@@ -68,7 +68,8 @@ AliAODHandler::AliAODHandler() :
     fTreeA(NULL),
     fFileA(NULL),
     fFileName(""),
-    fExtensions(NULL)
+    fExtensions(NULL),
+    fFilters(NULL)
 {
   // default constructor
 }
@@ -94,8 +95,10 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     fTreeA(NULL),
     fFileA(NULL),
     fFileName(""),
-    fExtensions(NULL)
+    fExtensions(NULL),
+    fFilters(NULL)
 {
+// Normal constructor.
 }
 
 //______________________________________________________________________________
@@ -110,6 +113,7 @@ AliAODHandler::~AliAODHandler()
   }
   delete fTreeA;
   if (fExtensions) delete fExtensions;
+  if (fFilters)    delete fFilters;
 }
 
 //______________________________________________________________________________
@@ -143,6 +147,14 @@ Bool_t AliAODHandler::Init(Option_t* opt)
      TIter next(fExtensions);
      AliAODExtension *ext;
      while ((ext=(AliAODExtension*)next())) ext->Init(option);
+  }   
+  if (fFilters) {
+     TIter nextf(fFilters);
+     AliAODExtension *filteredAOD;
+     while ((filteredAOD=(AliAODExtension*)nextf())) {
+        filteredAOD->SetEvent(fAODEvent);
+        filteredAOD->Init(option);
+     }   
   }   
   return kTRUE;
 }
@@ -377,13 +389,14 @@ Bool_t AliAODHandler::FinishEvent()
     if (fExtensions) {
       TIter next(fExtensions);
       AliAODExtension *ext;
-      while ((ext=(AliAODExtension*)next())) {
-        ext->GetAOD()->MakeEntriesReferencable();
-        ext->GetTree()->Fill();
-      }  
+      while ((ext=(AliAODExtension*)next())) ext->FinishEvent();
+    }
+    if (fFilters) {   
+      TIter nextf(fFilters);
+      AliAODExtension *ext;
+      while ((ext=(AliAODExtension*)nextf())) ext->FinishEvent();
     }       
   }
-
   if (fIsStandard) fAODEvent->ResetStd();
   // Reset AOD replication flag
   fAODIsReplicated = kFALSE;
@@ -416,6 +429,11 @@ Bool_t AliAODHandler::TerminateIO()
     TIter next(fExtensions);
     AliAODExtension *ext;
     while ((ext=(AliAODExtension*)next())) ext->TerminateIO();
+  }  
+  if (fFilters) {
+    TIter nextf(fFilters);
+    AliAODExtension *ext;
+    while ((ext=(AliAODExtension*)nextf())) ext->TerminateIO();
   }  
   return kTRUE;
 }
@@ -493,6 +511,38 @@ AliAODExtension *AliAODHandler::AddExtension(const char *filename, const char *t
    }   
    return ext;
 }
+
+//______________________________________________________________________________
+AliAODExtension *AliAODHandler::GetExtension(const char *filename) const
+{
+// Getter for AOD extensions via file name.
+   if (!fExtensions) return NULL;
+   return (AliAODExtension*)fExtensions->FindObject(filename);
+}   
+
+//______________________________________________________________________________
+AliAODExtension *AliAODHandler::AddFilteredAOD(const char *filename, const char *filtername)
+{
+// Add an AOD extension that can write only AOD events that pass a user filter.
+   if (!fFilters) {
+      fFilters = new TObjArray();
+      fFilters->SetOwner();
+   } 
+   AliAODExtension *filter = (AliAODExtension*)fFilters->FindObject(filename);
+   if (!filter) {
+      filter = new AliAODExtension(filename, filtername, kTRUE);
+      fFilters->Add(filter);
+   }
+   return filter;
+}      
+
+//______________________________________________________________________________
+AliAODExtension *AliAODHandler::GetFilteredAOD(const char *filename) const
+{
+// Getter for AOD filters via file name.
+   if (!fFilters) return NULL;
+   return (AliAODExtension*)fFilters->FindObject(filename);
+}   
    
 //______________________________________________________________________________
 void AliAODHandler::SetOutputFileName(const char* fname)
@@ -554,10 +604,24 @@ ClassImp(AliAODExtension)
 //-------------------------------------------------------------------------
 
 //______________________________________________________________________________
+AliAODExtension::AliAODExtension(const char* name, const char* title, Bool_t isfilter)
+                :TNamed(name,title), 
+                 fAODEvent(0), 
+                 fTreeE(0), 
+                 fFileE(0), 
+                 fNtotal(0), 
+                 fNpassed(0),
+                 fSelected(kFALSE)
+{
+// Constructor.
+   if (isfilter) TObject::SetBit(kFilteredAOD);
+}   
+
+//______________________________________________________________________________
 AliAODExtension::~AliAODExtension()
 {
 // Destructor.
-  delete fAODEvent;
+  if (!IsFilteredAOD()) delete fAODEvent;
   if(fFileE){
     // is already handled in TerminateIO
     fFileE->Close();
@@ -570,6 +634,10 @@ AliAODExtension::~AliAODExtension()
 void AliAODExtension::AddBranch(const char* cname, void* addobj)
 {
     // Add a new branch to the aod 
+    if (IsFilteredAOD()) {
+       Error("AddBranch", "Not allowed to add branched to filtered AOD's.");
+       return;
+    }   
     if (!fAODEvent) {
        char type[20];
        gROOT->ProcessLine(Form("TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)0x%lx, \"%%s\", s_tmp.Data());", type));
@@ -599,6 +667,25 @@ void AliAODExtension::AddBranch(const char* cname, void* addobj)
 }
 
 //______________________________________________________________________________
+Bool_t AliAODExtension::FinishEvent()
+{
+// Fill current event.
+  fNtotal++;
+  if (!IsFilteredAOD()) {
+    fAODEvent->MakeEntriesReferencable();
+    fTreeE->Fill();
+    return kTRUE;
+  }  
+  // Filtered AOD. Fill only if event is selected.
+  if (!fSelected) return kTRUE;
+  printf("SELECTED EVENT\n");
+  fNpassed++;
+  fTreeE->Fill();
+  fSelected = kFALSE; // so that next event will not be selected unless demanded
+  return kTRUE;
+}  
+
+//______________________________________________________________________________
 Bool_t AliAODExtension::Init(Option_t *option)
 {
 // Initialize IO.
@@ -620,6 +707,17 @@ Bool_t AliAODExtension::Init(Option_t *option)
   return kTRUE;
 }
 
+//______________________________________________________________________________
+void AliAODExtension::SetEvent(AliAODEvent *event)
+{
+// Connects to an external event
+   if (!IsFilteredAOD()) {
+      Error("SetEvent", "Not allowed to set external event for filtered AOD's");   
+      return;
+   }
+   fAODEvent = event;
+}
+   
 //______________________________________________________________________________
 Bool_t AliAODExtension::TerminateIO()
 {

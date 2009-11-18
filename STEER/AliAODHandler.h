@@ -57,11 +57,15 @@ class AliAODHandler : public AliVEventHandler {
     AliAODEvent*         GetAOD()  {return fAODEvent;}
     virtual TTree*       GetTree() const {return fTreeA;}
     TObjArray*           GetExtensions() const {return fExtensions;}
+    AliAODExtension*     GetExtension(const char *filename) const;
+    TObjArray*           GetFilters() const {return fFilters;}
+    AliAODExtension*     GetFilteredAOD(const char *filename) const;
     void                 CreateTree(Int_t flag);
     void                 FillTree();
     void                 AddAODtoTreeUserInfo();
     void                 AddBranch(const char* cname, void* addobj, const char *fname="");
     AliAODExtension*     AddExtension(const char *filename, const char *title="");                 
+    AliAODExtension*     AddFilteredAOD(const char *filename, const char *filtername);
     Bool_t               IsStandard()                         const {return fIsStandard;}
     Bool_t               GetFillAOD()                         const {return fFillAOD;} 
     Bool_t               NeedsHeaderReplication()             const {return  fNeedsHeaderReplication;}
@@ -104,7 +108,8 @@ class AliAODHandler : public AliVEventHandler {
     TFile                   *fFileA;                  //! Output file
     TString                  fFileName;               //  Output file name
     TObjArray               *fExtensions;             //  List of extensions
-    ClassDef(AliAODHandler, 4)
+    TObjArray               *fFilters;                // List of filtered AOD's
+    ClassDef(AliAODHandler, 5)
 };
 
 //-------------------------------------------------------------------------
@@ -116,16 +121,28 @@ class AliAODHandler : public AliVEventHandler {
 //-------------------------------------------------------------------------
 
 class AliAODExtension : public TNamed {
+
+public:
+
+enum EAliAODExtensionFlags {
+   kFilteredAOD      = BIT(14)
+};
     
- public:
-    AliAODExtension() : TNamed(), fAODEvent(0), fTreeE(0), fFileE(0)   {;}
-    AliAODExtension(const char* name, const char* title) : TNamed(name,title), fAODEvent(0), fTreeE(0), fFileE(0) {;}
+    AliAODExtension() : TNamed(), fAODEvent(0), fTreeE(0), fFileE(0), fNtotal(0), fNpassed(0), fSelected(kFALSE) {}
+    AliAODExtension(const char* name, const char* title, Bool_t isfilter=kFALSE);
     virtual ~AliAODExtension();
     void                 AddBranch(const char* cname, void* addobj);
+    Bool_t               FinishEvent();
+    Int_t                GetNtotal() const         {return fNtotal;}
+    Int_t                GetNpassed() const        {return fNpassed;}
     const char*          GetOutputFileName() const {return TNamed::GetName();}
     AliAODEvent*         GetAOD() const            {return fAODEvent;}
     TTree*               GetTree() const           {return fTreeE;}
     Bool_t               Init(Option_t *option);
+    Bool_t               IsFilteredAOD() const     {return TObject::TestBit(kFilteredAOD);}
+    Bool_t               IsEventSelected() const   {return fSelected;}
+    void                 SelectEvent(Bool_t flag=kTRUE)  {fSelected = flag;}
+    void                 SetEvent(AliAODEvent *event);
     void                 SetOutputFileName(const char* fname) {TNamed::SetName(fname);}
     Bool_t               TerminateIO();
  private:
@@ -136,6 +153,9 @@ class AliAODExtension : public TNamed {
     AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
     TTree                   *fTreeE;                  //! tree for AOD persistency
     TFile                   *fFileE;                  //! Output file
+    Int_t                    fNtotal;                 //! Number of processed events
+    Int_t                    fNpassed;                //! Number of events that passed the filter
+    Bool_t                   fSelected;               //! Select current event for filtered AOD's. Made false at event start.
     ClassDef(AliAODExtension, 1)                      // Support for extra AOD branches in a separate AOD file
 };
 #endif
