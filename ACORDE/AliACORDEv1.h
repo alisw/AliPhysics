@@ -4,9 +4,12 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id: AliACORDEv1.h,v 1.3 2007/08/18 08:40:00 hristov Exp $ */
-////////////////////////////////////////////////
-//  Manager class for detector: ACORDEv1         //
-////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+//  Manager class for detector: ACORDEv1             //
+//						     //
+// Last update: Nov. 17th. 2009                      //
+// Mario Rodriguez Cahuantzi <mrodrigu@mail.cern.ch> //
+///////////////////////////////////////////////////////
 
 #include "AliACORDE.h"
 

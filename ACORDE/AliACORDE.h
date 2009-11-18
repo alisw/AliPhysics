@@ -42,16 +42,16 @@ public:
   virtual Bool_t Raw2SDigits(AliRawReader*);
 
   virtual void SetCreateCavern(Bool_t b) {fCreateCavern = b;}
-  virtual void SetITSGeometry(Bool_t b) {fITSGeometry = b;}
+  virtual void Set4CentralModulesGeometry(Bool_t b) {f4CentralModulesGeometry = b;}
   virtual Bool_t GetCreateCavern() const {return fCreateCavern;}
-  virtual Bool_t GetITSGeometry() const {return fITSGeometry;}
+  virtual Bool_t Get4CentralModulesGeometry() const {return f4CentralModulesGeometry;}
 
 private:
   AliACORDE(const AliACORDE& crt);
   AliACORDE& operator=(const AliACORDE& crt);
 
   Bool_t fCreateCavern;
-  Bool_t fITSGeometry;
+  Bool_t f4CentralModulesGeometry;
 
   ClassDef(AliACORDE, 1) // Cosmic Ray Trigger (ACORDE) base class
 };

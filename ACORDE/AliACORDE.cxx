@@ -56,7 +56,7 @@ ClassImp(AliACORDE)
 AliACORDE::AliACORDE()
   : AliDetector(),
     fCreateCavern(0),
-    fITSGeometry(0)
+    f4CentralModulesGeometry(0)
 {
   //
   // Default constructor
@@ -67,7 +67,7 @@ AliACORDE::AliACORDE()
 AliACORDE::AliACORDE(const char *name, const char *title)
   : AliDetector(name, title),
     fCreateCavern(kFALSE),
-    fITSGeometry(kTRUE)
+    f4CentralModulesGeometry(kTRUE)
 
 {
   //

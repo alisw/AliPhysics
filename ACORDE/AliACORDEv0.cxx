@@ -22,11 +22,17 @@
 //  This class contains the functions for version 0 of the ALICE Cosmic Ray  //
 //  Trigger. This version will be used to simulation comic rays in alice with//
 //  all the detectors. It include geometry and hits (posicion and momentum)  //
+//  									     //	
+//   Author: Enrique Gamez                                                   //
 //                                                                           //
 //                  Send comments to:                                        //
 //      Arturo Fernandez <afernand@fcfm.buap.mx>                             //
-//      Enrique Gamez    <egamez@fcfm.buap.mx>                               //
 //      Eleazar Cuautle  <ecuautle@nucleares.unam.mx>                        //
+//									     //
+//	Last update: Nov. 17th. 2009					     //
+//	Mario Rodriguez Cahuantzi <mrodrigu@mail.cern.ch		     //
+//	FCFM-BUAP, Puebla, Pue. Mexico					     //
+//									     //
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -525,80 +531,80 @@ void AliACORDEv0::CreateAcorde()
   // first column, except first and last  modules
   for (Int_t copy = 2; copy < 10; copy++)
     gMC->Gspos("ACORDE1",copy,"ALIC",
-	       constants->ModulePositionX(copy-1),
-	       constants->ModulePositionY(copy-1),
-	       constants->ModulePositionZ(copy-1),
+	       constants->OldModulePositionX(copy-1),
+	       constants->OldModulePositionY(copy-1),
+	       constants->OldModulePositionZ(copy-1),
 	       idrotm[232], "MANY");
   // second column
   for (Int_t copy = 11; copy < 21; copy++)
     gMC->Gspos("ACORDE1",copy,"ALIC",
-	       constants->ModulePositionX(copy-1),
-	       constants->ModulePositionY(copy-1),
-	       constants->ModulePositionZ(copy-1),
+	       constants->OldModulePositionX(copy-1),
+	       constants->OldModulePositionY(copy-1),
+	       constants->OldModulePositionZ(copy-1),
 	       idrotm[232], "MANY");
   // third and fourth columns
   for (Int_t copy = 21; copy < 41; copy++)
     gMC->Gspos("ACORDE1",copy,"ALIC",
-	       constants->ModulePositionX(copy-1),
-	       constants->ModulePositionY(copy-1),
-	       constants->ModulePositionZ(copy-1),
+	       constants->OldModulePositionX(copy-1),
+	       constants->OldModulePositionY(copy-1),
+	       constants->OldModulePositionZ(copy-1),
 	       0, "MANY");
   // fifth column
   for (Int_t copy = 41; copy < 51; copy++)
     gMC->Gspos("ACORDE1",copy,"ALIC",
-	       constants->ModulePositionX(copy-1),
-	       constants->ModulePositionY(copy-1),
-	       constants->ModulePositionZ(copy-1),
+	       constants->OldModulePositionX(copy-1),
+	       constants->OldModulePositionY(copy-1),
+	       constants->OldModulePositionZ(copy-1),
 	       idrotm[231], "MANY");
   // last column, except first and last  modules
   for (Int_t copy = 52; copy < 60; copy++)
     gMC->Gspos("ACORDE1",copy,"ALIC",
-	       constants->ModulePositionX(copy-1),
-	       constants->ModulePositionY(copy-1),
-	       constants->ModulePositionZ(copy-1),
+	       constants->OldModulePositionX(copy-1),
+	       constants->OldModulePositionY(copy-1),
+	       constants->OldModulePositionZ(copy-1),
 	       idrotm[231], "MANY");
   // the last four modules
-  if (GetITSGeometry()) {
+  if (Get4CentralModulesGeometry()) {
     gMC->Gspos("ACORDE1",1,"ALIC",
-	       constants->ExtraModulePositionX(),
-	       constants->ExtraModulePositionY(),
-	       constants->ExtraModulePositionZ(0),
+	       constants->OldExtraModulePositionX(),
+	       constants->OldExtraModulePositionY(),
+	       constants->OldExtraModulePositionZ(0),
 	       0, "MANY");  
     gMC->Gspos("ACORDE1",10,"ALIC",
-	       constants->ExtraModulePositionX(),
-	       constants->ExtraModulePositionY(),
-	       constants->ExtraModulePositionZ(1),
+	       constants->OldExtraModulePositionX(),
+	       constants->OldExtraModulePositionY(),
+	       constants->OldExtraModulePositionZ(1),
 	       0, "MANY");  
     gMC->Gspos("ACORDE1",51,"ALIC",
-	       constants->ExtraModulePositionX(),
-	       constants->ExtraModulePositionY(),
-	       constants->ExtraModulePositionZ(2),
+	       constants->OldExtraModulePositionX(),
+	       constants->OldExtraModulePositionY(),
+	       constants->OldExtraModulePositionZ(2),
 	       0, "MANY");  
     gMC->Gspos("ACORDE1",60,"ALIC",
-	       constants->ExtraModulePositionX(),
-	       constants->ExtraModulePositionY(),
-	       constants->ExtraModulePositionZ(3),
+	       constants->OldExtraModulePositionX(),
+	       constants->OldExtraModulePositionY(),
+	       constants->OldExtraModulePositionZ(3),
 	       0, "MANY");  
   } else {
     gMC->Gspos("ACORDE1",1,"ALIC",
-	       constants->ModulePositionX(0),
-	       constants->ModulePositionY(0),
-	       constants->ModulePositionZ(0),
+	       constants->OldModulePositionX(0),
+	       constants->OldModulePositionY(0),
+	       constants->OldModulePositionZ(0),
 	       idrotm[232], "MANY");
     gMC->Gspos("ACORDE1",10,"ALIC",
-	       constants->ModulePositionX(9),
-	       constants->ModulePositionY(9),
-	       constants->ModulePositionZ(9),
+	       constants->OldModulePositionX(9),
+	       constants->OldModulePositionY(9),
+	       constants->OldModulePositionZ(9),
 	       idrotm[232], "MANY");
     gMC->Gspos("ACORDE1",51,"ALIC",
-	       constants->ModulePositionX(50),
-	       constants->ModulePositionY(50),
-	       constants->ModulePositionZ(50),
+	       constants->OldModulePositionX(50),
+	       constants->OldModulePositionY(50),
+	       constants->OldModulePositionZ(50),
 	       idrotm[231], "MANY");
     gMC->Gspos("ACORDE1",60,"ALIC",
-	       constants->ModulePositionX(59),
-	       constants->ModulePositionY(59),
-	       constants->ModulePositionZ(59),
+	       constants->OldModulePositionX(59),
+	       constants->OldModulePositionY(59),
+	       constants->OldModulePositionZ(59),
 	       idrotm[231], "MANY");
   } // end if (fITSGeometry)
 

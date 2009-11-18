@@ -37,16 +37,25 @@ public:
   Float_t ModuleLength() const;
   Float_t ModuleWidth() const;
   Float_t ModuleHeight() const;
-  Float_t ModulePositionX(Int_t i) const;
-  Float_t ModulePositionY(Int_t i) const;
-  Float_t ModulePositionZ(Int_t i) const;
+  Float_t InsideModulePositionX(Int_t i) const;
+  Float_t InsideModulePositionY(Int_t i) const;
+  Float_t InsideModulePositionZ(Int_t i) const;
+  Float_t CenterModulePositionX(Int_t i) const;
+  Float_t CenterModulePositionY(Int_t i) const;
+  Float_t CenterModulePositionZ(Int_t i) const;
+  Float_t OutsideModulePositionX(Int_t i) const;
+  Float_t OutsideModulePositionY(Int_t i) const;
+  Float_t OutsideModulePositionZ(Int_t i) const;
+  Float_t OldModulePositionX(Int_t i) const;
+  Float_t OldModulePositionY(Int_t i) const;
+  Float_t OldModulePositionZ(Int_t i) const;
   Float_t SupportModulePositionX(Int_t i) const;
   Float_t SupportModulePositionY(Int_t i) const;
   Float_t SupportModulePositionZ(Int_t i) const;
-  Float_t ExtraModulePositionZ(Int_t i) const;
-  Int_t ModuleElectronicChannel(Int_t i) const;
-  Float_t ExtraModulePositionX() const;
-  Float_t ExtraModulePositionY() const;
+  Float_t OldExtraModulePositionZ(Int_t i) const;
+  Int_t OldModuleElectronicChannel(Int_t i) const;
+  Float_t OldExtraModulePositionX() const;
+  Float_t OldExtraModulePositionY() const;
   Float_t PlasticLength() const;
   Float_t PlasticWidth() const;
   Float_t PlasticHeight() const;
@@ -70,16 +79,25 @@ protected:
   static const Float_t fgkModuleLength; // Module lenght
   static const Float_t fgkModuleWidth;  // Module width
   static const Float_t fgkModuleHeight; // Module height
-  static const Float_t fgkModulePositionX[60]; // position in ALICE
-  static const Float_t fgkModulePositionY[60]; // of center of module
-  static const Float_t fgkModulePositionZ[60]; 
+  static const Float_t fgkInsideModulePositionX[60]; 
+  static const Float_t fgkInsideModulePositionY[60];
+  static const Float_t fgkInsideModulePositionZ[60];
+  static const Float_t fgkCenterModulePositionX[60];
+  static const Float_t fgkCenterModulePositionY[60];
+  static const Float_t fgkCenterModulePositionZ[60];
+  static const Float_t fgkOutsideModulePositionX[60];
+  static const Float_t fgkOutsideModulePositionY[60];
+  static const Float_t fgkOutsideModulePositionZ[60];
+  static const Float_t fgkOldModulePositionX[60]; // OLD position in ALICE
+  static const Float_t fgkOldModulePositionY[60]; // of center of module
+  static const Float_t fgkOldModulePositionZ[60]; 
   static const Float_t fgkSupportModulePositionX[60];
   static const Float_t fgkSupportModulePositionY[60];
   static const Float_t fgkSupportModulePositionZ[60];
-  static const Float_t fgkExtraModulePositionZ[4];
-  static const Float_t fgkExtraModulePositionX;
-  static const Float_t fgkExtraModulePositionY;
-  static const Int_t fgkModuleElectronicChannel[60];
+  static const Float_t fgkOldExtraModulePositionZ[4];
+  static const Float_t fgkOldExtraModulePositionX;
+  static const Float_t fgkOldExtraModulePositionY;
+  static const Int_t fgkOldModuleElectronicChannel[60];
 
   static const Float_t fgkPlasticLength; // Plastic length
   static const Float_t fgkPlasticWidth;  // Plastic width
