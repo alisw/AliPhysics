@@ -103,6 +103,8 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
   }//ESD
   if(analysisLevel == "MC") 
     baseAnalysis->SetPhaseSpace(10, -0.5, 0.5, 16, 0.5, 0.9);
+  if(analysisLevel == "AOD") {  
+    baseAnalysis->SetPhaseSpace(10, -0.5, 0.5, 16, 0.5, 0.9);
 
   return baseAnalysis;
 }
