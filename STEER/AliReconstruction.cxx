@@ -1147,6 +1147,13 @@ Bool_t AliReconstruction::LoadCDB()
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     AliCDBManager::Instance()->GetAll(Form("%s/Calib/*",fgkDetectorName[iDet]));
   }
+
+  // Temporary fix - one has to define the correct policy in order
+  // to load the trigger OCDB entries only for the detectors that
+  // in the trigger or that are needed in order to put correct
+  // information in ESD
+  AliCDBManager::Instance()->GetAll("TRIGGER/*/*");
+
   return kTRUE;
 }
 //_____________________________________________________________________________

@@ -976,7 +976,7 @@ AliITSTriggerConditions* AliITSDetTypeSim::GetTriggerConditions() {
     if (fRunNumber<0) isCacheActive=kFALSE;
     else              isCacheActive=kTRUE;
     AliCDBManager::Instance()->SetCacheFlag(isCacheActive);
-    AliCDBEntry *pitCond = AliCDBManager::Instance()->Get("ITS/Calib/PITConditions", fRunNumber);
+    AliCDBEntry *pitCond = AliCDBManager::Instance()->Get("TRIGGER/SPD/PITConditions", fRunNumber);
     if (!pitCond) {
       AliError("Trigger conditions retrieval failed! ");
       return NULL;

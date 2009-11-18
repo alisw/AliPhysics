@@ -446,7 +446,7 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
  
   AliCDBEntry *noisySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDNoisy");
   AliCDBEntry *deadSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead");
-  AliCDBEntry *pitCond = AliCDBManager::Instance()->Get("ITS/Calib/PITConditions");
+  AliCDBEntry *pitCond = AliCDBManager::Instance()->Get("TRIGGER/SPD/PITConditions");
   if(!noisySPD || !deadSPD || !pitCond ){
     AliFatal("SPD Calibration object retrieval failed! ");
     return kFALSE;
