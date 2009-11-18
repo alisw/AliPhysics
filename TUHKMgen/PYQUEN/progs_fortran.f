@@ -5,7 +5,7 @@ c*******************************************
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       double precision nbcol,npart,npart0
       real p,v,plu
-      external ludata,pydata
+      external pydata
       double precision numpar,npar0,nbco0 
 c      common /lujets/ n,k(150000,5),p(150000,5),v(150000,5)
       common /hyjets/ nhj,nhp,khj(150000,5),phj(150000,5),vhj(150000,5) 
@@ -302,7 +302,6 @@ c       write(*,*)" ipdg ", ipdg, " KC ",KC," delta ",delta
       double precision numpar,npar0,nbco0,npart,nbcol,npart0 
       real p,v, delta
       external hsin,hftaa,numpar,hyhard,hipsear,pyr,pymass,PYCOMP 
-      external ludata 
 c      common /lujets/ n,k(150000,5),p(150000,5),v(150000,5)
       common /hyjets/ nhj,nhp,khj(150000,5),phj(150000,5),vhj(150000,5)
       common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
