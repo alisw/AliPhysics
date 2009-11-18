@@ -157,8 +157,8 @@ void AliTPCcalibDButil::UpdateFromCalibDB()
   fCalibRaw=fCalibDB->GetCalibRaw();
   fDataQA=fCalibDB->GetDataQA();
   UpdatePulserOutlierMap();
-  SetReferenceRun();
-  UpdateRefDataFromOCDB();
+//   SetReferenceRun();
+//   UpdateRefDataFromOCDB();
 }
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC,
