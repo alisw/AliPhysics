@@ -387,14 +387,15 @@ int main(int argc, char **argv) {
   	   }
   	    iraw++;
   	  }//IsADCDataWord()
-  	  //
-  	  if(iraw == 4*kNChannels){ // Last ADC channel -> Filling correlation histos
-  	    for(Int_t k=0; k<kNChannels; k++){
-  	      hPedCorrhg[k]->Fill(RawADCoothg[k], RawADChg[k]);
-  	      hPedCorrlg[k]->Fill(RawADCootlg[k], RawADClg[k]);
-  	    }
-  	  }
         }
+  	//
+  	if(iraw==4*kNChannels ){ // Last ADC channel -> Filling correlation histos
+  	  for(Int_t k=0; k<kNChannels; k++){
+  	    hPedCorrhg[k]->Fill(RawADCoothg[k], RawADChg[k]);
+  	    hPedCorrlg[k]->Fill(RawADCootlg[k], RawADClg[k]);
+  	  }
+          //printf(" ev. %d -> Filling correlation histo %d\n",nevents_physics, kNChannels);
+  	}
         nevents_physics++;
         //
 	delete reader;
