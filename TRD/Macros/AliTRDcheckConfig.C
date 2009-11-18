@@ -143,10 +143,10 @@ void GetMajorityDifferences(AliTRDCalDCS* calDCSObj, AliTRDCalDCS* calDCSObj2) {
       (idcsfee->GetStatusBit() != 0) /*|| (idcsfee2->GetStatusBit() != 0)*/) continue;
     for (Int_t j=0; j<nROB; j++) {
       for (Int_t k=0; k<nMCM; k++) {
-	Int_t igsm = idcsfee->GetMCMGlobalState(j,k)-idcsfee2->GetMCMGlobalState(j,k);
-	Int_t inim = idcsfee->GetMCMStateNI(j,k)-idcsfee2->GetMCMStateNI(j,k);
-	Int_t inev = idcsfee->GetMCMEventCnt(j,k)-idcsfee2->GetMCMEventCnt(j,k);
-	Int_t inpt = idcsfee->GetMCMPtCnt(j,k)-idcsfee2->GetMCMPtCnt(j,k);
+	Int_t igsm = idcsfee->GetMCMGlobalState(j,k) - idcsfee2->GetMCMGlobalState(j,k);
+	Int_t inim = idcsfee->GetMCMStateNI(j,k)     - idcsfee2->GetMCMStateNI(j,k);
+	Int_t inev = idcsfee2->GetMCMEventCnt(j,k)   - idcsfee->GetMCMEventCnt(j,k);
+	Int_t inpt = idcsfee2->GetMCMPtCnt(j,k)      - idcsfee->GetMCMPtCnt(j,k);
 	
 	// if they were set to -1, it means they were not actauuly set
 	// change -1 to -100 to mean they werent set since the above 
