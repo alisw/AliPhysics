@@ -1187,7 +1187,7 @@ void AliTRDseedV1::Bootstrap(const AliTRDReconstructor *rec)
   AliTRDpadPlane *pp = g.GetPadPlane(fDet);
   fPad[0] = pp->GetLengthIPad();
   fPad[1] = pp->GetWidthIPad();
-  fPad[3] = TMath::Tan(TMath::DegToRad()*pp->GetTiltingAngle());
+  fPad[2] = TMath::Tan(TMath::DegToRad()*pp->GetTiltingAngle());
   //fSnp = fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);
   //fTgl = fZref[1];
   Int_t n = 0, nshare = 0, nused = 0;
@@ -1706,6 +1706,7 @@ void AliTRDseedV1::Print(Option_t *o) const
   AliInfo(Form("Det[%3d] X0[%7.2f] Pad{L[%5.2f] W[%5.2f] Tilt[%+6.2f]}", fDet, fX0, GetPadLength(), GetPadWidth(), GetTilt()));
   AliInfo(Form("N[%2d] Nused[%2d] Nshared[%2d] [%d]", GetN(), GetNUsed(), GetNShared(), fN));
   AliInfo(Form("FLAGS : RC[%c] Kink[%c] SA[%c]", IsRowCross()?'y':'n', IsKink()?'y':'n', IsStandAlone()?'y':'n'));
+  AliInfo(Form("CALIB PARAMS :  T0[%5.2f]  Vd[%5.2f]  s2PRF[%5.2f]  ExB[%5.2f]  Dl[%5.2f]  Dt[%5.2f]", fT0, fVD, fS2PRF, fExB, fDiffL, fDiffT));
 
   Double_t cov[3], x=GetX();
   GetCovAt(x, cov);
