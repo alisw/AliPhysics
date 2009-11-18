@@ -36,9 +36,9 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
   // position range. Fail otherwise
   int mult =  event->NumberOfTracks();
   double vertexZPos = event->PrimVertPos().z();
-  cout << "AliFemtoBasicEventCut:: mult:       " << fEventMult[0] << " < " << mult << " < " << fEventMult[1] << endl;
-  cout << "AliFemtoBasicEventCut:: VertexZPos: " << fVertZPos[0] << " < " << vertexZPos << " < " << fVertZPos[1] << endl;
-  cout << "AliFemtoBasicEventCut:: VertexZErr: " << event->PrimVertCov()[4] << endl;
+//   cout << "AliFemtoBasicEventCut:: mult:       " << fEventMult[0] << " < " << mult << " < " << fEventMult[1] << endl;
+//   cout << "AliFemtoBasicEventCut:: VertexZPos: " << fVertZPos[0] << " < " << vertexZPos << " < " << fVertZPos[1] << endl;
+//   cout << "AliFemtoBasicEventCut:: VertexZErr: " << event->PrimVertCov()[4] << endl;
   bool goodEvent =
     ((mult >= fEventMult[0]) && 
      (mult <= fEventMult[1]) && 
@@ -46,7 +46,7 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
      (vertexZPos < fVertZPos[1]) &&
      (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)));
   goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
-  cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
+//   cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
   return (goodEvent);
 }
 //------------------------------
