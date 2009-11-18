@@ -119,20 +119,20 @@ public:
     AliTRDLeastSquare();
     ~AliTRDLeastSquare(){};
     
-    void		AddPoint(const Double_t * const x, Double_t y, Double_t sigmaY);
-    void		RemovePoint(const Double_t * const x, Double_t y, Double_t sigmaY);
-    void		Eval();
-    void    Reset();
+    void          AddPoint(const Double_t * const x, Double_t y, Double_t sigmaY);
+    void          RemovePoint(const Double_t * const x, Double_t y, Double_t sigmaY);
+    Bool_t        Eval();
+    void          Reset();
     
-    Double_t	GetFunctionParameter(Int_t ParNumber) const {return fParams[ParNumber];}
-    Double_t	GetFunctionValue(const Double_t * const xpos) const;
-    void		GetCovarianceMatrix(Double_t *storage) const;
+    Double_t      GetFunctionParameter(Int_t ParNumber) const {return fParams[ParNumber];}
+    Double_t      GetFunctionValue(const Double_t * const xpos) const;
+    void          GetCovarianceMatrix(Double_t *storage) const;
   private:
     AliTRDLeastSquare(const AliTRDLeastSquare &);
     AliTRDLeastSquare& operator=(const AliTRDLeastSquare &);
-    Double_t 	fParams[2];						// Fitparameter	
-    Double_t 	fCovarianceMatrix[3];			// Covariance Matrix
-    Double_t 	fSums[6];						// Sums
+    Double_t      fParams[2];           // Fitparameter	
+    Double_t      fCovarianceMatrix[3]; // Covariance Matrix
+    Double_t      fSums[6];             // Sums
   };
 
   class AliTRDtrackFitterRieman{

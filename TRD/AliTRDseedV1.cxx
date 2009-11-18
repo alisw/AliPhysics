@@ -837,6 +837,9 @@ void AliTRDseedV1::Calibrate()
   fExB   = AliTRDCommonParam::Instance()->GetOmegaTau(fVD);
   AliTRDCommonParam::Instance()->GetDiffCoeff(fDiffL,
   fDiffT, fVD);
+  AliDebug(4, Form("Calibration params for Det[%3d] Col[%3d] Row[%2d]\n  t0[%f]  vd[%f]  s2PRF[%f]  ExB[%f]  Dl[%f]  Dt[%f]", fDet, col, row, fT0, fVD, fS2PRF, fExB, fDiffL, fDiffT));
+
+
   SetBit(kCalib, kTRUE);
 }
 
@@ -1351,7 +1354,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     //optional tilt correction
     if(tilt) yc[n] -= (GetTilt()*(zc[n] - zt)); 
 
-    fitterY.AddPoint(&xc[n], yc[n], TMath::Sqrt(sy[n]));
+    fitterY.AddPoint(&xc[n], yc[n], sy[n]);
     if(IsRowCross()) fitterZ.AddPoint(&xc[n], qc[n], 1.);
     n++;
   }
@@ -1360,18 +1363,27 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   if (n < kClmin) return kFALSE; 
 
   // fit XY
-  fitterY.Eval();
+  if(!fitterY.Eval()){
+    SetErrorMsg(kFitFailed);
+    return kFALSE;
+  }
   fYfit[0] = fitterY.GetFunctionParameter(0);
   fYfit[1] = -fitterY.GetFunctionParameter(1);
   // store covariance
   Double_t p[3];
   fitterY.GetCovarianceMatrix(p);
-  fCov[0] = p[0]; // variance of y0
+  fCov[0] = p[1]; // variance of y0
   fCov[1] = p[2]; // covariance of y0, dydx
-  fCov[2] = p[1]; // variance of dydx
+  fCov[2] = p[0]; // variance of dydx
   // the ref radial position is set at the minimum of 
   // the y variance of the tracklet
   fX   = -fCov[1]/fCov[2];
+  Float_t xs=fX+.5*AliTRDgeometry::CamHght();
+  if(xs < 0. || xs > AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght()){
+    AliDebug(1, Form("Ref radial position ouside chamber x[%5.2f].", fX));
+    SetErrorMsg(kFitOutside);
+    return kFALSE;
+  }
 
   // collect second row clusters
   Int_t m(0);

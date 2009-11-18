@@ -75,6 +75,8 @@ public:
    ,kAttachRow          // found 3 rows
    ,kAttachMultipleCl   // multiple clusters attached to time bin
    ,kAttachClAttach     // not enough clusters attached
+   ,kFitFailed          // fit failed det=0
+   ,kFitOutside         // ref radial position outside chamber - wrong covariance
   };
 
   AliTRDseedV1(Int_t det = -1);

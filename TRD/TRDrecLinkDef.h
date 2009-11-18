@@ -26,6 +26,8 @@
 #pragma link C++ class  AliTRDseedV1+;
 #pragma link C++ class  AliTRDtrackV1+;
 #pragma link C++ class  AliTRDtrackerV1+;
+#pragma link C++ class  AliTRDtrackerV1::AliTRDLeastSquare+;
+#pragma link C++ class  AliTRDtrackerV1::AliTRDtrackFitterRieman+;
 #pragma link C++ class  AliTRDtrackerDebug+;
 #pragma link C++ class  AliTRDtrackingSector+;
 #pragma link C++ class  AliTRDtrackingChamber+;

@@ -58,6 +58,8 @@
 #include "AliTRDchamberTimeBin.h"
 
 ClassImp(AliTRDtrackerV1)
+ClassImp(AliTRDtrackerV1::AliTRDLeastSquare)
+ClassImp(AliTRDtrackerV1::AliTRDtrackFitterRieman)
 
 const  Float_t  AliTRDtrackerV1::fgkMinClustersInTrack =  0.5;  //
 const  Float_t  AliTRDtrackerV1::fgkLabelFraction      =  0.8;  //
@@ -3671,9 +3673,26 @@ Double_t AliTRDtrackerV1::FitTiltedRiemanV1(AliTRDseedV1 *const tracklets){
 
 //_____________________________________________________________________________
 AliTRDtrackerV1::AliTRDLeastSquare::AliTRDLeastSquare(){
-  //
-  // Constructor of the nested class AliTRDtrackFitterLeastSquare
-  //
+//
+// Constructor of the nested class AliTRDtrackFitterLeastSquare
+//
+// Fast solving linear regresion in 2D
+//         y=ax+b
+// The data members have the following meaning
+// fParams[0] : b
+// fParams[1] : a
+// 
+// fSums[0] : S
+// fSums[1] : Sx
+// fSums[2] : Sy
+// fSums[3] : Sxy
+// fSums[4] : Sxx
+// fSums[5] : Syy
+// 
+// fCovarianceMatrix[0] : s2b
+// fCovarianceMatrix[1] : s2a
+// fCovarianceMatrix[2] : cov(ab)
+
   memset(fParams, 0, sizeof(Double_t) * 2);
   memset(fSums, 0, sizeof(Double_t) * 6);
   memset(fCovarianceMatrix, 0, sizeof(Double_t) * 3);
@@ -3716,27 +3735,28 @@ void AliTRDtrackerV1::AliTRDLeastSquare::RemovePoint(const Double_t *const x, Do
 }
 
 //_____________________________________________________________________________
-void AliTRDtrackerV1::AliTRDLeastSquare::Eval(){
+Bool_t AliTRDtrackerV1::AliTRDLeastSquare::Eval(){
   //
   // Evaluation of the fit:
   // Calculation of the parameters
   // Calculation of the covariance matrix
   //
   
-  Double_t denominator = fSums[0] * fSums[4] - fSums[1] *fSums[1];
-  if(denominator==0) return;
+  Double_t det = fSums[0] * fSums[4] - fSums[1] *fSums[1];
+  if(det==0) return kFALSE;
 
   //	for(Int_t isum = 0; isum < 5; isum++)
   //		printf("fSums[%d] = %f\n", isum, fSums[isum]);
   //	printf("denominator = %f\n", denominator);
-  fParams[0] = (fSums[2] * fSums[4] - fSums[1] * fSums[3])/ denominator;
-  fParams[1] = (fSums[0] * fSums[3] - fSums[1] * fSums[2]) / denominator;
+  fParams[0] = (fSums[2] * fSums[4] - fSums[1] * fSums[3])/det;
+  fParams[1] = (fSums[0] * fSums[3] - fSums[1] * fSums[2])/det;
   //	printf("fParams[0] = %f, fParams[1] = %f\n", fParams[0], fParams[1]);
   
   // Covariance matrix
   fCovarianceMatrix[0] = fSums[4] / fSums[0] - fSums[1] * fSums[1] / (fSums[0] * fSums[0]);
   fCovarianceMatrix[1] = fSums[5] / fSums[0] - fSums[2] * fSums[2] / (fSums[0] * fSums[0]);
   fCovarianceMatrix[2] = fSums[3] / fSums[0] - fSums[1] * fSums[2] / (fSums[0] * fSums[0]);
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
