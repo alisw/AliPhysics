@@ -34,7 +34,7 @@ tpc_hits(const char  *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ
 
   // PD - added tags
   
-  points->SetName(Form("SIM Hits TPC"));
+  points->SetName(Form("TPC Hits"));
   const TString viz_tag("SIM Hits TPC");
   points->ApplyVizTag(viz_tag, "Hits");
 

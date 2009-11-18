@@ -65,11 +65,12 @@ TEvePointSet* trd_clusters(TEveElement *cont = 0)
     return 0;
   }
 
-  clusters->SetName(Form("REC Clusters TRD"));
+  clusters->SetName("TRD Clusters");
 
   clusters->SetTitle(Form("N=%d", clusters->Size()));
 
   const TString viz_tag("REC Clusters TRD");
+
   clusters->ApplyVizTag(viz_tag, "Clusters");
 
   gEve->AddElement(clusters, cont);

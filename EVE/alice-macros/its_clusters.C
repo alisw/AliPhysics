@@ -79,11 +79,12 @@ TEvePointSet* its_clusters(TEveElement* cont=0, Float_t maxR=50)
     return 0;
   }
 
-  clusters->SetName(Form("REC Clusters ITS"));
+  clusters->SetName("ITS Clusters");
 
   clusters->SetTitle(Form("N=%d", clusters->Size()));
 
   const TString viz_tag("REC Clusters ITS");
+
   clusters->ApplyVizTag(viz_tag, "Clusters");
 
   gEve->AddElement(clusters, cont);

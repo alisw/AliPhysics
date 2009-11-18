@@ -17,7 +17,7 @@ tof_hits(const char *varexp    = "fX:fY:fZ",
 
   TTree* ht = rl->GetTreeH("TOF", false);
   
-  TEvePointSet* points = new TEvePointSet(Form("SIM Hits TOF '%s'", selection));
+  TEvePointSet* points = new TEvePointSet(Form("TOF Hits '%s'", selection));
 
   TEvePointSelector ps(ht, points, varexp, selection);
   ps.Select();
@@ -27,6 +27,14 @@ tof_hits(const char *varexp    = "fX:fY:fZ",
     delete points;
     return 0;
   }
+
+ // PD - added tags
+  
+  points->SetName(Form("TOF Hits"));
+  const TString viz_tag("SIM Hits TOF");
+  points->ApplyVizTag(viz_tag, "Hits");
+
+  // PD
 
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);

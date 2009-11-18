@@ -17,7 +17,7 @@ acorde_hits(const char  *varexp    = "ACORDE.fX:ACORDE.fY:ACORDE.fZ",
 
   TTree* ht = rl->GetTreeH("ACORDE", false);
 
-  TEvePointSet* points = new TEvePointSet(Form("SIM Hits ACORDE '%s'", selection));
+  TEvePointSet* points = new TEvePointSet(Form("ACORDE Hits '%s'", selection));
 
   TEvePointSelector ps(ht, points, varexp, selection);
   ps.Select();
@@ -28,6 +28,14 @@ acorde_hits(const char  *varexp    = "ACORDE.fX:ACORDE.fY:ACORDE.fZ",
     delete points;
     return 0;
   }
+
+  // PD - added tags
+  
+  points->SetName(Form("ACORDE Hits"));
+  const TString viz_tag("SIM Hits ACORDE");
+  points->ApplyVizTag(viz_tag, "Hits");
+
+  // PD
 
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);

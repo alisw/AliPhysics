@@ -52,10 +52,16 @@ TEvePointSet* phos_clusters(TEveElement* cont=0)
   clusters->SetMarkerSize(0.5);
   clusters->SetMarkerColor(4);
 
-  clusters->SetName(Form("REC Clusters PHOS"));
+  clusters->SetName("PHOS Clusters");
 
   clusters->SetTitle(Form("N=%d", clusters->Size()));
+
+  const TString viz_tag("REC Clusters PHOS");
+
+  clusters->ApplyVizTag(viz_tag, "Clusters");
+
   gEve->AddElement(clusters);
+
   gEve->Redraw3D();
 
   return clusters;

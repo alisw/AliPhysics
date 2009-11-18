@@ -81,11 +81,12 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
     return 0;
   }
 
-  clusters->SetName(Form("REC Clusters TPC"));
+  clusters->SetName("TPC Clusters");
 
   clusters->SetTitle(Form("N=%d", clusters->Size()));
 
   const TString viz_tag("REC Clusters TPC");
+
   clusters->ApplyVizTag(viz_tag, "Clusters");
 
   gEve->AddElement(clusters, cont);

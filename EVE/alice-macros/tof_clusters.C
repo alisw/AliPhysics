@@ -76,7 +76,6 @@ TEvePointSet* tof_clusters(TEveElement* cont=0, Float_t maxR=390)
   clusters->ApplyVizTag(viz_tag, "Clusters");
 
   gEve->AddElement(clusters, cont);
-
   gEve->Redraw3D();
 
   return clusters;
@@ -140,7 +139,6 @@ TEvePointSet* tof_clusters_sec(Int_t selectedSector,
   }
 
   clusters->SetName(Form("REC Clusters TOF"));
-
   clusters->SetTitle(Form("N=%d", clusters->Size()));
 
   const TString viz_tag("REC Clusters TOF");

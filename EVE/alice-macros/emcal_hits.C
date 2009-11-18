@@ -17,7 +17,7 @@ emcal_hits(const char *varexp    = "fX:fY:fZ",
 
   TTree* ht = rl->GetTreeH("EMCAL", false);
 
-  TEvePointSet* points = new TEvePointSet(Form("SIM Hits EMCAL '%s'", selection));
+  TEvePointSet* points = new TEvePointSet(Form("EMCAL Hits '%s'", selection));
 
   TEvePointSelector ps(ht, points, varexp, selection);
   ps.Select();
@@ -27,6 +27,14 @@ emcal_hits(const char *varexp    = "fX:fY:fZ",
     delete points;
     return 0;
   }
+
+  // PD - added tags
+  
+  points->SetName(Form("EMCAL Hits"));
+  const TString viz_tag("SIM Hits EMCAL");
+  points->ApplyVizTag(viz_tag, "Hits");
+
+  // PD
 
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);
