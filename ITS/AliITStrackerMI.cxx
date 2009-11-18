@@ -50,7 +50,6 @@
 #include "AliITSChannelStatus.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
-#include "AliITSRecPointContainer.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSReconstructor.h"
 #include "AliITSClusterParam.h"
@@ -347,7 +346,6 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
   //--------------------------------------------------------------------
   //This function loads ITS clusters
   //--------------------------------------------------------------------
-  /*
   TBranch *branch=cTree->GetBranch("ITSRecPoints");
   if (!branch) { 
     Error("LoadClusters"," can't get the branch !\n");
@@ -356,23 +354,14 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
 
   static TClonesArray dummy("AliITSRecPoint",10000), *clusters=&dummy;
   branch->SetAddress(&clusters);
-  */
-  TClonesArray *clusters = NULL;
-  AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
-  clusters=rpcont->FetchClusters(0,cTree);
-  if(!(rpcont->IsSPDActive() || rpcont->IsSDDActive() || rpcont->IsSSDActive())){
-      AliError("ITS is not in a known running configuration: SPD, SDD and SSD are not active");
-      return 1;
-  }
+
   Int_t i=0,j=0,ndet=0;
   Int_t detector=0;
   for (i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
     ndet=fgLayers[i].GetNdetectors();
     Int_t jmax = j + fgLayers[i].GetNladders()*ndet;
     for (; j<jmax; j++) {           
-      //      if (!cTree->GetEvent(j)) continue;
-      clusters = rpcont->UncheckedGetClusters(j);
-      if(!clusters)continue;
+      if (!cTree->GetEvent(j)) continue;
       Int_t ncl=clusters->GetEntriesFast();
       SignDeltas(clusters,GetZ());
  
@@ -384,7 +373,7 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
 
         fgLayers[i].InsertCluster(new AliITSRecPoint(*c));
       }
-      //      clusters->Clear();
+      clusters->Clear();
       // add dead zone "virtual" cluster in SPD, if there is a cluster within 
       // zwindow cm from the dead zone      
       if (i<2 && AliITSReconstructor::GetRecoParam()->GetAddVirtualClustersInDeadZone()) {

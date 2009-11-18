@@ -41,8 +41,6 @@
 
 #include "AliITSgeomTGeo.h"
 
-
-//#include "dataSDDladder.h"
 ClassImp(AliITSSurveyToAlign)
 
 const Double_t AliITSSurveyToAlign::fgkLocR[6][3]={{ 3.24,0.21905,-2.4},
@@ -62,40 +60,16 @@ const Double_t AliITSSurveyToAlign::fgkLocL[6][3]={{-3.24,0.21905, 2.4},
 const Double_t kRadToDeg = 180./TMath::Pi();
 
 //________________________________________________________________________
-AliITSSurveyToAlign::AliITSSurveyToAlign(Int_t run, Int_t repModSDD, Int_t repModVerSDD, Int_t repLadSDD, Int_t repLadVerSDD, Int_t repModSSD, Int_t repModVerSSD, Int_t repLaddSSD, Int_t repLaddVerSSD) :
+AliITSSurveyToAlign::AliITSSurveyToAlign(Int_t run, Int_t repSDD, Int_t repVerSDD, Int_t repModSSD, Int_t repModVerSSD, Int_t repLaddSSD, Int_t repLaddVerSSD) :
   AliSurveyToAlignObjs(),
   fRun(run),
-  fSDDModuleRepNumber(repModSDD),
-  fSDDModuleRepVersion(repModVerSDD),
-  fSDDLadderRepNumber(repLadSDD),
-  fSDDLadderRepVersion(repLadVerSDD),
+  fSDDrepNumber(repSDD),
+  fSDDrepVersion(repVerSDD),
   fSSDModuleRepNumber(repModSSD),
   fSSDModuleRepVersion(repModVerSSD),
   fSSDLadderRepNumber(repLaddSSD),
   fSSDLadderRepVersion(repLaddVerSSD)
  {
-  for(Int_t i=0; i<260; i++)
-    {
-      fuidSDDm[i]= 0;
-      fsymnameSDDm[i]=TString("");
-      fxSDDm[i]=0;
-      fySDDm[i]=0;
-      fzSDDm[i]=0;
-      fpsiSDDm[i]=0;
-      ftetSDDm[i]=0;
-      fphiSDDm[i]=0;
-      if(i>35) continue;
-      fuidSDDl[i]=0;
-      fsymnameSDDl[i]=TString("");
-      fxSDDl[i]=0;
-      fySDDl[i]=0;
-      fzSDDl[i]=0;
-      fpsiSDDl[i]=0;
-      ftetSDDl[i]=0;
-      fphiSDDl[i]=0;
-    }
-
-   //   ftypeSDDlad=0;
   //
   //  default constructor
   //  Arguments are report numbers for survey data. 
@@ -107,10 +81,8 @@ AliITSSurveyToAlign::AliITSSurveyToAlign(Int_t run, Int_t repModSDD, Int_t repMo
 AliITSSurveyToAlign::AliITSSurveyToAlign(const AliITSSurveyToAlign &align) :
   AliSurveyToAlignObjs(align),
   fRun(align.fRun),
-  fSDDModuleRepNumber(align.fSDDModuleRepNumber),
-  fSDDModuleRepVersion(align.fSDDModuleRepVersion),
-  fSDDLadderRepNumber(align.fSDDLadderRepNumber),
-  fSDDLadderRepVersion(align.fSDDLadderRepVersion),
+  fSDDrepNumber(align.fSDDrepNumber),
+  fSDDrepVersion(align.fSDDrepVersion),
   fSSDModuleRepNumber(align.fSSDModuleRepNumber),
   fSSDModuleRepVersion(align.fSSDModuleRepVersion),
   fSSDLadderRepNumber(align.fSSDLadderRepNumber),
@@ -119,27 +91,6 @@ AliITSSurveyToAlign::AliITSSurveyToAlign(const AliITSSurveyToAlign &align) :
   //
   //  copy constructor 
   //
-  for(Int_t i=0; i<260; i++)
-    {
-      fuidSDDm[i]= align.fuidSDDm[i];
-      fsymnameSDDm[i]=TString(align.fsymnameSDDm[i]);
-      fxSDDm[i]=align.fxSDDm[i];
-      fySDDm[i]=align.fySDDm[i];
-      fzSDDm[i]=align.fzSDDm[i];
-      fpsiSDDm[i]=align.fpsiSDDm[i];
-      ftetSDDm[i]=align.ftetSDDm[i];
-      fphiSDDm[i]=align.fphiSDDm[i];
-      if(i>35) continue;
-      fuidSDDl[i]=align.fuidSDDl[i];
-      fsymnameSDDl[i]=TString(align.fsymnameSDDl[i]);
-      fxSDDl[i]=align.fxSDDl[i];
-      fySDDl[i]=align.fySDDl[i];
-      fzSDDl[i]=align.fzSDDl[i];
-      fpsiSDDl[i]=align.fpsiSDDl[i];
-      ftetSDDl[i]=align.ftetSDDl[i];
-      fphiSDDl[i]=align.fphiSDDl[i];
-    }
-
 }
 
 //__________________________________________________________________________
@@ -184,21 +135,12 @@ Bool_t AliITSSurveyToAlign::CreateAlignObjs() {
   //for SPD
   CreateAlignObjDummySPD();
 
-  ///////////////////////////
   // for SDD
-  if(!LoadSurveyFromAlienFile("ITS", fSDDModuleRepNumber, fSDDModuleRepVersion)){
-      AliError("Loading of alignment objects from survey for SDD modules failed!");
+  if(!LoadSurveyFromAlienFile("ITS", fSDDrepNumber, fSDDrepVersion)){
+      AliError("Loading of alignment objects from survey for SDD failed!");
       return kFALSE;
   }
-  CreateAlignObjSDDModules();
-
-  if(!LoadSurveyFromAlienFile("ITS", fSDDLadderRepNumber, fSDDLadderRepVersion)){
-      AliError("Loading of alignment objects from survey for SDD ladder failed!");
-      return kFALSE;
-  }
-  CreateAlignObjSDDLadders();
-  if(!ApplyAlignObjSDD()) return kFALSE;
-
+  CreateAlignObjSDD();
 
   // for SSD ladders
   if(!LoadSurveyFromAlienFile("ITS", fSSDLadderRepNumber, fSSDLadderRepVersion)){
@@ -235,59 +177,9 @@ void AliITSSurveyToAlign::CreateAlignObjDummySPD(){
   }//module loop
 
 }
-Bool_t AliITSSurveyToAlign::ApplyAlignObjSDD()
-{
-  Int_t applied=0;
-
-  for(Int_t iLadd=0; iLadd<36; iLadd++)
-    {
-      new((*fAlignObjArray)[240+iLadd]) AliAlignObjParams(fsymnameSDDl[iLadd].Data(), fuidSDDl[iLadd], 
-					       fxSDDl[iLadd]  , fySDDl[iLadd]  , fzSDDl[iLadd]  , 
-					       fpsiSDDl[iLadd], ftetSDDl[iLadd], fphiSDDl[iLadd], kFALSE);
-      //      new((*fAlignObjArray)[240+iLadd]) AliAlignObjParams(fsymnameSDDl[iLadd].Data(), fuidSDDl[iLadd], 
-      //			       fxSDDl[iLadd]  , fySDDl[iLadd]  , fzSDDl[iLadd]  , 
-      //			       0, 0, 0, kFALSE);
-
-      AliAlignObjParams* ap = dynamic_cast<AliAlignObjParams*> (fAlignObjArray->UncheckedAt(240+iLadd));
-      //      printf("%s  %f  %f  %f\n",fxSDDl[iLadd], fsymnameSDDl[iLadd].Data(), fySDDl[iLadd]  , fzSDDl[iLadd]);
-      //printf("%d  %f\n", iLadd, fzSDDl[iLadd]);
-
-      if(fsymnameSDDl[iLadd].Contains("SDD") && fsymnameSDDl[iLadd].Contains("Ladder"))
-	{
-	  //	  printf("%d  %s  %d\n",240+iLadd, fsymnameSDDl[iLadd].Data(),fuidSDDl[iLadd] );
-
-	  if(!ap->ApplyToGeometry()) return kFALSE;
-	  applied++;
-	}
-      else
-	{
-	  printf("Error: SDD Ladder array is not initialized correctly\n");
-	  return kFALSE;
-	}
-    }
-
-  for(Int_t iMod=0; iMod<260; iMod++)
-    {
-      new((*fAlignObjArray)[240+36+iMod]) AliAlignObjParams(fsymnameSDDm[iMod].Data(), fuidSDDm[iMod], 
-					     fxSDDm[iMod], fySDDm[iMod], fzSDDm[iMod], 
-					     fpsiSDDm[iMod], ftetSDDm[iMod], fphiSDDm[iMod], kFALSE);
-
-      //           printf("%d %s  %f  %f  %f\n",240+36+iMod, fsymnameSDDm[iMod].Data(),fxSDDm[iMod], fySDDm[iMod], fzSDDm[iMod] );
-
-          if(!fsymnameSDDm[iMod].Contains("SDD") || !fsymnameSDDm[iMod].Contains("Sensor"))
-	    {
-	  printf("Error: SDD Module array is not initialized correctly\n");
-	  return kFALSE;
-	    }
-
-    }
-
-  AliInfo(Form(" %d alignment objects for SDD ladders applied to geometry.",applied));
-  return kTRUE;
-}
 
 //______________________________________________________________________
-void AliITSSurveyToAlign::CreateAlignObjSDDModules(){
+void AliITSSurveyToAlign::CreateAlignObjSDD(){
   //
   // Create alignment objects for SDD
   // Called by Run()
@@ -304,7 +196,7 @@ void AliITSSurveyToAlign::CreateAlignObjSDDModules(){
 
   if (fSurveyPoints == 0 || fSurveyPoints->GetEntries() == 0) {
     AliWarning("SDD survey data are not available, using zero values");
-    CreateAlignObjDummySDDModules();
+    CreateAlignObjDummySDD();
     return;
   }
 
@@ -351,22 +243,7 @@ void AliITSSurveyToAlign::CreateAlignObjSDDModules(){
 
 //    printf("%s  %d  %f  %f  %f  %f  %f  %f\n",symname, uid, x0/10., y0/10., z0/10., psi, tet, phi);
 //      cout << "Allocate alignobjparams " << imod << endl;
-
-//      new((*fAlignObjArray)[iModuleIndex]) AliAlignObjParams(symname, uid, x0/10., y0/10., z0/10., psi, tet, phi, kFALSE);
-//       printf("INDEX:   Module: %d\n",iModuleIndex);
-
-      fsymnameSDDm[iModuleIndex-240]=TString(symname);
-      fuidSDDm[iModuleIndex-240]=uid;
-      fxSDDm[iModuleIndex-240]=x0/10.;
-      fySDDm[iModuleIndex-240]=y0/10.;
-      fzSDDm[iModuleIndex-240]=z0/10.;
-      fpsiSDDm[iModuleIndex-240]=psi;
-      ftetSDDm[iModuleIndex-240]=tet;
-      fphiSDDm[iModuleIndex-240]=phi;
-
-      //      new((*fAlignObjArray)[36+iModuleIndex]) AliAlignObjParams(fsymnameSDDm[iModuleIndex-240].Data(), fuidSDDm[iModuleIndex-240], 
-      //					     fxSDDm[iModuleIndex-240], fySDDm[iModuleIndex-240], fzSDDm[iModuleIndex-240], 
-      //					     fpsiSDDm[iModuleIndex-240], ftetSDDm[iModuleIndex-240], fphiSDDm[iModuleIndex-240], kFALSE);
+      new((*fAlignObjArray)[iModuleIndex]) AliAlignObjParams(symname, uid, x0/10., y0/10., z0/10., psi, tet, phi, kFALSE);
 
       iModule0=iModule;
       iLayer0=iLayer;
@@ -380,7 +257,7 @@ void AliITSSurveyToAlign::CreateAlignObjSDDModules(){
 }
 
 //______________________________________________________________________
-void AliITSSurveyToAlign::CreateAlignObjDummySDDModules(){
+void AliITSSurveyToAlign::CreateAlignObjDummySDD(){
   // 
   // Create empty alignment objects
   // Used when fSurveySDD == 0
@@ -393,16 +270,7 @@ void AliITSSurveyToAlign::CreateAlignObjDummySDDModules(){
     Int_t uid = AliGeomManager::LayerToVolUID(ilayer,imodule);
     const Char_t *symname = AliGeomManager::SymName(uid);
 
-      fsymnameSDDm[imod]=TString(symname);
-      fuidSDDm[imod]=uid;
-      fxSDDm[imod]=0.;
-      fySDDm[imod]=0.;
-      fzSDDm[imod]=0.;
-      fpsiSDDm[imod]=0.;
-      ftetSDDm[imod]=0.;
-      fphiSDDm[imod]=0.;
-
-    //    new((*fAlignObjArray)[imod+36+240]) AliAlignObjParams(symname, uid, 0., 0., 0., 0., 0., 0., kTRUE);
+    new((*fAlignObjArray)[imod+240]) AliAlignObjParams(symname, uid, 0., 0., 0., 0., 0., 0., kTRUE);
   }//module loop
 }
 
@@ -465,7 +333,7 @@ void AliITSSurveyToAlign::CreateAlignObjSSDModules(){
 	   << " theta " << theta << endl;
     }
     */
-    new((*fAlignObjArray)[imod+36]) AliAlignObjParams(symname, uid, sx, 0, sz, 0., theta, 0., kFALSE);
+    new((*fAlignObjArray)[imod]) AliAlignObjParams(symname, uid, sx, 0, sz, 0., theta, 0., kFALSE);
   } //module loop
 }
 
@@ -494,243 +362,6 @@ Bool_t AliITSSurveyToAlign::ApplyAlignObjSSDLadders(){
 
   return kTRUE;
 }
-//______________________________________________________________________
-/*
-Bool_t AliITSSurveyToAlign::ApplyAlignObjSDDLadders(){
-  //
-  //   Apply alignment objects for SDD ladders to geometry, needed to correctly
-  //   build alignment objects for SDD modules
-  // 
-  Int_t applied=0;
-
-  for(Int_t jj=0; jj<fAlignObjArray->GetEntriesFast(); jj++)
-  {
-      AliAlignObjParams* ap = dynamic_cast<AliAlignObjParams*> (fAlignObjArray->UncheckedAt(jj));
-      if(ap) 
-      {
-	  TString sName(ap->GetSymName());
-//	  printf("%s\n",sName.Data());
-	  if(sName.Contains("SDD") && sName.Contains("Ladder"))
-	  {
-	      if(!ap->ApplyToGeometry()) return kFALSE;
-	      applied++;
-	  }
-      }
-  }
-  AliInfo(Form(" %d alignment objects for SDD ladders applied to geometry.",applied));
-
-  return kTRUE;
-}
-*/
-//______________________________________________________________________
-void AliITSSurveyToAlign::CreateAlignObjDummySDDLadders()
-{
-  // 
-  // Create empty alignment objects
-  TString sddName = "ITS/SDD";
-  Int_t iLadd = 0;
-
-  for (Int_t ilayer =  0; ilayer <  2; ilayer ++)
-    {
-    Int_t nLadder = 14;              // layer SDD1
-    if (ilayer == 1)  nLadder = 22;  // layer SDD2
-    for (Int_t iLadder = 0; iLadder < nLadder; iLadder++) {
-      TString ladName = sddName;
-      ladName += (ilayer+2);      
-      ladName += "/Ladder";
-      ladName += iLadder;
-      fsymnameSDDl[iLadd]=TString(ladName);
-      fuidSDDl[iLadd]=0;
-      fxSDDl[iLadd]=0;
-      fySDDl[iLadd]=10;
-      fzSDDl[iLadd]=0;
-      fpsiSDDl[iLadd]=0;
-      ftetSDDl[iLadd]=0;
-      fphiSDDl[iLadd]=0;
-      iLadd++;
-    }  // Ladder loop
-  }  // Layer loop
-
-}
-
-
-
-void AliITSSurveyToAlign::CreateAlignObjSDDLadders(){
-  //
-  //   Alignment objects from survey for SDD ladders
-  // 
-  const Float_t kLaddLenz[2] ={500, 650};  // Layer 2,3: distance between mouting points along z (mm)
-  const Float_t kLaddLenx    = 28 ;        // Layer 2,3: distance between mouting points along x (mm)
-
-  TString sddName = "ITS/SDD";
-
- TObjArray *ladderPoints = fSurveyPoints;  
-  if (ladderPoints == 0 || ladderPoints->GetEntries() == 0) {
-    AliWarning("No SDD Ladder alignment points found. Skipping");
-    return;
-  }
-  if (ladderPoints->GetEntries()!= 72) {
-    AliWarning(Form("Unexpected number of survey points %d, should be 72",ladderPoints->GetEntries())); 
-  }
- 
-
-/*
-TAlien::Connect("alien://");
-gSystem->Load("libXMLParser.so");
-.x loadlibs.C 
-
-AliCDBManager *cdb = AliCDBManager::Instance();
-cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-cdb->SetRun(0);
-AliGeomManager::LoadGeometry();
-AliITSSurveyToAlign *a = new AliITSSurveyToAlign(); 
-
-a->CreateAlignObjSDDLadders()                     
-a->ApplyAlignObjSDDLadders();
-
-a->LoadSurveyFromAlienFile("ITS", 845069, 1);
-a->CreateAlignObjSDD();
-
-a->CreateAlignObjs();
-*/
-
-//  Int_t type =0;
-  ////////////////////////////////////////////////////////////
-  // pRB2X[layer][ladder][dx,dy,dz]
-  Double_t pRB24[2][22][3]; //(mm)
-  Double_t pRB26[2][22][3]; //(mm)
-
-
-pRB24[0][0][2] = 0.0228; pRB26[0][0][2] = 0.0284; pRB24[0][0][0] =-0.0377; pRB26[0][0][0] =-0.0008; pRB24[0][0][1] =-0.0336; pRB26[0][0][1] = 0.0540;
-pRB24[0][1][2] =-0.0175; pRB26[0][1][2] =-0.0186; pRB24[0][1][0] =-0.0143; pRB26[0][1][0] = 0.0348; pRB24[0][1][1] =-0.0123; pRB26[0][1][1] = 0.0407;
-pRB24[0][2][2] = 0.1313; pRB26[0][2][2] = 0.0302; pRB24[0][2][0] = 0.2408; pRB26[0][2][0] = 0.1113; pRB24[0][2][1] =-0.0150; pRB26[0][2][1] =-0.0194;
-pRB24[0][3][2] = 0.0307; pRB26[0][3][2] = 0.0350; pRB24[0][3][0] = 0.1140; pRB26[0][3][0] = 0.0952; pRB24[0][3][1] =-0.0423; pRB26[0][3][1] =-0.0375;
-pRB24[0][4][2] =-0.0159; pRB26[0][4][2] = 0.0185; pRB24[0][4][0] = 0.0713; pRB26[0][4][0] = 0.0803; pRB24[0][4][1] =-0.1311; pRB26[0][4][1] =-0.1201;
-pRB24[0][5][2] =-0.0128; pRB26[0][5][2] =-0.0209; pRB24[0][5][0] = 0.0436; pRB26[0][5][0] = 0.0606; pRB24[0][5][1] =-0.1551; pRB26[0][5][1] =-0.0587;
-pRB24[0][6][2] =-0.0257; pRB26[0][6][2] =-0.0044; pRB24[0][6][0] = 0.0380; pRB26[0][6][0] = 0.0264; pRB24[0][6][1] =-0.1913; pRB26[0][6][1] =-0.1851;
-pRB24[0][7][2] = 0.0185; pRB26[0][7][2] = 0.1450; pRB24[0][7][0] =-0.0406; pRB26[0][7][0] =-0.0426; pRB24[0][7][1] = 0.1564; pRB26[0][7][1] = 0.2998;
-pRB24[0][8][2] = 0.0048; pRB26[0][8][2] = 0.0077; pRB24[0][8][0] = 0.0290; pRB26[0][8][0] = 0.0361; pRB24[0][8][1] = 0.1321; pRB26[0][8][1] = 0.1679;
-pRB24[0][9][2] = 0.0049; pRB26[0][9][2] = 0.0115; pRB24[0][9][0] = 0.0405; pRB26[0][9][0] = 0.1058; pRB24[0][9][1] = 0.0319; pRB26[0][9][1] = 0.2464;
-pRB24[0][10][2]=-0.0017; pRB26[0][10][2]= 0.0100; pRB24[0][10][0]= 0.0724; pRB26[0][10][0]= 0.1035; pRB24[0][10][1]= 0.0561; pRB26[0][10][1]= 0.0713;
-pRB24[0][11][2]=-0.0021; pRB26[0][11][2]= 0.0202; pRB24[0][11][0]= 0.0590; pRB26[0][11][0]= 0.0596; pRB24[0][11][1]=-0.0875; pRB26[0][11][1]=-0.0591;
-pRB24[0][12][2]=-0.0200; pRB26[0][12][2]= 0.0242; pRB24[0][12][0]= 0.0664; pRB26[0][12][0]= 0.0780; pRB24[0][12][1]=-0.0197; pRB26[0][12][1]=-0.0227;
-pRB24[0][13][2]=-0.0382; pRB26[0][13][2]=-0.0139; pRB24[0][13][0]=-0.0320; pRB26[0][13][0]=-0.0136; pRB24[0][13][1]=-0.0798; pRB26[0][13][1]=-0.0843;
-pRB24[1][0][2] = 0.0191; pRB26[1][0][2] = 0.0295; pRB24[1][0][0] =-0.0776; pRB26[1][0][0] =-0.0585; pRB24[1][0][1] =-0.0148; pRB26[1][0][1] = 0.0123;
-pRB24[1][1][2] = 0.0135; pRB26[1][1][2] = 0.0074; pRB24[1][1][0] =-0.0289; pRB26[1][1][0] =-0.0213; pRB24[1][1][1] = 0.0064; pRB26[1][1][1] = 0.0289;
-pRB24[1][2][2] = 0.0096; pRB26[1][2][2] = 0.0011; pRB24[1][2][0] = 0.0123; pRB26[1][2][0] = 0.0404; pRB24[1][2][1] =-0.0246; pRB26[1][2][1] =-0.0064;
-pRB24[1][3][2] = 0.0209; pRB26[1][3][2] =-0.0049; pRB24[1][3][0] = 0.0322; pRB26[1][3][0] = 0.0447; pRB24[1][3][1] = 0.0066; pRB26[1][3][1] = 0.0284;
-pRB24[1][4][2] = 0.0149; pRB26[1][4][2] =-0.0033; pRB24[1][4][0] = 0.0530; pRB26[1][4][0] = 0.0822; pRB24[1][4][1] =-0.0455; pRB26[1][4][1] =-0.0365;
-pRB24[1][5][2] = 0.0395; pRB26[1][5][2] = 0.0094; pRB24[1][5][0] = 0.0633; pRB26[1][5][0] = 0.0933; pRB24[1][5][1] =-0.1133; pRB26[1][5][1] =-0.1070;
-pRB24[1][6][2] = 0.0288; pRB26[1][6][2] =-0.0002; pRB24[1][6][0] = 0.0692; pRB26[1][6][0] = 0.0916; pRB24[1][6][1] =-0.1670; pRB26[1][6][1] =-0.1670;
-pRB24[1][7][2] = 0.0238; pRB26[1][7][2] =-0.0090; pRB24[1][7][0] = 0.0625; pRB26[1][7][0] = 0.0607; pRB24[1][7][1] =-0.1592; pRB26[1][7][1] =-0.1678;
-pRB24[1][8][2] = 0.0196; pRB26[1][8][2] =-0.0738; pRB24[1][8][0] = 0.0639; pRB26[1][8][0] = 0.0686; pRB24[1][8][1] =-0.2050; pRB26[1][8][1] =-0.2056;
-pRB24[1][9][2] = 0.0029; pRB26[1][9][2] =-0.0051; pRB24[1][9][0] = 0.0178; pRB26[1][9][0] = 0.0170; pRB24[1][9][1] =-0.1042; pRB26[1][9][1] =-0.1159;
-pRB24[1][10][2]=-0.0108; pRB26[1][10][2]=-0.0023; pRB24[1][10][0]=-0.0005; pRB26[1][10][0]= 0.0119; pRB24[1][10][1]=-0.1353; pRB26[1][10][1]=-0.1461;
-pRB24[1][11][2]=-0.0131; pRB26[1][11][2]=-0.0233; pRB24[1][11][0]=-0.0202; pRB26[1][11][0]=-0.0242; pRB24[1][11][1]=-0.1883; pRB26[1][11][1]=-0.2031;
-pRB24[1][12][2]= 0.0028; pRB26[1][12][2]= 0.0036; pRB24[1][12][0]=-0.0066; pRB26[1][12][0]= 0.0011; pRB24[1][12][1]= 0.2024; pRB26[1][12][1]= 0.2382;
-pRB24[1][13][2]= 0.0111; pRB26[1][13][2]= 0.0029; pRB24[1][13][0]= 0.0283; pRB26[1][13][0]= 0.0287; pRB24[1][13][1]= 0.2057; pRB26[1][13][1]= 0.2384;
-pRB24[1][14][2]= 0.0140; pRB26[1][14][2]=-0.0657; pRB24[1][14][0]= 0.0682; pRB26[1][14][0]= 0.0825; pRB24[1][14][1]= 0.1650; pRB26[1][14][1]= 0.2545;
-pRB24[1][15][2]= 0.0263; pRB26[1][15][2]=-0.0013; pRB24[1][15][0]= 0.0909; pRB26[1][15][0]= 0.0709; pRB24[1][15][1]= 0.1093; pRB26[1][15][1]= 0.1321;
-pRB24[1][16][2]= 0.0025; pRB26[1][16][2]=-0.0045; pRB24[1][16][0]= 0.0672; pRB26[1][16][0]= 0.0955; pRB24[1][16][1]= 0.0745; pRB26[1][16][1]= 0.0901;
-pRB24[1][17][2]= 0.0060; pRB26[1][17][2]= 0.0035; pRB24[1][17][0]= 0.0664; pRB26[1][17][0]= 0.0739; pRB24[1][17][1]= 0.0471; pRB26[1][17][1]= 0.0598;
-pRB24[1][18][2]=-0.0124; pRB26[1][18][2]=-0.0168; pRB24[1][18][0]= 0.0710; pRB26[1][18][0]= 0.0866; pRB24[1][18][1]= 0.0123; pRB26[1][18][1]= 0.0237;
-pRB24[1][19][2]=-0.0125; pRB26[1][19][2]=-0.0178; pRB24[1][19][0]= 0.0433; pRB26[1][19][0]= 0.0535; pRB24[1][19][1]= 0.0234; pRB26[1][19][1]= 0.0262;
-pRB24[1][20][2]=-0.0021; pRB26[1][20][2]= 0.0100; pRB24[1][20][0]= 0.0213; pRB26[1][20][0]= 0.0394; pRB24[1][20][1]= 0.0734; pRB26[1][20][1]= 0.0677;
-pRB24[1][21][2]=-0.0490; pRB26[1][21][2]=-0.0222; pRB24[1][21][0]=-0.0269; pRB26[1][21][0]=-0.0039; pRB24[1][21][1]= 0.0160; pRB26[1][21][1]= 0.0076;
-
-
-
-  Int_t iLadd = 0;
-
-  for (Int_t ilayer =  0; ilayer <  2; ilayer ++)
-    {
-    Int_t nLadder = 14;              // layer SDD1
-    if (ilayer == 1)  nLadder = 22;  // layer SDD2
-
-    for (Int_t iLadder = 0; iLadder < nLadder; iLadder++) {
-      TString ladName = sddName;
-      ladName += (ilayer+2);      
-      ladName += "/Ladder";
-      ladName += iLadder;
-      Double_t drLoc[3];
-      //      for(Int_t i=0; i<3; i++) drLoc[i]=(pRB26[ilayer][iLadder][i]+pRB24[ilayer][iLadder][i])/20.; // average 
-
-
-      /////////////////////////////////////////////////////////////////////////////
-      AliSurveyPoint *p24 =  (AliSurveyPoint*) ladderPoints->FindObject(ladName+"/RB24");
-      AliSurveyPoint *p26 =  (AliSurveyPoint*) ladderPoints->FindObject(ladName+"/RB26");
-      if (p24 == 0) {
-	AliWarning(Form("Cannot find RB24 side point for ladder %s",ladName.Data()));
-	continue;
-      }
-      if (p26 == 0) {
-	AliWarning(Form("Cannot find RB26 side point for ladder %s",ladName.Data()));
-	continue;
-      }
-
-      TString tmpStr;
-      tmpStr.Insert(0,p24->GetName(),3);
-      Int_t ladder = tmpStr.Atoi();
-      tmpStr="";
-      tmpStr.Insert(0,p26->GetName(),3);
-      if (tmpStr.Atoi() != ladder) 
-	AliError(Form("Survey data file error. Expect pairs of RB24, RB26 points. Got ladders %d %d",ladder,tmpStr.Atoi()));
-
-      for(Int_t i=0; i<3; i++) drLoc[i]=pRB24[ilayer][iLadder][i]/10.;
-
-      Double_t x24, y24, z24;
-      Double_t x26, y26, z26;
-
-      x24=p24->GetX();
-      y24=p24->GetY();
-      z24=p24->GetZ();
-      x26=p26->GetX();
-      y26=p26->GetY();
-      z26=p26->GetZ();
-
-      // for top ladders: RS(local) = RS(global) + Y_shift 
-      // rot around z-axis
-      Double_t phi = 0;  // Not measured
-      // rot around y-axis
-      Double_t theta = 0;
-      // rot around x-axis
-      Double_t psi = 0;
-
-
-      psi=TMath::ATan((y26-y24)/(kLaddLenz[ilayer]+z24-z26));
-      Double_t tgtet0 = kLaddLenx/kLaddLenz[ilayer];
-      Double_t tgtet1 = (x24-x26+kLaddLenx)/(kLaddLenz[ilayer]+z24-z26);
-      theta=TMath::ATan((tgtet1-tgtet0)/(1+tgtet1*tgtet0));
-
-      Double_t x0=x24-theta*kLaddLenz[ilayer]/2;
-      Double_t y0=y24+psi*kLaddLenz[ilayer]/2;
-      Double_t z0=z24+theta*kLaddLenx/2;
-
-      theta*= kRadToDeg;
-      psi*= kRadToDeg;
-
-      AliDebug(1,Form("ladname %f %f %f %f %f %f ",drLoc[0],drLoc[1],drLoc[2],psi,theta,phi));  
-      // local delta transformation by passing 3 shifts (in centimeters) and 3 angles (expressed in degrees)    
-      //      new((*fAlignObjArray)[500+1698+144+iLadd]) AliAlignObjParams(ladName,0,drLoc[0],drLoc[1],drLoc[2],psi,theta,phi,kFALSE);
-      fsymnameSDDl[iLadd]=TString(ladName);
-      fuidSDDl[iLadd]=0;
-      fxSDDl[iLadd]=x0/10.;
-      fySDDl[iLadd]=y0/10.;
-      fzSDDl[iLadd]=z0/10.;
-      fpsiSDDl[iLadd]=psi;
-      ftetSDDl[iLadd]=theta;
-      fphiSDDl[iLadd]=phi;
-      //      new((*fAlignObjArray)[240+iLadd]) AliAlignObjParams(fsymnameSDDl[iLadd].Data(), fuidSDDl[iLadd], 
-      //					       fxSDDl[iLadd]  , fySDDl[iLadd]  , fzSDDl[iLadd]  , 
-      //					       fpsiSDDl[iLadd], ftetSDDl[iLadd], fphiSDDl[iLadd], kFALSE);
-      //       printf("INDEX:   Ladder: %d\n",iLadd);
-      iLadd++;
-    }  // Ladder loop
-  }  // Layer loop
-}
-////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 //______________________________________________________________________
 void AliITSSurveyToAlign::CreateAlignObjSSDLadders(){
@@ -801,7 +432,6 @@ void AliITSSurveyToAlign::CreateAlignObjSSDLadders(){
       // V side is A side is large global z 
       // Q side is C side is large local z
 
-
       if (ladder >= 600) {
 	theta = TMath::ATan((qPoint->GetX() - vPoint->GetX())*kMu2Cm/kLaddLen6);
 	psi = TMath::ATan((vPoint->GetY() - qPoint->GetY())*kMu2Cm/kLaddLen6);
@@ -820,13 +450,12 @@ void AliITSSurveyToAlign::CreateAlignObjSSDLadders(){
       psi *= kRadToDeg;
       AliDebug(1,Form("ladname %f %f %f %f %f %f ",dxLoc,dyLoc,dzLoc,psi,theta,phi));  
       
-      new((*fAlignObjArray)[500+36+1698+iLadd]) AliAlignObjParams(ladName,0,dxLoc,dyLoc,dzLoc,psi,theta,phi,kFALSE);
+      new((*fAlignObjArray)[500+1698+iLadd]) AliAlignObjParams(ladName,0,dxLoc,dyLoc,dzLoc,psi,theta,phi,kFALSE);
 
       iLadd++;
     }  // Ladder loop
   }  // Layer loop
 }
-////////////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
 void AliITSSurveyToAlign::CreateAlignObjDummySSDModules(){
@@ -841,7 +470,7 @@ void AliITSSurveyToAlign::CreateAlignObjDummySSDModules(){
     Int_t uid = AliGeomManager::LayerToVolUID(ilayer,imodule);
     const Char_t *symname = AliGeomManager::SymName(uid);
 
-    new((*fAlignObjArray)[500+36+imod]) AliAlignObjParams(symname, uid, 0., 0., 0., 0., 0., 0., kTRUE);
+    new((*fAlignObjArray)[500+imod]) AliAlignObjParams(symname, uid, 0., 0., 0., 0., 0., 0., kTRUE);
   }//module loop
 }
 
@@ -858,11 +487,9 @@ void AliITSSurveyToAlign::GetIdPosSDD(Int_t uid, Int_t layer, Int_t module, Int_
   TString ladderPath(pne->GetTitle());
   if(ladderPath.EndsWith("/")) ladderPath.Remove(TString::kTrailing,'/');
   ladderPath.Remove(ladderPath.Last('/'));
-  //  ladderPath.Remove(ladderPath.Last('/'));
+  ladderPath.Remove(ladderPath.Last('/'));
   gGeoManager->cd(ladderPath.Data());
   TGeoHMatrix gLad = *gGeoManager->GetCurrentMatrix(); // global matrix of ladder
-
-
   TGeoHMatrix rel = gMod; // to equal relative matrix ladder to sensor.
   TGeoHMatrix invgLad = gLad.Inverse();
   rel.MultiplyLeft(&invgLad);
@@ -878,19 +505,8 @@ void AliITSSurveyToAlign::GetIdPosSDD(Int_t uid, Int_t layer, Int_t module, Int_
   if((layer==4)&&(module<4)) rel.LocalToMaster(fgkLocR[iPoint],fSDDidP[iPoint]);
   if((layer==4)&&(module>3)) rel.LocalToMaster(fgkLocL[iPoint],fSDDidP[iPoint]);
 
-  for(Int_t i=0; i<3; i++) fSDDidP[iPoint][i]*=10; 
-  fSDDidP[iPoint][2]-=0.5205;
+  for(Int_t i=0; i<3; i++) fSDDidP[iPoint][i]*=10;
 
-  //  if(ladderPath.Data(),"/ALIC_1/ITSV_1/ITSsddLayer3_1/ITSsddLadd_3");
-  //  if(ladderPath.Contains("ITSsddLayer3_1") && (ladderPath.Contains("ITSsddLadd_3")|| ladderPath.Contains("ITSsddLadd_10")))
-  //  {
-  ///ALIC_1/ITSV_1/ITSsddLayer4_1/ITSsddLadd_5
-  ///ALIC_1/ITSV_1/ITSsddLayer4_1/ITSsddLadd_16
-  //  gLad.Print();
-  //  printf("%s  : Module# %d  Point# %d\n",ladderPath.Data(), module, iPoint);
-  //  printf("ID   {%f, %f, %f}\n", fSDDidP[iPoint][0],fSDDidP[iPoint][1],fSDDidP[iPoint][2]);
-  //  printf("Me   {%f, %f, %f}\n", fSDDmeP[iPoint][0],fSDDmeP[iPoint][1],fSDDmeP[iPoint][2]);
-  //  }
 }
 
 //______________________________________________________________________
@@ -930,46 +546,6 @@ void AliITSSurveyToAlign::ReadPointNameSDD(const char str[], Int_t &iLayer, Int_
   if(str[16]=='8') {iLader=10*iLader+8; ord=1;}
   if(str[16]=='9') {iLader=10*iLader+9; ord=1;}
 
-  /*
-  //tmp solution
-  Int_t module=-1;
-  if(str[23+ord]=='0') module=0;
-  if(str[23+ord]=='1') module=1;
-  if(str[23+ord]=='2') module=2;
-  if(str[23+ord]=='3') module=3;
-  if(str[23+ord]=='4') module=4;
-  if(str[23+ord]=='5') module=5;
-  if(str[23+ord]=='6') module=6;
-  if(str[23+ord]=='7') module=7;
-  if(str[23+ord]=='8') module=8;
-  if(str[23+ord]=='9') module=9;
-
-  if(iLayer==3)
-    {
-      if(module==0) iModul= 5;
-      if(module==1) iModul= 4;
-      if(module==2) iModul= 3;
-      if(module==3) iModul= 2;
-      if(module==4) iModul= 1;
-      if(module==5) iModul= 0;
-    }
-
-
-  if(iLayer==4)
-    {
-      if(module==0) iModul= 7;
-      if(module==1) iModul= 6;
-      if(module==2) iModul= 5;
-      if(module==3) iModul= 4;
-      if(module==4) iModul= 3;
-      if(module==5) iModul= 2;
-      if(module==6) iModul= 1;
-      if(module==7) iModul= 0;
-    }
-
-  if(module<0) {printf("ERROR MOULE\n"); iModul=0;}
-  */
-
   if(str[23+ord]=='0') iModul=0;
   if(str[23+ord]=='1') iModul=1;
   if(str[23+ord]=='2') iModul=2;
@@ -981,15 +557,12 @@ void AliITSSurveyToAlign::ReadPointNameSDD(const char str[], Int_t &iLayer, Int_
   if(str[23+ord]=='8') iModul=8;
   if(str[23+ord]=='9') iModul=9;
 
-
   if((str[25+ord]=='R')&&(str[26+ord]=='D')) iPoint=0;
   if((str[25+ord]=='R')&&(str[26+ord]=='C')) iPoint=1;
   if((str[25+ord]=='R')&&(str[26+ord]=='U')) iPoint=2;
   if((str[25+ord]=='L')&&(str[26+ord]=='U')) iPoint=3;
   if((str[25+ord]=='L')&&(str[26+ord]=='C')) iPoint=4;
   if((str[25+ord]=='L')&&(str[26+ord]=='D')) iPoint=5;
-
-
   return;
 }
 
@@ -1010,12 +583,10 @@ void AliITSSurveyToAlign::ConvertToRSofModulesAndRotSDD(Int_t Layer, Int_t Modul
   Double_t zmMeE;
 
   Double_t x0=fSDDidP[1][0];
-  Double_t z0=fSDDidP[1][2];//-0.5205;
-  //  Double_t z0=fSDDidP[1][2]-0.5;
+  Double_t z0=fSDDidP[1][2]-0.52;
   for(Int_t i=0; i<6; i++)
     {
-      //      fSDDidP[i][2]-=0.5205;
-      //      fSDDidP[i][2]-=0.5;
+      fSDDidP[i][2]-=0.52;
 
       if(!fSDDisMe[i]) continue; 
 
@@ -1118,8 +689,6 @@ void AliITSSurveyToAlign::CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &
   Double_t xId, yId, zId;
   Double_t xMe, yMe, zMe, sX2, sY2, sZ2;
 
-  //  printf("\n");
-
   for(Int_t iP1=0; iP1<=6; iP1++)
     {
       if(!fSDDisMe[iP1]) continue;
@@ -1133,8 +702,6 @@ void AliITSSurveyToAlign::CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &
       xMe= fSDDmeP[iP1][0];
       yMe= fSDDmeP[iP1][1];
       zMe= fSDDmeP[iP1][2];
-
-
 
       //squared precisions of measured x,y,z for fiducial mark iP1
       sX2 = fSDDmeP[iP1][3]* fSDDmeP[iP1][3];
@@ -1222,27 +789,27 @@ void AliITSSurveyToAlign::CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &
   Double_t x5 = p5.Determinant()/det0;
   Double_t x6 = p6.Determinant()/det0;
   //cout << "calculating determinants done" << endl;
-  if (TMath::Abs(x1) < 1.e-10) {
+  if (x1 == 0) {
     AliInfo("p1 singular ");
     p1.Print();
   }
-  if (TMath::Abs(x2) < 1.e-10) {
+  if (x2 == 0) {
     AliInfo("p2 singular ");
     p2.Print();
   }
-  if (TMath::Abs(x3) < 1.e-10) {
+  if (x3 == 0) {
     AliInfo("p3 singular ");
     p3.Print();
   }
-  if (TMath::Abs(x4) < 1.e-10) {
+  if (x4 == 0) {
     AliInfo("p4 singular ");
     p4.Print();
   }
-  if (TMath::Abs(x5) < 1.e-10) {
+  if (x5 == 0) {
     AliInfo("p5 singular ");
     p5.Print();
   }
-  if (TMath::Abs(x6) < 1.e-10) {
+  if (x6 == 0) {
     AliInfo("p6 singular ");
     p6.Print();
   }
