@@ -191,6 +191,8 @@ void AliEveMacroExecutorWindow::PopulateMacros(Bool_t keep_selected)
   if (keep_selected && fListBox->GetSelected() != -1)
     ex_sel = fBoxContents[fListBox->GetSelected()];
 
+  Int_t sbar_pos = fListBox->GetVScrollbar()->GetPosition();
+
   fListBox->RemoveAll();
   fBoxContents.clear();
 
@@ -219,8 +221,9 @@ void AliEveMacroExecutorWindow::PopulateMacros(Bool_t keep_selected)
   if (sel_id != -1)
     fListBox->Select(sel_id);
 
-  fListBox->MapSubwindows();
   fListBox->Layout();
+  fListBox->GetVScrollbar()->SetPosition(sbar_pos);
+  fListBox->MapSubwindows();
 }
 
 void AliEveMacroExecutorWindow::SetActiveStateOfShownMacros(Bool_t active)
