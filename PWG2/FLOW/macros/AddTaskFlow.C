@@ -12,10 +12,14 @@
 
 // event selection
 const Int_t multminESD = 10;  //used for CORRFW cuts 
-const Int_t multmaxESD = 1000000; //used for CORRFW cuts 
+const Int_t multmaxESD = 1000; //used for CORRFW cuts 
+//const Int_t multmaxESD = 1000000; //used for CORRFW cuts 
 
 const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
-const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
+const Int_t multmax = 40;     //used for AliFlowEventSimple (to set the centrality)
+//const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
+//const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
+
 
 // For RP selection
 const Double_t ptmin1 = 0.0;
@@ -42,6 +46,10 @@ Bool_t UsePIDforPOI = kFALSE;
 const Int_t PDG2 = 321;
 const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
+
+// For manipulating the event (for testing purposes)
+const Bool_t AddToEvent = kFALSE;
+Double_t ellipticflow = 0.05;
 
 
 AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, Bool_t* WEIGHTS)
@@ -158,7 +166,10 @@ if (LYZ2PROD){
   //===========================================================================
   AliAnalysisTaskFlowEvent *taskFE = NULL;
   if (QA) { 
-    taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kTRUE); 
+    if(AddToEvent) { 
+      taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kTRUE,1);
+      taskFE->SetEllipticFlowValue(ellipticflow); }    //TEST
+    else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kTRUE); }
     taskFE->SetAnalysisType(type);
     taskFE->SetMinMult(multmin);
     taskFE->SetMaxMult(multmax);
@@ -464,19 +475,21 @@ if (LYZ2PROD){
   mgr->ConnectOutput(taskFE,0,coutputFE);
 
   if (QA) { 
-    TString qaNameRPFE = "QAforRP_FE_";
+    TString qaNameRPFE = AliAnalysisManager::GetCommonFileName();
+    qaNameRPFE += ":QAforRP_FE_";
     qaNameRPFE += type;
-    qaNameRPFE += ".root";
-    AliAnalysisDataContainer *coutputQA1FE = 
-      mgr->CreateContainer("QARPFE", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameRPFE);
+
+    AliAnalysisDataContainer *coutputQA1FE =
+      mgr->CreateContainer("QARPFE", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameRPFE); 
     
-    TString qaNamePOIFE = "QAforPOI_FE_";
+    TString qaNamePOIFE = AliAnalysisManager::GetCommonFileName();
+    qaNamePOIFE += ":QAforPOI_FE_";
     qaNamePOIFE += type;
-    qaNamePOIFE += ".root";
-    AliAnalysisDataContainer *coutputQA2FE = 
-      mgr->CreateContainer("QAPOIFE", TList::Class(),AliAnalysisManager::kOutputContainer,qaNamePOIFE);
-    
-    mgr->ConnectOutput(taskFE,1,coutputQA1FE);
+        
+    AliAnalysisDataContainer *coutputQA2FE =
+      mgr->CreateContainer("QAPOIFE", TList::Class(),AliAnalysisManager::kOutputContainer,qaNamePOIFE); 
+
+    mgr->ConnectOutput(taskFE,1,coutputQA1FE); 
     mgr->ConnectOutput(taskFE,2,coutputQA2FE); 
   }
 
@@ -488,67 +501,74 @@ if (LYZ2PROD){
   }
 
   if(SP) {
-    TString outputSP = "outputSPanalysis";
+    TString outputSP = AliAnalysisManager::GetCommonFileName();
+    outputSP += ":outputSPanalysis";
     outputSP+= type;
-    outputSP+= ".root";
-    AliAnalysisDataContainer *coutputSP = mgr->CreateContainer("cobjSP", TList::Class(),AliAnalysisManager::kOutputContainer,outputSP);
+    
+    AliAnalysisDataContainer *coutputSP = mgr->CreateContainer("cobjSP", TList::Class(),AliAnalysisManager::kOutputContainer,outputSP); 
     mgr->ConnectInput(taskSP,0,coutputFE); 
-    mgr->ConnectOutput(taskSP,0,coutputSP);
+    mgr->ConnectOutput(taskSP,0,coutputSP); 
   }
   if(LYZ1SUM) {
-    TString outputLYZ1SUM = "outputLYZ1SUManalysis";
+    TString outputLYZ1SUM = AliAnalysisManager::GetCommonFileName();
+    outputLYZ1SUM += ":outputLYZ1SUManalysis";
     outputLYZ1SUM+= type;
-    outputLYZ1SUM+= ".root";
-    AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer("cobjLYZ1SUM", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1SUM);
+    
+    AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer("cobjLYZ1SUM", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1SUM); 
     mgr->ConnectInput(taskLYZ1SUM,0,coutputFE); 
-    mgr->ConnectOutput(taskLYZ1SUM,0,coutputLYZ1SUM);
+    mgr->ConnectOutput(taskLYZ1SUM,0,coutputLYZ1SUM); 
   }
   if(LYZ1PROD) {
-    TString outputLYZ1PROD = "outputLYZ1PRODanalysis";
+    TString outputLYZ1PROD = AliAnalysisManager::GetCommonFileName();
+    outputLYZ1PROD += ":outputLYZ1PRODanalysis";
     outputLYZ1PROD+= type;
-    outputLYZ1PROD+= ".root";
-    AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer("cobjLYZ1PROD", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1PROD);
+    
+    AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer("cobjLYZ1PROD", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1PROD); 
     mgr->ConnectInput(taskLYZ1PROD,0,coutputFE); 
     mgr->ConnectOutput(taskLYZ1PROD,0,coutputLYZ1PROD);
   }
   if(LYZ2SUM) {
     AliAnalysisDataContainer *cinputLYZ2SUM = mgr->CreateContainer("cobjLYZ2SUMin",TList::Class(),AliAnalysisManager::kInputContainer);
-    TString outputLYZ2SUM = "outputLYZ2SUManalysis";
+    TString outputLYZ2SUM = AliAnalysisManager::GetCommonFileName();
+    outputLYZ2SUM += ":outputLYZ2SUManalysis";
     outputLYZ2SUM+= type;
-    outputLYZ2SUM+= ".root";
-    AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer("cobjLYZ2SUM", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2SUM);
+    
+    AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer("cobjLYZ2SUM", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2SUM); 
     mgr->ConnectInput(taskLYZ2SUM,0,coutputFE); 
     mgr->ConnectInput(taskLYZ2SUM,1,cinputLYZ2SUM);
-    mgr->ConnectOutput(taskLYZ2SUM,0,coutputLYZ2SUM);
+    mgr->ConnectOutput(taskLYZ2SUM,0,coutputLYZ2SUM); 
     cinputLYZ2SUM->SetData(fInputListLYZ2SUM);
   }
   if(LYZ2PROD) {
     AliAnalysisDataContainer *cinputLYZ2PROD = mgr->CreateContainer("cobjLYZ2PRODin",TList::Class(),AliAnalysisManager::kInputContainer);
-    TString outputLYZ2PROD = "outputLYZ2PRODanalysis";
+    TString outputLYZ2PROD = AliAnalysisManager::GetCommonFileName();
+    outputLYZ2PROD += ":outputLYZ2PRODanalysis";
     outputLYZ2PROD+= type;
-    outputLYZ2PROD+= ".root";
-    AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer("cobjLYZ2PROD", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2PROD);
+    
+    AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer("cobjLYZ2PROD", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2PROD); 
     mgr->ConnectInput(taskLYZ2PROD,0,coutputFE); 
     mgr->ConnectInput(taskLYZ2PROD,1,cinputLYZ2PROD);
-    mgr->ConnectOutput(taskLYZ2PROD,0,coutputLYZ2PROD);
+    mgr->ConnectOutput(taskLYZ2PROD,0,coutputLYZ2PROD); 
     cinputLYZ2PROD->SetData(fInputListLYZ2PROD);
   }
   if(LYZEP) {
     AliAnalysisDataContainer *cinputLYZEP = mgr->CreateContainer("cobjLYZEPin",TList::Class(),AliAnalysisManager::kInputContainer);
-    TString outputLYZEP = "outputLYZEPanalysis";
+    TString outputLYZEP = AliAnalysisManager::GetCommonFileName();
+    outputLYZEP += ":outputLYZEPanalysis";
     outputLYZEP+= type;
-    outputLYZEP+= ".root";
-    AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer("cobjLYZEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP);
+    
+    AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer("cobjLYZEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP); 
     mgr->ConnectInput(taskLYZEP,0,coutputFE); 
     mgr->ConnectInput(taskLYZEP,1,cinputLYZEP);
-    mgr->ConnectOutput(taskLYZEP,0,coutputLYZEP);
+    mgr->ConnectOutput(taskLYZEP,0,coutputLYZEP); 
     cinputLYZEP->SetData(fInputListLYZEP);
   }
   if(GFC) {
-    TString outputGFC = "outputGFCanalysis";
+    TString outputGFC = AliAnalysisManager::GetCommonFileName();
+    outputGFC += ":outputGFCanalysis";
     outputGFC+= type;
-    outputGFC+= ".root";
-    AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer("cobjGFC", TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC);
+    
+    AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer("cobjGFC", TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC); 
     mgr->ConnectInput(taskGFC,0,coutputFE); 
     mgr->ConnectOutput(taskGFC,0,coutputGFC);
     if (useWeights) {
@@ -557,10 +577,11 @@ if (LYZ2PROD){
     } 
   }
   if(QC) {
-    TString outputQC = "outputQCanalysis";
+    TString outputQC = AliAnalysisManager::GetCommonFileName();
+    outputQC += ":outputQCanalysis";
     outputQC+= type;
-    outputQC+= ".root";
-    AliAnalysisDataContainer *coutputQC = mgr->CreateContainer("cobjQC", TList::Class(),AliAnalysisManager::kOutputContainer,outputQC);
+
+    AliAnalysisDataContainer *coutputQC = mgr->CreateContainer("cobjQC", TList::Class(),AliAnalysisManager::kOutputContainer,outputQC); 
     mgr->ConnectInput(taskQC,0,coutputFE); 
     mgr->ConnectOutput(taskQC,0,coutputQC);
     if (useWeights) {
@@ -569,10 +590,11 @@ if (LYZ2PROD){
     } 
   }
   if(FQD) {
-    TString outputFQD = "outputFQDanalysis";
+    TString outputFQD = AliAnalysisManager::GetCommonFileName();
+    outputFQD += ":outputFQDanalysis";
     outputFQD+= type;
-    outputFQD+= ".root";
-    AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer("cobjFQD", TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD);
+    
+    AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer("cobjFQD", TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD); 
     mgr->ConnectInput(taskFQD,0,coutputFE); 
     mgr->ConnectOutput(taskFQD,0,coutputFQD);
     if(useWeights) {
@@ -581,12 +603,13 @@ if (LYZ2PROD){
     } 
   }
   if(MCEP) {
-    TString outputMCEP = "outputMCEPanalysis";
+    TString outputMCEP = AliAnalysisManager::GetCommonFileName();
+    outputMCEP += ":outputMCEPanalysis";
     outputMCEP+= type;
-    outputMCEP+= ".root";
-    AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer("cobjMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP);
+    
+    AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer("cobjMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP); 
     mgr->ConnectInput(taskMCEP,0,coutputFE); 
-    mgr->ConnectOutput(taskMCEP,0,coutputMCEP);
+    mgr->ConnectOutput(taskMCEP,0,coutputMCEP); 
   }
   
 
