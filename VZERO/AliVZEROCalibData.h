@@ -77,7 +77,7 @@ class AliVZEROCalibData: public TNamed {
   void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
   void     SetTimeGain(Float_t* TimeGain);
   
-  void 	   SetParameter(TString name, Float_t val);
+  void 	   SetParameter(TString name, Int_t val);
   void     SetTimeResolution(UShort_t *resols);
   void     SetTimeResolution(UShort_t resol, Int_t board);
   void     SetWidthResolution(UShort_t *resols);

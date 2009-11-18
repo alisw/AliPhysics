@@ -89,11 +89,11 @@ private:
 	
 	Bool_t fBBFlags[64]; // Individual BB Flags
 	Bool_t fBGFlags[64]; // Individual BG Flags
-	Int_t  fCharges[64]; // Individual Charge
+	Float_t  fCharges[64]; // Individual Charge
 	
 	UShort_t fTriggerWord; // Word holding the 16 triggers return by the FEE
 		
-	ClassDef( AliVZEROTriggerSimulator, 1 )  
+	ClassDef( AliVZEROTriggerSimulator, 2 )  
 
 };
 

@@ -115,17 +115,17 @@ void AliVZEROTriggerData::FillData(AliVZERODataFEE * data){
 	
 	while ((  aliasName = (TObjString*) iter.Next() ))  {
 		AliDCSValue* aValue = (AliDCSValue*) params->GetValue(aliasName);
-		Float_t val;
+		Int_t val;
 		if(aValue) {
-			val = aValue->GetFloat();
-			AliInfo(Form("%s : %f",aliasName->String().Data(), val));
+			val = aValue->GetInt();
+			AliInfo(Form("%s : %d",aliasName->String().Data(), val));
 			SetParameter(aliasName->String(),val);
 		}
 	}	
 }
 
 //_____________________________________________________________________________
-void AliVZEROTriggerData::SetParameter(TString name, Float_t val){
+void AliVZEROTriggerData::SetParameter(TString name, Int_t val){
 	// Set given parameter
 	
 	Int_t iBoard = -1;
@@ -167,7 +167,7 @@ void AliVZEROTriggerData::SetParameter(TString name, Float_t val){
 	else if(name.Contains("MultV0AThrHigh")) SetMultV0AThrHigh((UShort_t) val);
 	else if(name.Contains("MultV0CThrLow")) SetMultV0CThrLow((UShort_t) val);
 	else if(name.Contains("MultV0CThrHigh")) SetMultV0CThrHigh((UShort_t) val);
-	else if(name.Contains("TriggerSelect")) SetTriggerSelected((UShort_t) val, iBoard );
+	else if(name.Contains("TriggerSelect")) SetTriggerSelected((UShort_t) val, iChannel-1 );
 	else if(name.Contains("EnableCharge")) SetEnableCharge((Bool_t) val, iBoard , iChannel-1);
 	else if(name.Contains("EnableTiming")) SetEnableTiming((Bool_t) val, iBoard , iChannel-1);
 	else if(name.Contains("DiscriThr")) SetDiscriThr((UShort_t) val, iBoard, iChannel-1);

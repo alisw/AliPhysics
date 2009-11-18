@@ -166,10 +166,10 @@ void AliVZEROCalibData::FillDCSData(AliVZERODataDCS * data){
 	
 	while ((  aliasName = (TObjString*) iter.Next() ))  {
 		AliDCSValue* aValue = (AliDCSValue*) params->GetValue(aliasName);
-		Float_t val;
+		Int_t val;
 		if(aValue) {
-			val = aValue->GetFloat();
-			AliInfo(Form("%s : %f",aliasName->String().Data(), val));
+			val = aValue->GetInt();
+			AliInfo(Form("%s : %d",aliasName->String().Data(), val));
 			SetParameter(aliasName->String(),val);
 		}
 	}	
@@ -180,7 +180,7 @@ void AliVZEROCalibData::FillDCSData(AliVZERODataDCS * data){
 
 }
 //_____________________________________________________________________________
-void AliVZEROCalibData::SetParameter(TString name, Float_t val){
+void AliVZEROCalibData::SetParameter(TString name, Int_t val){
 	// Set given parameter
 	
 	Int_t iBoard = -1;

@@ -44,7 +44,7 @@ TObject(),fTriggerData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWor
 	
 	for(int i=0;i<64;i++) {
 		fBBFlags[i] = fBGFlags[i] = kFALSE;
-		fCharges[i] = 0;
+		fCharges[i] = 0.;
 	}
 	GenerateBBWindows();
 	GenerateBGWindows();
@@ -159,17 +159,17 @@ void AliVZEROTriggerSimulator::Run() {
 			if(fTriggerData->GetEnableCharge(board,channel)) {
 				fCharges[pmNumber] = digit->ADC();
 				if(fTriggerData->GetPedestalSubtraction(board)) {
-					if(fCharges[pmNumber]>=fTriggerData->GetPedestalCut(integrator,board,channel)){ 
-						fCharges[pmNumber] -= fTriggerData->GetPedestal(integrator,board,channel);
+					if(fCharges[pmNumber]>=(Float_t) fTriggerData->GetPedestalCut(integrator,board,channel)){ 
+						fCharges[pmNumber] -= (Float_t) fTriggerData->GetPedestal(integrator,board,channel);
 					} else {
-						fCharges[pmNumber] = 0;
+						fCharges[pmNumber] = 0.;
 					}
 				}
 			} else {
-				fCharges[pmNumber] = 0;
+				fCharges[pmNumber] = 0.;
 			}
 			
-			Float_t time = (Float_t)digit->Time() / 10.; // digit->Time() in bin of 100 picoseconds. Divide by 10 to have it in nanoseconds
+			Float_t time = digit->Time(); 
 			time += fTriggerData->GetDelayHit(board,channel);
 			
 			//AliInfo(Form(" PM nb : %d ; ADC= %d ; TDC= %f  Enable Time %d charge %d",pmNumber,digit->ADC(),time,fTriggerData->GetEnableTiming(board,channel),fTriggerData->GetEnableCharge(board,channel)));
@@ -183,8 +183,8 @@ void AliVZEROTriggerSimulator::Run() {
 	Int_t nBBflagsV0C = 0;
 	Int_t nBGflagsV0A = 0;
 	Int_t nBGflagsV0C = 0;
-	Int_t chargeV0A   = 0;
-	Int_t chargeV0C   = 0;
+	Float_t chargeV0A   = 0.;
+	Float_t chargeV0C   = 0.;
 
 	for(int i=0;i<64;i++) {
 		if(i<32) {

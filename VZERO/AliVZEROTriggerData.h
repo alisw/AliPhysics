@@ -212,7 +212,7 @@ private:
 	Bool_t fIsProcessed; // bool to know processing status
 	
 	Bool_t	IsClkValid(UShort_t clock) const;
-	void SetParameter(TString name, Float_t val);
+	void SetParameter(TString name, Int_t val);
 	
 	
 	ClassDef( AliVZEROTriggerData, 2 )  
