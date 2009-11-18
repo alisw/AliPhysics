@@ -16,8 +16,8 @@
 //    root[1] AnalysisTrainNew(ana_mode, plugin_mode, "train_default_<date>/ConfigTrain.C")
 
 //==================   TRAIN NAME   ============================================
-TString     train_name         = "TR004_LHC09a1ESD"; // *CHANGE ME* (no blancs or special characters)
-TString     job_tag            = "TR004: ESD+MC analysis -> AOD + delta AOD + histograms"; // *CHANGE ME*
+TString     train_name         = "LHC09a3ESD"; // *CHANGE ME* (no blancs or special characters)
+TString     job_tag            = "ESD+MC analysis -> AOD + delta AOD + histograms"; // *CHANGE ME*
 //==============================================================================
 
 // ### Settings that make sense in PROOF only
@@ -42,23 +42,23 @@ Bool_t      useCPAR            = kFALSE;  // use par files for common libs
 TString     root_version       = "v20091109";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     aliroot_version    = "v4-18-09-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here
-TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a4";
+TString     alien_datadir      = "/alice/sim/PDC_08b/LHC09a3";
 // AliEn output directory. If blank will become output_<train_name>
-TString     alien_outdir       = "/alice/sim/PDC_09/LHC09a4/analysis/ESD/TR004";
+TString     alien_outdir       = "/alice/sim/PDC_08b/LHC09a3/AOD";
 // TString     alien_outdir       = "";
 // Number of files merged in a chunk
 Int_t       maxMergeFiles      = 50;
 // Files that should not be merged
-TString     mergeExclude       = "AliAOD.root AliAOD.VertexingHF.root AliAOD.Jets.root";
+TString     mergeExclude       = "AliAOD.root AliAOD.VertexingHF.root AliAOD.Jets.root deltaAODPartCorr.root";
 // Make replicas on the storages below
 TString     outputStorages      = "ALICE::NIHAM::File,ALICE::CNAF::SE,ALICE::FZK::SE,ALICE::GSI::SE,ALICE::Legnaro::SE";
 // Number of runs per master job
 Int_t       nRunsPerMaster     = 10;
 // Maximum number of files per job (gives size of AOD)
-Int_t       nFilesPerJob       = 100; // !
+Int_t       nFilesPerJob       = 10;
 // Set the run range
 //Int_t       run_range[2]       =  {70000, 70220};  // LHC09a4   *CHANGE ME*
-Int_t       run_range[2]       =  {81007, 81007};
+Int_t       run_range[2]       =  {90000, 90025};
 // ### Settings that make sense only for local analysis
 //==============================================================================
 // Change local xml dataset for local interactive analysis
@@ -67,7 +67,7 @@ TString     local_xmldataset   = "";
 // ### Other flags to steer the analysis
 //==============================================================================
 Bool_t      useDATE            = kFALSE; // use date in train name
-Bool_t      useDBG             = kTRUE; // activate debugging
+Bool_t      useDBG             = kFALSE; // activate debugging
 Bool_t      useMC              = kTRUE;  // use MC info
 Bool_t      useTAGS            = kTRUE; // use ESD tags for selection
 Bool_t      useKFILTER         = kTRUE; // use Kinematics filter
@@ -102,8 +102,13 @@ Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
 Int_t        iPWG2rsneff       = 1;      // Resonances efficiency
 Int_t       iPWG2kink          = 1;      // Kink analysis tasks (PWG2)
 Int_t        iPWG2kinkESDMC    = 1;         // Kink ESD-MC comparison (PWG2)
-Int_t        iPWG2kinkres      = 1;         // Kink resonances (PWG2)
 Int_t        iPWG2kinklikesign = 1;         // Kink like-sign (PWG2)
+Int_t        iPWG2kinkKstarESD = 1;      // Kink Kstar ESD (PWG2)
+Int_t        iPWG2kinkKstarMC  = 1;      // Kink Kstar MC (PWG2)
+Int_t        iPWG2kinkL1520ESD = 1;      // Kink L1520 ESD (PWG2)
+Int_t        iPWG2kinkL1520MC  = 1;      // Kink L1520 MC (PWG2)
+Int_t        iPWG2kinkPhiESD   = 1;      // Kink resonances Phi ESD (PWG2)
+Int_t        iPWG2kinkPhiMC    = 1;      // Kink resonances Phi MC (PWG2)
 Int_t       iPWG2evchar        = 1;      // Event characteristics (PWG2)
 Int_t       iPWG2unicor        = 1;      // Unicor analysis (PWG2)
 Int_t       iPWG2forward       = 1;      // FMD analysis (PWG2)
@@ -159,9 +164,14 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (iPWG2kink) {
       printf("=  PWG2 kink analysis tasks:                                     =\n");
       if (iPWG2kinkESDMC)    printf("=     PWG2 ESD-MC kinks                                          =\n");
-      if (iPWG2kinkres)      printf("=     PWG2 kink resonances                                       =\n");
       if (iPWG2kinklikesign) printf("=     PWG2 kink like-sign analysis                               =\n");
-   }   
+      if (iPWG2kinkKstarESD) printf("=     PWG2 kink Kstar ESD analysis                               =\n");
+      if (iPWG2kinkKstarMC)  printf("=     PWG2 kink Kstar MC analysis                                =\n");
+      if (iPWG2kinkL1520ESD) printf("=     PWG2 kink L1520 ESD analysis                               =\n");
+      if (iPWG2kinkL1520MC)  printf("=     PWG2 kink L1520 MC analysis                                =\n");
+      if (iPWG2kinkPhiESD) printf("=     PWG2 kink Phi ESD analysis                                 =\n");
+      if (iPWG2kinkPhiMC)  printf("=     PWG2 kink Phi MC analysis                                  =\n");
+  }   
    if (iPWG2evchar)    printf("=  PWG2 event characteristics                                    =\n");
    if (iPWG2unicor)    printf("=  PWG2 Unicor analysis                                          =\n");
    if (iPWG2forward)   printf("=  PWG2 forward: sharing, density, bkg. correction, dNdEta       =\n");
@@ -319,19 +329,44 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (iPWG2kink) {
       if (iPWG2kinkESDMC) {
         gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKink.C");
-        AliAnalysisKinkESDMC *taskkink = AddTaskKink();
-        if (!taskkink) ::Warning("AnalysisTrainNew", "AliAnalysisKinkESDMC cannot run for this train conditions - EXCLUDED");
+        AliAnalysisKinkESDMC *taskkink1 = AddTaskKink();
+        if (!taskkink1) ::Warning("AnalysisTrainNew", "AliAnalysisKinkESDMC cannot run for this train conditions - EXCLUDED");
       }   
-      if (iPWG2kinkres) {
-        gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonance.C");
-        AliAnalysisTaskKinkResonance *taskkinkres = AddTaskKinkResonance();
-        if (!taskkinkres) ::Warning("AnalysisTrainNew", "AliAnalysisTaskKinkResonance cannot run for this train conditions - EXCLUDED");
-      }  
       if (iPWG2kinklikesign) {
         gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonanceLikeSign.C");
-        AliResonanceKinkLikeSign *taskkinklikesign = AddTaskKinkResonanceLikeSign();
-        if (!taskkinklikesign) ::Warning("AnalysisTrainNew", "AliResonanceKinkLikeSign cannot run for this train conditions - EXCLUDED");
+        AliResonanceKinkLikeSign *taskkink2 = AddTaskKinkResonanceLikeSign();
+        if (!taskkink2) ::Warning("AnalysisTrainNew", "AliResonanceKinkLikeSign cannot run for this train conditions - EXCLUDED");
       }  
+      if (iPWG2kinkKstarESD) {
+        gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonanceKstarESD.C");
+        AliAnalysisTaskKinkResonance *taskkink3 = AddTaskKinkResonanceKstarESD();
+        if (!taskkink3) ::Warning("AnalysisTrainNew", "AliAnalysisKinkResonanceKstarESD cannot run for this train conditions - EXCLUDED");
+      }   
+      if (iPWG2kinkKstarMC) {
+        gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonanceKstarMC.C");
+        AliAnalysisTaskKinkResonance *taskkink4 = AddTaskKinkResonanceKstarMC();
+        if (!taskkink4) ::Warning("AnalysisTrainNew", "AliAnalysisKinkResonanceKstarMC cannot run for this train conditions - EXCLUDED");
+      }   
+      if (iPWG2kinkL1520ESD) {
+        gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonanceL1520ESD.C");
+        AliAnalysisTaskKinkResonance *taskkink5 = AddTaskKinkResonanceL1520ESD();
+        if (!taskkink5) ::Warning("AnalysisTrainNew", "AliAnalysisKinkResonanceL1520ESD cannot run for this train conditions - EXCLUDED");
+      }   
+      if (iPWG2kinkL1520MC) {
+        gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonanceL1520MC.C");
+        AliAnalysisTaskKinkResonance *taskkink6 = AddTaskKinkResonanceL1520MC();
+        if (!taskkink6) ::Warning("AnalysisTrainNew", "AliAnalysisKinkResonanceL1520MC cannot run for this train conditions - EXCLUDED");
+      }   
+      if (iPWG2kinkPhiESD) {
+        gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonancePhiESD.C");
+        AliAnalysisTaskKinkResonance *taskkink7 = AddTaskKinkResonancePhiESD();
+        if (!taskkink7) ::Warning("AnalysisTrainNew", "AliAnalysisKinkResonancePhiESD cannot run for this train conditions - EXCLUDED");
+      }   
+      if (iPWG2kinkPhiMC) {
+        gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonancePhiMC.C");
+        AliAnalysisTaskKinkResonance *taskkink8 = AddTaskKinkResonancePhiMC();
+        if (!taskkink8) ::Warning("AnalysisTrainNew", "AliAnalysisKinkResonancePhiMC cannot run for this train conditions - EXCLUDED");
+      }   
    }   
 
    // Event characterization
@@ -453,7 +488,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskGammaConversion.C");
       TString cdir = gSystem->WorkingDirectory();
       gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT/PWG4/macros/"));
-      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson";
+      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
       gSystem->ChangeDirectory(cdir);
       if (!taskGammaConversion) ::Warning("AnalysisTrainNew", "AliAnalysisTaskGammaConversion cannot run for these train conditions - EXCLUDED");
@@ -1162,7 +1197,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Optionally resubmit threshold.
 //   plugin->SetMasterResubmitThreshold(90);
 // Optionally set time to live (default 30000 sec)
-   plugin->SetTTL(100000);
+   plugin->SetTTL(200000);
 // Optionally set input format (default xml-single)
    plugin->SetInputFormat("xml-single");
 // Optionally modify the name of the generated JDL (default analysis.jdl)
@@ -1262,8 +1297,13 @@ void WriteConfig()
    out << "     iPWG2rsneff   = " << iPWG2rsneff << ";" << endl;
    out << "   iPWG2kink       = " << iPWG2kink << ";" << endl;
    out << "     iPWG2kinkESDMC    = " << iPWG2kinkESDMC << ";" << endl;
-   out << "     iPWG2kinkres      = " << iPWG2kinkres << ";" << endl;
    out << "     iPWG2kinklikesign = " << iPWG2kinklikesign << ";" << endl;
+   out << "     iPWG2kinkKstarESD = " << iPWG2kinkKstarESD << ";" << endl;
+   out << "     iPWG2kinkKstarMC  = " << iPWG2kinkKstarMC << ";" << endl;
+   out << "     iPWG2kinkL1520ESD = " << iPWG2kinkL1520ESD << ";" << endl;
+   out << "     iPWG2kinkL1520MC  = " << iPWG2kinkL1520MC << ";" << endl;
+   out << "     iPWG2kinkPhiESD   = " << iPWG2kinkPhiESD << ";" << endl;
+   out << "     iPWG2kinkPhiMC    = " << iPWG2kinkPhiMC << ";" << endl;
    out << "   iPWG2unicor     = " << iPWG2unicor << ";" << endl;
    out << "   iPWG2evchar     = " << iPWG2evchar << ";" << endl;
    out << "   iPWG2forward    = " << iPWG2forward << ";" << endl << endl;
