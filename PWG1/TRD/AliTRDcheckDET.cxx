@@ -32,6 +32,7 @@
 #include <TGaxis.h>
 #include <TGraph.h>
 #include <TLegend.h>
+#include <TLinearFitter.h>
 #include <TMath.h>
 #include <TMap.h>
 #include <TObjArray.h>
@@ -1172,6 +1173,20 @@ TH1* AliTRDcheckDET::MakePlotPulseHeight(){
   h->SetMarkerColor(kBlack);
   h->SetLineColor(kBlack);
   h->Draw("e1");
+  // Trending for the pulse height: plateau value, slope and timebin of the maximum
+  TLinearFitter fit(1,"pol1");
+  Double_t time = 0.;
+  for(Int_t itime = 10; itime <= 20; itime++){
+    time = static_cast<Double_t>(itime);
+    fit.AddPoint(&time, h->GetBinContent(itime + 1), h->GetBinError(itime + 1));
+  }
+  fit.Eval();
+  Double_t plateau = fit.GetParameter(0) + 12 * fit.GetParameter(1);
+  Double_t slope = fit.GetParameter(1);
+  PutTrendValue("PHplateau", plateau);
+  PutTrendValue("PHslope", slope);
+  PutTrendValue("PHamplificationPeak", static_cast<Double_t>(h->GetMaximumBin()-1));
+  AliDebug(1, Form("plateau %f, slope %f, MaxTime %f", plateau, slope, static_cast<Double_t>(h->GetMaximumBin()-1)));
 //   copy the second histogram in a new one with the same x-dimension as the phs with respect to time
   h1 = (TH1F *)arr->At(1);
   h2 = new TH1F("hphs1","Average PH", 31, -0.5, 30.5);
@@ -1209,4 +1224,3 @@ Bool_t AliTRDcheckDET::MakeBarPlot(TH1 *histo, Int_t color){
   histo->Draw("bar1");
   return kTRUE;
 }
-
