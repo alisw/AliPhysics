@@ -39,6 +39,7 @@ AliHLTMuonSpectroTriggerComponent::AliHLTMuonSpectroTriggerComponent() :
 	fBufferSizeConst(1024*16),
 	fBufferSizeMultiplier(1),
 	fMakeStats(false),
+	fTriggerDDLs(false),
 	fTriggerHits(false),
 	fTriggerTrigRecs(false),
 	fTriggerTracks(true),

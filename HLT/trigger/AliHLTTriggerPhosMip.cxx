@@ -178,7 +178,7 @@ int AliHLTTriggerPhosMip::ScanConfigurationArgument(int argc, const char** argv)
   else if (argument.CompareTo("-ncells")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fNCellsMax=argument.Atof();
+    fNCellsMax=argument.Atoi();
     return 2;
   }    
   

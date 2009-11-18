@@ -304,7 +304,7 @@ public:
 	 */
 	static bool IsSpecValid(AliHLTUInt32_t spec)
 	{
-		AliHLTUInt32_t mask = ~((1 << 22) - 1);  // First 22 bits indicate DDL number.
+		AliHLTUInt32_t mask = ~AliHLTUInt32_t((1 << 22) - 1);  // First 22 bits indicate DDL number.
 		return (spec & mask) == 0x0;
 	}
 
@@ -314,7 +314,7 @@ public:
 	 */
 	static bool ContainsDataFromTrigger(AliHLTUInt32_t spec)
 	{
-		AliHLTUInt32_t mask = ((1 << 22) - 1) & ~((1 << 20) - 1);
+		AliHLTUInt32_t mask = AliHLTUInt32_t((1 << 22) - 1) & ~AliHLTUInt32_t((1 << 20) - 1);
 		return (spec & mask) != 0x0;
 	}
 
@@ -324,7 +324,7 @@ public:
 	 */
 	static bool ContainsDataFromTracker(AliHLTUInt32_t spec)
 	{
-		AliHLTUInt32_t mask = ((1 << 20) - 1);
+		AliHLTUInt32_t mask = AliHLTUInt32_t((1 << 20) - 1);
 		return (spec & mask) != 0x0;
 	}
 	

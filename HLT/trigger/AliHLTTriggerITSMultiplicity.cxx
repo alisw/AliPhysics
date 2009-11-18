@@ -167,7 +167,7 @@ int AliHLTTriggerITSMultiplicity::ScanConfigurationArgument(int argc, const char
   if (argument.CompareTo("-nclusters")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fnClusters=argument.Atof();
+    fnClusters=argument.Atoi();
     return 2;
   }    
   
