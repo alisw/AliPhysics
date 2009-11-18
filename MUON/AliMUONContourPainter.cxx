@@ -28,6 +28,7 @@
 #include "AliMUONContour.h"
 #include "TObjArray.h"
 #include "TVirtualPad.h"
+#include "TVirtualPS.h"
 
 ///\cond CLASSIMP
 ClassImp(AliMUONContourPainter)
@@ -67,6 +68,13 @@ AliMUONContourPainter::Paint(const AliMUONContour& contour,
   if ( lineWidth > 0 ) gVirtualX->SetLineWidth(lineWidth);
   if ( fillColor > 0 ) gVirtualX->SetFillColor(fillColor);
   if ( fillStyle > 0 ) gVirtualX->SetFillStyle(fillStyle);
+  
+  if (gVirtualPS) { 
+    if ( lineColor > 0 ) gVirtualPS->SetLineColor(lineColor);
+    if ( lineWidth > 0 ) gVirtualPS->SetLineWidth(lineWidth);
+    if ( fillColor > 0 ) gVirtualPS->SetFillColor(fillColor);
+    if ( fillStyle > 0 ) gVirtualPS->SetFillStyle(fillStyle);
+  } 
   
   TIter next(contour.Polygons());
   AliMUONPolygon* pol;
