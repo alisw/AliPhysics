@@ -562,7 +562,7 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
       Double_t l2  = TMath::Sqrt((xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0]) 
                                + (xyz1[1]-xyz0[1])*(xyz1[1]-xyz0[1]) 
                                + (xyz1[2]-xyz0[2])*(xyz1[2]-xyz0[2]));
-      Double_t crv = AliExternalTrackParam::GetC(b[3]);
+      Double_t crv = AliExternalTrackParam::GetC(b[2]);
       if (TMath::Abs(l2*crv) > 0.0001) {
         // Make correction for curvature if neccesary
         l2 = 0.5 * TMath::Sqrt((xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0]) 
