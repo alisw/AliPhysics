@@ -132,7 +132,7 @@ TChain* AliEventPoolOTF::GetNextChain()
 	delete fChain;
 	fChain = 0;
     }
-
+    
     fBinNumber++;
     if (fNoMore) {
 	return 0;
@@ -185,14 +185,12 @@ Int_t AliEventPoolOTF::GetDimension()
 void AliEventPoolOTF::InitArrays()
 {
     // Initializes the pool axis
-    
     SetMultiplicityBinning(0, 20000, 20000);
     SetZVertexBinning(-1000., 1000., 2000.);
     SetEventPlaneBinning(-1000., 1000., 2000.);
-    SetEventPlaneBinning(-1000., 1000., 2000.);
-    SetLeadingParticleEtaBinning(-13.0, 13.0, 26.); 
-    SetLeadingParticlePhiBinning(-13.0, 13.0, 26.);   
-    for (Int_t i = 0; i < 4; i++) fValue[i] = fValueMin[i];
+    SetLeadingParticleEtaBinning(-13.0, 13.0, 27.);
+    SetLeadingParticlePhiBinning(0., 2*(TMath::Pi()),2*(TMath::Pi()));
+    for (Int_t i = 0; i < 5; i++) fValue[i] = fValueMin[i];
 }
 
 
