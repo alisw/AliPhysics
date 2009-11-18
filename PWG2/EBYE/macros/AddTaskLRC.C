@@ -71,8 +71,10 @@ OutName="LRC_out_"+type;
    // E. Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
+ TString outputFileName = AliAnalysisManager::GetCommonFileName();
+ outputFileName += ":PWG2EbyE.LRC.C.root";
    AliAnalysisDataContainer *cout_LRC = mgr->CreateContainer(OutName, TList::Class(),
-                 AliAnalysisManager::kOutputContainer,"LRC.C.root");                             
+							     AliAnalysisManager::kOutputContainer,outputFileName.Data());
    mgr->ConnectInput(taskLRC, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskLRC, 1, cout_LRC);
 

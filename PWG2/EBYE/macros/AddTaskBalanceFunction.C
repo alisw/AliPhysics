@@ -30,7 +30,9 @@ AliAnalysisTaskProtons *AddTaskBalanceFunction() {
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  AliAnalysisDataContainer *cout_bf = mgr->CreateContainer("bfOutput", AliBalance::Class(),AliAnalysisManager::kOutputContainer,"outputBalanceFunctionAnalysis.root");
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  outputFileName += ":PWG2EbyE.outputBalanceFunctionAnalysis.root";
+  AliAnalysisDataContainer *cout_bf = mgr->CreateContainer("bfOutput", AliBalance::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 0, cout_bf);
 
