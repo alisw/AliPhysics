@@ -452,6 +452,11 @@ Bool_t AliAnalysisTaskSE::IsStandardAOD() const
 Bool_t AliAnalysisTaskSE::Notify()
 {
     // Called for every change of input file
+    if (fInputHandler) {
+	if (fInputHandler->GetTree()) 
+	    fInputHandler->GetTree()->GetEntry(0);
+    }
+    
     if (InputEvent()->GetRunNumber() != fCurrentRunNumber) {
 	fCurrentRunNumber = InputEvent()->GetRunNumber();
 	NotifyRun();
