@@ -118,7 +118,8 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
     if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
       const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
       if(vertex) {
-	Printf("Proton ESD analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
+	AliDebug(1,Form("Proton ESD analysis task: There are %d tracks in this event",fESD->GetNumberOfTracks()));
+	//Printf("Proton ESD analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
 	fProtonAnalysis->Analyze(fESD,vertex);
       }//reconstructed vertex
     }//triggered event
@@ -129,8 +130,8 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
       Printf("ERROR: fAOD not available");
       return;
     }
-    
-    Printf("Proton AOD analysis task: There are %d tracks in this event", fAOD->GetNumberOfTracks());
+    AliDebug(1,Form("Proton AOD analysis task: There are %d tracks in this event", fAOD->GetNumberOfTracks()));
+    //Printf("Proton AOD analysis task: There are %d tracks in this event", fAOD->GetNumberOfTracks());
     fProtonAnalysis->Analyze(fAOD);
   }//AOD analysis
   
@@ -145,7 +146,8 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
       Printf("ERROR: Could not retrieve the stack");
       return;
     }
-    Printf("Proton MC analysis task: There are %d primaries in this event", stack->GetNprimary());
+    AliDebug(1,Form("Proton MC analysis task: There are %d primaries in this event", stack->GetNprimary()));
+    //Printf("Proton MC analysis task: There are %d primaries in this event", stack->GetNprimary());
     fProtonAnalysis->Analyze(stack,kFALSE);//kTRUE in case of inclusive measurement
   }//MC analysis                      
 

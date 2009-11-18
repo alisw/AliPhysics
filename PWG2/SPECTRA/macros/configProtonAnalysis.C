@@ -4,7 +4,7 @@ AliProtonAnalysis *GetProtonAnalysisObject(const char* analysisLevel = "ESD",
 					   const char* pidMode = "Bayesian") {
 					   
 					   
-  gROOT->LoadMacro("configProtonAnalysisBaseObject.C");  
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysisBaseObject.C");  
   //Function to setup the AliProtonAnalysis object and return it
   AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,esdAnalysisType,pidMode);
 
@@ -32,7 +32,7 @@ AliProtonAnalysis *GetProtonAnalysisObject(const char* analysisLevel = "ESD",
 AliProtonQAAnalysis *GetProtonQAAnalysisObject(const char* analysisLevel = "ESD",
 					       const char* esdAnalysisType = "Hybrid",
 					       const char* pidMode = "Bayesian") {
-  gROOT->LoadMacro("configProtonAnalysisBaseObject.C"); 
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysisBaseObject.C"); 
   //Function to setup the AliProtonQAAnalysis object and return it
   AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,esdAnalysisType,pidMode);
 
