@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "AliSurveyToAlignObjs.h"
+#include "TString.h"
 
 class TClonesArray;
 class TGeoMatrix;
@@ -26,17 +27,23 @@ class AliITSSurveyToAlign : public AliSurveyToAlignObjs
 {
 
 public:
-    AliITSSurveyToAlign(Int_t run = 0, Int_t repSDD = 845069, Int_t repVerSDD = 1,  Int_t repModSSD = 887877,
+    AliITSSurveyToAlign(Int_t run = 0, Int_t repModSDD = 845069, Int_t repModVerSDD = 1, 
+                        Int_t repLadSDD = 999999, Int_t repLadVerSDD = 1, Int_t repModSSD = 887877,
 	    Int_t repModVerSSD =3, Int_t repLaddSSD = 980521, Int_t repLaddVerSSD = 2);
     AliITSSurveyToAlign(const AliITSSurveyToAlign& align); // copy constructor
-    AliITSSurveyToAlign &operator = (const AliITSSurveyToAlign& /* align */); //assignment operator
+    AliITSSurveyToAlign &operator = (const AliITSSurveyToAlign& align); //assignment operator
     virtual ~AliITSSurveyToAlign();
 
     void Run();
     Bool_t CreateAlignObjs();
     void CreateAlignObjDummySPD();
-    void CreateAlignObjSDD();
-    void CreateAlignObjDummySDD();
+
+    void CreateAlignObjDummySDDModules();
+    void CreateAlignObjDummySDDLadders();
+    void CreateAlignObjSDDModules();
+    void CreateAlignObjSDDLadders();
+    Bool_t ApplyAlignObjSDD();
+
     void CreateAlignObjSSDModules();
     void CreateAlignObjDummySSDModules();
     void CreateAlignObjSSDLadders();
@@ -44,8 +51,10 @@ public:
 
 private:
     Int_t   fRun;                         // the run number for the OCDB
-    Int_t   fSDDrepNumber;
-    Int_t   fSDDrepVersion;
+    Int_t   fSDDModuleRepNumber;
+    Int_t   fSDDModuleRepVersion;
+    Int_t   fSDDLadderRepNumber;
+    Int_t   fSDDLadderRepVersion;
     Int_t   fSSDModuleRepNumber;
     Int_t   fSSDModuleRepVersion;
     Int_t   fSSDLadderRepNumber;
@@ -64,6 +73,26 @@ private:
     void CalcShiftSDD(Double_t &x0,Double_t &y0,Double_t &z0) const;
     void CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &phi,Double_t &x0,Double_t &y0,Double_t &z0);
 
+    
+    // these are tmp vars. 
+    //to be removed later
+    Int_t    fuidSDDm[260];      
+    TString  fsymnameSDDm[260];
+    Double_t fxSDDm[260];
+    Double_t fySDDm[260];
+    Double_t fzSDDm[260];
+    Double_t fpsiSDDm[260];
+    Double_t ftetSDDm[260];
+    Double_t fphiSDDm[260];
+    Int_t    fuidSDDl[36];
+    TString  fsymnameSDDl[36];
+    Double_t fxSDDl[36];
+    Double_t fySDDl[36];
+    Double_t fzSDDl[36];
+    Double_t fpsiSDDl[36];
+    Double_t ftetSDDl[36];
+    Double_t fphiSDDl[36];
+    
     ClassDef(AliITSSurveyToAlign,0);
 };
 #endif
