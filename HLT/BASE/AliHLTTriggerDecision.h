@@ -32,6 +32,11 @@ class AliHLTTriggerDecision : public TObject
   AliHLTTriggerDecision();
   
   /**
+   * Copy constructor performs a deep copy.
+   */
+  AliHLTTriggerDecision(const AliHLTTriggerDecision& obj);
+  
+  /**
    * Constructor specifying the result and trigger name.
    * \param result  The result of the trigger decision.
    * \param name  The name of the trigger decision. Should be the name of the
@@ -100,7 +105,7 @@ class AliHLTTriggerDecision : public TObject
    * The decision is stored in bit 15 of the fBits field.
    * \returns true if the event was triggered and should be readout.
    */
-  bool Result() const { return TestBit(BIT(15)) == 1; }
+  bool Result() const;
   
   /**
    * Sets the result of the trigger decision.
@@ -108,7 +113,7 @@ class AliHLTTriggerDecision : public TObject
    * \param value  The value to set; true if the event triggered and should be
    *     readout and false otherwise.
    */
-  void Result(bool value) { SetBit(BIT(15), value); }
+  void Result(bool value);
   
   /**
    * Returns the name of the trigger decision.
@@ -155,13 +160,18 @@ class AliHLTTriggerDecision : public TObject
    */
   void TriggerDomain(const AliHLTTriggerDomain& value) { fTriggerDomain = value; }
   
+  /**
+   * Assignment operator performs a deep copy.
+   */
+  AliHLTTriggerDecision& operator = (const AliHLTTriggerDecision& obj);
+  
  private:
   
   TString fName; /// The name of the trigger decision. Should be the name of the trigger component that generated it.
   TString fDescription; /// Optional descriptive text giving the reason for the trigger.
   AliHLTTriggerDomain fTriggerDomain;  /// The trigger domain associated with this trigger. i.e. the HLT data blocks to read out.
   
-  ClassDef(AliHLTTriggerDecision, 1) // HLT trigger decision object storing information about the readout list, trigger domain and result.
+  ClassDef(AliHLTTriggerDecision, 2) // HLT trigger decision object storing information about the readout list, trigger domain and result.
 };
 
 #endif // ALIHLTTRIGGERDECISION_H

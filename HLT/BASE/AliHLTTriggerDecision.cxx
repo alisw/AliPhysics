@@ -38,6 +38,24 @@ AliHLTTriggerDecision::AliHLTTriggerDecision() :
 }
 
 
+AliHLTTriggerDecision::AliHLTTriggerDecision(const AliHLTTriggerDecision& obj) :
+  TObject(obj),
+  fName(obj.fName),
+  fDescription(obj.fDescription),
+  fTriggerDomain(obj.fTriggerDomain)
+{
+  // Copy constructor performs a deep copy.
+  
+  // The following is a backward compatibility fix to be able to read trigger
+  // decisions recorded before the fix in AliRoot trunk rev. 35998 correctly.
+  if (obj.TestBits(15) == 15)
+  {
+    ResetBit(15);  // We can clear 'this' objects bit because we performed a deep copy.
+    SetBit(BIT(15));
+  }
+}
+
+
 AliHLTTriggerDecision::AliHLTTriggerDecision(bool result, const char* name) :
   TObject(),
   fName(name),
@@ -69,6 +87,34 @@ AliHLTTriggerDecision::AliHLTTriggerDecision(
 AliHLTTriggerDecision::~AliHLTTriggerDecision()
 {
   // Default destructor.
+}
+
+
+bool AliHLTTriggerDecision::Result() const
+{
+  // Returns the result of the trigger decision.
+  
+  // The following is a backward compatibility fix to be able to read trigger
+  // decisions recorded before the fix in AliRoot trunk rev. 35998 correctly.
+  if (TestBits(15) == 15) return true;
+  
+  return TestBit(BIT(15)) == 1;
+}
+
+
+void AliHLTTriggerDecision::Result(bool value)
+{
+  // Sets the result of the trigger decision.
+  SetBit(BIT(15), value);
+  
+  // The following is a backward compatibility fix to be able to read trigger
+  // decisions recorded before the fix in AliRoot trunk rev. 35998 correctly.
+  // It looks like bit 1 and 2 of fBits are not used in the case of the
+  // AliHLTTriggerDecision class, so reset those to prevent "TestBits(15) == 15"
+  // from succeeding in the "Result() const" method above.
+  // We do not touch the other two bits because they could affect memory handling
+  // and cleanup.
+  if (TestBits(15) == 15) ResetBit(6);
 }
 
 
@@ -120,4 +166,26 @@ Option_t *AliHLTTriggerDecision::GetOption() const
   // "0" or "1"
   if (Result()) return "1";
   return "0";
+}
+
+
+AliHLTTriggerDecision& AliHLTTriggerDecision::operator = (const AliHLTTriggerDecision& obj)
+{
+  // Assignment operator performs a deep copy.
+  
+  if (this == &obj) return *this;
+  
+  TObject::operator = (obj);
+  // The following is a backward compatibility fix to be able to read trigger
+  // decisions recorded before the fix in AliRoot trunk rev. 35998 correctly.
+  if (obj.TestBits(15) == 15)
+  {
+    ResetBit(15);  // We can clear 'this' objects bit because we performed a deep copy.
+    SetBit(BIT(15));
+  }
+  
+  fName = obj.fName;
+  fDescription = obj.fDescription;
+  fTriggerDomain = obj.fTriggerDomain;
+  return *this;
 }
