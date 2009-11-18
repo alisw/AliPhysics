@@ -39,6 +39,46 @@ AliPHOSDA2::AliPHOSDA2(int module) : TNamed(),
 
 }
 
+//----------------------------------------------------------------
+AliPHOSDA2::AliPHOSDA2(Int_t module, TObjArray* oldHistos) : TNamed(),
+ fHistoFile(0),fFiredCells(0),fMod(module)
+
+{
+  // Create AliPHOSDA2 ("Bad channels finder") object.
+  // module is the PHOS module number (0..4).
+  // Quality histogram names: module_iX_iZ_gain.
+  // Read histograms from array oldHistos (if any).
+  // Do not produce an output file!
+
+  char name[128];
+  sprintf(name,"PHOS_Module%d_BCM",fMod);
+  SetName(name);
+
+  SetTitle("Detector Algorithm to check for PHOS channels quality");
+
+  char hname[128];
+  TH1F* hist1=0;
+
+  for(Int_t iX=0; iX<64; iX++) {
+    for(Int_t iZ=0; iZ<56; iZ++) {
+      for(Int_t iGain=0; iGain<2; iGain++) {
+	sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
+	if(oldHistos) 
+	  hist1 = (TH1F*)oldHistos->FindObject(hname);
+	if(hist1) fHQuality[iX][iZ][iGain] = hist1;
+	else
+	  fHQuality[iX][iZ][iGain] = 0;
+      }
+    }
+  }
+  
+  fMaps[0]=0;
+  fMaps[1]=0;
+  
+  fFiredCells = new TH1I("fFiredCells","Number of fired cells per event",100,0,1000);
+  
+}
+
 //-------------------------------------------------------------------
 AliPHOSDA2::AliPHOSDA2(const AliPHOSDA2& da) : TNamed(da),
   fHistoFile(0),fFiredCells(0),fMod(da.fMod)

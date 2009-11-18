@@ -5,12 +5,15 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TFile.h"
+#include "TObjArray.h"
 
 class AliPHOSDA2 : public TNamed {
   
  public:
   
   AliPHOSDA2(Int_t module);
+  AliPHOSDA2(Int_t module, TObjArray* oldHistos);
+
   AliPHOSDA2(const AliPHOSDA2& );
   AliPHOSDA2& operator= (const AliPHOSDA2& );
   ~AliPHOSDA2();

@@ -1,13 +1,13 @@
 /*
 contact: Boris.Polishchuk@cern.ch
 link: http://aliceinfo.cern.ch/static/phpBB3/viewtopic.php?f=4&t=17
-reference run: /castor/cern.ch/alice/phos/2007/10/02/13/07000008232001.10.root
+reference run: /alice/data/2009/LHC09c_PHOS/000098979/raw
 run type: LED
 DA type: MON
 number of events needed: 1000
 number of events needed: 1000
 input files: Mod0RCU0.data Mod0RCU1.data Mod0RCU2.data Mod0RCU3.data Mod1RCU0.data Mod1RCU1.data Mod1RCU2.data Mod1RCU3.data Mod2RCU0.data Mod2RCU1.data Mod2RCU2.data Mod2RCU3.data Mod3RCU0.data Mod3RCU1.data Mod3RCU2.data Mod3RCU3.data Mod4RCU0.data Mod4RCU1.data Mod4RCU2.data Mod4RCU3.data 
-Output files: PHOS_Module2_BCM.root
+Output files: PHOS_BCM.root
 Trigger types used: CALIBRATION_EVENT
 */
 
@@ -24,11 +24,13 @@ extern "C" {
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TPluginManager.h>
+#include <TH1.h>
+#include <TH2.h>
 
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliPHOSDA2.h"
-#include "AliPHOSRawFitterv1.h"
+#include "AliPHOSRawFitterv3.h"
 #include "AliCaloAltroMapping.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliLog.h"
@@ -56,8 +58,9 @@ int main(int argc, char **argv) {
     return -1;
   }
   
-  short offset, threshold;
-
+  short offset=-1;
+  short threshold=-1;
+  
   /* Retrieve mapping files from DAQ DB */
   const char* mapFiles[20] = {
     "Mod0RCU0.data",
@@ -143,11 +146,14 @@ int main(int argc, char **argv) {
   int nevents_total=0;
 
   AliRawReader *rawReader = NULL;
-
-  AliPHOSDA2* da2 = new AliPHOSDA2(2); // DA2 ("Checking for bad channels") for module2
+  AliPHOSDA2* dAs[5];
   
-  Float_t q[64][56][2];
+  for(Int_t iMod=0; iMod<5; iMod++) {
+    dAs[iMod] = 0;
+  }
 
+  Float_t q[64][56][2];
+  
   Int_t cellX    = -1;
   Int_t cellZ    = -1;
   Int_t nBunches =  0;
@@ -198,7 +204,7 @@ int main(int argc, char **argv) {
 
       rawReader = new AliRawReaderDate((void*)event);
       AliCaloRawStreamV3 stream(rawReader,"PHOS",mapping);
-      AliPHOSRawFitterv1 fitter;
+      AliPHOSRawFitterv3 fitter;
       fitter.SubtractPedestals(kTRUE); // assume that data is non-ZS
       
       while (stream.NextDDL()) {
@@ -231,7 +237,6 @@ int main(int argc, char **argv) {
 	    fitter.SetChannelGeo(stream.GetModule(),cellX,cellZ,caloFlag);
 	    fitter.Eval(stream.GetSignals(),sigStart,sigLength);
 	    q[cellX][cellZ][caloFlag] = fitter.GetSignalQuality();
-	    printf("q[%d][%d][%d] = %.3f\n",cellX,cellZ,caloFlag,q[cellX][cellZ][caloFlag]);
 	  } // End of NextBunch()
 	  
 	  if(caloFlag==1 && fitter.GetEnergy()>40)
@@ -239,10 +244,18 @@ int main(int argc, char **argv) {
 	}
       }
       
-      da2->FillQualityHistograms(q);
-      da2->FillFiredCellsHistogram(nFired);
-      //da1.UpdateHistoFile();
-      
+      if(stream.GetModule()<0 || stream.GetModule()>4) continue;
+
+      if(dAs[stream.GetModule()]) {
+	dAs[stream.GetModule()]->FillQualityHistograms(q);
+	dAs[stream.GetModule()]->FillFiredCellsHistogram(nFired);
+      }
+      else {
+	dAs[stream.GetModule()] = new AliPHOSDA2(stream.GetModule(),0);
+	dAs[stream.GetModule()]->FillQualityHistograms(q);
+	dAs[stream.GetModule()]->FillFiredCellsHistogram(nFired);
+      } 
+
       delete rawReader;     
       nevents_physics++;
     }
@@ -262,10 +275,58 @@ int main(int argc, char **argv) {
   for(Int_t i = 0; i < 20; i++) delete mapping[i];  
 
   /* Be sure that all histograms are saved */
-  delete da2;
+
+  char lnam[128];
+  char ltitl[128];
+
+  char hnam[128];
+  char htitl[128];
+
+  const TH1F* hist1=0;
+  TH2F* maps[2];
+
+  TFile* f = new TFile("PHOS_BCM.root","recreate");
+
+  for(Int_t iMod=0; iMod<5; iMod++) {
+    if(!dAs[iMod]) continue;
+  
+    printf("DA2 for module %d detected.\n",iMod);
+
+    sprintf(lnam,"gmaplow%d",iMod);
+    sprintf(ltitl,"Quality map for Low gain in Module %d",iMod);
+
+    sprintf(hnam,"gmaphigh%d",iMod);
+    sprintf(htitl,"Quality map for High gain in Module %d",iMod);
+    
+    maps[0]  = new TH2F(lnam, ltitl, 64,0.,64.,56,0.,56.);
+    maps[1]  = new TH2F(hnam, htitl, 64,0.,64.,56,0.,56.);
+  
+    for(Int_t iX=0; iX<64; iX++) {
+      for(Int_t iZ=0; iZ<56; iZ++) {
+
+	for(Int_t iGain=0; iGain<2; iGain++) {
+	  hist1 = dAs[iMod]->GetQualityHistogram(iX,iZ,iGain);
+	  if(hist1) { 
+	    hist1->Write();
+	    Double_t mean = hist1->GetMean();
+	    maps[iGain]->SetBinContent(iX+1,iZ+1,mean);
+	  }
+	}
+      }
+    }
+    
+    maps[0]->Write(); delete maps[0];
+    maps[1]->Write(); delete maps[1];
+    
+  }
+  
+  f->Close();
+  
+  if(offset>0 && threshold>0)
+    printf("ZS parameters: offset %d, threshold %d.\n",offset,threshold);
   
   /* Store output files to the File Exchange Server */
-  daqDA_FES_storeFile("PHOS_Module2_BCM.root","BAD_CHANNELS");
-
+  daqDA_FES_storeFile("PHOS_BCM.root","BAD_CHANNELS");
+  
   return status;
 }
