@@ -838,7 +838,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
                         strstr(opt,"SSD")};
   if(optCluFind==0){
     SetDefaultClusterFindersV2();
-    AliInfo("V2 cluster finder has been selected \n");
+    AliDebug(1,"V2 cluster finder has been selected \n");
   }else{
     SetDefaultClusterFindersV2();
     AliInfo("Cluster Finder Option not implemented, V2 cluster finder will be used \n");    

@@ -490,11 +490,12 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
     }
   }
   // temporary
-
+  Int_t noesd = 0;
   {/* Read ESD tracks */
     Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
     Int_t nentr=event->GetNumberOfTracks();
-    Info("Clusters2Tracks", "Number of ESD tracks: %d\n", nentr);
+    noesd=nentr;
+    //    Info("Clusters2Tracks", "Number of ESD tracks: %d\n", nentr);
     while (nentr--) {
       AliESDtrack *esd=event->GetTrack(nentr);
       //  ---- for debugging:
@@ -618,7 +619,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   fCoefficients=0;
   DeleteTrksMaterialLUT();
 
-  Info("Clusters2Tracks","Number of prolonged tracks: %d\n",ntrk);
+  AliInfo(Form("Number of prolonged tracks: %d out of %d ESD tracks",ntrk,noesd));
 
   fTrackingPhase="Default";
   
@@ -632,7 +633,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
   //--------------------------------------------------------------------
   fTrackingPhase="PropagateBack";
   Int_t nentr=event->GetNumberOfTracks();
-  Info("PropagateBack", "Number of ESD tracks: %d\n", nentr);
+  //  Info("PropagateBack", "Number of ESD tracks: %d\n", nentr);
 
   Int_t ntrk=0;
   for (Int_t i=0; i<nentr; i++) {
@@ -689,7 +690,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      delete t;
   }
 
-  Info("PropagateBack","Number of back propagated ITS tracks: %d\n",ntrk);
+  AliInfo(Form("Number of back propagated ITS tracks: %d out of %d ESD tracks",ntrk,nentr));
 
   fTrackingPhase="Default";
 
@@ -707,7 +708,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
   if(AliITSReconstructor::GetRecoParam()->GetFindV0s()) AliITSV0Finder::RefitV02(event,this);
 
   Int_t nentr=event->GetNumberOfTracks();
-  Info("RefitInward", "Number of ESD tracks: %d\n", nentr);
+  //  Info("RefitInward", "Number of ESD tracks: %d\n", nentr);
 
   Int_t ntrk=0;
   for (Int_t i=0; i<nentr; i++) {
@@ -766,7 +767,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
     delete t;
   }
 
-  Info("RefitInward","Number of refitted tracks: %d\n",ntrk);
+  AliInfo(Form("Number of refitted tracks: %d out of %d ESD tracks",ntrk,nentr));
 
   fTrackingPhase="Default";
 
