@@ -68,6 +68,7 @@ void GenerateInputData()
 	{
 		gSystem->Load("libAliHLTUtil.so");
 		gSystem->Load("libAliHLTTRD.so");
+		gSystem->Load("libAliHLTMUON.so");
 		gSystem->Load("libAliHLTTrigger.so");
 		loadedLibs = true;
 	}
@@ -145,6 +146,7 @@ void GenerateInputData()
 	if (loadedLibs)
 	{
 		gSystem->Unload("libAliHLTTrigger.so");
+		gSystem->Unload("libAliHLTMUON.so");
 		gSystem->Unload("libAliHLTTRD.so");
 		gSystem->Unload("libAliHLTUtil.so");
 	}
@@ -165,14 +167,16 @@ void GenerateInputData()
  */
 void RunTrigger(int config = 0, bool usecint = false, bool debug = false, int numOfEvents = 8, const char* customClass = NULL)
 {
-	AliHLTSystem gHLTSystem;
-	gHLTSystem.LoadComponentLibraries("libAliHLTUtil.so");
-	gHLTSystem.LoadComponentLibraries("libAliHLTTRD.so");
-	gHLTSystem.LoadComponentLibraries("libAliHLTTrigger.so");
+	AliHLTSystem sys;
+	sys.ScanOptions("ECS=CTP_TRIGGER_CLASS=00:TRIGGER-ALL:00-01-02-03-04-05-06-07-08-09-10-11-12-13-14-15-16-17");
+	sys.LoadComponentLibraries("libAliHLTUtil.so");
+	sys.LoadComponentLibraries("libAliHLTTRD.so");
+	sys.LoadComponentLibraries("libAliHLTMUON.so");
+	sys.LoadComponentLibraries("libAliHLTTrigger.so");
 	if (debug)
 	{
 		AliLog::SetGlobalLogLevel(AliLog::kMaxType);
-		gHLTSystem.SetGlobalLoggingLevel(kHLTLogAll);
+		sys.SetGlobalLoggingLevel(kHLTLogAll);
 	}
 	
 	TString cmdline = "-datatype ROOTTOBJ 'HLT ' ";
@@ -183,7 +187,8 @@ void RunTrigger(int config = 0, bool usecint = false, bool debug = false, int nu
 	}
 	AliHLTConfiguration pub("pub", "ROOTFilePublisher", NULL, cmdline.Data());
 	
-	cmdline = Form("-config TriggerConfig.C(%d) -includepath $ALICE_ROOT/include -includepath $ALICE_ROOT/HLT/BASE"
+	cmdline = Form("-config $ALICE_ROOT/HLT/trigger/test/TriggerConfig.C(%d)"
+		" -includepath $ALICE_ROOT/include -includepath $ALICE_ROOT/HLT/BASE"
 		" -includepath $ALICE_ROOT/HLT/trigger -include AliHLTEventSummary.h",
 		config
 		);
@@ -194,8 +199,12 @@ void RunTrigger(int config = 0, bool usecint = false, bool debug = false, int nu
 	
 	AliHLTConfiguration sink("sink", "ROOTFileWriter", "proc", "-datafile testOutputFile.root -concatenate-events");
 	
-	gHLTSystem.BuildTaskList("sink");
-	gHLTSystem.Run(numOfEvents);
+	sys.BuildTaskList("sink");
+	sys.Run(
+		numOfEvents,
+		1,  // Stop chain at end of run.
+		0x1 // Active CTP trigger mask.
+	);
 }
 
 /**
@@ -217,10 +226,11 @@ void CallRunTrigger(
 			"aliroot %s <<EOF\n"
 			"gSystem->Load(\"libAliHLTUtil.so\");\n"
 			"gSystem->Load(\"libAliHLTTRD.so\");\n"
+			"gSystem->Load(\"libAliHLTMUON.so\");\n"
 			"gSystem->Load(\"libAliHLTTrigger.so\");\n"
 			"gSystem->SetIncludePath(\"-I${ALICE_ROOT}/include"
 			" -I${ALICE_ROOT}/HLT/BASE -I${ALICE_ROOT}/HLT/trigger\");\n"
-			".L testGlobalTriggerComponent.C+\n"
+			".L $ALICE_ROOT/HLT/trigger/test/testGlobalTriggerComponent.C+\n"
 			"RunTrigger(%d,%d,%d,%d,%s);\n"
 			"EOF\n",
 			redirection,
@@ -274,7 +284,7 @@ bool Check(
 		     << "): The domain does not match the expected value for event "
 		     << eventNum << ". Got:" << endl;
 		decision->TriggerDomain().Print();
-		cout << "but expected:" << endl;
+		cerr << "but expected:" << endl;
 		expectedDomain.Print();
 		return false;
 	}
@@ -723,14 +733,8 @@ bool testGlobalTriggerComponent(int configVersion = -1, const char* customClass 
 
 int main(int /*argc*/, const char** /*argv*/)
 {
-	const char* cpCmd1 = "if test ! -f TriggerConfig.C ; then cp $ALICE_ROOT/HLT/trigger/test/TriggerConfig.C ./; exit 1; fi";
-	const char* cpCmd2 = "if test ! -f testGlobalTriggerComponent.C ; then cp $ALICE_ROOT/HLT/trigger/test/testGlobalTriggerComponent.C ./; exit 1; fi";
-	bool copiedFile1 = gSystem->Exec(cpCmd1) != 0;
-	bool copiedFile2 = gSystem->Exec(cpCmd2) != 0;
 	bool resultOk = testGlobalTriggerComponent();
 	if (not resultOk) return 1;
-	if (copiedFile1) gSystem->Exec("rm TriggerConfig.C");
-	if (copiedFile2) gSystem->Exec("rm testGlobalTriggerComponent.C");
 	return 0;
 }
 

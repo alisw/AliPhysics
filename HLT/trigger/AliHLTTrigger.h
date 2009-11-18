@@ -168,6 +168,12 @@ class AliHLTTrigger : public AliHLTProcessor
     );
   
   /**
+   * This method allows one to completely ignore an event. The DoEvent method will
+   * not even generate a false trigger decision if this method is called.
+   */
+  void IgnoreEvent(bool value = true) { fDecisionMade = value; }
+  
+  /**
    * Method for finding out the result of the last call to TriggerEvent.
    * \returns the error code for the last call to TriggerEvent.
    */

@@ -403,7 +403,7 @@ bool testMuonSpectroTrigger(bool debug = false)
 	if (! CheckResults()) return false;
 	
 	// Cleanup all temporary files generated.
-	gSystem->Exec("rm -f testMuonTriggerOutputFile.root test*DecisionInputFile*.root");
+	gSystem->Exec("rm -f testMuonTriggerOutputFile.root test*DecisionInputFile*.dat");
 	return true;
 }
 

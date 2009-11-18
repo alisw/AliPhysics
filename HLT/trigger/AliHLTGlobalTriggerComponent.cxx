@@ -79,7 +79,8 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fIncludePaths(TObjString::Class()),
 	fIncludeFiles(TObjString::Class()),
 	fLibStateAtLoad(),
-	fBits(0)
+	fBits(0),
+	fDataEventsOnly(true)
 {
   // Default constructor.
   
@@ -129,6 +130,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   fIncludePaths.Clear();
   fIncludeFiles.Clear();
   SetBit(kIncludeInput);
+  fDataEventsOnly = true;
   
   for (int i = 0; i < argc; i++)
   {
@@ -260,7 +262,13 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
       }
       continue;
     }
-        
+
+    if (strcmp(argv[i], "-process-all-events") == 0)
+    {
+      fDataEventsOnly = false;
+      continue;
+    }
+    
     HLTError("Unknown option '%s'.", argv[i]);
     return -EINVAL;
   } // for loop
@@ -372,7 +380,11 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   AliHLTUInt32_t eventType=0;
   if (!IsDataEvent(&eventType)) {
     if (eventType==gkAliEventTypeEndOfRun) PrintStatistics(fTrigger, kHLTLogImportant, 0);
-    return 0;
+    if (fDataEventsOnly)
+    {
+      IgnoreEvent();
+      return 0;
+    }
   }
 
   // Copy the trigger counters in case we need to set them back to their original

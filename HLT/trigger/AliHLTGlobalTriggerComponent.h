@@ -67,6 +67,9 @@ class AliHLTGlobalTrigger;
  *      Steer adding of input objects to the global HLT trigger decision.
  *      Options: none - include nothing, short - include a short TNames array,
  *               objects - include objects, by default on
+ * \li -process-all-events <br>
+ *      Indicates that all events should be processed with the global trigger logic and
+ *      not just the data events. The default is not to process just the data events.
  *
  * <h2>Configuration:</h2>
  * Configured from CDB but can be overridden with the -config argument.
@@ -292,6 +295,7 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   TClonesArray fIncludeFiles; //! Files specified by the -include command line option.
   TString fLibStateAtLoad; //! This stores the loaded libraries just before we tell CINT to load the interpreted file.
   AliHLTUInt32_t fBits; //! Status bits
+  bool fDataEventsOnly; //! Flag indicating if only data events are processed with trigger logic.
 
   static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   
