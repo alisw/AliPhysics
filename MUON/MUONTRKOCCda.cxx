@@ -144,6 +144,8 @@ int main(int argc, char **argv)
   /// were seen per manu, and the number of events.
   ///
   
+  signal(SIGSEGV,SIG_DFL); // to be able to get core dumps...
+  
   TStopwatch timers;
   timers.Start(kTRUE); 
   
