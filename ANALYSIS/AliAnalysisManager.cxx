@@ -36,6 +36,7 @@
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TCanvas.h>
+#include <TStopwatch.h>
 
 #include "AliAnalysisSelector.h"
 #include "AliAnalysisGrid.h"
@@ -712,12 +713,33 @@ void AliAnalysisManager::Terminate()
   // the results graphically.
    if (fDebug > 0) printf("->AliAnalysisManager::Terminate()\n");
    AliAnalysisTask *task;
+   AliAnalysisDataContainer *output;
    TIter next(fTasks);
+   TStopwatch timer;
    // Call Terminate() for tasks
-   while ((task=(AliAnalysisTask*)next())) task->Terminate();
+   while ((task=(AliAnalysisTask*)next())) {
+      // Save all the canvases produced by the Terminate
+      TString pictname = Form("%s_%s", task->GetName(), task->ClassName());
+      Int_t istart = gROOT->GetListOfCanvases()->GetEntries()-1;
+      task->Terminate();
+      if (TObject::TestBit(kSaveCanvases)) {
+         timer.Start();
+         while (timer.CpuTime()<5) {
+            timer.Continue();
+            gSystem->ProcessEvents();
+         }   
+         Int_t iend = gROOT->GetListOfCanvases()->GetEntries()-1;
+         if (istart == iend) continue;
+         TCanvas *canvas;
+         for (Int_t ipict=0; ipict<iend-istart; ipict++) {
+            canvas = (TCanvas*)gROOT->GetListOfCanvases()->At(istart+ipict);
+            if (!canvas) continue;         
+            canvas->SaveAs(Form("%s_%02d.gif", pictname.Data(),ipict));
+         }   
+      }
+   }   
    //
    TIter next1(fOutputs);
-   AliAnalysisDataContainer *output;
    while ((output=(AliAnalysisDataContainer*)next1())) {
       // Special outputs or grid files have the files already closed and written.
       if (fMode == kGridAnalysis) continue;

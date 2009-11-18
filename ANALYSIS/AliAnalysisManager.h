@@ -48,7 +48,8 @@ enum EAliAnalysisExecMode {
 enum EAliAnalysisFlags {
    kEventLoop        = BIT(14),
    kDisableBranches  = BIT(15),
-   kUseDataSet       = BIT(16)
+   kUseDataSet       = BIT(16),
+   kSaveCanvases     = BIT(17)
 };   
 
    AliAnalysisManager(const char *name = "mgr", const char *title="");
@@ -104,6 +105,7 @@ enum EAliAnalysisFlags {
    void                SetEventPool(AliVEventPool* epool) {fEventPool = epool;}
    void                SetNSysInfo(Long64_t nevents) {fNSysInfo = nevents;}
    void                SetSelector(AliAnalysisSelector *sel) {fSelector = sel;}
+   void                SetSaveCanvases(Bool_t flag=kTRUE) {TObject::SetBit(kSaveCanvases,flag);}
    AliVEventHandler*   GetInputEventHandler()   {return fInputEventHandler;}
    AliVEventHandler*   GetOutputEventHandler()  {return fOutputEventHandler;}
    AliVEventHandler*   GetMCtruthEventHandler() {return fMCtruthEventHandler;}
