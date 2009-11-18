@@ -422,7 +422,7 @@ void AliTPCcalibDB::Update(){
   //QA calibration data
   entry          = GetCDBEntry("GRP/CTP/CTPtiming");
   if (entry){
-    entry->SetOwner(kTRUE);
+    //entry->SetOwner(kTRUE);
     fCTPTimeParams=dynamic_cast<AliCTPTimeParams*>(entry->GetObject());
   }
   
