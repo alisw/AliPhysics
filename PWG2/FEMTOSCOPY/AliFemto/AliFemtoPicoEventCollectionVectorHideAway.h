@@ -32,6 +32,9 @@ public:
 
   AliFemtoPicoEventCollection* PicoEventCollection(int bx, int by, int bz);
   AliFemtoPicoEventCollection* PicoEventCollection(double x, double y=0, double z=0);
+  unsigned int GetBinXNumber(double x);
+  unsigned int GetBinYNumber(double y);
+  unsigned int GetBinZNumber(double z);
 private:
   int fBinsTot;                                        // Total number of bins 
   int fBinsx,fBinsy,fBinsz;                            // Number of bins on x, y, z axis

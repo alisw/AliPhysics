@@ -40,8 +40,8 @@ AliFemtoPicoEventCollection* AliFemtoPicoEventCollectionVectorHideAway::PicoEven
   if ( iy<0 || iy >= fBinsy) return 0;
   if ( iz<0 || iz >= fBinsz) return 0;
   int bin = ix + iy*fBinsx + iz*fBinsy*fBinsx; 
-  cout << " AliFemtoPicoEventCollectionVectorHideAway::PicoEventCollection(...) - bin(ix,iy,iz): ";
-  cout << bin << "(" << ix <<"," << iy << "," << iz <<")" << endl;
+//   cout << " AliFemtoPicoEventCollectionVectorHideAway::PicoEventCollection(...) - bin(ix,iy,iz): ";
+//   cout << bin << "(" << ix <<"," << iy << "," << iz <<")" << endl;
   return fCollectionVector[bin]; 
 }
 // -----------------------------------
@@ -123,3 +123,6 @@ AliFemtoPicoEventCollectionVectorHideAway& AliFemtoPicoEventCollectionVectorHide
 
   return *this;
 }
+unsigned int AliFemtoPicoEventCollectionVectorHideAway::GetBinXNumber(double x) { return (int)floor( (x-fMinx)/fStepx ); }
+unsigned int AliFemtoPicoEventCollectionVectorHideAway::GetBinYNumber(double y) { return (int)floor( (y-fMiny)/fStepy ); }
+unsigned int AliFemtoPicoEventCollectionVectorHideAway::GetBinZNumber(double z) { return (int)floor( (z-fMinz)/fStepz ); }
