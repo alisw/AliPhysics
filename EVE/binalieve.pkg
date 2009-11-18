@@ -56,3 +56,6 @@ ELIBS+=GLU
 ELIBSDIR+=$(FINK_ROOT)/lib
 
 endif
+
+## Private hack to get own GEDs
+CXXFLAGS += -DXXX_LATEST_ROOT

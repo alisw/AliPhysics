@@ -28,8 +28,6 @@ void alieve_init(const TString& cdburi = "",
   alieve_init_import_macros();
   gSystem->cd(hack);
 
-  alieve_init_basic_vizdb();
-  // Temporarily assert also default vizdb.
   TEveUtil::AssertMacro("VizDB_scan.C");
 
   gSystem->ProcessEvents();
@@ -122,15 +120,4 @@ void alieve_init_import_macros()
       br->SetTab(0, 0);
     }
   }
-}
-
-void alieve_init_basic_vizdb()
-{
-  TEvePointSet* ps;
-
-  ps = new TEvePointSet();
-  ps->SetMarkerColor(4);
-  ps->SetMarkerSize(0.2);
-  ps->SetMarkerStyle(2);
-  gEve->InsertVizDBEntry("Clusters", ps);
 }
