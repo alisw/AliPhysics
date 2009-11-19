@@ -223,13 +223,13 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	  
 	  for (Int_t di=-5; di<=5;di++){
 	    for (Int_t dj=-10;dj<=10;dj++){
-	      Int_t index = idx[k]+di+dj*fNZbins;
+	      index = idx[k]+di+dj*fNZbins;
 	      if (index<0) continue;
 	      if (index>=kMaxBin) continue;
 	      AliBin *b=&bins[s][index];
-	      Int_t iAnode=index%fNZbins-1;
+	      Int_t jAnode=index%fNZbins-1;
 	      Int_t adcSignal=b->GetQ();
-	      if(adcSignal>cal->GetThresholdAnode(iAnode)){
+	      if(adcSignal>cal->GetThresholdAnode(jAnode)){
 		if (di>maxi) maxi=di;
 		if (di<mini) mini=di;
 		if (dj>maxj) maxj=dj;
@@ -305,8 +305,8 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
       }
     }
   }
-  
-}
+ 
+} 
 //______________________________________________________________________
 void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters){
     //------------------------------------------------------------

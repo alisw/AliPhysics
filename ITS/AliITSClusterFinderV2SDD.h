@@ -30,6 +30,9 @@ public:
   enum {kModulesPerDDL = 12};   // number of modules in each DDL 
 
  protected:
+ AliITSClusterFinderV2SDD(const AliITSClusterFinderV2SDD &source); // copy constructor
+  // assignment operator
+  AliITSClusterFinderV2SDD& operator=(const AliITSClusterFinderV2SDD &source);
   Bool_t NoiseSuppress(Int_t k, Int_t sid, AliBin* bins, AliITSCalibrationSDD* cal) const;
   void FindClustersSDD(TClonesArray *digits);
   void FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
