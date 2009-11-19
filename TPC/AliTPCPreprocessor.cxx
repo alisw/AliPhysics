@@ -950,12 +950,13 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 // Pressure maps
 
  if (fPressure) {
-   AliDCSSensor *sensor=0;
+   AliDCSSensor *sensor=0, *sensorCopy=0;
    for (Int_t isensor=0; isensor<kNumPressureSensors; ++isensor ) {
       sensor = fPressure->GetSensor(kPressureSensorNames[isensor]);
       if (sensor) {
-       sensor->SetNameTitle(kPressureSensorNames[isensor],kPressureSensorNames[isensor]);       
-       ceObjects->Add(sensor);
+       sensorCopy = new AliDCSSensor(*sensor);
+       sensorCopy->SetNameTitle(kPressureSensorNames[isensor],kPressureSensorNames[isensor]);       
+       ceObjects->Add(sensorCopy);
       }
    }
  }   
