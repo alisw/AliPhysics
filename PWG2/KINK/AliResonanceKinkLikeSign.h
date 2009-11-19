@@ -24,7 +24,6 @@ class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
   virtual void   ConnectInputData(Option_t *option);
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
-  virtual void   Terminate(Option_t *option);
   
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack) const ; 
   const AliESDVertex *GetEventVertex(const AliESDEvent* esd) const;
