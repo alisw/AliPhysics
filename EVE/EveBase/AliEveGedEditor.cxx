@@ -12,18 +12,19 @@
 
 
 //==============================================================================
-// AliEveGedFrame
+// AliEveGedNameFrame
 //==============================================================================
 
 //______________________________________________________________________________
-// Full description of AliEveGedFrame
+// Full description of AliEveGedNameFrame
 //
 
-ClassImp(AliEveGedFrame)
+ClassImp(AliEveGedNameFrame)
 
 //______________________________________________________________________________
-AliEveGedFrame::AliEveGedFrame(const TGWindow *p) :
-  TGedFrame(p)
+AliEveGedNameFrame::AliEveGedNameFrame(const TGWindow *p) :
+  TGedFrame(p),
+  fB(0)
 {
   // Constructor.
 
@@ -32,7 +33,7 @@ AliEveGedFrame::AliEveGedFrame(const TGWindow *p) :
 }
 
 //______________________________________________________________________________
-void AliEveGedFrame::SetModel(TObject* obj)
+void AliEveGedNameFrame::SetModel(TObject* obj)
 {
   // Set model object.
 
@@ -75,5 +76,5 @@ TGedFrame* AliEveGedEditor::CreateNameFrame(const TGWindow* parent, const char* 
 {
   // Create name-frame for a tab.
 
-  return new AliEveGedFrame(parent);
+  return new AliEveGedNameFrame(parent);
 }

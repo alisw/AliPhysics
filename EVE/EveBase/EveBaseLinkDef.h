@@ -28,7 +28,7 @@
 
 // Special GED editor for VizDB interaction.
 #pragma link C++ class AliEveGedEditor+;
-#pragma link C++ class AliEveGedFrame+;
+#pragma link C++ class AliEveGedNameFrame+;
 
 // Various
 #pragma link C++ class AliEveKineTools+;

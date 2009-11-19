@@ -15,18 +15,18 @@
 
 
 //==============================================================================
-// AliEveGedFrame
+// AliEveGedNameFrame
 //==============================================================================
 
 //______________________________________________________________________________
-// Short description of AliEveGedFrame
+// Short description of AliEveGedNameFrame
 //
 
-class AliEveGedFrame  : public TGedFrame
+class AliEveGedNameFrame  : public TGedFrame
 {
 public:
-  AliEveGedFrame(const TGWindow *p=0);
-  virtual ~AliEveGedFrame() {}
+  AliEveGedNameFrame(const TGWindow *p=0);
+  virtual ~AliEveGedNameFrame() {}
 
   virtual void SetModel(TObject* obj);
 
@@ -34,10 +34,10 @@ protected:
   TGTextButton *fB; // Info button.
 
 private:
-  AliEveGedFrame(const AliEveGedFrame&);            // Not implemented
-  AliEveGedFrame& operator=(const AliEveGedFrame&); // Not implemented
+  AliEveGedNameFrame(const AliEveGedNameFrame&);            // Not implemented
+  AliEveGedNameFrame& operator=(const AliEveGedNameFrame&); // Not implemented
 
-  ClassDef(AliEveGedFrame, 0); // Short description.
+  ClassDef(AliEveGedNameFrame, 0); // Specialization of GED top name-frame for AliEve.
 };
 
 
@@ -62,7 +62,7 @@ private:
   AliEveGedEditor(const AliEveGedEditor&);            // Not implemented
   AliEveGedEditor& operator=(const AliEveGedEditor&); // Not implemented
 
-  ClassDef(AliEveGedEditor, 0); // Short description.
+  ClassDef(AliEveGedEditor, 0); // // Specialization of GED editor for AliEve.
 };
 
 #endif
