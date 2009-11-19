@@ -15,8 +15,7 @@ MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 # AliRoot we leave the class names as they are but change the
 # file names. Thats why the automatic generation of the ROOT
 # LinkDef file doesn't work for the moment
-MODULE_DHDR:=
-#MODULE_DHDR:= 	AliHLTHOMERLinkDef.h
+MODULE_DHDR:= 	AliHLTHOMERLinkDef.h
 
 SRCS:=$(patsubst %,BASE/HOMER/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,BASE/HOMER/%,$(CLASS_HDRS))
