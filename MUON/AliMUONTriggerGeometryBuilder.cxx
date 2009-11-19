@@ -1696,17 +1696,20 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
 {
 /// Defines the transformations for the trigger chambers.
 
+    TGeoRotation st345inclination("rotbeam");
+    st345inclination.RotateX(-AliMUONConstants::St345Inclination());
+
     Double_t zpos1= AliMUONConstants::DefaultChamberZ(10); 
-    SetTranslation(16, TGeoTranslation(0., 0., zpos1));
+    SetTransformation(16, TGeoTranslation(0., 0, zpos1), st345inclination);
     
     zpos1= AliMUONConstants::DefaultChamberZ(11); 
-    SetTranslation(17, TGeoTranslation(0., 0., zpos1));
+    SetTransformation(17, TGeoTranslation(0., 0, zpos1), st345inclination);
 
     zpos1= AliMUONConstants::DefaultChamberZ(12); 
-    SetTranslation(18, TGeoTranslation(0., 0., zpos1));
+    SetTransformation(18, TGeoTranslation(0., 0, zpos1), st345inclination);
 
     zpos1= AliMUONConstants::DefaultChamberZ(13); 
-    SetTranslation(19, TGeoTranslation(0., 0., zpos1));
+    SetTransformation(19, TGeoTranslation(0., 0, zpos1), st345inclination);
 }
 
 //______________________________________________________________________________
