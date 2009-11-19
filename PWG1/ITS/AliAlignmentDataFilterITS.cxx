@@ -950,7 +950,6 @@ Int_t AliAlignmentDataFilterITS::WriteTrackPointsInIdealGeom(Char_t *fin,
 
 
   TGeoHMatrix deltahm;
-  TGeoHMatrix hcov;
 
   // Load geometry
   if (gSystem->AccessPathName(fgeo)) {
