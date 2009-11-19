@@ -13,15 +13,7 @@ SRCS = dNdEta/AlidNdEtaTask.cxx \
        highMultiplicity/AliHighMultiplicitySelector.cxx \
        multiplicity/AliMultiplicityTask.cxx \
        esdTrackCuts/AliCutTask.cxx \
-       trigger/AliTriggerTask.cxx \
-       dNdPt/AlidNdPtTask.cxx \
-       dNdPt/AlidNdPtAcceptanceCuts.cxx \
-       dNdPt/AlidNdPtEventCuts.cxx \
-       dNdPt/AlidNdPtHelper.cxx \
-       dNdPt/AlidNdPt.cxx \
-       dNdPt/AlidNdPtAnalysis.cxx \
-       dNdPt/AlidNdPtCorrection.cxx \
-       dNdPt/AlidNdPtCutAnalysis.cxx
+       trigger/AliTriggerTask.cxx
 
 HDRS = $(SRCS:.cxx=.h)
 
