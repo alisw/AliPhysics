@@ -76,7 +76,7 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
     cout << "#################### Input trigger decisions ####################" << endl;
     for (Int_t i = 0; i < NumberOfTriggerInputs(); i++)
     {
-      TriggerInput(i)->Print(option);
+      if (TriggerInput(i)) TriggerInput(i)->Print(option);
     }
     if (NumberOfTriggerInputs() == 0)
     {
@@ -103,7 +103,7 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
     for (Int_t i = 0; i < NumberOfTriggerInputs(); i++)
     {
       cout << "-------------------- Input trigger decision " << i << " --------------------" << endl;
-      TriggerInput(i)->Print(option);
+      if (TriggerInput(i)) TriggerInput(i)->Print(option);
     }
     if (NumberOfTriggerInputs() == 0)
     {
@@ -113,7 +113,7 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
     for (Int_t i = 0; i < NumberOfInputObjects(); i++)
     {
       cout << "------------------------ Input object " << i << " ------------------------" << endl;
-      InputObject(i)->Print(option);
+      if (InputObject(i)) InputObject(i)->Print(option);
     }
     if (NumberOfInputObjects() == 0)
     {
