@@ -15,6 +15,7 @@ class AlidNdPtAcceptanceCuts;
 
 #include "TNamed.h"
 #include "TFolder.h"
+#include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
 
 class AlidNdPt : public TNamed {
@@ -43,19 +44,19 @@ public:
   AlidNdPt& operator=(const AlidNdPt&); // not implemented
 
   //
-  void SetEventCuts(AlidNdPtEventCuts* const cuts) { fdNdPtEventCuts = cuts; }
-  void SetAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts) { fdNdPtAcceptanceCuts = cuts; }
-  void SetTrackCuts(AliESDtrackCuts* const cuts) { fEsdTrackCuts = cuts; }
-  void SetUseMCInfo(Bool_t info) { fUseMCInfo = info; }
-  void SetAnalysisMode(AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
-  void SetTrigger(AlidNdPtHelper::Trigger trigger) { fTrigger = trigger; }
+  void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
+  void SetAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts)    { fdNdPtAcceptanceCuts = cuts; }
+  void SetTrackCuts(AliESDtrackCuts* const cuts)                { fEsdTrackCuts = cuts; }
+  void SetUseMCInfo(const Bool_t info)                          { fUseMCInfo = info; }
+  void SetAnalysisMode(const AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
+  void SetTrigger(const AliPWG0Helper::Trigger trigger)         { fTrigger = trigger; }
 
-  AlidNdPtEventCuts* GetEventCuts() const { return fdNdPtEventCuts; }
-  AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const { return fdNdPtAcceptanceCuts; }
-  AliESDtrackCuts* GetTrackCuts() const { return fEsdTrackCuts; }
-  Bool_t IsUseMCInfo() { return fUseMCInfo; }
-  AlidNdPtHelper::AnalysisMode GetAnalysisMode() { return fAnalysisMode; }
-  AlidNdPtHelper::Trigger GetTrigger() { return fTrigger; }
+  AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
+  AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
+  AliESDtrackCuts* GetTrackCuts() const                         { return fEsdTrackCuts; }
+  Bool_t IsUseMCInfo() const                                    { return fUseMCInfo; }
+  AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
+  AliPWG0Helper::Trigger GetTrigger() const                     { return fTrigger; }
 
 private:
 
@@ -65,7 +66,7 @@ private:
 
   Bool_t fUseMCInfo;                            // use MC information
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
-  AlidNdPtHelper::Trigger fTrigger;             // trigger definition MB1, MB2 ...
+  AliPWG0Helper::Trigger fTrigger;              // trigger definition MB1, MB2 ...
 
   ClassDef(AlidNdPt,1);
 };

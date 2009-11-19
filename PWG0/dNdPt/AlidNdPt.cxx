@@ -29,7 +29,7 @@ AlidNdPt::AlidNdPt(): TNamed()
 , fEsdTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
-, fTrigger(AlidNdPtHelper::kMB1) 
+, fTrigger(AliPWG0Helper::kMB1) 
 {
   // default constructor
 }
@@ -41,7 +41,7 @@ AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
 , fEsdTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
-, fTrigger(AlidNdPtHelper::kMB1) 
+, fTrigger(AliPWG0Helper::kMB1) 
 {
   // constructor
 }

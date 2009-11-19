@@ -8,13 +8,15 @@
 //------------------------------------------------------------------------------
 
 #include "AliAnalysisCuts.h"
-#include "dNdPt/AlidNdPtHelper.h"
 
 class AliESDEvent;
 class AliESDVertex;
 class AliMCEvent;
 class AliHeader;
 class AliGenEventHeader;
+
+#include "AliPWG0Helper.h"
+#include "AlidNdPtHelper.h"
 
 class AlidNdPtEventCuts : public AliAnalysisCuts
 {
@@ -23,8 +25,9 @@ public:
   virtual ~AlidNdPtEventCuts(); 
  
   // setters 
+  void SetTriggerRequired(const Bool_t bFlag=kTRUE)  {fTriggerRequired=bFlag;}
   void SetRecVertexRequired(const Bool_t bFlag=kTRUE)  {fRecVertexRequired=bFlag;}
-  void SetEventProcessType(AlidNdPtHelper::MCProcessType type=AlidNdPtHelper::kInvalidProcess)  {fEventProcessType=type;}
+  void SetEventProcessType(AliPWG0Helper::MCProcessType type=AliPWG0Helper::kInvalidProcess)  {fEventProcessType=type;}
   void SetNContributorsRange(const Float_t min=0.,const Float_t max=1e99) {fMinNContributors=min; fMaxNContributors=max;}
   void SetMaxR(const Float_t max=1e99) {fMaxR=max;}
   void SetZvRange(const Float_t min=-1e99, const Float_t max=1e99) {fMinZv=min; fMaxZv=max;}
@@ -37,7 +40,11 @@ public:
     fSigmaMeanXv = sxv; fSigmaMeanYv = syv; fSigmaMeanZv = szv;
   }
 
+  void SetRedoTPCVertex(const Bool_t redo = kTRUE) {fRedoTPCVertex = redo;}
+  void SetUseBeamSpotConstraint(const Bool_t useConstr = kTRUE) {fUseBeamSpotConstraint = useConstr;}
+
   // getters 
+  Bool_t  IsTriggerRequired() const {return fTriggerRequired;}
   Bool_t  IsRecVertexRequired() const {return fRecVertexRequired;}
   Int_t   GetEventProcessType() const {return fEventProcessType;}  
   Float_t GetMinNContributors() const {return fMinNContributors;}
@@ -54,6 +61,9 @@ public:
   Float_t GetSigmaMeanYv() const {return fSigmaMeanYv;}
   Float_t GetSigmaMeanZv() const {return fSigmaMeanZv;}
  
+  Bool_t IsRedoTPCVertex() const {return fRedoTPCVertex;}
+  Bool_t IsUseBeamSpotConstraint() const {return fUseBeamSpotConstraint;}
+
   // cuts init function
   void Init();
 
@@ -69,6 +79,7 @@ public:
   virtual Long64_t Merge(TCollection* list);
 
 private:
+  Bool_t fTriggerRequired; // trigger required  
   Bool_t fRecVertexRequired; // reconstructed event vertex required  
   Int_t fEventProcessType;   // select MC event process type (ND, SD, DD)
   Float_t fMinNContributors; // min. number of contributing vertex tracks
@@ -86,6 +97,9 @@ private:
   Float_t fSigmaMeanYv; // sigma mean Yv position
   Float_t fSigmaMeanZv; // sigma mean Zv position
  
+  Bool_t fRedoTPCVertex;         // redo vertex
+  Bool_t fUseBeamSpotConstraint; // use beam spot contraints  
+
   AlidNdPtEventCuts(const AlidNdPtEventCuts&); // not implemented
   AlidNdPtEventCuts& operator=(const AlidNdPtEventCuts&); // not implemented
 

@@ -18,7 +18,6 @@
 //------------------------------------------------------------------------------
 
 
-class TProfile;
 class TFolder;
 class TObjArray;
 class TString;
@@ -33,10 +32,10 @@ class AlidNdPtEventCuts;
 class AlidNdPtAcceptanceCuts;
 class AlidNdPtCorrection;
 class AlidNdPt;
+class AlidNdPtHelper;
 
 #include "THnSparse.h"
 #include "AlidNdPt.h"
-#include "AlidNdPtHelper.h"
 
 class AlidNdPtCorrection : public AlidNdPt {
 public :
@@ -93,8 +92,7 @@ public :
   THnSparseF *GetCorrRecEventHist1(Int_t i) {return fCorrRecEventHist1[i];}
   THnSparseF *GetCorrRecEventHist2(Int_t i) {return fCorrRecEventHist2[i];}
 
-  //THnSparseF *GetPtvsPt() {return fPtvsPt;}
-  //TProfile *GetPtvsPt() {return fPtvsPt;}
+  THnSparseF *GetPtvsPt(Int_t i) {return fPtvsPt[i];}
 
   // correlation matrix
   void SetEventMultCorrelationMatrix(THnSparseF *const matrix=0) {fEventMultCorrelationMatrix = matrix;}
@@ -191,9 +189,6 @@ private:
   //mc primary tracks in acceptance (triggered and event vertex reconstructed)
   THnSparseF *fMCEventPrimTrackMultHist1; //-> mcPt:mcEta:multiplicity
 
-  // pt vs pt to get proper pt bin (center of gravity)
-  // THnSparseF *fPtvsPt; //-> pt:pt 
-  //TProfile *fPtvsPt; //-> pt profile
 
   // track histograms 
   // [0]=all charged tracks, 
@@ -212,6 +207,9 @@ private:
   // [7]=[4]+trigger MBToNSD)
   THnSparseF *fCorrRecTrackMultHist1[8]; //-> Pt:Eta:mult corrected histograms 
 
+  // pt vs pt to get proper pt bin (center of gravity)
+  THnSparseF *fPtvsPt[8]; //-> pt:pt 
+
   // corrected event histograms
   // [0]-not corrected, 
   // [1]=event vertex, 
@@ -219,6 +217,7 @@ private:
   // [3]=[1]+trigger MBtoND, 
   // [4]=[1]+trigger MBtoNSD 
   THnSparseF *fCorrRecEventHist1[5]; //-> mcZv:multMB 
+
 
   // corrected event histograms (empty events)
   // [0]=not corrected,

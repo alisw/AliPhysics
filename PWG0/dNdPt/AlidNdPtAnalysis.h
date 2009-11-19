@@ -27,9 +27,10 @@ class AliESD;
 class AliESDfriend;
 class AliESDfriendTrack;
 
+class AlidNdPtHelper;
+
 #include "THnSparse.h"
 #include "AlidNdPt.h"
-#include "AlidNdPtHelper.h"
 
 class AlidNdPtAnalysis : public AlidNdPt {
 public :
@@ -160,25 +161,25 @@ private:
   //
 
   // all genertated
-  THnSparseF *fGenEventMatrix; //-> mcZv:mult (inelastic)
-  THnSparseF *fGenSDEventMatrix; //-> mcZv:mult (single diffractive)
-  THnSparseF *fGenDDEventMatrix; //-> mcZv:mult (single diffractive)
-  THnSparseF *fGenNDEventMatrix; //-> mcZv:mult (non diffractive)
-  THnSparseF *fGenNSDEventMatrix; //-> mcZv:mult (non single diffractive)
+  THnSparseF *fGenEventMatrix; //-> mcZv:multMB (inelastic)
+  THnSparseF *fGenSDEventMatrix; //-> mcZv:multMB (single diffractive)
+  THnSparseF *fGenDDEventMatrix; //-> mcZv:multMB (single diffractive)
+  THnSparseF *fGenNDEventMatrix; //-> mcZv:multMB (non diffractive)
+  THnSparseF *fGenNSDEventMatrix; //-> mcZv:multMB (non single diffractive)
 
   // trigger bias corrections (fTriggerEventMatrix / fGenEventMatrix)
-  THnSparseF *fTriggerEventMatrix; //-> mcZv:mult
-  THnSparseF *fTriggerSDEventMatrix; //-> mcZv:mult
-  THnSparseF *fTriggerDDEventMatrix; //-> mcZv:mult
-  THnSparseF *fTriggerNDEventMatrix; //-> mcZv:mult
-  THnSparseF *fTriggerNSDEventMatrix; //-> mcZv:mult
+  THnSparseF *fTriggerEventMatrix; //-> mcZv:multMB
+  THnSparseF *fTriggerSDEventMatrix; //-> mcZv:multMB
+  THnSparseF *fTriggerDDEventMatrix; //-> mcZv:multMB
+  THnSparseF *fTriggerNDEventMatrix; //-> mcZv:multMB
+  THnSparseF *fTriggerNSDEventMatrix; //-> mcZv:multMB
 
   // event vertex rec. eff correction (fRecEventMatrix / fTriggerEventMatrix)
-  THnSparseF *fRecEventMatrix; //-> mcZv:mult 
-  THnSparseF *fRecSDEventMatrix; //-> mcZv:mult
-  THnSparseF *fRecDDEventMatrix; //-> mcZv:mult
-  THnSparseF *fRecNDEventMatrix; //-> mcZv:mult
-  THnSparseF *fRecNSDEventMatrix; //-> mcZv:mult
+  THnSparseF *fRecEventMatrix; //-> mcZv:multMB 
+  THnSparseF *fRecSDEventMatrix; //-> mcZv:multMB
+  THnSparseF *fRecDDEventMatrix; //-> mcZv:multMB
+  THnSparseF *fRecNDEventMatrix; //-> mcZv:multMB
+  THnSparseF *fRecNSDEventMatrix; //-> mcZv:multMB
 
   //
   // track-event level correction 
@@ -226,10 +227,10 @@ private:
   // THnSparse event histograms
   THnSparseF *fMCEventHist1;  //-> mcXv:mcYv:mcZv
   THnSparseF *fRecEventHist1; //-> Xv:Yv:Zv
-  THnSparseF *fRecEventHist2; //-> Zv:multMB
+  THnSparseF *fRecEventHist2; //-> Zv:multMB:mult
   THnSparseF *fRecMCEventHist1; //-> Xv-mcXv:Yv-mcYv:Zv-mcZv
-  THnSparseF *fRecMCEventHist2; //-> Xv-mcXv:Zv-mcZv:Mult
-  THnSparseF *fRecMCEventHist3; //-> Mult:EventType (ND, DD, SD)
+  THnSparseF *fRecMCEventHist2; //-> Xv-mcXv:Zv-mcZv:mult
+  THnSparseF *fRecMCEventHist3; //-> mult:EventType (ND, DD, SD)
 
   // THnSparse track histograms
   // [0] - after charged track selection, [1] - after acceptance cuts, [2] - after esd track cuts
@@ -239,7 +240,7 @@ private:
   THnSparseF *fMCSecTrackHist1[AlidNdPtHelper::kCutSteps];  //-> mcPt:mcEta:pid:mech:mother
 
   THnSparseF *fRecTrackHist1[AlidNdPtHelper::kCutSteps];     //-> Pt:Eta:Phi
-  THnSparseF *fRecTrackMultHist1[AlidNdPtHelper::kCutSteps]; //-> Pt:Mult
+  THnSparseF *fRecTrackMultHist1[AlidNdPtHelper::kCutSteps]; //-> Pt:mult
 
   THnSparseF *fRecMCTrackHist1; //-> mcPt:mcEta:(Pt-mcPt)/mcPt:(Eta-mcEta)
 
