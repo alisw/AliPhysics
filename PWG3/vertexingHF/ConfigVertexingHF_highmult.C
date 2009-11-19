@@ -1,0 +1,63 @@
+AliAnalysisVertexingHF* ConfigVertexingHF_highmult() {
+
+  printf("Call to AliAnalysisVertexingHF parameters setting :\n");
+  vHF = new AliAnalysisVertexingHF();
+ 
+  //--- switch-off candidates finding (default: all on)
+  //vHF->SetD0toKpiOff();
+  //vHF->SetJPSItoEleOff();
+  vHF->Set3ProngOff();
+  vHF->SetLikeSignOn(); // like-sign pairs and triplets
+  vHF->Set4ProngOff();
+  //vHF->SetDstarOff();
+  vHF->SetFindVertexForDstar(kFALSE);
+  //--- secondary vertex with KF?
+  //vHF->SetSecVtxWithKF();
+
+  //--- set cuts for single-track selection  
+  //     displaced tracks
+  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetMinNClustersITS(5);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kBoth);
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+  AliAnalysisFilter *trkFilter = new AliAnalysisFilter("trackFilter");
+  trkFilter->AddCuts(esdTrackCuts);
+  vHF->SetTrackFilter(trkFilter);
+  //     D* soft pion tracks
+  AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCutsSoftPi->SetMinNClustersITS(4);
+  AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");
+  trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
+  vHF->SetTrackFilterSoftPi(trkFilterSoftPi);
+  //--- set cuts for candidates selection
+  vHF->SetD0toKpiCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
+  vHF->SetBtoJPSICuts(0.350);
+  vHF->SetDplusCuts(0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85);
+  vHF->SetDsCuts(0.2,0.4,0.4,0.,0.,0.005,0.06,0.,0.,0.85,0.,0.1,0.1);
+  vHF->SetLcCuts(0.2,0.4,0.4,0.,0.,0.01,0.06,0.,0.,0.85);
+  vHF->SetD0to4ProngsCuts(0.2,0.04,0.00,0.01,0.02,0.8,0.,0.1,0.);
+  vHF->SetDstarCuts(0.3, 0.1, 0.05, 100000000000.0, 0.5);
+  vHF->SetD0fromDstarCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
+  //--- set this if you want to reconstruct primary vertex candidate by
+  //    candidate using other tracks in the event (for pp, broad 
+  //    interaction region)
+  //vHF->SetRecoPrimVtxSkippingTrks();
+  //--- OR set this if you want to remove the candidate daughters from 
+  //    the primary vertex, without recostructing it from scratch
+  //vHF->SetRmTrksFromPrimVtx();
+
+  //--- check the settings
+  vHF->PrintStatus();
+  //--- verbose
+  //AliLog::SetClassDebugLevel("AliAnalysisVertexingHF",2);
+
+ 
+  return vHF;
+}
+
+
+
