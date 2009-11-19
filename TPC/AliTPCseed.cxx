@@ -1079,9 +1079,10 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   UInt_t runNumber = 1;
   Float_t corrTimeGain = 1;
   AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
-  if (trans) {
+  const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
+  if (trans && recoParam->GetUseGainCorrectionTime()>0) {
     runNumber = trans->GetCurrentRunNumber();
-		//AliTPCcalibDB::Instance()->SetRun(runNumber);
+    //AliTPCcalibDB::Instance()->SetRun(runNumber);
     TObjArray * timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
     if (timeGainSplines) {
       UInt_t time = trans->GetCurrentTimeStamp();
@@ -1239,7 +1240,8 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   UInt_t runNumber = 1;
   Float_t corrTimeGain = 1;
   AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
-  if (trans) {
+  const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
+  if (trans && recoParam->GetUseGainCorrectionTime()>0) {
     runNumber = trans->GetCurrentRunNumber();
     //AliTPCcalibDB::Instance()->SetRun(runNumber);
     TObjArray * timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
