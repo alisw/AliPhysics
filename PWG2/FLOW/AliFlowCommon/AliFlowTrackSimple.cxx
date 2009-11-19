@@ -33,7 +33,8 @@ AliFlowTrackSimple::AliFlowTrackSimple():
   fEta(0),
   fPt(0),
   fPhi(0),
-  fFlowBits(0)
+  fFlowBits(0),
+  fSubEventBits(0)
 {
   //constructor 
   
@@ -46,7 +47,8 @@ AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
   fEta(aTrack.fEta),
   fPt(aTrack.fPt),
   fPhi(aTrack.fPhi),
-  fFlowBits(aTrack.fFlowBits)
+  fFlowBits(aTrack.fFlowBits),
+  fSubEventBits(aTrack.fSubEventBits)
 {
   //copy constructor 
 }
@@ -58,6 +60,7 @@ AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTra
   fPt = aTrack.fPt;
   fPhi = aTrack.fPhi;
   fFlowBits = aTrack.fFlowBits;
+  fSubEventBits = aTrack.fSubEventBits;
 
   return *this;
 

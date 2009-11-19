@@ -20,10 +20,10 @@ public:
 
   static AliFlowLYZConstants* GetMaster();
 
-  const Int_t GetNtheta() const {return fNtheta;}
-  const Int_t GetNbins() const {return fNbins;}
-  const Double_t GetMaxSUM() const {return fMaxSUM;}
-  const Double_t GetMaxPROD() const {return fMaxPROD;}
+  Int_t GetNtheta() const {return fNtheta;}
+  Int_t GetNbins() const {return fNbins;}
+  Double_t GetMaxSUM() const {return fMaxSUM;}
+  Double_t GetMaxPROD() const {return fMaxPROD;}
 
 private:
   AliFlowLYZConstants& operator= (const AliFlowLYZConstants& c);
