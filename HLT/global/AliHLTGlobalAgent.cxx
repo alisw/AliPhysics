@@ -33,6 +33,7 @@
 #include "AliHLTGlobalEsdConverterComponent.h"
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTV0HistoComponent.h"
+#include "AliHLTGlobalVertexerHistoComponent.h"
 
 /** global instance for agent registration */
 AliHLTGlobalAgent gAliHLTGlobalAgent;
@@ -64,6 +65,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTGlobalTrackMergerComponent);
   pHandler->AddComponent(new AliHLTGlobalEsdConverterComponent);
   pHandler->AddComponent(new AliHLTGlobalVertexerComponent);
+  pHandler->AddComponent(new AliHLTGlobalVertexerHistoComponent);
   pHandler->AddComponent(new AliHLTV0HistoComponent );
   return 0;
 }
