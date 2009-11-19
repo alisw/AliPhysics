@@ -17,6 +17,8 @@
 
 class AliESDEvent;
 class TArrayC;
+class TFile;
+class TTree;
 
 /**
  * @class AliHLTTriggerAgent
@@ -104,6 +106,9 @@ class AliHLTTriggerAgent : public AliHLTModuleAgent {
     /** inherited from AliHLTOUTHandler */
     int ReleaseProcessedData(const AliHLTUInt8_t* pData, int size);
 
+    /** write the temporary ESD to file */
+    int WriteESD();
+
   private:
     /** copy constructor forbidden */
     AliHLTTriggerDecisionHandler(const AliHLTTriggerDecisionHandler&);
@@ -113,6 +118,8 @@ class AliHLTTriggerAgent : public AliHLTModuleAgent {
     AliESDEvent* fESD; //!
     TArrayC* fpData;  //!
     int fSize; //!
+    TFile* fpESDfile; //!
+    TTree* fpESDtree; //!
   };
  protected:
 

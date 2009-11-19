@@ -25,12 +25,15 @@
 #include <cassert>
 #include "AliHLTTriggerAgent.h"
 #include "AliHLTTriggerDecision.h"
+#include "AliHLTGlobalTriggerDecision.h"
 #include "AliHLTOUT.h"
 #include "AliHLTMessage.h"
 #include "AliESDEvent.h"
 #include "TObjString.h"
 #include "TObjArray.h"
 #include "TArrayC.h"
+#include "TFile.h"
+#include "TTree.h"
 
 // header files of library components
 #include "AliHLTEventSummaryProducerComponent.h"
@@ -197,7 +200,12 @@ int AliHLTTriggerAgent::GetHandlerDescription(AliHLTComponentDataType dt,
   // avoid interference with other handlers
   // the handler produces an ESD object in order to be merged to the
   // hltEsd afterwards
-  if (dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginOut)) {
+  // 2009-11-17 adding the data tyepes for (global) trigger decisions
+  // the TObject data types stays for a while in order to preserve
+  // backward compatibility
+  if (dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginOut) ||
+      dt==kAliHLTDataTypeTriggerDecision ||
+      dt==kAliHLTDataTypeGlobalTrigger) {
     desc=AliHLTOUTHandlerDesc(AliHLTModuleAgent::kEsd, dt, GetModuleId());
     return 1;
   }
@@ -218,7 +226,9 @@ AliHLTOUTHandler* AliHLTTriggerAgent::GetOutputHandler(AliHLTComponentDataType d
   // see header file for class documentation
 
   // raw data blocks to be fed into offline reconstruction
-  if (dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginOut)) {
+  if ((dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginOut) ||
+       (dt==kAliHLTDataTypeTriggerDecision) ||
+       (dt==kAliHLTDataTypeGlobalTrigger))) {
     if (!fTriggerDecisionHandler) {
       fTriggerDecisionHandler=new AliHLTTriggerAgent::AliHLTTriggerDecisionHandler;
     }
@@ -252,6 +262,8 @@ AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::AliHLTTriggerDecisionHandler()
   , fESD(NULL)
   , fpData(NULL)
   , fSize(0)
+  , fpESDfile(NULL)
+  , fpESDtree(NULL)
 {
   // see header file for class documentation
 }
@@ -259,6 +271,18 @@ AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::AliHLTTriggerDecisionHandler()
 AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::~AliHLTTriggerDecisionHandler()
 {
   // see header file for class documentation
+  if (fpESDtree) {
+    fpESDtree->GetUserInfo()->Clear();
+    delete fpESDtree;
+  }
+  fpESDtree=NULL;
+
+  if (fpESDfile) {
+    fpESDfile->Close();
+    delete fpESDfile;
+  }
+  fpESDfile=NULL;
+
   if (fESD) delete fESD;
   fESD=NULL;
 
@@ -271,14 +295,89 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pDa
 {
   // see header file for class documentation
   if (!pData) return -EINVAL;
-  pData->SelectFirstDataBlock();
-  AliHLTComponentDataType dt=kAliHLTVoidDataType;
-  AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
-  int iResult=pData->GetDataBlockDescription(dt, spec);
-  if (iResult>=0) {
+  int iResult=0;
+  AliHLTGlobalTriggerDecision* pGlobalDecision=NULL;
+  TObjArray triggerDecisions;
+  triggerDecisions.SetOwner(kTRUE);
+  for (iResult=pData->SelectFirstDataBlock(); iResult>=0; iResult=pData->SelectNextDataBlock()) {
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+    if ((iResult=pData->GetDataBlockDescription(dt, spec))<0) break;
     TObject* pObject=pData->GetDataObject();
     if (pObject) {
-      AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(pObject);
+      if(dt==kAliHLTDataTypeGlobalTrigger) {
+	if (!pGlobalDecision) {
+	  if ((pGlobalDecision=dynamic_cast<AliHLTGlobalTriggerDecision*>(pObject))==NULL ||
+	      (pGlobalDecision=dynamic_cast<AliHLTGlobalTriggerDecision*>(pGlobalDecision->Clone()))==NULL) {
+	    HLTFatal("can not convert object of name %s (%s) to HLTGlobalTriggerDecsion according to data type", pObject->GetName(), pObject->Class()->GetName());
+	  }
+	} else {
+	  HLTWarning("multiple HLT GlobalTrigger decision objects, ignoring all but the first one");
+	}
+      } else if (dt==kAliHLTDataTypeTriggerDecision) {
+	if (pObject->IsA() == AliHLTTriggerDecision::Class() &&
+	    !(pObject->IsA() == AliHLTGlobalTriggerDecision::Class())) {
+	  AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(pObject);
+	  if (pDecision) {
+	    if (pGlobalDecision) {
+	      // add directly
+	      pGlobalDecision->AddTriggerInput(*pDecision);
+	    } else {
+	      // schedule
+	      triggerDecisions.Add(pDecision->Clone());
+	    }
+	  } else {
+	    HLTFatal("can not convert object of name %s (%s) to HLT TriggerDecsion according to data type", pObject->GetName(), pObject->Class()->GetName());
+	  }
+	}
+      } else if (dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginOut)){
+	// this is the branch for keeping compatibility
+	// the first version of the trigger framework was using the kAliHLTDataTypeTObject
+	// data type instead of the specific data types for HLT triggers
+	  // this effects the cosmic data taken Sep to Oct 2009
+	if (pObject->IsA() == AliHLTGlobalTriggerDecision::Class()) {
+	  if (!pGlobalDecision) {
+	    if ((pGlobalDecision=dynamic_cast<AliHLTGlobalTriggerDecision*>(pObject))==NULL ||
+		(pGlobalDecision=dynamic_cast<AliHLTGlobalTriggerDecision*>(pGlobalDecision->Clone()))==NULL) {
+	      HLTFatal("can not convert object of name %s (%s) to HLTGlobalTriggerDecsion according to data type", pObject->GetName(), pObject->Class()->GetName());
+	    }
+	  } else {
+	    HLTWarning("multiple HLT GlobalTrigger decision objects, ignoring all but the first one");
+	  }
+	} else if (pObject->IsA() == AliHLTTriggerDecision::Class()) {
+	  AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(pObject);
+	  if (pDecision) {
+	    if (pGlobalDecision) {
+	      // add directly
+	      pGlobalDecision->AddTriggerInput(*pDecision);
+	    } else {
+	      // schedule
+	      triggerDecisions.Add(pDecision->Clone());
+	    }
+	  } else {
+	    HLTFatal("can not convert object of name %s (%s) to HLT TriggerDecsion according to data type", pObject->GetName(), pObject->Class()->GetName());
+	  }
+	}
+      }
+      pData->ReleaseDataObject(pObject);
+      pObject=NULL;
+    } else {
+      HLTError("can not get TObject from HLTOUT buffer");
+      iResult=-ENODATA;
+    }
+  }
+  // -ENOENT just signals that there  are no more entries
+  if (iResult==-ENOENT) iResult=0;
+
+  if (pGlobalDecision) {
+    for (int i=0; i<triggerDecisions.GetEntriesFast(); i++) {
+      if (triggerDecisions[i]) {
+	pGlobalDecision->AddTriggerInput(*((AliHLTTriggerDecision*)triggerDecisions[i]));
+      }
+    }
+    triggerDecisions.Delete();
+    AliHLTTriggerDecision* pDecision=pGlobalDecision;
+    {
       if (pDecision) {
 	//pDecision->Print();
 	HLTDebug("extracted %s", pDecision->GetName());
@@ -292,11 +391,12 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pDa
 	  TObject* pESDObject=fESD->FindListObject("HLTGlobalTrigger");
 	  if (pESDObject) {
 	    // copy the content to the already existing object
-	    pObject->Copy(*pESDObject);
+	    pDecision->Copy(*pESDObject);
 	  } else {
 	    // add a new object
-	    fESD->AddObject(pObject->Clone());
+	    fESD->AddObject(pDecision->Clone());
 	  }
+	  WriteESD();
 	  AliHLTMessage* pMsg=AliHLTMessage::Stream(fESD);
 	  if (pMsg) {
 	    if (!pMsg->CompBuffer()) {
@@ -313,21 +413,15 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pDa
 	  HLTError("memory allocation failed");
 	  iResult=-ENOMEM;
 	}
-      } else {
-	HLTError("object %s is not an AliHLTTriggerDecision", pObject->GetName());
-	iResult=-ENODATA;
       }
-      pData->ReleaseDataObject(pObject);
-      pObject=NULL;
-    } else {
-      HLTError("can not get TObject from HLTOUT buffer");
-      iResult=-ENODATA;
     }
+    delete pGlobalDecision;
+    pGlobalDecision=NULL;
+  } else {
+    HLTError("no global trigger found in data collection");
   }
+
   if (iResult>=0) {
-    if (pData->SelectNextDataBlock()>=0) {
-      HLTWarning("current implementation of trigger decision handler can only handle one block");
-    }
     return fSize;
   }
   fSize=0;
@@ -355,5 +449,29 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ReleaseProcessedData(const
     HLTError("attempt to release to wrong data buffer %p size %d, expected %p size %d", pData, size, fpData?fpData->GetArray():NULL, fSize);
   }
   fSize=0;
+  return iResult;
+}
+
+int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::WriteESD()
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!fESD) return 0;
+  if (!fpESDfile) {
+    fpESDfile=new TFile("HLTdecision.root", "RECREATE");
+  }
+  if (!fpESDtree) {
+    fpESDtree=new TTree("HLTesdTree", "Tree with HLT ESD containing HLT decision");
+    if (fpESDtree) {
+      fESD->WriteToTree(fpESDtree);
+      fpESDtree->GetUserInfo()->Add(fESD);
+    }
+  }
+  if (!fpESDfile || !fpESDtree) return -ENOMEM;
+
+  fpESDtree->Fill();
+  fpESDfile->cd();
+  fpESDtree->Write(fpESDtree->GetName(),TObject::kOverwrite);
+
   return iResult;
 }
