@@ -16,7 +16,7 @@
 //    root[1] AnalysisTrainNew(ana_mode, plugin_mode, "train_default_<date>/ConfigTrain.C")
 
 //==================   TRAIN NAME   ============================================
-TString     train_name         = "LHC09a3ESD"; // *CHANGE ME* (no blancs or special characters)
+TString     train_name         = "TR004_LHC09a3ESD"; // *CHANGE ME* (no blancs or special characters)
 TString     job_tag            = "ESD+MC analysis -> AOD + delta AOD + histograms"; // *CHANGE ME*
 //==============================================================================
 
@@ -40,7 +40,7 @@ Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
 TString     root_version       = "v20091109";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     aliroot_version    = "v4-18-09-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     aliroot_version    = "v4-18-10-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here
 TString     alien_datadir      = "/alice/sim/PDC_08b/LHC09a3";
 // AliEn output directory. If blank will become output_<train_name>
@@ -55,7 +55,7 @@ TString     outputStorages      = "ALICE::NIHAM::File,ALICE::CNAF::SE,ALICE::FZK
 // Number of runs per master job
 Int_t       nRunsPerMaster     = 10;
 // Maximum number of files per job (gives size of AOD)
-Int_t       nFilesPerJob       = 10;
+Int_t       nFilesPerJob       = 50;
 // Set the run range
 //Int_t       run_range[2]       =  {70000, 70220};  // LHC09a4   *CHANGE ME*
 Int_t       run_range[2]       =  {90000, 90025};
@@ -85,7 +85,7 @@ Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tra
 Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4) - needs ESD filter
 Int_t       iPWG4partcorr      = 1;      // Gamma-hadron correlations task (PWG4)
-Int_t       iPWG4gammaconv     = 1;      // Gamma conversion analysis (PWG4)  # NOT YET WORKING - WAITING FOR FEEDBACK #
+Int_t       iPWG4gammaconv     = 1;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG4omega3pi      = 1;      // Omega to 3 pi analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
 Int_t       iPWG3hfe           = 1;      // Electrons analysis (PWG3)
@@ -97,7 +97,7 @@ Int_t        iPWG2checkcascade = 1;         // Check cascades task
 Int_t        iPWG2perfcascade  = 1;         // Check performance cascade
 Int_t        iPWG2checkv0      = 1;         // Check V0 task
 Int_t        iPWG2strange      = 1;         // Strangeness task
-Int_t       iPWG2flow          = 1;      // Flow analysis tasks (PWG2)   = crashes in AliCFManager
+Int_t       iPWG2flow          = 1;      // Flow analysis tasks (PWG2)
 Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
 Int_t        iPWG2rsneff       = 1;      // Resonances efficiency
 Int_t       iPWG2kink          = 1;      // Kink analysis tasks (PWG2)
@@ -116,7 +116,8 @@ Int_t       iPWG2forward       = 1;      // FMD analysis (PWG2)
 // ### Configuration macros used for each module
 //==============================================================================
 TString     configPWG2femto    = "$ALICE_ROOT/PWG2/FEMTOSCOPY/macros/Train/Train3/ConfigFemtoAnalysis.C";
-TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C";
+//TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF_highmult.C";
+TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF_highmult.C";
 // Temporaries.
 TString anaPars = "";
 TString anaLibs = "";
@@ -409,11 +410,6 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       // Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
       TString type = "AOD";
       if (!iAODanalysis) type = "ESD";
-      if (useMC) {
-         type += "MC";
-         if (!kineFromESD) type += "1";
-         else type += "0";
-      }   
       // Boolean to fill/not fill the QA histograms
       Bool_t QA = kTRUE;   
       // Boolean to use/not use weights for the Q vector
@@ -439,6 +435,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    // PWG3 vertexing
    if (iPWG3vertexing) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskVertexingHF.C");
+      if (!iPWG3d2h) TFile::Cp(gSystem->ExpandPathName(configPWG3d2h.Data()), Form("%s/ConfigVertexingHF.C", train_name.Data()));
       AliAnalysisTaskSEVertexingHF *taskvertexingHF = AddTaskVertexingHF();
       if (!taskvertexingHF) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSEVertexingHF cannot run for this train conditions - EXCLUDED");
    }   
@@ -1309,6 +1306,7 @@ void WriteConfig()
    out << "   iPWG2forward    = " << iPWG2forward << ";" << endl << endl;
    out << "// Configuration fot the wagons" << endl;
    out << "   configPWG2femto = \"" << configPWG2femto << "\";" << endl;
+   out << "   configPWG3d2h   = \"" << configPWG3d2h << "\";" << endl;
    out << "}" << endl;
    ::Info("AnalysisTrainNew.C::WriteConfig", "Train configuration wrote to file %s", Form("config_%s.C", train_name.Data()));
    gSystem->ChangeDirectory(cdir);
