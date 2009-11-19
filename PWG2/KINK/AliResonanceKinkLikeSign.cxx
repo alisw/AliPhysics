@@ -118,6 +118,8 @@ void AliResonanceKinkLikeSign::Exec(Option_t *option)
    Double_t daughter1Mass=TDatabasePDG::Instance()->GetParticle(kKPlus)->Mass();
    Double_t daughter2Mass=TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
 
+   if (option) Printf("WARNING: an option was initially required");
+
   if (!fESD) {
     Printf("ERROR: fESD not available");
     return;
@@ -275,12 +277,6 @@ void AliResonanceKinkLikeSign::Exec(Option_t *option)
     
     PostData(1, fListOfHistos);
 }      
-
-//________________________________________________________________________
-void AliResonanceKinkLikeSign::Terminate(Option_t *option) 
-{
- 
-}
 
 //____________________________________________________________________//
 
