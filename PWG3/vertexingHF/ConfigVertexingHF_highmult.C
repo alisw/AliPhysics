@@ -1,4 +1,4 @@
-AliAnalysisVertexingHF* ConfigVertexingHF_highmult() {
+AliAnalysisVertexingHF* ConfigVertexingHF() {
 
   printf("Call to AliAnalysisVertexingHF parameters setting :\n");
   vHF = new AliAnalysisVertexingHF();
