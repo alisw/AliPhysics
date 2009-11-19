@@ -60,9 +60,9 @@ public:
    virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
    // Options for track cuts
-   const Bool_t AddTPCcuts(const AliESDtrack *esdTrack);// applies TPC cuts
-   const Bool_t AddITScuts(const AliESDtrack *esdTrack);// applies ITS cuts
-   const Bool_t AddDCAcuts(const AliESDtrack *esdTrack);// applies DCA cuts
+   Bool_t AddTPCcuts(const AliESDtrack *esdTrack);// applies TPC cuts
+   Bool_t AddITScuts(const AliESDtrack *esdTrack);// applies ITS cuts
+   Bool_t AddDCAcuts(const AliESDtrack *esdTrack);// applies DCA cuts
  
    void SetReadTPCTracks(const Bool_t readTPC)        {fOptTPC   = readTPC;}//read only ESD tracks
    void SetTPCRefit(const Bool_t refitTPC)            {fRefitTPC = refitTPC;} //switch TPC refit flag on/off

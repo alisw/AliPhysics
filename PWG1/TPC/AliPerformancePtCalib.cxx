@@ -451,7 +451,7 @@ void AliPerformancePtCalib::Exec(AliMCEvent*, AliESDEvent* const esdEvent, AliES
 
 
 //______________________________________________________________________________________________________________________
-const Bool_t AliPerformancePtCalib::AddTPCcuts(const AliESDtrack *esdTrack){
+Bool_t AliPerformancePtCalib::AddTPCcuts(const AliESDtrack *esdTrack){
    // apply TPC cuts
    
    Bool_t cut = kFALSE;
@@ -462,7 +462,7 @@ const Bool_t AliPerformancePtCalib::AddTPCcuts(const AliESDtrack *esdTrack){
    return kFALSE;
 }
 //______________________________________________________________________________________________________________________
-const Bool_t AliPerformancePtCalib::AddDCAcuts(const AliESDtrack *esdTrack){
+Bool_t AliPerformancePtCalib::AddDCAcuts(const AliESDtrack *esdTrack){
    //apply DCA cuts
    Bool_t cut = kFALSE;
   
@@ -475,7 +475,7 @@ const Bool_t AliPerformancePtCalib::AddDCAcuts(const AliESDtrack *esdTrack){
 }
 
 //______________________________________________________________________________________________________________________
-const Bool_t AliPerformancePtCalib::AddITScuts(const AliESDtrack *esdTrack){
+Bool_t AliPerformancePtCalib::AddITScuts(const AliESDtrack *esdTrack){
    //apply ITS cuts
    Bool_t cut = kFALSE;
   
