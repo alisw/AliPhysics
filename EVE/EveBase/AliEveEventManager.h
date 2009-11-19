@@ -79,6 +79,8 @@ public:
   TString       GetEventInfoHorizontal() const;
   TString       GetEventInfoVertical()   const;
 
+  static Int_t  CurrentEventId();
+
   static Bool_t HasRunLoader();
   static Bool_t HasESD();
   static Bool_t HasESDfriend();

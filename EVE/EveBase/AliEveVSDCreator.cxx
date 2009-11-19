@@ -43,7 +43,7 @@ AliEveVSDCreator::AliEveVSDCreator(const Text_t* name, const Text_t* title) :
   TEveVSD(name, title),
 
   fTPCHitRes  (2),
-  fTRDHitRes  (2),
+  fTRDHitRes  (1),
 
   fDebugLevel (0),
   fRunLoader  (0),
@@ -53,28 +53,6 @@ AliEveVSDCreator::AliEveVSDCreator(const Text_t* name, const Text_t* title) :
 
   // Particles not in ROOT's PDG database occuring in ALICE
   AliPDG::AddParticlesToPdgDataBase();
-  {
-    TDatabasePDG *pdgDB = TDatabasePDG::Instance();
-    // const Int_t kspe=50000000;
-    const Int_t kion=10000000;
-
-    const Double_t kAu2Gev=0.9314943228;
-    const Double_t khSlash = 1.0545726663e-27;
-    const Double_t kErg2Gev = 1/1.6021773349e-3;
-    const Double_t khShGev = khSlash*kErg2Gev;
-    const Double_t kYear2Sec = 3600*24*365.25;
-
-    pdgDB->AddParticle("Deuteron","Deuteron",2*kAu2Gev+8.071e-3,kTRUE,
-		       0,1,"Ion",kion+10020);
-    pdgDB->AddParticle("Triton","Triton",3*kAu2Gev+14.931e-3,kFALSE,
-		       khShGev/(12.33*kYear2Sec),1,"Ion",kion+10030);
-    pdgDB->AddParticle("Alpha","Alpha",4*kAu2Gev+2.424e-3,kTRUE,
-		       khShGev/(12.33*kYear2Sec),2,"Ion",kion+20040);
-    pdgDB->AddParticle("HE3","HE3",3*kAu2Gev+14.931e-3,kFALSE,
-		       0,2,"Ion",kion+20030);
-  }
-
-  // AliKalmanTrack::SetConvConst(1);
 }
 
 /******************************************************************************/
@@ -82,15 +60,15 @@ AliEveVSDCreator::AliEveVSDCreator(const Text_t* name, const Text_t* title) :
 void AliEveVSDCreator::CreateVSD(const Text_t* vsdFile)
 {
   // Create the VSD for current event in AliEveEventManager.
-  // Result is stored in vsdFile.
-  //
-  // Needs to be extended to support conversion of multiple events.
+  // Result is stored in directory "Event%04d".
 
   static const TEveException kEH("AliEveVSDCreator::CreateVSD ");
 
+  AliEveEventManager::AssertGeometry();
+
   fRunLoader = AliEveEventManager::AssertRunLoader();
 
-  if(fDebugLevel > 0)
+  if (fDebugLevel > 0)
     printf("%s open seems ok. Now loading sim data.\n", kEH.Data());
 
   fRunLoader->LoadHeader();
@@ -98,28 +76,35 @@ void AliEveVSDCreator::CreateVSD(const Text_t* vsdFile)
   fRunLoader->LoadTrackRefs();
   fRunLoader->LoadHits();
 
-  // GledNS::PushFD();
-
-  if(fDebugLevel > 0)
+  if (fDebugLevel > 0)
     printf("%s opening output TEveVSD.\n", kEH.Data());
 
-  TFile* file = TFile::Open(vsdFile, "RECREATE", "ALICE Visualization Summary Data");
-  fDirectory = new TDirectoryFile("Event0", "");
+  TFile* file = TFile::Open(vsdFile, "UPDATE", "ALICE Visualization Summary Data");
 
-  if(fDebugLevel > 0)
+  Int_t curEvent = AliEveEventManager::CurrentEventId();
+
+  TString eventDir; eventDir.Form("Event%04d", curEvent);
+
+  if (file->Get(eventDir))
+  {
+    Warning(kEH, "Event-dir '%s' existed -- replacing.", eventDir.Data());
+    file->Delete(eventDir + ";*");
+  }
+
+  fDirectory = new TDirectoryFile(eventDir, Form("Data for event %d", curEvent));
+
+  if (fDebugLevel > 0)
     printf("%s creating trees now ...\n", kEH.Data());
 
   CreateTrees();
 
-  if(fDebugLevel > 0)
+  if (fDebugLevel > 0)
     printf("%s trees created, closing files.\n", kEH.Data());
 
   file->Write();
   file->Close();
   delete file;
-  fDirectory =0;
-
-  //GledNS::PopFD();
+  fDirectory = 0;
 
   // clean after the TEveVSD data was sucessfuly written
   fTreeK      = 0;
@@ -133,7 +118,7 @@ void AliEveVSDCreator::CreateVSD(const Text_t* vsdFile)
 
   fRunLoader = 0;
 
-  if(fDebugLevel > 0)
+  if (fDebugLevel > 0)
     printf("%s all done.\n", kEH.Data());
 }
 
@@ -146,57 +131,94 @@ void AliEveVSDCreator::CreateTrees()
   static const TEveException kEH("AliEveVSDCreator::CreateTrees ");
 
   if (fDirectory == 0)
-    throw(kEH + "output directory not set.");
+    throw kEH + "output directory not set.";
 
-  try {
+  try
+  {
     if (fDebugLevel > 1)
       printf("%sConvertKinematics.\n", kEH.Data());
     ConvertKinematics();
-  } catch(TEveException& exc) { Warning(kEH, exc); }
+  }
+  catch(TEveException& exc)
+  {
+    Warning(kEH, exc);
+  }
 
-  Warning(kEH, "Explicitly abandoning further conversion.");
-  return;
-
-  try {
+  try
+  {
     if (fDebugLevel > 1)
       printf("%sConvertHits.\n", kEH.Data());
     ConvertHits();
-  } catch(TEveException& exc) { Warning(kEH, exc); }
+  }
+  catch(TEveException& exc)
+  {
+    Warning(kEH, exc);
+  }
 
-  try {
+  try
+  {
     if (fDebugLevel > 1)
       printf("%sConvertClusters.\n", kEH.Data());
     ConvertClusters();
-  } catch(TEveException& exc) { Warning(kEH, exc); }
+  }
+  catch(TEveException& exc)
+  {
+    Warning(kEH, exc);
+  }
 
-  try {
+  try 
+  {
     if (fDebugLevel > 1)
       printf("%sConvertRecTracks.\n", kEH.Data());
     ConvertRecTracks();
-  } catch(TEveException& exc) {
+  }
+  catch(TEveException& exc)
+  {
     Warning(exc, "skipping AliEveV0 extraction.");
     goto end_esd_processing;
   }
 
-  try {
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  Warning(kEH, "Explicitly abandoning further conversion.");
+  return;
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  try
+  {
     if (fDebugLevel > 1)
       printf("%sConvertV0.\n", kEH.Data());
     ConvertV0();
-  } catch(TEveException& exc) { Warning(kEH, exc); }
+  }
+  catch(TEveException& exc)
+  {
+    Warning(kEH, exc);
+  }
 
-  try {
+  try
+  {
     if (fDebugLevel > 1)
       printf("%sConvertKinks.\n", kEH.Data());
     ConvertKinks();
-  } catch(TEveException& exc) { Warning(kEH, exc); }
+  }
+  catch(TEveException& exc)
+  {
+    Warning(kEH, exc);
+  }
 
 end_esd_processing:
 
-  try {
+  try
+  {
     if (fDebugLevel > 1)
       printf("%sConvertGenInfo.\n", kEH.Data());
     ConvertGenInfo();
-  } catch(TEveException& exc) { Warning(kEH, exc); }
+  }
+  catch(TEveException& exc)
+  {
+    Warning(kEH, exc);
+  }
 
   return;
 }
@@ -212,19 +234,20 @@ void AliEveVSDCreator::ConvertKinematics()
 
   static const TEveException kEH("AliEveVSDCreator::ConvertKinematics ");
 
-  if(fTreeK != 0)
-    throw (kEH + "kinematics already converted");
+  if (fTreeK != 0)
+    throw kEH + "kinematics already converted";
 
   AliStack* stack = fRunLoader->Stack();
-  if(stack == 0)
-    throw(kEH + "stack is null.");
+  if (stack == 0)
+    throw kEH + "stack is null.";
 
   fDirectory->cd();
-  fTreeK = new TTree("Kinematics", "TParticles sorted by Label");
+  fTreeK = new TTree("Kinematics", "Particles created during simulation.");
 
   Int_t nentries = stack->GetNtrack();
   std::vector<TEveMCTrack>  vmc(nentries);
-  for (Int_t idx=0; idx<nentries; idx++) {
+  for (Int_t idx = 0; idx < nentries; ++idx)
+  {
     TParticle*   tp = stack->Particle(idx);
     vmc[idx]        = *tp;
     vmc[idx].fLabel = idx;
@@ -273,17 +296,19 @@ void AliEveVSDCreator::ConvertKinematics()
   fTreeK->Branch("K", "TEveMCTrack",  &fpK, fBuffSize);
 
   printf("sizeofvmc = %d\n", (Int_t) vmc.size());
-  for(std::vector<TEveMCTrack>::iterator k=vmc.begin(); k!=vmc.end(); ++k) {
+  for(std::vector<TEveMCTrack>::iterator k = vmc.begin(); k != vmc.end(); ++k)
+  {
     TEveMCTrack& mct = *k;
     fK = mct;
 
     TParticle* m  = &mct;
     Int_t      mi = mct.fLabel;
     int cnt = 0;
-    while(m->GetMother(0) != -1) {
-      if(cnt > 100) {
+    while (m->GetMother(0) != -1)
+    {
+      if (cnt > 100)
 	printf("cnt %d mi=%d, mo=%d\n", cnt, mi, m->GetMother(0));
-      }
+
       mi = m->GetMother(0);
       m = &vmc[mi];
       ++cnt;
@@ -296,30 +321,10 @@ void AliEveVSDCreator::ConvertKinematics()
   fTreeK->BuildIndex("fLabel");
 }
 
-/******************************************************************************/
+
+//==============================================================================
 // Hits
-/******************************************************************************/
-
-namespace {
-
-  struct Detector_t
-  {
-    const char*   fName;      // Detector name.
-    const char*   fHitbranch; // Name of branch containing hits.
-    unsigned char fDetidx;    // Index identifying the detector internally.
-  };
-
-  Detector_t fgDetectors[] = {
-    { "ITS",  "AliITShit",         0 },
-    { "TPC",  "AliTPCTrackHitsV2", 1 },
-    { "TRD",  "AliTRDhit",         2 },
-    { "TOF",  "AliTOFhit",         3 }
-    // { "HMPID", "AliHMPIDhit",        4 },
-  };
-
-}
-
-/******************************************************************************/
+//==============================================================================
 
 void AliEveVSDCreator::ConvertHits()
 {
@@ -330,117 +335,152 @@ void AliEveVSDCreator::ConvertHits()
   static const TEveException kEH("AliEveVSDCreator::ConvertHits ");
 
   if (fTreeH != 0)
-    throw(kEH + "hits already converted.");
+    throw kEH + "hits already converted.";
 
   fDirectory->cd();
-  fTreeH =  new TTree("Hits", "Combined detector hits.");
+  fTreeH = new TTree("Hits", "Simulated energy depositions in detector.");
   fTreeH->Branch("H", "TEveHit", &fpH, fBuffSize);
 
-  std::map<Int_t, Int_t> hmap;
-  // parameters for ITS, TPC hits filtering
-  Float_t x,y,z, x1,y1,z1;
-  Float_t tpcSqrRes = fTPCHitRes*fTPCHitRes;
-  Float_t trdSqrRes = fTRDHitRes*fTRDHitRes;
-
-  int l=0;
-  // load hits from the rest of detectors
-  while (fgDetectors[l].fName != 0)
+  try
   {
-    Detector_t& det = fgDetectors[l++];
+    ConvertAnyHits("ITS", "AliITShit", 0, 0);
+    ConvertTPCHits(                    1, fTPCHitRes*fTPCHitRes);
+    ConvertAnyHits("TRD", "AliTRDhit", 2, fTRDHitRes*fTRDHitRes);
+    ConvertAnyHits("TOF", "AliTOFhit", 3, 0);
 
-    switch(det.fDetidx)
+  }
+  catch(TEveException& exc)
+  {
+    Warning(kEH, exc);
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void AliEveVSDCreator::ConvertAnyHits(const TString& detector,
+                                      const TString& clones_class,
+                                      Int_t det_id, Float_t minDistSqr)
+{
+  // Convert hits for detector.
+
+  static const TEveException kEH("AliEveVSDCreator::ConvertAnyHits ");
+
+  Float_t x,y,z, x1,y1,z1;
+
+  TTree* treeh = fRunLoader->GetTreeH(detector, kFALSE);
+  if (treeh == 0)
+  {
+    Warning(kEH, Form("no hits for %s.", detector.Data()));
+    return;
+  }
+
+  TClonesArray *arr = new TClonesArray(clones_class);
+  treeh->SetBranchAddress(detector, &arr);
+  Int_t np = treeh->GetEntries();
+
+  // In TreeH files hits are grouped in clones arrays
+  // each eva particle has its own clone array.
+
+  std::map<Int_t, Int_t> hmap;
+
+  for (Int_t i = 0; i < np; ++i)
+  {
+    treeh->GetEntry(i);
+    Int_t evaIdx = np - i - 1;
+    Int_t nh = arr->GetEntriesFast();
+    x = y = z = 0;
+    // printf("%d entry %d hits for primary %d \n", i, nh, evaIdx);
+    for (Int_t j = 0; j < nh; ++j)
     {
-      case 1:
+      AliHit* aliHit = (AliHit*)arr->UncheckedAt(j);
+
+      x1 = aliHit->X(); y1 = aliHit->Y(); z1 = aliHit->Z();
+      if (minDistSqr == 0 || (x-x1)*(x-x1) + (y-y1)*(y-y1) + (z-z1)*(z-z1) > minDistSqr)
       {
-	Int_t count = 0;
-	TTree* treeh = fRunLoader->GetTreeH(det.fName, false);
-	if(treeh == 0) {
-	  Warning(kEH, Form("no hits for %s.", det.fName));
-	  continue;
-	}
-	AliTPCTrackHitsV2 hv2, *hv2p = &hv2;
-	treeh->SetBranchAddress("TPC2", &hv2p);
-	Int_t np = treeh->GetEntries();
-	for (Int_t i = 0; i < np; ++i)
-	{
-	  treeh->GetEntry(i);
-	  Int_t evaIdx = np -i -1;
-	  if (hv2.First() == 0) continue;
-	  x = y = z = 0;
-	  do {
-	    AliHit* ah = hv2.GetHit();
-	    x1 = ah->X(); y1 = ah->Y(); z1 = ah->Z();
-	    if ((x-x1)*(x-x1) + (y-y1)*(y-y1) + (z-z1)*(z-z1) > tpcSqrRes)
-	    {
-	      fH.fDetId    = det.fDetidx;
-	      fH.fSubdetId = 0;
-	      fH.fLabel    = ah->Track();
-	      fH.fEvaLabel = evaIdx;
-	      fH.fV.fX = x1; fH.fV.fY = y1; fH.fV.fZ = z1;
-	      fTreeH->Fill();
-	      hmap[fH.fLabel]++;
-	      x = x1; y = y1; z = z1;
-	      count++;
-	    }
-	  } while (hv2.Next());
-	}
-	// printf("%d entries in TPChits \n",count);
-	break;
+        fH.fDetId      = det_id;
+        fH.fSubdetId   = 0;
+        fH.fLabel      = aliHit->GetTrack();
+        fH.fEvaLabel   = evaIdx;
+        fH.fV.Set(aliHit->X(), aliHit->Y(), aliHit->Z());
+
+        fTreeH->Fill();
+
+        hmap[fH.fLabel]++;
+
+        x=x1; y=y1; z=z1;
       }
-      default:
-      {
-	TTree* treeh = fRunLoader->GetTreeH(det.fName, false);
-	if (treeh == 0) {
-	  Warning(kEH, Form("no hits for %s.", det.fName));
-	  continue;
-	}
-	TClonesArray *arr = new TClonesArray(det.fHitbranch);
-	treeh->SetBranchAddress(det.fName, &arr);
-	Int_t np = treeh->GetEntries();
-	// in TreeH files hits are grouped in clones arrays
-	// each eva particle has its own clone array
-	for (Int_t i = 0; i < np; ++i)
-	{
-	  treeh->GetEntry(i);
-	  Int_t evaIdx = np -i -1;
-	  Int_t nh=arr->GetEntriesFast();
-	  x = y = z = 0;
-	  // printf("%d entry %d hits for primary %d \n", i, nh, evaIdx);
-	  for (Int_t j = 0; j < nh; ++j)
-	  {
-	    AliHit* aliHit = (AliHit*)arr->UncheckedAt(j);
-	    fH.fDetId    = det.fDetidx;
-	    fH.fSubdetId = 0;
-	    fH.fLabel     = aliHit->GetTrack();
-	    fH.fEvaLabel = evaIdx;
-	    fH.fV.Set(aliHit->X(), aliHit->Y(), aliHit->Z());
-	    if (det.fDetidx == 2)
-	    {
-	      x1=aliHit->X();y1=aliHit->Y();z1=aliHit->Z();
-	      if ((x-x1)*(x-x1)+(y-y1)*(y-y1)+(z-z1)*(z-z1) < trdSqrRes) continue;
-	      x=x1; y=y1; z=z1;
-	    }
-	    hmap[fH.fLabel]++;
-	    fTreeH->Fill();
-	  }
-	}
-	delete arr;
-	break;
-      } // end default
-    } // end switch
-  } // end while
+    }
+  }
+  delete arr;
 
-
-  //set geninfo
-  for(std::map<Int_t, Int_t>::iterator j=hmap.begin(); j!=hmap.end(); ++j)
+  // Set geninfo.
+  for (std::map<Int_t, Int_t>::iterator j = hmap.begin(); j != hmap.end(); ++j)
   {
     GetGeninfo(j->first)->fNHits += j->second;
   }
 }
 
-/******************************************************************************/
+//------------------------------------------------------------------------------
+
+void AliEveVSDCreator::ConvertTPCHits(Int_t det_id, Float_t minDistSqr)
+{
+  // Convert hits for TPC.
+
+  static const TEveException kEH("AliEveVSDCreator::ConvertTPCHits ");
+
+  Float_t x,y,z, x1,y1,z1;
+
+  TTree* treeh = fRunLoader->GetTreeH("TPC", false);
+  if (treeh == 0)
+  {
+    Warning(kEH, Form("no hits for %s.", "TPC"));
+    return;
+  }
+
+  AliTPCTrackHitsV2 hv2, *hv2p = &hv2;
+  treeh->SetBranchAddress("TPC2", &hv2p);
+  Int_t np = treeh->GetEntries();
+
+  std::map<Int_t, Int_t> hmap;
+
+  for (Int_t i = 0; i < np; ++i)
+  {
+    treeh->GetEntry(i);
+    Int_t evaIdx = np -i -1;
+    if (hv2.First() == 0) continue;
+    x = y = z = 0;
+    do
+    {
+      AliHit* ah = hv2.GetHit();
+      x1 = ah->X(); y1 = ah->Y(); z1 = ah->Z();
+      if (minDistSqr == 0 || (x-x1)*(x-x1) + (y-y1)*(y-y1) + (z-z1)*(z-z1) > minDistSqr)
+      {
+        fH.fDetId    = det_id;
+        fH.fSubdetId = 0;
+        fH.fLabel    = ah->Track();
+        fH.fEvaLabel = evaIdx;
+        fH.fV.fX = x1; fH.fV.fY = y1; fH.fV.fZ = z1;
+
+        fTreeH->Fill();
+
+        hmap[fH.fLabel]++;
+
+        x = x1; y = y1; z = z1;
+      }
+    } while (hv2.Next());
+  }
+
+  // Set geninfo.
+  for (std::map<Int_t, Int_t>::iterator j = hmap.begin(); j != hmap.end(); ++j)
+  {
+    GetGeninfo(j->first)->fNHits += j->second;
+  }
+}
+
+
+//==============================================================================
 // Clusters
-/******************************************************************************/
+//==============================================================================
 
 void AliEveVSDCreator::ConvertClusters()
 {
@@ -454,86 +494,139 @@ void AliEveVSDCreator::ConvertClusters()
 
   static const TEveException kEH("AliEveVSDCreator::ConvertClusters ");
 
-  if(fTreeC != 0)
-    throw(kEH + "clusters already converted.");
+  if (fTreeC != 0)
+    throw kEH + "clusters already converted.";
 
   fDirectory->cd();
-  fTreeC =  new TTree("Clusters", "rec clusters");
+  fTreeC = new TTree("Clusters", "Reconstructed points of particle passage.");
   fTreeC->Branch("C", "TEveCluster", &fpC, fBuffSize);
 
-  try {
-    ConvertITSClusters();
-  } catch(TEveException& exc) { Warning(kEH, exc); }
+  try
+  {
+    ConvertAnyClusters("ITS", "ITSRecPoints", 0);
+    ConvertTPCClusters(                       1);
+    ConvertAnyClusters("TRD", "TRDcluster",   2);
+    ConvertAnyClusters("TOF", "TOF",          3);
 
-  try {
-    ConvertTPCClusters();
-  } catch(TEveException& exc) { Warning(kEH, exc); }
+  }
+  catch(TEveException& exc)
+  {
+    Warning(kEH, exc);
+  }
 }
 
-/******************************************************************************/
+//------------------------------------------------------------------------------
 
-void AliEveVSDCreator::ConvertTPCClusters()
+void AliEveVSDCreator::ConvertAnyClusters(const TString& detector,
+                                          const TString& branch_name,
+                                          Int_t det_id)
+{
+  // Convert clusters for detector and transform them to global coordinates.
+
+  static const TEveException kEH("AliEveVSDCreator::ConvertITSClusters ");
+
+  fRunLoader->LoadRecPoints(detector);
+  TTree* tree = fRunLoader->GetTreeR(detector, false);
+  if (!tree)
+    throw kEH + "'TreeR' not found.";
+
+  TClonesArray *cl = 0;
+  TBranch *branch  = tree->GetBranch(branch_name);
+  branch->SetAddress(&cl);
+
+  Int_t nmods = branch->GetEntries();
+
+  std::map<Int_t, Int_t> cmap;
+
+  for (Int_t mod = 0; mod < nmods; ++mod)
+  {
+    branch->GetEntry(mod);
+    Int_t nc = cl->GetEntriesFast();
+    for (Int_t j = 0; j < nc; ++j)
+    {
+      AliCluster *c = (AliCluster*) cl->UncheckedAt(j);
+
+      fC.fDetId    = det_id;
+      fC.fSubdetId = mod;
+      fC.fLabel[0] = c->GetLabel(0);
+      fC.fLabel[1] = c->GetLabel(1);
+      fC.fLabel[2] = c->GetLabel(2);
+
+      c->GetGlobalXYZ(fC.fV.Arr());
+
+      fTreeC->Fill();
+
+      {
+        int i = 0;
+	while (i < 3 && fC.fLabel[i])
+	  cmap[fC.fLabel[i++]]++;
+      }
+    }
+  }
+  delete cl;
+
+  for (std::map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j)
+  {
+    GetGeninfo(j->first)->fNClus += j->second;
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void AliEveVSDCreator::ConvertTPCClusters(Int_t det_id)
 {
   // Convert TPC clusters and transform them to global coordinates.
 
   static const TEveException kEH("AliEveVSDCreator::ConvertTPCClusters ");
 
+  const Int_t kMaxCl = 100*160;
+
   fRunLoader->LoadRecPoints("TPC");
   TTree* tree = fRunLoader->GetTreeR("TPC", false);
   if (!tree)
-    throw(kEH + "'TreeR' not found.");
+    throw kEH + "'TreeR' not found.";
 
-  AliTPCClustersRow  clrow, *clrowp = &clrow;
-  AliTPCclusterMI   *cl;
-  clrow.SetClass("AliTPCclusterMI");
-  tree->SetBranchAddress("Segment", &clrowp);
+  AliTPCClustersRow *clrow = new AliTPCClustersRow;
+  clrow->SetClass("AliTPCclusterMI");
+  clrow->SetArray(kMaxCl);
+  tree->SetBranchAddress("Segment", &clrow);
 
-  // count clusters
-  Int_t nClusters = 0;
   Int_t nEnt = tree->GetEntries();
-  for (Int_t n = 0; n < nEnt; ++n)
-  {
-    tree->GetEntry(n);
-    nClusters += clrow.GetArray()->GetEntriesFast();
-  }
 
   std::map<Int_t, Int_t> cmap;
 
-  for (Int_t n = 0; n < tree->GetEntries(); ++n)
+  for (Int_t j = 0; j < nEnt; ++j)
   {
-    tree->GetEntry(n);
-    Int_t ncl = clrow.GetArray()->GetEntriesFast();
-    if (ncl > 0)
+    if (!tree->GetEvent(j)) continue;
+
+    TClonesArray *cl = clrow->GetArray();
+    Int_t ncl = cl->GetEntriesFast();
+
+    while (ncl--)
     {
-      while (ncl--)
+      AliCluster *c = (AliCluster*) cl->UncheckedAt(ncl);
+
+      fC.fDetId    = det_id;
+      fC.fSubdetId = j;
+      fC.fLabel[0] = c->GetLabel(0);
+      fC.fLabel[1] = c->GetLabel(1);
+      fC.fLabel[2] = c->GetLabel(2);
+
+      c->GetGlobalXYZ(fC.fV.Arr());
+
+      fTreeC->Fill();
+
       {
-	if (clrow.GetArray())
-	{
-	  // cl = new AliTPCclusterMI(*(AliTPCclusterMI*)clrow.GetArray()->UncheckedAt(ncl));
-	  cl = (AliTPCclusterMI*)clrow.GetArray()->UncheckedAt(ncl);
-          if (cl->GetLabel(0) >= 0)
-	  {
-            Float_t g[3]; //global coordinates
-            cl->GetGlobalXYZ(g);
-
-	    fC.fDetId    = 1;
-	    fC.fSubdetId = clrow.GetID();
-	    fC.fLabel[0] = cl->GetLabel(0);
-	    fC.fLabel[1] = cl->GetLabel(1);
-	    fC.fLabel[2] = cl->GetLabel(2);
-	    fC.fV.Set(g);
-
-	    fTreeC->Fill();
-	    {
-	      int i = 0;
-	      while (i < 3 && fC.fLabel[i])
-		cmap[fC.fLabel[i++]]++;
-	    }
-	  }
-	}
+        int i = 0;
+	while (i < 3 && fC.fLabel[i])
+	  cmap[fC.fLabel[i++]]++;
       }
     }
+
+    cl->Clear();
   }
+  delete clrow;
+
   //set geninfo
   for (std::map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j)
   {
@@ -541,81 +634,6 @@ void AliEveVSDCreator::ConvertTPCClusters()
   }
 }
 
-/******************************************************************************/
-
-void AliEveVSDCreator::ConvertITSClusters()
-{
-  // Convert ITS clusters and transform them to global coordinates.
-
-  static const TEveException kEH("AliEveVSDCreator::ConvertITSClusters ");
-
-  fRunLoader->LoadRecPoints("ITS");
-  TTree* tree = fRunLoader->GetTreeR("ITS", false);
-  if (!tree)
-    throw(kEH + "'TreeR' not found.");
-
-  // 
-  AliITSLoader *itsLd = (AliITSLoader*) fRunLoader->GetLoader("ITSLoader");
-  AliITSgeom   *geom  = itsLd->GetITSgeom();
-
-  //printf("alice ITS geom %p \n",geom );
-
-  if (!geom)
-    throw(kEH + "can not find ITS geometry");
-
-  TClonesArray *arr = new TClonesArray("AliITSclusterV2");
-  tree->SetBranchAddress("Clusters", &arr);
-  Int_t nmods = tree->GetEntries();
-  Float_t gc[3];
-  std::map<Int_t, Int_t> cmap;
-
-  for (Int_t mod = 0; mod < nmods; ++mod)
-  {
-    tree->GetEntry(mod);
-    Int_t nc=arr->GetEntriesFast();
-    for (Int_t j = 0; j < nc; ++j)
-    {
-      AliITSclusterV2* recp = (AliITSclusterV2*) arr->UncheckedAt(j);
-
-      Double_t rot[9];
-      geom->GetRotMatrix(mod,rot);
-      Int_t lay,lad,det;
-      geom->GetModuleId(mod,lay,lad,det);
-      Float_t tx,ty,tz;
-      geom->GetTrans(lay,lad,det,tx,ty,tz);
-
-      Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
-      Double_t phi1=TMath::Pi()/2+alpha;
-      if (lay == 1) phi1+=TMath::Pi();
-
-      Float_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
-      Float_t  r=tx*cp+ty*sp;
-      gc[0] = r*cp - recp->GetY()*sp;
-      gc[1] = r*sp + recp->GetY()*cp;
-      gc[2] = recp->GetZ();
-
-      fC.fDetId    = 0;
-      fC.fSubdetId = 0;
-      fC.fLabel[0] = recp->GetLabel(0);
-      fC.fLabel[1] = recp->GetLabel(1);
-      fC.fLabel[2] = recp->GetLabel(2);
-      fC.fV.fX     = r*cp - recp->GetY()*sp;
-      fC.fV.fY     = r*sp + recp->GetY()*cp;
-      fC.fV.fZ     = recp->GetZ();
-      fTreeC->Fill();
-      { int i = 0;
-	while(i < 3 && fC.fLabel[i])
-	  cmap[fC.fLabel[i++]]++;
-      }
-    }
-
-    for (std::map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j)
-    {
-      GetGeninfo(j->first)->fNClus += j->second;
-    }
-  }
-  delete arr;
-}
 
 /******************************************************************************/
 // ESD
@@ -628,14 +646,13 @@ void AliEveVSDCreator::ConvertRecTracks()
   static const TEveException kEH("AliEveVSDCreator::ConvertRecTracks ");
 
   if (fTreeR != 0)
-    throw(kEH + "tracks already converted.");
+    throw kEH + "tracks already converted.";
 
   AliESDEvent* esdEvent = AliEveEventManager::AssertESD();
 
   fDirectory->cd();
-  fTreeR =  new TTree("RecTracks", "rec tracks");
-
-  fTreeR->Branch("R", "TEveRecTrack", &fpR, 512*1024,1);
+  fTreeR =  new TTree("RecTracks", "Reconstructed particle trajectories.");
+  fTreeR->Branch("R", "TEveRecTrack", &fpR, 512*1024);
 
   // reconstructed tracks
   AliESDtrack* esdTrack;
@@ -653,8 +670,8 @@ void AliEveVSDCreator::ConvertRecTracks()
     fR.fBeta = ep/TMath::Sqrt(ep*ep + TMath::C()*TMath::C()*esdTrack->GetMass()*esdTrack->GetMass());
     fTreeR->Fill();
   }
-  fTreeR->BuildIndex("label");
-  delete esdEvent;
+
+  fTreeR->BuildIndex("fLabel");
 }
 
 /******************************************************************************/
@@ -665,8 +682,8 @@ void AliEveVSDCreator::ConvertV0()
 
   static const TEveException kEH("AliEveVSDCreator::ConvertV0 ");
 
-  if(fTreeV0 != 0)
-    throw(kEH + "AliEveV0 already converted.");
+  if (fTreeV0 != 0)
+    throw kEH + "AliEveV0 already converted.";
 
   AliESDEvent* esdEvent = AliEveEventManager::AssertESD();
 
@@ -731,7 +748,7 @@ void AliEveVSDCreator::ConvertKinks()
   static const TEveException kEH("AliEveVSDCreator::ConvertKinks ");
 
   if (fTreeKK != 0)
-    throw(kEH + "Kinks already converted.");
+    throw kEH + "Kinks already converted.";
 
   throw kEH + "Currently non-supported - TEveRecKink being updated.";
 
@@ -791,8 +808,8 @@ void AliEveVSDCreator::ConvertGenInfo()
 
   static const TEveException kEH("AliEveVSDCreator::ConvertGenInfo ");
 
-  if(fTreeGI != 0)
-    throw(kEH + "GI already converted.");
+  if (fTreeGI != 0)
+    throw kEH + "GI already converted.";
 
   fDirectory->cd();
   fTreeGI = new TTree("TEveMCRecCrossRef", "Objects prepared for cross querry");
@@ -802,7 +819,8 @@ void AliEveVSDCreator::ConvertGenInfo()
   fTreeGI->Branch("K.", "TEveMCTrack",  &fpK);
   fTreeGI->Branch("R.", "TEveRecTrack", &fpR);
 
-  for (std::map<Int_t, TEveMCRecCrossRef*>::iterator j=fGenInfoMap.begin(); j!=fGenInfoMap.end(); ++j) {
+  for (std::map<Int_t, TEveMCRecCrossRef*>::iterator j=fGenInfoMap.begin(); j!=fGenInfoMap.end(); ++j)
+  {
     fGI        = *(j->second);
     fGI.fLabel = j->first;
     fTreeK->GetEntry(j->first);
@@ -815,7 +833,8 @@ void AliEveVSDCreator::ConvertGenInfo()
     //    Int_t hasV0 =  fTreeV0->GetEntryNumberWithIndex(j->first);
     //if (hasV0 != -1)
     //  fGI.has_AliEveV0 = true;
-    if (fTreeKK) {
+    if (fTreeKK)
+    {
       Int_t hasKk =  fTreeKK->GetEntryNumberWithIndex(j->first);
       if (hasKk != -1)
 	fGI.fHasKink = true;
@@ -839,10 +858,13 @@ TEveMCRecCrossRef* AliEveVSDCreator::GetGeninfo(Int_t label)
   // printf("get_geninfo %d\n", label);
   TEveMCRecCrossRef* gi;
   std::map<Int_t, TEveMCRecCrossRef*>::iterator i = fGenInfoMap.find(label);
-  if (i == fGenInfoMap.end()) {
+  if (i == fGenInfoMap.end())
+  {
     gi =  new TEveMCRecCrossRef();
     fGenInfoMap[label] = gi;
-  } else {
+  }
+  else
+  {
     gi = i->second;
   }
   return gi;

@@ -929,6 +929,17 @@ void AliEveEventManager::Close()
 // Static convenience functions, mainly used from macros.
 //------------------------------------------------------------------------------
 
+Int_t AliEveEventManager::CurrentEventId()
+{
+  // Return current event-id.
+
+  static const TEveException kEH("AliEveEventManager::CurrentEventId ");
+
+  if (fgCurrent == 0 || fgCurrent->fHasEvent == kFALSE)
+    throw (kEH + "ALICE event not ready.");
+  return fgCurrent->GetEventId();
+}
+
 Bool_t AliEveEventManager::HasRunLoader()
 {
   // Check if AliRunLoader is initialized.

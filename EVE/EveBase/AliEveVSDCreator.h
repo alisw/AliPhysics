@@ -23,7 +23,7 @@ public:
   AliEveVSDCreator(const Text_t* name="AliEveVSDCreator", const Text_t* title="");
   virtual ~AliEveVSDCreator() {}
 
-  void CreateVSD(const Text_t* vsdFile);
+  void CreateVSD(const Text_t* vsdFile="AliVSD.root");
 
   void CreateTrees();
 
@@ -31,13 +31,22 @@ public:
   // Conversion functions.
 
   void ConvertKinematics();
+
   void ConvertHits();
+  void ConvertAnyHits(const TString& detector, const TString& clones_class,
+                      Int_t det_id, Float_t minDistSqr=0);
+  void ConvertTPCHits(Int_t det_id, Float_t minDistSqr=0);
+
   void ConvertClusters();
-  void ConvertTPCClusters();
-  void ConvertITSClusters();
+  void ConvertAnyClusters(const TString& detector, const TString& branch_name,
+                          Int_t det_id);
+  void ConvertTPCClusters(Int_t det_id);
+
+  void ConvertRecTracks();
+
   void ConvertV0();
   void ConvertKinks();
-  void ConvertRecTracks();
+
   void ConvertGenInfo();
 
   // --------------------------------------------------------------

@@ -7,13 +7,32 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-void alieve_create_vsd()
+void alieve_create_vsd(Int_t nEvents=1, Int_t minTracks=0)
 {
-  // Invoke from a running alieve, current event will be dumped.
+  // Invoke from a running alieve.
+  // nEvents will be domped starting from current one.
+  // If minTracks is set at least that many ESD tracks must exist.
 
   TEveVSD::DisableTObjectStreamersForVSDStruct();
 
   AliEveVSDCreator vc;
   vc.SetDebugLevel(2);
-  vc.CreateVSD("AliVSD.root");
+
+  Int_t nDone = 0;
+  while (nDone < nEvents)
+  {
+    if (minTracks)
+    {
+      AliESDEvent* esd = AliEveEventManager::AssertESD();
+      while (esd->GetNumberOfTracks() < minTracks)
+      {
+	AliEveEventManager::GetMaster()->NextEvent();
+	esd = AliEveEventManager::AssertESD();
+      }
+    }
+    vc.CreateVSD("AliVSD.root");
+    ++nDone;
+
+    AliEveEventManager::GetMaster()->NextEvent();
+  }
 }
