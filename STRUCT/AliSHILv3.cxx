@@ -1314,7 +1314,7 @@ void AliSHILv3::CreateGeometry()
       InvertPcon(shYOUT21);
       shYOUT21->SetName("shYOUT21");
 
-      TGeoBBox* shYOUT22 = new TGeoBBox(460. , 200., 65.);
+      TGeoBBox* shYOUT22 = new TGeoBBox(460. , 200., 65. - 1.5);
       shYOUT22->SetName("shYOUT22");
       
       TGeoTranslation* tYOUT22 = new TGeoTranslation(0., -310. - 200., -zcFilter);
