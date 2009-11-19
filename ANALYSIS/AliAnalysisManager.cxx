@@ -720,22 +720,25 @@ void AliAnalysisManager::Terminate()
    while ((task=(AliAnalysisTask*)next())) {
       // Save all the canvases produced by the Terminate
       TString pictname = Form("%s_%s", task->GetName(), task->ClassName());
-      Int_t istart = gROOT->GetListOfCanvases()->GetEntries()-1;
       task->Terminate();
       if (TObject::TestBit(kSaveCanvases)) {
-         timer.Start();
-         while (timer.CpuTime()<5) {
-            timer.Continue();
-            gSystem->ProcessEvents();
-         }   
-         Int_t iend = gROOT->GetListOfCanvases()->GetEntries()-1;
-         if (istart == iend) continue;
+         if (!gROOT->IsBatch()) {
+            Warning("Terminate", "Waiting 5 sec for %s::Terminate() to finish drawing", task->ClassName());
+            timer.Start();
+            while (timer.CpuTime()<5) {
+               timer.Continue();
+               gSystem->ProcessEvents();
+            }
+         }
+         Int_t iend = gROOT->GetListOfCanvases()->GetEntries();
+         if (iend==0) continue;
          TCanvas *canvas;
-         for (Int_t ipict=0; ipict<iend-istart; ipict++) {
-            canvas = (TCanvas*)gROOT->GetListOfCanvases()->At(istart+ipict);
+         for (Int_t ipict=0; ipict<iend; ipict++) {
+            canvas = (TCanvas*)gROOT->GetListOfCanvases()->At(ipict);
             if (!canvas) continue;         
             canvas->SaveAs(Form("%s_%02d.gif", pictname.Data(),ipict));
-         }   
+         } 
+         gROOT->GetListOfCanvases()->Delete(); 
       }
    }   
    //
