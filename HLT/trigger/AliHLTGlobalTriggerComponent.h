@@ -63,10 +63,11 @@ class AliHLTGlobalTrigger;
  *      This will also add a short info on the input objects and decisions, like
  *      -include-input=short, to switch off -include-input=none can be placed after the
  *      parameter
- * \li -include-input[=none,short,objects] <br>
+ * \li -include-input[=none,short,objects,both] <br>
  *      Steer adding of input objects to the global HLT trigger decision.
  *      Options: none - include nothing, short - include a short TNames array,
  *               objects - include objects, by default on
+ *               both - include both objects and short info
  * \li -process-all-events <br>
  *      Indicates that all events should be processed with the global trigger logic and
  *      not just the data events. The default is not to process just the data events.

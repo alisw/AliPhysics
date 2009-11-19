@@ -42,6 +42,7 @@
 #include "TInterpreter.h"
 #include "TDatime.h"
 #include "TClass.h"
+#include "TNamed.h"
 #include <fstream>
 #include <cerrno>
 #include <cassert>
@@ -232,7 +233,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
       continue;
     }
 
-    if (strcmp(argv[i], "-include-input") == 0)
+    if (strstr(argv[i], "-include-input") == argv[i])
     {
       SetBit(kForwardInput,false);
       TString param=argv[i];
@@ -245,10 +246,15 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
       }
       else if (param.CompareTo("=short")==0) 
       {
-        HLTWarning("short info on objects and trigger decisions not yet implemented");
-        //HLTInfo("including short info on objects and trigger decisions");
+        HLTInfo("including short info on objects and trigger decisions");
         SetBit(kIncludeShort);
         SetBit(kIncludeInput, false);
+      }
+      else if (param.CompareTo("=both")==0) 
+      {
+        HLTInfo("including input objects, trigger decisions and short info");
+        SetBit(kIncludeShort);
+        SetBit(kIncludeInput);
       }
       else if (param.CompareTo("=objects")==0 || param.IsNull())
       {
@@ -446,8 +452,9 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   }
   
   // Add the input objects used to the global decision.
+  TClonesArray* pShortInfo=NULL;
   if (TestBit(kIncludeShort)) {
-    // short info to be implemented
+    pShortInfo=new TClonesArray(TNamed::Class(), GetNumberOfInputBlocks());
   }
   obj = GetFirstInputObject();
   while (obj != NULL)
@@ -465,7 +472,23 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
       decision.AddInputObject(obj);
     }
     }
+
+    if (TestBit(kIncludeShort)) {
+      int entries=pShortInfo->GetEntriesFast();
+      new ((*pShortInfo)[entries]) TNamed(obj->GetName(), obj->GetTitle());
+      if (obj->IsA() == AliHLTTriggerDecision::Class()) {
+	(*pShortInfo)[entries]->SetBit(BIT(16)); // indicate that this is a trigger decision
+	(*pShortInfo)[entries]->SetBit(BIT(15), ((AliHLTTriggerDecision*)obj)->Result());
+      }
+    }
+
     obj = GetNextInputObject();
+  }
+  if (pShortInfo) {
+    decision.AddInputObject(pShortInfo);
+    pShortInfo->Delete();
+    delete pShortInfo;
+    pShortInfo=NULL;
   }
 
   if (!TestBit(kSkipCTP) && CTPData()) decision.AddInputObject(CTPData());
