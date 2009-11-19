@@ -22,6 +22,10 @@
 /////////////////////////////////////////////////////////////
 
 #include <TCanvas.h>
+#include <TMinuit.h>
+#include <TGraph.h>
+#include <TVirtualFitter.h>
+#include <TClonesArray.h>
 
 #include "AliHFMassFitter.h"
 
@@ -47,11 +51,13 @@ AliHFMassFitter::AliHFMassFitter() :
   fSideBands(0),
   fSideBandl(0),
   fSideBandr(0),
-  fcounter(0)
+  fcounter(0),
+  fContourGraph(0)
 {
   // default constructor
 
   cout<<"Default constructor"<<endl;
+
 }
 
 //___________________________________________________________________________
@@ -74,7 +80,8 @@ AliHFMassFitter::AliHFMassFitter (TH1F *histoToFit, Double_t minvalue, Double_t 
  fSideBands(0),
  fSideBandl(0),
  fSideBandr(0),
- fcounter(0)
+ fcounter(0),
+ fContourGraph(0)
 {
   // standard constructor
 
@@ -92,6 +99,10 @@ AliHFMassFitter::AliHFMassFitter (TH1F *histoToFit, Double_t minvalue, Double_t 
 
   ComputeParSize();
   fFitPars=new Float_t[fParsSize];
+
+  fContourGraph=new TList();
+  fContourGraph->SetOwner();
+
 }
 
 
@@ -113,8 +124,8 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   fSideBands(mfit.fSideBands),
   fSideBandl(mfit.fSideBandl),
   fSideBandr(mfit.fSideBandr),
-  fcounter(mfit.fcounter)
-
+  fcounter(mfit.fcounter),
+  fContourGraph(mfit.fContourGraph)
 {
   //copy constructor
   
@@ -173,6 +184,8 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
   fSideBandl= mfit.fSideBandl;
   fSideBandr= mfit.fSideBandr;
   fcounter= mfit.fcounter;
+  fContourGraph= mfit.fContourGraph;
+
   if(mfit.fParsSize > 0){
     if(fFitPars) {
       delete[] fFitPars;
@@ -242,7 +255,7 @@ void AliHFMassFitter::Reset() {
   fSigmaSgn=0.012;
   cout<<"Reset "<<fhistoInvMass<<endl;
   if(fhistoInvMass) {
-    cout<<"esiste"<<endl;
+    //cout<<"esiste"<<endl;
     //delete fhistoInvMass;
     fhistoInvMass=NULL;
     cout<<fhistoInvMass<<endl;
@@ -616,7 +629,10 @@ void AliHFMassFitter::GetSideBandsBounds(Int_t &left, Int_t &right) const{
 
 Bool_t AliHFMassFitter::MassFitter(Bool_t draw){  
   // Main method of the class: performs the fit of the histogram
-      
+  
+  //Set default fitter Minuit in order to use gMinuit in the contour plots    
+  TVirtualFitter::SetDefaultFitter("Minuit");
+
   Int_t nFitPars=0; //total function's number of parameters
   switch (ftypeOfFit4Bkg){
   case 0:
@@ -637,6 +653,17 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
 
   cout<<"nFitPars = "<<nFitPars<<"\tbkgPar = "<<bkgPar<<endl;
 
+
+  TString listname="contourplot";
+  listname+=fcounter;
+  if(!fContourGraph){  
+    fContourGraph=new TList();
+    fContourGraph->SetOwner();
+  }
+
+  fContourGraph->SetName(listname);
+
+
   //function names
   TString bkgname="funcbkg";
   TString bkg1name="funcbkg1";
@@ -644,10 +671,11 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
 
   //Total integral
   Double_t totInt = fhistoInvMass->Integral("width");
+  cout<<"Integral"<<endl;
 
   fSideBands = kTRUE;
   Double_t width=fhistoInvMass->GetBinWidth(8);
-  
+  cout<<"fNbin"<<fNbin<<endl;
   if (fNbin==0) fNbin=fhistoInvMass->GetNbinsX();
   Double_t minHisto=fhistoInvMass->GetBinLowEdge(1);
   Double_t maxHisto=fhistoInvMass->GetBinLowEdge(fNbin)+width;
@@ -871,6 +899,58 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   //increase counter of number of fits done
   fcounter++;
 
+  //contour plots
+  if(draw){
+
+    for (Int_t kpar=1; kpar<nFitPars;kpar++){
+
+      for(Int_t jpar=kpar+1;jpar<nFitPars;jpar++){
+	cout<<"Par "<<kpar<<" and "<<jpar<<endl;
+	
+	// produce 2 contours per couple of parameters
+	TGraph* cont[2] = {0x0, 0x0};
+	const Double_t errDef[2] = {1., 4.}; 
+	for (Int_t i=0; i<2; i++) {
+	  gMinuit->SetErrorDef(errDef[i]);
+	  cont[i] = (TGraph*)gMinuit->Contour(80,kpar,jpar);
+	}
+	
+	if(!cont[0] || !cont[1]){
+	  cout<<"Skipping par "<<kpar<<" vs par "<<jpar<<endl;
+	  continue;
+	}
+	  
+	// set graph titles and add them to the list
+	TString title = "Contour plot";
+	TString titleX = funcmass->GetParName(kpar);
+	TString titleY = funcmass->GetParName(jpar);
+	for (Int_t i=0; i<2; i++) {
+	  cont[i]->SetName( Form("cperr%d_%d%d", i, kpar, jpar) );
+	  cont[i]->SetTitle(title);
+	  cont[i]->GetXaxis()->SetTitle(titleX);
+	  cont[i]->GetYaxis()->SetTitle(titleY);
+	  cont[i]->GetYaxis()->SetLabelSize(0.033);
+	  cont[i]->GetYaxis()->SetTitleSize(0.033);
+	  cont[i]->GetYaxis()->SetTitleOffset(1.67);
+	  
+	  fContourGraph->Add(cont[i]);
+	}
+	
+	// plot them
+	TString cvname = Form("c%d%d", kpar, jpar);
+	TCanvas *c4=new TCanvas(cvname,cvname,600,600);
+	c4->cd();
+	cont[1]->SetFillColor(38);
+	cont[1]->Draw("alf");
+	cont[0]->SetFillColor(9);
+	cont[0]->Draw("lf");
+        
+      }
+      
+    }
+    
+  }
+
   if (ftypeOfFit4Sgn == 1 && funcbkg1) {
     delete funcbkg1;
     funcbkg1=NULL;
@@ -1031,6 +1111,7 @@ void AliHFMassFitter::WriteHisto(TString path) {
   else output = new TFile(path.Data(),"update");
   output->cd();
   hget->Write();
+  fContourGraph->Write();
   output->Close();
 
   cout<<fcounter<<" "<<hget->GetName()<<" written in "<<path<<endl;
@@ -1085,6 +1166,42 @@ void AliHFMassFitter::DrawFit() const{
 
 }
 
+
+//_________________________________________________________________________
+
+void AliHFMassFitter::PrintParTitles() const{
+  TF1 *f=fhistoInvMass->GetFunction("funcmass");
+  if(!f) {
+    cout<<"Fit function not found"<<endl;
+    return;
+  }
+
+  Int_t np=0;
+  switch (ftypeOfFit4Bkg){
+  case 0: //expo
+    np=2;
+    break;
+  case 1: //linear
+    np=2;
+    break;
+  case 2: //pol2
+    np=3;
+    break;
+  case 3: //no bkg
+    np=1;
+    break;
+  }
+
+  np+=3; //3 parameter for signal
+  if (ftypeOfFit4Sgn == 1) np+=3;
+
+  cout<<"Parameter Titles \n";
+  for(Int_t i=0;i<np;i++){
+    cout<<"Par "<<i<<": "<<f->GetParName(i)<<endl;
+  }
+  cout<<endl;
+
+}
 
 //************ significance
 
@@ -1379,3 +1496,5 @@ void AliHFMassFitter::Significance(Double_t min, Double_t max, Double_t &signifi
   
   return;
 }
+
+

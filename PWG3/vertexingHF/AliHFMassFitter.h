@@ -59,6 +59,8 @@ class AliHFMassFitter : public TNamed {
   Double_t GetReducedChiSquare() const;
   void     GetSideBandsBounds(Int_t&, Int_t&) const;
 
+  void     PrintParTitles() const;
+
   void     InitNtuParam(char *ntuname="ntupar");
   void     FillNtuParam();
   TNtuple* GetNtuParam() const {return fntuParam;}
@@ -105,8 +107,8 @@ class AliHFMassFitter : public TNamed {
   Int_t    fSideBandl;     // left side band limit (bin number)
   Int_t    fSideBandr;     // right side band limit (bin number)
   Int_t    fcounter;       // internal counter
-
-  ClassDef(AliHFMassFitter,2); // class for invariant mass fit
+  TList   *fContourGraph;  // TList of TGraph containing contour plots
+  ClassDef(AliHFMassFitter,3); // class for invariant mass fit
 };
 
 #endif
