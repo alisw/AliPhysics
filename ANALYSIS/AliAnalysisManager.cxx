@@ -1155,6 +1155,11 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
                task->CreateOutputObjects();
                if (curdir) curdir->cd();
             }   
+            if (IsExternalLoop()) {
+               Info("StartAnalysis", "Initialization done. Event loop is controlled externally.\
+                     \nSetData for top container, call ExecAnalysis in a loop and then Terminate manually");
+               return;
+            }         
             ExecAnalysis();
             Terminate();
             return;
