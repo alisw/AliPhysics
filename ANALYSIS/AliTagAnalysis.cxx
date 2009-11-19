@@ -124,7 +124,8 @@ void AliTagAnalysis::ChainLocalTags(const char *dirname) {
       
     }//pattern check
   }//directory loop
-  AliInfo(Form("Chained tag files: %d ",fChain->GetEntries()));
+  //AliInfo(Form("Chained tag files: %d ",fChain->GetEntries()));
+ // AliDebug(Form("Chained tag files: %d ",fChain->GetEntries()));
   fChain->ls();
   
 }
@@ -239,6 +240,7 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
   esdChain->ls();
   esdChain->SetEntryList(fGlobalList,"ne");
   delete tag;
+  delete localList;
   
   return esdChain;
 }
@@ -339,6 +341,7 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut,
   esdChain->SetEntryList(fGlobalList,"ne"); 	 
 
   delete tag;
+  delete localList;
   return esdChain; 	 
 }
 
@@ -447,6 +450,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
   collection->Export();
   
   delete tag;
+  delete localList;
   return kTRUE;
 }
 
