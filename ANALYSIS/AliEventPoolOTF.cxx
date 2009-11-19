@@ -104,6 +104,18 @@ AliEventPoolOTF::AliEventPoolOTF(const AliEventPoolOTF& obj):
     InitArrays();
 }
 
+
+AliEventPoolOTF::~AliEventPoolOTF()
+{
+    // Destructor
+    delete fTagAnalysis;
+    delete fRunCuts;
+    delete fEventCuts;
+    delete fLHCCuts;
+    delete fDetectorCuts;
+    delete fChain;
+}
+
 AliEventPoolOTF& AliEventPoolOTF::operator=(const AliEventPoolOTF& other)
 {
 // Assignment operator
@@ -122,7 +134,7 @@ void AliEventPoolOTF::Init()
     }
     
     
-    for (Int_t i = 0; i < 4; i++) fValue[i] = fValueMin[i];    
+    for (Int_t i = 0; i < 5; i++) fValue[i] = fValueMin[i];    
 }
 
 TChain* AliEventPoolOTF::GetNextChain()
@@ -132,10 +144,10 @@ TChain* AliEventPoolOTF::GetNextChain()
 	delete fChain;
 	fChain = 0;
     }
-    
+
     fBinNumber++;
     if (fNoMore) {
-	return 0;
+ 	return 0;
     } else {
     printf("Current bin (lower) %13.3f %13.3f %13.3f %13.3f %13.3f \n", fValue[kMultiplicity], fValue[kZVertex], fValue[kEventPlane],fValue[kLeadingParticleEta],fValue[kLeadingParticlePhi]);
     printf("Current bin (upper) %13.3f %13.3f %13.3f %13.3f %13.3f \n", fValue[kMultiplicity] + fValueStep[kMultiplicity], 
@@ -185,6 +197,7 @@ Int_t AliEventPoolOTF::GetDimension()
 void AliEventPoolOTF::InitArrays()
 {
     // Initializes the pool axis
+    
     SetMultiplicityBinning(0, 20000, 20000);
     SetZVertexBinning(-1000., 1000., 2000.);
     SetEventPlaneBinning(-1000., 1000., 2000.);

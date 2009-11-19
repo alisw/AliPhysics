@@ -27,7 +27,7 @@ class AliEventPoolOTF : public AliVEventPool
     AliEventPoolOTF();
     AliEventPoolOTF(const char* name, const char* title = "AOD");
 
-    virtual ~AliEventPoolOTF() {;}
+    virtual ~AliEventPoolOTF();
     // Interface
     virtual TChain* GetNextChain();
     virtual void  GetCurrentBin(Float_t* /*bin*/);
