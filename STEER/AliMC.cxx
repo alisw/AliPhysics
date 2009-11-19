@@ -1148,7 +1148,7 @@ void AliMC::FixParticleDecaytime()
 	//
  
 	tmax  = TMath::ACos((1.-fRDecayMax*kOvRhoSqr2)*(1.+fRDecayMax*kOvRhoSqr2)) / omega;   // [ct]
-	tmax  = TMath::ACos((1.-fRDecayMin*kOvRhoSqr2)*(1.+fRDecayMin*kOvRhoSqr2)) / omega;   // [ct]
+	tmin  = TMath::ACos((1.-fRDecayMin*kOvRhoSqr2)*(1.+fRDecayMin*kOvRhoSqr2)) / omega;   // [ct]
     } else {
 	tmax =  fRDecayMax / vt;                                                      // [ct] 
 	tmin =  fRDecayMin / vt;	                                              // [ct]
