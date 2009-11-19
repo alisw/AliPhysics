@@ -54,7 +54,7 @@ AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerComponent()
   fHistPrimVertexZX(0),
   fHistPrimVertexZY(0),
   fNEvents(0),
-  fPlotHistograms(1),
+  fPlotHistograms(0),
   fFitTracksToVertex(1),
   fConstrainedTrackDeviation(4.),
   fV0DaughterPrimDeviation( 2.5 ),
@@ -187,7 +187,7 @@ int AliHLTGlobalVertexerComponent::DoDeinit()
   fHistPrimVertexZX = 0;
   fHistPrimVertexZY = 0;
 
-  fPlotHistograms = 1;
+  fPlotHistograms = 0;
   fFitTracksToVertex = 1;
   fConstrainedTrackDeviation = 4.;
   fV0DaughterPrimDeviation = 2.5 ;
