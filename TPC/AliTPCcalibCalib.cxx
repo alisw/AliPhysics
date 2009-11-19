@@ -147,13 +147,15 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
   //
 
   for (Int_t i=0;i<ntracks;++i) {
-    AliESDtrack *track = event->GetTrack(i);  
-    const AliExternalTrackParam * trackIn = track->GetInnerParam();
+    AliESDtrack *track = event->GetTrack(i);     
+    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+ 
+    const AliExternalTrackParam * trackIn  = track->GetInnerParam();
     const AliExternalTrackParam * trackOut = track->GetOuterParam();
+    AliExternalTrackParam * tpcOut   = (AliExternalTrackParam *)friendTrack->GetTPCOut();
     if (!trackIn) continue;
     if (!trackOut) continue;
-   
-    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+    if (!tpcOut) continue;   
     TObject *calibObject;
     AliTPCseed *seed = 0;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
@@ -161,6 +163,7 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
     }
     if (!seed) continue;
     RefitTrack(track, seed,event->GetMagneticField());
+    (*tpcOut)=*(track->GetOuterParam());  
   }
   return;
 }
@@ -287,6 +290,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   //
   AliExternalTrackParam * trackInOld  = (AliExternalTrackParam*)track->GetInnerParam();
   AliExternalTrackParam * trackOutOld = (AliExternalTrackParam*)track->GetOuterParam();
+
 
   AliExternalTrackParam trackIn  = *trackOutOld;
   if (TMath::Abs(magesd)<0.05) {

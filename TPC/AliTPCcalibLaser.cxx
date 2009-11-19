@@ -548,7 +548,8 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   //
   // Loop over tracks and call  Process function
   //
-  Int_t kMinTracks=20;
+  const Int_t  kMinTracks=20;
+  const Int_t  kMinClusters=40;
 
   fESD = event;
   if (!fESD) {
@@ -598,7 +599,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
     for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
 	break;
-    if (track&&seed) {
+    if (track&&seed&&track->GetTPCNcls()>kMinClusters && seed->GetNumberOfClusters() >kMinClusters) {
       //filter CE tracks
       Int_t id = FindMirror(track,seed);
       if (id>=0) counter++;
@@ -608,7 +609,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   fNtracks=counter;
   if (counter<kMinTracks) return;
 
-  FitDriftV();
+  //FitDriftV();
   FitDriftV(0.3);
   if (!fFullCalib) return;
   static Bool_t init=kFALSE;
@@ -1133,7 +1134,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
       }
     }
 
-    if (fdriftAC.GetNpoints()>minFraction*knLaser){
+    if (fdriftAC.GetNpoints()>minFraction*knLaser &&npointsA>0.5*minFraction*knLaser&&npointsC>0.5*minFraction*knLaser){
       fdriftAC.Eval();
       npointsAC= fdriftAC.GetNpoints();
       chi2AC = fdriftAC.GetChisquare()/fdriftAC.GetNpoints();
@@ -2111,7 +2112,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	if (ltrp->GetSide()==0){
 	  if ((*fFitAside)[1]>0. || fUseFixedDriftV) { 
 	    // ignore global y dependence for now
-	    Double_t zcorrected = 0;	    
+	    zcorrected = 0;	    
 	    if(!fUseFixedDriftV) 
 	      zcorrected = (zcl + (*fFitAside)[0] - 
 			    (1.0-(*fFitAside)[1])*250.0)/(*fFitAside)[1];

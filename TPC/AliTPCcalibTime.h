@@ -43,6 +43,7 @@ public:
   Bool_t                 IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
   Bool_t                 IsCross(AliESDtrack *tr0, AliESDtrack *tr1);
   Bool_t                 IsSame (AliESDtrack *tr0, AliESDtrack *tr1);
+  void                   ProcessSame(AliESDtrack* track, AliESDfriendTrack *friendTrack,AliESDEvent *event);
   void                   ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack);
   void                   ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *friendTrack);
   void                   ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *friendTrack);
@@ -59,6 +60,11 @@ public:
   
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
+  TObjArray* GetAlignITSTPC() {return fAlignITSTPC;}              // alignemnt array ITS TPC match
+  TObjArray* GetAlignTRDTPC() {return fAlignTRDTPC;}              // alignemnt array TRD TPC match
+  TObjArray* GetAlignTOFTPC() {return fAlignTOFTPC;}              // alignemnt array TOF TPC match
+
+
 private:
   void ResetCurrent();                  // reset current values
 

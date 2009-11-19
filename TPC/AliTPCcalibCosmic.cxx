@@ -33,6 +33,13 @@
     AliTPCcalibCosmic * cosmic = ( AliTPCcalibCosmic *)array->FindObject("cosmicTPC");
     
 
+    //
+    //
+    gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+    gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+    AliXRDPROOFtoolkit tool;
+    TChain * chainCosmic = tool.MakeChainRandom("cosmic.txt","Track0",0,10000); 
+  
 
 */
 
