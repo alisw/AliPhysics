@@ -119,7 +119,7 @@ void AliHLTTRDTrackerV1Component::GetOutputDataSize( unsigned long& constBase, d
 {
   // Get the output data size
   constBase = 0;
-  inputMultiplier = ((double)fOutputPercentage)/100.0;
+  inputMultiplier = fOutputV1Tracks ? 2*((double)fOutputPercentage)/100.0 : 0.5*((double)fOutputPercentage)/100.0;
 }
 
 // Spawn function, return new instance of this class
