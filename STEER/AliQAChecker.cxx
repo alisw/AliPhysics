@@ -146,49 +146,6 @@ AliQAChecker::~AliQAChecker()
 	
 	return qac ; 
 }
- 
-//_____________________________________________________________________________
-void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB)     
-{ 
-  // Opens and returns the file with the reference data 
-  dirFile = NULL ; 
-  TString refStorage(AliQAv1::GetQARefStorage()) ;
-  if (!refStorage.Contains(AliQAv1::GetLabLocalOCDB()) && !refStorage.Contains(AliQAv1::GetLabAliEnOCDB())) {
-    AliError(Form("%s is not a valid location for reference data", refStorage.Data())) ; 
-    return ; 
-  } else {
-    AliQAManager* manQA = AliQAManager::QAManager(AliQAv1::GetTaskIndex(task)) ;
-    dirOCDB = new TObjArray*[AliRecoParam::kNSpecies] ;	
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      dirOCDB[specie] = NULL ; 
-      if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
-        continue ; 
-      AliQAv1::SetQARefDataDirName(specie) ;
-      if ( ! manQA->GetLock() ) { 
-        manQA->SetDefaultStorage(AliQAv1::GetQARefStorage()) ; 
-        manQA->SetSpecificStorage("*", AliQAv1::GetQARefStorage()) ;
-        manQA->SetRun(AliCDBManager::Instance()->GetRun()) ; 
-        manQA->SetLock() ; 
-      }
-      char * detOCDBDir = Form("%s/%s/%s", det, AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
-      AliCDBEntry * entry = manQA->Get(detOCDBDir, manQA->GetRun()) ;
-      if (entry) {
-        TList * listDetQAD =static_cast<TList *>(entry->GetObject()) ;
-        if ( strcmp(listDetQAD->ClassName(), "TList") != 0 ) {
-          AliError(Form("Expected a Tlist and found a %s for detector %s", listDetQAD->ClassName(), det)) ; 
-          listDetQAD = NULL ; 
-          continue ; 
-        } 
-        if ( listDetQAD ) {
-          TIter next(listDetQAD) ;
-          TObjArray * ar ; 
-          while ( (ar = (TObjArray*)next()) ) 
-            dirOCDB[specie] = static_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ;             
-        }
-      }
-    }
-  }
-}
 
 //_____________________________________________________________________________
 AliQAChecker * AliQAChecker::Instance()
@@ -355,10 +312,10 @@ Bool_t AliQAChecker::Run(const char * fileName, AliDetectorRecoParam * recoParam
         index = AliQAv1::kESD ; 
       qac->Init(AliQAv1::DETECTORINDEX_t(det)) ; 
       
-      TDirectory * refDir     = NULL ; 
-      TObjArray ** refOCDBDir = NULL ;	
-      GetRefSubDir(detNameQA.Data(), taskName.Data(), refDir, refOCDBDir) ;
-		  qac->SetRefandData(refDir, refOCDBDir, taskDir) ;
+//      TDirectory * refDir     = NULL ; 
+//      TObjArray ** refOCDBDir = NULL ;	
+//      GetRefSubDir(detNameQA.Data(), taskName.Data(), refDir, refOCDBDir) ;
+//		  qac->SetRefandData(refDir, refOCDBDir, taskDir) ;
 		  qac->Run(index, recoParam) ; 
     }
   }
@@ -406,11 +363,11 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 	else if ( task == AliQAv1::kESDS ) 
 		index = AliQAv1::kESD ; 
 
-	TDirectory * refDir     = NULL ; 
-	TObjArray ** refOCDBDir = NULL  ;	
+//	TDirectory * refDir     = NULL ; 
+//	TObjArray ** refOCDBDir = NULL  ;	
   qac->Init(det) ; 
-  GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
-  qac->SetRefandData(refDir, refOCDBDir) ; 
+//  GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
+//  qac->SetRefandData(refDir, refOCDBDir) ; 
   qac->Run(index, list, recoParam) ; 
   
   // make the image 
@@ -450,11 +407,11 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 	else if ( task == AliQAv1::kESDS ) 
 		index = AliQAv1::kESD ; 
   
-	TDirectory * refDir     = NULL ; 
-	TObjArray ** refOCDBDir = NULL ;	
+//	TDirectory * refDir     = NULL ; 
+//	TObjArray ** refOCDBDir = NULL ;	
   qac->Init(det) ; 
-  GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
-  qac->SetRefandData(refDir, refOCDBDir) ; 
+//  GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
+//  qac->SetRefandData(refDir, refOCDBDir) ; 
   qac->Run(index, list, recoParam) ; 
 
   return kTRUE ; 

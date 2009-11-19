@@ -35,7 +35,6 @@ public:
 
   static  AliQAChecker *     Instance() ;
   AliQACheckerBase *         GetDetQAChecker(Int_t det) ; 
-  void                       GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB) ;
 //  static TFile *         GetQAResultFile() ;
 //  static const char *    GetQAResultFileName() { return fgQAResultFileName.Data() ; }
 //  void                   SetQAResultDirName(const char * name) ; 

@@ -45,7 +45,7 @@ public:
   void           Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/, AliDetectorRecoParam * /*recoParam*/) {;} 
   void           SetHiLo(Float_t * hiValue, Float_t * lowValue) ; 
   void           SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
-  void           SetRefandData(TDirectory * ref, TObjArray ** refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
+//  void           SetRefandData(TDirectory * ref, TObjArray ** refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
 
 protected:
   virtual      Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, AliDetectorRecoParam * recoParam) ; 
@@ -53,6 +53,7 @@ protected:
   Double_t     DiffC(const TH1 * href, const TH1 * hin) const ;   
   Double_t     DiffK(const TH1 * href, const TH1 * hin) const ;   
   void         Finish() const ; 
+  void         GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB) ;
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
 
   TDirectory  * fDataSubDir     ; //! directory for the current task directory in the current detector directory in the data file

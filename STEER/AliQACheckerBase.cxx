@@ -37,11 +37,13 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliCDBEntry.h"
 #include "AliLog.h"
 #include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliQACheckerBase.h"
 #include "AliQADataMaker.h"
+#include "AliQAManager.h"
 #include "AliDetectorRecoParam.h"
 
 ClassImp(AliQACheckerBase)
@@ -175,7 +177,7 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index, AliDetectorRecoPara
 }  
 
 //____________________________________________________________________________
-Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/) 
+Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t task, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
@@ -183,6 +185,11 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** li
 	Double_t * test = new Double_t[AliRecoParam::kNSpecies] ;
 	Int_t count[AliRecoParam::kNSpecies]   = { 0 }; 
 
+//  TDirectory * refDir     = NULL ; 
+//	TObjArray ** refOCDBDir = NULL  ;	
+  GetRefSubDir(GetName(), AliQAv1::GetTaskName(task), fRefSubDir, fRefOCDBSubDir) ;
+ // SetRefandData(refDir, refOCDBDir) ; 
+  
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 1.0 ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) 
@@ -247,6 +254,49 @@ Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
   }
     
   return hin->KolmogorovTest(href) ;  
+}
+
+  //_____________________________________________________________________________
+void AliQACheckerBase::GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB)     
+{ 
+    // Opens and returns the file with the reference data 
+  dirFile = NULL ; 
+  TString refStorage(AliQAv1::GetQARefStorage()) ;
+  if (!refStorage.Contains(AliQAv1::GetLabLocalOCDB()) && !refStorage.Contains(AliQAv1::GetLabAliEnOCDB())) {
+    AliError(Form("%s is not a valid location for reference data", refStorage.Data())) ; 
+    return ; 
+  } else {
+    AliQAManager* manQA = AliQAManager::QAManager(AliQAv1::GetTaskIndex(task)) ;
+    dirOCDB = new TObjArray*[AliRecoParam::kNSpecies] ;	
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      dirOCDB[specie] = NULL ; 
+      if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
+        continue ; 
+      AliQAv1::SetQARefDataDirName(specie) ;
+      if ( ! manQA->GetLock() ) { 
+        manQA->SetDefaultStorage(AliQAv1::GetQARefStorage()) ; 
+        manQA->SetSpecificStorage("*", AliQAv1::GetQARefStorage()) ;
+        manQA->SetRun(AliCDBManager::Instance()->GetRun()) ; 
+        manQA->SetLock() ; 
+      }
+      char * detOCDBDir = Form("%s/%s/%s", det, AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
+      AliCDBEntry * entry = manQA->Get(detOCDBDir, manQA->GetRun()) ;
+      if (entry) {
+        TList * listDetQAD =static_cast<TList *>(entry->GetObject()) ;
+        if ( strcmp(listDetQAD->ClassName(), "TList") != 0 ) {
+          AliError(Form("Expected a Tlist and found a %s for detector %s", listDetQAD->ClassName(), det)) ; 
+          listDetQAD = NULL ; 
+          continue ; 
+        } 
+        if ( listDetQAD ) {
+          TIter next(listDetQAD) ;
+          TObjArray * ar ; 
+          while ( (ar = (TObjArray*)next()) ) 
+            dirOCDB[specie] = static_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ;             
+        }
+      }
+    }
+  }
 }
 
 //____________________________________________________________________________
