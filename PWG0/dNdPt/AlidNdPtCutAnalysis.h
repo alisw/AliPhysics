@@ -28,7 +28,6 @@ class AliESDfriendTrack;
 
 #include "THnSparse.h"
 #include "AlidNdPt.h"
-#include "AlidNdPtHelper.h"
 
 class AlidNdPtCutAnalysis : public AlidNdPt {
 public :
@@ -61,14 +60,14 @@ public :
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack);
 
   // Getters
-  THnSparseF *GetRecEventHist() {return fRecEventHist;}
-  THnSparseF *GetMCEventHist() {return fMCEventHist;}
+  THnSparseF *GetRecEventHist()   {return fRecEventHist;}
+  THnSparseF *GetMCEventHist()    {return fMCEventHist;}
   THnSparseF *GetRecMCEventHist() {return fRecMCEventHist;}
 
   //
   THnSparseF *GetRecMCTrackHist() {return fRecMCTrackHist;}
   
-  private:
+private:
 
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms

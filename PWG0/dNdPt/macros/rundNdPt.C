@@ -7,12 +7,13 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     //TProof::Open(""); // 1. Enter your username here
     
     TProofMgr * proofmgr = TProof::Mgr("lxialpod2.gsi.de:21001");
+    //TProofMgr * proofmgr = TProof::Mgr("lxial39.gsi.de:21001");
     TProof * proof = proofmgr->CreateSession();
     proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)1000);
 
     // -- Load AliRoot Libraries
     gROOT->LoadMacro("ProofEnableAliRootGSI.C");
-    ProofEnableAliRoot("/u/jacek/alice/AliRoot/trunk");
+    ProofEnableAliRootGSI("/u/jacek/alice/AliRoot/trunk");
   }
 
   // Swtich off all AliInfo (too much output!!!)
@@ -28,7 +29,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
   evtCuts->SetZvRange(-zvWindow,zvWindow);
   evtCuts->SetMeanXYZv(0.0,0.0,0.0);
   evtCuts->SetSigmaMeanXYZv(1.0,1.0,10.0);
-  //evtCuts->SetTriggerRequired(kFALSE);
+  evtCuts->SetTriggerRequired(kTRUE);
 
   // Create geom. acceptance cuts
   AlidNdPtAcceptanceCuts *accCuts = new AlidNdPtAcceptanceCuts("AlidNdPtAcceptanceCuts","Geom. acceptance cuts");
@@ -39,7 +40,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
 
   // Create standard esd track cuts
   gROOT->LoadMacro("CreatedNdPtTrackCuts.C");
-  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts(cutMode);
+  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
   if (!esdTrackCuts) {
     printf("ERROR: esdTrackCuts could not be created\n");
     return;
@@ -61,7 +62,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     fdNdPtCutAnalysis->SetAcceptanceCuts(accCuts);
     fdNdPtCutAnalysis->SetTrackCuts(esdTrackCuts);
     fdNdPtCutAnalysis->SetAnalysisMode(analysisMode); 
-    fdNdPtCutAnalysis->SetTrigger(AlidNdPtHelper::kMB1); 
+    fdNdPtCutAnalysis->SetTrigger(AliPWG0Helper::kMB1); 
     if (bUseMCInfo) fdNdPtCutAnalysis->SetUseMCInfo(kTRUE);
 
     task->AddAnalysisObject( fdNdPtCutAnalysis );
@@ -75,7 +76,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     fdNdPtAnalysis->SetAcceptanceCuts(accCuts);
     fdNdPtAnalysis->SetTrackCuts(esdTrackCuts);
     fdNdPtAnalysis->SetAnalysisMode(analysisMode); 
-    fdNdPtAnalysis->SetTrigger(AlidNdPtHelper::kMB1); 
+    fdNdPtAnalysis->SetTrigger(AliPWG0Helper::kMB1); 
     if (bUseMCInfo) fdNdPtAnalysis->SetUseMCInfo(kTRUE);
 
     fdNdPtAnalysis->SetHistogramsOn(kTRUE);
@@ -92,7 +93,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     fdNdPtCorrection->SetAcceptanceCuts(accCuts);
     fdNdPtCorrection->SetTrackCuts(esdTrackCuts);
     fdNdPtCorrection->SetAnalysisMode(analysisMode); 
-    fdNdPtCorrection->SetTrigger(AlidNdPtHelper::kMB1); 
+    fdNdPtCorrection->SetTrigger(AliPWG0Helper::kMB1); 
     if (bUseMCInfo) fdNdPtCorrection->SetUseMCInfo(kTRUE);
 
     task->AddAnalysisObject( fdNdPtCorrection );
@@ -123,7 +124,6 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
   }
 
   // Create containers for input
-  //AliAnalysisDataContainer *cinput = mgr->CreateContainer("cchain", TChain::Class(), AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 

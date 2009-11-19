@@ -31,6 +31,8 @@
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
 
+#include "AliPWG0Helper.h"
+#include "AlidNdPtHelper.h"
 #include "AlidNdPtCutAnalysis.h"
 
 using namespace std;
@@ -156,18 +158,20 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
     return;
   }
 
-  // trigger definition
-  Bool_t isEventTriggered = AlidNdPtHelper::IsEventTriggered(esdEvent->GetTriggerMask(), GetTrigger());
-  //if(!isEventTriggered) printf("no MB1 trigger ... \n");
-
-  // cuts
+  // get selection cuts
   AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
   AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
   AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
 
-  if(!evtCuts || !accCuts || !esdTrackCuts) {
+  if(!evtCuts || !accCuts  || !esdTrackCuts) {
     AliDebug(AliLog::kError, "cuts not available");
     return;
+  }
+
+  // trigger selection
+  Bool_t isEventTriggered = kTRUE;
+  if(evtCuts->IsTriggerRequired())  {
+    isEventTriggered = AliPWG0Helper::IsEventTriggered(esdEvent->GetTriggerMask(), GetTrigger());
   }
 
   // use MC information
@@ -175,7 +179,8 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
   TArrayF vtxMC(3);
-  AlidNdPtHelper::MCProcessType evtType = AlidNdPtHelper::kInvalidProcess;
+  //AlidNdPtHelper::MCProcessType evtType = AlidNdPtHelper::kInvalidProcess;
+  AliPWG0Helper::MCProcessType evtType = AliPWG0Helper::kInvalidProcess;
 
   if(IsUseMCInfo())
   {
@@ -199,7 +204,7 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
     }
 
     // get event type (ND=0x1, DD=0x2, SD=0x4)
-    evtType = AlidNdPtHelper::GetEventProcessType(header);
+    evtType = AliPWG0Helper::GetEventProcessType(header);
     AliDebug(AliLog::kDebug+1, Form("Found process type %d", evtType));
 
     // get MC vertex
@@ -217,10 +222,12 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   } // end bUseMC
 
   // get reconstructed vertex  
-  const AliESDVertex* vtxESD = AlidNdPtHelper::GetVertex(esdEvent,evtCuts,accCuts,esdTrackCuts,GetAnalysisMode(), kFALSE, kTRUE, kTRUE); // redo TPC vertex & vertex constraints
+  Bool_t bRedoTPCVertex = evtCuts->IsRedoTPCVertex();
+  Bool_t bUseConstraints = evtCuts->IsUseBeamSpotConstraint();
+  const AliESDVertex* vtxESD = AlidNdPtHelper::GetVertex(esdEvent,evtCuts,accCuts,esdTrackCuts,GetAnalysisMode(),kFALSE,bRedoTPCVertex,bUseConstraints); 
   if(!vtxESD) return; 
 
-  Bool_t isRecVertex = AlidNdPtHelper::TestVertex(vtxESD, GetAnalysisMode(), kFALSE);  // should be moved to AcceptEvent
+  Bool_t isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, GetAnalysisMode(), kFALSE);
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex;
 
   TObjArray *allChargedTracks=0;
@@ -230,8 +237,7 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   if(isEventOK && isEventTriggered)
   {
     // get all charged tracks
-    allChargedTracks = AlidNdPtHelper::GetAllChargedTracks(esdEvent,vtxESD,GetAnalysisMode());
-    //allChargedTracks = AlidNdPtHelper::GetAllChargedTracks(esdEvent,GetAnalysisMode());
+    allChargedTracks = AlidNdPtHelper::GetAllChargedTracks(esdEvent,GetAnalysisMode());
     if(!allChargedTracks) return;
 
     Int_t entries = allChargedTracks->GetEntries();
@@ -243,7 +249,6 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
       FillHistograms(track, stack);
       multAll++;
     }
-  } 
 
   Double_t vRecEventHist[5] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),vtxESD->GetZRes(),multAll};
   fRecEventHist->Fill(vRecEventHist);
@@ -251,6 +256,7 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   if(IsUseMCInfo()) {
     Double_t vRecMCEventHist[5] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2],multAll};
     fRecMCEventHist->Fill(vRecMCEventHist);
+  }
   }
 
   if(allChargedTracks) delete allChargedTracks; allChargedTracks = 0;
@@ -263,8 +269,8 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   // Fill ESD track and MC histograms 
   //
   if(!esdTrack) return;
+  if(esdTrack->Charge() == 0.) return;
 
-  //Float_t q = esdTrack->Charge();
   Float_t pt = esdTrack->Pt();
   Float_t eta = esdTrack->Eta();
   Float_t phi = esdTrack->Phi();
@@ -287,11 +293,17 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   //
   // Fill rec vs MC information
   //
-  if(!stack) return;
-  Int_t label = TMath::Abs(esdTrack->GetLabel()); 
-  TParticle* particle = stack->Particle(label);
-  if(!particle) return;
-  Bool_t isPrim = stack->IsPhysicalPrimary(label);
+
+  Bool_t isPrim = kTRUE;
+
+  if(IsUseMCInfo()) {
+    if(!stack) return;
+    Int_t label = TMath::Abs(esdTrack->GetLabel()); 
+    TParticle* particle = stack->Particle(label);
+    if(!particle) return;
+    if(particle->GetPDG() && particle->GetPDG()->Charge()==0.) return;
+    isPrim = stack->IsPhysicalPrimary(label);
+  }
 
   // fill histo
   Double_t vRecMCTrackHist[10] = {nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,isKink,isPrim}; 
@@ -364,6 +376,8 @@ void AlidNdPtCutAnalysis::Analyse()
   Double_t minEta = accCuts->GetMinEta();
   Double_t maxEta = accCuts->GetMaxEta()-0.00001;
 
+  Double_t maxDCAr = accCuts->GetMaxDCAr();
+
   //
   // Create rec. event histograms
   //
@@ -375,9 +389,15 @@ void AlidNdPtCutAnalysis::Analyse()
   h2D->SetName("rec_xv_vs_zv");
   aFolderObj->Add(h2D);
 
-  h2D = (TH2D *)fRecEventHist->Projection(0,2);
+  h2D = (TH2D *)fRecEventHist->Projection(3,4);
   h2D->SetName("rec_resZv_vs_Mult");
   aFolderObj->Add(h2D);
+
+
+  //
+  // MC available
+  //
+  if(IsUseMCInfo()) {
 
   //
   // Create mc event histograms
@@ -405,13 +425,22 @@ void AlidNdPtCutAnalysis::Analyse()
   h2D->SetName("rec_mc_deltaZv_vs_mult");
   aFolderObj->Add(h2D);
 
+  } // end use MC info 
+
+
+
   //
   // Create rec-mc track track histograms 
   //
 
   // DCA cuts
-  fRecMCTrackHist->GetAxis(3)->SetRangeUser(-0.3,0.3);
-  fRecMCTrackHist->GetAxis(4)->SetRangeUser(-0.3,0.3);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(-maxDCAr,maxDCAr);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(-maxDCAr,maxDCAr);
+
+  h2D = (TH2D *)fRecMCTrackHist->Projection(7,5);
+  h2D->SetName("pt_vs_eta");
+  aFolderObj->Add(h2D);
+
   fRecMCTrackHist->GetAxis(7)->SetRangeUser(minPt,maxPt);  
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(0,5);
@@ -427,6 +456,8 @@ void AlidNdPtCutAnalysis::Analyse()
   aFolderObj->Add(h2D);
 
   //
+  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minEta,maxEta);  
+
   h2D = (TH2D *)fRecMCTrackHist->Projection(0,6);
   h2D->SetName("nClust_vs_phi");
   aFolderObj->Add(h2D);
@@ -437,6 +468,10 @@ void AlidNdPtCutAnalysis::Analyse()
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(2,6);
   h2D->SetName("ratio_nClust_nFindableClust_vs_phi");
+  aFolderObj->Add(h2D);
+
+  h2D = (TH2D *)fRecMCTrackHist->Projection(5,6);
+  h2D->SetName("eta_vs_phi");
   aFolderObj->Add(h2D);
 
   //
@@ -454,13 +489,18 @@ void AlidNdPtCutAnalysis::Analyse()
   h2D->SetName("ratio_nClust_nFindableClust_vs_pt");
   aFolderObj->Add(h2D);
 
+  h2D = (TH2D *)fRecMCTrackHist->Projection(6,7);
+  h2D->SetName("phi_vs_pt");
+  aFolderObj->Add(h2D);
+
+
   // fiducial volume
   fRecMCTrackHist->GetAxis(5)->SetRangeUser(minEta,maxEta);  
   fRecMCTrackHist->GetAxis(7)->SetRangeUser(minPt,maxPt);  
 
   // DCA cuts
-  fRecMCTrackHist->GetAxis(3)->SetRangeUser(-0.3,0.3);
-  fRecMCTrackHist->GetAxis(4)->SetRangeUser(-0.3,0.3);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(-maxDCAr,maxDCAr);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(-maxDCAr,maxDCAr);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(0,1);
   h2D->SetName("nClust_vs_chi2PerClust");
@@ -471,7 +511,7 @@ void AlidNdPtCutAnalysis::Analyse()
   aFolderObj->Add(h2D);
 
   // DCAy cuts
-  fRecMCTrackHist->GetAxis(3)->SetRangeUser(-10.0,10.0);
+  fRecMCTrackHist->GetAxis(3)->SetRange(1,fRecMCTrackHist->GetAxis(3)->GetNbins());
   fRecMCTrackHist->GetAxis(4)->SetRangeUser(-1.0,1.0);
 
   // sec
@@ -488,7 +528,7 @@ void AlidNdPtCutAnalysis::Analyse()
 
   // DCAz cuts
   fRecMCTrackHist->GetAxis(3)->SetRangeUser(-1.0,1.0);
-  fRecMCTrackHist->GetAxis(4)->SetRangeUser(-10.0,10.0);
+  fRecMCTrackHist->GetAxis(4)->SetRange(1,fRecMCTrackHist->GetAxis(4)->GetNbins());
 
   // sec
   fRecMCTrackHist->GetAxis(9)->SetRange(1,1);

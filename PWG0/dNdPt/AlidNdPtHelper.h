@@ -1,11 +1,11 @@
-/* $Id: AlidNdPtHelper.h 28655 2008-09-10 12:57:42Z jgrosseo $ */
-
 #ifndef ALIDNDPTHELPER_H
 #define ALIDNDPTHELPER_H
 
 //
-// static helper functions
-// origin PWG0 (Jan Fiete, CKB) and extended by Jacek Otwinowski (JO)
+// static dNdPt helper functions
+//
+// Origin: Jan Fiete Grosse-Oetringhaus
+// Modified and Extended: Jacek Otwinowski 19/11/2009
 //
 
 #include <TObject.h>
@@ -32,46 +32,21 @@ class AliESDtrackCuts;
 class AlidNdPtAcceptanceCuts;
 class AlidNdPtEventCuts;
 
+#include "AliPWG0Helper.h"
 #include "THnSparse.h"
+
 class AlidNdPtHelper : public TObject
 {
   public:
-    enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR }; // definition from ALICE-INT-2005-025
     enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS, kTPCSPDvtx, kMCRec, kMCPion, kMCKaon, kMCProton, kPlus, kMinus };
-    // in case we want to use bitmaps...
-    // kDiffractiveProcess is artifficial
-    enum MCProcessType { kInvalidProcess = -1, kND = 0x1, kDD = 0x2, kSD = 0x4, kDiffractiveProcess = 0x9 }; 
-
-    static Bool_t IsEventTriggered(const AliESD* aEsd, Trigger trigger = kMB2);
-    static Bool_t IsEventTriggered(ULong64_t triggerMask, Trigger trigger = kMB2);
     static const AliESDVertex* GetVertex(AliESDEvent* aEsd, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts,  AnalysisMode analysisMethod, Bool_t debug = kFALSE,Bool_t bRedoTPC = kFALSE, Bool_t bUseMeanVertex = kFALSE);
-    //static const AliESDVertex* GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMethod, Bool_t debug = kFALSE,Bool_t bRedoTPC = kFALSE, Bool_t bUseMeanVertex = kFALSE);
 
-    static const AliESDVertex* GetTPCVertexZ(AliESDEvent* aEsd, Float_t sigmaXYcut=3., Float_t distXYcut=3., Float_t distZcut=30., Int_t nclCut=50, Float_t fraction=0.8, Int_t ntracksMin=2);
+    static const AliESDVertex* GetTPCVertexZ(AliESDEvent* aEsd, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts, Float_t fraction=0.8, Int_t ntracksMin=2);
 
-    static Bool_t TestVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
+    static Bool_t TestRecVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
-    static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug = kFALSE);
     static Bool_t IsPrimaryParticle(AliStack *stack, Int_t idx, AnalysisMode analysisMode);
-
-    static AlidNdPtHelper::MCProcessType GetEventProcessType(AliHeader* aHeader, Bool_t adebug = kFALSE);
-    static AlidNdPtHelper::MCProcessType GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
-    static AlidNdPtHelper::MCProcessType GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
-    static Int_t GetLastProcessType() { return fgLastProcessType; }
-
-    static TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
-    static Int_t FindPrimaryMotherLabel(AliStack* stack, Int_t label);
-
-    static void CreateProjections(TH3* hist, Bool_t save = kFALSE);
-    static void CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis = 0, Bool_t putErrors = kFALSE, Bool_t save = kFALSE);
-    static const char* GetAxisTitle(TH3* hist, const char axis);
-
-    static void NormalizeToBinWidth(TH1* hist);
-    static void NormalizeToBinWidth(TH2* hist);
-
-    static void PrintConf(AnalysisMode analysisMode, Trigger trigger);
-
-    // added by JO
+    static void PrintConf(AnalysisMode analysisMode, AliPWG0Helper::Trigger trigger);
     static Int_t ConvertPdgToPid(TParticle *particle);
 
     enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kCorrection, kSystematics };
@@ -79,9 +54,7 @@ class AlidNdPtHelper : public TObject
     enum EventObject  { kInvalidEventObject = -1, kAllEvents = 0, kTriggeredEvents, kAccEvents, kRecEvents, kMCEvents };
     enum CutSteps     { kCutSteps = 3 };
 
-    //static TObjArray *GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMode analysisMode);
-    static TObjArray *GetAllChargedTracks(AliESDEvent *esdEvent, const AliESDVertex *vtx, AnalysisMode analysisMode);
-    static AliESDtrack* GetTPCOnlyTrack(AliESDEvent* esd, const AliESDVertex *vtx, Int_t iTrack);
+    static TObjArray *GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMode analysisMode);
 
     static TH1F* MakeResol(TH2F * his, Int_t integ, Bool_t type, Bool_t drawBins, Int_t minHistEntries);
     static TH1F* CreateResHisto(TH2F* hRes2, TH1F **phMean, Int_t integ,  Bool_t drawBinFits, Int_t minHistEntries);
@@ -109,9 +82,6 @@ class AlidNdPtHelper : public TObject
     static TH2* GenerateContCorrMatrix(TH2 *hist1, TH2 *hist2, char *name);
     static TH1* GenerateContCorrMatrix(TH1 *hist1, TH1 *hist2, char *name);
 
-  protected:
-    static Int_t fgLastProcessType;    // stores the raw value of the last process type extracnted
- 
     ClassDef(AlidNdPtHelper, 0);
 
   private:
