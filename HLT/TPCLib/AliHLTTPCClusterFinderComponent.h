@@ -101,6 +101,7 @@ class AliHLTTPCDigitReader;
  * \li <tt>TPC/Calib/Mapping</tt>.
  * \li <tt>TPC/Calib/Goofie</tt>.
  * \li <tt>TPC/Calib/HighVoltage</tt>.
+ * \li <tt>TPC/Calib/Ref</tt>.
  *
  * These entries are used by the AliTPCTransform class to correct for T0, drift and ExB.
  * @ingroup alihlt_tpc_components
