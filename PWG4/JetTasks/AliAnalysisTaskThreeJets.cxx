@@ -44,9 +44,10 @@
 #include "AliAODHandler.h"
 #include "AliAODTrack.h"
 #include "AliAODJet.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliMCEvent.h"
-#include "AliStack.h"
+#include "AliAODMCParticle.h"
+//#include "AliGenPythiaEventHeader.h"
+//#include "AliMCEvent.h"
+//#include "AliStack.h"
 
 
 #include "AliAnalysisHelperJetTasks.h"
@@ -464,11 +465,11 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
     }    
   }
 
-  AliMCEvent* mcEvent =MCEvent();
-  if(!mcEvent){
-    Printf("%s:%d no mcEvent",(char*)__FILE__,__LINE__);
-    return;
-  }
+//   AliMCEvent* mcEvent =MCEvent();
+//   if(!mcEvent){
+//     Printf("%s:%d no mcEvent",(char*)__FILE__,__LINE__);
+//     return;
+//   }
   
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
   
@@ -477,9 +478,10 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
   if(!pvtx){
     if (fDebug > 1)     Printf("%s:%d AOD Vertex found",(char*)__FILE__,__LINE__);
     return;
-  }  
-  AliAODJet genJetsPythia[kMaxJets];
-  Int_t nPythiaGenJets = 0;
+  }
+  
+//   AliAODJet genJetsPythia[kMaxJets];
+//   Int_t nPythiaGenJets = 0;
   
   AliAODJet genJets[kMaxJets];
   Int_t nGenJets = 0;
@@ -525,18 +527,19 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
       genJets[ig] = * tmp;
     }
   
-  AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
-  if(!pythiaGenHeader){
-    Printf("!!!NO GEN HEADER AVALABLE!!!");
-    return;
-  }
+//   AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+//   if(!pythiaGenHeader){
+//     Printf("!!!NO GEN HEADER AVALABLE!!!");
+//     return;
+//   }
   
-  // Int_t ProcessType = pythiaGenHeader->ProcessType();
-  // if(ProcessType != 28) return;
-  fhXSec->Fill(pythiaGenHeader->GetPtHard(), fXsection);
-  nPythiaGenJets = pythiaGenHeader->NTriggerJets();
-  nPythiaGenJets = TMath::Min(nPythiaGenJets, kMaxJets);
+//   // Int_t ProcessType = pythiaGenHeader->ProcessType();
+//   // if(ProcessType != 28) return;
+//   nPythiaGenJets = pythiaGenHeader->NTriggerJets();
+//   nPythiaGenJets = TMath::Min(nPythiaGenJets, kMaxJets);
    
+//  fXsection = 1;
+
   Double_t eRec[kMaxJets];
   Double_t eGen[kMaxJets];
  
@@ -574,15 +577,15 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 
   Double_t psumRestRec = 0;
   //  Double_t psumRestGen = 0;
-  //Pythia_________________________________________________________________________________________________________________
+//   //Pythia_________________________________________________________________________________________________________________
 
-  for(int ip = 0;ip < nPythiaGenJets;++ip)
-    {
-      if(ip>=kMaxJets)continue;
-      Float_t p[4];
-      pythiaGenHeader->TriggerJet(ip,p);
-      genJetsPythia[ip].SetPxPyPzE(p[0],p[1],p[2],p[3]);
-    }
+//   for(int ip = 0;ip < nPythiaGenJets;++ip)
+//     {
+//       if(ip>=kMaxJets)continue;
+//       Float_t p[4];
+//       pythiaGenHeader->TriggerJet(ip,p);
+//       genJetsPythia[ip].SetPxPyPzE(p[0],p[1],p[2],p[3]);
+//     }
   
 //_________________________________________________________________________________________________________________________
  
@@ -638,8 +641,14 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
     {
       jetGen[ig] = selJets[idxGen[ig]];
     }
-  AliStack * stack = mcEvent->Stack();
-  Int_t nMCtracks = stack->GetNprimary();
+
+  fhXSec->Fill(jetGen[0].Pt(), fXsection);
+
+//  AliStack * stack = mcEvent->Stack();
+
+  TClonesArray *tca = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+  if(!tca) return;
+  Int_t nMCtracks = tca->GetEntries();
   Double_t * eTracksMC = new Double_t[kTracks];
   Double_t pTracksMC[kTracks];
   Int_t * idxTracksMC = new Int_t[kTracks];
@@ -659,12 +668,13 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 
   for(Int_t iTrack = 0; iTrack < nMCtracks; iTrack++)
     {
-      TParticle * part = (TParticle*)stack->Particle(iTrack);
+      //      TParticle * part = (TParticle*)stack->Particle(iTrack);
+      AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(iTrack));
       if (!part) continue;
+      if(!part->IsPhysicalPrimary())continue;      
       Double_t fEta = part->Eta();
       if(TMath::Abs(fEta) > .9) continue;
-      if(!IsPrimChar(part, nMCtracks, 0)) continue;
-      vTrackMCAll[nAllTracksMC].SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->Energy());
+      vTrackMCAll[nAllTracksMC].SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->E());
       pTrackMCAll[nAllTracksMC] = part->Pt();
       nAllTracksMC++;
     }

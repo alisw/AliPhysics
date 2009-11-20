@@ -528,7 +528,7 @@ Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01, TVector3 * pTrac
       if(switch2 == 0 && switch1 == 0 && switch3 == 0){
 	if(TMath::Abs(th-th02) < 10e-7 && TMath::Abs(th-th03) < 10e-7 && TMath::Abs(th02-th03) < 10e-7){
 	  eventShapes[0] = th;
-	  Printf("===== THRUST VALUE FOUND AT %d :: %f\n", k, th);
+	  AliInfoGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),Form("===== THRUST VALUE FOUND AT %d :: %f\n", k, th));
 	  break;
 	}
 	//if they did not, reset switches
