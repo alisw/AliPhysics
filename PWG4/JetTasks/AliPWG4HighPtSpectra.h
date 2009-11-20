@@ -1,0 +1,85 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//-----------------------------------------------------------------------
+// Author : Marta Verweij - UU
+//-----------------------------------------------------------------------
+
+#ifndef ALIPWG4HIGHPTSPECTRA_H
+#define ALIPWG4HIGHPTSPECTRA_H
+
+#include "AliAnalysisTask.h"
+#include "AliCFManager.h"
+
+class TH1I;
+class TH1D;
+class TFile ;
+class AliCFManager;
+class AliESDtrackCuts;
+class AliESDEvent;
+
+class AliPWG4HighPtSpectra : public AliAnalysisTask {
+  public:
+
+  enum {
+    kStepReconstructed    = 0,
+    kStepReconstructedTPCOnly = 1,
+    kStepSecondaries      = 2,
+    kStepMCtrackable      = 3,
+    kStepReconstructedMC    = 4
+  };
+
+  AliPWG4HighPtSpectra();
+  AliPWG4HighPtSpectra(const Char_t* name);
+  AliPWG4HighPtSpectra& operator= (const AliPWG4HighPtSpectra& c);
+  AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra& c);
+  virtual ~AliPWG4HighPtSpectra();
+
+  // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
+  virtual void   ConnectInputData(Option_t *);
+  virtual void   CreateOutputObjects();
+  virtual void   Exec(Option_t *option);
+  virtual void   Terminate(Option_t *);
+
+  // CORRECTION FRAMEWORK RELATED FUNCTIONS
+  void     SetCFManager(const AliCFManager* io) {fCFManager = io;}   // global correction manager
+  const AliCFManager * GetCFManager() const {return fCFManager;}           // get corr manager
+
+  //AliESDtrackCuts setters
+  void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
+
+  // Data types
+  Bool_t IsReadAODData()   const {return fReadAODData;}
+  void   SetReadAODData   (Bool_t flag=kTRUE) {fReadAODData=flag;}
+
+ protected:
+  Bool_t          fReadAODData ;   // flag for AOD/ESD input files
+  const AliCFManager   *fCFManager    ;  // pointer to the CF manager
+
+  AliESDEvent *fESD;    //! ESD object
+  //AliESDtrackCuts options. Must be setted in AliCFPWG4Task.C. They correspond with different steps in container.
+  AliESDtrackCuts *fTrackCuts; // trackCuts applied
+
+ private:
+
+  // Histograms
+  //Number of events
+  TList *fHistList;            // List of output histograms
+  TH1I  *fHistEventsProcessed; // simple histo for monitoring the number of events processed
+  
+  ClassDef(AliPWG4HighPtSpectra,1);
+};
+
+#endif

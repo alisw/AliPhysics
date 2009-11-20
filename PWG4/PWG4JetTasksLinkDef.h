@@ -12,6 +12,9 @@
 #pragma link C++ class AliAnalysisTaskJetCorrections+;
 #pragma link C++ class AliAnalysisTaskThreeJets+;
 #pragma link C++ class AliAnaESDSpectraQA+;
+#pragma link C++ class AliPWG4HighPtQATPConly+;
+#pragma link C++ class AliPWG4HighPtQAMC+;
+#pragma link C++ class AliPWG4HighPtSpectra+;
 #pragma link C++ class AliAnalysisTaskPWG4PidDetEx+;
 #pragma link C++ class AliJetSpectrumUnfolding+;
 
