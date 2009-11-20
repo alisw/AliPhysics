@@ -125,11 +125,11 @@ Double_t AliACORDEQAChecker::CheckAcordeRefHits(const TH1 * href, const TH1 * hd
 	Int_t flag=0;
 	for (Int_t i=0;i<60;i++)
 	{
-		if (TMath::Abs(href->GetBinContent(i)-hdata->GetBinContent(i))) flag++;
+		if (TMath::Abs(href->GetBinContent(i)-hdata->GetBinContent(i))>10) flag++;
 	}
-	if ((flag/60>50)&&(flag/60<=60)) acoTest = -1.;
-	if ((flag/60>30)&&(flag/60<=50)) acoTest = 0.25;
-	if ((flag/60>10)&&(flag/60<=30)) acoTest = 0.5;
-	if ((flag/60>0)&&(flag/60<=10)) acoTest = 0.75;
+	if ((flag>50)&&(flag<=60)) acoTest = -1.;
+	if ((flag>30)&&(flag<=50)) acoTest = 0.25;
+	if ((flag>10)&&(flag<=30)) acoTest = 0.5;
+	if ((flag>0)&&(flag<=10)) acoTest = 0.75;
 	return acoTest;
 }
