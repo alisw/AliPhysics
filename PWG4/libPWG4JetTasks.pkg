@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS = JetTasks/AliAnalysisTaskUE.cxx  JetTasks/AliAnalysisTaskJetSpectrum.cxx JetTasks/AliAnalysisTaskJetSpectrum2.cxx JetTasks/AliAnalysisHelperJetTasks.cxx JetTasks/AliAnaESDSpectraQA.cxx JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx JetTasks/AliJetSpectrumUnfolding.cxx JetTasks/AliAnalysisTaskJFSystematics.cxx JetTasks/AliAnalysisTaskJetCorrections.cxx JetTasks/AliAnalysisTaskThreeJets.cxx
+SRCS = JetTasks/AliAnalysisTaskUE.cxx  JetTasks/AliAnalysisTaskJetSpectrum.cxx JetTasks/AliAnalysisTaskJetSpectrum2.cxx JetTasks/AliAnalysisHelperJetTasks.cxx JetTasks/AliAnaESDSpectraQA.cxx JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx JetTasks/AliJetSpectrumUnfolding.cxx JetTasks/AliAnalysisTaskJFSystematics.cxx JetTasks/AliAnalysisTaskJetCorrections.cxx JetTasks/AliAnalysisTaskThreeJets.cxx JetTasks/AliPWG4HighPtQATPConly.cxx JetTasks/AliPWG4HighPtQAMC.cxx JetTasks/AliPWG4HighPtSpectra.cxx 
 
 HDRS:= $(SRCS:.cxx=.h) 
 
@@ -8,10 +8,10 @@ DHDR:= PWG4JetTasksLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
 
-EINCLUDE=JETAN PWG4/JetTasks
+EINCLUDE=JETAN CORRFW PWG4/JetTasks
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
-                         -lESD -lAOD -lANALYSIS -lANALYSISalice -lJETAN \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice -lJETAN -lCORRFW \
                          -L$(ROOTLIBDIR) -lEG
 endif
