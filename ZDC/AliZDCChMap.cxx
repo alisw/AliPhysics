@@ -46,6 +46,8 @@ TNamed()
     fADCChannel[i] = -1;
     fDetector[i] = -1;
     fSector[i] = -1;
+  }
+  for(Int_t i=0; i<32; i++){
     fScalerChannel[i] = -1;
     fScDetector[i] = -1;
     fScSector[i] = -1;
