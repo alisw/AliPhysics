@@ -38,7 +38,7 @@
 #include "AliAODHandler.h"
 #include "AliAODTrack.h"
 #include "AliAODJet.h"
-#include "AliMCEvent.h"
+//#include "AliMCEvent.h"
 
 #include "AliAnalysisHelperJetTasks.h"
 
@@ -186,42 +186,29 @@ Bool_t AliAnalysisTaskJetCorrections::Notify()
   // Implemented Notify() to read the cross sections
   // and number of trials from pyxsec.root
   // 
+
+
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-  UInt_t   ntrials  = 0;
+  Float_t xsection = 0;
+  Float_t ftrials  = 1;
+
+  Float_t fAvgTrials = 1;
   if(tree){
     TFile *curfile = tree->GetCurrentFile();
     if (!curfile) {
       Error("Notify","No current file");
       return kFALSE;
     }
+    AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
+    // construct a poor man average trials 
+    Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
+    if(ftrials>=nEntries)fAvgTrials = ftrials/nEntries; // CKB take this into account for normalisation
+  }  
 
-    TString fileName(curfile->GetName());
-    if(fileName.Contains("AliESDs.root")){
-        fileName.ReplaceAll("AliESDs.root", "pyxsec.root");
-    }
-    else if(fileName.Contains("AliAOD.root")){
-        fileName.ReplaceAll("AliAOD.root", "pyxsec.root");
-    }
-    else if(fileName.Contains("galice.root")){
-        // for running with galice and kinematics alone...                      
-        fileName.ReplaceAll("galice.root", "pyxsec.root");
-    }
-    TFile *fxsec = TFile::Open(fileName.Data());
-    if(!fxsec){
-      Printf("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,fileName.Data());
-      // no a severe condition
-      return kTRUE;
-    }
-    TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if(!xtree){
-      Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
-    }
-    xtree->SetBranchAddress("xsection",&fXsection);
-    xtree->SetBranchAddress("ntrials",&ntrials);
-    xtree->GetEntry(0);
-  }
-  
+  if(xsection>0)fXsection  = xsection;
+
   return kTRUE;
+
 }
 
 
@@ -447,11 +434,11 @@ void AliAnalysisTaskJetCorrections::UserExec(Option_t * )
       return;
     }
   
-  AliMCEvent* mcEvent =MCEvent();
-  if(!mcEvent){
-    Printf("%s:%d no mcEvent",(char*)__FILE__,__LINE__);
-    return;
-  }
+//   AliMCEvent* mcEvent =MCEvent();
+//   if(!mcEvent){
+//     Printf("%s:%d no mcEvent",(char*)__FILE__,__LINE__);
+//     return;
+//   }
   
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
 
@@ -959,7 +946,7 @@ void AliAnalysisTaskJetCorrections::UserExec(Option_t * )
 //__________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskJetCorrections::Terminate(Option_t *)
 {
-  printf("AnalysisJetCorrelation::Terminate()");
+  printf("AnalysisJetCorrections::Terminate()");
 
 } 
 
