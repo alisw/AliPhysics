@@ -6,13 +6,14 @@
 //-----------------------------------------------------------------
 //                 AliAnalysisTaskCheckCascade class
 //            (AliAnalysisTaskCheckCascade)
-//            This task has three roles :
+//            This task has four roles :
 //              1. QAing the Cascades from ESD and AOD
 //                 Origin:  AliAnalysisTaskESDCheckV0 by B.H. Nov2007, hippolyt@in2p3.fr
-//              2. Prepare the plots which stand as raw material for yield extraction
-//              3. Rough azimuthal correlation study (Eta, Phi)
+//              2. Prepare the plots which stand as raw material for yield extraction (wi/wo PID)
+//              3. Supply an AliCFContainer meant to define the optimised topological selections
+//              4. Rough azimuthal correlation study (Eta, Phi)
 //            Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
-//            Modified :           A.Maire Aug2009, antonin.maire@ires.in2p3.fr
+//            Modified :           A.Maire Nov2009, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
 
 class TList;
@@ -22,6 +23,9 @@ class TH3F;
 class TVector3;
 class THnSparse;
  
+class AliTPCpidESD;
+class AliCFContainer;
+
 
 #include "TString.h"
 
@@ -46,10 +50,11 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
     
  private:
-  	TString fAnalysisType;				// "ESD" or "AOD" analysis type	
-	Short_t fCollidingSystems;			// 0 = pp collisions or 1 = AA collisions
+  	TString 	fAnalysisType;			// "ESD" or "AOD" analysis type	
+	Short_t 	fCollidingSystems;		// 0 = pp collisions or 1 = AA collisions
+	AliTPCpidESD*	fTpcPidManager;			//! Tool data member to manage the TPC Bethe-Bloch info
 	
-
+	
 		TList	*fListHistCascade;		//! List of Cascade histograms
 	
 	// - General histos (filled for any event)
@@ -156,9 +161,23 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	TH3F	*f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus; //! casc. transv. momemtum Vs Omega- Eff mass Vs Y
 	TH3F	*f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus;  //! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
 	
+	// With TPC PID : 3-sigma band on the Bethe-Bloch curve
+	// = directly detector-based
+	TH3F	*f3dHistXiPtVsEffMassVsYWithTpcPIDOmegaMinus;   //! casc. transv. momemtum Vs Omega- Eff mass Vs Y
+	
+	// Compilation of all PID plots (3D = casc. transv. momemtum Vs Casc Eff mass Vs Y), stored into an AliCFContainer
+	AliCFContainer  *fCFContCascadePIDXiMinus;      //! for Xi-   : Container to store any 3D histos with the different PID flavours
+	AliCFContainer  *fCFContCascadePIDXiPlus;       //! for Xi+   : Container to store any 3D histos with the different PID flavours
+	AliCFContainer  *fCFContCascadePIDOmegaMinus;   //! for Omega-: Container to store any 3D histos with the different PID flavours
+	AliCFContainer  *fCFContCascadePIDOmegaPlus;    //! for Omega+: Container to store any 3D histos with the different PID flavours
 	
 	
-	// PART 3 :  Azimuthal correlation study
+	
+	// PART 3 : Towards the optimisation of topological selections
+	AliCFContainer  *fCFContCascadeCuts;		//! Container meant to store all the relevant distributions corresponding to the cut variables
+	
+	
+	// PART 4 :  Azimuthal correlation study
 	THnSparseF	*fHnSpAngularCorrXiMinus;	//! Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks Vs Eff Mass
 	THnSparseF	*fHnSpAngularCorrXiPlus;	//! Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks Vs Eff Mass
 	THnSparseF	*fHnSpAngularCorrOmegaMinus;	//! Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks Vs Eff Mass
@@ -168,7 +187,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascade, 6);
+  ClassDef(AliAnalysisTaskCheckCascade, 7);
 };
 
 #endif
