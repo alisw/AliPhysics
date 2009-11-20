@@ -92,7 +92,7 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
   
   Float_t xhit = hit.X();
   Float_t yhit = hit.Y();
-  Float_t zhit = 0; // FIXME : should it be hit.Z() ?
+  Float_t zhit = hit.Z();
   Int_t detElemId = hit.DetElemId();  
   
   Double_t x,y,z;
