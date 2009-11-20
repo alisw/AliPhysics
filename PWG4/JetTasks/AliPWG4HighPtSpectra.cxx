@@ -65,14 +65,14 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fReadAODData(0),
   fCFManager(0x0),
   fESD(0),
-  fTrackCuts(new AliESDtrackCuts),
+  fTrackCuts(),//new AliESDtrackCuts),
   fHistList(0),
   fHistEventsProcessed(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
   //
-  Info("AliPWG4HighPtSpectra","Calling Constructor");
+  AliDebug(2,Form("AliPWG4HighPtQAMC","Calling Constructor"));
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
   DefineOutput(0,TList::Class());
@@ -124,17 +124,18 @@ void AliPWG4HighPtSpectra::ConnectInputData(Option_t *)
 {
   // Connect ESD here
   // Called once
-  printf(">> AliPWG4HighPtSpectra::ConnectInputData \n");
+  AliDebug(2,Form(">> AliPWG4HighPtSpectra::ConnectInputData \n"));
+  //  printf(">> AliPWG4HighPtSpectra::ConnectInputData \n");
 
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
+    AliDebug(2,Form("ERROR: Could not read chain from input slot 0"));
   } else {
     
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     
     if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
+      AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
     } else
       fESD = esdH->GetEvent();
   }
@@ -146,10 +147,10 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
   //
   // Main loop function
   //
-  Info("Exec","") ;
+  AliDebug(2,Form(">> AliPWG4HighPtSpectra::Exec \n"));  
 
   if (!fESD) {
-    Printf("ERROR: fESD not available");
+    AliDebug(2,Form("ERROR: fESD not available"));
     return;
   }
 
@@ -158,26 +159,26 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
 
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) {
-    Printf("ERROR: Could not retrieve MC event handler");
+    AliDebug(2,Form("ERROR: Could not retrieve MC event handler"));
     return;
   }
 
   AliMCEvent* mcEvent = eventHandler->MCEvent();
   if (!mcEvent) {
-    Printf("ERROR: Could not retrieve MC event");
+    AliDebug(2,Form("ERROR: Could not retrieve MC event"));
     return;
   }
 
-  Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+  AliDebug(2,Form("MC particles: %d", mcEvent->GetNumberOfTracks()));
 
   if (!fESD) {
-    Printf("ERROR: fESD not available");
+    AliDebug(2,Form("ERROR: fESD not available"));
     return;
   }
 
   AliStack* stack = mcEvent->Stack();                //Particles Stack
 
-  Printf("MC particles stack: %d", stack->GetNtrack());
+  AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
 
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
 
@@ -187,13 +188,12 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
   vtx->GetXYZ(pvtx);
   if(TMath::Abs(pvtx[2])>10.) return;
 
-  printf("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors());
+  AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
   // Need to keep track of evts without vertex
 
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d", nTracks));
-  printf("nTracks %d\n", nTracks);
-
+ 
   // AliVEvent*    fEvent = fInputEvent ;
   
 //   if (!fEvent) {
@@ -276,18 +276,18 @@ void AliPWG4HighPtSpectra::Terminate(Option_t*)
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
 
-  Info("Terminate","");
-//   AliAnalysisTaskSE::Terminate();
 
 }
-
 
 //___________________________________________________________________________
 void AliPWG4HighPtSpectra::CreateOutputObjects() {
   //HERE ONE CAN CREATE OUTPUT OBJECTS, IN PARTICULAR IF THE OBJECT PARAMETERS DON'T NEED
   //TO BE SET BEFORE THE EXECUTION OF THE TASK
   //
-  Info("CreateOutputObjects","CreateOutputObjects of task %s", GetName());
+  AliDebug(2,Form("CreateOutputObjects","CreateOutputObjects of task %s", GetName()));
+
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE); 
 
   OpenFile(0);
   fHistList = new TList();
@@ -295,6 +295,8 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   //  OpenFile(0);
   fHistEventsProcessed = new TH1I("fHistEventsProcessed","",1,0,1) ;
   fHistList->Add(fHistEventsProcessed);
+
+  TH1::AddDirectory(oldStatus); 
 
 }
 
