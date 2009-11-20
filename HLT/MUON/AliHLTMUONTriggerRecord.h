@@ -164,16 +164,20 @@ public:
 	 * -1 is returned if this information was not set.
 	 * @param chamber  The chamber for which to fetch the bit pattern.
 	 *                 Valid values are in the range [11..14].
+	 * \param board  The board for which to fetch the bit pattern in the range [0..2].
+	 *             0 indicates the previous board, 1 the central and 2 the next board.
 	 */
-	Int_t PatternX(Int_t chamber) const;
+	Int_t PatternX(Int_t chamber, Int_t board) const;
 	
 	/**
 	 * Returns the 16 bit Y pattern from the local board.
 	 * -1 is returned if this information was not set.
 	 * @param chamber  The chamber for which to fetch the bit pattern.
 	 *                Valid values are in the range [11..14].
+	 * \param board  The board for which to fetch the bit pattern in the range [0..2].
+	 *             0 indicates the previous board, 1 the central and 2 the next board.
 	 */
-	Int_t PatternY(Int_t chamber) const;
+	Int_t PatternY(Int_t chamber, Int_t board) const;
 	
 	/**
 	 * Returns the Z coordinate in the middle of the magnetic field used to
@@ -182,7 +186,7 @@ public:
 	Float_t Zmiddle() const { return fZmiddle; }
 	
 	/**
-	 * Returns the integrated magnetic field strength times charge used in
+	 * Returns the integrated magnetic field strength times polarity used in
 	 * the calculation of the momentum. Value returned in (T.m) tesla metres.
 	 */
 	Float_t QBL() const { return fQBL; }
@@ -199,17 +203,32 @@ public:
 	void SetHit(Int_t chamber, Float_t x, Float_t y, Float_t z);
 	
 	/**
+	 * Sets the hit coordinate on a given chamber with the detection element ID.
+	 * @param chamber  The chamber for which to set the hit. Valid values
+	 *                 are in the range [11..14].
+	 * @param x  The X coordinate of the hit in centimetres.
+	 * @param y  The Y coordinate of the hit in centimetres.
+	 * @param z  The Z coordinate of the hit in centimetres.
+	 * @param detElemId The detection element ID where the hit was found.
+	 */
+	void SetHit(Int_t chamber, Float_t x, Float_t y, Float_t z, Int_t detElemId);
+	
+	/**
 	 * Sets the debugging information for the hit on the specified chamber.
 	 * @param chamber  The chamber for which to set the debugging information.
 	 *                Valid values are in the range [11..14].
-	 * @param detElemId  The detector element ID.
-	 * @param patterX    The X bit pattern from the local board.
-	 * @param patterY    The Y bit pattern from the local board.
+	 * @param patternX  Array of X bit pattern from the local boards.
+	 * @param patternY  Array of Y bit pattern from the local boards.
+	 * \note The bit patterns in the array are in the order: [previous, central, next].
 	 */
-	void SetHitDebugInfo(
-			Int_t chamber,
-			Int_t detElemId, UShort_t patternX, UShort_t patternY
-		);
+	void SetHitDebugInfo(Int_t chamber, UShort_t patternX[3], UShort_t patternY[3]);
+	
+	/**
+	 * Sets the debugging information for the hit on the specified chamber.
+	 * @param zmiddle  The z coordinate of the middle of the magnetic field.
+	 * @param bfieldintegral  The magnetic field integral times field polarity.
+	 */
+	void SetDebugInfo(Float_t zmiddle, Float_t bfieldintegral);
 	
 	/**
 	 * Prints the details of the trigger record.
@@ -247,14 +266,14 @@ private:
 	// dHLT components were not set to produce this information.
 	Int_t fSourceDDL;  ///< The DDL from which this trigger record originates.
 	Int_t fDetElemId[4]; ///< The detector element ID for the hit on each chamber 11 to 14.
-	Int_t fPatternX[4];  ///< The X pattern from the local board structure for chambers 11 to 14. -1 if invalid.
-	Int_t fPatternY[4];  ///< The Y pattern from the local board structure for chambers 11 to 14. -1 if invalid.
+	Int_t fPatternX[4][3]; ///< The X strip pattern for chambers 11 to 14 and previous, central and next local boards. -1 if invalid.
+	Int_t fPatternY[4][3]; ///< The Y strip pattern for chambers 11 to 14 and previous, central and next local boards. -1 if invalid.
 	
 	// Parameters used in momentum estimation:
 	Float_t fZmiddle; ///< Particle momentum X component in GeV/c.
-	Float_t fQBL;     ///< The integrated magnetic field times charge in (T.m) tesla metres.
+	Float_t fQBL;     ///< The integrated magnetic field times field polarity in (T.m) tesla metres.
 		
-	ClassDef(AliHLTMUONTriggerRecord, 3);  // Trigger record object translated from dHLT internal raw data.
+	ClassDef(AliHLTMUONTriggerRecord, 4);  // Trigger record object translated from dHLT internal raw data.
 };
 
 #endif // ALIHLTMUONTRIGGERRECORD_H

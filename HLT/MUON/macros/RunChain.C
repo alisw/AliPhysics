@@ -424,17 +424,18 @@ void RunChain(
 			string name = (k <= 20) ? "MUONHitReconstructor" : "MUONTriggerReconstructor";
 			string parent = Form("pubDDL%d", k);
 			string cmd;
+			const char* extraInfoFlags = k < 21 ? "-makeclusters -makechannels" : "-makedebuginfo";
 			if (TString(lutDir) == "CDB")
 			{
 				const char* path = cdbManager->GetDefaultStorage()->GetURI().Data();
-				cmd = Form("-ddl %d -cdbpath %s -run %d %s",
-					k, path, cdbManager->GetRun(), recoverFlag
+				cmd = Form("-ddl %d -cdbpath %s -run %d %s %s",
+					k, path, cdbManager->GetRun(), recoverFlag, extraInfoFlags
 				);
 			}
 			else
 			{
-				cmd = Form("-ddl %d -lut %s/Lut%d.dat %s",
-					k, lutDir, k, recoverFlag
+				cmd = Form("-ddl %d -lut %s/Lut%d.dat %s %s",
+					k, lutDir, k, recoverFlag, extraInfoFlags
 				);
 			}
 			if (k >= 21)

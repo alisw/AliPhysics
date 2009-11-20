@@ -39,7 +39,8 @@ class AliHLTMUONTriggerReconstructor;
  * Component ID: \b MUONTriggerReconstructor <br>
  * Library: \b libAliHLTMUON.so   <br>
  * Input Data Types: AliHLTMUONConstants::DDLRawDataType() = "DDL_RAW :MUON" <br>
- * Output Data Types: AliHLTMUONConstants::TriggerRecordsBlockDataType() = "TRIGRECS:MUON" <br>
+ * Output Data Types: \li AliHLTMUONConstants::TriggerRecordsBlockDataType() = "TRIGRECS:MUON"
+ *                    \li AliHLTMUONConstants::TrigRecsDebugBlockDataType() = "TRIGRDBG:MUON" <br>
  *
  * <h2>Mandatory arguments:</h2>
  * \li -ddl <i>number</i> <br>
@@ -122,6 +123,8 @@ class AliHLTMUONTriggerReconstructor;
  * \li -dumppath <i>path</i> <br>
  *      Allows one to specify the path in which to dump the received data blocks
  *      if an error occurs. <br>
+ * \li -makedebuginfo <br>
+ *      If specified then the trigger record debug informaiton data blocks are generated. <br>
  *
  * <h2>Standard configuration:</h2>
  * The configuration is taken from the CDB by default. It can be overridden with
@@ -158,6 +161,7 @@ public:
 	virtual const char* GetComponentID();
 	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
+	virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	virtual AliHLTComponent* Spawn();
 	

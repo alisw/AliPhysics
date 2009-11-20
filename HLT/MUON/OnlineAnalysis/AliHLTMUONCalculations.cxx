@@ -315,6 +315,50 @@ bool AliHLTMUONCalculations::FitLineToData(
 }
 
 
+bool AliHLTMUONCalculations::FitLineToData(
+		const AliHLTFloat32_t* x, const AliHLTFloat32_t* z, AliHLTUInt32_t n
+	)
+{
+	/// A straight line is fitted in the X, Z data points using a least squares fit.
+	/// http://mathworld.wolfram.com/LeastSquaresFitting.html
+	/// If this method returns true, then the fitted parameters can fetched using the
+	/// method calls Mzx() and Czx(). The line is then given by: x = Mzx() * z + Czx()
+	/// \param x  This must point to the array of x data values.
+	/// \param z  This must point to the array of z data values.
+	/// \param n  Specifies the number of data points in the x and z arrays.
+	/// \return  true if the line could be fitted or false otherwise.
+	///     The reason for failure could be either too few data points or the slopes
+	///     Mzx() would be infinite, implying a line that is perpendicular to the z axis.
+	
+	if (n < 2) return false;
+	
+	AliHLTFloat32_t sumX = 0;
+	AliHLTFloat32_t sumZ = 0;
+	for (AliHLTUInt32_t i = 0; i < n; i++)
+	{
+		sumX += x[i];
+		sumZ += z[i];
+	}
+	AliHLTFloat32_t meanX = sumX / AliHLTFloat32_t(n);
+	AliHLTFloat32_t meanZ = sumZ / AliHLTFloat32_t(n);
+	
+	AliHLTFloat32_t vSSzz = 0;
+	AliHLTFloat32_t vSSzx = 0;
+	for (AliHLTUInt32_t i = 0; i < n; i++)
+	{
+		vSSzz += (z[i] - meanZ)*(z[i] - meanZ);
+		vSSzx += (z[i] - meanZ)*(x[i] - meanX);
+	}
+	
+	// Calculate params for line x = fgMzx * z + fgCzx.
+	if (vSSzz == 0) return false;
+	fgMzx = vSSzx / vSSzz;
+	fgCzx = meanX - fgMzx * meanZ;
+	
+	return true;
+}
+
+
 AliHLTFloat32_t AliHLTMUONCalculations::AliHLTMUONCalculations::ComputeChi2(
 		const AliHLTFloat32_t* x, const AliHLTFloat32_t* y,
 		const AliHLTFloat32_t* z, AliHLTUInt32_t n

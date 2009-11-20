@@ -106,10 +106,21 @@ void AliHLTMUONTriggerReconstructorComponent::GetInputDataTypes(AliHLTComponentD
 AliHLTComponentDataType AliHLTMUONTriggerReconstructorComponent::GetOutputDataType()
 {
 	///
-	/// Inherited from AliHLTComponent. Returns the output data type.
+	/// Inherited from AliHLTComponent. Returns kAliHLTMultipleDataType.
 	///
 	
-	return AliHLTMUONConstants::TriggerRecordsBlockDataType();
+	return kAliHLTMultipleDataType;
+}
+
+
+int AliHLTMUONTriggerReconstructorComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& list)
+{
+	/// Inherited from AliHLTComponent. Returns the output data types.
+	
+	assert( list.empty() );
+	list.push_back( AliHLTMUONConstants::TriggerRecordsBlockDataType() );
+	list.push_back( AliHLTMUONConstants::TrigRecsDebugBlockDataType() );
+	return list.size();
 }
 
 
@@ -169,6 +180,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	bool suppressPartialTrigs = true;
 	bool tryRecover = false;
 	bool useLocalId = true;
+	bool makeDebugInfo = false;
 	double zmiddle = 0;
 	double bfieldintegral = 0;
 	
@@ -378,6 +390,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			continue;
 		}
 		
+		if (strcmp( argv[i], "-makedebuginfo" ) == 0)
+		{
+			makeDebugInfo = true;
+			continue;
+		}
+		
 		HLTError("Unknown option '%s'.", argv[i]);
 		return -EINVAL;
 		
@@ -491,6 +509,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	fTrigRec->TryRecover(tryRecover);
 	fTrigRec->UseCrateId(fUseCrateId);
 	fTrigRec->UseLocalId(useLocalId);
+	fTrigRec->StoreDebugInfo(makeDebugInfo);
 	
 	return 0;
 }
@@ -641,7 +660,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		if (not block.InitCommonHeader())
 		{
 			HLTError("There is not enough space in the output buffer for the new data block."
-				 " We require at least %ufTrigRec->GetkDDLHeaderSize() bytes, but have %u bytes left.",
+				 " We require at least %u bytes, but have %u bytes left.",
 				sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType),
 				block.BufferSize()
 			);
@@ -706,12 +725,53 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		outputBlocks.push_back(bd);
 		
 		HLTDebug("Created a new output data block at fPtr = %p,"
-			  " with fOffset = %u (0x%.X) and fSize = %u bytes.", 
+			  " with fOffset = %u (0x%.X) and fSize = %u bytes.",
 			bd.fPtr, bd.fOffset, bd.fOffset, bd.fSize
 		);
 		
 		// Increase the total amount of data written so far to our output memory.
 		totalSize += block.BytesUsed();
+		
+		if (fTrigRec->StoreDebugInfo())
+		{
+			// Create a new output data block and initialise the header.
+			AliHLTMUONTrigRecsDebugBlockWriter infoblock(outputPtr+totalSize, size-totalSize);
+			if (not infoblock.InitCommonHeader())
+			{
+				HLTError("There is not enough space in the output buffer for the new debug"
+					" data block. We require at least %u bytes, but have %u bytes left.",
+					sizeof(AliHLTMUONTrigRecsDebugBlockWriter::HeaderType),
+					infoblock.BufferSize()
+				);
+				break;
+			}
+			
+			infoblock.SetNumberOfEntries(fTrigRec->InfoBufferCount());
+			for (AliHLTUInt32_t i = 0; i < fTrigRec->InfoBufferCount(); ++i)
+			{
+				infoblock[i] = fTrigRec->InfoBuffer()[i];
+			}
+			fTrigRec->ZeroInfoBuffer();
+			
+			// Fill the block data structure for our output block.
+			AliHLTComponentBlockData bd2;
+			FillBlockData(bd2);
+			bd2.fPtr = outputPtr;
+			// This block's start (offset) is after all other blocks written so far.
+			bd2.fOffset = totalSize;
+			bd2.fSize = infoblock.BytesUsed();
+			bd2.fDataType = AliHLTMUONConstants::TrigRecsDebugBlockDataType();
+			bd2.fSpecification = blocks[n].fSpecification;
+			outputBlocks.push_back(bd2);
+			
+			HLTDebug("Created a new output data block for debug information at fPtr = %p,"
+				" with fOffset = %u (0x%.X) and fSize = %u bytes.",
+				bd2.fPtr, bd2.fOffset, bd2.fOffset, bd2.fSize
+			);
+			
+			// Increase the total amount of data written so far to our output memory.
+			totalSize += infoblock.BytesUsed();
+		}
 	}
 	
 	// Finally we set the total size of output memory we consumed.

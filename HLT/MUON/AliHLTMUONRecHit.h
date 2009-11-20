@@ -298,14 +298,15 @@ public:
 	
 	/**
 	 * Adds a new channel to this hit if it is on a tracking chamber.
+	 * @param buspatch  The bus patch ID of the channel.
 	 * @param manu    The MANU number
 	 * @param channel The MANU channel address.
 	 * @param signal  The ADC signal value measured on the channel.
 	 * @param rawDataWord This is the raw data word as read from the DDL.
 	 */
 	void AddChannel(
-			Short_t manu, Short_t channel, Short_t signal,
-			UInt_t rawDataWord
+			Short_t buspatch, Short_t manu, Short_t channel,
+			Short_t signal, UInt_t rawDataWord
 		);
 
 	/**

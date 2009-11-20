@@ -98,6 +98,15 @@ public:
 		);
 
 	/**
+	 * Returns the detector element ID from the flags bits.
+	 * [in]  @param flags  The flags from an AliHLTMUONRecHitStruct structure.
+	 */
+	static AliHLTUInt16_t GetDetElemIdFromFlags(AliHLTUInt32_t flags)
+	{
+		return flags & 0xFFF;
+	}
+
+	/**
 	 * This packs the given parameters into the bits of a word appropriate
 	 * for AliHLTMUONMansoTrackStruct::fFlags.
 	 * @param sign    The particle sign.

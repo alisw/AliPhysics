@@ -44,6 +44,20 @@ std::ostream& operator << (
 		<< ", fY2Y1 = " << info.fL0Struct.fY2Y1
 		<< ", fY4Y3 = " << info.fL0Struct.fY4Y3
 		<< ", fTriggerBits = " << info.fL0Struct.fTriggerBits
+		<< std::dec << "}"
+		<< ", fL0StructPrev = {fX2X1 = " << std::showbase << std::hex
+		<< info.fL0StructPrev.fX2X1
+		<< ", fX4X3 = " << info.fL0StructPrev.fX4X3
+		<< ", fY2Y1 = " << info.fL0StructPrev.fY2Y1
+		<< ", fY4Y3 = " << info.fL0StructPrev.fY4Y3
+		<< ", fTriggerBits = " << info.fL0StructPrev.fTriggerBits
+		<< std::dec << "}"
+		<< ", fL0StructNext = {fX2X1 = " << std::showbase << std::hex
+		<< info.fL0StructNext.fX2X1
+		<< ", fX4X3 = " << info.fL0StructNext.fX4X3
+		<< ", fY2Y1 = " << info.fL0StructNext.fY2Y1
+		<< ", fY4Y3 = " << info.fL0StructNext.fY4Y3
+		<< ", fTriggerBits = " << info.fL0StructNext.fTriggerBits
 		<< std::dec << "}}";
 	return stream;
 }
@@ -64,6 +78,31 @@ std::ostream& operator << (
 		stream << ", " << trigRecInfo[i];
 	stream << "]}";
 	return stream;
+}
+
+
+bool operator == (
+		const AliHLTMUONTrigRecInfoStruct& a,
+		const AliHLTMUONTrigRecInfoStruct& b
+	)
+{
+	return a.fTrigRecId == b.fTrigRecId and a.fDetElemId == b.fDetElemId
+		and a.fZmiddle == b.fZmiddle and a.fBl == b.fBl
+		and a.fL0Struct.fX2X1 == b.fL0Struct.fX2X1
+		and a.fL0Struct.fX4X3 == b.fL0Struct.fX4X3
+		and a.fL0Struct.fY2Y1 == b.fL0Struct.fY2Y1
+		and a.fL0Struct.fY4Y3 == b.fL0Struct.fY4Y3
+		and a.fL0Struct.fTriggerBits == b.fL0Struct.fTriggerBits
+		and a.fL0StructPrev.fX2X1 == b.fL0StructPrev.fX2X1
+		and a.fL0StructPrev.fX4X3 == b.fL0StructPrev.fX4X3
+		and a.fL0StructPrev.fY2Y1 == b.fL0StructPrev.fY2Y1
+		and a.fL0StructPrev.fY4Y3 == b.fL0StructPrev.fY4Y3
+		and a.fL0StructPrev.fTriggerBits == b.fL0StructPrev.fTriggerBits
+		and a.fL0StructNext.fX2X1 == b.fL0StructNext.fX2X1
+		and a.fL0StructNext.fX4X3 == b.fL0StructNext.fX4X3
+		and a.fL0StructNext.fY2Y1 == b.fL0StructNext.fY2Y1
+		and a.fL0StructNext.fY4Y3 == b.fL0StructNext.fY4Y3
+		and a.fL0StructNext.fTriggerBits == b.fL0StructNext.fTriggerBits;
 }
 
 

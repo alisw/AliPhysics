@@ -32,6 +32,8 @@
 
 extern "C" struct AliHLTMUONRecHitStruct;
 extern "C" struct AliHLTMUONTriggerRecordStruct;
+extern "C" struct AliHLTMUONTrigRecInfoStruct;
+extern "C" struct AliHLTMUONTriggerRecoLutRow;
 
 
 class AliHLTMUONTriggerReconstructor : public AliHLTLogging
@@ -116,6 +118,21 @@ public:
 	 */
 	void UseLocalId(bool value) { fDecoder.GetHandler().UseLocalId(value); }
 	
+	/// Return the flag indicating if the debug information is stored during decoding.
+	bool StoreDebugInfo() const { return fDecoder.GetHandler().StoreDebugInfo(); }
+	
+	/// Sets the flag indicating if the debug information should be stored.
+	void StoreDebugInfo(bool value) { fDecoder.GetHandler().StoreDebugInfo(value); }
+	
+	/// Returns the number of elements in the debug information buffer.
+	AliHLTUInt32_t InfoBufferCount() const { return fDecoder.GetHandler().InfoBufferCount(); }
+	
+	/// Returns the debug information buffer.
+	const AliHLTMUONTrigRecInfoStruct* InfoBuffer() const { return fDecoder.GetHandler().InfoBuffer(); }
+	
+	/// Empty the info buffer.
+	void ZeroInfoBuffer() { fDecoder.GetHandler().ZeroInfoBuffer(); }
+	
 private:
 
 	class AliDecoderHandler : public AliMUONTriggerDDLDecoderEventHandler, public AliHLTLogging
@@ -125,7 +142,7 @@ private:
 		AliDecoderHandler();
 		
 		/// Default destructor.
-		virtual ~AliDecoderHandler() {}
+		virtual ~AliDecoderHandler();
 		
 		/// Returns a pointer to the lookup table.
 		AliHLTMUONTriggerRecoLookupTable* LookupTableBuffer() { return &fLookupTable; }
@@ -228,14 +245,6 @@ private:
 		 */
 		void SetDDL(AliHLTInt32_t ddl) { fDDLBit = (ddl == 20 ? 0x00 : 0x80); }
 		
-		/**
-		 * Generates reconstructed hits from strip information.
-		 */
-		bool GenerateHits(
-				AliHLTMUONRecHitStruct* outputBuffer,
-				AliHLTUInt32_t& maxEntries
-			);
-		
 		// Methods inherited from AliMUONTriggerDDLDecoderEventHandler:
 		
 		/// Called for each new buffer. Just remember the start location of the buffer.
@@ -247,21 +256,32 @@ private:
 		
 		/**
 		 * Sets the regional structure sequencial number and decodes the crate ID.
-		 * if fUseCrateId is false then we use the sequencial number instead. This
-		 * might be necessary for for incorrectly generated or buggy raw data.
+		 * Also zero the local structure pointers.
+		 * If fUseCrateId is false then we use the sequencial number instead. This
+		 * might be necessary for incorrectly generated or buggy raw data.
 		 */
 		void OnNewRegionalStructV2(
 				UInt_t num,
 				const AliMUONRegionalHeaderStruct* regionalStruct,
 				const AliMUONRegionalScalarsStruct* /*scalars*/,
 				const void* /*data*/
-			)
-		{
-			fCurrentRegional = num;
-			fCurrentCrateId = (fUseCrateId ? GetRegionalId(regionalStruct) : num);
-		}
+			);
 		
-		/// Converts a local trigger structure from the L0 into a trigger record.
+		/**
+		 * Updates the local trigger structure pointers and processes the
+		 * the last local trigger.
+		 */
+		void OnEndOfRegionalStructV2(
+				UInt_t num,
+				const AliMUONRegionalHeaderStruct* regionalStruct,
+				const AliMUONRegionalScalarsStruct* scalars,
+				const void* data
+			);
+		
+		/**
+		 * Updates the local trigger structure pointers and processes the
+		 * current local trigger.
+		 */
 		void OnLocalStructV2(
 				UInt_t num,
 				const AliMUONLocalInfoStruct* localStruct,
@@ -270,6 +290,21 @@ private:
 		
 		/// Logs an error message if there was a decoding problem with the DDL payload.
 		void OnError(ErrorCode code, const void* location);
+		
+		/// Return the flag indicating if the debug information is stored during decoding.
+		bool StoreDebugInfo() const { return fStoreInfo; }
+		
+		/// Sets the flag indicating if the debug information should be stored.
+		void StoreDebugInfo(bool value) { fStoreInfo = value; }
+		
+		/// Returns the number of elements in the debug information buffer.
+		AliHLTUInt32_t InfoBufferCount() const { return fInfoBufferCount; }
+		
+		/// Returns the debug information buffer.
+		const AliHLTMUONTrigRecInfoStruct* InfoBuffer() const { return fInfoBuffer; }
+		
+		/// Empty the info buffer.
+		void ZeroInfoBuffer() { fInfoBufferCount = 0; }
 	
 	private:
 		// Do not allow copying of this class.
@@ -279,40 +314,58 @@ private:
 		AliDecoderHandler& operator = (const AliDecoderHandler& rhs); // assignment operator
 		
 		/**
-		 * Finds the strip bits / positions on MT1 that were fired given
-		 * the local trigger structure decision.
+		 * Finds the strip bits / positions on MT1 that were fired in
+		 * the current local trigger structure decision.
 		 */
-		bool FindStripsOnMT1(
-				const AliMUONLocalInfoStruct* localStruct,
-				AliHLTInt32_t& xPos, AliHLTInt32_t& yPos
-			);
+		bool FindStripsOnMT1(AliHLTInt32_t& xPos, AliHLTInt32_t& yPos);
+		
+		/**
+		 * Selects the correct X strip patterns to use in FindXStrips.
+		 * [out] \param strips  Resulting array of X strip patterns to use
+		 *    for chambers 11 to 14.
+		 */
+		void SelectXPatterns(AliHLTUInt64_t strips[4]);
+		
+		/**
+		 * Selects the correct Y strip patterns to use in FindYStrips and local IDs for
+		 * finding the correct row in the lookup table.
+		 * [in] \param xpos Array of X strip positions generated by FindXStrips.
+		 *    Values are in the range [0..47].
+		 * [out] \param strips  Resulting array of Y strip patterns to use.
+		 * [out] \param locId  Resulting array of local IDs to use for the lookup table.
+		 */
+		void SelectYPatterns(AliHLTInt32_t xpos[4], AliHLTUInt32_t strips[4], AliHLTUInt8_t locId[4]);
 		
 		/**
 		 * Tries to find the fired X strips for chambers 11 to 14.
 		 */
-		void FindXStrips(
-				const AliMUONLocalInfoStruct* localStruct,
-				AliHLTInt32_t startPos, AliHLTInt32_t pos[4]
-			);
+		void FindXStrips(AliHLTInt32_t startPos, AliHLTUInt64_t strips[4], AliHLTInt32_t pos[4]);
 		
 		/**
 		 * Tries to find the fired Y strips for chambers 11 to 14.
 		 */
-		void FindYStrips(
-				const AliMUONLocalInfoStruct* localStruct,
-				AliHLTInt32_t startPos, AliHLTInt32_t pos[4]
-			);
+		void FindYStrips(AliHLTInt32_t startPos, AliHLTUInt32_t strips[4], AliHLTInt32_t pos[4]);
+		
+		/**
+		 * Fetches the appropriate LUT row for a given X strip position.
+		 */
+		const AliHLTMUONTriggerRecoLutRow& GetLutRowX(AliHLTInt32_t xPos, AliHLTUInt8_t chamber);
 		
 		/**
 		 * Reconstructs a hit with global position coordinates from strip
 		 * information on a given chamber.
 		 */
 		void ReconstructHit(
-				AliHLTUInt32_t xStrips, AliHLTUInt32_t yStrips,
-				AliHLTInt32_t xPos, AliHLTInt32_t yPos,
-				AliHLTUInt8_t crateId, AliHLTUInt8_t locId,
+				AliHLTUInt64_t xStrips, AliHLTUInt32_t yStrips,
+				AliHLTInt32_t xPos, AliHLTInt32_t yPos, AliHLTUInt8_t yLocId,
 				AliHLTUInt8_t chamber, AliHLTMUONRecHitStruct& hit
 			);
+		
+		/**
+		 * Converts the fCurrentStruct local trigger structure from the L0
+		 * into a trigger record.
+		 */
+		void ProcessLocalStruct();
 		
 		AliHLTMUONTriggerRecoLookupTable fLookupTable;  ///< The lookup table used for mapping between channel addresses and geometrical information.
 		const void* fBufferStart; ///< Pointer to the start of the current DDL payload buffer.
@@ -328,6 +381,16 @@ private:
 		bool fUseCrateId;  ///< Flag to indicate if the crate ID as found in the regional header structures should be used or not.
 		AliHLTInt8_t fCurrentCrateId;  ///< The current trigger crate ID number from the regional header.
 		UInt_t fCurrentRegional;  ///< Index number of current regional structure being decoded.
+		UInt_t fNextLocalIndex;  ///< Index number of fNextStruct local structure being decoded.
+		const AliMUONLocalInfoStruct* fPrevStruct;  ///< Previous local trigger structure.
+		const AliMUONLocalInfoStruct* fCurrentStruct;  ///< Current local trigger structure.
+		const AliMUONLocalInfoStruct* fNextStruct;  ///< Next local trigger structure.
+		bool fStoreInfo;  ///< Store debug information in fInfoBuffer.
+		AliHLTUInt32_t fInfoBufferSize;  ///< Number of elements storable in fInfoBuffer.
+		AliHLTUInt32_t fInfoBufferCount;  ///< Number of elements stored in the fInfoBuffer.
+		AliHLTMUONTrigRecInfoStruct* fInfoBuffer;  ///< Buffer for storing the debug information.
+		
+		static const AliMUONLocalInfoStruct fgkNullStruct; ///< Empty structure marker.
 	};
 
 	/// Not implemented

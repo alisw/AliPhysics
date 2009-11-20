@@ -76,6 +76,11 @@ public:
 			const AliHLTFloat32_t* z, AliHLTUInt32_t n
 		);
 	
+	static bool FitLineToData(
+			const AliHLTFloat32_t* x, const AliHLTFloat32_t* z,
+			AliHLTUInt32_t n
+		);
+	
 	static AliHLTFloat32_t Mzx() { return fgMzx; }
 	static AliHLTFloat32_t Mzy() { return fgMzy; }
 	static AliHLTFloat32_t Czx() { return fgCzx; }

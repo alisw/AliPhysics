@@ -94,18 +94,19 @@ Int_t AliHLTMUONRecHit::Chamber(bool warn) const
 
 
 void AliHLTMUONRecHit::AddChannel(
-		Short_t manu, Short_t channel, Short_t signal,
+		Short_t buspatch, Short_t manu, Short_t channel, Short_t signal,
 		UInt_t rawDataWord
 	)
 {
 /// Adds a new channel to the channels list forming this hit's cluster.
+/// @param buspatch  The bus patch ID of the channel.
 /// @param manu    The MANU number
 /// @param channel The MANU channel address.
 /// @param signal  The ADC signal value measured on the channel.
 /// @param rawDataWord This is the raw data word as read from the DDL.
 
 	Int_t index = fChannels.GetEntriesFast();
-	new (fChannels[index]) AliChannel(manu, channel, signal, rawDataWord);
+	new (fChannels[index]) AliChannel(buspatch, manu, channel, signal, rawDataWord);
 }
 
 
@@ -137,23 +138,23 @@ void AliHLTMUONRecHit::Print(Option_t* option) const
 	}
 	else if (strcmp(option, "all") == 0)
 	{
-		cout << "(x = " << X() << " cm, y = " << Y()
+		streamsize w = cout.width();
+		ios::fmtflags f = cout.flags();
+		cout << "RecHit: (x = " << X() << " cm, y = " << Y()
 			<< " cm, z = " << Z()
 			<< " cm); source DDL = " << fSourceDDL
 			<< "; DetElemID = " << fDetElemId
 			<< "; cluster ID = " << fClusterId
-			<< "; charge (Bending, Non-bending) = (" << fChargeB
-			<< ", " << fChargeNB
-			<< "); expected #ch (Bending, Non-bending) = ("
-			<< fNchExpB << ", " << fNchExpNB << ")" << endl;
+			<< endl;
+		cout << setw(0) << "              Plane:" << setw(14) << "Bending" << setw(14) << "Non-bending" << endl;
+		cout << setw(0) << "             Charge:" << setw(14) << fChargeB << setw(14) << fChargeNB << endl;
+		cout << setw(0) << "Expected channels #:" << setw(14) << fNchExpB << setw(14) << fNchExpNB << setw(0) << endl;
 		if (fChannels.GetEntriesFast() == 0)
 		{
 			cout << "No channels found for this hit." << endl;
 		}
 		else
 		{
-			streamsize w = cout.width();
-			ios::fmtflags f = cout.flags();
 			cout << setw(12) << "MANU"
 				<< setw(12) << "Channel"
 				<< setw(12) << "Signal"
@@ -171,9 +172,9 @@ void AliHLTMUONRecHit::Print(Option_t* option) const
 				cout << c->RawDataWord() << right << endl;
 				cout.fill(fc);
 			}
-			cout.width(w); // reset the field width to previous value.
-			cout.flags(f); // reset the flags to previous values.
 		}
+		cout.width(w); // reset the field width to previous value.
+		cout.flags(f); // reset the flags to previous values.
 	}
 	else
 	{

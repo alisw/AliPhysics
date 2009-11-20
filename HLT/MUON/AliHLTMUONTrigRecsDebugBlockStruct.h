@@ -41,6 +41,8 @@ struct AliHLTMUONTrigRecInfoStruct
 	AliHLTFloat32_t fBl; // The integrated magnetic field in (T.m) tesla metres.
 	
 	AliMUONLocalInfoStruct fL0Struct;  // Copy of the L0 local trigger structure bits.
+	AliMUONLocalInfoStruct fL0StructPrev;  // Copy of the previous L0 local trigger structure bits used. Can be zero if none used.
+	AliMUONLocalInfoStruct fL0StructNext;  // Copy of the next L0 local trigger structure bits used. Can be zero if none used.
 };
 
 /**
@@ -77,19 +79,10 @@ std::ostream& operator << (
 	);
 
 
-inline bool operator == (
+bool operator == (
 		const AliHLTMUONTrigRecInfoStruct& a,
 		const AliHLTMUONTrigRecInfoStruct& b
-	)
-{
-	return a.fTrigRecId == b.fTrigRecId and a.fDetElemId == b.fDetElemId
-		and a.fZmiddle == b.fZmiddle and a.fBl == b.fBl
-		and a.fL0Struct.fX2X1 == b.fL0Struct.fX2X1
-		and a.fL0Struct.fX4X3 == b.fL0Struct.fX4X3
-		and a.fL0Struct.fY2Y1 == b.fL0Struct.fY2Y1
-		and a.fL0Struct.fY4Y3 == b.fL0Struct.fY4Y3
-		and a.fL0Struct.fTriggerBits == b.fL0Struct.fTriggerBits;
-}
+	);
 
 inline bool operator != (
 		const AliHLTMUONTrigRecInfoStruct& a,

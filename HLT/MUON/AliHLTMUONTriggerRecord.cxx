@@ -93,8 +93,11 @@ AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord(
 	for (int i = 0; i < 4; i++)
 	{
 		fDetElemId[i] = -1;
-		fPatternX[i] = -1;
-		fPatternY[i] = -1;
+		for (int j = 0; j < 3; j++)
+		{
+			fPatternX[i][j] = -1;
+			fPatternY[i][j] = -1;
+		}
 	}
 }
 
@@ -134,37 +137,63 @@ Int_t AliHLTMUONTriggerRecord::DetElemId(Int_t chamber) const
 }
 
 
-Int_t AliHLTMUONTriggerRecord::PatternX(Int_t chamber) const
+Int_t AliHLTMUONTriggerRecord::PatternX(Int_t chamber, Int_t board) const
 {
 /// Returns the raw data X pattern of the hit on the specified chamber.
 /// \param chamber  The chamber for which to fetch the bit pattern.
 ///                 Valid values are in the range [11..14].
+/// \param board  The board for which to fetch the bit pattern in the range [0..2].
+///               0 indicates the previous board, 1 the central and 2 the next board.
 /// \returns X bit pattern of the hit.
 
-	if (11 <= chamber and chamber <= 14) return fPatternX[chamber - 11];
+	if (chamber < 11 or 14 < chamber)
+	{
+		AliError(Form(
+			"Chamber number %d is not in the valid range [11..14].",
+			int(chamber)
+		));
+		return 0;
+	}
+	if (board < 0 or 2 < board)
+	{
+		AliError(Form(
+			"Board number %d is not in the valid range [0..2].",
+			int(board)
+		));
+		return 0;
+	}
 	
-	AliError(Form(
-		"Chamber number %d is not in the valid range [11..14].",
-		int(chamber)
-	));
-	return fPatternX[0];
+	return fPatternX[chamber - 11][board];
 }
 
 
-Int_t AliHLTMUONTriggerRecord::PatternY(Int_t chamber) const
+Int_t AliHLTMUONTriggerRecord::PatternY(Int_t chamber, Int_t board) const
 {
 /// Returns the raw data Y pattern of the hit on the specified chamber.
 /// \param chamber  The chamber for which to fetch the bit pattern.
 ///                 Valid values are in the range [11..14].
+/// \param board  The board for which to fetch the bit pattern in the range [0..2].
+///               0 indicates the previous board, 1 the central and 2 the next board.
 /// \returns Y bit pattern of the hit.
 
-	if (11 <= chamber and chamber <= 14) return fPatternY[chamber - 11];
+	if (chamber < 11 or 14 < chamber)
+	{
+		AliError(Form(
+			"Chamber number %d is not in the valid range [11..14].",
+			int(chamber)
+		));
+		return 0;
+	}
+	if (board < 0 or 2 < board)
+	{
+		AliError(Form(
+			"Board number %d is not in the valid range [0..2].",
+			int(board)
+		));
+		return 0;
+	}
 	
-	AliError(Form(
-		"Chamber number %d is not in the valid range [11..14].",
-		int(chamber)
-	));
-	return fPatternY[0];
+	return fPatternY[chamber - 11][board];
 }
 
 
@@ -191,24 +220,14 @@ void AliHLTMUONTriggerRecord::SetHit(Int_t chamber, Float_t x, Float_t y, Float_
 }
 
 
-void AliHLTMUONTriggerRecord::SetHitDebugInfo(
-		Int_t chamber,
-		Int_t detElemId, UShort_t patternX, UShort_t patternY
-	)
+void AliHLTMUONTriggerRecord::SetHit(Int_t chamber, Float_t x, Float_t y, Float_t z, Int_t detElemId)
 {
-/// Fills the debugging information corresponding to the hit on the specified chamber.
-/// Sets the debugging information for the hit on the specified chamber.
-/// @param chamber  The chamber for which to set the debugging information.
-///                Valid values are in the range [11..14].
-/// @param detElemId  The detector element ID.
-/// @param patterX    The X bit pattern from the local board.
-/// @param patterY    The Y bit pattern from the local board.
-
+	// Sets the hit with the detection element ID.
+	
 	if (11 <= chamber and chamber <= 14)
 	{
+		fHit[chamber - 11].SetXYZ(x, y, z);
 		fDetElemId[chamber - 11] = detElemId;
-		fPatternX[chamber - 11] = patternX;
-		fPatternY[chamber - 11] = patternY;
 	}
 	else
 	{
@@ -217,6 +236,45 @@ void AliHLTMUONTriggerRecord::SetHitDebugInfo(
 			int(chamber)
 		));
 	}
+}
+
+
+void AliHLTMUONTriggerRecord::SetHitDebugInfo(
+		Int_t chamber, UShort_t patternX[3], UShort_t patternY[3]
+	)
+{
+/// Fills the debugging information corresponding to the hit on the specified chamber.
+/// Sets the debugging information for the hit on the specified chamber.
+/// @param chamber  The chamber for which to set the debugging information.
+///                Valid values are in the range [11..14].
+/// @param detElemId  The detector element ID.
+/// @param patternX    The X bit patterns from the local board.
+/// @param patternY    The Y bit patterns from the local board.
+
+	if (11 <= chamber and chamber <= 14)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			fPatternX[chamber - 11][i] = patternX[i];
+			fPatternY[chamber - 11][i] = patternY[i];
+		}
+	}
+	else
+	{
+		AliError(Form(
+			"Chamber number %d is not in the valid range [11..14].",
+			int(chamber)
+		));
+	}
+}
+
+
+void AliHLTMUONTriggerRecord::SetDebugInfo(Float_t zmiddle, Float_t bfieldintegral)
+{
+	// Sets the trigger record debug information.
+	
+	fZmiddle = zmiddle;
+	fQBL = bfieldintegral;
 }
 
 
@@ -270,37 +328,58 @@ void AliHLTMUONTriggerRecord::Print(Option_t* option) const
 			<< setw(8) << "X (cm)"
 			<< setw(12) << "Y (cm)"
 			<< setw(12) << "Z (cm)"
-			<< setw(12) << "DetElemID"
-			<< setw(18) << "X bit pattern"
-			<< setw(18) << "Y bit pattern" << endl;
+			<< setw(12) << "DetElemID" << endl;
 		for (int i = 0; i < 4; i++)
 		{
 			cout << setw(9) << i+11
 				<< setw(14) << fHit[i].X()
 				<< setw(12) << fHit[i].Y()
 				<< setw(12) << fHit[i].Z()
-				<< setw(12) << fDetElemId[i];
-			if (fPatternX[i] != -1)
+				<< setw(12) << fDetElemId[i]
+				<< endl;
+		}
+		cout << setw(9) << "Chamber"
+			<< setw(18+17*2) << "X bit patterns for local boards"
+			<< setw(18+17*2) << "Y bit patterns for local boards"
+			<< endl;
+		cout << setw(9+18) << "Next"
+			<< setw(17) << "Central"
+			<< setw(17) << "Previous"
+			<< setw(18) << "Next"
+			<< setw(17) << "Central"
+			<< setw(17) << "Previous"
+			<< endl;
+		for (int i = 0; i < 4; i++)
+		{
+			cout << setw(9) << i+11 << "  ";
+			for (int k = 0; k < 3; ++k)
 			{
-				// Print the X pattern as a bit pattern.
-				cout << "  ";
-				for (Int_t j = 15; j >= 0; j--)
-					cout << (((fPatternX[i] & (1 << j)) > 0) ? "1" : "0");
+				if (k != 0) cout << "|";
+				if (fPatternX[i][2-k] != -1)
+				{
+					// Print the X pattern as a bit pattern.
+					for (Int_t j = 15; j >= 0; j--)
+						cout << (((fPatternX[i][2-k] & (1 << j)) > 0) ? "1" : "0");
+				}
+				else
+				{
+					cout << "----------------";
+				}
 			}
-			else
+			cout << "  ";
+			for (int k = 0; k < 3; ++k)
 			{
-				cout << "  ----------------";
-			}
-			if (fPatternY[i] != -1)
-			{
-				// Print the Y pattern as a bit pattern.
-				cout << "  ";
-				for (Int_t j = 15; j >= 0; j--)
-					cout << (((fPatternY[i] & (1 << j)) > 0) ? "1" : "0");
-			}
-			else
-			{
-				cout << "  ----------------";
+				if (k != 0) cout << "|";
+				if (fPatternY[i][2-k] != -1)
+				{
+					// Print the Y pattern as a bit pattern.
+					for (Int_t j = 15; j >= 0; j--)
+						cout << (((fPatternY[i][2-k] & (1 << j)) > 0) ? "1" : "0");
+				}
+				else
+				{
+					cout << "----------------";
+				}
 			}
 			cout << endl;
 		}

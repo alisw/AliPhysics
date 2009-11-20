@@ -1380,6 +1380,76 @@ int DumpTriggerRecordsBlock(
 }
 
 
+int DumpLocalStruct(
+		const char* buffer, unsigned long bufferSize,
+		const AliMUONLocalInfoStruct* localStruct,
+		bool continueParse,
+		const char* title = ""
+	)
+{
+	// Prints the fields of a L0 local structure as found in the buffer.
+	
+	typedef AliMUONTriggerDDLDecoderEventHandler AliH;
+	
+	cout << "L0 strip patterns" << title << ":" << endl;
+	cout << "Chamber |        X         |         Y        " << endl;
+	cout << "----------------------------------------------" << endl;
+	int result = CheckField(localStruct->fX2X1, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "   11     ";
+	PrintBitPattern(AliH::GetLocalX1(localStruct), 16);
+	result = CheckField(localStruct->fY2Y1, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "   ";
+	PrintBitPattern(AliH::GetLocalY1(localStruct), 16);
+	cout << endl;
+	cout << "   12     ";
+	PrintBitPattern(AliH::GetLocalX2(localStruct), 16);
+	cout << "   ";
+	PrintBitPattern(AliH::GetLocalY2(localStruct), 16);
+	cout << endl;
+	
+	result = CheckField(localStruct->fX4X3, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "   13     ";
+	PrintBitPattern(AliH::GetLocalX3(localStruct), 16);
+	result = CheckField(localStruct->fY4Y3, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "   ";
+	PrintBitPattern(AliH::GetLocalY3(localStruct), 16);
+	cout << endl;
+	cout << "   12     ";
+	PrintBitPattern(AliH::GetLocalX4(localStruct), 16);
+	cout << "   ";
+	PrintBitPattern(AliH::GetLocalY4(localStruct), 16);
+	cout << endl;
+	
+	cout << "L0 trigger bits" << title << ": (word = ";
+	result = CheckField(localStruct->fTriggerBits, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << showbase << hex << localStruct->fTriggerBits
+		<< noshowbase << dec << ")" << endl;
+	cout << "  ID |  Dec | TrigY | YPos | Sign XDev | XDev |  XPos " << endl;
+	cout << "------------------------------------------------------" << endl;
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalId(localStruct)), 4);
+	cout << "   ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalDec(localStruct)), 4);
+	cout << "     ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalTrigY(localStruct)), 1);
+	cout << "     ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalYPos(localStruct)), 4);
+	cout << "       ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalSXDev(localStruct)), 1);
+	cout << "       ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalXDev(localStruct)), 4);
+	cout << "   ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalXPos(localStruct)), 5);
+	cout << endl;
+	
+	return result;
+}
+
+
 int DumpTrigRecInfoStruct(
 		const char* buffer, unsigned long bufferSize,
 		const AliHLTMUONTrigRecInfoStruct* debuginfo,
@@ -1418,62 +1488,12 @@ int DumpTrigRecInfoStruct(
 	if (result != EXIT_SUCCESS) return result;
 	cout << setw(31) << right << debuginfo->fBl << setw(0) << endl;
 	
-	typedef AliMUONTriggerDDLDecoderEventHandler AliH;
-	
-	cout << "L0 strip patterns:" << endl;
-	cout << "Chamber |        X         |         Y        " << endl;
-	cout << "----------------------------------------------" << endl;
-	result = CheckField(debuginfo->fL0Struct.fX2X1, buffer, bufferSize, continueParse);
+	result = DumpLocalStruct(buffer, bufferSize, &debuginfo->fL0Struct, continueParse, " for central local structure");
 	if (result != EXIT_SUCCESS) return result;
-	cout << "   11     ";
-	PrintBitPattern(AliH::GetLocalX1(&debuginfo->fL0Struct), 16);
-	result = CheckField(debuginfo->fL0Struct.fY2Y1, buffer, bufferSize, continueParse);
+	result = DumpLocalStruct(buffer, bufferSize, &debuginfo->fL0StructPrev, continueParse, " for previous local structure");
 	if (result != EXIT_SUCCESS) return result;
-	cout << "   ";
-	PrintBitPattern(AliH::GetLocalY1(&debuginfo->fL0Struct), 16);
-	cout << endl;
-	cout << "   12     ";
-	PrintBitPattern(AliH::GetLocalX2(&debuginfo->fL0Struct), 16);
-	cout << "   ";
-	PrintBitPattern(AliH::GetLocalY2(&debuginfo->fL0Struct), 16);
-	cout << endl;
-	
-	result = CheckField(debuginfo->fL0Struct.fX4X3, buffer, bufferSize, continueParse);
+	result = DumpLocalStruct(buffer, bufferSize, &debuginfo->fL0StructNext, continueParse, " for next local structure");
 	if (result != EXIT_SUCCESS) return result;
-	cout << "   13     ";
-	PrintBitPattern(AliH::GetLocalX3(&debuginfo->fL0Struct), 16);
-	result = CheckField(debuginfo->fL0Struct.fY4Y3, buffer, bufferSize, continueParse);
-	if (result != EXIT_SUCCESS) return result;
-	cout << "   ";
-	PrintBitPattern(AliH::GetLocalY3(&debuginfo->fL0Struct), 16);
-	cout << endl;
-	cout << "   12     ";
-	PrintBitPattern(AliH::GetLocalX4(&debuginfo->fL0Struct), 16);
-	cout << "   ";
-	PrintBitPattern(AliH::GetLocalY4(&debuginfo->fL0Struct), 16);
-	cout << endl;
-	
-	cout << "L0 trigger bits: (word = ";
-	result = CheckField(debuginfo->fL0Struct.fTriggerBits, buffer, bufferSize, continueParse);
-	if (result != EXIT_SUCCESS) return result;
-	cout << showbase << hex << debuginfo->fL0Struct.fTriggerBits
-		<< noshowbase << dec << ")" << endl;
-	cout << "  ID |  Dec | TrigY | YPos | Sign XDev | XDev |  XPos " << endl;
-	cout << "------------------------------------------------------" << endl;
-	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalId(&debuginfo->fL0Struct)), 4);
-	cout << "   ";
-	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalDec(&debuginfo->fL0Struct)), 4);
-	cout << "     ";
-	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalTrigY(&debuginfo->fL0Struct)), 1);
-	cout << "     ";
-	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalYPos(&debuginfo->fL0Struct)), 4);
-	cout << "       ";
-	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalSXDev(&debuginfo->fL0Struct)), 1);
-	cout << "       ";
-	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalXDev(&debuginfo->fL0Struct)), 4);
-	cout << "   ";
-	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalXPos(&debuginfo->fL0Struct)), 5);
-	cout << endl;
 	
 	return result;
 }

@@ -170,6 +170,18 @@ public:
 	{
 		return not this->operator == (track);
 	}
+	
+	/**
+	 * Returns the Z coordinate in the middle of the magnetic field used to
+	 * calculate the momentum.
+	 */
+	Float_t Zmiddle() const { return fZmiddle; }
+	
+	/**
+	 * Returns the integrated magnetic field strength times polarity used in
+	 * the calculation of the momentum. Value returned in (T.m) tesla metres.
+	 */
+	Float_t QBL() const { return fQBL; }
 
 private:
 
@@ -189,9 +201,9 @@ private:
 	
 	// Parameters used in momentum estimation:
 	Float_t fZmiddle; ///< Particle momentum X component in GeV/c.
-	Float_t fQBL;     ///< The integrated magnetic field times charge in (T.m) tesla metres.
+	Float_t fQBL;     ///< The integrated magnetic field times the field polarity in (T.m) tesla metres.
 
-	ClassDef(AliHLTMUONMansoTrack, 3); // Manso track object containing data converted from a dHLT internal track structure.
+	ClassDef(AliHLTMUONMansoTrack, 4); // Manso track object containing data converted from a dHLT internal track structure.
 };
 
 #endif // ALIHLTMUONMANSOTRACK_H
