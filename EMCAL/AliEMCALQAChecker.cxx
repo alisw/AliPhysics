@@ -330,12 +330,12 @@ AliEMCALQAChecker::CheckRaws(TObjArray ** list)
       }
       
       if ( rv <=0.8 && rv >0.5 ) {
-        AliError(Form("Got a large deviation of %2.2f from average, some error on the detector!!!",rv));
+        AliError(Form("Got a large deviation of %2.2f from average, some error on the detector !!!",rv));
         test[specie] =  0.7;
       }
       
       if ( rv >0.8 ) {
-        AliError(Form("Got too large deviation of %2.2f from average, detector out of control???!!!",rv));
+        AliError(Form("Got too large deviation of %2.2f from average, detector out of control ???",rv));
         test[specie] =  0.9; 
       }
     
