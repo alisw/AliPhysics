@@ -252,11 +252,22 @@ TObjArray *AliGlauberMC::GetNucleons()
 }
 
 //______________________________________________________________________________
-Double_t AliGlauberMC::GetdNdEta() const
+Double_t AliGlauberMC::GetdNdEta( const Double_t npp, const Double_t x) const
 {
   //Get particle density per unit of rapidity
   //using the two component model
-  return (fNpp*((1.-fX)*fNpart/2.)+fX*fNcoll);
+  return (npp*((1.-x)*fNpart/2.)+x*fNcoll);
+}
+
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetdNdEtaGBW( const Double_t delta,
+                                     const Double_t lambda,
+                                     const Double_t snn ) const
+{
+  //Get particle density per unit of rapidity
+  //using the GBW model
+  return (fNpart*0.47*TMath::Sqrt(TMath::Power(snn,lambda))
+          * TMath::Power(fNpart,(1.-delta)/3./delta));
 }
 
 //______________________________________________________________________________
@@ -289,7 +300,7 @@ void AliGlauberMC::Run(Int_t nevents)
    TString title(Form("%s + %s (x-sect = %d mb)",fANucleus.GetName(),fBNucleus.GetName(),(Int_t) fXSect));
    if (fnt == 0) {
       fnt = new TNtuple(name,title,
-                        "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:VarEpart:Mult");
+                        "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:VarEpart:Mult:MultGBW");
       fnt->SetDirectory(0);
    }
 
@@ -318,6 +329,7 @@ void AliGlauberMC::Run(Int_t nevents)
       v[17] = GetEccentricity();
       v[18] = GetEccentricityPart();
       v[19] = GetdNdEta();
+      v[20] = GetdNdEtaGBW();
 
       fnt->Fill(v);
 

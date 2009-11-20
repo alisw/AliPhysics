@@ -58,17 +58,16 @@ private:
    Bool_t       CalcEvent(Double_t bgen);
 
 public:
-   AliGlauberMC(Option_t* NA = "Au", Option_t* NB = "Au", Double_t xsect = 42);
+   AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 72);
    virtual     ~AliGlauberMC() {Reset();}
 
    void         Draw(Option_t* option);
-   Double_t     GetdNdEta()          const;
+   Double_t     GetdNdEta( const Double_t npp=8.0, const Double_t x=0.13 ) const;
+   Double_t     GetdNdEtaGBW( const Double_t delta=0.79,
+                              const Double_t lambda=0.288,
+                              const Double_t snn=30.25 ) const;
    Double_t     GetEccentricity()    const;
    Double_t     GetEccentricityPart()const;
-   Double_t     GetX()               const {return fX;}
-   Double_t     GetNpp()             const {return fNpp;}
-   void SetX( const Double_t x ) {fX = x;}
-   void SetNpp( const Double_t n ) {fNpp = n;}
    Double_t     GetB()               const {return fB_MC;}
    Double_t     GetBMin()            const {return fBMin;}
    Double_t     GetBMax()            const {return fBMax;}

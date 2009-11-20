@@ -11,7 +11,7 @@
   gStyle->SetPalette(1);
 
   TCanvas* c = new TCanvas("GlauberMC","GlauberMC");
-  c->Divide(2,4);
+  c->Divide(2,3);
   c->cd(1);
   // plot number of collisions
   t->Draw("Ncoll:B","","prof");
@@ -19,17 +19,15 @@
   // plot number of wounded nucleons
   t->Draw("Npart:B","","prof");
   c->cd(3);
-  // plot "standard" eccentricity
-  t->Draw("(VarY-VarX)/(VarY+VarX):Npart","","prof");
-  c->cd(4);
-  // plot participant eccentricity
-  t->Draw("sqrt((VarY-VarX)*(VarY-VarX)+4*VarXY*VarXY)/(VarY+VarX):Npart","","prof");
-  c->cd(5);
   t->Draw("VarE:Npart","","prof");
-  c->cd(6);
+  c->cd(4);
   t->Draw("VarEpart:Npart","","prof");
-  c->cd(7);
-  t->Draw("Mult");
+  c->cd(5);
+  t->Draw("Mult:B");
+  c->cd(6);
+  t->Draw("MultGBW:B");
+
+  c->cd(0);
 
   c->Update();
 }
