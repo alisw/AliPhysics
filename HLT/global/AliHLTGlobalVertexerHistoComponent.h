@@ -35,7 +35,10 @@ public:
   /** interface function, see AliHLTComponent for description. why not const? */
   AliHLTComponentDataType GetOutputDataType();
   /** interface function, see AliHLTComponent for description */
-  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
+
+   /** interface function, see AliHLTComponent for description */
+ virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   /** interface function, see AliHLTComponent for description */
   AliHLTComponent* Spawn();
 

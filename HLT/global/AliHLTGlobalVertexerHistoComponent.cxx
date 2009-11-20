@@ -114,11 +114,23 @@ void AliHLTGlobalVertexerHistoComponent::GetInputDataTypes(AliHLTComponentDataTy
 }
 
 
+
 AliHLTComponentDataType AliHLTGlobalVertexerHistoComponent::GetOutputDataType()
 {
-  //Output are histogramms.
-  return kAliHLTDataTypeHistogram /*| kAliHLTDataOriginOut*/;
+  // see header file for class documentation
+  return kAliHLTMultipleDataType;
 }
+
+int AliHLTGlobalVertexerHistoComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+
+{
+  // see header file for class documentation
+  tgtList.clear();
+  tgtList.push_back(kAliHLTDataTypeHistogram|kAliHLTDataOriginOut);
+  tgtList.push_back(kAliHLTDataTypeHistogram|kAliHLTDataOriginITSSPD);
+ return tgtList.size();
+}
+
 
 void AliHLTGlobalVertexerHistoComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
@@ -222,14 +234,14 @@ int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& 
     }
   }
  
-  PushBack(&fPrimaryXY, kAliHLTDataTypeHistogram, 0);
-  PushBack(&fPrimaryZX, kAliHLTDataTypeHistogram, 0);
-  PushBack(&fPrimaryZY, kAliHLTDataTypeHistogram, 0);
+  PushBack(&fPrimaryXY, kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
+  PushBack(&fPrimaryZX, kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
+  PushBack(&fPrimaryZY, kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
 
-  PushBack(&fSPDVertexXY, kAliHLTDataTypeHistogram, 0);
-  PushBack(&fSPDVertexX, kAliHLTDataTypeHistogram, 0);
-  PushBack(&fSPDVertexY, kAliHLTDataTypeHistogram, 0);
-  PushBack(&fSPDVertexZ, kAliHLTDataTypeHistogram, 0);
+  PushBack(&fSPDVertexXY, kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
+  PushBack(&fSPDVertexX, kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
+  PushBack(&fSPDVertexY, kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
+  PushBack(&fSPDVertexZ, kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
   
   return iResult; 
 }
