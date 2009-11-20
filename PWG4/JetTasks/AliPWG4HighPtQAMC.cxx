@@ -21,6 +21,9 @@
 // Author : Marta Verweij - UU
 //-----------------------------------------------------------------------
 
+#ifndef ALIPWG4HighPtQAMC_CXX
+#define ALIPWG4HighPtQAMC_CXX
+
 #include "AliPWG4HighPtQAMC.h"
 
 #include "TH1.h"
@@ -37,7 +40,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliExternalTrackParam.h"
-
+#include "AliLog.h"
 
 using namespace std; //required for resolving the 'cout' symbol
 
@@ -47,9 +50,9 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(): AliAnalysisTask("AliPWG4HighPtQAMC", "")
   fESD(0), 
   fTrackCuts(0), 
   fTrackCutsITS(0),
-  fNEvent(0), // just to avoid warnings, inititialized in InitPointers too
-  fPtAll(0),  //
-  fPtSel(0),  //
+  fNEvent(0), 
+  fPtAll(0),  
+  fPtSel(0),  
   fPtAllminPtMCvsPtAll(0),
   fPtAllminPtMCvsPtAllNPointTPC(0),
   fPtAllminPtMCvsPtAllDCAR(0),
@@ -75,7 +78,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(): AliAnalysisTask("AliPWG4HighPtQAMC", "")
   fPtITSminPtMCvsPtITSRel1PtUncertainty(0),
   fHistListITS(0)
 {
-  InitHistPointers();
+
 }
 //________________________________________________________________________
 AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name): 
@@ -83,9 +86,9 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fESD(0),
   fTrackCuts(),
   fTrackCutsITS(),
-  fNEvent(0), // just to avoid warnings, inititialized in InitPointers too
-  fPtAll(0),  //
-  fPtSel(0),  //
+  fNEvent(0),
+  fPtAll(0),
+  fPtSel(0),
   fPtAllminPtMCvsPtAll(0),
   fPtAllminPtMCvsPtAllNPointTPC(0),
   fPtAllminPtMCvsPtAllDCAR(0),
@@ -114,7 +117,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   //
   // Constructor. Initialization of Inputs and Outputs
   //
-  Info("AliPWG4HighPtQAMC","Calling Constructor");
+  AliDebug(2,Form("AliPWG4HighPtQAMC","Calling Constructor"));
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList
@@ -123,66 +126,36 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   DefineOutput(1, TList::Class());
   // Output slot #2 writes into a TList
   DefineOutput(2, TList::Class());
-  InitHistPointers();
-  //  TH1::AddDirectory(kFALSE);
-  //  TH2::AddDirectory(kFALSE);
-  // TH3::AddDirectory(kFALSE);
-  }
+}
 
 //________________________________________________________________________
 void AliPWG4HighPtQAMC::ConnectInputData(Option_t *) 
 {
   // Connect ESD here
   // Called once
-  printf(">> AliPWG4HighPtQATPConly::ConnectInputData \n");
+  AliDebug(2,Form(">> AliPWG4HighPtSpectra::ConnectInputData \n"));
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
+    AliDebug(2,Form("ERROR: Could not read chain from input slot 0"));
   } else {
     
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     
     if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
+      AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
     } else
       fESD = esdH->GetEvent();
   }
 }
 
 //________________________________________________________________________
-void AliPWG4HighPtQAMC::InitHistPointers() {
-  //Initialize histograms
-  fNEvent = 0;
-  fPtAll = 0;
-  fPtSel = 0;
-  //Global tracking compared to MC pt
-  fPtAllMC = 0;
-  fPtSelMC = 0;
-  fPtAllminPtMCvsPtAll = 0;
-  fPtAllminPtMCvsPtAllNPointTPC = 0;
-  fPtAllminPtMCvsPtAllDCAR = 0;
-  fPtAllminPtMCvsPtAllDCAZ = 0;
-  fPtAllminPtMCvsPtAllPhi = 0;
-  fPtAllminPtMCvsPtAllNPointITS = 0;
-  fPtAllminPtMCvsPtAllNSigmaToVertex = 0;
-  fPtAllminPtMCvsPtAllChi2C = 0;
-  fPtAllminPtMCvsPtAllRel1PtUncertainty = 0;
-  //ITSrefit histos compared to MC pt
-  fPtSelITS = 0;
-  fPtITSminPtMCvsPtITS = 0;
-  fPtITSminPtMCvsPtITSNPointTPC = 0;
-  fPtITSminPtMCvsPtITSDCAR = 0;
-  fPtITSminPtMCvsPtITSDCAZ = 0;
-  fPtITSminPtMCvsPtITSPhi = 0;
-  fPtITSminPtMCvsPtITSNPointITS = 0;
-  fPtITSminPtMCvsPtITSNSigmaToVertex = 0;
-  fPtITSminPtMCvsPtITSChi2C = 0;
-  fPtITSminPtMCvsPtITSRel1PtUncertainty = 0;
-}
-//________________________________________________________________________
 void AliPWG4HighPtQAMC::CreateOutputObjects() {
   //Create output objects
-  printf(">> AliPWG4HighPtQATPConly::CreateOutputObjects \n");
+  AliDebug(2,Form(">> AliPWG4HighPtQATPConly::CreateOutputObjects \n"));
+
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE); 
+
   OpenFile(0);
   fHistList = new TList();
   OpenFile(1);
@@ -321,55 +294,58 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fPtSelMCITS = new TH1F("fPtSelMCITS","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
   fHistList->Add(fPtSelMCITS);
   
+  TH1::AddDirectory(oldStatus); 
+
 }
 //________________________________________________________________________
 void AliPWG4HighPtQAMC::Exec(Option_t *) {  
   // Main loop
   // Called for each event
-  printf(">> AliPWG4HighPtQATPConly::Exec \n");  
+  AliDebug(2,Form(">> AliPWG4HighPtQATPConly::Exec \n"));  
   
   if (!fESD) {
-    Printf("ERROR: fESD not available");
+    AliDebug(2,Form("ERROR: fESD not available"));
     return;
   }
 
  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) {
-    Printf("ERROR: Could not retrieve MC event handler");
+    AliDebug(2,Form("ERROR: Could not retrieve MC event handler"));
     return;
   }
 
   AliMCEvent* mcEvent = eventHandler->MCEvent();
   if (!mcEvent) {
-    Printf("ERROR: Could not retrieve MC event");
+    AliDebug(2,Form("ERROR: Could not retrieve MC event"));
     return;
   }
 
-  Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+  AliDebug(2,Form("MC particles: %d", mcEvent->GetNumberOfTracks()));
 
   if (!fESD) {
-    Printf("ERROR: fESD not available");
+    AliDebug(2,Form("ERROR: fESD not available"));
     return;
   }
 
   AliStack* stack = mcEvent->Stack();                //Particles Stack
 
-  Printf("MC particles stack: %d", stack->GetNtrack());
+  AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
 
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
 
   // Need vertex cut
   if (vtx->GetNContributors() < 2)
     return;
+  
+  AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
 
-  printf("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors());
   // Need to keep track of evts without vertex
   fNEvent->Fill(0.);
 
   if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2) return;
   Int_t nTracks = fESD->GetNumberOfTracks();
-  printf("nTracks %d\n", nTracks);
-  
+  AliDebug(2,Form("nTracks %d", nTracks));
+
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     
     AliESDtrack *track = fESD->GetTrack(iTrack);
@@ -439,7 +415,10 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 //________________________________________________________________________
 void AliPWG4HighPtQAMC::Terminate(Option_t *)
 {
-  printf("->AliPWG4HighPtQATPConly::Terminate \n");
+  // The Terminate() function is the last function to be called during
+  // a query. It always runs on the client, it can be used to present
+  // the results graphically or save the results to file.
 
-  printf("-<AliPWG4HighPtQATPConly::Terminate \n");
 }
+
+#endif
