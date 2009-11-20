@@ -39,6 +39,7 @@
 #include <TROOT.h>
 #include <TString.h>
 #include <TSystem.h>
+#include <TStopwatch.h>
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -204,7 +205,7 @@ AliQAManager::~AliQAManager()
 	}
   TCanvas fakeCanvas ; 
   if (fPrintImage) 
-    fakeCanvas.Print(Form("%s%s%d.%s]", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())); 
+    fakeCanvas.Print(Form("%s%s%d.%s]", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat()), "ps"); 
 }
 
 //_____________________________________________________________________________
@@ -671,6 +672,12 @@ Bool_t AliQAManager::InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  Char_t 
 	InitQADataMaker(fRunNumber, detArray) ; //, fCycleSame, kTRUE, detArray) ; 
   if (fPrintImage) {
     TCanvas fakeCanvas ; 
+    TStopwatch timer ; 
+    timer.Start() ; 
+    while (timer.CpuTime()<5) {
+      timer.Continue();
+      gSystem->ProcessEvents();
+    }
     fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())) ;    
   }    
 	return kTRUE ; 
@@ -1440,6 +1447,16 @@ Bool_t AliQAManager::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const
 	}
 	return rv ; 
 }	
+
+//_____________________________________________________________________________
+
+void AliQAManager::SetCheckerExternParam(AliQAv1::DETECTORINDEX_t detIndex, TList * parameterList) 
+{
+  // set the external parameters list for the detector checkers 
+  AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(detIndex) ; 
+  qac->SetExternParamlist(parameterList) ; 
+  qac->PrintExternParam() ;  
+}
 
 //_____________________________________________________________________________
 void AliQAManager::SetEventSpecie(AliRecoParam::EventSpecie_t es) 

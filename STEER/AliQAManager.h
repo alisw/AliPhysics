@@ -70,6 +70,7 @@ public:
 	void             RunOneEvent(AliESDEvent *& esd)  ;
 	Bool_t           Save2OCDB(const Int_t runNumber, AliRecoParam::EventSpecie_t es, const Char_t * year = "08", const Char_t * detectors = "ALL") const ; 
 	void             SetActiveDetectors(TString aDet) { fDetectors = aDet ;  }
+  void             SetCheckerExternParam(AliQAv1::DETECTORINDEX_t det, TList * parameterList) ;  
 	void             SetCycleLength(const AliQAv1::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
 	void             SetWriteExpert(const AliQAv1::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
 	void             SetEventRange(UInt_t first, UInt_t last) { fFirstEvent = first ; fMaxEvents = last - first + 1 ; }    
