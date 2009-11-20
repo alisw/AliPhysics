@@ -54,7 +54,9 @@
 #include <TBits.h>
 
 #include <AliESDtrack.h>
+#include <AliAODTrack.h>
 #include <AliESDEvent.h>
+#include <AliAODEvent.h>
 #include <AliLog.h>
 #include "AliCFTrackIsPrimaryCuts.h"
 
@@ -63,7 +65,7 @@ ClassImp(AliCFTrackIsPrimaryCuts)
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
   AliCFCutBase(),
-  fESD(0x0),
+  fEvt(0x0),
   fUseSPDvertex(0),
   fUseTPCvertex(0),
   fMinDCAToVertexXY(0),
@@ -109,7 +111,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
   AliCFCutBase(name,title),
-  fESD(0x0),
+  fEvt(0x0),
   fUseSPDvertex(0),
   fUseTPCvertex(0),
   fMinDCAToVertexXY(0),
@@ -155,7 +157,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(const AliCFTrackIsPrimaryCuts& c) :
   AliCFCutBase(c),
-  fESD(c.fESD),
+  fEvt(c.fEvt),
   fUseSPDvertex(c.fUseSPDvertex),
   fUseTPCvertex(c.fUseTPCvertex),
   fMinDCAToVertexXY(c.fMinDCAToVertexXY),
@@ -206,7 +208,7 @@ AliCFTrackIsPrimaryCuts& AliCFTrackIsPrimaryCuts::operator=(const AliCFTrackIsPr
   //
   if (this != &c) {
     AliCFCutBase::operator=(c) ;
-    fESD = c.fESD;
+    fEvt = c.fEvt;
     fUseSPDvertex = c.fUseSPDvertex;
     fUseTPCvertex = c.fUseTPCvertex;
     fMinDCAToVertexXY = c.fMinDCAToVertexXY;
@@ -269,7 +271,7 @@ AliCFTrackIsPrimaryCuts::~AliCFTrackIsPrimaryCuts()
     for (Int_t i=0; i<kNHist; i++)
       if(fhQA[i][j]) 		delete fhQA[i][j];
   }
-  if(fESD) 			delete fESD;
+  if(fEvt) 			delete fEvt;
   if(fBitmap) 			delete fBitmap;
   if(fhBinLimNSigma) 		delete fhBinLimNSigma;
   if(fhBinLimRequireSigma) 	delete fhBinLimRequireSigma;
@@ -360,20 +362,20 @@ void AliCFTrackIsPrimaryCuts::Copy(TObject &c) const
   TNamed::Copy(c);
 }
 //__________________________________________________________________________________
-void AliCFTrackIsPrimaryCuts::SetRecEventInfo(const TObject* esd) {
+void AliCFTrackIsPrimaryCuts::SetRecEventInfo(const TObject* evt) {
   //
-  // Sets pointer to esd event information (AliESDEvent)
+  // Sets pointer to event information (AliESDEvent or AliAODEvent)
   //
-  if (!esd) {
-    AliError("Pointer to AliESDEvent !");
+  if (!evt) {
+    AliError("Pointer to AliVEvent !");
     return;
   }
-  TString className(esd->ClassName());
-  if (className.CompareTo("AliESDEvent") != 0) {
-    AliError("argument must point to an AliESDEvent !");
+  TString className(evt->ClassName());
+  if (! (className.CompareTo("AliESDEvent")==0 || className.CompareTo("AliAODEvent")==0)) {
+    AliError("argument must point to an AliESDEvent or AliAODEvent !");
     return ;
   }
-  fESD = (AliESDEvent*) esd;
+  fEvt = (AliVEvent*) evt;
 }
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::UseSPDvertex(Bool_t b) {
@@ -399,9 +401,11 @@ void AliCFTrackIsPrimaryCuts::GetDCA(AliESDtrack* esdTrack)
   if( fUseTPCvertex)			esdTrack->GetImpactParametersTPC(b,bCov);
 
   if( fUseSPDvertex) {
-	if (!fESD) return;
-	const AliESDVertex *vtx = fESD->GetVertex();
-	const Double_t Bz = fESD->GetMagneticField();
+	if (!fEvt) return;
+	AliESDEvent * evt = 0x0 ; 
+	evt = dynamic_cast<AliESDEvent*>(fEvt);
+	const AliESDVertex *vtx = evt->GetVertex();
+	const Double_t Bz = evt->GetMagneticField();
 	AliExternalTrackParam *cParam = 0;
 	Bool_t success = esdTrack->RelateToVertex(vtx, Bz, kVeryBig, cParam);
 	if (success) esdTrack->GetImpactParameters(b,bCov);
@@ -437,6 +441,70 @@ void AliCFTrackIsPrimaryCuts::GetDCA(AliESDtrack* esdTrack)
   return;
 }
 //__________________________________________________________________________________
+void AliCFTrackIsPrimaryCuts::GetDCA(AliAODTrack* aodTrack)
+{
+  if (!aodTrack) return;
+
+  Double_t p[3] = {0.,0.,0.};
+  Double_t cov[21] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+
+  aodTrack->XYZAtDCA(p); // position at DCA
+  aodTrack->GetCovarianceXYZPxPyPz(cov);
+
+
+  fDCA[5] = -1; // n_sigma
+  if (p[0]==-999. || p[1]==-999. ||  p[2]==-999.) {
+    AliError("dca info not available !");
+    fDCA[0] = -999.; // impact parameter xy
+    fDCA[1] = -999.; // impact parameter z
+    return;
+  }
+
+  if (!fEvt) return;
+  AliAODEvent * evt = 0x0;
+  evt = dynamic_cast<AliAODEvent*>(fEvt);
+  // primary vertex is the "best": tracks, SPD or TPC vertex
+  AliAODVertex * primaryVertex = evt->GetVertex(0);
+  // dca = track postion - primary vertex position
+  p[0] = p[0] - primaryVertex->GetX();
+  p[1] = p[1] - primaryVertex->GetY();
+  p[2] = p[2] - primaryVertex->GetZ();
+  // calculate dca in transverse plane
+  Float_t b[2] = {0.,0.};
+  b[0] = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
+  b[1] = p[2];
+  // resolution
+  Double_t bCov[3] = {0.,0.,0.};
+  // how to calculate the resoultion in the transverse plane ?
+  bCov[0] = 0.; // to do: calculate cov in transverse plane
+  bCov[2] = 0.; // from cov in x and y, need to know correlation
+
+  if (bCov[0]<=0 || bCov[2]<=0) {
+      bCov[0]=0; bCov[2]=0;
+  }
+  fDCA[0] = b[0]; // impact parameter xy
+  fDCA[1] = b[1]; // impact parameter z
+  fDCA[2] = TMath::Sqrt(bCov[0]); // resolution xy
+  fDCA[3] = TMath::Sqrt(bCov[2]); // resolution z
+
+  if (!fAbsDCAToVertex) {
+	AliError("resolution of impact parameter not available, use absolute dca cut instead !");
+	if (fDCA[2] > 0) fDCA[0] = fDCA[0]/fDCA[2]; // normalised impact parameter xy
+	if (fDCA[3] > 0) fDCA[1] = fDCA[1]/fDCA[3]; // normalised impact parameter z
+  }
+
+  // get n_sigma
+  if (fDCA[2]==0 || fDCA[3]==0)
+	return;
+  fDCA[5] = 1000.;
+  Float_t d = TMath::Sqrt(TMath::Power(b[0]/fDCA[2],2) + TMath::Power(b[1]/fDCA[3],2));
+  if (TMath::Exp(-d * d / 2) < 1e-15)
+	return;
+  fDCA[5] = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+
+  return;
+}
+//__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
 {
   //
@@ -464,102 +532,65 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
 
   // get the track to vertex parameter for ESD track
   if (isESDTrack) GetDCA(esdTrack);
+  if (isAODTrack) GetDCA(aodTrack);
+
+  // check whether dca info is filled
+  Bool_t dcaInfo = 0;
+  if (fDCA[0]>-990. && fDCA[1]>-990.) dcaInfo = 1;
 
   Float_t bxy = 0, bz = 0;
-  if (isESDTrack) {
-	bxy = TMath::Abs(fDCA[0]);
- 	bz  = TMath::Abs(fDCA[1]);
- }
+  bxy = TMath::Abs(fDCA[0]);
+  bz  = TMath::Abs(fDCA[1]);
+
   Float_t b2Dmin = 0, b2Dmax = 0;
-  if (isESDTrack) {
-    if (fMinDCAToVertexXY>0 && fMinDCAToVertexZ>0)
-	b2Dmin = fDCA[0]*fDCA[0]/fMinDCAToVertexXY/fMinDCAToVertexXY + fDCA[1]*fDCA[1]/fMinDCAToVertexZ/fMinDCAToVertexZ;
-    if (fMaxDCAToVertexXY>0 && fMaxDCAToVertexZ>0) 
-	b2Dmax = fDCA[0]*fDCA[0]/fMaxDCAToVertexXY/fMaxDCAToVertexXY + fDCA[1]*fDCA[1]/fMaxDCAToVertexZ/fMaxDCAToVertexZ;
-  }
+  if (fMinDCAToVertexXY>0 && fMinDCAToVertexZ>0)
+    b2Dmin = fDCA[0]*fDCA[0]/fMinDCAToVertexXY/fMinDCAToVertexXY + fDCA[1]*fDCA[1]/fMinDCAToVertexZ/fMinDCAToVertexZ;
+  if (fMaxDCAToVertexXY>0 && fMaxDCAToVertexZ>0) 
+    b2Dmax = fDCA[0]*fDCA[0]/fMaxDCAToVertexXY/fMaxDCAToVertexXY + fDCA[1]*fDCA[1]/fMaxDCAToVertexZ/fMaxDCAToVertexZ;
+
 
   // fill the bitmap
   Int_t iCutBit = 0;
 
-  if (isESDTrack) {
-    if (fDCAToVertex2D || (!fDCAToVertex2D && bxy >= fMinDCAToVertexXY && bxy <= fMaxDCAToVertexXY)) {
-      fBitmap->SetBitNumber(iCutBit,kTRUE);
-    }
-  }
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-
+  if (!dcaInfo || fDCAToVertex2D || (!fDCAToVertex2D && bxy >= fMinDCAToVertexXY && bxy <= fMaxDCAToVertexXY))
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
 
-  if (isESDTrack) {
-    if (fDCAToVertex2D || (!fDCAToVertex2D && bz  >= fMinDCAToVertexZ && bz  <= fMaxDCAToVertexZ)) {
-      fBitmap->SetBitNumber(iCutBit,kTRUE);
-    }
-  }
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-
+  if (!dcaInfo || fDCAToVertex2D || (!fDCAToVertex2D && bz  >= fMinDCAToVertexZ && bz  <= fMaxDCAToVertexZ))
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
 
-  if (isESDTrack) {
-    if (!fDCAToVertex2D || (fDCAToVertex2D && TMath::Sqrt(b2Dmin) > 1  && TMath::Sqrt(b2Dmax) < 1)) {
+  if (!dcaInfo || !fDCAToVertex2D || (fDCAToVertex2D && TMath::Sqrt(b2Dmin) > 1  && TMath::Sqrt(b2Dmax) < 1))
       fBitmap->SetBitNumber(iCutBit,kTRUE);
-    }
-  }
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-
   iCutBit++;
 
-  if (isESDTrack) {
-    if (fDCA[5] >= fNSigmaToVertexMin && fDCA[5] <= fNSigmaToVertexMax) {
+  if (!dcaInfo || fDCA[5] >= fNSigmaToVertexMin && fDCA[5] <= fNSigmaToVertexMax)
       fBitmap->SetBitNumber(iCutBit,kTRUE);
-    }
-  }
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-
   iCutBit++;
 
-  if (isESDTrack) {
-    if (fDCA[2] < fSigmaDCAxy) {
+  if (!dcaInfo || fDCA[2] < fSigmaDCAxy)
       fBitmap->SetBitNumber(iCutBit,kTRUE);
-    }
-  }
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-
   iCutBit++;
 
-  if (isESDTrack) {
-    if (fDCA[3] < fSigmaDCAz) {
+  if (!dcaInfo || fDCA[3] < fSigmaDCAz)
       fBitmap->SetBitNumber(iCutBit,kTRUE);
-    }
-  }
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-
   iCutBit++;
 
-  if (isESDTrack) {
-    if (!fRequireSigmaToVertex || (fDCA[5]>=0 && fRequireSigmaToVertex)) {
+  if (!dcaInfo || !fRequireSigmaToVertex || (fDCA[5]>=0 && fRequireSigmaToVertex))
       fBitmap->SetBitNumber(iCutBit,kTRUE);
-    }
-  }
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-
   iCutBit++;
 
-  if (esdTrack) {
-    if (fAcceptKinkDaughters || (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)<=0)) {
+  if (!dcaInfo || fAcceptKinkDaughters || (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)<=0))
       fBitmap->SetBitNumber(iCutBit,kTRUE);
-    }
-  }
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-  
   iCutBit++;
-  
+
   if (isAODTrack) {
     if (fAODType==AliAODTrack::kUndef || fAODType == aodTrack->GetType()) {
       fBitmap->SetBitNumber(iCutBit,kTRUE);
     }
   }
   else fBitmap->SetBitNumber(iCutBit,kTRUE);
-  
+
   return;
 }
 //__________________________________________________________________________________
@@ -578,6 +609,7 @@ Bool_t AliCFTrackIsPrimaryCuts::IsSelected(TObject* obj) {
 	break;
     }
   }
+
   if (!isSelected) return kFALSE ;
   if (fIsQAOn) FillHistograms(obj,1);
   return kTRUE;

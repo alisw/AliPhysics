@@ -57,7 +57,8 @@
 #include "AliESDtrackCuts.h"
 class TBits;
 class AliESDtrack;
-class AliESDEvent;
+class AliAODTrack;
+class AliVEvent;
 
 class AliCFTrackIsPrimaryCuts : public AliCFCutBase
 {
@@ -97,7 +98,7 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   // please use indices from the enumeration below
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins);
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax);
-  virtual void SetRecEventInfo(const TObject* esd) ;
+  virtual void SetRecEventInfo(const TObject* esd);
 
   // indeces/counters for single selections
   enum { 
@@ -119,11 +120,12 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
  private:
   void SelectionBitMap(TObject* obj);
   void GetDCA(AliESDtrack* esdTrack);
+  void GetDCA(AliAODTrack* aodTrack);
   void DefineHistograms(); 		// books histograms and TList
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);
 					// Fills histograms before and after cuts
-  AliESDEvent*  fESD;			// pointer to event, needed for SPD vertex
+  AliVEvent*  fEvt;			// pointer to event, needed for SPD vertex and DCA in AODs
   Bool_t   fUseSPDvertex;		// flag: calculate dca to SPD-vertex, off by default
   Bool_t   fUseTPCvertex;		// flag: calculate dca to TPC-vertex, off by default
   Double_t fMinDCAToVertexXY;		// cut value: min distance to main vertex in transverse plane
