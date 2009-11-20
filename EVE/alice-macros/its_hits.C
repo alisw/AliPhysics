@@ -30,12 +30,9 @@ its_hits(const char *varexp    = "fX:fY:fZ",
   }
 
   points->SetName(Form("ITS Hits"));
-  const TString viz_tag("SIM Hits ITS");
-  points->ApplyVizTag(viz_tag, "Hits");
-
   points->SetTitle(Form("N=%d", points->Size()));
-  points->SetMarkerSize(.5);
-  points->SetMarkerColor(2);
+
+  points->ApplyVizTag("SIM Hits ITS", "Hits");
 
   gEve->AddElement(points, cont);
   gEve->Redraw3D();

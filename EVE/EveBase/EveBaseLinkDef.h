@@ -11,6 +11,9 @@
 #pragma link off all globals;
 #pragma link off all classes;
 
+// AliEveConfigManager
+#pragma link C++ class AliEveConfigManager+;
+
 // AliEveEventManager
 #pragma link C++ class AliEveEventManager+;
 #pragma link C++ class AliEveEventManagerEditor+;

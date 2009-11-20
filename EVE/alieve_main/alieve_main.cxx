@@ -7,6 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include <EveBase/AliEveConfigManager.h>
+
 #include <TInterpreter.h>
 #include <TRint.h>
 #include <TROOT.h>
@@ -66,7 +68,9 @@ int main(int argc, char **argv)
   TRint  *app = new TRint("App", &argc, argv);
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4) || defined XXX_LATEST_ROOT
-  TEveGListTreeEditorFrame::SetEditorClass("AliEveGedEditor");
+  // Waiting for update by Pawel. Now GED in ROOT is better again :)
+  // Uncomment when fixed in AliEveGedXXX.
+  // TEveGListTreeEditorFrame::SetEditorClass("AliEveGedEditor");
 #endif
 
   TEveManager::Create();
@@ -74,6 +78,8 @@ int main(int argc, char **argv)
   gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_PableCompound);
 
   gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/default_geo.root", evedir.Data()));
+
+  AliEveConfigManager::InitializeMaster();
 
   app->Run(kTRUE);
 
