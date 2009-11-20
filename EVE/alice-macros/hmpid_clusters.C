@@ -89,7 +89,7 @@ TEvePointSet* hmpid_clusters(TEveElement* cont=0)
 
   clusters->SetTitle(Form("N=%d", clusters->Size()));
 
-  const TString viz_tag("REC Clusters ITS");
+  const TString viz_tag("REC Clusters HMPID");
 
   clusters->ApplyVizTag(viz_tag, "Clusters");
 

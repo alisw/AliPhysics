@@ -29,13 +29,9 @@ acorde_hits(const char  *varexp    = "ACORDE.fX:ACORDE.fY:ACORDE.fZ",
     return 0;
   }
 
-  // PD - added tags
-  
   points->SetName(Form("ACORDE Hits"));
   const TString viz_tag("SIM Hits ACORDE");
   points->ApplyVizTag(viz_tag, "Hits");
-
-  // PD
 
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);

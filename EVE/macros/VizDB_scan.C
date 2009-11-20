@@ -37,6 +37,41 @@ void VizDB_scan()
   ps->SetMarkerStyle(4);
   gEve->InsertVizDBEntry("SIM Hits FMD", ps);
 
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(2);
+  ps->SetMarkerSize(.5);
+  ps->SetMarkerStyle(4);
+  gEve->InsertVizDBEntry("SIM Hits ACORDE", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(2);
+  ps->SetMarkerSize(.5);
+  ps->SetMarkerStyle(4);
+  gEve->InsertVizDBEntry("SIM Hits EMCAL", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(2);
+  ps->SetMarkerSize(.5);
+  ps->SetMarkerStyle(4);
+  gEve->InsertVizDBEntry("SIM Hits PMD", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(2);
+  ps->SetMarkerSize(.5);
+  ps->SetMarkerStyle(4);
+  gEve->InsertVizDBEntry("SIM Hits TOF", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(7);
+  ps->SetMarkerSize(.5);
+  ps->SetMarkerStyle(4);
+  gEve->InsertVizDBEntry("SIM Hits TRD", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(2);
+  ps->SetMarkerSize(.5);
+  ps->SetMarkerStyle(4);
+  gEve->InsertVizDBEntry("SIM Hits VZERO", ps);
 
   //============================================================================
   // Clusters
@@ -71,6 +106,18 @@ void VizDB_scan()
   ps->SetMarkerSize(0.5);
   ps->SetMarkerStyle(4);
   gEve->InsertVizDBEntry("REC Clusters TOF", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(4);
+  ps->SetMarkerSize(0.2);
+  ps->SetMarkerStyle(2);
+  gEve->InsertVizDBEntry("REC Clusters HMPID", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(4);
+  ps->SetMarkerSize(0.5);
+  ps->SetMarkerStyle(2);
+  gEve->InsertVizDBEntry("REC Clusters PHOS", ps);
 
 
   //============================================================================

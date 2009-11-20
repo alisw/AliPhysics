@@ -21,6 +21,10 @@ vzero_hits(const char *varexp    = "fX:fY:fZ",
   TEvePointSelector ps(ht, points, varexp, selection);
   ps.Select();
 
+  points->SetName(Form("VZERO Hits"));
+  const TString viz_tag("SIM Hits VZERO");
+  points->ApplyVizTag(viz_tag, "Hits");
+
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);
   points->SetMarkerColor(2);

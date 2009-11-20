@@ -21,13 +21,9 @@ pmd_hits(const char *varexp    = "fX:fY:fZ",
   TEvePointSelector ps(ht, points, varexp, selection);
   ps.Select();
 
-  // PD - added tags
-  
   points->SetName(Form("PMD Hits"));
   const TString viz_tag("SIM Hits PMD");
   points->ApplyVizTag(viz_tag, "Hits");
-
-  // PD
 
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);

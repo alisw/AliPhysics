@@ -29,13 +29,9 @@ its_hits(const char *varexp    = "fX:fY:fZ",
     return 0;
   }
 
-  // PD - added tags
-  
   points->SetName(Form("ITS Hits"));
   const TString viz_tag("SIM Hits ITS");
   points->ApplyVizTag(viz_tag, "Hits");
-
-  // PD
 
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);

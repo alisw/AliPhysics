@@ -31,14 +31,10 @@ tpc_hits(const char  *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ
     delete points;
     return 0;
   }
-
-  // PD - added tags
   
   points->SetName(Form("TPC Hits"));
   const TString viz_tag("SIM Hits TPC");
   points->ApplyVizTag(viz_tag, "Hits");
-
-  // PD
 
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);

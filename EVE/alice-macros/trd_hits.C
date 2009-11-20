@@ -28,13 +28,9 @@ trd_hits(const char *varexp    = "fX:fY:fZ",
     return 0;
   }
 
- // PD - added tags
-  
   points->SetName(Form("TRD Hits"));
   const TString viz_tag("SIM Hits TRD");
   points->ApplyVizTag(viz_tag, "Hits");
-
-  // PD
 
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);
