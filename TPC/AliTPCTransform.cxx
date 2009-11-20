@@ -63,6 +63,7 @@
 #include "AliTPCRecoParam.h"
 #include "AliTPCCalibVdrift.h"
 #include "AliTPCTransform.h"
+#include <AliCTPTimeParams.h>
 
 ClassImp(AliTPCTransform)
 
@@ -321,8 +322,15 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   // Z coordinate
   //
+  if (AliTPCcalibDB::Instance()->IsTrgL0()){
+    // by defualt we assume L1 trigger is used - make a correction in case of  L0
+    AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
+    Double_t delay = ctp->GetDelayL1L0()*0.000000025;
+    x[2]-=delay/param->GetTSample();
+  }
+  x[2]-= param->GetNTBinsL1();
   x[2]*= zwidth;  // tranform time bin to the distance to the ROC
-  x[2]-= 3.*param->GetZSigma() + param->GetNTBinsL1()*zwidth+ time0corrTime;
+  x[2]-= 3.*param->GetZSigma() + time0corrTime;
   // subtract the time offsets
   x[2] = sign*( param->GetZLength(sector) - x[2]);
 }
