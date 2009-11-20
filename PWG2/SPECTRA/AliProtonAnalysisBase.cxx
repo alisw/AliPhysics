@@ -27,7 +27,7 @@
 #include <AliESDEvent.h>
 #include <AliPID.h>
 #include <AliVertexerTracks.h>
-
+#include <AliTPCpidESD.h>
 class AliLog;
 class AliESDVertex;
 
@@ -801,19 +801,18 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
   }
   //Definition of an N-sigma area around the dE/dx vs P band
   else if(fProtonPIDMode == kSigma1) {
-    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
-    if(tpcTrack) {
-      gPt = tpcTrack->Pt();
-      gP = tpcTrack->P();
-      gEta = tpcTrack->Eta();
-    }
-    //We start the P slices at >0.3GeV/c with a bining of 50MeV/c ==> Int_t(0.3001/0.05) = 6
-    Int_t nbinP = Int_t(gP/0.05) - 6;
-    Double_t tpcSignal = track->GetTPCsignal();
-    Double_t dEdxMean = fdEdxMean[nbinP];
-    Double_t dEdxSigma = fdEdxSigma[nbinP];
-    if((tpcSignal <= dEdxMean + fNSigma*dEdxSigma)&&
-       (tpcSignal >= dEdxMean - fNSigma*dEdxSigma))
+    Double_t fAlephParameters[5];
+    fAlephParameters[0] = 4.23232575531564326e+00; //50*0.76176e-1;
+    fAlephParameters[1] = 8.68482806165147636e+00; //10.632;
+    fAlephParameters[2] = 1.34000000000000005e-05; //0.13279e-4;
+    fAlephParameters[3] = 2.30445734159456084e+00; //1.8631;
+    fAlephParameters[4] = 2.25624744086878559e+00; //1.9479;
+
+    AliTPCpidESD *fPidObject = new AliTPCpidESD(); 
+    fPidObject->SetBetheBlochParameters(fAlephParameters[0]/50.,fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+    
+    Double_t nsigma = TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kProton));
+    if(nsigma <= fNSigma) 
       return kTRUE;
   }//kSigma1 PID method
   //Another definition of an N-sigma area around the dE/dx vs P band
