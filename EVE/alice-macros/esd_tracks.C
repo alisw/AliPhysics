@@ -206,11 +206,12 @@ TEveTrackList* esd_tracks()
   return cont;
 }
 
-TEveElementList* esd_tracks_MI()
+TEveTrackList* esd_tracks_MI()
 {
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
-  TEveElementList* cont = new TEveElementList("ESD Tracks MI");
+  TEveTrackList* cont = new TEveTrackList("ESD Tracks MI");
+  cont->SetLineColor(5);
   gEve->AddElement(cont);
 
   Int_t count = 0;
@@ -218,13 +219,15 @@ TEveElementList* esd_tracks_MI()
   {
     ++count;
     AliESDtrack* at = esd->GetTrack(n);
-    TEveLine* l = new TEveLine; 
-    l->SetLineColor(5);
-    at->FillPolymarker(l, esd->GetMagneticField(), 0, 250, 5);
+    AliEveTrack* l = new AliEveTrack(at, cont->GetPropagator());
     l->SetName(Form("ESDTrackMI %d", at->GetID()));
     l->SetElementTitle(esd_track_title(at));
+    l->SetAttLineAttMarker(cont);
     l->SetSourceObject(at);
 
+    at->FillPolymarker(l, esd->GetMagneticField(), 0, 250, 5);
+
+    l->SetLockPoints(kTRUE);
     cont->AddElement(l);
   }
   cont->SetTitle(Form("N=%d", count));

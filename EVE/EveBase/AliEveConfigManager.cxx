@@ -74,9 +74,10 @@ AliEveConfigManager::AliEveConfigManager() :
   fAliEvePopup->Connect("Activated(Int_t)", "AliEveConfigManager",
                         this, "AliEvePopupHandler(Int_t)");
 
-  TGMenuBar *mBar = 0;
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4) || defined XXX_LATEST_ROOT
-  mBar = gEve->GetBrowser()->GetMenuBar();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4)
+  TGMenuBar *mBar = gEve->GetBrowser()->GetMenuBar();
+  mBar->AddPopup("&AliEve", fAliEvePopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
+  gEve->GetBrowser()->GetTopMenuFrame()->Layout();
 #else
   // Uber hack as TRootBrowser does not provede manu-bar getter.
   TGFrameElement   *xxFE = (TGFrameElement*)   gEve->GetBrowser()->GetList()->First();
@@ -86,10 +87,10 @@ AliEveConfigManager::AliEveConfigManager() :
   xxFE = (TGFrameElement*)   xxCF->GetList()->First();
   xxCF = (TGCompositeFrame*) xxFE->fFrame;
   xxFE = (TGFrameElement*)   xxCF->GetList()->First();
-  mBar = (TGMenuBar*) xxFE->fFrame;
-#endif
+  TGMenuBar *mBar = (TGMenuBar*) xxFE->fFrame;
   mBar->AddPopup("&AliEve", fAliEvePopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
   ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
+#endif
 }
 
 //==============================================================================
