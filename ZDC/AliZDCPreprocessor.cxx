@@ -183,7 +183,7 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
 //______________________________________________________________________________________________
 UInt_t AliZDCPreprocessor::ProcessChMap()
 { 
-  const int kNch = 48; const int kNScch = 32;
+  const int kNch=48; const int kNScch=32;
   
   // Reading the file for mapping from FXS
   TList* daqSource = GetFileSources(kDAQ, "MAPPING");
@@ -275,7 +275,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
 	 mapCalib->SetScSector(k, 0);
       }
     }
-    mapCalib->Print("");
+    //mapCalib->Print("");
     // 
     AliCDBMetaData metaData;
     metaData.SetBeamPeriod(0);
