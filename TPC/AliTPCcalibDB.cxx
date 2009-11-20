@@ -776,7 +776,7 @@ Bool_t AliTPCcalibDB::IsTrgL0()
   //
   Int_t mode=GetRCUTriggerConfig();
   if (mode<0) return kFALSE;
-  return ((mode&(1<<13))>>13)==1;
+  return (mode==1);
 }
 
 Bool_t AliTPCcalibDB::IsTrgL1()
@@ -786,7 +786,7 @@ Bool_t AliTPCcalibDB::IsTrgL1()
   //
   Int_t mode=GetRCUTriggerConfig();
   if (mode<0) return kFALSE;
-  return ((mode&(1<<13))>>13)==0;
+  return (mode==0);
 }
 
 void AliTPCcalibDB::RegisterExB(Int_t index, Float_t bz, Bool_t bdelete){
@@ -1566,6 +1566,7 @@ Bool_t AliTPCcalibDB::CreateGUITree(Int_t run, const char* filename)
   // retrieve cal pad objects
   db->SetRun(run);
   db->CreateGUITree(filename);
+  return kTRUE;
 }
 
 Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
