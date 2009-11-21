@@ -3,6 +3,7 @@
 #include <TH1F.h>
 #include <TH2I.h>
 #include <TGraph.h>
+#include <TExec.h>
 #include <TStyle.h>
 #include <TGrid.h>
 #include <TLine.h>
@@ -21,7 +22,12 @@
 //
 // Origin: F. Prino (prino@to.infn.it)
 
-void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/CalibSDD/Run0_9999999_v0_s0.root"){
+void MakePalette(){
+  Int_t palette[3]={kGray,2,3};  
+  gStyle->SetPalette(3,palette);
+}
+
+void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0_9999999_v0_s0.root"){
 
 
   TFile *f=TFile::Open(filnam);
@@ -41,6 +47,21 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
   hlay4->GetYaxis()->SetTitle("Ladder");
   hlay4->SetStats(0);
   hlay4->SetMinimum(-1);
+  TH2I* hdeadlay3=new TH2I("hlay3","Layer 3",6,-0.5,5.5,14,-0.5,13.5);
+  hdeadlay3->GetXaxis()->SetTitle("Detector");
+  hdeadlay3->GetYaxis()->SetTitle("Ladder");
+  hdeadlay3->GetXaxis()->SetTickLength(0);
+  hdeadlay3->GetYaxis()->SetTickLength(0);
+  hdeadlay3->SetStats(0);
+  hdeadlay3->SetMinimum(-1.);
+  TH2I* hdeadlay4=new TH2I("hlay4","Layer 4",8,-0.5,7.5,22,-0.5,21.5);
+  hdeadlay4->GetXaxis()->SetTitle("Detector");
+  hdeadlay4->GetYaxis()->SetTitle("Ladder");
+  hdeadlay4->GetXaxis()->SetTickLength(0);
+  hdeadlay4->GetYaxis()->SetTickLength(0);
+  hdeadlay4->GetYaxis()->SetTitle("Ladder");
+  hdeadlay4->SetStats(0);
+  hdeadlay4->SetMinimum(-1.);
 
   TObjArray *calSDD = (TObjArray *)ent->GetObject();
   printf("Entries in array=%d\n",calSDD->GetEntriesFast());
@@ -124,6 +145,8 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
     if(i<84) badAnodeCounter3+=cal->GetDeadChannels();
     else badAnodeCounter4+=cal->GetDeadChannels();
     hnbadch->SetBinContent(i+1,cal->GetDeadChannels());
+    if(lay==3) hdeadlay3->SetBinContent(det,lad,cal->GetDeadChannels());
+    if(lay==4) hdeadlay4->SetBinContent(det,lad,cal->GetDeadChannels());
     for(Int_t iAn=0; iAn<512; iAn++){
       Int_t ic=cal->GetChip(iAn);
       if(!cal->IsChipBad(ic) && !cal->IsBad() && cal->IsBadChannel(iAn)){ 
@@ -168,6 +191,47 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
   printf("---------------------------------------------------\n");
   
 
+  TLine* lin=new TLine(0,0,0,23);  
+  TExec *ex1 = new TExec("ex1","MakePalette();");
+  TExec *ex2 = new TExec("ex2","gStyle->SetPalette(1);");
+
+  TCanvas* clay=new TCanvas("clay","Layer status",900,600);
+  clay->Divide(2,1);
+  clay->cd(1);
+  hlay3->Draw("col");
+  ex1->Draw();
+  hlay3->DrawCopy("col same");
+  for(Int_t i=0;i<6;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(13.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<14;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(5.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+  clay->cd(2);
+  hlay4->DrawCopy("col");
+  for(Int_t i=0;i<8;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(21.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<22;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(7.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+
   TCanvas *c0=new TCanvas("c0","Module status",800,800);
   c0->Divide(1,2);
   c0->cd(1);
@@ -176,9 +240,53 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
   hmodstatus->GetYaxis()->SetTitle("Module status (1=OK, 0=BAD)");
   c0->cd(2);
   hnbadch->Draw();
-  hnbadch->GetXaxis()->SetTitle("Module number");
+  hnbadch->GetXaxis()->SetTitle("Module number");   
   hnbadch->GetYaxis()->SetTitle("Number of bad anodes");
 
+
+
+
+  TCanvas *c0b=new TCanvas("c0b","Bad Channels",900,600);
+  c0b->Divide(2,1);
+  c0b->cd(1);
+  hdeadlay3->DrawCopy("colz");
+  ex2->Draw();
+  hdeadlay3->DrawCopy("colz same");
+  for(Int_t i=0;i<6;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(13.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<14;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(5.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+  c0b->cd(2);
+  hdeadlay4->DrawCopy("colz");
+  ex2->Draw();
+  hdeadlay4->DrawCopy("colz same");
+  for(Int_t i=0;i<8;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(21.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<22;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(7.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+
+
+  
   TCanvas *c1=new TCanvas("c1","Anode calibration",800,800);
   c1->Divide(2,2);
   c1->cd(1);
@@ -197,44 +305,12 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
   hchstatus->Draw();
   hchstatus->GetXaxis()->SetTitle("Anode status (0=bad, 1=OK)");
   hchstatus->GetXaxis()->CenterTitle();
-  Int_t palette[3]={kGray,2,3};
-  gStyle->SetPalette(3,palette);
-  
-  TLine* lin=new TLine(0,0,0,23);  
-  TCanvas* clay=new TCanvas("clay","Layer status",900,600);
-  clay->Divide(2,1);
-  clay->cd(1);
-  hlay3->Draw("col");
-  for(Int_t i=0;i<6;i++){
-    lin->SetY1(-0.5);
-    lin->SetY2(13.5);
-    lin->SetX1(i+0.5);
-    lin->SetX2(i+0.5);
-    lin->DrawClone();
-  }
-  for(Int_t i=0;i<14;i++){
-    lin->SetX1(-0.5);
-    lin->SetX2(5.5);
-    lin->SetY1(i+0.5);
-    lin->SetY2(i+0.5);
-    lin->DrawClone();
-  }
-  clay->cd(2);
-  hlay4->Draw("col");
-  for(Int_t i=0;i<8;i++){
-    lin->SetY1(-0.5);
-    lin->SetY2(21.5);
-    lin->SetX1(i+0.5);
-    lin->SetX2(i+0.5);
-    lin->DrawClone();
-  }
-  for(Int_t i=0;i<22;i++){
-    lin->SetX1(-0.5);
-    lin->SetX2(7.5);
-    lin->SetY1(i+0.5);
-    lin->SetY2(i+0.5);
-    lin->DrawClone();
-  }
+
+
+
+
+
+
 
 
 
