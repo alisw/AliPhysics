@@ -160,9 +160,9 @@ void AliTOFDigitMap::AddDigit(Int_t *vol, Int_t idigit)
   // 0 means empty pad, we need to shift indeces by 1
 
   if (fDigitMap[CheckedIndex(vol)][kMaxDigitsPerPad-1]!=0) {
-    AliWarning(Form("In the volume (Se%i, Pl%i, St%i, PadR%i, Pad%i) there is not more possibility to add other digits.", vol[0], vol[1], vol[2], vol[4], vol[3]));
-    AliWarning(Form("Then, the digit number %i will be not inserted in the digit map, i.e. it will be lost.", idigit));
-    AliWarning(Form("Please, check the possibility to increase the digit map size (succently set to %i)", kMaxDigitsPerPad));
+    AliDebug(1,Form("In the volume (Se%i, Pl%i, St%i, PadR%i, Pad%i) there is not more possibility to add other digits.", vol[0], vol[1], vol[2], vol[4], vol[3]));
+    AliDebug(1,Form("Then, the digit number %i will be not inserted in the digit map, i.e. it will be lost.", idigit));
+    AliDebug(1,Form("Please, check the possibility to increase the digit map size (succently set to %i)", kMaxDigitsPerPad));
     return;
   }
 

@@ -567,7 +567,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
       AliDebug(2,"----------------------------------------");
       AliDebug(2,Form("After sdigitizing %d hits in event %d", nselectedHitsinEv, iEvent));
       //" (" << nHitsFromPrim << " from primaries and " << nHitsFromSec << " from secondaries) TOF hits, " 
-      AliInfo(Form("%d sdigits have been created", ntotalsdigitsinEv));
+      AliDebug(1,Form("%d sdigits have been created", ntotalsdigitsinEv));
       AliDebug(2,Form("(%d due to signals and %d due to border effect)", nsignalsdigitsinEv, nnoisesdigitsinEv));
       AliDebug(2,Form("%d total updates of the hit map have been performed in current event", ntotalupdatesinEv));
       AliDebug(2,"----------------------------------------");

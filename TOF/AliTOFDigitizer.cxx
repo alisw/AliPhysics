@@ -197,7 +197,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   treeD->Fill();
 
   AliDebug(2,"----------------------------------------");
-  AliInfo(Form("%d digits have been created", fDigits->GetEntriesFast()));
+  AliDebug(1,Form("%d digits have been created", fDigits->GetEntriesFast()));
   AliDebug(2,"----------------------------------------");
 
   outgime->WriteDigits("OVERWRITE");
