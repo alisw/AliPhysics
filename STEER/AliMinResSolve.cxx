@@ -478,8 +478,8 @@ Bool_t AliMinResSolve::SolveMinRes(double *VecSol,Int_t precon,int itnlim,double
     // See if any of the stopping criteria are satisfied.
     // In rare cases, istop is already -1 from above (Abar = const*I).
     //
-    AliInfo(Form("#%5d |qnrm: %+.2e Anrm:%+.2e Cnd:%+.2e Rnrm:%+.2e Ynrm:%+.2e EpsR:%+.2e EpsX:%+.2e Beta1:%+.2e",
-		 itn,qrnorm, normA,condA,rnorm,ynorm,epsr,epsx,beta1));
+    AliDebug(2,Form("#%5d |qnrm: %+.2e Anrm:%+.2e Cnd:%+.2e Rnrm:%+.2e Ynrm:%+.2e EpsR:%+.2e EpsX:%+.2e Beta1:%+.2e",
+		    itn,qrnorm, normA,condA,rnorm,ynorm,epsr,epsx,beta1));
 
     if (status == 0) {
       if (itn    >= itnlim    ) {status = 5; AliInfo(Form("%d iterations limit exceeded",itnlim));}
