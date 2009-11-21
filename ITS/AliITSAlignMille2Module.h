@@ -33,7 +33,7 @@ public:
   //
   AliITSAlignMille2Module(); 
   AliITSAlignMille2Module(UShort_t volid);
-  AliITSAlignMille2Module(Int_t index, UShort_t volid, char* symname, TGeoHMatrix *m, Int_t nsv=0, UShort_t *volidsv=NULL);
+  AliITSAlignMille2Module(Int_t index, UShort_t volid, const char* symname, const TGeoHMatrix *m, Int_t nsv=0, const UShort_t *volidsv=NULL);
   AliITSAlignMille2Module(const AliITSAlignMille2Module& rhs); // copy constructor
   AliITSAlignMille2Module& operator=(const AliITSAlignMille2Module& rhs);  
   //
@@ -97,7 +97,7 @@ public:
   void         SetFreeDOF(Int_t dof,Double_t cstr);
   void         SetSensorsProvided(Bool_t v=kTRUE)           {SetBit(1<<(kSensDefBit+1),v);}
   void         SetGeomParamsGlobal(Bool_t v=kTRUE)          {SetBit(1<<(kGlobalGeomBit+1),v);}
-  Int_t        Set(Int_t index,UShort_t volid,char* symname,TGeoHMatrix *m,Int_t nsv=0,UShort_t *volidsv=0);
+  Int_t        Set(Int_t index,UShort_t volid, const char* symname, const TGeoHMatrix *m,Int_t nsv=0, const UShort_t *volidsv=0);
   //
   void         AddSensitiveVolume(UShort_t volid);
   void         DelSensitiveVolume(Int_t at);
@@ -125,6 +125,7 @@ public:
   void         CalcDerivGloLoc(Int_t idx,Double_t *deriv);
   void         CalcDerivGloLoc(Int_t sensVol,Int_t paridx,Double_t* derivative);
   void         CalcDerivCurLoc(Int_t sensVol,Int_t paridx,Double_t* derivative);
+  void         CalcDerivDPosDPar(Int_t sensVol,const Double_t *pl,Double_t *deriv);
   //
   // forse non serve...
   AliAlignObjParams *GetSensitiveVolumeGlobalMisalignment(UShort_t voluid, Double_t *deltalocal); 

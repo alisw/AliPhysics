@@ -20,10 +20,11 @@
 #include <TString.h>
 #include <TObject.h>
 #include <TGeoMatrix.h>
+#include <TArrayS.h>
+#include <TArrayD.h>
 #include "AliTrackPointArray.h"
 #include "AliITSAlignMille2Module.h"
 
-class TArrayI;
 class TSystem;
 class TGeoManager;
 class TVirtualFitter;
@@ -33,21 +34,25 @@ class AliTrackFitterRieman;
 class AliITSAlignMille2Constraint;
 class AliITSAlignMille2ConstrArray;
 class AliITSresponseSDD;
+class AliITSTPArrayFit;
 
 class AliITSAlignMille2: public TObject
 {
  public:
- enum {kNLocal=5,kMaxPoints=100,
-       kNParChGeom = AliITSAlignMille2Module::kMaxParGeom,
-       kNParCh     = AliITSAlignMille2Module::kMaxParTot,
-       kMaxITSSensID=2197,kMaxITSSensVID=14300,kMinITSSupeModuleID=14336,kSDDoffsID=240};
+  enum {kX,kY,kZ};
+  enum {kNLocal=5,kMaxPoints=100,
+	kNParChGeom = AliITSAlignMille2Module::kMaxParGeom,
+	kNParCh     = AliITSAlignMille2Module::kMaxParTot,
+	kMaxITSSensID=2197,kMaxITSSensVID=14300,kMinITSSupeModuleID=14336,
+	kSDDoffsID=240,kNSDDmod=260};
   //
  public:
   //
-  AliITSAlignMille2(const Char_t *configFilename="AliITSAlignMille.conf");
+  AliITSAlignMille2(const Char_t *configFilename="AliITSAlignMille.conf",TList* userInfo=0);
   virtual ~AliITSAlignMille2();
   //
   AliMillePede2* GetMillePede()                                   const {return fMillepede;}
+  AliITSTPArrayFit* GetTPAFitter()                                const {return fTPAFitter;}
   //
   // configuration methods
   //
@@ -73,8 +78,8 @@ class AliITSAlignMille2: public TObject
   void          ConvertParamsToGlobal();
   void          ConvertParamsToLocal();
   //
-  const Char_t* GetGeometryFileName()                                   {return fGeometryFileName.Data();}
-  const Char_t* GetPreAlignmentFileName()                               {return fPreAlignmentFileName.Data();}
+  const Char_t* GetGeometryPath()                                   {return fGeometryPath.Data();}
+  const Char_t* GetPreAlignmentPath()                               {return fPreDeltaPath.Data();}
   TClonesArray* GetPreAlignmentDeltas()                           const {return fPrealignment;}
   AliITSresponseSDD* GetSDDPrecalibration()                       const {return fCorrectSDD;}
   AliITSresponseSDD* GetSDDInit()                                 const {return fInitialRecSDD;}
@@ -84,6 +89,7 @@ class AliITSAlignMille2: public TObject
   Bool_t    GetUseGlobalDelta()                                   const {return fUseGlobalDelta;}
   Bool_t    IsConstraintWrtRef()                                  const {return fConstrRef!=0;}
   Bool_t    FixedOrphans()                                        const;
+  Bool_t    IsLocalYError()                                       const {return fUseLocalYErr;}
   //
   // geometry stuffs
   Int_t     GetNModules()                   const {return fNModules;}
@@ -101,7 +107,7 @@ class AliITSAlignMille2: public TObject
   AliTrackPointArray *GetCurrentTrack()     const                       {return (AliTrackPointArray*)fTrack;}
   AliTrackPoint      *GetCurrentCluster()   const                       {return (AliTrackPoint*)&fCluster;}
   void      SetCurrentTrack(const AliTrackPointArray *atp)              {fTrack = (AliTrackPointArray*)atp;}
-  void      SetCurrentCluster(const AliTrackPoint &atp)                 {fCluster = atp;}
+  void      SetCurrentCluster(const AliTrackPoint &atp);
   void      InitTrackParams(int meth=1);
   Int_t     ProcessTrack(const AliTrackPointArray *track);
   Int_t     CheckCurrentTrack();
@@ -116,7 +122,22 @@ class AliITSAlignMille2: public TObject
   Double_t  GetMeasGlo(Int_t dim)                                 const {return fMeasGlo[dim];}
   Double_t  GetMeasLoc(Int_t dim)                                 const {return fMeasLoc[dim];}
   Int_t     GetCurrentLayer()                                     const;
+  void      SetBField(Double_t b=0);
+  void      SetUseLocalYErrors(Bool_t v=kTRUE)                          {fUseLocalYErr = v && fTPAFitter;}
+  void      SetMinPointsPerSensor( Int_t n )                            {fMinPntPerSens = n>0 ? n:0;}
+  Int_t     GetMinPointsPerSensor()                               const {return fMinPntPerSens;}
+  void      ConstrainHelixFitPT(  Int_t q=0,Double_t pt=-1, Double_t err=-1);
+  void      ConstrainHelixFitCurv(Int_t q=0,Double_t crv=-1,Double_t crverr=-1);
+  Double_t  GetHelixContraintCharge()                             const {return fConstrCharge;}
+  Double_t  GetHelixContraintPT()                                 const {return fConstrPT;}
+  Double_t  GetHelixContraintPTErr()                              const {return fConstrPTErr;}
   //
+  TGeoHMatrix* GetSensorOrigMatrixSID(Int_t sid)                  const;
+  TGeoHMatrix* GetSensorOrigMatrixVID(Int_t vid)                  const;
+  //
+  TGeoHMatrix* GetSensorCurrMatrixSID(Int_t sid)                  const;
+  TGeoHMatrix* GetSensorCurrMatrixVID(Int_t vid)                  const;
+
   // Hierarchical contraints
   Bool_t    PseudoParentsAllowed()                                const {return fAllowPseudoParents;}
   void      ConstrainModuleSubUnitsMean(Int_t idm, Double_t val=0, UInt_t pattern=0xff);
@@ -138,6 +159,8 @@ class AliITSAlignMille2: public TObject
   void      FixParameter(Int_t param, Double_t value);
   void      PrintGlobalParameters();
   //
+  TClonesArray*      CreateDeltas();
+  AliITSresponseSDD* CreateSDDResponse();
   // module specific 
   //
   Double_t  GetTDriftSDD()                  const;
@@ -147,7 +170,7 @@ class AliITSAlignMille2: public TObject
   AliITSAlignMille2Constraint* GetConstraint(const char* name)   const {return (AliITSAlignMille2Constraint*)fConstraints.FindObject(name);}
   //
   // debug stuffs
-  void       FetchCluster(const AliTrackPointArray *trc,int ip)        {trc->GetPoint(fCluster,ip);}
+  void       FetchCluster(int ip)                                      {fTrack->GetPoint(fCluster,ip);fCluster.SetUniqueID(ip);} 
   void       SetLocalInitParams(const Double_t *par)                   {for (int i=kNLocal;i--;) fLocalInitParam[i]=par[i];}
   Double_t  *GetMeasLoc()                                        const {return (Double_t*)fMeasLoc;}
   Double_t  *GetSigmaLoc()                                       const {return (Double_t*)fSigmaLoc;}
@@ -159,6 +182,11 @@ class AliITSAlignMille2: public TObject
   Int_t      GetPreAlignmentQualityFactor(Int_t index)           const;// if not prealign. return -1
   void       SetBug(Int_t bug) {fBug=bug;}                             // 1:SSD inversion sens.18-19
   static     AliITSAlignMille2* GetInstance()                          {return fgInstance;}
+
+  // pepo270809
+  Int_t      GetExtraClustersMode() const {return fExtraClustersMode;}
+  void       SetExtraClustersMode(Int_t mode) {fExtraClustersMode=mode;}  
+  // endpepo270809
 
   // pepo
   // flag for AliITSAlignMille compatibility
@@ -174,26 +202,35 @@ class AliITSAlignMille2: public TObject
   Bool_t    InitRiemanFit();
   void      SetMinNPtsPerTrack(Int_t pts=3)  {fMinNPtsPerTrack=pts;}
   //
+  static Bool_t    IsZero(Double_t v,Double_t threshold = 1e-16)       { return TMath::Abs(v)<threshold; }
+  static void      SetWordBit(UInt_t word,Int_t bitID)                 { word |= (1<<bitID);}
+  static void      ResetWordBit(UInt_t word,Int_t bitID)               { word &= ~(1<<bitID);}
+  static Bool_t    TestWordBit(UInt_t word,Int_t bitID)                { return (Bool_t)(word&(1<<bitID));}      
+  //
  protected:
   //
   struct Mille2Data { // structure to store data for 2 LocalEquations (X and Z)
     enum {kMaxLev = 7};
-    Double_t fMeasX, fMeasZ, fSigmaX, fSigmaZ;        // measured coordinates/errors
-    Double_t fDerLocX[kNLocal], fDerLocZ[kNLocal];    // calculated local derivatives
+    Double_t fMeas[3];                // measured coordinates
+    Double_t fSigma[3];               // measured errors
+    Double_t fDerLoc[kNLocal][3];     // calculated local derivatives
     Int_t    fNModFilled, fNGlobFilled, fModuleID[kMaxLev]; // used module info
     Int_t    fParMilleID[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // param id's
-    Double_t fDerGloX[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // global derivatives in X
-    Double_t fDerGloZ[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // and Z
+    Double_t fDerGlo[AliITSAlignMille2Module::kMaxParTot*kMaxLev][3]; // global derivatives
   };
-
+  //
   // configuration methods
   void      Init();
+  Int_t     CacheMatrices();
+  Int_t     ProcessUserInfo(TList *userInfo=0);
   Int_t     LoadConfig(const Char_t *cfile="AliITSAlignMille.conf");
   TObjArray* GetConfigRecord(FILE* stream, TString& recTitle, TString& recOpt, Bool_t rew);
   Int_t     CheckConfigRecords(FILE* stream);
   //
   void      BuildHierarchy();
   Int_t     LoadSuperModuleFile(const Char_t *cfile="ITSMilleSuperModules.root");
+  Int_t     LoadSDDResponse(TString& path, AliITSresponseSDD *&resp);
+  Int_t     LoadDeltas(TString& path, TClonesArray *&arr);
   void      ResetLocalEquation();
   Int_t     InitGeometry();
   Int_t     ApplyToGeometry();
@@ -203,18 +240,19 @@ class AliITSAlignMille2: public TObject
   void      PostConstrainModuleSubUnits(Int_t type,Int_t idm, Double_t val, UInt_t pattern);
   void      PostConstrainOrphans(Int_t type,Double_t val, UInt_t pattern);
   //
-  void      SetGeometryFileName(const Char_t* filename="geometry.root") { fGeometryFileName = filename; }
+  void      SetGeometryPath(const Char_t* filename="geometry.root") { fGeometryPath = filename; }
 
   void      SetInitTrackParamsMeth(Int_t meth=1)                        {fInitTrackParamsMeth=meth;}
   //
   void      AddConstraint(Double_t *factor, Double_t value, Double_t sigma=0);
-  void      InitGlobalParameters(Double_t *par);   
-  void      SetLocalDerivative(Int_t index, Double_t value)             {fLocalDerivatives[index] = value;}
-  void      SetGlobalDerivative(Int_t index, Double_t value)            {fGlobalDerivatives[index] = value;}  
+  void      InitGlobalParameters(Double_t *par);
+  Bool_t    SetLocalDerivative(Int_t index, Double_t value)             {return IsZero(fLocalDerivatives[index]=value);}
+  Bool_t    SetGlobalDerivative(Int_t index, Double_t value)            {return IsZero(fGlobalDerivatives[index]=value);}  
   //
   // millepede methods
   //
   Int_t     AddLocalEquation(Mille2Data &m);
+  Int_t     AddLocalEquationTPA(Mille2Data &m);
   void      SetLocalEquations(const Mille2Data *marr, Int_t neq);
   void      SetUseGlobalDelta(Bool_t v=kTRUE)                           {fUseGlobalDelta = v;}
   void      SetAllowPseudoParents(Bool_t v=kTRUE)                       {fAllowPseudoParents = v;} 
@@ -226,12 +264,14 @@ class AliITSAlignMille2: public TObject
  protected:
   //
   enum {
+    kOCDBPath,
     kGeomFile,
     kSuperModileFile,
     kConstrRefFile,
-    kPrealignFile,
+    kPreDeltaFile,
     kPreCalSDDFile,
     kInitCalSDDFile,
+    kInitDeltaFile,
     kGlobalDeltas,
     kConstrLocal,
     kModVolID,
@@ -250,6 +290,10 @@ class AliITSAlignMille2: public TObject
     kConstrOrphans,
     kConstrSubunits,
     kApplyConstr,
+    kExtraClustersMode,
+    kTPAFitter,
+    kUseLocalYErr,
+    kMinPointsSens,
     //
     kNKeyWords
   };                                            // id's of the keywirds for config file records
@@ -266,10 +310,15 @@ class AliITSAlignMille2: public TObject
   Bool_t        fAllowPseudoParents;            // For simple constraints don't involve parents into the fit
   //
   // fitting stuffs
+  AliITSTPArrayFit        *fTPAFitter;          // TPArrayFitter       
   AliITSAlignMille2Module *fCurrentModule;      // Current SuperModule index
   AliTrackPointArray *fTrack;                   // pointer to current track 
   TObjArray     fTrackBuff;                     // buffer for tracks of min length
   AliTrackPoint fCluster;                       // current cluster
+  Int_t         fCurrentSensID;                 // sensor index for current cluster
+  TArrayD       fClusLoc;                       // local  coordinates of the clusters
+  TArrayD       fClusGlo;                       // global coordinates of the clusters
+  TArrayD       fClusSigLoc;                    // local cov matrix of the clusters
   Double_t     *fGlobalDerivatives;             // Array of global derivatives
   Double_t      fLocalDerivatives[kNLocal];     // Array of local deriv.
   Double_t      fLocalInitParam[kNLocal];       // Array with inital values for local parameters for current track
@@ -278,10 +327,13 @@ class AliITSAlignMille2: public TObject
   Double_t      fPintLoc[3];                    // track/module intersection point in local coordinates
   Double_t      fPintLoc0[3];                   // track/module intersection point in local coordinates (before variation)
   Double_t      fPintGlo[3];                    // track/module intersection point in global coordinates
-  Double_t      fMeasLoc[3];                    // current point local coordinates (the original ones)
-  Double_t      fMeasGlo[3];                    // current point glob. coord (AliTrackPoint)
-  Double_t      fSigmaLoc[3];                   // stdev current point
+  Double_t     *fMeasLoc;                       // current point local coordinates (the original ones)
+  Double_t     *fMeasGlo;                       // current point glob. coord (AliTrackPoint)
+  Double_t     *fSigmaLoc;                      // stdev current point
   Double_t      fSigmaFactor[3];                // multiplicative factor for cluster sigmaX,Y,Z
+  Double_t      fConstrPT;                      // optional PT constraint for helix (abs value)
+  Double_t      fConstrPTErr;                   // error on this constraint (0 - exact)
+  Int_t         fConstrCharge;                  // optional constraint on charge of Helix track (0 - no constraint)
   //
   Double_t      fDerivativeLoc[kNLocal][3];    // XYZ deriv. over local params
   Double_t      fDerivativeGlo[kNParCh][3];     // XYZ deriv. over global params
@@ -291,6 +343,8 @@ class AliITSAlignMille2: public TObject
   AliTrackFitterRieman *fRieman;                // riemann fitter for helices
   //
   TObjArray     fConstraints;                   // list of constraints
+  TObjArray     fCacheMatrixOrig;               // cach for original geom matrices
+  TObjArray     fCacheMatrixCurr;               // cach for prealigned geom matrices
   // >> new members
   Bool_t        fUseGlobalDelta;  // intetpret deltas as global 
   Bool_t        fRequirePoints;   // required points in specific layers
@@ -303,16 +357,21 @@ class AliITSAlignMille2: public TObject
   Int_t         fTempExcludedModule; /// single module temporary excluded from initial fit
   // << new members
   //
+  // OCDB stuff
+  TString       fDefCDBpath;                    // default OCDB path
+  TString       fInitDeltaPath;                 // where to take the deltas used to produce the points
+  TString       fInitSDDRespPath;               // where to take the initial SDD response used to produce the points
+  TString       fPreCalSDDRespPath;             // precalibration SDD response file name
   // geometry stuffs
-  TString       fGeometryFileName;              // Geometry file name
-  TString       fPreAlignmentFileName;          // file with prealigned objects
-  TString       fConstrRefFileName;             // file with prealigned objects wrt which constraints are defined
+  TString       fGeometryPath;                  // Geometry file name
+  TString       fPreDeltaPath;                  // file with prealigned objects
+  TString       fConstrRefPath;                 // file with prealigned objects wrt which constraints are defined
   TGeoManager  *fGeoManager;                    // pointer to Alice geomanager
   Bool_t        fIsConfigured;                  // flag for loaded config file
   TArrayS       fPreAlignQF;                    // prealignment flags (not used?)
   //
-  AliITSresponseSDD* fCorrectSDD;   // array of SDD t0/vdrift calib params
-  AliITSresponseSDD* fInitialRecSDD;   // array of SDD t0/vdrift calib params used to create the track points
+  AliITSresponseSDD* fCorrectSDD;               // array of SDD t0/vdrift calib params
+  AliITSresponseSDD* fInitialRecSDD;            // array of SDD t0/vdrift calib params used to create the track points
   TClonesArray* fPrealignment; // array of prealignment global deltas
   TClonesArray* fConstrRef;    // array of refererence deltas with respect to which the constraint are defined (survey?)
   TObjArray     fMilleModule; /// array of super modules to be aligned
@@ -320,22 +379,66 @@ class AliITSAlignMille2: public TObject
   Int_t         fNModules;                      // number of defined modules from config file
   Int_t         fNSuperModules; /// number of custom supermodules in SM file
   Bool_t        fUsePreAlignment;               // start from prealigned setup 
+  Bool_t        fUseLocalYErr;                  // use local Yerror due to the sensor thickness
   Bool_t        fBOn;                           // magentic field ON
   Double_t      fBField;                        // value of magnetic field
+  Int_t         fMinPntPerSens;                 // min number of points per module to vary it
   Int_t         fBug;                           /// tag for temporary bug correction
   // pepo
   Int_t         fMilleVersion; /// tag for backward compatibility
   // endpepo
+  // pepo270809
+  Int_t         fExtraClustersMode; /// 1=remove random / 2=remove internal / 10=use only tracks with xcl
+  // endpepo270809
   //
   Double_t      fDriftSpeed[50];                   //temporary array for drift times of SDD alitrackpoints
   Double_t      fDriftTime0[50];                   //temporary array for drift time 0's used for SDD alitrackpoints
+  Double_t      fExtClusterPar[9];                 //array to store the parameters of the externally imposed cluster
   //
   static AliITSAlignMille2* fgInstance;         // global pointer on itself
   static Int_t              fgInstanceID;       // global counter of the instances
-  static const Char_t     * kRecKeys[];         // keywords for config file records
+  static const Char_t     * fgkRecKeys[];       // keywords for config file records
+  static const Char_t       fgkXYZ[];           // XYZ labels
   //
   ClassDef(AliITSAlignMille2, 0)
 };
+
+
+//______________________________________________________________________________________
+inline void AliITSAlignMille2::SetCurrentCluster(const AliTrackPoint &atp) 
+{
+  // set current cluster
+  fCluster = atp; 
+  fCurrentSensID = AliITSAlignMille2Module::GetIndexFromVolumeID(fCluster.GetVolumeID());
+}
+
+//______________________________________________________________________________________
+inline TGeoHMatrix* AliITSAlignMille2::GetSensorOrigMatrixSID(Int_t sid) const 
+{
+  // get cached original matrix by sensor ID
+  return sid<0 ? 0 : (TGeoHMatrix*) fCacheMatrixOrig[sid];
+}
+
+//______________________________________________________________________________________
+inline TGeoHMatrix* AliITSAlignMille2::GetSensorOrigMatrixVID(Int_t vid) const
+{
+  // get cached original matrix by sensor volume ID
+  return GetSensorOrigMatrixSID( AliITSAlignMille2Module::GetIndexFromVolumeID(vid) );
+}
+
+//______________________________________________________________________________________
+inline TGeoHMatrix* AliITSAlignMille2::GetSensorCurrMatrixSID(Int_t sid) const 
+{
+  // get cached current matrix by sensor ID
+  return sid<0 ? 0 : (TGeoHMatrix*) fCacheMatrixCurr[sid];
+}
+
+//______________________________________________________________________________________
+inline TGeoHMatrix* AliITSAlignMille2::GetSensorCurrMatrixVID(Int_t vid) const
+{
+  // get cached current matrix by sensor volume ID
+  return GetSensorCurrMatrixSID( AliITSAlignMille2Module::GetIndexFromVolumeID(vid) );
+}
 
 #endif
 
