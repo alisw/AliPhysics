@@ -169,6 +169,7 @@ void AliSymBDMatrix::Reset()
 {
   // set all elems to 0
   if (fElems) memset(fElems,0,fNcols*fRowLwb*sizeof(Double_t));
+  SetDecomposed(kFALSE);
   //
 }
 

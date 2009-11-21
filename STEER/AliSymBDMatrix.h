@@ -47,7 +47,7 @@ class AliSymBDMatrix : public AliMatrixSq {
   void          Solve(const TVectorD &rhs,TVectorD &sol)               {Solve(rhs.GetMatrixArray(),sol.GetMatrixArray());}
   //
   void          Print(Option_t* option="")                       const;
-  void          SetDecomposed()                                        {SetBit(kDecomposedBit);}
+  void          SetDecomposed(Bool_t v=kTRUE)                          {SetBit(kDecomposedBit,v);}
   Bool_t        IsDecomposed()                                   const {return TestBit(kDecomposedBit);}
   //
   void          MultiplyByVec(Double_t* vecIn, Double_t* vecOut) const;
