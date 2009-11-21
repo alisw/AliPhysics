@@ -38,6 +38,9 @@ static const Int_t fgkNumberOfPSideStrips = 768; //number of P-side strips
 TList *initCM();
 void makeCM(const char* filename, Int_t nEvents, TList *list);
 void checkCM(const char* filename);
+void compareChipLists(TString inputFile1, 
+		      TString inputFile2, 
+		      TString outputTxt);
 
 //__________________________________________________________//
 void readSSDCommonMode(const char* filename = "raw.root",
@@ -433,4 +436,55 @@ void checkCM(const char* filename) {
   fOutput->Close();
 
   fInput->Close();
+}
+
+//__________________________________________________________//
+void compareChipLists(TString inputFile1, 
+		      TString inputFile2, 
+		      TString outputTxt){
+  //Compare two different lists of chips and put those present in both files
+  //in a new list
+  //open input lists
+  TFile *fInput1 = TFile::Open(inputFile1.Data());
+  TList *listOfSuspiciousChips1 = new TList();
+  listOfSuspiciousChips1=fInput1->GetListOfKeys();
+  TFile *fInput2 = TFile::Open(inputFile2.Data());
+  TList *listOfSuspiciousChips2 = new TList();
+  listOfSuspiciousChips2=fInput2->GetListOfKeys();
+	
+  Int_t Nentries1 = 0, Nentries2 = 0, k = 0;
+  Nentries1 = listOfSuspiciousChips1->GetEntries();
+  Nentries2 = listOfSuspiciousChips2->GetEntries();
+	
+  //create new list
+  TList *listOfRecurrentChips = new TList();
+  TString Name1;
+	
+  for(Int_t i=0; i<Nentries1; i++){
+    TH1F *h1 = dynamic_cast <TH1F*>(fInput1->Get(listOfSuspiciousChips1->At(i)->GetName()));
+    for(Int_t j=0; j<Nentries2; j++){
+      TH1F *h2 = dynamic_cast <TH1F*>(fInput2->Get(listOfSuspiciousChips2->At(j)->GetName()));
+      Name1=h1->GetName();
+      if (!Name1.CompareTo(h2->GetName())) {
+	cout << Name1.CompareTo(h2->GetName()) << 
+	  "   " << h2->GetName() << endl;
+	k++;
+	listOfRecurrentChips->Add(h1);
+      }
+    }//second file loop
+  }//first file loop
+  
+  Printf("%i Faulty chips in the first file", Nentries1);
+  Printf("%i Faulty chips in the second file", Nentries2);
+  Printf("%i Recurrent Faulty chips", k+1);	
+  
+  TString outputFile = "SSD.RecurrentFaultyChips."; outputFile += outputTxt;
+  outputFile += ".root";
+  
+  TFile *fOutput = new TFile(outputFile.Data(),"recreate");
+  listOfRecurrentChips->Write();
+  fOutput->Close();
+  
+  fInput1->Close();
+  fInput2->Close();
 }

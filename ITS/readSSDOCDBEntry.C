@@ -466,6 +466,13 @@ void BadChannelMap(AliCDBManager * man) {
   cBadChannel->cd(4)->SetGridx(); cBadChannel->cd(4)->SetGridy();
   cBadChannel->cd(4); fHistNSideBadChannelMapLayer6->Draw("colz");
   cBadChannel->SaveAs("Run-BadChannels.gif");
+
+  TFile *fOutput = new TFile("badChannelsSSD.root","recreate");
+  fHistPSideBadChannelMapLayer5->Write();
+  fHistNSideBadChannelMapLayer5->Write();
+  fHistPSideBadChannelMapLayer6->Write();
+  fHistNSideBadChannelMapLayer6->Write();
+  fOutput->Close();
 }
 
 //_____________________________________________________________________//
