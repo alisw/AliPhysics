@@ -53,7 +53,14 @@ class AliZDCRawStream: public TObject {
 	 kZPCCD=76, kZPC1CD=77, kZPC2D=78, kZPC3D=79, kZPC4D=80,
 	 kZEM1D=81, kZEM2D=82,
 	 kZDCAMonD=83, kZDCCMonD=84,
-	 kZNAD=85, kZPAD=86, kZNCD=87, kZPCD=88, kZEMD=89};
+	 kZNAD=85, kZPAD=86, kZNCD=87, kZPCD=88, kZEMD=89,
+         kLogical00=90, kLogical01=91, kLogical02=92, kLogical03=93, kLogical04=94, 
+	 kLogical05=95, kLogical06=96, kLogical07=97, kLogical08=98, kLogical09=99, 
+	 kLogical10=100, kLogical11=101, kLogical12=102, kLogical13=103, kLogical14=104, 
+	 kLogical15=105, kLogical16=106, kLogical17=107, kLogical18=108, kLogical19=109, 
+	 kLogical20=110, kLogical21=111, kLogical22=112, kLogical23=113, kLogical24=114, 
+	 kLogical25=115, kLogical26=116, kLogical27=117, kLogical28=118, kLogical29=119, 
+	 kLogical30=120, kLogical31=121};
     
     // Error codes in raw data streaming
     enum EZDCRawStreamError{

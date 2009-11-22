@@ -251,28 +251,28 @@ void AliZDCRawStream::ReadCDHHeader()
     UChar_t message = header->GetAttributes();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
     
-    if((message & 0x0) == 0x0){ // PHYSICS RUN
+    if((message & 0xf0) == 0x0){ // PHYSICS RUN
        //printf("\t PHYSICS RUN raw data found\n");
     }
-    else if((message & 0x10) == 0x10){ // COSMIC RUN
+    else if((message & 0xf0) == 0x10){ // COSMIC RUN
        //printf("\t STANDALONE_COSMIC RUN raw data found\n");
     }
-    else if((message & 0x20) == 0x20){ // PEDESTAL RUN
+    else if((message & 0xf0) == 0x20){ // PEDESTAL RUN
        //printf("\t STANDALONE_PEDESTAL RUN raw data found\n");
     }
-    else if((message & 0x30) == 0x30){ // LASER RUN
+    else if((message & 0xf0) == 0x30){ // LASER RUN
        //printf("\t STANDALONE_LASER RUN raw data found\n");
     }
-    else if((message & 0x40) == 0x40){ // CALIBRATION_CENTRAL RUN
+    else if((message & 0xf0) == 0x40){ // CALIBRATION_CENTRAL RUN
        //printf("\t CALIBRATION_CENTRAL RUN raw data found\n");
     }
-    else if((message & 0x50) == 0x50){ // CALIBRATION_SEMICENTRAL
+    else if((message & 0xf0) == 0x50){ // CALIBRATION_SEMICENTRAL
        //printf("\t CALIBRATION_SEMICENTRAL RUN raw data found\n");
     }
-    else if((message & 0x60) == 0x60){ // CALIBRATION_MB
+    else if((message & 0xf0) == 0x60){ // CALIBRATION_MB
        //printf("\t CALIBRATION_MB RUN raw data found\n");
     }
-    else if((message & 0x70) == 0x70){ // CALIBRATION_EMD
+    else if((message & 0xf0) == 0x70){ // CALIBRATION_EMD
        //printf("\t CALIBRATION_EMD RUN raw data found\n");
     }
     // *** Checking the bit indicating the used readout card
