@@ -12,14 +12,6 @@ SRCS = dNdEta/dNdEtaAnalysis.cxx \
       AliUnfolding.cxx \
       multiplicity/AliMultiplicityCorrection.cxx \
       AliOfflineTrigger.cxx \
-      dNdPt/AlidNdPtTask.cxx \
-      dNdPt/AlidNdPtAcceptanceCuts.cxx \
-      dNdPt/AlidNdPtEventCuts.cxx \
-      dNdPt/AlidNdPtHelper.cxx \
-      dNdPt/AlidNdPt.cxx \
-      dNdPt/AlidNdPtAnalysis.cxx \
-      dNdPt/AlidNdPtCorrection.cxx \
-      dNdPt/AlidNdPtCutAnalysis.cxx
 
 HDRS = $(SRCS:.cxx=.h)
 

@@ -11,4 +11,14 @@
 #pragma link C++ class AliTPCClusterHistograms+;
 #pragma link C++ class AliTPCRawHistograms+;
 
+#pragma link C++ class AlidNdPtTask+;
+#pragma link C++ class AlidNdPtHelper+;
+#pragma link C++ class AlidNdPtAnalysis+;
+#pragma link C++ class AlidNdPtCorrection+;
+
+#pragma link C++ class AlidNdPtAcceptanceCuts+;
+#pragma link C++ class AlidNdPtEventCuts+;
+#pragma link C++ class AlidNdPt+;
+#pragma link C++ class AlidNdPtCutAnalysis+;
+
 #endif
