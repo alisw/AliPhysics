@@ -360,6 +360,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   rawReader->Reset() ;
   AliCaloRawStreamV3 in(rawReader,"EMCAL"); 
+  rawReader->Select("EMCAL", 0, 43) ; //select EMCAL DDL's 
 
   // setup
   int nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
