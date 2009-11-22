@@ -122,6 +122,7 @@
 #pragma link C++ class AliITSAlignMille2Constraint+;
 #pragma link C++ class AliITSAlignMille2ConstrArray+;
 #pragma link C++ class AliITSAlignMilleData+;
+#pragma link C++ class AliITSTPArrayFit+;
 #pragma link C++ class AliITSResidualsAnalysis+;
 #pragma link C++ class AliITSRealignTracks+;
 // Classes for QA
