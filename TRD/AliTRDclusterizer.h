@@ -99,6 +99,7 @@ class AliTRDclusterizer : public TNamed
   void             SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
   static UChar_t   GetStatus(Short_t &signal);
   Int_t            GetAddedClusters() const {return fNoOfClusters;}
+  Int_t            GetNTimeBins() const {return fTimeTotal;}
 
   Bool_t   IsClustersOwner() const {return TestBit(kClOwner);}
   virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kClOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
