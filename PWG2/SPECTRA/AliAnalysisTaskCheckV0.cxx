@@ -297,6 +297,11 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  continue;
 	}
 
+	// Filter like-sign V0 (next: add counter and distribution)
+	if ( pTrack->GetSign() == nTrack->GetSign()){
+	  continue;
+	} 
+
 	lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(tPrimaryVtxPosition[0],
 						      tPrimaryVtxPosition[1],
 						      lMagneticField) );
@@ -379,6 +384,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	lDcaPosToPrimVertex = v0->DcaPosToPrimVertex();
 	lDcaNegToPrimVertex = v0->DcaNegToPrimVertex();
 
+	// propose getOnFlyStatus() = -1 for like-sign
 
 	lOnFlyStatus = v0->GetOnFlyStatus();
 	lChi2V0 = v0->Chi2V0();
