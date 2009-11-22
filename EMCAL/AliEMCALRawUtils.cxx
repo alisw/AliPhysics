@@ -301,7 +301,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 
   AliCaloRawStreamV3 in(reader,"EMCAL",fMapping);
   // Select EMCAL DDL's;
-  reader->Select("EMCAL");
+  reader->Select("EMCAL",0,43);
 
   //Updated fitting routine from 2007 beam test takes into account
   //possibility of two peaks in data and selects first one for fitting
