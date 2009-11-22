@@ -1238,7 +1238,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	vtrack->IncrementNSkipped();
 	ntracks[ilayer]++;
       }
-
+      /*     
       // allow one prolongation without clusters for tracks with |tgl|>1.1
       if (constrain && itrack==0 && TMath::Abs(currenttrack1.GetTgl())>1.1) {  //big theta - for low flux
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
@@ -1251,7 +1251,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
 	ntracks[ilayer]++;
       }
-     
+      */    
       
     } // loop over tracks in layer ilayer+1
 
