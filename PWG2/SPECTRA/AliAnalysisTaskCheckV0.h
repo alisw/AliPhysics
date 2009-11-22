@@ -12,6 +12,7 @@
 class TString;
 class TList;
 class TH1F;
+class TH2F;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -56,6 +57,7 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   TH1F        *fHistMassK0sOff;                 //! Invariant mass of K0s
   TH1F        *fHistMassLambdaOff;              //! Invariant mass of Lambda
   TH1F        *fHistMassAntiLambdaOff;          //! Invariant mass of Anti-Lambda
+  TH2F        *fHistArmenterosPodolanskiOff;    //! Armenteros-Podolanski distribution       
 
               // V0 on-the-fly distributions
   TH1F        *fHistV0MultiplicityOn;           //! V0 multiplicity distribution on-the-fly
@@ -70,6 +72,7 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   TH1F        *fHistMassK0sOn;                  //! Invariant mass of K0s
   TH1F        *fHistMassLambdaOn;               //! Invariant mass of Lambda
   TH1F        *fHistMassAntiLambdaOn;           //! Invariant mass of Anti-Lambda
+  TH2F        *fHistArmenterosPodolanskiOn;     //! Armenteros-Podolanski distribution       
    
   AliAnalysisTaskCheckV0(const AliAnalysisTaskCheckV0&);            // not implemented
   AliAnalysisTaskCheckV0& operator=(const AliAnalysisTaskCheckV0&); // not implemented
