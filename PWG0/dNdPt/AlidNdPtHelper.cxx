@@ -244,7 +244,7 @@ return prim;
 }
 
 //____________________________________________________________________
-void AlidNdPtHelper::PrintConf(AnalysisMode analysisMode, AliPWG0Helper::Trigger trigger)
+void AlidNdPtHelper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger)
 {
   //
   // Prints the given configuration
@@ -268,24 +268,7 @@ void AlidNdPtHelper::PrintConf(AnalysisMode analysisMode, AliPWG0Helper::Trigger
   }
   str += " and trigger ";
 
-  switch (trigger)
-  {
-    case AliPWG0Helper::kAcceptAll : str += "kAcceptAll"; break;
-    case AliPWG0Helper::kMB1 : str += "MB1"; break;
-    case AliPWG0Helper::kMB2 : str += "MB2"; break;
-    case AliPWG0Helper::kMB3 : str += "MB3"; break;
-    case AliPWG0Helper::kSPDGFO : str += "SPDGFO"; break;
-    case AliPWG0Helper::kV0A : str += "V0A"; break;
-    case AliPWG0Helper::kV0C : str += "V0C"; break;
-    case AliPWG0Helper::kZDC : str += "ZDC"; break;
-    case AliPWG0Helper::kZDCA : str += "ZDCA"; break;
-    case AliPWG0Helper::kZDCC : str += "ZDCC"; break;
-    case AliPWG0Helper::kFMDA : str += "FMDA"; break;
-    case AliPWG0Helper::kFMDC : str += "FMDC"; break;
-    case AliPWG0Helper::kFPANY : str += "FPANY"; break;
-    case AliPWG0Helper::kStartOfFlags : str += "StartOfFlags"; break;
-    case AliPWG0Helper::kOfflineFlag  : str += "kOfflineFlag"; break;
-  }
+  str += AliTriggerAnalysis::GetTriggerName(trigger);
 
   str += " <<<<";
 

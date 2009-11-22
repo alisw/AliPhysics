@@ -1476,8 +1476,9 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
 
   // SPD TPC
   //const char* fileName[] = { "multiplicityMC_400k_syst.root", "multiplicityMC_TPC_4kfiles_syst.root" };
+  const char* fileName[] = { "LHC09b9_0.9TeV_0T/mb1/spd/multiplicity.root", "LHC09b8_0.9TeV_0.5T/mb1/tpc/multiplicity.root" };
   //const char* fileName[] = { "spd/multiplicity.root", "tpc/multiplicity.root" };
-  const char* fileName[] = { "multiplicity.root", "multiplicity.root" };
+  //const char* fileName[] = { "multiplicity.root", "multiplicity.root" };
   Float_t etaRangeArr[] = {0.49, 0.9};
   const char* titles[] = { "SPD Tracklets", "TPC Tracks" };
 
@@ -1492,7 +1493,7 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
   
   TLegend* legends[2];
   
-  for (Int_t loop=1; loop<2; ++loop)
+  for (Int_t loop=0; loop<2; ++loop)
   {
     Printf("%s", fileName[loop]);
 
@@ -1534,6 +1535,9 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
     Float_t sumGen = 0;
     Float_t sumMeas = 0;
 
+    Float_t sumGenAbove02 = 0;
+    Float_t sumMeasAbove02 = 0;
+    
     for (Int_t i=0; i<3; ++i)
     {
       Printf("correction %d", i);
@@ -1570,6 +1574,13 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
 
       TH1* genePt = gene->Project3D(Form("z_%d", i));
       TH1* measPt = meas->Project3D(Form("z_%d", i));
+      
+      if (i == 2)
+      {
+        Printf("WARNING: Rebinning for protons!");
+        genePt->Rebin(2);
+        measPt->Rebin(2);
+      }
 
       genePt->Sumw2();
       measPt->Sumw2();
@@ -1583,6 +1594,9 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
       sumGen += genePt->Integral();
       sumMeas += measPt->Integral();
 
+      sumGenAbove02 += genePt->Integral(genePt->GetXaxis()->FindBin(0.21), genePt->GetNbinsX());
+      sumMeasAbove02 += measPt->Integral(genePt->GetXaxis()->FindBin(0.21), genePt->GetNbinsX());
+      
       TH1* effPt = (TH1*) genePt->Clone(Form("effPt_%d", i));
       effPt->Reset();
       effPt->Divide(measPt, genePt, 1, 1, "B");
@@ -1679,6 +1693,7 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
     Printf("In total %.4f of the particles are below their effective pt cut off", (Float_t) below / total);
 
     Printf("%f measured, %f generated, effiency: %f", sumGen, sumMeas, sumMeas / sumGen);
+    Printf("Above 0.2 GeV/c: %f measured, %f generated, effiency: %f", sumGenAbove02, sumMeasAbove02, sumMeasAbove02 / sumGenAbove02);
 
     canvas->cd(loop+1);
     legend->Draw();
@@ -1931,15 +1946,28 @@ void StatisticalUncertainty(Int_t methodType, Bool_t mc = kFALSE)
 
   TH1* mcHist = mult2->GetMultiplicityVtx(etaRange)->ProjectionY("mymc", 1, 1);
 
-  mult->SetRegularizationParameters(AliMultiplicityCorrection::kPol0, 1e5);
+  AliUnfolding::SetNbins(70, 70);
+  //AliUnfolding::SetNbins(35, 35);
+  AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, 1e3);
+  AliUnfolding::SetBayesianParameters(1, 10);
   
-  TH1* errorMeasured = (TH1*) mult->StatisticalUncertainty((AliMultiplicityCorrection::MethodType) methodType, etaRange, kFALSE, AliMultiplicityCorrection::kTrVtx, kTRUE, kFALSE, ((mc) ? mcHist : 0))->Clone("errorMeasured");
+  TH1* errorMeasured = (TH1*) mult->StatisticalUncertainty((AliUnfolding::MethodType) methodType, etaRange, kFALSE, AliMultiplicityCorrection::kTrVtx, kTRUE, kFALSE, ((mc) ? mcHist : 0))->Clone("errorMeasured");
+  
+  new TCanvas; errorMeasured->Draw();
+  new TCanvas; 
+  
+  mult->GetMultiplicityESDCorrected(etaRange)->Scale(1.0 / mult->GetMultiplicityESDCorrected(etaRange)->Integral());
+  mult->GetMultiplicityESDCorrected(etaRange)->Draw();
+  mcHist->Scale(1.0 / mcHist->Integral()); 
+  mcHist->SetLineColor(2);
+  mcHist->Draw("SAME");
+  gPad->SetLogy();
   
   return;
   
-  TH1* errorResponse = (TH1*) mult->StatisticalUncertainty((AliMultiplicityCorrection::MethodType) methodType, etaRange, kFALSE, AliMultiplicityCorrection::kTrVtx, kFALSE, kTRUE, ((mc) ? mcHist : 0))->Clone("errorResponse");
+  TH1* errorResponse = (TH1*) mult->StatisticalUncertainty((AliUnfolding::MethodType) methodType, etaRange, kFALSE, AliMultiplicityCorrection::kTrVtx, kFALSE, kTRUE, ((mc) ? mcHist : 0))->Clone("errorResponse");
 
-  TH1* errorBoth = (TH1*) mult->StatisticalUncertainty((AliMultiplicityCorrection::MethodType) methodType, etaRange, kFALSE, AliMultiplicityCorrection::kTrVtx, kTRUE, kTRUE, ((mc) ? mcHist : 0))->Clone("errorBoth");
+  TH1* errorBoth = (TH1*) mult->StatisticalUncertainty((AliUnfolding::MethodType) methodType, etaRange, kFALSE, AliMultiplicityCorrection::kTrVtx, kTRUE, kTRUE, ((mc) ? mcHist : 0))->Clone("errorBoth");
 
   if (!mc)
   {
@@ -3057,9 +3085,9 @@ void finalPlot2(Bool_t tpc = 0)
   legend->SetFillColor(0);
   legend->SetTextSize(0.04);
   
-  Int_t displayRanges[] = { 50, 80, 120 };
+  Int_t displayRanges[] = { 30, 45, 65 };
   
-  TH2* dummy = new TH2F("dummy", ";True multiplicity N_{ch};P(N_{ch})", 100, -0.5, displayRanges[2]+10, 1000, 5e-5, 5);
+  TH2* dummy = new TH2F("dummy", ";True multiplicity N_{ch};P(N_{ch})", 100, -0.5, displayRanges[2]+10, 1000, 5e-6, 5);
   dummy->SetStats(0);
   dummy->Draw();
   
@@ -3131,16 +3159,16 @@ void finalPlot2(Bool_t tpc = 0)
         TString tmpStr;
         tmpStr.Form("|#eta| < %.1f (x %d)", etaRangeArr[etaR], (Int_t) TMath::Power(5, etaR));
         if (etaR == 0)
-          Tl->DrawLatex(36, result->GetBinContent(41), tmpStr);
+          Tl->DrawLatex(15, result->GetBinContent(20), tmpStr);
         if (etaR == 1)
         {
           Tl->SetTextAlign(12);
-          Tl->DrawLatex(82, result->GetBinContent(81), tmpStr);
+          Tl->DrawLatex(40, result->GetBinContent(40), tmpStr);
         }
         if (etaR == 2)
         {
           Tl->SetTextAlign(12);
-          Tl->DrawLatex(106, result->GetBinContent(101), tmpStr);
+          Tl->DrawLatex(60, result->GetBinContent(50), tmpStr);
         }
       }
       
@@ -3322,9 +3350,99 @@ void BlobelUnfoldingExample()
   //mult->ApplyBayesianMethod(0, kFALSE, AliMultiplicityCorrection::kTrVtx, 0, -1, 0, kFALSE);
   
   mult->DrawComparison("BlobelExample", 0, kFALSE, kTRUE, mult->GetMultiplicityVtx(0)->ProjectionY("mcmchist", 1, mult->GetMultiplicityVtx(0)->GetNbinsX()));
-  
-  
 }
+
+void TestWithDiagonalMatrix()
+{
+  const Int_t kSize = 20;
+
+  TMatrixD matrix(kSize, kSize);
+  for (Int_t x=0; x<kSize; x++)
+    matrix(x, x) = 1;
+ 
+  if (1)
+  { 
+  for (Int_t x=0; x<kSize; x++)
+  {
+    for (Int_t y=0; y<kSize; y++)
+    {
+      if (x == y)
+      {
+        if (x == 0 || x == kSize -1)
+        {
+          matrix(x, y) = 0.75;
+        }
+        else
+          matrix(x, y) = 0.5;
+      }
+      else if (TMath::Abs(x - y) == 1)
+      {
+        matrix(x, y) = 0.25;
+      }
+    }
+  }
+  }
+
+  //matrix.Print();
+
+  TH1F* inputDist = new TH1F("inputDist", ";t;Entries", kSize, -0.5, (Float_t) kSize - 0.5);
+  TVectorD inputDistVector(kSize);
+  
+  TH1F* measuredIdealDist = inputDist->Clone("measuredIdealDist");
+  measuredIdealDist->SetTitle(";m;Entries");
+  TH1F* measuredDist = measuredIdealDist->Clone("measuredDist");
+
+  TF1* gaus = new TF1("func", "gaus(0)", -0.5, kSize);
+  // norm: 1/(sqrt(2pi)sigma)
+  gaus->SetParameters(10000 / sqrt(2 * TMath::Pi()) / ((Float_t) kSize / 8), (Float_t) kSize / 2, (Float_t) kSize / 8);
+  //gaus->Print();
+
+  for (Int_t x=1; x<=inputDist->GetNbinsX(); x++)
+  {
+    Float_t value = gaus->Eval(inputDist->GetBinCenter(x));
+    inputDist->SetBinContent(x, value);
+    inputDistVector(x-1) = value;
+  }
+
+  TVectorD measuredDistIdealVector = matrix * inputDistVector;
+  
+  for (Int_t x=1; x<=measuredIdealDist->GetNbinsX(); x++)
+    measuredIdealDist->SetBinContent(x, measuredDistIdealVector(x-1));
+
+  // randomize
+  //measuredDist->FillRandom(measuredIdealDist, 10000);
+  measuredDist = measuredIdealDist;
+  measuredDist->Sumw2();
+  
+  for (Int_t x=0; x<kSize; x++)
+    Printf("bin %d %.2f +- %.2f", x+1, measuredDist->GetBinContent(x+1), measuredDist->GetBinError(x+1));
+
+  // now unfold this 
+  loadlibs();
+  
+  // fill a multiplicity object
+  mult = new AliMultiplicityCorrection("mult", "mult");
+  for (Int_t x=0; x<kSize; x++)
+  {
+    mult->GetMultiplicityVtx(0)->SetBinContent(1, x+1, inputDistVector(x));
+    mult->GetMultiplicityESD(0)->SetBinContent(1, x+1, measuredDist->GetBinContent(x+1));
+    for (Int_t y=0; y<kSize; y++)
+      mult->GetCorrelation(0)->SetBinContent(1, x+1, y+1, matrix(x, y));
+  }
+  
+  //mult->DrawHistograms();
+  
+  AliUnfolding::SetNbins(20, 20);
+  AliUnfolding::SetChi2Regularization(AliUnfolding::kNone, 0);
+  AliUnfolding::SetChi2Regularization(AliUnfolding::kPol1, 1e-14);
+  //mult->SetCreateBigBin(kFALSE);
+  mult->ApplyMinuitFit(0, kFALSE, AliMultiplicityCorrection::kTrVtx, kFALSE); //hist2->ProjectionY("mymchist"));
+  
+  //mult->ApplyBayesianMethod(0, kFALSE, AliMultiplicityCorrection::kTrVtx, 0, -1, 0, kFALSE);
+  
+  mult->DrawComparison("TestWithDiagonalMatrix", 0, kFALSE, kTRUE, mult->GetMultiplicityVtx(0)->ProjectionY("mcmchist", 1, mult->GetMultiplicityVtx(0)->GetNbinsX()));
+}
+
 
 void E735Fit()
 {
@@ -3606,4 +3724,71 @@ void DrawRawDistributions(const char* fileName = "multiplicityESD.root")
   }
   
   
+}
+
+void FindUnfoldedLimit()
+{
+  loadlibs();
+  
+  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open("multiplicityMC.root");
+  AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open("multiplicityESD.root");
+  
+  TH1* hist = mult->GetCorrelation(etaRange);
+  for (Int_t y=0; y<=hist->GetYaxis()->GetNbins()+1; ++y)
+  {
+    for (Int_t z=0; z<=hist->GetZaxis()->GetNbins()+1; ++z)
+    {
+      hist->SetBinContent(0, y, z, 0);
+      hist->SetBinContent(hist->GetXaxis()->GetNbins()+1, y, z, 0);
+    }
+  }
+  TH2* corr = (TH2*) ((TH3*) mult->GetCorrelation(etaRange))->Project3D("zy");
+
+  TH1* esd_proj = esd->GetMultiplicityESD(etaRange)->ProjectionY("esd_proj", 1, esd->GetMultiplicityESD(etaRange)->GetNbinsX());
+  //esd_proj = corr->ProjectionY("esd_proj", 1, corr->GetNbinsX());
+  
+  new TCanvas; corr->Draw("COLZ");
+  new TCanvas; esd_proj->DrawCopy();
+  
+  TH1* percentage = (TH1*) (esd_proj->Clone("percentage"));
+  percentage->Reset();
+  
+  for (Int_t i=1; i<=esd_proj->GetNbinsX(); i++)
+    if (esd_proj->GetBinContent(i) > 0)
+      esd_proj->SetBinContent(i, 1);
+  
+  for (Int_t i=1; i<=percentage->GetNbinsX(); i++)
+  {
+    TH1* binResponse = corr->ProjectionY("proj", i, i);
+    if (binResponse->Integral() <= 0)
+      continue;
+    binResponse->Scale(1.0 / binResponse->Integral());
+    binResponse->Multiply(esd_proj);
+    //new TCanvas; binResponse->Draw();
+    percentage->SetBinContent(i, binResponse->Integral());
+    //return;
+  }
+  
+  new TCanvas; percentage->Draw();
+  new TCanvas;
+  mc = esd->GetMultiplicityVtx(etaRange)->ProjectionY("mc", 1, esd->GetMultiplicityVtx(etaRange)->GetNbinsX());
+  mc->SetLineColor(2);
+  mc->Draw("");
+}
+   
+void CompareUnfoldedWithMC()
+{
+  loadlibs();
+  
+  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open("unfolded.root");
+
+  //mult->GetMultiplicityESDCorrected(etaRange)->Scale(1.0 / mult->GetMultiplicityESDCorrected(etaRange)->Integral());
+  mult->GetMultiplicityESDCorrected(etaRange)->SetTitle(";multiplicity;events");
+  mult->GetMultiplicityESDCorrected(etaRange)->SetStats(0);
+  mult->GetMultiplicityESDCorrected(etaRange)->Draw();
+  //mcHist->Scale(1.0 / mcHist->Integral()); 
+  mcHist = mult->GetMultiplicityVtx(etaRange)->ProjectionY("mymc", 1, 1);
+  mcHist->SetLineColor(2);
+  mcHist->Draw("SAME");
+  gPad->SetLogy();
 }

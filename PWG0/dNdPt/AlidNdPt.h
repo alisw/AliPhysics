@@ -15,7 +15,7 @@ class AlidNdPtAcceptanceCuts;
 
 #include "TNamed.h"
 #include "TFolder.h"
-#include "AliPWG0Helper.h"
+#include "AliTriggerAnalysis.h"
 #include "AlidNdPtHelper.h"
 
 class AlidNdPt : public TNamed {
@@ -49,14 +49,14 @@ public:
   void SetTrackCuts(AliESDtrackCuts* const cuts)                { fEsdTrackCuts = cuts; }
   void SetUseMCInfo(const Bool_t info)                          { fUseMCInfo = info; }
   void SetAnalysisMode(const AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
-  void SetTrigger(const AliPWG0Helper::Trigger trigger)         { fTrigger = trigger; }
+  void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; }
 
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
   AliESDtrackCuts* GetTrackCuts() const                         { return fEsdTrackCuts; }
   Bool_t IsUseMCInfo() const                                    { return fUseMCInfo; }
   AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
-  AliPWG0Helper::Trigger GetTrigger() const                     { return fTrigger; }
+  AliTriggerAnalysis::Trigger GetTrigger() const                { return fTrigger; }
 
 private:
 
@@ -66,7 +66,7 @@ private:
 
   Bool_t fUseMCInfo;                            // use MC information
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
-  AliPWG0Helper::Trigger fTrigger;              // trigger definition MB1, MB2 ...
+  AliTriggerAnalysis::Trigger fTrigger;         // trigger definition MB1, MB2 ...
 
   ClassDef(AlidNdPt,1);
 };

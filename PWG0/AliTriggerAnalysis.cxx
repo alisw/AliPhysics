@@ -1,4 +1,4 @@
-/* $Id: AliOfflineTrigger.cxx 35782 2009-10-22 11:54:31Z jgrosseo $ */
+/* $Id: AliTriggerAnalysis.cxx 35782 2009-10-22 11:54:31Z jgrosseo $ */
 
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
@@ -16,16 +16,18 @@
  **************************************************************************/
 
 //-------------------------------------------------------------------------
-//                      Implementation of   Class AliOfflineTrigger
-//   This class provides offline triggers from data in the ESD
+//                      Implementation of   Class AliTriggerAnalysis
+//   This class provides function to check if events have been triggered based on the data in the ESD
+//   The trigger bits, trigger class inputs and only the data (offline trigger) can be used
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN
 //-------------------------------------------------------------------------
 
+#include <Riostream.h>
 #include <TH1F.h>
 #include <TList.h>
 #include <TIterator.h>
 
-#include <AliOfflineTrigger.h>
+#include <AliTriggerAnalysis.h>
 
 #include <AliLog.h>
 
@@ -36,9 +38,9 @@
 #include <AliESDZDC.h>
 #include <AliESDFMD.h>
 
-ClassImp(AliOfflineTrigger)
+ClassImp(AliTriggerAnalysis)
 
-AliOfflineTrigger::AliOfflineTrigger() :
+AliTriggerAnalysis::AliTriggerAnalysis() :
   fSPDGFOThreshold(1),
   fV0AThreshold(1),
   fV0CThreshold(1),
@@ -55,7 +57,7 @@ AliOfflineTrigger::AliOfflineTrigger() :
 {
 }
 
-void AliOfflineTrigger::EnableHistograms()
+void AliTriggerAnalysis::EnableHistograms()
 {
   // creates the monitoring histograms
   
@@ -71,86 +73,195 @@ void AliOfflineTrigger::EnableHistograms()
   fHistFMDSum = new TH1F("fHistFMDSum", "FMD sum;multiplicity value;counts", 1000, 0, 10);
 }
 
-Bool_t AliOfflineTrigger::IsEventTriggered(const AliESDEvent* aEsd, AliPWG0Helper::Trigger trigger) const
+//____________________________________________________________________
+const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger) 
 {
-  // checks if an event has been triggered "offline"
-
-  UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) AliPWG0Helper::kStartOfFlags;
+  // returns the name of the requested trigger
+  // the returned string will only be valid until the next call to this function [not thread-safe]
+  
+  static TString str;
+  
+  UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) kStartOfFlags;
   
   switch (triggerNoFlags)
   {
-    case AliPWG0Helper::kAcceptAll:
+    case kAcceptAll : str = "ACCEPT ALL (bypass!)"; break;
+    case kMB1 : str = "MB1"; break;
+    case kMB2 : str = "MB2"; break;
+    case kMB3 : str = "MB3"; break;
+    case kSPDGFO : str = "SPD GFO"; break;
+    case kV0A : str = "V0 A"; break;
+    case kV0C : str = "V0 C"; break;
+    case kZDC : str = "ZDC"; break;
+    case kZDCA : str = "ZDC A"; break;
+    case kZDCC : str = "ZDC C"; break;
+    case kFMDA : str = "FMD A"; break;
+    case kFMDC : str = "FMD C"; break;
+    case kFPANY : str = "SPD GFO | V0 | ZDC | FMD"; break;
+    default: str = ""; break;
+  }
+   
+  if (trigger & kOfflineFlag)
+    str += " OFFLINE";  
+  
+  return str;
+}
+
+Bool_t AliTriggerAnalysis::IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger) const
+{
+  // checks if an event has been triggered
+
+  if (trigger & kOfflineFlag)
+    return IsOfflineTriggerFired(aEsd, trigger);
+    
+  return IsTriggerBitFired(aEsd, trigger);
+}
+
+Bool_t AliTriggerAnalysis::IsTriggerBitFired(const AliESDEvent* aEsd, Trigger trigger) const
+{
+  // checks if an event is fired using the trigger bits
+
+  return IsTriggerBitFired(aEsd->GetTriggerMask(), trigger);
+}
+
+Bool_t AliTriggerAnalysis::IsTriggerBitFired(ULong64_t triggerMask, Trigger trigger) const
+{
+  // checks if an event is fired using the trigger bits
+  //
+  // this function needs the branch TriggerMask in the ESD
+  
+  // definitions from p-p.cfg
+  ULong64_t spdFO = (1 << 14);
+  ULong64_t v0left = (1 << 10);
+  ULong64_t v0right = (1 << 11);
+
+  switch (trigger)
+  {
+    case kAcceptAll:
     {
       return kTRUE;
       break;
     }
-    case AliPWG0Helper::kMB1:
+    case kMB1:
+    {
+      if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
+        return kTRUE;
+      break;
+    }
+    case kMB2:
+    {
+      if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
+        return kTRUE;
+      break;
+    }
+    case kMB3:
+    {
+      if (triggerMask & spdFO && (triggerMask & v0left) && (triggerMask & v0right))
+        return kTRUE;
+      break;
+    }
+    case kSPDGFO:
+    {
+      if (triggerMask & spdFO)
+        return kTRUE;
+      break;
+    }
+    default:
+      Printf("IsEventTriggered: ERROR: Trigger type %d not implemented in this method", (Int_t) trigger);
+      break;
+  }
+
+  return kFALSE;
+}
+
+Bool_t AliTriggerAnalysis::IsTriggerBitFired(const AliESDEvent* aEsd, ULong64_t tclass) const
+{
+  // Checks if corresponding bit in mask is on
+  
+  ULong64_t trigmask = aEsd->GetTriggerMask();
+  return (trigmask & (1ull << (tclass-1)));
+}
+
+Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger) const
+{
+  // checks if an event has been triggered "offline"
+
+  UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) kStartOfFlags;
+  
+  switch (triggerNoFlags)
+  {
+    case kAcceptAll:
+    {
+      return kTRUE;
+      break;
+    }
+    case kMB1:
     {
       if (SPDGFOTrigger(aEsd) || V0Trigger(aEsd, kASide) || V0Trigger(aEsd, kCSide))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kMB2:
+    case kMB2:
     {
       if (SPDGFOTrigger(aEsd) && (V0Trigger(aEsd, kASide) || V0Trigger(aEsd, kCSide)))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kMB3:
+    case kMB3:
     {
       if (SPDGFOTrigger(aEsd) && V0Trigger(aEsd, kASide) && V0Trigger(aEsd, kCSide))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kSPDGFO:
+    case kSPDGFO:
     {
       if (SPDGFOTrigger(aEsd))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kV0A:
+    case kV0A:
     {
       if (V0Trigger(aEsd, kASide))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kV0C:
+    case kV0C:
     {
       if (V0Trigger(aEsd, kCSide))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kZDC:
+    case kZDC:
     {
       if (ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kZDCA:
+    case kZDCA:
     {
       if (ZDCTrigger(aEsd, kASide))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kZDCC:
+    case kZDCC:
     {
       if (ZDCTrigger(aEsd, kCSide))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kFMDA:
+    case kFMDA:
     {
       if (FMDTrigger(aEsd, kASide))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kFMDC:
+    case kFMDC:
     {
       if (FMDTrigger(aEsd, kCSide))
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kFPANY:
+    case kFPANY:
     {
       if (SPDGFOTrigger(aEsd) || V0Trigger(aEsd, kASide) || V0Trigger(aEsd, kCSide) || ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide) || FMDTrigger(aEsd, kASide) || FMDTrigger(aEsd, kCSide))
         return kTRUE;
@@ -165,7 +276,81 @@ Bool_t AliOfflineTrigger::IsEventTriggered(const AliESDEvent* aEsd, AliPWG0Helpe
   return kFALSE;
 }
 
-void AliOfflineTrigger::FillHistograms(const AliESDEvent* aEsd)
+
+Bool_t AliTriggerAnalysis::IsTriggerClassFired(const AliESDEvent* aEsd, const Char_t* tclass) const 
+{
+  // tclass is logical function of inputs, e.g. 01 && 02 || 03 && 11 && 21
+  // = L0 inp 1 && L0 inp 2 || L0 inp 3 && L1 inp 1 && L2 inp 1
+  // NO brackets in logical function !
+  // Spaces between operators and inputs.
+  // Not all logical functions are available in CTP= 
+  // =any function of first 4 inputs; 'AND' of other inputs, check not done
+  // This method will be replaced/complemened by similar one
+  // which works withh class and inputs names as in CTP cfg file
+  
+  TString TClass(tclass);
+  TObjArray* tcltokens = TClass.Tokenize(" ");
+  Char_t level=((TObjString*)tcltokens->At(0))->String()[0];
+  UInt_t input=atoi((((TObjString*)tcltokens->At(0))->String()).Remove(0));
+  Bool_t tcl = IsInputFired(aEsd,level,input);
+ 
+  for (Int_t i=1;i<tcltokens->GetEntriesFast();i=i+2) {
+    level=((TObjString*)tcltokens->At(i+1))->String()[0];
+    input=atoi((((TObjString*)tcltokens->At(i+1))->String()).Remove(0));
+    Bool_t inpnext = IsInputFired(aEsd,level,input);
+    Char_t op =((TObjString*)tcltokens->At(i))->String()[0];
+    if (op == '&') tcl=tcl && inpnext;
+    else if (op == '|') tcl =tcl || inpnext;
+    else {
+       AliError(Form("Syntax error in %s", tclass));
+       tcltokens->Delete();
+       return kFALSE;
+    }
+  }
+  tcltokens->Delete();
+  return tcl;
+}
+
+Bool_t AliTriggerAnalysis::IsInputFired(const AliESDEvent* aEsd, Char_t level, UInt_t input) const
+{
+  // Checks trigger input of any level
+  
+  switch (level)
+  {
+    case '0': return IsL0InputFired(aEsd,input);
+    case '1': return IsL1InputFired(aEsd,input);
+    case '2': return IsL2InputFired(aEsd,input);
+    default:
+      AliError(Form("Wrong level %i",level));
+      return kFALSE;
+  }
+}
+
+Bool_t AliTriggerAnalysis::IsL0InputFired(const AliESDEvent* aEsd, UInt_t input) const 
+{
+  // Checks if corresponding bit in mask is on
+  
+  UInt_t inpmask = aEsd->GetHeader()->GetL0TriggerInputs();
+  return (inpmask & (1<<(input-1)));
+}
+
+Bool_t AliTriggerAnalysis::IsL1InputFired(const AliESDEvent* aEsd, UInt_t input) const
+{
+  // Checks if corresponding bit in mask is on
+  
+  UInt_t inpmask = aEsd->GetHeader()->GetL1TriggerInputs();
+  return (inpmask & (1<<(input-1)));
+}
+
+Bool_t AliTriggerAnalysis::IsL2InputFired(const AliESDEvent* aEsd, UInt_t input) const 
+{
+  // Checks if corresponding bit in mask is on
+  
+  UInt_t inpmask = aEsd->GetHeader()->GetL2TriggerInputs();
+  return (inpmask & (1<<(input-1)));
+}
+
+void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd) 
 {
   // fills the histograms with the info from the ESD
   
@@ -204,7 +389,7 @@ void AliOfflineTrigger::FillHistograms(const AliESDEvent* aEsd)
   fHistFMDC->Fill(FMDHitCombinations(aEsd, kCSide, kTRUE));
 }
 
-Int_t AliOfflineTrigger::SPDFiredChips(const AliESDEvent* aEsd) const
+Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd) const
 {
   // returns the number of fired chips in the SPD
   
@@ -217,7 +402,7 @@ Int_t AliOfflineTrigger::SPDFiredChips(const AliESDEvent* aEsd) const
   return mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
 }
 
-Bool_t AliOfflineTrigger::SPDGFOTrigger(const AliESDEvent* aEsd) const
+Bool_t AliTriggerAnalysis::SPDGFOTrigger(const AliESDEvent* aEsd) const
 {
   // Returns if the SPD gave a global Fast OR trigger
   
@@ -228,7 +413,7 @@ Bool_t AliOfflineTrigger::SPDGFOTrigger(const AliESDEvent* aEsd) const
   return kFALSE;
 }
 
-Int_t AliOfflineTrigger::V0BBTriggers(const AliESDEvent* aEsd, AliceSide side) const
+Int_t AliTriggerAnalysis::V0BBTriggers(const AliESDEvent* aEsd, AliceSide side) const
 {
   // returns the number of BB triggers in V0A | V0C
   
@@ -251,7 +436,7 @@ Int_t AliOfflineTrigger::V0BBTriggers(const AliESDEvent* aEsd, AliceSide side) c
   return count;
 }
 
-Bool_t AliOfflineTrigger::V0Trigger(const AliESDEvent* aEsd, AliceSide side) const
+Bool_t AliTriggerAnalysis::V0Trigger(const AliESDEvent* aEsd, AliceSide side) const
 {
   // Returns if the V0 triggered
   
@@ -264,7 +449,7 @@ Bool_t AliOfflineTrigger::V0Trigger(const AliESDEvent* aEsd, AliceSide side) con
   return kFALSE;
 }
 
-Bool_t AliOfflineTrigger::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const
+Bool_t AliTriggerAnalysis::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const
 {
   // Returns if ZDC triggered
   
@@ -295,7 +480,7 @@ Bool_t AliOfflineTrigger::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) co
   return kFALSE;
 }
 
-Int_t AliOfflineTrigger::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHistograms) const
+Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHistograms) const
 {
   // returns number of hit combinations agove threshold
   //
@@ -348,7 +533,7 @@ Int_t AliOfflineTrigger::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide s
   return triggers;
 }
 
-Bool_t AliOfflineTrigger::FMDTrigger(const AliESDEvent* aEsd, AliceSide side) const
+Bool_t AliTriggerAnalysis::FMDTrigger(const AliESDEvent* aEsd, AliceSide side) const
 {
   // Returns if the FMD triggered
   //
@@ -362,7 +547,7 @@ Bool_t AliOfflineTrigger::FMDTrigger(const AliESDEvent* aEsd, AliceSide side) co
   return kFALSE;
 }
 
-Long64_t AliOfflineTrigger::Merge(TCollection* list)
+Long64_t AliTriggerAnalysis::Merge(TCollection* list)
 {
   // Merge a list of AliMultiplicityCorrection objects with this (needed for
   // PROOF).
@@ -384,7 +569,7 @@ Long64_t AliOfflineTrigger::Merge(TCollection* list)
   Int_t count = 0;
   while ((obj = iter->Next())) {
 
-    AliOfflineTrigger* entry = dynamic_cast<AliOfflineTrigger*> (obj);
+    AliTriggerAnalysis* entry = dynamic_cast<AliTriggerAnalysis*> (obj);
     if (entry == 0) 
       continue;
 
@@ -414,7 +599,7 @@ Long64_t AliOfflineTrigger::Merge(TCollection* list)
   return count+1;
 }
 
-void AliOfflineTrigger::WriteHistograms() const
+void AliTriggerAnalysis::WriteHistograms() const
 {
   // write histograms to current directory
   

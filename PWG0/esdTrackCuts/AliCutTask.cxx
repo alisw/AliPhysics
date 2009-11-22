@@ -9,6 +9,7 @@
 
 #include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
+#include "AliTriggerAnalysis.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -131,13 +132,15 @@ void AliCutTask::Exec(Option_t *)
 
   //fESD->GetVertex()->Print();
 
-  if (!AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1) && !AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2))
+  static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+  
+  if (!triggerAnalysis->IsTriggerFired(fESD, AliTriggerAnalysis::kMB1) && !triggerAnalysis->IsTriggerFired(fESD, AliTriggerAnalysis::kMB2))
     fTriggerStats->Fill(0);
 
-  if (AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1))
+  if (triggerAnalysis->IsTriggerFired(fESD, AliTriggerAnalysis::kMB1))
     fTriggerStats->Fill(1);
 
-  if (AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2))
+  if (triggerAnalysis->IsTriggerFired(fESD, AliTriggerAnalysis::kMB2))
     fTriggerStats->Fill(2);
 
   if (fESD->GetTriggerMask() & (0x1 << 14))
@@ -147,7 +150,7 @@ void AliCutTask::Exec(Option_t *)
     fTriggerStats->Fill(4);
 
   //if (fESD->GetTriggerMask() & (0x1 << 14) == 0)
-  if (!AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2))
+  if (!triggerAnalysis->IsTriggerFired(fESD, AliTriggerAnalysis::kMB2))
     return;
 
   // get the ESD vertex

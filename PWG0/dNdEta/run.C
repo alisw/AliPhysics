@@ -101,8 +101,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDVZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks Kinks Cascades AliESDTZERO ALIESDACORDE MuonTracks TrdTracks CaloClusters");
   mgr->SetInputEventHandler(esdH);
 
-  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn;
-  AliPWG0Helper::Trigger      trigger      = AliPWG0Helper::kMB1;
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn;
+  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kMB1 | AliTriggerAnalysis::kOfflineFlag; // AcceptAll;
 
   AliPWG0Helper::PrintConf(analysisMode, trigger);
 

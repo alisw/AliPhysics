@@ -34,6 +34,7 @@
 #include "multiplicity/AliMultiplicityCorrection.h"
 #include "AliCorrection.h"
 #include "AliCorrectionMatrix3D.h"
+#include "AliTriggerAnalysis.h"
 
 ClassImp(AliMultiplicityTask)
 
@@ -41,8 +42,8 @@ AliMultiplicityTask::AliMultiplicityTask(const char* opt) :
   AliAnalysisTask("AliMultiplicityTask", ""),
   fESD(0),
   fOption(opt),
-  fAnalysisMode(AliPWG0Helper::kSPD),
-  fTrigger(AliPWG0Helper::kMB1),
+  fAnalysisMode((AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn)),
+  fTrigger(AliTriggerAnalysis::kMB1),
   fDeltaPhiCut(-1),
   fReadMC(kFALSE),
   fUseMCVertex(kFALSE),
@@ -101,11 +102,11 @@ void AliMultiplicityTask::ConnectInputData(Option_t *)
     tree->SetBranchStatus("AliESDHeader*", 1);
     tree->SetBranchStatus("*Vertex*", 1);
 
-    if (fAnalysisMode == AliPWG0Helper::kSPD) {
+    if (fAnalysisMode & AliPWG0Helper::kSPD) {
       tree->SetBranchStatus("AliMultiplicity*", 1);
     }
 
-    if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
+    if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS) {
       //AliESDtrackCuts::EnableNeededBranches(tree);
       tree->SetBranchStatus("Tracks*", 1);
     }
@@ -214,7 +215,8 @@ void AliMultiplicityTask::Exec(Option_t*)
     return;
   }
 
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD, fTrigger);
+  static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+  Bool_t eventTriggered = triggerAnalysis->IsTriggerFired(fESD, fTrigger);
   //Printf("%lld", fESD->GetTriggerMask());
 
   const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
@@ -233,7 +235,7 @@ void AliMultiplicityTask::Exec(Option_t*)
   Int_t inputCount = 0;
   Int_t* labelArr = 0;
   Float_t* etaArr = 0;
-  if (fAnalysisMode == AliPWG0Helper::kSPD)
+  if (fAnalysisMode & AliPWG0Helper::kSPD)
   {
     // get tracklets
     const AliMultiplicity* mult = fESD->GetMultiplicity();
@@ -267,7 +269,7 @@ void AliMultiplicityTask::Exec(Option_t*)
       ++inputCount;
     }
   }
-  else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
+  else if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
   {
     if (!fEsdTrackCuts)
     {
@@ -278,7 +280,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     if (vtxESD)
     {
       // get multiplicity from ESD tracks
-      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode == AliPWG0Helper::kTPC));
+      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode & AliPWG0Helper::kTPC));
       Int_t nGoodTracks = list->GetEntries();
   
       labelArr = new Int_t[nGoodTracks];
@@ -304,15 +306,15 @@ void AliMultiplicityTask::Exec(Option_t*)
   }
 
   // eta range for nMCTracksSpecies, nESDTracksSpecies
-  Float_t etaRange = -1;
-  switch (fAnalysisMode) {
-    case AliPWG0Helper::kInvalid: break;
-    case AliPWG0Helper::kTPC:
-    case AliPWG0Helper::kTPCITS:
-    	etaRange = 1.0; break;
-    case AliPWG0Helper::kSPD: etaRange = 1.0; break;
-    default: break;
-  }
+  Float_t etaRange = 1.0;
+//   switch (fAnalysisMode) {
+//     case AliPWG0Helper::kInvalid: break;
+//     case AliPWG0Helper::kTPC:
+//     case AliPWG0Helper::kTPCITS:
+//     	etaRange = 1.0; break;
+//     case AliPWG0Helper::kSPD: etaRange = 1.0; break;
+//     default: break;
+//   }
 
   if (!fReadMC) // Processing of ESD information
   {
@@ -686,7 +688,7 @@ void AliMultiplicityTask::Exec(Option_t*)
           // if the particle decays/stops before this radius we do not see it
           // 8cm larger than SPD layer 2
           // 123cm TPC radius where a track has about 50 clusters (cut limit)          
-          const Float_t endRadius = (fAnalysisMode == AliPWG0Helper::kSPD) ? 8. : 123;
+          const Float_t endRadius = (fAnalysisMode & AliPWG0Helper::kSPD) ? 8. : 123;
                   
           // loop over all primaries that have not been found
           for (Int_t i=0; i<nPrim; i++)

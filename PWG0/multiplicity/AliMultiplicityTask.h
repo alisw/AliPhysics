@@ -30,7 +30,7 @@ class AliMultiplicityTask : public AliAnalysisTask {
     void SetPtSpectrum(TH1D* hist) { fPtSpectrum = hist; }
 
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
-    void SetTrigger(AliPWG0Helper::Trigger trigger) { fTrigger = trigger; }
+    void SetTrigger(AliTriggerAnalysis::Trigger trigger) { fTrigger = trigger; }
     void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
 
     void SetReadMC(Bool_t flag = kTRUE) { fReadMC = flag; }
@@ -41,7 +41,7 @@ class AliMultiplicityTask : public AliAnalysisTask {
 
     TString fOption;      // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
-    AliPWG0Helper::Trigger fTrigger;           // trigger that is used
+    AliTriggerAnalysis::Trigger fTrigger;      // trigger that is used
     Float_t fDeltaPhiCut;                      // cut in delta phi (only SPD)
 
     Bool_t  fReadMC;       // if true reads MC data (to build correlation maps)

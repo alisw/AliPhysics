@@ -41,7 +41,7 @@ void SetRanges(TAxis* axis)
     axis->SetRangeUser(0, 4.9999);
     axis->SetTitle("p_{T} (GeV/c)");
   }
-  if (strcmp(axis->GetTitle(), "vtx z [cm]") == 0 || strcmp(axis->GetTitle(), "vtx z (cm)") == 0)
+  if (strcmp(axis->GetTitle(), "vtx z [cm]") == 0 || strcmp(axis->GetTitle(), "vtx z (cm)") == 0 || strcmp(axis->GetTitle(), "vtx-z [cm]") == 0 || strcmp(axis->GetTitle(), "vtx-z (cm)") == 0)
   {
     axis->SetRangeUser(-15, 14.9999);
     axis->SetTitle("vtx-z (cm)");
@@ -145,7 +145,7 @@ void PrintInfo(const char* fileName = "correction_map.root", const char* dirName
   for (Int_t i=AlidNdEtaCorrection::kTrack2Particle; i<=AlidNdEtaCorrection::kND; i++)
   {
     Printf("Correction %d", i);
-    dNdEtaCorrection->GetCorrection(i)->PrintInfo(0);
+    dNdEtaCorrection->GetCorrection(i)->PrintInfo(0.2);
     return;
   }
 }
@@ -521,7 +521,8 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   legend->AddEntry(histESDMB, "Triggered");
   legend->AddEntry(histESD, "All events");
 
-  TH2F* dummy = new TH2F("dummy", "", 100, -etaPlotLimit, etaPlotLimit, 1000, 2.1, max * 1.1);
+  TH2F* dummy = new TH2F("dummy", "", 100, -etaPlotLimit, etaPlotLimit, 1000, 0, max * 1.1);
+  dummy->GetYaxis()->SetRangeUser(2.1, max * 1.1);
   Prepare1DPlot(dummy);
   dummy->SetStats(kFALSE);
   dummy->SetXTitle("#eta");
@@ -3030,6 +3031,8 @@ void VertexDistributions()
   temphist = dNdEtaCorrection->GetCorrection(AlidNdEtaCorrection::kINEL)->GetEventCorrection()->GetGeneratedHistogram();
   //temphist = dNdEtaCorrection->GetCorrection(AlidNdEtaCorrection::kINEL)->GetEventCorrection()->GetMeasuredHistogram();
   
+  temphist = (TH2*) gFile->Get("fTemp1");
+  
   new TCanvas;
   legend = new TLegend(0.7, 0.7, 0.99, 0.99);
   legend->SetFillColor(0);
@@ -3038,6 +3041,7 @@ void VertexDistributions()
   for (Int_t i=0; i<20; i+=5)
   {
     highmult = temphist->ProjectionX("highmult", i+1, i+1+4);
+    highmult->Rebin(10);
     Printf("%f", highmult->Integral());
     if (highmult->Integral() <= 0)
       continue;
