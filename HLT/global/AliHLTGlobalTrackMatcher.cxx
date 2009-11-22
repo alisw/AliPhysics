@@ -47,8 +47,8 @@ AliHLTGlobalTrackMatcher::AliHLTGlobalTrackMatcher() :
   fMinX(-72.-10.),
 
   fDetRadius(-99999),
-  fNModules(3),
   fMatchDistanceSq(400),
+  fNModules(3),
   fBestMatchesArray(NULL),
   fTrackDistanceArray(NULL)
 {
