@@ -88,9 +88,11 @@ TString  AliEveEventManager::fgCdbUri;
 
 TList*   AliEveEventManager::fgAODfriends = 0;
 
-Bool_t        AliEveEventManager::fgGRPLoaded    = kFALSE;
-AliMagF*      AliEveEventManager::fgMagField     = 0;
-Bool_t        AliEveEventManager::fgUniformField = kFALSE;
+Bool_t   AliEveEventManager::fgRawFromStandardLoc = kFALSE;
+
+Bool_t   AliEveEventManager::fgGRPLoaded    = kFALSE;
+AliMagF* AliEveEventManager::fgMagField     = 0;
+Bool_t   AliEveEventManager::fgUniformField = kFALSE;
 
 AliEveEventManager* AliEveEventManager::fgMaster  = 0;
 AliEveEventManager* AliEveEventManager::fgCurrent = 0;
@@ -250,6 +252,15 @@ void AliEveEventManager::SetAssertElements(Bool_t assertRunloader, Bool_t assert
   fgAssertESD = assertEsd;
   fgAssertAOD = assertAod;
   fgAssertRaw = assertRaw;
+}
+
+void AliEveEventManager::SearchRawForCentralReconstruction()
+{
+  // Enable searching of raw data in standard location. The path passed to
+  // Open() is expected to point to a centrally reconstructed run, e.g.:
+  // "alien:///alice/data/2009/LHC09c/000101134/ESDs/pass1/09000101134018.10".
+
+  fgRawFromStandardLoc = kTRUE;
 }
 
 /******************************************************************************/
@@ -471,7 +482,31 @@ void AliEveEventManager::Open()
 
   // Open raw-data file
 
-  TString rawPath(Form("%s/%s", fPath.Data(), fgRawFileName.Data()));
+  TString rawPath;
+  if (fgRawFromStandardLoc)
+  {
+    if (!fPath.BeginsWith("alien:"))
+      throw kEH + "Standard raw search requested, but the directory is not in AliEn.";
+    if (!fPath.Contains("/ESDs/"))
+      throw kEH + "Standard raw search requested, but does not contain 'ESDs' directory.";
+
+    TPMERegexp chunk("/([\\d\\.])+/?$");
+    Int_t nm = chunk.Match(fPath);
+    if (nm != 2)
+      throw kEH + "Standard raw search requested, but the path does not end with chunk-id directory.";
+
+    TPMERegexp esdstrip("/ESDs/.*");
+    rawPath = fPath;
+    esdstrip.Substitute(rawPath, "/raw/");
+    rawPath += chunk[0];
+    rawPath += ".root";
+
+    Info(kEH, "Standard raw search requested, using the following path:\n  %s\n", rawPath.Data());
+  }
+  else
+  {
+    rawPath.Form("%s/%s", fPath.Data(), fgRawFileName.Data());
+  }
   // If i use open directly, raw-reader reports an error but i have
   // no way to detect it.
   // Is this (AccessPathName check) ok for xrootd / alien? Yes, not for http.

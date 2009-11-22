@@ -50,7 +50,7 @@ public:
   static void SetCdbUri     (const TString& cdb);
   static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
 				Bool_t assertAod, Bool_t assertRaw);
-
+  static void SearchRawForCentralReconstruction();
 
   AliEveEventManager(const TString& name="Event");
   AliEveEventManager(const TString& name, const TString& path, Int_t ev=0);
@@ -167,6 +167,8 @@ protected:
   static Bool_t   fgAssertRaw;		// Global flag specifying if raw-data presence must be asserted during opening of the event-data.
 
   static TList   *fgAODfriends;         // Global list of AOD friend names to be attached during opening of the event-data (empty by default).
+
+  static Bool_t   fgRawFromStandardLoc; // Global flag to enable looking for raw data in ../../../raw/, as it is stored for central reco.
 
   static Bool_t        fgGRPLoaded;     // Global run parameters loaded?
   static AliMagF      *fgMagField;      // Global pointer to magnetic field.
