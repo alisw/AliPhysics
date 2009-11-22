@@ -18,6 +18,9 @@
 //-----------------------------------------------------------------
 #include "TList.h"
 #include "TH1F.h"
+#include "TH2F.h"
+
+#include "TStyle.h"
 #include "TCanvas.h"
 #include "TLegend.h"
 
@@ -38,16 +41,20 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0()
   : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fListHist(), 
     fHistPrimaryVertexPosX(0), fHistPrimaryVertexPosY(0), fHistPrimaryVertexPosZ(0),
     fHistTrackMultiplicity(0), fHistV0Multiplicity(0), fHistV0OnFlyStatus(0),
-    fHistV0MultiplicityOff(0), fHistV0Chi2Off(0),
+    fHistV0MultiplicityOff(0),
+    fHistV0Chi2Off(0),
     fHistDcaV0DaughtersOff(0), fHistV0CosineOfPointingAngleOff(0),
     fHistV0RadiusOff(0),fHistDcaV0ToPrimVertexOff(0),
     fHistDcaPosToPrimVertexOff(0),fHistDcaNegToPrimVertexOff(0),
     fHistMassK0sOff(0),fHistMassLambdaOff(0),fHistMassAntiLambdaOff(0),
-    fHistV0MultiplicityOn(0), fHistV0Chi2On(0),
+    fHistArmenterosPodolanskiOff(0),
+    fHistV0MultiplicityOn(0),
+    fHistV0Chi2On(0),
     fHistDcaV0DaughtersOn(0), fHistV0CosineOfPointingAngleOn(0),
     fHistV0RadiusOn(0),fHistDcaV0ToPrimVertexOn(0),
     fHistDcaPosToPrimVertexOn(0),fHistDcaNegToPrimVertexOn(0),
-    fHistMassK0sOn(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0)
+    fHistMassK0sOn(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0),
+    fHistArmenterosPodolanskiOn(0)
 {
   // Dummy constructor
 }
@@ -56,16 +63,20 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0(const char *name)
   : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fListHist(), 
     fHistPrimaryVertexPosX(0), fHistPrimaryVertexPosY(0), fHistPrimaryVertexPosZ(0),
     fHistTrackMultiplicity(0), fHistV0Multiplicity(0), fHistV0OnFlyStatus(0),
-    fHistV0MultiplicityOff(0), fHistV0Chi2Off(0),
+    fHistV0MultiplicityOff(0),
+    fHistV0Chi2Off(0),
     fHistDcaV0DaughtersOff(0), fHistV0CosineOfPointingAngleOff(0),
     fHistV0RadiusOff(0),fHistDcaV0ToPrimVertexOff(0),
     fHistDcaPosToPrimVertexOff(0),fHistDcaNegToPrimVertexOff(0),
     fHistMassK0sOff(0),fHistMassLambdaOff(0),fHistMassAntiLambdaOff(0),
-    fHistV0MultiplicityOn(0), fHistV0Chi2On(0),
+    fHistArmenterosPodolanskiOff(0),
+    fHistV0MultiplicityOn(0),
+    fHistV0Chi2On(0),
     fHistDcaV0DaughtersOn(0), fHistV0CosineOfPointingAngleOn(0),
     fHistV0RadiusOn(0),fHistDcaV0ToPrimVertexOn(0),
     fHistDcaPosToPrimVertexOn(0),fHistDcaNegToPrimVertexOn(0),
-    fHistMassK0sOn(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0)
+    fHistMassK0sOn(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0),
+    fHistArmenterosPodolanskiOn(0)
 {
   // Constructor
   // Define output slots only here
@@ -164,6 +175,10 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
     fHistMassAntiLambdaOff = new TH1F("fHistMassAntiLambdaOff","#bar{#Lambda}^{0} candidates;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts",75,1.05,1.2);
     fListHist->Add(fHistMassAntiLambdaOff);
   }
+  if (!fHistArmenterosPodolanskiOff) {
+    fHistArmenterosPodolanskiOff   = new TH2F("fHistArmenterosPodolanskiOff","Armenteros-Podolanski Offline phase space;#alpha;p_{t} arm",100,-1.0,1.0,50,0,0.5);
+    fListHist->Add(fHistArmenterosPodolanskiOff);
+  }
 
   // V0 on-the-fly distributions
   if (!fHistV0MultiplicityOn) {
@@ -214,6 +229,10 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
     fHistMassAntiLambdaOn = new TH1F("fHistMassAntiLambdaOn","#bar{#Lambda}^{0} candidates;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts",75,1.05,1.2);
     fListHist->Add(fHistMassAntiLambdaOn);
   }
+  if (!fHistArmenterosPodolanskiOn) {
+    fHistArmenterosPodolanskiOn    = new TH2F("fHistArmenterosPodolanskiOn","Armenteros-Podolanski Onthefly phase space;#alpha;p_{t} arm",100,-1.0,1.0,50,0,0.5);
+    fListHist->Add(fHistArmenterosPodolanskiOn);
+  }
 
 }
 
@@ -241,6 +260,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
   Double_t lV0CosineOfPointingAngle = 0;
   Double_t lV0Radius = 0;
   Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
+  Double_t lAlphaV0 = 0, lPtArmV0 = 0;
 
   if(fAnalysisType == "ESD") {
 
@@ -298,6 +318,8 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	lInvMassLambda = v0->GetEffMass();
 	v0->ChangeMassHypothesis(-3122);
 	lInvMassAntiLambda = v0->GetEffMass();
+	lAlphaV0 = v0->AlphaV0();
+	lPtArmV0 = v0->PtArmV0();
 
 	fHistV0OnFlyStatus->Fill(lOnFlyStatus);
 	if(!lOnFlyStatus){
@@ -315,6 +337,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  fHistMassK0sOff->Fill(lInvMassK0s);
 	  fHistMassLambdaOff->Fill(lInvMassLambda);
 	  fHistMassAntiLambdaOff->Fill(lInvMassAntiLambda);
+	  fHistArmenterosPodolanskiOff->Fill(lAlphaV0,lPtArmV0);
 	}
 	else {
 	  nv0sOn++;
@@ -331,6 +354,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  fHistMassK0sOn->Fill(lInvMassK0s);
 	  fHistMassLambdaOn->Fill(lInvMassLambda);
 	  fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
+	  fHistArmenterosPodolanskiOn->Fill(lAlphaV0,lPtArmV0);
 	}
       }// This is the end of the V0 loop
   } // end of "ESD" analysis
@@ -365,6 +389,8 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	lInvMassK0s = v0->MassK0Short();
 	lInvMassLambda = v0->MassLambda();
 	lInvMassAntiLambda = v0->MassAntiLambda();
+	lAlphaV0 = v0->AlphaV0();
+	lPtArmV0 = v0->PtArmV0();
 
 	fHistV0OnFlyStatus->Fill(lOnFlyStatus);
 	if(!lOnFlyStatus){
@@ -382,6 +408,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  fHistMassK0sOff->Fill(lInvMassK0s);
 	  fHistMassLambdaOff->Fill(lInvMassLambda);
 	  fHistMassAntiLambdaOff->Fill(lInvMassAntiLambda);
+	  fHistArmenterosPodolanskiOff->Fill(lAlphaV0,lPtArmV0);
 	}
 	else {
 	  nv0sOn++;
@@ -398,6 +425,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  fHistMassK0sOn->Fill(lInvMassK0s);
 	  fHistMassLambdaOn->Fill(lInvMassLambda);
 	  fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
+	  fHistArmenterosPodolanskiOn->Fill(lAlphaV0,lPtArmV0);
 	}
       }// This is the end of the V0 loop
   } // end of "AOD" analysis
@@ -415,6 +443,22 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
+
+  // Implement a decent style
+  TStyle *myStyle = new TStyle("myStyle","my style");
+  Int_t font = 42;
+  myStyle->SetCanvasColor(10);
+  myStyle->SetStatColor(10);
+  myStyle->SetPadColor(10);
+  myStyle->SetDrawBorder(0);
+  myStyle->SetCanvasBorderMode(0);
+  myStyle->SetPadBorderMode(0);
+  myStyle->SetTextFont(font);
+  myStyle->SetStatFont(font);
+  myStyle->SetLabelFont(font,"xyz"); 
+  myStyle->SetTitleFont(font);  
+  myStyle->SetPalette(1,0); 
+  myStyle->cd();
 
   fHistTrackMultiplicity = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistTrackMultiplicity"));
   if (!fHistTrackMultiplicity) {
@@ -436,9 +480,9 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
     Printf("ERROR: fHistV0MultiplicityOn not available");
     return;
   }
-   
-  TCanvas *canCheckV0 = new TCanvas("AliAnalysisTaskCheckV0","Multiplicity",10,10,510,510);
-  canCheckV0->Divide(2,2);
+
+  TCanvas *canCheckV0 = new TCanvas("AliAnalysisTaskCheckV0","Check V0",10,10,510,700);
+  canCheckV0->Divide(2,3);
   if (fHistTrackMultiplicity->GetMaximum() > 0.) canCheckV0->cd(1)->SetLogy();
   fHistTrackMultiplicity->SetMarkerStyle(26);
   fHistTrackMultiplicity->DrawCopy("E");
@@ -486,6 +530,16 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
     Printf("ERROR: fHistMassAntiLambdaOn not available");
     return;
   }
+  fHistArmenterosPodolanskiOff = dynamic_cast<TH2F*> (((TList*)GetOutputData(1))->FindObject("fHistArmenterosPodolanskiOff"));
+  if (!fHistArmenterosPodolanskiOff) {
+    Printf("ERROR: fHistArmenterosPodolanskiOff not available");
+    return;
+  }
+  fHistArmenterosPodolanskiOn = dynamic_cast<TH2F*> (((TList*)GetOutputData(1))->FindObject("fHistArmenterosPodolanskiOn"));
+  if (!fHistArmenterosPodolanskiOn) {
+    Printf("ERROR: fHistArmenterosPodolanskiOn not available");
+    return;
+  }
 
   canCheckV0->cd(2);
   fHistMassK0sOn->SetMarkerStyle(20);
@@ -504,5 +558,10 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   fHistMassAntiLambdaOn->DrawCopy("E");
   fHistMassAntiLambdaOff->SetMarkerStyle(24);
   fHistMassAntiLambdaOff->DrawCopy("ESAME");
+
+  canCheckV0->cd(5);
+  fHistArmenterosPodolanskiOff->DrawCopy("COL2Z");
+  canCheckV0->cd(6);
+  fHistArmenterosPodolanskiOn->DrawCopy("COL2Z");
 
 }
