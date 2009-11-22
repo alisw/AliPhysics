@@ -293,7 +293,7 @@ kine_track(Int_t  label,
       char tooltip[1000];
       sprintf(tooltip,"Ndaughters=%d", p->GetNDaughters());
       tlist->SetTitle(tooltip);
-      trkProp->fMaxOrbs = 2;
+      trkProp->SetMaxOrbs(2);
       trkProp->SetEditPathMarks(kTRUE);
 
       gEve->AddElement(cont);
