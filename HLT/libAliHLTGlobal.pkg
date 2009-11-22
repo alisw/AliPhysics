@@ -30,7 +30,8 @@ EINCLUDE 	:= HLT/global HLT/global/physics \
 		   TPC \
 		   RAW \
 		   TRD \
-		   STEER
+		   STEER \
+		   PHOS
 
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
