@@ -1,24 +1,33 @@
 /*
-  .x ~/NimStyle.C
-  .x ~/UliStyle.C
+  //gROOT->Macro("~/NimStyle.C");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
   .L $ALICE_ROOT/TPC/CalibMacros/CalibCosmic.C
   // init
   Init();
-  SetDefaultCut();
-  
+  SetDefaultCut();  // check defualt cut 
+  //
+  MakeDefaultPlots();
+
+
 */  
 
 AliTPCcalibCosmic * cosmic =0;
 TObjArray fitArr;
 
+void CalibCosmic(){
+  // init
+  Init();
+  SetDefaultCut(); 
+  //
+  MakeDefaultPlots();
+}
+
 void Init(){
   //
   //
-  TFile fcalib("CalibObjects.root");
-  TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
-  cosmic = ( AliTPCcalibCosmic *)array->FindObject("cosmicTPC");
+  TFile fcalib("CalibObjectsTrain1.root");
+  cosmic = ( AliTPCcalibCosmic *)fcalib.Get("cosmicTPC");
   TString axisName[9];
   axisName[0]  ="#Delta"; axisName[1]  ="N_{cl}";
   axisName[2]  ="DCA_{r}(cm)";
@@ -51,13 +60,18 @@ void SetRangeAll(Int_t axis, Float_t xmin, Float_t xmax){
 void SetDefaultCut(){
   for (Int_t i=0;i<6;i++){
     //
+    //cut on number of clusters
     cosmic->fHistoDelta[i]->GetAxis(1)->SetRangeUser(120,200);
     cosmic->fHistoPull[i]->GetAxis(1)->SetRangeUser(120,200);
-    cosmic->fHistoDelta[i]->GetAxis(3)->SetRangeUser(-0,250);
-    cosmic->fHistoPull[i]->GetAxis(3)->SetRangeUser(-0,250);
-    cosmic->fHistoDelta[i]->GetAxis(2)->SetRangeUser(0,60);
-    cosmic->fHistoPull[i]->GetAxis(2)->SetRangeUser(0,60);
+    //cut on DCA r
+    cosmic->fHistoDelta[i]->GetAxis(2)->SetRangeUser(0,30);
+    cosmic->fHistoPull[i]->GetAxis(2)->SetRangeUser(0,30);
+    //cut on z at
+    cosmic->fHistoDelta[i]->GetAxis(3)->SetRangeUser(-0,100);
+    cosmic->fHistoPull[i]->GetAxis(3)->SetRangeUser(-0,100);
   }
+  cosmic->fHistoDelta[0]->GetAxis(0)->SetRangeUser(-1,1);
+  cosmic->fHistoDelta[1]->GetAxis(0)->SetRangeUser(-1,1);
 }
 
 TH2 * GetDelta2D(Int_t type, Int_t var){
@@ -68,13 +82,17 @@ TH2 * GetDelta2D(Int_t type, Int_t var){
 }
 
 
-TH1* GetResol2DSigma(Int_t type, Int_t var){
+TH1* GetFit2D(Int_t type, Int_t var, Bool_t resol){
   
   TH2 * his = cosmic->fHistoDelta[type]->Projection(0,var);
   his->SetXTitle(cosmic->fHistoDelta[type]->GetAxis(var)->GetName());
   his->SetYTitle(cosmic->fHistoDelta[type]->GetAxis(0)->GetName());
   his->FitSlicesY(0,0,-1,0,"QNR",&fitArr);
-  TH1 * hres = (TH1*)(fitArr.At(2)->Clone());
+  TH1 * hres = 0;
+  if (resol) hres = (TH1*)(fitArr.At(2)->Clone());
+  if (!resol) hres = (TH1*)(fitArr.At(1)->Clone());
+  hres->SetMarkerStyle(20);
+  hres->SetMarkerColor(2);
   return hres;
 }
 
@@ -172,4 +190,133 @@ void DrawResoldEdx(AliTPCcalibCosmic *cosmic){
     hResolMax[ipad]->Draw("same");
   }
   
+}
+
+void DrawStat(Int_t coord, TObjArray *array=0){
+  //
+  //
+  //
+  TCanvas *cStat = new TCanvas(Form("Cosmic stat%d",coord), Form("CosmicStat%d",coord),800,600);
+  Float_t mx0=0.12, mx1=0.1, my0=0.15, my1=0.1;
+  //pad->SetMargin(mx0,mx1,my0,my1);
+  cStat->Divide(3,3);
+  for (Int_t i=0; i<8; i++){
+    cStat->cd(i+1);
+    cosmic->fHistoDelta[0]->Projection(i)->Draw();
+  }
+  if (array) array->AddLast(cStat);
+}
+
+void SetStylePad(TVirtualPad *pad){
+  Float_t mx0=0.12, mx1=0.1, my0=0.15, my1=0.1;
+  pad->SetMargin(mx0,mx1,my0,my1);
+  pad->SetTicks(1,1);
+  pad->SetGrid(1,1); 
+}
+
+void MakePlotPt(TObjArray * array){
+  //
+  //
+  TCanvas *cptRes = new TCanvas("TPCPtResol","TPCPtResol",600,500);
+  cptRes->Divide(2,1);
+  SetStylePad(cptRes->cd(1));
+  SetStylePad(cptRes->cd(2));
+  //
+  TH1 * hisRes=0;
+  TH1 * hisMean=0;
+  hisRes  = GetFit2D(5,7,kTRUE);
+  hisMean = GetFit2D(5,7,kFALSE);
+  hisRes->SetMarkerStyle(20);
+  hisMean->SetMarkerStyle(20);
+  hisRes->Scale(100);
+  hisMean->Scale(100);
+  hisRes->SetMaximum(30);
+  hisRes->SetMinimum(0);
+  hisMean->SetMaximum(3);
+  hisMean->SetMinimum(-3);
+  hisRes->SetName("Pt resol");
+  hisRes->SetName("p_{t} resolution");
+  hisRes->SetYTitle("#sigma_{p_{t}}/p_{t} (%)");
+  hisMean->SetYTitle("#Delta_{p_{t}}/p_{t} (%)");
+  hisRes->GetXaxis()->SetRangeUser(0,20);
+  hisMean->GetXaxis()->SetRangeUser(0,20);  
+  cptRes->cd(2); 
+  hisRes->Draw("");
+  cptRes->cd(1);
+  hisMean->Draw();
+  if (array) array->AddLast(cptRes);
+}
+
+
+void MakePlotPosY(TObjArray * array){
+  //
+  //
+  TCanvas *cptRes = new TCanvas("TPCPosResolY","TPCPosResolY",600,500);
+  cptRes->Divide(2,1);
+  SetStylePad(cptRes->cd(1));
+  SetStylePad(cptRes->cd(2));
+  //
+  TH1 * hisRes=0;
+  TH1 * hisMean=0;
+  hisRes  = GetFit2D(0,7,kTRUE);
+  hisMean = GetFit2D(0,7,kFALSE);
+  hisRes->SetMaximum(0.4);
+  hisRes->SetMinimum(0.0);
+  hisMean->SetMaximum(0.2);
+  hisMean->SetMinimum(-0.2);
+  hisRes->SetName("Y resol");
+  hisRes->SetName("Y resolution");
+  hisRes->SetYTitle("#sigma_{y} (cm)");
+  hisMean->SetYTitle("#Delta_{y} (cm)");
+  hisRes->GetXaxis()->SetRangeUser(0,20);
+  hisMean->GetXaxis()->SetRangeUser(0,20);  
+  cptRes->cd(2); 
+  hisRes->Draw("");
+  cptRes->cd(1);
+  hisMean->Draw();
+  if (array) array->AddLast(cptRes);
+}
+
+void MakePlotPosZ(TObjArray * array){
+  //
+  //
+  TCanvas *cptRes = new TCanvas("TPCPosResolZ","TPCPosResolZ",600,500);
+  cptRes->Divide(2,1);
+  SetStylePad(cptRes->cd(1));
+  SetStylePad(cptRes->cd(2));
+  //
+  TH1 * hisRes=0;
+  TH1 * hisMean=0;
+  hisRes  = GetFit2D(1,7,kTRUE);
+  hisMean = GetFit2D(1,7,kFALSE);
+  hisRes->SetMaximum(0.4);
+  hisRes->SetMinimum(0.0);
+  hisMean->SetMaximum(0.2);
+  hisMean->SetMinimum(-0.2);
+  hisRes->SetName("Z resol");
+  hisRes->SetName("Z resolution");
+  hisRes->SetYTitle("#sigma_{z} (cm)");
+  hisMean->SetYTitle("#Delta_{z} (cm)");
+  hisRes->GetXaxis()->SetRangeUser(0,20);
+  hisMean->GetXaxis()->SetRangeUser(0,20);  
+  cptRes->cd(2); 
+  hisRes->Draw("");
+  cptRes->cd(1);
+  hisMean->Draw();
+  if (array) array->AddLast(cptRes);
+}
+
+
+void  MakeDefaultPlots(){
+  //
+  //
+  //
+  TObjArray *picArray = new TObjArray();
+  DrawStat(0,picArray);
+  MakePlotPt(picArray);
+  MakePlotPosY(picArray);
+  MakePlotPosZ(picArray);
+  TFile f("cosmicPlots.root","recreate");
+  picArray->Write("CosmicPlots",TObject::kSingleKey);
+  f.Close();
 }
