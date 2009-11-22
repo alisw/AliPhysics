@@ -5,6 +5,7 @@
 
 #include "AliAnalysisTask.h"
 #include "AliPWG0Helper.h"
+#include "AliTriggerAnalysis.h"
 #include <TString.h>
 
 class AliESDtrackCuts;
@@ -32,7 +33,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     void SetUseMCVertex(Bool_t flag = kTRUE) { fUseMCVertex = flag; }
     void SetOnlyPrimaries(Bool_t flag = kTRUE) { fOnlyPrimaries = flag; }
     void SetUseMCKine(Bool_t flag = kTRUE) { fUseMCKine = flag; }
-    void SetTrigger(AliPWG0Helper::Trigger trigger) { fTrigger = trigger; }
+    void SetTrigger(AliTriggerAnalysis::Trigger trigger) { fTrigger = trigger; }
     void SetFillPhi(Bool_t flag = kTRUE) { fFillPhi = flag; }
     void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
     
@@ -44,7 +45,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
 
     TString fOption;      // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
-    AliPWG0Helper::Trigger fTrigger;           // trigger that is used
+    AliTriggerAnalysis::Trigger fTrigger;      // trigger that is used
     Bool_t fFillPhi;                           // if true phi is filled as 3rd coordinate in all maps
     Float_t fDeltaPhiCut;                      // cut in delta phi (only SPD)
 

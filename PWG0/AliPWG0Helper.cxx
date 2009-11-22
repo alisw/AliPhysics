@@ -28,87 +28,10 @@
 #include <AliGenDPMjetEventHeader.h>
 #include <AliESDVZERO.h>
 
-#include <AliOfflineTrigger.h>
-
 //____________________________________________________________________
 ClassImp(AliPWG0Helper)
 
 Int_t AliPWG0Helper::fgLastProcessType = -1;
-AliOfflineTrigger* AliPWG0Helper::fgOfflineTrigger = 0;
-
-//____________________________________________________________________
-AliOfflineTrigger* AliPWG0Helper::GetOfflineTrigger()
-{
-  // returns the current AliOfflineTrigger object
-  // creates one if needed
-  
-  if (!fgOfflineTrigger)
-    fgOfflineTrigger = new AliOfflineTrigger;
-    
-  return fgOfflineTrigger;
-}
-
-//____________________________________________________________________
-Bool_t AliPWG0Helper::IsEventTriggered(const AliESDEvent* aEsd, Trigger trigger)
-{
-  // checks if an event has been triggered
-
-  if (trigger & kOfflineFlag)
-    return GetOfflineTrigger()->IsEventTriggered(aEsd, trigger);
-    
-  return IsEventTriggered(aEsd->GetTriggerMask(), trigger);
-}
-
-//____________________________________________________________________
-Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
-{
-  // check if the event was triggered
-  //
-  // this function needs the branch fTriggerMask
-  
-  // definitions from p-p.cfg
-  ULong64_t spdFO = (1 << 14);
-  ULong64_t v0left = (1 << 10);
-  ULong64_t v0right = (1 << 11);
-
-  switch (trigger)
-  {
-    case kAcceptAll:
-    {
-      return kTRUE;
-      break;
-    }
-    case kMB1:
-    {
-      if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
-        return kTRUE;
-      break;
-    }
-    case kMB2:
-    {
-      if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
-        return kTRUE;
-      break;
-    }
-    case kMB3:
-    {
-      if (triggerMask & spdFO && (triggerMask & v0left) && (triggerMask & v0right))
-        return kTRUE;
-      break;
-    }
-    case kSPDGFO:
-    {
-      if (triggerMask & spdFO)
-        return kTRUE;
-      break;
-    }
-    default:
-      Printf("IsEventTriggered: ERROR: Trigger type %d not implemented in this method", (Int_t) trigger);
-      break;
-  }
-
-  return kFALSE;
-}
 
 //____________________________________________________________________
 Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug)
@@ -581,41 +504,7 @@ void AliPWG0Helper::NormalizeToBinWidth(TH2* hist)
 }
 
 //____________________________________________________________________
-const char* AliPWG0Helper::GetTriggerName(Trigger trigger) 
-{
-  // returns the name of the requested trigger
-  // the returned string will only be valid until the next call to this function [not thread-safe]
-  
-  static TString str;
-  
-  UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) kStartOfFlags;
-  
-  switch (triggerNoFlags)
-  {
-    case kAcceptAll : str = "ACCEPT ALL (bypass!)"; break;
-    case kMB1 : str = "MB1"; break;
-    case kMB2 : str = "MB2"; break;
-    case kMB3 : str = "MB3"; break;
-    case kSPDGFO : str = "SPD GFO"; break;
-    case kV0A : str = "V0 A"; break;
-    case kV0C : str = "V0 C"; break;
-    case kZDC : str = "ZDC"; break;
-    case kZDCA : str = "ZDC A"; break;
-    case kZDCC : str = "ZDC C"; break;
-    case kFMDA : str = "FMD A"; break;
-    case kFMDC : str = "FMD C"; break;
-    case kFPANY : str = "SPD GFO | V0 | ZDC | FMD"; break;
-    default: str = ""; break;
-  }
-   
-  if (trigger & kOfflineFlag)
-    str += " OFFLINE";  
-  
-  return str;
-}
-
-//____________________________________________________________________
-void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
+void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger)
 {
   //
   // Prints the given configuration
@@ -640,7 +529,7 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
      str += " (WITHOUT field)";
   
   str += "< and trigger >";
-  str += GetTriggerName(trigger);
+  str += AliTriggerAnalysis::GetTriggerName(trigger);
   str += "< <<<<";
 
   Printf("%s", str.Data());

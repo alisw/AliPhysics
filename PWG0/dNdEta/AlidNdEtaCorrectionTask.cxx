@@ -29,6 +29,7 @@
 #include "AliPWG0Helper.h"
 #include "dNdEta/dNdEtaAnalysis.h"
 #include "dNdEta/AlidNdEtaCorrection.h"
+#include "AliTriggerAnalysis.h"
 
 ClassImp(AlidNdEtaCorrectionTask)
 
@@ -38,7 +39,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask() :
   fOutput(0),
   fOption(),
   fAnalysisMode((AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn)),
-  fTrigger(AliPWG0Helper::kMB1),
+  fTrigger(AliTriggerAnalysis::kMB1),
   fFillPhi(kFALSE),
   fDeltaPhiCut(-1),
   fSignMode(0),
@@ -87,7 +88,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fOutput(0),
   fOption(opt),
   fAnalysisMode((AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn)),
-  fTrigger(AliPWG0Helper::kMB1),
+  fTrigger(AliTriggerAnalysis::kMB1),
   fFillPhi(kFALSE),
   fDeltaPhiCut(0),
   fSignMode(0),
@@ -252,9 +253,9 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
   }
 
   
-  /*
-  fTemp1 = new TH2F("fTemp1", "fTemp1", 200, -0.08, 0.08, 200, -0.08, 0.08);
+  fTemp1 = new TH2F("fTemp1", "fTemp1", 200, -20, 20, 200, -0.5, 199.5);
   fOutput->Add(fTemp1);
+  /*
   fTemp2 = new TH1F("fTemp2", "fTemp2", 2000, -5, 5);
   fOutput->Add(fTemp2);
   */
@@ -336,7 +337,8 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     Printf("WARNING: Statistical error evaluation active!");
     
   // trigger definition
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD, fTrigger);
+  static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+  Bool_t eventTriggered = triggerAnalysis->IsTriggerFired(fESD, fTrigger);
   //Printf("Trigger mask: %lld", fESD->GetTriggerMask());
 
   if (!eventTriggered)
@@ -683,8 +685,12 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       primCount[i] = kFALSE;
   }
 
+  Int_t nEta05 = 0;
   for (Int_t i=0; i<inputCount; ++i)
   {
+    if (TMath::Abs(etaArr[i]) < 0.5)
+      nEta05++;
+  
     Int_t label = labelArr[i];
     Int_t label2 = labelArr2[i];
 
@@ -916,6 +922,8 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     fVertexCorrelation->Fill(vtxMC[2], vtx[2]);
     fVertexCorrelationShift->Fill(vtxMC[2], vtxMC[2] - vtx[2], inputCount);
     fVertexProfile->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
+    
+    fTemp1->Fill(vtxMC[2], nEta05);
   }
 
   if (eventTriggered && eventVertex)

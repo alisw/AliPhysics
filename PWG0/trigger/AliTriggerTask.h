@@ -8,7 +8,7 @@
 
 class TH1;
 class AliESDEvent;
-class AliOfflineTrigger;
+class AliTriggerAnalysis;
 
 class AliTriggerTask : public AliAnalysisTask {
   public:
@@ -32,10 +32,10 @@ class AliTriggerTask : public AliAnalysisTask {
     UInt_t fEndTime;      // run end time
 
     Int_t fNTriggers;     //! number triggers
-    AliPWG0Helper::Trigger* fTriggerList;  //! list of triggers
+    AliTriggerAnalysis::Trigger* fTriggerList;  //! list of triggers
     TH1** fStats;                 //! trigger stats
     
-    AliOfflineTrigger* fOfflineTrigger; // offline trigger object
+    AliTriggerAnalysis* fTrigger; // trigger object
 
  private:
     AliTriggerTask(const AliTriggerTask&);

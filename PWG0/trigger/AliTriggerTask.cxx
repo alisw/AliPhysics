@@ -15,7 +15,7 @@
 #include <AliAnalysisManager.h>
 #include <AliESDInputHandler.h>
 #include <AliESDHeader.h>
-#include <AliOfflineTrigger.h>
+#include <AliTriggerAnalysis.h>
 
 ClassImp(AliTriggerTask)
 
@@ -29,7 +29,7 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   fNTriggers(0),
   fTriggerList(0),
   fStats(0),
-  fOfflineTrigger(0)
+  fTrigger(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -41,13 +41,13 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   
   fNTriggers = 13;
   
-  static AliPWG0Helper::Trigger triggerList[] = { AliPWG0Helper::kAcceptAll, AliPWG0Helper::kFPANY, AliPWG0Helper::kMB1, AliPWG0Helper::kMB2, AliPWG0Helper::kMB3, AliPWG0Helper::kSPDGFO, AliPWG0Helper::kV0A, AliPWG0Helper::kV0C, AliPWG0Helper::kZDC, AliPWG0Helper::kZDCA, AliPWG0Helper::kZDCC, AliPWG0Helper::kFMDA, AliPWG0Helper::kFMDC };
+  static AliTriggerAnalysis::Trigger triggerList[] = { AliTriggerAnalysis::kAcceptAll, AliTriggerAnalysis::kFPANY, AliTriggerAnalysis::kMB1, AliTriggerAnalysis::kMB2, AliTriggerAnalysis::kMB3, AliTriggerAnalysis::kSPDGFO, AliTriggerAnalysis::kV0A, AliTriggerAnalysis::kV0C, AliTriggerAnalysis::kZDC, AliTriggerAnalysis::kZDCA, AliTriggerAnalysis::kZDCC, AliTriggerAnalysis::kFMDA, AliTriggerAnalysis::kFMDC };
   fTriggerList = triggerList;
   
   fStats = new TH1*[fNTriggers];
   
-  fOfflineTrigger = new AliOfflineTrigger;
-  fOfflineTrigger->EnableHistograms();
+  fTrigger = new AliTriggerAnalysis;
+  fTrigger->EnableHistograms();
   
   AliLog::SetClassDebugLevel("AliTriggerTask", AliLog::kWarning);
 }
@@ -106,11 +106,11 @@ void AliTriggerTask::CreateOutputObjects()
     nBins = fEndTime - fStartTime;
   for (Int_t i=0; i<fNTriggers; i++)
   {
-    fStats[i] = new TH1F(Form("fStats_%d", i), Form("%s;time;counts", AliPWG0Helper::GetTriggerName(fTriggerList[i])), nBins, 0, fEndTime - fStartTime);
+    fStats[i] = new TH1F(Form("fStats_%d", i), Form("%s;time;counts", AliTriggerAnalysis::GetTriggerName(fTriggerList[i])), nBins, 0, fEndTime - fStartTime);
     fOutput->Add(fStats[i]);
   }
   
-  fOutput->Add(fOfflineTrigger);
+  fOutput->Add(fTrigger);
 }
 
 void AliTriggerTask::Exec(Option_t*)
@@ -143,17 +143,17 @@ void AliTriggerTask::Exec(Option_t*)
 
   //Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
   
-  fOfflineTrigger->FillHistograms(fESD);
+  fTrigger->FillHistograms(fESD);
   
   UInt_t timeStamp = fESD->GetTimeStamp() - fStartTime;
   //Printf("%d", timeStamp);
   
   for (Int_t i = 0; i < fNTriggers; i++)
   {
-    Bool_t triggered = fOfflineTrigger->IsEventTriggered(fESD, fTriggerList[i]);
+    Bool_t triggered = fTrigger->IsOfflineTriggerFired(fESD, fTriggerList[i]);
     if (triggered)
       fStats[i]->Fill(timeStamp);
-    //Printf("%s: %d", AliPWG0Helper::GetTriggerName(fTriggerList[i]), triggered);
+    //Printf("%s: %d", AliTriggerAnalysis::GetTriggerName(fTriggerList[i]), triggered);
   }
 }
 
@@ -171,7 +171,7 @@ void AliTriggerTask::Terminate(Option_t *)
   {
     for (Int_t i=0; i<fNTriggers; i++)
       fStats[i] = dynamic_cast<TH1*> (fOutput->FindObject(Form("fStats_%d", i)));
-    fOfflineTrigger = dynamic_cast<AliOfflineTrigger*> (fOutput->FindObject("AliOfflineTrigger"));
+    fTrigger = dynamic_cast<AliTriggerAnalysis*> (fOutput->FindObject("AliTriggerAnalysis"));
   }
 
   TFile* fout = new TFile("trigger.root", "RECREATE");
@@ -179,8 +179,8 @@ void AliTriggerTask::Terminate(Option_t *)
   for (Int_t i=0; i<fNTriggers; i++)
     if (fStats[i])
       fStats[i]->Write();
-  if (fOfflineTrigger)
-    fOfflineTrigger->WriteHistograms();
+  if (fTrigger)
+    fTrigger->WriteHistograms();
     
   fout->Write();
   fout->Close();
@@ -212,7 +212,7 @@ void AliTriggerTask::Terminate(Option_t *)
     {
       c->cd(i+1);
       fStats[i]->Draw();
-      Printf("%s: %d triggers | %f %% of all triggered | Rate: %f Hz", AliPWG0Helper::GetTriggerName(fTriggerList[i]), (UInt_t) fStats[i]->Integral(), 100.0 * fStats[i]->Integral() / base, (length > 0) ? (fStats[i]->Integral() / length) : -1);
+      Printf("%s: %d triggers | %f %% of all triggered | Rate: %f Hz", AliTriggerAnalysis::GetTriggerName(fTriggerList[i]), (UInt_t) fStats[i]->Integral(), 100.0 * fStats[i]->Integral() / base, (length > 0) ? (fStats[i]->Integral() / length) : -1);
     }
 
   Printf("Writting result to trigger.root");

@@ -46,7 +46,7 @@ class AlidNdPtHelper : public TObject
     static Bool_t TestRecVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
     static Bool_t IsPrimaryParticle(AliStack *stack, Int_t idx, AnalysisMode analysisMode);
-    static void PrintConf(AnalysisMode analysisMode, AliPWG0Helper::Trigger trigger);
+    static void PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger);
     static Int_t ConvertPdgToPid(TParticle *particle);
 
     enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kCorrection, kSystematics };

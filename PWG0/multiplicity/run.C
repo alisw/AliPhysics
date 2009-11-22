@@ -9,6 +9,7 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
 
   if (aProof)
   {
+    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
     TProof::Open("alicecaf");
     //gProof->SetParallel(1);
 
@@ -50,8 +51,8 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
   // Create the analysis manager
   mgr = new AliAnalysisManager;
 
-  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
-  AliPWG0Helper::Trigger      trigger      = AliPWG0Helper::kMB1;
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn;
+  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kMB1;
 
   AliPWG0Helper::PrintConf(analysisMode, trigger);
 
@@ -67,7 +68,7 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
 
   task = new AliMultiplicityTask(option);
 
-  if (analysisMode != AliPWG0Helper::kSPD)
+  if (!(analysisMode & AliPWG0Helper::kSPD))
   {
     // selection of esd tracks
     gROOT->ProcessLine(".L ../CreateStandardCuts.C");

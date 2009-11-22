@@ -36,6 +36,7 @@
 #include "AliCorrection.h"
 #include "AliCorrectionMatrix3D.h"
 #include "dNdEta/dNdEtaAnalysis.h"
+#include "AliTriggerAnalysis.h"
 
 ClassImp(AlidNdEtaTask)
 
@@ -45,7 +46,7 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fOutput(0),
   fOption(opt),
   fAnalysisMode((AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn)),
-  fTrigger(AliPWG0Helper::kMB1),
+  fTrigger(AliTriggerAnalysis::kMB1),
   fFillPhi(kFALSE),
   fDeltaPhiCut(-1),
   fReadMC(kFALSE),
@@ -129,7 +130,7 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
     
     TString branches("AliESDHeader Vertex ");
 
-    if (fAnalysisMode & AliPWG0Helper::kSPD || fTrigger & AliPWG0Helper::kOfflineFlag)
+    if (fAnalysisMode & AliPWG0Helper::kSPD || fTrigger & AliTriggerAnalysis::kOfflineFlag)
       branches += "AliMultiplicity ";
       
     if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
@@ -290,7 +291,8 @@ void AlidNdEtaTask::Exec(Option_t*)
 //     }
 
     // trigger definition
-    eventTriggered = AliPWG0Helper::IsEventTriggered(fESD, fTrigger);
+    static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+    eventTriggered = triggerAnalysis->IsTriggerFired(fESD, fTrigger);
     if (eventTriggered)
       fStats->Fill(3);
 

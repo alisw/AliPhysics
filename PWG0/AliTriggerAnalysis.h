@@ -1,34 +1,50 @@
-/* $Id: AliOfflineTrigger.h 35782 2009-10-22 11:54:31Z jgrosseo $ */
+/* $Id: AliTriggerAnalysis.h 35782 2009-10-22 11:54:31Z jgrosseo $ */
 
-#ifndef ALIOFFLINETRIGGER_H
-#define ALIOFFLINETRIGGER_H
+#ifndef ALITRIGGERANALYSIS_H
+#define ALITRIGGERANALYSIS_H
 
 #include <TObject.h>
-#include <AliPWG0Helper.h>
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 //-------------------------------------------------------------------------
-//                      Implementation of   Class AliOfflineTrigger
-//   This class provides offline triggers from data in the ESD
+//                      Implementation of   Class AliTriggerAnalysis
+//   This class provides function to check if events have been triggered based on the data in the ESD
+//   The trigger bits, trigger class inputs and only the data (offline trigger) can be used
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN
 //-------------------------------------------------------------------------
 
 class AliESDEvent;
 class TH1;
+class TCollection;
 
-class AliOfflineTrigger : public TObject
+class AliTriggerAnalysis : public TObject
 {
   public:
+    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kV0A, kV0C, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     
-    AliOfflineTrigger();
-    virtual ~AliOfflineTrigger() {}
+    AliTriggerAnalysis();
+    virtual ~AliTriggerAnalysis() {}
     
     void EnableHistograms();
 
-    Bool_t IsEventTriggered(const AliESDEvent* aEsd, AliPWG0Helper::Trigger trigger) const;
+    Bool_t IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger) const;
+    
+    // using trigger bits in ESD
+    Bool_t IsTriggerBitFired(const AliESDEvent* aEsd, Trigger trigger) const;
+    Bool_t IsTriggerBitFired(ULong64_t triggerMask, Trigger trigger) const;
+    Bool_t IsTriggerBitFired(const AliESDEvent* aEsd, ULong64_t tclass) const;
+    
+    // using ESD data from detectors
+    Bool_t IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger) const;
+
+    // using trigger classes in ESD
+    Bool_t IsTriggerClassFired(const AliESDEvent* aEsd, const Char_t* tclass) const;
+    
+    static const char* GetTriggerName(Trigger trigger);
+    
     void FillHistograms(const AliESDEvent* aEsd);
     
     void SetSPDGFOThreshhold(Int_t t) { fSPDGFOThreshold = t; }
@@ -45,6 +61,11 @@ class AliOfflineTrigger : public TObject
     void WriteHistograms() const;
 
   protected:
+    Bool_t IsL0InputFired(const AliESDEvent* aEsd, UInt_t input) const;
+    Bool_t IsL1InputFired(const AliESDEvent* aEsd, UInt_t input) const;
+    Bool_t IsL2InputFired(const AliESDEvent* aEsd, UInt_t input) const;
+    Bool_t IsInputFired(const AliESDEvent* aEsd, Char_t level, UInt_t input) const;
+    
     Int_t SPDFiredChips(const AliESDEvent* aEsd) const;
     Bool_t SPDGFOTrigger(const AliESDEvent* aEsd) const;
     
@@ -72,11 +93,11 @@ class AliOfflineTrigger : public TObject
     TH1* fHistFMDSingle;      // histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
     TH1* fHistFMDSum;         // histograms that histogram the criterion the cut is applied on: summed mult value (more than one entry per event)
 
-    ClassDef(AliOfflineTrigger, 1)
+    ClassDef(AliTriggerAnalysis, 1)
     
   private:
-    AliOfflineTrigger(const AliOfflineTrigger&);
-    AliOfflineTrigger& operator=(const AliOfflineTrigger&);
+    AliTriggerAnalysis(const AliTriggerAnalysis&);
+    AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);
 };
 
 #endif

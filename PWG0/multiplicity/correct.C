@@ -67,10 +67,20 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
   AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open(fileNameMC, folder);
   AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
   
-  AliUnfolding::SetNbins(150, 150);
+  //AliUnfolding::SetNbins(150, 150);
+  //AliUnfolding::SetNbins(65, 65); 
+  //AliUnfolding::SetNbins(35, 35);
+  //AliUnfolding::SetDebug(1);
 
-  for (hID = ((histID == -1) ? 0 : histID); hID <= ((histID == -1) ? 2 : histID); hID++)
+  for (Int_t hID = ((histID == -1) ? 0 : histID); hID <= ((histID == -1) ? 2 : histID); hID++)
   {
+    switch (hID)
+    {
+      case 0: AliUnfolding::SetNbins(35, 35); break;
+      case 1: AliUnfolding::SetNbins(60, 60); break;
+      case 2: AliUnfolding::SetNbins(70, 70); beta *= 3; break;
+    }
+  
     TH2F* hist = esd->GetMultiplicityESD(hID);
     TH2F* hist2 = esd->GetMultiplicityMC(hID, eventType);
   
@@ -92,21 +102,22 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
     if (chi2)
     {
       AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, beta);
-      //mult->SetCreateBigBin(kFALSE);
+      //AliUnfolding::SetCreateOverflowBin(kFALSE);
       //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0); //mult->SetCreateBigBin(kFALSE);
       //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0, 125); mult->SetCreateBigBin(kFALSE);
-      //mult->SetRegularizationParameters(AliMultiplicityCorrection::kEntropy, 1e4);
+     // AliUnfolding::SetChi2Regularization(AliUnfolding::kEntropy, beta);
       //mult->SetRegularizationParameters(AliMultiplicityCorrection::kLog, 1e5);
       
       //mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kTRUE, mcCompare);
       //mult->SetMultiplicityESDCorrected(histID, (TH1F*) mcCompare);
       
-      mult->ApplyMinuitFit(hID, fullPhaseSpace, eventType, kFALSE); //hist2->ProjectionY("mymchist"));
+      mult->ApplyMinuitFit(hID, fullPhaseSpace, eventType, kFALSE, 0, kFALSE); //hist2->ProjectionY("mymchist"));
       //mult->ApplyNBDFit(histID, fullPhaseSpace, eventType);
     }
     else
     {
       mult->ApplyBayesianMethod(hID, fullPhaseSpace, eventType, 1, 10, 0, kTRUE);
+      //mult->ApplyBayesianMethod(hID, fullPhaseSpace, eventType, 1, 5, 0, kFALSE);
     }
   
     mult->SetMultiplicityMC(hID, eventType, hist2);
@@ -124,6 +135,308 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
     TH1* mcCompare = hist2->ProjectionY("mcmchist", 1, hist2->GetNbinsX());
     mult->DrawComparison(Form("%s_%d", (chi2) ? "MinuitChi2" : "Bayesian", hID), hID, fullPhaseSpace, kTRUE, mcCompare);
   }
+}
+
+TH1* GetChi2Bias(Float_t alpha)
+{
+  loadlibs();
+  
+  const char* fileNameMC = "multiplicityMC.root";
+  const char* folder = "Multiplicity";
+  const char* fileNameESD = "multiplicityESD.root";
+  const char* folderESD = "Multiplicity";
+
+  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open(fileNameMC, folder);
+  AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
+  
+  //Int_t hID = 0; const Int_t kMaxBins = 35;
+  //Int_t hID = 1;  const Int_t kMaxBins = 60;
+  Int_t hID = 2;  const Int_t kMaxBins = 70;
+  AliUnfolding::SetNbins(kMaxBins, kMaxBins);
+  //AliUnfolding::SetDebug(1);
+  //AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, 50);
+  AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, alpha);
+  
+  TH2F* hist = esd->GetMultiplicityESD(hID);
+  mult->SetMultiplicityESD(hID, hist);  
+  
+  // without bias calculation
+  mult->ApplyMinuitFit(hID, kFALSE, 0, kFALSE);
+  baseold = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("baseold");
+  
+  // with bias calculation
+  mult->ApplyMinuitFit(hID, kFALSE, 0, kFALSE, 0, kTRUE);
+  base = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("base");
+ 
+  // relative error plots
+  ratio1 = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("hist1");
+  ratio1->SetStats(0);
+  ratio1->SetTitle(";unfolded multiplicity;relative error");
+  ratio1->Reset();
+  ratio2 = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("hist1");
+  ratio2->Reset();
+
+  for (Int_t t = 0; t<kMaxBins; t++)
+  {
+    Printf("Bin %d; Content: %f; Chi2 Error: %f; Bias: %f; In percent: %.2f %.2f", t+1, base->GetBinContent(t+1), baseold->GetBinError(t+1), base->GetBinError(t+1), (base->GetBinContent(t+1) > 0) ? 100.0 * baseold->GetBinError(t+1) / base->GetBinContent(t+1) : -1, (base->GetBinContent(t+1) > 0) ? 100.0 * base->GetBinError(t+1) / base->GetBinContent(t+1) : -1);
+    if (base->GetBinContent(t+1) <= 0)
+      continue;
+    ratio1->SetBinContent(t+1, baseold->GetBinError(t+1) / base->GetBinContent(t+1));
+    ratio2->SetBinContent(t+1, base->GetBinError(t+1) / base->GetBinContent(t+1));
+  }
+  
+  //new TCanvas; base->Draw(); gPad->SetLogy();
+
+  new TCanvas;
+  ratio1->GetYaxis()->SetRangeUser(0, 1);
+  ratio1->GetXaxis()->SetRangeUser(0, kMaxBins);
+  ratio1->Draw();
+  ratio2->SetLineColor(2);
+  ratio2->Draw("SAME");
+  
+  return base;
+}
+
+void CheckBayesianBias()
+{
+  loadlibs();
+  
+  const char* fileNameMC = "multiplicityMC.root";
+  const char* folder = "Multiplicity";
+  const char* fileNameESD = "multiplicityESD.root";
+  const char* folderESD = "Multiplicity";
+
+  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open(fileNameMC, folder);
+  AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
+  
+  const Int_t kMaxBins = 35;
+  AliUnfolding::SetNbins(kMaxBins, kMaxBins);
+  //AliUnfolding::SetDebug(1);
+  
+  Int_t hID = 0;
+  
+  TH2F* hist = esd->GetMultiplicityESD(hID);
+  mult->SetMultiplicityESD(hID, hist);  
+  
+  // without bias calculation
+  mult->ApplyBayesianMethod(hID, kFALSE, 0, 1, 10, 0, 1);
+  baseold = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("baseold");
+  
+  // with bias calculation
+  mult->ApplyBayesianMethod(hID, kFALSE, 0, 1, 10, 0, 2);
+  base = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("base");
+  
+  TH1* hist1 = new TH1F("hist1", "", 100, 0, 20);
+  TH1* hist2 = new TH1F("hist2", "", 100, 0, 20);
+  
+  for (Int_t t = 0; t<kMaxBins; t++)
+  {
+    Printf("Bin %d; Content: %f; Randomization Error: %f; Bias: %f; In percent: %.2f %.2f", t+1, base->GetBinContent(t+1), baseold->GetBinError(t+1), base->GetBinError(t+1), (base->GetBinContent(t+1) > 0) ? 100.0 * baseold->GetBinError(t+1) / base->GetBinContent(t+1) : -1, (base->GetBinContent(t+1) > 0) ? 100.0 * base->GetBinError(t+1) / base->GetBinContent(t+1) : -1);
+    
+    hist1->Fill((base->GetBinContent(t+1) > 0) ? 100.0 * baseold->GetBinError(t+1) / base->GetBinContent(t+1) : -1);
+    hist2->Fill((base->GetBinContent(t+1) > 0) ? 100.0 * base->GetBinError(t+1) / base->GetBinContent(t+1) : -1);
+  }
+  
+  new TCanvas;
+  hist1->Draw();
+  hist2->SetLineColor(2);
+  hist2->Draw("SAME");
+}
+
+void DataScan(Bool_t redo = kTRUE)
+{
+  // makes a set of unfolded spectra and compares
+  // don't forget FindUnfoldedLimit in plots.C
+
+  loadlibs();
+
+  // files...
+  Bool_t mc = kTRUE;
+  const char* fileNameMC = "multiplicityMC.root";
+  const char* folder = "Multiplicity";
+  const char* fileNameESD = "multiplicityESD.root";
+  const char* folderESD = "Multiplicity";
+  Int_t hID = 0;  const Int_t kMaxBins = 35;
+  //Int_t hID = 1;  const Int_t kMaxBins = 60;
+  //Int_t hID = 2;  const Int_t kMaxBins = 70;
+  AliMultiplicityCorrection::EventType eventType = AliMultiplicityCorrection::kTrVtx;
+  Bool_t evaluteBias = kFALSE;
+  
+  Int_t referenceCase = 2; // all results are shown as ratio to this case
+  
+  // chi2 range
+  AliUnfolding::RegularizationType regBegin = AliUnfolding::kPol0;
+  AliUnfolding::RegularizationType regEnd = AliUnfolding::kPol0;
+  Float_t regParamBegin[] = { 0, 1, 10 }; 
+  Float_t regParamEnd[] = { 0, 40, 101 }; 
+  Float_t regParamStep[] = { 0, TMath::Sqrt(10), TMath::Sqrt(10) }; 
+
+  // bayesian range
+  Int_t iterBegin = 5;
+  Int_t iterEnd = 21;
+  Int_t iterStep = 5;
+  
+  TList labels;
+  
+  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open(fileNameMC, folder);
+  AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
+  
+  mult->SetMultiplicityESD(hID, esd->GetMultiplicityESD(hID));
+  
+  if (mc)
+    mult->SetMultiplicityMC(hID, eventType, esd->GetMultiplicityMC(hID, eventType));
+  
+  AliUnfolding::SetNbins(kMaxBins, kMaxBins);
+  //AliUnfolding::SetDebug(1);
+  
+  Int_t count = -1;
+  
+  for (AliUnfolding::RegularizationType reg = regBegin; reg <= regEnd; reg++)
+  {
+    for (Float_t regParam = regParamBegin[reg]; regParam < regParamEnd[reg]; regParam *= regParamStep[reg])
+    {
+      count++;
+      labels.Add(new TObjString(Form("#chi^{2} Reg %d #beta = %.2f", (Int_t) reg, regParam)));
+      
+      if (!redo)
+        continue;
+    
+      AliUnfolding::SetChi2Regularization(reg, regParam);
+      
+      mult->ApplyMinuitFit(hID, kFALSE, eventType, kFALSE, 0, evaluteBias);
+      
+      file = TFile::Open(Form("datascan_%d.root", count), "RECREATE");
+      mult->SaveHistograms();
+      file->Close();
+    }
+  }
+  
+  for (Int_t iter = iterBegin; iter <= iterEnd; iter += iterStep)
+  {
+    count++;
+    labels.Add(new TObjString(Form("Bayesian Iter = %d", iter)));
+    
+    if (!redo)
+      continue;
+    
+    mult->ApplyBayesianMethod(hID, kFALSE, eventType, 1, iter, 0, kTRUE);
+    
+    file = TFile::Open(Form("datascan_%d.root", count), "RECREATE");
+    mult->SaveHistograms();
+    file->Close();
+  }
+      
+  // 1) all distributions
+  // 2) ratio to MC
+  // 3) ratio to ref point
+  // 4) relative error
+  // 5) residuals
+  c = new TCanvas("c", "c", 1200, 800);
+  c->Divide(3, 2);
+  
+  c->cd(1)->SetLogy();
+  
+  // get reference point
+  mult = AliMultiplicityCorrection::Open(Form("datascan_%d.root", referenceCase));
+  if (!mult)
+    return;
+  refPoint = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("refPoint");
+  
+  legend = new TLegend(0.5, 0.5, 0.99, 0.99);
+  legend->SetFillColor(0);
+  
+  TH1* residualSum = new TH1F("residualSum", ";;residual squared sum", count + 1, 0.5, count + 1.5);
+  
+  count = 0;
+  while (1)
+  {
+    mult = AliMultiplicityCorrection::Open(Form("datascan_%d.root", count++));
+    if (!mult)
+      break;
+      
+    hist = (TH1*) mult->GetMultiplicityESDCorrected(hID);
+    hist->SetLineColor((count-1) % 4 + 1);
+    hist->SetLineStyle((count-1) / 4 + 1);
+    hist->GetXaxis()->SetRangeUser(0, kMaxBins);
+    hist->SetStats(kFALSE);
+    hist->SetTitle("");
+    
+    legend->AddEntry(hist->Clone(), labels.At(count-1)->GetName());
+    
+    c->cd(1);
+    hist->DrawCopy((count == 1) ? "HIST" : "HISTSAME");
+    
+    if (mc)
+    {
+      TH2* mcHist2d = mult->GetMultiplicityMC(hID, eventType);
+      mcHist = mcHist2d->ProjectionY("mcmchist", 1, mcHist2d->GetNbinsX());
+      
+      c->cd(1);
+      mcHist->SetMarkerStyle(24);
+      mcHist->Draw("P SAME");
+    
+      c->cd(2);
+      // calculate ratio using only the error on the mc bin
+      ratio = (TH1*) hist->Clone("ratio");
+      for (Int_t bin=1; bin<=ratio->GetNbinsX(); bin++)
+      {
+        if (mcHist->GetBinContent(bin) <= 0)
+          continue;
+        ratio->SetBinContent(bin, hist->GetBinContent(bin) / mcHist->GetBinContent(bin));
+        ratio->SetBinError(bin, mcHist->GetBinError(bin) / mcHist->GetBinContent(bin) * ratio->GetBinContent(bin));
+      }
+      
+      ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+      ratio->GetYaxis()->SetTitle("Ratio unfolded / MC");
+      ratio->DrawCopy((count == 1) ? "HIST" : "HISTSAME");
+    }
+    
+    c->cd(3);
+    // calculate ratio using no errors for now
+    ratio = (TH1*) hist->Clone("ratio");
+    for (Int_t bin=1; bin<=ratio->GetNbinsX(); bin++)
+    {
+      if (refPoint->GetBinContent(bin) <= 0)
+        continue;
+      ratio->SetBinContent(bin, hist->GetBinContent(bin) / refPoint->GetBinContent(bin));
+      ratio->SetBinError(bin, 0);
+    }
+    
+    ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+    ratio->GetYaxis()->SetTitle("Ratio unfolded / unfolded reference case");
+    ratio->DrawCopy((count == 1) ? "" : "SAME");
+    
+    c->cd(4);
+    ratio = (TH1*) hist->Clone("ratio");
+    for (Int_t bin=1; bin<=ratio->GetNbinsX(); bin++)
+    {
+      if (ratio->GetBinContent(bin) <= 0)
+        continue;
+      ratio->SetBinContent(bin, ratio->GetBinError(bin) / ratio->GetBinContent(bin));
+      ratio->SetBinError(bin, 0);
+    }
+    ratio->GetYaxis()->SetRangeUser(0, 1);
+    ratio->GetYaxis()->SetTitle("Relative error");
+    ratio->DrawCopy((count == 1) ? "" : "SAME");
+    
+    c->cd(5);
+    Float_t sum;
+    residuals = mult->GetResiduals(hID, AliMultiplicityCorrection::kTrVtx, sum);
+    residuals->SetStats(0);
+    residuals->GetXaxis()->SetRangeUser(0, kMaxBins);
+    residuals->SetStats(kFALSE);
+    residuals->SetLineColor((count-1) % 4 + 1);
+    residuals->SetLineStyle((count-1) / 4 + 1);
+    residuals->GetYaxis()->SetRangeUser(-5, 5);
+    residuals->DrawCopy((count == 1) ? "" : "SAME");
+    
+    residualSum->Fill(count, sum);
+    residualSum->GetXaxis()->SetBinLabel(count, labels.At(count-1)->GetName());
+  }
+  
+  c->cd(6);
+  residualSum->Draw();
+  legend->Draw();
 }
 
 void DrawBayesianIterations(const char* fileNameMC = "multiplicityMC.root", const char* fileNameESD = "multiplicityESD.root", Int_t histID = 1, Int_t eventType = 0 /* AliMultiplicityCorrection::kTrVtx */)
@@ -1607,7 +1920,7 @@ void testMethod(Int_t caseNo, const char* fileName = "multiplicityMC.root")
   //mult->ApplyLaszloMethod(2, kFALSE, AliMultiplicityCorrection::kTrVtx);
 }
 
-void smoothCorrelationMap(const char* fileName = "multiplicityMC.root", Int_t corrMatrix = 2)
+void smoothCorrelationMap(const char* fileName = "multiplicity.root", Int_t corrMatrix = 1)
 {
   gSystem->Load("libPWG0base");
 
@@ -1690,7 +2003,7 @@ void smoothCorrelationMap(const char* fileName = "multiplicityMC.root", Int_t co
 
   const char* fitWith = "gaus";
 
-  for (Int_t i=1; i<=150; ++i)
+  for (Int_t i=1; i<=80; ++i)
   {
     printf("Fitting %d...\n", i);
 
@@ -1710,9 +2023,13 @@ void smoothCorrelationMap(const char* fileName = "multiplicityMC.root", Int_t co
       pad->SetLogy();
     }
 
-    scaling->Fill(i, func->GetParameter(0));
-    mean->Fill(i, func->GetParameter(1));
-    width->Fill(i, func->GetParameter(2));
+    scaling->SetBinContent(i, func->GetParameter(0));
+    mean->SetBinContent(i, func->GetParameter(1));
+    width->SetBinContent(i, func->GetParameter(2));
+    
+    scaling->SetBinError(i, func->GetParError(0));
+    mean->SetBinError(i, func->GetParError(1));
+    width->SetBinError(i, func->GetParError(2));
   }
 
   TF1* log = new TF1("log", "[0] + [1] * log([2] * x)", 0.01, 500);
@@ -1737,7 +2054,7 @@ void smoothCorrelationMap(const char* fileName = "multiplicityMC.root", Int_t co
   scaling->Fit(scalingFit, "", "", 3, 140);
   scalingFit->SetRange(0, 200);
   scalingFit->Draw("SAME");
-
+  
   c1->cd(2);
   mean->Draw("P");
 
@@ -1756,7 +2073,7 @@ void smoothCorrelationMap(const char* fileName = "multiplicityMC.root", Int_t co
   width->Fit(widthFit, "", "", 5, 140);
   widthFit->SetRange(0, 200);
   widthFit->Draw("SAME");
-
+  
   // build new correction matrix
   TH2* new = (TH2*) proj->Clone("new");
   new->Reset();
@@ -1827,7 +2144,7 @@ void smoothCorrelationMap(const char* fileName = "multiplicityMC.root", Int_t co
 
   for (Int_t i=1; i<=new->GetNbinsX(); ++i)
     for (Int_t j=1; j<=new->GetNbinsY(); ++j)
-      corr->SetBinContent(corr->GetXaxis()->GetNbins() / 2, i, j, new->GetBinContent(i, j));
+      corr->SetBinContent(corr->GetXaxis()->GetNbins() / 2 + 1, i, j, new->GetBinContent(i, j));
 
   new TCanvas;
   corr->Project3D("zy")->Draw("COLZ");

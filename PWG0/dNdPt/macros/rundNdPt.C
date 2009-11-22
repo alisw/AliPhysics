@@ -62,7 +62,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     fdNdPtCutAnalysis->SetAcceptanceCuts(accCuts);
     fdNdPtCutAnalysis->SetTrackCuts(esdTrackCuts);
     fdNdPtCutAnalysis->SetAnalysisMode(analysisMode); 
-    fdNdPtCutAnalysis->SetTrigger(AliPWG0Helper::kMB1); 
+    fdNdPtCutAnalysis->SetTrigger(AliTriggerAnalysis::kMB1); 
     if (bUseMCInfo) fdNdPtCutAnalysis->SetUseMCInfo(kTRUE);
 
     task->AddAnalysisObject( fdNdPtCutAnalysis );
@@ -76,7 +76,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     fdNdPtAnalysis->SetAcceptanceCuts(accCuts);
     fdNdPtAnalysis->SetTrackCuts(esdTrackCuts);
     fdNdPtAnalysis->SetAnalysisMode(analysisMode); 
-    fdNdPtAnalysis->SetTrigger(AliPWG0Helper::kMB1); 
+    fdNdPtAnalysis->SetTrigger(AliTriggerAnalysis::kMB1); 
     if (bUseMCInfo) fdNdPtAnalysis->SetUseMCInfo(kTRUE);
 
     fdNdPtAnalysis->SetHistogramsOn(kTRUE);
@@ -93,7 +93,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     fdNdPtCorrection->SetAcceptanceCuts(accCuts);
     fdNdPtCorrection->SetTrackCuts(esdTrackCuts);
     fdNdPtCorrection->SetAnalysisMode(analysisMode); 
-    fdNdPtCorrection->SetTrigger(AliPWG0Helper::kMB1); 
+    fdNdPtCorrection->SetTrigger(AliTriggerAnalysis::kMB1); 
     if (bUseMCInfo) fdNdPtCorrection->SetUseMCInfo(kTRUE);
 
     task->AddAnalysisObject( fdNdPtCorrection );

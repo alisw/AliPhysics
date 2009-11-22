@@ -125,7 +125,8 @@ Bool_t AliHighMultiplicitySelector::Process(Long64_t entry)
     return kFALSE;
   }
 
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1);
+  static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+  Bool_t eventTriggered = triggerAnalysis->IsTriggerBitFired(fESD->GetTriggerMask(), AliTriggerAnalysis::kMB1);
 
   if (!eventTriggered)
   {
@@ -1654,7 +1655,7 @@ void AliHighMultiplicitySelector::DrawHistograms()
 
   gSystem->Load("libANALYSIS");
   gSystem->Load("libPWG0base");
-  .L AliHighMultiplicitySelector.cxx+
+  .L AliHighMultiplicitySelector.cxx++
   x = new AliHighMultiplicitySelector();
   x->ReadHistograms("highmult_hijing100k.root");
   x->DrawHistograms();
