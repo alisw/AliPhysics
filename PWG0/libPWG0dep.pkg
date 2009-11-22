@@ -5,7 +5,15 @@
 # this library contains classed that depend on STEER
 
 SRCS = TPC/AliTPCClusterHistograms.cxx \
-       TPC/AliTPCRawHistograms.cxx
+       TPC/AliTPCRawHistograms.cxx \
+      dNdPt/AlidNdPtHelper.cxx \
+      dNdPt/AlidNdPtAnalysis.cxx \
+      dNdPt/AlidNdPtCorrection.cxx \
+      dNdPt/AlidNdPtAcceptanceCuts.cxx \
+      dNdPt/AlidNdPtEventCuts.cxx \
+      dNdPt/AlidNdPt.cxx \
+      dNdPt/AlidNdPtCutAnalysis.cxx \
+       dNdPt/AlidNdPtTask.cxx
 
 HDRS = $(SRCS:.cxx=.h)
 
