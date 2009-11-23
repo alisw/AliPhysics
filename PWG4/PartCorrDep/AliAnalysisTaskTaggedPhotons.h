@@ -23,6 +23,7 @@ class TH2D ;
 class TH2F ;
 class TH3D ;
 class AliPHOSGeoUtils;
+class AliEMCALGeoUtils;
 class AliAODPWG4Particle;
 
 class AliAnalysisTaskTaggedPhotons : public AliAnalysisTaskSE {
@@ -57,10 +58,15 @@ protected:
   Int_t   GetFiducialArea(Float_t * pos)const ; //what kind of fiducial area hit the photon
   Bool_t  IsSamePi0(const AliAODPWG4Particle *p1, const AliAODPWG4Particle *p2) const; //Check MC genealogy
   Bool_t  IsInPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
+  Bool_t  TestDisp(Double_t l0, Double_t l1, Double_t e)const  ;
+  Bool_t  TestTOF(Double_t /*t*/,Double_t /*en*/)const{return kTRUE;} 
+  Bool_t  TestCharged(Double_t /*dr*/,Double_t /*en*/)const{return kTRUE;} 
 
 private:
 
-  AliPHOSGeoUtils *fgeom;        //!PHOS/EMCAL geometry
+  AliPHOSGeoUtils *fPHOSgeom;    //!PHOS geometry
+  AliEMCALGeoUtils *fEMCALgeom;  //!EMCAL geometry
+
   AliStack        *fStack ;      //!Pointer to MC stack
   Bool_t           fPHOS ;       //Choose Calorimeter: PHOS/EMCAL
 
@@ -112,6 +118,7 @@ private:
   TH1D  * fhDecWMissedPartnerAll ;  //Decay photons with partner missed due to some reason (sum of below)
   TH1D  * fhDecWMissedPartnerEmin;  //Decay photons with partner missed due to low energy
   TH1D  * fhDecWMissedPartnerConv;  //Decay photons with partner missed due to conversion
+  TH1D  * fhDecWMissedPartnerStack;  //Decay photons with partner not present in Stack
   TH1D  * fhDecWMissedPartnerGeom0; //Decay photons with partner missed due geometry
   TH1D  * fhDecWMissedPartnerGeom1; //Decay photons with partner missed due geometry Fid. area. 1
   TH1D  * fhDecWMissedPartnerGeom2; //Decay photons with partner missed due geometry Fid. area. 2

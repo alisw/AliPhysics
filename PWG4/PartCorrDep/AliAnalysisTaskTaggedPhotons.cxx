@@ -39,22 +39,28 @@
 #include "AliAnalysisManager.h"
 #include "AliESDVertex.h"
 #include "AliESDEvent.h" 
+#include "AliAODEvent.h" 
 #include "AliESDCaloCluster.h" 
 #include "AliAODPWG4Particle.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
-#include "AliPHOSGeoUtils.h"
 #include "TGeoManager.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliPHOSGeoUtils.h"
+#include "AliEMCALGeoUtils.h"
+
+
 
 //______________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() : AliAnalysisTaskSE(),
-  fgeom(0x0),fStack(0x0),fPHOS(1),
+  fPHOSgeom(0x0),
+  fEMCALgeom(0x0),
+  fStack(0x0),fPHOS(1),
   fPhotonId(1.0),fMinEnergyCut(0.4),
-  fPi0MeanP0(0.1377),fPi0MeanP1(-0.002566),fPi0MeanP2(0.001216),fPi0MeanP3(-0.0001256),
+  fPi0MeanP0(0.136),fPi0MeanP1(0.0),fPi0MeanP2(0.0),fPi0MeanP3(0.0),
   fPi0SigmaP0(0.004508),fPi0SigmaP1(0.005497),fPi0SigmaP2(0.00000006),
   fZmax(0.),fZmin(0.),fPhimax(0.),fPhimin(0.),
   fOutputList(0x0),fEventList(0x0),
@@ -63,7 +69,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() : AliAnalysisTaskSE
   fhRecPhotOmega(0x0),fhRecPhotEtapr(0x0),fhRecPhotConv(0x0),fhRecPhotHadron(0x0),
   fhRecPhotDirect(0x0),fhRecPhotOther(0x0),
   fhDecWMCPartner(0x0),fhDecWMissedPartnerNotPhoton(0x0),fhDecWMissedPartnerAll(0x0),
-  fhDecWMissedPartnerEmin(0x0),fhDecWMissedPartnerConv(0x0),fhDecWMissedPartnerGeom0(0x0),
+  fhDecWMissedPartnerEmin(0x0),fhDecWMissedPartnerConv(0x0),fhDecWMissedPartnerStack(0x0),
+  fhDecWMissedPartnerGeom0(0x0),
   fhDecWMissedPartnerGeom1(0x0),fhDecWMissedPartnerGeom2(0x0),fhDecWMissedPartnerGeom3(0x0),
   fhPartnerMCReg(0x0),fhPartnerMissedEmin(0x0),fhPartnerMissedConv(0x0),fhPartnerMissedGeo(0x0),
   fhTaggedAll(0x0),fhTaggedArea1(0x0),fhTaggedArea2(0x0),fhTaggedArea3(0x0),fhTaggedMult(0x0),
@@ -76,9 +83,11 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() : AliAnalysisTaskSE
 //______________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) : 
   AliAnalysisTaskSE(name),
-  fgeom(0x0),fStack(0x0),fPHOS(1),
+  fPHOSgeom(0x0),
+  fEMCALgeom(0x0),
+  fStack(0x0),fPHOS(1),
   fPhotonId(1.0),fMinEnergyCut(0.4),
-  fPi0MeanP0(0.1377),fPi0MeanP1(-0.002566),fPi0MeanP2(0.001216),fPi0MeanP3(-0.0001256),
+  fPi0MeanP0(0.136),fPi0MeanP1(0.0),fPi0MeanP2(0.0),fPi0MeanP3(0.0),
   fPi0SigmaP0(0.004508),fPi0SigmaP1(0.005497),fPi0SigmaP2(0.00000006),
   fZmax(0.),fZmin(0.),fPhimax(0.),fPhimin(0.),
   fOutputList(0x0),fEventList(0x0),
@@ -87,7 +96,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fhRecPhotOmega(0x0),fhRecPhotEtapr(0x0),fhRecPhotConv(0x0),fhRecPhotHadron(0x0),
   fhRecPhotDirect(0x0),fhRecPhotOther(0x0),
   fhDecWMCPartner(0x0),fhDecWMissedPartnerNotPhoton(0x0),fhDecWMissedPartnerAll(0x0),
-  fhDecWMissedPartnerEmin(0x0),fhDecWMissedPartnerConv(0x0),fhDecWMissedPartnerGeom0(0x0),
+  fhDecWMissedPartnerEmin(0x0),fhDecWMissedPartnerConv(0x0),fhDecWMissedPartnerStack(0x0),
+  fhDecWMissedPartnerGeom0(0x0),
   fhDecWMissedPartnerGeom1(0x0),fhDecWMissedPartnerGeom2(0x0),fhDecWMissedPartnerGeom3(0x0),
   fhPartnerMCReg(0x0),fhPartnerMissedEmin(0x0),fhPartnerMissedConv(0x0),fhPartnerMissedGeo(0x0),
   fhTaggedAll(0x0),fhTaggedArea1(0x0),fhTaggedArea2(0x0),fhTaggedArea3(0x0),fhTaggedMult(0x0),
@@ -104,7 +114,9 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
 //____________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTaskTaggedPhotons& ap) :
   AliAnalysisTaskSE(ap.GetName()),  
-  fgeom(0x0),fStack(0x0),fPHOS(ap.fPHOS),
+  fPHOSgeom(0x0),
+  fEMCALgeom(0x0),
+  fStack(0x0),fPHOS(ap.fPHOS),
   fPhotonId(ap.fPhotonId),fMinEnergyCut(ap.fMinEnergyCut),
   fPi0MeanP0(ap.fPi0MeanP0),fPi0MeanP1(ap.fPi0MeanP1),fPi0MeanP2(ap.fPi0MeanP2),fPi0MeanP3(ap.fPi0MeanP3),
   fPi0SigmaP0(ap.fPi0SigmaP0),fPi0SigmaP1(ap.fPi0SigmaP1),fPi0SigmaP2(ap.fPi0SigmaP2),
@@ -115,9 +127,11 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fhRecPhotOmega(0x0),fhRecPhotEtapr(0x0),fhRecPhotConv(0x0),fhRecPhotHadron(0x0),
   fhRecPhotDirect(0x0),fhRecPhotOther(0x0),
   fhDecWMCPartner(0x0),fhDecWMissedPartnerNotPhoton(0x0),fhDecWMissedPartnerAll(0x0),
-  fhDecWMissedPartnerEmin(0x0),fhDecWMissedPartnerConv(0x0),fhDecWMissedPartnerGeom0(0x0),
+  fhDecWMissedPartnerEmin(0x0),fhDecWMissedPartnerConv(0x0),fhDecWMissedPartnerStack(0x0),
+  fhDecWMissedPartnerGeom0(0x0),
   fhDecWMissedPartnerGeom1(0x0),fhDecWMissedPartnerGeom2(0x0),fhDecWMissedPartnerGeom3(0x0),
-  fhPartnerMCReg(0x0),fhPartnerMissedEmin(0x0),fhPartnerMissedConv(0x0),fhPartnerMissedGeo(0x0),
+  fhPartnerMCReg(0x0),fhPartnerMissedEmin(0x0),fhPartnerMissedConv(0x0),
+  fhPartnerMissedGeo(0x0),
   fhTaggedAll(0x0),fhTaggedArea1(0x0),fhTaggedArea2(0x0),fhTaggedArea3(0x0),fhTaggedMult(0x0),
   fhTaggedMCTrue(0x0),fhMCMissedTagging(0x0),fhMCFakeTagged(0x0),
   fhInvMassReal(0x0),fhInvMassMixed(0x0),fhMCMissedTaggingMass(0x0),
@@ -151,48 +165,147 @@ AliAnalysisTaskTaggedPhotons::~AliAnalysisTaskTaggedPhotons()
 void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
 { 
 
+
   //Load geometry
   //if file "geometry.root" exists, load it
   //otherwise use misaligned matrixes stored in ESD
   TFile *geoFile = new TFile("geometry.root","read");
   if(geoFile->IsZombie()){ //no file, load geo matrixes from ESD
-    //todo
-    AliInfo("Can not find file geometry.root, reading misalignment matrixes from AliESDs") ;
+    AliInfo("Can not find file geometry.root, reading misalignment matrixes from ESD/AOD") ;
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
+    AliAODEvent * aod = 0x0 ;
     if(!esd)
-      AliFatal("Can not read geometry even from ESD. Note, that AOD does not contain PHOS/EMCAL geometry") ;
+      aod=dynamic_cast<AliAODEvent*>(InputEvent()) ;
+    if(!esd && !aod)
+      AliFatal("Can not read geometry even from ESD/AOD.") ;
     if(fPHOS){//reading PHOS matrixes
-      fgeom = new AliPHOSGeoUtils("IHEP","");
+      fPHOSgeom = new AliPHOSGeoUtils("IHEP","");
       for(Int_t mod=0; mod<5; mod++){
-        const TGeoHMatrix* m=esd->GetPHOSMatrix(mod) ;
-        fgeom->SetMisalMatrix(m, mod) ;
+        if(esd){
+          const TGeoHMatrix* m=esd->GetPHOSMatrix(mod) ;
+          fPHOSgeom->SetMisalMatrix(m, mod) ;
+        }
+        else{
+          const TGeoHMatrix* m=aod->GetHeader()->GetPHOSMatrix(mod) ;
+          fPHOSgeom->SetMisalMatrix(m, mod) ;
+        }
+      }
+    }
+    else{ //EMCAL
+      fEMCALgeom = new AliEMCALGeoUtils("");
+      for(Int_t mod=0; mod < 12; mod++){ //<---Gustavo, could you check???
+        if(esd){
+          const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
+          fEMCALgeom->SetMisalMatrix(m, mod) ;
+        }
+        else{
+          const TGeoHMatrix* m=aod->GetHeader()->GetEMCALMatrix(mod) ;
+          fEMCALgeom->SetMisalMatrix(m, mod) ;
+        }
       }
     }
   }
   else{
     gGeoManager = (TGeoManager*)geoFile->Get("Geometry");
-    fgeom = new AliPHOSGeoUtils("IHEP","");
+    //Geometry will be misaligned from GeoManager
+    if(fPHOS){
+      fPHOSgeom = new AliPHOSGeoUtils("IHEP","");
+    }
+    else{
+      fEMCALgeom = new AliEMCALGeoUtils("EMCAL_COMPLETE");
+    }
   }
 
 
-  if(fgeom==NULL){
+  if(fPHOSgeom==NULL && fEMCALgeom==NULL){
     AliError("Error loading Geometry\n");
   }
   else
     AliInfo("Geometry loaded... OK\n");
 
   //Evaluate active PHOS/EMCAL area
-  //To be fixed todo
-  fZmax= 2.25*56/2. ;
-  fZmin=-2.25*56/2. ;
-  fPhimax=220./180.*TMath::Pi() ;
-  fPhimin=320./180.*TMath::Pi() ;
+  if(fZmax<=fZmin){ //not set yet
+    if(fPHOS){
+      //Check active modules in the current configuration
+      if(fPHOSgeom){
+        fZmax= 999. ;
+        fZmin=-999. ;
+        fPhimax=-999. ;
+        fPhimin= 999. ;
+        for(Int_t imod=1; imod<=5; imod++){
+          //Find exact coordinates of PHOS corners
+          Int_t relId[4]={imod,0,1,1} ;
+          Int_t absId ;
+          fPHOSgeom->RelToAbsNumbering(relId,absId) ;
+          TVector3 pos ;
+          fPHOSgeom->RelPosInAlice(absId,pos) ;
+          Double_t phi=pos.Phi() ;
+          while(phi<0.)phi+=TMath::TwoPi() ;
+          while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+          fPhimin=TMath::Min(fPhimin,float(phi)) ;
+          fZmin=TMath::Max(fZmin,float(pos.Z())) ;
+          relId[2]=64 ;
+          relId[3]=56 ;
+          fPHOSgeom->RelToAbsNumbering(relId,absId) ;
+          fPHOSgeom->RelPosInAlice(absId,pos) ;
+          phi=pos.Phi() ;
+          while(phi<0.)phi+=TMath::TwoPi() ;
+          while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+          fPhimax=TMath::Max(fPhimax,float(phi)) ;
+          fZmax=TMath::Min(fZmax,float(pos.Z())) ;
+        }
+      }
+      else{
+        //Use approximate range
+        fZmax= 2.25*56/2. ;
+        fZmin=-2.25*56/2. ;
+        fPhimax=220./180.*TMath::Pi() ;
+        fPhimin=320./180.*TMath::Pi() ;
+      }
+    }
+    else{ //Similar for EMCAL <--Gustavo, Could you please have a look?
+      if(fEMCALgeom){
+        fZmax= 999. ;
+        fZmin=-999. ;
+        fPhimax=-999. ;
+        fPhimin= 999. ;
+        for(Int_t imod=0; imod<12; imod++){
+
+          //Find exact coordinates of SM corners
+          Int_t absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 0, 0);
+          TVector3 pos ;
+          //Get the position of this tower.
+          fEMCALgeom->RelPosCellInSModule(absId,pos);
+          Double_t phi=pos.Phi() ;
+          while(phi<0.)phi+=TMath::TwoPi() ;
+          while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+          fPhimin=TMath::Min(fPhimin,float(phi)) ;
+          fZmin=TMath::Max(fZmin,float(pos.Z())) ;
+          absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 24, 48); 
+          fEMCALgeom->RelPosCellInSModule(absId,pos);   
+          phi=pos.Phi() ;
+          while(phi<0.)phi+=TMath::TwoPi() ;
+          while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+          fPhimax=TMath::Max(fPhimax,float(phi)) ;
+          fZmax=TMath::Min(fZmax,float(pos.Z())) ;
+
+        }
+      }
+      else{
+        //Use approximate range
+        fZmax= 325. ;
+        fZmin=-325. ;
+        fPhimax=80./180.*TMath::Pi() ;
+        fPhimin=180./180.*TMath::Pi() ;
+      }
+    }
+  }
 
 
   // Create the outputs containers
 
   OpenFile(1) ; 
-  const Int_t nPtBins=51 ;
+  const Int_t nPtBins=52 ;
   Double_t ptBins[nPtBins+1] ;
   for(Int_t i=0;i<=20;i++)ptBins[i]=0.1*i ; //0-2 GeV:  0.1 GeV/bin
   for(Int_t i=21;i<=30;i++)ptBins[i]=2.+0.2*(i-20) ; //2-4 GeV:  0.2 GeV/bin                   
@@ -233,6 +346,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fhDecWMissedPartnerAll  = new TH1D("fhDecWMissedPartnerAll","Decay photons with partner missed due to some reason", nPtBins, ptBins ) ;
     fhDecWMissedPartnerEmin = new TH1D("fhDecWMissedPartnerEmin","Decay photons with partner missed due to low energy", nPtBins, ptBins ) ;
     fhDecWMissedPartnerConv = new TH1D("fhDecWMissedPartnerConv","Decay photons with partner missed due to conversion", nPtBins, ptBins ) ;
+    fhDecWMissedPartnerStack= new TH1D("fhDecWMissedPartnerStack","Decay photons with partner not in Stack", nPtBins, ptBins ) ;
     fhDecWMissedPartnerGeom0 = new TH1D("fhDecWMissedPartnerGeom0","Decay photons with partner missed due geometry", nPtBins, ptBins ) ;
     fhDecWMissedPartnerGeom1 = new TH1D("fhDecWMissedPartnerGeom1","Decay photons with partner missed due geometry Fid. area. 1", nPtBins, ptBins ) ;
     fhDecWMissedPartnerGeom2 = new TH1D("fhDecWMissedPartnerGeom2","Decay photons with partner missed due geometry Fid. area. 2", nPtBins, ptBins ) ;
@@ -261,9 +375,9 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fhMCFakeTagged    = new TH1D("fhMCFakeTagged","Spectrum of photons wrongly tagged according to MC", nPtBins, ptBins ) ;
 
     //Invariant mass distributions for fake corrections
-    const Int_t nmass=200 ;
+    const Int_t nmass=1000 ;
     Double_t masses[nmass+1] ;
-    for(Int_t i=0;i<=nmass;i++)masses[i]=0.005*i ;
+    for(Int_t i=0;i<=nmass;i++)masses[i]=0.001*i ;
     fhInvMassReal = new TH2D("fhInvMassReal","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
     fhInvMassMixed  = new TH2D("fhInvMassMixed","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
     fhMCMissedTaggingMass= new TH2D("fhMCMissedTaggingMass","Inv mass of pairs missed tagging",nmass,masses,nPtBins, ptBins ) ;
@@ -309,109 +423,53 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputList->AddAt(fhDecWMissedPartnerAll,                24) ;
   fOutputList->AddAt(fhDecWMissedPartnerEmin,               25) ;
   fOutputList->AddAt(fhDecWMissedPartnerConv,               26) ;
-  fOutputList->AddAt(fhDecWMissedPartnerGeom0,              27) ;
-  fOutputList->AddAt(fhDecWMissedPartnerGeom1,              28) ;
-  fOutputList->AddAt(fhDecWMissedPartnerGeom2,              29) ;
-  fOutputList->AddAt(fhDecWMissedPartnerGeom3,              30) ;
+  fOutputList->AddAt(fhDecWMissedPartnerStack,              27) ;
+  fOutputList->AddAt(fhDecWMissedPartnerGeom0,              28) ;
+  fOutputList->AddAt(fhDecWMissedPartnerGeom1,              29) ;
+  fOutputList->AddAt(fhDecWMissedPartnerGeom2,              30) ;
+  fOutputList->AddAt(fhDecWMissedPartnerGeom3,              31) ;
 
-  fOutputList->AddAt(fhPartnerMCReg,                        31) ;
-  fOutputList->AddAt(fhPartnerMissedEmin,                   32) ;
-  fOutputList->AddAt(fhPartnerMissedConv,                   33) ;
-  fOutputList->AddAt(fhPartnerMissedGeo,                    34) ;
+  fOutputList->AddAt(fhPartnerMCReg,                        32) ;
+  fOutputList->AddAt(fhPartnerMissedEmin,                   33) ;
+  fOutputList->AddAt(fhPartnerMissedConv,                   34) ;
+  fOutputList->AddAt(fhPartnerMissedGeo,                    35) ;
 
-  fOutputList->AddAt(fhTaggedAll,                           35) ;
-  fOutputList->AddAt(fhTaggedArea1,                         36) ;
-  fOutputList->AddAt(fhTaggedArea2,                         37) ;
-  fOutputList->AddAt(fhTaggedArea3,                         38) ;
-  fOutputList->AddAt(fhTaggedPID[0],                        39) ;
-  fOutputList->AddAt(fhTaggedPID[1],                        40) ;
-  fOutputList->AddAt(fhTaggedPID[2],                        41) ;
-  fOutputList->AddAt(fhTaggedPID[3],                        42) ;
-  fOutputList->AddAt(fhTaggedMult,                          43) ;
+  fOutputList->AddAt(fhTaggedAll,                           36) ;
+  fOutputList->AddAt(fhTaggedArea1,                         37) ;
+  fOutputList->AddAt(fhTaggedArea2,                         38) ;
+  fOutputList->AddAt(fhTaggedArea3,                         39) ;
+  fOutputList->AddAt(fhTaggedPID[0],                        40) ;
+  fOutputList->AddAt(fhTaggedPID[1],                        41) ;
+  fOutputList->AddAt(fhTaggedPID[2],                        42) ;
+  fOutputList->AddAt(fhTaggedPID[3],                        43) ;
+  fOutputList->AddAt(fhTaggedMult,                          44) ;
 
-  fOutputList->AddAt(fhTaggedMCTrue,                        44) ;
-  fOutputList->AddAt(fhMCMissedTagging,                     45) ;
-  fOutputList->AddAt(fhMCFakeTagged,                        46) ;
+  fOutputList->AddAt(fhTaggedMCTrue,                        45) ;
+  fOutputList->AddAt(fhMCMissedTagging,                     46) ;
+  fOutputList->AddAt(fhMCFakeTagged,                        47) ;
 
-  fOutputList->AddAt(fhInvMassReal,                         47) ;
-  fOutputList->AddAt(fhInvMassMixed,                        48) ;
-  fOutputList->AddAt(fhMCMissedTaggingMass,                 49) ;
+  fOutputList->AddAt(fhInvMassReal,                         48) ;
+  fOutputList->AddAt(fhInvMassMixed,                        49) ;
+  fOutputList->AddAt(fhMCMissedTaggingMass,                 50) ;
 
-  fOutputList->AddAt(fhConversionRadius,                    50) ;
-  fOutputList->AddAt(fhInteractionRadius,                   51) ;
+  fOutputList->AddAt(fhConversionRadius,                    51) ;
+  fOutputList->AddAt(fhInteractionRadius,                   52) ;
 
-  fOutputList->AddAt(fhEvents,                              52) ;
+  fOutputList->AddAt(fhEvents,                              53) ;
 
-
-/*
-  fOutputList->AddAt(fhPHOSPos,                              0) ; 
-  fOutputList->AddAt(fhPHOS,                                 1) ; 
-  fOutputList->AddAt(fhAllPhotons,                           2) ;
-  fOutputList->AddAt(fhNotPhotons,                           3) ;
-  fOutputList->AddAt(fhAllPhotonsPrimary,                    4) ;
-  fOutputList->AddAt(fhNotPhotonsPrimary,                    5) ;
-  fOutputList->AddAt(fhfakeNotPhotons,                       6) ;
-
-  fOutputList->AddAt(fhTaggedPhotons,                        7) ; 
-  fOutputList->AddAt(fhfakeTaggedPhotons,                    8) ;
-  fOutputList->AddAt(fhDecayNotTaggedPhotons,                9) ;
-  fOutputList->AddAt(fhPi0DecayPhotonsPrimary,               10);
-  fOutputList->AddAt(fhEtaDecayPhotonsPrimary,               11);
-  fOutputList->AddAt(fhOmegaDecayPhotonsPrimary,             12);
-  fOutputList->AddAt(fhEtaSDecayPhotonsPrimary,              13);
-  fOutputList->AddAt(fhOtherDecayPhotonsPrimary,             14);
-  fOutputList->AddAt(fhDecayPhotonsPrimary,                  15);
-
-  fOutputList->AddAt(fhConvertedPhotonsPrimary,              16);
-  fOutputList->AddAt(fhConvertedPhotonsPrimaryHadronsDecays, 17);
-  fOutputList->AddAt(fhCoordsConversion,                     18);
-  fOutputList->AddAt(fhCoordsConversion2,                    19);
-
-  fOutputList->AddAt(fhPHOSInvariantMassReal,                20);
-  fOutputList->AddAt(fhPHOSInvariantMassMixed,               21);
-
-  fOutputList->AddAt(fhPHOSPi0,                              22);
-
-  fOutputList->AddAt(fhPi0DecayPhotonsGeomfake,              23);
-  fOutputList->AddAt(fhPi0DecayPhotonsTaggedPrimary,         24);
-  fOutputList->AddAt(fhPi0DecayPhotonsTaggedPrimaryPair,     25);
-  fOutputList->AddAt(fhPi0DecayPhotonsBigDecay,              26);
-  fOutputList->AddAt(fhPi0DecayPhotonsPConv,                 27);
-  fOutputList->AddAt(fhPi0DecayPhotonsPGeo,                  28);
-  fOutputList->AddAt(fhPi0DecayPhotonsPReg,                  29);
-
-  fOutputList->AddAt(fhfakeTaggedPhotonsConv,                30) ;
-  fOutputList->AddAt(fhfakeTaggedPhotonsPID,                 31) ;
-  fOutputList->AddAt(fhstrangeNotTaggedPhotons,              32) ;
-  fOutputList->AddAt(fhstrangeNotTaggedPhotonsPair,          33) ;
-  fOutputList->AddAt(fhstrangeNotTaggedPhotonsRegCut,        34) ;
-  fOutputList->AddAt(fhPi0DecayPhotonsTaggedPrimaryRegCut,   35);
-  fOutputList->AddAt(fhstrangeNotTaggedPhotonsPairRegCut,        36) ;
-  fOutputList->AddAt(fhPi0DecayPhotonsTaggedPrimaryPairRegCut,   37);
-  fOutputList->AddAt(fhTrackRefCoords,                           38);
-*/
-  fOutputList->AddAt(fhEvents,                               39);
 }
 
 //______________________________________________________________________________
 void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *) 
 {
+  //Fill all histograms
+
   fhEvents->Fill(0.);
 
   // Processing of one event
   if(fDebug>1)
     AliInfo(Form("\n\n Processing event # %lld",  Entry())) ; 
   AliESDEvent* esd = (AliESDEvent*)InputEvent();
-
-  if(fDebug>2){ //DP: Check these histograms <------- 
-//    printf("Tagged: %f ",fhTaggedPhotons->GetEntries());
-//    printf("fakeTagged: %f ",fhfakeTaggedPhotons->GetEntries());
-//    printf("fakeNotTagged: %f ",fhfakeNotTaggedPhotons->GetEntries());
-//    printf("strangeNotTagged: %f ",fhstrangeNotTaggedPhotons->GetEntries());
-//    printf("trueTagged: %f ",fhPi0DecayPhotonsTrueTagged->GetEntries());
-//    printf("fakeTaggedConv: %f ",fhfakeTaggedPhotonsConv->GetEntries());
-//    printf("\nDIFF: %f\n",fhTaggedPhotons->GetEntries()-fhfakeTaggedPhotons->GetEntries()+fhfakeNotTaggedPhotons->GetEntries()+fhstrangeNotTaggedPhotons->GetEntries()-fhPi0DecayPhotonsTrueTagged->GetEntries()-fhfakeTaggedPhotonsConv->GetEntries());
-  }
 
   //MC stack init
   AliMCEventHandler* mctruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
@@ -420,19 +478,22 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   if(!fStack && gDebug>1)
     AliInfo("No stack! \n");
 
-  //************************  PHOS *************************************
+  //************************  PHOS/EMCAL *************************************
   TRefArray * caloClustersArr  = new TRefArray();  
-  esd->GetPHOSClusters(caloClustersArr);
-  const Int_t kNumberOfPhosClusters = caloClustersArr->GetEntries() ;  
+  if(fPHOS)
+    esd->GetPHOSClusters(caloClustersArr);
+  else
+    esd->GetEMCALClusters(caloClustersArr);
+  const Int_t kNumberOfClusters = caloClustersArr->GetEntries() ;  
 
-  TClonesArray * fCaloPhotonsArr   = new TClonesArray("AliAODPWG4Particle",kNumberOfPhosClusters);
+  TClonesArray * fCaloPhotonsArr   = new TClonesArray("AliAODPWG4Particle",kNumberOfClusters);
   Int_t inList = 0; //counter of caloClusters
 
-  Int_t      phosCluster ; 
+  Int_t cluster ; 
 
-  // loop over PHOS Clusters
-  for(phosCluster = 0 ; phosCluster < kNumberOfPhosClusters ; phosCluster++) {
-    AliESDCaloCluster * caloCluster = static_cast<AliESDCaloCluster*>(caloClustersArr->At(phosCluster)) ;
+  // loop over Clusters
+  for(cluster = 0 ; cluster < kNumberOfClusters ; cluster++) {
+    AliESDCaloCluster * caloCluster = static_cast<AliESDCaloCluster*>(caloClustersArr->At(cluster)) ;
   
     if((fPHOS && !caloCluster->IsPHOS()) ||
        (!fPHOS && caloCluster->IsPHOS()))
@@ -447,7 +508,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     AliAODPWG4Particle *p = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(inList));
     inList++;
 
-    p->SetCaloLabel(phosCluster,-1); //This and partner cluster
+    p->SetCaloLabel(cluster,-1); //This and partner cluster
     p->SetDistToBad(Int_t(caloCluster->GetDistanceToBadChannel()));
 
     p->SetTag(AliMCAnalysisUtils::kMCUnknown);
@@ -456,6 +517,11 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     Float_t pos[3] ;
     caloCluster->GetPosition(pos) ;
     p->SetFiducialArea(GetFiducialArea(pos)) ;
+
+    //PID criteria
+    p->SetDispBit(TestDisp(caloCluster->GetM02(),caloCluster->GetM20(),caloCluster->E())) ;
+    p->SetTOFBit(TestTOF(caloCluster->GetTOF(),caloCluster->E())) ;
+    p->SetChargedBit(TestCharged(caloCluster->GetEmcCpvDistance(),caloCluster->E())) ;
 
     fhRecAll->Fill( p->Pt() ) ; //All recontructed particles
     Int_t iFidArea = p->GetFiducialArea(); 
@@ -559,21 +625,13 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
               printf("Probably the other photon is not in the stack!\n");
               printf("Number of daughters: %d\n",pi0p->GetNDaughters());
             }
+            fhDecWMissedPartnerStack->Fill(p->Pt()) ;
           }  
           else{
             TParticle *partner = fStack->Particle(indexdecay);
-            Int_t modulenum;
-            Double_t xtmp,ztmp;
 //<--DP            p->SetPartnerPt(partner->Pt());
             if(partner->GetPdgCode()==22){ 
               Bool_t isPartnerLost=kFALSE; //If partner is lost for some reason
-              if(partner->Energy()<fMinEnergyCut){ //energy is not enough to be registered by PHOS
-                if(fDebug>2)
-                  printf("P_Reg, E=%f\n",partner->Energy());
-                fhPartnerMissedEmin->Fill(partner->Pt());  //Spectrum of missed partners
-                fhDecWMissedPartnerEmin->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
-                isPartnerLost=kTRUE;
-              }
               if(partner->GetNDaughters()!=0){ //this photon is converted before it is registered by some detector
                 if(fDebug>2)
                   printf("P_Conv, daughters=%d\n",partner->GetNDaughters());
@@ -582,7 +640,19 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
                 fhDecWMissedPartnerConv->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
                 isPartnerLost=kTRUE;
               }
-              if(!fgeom->ImpactOnEmc(partner,modulenum,ztmp,xtmp)){ //this photon cannot hit PHOS
+              Bool_t impact = kFALSE ;
+              if(fPHOS){
+                Int_t modulenum ;
+                Double_t ztmp,xtmp ;
+                impact=fPHOSgeom->ImpactOnEmc(partner,modulenum,ztmp,xtmp) ;
+                if(fDebug>2){
+                  printf("Impact on PHOS: module: %d, x tower: %f, z tower: %f\n", modulenum,xtmp,ztmp);
+                }
+              }
+              else{
+                impact = fEMCALgeom->Impact(partner) ;
+              }
+              if(!impact){ //this photon cannot hit PHOS
                 if(fDebug>2)
                   printf("P_Geo\n");
                 fhPartnerMissedGeo->Fill(partner->Pt());
@@ -598,13 +668,19 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
                 }
                 isPartnerLost=kTRUE;
               }
+              if(!isPartnerLost && partner->Energy()<fMinEnergyCut){ //energy is not enough to be registered by PHOS
+                if(fDebug>2)
+                  printf("P_Reg, E=%f\n",partner->Energy());
+                fhPartnerMissedEmin->Fill(partner->Pt());  //Spectrum of missed partners
+                fhDecWMissedPartnerEmin->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
+                isPartnerLost=kTRUE;
+              }
               if(!isPartnerLost){
 //                p->SetMCTagged(1); //set this photon as primary tagged
                 fhDecWMCPartner->Fill(p->Pt());
                 fhPartnerMCReg->Fill(partner->Pt());
                 if(fDebug>2){
-                  printf("both photons are inside PHOS. Energy: %f, Pt of pair photon: %f, E of pair photon: %f, Px: %f Py: %f Pz: %f, num of daughters: %d", caloCluster->E(),partner->Pt(),partner->Energy(),partner->Px(),partner->Py(),partner->Pz(),partner->GetNDaughters());
-                  printf(", module: %d, x tower: %f, z tower: %f\n", modulenum,xtmp,ztmp);
+                  printf("both photons are inside PHOS. Energy: %f, Pt of pair photon: %f, E of pair photon: %f, Px: %f Py: %f Pz: %f, num of daughters: %d \n", caloCluster->E(),partner->Pt(),partner->Energy(),partner->Px(),partner->Py(),partner->Pz(),partner->GetNDaughters());
                 }
               }
               else{
@@ -618,7 +694,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         }
       }
     }
-  } //PHOS clusters
+  } //PHOS/EMCAL clusters
     
   if(fDebug>1)   
     printf("number of clusters: %d\n",inList);
@@ -722,19 +798,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     }
   }
 
-/*  if(inList==1){ //We have only one photon in PHOS, but still there can be missing partner for it
-    AliAODPWG4Particle * p = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(0));
-//    if(p->IsMCTagged()){
-      //should have pair but partner was not registered in PHOS
-//      double pairpt=p->GetPairPt();
-//      if(fDebug>2)
-//        printf("pair not found for phot: E=%f, pair Pt=%f\n",p->Energy(),pairpt);
-//      fhMCPartnerMissed->Fill(pairpt);
-//      fhstra->Fill(p->Pt());
-//    }
-  }
-*/
-
   //Remove old events
   fEventList->AddFirst(fCaloPhotonsArr);
   if(fEventList->GetSize() > 10){
@@ -754,7 +817,8 @@ void AliAnalysisTaskTaggedPhotons::Init()
   AliInfo("Doing initialisation") ; 
   SetPhotonId(0.9) ; 
   SetMinEnergyCut(0.4);
-  SetPi0MeanParameters(0.1377,-0.002566,0.001216,-0.0001256);
+  SetPi0MeanParameters(0.136,0.,0.0,0.0);
+//  SetPi0MeanParameters(0.1377,-0.002566,0.001216,-0.0001256);
   SetPi0SigmaParameters(0.004508,0.005497,0.00000006);
 }
 
@@ -798,6 +862,7 @@ fhDecWMissedPartnerNotPhoton->Write();
 fhDecWMissedPartnerAll->Write();
 fhDecWMissedPartnerEmin->Write();
 fhDecWMissedPartnerConv->Write();
+fhDecWMissedPartnerStack->Write();
 fhDecWMissedPartnerGeom0->Write();
 fhDecWMissedPartnerGeom1->Write();
 fhDecWMissedPartnerGeom2->Write();
@@ -913,12 +978,12 @@ Bool_t AliAnalysisTaskTaggedPhotons::IsSamePi0(const AliAODPWG4Particle *p1, con
 //______________________________________________________________________________
 Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(Float_t * pos)const{
   //calculates in which kind of fiducial area photon hit
+  Double_t phi=TMath::ATan2(pos[1],pos[0]) ;
+  Double_t z=pos[2] ;
+  while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+  while(phi<0.)phi+=TMath::TwoPi() ;
   if(fPHOS){
-    Double_t phi=TMath::ATan2(pos[1],pos[0]) ;
-    Double_t z=pos[2] ;
-    while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-    while(phi<0.)phi+=TMath::TwoPi() ;
-    //From active PHOS areat remove bands in 10 cm
+    //From active PHOS area remove bands in 10 cm
     const Double_t kphi=TMath::ATan(10./460.) ; //angular band width
     Double_t dzMax=TMath::Ceil((fZmax-z)/10.) ;
     Double_t dzMin=TMath::Ceil((z-fZmin)/10.) ;
@@ -927,7 +992,30 @@ Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(Float_t * pos)const{
     return (Int_t)TMath::Min(TMath::Min(dzMax,dzMin),TMath::Min(dphiMax,dphiMin)); 
   }
   else{//EMCAL
-    //For the moment whole EMCAL is considered as area 1
-    return 1 ;
+    //From active EMCAL area remove bands in 20 cm
+    const Double_t kphi=TMath::ATan(20./428.) ; //angular band width
+    Double_t dzMax=TMath::Ceil((fZmax-z)/20.) ;
+    Double_t dzMin=TMath::Ceil((z-fZmin)/20.) ;
+    Double_t dphiMax=TMath::Ceil((fPhimax-phi)/kphi);
+    Double_t dphiMin=TMath::Ceil((phi-fPhimin)/kphi);
+    return (Int_t)TMath::Min(TMath::Min(dzMax,dzMin),TMath::Min(dphiMax,dphiMin)); 
   }
 }
+//______________________________________________________________________________
+Bool_t  AliAnalysisTaskTaggedPhotons::TestDisp(Double_t l0, Double_t l1, Double_t e)const{
+  //test if dispersion corresponds to those of photon
+  if(fPHOS){
+    Double_t l0mean=1.38736+0.490405*TMath::Exp(-e*0.286170) ;
+    Double_t l1mean=1.09786-0.323469*TMath::Exp(-e*0.918719) ;
+    Double_t l0sigma=0.159905+0.829831/e-0.158067/e/e ;
+    Double_t l1sigma=0.133170+0.404387/e-0.0426302/e/e ;
+    Double_t c =-0.382233 ; 
+    return ((l0-l0mean)*(l0-l0mean)/l0sigma/l0sigma + (l1-l1mean)*(l1-l1mean)/l1sigma/l1sigma+c*(l0-l0mean)*(l1-l1mean)/l0sigma/l1sigma)<1. ;
+  }
+  else{ //EMCAL: not ready yet
+   return kTRUE ;
+
+  }
+
+}
+
