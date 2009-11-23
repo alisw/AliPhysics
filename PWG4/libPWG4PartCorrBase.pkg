@@ -1,7 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS = PartCorrBase/AliAODPWG4Particle.cxx PartCorrBase/AliAODPWG4ParticleCorrelation.cxx \
-       PartCorrBase/AliNeutralMesonSelection.cxx PartCorrBase/AliFidutialCut.cxx \
+SRCS = PartCorrBase/AliNeutralMesonSelection.cxx PartCorrBase/AliFidutialCut.cxx \
        PartCorrBase/AliCaloPID.cxx PartCorrBase/AliMCAnalysisUtils.cxx PartCorrBase/AliIsolationCut.cxx\
        PartCorrBase/AliAnaScale.cxx PartCorrBase/AliAnaPartCorrMaker.cxx \
        PartCorrBase/AliAnaPartCorrBaseClass.cxx PartCorrBase/AliAnalysisTaskParticleCorrelation.cxx \
