@@ -1,4 +1,4 @@
-void MakeITSRecoParam_pp2009(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult) {
+void MakeITSRecoParam_pp2009(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult, const char* cdbURI) {
 //========================================================================
 //
 // Steering macro for ITS reconstruction parameters
@@ -13,7 +13,7 @@ void MakeITSRecoParam_pp2009(AliRecoParam::EventSpecie_t default=AliRecoParam::k
 
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("raw://");
+  cdb->SetDefaultStorage(cdbURI);
   
   TObjArray *recoParamArray = new TObjArray();
 
@@ -42,27 +42,27 @@ void MakeITSRecoParam_pp2009(AliRecoParam::EventSpecie_t default=AliRecoParam::k
     //****** FIRST PHYSICS 2009 (same as COSMICS 2009) *********************
 
     // find independently ITS SA tracks 
-    param->SetSAUseAllClusters();
-    param->SetOuterStartLayerSA(AliITSgeomTGeo::GetNLayers()-2);
+    itsRecoParam->SetSAUseAllClusters();
+    itsRecoParam->SetOuterStartLayerSA(AliITSgeomTGeo::GetNLayers()-2);
 
     // to maximize efficiency
-    param->SetAllowProlongationWithEmptyRoad();
+    itsRecoParam->SetAllowProlongationWithEmptyRoad();
     
     // larger seach windows for SA (in case of large misalignments)
-    param->SetNLoopsSA(33);
-    param->SetFactorSAWindowSizes(20);
+    itsRecoParam->SetNLoopsSA(33);
+    itsRecoParam->SetFactorSAWindowSizes(20);
     
     // additional error due to misal (B off)
-    param->SetClusterMisalErrorY(1.0,1.0,1.0,1.0,1.0,1.0); // [cm]
-    param->SetClusterMisalErrorZ(1.0,1.0,1.0,1.0,1.0,1.0); // [cm]
+    itsRecoParam->SetClusterMisalErrorY(1.0,1.0,1.0,1.0,1.0,1.0); // [cm]
+    itsRecoParam->SetClusterMisalErrorZ(1.0,1.0,1.0,1.0,1.0,1.0); // [cm]
     // additional error due to misal (B on)
-    param->SetClusterMisalErrorYBOn(0.0,0.0,0.1,0.1,0.1,0.1); // [cm]
-    param->SetClusterMisalErrorZBOn(0.1,0.1,0.1,0.1,0.1,0.1); // [cm]
+    itsRecoParam->SetClusterMisalErrorYBOn(0.0,0.0,0.1,0.1,0.1,0.1); // [cm]
+    itsRecoParam->SetClusterMisalErrorZBOn(0.1,0.1,0.1,0.1,0.1,0.1); // [cm]
 
     // SDD configuration 
-    param->fUseSDDCorrectionMaps = kFALSE;
-    param->fUseSDDClusterSizeSelection=kTRUE;
-    param->fMinClusterChargeSDD=30.;
+    itsRecoParam->SetUseSDDCorrectionMaps(kFALSE);
+    itsRecoParam->SetUseSDDClusterSizeSelection(kTRUE);
+    itsRecoParam->SetMinClusterChargeSDD(30.);
   
     //******************************************************************
 
