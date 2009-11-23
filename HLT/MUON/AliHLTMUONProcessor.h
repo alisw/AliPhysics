@@ -351,6 +351,17 @@ protected:
 		) const;
 	
 	/**
+	 * Loads the appropriate field integral from the CDB based on the currently
+	 * loaded global magnetic field in TGeoGlobalMagField. If the global field is
+	 * not loaded then we try load the GRP entry to figure out the correct integral.
+	 * [out] \param bfieldintegral  Will be filled with the dipole magnetic field
+	 *       integral value to use.
+	 * \return Zero if the field integral could be found and is valid. Otherwise an
+	 *       error code is returned, which is compatible with the HLT framework.
+	 */
+	int FetchFieldIntegral(Double_t& bfieldintegral) const;
+	
+	/**
 	 * Fetches the reconstruction parameters object from the CDB for MUON.
 	 * [out] \param params  This will be filled with the reconstruction
 	 *      parameters object found if a successful status code is returned.

@@ -331,12 +331,23 @@ void AliHLTMUONTriggerRecord::Print(Option_t* option) const
 			<< setw(12) << "DetElemID" << endl;
 		for (int i = 0; i < 4; i++)
 		{
-			cout << setw(9) << i+11
-				<< setw(14) << fHit[i].X()
-				<< setw(12) << fHit[i].Y()
-				<< setw(12) << fHit[i].Z()
-				<< setw(12) << fDetElemId[i]
-				<< endl;
+			cout << setw(9) << i+11;
+			if (fDetElemId[i] != -1)
+			{
+				cout << setw(14) << fHit[i].X()
+					<< setw(12) << fHit[i].Y()
+					<< setw(12) << fHit[i].Z()
+					<< setw(12) << fDetElemId[i]
+					<< endl;
+			}
+			else
+			{
+				cout << setw(14) << "-"
+					<< setw(12) << "-"
+					<< setw(12) << "-"
+					<< setw(12) << "-"
+					<< endl;
+			}
 		}
 		cout << setw(9) << "Chamber"
 			<< setw(18+17*2) << "X bit patterns for local boards"

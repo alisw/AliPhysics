@@ -108,6 +108,11 @@ AliHLTMUONMansoTrack::AliHLTMUONMansoTrack(
 	fHit[1] = hit8;
 	fHit[2] = hit9;
 	fHit[3] = hit10;
+	for (int i = 0; i < 4; i++)
+	{
+		fRoICentre[i] = TVector3(0, 0, 0);
+		fRoIRadius[i] = -1;
+	}
 }
 
 
@@ -197,6 +202,36 @@ void AliHLTMUONMansoTrack::Print(Option_t* option) const
 		cout << "Used Zmiddle = " << fZmiddle << " cm and QBL = "
 			<< fQBL << " T.m for the momentum calculation." << endl;
 		
+		cout << "Region of interest information:" << endl;
+		streamsize w = cout.width();
+		ios::fmtflags f = cout.flags();
+		cout << setw(9) << "Chamber"
+			<< setw(12) << "X (cm)"
+			<< setw(12) << "Y (cm)"
+			<< setw(12) << "Z (cm)"
+			<< setw(12) << "Radius (cm)" << endl;
+		for (int i = 0; i < 4; i++)
+		{
+			cout << setw(9) << i+11;
+			if (fRoIRadius[i] != -1)
+			{
+				cout << setw(12) << fRoICentre[i].X()
+					<< setw(12) << fRoICentre[i].Y()
+					<< setw(12) << fRoICentre[i].Z()
+					<< setw(12) << fRoIRadius[i];
+			}
+			else
+			{
+				cout << setw(12) << "-"
+					<< setw(12) << "-"
+					<< setw(12) << "-"
+					<< setw(12) << "-";
+			}
+			cout << endl;
+		}
+		cout.width(w); // reset the field width to previous value.
+		cout.flags(f); // reset the flags to previous values.
+		
 		for (int i = 0; i < 4; i++)
 		{
 			cout << "===== Hit on chamber: " << i+7 << " =====" << endl;
@@ -269,4 +304,61 @@ bool AliHLTMUONMansoTrack::operator == (const AliHLTMUONMansoTrack& track) const
 		and fChi2 == track.fChi2 and fTrigRec == track.fTrigRec
 		and fHit[0] == track.fHit[0] and fHit[1] == track.fHit[1]
 		and fHit[2] == track.fHit[2] and fHit[3] == track.fHit[3];
+}
+
+
+void AliHLTMUONMansoTrack::SetDebugData(Float_t zmiddle, Float_t bfieldintegral)
+{
+	// Sets the extra debugging information.
+	
+	fZmiddle = zmiddle;
+	fQBL = bfieldintegral;
+}
+
+
+const TVector3& AliHLTMUONMansoTrack::RoICentre(Int_t chamber) const
+{
+	// Returns the ragion of interest centre point for a given chamber.
+	
+	if (7 <= chamber and chamber <= 10) return fRoICentre[chamber - 7];
+	
+	AliError(Form(
+		"Chamber number %d is not in the valid range [7..10].",
+		int(chamber)
+	));
+	static TVector3 zeroVector(0, 0, 0);
+	return zeroVector;
+}
+
+
+Float_t AliHLTMUONMansoTrack::RoIRadius(Int_t chamber) const
+{
+	// Returns the ragion of interest radius for a given chamber.
+	
+	if (7 <= chamber and chamber <= 10) return fRoIRadius[chamber - 7];
+	
+	AliError(Form(
+		"Chamber number %d is not in the valid range [7..10].",
+		int(chamber)
+	));
+	return -1;
+}
+
+
+void AliHLTMUONMansoTrack::SetRoI(Int_t chamber, Float_t x, Float_t y, Float_t z, Float_t r)
+{
+	// Returns the ragion of interest radius for a given chamber.
+	
+	if (7 <= chamber and chamber <= 10)
+	{
+		fRoICentre[chamber - 7] = TVector3(x, y, z);
+		fRoIRadius[chamber - 7] = r;
+	}
+	else
+	{
+		AliError(Form(
+			"Chamber number %d is not in the valid range [7..10].",
+			int(chamber)
+		));
+	}
 }

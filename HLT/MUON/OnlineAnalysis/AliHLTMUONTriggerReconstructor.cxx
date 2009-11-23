@@ -46,6 +46,7 @@
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONCalculations.h"
+#include "AliMUONConstants.h"
 #include "AliRawDataHeader.h"
 #include <vector>
 #include <cassert>
@@ -359,8 +360,8 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::SelectYPatterns(
 		// here is to perform the bitwise or to form the correct strip pattern.
 		UShort_t mergedPattern[3] = {patterns[i][0], patterns[i][1], patterns[i][2]};
 		const AliHLTMUONTriggerRecoLutRow& lutnext = fLookupTable.fRow[fCurrentCrateId][locIdnext][i][1][0];
-		const AliHLTMUONTriggerRecoLutRow& lutcurr = fLookupTable.fRow[fCurrentCrateId][locIdnext][i][1][0];
-		const AliHLTMUONTriggerRecoLutRow& lutprev = fLookupTable.fRow[fCurrentCrateId][locIdnext][i][1][0];
+		const AliHLTMUONTriggerRecoLutRow& lutcurr = fLookupTable.fRow[fCurrentCrateId][locIdcurr][i][1][0];
+		const AliHLTMUONTriggerRecoLutRow& lutprev = fLookupTable.fRow[fCurrentCrateId][locIdprev][i][1][0];
 		if (lutprev.fX == lutcurr.fX and lutprev.fY == lutcurr.fY and lutprev.fZ == lutcurr.fZ)
 		{
 			mergedPattern[0] |= patterns[i][1];
@@ -385,7 +386,7 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::SelectYPatterns(
 		else  if (xpos[i] >= 0)
 		{
 			strips[i] = mergedPattern[0];
-			locId[i] = locIdnext;
+			locId[i] = locIdprev;
 		}
 		else
 		{
@@ -927,7 +928,7 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::ProcessLocalStruct()
 				if (hitset[i]) continue;  // Leave the found hits alone.
 				if (stripPosX[i] != -1)
 				{
-					// Got X strip but no hit so Y strip is missing.
+					// Got X strip but no hit, so Y strip is missing.
 					// Thus we have a good Y coordinate but poor X.
 					const AliHLTMUONTriggerRecoLutRow& lut = GetLutRowX(stripPosX[i], i);
 					trigger.fHit[i].fFlags = lut.fIdFlags;
@@ -939,7 +940,7 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::ProcessLocalStruct()
 				}
 				else if (stripPosY[i] != -1)
 				{
-					// Got Y strip but no hit so X strip is missing.
+					// Got Y strip but no hit, so X strip is missing.
 					// Thus we have a good X coordinate but poor Y.
 					const AliHLTMUONTriggerRecoLutRow& lut =
 						fLookupTable.fRow[fCurrentCrateId][locId[i]][i][1][stripPosY[i]];
@@ -950,6 +951,41 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::ProcessLocalStruct()
 					hitset[i] = true;
 					hitCount++;
 				}
+			}
+		}
+	}
+	
+	// If 4 hits found then check if they are all good, otherwise find the 3
+	// best fitting ones.
+	if (hitCount > 3)
+	{
+		AliHLTFloat32_t dx = AliMUONConstants::TriggerNonBendingReso();
+		AliHLTFloat32_t dy = AliMUONConstants::TriggerBendingReso();
+		AliHLTMUONCalculations::SigmaX2(dx*dx);
+		AliHLTMUONCalculations::SigmaY2(dy*dy);
+		
+		AliHLTFloat32_t chi2 = AliHLTMUONCalculations::ComputeChi2(trigger, hitset);
+		if (chi2 != -1 and chi2 > 5.*4)  // check 5 sigma cut.
+		{
+			// Poor fit so look for best 3 points.
+			int worstHit = -1;
+			AliHLTFloat32_t bestchi2 = 1e38;
+			for (int j = 0; j < 4; j++)
+			{
+				bool tmphitset[4] = {true, true, true, true};
+				tmphitset[j] = false;
+				AliHLTFloat32_t tmpchi2 = AliHLTMUONCalculations::ComputeChi2(trigger, tmphitset);
+				if (tmpchi2 * 4 < chi2 * 3 and tmpchi2 < bestchi2)
+				{
+					bestchi2 = tmpchi2;
+					worstHit = j;
+				}
+			}
+			if (worstHit != -1)
+			{
+				for (int j = 0; j < 4; j++) hitset[j] = true;
+				hitset[worstHit] = false;
+				trigger.fHit[worstHit] = AliHLTMUONConstants::NilRecHitStruct();
 			}
 		}
 	}
@@ -1043,7 +1079,7 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::ProcessLocalStruct()
 			}
 			catch (...)
 			{
-				HLTError("Could not allocate buffer space for debug information.");
+				HLTError("Could not allocate more buffer space for debug information.");
 				return;
 			}
 			for (AliHLTUInt32_t i = 0; i < fInfoBufferSize; ++i) newbuf[i] = fInfoBuffer[i];

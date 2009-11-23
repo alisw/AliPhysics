@@ -1,5 +1,5 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -11,7 +11,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -167,6 +167,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	FreeMemory();
 	
 	fWarnForUnexpecedBlock = false;
+	bool makeCandidates = false;
 	ResetCanLoadFlags();
 	double zmiddle = 0;
 	double bfieldintegral = 0;
@@ -377,7 +378,13 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 			fWarnForUnexpecedBlock = true;
 			continue;
 		}
-
+		
+		if (strcmp(argv[i], "-makecandidates") == 0)
+		{
+			makeCandidates = true;
+			continue;
+		}
+		
 		HLTError("Unknown option '%s'.", argv[i]);
 		return -EINVAL;
 	}
@@ -392,6 +399,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 		return -ENOMEM;
 	}
 	fTracker->SetCallback(this);
+	fTracker->MakeCandidates(makeCandidates);
 	
 	// Set all the parameters that were found on the command line.
 	if (not fCanLoadZmiddle) AliHLTMUONCalculations::Zf(zmiddle);
@@ -552,9 +560,20 @@ int AliHLTMUONMansoTrackerFSMComponent::ReadConfigFromCDB()
 	
 	if (fCanLoadBL)
 	{
-		result = GetFloatFromTMap(map, "bfieldintegral", value, pathToEntry, "integrated magnetic field");
-		if (result != 0) return result;
-		AliHLTMUONCalculations::QBL(value);
+		Double_t bfieldintegral;
+		result = FetchFieldIntegral(bfieldintegral);
+		if (result == 0)
+		{
+			AliHLTMUONCalculations::QBL(bfieldintegral);
+		}
+		else
+		{
+			HLTWarning("Failed to load the magnetic field integral from GRP information.");
+			result = GetFloatFromTMap(map, "bfieldintegral", value, pathToEntry, "integrated magnetic field");
+			if (result != 0) return result;
+			HLTWarning(Form("Using deprecated magnetic field integral value of %f T.m.", value));
+			AliHLTMUONCalculations::QBL(value);
+		}
 	}
 	
 	if (fCanLoadA[0])
@@ -855,8 +874,43 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 	bd.fDataType = AliHLTMUONConstants::MansoTracksBlockDataType();
 	bd.fSpecification = specification;
 	outputBlocks.push_back(bd);
-	size = block.BytesUsed();
-
+	AliHLTUInt32_t totalSize = block.BytesUsed();
+	
+	if (fTracker->MakeCandidates())
+	{
+		AliHLTMUONMansoCandidatesBlockWriter candidatesBlock(outputPtr+totalSize, size-totalSize);
+		if (not candidatesBlock.InitCommonHeader())
+		{
+			HLTError("Buffer overflowed. There are only %d bytes left in the buffer,"
+				" but we need a minimum of %d bytes.",
+				size, sizeof(AliHLTMUONMansoCandidatesBlockWriter::HeaderType)
+			);
+			if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+			size = 0; // Important to tell framework that nothing was generated.
+			return -ENOBUFS;
+		}
+		
+		// Fill in the output block buffer.
+		candidatesBlock.SetNumberOfEntries(fTracker->TrackCandidatesCount());
+		for (AliHLTUInt32_t i = 0; i < fTracker->TrackCandidatesCount(); ++i)
+		{
+			candidatesBlock[i] = fTracker->TrackCandidates()[i];
+		}
+		
+		fTracker->ZeroTrackCandidatesList();
+		
+		AliHLTComponentBlockData bdc;
+		FillBlockData(bdc);
+		bdc.fPtr = outputPtr;
+		bdc.fOffset = totalSize;
+		bdc.fSize = candidatesBlock.BytesUsed();
+		bdc.fDataType = AliHLTMUONConstants::MansoCandidatesBlockDataType();
+		bdc.fSpecification = specification;
+		outputBlocks.push_back(bdc);
+		totalSize += candidatesBlock.BytesUsed();
+	}
+	
+	size = totalSize;
 	return 0;
 }
 

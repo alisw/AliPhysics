@@ -905,9 +905,20 @@ int AliHLTMUONTriggerReconstructorComponent::ReadConfigFromCDB(
 	
 	if (setBL)
 	{
-		result = GetFloatFromTMap(map, "bfieldintegral", value, pathToEntry, "integrated magnetic field");
-		if (result != 0) return result;
-		AliHLTMUONCalculations::QBL(value);
+		Double_t bfieldintegral;
+		result = FetchFieldIntegral(bfieldintegral);
+		if (result == 0)
+		{
+			AliHLTMUONCalculations::QBL(bfieldintegral);
+		}
+		else
+		{
+			HLTWarning("Failed to load the magnetic field integral from GRP information.");
+			result = GetFloatFromTMap(map, "bfieldintegral", value, pathToEntry, "integrated magnetic field");
+			if (result != 0) return result;
+			HLTWarning(Form("Using deprecated magnetic field integral value of %f T.m.", value));
+			AliHLTMUONCalculations::QBL(value);
+		}
 	}
 	
 	HLTDebug("Using the following configuration parameters:");

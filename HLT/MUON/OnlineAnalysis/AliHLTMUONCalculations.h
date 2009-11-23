@@ -61,6 +61,11 @@ public:
 			const bool hitset[4]
 		);
 	
+	static bool FitLine(
+			const AliHLTMUONTriggerRecordStruct& trigger,
+			const bool hitset[4]
+		);
+	
 	static AliHLTFloat32_t IdealZ1() { return fgIdealZ1; }
 	static void IdealZ1(AliHLTFloat32_t value) { fgIdealZ1 = value; }
 	static AliHLTFloat32_t IdealZ2() { return fgIdealZ2; }
@@ -89,6 +94,11 @@ public:
 	static AliHLTFloat32_t ComputeChi2(
 			const AliHLTFloat32_t* x, const AliHLTFloat32_t* y,
 			const AliHLTFloat32_t* z, AliHLTUInt32_t n
+		);
+	
+	static AliHLTFloat32_t ComputeChi2(
+			const AliHLTMUONTriggerRecordStruct& trigger,
+			const bool hitset[4]
 		);
 	
 	static AliHLTFloat32_t SigmaX2() { return fgSigmaX2; }

@@ -50,7 +50,10 @@ AliHLTMUONConstants::fgkNilTriggerRecordStruct = {
 };
 
 const AliHLTMUONTrigRecInfoStruct
-AliHLTMUONConstants::fgkNilTrigRecInfoStruct = {0, {0, 0, 0, 0}, 0, 0, {0, 0, 0, 0, 0}};
+AliHLTMUONConstants::fgkNilTrigRecInfoStruct = {
+	0, {0, 0, 0, 0}, 0, 0,
+	{0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}
+};
 	
 const AliHLTMUONRecHitStruct
 AliHLTMUONConstants::fgkNilRecHitStruct = {0, 0, 0, 0};
@@ -157,4 +160,4 @@ const char* AliHLTMUONConstants::fgkTriggerReconstructorCDBPath = "HLT/ConfigMUO
 const char* AliHLTMUONConstants::fgkHitReconstructorCDBPath = "HLT/ConfigMUON/HitReconstructor";
 const char* AliHLTMUONConstants::fgkMansoTrackerFSMCDBPath = "HLT/ConfigMUON/MansoTrackerFSM";
 const char* AliHLTMUONConstants::fgkDecisionComponentCDBPath = "HLT/ConfigMUON/DecisionComponent";
-
+const char* AliHLTMUONConstants::fgkFieldIntegralsCDBPath = "HLT/ConfigMUON/FieldIntegrals";

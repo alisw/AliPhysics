@@ -1,7 +1,7 @@
 #ifndef AliHLTMUONMANSOTRACKERFSMCOMPONENT_H
 #define AliHLTMUONMANSOTRACKERFSMCOMPONENT_H
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -13,7 +13,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -132,6 +132,9 @@ struct AliHLTMUONRecHitStruct;
  * \li -dumppath <i>path</i> <br>
  *      Allows one to specify the path in which to dump the received data blocks
  *      if an error occurs. <br>
+ * \li -makecandidates <br>
+ *      Indicates if the Manso track candidates data block should be generated.
+ *      This kind of information is useful for debugging. <br>
  *
  * <h2>Standard configuration:</h2>
  * This component should normally be configured with no extra options.

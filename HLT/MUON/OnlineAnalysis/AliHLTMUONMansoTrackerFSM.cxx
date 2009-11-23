@@ -1,5 +1,5 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -10,7 +10,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -30,6 +30,9 @@
 #include "AliHLTMUONCalculations.h"
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONUtils.h"
+#include "AliHLTMUONTriggerRecordsBlockStruct.h"
+#include "AliHLTMUONMansoTracksBlockStruct.h"
+#include "AliHLTMUONMansoCandidatesBlockStruct.h"
 #include <cmath>
 
 
@@ -209,6 +212,7 @@ AliHLTMUONRecHitStruct AliHLTMUONMansoTrackerFSM::AliLine::FindIntersectWithXYPl
 
 
 AliHLTMUONMansoTrackerFSM::AliHLTMUONMansoTrackerFSM() :
+	AliHLTLogging(),
 	fCallback(NULL),
 	fSm4state(kSM4Idle),
 	fSm5state(kSM5Idle),
@@ -221,9 +225,21 @@ AliHLTMUONMansoTrackerFSM::AliHLTMUONMansoTrackerFSM() :
 	fSt5rec(),
 	fFoundPoint(),
 	fTriggerId(-1),
-	fTrackId(0)
+	fTrackId(0),
+	fMakeCandidates(false),
+	fCandidatesCount(0),
+	fCandidatesSize(0),
+	fCandidates(NULL)
 {
 // Default constructor
+}
+
+
+AliHLTMUONMansoTrackerFSM::~AliHLTMUONMansoTrackerFSM()
+{
+	// Default destructor cleans up any allocated memory.
+	
+	if (fCandidates != NULL) delete [] fCandidates;
 }
 
 
@@ -274,6 +290,24 @@ void AliHLTMUONMansoTrackerFSM::FindTrack(const AliHLTMUONTriggerRecordStruct& t
 	// that method could call one of our methods again, so we need to be
 	// in a consistant internal state.
 	fSm5state = kWaitChamber10;
+	
+	if (fMakeCandidates)
+	{
+		fMc1.fCandidate = AddTrackCandidate();
+		if (fMc1.fCandidate != NULL)
+		{
+			*fMc1.fCandidate = AliHLTMUONConstants::NilMansoCandidateStruct();
+			fMc1.fCandidate->fTrack.fId = -1;
+			fMc1.fCandidate->fTrack.fTrigRec = fTriggerId;
+			fMc1.fCandidate->fTrack.fChi2 = -1;
+			fMc1.fCandidate->fZmiddle = AliHLTMUONCalculations::Zf();
+			fMc1.fCandidate->fBl = AliHLTMUONCalculations::QBL();
+			fMc1.fCandidate->fRoI[3].fX = fMc1.fRoi.Centre().fX;
+			fMc1.fCandidate->fRoI[3].fY = fMc1.fRoi.Centre().fY;
+			fMc1.fCandidate->fRoI[3].fZ = fMc1.fRoi.Centre().fZ;
+			fMc1.fCandidate->fRoI[3].fRadius = fMc1.fRoi.Radius();
+		}
+	}
 
 	AliHLTFloat32_t left, right, bottom, top;
 	fMc1.fRoi.GetBoundaryBox(left, right, bottom, top);
@@ -404,6 +438,16 @@ bool AliHLTMUONMansoTrackerFSM::FillTrackData(AliHLTMUONMansoTrackStruct& track)
 	track.fFlags = AliHLTMUONUtils::PackMansoTrackFlags(
 			AliHLTMUONCalculations::Sign(), hitset
 		);
+	
+	if (fMakeCandidates)
+	{
+		AliHLTMUONMansoCandidateStruct* candidate = fSt5rec->fTag.fCandidate;
+		if (candidate != NULL)
+		{
+			candidate->fTrack = track;
+		}
+	}
+	
 	return calculated;
 }
 
@@ -441,8 +485,8 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber7(
 	switch (fSm4state)
 	{
 	case kWaitChamber7:
-		fSm4state = kWaitMoreChamber7;
-	
+		// We switch state below.
+		
 	case kWaitMoreChamber7:
 		for (AliHLTUInt32_t j = 0; j < count; j++)
 		{
@@ -450,6 +494,9 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber7(
 			// Check that the cluster actually is in our region of interest on station 4.
 			if ( data->fRoi.Contains(cluster) )
 			{
+				// Go to next wait state only if we actually found anything in the RoI.
+				fSm4state = kWaitMoreChamber7;
+				
 				DebugTrace("Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 7.");
 				AliStation4Data* newdata = fSt4points.Add();
 				newdata->fClusterPoint = cluster;
@@ -474,9 +521,8 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber8(
 	switch (fSm4state)
 	{
 	case kWaitChamber8:
-		fSm4state = kWaitMoreChamber8;
 		fSt4chamber = kChamber8;
-	
+		
 	case kWaitMoreChamber8:
 		for (AliHLTUInt32_t j = 0; j < count; j++)
 		{
@@ -484,6 +530,9 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber8(
 			// Check that the cluster actually is in our region of interest on station 4.
 			if ( data->fRoi.Contains(cluster) )
 			{
+				// Go to next wait state only if we actually found anything in the RoI.
+				fSm4state = kWaitMoreChamber8;
+				
 				DebugTrace("Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 8.");
 				AliStation4Data* newdata = fSt4points.Add();
 				newdata->fClusterPoint = cluster;
@@ -507,9 +556,8 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber9(
 	switch (fSm5state)
 	{
 	case kWaitChamber9:
-		fSm5state = kWaitMoreChamber9;
 		fSm4state = kWaitChamber8;  // Start SM4.
-	
+		
 	case kWaitMoreChamber9:
 		for (AliHLTUInt32_t j = 0; j < count; j++)
 		{
@@ -517,10 +565,13 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber9(
 			// Check that the cluster actually is in our region of interest on station 5.
 			if ( fMc1.fRoi.Contains(cluster) )
 			{
+				// Go to next wait state only if we actually found anything in the RoI.
+				fSm5state = kWaitMoreChamber9;
+			
 				DebugTrace("Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 9.");
 				AliStation5Data* data = fSt5data.Add();
 				data->fClusterPoint = cluster;
-				ProjectToStation4(data, fgZ9);  // This adds a new request for station 4.
+				ProjectToStation4(data, fgZ9, 2);  // This adds a new request for station 4.
 			}
 		}
 		break;
@@ -540,7 +591,6 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber10(
 	switch (fSm5state)
 	{
 	case kWaitChamber10:
-		fSm5state = kWaitMoreChamber10;
 		fSm4state = kWaitChamber8;  // Start SM4.
 	
 	case kWaitMoreChamber10:
@@ -550,10 +600,13 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber10(
 			// Check that the cluster actually is in our region of interest on station 5.
 			if ( fMc1.fRoi.Contains(cluster) )
 			{
+				// Go to next wait state only if we actually found anything in the RoI.
+				fSm5state = kWaitMoreChamber10;
+				
 				DebugTrace("Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 10.");
 				AliStation5Data* data = fSt5data.Add();
 				data->fClusterPoint = cluster;
-				ProjectToStation4(data, fgZ10);  // This adds a new request for station 4.
+				ProjectToStation4(data, fgZ10, 3);  // This adds a new request for station 4.
 			}
 		}
 		break;
@@ -620,12 +673,21 @@ void AliHLTMUONMansoTrackerFSM::EndOfClustersChamber8()
 			AliStation5Data* data = fSt5data.Add();
 			data->fClusterPoint = rec->fClusterPoint;
 			data->fTag.fLine = rec->fTag.fLine;
+			data->fTag.fCandidate = rec->fTag.fCandidate;
 
 			// Rebuild a region of interest for chamber 7.
 			// Remember the parameters a and b are station specific.
 			AliHLTMUONRecHitStruct p7 = data->fTag.fLine.FindIntersectWithXYPlain( fgZ7 );
 			data->fTag.fChamber = kChamber7;
 			data->fTag.fRoi.Create(p7, fgA7, fgB7);
+			
+			if (fMakeCandidates and data->fTag.fCandidate != NULL)
+			{
+				data->fTag.fCandidate->fRoI[0].fX = data->fTag.fRoi.Centre().fX;
+				data->fTag.fCandidate->fRoI[0].fY = data->fTag.fRoi.Centre().fY;
+				data->fTag.fCandidate->fRoI[0].fZ = data->fTag.fRoi.Centre().fZ;
+				data->fTag.fCandidate->fRoI[0].fRadius = data->fTag.fRoi.Radius();
+			}
 			
 			AliHLTFloat32_t left, right, bottom, top;
 			data->fTag.fRoi.GetBoundaryBox(left, right, bottom, top);
@@ -684,12 +746,20 @@ void AliHLTMUONMansoTrackerFSM::EndOfClustersChamber10()
 		// No clusters found on chamber 10 so we need to make a request for
 		// clusters from chamber 9:
 		AliHLTMUONRecHitStruct p9 = fMc1.fLine.FindIntersectWithXYPlain( fgZ9 );
-
+		
 		// Build a region of interest for tracking station 5 (chamber 9).
 		// Remember the parameters a and b are station specific.
 		fMc1.fChamber = kChamber9;
 		fMc1.fRoi.Create(p9, fgA9, fgB9);
-
+		
+		if (fMakeCandidates and fMc1.fCandidate != NULL)
+		{
+			fMc1.fCandidate->fRoI[2].fX = fMc1.fRoi.Centre().fX;
+			fMc1.fCandidate->fRoI[2].fY = fMc1.fRoi.Centre().fY;
+			fMc1.fCandidate->fRoI[2].fZ = fMc1.fRoi.Centre().fZ;
+			fMc1.fCandidate->fRoI[2].fRadius = fMc1.fRoi.Radius();
+		}
+		
 		AliHLTFloat32_t left, right, bottom, top;
 		fMc1.fRoi.GetBoundaryBox(left, right, bottom, top);
 		RequestClusters(left, right, bottom, top, kChamber9, &fMc1);
@@ -710,7 +780,7 @@ void AliHLTMUONMansoTrackerFSM::EndOfClustersChamber10()
 
 
 void AliHLTMUONMansoTrackerFSM::ProjectToStation4(
-		AliStation5Data* data, register AliHLTFloat32_t station5z
+		AliStation5Data* data, AliHLTFloat32_t station5z, AliHLTUInt32_t chamberSt5
 	)
 {
 	// Perform chamber specific operations:
@@ -722,7 +792,9 @@ void AliHLTMUONMansoTrackerFSM::ProjectToStation4(
 		|| fSm4state == kWaitChamber7
 		|| fSm4state == kWaitMoreChamber7
 	);
+	assert( chamberSt5 == 2 or chamberSt5 == 3 );
 	AliTagData* tag = &data->fTag;
+	int chamber = 0;
 	if (fSm4state == kWaitChamber8 || fSm4state == kWaitMoreChamber8)
 	{
 		// Form the vector line between trigger station 1 and tracking station 5,
@@ -734,6 +806,7 @@ void AliHLTMUONMansoTrackerFSM::ProjectToStation4(
 		// Build a region of interest for tracking station 4.
 		tag->fChamber = kChamber8;
 		tag->fRoi.Create(intercept, fgA8, fgB8);
+		chamber = 1;
 	}
 	else
 	{
@@ -746,6 +819,33 @@ void AliHLTMUONMansoTrackerFSM::ProjectToStation4(
 		// Build a region of interest for tracking station 4.
 		tag->fChamber = kChamber7;
 		tag->fRoi.Create(intercept, fgA7, fgB7);
+		chamber = 0;
+	}
+	
+	if (fMakeCandidates)
+	{
+		// Make a copy of the track candidate if the exisiting track candidate
+		// has already had its point on the given chamber filled.
+		if (fMc1.fCandidate != NULL and
+		    fMc1.fCandidate->fTrack.fHit[chamberSt5] == AliHLTMUONConstants::NilRecHitStruct()
+		   )
+		{
+			tag->fCandidate = fMc1.fCandidate;
+		}
+		else
+		{
+			tag->fCandidate = AddTrackCandidate();
+			if (tag->fCandidate != NULL) *tag->fCandidate = *fMc1.fCandidate;
+		}
+		// Now fill the cluster point found on station 5 and RoI on station 4.
+		if (tag->fCandidate != NULL)
+		{
+			tag->fCandidate->fTrack.fHit[chamberSt5] = data->fClusterPoint;
+			tag->fCandidate->fRoI[chamber].fX = tag->fRoi.Centre().fX;
+			tag->fCandidate->fRoI[chamber].fY = tag->fRoi.Centre().fY;
+			tag->fCandidate->fRoI[chamber].fZ = tag->fRoi.Centre().fZ;
+			tag->fCandidate->fRoI[chamber].fRadius = tag->fRoi.Radius();
+		}
 	}
 
 	// Make the request for clusters from station 4.
@@ -806,3 +906,43 @@ void AliHLTMUONMansoTrackerFSM::ProcessClusters()
 		NoTrackFound();
 }
 
+
+AliHLTMUONMansoCandidateStruct* AliHLTMUONMansoTrackerFSM::AddTrackCandidate()
+{
+	// Adds a new track candidate to the fCandidates list and returns a pointer
+	// to the new structure.
+	
+	// First allocate or reallocate buffer if necessary.
+	if (fCandidates == NULL)
+	{
+		try
+		{
+			fCandidates = new AliHLTMUONMansoCandidateStruct[1024];
+		}
+		catch (...)
+		{
+			HLTError("Could not allocate buffer space for Manso track candidates.");
+			return NULL;
+		}
+		fCandidatesSize = 1024;
+	}
+	else if (fCandidatesCount >= fCandidatesSize)
+	{
+		AliHLTMUONMansoCandidateStruct* newbuf = NULL;
+		try
+		{
+			newbuf = new AliHLTMUONMansoCandidateStruct[fCandidatesSize*2];
+		}
+		catch (...)
+		{
+			HLTError("Could not allocate more buffer space for Manso track candidates.");
+			return NULL;
+		}
+		for (AliHLTUInt32_t i = 0; i < fCandidatesSize; ++i) newbuf[i] = fCandidates[i];
+		delete [] fCandidates;
+		fCandidates = newbuf;
+		fCandidatesSize = fCandidatesSize*2;
+	}
+	
+	return &fCandidates[fCandidatesCount++];
+}

@@ -27,13 +27,18 @@
 ///
 
 #include "AliHLTMUONProcessor.h"
+#include "AliHLTMUONConstants.h"
 #include "AliMUONRecoParam.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
+#include "AliGRPManager.h"
+#include "AliGRPObject.h"
+#include "AliMagF.h"
 #include "AliMpCDB.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDEStore.h"
+#include "TGeoGlobalMagField.h"
 #include "TMap.h"
 #include "TObjString.h"
 #include "TString.h"
@@ -573,6 +578,94 @@ int AliHLTMUONProcessor::GetPositiveFloatFromTMap(
 	}
 	value = val;
 	
+	return 0;
+}
+
+
+int AliHLTMUONProcessor::FetchFieldIntegral(Double_t& bfieldintegral) const
+{
+	// Fetches the correct dipole magnetic field integral to use.
+	
+	Float_t currentL3 = 0;
+	Float_t currentDip = 0;
+	
+	if (TGeoGlobalMagField::Instance() == NULL or
+	    (TGeoGlobalMagField::Instance() != NULL and TGeoGlobalMagField::Instance()->GetField() == NULL)
+	   )
+	{
+		HLTWarning("The magnetic field has not been set in TGeoGlobalMagField."
+			" Will try and load the GRP entry directly."
+		);
+		
+		AliGRPManager grpman;
+		if (not grpman.ReadGRPEntry() or grpman.GetGRPData() == NULL)
+		{
+			HLTError("GRP entry could not be loaded.");
+			return -EIO;
+		}
+		
+		const AliGRPObject* grp = grpman.GetGRPData();
+		Char_t polarityL3 = grp->GetL3Polarity();
+		Char_t polarityDip = grp->GetDipolePolarity();
+		currentL3 = grp->GetL3Current(AliGRPObject::kMean);
+		currentDip = grp->GetDipoleCurrent(AliGRPObject::kMean);
+		if (polarityL3 == AliGRPObject::GetInvalidChar())
+		{
+			HLTError("L3 polarity in GRP is invalid.");
+			return -EPROTO;
+		}
+		if (polarityDip == AliGRPObject::GetInvalidChar())
+		{
+			HLTError("Dipole polarity in GRP is invalid.");
+			return -EPROTO;
+		}
+		if (currentL3 == AliGRPObject::GetInvalidFloat())
+		{
+			HLTError("L3 current in GRP is invalid.");
+			return -EPROTO;
+		}
+		if (currentDip == AliGRPObject::GetInvalidFloat())
+		{
+			HLTError("Dipole current in GRP is invalid.");
+			return -EPROTO;
+		}
+		if (grp->IsPolarityConventionLHC())
+		{
+			currentL3 *= (polarityL3 ? -1:1);
+			currentDip *= (polarityDip ? -1:1);
+		}
+		else
+		{
+			currentL3 *= (polarityL3 ? -1:1);
+			currentDip *= (polarityDip ? 1:-1);
+		}
+	}
+	else
+	{
+		TVirtualMagField* vfield = TGeoGlobalMagField::Instance()->GetField();
+		AliMagF* field = dynamic_cast<AliMagF*>(vfield);
+		if (vfield->IsA() != AliMagF::Class() and field != NULL)
+		{
+			HLTError(Form(
+				"The magnetic field is not of type AliMagF."
+				" Do not know how to handle class of type '%s'.",
+				vfield->ClassName()
+			));
+			return -EPROTO;
+		}
+		currentL3 = field->GetCurrentSol();
+		currentDip = field->GetCurrentDip();
+	}
+	
+	const char* path = AliHLTMUONConstants::FieldIntegralsCDBPath();
+	TMap* map = NULL;
+	int result = FetchTMapFromCDB(path, map);
+	if (result != 0) return result;
+	const char* paramName = Form("L3_current=%0.2e;Dipole_current=%0.2e", currentL3, currentDip);
+	Double_t value;
+	result = GetFloatFromTMap(map, paramName, value, path);
+	if (result != 0) return result;
+	bfieldintegral = value;
 	return 0;
 }
 

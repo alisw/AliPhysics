@@ -268,6 +268,11 @@ public:
 		return fgkDecisionComponentCDBPath;
 	}
 	
+	static const char* FieldIntegralsCDBPath()
+	{
+		return fgkFieldIntegralsCDBPath;
+	}
+	
 	/// Returns the typical X (non-bending plane) resolution of the hit reconstruction (units = cm).
 	static double DefaultNonBendingReso() { return 0.144; }
 	
@@ -332,6 +337,7 @@ private:
 	static const char* fgkHitReconstructorCDBPath; // Path to CDB entry for the hit reconstruction component.
 	static const char* fgkMansoTrackerFSMCDBPath; // Path to CDB entry for the Manso FSM tracker component.
 	static const char* fgkDecisionComponentCDBPath; // Path to CDB entry for trigger decision component.
+	static const char* fgkFieldIntegralsCDBPath; // Path to CDB entry for magnetic field integrals.
 	
 	ClassDef(AliHLTMUONConstants, 0);  // Interface class to dHLT constants.
 };

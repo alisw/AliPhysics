@@ -1,7 +1,7 @@
 #ifndef ALIHLTMUONMANSOTRACKERFSM_H
 #define ALIHLTMUONMANSOTRACKERFSM_H
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -12,7 +12,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -25,26 +25,29 @@
 ///  @brief  Declaration of the AliHLTMUONMansoTrackerFSM class which implements the Manso tracking algorithm.
 ///
 
+#include "AliHLTLogging.h"
 #include "AliHLTMUONDataTypes.h"
 #include "AliHLTMUONList.h"
 #include "AliHLTMUONCountedList.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
-#include "AliHLTMUONTriggerRecordsBlockStruct.h"
-#include "AliHLTMUONMansoTracksBlockStruct.h"
 #include "AliHLTMUONMansoTrackerFSMCallback.h"
 #include <cassert>
+
+extern "C" struct AliHLTMUONTriggerRecordStruct;
+extern "C" struct AliHLTMUONMansoTrackStruct;
+extern "C" struct AliHLTMUONMansoCandidateStruct;
 
 /**
  * The AliHLTMUONMansoTrackerFSM implements the Manso tracking
  * algorithm as a finite state machine, which partially reconstructs
  * tracks in the muon spectrometer.
  */
-class AliHLTMUONMansoTrackerFSM
+class AliHLTMUONMansoTrackerFSM : public AliHLTLogging
 {
 public:
 
 	AliHLTMUONMansoTrackerFSM();
-	virtual ~AliHLTMUONMansoTrackerFSM() {}
+	virtual ~AliHLTMUONMansoTrackerFSM();
 
 
 	/* This is the starting point for the tracking algorithm. The tracker is 
@@ -96,7 +99,21 @@ public:
 	{
 		fCallback = callback;
 	};
-
+	
+	/// Returns the flag indicating if track candidates are stored.
+	bool MakeCandidates() const { return fMakeCandidates; }
+	
+	/// Sets the flag to indicate if track candidates are stored or not.
+	void MakeCandidates(bool value) { fMakeCandidates = value; }
+	
+	/// Returns the number of track candidates found in the list returned by TrackCandidates().
+	AliHLTUInt32_t TrackCandidatesCount() const { return fCandidatesCount; }
+	
+	/// Returns the array of track candidates.
+	const AliHLTMUONMansoCandidateStruct* TrackCandidates() const { return fCandidates; }
+	
+	/// Removes all the elements in the track candidates array.
+	void ZeroTrackCandidatesList() { fCandidatesCount = 0; }
 
 	/* Get and set methods for the a and b parameters used to build the region
 	   of interests. Refer to AliRegionOfInterest for details about a and b parameters.
@@ -165,6 +182,12 @@ protected:
 		bool Contains(AliHLTMUONRecHitStruct p) const;
 
 		void GetBoundaryBox(AliHLTFloat32_t& left, AliHLTFloat32_t& right, AliHLTFloat32_t& bottom, AliHLTFloat32_t& top) const;
+		
+		/// Returns the centre point of the region of interest.
+		const AliHLTMUONRecHitStruct& Centre() const { return fCentre; }
+		
+		/// Returns the radius of the region of interest disk.
+		AliHLTFloat32_t Radius() const { return fRs; }
 
 	private:
 
@@ -237,11 +260,12 @@ protected:
 	class AliTagData
 	{
 	public:
-		AliTagData() : fChamber(kChamber1), fRoi(), fLine() {};
+		AliTagData() : fChamber(kChamber1), fRoi(), fLine(), fCandidate(NULL) {};
 		
 		AliHLTMUONChamberName fChamber;     // The chamber on which the region of interest lies.
 		AliRegionOfInterest fRoi;  // Region of interest on the next station.
 		AliLine fLine;             // line between a cluster point and the previous station.
+		AliHLTMUONMansoCandidateStruct* fCandidate;  // Track candidate related to the RoI.
 	};
 	
 	class AliStation5Data
@@ -287,7 +311,7 @@ protected:
 	void EndOfClustersChamber9();
 	void EndOfClustersChamber10();
 
-	void ProjectToStation4(AliStation5Data* data, register AliHLTFloat32_t station5z);
+	void ProjectToStation4(AliStation5Data* data, AliHLTFloat32_t station5z, AliHLTUInt32_t chamberSt5);
 	void ProcessClusters();
 
 #ifdef DEBUG
@@ -335,6 +359,10 @@ protected:
 	AliHLTInt32_t fTriggerId;  // The current ID number of the trigger record being processed.
 	AliHLTInt32_t fTrackId;   // Track ID counter for the current track.
 	
+	bool fMakeCandidates;   // Indicates if the track candidates should be recorded.
+	AliHLTUInt32_t fCandidatesCount;  // The number of track candidates in the fCandidates list.
+	AliHLTUInt32_t fCandidatesSize;   // Number of elements that the fCandidates list can store.
+	AliHLTMUONMansoCandidateStruct* fCandidates;  // The track candidates buffer.
 	
 	/* To request clusters from the boundary box specified by the 'left', 'right',
 	   'top' and 'bottom' boundaries and on the given chamber use this method call.
@@ -382,6 +410,13 @@ protected:
 		assert( fCallback != NULL );
 		fCallback->NoTrackFound(this);
 	};
+	
+	/**
+	 * Adds a new track candidate to the fCandidates list and returns the pointer
+	 * to the new structure to be filled.
+	 * \returns a pointer to the new structure and NULL if we ran out of space.
+	 */
+	AliHLTMUONMansoCandidateStruct* AddTrackCandidate();
 
 private:
 

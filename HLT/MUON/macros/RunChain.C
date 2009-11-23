@@ -43,6 +43,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliRawReader.h"
 #include "AliHLTOfflineInterface.h"
+#include "AliCDBStorage.h"
 #include "AliCDBManager.h"
 #include "AliHLTSystem.h"
 #include "AliHLTConfiguration.h"
@@ -485,7 +486,12 @@ void RunChain(
 	// full chains.
 	if (buildTrackerComp)
 	{
-		AliHLTConfiguration tracker("tracker", "MUONMansoTrackerFSM", "recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22", "");
+		AliHLTConfiguration tracker(
+			"tracker",
+			"MUONMansoTrackerFSM",
+			"recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22",
+			"-makecandidates"
+		);
 	}
 	
 	// Build the dHLT trigger decision component if enabled.

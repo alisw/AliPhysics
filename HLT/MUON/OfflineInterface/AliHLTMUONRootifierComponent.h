@@ -15,6 +15,10 @@
 
 #include "AliHLTMUONProcessor.h"
 
+class AliHLTMUONEvent;
+class AliHLTMUONMansoTrack;
+extern "C" struct AliHLTMUONMansoTrackStruct;
+
 /**
  * \class AliHLTMUONRootifierComponent
  * \brief Converts dHLT raw data blocks into ROOT objects.
@@ -92,6 +96,14 @@ private:
 	// Prevent copying of these objects.
 	AliHLTMUONRootifierComponent(const AliHLTMUONRootifierComponent& /*object*/);
 	AliHLTMUONRootifierComponent& operator = (const AliHLTMUONRootifierComponent& /*object*/);
+	
+	/**
+	 * This method creates a AliHLTMUONMansoTrack object from the track structure
+	 * and adds it to the dHLT event object.
+	 * \param event  The dHLT event object.
+	 * \param track  The track structure to convert and add to the event.
+	 */
+	AliHLTMUONMansoTrack* AddTrack(AliHLTMUONEvent& event, const AliHLTMUONMansoTrackStruct& track);
 	
 	bool fWarnForUnexpecedBlock;  /// Flag indicating if we should log a warning if we got a block of an unexpected type.
 

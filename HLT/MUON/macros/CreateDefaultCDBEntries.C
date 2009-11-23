@@ -50,9 +50,9 @@ using std::endl;
 /**
  * Generates default CDB entries in the given CDB storage (local by default)
  * \param cdbPath  The path to the local storage.
- * \param version = 0,
- * \param firstRun = 0,
- * \param lastRun = AliCDBRunRange::Infinity()
+ * \param version  The version of the CDB entry.
+ * \param firstRun = The first run number for which the CDB entry is valid.
+ * \param lastRun = The last run number for which the CDB entry is valid.
  * \param zmiddle  The middle of the dipole field (cm) used by AliHLTMUONTriggerReconstructorComponent and AliHLTMUONMansoTrackerFSMComponent.
  * \param bfieldintegral  The dipole magnetic field integral (T.m) used by AliHLTMUONTriggerReconstructorComponent and AliHLTMUONMansoTrackerFSMComponent.
  * \param dccut  DC cut applied to channels by AliHLTMUONHitReconstructorComponent.

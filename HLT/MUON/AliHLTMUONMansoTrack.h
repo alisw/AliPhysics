@@ -182,6 +182,44 @@ public:
 	 * the calculation of the momentum. Value returned in (T.m) tesla metres.
 	 */
 	Float_t QBL() const { return fQBL; }
+	
+	/**
+	 * Sets the extra debugging information.
+	 * @param zmiddle  The Z coordinate of the middle of the magnetic field
+	 *     assumed during momentum calculation.
+	 * @param bfieldintegral  The integrated magnetic field strength assumed
+	 *     during momentum calculation.
+	 */
+	void SetDebugData(Float_t zmiddle, Float_t bfieldintegral);
+	
+	/**
+	 * Returns the Region of Interest (RoI) centre point for the given chamber.
+	 * \param chamber  Specifies the chamber for which to return the centre point.
+	 *                 Valid values are in the range [7..10].
+	 * \return The RoI centre or a zero vector if the RoI is not set or the
+	 *    chamber is an incorrect value.
+	 */
+	const TVector3& RoICentre(Int_t chamber) const;
+	
+	/**
+	 * Returns the Region of Interest (RoI) radius for the given chamber.
+	 * \param chamber  Specifies the chamber for which to return the radius.
+	 *                 Valid values are in the range [7..10].
+	 * \return The RoI radius or -1 if the RoI is not set or the chamber is
+	 *    an incorrect value.
+	 */
+	Float_t RoIRadius(Int_t chamber) const;
+	
+	/**
+	 * Sets the Region of Interest (RoI) on the given chamber.
+	 * \param chamber  Specifies the chamber for which to return the radius.
+	 *                 Valid values are in the range [7..10].
+	 * \param x  X coordinate of the RoI centre point.
+	 * \param y  Y coordinate of the RoI centre point.
+	 * \param z  Z coordinate of the RoI centre point.
+	 * \param r  radius of the RoI.
+	 */
+	void SetRoI(Int_t chamber, Float_t x, Float_t y, Float_t z, Float_t r);
 
 private:
 
@@ -195,6 +233,8 @@ private:
 	Float_t fChi2; ///< Chi squared of fit.
 	const AliHLTMUONTriggerRecord* fTrigRec;  ///< Corresponding trigger record.
 	const AliHLTMUONRecHit* fHit[4];   ///< Particle hits on tracking chambers 7 to 10.
+	TVector3 fRoICentre[4];  ///< Region of Interest centre points.
+	Float_t fRoIRadius[4];   ///< Region of Interest radii.
 	
 	// The following is debugging information and may not be filled if the
 	// dHLT components were not set to produce this information.
