@@ -564,7 +564,7 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
       fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
 
-  if (!dcaInfo || fDCA[5] >= fNSigmaToVertexMin && fDCA[5] <= fNSigmaToVertexMax)
+  if (!dcaInfo || (fDCA[5] >= fNSigmaToVertexMin && fDCA[5] <= fNSigmaToVertexMax))
       fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
 
