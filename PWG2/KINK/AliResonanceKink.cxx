@@ -20,16 +20,11 @@
 //        Also, depending on the analysis mode (ESD or MC), fAnalysisType in the constructor must also be changed 
 //-----------------------------------------------------------------------------------------------------------------
 
-#include "TChain.h"
-#include "TTree.h"
 #include "TH2D.h"
 #include "TParticle.h"
 #include "TDatabasePDG.h"
-#include "TParticlePDG.h"
 #include "TF1.h"
 #include "TList.h"
-#include "TString.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliResonanceKink.h"
 #include "AliESDkink.h"
@@ -67,14 +62,14 @@ fMaxDCAxy(0), fMaxDCAzaxis(0), fMinTPCclusters(0), fMaxChi2PerTPCcluster(0), fMa
    fPhiBothKinks=new TH1D("fPhiBothKinks"," ",fNbins,fLowX,fHighX);  // Applicable for phi(1020)
 
    fRecPt=new TH1D("fRecPt"," ", 50,0.0,5.0);
-   fRecEta=new TH1D("fRecEta"," ", 44,-1.1,1.1);
-   fRecEtaPt=new TH2D("fRecEtaPt"," ", 50,0.0,5.0, 44,-1.1,1.1); 
+   fRecEta=new TH1D("fRecEta"," ", 36,-0.9,0.9);
+   fRecEtaPt=new TH2D("fRecEtaPt"," ", 50,0.0,5.0, 36,-0.9,0.9); 
    fSimPt=new TH1D("fSimPt"," ", 50,0.0,5.0);
-   fSimEta=new TH1D("fSimEta"," ", 44,-1.1,1.1); 
-   fSimEtaPt=new TH2D("fSimEtaPt"," ", 50,0.0,5.0, 44,-1.1,1.1);
+   fSimEta=new TH1D("fSimEta"," ", 36,-0.9,0.9); 
+   fSimEtaPt=new TH2D("fSimEtaPt"," ", 50,0.0,5.0, 36,-0.9,0.9);
    fSimPtKink=new TH1D("fSimPtKink"," ", 50,0.0,5.0);
-   fSimEtaKink=new TH1D("fSimEtaKink"," ", 44,-1.1,1.1);
-   fSimEtaPtKink=new TH2D("fSimEtaPtKink"," ", 50,0.0,5.0, 44,-1.1,1.1);                
+   fSimEtaKink=new TH1D("fSimEtaKink"," ", 36,-0.9,0.9);
+   fSimEtaPtKink=new TH2D("fSimEtaPtKink"," ", 50,0.0,5.0, 36,-0.9,0.9);                
    fhdr=new TH1D("fhdr"," ", 100,0.0,5.0);  
    fhdz=new TH1D("fhdz"," ", 100,0.0,5.0);
    
@@ -195,30 +190,34 @@ void AliResonanceKink::InitOutputHistograms(Int_t nbins, Float_t nlowx, Float_t 
   fMCInvmassPtTrue=new TH2D("fMCInvmassPtTrue"," ",fNbins,fLowX,fHighX,100,0.0,10.0);
   
 }
-  
+
 //________________________________________________________________________
 void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent) 
 {
   // Main loop
   // Called for each event
   Int_t resonancePDGcode, antiresonancePDGcode;
+  Double_t daughter1pdgMass, daughter2pdgMass;
   
-  if (fdaughter1pdg==kdaughterKaon)  {
+  if (fdaughter1pdg==kKPlus)  {
     resonancePDGcode=fresonancePDGcode;
     antiresonancePDGcode=-fresonancePDGcode;
+    daughter1pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter1pdg)->Mass();
+    daughter2pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter2pdg)->Mass(); 
   }
-  if (fdaughter1pdg!=kdaughterKaon)  {
+  
+  if (fdaughter1pdg!=kKPlus)  {
     resonancePDGcode=-fresonancePDGcode;
     antiresonancePDGcode=fresonancePDGcode;
-  }  
+    daughter1pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter2pdg)->Mass();
+    daughter2pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter1pdg)->Mass();   
+  }  // to ensure that daughter1pdgMass has always the kaon mass
+  
   if (fdaughter1pdg==fdaughter2pdg)  {
     resonancePDGcode=fresonancePDGcode;
     antiresonancePDGcode=fresonancePDGcode;
   }  
 
-   Double_t daughter1pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter1pdg)->Mass();
-   Double_t daughter2pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter2pdg)->Mass();
-   
   if (!esd) {
     Printf("ERROR: fESD not available");
     return;
@@ -264,14 +263,14 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
        AliMCParticle   *mcDaughter1 = 0;
        AliMCParticle   *mcDaughter2 = 0;       
                
-        if(fdaughter1pdg==kdaughterKaon) {  
+        if(fdaughter1pdg==kKPlus) {  
           daughterParticle1=stack->Particle(firstD);
           daughterParticle2=stack->Particle(lastD);
 	  mcDaughter1= (AliMCParticle*) mcEvent->GetTrack(firstD);  
 	  mcDaughter2= (AliMCParticle*) mcEvent->GetTrack(lastD);  	  
         }
         else 
-	    if(fdaughter2pdg==kdaughterKaon) {
+	    if(fdaughter2pdg==kKPlus) {
               daughterParticle1=stack->Particle(lastD);
               daughterParticle2=stack->Particle(firstD); 
 	      mcDaughter1= (AliMCParticle*) mcEvent->GetTrack(lastD);
@@ -280,16 +279,16 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
 	     
        if(TMath::Abs(daughterParticle1->GetPdgCode())!=321) continue;
        
-       TParticle       *daughters1Daughter = 0;
-       TParticle       *daughters2Daughter = 0;       
-       Int_t   mcProcessDaughters1Daughter = -999;
-       Int_t   mcProcessDaughters2Daughter = -999;       
+       TParticle      * daughters1Daughter=0;
+       TParticle      * daughters2Daughter=0;       
+       Int_t mcProcessDaughters1Daughter = -999;
+       Int_t mcProcessDaughters2Daughter = -999;       
        AliMCParticle *mcDaughters1Daughter = 0;
        
        if(mcDaughter1->Charge()==0) continue;
        if(mcDaughter2->Charge()==0) continue;       //accept resonance decays in two charged daughters
 
-       Int_t nDecayKaonDaughter = -99; 
+       Int_t nDecayKaonDaughter=-99; 
        for(Int_t ia=0; ia<daughterParticle1->GetNDaughters(); ia++) {
        if(((daughterParticle1->GetFirstDaughter()+ia)>0)&&((daughterParticle1->GetFirstDaughter()+ia)<stack->GetNtrack())) {
 	   daughters1Daughter=stack->Particle(daughterParticle1->GetFirstDaughter()+ia);
@@ -301,7 +300,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
         }
        }
        
-       Int_t nProcessDaughter = -99; 
+       Int_t nProcessDaughter=-99; 
        for(Int_t ib=0; ib<daughterParticle2->GetNDaughters(); ib++) {
         if(((daughterParticle2->GetFirstDaughter()+ib)>0)&&((daughterParticle2->GetFirstDaughter()+ib)<stack->GetNtrack())) {
 	   daughters2Daughter=stack->Particle(daughterParticle2->GetFirstDaughter()+ib);
@@ -313,7 +312,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
         }
        }  
        
-       Int_t numberOfCharged = 0;
+       Int_t numberOfCharged=0;
        if((mcProcessDaughters1Daughter==4)&&(nDecayKaonDaughter>=0)) {
          for(Int_t ic=nDecayKaonDaughter; ic<=daughterParticle1->GetLastDaughter(); ic++) {
 	   if ((ic>=0)&&(ic<stack->GetNtrack())) mcDaughters1Daughter= dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(ic));
@@ -322,14 +321,14 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
          }
        }
        
+       	 if(numberOfCharged>=2) continue; // leave out kaon decays to more than one charged daughter
+	 
          if ((particle->Pt()>0.25)&&(TMath::Abs(particle->Eta())<0.9)) {
 
          fSimEta->Fill(particle->Eta());
 	 fSimEtaPt->Fill(particle->Pt(), particle->Eta());
 	 fSimPt->Fill(particle->Pt());
-         fMCInvmassPtTrue->Fill(particle->GetMass(), particle->Pt());
-	 if(numberOfCharged>=2) continue; // leave out kaon decays to more than one charged daughter
-	   
+         fMCInvmassPtTrue->Fill(particle->GetMass(), particle->Pt());	   
 
          if((daughterParticle1->Pt()>0.25)&&(TMath::Abs(daughterParticle1->Eta())<0.9)&&(daughterParticle2->Pt()>0.25)&&(TMath::Abs(daughterParticle2->Eta())<0.9)) {
 	   if((mcProcessDaughters1Daughter==4)&&(daughters1Daughter->R()>120.)&&(daughters1Daughter->R()<220.)&&( (nProcessDaughter<0)||((daughters2Daughter->R()>120.)&&(nProcessDaughter>0)))) { //below are the findable
@@ -389,10 +388,17 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
     Int_t mumpdgpos = mumpos->GetPdgCode();
     
     Int_t indexKinkPos=trackpos->GetKinkIndex(0);
-    Bool_t posKaonKinkFlag=0;
-    if(indexKinkPos<0) posKaonKinkFlag=IsKink(esd, indexKinkPos, posTrackMom);
     
-    if(posKaonKinkFlag==1) anp4pos.SetVectM(posTrackMom,daughter1pdgMass);
+    if(indexKinkPos>0) continue;
+    
+    Bool_t posKaonKinkFlag=0;
+    
+    if(indexKinkPos<0) {
+      posKaonKinkFlag=IsKink(esd, indexKinkPos, posTrackMom);
+    
+      if(posKaonKinkFlag==1) anp4pos.SetVectM(posTrackMom,daughter1pdgMass);
+      if(posKaonKinkFlag==0) continue;
+    }
     
     if(indexKinkPos==0) {
 
@@ -429,10 +435,17 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
         Int_t mumpdgneg = mumneg->GetPdgCode();
 	
 	Int_t indexKinkNeg=trackneg->GetKinkIndex(0);
-	Bool_t negKaonKinkFlag=0;
-	if(indexKinkNeg<0) negKaonKinkFlag=IsKink(esd, indexKinkNeg, negTrackMom);
 	
-	if(negKaonKinkFlag==1) p4neg.SetVectM(negTrackMom,daughter1pdgMass);
+	if(indexKinkNeg>0) continue;
+	
+	Bool_t negKaonKinkFlag=0;
+	
+	if(indexKinkNeg<0) {
+	  negKaonKinkFlag=IsKink(esd, indexKinkNeg, negTrackMom);
+	
+	  if(negKaonKinkFlag==1) p4neg.SetVectM(negTrackMom,daughter1pdgMass);
+	  if(negKaonKinkFlag==0) continue;
+	}
 	
 	if(indexKinkNeg==0)  {
  
@@ -445,23 +458,29 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
 	
 	Double_t openingAngle=(ptrackpos[0]*ptrackneg[0]+ptrackpos[1]*ptrackneg[1]+ptrackpos[2]*ptrackneg[2])/(posTrackMom.Mag()*negTrackMom.Mag());
 
-	if((posKaonKinkFlag==1)&&(negKaonKinkFlag==1)) {
-	 p4comb=anp4pos;
-	 p4comb+=p4neg;
-	 if(openingAngle>0.6) fPhiBothKinks->Fill(p4comb.M());
+        if((posKaonKinkFlag==1)&&(negKaonKinkFlag==1)) {
+	  p4comb=anp4pos;
+	  p4comb+=p4neg;
+	  if((p4comb.Vect().Pt()<=0.25)&&(TMath::Abs(anp4pos.Vect().Eta())<0.9)&&(TMath::Abs(p4neg.Vect().Eta())<0.9)&&(p4comb.Vect().Eta()<0.9)) {	  
+	    if(openingAngle>0.6) fPhiBothKinks->Fill(p4comb.M());
+	  }
 	}
 		
 	if(negKaonKinkFlag==1) {
 	  p4comb=p4pos;
           p4comb+=p4neg;
-	  fInvariantMass->Fill(p4comb.M());
-	  fInvmassPt->Fill(p4comb.M(), p4comb.Vect().Pt());
-	  if ((mumpdgpos==(antiresonancePDGcode))&&(mumpdgneg==(antiresonancePDGcode))&&(mumlabelpos==mumlabelneg)
-          &&(pdgpos==fdaughter2pdg)&&(pdgneg==(-fdaughter1pdg))&&(TMath::Abs(trackpos->GetLabel())>=0)&&(TMath::Abs(trackneg->GetLabel())>=0)&&(mumlabelpos>=0)&&(mumlabelneg>=0)) {
-            fOpeningAngle->Fill(openingAngle);
-            fInvMassTrue->Fill(p4comb.M());
-	    fInvmassPtTrue->Fill(p4comb.M(), p4comb.Vect().Pt());
-	    if((TMath::Abs(p4pos.Vect().Eta())<1.1)&&(TMath::Abs(p4neg.Vect().Eta())<1.1)&&(p4comb.Vect().Eta()<1.1)) {
+	  
+	  if(p4comb.Vect().Pt()<=0.25) continue;
+	  
+	  if((TMath::Abs(p4pos.Vect().Eta())<0.9)&&(TMath::Abs(p4neg.Vect().Eta())<0.9)&&(p4comb.Vect().Eta()<0.9)) {	  
+	    fInvariantMass->Fill(p4comb.M());
+	    fInvmassPt->Fill(p4comb.M(), p4comb.Vect().Pt());
+	    if ((mumpdgpos==(antiresonancePDGcode))&&(mumpdgneg==(antiresonancePDGcode))&&(mumlabelpos==mumlabelneg)
+            &&(pdgpos==fdaughter2pdg)&&(pdgneg==(-fdaughter1pdg))&&(TMath::Abs(trackpos->GetLabel())>=0)&&(TMath::Abs(trackneg->GetLabel())>=0)&&(mumlabelpos>=0)&&(mumlabelneg>=0)) {
+              fOpeningAngle->Fill(openingAngle);
+              fInvMassTrue->Fill(p4comb.M());
+	      fInvmassPtTrue->Fill(p4comb.M(), p4comb.Vect().Pt());
+
 	      fRecPt->Fill(p4comb.Vect().Pt());
 	      fRecEta->Fill(p4comb.Vect().Eta());
 	      fRecEtaPt->Fill(p4comb.Vect().Perp(),p4comb.Vect().Eta());
@@ -475,17 +494,21 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
 	if(posKaonKinkFlag==1) {
           anp4comb=anp4pos;
           anp4comb+=anp4neg;  
-	  fInvariantMass->Fill(anp4comb.M());
-	  fInvmassPt->Fill(anp4comb.M(), anp4comb.Vect().Pt());
-	  if ((mumpdgpos==resonancePDGcode)&&(mumpdgneg==resonancePDGcode)&&(mumlabelpos==mumlabelneg)
-          &&(pdgpos==fdaughter1pdg)&&(pdgneg==(-fdaughter2pdg))&&(TMath::Abs(trackpos->GetLabel())>=0)&&(TMath::Abs(trackneg->GetLabel())>=0)&&(mumlabelpos>=0)  &&(mumlabelneg>=0)) {
-            fOpeningAngle->Fill(openingAngle);
-            fInvMassTrue->Fill(p4comb.M());
-	    fInvmassPtTrue->Fill(anp4comb.M(), anp4comb.Vect().Pt());
-            if((TMath::Abs(anp4neg.Vect().Eta())<1.1)&&(TMath::Abs(anp4pos.Vect().Eta())<1.1)&&(anp4comb.Vect().Eta()<1.1)) {	
-	     fRecPt->Fill(anp4comb.Vect().Pt());
-	     fRecEta->Fill(anp4comb.Vect().Eta());
-	     fRecEtaPt->Fill(anp4comb.Vect().Pt(), anp4comb.Vect().Eta());
+	  
+	  if(anp4comb.Vect().Pt()<=0.25) continue;	  
+	  
+          if((TMath::Abs(anp4neg.Vect().Eta())<0.9)&&(TMath::Abs(anp4pos.Vect().Eta())<0.9)&&(anp4comb.Vect().Eta()<0.9)) {	  
+	    fInvariantMass->Fill(anp4comb.M());
+	    fInvmassPt->Fill(anp4comb.M(), anp4comb.Vect().Pt());
+	    if ((mumpdgpos==resonancePDGcode)&&(mumpdgneg==resonancePDGcode)&&(mumlabelpos==mumlabelneg)
+            &&(pdgpos==fdaughter1pdg)&&(pdgneg==(-fdaughter2pdg))&&(TMath::Abs(trackpos->GetLabel())>=0)&&(TMath::Abs(trackneg->GetLabel())>=0)&&(mumlabelpos>=0)  &&(mumlabelneg>=0)) {
+              fOpeningAngle->Fill(openingAngle);
+              fInvMassTrue->Fill(anp4comb.M());
+	      fInvmassPtTrue->Fill(anp4comb.M(), anp4comb.Vect().Pt());
+ 	
+	      fRecPt->Fill(anp4comb.Vect().Pt());
+	      fRecEta->Fill(anp4comb.Vect().Eta());
+	      fRecEtaPt->Fill(anp4comb.Vect().Pt(), anp4comb.Vect().Eta());
 	   }
 
          }
@@ -585,7 +608,7 @@ const AliESDVertex* AliResonanceKink::GetEventVertex(const AliESDEvent* esd) con
       return kFALSE;
   }
   
-  if(gPt < fMinPtTrackCut) {
+  if(gPt <= fMinPtTrackCut) {
       if (fDebug > 1) Printf("IsAcceptedKink: Track rejected because it has a min value of pt of %lf (min. requested: %lf)", gPt, fMinPtTrackCut);
       return kFALSE;
   } 
@@ -693,7 +716,7 @@ Bool_t AliResonanceKink::IsKink(AliESDEvent *localesd, Int_t kinkIndex, TVector3
          Float_t p3Daughter=TMath::Sqrt(((p1XM-p2XM)*(p1XM-p2XM))+((p1YM-p2YM)*(p1YM-p2YM))+((p1ZM-p2ZM)*(p1ZM-p2ZM)));
          Double_t invariantMassKmu= TMath::Sqrt((energyDaughterMu+p3Daughter)*(energyDaughterMu+p3Daughter)-motherMfromKink.Mag()*motherMfromKink.Mag());
 
-         if((kinkAngle>maxDecAngpimu)&&(qt>0.05)&&(qt<0.25)&&((kink->GetR()>110.)&&(kink->GetR()<230.))&&(TMath::Abs(trackMom.Eta())<1.1)&&(invariantMassKmu<0.6)) {
+         if((kinkAngle>maxDecAngpimu)&&(qt>0.05)&&(qt<0.25)&&((kink->GetR()>120.)&&(kink->GetR()<220.))&&(TMath::Abs(trackMom.Eta())<0.9)&&(invariantMassKmu<0.6)) {
 
            if(trackMom.Mag()<=1.1) {
 		return kTRUE;

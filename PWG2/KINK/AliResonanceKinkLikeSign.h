@@ -10,32 +10,114 @@
 //        kaon-kink in their decay products. 
 //        Author: Paraskevi Ganoti, University of Athens (pganoti@phys.uoa.gr)
 //---------------------------------------------------------------------------------
+
+#include "AliAnalysisTaskSE.h"
+#include "TVector3.h"
+
 class TF1;
-class TTree;
+class TH1D;
+class TH2D;
+class AliESDtrack;
+class AliESDVertex;
 class AliESDEvent;
-class AliAnalysisTaskSE;
 
 class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
  public:
-  AliResonanceKinkLikeSign();
-  AliResonanceKinkLikeSign(const char *name);
+  AliResonanceKinkLikeSign(const char *name = "AliResonanceKinkLikeSign");
   virtual ~AliResonanceKinkLikeSign() {}
   
-  virtual void   ConnectInputData(Option_t *option);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
+  virtual void   Terminate(Option_t *);
   
+  void SetPDGCodes(Int_t d1, Int_t d2) {fdaughter1pdg=d1; fdaughter2pdg=d2;}
+  void SetHistoSettings(Int_t nbins, Float_t nlowx, Float_t nhighx) {fnbins=nbins; fnlowx=nlowx; fnhighx=nhighx;}
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack) const ; 
   const AliESDVertex *GetEventVertex(const AliESDEvent* esd) const;
+  void SetDebugLevel(Int_t level) {fDebug = level;}
+  Bool_t IsAcceptedForKink(AliESDEvent *localesd, const AliESDVertex *localvertex, AliESDtrack *localtrack);
+  Bool_t IsAcceptedForTrack(AliESDEvent *localesd, const AliESDVertex *localvertex, AliESDtrack *localtrack);
+  Bool_t IsKink(AliESDEvent *localesd, Int_t kinkIndex, TVector3 trackMom); 
+  
+  void SetMaxNsigmaToVertex(Float_t maxNSigmaToVertex) {
+   fMaxNSigmaToVertex=maxNSigmaToVertex;
+  }
+  Float_t GetMaxNsigmaToVertex() const {return fMaxNSigmaToVertex;} 
+  
+  void SetPtTrackCut(Double_t minPtTrackCut) {
+   fMinPtTrackCut=minPtTrackCut;
+  }
+  Double_t GetPtTrackCut() const {return fMinPtTrackCut;} 
+  
+  void SetMaxDCAxy(Double_t maxDCAxy) {
+   fMaxDCAxy=maxDCAxy;
+  }
+  Double_t GetMaxDCAxy() const {return fMaxDCAxy;}
+  
+  void SetMaxDCAzaxis(Double_t maxDCAzaxis) {
+   fMaxDCAzaxis=maxDCAzaxis;
+  }
+  Double_t GetMaxDCAzaxis() const {return fMaxDCAzaxis;}   
+  
+  void SetMinTPCclusters(Int_t minTPCclusters) {
+   fMinTPCclusters=minTPCclusters;
+  }
+  Int_t GetMinTPCclusters() const {return fMinTPCclusters;}    
+  
+  void SetMaxChi2PerTPCcluster(Double_t maxChi2PerTPCcluster) {
+   fMaxChi2PerTPCcluster=maxChi2PerTPCcluster;
+  }
+  Double_t GetMaxChi2PerTPCcluster() const {return fMaxChi2PerTPCcluster;} 
+  
+  void SetMaxCov0(Double_t maxCov0) {
+   fMaxCov0=maxCov0;
+  }
+  Double_t GetMaxCov0() const {return fMaxCov0;}     
+  
+  void SetMaxCov2(Double_t maxCov2) {
+   fMaxCov2=maxCov2;
+  }
+  Double_t GetMaxCov2() const {return fMaxCov2;}   
+  
+  void SetMaxCov5(Double_t maxCov5) {
+   fMaxCov5=maxCov5;
+  }
+  Double_t GetMaxCov5() const {return fMaxCov5;}   
+  
+  void SetMaxCov9(Double_t maxCov9) {
+   fMaxCov9=maxCov9;
+  }
+  Double_t GetMaxCov9() const {return fMaxCov9;}   
+  
+  void SetMaxCov14(Double_t maxCov14) {
+   fMaxCov14=maxCov14;
+  }
+  Double_t GetMaxCov14() const {return fMaxCov14;}      
   
  private:
-  AliESDEvent *fESD;    //! ESD object
-  TList       *fListOfHistos; //! List 
+  Int_t       fDebug;        //  Debug flag
+ // AliESDEvent *fESD;    // ESD object
+  TList       *fListOfHistos; // List 
   TF1         *f1; //upper limit curve for the decay K->mu
   TF1         *f2;  //upper limit curve for the decay pi->mu
-  TH1D        *fPosKaonLikeSign; //! negative spectrum
-  TH2D        *fLikeSignInvmassPt; //! negative spectrum
-  
+  TH1D        *fPosKaonLikeSign; // negative spectrum
+  TH2D        *fLikeSignInvmassPt; // negative spectrum
+  Float_t     fMaxNSigmaToVertex; // standard cut to select primary tracks
+  Double_t    fMinPtTrackCut; // lower pt cut for the tracks
+  Double_t    fMaxDCAxy; // impact parameter in the xy plane
+  Double_t    fMaxDCAzaxis; // impact parameter in the z axis
+  Int_t       fMinTPCclusters; // standard cut for the TPC clusters
+  Double_t    fMaxChi2PerTPCcluster; // standard cut for the chi2 of the TPC clusters
+  Double_t    fMaxCov0;  // standard cut
+  Double_t    fMaxCov2; // standard cut
+  Double_t    fMaxCov5; // standard cut
+  Double_t    fMaxCov9; // standard cut
+  Double_t    fMaxCov14; // standard cut
+  Int_t       fdaughter1pdg; // pdg code of the resonance's first daughter
+  Int_t       fdaughter2pdg;  // pdg code of the resonance's second daughter  
+  Int_t       fnbins; // Inv mass histo number of bins
+  Float_t     fnlowx; // Inv mass histo lower limit
+  Float_t     fnhighx; // Inv mass histo upper limit
   AliResonanceKinkLikeSign(const AliResonanceKinkLikeSign&); // not implemented
   AliResonanceKinkLikeSign& operator=(const AliResonanceKinkLikeSign&); // not implemented
 

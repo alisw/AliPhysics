@@ -9,7 +9,9 @@
 //        for analysing resonances having one kaon kink
 //Author: Paraskevi Ganoti, University of Athens (pganoti@phys.uoa.gr)
 //------------------------------------------------------------------------------
+
 #include "TVector3.h"
+
 class TF1;
 class TH1D;
 class TH2D;
@@ -24,7 +26,6 @@ class AliResonanceKink : public TObject {
  public:
  
   enum ResonanceType {kPhi=333, kKstar0=313, kLambda1520=3124};
-  enum DaughterType {kdaughterPion=211, kdaughterKaon=321, kdaughterProton=2212};
   
   AliResonanceKink();
   AliResonanceKink(Int_t nbins, Float_t nlowx, Float_t nhighx, Int_t daughter1, Int_t daughter2, Int_t resonancePDG);
