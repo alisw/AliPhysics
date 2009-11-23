@@ -451,3 +451,19 @@ void AliCFContainer::SetRangeUser(Double_t* varMin, Double_t* varMax, Int_t iste
   }
   ((AliCFGridSparse*)fGrid[istep])->SetRangeUser(varMin,varMax);
 }
+
+//_____________________________________________________________________
+void AliCFContainer::Print(const Option_t*) const {
+  AliInfo("====================================================================================");
+  AliInfo(Form("AliCFContainer : name = %s   title = %s",GetName(),GetTitle()));
+  AliInfo(Form("number of steps \t %d",GetNStep()));
+  for (Int_t iStep=0;iStep<GetNStep();iStep++) AliInfo(Form("step %d \t -> %s",iStep,GetStepTitle(iStep)));
+  AliInfo(Form("number of variables \t %d",GetNVar()));
+  for (Int_t iVar=0;iVar<GetNVar();iVar++) {
+    Double_t *binLimits = new Double_t[GetNBins(iVar)+1];
+    GetBinLimits(iVar,binLimits);
+    AliInfo(Form("variable %d \t -> %s : %d bins in [%f,%f]",iVar,GetVarTitle(iVar),GetNBins(iVar),binLimits[0],binLimits[GetNBins(iVar)]));
+    delete binLimits;
+  }
+  AliInfo("====================================================================================");
+}

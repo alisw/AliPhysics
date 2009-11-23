@@ -44,6 +44,8 @@ class AliCFContainer : public AliCFFrame
   virtual Float_t    GetBinCenter(Int_t ivar,Int_t ibin)             const {return fGrid[0]->GetBinCenter(ivar,ibin);}
   virtual Float_t    GetBinSize  (Int_t ivar,Int_t ibin)             const {return fGrid[0]->GetBinSize  (ivar,ibin);}
 
+  virtual void       Print(const Option_t*) const ;
+
   //virtual void       GetBinCenters(const Int_t *ibin, const Double_t *binCenter) const {return fGrid[0]->GetBinCenters(ibin,binCenter);}
   //virtual void       GetBinSizes(const Int_t *ibin, const Double_t *binSizes)    const {return fGrid[0]->GetBinSizes(ibin,binSizes);}
 
