@@ -438,6 +438,11 @@ void AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
   Bool_t isESDTrack = strcmp(obj->ClassName(),"AliESDtrack") == 0 ? kTRUE : kFALSE ;
   Bool_t isAODTrack = strcmp(obj->ClassName(),"AliAODTrack") == 0 ? kTRUE : kFALSE ;
 
+  if (!(isESDTrack || isAODTrack)) {
+    AliError("object must be an ESDtrack or an AODtrack !");
+    return;
+  }
+
   AliESDtrack * esdTrack = 0x0 ;
   AliAODTrack * aodTrack = 0x0 ; 
   if (isESDTrack) esdTrack = dynamic_cast<AliESDtrack*>(obj);
