@@ -1742,7 +1742,7 @@ Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t
   if (mode==1){
     // TPC-ITS mode
     Double_t dist=0;
-    result=   fDButil->GetTime0TPCITS(dist, run, timeStamp);
+    result= -fDButil->GetTime0TPCITS(dist, run, timeStamp)*fParam->GetDriftV()/1000000.;
   }
   return result;
 
