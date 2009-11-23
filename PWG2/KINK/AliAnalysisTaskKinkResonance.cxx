@@ -16,16 +16,11 @@
 //        Example of an analysis task for reconstructing resonances having at least one kaon-kink in their decay 
 //        products. 
 //-----------------------------------------------------------------------------------------------------------------
-#include "TChain.h"
-#include "TTree.h"
-#include "TH2D.h"
 
-#include "AliAnalysisManager.h"
-#include "AliMCEvent.h"
-#include "AliVEvent.h"
 #include "AliESDEvent.h"
-#include "AliResonanceKink.h"
+
 #include "AliAnalysisTaskKinkResonance.h"
+#include "AliResonanceKink.h"
 
 ClassImp(AliAnalysisTaskKinkResonance)
 

@@ -10,11 +10,10 @@
 //Author: Paraskevi Ganoti, University of Athens (pganoti@phys.uoa.gr)
 //------------------------------------------------------------------------------
 
-class TList;
-class AliResonanceKink;
-class TH1D;
-
 #include "AliAnalysisTaskSE.h"
+
+class AliResonanceKink;
+class TList;
 
 class AliAnalysisTaskKinkResonance : public AliAnalysisTaskSE {
  public:
