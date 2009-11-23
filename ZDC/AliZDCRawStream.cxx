@@ -71,6 +71,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fIsScHeaderRead(kFALSE),
   fScStartCounter(0),
   fScEvCounter(0),
+  fIsScalerWord(kFALSE),
   fDetPattern(0),
   fTrigCountNWords(0),
   fIsTriggerScaler(kFALSE),
@@ -155,6 +156,7 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fIsScHeaderRead(stream.fIsScHeaderRead),
   fScStartCounter(stream.fScStartCounter),
   fScEvCounter(stream.fScEvCounter),
+  fIsScalerWord(stream.fIsScalerWord),
   fDetPattern(stream.fDetPattern),
   fTrigCountNWords(stream.fTrigCountNWords),
   fIsTriggerScaler(stream.fIsTriggerScaler),
@@ -353,7 +355,7 @@ Bool_t AliZDCRawStream::Next()
   Int_t kFirstADCGeo=0, kLastADCGeo=3, kScalerGeo=8, kPUGeo=29, kTrigScales=30, kTrigHistory=31;
   fIsHeaderMapping = kFALSE; fIsChMapping = kFALSE; 
   fIsADCHeader = kFALSE; fIsADCDataWord = kFALSE; fIsADCEOB = kFALSE;
-  fIsUnderflow = kFALSE; fIsOverflow = kFALSE; 
+  fIsUnderflow = kFALSE; fIsOverflow = kFALSE; fIsScalerWord = kFALSE;
   fSector[0] = fSector[1] = -1;
 //  fTrigCountNWords = 9; fTrigHistNWords = 2;
   for(Int_t kl=0; kl<4; kl++) fCPTInput[kl] = 0;
@@ -782,7 +784,7 @@ Bool_t AliZDCRawStream::Next()
     // ********************************** VME SCALER DATA **********************************
     //  Reading VME scaler data 
     if(fIsScHeaderRead && fPosition>=fScStartCounter+1){ // *** Scaler word
-      fADCModule = kScalerGeo; fIsADCDataWord = kFALSE;	
+      fADCModule=kScalerGeo; fIsADCDataWord=kFALSE; fIsScalerWord=kTRUE;
       fScEvCounter = fBuffer;
       Int_t nWords = (Int_t) (fScNWords);
       if(fPosition == fScStartCounter+nWords) fIsScHeaderRead = kFALSE;

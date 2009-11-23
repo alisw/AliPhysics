@@ -129,6 +129,7 @@ class AliZDCRawStream: public TObject {
     UInt_t GetTriggerCount()    const {return fScEvCounter;}
     Bool_t IsScHeaderRead()     const {return fIsScHeaderRead;}
     Bool_t IsScEventGood()      const {return fIsScEventGood;}
+    Bool_t IsScalerWord()       const {return fIsScalerWord;}
     
     UInt_t GetDetectorPattern() const {return fDetPattern;}
     
@@ -204,6 +205,7 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsScHeaderRead;  // true if scaler header is read
     Int_t  fScStartCounter;  // position in the buffer where scaler data begins
     UInt_t fScEvCounter;     // event counter
+    Bool_t fIsScalerWord;    // is scaler word (not header)
     
     // Pattern Unit
     UInt_t fDetPattern;  // word from the pattern unit
@@ -249,7 +251,7 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsL0BitSet;    // true if L0 bit in history words = 1 
     Bool_t fIsPileUpEvent; // true if pile up bits in history words = 0
     
-    ClassDef(AliZDCRawStream, 15)    // class for reading ZDC raw data
+    ClassDef(AliZDCRawStream, 16)    // class for reading ZDC raw data
 };
 
 #endif

@@ -474,9 +474,12 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
    }// ADC DATA
    // ***************************** Reading Scaler
    else if(rawData.GetADCModule()==kScalerGeo){
-     if(rawData.IsScHeaderRead()==kTRUE && rawData.IsScEventGood()==kTRUE){
+     if(rawData.IsScalerWord()==kTRUE && rawData.IsScEventGood()==kTRUE){
        isScalerOn = kTRUE;
        scalerData[jsc] = rawData.GetTriggerCount();
+       // Ch. debug
+       //printf("   Reconstructed VME Scaler: %d %d  ",jsc,scalerData[jsc]);
+       //
        jsc++;
      }
    }// VME SCALER DATA
