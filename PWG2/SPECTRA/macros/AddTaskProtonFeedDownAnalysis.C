@@ -33,7 +33,7 @@ AliProtonFeedDownAnalysisTask* AddTaskProtonFeedDownAnalysis(const char *analysi
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  outputFileName += ":PWG2BaryonRatio_outputAliProtonFeedDownAnalysisTask.root";
+  outputFileName += ":PWG2BaryonRatioFeedDownAnalysis";
   AliAnalysisDataContainer *cout_proton = mgr->CreateContainer("protonFeedDown", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(taskproton, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskproton, 0, cout_proton);
