@@ -257,7 +257,11 @@ void AliCFManager::SetParticleCutsList(Int_t isel, TObjArray* array) {
   
   Int_t nstep = fNStepPart ;
   
-  if (!fPartCutList) fPartCutList = new TObjArray*[nstep] ;
+  if (!fPartCutList) {
+    fPartCutList = new TObjArray*[nstep] ;
+    for (Int_t istep = 0; istep < nstep; istep++)  fPartCutList[istep] = 0; 
+  }
+  
   if (isel >= nstep) {
     AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,nstep));
     return;
