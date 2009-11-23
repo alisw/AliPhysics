@@ -66,14 +66,14 @@ class AliCdfJetFinder : public AliJetFinder
     Int_t fMinJetParticles;   // leading jet must contain AT LEAST fMinJetParticles
     Double_t fJetPtCut;       // leading jet must have AT LEAST fJetPtCut
 
-    varContainer **fVectParticle; //! container for Particles
-    varContainer **fVectJet;      //! container for Jets
+    varContainer **fVectParticle; // container for Particles
+    varContainer **fVectJet;      // container for Jets
 
-    Double_t *fPtArray;  //! momentum array
-    Int_t    *fIdxArray;  //! index array of sorted pts
+    Double_t *fPtArray;  // momentum array
+    Int_t    *fIdxArray;  // index array of sorted pts
 
 
-    ClassDef(AliCdfJetFinder,2)
+    ClassDef(AliCdfJetFinder,1)
    };
 #endif
 
