@@ -60,7 +60,7 @@ AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) :
   fUpTestValue(0x0),
   fImage(new TCanvas*[AliRecoParam::kNSpecies]), 
   fPrintImage(kTRUE), 
-  fExternParamList(NULL)
+  fExternParamList(new TList())
 {
   // ctor
   fLowTestValue = new Float_t[AliQAv1::kNBIT] ; 
@@ -100,7 +100,7 @@ AliQACheckerBase::AliQACheckerBase(const AliQACheckerBase& qac) :
   fUpTestValue(qac.fLowTestValue), 
   fImage(NULL),  
   fPrintImage(kTRUE), 
-  fExternParamList(NULL)  
+  fExternParamList(new TList())  
 {
   //copy ctor
   for (Int_t index = 0 ; index < AliQAv1::kNBIT ; index++) {
@@ -112,7 +112,6 @@ AliQACheckerBase::AliQACheckerBase(const AliQACheckerBase& qac) :
       fRefOCDBSubDir[specie] = qac.fRefOCDBSubDir[specie] ; 
     }
   if (qac.fExternParamList) {
-    fExternParamList = new TList() ;
     TIter next(qac.fExternParamList) ; 
     TParameter<double> * p ; 
     while ( (p = (TParameter<double>*)next()) )
@@ -402,7 +401,7 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
       TPaveText someText(0.015, 0.015, 0.98, 0.98) ;
       someText.AddText(title) ;
       someText.Draw() ; 
-      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat())) ; 
+      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
       fImage[esIndex]->Clear() ; 
       Int_t nx = TMath::Sqrt(nImages) ; 
       Int_t ny = nx  ; 
@@ -423,7 +422,7 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
           fImage[esIndex]->cd(++npad) ; 
         }
       }
-      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat())) ; 
+      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
     }
   }  
 }
