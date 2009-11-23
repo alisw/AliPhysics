@@ -44,6 +44,7 @@ TFile f("dcsTime.root")
 #include "AliTPCCalibRaw.h"
 #include "AliSplineFit.h"
 #include "TGraphErrors.h"
+#include <AliCTPTimeParams.h>
 
 //
 AliTPCcalibDB     *calibDB=0;
@@ -59,13 +60,14 @@ void ProcessDrift(Int_t run, Int_t timeStamp);
 void ProcessDriftCE(Int_t run, Int_t timeStamp);
 void ProcessDriftAll(Int_t run, Int_t timeStamp);
 void ProcessKryptonTime(Int_t run, Int_t timeStamp);
+void ProcessCTP(Int_t run, Int_t timeStamp);
+void ProcessAlign(Int_t run, Int_t timeStamp);
 void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
   //
   // runList - listOfRuns to process
   // first   - first run to process
   // last    - last  to process
   // 
-  refFile=gSystem->Getenv("REF_DATA_FILE");
   calibDB = AliTPCcalibDB::Instance();
   dbutil= new AliTPCcalibDButil;
   //
@@ -87,7 +89,6 @@ void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
   }
   TMath::Sort(nruns, runArray.fArray, indexes,kFALSE);
   pcstream = new TTreeSRedirector("dcsTime.root");
-  dbutil->SetRefFile(refFile.Data());
   Int_t startTime = 0;
   Int_t endTime   = 0;
   for (Int_t run=0; run<nruns; run++){
@@ -95,6 +96,8 @@ void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
     printf("Processing run %d ...\n",irun);
     AliTPCcalibDB::Instance()->SetRun(irun);
     dbutil->UpdateFromCalibDB();
+    dbutil->SetReferenceRun(irun);
+    dbutil->UpdateRefDataFromOCDB();
     //
     AliDCSSensorArray *arrHV=calibDB->GetVoltageSensors(irun);
     if (!arrHV) continue;
@@ -111,7 +114,7 @@ void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
     //dbutil->FilterCE(120., 3., 4.,pcstream);
     //dbutil->FilterTracks(irun, 10.,pcstream);
     AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(irun);		 
-    if (goofieArray) dbutil->FilterGoofie(goofieArray,0.5,4.,6.8,7.05,pcstream);
+    if (goofieArray) dbutil->FilterGoofie(goofieArray,0.5,4.,6.85,7.05,pcstream);
     // don't filter goofie for the moment
     ProcessRun(irun, startTime,endTime);
   }
@@ -347,6 +350,8 @@ void ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     ProcessDriftCE(irun,itime);
     ProcessDriftAll(irun,itime);
     ProcessKryptonTime(irun,itime);
+    ProcessCTP(irun,itime);
+    ProcessAlign(irun,itime);
     (*pcstream)<<"dcs"<<	
       //noise data
       "meanNoise.="<<&vNoiseMean<<
@@ -580,8 +585,10 @@ void ProcessDriftAll(Int_t run,Int_t timeStamp){
   // test of utils
   static Double_t vdriftCEA=0, vdriftCEC=0, vdriftCEM=0;
   static Double_t vdriftLTA=0, vdriftLTC=0, vdriftLTM=0;
+  static Double_t vdriftITS=0;
   static Double_t vdriftP=0;
   static Double_t dcea=0, dcec=0, dcem=0,  dla=0,dlc=0,dlm=0,dp=0;
+  static Double_t dits=0;
   static Double_t ltime0A;
   static Double_t ltime0C;
   static Double_t ctime0;
@@ -597,6 +604,8 @@ void ProcessDriftAll(Int_t run,Int_t timeStamp){
   vdriftLTA= dbutil->GetVDriftTPCLaserTracks(dla,run,timeStamp,36000,0);
   vdriftLTC= dbutil->GetVDriftTPCLaserTracks(dlc,run,timeStamp,36000,1);
   vdriftLTM= dbutil->GetVDriftTPCLaserTracks(dlm,run,timeStamp,36000,2);
+  //
+  vdriftITS= dbutil->GetVDriftTPCITS(dits, run,timeStamp);
   //
   ltime0A  = dbutil->GetLaserTime0(run,timeStamp,36000,0);
   ltime0C  = dbutil->GetLaserTime0(run,timeStamp,36000,1);
@@ -615,6 +624,10 @@ void ProcessDriftAll(Int_t run,Int_t timeStamp){
     "dla="<<dla<<
     "dlc="<<dlc<<
     "dlm="<<dlm<<
+    //
+    //
+    "vdriftITS="<<vdriftITS<<
+    "dits="<<dits<<
     "ctime0="<<ctime0<<
     "vdriftP="<<vdriftP<<       // drift velocity comsic 
     "dp="<<dp<<
@@ -667,6 +680,66 @@ void ProcessKryptonTime(Int_t run, Int_t timeStamp){
     "krDist.="<<&krDist;
 }
 
+void ProcessCTP(Int_t irun, Int_t timeStamp){
+  //
+  //
+  //
+  static TClonesArray *pcarray = new TClonesArray("AliCTPInputTimeParams",1);
+  static AliCTPTimeParams *ctpParams =0;
+  ctpParams = AliTPCcalibDB::Instance()->GetCTPTimeParams(); //
+  const TObjArray        *arr = ctpParams->GetInputTimeParams();
+  pcarray->ExpandCreateFast(TMath::Max(arr->GetEntries(),1));
+  for (Int_t i=0; i<arr->GetEntries(); i++){
+    new ((*pcarray)[i]) AliCTPInputTimeParams(*((AliCTPInputTimeParams*)arr->At(i)));
+  }
+  (*pcstream)<<"ctp"<<
+    "run="<<irun<<
+    "time="<<timeStamp<<
+    "ctpP.="<<ctpParams<<
+    "ctpArr="<<pcarray<<
+    "\n";
+  (*pcstream)<<"dcs"<<
+    "ctpP.="<<ctpParams<<
+    "ctpArr="<<pcarray;
+}
+
+void ProcessAlign(Int_t run, Int_t timeStamp){
+  //
+  // Proccess alignment 
+  //
+  TString   grnames[12]={"ALIGN_ITS", "ALIGN_ITSP", "ALIGN_ITSM", "ALIGN_ITSB",
+			 "ALIGN_TRD", "ALIGN_TRDP", "ALIGN_TRDM","ALIGN_TRDB",
+			 "ALIGN_TOF", "ALIGN_TOFP", "ALIGN_TOFM","ALIGN_TOFB"};
+  TString   grpar[9]={"DELTAPSI", "DELTATHETA", "DELTAPHI",
+		      "DELTAX", "DELTAY", "DELTAZ",
+		      "DRIFTVD", "T0", "VDGY"};
+  static Double_t values[12*9];
+  static Double_t errs[12*9];
+
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  TGraphErrors *gr=0;
+  for (Int_t idet=0; idet<12; idet++){
+    for (Int_t ipar=0; ipar<9; ipar++){
+      TString grName=grnames[idet];
+      grName+="_TPC_";
+      grName+=grpar[ipar];
+      if (array){
+	gr = (TGraphErrors*)array->FindObject(grName.Data());
+      }
+      values[9*idet+ipar]=0;
+      errs[9*idet+ipar]=0;
+      if (gr) values[9*idet+ipar]=gr->Eval(timeStamp);
+      (*pcstream)<<"dcs"<<
+	Form("%s=",grName.Data())<<values[9*idet+ipar];
+      (*pcstream)<<"align"<<
+	Form("%s=",grName.Data())<<values[9*idet+ipar];
+    }
+  }
+  (*pcstream)<<"align"<<
+    "time="<<timeStamp<<
+    "run="<<run<<
+    "\n";
+}
 
 
 
