@@ -30,7 +30,6 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSMeanVertexer.cxx \
 		AliITSZPoint.cxx \
 		AliITSPid.cxx \
-		AliITStrackV2Pid.cxx \
 		AliITSreconstruction.cxx \
 		AliITSclusterTable.cxx \
 		AliITStrackSA.cxx \

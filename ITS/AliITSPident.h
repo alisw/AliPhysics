@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-class AliITStrackV2;
+class AliESDtrack;
 class AliITSSteerPid;
 class TF1;
 class AliITSPidParItem;
@@ -18,13 +18,12 @@ class AliITSPident : public TObject{
 
  public:
   AliITSPident();
-  AliITSPident(Double_t mom,Double_t dEdx,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
+  AliITSPident(Double_t mom,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
   
-  AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
+  AliITSPident(AliESDtrack *track,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
 
   virtual ~AliITSPident();
   Float_t GetP() const {return fMom;}//local momentum (GeV/c)
-  Double_t GetdEdx() const {return fdEdx;} //dEdx (ADC units)
   Double_t GetCondFunPro(Int_t lay) const {
     return fCondFunProLay[lay];
   }
@@ -62,7 +61,6 @@ class AliITSPident : public TObject{
   AliITSPident& operator=(const AliITSPident & ob); // ass. op.
 
   Float_t fMom;                   // Particle momentum
-  Double_t fdEdx;                 // Particle dE/dx
   Double_t fCondFunProLay[8];     // one for each silicon layer
   Double_t fCondFunKLay[8];       // cond. prob. function kaons per layer
   Double_t fCondFunPiLay[8];      // cond. prob. function pions per layer
@@ -74,6 +72,6 @@ class AliITSPident : public TObject{
   Float_t fPPrioripi;             // Priori prob. for pions
   Float_t fPPriorie;              // Priori prob. for electrons
   Int_t fNcls[4];                 // N. of clusters per layer (sdd1,sdd2,ssd1,ssd2) 
-  ClassDef(AliITSPident,2);
+  ClassDef(AliITSPident,3);
 };
 #endif

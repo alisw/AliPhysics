@@ -63,7 +63,6 @@
 
 // Classes for PID
 #pragma link C++ class  AliITSPid+;
-#pragma link C++ class  AliITStrackV2Pid+;
 #pragma link C++ class AliITSPidParItem+;
 #pragma link C++ class AliITSPident+;
 #pragma link C++ class AliITSSteerPid+;

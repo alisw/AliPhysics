@@ -5,7 +5,7 @@
 //functions for each layer are convoluted Landau-Gaussian functions.      // 
 // Origin: Elena Bruna bruna@to.infn.it,, Massimo Masera masera@to.infn.it//
 //////////////////////////////////////////////////////////////////////////
-#include "AliITStrackV2.h"
+#include "AliESDtrack.h"
 #include "AliITSPident.h"
 #include "AliITSSteerPid.h"
 #include <Riostream.h>
@@ -14,7 +14,6 @@ ClassImp(AliITSPident)
   //_______________________________________________________________________
 AliITSPident::AliITSPident():
 fMom(0),
-fdEdx(0),
 fPBayesp(0),
 fPBayesk(0),
 fPBayespi(0),
@@ -38,7 +37,6 @@ AliITSPident::~AliITSPident(){
 //______________________________________________________________________
 AliITSPident::AliITSPident(const AliITSPident &ob) :TObject(ob),
 fMom(ob.fMom),
-fdEdx(ob.fdEdx),
 fPBayesp(ob.fPBayesp),
 fPBayesk(ob.fPBayesk),
 fPBayespi(ob.fPBayespi),
@@ -60,9 +58,8 @@ AliITSPident& AliITSPident::operator=(const AliITSPident&  ob){
 
 
 //_______________________________________________________________________
-AliITSPident::AliITSPident(Double_t mom,Double_t dEdx,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
+AliITSPident::AliITSPident(Double_t mom,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
 fMom(mom),
-fdEdx(dEdx),
 fPBayesp(0),
 fPBayesk(0),
 fPBayespi(0),
@@ -123,9 +120,8 @@ fPPriorie(priorie)
 }
 
 //__________________________________________________________________________________________
-AliITSPident::AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
+AliITSPident::AliITSPident(AliESDtrack *track,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
 fMom(0),
-fdEdx(0),
 fPBayesp(0),
 fPBayesk(0),
 fPBayespi(0),
@@ -142,7 +138,7 @@ fPPriorie(priorie)
   }
   Double_t xr;
   Double_t par[5];
-  trackITS->GetExternalParameters(xr,par);
+  track->GetExternalParameters(xr,par);
   if (par[4]!=0) {
     Float_t lamb=TMath::ATan(par[3]);
     fMom=1/(TMath::Abs(par[4])*TMath::Cos(lamb));
@@ -193,7 +189,6 @@ fPPriorie(priorie)
   fPBayesp=CookCombinedBayes(condFun,prior,0);
   fPBayesk=CookCombinedBayes(condFun,prior,1); 
   fPBayespi=CookCombinedBayes(condFun,prior,2); 
-  fdEdx=trackITS->GetdEdx();
 
 }
 //_______________________________________________________________________
@@ -237,7 +232,6 @@ void AliITSPident::PrintParameters() const{
  //print parameters
   cout<<"___________________________\n";
   cout<<"Track Local Momentum = "<<"  "<<fMom<<endl;
-  cout<<"Track dEdx = "<<"  "<<fdEdx<<endl;
 }
 
 //_______________________________________________________________________

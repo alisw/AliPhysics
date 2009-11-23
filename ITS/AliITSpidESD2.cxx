@@ -28,7 +28,6 @@
 #include "AliITSpidESD2.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliITStrackV2.h"
 #include "AliITSLoader.h"
 #include "AliITSPident.h"
 #include "AliITSSteerPid.h"
@@ -75,7 +74,6 @@ AliITSpidESD2& AliITSpidESD2::operator=(const AliITSpidESD2& ob ){
 void AliITSpidESD2::GetITSpidSingleTrack(AliESDtrack* esdtr, Double_t condprobfun[]){
   // Method to calculate PID probabilities for a single track
   
-  Double_t dEdxsignal=esdtr->GetITSsignal();
   Double_t momits=esdtr->GetP();
   Double_t qclu[4];
   esdtr->GetITSdEdxSamples(qclu);
@@ -96,7 +94,7 @@ void AliITSpidESD2::GetITSpidSingleTrack(AliESDtrack* esdtr, Double_t condprobfu
   Float_t prik=0.33;
   Float_t pripi=0.33;
   Float_t prie=0.;
-  AliITSPident mypid(momits,dEdxsignal,fSp,qclucorr,nlay,prip,prik,pripi,prie);
+  AliITSPident mypid(momits,fSp,qclucorr,nlay,prip,prik,pripi,prie);
   condprobfun[0]=mypid.GetProdCondFunPi();//el --PID in the ITS does not distinguish among Pi,el,mu
   condprobfun[1]=mypid.GetProdCondFunPi();//mu
   condprobfun[2]=mypid.GetProdCondFunPi();//pi
