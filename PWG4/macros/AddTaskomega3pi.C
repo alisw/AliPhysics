@@ -22,7 +22,11 @@ AliAnalysisTaskOmegaPi0PiPi* AddTaskomega3pi()
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("histos",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  //AliAnalysisDataContainer *coutput = mgr->CreateContainer("histos",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+
+
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("omega3pi", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:omega3pi",outputfile.Data()));
   
   // Connect input/output
   mgr->ConnectInput(omegaTask, 0, cinput);
