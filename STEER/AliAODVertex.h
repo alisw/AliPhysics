@@ -106,7 +106,10 @@ class AliAODVertex : public AliVVertex {
   Bool_t   HasDaughter(TObject *daughter) const;
   Int_t    GetNDaughters() const;
   Int_t    GetNContributors() const;
-  void     SetNProngs(Int_t nprong) {fNprong = nprong;}
+  void     SetNProngs(Int_t nprong) {
+      fNprong = nprong;
+      MakeProngs();
+  }
   // covariance matrix elements after rotation by phi around z-axis 
   // and, then, by theta around new y-axis
   Double_t  RotatedCovMatrixXX(Double_t phi = 0., Double_t theta = 0.) const;
