@@ -270,8 +270,9 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     //
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
     recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(ipCh),index,nmean,xRa,yRa);                   //search for Cerenkov angle of this track
-    
-    
+
+    if(pTrk->GetHMPIDsignal()<0) continue;
+        
     AliHMPIDPid pID;
     Double_t prob[5];
     pID.FindPid(pTrk,5,prob);
