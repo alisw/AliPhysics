@@ -260,6 +260,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
     primary->SetName(vtx->GetName());
     primary->SetTitle(vtx->GetTitle());
+    
+    if (!strcmp(vtx->GetTitle(), "vertexer: 3D")) primary->SetNProngs(vtx->GetNContributors());
 
     if (fDebug > 0) primary->Print();
 

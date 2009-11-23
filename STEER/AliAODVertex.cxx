@@ -258,13 +258,15 @@ template <class T> void AliAODVertex::GetSigmaXYZ(T sigma[3]) const
 Int_t AliAODVertex::GetNContributors() const 
 {
   // Returns the number of tracks used to fit this vertex.
-  
   Int_t cont = 0;
 
-  for (Int_t iDaug = 0; iDaug < GetNDaughters(); iDaug++) {
-    if (((AliAODTrack*)fDaughters.At(iDaug))->GetUsedForVtxFit()) cont++;
+  if (!strcmp(GetTitle(), "vertexer: 3D")) {
+    cont = fNprong;
+  } else {
+    for (Int_t iDaug = 0; iDaug < GetNDaughters(); iDaug++) {
+      if (((AliAODTrack*)fDaughters.At(iDaug))->GetUsedForVtxFit()) cont++;
+    }
   }
-
   return cont;
 }
 

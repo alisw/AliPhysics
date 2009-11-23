@@ -106,7 +106,7 @@ class AliAODVertex : public AliVVertex {
   Bool_t   HasDaughter(TObject *daughter) const;
   Int_t    GetNDaughters() const;
   Int_t    GetNContributors() const;
-
+  void     SetNProngs(Int_t nprong) {fNprong = nprong;}
   // covariance matrix elements after rotation by phi around z-axis 
   // and, then, by theta around new y-axis
   Double_t  RotatedCovMatrixXX(Double_t phi = 0., Double_t theta = 0.) const;
@@ -121,7 +121,7 @@ class AliAODVertex : public AliVVertex {
   Double_t  ErrorDistanceToVertex(AliAODVertex *vtx) const;
   Double_t  DistanceXYToVertex(AliAODVertex *vtx) const;
   Double_t  ErrorDistanceXYToVertex(AliAODVertex *vtx) const;
-
+  
   void     PrintIndices() const;
   void     Print(Option_t* option = "") const;
   private:
