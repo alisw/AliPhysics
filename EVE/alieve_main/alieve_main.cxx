@@ -51,6 +51,7 @@ int main(int argc, char **argv)
   {
     macPath += Form(":%s/alice-macros", evedir.Data());
     gInterpreter->AddIncludePath(Form("%s/EVE", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/PWG0", gSystem->Getenv("ALICE_ROOT")));
     gInterpreter->AddIncludePath(Form("%s/include", gSystem->Getenv("ALICE_ROOT")));
     gInterpreter->AddIncludePath(gSystem->Getenv("ALICE_ROOT"));
   }

@@ -29,7 +29,7 @@
 #include <AliESDtrack.h>
 #include <AliExternalTrackParam.h>
 
-#include <PWG0/AliPWG0Helper.h>
+#include <AliPWG0Helper.h>
 
 #endif
 
