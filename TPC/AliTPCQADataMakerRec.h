@@ -49,6 +49,8 @@ public:
   Float_t GetQmaxLowLimit() const {return fQmaxLowLimit; }
   Float_t GetQmaxHighLimit() const {return fQmaxHighLimit;}
 
+  virtual void ResetDetector();
+
 private:
   virtual void   StartOfDetectorCycle() {}; // empty 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** list) ;

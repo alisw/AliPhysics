@@ -389,7 +389,7 @@ void AliTPCQADataMakerRec::InitRaws()
     new TH1F("hRawsOccupancy", "Occupancy (all pads); Occupancy; Counts",
 	     100, 0, 1);
   histRawsOccupancy->Sumw2();
-  Add2RawsList(histRawsOccupancy, kRawsOccupancy, expert, image, !saveCorr);
+  Add2RawsList(histRawsOccupancy, kRawsOccupancy, expert, !image, !saveCorr);
   
   TH1F * histRawsOccupancyVsSector = 
     new TH1F("hRawsOccupancyVsSector", "Occupancy vs sector; Sector; Occupancy",
@@ -404,13 +404,13 @@ void AliTPCQADataMakerRec::InitRaws()
     new TH1F("hRawsNClustersPerEventVsSector", "Nclusters per event vs sector; Sector; Nclusters per event",
 	     72, 0, 72);
   histRawsNClustersPerEventVsSector->Sumw2();
-  Add2RawsList(histRawsNClustersPerEventVsSector, kRawsNClustersPerEventVsSector, expert, image, !saveCorr);
+  Add2RawsList(histRawsNClustersPerEventVsSector, kRawsNClustersPerEventVsSector, expert, !image, !saveCorr);
   
   TH1F * histRawsQVsSector = 
     new TH1F("hRawsQVsSector", "<Q> vs sector; Sector; <Q>",
 	     72, 0, 72);
   histRawsQVsSector->Sumw2();
-  Add2RawsList(histRawsQVsSector, kRawsQVsSector, expert, image, !saveCorr);
+  Add2RawsList(histRawsQVsSector, kRawsQVsSector, expert, !image, !saveCorr);
 
   TH1F * histRawsQmaxVsSector = 
     new TH1F("hRawsQmaxVsSector", "<Qmax> vs sector; Sector; <Qmax>",
@@ -427,6 +427,8 @@ void AliTPCQADataMakerRec::InitRaws()
     new TH1F("hRawsOccupancyVsEvent", hOccHelp->GetTitle(),
 	     hOccHelp->GetXaxis()->GetNbins(),
 	     hOccHelp->GetXaxis()->GetXmin(), hOccHelp->GetXaxis()->GetXmax());
+  histRawsOccupancyVsEvent->GetXaxis()->SetTitle(hOccHelp->GetXaxis()->GetTitle());
+  histRawsOccupancyVsEvent->GetYaxis()->SetTitle(hOccHelp->GetYaxis()->GetTitle());
   histRawsOccupancyVsEvent->SetMarkerStyle(20);
   histRawsOccupancyVsEvent->SetOption("P");
   histRawsOccupancyVsEvent->SetStats(kFALSE);
@@ -438,6 +440,8 @@ void AliTPCQADataMakerRec::InitRaws()
     new TH1F("hRawsNclustersVsEvent", hNclHelp->GetTitle(),
 	     hNclHelp->GetXaxis()->GetNbins(),
 	     hNclHelp->GetXaxis()->GetXmin(), hNclHelp->GetXaxis()->GetXmax());
+  histRawsNclustersVsEvent->GetXaxis()->SetTitle(hNclHelp->GetXaxis()->GetTitle());
+  histRawsNclustersVsEvent->GetYaxis()->SetTitle(hNclHelp->GetYaxis()->GetTitle());
   histRawsNclustersVsEvent->SetMarkerStyle(20);
   histRawsNclustersVsEvent->SetOption("P");
   histRawsNclustersVsEvent->SetStats(kFALSE);
@@ -644,3 +648,40 @@ void AliTPCQADataMakerRec::LoadMaps()
   }
 }
 
+//____________________________________________________________________________
+void AliTPCQADataMakerRec::ResetDetector()
+{
+  // This method is only used for DQM.
+  // The AliTPCdataQA elements that does the internal processing are
+  // in the case they have processed data deleted and new are created
+
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    
+    if ( fTPCdataQA[specie] != NULL) { // exist
+      
+      if(fTPCdataQA[specie]->GetEventCounter()>0) { // has processed data
+	
+	// old configuration
+	Int_t  firstTime    = fTPCdataQA[specie]->GetFirstTimeBin();
+	Int_t  lastTime     = fTPCdataQA[specie]->GetLastTimeBin();
+	Int_t  minADC       = fTPCdataQA[specie]->GetAdcMin();
+	Int_t  maxADC       = fTPCdataQA[specie]->GetAdcMax();
+	Int_t  maxEvents    = fTPCdataQA[specie]->GetMaxEvents();
+	Int_t  eventsPerBin = fTPCdataQA[specie]->GetEventsPerBin();
+
+	//delete old
+	delete fTPCdataQA[specie]; 
+
+	// create new
+	fTPCdataQA[specie] = new AliTPCdataQA(AliRecoParam::ConvertIndex(specie));
+	// configure new
+	LoadMaps(); // Load Altro maps
+	fTPCdataQA[specie]->SetAltroMapping(fMapping);
+	fTPCdataQA[specie]->SetRangeTime(firstTime, lastTime);
+	fTPCdataQA[specie]->SetRangeAdc(minADC, maxADC);
+	fTPCdataQA[specie]->SetMaxEvents(maxEvents);
+	fTPCdataQA[specie]->SetEventsPerBin(eventsPerBin);
+      }
+    }
+  }
+}
