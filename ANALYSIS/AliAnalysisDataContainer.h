@@ -40,7 +40,8 @@ enum ENotifyMessage {
 };   
 enum EAnalysisContainerFlags {
    kPostEventLoop = BIT(14),
-   kSpecialOutput = BIT(15)
+   kSpecialOutput = BIT(15),
+   kRegisterDataset = BIT(16)
 };     
    AliAnalysisDataContainer();
    AliAnalysisDataContainer(const AliAnalysisDataContainer &cont);
@@ -64,6 +65,7 @@ enum EAnalysisContainerFlags {
    void                      SetDataOwned(Bool_t flag) {fOwnedData = flag;}
    void                      SetPostEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kPostEventLoop,flag);}
    void                      SetSpecialOutput(Bool_t flag=kTRUE) {TObject::SetBit(kSpecialOutput,flag);}
+   void                      SetRegisterDataset(Bool_t flag=kTRUE) {TObject::SetBit(kRegisterDataset,flag);}
    void                      SetFileName(const char *filename);
    void                      SetFile(TFile *f) {fFile = f;}
    void                      SetProducer(AliAnalysisTask *prod, Int_t islot);
@@ -76,6 +78,7 @@ enum EAnalysisContainerFlags {
    Bool_t                    IsDataReady() const  {return fDataReady;}
    Bool_t                    IsPostEventLoop() const {return TObject::TestBit(kPostEventLoop);}
    Bool_t                    IsSpecialOutput() const {return TObject::TestBit(kSpecialOutput);}
+   Bool_t                    IsRegisterDataset() const {return TObject::TestBit(kRegisterDataset);}
    Bool_t                    IsOwnedData() const  {return fOwnedData;}
    Bool_t                    ClientsExecuted() const;
    Bool_t                    HasConsumers() const {return (fConsumers != 0);}

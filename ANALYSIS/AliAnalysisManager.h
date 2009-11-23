@@ -50,7 +50,8 @@ enum EAliAnalysisFlags {
    kDisableBranches  = BIT(15),
    kUseDataSet       = BIT(16),
    kSaveCanvases     = BIT(17),
-   kExternalLoop     = BIT(18)
+   kExternalLoop     = BIT(18),
+   kSkipTerminate    = BIT(19)
 };   
 
    AliAnalysisManager(const char *name = "mgr", const char *title="");
@@ -101,7 +102,6 @@ enum EAliAnalysisFlags {
    TObjArray          *GetTopTasks() const        {return fTopTasks;}
    TTree              *GetTree() const            {return fTree;}
    TObjArray          *GetZombieTasks() const     {return fZombies;}
-   Bool_t              IsExternalLoop() const     {return TObject::TestBit(kExternalLoop);}
    Bool_t              IsUsingDataSet() const     {return TObject::TestBit(kUseDataSet);}
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
    void                SetCurrentEntry(Long64_t entry)            {fCurrentEntry = entry;}
@@ -118,6 +118,7 @@ enum EAliAnalysisFlags {
    void                SetOutputEventHandler(AliVEventHandler*  handler);
    void                SetSelector(AliAnalysisSelector *sel)      {fSelector = sel;}
    void                SetSaveCanvases(Bool_t flag=kTRUE)         {TObject::SetBit(kSaveCanvases,flag);}
+   void                SetSkipTerminate(Bool_t flag)              {TObject::SetBit(kSkipTerminate,flag);}
    void                SetSpecialOutputLocation(const char *loc)  {fSpecialOutputLocation = loc;}
 
    // Container handling
@@ -140,7 +141,9 @@ enum EAliAnalysisFlags {
    // Analysis initialization and execution, status
    Bool_t               InitAnalysis();
    Bool_t               IsInitialized() const {return fInitOK;}
+   Bool_t               IsExternalLoop() const {return TObject::TestBit(kExternalLoop);}
    Bool_t               IsEventLoop() const {return TObject::TestBit(kEventLoop);}
+   Bool_t               IsSkipTerminate() const {return TObject::TestBit(kSkipTerminate);}
    void                 ResetAnalysis();
    void                 ExecAnalysis(Option_t *option="");
    void                 FinishAnalysis();

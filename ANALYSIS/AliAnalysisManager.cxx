@@ -607,6 +607,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
    while ((cont=(AliAnalysisDataContainer*)next())) {
       wrap = 0;
       if (cont->GetProducer()->IsPostEventLoop() && !inGrid) continue;
+      if (cont->IsRegisterDataset()) continue;
       const char *filename = cont->GetFileName();
       Bool_t isManagedByHandler = kFALSE;
       if (!(strcmp(filename, "default")) && fOutputEventHandler) {
@@ -717,7 +718,7 @@ void AliAnalysisManager::Terminate()
    TIter next(fTasks);
    TStopwatch timer;
    // Call Terminate() for tasks
-   while ((task=(AliAnalysisTask*)next())) {
+   while (!IsSkipTerminate() && (task=(AliAnalysisTask*)next())) {
       // Save all the canvases produced by the Terminate
       TString pictname = Form("%s_%s", task->GetName(), task->ClassName());
       task->Terminate();
@@ -746,7 +747,9 @@ void AliAnalysisManager::Terminate()
    while ((output=(AliAnalysisDataContainer*)next1())) {
       // Special outputs or grid files have the files already closed and written.
       if (fMode == kGridAnalysis) continue;
-      if (output->IsSpecialOutput()&&(fMode == kProofAnalysis)) continue;
+      if (fMode == kProofAnalysis) {
+        if (output->IsSpecialOutput() || output->IsRegisterDataset()) continue;
+      }  
       const char *filename = output->GetFileName();
       if (!(strcmp(filename, "default"))) {
          if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
@@ -1086,7 +1089,10 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
    anaType.ToLower();
    fMode = kLocalAnalysis;
    Bool_t runlocalinit = kTRUE;
-   if (anaType.Contains("file")) runlocalinit = kFALSE;
+   if (anaType.Contains("file")) {
+      runlocalinit = kFALSE;
+      SetSkipTerminate(kTRUE);
+   }   
    if (anaType.Contains("proof"))     fMode = kProofAnalysis;
    else if (anaType.Contains("grid")) fMode = kGridAnalysis;
    else if (anaType.Contains("mix"))  fMode = kMixingAnalysis;
@@ -1353,6 +1359,9 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
     // Get the actual file
     line = Form("((TProofOutputFile*)0x%lx)->GetFileName();", (ULong_t)pof);
     filename = (const char*)gROOT->ProcessLine(line);
+    if (fDebug>1) {
+      printf("File: %s already booked via TProofOutputFile\n", filename.Data());
+    }  
     f = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
     if (!f) Fatal("OpenProofFile", "Proof output file found but no file opened for %s", filename.Data());
     // Check if option "UPDATE" was preserved 
@@ -1361,7 +1370,16 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
     if ((opt=="UPDATE") && (opt!=f->GetOption())) 
       Fatal("OpenProofFile", "File %s already opened, but not in UPDATE mode!", cont->GetFileName());
   } else {
-    line = Form("TProofOutputFile *pf = new TProofOutputFile(\"%s\");", filename.Data());
+    if (cont->IsRegisterDataset()) {
+      TString dset_name = filename;
+      dset_name.ReplaceAll(".root", "");
+      dset_name.ReplaceAll(":","_");
+      if (fDebug>1) printf("Booking dataset: %s\n", dset_name.Data());
+      line = Form("TProofOutputFile *pf = new TProofOutputFile(\"%s\", \"DROV\", \"%s\");", filename.Data(), dset_name.Data());
+    } else {
+      if (fDebug>1) printf("Booking TProofOutputFile: %s to be merged\n", filename.Data());
+      line = Form("TProofOutputFile *pf = new TProofOutputFile(\"%s\");", filename.Data());
+    }
     if (fDebug > 1) printf("=== %s\n", line.Data());
     gROOT->ProcessLine(line);
     line = Form("pf->OpenFile(\"%s\");", option);
@@ -1373,7 +1391,7 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
     }   
     // Add to proof output list
     line = Form("((TList*)0x%lx)->Add(pf);",(ULong_t)fSelector->GetOutputList());
-    if (fDebug > 1) printf("=== %s", line.Data());
+    if (fDebug > 1) printf("=== %s\n", line.Data());
     gROOT->ProcessLine(line);
   }
   if (f && !f->IsZombie() && !f->TestBit(TFile::kRecovered)) {
@@ -1565,6 +1583,7 @@ Bool_t AliAnalysisManager::ValidateOutputFiles() const
    TDirectory *cdir = gDirectory;
    TString openedFiles;
    while ((output=(AliAnalysisDataContainer*)next())) {
+      if (output->IsRegisterDataset()) continue;
       TString filename = output->GetFileName();
       if (filename == "default") {
          if (!fOutputEventHandler) continue;
