@@ -167,24 +167,39 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
       t->SetStatus(AliESDtrack::kTOFin);
       //if(seed->GetTOFsignal()>0){
       if ( (seed->GetStatus()&AliESDtrack::kTOFout)!=0 ) {
+	t->SetStatus(AliESDtrack::kTOFout);
 	t->SetTOFsignal(seed->GetTOFsignal());
 	t->SetTOFcluster(seed->GetTOFcluster());
-	Int_t tlab[3];
-	seed->GetTOFLabel(tlab);    
+	Int_t tlab[3]; seed->GetTOFLabel(tlab);    
 	t->SetTOFLabel(tlab);
+
+	// Check done:
+	//       by calling the AliESDtrack::UpdateTrackParams,
+	//       the current track parameters are changed
+	//       and it could cause refit problems.
+	//       We need to update only the following track parameters:
+        //            the track length and expected times.
+	//       Removed AliESDtrack::UpdateTrackParams call
+	//       Called AliESDtrack::SetIntegratedTimes(...) and
+	//       AliESDtrack::SetIntegratedLength() routines.
+	/*
 	AliTOFtrack *track = new AliTOFtrack(*seed);
-	Double_t times[10];
-	seed->GetIntegratedTimes(times);
 	t->UpdateTrackParams(track,AliESDtrack::kTOFout);
-	t->SetIntegratedLength(seed->GetIntegratedLength());
+	delete track;
+	*/
+
+	Double_t times[10]; seed->GetIntegratedTimes(times);
 	t->SetIntegratedTimes(times);
+	t->SetIntegratedLength(seed->GetIntegratedLength());
 	t->SetTOFsignalToT(seed->GetTOFsignalToT());
 	t->SetTOFCalChannel(seed->GetTOFCalChannel());
 	//
+	// Make attention, please:
+	//      AliESDtrack::fTOFInfo array does not be stored in the AliESDs.root file
+	//      it is there only for a check during the reconstruction step.
 	Float_t info[10];
 	seed->GetTOFInfo(info);
 	t->SetTOFInfo(info);
-	delete track;
       }
     }
   }
