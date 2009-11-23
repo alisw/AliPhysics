@@ -19,6 +19,7 @@
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
 #include <TGDoubleSlider.h>
+#include <TGComboBox.h>
 
 //______________________________________________________________________________
 // AliEveHOMERManagerEditor
@@ -28,15 +29,21 @@ ClassImp(AliEveHOMERManagerEditor)
 
 AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t width, Int_t height,
 	     UInt_t options, Pixel_t back) :
-  TGedFrame(p, width, height, options | kVerticalFrame, back),
+  
+TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
-  fButtonConnect(0),
+//  fButtonSaveBlockList(0),
   fButtonNextEvent(0),
   fButtonNavigateBack(0),
   fButtonNavigateFwd(0),
+  fBoxTriggerSelector(0),
+  fButtonEventLoopText(0),
+//  fBoxEventLoopSpeed(0),
   fButtonEventLoop(0),
-  fEventLoopStarted(kFALSE) {
-
+  
+ fEventLoopStarted(kFALSE) 
+{
+  
   MakeTitle("AliEveHOMERManager");
 
   // Create widgets
@@ -44,9 +51,14 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
   // AddFrame(fXYZZ, new TGLayoutHints(...));
   // fXYZZ->Connect("SignalName()", "AliEveHOMERManagerEditor", this, "DoXYZZ()");
 
-  fButtonConnect = new TGTextButton(this, "  Connect to HLT  ");
-  AddFrame(fButtonConnect); //, new TGLayoutHints(...));
-  fButtonConnect->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "ConnectToHLT()");
+//   fButtonConnect = new TGTextButton(this, "  Connect to HLT  ");
+//   AddFrame(fButtonConnect); //, new TGLayoutHints(...));
+//   fButtonConnect->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "ConnectToHLT()");
+
+  fButtonWriteToFile = new TGTextButton(this, " Write to file  ");
+  AddFrame(fButtonWriteToFile); //, new TGLayoutHints(...));
+  fButtonWriteToFile->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "WriteBlockListToFile()");
+
 
   fButtonNextEvent = new TGTextButton(this, "  NextEvent  ");
   AddFrame(fButtonNextEvent); //, new TGLayoutHints(...));
@@ -59,6 +71,20 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
   fButtonNavigateFwd = new TGTextButton(this, "  Navigate Fwd  ");
   AddFrame(fButtonNavigateFwd); //, new TGLayoutHints(...));
   fButtonNavigateFwd->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "NavigateFwd()");
+
+  fBoxTriggerSelector = new TGComboBox(this, "Select Trigger");
+  fBoxTriggerSelector->AddEntry("HLT Global Trigger", 0);
+  fBoxTriggerSelector->AddEntry("Barrel multiplicity trigger", 1);
+  fBoxTriggerSelector->AddEntry("PHOS Geometry trigger", 2);
+  fBoxTriggerSelector->AddEntry("No trigger selection", 3);
+  fBoxTriggerSelector->Connect("Selected(Int_t)","AliEveHOMERManagerEditor", this, "SetTriggerString(int)");
+  fBoxTriggerSelector->SetWidth(150);
+  fBoxTriggerSelector->SetHeight(25);
+  AddFrame(fBoxTriggerSelector);
+
+  fButtonEventLoopText = new TGTextButton(this, "  Loop Events  ");
+  AddFrame(fButtonEventLoopText); //, new TGLayoutHints(...));
+  fButtonEventLoopText->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "EventLoop()");
 
   fButtonEventLoop = new TGPictureButton(this, gClient->GetPicture("$ALICE_ROOT/EVE/hlt-macros/HLT-logo.png"));
   AddFrame(fButtonEventLoop); //, new TGLayoutHints(...));
@@ -76,21 +102,44 @@ void AliEveHOMERManagerEditor::SetModel(TObject* obj) {
 
 /******************************************************************************/
 
-void AliEveHOMERManagerEditor::ConnectToHLT() {
-  // Connects to HOMER sources -> to HLT.
+// void AliEveHOMERManagerEditor::ConnectToHLT() {
+//   // Connects to HOMER sources -> to HLT.
   
-  fM->ConnectEVEtoHOMER();
-}
+//   fM->ConnectEVEtoHOMER();
+// }
 
 void AliEveHOMERManagerEditor::NextEvent() {
   // call next event from macro
 
-  if ( fM->NextEvent() )
+  Int_t iResult = 0;
+    if ( fM->NextEvent() )
     return;
 
+
+//   if ( iResult = fM->CheckTriggerDecision(fTriggerString) ) {
+    
+//     if(iResult == 1) {
+    
+//       fM->NextEvent();
+//       return;
+    
+//     } else if (iResult == 2) {
+    
+//       HLTError(Form("No trigger decision found in event"));
+//       return;
+//     }
+//   } 
+    
   gROOT->ProcessLineFast("processEvent();");
 
   return;
+}
+
+void AliEveHOMERManagerEditor::WriteBlockListToFile() {
+  
+  
+  gROOT->ProcessLineFast("writeToFile();");
+
 }
 
 void AliEveHOMERManagerEditor::NavigateFwd() {
@@ -123,10 +172,28 @@ void AliEveHOMERManagerEditor::EventLoop() {
   if ( !fEventLoopStarted ) {
     gROOT->ProcessLineFast("loopEvent();");
     fEventLoopStarted = kTRUE;
+    fButtonEventLoopText->SetText(" Stop Loop ");
   }
   else {
     gROOT->ProcessLineFast("stopLoopEvent();");
     fEventLoopStarted = kFALSE;
+    fButtonEventLoopText->SetText(" Loop Events ");
   }
+}
+
+void AliEveHOMERManagerEditor::SetTriggerString(int id) {
+
+  if (id < 0 || id > 4) {
+    return;
+  }
+  
+  TString tsa[4] = {"HLTGlobalTrigger", 
+		    "BarrelMultiplicityTrigger", 
+		    "PHOSgeomTrigger",
+		    "ALL"};
+   
+ 
+  fM->SetTriggerString(tsa[id]);
+    
 }
 

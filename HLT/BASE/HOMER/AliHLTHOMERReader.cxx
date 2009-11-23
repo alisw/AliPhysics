@@ -119,6 +119,7 @@ AliHLTHOMERReader::AliHLTHOMERReader()
 AliHLTHOMERReader::AliHLTHOMERReader( const char* hostname, unsigned short port )
   :
   AliHLTMonitoringReader(),
+  TObject(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -156,6 +157,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( const char* hostname, unsigned short port 
 AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports )
   :
   AliHLTMonitoringReader(),
+  TObject(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -194,6 +196,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostname
 AliHLTHOMERReader::AliHLTHOMERReader( key_t shmKey, int shmSize )
   :
   AliHLTMonitoringReader(),
+  TObject(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -231,6 +234,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( key_t shmKey, int shmSize )
 AliHLTHOMERReader::AliHLTHOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
   :
   AliHLTMonitoringReader(),
+  TObject(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -270,6 +274,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostname
 			  unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
   :
   AliHLTMonitoringReader(),
+  TObject(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -318,6 +323,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostname
 AliHLTHOMERReader::AliHLTHOMERReader( const void* pBuffer, int size )
   :
   AliHLTMonitoringReader(),
+  TObject(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -786,25 +792,25 @@ int AliHLTHOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
     ReleaseCurrentEvent();
     int ret=0;
     // Trigger all configured data sources
-    for ( unsigned n = 0; n<fDataSourceCnt; n++ )
+    for ( unsigned n = 0; n<fDataSourceCnt; n++ ){
+      if ( fDataSources[n].fType == kTCP )
+	ret = TriggerTCPSource( fDataSources[n], useTimeout, timeout );
+      else if ( fDataSources[n].fType == kShm )
+	ret = TriggerShmSource( fDataSources[n], useTimeout, timeout );
+      if ( ret )
 	{
-	if ( fDataSources[n].fType == kTCP )
-	    ret = TriggerTCPSource( fDataSources[n], useTimeout, timeout );
-	else if ( fDataSources[n].fType == kShm )
-	    ret = TriggerShmSource( fDataSources[n], useTimeout, timeout );
-	if ( ret )
-	    {
-	    fErrorConnection = n;
-	    fConnectionStatus=ret;
-	    return fConnectionStatus;
-	    }
+	  fErrorConnection = n;
+	  fConnectionStatus=ret;
+	  return fConnectionStatus;
 	}
+    }
     // Now read in data from the configured data source
     ret = ReadDataFromTCPSources( fTCPDataSourceCnt, fDataSources, useTimeout, timeout );
+    
     if ( ret )
-	{
+      {
 	return ret;
-	}
+      }
     ret = ReadDataFromShmSources( fShmDataSourceCnt, fDataSources+fTCPDataSourceCnt, useTimeout, timeout );
     if ( ret )
 	{

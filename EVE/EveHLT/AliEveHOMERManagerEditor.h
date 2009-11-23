@@ -17,7 +17,7 @@ class TGTextButton;
 class TGNumberEntry;
 class TGColorSelect;
 class TGPictureButton;
-
+class TGComboBox;
 class AliEveHOMERManager;
 
 class AliEveHOMERManagerEditor : public TGedFrame
@@ -30,22 +30,28 @@ public:
   virtual void SetModel(TObject* obj);
 
   // Declare callback/slot methods
-  void ConnectToHLT();
+  //void ConnectToHLT();
   void NextEvent();
   void EventLoop();
 
   void NavigateBack();
   void NavigateFwd();
-
+  void SetTriggerString(int id);
+  void WriteBlockListToFile();
 protected:
-  AliEveHOMERManager  *fM; // Model object.
 
-  TGTextButton     *fButtonConnect;      // Button to connect to HOMER.
-  TGTextButton     *fButtonNextEvent;    // Button to call next Even
+  AliEveHOMERManager  *fM; // Model object.
+  
+  //  TGTextButton     *fButtonConnect; // Button to connect to HOMER.
+  TGTextButton     *fButtonWriteToFile; // Button to write block list to file
+  TGTextButton     *fButtonNextEvent; // Button to call next Even
   TGTextButton     *fButtonNavigateBack; // Button to navigate back
   TGTextButton     *fButtonNavigateFwd;  // Button to navigate fwd
-
-  TGPictureButton  *fButtonEventLoop; // Button to start/stop event loop, HLT LOGO.
+  TGComboBox       *fBoxTriggerSelector; // Drop down menu to select trigger criteria.
+  TGTextButton     *fButtonEventLoopText; //Text button to start / stop event loop.
+  //TGComboBox       *fBoxEventLoopSpeed; // Drop down menu to set the speed of the loop.
+  TGPictureButton  *fButtonEventLoop; // Picture button to start/stop event loop, HLT LOGO.
+  
 
 private:
   AliEveHOMERManagerEditor(const AliEveHOMERManagerEditor&);            // Not implemented

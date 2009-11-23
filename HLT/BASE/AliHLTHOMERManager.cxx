@@ -40,6 +40,10 @@
 #include "AliHLTHOMERSourceDesc.h"
 #include "AliHLTHOMERBlockDesc.h"
 // -- -- -- -- -- -- -- 
+#include "AliHLTGlobalTriggerDecision.h"
+#include "AliHLTTriggerDecision.h"
+//---------------------------
+
 ClassImp(AliHLTHOMERManager)
 
 /*
@@ -53,17 +57,22 @@ ClassImp(AliHLTHOMERManager)
   fLibManager(new AliHLTHOMERLibManager),
   fStateHasChanged(kTRUE),
   fProxyHandler(NULL),
-  fReader(NULL),
+  fCurrentReader(NULL),
+  fReaderList(NULL),
   fSourceList(NULL),
   fNBlks(0),
   fEventID(),
   fCurrentBlk(0),
+  fAsyncBlockList(NULL),
   fEventBuffer(NULL),
   fBufferTopIdx(-1),
   fBufferLowIdx(-1),
   fCurrentBufferIdx(-1),
   fNavigateBufferIdx(-1),
-  fConnected(kFALSE) {
+  fConnected(kFALSE), 
+  fTriggerString("ALL"), 
+  fNEventsNotTriggered(0),
+  fRetryNextEvent(kFALSE) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -77,12 +86,21 @@ AliHLTHOMERManager::~AliHLTHOMERManager() {
   // see header file for class documentation
 
   if ( fLibManager ) {
-    if ( fReader )
-      fLibManager->DeleteReader(fReader);
+
+    if ( fReaderList ) {
+      TIter next(fReaderList);
+      TObject * object = NULL;
+      while ( ( object = next()) )
+	fLibManager->DeleteReader(static_cast<AliHLTHOMERReader*>(object) );
+      
+      fReaderList->Clear();
+      delete fReaderList;
+    }
+    fReaderList = NULL;   
+    
     delete fLibManager;
-    fLibManager = NULL;
-    fReader = NULL;
-  }
+  } 
+  fLibManager = NULL;
 
   if ( fProxyHandler != NULL )
     delete fProxyHandler;
@@ -96,7 +114,13 @@ AliHLTHOMERManager::~AliHLTHOMERManager() {
     fEventBuffer->Clear();
     delete fEventBuffer;
   }
+  fEventBuffer = NULL;
 
+  if ( fAsyncBlockList ) {
+    fAsyncBlockList->Clear();
+    delete fAsyncBlockList;
+  }
+  fAsyncBlockList = NULL;
 }
 
 //##################################################################################
@@ -105,6 +129,7 @@ Int_t AliHLTHOMERManager::Initialize() {
 
   Int_t iResult = 0;
 
+  // -- Initialize ProxyHandler
   if ( !fProxyHandler )
     fProxyHandler = new AliHLTHOMERProxyHandler();
   
@@ -118,15 +143,26 @@ Int_t AliHLTHOMERManager::Initialize() {
     HLTError(Form("Creating of ProxyHandler failed."));
   }
  
-  // -- Initialize Event Buffer
+  // -- Initialize ReaderList
+  //    List ist not owner, as reader have to be created/deleted by the LibManager
+  if( !fReaderList )
+    fReaderList = new TList();
+  
+  // -- Initialize asynchronous BlockList
+  if( !fAsyncBlockList ) {
+    fAsyncBlockList = new TList();
+    fAsyncBlockList->SetOwner(kFALSE);
+  }
+
+  // -- Initialize Event Buffer and EventID array
   if ( !fEventBuffer ) {
     fEventBuffer = new TClonesArray( "TList", BUFFERSIZE );
   }
 
   for ( Int_t idx = 0; idx < BUFFERSIZE; ++idx ) {
-    new ((*fEventBuffer)[idx]) TList();
+    new ((*fEventBuffer)[idx]) TList( );
     (reinterpret_cast<TList*>((*fEventBuffer)[idx]))->SetOwner(kTRUE);
-
+    
     fEventID[idx] = 0;
   }
 
@@ -207,58 +243,74 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
   // -- Check if already connected and state has not changed
   if ( fStateHasChanged == kFALSE && IsConnected() ) {
     HLTInfo(Form("No need for reconnection."));
-    return iResult;
+    return 0;
   }
   
   // -- If already connected, disconnect before connect
-  if ( IsConnected() )
+  //    or if ReaderList already filled
+  if ( IsConnected() || fReaderList->GetSize() != 0 )
     DisconnectHOMER();
   
   // -- Create the Readoutlist
   UShort_t* sourcePorts = new UShort_t [fSourceList->GetEntries()];
-  const char ** sourceHostnames = new const char* [fSourceList->GetEntries()];
+  const Char_t ** sourceHostnames = new const Char_t* [fSourceList->GetEntries()];
   UInt_t sourceCount = 0;
-  
+
   CreateReadoutList( sourceHostnames, sourcePorts, sourceCount, detector );
   if ( sourceCount == 0 ) {
     HLTError(Form("No sources selected, aborting."));
     return -2;
   }
 
+  // ***
   // *** Connect to data sources
-  if ( !fReader )
-    fReader = fLibManager->OpenReader( sourceCount, sourceHostnames, sourcePorts );
+  // ***
   
-  iResult = fReader->GetConnectionStatus();
-  if ( iResult ) {
-    // -- Connection failed
+  for (UInt_t idx = 0; idx < sourceCount; idx++) {
+    
+    HLTInfo(Form("Adding source %d as %s : %d", idx, sourceHostnames[idx], sourcePorts[idx]));
+    
+    fReaderList->Add(dynamic_cast<TObject*>(fLibManager->OpenReader(sourceHostnames[idx], sourcePorts[idx])));
+    AliHLTHOMERReader *reader = static_cast<AliHLTHOMERReader*>(fReaderList->Last());
+    if ( !reader ) {
+      HLTError(Form("Adding reader failed, aborting"));
+      return -3;
+    }
 
-    UInt_t ndx = fReader->GetErrorConnectionNdx();
+    if ( (iResult = reader->GetConnectionStatus()) )  {
 
-    if ( ndx < sourceCount ) {
+      // -- Connection to source failed
+      
       HLTError(Form("Error establishing connection to TCP source %s:%hu: %s (%d)",
-		    sourceHostnames[ndx], sourcePorts[ndx], strerror(iResult), iResult));
-    }
+		    sourceHostnames[idx], sourcePorts[idx], strerror(iResult), iResult));
+
+      if( !(TString(sourceHostnames[idx]).CompareTo("localhost")) ) {
+	HLTInfo("The failed connection is on localhost. is SSH tunnel up????? ");
+	HLTInfo(Form("Do: 'ssh -L %s:alihlt-vobox0.cern.ch:%d cernUser@lxplus.cern.ch -fN'",
+		     sourcePorts[idx], sourcePorts[idx]));
+      }
+      
+      // -- Remove reader
+      if ( reader )
+	fLibManager->DeleteReader( reader );
+      reader = NULL;
+      
+      fReaderList->RemoveLast();
+    } 
     else {
-      HLTError(Form("Error establishing connection to unknown source with index %d: %s (%d)",
-		    ndx, strerror(iResult), iResult));
+      // -- Connection succeded
+      fConnected = kTRUE;
+
+      HLTInfo(Form("Connection established to source %s on port %d", sourceHostnames[idx], sourcePorts[idx]));
     }
-
-    if ( fReader )
-      fLibManager->DeleteReader( fReader );
-    fReader = NULL;
-  }
-  else {
-    // -- Connection ok - set reader
-    fConnected = kTRUE;
-
-    HLTInfo(Form("Connection established."));
-  }
-
+    
+  } // for (Int_t idx = 0; idx < sourceCount; idx++) {
+  
   delete[] sourceHostnames;
   delete[] sourcePorts;
 
   return iResult;
+
 }
 
 //##################################################################################
@@ -268,10 +320,17 @@ void AliHLTHOMERManager::DisconnectHOMER(){
   if ( ! IsConnected() )
     return;
 
-  if ( fReader )
-    fLibManager->DeleteReader( fReader );
-  fReader = NULL;
-
+  if ( fReaderList && fLibManager ) {
+    TIter next(fReaderList);
+    TObject * object = NULL;
+    while ( ( object = next()) ) 
+      fLibManager->DeleteReader(static_cast<AliHLTHOMERReader*>(object) );
+      
+    fReaderList->Clear();
+    delete fReaderList;
+    fReaderList = NULL;
+  }
+  
   fStateHasChanged = kTRUE;
   fConnected = kFALSE;
 
@@ -305,95 +364,101 @@ Int_t AliHLTHOMERManager::ReconnectHOMER( TString detector="" ){
 
 //##################################################################################
 Int_t AliHLTHOMERManager::NextEvent(){
+ 
   // see header file for class documentation
+  
 
   Int_t iResult = 0;
   Int_t iRetryCount = 0;
   
-  if ( !IsConnected() || fStateHasChanged )
+  if ( !IsConnected() || fStateHasChanged ) 
     ConnectHOMER();
   
-  if ( !fReader || !IsConnected() ) {
+  if ( !IsConnected() ) {
     HLTWarning(Form( "Not connected yet." ));
     return -1;
   }
 
-  //  fReader->SetEventRequestAdvanceTime( 20000000 /*timeout in us*/ );
+  // -- Reset asyncronous BlockList
+  fAsyncBlockList->Clear();
 
-  // -- Read next event data and error handling for HOMER (error codes and empty blocks)
-  while( 1 ) {
+  // ***
+  // *** Loop over all readers and get new event data
+  // ***
+  
+  TIter next(fReaderList);
+  TObject * object = NULL;
+  
+  while( (object = next()) ) {
     
-    iResult = fReader->ReadNextEvent( 40000000 /*timeout in us*/);
-
-    if ( iResult == 111 || iResult == 32 || iResult == 6 ) {
-      HLTError(Form("No Connection to source %d: %s (%d)", 
-		    fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
-      return -iResult;
-    }
-    else if ( iResult == 110 ) {
-      HLTError(Form("Timeout occured, reading event from source %d: %s (%d)", 
-		    fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
-      return -iResult;
-    }
-    else if ( iResult == 56) {
-      ++iRetryCount;
-
-      if ( iRetryCount >= 20 ) {
-	HLTError(Form("Retry Failed: Error reading event from source %d: %s (%d)", 
-		      fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
-	return -iResult;
+    fCurrentReader = static_cast<AliHLTHOMERReader*>(object);
+    
+    // -- Read next event data and error handling for HOMER (error codes and empty blocks)
+    while ( 1 ) {
+      
+      iResult = fCurrentReader->ReadNextEvent( 40000000 /*timeout in us*/);
+      
+      if ( iResult == 111 || iResult == 32 || iResult == 6 ) {
+	HLTError(Form("No connection to source %d: %s (%d)", 
+		      fCurrentReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
+	break;
+      } 
+      else if ( iResult == 110 ) {
+	HLTError(Form("Timeout occured, reading event from source %d: %s (%d)", 
+		      fCurrentReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
+	break;
+      } 
+      else if ( iResult == 56 ) {
+	++iRetryCount;
+      
+	if ( iRetryCount >= 20 ) {
+	  HLTError(Form("Retry Failed: Error reading event from source %d: %s (%d), returning", 
+			fCurrentReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
+	  break;
+	} 
+	else {
+	  HLTError(Form("Retry: Error reading event from source %d: %s (%d), making another attempt (no %d out of 20)", 
+			fCurrentReader->GetErrorConnectionNdx(), strerror(iResult), iResult, iRetryCount));
+	  //break;
+	  continue;
+	}
       }
+      else if ( iResult ) {
+	HLTError(Form("General Error reading event from source %d: %s (%d), giving up", 
+		      fCurrentReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
+	fConnected = kFALSE;
+	break;
+      } 
       else {
-	HLTError(Form("Retry: Error reading event from source %d: %s (%d)", 
-		      fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
-	continue;
+	break;
       }
-    }
-    else if ( iResult ) {
-      HLTError(Form("General Error reading event from source %d: %s (%d)", 
-		    fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
-      fConnected = kFALSE;
-      return -iResult;
-    }
-    else {
-      break;
-    }
-  } // while( 1 ) {
 
-  // -- Get blockCnt and eventID
-  fNBlks = static_cast<ULong_t>(fReader->GetBlockCnt());
-  ULong_t eventID = static_cast<ULong64_t>(fReader->GetEventID());  
-  fCurrentBlk = 0;
-
-  HLTInfo(Form("Event 0x%016LX (%Lu) with %lu blocks", eventID,eventID, fNBlks));
-
-#if EVE_DEBUG
-  // Loop for Debug only
-  for ( ULong_t ii = 0; ii < fNBlks; ii++ ) {
-    Char_t tmp1[9], tmp2[5];
-    memset( tmp1, 0, 9 );
-    memset( tmp2, 0, 5 );
-    void *tmp11 = tmp1;
-    ULong64_t* tmp12 = static_cast<ULong64_t*>(tmp11);
-    *tmp12 = fReader->GetBlockDataType(ii);
-    void *tmp21 = tmp2;
-    ULong_t* tmp22 = static_cast<ULong_t*>(tmp21);
-    *tmp22 = fReader->GetBlockDataOrigin(ii);
-    HLTInfo(Form( "Block %lu length: %lu - type: %s - origin: %s - spec 0x%08X",
-		  ii, fReader->GetBlockDataLength(ii), tmp1, tmp2, fReader->GetBlockDataSpec(ii) ));
-  } // end for ( ULong_t ii = 0; ii < fNBlks; ii++ ) {
-#endif
-
-  // -- Create BlockList
-  if ( fNBlks > 0 ) {
-    HLTInfo(Form("Add Block List to buffer"));
-    AddBlockListToBuffer();
-  }
-  else {
-    HLTWarning(Form("Event 0x%016LX (%Lu) with %lu blocks", eventID, eventID, fNBlks));
-  }
+    } // while( 1 ) {
     
-  return iResult;
+    
+    // -- Check if event could be read
+    if ( iResult )
+      continue;
+
+    // -- Handle Blocks from current reader
+    iResult = HandleBlocks();
+    if ( iResult ) {
+      HLTError(Form("Handling of blocks failed."));
+    }
+
+  } // while( (object = next()) ) {
+
+  // -- Check if NextEvent should be recalled, 
+  //    to catch the next event with a trigger
+  if ( fRetryNextEvent ) {
+    usleep(1000000);
+    fRetryNextEvent = kFALSE;
+    
+    HLTInfo(Form("Checked trigger of %d events, without triggering", fNEventsNotTriggered));
+    return NextEvent();
+  }
+  else
+    return 0;  
 }
 
 /* ---------------------------------------------------------------------------------
@@ -504,6 +569,26 @@ void AliHLTHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
 void AliHLTHOMERManager::AddBlockListToBuffer() {
   // see header file for class documentation
 
+  // -- Check if event is already in buffer
+  ULong_t eventID = static_cast<ULong64_t>(fCurrentReader->GetEventID());  
+  
+  if ( fEventID[fBufferTopIdx] == eventID ) {
+    HLTInfo(Form("Event 0x%016LX (%Lu) already in buffer.", eventID, eventID));
+    return;
+  }
+
+  // -- Check if event should be selected on basis of trigger string
+  if( fTriggerString.CompareTo("ALL") ){
+    if ( !CheckTriggerDecision() ) {
+      HLTInfo(Form("Event 0x%016LX (%Lu) is not triggered by %s.", 
+		   eventID, eventID, fTriggerString.Data()));
+      return;
+    }
+  }
+  else {
+    HLTInfo("No trigger selection.");
+  }
+
   // -- Set Top mark 
   ++fBufferTopIdx;
   if ( fBufferTopIdx == BUFFERSIZE )
@@ -521,10 +606,11 @@ void AliHLTHOMERManager::AddBlockListToBuffer() {
   fNavigateBufferIdx = fCurrentBufferIdx = fBufferTopIdx;    
 
   // -- Fill EventID
-  fEventID[fBufferTopIdx] = static_cast<ULong64_t>(fReader->GetEventID());
+  fEventID[fBufferTopIdx] = eventID;
 
   // -- Clear Buffer slot
   (reinterpret_cast<TList*>((*fEventBuffer)[fBufferTopIdx]))->Clear();
+
 
   GetFirstBlk();
 
@@ -543,8 +629,8 @@ void AliHLTHOMERManager::AddBlockListToBuffer() {
     else {
       // XXX HACK Jochen
       (reinterpret_cast<TList*>((*fEventBuffer)[fBufferTopIdx]))->Add( block );
-      //      delete block;
-      //      block = NULL;
+      // delete block;
+      // block = NULL;
     }
  
   } while( GetNextBlk() );
@@ -553,9 +639,38 @@ void AliHLTHOMERManager::AddBlockListToBuffer() {
 }
 
 //##################################################################################
+void AliHLTHOMERManager::AddToAsyncBlockList() {
+  // see header file for class documentation
+
+  GetFirstBlk();
+
+  // -- Fill block list
+  do {
+    
+
+    // -- Create new block
+    AliHLTHOMERBlockDesc * block = new AliHLTHOMERBlockDesc();
+    block->SetBlock( GetBlk(), GetBlkSize(), GetBlkOrigin(),
+		     GetBlkType(), GetBlkSpecification() );
+    
+    // -- Check sources list if block is requested
+    if ( CheckIfRequested( block ) ) 
+      fAsyncBlockList->Add( block );
+    else {
+      // XXX HACK Jochen
+      fAsyncBlockList->Add( block );
+      // delete block;
+      // block = NULL;
+    }
+ 
+  } while( GetNextBlk() );
+
+  return;
+}
+//##################################################################################
 TList* AliHLTHOMERManager::GetBlockListEventBuffer( Int_t idx ) {
   // see header file for class documentation
-  
+
   if ( idx == -1 )
     return NULL;
 
@@ -569,16 +684,98 @@ TList* AliHLTHOMERManager::GetBlockListEventBuffer( Int_t idx ) {
  */
 
 //##################################################################################
+Int_t AliHLTHOMERManager::HandleBlocks() {
+  // see header file for class documentation
+  
+  Int_t iResult = 0;
+
+  // -- Get blockCnt and eventID
+  fNBlks = static_cast<ULong_t>(fCurrentReader->GetBlockCnt());
+  ULong_t eventID = static_cast<ULong64_t>(fCurrentReader->GetEventID());  
+  fCurrentBlk = 0;
+
+  // -- Check if blocks present
+  if ( fNBlks ==  0 ) {
+    HLTWarning(Form("Event 0x%016LX (%Lu) with no blocks", eventID, eventID));
+    return -1;
+  }
+
+  HLTInfo(Form("Event 0x%016LX (%Lu) with %lu blocks", eventID, eventID, fNBlks));
+
+#if EVE_DEBUG
+  // Loop for Debug only
+  for ( ULong_t ii = 0; ii < fNBlks; ii++ ) {
+    Char_t tmp1[9], tmp2[5];
+    memset( tmp1, 0, 9 );
+    memset( tmp2, 0, 5 );
+    void *tmp11 = tmp1;
+    ULong64_t* tmp12 = static_cast<ULong64_t*>(tmp11);
+    *tmp12 = fCurrentReader->GetBlockDataType(ii);
+    void *tmp21 = tmp2;
+    ULong_t* tmp22 = static_cast<ULong_t*>(tmp21);
+    *tmp22 = fCurrentReader->GetBlockDataOrigin(ii);
+    HLTInfo(Form( "Block %lu length: %lu - type: %s - origin: %s - spec 0x%08X",
+		  ii, fCurrentReader->GetBlockDataLength(ii), tmp1, tmp2, fCurrentReader->GetBlockDataSpec(ii) ));
+  } // end for ( ULong_t ii = 0; ii < fNBlks; ii++ ) {
+#endif
+    
+  // -- Check if blocks are from syncronous source
+
+  if ( IsSyncBlocks() )
+    AddBlockListToBuffer();
+  else
+    AddToAsyncBlockList();
+    
+  return iResult;
+}
+
+//##################################################################################
+Bool_t AliHLTHOMERManager::IsSyncBlocks() {
+  // see header file for class documentation
+  
+  Bool_t bResult = kFALSE;
+
+  GetFirstBlk();
+  
+  do {
+  
+          
+    //    if ( !GetBlkType().CompareTo("ALIESDV0") ||
+    // !GetBlkType().CompareTo("CLUSTERS") ) {
+    if ( !GetBlkType().CompareTo("ALIESDV0") ) {
+      bResult = kTRUE;
+      break;
+    }
+    
+    if ( !GetBlkType().CompareTo("ROOTTOBJ") ) {
+      AliHLTHOMERBlockDesc blockDesc;
+      
+      blockDesc.SetBlock( GetBlk(), GetBlkSize(), GetBlkOrigin(),
+			  GetBlkType(), GetBlkSpecification() );
+      if ( !blockDesc.GetClassName().CompareTo("AliHLTGlobalTriggerDecision") ) {
+
+	bResult = kTRUE;
+	break;
+      }
+    }
+
+  } while( GetNextBlk() );
+
+
+  return bResult;
+}
+
+//##################################################################################
 void* AliHLTHOMERManager::GetBlk( Int_t ndx ) {
   // see header file for class documentation
   // Get pointer to current block in current event
    
-  if ( !fReader || !IsConnected() ) {
+  if ( !fCurrentReader || !IsConnected() ) {
     HLTError(Form("Not connected yet."));
     return NULL;
   }
   if ( ndx < static_cast<Int_t>(fNBlks) )
-    return  const_cast<void*> (fReader->GetBlockData(ndx));
+    return  const_cast<void*> (fCurrentReader->GetBlockData(ndx));
   else
     return NULL;
 }
@@ -587,13 +784,13 @@ void* AliHLTHOMERManager::GetBlk( Int_t ndx ) {
 ULong_t AliHLTHOMERManager::GetBlkSize( Int_t ndx ) {
   // see header file for class documentation
    
-  if ( !fReader || !IsConnected() ) {
+  if ( !fCurrentReader || !IsConnected() ) {
     HLTError(Form("Not connected yet."));
     return 0;
   }
   
   if ( ndx < static_cast<Int_t>(fNBlks) )
-    return static_cast<ULong_t> (fReader->GetBlockDataLength(ndx));
+    return static_cast<ULong_t> (fCurrentReader->GetBlockDataLength(ndx));
   else
     return 0;
 }
@@ -605,7 +802,7 @@ TString AliHLTHOMERManager::GetBlkOrigin( Int_t ndx ) {
   TString origin = "";
 
   // -- Check for Connection
-  if ( !fReader || ! IsConnected() ) {
+  if ( !fCurrentReader || ! IsConnected() ) {
     HLTError(Form("Not connected yet."));
     return origin;
   }
@@ -622,7 +819,7 @@ TString AliHLTHOMERManager::GetBlkOrigin( Int_t ndx ) {
     Char_t array[4];
   } reverseOrigin;
 
-  reverseOrigin.data = static_cast<UInt_t>(fReader->GetBlockDataOrigin(ndx));
+  reverseOrigin.data = static_cast<UInt_t>(fCurrentReader->GetBlockDataOrigin(ndx));
 
   // -- Reverse the order
   for (Int_t ii = 3; ii >= 0; ii-- )
@@ -641,7 +838,7 @@ TString AliHLTHOMERManager::GetBlkType( Int_t ndx ) {
   TString type = "";
 
   // -- Check for Connection
-  if ( !fReader || ! IsConnected() ) {
+  if ( !fCurrentReader || ! IsConnected() ) {
     HLTError(Form("Not connected yet."));
     return type;
   }
@@ -658,7 +855,7 @@ TString AliHLTHOMERManager::GetBlkType( Int_t ndx ) {
     Char_t array[8];
   } reverseType;
 
-  reverseType.data = static_cast<ULong64_t> (fReader->GetBlockDataType(ndx));
+  reverseType.data = static_cast<ULong64_t> (fCurrentReader->GetBlockDataType(ndx));
 
   // -- Reverse the order
   for (Int_t ii = 7; ii >= 0; ii-- )
@@ -675,7 +872,7 @@ ULong_t AliHLTHOMERManager::GetBlkSpecification( Int_t ndx ) {
   // see header file for class documentation
 
   // -- Check for Connection
-  if ( !fReader || ! IsConnected() ) {
+  if ( !fCurrentReader || ! IsConnected() ) {
     HLTError(Form("Not connected yet."));
     return 0;
   }
@@ -686,7 +883,7 @@ ULong_t AliHLTHOMERManager::GetBlkSpecification( Int_t ndx ) {
     return 0;
   }
 
-  return static_cast<ULong_t>(fReader->GetBlockDataSpec(ndx));
+  return static_cast<ULong_t>(fCurrentReader->GetBlockDataSpec(ndx));
 }
 
 //##################################################################################
@@ -726,3 +923,79 @@ Bool_t AliHLTHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
   return requested;
 }
 
+/* ---------------------------------------------------------------------------------
+ *                          Trigger Handling - private
+ * ---------------------------------------------------------------------------------
+ */
+
+//##################################################################################
+Bool_t AliHLTHOMERManager::CheckTriggerDecision() {
+  // see header file for class documentation
+
+  Bool_t triggered = kFALSE;
+
+  if ( !fCurrentReader || !IsConnected() ) {
+    HLTError(Form("Not connected yet."));
+    return NULL;
+  }
+
+  AliHLTHOMERBlockDesc blockDesc;
+
+  GetFirstBlk();
+  
+  // -- Fill block list
+  Bool_t foundTriggerBlock = kFALSE;
+  
+  do {
+    if ( (GetBlkType().CompareTo("ROOTTOBJ") == 0) ) {
+      blockDesc.SetBlock( GetBlk(), GetBlkSize(), GetBlkOrigin(),
+			  GetBlkType(), GetBlkSpecification() );
+
+      if ( ! blockDesc.GetClassName().CompareTo("AliHLTGlobalTriggerDecision") ) {
+
+	foundTriggerBlock = kTRUE;
+	break;
+      }
+      
+    }
+  } while( GetNextBlk() );
+  
+  if ( !foundTriggerBlock ) {
+    HLTError(Form("No trigger decision object found"));
+    return kFALSE;
+  }
+
+  // -- Get the global decision object
+  AliHLTGlobalTriggerDecision* globalDecision = 
+    static_cast<AliHLTGlobalTriggerDecision*>(blockDesc.GetTObject());
+
+  if ( fTriggerString.CompareTo("HLTGlobalTrigger") == 0 ) {
+    triggered = globalDecision->EventTriggered();
+  } 
+  else {
+    
+    for (Int_t idx = 0; idx < globalDecision->NumberOfInputObjects(); idx++) {
+       
+      const AliHLTTriggerDecision* triggerDecision = 
+	reinterpret_cast<const AliHLTTriggerDecision*>(globalDecision->InputObject(idx));
+    
+      if ( !(fTriggerString.CompareTo(triggerDecision->Description())) ) {
+	triggered = triggerDecision->EventTriggered();
+	break;
+      }
+    } // for (Int_t idx = 0; idx < globalDecision->NumberOfInputObjects(); idx++) {
+  }
+
+
+
+  if ( triggered ) {
+    fRetryNextEvent = kFALSE;
+    fNEventsNotTriggered = 0;
+  }
+  else {
+    fRetryNextEvent = kTRUE;
+    ++fNEventsNotTriggered;
+  }
+
+  return triggered;
+}

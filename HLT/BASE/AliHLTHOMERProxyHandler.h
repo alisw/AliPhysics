@@ -82,11 +82,12 @@ private:
 
   /** Realms */
   enum HOMERRealms_t { 
-    kHLT,            /**< HLT realm */
-    kACR,            /**< ACR realm */
-    kGPN,            /**< GPN realm */
-    kKIP,            /**< KIP realm */
-    kHOMERRealmsMax  /**< Number of enum entries */
+    kHLT,             /**< HLT realm */
+    kACR,             /**< ACR realm */
+    kGPN,             /**< GPN realm */
+    kKIP,             /**< KIP realm */         
+    kLoc,             /**< Local realm. needs ssh tunnel */
+    kHOMERRealmsMax   /**< Number of enum entries */
   };
 
   /** Array of proxy nodes per realm */

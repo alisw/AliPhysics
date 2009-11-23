@@ -21,7 +21,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include "AliHLTHOMERData.h"
-
+#include <TObject.h>
 
 
 
@@ -123,7 +123,7 @@ class AliHLTMonitoringReader
 
 
 
-class AliHLTHOMERReader: public AliHLTMonitoringReader
+class AliHLTHOMERReader: public AliHLTMonitoringReader, public TObject 
     {
     public:
 #ifdef USE_ROOT

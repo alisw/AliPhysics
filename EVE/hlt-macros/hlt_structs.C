@@ -94,35 +94,35 @@ struct AliHLTTPCClusterData {
 // };
 
 // --------------------------------------------------------------------
-struct AliHLTPHOSDigitDataStruct {
-  /** The x coordinate */
-  Float_t fX;
+// struct AliHLTPHOSDigitDataStruct {
+//   /** The x coordinate */
+//   Float_t fX;
 
-  /** The x coordinate */
-  Float_t fZ;
+//   /** The x coordinate */
+//   Float_t fZ;
 
-  /** The module number */
-  Int_t fModule;
+//   /** The module number */
+//   Int_t fModule;
 
-  /** The amplitude in ADC counts */
-  Float_t fAmplitude;
+//   /** The amplitude in ADC counts */
+//   Float_t fAmplitude;
 
-  /** The time in sample count */ 
-  Float_t fTime;
+//   /** The time in sample count */ 
+//   Float_t fTime;
 
-  /* The energy in GeV */
-  Float_t fEnergy;
+//   /* The energy in GeV */
+//   Float_t fEnergy;
 
-  /** The gain */
-  Int_t fGain;
+//   /** The gain */
+//   Int_t fGain;
   
-  /** The crazyness */
-  Int_t fCrazyness; 
+//   /** The crazyness */
+//   Int_t fCrazyness; 
 
-  /**  The baseline */
-  Float_t fBaseline;
+//   /**  The baseline */
+//   Float_t fBaseline;
 
-};
+// };
 
 // --------------------------------------------------------------------
 // --                            MUON                                --

@@ -22,11 +22,12 @@
     from AliHLTHOMERManager, with small additions for alieve interface
 */
 #include <AliHLTHOMERManager.h>
-#include <TEveEventManager.h>
+//\#include <TEveElementList.h>
 #include "AliEveHOMERSourceList.h"
+#include "TString.h"
+class TEveElementList;
 
-
-class AliEveHOMERManager : public AliHLTHOMERManager, public TEveElementList
+class AliEveHOMERManager : public TEveElementList, public AliHLTHOMERManager
 {
 public:
 
@@ -57,6 +58,8 @@ public:
   Int_t CreateEveSourcesListLoop();
   
   Int_t ConnectEVEtoHOMER(TString detector="ALL");
+
+  //  Int_t CheckTriggerDecision(TString triggers="ALL");
 
   void SetRetryCount(Int_t count, Int_t sleeptime) { fRetryCount = count; fRetrySleeptime = sleeptime; }
 

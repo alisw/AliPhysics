@@ -8,9 +8,9 @@
 
 
 /** @file   AliEveHOMERManager.cxx
-    @author Jochen Thaeder
+    @author Jochen Thaeder and Svein Lindal
     @date
-    @brief  Manger for HOMER in offline
+    @brief  Manager for HOMER online
 */
 
 #if __GNUC__>= 3
@@ -18,9 +18,12 @@
 #endif
 
 #include "unistd.h"
-
+//#include "TIter.h"
 #include "AliEveHOMERManager.h"
-
+#include "AliHLTHOMERBlockDesc.h"
+//#include <TEveElementList.h>
+#include "AliHLTHOMERManager.h"
+#include "AliHLTTriggerDecision.h"
 
 ClassImp(AliEveHOMERManager)
   
@@ -32,12 +35,15 @@ ClassImp(AliEveHOMERManager)
   
 //##################################################################################
 AliEveHOMERManager::AliEveHOMERManager() :
-  AliHLTHOMERManager(), 
-  TEveElementList("Homer Manager"),
-  fSrcList(NULL),
-  fRetryCount(1),
-  fRetrySleeptime(10) {
-  // see header file for class documentation
+AliHLTHOMERManager(), 
+     TEveElementList("Homer Manager"),
+     fSrcList(NULL),
+     fRetryCount(1),
+     fRetrySleeptime(10000)
+{
+  
+ 
+// see header file for class documentation
   // or
   // refer to README to build package
   // or
@@ -99,10 +105,10 @@ Int_t AliEveHOMERManager::CreateEveSourcesListLoop() {
       break;
     
     else if (iResult == 1) {
-      HLTWarning( Form("Couldn't find active services, sleeping %d s", fRetryCount) ) ;
+      HLTWarning( Form("Couldn't find active services, sleeping %d s before making attempt %d out of %d", fRetrySleeptime, retry, fRetryCount) ) ;
     }   
     else if (iResult == 2) {
-      HLTWarning( Form("Services List empty, sleeping %d s", fRetryCount) ) ;
+      HLTWarning( Form("Services List empty, sleeping %d s", fRetrySleeptime) ) ;
     }
     else {
       HLTError( Form("Other problem ... \n") ); 
@@ -128,3 +134,4 @@ Int_t AliEveHOMERManager::ConnectEVEtoHOMER( TString detector ) {
   
   return ConnectHOMER(detector);
 }
+

@@ -39,6 +39,8 @@
   includePath        += "-I${ALICE_ROOT}/MUON ";
   includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
   includePath        += "-I${ALICE_ROOT}/HLT/MUON ";
-  includePath        += "-I${ALICE_ROOT}/HLT/TPCLib/tracking-ca";
+  includePath        += "-I${ALICE_ROOT}/HLT/TPCLib/tracking-ca ";
+  includePath        += "-I${ALICE_ROOT}/PWG0";
+  
   gSystem->SetIncludePath(includePath.Data());
 }

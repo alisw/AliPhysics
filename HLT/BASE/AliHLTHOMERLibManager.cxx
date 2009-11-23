@@ -80,7 +80,7 @@ AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(const char* hostname, unsig
   
   AliHLTHOMERReader* pReader=NULL;
   if (fFctCreateReaderFromTCPPort!=NULL && (pReader=(((AliHLTHOMERReaderCreateFromTCPPort_t)fFctCreateReaderFromTCPPort)(hostname, port)))==NULL) {
-    //HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromTCPPort);
+    cout <<"can not create instance of HOMER reader from ports" << endl;
   }
   
   return pReader;
@@ -98,6 +98,7 @@ AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(unsigned int tcpCnt, const 
   AliHLTHOMERReader* pReader=NULL;
   if (fFctCreateReaderFromTCPPorts!=NULL && (pReader=(((AliHLTHOMERReaderCreateFromTCPPorts_t)fFctCreateReaderFromTCPPorts)(tcpCnt, hostnames, ports)))==NULL) {
     //HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromTCPPorts);
+    cout << "can not create instance of HOMER reader from port"<<endl;
   }
   
   return pReader;
