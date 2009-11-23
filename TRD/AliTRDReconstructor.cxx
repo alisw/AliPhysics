@@ -95,12 +95,19 @@ AliTRDReconstructor::~AliTRDReconstructor()
   // Destructor
   //
 
-  if(fgDigitsParam) delete fgDigitsParam;
+  if(fgDigitsParam){
+    delete fgDigitsParam;
+    fgDigitsParam = NULL;
+  }
   if(fgClusters) {
-    fgClusters->Delete(); delete fgClusters;
+    fgClusters->Delete();
+    delete fgClusters;
+    fgClusters = NULL;
   }
   if(fgTracklets) {
-    fgTracklets->Delete(); delete fgTracklets;
+    fgTracklets->Delete();
+    delete fgTracklets;
+    fgTracklets = NULL;
   }
   if(fSteerParam&kOwner){
     for(Int_t itask = 0; itask < AliTRDrecoParam::kTRDreconstructionTasks; itask++)
