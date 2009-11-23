@@ -23,13 +23,15 @@ mkdir $1_$2
 cp *.C $1_$2 
 cd $1_$2
 cp $3 esd.txt
-
+#
+#
+#
 dname=`basename \`pwd\``
-basename=`pwd`/${fstart}_${fend}
-mkdirhier $basename
-tmpname=/tmp/$USER/$run/$dname/${fstart}_${fend}
+basename=`pwd`/
+tmpname=/tmp/$USER/$run/$dname
 mkdirhier $tmpname
-cp * $tmpname
+rm -rf  $tmpname/*
+cp * $tmpname/
 ls -al $tmpname
 cd $tmpname
 echo Working directory  $tmpname
@@ -47,9 +49,15 @@ echo 00000000000000000000000000000000000000000000000
 echo Copy output
 echo Date  `date`
 echo 00000000000000000000000000000000000000000000000
-
-rm *.root
 cp -rf * $basename
+find $basename/ | grep .root
+
+echo 00000000000000000000000000000000000000000000000
+echo DELET OUTPY
+echo Date  `date`
+echo 00000000000000000000000000000000000000000000000
+rm -rf  $tmpname/*
+rm *.root
 
 
 echo 00000000000000000000000000000000000000000000000

@@ -17,8 +17,17 @@ echo
 mydir=`pwd`
 for adir in `cat $runlist`; do
     cd $mydir
+    #
+    #remove old data
     rm -f *.log
     rm -f core*
+    rm -rf $mydir/$adir/core*
+    rm -rf $mydir/$adir/*/core*
+    rm -rf $mydir/$adir/*.root
+    rm -rf $mydir/$adir/*.log
+    rm -rf $mydir/$adir/*_*
+    #end of remove old data
+    #
     up=`cat  $adir/esd.txt.Good | grep -c .root`
     if [ $up -gt 0 ] ; then
 	myvar=0;
@@ -26,8 +35,6 @@ for adir in `cat $runlist`; do
 	echo SUBMITING DIRECTORY $adir
 	cp ../ConfigOCDB.C .
 	cp ../CalibrateTPC.C .
-	rm -rf *_*
-	rm -rf */V3/
 	while [ $myvar -le ${up} ] ; do
         bsub -q $bqueues  -oo out$myvar.log -eo err$myvar.log $ALICE_ROOT/TPC/scripts/submitCalibJob.sh $myvar $(($myvar+step))  `pwd`/esd.txt.Good $adir; 
 	myvar=$(( $myvar + $step )) ; 

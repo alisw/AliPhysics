@@ -40,4 +40,4 @@ esd.list      - the list of files -standard
 
 Run the train:
 runTrainGSI.sh  - this is a recepie
-                - $ALICE_ROOT/TPC/scripts/runTrainGSI.sh    
+                - $ALICE_ROOT/TPC/scripts/runTrainBatch.sh    
