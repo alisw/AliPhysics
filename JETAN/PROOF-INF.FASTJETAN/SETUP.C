@@ -4,9 +4,8 @@ void SETUP()
    gSystem->Load("libFASTJETAN");
 
    // Set the Inlucde paths
-   gSystem->SetIncludePath("-I$ROOTSYS/include -IJETAN");
-   gROOT->ProcessLine(".include JETAN");
+   gROOT->ProcessLine(".include FASTJETAN");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("JETAN_INCLUDE", "JETAN");
+   gSystem->Setenv("FASTJETAN_INCLUDE", "FASTJETAN");
 }

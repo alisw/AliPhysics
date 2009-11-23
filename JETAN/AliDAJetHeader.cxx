@@ -43,7 +43,7 @@ void AliDAJetHeader::SetRadius(Float_t radius)
     // to be found, in order to obtain jets with the expected area.
     // It must not be intended as a sharp limit on the cluster shape
     
-	Float_t fEtaLim = 0.9;
-    Int_t nclust = (Int_t) 4*fEtaLim/(radius*radius) + 1;
-    SetNclust(nclust);
+  Float_t fEtaLim = 0.9;
+  Int_t nclust = (Int_t) (4.*fEtaLim/(radius*radius)) + 1;
+  SetNclust(nclust);
 }

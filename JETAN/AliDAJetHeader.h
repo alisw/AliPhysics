@@ -20,7 +20,7 @@ class AliDAJetHeader : public AliJetHeader
 	virtual ~AliDAJetHeader() {}
 
 	void SelectJets		(Bool_t seljets ) { fSelectJets=seljets; }
-    void SetRadius      (Float_t radius );
+	void SetRadius      (Float_t radius );
 	void SetNclust		(Int_t ncl      ) { fNclustMax=ncl ; fFixedCl=kTRUE; }
 	void SetEtMin		(Float_t etmin  ) { fEtMin =etmin;  }
 

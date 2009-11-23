@@ -13,7 +13,7 @@ endif
 HDRS:= $(SRCS:.cxx=.h) 
 DHDR= FASTJETANLinkDef.h
 
-EINCLUDE:= JETAN/fastjet
+# EINCLUDE:= JETAN/fastjet
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

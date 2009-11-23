@@ -158,7 +158,6 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
 
 
   // Histograms
-  OpenFile(1);
   fListOfHistos = new TList();
   fHistos       = new AliJetHistos();
   fHistos->AddHistosToList(fListOfHistos);
