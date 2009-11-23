@@ -528,7 +528,7 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
   AliQAChecker::Instance()->SetRunNumber(fRunNumber) ; 
  if (fPrintImage) {
     TCanvas fakeCanvas ; 
-    fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())) ; 
+    fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat()), "ps") ; 
   }
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
@@ -563,7 +563,7 @@ void  AliQAManager::EndOfCycle(TString detectors)
   AliQAChecker::Instance()->SetRunNumber(fRunNumber) ; 
   if (fPrintImage) {
     TCanvas fakeCanvas ; 
-    fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())) ; 
+    fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat()), "ps") ; 
   }
   for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
@@ -678,7 +678,7 @@ Bool_t AliQAManager::InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  Char_t 
       timer.Continue();
       gSystem->ProcessEvents();
     }
-    fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())) ;    
+    fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat()), "ps") ;    
   }    
 	return kTRUE ; 
 }
