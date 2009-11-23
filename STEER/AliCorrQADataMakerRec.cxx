@@ -78,10 +78,10 @@ AliCorrQADataMakerRec::~AliCorrQADataMakerRec()
 {
   // dtor only destroy the ntuple 
   if ( fCorrNt ) {
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      if ( fCorrNt[specie] != NULL ) 
-        delete fCorrNt[specie] ; 
-    }
+//    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+//      if ( fCorrNt[specie] != NULL ) 
+//        delete fCorrNt[specie] ; 
+//    }
 		delete[] fCorrNt ; 
     fCorrNt = 0x0;
 	}  
