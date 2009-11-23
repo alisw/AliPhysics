@@ -31,7 +31,7 @@ MUON_displayData   - to be used with reconstructed raw data (with the option
 
 3. Initialize
 
-   alieve_init("directory_to_data",event_number)
+   alieve_init("local://$ALICE_ROOT/OCDB","directory_to_data",event_number)
 
 4. Display simulation digits
 
