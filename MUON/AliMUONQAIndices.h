@@ -21,6 +21,11 @@ namespace AliMUONQAIndices
     kTrackerBusPatchNofPads   = 5, ///< Number of pads per bus patch
     kTrackerBusPatchNofManus  = 6, ///< Number of manus per bus patch
     kTrackerBusPatchConfig    = 7, ///< Configuration of the tracker
+    kTrackerBusPatchParityErrors    =  8, ///< Parity errors during readout of the tracker
+    kTrackerBusPatchTokenLostErrors =  9, ///< Token lost errors during readout of the tracker
+    kTrackerBusPatchPaddingErrors   = 10, ///< Padding errors during readout of the tracker
+    kTrackerNofRawEventSeen         = 11, ///< Number of events seen (and used)
+    kTrackerReadoutErrors           = 12,  ///< Integrated number of errors (and events for 1st bin)
     kTriggerScalersTime       = 22, ///< Trigger scalers acquisition time index
     kTriggerScalers           = 23, ///< Trigger scalers histogram per plane index
     kTriggerScalersDisplay    = 31, ///< Trigger scalers display histogram per plane index

@@ -25,6 +25,7 @@ class AliMUONDigitCalibrator;
 class AliMUONVStore;
 class AliMUONVTrackerData;
 class AliRawReader;
+class AliMUONLogger;
 
 class AliMUONTrackerDataMaker : public AliMUONVTrackerDataMaker
 {
@@ -96,6 +97,8 @@ public:
   
   void SetRawReader(AliRawReader* rawReader);
   
+  void EnableErrorLogger(AliMUONLogger* logger) { fLogger = logger; }
+  
 private:
   /// not implemented
   AliMUONTrackerDataMaker(const AliMUONTrackerDataMaker& rhs);
@@ -123,8 +126,9 @@ private:
   Bool_t fIsOwnerOfRawReader; ///< whether we must delete rawReader or not
   Bool_t fIsEventByEvent; ///< we only keep one event's data (no accumulation)
   static Int_t fgkCounter; ///< to count the number of instances
+  AliMUONLogger* fLogger; ///< error logger (not owner)
   
-  ClassDef(AliMUONTrackerDataMaker,1) // Producer of AliMUONVTrackerData from raw
+  ClassDef(AliMUONTrackerDataMaker,2) // Producer of AliMUONVTrackerData from raw
 };
 
 #endif

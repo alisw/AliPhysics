@@ -39,7 +39,10 @@ public:
   void   Clear(Option_t* /*option*/ ="");
   
   Bool_t Next(TString& msg, Int_t& occurance);
+  
   void   ResetItr();
+  
+  Int_t NumberOfEntries() const;
   
 private:
   /// Not implemented

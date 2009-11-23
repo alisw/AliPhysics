@@ -22,12 +22,21 @@
 
 class AliMUONDDLTracker;
 class AliRawReader;
+class AliMUONLogger;
 
 class AliMUONRawStreamTrackerHP : public TObject
 {
 public:
 	class AliDspHeader;
 	class AliBusPatch;
+	
+	/// Values indicating the logging detail level to use for error messages.
+	enum EDetailLevel
+	{
+		kLowErrorDetail,     /// Logs minimal information in the error messages.
+		kMediumErrorDetail,  /// Logs a medium level of detail in the error messages.
+		kHighErrorDetail     /// Logs maximum information in the error messages.
+	};
 
 	/// Default constructor.
 	AliMUONRawStreamTrackerHP();
@@ -39,7 +48,10 @@ public:
 	virtual ~AliMUONRawStreamTrackerHP();
 	
 	/// Get object for reading the raw data
-	virtual AliRawReader* GetReader();
+	virtual AliRawReader* GetReader() { return fRawReader; }
+	
+	/// Set the raw reader
+	void SetReader(AliRawReader* reader) { fRawReader = reader; }
 	
 	/// Initialize iterator
 	virtual void First();
@@ -49,10 +61,6 @@ public:
 	
 	/// Whether the iteration is finished or not
 	virtual Bool_t IsDone() const;
-	
-	/// Nothing is actually done in the AddErrorMessage method because we log
-	/// the error messages as we find them in AliDecoderEventHandler::OnError().
-	virtual void AddErrorMessage() { };
 
 	/// Advance one step in the iteration. Returns false if finished.
 	virtual Bool_t Next(Int_t& busPatchId,
@@ -117,9 +125,11 @@ public:
 	}
 
 	/// Set warnings flag to disable warnings on data errors.
-	void DisableWarnings() { fDecoder.GetHandler().Warnings(kFALSE); }
+	void DisableWarnings() { fWarnings = kFALSE; }
 	/// Set warnings flag to enable warnings on data errors.
-	void EnableWarnings() { fDecoder.GetHandler().Warnings(kTRUE); }
+	void EnableWarnings() { fWarnings = kTRUE; }
+	
+	Bool_t IsWarningsEnabled() const { return fWarnings; }
 
 	/// Returns the "try to recover from errors" flag.
 	Bool_t TryRecover() const { return Bool_t(fDecoder.TryRecover()); }
@@ -515,14 +525,41 @@ public:
 		return (dsp != NULL) ? dsp->GetBlockHeader() : NULL;
 	}
 	
-	/// Set the raw reader
-	void SetReader(AliRawReader* reader);
+	/// Enable error logging to the raw reader. \note Kept for backward compatibility.
+	virtual void EnabbleErrorLogger() { EnableRawReaderErrorLogger(); }
 	
-	/// Enable error info logger
-	virtual void EnabbleErrorLogger() { fEnableErrorLogger = kTRUE; }
+	/// Enable error info logging to AliMUONLogger.
+	void EnableMUONErrorLogger() { fEnableMUONErrorLogger = kTRUE; }
 	
-	/// Check if error info logger enable
-	virtual Bool_t IsErrorLogger() const {return fEnableErrorLogger; }
+	/// Disable logging to AliMUONLogger.
+	void DisableMUONErrorLogger() { fEnableMUONErrorLogger = kFALSE; }
+	
+	/// Enable error info logging to raw reader.
+	void EnableRawReaderErrorLogger() { fEnableRawReaderErrorLogger = kTRUE; }
+	
+	/// Disable logging to the raw reader.
+	void DisableRawReaderErrorLogger() { fEnableRawReaderErrorLogger = kFALSE; }
+	
+	/// Check if the AliMUONLogger is enabled for error logging.
+	Bool_t IsMUONErrorLoggerEnabled() const { return fEnableMUONErrorLogger; }
+	
+	/// Check if the AliMUONLogger is enabled for error logging.
+	Bool_t IsRawReaderErrorLoggerEnabled() const { return fEnableRawReaderErrorLogger; }
+	
+	/// Returns the logger object. (constant version)
+	const AliMUONLogger* GetMUONErrorLogger() const { return fLogger; }
+	
+	/// Returns the logger object.
+	AliMUONLogger* GetMUONErrorLogger() { return fLogger; }
+	
+	/// Sets the logger object to use. Ownership of the logger object remains with the caller.
+	void SetMUONErrorLogger(AliMUONLogger* logger) { fLogger = logger; }
+	
+	/// Returns the level of detail used in the error messages.
+	EDetailLevel GetLoggingDetailLevel() const { return fDetailLevel; }
+	
+	/// Sets the level of detail used in the error messages.
+	void SetLoggingDetailLevel(EDetailLevel level) { fDetailLevel = level; }
 	
 	/// Number of glitch errors since First() was called
 	UInt_t NumberOfGlitchErrors() const { return fTotalNumberOfGlitchErrors; }
@@ -558,7 +595,10 @@ private:
 	
 	/// Return max number of tracker DDLs
 	Int_t GetMaxDDL() const { return fgkMaxDDL; }
-  
+	
+	/// swap method for Power PC
+	virtual void Swap(UInt_t* buffer, Int_t size) const;
+	
 	/// This is the custom event handler (callback interface) class which
 	/// unpacks raw data words and fills an internal buffer with decoded digits
 	/// as they are decoded by the high performance decoder.
@@ -573,6 +613,9 @@ private:
 		
 		/// Sets the internal arrays based on the maximum number of structures allowed.
 		void SetMaxStructs(UInt_t maxBlocks, UInt_t maxDsps, UInt_t maxBusPatches);
+		
+		/// Sets the raw stream object which should be the parent of this class.
+		void SetRawStream(AliMUONRawStreamTrackerHP* rawStream) { fRawStream = rawStream; }
 		
 		/// Return the number of blocks found in the payload.
 		UInt_t BlockCount() const { return fBlockCount; };
@@ -597,11 +640,6 @@ private:
 		UInt_t PaddingErrorCount() const { return fPaddingErrors; }
 		/// Returns the number of token lost errors found in the DDL.
 		UInt_t TokenLostCount() const { return fTokenLostErrors; }
-
-		/// Returns the warnings flag.
-		Bool_t Warnings() const { return fWarnings; }
-		/// Sets the warnings flag.
-		void Warnings(Bool_t value) { fWarnings = value; }
 		
 		// The following methods are inherited from AliMUONTrackerDDLDecoderEventHandler:
 		
@@ -639,12 +677,6 @@ private:
 		/// Error handler.
 		void OnError(ErrorCode error, const void* location);
 	
-		/// Set reader
-		void SetReader(AliRawReader* reader) { fRawReader = reader; }
-		
-		/// Get reader
-		AliRawReader* GetReader() const { return fRawReader; }
-	
 	private:
 	
 		// Do not allow copying of this class.
@@ -653,7 +685,7 @@ private:
                 /// Not implemented
 		AliDecoderEventHandler& operator = (const AliDecoderEventHandler& /*obj*/);
 
-		AliRawReader* fRawReader; //!< Pointer to the raw reader
+		AliMUONRawStreamTrackerHP* fRawStream; //!< Pointer to the parent raw stream object.
 		const void* fBufferStart;   //!< Pointer to the start of the current DDL payload buffer.
 		UInt_t fBlockCount;  //!< Number of blocks filled in fBlocks.
 		AliBlockHeader* fBlocks;  //!< Array of blocks. [0..fMaxBlocks-1]
@@ -670,13 +702,17 @@ private:
 		UInt_t fGlitchErrors;   //!< Number of glitch errors found in DDL.
 		UInt_t fPaddingErrors;  //!< Number of padding errors found in DDL.
 		UInt_t fTokenLostErrors;  //!< Number of token lost errors found in DDL.
-		Bool_t fWarnings;       //!< Flag indicating if we should generate a warning for errors.
 		UInt_t fMaxBlocks; //!< max number of blocks
 		UInt_t fMaxDsps; //!< max number of dsps per block
 		UInt_t fMaxBusPatches; //!< max number of buspatches per dsp
 	};
 
-	Bool_t fEnableErrorLogger; //!< whether or not we log errors
+	AliRawReader* fRawReader; //!< Pointer to the raw reader
+	AliMUONLogger* fLogger; //!< Logger object to store error messages.
+	EDetailLevel fDetailLevel;  //!< The logging detail level used in the error messages generated in OnError.
+	Bool_t fEnableMUONErrorLogger; //!< whether or not we log errors to AliMUONLogger
+	Bool_t fEnableRawReaderErrorLogger; //!< whether or not we log errors to the raw reader.
+	Bool_t fWarnings;       //!< Flag indicating if we should generate a warning for errors.
 	AliMUONTrackerDDLDecoder<AliDecoderEventHandler> fDecoder;  //!< The decoder for the DDL payload.
 	Int_t fDDL;         //!< The current DDL number being handled.
 	Int_t fBufferSize;  //!< This is the buffer size in bytes of fBuffer.

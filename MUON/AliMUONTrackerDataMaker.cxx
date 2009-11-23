@@ -33,6 +33,7 @@
 #include "AliMUONCalibParamND.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONDigitCalibrator.h"
+#include "AliMUONLogger.h"
 #include "AliMUONRawStreamTrackerHP.h"
 #include "AliMUONTrackerData.h"
 #include "AliMpDDLStore.h"
@@ -61,7 +62,8 @@ fNumberOfEvents(0),
 fRunNumber(0),
 fIsRunning(kFALSE),
 fIsOwnerOfRawReader(kFALSE),
-fIsEventByEvent(kFALSE)
+fIsEventByEvent(kFALSE),
+fLogger(0x0)
 {
 /// Root IO ctor
 }
@@ -88,7 +90,8 @@ fNumberOfEvents(0),
 fRunNumber(runNumber),
 fIsRunning(kFALSE),
 fIsOwnerOfRawReader(kFALSE),
-fIsEventByEvent(kFALSE)
+fIsEventByEvent(kFALSE),
+fLogger(0x0)
 {
   /// Ctor in which this object will NOT be the owner of the reader
   /// and can NOT apply rewind to it, nor use Next on it. 
@@ -117,7 +120,8 @@ fNumberOfEvents(0),
 fRunNumber(0),
 fIsRunning(kFALSE),
 fIsOwnerOfRawReader(kTRUE),
-fIsEventByEvent(kFALSE)
+fIsEventByEvent(kFALSE),
+fLogger(0x0)
 {
   /// Ctor in which we take the ownership of the rawReader, so we can rewind
   /// and advance it as we wish
@@ -147,7 +151,8 @@ fNumberOfEvents(0),
 fRunNumber(0),
 fIsRunning(kFALSE),
 fIsOwnerOfRawReader(kTRUE),
-fIsEventByEvent(kFALSE)
+fIsEventByEvent(kFALSE),
+fLogger(0x0)
 {
   /// Ctor from raw data reader
   if (fRawReader) 
@@ -345,9 +350,17 @@ Bool_t AliMUONTrackerDataMaker::ProcessEvent()
   AliCodeTimerAuto("",0);
   
   AliMUONRawStreamTrackerHP stream(fRawReader);
-  
+
   stream.DisableWarnings();
-  stream.EnabbleErrorLogger();
+  stream.DisableRawReaderErrorLogger();
+  stream.DisableMUONErrorLogger();
+  
+  if (fLogger)
+  {
+    stream.EnableMUONErrorLogger();  
+    stream.SetMUONErrorLogger(fLogger);    
+    stream.SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail);
+  }
   
   const Int_t nddls = AliDAQ::NumberOfDdls("MUONTRK");
   TArrayI nevents(nddls);
@@ -408,7 +421,7 @@ Bool_t AliMUONTrackerDataMaker::ProcessEvent()
   {
     fAccumulatedData->Add(*fOneEventData,&nevents);    
   }
-  
+    
   return !badEvent;
 }
 

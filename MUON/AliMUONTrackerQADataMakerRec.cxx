@@ -23,6 +23,7 @@
 #include "AliMUONDigitMaker.h"
 #include "AliMUONQAIndices.h"
 #include "AliMUONQAMappingCheck.h"
+#include "AliMUONLogger.h"
 #include "AliMUONTrackerDataMaker.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterStore.h"
@@ -55,6 +56,7 @@
 #include <TH2F.h>
 #include <Riostream.h>
 #include <TMath.h>
+#include <TPaveText.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONTrackerQADataMakerRec
@@ -67,6 +69,11 @@
 ClassImp(AliMUONTrackerQADataMakerRec)
 /// \endcond
            
+Double_t AliMUONTrackerQADataMakerRec::fgkRawNofGlitchErrors(0.0);
+Double_t AliMUONTrackerQADataMakerRec::fgkRawNofTokenLostErrors(1.0);
+Double_t AliMUONTrackerQADataMakerRec::fgkRawNofParityErrors(2.0);
+Double_t AliMUONTrackerQADataMakerRec::fgkRawNofPaddingErrors(3.0);
+
 //____________________________________________________________________________ 
 AliMUONTrackerQADataMakerRec::AliMUONTrackerQADataMakerRec(AliQADataMakerRec* master) : 
 AliMUONVQADataMakerRec(master),
@@ -75,7 +82,8 @@ fDigitMaker(new AliMUONDigitMaker(kTRUE)),
 fClusterStore(0x0),
 fTrackerDataMaker(0x0),
 fMappingCheckRecPoints(0x0),
-fCalibrationData(new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun()))
+fCalibrationData(new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun())),
+fLogger(0x0)
 {
   /// ctor
 }
@@ -90,6 +98,14 @@ AliMUONTrackerQADataMakerRec::~AliMUONTrackerQADataMakerRec()
   delete fTrackerDataMaker;
   delete fCalibrationData;
   delete fMappingCheckRecPoints;
+  if (fLogger)
+  {
+    if ( fLogger->NumberOfEntries() != 0 ) 
+    {
+      AliError("Some unprocessed logged errors are still there... Please check");
+    }
+    delete fLogger;    
+  }
 }
 
 //____________________________________________________________________________ 
@@ -381,8 +397,92 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArra
       Int_t bin = hbp->FindBin(busPatchId);
       hbp->SetBinContent(bin,data->BusPatch(busPatchId,occDim)*100.0); // occupancy, in percent
     }
+    
+    TH1* hnevents = GetRawsData(AliMUONQAIndices::kTrackerNofRawEventSeen);
+    hnevents->Reset();
+    hnevents->Fill(0.0,fTrackerDataMaker->Data()->NumberOfEvents(-1));
+    
+    if ( fLogger->NumberOfEntries() > 0 )
+    {
+      // readout errors      
+      FillErrors(*fLogger);      
+      fLogger->Clear();
+    }
   }
 }
+
+//____________________________________________________________________________ 
+void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
+{
+  log.ResetItr();
+
+  TString msg;
+  Int_t occurence;
+  
+  TH1* hparity = GetRawsData(AliMUONQAIndices::kTrackerBusPatchParityErrors);
+
+  TH1* htoken = GetRawsData(AliMUONQAIndices::kTrackerBusPatchTokenLostErrors);
+
+  TH1* hpadding = GetRawsData(AliMUONQAIndices::kTrackerBusPatchPaddingErrors);
+  
+  TH1* hroe = GetRawsData(AliMUONQAIndices::kTrackerReadoutErrors);
+    
+  TH1* hnevents = GetRawsData(AliMUONQAIndices::kTrackerNofRawEventSeen);
+  
+  Int_t nevents = TMath::Nint(hnevents->GetBinContent(1));
+  
+  if ( !nevents ) 
+  {
+    TPaveText* text = new TPaveText(0,0,0.99,0.99,"NDC");
+    text->AddText("FATAL : 0 event seen ? That's NOT normal...");
+    text->SetFillColor(2); // red = FATAL
+    hroe->GetListOfFunctions()->Add(text);
+    return;
+  }
+  
+  while ( log.Next(msg,occurence) )
+  {
+    AliDebug(1,Form("msg=%s occurence=%d",msg.Data(),occurence));
+             
+    if ( msg.Contains("token") )
+    {
+      Int_t dsp(-1),ddl(-1),ecode(-1);
+      
+      sscanf(msg.Data(),"Lost token error detected in DSP 0x%X of DDL %d and code %d.",
+             &dsp,&ddl,&ecode);
+      Int_t localBP = ((dsp >> 16)- 4)*5 + 1;
+      Int_t buspatch = localBP + ddl*100;
+      htoken->Fill(buspatch,occurence);
+      hroe->Fill(fgkRawNofTokenLostErrors,occurence);
+      AliDebug(1,Form("DDL %d DSP %d busPatch %d",ddl,dsp,buspatch));
+    }
+    
+    if ( msg.Contains("Parity") )
+    {
+      Int_t buspatch;
+      sscanf(msg.Data(),"Parity error in buspatch %d (0x%X).",&buspatch,&buspatch);
+      hparity->Fill(buspatch,occurence);      
+      hroe->Fill(fgkRawNofParityErrors,occurence);
+    }
+    
+    if ( msg.Contains("Glitch") ) 
+    {
+      hroe->Fill(fgkRawNofGlitchErrors,occurence);      
+    }
+    
+    if ( msg.Contains("Padding") )
+    {
+      Int_t block, dsp, buspatch;      
+      sscanf(msg.Data(),"Padding word error for iBlock %d, iDsp %d, iBus %d.",&block,&dsp,&buspatch);
+      hpadding->Fill(buspatch,occurence);
+      hroe->Fill(fgkRawNofPaddingErrors,occurence);      
+    }
+  }
+  
+  /// Finally we normalize to the number of events, for the shifter plot only
+  hroe->Scale(100.0/nevents);
+}
+
 
 //____________________________________________________________________________ 
 void AliMUONTrackerQADataMakerRec::InitRaws()
@@ -395,7 +495,7 @@ void AliMUONTrackerQADataMakerRec::InitRaws()
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
  
-   Int_t bpmin(999999);
+  Int_t bpmin(999999);
   Int_t bpmax(0);
   
   TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
@@ -412,7 +512,6 @@ void AliMUONTrackerQADataMakerRec::InitRaws()
   
   TH1* hbp = new TH1F("hTrackerBusPatchOccupancy","Occupancy of bus patches",nbins,xmin,xmax);
 
-
   TH1* hbpnpads = new TH1F("hTrackerBusPatchNofPads","Number of pads per bus patch",nbins,xmin,xmax);
 
   TH1* hbpnmanus = new TH1F("hTrackerBusPatchNofManus","Number of manus per bus patch",nbins,xmin,xmax);
@@ -421,17 +520,51 @@ void AliMUONTrackerQADataMakerRec::InitRaws()
   Add2RawsList(hbpnpads,AliMUONQAIndices::kTrackerBusPatchNofPads, expert, !image, !saveCorr);
   Add2RawsList(hbpnmanus,AliMUONQAIndices::kTrackerBusPatchNofManus, expert, !image, !saveCorr);
 
+  Add2RawsList(new TH1F("hTrackerBusPatchParityErrors","Number of parity errors per bus patch",nbins,xmin,xmax),
+               AliMUONQAIndices::kTrackerBusPatchParityErrors,expert,!image,!saveCorr);
+
+  Add2RawsList(new TH1F("hTrackerBusPatchTokenLostErrors","Number of token lost errors per bus patch",nbins,xmin,xmax),
+               AliMUONQAIndices::kTrackerBusPatchTokenLostErrors,expert,!image,!saveCorr);
+
+  Add2RawsList(new TH1F("hTrackerBusPatchPaddingErrors","Number of padding errors per bus patch",nbins,xmin,xmax),
+               AliMUONQAIndices::kTrackerBusPatchPaddingErrors,expert,!image,!saveCorr);
+
+  TH1* h = new TH1F("hTrackerReadoutErrors","Number of readout errors per event;;Error rate in %",4,-0.5,3.5);
+  h->SetStats(kFALSE);
+  
+  // The QA shifter will only see the summary plot below
+  TAxis* a = h->GetXaxis();
+  
+  a->SetBinLabel(h->FindBin(fgkRawNofGlitchErrors),"Glitch errors");
+  a->SetBinLabel(h->FindBin(fgkRawNofTokenLostErrors),"Token lost errors");
+  a->SetBinLabel(h->FindBin(fgkRawNofParityErrors),"Parity errors");
+  a->SetBinLabel(h->FindBin(fgkRawNofPaddingErrors),"Padding errors");
+
+  Add2RawsList(h,AliMUONQAIndices::kTrackerReadoutErrors,!expert,image,!saveCorr);
+
+  TH1* hnevents = new TH1F("hTrackerNofRawEventSeen","Number of events seen",1,-0.5,0.5);
+  a = hnevents->GetXaxis();
+  a->SetBinLabel(1,"Nevents");
+  hnevents->SetStats(kFALSE);
+  
+  Add2RawsList(hnevents,AliMUONQAIndices::kTrackerNofRawEventSeen,expert,!image,!saveCorr);
+
   const Bool_t histogram(kFALSE);
 
   if(!fTrackerDataMaker) 
   {
-    fTrackerDataMaker = new AliMUONTrackerDataMaker(GetRecoParam(),
+    
+    AliMUONTrackerDataMaker* dm = new AliMUONTrackerDataMaker(GetRecoParam(),
                                                     AliCDBManager::Instance()->GetRun(),
                                                     0x0,
                                                     "",
                                                     "NOGAIN",
                                                     histogram,
                                                     0.0,0.0);
+
+    fLogger = new AliMUONLogger(-1);
+    dm->EnableErrorLogger(fLogger);
+    fTrackerDataMaker = dm;
   }
   
   fTrackerDataMaker->Data()->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
@@ -833,6 +966,8 @@ void AliMUONTrackerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	((AliMUONTrackerDataMaker*)fTrackerDataMaker)->SetRawReader(rawReader);
 	
 	fTrackerDataMaker->ProcessEvent();
+  
+  
 }
 
 //__________________________________________________________________

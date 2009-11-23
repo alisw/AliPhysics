@@ -358,7 +358,8 @@ void MUONRawStreamTrackerSimple2(TString fileName = "./", Int_t maxEvent = 1000)
   AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   // raw stream
-  AliMUONRawStreamTrackerHP rawStream(rawReader);    
+  AliMUONRawStreamTrackerHP rawStream(rawReader);
+  rawStream.EnableRawReaderErrorLogger();
   
   //   Loop over events  
   Int_t iEvent = 0;
@@ -402,7 +403,9 @@ void MUONRawStreamTrackerErrorCount(TString fileName = "collection://filelist", 
   AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   // raw stream
-  AliMUONRawStreamTrackerHP rawStream(rawReader);    
+  AliMUONRawStreamTrackerHP rawStream(rawReader);
+  rawStream.EnableRawReaderErrorLogger();    
+  rawStream.DisableWarnings();    
   
   //   Loop over events  
   Int_t iEvent = 0;

@@ -250,12 +250,16 @@ AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, AliMUONRecoParam* recoPara
 
     TH1* hbpconfig = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchConfig,AliRecoParam::ConvertIndex(specie));
 
-    if (!hbp || !hnpads ) 
+    TH1* hnevents = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerNofRawEventSeen,AliRecoParam::ConvertIndex(specie));
+
+    if ( !hbp || !hnpads || !hnevents ) 
     {
       continue;
     }
 
-    rv[specie] = BeautifyTrackerBusPatchOccupancy(*hbp,hbpconfig,*hnpads,*recoParam);    
+    Int_t nevents = TMath::Nint(hnevents->GetBinContent(1));
+    
+    rv[specie] = BeautifyTrackerBusPatchOccupancy(*hbp,hbpconfig,*hnpads,nevents,*recoParam);    
   }
   
   return rv;
@@ -266,6 +270,7 @@ AliMUONVQAChecker::ECheckCode
 AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hbp, 
                                                           const TH1* hbuspatchconfig, 
                                                           const TH1& hnpads, 
+                                                          Int_t nevents,
                                                           AliMUONRecoParam& recoParam)
 {
   /// Put labels, limits and so on on the TrackerBusPatchOccupancy histogram
@@ -385,15 +390,19 @@ AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hbp,
   
   hbp.SetMaximum(ymax*1.4);
   
-  TPaveText* text = new TPaveText(0.50,0.80,0.99,0.99,"NDC");
+  TPaveText* text = new TPaveText(0.50,0.60,0.99,0.99,"NDC");
   
-  if (ok < 0 ) 
+  text->AddText(Form("MCH RUN %d - %d events",AliCDBManager::Instance()->GetRun(),nevents));
+  
+  if ( ok < 0 ) 
   {
     text->AddText("Could not compute truncated mean. Not enough events ?");
+    text->AddText(Form("nBusPatches=%d n=%d",nBusPatches,n));
   }
   else if (!nPads || !nBusPatches)
   {
-    text->AddText("Could not get the total number of pads. ERROR !!!");
+    text->AddText(Form("Could not get the total number of pads (%d) or total number of buspatches (%d). ERROR !!!",
+                       nPads,nBusPatches));
   }
   else
   {
@@ -402,7 +411,6 @@ AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hbp,
     Float_t aboveLimitFraction = nBusPatchesAboveLimit*100.0/nBusPatches;
     Float_t belowLimitFraction = nBusPatchesBelowLimit*100.0/nBusPatches;
     
-    text->AddText(Form("MCH RUN %d",AliCDBManager::Instance()->GetRun()));
     text->AddText(Form("%5.2f %% of missing buspatches (%d out of %d)",missingBusPatchFraction,nMissingBusPatches,nBusPatches));
     text->AddText(Form("%5.2f %% of missing pads (%d out of %d)",missingPadFraction,nMissingPads,nPads));
     text->AddText(Form("%5.2f %% bus patches above the %5.2f %% limit",aboveLimitFraction,maxToleratedOccupancy));

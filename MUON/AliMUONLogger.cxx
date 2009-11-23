@@ -61,9 +61,11 @@ Int_t
 AliMUONLogger::Log(const char* message)
 {
   /// Log a message
-  if ( fLog->GetNofItems() >= fMaxNumberOfEntries ) 
+
+  if ( fMaxNumberOfEntries >0 && fLog->GetNofItems() >= fMaxNumberOfEntries ) 
   {
-    AliWarning("Reached max number of entries. Printing and resetting.");
+    AliWarning(Form("Reached max number of entries (%d over %d). Printing and resetting.",
+                    fLog->GetNofItems(),fMaxNumberOfEntries));
     Print();
     fLog->Clear();
   }
@@ -127,5 +129,11 @@ AliMUONLogger::Next(TString& msg, Int_t& occurance)
      
 }
     
-    
+//_____________________________________________________________________________
+Int_t
+AliMUONLogger::NumberOfEntries() const
+{
+  /// Get the number of logs we have so far
+  return fLog->GetNofItems();
+}
 

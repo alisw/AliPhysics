@@ -49,8 +49,10 @@
 #include "AliMUONBlockHeader.h"
 #include "AliMUONBusStruct.h"
 #include "AliMUONDDLTracker.h"
+#include "AliMUONLogger.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
+#include "AliDAQ.h"
 #include <cassert>
 #include <iostream>
 using std::cout;
@@ -66,7 +68,12 @@ const Int_t AliMUONRawStreamTrackerHP::fgkMaxDDL = 20;
 
 AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP() :
 	TObject(),
-	fEnableErrorLogger(kFALSE),
+	fRawReader(NULL),
+	fLogger(NULL),
+	fDetailLevel(kMediumErrorDetail),
+	fEnableMUONErrorLogger(kFALSE),
+	fEnableRawReaderErrorLogger(kFALSE),
+	fWarnings(kTRUE),
 	fDecoder(),
 	fDDL(0),
 	fBufferSize(8192),
@@ -96,12 +103,19 @@ AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP() :
 			fDecoder.MaxDSPs(),
 			fDecoder.MaxBusPatches()
 		);
+	
+	fDecoder.GetHandler().SetRawStream(this);
 }
 
 
 AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP(AliRawReader* rawReader) :
 	TObject(),
-	fEnableErrorLogger(kFALSE),
+	fRawReader(rawReader),
+	fLogger(NULL),
+	fDetailLevel(kMediumErrorDetail),
+	fEnableMUONErrorLogger(kFALSE),
+	fEnableRawReaderErrorLogger(kFALSE),
+	fWarnings(kTRUE),
 	fDecoder(),
 	fDDL(0),
 	fBufferSize(8192),
@@ -132,7 +146,7 @@ AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP(AliRawReader* rawReader) :
 			fDecoder.MaxBusPatches()
 		);
 	
-	fDecoder.GetHandler().SetReader(rawReader);
+	fDecoder.GetHandler().SetRawStream(this);
 }
 
 
@@ -450,16 +464,6 @@ void AliMUONRawStreamTrackerHP::SetMaxBus(Int_t bus)
 		);
 }
 
-AliRawReader* AliMUONRawStreamTrackerHP::GetReader()
-{
-  return fDecoder.GetHandler().GetReader();
-}
-
-void AliMUONRawStreamTrackerHP::SetReader(AliRawReader* reader)
-{
-  fDecoder.GetHandler().SetReader(reader);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void AliMUONRawStreamTrackerHP::AliBlockHeader::Print() const
@@ -530,7 +534,7 @@ void AliMUONRawStreamTrackerHP::AliBusPatch::Print(const Option_t* opt) const
 ///////////////////////////////////////////////////////////////////////////////
 
 AliMUONRawStreamTrackerHP::AliDecoderEventHandler::AliDecoderEventHandler() :
-	fRawReader(0x0),
+	fRawStream(NULL),
 	fBufferStart(NULL),
 	fBlockCount(0),
 	fBlocks(NULL),
@@ -547,7 +551,6 @@ AliMUONRawStreamTrackerHP::AliDecoderEventHandler::AliDecoderEventHandler() :
 	fGlitchErrors(0),
 	fPaddingErrors(0),
 	fTokenLostErrors(0),
-	fWarnings(kTRUE),
 	fMaxBlocks(),
 	fMaxDsps(),
 	fMaxBusPatches()
@@ -653,6 +656,32 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewBuffer(
 }
 
 
+void AliMUONRawStreamTrackerHP::Swap(UInt_t* buffer, Int_t size) const
+{
+	// swap from little to big endian
+	
+	typedef struct {
+		UInt_t b1:8; ///< first byte word
+		UInt_t b2:8; ///< second byte word
+		UInt_t b3:8; ///< third byte word
+		UInt_t b4:8; ///< fourth byte word
+	} RawWord;
+	
+	RawWord* word, temp;
+	word = (RawWord*) buffer;
+	
+	for (Int_t i = 0; i < size; i++)
+	{
+		temp = *(((RawWord*)buffer)+i);
+		word->b1 = temp.b4;
+		word->b2 = temp.b3;
+		word->b3 = temp.b2;
+		word->b4 = temp.b1;
+		word++;
+	}
+}
+
+
 void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 		ErrorCode error, const void* location
 	)
@@ -660,81 +689,209 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 	/// This is called by the high performance decoder when a error occurs
 	/// when trying to decode the DDL payload. This indicates corruption in
 	/// the data. This method converts the error code to a descriptive message
-	/// and logs this with the raw reader.
+	/// and logs this with the logger object.
 	/// \param error  The error code indicating the problem.
 	/// \param location  A pointer to the location within the DDL payload buffer
 	///              being decoded where the problem with the data was found.
-
-	assert( fRawReader != NULL );
 	
-	Char_t* message = NULL;
+	assert(fRawStream != NULL);
+	
+	const char* message = NULL;
 	UInt_t word = 0;
-
+	bool logAsMajorError = true;
+	
+	// Build the detailed part of the error message if high detail selected.
+	const char* detail = "";
+	if (fRawStream->GetLoggingDetailLevel() == kHighErrorDetail)
+	{
+		bool blockPtrOk = fBlockCount > 0;
+		bool dspPtrOk = blockPtrOk ? fCurrentBlock->GetDspCount() > 0 : false;
+		bool buspatchPtrOk = dspPtrOk ? fCurrentDSP->GetBusPatchCount() > 0 : false;
+		// We subtract 1 from the current numbers of blocks, DSPs
+		// and bus patches to get the iBlock, iDsp and iBus indices.
+		detail = Form(
+			"At byte %d in DDL %d, event %d, iBlock %d, iDsp %d [DSP ID: %d (0x%X)],"
+			" iBus %d [bus patch ID: %d (0x%X)].",
+			(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader),
+			AliDAQ::DdlID("MUONTRK", fRawStream->GetDDL()),
+			fRawStream->GetReader()->GetEventIndex(),
+			int(fBlockCount)-1,
+			blockPtrOk ? int(fCurrentBlock->GetDspCount())-1 : -1,
+			blockPtrOk ? fCurrentBlock->GetDspId() : -1,
+			blockPtrOk ? fCurrentBlock->GetDspId() : -1,
+			dspPtrOk ? int(fCurrentDSP->GetBusPatchCount())-1 : -1,
+			buspatchPtrOk ? fCurrentBusPatch->GetBusPatchId() : -1,
+			buspatchPtrOk ? fCurrentBusPatch->GetBusPatchId() : -1
+		);
+	}
+	
+	// Build the log message.
 	switch (error)
 	{
 	case kGlitchFound:
 		fGlitchErrors++;
-		message = Form(
-			"Glitch error detected in DSP %d (0x%X), skipping event ",
-			fCurrentBlock->GetDspId(), fCurrentBlock->GetDspId()
-		);
-		fRawReader->AddMajorErrorLog(error, message);
+		switch (fRawStream->GetLoggingDetailLevel())
+		{
+		case kLowErrorDetail:
+			message = "Glitch error detected.";
+			break;
+		case kMediumErrorDetail:
+			message = Form(
+				"Glitch error detected in DSP %d (0x%X), skipping event.",
+				fCurrentBlock->GetDspId(), fCurrentBlock->GetDspId()
+			);
+			break;
+		case kHighErrorDetail:
+		default:
+			message = Form("%s %s", ErrorCodeToMessage(error), detail);
+			break;
+		}
+		logAsMajorError = true;
 		break;
 
 	case kBadPaddingWord:
 		fPaddingErrors++;
-		// We subtract 1 from the current numbers of blocks, DSPs
-		// and bus patches to get the indices.
-		message = Form(
-			"Padding word error for iBlock %d, iDsp %d, iBus %d\n", 
-			fBlockCount-1,
-			fCurrentBlock->GetDspCount()-1,
-			fCurrentDSP->GetBusPatchCount()-1
-		);
-		fRawReader->AddMinorErrorLog(error, message);
+		switch (fRawStream->GetLoggingDetailLevel())
+		{
+		case kLowErrorDetail:
+			message = "Padding word error detected.";
+			break;
+		case kMediumErrorDetail:
+			// We subtract 1 from the current numbers of blocks, DSPs
+			// and bus patches to get the indices.
+			message = Form(
+				"Padding word error for iBlock %d, iDsp %d, iBus %d.",
+				fBlockCount-1,
+				fCurrentBlock->GetDspCount()-1,
+				fCurrentDSP->GetBusPatchCount()-1
+			);
+			break;
+		case kHighErrorDetail:
+		default:
+			message = Form("%s %s", ErrorCodeToMessage(error), detail);
+			break;
+		}
+		logAsMajorError = false;
 		break;
 
 	case kParityError:
 		fParityErrors++;
-		// location points to the incorrect data word and
-		// fCurrentBusPatch->GetData() returns a pointer to the start of
-		// bus patches data, so the difference divided by 4 gives the 32
-		// bit word number.
-		word = ((unsigned long)location - (unsigned long)fCurrentBusPatch->GetData())
+		switch (fRawStream->GetLoggingDetailLevel())
+		{
+		case kLowErrorDetail:
+			message = "Parity error detected.";
+			break;
+		case kMediumErrorDetail:
+			message = Form(
+				"Parity error in buspatch %d (0x%X).",
+				fCurrentBusPatch->GetBusPatchId(),
+				fCurrentBusPatch->GetBusPatchId()
+			);
+			break;
+		case kHighErrorDetail:
+		default:
+			// location points to the incorrect data word and
+			// fCurrentBusPatch->GetData() returns a pointer to the start of
+			// bus patches data, so the difference divided by 4 gives the 32
+			// bit word number.
+			word = ((unsigned long)location - (unsigned long)fCurrentBusPatch->GetData())
 				/ sizeof(UInt_t);
-		message = Form(
-			"Parity error in word %d for manuId %d and channel %d in buspatch %d\n", 
-			word,
-			fCurrentBusPatch->GetManuId(word),
-			fCurrentBusPatch->GetChannelId(word),
-			fCurrentBusPatch->GetBusPatchId()
-		);
-		fRawReader->AddMinorErrorLog(error, message);
+			message = Form(
+				"Parity error in word %d for manuId %d and channel %d in buspatch %d. %s",
+				word,
+				fCurrentBusPatch->GetManuId(word),
+				fCurrentBusPatch->GetChannelId(word),
+				fCurrentBusPatch->GetBusPatchId(),
+				detail
+			);
+			break;
+		}
+		logAsMajorError = false;
 		break;
 		
 	case kTokenLost:
 		fTokenLostErrors++;
-		word = *reinterpret_cast<const UInt_t*>(location);
-		message = Form(
-			"Lost token error detected in DSP %d (0x%X) with address 0x%X and code %d.",
-			fCurrentBlock->GetDspId(), fCurrentBlock->GetDspId(),
-			((word & 0xFFFF0000) >> 16),
-			(word & 0xF)
-		);
-		fRawReader->AddMinorErrorLog(error, message);
+		switch (fRawStream->GetLoggingDetailLevel())
+		{
+		case kLowErrorDetail:
+			message = "Lost token error detected.";
+			break;
+		case kMediumErrorDetail:
+			word = *reinterpret_cast<const UInt_t*>(location);
+			message = Form(
+				"Lost token error detected in DSP 0x%X of DDL %d and code %d.",
+        ((word & 0xFFFF0000) >> 16),
+        fRawStream->GetDDL(),
+				(word & 0xF)
+			);
+			break;
+		case kHighErrorDetail:
+		default:
+			word = *reinterpret_cast<const UInt_t*>(location);
+			message = Form(
+				"Lost token error detected with address 0x%X and code %d. %s",
+				((word & 0xFFFF0000) >> 16),
+				(word & 0xF),
+				detail
+			);
+			message = Form("Lost token error detected. %s.", detail);
+			break;
+		}
+		logAsMajorError = false;
 		break;
 
 	default:
-		message = Form(
-			"%s (At byte %d in DDL.)",
-			ErrorCodeToMessage(error),
-			(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader)
-		);
-		fRawReader->AddMajorErrorLog(error, message);
+		switch (fRawStream->GetLoggingDetailLevel())
+		{
+		case kLowErrorDetail:
+			message = ErrorCodeToMessage(error);
+			break;
+		case kMediumErrorDetail:
+			message = Form(
+				"%s (At byte %d)",
+				ErrorCodeToMessage(error),
+				(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader)
+			);
+			break;
+		case kHighErrorDetail:
+		default:
+			message = Form(
+				"%s Error code: %d (%s). %s",
+				ErrorCodeToMessage(error),
+				error, ErrorCodeToString(error),
+				detail
+			);
+			break;
+		}
+		logAsMajorError = true;
 		break;
 	}
-
-	if (fWarnings)
+	
+	// Now log the error message depending on the logging flags set.
+	if (fRawStream->IsRawReaderErrorLoggerEnabled())
+	{
+		if (logAsMajorError)
+			fRawStream->GetReader()->AddMajorErrorLog(Int_t(error), message);
+		else
+			fRawStream->GetReader()->AddMinorErrorLog(Int_t(error), message);
+	}
+	if (fRawStream->IsMUONErrorLoggerEnabled())
+	{
+		AliMUONLogger* logger = fRawStream->GetMUONErrorLogger();
+		if (logger != NULL)
+		{
+			logger->Log(message);
+		}
+		else
+		{
+			AliErrorGeneral(
+				"AliMUONRawStreamTrackerHP::AliDecoderEventHandler",
+				"Enabled logging to AliMUONLogger, but the logger object"
+				" was not set with SetMUONErrorLogger()."
+			);
+		}
+	}
+	if (fRawStream->IsWarningsEnabled())
 	{
 		AliWarningGeneral(
 				"AliMUONRawStreamTrackerHP::AliDecoderEventHandler",

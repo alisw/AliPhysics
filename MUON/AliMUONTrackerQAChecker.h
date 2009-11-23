@@ -32,7 +32,9 @@ private:
   
   AliMUONVQAChecker::ECheckCode BeautifyTrackerBusPatchOccupancy(TH1& hbp, 
                                                                  const TH1* hbuspatchconfig, 
-                                                                 const TH1& hnpads, AliMUONRecoParam& recoParam);
+                                                                 const TH1& hnpads, 
+                                                                 Int_t nevents,
+                                                                 AliMUONRecoParam& recoParam);
 
   ClassDef(AliMUONTrackerQAChecker,1)  // MUON quality assurance checker
 

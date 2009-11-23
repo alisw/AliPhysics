@@ -22,6 +22,7 @@ class AliMUONVTrackerData;
 class AliMUONVTrackerDataMaker;
 class AliMUONCalibrationData;
 class AliMUONQAMappingCheck;
+class AliMUONLogger;
 
 class AliMUONTrackerQADataMakerRec: public AliMUONVQADataMakerRec {
 
@@ -53,6 +54,8 @@ private:
   void InsertTrackerData(Int_t specie, TObjArray** list, TObject* object, 
                          Int_t indexNumber, Bool_t replace=kFALSE);
 
+  void FillErrors(AliMUONLogger& log);
+  
 private:
   /// Not implemented
   AliMUONTrackerQADataMakerRec(const AliMUONTrackerQADataMakerRec& rhs);
@@ -69,7 +72,15 @@ private:
   
   AliMUONCalibrationData* fCalibrationData; //!< Used to load Local, Regional and Global masks
   
-  ClassDef(AliMUONTrackerQADataMakerRec,1)  // MUON Quality assurance data maker
+  AliMUONLogger* fLogger; //!< (readout) error logger
+  
+  static Double_t fgkRawNofEvents; //!< x-position to fill kTrackerReadoutErrors with nof events
+  static Double_t fgkRawNofGlitchErrors; //!< x-position to fill kTrackerReadoutErrors with nof glitch errors
+  static Double_t fgkRawNofTokenLostErrors; //!< x-position to fill kTrackerReadoutErrors with nof token lost errors
+  static Double_t fgkRawNofParityErrors; //!< x-position to fill kTrackerReadoutErrors with nof parity errors
+  static Double_t fgkRawNofPaddingErrors; //!< x-position to fill kTrackerReadoutErrors with nof padding errors
+  
+  ClassDef(AliMUONTrackerQADataMakerRec,2)  // MUON Quality assurance data maker
 
 };
 #endif
