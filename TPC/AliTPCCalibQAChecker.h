@@ -11,7 +11,7 @@ class TTree;
 class TIterator;
 class TGraph;
 class TObjArray;
-class TPad;
+class TVirtualPad;
 
 class AliTPCCalibQAChecker : public TNamed {
 public:
@@ -21,7 +21,6 @@ public:
 
   AliTPCCalibQAChecker();
   AliTPCCalibQAChecker(const char* name, const char *title);
-//   AliTPCCalibQAChecker(const char* name, const char *title);
   
   virtual ~AliTPCCalibQAChecker();
   
@@ -99,7 +98,7 @@ public:
   AlarmType_t fAlarmType;          //type of the alarm
   QualityFlag_t fQualityLevel;     //quality level
   
-  TH1* fHistRep;                   //visualised histogram
+  TObject* fHistRep;                   //visualised histogram
 
   Double_t fThresMin[kNQualityFlags];//minimum thresholds
   Double_t fThresMax[kNQualityFlags];//maximum thresholds
@@ -120,7 +119,11 @@ public:
   void CreateAlarmHist();
   void ResetAlarmHist();
   //
-  Int_t DrawInPad(TPad *pad, Int_t sub=1);
+  Int_t DrawInPad(TVirtualPad *pad, Int_t sub=1);
+  void DrawSubNodes(Option_t *option);
+  void DrawRepresentationHist(Option_t *option);
+  void AddQualityLines(TH1 *hist);
+  //
   AliTPCCalibQAChecker(const AliTPCCalibQAChecker &cfg);
   AliTPCCalibQAChecker& operator = (const AliTPCCalibQAChecker &cfg);
   

@@ -38,7 +38,7 @@ public:
   Int_t   GetNtracks(){return fNtracks;}
   virtual void Analyze();
   virtual Long64_t Merge(TCollection *li);
-  virtual void DumpMeanInfo(Float_t bfield, Int_t run=-1);
+  virtual void DumpMeanInfo(Int_t run=-1);
   static  void DumpScanInfo(TTree * tree, const char * cutUser="entries>300&&(gz2<0.15&&gphi2<0.1&&gp42<0.02&&abs(gp41)<0.03)");
   static  void DumpFitInfo(TTree * chainFit, Int_t id);
   static  TH1* GetLaserProjection(TH2F* his, Int_t laser){return his->ProjectionY("aaa",laser+1,laser+1);}

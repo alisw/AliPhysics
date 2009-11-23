@@ -61,7 +61,7 @@ private:
   
   Float_t fRayLength;     //distance from the last common point of the laser Rays
                           //(Splitter box on the A-Side at the bottom of the TPC)
-                          //to each mirror (needed for an exact drift velocity estimation)
+                          //to each mirror [cm](needed for an exact drift velocity estimation)
   
   
   static TObjArray* fgArrLaserTracks; //! Array of all Laser Tracks,

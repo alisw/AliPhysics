@@ -508,6 +508,8 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
   // Track0 is choosen in upper TPC part
   // Track1 is choosen in lower TPC part
   //
+  const Int_t kMinClustersCross =30;
+  const Int_t kMinClusters      =80;
   Int_t ntracks=event->GetNumberOfTracks();
   if (ntracks==0) return;
   if (ntracks > fCutTracks) return;
@@ -522,7 +524,11 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
   //
   // track loop
   //
+  TArrayI clusterSideA(ntracks);
+  TArrayI clusterSideC(ntracks);
   for (Int_t i=0;i<ntracks;++i) {
+    clusterSideA[i]=0;
+    clusterSideC[i]=0;
     AliESDtrack *track = event->GetTrack(i);
     
     const AliExternalTrackParam * trackIn = track->GetInnerParam();
@@ -538,7 +544,18 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
     TObject *calibObject;
     AliTPCseed *seed = 0;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    if (seed) tpcSeeds.AddAt(seed,i);
+    if (seed) {
+      tpcSeeds.AddAt(seed,i);
+      Int_t nA=0, nC=0;
+      for (Int_t irow=159;irow>0;irow--) {
+	AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+	if (!cl) continue;
+	if ((cl->GetDetector()%36)<18) nA++;
+	if ((cl->GetDetector()%36)>=18) nC++;
+      }
+      clusterSideA[i]=nA;
+      clusterSideC[i]=nC;
+    }
   }
   if (ntracks<2) return;
   //
@@ -559,6 +576,14 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
       //track 1 lower part
       if (!track1) continue;
       if (!track1->GetOuterParam()) continue;
+      if (track0->GetTPCNcls()+ track1->GetTPCNcls()< kMinClusters) continue;
+      Int_t nAC = TMath::Max( TMath::Min(clusterSideA[i], clusterSideC[j]), 
+			      TMath::Min(clusterSideC[i], clusterSideA[j]));
+      if (nAC<kMinClustersCross) continue; 
+      Int_t nA0=clusterSideA[i];
+      Int_t nC0=clusterSideC[i];
+      Int_t nA1=clusterSideA[j];
+      Int_t nC1=clusterSideC[j];
       //      if (track1->GetOuterParam()->GetAlpha()>0) continue;
       //
       Double_t d2[3];
@@ -620,7 +645,8 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
       if((isSame) || (isCross && isPair)){
 	if (track0->GetTPCNcls()+ track1->GetTPCNcls()> 80) {
 	  fDz = param0.GetZ() - param1.GetZ();
-	  if(track0->GetOuterParam()->GetZ()<0) fDz=-fDz;
+	  Double_t sign=(nA0>nA1)? 1:-1; 
+	  fDz*=sign;
 	  TTimeStamp tstamp(fTime);
 	  Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
 	  Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
@@ -667,6 +693,11 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
 	  "tr1.="<<track1<<
 	  "p0.="<<&param0<<
 	  "p1.="<<&param1<<
+	  "nAC="<<nAC<<
+	  "nA0="<<nA0<<
+	  "nA1="<<nA1<<
+	  "nC0="<<nC0<<
+	  "nC1="<<nC1<<
 	  "isPair="<<isPair<<
 	  "isCross="<<isCross<<
 	  "isSame="<<isSame<<
@@ -919,7 +950,13 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
   return kTRUE;  
 }
 Bool_t AliTPCcalibTime::IsCross(AliESDtrack *tr0, AliESDtrack *tr1){
-  return  tr0->GetOuterParam()->GetZ()*tr1->GetOuterParam()->GetZ()<0 && tr0->GetInnerParam()->GetZ()*tr1->GetInnerParam()->GetZ()<0 && tr0->GetOuterParam()->GetZ()*tr0->GetInnerParam()->GetZ()>0 && tr1->GetOuterParam()->GetZ()*tr1->GetInnerParam()->GetZ()>0;
+  //
+  // check if the cosmic pair of tracks crossed A/C side
+  // 
+  Bool_t result= tr0->GetOuterParam()->GetZ()*tr1->GetOuterParam()->GetZ()<0;
+  if (result==kFALSE) return result;
+  result=kTRUE;
+  return result;
 }
 
 Bool_t AliTPCcalibTime::IsSame(AliESDtrack *tr0, AliESDtrack *tr1){

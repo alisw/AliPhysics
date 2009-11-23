@@ -168,6 +168,7 @@ fVTimeStampEvent(100000)
   fLastTimeBin=1020;
   if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
   if (config->GetValue("LastTimeBin")) fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
+  if (config->GetValue("DebugLevel")) fDebugLevel = ((TObjString*)config->GetValue("DebugLevel"))->GetString().Atoi();
 }
 
 //_____________________________________________________________________
@@ -317,7 +318,7 @@ void AliTPCCalibRaw::EndEvent()
     }
   }
   // store phase of current event
-  if (fArrALTROL1Phase.GetNrows()<=GetNevents())
+  if (fArrALTROL1Phase.GetNrows()-1<=GetNevents())
     fArrALTROL1Phase.ResizeTo(GetNevents()+10000);
   (fArrALTROL1Phase.GetMatrixArray())[GetNevents()]=phaseMaxEntries;
   
@@ -328,7 +329,7 @@ void AliTPCCalibRaw::EndEvent()
     if (phase<0) continue;
     if (phase!=phaseMaxEntries){
       TVectorF *arr=MakeArrL1PhaseRCU(fCurrDDLNum,kTRUE);
-      if (arr->GetNrows()<=(Int_t)fNFailL1PhaseEvent) arr->ResizeTo(arr->GetNrows()+100);
+      if (arr->GetNrows()-1<=(Int_t)fNFailL1PhaseEvent) arr->ResizeTo(arr->GetNrows()+100);
       (arr->GetMatrixArray())[fNFailL1PhaseEvent]=phase;
       ++fNFailL1Phase;
       fail=1;
@@ -337,7 +338,7 @@ void AliTPCCalibRaw::EndEvent()
     fArrCurrentPhase[ircu]=-1;
   }
   if (fail){
-    if (fArrFailEventNumber.GetNrows()<=(Int_t)fNFailL1PhaseEvent) fArrFailEventNumber.ResizeTo(fArrFailEventNumber.GetNrows()+100);
+    if (fArrFailEventNumber.GetNrows()-1<=(Int_t)fNFailL1PhaseEvent) fArrFailEventNumber.ResizeTo(fArrFailEventNumber.GetNrows()+100);
     fArrFailEventNumber.GetMatrixArray()[fNFailL1PhaseEvent]=GetNevents();
   }
   fNFailL1PhaseEvent+=fail;
@@ -345,7 +346,7 @@ void AliTPCCalibRaw::EndEvent()
   fVTimeStampEvent.GetMatrixArray()[GetNevents()]=GetTimeStamp()-fFirstTimeStamp+fNanoSec*1e-9;
   fNanoSec=0;
   //occupance related
-  if (fVOccupancyEvent.GetNrows()<=GetNevents()){
+  if (fVOccupancyEvent.GetNrows()-1<=GetNevents()){
     fVOccupancyEvent.ResizeTo(GetNevents()+10000);
     fVSignalSumEvent.ResizeTo(GetNevents()+10000);
     fVOccupancySenEvent.ResizeTo(GetNevents()+10000);
@@ -500,13 +501,22 @@ void AliTPCCalibRaw::Analyse()
 //    TVectorF *arrF=MakeArrL1PhaseFailRCU(ircu);
 //     arrF->ResizeTo(1);
   }
-  //resize occupancy arrays
-  fVTimeStampEvent.ResizeTo(GetNevents());
-  fVOccupancyEvent.ResizeTo(GetNevents());
+  //resize occupancy arrays only save event occupancy in sensitive regions by default
+  //save the rest in debub mode
   fVOccupancySenEvent.ResizeTo(GetNevents());
-  fVSignalSumEvent.ResizeTo(GetNevents());
-  fVSignalSumSenEvent.ResizeTo(GetNevents());
-  fVNfiredPadsSenEvent.ResizeTo(GetNevents());
+  if (fDebugLevel>0){
+    fVOccupancyEvent.ResizeTo(GetNevents());
+    fVSignalSumEvent.ResizeTo(GetNevents());
+    fVSignalSumSenEvent.ResizeTo(GetNevents());
+    fVNfiredPadsSenEvent.ResizeTo(GetNevents());
+    fVTimeStampEvent.ResizeTo(GetNevents());
+  } else {
+    fVOccupancyEvent.ResizeTo(0);
+    fVSignalSumEvent.ResizeTo(0);
+    fVSignalSumSenEvent.ResizeTo(0);
+    fVNfiredPadsSenEvent.ResizeTo(0);
+    fVTimeStampEvent.ResizeTo(0);
+  }
   //Analyse drift velocity TODO
   
 }
@@ -528,7 +538,7 @@ TGraph* AliTPCCalibRaw::MakeGraphOccupancy(const Int_t type, const Int_t xType)
   // type=11:  mean data volume (ADC counts/sample)
   // type=12:  data volume (ADC counts)
   // type=13:  samples per ADC count
-  // type=14:   sample occupancy
+  // type=14:  sample occupancy
   //
   // type=16: number of samples sensitive / number of pads sensitive
   // type=17: pad occupancy in sensitive regions
@@ -540,6 +550,7 @@ TGraph* AliTPCCalibRaw::MakeGraphOccupancy(const Int_t type, const Int_t xType)
   TString xTitle("Time");
   TString yTitle("number of samples");
   TGraph *gr=new TGraph(GetNevents());
+  if (fVSignalSumEvent.GetNrows()==0&&!(type==10||type==14)) return 0;
   TVectorF *vOcc=&fVOccupancyEvent;
   TVectorF *vSum=&fVSignalSumEvent;
   TVectorF *vPads=&fVNfiredPadsSenEvent;

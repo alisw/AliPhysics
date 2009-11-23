@@ -19,6 +19,7 @@
 class TGListTree;
 class TGListTreeItem;
 class TCanvas;
+class TGCanvas;
 class TGLabel;
 
 class AliTPCCalibQAChecker;
@@ -36,8 +37,9 @@ public:
   void SetCalibViewerGUItime(AliTPCCalibViewerGUItime *gui) {fCalibViewerGUItime=gui;}
   
   void InitBrowser();
-  
   void UpdateBrowser();
+  void ResetBrowser();
+  void OpenAllItems();
 
   static AliTPCCalibViewerGUIAlarms* Show();
 
@@ -57,6 +59,7 @@ protected:
   void DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h);
   void AddSubItems(AliTPCCalibQAChecker *fChecker, TGListTreeItem *item);
   void UpdateSubItem(TGListTreeItem *item);
+  void OpenSubItems(TGListTreeItem *item);
   
 private:
   AliTPCCalibViewerGUIAlarms(const AliTPCCalibViewerGUIAlarms &v);

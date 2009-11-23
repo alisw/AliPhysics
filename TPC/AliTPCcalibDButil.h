@@ -149,6 +149,7 @@ public:
   //
   static TMatrixD* MakeStatRelKalman(TObjArray *array, Float_t minFraction, Int_t minStat, Float_t maxvd);
   static TObjArray *SmoothRelKalman(TObjArray *array,TMatrixD & stat, Bool_t direction, Float_t sigmaCut);
+  static TObjArray *SmoothRelKalman(TObjArray *arrayP, TObjArray *arrayM);
   static void FilterCE(Double_t deltaT=100, Double_t cutAbs=10, Double_t cutSigma=4., TTreeSRedirector *pcstream=0);
   static void FilterTracks(Int_t run, Double_t cutSigma=20., TTreeSRedirector *pcstream=0);
   static Float_t FilterTemperature(AliTPCSensorTempArray *tempArray, Double_t ymin=15, Double_t ymax=22, Double_t sigmaCut=5); 
@@ -158,6 +159,8 @@ public:
   static Double_t  GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
   static Double_t  GetVDriftTPCLaserTracks(Double_t &dist,Int_t run, Int_t timeStamp, Double_t deltaT=43200, Int_t side=2);
   static Double_t  GetVDriftTPCCE(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT=43200, Int_t side=2);
+  static Double_t  GetVDriftTPCITS(Double_t &dist, Int_t run, Int_t timeStamp);
+  static Double_t  GetTime0TPCITS(Double_t &dist, Int_t run, Int_t timeStamp);
   Int_t MakeRunList(Int_t startRun, Int_t stopRun); // find the list of usable runs
   Int_t FindRunTPC(Int_t    itime, Bool_t debug=kFALSE);
 private:

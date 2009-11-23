@@ -24,11 +24,18 @@
 #include <TObjArray.h>
 #include <TString.h>
 #include <TObjString.h>
+#include <TStyle.h>
+#include <TMarker.h>
+#include <TAxis.h>
+#include <TLine.h>
+#include <TList.h>
 #include <TTree.h>
+#include <TMath.h>
 #include <TGraph.h>
 #include <TFrame.h>
 #include <TIterator.h>
 #include <TPad.h>
+#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TStopwatch.h>
@@ -197,6 +204,20 @@ void AliTPCCalibQAChecker::ProcessHist()
     ProcessBin();
     break;
   }
+
+  //create representation histogram if we are not in tree mode
+  if (!fTreePtr){
+    if (!fHistRep) {
+      fHistRep=(*fHistPtr)->Clone();
+      TH1* h=(TH1*)fHistRep;
+      h->SetDirectory(0);
+      h->SetNameTitle(Form("h%s",GetName()),GetTitle());
+    }
+    TH1* h=(TH1*)fHistRep;
+    h->Reset();
+    h->Add(*fHistPtr);
+    if (!fHistRep->InheritsFrom(TH2::Class())) AddQualityLines(h);
+  }
 }
 //_________________________________________________________________________
 void AliTPCCalibQAChecker::ProcessGraph()
@@ -216,6 +237,22 @@ void AliTPCCalibQAChecker::ProcessNumber()
   //
   if (!fNumberPtr) return;
   fQualityLevel=GetQuality(*fNumberPtr);
+  //create representation histogram
+  if (!fHistRep){
+    TH1* h=new TH1F(Form("h%s",GetName()),GetTitle(),1,0,1);
+    h->GetXaxis()->SetBinLabel(1,"Value");
+    AddQualityLines(h);
+    h->SetDirectory(0);
+    fHistRep=h;
+  }
+  TH1 *h=(TH1*)fHistRep;
+  TMarker *marker=(TMarker*)h->GetListOfFunctions()->FindObject("TMarker");
+  if (!marker) {
+    marker=new TMarker(.5,0,20);
+    h->GetListOfFunctions()->Add(marker);
+  }
+  marker->SetMarkerColor(GetQualityColor());
+  marker->SetY(*fNumberPtr);
 }
 //_________________________________________________________________________
 void AliTPCCalibQAChecker::ProcessEntries()
@@ -313,8 +350,10 @@ void AliTPCCalibQAChecker::CreateRepresentationHist()
     AliError(Form("Could not create representation histogram of alarm '%s'",GetName()));
     return;
   }
-  fHistRep=(TH1*)hist->Clone();
-  fHistRep->SetDirectory(0);
+  fHistRep=hist->Clone();
+  TH1 *h=(TH1*)fHistRep;
+  h->SetDirectory(0);
+  h->SetNameTitle(Form("h%s",GetName()),GetTitle());
 }
 //_________________________________________________________________________
 void AliTPCCalibQAChecker::CreateAlarmHist()
@@ -361,31 +400,9 @@ void AliTPCCalibQAChecker::Draw(Option_t *option)
   // use 'nobc' to change this
   //
 
-  if (!fHistRep) return;
-  
-  Bool_t withBackColor=kTRUE;
-  
-  TString opt=option;
-  opt.ToLower();
-  
-  if (opt.Contains("nobc")) withBackColor=kFALSE;
-  opt.ReplaceAll("nobc","");
-  
-  if (opt.IsNull()) opt=fStrDrawRepOpt;
-  opt.ToLower();
-  
-  opt.ReplaceAll("prof","");
-  
-  fHistRep->Draw(opt.Data());
-  
-  if (gPad){
-    gPad->Modified();
-    if (withBackColor) gPad->SetFillColor(GetQualityColor());
-    TFrame* frame=(TFrame*)gPad->GetPrimitive("TFrame");
-    if (frame) frame->SetFillColor(kWhite);
-  }
-  
-  gPad->Modified();
+  //case of a node with subcheckers and no specific representation histogram
+  if (HasSubCheckers()&&!fHistRep) {DrawSubNodes(option); return;}
+  if (fHistRep) {DrawRepresentationHist(option); return;}
 }
 //_________________________________________________________________________
 void AliTPCCalibQAChecker::Print(Option_t *option) const
@@ -582,7 +599,7 @@ const char* AliTPCCalibQAChecker::QualityDescription(const QualityFlag_t quality
   return s.Data();
 }
 //_________________________________________________________________________
-Int_t AliTPCCalibQAChecker::DrawInPad(TPad *pad, Int_t sub)
+Int_t AliTPCCalibQAChecker::DrawInPad(TVirtualPad *pad, Int_t sub)
 {
   //
   //
@@ -603,4 +620,87 @@ Int_t AliTPCCalibQAChecker::DrawInPad(TPad *pad, Int_t sub)
     Draw();
   }
   return sub;
+}
+//_________________________________________________________________________
+void AliTPCCalibQAChecker::DrawSubNodes(Option_t */*option*/)
+{
+  //
+  // divide the current pad in sub pads and draw all sub nodes
+  //
+  if (!gPad) new TCanvas;
+  TPad *mother=(TPad*)gPad;
+  mother->Clear();
+  //find number of sub pads needed
+  Int_t nPads = GetNumberOfSubCheckers();
+  Int_t nCols = (Int_t)TMath::Ceil( TMath::Sqrt(nPads) );
+  Int_t nRows = (Int_t)TMath::Ceil( (Double_t)nPads/(Double_t)nCols );
+  gPad->Divide(nCols,nRows);
+  
+  DrawInPad(gPad);
+  mother->Update();
+  TPad *pad=0;
+  Int_t ipad=1;
+  while ( (pad=(TPad*)mother->GetPad(ipad)) ){
+    TFrame* frame=(TFrame*)pad->GetPrimitive("TFrame");
+    if (frame) frame->SetFillColor(kWhite);
+    else {printf("no frame\n");}
+    pad->Modified();
+    ++ipad;
+  }
+  mother->Update();
+}
+//_________________________________________________________________________
+void AliTPCCalibQAChecker::DrawRepresentationHist(Option_t *option)
+{
+  //
+  // Draw the representation histogram
+  //
+  if (!fHistRep) return;
+  if (!gPad) new TCanvas;
+  Bool_t withBackColor=kTRUE;
+  
+  TString opt=option;
+  opt.ToLower();
+  
+  if (opt.Contains("nobc")) withBackColor=kFALSE;
+  opt.ReplaceAll("nobc","");
+  
+  if (opt.IsNull()) opt=fStrDrawRepOpt;
+  opt.ToLower();
+  
+  opt.ReplaceAll("prof","");
+  
+  fHistRep->Draw(opt.Data());
+  if (withBackColor) {
+    gPad->SetFillColor(GetQualityColor());
+  }
+  
+  gPad->Modified();
+}
+//_________________________________________________________________________
+void AliTPCCalibQAChecker::AddQualityLines(TH1 *hist)
+{
+  //
+  // add lines indicating the quality level to hist
+  //
+
+  Double_t xmin=hist->GetXaxis()->GetXmin();
+  Double_t xmax=hist->GetXaxis()->GetXmax();
+  Double_t min=0;
+  Double_t max=0;
+  
+  for (Int_t i=(Int_t)kINFO; i<kNQualityFlags; ++i){
+    if (fThresMin[i]>=fThresMax[i]) continue;
+    min=fThresMin[i];
+    max=fThresMax[i];
+    TLine *lmin=new TLine(xmin,min,xmax,min);
+    lmin->SetLineWidth(2);
+    lmin->SetLineColor(QualityColor((QualityFlag_t)i));
+    TLine *lmax=new TLine(xmin,max,xmax,max);
+    lmax->SetLineWidth(2);
+    lmax->SetLineColor(QualityColor((QualityFlag_t)i));
+    hist->GetListOfFunctions()->Add(lmin);
+    hist->GetListOfFunctions()->Add(lmax);
+  }
+  hist->SetAxisRange(min,max,"Y");
 }

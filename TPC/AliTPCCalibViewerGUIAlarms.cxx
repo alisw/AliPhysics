@@ -114,7 +114,7 @@ void AliTPCCalibViewerGUIAlarms::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t
   
   //--------------
   // canvas on top
-  TRootEmbeddedCanvas *cEmbed = new TRootEmbeddedCanvas("Main_Canvas", contCenterTop, 200, 200, kFitWidth | kFitHeight);
+  TRootEmbeddedCanvas *cEmbed = new TRootEmbeddedCanvas("Alarm_Canvas", contCenterTop, 200, 200, kFitWidth | kFitHeight);
   contCenterTop->AddFrame(cEmbed, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
 //   cEmbed->GetCanvas()->Connect("ProcessedEvent(Int_t, Int_t, Int_t, TObject*)", "AliTPCCalibViewerGUIAlarms", this, "MouseMove(Int_t, Int_t, Int_t, TObject*)");
   cEmbed->GetCanvas()->SetToolTipText("Alarm histograms are displayed in this region.");
@@ -181,7 +181,7 @@ void AliTPCCalibViewerGUIAlarms::UpdateSubItem(TGListTreeItem *item)
   //
   //
 
-  printf("name: %s\n", item->GetText());
+//   printf("name: %s\n", item->GetText());
   AliTPCCalibQAChecker *checker=dynamic_cast<AliTPCCalibQAChecker*>((TObject*)item->GetUserData());
   if (checker){
     item->SetColor(checker->GetQualityColor());
@@ -199,6 +199,38 @@ void AliTPCCalibViewerGUIAlarms::UpdateBrowser()
   //
   //
   UpdateSubItem(fAlarmTree->GetFirstItem());
+  fAlarmTree->ClearViewPort();
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUIAlarms::ResetBrowser()
+{
+  //
+  //
+  //
+  if (!fAlarmTree->GetFirstItem()) return;
+  fAlarmTree->DeleteChildren(fAlarmTree->GetFirstItem());
+  fAlarmTree->DeleteItem(fAlarmTree->GetFirstItem());
+  fAlarmTree->ClearViewPort();
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUIAlarms::OpenSubItems(TGListTreeItem *item)
+{
+  //
+  //
+  //
+  fAlarmTree->OpenItem(item);
+  TGListTreeItem *nextItem=0x0;
+  if ( (nextItem=item->GetFirstChild())  ) OpenSubItems(nextItem);
+  if ( (nextItem=item->GetNextSibling()) ) OpenSubItems(nextItem);
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUIAlarms::OpenAllItems()
+{
+  //
+  //
+  //
+  if (!fAlarmTree->GetFirstItem()) return;
+  OpenSubItems(fAlarmTree->GetFirstItem());
   fAlarmTree->ClearViewPort();
 }
 //______________________________________________________________________________

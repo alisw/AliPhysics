@@ -39,7 +39,7 @@
   gSystem->Load("libTPCcalib");
   TFile fcalib("CalibObjectsTrain2.root");
   AliTPCcalibLaser * laser = ( AliTPCcalibLaser *)fcalib->Get("laserTPC");
-  laser->DumpMeanInfo(-0,0)
+  laser->DumpMeanInfo(0)
   TFile fmean("laserMean.root")
   //
   //  laser track clasification;
@@ -126,6 +126,7 @@
 #include "TTimeStamp.h"
 #include "AliDCSSensorArray.h"
 #include "AliDCSSensor.h"
+#include "AliGRPObject.h"
 
 using namespace std;
 
@@ -2232,7 +2233,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 
 
 
-void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
+void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
   //
   //  Dump information about laser beams
   //  isOK variable indicates usability of the beam  
@@ -2251,13 +2252,23 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
   AliTPCcalibLaser *laser = this;
   TTreeSRedirector *pcstream = new TTreeSRedirector("laserMean.root");
   TF1 fg("fg","gaus");
-
+  AliTPCParam  * tpcparam    = 0;   
   // start set up for absolute residuals analysis
-  //AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
-  //  AliTPCParam  * tpcparam    = calib->GetParameters(); 
-  AliTPCParam  * tpcparam    = 0; 
+  //
+  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+  tpcparam    = calib->GetParameters(); 
   if (!tpcparam) tpcparam    = new AliTPCParamSR;
   tpcparam->Update();
+  AliGRPObject *grp = AliTPCcalibDB::GetGRP(run);
+  Float_t current=0;
+  Float_t bfield      = 0, bz=0;
+  if (grp){
+    current = grp->GetL3Current((AliGRPObject::Stats)0);
+    bfield = 5*current/30000.;
+    bz = 5*current/30000.;
+    printf("Run%d\tL3 current%f\tBz\t%f\n",run,current,bz);
+  }
+
   SetBeamParameters(fBeamOffsetYOuter, fBeamSlopeYOuter, fBeamSectorOuter,0);
   SetBeamParameters(fBeamOffsetYInner, fBeamSlopeYInner, fBeamSectorInner,1);
   TLinearFitter lfabsyInner(2);

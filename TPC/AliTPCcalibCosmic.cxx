@@ -333,11 +333,11 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
   Int_t ntracks=event->GetNumberOfTracks(); 
   fHistNTracks->Fill(ntracks);
   if (ntracks==0) return;
-  AliESDcosmic cosmicESD;    
-  TTreeSRedirector * cstream =  GetDebugStreamer();
-  cosmicESD.SetDebugStreamer(cstream);
-  cosmicESD.ProcessEvent(event);
-  if (cstream) cosmicESD.DumpToTree();
+ //  AliESDcosmic cosmicESD;    
+//   TTreeSRedirector * cstream =  GetDebugStreamer();
+//   cosmicESD.SetDebugStreamer(cstream);
+//   cosmicESD.ProcessEvent(event);
+//   if (cstream) cosmicESD.DumpToTree();
       
   
 }

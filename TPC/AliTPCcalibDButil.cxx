@@ -1260,7 +1260,7 @@ const Int_t AliTPCcalibDButil::GetCurrentReferenceRun(const char* type){
   if (!fCurrentRefMap) return -2;
   TObjString *str=dynamic_cast<TObjString*>(fCurrentRefMap->GetValue(type));
   if (!str) return -2;
-  return str->GetString().Atoi();
+  return (const Int_t)str->GetString().Atoi();
 }
 //_____________________________________________________________________________________
 const Int_t AliTPCcalibDButil::GetReferenceRun(const char* type) const{
@@ -1270,7 +1270,7 @@ const Int_t AliTPCcalibDButil::GetReferenceRun(const char* type) const{
   if (!fRefMap) return -1;
   TObjString *str=dynamic_cast<TObjString*>(fRefMap->GetValue(type));
   if (!str) return -1;
-  return str->GetString().Atoi();
+  return (const Int_t)str->GetString().Atoi();
 }
 //_____________________________________________________________________________________
 AliTPCCalPad *AliTPCcalibDButil::CreateCEOutlyerMap( Int_t & noutliersCE, AliTPCCalPad *ceOut, Float_t minSignal, Float_t cutTrmsMin,  Float_t cutTrmsMax, Float_t cutMaxDistT){
@@ -1711,7 +1711,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeS
   Double_t vcosmic=  AliTPCcalibDButil::EvalGraphConst(cosmicAll, timeStamp);
   if (timeStamp>cosmicAll->GetX()[cosmicAll->GetN()-1])  vcosmic=cosmicAll->GetY()[cosmicAll->GetN()-1];
   if (timeStamp<cosmicAll->GetX()[0])  vcosmic=cosmicAll->GetY()[0];
-  return  vcosmic+t0;
+  return  vcosmic-t0;
 
   /*
     Example usage:
@@ -1888,6 +1888,45 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCCE(Double_t &dist,Int_t run, Int_t time
   if (!graphC) corrM=corrA; 
   return corrM;
 }
+
+Double_t  AliTPCcalibDButil::GetVDriftTPCITS(Double_t &dist, Int_t run, Int_t timeStamp){
+  //
+  // return drift velocity using the TPC-ITS matchin method
+  // return also distance to the closest point
+  //
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  TGraphErrors *graph=0;
+  dist=0;
+  if (!array) return 0;
+  graph = (TGraphErrors*)array->FindObject("ALIGN_ITSB_TPC_DRIFTVD");
+  if (!graph) return 0;
+  Double_t deltaY;
+  AliTPCcalibDButil::GetNearest(graph,timeStamp,dist,deltaY); 
+  Double_t value = AliTPCcalibDButil::EvalGraphConst(graph,timeStamp);
+  return value;
+}
+
+Double_t AliTPCcalibDButil::GetTime0TPCITS(Double_t &dist, Int_t run, Int_t timeStamp){
+  //
+  // Get time dependent time 0 (trigger delay in cm) correction
+  // Arguments:
+  // timestamp - timestamp
+  // run       - run number
+  //
+  // Notice - Extrapolation outside of calibration range  - using constant function
+  //
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  TGraphErrors *graph=0;
+  dist=0;
+  if (!array) return 0;
+  graph = (TGraphErrors*)array->FindObject("ALIGN_ITSM_TPC_T0");
+  if (!graph) return 0;
+  Double_t deltaY;
+  AliTPCcalibDButil::GetNearest(graph,timeStamp,dist,deltaY); 
+  Double_t value = AliTPCcalibDButil::EvalGraphConst(graph,timeStamp);
+  return value;
+}
+
 
 
 
@@ -2739,7 +2778,7 @@ TMatrixD* AliTPCcalibDButil::MakeStatRelKalman(TObjArray *array, Float_t minFrac
   //    row        - parameter type (rotation[3], translation[3], drift[3])
   if (!array) return 0;
   if (array->GetEntries()<=0) return 0;
-  Int_t entries = array->GetEntries();
+  //  Int_t entries = array->GetEntries();
   Int_t entriesFast = array->GetEntriesFast();
   TVectorD state(9);
   TVectorD *valArray[9];
@@ -2779,10 +2818,13 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray *array,TMatrixD & stat, 
   //   sigmaCut  - maximal allowed deviation from mean in terms of RMS 
   if (!array) return 0;
   if (array->GetEntries()<=0) return 0;
-  const Double_t errvd = 0.0001;
-  const Double_t errt0 = 0.001;
-  const Double_t errvy = 0.0001;
-
+  // error increase in 1 hour
+  const Double_t kerrsTime[9]={
+    0.00001,  0.00001, 0.00001,
+    0.001,    0.001,   0.001,
+    0.0001,  0.001,   0.0001};
+  //
+  //
   Int_t entries = array->GetEntriesFast();
   TObjArray *sArray= new TObjArray(entries);
   AliRelAlignerKalman * sKalman =0;
@@ -2804,9 +2846,12 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray *array,TMatrixD & stat, 
     }
     if (!sKalman) continue;
     Double_t deltaT=TMath::Abs(Int_t(kalman->GetTimeStamp())-Int_t(sKalman->GetTimeStamp()))/3600.;
-    (*(sKalman->GetStateCov()))(6,6)+=deltaT*errvd*errvd;
-    (*(sKalman->GetStateCov()))(7,7)+=deltaT*errt0*errt0;
-    (*(sKalman->GetStateCov()))(8,8)+=deltaT*errvy*errvy;  
+    for (Int_t ipar=0; ipar<9; ipar++){
+//       (*(sKalman->GetStateCov()))(6,6)+=deltaT*errvd*errvd;
+//       (*(sKalman->GetStateCov()))(7,7)+=deltaT*errt0*errt0;
+//       (*(sKalman->GetStateCov()))(8,8)+=deltaT*errvy*errvy; 
+      (*(sKalman->GetStateCov()))(ipar,ipar)+=deltaT*kerrsTime[ipar]*kerrsTime[ipar];
+    }
     sKalman->SetRunNumber(kalman->GetRunNumber());
     if (!isOK) sKalman->SetRunNumber(0);
     sArray->AddAt(new AliRelAlignerKalman(*sKalman),index);
@@ -2821,3 +2866,26 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray *array,TMatrixD & stat, 
   return sArray;
 }
 
+TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray *arrayP, TObjArray *arrayM){
+  //
+  // Merge 2 RelKalman arrays
+  // Input:
+  //   arrayP    - rel kalman in direction plus
+  //   arrayM    - rel kalman in direction minus
+  if (!arrayP) return 0;
+  if (arrayP->GetEntries()<=0) return 0;
+  if (!arrayM) return 0;
+  if (arrayM->GetEntries()<=0) return 0;
+  Int_t entries = arrayP->GetEntriesFast();
+  TObjArray *array = new TObjArray(arrayP->GetEntriesFast()); 
+  for (Int_t i=0; i<entries; i++){
+     AliRelAlignerKalman * kalmanP = (AliRelAlignerKalman *) arrayP->UncheckedAt(i);
+     AliRelAlignerKalman * kalmanM = (AliRelAlignerKalman *) arrayM->UncheckedAt(i);
+     if (!kalmanP) continue;
+     if (!kalmanM) continue;
+     AliRelAlignerKalman *kalman = new AliRelAlignerKalman(*kalmanP);
+     kalman->Merge(kalmanM);
+     array->AddAt(kalman,i);
+  }
+  return array;
+}
