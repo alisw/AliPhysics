@@ -24,7 +24,6 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONClusterFinderCOG.cxx \
        AliMUONPad.cxx \
        AliMUONCluster.cxx \
-       AliMUONPadStatusMaker.cxx \
        AliMUONPadStatusMapMaker.cxx \
        AliMUONTrackHitPattern.cxx \
        AliMUONVClusterStore.cxx \
@@ -33,17 +32,12 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONClusterStoreV2Iterator.cxx \
        AliMUONVTrackStore.cxx \
        AliMUONTrackStoreV1.cxx \
-       AliMUONRecoParam.cxx \
        AliMUONVClusterServer.cxx \
        AliMUONSimpleClusterServer.cxx \
        AliMUONVQADataMakerRec.cxx \
        AliMUONQADataMakerRec.cxx \
        AliMUONTrackerQADataMakerRec.cxx \
        AliMUONTriggerQADataMakerRec.cxx \
-       AliMUONQAChecker.cxx \
-       AliMUONVQAChecker.cxx \
-       AliMUONTrackerQAChecker.cxx \
-       AliMUONTriggerQAChecker.cxx \
        AliMUONClusterFinderPeakCOG.cxx \
        AliMUONClusterFinderPeakFit.cxx \
        AliMUONRefitter.cxx \

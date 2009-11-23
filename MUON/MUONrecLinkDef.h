@@ -46,7 +46,6 @@
 #pragma link C++ class AliMUONVTriggerTrackStore+;
 #pragma link C++ class AliMUONTriggerTrackStoreV1+;
 
-#pragma link C++ class AliMUONRecoParam+;
 
 #pragma link C++ class AliMUONVClusterServer+;
 #pragma link C++ class AliMUONSimpleClusterServer+;
@@ -57,19 +56,13 @@
 
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;
-#pragma link C++ class AliMUONPadStatusMaker+;
 #pragma link C++ class AliMUONPadStatusMapMaker+;
 
 // QA
-#pragma link C++ class AliMUONVQADataMakerRec+;
-#pragma link C++ class AliMUONVQAChecker+;
 #pragma link C++ class AliMUONQADataMakerRec+;
-#pragma link C++ class AliMUONQAChecker+;
 #pragma link C++ class AliMUONTrackerQADataMakerRec+;
-#pragma link C++ class AliMUONTrackerQAChecker+;
 #pragma link C++ class AliMUONTriggerQADataMakerRec+;
-#pragma link C++ class AliMUONTriggerQAChecker+;
-
+#pragma link C++ class AliMUONVQADataMakerRec+;
 #pragma link C++ class AliMUONVTrackerDataMaker+;
 #pragma link C++ class AliMUONTrackerDataMaker+;
 #pragma link C++ class AliMUONTrackerConditionDataMaker+;

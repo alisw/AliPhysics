@@ -41,6 +41,14 @@
 #pragma link C++ class AliMUONDigitMaker+;
 #pragma link C++ class AliMUONRawWriter+;
 
+// needed by qa (sim and rec)
+#pragma link C++ class AliMUONRecoParam+;
+#pragma link C++ class AliMUONPadStatusMaker+;
+#pragma link C++ class AliMUONVQAChecker+;
+#pragma link C++ class AliMUONQAChecker+;
+#pragma link C++ class AliMUONTrackerQAChecker+;
+#pragma link C++ class AliMUONTriggerQAChecker+;
+
 #endif
 
 

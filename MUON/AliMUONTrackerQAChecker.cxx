@@ -29,8 +29,8 @@
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliLog.h"
+#include "AliMUONQAIndices.h"
 #include "AliMUONRecoParam.h"
-#include "AliMUONTrackerQADataMakerRec.h"
 #include "AliMpBusPatch.h"
 #include "AliMpDDLStore.h"
 #include "AliQAv1.h"
@@ -170,9 +170,10 @@ AliMUONTrackerQAChecker::CheckRecPoints(TObjArray ** list, AliMUONRecoParam* /*r
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
     rv[specie] =  AliMUONVQAChecker::kInfo; 
   
+  
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
-    TH1* h = AliQAv1::GetData(list,AliMUONTrackerQADataMakerRec::kTrackerNumberOfClustersPerDE,AliRecoParam::ConvertIndex(specie));
+    TH1* h = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerNumberOfClustersPerDE,AliRecoParam::ConvertIndex(specie));
 
     if ( !h ) rv[specie] = AliMUONVQAChecker::kWarning; // only a warning if histo not found, in order not to kill anything because QA failed...
   
@@ -209,13 +210,13 @@ AliMUONTrackerQAChecker::CheckESD(TObjArray ** list, AliMUONRecoParam* /*recoPar
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     
-    TH1* h = AliQAv1::GetData(list,AliMUONTrackerQADataMakerRec::kESDnTracks,AliRecoParam::ConvertIndex(specie));
+    TH1* h = AliQAv1::GetData(list,AliMUONQAIndices::kESDnTracks,AliRecoParam::ConvertIndex(specie));
   
     if (!h) rv[specie] = AliMUONVQAChecker::kWarning;
   
     else if ( h->GetMean() == 0.0 ) rv[specie] =  MarkHisto(*h,AliMUONVQAChecker::kFatal); // no track -> fatal
   
-    h = AliQAv1::GetData(list,AliMUONTrackerQADataMakerRec::kESDMatchTrig,AliRecoParam::ConvertIndex(specie));
+    h = AliQAv1::GetData(list,AliMUONQAIndices::kESDMatchTrig,AliRecoParam::ConvertIndex(specie));
   
     if (!h) rv[specie] = AliMUONVQAChecker::kWarning;
   
@@ -243,11 +244,11 @@ AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, AliMUONRecoParam* recoPara
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
-    TH1* hbp = AliQAv1::GetData(list,AliMUONTrackerQADataMakerRec::kTrackerBusPatchOccupancy,AliRecoParam::ConvertIndex(specie));    
+    TH1* hbp = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchOccupancy,AliRecoParam::ConvertIndex(specie));    
 
-    TH1* hnpads = AliQAv1::GetData(list,AliMUONTrackerQADataMakerRec::kTrackerBusPatchNofPads,AliRecoParam::ConvertIndex(specie));
+    TH1* hnpads = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchNofPads,AliRecoParam::ConvertIndex(specie));
 
-    TH1* hbpconfig = AliQAv1::GetData(list,AliMUONTrackerQADataMakerRec::kTrackerBusPatchConfig,AliRecoParam::ConvertIndex(specie));
+    TH1* hbpconfig = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchConfig,AliRecoParam::ConvertIndex(specie));
 
     if (!hbp || !hnpads ) 
     {

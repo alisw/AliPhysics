@@ -28,7 +28,7 @@
 
 
 #include "AliRecoParam.h"
-#include "AliMUONTriggerQADataMakerRec.h"
+#include "AliMUONQAIndices.h"
 #include "AliQAv1.h"
 #include "TH1.h"
 #include "TPaveText.h"
@@ -79,9 +79,9 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, AliMUONRecoParam* )
   }
 
   Int_t histoRawsPercentIndex[] = {
-    AliMUONTriggerQADataMakerRec::kTriggerErrorSummaryNorm, 
-    AliMUONTriggerQADataMakerRec::kTriggerCalibSummaryNorm,
-    AliMUONTriggerQADataMakerRec::kTriggerReadOutErrorsNorm
+    AliMUONQAIndices::kTriggerErrorSummaryNorm, 
+    AliMUONQAIndices::kTriggerCalibSummaryNorm,
+    AliMUONQAIndices::kTriggerReadOutErrorsNorm
   };
   const Int_t kNrawsHistos = sizeof(histoRawsPercentIndex)/sizeof(histoRawsPercentIndex[0]);
 

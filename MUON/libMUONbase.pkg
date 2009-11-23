@@ -22,7 +22,13 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONTriggerCircuit.cxx \
         AliMUONVTriggerStore.cxx \
         AliMUONTriggerStoreV1.cxx \
-        AliMUONTriggerElectronics.cxx
+        AliMUONTriggerElectronics.cxx \
+        AliMUONQAChecker.cxx \
+        AliMUONVQAChecker.cxx \
+        AliMUONTrackerQAChecker.cxx \
+        AliMUONTriggerQAChecker.cxx \
+        AliMUONRecoParam.cxx \
+        AliMUONPadStatusMaker.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
