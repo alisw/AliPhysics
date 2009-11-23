@@ -49,3 +49,25 @@ AliCFFrame::AliCFFrame(const Char_t* name, const Char_t* title) :
   // named constructor
 }
 
+//____________________________________________________________________
+void AliCFFrame::Save(const Char_t *outfile) const
+{
+  //
+  // Save 'this' to a root file
+  //
+
+  const char *dirname = "./";
+  TString filename = outfile;
+  TFile *file=0x0;
+  if((gSystem->FindFile(dirname,filename))!=NULL){
+    file = new TFile( outfile,"UPDATE");
+  }
+  else{
+    file = new TFile( outfile,"RECREATE");
+  } 
+  file->cd();
+  //write the object to a file
+  this->Write(GetName(),TObject::kSingleKey);
+  file->Close();
+  delete file;
+}

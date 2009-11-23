@@ -19,7 +19,7 @@ class AliCFFrame : public TNamed
   AliCFFrame(const Char_t* name,const Char_t* title);
   virtual ~AliCFFrame() {} ;
   virtual void Copy(TObject& c) const {TNamed::Copy(c);}
-
+  virtual void Save(const Char_t *outfile) const;
   virtual Int_t      GetNVar()                                                   const = 0 ; // number of variables
   virtual void       PrintBinLimits()                                            const = 0 ; // prints the bin limits for each variable
   virtual void       PrintNBins()                                                const = 0 ; // prints the number of bins for each variable
