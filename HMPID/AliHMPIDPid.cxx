@@ -48,8 +48,15 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
     for(Int_t iPart=0;iPart<nsp;iPart++) prob[iPart]=1.0/(Float_t)nsp;
     return;
   } 
-
-  Double_t pmod = pTrk->GetP();                  // Momentum of the charged particle
+  
+  Double_t p[3] = {0}, pmod = 0;
+  if(pTrk->GetOuterHmpPxPyPz(p))  pmod = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);  // Momentum of the charged particle
+  
+  else {                                         
+    for(Int_t iPart=0;iPart<nsp;iPart++) prob[iPart]=1.0/(Float_t)nsp;
+    return;
+  } 
+  
   Double_t hTot=0;                               // Initialize the total height of the amplitude method
   Double_t *h = new Double_t [nsp];              // number of charged particles to be considered
 
