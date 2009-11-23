@@ -14,8 +14,8 @@
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
-#include <TObject.h> 
-class TString ;
+#include <TObject.h>
+#include <TString.h> 
 class TList ;
 
 //--- AliRoot system ---
