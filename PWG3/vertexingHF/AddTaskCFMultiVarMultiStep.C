@@ -319,8 +319,6 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
 	outputfile += ":PWG3_D2H_CFtaskD0toKpi";
 
-	//slot 0 : default output tree (by default handled by AliAnalysisTaskSE)
-	AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("CFHFctree0", TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 	
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -333,7 +331,6 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	mgr->AddTask(task);
 	
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-	mgr->ConnectOutput(task,0,coutput0);
 	mgr->ConnectOutput(task,1,coutput1);
 	mgr->ConnectOutput(task,2,coutput2);
         mgr->ConnectOutput(task,3,coutput3);
