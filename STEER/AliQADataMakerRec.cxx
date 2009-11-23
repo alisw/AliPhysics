@@ -148,7 +148,8 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
 {
 	// Finishes a cycle of QA 
 	
-	TObjArray ** list = NULL ; 
+    
+  TObjArray ** list = NULL ; 
 	
 	if ( task == AliQAv1::kRAWS )     
 		list = fRawsQAList ; 
@@ -165,6 +166,9 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
   //DefaultEndOfDetectorCycle(task) ;
 	EndOfDetectorCycle(task, list) ;
   
+  if (! AliQAManager::QAManager(AliQAv1::kRECMODE)->IsSaveData())
+    return ; 
+
   fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
   if (!fDetectorDir)
     fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
