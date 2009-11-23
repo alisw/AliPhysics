@@ -90,7 +90,7 @@ void AliZDCReconstructor::Init()
     
   TString beamType = GetRunInfo()->GetBeamType();
   // This is a temporary solution to allow reconstruction in tests without beam
-  if(((beamType.CompareTo("UNKNOWN"))==0) && ((runType.CompareTo("PHYSICS")) == 0)){
+  if(((beamType.CompareTo("UNKNOWN"))==0)){
     fRecoMode=1;
   }
   /*else if((beamType.CompareTo("UNKNOWN"))==0){
