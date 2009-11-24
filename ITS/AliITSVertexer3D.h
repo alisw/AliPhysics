@@ -59,6 +59,8 @@ class AliITSVertexer3D : public AliITSVertexer {
   void SetPileupAlgo(UShort_t optalgo=1){fPileupAlgo=optalgo;}
   void SetBinSizeR(Double_t siz=0.1){fBinSizeR=siz;}
   void SetBinSizeZ(Double_t siz=0.8){fBinSizeZ=siz;}
+  void SetMaxNumOfClusters(Int_t ncl){fMaxNumOfCl=ncl;}
+  Int_t GetMaxNumOfClusters() const {return fMaxNumOfCl;}
 
 protected:
   AliITSVertexer3D(const AliITSVertexer3D& vtxr);
@@ -97,8 +99,11 @@ protected:
   UShort_t fPileupAlgo;    // Algo for pileup identification
                            // 0->VertexerZ pileup algo
                            // 1->Unused RecPoints algo
+  Int_t fMaxNumOfCl;       // max number of clusters on L1 or L2
 
-  ClassDef(AliITSVertexer3D,12);
+  static const Int_t fgkMaxNumOfClDefault; // Default max number of clusters
+
+  ClassDef(AliITSVertexer3D,13);
 
 };
 
