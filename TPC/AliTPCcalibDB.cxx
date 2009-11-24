@@ -868,6 +868,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
     fALTROConfigData->Expand(run*2+1);    // ALTRO configuration data
     fPulserData->Expand(run*2+1);         // Calibration Pulser data
     fCEData->Expand(run*2+1);             // CE data
+    if (!fTimeGainSplines) fTimeGainSplines = new TObjArray(run*2+1);
     fTimeGainSplines->Expand(run*2+1); // Array of AliSplineFits: at 0 MIP position in
   }
   if (fRunList[run]>0 &&force==kFALSE) return;
