@@ -47,6 +47,7 @@ meanNoiseSen.		1, Mean_Noise_in_sensitive_regions, Noise_Pedestals, All_Pads, IR
 rmsNoise.		1, RMS_Noise, Noise_Pedestals, All_Pads, IROCs, OROCs_small_pads, OROCs_large_pads
 rmsNoiseSen.		1, RMS_Noise_in_sensitive_regions, Noise_Pedestals, All_Pads, IROCs, OROCs_small_pads, OROCs_large_pads
 zeroNoise		1, Pads_with_zero_noise, Noise_Pedestals
+nNaN  1, Pads_with_NaN_noise, Noise_Pedestals
 nMasked		1, Number_of_masked_pads, ALTRO
 nOffPulser		1, Pads_without_pulser_signal, Pulser
 timePulser.   1, Pulser_Position_[timebins], Pulser, IROC_A-Side, IROC_C-Side, OROC_A-Side, OROC_C-Side
@@ -77,5 +78,17 @@ noiseDeviations. 1, Noise_var_to_ref_[fraction], Noise_Pedestals, >5%, >10%, >15
 pulserQdeviations. 1, PulserQ_var_to_ref_[fraction], Pulser, >0.5%, >1%, >5%, >10%
 #pulserVarQMean
 pulserNpadsOutOneTB 1, Number_of_pads_with_PulserT_var_>#pm_1_tb_to_ROC_mean, Pulser
-pulserNpadsOffAdd 1, Number_of_pads_without_signal_but_signal_in_ref
+pulserNpadsOffAdd 1, Number_of_pads_without_signal_but_signal_in_ref,
+#
+#drift velocity
+#
+vlaserA0 1, LaserA_offset, Drift,
+vlaserA1 1, LaserA_drift_correction, Drift, 
+vlaserA2 1, LaserA_gy_correction, Drift,
+vlaserC0 1, LaserC_offset, Drift,
+vlaserC1 1, LaserC_drift_correction, Drift,
+vlaserC2 1, LaserC_gy_correction, Drift, 
+vcosmicAll 1, Cosmic_drift_corrrection, Drift,
+vdrift1 1, Combined_drift_correction, Drift,
+vdriftITS 1, TPC-ITS_vdrift_correction, Drift,
 

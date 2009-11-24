@@ -20,12 +20,22 @@
 
 TTree * guiTree =  guiTime->GetChain();
 
-void Init(){
+void guiAlias(){
   guiTree =  guiTime->GetChain();
   MakeAliasCE(4);
   MakeAliasLT(4);
   MakeAliasCosmic(4);   
-  guiTree->SetAlias("goCut","abs(goofie.fElements[3]-2.677)<0.1");
+  guiTree->SetAlias("goCut","abs(goofie.fElements[3]-2.677)<0.1");  
+}
+
+void SetStyle(){ 
+  Float_t mx0=0.2, mx1=0.1, my0=0.15, my1=0.1;
+  guiTime->GetCanvas()->SetTicks(1,1);
+  guiTime->GetCanvas()->SetMargin(mx0,mx1,my0,my1);
+  gStyle->SetTitleYSize(0.03);
+  gStyle->SetTitleXSize(0.03);
+  gStyle->SetTitleXOffset(2);
+  gStyle->SetTitleYOffset(6);
 }
 
 void MakeAliasCE(Double_t deltaT){
@@ -46,5 +56,14 @@ void MakeAliasCosmic(Double_t deltaT){
   guiTree->SetAlias("itsCut", Form("((dits!=0)&&abs(dits)<%f)", deltaT*3600));
 }
 
+
+void SetGoofieAlias(){
+  //
+  // goofie aliases
+  //
+  guiTree->SetAlias("ptrelG","(goofie.fElements[17]/0.3426-1)");
+  guiTree->SetAlias("vdriftGN","goofie.fElements[3]/(1+ptrelG)");
+  //
+}
 
 

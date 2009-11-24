@@ -173,8 +173,8 @@ void ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
   fitVdrift=calibDB->CreateVdriftSplineFit("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL",irun);
   //noise data Processing - see ProcessNoiseData function for description of the results
   TVectorD vNoiseMean, vNoiseMeanSenRegions, vNoiseRMS, vNoiseRMSSenRegions;
-  Int_t nonMaskedZero=0;
-  dbutil->ProcessNoiseData(vNoiseMean, vNoiseMeanSenRegions, vNoiseRMS, vNoiseRMSSenRegions, nonMaskedZero);
+  Int_t nonMaskedZero=0, nNaN=0;
+  dbutil->ProcessNoiseData(vNoiseMean, vNoiseMeanSenRegions, vNoiseRMS, vNoiseRMSSenRegions, nonMaskedZero, nNaN);
   //
   // comparisons
   //
@@ -359,6 +359,7 @@ void ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "rmsNoise.="<<&vNoiseRMS<<
       "rmsNoiseSen.="<<&vNoiseRMSSenRegions<<
       "zeroNoise="<<nonMaskedZero<<
+      "nNaN="<<nNaN<<
       //pulser data
       "timePulser.=" << &vTimePulser <<
       "nOffPulser="<<nOffChannels<<
