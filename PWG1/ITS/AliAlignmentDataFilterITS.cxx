@@ -750,9 +750,11 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 
   if(ntracks==0) return;
 
-  if(esd->GetPrimaryVertexTracks()->GetNContributors()<=0) return;
+  if(esd->GetPrimaryVertexSPD()->GetNContributors()<=0) return;
+  TString vtitle = esd->GetPrimaryVertexSPD()->GetTitle();
+  if(!vtitle.Contains("3D")) return;
 
-  Double_t vtxpos[3]; esd->GetPrimaryVertexTracks()->GetXYZ(vtxpos);
+  Double_t vtxpos[3]; esd->GetPrimaryVertexSPD()->GetXYZ(vtxpos);
 
   Int_t ncls=0;
   Double_t pt=-10000.;
@@ -823,6 +825,28 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
       volId = point.GetVolumeID();
       layerId = AliGeomManager::VolUIDToLayer(volId,modId);
       if(layerId<1 || layerId>6 || !layerOK[layerId-1]) continue;
+      arrayForTree->AddPoint(jpt,&point);
+      switch(layerId) {
+      case 1:
+	fHistLayer0->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
+	break;
+      case 2:
+	fHistLayer1->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
+	break;
+      case 3:
+	fHistLayer2->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
+	break;
+      case 4:
+	fHistLayer3->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
+	break;
+      case 5:
+	fHistLayer4->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
+	break;
+      case 6:
+	fHistLayer5->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
+	break;
+      }
+      jpt++;
       if(!point.IsExtra() || 
 	 !(GetRecoParam()->GetAlignFilterFillQANtuples())) continue;
       ncls--;
@@ -851,28 +875,6 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 	dzOverlap[1]=(Float_t)((pointT.GetZ()-point.GetZ())-(radiusT-radius)/TMath::Tan(0.5*(thetav+thetavT)));
 	fntExtra->Fill((Float_t)ncls,(Float_t)(layerId-1),lad,volId,TMath::ATan2(point.GetY(),point.GetX()),point.GetX(),point.GetY(),point.GetZ(),locExtra[0],locExtra[2],dzOverlap[0],dzOverlap[1],d0z0[0],d0z0[1]);
       }
-      arrayForTree->AddPoint(jpt,&point);
-      switch(layerId) {
-      case 1:
-	fHistLayer0->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
-	break;
-      case 2:
-	fHistLayer1->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
-	break;
-      case 3:
-	fHistLayer2->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
-	break;
-      case 4:
-	fHistLayer3->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
-	break;
-      case 5:
-	fHistLayer4->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
-	break;
-      case 6:
-	fHistLayer5->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
-	break;
-      }
-      jpt++;
     }
 
     curv = track->GetC(esd->GetMagneticField());
