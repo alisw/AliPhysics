@@ -121,7 +121,7 @@ ClassImp(AliGRPPreprocessor)
                    "CavernTemperature",
                    "CavernAtmosPressure",
                    "SurfaceAtmosPressure",
-                   "CavernAtmosPressure2",
+                   "CavernAtmosPressure2"
                  };
 
   const char* AliGRPPreprocessor::fgkDCSDataPointsHallProbes[AliGRPPreprocessor::fgknDCSDPHallProbes] = {
@@ -164,7 +164,7 @@ ClassImp(AliGRPPreprocessor)
 		   "Dipole_Outside_H1",
 		   "Dipole_Outside_H2",
 		   "Dipole_Outside_H3",
-		   "Dipole_Outside_Temperature",
+		   "Dipole_Outside_Temperature"
                  };
                  
   const Short_t kSensors = 48; // start index position of sensor in DCS DPs
@@ -1020,6 +1020,8 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	indexDP = kCavernAtmosPressure;
 	AliDCSSensor* sensorCavernP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
 	TGraph* graph = sensorCavernP2->GetGraph();
+	AliDebug(3,Form("index = %d",indexDP));
+	AliDebug(3,Form("name = %s",fgkDCSDataPoints[indexDP]));
 	AliDebug(2,Form("graph = %p",graph));
 	AliDebug(3,Form("sensorCavernP2 = %p", sensorCavernP2));
 	if(sensorCavernP2->GetFit() || graph) {
@@ -1042,6 +1044,8 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	indexDP = kSurfaceAtmosPressure;
 	AliDCSSensor* sensorP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
 	graph = sensorP2->GetGraph();
+	AliDebug(3,Form("index = %d",indexDP));
+	AliDebug(3,Form("name = %s",fgkDCSDataPoints[indexDP]));
 	AliDebug(2,Form("graph = %p",graph));	
 	AliDebug(3,Form("sensorP2 = %p", sensorP2));
 	if(sensorP2->GetFit() || graph) {
@@ -1064,6 +1068,8 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	indexDP = kCavernAtmosPressure2;
 	AliDCSSensor* sensorCavernP22 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
 	graph = sensorCavernP22->GetGraph();
+	AliDebug(3,Form("index = %d",indexDP));
+	AliDebug(3,Form("name = %s",fgkDCSDataPoints[indexDP]));
 	AliDebug(2,Form("graph = %p",graph));	
 	AliDebug(3,Form("sensorCavernP2_2 = %p", sensorCavernP22));
 	if(sensorCavernP22->GetFit() || graph) {
