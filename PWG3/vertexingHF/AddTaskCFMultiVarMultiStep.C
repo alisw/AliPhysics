@@ -29,6 +29,8 @@ const Double_t ptmin = 0.1;
 const Double_t ptmax = 9999.;
 const Double_t etamin = -0.9;
 const Double_t etamax = 0.9;
+const Double_t zmin = -15;
+const Double_t zmax = 15;
 const Int_t    minITSClusters = 5;
 
 //----------------------------------------------------
@@ -38,7 +40,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 
 	//CONTAINER DEFINITION
 	Info("AliCFHeavyFlavourTaskMultiVarMultiStep","SETUP CONTAINER");
-	//the sensitive variables (6 in this example), their indices
+	//the sensitive variables, their indices
 	UInt_t ipt = 0;
 	UInt_t iy  = 1;
 	UInt_t icosThetaStar  = 2;
@@ -51,12 +53,13 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	UInt_t id0xd0  = 9;
 	UInt_t ipointing  = 10;
 	UInt_t iphi  = 11;
+	UInt_t iz  = 12;
 
 	const Double_t phimax = 2*TMath::Pi();
 
 	//Setting up the container grid... 
 	UInt_t nstep = 8; //number of selection steps: MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included) 
-	const Int_t nvar   = 12 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
+	const Int_t nvar   = 13 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
 	const Int_t nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
 	const Int_t nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
 	const Int_t nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
@@ -75,6 +78,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	const Int_t nbin9  = 80 ; //bins in d0xd0
 	const Int_t nbin10  = 1050 ; //bins in cosPointingAngle
 	const Int_t nbin11  = 20 ; //bins in Phi
+	const Int_t nbin12  = 60 ; //bins in z vertex
 
 	//arrays for the number of bins in each dimension
 	Int_t iBin[nvar];
@@ -90,6 +94,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	iBin[9]=nbin9;
 	iBin[10]=nbin10;
 	iBin[11]=nbin11;
+	iBin[12]=nbin12;
 	
 	//arrays for lower bounds :
 	Double_t *binLim0=new Double_t[iBin[0]+1];
@@ -104,6 +109,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	Double_t *binLim9=new Double_t[iBin[9]+1];
 	Double_t *binLim10=new Double_t[iBin[10]+1];
 	Double_t *binLim11=new Double_t[iBin[11]+1];
+	Double_t *binLim12=new Double_t[iBin[12]+1];
 
 	// checking limits
 	if (ptmax_0_4 != ptmin_4_8) {
@@ -174,6 +180,12 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	// Phi
 	for(Int_t i=0; i<=nbin11; i++) binLim11[i]=(Double_t)phimin  + (phimax-phimin)  /nbin11*(Double_t)i ;
 
+	// z Primary Vertex
+	for(Int_t i=0; i<=nbin12; i++) {
+		binLim12[i]=(Double_t)zmin  + (zmax-zmin)  /nbin12*(Double_t)i ;
+		//		Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim12[i]));
+	}
+
 	// debugging printings
 	//Info("AliCFHeavyFlavourTaskMultiVarMultiStep","Printing lower limits for bins in pt");
 	//for (Int_t i =0; i<= iBin[0]; i++){
@@ -203,6 +215,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	container -> SetBinLimits(id0xd0,binLim9);
 	container -> SetBinLimits(ipointing,binLim10);
 	container -> SetBinLimits(iphi,binLim11);
+	container -> SetBinLimits(iz,binLim12);
 	
 	//CREATE THE  CUTS -----------------------------------------------
 	
@@ -319,7 +332,6 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
 	outputfile += ":PWG3_D2H_CFtaskD0toKpi";
 
-	
 	//now comes user's output objects :
 	// output TH1I for event counting
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("CFHFchist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());

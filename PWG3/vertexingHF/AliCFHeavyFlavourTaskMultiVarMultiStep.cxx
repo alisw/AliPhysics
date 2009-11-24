@@ -48,10 +48,12 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 #include "AliESDtrack.h"
 #include "TChain.h"
 #include "THnSparse.h"
 #include "TH2D.h"
+
 //__________________________________________________________________________
 AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep() :
 	AliAnalysisTaskSE(),
@@ -215,7 +217,10 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	//loop on the MC event
 	
 	TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-	if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
+	if (!mcArray) {
+		AliError("Could not find Monte-Carlo in AOD");
+		return;
+	}
 	Int_t icountMC = 0;
 	Int_t icountAcc = 0;
 	Int_t icountReco = 0;
@@ -225,10 +230,18 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	Int_t icountRecoITSClusters = 0;
 	Int_t icountRecoPPR = 0;
 	
+	AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+	if (!mcHeader) {
+		AliError("Could not find MC Header in AOD");
+		return;
+	}
+
 	Int_t cquarks = 0;
 		
 	// AOD primary vertex
 	AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
+	Double_t zPrimVertex = vtx1->GetZ();
+	Double_t zMCVertex = mcHeader->GetVtxZ();
 	Bool_t vtxFlag = kTRUE;
 	TString title=vtx1->GetTitle();
 	if(!title.Contains("VertexerTracks")) vtxFlag=kFALSE;
@@ -269,6 +282,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			containerInputMC[9] = -100000.; // dummy value, meaningless in MC, in micron^2
 			containerInputMC[10] = 1.01;    // dummy value, meaningless in MC
 			containerInputMC[11] = vectorMC[6];    // dummy value, meaningless in MC
+			containerInputMC[12] = zMCVertex;    // z of reconstructed of primary vertex
 			fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGenerated);
 			icountMC++;
 
@@ -467,6 +481,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				containerInput[9] = d0xd0*1.E8;  // in micron^2
 				containerInput[10] = cosPointingAngle;  // in micron
 				containerInput[11] = phi;  
+				containerInputMC[12] = zPrimVertex;    // z of reconstructed of primary vertex
 			}
 			else {
 				// ... or with generated values				
@@ -484,6 +499,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					containerInput[9] = 100000.; // dummy value, meaningless in MC, in micron^2
 					containerInput[10] = 1.01;    // dummy value, meaningless in MC
 					containerInput[11] = vectorMC[6];   
+					containerInputMC[12] = zMCVertex;    // z of reconstructed of primary vertex
 				}
 				else {
 					AliDebug(3,"Problems in filling the container");
@@ -1184,7 +1200,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	c2->SaveAs("Plots/pTpi_pTK_cT.gif");
 	c3->SaveAs("Plots/dca_d0pi_d0TK.gif");
 	c4->SaveAs("Plots/d0xd0_cosPointingAngle.gif");
-	*/
+	*/	
 }
 
 //___________________________________________________________________________
@@ -1196,7 +1212,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserCreateOutputObjects() {
 	
 	//slot #1
 	OpenFile(1);
-	fHistEventsProcessed = new TH1I("fHistEventsProcessed","",1,0,1) ;
+	fHistEventsProcessed = new TH1I("CFHFchist0","",1,0,1) ;
 }
 
 //___________________________________________________________________________
