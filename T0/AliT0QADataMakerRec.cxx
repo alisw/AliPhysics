@@ -358,22 +358,22 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* fhHitsOrC= new TH1F("fhHitsOrC","T0_OR C hit multiplicitie",10, 0 ,10);
   Add2RawsList(fhHitsOrC ,214, expert, !image, !saveCorr);
 
-  TH1F* fhOrCminOrA= new TH1F("fhOrCminOrA","T0_OR C - T0_OR A",Int_t( high[215]-low[215]),low[215],high[215]);
+  TH1F* fhOrCminOrA= new TH1F("fhOrCminOrA","T0_OR C - T0_OR A",10000,-5000,5000);
   Add2RawsList( fhOrCminOrA,215, expert, !image, !saveCorr);
 
-  TH1F* fhOrCminOrAcal= new TH1F("fhOrCminOrAcal","T0_OR C - T0_OR A",Int_t( high[219]-low[219]),low[219],high[219]);
+  TH1F* fhOrCminOrAcal= new TH1F("fhOrCminOrAcal","T0_OR C - T0_OR A",10000,-5000,5000);
   Add2RawsList( fhOrCminOrAcal,219, expert, !image, !saveCorr);
 
-  TH1F* fhOrCminOrATvdcOn= new TH1F("fhOrCminOrATvdcOn","T0_OR C - T0_OR A TVDC on",Int_t( high[350]-low[350]),low[350],high[350]);
+  TH1F* fhOrCminOrATvdcOn= new TH1F("fhOrCminOrATvdcOn","T0_OR C - T0_OR A TVDC on",10000,-5000,5000);
   Add2RawsList( fhOrCminOrATvdcOn,350, expert, !image, !saveCorr);
 
-  TH1F* fhOrCminOrATvdcOncal= new TH1F("fhOrCminOrATvdcOncal","T0_OR C - T0_OR A TVDC on laser",Int_t( high[351]-low[351]),low[351],high[351]);
+  TH1F* fhOrCminOrATvdcOncal= new TH1F("fhOrCminOrATvdcOncal","T0_OR C - T0_OR A TVDC on laser",10000,-5000,5000);
   Add2RawsList( fhOrCminOrATvdcOncal,351, expert, !image, !saveCorr);
 
-  TH1F* fhOrCminOrATvdcOff= new TH1F("fhOrCminOrATvdcOff","T0_OR C - T0_OR A TVDC off",Int_t( high[352]-low[352]),low[352],high[352]);
+  TH1F* fhOrCminOrATvdcOff= new TH1F("fhOrCminOrATvdcOff","T0_OR C - T0_OR A TVDC off",10000,-5000,5000);
   Add2RawsList( fhOrCminOrATvdcOff,352, expert, !image, !saveCorr);
 
-  TH1F* fhOrCminOrATvdcOffcal= new TH1F("fhOrCminOrATvdcOffcal","T0_OR C - T0_OR ATVDC off laser",Int_t( high[353]-low[353]),low[353],high[353]);
+  TH1F* fhOrCminOrATvdcOffcal= new TH1F("fhOrCminOrATvdcOffcal","T0_OR C - T0_OR ATVDC off laser",10000,-5000,5000);
   Add2RawsList( fhOrCminOrATvdcOffcal,353, expert, !image, !saveCorr);
 
   TH1F* fhCFD1abs= new TH1F("fhCFD1abs"," CFD 1 pure ( L1) ", 20000, 575000, 595000 );
