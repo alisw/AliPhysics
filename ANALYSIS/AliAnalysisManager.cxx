@@ -1372,7 +1372,7 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
   } else {
     if (cont->IsRegisterDataset()) {
       TString dset_name = filename;
-      dset_name.ReplaceAll(".root", "");
+      dset_name.ReplaceAll(".root", cont->GetTitle());
       dset_name.ReplaceAll(":","_");
       if (fDebug>1) printf("Booking dataset: %s\n", dset_name.Data());
       line = Form("TProofOutputFile *pf = new TProofOutputFile(\"%s\", \"DROV\", \"%s\");", filename.Data(), dset_name.Data());
