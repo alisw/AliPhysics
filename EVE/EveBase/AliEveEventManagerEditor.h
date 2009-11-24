@@ -40,13 +40,13 @@ public:
 
    virtual void SetModel(TObject* obj);
 
-   void DoNextEvent();
+   void DumpEventInfo();
 
 protected:
-   AliEveEventManager  *fM;         // Model object.
+   AliEveEventManager  *fM;             // Model object.
 
-   TGTextButton        *fNextEvent; // Load next event
-   TGTextView          *fEventInfo; // Text box with event info
+   TGTextButton        *fDumpEventInfo; // Button that dumps event-info into a file.
+   TGTextView          *fEventInfo;     // Text box with event info.
 
 private:
    AliEveEventManagerEditor(const AliEveEventManagerEditor&);            // Not implemented

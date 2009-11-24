@@ -20,6 +20,8 @@
 #include <TGTextView.h>
 #include <TGLabel.h>
 
+#include "Riostream.h"
+
 //______________________________________________________________________________
 // GUI editor for AliEveEventManager.
 //
@@ -31,7 +33,7 @@ AliEveEventManagerEditor::AliEveEventManagerEditor(const TGWindow *p, Int_t widt
 						   UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
-  fNextEvent(0),
+  fDumpEventInfo(0),
   fEventInfo(0)
 {
   // Constructor.
@@ -40,12 +42,13 @@ AliEveEventManagerEditor::AliEveEventManagerEditor(const TGWindow *p, Int_t widt
 
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    fNextEvent = new TGTextButton(f, "Next Event");
-    fNextEvent->SetWidth(100);
-    fNextEvent->ChangeOptions(fNextEvent->GetOptions() | kFixedWidth);
-    f->AddFrame(fNextEvent, new TGLayoutHints(kLHintsNormal, 4,0,0,0));
-    fNextEvent->Connect("Clicked()",
-			"AliEveEventManagerEditor", this, "DoNextEvent()");
+    fDumpEventInfo = new TGTextButton(f, "Dump Event Info");
+    fDumpEventInfo->SetToolTipText("Append information about current event to event_info.txt file.");
+    fDumpEventInfo->SetWidth(120);
+    fDumpEventInfo->ChangeOptions(fDumpEventInfo->GetOptions() | kFixedWidth);
+    f->AddFrame(fDumpEventInfo, new TGLayoutHints(kLHintsNormal, 4,0,0,0));
+    fDumpEventInfo->Connect("Clicked()",
+			"AliEveEventManagerEditor", this, "DumpEventInfo()");
     AddFrame(f, new TGLayoutHints(kLHintsExpandX, 8,8,8,0));
   }
   {
@@ -76,11 +79,17 @@ void AliEveEventManagerEditor::SetModel(TObject* obj)
 /******************************************************************************/
 
 //______________________________________________________________________________
-void AliEveEventManagerEditor::DoNextEvent()
+void AliEveEventManagerEditor::DumpEventInfo()
 {
-  // Load next event
+  // Dump event-info into event_info.txt.
+  // The info is appended into the file.
 
-  fM->NextEvent();
+  ofstream f("event_info.txt", ios::out | ios::app);
+
+  f << "================================================================================\n\n";
+  f << fM->GetEventInfoHorizontal() << std::endl << std::endl;
+
+  f.close();
 }
 
 
