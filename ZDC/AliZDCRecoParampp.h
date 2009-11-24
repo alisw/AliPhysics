@@ -22,9 +22,6 @@ class AliZDCRecoParampp : public AliZDCRecoParam {
   // make reco parameters for p-p collisions
   static AliZDCRecoParampp *GetLowFluxParam();
   
-  virtual TH2F* GethZDCvsZEM()  const {AliError("NO centrality determination in p-p!"); return 0;}    
-  virtual TH2F* GethZDCCvsZEM() const {AliError("NO centrality determination in p-p!"); return 0;}    
-  virtual TH2F* GethZDCAvsZEM() const {AliError("NO centrality determination in p-p!"); return 0;}    
   virtual TH1D* GethNpartDist() const {AliError("NO centrality determination in p-p!"); return 0;}
   virtual TH1D* GethbDist() 	const {AliError("NO centrality determination in p-p!"); return 0;}
   virtual Float_t GetClkCenter() const {AliError("NO centrality determination in p-p!");return 0;}

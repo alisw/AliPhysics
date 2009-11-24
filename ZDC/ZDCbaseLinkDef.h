@@ -14,6 +14,7 @@
 #pragma link C++ class  AliZDCLaserCalib+;
 #pragma link C++ class  AliZDCEnCalib+;
 #pragma link C++ class  AliZDCTowerCalib+;
+#pragma link C++ class  AliZDCMBCalib+;
 #pragma link C++ class  AliZDCMisAligner+;
 #pragma link C++ class  AliZDCChMap+;
 #pragma link C++ class  AliZDCDataDCS+;

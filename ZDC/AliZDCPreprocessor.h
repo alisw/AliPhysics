@@ -35,6 +35,7 @@ class AliZDCPreprocessor : public AliPreprocessor
     UInt_t ProcessCalibData();
     UInt_t ProcessPedestalData();
     UInt_t ProcessLaserData();
+    UInt_t ProcessMBCalibData();
 
     AliZDCDataDCS *fData;    // OCDB class that stores DCS data
 

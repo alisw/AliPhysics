@@ -10,7 +10,6 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
-#include <TH2F.h>
 #include <TH1D.h>
 #include <TF1.h>
 #include "AliDetectorRecoParam.h"
@@ -22,18 +21,10 @@ class AliZDCRecoParam : public AliDetectorRecoParam {
   AliZDCRecoParam();
   virtual ~AliZDCRecoParam();
 
-  virtual TH2F*   GethZDCvsZEM()  const = 0;	
-  virtual TH2F*   GethZDCCvsZEM() const = 0;	
-  virtual TH2F*   GethZDCAvsZEM() const = 0;	
   virtual TH1D*   GethNpartDist() const = 0;	
   virtual TH1D*   GethbDist()     const = 0;	
   virtual Float_t GetClkCenter()  const = 0;
-  
-  virtual void SetZDCvsZEM(TH2F* /*hCorr*/)  {printf(" AliZDCRecoParam::SetZDCvsZEM doesn't set anything!!!");}    
-  virtual void SetZDCCvsZEM(TH2F* /*hCorr*/) {printf(" AliZDCRecoParam::SetZDCCvsZEM doesn't set anything!!!");}    
-  virtual void SetZDCAvsZEM(TH2F* /*hCorr*/) {printf(" AliZDCRecoParam::SetZDCAvsZEM doesn't set anything!!!");}    
-
-    
+      
   virtual void PrintParameters() const {;} 
   
  protected:

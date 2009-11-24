@@ -42,6 +42,7 @@
 #include "AliZDCPedestals.h"
 #include "AliZDCEnCalib.h"
 #include "AliZDCTowerCalib.h"
+#include "AliZDCMBCalib.h"
 #include "AliZDCRecoParam.h"
 #include "AliZDCRecoParampp.h"
 #include "AliZDCRecoParamPbPb.h"
@@ -56,6 +57,7 @@ AliZDCReconstructor:: AliZDCReconstructor() :
   fPedData(GetPedestalData()),
   fEnCalibData(GetEnergyCalibData()),
   fTowCalibData(GetTowerCalibData()),
+  fMBCalibData(GetMBCalibData()),
   fRecoMode(0),
   fBeamEnergy(0.),
   fNRun(0),
@@ -75,6 +77,7 @@ AliZDCReconstructor::~AliZDCReconstructor()
    if(fPedData)      delete fPedData;    
    if(fEnCalibData)  delete fEnCalibData;
    if(fTowCalibData) delete fTowCalibData;
+   if(fMBCalibData)  delete fMBCalibData;
 }
 
 //____________________________________________________________________________
@@ -915,15 +918,12 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   
   if(fIsCalibrationMB == kFALSE){
     // ******	Reconstruction parameters ------------------ 
-    // Ch. debug
-    //fRecoParam->Print("");
-    //
- 
     if (!fRecoParam) fRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam()); 
  
-    TH2F *hZDCvsZEM  = fRecoParam->GethZDCvsZEM();
-    TH2F *hZDCCvsZEM = fRecoParam->GethZDCCvsZEM();
-    TH2F *hZDCAvsZEM = fRecoParam->GethZDCAvsZEM();
+    TH2F *hZDCvsZEM  = fMBCalibData->GethZDCvsZEM();
+    TH2F *hZDCCvsZEM = fMBCalibData->GethZDCCvsZEM();
+    TH2F *hZDCAvsZEM = fMBCalibData->GethZDCAvsZEM();
+    //
     TH1D *hNpartDist = fRecoParam->GethNpartDist();
     TH1D *hbDist = fRecoParam->GethbDist();    
     Float_t ClkCenter = fRecoParam->GetClkCenter();
@@ -1156,15 +1156,6 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   clustersTree->Fill();
 }
 
-//_____________________________________________________________________________
-void AliZDCReconstructor::BuildRecoParam(Float_t ZDCC, Float_t ZDCA, Float_t ZEM) const
-{
-  // Calculate RecoParam object for Pb-Pb data
-  (fRecoParam->GethZDCvsZEM())->Fill(ZDCC+ZDCA, ZEM);
-  (fRecoParam->GethZDCCvsZEM())->Fill(ZDCC, ZEM);
-  (fRecoParam->GethZDCAvsZEM())->Fill(ZDCA, ZEM);
- 
-}
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) const
@@ -1292,6 +1283,22 @@ AliZDCTowerCalib* AliZDCReconstructor::GetTowerCalibData() const
   entry->SetOwner(kFALSE);
 
   AliZDCTowerCalib *calibdata = dynamic_cast<AliZDCTowerCalib*> (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCMBCalib* AliZDCReconstructor::GetMBCalibData() const
+{
+
+  // Getting energy and equalization calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/MBCalib");
+  if(!entry) AliFatal("No calibration data loaded!");  
+  entry->SetOwner(kFALSE);
+
+  AliZDCMBCalib *calibdata = dynamic_cast<AliZDCMBCalib*> (entry->GetObject());
   if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;

@@ -33,9 +33,6 @@ ClassImp(AliZDCRecoParamPbPb)
 //_____________________________________________________________________________
 AliZDCRecoParamPbPb::AliZDCRecoParamPbPb() :
   AliZDCRecoParam(),
-  fhZDCvsZEM(0x0),
-  fhZDCCvsZEM(0x0),
-  fhZDCAvsZEM(0x0),
   fhNpartDist(0x0),
   fhbDist(0x0),
   fClkCenter(0)
@@ -44,26 +41,8 @@ AliZDCRecoParamPbPb::AliZDCRecoParamPbPb() :
   //Default constructor
 }
 //_____________________________________________________________________________
-AliZDCRecoParamPbPb::AliZDCRecoParamPbPb(TH2F *hZDCvsZEM, TH2F *hZDCCvsZEM, TH2F *hZDCAvsZEM) :
+AliZDCRecoParamPbPb::AliZDCRecoParamPbPb(TH1D *hNpart, TH1D *hb, Float_t clkCent) :
   AliZDCRecoParam(),
-  fhZDCvsZEM(hZDCvsZEM),
-  fhZDCCvsZEM(hZDCCvsZEM),
-  fhZDCAvsZEM(hZDCAvsZEM),
-  fhNpartDist(0x0),
-  fhbDist(0x0),
-  fClkCenter(0.1)
-{
-  //
-  //Standard constructor
-  SetGlauberMCDist();
-}
-//_____________________________________________________________________________
-AliZDCRecoParamPbPb::AliZDCRecoParamPbPb(TH2F *hZDCvsZEM, TH2F *hZDCCvsZEM, TH2F *hZDCAvsZEM,
-  		      TH1D *hNpart, TH1D *hb, Float_t clkCent) :
-  AliZDCRecoParam(),
-  fhZDCvsZEM(hZDCvsZEM),
-  fhZDCCvsZEM(hZDCCvsZEM),
-  fhZDCAvsZEM(hZDCAvsZEM),
   fhNpartDist(hNpart),
   fhbDist(hb),
   fClkCenter(clkCent)
@@ -75,26 +54,11 @@ AliZDCRecoParamPbPb::AliZDCRecoParamPbPb(TH2F *hZDCvsZEM, TH2F *hZDCCvsZEM, TH2F
 //______________________________________________________________________________
 AliZDCRecoParamPbPb::AliZDCRecoParamPbPb(const AliZDCRecoParamPbPb &oldrecopar) :
   AliZDCRecoParam(),
-  fhZDCvsZEM(0x0),
-  fhZDCCvsZEM(0x0),
-  fhZDCAvsZEM(0x0),
   fhNpartDist(0x0),
   fhbDist(0x0),
   fClkCenter(oldrecopar.fClkCenter)
 {
   //Copy constructor
-  if(oldrecopar.fhZDCvsZEM){
-    fhZDCvsZEM = new TH2F(*oldrecopar.fhZDCvsZEM);
-    fhZDCvsZEM->SetDirectory(0);
-  }
-  if(oldrecopar.fhZDCCvsZEM){
-    fhZDCCvsZEM = new TH2F(*oldrecopar.fhZDCCvsZEM);
-    fhZDCCvsZEM->SetDirectory(0);
-  }
-  if(oldrecopar.fhZDCAvsZEM){
-    fhZDCAvsZEM = new TH2F(*oldrecopar.fhZDCAvsZEM);
-    fhZDCAvsZEM->SetDirectory(0);
-  }
   if(oldrecopar.fhNpartDist){
     fhNpartDist = new TH1D(*oldrecopar.fhNpartDist);
     fhNpartDist->SetDirectory(0);
@@ -120,9 +84,6 @@ AliZDCRecoParamPbPb::~AliZDCRecoParamPbPb()
 {
   // destructor
 
-  if(fhZDCvsZEM)  delete fhZDCvsZEM;
-  if(fhZDCCvsZEM) delete fhZDCCvsZEM;
-  if(fhZDCAvsZEM) delete fhZDCAvsZEM;
   if(fhNpartDist) delete fhNpartDist;
   if(fhbDist)     delete fhbDist;
 }
@@ -152,23 +113,13 @@ AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetHighFluxParam()
   TFile * fileHistos = TFile::Open("$ALICE_ROOT/ZDC/GlauberMCHistos.root");
   fileHistos->cd();
   //
-  TH2F *hZDCvsZEM = (TH2F*) fileHistos->Get("hZDCvsZEM");
-  hZDCvsZEM->SetDirectory(0);
-  //
-  TH2F *hZDCCvsZEM = (TH2F*) fileHistos->Get("hZDCCvsZEM");
-  hZDCCvsZEM->SetDirectory(0);
-  //
-  TH2F *hZDCAvsZEM = (TH2F*) fileHistos->Get("hZDCAvsZEM");
-  hZDCAvsZEM->SetDirectory(0);
-  //
   TH1D* hDist = (TH1D*) fileHistos->Get("hDist");
   hDist->SetDirectory(0);
   //
   TH1D* hbDist = (TH1D*) fileHistos->Get("hbDist");
   hbDist->SetDirectory(0);
   
-  AliZDCRecoParamPbPb* zdcRecoParam = new AliZDCRecoParamPbPb(hZDCvsZEM, hZDCCvsZEM, 
-              hZDCAvsZEM, hDist, hbDist, 0.1);
+  AliZDCRecoParamPbPb* zdcRecoParam = new AliZDCRecoParamPbPb(hDist, hbDist, 0.1);
   //
   fileHistos->Close();
 	      

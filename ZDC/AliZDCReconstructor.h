@@ -17,6 +17,7 @@
 #include "AliZDCPedestals.h"
 #include "AliZDCEnCalib.h"
 #include "AliZDCTowerCalib.h"
+#include "AliZDCMBCalib.h"
 #include "AliZDCRecoParam.h"
 #include "AliZDCRecoParampp.h"
 #include "AliZDCRecoParamPbPb.h"
@@ -61,6 +62,7 @@ public:
   AliZDCPedestals     *GetPedestalData() const; 
   AliZDCEnCalib       *GetEnergyCalibData() const; 
   AliZDCTowerCalib    *GetTowerCalibData() const; 
+  AliZDCMBCalib       *GetMBCalibData() const; 
   AliZDCRecoParampp   *GetppRecoParamFromOCDB() const;  
   AliZDCRecoParamPbPb *GetPbPbRecoParamFromOCDB() const;  
   
@@ -78,7 +80,6 @@ private:
 	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2,
 	    Bool_t isScalerOn, UInt_t* scaler, 
 	    Int_t* evQualityBlock, Int_t* triggerBlock, Int_t* chBlock, UInt_t puBits) const;
-  void   BuildRecoParam(Float_t ZDCC, Float_t ZDCA, Float_t ZEM) const;
   
   void   FillZDCintoESD(TTree *clustersTree, AliESDEvent*esd) const;
 
@@ -87,6 +88,7 @@ private:
   AliZDCPedestals  *fPedData; 	    //! pedestal calibration data
   AliZDCEnCalib    *fEnCalibData;   //! energy calibration data
   AliZDCTowerCalib *fTowCalibData;  //! equalization calibration data
+  AliZDCMBCalib    *fMBCalibData;   //! mb calibration data
   
   Int_t   fRecoMode;	    // =1->p-p, =2->A-A
   Float_t fBeamEnergy;	    // beam energy
@@ -95,7 +97,7 @@ private:
   Int_t   fPedSubMode;	    // =0->mean values, =1->from correlations
   Float_t fSignalThreshold; // Threshold value for "triggering" in p-p
 
-  ClassDef(AliZDCReconstructor, 9)   // class for the ZDC reconstruction
+  ClassDef(AliZDCReconstructor, 10)   // class for the ZDC reconstruction
 };
 
 #endif
