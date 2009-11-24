@@ -482,7 +482,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
       if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
         qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 
-  } else if ( iDet < AliQAv1::kHLT ) {
+  } else if ( iDet < AliQAv1::kGLOBAL ) {
     
     // load the QA data maker object
     TPluginManager* pluginManager = gROOT->GetPluginManager() ;
@@ -542,7 +542,8 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 				if (!det || !det->IsActive())  
 					continue ;
 			}
-      qac->SetPrintImage(fPrintImage) ;
+      if (qac) 
+        qac->SetPrintImage(fPrintImage) ;
       
       if (IsSaveData()) {
         for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
@@ -574,7 +575,8 @@ void  AliQAManager::EndOfCycle(TString detectors)
 			// skip non active detectors
       if (!detectors.Contains(AliQAv1::GetDetName(iDet))) 
         continue ;
-      qac->SetPrintImage(fPrintImage) ;
+      if (qac) 
+        qac->SetPrintImage(fPrintImage) ;
       if (IsSaveData()) {
         for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
           if ( fTasks.Contains(Form("%d", taskIndex)) ) 
