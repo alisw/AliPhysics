@@ -13,15 +13,14 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  **************************************************   
-//  * pt spectra extrapolation in the 0. - 0.2 region using   *
+//  *********************************************************
+//  * pt spectra extrapolation in the 0. - 0.2 region using *
 //  * Boltzmann-Gibbs Blast Wave model or Tsallis Blast     *
 //  * Wave model for azimuthal isotropic  expansion in      *
-//  * highly central collisions analysis                                  *
-//  * author: Cristian Andrei                                                 *
-//  *         acristian@niham.nipne.ro                                     *
-//  * *************************************************
-
+//  * highly central collisions analysis                    *
+//  * author: Cristian Andrei                               *
+//  *         acristian@niham.nipne.ro                      *
+//  * *******************************************************
 
 #include "TH1D.h"
 #include "TFile.h"
@@ -125,17 +124,17 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
 
     if(!data){
 		printf("Unable to get CFContainer! \n");
-		exit(1);
+		return;
 	}
 	
 	if(!eff){
 		printf("No Eff Grid found! \n");
-		exit(1);
+		return;
     }
  
 // 	ccorrdata->Divide(1,2);
 // 	ccorrdata->cd(1);
-//     ccorrdata->cd(1)->SetLogy();
+//  ccorrdata->cd(1)->SetLogy();
 
  
     AliCFDataGrid *corrdata = new AliCFDataGrid("corrdata","corrected data",*data);
@@ -183,15 +182,15 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
 	TH1F *hNoEvt = dynamic_cast<TH1F*>(fInputList->FindObject("AliAnalysisCentral_NoEvt"));
 	if(!hNoEvt){
 		printf("Unable to get the number of events! \n");
-		exit(1);
+		return;
 	}
 
     Int_t noEvt = (Int_t)(hNoEvt->GetEntries());
 
     printf("\n** No of processed events = %i **\n",noEvt);
-    
+
     Double_t scale = 1.0/noEvt;
-    
+
     TH1D *hPtESDCorrNorm = (TH1D*)hPtESDCorr->Clone("hPtESDCorrNorm");
     hPtESDCorrNorm->Scale(scale);
 
@@ -274,6 +273,15 @@ void AliAnalysisCentralExtrapolate::TsallisFit(){
     timer.Start(); 
 
 	TH1D *ptSpectra  = dynamic_cast<TH1D*>(fResultsList->FindObject("hPtESDCorrNorm"));
+	if(!ptSpectra){
+		printf("BoltzmannFit: Can't get the normalized spectrum\n");
+		return;	
+	}
+
+	if(!ptSpectra->GetEntries()){
+		printf("BoltzmannFit: The fit data is empty!\n");
+		return;
+	}
 
     TVirtualFitter::SetDefaultFitter("Minuit2");//options Minuit, Minuit2, Fumili, Fumili2
 
@@ -403,11 +411,20 @@ void AliAnalysisCentralExtrapolate::BoltzmannFit(){
 
     TH1::SetDefaultSumw2();
     TH1::AddDirectory(0);
-    
+
     timer.Start(); 
 
 
 	TH1D *ptSpectra  = dynamic_cast<TH1D*>(fResultsList->FindObject("hPtESDCorrNorm"));
+	if(!ptSpectra){
+		printf("BoltzmannFit: Can't get the normalized spectrum\n");
+		return;	
+	}
+
+	if(!ptSpectra->GetEntries()){
+		printf("BoltzmannFit: The fit data is empty!\n");
+		return;
+	}
 
     gStyle->SetOptStat("neRM");
 

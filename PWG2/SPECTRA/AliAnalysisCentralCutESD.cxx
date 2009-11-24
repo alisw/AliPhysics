@@ -13,23 +13,19 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  *******************************************
-//  * particle level cuts for azimuthal isotropic      *
+//  ***************************************************
+//  * particle level cuts for azimuthal isotropic     *
 //  * expansion in highly central collisions analysis *
-//  * author: Cristian Andrei                                    *
-//  *         acristian@niham.nipne.ro                        *
-//  * *****************************************
+//  * author: Cristian Andrei                         *
+//  *         acristian@niham.nipne.ro                *
+//  ***************************************************
 
-#include <TF1.h>
 #include <TFile.h>
+#include <TF1.h>
 
-#include "AliAnalysisCentralCutESD.h"
 #include "AliESDtrack.h"
 
-
-class TObject;
-class TParticle;
-
+#include "AliAnalysisCentralCutESD.h"
 
 //____________________________________________________________________
 ClassImp(AliAnalysisCentralCutESD)
@@ -61,7 +57,7 @@ AliAnalysisCentralCutESD::AliAnalysisCentralCutESD(const Char_t* name, const Cha
 	TFile *f = TFile::Open("$ALICE_ROOT/PWG2/data/PriorProbabilities.root ");
 	if(!f){
 	    printf("Can't open PWG2 prior probabilities file!\n Exiting ...\n");
-	    exit(1);
+	    return;
 	}
 	fElectronFunction = (TF1 *)f->Get("fitElectrons");
 	fMuonFunction = (TF1 *)f->Get("fitMuons");
@@ -93,7 +89,7 @@ Bool_t AliAnalysisCentralCutESD::IsSelected(TObject *obj){
 
     if(!track){
 		printf("AliAnalysisCentralCutESD:IsSelected ->Can't get track!\n");
-		exit(1);
+		return kFALSE;
     }
 
     if(fReqCharge){
@@ -101,7 +97,7 @@ Bool_t AliAnalysisCentralCutESD::IsSelected(TObject *obj){
     } 
 
     if(fReqPID){
-		if(!IsA(track, fPartType)) return kFALSE;    
+		if(!IsA(track, fPartType)) return kFALSE;
     }
 
     return kTRUE;
@@ -168,7 +164,7 @@ Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t fPartType){
 
     else{
 		printf("Unknown PID method!\n");
-		exit(1);
+		return kFALSE;
     }
 
     if((AliPID::ParticleCode(partType)) != fPartType){

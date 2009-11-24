@@ -13,12 +13,12 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  *************************************
-//  * analysis task for azimuthal isotropic   *
-//  * expansion in highly central collisions    *
-//  * author: Cristian Andrei                          *
-//  *         acristian@niham.nipne.ro              *
-//  * ***********************************
+//  ******************************************
+//  * analysis task for azimuthal isotropic  *
+//  * expansion in highly central collisions *
+//  * author: Cristian Andrei                *
+//  *         acristian@niham.nipne.ro       *
+//  ******************************************
 
 #include "TChain.h"
 #include "TTree.h"
@@ -307,12 +307,12 @@ void AliAnalysisTaskCentral::SendEvent(TObject *obj) const{
 // Some cuts (ie MC IsPrimary) need the MC Event info
 
     if (!fCutsList) {
-	printf("No particle cut list found!\n\n");
-	exit(1);
+		printf("No particle cut list found!\n\n");
+		return;
     }
     else {
 		for(Int_t isel=0;isel< 10; isel++){
-			if(!fCutsList[isel])continue;
+			if(!fCutsList[isel]) continue;
 			TObjArrayIter iter(fCutsList[isel]);
 			AliAnalysisCuts *cut = 0;
 	
@@ -321,7 +321,7 @@ void AliAnalysisTaskCentral::SendEvent(TObject *obj) const{
 				TString cutName=cut->GetName();
 				if(!cutName){
 					printf("No cutname!\n");
-					exit(1);
+					return;
 				}
 		
 				Bool_t checkCut=cutName.Contains("AliAnalysisCentralCutMC");
@@ -492,7 +492,7 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 	TList *outList = dynamic_cast<TList*>(GetOutputData(0));
 	if(!outList){
 		printf("Unable to get output list! \n");
-		exit(1);
+		return;
 	}
  
 	AliAnalysisCentralExtrapolate *extPi = new AliAnalysisCentralExtrapolate("extrapolationpi");
