@@ -699,7 +699,7 @@ void AliTPCCalibViewerGUItime::GetCutString(TString &cutStr){
   cutStr=cuts.GetTitle();
 }
 //______________________________________________________________________________
-void AliTPCCalibViewerGUItime::UpdateValueArrays(Bool_t withGraph)
+void AliTPCCalibViewerGUItime::UpdateValueArrays(Bool_t withGraph, const Double_t *xArr)
 {
   //
   //
@@ -710,13 +710,20 @@ void AliTPCCalibViewerGUItime::UpdateValueArrays(Bool_t withGraph)
     fRunNumbers.ResizeTo(1);
     fTimeStamps.ResizeTo(1);
   } else {
-    fValuesX.ResizeTo(fTree->GetSelectedRows());
-    fValuesY.ResizeTo(fTree->GetSelectedRows());
-    fRunNumbers.ResizeTo(fTree->GetSelectedRows());
-    fTimeStamps.ResizeTo(fTree->GetSelectedRows());
-    fValuesY.SetElements(fTree->GetV3());
-    fRunNumbers.SetElements(fTree->GetV1());
-    fTimeStamps.SetElements(fTree->GetV2());
+    const Long64_t nrows=fTree->GetSelectedRows();
+    fValuesX.ResizeTo(nrows);
+    fValuesY.ResizeTo(nrows);
+    fRunNumbers.ResizeTo(nrows);
+    fTimeStamps.ResizeTo(nrows);
+    long long *index=new long long[nrows];
+    TMath::Sort(nrows,fTree->GetV2(),index,kFALSE);
+    for (Long64_t i=0; i<nrows; ++i){
+      fValuesX.GetMatrixArray()[i]=xArr[index[i]];
+      fValuesY.GetMatrixArray()[i]=fTree->GetV3()[index[i]];
+      fRunNumbers.GetMatrixArray()[i]=fTree->GetV1()[index[i]];
+      fTimeStamps.GetMatrixArray()[i]=fTree->GetV2()[index[i]];
+    }
+    delete [] index;
   }
 }
 //______________________________________________________________________________
@@ -851,24 +858,29 @@ void AliTPCCalibViewerGUItime::DoDraw() {
   //select data
   fTree->Draw(drawString.Data(),cutString.Data(),optString.Data());
   if (fTree->GetSelectedRows()==-1) return;
-  UpdateValueArrays(graphOutput);
+  
   TString title;
   GetHistogramTitle(title);
   Bool_t drawGraph=kFALSE;
+  Double_t *xArr=0;
   if (graphOutput){
     drawGraph=kTRUE;
     if (fIsCustomDraw&&fDrawString.Contains(":")){
-        fValuesX.SetElements(fTree->GetV4());
+//       fValuesX.SetElements(fTree->GetV4());
+      xArr=fTree->GetV4();
     }else{
       if (fRadioXrun->GetState()==kButtonDown){
-        fValuesX.SetElements(fTree->GetV1());
+//         fValuesX.SetElements(fTree->GetV1());
+        xArr=fTree->GetV1();
       } else if (fRadioXtime->GetState()==kButtonDown){
-        fValuesX.SetElements(fTree->GetV2());
+//         fValuesX.SetElements(fTree->GetV2());
+        xArr=fTree->GetV2();
       } else {
         drawGraph=kFALSE;
       }
     }
   }
+  UpdateValueArrays(graphOutput, xArr);
 //   if (graphOutput){
 //     if (fIsCustomDraw){
 //       if (fDrawString.Contains(":")){

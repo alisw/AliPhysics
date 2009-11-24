@@ -331,7 +331,7 @@ void AliTPCcalibDButil::ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMea
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseMeanSenRegions,
                       TVectorD &vNoiseRMS, TVectorD &vNoiseRMSSenRegions,
-                      Int_t &nonMaskedZero)
+                      Int_t &nonMaskedZero, Int_t &nNaN)
 {
   //
   // process noise data
@@ -352,6 +352,7 @@ void AliTPCcalibDButil::ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseM
   vNoiseRMS.Zero();
   vNoiseRMSSenRegions.Zero();
   nonMaskedZero=0;
+  nNaN=0;
   //counters
   TVectorD c(infoSize);
   TVectorD cs(infoSize);
@@ -379,7 +380,8 @@ void AliTPCcalibDButil::ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseM
         }
         //check for nan
         if ( !(noiseVal<10000000) ){
-          printf ("Warning: nan detected in (sec,row,pad - val): %02d,%02d,%03d - %.1f\n",isec,irow,ipad,noiseVal);
+//           printf ("Warning: nan detected in (sec,row,pad - val): %02d,%02d,%03d - %.1f\n",isec,irow,ipad,noiseVal);
+          ++nNaN;
           continue;
         }
         Int_t cpad=(Int_t)ipad-(Int_t)npads/2;

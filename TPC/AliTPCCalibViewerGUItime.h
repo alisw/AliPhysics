@@ -177,7 +177,7 @@ public:
   void SetInitialValues();
   void CheckDrawGraph();
   Bool_t CheckChain();
-  void UpdateValueArrays(Bool_t withGraph);
+  void UpdateValueArrays(Bool_t withGraph, const Double_t *xArr);
   const char* SubstituteUnderscores(const char* in);
   void GetHistogramTitle(TString &title);
   void AdjustYRange();

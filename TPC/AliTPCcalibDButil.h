@@ -47,7 +47,7 @@ public:
                        Float_t &driftTimeA, Float_t &driftTimeC );
   void ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseMeanSenRegions,
                         TVectorD &vNoiseRMS, TVectorD &vNoiseRMSSenRegions,
-                        Int_t &nonMaskedZero);
+                        Int_t &nonMaskedZero, Int_t &nNaN);
   void ProcessPulser(TVectorD &vMeanTime);
   void ProcessALTROConfig(Int_t &nMasked);
   void ProcessGoofie(TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS);
