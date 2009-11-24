@@ -5,6 +5,8 @@
 #include <TGraph.h>
 #include <TExec.h>
 #include <TStyle.h>
+#include <TString.h>
+#include <TSystem.h>
 #include <TGrid.h>
 #include <TLine.h>
 #include <TCanvas.h>
@@ -27,7 +29,7 @@ void MakePalette(){
   gStyle->SetPalette(3,palette);
 }
 
-void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0_9999999_v0_s0.root"){
+void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0_9999999_v0_s0.root", Int_t iMod=0){
 
 
   TFile *f=TFile::Open(filnam);
@@ -378,10 +380,22 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib
   gbad->GetYaxis()->SetTitle("Anode Status (1=OK, 0=bad)");
 }
 
-void ShowCalibrationSDD(Int_t nrun, Int_t nv, Int_t year=2009, Int_t nmod=0){
+void ShowCalibrationSDD(Int_t nrun, Int_t year=2009, Int_t nmod=0){
   TGrid::Connect("alien:",0,0,"t");
-  Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/%d/OCDB/ITS/Calib/CalibSDD/Run%d_999999999_v%d_s0.root",year,nrun,nv);
-  printf("Open file: %s\n",filnam);
-  ShowCalibrationSDD(nmod,filnam);
+  TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/CalibSDD\" \"Run%d*.root\" > run.txt",year,nrun);
+  gSystem->Exec(cmd.Data());
+  Char_t filnam[200],filnamalien[200];
+  FILE* runtxt=fopen("run.txt","r");
+  fscanf(runtxt,"%s\n",filnam);    
+  if(!strstr(filnam,"/alice/data/")){
+    printf("Bad run number\n");
+    gSystem->Exec("rm run.txt");
+    return;
+  }  
+  sprintf(filnamalien,"alien://%s",filnam);
+  
+  printf("Open file: %s\n",filnamalien);
+  ShowCalibrationSDD(filnamalien,nmod);
+  fclose(runtxt);
+  gSystem->Exec("rm run.txt");
 }

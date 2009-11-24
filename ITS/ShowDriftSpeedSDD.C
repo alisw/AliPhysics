@@ -3,6 +3,8 @@
 #include <TH1F.h>
 #include <TGraph.h>
 #include <TStyle.h>
+#include <TSystem.h>
+#include <TString.h>
 #include <TGrid.h>
 #include <TCanvas.h>
 #include <TLatex.h>
@@ -107,10 +109,24 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
 
 
-void ShowDriftSpeedSDD(Int_t nrun, Int_t nv, Int_t year=2009){
+void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2009){
   TGrid::Connect("alien:",0,0,"t");
-  Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD/Run%d_999999999_v%d_s0.root",year,nrun,nv);
-  printf("Open file: %s\n",filnam);
-  ShowDriftSpeedSDD(filnam,0,260);
+  TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD\" \"Run%d*.root\" > run.txt",year,nrun);
+  gSystem->Exec(cmd.Data());
+  
+  Char_t filnam[200],filnamalien[200];
+  FILE* runtxt=fopen("run.txt","r");
+  fscanf(runtxt,"%s\n",filnam);    
+  if(!strstr(filnam,"/alice/data/")){
+    printf("Bad run number\n");
+    gSystem->Exec("rm run.txt");
+    return;
+  }  
+  sprintf(filnamalien,"alien://%s",filnam);
+  
+  printf("Open file: %s\n",filnamalien);
+  ShowDriftSpeedSDD(filnamalien,0,260);
+  fclose(runtxt);
+  gSystem->Exec("rm run.txt");
+  
 }
