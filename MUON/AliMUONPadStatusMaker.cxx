@@ -81,7 +81,7 @@ fManuOccupancyLimits(0,1.0),
 fBuspatchOccupancyLimits(0,1.0),
 fDEOccupancyLimits(0,1.0),
 fStatus(new AliMUON2DMap(true)),
-fHV(new TExMap),
+fHV(0x0),
 fPedestals(calibData.Pedestals()),
 fGains(calibData.Gains()),
 fTrackerData(0x0)
@@ -92,7 +92,11 @@ fTrackerData(0x0)
     /// create a tracker data from the occupancy map
     fTrackerData = new AliMUONTrackerData("OCC","OCC",*(calibData.OccupancyMap()));
   }     
-  
+  if ( calibData.HV() )
+  {
+    /// Only create the fHV internal store if there are some HV values available
+    fHV = new TExMap;
+  }
 }
 
 //_____________________________________________________________________________
@@ -212,6 +216,8 @@ AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
   
   AliCodeTimerAuto("",0)
   
+  if (!fHV) return kFALSE;
+  
   Bool_t error = kFALSE;
   hvChannelTooLow = kFALSE;
   hvChannelTooHigh = kFALSE;
@@ -322,6 +328,8 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
   
   AliCodeTimerAuto("",0)
   
+  if (!fHV) return kFALSE;
+  
   Bool_t error = kFALSE;
   hvChannelTooLow = kFALSE;
   hvChannelTooHigh = kFALSE;
@@ -406,7 +414,7 @@ AliMUONPadStatusMaker::HVStatus(Int_t detElemId, Int_t manuId) const
   
   AliCodeTimerAuto("",0)
   
-  if ( !fkCalibrationData.HV() ) return kMissing;
+  if ( !fHV ) return kMissing;
 
   Long_t lint = fHV->GetValue(AliMpManuUID::BuildUniqueID(detElemId,manuId));
   
