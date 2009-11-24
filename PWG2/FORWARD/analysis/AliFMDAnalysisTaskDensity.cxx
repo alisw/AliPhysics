@@ -71,10 +71,13 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
   
   fOutputList->Add(&fVertexString);
   
+  
+  
   TH2F* hMult = 0;
   
   Int_t nVtxbins = pars->GetNvtxBins();
   
+
   for(Int_t det =1; det<=3;det++)
     {
       Int_t nRings = (det==1 ? 1 : 2);

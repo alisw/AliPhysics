@@ -112,11 +112,18 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
   
   TH1F* hEventsSelected  = new TH1F("EventsSelected","EventsSelected",fNvtxBins,0,fNvtxBins);
   TH1F* hEventsAll    = new TH1F("EventsAll","EventsAll",fNvtxBins,0,fNvtxBins);
+  TH1F* hEventsSelectedVtx  = new TH1F("EventsSelectedVtx","EventsSelectedVtx",fNvtxBins,0,fNvtxBins);  
+  TH1F* hEventsSelectedTrigger  = new TH1F("EventsSelectedTrigger","EventsSelectedTrigger",fNvtxBins,0,fNvtxBins);
+
+  
+  
   //  TH1F* hTriggered    = new TH1F("Triggered","Triggered",fNvtxBins,0,fNvtxBins);
   // TH1F* hTriggeredAll = new TH1F("TriggeredAll","TriggeredAll",fNvtxBins,0,fNvtxBins);
   hEventsSelected->Sumw2();
   hEventsAll->Sumw2();
   fListOfHits.Add(hEventsSelected);
+  fListOfHits.Add(hEventsSelectedVtx);
+  fListOfHits.Add(hEventsSelectedTrigger);
   fListOfPrimaries.Add(hEventsAll);
   
   // fListOfHits.Add(hTriggered);
@@ -146,7 +153,7 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   
   AliESDEvent* esdevent = (AliESDEvent*)InputEvent();
   Double_t esdvertex[3];
-  pars->GetVertex(esdevent,esdvertex);
+  Bool_t vtxStatus =  pars->GetVertex(esdevent,esdvertex);
   
   AliMCParticle* particle = 0;
   AliStack* stack = mcevent->Stack();
@@ -169,28 +176,27 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   Int_t    vertexBin       = (Int_t)vertexBinDouble;
   
   // Vertex determination correction
-  TH1F* hEventsSelected    = (TH1F*)fListOfHits.FindObject("EventsSelected");
-  TH1F* hEventsAll         = (TH1F*)fListOfPrimaries.FindObject("EventsAll");
+  TH1F* hEventsSelected           = (TH1F*)fListOfHits.FindObject("EventsSelected");
+  TH1F* hEventsSelectedVtx        = (TH1F*)fListOfHits.FindObject("EventsSelectedVtx");
+  TH1F* hEventsSelectedTrigger    = (TH1F*)fListOfHits.FindObject("EventsSelectedTrigger");
+  TH1F* hEventsAll                = (TH1F*)fListOfPrimaries.FindObject("EventsAll");
+  
   // TH1F* hTriggered      = (TH1F*)fListOfHits.FindObject("Triggered");
   //  TH1F* hTriggeredAll   = (TH1F*)fListOfPrimaries.FindObject("TriggeredAll");
   
   Bool_t vtxFound = kTRUE;
-  if(esdvertex[0] == 0 && esdvertex[1] == 0 && esdvertex[2] == 0)
+  if(!vtxStatus)
     vtxFound = kFALSE;
-    
+  
   Bool_t isTriggered = pars->IsEventTriggered(esdevent);
   
-  if(vtxFound && isTriggered) {
-    //hTriggered->Fill(vertexBin);
-    hEventsSelected->Fill(vertexBin);
-  }
+  if(vtxFound && isTriggered) hEventsSelected->Fill(vertexBin);
   
-  //if(isTriggered)
-  
+  if(vtxFound) hEventsSelectedVtx->Fill(vertexBin);
+  if(isTriggered) hEventsSelectedTrigger->Fill(vertexBin);
+    
   hEventsAll->Fill(vertexBin);
-  //if(vtxFound)
-  //   hTriggeredAll->Fill(vertexBin);
-  
+    
   for(Int_t i = 0 ;i<nTracks;i++) {
     particle = (AliMCParticle*) mcevent->GetTrack(i);
     
@@ -267,11 +273,14 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
   //TH1F* hTriggered      = (TH1F*)fListOfHits.FindObject("Triggered");
   //TH1F* hTriggeredAll   = (TH1F*)fListOfPrimaries.FindObject("TriggeredAll");
   
-  TH1F* hEventsSelected    = (TH1F*)fListOfHits.FindObject("EventsSelected");
-  TH1F* hEventsAll         = (TH1F*)fListOfPrimaries.FindObject("EventsAll");
+  TH1F* hEventsSelected           = (TH1F*)fListOfHits.FindObject("EventsSelected");
+  TH1F* hEventsSelectedVtx        = (TH1F*)fListOfHits.FindObject("EventsSelectedVtx");
+  TH1F* hEventsSelectedTrigger    = (TH1F*)fListOfHits.FindObject("EventsSelectedTrigger");
+  TH1F* hEventsAll                = (TH1F*)fListOfPrimaries.FindObject("EventsAll");
   
   //  hEventsAll->Divide(hEventsAll,hEventsSelected,1,1,"B");
- 
+  hEventsSelectedVtx->Divide(hEventsAll);
+  hEventsSelectedTrigger->Divide(hEventsAll);
   
   for(Int_t i = 1; i<=hEventsSelected->GetNbinsX(); i++) {
     if(hEventsSelected->GetBinContent(i) == 0 )
@@ -346,9 +355,14 @@ void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, 
   TList* listOfHits = (TList*)infile.Get("Hits");
   TList* listOfPrim = (TList*)infile.Get("Primaries");
   
-  TH1F* hEventsSelected    = (TH1F*)listOfHits->FindObject("EventsSelected");
-  TH1F* hEventsAll         = (TH1F*)listOfPrim->FindObject("EventsAll");
+  TH1F* hEventsSelected           = (TH1F*)listOfHits->FindObject("EventsSelected");
+  TH1F* hEventsSelectedVtx        = (TH1F*)listOfHits->FindObject("EventsSelectedVtx");
+  TH1F* hEventsSelectedTrigger    = (TH1F*)listOfHits->FindObject("EventsSelectedTrigger");
+  TH1F* hEventsAll                = (TH1F*)listOfPrim->FindObject("EventsAll");
+  
   fListOfHits.Add(hEventsSelected);
+  fListOfHits.Add(hEventsSelectedVtx);
+  fListOfHits.Add(hEventsSelectedTrigger);
   fListOfPrimaries.Add(hEventsAll);
   
   for(Int_t det =1; det<=3;det++)

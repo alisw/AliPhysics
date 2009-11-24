@@ -553,29 +553,15 @@ Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t
 
 //_____________________________________________________________________
 
-void AliFMDAnaParameters::GetVertex(AliESDEvent* esd, Double_t* vertexXYZ) 
+Bool_t AliFMDAnaParameters::GetVertex(AliESDEvent* esd, Double_t* vertexXYZ) 
 {
-  const AliESDVertex* vertex = 0;
-  vertex = esd->GetPrimaryVertex();
-  if(!vertex || (vertex->GetXv() < 0.0001 && vertex->GetYv() < 0.0001 && vertex->GetZv() < 0.0001))        
-    vertex = esd->GetPrimaryVertexSPD();
-  if(!vertex || (vertex->GetXv() < 0.0001 && vertex->GetYv() < 0.0001 && vertex->GetZv() < 0.0001))        
-    vertex = esd->GetPrimaryVertexTPC();
-  if(!vertex || (vertex->GetXv() < 0.0001 && vertex->GetYv() < 0.0001 && vertex->GetZv() < 0.0001))    
-    vertex = esd->GetVertex();
-  if (vertex && (vertex->GetXv() > 0.0001 || vertex->GetYv() > 0.0001 || vertex->GetZv() > 0.0010)) {
-    vertex->GetXYZ(vertexXYZ);
-    return;
-  }
-  else { //no valid vertex
-    vertexXYZ[0] = 0;
-    vertexXYZ[1] = 0;
-    vertexXYZ[2] = 0;
-    
-    return;
-  }
   
-  return;
+  const AliESDVertex* vertex = 0;
+  vertex = esd->GetPrimaryVertexSPD();
+  if(vertex)
+    vertex->GetXYZ(vertexXYZ);
+  
+  return vertex->GetStatus();
   
 }
 
