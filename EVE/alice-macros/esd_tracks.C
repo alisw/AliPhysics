@@ -343,122 +343,157 @@ Float_t get_sigma_to_vertex(AliESDtrack* esdTrack)
 
 TEveElementList* esd_tracks_by_category()
 {
-  // Import ESD tracks, separate them into several containers
-  // according to primary-vertex cut and ITS&TPC refit status.
+   // Import ESD tracks, separate them into several containers
+   // according to primary-vertex cut and ITS&TPC refit status.
 
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
-  TEveElementList* cont = new TEveElementList("ESD Tracks by category");
-  gEve->AddElement(cont);
+   TEveElementList* cont = new TEveElementList("ESD Tracks by category");
+   gEve->AddElement(cont);
 
-  const Int_t   nCont = 7;
-  const Float_t maxR  = 520;
-  const Float_t magF  = 0.1*esd->GetMagneticField();
+   const Int_t   nCont = 9;
+   const Float_t maxR  = 520;
+   const Float_t magF  = 0.1*esd->GetMagneticField();
 
-  TEveTrackList *tl[nCont];
-  Int_t          tc[nCont];
-  Int_t          count = 0;
+   TEveTrackList *tl[nCont];
+   Int_t          tc[nCont];
+   Int_t          count = 0;
 
-  tl[0] = new TEveTrackList("Sigma < 3");
-  tc[0] = 0;
-  esd_track_propagator_setup(tl[0]->GetPropagator(), magF, maxR);
-  tl[0]->SetMainColor(3);
-  cont->AddElement(tl[0]);
+   tl[0] = new TEveTrackList("Sigma < 3");
+   tc[0] = 0;
+   esd_track_propagator_setup(tl[0]->GetPropagator(), magF, maxR);
+   tl[0]->SetMainColor(3);
+   cont->AddElement(tl[0]);
 
-  tl[1] = new TEveTrackList("3 < Sigma < 5");
-  tc[1] = 0;
-  esd_track_propagator_setup(tl[1]->GetPropagator(), magF, maxR);
-  tl[1]->SetMainColor(7);
-  cont->AddElement(tl[1]);
+   tl[1] = new TEveTrackList("3 < Sigma < 5");
+   tc[1] = 0;
+   esd_track_propagator_setup(tl[1]->GetPropagator(), magF, maxR);
+   tl[1]->SetMainColor(7);
+   cont->AddElement(tl[1]);
 
-  tl[2] = new TEveTrackList("5 < Sigma");
-  tc[2] = 0;
-  esd_track_propagator_setup(tl[2]->GetPropagator(), magF, maxR);
-  tl[2]->SetMainColor(46);
-  cont->AddElement(tl[2]);
+   tl[2] = new TEveTrackList("5 < Sigma");
+   tc[2] = 0;
+   esd_track_propagator_setup(tl[2]->GetPropagator(), magF, maxR);
+   tl[2]->SetMainColor(46);
+   cont->AddElement(tl[2]);
 
-  tl[3] = new TEveTrackList("no ITS refit; Sigma < 5");
-  tc[3] = 0;
-  esd_track_propagator_setup(tl[3]->GetPropagator(), magF, maxR);
-  tl[3]->SetMainColor(41);
-  cont->AddElement(tl[3]);
+   tl[3] = new TEveTrackList("no ITS refit; Sigma < 5");
+   tc[3] = 0;
+   esd_track_propagator_setup(tl[3]->GetPropagator(), magF, maxR);
+   tl[3]->SetMainColor(41);
+   cont->AddElement(tl[3]);
 
-  tl[4] = new TEveTrackList("no ITS refit; Sigma > 5");
-  tc[4] = 0;
-  esd_track_propagator_setup(tl[4]->GetPropagator(), magF, maxR);
-  tl[4]->SetMainColor(48);
-  cont->AddElement(tl[4]);
+   tl[4] = new TEveTrackList("no ITS refit; Sigma > 5");
+   tc[4] = 0;
+   esd_track_propagator_setup(tl[4]->GetPropagator(), magF, maxR);
+   tl[4]->SetMainColor(48);
+   cont->AddElement(tl[4]);
 
-  tl[5] = new TEveTrackList("no TPC refit");
-  tc[5] = 0;
-  esd_track_propagator_setup(tl[5]->GetPropagator(), magF, maxR);
-  tl[5]->SetMainColor(kRed);
-  cont->AddElement(tl[5]);
+   tl[5] = new TEveTrackList("no TPC refit");
+   tc[5] = 0;
+   esd_track_propagator_setup(tl[5]->GetPropagator(), magF, maxR);
+   tl[5]->SetMainColor(kRed);
+   cont->AddElement(tl[5]);
 
-  tl[6] = new TEveTrackList("ITS stand-alone");
-  tc[6] = 0;
-  esd_track_propagator_setup(tl[6]->GetPropagator(), magF, maxR);
-  tl[6]->SetMainColor(kMagenta - 9);
-  cont->AddElement(tl[6]);
+   tl[6] = new TEveTrackList("ITS ncl>=3 & SPD Inner");
+   tc[6] = 0;
+   esd_track_propagator_setup(tl[6]->GetPropagator(), magF, maxR);
+   tl[6]->SetMainColor(kGreen);
+   cont->AddElement(tl[6]);
 
-  for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
-  {
-    AliESDtrack* at = esd->GetTrack(n);
+   tl[7] = new TEveTrackList("ITS ncl>=3 & b<3 cm");
+   tc[7] = 0;
+   esd_track_propagator_setup(tl[7]->GetPropagator(), magF, maxR);
+   tl[7]->SetMainColor(kMagenta - 9);
+   cont->AddElement(tl[7]);
 
-    Float_t s  = get_sigma_to_vertex(at);
-    Int_t   ti;
-    if      (s <  3) ti = 0;
-    else if (s <= 5) ti = 1;
-    else             ti = 2;
+   tl[8] = new TEveTrackList("ITS others");
+   tc[8] = 0;
+   esd_track_propagator_setup(tl[8]->GetPropagator(), magF, maxR);
+   tl[8]->SetMainColor(kRed + 2);
+   cont->AddElement(tl[8]);
 
-    if (at->IsOn(AliESDtrack::kITSin) && ! at->IsOn(AliESDtrack::kTPCin))
-    {
-      ti = 6;
-    }
-    else if (at->IsOn(AliESDtrack::kTPCin) && ! at->IsOn(AliESDtrack::kTPCrefit))
-    {
-      ti = 5;
-    }
-    else if ( ! at->IsOn(AliESDtrack::kITSrefit))
-    {
-      ti = (ti == 2) ? 4 : 3;
-    }
+   for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+   {
+      AliESDtrack* at = esd->GetTrack(n);
 
-    TEveTrackList* tlist = tl[ti];
-    ++tc[ti];
-    ++count;
+      Float_t s  = get_sigma_to_vertex(at);
+      Int_t   ti;
+      if      (s <  3) ti = 0;
+      else if (s <= 5) ti = 1;
+      else             ti = 2;
 
-    AliEveTrack* track = esd_make_track(at, tlist);
-    track->SetName(Form("ESD Track idx=%d, sigma=%5.3f", at->GetID(), s));
-    tlist->AddElement(track);
-  }
+      Int_t    nclits;
+      Double_t dtobeam;
 
-  for (Int_t ti = 0; ti < nCont; ++ti)
-  {
-    TEveTrackList* tlist = tl[ti];
-    tlist->SetName(Form("%s [%d]", tlist->GetName(), tlist->NumChildren()));
-    tlist->SetTitle(Form("N tracks=%d", tc[ti]));
+      if (at->IsOn(AliESDtrack::kITSin) && ! at->IsOn(AliESDtrack::kTPCin))
+      {
+         UChar_t itsclmap = at->GetITSClusterMap();
+         Bool_t  spdinner = (itsclmap & 3) != 0;
 
-    tlist->MakeTracks();
+         nclits = 0;
+         for (Int_t iter = 0; iter < 6; ++iter)
+            if (itsclmap & (1 << iter)) nclits ++;
 
-    Bool_t good_cont = ti <= 1;
-    if (AliEveTrackCounter::IsActive())
-    {
-      AliEveTrackCounter::fgInstance->RegisterTracks(tlist, good_cont);
-    }
-    else
-    {
-      if ( ! good_cont)
-        tlist->SetLineStyle(6);
-    }
-  }
-  cont->SetTitle(Form("N all tracks = %d", count));
-  // ??? The following does not always work:
-  cont->FindListTreeItem(gEve->GetListTree())->SetOpen(kTRUE);
+         Double_t xyz[3];
+         at->GetXYZ(xyz);
+         dtobeam = TMath::Hypot(xyz[0], xyz[1]);
 
-  gEve->Redraw3D();
+         if ((nclits >= 3) && (spdinner))
+            ti = 6;
+         else if ((nclits >= 3) && (dtobeam < 3.0))
+            ti = 7;
+         else
+            ti = 8;
+      }
+      else if (at->IsOn(AliESDtrack::kTPCin) && ! at->IsOn(AliESDtrack::kTPCrefit))
+      {
+         ti = 5;
+      }
+      else if ( ! at->IsOn(AliESDtrack::kITSrefit))
+      {
+         ti = (ti == 2) ? 4 : 3;
+      }
 
-  return cont;
+      TEveTrackList* tlist = tl[ti];
+      ++tc[ti];
+      ++count;
+
+      AliEveTrack* track = esd_make_track(at, tlist);
+      if (ti<6)
+         track->SetName(Form("ESD Track idx=%d, sigma=%5.3f", at->GetID(), s));
+      else
+         track->SetName(Form("ESD Track idx=%d, dxy=%5.3f cl=%i", at->GetID(), dtobeam, nclits));
+      tlist->AddElement(track);
+   }
+
+   for (Int_t ti = 0; ti < nCont; ++ti)
+   {
+      TEveTrackList* tlist = tl[ti];
+      tlist->SetName(Form("%s [%d]", tlist->GetName(), tlist->NumChildren()));
+      tlist->SetTitle(Form("N tracks=%d", tc[ti]));
+
+      tlist->MakeTracks();
+
+      //    Bool_t good_cont = ti <= 1;
+      Bool_t good_cont = ((ti == 6) || (ti == 7));
+      if (AliEveTrackCounter::IsActive())
+      {
+         AliEveTrackCounter::fgInstance->RegisterTracks(tlist, good_cont);
+      }
+      else
+      {
+         if ( ! good_cont)
+            tlist->SetLineStyle(6);
+      }
+   }
+   cont->SetTitle(Form("N all tracks = %d", count));
+   // ??? The following does not always work:
+   cont->FindListTreeItem(gEve->GetListTree())->SetOpen(kTRUE);
+
+   gEve->Redraw3D();
+
+   return cont;
 }
 
 
