@@ -3677,10 +3677,10 @@ AliTRDtrackerV1::AliTRDLeastSquare::AliTRDLeastSquare(){
 // Constructor of the nested class AliTRDtrackFitterLeastSquare
 //
 // Fast solving linear regresion in 2D
-//         y=ax+b
+//         y=a + bx
 // The data members have the following meaning
-// fParams[0] : b
-// fParams[1] : a
+// fParams[0] : a
+// fParams[1] : b
 // 
 // fSums[0] : S
 // fSums[1] : Sx
@@ -3689,8 +3689,8 @@ AliTRDtrackerV1::AliTRDLeastSquare::AliTRDLeastSquare(){
 // fSums[4] : Sxx
 // fSums[5] : Syy
 // 
-// fCovarianceMatrix[0] : s2b
-// fCovarianceMatrix[1] : s2a
+// fCovarianceMatrix[0] : s2a
+// fCovarianceMatrix[1] : s2b
 // fCovarianceMatrix[2] : cov(ab)
 
   memset(fParams, 0, sizeof(Double_t) * 2);
@@ -3753,9 +3753,16 @@ Bool_t AliTRDtrackerV1::AliTRDLeastSquare::Eval(){
   //	printf("fParams[0] = %f, fParams[1] = %f\n", fParams[0], fParams[1]);
   
   // Covariance matrix
-  fCovarianceMatrix[0] = fSums[4] / fSums[0] - fSums[1] * fSums[1] / (fSums[0] * fSums[0]);
+  Double_t den = fSums[0]*fSums[4] - fSums[1]*fSums[1];
+  fCovarianceMatrix[0] = fSums[4] / den;
+  fCovarianceMatrix[1] = fSums[0] / den;
+  fCovarianceMatrix[2] = -fSums[1] / den;
+/*  fCovarianceMatrix[0] = fSums[4] / fSums[0] - fSums[1] * fSums[1] / (fSums[0] * fSums[0]);
   fCovarianceMatrix[1] = fSums[5] / fSums[0] - fSums[2] * fSums[2] / (fSums[0] * fSums[0]);
-  fCovarianceMatrix[2] = fSums[3] / fSums[0] - fSums[1] * fSums[2] / (fSums[0] * fSums[0]);
+  fCovarianceMatrix[2] = fSums[3] / fSums[0] - fSums[1] * fSums[2] / (fSums[0] * fSums[0]);*/
+
+
+
   return kTRUE;
 }
 

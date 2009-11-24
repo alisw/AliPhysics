@@ -207,12 +207,12 @@ private:
   const AliTRDReconstructor *fkReconstructor;//! local reconstructor
   AliTRDcluster  **fClusterIter;            //! clusters iterator
   Int_t            fIndexes[kNclusters];    //! Indexes
-  Float_t          fExB;                    //! tg(a_L) @ tracklet location
-  Float_t          fVD;                     //! drift velocity @ tracklet location
-  Float_t          fT0;                     //! time 0 @ tracklet location
-  Float_t          fS2PRF;                  //! sigma^2 PRF for xd->0 and phi=a_L 
-  Float_t          fDiffL;                  //! longitudinal diffusion coefficient
-  Float_t          fDiffT;                  //! transversal diffusion coefficient
+  Float_t          fExB;                    // tg(a_L) @ tracklet location
+  Float_t          fVD;                     // drift velocity @ tracklet location
+  Float_t          fT0;                     // time 0 @ tracklet location
+  Float_t          fS2PRF;                  // sigma^2 PRF for xd->0 and phi=a_L 
+  Float_t          fDiffL;                  // longitudinal diffusion coefficient
+  Float_t          fDiffT;                  // transversal diffusion coefficient
   Char_t           fClusterIdx;             //! clusters iterator
   UChar_t          fErrorMsg;               // processing error
   UInt_t           fN;                      // number of clusters attached/used/shared
@@ -241,7 +241,7 @@ private:
   static TLinearFitter   *fgFitterY;        // Linear Fitter for tracklet fit in xy-plane
   static TLinearFitter   *fgFitterZ;        // Linear Fitter for tracklet fit in xz-plane
 
-  ClassDef(AliTRDseedV1, 8)                 // The offline TRD tracklet 
+  ClassDef(AliTRDseedV1, 9)                 // The offline TRD tracklet 
 };
 
 //____________________________________________________________
