@@ -110,7 +110,7 @@ public:
   void     SetProcessHits(Bool_t hits=kTRUE) {fProcessHits = hits;}
   Bool_t   GetProcessPrimary() const {return fProcessPrimary;} 
   Bool_t   GetProcessHits() const {return fProcessHits;}
-  void     GetVertex(AliESDEvent* esd, Double_t* vertexXYZ);
+  Bool_t   GetVertex(AliESDEvent* esd, Double_t* vertexXYZ);
   void     SetTriggerDefinition(Trigger trigger) {fTrigger = trigger;}
   Trigger  GetTriggerDefinition() const {return fTrigger;}
   Bool_t   IsEventTriggered(AliESDEvent* esd) const;

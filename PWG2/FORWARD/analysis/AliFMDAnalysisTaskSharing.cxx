@@ -104,6 +104,10 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
 			    hBg->GetXaxis()->GetXmax());
   hPrimary->Sumw2();
   fDiagList->Add(hPrimary);
+  TH1F* hZvtx = new TH1F("hZvtx","z vertex distribution",pars->GetNvtxBins(),-1*pars->GetVtxCutZ(),pars->GetVtxCutZ());
+  
+  fDiagList->Add(hZvtx);
+  
   TH1F* hPrimVertexBin = 0;
   TH1F* hHits = 0;
   for(Int_t i = 0; i< pars->GetNvtxBins(); i++) {
@@ -175,7 +179,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   Double_t vertex[3];
-  pars->GetVertex(fESD,vertex);
+  Bool_t vtxStatus = pars->GetVertex(fESD,vertex);
   fEsdVertex->SetXYZ(vertex);
   
   // Process primaries here to get true MC distribution
@@ -183,21 +187,24 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
     ProcessPrimary();
   
   Bool_t isTriggered = pars->IsEventTriggered(fESD);
- 
+  
   if(!isTriggered) {
     fStatus = kFALSE;
     return;
    }
    else
-    fStatus = kTRUE;
+     fStatus = kTRUE;
   
-  if(vertex[0] < 0.0001 && vertex[1] < 0.0001 && vertex[2] < 0.0001) {
+  if(!vtxStatus) {
     fStatus = kFALSE;
     return;
   }
   else
     fStatus = kTRUE;
   
+  TH1F* hZvtx = (TH1F*)fDiagList->FindObject("hZvtx");
+  hZvtx->Fill(vertex[2]);
+ 
   
   const AliMultiplicity* testmult = fESD->GetMultiplicity();
   
