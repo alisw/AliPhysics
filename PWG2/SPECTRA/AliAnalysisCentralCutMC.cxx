@@ -13,12 +13,12 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  *********************************************
-//  * MC particle level cuts for azimuthal isotropic    *
-//  * expansion in highly central collisions analysis     *
-//  * author: Cristian Andrei                                         *
-//  *         acristian@niham.nipne.ro                             *
-//  * ********************************************
+//  ***************************************************
+//  * MC particle level cuts for azimuthal isotropic  *
+//  * expansion in highly central collisions analysis *
+//  * author: Cristian Andrei                         *
+//  *         acristian@niham.nipne.ro                *
+//  * *************************************************
 
 #include <TParticle.h>
 
@@ -27,9 +27,6 @@
 #include "AliMCParticle.h"
 
 #include "AliAnalysisCentralCutMC.h"
-
-class TObject;
-
 //____________________________________________________________________
 ClassImp(AliAnalysisCentralCutMC)
 

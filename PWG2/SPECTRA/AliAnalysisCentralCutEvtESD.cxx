@@ -13,27 +13,23 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  *******************************************
-//  * ESD event level cuts for azimuthal isotropic  *
+//  ***************************************************
+//  * ESD event level cuts for azimuthal isotropic    *
 //  * expansion in highly central collisions analysis *
-//  * author: Cristian Andrei                                    *
-//  *         acristian@niham.nipne.ro                        *
-//  * *****************************************
+//  * author: Cristian Andrei                         *
+//  *         acristian@niham.nipne.ro                *
+//  ***************************************************
 
 #include "TMath.h"
 #include <TObjArray.h>
-#include <TList.h>
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
- #include "AliMultiplicity.h"
-
+#include "AliMultiplicity.h"
 #include "AliAnalysisCentralCutESD.h"
+
 #include "AliAnalysisCentralCutEvtESD.h"
-
-class TObject;
-
 
 //____________________________________________________________________
 ClassImp(AliAnalysisCentralCutEvtESD)
@@ -77,10 +73,9 @@ Bool_t AliAnalysisCentralCutEvtESD::IsSelected(TObject *obj){
     AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(obj);
 
     if(!esdEvent){
-	printf("AliAnalysisCentralCutEvtESD:IsSelected ->Can't get ESD event!\n");
-	exit(1);
+		printf("AliAnalysisCentralCutEvtESD:IsSelected ->Can't get ESD event!\n");
+		return kFALSE;
     }
-
 
     if(fReqMult){
 		Int_t mult = CalcMult(esdEvent);
@@ -88,8 +83,6 @@ Bool_t AliAnalysisCentralCutEvtESD::IsSelected(TObject *obj){
 			return kFALSE;
 		}
     }
-
-
 
     if(fReqDir){
 		Double_t dir = CalcDir(esdEvent);

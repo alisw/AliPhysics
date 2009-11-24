@@ -1,20 +1,20 @@
+#ifndef ALIANALYSISCENTRALEXTRAPOLATE_H
+#define ALIANALYSISCENTRALEXTRAPOLATE_H
 /*
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.
  * See cxx source for full Copyright notice
  * $Id$
  */
 
-//  **************************************************   
-//  * pt spectra extrapolation in the 0. - 0.2 region using   *
+//  *********************************************************
+//  * pt spectra extrapolation in the 0. - 0.2 region using *
 //  * Boltzmann-Gibbs Blast Wave model or Tsallis Blast     *
 //  * Wave model for azimuthal isotropic  expansion in      *
-//  * highly central collisions analysis                                  *
-//  * author: Cristian Andrei                                                 *
-//  *         acristian@niham.nipne.ro                                     *
-//  * *************************************************
+//  * highly central collisions analysis                    *
+//  * author: Cristian Andrei                               *
+//  *         acristian@niham.nipne.ro                      *
+//  * *******************************************************
 
-#ifndef ALI_ANALYSIS_CENTRAL_EXTRAPOLATE_H
-#define ALI_ANALYSIS_CENTRAL_EXTRAPOLATE_H
 
 #include "TObject.h"
 

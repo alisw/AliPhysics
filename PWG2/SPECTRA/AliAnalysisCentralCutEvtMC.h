@@ -1,27 +1,23 @@
+#ifndef ALIANALYSISCENTRALCUTEVTMC_H
+#define ALIANALYSISCENTRALCUTEVTMC_H
 /*
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.
  * See cxx source for full Copyright notice
  * $Id$
  */
 
-//  ********************************************
+//  ***************************************************
 //  * MC event level cuts for azimuthal isotropic     *
-//  * expansion in highly central collisions analysis   *
-//  * author: Cristian Andrei                                      *
-//  *         acristian@niham.nipne.ro                          *
-//  * ******************************************
-
-#ifndef ALI_ANALYSIS_CENTRAL_CUT_EVT_MC_H
-#define ALI_ANALYSIS_CENTRAL_CUT_EVT_MC_H
-
+//  * expansion in highly central collisions analysis *
+//  * author: Cristian Andrei                         *
+//  *         acristian@niham.nipne.ro                *
+//  ***************************************************
 
 #include "AliAnalysisCuts.h"
-
 
 class TObject;
 class AliMCEvent;
 class AliStack;
-
 
 class AliAnalysisCentralCutEvtMC: public AliAnalysisCuts {
  public:

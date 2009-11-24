@@ -1,29 +1,25 @@
+#ifndef ALIANALYSISCENTRALCUTEVTESD_H
+#define ALIANALYSISCENTRALCUTEVTESD_H
 /*
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.
  * See cxx source for full Copyright notice
  * $Id$
  */
 
-//  ********************************************
+//  *****************************************************
 //  * ESD event level cuts for azimuthal isotropic	*
 //  * expansion in highly central collisions analysis   *
-//  * author: Cristian Andrei                                      *
-//  *         acristian@niham.nipne.ro                          *
-//  * ******************************************
-
-#ifndef ALIANALYSISCENTRALCUTEVTESD_H
-#define ALIANALYSISCENTRALCUTEVTESD_H
-
+//  * author: Cristian Andrei                           *
+//  *         acristian@niham.nipne.ro                  *
+//  *****************************************************
 
 #include "AliAnalysisCuts.h"
-
 
 class TObject;
 class TObjArray;
 class TList;
 
 class AliESDEvent;
-
 
 class AliAnalysisCentralCutEvtESD: public AliAnalysisCuts {
 public:
