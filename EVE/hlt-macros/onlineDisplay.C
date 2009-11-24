@@ -214,6 +214,7 @@ TEvePointSet*                             gSDDClusters       = 0;
 TEvePointSet*                             gTRDClusters       = 0;
 TEvePointSetArray*                        gTRDColClusters    = 0;
 TEvePointSet*                             gTPCClusters       = 0;
+TEvePointSet*                             gTPCTestClusters       = 0;
 TEvePointSetArray*                        gTPCColClusters    = 0;
 TEveBoxSet*                               gPHOSBoxSet[5]     = {0, 0, 0, 0, 0}; 
 TEveBoxSet*                               gEMCALBoxSet[13]   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -280,7 +281,7 @@ Int_t processHLTRDLST( AliHLTHOMERBlockDesc* block );
 
 Int_t processROOTTOBJ( AliHLTHOMERBlockDesc* block, TEveText* text );
 
-Int_t processTPCClusters( AliHLTHOMERBlockDesc * block, TEvePointSet *cont, TEvePointSetArray *contCol );
+Int_t processTPCClusters( AliHLTHOMERBlockDesc * block, TEvePointSet *cont, TEvePointSetArray *contCol = NULL );
 
 Int_t processTRDClusters( AliHLTHOMERBlockDesc * block, TEvePointSet *cont, TEvePointSetArray *contCol);
 
@@ -714,6 +715,7 @@ Int_t processEvent() {
   if ( gSSDClusters )  gSSDClusters->Reset();
   if ( gSDDClusters )  gSSDClusters->Reset();
   if ( gTPCClusters )  gTPCClusters->Reset();
+  if ( gTPCTestClusters )  gTPCTestClusters->Reset();
   if ( gTRDClusters )  gTRDClusters->Reset();
   if ( gMUONClusters ) gMUONClusters->Reset();
   if ( gMUONTracks ){
@@ -1095,8 +1097,7 @@ Int_t processEvent() {
   //   Reading out the histograms
   //===========================================================================
   TIter anext(gHomerManager->GetAsyncBlockList());
-  cout << gHomerManager->GetAsyncBlockList()->GetSize() << endl;
-  cout << "Asynced it"<<endl;
+  
   while ( (block = (AliHLTHOMERBlockDesc*)anext()) ) {
 
 #if 1 //DEBUG
@@ -1215,7 +1216,24 @@ Int_t processEvent() {
       
     } // "EMCAL" blocks end
 
-
+      //Extra TPC clusters set for testing
+    else if ( ! block->GetDetector().CompareTo("TPC") ) {
+      if ( ! block->GetDataType().CompareTo("HWCL_ALT") ) {
+	if(!gTPCTestClusters){	  
+	  
+	  gTPCTestClusters = new TEvePointSet("TPC Clusters Test");
+	  //ggTPCTestClusters->ApplyVizTag("TPC Clusters");
+	  gTPCTestClusters->SetMainColor(kBlue);
+	  gTPCTestClusters->SetMarkerStyle((Style_t)kFullDotSmall);
+	  gEve->AddElement(gTPCTestClusters);
+	}
+	
+	iResult = processTPCClusters(block, gTPCTestClusters);
+	gTPCTestClusters->ElementChanged();
+      }
+      
+      
+    }
 
 
   }
@@ -1243,6 +1261,7 @@ Int_t processEvent() {
   }
 
   if ( gTPCClusters ) gTPCClusters->ResetBBox();
+  if ( gTPCTestClusters ) gTPCTestClusters->ResetBBox();
   if ( gTRDClusters ) gTRDClusters->ResetBBox();
   if ( gSPDClusters ) gSPDClusters->ResetBBox();
   if ( gSDDClusters ) gSDDClusters->ResetBBox();
@@ -1522,7 +1541,8 @@ Int_t processTPCClusters(AliHLTHOMERBlockDesc* block, TEvePointSet* cont, TEvePo
     for (Int_t iter = 0; iter < cd->fSpacePointCnt; ++iter, data += sizeof(AliHLTTPCSpacePointData)) {
       AliHLTTPCSpacePointData *sp = reinterpret_cast<AliHLTTPCSpacePointData*> (data);
       cont->SetNextPoint(cos*sp->fX - sin*sp->fY, sin*sp->fX + cos*sp->fY, sp->fZ);
-      contCol->Fill(cos*sp->fX - sin*sp->fY, sin*sp->fX + cos*sp->fY, sp->fZ, sp->fCharge);
+      if (contCol)
+	contCol->Fill(cos*sp->fX - sin*sp->fY, sin*sp->fX + cos*sp->fY, sp->fZ, sp->fCharge);
 
       gTPCCharge->Fill(sp->fCharge);
       gTPCQMax->Fill(sp->fQMax);

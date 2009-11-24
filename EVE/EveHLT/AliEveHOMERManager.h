@@ -59,8 +59,6 @@ public:
   
   Int_t ConnectEVEtoHOMER(TString detector="ALL");
 
-  //  Int_t CheckTriggerDecision(TString triggers="ALL");
-
   void SetRetryCount(Int_t count, Int_t sleeptime) { fRetryCount = count; fRetrySleeptime = sleeptime; }
 
   ///////////////////////////////////////////////////////////////////////////////////

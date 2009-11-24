@@ -115,20 +115,6 @@ void AliEveHOMERManagerEditor::NextEvent() {
     if ( fM->NextEvent() )
     return;
 
-
-//   if ( iResult = fM->CheckTriggerDecision(fTriggerString) ) {
-    
-//     if(iResult == 1) {
-    
-//       fM->NextEvent();
-//       return;
-    
-//     } else if (iResult == 2) {
-    
-//       HLTError(Form("No trigger decision found in event"));
-//       return;
-//     }
-//   } 
     
   gROOT->ProcessLineFast("processEvent();");
 

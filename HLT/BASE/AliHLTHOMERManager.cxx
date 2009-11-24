@@ -642,6 +642,9 @@ void AliHLTHOMERManager::AddBlockListToBuffer() {
 void AliHLTHOMERManager::AddToAsyncBlockList() {
   // see header file for class documentation
 
+  HLTInfo("Adding blocks to the asynchroneous block list");
+
+
   GetFirstBlk();
 
   // -- Fill block list
@@ -675,6 +678,7 @@ TList* AliHLTHOMERManager::GetBlockListEventBuffer( Int_t idx ) {
     return NULL;
 
   return reinterpret_cast<TList*>((*fEventBuffer)[idx]);
+
 }
 
 /*
@@ -702,7 +706,7 @@ Int_t AliHLTHOMERManager::HandleBlocks() {
 
   HLTInfo(Form("Event 0x%016LX (%Lu) with %lu blocks", eventID, eventID, fNBlks));
 
-#if EVE_DEBUG
+#if 1// EVE_DEBUG
   // Loop for Debug only
   for ( ULong_t ii = 0; ii < fNBlks; ii++ ) {
     Char_t tmp1[9], tmp2[5];
@@ -741,10 +745,13 @@ Bool_t AliHLTHOMERManager::IsSyncBlocks() {
   
           
     //    if ( !GetBlkType().CompareTo("ALIESDV0") ||
-    // !GetBlkType().CompareTo("CLUSTERS") ) {
-    if ( !GetBlkType().CompareTo("ALIESDV0") ) {
+   
+    if ( !GetBlkType().CompareTo("ALIESDV0")  ||
+	 !GetBlkType().CompareTo("CLUSTERS")  ) {
+      
       bResult = kTRUE;
       break;
+    
     }
     
     if ( !GetBlkType().CompareTo("ROOTTOBJ") ) {
