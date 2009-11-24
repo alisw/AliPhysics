@@ -63,6 +63,18 @@ void MakeITSRecoParam_pp2009(AliRecoParam::EventSpecie_t default=AliRecoParam::k
     itsRecoParam->SetUseSDDCorrectionMaps(kFALSE);
     itsRecoParam->SetUseSDDClusterSizeSelection(kTRUE);
     itsRecoParam->SetMinClusterChargeSDD(30.);
+
+    // Plane Efficiency evaluation with tracklets Method
+    itsRecoParam->SetIPlanePlaneEff(-1);
+    itsRecoParam->SetComputePlaneEff(kTRUE,kFALSE);
+    itsRecoParam->SetUseTrackletsPlaneEff(kTRUE);
+    itsRecoParam->SetTrackleterPhiWindowL2(0.07);
+    itsRecoParam->SetTrackleterZetaWindowL2(0.4);
+    itsRecoParam->SetTrackleterPhiWindowL1(0.10);
+    itsRecoParam->SetTrackleterZetaWindowL1(0.6);
+    itsRecoParam->SetUpdateOncePerEventPlaneEff(kTRUE);
+    itsRecoParam->SetMinContVtxPlaneEff(3);
+    // itsRecoParam->SetOptTrackletsPlaneEff(kTRUE); // activate it for MC (very important) !
   
     //******************************************************************
 
