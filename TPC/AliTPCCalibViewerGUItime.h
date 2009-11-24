@@ -94,7 +94,7 @@ public:
   void DoAddAlias();
   void DoDelAlias();
   void UpdateAliasList();
-  
+  TCanvas * GetCanvas(){ return fCanvMain->GetCanvas();}
  private:
   TFile*  fFile;                          //file that keeps the tree
   TChain*  fTree;                         //internal tree
