@@ -85,6 +85,8 @@ public: // static methods
   
   // Reset the MUON tracker (using "recoParam" if provided)
   static void ResetTracker(const AliMUONRecoParam* recoParam = 0x0, Bool_t info = kTRUE);
+  /// Return pointer to the MUON tracker if any (use first ResetTracker(...) to create it)
+  static AliMUONVTrackReconstructor* GetTracker() {return fgTracker;}
   
   /// Set the version of track store
   static void UseTrackStore(TString name) {fgTrackStoreName = name;}
