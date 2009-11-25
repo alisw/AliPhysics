@@ -172,7 +172,12 @@ void AliAnalysisTaskCosmic::UserExec(Option_t *)
   }
   
   AliESDEvent* esdE = (AliESDEvent*)fInputEvent;
-  if (esdE->GetNumberOfTracks() != 2) return;
+  
+  if (esdE->GetNumberOfTracks() != 2) {
+      PostData(1, fHists);
+      return;
+  }
+  
   
   for (Int_t iTracks = 0; iTracks < esdE->GetNumberOfTracks(); iTracks++) {
       AliESDtrack* track = esdE->GetTrack(iTracks);
