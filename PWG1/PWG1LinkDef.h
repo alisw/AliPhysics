@@ -9,6 +9,8 @@
 #pragma link C++ class AliESDresolParams+;
 #pragma link C++ class AliESDresolMakerFast+;
 
+#pragma link C++ class AliAnalysisTaskGlobalQA+;
+
 #pragma link C++ class AliTreeDraw+;
 //
 #pragma link C++ class AliTPCdigitRow+;
