@@ -2381,17 +2381,17 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
   
   Int_t rv = tracker->Clusters2Tracks(esd);
   
-  if ( rv )
-  {
-    AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
-    return kFALSE;
-  }
-  
   fLoader[iDet]->UnloadRecPoints();
 
   tracker->UnloadClusters();
   
   delete tracker;
+  
+  if ( rv )
+  {
+    AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
+    return kFALSE;
+  }
   
   return kTRUE;
 }
