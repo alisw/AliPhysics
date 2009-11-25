@@ -17,6 +17,7 @@
 
 class AliESDEvent;
 class TH1;
+class TH2;
 class TCollection;
 
 class AliTriggerAnalysis : public TObject
@@ -66,7 +67,7 @@ class AliTriggerAnalysis : public TObject
     Bool_t IsL2InputFired(const AliESDEvent* aEsd, UInt_t input) const;
     Bool_t IsInputFired(const AliESDEvent* aEsd, Char_t level, UInt_t input) const;
     
-    Int_t SPDFiredChips(const AliESDEvent* aEsd) const;
+    Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin = 0) const;
     Bool_t SPDGFOTrigger(const AliESDEvent* aEsd) const;
     
     Int_t V0BBTriggers(const AliESDEvent* aEsd, AliceSide side) const;
@@ -85,6 +86,7 @@ class AliTriggerAnalysis : public TObject
     Float_t fFMDHitCut;		    // 
     
     TH1* fHistSPD;            // histograms that histogram the criterion the cut is applied on: fired chips
+    TH2* fHistBitsSPD;        // offline trigger bits vs hardware trigger bits
     TH1* fHistV0A;            // histograms that histogram the criterion the cut is applied on: bb triggers
     TH1* fHistV0C;            // histograms that histogram the criterion the cut is applied on: bb triggers
     TH1* fHistZDC;            // histograms that histogram the criterion the cut is applied on: fired bits (6 bins)

@@ -24,6 +24,7 @@
 
 #include <Riostream.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TList.h>
 #include <TIterator.h>
 
@@ -41,12 +42,13 @@
 ClassImp(AliTriggerAnalysis)
 
 AliTriggerAnalysis::AliTriggerAnalysis() :
-  fSPDGFOThreshold(1),
+  fSPDGFOThreshold(2),
   fV0AThreshold(1),
   fV0CThreshold(1),
-  fFMDLowCut(0.7),
-  fFMDHitCut(1.2),
+  fFMDLowCut(0.2),
+  fFMDHitCut(0.5),
   fHistSPD(0),
+  fHistBitsSPD(0),
   fHistV0A(0),       
   fHistV0C(0),    
   fHistZDC(0),    
@@ -62,6 +64,7 @@ void AliTriggerAnalysis::EnableHistograms()
   // creates the monitoring histograms
   
   fHistSPD = new TH1F("fHistSPD", "SPD GFO;number of fired chips;events", 1202, -1.5, 1200.5);
+  fHistBitsSPD = new TH2F("fHistBitsSPD", "SPD GFO;number of fired chips (offline);number of fired chips (hardware)", 1202, -1.5, 1200.5, 1202, -1.5, 1200.5);
   fHistV0A = new TH1F("fHistV0A", "V0A;number of BB triggers;events", 34, -1.5, 32.5);
   fHistV0C = new TH1F("fHistV0C", "V0C;number of BB triggers;events", 34, -1.5, 32.5);
   fHistZDC = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
@@ -355,6 +358,7 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd)
   // fills the histograms with the info from the ESD
   
   fHistSPD->Fill(SPDFiredChips(aEsd));
+  fHistBitsSPD->Fill(SPDFiredChips(aEsd, 0), SPDFiredChips(aEsd, 1));
   
   fHistV0A->Fill(V0BBTriggers(aEsd, kASide));  
   fHistV0C->Fill(V0BBTriggers(aEsd, kCSide));
@@ -389,9 +393,12 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd)
   fHistFMDC->Fill(FMDHitCombinations(aEsd, kCSide, kTRUE));
 }
 
-Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd) const
+Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin) const
 {
   // returns the number of fired chips in the SPD
+  //
+  // origin = 0 --> aEsd->GetMultiplicity()->GetNumberOfFiredChips() (filled from clusters)
+  // origin = 1 --> aEsd->GetMultiplicity()->TestFastOrFiredChips() (from hardware bits)
   
   const AliMultiplicity* mult = aEsd->GetMultiplicity();
   if (!mult)
@@ -399,7 +406,20 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd) const
     AliError("AliMultiplicity not available");
     return -1;
   }
-  return mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
+  
+  if (origin == 0)
+    return mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
+    
+  if (origin == 1)
+  {
+    Int_t nChips = 0;
+    for (Int_t i=0; i<1200; i++)
+      if (mult->TestFastOrFiredChips(i) == kTRUE)
+        nChips++;
+    return nChips;
+  }
+  
+  return -1;
 }
 
 Bool_t AliTriggerAnalysis::SPDGFOTrigger(const AliESDEvent* aEsd) const
@@ -563,7 +583,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  const Int_t nHists = 8;
+  const Int_t nHists = 9;
   TList collections[nHists];
 
   Int_t count = 0;
@@ -581,6 +601,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
     collections[5].Add(entry->fHistFMDC);
     collections[6].Add(entry->fHistFMDSingle);
     collections[7].Add(entry->fHistFMDSum);
+    collections[8].Add(entry->fHistBitsSPD);
 
     count++;
   }
@@ -593,6 +614,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   fHistFMDC->Merge(&collections[5]);
   fHistFMDSingle->Merge(&collections[6]);
   fHistFMDSum->Merge(&collections[7]);
+  fHistBitsSPD->Merge(&collections[8]);
 
   delete iter;
 
@@ -607,6 +629,7 @@ void AliTriggerAnalysis::WriteHistograms() const
     return;
     
   fHistSPD->Write();
+  fHistBitsSPD->Write();
   fHistV0A->Write();
   fHistV0C->Write();
   fHistZDC->Write();
