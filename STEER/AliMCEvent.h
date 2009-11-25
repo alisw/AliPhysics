@@ -21,6 +21,7 @@
 #include <AliVEvent.h>
 #include "AliVHeader.h"
 #include "AliVParticle.h"
+#include "AliVVertex.h"
 #include "AliMCParticle.h"
 
 class AliStack;
@@ -94,14 +95,16 @@ public:
     virtual Int_t     GetNumberOfTracks()    const {return fNparticles;}
     virtual Int_t     GetNumberOfV0s()       const {return -1;}
     virtual Int_t     GetNumberOfCascades()  const {return -1;}
-
+    // Vertex
+    virtual const AliVVertex *GetPrimaryVertex() const;
+    
     //
     // MC Specific methods
     //
     // Getters
     AliStack*    Stack()   {return fStack;}
     AliHeader*   Header()  {return fHeader;}
-    AliGenEventHeader* GenEventHeader();
+    AliGenEventHeader* GenEventHeader() const;
     // Services
     virtual void      ConnectTreeE (TTree* tree);
     virtual void      ConnectTreeK (TTree* tree);
@@ -145,7 +148,8 @@ private:
     Int_t             fPrimaryOffset;    // Offset for primaries
     Int_t             fSecondaryOffset;  // Offset for secondaries
     Bool_t            fExternal;         // True if external particle array
-    static Int_t      fgkBgLabelOffset;  // Standard branch name    
+    static   Int_t        fgkBgLabelOffset;  // Standard branch name    
+    mutable  AliVVertex*  fVertex;           // MC Vertex
     ClassDef(AliMCEvent, 1)  // AliVEvent realisation for MC data
 };
 

@@ -28,9 +28,11 @@
 #include <TClonesArray.h>
 #include <TRefArray.h>
 #include <TList.h>
+#include <TArrayF.h>
 
 #include "AliLog.h"
 #include "AliMCEvent.h"
+#include "AliMCVertex.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
 #include "AliHeader.h"
@@ -56,7 +58,8 @@ AliMCEvent::AliMCEvent():
     fSubsidiaryEvents(0),
     fPrimaryOffset(0),
     fSecondaryOffset(0),
-    fExternal(0)
+    fExternal(0),
+    fVertex(0)
 {
     // Default constructor
 }
@@ -77,7 +80,8 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fSubsidiaryEvents(0),
     fPrimaryOffset(0),
     fSecondaryOffset(0),
-    fExternal(0)
+    fExternal(0),
+    fVertex(mcEvnt.fVertex)
 { 
 // Copy constructor
 }
@@ -169,11 +173,6 @@ Int_t AliMCEvent::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*&
 void AliMCEvent::Clean()
 {
     // Clean-up before new trees are connected
-//    if (fHeader) {
-//	delete fHeader;
-//	fHeader = 0;
-//    }
-
     delete fStack; fStack = 0;
 
     // Clear TR
@@ -182,6 +181,11 @@ void AliMCEvent::Clean()
 	delete fTRBuffer;
 	fTRBuffer = 0;
     }
+    if (fVertex) {
+	delete fVertex;
+	fVertex = 0;
+    }
+    
 }
 
 void AliMCEvent::FinishEvent()
@@ -570,7 +574,7 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
     return mcParticle;
 }
 
-    AliGenEventHeader* AliMCEvent::GenEventHeader() {return (fHeader->GenEventHeader());}
+AliGenEventHeader* AliMCEvent::GenEventHeader() const {return (fHeader->GenEventHeader());}
 
 
 void AliMCEvent::AddSubsidiaryEvent(AliMCEvent* event) 
@@ -677,6 +681,19 @@ void AliMCEvent::PreReadAll()
     }
     
     
+}
+
+
+const AliVVertex * AliMCEvent::GetPrimaryVertex() const 
+{
+    // Create a MCVertex object from the MCHeader information
+    if (!fVertex) {
+	TArrayF v;
+	GenEventHeader()->PrimaryVertex(v) ;
+	fVertex = new AliMCVertex(v[0], v[1], v[2]);
+    }
+    
+    return fVertex;
 }
 
 
