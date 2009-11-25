@@ -1190,23 +1190,23 @@ void AlidNdPtCorrection::Analyse()
   
   // limit eta range
   for(Int_t i=0;i<8;i++) { 
-      fCorrRecTrackMultHist1[i]->GetAxis(0)->SetRangeUser(minPt,maxPt);
-      fCorrRecTrackMultHist1[i]->GetAxis(1)->SetRangeUser(minEta,maxEta);
+      //fCorrRecTrackMultHist1[i]->GetAxis(0)->SetRangeUser(minPt,maxPt);
+      //fCorrRecTrackMultHist1[i]->GetAxis(1)->SetRangeUser(minEta,maxEta);
   }
-  fMCAllPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
-  fMCAllPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
+  //fMCAllPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
+  //fMCAllPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
 
-  fMCNDEventAllPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
-  fMCNDEventAllPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
+  //fMCNDEventAllPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
+  //fMCNDEventAllPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
 
-  fMCNSDEventAllPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
-  fMCNSDEventAllPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
+  //fMCNSDEventAllPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
+  //fMCNSDEventAllPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
 
-  fMCTriggerPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
-  fMCTriggerPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
+  //fMCTriggerPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
+  //fMCTriggerPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
 
-  fMCEventPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
-  fMCEventPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
+  //fMCEventPrimTrackMultHist1->GetAxis(0)->SetRangeUser(minPt,maxPt);
+  //fMCEventPrimTrackMultHist1->GetAxis(1)->SetRangeUser(minEta,maxEta);
 
   } // end use MC info 
   
