@@ -302,6 +302,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     AliWarning("No output container defined.");
     return 0x0;
   }
+  ULong_t status = fkESD ? fkESD->GetStatus():0;
 
   Double_t cov[7];
   Float_t x0, y0, z0, dy, dydx, dzdx;
@@ -348,11 +349,13 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
         AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
         fCl->Add(clInfo);
         clInfo->SetCluster(c);
-        clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);
+        Float_t covR[] = {cov[0], cov[1], cov[2]};
+        clInfo->SetGlobalPosition(yt, zt, dydx, dzdx, covR);
         clInfo->SetResolution(dy);
         clInfo->SetAnisochronity(d);
         clInfo->SetDriftLength(dx);
         (*DebugStream()) << "ClusterREC"
+          <<"status="  << status
           <<"clInfo.=" << clInfo
           << "\n";
       }
