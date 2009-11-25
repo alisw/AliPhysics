@@ -181,11 +181,6 @@ void AliMCEvent::Clean()
 	delete fTRBuffer;
 	fTRBuffer = 0;
     }
-    if (fVertex) {
-	delete fVertex;
-	fVertex = 0;
-    }
-    
 }
 
 void AliMCEvent::FinishEvent()
@@ -687,12 +682,13 @@ void AliMCEvent::PreReadAll()
 const AliVVertex * AliMCEvent::GetPrimaryVertex() const 
 {
     // Create a MCVertex object from the MCHeader information
+    TArrayF v;
+    GenEventHeader()->PrimaryVertex(v) ;
     if (!fVertex) {
-	TArrayF v;
-	GenEventHeader()->PrimaryVertex(v) ;
 	fVertex = new AliMCVertex(v[0], v[1], v[2]);
+    } else {
+	((AliMCVertex*) fVertex)->SetPosition(v[0], v[1], v[2]);
     }
-    
     return fVertex;
 }
 

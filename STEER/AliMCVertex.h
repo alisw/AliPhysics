@@ -29,7 +29,9 @@ class AliMCVertex : public AliVVertex {
     virtual Double_t GetChi2perNDF() const {return -1.;}
     virtual Double_t GetChi2()       const {return -1.;}
     virtual Int_t    GetNDF()        const {return -1 ;}
-    
+
+    virtual void     SetPosition(Double_t xv, Double_t yv, Double_t zv)
+	{fPosition[0] = xv; fPosition[1] = yv; fPosition[2] = zv;}
     virtual Int_t    GetNContributors() const {return -1;}
     virtual void     PrintIndices() const {;}
     virtual void     Print(Option_t* option = "") const;
