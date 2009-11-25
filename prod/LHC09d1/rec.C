@@ -11,7 +11,7 @@ void rec() {
   // We store the object in AliEn during the simulation
   reco.SetSpecificStorage("GRP/GRP/Data",
 			  "alien://Folder=/alice/simulation/2008/v4-15-Release/Ideal/");
-
+  reco.SetRunPlaneEff(kTRUE); 
   // ITS Plane efficiency
   reco.SetRunPlaneEff(kTRUE);
   AliITSRecoParam *itspar = AliITSRecoParam::GetPlaneEffParam(-1);

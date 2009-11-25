@@ -12,6 +12,7 @@ void rec() {
   reco.SetRunQA("ALL:ALL") ;
   
   reco.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
+  reco.SetRunPlaneEff(kTRUE);
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     reco.SetQACycles(det, 999) ;

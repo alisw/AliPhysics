@@ -7,6 +7,7 @@
   reco.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   reco.SetSpecificStorage("GRP/GRP/Data",
 			  Form("local://%s",gSystem->pwd()));
+  reco.SetRunPlaneEff(kTRUE);
 
   AliTPCReconstructor::SetStreamLevel(1);
 

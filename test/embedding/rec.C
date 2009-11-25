@@ -26,6 +26,7 @@ void rec(Int_t embrun=0) {
     reco.SetSpecificStorage("GRP/GRP/Data",
 			    Form("local://%s",gSystem->pwd()));
   }
+  reco.SetRunPlaneEff(kTRUE);
   reco.SetRunQA("ALL:ALL") ;
   
   AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
