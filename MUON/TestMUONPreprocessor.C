@@ -40,17 +40,21 @@
 /// You must also make a link of some OCDB entries to have the mapping loaded 
 /// correctly :
 ///
+/// <pre>
 /// cd $ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB
 /// mkdir -p MUON/Calib
 /// cd MUON/Calib
 /// ln -si $ALICE_ROOT/OCDB/MUON/Calib/MappingData .
+/// </pre>
 ///
 /// and Align/Baseline if you'd like to test GMS subprocessor :
 ///
+/// <pre>
 /// cd $ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB
-/// mkdir -p MUON/Align/Baseline
+/// mkdir -p MUON/Align
 /// cd MUON/Align
 /// ln -si $ALICE_ROOT/OCDB/MUON/Align/Baseline .
+/// </pre>
 ///
 /// The input data has to be created first by other processes (or is created
 /// here by CreateDCSAliasMap() for tracker HV).
