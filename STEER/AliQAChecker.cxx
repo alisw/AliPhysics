@@ -311,11 +311,6 @@ Bool_t AliQAChecker::Run(const char * fileName, AliDetectorRecoParam * recoParam
       if ( taskName == AliQAv1::GetTaskName(AliQAv1::kESDS) ) 
         index = AliQAv1::kESD ; 
       qac->Init(AliQAv1::DETECTORINDEX_t(det)) ; 
-      
-//      TDirectory * refDir     = NULL ; 
-//      TObjArray ** refOCDBDir = NULL ;	
-//      GetRefSubDir(detNameQA.Data(), taskName.Data(), refDir, refOCDBDir) ;
-//		  qac->SetRefandData(refDir, refOCDBDir, taskDir) ;
 		  qac->Run(index, recoParam) ; 
     }
   }
@@ -363,11 +358,7 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 	else if ( task == AliQAv1::kESDS ) 
 		index = AliQAv1::kESD ; 
 
-//	TDirectory * refDir     = NULL ; 
-//	TObjArray ** refOCDBDir = NULL  ;	
   qac->Init(det) ; 
-//  GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
-//  qac->SetRefandData(refDir, refOCDBDir) ; 
   qac->Run(index, list, recoParam) ; 
   
   // make the image 
@@ -407,11 +398,7 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 	else if ( task == AliQAv1::kESDS ) 
 		index = AliQAv1::kESD ; 
   
-//	TDirectory * refDir     = NULL ; 
-//	TObjArray ** refOCDBDir = NULL ;	
   qac->Init(det) ; 
-//  GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
-//  qac->SetRefandData(refDir, refOCDBDir) ; 
   qac->Run(index, list, recoParam) ; 
 
   return kTRUE ; 
