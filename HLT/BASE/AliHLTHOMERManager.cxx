@@ -291,11 +291,14 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
       }
       
       // -- Remove reader
+      fReaderList->RemoveLast();
+
       if ( reader )
 	fLibManager->DeleteReader( reader );
       reader = NULL;
       
-      fReaderList->RemoveLast();
+      HLTInfo(Form("Removed source %d,  %s : %d from sourceList", idx, sourceHostnames[idx], sourcePorts[idx]));
+      
     } 
     else {
       // -- Connection succeded
