@@ -384,7 +384,7 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
 
 
   // -- Change hostame from service with proxy, if outside HLT
-  if ( fRealm != kHLT || fRealm != kHLT+kHOMERRealmsMax )
+  if ( fRealm != kHLT && fRealm != kHLT+kHOMERRealmsMax )
     hostname = fgkHOMERProxyNode[fRealm];
 
 
