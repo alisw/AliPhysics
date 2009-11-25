@@ -107,6 +107,8 @@ public:
   Int_t    LoDev(void)    const  { return fLocalTrigger >> 17 & 0x1F; }
   Int_t    LoLpt(void)    const  { return fLocalTrigger >> 22 & 0x03; }
   Int_t    LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
+  Int_t    GetTriggerWithoutChamber(void) const { return fLocalTrigger >> 26 & 0xF; }
+  Bool_t TriggerFiredWithoutChamber(Int_t ich) const { return GetTriggerWithoutChamber() >> (3 - ich) & 0x1; }
 
   // Get and Set methods for the hit strips pattern in the trigger chambers
   UShort_t GetTriggerX1Pattern() const { return fX1Pattern; }
