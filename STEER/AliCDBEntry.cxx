@@ -44,7 +44,7 @@ fId(id),
 fMetaData(metaData), 
 fIsOwner(owner){
 // constructor
-
+    fMetaData->SetObjectClassName(fObject->ClassName());
 }
 
 //_____________________________________________________________________________
