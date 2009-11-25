@@ -1850,6 +1850,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
                  t->RelateToVertexBxByBz(pvtx, b, kVeryBig);
              } 
           }
+	  delete pvtx; pvtx=NULL;
        }
 
        // TPC-only primary vertex
@@ -1876,6 +1877,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
                  t->RelateToVertexTPCBxByBz(pvtx, b, kVeryBig);
              } 
           }
+	  delete pvtx; pvtx=NULL;
        }
 
     }
@@ -2086,6 +2088,7 @@ void AliReconstruction::Terminate()
   if (!fInput) {
     AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
     esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData, AliQAv1::Instance()->GetQA(), AliQAv1::Instance()->GetEventSpecies(), AliQAv1::kNDET, AliRecoParam::kNSpecies);
+    delete esdtagCreator;
   }
 
   // Cleanup of CDB manager: cache and active storages!
