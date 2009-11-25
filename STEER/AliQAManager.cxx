@@ -544,12 +544,9 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 			}
       if (qac) 
         qac->SetPrintImage(fPrintImage) ;
-      
-      if (IsSaveData()) {
-        for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
-          if ( fTasks.Contains(Form("%d", taskIndex)) ) 
-            qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
-        }
+      for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
+        if ( fTasks.Contains(Form("%d", taskIndex)) ) 
+          qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
       }
 			qadm->Finish();
 		}
@@ -577,11 +574,9 @@ void  AliQAManager::EndOfCycle(TString detectors)
         continue ;
       if (qac) 
         qac->SetPrintImage(fPrintImage) ;
-      if (IsSaveData()) {
-        for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
-          if ( fTasks.Contains(Form("%d", taskIndex)) ) 
-            qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
-        }
+      for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
+        if ( fTasks.Contains(Form("%d", taskIndex)) ) 
+          qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
       }
 			qadm->Finish();
 		}
