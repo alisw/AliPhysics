@@ -81,7 +81,7 @@ Bool_t MEM = kFALSE;
 
 TChain* MakeChainLST(const char* filename = 0x0);
 TChain* MakeChainXML(const char* filename = 0x0);
-void run(Char_t *trd="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Long64_t first = 0)
+void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Long64_t first = 0, Int_t runNo=0, const Char_t *ocdb_uri="local://$ALICE_ROOT/OCDB", const Char_t *grp_uri=Form("local://%s", gSystem->pwd()))
 {
   TMemStat *mem = 0x0;
   if(MEM){ 
@@ -93,8 +93,6 @@ void run(Char_t *trd="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Lo
   TStopwatch timer;
   timer.Start();
 
-
-
   // VERY GENERAL SETTINGS
   AliLog::SetGlobalLogLevel(AliLog::kError);
   if(gSystem->Load("libANALYSIS.so")<0) return;
@@ -102,24 +100,26 @@ void run(Char_t *trd="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Lo
   if(gSystem->Load("libTENDER.so")<0) return;
   if(gSystem->Load("libPWG1.so")<0) return;
 
-  Bool_t fHasMCdata =  HasReadMCData(trd);
-  Bool_t fHasFriends = HasReadFriendData(trd);
+  Bool_t fHasMCdata =  HasReadMCData(optList);
+  Bool_t fHasFriends = HasReadFriendData(optList);
   
   // INITIALIZATION OF RUNNING ENVIRONMENT
-  //TODO We should use the GRP if available similar to AliReconstruction::InitGRP()!
   // initialize OCDB manager
   AliCDBManager *cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  cdbManager->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
-  cdbManager->SetRun(0);
+  cdbManager->SetDefaultStorage(ocdb_uri);
+  if(!cdbManager->IsDefaultStorageSet()){
+    Error("run.C", "Error setting OCDB.");
+    return;
+  }
+  cdbManager->SetRun(runNo);
+  cdbManager->SetSpecificStorage("GRP/GRP/Data", grp_uri);
   cdbManager->SetCacheFlag(kFALSE);
   // initialize magnetic field from the GRP manager.
   AliGRPManager grpMan;
-  grpMan.ReadGRPEntry();
-  grpMan.SetMagField();
+  if(!grpMan.ReadGRPEntry()) return;
+  if(!grpMan.SetMagField()) return;
   //AliRunInfo *runInfo = grpMan.GetRunInfo();
   AliGeomManager::LoadGeometry();
-
 
   // DEFINE DATA CHAIN
   TChain *chain = 0x0;
@@ -147,7 +147,7 @@ void run(Char_t *trd="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Lo
   //mgr->SetDebugLevel(10);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
-  if(! AddTrainPerformanceTRD(fHasMCdata, fHasFriends, trd)) {
+  if(! AddTrainPerformanceTRD(fHasMCdata, fHasFriends, optList)) {
     Error("run.C", "Error loading TRD train.");
     return;
   }
