@@ -155,11 +155,12 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	   }
 	   // Convert i (FEE channel numbering) to j (aliroot channel numbering)
 
-	   Int_t board   = j / 8;
-	   time[j]       =  rawStream.GetTime(i)/ (25./256.) * fCalibData->GetTimeResolution(board);
-	   width[j]      =  rawStream.GetWidth(i) / 0.4 * fCalibData->GetWidthResolution(board);
 	   integrator[j] =  rawStream.GetIntegratorFlag(i,imax); 
 	 }
+
+	 Int_t board   = j / 8;
+	 time[j]       =  rawStream.GetTime(i)/ (25./256.) * fCalibData->GetTimeResolution(board);
+	 width[j]      =  rawStream.GetWidth(i) / 0.4 * fCalibData->GetWidthResolution(board);
 
 	 // Filling the esd friend object
 	 fESDVZEROfriend->SetBBScalers(j,rawStream.GetBBScalers(i));
