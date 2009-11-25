@@ -233,6 +233,7 @@ Bool_t AliITSTPArrayFit::InvertPointsCovMat()
     Double_t t1 = cov[kXY]*cov[kZZ] - cov[kXZ]*cov[kYZ];
     Double_t t2 = cov[kXY]*cov[kYZ] - cov[kXZ]*cov[kYY];
     Double_t det = cov[kXX]*t0 - cov[kXY]*t1 + cov[kXZ]*t2;
+    AliDebug(2,Form("%+.4e %+.4e %+.4e -> %+.4e",t0,t1,t2,det));
     if (TMath::Abs(det)<fgkAlmostZero) {
       AliInfo(Form("Cov.Matrix for point %d is singular",i));
       return kFALSE;

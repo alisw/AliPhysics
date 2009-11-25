@@ -338,6 +338,16 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
     }
     //
     //	 
+    recTitle = fgkRecKeys[kInitDeltaFile];
+    if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1))  && !recOpt.IsNull()) {
+      for (int i=2;i<=recArr->GetLast();i++) {recOpt += " "; recOpt += recArr->At(i)->GetName();} // in case of OCDB string
+      fInitDeltaPath = recOpt;
+      AliInfo(Form("Configuration sets Production Deltas to %s",fInitDeltaPath.Data()));
+    }
+    //
+    // if initial deltas were provided, load them, apply to geometry and store are "original" matrices
+    if (CacheMatricesOrig()) {stopped = kTRUE; break;}
+    //	 
     recTitle = fgkRecKeys[kPreDeltaFile];
     if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1))  && !recOpt.IsNull()) {
       for (int i=2;i<=recArr->GetLast();i++) {recOpt += " "; recOpt += recArr->At(i)->GetName();} // in case of OCDB string
@@ -346,14 +356,6 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
     }
     if (LoadDeltas(fPreDeltaPath,fPrealignment)) {stopped = kTRUE; break;}
     if (fPrealignment && ApplyToGeometry()) {stopped = kTRUE; break;}
-    //
-    //	 
-    recTitle = fgkRecKeys[kInitDeltaFile];
-    if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1))  && !recOpt.IsNull()) {
-      for (int i=2;i<=recArr->GetLast();i++) {recOpt += " "; recOpt += recArr->At(i)->GetName();} // in case of OCDB string
-      fInitDeltaPath = recOpt;
-      AliInfo(Form("Configuration sets Production Deltas to %s",fInitDeltaPath.Data()));
-    }
     //
     //
     recTitle = fgkRecKeys[kPreCalSDDFile];
@@ -766,7 +768,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
     return -1;
   }
   //
-  if (CacheMatrices()) return -1;
+  if (CacheMatricesCurr()) return -1;
   SetUseLocalYErrors(fUseLocalYErr); // YErr used only with TPAFitter 
   fIsConfigured = kTRUE;
   return 0;
@@ -1437,7 +1439,7 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     pg[2]=p.GetZ();
     AliDebug(3,Form("Global coordinates of measured point : X=%f  Y=%f  Z=%f \n",pg[0],pg[1],pg[2]));
     svOrigMatrix->MasterToLocal(pg,pl);
-    AliDebug(3,Form("Local coordinates of measured point : X=%f  Y=%f  Z=%f \n",pg[0],pg[1],pg[2]));
+    AliDebug(3,Form("Local coordinates of measured point : X=%f  Y=%f  Z=%f \n",pl[0],pl[1],pl[2]));
     //
     // this is a temporary code to extract the drift speed used for given point
     if (p.GetDriftTime()>0) { // RRR
@@ -1473,23 +1475,37 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     hcovel[7]=double(p.GetCov()[4]);
     hcovel[8]=double(p.GetCov()[5]);
     hcov.SetRotation(hcovel);
+    //
+    if (AliLog::GetGlobalDebugLevel()>=2) {
+      AliInfo("Original Global Cov Matrix");
+      printf("%+.4e %+.4e %+.4e\n%+.4e %+.4e\n%+.4e\n",hcovel[0],hcovel[1],hcovel[2],hcovel[4],hcovel[5],hcovel[8]);
+    } 
+    //
     // now rotate in local system
     hcov.Multiply(svOrigMatrix);
     hcov.MultiplyLeft(&svOrigMatrix->Inverse());
     // now hcov is LOCAL COVARIANCE MATRIX
     // apply sigma scaling
-    Double_t *hcovscl = hcov.GetRotationMatrix(); 
-    hcovscl[4] = fUseLocalYErr ? kSensSigY2[lrID[idx[i]]] : 1E-10; // error due to the sensor thickness
+    Double_t *hcovscl = hcov.GetRotationMatrix();
+    if (AliLog::GetGlobalDebugLevel()>=2) {
+      AliInfo("Original Local Cov Matrix");
+      printf("%+.4e %+.4e %+.4e\n%+.4e %+.4e\n%+.4e\n",hcovscl[0],hcovscl[1],hcovscl[2],hcovscl[4],hcovscl[5],hcovscl[8]);
+    } 
+    hcovscl[4] = fUseLocalYErr ? kSensSigY2[lrID[idx[i]]] : 1E-8; // error due to the sensor thickness
     //
     for (int ir=3;ir--;) for (int ic=3;ic--;) {
 	if (ir==ic) {	  
-	  if ( IsZero(hcovscl[ir*3+ic]) ) hcovscl[ir*3+ic] = 0.;
+	  if ( IsZero(hcovscl[ir*3+ic],1e-8) ) hcovscl[ir*3+ic] = 1E-8;
 	  else hcovscl[ir*3+ic] *= mod->GetSigmaFactor(ir)*mod->GetSigmaFactor(ic); //RRR
 	  sgl[ir] = TMath::Sqrt(hcovscl[ir*3+ic]);
 	}
 	else hcovscl[ir*3+ic]  = 0;
       }
     //
+    if (AliLog::GetGlobalDebugLevel()>=2) {
+      AliInfo("Modified Local Cov Matrix");
+      printf("%+.4e %+.4e %+.4e\n%+.4e %+.4e\n%+.4e\n",hcovscl[0],hcovscl[1],hcovscl[2],hcovscl[4],hcovscl[5],hcovscl[8]);
+    } 
     //
     if (fBug==1) {
       // correzione bug LAYER 5  SSD temporanea..
@@ -1510,6 +1526,11 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     // cure once more
     for (int ir=3;ir--;) for (int ic=3;ic--;) if (IsZero(hcovscl[ir*3+ic])) hcovscl[ir*3+ic] = 0.;
     //    printf("\nErrMatGlob: after\n"); hcov.Print(""); //RRR
+    //
+    if (AliLog::GetGlobalDebugLevel()>=2) {
+      AliInfo("Modified Global Cov Matrix");
+      printf("%+.4e %+.4e %+.4e\n%+.4e %+.4e\n%+.4e\n",hcovscl[0],hcovscl[1],hcovscl[2],hcovscl[4],hcovscl[5],hcovscl[8]);
+    } 
     //
     Float_t pcov[6];
     pcov[0]=hcovscl[0];
@@ -3367,11 +3388,12 @@ Int_t AliITSAlignMille2::LoadSDDResponse(TString& path, AliITSresponseSDD *&resp
 {
   if (path.IsNull()) return 0;
   //
+  AliCDBEntry *entry = 0;
   resp = 0;
   while(1) {
     if (path.BeginsWith("path: ")) { // must load from OCDB
       AliCDBId* cdbId = AliCDBId::MakeFromString( path.Data() );
-      AliCDBEntry *entry = AliCDBManager::Instance()->Get( *cdbId );
+      entry = AliCDBManager::Instance()->Get( *cdbId );
       delete cdbId;
       if (!entry) break;
       resp = (AliITSresponseSDD*) entry->GetObject();
@@ -3383,7 +3405,15 @@ Int_t AliITSAlignMille2::LoadSDDResponse(TString& path, AliITSresponseSDD *&resp
     //
     if (gSystem->AccessPathName(path.Data())) break;
     TFile* precf = TFile::Open(path.Data());
-    resp = (AliITSresponseSDD*)precf->Get("AliITSresponseSDD");
+    if (precf->FindKey("AliITSresponseSDD")) resp = (AliITSresponseSDD*)precf->Get("AliITSresponseSDD");
+    else if (precf->FindKey("AliCDBEntry") && (entry=(AliCDBEntry*)precf->Get("AliCDBEntry"))) {
+      resp = (AliITSresponseSDD*) entry->GetObject();
+      if (resp && resp->InheritsFrom(AliITSresponseSDD::Class())) entry->SetObject(NULL);
+      else resp = 0;
+      entry->SetOwner(kTRUE);
+      delete entry;
+    }
+    //
     precf->Close();
     delete precf;
     break;
@@ -3398,11 +3428,12 @@ Int_t AliITSAlignMille2::LoadDeltas(TString& path, TClonesArray *&arr)
 {
   if (path.IsNull()) return 0;
   //
+  AliCDBEntry *entry = 0;
   arr = 0;
   while(1) {
     if (path.BeginsWith("path: ")) { // must load from OCDB
       AliCDBId *cdbId = AliCDBId::MakeFromString( path.Data() );
-      AliCDBEntry *entry = AliCDBManager::Instance()->Get( *cdbId );
+      entry = AliCDBManager::Instance()->Get( *cdbId );
       delete cdbId;
       if (!entry) break;
       arr = (TClonesArray*) entry->GetObject();
@@ -3414,7 +3445,14 @@ Int_t AliITSAlignMille2::LoadDeltas(TString& path, TClonesArray *&arr)
     //
     if (gSystem->AccessPathName(path.Data())) break;
     TFile* precf = TFile::Open(path.Data());
-    arr = (TClonesArray*)precf->Get("ITSAlignObjs");
+    if (precf->FindKey("ITSAlignObjs")) arr = (TClonesArray*)precf->Get("ITSAlignObjs");
+    else if (precf->FindKey("AliCDBEntry") && (entry=(AliCDBEntry*)precf->Get("AliCDBEntry"))) {
+      arr = (TClonesArray*) entry->GetObject();
+      if (arr && arr->InheritsFrom(TClonesArray::Class())) entry->SetObject(NULL);
+      else arr = 0;
+      entry->SetOwner(kTRUE);
+      delete entry;
+    }
     precf->Close();
     delete precf;
     break;
@@ -3425,45 +3463,55 @@ Int_t AliITSAlignMille2::LoadDeltas(TString& path, TClonesArray *&arr)
 }
 
 //________________________________________________________________________________________________________
-Int_t AliITSAlignMille2::CacheMatrices()
+Int_t AliITSAlignMille2::CacheMatricesCurr()
 {
   // build arrays for the fast access to sensor matrices from their sensor ID
   //
   TGeoHMatrix mdel;
-  AliITSAlignMille2Module *mod = GetMilleModule(0); // does not matter which one...
-  AliInfo("Building sensors matrices cache");
+  AliInfo("Building sensors current matrices cache");
   //
-  fCacheMatrixOrig.Delete();
   fCacheMatrixCurr.Delete();
-  // in case the reconstruction was done with non-ideal geometry, load relevant deltas
-  TClonesArray *initDeltas = 0;
-  if (!fInitDeltaPath.IsNull()) if (LoadDeltas(fInitDeltaPath,initDeltas)) return -1;
-  //
-  // 1) Original matrices (used to write the global coordinates of the points)
   for (int idx=0;idx<=kMaxITSSensID;idx++) {
     int volID = AliITSAlignMille2Module::GetVolumeIDFromIndex(idx);
-    TGeoHMatrix *morig = new TGeoHMatrix();
     TGeoHMatrix *mcurr = new TGeoHMatrix();
-    *morig = *mod->GetSensitiveVolumeOrigGlobalMatrix(volID);
-    *mcurr = *mod->GetSensitiveVolumeMatrix(volID);
-    //
-    // the reconstruction might be done with particular deltas
-    if (initDeltas) for (int i=initDeltas->GetLast()+1;i--;) {
-	AliAlignObjParams *preo = (AliAlignObjParams*) initDeltas->At(i);
-	if (!preo || (preo->GetVolUID()!=volID)) continue;
-	preo->GetMatrix(mdel);
-	morig->MultiplyLeft(&mdel); // account delta used for reconstruction
-	break;
-      }
-    //
-    fCacheMatrixOrig.AddAtAndExpand(morig,idx);
+    AliITSAlignMille2Module::SensVolMatrix(volID, mcurr);
     fCacheMatrixCurr.AddAtAndExpand(mcurr,idx);
     //
   }
   //
-  fCacheMatrixOrig.SetOwner(kTRUE);
   fCacheMatrixCurr.SetOwner(kTRUE);
-  if (initDeltas) {delete initDeltas; initDeltas = 0;}
+  return 0;
+}
+
+//________________________________________________________________________________________________________
+Int_t AliITSAlignMille2::CacheMatricesOrig()
+{
+  // build arrays for the fast access to sensor original matrices (used for production)
+  //
+  TGeoHMatrix mdel;
+  AliInfo("Building sensors original matrices cache");
+  //
+  fCacheMatrixOrig.Delete();
+  if (!fInitDeltaPath.IsNull()) {
+    if (LoadDeltas(fInitDeltaPath,fPrealignment) || ApplyToGeometry()) 
+      { AliError("Failed to load/apply initial deltas used to produce points"); return -1;}
+  }
+  //
+  for (int idx=0;idx<=kMaxITSSensID;idx++) {
+    int volID = AliITSAlignMille2Module::GetVolumeIDFromIndex(idx);
+    TGeoHMatrix *morig = new TGeoHMatrix();
+    if (fUsePreAlignment) AliITSAlignMille2Module::SensVolMatrix(volID,morig);
+    else                  AliITSAlignMille2Module::SensVolOrigGlobalMatrix(volID,morig);
+    fCacheMatrixOrig.AddAtAndExpand(morig,idx);
+  }
+  //
+  fCacheMatrixOrig.SetOwner(kTRUE);
+  if (fUsePreAlignment) { // the initial deltas were temporary attached to prealignment array, clean and reinitialize geometry
+    delete fPrealignment; 
+    fPrealignment = 0; 
+    fUsePreAlignment = 0; 
+    InitGeometry();
+  }
   return 0;
 }
 

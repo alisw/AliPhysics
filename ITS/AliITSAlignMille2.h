@@ -221,7 +221,8 @@ class AliITSAlignMille2: public TObject
   //
   // configuration methods
   void      Init();
-  Int_t     CacheMatrices();
+  Int_t     CacheMatricesOrig();
+  Int_t     CacheMatricesCurr();
   Int_t     ProcessUserInfo(TList *userInfo=0);
   Int_t     LoadConfig(const Char_t *cfile="AliITSAlignMille.conf");
   TObjArray* GetConfigRecord(FILE* stream, TString& recTitle, TString& recOpt, Bool_t rew);

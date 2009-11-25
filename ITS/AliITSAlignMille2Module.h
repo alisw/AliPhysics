@@ -86,10 +86,10 @@ public:
   void         SetParVal(Int_t par,Double_t v=0)            {fParVals[par] = v;}
   void         SetParErr(Int_t par,Double_t e=0)            {fParErrs[par] = e;}
   void         SetParConstraint(Int_t par,Double_t s=1e6)   {fParCstr[par] = s>0. ? s:0.0;}
-  void         SetSigmaFactor(Int_t i,Float_t v)            {fSigmaFactor[i]=v;}
-  void         SetSigmaXFactor(Float_t v)                   {fSigmaFactor[0]=v;}
-  void         SetSigmaYFactor(Float_t v)                   {fSigmaFactor[1]=v;}
-  void         SetSigmaZFactor(Float_t v)                   {fSigmaFactor[2]=v;}
+  void         SetSigmaFactor(Int_t i,Float_t v)            {fSigmaFactor[i]=TMath::Max(0.001F,v);}
+  void         SetSigmaXFactor(Float_t v)                   {SetSigmaFactor(0,v);}
+  void         SetSigmaYFactor(Float_t v)                   {SetSigmaFactor(1,v);}
+  void         SetSigmaZFactor(Float_t v)                   {SetSigmaFactor(2,v);}
   void         IncNProcessedPoints(Int_t step=1)            {fNProcPoints += step;}
   void         SetNProcessedPoints(Int_t v)                 {fNProcPoints = v;}
   void         SetParent(AliITSAlignMille2Module* par)      {fParent = par;}
@@ -136,12 +136,13 @@ public:
   static UShort_t GetVolumeIDFromSymname(const Char_t *symname);
   static UShort_t GetVolumeIDFromIndex(Int_t index);
   static Bool_t   IsSensor(UShort_t vid);
+  static Int_t    SensVolMatrix(UShort_t volid, TGeoHMatrix *m); 
+  static Int_t    SensVolOrigGlobalMatrix(UShort_t volid, TGeoHMatrix *m); 
+
   //
 protected:
   //
   void         AssignDetType();
-  Int_t        SensVolMatrix(UShort_t volid, TGeoHMatrix *m); 
-  Int_t        SensVolOrigGlobalMatrix(UShort_t volid, TGeoHMatrix *m); 
   //
 protected:
   //
