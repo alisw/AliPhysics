@@ -117,7 +117,7 @@ private:
   int fNGlobalPar;             ///< Number of global parameters
   int fNLocalPar;              ///< Number of local parameters
 
-  ClassDef(AliMillepede, 0)  // Millepede Class
+  ClassDef(AliMillepede, 1)  // Millepede Class
 };
 
 #endif
