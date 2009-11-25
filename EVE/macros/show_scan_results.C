@@ -74,6 +74,40 @@ void show_scan_results()
 
 
   //----------------------------------------------------------------------------
+  // Vertices
+  //----------------------------------------------------------------------------
+
+  c = new TCanvas("Vertices", "Vertex Scanning Results", 800, 600);
+  c->Divide(3, 3);
+
+  c->cd(1);
+  t->Draw("VT.GetX()", "VT.GetNContributors()>0");
+
+  c->cd(2);
+  t->Draw("VT.GetY()", "VT.GetNContributors()>0");
+
+  c->cd(3);
+  t->Draw("VT.GetZ()", "VT.GetNContributors()>0");
+
+  c->cd(4);
+  t->Draw("VSPD.GetX()", "VSPD.GetNContributors()>0 && VSPD.fTitle.Contains(\"3D\")");
+
+  c->cd(5);
+  t->Draw("VSPD.GetY()", "VSPD.GetNContributors()>0 && VSPD.fTitle.Contains(\"3D\")");
+
+  c->cd(6);
+  t->Draw("VSPD.GetZ()", "VSPD.GetNContributors()>0 && VSPD.fTitle.Contains(\"3D\")");
+
+  c->cd(7);
+  t->Draw("VTPC.GetX()", "VTPC.GetNContributors()>0");
+
+  c->cd(8);
+  t->Draw("VTPC.GetY()", "VTPC.GetNContributors()>0");
+
+  c->cd(9);
+  t->Draw("VTPC.GetZ()", "VTPC.GetNContributors()>0");
+
+  //----------------------------------------------------------------------------
   // End
   //----------------------------------------------------------------------------
 
