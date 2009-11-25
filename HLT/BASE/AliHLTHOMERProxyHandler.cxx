@@ -114,7 +114,7 @@ const Char_t *AliHLTHOMERProxyHandler::fgkHOMERProxyNode[] = {
   "alihlt-dcs0.cern.ch",
   "alihlt-vobox0.cern.ch",
   "alihlt-gw0.kip.uni-heidelberg.de",
-  "localhost"
+  "localhost",
   "portal-dcs1.internal", 
   "alihlt-dcs1.cern.ch",
   "alihlt-vobox1.cern.ch",
@@ -134,9 +134,9 @@ void AliHLTHOMERProxyHandler::IdentifyRealm() {
     fRealm = kACR;
   else if ( hostIP.Contains("129.206.") )
     fRealm = kKIP;
-  else  if ( hostIP.Contains("137.138") || 
-	     hostIP.Contains("128.141") ||
-	     hostIP.Contains("127.0.") 
+  else  if ( hostIP.Contains("137.138") 
+	     || hostIP.Contains("128.141") 
+	     || hostIP.Contains("127.0.") 
 	     )
     fRealm = kGPN;
   else {

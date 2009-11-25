@@ -286,7 +286,7 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
 
       if( !(TString(sourceHostnames[idx]).CompareTo("localhost")) ) {
 	HLTInfo("The failed connection is on localhost. is SSH tunnel up????? ");
-	HLTInfo(Form("Do: 'ssh -L %s:alihlt-vobox0.cern.ch:%d cernUser@lxplus.cern.ch -fN'",
+	HLTInfo(Form("Do: 'ssh -L %d:alihlt-vobox0.cern.ch:%d cernUser@lxplus.cern.ch -fN'",
 		     sourcePorts[idx], sourcePorts[idx]));
       }
       
