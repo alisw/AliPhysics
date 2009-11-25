@@ -77,6 +77,12 @@ class AliMUONLocalTrigger : public TObject {
   /// Trigger response Y strips
   Bool_t IsTrigY();
 
+  /// Hit pattern from the re-calculated trigger response after removing chambers one-by-one
+  UShort_t GetHitPatternFromResponse() const {return fHitPatternFromResponse; }
+
+  /// Triggers from the re-calculated trigger response after removing chambers one-by-one
+  UChar_t GetTriggerWithoutChamber() const {return fTriggerWithoutChamber; }
+
   // setter methods
   //
            /// Set Circuit number
@@ -122,7 +128,13 @@ class AliMUONLocalTrigger : public TObject {
   virtual void Print(Option_t* opt="") const;
   
   virtual const char* GetName() const;
-  
+
+  /// The board would provide a trigger even after removing chamber ich [0,3]
+  void SetTriggerWithoutChamber(Int_t ich){ fTriggerWithoutChamber |= 1 << (3 - ich); }
+
+  /// Trigger algorithm did NOT find hit in the specified chamber and cathode
+  void SetNoHitInPlane(Int_t icath, Int_t ich){ fHitPatternFromResponse &= ~(1 << (7 - 4*icath - ich)); }
+
 private:
   Int_t fLoCircuit; ///< Circuit number 
   Int_t fLoStripX;  ///< X strip in MT11 
@@ -142,6 +154,9 @@ private:
   UShort_t fY2Pattern; ///< Y strip pattern for chamber 12
   UShort_t fY3Pattern; ///< Y strip pattern for chamber 21
   UShort_t fY4Pattern; ///< Y strip pattern for chamber 22
+
+  UShort_t fHitPatternFromResponse; ///<  Fired plane according to re-computed repsonse
+  UChar_t fTriggerWithoutChamber; ///< Pattern of triggers after chamber removal
 
   ClassDef(AliMUONLocalTrigger,4)  // reconstructed Local Trigger object
 };

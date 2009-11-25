@@ -63,6 +63,8 @@
 #include <TBits.h>
 #include <TSystem.h>
 
+#include "AliCodeTimer.h"
+
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerElectronics)
@@ -174,6 +176,8 @@ void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
 {
   /// FILL INPUTS
   ///
+
+  AliCodeTimerAuto("",0);
   
   TIter next(digitStore.CreateTriggerIterator());
   AliMUONVDigit* mdig;
@@ -224,6 +228,18 @@ void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
       }
     }		
   }
+
+  FeedCopyNeighbours();
+}
+
+
+//___________________________________________
+void AliMUONTriggerElectronics::FeedCopyNeighbours()
+{
+  //
+  /// Feed the local copies
+  /// and complete the feed with the information of neighbours
+  //
 
   // Particular case of the columns with 22 local boards (2R(L) 3R(L))   
   // fill copy input from mapping instead of hardcoded valued (Ch.F)
@@ -478,9 +494,13 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
 void AliMUONTriggerElectronics::LocalResponse()
 {
 /// Compute the response for local cards
+
+  AliCodeTimerAuto("",0);
 	
   AliMUONTriggerCrate* cr;
   TIter next(fCrates->CreateCrateIterator());
+
+  UShort_t thisl[16];
   
   while ( ( cr = static_cast<AliMUONTriggerCrate*>(next()) ) )
   {            
@@ -489,7 +509,7 @@ void AliMUONTriggerElectronics::LocalResponse()
     
     AliMUONRegionalTriggerBoard *regb = (AliMUONRegionalTriggerBoard*)boards->At(0);
     
-    UShort_t thisl[16]; for (Int_t j=0; j<16; j++) thisl[j] = 0;
+    for (Int_t j=0; j<16; ++j) thisl[j] = 0;
   
     for (Int_t j = 1; j < boards->GetEntries(); j++)
     {     
@@ -498,26 +518,23 @@ void AliMUONTriggerElectronics::LocalResponse()
 	if (!o) break;
       
 	AliMUONLocalTriggerBoard *board = (AliMUONLocalTriggerBoard*)o;
-      
-	if (board) // check if empty slot
-	{
-	  board->Response();
-				
-	  UShort_t response = board->GetResponse();            
-        
-	  // CRATE CONTAINING INTERFACE BOARD
-	  if (board->GetNumber() == 0) // copy boards
-	  {
-	    if ( response != 0 ) 
-	      AliWarning(Form("Interface board %s in slot %d of crate %s has a non zero response",
-					  board->GetName(),j,cr->GetName()));
-	    AliDebug(1, Form("local slot %d, number %d in crate %s\n", j, board->GetNumber(), cr->GetName()));
 
-	  }
+	board->Response();
+				
+	UShort_t response = board->GetResponse();            
         
-	  thisl[j-1] = response;
+	// CRATE CONTAINING INTERFACE BOARD
+	if (board->GetNumber() == 0) // copy boards
+	{
+	  if ( response != 0 ) 
+	    AliWarning(Form("Interface board %s in slot %d of crate %s has a non zero response",
+			    board->GetName(),j,cr->GetName()));
+	  AliDebug(1, Form("local slot %d, number %d in crate %s\n", j, board->GetNumber(), cr->GetName()));
+	  
 	}
-      }
+        
+	thisl[j-1] = response;
+    }
     
     regb->SetLocalResponse(thisl);
   }
@@ -527,6 +544,9 @@ void AliMUONTriggerElectronics::LocalResponse()
 void AliMUONTriggerElectronics::RegionalResponse()
 {
   /// Compute the response for all regional cards.
+
+  AliCodeTimerAuto("",0);
+
   AliMUONTriggerCrate* cr;
   TIter next(fCrates->CreateCrateIterator());
   
@@ -535,11 +555,9 @@ void AliMUONTriggerElectronics::RegionalResponse()
       TObjArray *boards = cr->Boards();
 
       AliMUONRegionalTriggerBoard *regb = (AliMUONRegionalTriggerBoard*)boards->At(0);
-      
-      if (regb) 
-      {
-         regb->Response();
-      }  
+
+      regb->Response();
+
    }
 }
 
@@ -547,6 +565,8 @@ void AliMUONTriggerElectronics::RegionalResponse()
 void AliMUONTriggerElectronics::GlobalResponse()
 {
   /// Compute the global response
+
+  AliCodeTimerAuto("",0);
 
   UShort_t regional[16];
   
@@ -583,10 +603,15 @@ void AliMUONTriggerElectronics::GlobalResponse()
 void AliMUONTriggerElectronics::Digits2Trigger(const AliMUONVDigitStore& digitStore,
                                                AliMUONVTriggerStore& triggerStore)
 {
+  AliCodeTimerAuto("",0);
+
   /// Main method to go from digits to trigger decision
   AliMUONRegionalTrigger pRegTrig;
   
   triggerStore.Clear();
+
+  // NOW RESET ELECTRONICS
+  Reset();
   
   // RUN THE FULL BEE CHAIN
   Feed(digitStore);
@@ -689,7 +714,124 @@ void AliMUONTriggerElectronics::Digits2Trigger(const AliMUONVDigitStore& digitSt
   globalTrigger.SetFromGlobalInput(globalInput);
   // ADD A LOCAL TRIGGER IN THE LIST 
   triggerStore.SetGlobal(globalTrigger);
-  
-  // NOW RESET ELECTRONICS
+
+}
+
+//___________________________________________
+void AliMUONTriggerElectronics::Feed(AliMUONVTriggerStore& triggerStore)
+{
+  //
+  /// Fill inputs from reconstructed local trigger store
+  //
+  AliMUONLocalTrigger* locTrg;
+  TIter next(triggerStore.CreateLocalIterator());
+  TArrayS xyPattern[2];
+  UShort_t xy[2][4];
+  Int_t loCircuit;
+  while ( ( locTrg = static_cast<AliMUONLocalTrigger*>( next() )) != NULL ){
+    locTrg->GetXPattern(xyPattern[0]);
+    locTrg->GetYPattern(xyPattern[1]);
+    loCircuit = locTrg->LoCircuit();
+    AliMUONLocalTriggerBoard* localBoard = fCrates->LocalBoard(loCircuit);
+    for (Int_t icath = 0; icath<2; ++icath){
+      for (Int_t ich = 0; ich < 4; ++ich){
+	xy[icath][ich] = xyPattern[icath][ich];
+      }
+    }
+    localBoard->SetXY(xy);
+  }
+
+  FeedCopyNeighbours();
+}
+
+//_______________________________________________________________________
+Bool_t AliMUONTriggerElectronics::ModifiedLocalResponse(Int_t loCircuit,
+							Bool_t& bendingPlaneResp,
+							Bool_t& nonBendingPlaneResp,
+							Bool_t isCoinc44,
+							Int_t removeChamber)
+{
+  //
+  /// Re-compute the local trigger response
+  /// with some modifications (i.e. setting coinc44 or after removing one chamber)
+  //
+
+  bendingPlaneResp = kFALSE;
+  nonBendingPlaneResp = kFALSE;
+
+  Bool_t isTriggered = kFALSE;
+
+  AliMUONLocalTriggerBoard* currBoard = fCrates->LocalBoard(loCircuit);
+
+  if ( ! currBoard ) return isTriggered;
+
+  AliMUONLocalTriggerBoard localBoard (*currBoard);
+
+  if (removeChamber>=0 && removeChamber<=3){
+
+    // Set the bit pattern of selected chamber to 0
+    UShort_t xy[2][4];
+    UShort_t xyu[2][4];
+    UShort_t xyd[2][4];
+
+    localBoard.GetXY(xy);
+    localBoard.GetXYU(xyu);
+    localBoard.GetXYD(xyd);
+
+    for(Int_t icath=0; icath<2; icath++){
+      xy[icath][removeChamber] = 0;
+      xyu[icath][removeChamber] = 0;
+      xyd[icath][removeChamber] = 0;
+    }
+
+    localBoard.SetXY(xy);
+    localBoard.SetXYU(xyu);
+    localBoard.SetXYD(xyd);
+  }
+
+  localBoard.ResetResponse();
+
+  localBoard.SetCoinc44((Int_t)isCoinc44);
+  localBoard.Response();
+
+  bendingPlaneResp = localBoard.IsTrigX();
+  nonBendingPlaneResp = localBoard.IsTrigY();
+  isTriggered = localBoard.Triggered();
+
+  return isTriggered;
+}
+
+
+//_______________________________________________________________________
+void AliMUONTriggerElectronics::ResponseRemovingChambers(AliMUONVTriggerStore& triggerStore)
+{
+  /// Update local board information with the trigger response after removing each chamber
+
+  AliCodeTimerAuto("", 0);
+
   Reset();
+  Feed(triggerStore);
+
+  AliMUONLocalTrigger* locTrg;
+  TIter next(triggerStore.CreateLocalIterator());
+  Int_t loCircuit;
+  Bool_t planeResp[2], isTrig44;
+  Bool_t bendPlaneRespNoCh, nonBendPlaneRespNoCh, isTrigWithoutCh;
+  while ( ( locTrg = static_cast<AliMUONLocalTrigger*>( next() )) != NULL ){
+    if ( ! ( locTrg->IsTrigX() && locTrg->IsTrigY() ) ) continue;
+    loCircuit = locTrg->LoCircuit();
+    isTrig44 = ModifiedLocalResponse(loCircuit, planeResp[0], planeResp[1], kTRUE);
+    for (Int_t ich=0; ich<4; ++ich){
+      if ( ! isTrig44 ){
+	isTrigWithoutCh = ModifiedLocalResponse(loCircuit, bendPlaneRespNoCh, nonBendPlaneRespNoCh, kFALSE, ich);
+	if ( ! isTrigWithoutCh ) continue;
+	for (Int_t icath=0; icath<2; icath++){
+	  if ( ! planeResp[icath] )
+	    locTrg->SetNoHitInPlane(icath, ich);
+	} // loop on cathodes
+      }
+      locTrg->SetTriggerWithoutChamber(ich);
+    } // loop on chambers
+    AliDebug(1, Form("Is44 %i  triggers %i  pattern %i", isTrig44, locTrg->GetTriggerWithoutChamber(), locTrg->GetHitPatternFromResponse()));
+  }
 }

@@ -116,6 +116,88 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(AliMpLocalBoard* mpLocalBoard
 }
 
 //___________________________________________
+AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right) :
+  AliMUONTriggerBoard(right),
+  fMpLocalBoard(right.fMpLocalBoard),
+  fStripX11(right.fStripX11),
+  fStripY11(right.fStripY11),
+  fDev(right.fDev),
+  fTrigY(right.fTrigY),
+  fOutput(right.fOutput),
+  fLUT(right.fLUT),
+  fCoinc44(right.fCoinc44)
+{
+  //
+  /// Copy constructor
+  //
+  for (Int_t i=0; i<2; i++) {
+    for (Int_t j=0; j<4; j++) {
+      fXY[i][j]  = right.fXY[i][j];
+      fXYU[i][j] = right.fXYU[i][j];
+      fXYD[i][j] = right.fXYD[i][j];
+
+      fMask[i][j] = right.fMask[i][j];
+    }
+  }
+
+  for (Int_t i=0; i<2; i++) {
+    fLutLpt[i] = right.fLutLpt[i];
+    fLutHpt[i] = right.fLutHpt[i];
+  }
+
+  for (Int_t i=0; i<5; i++) {
+    fMinDevStrip[i] = right.fMinDevStrip[i];
+    fMinDev[i] = right.fMinDev[i];
+    fCoordY[i] = right.fCoordY[i];
+  }
+}
+
+//___________________________________________
+AliMUONLocalTriggerBoard& AliMUONLocalTriggerBoard::operator=(const AliMUONLocalTriggerBoard& right)
+{
+/// Assigment operator;
+/// equal operator
+
+  if (this == &right)
+    return *this;
+
+  // base class assignement
+  AliMUONTriggerBoard::operator=(right);
+
+  fMpLocalBoard = right.fMpLocalBoard;
+  fStripX11 = right.fStripX11;
+  fStripY11 = right.fStripY11;
+  fDev      = right.fDev;
+  fTrigY    = right.fTrigY;
+  fOutput   = right.fOutput;
+  fLUT      = right.fLUT;
+  fCoinc44  = right.fCoinc44;
+
+  for (Int_t i=0; i<2; i++) {
+    for (Int_t j=0; j<4; j++) {
+      fXY[i][j]  = right.fXY[i][j];
+      fXYU[i][j] = right.fXYU[i][j];
+      fXYD[i][j] = right.fXYD[i][j];
+
+      fMask[i][j] = right.fMask[i][j];
+    }
+  }
+
+  for (Int_t i=0; i<2; i++) {
+    fLutLpt[i] = right.fLutLpt[i];
+    fLutHpt[i] = right.fLutHpt[i];
+  }
+
+  for (Int_t i=0; i<5; i++) {
+    fMinDevStrip[i] = right.fMinDevStrip[i];
+    fMinDev[i] = right.fMinDev[i];
+    fCoordY[i] = right.fCoordY[i];
+  }
+
+  return *this;  
+}
+
+//___________________________________________
 AliMUONLocalTriggerBoard::~AliMUONLocalTriggerBoard()
 {
 /// Destructor
@@ -142,19 +224,28 @@ void AliMUONLocalTriggerBoard::Reset()
       for (Int_t j=0; j<4; j++) 
          fXY[i][j] = fXYU[i][j] = fXYD[i][j] = 0;
 
-   fResponse = 0;
-
-   for (Int_t i=0; i<5; i++) fMinDevStrip[i] = fMinDev[i] = fCoordY[i] = 0;
-
-   fOutput = 0;
-   
-   fStripX11 = 0;
-   fStripY11 = 15;
-   fDev = 0;
-   fTrigY = 1;
-
-   for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = 0;
+   ResetResponse();
 }
+
+//___________________________________________
+void AliMUONLocalTriggerBoard::ResetResponse()
+{
+/// reset board response
+//
+  fResponse = 0;
+
+  for (Int_t i=0; i<5; i++) fMinDevStrip[i] = fMinDev[i] = fCoordY[i] = 0;
+
+  fOutput = 0;
+   
+  fStripX11 = 0;
+  fStripY11 = 15;
+  fDev = 0;
+  fTrigY = 1;
+
+  for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = 0;
+}
+
 
 //___________________________________________
 void AliMUONLocalTriggerBoard::Setbit(Int_t strip, Int_t cathode, Int_t chamber)
@@ -1175,6 +1266,8 @@ void AliMUONLocalTriggerBoard::Scan(Option_t *option) const
 
    if (op.Contains("RESPF")) Resp("F"); 
 
+   if (op.Contains("RESPO")) Resp("O");
+
    if (op.Contains("ALL"))
    {
       Conf();
@@ -1225,6 +1318,13 @@ void AliMUONLocalTriggerBoard::Resp(Option_t *option) const
       for  (Int_t i=4; i>=0; i--) printf("%i",fCoordY[i]); 
       printf(" \n");
    }
+   if (op.Contains("O")){
+     printf("-- Output --\n");
+     printf("Coinc44 %i\n", fCoinc44);
+     printf("StripX11 %i  StripY11 %i  Dev %i  TrigY %i\n", fStripX11, fStripY11, fDev, fTrigY);
+     printf("LutLpt %i %i  LutHpt %i %i\n", fLutLpt[0], fLutLpt[1], fLutHpt[0], fLutHpt[1]);
+     printf("Response %i\n", fOutput);
+   }
 
 }
 
@@ -1233,6 +1333,12 @@ void AliMUONLocalTriggerBoard::Response()
 {
 /// algo
 ///
+  if ( IsNull() ) {
+    fMinDev[4] = 1;
+    for  (Int_t i=4; i>=0; i--) fCoordY[i] = 1;
+    return; // Do nothing if strip pattern is null
+  }
+
    Int_t xX1[16], xX2[16], xXX3[32], xXX4[32];
 
    TBits x1(16), x2(16), x3(16), x4(16);
@@ -1341,4 +1447,16 @@ Bool_t AliMUONLocalTriggerBoard::IsTrigX() const
   else output=kTRUE;                               // trigger in X
 
   return output;
+}
+
+//___________________________________________
+Bool_t AliMUONLocalTriggerBoard::IsNull() const
+{
+  /// Check if board has fired strips in the first station
+  for (Int_t icath=0; icath<2; icath++){
+    for(Int_t ich=0; ich<2; ich++){
+      if ( fXY[icath][ich] ) return kFALSE;
+    }
+  }
+  return kTRUE;
 }

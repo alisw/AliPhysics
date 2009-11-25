@@ -683,7 +683,8 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
   track.SetChi2MatchTrigger(esdTrack.GetChi2MatchTrigger());
   track.SetHitsPatternInTrigCh(esdTrack.GetHitsPatternInTrigCh());
   track.SetLocalTrigger(esdTrack.LoCircuit(), esdTrack.LoStripX(), esdTrack.LoStripY(),
-			esdTrack.LoDev(), esdTrack.LoLpt(), esdTrack.LoHpt());
+			esdTrack.LoDev(), esdTrack.LoLpt(), esdTrack.LoHpt(),
+			esdTrack.GetTriggerWithoutChamber());
   
   // track parameters at vertex
   AliMUONTrackParam paramAtVertex;
@@ -777,6 +778,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLoca
   locTrg.SetDeviation(esdTrack.LoDev());
   locTrg.SetLoLpt(esdTrack.LoLpt());
   locTrg.SetLoHpt(esdTrack.LoHpt());
+  locTrg.SetTriggerWithoutChamber(esdTrack.GetTriggerWithoutChamber());
   locTrg.SetLoTrigY(1);
   locTrg.SetX1Pattern(esdTrack.GetTriggerX1Pattern());
   locTrg.SetX2Pattern(esdTrack.GetTriggerX2Pattern());
@@ -928,7 +930,8 @@ void AliMUONESDInterface::MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuo
 			    locTrg.LoStripY(),
 			    locTrg.GetDeviation(),
 			    locTrg.LoLpt(),
-			    locTrg.LoHpt());
+			    locTrg.LoHpt(),
+			    locTrg.GetTriggerWithoutChamber());
   esdTrack.SetLocalTrigger(muonTrack.GetLocalTrigger());
   esdTrack.SetChi2MatchTrigger(0.);
   esdTrack.SetTriggerX1Pattern(locTrg.GetX1Pattern());

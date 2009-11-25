@@ -1194,7 +1194,7 @@ void AliMUONTrack::Print(Option_t*) const
 }
 
 //__________________________________________________________________________
-void AliMUONTrack::SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY, Int_t loDev, Int_t loLpt, Int_t loHpt)
+void AliMUONTrack::SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY, Int_t loDev, Int_t loLpt, Int_t loHpt, UChar_t respWithoutChamber)
 {
   /// pack the local trigger information and store
 
@@ -1207,6 +1207,7 @@ void AliMUONTrack::SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY,
   fLocalTrigger += loDev    << 17;
   fLocalTrigger += loLpt    << 22;
   fLocalTrigger += loHpt    << 24;
+  fLocalTrigger += respWithoutChamber << 26;
 
 }
 

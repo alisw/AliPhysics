@@ -20,8 +20,7 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
       AliMUONRegionalTriggerBoard(const char *name, Int_t a);
       virtual ~AliMUONRegionalTriggerBoard();
     
-      /// Reset Local trigger inputs
-      virtual void Reset() {for (Int_t i=0; i<16; i++) fLocalResponse[i] = 0;}
+      virtual void Reset();
 
       virtual void Scan(Option_t *option) const;
 
@@ -38,7 +37,9 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
 
       /// set local boards enable
       void Mask(UShort_t mask);
-      
+
+      virtual Bool_t IsNull();
+
    private:
       UShort_t fLocalResponse[16]; ///< Local trigger inputs
       UShort_t fMask;              ///< Entry mask

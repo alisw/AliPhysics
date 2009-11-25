@@ -35,16 +35,13 @@ class AliMUONTriggerBoard : public TNamed
       /// Return response
       virtual UShort_t GetResponse() const {return fResponse;}
 
+      AliMUONTriggerBoard(const AliMUONTriggerBoard &rhs);
+      AliMUONTriggerBoard& operator=(const AliMUONTriggerBoard &rhs);
+
    protected:
       Int_t fSlot;                ///< SLOT NUMBER IN CRATE
 
       UShort_t fResponse;         ///< RESPONSE
-
-   private:
-      /// Not implemented
-      AliMUONTriggerBoard(const AliMUONTriggerBoard &entry);
-      /// Not implemented
-      AliMUONTriggerBoard& operator=(const AliMUONTriggerBoard &rhs);
 
    ClassDef(AliMUONTriggerBoard,1) //Trigger board base class
 };

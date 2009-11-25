@@ -52,6 +52,37 @@ AliMUONTriggerBoard::AliMUONTriggerBoard(const char *Name, Int_t islot)
 
 }
 
+
+//___________________________________________
+AliMUONTriggerBoard::AliMUONTriggerBoard(const AliMUONTriggerBoard &rhs) 
+    : TNamed(rhs),
+      fSlot(rhs.fSlot),
+      fResponse(rhs.fResponse)
+{
+  //
+  /// Copy constructor
+  //
+}
+
+
+//___________________________________________
+AliMUONTriggerBoard& AliMUONTriggerBoard::operator=(const AliMUONTriggerBoard &rhs)
+{
+/// Assigment operator;
+
+  if (this == &rhs)
+    return *this;
+
+  // base class assignement
+  TNamed::operator=(rhs);
+
+  fSlot = rhs.fSlot;
+  fResponse = rhs.fResponse;
+
+  return *this;
+}
+
+
 //___________________________________________
 AliMUONTriggerBoard::~AliMUONTriggerBoard()
 {

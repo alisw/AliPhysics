@@ -100,6 +100,7 @@
 #include "AliMUONVClusterFinder.h"
 #include "AliMUONVClusterServer.h"
 #include "AliMUONVTrackStore.h"
+#include "AliMUONTriggerElectronics.h"
 
 #include "AliMpArea.h"
 #include "AliMpCDB.h"
@@ -135,7 +136,8 @@ fDigitCalibrator(0x0),
 fClusterServer(0x0),
 fTriggerStore(0x0),
 fTrackStore(0x0),
-fClusterStore(0x0)
+fClusterStore(0x0),
+fTriggerProcessor(0x0)  
 {
   /// normal ctor
 
@@ -174,6 +176,7 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fTriggerStore;
   delete fTrackStore;
   delete fClusterStore;
+  delete fTriggerProcessor;
 
   delete AliMpSegmentation::Instance(false);
   delete AliMpDDLStore::Instance(false);
@@ -411,16 +414,14 @@ AliMUONReconstructor::CreateClusterServer() const
 
 //_____________________________________________________________________________
 void
-AliMUONReconstructor::CreateCalibrator() const
+AliMUONReconstructor::CreateCalibrationData() const
 {
   /// Create the calibrator
   
-  AliCodeTimerAuto("",0)
+  AliCodeTimerAuto("",0);
   
   Int_t runNumber = AliCDBManager::Instance()->GetRun();
 
-  AliInfo("Calibration will occur.");
-  
   fCalibrationData = new AliMUONCalibrationData(runNumber);
   if ( !fCalibrationData->IsValid() )
   {
@@ -476,7 +477,21 @@ AliMUONReconstructor::CreateCalibrator() const
       }
     } 
   }
-  
+}
+
+//_____________________________________________________________________________
+void
+AliMUONReconstructor::CreateCalibrator() const
+{
+  /// Create the calibrator
+
+  AliCodeTimerAuto("",0);
+
+  if ( ! fCalibrationData )
+    CreateCalibrationData();
+
+  AliInfo("Calibration will occur.");
+
   TString opt(GetOption());
   opt.ToUpper();
   
@@ -488,6 +503,23 @@ AliMUONReconstructor::CreateCalibrator() const
   TString calibMode = GetRecoParam()->GetCalibrationMode();
 
   fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,GetRecoParam(),calibMode.Data());
+}
+
+//_____________________________________________________________________________
+void
+AliMUONReconstructor::ResponseRemovingChambers(AliMUONVTriggerStore* triggerStore) const
+{
+  /// Update trigger information with informatins obtained after
+  /// re-calculation of trigger response
+  AliCodeTimerAuto("",0);
+
+  if ( ! fCalibrationData )
+    CreateCalibrationData();
+
+  if ( ! fTriggerProcessor )
+    fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
+
+  fTriggerProcessor->ResponseRemovingChambers(*triggerStore);
 }
 
 //_____________________________________________________________________________
@@ -543,6 +575,7 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
   
   if ( triggerStore ) 
   {
+    ResponseRemovingChambers(triggerStore);
     ok = triggerStore->Connect(clustersTree,alone);
     if (!ok)
     {

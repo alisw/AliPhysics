@@ -39,7 +39,8 @@ class AliMUONTriggerElectronics : public TObject
       void LoadMasks(AliMUONCalibrationData* calibData);
 
       virtual void Feed(UShort_t pattern[2][4]);
-		  virtual void Feed(const AliMUONVDigitStore& digitStore);
+      virtual void Feed(const AliMUONVDigitStore& digitStore);
+      virtual void Feed(AliMUONVTriggerStore& triggerStore);
       virtual void Reset();
 
       virtual void Scan(Option_t *option);
@@ -53,6 +54,13 @@ class AliMUONTriggerElectronics : public TObject
       virtual void Digits2Trigger(const AliMUONVDigitStore& digitStore,
                                   AliMUONVTriggerStore& triggerStore);
 
+      virtual Bool_t ModifiedLocalResponse(Int_t loCircuit,
+					   Bool_t& bendingPlaneResp,
+					   Bool_t& nonBendingPlaneResp,
+					   Bool_t isCoinc44 = kFALSE,
+					   Int_t removeChamber = -1);
+
+      virtual void ResponseRemovingChambers(AliMUONVTriggerStore& triggerStore);
 
       /// Return Crate array
       AliMUONTriggerCrateStore* GetCrateStore() {return fCrates;}
@@ -62,6 +70,8 @@ class AliMUONTriggerElectronics : public TObject
       AliMUONTriggerElectronics(const AliMUONTriggerElectronics& right);
       /// Not implemented
       AliMUONTriggerElectronics&  operator = (const AliMUONTriggerElectronics& right);
+
+      void FeedCopyNeighbours();
      
       /// set copy card array
       void SetCopyInput();

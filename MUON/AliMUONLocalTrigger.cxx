@@ -19,6 +19,7 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliLog.h"
 #include "AliMUONLocalStruct.h"
+#include "AliMUONRawStreamTriggerHP.h"
 #include <Riostream.h>
 #include <TArrayS.h>
 
@@ -54,7 +55,10 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
     fY1Pattern(0),
     fY2Pattern(0),
     fY3Pattern(0),
-    fY4Pattern(0)
+    fY4Pattern(0),
+
+    fHitPatternFromResponse(0xFF),
+    fTriggerWithoutChamber(0)
 {
 /// Default constructor
 }
@@ -78,7 +82,10 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
       fY1Pattern(theMUONLocalTrig.fY1Pattern),
       fY2Pattern(theMUONLocalTrig.fY2Pattern),
       fY3Pattern(theMUONLocalTrig.fY3Pattern),
-      fY4Pattern(theMUONLocalTrig.fY4Pattern)
+      fY4Pattern(theMUONLocalTrig.fY4Pattern),
+
+      fHitPatternFromResponse(theMUONLocalTrig.fHitPatternFromResponse),
+      fTriggerWithoutChamber(theMUONLocalTrig.fTriggerWithoutChamber)
 {
 /// Copy constructor (useful for TClonesArray)
 
@@ -120,6 +127,9 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
   fY2Pattern  = theMUONLocalTrig.fY2Pattern;
   fY3Pattern  = theMUONLocalTrig.fY3Pattern;
   fY4Pattern  = theMUONLocalTrig.fY4Pattern;
+
+  fHitPatternFromResponse = theMUONLocalTrig.fHitPatternFromResponse;
+  fTriggerWithoutChamber = theMUONLocalTrig.fTriggerWithoutChamber;
 
   return *this;
 }

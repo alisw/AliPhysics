@@ -70,6 +70,8 @@ void AliMUONRegionalTriggerBoard::Response()
 // [+, -] * [Hpt, Lpt]
 // transformed to [+, -, US, LS] * [Hpt, Lpt]
 
+  if ( IsNull() ) return; // Do nothing if all local responses are null
+
   Int_t t[16];
 
    for (Int_t i = 0; i < 16; ++i)
@@ -99,6 +101,7 @@ void AliMUONRegionalTriggerBoard::Response()
       
       rank /= 2; 
    }
+
    fResponse = t[0]; // 8-bit [H4:L4]
 }
 
@@ -210,5 +213,24 @@ void AliMUONRegionalTriggerBoard::Mask(UShort_t mask)
     fMask = mask;
 }
 
+//___________________________________________
+Bool_t AliMUONRegionalTriggerBoard::IsNull()
+{
+  /// Check if all local response are null
+  for (Int_t i=0; i<16; i++) {
+    if ( fLocalResponse[i] ) return kFALSE;
+  }
+  return kTRUE;
+}
 
 
+//___________________________________________
+void AliMUONRegionalTriggerBoard::Reset()
+{
+  /// Reset board
+
+  for (Int_t i=0; i<16; ++i) fLocalResponse[i] = 0;
+
+  fResponse = 0;
+  
+}

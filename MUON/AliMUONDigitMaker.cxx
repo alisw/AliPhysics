@@ -55,7 +55,6 @@
 #include "AliMUONRawStreamTrackerHP.h"
 #include "AliMUONRawStreamTriggerHP.h"
 #include "AliMUONRegHeader.h"
-#include "AliMUONTriggerCircuit.h"
 #include "AliMUONVTriggerStore.h"
 #include "AliMpDetElement.h"
 #include "AliMpTriggerCrate.h"

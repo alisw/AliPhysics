@@ -39,6 +39,7 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       virtual void     Pattern(Option_t *option = "X Y") const; // default option displays X then Y bp
 
       virtual void     Reset();
+      virtual void     ResetResponse();
 
 
                        /// Return i-th Switch value
@@ -94,8 +95,14 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
                        /// Set XYU
       virtual void     SetXYU(UShort_t V[2][4]) {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) fXYU[i][j] = V[i][j];}
 
+                       /// Return XYU
+      virtual void     GetXYU(UShort_t V[2][4]) const {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) V[i][j] = fXYU[i][j];}
+
                        /// Set XYD
       virtual void     SetXYD(UShort_t V[2][4]) {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) fXYD[i][j] = V[i][j];}
+
+                       /// Return XYD
+      virtual void     GetXYD(UShort_t V[2][4]) const {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) V[i][j] = fXYD[i][j];}
 
       virtual void     Scan(Option_t *option = "") const;
 
@@ -124,6 +131,11 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       virtual Bool_t   IsTrigY() const;
 
       virtual Bool_t   IsTrigX() const;
+
+      AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right);
+      AliMUONLocalTriggerBoard&  operator = (const AliMUONLocalTriggerBoard& right);
+
+      virtual Bool_t IsNull() const;
       
    protected:
 
@@ -134,11 +146,6 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       virtual void     BP(Option_t *option) const;   ///< display X/Y bp
 
    private:
-      /// Not implemented
-      AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right);
-      /// Not implemented
-      AliMUONLocalTriggerBoard&  operator = (const AliMUONLocalTriggerBoard& right);
-
       AliMpLocalBoard*  fMpLocalBoard; ///< pointer to the local board mapping 
 
       UShort_t fXY[2][4];         ///< Bit pattern

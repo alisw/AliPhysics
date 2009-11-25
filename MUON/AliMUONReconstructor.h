@@ -28,7 +28,7 @@ class AliMUONVClusterStore;
 class AliMUONVDigitStore;
 class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
-class AliMUONVTriggerStore;
+class AliMUONTriggerElectronics;
 class TClonesArray;
 
 #include "AliMUONRecoParam.h"
@@ -64,6 +64,7 @@ private:
                      AliMUONVDigitStore* digitStore,
                      AliMUONVTriggerStore* triggerStore) const;
   void Calibrate(AliMUONVDigitStore& digitStore) const;
+  void CreateCalibrationData() const;
   void CreateCalibrator() const;
   void CreateDigitMaker() const;
   void CreateTriggerCircuit() const;
@@ -73,6 +74,7 @@ private:
   
   AliMUONVDigitStore* DigitStore() const;
   AliMUONVTriggerStore* TriggerStore() const;
+  void ResponseRemovingChambers(AliMUONVTriggerStore* triggerStore) const;
   
 private:
 
@@ -86,8 +88,9 @@ private:
   mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
   mutable AliMUONVClusterStore* fClusterStore; //!< cluster store (when not in combined tracking mode)
+  mutable AliMUONTriggerElectronics* fTriggerProcessor; //!< Processor to recalculate trigger response
   
-  ClassDef(AliMUONReconstructor,8) // Implementation of AliReconstructor
+  ClassDef(AliMUONReconstructor,9) // Implementation of AliReconstructor
 };
 
 #endif
