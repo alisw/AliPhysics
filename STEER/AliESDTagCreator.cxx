@@ -1598,6 +1598,8 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   ttag->Write();
   ftag->Close();
   file->cd();
+  delete file;
+  delete esd;
   delete tag;
   delete evTag;
 }
