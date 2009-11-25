@@ -29,6 +29,7 @@
 #include <fstream>
 
 #include <TString.h>
+#include <TError.h>
 #include <TGraphErrors.h>
 #include <TTree.h>
 #include <TChain.h>
@@ -48,7 +49,6 @@
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
 #include "AliGeomManager.h"
-#include "AliLog.h"
 
 #include "AliMpCDB.h"
 #include "AliMUONAlignment.h"
@@ -108,6 +108,7 @@ AliMUONAlignmentTask::AliMUONAlignmentTask(const char *name, const char *geofile
     fTransform(0x0),
     fTrackTot(0),
     fTrackOk(0),
+    fLastRunNumber(-1),
     fMSDEx(0x0), 
     fMSDEy(0x0), 
     fMSDEz(0x0),
@@ -144,6 +145,7 @@ AliMUONAlignmentTask::AliMUONAlignmentTask(const AliMUONAlignmentTask& obj)
     fTransform(0x0),
     fTrackTot(0),
     fTrackOk(0),
+    fLastRunNumber(-1),
     fMSDEx(0x0), 
     fMSDEy(0x0), 
     fMSDEz(0x0),
@@ -157,6 +159,7 @@ AliMUONAlignmentTask::AliMUONAlignmentTask(const AliMUONAlignmentTask& obj)
   fTransform = obj.fTransform;
   fTrackTot = obj.fTrackTot;  
   fTrackOk = obj.fTrackOk;  
+  fLastRunNumber = obj.fLastRunNumber;
   fMSDEx = obj.fMSDEx; 
   fMSDEy = obj.fMSDEy; 
   fMSDEz = obj.fMSDEz;
@@ -177,6 +180,7 @@ AliMUONAlignmentTask& AliMUONAlignmentTask::operator=(const AliMUONAlignmentTask
   fTransform = other.fTransform;
   fTrackTot = other.fTrackTot;  
   fTrackOk = other.fTrackOk;  
+  fLastRunNumber = other.fLastRunNumber;
   fMSDEx = other.fMSDEx; 
   fMSDEy = other.fMSDEy; 
   fMSDEz = other.fMSDEz;
@@ -199,8 +203,10 @@ void AliMUONAlignmentTask::LocalInit()
 {
   /// Local initialization, called once per task on the client machine 
   /// where the analysis train is assembled
-
-  Prepare(fGeoFilename.Data(),fDefaultOCDB.Data(),fMisAlignOCDB.Data());
+  fLastRunNumber = 0; 
+  //  Prepare(fGeoFilename.Data(),fDefaultOCDB.Data(),fMisAlignOCDB.Data());
+  Prepare(fGeoFilename.Data(),"local://$ALICE_ROOT/OCDB",fMisAlignOCDB.Data());
+  fLastRunNumber = -1;
 
   // Set initial values here, good guess may help convergence
   // St 1 
@@ -305,8 +311,11 @@ void AliMUONAlignmentTask::Exec(Option_t *)
   }
 
   Double_t trackParams[8] = {0.,0.,0.,0.,0.,0.,0.,0.};
-
-
+  printf("ESD RunNumber %d , fLastRunNumber %d\n",fESD->GetRunNumber(),fLastRunNumber);
+  if (fESD->GetRunNumber()!=fLastRunNumber){
+    fLastRunNumber = fESD->GetRunNumber();
+    Prepare(fGeoFilename.Data(),fDefaultOCDB.Data(),fMisAlignOCDB.Data());
+  }
  
   Int_t nTracks = Int_t(fESD->GetNumberOfMuonTracks());
   //  if (!event%100) cout << " there are " << nTracks << " tracks in event " << event << endl;
@@ -318,11 +327,16 @@ void AliMUONAlignmentTask::Exec(Option_t *)
 //     fBenMom->Fill(1./invBenMom);
     if (TMath::Abs(invBenMom)<=1.04) {
       AliMUONTrack track;
+      printf("cero\n");
       AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+      printf("uno %p\n", fAlign);
       fAlign->ProcessTrack(&track);
+      printf("dos\n");
       fAlign->LocalFit(fTrackOk++,trackParams,0);
+      printf("tres\n");
     }
     fTrackTot++;
+    cout << "Processed " << fTrackTot << " Tracks." << endl;
   }
   
   // Post final data. Write histo list to a file with option "RECREATE"
@@ -330,7 +344,7 @@ void AliMUONAlignmentTask::Exec(Option_t *)
 }      
 
 //________________________________________________________________________
-void AliMUONAlignmentTask::Terminate(const Option_t*)
+void AliMUONAlignmentTask::FinishTaskOutput()
 {
   /// Called once per task on the client machine at the end of the analysis.
 
@@ -340,12 +354,12 @@ void AliMUONAlignmentTask::Terminate(const Option_t*)
 
   cout << "Done with GlobalFit " << endl;
 
-  // Update pointers reading them from the output slot
-  fList = (TList*)GetOutputData(0);
-  fMSDEx = (TGraphErrors*)fList->At(0);
-  fMSDEy = (TGraphErrors*)fList->At(1);
-  fMSDEz = (TGraphErrors*)fList->At(2);
-  fMSDEp = (TGraphErrors*)fList->At(3);
+//   // Update pointers reading them from the output slot
+//   fList = (TList*)GetOutputData(0);
+//   fMSDEx = (TGraphErrors*)fList->At(0);
+//   fMSDEy = (TGraphErrors*)fList->At(1);
+//   fMSDEz = (TGraphErrors*)fList->At(2);
+//   fMSDEp = (TGraphErrors*)fList->At(3);
 
   // Store results
   Double_t DEid[156] = {0};
@@ -396,7 +410,6 @@ void AliMUONAlignmentTask::Terminate(const Option_t*)
   // Post final data. Write histo list to a file with option "RECREATE"
   PostData(0,fList);
 
-
   // Re Align
   AliMUONGeometryTransformer *newTransform = fAlign->ReAlign(fTransform,fParameters,true); 
   newTransform->WriteTransformations("transform2ReAlign.dat");
@@ -420,29 +433,36 @@ void AliMUONAlignmentTask::Terminate(const Option_t*)
 
 }
 
+//________________________________________________________________________
+void AliMUONAlignmentTask::Terminate(const Option_t*)
+{
+  /// Called once per task on the client machine at the end of the analysis.
+
+}
+
 //-----------------------------------------------------------------------
 void AliMUONAlignmentTask::Prepare(const char* geoFilename, const char* defaultOCDB, const char* misAlignOCDB)
 {
   /// Set the geometry, the magnetic field, the mapping and the reconstruction parameters
-  
-  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
-  if (!gGeoManager) {
-    AliGeomManager::LoadGeometry(geoFilename);
-    if (!gGeoManager) {
-      AliError(Form("Getting geometry from file %s failed", "generated/galice.root"));
-      return;
-    }
-  }
-    
+      
   // Load mapping
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(defaultOCDB);
   man->SetSpecificStorage("MUON/Align/Data",misAlignOCDB);
   man->Print();
-  man->SetRun(0);
+  man->SetRun(fLastRunNumber);
   if ( ! AliMpCDB::LoadDDLStore() ) {
-    AliError("Could not access mapping from OCDB !");
+    Error("MUONRefit","Could not access mapping from OCDB !");
     exit(-1);
+  }
+
+  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
+  if (!gGeoManager) {
+    AliGeomManager::LoadGeometry(geoFilename);
+    if (!gGeoManager) {
+      Error("AliMUONReAlignTask", "getting geometry from file %s failed", "generated/galice.root");
+      return;
+    }
   }
 
   // set mag field

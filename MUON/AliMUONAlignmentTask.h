@@ -32,6 +32,7 @@ class AliMUONAlignmentTask : public AliAnalysisTask {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(const Option_t*);
+  virtual void   FinishTaskOutput();
 
   /// Set geoemetry file name
   void SetGeoFilename(const char* geoFilename) {fGeoFilename = geoFilename;}
@@ -52,6 +53,7 @@ class AliMUONAlignmentTask : public AliAnalysisTask {
     
   Int_t fTrackTot;             ///< Number of track read 
   Int_t fTrackOk;              ///< Number of track read 
+  Int_t fLastRunNumber;              ///< Last run number 
 
   Double_t fParameters[4*156]; ///< Array of alignment parameters
   Double_t fErrors[4*156];     ///< Array of alignment parameters errors
@@ -64,7 +66,7 @@ class AliMUONAlignmentTask : public AliAnalysisTask {
 
   TList   *fList;          ///< list of graphs
    
-  ClassDef(AliMUONAlignmentTask, 2) // example of analysis
+  ClassDef(AliMUONAlignmentTask, 3) // example of analysis
 };
 
 #endif
