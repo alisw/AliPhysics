@@ -22,6 +22,10 @@
     @brief  Container for the HLT offline QA
 */
 #include "AliHLTQADataMakerRec.h"
+#include "AliESDEvent.h"
+#include <iostream>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTQADataMakerRec)
@@ -40,6 +44,44 @@ AliHLTQADataMakerRec::~AliHLTQADataMakerRec()
   // see header file for class documentation
 }
 
+void AliHLTQADataMakerRec::Exec(AliQAv1::TASKINDEX_t task, TObject * data) 
+{ 
+  // special handling for esds
+  if ( task == AliQAv1::kESDS ) {
+    AliESDEvent * esd = NULL;
+    AliESDEvent * hltesd = NULL;
+    if (data->IsA() == AliESDEvent::Class()) {
+      // silently skip this. Currently HLT QA is still called as
+      // part of AliQAManager::RunOneEvent with the esd
+      return;
+    }
+    if (data->InheritsFrom("TObjArray")) {
+      TObjArray* array=dynamic_cast<TObjArray*>(data);
+      if (array && array->GetEntriesFast()>0) {
+	esd = dynamic_cast<AliESDEvent *>(array->At(0)) ;
+      }
+      if (array && array->GetEntriesFast()>1) {
+	hltesd = dynamic_cast<AliESDEvent *>(array->At(1)) ;
+      }
+    } else {
+      esd = static_cast<AliESDEvent *>(data) ; 
+    }
+
+    if (esd && strcmp(esd->ClassName(), "AliESDEvent") == 0) {
+      if (hltesd) {
+	MakeESDs(esd, hltesd);
+      } else {
+	AliError(Form("HLT ESD missing or wrong class type (%p), skipping HLT QA task kESDs", hltesd));
+      }
+    } else {
+      AliError(Form("ESD missing or wrong class type (%p), skipping HLT QA task kESDSs", esd));
+    }
+  } else {
+    // forward for all other types
+    AliQADataMakerRec::Exec(task, data);
+  }
+}
+
 void AliHLTQADataMakerRec::StartOfDetectorCycle()
 {
   // see header file for class documentation
@@ -48,4 +90,31 @@ void AliHLTQADataMakerRec::StartOfDetectorCycle()
 void AliHLTQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** /*list*/)
 {
   // see header file for class documentation
+}
+
+void AliHLTQADataMakerRec::MakeRaws(AliRawReader * rawReader)
+{
+  // see header file for class documentation
+  if (!rawReader) return;
+}
+
+void AliHLTQADataMakerRec::MakeESDs(AliESDEvent * esd)
+{
+  // see header file for class documentation
+  
+  // as an extension in the QA interface also the hlt esd can be sent
+  // in order to preserve backward compatibility, a new function has been
+  // introduced.
+  //
+  // NOTE: This function is not the place for HLT QA
+  if (!esd) return;
+}
+
+void AliHLTQADataMakerRec::MakeESDs(AliESDEvent * esd, AliESDEvent* hltesd)
+{
+  // HLT QA on ESDs
+  if (!esd || !hltesd) {
+    AliError("invalid parameter: missing ESDs");
+    return;
+  }
 }

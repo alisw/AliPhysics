@@ -2,7 +2,8 @@
 # $Id$
 
 CLASS_HDRS:=  	AliHLTQADataMakerSim.h \
-		AliHLTQADataMakerRec.h
+		AliHLTQADataMakerRec.h \
+		AliHLTQAChecker.h
 
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
 
