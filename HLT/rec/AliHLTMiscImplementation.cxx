@@ -21,6 +21,10 @@
 /// @date   
 /// @brief  Miscellaneous methods for the HLT AliRoot integration
 
+// define will be set set from configure.ac, but for now it needs
+// to be set until the changes in STEER have been committed
+#define HAVE_NOT_ALIESDHLTDECISION
+
 #include "AliHLTMiscImplementation.h"
 #include "AliHLTLogging.h"
 #include "AliCDBManager.h"
@@ -29,7 +33,11 @@
 #include "AliGRPManager.h"
 #include "AliRawReader.h"
 #include "AliTracker.h"
+#ifndef HAVE_NOT_ALIESDHLTDECISION
+#include "AliESDHLTDecision.h"
+#endif //HAVE_NOT_ALIESDHLTDECISION
 #include "TGeoGlobalMagField.h"
+#include "AliHLTGlobalTriggerDecision.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMiscImplementation);
@@ -162,4 +170,35 @@ void AliHLTMiscImplementation::GetBxByBz(const Double_t r[3], Double_t b[3])
 {
   // Returns Bx, By and Bz (kG) at the point "r" .
   return AliTracker::GetBxByBz(r, b);
+}
+
+const TClass* AliHLTMiscImplementation::IsAliESDHLTDecision() const
+{
+  // Return the IsA of the AliESDHLTDecision class
+#ifndef HAVE_NOT_ALIESDHLTDECISION
+  return AliESDHLTDecision::Class();
+#else // HAVE_NOT_ALIESDHLTDECISION
+  return NULL;
+#endif // HAVE_NOT_ALIESDHLTDECISION
+}
+
+int AliHLTMiscImplementation::Copy(const AliHLTGlobalTriggerDecision* pDecision, TObject* object) const
+{
+  // Copy HLT global trigger decision to AliESDHLTDecision container
+  if (!pDecision || !object) return -EINVAL;
+#ifndef HAVE_NOT_ALIESDHLTDECISION
+  AliESDHLTDecision* pESDHLTDecision=NULL;
+  if (object->IsA()==NULL ||
+      object->IsA() != AliESDHLTDecision::Class() ||
+      (pESDHLTDecision=dynamic_cast<AliESDHLTDecision*>(object))==NULL) {
+//     HLTError("can not copy HLT global decision to object of class \"%s\"", 
+// 	     object->IsA()?object->IsA()->GetName():"NULL");
+    return -EINVAL;
+  }
+
+  pESDHLTDecision->~AliESDHLTDecision();
+  new (pESDHLTDecision) AliESDHLTDecision(pDecision->GetTitle());
+
+#endif // HAVE_NOT_ALIESDHLTDECISION
+  return 0;
 }

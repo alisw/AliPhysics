@@ -342,6 +342,7 @@ if test ! "x$have_aliroot" = "xno" ; then
   have_aliqav1=no
   AC_CHECK_HEADER([AliQAv1.h], [have_aliqav1=yes], [])
   AM_CONDITIONAL(EN_HLT_QA, test x$have_aliqav1 = xyes)
+  AC_CHECK_HEADER([AliESDHLTDecision.h], [], [AC_DEFINE(HAVE_NOT_ALIESDHLTDECISION)])
 
   dnl
   dnl required header files and libraries for modules

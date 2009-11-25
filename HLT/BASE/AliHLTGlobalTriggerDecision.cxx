@@ -24,6 +24,8 @@
 
 #include "AliHLTGlobalTriggerDecision.h"
 #include "Riostream.h"
+#include "TClass.h"
+#include "AliHLTMisc.h"
 
 ClassImp(AliHLTGlobalTriggerDecision)
 
@@ -135,6 +137,11 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
 void AliHLTGlobalTriggerDecision::Copy(TObject &object) const
 {
   // copy this to the specified object
+
+  if (object.IsA() == AliHLTMisc::Instance().IsAliESDHLTDecision()) {
+    AliHLTMisc::Instance().Copy(this, &object);
+    return;
+  }
 
   AliHLTGlobalTriggerDecision* pDecision=dynamic_cast<AliHLTGlobalTriggerDecision*>(&object);
   if (pDecision)

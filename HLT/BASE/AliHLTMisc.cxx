@@ -142,6 +142,18 @@ void AliHLTMisc::GetBxByBz(const Double_t r[3], Double_t b[3])
   return;
 }
 
+const TClass* AliHLTMisc::IsAliESDHLTDecision() const
+{
+  // default method, functionality is implemented in the child class
+  return NULL;
+}
+
+int AliHLTMisc::Copy(const AliHLTGlobalTriggerDecision* /*pDecision*/, TObject* /*pESDHLTDecision*/) const
+{
+  // default method, functionality is implemented in the child class
+  return -EFAULT;
+}
+
 ostream  &operator<<(ostream &out, const AliHLTComponentDataType &dt)
 {
   // printout of AliHLTComponentDataType struct

@@ -21,6 +21,7 @@ class AliCDBManager;
 class AliCDBEntry;
 class AliRawReader;
 class AliHLTComponentDataType;
+class AliHLTGlobalTriggerDecision;
 
 class AliHLTMisc : public TObject {
  public:
@@ -47,6 +48,9 @@ class AliHLTMisc : public TObject {
   virtual Double_t GetBz();
   virtual Double_t GetBz(const Double_t *r);
   virtual void GetBxByBz(const Double_t r[3], Double_t b[3]);
+
+  virtual const TClass* IsAliESDHLTDecision() const;
+  virtual int Copy(const AliHLTGlobalTriggerDecision* pDecision, TObject* pESDHLTDecision) const;
 
  private:
   static AliHLTMisc* fgInstance;

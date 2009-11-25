@@ -37,6 +37,9 @@ class AliHLTMiscImplementation : public AliHLTMisc
   Double_t GetBz(const Double_t *r);
   void GetBxByBz(const Double_t r[3], Double_t b[3]);
 
+  const TClass* IsAliESDHLTDecision() const;
+  int Copy(const AliHLTGlobalTriggerDecision* pDecision, TObject* pESDHLTDecision) const;
+
  private:
 
   ClassDef(AliHLTMiscImplementation, 0)
