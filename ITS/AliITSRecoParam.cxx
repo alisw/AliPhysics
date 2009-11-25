@@ -231,6 +231,8 @@ fESDV0Params(NULL)
   fESDV0Params->SetMinNormDistForb3(1.0);
   fESDV0Params->SetMinNormDistForb4(4.0);
   fESDV0Params->SetMinNormDistForb5(5.0);
+  fESDV0Params->SetMinNormDistForbProt(2.0);
+  fESDV0Params->SetMaxPidProbPionForb(0.5);
 
   fESDV0Params->SetMinRTPCdensity(40.);
   fESDV0Params->SetMaxRTPCdensity0(110.);
@@ -484,6 +486,8 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   param->GetESDV0Params()->SetMinPABestConst(0.99);
   param->GetESDV0Params()->SetMinNormDistForbTgl0(1.);
   param->GetESDV0Params()->SetMinNormDistForb1(2.);
+  param->GetESDV0Params()->SetMinNormDistForbProt(1.);
+  param->GetESDV0Params()->SetMaxPidProbPionForb(0.7);
   param->GetESDV0Params()->SetLikelihood01Cut(0.3);
   param->GetESDV0Params()->SetLikelihood1Cut(0.35);
   param->GetESDV0Params()->SetCombinedCut(0.4);

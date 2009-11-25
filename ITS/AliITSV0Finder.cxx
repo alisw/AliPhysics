@@ -204,6 +204,8 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   const Float_t kMinNormDistForb3= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForb3();
   const Float_t kMinNormDistForb4= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForb4();
   const Float_t kMinNormDistForb5= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForb5();
+  const Float_t kMinNormDistForbProt= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForbProt();
+  const Float_t kMaxPidProbPionForb= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxPidProbPionForb();
 
   const Float_t kMinRTPCdensity= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinRTPCdensity();
   const Float_t kMaxRTPCdensity0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxRTPCdensity0();
@@ -466,8 +468,13 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       normdist[itsindex]*=-1;
     }
     if (isProton){
-      if (normdist[itsindex]>2) forbidden[itsindex]=kFALSE;	
+      if (normdist[itsindex]>kMinNormDistForbProt) forbidden[itsindex]=kFALSE;	
       normdist[itsindex]*=-1;
+    }
+
+    // We allow all tracks that are not pions
+    if( (pid[1]+pid[2])< kMaxPidProbPionForb ){
+      forbidden[itsindex]=kFALSE;
     }
 
     //

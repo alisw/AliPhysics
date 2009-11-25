@@ -43,6 +43,9 @@ class AliESDV0Params : public TObject{
   void SetMinNormDistForb3(Float_t kMinNormDistForb3=1.0){fkMinNormDistForb3=kMinNormDistForb3;}
   void SetMinNormDistForb4(Float_t kMinNormDistForb4=4.0){fkMinNormDistForb4=kMinNormDistForb4;}
   void SetMinNormDistForb5(Float_t kMinNormDistForb5=5.0){fkMinNormDistForb5=kMinNormDistForb5;}
+  void SetMinNormDistForbProt(Float_t kMinNormDistForbProt=2.0){fkMinNormDistForbProt=kMinNormDistForbProt;}
+  void SetMaxPidProbPionForb(Float_t kMaxPidProbPionForb=0.5){fkMaxPidProbPionForb=kMaxPidProbPionForb;}
+
 
   void SetMinRTPCdensity(Float_t kMinRTPCdensity=40.0){fkMinRTPCdensity=kMinRTPCdensity;}
   void SetMaxRTPCdensity0( Float_t kMaxRTPCdensity0=110.0){fkMaxRTPCdensity0=kMaxRTPCdensity0;}
@@ -97,6 +100,8 @@ class AliESDV0Params : public TObject{
   Float_t GetMinNormDistForb3() const {return fkMinNormDistForb3;}
   Float_t GetMinNormDistForb4() const {return fkMinNormDistForb4;}
   Float_t GetMinNormDistForb5() const {return fkMinNormDistForb5;}
+  Float_t GetMinNormDistForbProt() const {return fkMinNormDistForbProt;}
+  Float_t GetMaxPidProbPionForb() const {return fkMaxPidProbPionForb;}
 
   Float_t GetMinRTPCdensity() const  {return fkMinRTPCdensity;}
   Float_t GetMaxRTPCdensity0() const {return fkMaxRTPCdensity0;}
@@ -181,6 +186,9 @@ class AliESDV0Params : public TObject{
   Float_t fkMinNormDistForb3;       // Minimum  normalize distance Forbid cond 3  
   Float_t fkMinNormDistForb4;       // Minimum  normalize distance Forbid cond 4 
   Float_t fkMinNormDistForb5;       // Minimum  normalize distance Forbid cond 5
+  Float_t fkMinNormDistForbProt;    // Minimum  normalize distance to not Forbid Proton
+  Float_t fkMaxPidProbPionForb;     // Max pid prob to decleare not pion  
+
 
   Float_t fkMinRTPCdensity;         // Minimum R TPC density cond  
   Float_t fkMaxRTPCdensity0;        // Maximum R TPC density cond  
@@ -214,7 +222,7 @@ class AliESDV0Params : public TObject{
 
 
 
-  ClassDef(AliESDV0Params,3)      // ESD V0 vertex - error and likelihood parameterization constant
+  ClassDef(AliESDV0Params,4)      // ESD V0 vertex - error and likelihood parameterization constant
 };
 
 

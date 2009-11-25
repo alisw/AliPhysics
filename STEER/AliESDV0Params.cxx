@@ -91,7 +91,8 @@ AliESDV0Params::AliESDV0Params() :
   fkMinNormDistForb3(1.0),
   fkMinNormDistForb4(4.0),
   fkMinNormDistForb5(5.0),
-  
+  fkMinNormDistForbProt(2.0),
+  fkMaxPidProbPionForb(0.5),
   fkMinRTPCdensity(40.),
   fkMaxRTPCdensity0(110.),
   fkMaxRTPCdensity10(120.),
