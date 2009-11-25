@@ -85,8 +85,8 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
 {
   TMemStat *mem = 0x0;
   if(MEM){ 
-    gSystem->Load("libMemStat.so");
-    gSystem->Load("libMemStatGui.so");
+    if(gSystem->Load("libMemStat.so")<0) return;
+    if(gSystem->Load("libMemStatGui.so")<0) return;
     mem = new TMemStat("new, gnubuildin");
     mem->AddStamp("Start");
   }
@@ -136,38 +136,40 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   chain->SetBranchStatus("ESDfriend*",1);
   chain->Lookup();
   chain->GetListOfFiles()->Print();
-  printf("\n ----> CHAIN HAS %d ENTRIES <----\n\n", (Int_t)chain->GetEntries());
+  printf("\tFOUND %d ENTRIES\n", (Int_t)chain->GetEntries());
 
 
   // BUILD ANALYSIS MANAGER
-  AliAnalysisManager *mgr = new AliAnalysisManager("Post Reconstruction Calibration/QA");
+  AliAnalysisManager *mgr = new AliAnalysisManager("TRD Reconstruction Performance & Calibration");
   AliVEventHandler *esdH = 0x0, *mcH = 0x0;
   mgr->SetInputEventHandler(esdH = new AliESDInputHandler);
   if(fHasMCdata) mgr->SetMCtruthEventHandler(mcH = new AliMCEventHandler());
   //mgr->SetDebugLevel(10);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
-  if(! AddTrainPerformanceTRD(fHasMCdata, fHasFriends, optList)) {
+  if(!AddTrainPerformanceTRD(fHasMCdata, fHasFriends, optList)) {
     Error("run.C", "Error loading TRD train.");
     return;
   }
 
   if (!mgr->InitAnalysis()) return;
   // verbosity
-  printf("\n\tRUNNING TRAIN FOR TASKS:\n");
-  mgr->GetTasks()->ls();
-  //mgr->PrintStatus();
+  printf("\tRUNNING TRAIN FOR TASKS:\n");
+  TObjArray *taskList=mgr->GetTasks();
+  for(Int_t itask=0; itask<taskList->GetEntries(); itask++){ 
+    AliAnalysisTask *task=(AliAnalysisTask*)taskList->At(itask);
+    printf(" %s [%s]\n", task->GetName(), task->GetTitle());
+  }
 
   mgr->StartAnalysis("local", chain, nev, first);
 
   timer.Stop();
   timer.Print();  
 
-  TGeoGlobalMagField::Instance()->SetField(NULL);
   delete cdbManager;
 
   // verbosity
-  printf("\n\tCLEANING UP TRAIN:\n");
+  printf("\tCLEANING TASK LIST:\n");
   mgr->GetTasks()->Delete();
 
   if(mcH) delete mcH;
