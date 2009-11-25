@@ -22,5 +22,11 @@
 //-------------------------------------------------------------------------
 
 #include "AliMCVertex.h"
+void AliMCVertex::Print(Option_t* /*option*/) const
+{
+    printf("MC Primary Vertex Position x = %13.3f, y = %13.3f, z = %13.3f \n",
+	   fPosition[0], fPosition[1], fPosition[2]);
+    
+}
 
 ClassImp(AliMCVertex)

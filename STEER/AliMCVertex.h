@@ -32,7 +32,7 @@ class AliMCVertex : public AliVVertex {
     
     virtual Int_t    GetNContributors() const {return -1;}
     virtual void     PrintIndices() const {;}
-    virtual void     Print(Option_t* option = "") const {;}
+    virtual void     Print(Option_t* option = "") const;
     virtual void     Clear(Option_t* option) {TNamed::Clear(option);}
  private:
     Double32_t      fPosition[3]; // vertex position
