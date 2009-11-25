@@ -336,9 +336,8 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       ((TH2I*)arr->At(0))->Fill(dydx, dy);
       ((TH2I*)arr->At(1))->Fill(dydx, dy/TMath::Sqrt(cov[0] /*+ sx2*/ + sy2));
   
-/*      if(DebugLevel()>=3){
+      if(DebugLevel()>=2){
         // Get z-position with respect to anode wire
-        //AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
         Int_t istk = fGeo->GetStack(c->GetDetector());
         AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
         Float_t row0 = pp->GetRow0();
@@ -353,10 +352,10 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
         clInfo->SetResolution(dy);
         clInfo->SetAnisochronity(d);
         clInfo->SetDriftLength(dx);
-        (*DebugStream()) << "ClusterResiduals"
+        (*DebugStream()) << "ClusterREC"
           <<"clInfo.=" << clInfo
           << "\n";
-      }*/
+      }
     }
   }
   return (TH2I*)arr->At(0);
@@ -757,7 +756,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       dx = x0 - x; 
       ymc= y0 - dx*dydx0;
       zmc= z0 - dx*dzdx0;
-      dy = ymc - (y - tilt*(z-zmc));
+      dy = (y - tilt*(z-zmc)) - ymc;
       // Fill Histograms
       if(q>20. && q<250.){ 
         ((TH2I*)arr->At(0))->Fill(dydx0, dy);
@@ -1252,6 +1251,8 @@ TObjArray* AliTRDresolution::Histos()
   TH1 *h = 0x0;
   TObjArray *arr = 0x0;
 
+  const Int_t kPbins(12); // binning in momentum range should depend on the statistics analyzed
+
   // cluster to track residuals/pulls
   fContainer->AddAt(arr = new TObjArray(fgNElements[kCharge]), kCharge);
   arr->SetName("Charge");
@@ -1506,7 +1507,7 @@ TObjArray* AliTRDresolution::Histos()
   arr2->SetName("Track Pt Resolution");
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
     if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcTrkPt%d", il)))){
-      h3 = new TH3S(Form("hMcTrkPt%d", il), "Track Pt Resolution", 40, 0., 20., 150, -.1, .2, n, -.5, n-.5);
+      h3 = new TH3S(Form("hMcTrkPt%d", il), "Track Pt Resolution", kPbins, 0., 12., 150, -.1, .2, n, -.5, n-.5);
       h3->GetXaxis()->SetTitle("p_{t} [GeV/c]");
       h3->GetYaxis()->SetTitle("#Delta p_{t}/p_{t}^{MC}");
       h3->GetZaxis()->SetTitle("SPECIES");
@@ -1518,7 +1519,7 @@ TObjArray* AliTRDresolution::Histos()
   arr2->SetName("Track 1/Pt Pulls");
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
     if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcTrkPtPulls%d", il)))){
-      h3 = new TH3S(Form("hMcTrkPtPulls%d", il), "Track 1/Pt Pulls", 40, 0., 2., 100, -4., 4., n, -.5, n-.5);
+      h3 = new TH3S(Form("hMcTrkPtPulls%d", il), "Track 1/Pt Pulls", kPbins, 0., 2., 100, -4., 4., n, -.5, n-.5);
       h3->GetXaxis()->SetTitle("1/p_{t}^{MC} [c/GeV]");
       h3->GetYaxis()->SetTitle("#Delta(1/p_{t})/#sigma(1/p_{t}) ");
       h3->GetZaxis()->SetTitle("SPECIES");
@@ -1530,7 +1531,7 @@ TObjArray* AliTRDresolution::Histos()
   arr2->SetName("Track P Resolution [PID]");
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
     if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcTrkP%d", il)))){
-      h3 = new TH3S(Form("hMcTrkP%d", il), "Track P Resolution", 40, 0., 20., 150, -.15, .35, n, -.5, n-.5);
+      h3 = new TH3S(Form("hMcTrkP%d", il), "Track P Resolution", kPbins, 0., 12., 150, -.15, .35, n, -.5, n-.5);
       h3->GetXaxis()->SetTitle("p [GeV/c]");
       h3->GetYaxis()->SetTitle("#Delta p/p^{MC}");
       h3->GetZaxis()->SetTitle("SPECIES");
@@ -1607,7 +1608,7 @@ TObjArray* AliTRDresolution::Histos()
   arr->AddAt(h, 7);
   // Kalman track Pt resolution
   if(!(h3 = (TH3S*)gROOT->FindObject("hMcTrkTPCPt"))){
-    h3 = new TH3S("hMcTrkTPCPt", "Track[TPC] Pt Resolution", 80, 0., 20., 150, -.1, .2, n, -.5, n-.5);
+    h3 = new TH3S("hMcTrkTPCPt", "Track[TPC] Pt Resolution", kPbins, 0., 12., 100, -.1, .2, n, -.5, n-.5);
     h3->GetXaxis()->SetTitle("p_{t} [GeV/c]");
     h3->GetYaxis()->SetTitle("#Delta p_{t}/p_{t}^{MC}");
     h3->GetZaxis()->SetTitle("SPECIES");
@@ -1615,7 +1616,7 @@ TObjArray* AliTRDresolution::Histos()
   arr->AddAt(h3, 8);
   // Kalman track Pt pulls
   if(!(h3 = (TH3S*)gROOT->FindObject("hMcTrkTPCPtPulls"))){
-    h3 = new TH3S("hMcTrkTPCPtPulls", "Track[TPC] 1/Pt Pulls", 80, 0., 2., 100, -4., 4., n, -.5, n-.5);
+    h3 = new TH3S("hMcTrkTPCPtPulls", "Track[TPC] 1/Pt Pulls", kPbins, 0., 2., 100, -4., 4., n, -.5, n-.5);
     h3->GetXaxis()->SetTitle("1/p_{t}^{MC} [c/GeV]");
     h3->GetYaxis()->SetTitle("#Delta(1/p_{t})/#sigma(1/p_{t}) ");
     h3->GetZaxis()->SetTitle("SPECIES");
@@ -1623,7 +1624,7 @@ TObjArray* AliTRDresolution::Histos()
   arr->AddAt(h3, 9);
   // Kalman track P resolution
   if(!(h3 = (TH3S*)gROOT->FindObject("hMcTrkTPCP"))){
-    h3 = new TH3S("hMcTrkTPCP", "Track[TPC] P Resolution", 80, 0., 20., 150, -.15, .35, n, -.5, n-.5);
+    h3 = new TH3S("hMcTrkTPCP", "Track[TPC] P Resolution", kPbins, 0., 12., 100, -.15, .35, n, -.5, n-.5);
     h3->GetXaxis()->SetTitle("p [GeV/c]");
     h3->GetYaxis()->SetTitle("#Delta p/p^{MC}");
     h3->GetZaxis()->SetTitle("SPECIES");
@@ -1631,7 +1632,7 @@ TObjArray* AliTRDresolution::Histos()
   arr->AddAt(h3, 10);
   // Kalman track Pt pulls
   if(!(h3 = (TH3S*)gROOT->FindObject("hMcTrkTPCPPulls"))){
-    h3 = new TH3S("hMcTrkTPCPPulls", "Track[TPC] P Pulls", 80, 0., 20., 100, -5., 5., n, -.5, n-.5);
+    h3 = new TH3S("hMcTrkTPCPPulls", "Track[TPC] P Pulls", kPbins, 0., 12., 100, -5., 5., n, -.5, n-.5);
     h3->GetXaxis()->SetTitle("p^{MC} [GeV/c]");
     h3->GetYaxis()->SetTitle("#Deltap/#sigma_{p}");
     h3->GetZaxis()->SetTitle("SPECIES");
@@ -1972,7 +1973,7 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
   TObjArray *a0 = fGraphS, *a1 = 0x0;
   a1 = (TObjArray*)a0->At(kMCtrackTPC); a0 = a1;
   a1 = (TObjArray*)a0->At(sel); a0 = a1;
-  for(Int_t is=0; is<AliPID::kSPECIES; is++){
+  for(Int_t is=AliPID::kSPECIES; is--;){
     if(!(gs =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gs->GetN()) continue;
     gs->Draw(is ? "pl" : "apl");
@@ -2003,7 +2004,7 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
   a0 = fGraphM;
   a1 = (TObjArray*)a0->At(kMCtrackTPC); a0 = a1;
   a1 = (TObjArray*)a0->At(sel); a0 = a1;
-  for(Int_t is=0; is<AliPID::kSPECIES; is++){
+  for(Int_t is=AliPID::kSPECIES; is--;){
     if(!(gm =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gm->GetN()) continue;
     gm->Draw("pl");
