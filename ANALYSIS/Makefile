@@ -33,9 +33,9 @@ endif
 
 CXXFLAGS     += $(ALICEINC) -g
 
+CHECKXML      := $(shell root-config --has-xml)
 include lib$(PACKAGE).pkg
 
-CHECKXML      := $(shell root-config --has-xml)
 DHDR_ANALYSIS := $(DHDR)
 HDRS_ANALYSIS := $(HDRS)
 SRCS_ANALYSIS := $(SRCS) G__$(PACKAGE).cxx
