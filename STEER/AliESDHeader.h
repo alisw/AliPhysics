@@ -83,7 +83,7 @@ private:
   enum {kNMaxIR = 3};              // Max number of interaction records (IR)
   AliTriggerIR*  fIRArray[kNMaxIR];// Array with trigger IRs 
 
-  ClassDef(AliESDHeader,6)
+  ClassDef(AliESDHeader,7)
 };
 
 #endif
