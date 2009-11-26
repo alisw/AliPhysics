@@ -136,6 +136,11 @@ AliAnalysisTaskMuonDistributions::~AliAnalysisTaskMuonDistributions() {
   //destructor
   //
   Info("~AliAnalysisTaskMuonDistributions","Calling Destructor");
+
+  if (fOutput){
+    delete fOutput;
+    fOutput = 0;
+  }
 }
 
 //___________________________________________________________________________
@@ -290,48 +295,56 @@ void AliAnalysisTaskMuonDistributions::Terminate(Option_t *)
   TH1D *hMassDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hMassDimu"));  
   TH1D *hPtDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hPtDimu"));  
   TH1D *hRapidityDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hRapidityDimu"));  
-  TH1D *hCostCSDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hCosThetaCSDimu"));  
-  TH1D *hCostHEDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hCosThetaHEDimu"));  
+  TH1D *hCosThetaCSDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hCosThetaCSDimu"));  
+  TH1D *hCosThetaHEDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hCosThetaHEDimu"));  
   TH1D *hP = dynamic_cast<TH1D*> (fOutput->FindObject("hP"));  
   TH1D *hPt = dynamic_cast<TH1D*> (fOutput->FindObject("hPt"));  
   TH1D *hRapidity = dynamic_cast<TH1D*> (fOutput->FindObject("hRapidity"));  
  
-   TCanvas *c0 = new TCanvas("c0","Plots",xmin,ymin,600,600);
-   c0->Divide(2,2);
-   c0->cd(1);
-   hNumberMuonTracks->Draw();
-   
-   xmin+=20; ymin+=20;
-   TCanvas *c1 = new TCanvas("c1","Muon kinematic distributions Plots",xmin,ymin,600,600);
-   c1->Divide(2,2);  
-   c1->cd(1);
-   gPad->SetLogy(1);
-   hP->Draw();
-   c1->cd(2);
-   gPad->SetLogy(1);
-   hPt->Draw();
-   c1->cd(3);
-   hRapidity->Draw();
-   
-   xmin+=20; ymin+=20;
-   TCanvas *c2 = new TCanvas("c2","Dimuon kinematic distributions Plots",xmin,ymin,600,600);
-   c2->Divide(2,2);  
-   c2->cd(1);
-   gPad->SetLogy(1);
-   hPtDimu->Draw();
-   c2->cd(2);
-   hRapidityDimu->Draw();
-   c2->cd(3);
-   hCostCSDimu->Draw();
-   c2->cd(4);
-   hCostHEDimu->Draw();
-   
-   xmin+=20; ymin+=20;
-   TCanvas *c3 = new TCanvas("c3","Invariant Mass Plots",xmin,ymin,600,600);
-   gPad->SetLogy(1);
-   hMassDimu->Draw();  
-   if(fInvariantMassFit) FitInvMass(hMassDimu);
-   c3->Update();
+  TCanvas *c0_MuonDistributions = new TCanvas("c0_MuonDistributions","Plots",xmin,ymin,600,600);
+  c0_MuonDistributions->Divide(2,2);
+  c0_MuonDistributions->cd(1);
+  hNumberMuonTracks->SetFillColor(2);
+  hNumberMuonTracks->Draw();
+  
+  xmin+=20; ymin+=20;
+  TCanvas *c1_MuonDistributions = new TCanvas("c1_MuonDistributions","Muon kinematic distributions Plots",xmin,ymin,600,600);
+  c1_MuonDistributions->Divide(2,2);  
+  c1_MuonDistributions->cd(1);
+  gPad->SetLogy(1);
+  hP->SetLineColor(4);
+  hP->Draw();
+  c1_MuonDistributions->cd(2);
+  gPad->SetLogy(1);
+  hPt->SetLineColor(4);
+  hPt->Draw();
+  c1_MuonDistributions->cd(3);
+  hRapidity->SetLineColor(4);
+  hRapidity->Draw();
+  
+  xmin+=20; ymin+=20;
+  TCanvas *c2_MuonDistributions = new TCanvas("c2_MuonDistributions","Dimuon kinematic distributions Plots",xmin,ymin,600,600);
+  c2_MuonDistributions->Divide(2,2);  
+  c2_MuonDistributions->cd(1);
+  gPad->SetLogy(1);
+  hPtDimu->SetLineColor(2);
+  hPtDimu->Draw();
+  c2_MuonDistributions->cd(2);
+  hRapidityDimu->SetLineColor(2);
+  hRapidityDimu->Draw();
+  c2_MuonDistributions->cd(3);
+  hCosThetaCSDimu->SetLineColor(2);
+  hCosThetaCSDimu->Draw();
+  c2_MuonDistributions->cd(4);
+  hCosThetaHEDimu->SetLineColor(2);
+  hCosThetaHEDimu->Draw();
+  
+  xmin+=20; ymin+=20;
+  TCanvas *c3_MuonDistributions = new TCanvas("c3_MuonDistributions","Invariant Mass Plots",xmin,ymin,600,600);
+  gPad->SetLogy(1);
+  hMassDimu->Draw();  
+  if(fInvariantMassFit) FitInvMass(hMassDimu);
+  c3_MuonDistributions->Update();
 }
 
 //________________________________________________________________________

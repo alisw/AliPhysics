@@ -393,9 +393,10 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   /// Draw some histogram at the end.
   //
   if (!gROOT->IsBatch()) {
-    TCanvas *c1 = new TCanvas("c1","Vz vs Pt",10,10,310,310);
-    c1->SetFillColor(10); c1->SetHighLightColor(10);
-    c1->SetLeftMargin(0.15); c1->SetBottomMargin(0.15);
+    fHistoList = dynamic_cast<TList*> (GetOutputData(1));
+    TCanvas *c1_SingleMu = new TCanvas("c1_SingleMu","Vz vs Pt",10,10,310,310);
+    c1_SingleMu->SetFillColor(10); c1_SingleMu->SetHighLightColor(10);
+    c1_SingleMu->SetLeftMargin(0.15); c1_SingleMu->SetBottomMargin(0.15);
     Int_t histoIndex = GetHistoIndex(kHistoPtVz, kAllPtTrig);
     ((TH2F*)fHistoList->At(histoIndex))->DrawCopy("COLZ");
   }
