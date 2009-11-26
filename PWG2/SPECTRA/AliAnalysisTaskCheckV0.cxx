@@ -262,16 +262,15 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
   Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
   Double_t lAlphaV0 = 0, lPtArmV0 = 0;
 
+  const AliVVertex *primaryVtx = ((AliESDEvent*)lEvent)->GetPrimaryVertex();
+  tPrimaryVtxPosition[0] = primaryVtx->GetX();
+  tPrimaryVtxPosition[1] = primaryVtx->GetY();
+  tPrimaryVtxPosition[2] = primaryVtx->GetZ();
+  fHistPrimaryVertexPosX->Fill(tPrimaryVtxPosition[0]);
+  fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
+  fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
+
   if(fAnalysisType == "ESD") {
-
-    const AliESDVertex *primaryVtx = ((AliESDEvent*)lEvent)->GetPrimaryVertex();
-    tPrimaryVtxPosition[0] = primaryVtx->GetXv();
-    tPrimaryVtxPosition[1] = primaryVtx->GetYv();
-    tPrimaryVtxPosition[2] = primaryVtx->GetZv();
-
-    fHistPrimaryVertexPosX->Fill(tPrimaryVtxPosition[0]);
-    fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
-    fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
 
     Double_t lMagneticField = ((AliESDEvent*)lEvent)->GetMagneticField();
 
@@ -365,15 +364,6 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
   } // end of "ESD" analysis
 
   else if(fAnalysisType == "AOD") {
-
-    const AliAODVertex *primaryVtx = ((AliAODEvent*)lEvent)->GetPrimaryVertex();
-    tPrimaryVtxPosition[0] = primaryVtx->GetX();
-    tPrimaryVtxPosition[1] = primaryVtx->GetY();
-    tPrimaryVtxPosition[2] = primaryVtx->GetZ();
-
-    fHistPrimaryVertexPosX->Fill(tPrimaryVtxPosition[0]);
-    fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
-    fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
 
     for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
       {// This is the begining of the V0 loop
