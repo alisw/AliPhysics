@@ -18,15 +18,16 @@ Bool_t kGCrunCF           = kFALSE;
 Int_t kGCpidOfNegativeTrack=11;
 Int_t kGCpidOfPositiveTrack=-11;
 
-Double_t kGCLineCutZRSlope = 0.662487;
-Double_t kGCLineCutZValue = 7.;
-
 Double_t kGCmaxRCut   = 180.;
 Double_t kGCetaCut    = 1.2;
 Double_t kGCptCut     = 0.02;
 Double_t kGCmaxZCut     = 240.;
 Double_t kGCchi2CutConversion   = 30.;
 Double_t kGCchi2CutMeson   = 50.;
+
+Double_t kGCLineCutZRSlope = tan(2*atan(exp(-kGCetaCut)));
+Double_t kGCLineCutZValue = 7.;
+
 
 Double_t kGCxVertexCut = 0.;
 Double_t kGCyVertexCut = 0.;
@@ -681,7 +682,7 @@ Double_t kGCPIDMinPnSigmaAbovePionLine=5;
  
 
 
-Bool_t kGCcalculateBackground = kTRUE;
+Bool_t kGCcalculateBackground = kFALSE;
 
 Bool_t scanArguments(TString arguments){
   Bool_t iResult = kTRUE;
@@ -1076,7 +1077,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
 	
   // Create the GammaConversionTask
   AliAnalysisTaskGammaConversion *gammaconversion = new AliAnalysisTaskGammaConversion("GammaConversionTask");
-  gammaconversion->SetDebugLevel(10);
+  gammaconversion->SetDebugLevel(0);
 	
   gammaconversion->SetWriteNtuple(kGCwriteNtuple);
 	
