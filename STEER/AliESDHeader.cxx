@@ -35,6 +35,7 @@ AliESDHeader::AliESDHeader() :
   fOrbitNumber(0),
   fTimeStamp(0),
   fEventType(0),
+  fEventSpecie(0),
   fPeriodNumber(0),
   fEventNumberInFile(0),
   fBunchCrossNumber(0),
@@ -63,6 +64,7 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fOrbitNumber(header.fOrbitNumber),
   fTimeStamp(header.fTimeStamp),
   fEventType(header.fEventType),
+  fEventSpecie(header.fEventSpecie),
   fPeriodNumber(header.fPeriodNumber),
   fEventNumberInFile(header.fEventNumberInFile),
   fBunchCrossNumber(header.fBunchCrossNumber),
@@ -90,6 +92,7 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fOrbitNumber = header.fOrbitNumber;
     fTimeStamp = header.fTimeStamp;
     fEventType = header.fEventType;
+    fEventSpecie = header.fEventSpecie;
     fPeriodNumber = header.fPeriodNumber;
     fEventNumberInFile = header.fEventNumberInFile;
     fBunchCrossNumber = header.fBunchCrossNumber;
@@ -129,6 +132,7 @@ void AliESDHeader::Reset()
   fOrbitNumber       = 0;
   fTimeStamp         = 0;
   fEventType         = 0;
+  fEventSpecie       = 0;
   fPeriodNumber      = 0;
   fEventNumberInFile = 0;
   fBunchCrossNumber  = 0;

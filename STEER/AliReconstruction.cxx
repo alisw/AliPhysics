@@ -1670,6 +1670,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fhltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     fesd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
     fhltesd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
+
+    fesd->SetEventSpecie(fRecoParam.GetEventSpecie());
+    fhltesd->SetEventSpecie(fRecoParam.GetEventSpecie());
     
     // Set magnetic field from the tracker
     fesd->SetMagneticField(AliTracker::GetBz());

@@ -33,6 +33,7 @@ public:
   void      SetOrbitNumber(UInt_t n) {fOrbitNumber=n;}
   void      SetTimeStamp(UInt_t timeStamp){fTimeStamp = timeStamp;}
   void      SetEventType(UInt_t eventType){fEventType = eventType;}
+  void      SetEventSpecie(UInt_t eventSpecie){fEventSpecie = eventSpecie;}
   void      SetEventNumberInFile(Int_t n) {fEventNumberInFile=n;}
   void      SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber=n;}
   void      SetPeriodNumber(UInt_t n) {fPeriodNumber=n;}
@@ -55,6 +56,7 @@ public:
   UInt_t    GetOrbitNumber() const {return fOrbitNumber;}
   UInt_t    GetTimeStamp()  const { return fTimeStamp;}
   UInt_t    GetEventType()  const { return fEventType;}
+  UInt_t    GetEventSpecie()  const { return fEventSpecie;}
   Int_t     GetEventNumberInFile() const {return fEventNumberInFile;}
   UShort_t  GetBunchCrossNumber() const {return fBunchCrossNumber;}
   UInt_t    GetPeriodNumber() const {return fPeriodNumber;}
@@ -69,6 +71,7 @@ private:
   UInt_t       fOrbitNumber;       // Orbit Number
   UInt_t       fTimeStamp;         // Time stamp
   UInt_t       fEventType;         // Type of Event
+  UInt_t       fEventSpecie;       // Reconstruction event specie (1-default,2-lowM,4-highM,8-cosmic,16-cal)
   UInt_t       fPeriodNumber;      // Period Number
   Int_t        fEventNumberInFile; // Running Event count in the file
   UShort_t     fBunchCrossNumber;  // Bunch Crossing Number

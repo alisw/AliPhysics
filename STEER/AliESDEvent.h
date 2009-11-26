@@ -140,6 +140,7 @@ public:
   void      SetOrbitNumber(UInt_t n) {fHeader->SetOrbitNumber(n);}
   void      SetTimeStamp(UInt_t timeStamp){fHeader->SetTimeStamp(timeStamp);}
   void      SetEventType(UInt_t eventType){fHeader->SetEventType(eventType);}
+  void      SetEventSpecie(UInt_t eventSpecie){fHeader->SetEventSpecie(eventSpecie);}
   void      SetEventNumberInFile(Int_t n) {fHeader->SetEventNumberInFile(n);}
   //  void     SetRunNumber(Int_t n) {fHeader->SetRunNumber(n);}
   void      SetBunchCrossNumber(UShort_t n) {fHeader->SetBunchCrossNumber(n);}
@@ -155,6 +156,7 @@ public:
   UInt_t    GetOrbitNumber() const {return fHeader->GetOrbitNumber();}
   UInt_t    GetTimeStamp()  const { return fHeader->GetTimeStamp();}
   UInt_t    GetEventType()  const { return fHeader->GetEventType();}
+  UInt_t    GetEventSpecie()  const { return fHeader->GetEventSpecie();}
   Int_t     GetEventNumberInFile() const {return fHeader->GetEventNumberInFile();}
   UShort_t  GetBunchCrossNumber() const {return fHeader->GetBunchCrossNumber();}
   UChar_t   GetTriggerCluster() const {return fHeader->GetTriggerCluster();}
