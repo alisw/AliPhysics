@@ -329,7 +329,7 @@ AliEMCALRecParam* AliEMCALRecParam::GetCalibParam()
 {
   //parameters for the reconstruction of calibration runs
   AliEMCALRecParam* params = GetLowFluxParam();
-  //params->SetClusteringThreshold(0.2); // 200 MeV                                             
+  //params->SetClusteringThreshold(0.1); // 100 MeV                                             
   //params->SetMinECut(0.01);  //10 MeV       
   params->SetName("Calibration - LED");
   params->SetTitle("Calibration - LED");
@@ -344,7 +344,7 @@ AliEMCALRecParam* AliEMCALRecParam::GetCosmicParam()
 {
   //parameters for the reconstruction of cosmic runs
   AliEMCALRecParam* params = GetLowFluxParam();
-  //params->SetClusteringThreshold(0.2); // 200 MeV                                             
+  //params->SetClusteringThreshold(0.1); // 100 MeV                                             
   //params->SetMinECut(0.01);  //10 MeV       
   params->SetName("Cosmic");
   params->SetTitle("Cosmic");
@@ -360,7 +360,7 @@ AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
 {
   //low flux/multiplicity ("p+p") parameters for the reconstruction
   AliEMCALRecParam* params = new AliEMCALRecParam();
-  params->SetClusteringThreshold(0.1); // 200 MeV                                             
+  params->SetClusteringThreshold(0.1); // 100 MeV                                             
   params->SetMinECut(0.01);  //10 MeV       
   params->SetName("Low Flux - p+p");
   params->SetTitle("Low Flux - p+p");
