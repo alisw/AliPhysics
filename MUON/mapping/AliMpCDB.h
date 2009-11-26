@@ -93,8 +93,7 @@ class AliMpCDB : public  TObject {
                                        const char* cdbpath, 
                                        Int_t runNumber);
                                        
-    /// option for loading from CDB mapping data or from CDB mapping objects 
-    static Bool_t fgLoadFromData;                                       
+    static Bool_t fgLoadFromData; ///< option for loading from CDB mapping data or from CDB mapping objects 
     
   ClassDef(AliMpCDB,0)  // The factory for building mapping segmentations
 };

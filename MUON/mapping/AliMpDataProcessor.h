@@ -41,10 +41,8 @@ class AliMpDataProcessor : public TObject
     void GenerateFill();
 
     // static data
-    /// default name for generated header file
-    static const TString fgkHeaderFileName;
-    /// default name for generated implementation file
-    static const TString fgkImplFileName;
+    static const TString fgkHeaderFileName;///< default name for generated header file
+    static const TString fgkImplFileName;  ///< default name for generated implementation file
 
     // data
     Int_t     fCounter;    ///< data files counter
