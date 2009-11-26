@@ -1012,7 +1012,7 @@ AliMUONTrack* AliMUONESDInterface::Add(const AliESDMuonTrack& esdTrack, AliMUONV
 void AliMUONESDInterface::Add(const AliESDMuonTrack& esdTrack, AliMUONVTriggerStore& triggerStore)
 {
   /// Create MUON local trigger from ESDMuon track and add it to the store if not already there
-  if (triggerStore.FindLocal(esdTrack.LoCircuit())) return;
+  if (!triggerStore.FindLocal(esdTrack.LoCircuit())->IsNull()) return;
   AliMUONLocalTrigger locTrg;
   ESDToMUON(esdTrack, locTrg);
   triggerStore.Add(locTrg);
