@@ -2116,9 +2116,21 @@ Bool_t AliSimulation::SetRunQA(TString detAndAction)
 	}
 	Int_t colon = detAndAction.Index(":") ; 
 	fQADetectors = detAndAction(0, colon) ; 
-	if (fQADetectors.Contains("ALL") )
-		fQADetectors = Form("%s %s", fMakeDigits.Data(), fMakeDigitsFromHits.Data()) ; 
-		fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
+	if (fQADetectors.Contains("ALL") ){
+    TString tmp = Form("%s %s", fMakeDigits.Data(), fMakeDigitsFromHits.Data()) ; 
+    Int_t minus = fQADetectors.Last('-') ; 
+    TString toKeep = Form("%s %s", fMakeDigits.Data(), fMakeDigitsFromHits.Data()) ; 
+    TString toRemove("") ;
+    while (minus >= 0) {
+      toRemove = fQADetectors(minus+1, fQADetectors.Length()) ; 
+      toRemove = toRemove.Strip() ; 
+      toKeep.ReplaceAll(toRemove, "") ; 
+      fQADetectors.ReplaceAll(Form("-%s", toRemove.Data()), "") ; 
+      minus = fQADetectors.Last('-') ; 
+    }
+    fQADetectors = toKeep ; 
+  }
+  fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
 	if (fQATasks.Contains("ALL") ) {
 		fQATasks = Form("%d %d %d", AliQAv1::kHITS, AliQAv1::kSDIGITS, AliQAv1::kDIGITS) ; 
 	} else {
