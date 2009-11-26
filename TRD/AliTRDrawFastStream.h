@@ -46,7 +46,6 @@ class AliTRDrawFastStream : public AliTRDrawStreamBase
       
     Int_t               fADCmax;                  // number of ADCs fired
     Int_t               fADCcount;                // number of ADCs fired from double checking bit
-    Int_t               fMCMADCWords;             // mcm words to expect
     Int_t               fSingleADCwords;          // n of words per ADC
       
     Int_t               fMCMhdCorrupted;          // is mcm header corrupted
@@ -69,7 +68,6 @@ class AliTRDrawFastStream : public AliTRDrawStreamBase
       , fADCchannel()      
       , fADCmax(0)
       , fADCcount(0)
-      , fMCMADCWords(0)      
       , fSingleADCwords(0)
       , fMCMhdCorrupted(0)      
       , fADCmaskCorrupted(0)      
@@ -91,7 +89,6 @@ class AliTRDrawFastStream : public AliTRDrawStreamBase
       , fADCchannel()      
       , fADCmax(p.fADCmax)
       , fADCcount(p.fADCcount)
-      , fMCMADCWords(p.fMCMADCWords)      
       , fSingleADCwords(p.fSingleADCwords)
       , fMCMhdCorrupted(p.fMCMhdCorrupted)      
       , fADCmaskCorrupted(p.fADCmaskCorrupted)      

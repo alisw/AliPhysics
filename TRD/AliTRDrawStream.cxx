@@ -549,7 +549,6 @@ void AliTRDrawStream::ResetPerMCM()
   fMCM->fADCMaskWord = 0;
   fMCM->fADCmax = 0;
   fMCM->fADCcount = 0;
-  fMCM->fMCMADCWords = 0;
   fMCM->fSingleADCwords = 0;
   fMCM->fMCMhdCorrupted = 0;
   fMCM->fADCmaskCorrupted = 0;
@@ -2032,7 +2031,6 @@ void AliTRDrawStream::DecodeMask(const UInt_t *word, struct AliTRDrawMCM *mcm) c
   //
   // decode the adc mask - adcs to be read out
   //
-  mcm->fMCMADCWords = 0;
   mcm->fSingleADCwords = 0;
   mcm->fADCmax = 0;
   mcm->fADCMask = GetMCMadcMask(word, mcm);
@@ -2058,11 +2056,8 @@ void AliTRDrawStream::MCMADCwordsWithTbins(UInt_t fTbins, struct AliTRDrawMCM *m
   //
   //  count the expected mcm words for a given tbins
   //
-  mcm->fMCMADCWords = ( mcm->fADCmax ) * ( fTbins / 3 );
   mcm->fSingleADCwords = 0;
-  if (mcm->fADCmax > 0) {
-    mcm->fSingleADCwords = mcm->fMCMADCWords/mcm->fADCmax;
-  }
+  mcm->fSingleADCwords = (fTbins-1)/3+1;
   if (fTbins > 32) mcm->fSingleADCwords = 10; // if the timebin is more than 30, then fix the number of adc words to 10
 }
   
