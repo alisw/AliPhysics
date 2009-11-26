@@ -399,7 +399,7 @@ void    AliConfig::Add (char *list)
   
   const char   *confPath = gSystem->Getenv ("ALICE_CONFIG_PATH");
   if  (confPath) {
-    path = new char[strlen (confPath)];
+    path = new char[strlen (confPath)+1];
     strcpy (path, confPath);
   } else {
     const char   *alice = gSystem->Getenv ("ALICE_ROOT");
