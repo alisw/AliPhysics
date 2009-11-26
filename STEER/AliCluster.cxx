@@ -145,6 +145,19 @@ AliCluster & AliCluster::operator=(const AliCluster& cluster)
 }
 
 //______________________________________________________________________________
+void AliCluster::Print(Option_t* option) const
+{
+  // Print cluster information.
+  
+  printf("AliCluster pos=(%.4f, %.4f, %.4f), s_y2=%f, s_z2=%f, s_yz=%f, vol=%hu\n",
+         fX, fY, fZ, fSigmaY2, fSigmaZ2, fSigmaYZ, fVolumeId);
+  Float_t g[3];
+  if (GetGlobalXYZ(g))
+    printf("    global_pos=(%.4f, %.4f, %.4f)\n", g[0], g[1], g[2]);
+
+}
+
+//______________________________________________________________________________
 Bool_t AliCluster::GetGlobalXYZ(Float_t xyz[3]) const
 {
   // Get the global coordinates of the cluster

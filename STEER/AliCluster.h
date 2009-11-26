@@ -38,6 +38,8 @@ class AliCluster : public TObject {
   AliCluster &operator=(const AliCluster& cluster);
   virtual ~AliCluster() {;}
 
+  virtual void Print(Option_t* option = "") const;
+
   Int_t    GetLabel(Int_t i) const {return fTracks[i];}
   Float_t  GetX()            const {return fX;}
   Float_t  GetY()            const {return fY;}
