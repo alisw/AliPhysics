@@ -141,7 +141,6 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   
   
     AliQAChecker *qac = AliQAChecker::Instance();
-    qac->SetRunNumber(GetRunNumber());
     AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
     Int_t subdet=GetSubDet();
     qacb->SetSubDet(subdet);
