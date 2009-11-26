@@ -5,21 +5,19 @@
 //============================================================================
 AliHLTTRDTracklet::AliHLTTRDTracklet():
   fN(0),
-  fDet(-1),
   fdX(-1),
   fS2Y(-1),
   fPt(-1),
-  fPad3(-1),
-  fPad2(-1),
   fX0(-1),
   fC(-1),
   fChi2(-1),
+  fDet(-1),
+  fCount(0),
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  fSize(sizeof(AliHLTTRDTracklet)-sizeof(IndexAndCluster)),
+  fSize(sizeof(AliHLTTRDTracklet)-sizeof(IndexAndCluster))
 #else
-  fSize(sizeof(AliHLTTRDTracklet)),
+  fSize(sizeof(AliHLTTRDTracklet))
 #endif
-  fCount(0)
 {
   InitArrays();
 }
@@ -30,21 +28,19 @@ AliHLTTRDTracklet::AliHLTTRDTracklet():
 //============================================================================
 AliHLTTRDTracklet::AliHLTTRDTracklet(const AliTRDseedV1* const inTracklet):
   fN(inTracklet->fN),
-  fDet(inTracklet->fDet),
   fdX(inTracklet->fdX),
   fS2Y(inTracklet->fS2Y),
   fPt(inTracklet->fPt),
-  fPad3(inTracklet->fPad[3]),
-  fPad2(inTracklet->fPad[2]),
   fX0(inTracklet->fX0),
   fC(inTracklet->fC),
   fChi2(inTracklet->fChi2),
+  fDet(inTracklet->fDet),
+  fCount(0),
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  fSize(sizeof(AliHLTTRDTracklet)-sizeof(IndexAndCluster)),
+  fSize(sizeof(AliHLTTRDTracklet)-sizeof(IndexAndCluster))
 #else
-  fSize(sizeof(AliHLTTRDTracklet)),
+  fSize(sizeof(AliHLTTRDTracklet))
 #endif
-  fCount(0)
 {
   CopyDataMembers(inTracklet);
 }
@@ -62,6 +58,10 @@ void AliHLTTRDTracklet::CopyDataMembers(const AliTRDseedV1* const inTracklet)
     fZref[i]   = inTracklet->fZref[i];
     fYfit[i]   = inTracklet->fYfit[i];
     fZfit[i]   = inTracklet->fZfit[i];
+  }
+
+  for (Int_t i=0; i < 3; i++){
+    fPad[i] = inTracklet->fPad[i];
   }
   
   for (Int_t i=0; i < AliPID::kSPECIES; i++){
@@ -93,8 +93,6 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1* const outTracklet) const
 
   outTracklet->fN      = fN;
   outTracklet->fDet    = fDet;
-  outTracklet->fPad[3] = fPad3;
-  outTracklet->fPad[2] = fPad2;
   outTracklet->fdX     = fdX;
   outTracklet->fX0     = fX0;
   outTracklet->fS2Y    = fS2Y;
@@ -107,6 +105,10 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1* const outTracklet) const
     outTracklet->fZref[i]   = fZref[i];
     outTracklet->fYfit[i]   = fYfit[i];
     outTracklet->fZfit[i]   = fZfit[i];
+  }
+
+  for (Int_t i=0; i < 3; i++){
+    outTracklet->fPad[i] = fPad[i];
   }
 
   for (Int_t i=0; i < AliPID::kSPECIES; i++){

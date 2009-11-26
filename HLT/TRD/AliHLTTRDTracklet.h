@@ -32,8 +32,7 @@ class AliHLTTRDTracklet
   void InitArrays();
 
   /* Defenitely need */
-  UShort_t       fN;                     // number of clusters attached/used/shared
-  Short_t        fDet;                   //  TRD detector
+  UInt_t         fN;                     // number of clusters attached/used/shared
   Float_t        fdX;                    // length of time bin
   Float_t        fYref[2];               //  Reference y
   Float_t        fZref[2];               //  Reference z
@@ -41,14 +40,14 @@ class AliHLTTRDTracklet
   Float_t        fPt;                    //  Momentum estimate for tracklet [GeV/c]
  
   /* Probably need */
-  Float_t        fPad3;                  //  Tilting angle
-  Float_t        fPad2;                  //  Pad length
+  Float_t        fPad[3];                //  local pad definition : length/width/tilt 
   Float_t        fX0;                    //  X0 position
   Float_t        fYfit[2];               //  Y fit position +derivation
   Float_t        fZfit[2];               //  Z fit position
   Float_t        fC;                     //  Curvature
   Float_t        fChi2;                  //  Global chi2
   Float_t        fProb[AliPID::kSPECIES];// PID probabilities
+  Short_t        fDet;                   //  TRD detector
 
   /* Not needed */
   //Int_t          fLabels[3];            //  Labels
@@ -66,13 +65,13 @@ class AliHLTTRDTracklet
   //Float_t        fCC;                   //  Curvature with constrain
   //Float_t        fChi2Z;                //  Global chi2
 
+  AliHLTUInt16_t fCount;                  // Number of clusters saved in the open array
   AliHLTUInt32_t fSize;                   // Size of the tracklet with clusters in the memory
-  AliHLTUInt32_t fCount;                  // Number of clusters saved in the open array
 
   struct IndexAndCluster{
     Int_t            Index;
     AliHLTTRDCluster Cluster;
-    IndexAndCluster():Index(-1),Cluster() {}
+    IndexAndCluster():Index(),Cluster() {}
   }
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
     fClusters[1];                         // Open array of clusters and their index
