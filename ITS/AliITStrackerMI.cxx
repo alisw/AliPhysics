@@ -372,9 +372,14 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
         detector=c->GetDetectorIndex();
 
 	if (!c->Misalign()) AliWarning("Can't misalign this cluster !");
-
-        fgLayers[i].InsertCluster(new AliITSRecPoint(*c));
+	
+	Int_t retval = fgLayers[i].InsertCluster(new AliITSRecPoint(*c));
+	if(retval) {
+	  AliWarning(Form("Too many clusters on layer %d!",i));
+	  break;  
+	} 
       }
+
       // add dead zone "virtual" cluster in SPD, if there is a cluster within 
       // zwindow cm from the dead zone      
       if (i<2 && AliITSReconstructor::GetRecoParam()->GetAddVirtualClustersInDeadZone()) {
@@ -1239,21 +1244,8 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	vtrack->IncrementNSkipped();
 	ntracks[ilayer]++;
       }
-      /*     
-      // allow one prolongation without clusters for tracks with |tgl|>1.1
-      if (constrain && itrack==0 && TMath::Abs(currenttrack1.GetTgl())>1.1) {  //big theta - for low flux
-	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
-	// apply correction for material of the current layer
-	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
-	vtrack->SetClIndex(ilayer,-1);
-	modstatus = 3; // skipped
-	vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
-	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
-	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
-	ntracks[ilayer]++;
-      }
-      */    
       
+
     } // loop over tracks in layer ilayer+1
 
     //loop over track candidates for the current layer
@@ -1588,7 +1580,6 @@ Int_t AliITStrackerMI::AliITSlayer::InsertCluster(AliITSRecPoint *cl) {
   //This function adds a cluster to this layer
   //--------------------------------------------------------------------
   if (fN==AliITSRecoParam::GetMaxClusterPerLayer()) {
-    ::Error("InsertCluster","Too many clusters !\n");
     return 1;
   }
   fCurrentSlice=-1;
@@ -4282,7 +4273,7 @@ void AliITStrackerMI::SetForceSkippingOfLayer() {
   //-----------------------------------------------------------------
 
   const AliEventInfo *eventInfo = GetEventInfo();
- 
+  
   for(Int_t l=0; l<AliITSgeomTGeo::kNLayers; l++) {
     fForceSkippingOfLayer[l] = 0;
     // check reco param
@@ -4393,10 +4384,10 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
 
   // check if road goes out of detector
   Bool_t touchNeighbourDet=kFALSE; 
-  if (TMath::Abs(xlocmin)>0.5*detSizeX) {xlocmin=-0.5*detSizeX; touchNeighbourDet=kTRUE;} 
-  if (TMath::Abs(xlocmax)>0.5*detSizeX) {xlocmax=+0.5*detSizeX; touchNeighbourDet=kTRUE;} 
-  if (TMath::Abs(zlocmin)>0.5*detSizeZ) {zlocmin=-0.5*detSizeZ; touchNeighbourDet=kTRUE;} 
-  if (TMath::Abs(zlocmax)>0.5*detSizeZ) {zlocmax=+0.5*detSizeZ; touchNeighbourDet=kTRUE;} 
+  if (TMath::Abs(xlocmin)>0.5*detSizeX) {xlocmin=-0.4999*detSizeX; touchNeighbourDet=kTRUE;} 
+  if (TMath::Abs(xlocmax)>0.5*detSizeX) {xlocmax=+0.4999*detSizeX; touchNeighbourDet=kTRUE;} 
+  if (TMath::Abs(zlocmin)>0.5*detSizeZ) {zlocmin=-0.4999*detSizeZ; touchNeighbourDet=kTRUE;} 
+  if (TMath::Abs(zlocmax)>0.5*detSizeZ) {zlocmax=+0.4999*detSizeZ; touchNeighbourDet=kTRUE;} 
   AliDebug(2,Form("layer %d det %d zmim zmax %f %f xmin xmax %f %f   %f %f",ilayer,idet,zlocmin,zlocmax,xlocmin,xlocmax,detSizeZ,detSizeX));
 
   // check if this detector is bad
@@ -4751,3 +4742,4 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
+
