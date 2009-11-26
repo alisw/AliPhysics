@@ -72,19 +72,13 @@ class AliHLTTPCCalibSeedMakerComponent : public AliHLTProcessor {
 
       /** assignment operator prohibited */
       AliHLTTPCCalibSeedMakerComponent& operator=(const AliHLTTPCCalibSeedMakerComponent&);
-           
-      AliHLTUInt32_t  fSpecification; //!transient
-      AliHLTUInt8_t   fMinSlice;      //!transient
-      AliHLTUInt8_t   fMaxSlice;      //!transient
-      AliHLTUInt8_t   fMinPartition;  //!transient
-      AliHLTUInt8_t   fMaxPartition;  //!transient
       AliTPCParam    *fTPCGeomParam;  //!transient
       
       AliHLTTPCSpacePointData *fClustersArray[36][6]; //! transient
       UInt_t                   fNSpacePoints[36][6];  //! transient
       TObjArray *fSeedArray;
                       
-      ClassDef(AliHLTTPCCalibSeedMakerComponent, 1)
+      ClassDef(AliHLTTPCCalibSeedMakerComponent, 2)
     };
 
 #endif
