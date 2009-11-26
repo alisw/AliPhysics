@@ -203,11 +203,7 @@ AliQAManager::~AliQAManager()
 		delete fRawReader ;
 		fRawReader = NULL ;
 	}
-//  TCanvas fakeCanvas ; 
-//  if (fPrintImage) 
-//    fakeCanvas.Print(Form("%s%s%d.%s]", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat()), "ps"); 
 }
-
 //_____________________________________________________________________________
 Bool_t AliQAManager::DoIt(const AliQAv1::TASKINDEX_t taskIndex)
 {
@@ -323,7 +319,7 @@ Bool_t AliQAManager::DoIt(const AliQAv1::TASKINDEX_t taskIndex)
 	} // event loop	
 	// Save QA data for all detectors
 
-	rv = Finish(taskIndex) ;
+  EndOfCycle() ; 
 	
 	if ( taskIndex == AliQAv1::kRAWS ) 
 		fRawReader->RewindEvents() ;
@@ -527,12 +523,11 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 	
   AliQAChecker::Instance()->SetRunNumber(fRunNumber) ; 
   TCanvas fakeCanvas ; 
-  if (fPrintImage) 
+
     fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat()), "ps") ; 
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
-			AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(iDet) ;
 			if (!qadm) 
 				continue ;	
 			// skip non active detectors
@@ -541,6 +536,7 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 				if (!det || !det->IsActive())  
 					continue ;
 			}
+			AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(iDet) ;
       if (qac) 
         qac->SetPrintImage(fPrintImage) ;
       for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
@@ -566,12 +562,12 @@ void  AliQAManager::EndOfCycle(TString detectors)
   for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
-      AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(iDet) ;
 			if (!qadm) 
 				continue ;	
 			// skip non active detectors
       if (!detectors.Contains(AliQAv1::GetDetName(iDet))) 
         continue ;
+			AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(iDet) ;
       if (qac) 
         qac->SetPrintImage(fPrintImage) ;
       for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
