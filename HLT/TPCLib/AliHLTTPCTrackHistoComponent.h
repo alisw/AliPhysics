@@ -23,15 +23,14 @@ class TProfile;
 
 /**
  * @class AliHLTTPCTrackHistoComponent
- * Component for ploting proparties of Tracks. 
- * The component gives out two NTuples. One for cluster- and one for track proprties
+ * Component for plotting proparties of Tracks. 
+ * The component gives out 2 NTuples. One for cluster and one for track properties
  * 
  * <h2>General properties:</h2> 
  *
  * Component ID: \b TPCTrackHisto <br>
  * Library: \b libAliHLTTPC.so <br>
  * Input Data Types: AliHLTTPCDefinitions::fgkClustersDataType,
- *                   AliHLTTPCDefinitions::fgkTrackSegmentsDataType or
  *                   AliHLTTPCDefinitions::fgkTracksDataType <br>
  * Output Data Types: ::kAliHLTDataTypeTNtuple <br> 
  *
@@ -115,11 +114,6 @@ private:
 
   void PushHisto();
  
-  AliHLTUInt8_t fMinSlice;     //! transient
-  AliHLTUInt8_t fMaxSlice;     //! transient
-  AliHLTUInt8_t fMinPartition; //! transient
-  AliHLTUInt8_t fMaxPartition; //! transient
-
   Int_t fNEvents;    //! transient
   Int_t fNtotTracks; //! transient
 
@@ -130,6 +124,7 @@ private:
 
   TH1F *fMeanMultiplicity; //! transient (mean multiplicity for every 20 evts vs. #evt by Z.Y.)
   TH1F *fMultiplicity;     //! transient (track multiplicity by Z.Y.)
+  //TH1F *fdNdEta;           //! transient (dN/dEta)
      
   //TH2F *fNClusterVsXY;   //! transient (#Clusters vs. x, y positions, by ZY)
   //TH2F *fChargeVsXY;     //! transient (Charge distr. vs. x, y added by ZY)
@@ -146,7 +141,7 @@ private:
   /** the default configuration entry for this component */
   static const char* fgkOCDBEntry; //!transient
 
-  ClassDef(AliHLTTPCTrackHistoComponent, 4);
+  ClassDef(AliHLTTPCTrackHistoComponent, 5);
 
 };
 #endif
