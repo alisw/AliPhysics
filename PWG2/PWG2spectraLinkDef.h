@@ -16,6 +16,7 @@
 #pragma link C++ class AliAnalysisTaskStrange+;
 #pragma link C++ class AliProtonFeedDownAnalysisTask+;
 #pragma link C++ class AliProtonFeedDownAnalysis+;
+#pragma link C++ class AliProtonAbsorptionCorrection+;
 #pragma link C++ class AliAnalysisCentralCutMC+;
 #pragma link C++ class AliAnalysisCentralCutESD+;
 #pragma link C++ class AliAnalysisCentralCutEvtMC+;
