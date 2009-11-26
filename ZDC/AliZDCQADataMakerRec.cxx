@@ -708,13 +708,21 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
     Float_t beamEne = esd->GetBeamEnergy();
     centr_ZNC = zdcESD->GetZNCCentroidInPbPb(beamEne);
     centr_ZNA = zdcESD->GetZNACentroidInPbPb(beamEne);
+    //
+    GetESDsData(0)->Fill(centr_ZNC[0], centr_ZNC[1]);
+    GetESDsData(1)->Fill(centr_ZNA[0], centr_ZNA[1]);
   }
   else if((beamType.CompareTo("A-A")) == 0){
     centr_ZNC = zdcESD->GetZNCCentroidInpp();
     centr_ZNA = zdcESD->GetZNACentroidInpp();
+    //
+    GetESDsData(0)->Fill(centr_ZNC[0], centr_ZNC[1]);
+    GetESDsData(1)->Fill(centr_ZNA[0], centr_ZNA[1]);
   }
-  GetESDsData(0)->Fill(centr_ZNC[0], centr_ZNC[1]);
-  GetESDsData(1)->Fill(centr_ZNA[0], centr_ZNA[1]);
+  else{
+    GetESDsData(0)->Fill(0., 0.);
+    GetESDsData(1)->Fill(0., 0.);
+  }
 
   //
   GetESDsData(2)->Fill(esd->GetZDCN1Energy());
