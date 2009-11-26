@@ -89,6 +89,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
    fInputs     = new TObjArray();
    fOutputs    = new TObjArray();
    SetEventLoop(kTRUE);
+   TObject::SetObjectStat(kFALSE);
 }
 
 //______________________________________________________________________________
@@ -126,6 +127,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
    fOutputs    = new TObjArray(*other.fOutputs);
    fgCommonFileName  = "AnalysisResults.root";
    fgAnalysisManager = this;
+   TObject::SetObjectStat(kFALSE);
 }
    
 //______________________________________________________________________________
@@ -173,6 +175,7 @@ AliAnalysisManager::~AliAnalysisManager()
    if (fOutputs) delete fOutputs;
    if (fGridHandler) delete fGridHandler;
    if (fgAnalysisManager==this) fgAnalysisManager = NULL;
+   TObject::SetObjectStat(kTRUE);
 }
 
 //______________________________________________________________________________

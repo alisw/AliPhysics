@@ -104,6 +104,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AddObject(fPmdClusters);
   fConnected = aod.fConnected;
   GetStdContent();
+  CreateStdFolders();
 }
 
 //______________________________________________________________________________
@@ -111,40 +112,94 @@ AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
 
     // Assignment operator
 
-    if(&aod == this) return *this;
-    AliVEvent::operator=(aod);
+  if(&aod == this) return *this;
+  AliVEvent::operator=(aod);
 
-    fAODObjects      = new TList();
-    fAODFolder       = new TFolder();
-    fConnected       = aod.fConnected;
-    fHeader          = new AliAODHeader(*aod.fHeader);
-    fTracks          = new TClonesArray(*aod.fTracks);
-    fVertices        = new TClonesArray(*aod.fVertices);
-    fV0s             = new TClonesArray(*aod.fV0s);
-    fCascades        = new TClonesArray(*aod.fCascades);
-    fTracklets       = new AliAODTracklets(*aod.fTracklets);
-    fJets            = new TClonesArray(*aod.fJets);
-    fEmcalCells      = new AliAODCaloCells(*aod.fEmcalCells);
-    fPhosCells       = new AliAODCaloCells(*aod.fPhosCells);
-    fCaloClusters    = new TClonesArray(*aod.fCaloClusters);
-    fFmdClusters     = new TClonesArray(*aod.fFmdClusters);
-    fPmdClusters     = new TClonesArray(*aod.fPmdClusters);
-    
-    
-    AddObject(fHeader);
-    AddObject(fTracks);
-    AddObject(fVertices);
-    AddObject(fV0s);
-    AddObject(fCascades);
-    AddObject(fTracklets);
-    AddObject(fJets);
-    AddObject(fEmcalCells);
-    AddObject(fPhosCells);
-    AddObject(fCaloClusters);
-    AddObject(fFmdClusters);
-    AddObject(fPmdClusters);
-    GetStdContent();
-    return *this;
+  // This assumes that the list is already created
+  // and that the virtual void Copy(Tobject&) function
+  // is correctly implemented in the derived class
+  // otherwise only TObject::Copy() will be used
+
+  if((fAODObjects->GetSize()==0)&&(aod.fAODObjects->GetSize()>=kAODListN)){
+    // We cover the case that we do not yet have the 
+    // standard content but the source has it
+    CreateStdContent();
+  }
+  
+  // Here we have the standard content without user additions, but the content is 
+  // not matching the aod source.
+  
+  // Iterate the list of source objects
+  TIter next(aod.GetList());
+  TObject *its = 0;
+  TString name;
+  while ((its = next())) {
+    name = its->GetName();
+    // Check if we have this object type in out list
+    TObject *mine = fAODObjects->FindObject(name);    
+    if(!mine) {
+      // We have to create the same type of object.
+      TClass* pClass=TClass::GetClass(its->ClassName());     
+      if (!pClass) {
+        AliWarning(Form("Can not find class description for entry %s (%s)\n",
+                   its->ClassName(), name.Data()));
+        continue;
+      }
+      mine=(TObject*)pClass->New();
+      if(!mine){
+        // not in this: can be added to list
+        AliWarning(Form("%s:%d Could not find %s for copying \n",
+                   (char*)__FILE__,__LINE__,name.Data()));
+        continue;
+      }  
+      if(mine->InheritsFrom("TNamed"))	{
+        ((TNamed*)mine)->SetName(name);
+      } else if(mine->InheritsFrom("TCollection")){
+        if(mine->InheritsFrom("TClonesArray")) {
+          TClonesArray *itscl = dynamic_cast<TClonesArray*>(its);
+          if (!itscl) {
+            AliWarning(Form("Class description for entry %s (%s) not TClonesArray\n",
+                   its->ClassName(), name.Data()));
+            continue;
+          
+          }
+	       dynamic_cast<TClonesArray*>(mine)->SetClass(itscl->GetClass(), itscl->GetSize());
+        }
+        dynamic_cast<TCollection*>(mine)->SetName(name);
+      }
+      AliDebug(1, Form("adding object %s of type %s", mine->GetName(), mine->ClassName()));
+      AddObject(mine);
+    }
+    // Now we have an object of the same type and name, but different content.        
+    if(!its->InheritsFrom("TCollection")){
+      // simple objects (do they have a Copy method that calls operator= ?)
+      its->Copy(*mine);
+    } else if (its->InheritsFrom("TClonesArray")) {
+      // Create or expand the tclonesarray pointers
+      // so we can directly copy to the object
+      TClonesArray *its_tca = (TClonesArray*)its;
+      TClonesArray *mine_tca = (TClonesArray*)mine;
+      // this leaves the capacity of the TClonesArray the same
+      // except for a factor of 2 increase when size > capacity
+      // does not release any memory occupied by the tca
+      Int_t its_entries = its_tca->GetEntriesFast();
+      mine_tca->ExpandCreate(its_entries);
+      for(int i=0; i<its_entries; i++){
+        // copy 
+        TObject *mine_tca_obj = mine_tca->At(i);
+        TObject *its_tca_obj = its_tca->At(i);
+        // no need to delete first
+        // pointers within the class should be handled by Copy()...
+        // Can there be Empty slots?
+        its_tca_obj->Copy(*mine_tca_obj);
+      }
+    } else {
+      AliWarning(Form("%s:%d cannot copy TCollection \n",
+		      (char*)__FILE__,__LINE__));
+    }
+  }  
+  fConnected = aod.fConnected;
+  return *this;
 }
 
 

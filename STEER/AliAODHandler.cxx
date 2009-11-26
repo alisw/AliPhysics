@@ -105,15 +105,16 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
 AliAODHandler::~AliAODHandler() 
 {
  // Destructor.
-  delete fAODEvent;
+  if (fAODEvent) delete fAODEvent;
   if(fFileA){
     // is already handled in TerminateIO
     fFileA->Close();
     delete fFileA;
+    fTreeA = 0;
   }
-  delete fTreeA;
-  if (fExtensions) delete fExtensions;
-  if (fFilters)    delete fFilters;
+  if (fTreeA) delete fTreeA;
+  if (fExtensions) {fExtensions->Delete(); delete fExtensions;}
+  if (fFilters)    {fFilters->Delete();    delete fFilters;}
 }
 
 //______________________________________________________________________________
@@ -394,7 +395,10 @@ Bool_t AliAODHandler::FinishEvent()
     if (fFilters) {   
       TIter nextf(fFilters);
       AliAODExtension *ext;
-      while ((ext=(AliAODExtension*)nextf())) ext->FinishEvent();
+      while ((ext=(AliAODExtension*)nextf())) {
+//        ext->SetEvent(fAODEvent);
+        ext->FinishEvent();
+      }  
     }       
   }
   if (fIsStandard) fAODEvent->ResetStd();
@@ -424,6 +428,8 @@ Bool_t AliAODHandler::TerminateIO()
     fFileA->Close();
     delete fFileA;
     fFileA = 0;
+    // When closing the file, the tree is also deleted.
+    fTreeA = 0;
   }
   if (fExtensions) {
     TIter next(fExtensions);
@@ -459,6 +465,8 @@ void AliAODHandler::AddAODtoTreeUserInfo()
 {
   // Add aod event to tree user info
   fTreeA->GetUserInfo()->Add(fAODEvent);
+  // Now the tree owns our fAODEvent...
+  fAODEvent = 0;
 }
 
 //______________________________________________________________________________
@@ -614,20 +622,24 @@ AliAODExtension::AliAODExtension(const char* name, const char* title, Bool_t isf
                  fSelected(kFALSE)
 {
 // Constructor.
-   if (isfilter) TObject::SetBit(kFilteredAOD);
+  if (isfilter) {
+    TObject::SetBit(kFilteredAOD);
+    printf("####### Added AOD filter %s\n", name);
+  } else printf("####### Added AOD extension %s\n", name);
 }   
 
 //______________________________________________________________________________
 AliAODExtension::~AliAODExtension()
 {
 // Destructor.
-  if (!IsFilteredAOD()) delete fAODEvent;
   if(fFileE){
     // is already handled in TerminateIO
     fFileE->Close();
     delete fFileE;
+    fTreeE = 0;
+    fAODEvent = 0;
   }
-  delete fTreeE;
+  if (fTreeE) delete fTreeE;
 }
 
 //______________________________________________________________________________
@@ -678,7 +690,6 @@ Bool_t AliAODExtension::FinishEvent()
   }  
   // Filtered AOD. Fill only if event is selected.
   if (!fSelected) return kTRUE;
-  printf("SELECTED EVENT\n");
   fNpassed++;
   fTreeE->Fill();
   fSelected = kFALSE; // so that next event will not be selected unless demanded
@@ -715,6 +726,10 @@ void AliAODExtension::SetEvent(AliAODEvent *event)
       Error("SetEvent", "Not allowed to set external event for filtered AOD's");   
       return;
    }
+   // Use the copy constructor or assignment operator to synchronize with external event.
+//   AliAODEvent &other = *event;
+//   if (!fAODEvent)     fAODEvent = new AliAODEvent(other);
+//   else if (fSelected) *fAODEvent = other;
    fAODEvent = event;
 }
    
@@ -722,11 +737,17 @@ void AliAODExtension::SetEvent(AliAODEvent *event)
 Bool_t AliAODExtension::TerminateIO()
 {
   // Terminate IO
+  if (TObject::TestBit(kFilteredAOD))
+    printf("AOD Filter %s: events processed: %d   passed: %d\n", GetName(), fNtotal, fNpassed);
+  else
+    printf("AOD extension %s: events processed: %d\n", GetName(), fNtotal);
   if (fFileE) {
     fFileE->Write();
     fFileE->Close();
     delete fFileE;
     fFileE = 0;
+    fTreeE = 0;
+    fAODEvent = 0;
   }
   return kTRUE;
 }
