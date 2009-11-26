@@ -58,7 +58,7 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
   for(int is =0; is<AliPID::kSPECIES; is++) fPID[is] = pid;
 
   for(int ip=0; ip<kNplane; ip++){
-    fTrackletIndex[ip] = 0xffff;
+    fTrackletIndex[ip] = -1;
     fTracklet[ip]      = NULL;
   }
 }
@@ -110,9 +110,9 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
 
   SetMass(t.GetMass()/*0.000510*/);
   AliKalmanTrack::SetNumberOfClusters(t.GetTRDncls()); 
-  Int_t ti[kNplane]; t.GetTRDtracklets(&ti[0]);
+  Int_t ti[]={-1, -1, -1, -1, -1, -1}; t.GetTRDtracklets(&ti[0]);
   for(int ip=0; ip<kNplane; ip++){ 
-    fTrackletIndex[ip] = ti[ip] < 0 ? 0xffff : ti[ip];
+    fTrackletIndex[ip] = ti[ip];
     fTracklet[ip]      = NULL;
   }
   for(int i =0; i<3; i++) fBudget[i] = 0.;
@@ -194,7 +194,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], c
   AliDebug(2, Form("Init @ x[%6.2f] pt[%5.3f]", x, 1./pp[4]));
   Int_t ncls = 0;
 	for(int iplane=0; iplane<kNplane; iplane++){
-    fTrackletIndex[iplane] = 0xffff;
+    fTrackletIndex[iplane] = -1;
 		if(!trklts[iplane].IsOK()) fTracklet[iplane] = NULL;
     else{ 
       fTracklet[iplane] = &trklts[iplane];
@@ -223,7 +223,7 @@ AliTRDtrackV1::~AliTRDtrackV1()
   for(Int_t ip=0; ip<kNplane; ip++){
     if(TestBit(kOwner) && fTracklet[ip]) delete fTracklet[ip];
     fTracklet[ip] = NULL;
-    fTrackletIndex[ip] = 0xffff;
+    fTrackletIndex[ip] = -1;
   }
 }
 	
@@ -243,7 +243,7 @@ Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
   Int_t label;
   AliTRDcluster *c    = NULL;
   for (Int_t ip = 0; ip < kNplane; ip++) {
-    if(fTrackletIndex[ip] == 0xffff) continue;
+    if(fTrackletIndex[ip] == -1) continue;
     for (Int_t ic = 0; ic < AliTRDseedV1::kNclusters; ic++) {
       if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
       for (Int_t k = 0; k < 3; k++) { 
@@ -328,7 +328,7 @@ UChar_t AliTRDtrackV1::GetNumberOfTrackletsPID() const
   UChar_t nPID = 0;
   Float_t *prob = NULL;
   for(int ip=0; ip<kNplane; ip++){
-    if(fTrackletIndex[ip] == 0xffff) continue;
+    if(fTrackletIndex[ip] == -1) continue;
     if(!fTracklet[ip]->IsOK()) continue;
     if(!(prob = fTracklet[ip]->GetProbability(kFALSE))) continue;
     
@@ -355,7 +355,7 @@ UChar_t AliTRDtrackV1::SetNumberOfTrackletsPID(Bool_t recalc)
   // steer PID calculation @ tracklet level
   Float_t *prob = NULL;
   for(int ip=0; ip<kNplane; ip++){
-    if(fTrackletIndex[ip] == 0xffff) continue;
+    if(fTrackletIndex[ip] == -1) continue;
     if(!fTracklet[ip]->IsOK()) continue;
     if(!(prob = fTracklet[ip]->GetProbability(recalc))) return 0;
     
@@ -725,7 +725,7 @@ void AliTRDtrackV1::SetNumberOfClusters()
 	
   Int_t ncls = 0;
   for(int ip=0; ip<kNplane; ip++){
-    if(fTracklet[ip] && fTrackletIndex[ip] != 0xffff) ncls += fTracklet[ip]->GetN();
+    if(fTracklet[ip] && fTrackletIndex[ip] != -1) ncls += fTracklet[ip]->GetN();
   }
   AliKalmanTrack::SetNumberOfClusters(ncls);	
 }
@@ -740,7 +740,7 @@ void AliTRDtrackV1::SetOwner()
 
   if(TestBit(kOwner)) return;
   for (Int_t ip = 0; ip < kNplane; ip++) {
-    if(fTrackletIndex[ip] == 0xffff) continue;
+    if(fTrackletIndex[ip] == -1) continue;
     fTracklet[ip] = new AliTRDseedV1(*fTracklet[ip]);
     fTracklet[ip]->SetOwner();
   }
@@ -777,7 +777,7 @@ void AliTRDtrackV1::SetTrackHigh(const AliExternalTrackParam *op)
 void AliTRDtrackV1::UnsetTracklet(Int_t plane)
 {
   if(plane<0 && plane >= kNplane) return;
-  fTrackletIndex[plane] = 0xffff;
+  fTrackletIndex[plane] = -1;
   fTracklet[plane] = NULL;
 }
 
@@ -816,7 +816,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // store raw signals
   Float_t p, sp; Double_t spd;
   for (Int_t ip = 0; ip < kNplane; ip++) {
-    if(fTrackletIndex[ip] == 0xffff) continue;
+    if(fTrackletIndex[ip] == -1) continue;
     if(!fTracklet[ip]->HasPID()) continue;
     const Float_t *dedx = fTracklet[ip]->GetdEdx();
     for (Int_t js = 0; js < nslices; js++, dedx++) track->SetTRDslice(*dedx, ip, js);

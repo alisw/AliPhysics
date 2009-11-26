@@ -549,8 +549,9 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
   Bool_t kStoreIn = kTRUE;
   Int_t    nClustersExpected = 0;
   for (Int_t iplane = kNPlanes; iplane--;) {
-    Int_t   index   = 0;
+    Int_t   index(-1);
     AliTRDseedV1 *tracklet = GetTracklet(&t, iplane, index);
+    AliDebug(2, Form("Tracklet[%p] ly[%d] idx[%d]", (void*)tracklet, iplane, index));
     if(!tracklet) continue;
     if(!tracklet->IsOK()){ 
       AliDebug(1, Form("Tracklet Det[%d] !OK", tracklet->GetDetector()));
@@ -946,8 +947,10 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     // load tracklet to the tracker
     ptrTracklet->Update(&t);
     ptrTracklet = SetTracklet(ptrTracklet);
-    t.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
+    Int_t index(fTracklets->GetEntriesFast()-1);
+    t.SetTracklet(ptrTracklet, index);
     n += ptrTracklet->GetN();
+    AliDebug(2, Form("Setting Tracklet[%d] @ Idx[%d]", ily, index));
 
     // Reset material budget if 2 consecutive gold
 //     if(ilayer>0 && t.GetTracklet(ilayer-1) && ptrTracklet->GetN() + t.GetTracklet(ilayer-1)->GetN() > 20) t.SetBudget(2, 0.);
@@ -2043,7 +2046,7 @@ AliTRDseedV1* AliTRDtrackerV1::GetTracklet(AliTRDtrackV1 *const track, Int_t p, 
   // Detailed description
   //
   idx = track->GetTrackletIndex(p);
-  AliTRDseedV1 *tracklet = (idx==0xffff) ? NULL : (AliTRDseedV1*)fTracklets->UncheckedAt(idx);
+  AliTRDseedV1 *tracklet = (idx<0) ? NULL : (AliTRDseedV1*)fTracklets->UncheckedAt(idx);
 
   return tracklet;
 }

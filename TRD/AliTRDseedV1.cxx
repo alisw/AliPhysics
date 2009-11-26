@@ -36,8 +36,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "TMath.h"
-#include "TLinearFitter.h"
-#include "TClonesArray.h" // tmp
 #include <TTreeStream.h>
 
 #include "AliLog.h"
@@ -61,9 +59,6 @@
 #include "Cal/AliTRDCalDet.h"
 
 ClassImp(AliTRDseedV1)
-
-TLinearFitter *AliTRDseedV1::fgFitterY = NULL;
-TLinearFitter *AliTRDseedV1::fgFitterZ = NULL;
 
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(Int_t det) 
@@ -771,21 +766,6 @@ UShort_t AliTRDseedV1::GetVolumeId() const
   return fClusters[ic] ? fClusters[ic]->GetVolumeId() : 0;
 }
 
-//____________________________________________________________________
-TLinearFitter* AliTRDseedV1::GetFitterY()
-{
-  if(!fgFitterY) fgFitterY = new TLinearFitter(1, "pol1");
-  fgFitterY->ClearPoints();
-  return fgFitterY;
-}
-
-//____________________________________________________________________
-TLinearFitter* AliTRDseedV1::GetFitterZ()
-{
-  if(!fgFitterZ) fgFitterZ = new TLinearFitter(1, "pol1");
-  fgFitterZ->ClearPoints();
-  return fgFitterZ;
-}
 
 //____________________________________________________________________
 void AliTRDseedV1::Calibrate()

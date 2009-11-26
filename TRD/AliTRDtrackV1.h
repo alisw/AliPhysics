@@ -97,7 +97,7 @@ public:
                  GetTrackLow() const  { return fTrackLow;} 
   AliExternalTrackParam*
                  GetTrackHigh() const  { return fTrackHigh;} 
-  const UShort_t* GetTrackletIndexes() const { return &fTrackletIndex[0];}
+  const Int_t* GetTrackletIndexes() const { return &fTrackletIndex[0];}
   
   Bool_t         IsEqual(const TObject *inTrack) const;
   Bool_t         IsKink() const    { return TestBit(kKink);}
@@ -135,23 +135,23 @@ public:
 
 private:
   UInt_t       fStatus;                //  Bit map for the status of propagation
-  UShort_t     fTrackletIndex[kNplane];//  Tracklets index in the tracker list
+  Int_t        fTrackletIndex[kNplane];//  Tracklets index in the tracker list
   Double32_t   fPID[AliPID::kSPECIES]; //  PID probabilities
   Double32_t   fBudget[3];             //  Integrated material budget
   Double32_t   fDE;                    //  Integrated delta energy
   const AliTRDReconstructor *fkReconstructor;//! reconstructor link 
   AliTRDtrackV1 *fBackupTrack;         //! Backup track
-  AliTRDseedV1 *fTracklet[kNplane];    //  Tracklets array defining the track
+  AliTRDseedV1  *fTracklet[kNplane];   //  Tracklets array defining the track
   AliExternalTrackParam *fTrackLow;    // parameters of the track which enter TRD from below (TPC) 
-  AliExternalTrackParam *fTrackHigh;  // parameters of the track which enter TRD from above (HMPID, PHOS) 
+  AliExternalTrackParam *fTrackHigh;   // parameters of the track which enter TRD from above (HMPID, PHOS) 
 
-  ClassDef(AliTRDtrackV1, 5)          // TRD track - tracklet based
+  ClassDef(AliTRDtrackV1, 6)          // TRD track - tracklet based
 };
 
 //____________________________________________________
 inline Float_t AliTRDtrackV1::GetMomentum(Int_t plane) const
 {
-  return plane >=0 && plane < kNplane && fTrackletIndex[plane] != 0xff ? fTracklet[plane]->GetMomentum() : -1.;
+  return plane >=0 && plane < kNplane && fTrackletIndex[plane] != -1 ? fTracklet[plane]->GetMomentum() : -1.;
 }
 
 //____________________________________________________
