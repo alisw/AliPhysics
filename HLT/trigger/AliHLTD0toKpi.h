@@ -14,6 +14,9 @@
 #include "TObject.h"
 
 class AliESDtrack;
+class AliAODVertex;
+class AliESDVertex;
+class TObjArray;
 
 class AliHLTD0toKpi : public TObject
 {
@@ -22,6 +25,9 @@ public:
   Double_t InvMass(AliESDtrack* d1, AliESDtrack* d2);
   void cosThetaStar(AliESDtrack* n, AliESDtrack* p,Double_t &D0,Double_t &D0bar);
   Double_t pointingAngle(AliESDtrack* n, AliESDtrack* p, Double_t *pv, Double_t *sv);
+
+  AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, const AliESDVertex *v);
+
 private:
   
   ClassDef(AliHLTD0toKpi, 1)

@@ -12,7 +12,12 @@
 /// @brief  HLT trigger component for D0->Kpi
 
 #include "AliHLTTrigger.h"
+#include <vector>
+#include "AliESDtrack.h"
+
 class TH1F;
+class TObjArray;
+class AliHLTD0toKpi;
 
 /**
  * @class  AliHLTD0Trigger
@@ -95,6 +100,11 @@ class AliHLTD0Trigger : public AliHLTTrigger
   /// inherited from AliHLTTrigger: calculate the trigger
   virtual int DoTrigger();
 
+  void SingleTrackSelect(AliESDtrack*,Double_t,Double_t*);
+  Int_t RecESDTracks(const TObject* iter);
+  Int_t RecV0(const TObject* iter);
+  Int_t RecBarrelTracks(const TObject* iter);
+
   /// pt cut for decay, minimum [GeV/c]
   float fPtMin;                                            //! transient
   /// Distance between decay tracks [cm] ??
@@ -111,9 +121,20 @@ class AliHLTD0Trigger : public AliHLTTrigger
   float fcosPoint;                                         //! transient 
 
   bool fplothisto;                                         //! transient 
+  bool fUseV0;                                             //! transient 
+
+  Double_t mD0PDG;                                         //! transient
 
   /// D0 inv. mass plot
-  TH1F *fD0mass;   //! transient  
+  TH1F *fD0mass;                                           //! transient  
+
+  vector<AliESDtrack*> fPos;                                //! transient
+  vector<AliESDtrack*> fNeg;                                //! transient
+
+  AliHLTD0toKpi *fd0calc;                                    //! transient
+  TObjArray *ftwoTrackArray;                                 //! transient
+
+  Int_t fTotalD0;                                            //! transient
 
   /// the default configuration entry for this component
   static const char* fgkOCDBEntry; //!transient

@@ -4,6 +4,11 @@
 #include "TMath.h"
 #include "AliESDtrack.h"
 #include "TVector3.h"
+#include "AliAODVertex.h"
+#include "AliESDVertex.h"
+#include "TObjArray.h"
+#include "AliVertexerTracks.h"
+
 
 ClassImp(AliHLTD0toKpi)
 
@@ -71,4 +76,39 @@ Double_t AliHLTD0toKpi::pointingAngle(AliESDtrack* n, AliESDtrack* p, Double_t *
   double pta = mom.Angle(flight);
 
   return TMath::Cos(pta); 
+}
+
+AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, const AliESDVertex *v)
+{
+  
+  AliESDVertex *vertexESD = 0;
+  AliAODVertex *vertexAOD = 0;
+  
+  AliVertexerTracks *vertexer = new AliVertexerTracks(b);
+  AliESDVertex* fV1 = new AliESDVertex(*v);
+  vertexer->SetVtxStart(fV1);
+  vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);
+  delete vertexer; vertexer=NULL;
+  
+  if(!vertexESD) return vertexAOD;
+  
+  if(vertexESD->GetNContributors()!=trkArray->GetEntriesFast()) { 
+    //AliDebug(2,"vertexing failed"); 
+    delete vertexESD; vertexESD=NULL;
+    return vertexAOD;
+  }
+
+  // convert to AliAODVertex
+  Double_t pos[3],cov[6],chi2perNDF;
+  vertexESD->GetXYZ(pos); // position
+  vertexESD->GetCovMatrix(cov); //covariance matrix
+  chi2perNDF = vertexESD->GetChi2toNDF();
+  //dispersion = vertexESD->GetDispersion();
+  delete vertexESD; vertexESD=NULL;
+
+  Int_t nprongs= trkArray->GetEntriesFast();
+  vertexAOD = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,nprongs);
+
+  return vertexAOD;
+
 }
