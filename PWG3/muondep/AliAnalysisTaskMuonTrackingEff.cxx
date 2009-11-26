@@ -405,7 +405,7 @@ void AliAnalysisTaskMuonTrackingEff::ComputeErrors()
   for (Int_t ii = 0; ii < 10; ii++)
     {
       Int_t NumberOfBins = ((TH1F*) fChamberEffHistList->UncheckedAt(ii))->GetNbinsX();
-      for (Int_t jj = 0; jj < NumberOfBins; jj++)
+      for (Int_t jj = 1; jj <= NumberOfBins; jj++)
 	{
 	  Double_t Ntd = ((TH1F*) fChamberTDHistList->UncheckedAt(ii))->GetBinContent(jj);
 	  Double_t Ntt = ((TH1F*) fChamberTTHistList->UncheckedAt(ii))->GetBinContent(jj);
