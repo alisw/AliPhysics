@@ -3198,14 +3198,16 @@ Bool_t AliReconstruction::InitPlaneEff() {
  AliWarning(Form("Implementation of this method not yet completed !! Method return kTRUE"));
 
   fSPDTrackleter = NULL;
-  AliReconstructor* itsReconstructor = GetReconstructor(0);
-  if (itsReconstructor) {
-    fSPDTrackleter = itsReconstructor->CreateTrackleter(); // this is NULL unless required in RecoParam
+  TString detStr = fLoadCDB;
+  if (IsSelected(fgkDetectorName[0], detStr)) {
+    AliReconstructor* itsReconstructor = GetReconstructor(0);
+    if (itsReconstructor) {
+      fSPDTrackleter = itsReconstructor->CreateTrackleter(); // this is NULL unless required in RecoParam
+    }
+    if (fSPDTrackleter) {
+      AliInfo("Trackleter for SPD has been created");
+    }
   }
-  if (fSPDTrackleter) {
-    AliInfo("Trackleter for SPD has been created");
-  }
-
  return kTRUE;
 }
 
