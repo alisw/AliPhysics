@@ -608,6 +608,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
   Int_t    *nhit = new Int_t[kNdet];
 
   AliTRDarraySignal *signals = 0x0;
+
+  // 
+  if (calibration->GetNumberOfTimeBinsDCS() != AliTRDSimParam::Instance()->GetNTimeBins()) {
+    AliWarning(Form("Number of time bins is different to OCDB value [SIM=%d, OCDB=%d]"
+		   ,AliTRDSimParam::Instance()->GetNTimeBins()
+                   ,calibration->GetNumberOfTimeBinsDCS()));
+  }
  
   // Sort all hits according to detector number
   if (!SortHits(hits,nhit)) {
@@ -649,6 +656,10 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   delete [] hits;
   delete [] nhit;
+
+  // Save the values for the raw data headers
+  fDigitsManager->GetDigitsParam()->SetNTimeBins(AliTRDSimParam::Instance()->GetNTimeBins());
+  fDigitsManager->GetDigitsParam()->SetADCbaseline(AliTRDSimParam::Instance()->GetADCbaseline());
 
   return kTRUE;
 
@@ -830,7 +841,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det
                   * commonParam->GetSamplingFrequency())) - 1;
   }
 
-  Int_t   nTimeTotal   = fDigitsManager->GetDigitsParam()->GetNTimeBins();
+  Int_t   nTimeTotal   = simParam->GetNTimeBins();
   Float_t samplingRate = commonParam->GetSamplingFrequency();
   Float_t elAttachProp = simParam->GetElAttachProp() / 100.0; 
 
@@ -1184,7 +1195,7 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
 
   Int_t nRowMax    = fGeo->GetPadPlane(det)->GetNrows();
   Int_t nColMax    = fGeo->GetPadPlane(det)->GetNcols();
-  Int_t nTimeTotal = fDigitsManager->GetDigitsParam()->GetNTimeBins();
+  Int_t nTimeTotal = simParam->GetNTimeBins();
 
   // The gainfactor calibration objects
   const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();  
@@ -1300,7 +1311,7 @@ Bool_t AliTRDdigitizer::Signal2SDigits(Int_t det, AliTRDarraySignal *signals)
 
   Int_t nRowMax    = fGeo->GetPadPlane(det)->GetNrows();
   Int_t nColMax    = fGeo->GetPadPlane(det)->GetNcols();
-  Int_t nTimeTotal = fDigitsManager->GetDigitsParam()->GetNTimeBins();
+  Int_t nTimeTotal = AliTRDSimParam::Instance()->GetNTimeBins();
 
   // Get the container for the digits of this detector
 
@@ -1386,7 +1397,7 @@ Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager * const manDig
 
     Int_t nRowMax    = fGeo->GetPadPlane(det)->GetNrows();
     Int_t nColMax    = fGeo->GetPadPlane(det)->GetNcols();
-    Int_t nTimeTotal = calibration->GetNumberOfTimeBins();
+    Int_t nTimeTotal = manDig->GetDigitsParam()->GetNTimeBins();
 
     // Get the calibration objects
     //calGainFactorROC      = calibration->GetGainFactorROC(det);
@@ -1409,6 +1420,10 @@ Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager * const manDig
     tracks0->Allocate(nRowMax,nColMax,nTimeTotal);
     tracks1->Allocate(nRowMax,nColMax,nTimeTotal);
     tracks2->Allocate(nRowMax,nColMax,nTimeTotal);
+
+    // Keep the digits param
+    manSDig->GetDigitsParam()->SetNTimeBins(manDig->GetDigitsParam()->GetNTimeBins());
+    manSDig->GetDigitsParam()->SetADCbaseline(manDig->GetDigitsParam()->GetADCbaseline());
 
     if (digits->HasData()) {
 
@@ -1530,13 +1545,20 @@ Bool_t AliTRDdigitizer::MergeSDigits()
     AliDebug(1,"Only one input file.");
   }
   
-  Int_t nTimeTotal = calibration->GetNumberOfTimeBins();  
+  Int_t nTimeTotal = fSDigitsManager->GetDigitsParam()->GetNTimeBins();
   Int_t iMerge = 0;
 
   while (mergeSDigitsManager) {
 
+    if (mergeSDigitsManager->GetDigitsParam()->GetNTimeBins() != nTimeTotal) {
+      AliError(Form("Mismatch in the number of time bins [%d,%d]"
+                   ,nTimeTotal
+		   ,mergeSDigitsManager->GetDigitsParam()->GetNTimeBins()));
+      return kFALSE;
+    }
+
     iMerge++;
-      
+
     // Loop through the detectors
     for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) {
 
@@ -1667,6 +1689,9 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
 
   } // for: detector numbers
 
+  // Save the values for the raw data headers
+  fDigitsManager->GetDigitsParam()->SetNTimeBins(AliTRDSimParam::Instance()->GetNTimeBins());
+  fDigitsManager->GetDigitsParam()->SetADCbaseline(AliTRDSimParam::Instance()->GetADCbaseline());
 
   return kTRUE;
 
@@ -1694,7 +1719,7 @@ Bool_t AliTRDdigitizer::CopyDictionary(Int_t det)
 
   Int_t nRowMax    = fGeo->GetPadPlane(det)->GetNrows();
   Int_t nColMax    = fGeo->GetPadPlane(det)->GetNcols();
-  Int_t nTimeTotal = calibration->GetNumberOfTimeBins();
+  Int_t nTimeTotal = AliTRDSimParam::Instance()->GetNTimeBins();
 
   Int_t row  = 0;
   Int_t col  = 0;

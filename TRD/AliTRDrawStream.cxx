@@ -770,7 +770,6 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
       digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
       digitsparam->SetPretiggerPhase(det,GetPreTriggerPhase());
       if (!fIsGlobalDigitsParamSet){
-        digitsparam->SetCheckOCDB(kFALSE);
         digitsparam->SetNTimeBins(ntbins);
 	fCommonAdditive=10;
         digitsparam->SetADCbaseline(fCommonAdditive);
@@ -1311,11 +1310,13 @@ Bool_t AliTRDrawStream::IsMCMheaderOK()
     if (fgDebugFlag) AliDebug(11,Form("Event from the past? Current %d Last %d %s.\n", fEventCounter, fLastEventCounter, DumpMCMinfo(fMCM)));
   }
 
-  if ( fMCM->fADCmaskCorrupted > 0 )
+  if ( fMCM->fADCmaskCorrupted > 0 ) {
     return kFALSE;
+  }
 
-  if ( fMCM->fMCMhdCorrupted > 0 )
+  if ( fMCM->fMCMhdCorrupted > 0 ) {
     return kFALSE;
+  }
 
   return kTRUE;
 }
@@ -1346,7 +1347,6 @@ Bool_t AliTRDrawStream::DecodeMCMheader()
     fpPos--; 
     return kFALSE;
   }
-
   fMCM->fROW = fTRDfeeParam->GetPadRowFromMCM(fMCM->fROB, fMCM->fMCM); 
 
   if ((fHC->fRawVMajor > 2 && fHC->fRawVMajor <5) || ((fHC->fRawVMajor & 32) == 32)) { //cover old and new version definition of ZS data
@@ -1379,9 +1379,10 @@ Bool_t AliTRDrawStream::DecodeMCMheader()
     AliDebug(7, DumpMCMadcMask(fMCM));
   }
 
-  if (IsMCMheaderOK() == kFALSE)
+  if (IsMCMheaderOK() == kFALSE) {
     return kFALSE;
-    
+  }    
+
   return kTRUE;
 }
 
@@ -1503,6 +1504,7 @@ Bool_t AliTRDrawStream::DecodeHC()
   //
   // decode hc header and data
   //
+
   if (DecodeHCheader() == kFALSE) {
     if (fWarnError) AliWarning(Form("HC Header decode failed. H0 Error: %d H1 Error: %d",fHC->fH0Corrupted,fHC->fH1Corrupted));
     if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderCorrupt, "HC header corrupted"); 
@@ -1542,7 +1544,7 @@ Bool_t AliTRDrawStream::DecodeHC()
       if (fHC->fCorrupted < 4) fHC->fCorrupted += 4; // benchmark hc data corruption as 4
     
       if (fgSkipData == kTRUE || fHC->fCorrupted >= 16) { // stop HC data reading
-        fHC->fMCMmax++; 
+        fHC->fMCMmax++;
         return kFALSE;
       } 
           

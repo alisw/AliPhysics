@@ -86,7 +86,8 @@ class AliTRDrawData : public TObject {
  	static const UInt_t fgkEndOfTrackletMarker  = 0x10001000; // This marks the end of tracklet data words
  	static const UInt_t fgkEndOfDataMarker      = 0x00000000; // This marks the end of HC data words
 
-	Int_t   fSMindexPos;                // Position of SM index word
+    Int_t   fNTimeBins;                 // number of time bin
+    Int_t   fSMindexPos;                // Position of SM index word
     Int_t   fStackindexPos;             // Position of SM index word
     UInt_t  fEventCounter;              // Event counter(starting from 1)
 

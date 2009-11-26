@@ -41,6 +41,7 @@
 #include "AliTRDSignalIndex.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDmcmSim.h"
+#include "AliTRDdigitsParam.h"
 
 ClassImp(AliTRDrawData)
 
@@ -56,6 +57,7 @@ AliTRDrawData::AliTRDrawData()
   ,fNumberOfDDLs(0)
   ,fTrackletTree(NULL)
   ,fTrackletContainer(NULL)
+  ,fNTimeBins(0)
   ,fSMindexPos(0)
   ,fStackindexPos(0)
   ,fEventCounter(0)
@@ -78,6 +80,7 @@ AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   ,fNumberOfDDLs(0)
   ,fTrackletTree(NULL)
   ,fTrackletContainer(NULL)
+  ,fNTimeBins(0)
   ,fSMindexPos(0)
   ,fStackindexPos(0)
   ,fEventCounter(0)
@@ -173,6 +176,9 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
   // Buffer to temporary store half chamber data
   UInt_t     *hcBuffer    = new UInt_t[kMaxHcWords];
   
+  // set the number of time bin 
+  fNTimeBins = digitsManager->GetDigitsParam()->GetNTimeBins(); 
+
   Bool_t newEvent = kFALSE;  // only for correct readout tree
   Bool_t newSM    = kFALSE;  // new SM flag, for writing SM index words
   Bool_t newStack = kFALSE;  // new stack flag, for writing stack index words
@@ -699,7 +705,8 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDarrayADC *digits, Int_t side
   Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
   Int_t         nRow = fGeo->GetRowMax( layer, stack, sect );
   Int_t         nCol = fGeo->GetColMax( layer );
-  const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  //const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  const Int_t kNTBin = fNTimeBins;
   Int_t       kCtype = 0;                       // Chamber type (0:C0, 1:C1)
   Int_t          iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
   UInt_t           x = 0;                       // General used number
@@ -870,7 +877,8 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side , Int_t 
   Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
   Int_t         nRow = fGeo->GetRowMax( layer, stack, sect );
   Int_t         nCol = fGeo->GetColMax( layer );
-  const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  //const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  const Int_t kNTBin = fNTimeBins;
   Int_t       kCtype = 0;                       // Chamber type (0:C0, 1:C1)
   //Int_t          iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
 
@@ -1103,7 +1111,8 @@ void AliTRDrawData::WriteIntermediateWords(UInt_t* buf, Int_t& nw, Int_t& of, co
     Int_t        stack = fGeo->GetStack( det );   // Stack
     Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
     Int_t           rv = fFee->GetRAWversion();
-    const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+    //const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+    const Int_t kNTBin = fNTimeBins;
     UInt_t           x = 0;
 
     // Write end of tracklet marker
@@ -1165,8 +1174,9 @@ void AliTRDrawData::WriteIntermediateWordsV2(UInt_t* buf, Int_t& nw, Int_t& of, 
     Int_t        stack = fGeo->GetStack( det );   // Stack
     Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
     Int_t           rv = fFee->GetRAWversion();
-    const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-	Bool_t trackletOn = fFee->GetTracklet();
+    //const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();    // old method, fetch the info from OCDB
+    const Int_t kNTBin = fNTimeBins;
+    Bool_t  trackletOn = fFee->GetTracklet();
     UInt_t           x = 0;
 
     // Write end of tracklet marker

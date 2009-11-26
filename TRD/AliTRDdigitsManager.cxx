@@ -239,8 +239,6 @@ void AliTRDdigitsManager::CreateArrays()
       delete fDigitsParam;
     }
   fDigitsParam = new AliTRDdigitsParam();
-  fDigitsParam->SetNTimeBins(AliTRDSimParam::Instance()->GetNTimeBins());
-  fDigitsParam->SetADCbaseline(AliTRDSimParam::Instance()->GetADCbaseline());
 
 }
 
@@ -467,7 +465,7 @@ Bool_t AliTRDdigitsManager::ReadDigits(TTree * const tree)
 Bool_t AliTRDdigitsManager::WriteDigits()
 {
   //
-  // Writes out the TRD-digits and the dictionaries
+  // Writes out the TRD-digits, the dictionaries and the digitsPaam
   //
 
   if (!StoreArrayDigits())
@@ -483,6 +481,12 @@ Bool_t AliTRDdigitsManager::WriteDigits()
 	  AliError("Error while storing dictionaries in branch\n");
 	  return kFALSE;
 	}
+    }
+
+  if (!StoreDigitsParam())
+    {
+      AliError("Error while storing digitsParam\n");
+      return kFALSE;
     }
   
   // Write the new tree to the output file

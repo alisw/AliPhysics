@@ -675,7 +675,6 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
       // Set digitparam variables
       digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
       if (!fIsGlobalDigitsParamSet){
-        digitsparam->SetCheckOCDB(kFALSE);
         digitsparam->SetNTimeBins(ntbins);
 	fCommonAdditive=10;
         digitsparam->SetADCbaseline(fCommonAdditive);

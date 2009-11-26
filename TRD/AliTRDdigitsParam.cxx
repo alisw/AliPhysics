@@ -24,14 +24,12 @@
 #include "AliLog.h"
 
 #include "AliTRDdigitsParam.h"
-#include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDdigitsParam)
 
 //_____________________________________________________________________________
 AliTRDdigitsParam::AliTRDdigitsParam()
   :TObject()
-  ,fCheckOCDB(kTRUE)
   ,fNTimeBins(0)
   ,fADCbaseline(0)
 {
@@ -57,7 +55,6 @@ AliTRDdigitsParam::~AliTRDdigitsParam()
 //_____________________________________________________________________________
 AliTRDdigitsParam::AliTRDdigitsParam(const AliTRDdigitsParam &p)
   :TObject(p)
-  ,fCheckOCDB(p.fCheckOCDB)
   ,fNTimeBins(p.fNTimeBins)
   ,fADCbaseline(p.fADCbaseline)
 {
@@ -98,46 +95,11 @@ void AliTRDdigitsParam::Copy(TObject &p) const
     return;
   }  
 
-  target->fCheckOCDB   = fCheckOCDB;
   target->fNTimeBins   = fNTimeBins;
   target->fADCbaseline = fADCbaseline;
 
   for (Int_t i = 0; i < 540; i++) {
     target->fPretriggerPhase[i] = fPretriggerPhase[i];
-  }
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDdigitsParam::SetNTimeBins(Int_t ntb)
-{
-  //
-  // Sets the number of time bins
-  // Per default an automatic consistency check with the corresponding
-  // OCDB entry is performed. This check can be disabled by setting
-  // SetCheckOCDB(kFALSE)
-  //
-
-  fNTimeBins = ntb;
-
-  if (fCheckOCDB) {
-    Int_t nTimeBinsOCDB = AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS();
-    if (nTimeBinsOCDB > -1) {
-      if (fNTimeBins == nTimeBinsOCDB) {
-        return kTRUE;
-      }
-      else {
-        AliError(Form("Number of timebins does not match OCDB value (raw:%d, OCDB:%d)"
-                     ,fNTimeBins,nTimeBinsOCDB));
-        return kFALSE;
-      }
-    }
-    else {
-      return kTRUE;
-    }
-  }
-  else {
-    return kTRUE;
   }
 
 }

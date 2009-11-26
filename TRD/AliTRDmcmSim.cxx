@@ -199,7 +199,8 @@ void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEve
   fRobPos        = robPos;
   fMcmPos        = mcmPos;
   fNADC          = fFeeParam->GetNadcMcm();
-  fNTimeBin      = fCal->GetNumberOfTimeBins();
+  //fNTimeBin      = fCal->GetNumberOfTimeBins();
+  fNTimeBin      = AliTRDSimParam::Instance()->GetNTimeBins();
   fRow           = fFeeParam->GetPadRowFromMCM( fRobPos, fMcmPos );
   fMaxTracklets  = fFeeParam->GetMaxNrOfTracklets();  
   
@@ -242,7 +243,8 @@ void AliTRDmcmSim::Reset()
     for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
       fADCR[iadc][it] = 0;
       fADCF[iadc][it] = 0;
-      fZSM [iadc][it] = 1;   // Default unread = 1
+      fZSM [iadc][it] = 1;   // Default unread = 1  simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
+
     }
     fZSM1Dim[iadc] = 1;      // Default unread = 1
     fGainCounterA[iadc] = 0;
@@ -299,8 +301,9 @@ Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob
   if (digits->HasData()) {
     digits->Expand();
 
-    if (fNTimeBin != digits->GetNtime()) 
+    if (fNTimeBin != digits->GetNtime()) {
       SetNTimebins(digits->GetNtime());
+    }
 
     Int_t padrow = fFeeParam->GetPadRowFromMCM(rob, mcm);
     Int_t padcol = 0;
@@ -577,8 +580,9 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
 
   fDigitsManager = digitsManager;
 
-  if (fNTimeBin != adcArray->GetNtime())
+  if (fNTimeBin != adcArray->GetNtime()) {
     SetNTimebins(adcArray->GetNtime());
+  }
 
   Int_t offset = (fMcmPos % 4) * 21 + (fRobPos % 2) * 84;
 

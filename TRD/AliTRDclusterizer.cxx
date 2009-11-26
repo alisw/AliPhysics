@@ -784,7 +784,6 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     return kFALSE;
   }
 
-
   fMaxThresh            = fReconstructor->GetRecoParam()->GetClusMaxThresh();
   fSigThresh            = fReconstructor->GetRecoParam()->GetClusSigThresh();
   fMinMaxCutSigma       = fReconstructor->GetRecoParam()->GetMinMaxCutSigma();
