@@ -12,6 +12,7 @@ SRCS= SPECTRA/AliProtonAnalysisBase.cxx \
       SPECTRA/AliAnalysisTaskStrange.cxx \
       SPECTRA/AliProtonFeedDownAnalysisTask.cxx \
       SPECTRA/AliProtonFeedDownAnalysis.cxx \
+      SPECTRA/AliProtonAbsorptionCorrection.cxx \
       SPECTRA/AliAnalysisCentralCutMC.cxx \
       SPECTRA/AliAnalysisCentralCutESD.cxx \
       SPECTRA/AliAnalysisCentralCutEvtMC.cxx \
