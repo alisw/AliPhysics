@@ -206,7 +206,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunMuonTracking(kFALSE),
   fRunV0Finder(kTRUE),
   fRunCascadeFinder(kTRUE),
-  fStopOnError(kFALSE),
+  fStopOnError(kTRUE),
   fWriteAlignmentData(kFALSE),
   fWriteESDfriend(kFALSE),
   fFillTriggerESD(kTRUE),
