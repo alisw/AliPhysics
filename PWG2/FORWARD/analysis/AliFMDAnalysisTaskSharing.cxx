@@ -292,9 +292,9 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
  
   Float_t mergedEnergy = 0;
   //Float_t nParticles = 0;
-  Float_t cutLow  = 0.15;
-  if(ring == 'I')
-    cutLow = 0.1;
+  Float_t cutLow  = 0.25;//0.15;
+  // if(ring == 'I')
+  //  cutLow = 0.1;
   
   //cutLow = 0;
   //AliFMDParameters* recopars = AliFMDParameters::Instance();
