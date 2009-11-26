@@ -120,7 +120,7 @@ public:
   void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}
   void     PrintStatus() const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
-  char*    GetDndetaAnalysisName() {return "FORWARD_DnDeta";}
+  char*    GetDndetaAnalysisName() {return "PWG2forwardDnDeta";}
   
 protected:
   
