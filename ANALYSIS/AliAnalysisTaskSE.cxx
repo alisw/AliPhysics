@@ -277,7 +277,11 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     if( fInputHandler ) {
        fEntry = fInputHandler->GetReadEntry();
     }
-    
+// Notify the change of run number
+    if (InputEvent()->GetRunNumber() != fCurrentRunNumber) {
+	fCurrentRunNumber = InputEvent()->GetRunNumber();
+	NotifyRun();
+    }    
 	   
     else if( fMCEvent )
        fEntry = fMCEvent->Header()->GetEvent(); 
@@ -451,16 +455,6 @@ Bool_t AliAnalysisTaskSE::IsStandardAOD() const
 
 Bool_t AliAnalysisTaskSE::Notify()
 {
-    // Called for every change of input file
-    if (fInputHandler) {
-	if (fInputHandler->GetTree()) 
-	    fInputHandler->GetTree()->GetEntry(0);
-    }
-    
-    if (InputEvent()->GetRunNumber() != fCurrentRunNumber) {
-	fCurrentRunNumber = InputEvent()->GetRunNumber();
-	NotifyRun();
-    }
     return (UserNotify());
 }
 
