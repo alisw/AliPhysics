@@ -2019,21 +2019,9 @@ void AliReconstruction::SlaveTerminate()
   }
 
   // End of cycle for the in-loop  
-  if (fRunQA) 
-    AliQAManager::QAManager()->EndOfCycle() ;
-  
-  if (fRunGlobalQA) {
-    AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
-    if (qadm) {
-      if (IsInTasks(AliQAv1::kRECPOINTS)) 
-        qadm->EndOfCycle(AliQAv1::kRECPOINTS);
-      if (IsInTasks(AliQAv1::kESDS)) 
-        qadm->EndOfCycle(AliQAv1::kESDS);
-      qadm->Finish();
-    }
-  }
 
   if (fRunQA || fRunGlobalQA) {
+    AliQAManager::QAManager()->EndOfCycle() ;
     if (fInput &&
 	!fProofOutputLocation.IsNull() &&
 	fProofOutputArchive.IsNull() &&
