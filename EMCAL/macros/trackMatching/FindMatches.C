@@ -25,10 +25,14 @@ void FindMatches(const char *fileOut = "matchESD.root")
 	if (!rl) return;
 	rl->LoadgAlice();
 	gAlice = rl->GetAliRun();
-	
-  	//AliMagF *magf = new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG);
-  	AliMagF *magf = new AliMagF("Maps","Maps", 1., 1.);
- 	
+
+	//
+	//Get magnetic field from GRP
+	//
+ 	 AliGRPManager * grpMan=new AliGRPManager();
+	 grpMan->ReadGRPEntry(); 
+	 grpMan->SetMagField(); 
+
 	//
 	// Open ESD file and recoveries TTree of ESD objects.
 	//
