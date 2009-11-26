@@ -37,7 +37,7 @@ AliHLTTRDOfflineClusterizerComponent::AliHLTTRDOfflineClusterizerComponent():
   AliHLTTRDClusterizerComponent()
 {
   // Default constructor
-
+  fOffline = kTRUE;
 }
 
 AliHLTTRDOfflineClusterizerComponent::~AliHLTTRDOfflineClusterizerComponent()
@@ -65,21 +65,15 @@ int AliHLTTRDOfflineClusterizerComponent::DoInit( int argc, const char** argv )
 }
 
 void AliHLTTRDOfflineClusterizerComponent::SetOfflineParams(){
-  HLTFatal("You have entered the OFFLINE configuration!");
-  HLTFatal("This program shall NOT run on the HLT cluster like this!");
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
     HLTFatal("You are resetting the Default Storage of the CDBManager!");
     HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
     AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  }else{
-    HLTError("DefaultStorage was already set!");
   }
   if(AliCDBManager::Instance()->GetRun()<0){
     HLTFatal("You are resetting the CDB run number to 0!");
     HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
     AliCDBManager::Instance()->SetRun(0);
-  }else{
-    HLTError("Run Number was already set!");
   }
 }
 
@@ -92,6 +86,8 @@ int AliHLTTRDOfflineClusterizerComponent::DoEvent(const AliHLTComponent_EventDat
 						  AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 						  AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
 {
+  if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
+    return 0;
   return AliHLTTRDClusterizerComponent::DoEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks );
 }
 

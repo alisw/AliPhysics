@@ -75,7 +75,8 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   fgeometryFileName(""),
   fieldStrength(-101),
   fSlowTracking(kFALSE),
-  fOutputV1Tracks(kTRUE)
+  fOutputV1Tracks(kTRUE),
+  fOffline(kFALSE)
 {
   // Default constructor
 
@@ -261,7 +262,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       TClonesArray* trdTracks;
       trdTracks = fTracker->GetListOfTracks();
       
-      if(nTracks>0){
+      if(!fOffline && nTracks>0){
 	HLTDebug("We have an output ESDEvent: 0x%x with %i tracks", fESD, nTracks);
 	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddESDToOutput(fESD, outputPtr+offset);
 	totalSize += addedSize;
@@ -296,7 +297,13 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	  offset = totalSize;
 	}
       }
-      
+      if(fOffline){
+	if(trdTracks)
+	  PushBack(trdTracks, AliHLTTRDDefinitions::fgkTRDOffTracksDataType, 0); 
+	else
+	  PushBack(new TObject, AliHLTTRDDefinitions::fgkTRDOffTracksDataType, 0);
+      }
+
       HLTDebug("totalSize: %i", totalSize);
       
 //       if ( totalSize > allocSize )

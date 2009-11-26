@@ -13,7 +13,6 @@
 #include "AliHLTProcessor.h"
 
 class TFile;
-class TTree;
 
 class TGeoManager;
 class AliCDBManager;
@@ -68,7 +67,7 @@ protected:
   int Configure(const char* arguments);
   int SetParams();
 	
-private:
+protected:
   /** copy constructor prohibited */
   AliHLTTRDTrackerV1Component(const AliHLTTRDTrackerV1Component&);
   /** assignment operator prohibited */
@@ -85,16 +84,17 @@ private:
 
   TClonesArray* fClusterArray;
 
-  Int_t fRecoParamType;     // default will be the low flux
-  Int_t fNtimeBins;         // number of time bins for the tracker to use
-  Int_t fMagneticField;     // magnetic field: 0==OFF and 1==ON
-  Int_t fPIDmethod;          // 0=LikelyHood(LH) 1=NeuronalNetwork(NN) 2=TruncatedMean(TM)
+  Int_t fRecoParamType;       // default will be the low flux
+  Int_t fNtimeBins;           // number of time bins for the tracker to use
+  Int_t fMagneticField;       // magnetic field: 0==OFF and 1==ON
+  Int_t fPIDmethod;           // 0=LikelyHood(LH) 1=NeuronalNetwork(NN) 2=TruncatedMean(TM)
   TString fgeometryFileName;
   Double_t fieldStrength;
   Bool_t fSlowTracking;
   Bool_t fOutputV1Tracks;
+  Bool_t fOffline;            // mode to compare HLT data with offline
 
-  ClassDef(AliHLTTRDTrackerV1Component, 3)
+  ClassDef(AliHLTTRDTrackerV1Component, 4)
 
 };
 #endif

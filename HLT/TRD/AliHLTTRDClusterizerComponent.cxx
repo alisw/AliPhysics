@@ -83,7 +83,8 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
   fgeometryFileName(""),
   fProcessTracklets(kFALSE),
   fHLTstreamer(kTRUE),
-  fTC(kFALSE)
+  fTC(kFALSE),
+  fOffline(kFALSE)
 {
   // Default constructor
 

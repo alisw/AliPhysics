@@ -65,7 +65,7 @@ protected:
   int Configure(const char* arguments);
   int SetParams();
 	
-private:
+protected:
   /** copy constructor prohibited */
   AliHLTTRDClusterizerComponent(const AliHLTTRDClusterizerComponent&);
   /** assignment operator prohibited */
@@ -90,8 +90,9 @@ private:
   Bool_t fProcessTracklets; // write the L! tracklets to output
   Bool_t fHLTstreamer;      // use FastStreamer
   Bool_t fTC;               // using tail cancellation
+  Bool_t fOffline;          // mode to compare HLT data with offline
 
-  ClassDef(AliHLTTRDClusterizerComponent, 4)
+  ClassDef(AliHLTTRDClusterizerComponent, 5)
 
 };
 #endif

@@ -24,20 +24,38 @@
 
 #include "AliHLTTRDOfflineTrackerV1Component.h"
 #include "AliCDBManager.h"
+#include "AliTRDrecoParam.h"
+#include "AliHLTTRDDefinitions.h"
 
 ClassImp(AliHLTTRDOfflineTrackerV1Component)
     
-AliHLTTRDOfflineTrackerV1Component::AliHLTTRDOfflineTrackerV1Component():
-  AliHLTTRDTrackerV1Component()
+AliHLTTRDOfflineTrackerV1Component::AliHLTTRDOfflineTrackerV1Component()
+  :AliHLTTRDTrackerV1Component()
 {
   // Default constructor
-
+  fOffline=kTRUE;
 }
 
 AliHLTTRDOfflineTrackerV1Component::~AliHLTTRDOfflineTrackerV1Component()
 {
   // Destructor
   // Work is Done in DoDeInit()
+}
+
+int AliHLTTRDOfflineTrackerV1Component::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+{
+  // Get the output data types
+  tgtList.clear();
+  AliHLTTRDTrackerV1Component::GetOutputDataTypes(tgtList);
+  tgtList.push_back(AliHLTTRDDefinitions::fgkTRDOffTracksDataType);
+  return tgtList.size();
+}
+
+void AliHLTTRDOfflineTrackerV1Component::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
+{
+  // Get the output data size
+  constBase = 1000000;
+  inputMultiplier = 4*((double)fOutputPercentage);
 }
 
 AliHLTComponent* AliHLTTRDOfflineTrackerV1Component::Spawn()
@@ -48,8 +66,11 @@ AliHLTComponent* AliHLTTRDOfflineTrackerV1Component::Spawn()
 
 int AliHLTTRDOfflineTrackerV1Component::DoInit( int argc, const char** argv )
 {
+  int iResult = 0;
   SetOfflineParams();
-  return AliHLTTRDTrackerV1Component::DoInit(argc, argv);
+  iResult=AliHLTTRDTrackerV1Component::DoInit(argc, argv);
+  fRecoParam->SetStreamLevel(AliTRDrecoParam::kTracker, 1); //in order to have the friends written
+  return iResult;
 }
 
 const char* AliHLTTRDOfflineTrackerV1Component::GetComponentID()
@@ -59,21 +80,15 @@ const char* AliHLTTRDOfflineTrackerV1Component::GetComponentID()
 }
 
 void AliHLTTRDOfflineTrackerV1Component::SetOfflineParams(){
-  HLTFatal("You have entered the OFFLINE configuration!");
-  HLTFatal("This program shall NOT run on the HLT cluster like this!");
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
     HLTFatal("You are resetting the Default Storage of the CDBManager!");
     HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
     AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  }else{
-    HLTError("DefaultStorage was already set!");
   }
   if(AliCDBManager::Instance()->GetRun()<0){
     HLTFatal("You are resetting the CDB run number to 0!");
     HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
     AliCDBManager::Instance()->SetRun(0);
-  }else{
-    HLTError("Run Number was already set!");
   }
 }
 
@@ -86,6 +101,7 @@ int AliHLTTRDOfflineTrackerV1Component::DoEvent(const AliHLTComponent_EventData&
 						  AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 						  AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
 {
+  if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
+    return 0;
   return AliHLTTRDTrackerV1Component::DoEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks );
 }
-
