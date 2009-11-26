@@ -10,19 +10,21 @@
 #include <TSystem.h>
 
 #include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliDAQ.h"
+#include "AliGRPObject.h"
 #include "AliLog.h"
 #include "AliQAv1.h"
 #include "AliQAManager.h"
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
-//#include "AliTRDrawStreamBase.h"
 #include "AliGeomManager.h"
+#include "AliRecoParam.h"
 
 TString ClassName() { return "rawqa" ; } 
 
 //________________________________qa______________________________________
-void rawqa(Char_t * filename, Int_t run) 
+void rawqa(Char_t * filename, Int_t run, AliRecoParam::EventSpecie_t es=AliRecoParam::kDefault) 
 {	
 //  TGrid * grid = TGrid::Connect("alien://") ; 
 //  TString filename ; 
@@ -36,65 +38,70 @@ void rawqa(Char_t * filename, Int_t run)
   AliCDBManager * man = AliCDBManager::Instance();
 //  man->SetDefaultStorage("local://cdb2");
   man->SetDefaultStorage("raw://");
-  
-  // set the location of reference data 
-  //AliQAv1::SetQARefStorage(Form("%s%s/", AliQAv1::GetQARefDefaultStorage(), year)) ;  
+  man->SetRun(run);
+  AliCDBEntry *  entry    = man->Get("GRP/GRP/Data");  
+  if (!entry) 
+    return ;
+  AliGRPObject * fGRPData = dynamic_cast<AliGRPObject*>(entry->GetObject());
+  if (!fGRPData) {
+    printf("ERROR: No GRP entry found in OCDB") ; 
+    return ; 
+  }
+  Int_t activeDetectors = fGRPData->GetDetectorMask();
+  const char * detNameOff[AliDAQ::kNDetectors] = { 
+    "ITS",
+    "ITS",
+    "ITS",
+    "TPC",
+    "TRD",
+    "TOF",
+    "HMPID",
+    "PHOS",
+    "CPV",
+    "PMD",
+    "MUON",
+    "MUON",
+    "FMD",
+    "T0",
+    "VZERO", // Name to be changed to V0 ?
+    "ZDC",
+    "ACORDE",
+    "TRG",
+    "EMCAL",
+    "DAQ_TEST",
+    "HLT"
+  } ; 
+  TString detectors  = ""; 
+  TString detectorsW ; 
+  for(Int_t iDet = 0; iDet < (AliDAQ::kNDetectors-1); iDet++) {
+    if ((activeDetectors >> iDet) & 0x1) {
+      if (!detectors.Contains(detNameOff[iDet])) {
+        detectors +=detNameOff[iDet] ; 
+        detectors += " " ;  
+      }
+    }
+  }
   AliQAv1::SetQARefStorage("local://$ALICE_ROOT/QAref") ;
-	
+
   AliLog::SetGlobalDebugLevel(0) ; 
-	
-  	
-  Bool_t detIn[AliDAQ::kNDetectors] = {kFALSE} ;
-  const char * detNameOff[AliDAQ::kNDetectors] = {"ITS", "ITS", "ITS", "TPC", "TRD", "TOF", "HMPID", "PHOS", "PHOS", 
-          "PMD", "MUON", "MUON", "FMD", "T0", "VZERO", "ZDC", "ACORDE", "TRG", 
-          "EMCAL", "DAQ_TEST", "HLT"} ; 
 	
   AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kRECMODE) ; 
   qam->SetEventSpecie(AliRecoParam::kCosmic) ; 
-  AliQAv1::Instance()->SetEventSpecie(AliRecoParam::kCosmic) ; 
-  TString detectors  = ""; 
-  TString detectorsW = ""; 
+  AliQAv1::Instance()->SetEventSpecie(es) ; 
+//  TString detectorsW = ""; 
   UShort_t eventsProcessed = 0 ; 
   UShort_t filesProcessed  = 1 ; 
-  man->SetRun(run);
   AliGeomManager::LoadGeometry();
-  printf("INFO: Proccessing file %s\n", filename) ;
-  // check which detectors are present 
-  TString alienName = Form("alien://%s", filename) ;
-  AliRawReader * rawReader = new AliRawReaderRoot(alienName.Data());
-  //AliTRDrawStreamBase::SetRawStreamVersion("TB");
-  while ( rawReader->NextEvent() ) {
-    man->SetRun(rawReader->GetRunNumber());
-    AliLog::Flush();
-    UChar_t * data ; 
-    while (rawReader->ReadNextData(data)) {
-      Int_t detID = rawReader->GetDetectorID();
-      if (detID < 0 || detID >= AliDAQ::kNDetectors) {
-        printf("INFO: Wrong detector ID! Skipping payload...\n");
-        continue;
-      }
-      detIn[detID] = kTRUE ; 
-    }
-    for (Int_t detID = 0; detID < AliDAQ::kNDetectors ; detID++) {
-      if (detIn[detID]) {
-        if ( ! detectors.Contains(detNameOff[detID]) ) {
-          detectors.Append(detNameOff[detID]) ;
-          detectors.Append(" ") ;
-        }
-      }
-    }
-    if ( !detectors.IsNull() )
-      break ; 
-  }
+  printf("INFO: Proccessing detectors %s from file %s\n", detectors.Data(), filename) ;
   if ( !detectors.IsNull() ) {
 	  qam->SetMaxEvents(-1) ; 
-    qam->SetTasks(Form("%d", AliQAv1::kRAWS)); 			
+    qam->SetTasks(Form("%d", AliQAv1::kRAWS)); 		
+    AliRawReader * rawReader = new AliRawReaderRoot(Form("alien://%s", filename));
     detectorsW = qam->Run(detectors, rawReader) ;
     qam->Reset() ;
   } else {
-       	  printf("ERROR: No valid detectors found") ; 
+    printf("ERROR: No valid detectors found") ; 
   } 
-  delete rawReader ;
   eventsProcessed += qam->GetCurrentEvent() ; 
 	//qam->Merge(run) ; 
 	

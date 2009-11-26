@@ -32,8 +32,8 @@ VERSION=1.0
 TITLE="Standalone QA checking of Grid rawdata chunks. v$VERSION"
 
 # Retrieve the list of chunks from AliEn.......
-export BASEDIR="/alice/data/20"$YEAR
-PATTERN="/raw/"$YEAR"0000"$RUNNUM"*0.root"
+export BASEDIR="/alice/data/20"$YEAR/LHC${YEAR}*
+PATTERN="$RUNNUM/raw/${YEAR}*${RUNNUM}*.root"
 #aliensh -c "gbbox find $BASEDIR $PATTERN" | head --lines=-1 > collection.tmp
 aliensh -c "gbbox find $BASEDIR $PATTERN" > collection.tmp
 
@@ -74,7 +74,7 @@ for filename in $CHUNKS; do
      rm $RUNNUM"/"QA.$SUBCHUNK.root 
      cd       $RUNNUM"/"$CHUNK
 $PROGRAM -b <<EOF
-.L $ALICE_ROOT/test/cosmic/rawqa.C+
+.L $ALICE_ROOT/prod/cosmic/rawqa.C+
 rawqa($filename, $RUNNUM)
 EOF
 
