@@ -1935,6 +1935,7 @@ Int_t AliTRDtrackerV1::BuildTrackingContainers()
   while (icl--) {
     AliTRDcluster *c = (AliTRDcluster *) fClusters->UncheckedAt(icl);
     if(c->IsInChamber()) nin++;
+    if(fkReconstructor->IsHLT()) c->SetRPhiMethod(AliTRDcluster::kCOG);
     Int_t detector       = c->GetDetector();
     Int_t sector         = fGeom->GetSector(detector);
     Int_t stack          = fGeom->GetStack(detector);
