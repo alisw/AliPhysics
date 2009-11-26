@@ -262,7 +262,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
   Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
   Double_t lAlphaV0 = 0, lPtArmV0 = 0;
 
-  const AliVVertex *primaryVtx = ((AliESDEvent*)lEvent)->GetPrimaryVertex();
+  const AliVVertex *primaryVtx = lEvent->GetPrimaryVertex();
   tPrimaryVtxPosition[0] = primaryVtx->GetX();
   tPrimaryVtxPosition[1] = primaryVtx->GetY();
   tPrimaryVtxPosition[2] = primaryVtx->GetZ();
