@@ -69,6 +69,7 @@ AliPerformanceMatch::AliPerformanceMatch():
   AliPerformanceObject("AliPerformanceMatch"),
   fResolHisto(0),
   fPullHisto(0),
+  fTrackingEffHisto(0),
 
   // Cuts 
   fCutsRC(0),  
@@ -85,6 +86,7 @@ AliPerformanceMatch::AliPerformanceMatch(Char_t* name="AliPerformanceMatch", Cha
   AliPerformanceObject(name,title),
   fResolHisto(0),
   fPullHisto(0),
+  fTrackingEffHisto(0),
 
   // Cuts 
   fCutsRC(0),  
@@ -107,7 +109,8 @@ AliPerformanceMatch::~AliPerformanceMatch()
   // destructor
    
   if(fResolHisto) delete fResolHisto; fResolHisto=0;     
-  if(fPullHisto)  delete fPullHisto;  fPullHisto=0;     
+  if(fPullHisto)  delete fPullHisto;  fPullHisto=0;
+  if(fTrackingEffHisto) delete fTrackingEffHisto; fTrackingEffHisto = 0x0;
   
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
@@ -178,6 +181,20 @@ void AliPerformanceMatch::Init(){
   fPullHisto->GetAxis(10)->SetTitle("isReconstructed");
   fPullHisto->Sumw2();
 
+  // -> has match:y:z:snp:tgl:pt:ITSclusters
+  Int_t binsTrackingEffHisto[7]    = { 2,    50,  250, 50, 50, 100,    7};
+  Double_t minTrackingEffHisto[7]  = {-0.5, -25, -250, -1, -2,   0, -0.5};
+  Double_t maxTrackingEffHisto[7]  = { 1.5,  25,  250,  1,  2,  20,  6.5};
+  
+  fTrackingEffHisto = new THnSparseF("fTrackingEffHisto","has match:y:z:snp:tgl:pt:ITSclusters",7,binsTrackingEffHisto,minTrackingEffHisto,maxTrackingEffHisto);
+  fTrackingEffHisto->GetAxis(0)->SetTitle("IsMatching");
+  fTrackingEffHisto->GetAxis(1)->SetTitle("local y (cm)");
+  fTrackingEffHisto->GetAxis(2)->SetTitle("z (cm)");
+  fTrackingEffHisto->GetAxis(3)->SetTitle("sin(#phi)");
+  fTrackingEffHisto->GetAxis(4)->SetTitle("tan(#lambda)");
+  fTrackingEffHisto->GetAxis(5)->SetTitle("p_{T}");
+  fTrackingEffHisto->GetAxis(6)->SetTitle("number of ITS clusters");
+
   // Init cuts 
   if(!fCutsMC) 
     AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
@@ -186,6 +203,63 @@ void AliPerformanceMatch::Init(){
 
   // init folder
   fAnalysisFolder = CreateFolder("folderRes","Analysis Resolution Folder");
+}
+
+//_____________________________________________________________________________
+void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEvent, AliStack* /*const stack*/, AliESDtrack *const esdTrack, AliESDfriendTrack *const esdFriendTrack)
+{
+  //
+  // addition to standard analysis - check if ITS stand-alone tracks have a match in the TPC
+  // Author: A. Kalwait
+  //
+  if(!esdTrack) return;
+  if(!esdFriendTrack) return;
+
+  //
+  if (esdTrack->GetInnerParam()) return; // ITS stand-alone tracks have not TPC inner param
+  if (esdTrack->GetITSclusters(0) < 2) return;
+  //AliTracker::PropagateTrackToBxByBz(esdTrack,80.0,0.1056,1.0,kTRUE); // we propagate the ITS stand-alone to the inner TPC radius
+  Bool_t hasMatch = kFALSE;
+    for (Int_t jTrack = 0; jTrack < esdEvent->GetNumberOfTracks(); jTrack++) {
+      // loop for all those tracks and check if the corresponding TPC track is found
+      if (jTrack==iTrack) continue;
+      AliESDtrack *trackTPC = esdEvent->GetTrack(jTrack);
+      if (!trackTPC) continue;
+      if (!trackTPC->GetInnerParam()) continue;
+
+      AliExternalTrackParam *innerTPC = new AliExternalTrackParam(*(trackTPC->GetTPCInnerParam()));
+      AliTracker::PropagateTrackToBxByBz(innerTPC,2.8,trackTPC->GetMass(),1.0,kTRUE);
+      Double_t x[3]; trackTPC->GetXYZ(x);
+      Double_t b[3]; AliTracker::GetBxByBz(x,b);
+
+      Double_t dz[2],cov[3];
+      innerTPC->PropagateToDCABxByBz(esdEvent->GetPrimaryVertexSPD(),b,kVeryBig,dz,cov);
+
+      // rough checking if they match
+      /*
+      printf("+++++++++++++++++++++++++++++++++++++++++++++++ ");
+      printf("esdTrack->GetY() %f, esdTrack->GetSnp() %f, esdTrack->GetTgl() %f \n", 
+              esdTrack->GetY(), esdTrack->GetSnp(), esdTrack->GetTgl());
+      printf("innerTPC->GetY() %f, innerTPC->GetSnp() %f, innerTPC->GetTgl() %f \n", 
+              innerTPC->GetY() , innerTPC->GetSnp() , innerTPC->GetTgl());
+      */
+
+      /*
+      if (TMath::Abs(esdTrack->GetY() - trackTPC->GetInnerParam()->GetY()) > 3) continue;
+      if (TMath::Abs(esdTrack->GetSnp() - trackTPC->GetInnerParam()->GetSnp()) > 0.2) continue;
+      if (TMath::Abs(esdTrack->GetTgl() - trackTPC->GetInnerParam()->GetTgl()) > 0.2) continue;
+      */
+      if (TMath::Abs(esdTrack->GetY() - innerTPC->GetY()) > 3) continue;
+      if (TMath::Abs(esdTrack->GetSnp() - innerTPC->GetSnp()) > 0.2) continue;
+      if (TMath::Abs(esdTrack->GetTgl() - innerTPC->GetTgl()) > 0.2) continue;
+
+      hasMatch = kTRUE;
+      if(innerTPC) delete innerTPC;
+    }
+    //has match:y:z:snp:tgl:pt:ITSclusters
+    Double_t vecTrackingEff[7] = {hasMatch,esdTrack->GetY(),esdTrack->GetZ(),esdTrack->GetSnp(),esdTrack->GetTgl(),esdTrack->Pt(),esdTrack->GetITSclusters(0)};
+    fTrackingEffHisto->Fill(vecTrackingEff);
+    
 }
 
 //_____________________________________________________________________________
@@ -223,7 +297,10 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *
   {
      isTPCOK = AliTracker::PropagateTrackToBxByBz(innerTPC,radius,mass,step,kTRUE);
   }
-  if(!isTPCOK) return;
+  if(!isTPCOK) { 
+   if(innerTPC) delete innerTPC;  
+   return;
+  }
 
   //
   // Propagate ITSouter
@@ -282,7 +359,10 @@ void AliPerformanceMatch::ProcessTPCTRD(AliStack* /*const stack*/, AliESDtrack *
   {
      isTPCOK = AliTracker::PropagateTrackToBxByBz(outerTPC,radius,mass,step,kTRUE);
   }
-  if(!isTPCOK) return;
+  if(!isTPCOK)  { 
+    if(outerTPC) delete outerTPC;  
+    return;
+  }
 
   //
   // Propagate TRDinner
@@ -429,6 +509,7 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esd
 
     if(GetAnalysisMode() == 0) ProcessTPCITS(stack,track,friendTrack);
     else if(GetAnalysisMode() == 1) ProcessTPCTRD(stack,track,friendTrack);
+    else if(GetAnalysisMode() == 2) ProcessITSTPC(iTrack,esdEvent,stack,track,friendTrack);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;
