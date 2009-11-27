@@ -1109,7 +1109,7 @@ AliQAManager * AliQAManager::QAManager(AliQAv1::MODE_t mode, TMap *entryCache, I
   
 	if (!fgQAInstance) {
     if ( (mode != AliQAv1::kSIMMODE) && (mode != AliQAv1::kRECMODE) ) {
-      AliErrorClass("You must specify kSIMMODE or kRECMODE") ; 
+      AliWarningClass("You must specify kSIMMODE or kRECMODE") ; 
       return NULL ; 
     }
     fgQAInstance = new AliQAManager(mode) ;  
