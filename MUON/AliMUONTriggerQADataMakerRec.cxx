@@ -34,6 +34,7 @@ ClassImp(AliMUONTriggerQADataMakerRec)
 #include "AliMpConstants.h"
 #include "AliMUONTriggerDisplay.h"
 #include "TH2.h"
+#include "TH1F.h"
 #include "TString.h"
 #include "AliRecoParam.h"
 #include "AliMUONDigitStoreV2R.h"
@@ -64,6 +65,8 @@ ClassImp(AliMUONTriggerQADataMakerRec)
 //____________________________________________________________________________ 
 AliMUONTriggerQADataMakerRec::AliMUONTriggerQADataMakerRec(AliQADataMakerRec* master) : 
 AliMUONVQADataMakerRec(master),
+fNumberOf34Dec(0x0),
+fNumberOf44Dec(0x0),
 fDigitMaker(new AliMUONDigitMaker(kFALSE)),
 fCalibrationData(new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun())),
 fTriggerProcessor(new AliMUONTriggerElectronics(fCalibrationData)),
@@ -81,6 +84,8 @@ AliMUONTriggerQADataMakerRec::~AliMUONTriggerQADataMakerRec()
   delete fDigitStore;
   delete fTriggerProcessor;
   delete fCalibrationData;
+  delete fNumberOf34Dec;
+  delete fNumberOf44Dec;
 }
 
 //____________________________________________________________________________ 
@@ -140,6 +145,16 @@ void AliMUONTriggerQADataMakerRec::EndOfDetectorCycleRaws(Int_t /*specie*/, TObj
       
   TH1* hSummary = GetRawsData(AliMUONQAIndices::kTriggerErrorSummary);
   hSummary->SetBinContent(AliMUONQAIndices::kAlgoLocalYCopy+1,mean/192.); //put the mean of the % of YCopy error in the kTriggerError's corresponding bin
+
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434))->Divide(fNumberOf44Dec,fNumberOf34Dec);
+
+  //reset bins temporary used to store informations
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(1,0); 
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(2,0);
+
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434))->SetMaximum(1.1);
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetMaximum(1.1);
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetMaximum(1.1);
 }
 
 //____________________________________________________________________________ 
@@ -265,6 +280,20 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   histo1D->GetYaxis()->SetTitle(errorAxisTitle.Data());
   Add2RawsList(histo1D, AliMUONQAIndices::kTriggerErrorLocalTrigY, expert, !image, !saveCorr);
 
+  histo1D = new TH1F("Ratio4434Local", "Ratio4434Local",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
+  histo1D->GetXaxis()->SetTitle(boardName.Data());
+  histo1D->GetYaxis()->SetTitle("ratio 44/34");
+  Add2RawsList(histo1D, AliMUONQAIndices::kTriggerLocalRatio4434, expert, !image, !saveCorr);                                               
+  histo1D = new TH1F("Ratio4434AllEvents", "Ratio4434AllEvents",1,0,1);
+  histo1D->GetXaxis()->SetTitle("Event number");
+  histo1D->GetYaxis()->SetTitle("ratio 44/34");
+  histo1D->SetLineColor(4);                           
+  Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRatio4434AllEvents, expert, !image, !saveCorr);                                               
+  histo1D = new TH1F("Ratio4434SinceLastUpdate", "Ratio4434SinceLastUpdate",1,0,1);
+  histo1D->GetXaxis()->SetTitle("Event number");
+  histo1D->GetYaxis()->SetTitle("ratio 44/34");                           
+  Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate, expert, !image, !saveCorr);
+
   histo1D = new TH1F("ErrorLocal2RegionalLPtLSB", "ErrorLocal2RegionalLPtLSB",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
   histo1D->GetXaxis()->SetTitle(boardName.Data());
   histo1D->GetYaxis()->SetTitle(errorAxisTitle.Data());
@@ -291,6 +320,13 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
     histo1D->GetXaxis()->SetBinLabel(ibin+1,globalXaxisName[ibin]);
   }
   Add2RawsList(histo1D, AliMUONQAIndices::kTriggerErrorOutGlobalFromInGlobal, expert, !image, !saveCorr);
+
+  histo1D = new TH1F("ErrorOutGlobalFromInLocal", "ErrorOutGlobalFromInLocal",6,-0.5,6-0.5);
+  histo1D->GetYaxis()->SetTitle(errorAxisTitle.Data());
+  for (int ibin=0;ibin<6;ibin++){
+    histo1D->GetXaxis()->SetBinLabel(ibin+1,globalXaxisName[ibin]);
+  }
+  Add2RawsList(histo1D, AliMUONQAIndices::kTriggerErrorOutGlobalFromInLocal, expert, !image, !saveCorr);
 
   TH1F* histoAlgoErr = new TH1F("hTriggerAlgoNumOfErrors", "Trigger Algorithm total errors",AliMUONQAIndices::kNtrigAlgoErrorBins,-0.5,(Float_t)AliMUONQAIndices::kNtrigAlgoErrorBins-0.5);
   histoAlgoErr->GetYaxis()->SetTitle("Number of events with errors");
@@ -367,6 +403,9 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   histo1D->GetXaxis()->SetBinLabel(1, AliRecoParam::GetEventSpecieName(esindex));
   histo1D->GetYaxis()->SetTitle("Number of analyzed events");
   Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRawNAnalyzedEvents, expert, !image, !saveCorr);
+
+  fNumberOf34Dec = new TH1F("hNumberOf34Dec", "hNumberOf34Dec",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
+  fNumberOf44Dec = new TH1F("hNumberOf44Dec", "hNumberOf44Dec",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
 }
 
 //__________________________________________________________________
@@ -650,15 +689,23 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   fTriggerProcessor->Digits2Trigger(digitStore,recoTriggerStore);
 
+  AliMUONGlobalTrigger* recoGlobalTriggerFromLocal;
+  recoGlobalTriggerFromLocal = recoTriggerStore.Global();
+
   //Reconstruct Global decision from Global inputs
   UChar_t recoResp = RawTriggerInGlobal2OutGlobal(globalInput);
-  AliMUONGlobalTrigger recoGlobalTrigger;
-  recoGlobalTrigger.SetFromGlobalResponse(recoResp);
+  AliMUONGlobalTrigger recoGlobalTriggerFromGlobal;
+  recoGlobalTriggerFromGlobal.SetFromGlobalResponse(recoResp);
 
   // Compare data and reconstructed decisions and fill histos
   RawTriggerMatchOutLocal(inputTriggerStore, recoTriggerStore);
+  //Fill ratio 44/34 histos
+  FillRatio4434Histos();
   //RawTriggerMatchOutLocalInRegional(); // Not tested, hardware read-out doesn't work
-  RawTriggerMatchOutGlobalFromInGlobal(inputGlobalTrigger, recoGlobalTrigger);
+  RawTriggerMatchOutGlobal(inputGlobalTrigger, recoGlobalTriggerFromGlobal, 'G');
+  // Global, reconstruction from Local inputs: compare data and reconstructed decisions and fill histos
+  RawTriggerMatchOutGlobal(inputGlobalTrigger, *recoGlobalTriggerFromLocal, 'L');
+  // Global, reconstruction from Global inputs: compare data and reconstructed decisions and fill histos
 }
 
 //__________________________________________________________________
@@ -1085,11 +1132,16 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(AliMUONVTriggerStore&
   Bool_t errorInLUT = kFALSE;
 
   next.Reset();
+  Bool_t respBendPlane, respNonBendPlane;
   while ( ( recoLocalTrigger = static_cast<AliMUONLocalTrigger*>(next()) ) )
   {  
     loCircuit = recoLocalTrigger->LoCircuit();
     Int_t iboard = loCircuit - 1;
   
+    // Fill ratio 44/34 histos
+    if (recoLocalTrigger->GetLoDecision()!=0) fNumberOf34Dec->Fill(loCircuit);
+    if (fTriggerProcessor->ModifiedLocalResponse(loCircuit, respBendPlane, respNonBendPlane, kTRUE)) fNumberOf44Dec->Fill(loCircuit);
+    
     inputLocalTrigger = inputTriggerStore.FindLocal(loCircuit);
 
     if ( recoLocalTrigger->LoStripX() != inputLocalTrigger->LoStripX() ) {
@@ -1180,17 +1232,34 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocalInRegional()
 
 
 //____________________________________________________________________________ 
-void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutGlobalFromInGlobal(AliMUONGlobalTrigger& inputGlobalTrigger, 
-									AliMUONGlobalTrigger& recoGlobalTrigger)
+void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutGlobal(AliMUONGlobalTrigger& inputGlobalTrigger, 
+									AliMUONGlobalTrigger& recoGlobalTrigger, 
+									Char_t histo)
 {
   //
-  /// Match data and reconstructed Global Trigger decision for a reconstruction from Global inputs
+  /// Match data and reconstructed Global Trigger decision for a reconstruction from Global inputs.
+  /// histo='G': fill FromGlobalInput histo='F': fill from Local input;
   //
 
   if ( recoGlobalTrigger.GetGlobalResponse() == inputGlobalTrigger.GetGlobalResponse() )
     return;
+  Int_t histoToFill;
+  Int_t binToFill;
+  
+  if (histo=='G'){
+      histoToFill=AliMUONQAIndices::kTriggerErrorOutGlobalFromInGlobal;
+      binToFill=AliMUONQAIndices::kAlgoGlobalFromGlobal;
+  }else{
+      if (histo=='L'){
+	  histoToFill=AliMUONQAIndices::kTriggerErrorOutGlobalFromInLocal;
+	  binToFill=AliMUONQAIndices::kAlgoGlobalFromLocal;
+      }else{
+	  AliWarning(Form("Global histos not filled, 3rd argument must be 'G' or 'F'"));
+	  return;
+      } 
+  }
 
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerErrorSummary))->Fill(AliMUONQAIndices::kAlgoGlobalFromGlobal);
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerErrorSummary))->Fill(binToFill);
 
   Bool_t inputResp[6] = {inputGlobalTrigger.PairUnlikeHpt(), inputGlobalTrigger.PairUnlikeLpt(),
 			 inputGlobalTrigger.PairLikeHpt(), inputGlobalTrigger.PairLikeLpt(),
@@ -1202,6 +1271,49 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutGlobalFromInGlobal(AliMUONG
 
   for (int bit=0;bit<6;bit++){
     if ( recoResp[bit] != inputResp[bit] )
-      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerErrorOutGlobalFromInGlobal))->Fill(bit);
+      ((TH1F*)GetRawsData(histoToFill))->Fill(bit);
   }
 }
+
+//____________________________________________________________________________ 
+void AliMUONTriggerQADataMakerRec::FillRatio4434Histos()
+{
+  /// Fill ratio 44/34 histos
+
+  Int_t numEvent = Int_t(((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRawNAnalyzedEvents))->GetBinContent(1));
+
+  if (numEvent % fgkUpdateRatio4434 == 0){
+      Float_t totalNumberOf44 = fNumberOf44Dec->GetSumOfWeights();
+      Float_t totalNumberOf34 = fNumberOf34Dec->GetSumOfWeights();
+      Float_t ratio4434;
+      Float_t errorRatio4434;
+
+      ratio4434 = totalNumberOf44/totalNumberOf34;
+      errorRatio4434 = sqrt(totalNumberOf44*(1-ratio4434))/totalNumberOf34;
+  
+      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(numEvent,ratio4434);
+      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinError(numEvent,errorRatio4434);
+
+
+      Float_t NumberOf44Update = totalNumberOf44 - ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->GetBinContent(2);
+      Float_t NumberOf34Update = totalNumberOf34 - ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->GetBinContent(1);
+      Float_t ratio4434Update;
+      Float_t errorRatio4434Update;
+
+      ratio4434Update = NumberOf44Update/NumberOf34Update;
+      errorRatio4434Update = sqrt(NumberOf44Update*(1-ratio4434Update))/NumberOf34Update;
+
+      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinContent(numEvent,ratio4434Update);
+      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinError(numEvent,errorRatio4434Update);
+
+      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(1,totalNumberOf34);
+      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(2,totalNumberOf44);
+   
+  }
+  
+  Int_t newNBins = ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->GetNbinsX()+1;
+  
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBins(newNBins,0,newNBins);
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBins(newNBins,0,newNBins);
+}
+

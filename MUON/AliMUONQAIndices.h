@@ -44,9 +44,10 @@ namespace AliMUONQAIndices
     kTriggerErrorLocal2RegionalLPtMSB  = 60, ///< Local to Regional: Number of LPt MSB error vs Local Board Id
     kTriggerErrorLocal2RegionalHPtLSB  = 61, ///< Local to Regional: Number of HPt LSB error vs Local Board Id
     kTriggerErrorLocal2RegionalHPtMSB  = 62, ///< Local to Regional: Number of HPt MSB error vs Local Board Id
-    kTriggerErrorOutGlobalFromInGlobal = 63, ///< Global board: Number of error vs output bit 
-    kTriggerErrorSummary      = 64,  ///< Number of errors for each trigger decision level (Local, Reg->Local, Reg, Reg->Glob, Global)
-    kTriggerErrorSummaryNorm  = 65,  ///< Percentage of errors for each trigger decision level
+    kTriggerErrorOutGlobalFromInGlobal = 63, ///< Global board: Number of error vs output bit    with a re-reconstruction from Global inputs
+    kTriggerErrorOutGlobalFromInLocal = 64, ///< Global board: Number of error vs output bit  with a re-reconstruction from Local inputs
+    kTriggerErrorSummary      = 65,  ///< Number of errors for each trigger decision level (Local, Reg->Local, Reg, Reg->Glob, Global)
+    kTriggerErrorSummaryNorm  = 66,  ///< Percentage of errors for each trigger decision level
     kTriggerErrorLocalYCopy     = 67, ///< Local board: Number of Y Copy Error vs Local Board Id
     kTriggerErrorLocalYCopyTest = 68, ///< Local Board: Number of Y copy error tests (for normalization)
     kTriggerErrorLocalYCopyNorm = 69, ///< Local Board: Number of Y Copy Error vs Local Board Id Normalized to the number of tests
@@ -56,7 +57,10 @@ namespace AliMUONQAIndices
     kTriggerReadOutErrorsNorm = 81,  ///< Percentage of read-out errors
     kTriggerGlobalOutput      = 90,  ///< Number of Global outputs and Global algo errors
     kTriggerGlobalOutputNorm  = 91,  ///< Percentage of Global outputs and Global algo errors
-    kTriggerRawNAnalyzedEvents= 100  ///< Number of analyzed events per event specie
+    kTriggerRawNAnalyzedEvents= 100,  ///< Number of analyzed events per event specie
+    kTriggerLocalRatio4434       = 101,  ///< Ratio 44/34 vs Local Board Id
+    kTriggerRatio4434AllEvents       = 102,  ///< Ratio 44/34 since the beginning of the run vs Event Number
+    kTriggerRatio4434SinceLastUpdate       = 103  ///< Ratio 44/34 for the last kUpdateRatio4434 events vs Event Number
     
   };
   

@@ -23,6 +23,7 @@ class TMap;
 class AliMpDCSNamer;
 class AliMUONVTriggerStore;
 class AliMUONGlobalTrigger;
+class TH1F;
 
 class AliMUONTriggerQADataMakerRec: public AliMUONVQADataMakerRec {
 
@@ -55,14 +56,16 @@ private:
   AliMUONTriggerQADataMakerRec& operator=(const AliMUONTriggerQADataMakerRec& qadm);
 
   void DisplayTriggerInfo();
+  void FillRatio4434Histos();
   Bool_t FillTriggerDCSHistos();
   TObjArray* GetDCSValues(Int_t iMeas, Int_t detElemId,
 			  TMap* triggerDcsMap, AliMpDCSNamer& triggerDcsNamer);
   UChar_t RawTriggerInGlobal2OutGlobal(UInt_t globalInput[4]);
   void RawTriggerMatchOutLocal(AliMUONVTriggerStore& inputTriggerStore, AliMUONVTriggerStore& recoTriggerStore);
   //void RawTriggerMatchOutLocalInRegional();
-  void RawTriggerMatchOutGlobalFromInGlobal(AliMUONGlobalTrigger& inputLocalTrigger,
-					    AliMUONGlobalTrigger& recoGlobalTrigger);
+  void RawTriggerMatchOutGlobal(AliMUONGlobalTrigger& inputLocalTrigger,
+				AliMUONGlobalTrigger& recoGlobalTrigger,
+				Char_t histo); 
 
   //Int_t fTriggerOutputRegionalData[16]; ///< Data Regional Trigger decision for each Regional Board (1R:0, 2R:1, ... , 1L:8, ...) -> 4 bits LPt, 4 bits HPt
   //Int_t fTriggerInputRegionalRecLPt[2][16][16]; ///< Reconstructed Regional Input LPt for each Regional Board ([bit][reg][loc]) (reg -> 1R:0, 2R:1, ... , 1L:8, ...)
@@ -73,6 +76,10 @@ private:
   //Int_t fTriggerInputGlobalDataHPt[16][4]; ///< Data Global inputs HPt (1R:0, 2R:1, ... , 1L:8, ...)
   //Int_t fTriggerOutputGlobalRecFromLocalInput[6]; //< Reconstructed Global outputs from Local inputs
   //Int_t fTriggerOutputGlobalRecFromLocalOutput[6]; //< Reconstructed Global outputs from Local outputs
+
+  static const Int_t fgkUpdateRatio4434=50; ///< Event interval between 2 update of the Ratio4434 histos
+  TH1F *fNumberOf34Dec; //!< Number of Decision in coincidence 3/4 vs Local Board (for the calculation of the Ratio4434)
+  TH1F *fNumberOf44Dec; //!< Number of Decision in coincidence 4/4 vs Local Board (for the calculation of the Ratio4434)
   
   AliMUONDigitMaker* fDigitMaker; //!< pointer to digit maker
   AliMUONCalibrationData* fCalibrationData; //!< Used to load Local, Regional and Global masks
