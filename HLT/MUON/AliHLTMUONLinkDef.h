@@ -62,5 +62,6 @@
 #pragma link C++ class AliHLTMUONDataCheckerComponent+;
 #pragma link C++ class AliHLTMUONClusterFinderComponent+;
 #pragma link C++ class AliHLTMUONRawDataHistoComponent+;
+#pragma link C++ class AliHLTMUONClusterHistoComponent+;
 
 #endif // __CINT__

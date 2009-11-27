@@ -82,7 +82,7 @@ void CreateHitRecoLookupTables(const char* CDBPath = "local://$ALICE_ROOT/OCDB",
 {
 	gSystem->Load("libAliHLTMUON.so");
 
-	for (Int_t ddl = 12; ddl < 20; ddl++)
+	for (Int_t ddl = 0; ddl < 20; ddl++)
 	{
 		Char_t filename[64];
 		sprintf(filename, "Lut%d.dat", ddl+1);

@@ -18,6 +18,7 @@ CLASS_HDRS := 	AliHLTMUONUtils.h \
 		utils/AliHLTMUONEmptyEventFilterComponent.h \
 		utils/AliHLTMUONDataCheckerComponent.h \
 		utils/AliHLTMUONRawDataHistoComponent.h \
+		utils/AliHLTMUONClusterHistoComponent.h \
 		AliHLTMUONConstants.h \
 		AliHLTMUONProcessor.h \
 		AliHLTMUONRecHit.h \

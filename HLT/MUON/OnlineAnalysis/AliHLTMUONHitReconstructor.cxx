@@ -43,8 +43,8 @@
 
 
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkDetectorId = 0xA00;
-const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkDDLOffSet = 12;
-const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkNofDDL = 8;
+const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkDDLOffSet = 0;
+const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkNofDDL = 20;
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkDDLHeaderSize = 8;
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkLutLine = 59648 + 1;
 

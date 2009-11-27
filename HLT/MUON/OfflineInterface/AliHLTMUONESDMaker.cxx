@@ -41,6 +41,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDMuonCluster.h"
 #include "TClonesArray.h"
+#include "TList.h"
 #include <cmath>
 #include <cassert>
 
@@ -52,7 +53,9 @@ AliHLTMUONESDMaker::AliHLTMUONESDMaker() :
 	AliHLTMUONProcessor(),
 	fWarnForUnexpecedBlock(false),
 	fMakeMinimalESD(false),
-	fAddCustomData(false)
+	fAddCustomData(false),
+	fMakeClonesArray(false),
+	fMakeESDDataBlock(true)
 {
 	/// Default constructor.
 }
@@ -94,6 +97,8 @@ int AliHLTMUONESDMaker::DoInit(int argc, const char** argv)
 	
 	fWarnForUnexpecedBlock = false;
 	fMakeMinimalESD = false;
+	fMakeClonesArray = false;
+	fMakeESDDataBlock = true;
 	
 	for (int i = 0; i < argc; i++)
 	{
@@ -114,6 +119,20 @@ int AliHLTMUONESDMaker::DoInit(int argc, const char** argv)
 		if (strcmp(argv[i], "-add_rootified_objects") == 0)
 		{
 			fAddCustomData = true;
+			continue;
+		}
+
+		if (strcmp(argv[i], "-makeclonesarray") == 0)
+		{
+			fMakeClonesArray = true;
+			continue;
+		}
+
+		if (strcmp(argv[i], "-makeonlyclonesarray") == 0)
+		{
+			fMakeMinimalESD = true;
+			fMakeClonesArray = true;
+			fMakeESDDataBlock = false;
 			continue;
 		}
 
@@ -144,10 +163,21 @@ const char* AliHLTMUONESDMaker::GetComponentID()
 
 AliHLTComponentDataType AliHLTMUONESDMaker::GetOutputDataType()
 {
-	/// Inherited from AliHLTComponent.
-	/// Returns the ESD object data type with MUON origin.
+	/// Inherited from AliHLTComponent. Returns kAliHLTMultipleDataType.
+	/// Refer to GetOutputDataTypes for all returned data types.
 	
-	return AliHLTMUONConstants::ESDDataType();
+	return kAliHLTMultipleDataType;
+}
+
+
+int AliHLTMUONESDMaker::GetOutputDataTypes(AliHLTComponentDataTypeList& list)
+{
+	/// Inherited from AliHLTComponent.
+	/// Returns the ESD object and kAliHLTDataTypeTObject data type with MUON origin.
+	
+	list.push_back(AliHLTMUONConstants::ESDDataType());
+	list.push_back(kAliHLTDataTypeTObject | kAliHLTDataOriginMUON);
+	return list.size();
 }
 
 
@@ -195,7 +225,7 @@ int AliHLTMUONESDMaker::DoEvent(
 	// tracks array if so requested.
 	if (fMakeMinimalESD)
 	{
-		TClonesArray* muonTracks = new TClonesArray("AliESDMuonTrack",0);
+		TClonesArray* muonTracks = new TClonesArray("AliESDMuonTrack",2);
 		muonTracks->SetName("MuonTracks");
 		event.AddObject(muonTracks);
 		event.GetStdContent();
@@ -425,8 +455,18 @@ int AliHLTMUONESDMaker::DoEvent(
 		}
 	}
 	
-	PushBack(&event, AliHLTMUONConstants::ESDDataType(), specification);
-	
+	if (fMakeClonesArray and event.GetList() != NULL)
+	{
+		PushBack(
+			event.GetList()->FindObject("MuonTracks"),
+			kAliHLTDataTypeTObject | kAliHLTDataOriginMUON,
+			specification
+		);
+	}
+	if (fMakeESDDataBlock)
+	{
+		PushBack(&event, AliHLTMUONConstants::ESDDataType(), specification);
+	}
 	return 0;
 }
 

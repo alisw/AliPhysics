@@ -155,6 +155,7 @@ const char* AliHLTMUONConstants::fgkEmptyEventFilterComponentId = "MUONEmptyEven
 const char* AliHLTMUONConstants::fgkDataCheckerComponentId = "MUONDataChecker";
 const char* AliHLTMUONConstants::fgkClusterFinderId = "MUONClusterFinder";
 const char* AliHLTMUONConstants::fgkRawDataHistogrammerId = "MUONRawDataHistogrammer";
+const char* AliHLTMUONConstants::fgkClusterHistogrammerId = "MUONClusterHistogrammer";
 
 const char* AliHLTMUONConstants::fgkTriggerReconstructorCDBPath = "HLT/ConfigMUON/TriggerReconstructor";
 const char* AliHLTMUONConstants::fgkHitReconstructorCDBPath = "HLT/ConfigMUON/HitReconstructor";

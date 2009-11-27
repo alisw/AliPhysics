@@ -247,6 +247,11 @@ public:
 	{
 		return fgkRawDataHistogrammerId;
 	}
+
+	static const char* ClusterHistogrammerId()
+	{
+		return fgkClusterHistogrammerId;
+	}
 	
 	static const char* TriggerReconstructorCDBPath()
 	{
@@ -331,6 +336,7 @@ private:
 	static const char* fgkDataCheckerComponentId; // Name of data checking component for debugging.
 	static const char* fgkClusterFinderId; // Name of cluster finder implementing offline algorithms.
 	static const char* fgkRawDataHistogrammerId; // Raw data histogrammer component name.
+	static const char* fgkClusterHistogrammerId; // Cluster data histogrammer component name.
 	
 	// CDB path entries to configuration information.
 	static const char* fgkTriggerReconstructorCDBPath; // Path to CDB entry for the trigger reconstruction component.

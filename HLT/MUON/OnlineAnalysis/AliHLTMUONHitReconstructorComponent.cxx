@@ -223,7 +223,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			
 			if (argc <= i+1)
 			{
-				HLTError("The DDL number was not specified. Must be in the range [13..20].");
+				HLTError("The DDL number was not specified. Must be in the range [1..20].");
 				return -EINVAL;
 			}
 			
@@ -234,12 +234,12 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to DDL a number.", argv[i+1] );
 				return -EINVAL;
 			}
-			if (num < 13 or 20 < num)
+			if (num < 1 or 20 < num)
 			{
-				HLTError("The DDL number must be in the range [13..20].");
+				HLTError("The DDL number must be in the range [1..20].");
 				return -EINVAL;
 			}
-			fDDL = num - 1;  // convert to range [12..19]
+			fDDL = num - 1;  // convert to range [0..19]
 			
 			i++;
 			continue;
@@ -256,7 +256,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			
 			if ( argc <= i+1 )
 			{
-				HLTError("DDL equipment ID number not specified. It must be in the range [2572..2579]" );
+				HLTError("DDL equipment ID number not specified. It must be in the range [2560..2579]" );
 				return -EINVAL;
 			}
 		
@@ -268,9 +268,9 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 				return -EINVAL;
 			}
 			fDDL = AliHLTMUONUtils::EquipIdToDDLNumber(num); // Convert to DDL number in the range 0..21
-			if (fDDL < 12 or 19 < fDDL)
+			if (fDDL < 0 or 19 < fDDL)
 			{
-				HLTError("The DDL equipment ID number must be in the range [2572..2579].");
+				HLTError("The DDL equipment ID number must be in the range [2560..2579].");
 				return -EINVAL;
 			}
 			
@@ -1313,7 +1313,7 @@ bool AliHLTMUONHitReconstructorComponent::GenerateLookupTable(
 	/// Generates a ASCII text file containing the lookup table (LUT) from
 	/// the CDB, which can be used for the hit reconstructor component later.
 	/// @param ddl  Must be the DDL for which to generate the DDL,
-	///             in the range [13..20].
+	///             in the range [0..19].
 	/// @param filename  The name of the LUT file to generate.
 	/// @param cdbPath  The CDB path to use.
 	/// @param run  The run number to use for the CDB.
@@ -1321,9 +1321,9 @@ bool AliHLTMUONHitReconstructorComponent::GenerateLookupTable(
 	
 	AliHLTMUONHitReconstructorComponent comp;
 	
-	if (ddl < 12 or 19 < ddl)
+	if (ddl < 0 or 19 < ddl)
 	{
-		std::cerr << "ERROR: the DDL number must be in the range [12..19]." << std::endl;
+		std::cerr << "ERROR: the DDL number must be in the range [0..19]." << std::endl;
 		return false;
 	}
 	

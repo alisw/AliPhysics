@@ -36,11 +36,13 @@
 #include "AliHLTCTPData.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliESDMuonTrack.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliPID.h"
 #include "TTree.h"
 #include "TList.h"
+#include "TClonesArray.h"
 #include "AliHLTESDCaloClusterMaker.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
@@ -143,6 +145,8 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeCaloCluster);
   list.push_back(kAliHLTDataTypedEdx );
   list.push_back(kAliHLTDataTypeESDVertex );
+  list.push_back(kAliHLTDataTypeESDObject);
+  list.push_back(kAliHLTDataTypeTObject);
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
@@ -472,11 +476,52 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       HLTInfo("converted %d cluster(s) to AliESDCaloCluster and added to ESD", nClusters);
       iAddedDataBlocks++;
     }
-      
-       
-      if (iAddedDataBlocks>0 && pTree) {
-       pTree->Fill();
+  
+  // Add tracks from MUON.
+  for (const TObject* obj = GetFirstInputObject(kAliHLTAnyDataType | kAliHLTDataOriginMUON);
+       obj != NULL;
+       obj = GetNextInputObject()
+      )
+  {
+    const TClonesArray* tracklist = NULL;
+    if (obj->IsA() == AliESDEvent::Class())
+    {
+      const AliESDEvent* event = static_cast<const AliESDEvent*>(obj);
+      HLTDebug("Received a MUON ESD with specification: 0x%X", GetSpecification(obj));
+      if (event->GetList() == NULL) continue;
+      tracklist = dynamic_cast<const TClonesArray*>(event->GetList()->FindObject("MuonTracks"));
+      if (tracklist == NULL) continue;
+    }
+    else if (obj->IsA() == TClonesArray::Class())
+    {
+      tracklist = static_cast<const TClonesArray*>(obj);
+      HLTDebug("Received a MUON TClonesArray of tracks with specification: 0x%X", GetSpecification(obj));
+    }
+    else
+    {
+      // Cannot handle this object type.
+      continue;
+    }
+    HLTDebug("Received %d MUON tracks.", tracklist->GetEntriesFast());
+    if (tracklist->GetEntriesFast() > 0)
+    {
+      const AliESDMuonTrack* track = dynamic_cast<const AliESDMuonTrack*>(tracklist->UncheckedAt(0));
+      if (track == NULL)
+      {
+        HLTError(Form("%s from MUON does not contain AliESDMuonTrack objects.", obj->ClassName()));
+        continue;
       }
+    }
+    for (Int_t i = 0; i < tracklist->GetEntriesFast(); ++i)
+    {
+      const AliESDMuonTrack* track = static_cast<const AliESDMuonTrack*>(tracklist->UncheckedAt(i));
+      pESD->AddMuonTrack(track);
+    }
+  }
+  
+  if (iAddedDataBlocks>0 && pTree) {
+    pTree->Fill();
+  }
   
   if (iResult>=0) iResult=iAddedDataBlocks;
   return iResult;

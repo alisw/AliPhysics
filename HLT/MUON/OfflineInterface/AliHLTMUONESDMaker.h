@@ -37,6 +37,12 @@
  * \li -add_rootified_objects <br>
  *       If specified then the any rootified dHLT event data that is found is added to the
  *       ESD list of objects as a custom data object.<br>
+ * \li -makeclonesarray <br>
+ *      This option will cause the component to generate a TClonesArray of MUON ESD tracks
+ *      and send it as a kAliHLTDataTypeTObject data block type. <br>
+ * \li -makeonlyclonesarray <br>
+ *      Same as the -makeclonesarray option, however the data block with the AliESDEvent
+ *      object is not generated at all. <br>
  * \li -warn_on_unexpected_block <br>
  *       If set, then warning messages are generated for any data block types that
  *       were not expected. (default is to generate only debug messages)<br>
@@ -60,6 +66,7 @@ public:
 
 	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
+	virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
 	virtual AliHLTComponent* Spawn();
@@ -81,6 +88,8 @@ private:
 	bool fWarnForUnexpecedBlock;  /// Flag indicating if we should log a warning if we got a block of an unexpected type.
 	bool fMakeMinimalESD;  /// Flag to indicate if a minimal ESD object should be created.
 	bool fAddCustomData;  /// Flag to turn on adding of all dHLT rootified objects to the ESD.
+	bool fMakeClonesArray;  /// Flag indicating if a data block of TClonesArray with AliESDMuonTrack objects should be generated.
+	bool fMakeESDDataBlock;  /// Flag indicating if the ESD data block should generated.
 
 	ClassDef(AliHLTMUONESDMaker, 0); // Component for converting dHLT reconstructed data into the ESD format.
 };

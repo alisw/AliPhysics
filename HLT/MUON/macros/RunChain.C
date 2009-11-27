@@ -523,7 +523,7 @@ void RunChain(
 	if (checkData)
 	{
 		AliHLTConfiguration checker("checker", "MUONDataChecker", sources, "-warn_on_unexpected_block");
-		sources = "checker";
+		sources = "checker"; // Only add the checker to the sources in this case since it will forward just the bad events.
 	}
 	
 	if (useRootWriter)
