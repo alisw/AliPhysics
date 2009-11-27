@@ -93,11 +93,6 @@ void MakeSDDGeoMap(){
     }
   }
   fclose(outfil);
-  TFile *f=new TFile("SDDgeomap.root","recreate");
-  f->cd();
-  ntsddgeo->Write();
-  f->Close();
-  
   ntsddgeo->SetMarkerStyle(7);
   TCanvas *c1;
   c1=new TCanvas("c1","",800,800);
@@ -107,6 +102,7 @@ void MakeSDDGeoMap(){
     text[i]->Draw();
     ltext[i]->Draw();
   }
+  
 
   TCanvas *c2=new TCanvas("c2","",1200,800);
   c2->Divide(3,2);
@@ -154,6 +150,10 @@ void MakeSDDGeoMap(){
   t3->Draw();
   t4->Draw();
   
+  TFile *f=new TFile("SDDgeomap.root","recreate");
+  f->cd();
+  ntsddgeo->Write();
+  f->Close();
   
 }
 
