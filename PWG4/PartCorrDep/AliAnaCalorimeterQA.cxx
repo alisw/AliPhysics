@@ -1007,8 +1007,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 					//Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
 				}
-				if(GetEventNumber() > 139 && GetEventNumber() < 145)
-					printf("Event %d: epair %f mass %f\n", GetEventNumber(), (mom+mom2).E(),(mom+mom2).M());
+				
 				fhIM  ->Fill((mom+mom2).E(),(mom+mom2).M());
 				fhAsym->Fill((mom+mom2).E(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
 					
@@ -2004,38 +2003,29 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		
 		c5->cd(1) ; 
 		fhIM->SetLineColor(4);
-		fhIM->Draw("lego");
+		fhIM->Draw();
 		
 		c5->cd(2) ; 
 		binmin = 0;
-		binmax =  (Int_t) (1-emin)*nebins/emax;
+		binmax =  (Int_t) (5-emin)*nebins/emax;
 		TH1D *pyim5 = fhIM->ProjectionY("pyim5",binmin,binmax);
-		pyim5->SetTitle("0 < E_{pair} < 1 GeV");
-		if(pyim5->GetEntries() > 1) gPad->SetLogy();
-		pyim5->SetTitle("All Pairs");
+		pyim5->SetTitle("E_{pair} < 5 GeV");
 		pyim5->SetLineColor(4);
 		pyim5->Draw();
 		
 		c5->cd(3) ; 
-		//binmin =  (Int_t) (5-emin)*nebins/emax;
-		//binmax =  (Int_t) (10-emin)*nebins/emax;
-		//TH1D *pyim510 = fhIM->ProjectionY("pyim5_10",binmin,binmax);
-		//pyim510->SetTitle("5 < E_{pair} < 10 GeV");
-		binmin =  (Int_t) (1-emin)*nebins/emax;
-		binmax =  (Int_t) (2-emin)*nebins/emax;
-		TH1D *pyim510 = fhIM->ProjectionY("pyim0_2",binmin,binmax);
-		if(pyim510->GetEntries() > 1) gPad->SetLogy();
-		pyim510->SetTitle("1 < E_{pair} < 2 GeV");
-		
+		binmin =  (Int_t) (5-emin)*nebins/emax;
+		binmax =  (Int_t) (10-emin)*nebins/emax;
+		TH1D *pyim510 = fhIM->ProjectionY("pyim5_10",binmin,binmax);
+		pyim510->SetTitle("5 < E_{pair} < 10 GeV");
 		pyim510->SetLineColor(4);
 		pyim510->Draw();
 		
 		c5->cd(4) ;
-		binmin =  (Int_t) (2-emin)*nebins/emax;
+		binmin =  (Int_t) (10-emin)*nebins/emax;
 		binmax = -1;
 		TH1D *pyim10 = fhIM->ProjectionY("pyim10",binmin,binmax);
-		pyim10->SetTitle("E_{pair} > 2 GeV");
-		if(pyim10->GetEntries() > 1) gPad->SetLogy();
+		pyim10->SetTitle("E_{pair} > 10 GeV");
 		pyim10->SetLineColor(4);
 		pyim10->Draw();
 		
