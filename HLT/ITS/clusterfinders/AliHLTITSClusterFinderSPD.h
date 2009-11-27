@@ -9,8 +9,7 @@
 //
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //--------------------------------------------------------------
-#include "AliHLTITSClusterFinder.h"
-
+#include "AliITSDetTypeRec.h"
 class TClonesArray;
 class AliRawReader;
 class AliITSRawStream;
