@@ -158,7 +158,7 @@ private:
   UShort_t fHitPatternFromResponse; ///<  Fired plane according to re-computed repsonse
   UChar_t fTriggerWithoutChamber; ///< Pattern of triggers after chamber removal
 
-  ClassDef(AliMUONLocalTrigger,4)  // reconstructed Local Trigger object
+  ClassDef(AliMUONLocalTrigger,5)  // reconstructed Local Trigger object
 };
 #endif
 
