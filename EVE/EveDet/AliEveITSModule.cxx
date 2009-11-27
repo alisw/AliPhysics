@@ -32,6 +32,7 @@ ClassImp(AliEveITSModule)
 Bool_t AliEveITSModule::fgStaticInitDone = kFALSE;
 
 TEveFrameBox*    AliEveITSModule::fgSPDFrameBox = 0;
+TEveFrameBox*    AliEveITSModule::fgSPDFrameBoxDead = 0;
 TEveFrameBox*    AliEveITSModule::fgSDDFrameBox = 0;
 TEveFrameBox*    AliEveITSModule::fgSSDFrameBox = 0;
 
@@ -94,6 +95,12 @@ void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
     fgSPDFrameBox->IncRefCount();
     fgSPDPalette  = new TEveRGBAPalette(info->fSPDMinVal,info->fSPDMaxVal);
     fgSPDPalette->IncRefCount();
+
+    fgSPDFrameBoxDead = new TEveFrameBox();
+    fgSPDFrameBoxDead->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
+    fgSPDFrameBoxDead->SetFrameColor(kRed);
+    fgSPDFrameBoxDead->SetFrameFill(kTRUE);
+    fgSPDFrameBoxDead->IncRefCount();
   }
 
   {
@@ -174,7 +181,9 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
   {
     // SPD
 
-    SetFrame(fgSPDFrameBox);
+    fDetID = 0;
+
+    SetFrame(fInfo->IsDead(fID, fDetID) ? fgSPDFrameBoxDead : fgSPDFrameBox);
     SetPalette(fgSPDPalette);
 
     symname += strLadder;
@@ -195,7 +204,6 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     rest    -= 4*nstave;
     symname += rest;
     SetName(symname);
-    fDetID = 0;
     fDx = fInfo->fSegSPD->Dx()*0.00005;
     fDz = 3.50;
     fDy = fInfo->fSegSPD->Dy()*0.00005;
@@ -203,6 +211,8 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
   else if (fID <= (AliITSgeomTGeo::GetModuleIndex(5,1,1) - 1))
   {
     // SDD
+
+    fDetID = 1;
 
     SetFrame(fgSDDFrameBox);
     SetPalette(fgSDDPalette);
@@ -222,7 +232,6 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     }
     symname += rest;
     SetName(symname);
-    fDetID = 1;
     fDx = fInfo->fSegSDD->Dx()*0.0001;
     fDz = fInfo->fSegSDD->Dz()*0.00005;
     fDy = fInfo->fSegSDD->Dy()*0.00005;
@@ -230,6 +239,8 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
   else
   {
     // SSD
+
+    fDetID = 2;
 
     SetFrame(fgSSDFrameBox);
     SetPalette(fgSSDPalette);
@@ -249,7 +260,6 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     }
     symname += rest;
     SetName(symname);
-    fDetID = 2;
     fInfo->fSegSSD->SetLayer(fLayer);
     fDx = fInfo->fSegSSD->Dx()*0.00005;
     fDz = fInfo->fSegSSD->Dz()*0.00005;
@@ -257,10 +267,12 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
   }
 
   LoadQuads();
+  RefitPlex();
   ComputeBBox();
   InitMainTrans();
   if (trans)
     SetTrans();
+
 }
 
 void AliEveITSModule::LoadQuads()
@@ -269,8 +281,6 @@ void AliEveITSModule::LoadQuads()
   // visualization - called quads.
 
   TClonesArray *digits  = fInfo->GetDigits(fID, fDetID);
-  if (!digits) return;
-
   Int_t         ndigits = digits ? digits->GetEntriesFast() : 0;
 
   Float_t       x, z, dpx, dpz;
@@ -357,8 +367,6 @@ void AliEveITSModule::LoadQuads()
     }
 
   } // end switch
-
-  RefitPlex();
 }
 
 /******************************************************************************/

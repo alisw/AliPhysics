@@ -19,6 +19,7 @@
 #include <AliITSDDLModuleMapSDD.h>
 
 #include <AliITSCalibrationSDD.h>
+#include <AliITSCalibrationSPD.h>
 #include <AliITSdigit.h>
 #include <AliITSdigitSPD.h>
 
@@ -73,7 +74,8 @@ AliEveITSModuleSelection::AliEveITSModuleSelection():
 
 ClassImp(AliEveITSDigitsInfo)
 
-AliITSDDLModuleMapSDD* AliEveITSDigitsInfo::fgDDLMapSDD = 0;
+AliITSDDLModuleMapSDD *AliEveITSDigitsInfo::fgDDLMapSDD  = 0;
+TObjArray             *AliEveITSDigitsInfo::fgDeadModSPD = 0;
 
 /******************************************************************************/
 
@@ -179,6 +181,23 @@ void AliEveITSDigitsInfo::InitInternals()
 
     if (!cacheStatus)
       delete ddlMapSDD;
+  }
+
+  if (fgDeadModSPD == 0)
+  {
+    AliCDBManager *cdb = AliCDBManager::Instance();
+
+    AliCDBEntry *deadSPD = cdb->Get("ITS/Calib/SPDDead");
+
+    if (!deadSPD)
+    {
+      AliWarning("SPD Calibration object retrieval failed!");
+    }
+    else
+    {
+      fgDeadModSPD = (TObjArray*)deadSPD->GetObject();
+      fgDeadModSPD->SetOwner(kTRUE);
+    }
   }
 }
 
@@ -349,7 +368,7 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
 
 /******************************************************************************/
 
-TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
+TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet) const
 {
   // Return TClonesArray of digits for specified module and sub-detector-id.
 
@@ -419,7 +438,7 @@ TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
 /******************************************************************************/
 
 void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel,
-				       std::vector<UInt_t>& ids)
+				       std::vector<UInt_t>& ids) const
 {
   // Fill the id-vector with ids of modules that satisfy conditions
   // given by the AliEveITSModuleSelection object.
@@ -463,6 +482,26 @@ void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel,
       }
     }
   }
+}
+
+/******************************************************************************/
+
+Bool_t AliEveITSDigitsInfo::HasData(Int_t module, Int_t det_id) const
+{
+  // Return true if given module has data.
+
+  TClonesArray *digits = GetDigits(module, det_id);
+  return digits && digits->GetEntriesFast() > 0;
+}
+
+Bool_t AliEveITSDigitsInfo::IsDead (Int_t module, Int_t det_id) const
+{
+  // Return true if given module is dead.
+  // Only implemented for SPD.
+
+  if (det_id == 0 && fgDeadModSPD)
+    return ((AliITSCalibrationSPD*) fgDeadModSPD->At(module))->IsBad();
+  return kFALSE;
 }
 
 /******************************************************************************/

@@ -22,12 +22,24 @@ AliEveITSModule* its_make_module(Int_t i, TEveElement* parent,
   if (i > 239 && i < 500) det_id = 1;
   else if (i >= 500)      det_id = 2;
 
-  if (!check_empty || (di->GetDigits(i, det_id) && di->GetDigits(i, det_id)->GetEntriesFast() > 0))
+  printf("Mod %d, %d %d\n", i, di->HasData(i, det_id), di->IsDead(i, det_id));
+
+  if (!check_empty || di->HasData(i, det_id) || di->IsDead(i, det_id))
   {
+    printf("Creating module: %d\n", i);
     if (scaled_modules)
       m = new AliEveITSScaledModule(i, di, si);
     else
       m = new AliEveITSModule(i, di);
+
+    // Before 5.26 ROOT did not draw frames of empty quad-sets.
+    // Bypass until we move there.
+    if (!di->HasData(i, det_id))
+    {
+      m->AddQuad(0,0,0,0);
+      m->RefitPlex();
+    }
+
     if (parent)
       parent->AddElement(m);
   }

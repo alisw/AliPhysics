@@ -39,6 +39,7 @@ public:
   virtual void Print(Option_t* opt="") const;
 
   static TEveFrameBox    *fgSPDFrameBox; // Module frame for SPD.
+  static TEveFrameBox    *fgSPDFrameBoxDead; // Module frame for SPD.
   static TEveFrameBox    *fgSDDFrameBox; // Module frame for SDD.
   static TEveFrameBox    *fgSSDFrameBox; // Module frame for SSD.
 

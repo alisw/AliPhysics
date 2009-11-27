@@ -94,7 +94,9 @@ public:
   Int_t                    fSDDScaleZ[5]; // SDD cell-sizes along Z for display of scaled-digits.
   Int_t                    fSSDScale [5]; // SSD cell-sizes for display of scaled-digits.
 
-  static AliITSDDLModuleMapSDD* fgDDLMapSDD;  // Mapping DDL/module to SDD-module number.
+  static AliITSDDLModuleMapSDD *fgDDLMapSDD;  // Mapping DDL/module to SDD-module number.
+
+  static TObjArray             *fgDeadModSPD; // Dead modules of SPD.
 
   AliEveITSDigitsInfo();
   virtual ~AliEveITSDigitsInfo();
@@ -102,18 +104,21 @@ public:
   void SetTree(TTree* tree);
   void ReadRaw(AliRawReader* raw, Int_t mode);
 
-  TClonesArray* GetDigits(Int_t moduleID, Int_t detector);
+  TClonesArray* GetDigits(Int_t moduleID, Int_t detector) const;
 
   void GetSPDLocalZ(Int_t j, Float_t& z) const;
 
-  void GetModuleIDs(AliEveITSModuleSelection* sel, std::vector<UInt_t>& ids);
+  void GetModuleIDs(AliEveITSModuleSelection* sel, std::vector<UInt_t>& ids) const;
+
+  Bool_t HasData(Int_t module, Int_t det_id) const;
+  Bool_t IsDead (Int_t module, Int_t det_id) const;
 
   virtual void Print(Option_t* opt="") const;
 
 protected:
-  std::map<Int_t,  TClonesArray*> fSPDmap; // Map from module-id to SPD data.
-  std::map<Int_t,  TClonesArray*> fSDDmap; // Map from module-id to SDD data.
-  std::map<Int_t,  TClonesArray*> fSSDmap; // Map from module-id to SSD data.
+  mutable std::map<Int_t,  TClonesArray*> fSPDmap; // Map from module-id to SPD data.
+  mutable std::map<Int_t,  TClonesArray*> fSDDmap; // Map from module-id to SDD data.
+  mutable std::map<Int_t,  TClonesArray*> fSSDmap; // Map from module-id to SSD data.
 
   void SetITSSegmentation();
 
