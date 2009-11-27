@@ -55,6 +55,7 @@ public :
   // Process matching
   void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
   void ProcessTPCTRD(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
+  void ProcessITSTPC(Int_t trackIdx, AliESDEvent* const esdEvent, AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
 
   // Fill histogrrams
   void FillHistograms(AliExternalTrackParam *const refParam, AliExternalTrackParam *const param, Bool_t isRec);
@@ -78,6 +79,8 @@ public :
   //
   THnSparse *GetResolHisto() const  { return fResolHisto; }
   THnSparse *GetPullHisto()  const  { return fPullHisto; }
+  THnSparse *GetTrackEffHisto() const  { return fTrackingEffHisto; }
+
 private:
   //
   // Control histograms
@@ -90,6 +93,9 @@ private:
 
   // pull histogram
   THnSparseF *fPullHisto;  //-> pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt:isRec
+
+  // tracking efficiency using ITS stand-alone tracks histogram
+  THnSparseF *fTrackingEffHisto;  // -> has match:y:z:snp:tgl:pt:ITSclusters
 
   // Global cuts objects
   AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks
