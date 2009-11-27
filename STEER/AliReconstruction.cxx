@@ -1662,7 +1662,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       detectors=fRunLocalReconstruction;
       detectors.ReplaceAll("HLT", "");
       if (!RunLocalEventReconstruction(detectors)) {
-	if (fStopOnError) {CleanUp(); return kFALSE;}
+        if (fStopOnError) {
+          CleanUp(); 
+          return kFALSE;
+        }
       }
     }
 
@@ -2143,7 +2146,8 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       TTree* digitsTree = loader->TreeD();
       if (!digitsTree) {
         AliError(Form("Can't get the %s digits tree", fgkDetectorName[iDet]));
-        if (fStopOnError) return kFALSE;
+        if (fStopOnError) 
+          return kFALSE;
       } else {
         reconstructor->Reconstruct(digitsTree, clustersTree);
         if (fRunQA && IsInTasks(AliQAv1::kDIGITSR)) {
@@ -2161,10 +2165,12 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     loader->UnloadRecPoints();
     AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
   }
+  IsSelected("CTP", detStr);
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
     AliError(Form("the following detectors were not found: %s",
                   detStr.Data()));
-    if (fStopOnError) return kFALSE;
+    if (fStopOnError) 
+      return kFALSE;
   }
   eventNr++;
   return kTRUE;
@@ -2617,7 +2623,8 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
       fLoader[iDet]->UnloadRecPoints();
     }
   }
-
+  
+  IsSelected("CTP", detStr);
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
     AliError(Form("the following detectors were not found: %s", 
                   detStr.Data()));
