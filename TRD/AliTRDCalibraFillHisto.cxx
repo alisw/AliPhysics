@@ -365,6 +365,7 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
   // Some parameters
   if(nboftimebin > 0) fTimeMax = nboftimebin;
   else fTimeMax = cal->GetNumberOfTimeBinsDCS();
+  if(fTimeMax <= 0) fTimeMax = 30;
   fSf                 = parCom->GetSamplingFrequency();
   if(!fNormalizeNbOfCluster) fRelativeScale = 20.0;
   else fRelativeScale = 1.18;
@@ -3191,3 +3192,4 @@ void AliTRDCalibraFillHisto::AnalyseLinearFitter()
     }
   }
 }
+
