@@ -82,7 +82,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   // assembly of the global ESD
 
   // define the inputs to the global ESD
-  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker";
+  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-SPD-vertexer ITS-tracker";
 
   // check for the availibility
   TObjArray* pTokens=esdInputs.Tokenize(" ");
@@ -105,6 +105,22 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   }
 
   pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "");
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // global vertexer component
+  //
+  pHandler->CreateConfiguration("GLOBAL-vertexer","GlobalVertexer","GLOBAL-esd-converter","");
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // global histograms
+  //
+  TString vertexhistoInput="GLOBAL-vertexer";
+  if (pHandler->FindConfiguration("ITS-SPD-vertexer")) {
+    vertexhistoInput+=" ITS-SPD-vertexer";
+  }
+  pHandler->CreateConfiguration("GLOBAL-vertexhisto","GlobalVertexerHisto", vertexhistoInput.Data(),"");
   
   return 0;
 }
