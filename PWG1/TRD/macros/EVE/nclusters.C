@@ -4,8 +4,12 @@
 #include <TRD/AliTRDtrackV1.h>
 #endif
 
-void nclusters(const AliTRDtrackV1* track, Double_t* &res, Int_t& n)
+void nclusters(const TObject* object, Double_t* &res, Int_t& n)
 {
+  if (!object) return;
+  if (object->IsA() != AliTRDtrackV1::Class()) return;
+
+  const AliTRDtrackV1* track = dynamic_cast<const AliTRDtrackV1*>(object); 
   if (!track)  return;
 
   n = 1;
