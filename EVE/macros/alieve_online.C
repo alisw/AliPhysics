@@ -121,6 +121,10 @@ void alieve_online_init()
   glv->DoDraw();
 }
 
+Int_t g_pic_id  = 0;
+Int_t g_pic_max = 10;
+TTime g_pic_prev;
+
 void alieve_online_on_new_event()
 {
   AliESDEvent* esd = AliEveEventManager::AssertESD();
@@ -140,4 +144,28 @@ void alieve_online_on_new_event()
   if (gCenterProjectionsAtPrimaryVertex)
     mv->SetCenterRhoZ(x[0], x[1], x[2]);
   mv->ImportEventRhoZ(top);
+
+  // Online picture-dump to amore.
+  const TString pichost("aldaqacrs3");
+  TTime now = gSystem->Now();
+  Long_t delta = now - g_pic_prev;  delta /= 1000;
+  if (pichost == gSystem->HostName() && delta >= 30)
+  {
+    TString id;      id.Form("online-viz-%03d", g_pic_id);
+    TString pic(id); pic += ".png";
+
+    gEve->GetBrowser()->RaiseWindow();
+    gEve->FullRedraw3D();
+    gSystem->ProcessEvents();
+    gSystem->Exec(TString::Format("xwd -id %u | convert - %s",
+                 gEve->GetBrowser()->GetId(), pic.Data()));
+
+    gSystem->Exec(TString::Format("SendImageToAmore %s %s %d",
+                 id.Data(), pic.Data(),
+                 AliEveEventManager::AssertRawReader()->GetRunNumber()));
+
+    if (++g_pic_id >= g_pic_max)
+      g_pic_id = 0;
+    g_pic_prev = now;
+  }
 }
