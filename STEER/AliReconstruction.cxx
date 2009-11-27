@@ -3005,9 +3005,9 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
       Int_t idx[200];
       for (Int_t i=0; i<200; ++i) idx[i] = -1; //PH avoid uninitialized values
       for (Int_t iDet = 5; iDet >= 0; iDet--) {// TOF, TRD, TPC, ITS clusters
-          nsp += track->GetNcls(iDet);
+          nsp += (iDet==GetDetIndex("TRD")) ? track->GetTRDntracklets():track->GetNcls(iDet);
 
-          if (iDet==0) { // ITS "extra" clusters
+          if (iDet==GetDetIndex("ITS")) { // ITS "extra" clusters
              track->GetClusters(iDet,idx);
              for (Int_t i=6; i<12; i++) if(idx[i] >= 0) nsp++;
           }  
@@ -3020,9 +3020,9 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	for (Int_t iDet = 5; iDet >= 0; iDet--) {
 	  AliTracker *tracker = fTracker[iDet];
 	  if (!tracker) continue;
-	  Int_t nspdet = track->GetClusters(iDet,idx);
+	  Int_t nspdet = (iDet==GetDetIndex("TRD")) ? track->GetTRDtracklets(idx):track->GetClusters(iDet,idx);
 
-	  if (iDet==0) // ITS "extra" clusters             
+	  if (iDet==GetDetIndex("ITS")) // ITS "extra" clusters             
              for (Int_t i=6; i<12; i++) if(idx[i] >= 0) nspdet++;
 
 	  if (nspdet <= 0) continue;
@@ -3046,7 +3046,7 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	    } 
 	    isp2++;
 	    if (!isvalid) continue;
-	    if (iDet==0 && (isp-1)>=6) p.SetExtra();
+	    if (iDet==GetDetIndex("ITS") && (isp-1)>=6) p.SetExtra();
 	    sp->AddPoint(isptrack,&p); isptrack++;
 	  }
 	}	

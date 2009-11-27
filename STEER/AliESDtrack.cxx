@@ -1638,14 +1638,23 @@ UChar_t AliESDtrack::GetTRDclusters(Int_t *idx) const {
 
 //_______________________________________________________________________
 UChar_t AliESDtrack::GetTRDtracklets(Int_t *idx) const {
-  //---------------------------------------------------------------------
-  // This function returns indices of the assigned TRD tracklets 
-  //---------------------------------------------------------------------
-  if (idx!=0) {
-     Int_t *index=fFriendTrack->GetTRDindices();
-     for (Int_t i=0; i<6/*AliESDfriendTrack::kMaxTRDcluster*/; i++) idx[i]=index[i];
+//
+// This function returns the number of TRD tracklets used in tracking
+// and it fills the indices of these tracklets in the array "idx" as they 
+// are registered in the TRD track list. 
+// 
+// Caution :
+//   1. The idx array has to be allocated with a size >= AliESDtrack::kTRDnPlanes
+//   2. The idx array store not only the index but also the layer of the tracklet. 
+//      Therefore tracks with TRD gaps contain default values for indices [-1] 
+
+  if (!idx) return GetTRDntracklets();
+  Int_t *index=fFriendTrack->GetTRDindices(), n(0);
+  for (Int_t i=0; i<kTRDnPlanes; i++){ 
+    if(index[i]>=0) n++;
+    idx[i]=index[i];
   }
-  return fTRDncls;
+  return n;
 }
 
 //_______________________________________________________________________
