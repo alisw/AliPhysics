@@ -19,13 +19,13 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	printf("======================== \n");
 	
 	
-	//Detector Fidutial Cuts
-	AliFidutialCut * fidCut = new AliFidutialCut();
-	fidCut->DoCTSFidutialCut(kTRUE) ;
-	fidCut->DoEMCALFidutialCut(kFALSE) ;
-	fidCut->DoPHOSFidutialCut(kFALSE) ;
+	//Detector Fiducial Cuts
+	AliFiducialCut * fidCut = new AliFiducialCut();
+	fidCut->DoCTSFiducialCut(kTRUE) ;
+	fidCut->DoEMCALFiducialCut(kFALSE) ;
+	fidCut->DoPHOSFiducialCut(kFALSE) ;
 	
-	fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
+	fidCut->SetSimpleCTSFiducialCut(0.9,0.,360.);
 	fidCut->Print("");
 	
 	
@@ -49,7 +49,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 //	reader->AddStatusArray(statusArray)  ;
 //	reader->SwitchOnStatusSelection() ;
 	
-	reader->SetFidutialCut(fidCut);
+	reader->SetFiducialCut(fidCut);
 
 	//     //We want tracks fitted in the detectors:
 	//     ULong_t status=AliAODTrack::kTPCrefit;
@@ -75,7 +75,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	anatrack->SetDebug(-1);//10 for lots of messages
 	anatrack->SetMinPt(5.);
 	anatrack->SetOutputAODName("Charged");
-	anatrack->SwitchOffFidutialCut();
+	anatrack->SwitchOffFiducialCut();
 	anatrack->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
 	anatrack->SwitchOnDataMC() ;//Access MC stack and fill more histograms
 	//Set Histrograms bins and ranges

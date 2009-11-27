@@ -41,7 +41,7 @@
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
 #include "AliAODEvent.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 
 ClassImp(AliCaloTrackESDReader)
 
@@ -105,7 +105,7 @@ void AliCaloTrackESDReader::FillInputCTS() {
 	track->GetPxPyPz(p) ;
 	TLorentzVector momentum(p[0],p[1],p[2],0);
       
-	if(fCTSPtMin < momentum.Pt() &&fFidutialCut->IsInFidutialCut(momentum,"CTS")){
+	if(fCTSPtMin < momentum.Pt() &&fFiducialCut->IsInFiducialCut(momentum,"CTS")){
 	
 		if(fDebug > 3 && momentum.Pt() > 0.2) printf("AliCaloTrackESDReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						    momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -169,7 +169,7 @@ void AliCaloTrackESDReader::FillInputCTS() {
 		  aodTrack->SetDetPID(aodpid);
 		}
 		else continue;   // outside the beam pipe: orphan track	
-	}//Pt and Fidutial cut passed. 
+	}//Pt and Fiducial cut passed. 
   }// track loop
 
   //Put references to selected tracks in array
@@ -193,7 +193,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
   Int_t naod      = (fOutputEvent->GetCaloClusters())->GetEntriesFast();
   Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
   
-  //Loop to select clusters in fidutial cut and fill container with aodClusters
+  //Loop to select clusters in fiducial cut and fill container with aodClusters
   for (Int_t iclus = 0; iclus < ((AliESDEvent*)fInputEvent)->GetNumberOfCaloClusters(); iclus++) {
     AliESDCaloCluster * clus = 0;
     if ( (clus = ((AliESDEvent*)fInputEvent)->GetCaloCluster(iclus)) ) {
@@ -202,7 +202,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 	clus->GetMomentum(momentum, v);      
 	if(fDebug > 3 && momentum.E() > 0.2) printf("AliCaloTrackESDReader::FillInputEMCAL() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta()); 
-	if(fEMCALPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"EMCAL")){
+	if(fEMCALPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"EMCAL")){
 	  
 	  if(fDebug > 2 && momentum.E() > 0.2) printf("AliCaloTrackESDReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -247,7 +247,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 	    }
 	  }
 	  //Fill reference array
-	}//Pt and Fidutial cut passed.
+	}//Pt and Fiducial cut passed.
       }//EMCAL cluster
     }//cluster exists
   }//esd cluster loop
@@ -274,7 +274,7 @@ void AliCaloTrackESDReader::FillInputPHOS() {
   Int_t naod      = (fOutputEvent->GetCaloClusters())->GetEntriesFast();
   Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
 
-  //Loop to select clusters in fidutial cut and fill container with aodClusters
+  //Loop to select clusters in fiducial cut and fill container with aodClusters
   for (Int_t iclus = 0; iclus < ((AliESDEvent*)fInputEvent)->GetNumberOfCaloClusters(); iclus++) {
     AliESDCaloCluster * clus = 0;
     if ( (clus = ((AliESDEvent*)fInputEvent)->GetCaloCluster(iclus)) ) {
@@ -283,7 +283,7 @@ void AliCaloTrackESDReader::FillInputPHOS() {
 	clus->GetMomentum(momentum, v);      
 	if(fDebug > 3 && momentum.E() > 0.1)printf("AliCaloTrackESDReader::FillInputPHOS() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-	if(fPHOSPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"PHOS")){
+	if(fPHOSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"PHOS")){
 	  
 	  if(fDebug > 2 && momentum.E() > 0.1)printf("AliCaloTrackESDReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -333,7 +333,7 @@ void AliCaloTrackESDReader::FillInputPHOS() {
 		caloCluster->AddTrackMatched((fInputEvent->GetTrack(iESDtrack)));
 	    }
 	  }
-	}//Pt and Fidutial cut passed.
+	}//Pt and Fiducial cut passed.
       }//PHOS cluster
     }//cluster exists
   }//esd cluster loop

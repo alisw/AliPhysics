@@ -42,7 +42,7 @@
 #include "AliESDCaloCells.h"
 #include "AliStack.h"
 #include "AliCaloPID.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "AliAODCaloCells.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODTrack.h"
@@ -240,10 +240,10 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       
       //Acceptance selection   
       Bool_t in = kTRUE;
-      if(IsFidutialCutOn())
-	in =  GetFidutialCut()->IsInFidutialCut(mom,fDetector) ;
+      if(IsFiducialCutOn())
+	in =  GetFiducialCut()->IsInFiducialCut(mom,fDetector) ;
       
-      if(GetDebug() > 1) printf("AliAnaExample::MakeAnalysisFillAOD() - Cluster pt %2.2f, phi %2.2f, pdg %d, in fidutial cut %d \n",mom.Pt(), mom.Phi(), pdg, in);
+      if(GetDebug() > 1) printf("AliAnaExample::MakeAnalysisFillAOD() - Cluster pt %2.2f, phi %2.2f, pdg %d, in fiducial cut %d \n",mom.Pt(), mom.Phi(), pdg, in);
       
       //Select cluster if momentum, pdg and acceptance are good
       if(mom.Pt() > GetMinPt() && pdg ==fPdg && in) {
@@ -304,8 +304,8 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       p3.SetXYZ(mom[0],mom[1],mom[2]);
       
       //Acceptance selection
-      Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom,"CTS") ;
-      if(GetDebug() > 1) printf("AliAnaExample::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, in fidutial cut %d\n",p3.Pt(), p3.Phi(), in);
+      Bool_t in =  GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+      if(GetDebug() > 1) printf("AliAnaExample::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, in fiducial cut %d\n",p3.Pt(), p3.Phi(), in);
       if(p3.Pt() > GetMinPt() && in) {
 	AliAODPWG4Particle tr = AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
 	tr.SetDetector("CTS");

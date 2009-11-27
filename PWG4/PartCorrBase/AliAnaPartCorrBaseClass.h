@@ -21,7 +21,7 @@ class AliAODCaloCluster;
 class AliAODCaloCells;
 class AliCaloTrackReader ;   
 class AliCaloPID ;
-class AliFidutialCut ;
+class AliFiducialCut ;
 class AliIsolationCut ;
 class AliMCAnalysisUtils ;
 class AliNeutralMesonSelection ;
@@ -110,8 +110,8 @@ public:
   virtual AliCaloPID * GetCaloPID() const {return  fCaloPID ;}
   virtual void SetCaloPID(AliCaloPID * const pid) { fCaloPID = pid ;}
   
-  virtual AliFidutialCut * GetFidutialCut() const {return  fFidCut ;}
-  virtual void SetFidutialCut(AliFidutialCut * const fc) { fFidCut = fc ;}
+  virtual AliFiducialCut * GetFiducialCut() const {return  fFidCut ;}
+  virtual void SetFiducialCut(AliFiducialCut * const fc) { fFidCut = fc ;}
   
   virtual AliIsolationCut * GetIsolationCut() const {return  fIC ;}
   virtual void SetIsolationCut(AliIsolationCut * const ic) { fIC = ic ;}
@@ -126,9 +126,9 @@ public:
   virtual void SwitchOnDataMC()    {fDataMC = kTRUE ; }
   virtual void SwitchOffDataMC()    {fDataMC = kFALSE ; }
   
-  virtual Bool_t IsFidutialCutOn() const {return fCheckFidCut ; }
-  virtual void SwitchOnFidutialCut() { fCheckFidCut = kTRUE;}
-  virtual void SwitchOffFidutialCut() { fCheckFidCut = kFALSE;}
+  virtual Bool_t IsFiducialCutOn() const {return fCheckFidCut ; }
+  virtual void SwitchOnFiducialCut() { fCheckFidCut = kTRUE;}
+  virtual void SwitchOffFiducialCut() { fCheckFidCut = kFALSE;}
   
   virtual Bool_t IsCaloPIDOn() const {return fCheckCaloPID ; }
   virtual void SwitchOnCaloPID() { fCheckCaloPID = kTRUE;}
@@ -202,7 +202,7 @@ public:
   
   //Analysis helper classes access pointers
   AliCaloPID               * fCaloPID; // PID calculation
-  AliFidutialCut           * fFidCut;  // Acceptance cuts
+  AliFiducialCut           * fFidCut;  // Acceptance cuts
   AliIsolationCut          * fIC;      // Isolation cut 
   AliMCAnalysisUtils       * fMCUtils; // MonteCarlo Analysis utils 
   AliNeutralMesonSelection * fNMS;     // Neutral Meson Selection

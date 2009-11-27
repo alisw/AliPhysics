@@ -17,7 +17,7 @@
 //_________________________________________________________________________
 // Base class for reading data: MonteCarlo, ESD or AOD, of PHOS EMCAL and 
 // Central Barrel Tracking detectors (CTS).
-// Not all MC particles/tracks/clusters are kept, some kinematical/fidutial restrictions are done.
+// Not all MC particles/tracks/clusters are kept, some kinematical/fiducial restrictions are done.
 // Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TObjArrays (PHOS, EMCAL, CTS)
 //                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TObjArrays (PHOS, EMCAL, CTS)
 //                 : AliCaloTrackAODReader: Fills AOD data in 3 TObjArrays (PHOS, EMCAL, CTS) 
@@ -31,7 +31,7 @@
 
 //---- ANALYSIS system ----
 #include "AliCaloTrackReader.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "AliMCEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -43,7 +43,7 @@ ClassImp(AliCaloTrackReader)
 //____________________________________________________________________________
   AliCaloTrackReader::AliCaloTrackReader() : 
     TObject(), fEventNumber(-1), fCurrentFileName(""),fDataType(0), fDebug(0), 
-    fFidutialCut(0x0), fComparePtHardAndJetPt(kFALSE), fPtHardAndJetPtFactor(7),
+    fFiducialCut(0x0), fComparePtHardAndJetPt(kFALSE), fPtHardAndJetPtFactor(7),
     fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0),
     fAODCTS(new TObjArray()), fAODEMCAL(new TObjArray()), fAODPHOS(new TObjArray()),
     fEMCALCells(0x0), fPHOSCells(0x0),
@@ -67,7 +67,7 @@ ClassImp(AliCaloTrackReader)
 AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :   
   TObject(g), fEventNumber(g.fEventNumber), fCurrentFileName(g.fCurrentFileName), 
   fDataType(g.fDataType), fDebug(g.fDebug),
-  fFidutialCut(g.fFidutialCut),
+  fFiducialCut(g.fFiducialCut),
   fComparePtHardAndJetPt(g.fComparePtHardAndJetPt),
   fPtHardAndJetPtFactor(g.fPtHardAndJetPtFactor),
   fCTSPtMin(g.fCTSPtMin), fEMCALPtMin(g.fEMCALPtMin),fPHOSPtMin(g.fPHOSPtMin), 
@@ -105,7 +105,7 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
   fDebug       = source.fDebug ;
   fEventNumber = source.fEventNumber ;
   fCurrentFileName = source.fCurrentFileName ;
-  fFidutialCut = source.fFidutialCut;
+  fFiducialCut = source.fFiducialCut;
 	
   fComparePtHardAndJetPt = source.fComparePtHardAndJetPt;
   fPtHardAndJetPtFactor  = source.fPtHardAndJetPtFactor;
@@ -154,7 +154,7 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
 AliCaloTrackReader::~AliCaloTrackReader() {
   //Dtor
   
-  if(fFidutialCut) delete fFidutialCut ;
+  if(fFiducialCut) delete fFiducialCut ;
 	
   if(fAODCTS){
     fAODCTS->Clear() ; 
@@ -351,7 +351,7 @@ void AliCaloTrackReader::InitParameters()
   fFillEMCALCells = kFALSE;
   fFillPHOSCells  = kFALSE;
 
-  fFidutialCut           = new AliFidutialCut();
+  fFiducialCut           = new AliFiducialCut();
   fSecondInputFileName   = "" ;
   fSecondInputFirstEvent = 0 ;
   fReadStack             = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file

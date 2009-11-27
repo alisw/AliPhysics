@@ -37,7 +37,7 @@
 #include "AliCaloTrackReader.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliAODCaloCluster.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
 #include "AliCaloPID.h"
@@ -574,7 +574,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   //Get parameters set in base class.
   parList += GetBaseParametersList() ;
   
-  //Get parameters set in FidutialCut class (not available yet)
+  //Get parameters set in FiducialCut class (not available yet)
   //parlist += GetFidCut()->GetFidCutParametersList() 
   
   TObjString *oString= new TObjString(parList) ;
@@ -712,9 +712,9 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	 track->Eta() > -0.7 && track->Eta() < 0.7) in = kTRUE;
       ////////////////////////////
       //THIS HAS A MEM LEAK JLK 24-Oct-09
-      //Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom2,fCalorimeter) ;
+      //Bool_t in =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
       ///////////////////////////
-      if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Track(Extrap) pt %2.2f(%2.2f), phi %2.2f(%2.2f), eta %2.2f(%2.2f) in fidutial cut %d\n",track->Pt(), mom.Pt(), track->Phi(), mom.Phi(), track->Eta(),mom.Eta(), in);
+      if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Track(Extrap) pt %2.2f(%2.2f), phi %2.2f(%2.2f), eta %2.2f(%2.2f) in fiducial cut %d\n",track->Pt(), mom.Pt(), track->Phi(), mom.Phi(), track->Eta(),mom.Eta(), in);
 
       if(mom.Pt() > GetMinPt() && in) {
 	
@@ -1224,7 +1224,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	 mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
       /////////////////////////////////
       //THIS HAS A MEM LEAK JLK 24-Oct-09
-      //Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,fCalorimeter);
+      //Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter);
       ////////////////////////////////
       if(mom.Pt() < GetMinPt()) continue;
       if(!in) continue;

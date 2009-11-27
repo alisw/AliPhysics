@@ -37,7 +37,7 @@
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
 #include "AliAODPWG4ParticleCorrelation.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "AliAODTrack.h"
 #include "AliAODCaloCluster.h"
 #include "AliMCAnalysisUtils.h"
@@ -619,8 +619,8 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     // printf("rat = %f, xE = %f, cosi =%f \n", rat, xE, cosi);
      // printf("phi = %f \n", phi);
     
-     if(IsFidutialCutOn()){
-       Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,"CTS") ;
+     if(IsFiducialCutOn()){
+       Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
        if(! in ) continue ;
      }    
 
@@ -721,7 +721,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
 	if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) inputi = 1 ;
 	else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) inputi = 1;
 	  
-	//Cluster selection, not charged, with photon or pi0 id and in fidutial cut
+	//Cluster selection, not charged, with photon or pi0 id and in fiducial cut
     Int_t pdg=0;
 	if     (inputi == 0 && !SelectCluster(calo, vertex,  gammai, pdg))  continue ;
 	else if(inputi == 1 && !SelectCluster(calo, vertex2, gammai, pdg))  continue ;
@@ -772,7 +772,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
 	if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= jclus) inputj = 1;
 	else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= jclus) inputj = 1;
 		  
-	//Cluster selection, not charged with photon or pi0 id and in fidutial cut
+	//Cluster selection, not charged with photon or pi0 id and in fiducial cut
 	Int_t pdgj=0;
 	if     (inputj == 0 && !SelectCluster(calo2, vertex,  gammaj, pdgj))  continue ;
 	else if(inputj == 1 && !SelectCluster(calo2, vertex2, gammaj, pdgj))  continue ;
@@ -975,8 +975,8 @@ Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliAODCaloCluster * calo,
   }//PID on
   
   //Check acceptance selection
-  if(IsFidutialCutOn()){
-    Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,detector) ;
+  if(IsFiducialCutOn()){
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,detector) ;
     if(! in ) return kFALSE ;
   }
   

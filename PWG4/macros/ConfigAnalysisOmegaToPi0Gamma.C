@@ -8,15 +8,15 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	printf("ConfigAnalysis() \n");
 	printf("======================== \n");
 	
-	//Detector Fidutial Cuts
-	AliFidutialCut * fidCut = new AliFidutialCut();
-	fidCut->DoCTSFidutialCut(kFALSE) ;
-	fidCut->DoEMCALFidutialCut(kTRUE) ;
-	fidCut->DoPHOSFidutialCut(kTRUE) ;
+	//Detector Fiducial Cuts
+	AliFiducialCut * fidCut = new AliFiducialCut();
+	fidCut->DoCTSFiducialCut(kFALSE) ;
+	fidCut->DoEMCALFiducialCut(kTRUE) ;
+	fidCut->DoPHOSFiducialCut(kTRUE) ;
 	
-	//fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
-	fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
-	fidCut->SetSimplePHOSFidutialCut(0.12,220.,320.);
+	//fidCut->SetSimpleCTSFiducialCut(0.9,0.,360.);
+	fidCut->SetSimpleEMCALFiducialCut(0.7,80.,190.);
+	fidCut->SetSimplePHOSFiducialCut(0.12,220.,320.);
 	
 	fidCut->Print("");
 	
@@ -36,7 +36,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	reader->SetPHOSPtMin(0.2);
 	//reader->SetCTSPtMin(0.2);
 	
-	reader->SetFidutialCut(fidCut);
+	reader->SetFiducialCut(fidCut);
 		
 	//Remove the temporal AODs we create.	
 	reader->SwitchOnCleanStdAOD();	
@@ -62,12 +62,12 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
         anaphoton->SetMinPt(0.2);
         anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
         anaphoton->SetCaloPID(pid);
-//        anaphoton->SetFidutialCut(fidCut); //More acceptance selections if needed at this level
+//        anaphoton->SetFiducialCut(fidCut); //More acceptance selections if needed at this level
         anaphoton->SetCalorimeter("PHOS");
         anaphoton->SwitchOffDataMC() ;//Access MC stack and fill more histograms
         anaphoton->SwitchOffCaloPID();
         anaphoton->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
-        anaphoton->SwitchOffFidutialCut();
+        anaphoton->SwitchOffFiducialCut();
         anaphoton->SetOutputAODName("PhotonsPHOS");
         anaphoton->SetOutputAODClassName("AliAODPWG4Particle");
         anaphoton->AddToHistogramsName("AnaPhotonPHOS_");
@@ -114,7 +114,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
         anaomega->SetNPtBinsMinMax(200,0,20.);
         anaomega->SetNMassBinsMinMas(200,0,1.);
         anaomega->SetPi0MassPeakWidthCut(0.015);
-        anaomega->SwitchOnFidutialCut();
+        anaomega->SwitchOnFiducialCut();
         anaomega->SwitchOnDataMC() ;//Access MC stack and fill more histograms
         anaomega->AddToHistogramsName("AnaNeuPHOS_");
         anaomega->Print("");
@@ -138,7 +138,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
         anaphoton1->SwitchOffDataMC() ;//Access MC stack and fill more histograms
         anaphoton1->SwitchOffCaloPID();
         anaphoton1->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
-        anaphoton1->SwitchOffFidutialCut();
+        anaphoton1->SwitchOffFiducialCut();
         anaphoton1->SetOutputAODName("PhotonsEMCAL");
         anaphoton1->SetOutputAODClassName("AliAODPWG4Particle");
         anaphoton1->AddToHistogramsName("AnaPhotonEMCAL_");
@@ -183,7 +183,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
         anaomega1->SetNPtBinsMinMax(200,0,20.);
         anaomega1->SetNMassBinsMinMas(200,0,1.);
         anaomega1->SetPi0MassPeakWidthCut(0.015);
-        anaomega1->SwitchOnFidutialCut();
+        anaomega1->SwitchOnFiducialCut();
         anaomega1->SwitchOnDataMC() ;//Access MC stack and fill more histograms
         anaomega1->AddToHistogramsName("AnaNeuEMCAL_");
         anaomega1->Print("");

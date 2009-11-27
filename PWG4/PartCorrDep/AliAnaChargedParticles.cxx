@@ -33,7 +33,7 @@
 #include "AliCaloTrackReader.h"
 #include "AliAODPWG4Particle.h"
 #include "AliStack.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 
@@ -256,8 +256,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     p3.SetXYZ(mom[0],mom[1],mom[2]);
     
     //Acceptance selection
-    Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom,"CTS") ;
-    if(GetDebug() > 1) printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, in fidutial cut %d\n",p3.Pt(), p3.Phi(), in);
+    Bool_t in =  GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+    if(GetDebug() > 1) printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, in fiducial cut %d\n",p3.Pt(), p3.Phi(), in);
     if(p3.Pt() > GetMinPt() && in) {
       //Keep only particles identified with fPdg
       //Selection not done for the moment

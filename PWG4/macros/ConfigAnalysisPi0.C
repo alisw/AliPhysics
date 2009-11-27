@@ -21,15 +21,15 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	printf("======================== \n");
 	
 	
-	//Detector Fidutial Cuts
-	AliFidutialCut * fidCut = new AliFidutialCut();
-	fidCut->DoCTSFidutialCut(kFALSE) ;
-	fidCut->DoEMCALFidutialCut(kFALSE) ;
-	fidCut->DoPHOSFidutialCut(kTRUE) ;
+	//Detector Fiducial Cuts
+	AliFiducialCut * fidCut = new AliFiducialCut();
+	fidCut->DoCTSFiducialCut(kFALSE) ;
+	fidCut->DoEMCALFiducialCut(kFALSE) ;
+	fidCut->DoPHOSFiducialCut(kTRUE) ;
 	
-	//fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
-	//fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
-	fidCut->SetSimplePHOSFidutialCut(0.12,220.,320.);
+	//fidCut->SetSimpleCTSFiducialCut(0.9,0.,360.);
+	//fidCut->SetSimpleEMCALFiducialCut(0.7,80.,190.);
+	fidCut->SetSimplePHOSFiducialCut(0.12,220.,320.);
 	
 	fidCut->Print("");
 	
@@ -50,7 +50,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	//reader->SetPHOSPtMin(0.5);
 	//reader->SetCTSPtMin(0.2);
 	
-	reader->SetFidutialCut(fidCut);
+	reader->SetFiducialCut(fidCut);
 	
 	//Remove the temporal AODs we create.	
 	reader->SwitchOnCleanStdAOD();	
@@ -82,12 +82,12 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	anaphoton->SetMinPt(1);
 	anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
 	anaphoton->SetCaloPID(pid);
-	//anaphoton->SetFidutialCut(fidCut2); //More acceptance selections if needed at this level
+	//anaphoton->SetFiducialCut(fidCut2); //More acceptance selections if needed at this level
 	anaphoton->SetCalorimeter("EMCAL");
 	anaphoton->SwitchOffDataMC() ;//Access MC stack and fill more histograms
 	anaphoton->SwitchOffCaloPID();
 	anaphoton->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
-	anaphoton->SwitchOffFidutialCut();
+	anaphoton->SwitchOffFiducialCut();
 	anaphoton->SetOutputAODName("Photons");
 	anaphoton->SetOutputAODClassName("AliAODPWG4Particle");
 	//Set Histrograms bins and ranges
@@ -95,10 +95,10 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 //	anaphoton->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
 //	anaphoton->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;	anaphoton->Print("");
 	
-	//Detector Fidutial Cuts
-	AliFidutialCut * fidCut2 = new AliFidutialCut();
-	fidCut2->DoPHOSFidutialCut(kTRUE) ;
-	fidCut2->SetSimplePHOSFidutialCut(0.12,220.,320.);
+	//Detector Fiducial Cuts
+	AliFiducialCut * fidCut2 = new AliFiducialCut();
+	fidCut2->DoPHOSFiducialCut(kTRUE) ;
+	fidCut2->SetSimplePHOSFiducialCut(0.12,220.,320.);
 	
 	fidCut->Print("");
 		
@@ -111,8 +111,8 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 //	anapi0->SetNRPBin(6); //number of bins in reaction plain
 	anapi0->SetNMaxEvMix(2);//Maximal number of events for mixing
 	anapi0->SetCalorimeter("EMCAL");
-	anapi0->SetFidutialCut(fidCut2); //More acceptance selections if needed at this level. Not used if real geometry
-	anapi0->SwitchOnFidutialCut();
+	anapi0->SetFiducialCut(fidCut2); //More acceptance selections if needed at this level. Not used if real geometry
+	anapi0->SwitchOnFiducialCut();
 	anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
 	anapi0->Print("");
 	

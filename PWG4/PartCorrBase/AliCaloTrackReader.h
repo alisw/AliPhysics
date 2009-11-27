@@ -30,7 +30,7 @@ class AliGenEventHeader ;
 class AliVEvent;
 class AliAODEvent;
 class AliMCEvent;
-class AliFidutialCut;
+class AliFiducialCut;
 class AliAODMCHeader;
 
 class AliCaloTrackReader : public TObject {
@@ -130,8 +130,8 @@ class AliCaloTrackReader : public TObject {
 
   virtual void ResetLists();
 
-  virtual AliFidutialCut * GetFidutialCut() const {return  fFidutialCut ;}
-  virtual void SetFidutialCut(AliFidutialCut * const fc) { fFidutialCut = fc ;}
+  virtual AliFiducialCut * GetFiducialCut() const {return  fFiducialCut ;}
+  virtual void SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc ;}
 	
   virtual void SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) {;}
 	
@@ -176,7 +176,7 @@ class AliCaloTrackReader : public TObject {
   TString          fCurrentFileName; // Current file name under analysis
   Int_t            fDataType ;   // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;       // Debugging level
-  AliFidutialCut * fFidutialCut; // Acceptance cuts
+  AliFiducialCut * fFiducialCut; // Acceptance cuts
 	
   Bool_t           fComparePtHardAndJetPt;  // In MonteCarlo, jet events, reject fake events with wrong jet energy.
   Float_t          fPtHardAndJetPtFactor;   // Factor between ptHard and jet pT to reject/accept event.

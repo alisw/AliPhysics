@@ -46,8 +46,8 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TString GetStyleMacro() const {return fStyleMacro ;}
   void SetStyleMacro( TString macro ) {fStyleMacro = macro; }
   
-  void SwithOnPlotsMaking()  {fMakePlots = kTRUE;}
-  void SwithOffPlotsMaking() {fMakePlots = kFALSE;}
+  void SwitchOnPlotsMaking()  {fMakePlots = kTRUE;}
+  void SwitchOffPlotsMaking() {fMakePlots = kFALSE;}
 	
   void Terminate(TList * outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.

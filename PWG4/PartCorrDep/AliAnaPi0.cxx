@@ -38,7 +38,7 @@
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
 #include "AliStack.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "TParticle.h"
 #include "AliAODCaloCluster.h"
 #include "AliVEvent.h"
@@ -470,7 +470,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 					   TLorentzVector lv1, lv2;
 					   phot1->Momentum(lv1);
 					   phot2->Momentum(lv2);
-					   if(GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) && GetFidutialCut()->IsInFidutialCut(lv2,fCalorimeter)) 
+					   if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
 					   inacceptance = kTRUE ;
 					   if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
 				   }
@@ -486,7 +486,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 					   TLorentzVector lv1, lv2;
 					   phot1->Momentum(lv1);
 					   phot2->Momentum(lv2);
-					   if(GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) && GetFidutialCut()->IsInFidutialCut(lv2,fCalorimeter)) 
+					   if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
 						   inacceptance = kTRUE ;
 					   if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
 				   }

@@ -37,7 +37,7 @@
 #include "AliStack.h"
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODMCParticle.h"
 
@@ -375,7 +375,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   //Get parameters set in PID class.
   parList += GetCaloPID()->GetPIDParametersList() ;
   
-  //Get parameters set in FidutialCut class (not available yet)
+  //Get parameters set in FiducialCut class (not available yet)
   //parlist += GetFidCut()->GetFidCutParametersList() 
   
   TObjString *oString= new TObjString(parList) ;
@@ -449,7 +449,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
     AliAODCaloCluster * calo =  (AliAODCaloCluster*) (pl->At(icalo));	
 	  
-    //Cluster selection, not charged, with photon id and in fidutial cut
+    //Cluster selection, not charged, with photon id and in fiducial cut
 	  
 	//Input from second AOD?
 	Int_t input = 0;
@@ -466,8 +466,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 	//printf("AliAnaPhoton::Current Event %d; Current File Name : %s, E %f, pT %f, Ecl %f\n",GetReader()->GetEventNumber(),(GetReader()->GetCurrentFileName()).Data(), mom.E(), mom.Pt(),calo->E());
 
     //Check acceptance selection
-    if(IsFidutialCutOn()){
-      Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,fCalorimeter) ;
+    if(IsFiducialCutOn()){
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
       if(! in ) continue ;
     }
 	
@@ -482,7 +482,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     aodph.SetCaloLabel(calo->GetID(),-1);
     aodph.SetDetector(fCalorimeter);
     if(GetDebug() > 1) 
-      printf("AliAnaPhoton::MakeAnalysisFillAOD() - Min pt cut and fidutial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodph.Pt(),aodph.Phi(),aodph.Eta());	
+      printf("AliAnaPhoton::MakeAnalysisFillAOD() - Min pt cut and fiducial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodph.Pt(),aodph.Phi(),aodph.Eta());	
     
     //Check Distance to Bad channel, set bit.
     Double_t distBad=calo->GetDistToBadChannel() ; //Distance to bad channel

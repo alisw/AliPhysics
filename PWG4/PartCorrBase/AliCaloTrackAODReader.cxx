@@ -35,7 +35,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 
@@ -91,7 +91,7 @@ void AliCaloTrackAODReader::FillInputCTS() {
     track->GetPxPyPz(p) ;
     TLorentzVector momentum(p[0],p[1],p[2],0);
     
-    if(fCTSPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"CTS")){
+    if(fCTSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"CTS")){
       
       if(fDebug > 2 && momentum.Pt() > 0.1) printf("AliCaloTrackAODReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						  momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -101,7 +101,7 @@ void AliCaloTrackAODReader::FillInputCTS() {
 		   fAODCTS->Add(newtrack); //Use AOD stored in output for references.
 	  }
 	  else fAODCTS->Add(track);
-    }//Pt and Fidutial cut passed. 
+    }//Pt and Fiducial cut passed. 
   }// track loop
 	
   fAODCTSNormalInputEntries = fAODCTS->GetEntriesFast();
@@ -120,7 +120,7 @@ void AliCaloTrackAODReader::FillInputCTS() {
 		  track->GetPxPyPz(p) ;
 		  TLorentzVector momentum(p[0],p[1],p[2],0);
 		  
-		  if(fCTSPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"CTS")){
+		  if(fCTSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"CTS")){
 			  
 			  if(fDebug > 2 && momentum.Pt() > 0.1) printf("AliCaloTrackAODReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 														   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -131,7 +131,7 @@ void AliCaloTrackAODReader::FillInputCTS() {
 			  }
 			  else fAODCTS->Add(track);
 			  
-		  }//Pt and Fidutial cut passed. 
+		  }//Pt and Fiducial cut passed. 
 	  }// track loop
 	  
 	  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputCTS()   - aod normal entries %d, after second input %d\n", fAODCTSNormalInputEntries, fAODCTS->GetEntriesFast());
@@ -148,7 +148,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
   GetVertex(v);
 
   Int_t naod =  (fOutputEvent->GetCaloClusters())->GetEntriesFast();
-  //Loop to select clusters in fidutial cut and fill container with aodClusters
+  //Loop to select clusters in fiducial cut and fill container with aodClusters
   Int_t nclusters = ((AliAODEvent*)fInputEvent)->GetNCaloClusters();
   for (Int_t iclus =  0; iclus <  nclusters; iclus++) {
     AliAODCaloCluster * clus = 0;
@@ -157,7 +157,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
 	
-	if(fEMCALPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"EMCAL")){
+	if(fEMCALPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"EMCAL")){
     
 	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -167,7 +167,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 		fAODEMCAL->Add(newclus);	
 	  }
 	  else fAODEMCAL->Add(clus);	
-	}//Pt and Fidutial cut passed.
+	}//Pt and Fiducial cut passed.
       }//EMCAL cluster
     }// cluster exists
   }// cluster loop
@@ -187,7 +187,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 					TLorentzVector momentum ;
 					clus->GetMomentum(momentum, v);      
 					
-					if(fEMCALPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"EMCAL")){
+					if(fEMCALPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"EMCAL")){
 						
 						if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 																	momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -196,7 +196,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 						    fAODEMCAL->Add(newclus);	
 						}
 						else fAODEMCAL->Add(clus);	
-					}//Pt and Fidutial cut passed.
+					}//Pt and Fiducial cut passed.
 				}//EMCAL cluster
 			}// cluster exists
 		}// cluster loop
@@ -215,7 +215,7 @@ void AliCaloTrackAODReader::FillInputPHOS() {
   GetVertex(v);
 	
   Int_t naod =  (fOutputEvent->GetCaloClusters())->GetEntriesFast();
-  //Loop to select clusters in fidutial cut and fill container with aodClusters
+  //Loop to select clusters in fiducial cut and fill container with aodClusters
   Int_t nclusters = ((AliAODEvent*)fInputEvent)->GetNCaloClusters();
   for (Int_t iclus =  0; iclus < nclusters; iclus++) {
     AliAODCaloCluster * clus = 0;
@@ -224,7 +224,7 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
 	
-	if(fPHOSPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"PHOS")){
+	if(fPHOSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"PHOS")){
 	  
 	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -234,7 +234,7 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 			fAODPHOS->Add(newclus);	
 		}
 		else fAODPHOS->Add(clus);	
-	}//Pt and Fidutial cut passed.
+	}//Pt and Fiducial cut passed.
       }//PHOS cluster
     }//cluster exists
   }//esd cluster loop
@@ -254,7 +254,7 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 					TLorentzVector momentum ;
 					clus->GetMomentum(momentum, v);      
 					
-					if(fPHOSPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"PHOS")){
+					if(fPHOSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"PHOS")){
 						
 						if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 																	momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -263,7 +263,7 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 						    fAODPHOS->Add(newclus);	
 						}
 						else fAODPHOS->Add(clus);	
-					}//Pt and Fidutial cut passed.
+					}//Pt and Fiducial cut passed.
 				}//PHOS cluster
 			}// cluster exists
 		}// cluster loop
