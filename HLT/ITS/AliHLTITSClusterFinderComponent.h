@@ -20,6 +20,9 @@
 #include "AliITSInitGeometry.h"
 #include "TClonesArray.h"
 
+class AliHLTITSClusterFinderSPD;
+
+
 /**
  * @class AliHLTITSClusterFinderComponent
  * HLT Component to run the ITS offline clusterfinders.
@@ -178,6 +181,14 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   AliITSgeom* fgeom;                                          //!transient
 
   AliITSInitGeometry* fgeomInit;                              //!transient
+
+  AliHLTITSClusterFinderSPD *fSPD;
+
+  double fStatTime;
+  double fStatTimeAll;
+  double fStatTimeC;
+  double fStatTimeAllC;
+  int fStatNEv;
 
   ClassDef(AliHLTITSClusterFinderComponent, 0)
     
