@@ -13,7 +13,54 @@ void geom_its()
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
 
-  TEveGeoTopNode* its_re = new TEveGeoTopNode(gGeoManager, node);
-  gEve->AddGlobalElement(its_re);
+  gEve->AddGlobalElement(new TEveGeoTopNode(gGeoManager, node));
+  gEve->Redraw3D();
+}
+
+void geom_its_spd()
+{
+  gGeoManager = gEve->GetDefaultGeometry();
+
+  TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
+  node = node->GetVolume()->FindNode("ITSSPD_1");
+
+  gEve->AddGlobalElement(new TEveGeoTopNode(gGeoManager, node));
+
+  gEve->Redraw3D();
+}
+
+void geom_its_sdd()
+{
+  gGeoManager = gEve->GetDefaultGeometry();
+
+  TEveGeoTopNode *its_re;
+  TGeoNode       *n1, *n2;
+
+  n1 = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
+
+  n2 = n1->GetVolume()->FindNode("ITSsddLayer3_1");
+  gEve->AddGlobalElement(new TEveGeoTopNode(gGeoManager, n2));
+
+  n2 = n1->GetVolume()->FindNode("ITSsddLayer4_1");
+  gEve->AddGlobalElement(new TEveGeoTopNode(gGeoManager, n2));
+
+  gEve->Redraw3D();
+}
+
+void geom_its_ssd()
+{
+  gGeoManager = gEve->GetDefaultGeometry();
+
+  TEveGeoTopNode *its_re;
+  TGeoNode       *n1, *n2;
+
+  n1 = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
+
+  n2 = n1->GetVolume()->FindNode("ITSssdLayer5_1");
+  gEve->AddGlobalElement(new TEveGeoTopNode(gGeoManager, n2));
+
+  n2 = n1->GetVolume()->FindNode("ITSssdLayer6_1");
+  gEve->AddGlobalElement(new TEveGeoTopNode(gGeoManager, n2));
+
   gEve->Redraw3D();
 }
