@@ -85,15 +85,33 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // define the ITS cluster finder configurations
     //
 
-    TString trackerInput;
-    for (int detectorId=0; detectorId<3; detectorId++) {
-      iResult=CreateCFConfigurations(handler, detectorId, trackerInput);
-    }
+    TString spdCF;
+    TString ssdCF;
+    TString sddCF;
+    
+    iResult=CreateCFConfigurations(handler, AliHLTDAQ::DetectorID("ITSSPD"), spdCF);
+    handler->CreateConfiguration("ITS-SPD-CF","BlockFilter",spdCF.Data(),"");
+
+    iResult=CreateCFConfigurations(handler, AliHLTDAQ::DetectorID("ITSSDD"), sddCF);
+    handler->CreateConfiguration("ITS-SDD-CF","BlockFilter",sddCF.Data(),"");
+
+    iResult=CreateCFConfigurations(handler, AliHLTDAQ::DetectorID("ITSSSD"), ssdCF);
+    handler->CreateConfiguration("ITS-SSD-CF","BlockFilter",ssdCF.Data(),"");
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // define the SPD vertexer Z configuration
+    //
+    handler->CreateConfiguration("ITS-SPD-vertexer","ITSVertexerSPD", "ITS-SPD-CF","");
+    
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // define the ITS tracker configuration
     //
+    TString trackerInput="ITS-SPD-CF ITS-SDD-CF ITS-SSD-CF";
+
     if (handler->FindConfiguration("TPC-globalmerger")) {
       trackerInput+=" TPC-globalmerger";
     }
@@ -264,7 +282,7 @@ int AliHLTITSAgent::CreateCFConfigurations(AliHLTConfigurationHandler* pHandler,
   }
 
   int minddl=AliHLTDAQ::DdlIDOffset(detectorId);
-  int maxddl=minddl+=AliHLTDAQ::NumberOfDdls(detectorId);
+  int maxddl=minddl+AliHLTDAQ::NumberOfDdls(detectorId)-1;
   int spec=0x1;
   int ddlno=0;
 
