@@ -1906,7 +1906,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
   if (fRunQA && IsInTasks(AliQAv1::kESDS)) {
     AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-    AliQAManager::QAManager()->RunOneEvent(fesd) ; 
+    AliQAManager::QAManager()->RunOneEvent(fesd, fhltesd) ; 
   }
   if (fRunGlobalQA) {
     AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);

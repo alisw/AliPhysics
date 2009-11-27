@@ -1258,7 +1258,7 @@ void AliQAManager::RunOneEvent(AliRawReader * rawReader)
 }
 
 //_____________________________________________________________________________
-void AliQAManager::RunOneEvent(AliESDEvent *& esd) 
+void AliQAManager::RunOneEvent(AliESDEvent *& esd, AliESDEvent *& hltesd) 
 {
 	//Runs all the QA data Maker for ESDs only and on one event only (event loop done by calling method)
 	
@@ -1276,7 +1276,14 @@ void AliQAManager::RunOneEvent(AliESDEvent *& esd)
       if ( qadm->IsCycleDone() ) {
         qadm->EndOfCycle() ;
       }
-			qadm->Exec(AliQAv1::kESDS, esd) ;
+      if (iDet == AliQAv1::kHLT) {
+        TObjArray esdarray;
+        esdarray.Add(esd); 
+        esdarray.Add(hltesd); 
+        qadm->Exec(AliQAv1::kESDS, &esdarray);
+      } else {
+        qadm->Exec(AliQAv1::kESDS, esd) ;        
+      }
 		}
 	}
 }

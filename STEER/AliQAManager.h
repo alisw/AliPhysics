@@ -67,7 +67,7 @@ public:
 	TString          Run(const Char_t * detectors, const Char_t * filename, Bool_t const sameCycle = kFALSE) ;
 	void             RunOneEvent(AliRawReader * rawReader) ; 
 	void             RunOneEventInOneDetector(Int_t det, TTree * tree) ; 
-	void             RunOneEvent(AliESDEvent *& esd)  ;
+	void             RunOneEvent(AliESDEvent *& esd, AliESDEvent *& hltesd)  ;
 	Bool_t           Save2OCDB(const Int_t runNumber, AliRecoParam::EventSpecie_t es, const Char_t * year = "08", const Char_t * detectors = "ALL") const ; 
 	void             SetActiveDetectors(TString aDet) { fDetectors = aDet ;  }
   void             SetCheckerExternParam(AliQAv1::DETECTORINDEX_t det, TList * parameterList) ;  
