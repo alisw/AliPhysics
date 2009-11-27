@@ -11,6 +11,11 @@
 #pragma link off all globals;
 #pragma link off all classes;
 
+// Analysis
+#pragma link C++ class AliEveListAnalyser+;
+#pragma link C++ class AliEveListAnalyserEditor+;
+#pragma link C++ class AliEveGeneralMacroWizard+;
+
 // EMCAL
 #pragma link C++ class AliEveEMCALData+;
 #pragma link C++ class AliEveEMCALSModuleData+;
@@ -89,7 +94,7 @@
 #pragma link C++ class AliEveTRDTrack+;
 #pragma link C++ class AliEveTRDTrackList+;
 #pragma link C++ class AliEveTRDTrackListEditor+;
-#pragma link C++ class AliEveTRDMacroWizzard+;
+#pragma link C++ class AliEveTRDMacroWizard+;
 #pragma link C++ class AliEveTRDmcm+;
 
 // TOF

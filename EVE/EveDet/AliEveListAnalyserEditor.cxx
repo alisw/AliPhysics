@@ -1,33 +1,32 @@
-// Author: Benjamin Hess   30/10/2009
+// Author: Benjamin Hess   06/11/2009
 
 /*************************************************************************
- * Copyright (C) 2008-2009, Alexandru Bercuci, Benjamin Hess.            *
+ * Copyright (C) 2009, Alexandru Bercuci, Benjamin Hess.                 *
  * All rights reserved.                                                  *
  *************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// AliEveTRDTrackListEditor                                             //
+// AliEveListAnalyserEditor                                     //
 //                                                                      //
-// The AliEveTRDTrackListEditor provides the graphical functionality    //
-// for the AliEveTRDTrackList. It creates the tabs and canvases, when   //
-// they are needed and, as well, frees allocated memory on destruction  //
-// (or if new events are loaded and thus some tabs are closed).         //
-// The function DrawHistos() accesses the temporary file created by the //
-// AliEveTRDTrackList and draws the desired data (the file will be      //
-// created within the call of ApplyMacros()). Have a look at this       //
-// function to learn more about the structure of the file and how to    //
-// access the data.                                                     //
+// The AliEveListAnalyserEditor provides the graphical          //
+// functionality for the AliEveTRDAnalyseObject. It creates the tabs    //
+// and canvases, when they are needed and, as well, frees allocated     //
+// memory on destruction (or if new events are loaded and thus some     //
+// tabs are closed). The function DrawHistos() accesses the temporary   //
+// file created by the AliEveListAnalyser and draws the desired //
+// data (the file will be created within the call of ApplyMacros()).    //
+// Have a look at this function to learn more about the structure of    //
+// the file and how to access the data.                                 //
 //////////////////////////////////////////////////////////////////////////
 
 #include <EveDet/AliEveTRDData.h>
-#include <EveDet/AliEveTRDTrackList.h>
-#include "AliEveTRDTrackListEditor.h"
+#include <EveDet/AliEveListAnalyser.h>
+#include "AliEveListAnalyserEditor.h"
 
 #include <EveBase/AliEveEventManager.h>
 #include <AliTRDReconstructor.h>
-#include <AliTRDtrackV1.h>
-#include <TGButton.h>
+//#include <AliTRDtrackV1.h>
 #include <TCanvas.h>     
 #include <TEveBrowser.h>
 #include <TEveGedEditor.h> 
@@ -35,6 +34,7 @@
 #include <TEveManager.h>
 #include <TFile.h>
 #include <TG3DLine.h>
+#include <TGButton.h>
 #include <TGButtonGroup.h>
 #include <TGFileDialog.h>
 #include <TGLabel.h>
@@ -44,6 +44,7 @@
 #include <TMap.h>
 #include <TObjString.h>
 #include <TROOT.h>
+#include <TString.h>
 #include <TSystem.h>
 #include <TGTextEntry.h>
 #include <TGTextEdit.h>
@@ -53,12 +54,12 @@
 #include <TTreeStream.h>
 
 
-ClassImp(AliEveTRDTrackListEditor)
+ClassImp(AliEveListAnalyserEditor)
 
 ///////////////////////////////////////////////////////////
-/////////////   AliEveTRDTrackListEditor //////////////////
+/////////////   AliEveListAnalyserEditor //////////
 ///////////////////////////////////////////////////////////
-AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t width, Int_t height,
+AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t width, Int_t height,
 				                   UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options, back),
   fM(0),
@@ -66,15 +67,15 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fHistoCanvasName(0),
   fInheritedMacroList(0),
   fInheritSettings(kFALSE),
-  fStyleFrame(0),
+//  fStyleFrame(0),
   fMainFrame(0),
   fHistoFrame(0),
   fHistoSubFrame(0),
   fBrowseFrame(0),
-  fbgStyleColor(0),
-  fbgStyleTrack(0),
-  frbColor(new TGRadioButton*[3]),
-  frbTrack(new TGRadioButton*[3]),
+//  fbgStyleColor(0),
+//  fbgStyleTrack(0),
+//  frbColor(new TGRadioButton*[3]),
+//  frbTrack(new TGRadioButton*[3]),
   fbBrowse(0),
   fbNew(0),
   fbApplyMacros(0),
@@ -86,11 +87,13 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fFileInfo(0),
   fFileTypes(0),
   fLabel1(0), fLabel2(0), fLabel3(0), fLabel4(0),
-  fLine1(0), fLine2(0), fLine3(0), fLine4(0), fLine5(0),
+  fLine1(0), fLine2(0), fLine3(0), fLine4(0),
+// fLine5(0),
   fCheckButtons(0)
 {
-  // Creates the AliEveTRDTrackListEditor.
+  // Creates the AliEveListAnalyserEditor.
 
+/*
   // Style stuff
   fLine5 = new TGHorizontal3DLine(this, 194, 8);
   AddFrame(fLine5, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 8));
@@ -128,7 +131,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   frbColor[2] = new TGRadioButton(fbgStyleColor, "ESD Source", 2);
   frbColor[2]->SetToolTipText("Set color model to \"ESD Source\" -> By source (TPC track prolongation or TRD stand alone)");
   fbgStyleColor->AddFrame(frbColor[2]);  
-  
+*/  
 
   // Functionality for adding macros  
   fMainFrame = CreateEditorTabSubFrame("Process");
@@ -139,17 +142,17 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 
   fteField = new TGTextEntry(fBrowseFrame);
   fteField->SetToolTipText("Enter the pathname of the macro you want to add here and press \"Enter\"");
-  fteField->Connect("ReturnPressed()","AliEveTRDTrackListEditor", this, "HandleMacroPathSet()"); 
+  fteField->Connect("ReturnPressed()","AliEveListAnalyserEditor", this, "HandleMacroPathSet()"); 
   fBrowseFrame->AddFrame(fteField);
   
   fbBrowse = new TGTextButton(fBrowseFrame, "Browse");
   fbBrowse->SetToolTipText("Browse the macro you want to add");
-  fbBrowse->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "BrowseMacros()");
+  fbBrowse->Connect("Clicked()", "AliEveListAnalyserEditor", this, "BrowseMacros()");
   fBrowseFrame->AddFrame(fbBrowse);
   
   fbNew = new TGTextButton(fBrowseFrame, "New");
   fbNew->SetToolTipText("Start macro creation wizard");
-  fbNew->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "NewMacros()");
+  fbNew->Connect("Clicked()", "AliEveListAnalyserEditor", this, "NewMacros()");
   fBrowseFrame->AddFrame(fbNew);
   fMainFrame->AddFrame(fBrowseFrame);
 
@@ -177,14 +180,14 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fMainFrame->AddFrame(fLine3, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));  
 
   fbApplyMacros = new TGTextButton(fMainFrame, "Apply plugin(s)");
-  fbApplyMacros->SetToolTipText("Apply all selected macros/class functins to the list of tracks -> A data file will be generated");
-  fbApplyMacros->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "ApplyMacros()");
+  fbApplyMacros->SetToolTipText("Apply all selected macros/class functins to the list of objects -> A data file will be generated");
+  fbApplyMacros->Connect("Clicked()", "AliEveListAnalyserEditor", this, "ApplyMacros()");
   fbApplyMacros->SetRightMargin(12);
   fMainFrame->AddFrame(fbApplyMacros);
 
   fbRemoveMacros = new TGTextButton(fMainFrame, "Remove plugin(s)");
   fbRemoveMacros->SetToolTipText("Remove the selected macros/class functions from the list(s)");
-  fbRemoveMacros->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "RemoveMacros()");
+  fbRemoveMacros->Connect("Clicked()", "AliEveListAnalyserEditor", this, "RemoveMacros()");
   fMainFrame->AddFrame(fbRemoveMacros);
 
   // Stuff for displaying histograms
@@ -203,7 +206,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 
   fbDrawHisto = new TGTextButton(fHistoFrame, "Draw projections");
   fbDrawHisto->SetToolTipText("Uses the data file created by the last \"Apply selected macro(s)\".\nClick here to display the data histograms of the selected macros.\nSelect multiple macros to create multi-dimensional plots.\nHisto macros cannot be used for multi-dimensional plots!");
-  fbDrawHisto->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "DrawHistos()");
+  fbDrawHisto->Connect("Clicked()", "AliEveListAnalyserEditor", this, "DrawHistos()");
   fHistoFrame->AddFrame(fbDrawHisto);
 
   // Set up file dialog
@@ -220,23 +223,25 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 
   fHistoCanvasName = new TGString("");
 
+/*
   // Handle style changed signals:
-  fbgStyleTrack->Connect("Clicked(Int_t)", "AliEveTRDTrackListEditor", this, "SetTrackModel(Int_t)");
-  fbgStyleColor->Connect("Clicked(Int_t)", "AliEveTRDTrackListEditor", this, "SetTrackColor(Int_t)");
+  fbgStyleTrack->Connect("Clicked(Int_t)", "AliEveListAnalyserEditor", this, "SetTrackModel(Int_t)");
+  fbgStyleColor->Connect("Clicked(Int_t)", "AliEveListAnalyserEditor", this, "SetTrackColor(Int_t)");
+*/
 
   // Handle the signal "Selected(Int_t ind)"
-  ftlMacroList->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "UpdateMacroListSelection(Int_t)");
-  ftlMacroSelList->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "UpdateMacroListSelection(Int_t)");
+  ftlMacroList->Connect("Selected(Int_t)", "AliEveListAnalyserEditor", this, "UpdateMacroListSelection(Int_t)");
+  ftlMacroSelList->Connect("Selected(Int_t)", "AliEveListAnalyserEditor", this, "UpdateMacroListSelection(Int_t)");
 
   // Handle the signal "NewEventLoaded"
-  AliEveEventManager::GetMaster()->Connect("NewEventLoaded()", "AliEveTRDTrackListEditor", this, "HandleNewEventLoaded()");
+  AliEveEventManager::GetMaster()->Connect("NewEventLoaded()", "AliEveListAnalyserEditor", this, "HandleNewEventLoaded()");
 
   // Handle the signal "Selected" (another tab has been selected)
-  GetGedEditor()->GetTab()->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "HandleTabChangedToIndex(Int_t)");
+  GetGedEditor()->GetTab()->Connect("Selected(Int_t)", "AliEveListAnalyserEditor", this, "HandleTabChangedToIndex(Int_t)");
 }
 
 //______________________________________________________
-AliEveTRDTrackListEditor::~AliEveTRDTrackListEditor()
+AliEveListAnalyserEditor::~AliEveListAnalyserEditor()
 {
   // Destructor: Closes all tabs created by this object and
   // frees the corresponding memory.
@@ -269,7 +274,7 @@ AliEveTRDTrackListEditor::~AliEveTRDTrackListEditor()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::AddMacro(const Char_t* name, const Char_t* path)
+void AliEveListAnalyserEditor::AddMacro(const Char_t* name, const Char_t* path)
 {
   // Adds the macro path/name to the macro list. A warning is provided, if there is
   // something wrong, e.g. if the macro does not have the correct signature.
@@ -290,29 +295,33 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* name, const Char_t* path)
     break;
   case SIGNATURE_ERROR:
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
-                 "Macro has not the signature of...\n...a single track selection macro: Bool_t YourMacro(const AliTRDtrackV1*)\n...a correlated tracks selection macro: Bool_t YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*)\n...a single track analyse macro: void YourMacro(const AliTRDtrackV1*, Double_t*&, Int_t&)\n...a correlated tracks analyse macro: void YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*, Double_t*&, Int_t&)\n...a single track histo macro: TH1* YourMacro(const AliTRDtrackV1*)\n...a correlated tracks histo macro: TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*)", 
+                 "Macro has not the signature of...\n...a single object selection macro: Bool_t YourMacro(const TObject*)\n...a correlated objects selection macro: Bool_t YourMacro(const TObject*, const TObject*)\n...a single object analyse macro: void YourMacro(const TObject*, Double_t*&, Int_t&)\n...a correlated objects analyse macro: void YourMacro(const TObject*, const TObject*, Double_t*&, Int_t&)\n...a single object histo macro: TH1* YourMacro(const TObject*)\n...a correlated objects histo macro: TH1* YourMacro(const TObject*, const TObject*)", 
                  kMBIconExclamation, kMBOk);
     break;               
   case NOT_EXIST_ERROR:
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  "File does not exist or you do not have read permission!", kMBIconExclamation, kMBOk);
     break;
+  case UNKNOWN_OBJECT_TYPE_ERROR:
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
+                 "Unknown object type of macro parameter!", kMBIconExclamation, kMBOk);
+    break;
   default:
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
-                 Form("AliEveTRDTrackList::AddMacro exited with unknown return value: %d", result),
+                 Form("AliEveListAnalyser::AddMacro exited with unknown return value: %d", result),
                  kMBIconExclamation, kMBOk);
     break;
   }
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::ApplyMacros()
+void AliEveListAnalyserEditor::ApplyMacros()
 {
   // Applies the selected macros and updates the view.
 
   Bool_t success = kFALSE;
 
-  // First apply the single track selection macros
+  // First apply the single object selection macros
   TList* selIterator = new TList();
   ftlMacroSelList->GetSelectedEntries(selIterator);
   fM->ApplySTSelectionMacros(selIterator);
@@ -329,7 +338,7 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   SetModel(fM);
   Update();
 
-  // AlieveTRDTrackList::ApplyProcessMacros() automatically selects a macro -> Draw the histogram for it,
+  // AliEveListAnalyser::ApplyProcessMacros() automatically selects a macro -> Draw the histogram for it,
   // if a process macro has been applied
   if (success && procIterator->GetEntries() > 0) 
   {
@@ -347,24 +356,13 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   if (!success)
   {
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
-                 "AliEveTRDTrackList::ApplyProcessMacros experienced an error (cf. CINT-output)!", 
+                 "AliEveListAnalyser::ApplyProcessMacros experienced an error (cf. CINT-output)!", 
                  kMBIconExclamation, kMBOk);  
   }
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::NewMacros()
-{
-  // Start the macro creation wizard.
-  // thanks to Jacek Otwinowski<J.Otwinowski@GSI.DE> for this suggestion
-
-  AliEveTRDMacroWizard *wizz = new AliEveTRDMacroWizard();
-  wizz->Connect("Create(Char_t*)", "AliEveTRDTrackListEditor", this, "AddMacro(Char_t*)");
-}
-
-
-//______________________________________________________
-void AliEveTRDTrackListEditor::BrowseMacros()
+void AliEveListAnalyserEditor::BrowseMacros()
 {
   // Creates a file-dialog. The selected files will be added to the macro list
   // via AddMacro(...).
@@ -397,7 +395,7 @@ void AliEveTRDTrackListEditor::BrowseMacros()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::CloseTabs()
+void AliEveListAnalyserEditor::CloseTabs()
 {
   // Closes + deletes the tabs created by this object
 
@@ -418,7 +416,7 @@ void AliEveTRDTrackListEditor::CloseTabs()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::DrawHistos()
+void AliEveListAnalyserEditor::DrawHistos()
 {
   // Accesses the temporary data file created by the last call of ApplyMacros() and draws
   // histograms according to the selection in the "Histograms"-tab.
@@ -469,13 +467,13 @@ void AliEveTRDTrackListEditor::DrawHistos()
     }
   }
 
-  TFile* file = new TFile(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")), "READ");
+  TFile* file = new TFile(Form("/tmp/ListAnalyserMacroData_%s.root", gSystem->Getenv("USER")), "READ");
   if (!file)  
   {
-    Error("Draw histograms", Form("Cannot open file \"/tmp/TRD.TrackListMacroData_%s.root\"", 
+    Error("Draw histograms", Form("Cannot open file \"/tmp/ListAnalyserMacroData_%s.root\"", 
                                   gSystem->Getenv("USER")));
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                 Form("Cannot open file \"/tmp/TRD.TrackListMacroData_%s.root\"", gSystem->Getenv("USER")),
+                 Form("Cannot open file \"/tmp/ListAnalyserMacroData_%s.root\"", gSystem->Getenv("USER")),
                  kMBIconExclamation, kMBOk);
     return;
   }
@@ -494,7 +492,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
   // Draw histo macro?
   if (indexOfHistoMacro >= 0)
   {
-    if ((t = (TTree*)file->Get(Form("TrackData%d", indexOfHistoMacro))))
+    if ((t = (TTree*)file->Get(Form("ObjectData%d", indexOfHistoMacro))))
     {
       SetDrawingToHistoCanvasTab();
  
@@ -516,10 +514,10 @@ void AliEveTRDTrackListEditor::DrawHistos()
     }
     else
     {
-      Error("Draw histograms", Form("No data for histo macro \"%s\" found!\nMaybe no tracks have been selected.", 
+      Error("Draw histograms", Form("No data for histo macro \"%s\" found!\nMaybe no objects have been selected.", 
                                     fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()));
       new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                   Form("No data for histo macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                   Form("No data for histo macro \"%s\" found!\nMaybe no objects have been selected.", 
                         fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()), kMBIconExclamation, kMBOk);
     }
 
@@ -535,12 +533,12 @@ void AliEveTRDTrackListEditor::DrawHistos()
       if (t == 0)
       {
         indexOfMacro1 = i;
-        if (!(t = (TTree*)file->Get(Form("TrackData%d", i))))
+        if (!(t = (TTree*)file->Get(Form("ObjectData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
                                         fM->fDataFromMacroList->At(i)->GetName()));
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                       Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                       Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
                             fM->fDataFromMacroList->At(i)->GetName()), kMBIconExclamation, kMBOk);
           break;   
         }
@@ -562,12 +560,12 @@ void AliEveTRDTrackListEditor::DrawHistos()
       else if (tFriend1 == 0)
       {
         indexOfMacro2 = i;
-        if (!(tFriend1 = (TTree*)file->Get(Form("TrackData%d", i))))
+        if (!(tFriend1 = (TTree*)file->Get(Form("ObjectData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
                                         fM->fDataFromMacroList->At(i)->GetName()));
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                       Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                       Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
                             fM->fDataFromMacroList->At(i)->GetName()),
                             kMBIconExclamation, kMBOk);
           break;   
@@ -595,12 +593,12 @@ void AliEveTRDTrackListEditor::DrawHistos()
       else
       {
         indexOfMacro3 = i;
-        if (!(tFriend2 = (TTree*)file->Get(Form("TrackData%d", i))))
+        if (!(tFriend2 = (TTree*)file->Get(Form("ObjectData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
                                         fM->fDataFromMacroList->At(i)->GetName()));
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                       Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                       Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
                             fM->fDataFromMacroList->At(i)->GetName()), kMBIconExclamation, kMBOk);
           break;   
         }
@@ -638,7 +636,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
 }
 
 //______________________________________________________
-Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms() const
+Int_t AliEveListAnalyserEditor::GetNSelectedHistograms() const
 {
   // Returns the number of selected macros (or rather: of their selected data) in the "Histograms"-tab
 
@@ -653,7 +651,7 @@ Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms() const
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::HandleMacroPathSet()
+void AliEveListAnalyserEditor::HandleMacroPathSet()
 {
   // Takes the input of the text field (adding a macro), checks if the macro can be
   // accessed (and that it exists) and adds the macro to the macro list via AddMacro(...).
@@ -681,13 +679,13 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
       // Current path
       if (name == NULL)
       {
-        name = new Char_t[AliEveTRDTrackList::fkMaxMacroNameLength];
-        memset(name, '\0', sizeof(Char_t) * AliEveTRDTrackList::fkMaxMacroNameLength);
+        name = new Char_t[AliEveListAnalyser::fkMaxMacroNameLength];
+        memset(name, '\0', sizeof(Char_t) * AliEveListAnalyser::fkMaxMacroNameLength);
         sprintf(name, "%s", fteField->GetText());
 
         // Add path to textfield -> Path is "./" -> Use length for the name + 2
-        Char_t pathname[AliEveTRDTrackList::fkMaxMacroNameLength + 2];
-        memset(pathname, '\0', sizeof(Char_t) * (AliEveTRDTrackList::fkMaxMacroNameLength + 2));
+        Char_t pathname[AliEveListAnalyser::fkMaxMacroNameLength + 2];
+        memset(pathname, '\0', sizeof(Char_t) * (AliEveListAnalyser::fkMaxMacroNameLength + 2));
         sprintf(pathname, "./%s", fteField->GetText());
         fteField->SetText(pathname);
 
@@ -699,8 +697,8 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
       else
       {
         // Extract path
-        Char_t* path = new Char_t[AliEveTRDTrackList::fkMaxMacroPathLength];
-        memset(path, '\0', sizeof(Char_t) * AliEveTRDTrackList::fkMaxMacroPathLength);
+        Char_t* path = new Char_t[AliEveListAnalyser::fkMaxMacroPathLength];
+        memset(path, '\0', sizeof(Char_t) * AliEveListAnalyser::fkMaxMacroPathLength);
         strncpy(path, fteField->GetText(), strlen(fteField->GetText()) - strlen(name));
         
         // Ignore the slash "/" in name
@@ -719,13 +717,16 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::HandleNewEventLoaded()
+void AliEveListAnalyserEditor::HandleNewEventLoaded()
 {
   // Closes the tabs created by this object and sets a flag that will
   // cause the function SetModel() to inherit the macro lists + style
-  // for the next AliEveTRDTrackList from the current one.
+  // for the next AliEveListAnalyser from the current one.
 
+//TODO: Old version with style tab....
   // Inherit the macro list and track style for the next track list!
+
+  // Inherit the macro list for the next analyse object list!
   fInheritSettings = kTRUE;
 
   // Close the tabs
@@ -733,40 +734,40 @@ void AliEveTRDTrackListEditor::HandleNewEventLoaded()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::HandleTabChangedToIndex(Int_t index)
+void AliEveListAnalyserEditor::HandleTabChangedToIndex(Int_t index)
 {
-  // Saves the current tab in the current AliEveTRDTrackList.
+  // Saves the current tab in the current AliEveListAnalyser.
 
   fM->SetSelectedTab(index);
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::InheritMacroList()
+void AliEveListAnalyserEditor::InheritMacroList()
 {
   // The old macro list is possibly stored in the corresponding interior map. This function will 
-  // use this interior map to move the data from the interior map to the newly loaded AliEveTRDTrackList. 
+  // use this interior map to move the data from the interior map to the newly loaded AliEveListAnalyser. 
   // Then the interior map will be cleaned up. With this, the settings will be inherited from the previously 
-  // loaded AliEveTRDTrackList.
+  // loaded AliEveListAnalyser.
 
   if (fInheritedMacroList == 0)  return;
 
   // Clear list  
   fM->fMacroList->Delete();
 
-  // Store data from interior list in the track list's map
+  // Store data from interior list in the analyse object list's map
   TMapIter* iter = (TMapIter*)fInheritedMacroList->MakeIterator();
   
   TObject* key = 0;
-  TMacroData* macro = 0;
+  TGeneralMacroData* macro = 0;
   
   while ((key = iter->Next()) != 0)
   {
-    macro = (TMacroData*)fInheritedMacroList->GetValue(key);
+    macro = (TGeneralMacroData*)fInheritedMacroList->GetValue(key);
     if (macro != 0)  fM->fMacroList->Add(new TObjString(key->GetName()), 
-                                         new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
+                                         new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
     else
     {
-      Error("AliEveTRDTrackListEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+      Error("AliEveListAnalyserEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key));
     }
   }
   
@@ -775,12 +776,13 @@ void AliEveTRDTrackListEditor::InheritMacroList()
   fInheritedMacroList = 0;
 }
 
+/*
 //______________________________________________________
-void AliEveTRDTrackListEditor::InheritStyle()
+void AliEveListAnalyserEditor::InheritStyle()
 {
   // The old styles are stored in the corresponding button groups. This function will replace
-  // the style settings of the newly loaded AliEveTRDTrackList with the old styles. With this, the settings
-  // will be inherited from the previously loaded AliEveTRDTrackList.
+  // the style settings of the newly loaded AliEveListAnalyser with the old styles. With this, the settings
+  // will be inherited from the previously loaded AliEveListAnalyser.
 
   for (Int_t ind = 0; ind < 3; ind++)
   {
@@ -799,9 +801,20 @@ void AliEveTRDTrackListEditor::InheritStyle()
     }
   }
 }
+*/
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::RemoveMacros()
+void AliEveListAnalyserEditor::NewMacros()
+{
+  // Start the macro creation wizard.
+  // thanks to Jacek Otwinowski<J.Otwinowski@GSI.DE> for this suggestion
+
+  AliEveGeneralMacroWizard *wizz = new AliEveGeneralMacroWizard();
+  wizz->Connect("Create(Char_t*)", "AliEveListAnalyserEditor", this, "AddMacro(Char_t*)");
+}
+
+//______________________________________________________
+void AliEveListAnalyserEditor::RemoveMacros()
 {
   // Removes the selected macros from the corresponding list.
 
@@ -826,9 +839,9 @@ void AliEveTRDTrackListEditor::RemoveMacros()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::SetDrawingToHistoCanvasTab()
+void AliEveListAnalyserEditor::SetDrawingToHistoCanvasTab()
 {
-  // Sets gPad to the tab with the name of the current AliEveTRDTrackList. If this tab does
+  // Sets gPad to the tab with the name of the current AliEveListAnalyser. If this tab does
   // not exist, it will be created. Otherwise, it is re-used.
 
   // If the tab with the canvas has been closed, the canvas will be deleted.
@@ -850,12 +863,12 @@ void AliEveTRDTrackListEditor::SetDrawingToHistoCanvasTab()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::SetModel(TObject* obj)
+void AliEveListAnalyserEditor::SetModel(TObject* obj)
 {  
   // Sets the model object, updates the related data in the GUI and
   // inherits settings (cf. Inherit*(...)), if the flag fInheritSettings is set to kTRUE.
 
-  fM = dynamic_cast<AliEveTRDTrackList*>(obj);
+  fM = dynamic_cast<AliEveListAnalyser*>(obj);
 
   if (fM == 0) 
   {
@@ -870,11 +883,13 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
   if (fInheritSettings)
   {
     InheritMacroList();
-    InheritStyle();
+    //TODO
+    //InheritStyle();
 
     fInheritSettings = kFALSE;
   }
-
+//TODO
+/*
   // Select the correct styles
   Int_t b = 0;
   UChar_t style = fM->GetSelectedTrackStyle();
@@ -894,7 +909,7 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
     else b = 0;
   }
   fbgStyleTrack->SetButton(b, kTRUE);
-  
+*/  
   UpdateMacroList();
   UpdateHistoList(); 
 
@@ -903,11 +918,11 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::SaveMacroList(TMap* list)
+void AliEveListAnalyserEditor::SaveMacroList(TMap* list)
 {
   // Saves the provided macro list in an interior list. This list will be used by
   // InheritMacroList() to restore the data in "list". With this method one is able
-  // to inherit the macro list from track list to track list (i.e. from event to event).
+  // to inherit the macro list from analyse object list to analyse object list (i.e. from event to event).
 
   if (fInheritedMacroList != 0)
   {
@@ -919,22 +934,23 @@ void AliEveTRDTrackListEditor::SaveMacroList(TMap* list)
 
   TMapIter* iter = (TMapIter*)list->MakeIterator();
   TObject* key = 0;
-  TMacroData* macro = 0;
+  TGeneralMacroData* macro = 0;
   
   while ((key = iter->Next()) != 0)
   {
-    macro = (TMacroData*)fM->fMacroList->GetValue(key);
+    macro = (TGeneralMacroData*)fM->fMacroList->GetValue(key);
     if (macro != 0) fInheritedMacroList->Add(new TObjString(key->GetName()), 
-                                             new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
+                                             new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
     else
     {
-      Error("AliEveTRDTrackListEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+      Error("AliEveListAnalyserEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
     }
   }
 }
 
+/*
 //______________________________________________________
-void AliEveTRDTrackListEditor::SetTrackColor(Int_t ind)
+void AliEveListAnalyserEditor::SetTrackColor(Int_t ind)
 {
   // Sets the color model for the tracks, updates the tracks with this model and
   // redraws the scene.
@@ -956,7 +972,7 @@ void AliEveTRDTrackListEditor::SetTrackColor(Int_t ind)
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::SetTrackModel(Int_t ind)
+void AliEveListAnalyserEditor::SetTrackModel(Int_t ind)
 {
   // Sets the track model for the tracks, updates the tracks with this model and
   // redraws the scene.
@@ -976,12 +992,13 @@ void AliEveTRDTrackListEditor::SetTrackModel(Int_t ind)
 
   gEve->Redraw3D();
 }
+*/
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::UpdateDataFromMacroListSelection()
+void AliEveListAnalyserEditor::UpdateDataFromMacroListSelection()
 {
   // Saves the current selection in the "Histograms"-tab to the current
-  // AliEveTRDTrackList. This means that the selection is updated and won't
+  // AliEveListAnalyser. This means that the selection is updated and won't
   // get lost, if another editor is loaded in Eve.
 
   for (Int_t i = 0; i < fM->fDataFromMacroList->GetEntries(); i++)
@@ -991,7 +1008,7 @@ void AliEveTRDTrackListEditor::UpdateDataFromMacroListSelection()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::UpdateHistoCanvasTab()
+void AliEveListAnalyserEditor::UpdateHistoCanvasTab()
 {
    // Updates the histogram and the corresponding tab (including titles).
 
@@ -1009,10 +1026,10 @@ void AliEveTRDTrackListEditor::UpdateHistoCanvasTab()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::UpdateHistoList()
+void AliEveListAnalyserEditor::UpdateHistoList()
 {
   // Reloads (updates) the buttons in the "Histograms"-tab via
-  // the current AliEveTRDTrackList (data).
+  // the current AliEveListAnalyser (data).
 
   fHistoSubFrame->TGCompositeFrame::Cleanup();
   
@@ -1029,29 +1046,29 @@ void AliEveTRDTrackListEditor::UpdateHistoList()
     fCheckButtons[i]->SetState(kButtonUp, kFALSE);
     fCheckButtons[i]->MapRaised();
     fCheckButtons[i]->SetOn(fM->HistoDataIsSelected(i));
-    fCheckButtons[i]->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "UpdateDataFromMacroListSelection()");
+    fCheckButtons[i]->Connect("Clicked()", "AliEveListAnalyserEditor", this, "UpdateDataFromMacroListSelection()");
             
     iter = (TObjString*)fM->fDataFromMacroList->After(iter);
   }  
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::UpdateMacroList()
+void AliEveListAnalyserEditor::UpdateMacroList()
 {
   // Reloads (updates) the macro list (selection AND process macros) via
-  // the current AliEveTRDTrackList (data).
+  // the current AliEveListAnalyser (data).
 
   ftlMacroList->RemoveAll();
   ftlMacroSelList->RemoveAll();
    
   TMapIter* iter = (TMapIter*)fM->fMacroList->MakeIterator();
   TObject* key = 0;
-  TMacroData* macro = 0;
+  TGeneralMacroData* macro = 0;
 
   Int_t ind = 0;
   while ((key = iter->Next()) != 0)
   {
-    macro = (TMacroData*)fM->fMacroList->GetValue(key);
+    macro = (TGeneralMacroData*)fM->fMacroList->GetValue(key);
     if (macro != 0)
     {
       if (macro->IsProcessMacro())
@@ -1070,14 +1087,14 @@ void AliEveTRDTrackListEditor::UpdateMacroList()
       }
       else
       {
-        Error("AliEveTRDTrackListEditor::UpdateMacroList()", 
+        Error("AliEveListAnalyserEditor::UpdateMacroList()", 
               Form("Macro \"%s/%s.C\" is neither a selection macro nor a process macro!",
                    macro->GetPath(), macro->GetName()));                                        
       }
     }
     else
     {
-      Error("AliEveTRDTrackListEditor::UpdateMacroList()", 
+      Error("AliEveListAnalyserEditor::UpdateMacroList()", 
               Form("Macro list is corrupted: Macro \"%s\" not found!", key->GetName()));            
     }     
   }
@@ -1087,10 +1104,10 @@ void AliEveTRDTrackListEditor::UpdateMacroList()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::UpdateMacroListSelection(Int_t ind)
+void AliEveListAnalyserEditor::UpdateMacroListSelection(Int_t ind)
 {
   // Saves the current selection in the macro listS to the current
-  // AliEveTRDTrackList. This means that the selection is updated and won't
+  // AliEveListAnalyser. This means that the selection is updated and won't
   // get lost, if another editor is loaded in Eve.
   // NOTE: The indices in BOTH lists will be unique!
 
@@ -1100,12 +1117,13 @@ void AliEveTRDTrackListEditor::UpdateMacroListSelection(Int_t ind)
 
 
 /////////////////////////////////////////////////
-ClassImp(AliEveTRDMacroWizard)
+ClassImp(AliEveGeneralMacroWizard)
 
 //______________________________________________________
-AliEveTRDMacroWizard::AliEveTRDMacroWizard(const TGWindow* p)
+AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   :TGMainFrame(p ? p : gClient->GetRoot(), 10, 10, kMainFrame | kVerticalFrame)
-  ,fText(0x0)
+  ,fTextName(0x0)
+  ,fTextObjectType(0x0)
   ,fCombo(0x0)
   ,fTextEdit(0x0)
   ,fbCreate(0x0)
@@ -1121,13 +1139,31 @@ AliEveTRDMacroWizard::AliEveTRDMacroWizard(const TGWindow* p)
   fLabel->SetWrapLength(-1);
   fFrameName->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
 
-  fText = new TGTextEntry(fFrameName);
-  fText->SetMaxLength(255);
-  fText->SetAlignment(kTextLeft);
-  fText->SetText("");
-  fText->Resize(width, fText->GetDefaultHeight());
-  fFrameName->AddFrame(fText, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
+  fTextName = new TGTextEntry(fFrameName);
+  fTextName->SetMaxLength(255);
+  fTextName->SetAlignment(kTextLeft);
+  fTextName->SetText("");
+  fTextName->SetToolTipText("The name of your macro");
+  fTextName->Resize(width, fTextName->GetDefaultHeight());
+  fFrameName->AddFrame(fTextName, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
 
+  // horizontal frame
+  TGHorizontalFrame *fFrameObjectType = new TGHorizontalFrame(this, 10, 10, kHorizontalFrame);
+  fLabel = new TGLabel(fFrameObjectType, "Object type of macro");
+  fLabel->SetTextJustify(36);
+  fLabel->SetMargins(0,0,0,0);
+  fLabel->SetWrapLength(-1);
+  fFrameObjectType->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+
+  fTextObjectType = new TGTextEntry(fFrameObjectType);
+  fTextObjectType->SetMaxLength(255);
+  fTextObjectType->SetAlignment(kTextLeft);
+  fTextObjectType->SetText("");
+  // Limit max.length to 80 characters
+  fTextObjectType->SetMaxLength(80);
+  fTextObjectType->SetToolTipText("The type of objects, your macro will work with");
+  fTextObjectType->Resize(width, fTextObjectType->GetDefaultHeight());
+  fFrameObjectType->AddFrame(fTextObjectType, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
 
   // horizontal frame
   TGHorizontalFrame *fFrameComment = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
@@ -1137,7 +1173,7 @@ AliEveTRDMacroWizard::AliEveTRDMacroWizard(const TGWindow* p)
   fLabel->SetWrapLength(-1);
   fFrameComment->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
 
-  fTextEdit = new TGTextEdit(fFrameComment, width, 5*fText->GetDefaultHeight());
+  fTextEdit = new TGTextEdit(fFrameComment, width, 5*fTextName->GetDefaultHeight());
   fFrameComment->AddFrame(fTextEdit, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
 
   // horizontal frame
@@ -1149,14 +1185,14 @@ AliEveTRDMacroWizard::AliEveTRDMacroWizard(const TGWindow* p)
   fFrameType->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
 
   fCombo = new TGComboBox(fFrameType, -1, kHorizontalFrame | kSunkenFrame | kDoubleBorder | kOwnBackground);
-  fCombo->AddEntry("Single Track Selection", AliEveTRDTrackList::kSingleTrackSelect);
-  fCombo->AddEntry("Pair Tracks Selection", AliEveTRDTrackList::kCorrelTrackSelect);
-  fCombo->AddEntry("Single Track Analyse", AliEveTRDTrackList::kSingleTrackAnalyse);
-  fCombo->AddEntry("Single Track Histo", AliEveTRDTrackList::kSingleTrackHisto);
-  fCombo->AddEntry("Pair Tracks Analyse", AliEveTRDTrackList::kCorrelTrackAnalyse);
-  fCombo->AddEntry("Pair Tracks Histo", AliEveTRDTrackList::kCorrelTrackHisto);
+  fCombo->AddEntry("Single Object Selection", AliEveListAnalyser::kSingleObjectSelect);
+  fCombo->AddEntry("Pair Objects Selection", AliEveListAnalyser::kCorrelObjectSelect);
+  fCombo->AddEntry("Single Object Analyse", AliEveListAnalyser::kSingleObjectAnalyse);
+  fCombo->AddEntry("Single Object Histo", AliEveListAnalyser::kSingleObjectHisto);
+  fCombo->AddEntry("Pair Objects Analyse", AliEveListAnalyser::kCorrelObjectAnalyse);
+  fCombo->AddEntry("Pair Objects Histo", AliEveListAnalyser::kCorrelObjectHisto);
   fCombo->Select(-1);
-  fCombo->Resize(width, fText->GetDefaultHeight());
+  fCombo->Resize(width, fTextName->GetDefaultHeight());
   fFrameType->AddFrame(fCombo, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
 
   // horizontal frame
@@ -1179,6 +1215,7 @@ AliEveTRDMacroWizard::AliEveTRDMacroWizard(const TGWindow* p)
 
   // put things together  
   AddFrame(fFrameName, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
+  AddFrame(fFrameObjectType, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameComment, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameType, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameAction, new TGLayoutHints(kLHintsRight | kLHintsTop | kLHintsExpandX,2,2,2,2));
@@ -1188,7 +1225,7 @@ AliEveTRDMacroWizard::AliEveTRDMacroWizard(const TGWindow* p)
   AddFrame(fFrameText, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
 
 
-  SetWindowName("TRD Macro Wizard");
+  SetWindowName("Macro Wizard");
   SetMWMHints(kMWMDecorAll,
               kMWMFuncAll,
               kMWMInputModeless);
@@ -1198,15 +1235,16 @@ AliEveTRDMacroWizard::AliEveTRDMacroWizard(const TGWindow* p)
   MapWindow();
 
   // Do the linking
-  //fCombo->Connect("Selected(Int_t)", "AliEveTRDMacroWizard", this, "Create(Int_t)");
-  fbCreate->Connect("Clicked()", "AliEveTRDMacroWizard", this, "HandleCreate()");
-  fbCancel->Connect("Clicked()", "AliEveTRDMacroWizard", this, "CloseWindow()");
+  //fCombo->Connect("Selected(Int_t)", "AliEveGeneralMacroWizard", this, "Create(Int_t)");
+  fbCreate->Connect("Clicked()", "AliEveGeneralMacroWizard", this, "HandleCreate()");
+  fbCancel->Connect("Clicked()", "AliEveGeneralMacroWizard", this, "CloseWindow()");
 
   // Standard choice
   fCombo->Select(1, kFALSE);
 }  
 
-const Char_t *fIncludes = 
+const Char_t *fGeneralIncludes = 
+// TODO: Remove include files corresponding to a track list
 "#if !defined(__CINT__) || defined(__MAKECINT__)\n"
 "#include <TROOT.h>\n"
 "#include <TH1.h>\n"
@@ -1216,15 +1254,15 @@ const Char_t *fIncludes =
 "#include <TRD/AliTRDtrackV1.h>\n"
 "#endif\n";
 
-const Char_t *fMacroTemplate[7] = {
+const Char_t *fGeneralMacroTemplate[7] = {
 ""
-,"  if (!track) return kFALSE;\n"
+,"  if (!object) return kFALSE;\n"
 
 ,"  n = 0;\n"
 "  r = 0x0;\n"
-"  if (!track) return;\n"
+"  if (!object) return;\n"
 
-,"  if (!track) return 0x0;\n"
+,"  if (!object) return 0x0;\n"
 "  TH1* h = 0x0;\n\n"
 "// Set bins, xmin and xmax here\n"
 "  Int_t n = 1;\n"
@@ -1236,16 +1274,16 @@ const Char_t *fMacroTemplate[7] = {
 "    h->GetYaxis()->SetTitle("");\n"
 "  } else h->Reset();\n"
 
-,"  if (!track) return kFALSE;\n"
-"  if (!track2) return kFALSE;\n"
+,"  if (!object) return kFALSE;\n"
+"  if (!object2) return kFALSE;\n"
 
 ,"  n = 0;\n"
 "  r = 0x0;\n"
-"  if (!track) return;\n"
-"  if (!track2) return;\n"
+"  if (!object) return;\n"
+"  if (!object2) return;\n"
 
-,"  if (!track) return 0x0;\n"
-"  if (!track2) return 0x0;\n"
+,"  if (!object) return 0x0;\n"
+"  if (!object2) return 0x0;\n"
 "  TH1* h = 0x0;\n\n"
 "// Set bins, xmin and xmax here\n"
 "  Int_t n = 1;\n"
@@ -1257,16 +1295,125 @@ const Char_t *fMacroTemplate[7] = {
 "    h->GetYaxis()->SetTitle("");\n"
 "  } else h->Reset();\n"
 };
+
+
+const Char_t *fGeneralMacroTemplate_WithType[7] = {
+""
+,"  if (!object) return kFALSE;\n"
+"  if (object->IsA() != OBJECTTYPE::Class()) return kFALSE;\n\n"
+"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n" 
+"  if (!myObject) return kFALSE;\n"
+
+,"  n = 0;\n"
+"  r = 0x0;\n"
+"  if (!object) return;\n"
+"  if (object->IsA() != OBJECTTYPE::Class()) return;\n\n"
+"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n" 
+"  if (!myObject) return;\n"
+
+,"  if (!object) return 0x0;\n"
+"  if (object->IsA() != OBJECTTYPE::Class()) return 0x0;\n\n"
+"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n" 
+"  if (!myObject) return 0x0;\n\n"
+"  TH1* h = 0x0;\n\n"
+"// Set bins, xmin and xmax here\n"
+"  Int_t n = 1;\n"
+"  Double_t xmin = 0;\n"
+"  Double_t xmax = 100;\n\n" 
+"  if(!(h = (TH1*)gROOT->FindObject(\"h\"))){\n"
+"    h = new TH1(\"h\", \"Title\", n, xmin, xmax);\n"
+"    h->GetXaxis()->SetTitle("");\n"
+"    h->GetYaxis()->SetTitle("");\n"
+"  } else h->Reset();\n"
+
+,"  if (!object) return kFALSE;\n"
+"  if (!object2) return kFALSE;\n"
+"  if (object->IsA() != OBJECTTYPE::Class()) return kFALSE;\n"
+"  if (object2->IsA() != OBJECTTYPE::Class()) return kFALSE;\n\n"
+"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n"
+"  const OBJECTTYPE* myObject2 = dynamic_cast<const OBJECTTYPE*>(object2);\n" 
+"  if (!myObject) return kFALSE;\n"
+"  if (!myObject2) return kFALSE;\n"
+
+,"  n = 0;\n"
+"  r = 0x0;\n"
+"  if (!object) return;\n"
+"  if (!object2) return;\n"
+"  if (object->IsA() != OBJECTTYPE::Class()) return;\n"
+"  if (object2->IsA() != OBJECTTYPE::Class()) return;\n\n"
+"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n"
+"  const OBJECTTYPE* myObject2 = dynamic_cast<const OBJECTTYPE*>(object2);\n" 
+"  if (!myObject) return;\n"
+"  if (!myObject2) return;\n"
+
+,"  if (!object) return 0x0;\n"
+"  if (!object2) return 0x0;\n"
+"  if (object->IsA() != OBJECTTYPE::Class()) return 0x0;\n"
+"  if (object2->IsA() != OBJECTTYPE::Class()) return 0x0;\n\n"
+"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n"
+"  const OBJECTTYPE* myObject2 = dynamic_cast<const OBJECTTYPE*>(object2);\n" 
+"  if (!myObject) return 0x0;\n"
+"  if (!myObject2) return 0x0;\n"
+"  TH1* h = 0x0;\n\n"
+"// Set bins, xmin and xmax here\n"
+"  Int_t n = 1;\n"
+"  Double_t xmin = 0;\n"
+"  Double_t xmax = 100;\n\n" 
+"  if(!(h = (TH1*)gROOT->FindObject(\"h\"))){\n"
+"    h = new TH1(\"h\", \"Title\", n, xmin, xmax);\n"
+"    h->GetXaxis()->SetTitle("");\n"
+"    h->GetYaxis()->SetTitle("");\n"
+"  } else h->Reset();\n"
+};
+
 //______________________________________________________
-void AliEveTRDMacroWizard::Create(Int_t type)
+void AliEveGeneralMacroWizard::Create(Int_t type)
 {
-  const Char_t *name = fText->GetText();
+  const Char_t* name = fTextName->GetText();
   if(strcmp(name,"")==0){
     AliInfo("Please specify a name for your macro.");
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  "Please specify a name for your macro.", kMBIconExclamation, kMBOk);
     //fCombo->Select(-1);
     return;
+  }
+
+  Bool_t useGivenType = kFALSE;
+
+  // Remove white-spaces
+  TString* typeStr = new TString();
+
+  typeStr->Append(fTextObjectType->GetText());
+  typeStr->ReplaceAll(" ", "");
+  fTextObjectType->SetText(typeStr->Data(), kFALSE);
+
+  // If an object type is provided by the user, use it!
+  if (strlen(typeStr->Data()) > 0)
+  {
+    // Check, if the class really exists
+    if (TClass::GetClass(typeStr->Data()) != 0x0)
+    {
+      useGivenType = kTRUE; 
+    }
+    else
+    {
+      Int_t buttonsPressed = 0;
+      new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Unknown object type", 
+        Form("The class of your object, \"%s\" has not been found. Do you really want to create your macro with this object type?", 
+             typeStr->Data()), kMBIconExclamation, kMBYes | kMBNo, &buttonsPressed);
+
+      if (buttonsPressed & kMBYes)  useGivenType = kTRUE;
+      else useGivenType = kFALSE;
+
+      // Cancel creation
+      if (!useGivenType)
+      {
+        typeStr->Clear();
+        if (typeStr != 0) delete typeStr;
+        typeStr = 0;
+        return;
+      }
+    }
   }
 
   // Note: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
@@ -1288,30 +1435,51 @@ void AliEveTRDMacroWizard::Create(Int_t type)
     return;
   }
 
-  TGText *comment = fTextEdit->GetText();
-  Char_t *line = 0x0; Int_t iline = 0;
+  TGText* comment = fTextEdit->GetText();
+  Char_t* line = 0x0; Int_t iline = 0;
   while((line = comment->GetLine(TGLongPosition(0,iline++), 200))) fprintf(fp, "// %s\n", line);
 
-  fprintf(fp, "\n%s\n", fIncludes);
+  fprintf(fp, "\n%s\n", fGeneralIncludes);
+
+  TString* tempStr = new TString();
+
+  // Use default type
+  if (!useGivenType)
+  {
+    typeStr->Clear();
+    typeStr->Append("TObject");
+  }
 
   switch(type){
-  case AliEveTRDTrackList::kSingleTrackSelect:
-    fprintf(fp, "Bool_t %s(const AliTRDtrackV1 *track)\n", name);
+  case AliEveListAnalyser::kSingleObjectSelect:
+    // Use "Bool_t 'NAME'(const 'OBJECTTYPE' *object)\n"
+    tempStr->Append("Bool_t ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object)\n");
+    fprintf(fp, tempStr->Data());
     break;
-  case AliEveTRDTrackList::kCorrelTrackSelect:
-    fprintf(fp, "Bool_t %s(const AliTRDtrackV1 *track, const AliTRDtrackV1 *track2)\n", name);
+  case AliEveListAnalyser::kCorrelObjectSelect:
+    // Use "Bool_t 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE' *object2)\n"
+    tempStr->Append("Bool_t ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr->Data()).Append(" *object2)\n");
+    fprintf(fp, tempStr->Data());
     break;
-  case AliEveTRDTrackList::kSingleTrackAnalyse:
-    fprintf(fp, "void %s(const AliTRDtrackV1 *track, Double_t*& r, Int_t& n)\n", name);
+  case AliEveListAnalyser::kSingleObjectAnalyse:    
+    // Use "void 'NAME'(const 'OBJECTTYPE' *object, Double_t*& r, Int_t& n)\n"
+    tempStr->Append("void ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, Double_t*& r, Int_t& n)\n");
+    fprintf(fp, tempStr->Data());
     break;
-  case AliEveTRDTrackList::kSingleTrackHisto:
-    fprintf(fp, "TH1* %s(const AliTRDtrackV1 *track)\n", name);
+  case AliEveListAnalyser::kSingleObjectHisto:
+    // Use "TH1* 'NAME'(const 'OBJECTTYPE' *object)\n"
+    tempStr->Append("TH1* ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object)\n");
+    fprintf(fp, tempStr->Data());
     break;
-  case AliEveTRDTrackList::kCorrelTrackAnalyse:
-    fprintf(fp, "void %s(const AliTRDtrackV1 *track, const AliTRDtrackV1 *track2, Double_t*& r, Int_t& n)\n", name);
+  case AliEveListAnalyser::kCorrelObjectAnalyse:
+    // Use "void 'NAME'(const TObject *object, const TObject *object2, Double_t*& r, Int_t& n)\n"
+    tempStr->Append("void ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr->Data()).Append(" *object2, Double_t*& r, Int_t& n)\n");
+    fprintf(fp, tempStr->Data());
     break;
-  case AliEveTRDTrackList::kCorrelTrackHisto:
-    fprintf(fp, "TH1* %s(const AliTRDtrackV1 *track, const AliTRDtrackV1 *track2)\n", name);
+  case AliEveListAnalyser::kCorrelObjectHisto:
+    // Use "TH1* 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE' *object2)\n"
+    tempStr->Append("TH1* ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr->Data()).Append(" *object2)\n");
+    fprintf(fp, tempStr->Data());
     break;
   default:
     AliInfo(Form("Unknown type[%d]", type));
@@ -1320,10 +1488,47 @@ void AliEveTRDMacroWizard::Create(Int_t type)
     fclose(fp);
     gSystem->Exec(Form("rm -f %s.C", name));
     //fCombo->Select(-1);
+
+    tempStr->Clear();
+    if (tempStr != 0) delete tempStr;
+    tempStr = 0;
+
+    typeStr->Clear();
+    if (typeStr != 0) delete typeStr;
+    typeStr = 0;
+
     return;
   }
-  
-  fprintf(fp, "{\n%s\n", fMacroTemplate[type]);
+
+  tempStr->Clear();
+  if (tempStr != 0) delete tempStr;
+  tempStr = 0;
+
+  typeStr->Clear();
+  if (typeStr != 0) delete typeStr;
+  typeStr = 0;
+      
+  if (useGivenType)
+  {
+    // Replace "OBJECTTYPE" with the class name
+    TString* tempStr = new TString();
+    tempStr->Append(fGeneralMacroTemplate_WithType[type]);
+
+    tempStr->ReplaceAll("OBJECTTYPE", fTextObjectType->GetText());
+
+    fprintf(fp, "{\n%s\n", tempStr->Data());
+
+    if (tempStr != 0)
+    {
+      tempStr->Clear();
+      delete tempStr;
+      tempStr = 0;
+    }
+  }
+  else
+  {
+    fprintf(fp, "{\n%s\n", fGeneralMacroTemplate[type]);
+  }
   fprintf(fp, "// add your own code here\n\n\n}\n");
   fclose(fp);
 
@@ -1333,13 +1538,13 @@ void AliEveTRDMacroWizard::Create(Int_t type)
 }
 
 //______________________________________________________
-void AliEveTRDMacroWizard::Create(Char_t *name)
+void AliEveGeneralMacroWizard::Create(Char_t *name)
 {
   Emit("Create(Char_t*)", Form("%s.C", name));
 }
 
 //______________________________________________________
-void AliEveTRDMacroWizard::HandleCreate()
+void AliEveGeneralMacroWizard::HandleCreate()
 {
   Create(fCombo->GetSelected());
 }
