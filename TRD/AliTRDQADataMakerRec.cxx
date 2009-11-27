@@ -26,20 +26,30 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
+#include <TClonesArray.h>
+#include <TFile.h> 
 #include <TH1D.h> 
 #include <TH2D.h>
 #include <TH3D.h>
 #include <TProfile.h>
 #include <TF1.h>
+#include <TCanvas.h>
 
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
+#include "AliLog.h"
 #include "AliRawReader.h"
-#include "AliQAChecker.h"
-
 #include "AliTRDcluster.h"
 #include "AliTRDQADataMakerRec.h"
+#include "AliTRDgeometry.h"
+//#include "AliTRDdataArrayI.h"
 #include "AliTRDrawStream.h"
+
+#include "AliTRDdigitsManager.h"
+#include "AliTRDSignalIndex.h"
+#include "AliTRDarrayADC.h"
+
+#include "AliQAChecker.h"
 
 ClassImp(AliTRDQADataMakerRec)
 
@@ -49,8 +59,6 @@ ClassImp(AliTRDQADataMakerRec)
 {
   //
   // Default constructor
-  //
-
 }
 
 //____________________________________________________________________________ 
@@ -90,6 +98,23 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   /**/
   AliDebug(AliQAv1::GetQADebugLevel(), "End of TRD cycle");
   
+
+  if (task == AliQAv1::kRAWS) {
+
+    // loop over event types
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      
+      if (! IsValidEventSpecie(specie, list)) continue;
+      
+
+      TH2D *mnCls = (TH2D*)list[specie]->At(1); 
+      TH2D *mClsDet = (TH2D*)list[specie]->At(2);  
+  
+      mClsDet->Divide(mnCls);
+    }
+  }
+
+
   if (task == AliQAv1::kRECPOINTS) {
     
     TH1D * hist = new TH1D("fitHist", "", 200, -0.5, 199.5);
@@ -446,37 +471,33 @@ void AliTRDQADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
   
   AliInfo("Initialization of QA for Raw Data");
-
-  //const Int_t kSM = 18;
-  //const Int_t kNCh = 540;
-  const Int_t kNhist = 6;
+  
+  const Int_t kNhist = 7;
   TH1 *hist[kNhist];
 
-  // link monitor
-  const char *linkName[3] = {"smLink", "smBeaf", "smData"};
-  for(Int_t i=0; i<3; i++) {
-    hist[i] = new TH2D(Form("qaTRD_raws_%s", linkName[i]), 
-		       ";super module;link", 
-		       18, -0.5, 17.5, 60, -0.5, 59.5);
-  }
-
-  hist[3] = new TH1D("qaTRD_raws_errorHC", "TRD raws error HC;error ID;Counts", 18, -3.5, 14.5);
-  hist[4] = new TH1D("qaTRD_raws_errorMCM", "TRD raws error MCM;error ID;Counts", 18, -3.5, 14.5);
-  hist[5] = new TH1D("qaTRD_raws_errorADC", "TRD raws errorADC;error ID;Counts", 18, -3.5, 14.5);
+  hist[0] = new TH2D("qaTRD_raws_nADC","number of ADC channels;sector;detector", 18, -0.5, 17.5, 30, -0.5, 29.5);
+  hist[1] = new TH2D("qaTRD_raws_nCls", "number of clusters;sector;detector", 18, -0.5, 17.5, 30, -0.5, 29.5);
+  hist[2] = new TH2D("qaTRD_raws_meanSig", "mean signal;sector;detector", 18, -0.5, 17.5, 30, -0.5, 29.5);
+  
+  hist[3] = new TH1D("qaTRD_raws_ADC", "ADC amplitude;ADC counts", 100, -0.5, 99.5);
+  hist[4] = new TH1D("qaTRD_raws_Cls", "Cluster amplitude; ADC counts", 100, -0.5, 199.5);
+  hist[5] = new TH2D("qaTRD_raws_ClsTb", "Clusters vs Time Bin;time bin;amoplitude", 30, -0.5, 29.5, 200, -0.5, 199.5);
+  
+  hist[6] = new TH2D("qaTRD_raws_ClsAmpDet", ";detector;amplitude", 540, -0.5, 539.5, 100, 0, 200);
+  
 
   /*
-  // four histograms to be published
-  hist[0] = new TH1D("qaTRD_raws_det", ";detector", 540, -0.5, 539.5);
-  hist[1] = new TH1D("qaTRD_raws_sig", ";signal", 100, -0.5, 99.5);
-  hist[2] = new TH1D("qaTRD_raws_timeBin", ";time bin", 40, -0.5, 39.5); 
-  hist[3] = new TH1D("qaTRD_raws_smId", ";supermodule", 18, -0.5, 17.5);
-  //
-  
-  // one double per MCM (not published)
-  const Int_t kNMCM = 30 * 8 * 16;
-  for(Int_t i=0; i<kSM; i++)
-    hist[4+i] = new TH1D(Form("qaTRD_raws_sm%d",i),"",kNMCM, -0.5, kNMCM-0.5); 
+    hist[0] = new TH2D("qaTRD_raws_DataVolume", ";Sector;Data Volume, kB", 18, -0.5, 17.5, 100, 0, 30);
+    hist[1] = new TH2D("qaTRD_raws_HC", "Data Headers;Sector;HC", 18, -0.5, 17.5, 60, -0.5, 59.5);
+    hist[2] = new TH2D("qaTRD_raws_LME", "Link Monitor Error;Sector;HC", 18, -0.5, 17.5, 60, -0.5, 59.5);
+    
+    hist[3] = new TH1D("qaTRD_rawd_cls", "Clusters amplitude;ADC counts", 100, 0, 200);
+    hist[4] = new TH2D("qaTRD_raws_clsTB", "amplitude - time bins;time bin;amplitude"
+    30, -0.5, 29.5, 100, 0, 200);
+    hist[5] = new TH2D("qaTRD_raws_clsSec", "amplitude in sectors;Sector;amplitude, ADCs"
+    18, -0.5, 17.5);
   */
+
 
   // register
   for(Int_t i=0; i<kNhist; i++) {
@@ -487,7 +508,7 @@ void AliTRDQADataMakerRec::InitRaws()
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * const esd)
+void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //
   // Make QA data from ESDs
@@ -656,11 +677,11 @@ Int_t AliTRDQADataMakerRec::GetStack(const AliExternalTrackParam *paramOut) cons
   // calculates the stack the track is in
   //
   
-  const Double_t l = -0.9;
-  const Double_t w = (2*l)/5;
+  const Double_t L = -0.9;
+  const Double_t W = (2*L)/5;
 
   Double_t tan = paramOut->GetZ() / paramOut->GetX();
-  Double_t pos = (tan - l) / w;
+  Double_t pos = (tan - L) / W;
   return (Int_t) pos;
 }
 
@@ -690,163 +711,112 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   //
   // Makes QA data from raw data
   //
-  
-  AliInfo("Execution of QA for Raw data");
- 
-  //printf("Execution of QA for Raw data\n");
 
-  // create raw reader TB
+  AliInfo("Making QA for Raws");
+
+  // take histograms
+
+  TH2D *mnADC = (TH2D*)GetRawsData(0);
+  TH2D *mnCls = (TH2D*)GetRawsData(1); 
+  TH2D *mClsDet = (TH2D*)GetRawsData(2);
+  
+  TH1D *mADC = (TH1D*)GetRawsData(3);
+  TH1D *mCls = (TH1D*)GetRawsData(4);
+  TH2D *mClsTb = (TH2D*)GetRawsData(5);
+
+  TH2D *mClsDetAmp = (TH2D*)GetRawsData(6);
+
+  const Int_t baseline = 10;
+
+
+  // configure the reader
   rawReader->Reset();
   rawReader->SelectEquipment(0, 1024, 1041);
   rawReader->Select("TRD");
+
+  AliTRDrawStreamBase::SetRawStreamVersion("FAST");
+  AliTRDrawStreamBase *data = AliTRDrawStreamBase::GetRawStream(rawReader);
+  data->SetSharedPadReadout(kFALSE);
+
+  // build data manager  
+  AliTRDdigitsManager *digitsManager;
+  digitsManager = new AliTRDdigitsManager(kTRUE);
+  digitsManager->CreateArrays();
+
+  // error container 
+  const UShort_t kErrorChmb = 1411;
+  UShort_t **fErrorContainer = new UShort_t *[2];
+  fErrorContainer[0] = new UShort_t[kErrorChmb];
+  fErrorContainer[1] = new UShort_t[kErrorChmb];
   
-  // AliTRDrawStreamTB::AllowCorruptedData();
-  // AliTRDrawStreamTB::DisableStackNumberChecker();
-  // AliTRDrawStreamTB::DisableStackLinkNumberChecker();
-  // AliTRDrawStreamTB::DisableSkipData();
+  Int_t det = 0;
+  Int_t row, col;
 
-  //AliTRDrawStreamTB *data = (AliTRDrawStreamTB*)AliTRDrawStreamBase::GetRawStream(rawReader);
-  AliTRDrawStreamBase::SetRawStreamVersion ("REAL") ;
-  AliTRDrawStream *data = (AliTRDrawStream *)AliTRDrawStreamBase::GetRawStream(rawReader);  
-
-  //if (raw->IsA()->GetName())
-
-
-  // import the histograms
-  TH2D *fSMLink[3];
-  for(Int_t i=0; i<3; i++) {
-    fSMLink[i] = (TH2D*)GetRawsData(i);
-    //printf("address = %d\n", fSMLink[i]);
-  }
+  while ((det = data->NextChamber(digitsManager, NULL, fErrorContainer)) >= 0){
     
-  TH1D *fErrorHC =  (TH1D*)GetRawsData(3);
-  TH1D *fErrorMCM = (TH1D*)GetRawsData(4);
-  TH1D *fErrorADC = (TH1D*)GetRawsData(5);
+    //printf("DET = %d\n", det);
 
-
-  // loop over super-modules
-  while (data->NextBuffer()>0) {
-    
-    //printf("processing next buffer\n");
-    // check sm
-    Int_t sm = rawReader->GetEquipmentId() - 1024;
-    if (sm < 0 || sm > 18) return;
-    
-    // loop over links
-    for (Int_t istack = 0; istack < 5; istack++) {	
-      for (Int_t ilink = 0; ilink < 12; ilink++) {
-	
-	//Int_t det = sm * 30 + istack * 6 + ilink/2;	
+    AliTRDSignalIndex* indexes = digitsManager->GetIndexes(det);
+    if (indexes->HasEntry()) {
       
-	// check if data delivered
-	if (!(data->IsLinkActiveInStack(istack, ilink))) continue;
-	fSMLink[0]->Fill(sm, istack * 12 + ilink);
-	
-	// check if beaf-beaf
-	if (data->GetLinkMonitorError(istack, ilink)) {
-	  fSMLink[1]->Fill(sm, istack * 12 + ilink);
-	  continue;
-	}
-	
-	// fill histogram with HC header errors
-	Int_t nErrHc = 0;
-	
-	nErrHc = FillBits(fErrorHC, data->GetH0ErrorCode(istack, ilink), 0);
-	if (!nErrHc) fErrorHC->Fill(-3);
-	      
-	nErrHc = FillBits(fErrorHC, data->GetH1ErrorCode(istack, ilink), 2);
-	if (!nErrHc) fErrorHC->Fill(-2);
-	      
-	nErrHc = FillBits(fErrorHC, data->GetHCErrorCode(istack, ilink), 4);
-	if (!nErrHc) fErrorHC->Fill(-1);
-	
-	// data integrity protection 
-	if (data->GetH0ErrorCode(istack, ilink) > 0) continue;
-	if (data->GetH1ErrorCode(istack, ilink) > 0) continue;
-	
-	fSMLink[2]->Fill(sm, istack * 12 + ilink);	
+      AliTRDarrayADC *digits = (AliTRDarrayADC*) digitsManager->GetDigits(det);
 
-	// loop over MCMs
-	for (Int_t imcm = 0; imcm < data->GetHCMCMmax(istack, ilink); imcm++ ){
-	  
-	  Int_t nErrMcm = 0;
-	
-	  nErrMcm = FillBits(fErrorMCM, data->GetMCMhdErrorCode(istack, ilink, imcm), 0);
-	  if (!nErrMcm) fErrorMCM->Fill(-3);
-	
-	  nErrMcm = FillBits(fErrorMCM, data->GetMCMADCMaskErrorCode(istack, ilink, imcm), 5);
-	  if (!nErrMcm) fErrorMCM->Fill(-2);
-	
-	  nErrMcm = FillBits(fErrorMCM, data->GetMCMErrorCode(istack, ilink, imcm), 10);
-	  if (!nErrMcm) fErrorMCM->Fill(-1);
-	
-	  // MCM protection
-	  if ( (data->GetMCMhdErrorCode(istack,ilink,imcm)) & 2 ) continue;
+      while(indexes->NextRCIndex(row, col))  {
 
-	  // loop over ADC chanels 	
-	  for (Int_t iadc=0; iadc < data->GetADCcount(istack, ilink, imcm); iadc++) {
+	mnADC->Fill(det/30, det%30);
+	
+	for(Int_t tb = 0; tb < digits->GetNtime(); tb++) {
+	  Int_t value = digits->GetData(row, col, tb);
+	  mADC->Fill(value);
 	  
-	    // fill ADC error bits
-	    Int_t nErrAdc = FillBits(fErrorADC, data->GetADCErrorCode(), 0);
-	    if (!nErrAdc) fErrorADC->Fill(-1);
+	  // simple clusterizer
+	  if (col < 1 || col > digits->GetNcol()-1) continue;
+	  if (tb < 1 || tb > digits->GetNtime()-1) continue;
+	  
+	  value -= baseline;
+
+	  Int_t valueL = digits->GetData(row, col-1, tb) - baseline;
+	  if (valueL >= value) continue;
+	  
+	  Int_t valueR = digits->GetData(row, col+1, tb) - baseline;
+	  if (valueR >= value) continue;
+	  
+	  Int_t valueUp = digits->GetData(row, col-1, tb+1) + 
+	    digits->GetData(row, col, tb+1) + digits->GetData(row, col+1, tb+1) - 3 * baseline;
+	  if (valueUp < 10) continue;
+	  
+	  Int_t valueDown = digits->GetData(row, col-1, tb-1) + 
+	    digits->GetData(row, col, tb-1) + digits->GetData(row, col+1, tb-1) - 3 * baseline;
+	  if (valueDown < 10) continue;
+	  
+	  Int_t valueTot = value + valueL + valueR;
+	  if (valueTot < 0) continue;
+
+	  mCls->Fill(valueTot);
+	  mClsTb->Fill(tb, valueTot);
+	  mClsDetAmp->Fill(det, valueTot);
+
+	  if (valueTot < 200) {
+	    mnCls->Fill(det/30, det%30); 
+	    mClsDet->Fill(det/30, det%30, valueTot);
 	  }
-	} // mcm 
+	
+	}
       }
-    } // link
 
-    //printf("buffer analyzed\n");
+      digitsManager->ClearArrays(det); // do we need this if object will be deleted ??
+    }    
   }
   
-  // clean up
-
+  if (fErrorContainer){
+    delete [] fErrorContainer[0];
+    delete [] fErrorContainer[1];
+    delete [] fErrorContainer;
+    fErrorContainer = NULL;
+  }
+  
+  delete digitsManager;  
   delete data;
-  AliInfo("sucessfull execution of QA for TRD raw data");
-  //printf("sucessfull execution of QA for TRD raw data\n");
-  
-
-  /*
-  // 157
-  // T9 -- T10
-
-  //const Int_t kSM = 18;
-  //const Int_t kROC = 30;
-  const Int_t kROB = 8;
-  //const Int_t kLayer = 6;
-  //const Int_t kStack = 5;
-  const Int_t kMCM = 16;
-  //  const Int_t kADC = 22;
-
-  rawReader->Reset() ; 
-  //AliTRDrawStreamBase::SetRawStreamVersion("TB");
-  AliTRDrawStreamBase *raw = AliTRDrawStreamBase::GetRawStream(rawReader);
-  AliDebug(2,Form("Stream version: %s", raw->IsA()->GetName()));
-
-  while (raw->Next()) {
-
-    GetRawsData(0)->Fill(raw->GetDet());
-
-    // possibly needs changes with the new reader !!
-    Int_t *sig = raw->GetSignals();
-    for(Int_t i=0; i<3; i++) GetRawsData(1)->Fill(sig[i]);
-    // ---
-
-    GetRawsData(2)->Fill(raw->GetTimeBin());
-
-    // calculate the index;
-    Int_t sm = raw->GetSM();
-    Int_t roc = raw->GetROC();
-    Int_t rob = raw->GetROB();
-    Int_t mcm = raw->GetMCM();
-    //Int_t adc = raw->GetADC();
-
-    //Int_t index = roc * (kROB*kMCM*kADC) + rob * (kMCM*kADC) + mcm * kADC + adc;
-    Int_t  index = roc * (kROB*kMCM) + rob * kMCM + mcm;
-    GetRawsData(3)->Fill(sm);
-    GetRawsData(4+sm)->Fill(index);
-  }
-
-  delete raw;
-  */
 }
 
 //____________________________________________________________________________
@@ -983,7 +953,7 @@ void AliTRDQADataMakerRec::StartOfDetectorCycle()
 }
 
 //__________________________________________________________________________
-Int_t AliTRDQADataMakerRec::CheckPointer(TObject * const obj, const char *name) 
+Int_t AliTRDQADataMakerRec::CheckPointer(TObject *obj, const char *name) 
 {
   //
   // Checks initialization of pointers
@@ -993,8 +963,7 @@ Int_t AliTRDQADataMakerRec::CheckPointer(TObject * const obj, const char *name)
   return !!obj;
 }
 //__________________________________________________________________________
-void AliTRDQADataMakerRec::BuildRatio(TH1D *ratio, TH1D * const histN, TH1D * const histD) 
-{
+void AliTRDQADataMakerRec::BuildRatio(TH1D *ratio, TH1D *histN, TH1D*histD) {
   //
   // Calculate the ratio of two histograms 
   // error are calculated assuming the histos have the same counts
@@ -1025,13 +994,9 @@ void AliTRDQADataMakerRec::BuildRatio(TH1D *ratio, TH1D * const histN, TH1D * co
   ratio->SetMaximum(1.1);
   ratio->SetMarkerStyle(20);
 }
-
 //__________________________________________________________________________
-Int_t AliTRDQADataMakerRec::FillBits(TH1D *hist, Int_t code, Int_t offset) 
-{
-  //
-  // Fill bits
-  //
+
+Int_t AliTRDQADataMakerRec::FillBits(TH1D *hist, Int_t code, Int_t offset) {
 
   Int_t nb = 0;
   UInt_t test = 1;
