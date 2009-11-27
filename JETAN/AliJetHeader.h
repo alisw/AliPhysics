@@ -43,7 +43,7 @@ protected:
   Float_t fJetEtaMin;       // minimum eta for the jet
   Int_t   fDebug;           // debug option
   
-  ClassDef(AliJetHeader,1)
+  ClassDef(AliJetHeader,2)
 };
  
 #endif
