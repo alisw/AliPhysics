@@ -279,9 +279,8 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
   Int_t detElt;                          //!<Detection element Id.
   
   for (Int_t ch = 0; ch < fNCh; ++ch)
-    {
-      fTrackFilter[ch] = 0;
-    }
+    fTrackFilter[ch] = 0;
+
 
   Double_t posXL, posYL, posZL;          //!<Local positions.
   Double_t posXG, posYG, posZG;          //!<Global. positions.
@@ -294,67 +293,52 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
       fTrackFilter   [fCluster->GetChamberId()] = 1;
       chamberResponse[fCluster->GetChamberId()] = 1;
     }
-  
+
   for (Int_t station = 0; station < fNSt-1; ++station)
     {
-      Int_t filter;                                                  //<!
-      Int_t ch1, ch2, ch3, ch4;                                      //<!
-      ch1 = 2*station;                                               //<!
-      ch2 = 2*station + 1;                                           //<!
-      ch3 = 2*station + 2;                                           //<!
-      ch4 = 2*station + 3;                                           //<!
-                                                                     //<!For the efficiency calculation the tracks
-      if (station < 3 )                                              //<!reconstructed must have responded to the
-	{                                                              //<!criteria of the tracking. 
-	  filter            = fTrackFilter[ch1];                       //<!And that's why the tracks usable for the 
-	  fTrackFilter[ch1] = fTrackFilter[ch2];                       //<!intrinsic efficiency calculation are
-	  fTrackFilter[ch2] = filter;                                  //<!the tracks which have one or two clusters
-	}                                                              //<!in each station. So the case where a track
-                                                                       //<!hasn't a cluster in a station is not
-      else                                                             //<!taking into account.
-	{                                                              //<!This part solves the problem. See the ALICE 
-	  if (chamberResponse[ch3]*chamberResponse[ch4] != 0)          //<!note of Diego STOCCO on the trigger efficiency
-	    {                                                            //<!
-	      filter            = fTrackFilter[ch1];                       //<!
-	      fTrackFilter[ch1] = fTrackFilter[ch2];                       //<!
-	      fTrackFilter[ch2] = filter;                                  //<!
-	    }                                                            //<!
-	  else                                                         //<!
-	    {                                                            //<!
-	      fTrackFilter[ch1] = 0;                                       //<!
-	      fTrackFilter[ch2] = 0;                                       //<!
-	    }                                                            //<!
-	  //<!
-	  if (chamberResponse[ch1]*chamberResponse[ch2] != 0)          //<!
-	    {                                                            //<!
-	      filter            = fTrackFilter[ch3];                       //<!
-	      fTrackFilter[ch3] = fTrackFilter[ch4];                       //<!
-	      fTrackFilter[ch4] = filter;                                  //<!
-	    }                                                            //<!
-	  else                                                         //<!
-	    {                                                            //<!
-	      fTrackFilter[ch3] = 0;                                       //<!
-	      fTrackFilter[ch4] = 0;                                       //<!
-	    }                                                            //<!
-	}                                                              //<!
-    }                                                                //<!
+      Int_t filter;                                                       //<!
+      Int_t ch1, ch2, ch3, ch4;                                           //<!
+      ch1 = 2*station;                                                    //<!
+      ch2 = 2*station + 1;                                                //<!
+      ch3 = 2*station + 2;                                                //<!
+      ch4 = 2*station + 3;                                                //<!
+                                                                          //<!For the efficiency calculation the tracks
+      if (station < 3 )                                                   //<!reconstructed must have responded to the
+	{                                                                 //<!criteria of the tracking. 
+	  filter            = fTrackFilter[ch1];                          //<!And that's why the tracks usable for the 
+	  fTrackFilter[ch1] = fTrackFilter[ch2];                          //<!intrinsic efficiency calculation are
+	  fTrackFilter[ch2] = filter;                                     //<!the tracks which have one or two clusters
+	}                                                                 //<!in each station. So the case where a track
+                                                                          //<!hasn't a cluster in a station is not
+      else                                                                //<!taking into account.
+	{                                                                 //<!This part solves the problem. See the ALICE 
+	  if (chamberResponse[ch3]*chamberResponse[ch4] != 0)             //<!note of Diego STOCCO on the trigger efficiency
+	    {                                                             //<!
+	      filter            = fTrackFilter[ch1];                      //<!
+	      fTrackFilter[ch1] = fTrackFilter[ch2];                      //<!
+	      fTrackFilter[ch2] = filter;                                 //<!
+	    }                                                             //<!
+	  else                                                            //<!
+	    {                                                             //<!
+	      fTrackFilter[ch1] = 0;                                      //<!
+	      fTrackFilter[ch2] = 0;                                      //<!
+	    }                                                             //<!
+	  
+	  if (chamberResponse[ch1]*chamberResponse[ch2] != 0)
+	    {
+	      filter            = fTrackFilter[ch3];
+	      fTrackFilter[ch3] = fTrackFilter[ch4];
+	      fTrackFilter[ch4] = filter;
+	    }
+	  else
+	    {
+	      fTrackFilter[ch3] = 0;
+	      fTrackFilter[ch4] = 0;
+	    }
+	}
+    }
   
 
-  for (Int_t ch = 0; ch < fNCh; ++ch)
-    {
-      if (fTrackFilter[ch] == 1)
-	{
-	  if ( chamberResponse[ch] != 0) 
-	    {
-	      ((TH2F*) fDetEltTDHistList->UncheckedAt(fNDE))->Fill(ch, 0);
-	      ((TH1F*) fChamberTDHistList->UncheckedAt(fNCh))->Fill(ch);	  
-	    }
-	  
-	  ((TH2F*) fDetEltTTHistList->UncheckedAt(fNDE))->Fill(ch, 0);
-	  ((TH1F*) fChamberTTHistList->UncheckedAt(fNCh))->Fill(ch);
-	}
-    } 
-  
   ///Begining of the loop:
   for (iTrackParam = 0; iTrackParam < nTrackParams; ++iTrackParam)
     {
@@ -386,9 +370,8 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
 	    }
 	    
 	  if ( iTrackParam == nTrackParams - 1 && newChamber != fNCh-1)           //!<Check if the last chamber, chamber 9 (from 0 to 9) has responded.
-	    {	  
-	      FindAndFillMissedDetElt(fTrackParam, fNCh-1, 1);                      //!<Calculation of the parameters of the missing cluster(s) in the last chamber.
-	    }
+	    FindAndFillMissedDetElt(fTrackParam, fNCh-1, 1);                      //!<Calculation of the parameters of the missing cluster(s) in the last chamber.
+	    
 	}
       oldChamber = newChamber; 
     } 
@@ -407,11 +390,13 @@ void AliCheckMuonDetEltResponse::FillTDHistos(Int_t chamber,
       Int_t iDet = 0; //!<Position of the detection element in the histograms' list.
       iDet = FromDetElt2iDet(chamber, detElt);
       ((TH2F*) fDetEltTDHistList->UncheckedAt(iDet))->Fill(posXL, posYL);
-      
+      ((TH2F*) fDetEltTDHistList->UncheckedAt(fNDE))->Fill(chamber, 0);
+  
       Int_t detEltLocalId = 0;  //!<Id of the detection element in the station
       detEltLocalId =  FromDetElt2LocalId(chamber, detElt);
       ((TH1F*) fChamberTDHistList->UncheckedAt(chamber))->Fill(detEltLocalId);
-    }
+      ((TH1F*) fChamberTDHistList->UncheckedAt(10))->Fill(chamber);
+   }
 }
 
 
@@ -428,10 +413,12 @@ void AliCheckMuonDetEltResponse::FillTTHistos(Int_t chamber,
       Int_t iDet = 0; //!<Position of the detection element in the histograms' list.
       iDet = FromDetElt2iDet(chamber, detElt);
       ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
-      
+      ((TH2F*) fDetEltTTHistList->UncheckedAt(fNDE))->Fill(chamber, 0);
+     
       Int_t detEltLocalId = 0;  //!<Id of the detection element in the station
       detEltLocalId =  FromDetElt2LocalId(chamber, detElt);
       ((TH1F*) fChamberTTHistList->UncheckedAt(chamber))->Fill(detEltLocalId);
+      ((TH1F*) fChamberTTHistList->UncheckedAt(10))->Fill(chamber);
     }
 }
 
@@ -513,15 +500,14 @@ void AliCheckMuonDetEltResponse::FindAndFillMissedDetElt(AliMUONTrackParam* extr
 	    
 	    CoordinatesOfMissingCluster(pos1[3], pos1[4], pos1[5], pos2[3], pos2[4], pos2[5], posMiss[0], posMiss[1]);
 
-	    Bool_t IsMissed = kFALSE;
+	    Bool_t isMissed = kFALSE;
 	    if (chamber < 4)
-	      IsMissed = CoordinatesInDetEltSt12(deId, posMiss[0], posMiss[1]);
+	      isMissed = CoordinatesInDetEltSt12(deId, posMiss[0], posMiss[1]);
 	    else
-	      IsMissed = CoordinatesInDetEltSt345(deId, posMiss[0], posMiss[1]);
+	      isMissed = CoordinatesInDetEltSt345(deId, posMiss[0], posMiss[1]);
 
-	    if (IsMissed)
+	    if (isMissed)
 	      FillTTHistos(chamber, deId, posMiss[0], posMiss[1]);
-	    
 	  }
     }
 }
@@ -563,7 +549,7 @@ Bool_t AliCheckMuonDetEltResponse::CoordinatesInDetEltSt345(Int_t DeId, Double_t
   pad1 = segm1->PadByPosition(x, y, kFALSE);
   pad2 = segm2->PadByPosition(x, y, kFALSE);
  
-  if (pad1.IsValid() || pad2.IsValid())
+  if (pad1.IsValid() && pad2.IsValid())
     return kTRUE;
   else
     return kFALSE;
@@ -584,7 +570,7 @@ Bool_t AliCheckMuonDetEltResponse::CoordinatesInDetEltSt12(Int_t DeId, Double_t 
   pad1 = segm1->PadByPosition(x, y, kFALSE);
   pad2 = segm2->PadByPosition(x, y, kFALSE);
  
-  if (pad1.IsValid() || pad2.IsValid())
+  if (pad1.IsValid() && pad2.IsValid())
     return kTRUE;
   else
     return kFALSE;
