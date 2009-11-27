@@ -56,15 +56,15 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
     }
   }
 
-  //Detector Fidutial Cuts
-  AliFidutialCut * fidCut = new AliFidutialCut();
-  fidCut->DoCTSFidutialCut(kFALSE) ;
-  fidCut->DoEMCALFidutialCut(kFALSE) ;
-  fidCut->DoPHOSFidutialCut(kFALSE) ;
+  //Detector Fiducial Cuts
+  AliFiducialCut * fidCut = new AliFiducialCut();
+  fidCut->DoCTSFiducialCut(kFALSE) ;
+  fidCut->DoEMCALFiducialCut(kFALSE) ;
+  fidCut->DoPHOSFiducialCut(kFALSE) ;
 
-  //fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
-  //fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
-  //fidCut->SetSimplePHOSFidutialCut(0.13,220.,320.);
+  //fidCut->SetSimpleCTSFiducialCut(0.9,0.,360.);
+  //fidCut->SetSimpleEMCALFiducialCut(0.7,80.,190.);
+  //fidCut->SetSimplePHOSFiducialCut(0.13,220.,320.);
 
   fidCut->Print("");
 
@@ -97,7 +97,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   //reject events with large difference between ptHard and triggered jet
   //reader->SetPtHardAndJetPtComparison(kTRUE);
 
-  reader->SetFidutialCut(fidCut);
+  reader->SetFiducialCut(fidCut);
 
   if(!kInputIsESD){
     // Analysis with tracks, select only tracks with
@@ -117,13 +117,13 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   reader->Print("");
 
 
-  //Detector Fidutial Cuts
-  AliFidutialCut * fidCut2 = new AliFidutialCut();
-  fidCut2->DoEMCALFidutialCut(kTRUE) ;
-  fidCut2->SetSimpleEMCALFidutialCut(0.7,80.,190.);
+  //Detector Fiducial Cuts
+  AliFiducialCut * fidCut2 = new AliFiducialCut();
+  fidCut2->DoEMCALFiducialCut(kTRUE) ;
+  fidCut2->SetSimpleEMCALFiducialCut(0.7,80.,190.);
 
-  fidCut2->DoCTSFidutialCut(kTRUE) ;
-  fidCut2->SetSimpleCTSFidutialCut(0.9,0.,360.); 
+  fidCut2->DoCTSFiducialCut(kTRUE) ;
+  fidCut2->SetSimpleCTSFiducialCut(0.9,0.,360.); 
 
   fidCut2->Print("");
 

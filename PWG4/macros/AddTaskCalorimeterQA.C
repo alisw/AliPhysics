@@ -46,10 +46,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
 	
   // ##### Analysis algorithm settings ####
 
-  AliFidutialCut * fidCut = new AliFidutialCut();
-  fidCut->DoCTSFidutialCut(kFALSE) ;
-  fidCut->DoEMCALFidutialCut(kTRUE) ;
-  fidCut->DoPHOSFidutialCut(kTRUE) ;
+  AliFiducialCut * fidCut = new AliFiducialCut();
+  fidCut->DoCTSFiducialCut(kFALSE) ;
+  fidCut->DoEMCALFiducialCut(kTRUE) ;
+  fidCut->DoPHOSFiducialCut(kTRUE) ;
 		
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
   //emcalQA->SetDebug(2); //10 for lots of messages
@@ -57,8 +57,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   if(kUseKinematics) emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else  emcalQA->SwitchOffDataMC() ;
   emcalQA->AddToHistogramsName("EMCAL_"); //Begining of histograms name
-  emcalQA->SetFidutialCut(fidCut);
-  emcalQA->SwitchOnFidutialCut();
+  emcalQA->SetFiducialCut(fidCut);
+  emcalQA->SwitchOnFiducialCut();
   if(kPrintSettings) emcalQA->Print("");	
   //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
 	
@@ -68,8 +68,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   if(kUseKinematics) phosQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else  phosQA->SwitchOffDataMC() ;  
   phosQA->AddToHistogramsName("PHOS_");//Begining of histograms name
-  phosQA->SetFidutialCut(fidCut);
-  phosQA->SwitchOnFidutialCut();
+  phosQA->SetFiducialCut(fidCut);
+  phosQA->SwitchOnFiducialCut();
   if(kPrintSettings)phosQA->Print("");	
   //phosQA->GetMCAnalysisUtils()->SetDebug(10);
 

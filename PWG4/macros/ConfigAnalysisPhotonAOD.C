@@ -21,15 +21,15 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   printf("======================== \n");
   
   
-  //Detector Fidutial Cuts
-  AliFidutialCut * fidCut = new AliFidutialCut();
-  fidCut->DoCTSFidutialCut(kFALSE) ;
-  fidCut->DoEMCALFidutialCut(kFALSE) ;
-  fidCut->DoPHOSFidutialCut(kFALSE) ;
+  //Detector Fiducial Cuts
+  AliFiducialCut * fidCut = new AliFiducialCut();
+  fidCut->DoCTSFiducialCut(kFALSE) ;
+  fidCut->DoEMCALFiducialCut(kFALSE) ;
+  fidCut->DoPHOSFiducialCut(kFALSE) ;
   
-  //fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
-  //fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
-  //fidCut->SetSimplePHOSFidutialCut(0.13,220.,320.);
+  //fidCut->SetSimpleCTSFiducialCut(0.9,0.,360.);
+  //fidCut->SetSimpleEMCALFiducialCut(0.7,80.,190.);
+  //fidCut->SetSimplePHOSFiducialCut(0.13,220.,320.);
    
   fidCut->Print("");
   
@@ -57,7 +57,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   //reject events with large difference between ptHard and triggered jet	
   //reader->SetPtHardAndJetPtComparison(kTRUE);
 	
-  reader->SetFidutialCut(fidCut);
+  reader->SetFiducialCut(fidCut);
 
   //Embedding/mixing/merging analysis with other events in another AOD file
   reader->SetSecondInputFileName("./aod.root");
@@ -84,15 +84,15 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   // Analysis algorithm
   //---------------------------------------------------------------------
   
-  //Detector Fidutial Cuts for analysis part
-  AliFidutialCut * fidCut2 = new AliFidutialCut();
-  fidCut2->DoCTSFidutialCut(kFALSE) ;
-  fidCut2->DoEMCALFidutialCut(kFALSE) ;
-  fidCut2->DoPHOSFidutialCut(kFALSE) ;
+  //Detector Fiducial Cuts for analysis part
+  AliFiducialCut * fidCut2 = new AliFiducialCut();
+  fidCut2->DoCTSFiducialCut(kFALSE) ;
+  fidCut2->DoEMCALFiducialCut(kFALSE) ;
+  fidCut2->DoPHOSFiducialCut(kFALSE) ;
   
-  //fidCut2->SetSimpleCTSFidutialCut(0.9,0.,360.);
-  //fidCut2->SetSimpleEMCALFidutialCut(0.7,80.,190.);
-  //fidCut2->SetSimplePHOSFidutialCut(0.13,220.,320.);
+  //fidCut2->SetSimpleCTSFiducialCut(0.9,0.,360.);
+  //fidCut2->SetSimpleEMCALFiducialCut(0.7,80.,190.);
+  //fidCut2->SetSimplePHOSFiducialCut(0.13,220.,320.);
 
   fidCut2->Print("");
 
@@ -116,13 +116,13 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   ana->SetMinPt(5.);
   ana->SetMinDistanceToBadChannel(2, 4, 5);
   ana->SetCaloPID(pid);
-  ana->SetFidutialCut(fidCut2);
+  ana->SetFiducialCut(fidCut2);
   ana->SetCalorimeter("EMCAL");
   ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   ana->SwitchOffCaloPID();
   ana->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
   ana->SwitchOnTrackMatchRejection(); //Only in use when OnCaloPID
-  ana->SwitchOffFidutialCut();
+  ana->SwitchOffFiducialCut();
   ana->SetOutputAODName("Photons");
   ana->SetOutputAODClassName("AliAODPWG4Particle");
   //Set Histrograms bins and ranges

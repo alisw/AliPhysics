@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliFidutialCut.cxx 21839 2007-10-29 13:49:42Z gustavo $ */
+/* $Id: AliFiducialCut.cxx 21839 2007-10-29 13:49:42Z gustavo $ */
 
 //_________________________________________________________________________
 // Class for track/cluster acceptance selection
@@ -32,15 +32,15 @@
 //#include <TArrayF.h>
 
 //---- ANALYSIS system ----
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 
-ClassImp(AliFidutialCut)
+ClassImp(AliFiducialCut)
 
 
 //____________________________________________________________________________
-AliFidutialCut::AliFidutialCut() : 
+AliFiducialCut::AliFiducialCut() : 
   TObject(),
-  fEMCALFidutialCut(0),  fPHOSFidutialCut(0),  fCTSFidutialCut(0),
+  fEMCALFiducialCut(0),  fPHOSFiducialCut(0),  fCTSFiducialCut(0),
   fCTSFidCutMinEta(0x0),fCTSFidCutMinPhi(0x0),fCTSFidCutMaxEta(0x0), fCTSFidCutMaxPhi(0x0),
   fEMCALFidCutMinEta(0x0),fEMCALFidCutMinPhi(0x0),fEMCALFidCutMaxEta(0x0), fEMCALFidCutMaxPhi(0x0),
   fPHOSFidCutMinEta(0x0),fPHOSFidCutMinPhi(0x0),fPHOSFidCutMaxEta(0x0), fPHOSFidCutMaxPhi(0x0)
@@ -53,9 +53,9 @@ AliFidutialCut::AliFidutialCut() :
 }
 
 //____________________________________________________________________________
-AliFidutialCut::AliFidutialCut(const AliFidutialCut & g) :   
+AliFiducialCut::AliFiducialCut(const AliFiducialCut & g) :   
   TObject(g), 
-  fEMCALFidutialCut(g.fEMCALFidutialCut),  fPHOSFidutialCut(g.fPHOSFidutialCut),  fCTSFidutialCut(g. fCTSFidutialCut),
+  fEMCALFiducialCut(g.fEMCALFiducialCut),  fPHOSFiducialCut(g.fPHOSFiducialCut),  fCTSFiducialCut(g. fCTSFiducialCut),
   fCTSFidCutMinEta(g.fCTSFidCutMinEta?new TArrayF(*g.fCTSFidCutMinEta):0x0),
   fCTSFidCutMinPhi(g.fCTSFidCutMinPhi?new TArrayF(*g.fCTSFidCutMinPhi):0x0),
   fCTSFidCutMaxEta(g.fCTSFidCutMaxEta?new TArrayF(*g.fCTSFidCutMaxEta):0x0),
@@ -75,15 +75,15 @@ AliFidutialCut::AliFidutialCut(const AliFidutialCut & g) :
 }
 
 //_________________________________________________________________________
-AliFidutialCut & AliFidutialCut::operator = (const AliFidutialCut & source)
+AliFiducialCut & AliFiducialCut::operator = (const AliFiducialCut & source)
 {
   // assignment operator
   
   if(&source == this) return *this;
   
-  fEMCALFidutialCut = source.fEMCALFidutialCut;  
-  fPHOSFidutialCut = source.fPHOSFidutialCut;
-  fCTSFidutialCut = source.fCTSFidutialCut;
+  fEMCALFiducialCut = source.fEMCALFiducialCut;  
+  fPHOSFiducialCut = source.fPHOSFiducialCut;
+  fCTSFiducialCut = source.fCTSFiducialCut;
   
   fCTSFidCutMinEta = source.fCTSFidCutMinEta?new TArrayF(*source.fCTSFidCutMinEta):0x0;
   fCTSFidCutMinPhi = source.fCTSFidCutMinPhi?new TArrayF(*source.fCTSFidCutMinPhi):0x0;
@@ -103,7 +103,7 @@ AliFidutialCut & AliFidutialCut::operator = (const AliFidutialCut & source)
 }
 
 //_________________________________
-AliFidutialCut::~AliFidutialCut() {
+AliFiducialCut::~AliFiducialCut() {
   //Dtor
 
   delete fCTSFidCutMinEta ;
@@ -125,58 +125,58 @@ AliFidutialCut::~AliFidutialCut() {
 
 
 //_______________________________________________________________
-Bool_t AliFidutialCut::IsInFidutialCut(const TLorentzVector momentum, const TString det) const
+Bool_t AliFiducialCut::IsInFiducialCut(const TLorentzVector momentum, const TString det) const
 {
   //Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
 
   if(det == "CTS"){
-	  if(!fCTSFidutialCut)  return kTRUE; //Fidutial cut not requested, accept all tracks  
-	  else return CheckFidutialRegion(momentum, fCTSFidCutMinPhi  , fCTSFidCutMaxPhi , fCTSFidCutMinEta  , fCTSFidCutMaxEta  );
+	  if(!fCTSFiducialCut)  return kTRUE; //Fiducial cut not requested, accept all tracks  
+	  else return CheckFiducialRegion(momentum, fCTSFidCutMinPhi  , fCTSFidCutMaxPhi , fCTSFidCutMinEta  , fCTSFidCutMaxEta  );
   }
   else   if(det == "EMCAL") {
-	  if(!fEMCALFidutialCut) return kTRUE; //Fidutial cut not requested, accept all clusters  
-	  else return CheckFidutialRegion(momentum, fEMCALFidCutMinPhi, fEMCALFidCutMaxPhi, fEMCALFidCutMinEta, fEMCALFidCutMaxEta);
+	  if(!fEMCALFiducialCut) return kTRUE; //Fiducial cut not requested, accept all clusters  
+	  else return CheckFiducialRegion(momentum, fEMCALFidCutMinPhi, fEMCALFidCutMaxPhi, fEMCALFidCutMinEta, fEMCALFidCutMaxEta);
   }
   else   if(det == "PHOS")  {
-	  if(!fPHOSFidutialCut) return kTRUE; //Fidutial cut not requested, accept all clusters 
-	  else return CheckFidutialRegion(momentum, fPHOSFidCutMinPhi , fPHOSFidCutMaxPhi , fPHOSFidCutMinEta , fPHOSFidCutMaxEta );
+	  if(!fPHOSFiducialCut) return kTRUE; //Fiducial cut not requested, accept all clusters 
+	  else return CheckFiducialRegion(momentum, fPHOSFidCutMinPhi , fPHOSFidCutMaxPhi , fPHOSFidCutMinEta , fPHOSFidCutMaxEta );
   }
   else{
-	  printf("AliFidutialCut::IsInFidutialCut() - Wrong detector name = %s\n", det.Data());
+	  printf("AliFiducialCut::IsInFiducialCut() - Wrong detector name = %s\n", det.Data());
 	  return kFALSE;
   }
 
 }
 
 //_______________________________________________________________
-Bool_t AliFidutialCut::CheckFidutialRegion(const TLorentzVector momentum, const TArrayF* minphi, const TArrayF* maxphi, const TArrayF* mineta, const TArrayF* maxeta) const {
+Bool_t AliFiducialCut::CheckFiducialRegion(const TLorentzVector momentum, const TArrayF* minphi, const TArrayF* maxphi, const TArrayF* mineta, const TArrayF* maxeta) const {
   //Given the selection regions in Eta and Phi, check if particle is in this region.
 
     Double_t phi = momentum.Phi();
 	if(phi < 0) phi+=TMath::TwoPi() ;
 	Double_t eta =  momentum.Eta();
-	//printf("IsInFidutialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
+	//printf("IsInFiducialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
 
 	Int_t netaregions =  fCTSFidCutMaxEta->GetSize();
     Int_t nphiregions =  fCTSFidCutMaxPhi->GetSize();
     if(netaregions !=  mineta->GetSize() || nphiregions !=  minphi->GetSize())
-		printf("AliFidutialCut::IsInFidutialCut() - Wrong number of fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
+		printf("AliFiducialCut::IsInFiducialCut() - Wrong number of fiducial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
 			   netaregions, mineta->GetSize(),  nphiregions, minphi->GetSize());
 	
-	//Eta fidutial cut
+	//Eta fiducial cut
 	Bool_t bInEtaFidCut = kFALSE;
 	for(Int_t ieta = 0; ieta < netaregions; ieta++)
 		if(eta > mineta->GetAt(ieta) && eta < maxeta->GetAt(ieta)) bInEtaFidCut = kTRUE;
 
 	if(bInEtaFidCut){
 		//printf("Eta cut passed\n");
-		//Phi fidutial cut
+		//Phi fiducial cut
 		Bool_t bInPhiFidCut = kFALSE;
 		for(Int_t iphi = 0; iphi < nphiregions; iphi++)
 			if(phi > minphi->GetAt(iphi) *TMath::DegToRad()&& phi < maxphi->GetAt(iphi)*TMath::DegToRad()) bInPhiFidCut = kTRUE ;
 	  
 		if(bInPhiFidCut) {
-			//printf("IsInFidutialCut:: %s cluster/track accepted\n",det.Data());
+			//printf("IsInFiducialCut:: %s cluster/track accepted\n",det.Data());
 			return kTRUE;
 		}
 		else return kFALSE;
@@ -188,14 +188,14 @@ Bool_t AliFidutialCut::CheckFidutialRegion(const TLorentzVector momentum, const 
 
 
 //_______________________________________________________________
-void AliFidutialCut::InitParameters()
+void AliFiducialCut::InitParameters()
 {
  
   //Initialize the parameters of the analysis.
 
-  fEMCALFidutialCut = kTRUE ;  
-  fPHOSFidutialCut = kTRUE ;
-  fCTSFidutialCut = kTRUE ;
+  fEMCALFiducialCut = kTRUE ;  
+  fPHOSFiducialCut = kTRUE ;
+  fCTSFiducialCut = kTRUE ;
 
   fCTSFidCutMinEta = new TArrayF(1);
   fCTSFidCutMinEta->SetAt(-0.9,0); 
@@ -231,7 +231,7 @@ void AliFidutialCut::InitParameters()
 
 
 //________________________________________________________________
-void AliFidutialCut::Print(const Option_t * opt) const
+void AliFiducialCut::Print(const Option_t * opt) const
 {
 
   //Print some relevant parameters set for the analysis
@@ -240,44 +240,44 @@ void AliFidutialCut::Print(const Option_t * opt) const
 
   printf("***** Print: %s %s ******\n", GetName(), GetTitle() ) ;
 
-  if(fCTSFidutialCut){
+  if(fCTSFiducialCut){
     Int_t netaregions =  fCTSFidCutMaxEta->GetSize();
     Int_t nphiregions =  fCTSFidCutMaxPhi->GetSize();
-    printf(">> CTS Fidutial regions : phi %d eta %d\n", netaregions, nphiregions) ;
+    printf(">> CTS Fiducial regions : phi %d eta %d\n", netaregions, nphiregions) ;
     for(Int_t ieta = 0; ieta < netaregions; ieta++)
       printf(" region %d : %3.2f < eta < %3.2f\n", ieta, fCTSFidCutMinEta->GetAt(ieta), fCTSFidCutMaxEta->GetAt(ieta)) ;
     for(Int_t iphi = 0; iphi < nphiregions; iphi++)
       printf(" region %d : %3.1f < phi < %3.1f\n", iphi, fCTSFidCutMinPhi->GetAt(iphi), fCTSFidCutMaxPhi->GetAt(iphi)) ; 
   }
-  else printf(">>No fidutial cuts in CTS\n");
+  else printf(">>No fiducial cuts in CTS\n");
 
-  if(fEMCALFidutialCut){
+  if(fEMCALFiducialCut){
     Int_t netaregions =  fEMCALFidCutMaxEta->GetSize();
     Int_t nphiregions =  fEMCALFidCutMaxPhi->GetSize();
-    printf(">>EMCAL Fidutial regions : phi %d eta %d\n", netaregions, nphiregions) ;
+    printf(">>EMCAL Fiducial regions : phi %d eta %d\n", netaregions, nphiregions) ;
     for(Int_t ieta = 0; ieta < netaregions; ieta++)
       printf(" region %d : %3.2f < eta < %3.2f\n", ieta, fEMCALFidCutMinEta->GetAt(ieta), fEMCALFidCutMaxEta->GetAt(ieta)) ;
     for(Int_t iphi = 0; iphi < nphiregions; iphi++)
       printf(" region %d : %3.1f < phi < %3.1f\n", iphi, fEMCALFidCutMinPhi->GetAt(iphi), fEMCALFidCutMaxPhi->GetAt(iphi)) ; 
   }
-  else printf(">>No fidutial cuts in EMCAL\n");
+  else printf(">>No fiducial cuts in EMCAL\n");
 
-  if(fPHOSFidutialCut){
+  if(fPHOSFiducialCut){
     Int_t netaregions =  fPHOSFidCutMaxEta->GetSize();
     Int_t nphiregions =  fPHOSFidCutMaxPhi->GetSize();
-    printf(">>PHOS Fidutial regions : phi %d eta %d\n", netaregions, nphiregions) ;
+    printf(">>PHOS Fiducial regions : phi %d eta %d\n", netaregions, nphiregions) ;
     for(Int_t ieta = 0; ieta < netaregions; ieta++)
       printf(" region %d : %3.2f < eta < %3.2f\n", ieta, fPHOSFidCutMinEta->GetAt(ieta), fPHOSFidCutMaxEta->GetAt(ieta)) ;
     for(Int_t iphi = 0; iphi < nphiregions; iphi++)
       printf(" region %d : %3.1f < phi < %3.1f\n", iphi, fPHOSFidCutMinPhi->GetAt(iphi), fPHOSFidCutMaxPhi->GetAt(iphi)) ; 
   }
-  else printf(">>No fidutial cuts in PHOS\n");
+  else printf(">>No fiducial cuts in PHOS\n");
   printf("    \n") ;
 } 
 
 
 //_______________________________________________________________
-void AliFidutialCut::SetSimpleCTSFidutialCut(const Float_t eta, const Float_t minphi, const Float_t maxphi){
+void AliFiducialCut::SetSimpleCTSFiducialCut(const Float_t eta, const Float_t minphi, const Float_t maxphi){
 
   //Method to set simple acceptance cut to CTS
   fCTSFidCutMinEta->Set(1);
@@ -295,7 +295,7 @@ void AliFidutialCut::SetSimpleCTSFidutialCut(const Float_t eta, const Float_t mi
 
 
 //_______________________________________________________________
-void AliFidutialCut::SetSimpleEMCALFidutialCut(const Float_t eta, const Float_t minphi, const Float_t maxphi){
+void AliFiducialCut::SetSimpleEMCALFiducialCut(const Float_t eta, const Float_t minphi, const Float_t maxphi){
   //Method to set simple acceptance cut to EMCAL
 
   fEMCALFidCutMinEta->Set(1);
@@ -312,7 +312,7 @@ void AliFidutialCut::SetSimpleEMCALFidutialCut(const Float_t eta, const Float_t 
 }
 
 //_______________________________________________________________
-void AliFidutialCut::SetSimplePHOSFidutialCut(const Float_t eta, const Float_t minphi, const Float_t maxphi){
+void AliFiducialCut::SetSimplePHOSFiducialCut(const Float_t eta, const Float_t minphi, const Float_t maxphi){
 
   //Method to set simple acceptance cut to PHOS
   fPHOSFidCutMinEta->Set(1);

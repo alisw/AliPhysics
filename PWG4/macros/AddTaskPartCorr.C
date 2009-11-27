@@ -68,10 +68,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   pid->SetDebug(-1);
   if(kPrintSettings) pid->Print("");
 	
-  AliFidutialCut * fidCut = new AliFidutialCut();
-  fidCut->DoCTSFidutialCut(kFALSE) ;
-  fidCut->DoEMCALFidutialCut(kTRUE) ;
-  fidCut->DoPHOSFidutialCut(kTRUE) ;
+  AliFiducialCut * fidCut = new AliFiducialCut();
+  fidCut->DoCTSFiducialCut(kFALSE) ;
+  fidCut->DoEMCALFiducialCut(kTRUE) ;
+  fidCut->DoPHOSFiducialCut(kTRUE) ;
 	
   AliAnaCalorimeterQA *qa = new AliAnaCalorimeterQA();
   qa->SetDebug(-1); //10 for lots of messages
@@ -80,16 +80,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else  qa->SwitchOffDataMC() ;
   //qa->AddToHistogramsName(Form("AnaCaloQA_%s",calorimeter.Data()));
   qa->AddToHistogramsName("AnaCaloQA_");
-  qa->SetFidutialCut(fidCut);
-  qa->SwitchOnFidutialCut();
+  qa->SetFiducialCut(fidCut);
+  qa->SwitchOnFiducialCut();
   if(kPrintSettings) qa->Print("");	
 	
-  AliFidutialCut * fidCut1stYear = new AliFidutialCut();
-  fidCut1stYear->DoCTSFidutialCut(kFALSE) ;
-  fidCut1stYear->DoEMCALFidutialCut(kTRUE) ;
-  fidCut1stYear->DoPHOSFidutialCut(kTRUE) ;
-  fidCut1stYear->SetSimpleEMCALFidutialCut(0.7,80.,120.);
-  fidCut1stYear->SetSimplePHOSFidutialCut(0.12,260.,320.);
+  AliFiducialCut * fidCut1stYear = new AliFiducialCut();
+  fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
+  fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+  fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+  fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+  fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
 	
   AliAnaPhoton *anaphoton1 = new AliAnaPhoton();
   anaphoton1->SetDebug(-1); //10 for lots of messages
@@ -101,8 +101,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else  anaphoton1->SwitchOffDataMC() ;
   anaphoton1->SwitchOffCaloPID();
   anaphoton1->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
-  anaphoton1->SwitchOnFidutialCut();
-  anaphoton1->SetFidutialCut(fidCut1stYear);
+  anaphoton1->SwitchOnFiducialCut();
+  anaphoton1->SetFiducialCut(fidCut1stYear);
   anaphoton1->SetOutputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
   if(kPrintSettings) anaphoton1->Print("");
 
@@ -111,7 +111,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SetInputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
   anapi0->SetCaloPID(pid);
   anapi0->SetCalorimeter(calorimeter);
-  anapi0->SwitchOnFidutialCut();
+  anapi0->SwitchOnFiducialCut();
   anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
   if(kPrintSettings) anapi0->Print("");
   
@@ -129,7 +129,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else  anaphoton2->SwitchOffDataMC() ;
   anaphoton2->SwitchOnCaloPID();
   if(calorimeter == "EMCAL") anaphoton2->SwitchOnCaloPIDRecalculation();
-  anaphoton2->SwitchOffFidutialCut();
+  anaphoton2->SwitchOffFiducialCut();
   anaphoton2->SetOutputAODName(Form("DirectPhotons%s",calorimeter.Data()));
   anaphoton2->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   anaphoton2->AddToHistogramsName("AnaPhotonCorr_");
@@ -164,7 +164,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // ### Correlation with Jet Finder AOD output
   AliAnaParticleJetFinderCorrelation *anacorrjet = new AliAnaParticleJetFinderCorrelation();
   anacorrjet->SetInputAODName(Form("DirectPhotons%s",calorimeter.Data()));
-  anacorrjet->SwitchOffFidutialCut();
+  anacorrjet->SwitchOffFiducialCut();
   anacorrjet->SetDebug(-1);
   anacorrjet->SetConeSize(1);  
   anacorrjet->SelectIsolated(kTRUE); // do correlation with isolated photons
@@ -181,7 +181,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrhadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   anacorrhadron->SetDebug(-1);
   anacorrhadron->SwitchOffCaloPID();
-  anacorrhadron->SwitchOffFidutialCut();
+  anacorrhadron->SwitchOffFiducialCut();
   anacorrhadron->SetPtCutRange(1,100);
   anacorrhadron->SetDeltaPhiCutRange(1.5,4.5);
   anacorrhadron->SelectIsolated(kTRUE); // do correlation with isolated photons

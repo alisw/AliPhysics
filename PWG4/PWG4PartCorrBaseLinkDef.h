@@ -6,7 +6,7 @@
 
 #pragma link C++ class AliAnaScale+;
 #pragma link C++ class AliNeutralMesonSelection+;
-#pragma link C++ class AliFidutialCut+;
+#pragma link C++ class AliFiducialCut+;
 #pragma link C++ class AliCaloPID+;
 #pragma link C++ class AliMCAnalysisUtils+;
 #pragma link C++ class AliIsolationCut+;

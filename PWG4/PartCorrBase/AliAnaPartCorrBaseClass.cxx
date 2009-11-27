@@ -28,7 +28,7 @@
 #include "AliAnaPartCorrBaseClass.h"
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "AliIsolationCut.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliNeutralMesonSelection.h"
@@ -58,7 +58,7 @@ ClassImp(AliAnaPartCorrBaseClass)
   
   fReader  = new AliCaloTrackReader();
   fCaloPID = new AliCaloPID();
-  fFidCut  = new AliFidutialCut();
+  fFidCut  = new AliFiducialCut();
   fIC      = new AliIsolationCut();
   fMCUtils = new AliMCAnalysisUtils();
   
@@ -331,7 +331,7 @@ TString  AliAnaPartCorrBaseClass::GetBaseParametersList()  {
   parList+=onePar ;
   sprintf(onePar,"fDataMC =%d (Check MC information, on/off) \n",fDataMC) ;
   parList+=onePar ;
-  sprintf(onePar,"fCheckFidCut=%d (Check Fidutial cut selection on/off) \n",fCheckFidCut) ;
+  sprintf(onePar,"fCheckFidCut=%d (Check Fiducial cut selection on/off) \n",fCheckFidCut) ;
   parList+=onePar ;
   sprintf(onePar,"fCheckCaloPID =%d (Use Bayesian PID in calorimetes, on/off) \n",fCheckCaloPID) ;
   parList+=onePar ;
@@ -427,7 +427,7 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fMaxPt = 300. ; //Max pt in particle analysis
 
   fCaloPID = new AliCaloPID ;  
-  fFidCut = new AliFidutialCut;
+  fFidCut = new AliFiducialCut;
   fIC = new AliIsolationCut;
   fNMS = new AliNeutralMesonSelection;
   fNewAOD = kFALSE ;
@@ -468,7 +468,7 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   printf("Max Photon pT       =     %3.2f\n",  fMaxPt) ;
   printf("Check PID           =     %d\n",     fCheckCaloPID) ;
   printf("Recalculate PID     =     %d\n",     fRecalculateCaloPID) ;
-  printf("Check Fidutial cut  =     %d\n",     fCheckFidCut) ;
+  printf("Check Fiducial cut  =     %d\n",     fCheckFidCut) ;
   printf("Check MC labels     =     %d\n",     fDataMC);
   printf("Debug Level         =     %d\n",     fDebug);
   printf("Histograms: %3.1f < pT < %3.1f,  Nbin = %d\n", fHistoPtMin,  fHistoPtMax,  fHistoNPtBins);

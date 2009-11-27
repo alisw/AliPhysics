@@ -40,7 +40,7 @@
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliStack.h"
-#include "AliFidutialCut.h"
+#include "AliFiducialCut.h"
 #include "TParticle.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODEvent.h"
@@ -467,7 +467,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
     AliAODCaloCluster * calo = (AliAODCaloCluster*) (pl->At(icalo));	
     
-    //Cluster selection, not charged, with pi0 id and in fidutial cut
+    //Cluster selection, not charged, with pi0 id and in fiducial cut
 	  
 	//Input from second AOD?
 	Int_t input = 0;
@@ -481,8 +481,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 	//If too small or big pt, skip it
     if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
     //Check acceptance selection
-    if(IsFidutialCutOn()){
-      Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,fCalorimeter) ;
+    if(IsFiducialCutOn()){
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
       if(! in ) continue ;
     }
     
@@ -493,7 +493,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     aodpi0.SetCaloLabel(calo->GetID(),-1);
     aodpi0.SetDetector(fCalorimeter);
     if(GetDebug() > 1) 
-      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Min pt cut and fidutial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodpi0.Pt(),aodpi0.Phi(),aodpi0.Eta());	
+      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Min pt cut and fiducial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodpi0.Pt(),aodpi0.Phi(),aodpi0.Eta());	
     
     //Check Distance to Bad channel, set bit.
     Double_t distBad=calo->GetDistToBadChannel() ; //Distance to bad channel

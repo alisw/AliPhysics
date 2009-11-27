@@ -19,17 +19,17 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   printf("======================== \n");
   
   
-  //Detector Fidutial Cuts
-  AliFidutialCut * fidCut = new AliFidutialCut();
-  fidCut->DoCTSFidutialCut(kFALSE) ;
-  fidCut->DoEMCALFidutialCut(kFALSE) ;
-  fidCut->DoPHOSFidutialCut(kTRUE) ;
+  //Detector Fiducial Cuts
+  AliFiducialCut * fidCut = new AliFiducialCut();
+  fidCut->DoCTSFiducialCut(kFALSE) ;
+  fidCut->DoEMCALFiducialCut(kFALSE) ;
+  fidCut->DoPHOSFiducialCut(kTRUE) ;
   
-  //fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
-  //fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
-  fidCut->SetSimplePHOSFidutialCut(0.13,220.,320.);
+  //fidCut->SetSimpleCTSFiducialCut(0.9,0.,360.);
+  //fidCut->SetSimpleEMCALFiducialCut(0.7,80.,190.);
+  fidCut->SetSimplePHOSFiducialCut(0.13,220.,320.);
   
-  //   //Fidutial cut EMCAL, 5 regions
+  //   //Fiducial cut EMCAL, 5 regions
   //   Float_t etamax[]={0.67,0.51,0.16,-0.21,-0.61};
   //   TArrayF etamaxarr(5,etamax);
   //   fidCut->AddEMCALFidCutMaxEtaArray(etamaxarr);
@@ -65,7 +65,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   reader->SetPHOSPtMin(0.);
   reader->SetCTSPtMin(.2);
  
-  reader->SetFidutialCut(fidCut);
+  reader->SetFiducialCut(fidCut);
 
   //Remove the temporal AODs we create.	
   reader->SwitchOnCleanStdAOD();	
@@ -77,12 +77,12 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   // Analysis algorithm
   //---------------------------------------------------------------------
   
-  //Detector Fidutial Cuts for analysis part
-  AliFidutialCut * fidCut2 = new AliFidutialCut();
-  fidCut2->DoCTSFidutialCut(kFALSE) ;
-  fidCut2->DoEMCALFidutialCut(kFALSE) ;
-  fidCut2->DoPHOSFidutialCut(kTRUE) ;
-  fidCut2->SetSimplePHOSFidutialCut(0.1,240.,280.);
+  //Detector Fiducial Cuts for analysis part
+  AliFiducialCut * fidCut2 = new AliFiducialCut();
+  fidCut2->DoCTSFiducialCut(kFALSE) ;
+  fidCut2->DoEMCALFiducialCut(kFALSE) ;
+  fidCut2->DoPHOSFiducialCut(kTRUE) ;
+  fidCut2->SetSimplePHOSFiducialCut(0.1,240.,280.);
 
   AliCaloPID * pid = new AliCaloPID();
   // use selection with simple weights
@@ -99,7 +99,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   AliAnaExample *ana = new AliAnaExample();
   ana->SetDebug(-1);
   ana->SetCaloPID(pid);
-  ana->SetFidutialCut(fidCut2);
+  ana->SetFiducialCut(fidCut2);
   ana->SetDetector("PHOS");
   //ana->SwitchOnDataMC();
   ana->SetMinPt(0.);

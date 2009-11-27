@@ -45,10 +45,10 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	// Analysis algorithm
 	//---------------------------------------------------------------------
 	
-	AliFidutialCut * fidCut = new AliFidutialCut();
-	fidCut->DoCTSFidutialCut(kFALSE) ;
-	fidCut->DoEMCALFidutialCut(kTRUE) ;
-	fidCut->DoPHOSFidutialCut(kTRUE) ;
+	AliFiducialCut * fidCut = new AliFiducialCut();
+	fidCut->DoCTSFiducialCut(kFALSE) ;
+	fidCut->DoEMCALFiducialCut(kTRUE) ;
+	fidCut->DoPHOSFiducialCut(kTRUE) ;
 	
 	
   	AliAnaCalorimeterQA *anaEMCAL = new AliAnaCalorimeterQA();
@@ -57,8 +57,8 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	anaEMCAL->SwitchOnDataMC() ;//Access MC stack and fill more histograms
 	//anaEMCAL->SetStyleMacro("$MACROS/style.C") ;
 	anaEMCAL->AddToHistogramsName("AnaCaloQA_EMCAL_");
-	anaEMCAL->SetFidutialCut(fidCut);
-	anaEMCAL->SwitchOnFidutialCut();
+	anaEMCAL->SetFiducialCut(fidCut);
+	anaEMCAL->SwitchOnFiducialCut();
 	anaEMCAL->Print("");
 	
 	AliAnaCalorimeterQA *anaPHOS = new AliAnaCalorimeterQA();
@@ -67,8 +67,8 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	anaPHOS->SwitchOnDataMC() ;//Access MC stack and fill more histograms
 	//anaPHOS->SetStyleMacro("$MACROS/style.C") ;
 	anaPHOS->AddToHistogramsName("AnaCaloQA_PHOS_");
-	anaPHOS->SetFidutialCut(fidCut);
-	anaPHOS->SwitchOnFidutialCut();
+	anaPHOS->SetFiducialCut(fidCut);
+	anaPHOS->SwitchOnFiducialCut();
 	anaPHOS->Print("");
 	
 	

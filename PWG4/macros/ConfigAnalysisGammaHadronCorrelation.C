@@ -22,15 +22,15 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	printf("======================== \n");
 	
 	
-	//Detector Fidutial Cuts
-	AliFidutialCut * fidCut = new AliFidutialCut();
-	fidCut->DoCTSFidutialCut(kTRUE) ;
-	fidCut->DoEMCALFidutialCut(kTRUE) ;
-	fidCut->DoPHOSFidutialCut(kTRUE) ;
+	//Detector Fiducial Cuts
+	AliFiducialCut * fidCut = new AliFiducialCut();
+	fidCut->DoCTSFiducialCut(kTRUE) ;
+	fidCut->DoEMCALFiducialCut(kTRUE) ;
+	fidCut->DoPHOSFiducialCut(kTRUE) ;
 	
-	fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
-	fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
-	fidCut->SetSimplePHOSFidutialCut(0.13,220.,320.);
+	fidCut->SetSimpleCTSFiducialCut(0.9,0.,360.);
+	fidCut->SetSimpleEMCALFiducialCut(0.7,80.,190.);
+	fidCut->SetSimplePHOSFiducialCut(0.13,220.,320.);
 	
 	fidCut->Print("");
 	
@@ -53,7 +53,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	reader->SetPHOSPtMin(0.5);
 	reader->SetCTSPtMin(0.2);
 	
-	reader->SetFidutialCut(fidCut);
+	reader->SetFiducialCut(fidCut);
 	
 	//     //We want tracks fitted in the detectors:
 	//     ULong_t status=AliAODTrack::kTPCrefit;
@@ -75,15 +75,15 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	// Analysis algorithm
 	//---------------------------------------------------------------------
 	//<<<< first analysis >>> select the photons
-	//Detector Fidutial Cuts for analysis part
-	AliFidutialCut * fidCut2 = new AliFidutialCut();
-	fidCut2->DoCTSFidutialCut(kFALSE) ;
-	fidCut2->DoEMCALFidutialCut(kTRUE) ;
-	fidCut2->DoPHOSFidutialCut(kFALSE) ;
+	//Detector Fiducial Cuts for analysis part
+	AliFiducialCut * fidCut2 = new AliFiducialCut();
+	fidCut2->DoCTSFiducialCut(kFALSE) ;
+	fidCut2->DoEMCALFiducialCut(kTRUE) ;
+	fidCut2->DoPHOSFiducialCut(kFALSE) ;
 	
-	fidCut2->SetSimpleCTSFidutialCut(0.9,0.,360.);
-	fidCut2->SetSimpleEMCALFidutialCut(0.7,80.,190.);
-	fidCut2->SetSimplePHOSFidutialCut(0.13,220.,320.);
+	fidCut2->SetSimpleCTSFiducialCut(0.9,0.,360.);
+	fidCut2->SetSimpleEMCALFiducialCut(0.7,80.,190.);
+	fidCut2->SetSimplePHOSFiducialCut(0.13,220.,320.);
 	fidCut2->Print("");
 	
 	AliCaloPID * pid = new AliCaloPID();
@@ -99,12 +99,12 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	anaphoton->SetMinPt(0.2);
 	anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
 	anaphoton->SetCaloPID(pid);
-	anaphoton->SetFidutialCut(fidCut2); //More acceptance selections if needed at this level
+	anaphoton->SetFiducialCut(fidCut2); //More acceptance selections if needed at this level
 	anaphoton->SetCalorimeter("PHOS");
 	anaphoton->SwitchOffDataMC() ;//Access MC stack and fill more histograms
 	anaphoton->SwitchOnCaloPID();
 	anaphoton->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
-	anaphoton->SwitchOnFidutialCut();
+	anaphoton->SwitchOnFiducialCut();
 	anaphoton->SetOutputAODName("Photons");
 	anaphoton->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
 	//Set Histrograms bins and ranges
@@ -148,7 +148,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	anacorr->SetCaloPID(pid);
 	anacorr->SwitchOnCaloPID();
 	anacorr->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
-	anacorr->SwitchOffFidutialCut();
+	anacorr->SwitchOffFiducialCut();
 	anacorr->SetPtCutRange(1,100);
 	anacorr->SetDeltaPhiCutRange(1.5,4.5);
 	//Set Histrograms bins and ranges
