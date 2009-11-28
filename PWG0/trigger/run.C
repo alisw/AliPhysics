@@ -53,6 +53,12 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
  .x run.C("/PWG0/jgrosseo/ERP_run98097", -1, 0, kFALSE, 2, 1258045012, 1258045458)
  .x run.C("/PWG0/jgrosseo/ERP_run98576", -1, 0, kFALSE, 2, 1258123911, 1258124103)
  .x run.C("/PWG0/jgrosseo/ERP_run98569", -1, 0, kFALSE, 2, 1258122187, 1258122524)
+ .x run.C("/PWG0/jgrosseo/run101235", 10000, 0, kFALSE, 2, 1258821541, 1258822595) 
+ 
+  timestamps:
+ .x run.C("/ALIREC/aliprod/run101498", 10000, 0, kFALSE, 2, 1258990726, 1258993311) 
+  orbits:
+ .x run.C("/ALIREC/aliprod/run101498", 10000, 0, kFALSE, 2, 13587, 16749493) 
 */
   
   if (nRuns < 0)
@@ -122,6 +128,7 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
   TString optStr(option);
   task = new AliTriggerTask(optStr);
   task->SetTimes(startTime, endTime);
+  //task->SetUseOrbits(kTRUE);
 
   mgr->AddTask(task);
 

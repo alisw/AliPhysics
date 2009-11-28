@@ -26,6 +26,9 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   fOption(opt),
   fStartTime(0),
   fEndTime(0),
+  fUseOrbits(kFALSE),
+  fFirstOrbit(0),
+  fLastOrbit(0),
   fNTriggers(0),
   fTriggerList(0),
   fStats(0),
@@ -39,9 +42,9 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   DefineInput(0, TChain::Class());
   DefineOutput(0, TList::Class());
   
-  fNTriggers = 13;
+  fNTriggers = 14;
   
-  static AliTriggerAnalysis::Trigger triggerList[] = { AliTriggerAnalysis::kAcceptAll, AliTriggerAnalysis::kFPANY, AliTriggerAnalysis::kMB1, AliTriggerAnalysis::kMB2, AliTriggerAnalysis::kMB3, AliTriggerAnalysis::kSPDGFO, AliTriggerAnalysis::kV0A, AliTriggerAnalysis::kV0C, AliTriggerAnalysis::kZDC, AliTriggerAnalysis::kZDCA, AliTriggerAnalysis::kZDCC, AliTriggerAnalysis::kFMDA, AliTriggerAnalysis::kFMDC };
+  static AliTriggerAnalysis::Trigger triggerList[] = { AliTriggerAnalysis::kAcceptAll, AliTriggerAnalysis::kFPANY, AliTriggerAnalysis::kMB1, AliTriggerAnalysis::kMB2, AliTriggerAnalysis::kMB3, AliTriggerAnalysis::kSPDGFO, AliTriggerAnalysis::kSPDGFOBits, AliTriggerAnalysis::kV0A, AliTriggerAnalysis::kV0C, AliTriggerAnalysis::kZDC, AliTriggerAnalysis::kZDCA, AliTriggerAnalysis::kZDCC, AliTriggerAnalysis::kFMDA, AliTriggerAnalysis::kFMDC };
   fTriggerList = triggerList;
   
   fStats = new TH1*[fNTriggers];
@@ -103,12 +106,29 @@ void AliTriggerTask::CreateOutputObjects()
 
   Int_t nBins = 1000;
   if (fEndTime - fStartTime > 0)
-    nBins = fEndTime - fStartTime;
+    nBins = fEndTime - fStartTime + 1;
+  if (nBins > 10000)
+    nBins = 10000;
+  
+  Int_t start = 0;
+  Int_t end = fEndTime - fStartTime;
+  
+  if (fUseOrbits)
+  {
+    start = fStartTime;
+    end = fEndTime;
+  }
+  
   for (Int_t i=0; i<fNTriggers; i++)
   {
-    fStats[i] = new TH1F(Form("fStats_%d", i), Form("%s;time;counts", AliTriggerAnalysis::GetTriggerName(fTriggerList[i])), nBins, 0, fEndTime - fStartTime);
+    fStats[i] = new TH1F(Form("fStats_%d", i), Form("%s;%s;counts", AliTriggerAnalysis::GetTriggerName(fTriggerList[i]), (fUseOrbits) ? "orbit number" : "time"), nBins, start - 0.5, end + 0.5);
     fOutput->Add(fStats[i]);
   }
+  
+  fFirstOrbit = new TParameter<Long_t> ("fFirstOrbit", 0);
+  fLastOrbit = new TParameter<Long_t> ("fLastOrbit", 0);
+  fOutput->Add(fFirstOrbit);
+  fOutput->Add(fLastOrbit);
   
   fOutput->Add(fTrigger);
 }
@@ -134,18 +154,23 @@ void AliTriggerTask::Exec(Option_t*)
     return;
   }
   
+  /*
   UInt_t eventType = esdHeader->GetEventType();
   if (eventType != 7)
   {
     Printf("Skipping event because it is of type %d", eventType);
     return;
   }
-
+  */
   //Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
   
   fTrigger->FillHistograms(fESD);
   
-  UInt_t timeStamp = fESD->GetTimeStamp() - fStartTime;
+  UInt_t timeStamp = 0;
+  if (fUseOrbits)
+    timeStamp = fESD->GetOrbitNumber();
+  else
+    timeStamp = fESD->GetTimeStamp() - fStartTime;
   //Printf("%d", timeStamp);
   
   for (Int_t i = 0; i < fNTriggers; i++)
@@ -155,6 +180,13 @@ void AliTriggerTask::Exec(Option_t*)
       fStats[i]->Fill(timeStamp);
     //Printf("%s: %d", AliTriggerAnalysis::GetTriggerName(fTriggerList[i]), triggered);
   }
+  
+  if (fFirstOrbit->GetVal() == 0)
+    fFirstOrbit->SetVal(esdHeader->GetOrbitNumber());
+  else
+    fFirstOrbit->SetVal(TMath::Min(fFirstOrbit->GetVal(), (Long_t) esdHeader->GetOrbitNumber()));
+  
+  fLastOrbit->SetVal(TMath::Max(fLastOrbit->GetVal(), (Long_t) esdHeader->GetOrbitNumber()));
 }
 
 void AliTriggerTask::Terminate(Option_t *)
@@ -166,6 +198,8 @@ void AliTriggerTask::Terminate(Option_t *)
   fOutput = dynamic_cast<TList*> (GetOutputData(0));
   if (!fOutput)
     Printf("ERROR: fOutput not available");
+    
+  fOutput->Print();
 
   if (fOutput)
   {
@@ -181,6 +215,11 @@ void AliTriggerTask::Terminate(Option_t *)
       fStats[i]->Write();
   if (fTrigger)
     fTrigger->WriteHistograms();
+    
+  if (fFirstOrbit)
+    fFirstOrbit->Dump();
+  if (fLastOrbit)
+    fLastOrbit->Dump();
     
   fout->Write();
   fout->Close();
