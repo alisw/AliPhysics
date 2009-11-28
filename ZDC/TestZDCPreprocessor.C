@@ -43,7 +43,7 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
   //     To use it uncomment the following line:
   //
   TMap* dcsAliasMap = CreateDCSAliasMap();
-  //dcsAliasMap->Print("");
+  dcsAliasMap->Print("");
   //WriteDCSAliasMap();
 
   // now give the alias map to the shuttle
@@ -72,6 +72,8 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDENERGYCALIB", "LDC", "ZDCEnergyCalib.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDTOWERCALIB", "LDC", "ZDCTowerCalib.dat");
+  //
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "MBCALIB", "LDC", "ZDCMBCalib.root");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "MAPPING", "MON", "ZDCChMapping.dat");
 
@@ -235,7 +237,7 @@ TMap* CreateDCSAliasMap()
   aliasNames[27]  = "ZDC_REFC_HV.actual.vMon";
   //
   for(int nAlias=4;nAlias<28;nAlias++){
-   if(nAlias<14 || nAlias>18){
+//   if(nAlias<14 || nAlias>18){
      TObjArray* valueSet = new TObjArray;
      valueSet->SetOwner(1);
    
@@ -249,7 +251,7 @@ TMap* CreateDCSAliasMap()
        valueSet->Add(dcsVal);
      }
      aliasMap->Add(new TObjString(aliasName), valueSet);
-   }
+//   }
   }
 
   return aliasMap;
