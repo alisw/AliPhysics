@@ -5,6 +5,7 @@
 
 #include "AliAnalysisTask.h"
 #include "AliPWG0Helper.h"
+#include "TParameter.h"
 
 class TH1;
 class AliESDEvent;
@@ -22,6 +23,7 @@ class AliTriggerTask : public AliAnalysisTask {
 
     void SetOption(const char* opt) { fOption = opt; }
     void SetTimes(UInt_t start, UInt_t end) { fStartTime = start; fEndTime = end; }
+    void SetUseOrbits(Bool_t flag) { fUseOrbits = flag; }
 
  protected:
     AliESDEvent *fESD;    //! ESD object
@@ -30,6 +32,10 @@ class AliTriggerTask : public AliAnalysisTask {
     TString fOption;      // option string  
     UInt_t fStartTime;    // run start time
     UInt_t fEndTime;      // run end time
+    Bool_t fUseOrbits;    // use orbits instead of time stamps on the axes
+    
+    TParameter<Long_t>* fFirstOrbit; // first orbit occuring
+    TParameter<Long_t>* fLastOrbit; // first orbit occuring
 
     Int_t fNTriggers;     //! number triggers
     AliTriggerAnalysis::Trigger* fTriggerList;  //! list of triggers

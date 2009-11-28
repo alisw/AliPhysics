@@ -23,7 +23,7 @@ class TCollection;
 class AliTriggerAnalysis : public TObject
 {
   public:
-    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kV0A, kV0C, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
+    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     
     AliTriggerAnalysis();
@@ -67,8 +67,8 @@ class AliTriggerAnalysis : public TObject
     Bool_t IsL2InputFired(const AliESDEvent* aEsd, UInt_t input) const;
     Bool_t IsInputFired(const AliESDEvent* aEsd, Char_t level, UInt_t input) const;
     
-    Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin = 0) const;
-    Bool_t SPDGFOTrigger(const AliESDEvent* aEsd) const;
+    Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE) const;
+    Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin) const;
     
     Int_t V0BBTriggers(const AliESDEvent* aEsd, AliceSide side) const;
     Bool_t V0Trigger(const AliESDEvent* aEsd, AliceSide side) const;
@@ -87,6 +87,7 @@ class AliTriggerAnalysis : public TObject
     
     TH1* fHistSPD;            // histograms that histogram the criterion the cut is applied on: fired chips
     TH2* fHistBitsSPD;        // offline trigger bits vs hardware trigger bits
+    TH1* fHistFiredBitsSPD;   // fired hardware bits
     TH1* fHistV0A;            // histograms that histogram the criterion the cut is applied on: bb triggers
     TH1* fHistV0C;            // histograms that histogram the criterion the cut is applied on: bb triggers
     TH1* fHistZDC;            // histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
@@ -95,7 +96,7 @@ class AliTriggerAnalysis : public TObject
     TH1* fHistFMDSingle;      // histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
     TH1* fHistFMDSum;         // histograms that histogram the criterion the cut is applied on: summed mult value (more than one entry per event)
 
-    ClassDef(AliTriggerAnalysis, 1)
+    ClassDef(AliTriggerAnalysis, 2)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
