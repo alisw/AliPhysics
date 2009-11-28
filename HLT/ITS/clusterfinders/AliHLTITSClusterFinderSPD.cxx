@@ -38,6 +38,7 @@ ClassImp(AliHLTITSClusterFinderSPD)
 //__________________________________________________________________________
 AliHLTITSClusterFinderSPD::AliHLTITSClusterFinderSPD(AliITSDetTypeRec* dettyp)
   :
+  TObject(),
   fRecoParam(0),
   fDetTypeRec( dettyp ),
   fNModules(AliITSgeomTGeo::GetNModules()),
@@ -97,6 +98,35 @@ AliHLTITSClusterFinderSPD::AliHLTITSClusterFinderSPD(AliITSDetTypeRec* dettyp)
 
 }
 
+AliHLTITSClusterFinderSPD::AliHLTITSClusterFinderSPD( const AliHLTITSClusterFinderSPD &)
+  :
+  TObject(),
+  fRecoParam(0),
+  fDetTypeRec(0),
+  fNModules(0),
+  fLastSPD1(0),
+  fNySPD(256),
+  fNzSPD(160),
+  fNzBins( fNzSPD + 2 ),
+  fNyBins( fNySPD + 2),
+  fMaxBin( fNzBins * fNyBins ),
+  fYpitchSPD(0.0050),
+  fZ1pitchSPD(0.0425),
+  fZ2pitchSPD(0.0625),
+  fHwSPD(0.64),
+  fHlSPD(3.48),
+  fNSignals(0),
+  fSignal2Bin(0),
+  fBin2Signal(0)
+{
+  // dummy
+}
+
+AliHLTITSClusterFinderSPD &AliHLTITSClusterFinderSPD::operator=( const AliHLTITSClusterFinderSPD &)
+{
+  // dummy
+  return *this;
+}
 
 void AliHLTITSClusterFinderSPD::RawdataToClusters(AliRawReader* rawReader, std::vector<AliITSRecPoint> & clusters){
   //------------------------------------------------------------

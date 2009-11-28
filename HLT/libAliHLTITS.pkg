@@ -17,6 +17,7 @@ CLASS_HDRS:=  	AliHLTITStrack.h \
 		tracking/AliHLTITSLayer.h \
 		tracking/AliHLTITSTrack.h \
 		clusterfinders/AliHLTITSClusterFinderSPD.h \
+		clusterfinders/AliHLTITSClusterFinderSSD.h \
 		AliHLTITSVertexerSPDComponent.h 
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)

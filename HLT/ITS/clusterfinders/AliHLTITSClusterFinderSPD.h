@@ -21,7 +21,7 @@ class AliHLTITSClusterFinderSPD : public TObject
 {
 public:
   AliHLTITSClusterFinderSPD(AliITSDetTypeRec* dettyp);
-
+ 
   virtual ~AliHLTITSClusterFinderSPD(){
     delete[] fSignal2Bin;
     delete[] fBin2Signal;
@@ -59,6 +59,11 @@ public:
   Int_t fNSignals;
   UShort_t *fSignal2Bin; // array of input SPD signals
   UShort_t *fBin2Signal; // 2D map of SPD signals;
+
+ private:
+
+  AliHLTITSClusterFinderSPD(const AliHLTITSClusterFinderSPD&);
+  AliHLTITSClusterFinderSPD &operator=( const AliHLTITSClusterFinderSPD &);
 
   ClassDef(AliHLTITSClusterFinderSPD,0)  // ITS cluster finder V2 for SPD
 };
