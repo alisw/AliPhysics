@@ -414,9 +414,6 @@ Bool_t AliCDBStorage::Put(AliCDBEntry* entry, AliCDBManager::DataType type) {
 			return 0;
 	}
 
-	// set object's class name into metaData!
-	entry->GetMetaData()->SetObjectClassName(entry->GetObject()->ClassName());
-
 	return PutEntry(entry);
 }
 

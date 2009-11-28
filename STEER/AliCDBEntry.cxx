@@ -56,7 +56,7 @@ fId(path, runRange, -1, -1),
 fMetaData(metaData),
 fIsOwner(owner){
 // constructor
-
+    fMetaData->SetObjectClassName(fObject->ClassName());
 }
 
 //_____________________________________________________________________________
@@ -68,7 +68,7 @@ fId(path, runRange, version, -1),
 fMetaData(metaData),
 fIsOwner(owner){
 // constructor
-
+    fMetaData->SetObjectClassName(fObject->ClassName());
 }
 
 //_____________________________________________________________________________
@@ -81,7 +81,7 @@ fId(path, runRange, version, subVersion),
 fMetaData(metaData), 
 fIsOwner(owner){
 // constructor
-
+    fMetaData->SetObjectClassName(fObject->ClassName());
 }
 
 
@@ -94,7 +94,7 @@ fId(path, firstRun, lastRun, -1, -1),
 fMetaData(metaData), 
 fIsOwner(owner){
 // constructor
-
+    fMetaData->SetObjectClassName(fObject->ClassName());
 }
 
 //_____________________________________________________________________________
@@ -107,7 +107,7 @@ fId(path, firstRun, lastRun, version, -1),
 fMetaData(metaData), 
 fIsOwner(owner){
 // constructor
-
+    fMetaData->SetObjectClassName(fObject->ClassName());
 }
 
 //_____________________________________________________________________________
@@ -119,7 +119,7 @@ fObject(object),
 fId(path, firstRun, lastRun, version, subVersion),
 fMetaData(metaData), fIsOwner(owner){
 // constructor
-
+    fMetaData->SetObjectClassName(fObject->ClassName());
 }
 
 //_____________________________________________________________________________
