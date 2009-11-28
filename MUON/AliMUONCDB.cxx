@@ -86,6 +86,7 @@
 #include <TSystem.h>
 #include <TMath.h>
 #include <TGeoGlobalMagField.h>
+#include <TClonesArray.h>
 
 
 namespace
@@ -303,6 +304,30 @@ AliMUONRecoParam* AliMUONCDB::LoadRecoParam()
   
   return recoParam;
   
+}
+
+//_____________________________________________________________________________
+TClonesArray* AliMUONCDB::LoadAlignmentData()
+{
+  /// Load and return the array of alignment objects.
+  
+  AliInfoGeneral("AliMUONCDB", "Loading Alignemnt from OCDB...");
+  
+  if (!AliMUONCDB::CheckOCDB()) return kFALSE;
+  
+  TClonesArray* alignmentArray = 0x0;
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Align/Data");
+  
+  if (entry) {
+    // load alignement array
+    alignmentArray = dynamic_cast<TClonesArray*>(entry->GetObject());
+  }
+  
+  if (!alignmentArray) { 
+    AliErrorGeneral("AliMUONCDB", "failed to load Alignemnt from OCDB");
+  }  
+  
+  return alignmentArray;
 }
 
 //_____________________________________________________________________________

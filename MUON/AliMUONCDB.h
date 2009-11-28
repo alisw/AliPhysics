@@ -16,6 +16,7 @@
 
 class AliMUONVStore;
 class TMap;
+class TClonesArray;
 class AliMUONVCalibParam;
 class AliMUONTriggerLut;
 class AliMUONTriggerEfficiencyCells;
@@ -32,6 +33,7 @@ namespace AliMUONCDB
   Bool_t LoadField();
   Bool_t LoadMapping(Bool_t segmentationOnly = kFALSE);
   AliMUONRecoParam* LoadRecoParam();
+  TClonesArray* LoadAlignmentData();
   
   Int_t MakeNeighbourStore(AliMUONVStore& neighbourStore);
 
