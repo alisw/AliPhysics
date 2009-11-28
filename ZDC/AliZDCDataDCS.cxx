@@ -144,11 +144,11 @@ Bool_t AliZDCDataDCS::ProcessData(TMap& aliasMap)
       Introduce(j, aliasArr);
 
       Int_t nentries = aliasArr->GetEntries();
-      if(nentries<=2){
+/*      if(nentries<=2){
         AliWarning(Form("Alias %s has just %d entries!", fAliasNames[j].Data(), nentries));
 //        continue;
       }
-
+*/
       Float_t *time = new Float_t[nentries];
       Float_t *val  = new Float_t[nentries];
 
