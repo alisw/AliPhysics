@@ -27,16 +27,14 @@ void alieve_online_init()
   // Gentle-geom loading changes gGeoManager.
   TEveGeoManagerHolder mgrRestore;
 
-  AliEveMultiView* mv = new AliEveMultiView;
-
-  mv->SetDepth(-10);
+  gMultiView = new MultiView;
 
   TEveUtil::LoadMacro("geom_gentle.C");
-  mv->InitGeomGentle(geom_gentle(), geom_gentle_rphi(), geom_gentle_rhoz());
+  gMultiView->InitGeomGentle(geom_gentle(),
+                             geom_gentle_rphi(), 
+                             geom_gentle_rhoz());
 
   // See visscan_init.C for how to add TRD / MUON geometry.
-
-  mv->SetDepth(0);
 
   //============================================================================
   // Standard macros to execute -- not all are enabled by default.
@@ -116,14 +114,15 @@ void alieve_online_init()
 
   gEve->FullRedraw3D(kTRUE);
 
-  TGLViewer *glv = mv->Get3DView()->GetGLViewer();
+  TGLViewer *glv = gMultiView->f3DView->GetGLViewer();
   glv->CurrentCamera().RotateRad(-0.4, 1);
   glv->DoDraw();
 }
 
-Int_t g_pic_id  = 0;
-Int_t g_pic_max = 10;
-TTime g_pic_prev;
+
+Int_t      g_pic_id  = 0;
+Int_t      g_pic_max = 10;
+TTimeStamp g_pic_prev(0, 0);
 
 void alieve_online_on_new_event()
 {
@@ -133,39 +132,51 @@ void alieve_online_on_new_event()
 
   TEveElement* top = gEve->GetCurrentEvent();
 
-  AliEveMultiView* mv = AliEveMultiView::Instance();
-
-  mv->DestroyEventRPhi();
+  gMultiView->DestroyEventRPhi();
   if (gCenterProjectionsAtPrimaryVertex)
-    mv->SetCenterRPhi(x[0], x[1], x[2]);
-  mv->ImportEventRPhi(top);
+    gMultiView->SetCenterRPhi(x[0], x[1], x[2]);
+  gMultiView->ImportEventRPhi(top);
 
-  mv->DestroyEventRhoZ();
+  gMultiView->DestroyEventRhoZ();
   if (gCenterProjectionsAtPrimaryVertex)
-    mv->SetCenterRhoZ(x[0], x[1], x[2]);
-  mv->ImportEventRhoZ(top);
+    gMultiView->SetCenterRhoZ(x[0], x[1], x[2]);
+  gMultiView->ImportEventRhoZ(top);
 
-  // Online picture-dump to amore.
+  // Register image to amore.
   const TString pichost("aldaqacrs3");
-  TTime now = gSystem->Now();
-  Long_t delta = now - g_pic_prev;  delta /= 1000;
+  TTimeStamp now;
+  Double_t delta = now.AsDouble() - g_pic_prev.AsDouble();
+
+  printf("Pre image dump: host='%s', delta=%f.\n",
+	 gSystem->HostName(), delta);
+
   if (pichost == gSystem->HostName() && delta >= 30)
   {
     TString id;      id.Form("online-viz-%03d", g_pic_id);
     TString pic(id); pic += ".png";
 
+    printf("In image dump: file='%s'.\n", pic.Data());
+
     gEve->GetBrowser()->RaiseWindow();
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();
-    gSystem->Exec(TString::Format("xwd -id %u | convert - %s",
-                 gEve->GetBrowser()->GetId(), pic.Data()));
 
-    gSystem->Exec(TString::Format("SendImageToAmore %s %s %d",
-                 id.Data(), pic.Data(),
-                 AliEveEventManager::AssertRawReader()->GetRunNumber()));
+    Int_t status;
+
+    status = gSystem->Exec(TString::Format("xwd -id %u | convert - %s",
+			   gEve->GetBrowser()->GetId(), pic.Data()));
+
+    printf("Post capture -- status=%d.\n", status);
+
+    status = gSystem->Exec(TString::Format("SendImageToAmore %s %s %d",
+		          id.Data(), pic.Data(),
+		          AliEveEventManager::AssertRawReader()->GetRunNumber()));
+
+    printf("Post AMORE reg -- status=%d, run=%d.\n", status,
+	   AliEveEventManager::AssertRawReader()->GetRunNumber());
 
     if (++g_pic_id >= g_pic_max)
       g_pic_id = 0;
-    g_pic_prev = now;
+    g_pic_prev.Set();
   }
 }
