@@ -677,6 +677,7 @@ void AliTPCcalibDButil::ProcessNoiseVariations(TVectorF &noiseDeviations)
         //don't use masked channels;
         if (mROC   ->GetValue(irow,ipad)) continue;
         if (mRefROC->GetValue(irow,ipad)) continue;
+	if (nRefROC->GetValue(irow,ipad)==0) continue;
         Float_t deviation=(nROC->GetValue(irow,ipad)/nRefROC->GetValue(irow,ipad))-1;
         for (Int_t i=0;i<npar;++i){
           if (deviation>vThres[i])
