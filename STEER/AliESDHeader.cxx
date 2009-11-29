@@ -152,7 +152,7 @@ Bool_t AliESDHeader::AddTriggerIR(const AliTriggerIR* ir)
  // Adds trigger interaction record to array
  for(Int_t i=0;i<kNMaxIR;i++){
   if(!fIRArray[i]){
-    fIRArray[i]=const_cast<AliTriggerIR*>(ir);
+    fIRArray[i]=new AliTriggerIR(*ir);
     return 0;
   }
  }

@@ -62,13 +62,15 @@ AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t in
    //
    //  It takes as an input the CTP raw-data payload (words)
    //  corresponding to the IRs
-  fInt1 = new Bool_t[fNWord];
-  fInt2 = new Bool_t[fNWord];
-  fBC   = new UShort_t[fNWord];
-  for(UInt_t i = 0; i < fNWord; i++) {
-    fInt1[i] = words[i] & 0x1000;
-    fInt2[i] = words[i] & 0x2000;
-    fBC[i] = words[i] & 0xFFF;
+   if(fNWord){
+     fInt1 = new Bool_t[fNWord];
+     fInt2 = new Bool_t[fNWord];
+     fBC   = new UShort_t[fNWord];
+     for(UInt_t i = 0; i < fNWord; i++) {
+        fInt1[i] = words[i] & 0x1000;
+        fInt2[i] = words[i] & 0x2000;
+        fBC[i] = words[i] & 0xFFF;
+     }
   }
 }
 
@@ -85,16 +87,17 @@ AliTriggerIR::AliTriggerIR(const AliTriggerIR &rec):
 {
   // Copy constructor
   //
-  fInt1 = new Bool_t[fNWord];
-  fInt2 = new Bool_t[fNWord];
-  fBC   = new UShort_t[fNWord];
-  for (UInt_t i = 0; i < fNWord; i++) {
-    fInt1[i] = rec.fInt1[i];
-    fInt2[i] = rec.fInt2[i];
-    fBC[i] = rec.fBC[i];
+  if(fNWord){
+    fInt1 = new Bool_t[fNWord];
+    fInt2 = new Bool_t[fNWord];
+    fBC   = new UShort_t[fNWord];
+    for (UInt_t i = 0; i < fNWord; i++) {
+      fInt1[i] = rec.fInt1[i];
+      fInt2[i] = rec.fInt2[i];
+      fBC[i] = rec.fBC[i];
+    }
   }
 }
-
 //_____________________________________________________________________________
 AliTriggerIR &AliTriggerIR::operator =(const AliTriggerIR& rec)
 {
@@ -105,22 +108,21 @@ AliTriggerIR &AliTriggerIR::operator =(const AliTriggerIR& rec)
 
   fOrbit = rec.fOrbit;
   fNWord = rec.fNWord;
-
-  if (fInt1) delete fInt1;
-  fInt1 = new Bool_t[fNWord];
-  if (fInt2) delete fInt2;
-  fInt2 = new Bool_t[fNWord];
-  if (fBC) delete fBC;
-  fBC = new UShort_t[fNWord];
-  for (UInt_t i = 0; i < fNWord; i++) {
-    fInt1[i] = rec.fInt1[i];
-    fInt2[i] = rec.fInt2[i];
-    fBC[i] = rec.fBC[i];
-  }
-    
+  if(fNWord){
+    if (fInt1) delete fInt1;
+    fInt1 = new Bool_t[fNWord];
+    if (fInt2) delete fInt2;
+    fInt2 = new Bool_t[fNWord];
+    if (fBC) delete fBC;
+    fBC = new UShort_t[fNWord];
+    for (UInt_t i = 0; i < fNWord; i++) {
+      fInt1[i] = rec.fInt1[i];
+      fInt2[i] = rec.fInt2[i];
+      fBC[i] = rec.fBC[i];
+    }
+  }  
   fIncomplete = rec.fIncomplete;
   fTransErr = rec.fTransErr;
-
   return *this;
 }
 
