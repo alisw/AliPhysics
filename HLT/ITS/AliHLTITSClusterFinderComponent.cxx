@@ -39,6 +39,7 @@ using namespace std;
 #include "AliITSRecoParam.h"
 #include "AliITSReconstructor.h"
 #include "AliHLTITSClusterFinderSPD.h"
+#include "AliHLTITSClusterFinderSSD.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -52,6 +53,9 @@ ClassImp(AliHLTITSClusterFinderComponent);
 AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
   :
   fModeSwitch(mode),
+  fInputDataType(kAliHLTVoidDataType),
+  fOutputDataType(kAliHLTVoidDataType),
+  fUseOfflineFinder(0),
   fNModules(0),
   fId(0),
   fNddl(0),
@@ -60,16 +64,29 @@ AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
   fDettype(NULL),
   fgeom(NULL),
   fgeomInit(NULL),
-  fSPD(NULL)
+  fSPD(NULL),
+  fSSD(NULL)
 { 
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-  if (fModeSwitch!=kClusterFinderSPD &&
-      fModeSwitch!=kClusterFinderSDD &&
-      fModeSwitch!=kClusterFinderSSD) {
+
+  switch(fModeSwitch){
+  case kClusterFinderSPD:
+    fInputDataType  = kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSPD;
+    fOutputDataType = kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD;
+    break;
+  case kClusterFinderSDD: 	 
+    fInputDataType  = kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSDD;
+    fOutputDataType = kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD;
+    break;
+  case kClusterFinderSSD:
+    fInputDataType  = kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSSD;
+    fOutputDataType = kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD;
+    break;
+  default:
     HLTFatal("unknown cluster finder");
   }
 }
@@ -81,6 +98,7 @@ AliHLTITSClusterFinderComponent::~AliHLTITSClusterFinderComponent()
   delete fDettype;
   delete fgeomInit;  
   delete fSPD;
+  delete fSSD;
 }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -103,36 +121,17 @@ const char* AliHLTITSClusterFinderComponent::GetComponentID()
   return "";
 }
 
-void AliHLTITSClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
+void AliHLTITSClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) 
+{
   // see header file for class documentation
   list.clear(); 
-  switch(fModeSwitch){
-  case kClusterFinderSPD:
-    list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSPD );
-    break;
-  case kClusterFinderSDD: 	 
-    list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSDD );
-    break;
-  case kClusterFinderSSD:
-    list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSSD );
-    break;
-  }
+  list.push_back( fInputDataType );
 }
 
-AliHLTComponentDataType AliHLTITSClusterFinderComponent::GetOutputDataType() {
+AliHLTComponentDataType AliHLTITSClusterFinderComponent::GetOutputDataType() 
+{
   // see header file for class documentation
-  switch(fModeSwitch){
-  case kClusterFinderSPD:
-    return kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD;
-    break;
-  case kClusterFinderSDD: 	 
-    return kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD;
-    break;
-  case kClusterFinderSSD:
-    return kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD;
-    break;
-  }
-  return kAliHLTVoidDataType;
+  return fOutputDataType;
 }
 
 void AliHLTITSClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
@@ -148,13 +147,13 @@ AliHLTComponent* AliHLTITSClusterFinderComponent::Spawn() {
 	
 Int_t AliHLTITSClusterFinderComponent::DoInit( int /*argc*/, const char** /*argv*/ ) {
   // see header file for class documentation
-
+  /*
   fStatTime = 0;
   fStatTimeAll = 0;
   fStatTimeC = 0;
   fStatTimeAllC = 0;
   fStatNEv = 0;
-
+  */
   if(fModeSwitch==kClusterFinderSPD) {
     HLTDebug("using ClusterFinder for SPD");
     //fNModules=AliITSgeomTGeo::GetNDetectors(1)*AliITSgeomTGeo::GetNLadders(1) + AliITSgeomTGeo::GetNDetectors(2)*AliITSgeomTGeo::GetNLadders(2);
@@ -215,6 +214,7 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int /*argc*/, const char** /*argv
 
   fRawReader = new AliRawReaderMemory();
   fSPD = new AliHLTITSClusterFinderSPD( fDettype );
+  fSSD = new AliHLTITSClusterFinderSSD( fDettype, fRawReader );
 
   return 0;
 }
@@ -237,6 +237,9 @@ Int_t AliHLTITSClusterFinderComponent::DoDeinit() {
   delete fSPD;
   fSPD = 0;
 
+  delete fSSD;
+  fSSD = 0;
+
   for (Int_t iModule = 0; iModule < fNModules; iModule++) {
     if(fClusters[iModule] != NULL){
       fClusters[iModule]->Delete();
@@ -245,35 +248,41 @@ Int_t AliHLTITSClusterFinderComponent::DoDeinit() {
     fClusters[iModule] = NULL;
   } 
   
+  fUseOfflineFinder = 0;
+
   return 0;
 }
 
-#include "TStopwatch.h"
+// #include "TStopwatch.h"
 
-Int_t AliHLTITSClusterFinderComponent::DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/)
-{  // see header file for class documentation
-
-  // -- Iterator over Data Blocks --
-  const AliHLTComponentBlockData* iter = NULL;
-
-  //if (!IsDataEvent()) return 0;
-
-  if ( evtData.fBlockCnt<=0 )
-      {
-	HLTDebug("no blocks in event" );
-	return 0;
-      }
-
-
-  AliHLTComponentDataType datatype;
-  if(fModeSwitch==kClusterFinderSPD) { datatype = kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSPD;}
-  else if(fModeSwitch==kClusterFinderSDD) {datatype = kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSDD;}
-  else if(fModeSwitch==kClusterFinderSSD) {datatype = kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSSD;}
+int AliHLTITSClusterFinderComponent::DoEvent
+(
+ const AliHLTComponentEventData& evtData,
+ const AliHLTComponentBlockData* blocks,
+ AliHLTComponentTriggerData& /*trigData*/,
+ AliHLTUInt8_t* outputPtr,
+ AliHLTUInt32_t& size,
+  vector<AliHLTComponentBlockData>& outputBlocks )
+{
+ // see header file for class documentation
   
-  TStopwatch timer;
+  AliHLTUInt32_t maxBufferSize = size;
+  size = 0; // output size
+
+  if (!IsDataEvent()) return 0;
+  
+  if ( evtData.fBlockCnt<=0 )
+    {
+      HLTDebug("no blocks in event" );
+      return 0;
+    }
+  
+  // TStopwatch timer;
+
+  Int_t ret = 0;
 
   // -- Loop over blocks
-  for ( iter = GetFirstInputBlock(datatype); iter != NULL; iter = GetNextInputBlock() ) {
+  for( const AliHLTComponentBlockData* iter = GetFirstInputBlock(fInputDataType); iter != NULL; iter = GetNextInputBlock() ) {
   
     // -- Debug output of datatype --
     HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
@@ -282,7 +291,7 @@ Int_t AliHLTITSClusterFinderComponent::DoEvent( const AliHLTComponentEventData& 
 	       DataType2Text(datatype).c_str());
     
     // -- Check for the correct data type
-    if ( iter->fDataType != (datatype) )  
+    if ( iter->fDataType != (fInputDataType) )  
       continue;
     
     // -- Get equipment ID out of specification
@@ -302,14 +311,16 @@ Int_t AliHLTITSClusterFinderComponent::DoEvent( const AliHLTComponentEventData& 
     if(!fRawReader->AddBuffer((UChar_t*) iter->fPtr, iter->fSize, id)){
       HLTWarning("Could not add buffer");
     }
-    TStopwatch timer1;
-
+    // TStopwatch timer1;
+    
     std::vector<AliITSRecPoint> vclusters;
     
-    if(fModeSwitch==kClusterFinderSPD) {fSPD->RawdataToClusters( fRawReader, vclusters );}
+    if(fModeSwitch==kClusterFinderSPD && !fUseOfflineFinder){ fSPD->RawdataToClusters( fRawReader, vclusters ); }
+    else if(fModeSwitch==kClusterFinderSSD && !fUseOfflineFinder){ fSSD->RawdataToClusters( vclusters ); }
     else{
+      if(fModeSwitch==kClusterFinderSPD && fUseOfflineFinder) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SPD");}
+      if(fModeSwitch==kClusterFinderSSD && fUseOfflineFinder) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SSD");}
       if(fModeSwitch==kClusterFinderSDD) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SDD");}
-      if(fModeSwitch==kClusterFinderSSD) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SSD");}
       for(int i=0;i<fNModules;i++){
 	if(fClusters[i] != NULL){
 	  for(int j=0;j<fClusters[i]->GetEntriesFast();j++){
@@ -323,56 +334,67 @@ Int_t AliHLTITSClusterFinderComponent::DoEvent( const AliHLTComponentEventData& 
       }     
     }
     
-    timer1.Stop();
-    fStatTime+=timer1.RealTime();
-    fStatTimeC+=timer1.CpuTime();
+    // timer1.Stop();
+    // fStatTime+=timer1.RealTime();
+    // fStatTimeC+=timer1.CpuTime();
     
+    fRawReader->ClearBuffers();    
+
     UInt_t nClusters=vclusters.size();
     
     UInt_t bufferSize = nClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
-    AliHLTUInt8_t *buffer = new AliHLTUInt8_t[bufferSize];
-    AliHLTITSClusterData *outputClusters = reinterpret_cast<AliHLTITSClusterData*>(buffer);
-    outputClusters->fSpacePointCnt=nClusters;
-    
-    int clustIdx=0;
-    for(int i=0;i<vclusters.size();i++){
-      AliITSRecPoint *recpoint = (AliITSRecPoint*) &(vclusters[i]);
-      outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
-      outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
-      outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
-      outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
-      outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
-      outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
-      outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
-      outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
-      outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
-      outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex() | recpoint->GetPindex() | recpoint->GetNindex();
-      outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
-      outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
-      outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);
-      
-      clustIdx++;
+    if( size + bufferSize > maxBufferSize ){
+      HLTWarning( "Output buffer size exceed (buffer size %d, current size %d)", maxBufferSize, size+bufferSize);
+      ret = -ENOSPC;      
+      break;		
+    }
+    //cout<<"event "<<fStatNEv<<", nclu="<<nClusters<<":"<<endl;
+    if( nClusters>0 ){
+      AliHLTITSClusterData *outputClusters = reinterpret_cast<AliHLTITSClusterData*>(outputPtr + size);
+      outputClusters->fSpacePointCnt=nClusters;    
+      int clustIdx=0;
+      for(int i=0;i<vclusters.size();i++){
+	AliITSRecPoint *recpoint = (AliITSRecPoint*) &(vclusters[i]);
+	//cout<<recpoint->GetDetectorIndex()<<" "<<recpoint->GetY()<<" "<<recpoint->GetZ()<<endl;
+	outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
+	outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
+	outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
+	outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
+	outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
+	outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
+	outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
+	outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
+	outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
+	outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex() | recpoint->GetPindex() | recpoint->GetNindex();
+	outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
+	outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
+	outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);      
+	clustIdx++;
+      }
+      AliHLTComponentBlockData bd;
+      FillBlockData( bd );
+      bd.fOffset = size;
+      bd.fSize = bufferSize;
+      bd.fSpecification = iter->fSpecification;
+      bd.fDataType = GetOutputDataType();
+      outputBlocks.push_back( bd );
+      size += bufferSize;
     }
 
-    if(fModeSwitch==kClusterFinderSPD) {PushBack(buffer,bufferSize,kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD,iter->fSpecification);}
-    else if(fModeSwitch==kClusterFinderSDD) {PushBack(buffer,bufferSize,kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD,iter->fSpecification);}
-    else if(fModeSwitch==kClusterFinderSSD) {PushBack(buffer,bufferSize,kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD,iter->fSpecification);}
-  
-    delete[] buffer; 
-    fRawReader->ClearBuffers();
-    
-  } //  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {    
+  } // input blocks
 
+  /*
   timer.Stop();
-
+  
   fStatTimeAll+=timer.RealTime();
   fStatTimeAllC+=timer.CpuTime();
   fStatNEv++;
-  //if( fStatNEv%10000==0 && fStatTimeAll>0.0 && fStatTime>0.0 && fStatTimeAllC>0.0 && fStatTimeC>0.0)
-  //cout<<fStatTimeAll/fStatNEv*1.e3<<" "<<fStatTime/fStatNEv*1.e3<<" "
-  //<<fStatTimeAllC/fStatNEv*1.e3<<" "<<fStatTimeC/fStatNEv*1.e3<<" ms"<<endl;
+  if( fStatNEv%1000==0 && fStatTimeAll>0.0 && fStatTime>0.0 && fStatTimeAllC>0.0 && fStatTimeC>0.0)
+    cout<<fStatTimeAll/fStatNEv*1.e3<<" "<<fStatTime/fStatNEv*1.e3<<" "
+	<<fStatTimeAllC/fStatNEv*1.e3<<" "<<fStatTimeC/fStatNEv*1.e3<<" ms"<<endl;
+  */
 
-  return 0;
+  return ret;
 }
 
 int AliHLTITSClusterFinderComponent::Configure(const char* arguments)
@@ -390,13 +412,13 @@ int AliHLTITSClusterFinderComponent::Configure(const char* arguments)
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
       argument=((TObjString*)pTokens->At(i))->GetString();
-      if (argument.IsNull()) continue;
-      /*
-      if (argument.CompareTo("")==0) {
-	HLTInfo("");
+      if (argument.IsNull()) continue;      
+      if (argument.CompareTo("-use-offline-finder")==0) {
+	fUseOfflineFinder = 1;
+	HLTInfo("Off-line ClusterFinder will be used");
 	continue;
       }
-
+      /*
       else if (argument.CompareTo("")==0) {
 	HLTInfo("");
 	continue;
