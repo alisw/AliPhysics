@@ -45,6 +45,8 @@ Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
 {
   AliDebug(2, Form("AliITSQASPDChecker called with offset: %d\n", fSubDetOffset));
 
+  AliInfo(Form("AliITSQASPDChecker called with offset: %d\n", fSubDetOffset));
+
   Double_t test = 0.0;
   Int_t count = 0;
 
@@ -119,4 +121,31 @@ Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
 void AliITSQASPDChecker::SetTaskOffset(Int_t TaskOffset)
 {
   fSubDetOffset = TaskOffset;
+}
+
+//__________________________________________________________________
+void AliITSQASPDChecker::SetStepBit(Double_t *steprange)
+{
+
+  fStepBitSPD = new Double_t[AliQAv1::kNBIT];
+  for(Int_t bit=0;bit<AliQAv1::kNBIT;bit++)
+    {
+      fStepBitSPD[bit]=steprange[bit];
+    }
+}
+
+
+//__________________________________________________________________
+void  AliITSQASPDChecker::SetSPDLimits(Float_t *lowvalue, Float_t * highvalue)
+{
+
+  fLowSPDValue = new Float_t[AliQAv1::kNBIT];
+  fHighSPDValue= new Float_t[AliQAv1::kNBIT];
+
+  for(Int_t bit=0;bit<AliQAv1::kNBIT;bit++)
+    {
+      fLowSPDValue[bit]=lowvalue[bit];
+      fHighSPDValue[bit]= highvalue[bit];
+    }
+
 }

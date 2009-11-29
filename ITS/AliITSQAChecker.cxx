@@ -42,22 +42,29 @@ fLDC(0),
 fSPDOffset(0), 
 fSDDOffset(0), 
 fSSDOffset(0),
+fSPDHisto(0),
+fSDDHisto(0),
+fSSDHisto(0),
 fSPDChecker(0),  // SPD Checker
 fSDDChecker(0),  // SDD Checker
 fSSDChecker(0)  // SSD Checker
+
 {
   // Standard constructor
   fkOnline = kMode; fDet = subDet; fLDC = ldc;
   if(fDet == 0 || fDet == 1) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SPD Checker\n");
+    fSPDChecker = new AliITSQASPDChecker();
   }
   if(fDet == 0 || fDet == 2) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SDD Checker\n");
+    fSDDChecker = new AliITSQASDDChecker();
   }
   if(fDet == 0 || fDet == 3) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SSD Checker\n");
+    fSSDChecker = new AliITSQASSDChecker();
   }
-
+  InitQACheckerLimits();
 }
 
 //____________________________________________________________________________
@@ -69,9 +76,13 @@ fLDC(qac.fLDC),
 fSPDOffset(qac.fSPDOffset), 
 fSDDOffset(qac.fSDDOffset), 
 fSSDOffset(qac.fSSDOffset), 
-fSPDChecker(0), 
-fSDDChecker(0), 
-fSSDChecker(0) {
+fSPDHisto(qac.fSPDHisto),
+fSDDHisto(qac.fSDDHisto),
+fSSDHisto(qac.fSSDHisto),
+fSPDChecker(qac.fSPDChecker), 
+fSDDChecker(qac.fSDDChecker), 
+fSSDChecker(qac.fSSDChecker)
+{
   // copy constructor
   AliError("Copy should not be used with this class\n");
 }
@@ -86,10 +97,13 @@ AliITSQAChecker& AliITSQAChecker::operator=(const AliITSQAChecker& qac){
 //____________________________________________________________________________
 Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
 {
-  
+
+
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
+  //for the ITS subdetectorQA (Raws Digits Hits RecPoints SDigits) return the worst (= lowest) value of the three result
   if(index == AliQAv1::kESD){
+
     Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       rv[specie] = 0.0 ; 
@@ -109,6 +123,9 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
         rv[specie] = 0.; // nothing to check
       }
       else {
+	Double_t *stepbit=new Double_t[AliQAv1::kNBIT];
+	Double_t histonumb= list[specie]->GetEntries();
+	CreateStepForBit(histonumb,stepbit); 
         TIter next1(list[specie]);
         TH1 * hdata;
         Int_t nskipped=0;
@@ -229,57 +246,82 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
   Double_t * retval = new Double_t[AliRecoParam::kNSpecies] ; 
   //____________________________________________________________________________
 
-  Double_t spdCheck, sddCheck, ssdCheck;
-  //pixel
-  if(fDet == 0 || fDet == 1) {
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SPD Checker\n");
-    if(!fSPDChecker) {
-      fSPDChecker = new AliITSQASPDChecker();
-    }
-    fSPDChecker->SetTaskOffset(fSPDOffset);
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      retval[specie] = 1.0 ; 
-      if ( AliQAv1::Instance()->IsEventSpecieSet(specie) ) {
-        spdCheck = fSPDChecker->Check(index, list[specie]);
-        if(spdCheck<retval[specie])retval[specie] = spdCheck;
-      }
-    }
-  }
-  //drift
-  if(fDet == 0 || fDet == 2) {
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SDD Checker\n");
-    if(!fSDDChecker) {
-      fSDDChecker = new AliITSQASDDChecker();
-    }
-    fSDDChecker->SetTaskOffset(fSDDOffset);
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      retval[specie] = 1.0 ; 
-      if ( AliQAv1::Instance()->IsEventSpecieSet(specie) ) {
-        sddCheck = fSDDChecker->Check(index, list[specie]);
-        if(sddCheck<retval[specie])retval[specie] = sddCheck;
-      }
-    }
-  }
-  //strip
-  if(fDet == 0 || fDet == 3) {
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SSD Checker\n");
-    if(!fSSDChecker) {
-      fSSDChecker = new AliITSQASSDChecker();
-      AliDebug(AliQAv1::GetQADebugLevel(), Form("Number of monitored objects SSD: %d", list[AliRecoParam::kDefault]->GetEntries()));
-    }
-    fSSDChecker->SetTaskOffset(fSSDOffset);
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      retval[specie] = 1.0 ; 
-      if ( AliQAv1::Instance()->IsEventSpecieSet(specie) ) {
-        ssdCheck = fSSDChecker->Check(index, list[specie]);
-        if(ssdCheck<retval[specie])retval[specie] = ssdCheck;  
-      }
-    }
-  }
-  // here merging part for common ITS QA result
-  // 
+  Double_t spdCheck[AliRecoParam::kNSpecies] ;
+  Double_t sddCheck[AliRecoParam::kNSpecies] ;
+  Double_t ssdCheck[AliRecoParam::kNSpecies] ;
 
-  return retval;  
+
+
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( AliQAv1::Instance()->IsEventSpecieSet(specie) ) {
+	Double_t histotot=list[specie]->GetEntries();
+	if(histotot!=0)
+	  {
+	    spdCheck[specie]=0.;
+	    sddCheck[specie]=0.;
+	    ssdCheck[specie]=0.;
+	    retval[specie] = 0.0 ;// 
+	    //pixel
+	    if(fDet == 0 || fDet == 1) {
+	      fSPDChecker->SetTaskOffset(fSPDOffset);
+	      //printf("spdoffset = %i \n",fSPDOffset );
+	      Double_t histoSPD=double(GetSPDHisto());
+
+	      Double_t *stepSPD=new Double_t[AliQAv1::kNBIT];
+	      CreateStepForBit(histoSPD,stepSPD);
+	      fSPDChecker->SetStepBit(stepSPD);
+	      spdCheck[specie] = fSPDChecker->Check(index, list[specie]);
+	      if(spdCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||spdCheck[specie]<0.)
+		{
+		  AliInfo(Form("SPD check result for %s  is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),spdCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
+		  spdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];
+		}
+	      //if(spdCheck[specie]<0.5)AliInfo(Form("SPD check result  for %s (%s) is < 0.5 .The result is %f ",AliQAv1::GetAliTaskName(index),AliRecoParam::GetEventSpecieName(specie),spdCheck[specie]) );
+	      delete []stepSPD;
+	      retval[specie]=spdCheck[specie];
+	    }
+	    //drift
+	    if(fDet == 0 || fDet == 2) {
+	      fSDDChecker->SetTaskOffset(fSDDOffset);
+	      Double_t histoSDD=double(GetSDDHisto());
+	      Double_t *stepSDD=new Double_t[AliQAv1::kNBIT];
+	      CreateStepForBit(histoSDD,stepSDD);
+	      fSDDChecker->SetStepBit(stepSDD);
+	      sddCheck[specie] = fSDDChecker->Check(index, list[specie]);
+	      if(sddCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||sddCheck[specie]<0.)
+		{
+		  AliInfo(Form("SDD check result for %s  is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),sddCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
+		  sddCheck[specie]=fUpTestValue[AliQAv1::kFATAL];
+		}
+	      //if(sddCheck[specie]<0.5)AliInfo(Form("SDD check result  for %s (%s) is < 0.5 .The result is %f\f ",AliQAv1::GetAliTaskName(index),AliRecoParam::GetEventSpecieName(specie),sddCheck[specie]) );
+	      delete []stepSDD;
+	      if(sddCheck[specie]>retval[specie])retval[specie]=sddCheck[specie];  
+	    }
+	    //strip
+	    if(fDet == 0 || fDet == 3) {
+	      fSSDChecker->SetTaskOffset(fSSDOffset);
+	      Double_t histoSSD=double(GetSSDHisto());
+	      Double_t *stepSSD=new Double_t[AliQAv1::kNBIT];
+	      CreateStepForBit(histoSSD,stepSSD);
+	      fSSDChecker->SetStepBit(stepSSD);
+	      ssdCheck[specie] = fSSDChecker->Check(index, list[specie]);
+	      if(ssdCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||ssdCheck[specie]<0.)
+		{
+		  AliInfo(Form("SSD check result for %s is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),ssdCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
+		  ssdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];
+		}
+	      //if(ssdCheck[specie]<0.5)AliInfo(Form("SSD check result  for %s (%s) is < 0.5 . The result is %f ",AliQAv1::GetAliTaskName(index),AliRecoParam::GetEventSpecieName(specie),ssdCheck[specie]) );
+	      delete [] stepSSD;
+	      if(ssdCheck[specie]>retval[specie])retval[specie]=ssdCheck[specie];
+	    }
+	    
+	    AliInfo(Form("Check result for %s: \n\t  SPD %f \n\t  SDD %f \n\t  SSD %f \n Check result %f \n ",AliQAv1::GetAliTaskName(index),spdCheck[specie],sddCheck[specie],ssdCheck[specie],retval[specie]));
+	    // here merging part for common ITS QA result
+	    // 
+	  }//end entries
+      }//end if event specie
+    }//end for
+    return retval;  
 }
 
 
@@ -290,6 +332,15 @@ void AliITSQAChecker::SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDO
   fSPDOffset = SPDOffset;
   fSDDOffset = SDDOffset;
   fSSDOffset = SSDOffset;
+}
+
+//____________________________________________________________________________
+void AliITSQAChecker::SetHisto(Int_t SPDhisto, Int_t SDDhisto, Int_t SSDhisto)
+{
+  //Setting the 3 offsets for each task called
+  fSPDHisto = SPDhisto;
+  fSDDHisto = SDDhisto;
+  fSSDHisto = SSDhisto;
 }
 
  //____________________________________________________________________________
@@ -311,3 +362,101 @@ void AliITSQAChecker::SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDO
      break;
    }
  }
+
+ //____________________________________________________________________________
+ void AliITSQAChecker::SetDetHisto(Int_t subdet,Int_t histo)
+ {
+   switch(subdet){
+   case 1:
+     SetSPDHisto(histo);
+     break;
+   case 2:
+     SetSDDHisto(histo);
+     break;
+   case 3:
+     SetSSDHisto(histo);
+     break;
+   default:
+     AliWarning("No specific (SPD,SDD or SSD) subdetector correspond to to this number!!! all offsets set to zero for all the detectors\n");
+     SetHisto(0, 0, 0);
+     break;
+   }
+ }
+
+//_____________________________________________________________________________
+
+void AliITSQAChecker::InitQACheckerLimits()
+{
+  
+  AliInfo("Setting of tolerance values\n");
+
+  Float_t lowtolerancevalue[AliQAv1::kNBIT];
+
+  Float_t hightolerancevalue[AliQAv1::kNBIT];
+  for(Int_t bit=0;bit<AliQAv1::kNBIT;bit++)
+    {
+      lowtolerancevalue[bit]=(bit*1000.);
+      hightolerancevalue[bit]=((bit+1.)*1000.);
+    }
+  SetHiLo(hightolerancevalue,lowtolerancevalue);
+  //  AliInfo(Form("Range Value  \n INFO    -> %f <  value <  %f \n WARNING -> %f <  value <= %f \n ERROR   -> %f <  value <= %f \n FATAL   -> %f <= value <  %f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO], fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING], fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR], fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]  ));
+
+  if(fDet == 0 || fDet == 1) {
+    fSPDChecker->SetSPDLimits( lowtolerancevalue,hightolerancevalue );
+  }
+  if(fDet == 0 || fDet == 2) {
+    fSDDChecker->SetSDDLimits( lowtolerancevalue,hightolerancevalue );
+  }
+  if(fDet == 0 || fDet == 3) {
+    fSSDChecker->SetSSDLimits( lowtolerancevalue,hightolerancevalue );
+  }
+
+
+  
+}
+
+
+//_____________________________________________________________________________
+
+void AliITSQAChecker::CreateStepForBit(Double_t histonumb,Double_t *steprange)
+{
+  for(Int_t bit=0;bit < AliQAv1::kNBIT; bit++)
+    {       
+      //printf("%i\t %f \t %f \t %f \n",bit, fUpTestValue[bit],fLowTestValue[AliQAv1::kINFO],histonumb);
+      steprange[bit]=double((fUpTestValue[bit] - fLowTestValue[AliQAv1::kINFO])/histonumb);
+      //printf("%i\t %f \t %f \t %f \t %f\n",bit, fUpTestValue[bit],fLowTestValue[AliQAv1::kINFO],histonumb,steprange[bit] );
+    }
+  //AliInfo(Form("StepBitValue:numner of histo %f\n\t INFO %f \t WARNING %f \t ERROR %f \t FATAL %f \n",histonumb, steprange[AliQAv1::kINFO],steprange[AliQAv1::kWARNING],steprange[AliQAv1::kERROR],steprange[AliQAv1::kFATAL]));
+}
+
+
+//_____________________________________________________________________________
+void AliITSQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
+{
+
+  AliQAv1 * qa = AliQAv1::Instance(index) ;
+
+
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+
+    if (! qa->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)))
+      continue ;
+    if (  value == NULL ) { // No checker is implemented, set all QA to Fatal
+      qa->Set(AliQAv1::kFATAL, specie) ; 
+    } else {
+      if ( value[specie] > fLowTestValue[AliQAv1::kFATAL] && value[specie] <= fUpTestValue[AliQAv1::kFATAL] ) 
+        qa->Set(AliQAv1::kFATAL, AliRecoParam::ConvertIndex(specie)) ; 
+      else if ( value[specie] > fLowTestValue[AliQAv1::kERROR] && value[specie] <= fUpTestValue[AliQAv1::kERROR]  )
+        qa->Set(AliQAv1::kERROR, AliRecoParam::ConvertIndex(specie)) ; 
+      else if ( value[specie] > fLowTestValue[AliQAv1::kWARNING] && value[specie] <= fUpTestValue[AliQAv1::kWARNING]  )
+        qa->Set(AliQAv1::kWARNING, AliRecoParam::ConvertIndex(specie)) ;
+      else if ( value[specie] > fLowTestValue[AliQAv1::kINFO] && value[specie] <= fUpTestValue[AliQAv1::kINFO] ) 
+        qa->Set(AliQAv1::kINFO, AliRecoParam::ConvertIndex(specie)) ; 	
+      //else if(value[specie]==0) qa->Set(AliQAv1::kFATAL, AliRecoParam::ConvertIndex(specie)) ; //no ckeck has been done
+    }
+    qa->ShowStatus(AliQAv1::kITS,index,AliRecoParam::ConvertIndex(specie));
+  }//end for
+
+}
+
+

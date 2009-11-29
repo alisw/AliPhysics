@@ -429,13 +429,13 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 				    "SSD Data Size;(SSD data size) [KB];Events",
 				    1000,0,500);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSize, 
-       fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizePercentage = new TH1D("fHistSSDDataSizePercentage",
 					      "SSD Data Size Percentage;SSD data size [%];Events",
 					      1000,0,100);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePercentage, 
-       fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDDLId = new TH1D("fHistSSDDDLId",
 				 "SSD DDL Id;DDL id;Events",16,511.5,527.5);
@@ -443,9 +443,11 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizePerDDL = new TH1D("fHistSSDDataSizePerDDL",
-					  "SSD Data Size Per DDL;DDL id;<SSD data size> [KB]",16,511.5,527.5);
+					  "SSD Data Size Per DDL;DDL id;<SSD data size> [KB]",
+					  16,511.5,527.5);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerDDL, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
+
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizeDDL[fgkNumOfDDLs];
   for(Int_t i = 1; i < fgkNumOfDDLs+1; i++) {
@@ -467,8 +469,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 					  "SSD Data Size Per LDC;LDC id;<SSD data size> [KB]",
 					  8,169.5,177.5);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerLDC, 
-					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
-  fSSDRawsOffset += 1;
+					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);  fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizeLDC[fgkNumOfLDCs];
   for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) {
     gName = "fHistSSDDataSizeLDC"; 
@@ -1621,17 +1622,17 @@ Int_t AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
 }
 
 //____________________________________________________________________________ 
-Int_t AliITSQASSDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task) {
+Int_t AliITSQASSDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie) {
   // Returns offset number according to the specified task 
   Int_t offset=0;
   if( task == AliQAv1::kRAWS ) {
-    offset=fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()];  
+    offset=fGenRawsOffset[specie];  
   }
   else if( task == AliQAv1::kDIGITSR ) {
-    offset=fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()];   
+    offset=fGenDigitsOffset[specie];   
   }
   else if( task == AliQAv1::kRECPOINTS ) {
-    offset=fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()];   
+    offset=fGenRecPointsOffset[specie];   
   }
 
   return offset;

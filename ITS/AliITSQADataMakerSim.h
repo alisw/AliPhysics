@@ -45,7 +45,7 @@ public:
   Short_t GetSubDet(){return fSubDetector;};
   Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task);
   virtual Int_t GetEventSpecie() const { return AliRecoParam::AConvert(fEventSpecie); }
-
+  Int_t GetDetTaskHisto(Int_t subdet,AliQAv1::TASKINDEX_t task);
 private:
 
   Short_t fSubDetector;                    // subDetector: 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)

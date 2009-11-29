@@ -368,17 +368,17 @@ Int_t AliITSQASPDDataMakerSim::MakeHits(TTree *hits)
 
 //_______________________________________________________________
 
-Int_t AliITSQASPDDataMakerSim::GetOffset(AliQAv1::TASKINDEX_t task){
+Int_t AliITSQASPDDataMakerSim::GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie){
   // Returns histogram offset according to the specified task
   Int_t offset=0;
   if( task == AliQAv1::kHITS){
-    offset=fGenOffsetH[fAliITSQADataMakerSim->GetEventSpecie()];
+    offset=fGenOffsetH[specie];
   }
   else if( task == AliQAv1::kSDIGITS) {
-    offset=fGenOffsetS[fAliITSQADataMakerSim->GetEventSpecie()];
+    offset=fGenOffsetS[specie];
   }
   else if( task == AliQAv1::kDIGITS) {
-    offset=fGenOffsetD[fAliITSQADataMakerSim->GetEventSpecie()];
+    offset=fGenOffsetD[specie];
   }
   else {
     AliInfo("No task has been selected. TaskHisto set to zero.\n");

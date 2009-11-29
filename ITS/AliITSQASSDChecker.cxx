@@ -181,6 +181,8 @@ void AliITSQASSDChecker::CheckRecPoints(TH1* /*histo*/) {
 //__________________________________________________________________
 Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * list) {  
   AliDebug(AliQAv1::GetQADebugLevel(),Form("AliITSQASSDChecker called with offset: %d\n", fSubDetOffset));
+
+  AliInfo(Form("AliITSQASSDChecker called with offset: %d\n", fSubDetOffset) );
   //cout<<"(AliITSQASSDChecker::Check): List name "<<list->GetName()<<endl;
   Double_t test = 0.0  ;
   Int_t count = 0 ;
@@ -244,4 +246,30 @@ Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
 void AliITSQASSDChecker::SetTaskOffset(Int_t TaskOffset)
 {
   fSubDetOffset = TaskOffset;
+}
+
+//__________________________________________________________________
+void AliITSQASSDChecker::SetStepBit(Double_t *steprange)
+{
+
+  fStepBitSSD = new Double_t[AliQAv1::kNBIT];
+  for(Int_t bit=0;bit<AliQAv1::kNBIT;bit++)
+    {
+      fStepBitSSD[bit]=steprange[bit];
+    }
+}
+
+//__________________________________________________________________
+void  AliITSQASSDChecker::SetSSDLimits(Float_t *lowvalue, Float_t * highvalue)
+{
+
+  fLowSSDValue = new Float_t[AliQAv1::kNBIT];
+  fHighSSDValue= new Float_t[AliQAv1::kNBIT];
+
+  for(Int_t bit=0;bit<AliQAv1::kNBIT;bit++)
+    {
+      fLowSSDValue[bit]=lowvalue[bit];
+      fHighSSDValue[bit]= highvalue[bit];
+    }
+
 }

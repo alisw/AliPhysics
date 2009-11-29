@@ -38,7 +38,7 @@ public:
   virtual void  StartOfDetectorCycle();
   virtual void  EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASPDDataMakerRec();   // dtor
-  Int_t GetOffset(AliQAv1::TASKINDEX_t task);
+  Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0);
   void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 

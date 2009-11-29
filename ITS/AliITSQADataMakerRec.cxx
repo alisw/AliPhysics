@@ -130,35 +130,46 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   // launch the QA checking
 
+  AliInfo(Form("End of Dedetctor Cycle called for %s\n",AliQAv1::GetTaskName(task).Data() ));
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    //SetEventSpecie(specie) ; 
-    //AliQAv1::Instance()->SetEventSpecie(specie);
-    if(AliQAv1::Instance()->IsEventSpecieSet(specie)){
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list[specie])\n"); 
-    if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
-    if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
-    if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
-  
-  
-    AliQAChecker *qac = AliQAChecker::Instance();
-    AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
-    Int_t subdet=GetSubDet();
-    qacb->SetSubDet(subdet);
- 
-    if(subdet== 0 ){
-      qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task), fSDDDataMaker->GetOffset(task), fSSDDataMaker->GetOffset(task)); //Setting the offset for the QAChecker list
-    }
-    else
-      if(subdet!=0){
-	Int_t offset=GetDetTaskOffset(subdet, task);
-	qacb->SetDetTaskOffset(subdet,offset);
-      }
 
-    qac->Run( AliQAv1::kITS , task, list);
- 
-    }
-    
-  }
+	if(AliQAv1::Instance()->IsEventSpecieSet(specie)){
+	  Int_t idnumber=list[specie]->GetUniqueID();
+	  //printf("specie %s \t id number == %d\n",AliRecoParam::GetEventSpecieName(specie),idnumber);
+	  if(idnumber==40||idnumber==0)
+	    {
+	      //AliInfo(Form("No check for %s\n",AliQAv1::GetTaskName(task).Data() ))
+		continue;
+	    } //skip kDigitsR and not filled TobjArray specie
+	  else{
+	    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list[specie])\n"); 
+	    if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
+	    if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
+	    if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
+	    
+	    
+	    AliQAChecker *qac = AliQAChecker::Instance();
+	    AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
+	    Int_t subdet=GetSubDet();
+	    qacb->SetSubDet(subdet);
+	  
+	    if(subdet== 0 ){
+	      qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task,specie), fSDDDataMaker->GetOffset(task,specie), fSSDDataMaker->GetOffset(task,specie)); //Setting the offset for the QAChecker list
+	      qacb->SetHisto(fSPDDataMaker->GetTaskHisto(task), fSDDDataMaker->GetTaskHisto(task), fSSDDataMaker->GetTaskHisto(task));
+	    }
+	    else
+	      if(subdet!=0){
+		Int_t offset=GetDetTaskOffset(subdet, task,specie);
+		qacb->SetDetTaskOffset(subdet,offset);
+		Int_t histo=GetDetTaskHisto(subdet, task);
+		qacb->SetDetHisto(subdet,histo);
+	      }
+	    
+	    qac->Run( AliQAv1::kITS , task, list);
+	    
+	  }//end else unique id
+	}//end else event specie
+  }//end for
 }
 
 //____________________________________________________________________________ 
@@ -173,6 +184,7 @@ void AliITSQADataMakerRec::InitRaws()
 
   //if(fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()) return;
 	
+
 
   if(fSubDetector == 0 || fSubDetector == 1) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitRaws\n");
@@ -190,6 +202,8 @@ void AliITSQADataMakerRec::InitRaws()
     fSSDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
     fSSDDataMaker->InitRaws();
   }
+  fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(10);
+
 }
 
 //____________________________________________________________________________
@@ -215,10 +229,10 @@ void AliITSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::InitDigits()
 {
-  
+
   // Initialization for DIGITS
   if(fSubDetector == 0 || fSubDetector == 1) {
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitDigitss\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitDigits\n");
 
     fSPDDataMaker->InitDigits();
   }
@@ -234,6 +248,7 @@ void AliITSQADataMakerRec::InitDigits()
 
     fSSDDataMaker->InitDigits();
   }
+  fDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(40);
 }
 
 //____________________________________________________________________________ 
@@ -277,7 +292,7 @@ void AliITSQADataMakerRec::InitRecPoints()
 		fSSDDataMaker->InitRecPoints();
 	}
 
-
+  fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(20);
 	if(fSubDetector == 0){
 	  Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
 	  const Bool_t expert   = kTRUE ; 
@@ -291,9 +306,9 @@ void AliITSQADataMakerRec::InitRecPoints()
 	    hPhiEta[iLay]=new TH2F(name,title,30,-1.5,1.5,200,0.,2*TMath::Pi());
 	    hPhiEta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
 	    hPhiEta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
-	    Add2RecPointsList((new TH2F(*hPhiEta[iLay])), iLay + offset, !expert, image);
+	    Add2RecPointsList(hPhiEta[iLay], iLay + offset, !expert, image);
 	    
-	    delete hPhiEta[iLay];
+	    //delete hPhiEta[iLay];
 	  }
 	  
  	}
@@ -546,7 +561,7 @@ void AliITSQADataMakerRec::InitESDs()
   hESDSkippedLayers->SetMinimum(0);
   Add2ESDsList(hESDSkippedLayers, 23, expertHistogram);
 
-
+  fESDsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(30);
   return;
 }
 
@@ -655,31 +670,31 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
 }
 
 //_________________________________________________________________
-Int_t AliITSQADataMakerRec::GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task)
+Int_t AliITSQADataMakerRec::GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task, Int_t specie)
 {
+
+  Int_t offset=0;
   switch(subdet)
     {
-
-      Int_t offset;
     case 1:
-      offset=fSPDDataMaker->GetOffset(task);
-      return offset;
+      offset=fSPDDataMaker->GetOffset(task,specie);
+      //return offset;
       break;
     case 2:
-      offset=fSDDDataMaker->GetOffset(task);
-      return offset;
+      offset=fSDDDataMaker->GetOffset(task,specie);
+      //return offset;
       break;
     case 3:
-      offset=fSSDDataMaker->GetOffset(task);
-      return offset;
+      offset=fSSDDataMaker->GetOffset(task,specie);
+      //return offset;
       break;
     default:
       AliWarning("No specific subdetector (SPD, SDD, SSD) selected!! Offset set to zero \n");
       offset=0;
-      return offset;
+      //return offset;
       break;
     }
-  //return offset;
+  return offset;
 }
 
 //____________________________________________________________________
@@ -690,3 +705,32 @@ Bool_t AliITSQADataMakerRec::AreEqual(Double_t a1,Double_t a2)
   return TMath::Abs(a1-a2)<=kEpsilon*TMath::Abs(a1);      
 }
 
+//_________________________________________________________________
+Int_t AliITSQADataMakerRec::GetDetTaskHisto(Int_t subdet,AliQAv1::TASKINDEX_t task)
+{
+
+
+  Int_t histo=0;
+  switch(subdet)
+    {
+    case 1:
+      histo=fSPDDataMaker->GetTaskHisto(task);
+      //return histo;
+      break;
+    case 2:
+      histo=fSDDDataMaker->GetTaskHisto(task);
+      //return histo;
+      break;
+    case 3:
+      histo=fSSDDataMaker->GetTaskHisto(task);
+      //return histo;
+      break;
+    default:
+      AliWarning("No specific subdetector (SPD, SDD, SSD) selected!! Offset set to zero \n");
+      histo=0;
+      //return histo;
+      break;
+    }
+  //return offset;
+  return histo;
+}

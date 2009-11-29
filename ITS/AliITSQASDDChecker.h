@@ -22,21 +22,31 @@ class TH2F ;
 #include "AliQAv1.h"
 #include "AliQACheckerBase.h"
 #include "AliITSQAChecker.h"
+#include "AliITSCalibrationSDD.h"
 class AliITSLoader ; 
 
 class AliITSQASDDChecker: public TObject {
 
 public:
-  AliITSQASDDChecker():fSubDetOffset(0) {;}          // ctor
+  AliITSQASDDChecker():fSubDetOffset(0),fStepBitSDD(NULL),fLowSDDValue(NULL),fHighSDDValue(NULL),fCalibration(NULL) {;}          // ctor
   AliITSQASDDChecker& operator = (const AliITSQASDDChecker& qac) ; //operator =
-  virtual ~AliITSQASDDChecker() {;} // dtor
-  Double_t Check(AliQAv1::ALITASK_t index, TObjArray * list);
-  void SetTaskOffset(Int_t TaskOffset);
-
+  virtual ~AliITSQASDDChecker(); /*{if(fStepBitSDD) delete[] fStepBitSDD ;if(fLowSDDValue)delete[]fLowSDDValue;if(fHighSDDValue) delete[]fHighSDDValue;if(fCalibration)delete fCalibration;} */// dtor
+  virtual Double_t Check(AliQAv1::ALITASK_t index, TObjArray * list);
+  virtual void SetTaskOffset(Int_t taskoffset);
+  virtual void SetStepBit(Double_t *steprange);
+  virtual Double_t *GetStepBit(){return fStepBitSDD;};
+  virtual void SetSDDLimits(Float_t *lowvalue, Float_t * highvalue);
 private:
-  AliITSQASDDChecker(const AliITSQASDDChecker& /*qac*/):TObject(),fSubDetOffset(0) {;} // cpy ctor   
+  AliITSQASDDChecker(const AliITSQASDDChecker& qac):TObject(),fSubDetOffset(qac.fSubDetOffset),fStepBitSDD(qac.fStepBitSDD),fLowSDDValue(qac.fLowSDDValue),fHighSDDValue(qac.fHighSDDValue),fCalibration(qac.fCalibration) {;} // cpy ctor   
   Int_t fSubDetOffset;            // checking operation starting point
-  ClassDef(AliITSQASDDChecker,1)  // description 
+  Double_t *fStepBitSDD;
+  Float_t *fLowSDDValue;
+  Float_t *fHighSDDValue;
+  TObjArray *fCalibration;
+
+  static const Int_t fgknSDDmodules = 260; // number of SDD modules
+  static const Int_t fgkmodoffset = 240;   // number of SPD modules
+  ClassDef(AliITSQASDDChecker,2)  // description 
 
 };
 

@@ -40,7 +40,7 @@ public:
   virtual Int_t MakeDigits(TTree * digits);
   virtual Int_t MakeSDigits(TTree * sdigits);
   virtual Int_t MakeHits(TTree * hits);
-  Int_t GetOffset(AliQAv1::TASKINDEX_t task);
+  Int_t GetOffset(AliQAv1::TASKINDEX_t task, Int_t specie = 0);
   void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset,Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 

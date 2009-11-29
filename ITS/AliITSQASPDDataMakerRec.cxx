@@ -631,17 +631,17 @@ Int_t AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
 
 //_______________________________________________________________
 
-Int_t AliITSQASPDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task) {
+Int_t AliITSQASPDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie) {
   // Returns offset number according to the specified task
   Int_t offset=0;
   if( task == AliQAv1::kRAWS ) {
-    offset=fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()];
+    offset=fGenRawsOffset[specie];
   }
   else if( task == AliQAv1::kDIGITSR ) {
-    offset=fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()];
+    offset=fGenDigitsOffset[specie];
   }
   else if( task == AliQAv1::kRECPOINTS ) {
-    offset=fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()];
+    offset=fGenRecPointsOffset[specie];
   }
 
   return offset;

@@ -54,7 +54,7 @@ fSSDDataMaker(NULL)
 	AliError("Error: fSubDetector number out of range; return\n");
   }
 
-  // Initialization for RAW data 
+  // Initialization for each subdetector 
   if(fSubDetector == 0 || fSubDetector == 1) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Create SPD DataMakerSim\n");
 	fSPDDataMaker = new AliITSQASPDDataMakerSim(this);
@@ -114,37 +114,57 @@ void AliITSQADataMakerSim::StartOfDetectorCycle()
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list)
 {
+
+  AliInfo(Form("End of Dedetctor Cycle called for %s\n",AliQAv1::GetTaskName(task).Data() ));
+
   // launch the QA checking
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (! IsValidEventSpecie(specie, list) )
+    if (! IsValidEventSpecie(specie, list) ){
       continue ; 
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
-    if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[specie]);
-    if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[specie]);
-    if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[specie]);
-  
-  
-    AliQAChecker *qac = AliQAChecker::Instance();
-    AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
-    Int_t subdet=GetSubDet();
-    qacb->SetSubDet(subdet);
-
-    if(subdet== 0 ){
-      qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task),fSDDDataMaker->GetOffset(task),fSSDDataMaker->GetOffset(task)); //Setting the offset for the QAChecker list		
     }
-    else
-      if(subdet!=0){
-	Int_t offset=GetDetTaskOffset(subdet, task);
-	qacb->SetDetTaskOffset(subdet,offset);
-      }
-    qac->Run( AliQAv1::kITS , task, list); 
-  }
+    else{
+      Int_t idnumber=list[specie]->GetUniqueID();
+      //printf("specie %s \t id number == %d\n",AliRecoParam::GetEventSpecieName(specie),idnumber);
+      if(idnumber==0)
+	{
+	  //AliInfo(Form("No check for %s\n",AliQAv1::GetTaskName(task).Data() ))
+	    continue;
+	} //skip kDigitsR and not filled TobjArray specie
+      else{
+	AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+	if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[specie]);
+	if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[specie]);
+	if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[specie]);
+	
+	
+	AliQAChecker *qac = AliQAChecker::Instance();
+	AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
+	Int_t subdet=GetSubDet();
+	qacb->SetSubDet(subdet);
+	
+	if(subdet== 0 ){
+	  qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task,specie),fSDDDataMaker->GetOffset(task,specie),fSSDDataMaker->GetOffset(task,specie)); //Setting the offset for the QAChecker list
+	qacb->SetHisto(fSPDDataMaker->GetTaskHisto(task), fSDDDataMaker->GetTaskHisto(task), fSSDDataMaker->GetTaskHisto(task));	
+	}
+	else
+	  if(subdet!=0){
+	    Int_t offset=GetDetTaskOffset(subdet, task);
+	    qacb->SetDetTaskOffset(subdet,offset);
+	    Int_t histo=GetDetTaskHisto(subdet, task);
+	    qacb->SetDetHisto(subdet,histo);
+	  }
+	qac->Run( AliQAv1::kITS , task, list);
+      }//end else unique id 
+    }//end else event specie
+  }//end for
 }
 
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::InitDigits()
 {  
-  // Initialization for RAW data 
+
+  fDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(60);
+  // Initialization for Digits data 
 	if(fSubDetector == 0 || fSubDetector == 1) {
 	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitDigits\n");
 
@@ -194,6 +214,7 @@ void AliITSQADataMakerSim::MakeDigits(TTree * digits)
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::InitSDigits()
 {
+  fSDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(70);
   // Initialization for RECPOINTS
   if(fSubDetector == 0 || fSubDetector == 1) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitSDigits\n");
@@ -247,6 +268,7 @@ void AliITSQADataMakerSim::MakeSDigits(TTree * sdigits)
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::InitHits()
 {
+  fHitsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(50);
   // Initialization for hits
   if(fSubDetector == 0 || fSubDetector == 1) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitHits\n");
@@ -318,6 +340,34 @@ Int_t AliITSQADataMakerSim::GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t t
       AliWarning("No specific subdetector (SPD, SDD, SSD) selected!! Offset set to zero \n");
       offset=0;
       return offset;
+      break;
+    }
+  //return offset;
+}
+
+//_________________________________________________________________
+Int_t AliITSQADataMakerSim::GetDetTaskHisto(Int_t subdet,AliQAv1::TASKINDEX_t task)
+{
+  switch(subdet)
+    {
+
+      Int_t histo;
+    case 1:
+      histo=fSPDDataMaker->GetOffset(task);
+      return histo;
+      break;
+    case 2:
+      histo=fSDDDataMaker->GetOffset(task);
+      return histo;
+      break;
+    case 3:
+      histo=fSSDDataMaker->GetOffset(task);
+      return histo;
+      break;
+    default:
+      AliWarning("No specific subdetector (SPD, SDD, SSD) selected!! Offset set to zero \n");
+      histo=0;
+      return histo;
       break;
     }
   //return offset;

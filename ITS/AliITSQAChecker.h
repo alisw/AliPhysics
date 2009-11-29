@@ -45,7 +45,17 @@ public:
   Short_t GetSubDet() { return fDet; }
   Short_t GetLDC() { return fLDC; }
   virtual void SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDOffset);
+  virtual void SetHisto(Int_t SPDhisto, Int_t SDDhisto, Int_t SSDhisto);
   virtual void SetDetTaskOffset(Int_t subdet=0,Int_t offset=0);
+  virtual void InitQACheckerLimits();
+  virtual void CreateStepForBit(Double_t histonumb,Double_t *steprange);
+  virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const;
+  virtual void SetDetHisto(Int_t subdet=0,Int_t histo=0);
+
+  virtual Int_t GetSPDHisto(){return fSPDHisto;} ;
+  virtual Int_t GetSDDHisto(){return fSDDHisto;} ;
+  virtual Int_t GetSSDHisto(){return fSSDHisto;} ;
+
 
 protected:
   virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam) ;
@@ -53,14 +63,23 @@ protected:
   virtual void SetSDDTaskOffset(Int_t SDDOffset){fSDDOffset = SDDOffset;} ;
   virtual void SetSSDTaskOffset(Int_t SSDOffset){fSSDOffset = SSDOffset;} ;
 
+  virtual void SetSPDHisto(Int_t SPDhisto){fSPDHisto = SPDhisto;} ;
+  virtual void SetSDDHisto(Int_t SDDhisto){fSDDHisto = SDDhisto;} ;
+  virtual void SetSSDHisto(Int_t SSDhisto){fSSDHisto = SSDhisto;} ;
+
 private:
 
   Bool_t  fkOnline;
   Short_t fDet;  
   Short_t fLDC;
+
   Int_t fSPDOffset; //starting point for the QACheck list
   Int_t fSDDOffset;
   Int_t fSSDOffset;
+
+  Int_t fSPDHisto;
+  Int_t fSDDHisto;
+  Int_t fSSDHisto;
 
   AliITSQASPDChecker *fSPDChecker;  // SPD Checker
   AliITSQASDDChecker *fSDDChecker;  // SDD Checker

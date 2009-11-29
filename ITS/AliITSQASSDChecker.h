@@ -27,21 +27,28 @@ class AliITSLoader ;
 class AliITSQASSDChecker: public TObject {
 
 public:
-  AliITSQASSDChecker():fSubDetOffset(0) {;}          // ctor
+  AliITSQASSDChecker():fSubDetOffset(0),fStepBitSSD(NULL),fLowSSDValue(NULL),fHighSSDValue(NULL) {;}          // ctor
   AliITSQASSDChecker& operator = (const AliITSQASSDChecker& qac) ; //operator =
-  virtual ~AliITSQASSDChecker() {;} // dtor
+  virtual ~AliITSQASSDChecker() {if(fStepBitSSD) delete[] fStepBitSSD ;if(fLowSSDValue)delete[]fLowSSDValue;if(fHighSSDValue) delete[]fHighSSDValue; } // dtor
   Double_t Check(AliQAv1::ALITASK_t /*index*/, TObjArray * /*list*/);
+
+  void SetStepBit(Double_t *steprange);
+  Double_t *GetStepBit(){return fStepBitSSD;};
 
   void CheckRaws(TH1 *);
   void CheckRecPoints(TH1 *);
   void SetTaskOffset(Int_t TaskOffset);
+  void SetSSDLimits(Float_t *lowvalue, Float_t * highvalue);
 
 
 private:
   
-  AliITSQASSDChecker(const AliITSQASSDChecker& /*qac*/):TObject(),fSubDetOffset(0) {;} // cpy ctor   
+  AliITSQASSDChecker(const AliITSQASSDChecker& qac):TObject(),fSubDetOffset(qac.fSubDetOffset),fStepBitSSD(qac.fStepBitSSD),fLowSSDValue(qac.fLowSSDValue),fHighSSDValue(qac.fHighSSDValue) {;} // cpy ctor   
   Int_t fSubDetOffset;            // checking operation starting point
-  ClassDef(AliITSQASSDChecker,1)  // description 
+  Double_t *fStepBitSSD;
+  Float_t *fLowSSDValue;
+  Float_t *fHighSSDValue;
+  ClassDef(AliITSQASSDChecker,2)  // description 
 
 };
 
