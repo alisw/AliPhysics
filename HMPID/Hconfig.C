@@ -529,7 +529,7 @@ void HmpConfig::GuiBatch(TGHorizontalFrame *pMainF)
     new TGRadioButton(fCluBG,  "Clusters CORE"   ,kAll    );  
     new TGRadioButton(fCluBG,  "Clusters HMPID"  ,kHmp    );   
 
-    new TGCheckButton(fTrkBG,  "Apply RecoParam" ,kRecoPar);  
+    new TGCheckButton(fTrkBG,  "Apply RecoParamV1" ,kRecoPar);  
 
     new TGCheckButton(fTrkBG,  "Load Align data" ,kAln    );  
     new TGCheckButton(fTrkBG,  "Prim vertex"     ,kVtx    );  
@@ -691,7 +691,7 @@ void HmpConfig::WriteBatch()
     //---------------------------------------------
     if     (fTrkBG->GetButton(kRecoPar)->GetState())
       { 
-         fprintf(fp,"  AliHMPIDRecoParam *hmpidRecoParam=AliHMPIDReconstructor::GetRecoParam();    //Get the HMPID reco param\n"); 
+         fprintf(fp,"  AliHMPIDRecoParamV1 *hmpidRecoParam=AliHMPIDReconstructor::GetRecoParam();    //Get the HMPID reco param\n"); 
          fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(0,4);                                            //eg cut for UserCutSigma (Values: ch0)\n");
          fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(1,4);                                            //eg cut for UserCutSigma (Values: ch1)\n");
          fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(2,4);                                            //eg cut for UserCutSigma (Values: ch2)\n");

@@ -13,7 +13,7 @@
 class AliESDEvent;      //Recon()     
 class AliESDtrack;      //IntTrkCha()
 class AliHMPIDtrack;
-class AliHMPIDRecoParam;
+class AliHMPIDRecoParamV1;
 
 class AliHMPIDTracker : public AliTracker
 {

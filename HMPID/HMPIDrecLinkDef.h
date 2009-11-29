@@ -9,6 +9,7 @@
 #pragma link C++ class  AliHMPIDRecon+;
 #pragma link C++ class  AliHMPIDPid+;
 #pragma link C++ class  AliHMPIDRecoParam+;
+#pragma link C++ class  AliHMPIDRecoParamV1+;
 #pragma link C++ class  AliHMPIDReconHTA+;
 #pragma link C++ class  AliHMPIDQADataMakerRec+;
 

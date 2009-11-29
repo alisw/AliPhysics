@@ -4,7 +4,7 @@
 #include "AliHMPIDParam.h"       //GetTrackPoint(),PropagateBack()
 #include "AliHMPIDPid.h"         //Recon(),reconHTA()
 #include "AliHMPIDRecon.h"       //Recon()
-#include "AliHMPIDRecoParam.h"   //Recon()
+#include "AliHMPIDRecoParamV1.h"   //Recon()
 #include "AliHMPIDReconstructor.h"//Recon()
 #include "AliHMPIDReconHTA.h"    //ReconHTA()
 #include <AliESDEvent.h>         //PropagateBack(),Recon()  
@@ -15,7 +15,6 @@
 #include <AliAlignObj.h>         //GetTrackPoint()
 #include <AliCDBManager.h>       //PropageteBack()
 #include <AliCDBEntry.h>         //PropageteBack()
-#include "AliHMPIDRecoParam.h"   //Recon()
 //.
 // HMPID base class fo tracking
 //.
@@ -214,7 +213,6 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 
     if(AliHMPIDReconstructor::GetRecoParam())                                                 //retrieve distance cut
     {
-      AliHMPIDReconstructor::GetRecoParam()->PrintParameters();
       if(AliHMPIDReconstructor::GetRecoParam()->IsFixedDistCut()==kTRUE)                      //distance cut is fixed number
       { 
         distCut=AliHMPIDReconstructor::GetRecoParam()->GetHmpTrackMatchingDist();

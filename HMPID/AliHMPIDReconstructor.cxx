@@ -28,11 +28,10 @@
 #include <AliRawReader.h>          //Reconstruct() for raw digits
 #include <AliLog.h>                //
 #include "AliHMPIDRawStream.h"     //ConvertDigits()
-#include "AliHMPIDRecoParam.h"     //ctor
+#include "AliHMPIDRecoParamV1.h"   //ctor
 
 ClassImp(AliHMPIDReconstructor)
 
-//AliHMPIDRecoParam* AliHMPIDReconstructor::fgkRecoParam =0;  // 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fDaqSig(0),fDig(0),fClu(0)
 {
@@ -56,14 +55,14 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
    if(AliHMPIDReconstructor::GetRecoParam()) {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
       fUserCut[iCh] = AliHMPIDReconstructor::GetRecoParam()->GetHmpUserCut(iCh);
-      AliDebug(1,Form("UserCut successfully loaded (from RecoParam) for chamber %i -> %i ",iCh,fUserCut[iCh]));
+      AliDebug(1,Form("UserCut successfully loaded (from AliHMPIDRecoParamV1) for chamber %i -> %i ",iCh,fUserCut[iCh]));
     }
   }
   else {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
       fUserCut[iCh] = 3;                                                                             // minimal requirement for sigma cut
       AliDebug(1,Form("UserCut loaded from defaults for chamber %i -> %i ",iCh,fUserCut[iCh]));
-      AliDebug(1,Form("Cannot get AliHMPIDRecoParam!"));
+      AliDebug(1,Form("Cannot get AliHMPIDRecoParamV1!"));
       }
     }
 
