@@ -1,4 +1,4 @@
-AliAnalysisTaskMuonDistributions *AddTaskMuonDistributions(const char *kAnalysisType){
+AliAnalysisTaskMuonDistributions *AddTaskMuonDistributions(const char *kAnalysisType, Bool_t doFitInvMass){
 
 //****************************************************************************************
 // Add task class.
@@ -37,7 +37,7 @@ AliAnalysisTaskMuonDistributions *AddTaskMuonDistributions(const char *kAnalysis
    //
    // perform fit to the invariant mass spectrum
    //
-   MuonDistributionsTask->FitInvariantMassSpectrum(kFALSE);
+   MuonDistributionsTask->FitInvariantMassSpectrum(doFitInvMass);
   
    mgr->AddTask(MuonDistributionsTask);
  

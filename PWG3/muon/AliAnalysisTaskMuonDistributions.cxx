@@ -343,7 +343,7 @@ void AliAnalysisTaskMuonDistributions::Terminate(Option_t *)
   TCanvas *c3_MuonDistributions = new TCanvas("c3_MuonDistributions","Invariant Mass Plots",xmin,ymin,600,600);
   gPad->SetLogy(1);
   hMassDimu->Draw();  
-  if(fInvariantMassFit) FitInvMass(hMassDimu);
+  if(fInvariantMassFit && hMassDimu->GetEntries()>100) FitInvMass(hMassDimu);
   c3_MuonDistributions->Update();
 }
 
@@ -527,6 +527,7 @@ void AliAnalysisTaskMuonDistributions::FitInvMass(TH1D *histo)
   
   printf("\n\n****************************************************************************\n");
   char psitext[100];
+  if(nPsiFit<0) nPsiFit = 0;  
   sprintf(psitext,"N. J/#psi = %10.0f",nPsiFit);
   printf("\nN. J/psi = %10.0f\n",nPsiFit);
   TLatex *psilatex = new TLatex(4.,0.85*histo->GetMaximum(),psitext);
@@ -554,6 +555,7 @@ void AliAnalysisTaskMuonDistributions::FitInvMass(TH1D *histo)
   sblatex->Draw();
   
   char psiptext[100];
+  if(nPsiPFit<0) nPsiPFit = 0;  
   sprintf(psiptext,"N. #psi(2S) = %10.0f",nPsiPFit);
   printf("\npsi(2S) = %10.0f\n",nPsiPFit);
   TLatex *psiplatex = new TLatex(4.,0.106*histo->GetMaximum(),psiptext);
