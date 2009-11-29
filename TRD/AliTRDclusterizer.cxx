@@ -700,6 +700,8 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   if(!TestBit(knewDM)){
     delete fDigitsManager;
     fDigitsManager = NULL;
+    delete fRawStream;
+    fRawStream = NULL;
   }
 
   AliInfo(Form("Number of found clusters : %d", fNoOfClusters)); 
