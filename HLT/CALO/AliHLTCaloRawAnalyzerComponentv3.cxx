@@ -237,7 +237,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   //  return 1;
 
-  fAltroRawStreamPtr->NextDDL();
+  if(fAltroRawStreamPtr->NextDDL())
   {
     int cnt = 0;
     while( fAltroRawStreamPtr->NextChannel()  )
