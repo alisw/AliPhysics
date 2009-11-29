@@ -79,7 +79,54 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
 
   //
   // Create TPC-ESD track reconstruction cuts
+  // MB tracks
   //
+  AliRecInfoCuts *pRecInfoCutsTPC = new AliRecInfoCuts(); 
+  if(pRecInfoCutsTPC) {
+    pRecInfoCutsTPC->SetMaxDCAToVertexXY(3.0);
+    pRecInfoCutsTPC->SetMaxDCAToVertexZ(30.0);
+    pRecInfoCutsTPC->SetRequireSigmaToVertex(kFALSE);
+    pRecInfoCutsTPC->SetRequireTPCRefit(kFALSE);
+    pRecInfoCutsTPC->SetAcceptKinkDaughters(kTRUE);
+    pRecInfoCutsTPC->SetMinNClustersTPC(50);
+    pRecInfoCutsTPC->SetMaxChi2PerClusterTPC(1000000.);
+    pRecInfoCutsTPC->SetDCAToVertex2D(kFALSE);
+
+    pRecInfoCutsTPC->SetHistogramsOn(kFALSE); 
+  } 
+  else {
+    Error("AddTaskPerformanceTPC", "AliRecInfoCutsTPC cannot be created!");
+    return NULL;
+  }
+
+  //
+  // Create TPC-ESD track reconstruction cuts
+  // MATCH tracks
+  //
+  AliRecInfoCuts *pRecInfoCutsMATCH = new AliRecInfoCuts(); 
+  if(pRecInfoCutsMATCH) {
+    pRecInfoCutsMATCH->SetMaxDCAToVertexXY(3.0);
+    pRecInfoCutsMATCH->SetMaxDCAToVertexZ(3.0);
+    pRecInfoCutsMATCH->SetRequireSigmaToVertex(kFALSE);
+    pRecInfoCutsMATCH->SetRequireTPCRefit(kFALSE);
+    pRecInfoCutsMATCH->SetAcceptKinkDaughters(kTRUE);
+    pRecInfoCutsMATCH->SetMinNClustersTPC(50);
+    pRecInfoCutsMATCH->SetMaxChi2PerClusterTPC(1000000.);
+    pRecInfoCutsMATCH->SetDCAToVertex2D(kFALSE);
+    pRecInfoCutsMATCH->SetTPCITSMatchingRadius(70); 
+    pRecInfoCutsMATCH->SetTPCTRDMatchingRadius(260); 
+    pRecInfoCutsMATCH->SetMinNClustersITS(2);
+
+    pRecInfoCutsMATCH->SetHistogramsOn(kFALSE); 
+  } 
+  else {
+    Error("AddTaskPerformanceTPC", "AliRecInfoCutsTPC cannot be created!");
+    return NULL;
+  }
+
+  //
+  // Create TPC-ESD track reconstruction cuts
+  // standard cuts
   AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts(); 
   if(pRecInfoCuts) {
     pRecInfoCuts->SetMaxDCAToVertexXY(3.0);
@@ -168,32 +215,32 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
   if(!pCompTPC0) {
     Error("AddTaskPerformanceTPC", "Cannot create AliPerformanceTPC");
   }
-  pCompTPC0->SetAliRecInfoCuts(pRecInfoCuts);
+  pCompTPC0->SetAliRecInfoCuts(pRecInfoCutsTPC);
   pCompTPC0->SetAliMCInfoCuts(pMCInfoCuts);
   //
   // TPC+ITS matching performance
   //
-  AliPerformanceMatch *pCompMatch0 = new AliPerformanceMatch("AliPerformanceMatchTPCITS","AliPerformanceMatch",0,kFALSE); 
+  AliPerformanceMatch *pCompMatch0 = new AliPerformanceMatch("AliPerformanceMatchTPCITS","AliPerformanceMatchTPCITS",0,kFALSE); 
   if(!pCompMatch0) {
     Error("AddTaskPerformanceMatch", "Cannot create AliPerformanceMatchTPCITS");
   }
-  pCompMatch0->SetAliRecInfoCuts(pRecInfoCuts);
+  pCompMatch0->SetAliRecInfoCuts(pRecInfoCutsMATCH);
   pCompMatch0->SetAliMCInfoCuts(pMCInfoCuts);
   //
   // TPC+TRD matching performance
   //
-  AliPerformanceMatch *pCompMatch1 = new AliPerformanceMatch("AliPerformanceMatchTPCTRD","AliPerformanceMatch",1,kFALSE); 
+  AliPerformanceMatch *pCompMatch1 = new AliPerformanceMatch("AliPerformanceMatchTPCTRD","AliPerformanceMatchTPCTRD",1,kFALSE); 
   if(!pCompMatch1) {
     Error("AddTaskPerformanceMatch", "Cannot create AliPerformanceMatchTPCTRD");
   }
-  pCompMatch1->SetAliRecInfoCuts(pRecInfoCuts);
+  pCompMatch1->SetAliRecInfoCuts(pRecInfoCutsMATCH);
   pCompMatch1->SetAliMCInfoCuts(pMCInfoCuts);
  
   AliPerformanceMatch *pCompMatch2 = new AliPerformanceMatch("AliPerformanceMatchTPCEFF","AliPerformanceMatchTPCEFF",2,kFALSE); 
   if(!pCompMatch2) {
     Error("AddTaskPerformanceMatch", "Cannot create AliPerformanceMatchTPCEFF");
   }
-  pCompMatch2->SetAliRecInfoCuts(pRecInfoCuts);
+  pCompMatch2->SetAliRecInfoCuts(pRecInfoCutsMATCH);
   pCompMatch2->SetAliMCInfoCuts(pMCInfoCuts);
 
   //
