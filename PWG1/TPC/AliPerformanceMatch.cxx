@@ -181,19 +181,21 @@ void AliPerformanceMatch::Init(){
   fPullHisto->GetAxis(10)->SetTitle("isReconstructed");
   fPullHisto->Sumw2();
 
-  // -> has match:y:z:snp:tgl:pt:ITSclusters
-  Int_t binsTrackingEffHisto[7]    = { 2,    50,  250, 50, 50, 100,    7};
-  Double_t minTrackingEffHisto[7]  = {-0.5, -25, -250, -1, -2,   0, -0.5};
-  Double_t maxTrackingEffHisto[7]  = { 1.5,  25,  250,  1,  2,  20,  6.5};
+  // -> has match:y:z:snp:tgl:phi:pt:ITSclusters
+  Int_t binsTrackingEffHisto[8]    = { 2,    50, 100, 50, 50, 90,           100,  7   };
+  Double_t minTrackingEffHisto[8]  = {-0.5, -25, -50, -1, -2, 0.,            0,   -0.5 };
+  Double_t maxTrackingEffHisto[8]  = { 1.5,  25,  50,  1,  2, 2*TMath::Pi(), 20,   6.5 };
   
-  fTrackingEffHisto = new THnSparseF("fTrackingEffHisto","has match:y:z:snp:tgl:pt:ITSclusters",7,binsTrackingEffHisto,minTrackingEffHisto,maxTrackingEffHisto);
+  fTrackingEffHisto = new THnSparseF("fTrackingEffHisto","has match:y:z:snp:tgl:phi:pt:ITSclusters",8,binsTrackingEffHisto,minTrackingEffHisto,maxTrackingEffHisto);
   fTrackingEffHisto->GetAxis(0)->SetTitle("IsMatching");
   fTrackingEffHisto->GetAxis(1)->SetTitle("local y (cm)");
   fTrackingEffHisto->GetAxis(2)->SetTitle("z (cm)");
   fTrackingEffHisto->GetAxis(3)->SetTitle("sin(#phi)");
   fTrackingEffHisto->GetAxis(4)->SetTitle("tan(#lambda)");
-  fTrackingEffHisto->GetAxis(5)->SetTitle("p_{T}");
-  fTrackingEffHisto->GetAxis(6)->SetTitle("number of ITS clusters");
+  fTrackingEffHisto->GetAxis(5)->SetTitle("phi (rad)");
+  fTrackingEffHisto->GetAxis(6)->SetTitle("p_{T}");
+  fTrackingEffHisto->GetAxis(7)->SetTitle("number of ITS clusters");
+  fTrackingEffHisto->Sumw2();
 
   // Init cuts 
   if(!fCutsMC) 
@@ -202,7 +204,7 @@ void AliPerformanceMatch::Init(){
     AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
 
   // init folder
-  fAnalysisFolder = CreateFolder("folderRes","Analysis Resolution Folder");
+  fAnalysisFolder = CreateFolder("folderMatch","Analysis Matching Folder");
 }
 
 //_____________________________________________________________________________
@@ -210,14 +212,14 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEven
 {
   //
   // addition to standard analysis - check if ITS stand-alone tracks have a match in the TPC
-  // Author: A. Kalwait
-  //
+  // Origin: A. Kalwait
+  // Modified: J. Otwinowski
   if(!esdTrack) return;
   if(!esdFriendTrack) return;
 
   //
   if (esdTrack->GetInnerParam()) return; // ITS stand-alone tracks have not TPC inner param
-  if (esdTrack->GetITSclusters(0) < 2) return;
+  if (esdTrack->GetITSclusters(0) < fCutsRC->GetMinNClustersITS()) return;
   //AliTracker::PropagateTrackToBxByBz(esdTrack,80.0,0.1056,1.0,kTRUE); // we propagate the ITS stand-alone to the inner TPC radius
   Bool_t hasMatch = kFALSE;
     for (Int_t jTrack = 0; jTrack < esdEvent->GetNumberOfTracks(); jTrack++) {
@@ -225,9 +227,11 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEven
       if (jTrack==iTrack) continue;
       AliESDtrack *trackTPC = esdEvent->GetTrack(jTrack);
       if (!trackTPC) continue;
-      if (!trackTPC->GetInnerParam()) continue;
+      if (!trackTPC->GetTPCInnerParam()) continue;
 
       AliExternalTrackParam *innerTPC = new AliExternalTrackParam(*(trackTPC->GetTPCInnerParam()));
+      if(!innerTPC) continue;
+
       AliTracker::PropagateTrackToBxByBz(innerTPC,2.8,trackTPC->GetMass(),1.0,kTRUE);
       Double_t x[3]; trackTPC->GetXYZ(x);
       Double_t b[3]; AliTracker::GetBxByBz(x,b);
@@ -243,21 +247,15 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEven
       printf("innerTPC->GetY() %f, innerTPC->GetSnp() %f, innerTPC->GetTgl() %f \n", 
               innerTPC->GetY() , innerTPC->GetSnp() , innerTPC->GetTgl());
       */
-
-      /*
-      if (TMath::Abs(esdTrack->GetY() - trackTPC->GetInnerParam()->GetY()) > 3) continue;
-      if (TMath::Abs(esdTrack->GetSnp() - trackTPC->GetInnerParam()->GetSnp()) > 0.2) continue;
-      if (TMath::Abs(esdTrack->GetTgl() - trackTPC->GetInnerParam()->GetTgl()) > 0.2) continue;
-      */
-      if (TMath::Abs(esdTrack->GetY() - innerTPC->GetY()) > 3) continue;
-      if (TMath::Abs(esdTrack->GetSnp() - innerTPC->GetSnp()) > 0.2) continue;
-      if (TMath::Abs(esdTrack->GetTgl() - innerTPC->GetTgl()) > 0.2) continue;
+      if (TMath::Abs(esdTrack->GetY() - innerTPC->GetY()) > 3) { delete innerTPC; continue; }
+      if (TMath::Abs(esdTrack->GetSnp() - innerTPC->GetSnp()) > 0.2) { delete innerTPC; continue; }
+      if (TMath::Abs(esdTrack->GetTgl() - innerTPC->GetTgl()) > 0.2) { delete innerTPC; continue; }
 
       hasMatch = kTRUE;
       if(innerTPC) delete innerTPC;
     }
-    //has match:y:z:snp:tgl:pt:ITSclusters
-    Double_t vecTrackingEff[7] = {hasMatch,esdTrack->GetY(),esdTrack->GetZ(),esdTrack->GetSnp(),esdTrack->GetTgl(),esdTrack->Pt(),esdTrack->GetITSclusters(0)};
+    //has match:y:z:snp:tgl:phi:pt:ITSclusters
+    Double_t vecTrackingEff[8] = { hasMatch,esdTrack->GetY(),esdTrack->GetZ(),esdTrack->GetSnp(),esdTrack->GetTgl(),esdTrack->Phi(), esdTrack->Pt(),esdTrack->GetITSclusters(0) };
     fTrackingEffHisto->Fill(vecTrackingEff);
     
 }
@@ -280,7 +278,6 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *
   Double_t mass = esdTrack->GetMass();
   Double_t step=1.0; // cm
 
-
   //
   // Propagate TPCinner (reference detector)
   //
@@ -290,8 +287,19 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
   esdTrack->GetImpactParametersTPC(dca,cov);
 
+  //
+  // select primaries
+  //
+  Double_t dcaToVertex = -1;
+  if( fCutsRC->GetDCAToVertex2D() ) 
+  {
+      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY()                    + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
+  }
+  if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
+  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
+  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
+
   if( (esdTrack->GetNcls(1)>fCutsRC->GetMinNClustersTPC()) && 
-      (TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) && 
       (esdTrack->GetTPCInnerParam()) &&
       (innerTPC=new AliExternalTrackParam(*(esdTrack->GetTPCInnerParam())))) 
   {
@@ -352,8 +360,19 @@ void AliPerformanceMatch::ProcessTPCTRD(AliStack* /*const stack*/, AliESDtrack *
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
   esdTrack->GetImpactParametersTPC(dca,cov);
 
+  //
+  // select primaries
+  //
+  Double_t dcaToVertex = -1;
+  if( fCutsRC->GetDCAToVertex2D() ) 
+  {
+      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY()                    + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
+  }
+  if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
+  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
+  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
+
   if( (esdTrack->GetNcls(1)>fCutsRC->GetMinNClustersTPC()) && 
-      (TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) && 
       (esdFriendTrack->GetTPCOut()) &&
       (outerTPC=new AliExternalTrackParam(*(esdFriendTrack->GetTPCOut())))) 
   {
@@ -379,7 +398,6 @@ void AliPerformanceMatch::ProcessTPCTRD(AliStack* /*const stack*/, AliESDtrack *
     if(!(trdTrack = dynamic_cast<AliTRDtrackV1*>(calObject))) break;
   }
 
-  //if( (esdTrack->GetNcls(2)>fCutsRC->GetMinNClustersTRD()) &&
   if( (trdTrack) &&
       (trdTrack->GetNumberOfTracklets()>fCutsRC->GetMinNTrackletsTRD()) &&
       (trdTrack->GetTracklet(0)) &&
@@ -547,6 +565,8 @@ void AliPerformanceMatch::Analyse() {
   char name[256];
   char title[256];
 
+  if(GetAnalysisMode()==0 || GetAnalysisMode()==1) { 
+
   fResolHisto->GetAxis(10)->SetRangeUser(1.0,2.0); // only reconstructed
   fPullHisto->GetAxis(10)->SetRangeUser(1.0,2.0);  // only reconstructed
   for(Int_t i=0; i<5; i++) 
@@ -556,7 +576,7 @@ void AliPerformanceMatch::Analyse() {
       //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
       if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
       else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
-      fResolHisto->GetAxis(9)->SetRangeUser(0.16,100.); // pt threshold
+      fResolHisto->GetAxis(9)->SetRangeUser(0.1,100.); // pt threshold
 
       h2D = (TH2F*)fResolHisto->Projection(i,j);
 
@@ -570,7 +590,7 @@ void AliPerformanceMatch::Analyse() {
       sprintf(title,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
-      if(j==9) h->SetBit(TH1::kLogX);    
+      //if(j==9) h->SetBit(TH1::kLogX);    
       aFolderObj->Add(h);
 
       h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
@@ -589,10 +609,9 @@ void AliPerformanceMatch::Analyse() {
       aFolderObj->Add(h);
 
       //
-      //if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
       if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
       else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49); // eta window
-      fPullHisto->GetAxis(9)->SetRangeUser(0.16,100.);  // pt threshold
+      fPullHisto->GetAxis(9)->SetRangeUser(0.1,100.);  // pt threshold
 
       h2D = (TH2F*)fPullHisto->Projection(i,j);
 
@@ -606,7 +625,7 @@ void AliPerformanceMatch::Analyse() {
       sprintf(title,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
-      //if(j==9) h->SetBit(TH1::kLogX);    
+      if(j==9) h->SetBit(TH1::kLogX);    
       aFolderObj->Add(h);
 
       h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
@@ -631,16 +650,16 @@ void AliPerformanceMatch::Analyse() {
   {
     if(i!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
     else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
-    fResolHisto->GetAxis(9)->SetRangeUser(0.16,100.); // pt threshold
+    fResolHisto->GetAxis(9)->SetRangeUser(0.1,100.); // pt threshold
 
     fResolHisto->GetAxis(10)->SetRange(1,fResolHisto->GetAxis(10)->GetNbins()); // all 
     h = (TH1F*)fResolHisto->Projection(i);
 
-    fResolHisto->GetAxis(10)->SetRangeUser(1.0,2.0); // only reconstructed
+    fResolHisto->GetAxis(10)->SetRange(2,2); // only reconstructed
     h2 = (TH1F*)fResolHisto->Projection(i);
 
     TH1F* h2c = (TH1F*)h2->Clone();
-    h2c->Divide(h2c,h,1,1,"B");
+    h2c->Divide(h2,h,1,1,"B");
  
     sprintf(name,"h_eff_%d",i);
     h2c->SetName(name);
@@ -651,6 +670,47 @@ void AliPerformanceMatch::Analyse() {
 
     aFolderObj->Add(h2c);
   }
+
+  }
+  
+  // 
+  // TPC efficiency wrt ITS
+  //
+  if(GetAnalysisMode()==2) { 
+
+    h = (TH1F*)fTrackingEffHisto->Projection(0);
+    aFolderObj->Add(h);
+
+    for(Int_t i=1; i<7; i++) 
+    {
+      //
+      // 
+      // calculate efficiency 
+      //
+
+      // all ITS standalone tracks
+      fTrackingEffHisto->GetAxis(0)->SetRange(1,fTrackingEffHisto->GetAxis(0)->GetNbins());
+      h = (TH1F*)fTrackingEffHisto->Projection(i);
+
+      // TPC tracks which has matching with TPC
+      fTrackingEffHisto->GetAxis(0)->SetRange(2,2);
+      h2 = (TH1F*)fTrackingEffHisto->Projection(i);
+
+      TH1F* h2c = (TH1F*)h2->Clone();
+      h2c->Divide(h2,h,1,1,"B");
+ 
+      sprintf(name,"h_TPC_eff_%d",i);
+      h2c->SetName(name);
+
+      h2c->GetXaxis()->SetTitle(h2c->GetXaxis()->GetTitle());
+      h2c->GetYaxis()->SetTitle("efficiency");
+      h2c->SetTitle("TPC effciency wrt ITS");
+
+      aFolderObj->Add(h2c);
+    }
+
+  }
+
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
 
@@ -716,6 +776,7 @@ Long64_t AliPerformanceMatch::Merge(TCollection* const list)
 
   fResolHisto->Add(entry->fResolHisto);
   fPullHisto->Add(entry->fPullHisto);
+  fTrackingEffHisto->Add(entry->fTrackingEffHisto);
 
   count++;
   }

@@ -319,7 +319,7 @@ void AliPerformanceDCA::Analyse()
   char title[256];
 
   // set pt measurable range 
-  fDCAHisto->GetAxis(3)->SetRangeUser(0.10,10.);
+  //fDCAHisto->GetAxis(3)->SetRangeUser(0.10,10.);
 
   //
   h2D = fDCAHisto->Projection(0,1); // inverse projection convention
@@ -480,12 +480,6 @@ void AliPerformanceDCA::Analyse()
   h2D->SetTitle(title);
   aFolderObj->Add(h2D);
   */
-
-
-
-
-
-
 
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);

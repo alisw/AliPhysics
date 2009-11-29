@@ -187,26 +187,36 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   esdTrack->GetImpactParametersTPC(dca,cov);
 
   if((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
-  { 
-    Float_t dedx = esdTrack->GetTPCsignal();
-    Int_t ncls = esdTrack->GetTPCNcls();
 
-    Double_t pt = innerParam->Pt();
-    Double_t lam = TMath::ATan2(innerParam->Pz(),innerParam->Pt());
-    Double_t p = pt/TMath::Cos(lam);
-    //Double_t alpha = innerParam->GetAlpha();
-    Double_t phi = TMath::ATan2(innerParam->Py(),innerParam->Px());
-    //if(phi<0.) phi += 2.*TMath::Phi();
-    Double_t y = innerParam->GetY();
-    Double_t z = innerParam->GetZ();
-    Double_t snp = innerParam->GetSnp();
-    Double_t tgl = innerParam->GetTgl();
-
-    //Double_t vDeDxHisto[8] = {dedx,alpha,y,z,snp,tgl,ncls,p};
-    Double_t vDeDxHisto[8] = {dedx,phi,y,z,snp,tgl,ncls,p};
-    fDeDxHisto->Fill(vDeDxHisto); 
+  //
+  // select primaries
+  //
+  Double_t dcaToVertex = -1;
+  if( fCutsRC->GetDCAToVertex2D() ) 
+  {
+      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY()                    + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
   }
+  if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
+  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
+  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
+
+  Float_t dedx = esdTrack->GetTPCsignal();
+  Int_t ncls = esdTrack->GetTPCNcls();
+
+  Double_t pt = innerParam->Pt();
+  Double_t lam = TMath::ATan2(innerParam->Pz(),innerParam->Pt());
+  Double_t p = pt/TMath::Cos(lam);
+  //Double_t alpha = innerParam->GetAlpha();
+  Double_t phi = TMath::ATan2(innerParam->Py(),innerParam->Px());
+  //if(phi<0.) phi += 2.*TMath::Phi();
+  Double_t y = innerParam->GetY();
+  Double_t z = innerParam->GetZ();
+  Double_t snp = innerParam->GetSnp();
+  Double_t tgl = innerParam->GetTgl();
+
+  //Double_t vDeDxHisto[8] = {dedx,alpha,y,z,snp,tgl,ncls,p};
+  Double_t vDeDxHisto[8] = {dedx,phi,y,z,snp,tgl,ncls,p};
+  fDeDxHisto->Fill(vDeDxHisto); 
 
   if(!stack) return;
 }
@@ -358,11 +368,12 @@ void AliPerformanceDEdx::Analyse()
   }
 
   // resolution histograms for mips
+  //dedx:phi:y:z:snp:tgl:ncls:p
   fDeDxHisto->GetAxis(2)->SetRangeUser(-15.,14.999);
   fDeDxHisto->GetAxis(3)->SetRangeUser(-120.,119.999);
   fDeDxHisto->GetAxis(4)->SetRangeUser(-0.4, 0.399);
-  fDeDxHisto->GetAxis(5)->SetRangeUser(-1.,0.999);
-  fDeDxHisto->GetAxis(6)->SetRangeUser(60.,140.);
+  fDeDxHisto->GetAxis(5)->SetRangeUser(-0.9,0.89);
+  fDeDxHisto->GetAxis(6)->SetRangeUser(60.,160.);
   fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.499);
 
   h1D=(TH1F*)fDeDxHisto->Projection(0);
@@ -415,7 +426,7 @@ void AliPerformanceDEdx::Analyse()
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
 
-  // delete only TObjrArray
+  // delete only TObjArray
   if(aFolderObj) delete aFolderObj;
 }
 
