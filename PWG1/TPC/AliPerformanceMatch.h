@@ -95,7 +95,7 @@ private:
   THnSparseF *fPullHisto;  //-> pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt:isRec
 
   // tracking efficiency using ITS stand-alone tracks histogram
-  THnSparseF *fTrackingEffHisto;  // -> has match:y:z:snp:tgl:pt:ITSclusters
+  THnSparseF *fTrackingEffHisto;  //-> has match:y:z:snp:tgl:phi:pt:ITSclusters
 
   // Global cuts objects
   AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks
