@@ -42,6 +42,7 @@
 #include "AliITSgeomTGeo.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecPointContainer.h"
 #include "AliITSdigitSSD.h"
 #include "AliITSBadChannelsSSDv2.h"
 
@@ -1527,23 +1528,23 @@ Int_t AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
   Int_t rv = 0 ; 
   Int_t gLayer = 0, gLadder = 0, gModule = 0;
   Int_t lLadderLocationY = 0;
-  TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
-  if (!branchRecP) { 
-    AliError("can't get the branch with the ITS clusters !");
+  AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
+  TClonesArray *recpoints = rpcont->FetchClusters(0,clustersTree); 
+  if(!rpcont->GetStatusOK() || !rpcont->IsSSDActive()){
+    AliError("can't get SSD clusters !");
     return rv;
   }
  
   //AliInfo(Form("fAliITSQADataMakerRec->GetEventSpecie() %d\n",fAliITSQADataMakerRec->GetEventSpecie()));
   //AliInfo(Form("fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()] %d\n",fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]));
-  static TClonesArray statRecpoints("AliITSRecPoint");
-  TClonesArray *recpoints = &statRecpoints;
-  branchRecP->SetAddress(&recpoints);
   Int_t nClustersLayer5 = 0, nClustersLayer6 = 0;
   Int_t npoints = 0;      
   Float_t cluglo[3]={0.,0.,0.}; 
   //printf("*-*-*-*-*-*-*---*-*-*-------*-*-*-*-*-*-***************AliITSQASSDataMakerRec::MakeRecpoints STEP1 \n");
-  for(Int_t module = 0; module < clustersTree->GetEntries(); module++){
-    branchRecP->GetEvent(module);
+  Int_t firMod = AliITSgeomTGeo::GetModuleIndex(5,1,1);
+  Int_t lasMod =  AliITSgeomTGeo::GetNModules();
+  for(Int_t module = firMod; module < lasMod; module++){
+    recpoints = rpcont->UncheckedGetClusters(module);
     npoints += recpoints->GetEntries();
     AliITSgeomTGeo::GetModuleId(module,gLayer,gLadder,gModule);
     //printf("SSDDataMAkerRec:::::::::::::::::::::::gLayer ========== %d \n\n",gLayer);
@@ -1617,7 +1618,6 @@ Int_t AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
   fAliITSQADataMakerRec->GetRecPointsData(fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()] + 2)->Fill(nClustersLayer5);
   fAliITSQADataMakerRec->GetRecPointsData(fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()] + 3)->Fill(nClustersLayer6);
 
-  statRecpoints.Clear();
   return rv ; 
 }
 

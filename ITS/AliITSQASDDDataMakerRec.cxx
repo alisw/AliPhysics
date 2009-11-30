@@ -50,6 +50,7 @@
 #include "AliITSDetTypeRec.h"
 #include "AliITSdigit.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecPointContainer.h"
 #include "AliITSgeomTGeo.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -645,15 +646,13 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 
   Int_t lay, lad, det; 
   //AliInfo("get the branch with the ITS clusters !\n");
-  TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
-  if (!branchRecP) {
-    AliError("can't get the branch with the ITS clusters !");
-    return rv ;
+  AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
+  TClonesArray *recpoints = rpcont->FetchClusters(0,clustersTree); 
+  if(!rpcont->GetStatusOK() || !rpcont->IsSDDActive()){
+    AliError("can't get SDD clusters !");
+    return rv;
   }
 
-  static TClonesArray statRecpoints("AliITSRecPoint") ;
-  TClonesArray *recpoints = &statRecpoints;
-  branchRecP->SetAddress(&recpoints);
   Int_t npoints = 0;      
   Float_t cluglo[3]={0.,0.,0.}; 
   if(fkOnline)
@@ -663,9 +662,11 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 	  fAliITSQADataMakerRec->GetRecPointsData(i+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
 	}
     }
-  for(Int_t module=0; module<clustersTree->GetEntries();module++){
+  Int_t firMod=AliITSgeomTGeo::GetModuleIndex(3,1,1);
+  Int_t lasMod=AliITSgeomTGeo::GetModuleIndex(5,1,1);
+  for(Int_t module=firMod; module<lasMod;module++){
     //AliInfo(Form("Module %d\n",module));
-    branchRecP->GetEvent(module);
+    recpoints = rpcont->UncheckedGetClusters(module);
     npoints += recpoints->GetEntries();
     //AliInfo(Form("modnumb %d, npoints %d, total points %d\n",module, recpoints->GetEntries(),npoints));
     //AliITSgeomTGeo::GetModuleId(module, lay, lad, det);
@@ -709,7 +710,6 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
       }
     }
   }
-  statRecpoints.Clear();
   return rv ; 
 }
 

@@ -40,6 +40,7 @@
 #include "AliQAChecker.h"
 #include "AliITSQAChecker.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecPointContainer.h"
 #include "AliRawReader.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -317,9 +318,9 @@ void AliITSQADataMakerRec::InitRecPoints()
 
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
-{
- 
+{ 
   // Fill QA for recpoints
+ 
   if(fSubDetector == 0 || fSubDetector == 1) {
     fSPDDataMaker->MakeRecPoints(clustersTree) ; 
   }
@@ -334,22 +335,20 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 
   if(fSubDetector == 0){
     // Check id histograms already created for this Event Specie
-    TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
-    if (!branchRecP) {
-      AliError("can't get the branch with the ITS clusters !");
+    AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
+    TClonesArray *recpoints = rpcont->FetchClusters(0,clustersTree); 
+    if(!rpcont->GetStatusOK()){
+      AliError("connot access to ITS recpoints");
       return;
     }
     
     Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
     Float_t cluGlo[3] = {0.,0.,0.};
     Int_t lay, lad, det; 
-    static TClonesArray statRecpoints("AliITSRecPoint") ;
-    TClonesArray *recpoints = &statRecpoints;
-    branchRecP->SetAddress(&recpoints);
     // Fill QA for recpoints
-    for(Int_t module=0; module<clustersTree->GetEntries();module++){
+    for(Int_t module=0; module<rpcont->GetNumberOfModules();module++){
       //  AliInfo(Form("Module %d\n",module));
-      branchRecP->GetEvent(module);
+      recpoints = rpcont->UncheckedGetClusters(module);
       AliITSgeomTGeo::GetModuleId(module, lay, lad, det);
       for(Int_t j=0;j<recpoints->GetEntries();j++){
 	AliITSRecPoint *rcp = (AliITSRecPoint*)recpoints->At(j);    
@@ -573,7 +572,7 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
   // Check id histograms already created for this Event Specie
 //  if ( ! GetESDsData(0) )
 //    InitESDs() ;
-  
+ 
   const Int_t nESDTracks = esd->GetNumberOfTracks();
   Int_t nITSrefit5 = 0; 
 
@@ -581,6 +580,7 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
   Float_t xloc,zloc;
 
   // loop on tracks
+  AliInfo(Form("Filling histograms for ESD. Number of tracks %d",nESDTracks)); 
   for(Int_t i = 0; i < nESDTracks; i++) {
     
     AliESDtrack *track = esd->GetTrack(i);
@@ -620,6 +620,7 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
   const AliESDVertex *vtxTrk = esd->GetPrimaryVertexTracks();
 
   Int_t mult = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetNumberOfTracklets();
+  AliInfo(Form("Multiplicity %d ; Number of SPD vert contributors %d",mult,vtxSPD->GetNContributors()));
   if(mult>0)
     GetESDsData(7)->Fill((Float_t)(vtxSPD->GetNContributors())/(Float_t)mult);
 

@@ -99,9 +99,8 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
 {
 
 
-  // Super-basic check on the QA histograms on the input list:
-  // look whether they are empty!
-  //for the ITS subdetectorQA (Raws Digits Hits RecPoints SDigits) return the worst (= lowest) value of the three result
+  // basic checks on the QA histograms on the input list
+  //for the ITS subdetectorQA (Raws Digits Hits RecPoints SDigits) return the worst value of the three result
   if(index == AliQAv1::kESD){
 
     Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
@@ -160,7 +159,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
                 if(skipped[k-1]) continue;
                 if(hdata->GetBinContent(k)<0.5*(entries/6.)){
                   cluMapSA = kFALSE;
-                  AliDebug(AliQAv1::GetQADebugLevel(), Form("SA tracks have few points on layer %d - look at histogram hESDClustersSA",k));
+                  AliDebug(AliQAv1::GetQADebugLevel(),Form("SA tracks have few points on layer %d - look at histogram hESDClustersSA",k));
                 }
               }  
             }
@@ -175,7 +174,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
                 if(skipped[k-1]) continue;
                 if(hdata->GetBinContent(k)<0.5*(entries/6.)){
                   cluMapMI = kFALSE;
-                  AliDebug(AliQAv1::GetQADebugLevel(), Form("MI tracks have few points on layer %d - look at histogram hESDClustersMI",k));
+                  AliDebug(AliQAv1::GetQADebugLevel(),Form("MI tracks have few points on layer %d - look at histogram hESDClustersMI",k));
                 }
               }  
             }
@@ -188,7 +187,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
               for(Int_t k=2; k<7-nskipped; k++){
                 if(hdata->GetBinContent(k)>maxlaytracks){
                   cluMI = kFALSE;
-                  AliDebug(AliQAv1::GetQADebugLevel(), Form("MI Tracks with %d clusters are more than tracks with %d clusters. Look at histogram hESDClustersMI",k-1,6-nskipped));
+                  AliDebug(AliQAv1::GetQADebugLevel(),Form("MI Tracks with %d clusters are more than tracks with %d clusters. Look at histogram hESDClustersMI",k-1,6-nskipped));
                 }
               }
             }
@@ -212,33 +211,32 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
               verSPDZ = kTRUE;
               if(hdata->GetMean()<-5. && hdata->GetMean()>5.){
                 verSPDZ = kFALSE;
-                AliDebug(AliQAv1::GetQADebugLevel(), Form("Average z vertex coordinate is at z= %10.4g cm",hdata->GetMean()));
+                AliDebug(AliQAv1::GetQADebugLevel(),Form("Average z vertex coordinate is at z= %10.4g cm",hdata->GetMean()));
               }
             }
           }
-
           else{
             AliError("ESD Checker - invalid data type");
           }
-	  
-          rv[specie] = 0.;
-          if(tested>0){
-            if(tested == empty){
-              rv[specie] = 0.1;
-              AliWarning("All ESD histograms are empty");
-            }
-            else {
-              rv[specie] = 0.1+0.4*(static_cast<Double_t>(tested-empty)/static_cast<Double_t>(tested));
-              if(cluMapSA)rv[specie]+=0.1;
-              if(cluMapMI)rv[specie]+=0.1;
-              if(cluMI)rv[specie]+=0.1;
-              if(cluSA)rv[specie]+=0.1;
-              if(verSPDZ)rv[specie]+=0.1;
-            }
-          }
-        }
-      }  
-      AliDebug(AliQAv1::GetQADebugLevel(), Form("ESD - Tested %d histograms, Return value %f \n",tested,rv[specie]));
+	}
+	rv[specie] = 0.;
+	if(tested>0){
+	  if(tested == empty){
+	    rv[specie] = 2500.; // set to error
+	    AliWarning(Form("All ESD histograms are empty - specie=%d",specie));
+	  }
+	  else {
+	    rv[specie] = 2500.-1500.*(static_cast<Double_t>(tested-empty)/static_cast<Double_t>(tested)); // INFO if all histos are filled
+	    if(cluMapSA)rv[specie]-=200.;
+	    if(cluMapMI)rv[specie]-=200.;
+	    if(cluMI)rv[specie]-=200.;
+	    if(cluSA)rv[specie]-=200.;
+	    if(verSPDZ)rv[specie]-=199.;  // down to 1 if everything is OK
+	  }
+	}
+      }
+      //     AliDebug(AliQAv1::GetQADebugLevel(), Form("ESD - Tested %d histograms, Return value %f \n",tested,rv[specie]));
+      AliInfo(Form("ESD - Tested %d histograms, Return value %f \n",tested,rv[specie]));
     }
     return rv ; 
   }  // end of ESD QA

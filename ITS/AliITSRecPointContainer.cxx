@@ -28,7 +28,8 @@ fSSDNModules(0),
 fArray(),
 fCurrentEve(-1000),
 fActualSize(0),
-fDet(""){
+fDet(""),
+fStatusOK(kTRUE){
   // Default constructor
 
   if(fgkNModules != AliITSgeomTGeo::GetNModules())AliError(Form("The total number of modules is not %d, but %d",fgkNModules,AliITSgeomTGeo::GetNModules()));
@@ -89,7 +90,10 @@ void AliITSRecPointContainer::CookEntries(){
   if(fActualSize == (fSPDNModules+fSSDNModules))fDet = "SPD SSD ";
   if(fActualSize == (fSDDNModules+fSSDNModules))fDet = "SDD SSD ";
   if((!fDet.Contains("SPD")) && (!fDet.Contains("SDD")) &&
-     (!fDet.Contains("SSD")))AliError(Form("The number of active modules %d does not correspond to any standard configuration of the detector",fActualSize));
+     (!fDet.Contains("SSD"))){
+    AliError(Form("The number of active modules %d does not correspond to any standard configuration of the detector",fActualSize));
+    fStatusOK = kFALSE;
+  }
 }
 //______________________________________________________________________
 TClonesArray* AliITSRecPointContainer::FetchClusters(Int_t mod, TTree* tR){
@@ -102,6 +106,7 @@ TClonesArray* AliITSRecPointContainer::FetchClusters(Int_t mod, TTree* tR){
     branch = tR->GetBranch("ITSRecPoints");
     if(!branch){
       AliError("Branch ITSRecPoints not found on ITS recpoints TTree");
+      fStatusOK = kFALSE;
       return NULL;
     }
 

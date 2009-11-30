@@ -41,6 +41,7 @@
 #include "AliITSRawStreamSPDErrorLog.h"
 #include "AliITSdigitSPD.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecPointContainer.h"
 
 ClassImp(AliITSQASPDDataMakerRec)
 
@@ -554,31 +555,29 @@ Int_t AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
 {
   // Fill QA for RecPoints - SPD -
   Int_t rv = 0 ; 
-  static TClonesArray statITSCluster("AliITSRecPoint");
-  TClonesArray *ITSCluster = &statITSCluster;
-  TBranch* itsClusterBranch=clusterTree->GetBranch("ITSRecPoints");
-  if (!itsClusterBranch) {
-    AliError("can't get the branch with the ITS clusters !");
+  AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
+  TClonesArray *recpoints = rpcont->FetchClusters(0,clusterTree); 
+  if(!rpcont->GetStatusOK() || !rpcont->IsSPDActive()){
+    AliError("can't get SPD clusters !");
     return rv;
   }
-  
+ 
   //AliInfo(Form("fAliITSQADataMakerRec->GetEventSpecie() %d\n",fAliITSQADataMakerRec->GetEventSpecie()));
   //AliInfo(Form("fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()] %d\n",fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]));
-  itsClusterBranch->SetAddress(&ITSCluster);
-  Int_t nItsMods = (Int_t)clusterTree->GetEntries();
+  Int_t nSPDmod = AliITSgeomTGeo::GetModuleIndex(3,1,1);
   
   Float_t cluGlo[3] = {0.,0.,0.};
   Int_t nClusters[2] = {0,0};
   
-  for (Int_t iIts=0; iIts < nItsMods; iIts++) {
-    
-    if (!clusterTree->GetEvent(iIts))    continue;
-    Int_t nCluster = ITSCluster->GetEntriesFast();
+  for (Int_t iIts=0; iIts < nSPDmod; iIts++) {
+    recpoints = rpcont->UncheckedGetClusters(iIts);
+    Int_t nCluster = recpoints->GetEntriesFast();
+    if(nCluster == 0)continue;
     // loop over clusters
     while(nCluster--) {
-      AliITSRecPoint* cluster = (AliITSRecPoint*)ITSCluster->UncheckedAt(nCluster);
-      
-      if (cluster->GetLayer()>1)        continue;
+      AliITSRecPoint* cluster = 
+                      (AliITSRecPoint*)recpoints->UncheckedAt(nCluster);
+      if (cluster->GetLayer()>1)continue;
       Int_t lay=cluster->GetLayer();
       fAliITSQADataMakerRec->GetRecPointsData(0 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(lay);
       cluster->GetGlobalXYZ(cluGlo);
@@ -623,7 +622,6 @@ Int_t AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
   
   fAliITSQADataMakerRec->GetRecPointsData(29 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(nClusters[0],nClusters[1]);
   
-  statITSCluster.Clear();
   return rv ;
 }
 

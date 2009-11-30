@@ -24,6 +24,8 @@ class AliITSRecPointContainer : public TObject {
   Bool_t IsSDDActive() const {return fDet.Contains("SDD");}
   Bool_t IsSSDActive() const {return fDet.Contains("SSD");}
   Bool_t IsITSComplete() const {return fDet.Contains("ALL");}
+  Bool_t GetStatusOK() const {return fStatusOK;}
+  Int_t GetNumberOfModules() const {return fActualSize; }
 
   static AliITSRecPointContainer* Instance(const AliITSRecoParam *ptr=NULL);
   TClonesArray* FetchClusters(Int_t mod, TTree* tR);
@@ -49,6 +51,8 @@ class AliITSRecPointContainer : public TObject {
   Int_t fCurrentEve; //!run number
   Int_t fActualSize; //! actual number of ITS modules in TTree R 
   TString fDet; //! ITS subdetectors active for the current run 
+  Bool_t fStatusOK; //! kFALSE is RP branch is absent or if there are anomalies
+                    //! in the number of active modules
 
   ClassDef(AliITSRecPointContainer,0)
 };
