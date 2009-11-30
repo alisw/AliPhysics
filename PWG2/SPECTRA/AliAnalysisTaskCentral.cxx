@@ -13,12 +13,12 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  ******************************************
-//  * analysis task for azimuthal isotropic  *
-//  * expansion in highly central collisions *
-//  * author: Cristian Andrei                *
-//  *         acristian@niham.nipne.ro       *
-//  ******************************************
+//  ------------------------------------------
+//  analysis task for azimuthal isotropic
+//  expansion in highly central collisions
+//  author: Cristian Andrei
+//          acristian@niham.nipne.ro
+//  ------------------------------------------
 
 #include "TChain.h"
 #include "TTree.h"
@@ -26,7 +26,7 @@
 #include "TList.h"
 #include "TObjArray.h"
 #include "TString.h"
-// #include "TCanvas.h"
+#include "TFile.h"
 
 #include "AliAnalysisManager.h"
 #include "AliMCEvent.h"
@@ -35,6 +35,8 @@
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliCFContainer.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisDataSlot.h"
 
 #include "AliAnalysisCentralCutMC.h"
 #include "AliAnalysisCentralCutESD.h"
@@ -72,6 +74,13 @@ AliAnalysisTaskCentral::AliAnalysisTaskCentral(const char *name)
 		fCutsList[i] = 0;
     } 
 
+	InitCuts(); //initialize the analysis specific cuts	
+    if (!fCutsList) {
+		Printf("ERROR: fCutsList not available");
+		return;
+    }
+	
+	printf("AliAnalysisTaskCentral::Constructor\n");
 }
 
 
@@ -96,6 +105,7 @@ AliAnalysisTaskCentral::~AliAnalysisTaskCentral()
 	
 	if(fOutList) delete fOutList;
 
+	printf("AliAnalysisTaskCentral::Destructor\n");
 }
 
 //________________________________________________________________________
@@ -126,8 +136,9 @@ void AliAnalysisTaskCentral::ConnectInputData(Option_t *) {
 void AliAnalysisTaskCentral::CreateOutputObjects(){
 //Creates the output list
 
-	fNoEvt = new TH1F(Form("%s_NoEvt",GetName()), "Number of processed events", 1, 0.0, 1.0);
+// 	fNoEvt = new TH1F(Form("%s_NoEvt",GetName()), "Number of processed events", 1, 0.0, 1.0);
 
+	fNoEvt = new TH1F("TaskCentral_NoEvt", "Number of processed events", 1, 0.0, 1.0);
 //set here the:     
     //min and max variable values (to do: move these to a separate cuts class)
     const Double_t ptmin  = 0.0 ; //bins in pt
@@ -161,9 +172,9 @@ void AliAnalysisTaskCentral::CreateOutputObjects(){
     for(Int_t i=0; i<=nbineta; i++) binLim2[i]=(Double_t)etamin  + (etamax-etamin)  /nbineta*(Double_t)i ;
 
 	//container creation
-	fCFContainerPi = new AliCFContainer(Form("%s_CFCont_Pi",GetName()),"container for tracks",nstep,nvar,iBin);
-	fCFContainerK = new AliCFContainer(Form("%s_CFCont_K",GetName()),"container for tracks",nstep,nvar,iBin);
-	fCFContainerP = new AliCFContainer(Form("%s_CFCont_P",GetName()),"container for tracks",nstep,nvar,iBin);
+	fCFContainerPi = new AliCFContainer("TaskCentral_CFCont_Pi","container for tracks",nstep,nvar,iBin);
+	fCFContainerK = new AliCFContainer("TaskCentral_CFCont_K","container for tracks",nstep,nvar,iBin);
+	fCFContainerP = new AliCFContainer("TaskCentral_CFCont_P","container for tracks",nstep,nvar,iBin);
 	
     //setting the bin limits
     fCFContainerPi -> SetBinLimits(ipt,binLim1);
@@ -341,6 +352,7 @@ void AliAnalysisTaskCentral::SendEvent(TObject *obj) const{
 Bool_t AliAnalysisTaskCentral::CheckCuts(Int_t no, TObject *obj) const{ 
 
 // For each cut run IsSelected();
+// 	printf("AliAnalysisTaskCentral::CheckCuts IN\n");
 
     if(no > 10){
 		printf("\nAliAnalysisTaskCentral::CheckCuts -> Cut number is not ok! \n");
@@ -356,9 +368,13 @@ Bool_t AliAnalysisTaskCentral::CheckCuts(Int_t no, TObject *obj) const{
     AliAnalysisCuts *cut = 0;
 
     while((cut = (AliAnalysisCuts*)iter.Next())){
-		if(!cut->IsSelected(obj)) return kFALSE;
+		if(!cut->IsSelected(obj)){
+// 			printf("AliAnalysisTaskCentral::CheckCuts OUT\n");
+			return kFALSE;
+		}
     }
 
+// 	printf("AliAnalysisTaskCentral::CheckCuts OUT\n");
     return kTRUE;
 }
 
@@ -369,12 +385,6 @@ void AliAnalysisTaskCentral::Exec(Option_t *) {
 // Main loop
 // Called for each event
 	
-	InitCuts(); //initialize the analysis specific cuts	
-    if (!fCutsList) {
-		Printf("ERROR: fCutsList not available");
-		return;
-    }
-
 	Double_t pt, eta;
 	Double_t w = 1.0;    
 	const Int_t nvar=2; //number of variables on the grid:pt,vtx
@@ -508,7 +518,7 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 	extK->SetParticle("kKPlus");
 	extK->ApplyEff();
 	extK->BoltzmannFit();
-	extK->TsallisFit();
+ 	extK->TsallisFit();
 	TList *extOutListK = extK->GetOutputList();
 	
 	AliAnalysisCentralExtrapolate *extP = new AliAnalysisCentralExtrapolate("extrapolationP");
@@ -516,11 +526,41 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 	extP->SetParticle("kProton");
 	extP->ApplyEff();
 	extP->BoltzmannFit();
-	extP->TsallisFit();
+ 	extP->TsallisFit();
 	TList *extOutListP = extP->GetOutputList();
 
-	fOutList->Add(extOutListPi);
-	fOutList->Add(extOutListK);
-	fOutList->Add(extOutListP);
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	if(!mgr){
+		printf("Unable to get AnalysisManager! \n");
+        return;
+	}
+
+	TString anaType;
+	mgr->GetAnalysisTypeString(anaType);
+
+	if(anaType.Contains("local")){
+		fOutList->Add(extOutListPi);
+		fOutList->Add(extOutListK);
+		fOutList->Add(extOutListP);
+	}
+	else{
+		AliAnalysisDataContainer *cont = GetOutputSlot(0)->GetContainer();
+		if(!cont){
+			printf("Unable to get DataContainer! \n");
+			return;
+		}
+	
+		printf("file name = %s\n", cont->GetFileName());
+		TFile file(cont->GetFileName(),"update");
+	
+		file.cd("PWG2Central");
+	
+		gFile->WriteObject(extOutListPi,"pion_list","SingleKey");
+		gFile->WriteObject(extOutListK,"kaon_list","SingleKey");
+		gFile->WriteObject(extOutListP,"proton_list","SingleKey");
+		file.Close();
+	}
+
 
 }

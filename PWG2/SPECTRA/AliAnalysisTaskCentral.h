@@ -1,17 +1,18 @@
-#ifndef ALI_ANALYSIS_TASK_CENTRAL_H
-#define ALI_ANALYSIS_TASK_CENTRAL_H
+#ifndef ALIANALYSISTASKCENTRAL_H
+#define ALIANALYSISTASKCENTRAL_H
+
 /*
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.
  * See cxx source for full Copyright notice
  * $Id$
  */
 
-//  ******************************************
-//  * analysis task for azimuthal isotropic  *
-//  * expansion in highly central collisions *
-//  * author: Cristian Andrei                *
-//  *         acristian@niham.nipne.ro       *
-//  ******************************************
+//-----------------------------------------
+//  analysis task for azimuthal isotropic
+//  expansion in highly central collisions
+//  author: Cristian Andrei
+//         acristian@niham.nipne.ro
+//-----------------------------------------
 
 #include "AliAnalysisTask.h"
 

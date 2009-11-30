@@ -1,26 +1,30 @@
 #ifndef ALIANALYSISCENTRALCUTESD_H
 #define ALIANALYSISCENTRALCUTESD_H
+
+
 /*
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.
  * See cxx source for full Copyright notice
  * $Id$
  */
 
-//  ***************************************************
-//  * ESD particle level cuts for azimuthal isotropic *
-//  * expansion in highly central collisions analysis *
-//  * author: Cristian Andrei                         *
-//  *         acristian@niham.nipne.ro                *
-//  ***************************************************
+// ---------------------------------------------------
+//  ESD particle level cuts for azimuthal isotropic
+//  expansion in highly central collisions analysis
+//  author: Cristian Andrei
+//           acristian@niham.nipne.ro
+// ---------------------------------------------------
 
+
+#include <TString.h>
 #include <TPDGCode.h>
 
 #include "AliAnalysisCuts.h"
 
+
 class TObject;
 class TList;
 class TF1;
-class TString;
 
 class AliESDtrack;
 

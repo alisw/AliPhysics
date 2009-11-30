@@ -13,23 +13,27 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  ***************************************************
-//  * ESD event level cuts for azimuthal isotropic    *
-//  * expansion in highly central collisions analysis *
-//  * author: Cristian Andrei                         *
-//  *         acristian@niham.nipne.ro                *
-//  ***************************************************
+// ---------------------------------------------------
+//  ESD event level cuts for azimuthal isotropic
+//  expansion in highly central collisions analysis
+//  author: Cristian Andrei
+//           acristian@niham.nipne.ro
+//  --------------------------------------------------
 
 #include "TMath.h"
 #include <TObjArray.h>
+#include <TList.h>
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliMultiplicity.h"
-#include "AliAnalysisCentralCutESD.h"
+ #include "AliMultiplicity.h"
 
+#include "AliAnalysisCentralCutESD.h"
 #include "AliAnalysisCentralCutEvtESD.h"
+
+class TObject;
+
 
 //____________________________________________________________________
 ClassImp(AliAnalysisCentralCutEvtESD)
@@ -56,6 +60,13 @@ AliAnalysisCentralCutEvtESD::AliAnalysisCentralCutEvtESD(const Char_t* name, con
 		fCutsList[i] = 0;
     }
 
+	InitCuts();
+	if (!fCutsList) {
+		Printf("ERROR: fCutsList not available");
+		return;
+    }
+
+	printf("AliAnalysisCentralCutEvtESD::Constructor\n");
 }
 
 AliAnalysisCentralCutEvtESD::~AliAnalysisCentralCutEvtESD() {
@@ -64,6 +75,7 @@ AliAnalysisCentralCutEvtESD::~AliAnalysisCentralCutEvtESD() {
 		delete [] fCutsList;
 	}
 
+	printf("AliAnalysisCentralCutEvtESD::Destructor\n");
 }
 
 
@@ -71,13 +83,12 @@ AliAnalysisCentralCutEvtESD::~AliAnalysisCentralCutEvtESD() {
 Bool_t AliAnalysisCentralCutEvtESD::IsSelected(TObject *obj){
 // check whether the event passes the cuts
     AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(obj);
-
     if(!esdEvent){
 		printf("AliAnalysisCentralCutEvtESD:IsSelected ->Can't get ESD event!\n");
 		return kFALSE;
     }
 
-    if(fReqMult){
+	if(fReqMult){
 		Int_t mult = CalcMult(esdEvent);
 		if((mult<fMultMin)||(mult>fMultMax)){
 			return kFALSE;
@@ -193,7 +204,7 @@ Double_t AliAnalysisCentralCutEvtESD::CalcDir(AliESDEvent* const esdEv) {
 
 //Compute the directivity - FULL ALICE
 
-    InitCuts();
+//     InitCuts();
 
     Double_t dir;
     Double_t px,py;
@@ -247,7 +258,7 @@ Int_t AliAnalysisCentralCutEvtESD::CalcMult(AliESDEvent* const esdEv) {
 
 //Compute multiplicity - FULL ALICE
 
-    InitCuts();
+//     InitCuts();
 
     Int_t charged = 0;
 
@@ -284,7 +295,7 @@ Double_t AliAnalysisCentralCutEvtESD::CalcSPDDir(AliESDEvent* const esdEv) {
 
 //Compute directivity - SPD ONLY
 
-    InitCuts();
+//     InitCuts();
 
     Double_t dirU;
     Double_t pxU,pyU;
@@ -342,7 +353,7 @@ Int_t AliAnalysisCentralCutEvtESD::CalcSPDMult(AliESDEvent* const esdEv) {
 
 	//Compute multiplicity - SPD ONLY
 
-    InitCuts();
+//     InitCuts();
 
     const AliMultiplicity *spdMult=esdEv->GetMultiplicity();
     if(!spdMult){

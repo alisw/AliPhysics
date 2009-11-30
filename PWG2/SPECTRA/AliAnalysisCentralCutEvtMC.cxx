@@ -13,12 +13,13 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  ***************************************************
-//  * MC event level cuts for azimuthal isotropic     *
-//  * expansion in highly central collisions analysis *
-//  * author: Cristian ANDREI                         *
-//  *         acristian@niham.nipne.ro                *
-//  ***************************************************
+// ---------------------------------------------------
+//  MC event level cuts for azimuthal isotropic
+//  expansion in highly central collisions analysis
+//  author: Cristian ANDREI
+//          acristian@niham.nipne.ro
+// ----------------------------------------------------
+
 
 #include <TParticle.h>
 
@@ -26,6 +27,10 @@
 #include "AliStack.h"
 
 #include "AliAnalysisCentralCutEvtMC.h"
+
+
+class TObject;
+
 //____________________________________________________________________
 ClassImp(AliAnalysisCentralCutEvtMC)
 
@@ -44,12 +49,12 @@ AliAnalysisCentralCutEvtMC::AliAnalysisCentralCutEvtMC(const Char_t* name, const
 
 {
     //constructor
-
+	printf("AliAnalysisCentralCutEvtMC::Constructor\n");
 }
 
 AliAnalysisCentralCutEvtMC::~AliAnalysisCentralCutEvtMC(){
 //destructor
-
+printf("AliAnalysisCentralCutEvtMC::Destructor\n");
 }
 
 //___________________________________________________________________________
