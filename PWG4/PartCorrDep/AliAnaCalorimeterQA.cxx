@@ -51,6 +51,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAODMCParticle.h"
 #include "AliMCAnalysisUtils.h"
+#include "AliAODPid.h"
 
 ClassImp(AliAnaCalorimeterQA)
   
@@ -743,8 +744,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	}
 	
 	
-	fh1pOverE = new TH1F("h1pOverE","TRACK matches p/E",100,0.,10.);
-	fh1pOverE->SetXTitle("p/E");
+	fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",200.,0.,100., 100,0.,10.);
+	fh1pOverE->SetYTitle("p/E");
+	fh1pOverE->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fh1pOverE);
 	
 	fh1dR = new TH1F("h1dR","TRACK matches dR",300, 0.,TMath::Pi());
@@ -761,8 +763,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fh2EledEdx->SetYTitle("<dE/dx>");
 	outputContainer->Add(fh2EledEdx) ;
 	
-	fhMCEle1pOverE = new TH1F("hMCEle1pOverE","TRACK matches p/E, MC electrons",100,0.,10.);
-	fhMCEle1pOverE->SetXTitle("p/E");
+	fhMCEle1pOverE = new TH2F("hMCEle1pOverE","TRACK matches p/E, MC electrons",200.,0.,100.,100,0.,10.);
+	fhMCEle1pOverE->SetYTitle("p/E");
+	fhMCEle1pOverE->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fhMCEle1pOverE);
 	
 	fhMCEle1dR = new TH1F("hMCEle1dR","TRACK matches dR, MC electrons",300, 0.,TMath::Pi());
@@ -774,8 +777,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhMCEle2MatchdEdx->SetYTitle("<dE/dx>");
 	outputContainer->Add(fhMCEle2MatchdEdx);
 	
-	fhMCChHad1pOverE = new TH1F("hMCChHad1pOverE","TRACK matches p/E, MC charged hadrons",100,0.,10.);
-	fhMCChHad1pOverE->SetXTitle("p/E");
+	fhMCChHad1pOverE = new TH2F("hMCChHad1pOverE","TRACK matches p/E, MC charged hadrons",200.,0.,100.,100,0.,10.);
+	fhMCChHad1pOverE->SetYTitle("p/E");
+	fhMCChHad1pOverE->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fhMCChHad1pOverE);
 	
 	fhMCChHad1dR = new TH1F("hMCChHad1dR","TRACK matches dR, MC charged hadrons",300, 0.,TMath::Pi());
@@ -787,8 +791,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhMCChHad2MatchdEdx->SetYTitle("<dE/dx>");
 	outputContainer->Add(fhMCChHad2MatchdEdx);
 	
-	fhMCNeutral1pOverE = new TH1F("hMCNeutral1pOverE","TRACK matches p/E, MC neutrals",100,0.,10.);
-	fhMCNeutral1pOverE->SetXTitle("p/E");
+	fhMCNeutral1pOverE = new TH2F("hMCNeutral1pOverE","TRACK matches p/E, MC neutrals",200.,0.,100.,100,0.,10.);
+	fhMCNeutral1pOverE->SetYTitle("p/E");
+	fhMCNeutral1pOverE->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fhMCNeutral1pOverE);
 	
 	fhMCNeutral1dR = new TH1F("hMCNeutral1dR","TRACK matches dR, MC neutrals",300, 0.,TMath::Pi());
@@ -800,20 +805,24 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhMCNeutral2MatchdEdx->SetYTitle("<dE/dx>");
 	outputContainer->Add(fhMCNeutral2MatchdEdx);
 	
-	fh1pOverER02 = new TH1F("h1pOverER02","TRACK matches p/E, all",100,0.,10.);
-	fh1pOverER02->SetXTitle("p/E");
+	fh1pOverER02 = new TH2F("h1pOverER02","TRACK matches p/E, all",200.,0.,100.,100,0.,10.);
+	fh1pOverER02->SetYTitle("p/E");
+	fh1pOverER02->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fh1pOverER02);
 	
-	fhMCEle1pOverER02 = new TH1F("hMCEle1pOverER02","TRACK matches p/E, MC electrons",100,0.,10.);
-	fhMCEle1pOverER02->SetXTitle("p/E");
+	fhMCEle1pOverER02 = new TH2F("hMCEle1pOverER02","TRACK matches p/E, MC electrons",200.,0.,100.,100,0.,10.);
+	fhMCEle1pOverER02->SetYTitle("p/E");
+	fhMCEle1pOverER02->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fhMCEle1pOverER02);
 	
-	fhMCChHad1pOverER02 = new TH1F("hMCChHad1pOverER02","TRACK matches p/E, MC charged hadrons",100,0.,10.);
-	fhMCChHad1pOverER02->SetXTitle("p/E");
+	fhMCChHad1pOverER02 = new TH2F("hMCChHad1pOverER02","TRACK matches p/E, MC charged hadrons",200.,0.,100.,100,0.,10.);
+	fhMCChHad1pOverER02->SetYTitle("p/E");
+	fhMCChHad1pOverER02->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fhMCChHad1pOverER02);
 	
-	fhMCNeutral1pOverER02 = new TH1F("hMCNeutral1pOverER02","TRACK matches p/E, MC neutrals",100,0.,10.);
-	fhMCNeutral1pOverER02->SetXTitle("p/E");
+	fhMCNeutral1pOverER02 = new TH2F("hMCNeutral1pOverER02","TRACK matches p/E, MC neutrals",200.,0.,100.,100,0.,10.);
+	fhMCNeutral1pOverER02->SetYTitle("p/E");
+	fhMCNeutral1pOverER02->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fhMCNeutral1pOverER02);
 	
 	return outputContainer;
@@ -1388,63 +1397,121 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_
 		fhEtaCharged   ->Fill(eta);
 		fhEtaPhiCharged->Fill(eta,phi);		
 		
-		//printf("track index %d ntracks %d\n", esd->GetNumberOfTracks());
+		//printf("track index %d ntracks %d\n", esd->GetNumberOfTracks());	
+		//Study the track and matched cluster if track exists.
+		if(!track) return;
+		Double_t emcpos[3] = {0.,0.,0.};
+		Double_t emcmom[3] = {0.,0.,0.};
+		Double_t radius    = 441.0; //[cm] EMCAL radius +13cm
+		Double_t bfield    = 0.;
+		Double_t tphi      = 0;
+		Double_t teta      = 0;
+		Double_t tmom      = 0;
+		Double_t tpt       = 0;
+		Double_t tmom2     = 0;
+		Double_t tpcSignal = 0;
+		Bool_t okpos = kFALSE;
+		Bool_t okmom = kFALSE;
+		Bool_t okout = kFALSE;
+		Int_t nITS   = 0;
+		Int_t nTPC   = 0;
+		
+		//In case of ESDs get the parameters in this way
 		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-			if (track && ((AliESDtrack*)track)->GetOuterParam() ) {
+			if (((AliESDtrack*)track)->GetOuterParam() ) {
+				okout = kTRUE;
 				
-				Double_t tphi  = ((AliESDtrack*)track)->GetOuterParam()->Phi();
-				Double_t teta  = ((AliESDtrack*)track)->GetOuterParam()->Eta();
-				Double_t tmom  = ((AliESDtrack*)track)->GetOuterParam()->P();
+				bfield = ((AliESDEvent*)GetReader()->GetInputEvent())->GetMagneticField();
+				okpos = ((AliESDtrack*)track)->GetOuterParam()->GetXYZAt(radius,bfield,emcpos);
+				okmom = ((AliESDtrack*)track)->GetOuterParam()->GetPxPyPzAt(radius,bfield,emcmom);
+				if(!(okpos && okmom)) return;
+
+				TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
+				TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
+				tphi = position.Phi();
+				teta = position.Eta();
+				tmom = momentum.Mag();
 				
-				Double_t tmom2     = ((AliESDtrack*)track)->P();
-				Double_t tpcSignal = ((AliESDtrack*)track)->GetTPCsignal();
+				//Double_t tphi  = ((AliESDtrack*)track)->GetOuterParam()->Phi();
+				//Double_t teta  = ((AliESDtrack*)track)->GetOuterParam()->Eta();
+				//Double_t tmom  = ((AliESDtrack*)track)->GetOuterParam()->P();
+				tpt       = ((AliESDtrack*)track)->Pt();
+				tmom2     = ((AliESDtrack*)track)->P();
+				tpcSignal = ((AliESDtrack*)track)->GetTPCsignal();
 				
+				nITS = ((AliESDtrack*)track)->GetNcls(0);
+				nTPC = ((AliESDtrack*)track)->GetNcls(1);
+				}//Outer param available 
+			}// ESDs
+			else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) {
+				AliAODPid* pid = (AliAODPid*) ((AliAODTrack *) track)->GetDetPid();
+				if (pid) {
+					okout = kTRUE;
+					pid->GetEMCALPosition(emcpos);
+					pid->GetEMCALMomentum(emcmom);	
+					
+					TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
+					TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
+					tphi = position.Phi();
+					teta = position.Eta();
+					tmom = momentum.Mag();
+					
+					tpt       = ((AliAODTrack*)track)->Pt();
+					tmom2     = ((AliAODTrack*)track)->P();
+					tpcSignal = pid->GetTPCsignal();
+				
+					//nITS = ((AliAODTrack*)track)->GetNcls(0);
+					//nTPC = ((AliAODTrack*)track)->GetNcls(1);
+				}//Outer param available 
+			}//AODs
+			else return; //Do nothing case not implemented.
+		
+			if(okout){
 				Double_t deta = teta - eta;
 				Double_t dphi = tphi - phi;
 				if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
 				if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
 				Double_t dR = sqrt(dphi*dphi + deta*deta);
-				
+			
 				Double_t pOverE = tmom/e;
-				
-				fh1pOverE->Fill(pOverE);
-				if(dR < 0.02) fh1pOverER02->Fill(pOverE);
-				
+			
+				fh1pOverE->Fill(tpt, pOverE);
+				if(dR < 0.02) fh1pOverER02->Fill(tpt,pOverE);
+			
 				fh1dR->Fill(dR);
 				fh2MatchdEdx->Fill(tmom2,tpcSignal);
-				
+			
 				if(IsDataMC() && primary){ 
 					Int_t pdg = primary->GetPdgCode();
 					Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-					
+				
 					if(TMath::Abs(pdg) == 11){
-						fhMCEle1pOverE->Fill(pOverE);
+						fhMCEle1pOverE->Fill(tpt,pOverE);
 						fhMCEle1dR->Fill(dR);
 						fhMCEle2MatchdEdx->Fill(tmom2,tpcSignal);		
-						if(dR < 0.02) fhMCEle1pOverER02->Fill(pOverE);
+						if(dR < 0.02) fhMCEle1pOverER02->Fill(tpt,pOverE);
 					}
 					else if(charge!=0){
-						fhMCChHad1pOverE->Fill(pOverE);
+						fhMCChHad1pOverE->Fill(tpt,pOverE);
 						fhMCChHad1dR->Fill(dR);
 						fhMCChHad2MatchdEdx->Fill(tmom2,tpcSignal);	
-						if(dR < 0.02) fhMCChHad1pOverER02->Fill(pOverE);
+						if(dR < 0.02) fhMCChHad1pOverER02->Fill(tpt,pOverE);
 					}
 					else if(charge == 0){
-						fhMCNeutral1pOverE->Fill(pOverE);
+						fhMCNeutral1pOverE->Fill(tpt,pOverE);
 						fhMCNeutral1dR->Fill(dR);
 						fhMCNeutral2MatchdEdx->Fill(tmom2,tpcSignal);	
-						if(dR < 0.02) fhMCNeutral1pOverER02->Fill(pOverE);
+						if(dR < 0.02) fhMCNeutral1pOverER02->Fill(tpt,pOverE);
 					}
 				}//DataMC
-				int nITS = ((AliESDtrack*)track)->GetNcls(0);
-				int nTPC = ((AliESDtrack*)track)->GetNcls(1);
+
 				if(dR < 0.02 && pOverE > 0.5 && pOverE < 1.5
 				   && nCaloCellsPerCluster > 1 && nITS > 3 && nTPC > 20) {
 					fh2EledEdx->Fill(tmom2,tpcSignal);
 				}
-			}//Outer param available 
-			else if(!((AliESDtrack*)track)->GetOuterParam()){
-				ULong_t status=AliESDtrack::kTPCrefit;
+			}
+			else{//no ESD external param or AODPid
+					ULong_t status=AliESDtrack::kTPCrefit;
 				status|=AliESDtrack::kITSrefit;
 				//printf("track status %d\n", track->GetStatus() );
 				fhEChargedNoOut     ->Fill(e);		
@@ -1453,12 +1520,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_
 				fhEtaChargedNoOut    ->Fill(eta);
 				fhEtaPhiChargedNoOut ->Fill(eta,phi);	
 				if(GetDebug() >= 0 && ((((AliESDtrack*)track)->GetStatus() & status) == status)) printf("ITS+TPC\n");
-			}
-			else {
-				if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() ERROR: Could not receive track %d\n", ((AliESDtrack*)track)->GetID());
-			}
-		}//do only if input are ESDs
-	}
+			}//No out params
+	}//matched clusters with tracks
 	
 }// Clusters
 	
@@ -1671,28 +1734,28 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		
 	}//Is data MC	
 	
-	fh1pOverE =    (TH1F *) outputList->At(index++);
+	fh1pOverE =    (TH2F *) outputList->At(index++);
 	fh1dR =        (TH1F *) outputList->At(index++);
 	fh2MatchdEdx = (TH2F *) outputList->At(index++);
 	fh2EledEdx =   (TH2F *) outputList->At(index++);
 	
 	if(IsDataMC()){
-		fhMCEle1pOverE =    (TH1F *) outputList->At(index++);
+		fhMCEle1pOverE =    (TH2F *) outputList->At(index++);
 		fhMCEle1dR =        (TH1F *) outputList->At(index++);
 		fhMCEle2MatchdEdx = (TH2F *) outputList->At(index++);
 		
-		fhMCChHad1pOverE =    (TH1F *) outputList->At(index++);
+		fhMCChHad1pOverE =    (TH2F *) outputList->At(index++);
 		fhMCChHad1dR =        (TH1F *) outputList->At(index++);
 		fhMCChHad2MatchdEdx = (TH2F *) outputList->At(index++);
 		
-		fhMCNeutral1pOverE    = (TH1F *) outputList->At(index++);
+		fhMCNeutral1pOverE    = (TH2F *) outputList->At(index++);
 		fhMCNeutral1dR        = (TH1F *) outputList->At(index++);
 		fhMCNeutral2MatchdEdx = (TH2F *) outputList->At(index++);
 		
-		fh1pOverER02          =    (TH1F *) outputList->At(index++);
-		fhMCEle1pOverER02     =    (TH1F *) outputList->At(index++);
-		fhMCChHad1pOverER02   =    (TH1F *) outputList->At(index++);
-		fhMCNeutral1pOverER02 =    (TH1F *) outputList->At(index++);
+		fh1pOverER02          =    (TH2F *) outputList->At(index++);
+		fhMCEle1pOverER02     =    (TH2F *) outputList->At(index++);
+		fhMCChHad1pOverER02   =    (TH2F *) outputList->At(index++);
+		fhMCNeutral1pOverER02 =    (TH2F *) outputList->At(index++);
 	}
 	//for(Int_t i = 0;  i<index ; i++) cout<<outputList->At(i)->GetName()<<endl;
 }
@@ -2860,160 +2923,156 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 	}	
 	//Track-matching distributions
-	if(!strcmp(GetReader()->GetInputEvent()->GetName(),"AliESDEvent")){
 		
+	sprintf(cname,"QA_%s_trkmatch",fCalorimeter.Data());
+	TCanvas *cme = new TCanvas(cname,"Track-matching distributions", 400, 400);
+	cme->Divide(2,2);
 		
-		sprintf(cname,"QA_%s_trkmatch",fCalorimeter.Data());
-		TCanvas *cme = new TCanvas(cname,"Track-matching distributions", 400, 400);
-		cme->Divide(2,2);
+	TLegend pLegendpE0(0.6,0.55,0.9,0.8);
+	pLegendpE0.SetTextSize(0.04);
+	pLegendpE0.AddEntry(fh1pOverE,"all","L");
+	pLegendpE0.AddEntry(fh1pOverER02,"dR < 0.02","L");		
+	pLegendpE0.SetFillColor(10);
+	pLegendpE0.SetBorderSize(1);
+	//pLegendpE0.Draw();
 		
-		TLegend pLegendpE0(0.6,0.55,0.9,0.8);
-		pLegendpE0.SetTextSize(0.04);
-		pLegendpE0.AddEntry(fh1pOverE,"all","L");
-		pLegendpE0.AddEntry(fh1pOverER02,"dR < 0.02","L");
-		pLegendpE0.SetFillColor(10);
-		pLegendpE0.SetBorderSize(1);
-		//pLegendpE0.Draw();
+	cme->cd(1);
+	if(fh1pOverE->GetEntries() > 0) gPad->SetLogy();
+	fh1pOverE->SetTitle("Track matches p/E");
+	fh1pOverE->Draw();
+	fh1pOverER02->SetLineColor(4);
+	fh1pOverER02->Draw("same");
+	pLegendpE0.Draw();
 		
-		cme->cd(1);
-		if(fh1pOverE->GetEntries() > 0) gPad->SetLogy();
-		fh1pOverE->SetTitle("Track matches p/E");
-		fh1pOverE->Draw();
-		fh1pOverER02->SetLineColor(4);
-		fh1pOverER02->Draw("same");
-		pLegendpE0.Draw();
+	cme->cd(2);
+	if(fh1dR->GetEntries() > 0) gPad->SetLogy();
+	fh1dR->Draw();
+	
+	cme->cd(3);
+	fh2MatchdEdx->Draw();
+	
+	cme->cd(4);
+	fh2EledEdx->Draw();
+	
+	sprintf(name,"QA_%s_TrackMatchingEleDist.eps",fCalorimeter.Data());
+	cme->Print(name); printf("Plot: %s\n",name);       
+	
+	if(IsDataMC()){
+	sprintf(cname,"QA_%s_trkmatchMCEle",fCalorimeter.Data());
+	TCanvas *cmemc = new TCanvas(cname,"Track-matching distributions from MC electrons", 600, 200);
+	cmemc->Divide(3,1);
+	
+	cmemc->cd(1);
+	gPad->SetLogy();
+	fhMCEle1pOverE->Draw();
+	fhMCEle1pOverER02->SetLineColor(4);
+	fhMCEle1pOverE->SetLineColor(1);
+	fhMCEle1pOverER02->Draw("same");
+	pLegendpE0.Draw();
 		
-		cme->cd(2);
-		if(fh1dR->GetEntries() > 0) gPad->SetLogy();
-		fh1dR->Draw();
+	cmemc->cd(2);
+	gPad->SetLogy();
+	fhMCEle1dR->Draw();
 		
-		cme->cd(3);
-		fh2MatchdEdx->Draw();
+	cmemc->cd(3);
+	fhMCEle2MatchdEdx->Draw();
 		
-		cme->cd(4);
-		fh2EledEdx->Draw();
-		
-		sprintf(name,"QA_%s_TrackMatchingEleDist.eps",fCalorimeter.Data());
-		cme->Print(name); printf("Plot: %s\n",name);       
-		
-		if(IsDataMC()){
-		sprintf(cname,"QA_%s_trkmatchMCEle",fCalorimeter.Data());
-		TCanvas *cmemc = new TCanvas(cname,"Track-matching distributions from MC electrons", 600, 200);
-		cmemc->Divide(3,1);
-		
-		cmemc->cd(1);
-		gPad->SetLogy();
-		fhMCEle1pOverE->Draw();
-		fhMCEle1pOverER02->SetLineColor(4);
-		fhMCEle1pOverE->SetLineColor(1);
-		fhMCEle1pOverER02->Draw("same");
-		pLegendpE0.Draw();
-		
-		cmemc->cd(2);
-		gPad->SetLogy();
-		fhMCEle1dR->Draw();
-		
-		cmemc->cd(3);
-		fhMCEle2MatchdEdx->Draw();
-		
-		sprintf(name,"QA_%s_TrackMatchingDistMCEle.eps",fCalorimeter.Data());
-		cmemc->Print(name); printf("Plot: %s\n",name);  
+	sprintf(name,"QA_%s_TrackMatchingDistMCEle.eps",fCalorimeter.Data());
+	cmemc->Print(name); printf("Plot: %s\n",name);  
 	
 		
-		sprintf(cname,"QA_%s_trkmatchMCChHad",fCalorimeter.Data());
-		TCanvas *cmemchad = new TCanvas(cname,"Track-matching distributions from MC charged hadrons", 600, 200);
-		cmemchad->Divide(3,1);
+	sprintf(cname,"QA_%s_trkmatchMCChHad",fCalorimeter.Data());
+	TCanvas *cmemchad = new TCanvas(cname,"Track-matching distributions from MC charged hadrons", 600, 200);
+	cmemchad->Divide(3,1);
 		
-		cmemchad->cd(1);
-		gPad->SetLogy();
-		fhMCChHad1pOverE->Draw();
-		fhMCChHad1pOverER02->SetLineColor(4);
-		fhMCChHad1pOverE->SetLineColor(1);
-		fhMCChHad1pOverER02->Draw("same");
-		pLegendpE0.Draw();
+	cmemchad->cd(1);
+	gPad->SetLogy();
+	fhMCChHad1pOverE->Draw();
+	fhMCChHad1pOverER02->SetLineColor(4);
+	fhMCChHad1pOverE->SetLineColor(1);
+	fhMCChHad1pOverER02->Draw("same");
+	pLegendpE0.Draw();
 		
-		cmemchad->cd(2);
-		gPad->SetLogy();
-		fhMCChHad1dR->Draw();
+	cmemchad->cd(2);
+	gPad->SetLogy();
+	fhMCChHad1dR->Draw();
+
+	cmemchad->cd(3);
+	fhMCChHad2MatchdEdx->Draw();
 		
-		cmemchad->cd(3);
-		fhMCChHad2MatchdEdx->Draw();
+	sprintf(name,"QA_%s_TrackMatchingDistMCChHad.eps",fCalorimeter.Data());
+	cmemchad->Print(name); printf("Plot: %s\n",name);       
+	
+	sprintf(cname,"QA_%s_trkmatchMCNeutral",fCalorimeter.Data());
+	TCanvas *cmemcn = new TCanvas(cname,"Track-matching distributions from MC neutrals", 600, 200);
+	cmemcn->Divide(3,1);
 		
-		sprintf(name,"QA_%s_TrackMatchingDistMCChHad.eps",fCalorimeter.Data());
-		cmemchad->Print(name); printf("Plot: %s\n",name);       
+	cmemcn->cd(1);
+	gPad->SetLogy();
+	fhMCNeutral1pOverE->Draw();
+	fhMCNeutral1pOverE->SetLineColor(1);
+	fhMCNeutral1pOverER02->SetLineColor(4);
+	fhMCNeutral1pOverER02->Draw("same");
+	pLegendpE0.Draw();
 		
-		sprintf(cname,"QA_%s_trkmatchMCNeutral",fCalorimeter.Data());
-		TCanvas *cmemcn = new TCanvas(cname,"Track-matching distributions from MC neutrals", 600, 200);
-		cmemcn->Divide(3,1);
+	cmemcn->cd(2);
+	gPad->SetLogy();
+	fhMCNeutral1dR->Draw();
 		
-		cmemcn->cd(1);
-		gPad->SetLogy();
-		fhMCNeutral1pOverE->Draw();
-		fhMCNeutral1pOverE->SetLineColor(1);
-		fhMCNeutral1pOverER02->SetLineColor(4);
-		fhMCNeutral1pOverER02->Draw("same");
-		pLegendpE0.Draw();
+	cmemcn->cd(3);
+	fhMCNeutral2MatchdEdx->Draw();
 		
-		cmemcn->cd(2);
-		gPad->SetLogy();
-		fhMCNeutral1dR->Draw();
+	sprintf(name,"QA_%s_TrackMatchingDistMCNeutral.eps",fCalorimeter.Data());
+	cmemcn->Print(name); printf("Plot: %s\n",name);       
+	
+	sprintf(cname,"QA_%s_trkmatchpE",fCalorimeter.Data());
+	TCanvas *cmpoe = new TCanvas(cname,"Track-matching distributions, p/E", 400, 200);
+	cmpoe->Divide(2,1);
 		
-		cmemcn->cd(3);
-		fhMCNeutral2MatchdEdx->Draw();
-		
-		sprintf(name,"QA_%s_TrackMatchingDistMCNeutral.eps",fCalorimeter.Data());
-		cmemcn->Print(name); printf("Plot: %s\n",name);       
-		
-		sprintf(cname,"QA_%s_trkmatchpE",fCalorimeter.Data());
-		TCanvas *cmpoe = new TCanvas(cname,"Track-matching distributions, p/E", 400, 200);
-		cmpoe->Divide(2,1);
-		
-		cmpoe->cd(1);
-		gPad->SetLogy();
-		fh1pOverE->SetLineColor(1);
-		fhMCEle1pOverE->SetLineColor(4);
-		fhMCChHad1pOverE->SetLineColor(2);
-		fhMCNeutral1pOverE->SetLineColor(7);
-		fh1pOverER02->SetMinimum(0.5);
-		fh1pOverE->Draw();
-		fhMCEle1pOverE->Draw("same");
-		fhMCChHad1pOverE->Draw("same");
-		fhMCNeutral1pOverE->Draw("same");
-		TLegend pLegendpE(0.65,0.55,0.9,0.8);
-		pLegendpE.SetTextSize(0.06);
-		pLegendpE.AddEntry(fh1pOverE,"all","L");
-		pLegendpE.AddEntry(fhMCEle1pOverE,"e^{#pm}","L");
-		pLegendpE.AddEntry(fhMCChHad1pOverE,"h^{#pm}","L");
-		pLegendpE.AddEntry(fhMCNeutral1pOverE,"neutrals","L");
-		pLegendpE.SetFillColor(10);
-		pLegendpE.SetBorderSize(1);
-		pLegendpE.Draw();
-		
-		cmpoe->cd(2);
-		gPad->SetLogy();
-		fh1pOverER02->SetTitle("Track matches p/E, dR<0.2");
-		fh1pOverER02->SetLineColor(1);
-		fhMCEle1pOverER02->SetLineColor(4);
-		fhMCChHad1pOverER02->SetLineColor(2);
-		fhMCNeutral1pOverER02->SetLineColor(7);
-		fh1pOverER02->SetMaximum(fh1pOverE->GetMaximum());
-		fh1pOverER02->SetMinimum(0.5);
-		fh1pOverER02->Draw();
-		fhMCEle1pOverER02->Draw("same");
-		fhMCChHad1pOverER02->Draw("same");
-		fhMCNeutral1pOverER02->Draw("same");
-		
-		//		TLegend pLegendpE2(0.65,0.55,0.9,0.8);
-		//		pLegendpE2.SetTextSize(0.06);
-		//		pLegendpE2.SetHeader("dR < 0.02");
-		//		pLegendpE2.SetFillColor(10);
-		//		pLegendpE2.SetBorderSize(1);
-		//		pLegendpE2.Draw();
-		
-		sprintf(name,"QA_%s_TrackMatchingPOverE.eps",fCalorimeter.Data());
-		cmpoe->Print(name); printf("Plot: %s\n",name);       			
-		}
-		
+	cmpoe->cd(1);
+	gPad->SetLogy();
+	fh1pOverE->SetLineColor(1);
+	fhMCEle1pOverE->SetLineColor(4);
+	fhMCChHad1pOverE->SetLineColor(2);
+	fhMCNeutral1pOverE->SetLineColor(7);
+	fh1pOverER02->SetMinimum(0.5);
+	fh1pOverE->Draw();
+	fhMCEle1pOverE->Draw("same");
+	fhMCChHad1pOverE->Draw("same");
+	fhMCNeutral1pOverE->Draw("same");
+	TLegend pLegendpE(0.65,0.55,0.9,0.8);
+	pLegendpE.SetTextSize(0.06);
+	pLegendpE.AddEntry(fh1pOverE,"all","L");
+	pLegendpE.AddEntry(fhMCEle1pOverE,"e^{#pm}","L");
+	pLegendpE.AddEntry(fhMCChHad1pOverE,"h^{#pm}","L");
+	pLegendpE.AddEntry(fhMCNeutral1pOverE,"neutrals","L");
+	pLegendpE.SetFillColor(10);
+	pLegendpE.SetBorderSize(1);
+	pLegendpE.Draw();
+	
+	cmpoe->cd(2);
+	gPad->SetLogy();
+	fh1pOverER02->SetTitle("Track matches p/E, dR<0.2");
+	fh1pOverER02->SetLineColor(1);
+	fhMCEle1pOverER02->SetLineColor(4);
+	fhMCChHad1pOverER02->SetLineColor(2);
+	fhMCNeutral1pOverER02->SetLineColor(7);
+	fh1pOverER02->SetMaximum(fh1pOverE->GetMaximum());
+	fh1pOverER02->SetMinimum(0.5);
+	fh1pOverER02->Draw();
+	fhMCEle1pOverER02->Draw("same");
+	fhMCChHad1pOverER02->Draw("same");
+	fhMCNeutral1pOverER02->Draw("same");
+	
+	//		TLegend pLegendpE2(0.65,0.55,0.9,0.8);
+	//		pLegendpE2.SetTextSize(0.06);
+	//		pLegendpE2.SetHeader("dR < 0.02");
+	//		pLegendpE2.SetFillColor(10);
+	//		pLegendpE2.SetBorderSize(1);
+	//		pLegendpE2.Draw();
+	
+	sprintf(name,"QA_%s_TrackMatchingPOverE.eps",fCalorimeter.Data());
+	cmpoe->Print(name); printf("Plot: %s\n",name);       			
 	}
 	
 	
