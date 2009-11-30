@@ -293,7 +293,8 @@ int AliHLTITSAgent::CreateCFConfigurations(AliHLTConfigurationHandler* pHandler,
     TString arg, publisher, cf;
  
     // the HLT origin defines are 4 chars: ISPD, ISSD, ISDD respectively
-    arg.Form("-minid %d -datatype 'DDL_RAW ' '%s' -dataspec 0x%08x -verbose",ddlno, origin.Data(), spec);
+    arg.Form("-minid %d -datatype 'DDL_RAW ' '%s' -dataspec 0x%08x",ddlno, origin.Data(), spec);
+    if (CheckFilter(kHLTLogDebug)) arg+=" -verbose";
     publisher.Form("ITS-DP_%d", ddlno);
     pHandler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
 
