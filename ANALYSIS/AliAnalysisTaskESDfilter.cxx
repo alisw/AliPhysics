@@ -261,7 +261,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     primary->SetName(vtx->GetName());
     primary->SetTitle(vtx->GetTitle());
     
-    if (!strcmp(vtx->GetTitle(), "vertexer: 3D")) primary->SetNProngs(vtx->GetNContributors());
+    if (!strcmp(vtx->GetTitle(), "vertexer: 3D")) primary->SetNContributors(vtx->GetNContributors());
 
     if (fDebug > 0) primary->Print();
 

@@ -106,10 +106,7 @@ class AliAODVertex : public AliVVertex {
   Bool_t   HasDaughter(TObject *daughter) const;
   Int_t    GetNDaughters() const;
   Int_t    GetNContributors() const;
-  void     SetNProngs(Int_t nprong) {
-      fNprong = nprong;
-      MakeProngs();
-  }
+  void     SetNContributors(Int_t nc) {fNContributors = nc;}
   // covariance matrix elements after rotation by phi around z-axis 
   // and, then, by theta around new y-axis
   Double_t  RotatedCovMatrixXX(Double_t phi = 0., Double_t theta = 0.) const;
@@ -132,18 +129,19 @@ class AliAODVertex : public AliVVertex {
 	  
  private:
 
-  Double32_t      fPosition[3]; // vertex position
-  Double32_t      fChi2perNDF;  // chi2/NDF of vertex fit
-  Short_t         fID;          // vertex ID; corresponds to the array index of the appropriate ESD container
-  Char_t          fType;        // vertex type
-  Int_t           fNprong;      // number of prongs
-  Int_t           fIprong;      //!index  of prong
-  AliAODRedCov<3> *fCovMatrix;  // vertex covariance matrix; values of and below the diagonal
-  TRef            fParent;      // reference to the parent particle
-  TRefArray       fDaughters;   // references to the daughter particles
-  TRef            *fProngs;     //[fNprong] alternative daughters for n-prong vertex
+  Double32_t      fPosition[3];   // vertex position
+  Double32_t      fChi2perNDF;    // chi2/NDF of vertex fit
+  Short_t         fID;            // vertex ID; corresponds to the array index of the appropriate ESD container
+  Char_t          fType;          // vertex type
+  Int_t           fNprong;        // number of prongs
+  Int_t           fIprong;        //!index  of prong
+  Int_t           fNContributors; // Number of contributors for SPD vertex
+  AliAODRedCov<3> *fCovMatrix;    // vertex covariance matrix; values of and below the diagonal
+  TRef            fParent;        // reference to the parent particle
+  TRefArray       fDaughters;     // references to the daughter particles
+  TRef            *fProngs;       //[fNprong] alternative daughters for n-prong vertex
   
-  ClassDef(AliAODVertex, 5);
+  ClassDef(AliAODVertex, 6);
 };
 
 inline  Int_t AliAODVertex::GetNDaughters() const

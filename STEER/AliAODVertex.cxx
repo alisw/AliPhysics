@@ -261,7 +261,7 @@ Int_t AliAODVertex::GetNContributors() const
   Int_t cont = 0;
 
   if (!strcmp(GetTitle(), "vertexer: 3D")) {
-    cont = fNprong;
+    cont = fNContributors;
   } else {
     for (Int_t iDaug = 0; iDaug < GetNDaughters(); iDaug++) {
       if (((AliAODTrack*)fDaughters.At(iDaug))->GetUsedForVtxFit()) cont++;
