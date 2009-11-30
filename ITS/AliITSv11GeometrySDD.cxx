@@ -1223,6 +1223,7 @@ void AliITSv11GeometrySDD::Layer3(TGeoVolume *moth) {
 
   TGeoVolumeAssembly *lay3Ladder    = CreateLadder(3);
   TGeoVolumeAssembly *lay3Detectors = CreateDetectorsAssembly(3);
+  TGeoVolumeAssembly *lay3Ladd2Det  = CreateDetectorsAssemblyLadd2();
   //TGeoVolume *lay3Detectors = CreateDetectors(3);
   TGeoTube *virtualLayer3Shape = new TGeoTube("ITSsddLayer3Shape",
 				     fgkLay3Rmin,fgkLay3Rmax,fgkLay3Length*0.5);
@@ -1269,14 +1270,14 @@ void AliITSv11GeometrySDD::Layer3(TGeoVolume *moth) {
     if (iLadd%2 != 0) minRadiusDetBox = fgkLay3DetLongRadius;
     minRadiusDetBox += detectorsThick/2;
     TGeoCombiTrans *ctDet;
-    if (iLadd != 2)
-      ctDet = CreateCombiTrans(rotName, minRadiusDetBox,
-			       0, ladderPhi, kTRUE);
-    else
-      ctDet = CreateCombiTrans(rotName, minRadiusDetBox,
-			       0, ladderPhi, kFALSE);
+    ctDet = CreateCombiTrans(rotName, minRadiusDetBox,
+			     0, ladderPhi, kTRUE);
 
-    virtualLayer3->AddNode(lay3Detectors, iLadd, ctDet);
+    if (iLadd != 2)
+      virtualLayer3->AddNode(lay3Detectors, iLadd, ctDet);
+    else
+      virtualLayer3->AddNode(lay3Ladd2Det , iLadd, ctDet);
+
     ///////////////////////////////////////////////////
   }
 
@@ -5269,6 +5270,49 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssembly(Int_t iLay) {
     if (iLay==3) if (i%2!=0) localY = -localY;
     if (iLay==4) if (i%2==0) localY = -localY;
     sprintf(name, "ITSsddLay%iSensorPos%i",iLay, i);
+ 
+    if (i >= nDetectors/2) {
+      TGeoTranslation *sensorPos = new TGeoTranslation(0,localY,localZ);
+      sensorPos->SetName(name);
+      virtualDet->AddNode(sensorSDD, i, sensorPos);
+    }
+    else {
+      TGeoRotation *rotSensor = new TGeoRotation("",0, 180, 180);
+      TGeoCombiTrans *sensorPos = new TGeoCombiTrans(0,localY,
+						     localZ, rotSensor);
+      sensorPos->SetName(name);
+      virtualDet->AddNode(sensorSDD, i, sensorPos);
+    };
+  }
+  
+  if(GetDebug(1)) virtualDet->CheckOverlaps(0.01);
+  return virtualDet;
+}
+
+
+//________________________________________________________________________
+TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssemblyLadd2() {
+//
+// return a box volume containing the detectors
+// Special case for Layer 3 Ladder 2 which is rotated (cannot simply
+// rotate the standard volume, because the module numbering would be wrong)
+// M.Sitta 25 Nov 2009
+//
+  
+  Int_t    nDetectors   = fgkLay3Ndet;
+  Double_t *sensorZPos  = fLay3sensorZPos;
+  TGeoVolume *sensorSDD = fSDDsensor3;
+
+  char name[30];
+  sprintf(name,"ITSsddDetBoxLadd2");
+  
+  TGeoVolumeAssembly  *virtualDet = new TGeoVolumeAssembly("ITSsddLadd");
+
+  for (Int_t i=0; i<nDetectors; i++) {
+    Double_t localZ = (-1.)*sensorZPos[nDetectors-1-i];
+    Double_t localY = fgkLadWaferSep/2+fgkWaferThickness/2;
+    if (i%2==0) localY = -localY;
+    sprintf(name, "ITSsddLayLadd2SensorPos%i", i);
  
     if (i >= nDetectors/2) {
       TGeoTranslation *sensorPos = new TGeoTranslation(0,localY,localZ);

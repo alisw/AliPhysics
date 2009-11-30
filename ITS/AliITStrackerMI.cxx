@@ -1911,8 +1911,15 @@ FindDetectorIndex(Double_t phi, Double_t z) const {
   // this correction is OK only from AliITSv11Hybrid onwards
   if (GetR()>12. && GetR()<20.) { // SDD inner
     if(np==2) { // 3rd ladder
-      nz = (fNdetectors-1) - nz;
-    } 
+      Double_t posMod252[3];
+      AliITSgeomTGeo::GetTranslation(252,posMod252);
+      // check the Z coordinate of Mod 252: if negative 
+      // (old SDD geometry in AliITSv11Hybrid)
+      // the swap of numeration whould be applied
+      if(posMod252[2]<0.){
+	nz = (fNdetectors-1) - nz;
+      } 
+    }
   }
   //printf("ndet %d phi %f z %f  np %d nz %d\n",fNdetectors,phi,z,np,nz);
 

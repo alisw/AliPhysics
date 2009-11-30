@@ -80,6 +80,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
 
   virtual TGeoVolumeAssembly*  CreateLadder(Int_t iLay);
   virtual TGeoVolumeAssembly*  CreateDetectorsAssembly(Int_t iLay);
+  virtual TGeoVolumeAssembly*  CreateDetectorsAssemblyLadd2();
   virtual TGeoVolume*          CreateLadderSegment(Int_t iLay, Int_t iSeg);
   virtual TGeoVolumeAssembly*  CreateEndLadder(Int_t iLay);
   virtual TGeoVolumeAssembly*  CreateEndLadderCards(Int_t iLay);

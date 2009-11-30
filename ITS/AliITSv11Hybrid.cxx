@@ -695,11 +695,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
                    strEntryName2.Data(),sensor.Data()));
 
-	if(c1 != 2) { 
 	SetT2Lmatrix(modUID, 0, kFALSE, c2>=3);
-	  	  } else {// for ladder 2, mounted with a pi rot around y
-	  SetT2Lmatrix(modUID, 0, kFALSE, c2<3);
-	  }
       }
     }
 
