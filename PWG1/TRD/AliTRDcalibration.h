@@ -80,6 +80,7 @@ public:
   void SetHisto2d(Bool_t histo2d)                                   {fHisto2d=histo2d;};
   void SetVector2d(Bool_t vector2d)                                 {fVector2d=vector2d;};
   void SetVdriftLinear(Bool_t vdriftLinear)                         {fVdriftLinear = vdriftLinear;};
+  void SetNbTimeBins(Int_t nbTimeBins)                              {fNbTimeBins=nbTimeBins;};
   void SetLow(Int_t low)                                            {flow=low;};
   void SetHigh(Int_t high)                                          {fhigh=high;};
   void SetNz(Short_t nz, Int_t i)                                   {fNz[i]=nz;};
@@ -148,4 +149,3 @@ private:
   ClassDef(AliTRDcalibration, 1) // calibration task
 };
 #endif
-

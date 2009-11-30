@@ -98,7 +98,7 @@ AliTRDcalibration::AliTRDcalibration()
   ,fVdriftLinear(kTRUE)
   ,flow(0)
   ,fhigh(30)
-  ,fNbTimeBins(30)
+  ,fNbTimeBins(0)
   ,ffillZero(kFALSE)
   ,fnormalizeNbOfCluster(kFALSE)
   ,fmaxCluster(0)
@@ -154,8 +154,14 @@ void AliTRDcalibration::CreateOutputObjects()
   OpenFile(0, "RECREATE");
   
   // Number of time bins
-  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-  fNbTimeBins = cal->GetNumberOfTimeBins();
+  if(fNbTimeBins==0) {
+    AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+    fNbTimeBins = cal->GetNumberOfTimeBinsDCS();
+    if(fNbTimeBins <= 0){ 
+      AliWarning(Form("No of TimeBins from DB [%d] use default [30]", fNbTimeBins));
+      fNbTimeBins = 30;
+    }
+  }
   
   // instance calibration: what to calibrate
   fTRDCalibraFillHisto = AliTRDCalibraFillHisto::Instance();
@@ -189,7 +195,7 @@ void AliTRDcalibration::CreateOutputObjects()
   fTRDCalibraFillHisto->SetDebugLevel(DebugLevel()); //debug stuff
 
   // Init the stuff
-  fTRDCalibraFillHisto->Init2Dhistos(); // initialise the histos
+  fTRDCalibraFillHisto->Init2Dhistos(fNbTimeBins); // initialise the histos
 
   // cuts
   fTRDCalibraFillHisto->SetNumberClusters(flow); // At least flow clusters
@@ -1368,6 +1374,4 @@ Int_t AliTRDcalibration::GetNumberOfGroupsPRF(const char* nametitle) const
     return 6;
   }
   else return -1;
- 
-
 }
