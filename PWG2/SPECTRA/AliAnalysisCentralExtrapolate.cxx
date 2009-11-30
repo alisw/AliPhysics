@@ -13,20 +13,21 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  *********************************************************
-//  * pt spectra extrapolation in the 0. - 0.2 region using *
-//  * Boltzmann-Gibbs Blast Wave model or Tsallis Blast     *
-//  * Wave model for azimuthal isotropic  expansion in      *
-//  * highly central collisions analysis                    *
-//  * author: Cristian Andrei                               *
-//  *         acristian@niham.nipne.ro                      *
-//  * *******************************************************
+//  -------------------------------------------------------
+//  pt spectra extrapolation in the 0. - 0.2 region using
+//  Boltzmann-Gibbs Blast Wave model or Tsallis Blast
+//  Wave model for azimuthal isotropic  expansion in
+//  highly central collisions analysis
+//  author: Cristian Andrei
+//          acristian@niham.nipne.ro
+//  ----------------------------------------------------------
+
 
 #include "TH1D.h"
 #include "TFile.h"
 #include "TList.h"
-// #include "TCanvas.h"
-// #include "TLegend.h"
+#include "TCanvas.h"
+#include "TLegend.h"
 // #include "TString.h"
 // #include "TPaveStats.h"
 #include "TMath.h"
@@ -52,14 +53,14 @@ ClassImp(AliAnalysisCentralExtrapolate)
 AliAnalysisCentralExtrapolate::AliAnalysisCentralExtrapolate(const char *name) 
   : TObject()
   ,fPartType()
-  ,fInputList(0x0)
+  ,fInputList(0)
   ,fResultsList(0x0)
 
 {
 // Constructor
 
 //  printf("AliAnalysisCentralExtrapolate::AliAnalysisCentralExtrapolate(const char *name)\n");
-
+	fInputList = new TList();
 	fResultsList = new TList();
 	
 }
@@ -89,15 +90,14 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
     Int_t stepRec = 1;
 
 	AliCFContainer *data = 0;
-
+	
+	
 	TFile *file1 = new TFile("$ALICE_ROOT/PWG2/data/AliAnalysisCentralEfficiency.root", "read");
     
     AliCFEffGrid *eff = 0;
     
-//     TCanvas *ccorrdata;
-    	
-	if(fPartType.Contains("kPi")){
-		data = dynamic_cast<AliCFContainer*>(fInputList->FindObject("AliAnalysisCentral_CFCont_Pi"));
+    if(fPartType.Contains("kPi")){
+		data = dynamic_cast<AliCFContainer*>(fInputList->FindObject("TaskCentral_CFCont_Pi"));
 		eff = dynamic_cast<AliCFEffGrid*>(file1->Get("eff_Pi"));
 		mass= 0.13957;//(GeV - pions)
 // 		ccorrdata =new TCanvas("Pions ccorrdata","Pions - corrected data",0,0,600,800);
@@ -105,7 +105,7 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
 		printf("\tRunning for pions!\n");
 	}
 	else if(fPartType.Contains("kK")){
-		data = dynamic_cast<AliCFContainer*>(fInputList->FindObject("AliAnalysisCentral_CFCont_K"));
+		data = dynamic_cast<AliCFContainer*>(fInputList->FindObject("TaskCentral_CFCont_K"));
 		eff = dynamic_cast<AliCFEffGrid*>(file1->Get("eff_K"));
 		mass= 0.49368;//(GeV - kaons)
 // 		ccorrdata =new TCanvas("Kaons ccorrdata","Kaons - corrected data",0,0,600,800);
@@ -113,7 +113,7 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
  		printf("\tRunning for kaons!\n");
 	}
 	else if(fPartType.Contains("kProton")){
-		data = dynamic_cast<AliCFContainer*>(fInputList->FindObject("AliAnalysisCentral_CFCont_P"));
+		data = dynamic_cast<AliCFContainer*>(fInputList->FindObject("TaskCentral_CFCont_P"));
 		eff = dynamic_cast<AliCFEffGrid*>(file1->Get("eff_P"));
 		mass = 0.93827;//(GeV - protons)
 // 		ccorrdata =new TCanvas("Protons ccorrdata","Protons - corrected data",0,0,600,800);
@@ -131,10 +131,11 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
 		printf("No Eff Grid found! \n");
 		return;
     }
- 
+	
+// 	TCanvas *ccorrdata = new TCanvas();
 // 	ccorrdata->Divide(1,2);
 // 	ccorrdata->cd(1);
-//  ccorrdata->cd(1)->SetLogy();
+// 	ccorrdata->cd(1)->SetLogy();
 
  
     AliCFDataGrid *corrdata = new AliCFDataGrid("corrdata","corrected data",*data);
@@ -143,17 +144,17 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
     corrdata->SetMeasured(stepRec); //set data to be corrected
     corrdata->ApplyEffCorrection(*eff);//apply the correction for efficiency
 
-    TH1D *hPtMC = data->ShowProjection(0,0); //MC distribution ShowProjection(ivar, istep)
-    hPtMC->SetMarkerStyle(20);
-    hPtMC->SetMarkerColor(kGreen-3);
-    hPtMC->GetXaxis()->SetTitle("p_{T}(GeV/c)");
-    hPtMC->GetYaxis()->SetTitle("#frac{dN}{p_{T}dp_{T}}");
+//     TH1D *hPtMC = data->ShowProjection(0,0); //MC distribution ShowProjection(ivar, istep)
+//     hPtMC->SetMarkerStyle(20);
+//     hPtMC->SetMarkerColor(kGreen-3);
+//     hPtMC->GetXaxis()->SetTitle("p_{T}(GeV/c)");
+//     hPtMC->GetYaxis()->SetTitle("#frac{dN}{p_{T}dp_{T}}");
 //     hPtMC->Draw("p e1");
-
-    TH1D *hPtESDI = corrdata->GetData()->Project(0); //uncorrected ESD  Project(ivar)
-    hPtESDI->SetMarkerStyle(25);
-    hPtESDI->SetMarkerColor(kBlue);
-    hPtESDI->GetXaxis()->SetTitle("Pt");
+// 
+//     TH1D *hPtESDI = corrdata->GetData()->Project(0); //uncorrected ESD  Project(ivar)
+//     hPtESDI->SetMarkerStyle(25);
+//     hPtESDI->SetMarkerColor(kBlue);
+//     hPtESDI->GetXaxis()->SetTitle("Pt");
 //     hPtESDI->Draw("p e1 same");
 
     TH1D *hPtESDCorr = corrdata->Project(0); //corrected data
@@ -171,20 +172,19 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
 
 // 	ccorrdata->cd(2);
 // 	ccorrdata->cd(2)->SetLogy();
-	
-	TH1D *efficiency = eff->Project(0); //the efficiency vs pt (ipt = 0)
-	efficiency->GetXaxis()->SetTitle("p_{T}(GeV/c)");
+// 	
+// 	TH1D *efficiency = eff->Project(0); //the efficiency vs pt (ipt = 0)
+// 	efficiency->GetXaxis()->SetTitle("p_{T}(GeV/c)");
 // 	efficiency->Draw();
 
 
-//scalez hist corectata la nr de ev
-
-	TH1F *hNoEvt = dynamic_cast<TH1F*>(fInputList->FindObject("AliAnalysisCentral_NoEvt"));
+	TH1F *hNoEvt = dynamic_cast<TH1F*>(fInputList->FindObject("TaskCentral_NoEvt"));
 	if(!hNoEvt){
 		printf("Unable to get the number of events! \n");
 		return;
 	}
 
+	
     Int_t noEvt = (Int_t)(hNoEvt->GetEntries());
 
     printf("\n** No of processed events = %i **\n",noEvt);
@@ -274,12 +274,12 @@ void AliAnalysisCentralExtrapolate::TsallisFit(){
 
 	TH1D *ptSpectra  = dynamic_cast<TH1D*>(fResultsList->FindObject("hPtESDCorrNorm"));
 	if(!ptSpectra){
-		printf("BoltzmannFit: Can't get the normalized spectrum\n");
+		printf("TsallisFit: Can't get the normalized spectrum\n");
 		return;	
 	}
 
 	if(!ptSpectra->GetEntries()){
-		printf("BoltzmannFit: The fit data is empty!\n");
+		printf("TsallisFit: The fit data is empty!\n");
 		return;
 	}
 
@@ -289,9 +289,9 @@ void AliAnalysisCentralExtrapolate::TsallisFit(){
 
     gStyle->SetOptFit(1112);
 
-    ptFit->SetParName(0,"T");
-    ptFit->SetParName(1,"betaS");
-    ptFit->SetParName(2,"q");
+//     ptFit->SetParName(0,"T");
+//     ptFit->SetParName(1,"betaS");
+//     ptFit->SetParName(2,"q");
 
     ptFit->SetParameters(0.1,0.5,1.05); //GeV
     ptFit->SetParLimits(0,0.0,0.5);//GeV
@@ -361,20 +361,26 @@ Double_t func(Double_t r){
 
     Double_t betaR = betaS*(r/rMax);
 
+
     Double_t rho = TMath::ATanH(betaR);
 
+
 	Double_t mt = sqrt(mass*mass + pt*pt);// !!! par[0]= pt !!!!!
-	
+
     Double_t argI0 = (pt*TMath::SinH(rho))/T; //T = par[1]
+	if(argI0>700.0) return 0.0; // !! floating point exception protection
 
     Double_t argK1 = (mt*TMath::CosH(rho))/T;
 
+	
     Double_t i0 = TMath::BesselI0(argI0);
+
 
     Double_t k1 = TMath::BesselK1(argK1);
 
-    Double_t f = r*mt*i0*k1;
 
+    Double_t f = r*mt*i0*k1;
+	
     return f;
 }
 
@@ -421,6 +427,8 @@ void AliAnalysisCentralExtrapolate::BoltzmannFit(){
 		return;	
 	}
 
+	printf("pt spectra get entries: %f\n",ptSpectra->GetEntries());
+
 	if(!ptSpectra->GetEntries()){
 		printf("BoltzmannFit: The fit data is empty!\n");
 		return;
@@ -434,16 +442,16 @@ void AliAnalysisCentralExtrapolate::BoltzmannFit(){
 
     gStyle->SetOptFit(1112);
 
-    ptFit->SetParName(0,"T");
-    ptFit->SetParName(1,"betaS");
+//     ptFit->SetParName(0,"T");
+//     ptFit->SetParName(1,"betaS");
 
     ptFit->SetParameters(0.1,0.5); //GeV
-    ptFit->SetParLimits(0,0.0,0.5);//GeV
+    ptFit->SetParLimits(0,0.001,0.5);//GeV
     ptFit->SetParLimits(1,0.0,1.0);
-    
+
 	ptSpectra->Fit("ptFit","Q R B ME I N");
 
-    timer.Stop(); 
+    timer.Stop();
     timer.Print();
 
 //  ----------- print the fit results ----------

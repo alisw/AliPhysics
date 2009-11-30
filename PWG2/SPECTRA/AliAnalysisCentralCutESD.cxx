@@ -13,19 +13,23 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//  ***************************************************
-//  * particle level cuts for azimuthal isotropic     *
-//  * expansion in highly central collisions analysis *
-//  * author: Cristian Andrei                         *
-//  *         acristian@niham.nipne.ro                *
-//  ***************************************************
+// -----------------------------------------------
+// particle level cuts for azimuthal isotropic
+// expansion in highly central collisions analysis
+// author: Cristian Andrei
+//         acristian@niham.nipne.ro
+// ------------------------------------------------
 
-#include <TFile.h>
 #include <TF1.h>
-
-#include "AliESDtrack.h"
+#include <TFile.h>
 
 #include "AliAnalysisCentralCutESD.h"
+#include "AliESDtrack.h"
+
+
+class TObject;
+class TParticle;
+
 
 //____________________________________________________________________
 ClassImp(AliAnalysisCentralCutESD)
@@ -66,6 +70,7 @@ AliAnalysisCentralCutESD::AliAnalysisCentralCutESD(const Char_t* name, const Cha
 	fProtonFunction = (TF1 *)f->Get("fitProtons");
     }
 
+	printf("AliAnalysisCentralCutESD::Constructor\n");
 }
 
 AliAnalysisCentralCutESD::~AliAnalysisCentralCutESD() {
@@ -79,6 +84,8 @@ AliAnalysisCentralCutESD::~AliAnalysisCentralCutESD() {
 	if(fPionFunction) delete fPionFunction;
 	if(fKaonFunction) delete fKaonFunction;
 	if(fProtonFunction) delete fProtonFunction;
+
+	printf("AliAnalysisCentralCutESD::Destructor\n");
 }
 
 

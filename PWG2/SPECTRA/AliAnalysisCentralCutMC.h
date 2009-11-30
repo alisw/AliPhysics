@@ -1,19 +1,22 @@
 #ifndef ALIANALYSISCENTRALCUTMC_H
 #define ALIANALYSISCENTRALCUTMC_H
+
 /*
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.
  * See cxx source for full Copyright notice
  * $Id$
  */
 
-//  ***************************************************
-//  * MC particle level cuts for azimuthal isotropic  *
-//  * expansion in highly central collisions analysis *
-//  * author: Cristian Andrei                         *
-//  *         acristian@niham.nipne.ro                *
-//  * *************************************************
+// ---------------------------------------------------
+//  MC particle level cuts for azimuthal isotropic
+//  expansion in highly central collisions analysis
+//  author: Cristian Andrei
+//          acristian@niham.nipne.ro
+//  --------------------------------------------------
+
 
 #include "AliAnalysisCuts.h"
+
 
 class TObject;
 class TList;
@@ -21,6 +24,7 @@ class TList;
 class AliStack;
 class AliMCEvent;
 class AliMCParticle;
+
 
 class AliAnalysisCentralCutMC: public AliAnalysisCuts{
  public:
