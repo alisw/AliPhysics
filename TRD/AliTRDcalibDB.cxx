@@ -41,7 +41,6 @@
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalDCS.h"
-#include "Cal/AliTRDCalFEE.h"
 #include "Cal/AliTRDCalPID.h"
 #include "Cal/AliTRDCalMonitoring.h"
 #include "Cal/AliTRDCalChamberStatus.h"
@@ -738,28 +737,14 @@ Float_t AliTRDcalibDB::GetPRFWidth(Int_t det, Int_t col, Int_t row)
 }
   
 //_____________________________________________________________________________
-Int_t AliTRDcalibDB::GetNumberOfTimeBins()
+Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
 {
-  //
-  // Returns the number of time bins which are read-out.
-  //
-
-  const AliTRDCalFEE *calFEE     = dynamic_cast<const AliTRDCalFEE *> 
-                                   (GetCachedCDBObject(kIDFEE));
-  if (!calFEE) {
-    return -1;
-  }
-
-  return calFEE->GetNumberOfTimeBins();
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS(){
   //
   // Returns Number of time bins from the DCS
   //
+
   const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
+
   if(!dcsArr){
     return -1;
   }
@@ -769,10 +754,16 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS(){
     return -1;
   }
   return calDCS->GetGlobalNumberOfTimeBins();
+
 }
 
 //_____________________________________________________________________________
-void AliTRDcalibDB::GetFilterType(TString &filterType){
+void AliTRDcalibDB::GetFilterType(TString &filterType)
+{
+  //
+  // Returns the filter type
+  //
+
   const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
   if(!dcsArr){
     filterType = "";
@@ -785,6 +776,7 @@ void AliTRDcalibDB::GetFilterType(TString &filterType){
     return;
   } 
   filterType = calDCS->GetGlobalFilterType();
+
 }
 
 //_____________________________________________________________________________
@@ -923,6 +915,7 @@ Bool_t AliTRDcalibDB::IsPadNotConnected(Int_t det, Int_t col, Int_t row)
   //
   // Returns status, see name of functions for details ;-)
   //
+
   const AliTRDCalPadStatus         * cal = dynamic_cast<const AliTRDCalPadStatus *> 
                                            (GetCachedCDBObject(kIDPadStatus));
   if (!cal) {

@@ -22,7 +22,6 @@ SRCS= AliTRDarraySignal.cxx \
       Cal/AliTRDCalROC.cxx \
       Cal/AliTRDCalPad.cxx \
       Cal/AliTRDCalDet.cxx \
-      Cal/AliTRDCalFEE.cxx \
       Cal/AliTRDCalDCS.cxx \
       Cal/AliTRDCalDCSFEE.cxx \
       Cal/AliTRDCalDCSPTR.cxx \

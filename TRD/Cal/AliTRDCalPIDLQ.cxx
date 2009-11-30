@@ -104,7 +104,7 @@ Bool_t AliTRDCalPIDLQ::LoadReferences(Char_t *refFile)
   if(!calibration){
     AliWarning(Form("No AliTRDcalibDB available. Using %d time bins.", nTimeBins));
   }else{
-    if(calibration->GetRun() > -1) nTimeBins = calibration->GetNumberOfTimeBins();
+    if(calibration->GetRun() > -1) nTimeBins = calibration->GetNumberOfTimeBinsDCS();
     else AliWarning(Form("Run number not set. Using %d time bins.", nTimeBins));
   }
 

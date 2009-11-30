@@ -186,7 +186,7 @@ AliTRDtracker::AliTRDtracker(const TFile */*geomfile*/, AliTRDReconstructor *rec
   if (!AliTRDcalibDB::Instance()) {
     AliFatal("Could not get calibration object");
   }
-  fTimeBinsPerPlane = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  fTimeBinsPerPlane = AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS();
 
   fDebugStreamer    = new TTreeSRedirector("TRDdebug.root");
 
@@ -2786,7 +2786,7 @@ AliTRDtracker::AliTRDtrackingSector
 		//temporary !! (A.Bercuci)
     Int_t t0 = (Int_t)fCalibration->GetT0Average(AliTRDgeometry::GetDetector(layer, 2, gs));
 
-    Int_t nTimeBins =  AliTRDcalibDB::Instance()->GetNumberOfTimeBins();    
+    Int_t nTimeBins =  AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS();    
     for (Int_t iTime = 0; iTime < nTimeBins; iTime++) {
 
       Double_t xlayer = iTime * dx - dxAmp;
@@ -2851,7 +2851,7 @@ Int_t  AliTRDtracker::AliTRDtrackingSector
   // timebin <localTB> in plane <plane>
   //
 
-  Int_t tbPerPlane = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  Int_t tbPerPlane = AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS();
   Int_t gtb        = (plane+1) * tbPerPlane - localTB - 1;
   if (localTB < 0) {
     return -1;
@@ -3800,7 +3800,7 @@ AliTRDtrack *AliTRDtracker::RegisterSeed(AliTRDseed * const seeds, Double_t *par
   //
 
 	AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-	Int_t nTimeBins = cal->GetNumberOfTimeBins();
+	Int_t nTimeBins = cal->GetNumberOfTimeBinsDCS();
 	
 
   Double_t alpha = AliTRDgeometry::GetAlpha();

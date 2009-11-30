@@ -12,7 +12,6 @@
 #include "AliTRDCalROC.h"
 #include "AliTRDCalPad.h"
 #include "AliTRDCalDet.h"
-#include "AliTRDCalFEE.h"
 
 #include "AliTRDCalChamberStatus.h"
 #include "AliTRDCalPadStatus.h"
@@ -53,25 +52,6 @@ TObject *CreateDetObject(const char *shortName, const char *description
   for (Int_t det = 0; det < AliTRDgeometry::kNdet; ++det) {
     object->SetValue(det, value);
   }
-  return object;
-
-}
-
-//_____________________________________________________________________________
-TObject *CreateFEEObject() 
-{
-
-  AliTRDCalFEE *object = new AliTRDCalFEE("FEE"
-                                         ,"TRD FEE calibration parameters");
-
-  object->SetNumberOfTimeBins(24);
-
-  object->SetTailCancelationTau1(0);
-  object->SetTailCancelationTau2(0);
-  object->SetTailCancelationAmp(0);
-
-  object->SetPedestal(0);
-
   return object;
 
 }
@@ -269,14 +249,6 @@ void AliTRDCreateDummyCDB()
   
   obj = CreateDetObject("ChamberGainFactor" ,"GainFactor (detector value)", 1);
   StoreObject("TRD/Calib/ChamberGainFactor" ,obj,metaData);
-  
-  //
-  // FEE object
-  //
-
-  metaData = CreateMetaObject("AliTRDCalFEE");
-  obj = CreateFEEObject();
-  StoreObject("TRD/Calib/FEE"               ,obj,metaData);
   
   //
   // Status objects

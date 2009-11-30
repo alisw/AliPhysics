@@ -38,7 +38,6 @@
 #pragma link C++ class  AliTRDCalROC+;
 #pragma link C++ class  AliTRDCalPad+;
 #pragma link C++ class  AliTRDCalDet+;
-#pragma link C++ class  AliTRDCalFEE+;
 #pragma link C++ class  AliTRDCalDCS+;
 #pragma link C++ class  AliTRDCalDCSFEE+;
 #pragma link C++ class  AliTRDCalDCSPTR+;

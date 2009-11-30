@@ -495,7 +495,7 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
   // Number of clusters attached to track per chamber and slice
   Int_t     nCluster[kNplane][AliTRDCalPID::kNSlicesLQ];
   // Number of time bins in chamber
-  Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS();
   Int_t plane;                  // Plane of current cluster
   Int_t tb;                     // Time bin of current cluster
   Int_t slice;                  // Current slice
@@ -563,7 +563,7 @@ void AliTRDtrack::CookdEdxNN(Float_t *dedx)
   //
  
   //number of time bins in chamber
-  Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS();
 
   Int_t plane;                    // plane of current cluster
   Int_t tb;                       // time bin of current cluster

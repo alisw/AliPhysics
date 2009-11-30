@@ -70,7 +70,6 @@ class AliTRDcalibDB : public TObject {
   Float_t                             GetPRFlo() const      { return fPRFlo;  };
   Float_t                             GetPRFhi() const      { return fPRFhi;  };
 
-  Int_t                               GetNumberOfTimeBins();
   Int_t                               GetNumberOfTimeBinsDCS();
   void                                GetFilterType(TString &filterType);
 
