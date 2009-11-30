@@ -38,7 +38,8 @@ public:
 
   void UpdateTrack(AliExternalTrackParam &track0, const AliExternalTrackParam &track1);
   //
-  void FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1);
+  void FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined);
+  void MaterialBudgetDump(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined, AliExternalTrackParam *param1Combined);
 
 
   //

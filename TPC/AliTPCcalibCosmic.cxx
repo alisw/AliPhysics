@@ -38,9 +38,21 @@
     gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
     gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
     AliXRDPROOFtoolkit tool;
-    TChain * chainCosmic = tool.MakeChainRandom("cosmic.txt","Track0",0,10000); 
-  
-
+    TChain * chainCosmic = tool.MakeChainRandom("cosmic.txt","Track0",0,10000);
+    TChain * chainBudget = tool.MakeChainRandom("cosmic.txt","material",0,1000); 
+    TCut cutptV="abs(1/pt0V-1/pt1V)<0.1";
+    TCut cutptI="abs(1/pt0In-1/pt1In)<0.5";
+    TCut cutncl="nclmin>120";
+    TCut cutDz="abs(p0.fP[1])<50";
+    TCut cutDr="abs(p0.fP[0])<50";
+    //
+    chainBudget->Draw(">>listB",cutptV+cutptI+cutncl+cutDr+cutDz,"entryList");
+    TEntryList *elistB = (TEntryList*)gDirectory->Get("listB");
+    chainBudget->SetEntryList(elistB);
+    
+    chainBudget->SetAlias("dptrel","(pt0V-pt1V)/((pt0V+pt1V)*0.5)");
+    chainBudget->SetAlias("dptInrel","(pt0In-pt1In)/((pt0In+pt1In)*0.5)");
+    chainBudget->SetAlias("ptcorr","(pt0In-pt0V)/(pt0V)+(pt1V-pt1In)/(pt1In)");
 */
 
 
@@ -201,15 +213,15 @@ void AliTPCcalibCosmic::Init(){
   xminTrack[5] =-1; xmaxTrack[5]=1;  // 
   axisName[5]  ="tan(#theta)";
   //
-  binsTrack[6] =10;
-  xminTrack[6] =0; xmaxTrack[6]=2;  // 
+  binsTrack[6] =40;
+  xminTrack[6] =-2; xmaxTrack[6]=2;  // 
   axisName[6]  ="1/pt (1/GeV)";
   //
   binsTrack[7] =40;
   xminTrack[7] =0.2; xmaxTrack[7]=50;  // 
   axisName[7]  ="pt (GeV)";
   //
-  binsTrack[8] =32;
+  binsTrack[8] =18;
   xminTrack[8] =0; xmaxTrack[8]=TMath::Pi();  // 
   axisName[8]  ="alpha";
   //
@@ -343,9 +355,12 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
 }
 
 
-void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1){
+void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined ){
   //
-  //
+  // par0,par1       - parameter of tracks at DCA 0
+  // inner0,inner1   - parameter of tracks at the TPC entrance
+  // seed0, seed1    - detailed track information
+  // param0Combined  - Use combined track parameters for binning
   //
   Int_t kMinCldEdx =20;
   Int_t ncl0 = seed0->GetNumberOfClusters();
@@ -364,11 +379,11 @@ void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExt
   // bin parameters
   x[1] = TMath::Min(ncl0,ncl1);
   x[2] = (radius0+radius1)*0.5;
-  x[3] = (inner0->GetZ()+inner1->GetZ())*0.5;
-  x[4] = (inner0->GetSnp()-inner1->GetSnp())*0.5;
-  x[5] = (inner0->GetTgl()-inner1->GetTgl())*0.5;
-  x[6] = (1/par0->Pt()+1/par1->Pt())*0.5;
-  x[7] = (par0->Pt()+par1->Pt())*0.5;
+  x[3] = param0Combined->GetZ();
+  x[4] = inner0->GetSnp();
+  x[5] = param0Combined->GetTgl();
+  x[6] = param0Combined->GetSigned1Pt();
+  x[7] = param0Combined->Pt();
   x[8] = alpha;
   // deltas
   Double_t delta[6];
@@ -440,7 +455,60 @@ void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExt
   
 }
 
-
+void AliTPCcalibCosmic::MaterialBudgetDump(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined, AliExternalTrackParam *param1Combined){
+  //
+  // matrial budget AOD dump
+  //
+  // par0,par1       - parameter of tracks at DCA 0
+  // inner0,inner1   - parameter of tracks at the TPC entrance
+  // seed0, seed1    - detailed track information
+  // param0Combined  - Use combined track parameters for binning
+  // param1Combined  - 
+  Double_t p0In = inner0->GetP(); 
+  Double_t p1In = inner1->GetP(); 
+  Double_t p0V  = par0->GetP(); 
+  Double_t p1V  = par1->GetP(); 
+  //
+  Double_t pt0In = inner0->Pt(); 
+  Double_t pt1In = inner1->Pt(); 
+  Double_t pt0V  = par0->Pt(); 
+  Double_t pt1V  = par1->Pt(); 
+  Int_t ncl0 = seed0->GetNumberOfClusters();
+  Int_t ncl1 = seed1->GetNumberOfClusters();
+  Int_t nclmin=TMath::Min(ncl0,ncl1);
+  Double_t sign = (param0Combined->GetSigned1Pt()>0) ? 1:-1.;
+  //
+  TTreeSRedirector * pcstream =  GetDebugStreamer();
+  if (pcstream){
+    (*pcstream)<<"material"<<
+      "run="<<fRun<<              //  run number
+      "event="<<fEvent<<          //  event number
+      "time="<<fTime<<            //  time stamp of event
+      "trigger="<<fTrigger<<      //  trigger
+      "triggerClass="<<&fTriggerClass<<      //  trigger
+      "mag="<<fMagF<<             //  magnetic field
+      "sign="<<sign<<             // sign of the track
+      //
+      "ncl0="<<ncl0<<
+      "ncl1="<<ncl1<<
+      "nclmin="<<nclmin<<
+      //
+      "p0In="<<p0In<<
+      "p1In="<<p1In<<
+      "p0V="<<p0V<<
+      "p1V="<<p1V<<
+      "pt0In="<<pt0In<<
+      "pt1In="<<pt1In<<
+      "pt0V="<<pt0V<<
+      "pt1V="<<pt1V<<
+      "p0.="<<par0<<
+      "p1.="<<par1<<
+      "up0.="<<param0Combined<<
+      "up1.="<<param1Combined<<
+      "\n";
+  }
+  
+}
 
 void AliTPCcalibCosmic::Analyze() {
 
@@ -565,8 +633,11 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       //
       // Propagate using Magnetic field and correct fo material budget
       //
-      AliTracker::PropagateTrackTo(&param0,dmax+1,0.0005,3,kTRUE);
-      AliTracker::PropagateTrackTo(&param1,dmax+1,0.0005,3,kTRUE);
+      Double_t sign0=-1;
+      Double_t sign1=1;
+      Double_t maxsnp=0.90;
+      AliTracker::PropagateTrackToBxByBz(&param0,dmax+1,0.0005,3,kTRUE,maxsnp,sign0);
+      AliTracker::PropagateTrackToBxByBz(&param1,dmax+1,0.0005,3,kTRUE,maxsnp,sign1);
       //
       // Propagate rest to the 0,0 DCA - z should be ignored
       //
@@ -606,8 +677,8 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 	//
 	//
 	//
-	FillHistoPerformance(&param0, &param1, ip0, ip1, seed0, seed1);
-
+	FillHistoPerformance(&param0, &param1, ip0, ip1, seed0, seed1,par0U);
+	MaterialBudgetDump(&param0, &param1, ip0, ip1, seed0, seed1,par0U,par1U);
 	if (cstream) {
 	  (*cstream) << "Track0" <<
 	    "run="<<fRun<<              //  run number

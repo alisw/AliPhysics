@@ -514,7 +514,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
   if (ntracks==0) return;
   if (ntracks > fCutTracks) return;
   
-  if (GetDebugLevel()>1) printf("Hallo world: Im here\n");
+  if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
   AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   
   TObjArray  tpcSeeds(ntracks);
@@ -750,7 +750,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
 	"\n";
     }
   }
-  printf("Trigger: %s\n",event->GetFiredTriggerClasses().Data());
+  if (GetDebugLevel()>20) printf("Trigger: %s\n",event->GetFiredTriggerClasses().Data());
 }
 
 void AliTPCcalibTime::ProcessBeam(AliESDEvent */*event*/){
