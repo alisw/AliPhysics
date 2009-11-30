@@ -177,8 +177,8 @@ int AliHLTMUONClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*e
     if (block->fDataType != AliHLTMUONConstants::ClusterBlockDataType()) continue;
     specification |= block->fSpecification;  // The specification bit pattern should indicate all the DDLs that contributed.
     
-    HLTDebug("Handling block: %u, with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
-	     i, DataType2Text(block->fDataType).c_str(), block->fPtr, block->fSize
+    HLTDebug("Handling block: with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
+	     DataType2Text(block->fDataType).c_str(), block->fPtr, block->fSize
 	     );
     
     AliHLTMUONClustersBlockReader clusterBlock(block->fPtr, block->fSize);
