@@ -21,10 +21,6 @@
 /// @date   
 /// @brief  Miscellaneous methods for the HLT AliRoot integration
 
-// define will be set set from configure.ac, but for now it needs
-// to be set until the changes in STEER have been committed
-#define HAVE_NOT_ALIESDHLTDECISION
-
 #include "AliHLTMiscImplementation.h"
 #include "AliHLTLogging.h"
 #include "AliCDBManager.h"
@@ -33,9 +29,12 @@
 #include "AliGRPManager.h"
 #include "AliRawReader.h"
 #include "AliTracker.h"
-#ifndef HAVE_NOT_ALIESDHLTDECISION
+// AliESDEvent.h includes AliESDHLTDecision.h
+// and switches the functionality
+#include "AliESDEvent.h"
+#ifdef ALIESDHLTDECISION_H
 #include "AliESDHLTDecision.h"
-#endif //HAVE_NOT_ALIESDHLTDECISION
+#endif //ALIESDHLTDECISION_H
 #include "TGeoGlobalMagField.h"
 #include "AliHLTGlobalTriggerDecision.h"
 
@@ -175,18 +174,18 @@ void AliHLTMiscImplementation::GetBxByBz(const Double_t r[3], Double_t b[3])
 const TClass* AliHLTMiscImplementation::IsAliESDHLTDecision() const
 {
   // Return the IsA of the AliESDHLTDecision class
-#ifndef HAVE_NOT_ALIESDHLTDECISION
+#ifdef ALIESDHLTDECISION_H
   return AliESDHLTDecision::Class();
-#else // HAVE_NOT_ALIESDHLTDECISION
+#else // ALIESDHLTDECISION_H
   return NULL;
-#endif // HAVE_NOT_ALIESDHLTDECISION
+#endif // ALIESDHLTDECISION_H
 }
 
 int AliHLTMiscImplementation::Copy(const AliHLTGlobalTriggerDecision* pDecision, TObject* object) const
 {
   // Copy HLT global trigger decision to AliESDHLTDecision container
   if (!pDecision || !object) return -EINVAL;
-#ifndef HAVE_NOT_ALIESDHLTDECISION
+#ifdef ALIESDHLTDECISION_H
   AliESDHLTDecision* pESDHLTDecision=NULL;
   if (object->IsA()==NULL ||
       object->IsA() != AliESDHLTDecision::Class() ||
@@ -197,8 +196,8 @@ int AliHLTMiscImplementation::Copy(const AliHLTGlobalTriggerDecision* pDecision,
   }
 
   pESDHLTDecision->~AliESDHLTDecision();
-  new (pESDHLTDecision) AliESDHLTDecision(pDecision->GetTitle());
+  new (pESDHLTDecision) AliESDHLTDecision(pDecision->Result(), pDecision->GetTitle());
 
-#endif // HAVE_NOT_ALIESDHLTDECISION
+#endif // ALIESDHLTDECISION_H
   return 0;
 }
