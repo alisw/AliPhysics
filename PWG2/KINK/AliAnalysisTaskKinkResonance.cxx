@@ -16,9 +16,10 @@
 //        Example of an analysis task for reconstructing resonances having at least one kaon-kink in their decay 
 //        products. 
 //-----------------------------------------------------------------------------------------------------------------
+#include "TCanvas.h"
+#include "TH1.h"
 
 #include "AliESDEvent.h"
-
 #include "AliAnalysisTaskKinkResonance.h"
 #include "AliResonanceKink.h"
 
@@ -60,19 +61,26 @@ void AliAnalysisTaskKinkResonance::UserExec(Option_t *)
   }
 
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+  
   if (!esd) {
      Printf("ERROR: Could not retrieve esd");
      return;
   }
-
-  AliMCEvent* mcEvent = MCEvent();
-  if (!mcEvent) {
-     Printf("ERROR: Could not retrieve MC event");
-     return;
+  
+  if((fKinkResonance->GetAnalysisType() == "MC")||(fKinkResonance->GetAnalysisType() == "ESD")) {
+    AliMCEvent* mcEvent = MCEvent();
+    if (!mcEvent) {
+       Printf("ERROR: Could not retrieve MC event");
+       return;
+    }
+    fKinkResonance->SetDebugLevel(fDebug);
+    fKinkResonance->Analyse(esd, mcEvent);
   }
-
-  fKinkResonance->SetDebugLevel(fDebug);
-  fKinkResonance->Analyse(esd, mcEvent);
+  
+  if(fKinkResonance->GetAnalysisType() == "DATA") {
+    fKinkResonance->SetDebugLevel(fDebug);
+    fKinkResonance->Analyse(esd);
+  }
    
   PostData(1, fList);
    
@@ -83,16 +91,18 @@ void AliAnalysisTaskKinkResonance::Terminate(Option_t *)
 {
   // Draw result to the screen 
   // Called once at the end of the query
+
   fList = dynamic_cast<TList*> (GetOutputData(1));
 
   if (!fList) {
     Printf("ERROR: fList not available");
     return;
   }
-  //TH1D* h=(TH1D *) fList->At(15);
-  //TCanvas *c1 = new TCanvas("AliAnalysisTaskKinkResonance","Pt MC",10,10,510,510);
-  //c1->cd(1);
-  //if (h) h->DrawCopy("E");
-
+  
+  TH1D* h=(TH1D *) fList->At(1);
+  TCanvas *c1 = new TCanvas("AliAnalysisTaskKinkResonance","Inv mass",10,10,510,510);
+  c1->cd(1);
+  if (h) h->DrawCopy("E");
+  
 }
 

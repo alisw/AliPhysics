@@ -13,16 +13,17 @@
 //                    mspyrop@phys.uoa.gr
 //-----------------------------------------------------------------
 
-#include "AliAnalysisTaskSE.h"
-
-class AliESDtrack;
 class AliESDVertex;
+class AliESDtrack;
 class AliESDEvent;
+class TF1;
 class TH1F;
 class TH2F;
 class TH1D;
-class TF1;
+class TH2D;
 class TList;
+
+#include "AliAnalysisTaskSE.h"
 
 class AliAnalysisKinkESDMC : public AliAnalysisTaskSE {
  public:

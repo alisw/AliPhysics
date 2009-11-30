@@ -5,7 +5,7 @@
 
 //------------------------------------------------------------------------------
 //                   class AliResonanceKink
-//         This task is an example of an analysis task
+//                 This task is the base class
 //        for analysing resonances having one kaon kink
 //Author: Paraskevi Ganoti, University of Athens (pganoti@phys.uoa.gr)
 //------------------------------------------------------------------------------
@@ -28,17 +28,19 @@ class AliResonanceKink : public TObject {
   enum ResonanceType {kPhi=333, kKstar0=313, kLambda1520=3124};
   
   AliResonanceKink();
-  AliResonanceKink(Int_t nbins, Float_t nlowx, Float_t nhighx, Int_t daughter1, Int_t daughter2, Int_t resonancePDG);
+  AliResonanceKink(Int_t nbins, Float_t nlowx, Float_t nhighx, Int_t netabins, Float_t nloweta, Float_t nupeta, Int_t nptbins, Float_t nlowpt, Float_t nupperpt, Int_t daughter1, Int_t daughter2, Int_t resonancePDG);
   virtual ~AliResonanceKink();
   
   TList* GetHistogramList();
-  void Analyse(AliESDEvent* esd, AliMCEvent* mcEvent);  
+  void Analyse(AliESDEvent* esd, AliMCEvent* mcEvent);
+  void Analyse(AliESDEvent* esd);   
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack) const ; 
   const AliESDVertex *GetEventVertex(const AliESDEvent* esd) const;
   void SetDebugLevel(Int_t level) {fDebug = level;}
   void SetAnalysisType(TString type) {fAnalysisType=type;}
+  TString GetAnalysisType() {return fAnalysisType;} 
   void SetPDGCodes(Int_t d1, Int_t d2, Int_t res) {fdaughter1pdg=d1; fdaughter2pdg=d2; fresonancePDGcode=res;}
-  void InitOutputHistograms(Int_t nbins, Float_t nlowx, Float_t nhighx);
+  void InitOutputHistograms(Int_t nbins, Float_t nlowx, Float_t nhighx, Int_t netabins, Float_t nloweta, Float_t nupeta, Int_t nptbins, Float_t nlowpt, Float_t nupperpt); 
   Bool_t IsAcceptedForKink(AliESDEvent *localesd, const AliESDVertex *localvertex, AliESDtrack *localtrack);
   Bool_t IsAcceptedForTrack(AliESDEvent *localesd, const AliESDVertex *localvertex, AliESDtrack *localtrack);
   Bool_t IsKink(AliESDEvent *localesd, Int_t kinkIndex, TVector3 trackMom); 
@@ -96,8 +98,20 @@ class AliResonanceKink : public TObject {
   void SetMaxCov14(Double_t maxCov14) {
    fMaxCov14=maxCov14;
   }
-  Double_t GetMaxCov14() const {return fMaxCov14;}     
+  Double_t GetMaxCov14() const {return fMaxCov14;} 
   
+  void SetMinKinkRadius(Float_t minKinkRadius) {
+   fminKinkRadius=minKinkRadius;
+  }
+  Float_t GetMinKinkRadius() const {return fminKinkRadius;}  
+  
+  void SetMaxKinkRadius(Float_t maxKinkRadius) {
+   fmaxKinkRadius=maxKinkRadius;
+  }
+  Float_t GetMaxKinkRadius() const {return fmaxKinkRadius;}    
+  
+  void SetQtLimits(Float_t minQt, Float_t maxQt) {fminQt=minQt; fmaxQt=maxQt;}    
+
   //void SetTPCrefit() {Int_t fTPCrefitFlag=kTRUE;}
      
  private:
@@ -108,6 +122,9 @@ class AliResonanceKink : public TObject {
   TH1D        *fInvariantMass; // invMass spectrum   
   TH1D        *fInvMassTrue; // invMassTrue spectrum  
   TH1D        *fPhiBothKinks; // bothKaonsKinks   
+  Int_t       fetabins; // number of eta bins
+  Float_t     floweta; // lower limit for eta
+  Float_t     fupeta; // upper limit for eta  
   TH1D        *fRecPt; // pT spectrum  
   TH1D        *fRecEta; // Eta spectrum
   TH2D        *fRecEtaPt; // Eta pT spectrum  
@@ -143,7 +160,15 @@ class AliResonanceKink : public TObject {
   TH2D        *fInvmassPt;  // 2D histo for invariant mass calculation in pt bins (all pairs, ESD) 
   TH2D        *fInvmassPtTrue;  // 2D histo for invariant mass calculation in pt bins (true pairs, ESD) 
   TH2D        *fMCInvmassPt; // 2D histo for invariant mass calculation in pt bins (all pairs, MC)
-  TH2D        *fMCInvmassPtTrue;  // 2D histo for invariant mass calculation in pt bins (true pairs, MC)       
+  TH2D        *fMCInvmassPtTrue;  // 2D histo for invariant mass calculation in pt bins (true pairs, MC) 
+  Float_t     fminKinkRadius; // min accepted radius for the kink vertex
+  Float_t     fmaxKinkRadius; // max accepted radius for the kink vertex
+  Float_t     fminQt; //min Qt cut
+  Float_t     fmaxQt; //max Qt cut   
+  Int_t       fptbins; // number of bins in pt
+  Float_t     flowpt; // pt lower limit
+  Float_t     fupperpt; // pt upper limit
+  
 //  Bool_t      fTPCrefitFlag;
   
   AliResonanceKink(const AliResonanceKink&); // not implemented

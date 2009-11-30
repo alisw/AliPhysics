@@ -31,7 +31,8 @@ class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   
   void SetPDGCodes(Int_t d1, Int_t d2) {fdaughter1pdg=d1; fdaughter2pdg=d2;}
-  void SetHistoSettings(Int_t nbins, Float_t nlowx, Float_t nhighx) {fnbins=nbins; fnlowx=nlowx; fnhighx=nhighx;}
+  void SetHistoSettings(Int_t nbins, Float_t nlowx, Float_t nhighx, Int_t nptbins, Float_t nlowpt, Float_t nupperpt) {fnbins=nbins; fnlowx=nlowx; fnhighx=nhighx; fptbins=nptbins; flowpt=nlowpt; fupperpt=nupperpt;}
+  void SetEtaLimits(Float_t nloweta, Float_t nuppereta) {floweta=nloweta; fuppereta=nuppereta;} 
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack) const ; 
   const AliESDVertex *GetEventVertex(const AliESDEvent* esd) const;
   void SetDebugLevel(Int_t level) {fDebug = level;}
@@ -92,7 +93,19 @@ class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
   void SetMaxCov14(Double_t maxCov14) {
    fMaxCov14=maxCov14;
   }
-  Double_t GetMaxCov14() const {return fMaxCov14;}      
+  Double_t GetMaxCov14() const {return fMaxCov14;}
+   
+  void SetMinKinkRadius(Float_t minKinkRadius) {
+   fminKinkRadius=minKinkRadius;
+  }
+  Float_t GetMinKinkRadius() const {return fminKinkRadius;}
+
+  void SetMaxKinkRadius(Float_t maxKinkRadius) {
+   fmaxKinkRadius=maxKinkRadius;
+  }
+  Float_t GetMaxKinkRadius() const {return fmaxKinkRadius;} 
+  
+  void SetQtLimits(Float_t minQt, Float_t maxQt) {fminQt=minQt; fmaxQt=maxQt;}     
   
  private:
   Int_t       fDebug;        //  Debug flag
@@ -118,6 +131,16 @@ class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
   Int_t       fnbins; // Inv mass histo number of bins
   Float_t     fnlowx; // Inv mass histo lower limit
   Float_t     fnhighx; // Inv mass histo upper limit
+  Float_t     floweta; // lower eta limit
+  Float_t     fuppereta; // upper eta limit
+  Float_t     fminKinkRadius; // min accepted radius for the kink vertex
+  Float_t     fmaxKinkRadius; // max accepted radius for the kink vertex
+  Float_t     fminQt; //min Qt cut
+  Float_t     fmaxQt; //max Qt cut  
+  Int_t       fptbins; // number of bins in pt
+  Float_t     flowpt; // pt lower limit
+  Float_t     fupperpt; // pt upper limit 
+    
   AliResonanceKinkLikeSign(const AliResonanceKinkLikeSign&); // not implemented
   AliResonanceKinkLikeSign& operator=(const AliResonanceKinkLikeSign&); // not implemented
 
