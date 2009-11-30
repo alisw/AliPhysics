@@ -41,6 +41,7 @@
 #include <iostream>
 #include <cmath>
 
+#include "AliRawReader.h"
 #include "AliCaloRawStreamV3.h"
 
 //The include file
@@ -425,6 +426,9 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliRawReader *rawReader)
 { 
   // if fMapping is NULL the rawstream will crate its own mapping
   AliCaloRawStreamV3 rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
+  if (fDetType == kEmCal) {
+    rawReader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL range 
+  }
   return ProcessEvent(&rawStream);
 }
 
@@ -839,7 +843,7 @@ Bool_t AliCaloCalibPedestal::IsBadChannel(int imod, int icol, int irow) const
 {
 	//Check if channel is dead or hot.
 	
-	Int_t status =  ((TH2D*)fDeadMap[imod])->GetBinContent(icol,irow);
+	Int_t status =  (Int_t) ( ((TH2D*)fDeadMap[imod])->GetBinContent(icol,irow) );
 	if(status == kAlive)
 		return kFALSE;
 	else 

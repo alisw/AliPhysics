@@ -70,6 +70,8 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
   fAmpCut(40), // min. 40 ADC counts as default
   fReqFractionAboveAmpCutVal(0.6), // 60% in a strip, per default
   fReqFractionAboveAmp(kTRUE),
+  fAmpCutLEDRef(100), // min. 100 ADC counts as default
+  fReqLEDRefAboveAmpCutVal(kTRUE),
   fHour(0),
   fLatestHour(0),
   fUseAverage(kTRUE),
@@ -145,6 +147,8 @@ AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
   fAmpCut(sig.GetAmpCut()),
   fReqFractionAboveAmpCutVal(sig.GetReqFractionAboveAmpCutVal()),
   fReqFractionAboveAmp(sig.GetReqFractionAboveAmp()),
+  fAmpCutLEDRef(sig.GetAmpCutLEDRef()),
+  fReqLEDRefAboveAmpCutVal(sig.GetReqLEDRefAboveAmpCutVal()),
   fHour(sig.GetHour()),
   fLatestHour(sig.GetLatestHour()),
   fUseAverage(sig.GetUseAverage()),
@@ -267,6 +271,36 @@ Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(const int *iAmpVal,
   return returnCode;
 }
 
+
+//_____________________________________________________________________
+Bool_t AliCaloCalibSignal::CheckLEDRefAboveAmp(const int *iAmpVal, 
+					       int resultArray[])
+{ // check which LEDRef/Mon strips are above amplitude cut
+  Bool_t returnCode = false;
+    
+  int iRefNum = 0;
+  int gain = 1; // look at high gain; this should be rather saturated usually..
+  for (int i = 0; i<fModules; i++) {
+    for (int j = 0; j<fLEDRefs; j++) {
+      iRefNum = GetRefNum(i, j, gain);
+      if (iAmpVal[iRefNum] > fAmpCutLEDRef) { 
+	resultArray[i*fLEDRefs +j] = 1; // enough signal
+	returnCode = true;
+      }
+      else {
+	resultArray[i*fLEDRefs +j] = 0; // not enough signal
+      }
+      
+      /*
+      printf("DS mod %d LEDRef %d ampVal %d\n",
+	     i, j, iAmpVal[iRefNum]);
+      */
+    } // LEDRefs
+  } // modules loop
+  
+  return returnCode;
+}
+
 // Parameter/cut handling
 //_____________________________________________________________________
 void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
@@ -325,7 +359,8 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
       // printf("AliCaloCalibSignal::SetParametersFromFile - key %s value %s\n", key.c_str(), value.c_str());
 
       // if the key matches with something we expect, we assign the new value
-      if ( (key == "fAmpCut") || (key == "fReqFractionAboveAmpCutVal") || (key == "fSecInAverage") ) {
+      if ( (key == "fAmpCut") || (key == "fReqFractionAboveAmpCutVal") ||
+	   (key == "fAmpCutLEDRef") || (key == "fSecInAverage") ) {
 	istringstream iss(value);
 	printf("AliCaloCalibSignal::SetParametersFromFile - key %s value %s\n", key.c_str(), value.c_str());
 
@@ -334,6 +369,9 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
 	}
 	else if (key == "fReqFractionAboveAmpCutVal") { 
 	  iss >> fReqFractionAboveAmpCutVal; 
+	}
+	else if (key == "fAmpCutLEDRef") { 
+	  iss >> fAmpCutLEDRef; 
 	}
 	else if (key == "fSecInAverage") { 
 	  iss >> fSecInAverage; 
@@ -344,8 +382,7 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
   }
 
   in.close();
-  return;
-	
+  return;	
 }
 
 //_____________________________________________________________________
@@ -356,6 +393,7 @@ void AliCaloCalibSignal::WriteParametersToFile(const char *parameterFile)
   out << "// " << parameterFile << endl;
   out << "fAmpCut" << "::" << fAmpCut << endl;
   out << "fReqFractionAboveAmpCutVal" << "::" << fReqFractionAboveAmpCutVal << endl;
+  out << "fAmpCutLEDRef" << "::" << fAmpCutLEDRef << endl;
   out << "fSecInAverage" << "::" << fSecInAverage << endl;
 
   out.close();
@@ -431,8 +469,10 @@ Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
 Bool_t AliCaloCalibSignal::ProcessEvent(AliRawReader *rawReader)
 {
   // if fMapping is NULL the rawstream will crate its own mapping
-  AliCaloRawStreamV3 rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
-
+  AliCaloRawStreamV3 rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);  
+  if (fDetType == kEmCal) {
+    rawReader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL range 
+  }
   return ProcessEvent( &rawStream, rawReader->GetTimestamp() );
 }
 
@@ -457,9 +497,10 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   int sample; // temporary value
   int gain = 0; // high or low gain
   
-  // Number of Low and High gain channels for this event:
+  // Number of Low and High gain, and LED Ref, channels for this event:
   int nLowChan = 0; 
   int nHighChan = 0; 
+  int nLEDRefChan = 0;
 
   int iTowerNum = 0; // array index for regular towers
   int iRefNum = 0; // array index for LED references
@@ -527,6 +568,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
 	// strip # is coded is 'column' in the channel maps 
 	iRefNum = GetRefNum(arrayPos, in->GetColumn(), gain); 
 	iLEDAmpVal[iRefNum] = max - min;
+	nLEDRefChan++;
       } // end of LED ref
 
       } // nsamples>0 check, some data found for this channel; not only trailer/header      
@@ -536,18 +578,30 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   
   in->Reset(); // just in case the next customer forgets to check if the stream was reset..
 
-  // now check if it was a led event, only use high gain (that should be sufficient)
+  // now check if it was an LED event, using the LED Reference info per strip
 
   // by default all columns are accepted (init check to > 0)
   int checkResultArray[AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALCols];
   for (int ia=0; ia<(AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALCols); ia++) { 
     checkResultArray[ia] = 1; 
   }
-
   if (fReqFractionAboveAmp) {
     bool ok = false;
     if (nHighChan > 0) { 
       ok = CheckFractionAboveAmp(iAmpValHighGain, checkResultArray); 
+    }
+    if (!ok) return false; // skip event
+  }
+
+  // by default all columns are accepted (init check to > 0)
+  int checkResultArrayLEDRef[AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALLEDRefs];
+  for (int ia=0; ia<(AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALLEDRefs); ia++) { 
+    checkResultArrayLEDRef[ia] = 1; 
+  }
+  if (fReqLEDRefAboveAmpCutVal) {
+    bool ok = false;
+    if (nLEDRefChan > 0) { 
+      ok = CheckLEDRefAboveAmp(iLEDAmpVal, checkResultArrayLEDRef); 
     }
     if (!ok) return false; // skip event
   }
@@ -564,9 +618,17 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   }
   
   // it is a led event, now fill TTree
+  // We also do the activity check for LEDRefs/Strips, but need to translate between column
+  // and strip indices for that; based on these relations: 
+  // iStrip = AliEMCALGeoParams::GetStripModule(iSM, iCol);
+  // iStrip = (iSM%2==0) ? iCol/2 : AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iCol/2;
+  // which leads to
+  // iColFirst = (iSM%2==0) ? iStrip*2 : (AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iStrip)*2;
+
   for(int i=0; i<fModules; i++){
-    for(int j=0; j<fColumns; j++){
-      if (checkResultArray[i*fColumns + j] > 0) { // column passed check 
+    for(int j=0; j<fColumns; j++) {
+      int iStrip = (i%2==0) ? j/2 : AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - j/2;
+      if (checkResultArray[i*fColumns + j]>0  && checkResultArrayLEDRef[i*fLEDRefs + iStrip]>0) { // column passed check 
       for(int k=0; k<fRows; k++){
 	
 	iTowerNum = GetTowerNum(i, j, k); 
@@ -584,29 +646,23 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
 	  fNLowGain[iTowerNum]++;
 	}
       } // rows
-      } // column passed check
+      } // column passed check, and LED Ref for strip passed check (if any)
     } // columns
-
-    // We also do the activity check for LEDRefs/Strips, but need to translate between column
-    // and strip indices for that; based on these relations: 
-    // iStrip = AliEMCALGeoParams::GetStripModule(iSM, iCol);
-    // iStrip = (iSM%2==0) ? iCol/2 : AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iCol/2;
-    // which leads to
-    // iColFirst = (iSM%2==0) ? iStrip*2 : (AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iStrip)*2;
 
     // also LED refs
     for(int j=0; j<fLEDRefs; j++){
       int iColFirst = (i%2==0) ? j*2 : (AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - j)*2; //CHECKME!!!
-      if ( (checkResultArray[i*fColumns + iColFirst]>0) || (checkResultArray[i*fColumns + iColFirst + 1]>0) ) { // at least one column in strip passed check 
-      for (gain=0; gain<2; gain++) {
-	fRefNum = GetRefNum(i, j, gain); 
-	if (iLEDAmpVal[fRefNum]) {
-	  fAmp = iLEDAmpVal[fRefNum];
-	  fTreeLEDAmpVsTime->Fill();//fRefNum,fHour,fAmp);
-	  fNRef[fRefNum]++;
-	}
-      } // gain
-      } // at least one column in strip passed check 
+      if ( ((checkResultArray[i*fColumns + iColFirst]>0) || (checkResultArray[i*fColumns + iColFirst + 1]>0)) && // at least one column in strip passed check 
+	   (checkResultArrayLEDRef[i*fLEDRefs + j]>0) ) { // and LED Ref passed checks
+	for (gain=0; gain<2; gain++) {
+	  fRefNum = GetRefNum(i, j, gain); 
+	  if (iLEDAmpVal[fRefNum]) {
+	    fAmp = iLEDAmpVal[fRefNum];
+	    fTreeLEDAmpVsTime->Fill();//fRefNum,fHour,fAmp);
+	    fNRef[fRefNum]++;
+	  }
+	} // gain
+      } // at least one column in strip passed check, and LED Ref passed check (if any) 
     }
 
   } // modules

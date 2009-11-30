@@ -20,7 +20,6 @@
 #define RESULT_FILE  "EMCALLED.root"
 #define FILE_ID "signal"
 #define AliDebugLevel() -1
-#define FILE_PEDClassName "emcCalibPedestal"
 #define FILE_SIGClassName "emcCalibSignal"
 const int kNRCU = 4;
 /* LOCAL_DEBUG is used to bypass daq* calls that do not work locally */
@@ -53,7 +52,6 @@ extern "C" {
 //
 // EMC calibration-helper algorithm includes
 //
-#include "AliCaloCalibPedestal.h"
 #include "AliCaloCalibSignal.h"
 
 /*
@@ -139,9 +137,6 @@ int main(int argc, char **argv) {
   }
   
   /* set up our analysis classes */  
-  AliCaloCalibPedestal * calibPedestal = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal); 
-  calibPedestal->SetAltroMapping( mapping );
-  calibPedestal->SetParametersFromFile( parameterFile );
   AliCaloCalibSignal * calibSignal = new AliCaloCalibSignal(AliCaloCalibSignal::kEmCal); 
   calibSignal->SetAltroMapping( mapping );
   calibSignal->SetParametersFromFile( parameterFile );
@@ -197,9 +192,6 @@ int main(int argc, char **argv) {
       rawReader = new AliRawReaderDate((void*)event);
       calibSignal->SetRunNumber(event->eventRunNb);
       calibSignal->ProcessEvent(rawReader);
-      rawReader->Reset();
-      calibPedestal->SetRunNumber(event->eventRunNb);
-      calibPedestal->ProcessEvent(rawReader);
       delete rawReader;
       
       /* free resources */
@@ -229,11 +221,10 @@ int main(int argc, char **argv) {
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 
     f.cd();
-    calibPedestal->Write(FILE_PEDClassName);
     calibSignal->Write(FILE_SIGClassName);
     f.Close();
-    printf("Objects saved to file \"%s\" as \"%s\" and \"%s\".\n", 
-	   RESULT_FILE, FILE_PEDClassName, FILE_SIGClassName); 
+    printf("Objects saved to file \"%s\" as \"%s\".\n", 
+	   RESULT_FILE, FILE_SIGClassName); 
   } 
   else {
     printf("Could not save the object to file \"%s\".\n", 
@@ -243,7 +234,6 @@ int main(int argc, char **argv) {
   //
   // closing down; see if we can delete our analysis helper(s) also
   //
-  delete calibPedestal;
   delete calibSignal;
   for(Int_t iFile=0; iFile<kNRCU; iFile++) {
     if (mapping[iFile]) delete mapping[iFile];

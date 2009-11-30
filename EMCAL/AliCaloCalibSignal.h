@@ -46,6 +46,7 @@ class AliCaloCalibSignal : public TObject {
   Bool_t ProcessEvent(AliRawReader *rawReader);
   Bool_t ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp); // added header for time info
   Bool_t CheckFractionAboveAmp(const int *AmpVal, int resultArray[]); // check fraction of signals to check for LED events
+  Bool_t CheckLEDRefAboveAmp(const int *AmpVal, int resultArray[]); // check if LED Ref is also above cut
 
   // Mapping handling
   AliCaloAltroMapping **GetAltroMapping() const { return fMapping; };
@@ -111,6 +112,11 @@ class AliCaloCalibSignal : public TObject {
   double GetReqFractionAboveAmpCutVal() const { return fReqFractionAboveAmpCutVal; }; //!
   void SetReqFractionAboveAmp(bool b) { fReqFractionAboveAmp = b; } //!
   bool GetReqFractionAboveAmp() const { return fReqFractionAboveAmp; }; //!
+  // also for LED Reference/Mon channels
+  void SetAmpCutLEDRef(double d) { fAmpCutLEDRef = d; } //!
+  double GetAmpCutLEDRef() const { return fAmpCutLEDRef; }; //!
+  void SetReqLEDRefAboveAmpCutVal(bool b) { fReqLEDRefAboveAmpCutVal = b; } //!
+  bool GetReqLEDRefAboveAmpCutVal() const { return fReqLEDRefAboveAmpCutVal; }; //!
 
   // We may select to get averaged info
   void SetUseAverage(bool b) { fUseAverage = b; } //!
@@ -164,6 +170,9 @@ class AliCaloCalibSignal : public TObject {
   double fReqFractionAboveAmpCutVal; // required fraction that should be above cut
   bool fReqFractionAboveAmp; // flag to select if we should do some event selection based on amplitudes
 
+  double fAmpCutLEDRef; // amplitude cut value for LED reference
+  bool fReqLEDRefAboveAmpCutVal; // flag to select if we should require that signal is also seen in LED Reference/Monitoring channel
+
   double fHour; // fraction of hour since beginning of run, for amp vs. time graphs, for current event
   double fLatestHour; // largest fraction of hour since beginning of run, for amp vs. time graphs
   bool fUseAverage; // flag to average graph points into over a time interval
@@ -198,7 +207,7 @@ class AliCaloCalibSignal : public TObject {
   int fNLowGain[fgkMaxTowers]; // same, for low gain
   int fNRef[fgkMaxRefs * 2]; // same, for LED refs; *2 for both gains
   
-  ClassDef(AliCaloCalibSignal, 5) // don't forget to change version if you change class member list..
+  ClassDef(AliCaloCalibSignal, 6) // don't forget to change version if you change class member list..
     
 };
     
