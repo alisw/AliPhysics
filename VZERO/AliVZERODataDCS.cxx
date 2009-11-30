@@ -46,6 +46,8 @@ AliVZERODataDCS::AliVZERODataDCS():
 	fRun(0),
 	fStartTime(0),
 	fEndTime(0),
+	fDaqStartTime(0),
+	fDaqEndTime(0),
     fGraphs("TGraph",kNGraphs),
 	fFEEParameters(NULL),
 	fIsProcessed(kFALSE)
@@ -60,11 +62,13 @@ AliVZERODataDCS::AliVZERODataDCS():
 }
 
 //_____________________________________________________________________________
-AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
+AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t daqStartTime, UInt_t daqEndTime):
 	TObject(),
 	fRun(nRun),
 	fStartTime(startTime),
 	fEndTime(endTime),
+	fDaqStartTime(daqStartTime),
+	fDaqEndTime(daqEndTime),
 	fGraphs("TGraph",kNGraphs),
 	fFEEParameters(new TMap()),
 	fIsProcessed(kFALSE)
@@ -77,9 +81,11 @@ AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
 	 fMeanHV[i]      = 100.0;
      fWidthHV[i]     = 0.0; 
 	}
-	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
+	AliInfo(Form("\n\tRun %d \n\tTime Created %s \n\tTime Completed %s \n\tDAQ start %s \n\tDAQ end %s  ", nRun,
 		TTimeStamp(startTime).AsString(),
-		TTimeStamp(endTime).AsString()));
+		TTimeStamp(endTime).AsString(),
+		TTimeStamp(daqStartTime).AsString(),
+		TTimeStamp(daqEndTime).AsString()));
 	
 	fFEEParameters->SetOwnerValue();
 	Init();
@@ -134,11 +140,14 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
 
     	while((aValue = (AliDCSValue*) iterarray.Next())) {
    			values[iValue] = aValue->GetFloat();
+			UInt_t currentTime = aValue->GetTimeStamp();
+   			times[iValue] = (Double_t) (currentTime);
+			
 			if(iValue>0) {
 				if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
+				if(currentTime>fDaqEndTime && variation>0.10) continue;
 				if(variation > 0.10) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
 			}
-   			times[iValue] = (Double_t) (aValue->GetTimeStamp());
 			fHv[iAlias]->Fill(values[iValue]);
 			printf("%s %f Dead=%d\n",fAliasNames[iAlias].Data(),values[iValue],fDeadChannel[GetOfflineChannel(iAlias)]);
    			iValue++;

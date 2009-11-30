@@ -24,15 +24,19 @@ public:
   enum {kHvMin=0, kHvMax=3000};
   
   AliVZERODataDCS();
-  AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime);
+  AliVZERODataDCS(Int_t nRun, UInt_t timeCreated, UInt_t timeCompleted, UInt_t daqStart, UInt_t daqEnd);
   ~AliVZERODataDCS();
   
   void SetRun(Int_t run) {fRun = run;}
   void SetStartTime(Int_t startTime) {fStartTime = startTime;}
   void SetEndTime(Int_t endTime) {fEndTime = endTime;}
+  void SetDaqStartTime(Int_t startTime) {fDaqStartTime = startTime;}
+  void SetDaqEndTime(Int_t endTime) {fDaqEndTime = endTime;}
   Int_t GetRun() const {return fRun;}
   Int_t GetStartTime() const {return fStartTime;}
   Int_t GetEndTime() const {return fEndTime;}
+  Int_t GetDaqStartTime() const {return fDaqStartTime;}
+  Int_t GetDaqEndTime() const {return fDaqEndTime;}
   
   void ProcessData(TMap& aliasMap);
   
@@ -69,9 +73,10 @@ private:
   void CreateGraph(int i, int dim, const Double_t *x, const Double_t *y);
     
   Int_t fRun;       // Run number
-  Int_t fStartTime; // start time
-  Int_t fEndTime;   // end time
-  
+  Int_t fStartTime; // start time (time created)
+  Int_t fEndTime;   // end time (time completed)
+  UInt_t fDaqStartTime; // DAQ start time
+  UInt_t fDaqEndTime;   // DAQ end time
   
   TString fAliasNames[kNAliases];        // aliases for DCS data
   TClonesArray fGraphs;		         // Array containing  graphics
@@ -83,7 +88,7 @@ private:
     
   Bool_t fIsProcessed;                   // bool to know processing status
   
-  ClassDef(AliVZERODataDCS, 4);
+  ClassDef(AliVZERODataDCS, 5);
 };
 
 #endif

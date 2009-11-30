@@ -70,8 +70,10 @@ void AliVZEROPreprocessor::Initialize(Int_t run, UInt_t startTime,
    // fEndTime   = endTime;
    fStartTime = GetStartTimeDCSQuery ();
    fEndTime   = GetEndTimeDCSQuery ();
-
-	fData      = new AliVZERODataDCS(fRun, fStartTime, fEndTime);
+   time_t daqStart = (time_t) (((TString)GetRunParameter("DAQ_time_start")).Atoi());
+   time_t daqEnd   = (time_t) (((TString)GetRunParameter("DAQ_time_end")).Atoi());
+   
+	fData      = new AliVZERODataDCS(fRun, fStartTime, fEndTime,(UInt_t)daqStart, (UInt_t)daqEnd);
 	fFEEData   = new AliVZERODataFEE(fRun, fStartTime, fEndTime);		
    
 }
