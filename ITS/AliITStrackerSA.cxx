@@ -420,9 +420,6 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 
   static Int_t nClusLay[AliITSgeomTGeo::kNLayers];//counter for clusters on each layer
 
-  if(AliITSReconstructor::GetRecoParam()->GetAllowProlongationWithEmptyRoad()) fMinNPoints=2;
-
- 
   // loop on minimum number of points
   for(Int_t iMinNPoints=AliITSgeomTGeo::GetNLayers(); iMinNPoints>=fMinNPoints; iMinNPoints--) {
 

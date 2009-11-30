@@ -527,6 +527,7 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
 
   // to maximize efficiency
   param->SetAllowProlongationWithEmptyRoad();
+  param->SetMinNPointsSA(2);
 
   // larger seach windows for SA (in case of large misalignments)
   param->SetNLoopsSA(33);
