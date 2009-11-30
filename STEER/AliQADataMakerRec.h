@@ -60,6 +60,7 @@ public:
 	virtual void        InitRecPoints()                     {AliInfo("To be implemented by detectors");}
 	virtual void        InitDigits()                        {AliInfo("To be implemented by detectors");}
 	virtual void        InitESDs()                          {AliInfo("To be implemented by detectors");}
+  virtual void        ResetDetector(AliQAv1::TASKINDEX_t task) ;
 	virtual void        StartOfCycle(Int_t run = -1) ;
 	virtual void        StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const Bool_t sameCycle = kFALSE) ;
 	virtual void        SetRecoParam(const AliDetectorRecoParam *param) { fRecoParam = param; }

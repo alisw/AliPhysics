@@ -75,7 +75,7 @@ public:
   Bool_t              IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
   Bool_t              IsValidEventSpecie(Int_t eventSpecieIndex, TObjArray ** list) ; 
 	void                Reset() { fCycleCounter = 0 ; }
-	virtual void        ResetDetector() {;}
+	virtual void        ResetDetector(AliQAv1::TASKINDEX_t task) = 0 ;
 	void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
   void                SetWriteExpert() { fWriteExpert = kTRUE ; }
 	virtual void        StartOfCycle(Int_t run = -1)                                                   = 0 ;

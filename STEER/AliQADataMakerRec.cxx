@@ -362,6 +362,37 @@ void AliQADataMakerRec::InitRecoParams()
   }
 }
 
+//____________________________________________________________________________ 
+void AliQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
+{
+    // default reset that resets all the QA objects.
+    // to be overloaded by detectors, if necessary
+
+  TObjArray ** list = NULL ; 
+  if ( task == AliQAv1::kRAWS ) {
+		list = fRawsQAList ;	 
+	} else if ( task == AliQAv1::kDIGITSR ) {
+		list = fDigitsQAList ; 
+	} else if ( task == AliQAv1::kRECPOINTS ) {
+		list = fRecPointsQAList ; 
+	} else if ( task == AliQAv1::kESDS ) {
+		list = fESDsQAList ; 
+	}
+    //list was not initialized, skip
+  if (!list) 
+    return ; 
+  
+  for (int spec = 0; spec < AliRecoParam::kNSpecies; spec++) {
+    if (!AliQAv1::Instance()->IsEventSpecieSet(AliRecoParam::ConvertIndex(spec)))
+      continue;
+    TIter next(list[spec]) ; 
+    TH1 * histo = NULL ; 
+    while ( (histo = dynamic_cast<TH1*> (next())) ) {
+      histo->Reset() ;
+    }
+  }
+}
+
 //____________________________________________________________________________
 void AliQADataMakerRec::StartOfCycle(Int_t run) 
 {

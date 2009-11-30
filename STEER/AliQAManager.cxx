@@ -1103,6 +1103,25 @@ void AliQAManager::Reset(const Bool_t sameCycle)
 }
 
 //_____________________________________________________________________________
+void AliQAManager::ResetDetectors(AliQAv1::TASKINDEX_t task, AliQAv1::DETECTORINDEX_t det)
+{
+    //calls ResetDetector of specified or all detectors
+  UInt_t iDet    = 0 ;
+  UInt_t iDetMax = fgkNDetectors ;    
+  if ( det != AliQAv1::kNULLDET ) {
+    iDet    = det ;
+    iDetMax = det+1 ;    
+  }
+  
+	for (iDet = 0; iDet < iDetMax ; iDet++) {
+		if (IsSelected(AliQAv1::GetDetName(iDet))) {
+			AliQADataMaker * qadm = GetQADataMaker(iDet);
+			qadm->ResetDetector(task);
+		}
+	}   
+}
+
+//_____________________________________________________________________________
 AliQAManager * AliQAManager::QAManager(AliQAv1::MODE_t mode, TMap *entryCache, Int_t run) 
 {
   // returns AliQAManager instance (singleton)

@@ -14,6 +14,7 @@ void rec() {
 			  Form("local://%s/..",gSystem->pwd()));
   reco.SetRunPlaneEff(kTRUE);
 
+  reco.SetRunReconstruction("ALL -ZDC") ;
   reco.SetRunQA("ALL:ALL") ;
   
   reco.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;

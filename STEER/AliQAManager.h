@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // class for running the QA makers                                           //
-//                                                                           //
+//                                                                           //1
 //   AliQAManager qas;                                                //
 //   qas.Run(AliQAv1::kRAWS, rawROOTFileName);                                 //
 //   qas.Run(AliQAv1::kHITS);                                                  //
@@ -62,6 +62,7 @@ public:
   static           AliQAManager * QAManager(AliQAv1::MODE_t = AliQAv1::kNULLMODE, TMap *entryCache = NULL, Int_t run = -1) ;
   static           AliQAManager * QAManager(AliQAv1::TASKINDEX_t task) ;  
 	void             Reset(const Bool_t sameCycle = kFALSE) ;  
+  void             ResetDetectors(AliQAv1::TASKINDEX_t task, AliQAv1::DETECTORINDEX_t det=AliQAv1::kNULLDET) ; 
 	TString          Run(const Char_t * detectors, const AliQAv1::TASKINDEX_t taskIndex=AliQAv1::kNULLTASKINDEX, Bool_t const sameCycle = kFALSE, const Char_t * fileName = NULL) ; 
 	TString          Run(const Char_t * detectors, AliRawReader * rawReader, Bool_t const sameCycle = kFALSE) ; 
 	TString          Run(const Char_t * detectors, const Char_t * filename, Bool_t const sameCycle = kFALSE) ;
