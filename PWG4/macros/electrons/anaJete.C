@@ -337,6 +337,8 @@ void  LoadLibraries(const anaModes mode) {
       SetupPar("AOD");
       SetupPar("ANALYSIS");
       SetupPar("ANALYSISalice");
+      SetupPar("PHOSUtils");
+      SetupPar("EMCALUtils");
       if( kDoJetTask ){
         cerr<<"Now Loading JETAN"<<endl;
         SetupPar("JETAN");
@@ -358,6 +360,8 @@ void  LoadLibraries(const anaModes mode) {
       gSystem->Load("libAOD");
       gSystem->Load("libANALYSIS");
       gSystem->Load("libANALYSISalice");
+      gSystem->Load("libPHOSUtils");
+      gSystem->Load("libEMCALUtils");
       if( kDoJetTask ){
         gSystem->Load("libJETAN");
         gSystem->Load("libFASTJETAN");

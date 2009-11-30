@@ -15,8 +15,8 @@
 # parmaker all   remote
 #
 # So far only available for these par files:
-# ANALYSIS ANALYSISalice AOD ESD FASTJETAN JETAN
-# PWG4PartCorrBase PWG4PartCorrDep STEERBase
+# ANALYSIS ANALYSISalice AOD EMCALUtils ESD FASTJETAN JETAN
+# PHOSUtils PWG4PartCorrBase PWG4PartCorrDep STEERBase
 #
 
 case $2 in
@@ -28,9 +28,11 @@ case $2 in
          parmaker ANALYSIS remote
          parmaker ANALYSISalice remote
          parmaker AOD remote
+         parmaker EMCALUtils remote
          parmaker ESD remote
          parmaker FASTJETAN remote
          parmaker JETAN remote
+         parmaker PHOSUtils remote
          parmaker PWG4PartCorrBase remote
          parmaker PWG4PartCorrDep remote
          parmaker STEERBase remote
@@ -53,10 +55,20 @@ case $2 in
          parmaker_input_dir_subdir="STEER"
          parmaker_output_dir_subdir="AOD"
          ;;
+      "EMCALUtils")
+         parmaker_input_basedir="EMCAL"
+         parmaker_input_dir_subdir="EMCAL"
+         parmaker_output_dir_subdir="EMCALUtils"
+         ;;
       "ESD")
          parmaker_input_basedir="STEER"
          parmaker_input_dir_subdir="STEER"
          parmaker_output_dir_subdir="ESD"
+         ;;
+      "PHOSUtils")
+         parmaker_input_basedir="PHOS"
+         parmaker_input_dir_subdir="PHOS"
+         parmaker_output_dir_subdir="PHOSUtils"
          ;;
       "PWG4PartCorrBase")
          parmaker_input_basedir="PWG4"
@@ -100,8 +112,9 @@ case $2 in
         mkdir $parmaker_output_dir_subdir
       fi
 
-      list=`grep Ali ${ALICE_ROOT}/${parmaker_input_basedir}/lib${1}.pkg | sed -e 's:.cxx::g' -e 's:SRCS::' -e 's:=::' -e 's:+::' -e 's:\\\::'`
+      list=`grep Ali ${ALICE_ROOT}/${parmaker_input_basedir}/lib${1}.pkg | sed -e '/EXPORT/d' -e '/EINCLUDE/d' -e 's:.cxx::g' -e 's:SRCS::' -e 's:=::' -e 's:+::' -e 's:\\\::'`
       for i in $list; do
+#       echo "adding:" $i
         cp $ALICE_ROOT/$parmaker_input_basedir/$i.cxx $parmaker_output_dir_subdir
         cp $ALICE_ROOT/$parmaker_input_basedir/$i.h   $parmaker_output_dir_subdir
       done
