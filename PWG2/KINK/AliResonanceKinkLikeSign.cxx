@@ -11,12 +11,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 //                        class AliResonanceKinkLikeSign
 //        Example of an analysis task for producing a like-sign background for resonances having at least one 
 //        kaon-kink in their decay products. 
-//        Background is calculated from a positive kaon kink and a negative track.
-//-----------------------------------------------------------------------------------------------------------------
+//        Background is calculated from a positive kaon kink and a positive track but other possibilities are feasible.
+//----------------------------------------------------------------------------------------------------------------------
 
 #include "AliESDEvent.h"
 #include "TH1D.h"
@@ -33,7 +33,7 @@ ClassImp(AliResonanceKinkLikeSign)
 //________________________________________________________________________
 AliResonanceKinkLikeSign::AliResonanceKinkLikeSign(const char *name) 
   : AliAnalysisTaskSE(name), fDebug(0), fListOfHistos(0), f1(0), f2(0), fPosKaonLikeSign(0), fLikeSignInvmassPt(0), fMaxNSigmaToVertex(0), fMinPtTrackCut(0), fMaxDCAxy(0), fMaxDCAzaxis(0), 
-fMinTPCclusters(0),fMaxChi2PerTPCcluster(0), fMaxCov0(0), fMaxCov2(0), fMaxCov5(0) , fMaxCov9(0), fMaxCov14(0), fdaughter1pdg(0), fdaughter2pdg(0), fnbins(0), fnlowx(0), fnhighx(0)
+fMinTPCclusters(0),fMaxChi2PerTPCcluster(0), fMaxCov0(0), fMaxCov2(0), fMaxCov5(0) , fMaxCov9(0), fMaxCov14(0), fdaughter1pdg(0), fdaughter2pdg(0), fnbins(0), fnlowx(0), fnhighx(0), floweta(0), fuppereta(0), fminKinkRadius(0), fmaxKinkRadius(0), fminQt(0), fmaxQt(0), fptbins(0), flowpt(0), fupperpt(0)
 
 {
   // Constructor
@@ -60,7 +60,7 @@ void AliResonanceKinkLikeSign::UserCreateOutputObjects()
    f2->SetParameter(2,TMath::Pi());
   
    fPosKaonLikeSign=new TH1D("fPosKaonLikeSign"," ", fnbins, fnlowx, fnhighx);
-   fLikeSignInvmassPt=new TH2D("fLikeSignInvmassPt"," ", fnbins, fnlowx, fnhighx, 100,0.0,10.0);
+   fLikeSignInvmassPt=new TH2D("fLikeSignInvmassPt"," ", fnbins, fnlowx, fnhighx, fptbins, flowpt, fupperpt);
  
    fListOfHistos=new TList();
    fListOfHistos->Add(fPosKaonLikeSign);
@@ -86,12 +86,6 @@ void AliResonanceKinkLikeSign::UserExec(Option_t *)
      return;
   }
 
-  AliMCEvent* mcEvent = MCEvent();
-  if (!mcEvent) {
-     Printf("ERROR: Could not retrieve MC event");
-     return;
-  }
-  
    Double_t daughter1Mass, daughter2Mass;
   
    if (fdaughter1pdg==kKPlus)  {
@@ -172,9 +166,9 @@ void AliResonanceKinkLikeSign::UserExec(Option_t *)
 	p4comb=p4pos;
 	p4comb+=p4neg;
 	
-	if(p4comb.Vect().Pt()<=0.25) continue;	
+	if(p4comb.Vect().Pt()<=fMinPtTrackCut) continue;	
 	
-        if((TMath::Abs(p4pos.Vect().Eta())<0.9)&&(TMath::Abs(p4neg.Vect().Eta())<0.9)&&(p4comb.Vect().Eta()<0.9)) {
+        if((TMath::Abs(p4pos.Vect().Eta())<fuppereta)&&(TMath::Abs(p4neg.Vect().Eta())<fuppereta)&&(p4comb.Vect().Eta()<fuppereta)) {
 	
 	  fPosKaonLikeSign->Fill(p4comb.M());
 	  fLikeSignInvmassPt->Fill(p4comb.M(), p4comb.Vect().Pt());
@@ -390,7 +384,7 @@ Bool_t AliResonanceKinkLikeSign::IsKink(AliESDEvent *localesd, Int_t kinkIndex, 
          Float_t p3Daughter=TMath::Sqrt(((p1XM-p2XM)*(p1XM-p2XM))+((p1YM-p2YM)*(p1YM-p2YM))+((p1ZM-p2ZM)*(p1ZM-p2ZM)));
          Double_t invariantMassKmu= TMath::Sqrt((energyDaughterMu+p3Daughter)*(energyDaughterMu+p3Daughter)-motherMfromKink.Mag()*motherMfromKink.Mag());
 
-         if((kinkAngle>maxDecAngpimu)&&(qt>0.05)&&(qt<0.25)&&((kink->GetR()>120.)&&(kink->GetR()<220.))&&(TMath::Abs(trackMom.Eta())<0.9)&&(invariantMassKmu<0.6)) {
+         if((kinkAngle>maxDecAngpimu)&&(qt>fminQt)&&(qt<fmaxQt)&&((kink->GetR()>fminKinkRadius)&&(kink->GetR()<fmaxKinkRadius))&&(TMath::Abs(trackMom.Eta())<fuppereta)&&(invariantMassKmu<0.6)) {
 
            if(trackMom.Mag()<=1.1) {
 		return kTRUE;

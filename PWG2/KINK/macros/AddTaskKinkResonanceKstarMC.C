@@ -28,9 +28,9 @@ if (!mgr->GetMCtruthEventHandler()) {
 // Setup the analysis object
   
   AliResonanceKink  *kinkResonanceObjectKMC=new AliResonanceKink();
-  kinkResonanceObjectKMC->InitOutputHistograms(60, 0.6, 1.2);
+  kinkResonanceObjectKMC->InitOutputHistograms(60, 0.6, 1.2, 36, -0.9, 0.9, 100, 0.0, 10.0);
   kinkResonanceObjectKMC->SetPDGCodes(kKPlus, kPiPlus, AliResonanceKink::kKstar0); 
-  kinkResonanceObjectKMC->SetAnalysisType("MC"); // "ESD" or "MC"
+  kinkResonanceObjectKMC->SetAnalysisType("MC"); // "ESD" or "MC" or "DATA"
   kinkResonanceObjectKMC->SetMaxNsigmaToVertex(4.0);
   kinkResonanceObjectKMC->SetMaxDCAxy(3.0);
   kinkResonanceObjectKMC->SetMaxDCAzaxis(3.0);
@@ -42,6 +42,9 @@ if (!mgr->GetMCtruthEventHandler()) {
   kinkResonanceObjectKMC->SetMaxCov5(0.5);
   kinkResonanceObjectKMC->SetMaxCov9(0.5);
   kinkResonanceObjectKMC->SetMaxCov14(2.0);
+  kinkResonanceObjectKMC->SetMinKinkRadius(120.);
+  kinkResonanceObjectKMC->SetMaxKinkRadius(220.);
+  kinkResonanceObjectKMC->SetQtLimits(0.05, 0.5);
 
 // Create and configure the task
 AliAnalysisTaskKinkResonance *taskresonanceKstarMC = new AliAnalysisTaskKinkResonance("TaskResKstarMCKinkPID");

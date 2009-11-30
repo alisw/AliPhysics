@@ -23,6 +23,7 @@
 #include "TMath.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TCanvas.h"
 
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -475,6 +476,14 @@ void AliAnalysisKinkESDMC::Terminate(Option_t *)
 {
   // Draw result to the screen 
   // Called once at the end of the query
+   fHistPtKaon = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistPtKaon"));
+   if (!fHistPtKaon) {
+     Printf("ERROR: fHistPtKaon not available");
+     return;
+   }
+   
+   TCanvas *c1=new TCanvas("c1","  ",1);
+   fHistPtKaon->DrawCopy("E");
 
 }
 //____________________________________________________________________//

@@ -11,20 +11,21 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 //                        class AliResonanceKink
-//        Example of an analysis task for reconstructing resonances having at least one kaon-kink in their decay 
-//        products. It provides basic plots as well as plots helping to calculate the corrections.
-//        Usage: To analyse a resonance having a kaon in its decay products, one has to modify the integer 
-//        variables resonancePDG, fdaughter1pdg and fdaughter2pdg accordingly as well as daughter1pdgMass  and daughter2pdgMass.
-//        Also, depending on the analysis mode (ESD or MC), fAnalysisType in the constructor must also be changed 
-//-----------------------------------------------------------------------------------------------------------------
+//        Base class for reconstructing resonances having at least one kaon-kink in their decay 
+//        products. It provides basic invariant mass plots as well as plots helping to calculate the corrections.
+//        Usage: To analyse a resonance having a kaon in its decay products, an external configuration of the class 
+//        object must be made. Example of such a configuration can be found in the "macro" directory.        
+//        The analysis mode can be either ESD (esd and mc handlers needed) or MC (only mc handler) or DATA (esd only) 
+//----------------------------------------------------------------------------------------------------------------------
 
 #include "TH2D.h"
 #include "TParticle.h"
 #include "TDatabasePDG.h"
 #include "TF1.h"
 #include "TList.h"
+
 #include "AliMCEvent.h"
 #include "AliResonanceKink.h"
 #include "AliESDkink.h"
@@ -38,20 +39,20 @@ ClassImp(AliResonanceKink)
 
 //________________________________________________________________________
 AliResonanceKink::AliResonanceKink() 
-  : TObject(), fDebug(0), fListOfHistos(0), fOpeningAngle(0), fInvariantMass(0), fInvMassTrue(0), fPhiBothKinks(0), fRecPt(0), fRecEta(0), fRecEtaPt(0), fSimPt(0), fSimEta(0), fSimEtaPt(0), fSimPtKink(0), fSimEtaKink(0),  fSimEtaPtKink(0), 
+  : TObject(), fDebug(0), fListOfHistos(0), fOpeningAngle(0), fInvariantMass(0), fInvMassTrue(0), fPhiBothKinks(0), fetabins(0), floweta(0), fupeta(0), fRecPt(0), fRecEta(0), fRecEtaPt(0), fSimPt(0), fSimEta(0), fSimEtaPt(0), fSimPtKink(0), fSimEtaKink(0),  fSimEtaPtKink(0), 
   fhdr(0), fhdz(0), f1(0), f2(0), fAnalysisType(), fvtxz(0), fNbins(0), fLowX(0), fHighX(0), fdaughter1pdg(0), fdaughter2pdg(0), fresonancePDGcode(0), fMaxNSigmaToVertex(0), fMinPtTrackCut(0), fMaxDCAxy(0), fMaxDCAzaxis(0), 
 fMinTPCclusters(0),fMaxChi2PerTPCcluster(0), fMaxCov0(0), fMaxCov2(0), fMaxCov5(0) , fMaxCov9(0), fMaxCov14(0) //, fTPCrefitFlag(kFALSE)
-, fInvmassPt(0), fInvmassPtTrue(0), fMCInvmassPt(0), fMCInvmassPtTrue(0)
+, fInvmassPt(0), fInvmassPtTrue(0), fMCInvmassPt(0), fMCInvmassPtTrue(0), fminKinkRadius(0), fmaxKinkRadius(0), fminQt(0), fmaxQt(0), fptbins(0), flowpt(0), fupperpt(0)
 {
   // Constructor
 }
 
 //________________________________________________________________________
-AliResonanceKink::AliResonanceKink(Int_t nbins, Float_t nlowx, Float_t nhighx, Int_t daughter1, Int_t daughter2, Int_t resonancePDG) 
-  : TObject(), fDebug(0), fListOfHistos(0), fOpeningAngle(0), fInvariantMass(0), fInvMassTrue(0), fPhiBothKinks(0), fRecPt(0), fRecEta(0), fRecEtaPt(0), fSimPt(0), fSimEta(0), fSimEtaPt(0), fSimPtKink(0), fSimEtaKink(0),  fSimEtaPtKink(0), 
+AliResonanceKink::AliResonanceKink(Int_t nbins, Float_t nlowx, Float_t nhighx, Int_t netabins, Float_t nloweta, Float_t nupeta, Int_t nptbins, Float_t nlowpt, Float_t nupperpt, Int_t daughter1, Int_t daughter2, Int_t resonancePDG) 
+  : TObject(), fDebug(0), fListOfHistos(0), fOpeningAngle(0), fInvariantMass(0), fInvMassTrue(0), fPhiBothKinks(0), fetabins(netabins), floweta(nloweta), fupeta(nupeta), fRecPt(0), fRecEta(0), fRecEtaPt(0), fSimPt(0), fSimEta(0), fSimEtaPt(0), fSimPtKink(0), fSimEtaKink(0),  fSimEtaPtKink(0), 
   fhdr(0), fhdz(0), f1(0), f2(0), fAnalysisType(), fvtxz(0), fNbins(nbins), fLowX(nlowx), fHighX(nhighx), fdaughter1pdg(daughter1), fdaughter2pdg(daughter2), fresonancePDGcode(resonancePDG), fMaxNSigmaToVertex(0), fMinPtTrackCut(0), 
 fMaxDCAxy(0), fMaxDCAzaxis(0), fMinTPCclusters(0), fMaxChi2PerTPCcluster(0), fMaxCov0(0), fMaxCov2(0), fMaxCov5(0), fMaxCov9(0), fMaxCov14(0) //, fTPCrefitFlag(kFALSE)
-, fInvmassPt(0), fInvmassPtTrue(0), fMCInvmassPt(0), fMCInvmassPtTrue(0)
+, fInvmassPt(0), fInvmassPtTrue(0), fMCInvmassPt(0), fMCInvmassPtTrue(0), fminKinkRadius(0), fmaxKinkRadius(0), fminQt(0), fmaxQt(0), fptbins(nptbins), flowpt(nlowpt), fupperpt(nupperpt)
 {
    // Constructor
   
@@ -61,15 +62,15 @@ fMaxDCAxy(0), fMaxDCAzaxis(0), fMinTPCclusters(0), fMaxChi2PerTPCcluster(0), fMa
    fInvMassTrue=new TH1D("fInvMassTrue"," ",fNbins,fLowX,fHighX);
    fPhiBothKinks=new TH1D("fPhiBothKinks"," ",fNbins,fLowX,fHighX);  // Applicable for phi(1020)
 
-   fRecPt=new TH1D("fRecPt"," ", 50,0.0,5.0);
-   fRecEta=new TH1D("fRecEta"," ", 36,-0.9,0.9);
-   fRecEtaPt=new TH2D("fRecEtaPt"," ", 50,0.0,5.0, 36,-0.9,0.9); 
-   fSimPt=new TH1D("fSimPt"," ", 50,0.0,5.0);
-   fSimEta=new TH1D("fSimEta"," ", 36,-0.9,0.9); 
-   fSimEtaPt=new TH2D("fSimEtaPt"," ", 50,0.0,5.0, 36,-0.9,0.9);
-   fSimPtKink=new TH1D("fSimPtKink"," ", 50,0.0,5.0);
-   fSimEtaKink=new TH1D("fSimEtaKink"," ", 36,-0.9,0.9);
-   fSimEtaPtKink=new TH2D("fSimEtaPtKink"," ", 50,0.0,5.0, 36,-0.9,0.9);                
+   fRecPt=new TH1D("fRecPt"," ", nptbins, nlowpt, nupperpt);
+   fRecEta=new TH1D("fRecEta"," ",netabins, nloweta, nupeta);
+   fRecEtaPt=new TH2D("fRecEtaPt"," ", nptbins, nlowpt, nupperpt, netabins, nloweta, nupeta); 
+   fSimPt=new TH1D("fSimPt"," ", nptbins, nlowpt, nupperpt);
+   fSimEta=new TH1D("fSimEta"," ", netabins, nloweta, nupeta); 
+   fSimEtaPt=new TH2D("fSimEtaPt"," ", nptbins, nlowpt, nupperpt, netabins, nloweta, nupeta);
+   fSimPtKink=new TH1D("fSimPtKink"," ", nptbins, nlowpt, nupperpt);
+   fSimEtaKink=new TH1D("fSimEtaKink"," ", netabins, nloweta, nupeta);
+   fSimEtaPtKink=new TH2D("fSimEtaPtKink"," ", nptbins, nlowpt, nupperpt, netabins, nloweta, nupeta);                
    fhdr=new TH1D("fhdr"," ", 100,0.0,5.0);  
    fhdz=new TH1D("fhdz"," ", 100,0.0,5.0);
    
@@ -147,7 +148,7 @@ TList* AliResonanceKink::GetHistogramList()
 }
 
 //________________________________________________________________________
-void AliResonanceKink::InitOutputHistograms(Int_t nbins, Float_t nlowx, Float_t nhighx)
+void AliResonanceKink::InitOutputHistograms(Int_t nbins, Float_t nlowx, Float_t nhighx, Int_t netabins, Float_t nloweta, Float_t nupeta, Int_t nptbins, Float_t nlowpt, Float_t nupperpt)
 {
   //  Initialisation of the output histograms
   fNbins=nbins; 
@@ -160,15 +161,15 @@ void AliResonanceKink::InitOutputHistograms(Int_t nbins, Float_t nlowx, Float_t 
   fInvMassTrue=new TH1D("fInvMassTrue"," ",fNbins,fLowX,fHighX);
   fPhiBothKinks=new TH1D("fPhiBothKinks"," ",fNbins,fLowX,fHighX);  // Applicable for phi(1020)
 
-  fRecPt=new TH1D("fRecPt"," ", 50,0.0,5.0);
-  fRecEta=new TH1D("fRecEta"," ", 44,-1.1,1.1);
-  fRecEtaPt=new TH2D("fRecEtaPt"," ", 50,0.0,5.0, 44,-1.1,1.1); 
-  fSimPt=new TH1D("fSimPt"," ", 50,0.0,5.0);
-  fSimEta=new TH1D("fSimEta"," ", 44,-1.1,1.1); 
-  fSimEtaPt=new TH2D("fSimEtaPt"," ", 50,0.0,5.0, 44,-1.1,1.1);
-  fSimPtKink=new TH1D("fSimPtKink"," ", 50,0.0,5.0);
-  fSimEtaKink=new TH1D("fSimEtaKink"," ", 44,-1.1,1.1);
-  fSimEtaPtKink=new TH2D("fSimEtaPtKink"," ", 50,0.0,5.0, 44,-1.1,1.1);                
+  fRecPt=new TH1D("fRecPt"," ", nptbins, nlowpt, nupperpt);
+  fRecEta=new TH1D("fRecEta"," ", netabins, nloweta, nupeta);
+  fRecEtaPt=new TH2D("fRecEtaPt"," ", nptbins, nlowpt, nupperpt, netabins, nloweta, nupeta); 
+  fSimPt=new TH1D("fSimPt"," ", nptbins, nlowpt, nupperpt);
+  fSimEta=new TH1D("fSimEta"," ",netabins, nloweta, nupeta); 
+  fSimEtaPt=new TH2D("fSimEtaPt"," ", nptbins, nlowpt, nupperpt, netabins, nloweta, nupeta);
+  fSimPtKink=new TH1D("fSimPtKink"," ", nptbins, nlowpt, nupperpt);
+  fSimEtaKink=new TH1D("fSimEtaKink"," ", netabins, nloweta, nupeta);
+  fSimEtaPtKink=new TH2D("fSimEtaPtKink"," ", nptbins, nlowpt, nupperpt, netabins, nloweta, nupeta);                
   fhdr=new TH1D("fhdr"," ", 100,0.0,5.0);  
   fhdz=new TH1D("fhdz"," ", 100,0.0,5.0);
    
@@ -184,10 +185,10 @@ void AliResonanceKink::InitOutputHistograms(Int_t nbins, Float_t nlowx, Float_t 
    
   fvtxz=new TH1D("fvtxz"," ", 100,-20.0,20.0);
   
-  fInvmassPt=new TH2D("fInvmassPt"," ",fNbins,fLowX,fHighX,100,0.0,10.0);
-  fInvmassPtTrue=new TH2D("fInvmassPtTrue"," ",fNbins,fLowX,fHighX,100,0.0,10.0);  
-  fMCInvmassPt=new TH2D("fMCInvmassPt"," ",fNbins,fLowX,fHighX,100,0.0,10.0);
-  fMCInvmassPtTrue=new TH2D("fMCInvmassPtTrue"," ",fNbins,fLowX,fHighX,100,0.0,10.0);
+  fInvmassPt=new TH2D("fInvmassPt"," ",fNbins,fLowX,fHighX, nptbins, nlowpt, nupperpt);
+  fInvmassPtTrue=new TH2D("fInvmassPtTrue"," ",fNbins,fLowX,fHighX, nptbins, nlowpt, nupperpt);  
+  fMCInvmassPt=new TH2D("fMCInvmassPt"," ",fNbins,fLowX,fHighX,nptbins, nlowpt, nupperpt);
+  fMCInvmassPtTrue=new TH2D("fMCInvmassPtTrue"," ",fNbins,fLowX,fHighX, nptbins, nlowpt, nupperpt);
   
 }
 
@@ -219,15 +220,16 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
   }  
 
   if (!esd) {
-    Printf("ERROR: fESD not available");
+    Printf("ERROR: esd not available");
     return;
-  }  
-
-    if (!mcEvent) {
-    Printf("ERROR: mcEvent not available");
-    return;
-  }  
-
+  }
+    
+      if (!mcEvent) {
+      Printf("ERROR: mcEvent not available");
+      return;
+     }  
+  
+  
   AliStack* stack=mcEvent->Stack();
 
   if(fAnalysisType == "MC") {
@@ -323,15 +325,15 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
        
        	 if(numberOfCharged>=2) continue; // leave out kaon decays to more than one charged daughter
 	 
-         if ((particle->Pt()>0.25)&&(TMath::Abs(particle->Eta())<0.9)) {
+         if ((particle->Pt()>fMinPtTrackCut)&&(TMath::Abs(particle->Eta())<fupeta)) {
 
          fSimEta->Fill(particle->Eta());
 	 fSimEtaPt->Fill(particle->Pt(), particle->Eta());
 	 fSimPt->Fill(particle->Pt());
          fMCInvmassPtTrue->Fill(particle->GetMass(), particle->Pt());	   
 
-         if((daughterParticle1->Pt()>0.25)&&(TMath::Abs(daughterParticle1->Eta())<0.9)&&(daughterParticle2->Pt()>0.25)&&(TMath::Abs(daughterParticle2->Eta())<0.9)) {
-	   if((mcProcessDaughters1Daughter==4)&&(daughters1Daughter->R()>120.)&&(daughters1Daughter->R()<220.)&&( (nProcessDaughter<0)||((daughters2Daughter->R()>120.)&&(nProcessDaughter>0)))) { //below are the findable
+         if((daughterParticle1->Pt()>fMinPtTrackCut)&&(TMath::Abs(daughterParticle1->Eta())<fupeta)&&(daughterParticle2->Pt()>fMinPtTrackCut)&&(TMath::Abs(daughterParticle2->Eta())<fupeta)) {
+	   if((mcProcessDaughters1Daughter==4)&&(daughters1Daughter->R()>fminKinkRadius)&&(daughters1Daughter->R()<fmaxKinkRadius)&&( (nProcessDaughter<0)||((daughters2Daughter->R()>fminKinkRadius)&&(nProcessDaughter>0)))) { //below are the findable
 	     fSimPtKink->Fill(particle->Pt());
 	     fSimEtaKink->Fill(particle->Eta());
 	     fSimEtaPtKink->Fill(particle->Pt(), particle->Eta());
@@ -344,8 +346,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
           }   //for the particular resonance
   } //MC loop
   
-  } // end fAnalysisType==MC
-  else 
+  } // end fAnalysisType==MC 
   
   if(fAnalysisType == "ESD") {
   const AliESDVertex* vertex = GetEventVertex(esd);
@@ -461,7 +462,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
         if((posKaonKinkFlag==1)&&(negKaonKinkFlag==1)) {
 	  p4comb=anp4pos;
 	  p4comb+=p4neg;
-	  if((p4comb.Vect().Pt()<=0.25)&&(TMath::Abs(anp4pos.Vect().Eta())<0.9)&&(TMath::Abs(p4neg.Vect().Eta())<0.9)&&(p4comb.Vect().Eta()<0.9)) {	  
+	  if((p4comb.Vect().Pt()>fMinPtTrackCut)&&(TMath::Abs(anp4pos.Vect().Eta())<fupeta)&&(TMath::Abs(p4neg.Vect().Eta())<fupeta)&&(p4comb.Vect().Eta()<fupeta)) {	  
 	    if(openingAngle>0.6) fPhiBothKinks->Fill(p4comb.M());
 	  }
 	}
@@ -470,9 +471,9 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
 	  p4comb=p4pos;
           p4comb+=p4neg;
 	  
-	  if(p4comb.Vect().Pt()<=0.25) continue;
+	  if(p4comb.Vect().Pt()<=fMinPtTrackCut) continue;
 	  
-	  if((TMath::Abs(p4pos.Vect().Eta())<0.9)&&(TMath::Abs(p4neg.Vect().Eta())<0.9)&&(p4comb.Vect().Eta()<0.9)) {	  
+	  if((TMath::Abs(p4pos.Vect().Eta())<fupeta)&&(TMath::Abs(p4neg.Vect().Eta())<fupeta)&&(p4comb.Vect().Eta()<fupeta)) {	  
 	    fInvariantMass->Fill(p4comb.M());
 	    fInvmassPt->Fill(p4comb.M(), p4comb.Vect().Pt());
 	    if ((mumpdgpos==(antiresonancePDGcode))&&(mumpdgneg==(antiresonancePDGcode))&&(mumlabelpos==mumlabelneg)
@@ -495,9 +496,9 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
           anp4comb=anp4pos;
           anp4comb+=anp4neg;  
 	  
-	  if(anp4comb.Vect().Pt()<=0.25) continue;	  
+	  if(anp4comb.Vect().Pt()<=fMinPtTrackCut) continue;	  
 	  
-          if((TMath::Abs(anp4neg.Vect().Eta())<0.9)&&(TMath::Abs(anp4pos.Vect().Eta())<0.9)&&(anp4comb.Vect().Eta()<0.9)) {	  
+          if((TMath::Abs(anp4neg.Vect().Eta())<fupeta)&&(TMath::Abs(anp4pos.Vect().Eta())<fupeta)&&(anp4comb.Vect().Eta()<fupeta)) {	  
 	    fInvariantMass->Fill(anp4comb.M());
 	    fInvmassPt->Fill(anp4comb.M(), anp4comb.Vect().Pt());
 	    if ((mumpdgpos==resonancePDGcode)&&(mumpdgneg==resonancePDGcode)&&(mumlabelpos==mumlabelneg)
@@ -520,9 +521,164 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
   } //outer track loop 
   
   } // end fAnalysisType == ESD
-  
+    
 }      
 
+//____________________________________________________________________//
+void AliResonanceKink::Analyse(AliESDEvent* esd) 
+{
+  // Main loop
+  // Called for each event
+  Double_t daughter1pdgMass, daughter2pdgMass;
+  
+  if (fdaughter1pdg==kKPlus)  {
+    daughter1pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter1pdg)->Mass();
+    daughter2pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter2pdg)->Mass(); 
+  }
+  
+  if (fdaughter1pdg!=kKPlus)  {
+    daughter1pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter2pdg)->Mass();
+    daughter2pdgMass=TDatabasePDG::Instance()->GetParticle(fdaughter1pdg)->Mass();   
+  }  // to ensure that daughter1pdgMass has always the kaon mass
+  
+  if (!esd) {
+    Printf("ERROR: esd not available");
+    return;
+  }
+ 
+ if(fAnalysisType == "DATA") {
+  const AliESDVertex* vertex = GetEventVertex(esd);
+  if(!vertex) return;
+  Double_t vtx[3];
+  vertex->GetXYZ(vtx);
+  fvtxz->Fill(vtx[2]);
+  Double_t ptrackpos[3], ptrackneg[3];
+  
+  TLorentzVector p4pos, anp4pos;
+  TLorentzVector p4neg, anp4neg;
+  TLorentzVector p4comb, anp4comb;
+  
+  for (Int_t iTracks = 0; iTracks < esd->GetNumberOfTracks(); iTracks++) {
+    AliESDtrack* trackpos = esd->GetTrack(iTracks);
+    if (!trackpos) {
+      if (fDebug > 0) Printf("ERROR: Could not receive track %d", iTracks);
+      continue;
+    }
+    if (trackpos->GetSign() < 0) continue;
+    
+    AliExternalTrackParam *tpcTrackpos = (AliExternalTrackParam *)trackpos->GetTPCInnerParam();
+    if(!tpcTrackpos) continue;
+    ptrackpos[0]=tpcTrackpos->Px();
+    ptrackpos[1]=tpcTrackpos->Py();   
+    ptrackpos[2]=tpcTrackpos->Pz();  
+    
+    Bool_t firstLevelAcceptPosTrack=IsAcceptedForKink(esd, vertex, trackpos);
+    if(firstLevelAcceptPosTrack==kFALSE) continue;
+    
+    TVector3 posTrackMom(ptrackpos[0],ptrackpos[1],ptrackpos[2]);
+    
+    Int_t indexKinkPos=trackpos->GetKinkIndex(0);
+    
+    if(indexKinkPos>0) continue;
+    
+    Bool_t posKaonKinkFlag=0;
+    
+    if(indexKinkPos<0) {
+      posKaonKinkFlag=IsKink(esd, indexKinkPos, posTrackMom);
+    
+      if(posKaonKinkFlag==1) anp4pos.SetVectM(posTrackMom,daughter1pdgMass);
+      if(posKaonKinkFlag==0) continue;
+    }
+    
+    if(indexKinkPos==0) {
+
+    Bool_t secondLevelAcceptPosTrack=IsAcceptedForTrack(esd, vertex, trackpos);
+    if(secondLevelAcceptPosTrack==kFALSE) continue;
+
+      p4pos.SetVectM(posTrackMom, daughter2pdgMass);
+    
+    }
+	
+      for (Int_t j=0; j<esd->GetNumberOfTracks(); j++) {
+        if(iTracks==j) continue;
+        AliESDtrack* trackneg=esd->GetTrack(j);
+        if (trackneg->GetSign() > 0) continue;
+	
+        AliExternalTrackParam *tpcTrackneg = (AliExternalTrackParam *)trackneg->GetTPCInnerParam();
+        if(!tpcTrackneg) continue;
+        ptrackneg[0]=tpcTrackneg->Px();
+        ptrackneg[1]=tpcTrackneg->Py();   
+        ptrackneg[2]=tpcTrackneg->Pz();  
+    
+        Bool_t firstLevelAcceptNegTrack=IsAcceptedForKink(esd, vertex, trackneg);
+        if(firstLevelAcceptNegTrack==kFALSE) continue;	
+
+        TVector3 negTrackMom(ptrackneg[0],ptrackneg[1],ptrackneg[2]);
+	
+	Int_t indexKinkNeg=trackneg->GetKinkIndex(0);
+	
+	if(indexKinkNeg>0) continue;
+	
+	Bool_t negKaonKinkFlag=0;
+	
+	if(indexKinkNeg<0) {
+	  negKaonKinkFlag=IsKink(esd, indexKinkNeg, negTrackMom);
+	
+	  if(negKaonKinkFlag==1) p4neg.SetVectM(negTrackMom,daughter1pdgMass);
+	  if(negKaonKinkFlag==0) continue;
+	}
+	
+	if(indexKinkNeg==0)  {
+ 
+	   Bool_t secondLevelAcceptNegTrack=IsAcceptedForTrack(esd, vertex, trackneg);
+           if(secondLevelAcceptNegTrack==kFALSE) continue;  
+	  
+	  anp4neg.SetVectM(negTrackMom, daughter2pdgMass);
+	
+        }
+	
+	Double_t openingAngle=(ptrackpos[0]*ptrackneg[0]+ptrackpos[1]*ptrackneg[1]+ptrackpos[2]*ptrackneg[2])/(posTrackMom.Mag()*negTrackMom.Mag());
+
+        if((posKaonKinkFlag==1)&&(negKaonKinkFlag==1)) {
+	  p4comb=anp4pos;
+	  p4comb+=p4neg;
+	  if((p4comb.Vect().Pt()>fMinPtTrackCut)&&(TMath::Abs(anp4pos.Vect().Eta())<fupeta)&&(TMath::Abs(p4neg.Vect().Eta())<fupeta)&&(p4comb.Vect().Eta()<fupeta)) {	  
+	    if(openingAngle>0.6) fPhiBothKinks->Fill(p4comb.M());
+	  }
+	}
+		
+	if(negKaonKinkFlag==1) {
+	  p4comb=p4pos;
+          p4comb+=p4neg;
+	  
+	  if(p4comb.Vect().Pt()<=fMinPtTrackCut) continue;
+	  
+	  if((TMath::Abs(p4pos.Vect().Eta())<fupeta)&&(TMath::Abs(p4neg.Vect().Eta())<fupeta)&&(p4comb.Vect().Eta()<fupeta)) {	  
+	    fInvariantMass->Fill(p4comb.M());
+	    fInvmassPt->Fill(p4comb.M(), p4comb.Vect().Pt());
+           }
+	}
+	
+	if(posKaonKinkFlag==1) {
+          anp4comb=anp4pos;
+          anp4comb+=anp4neg;  
+	  
+	  if(anp4comb.Vect().Pt()<=fMinPtTrackCut) continue;	  
+	  
+          if((TMath::Abs(anp4neg.Vect().Eta())<fupeta)&&(TMath::Abs(anp4pos.Vect().Eta())<fupeta)&&(anp4comb.Vect().Eta()<fupeta)) {	  
+	    fInvariantMass->Fill(anp4comb.M());
+	    fInvmassPt->Fill(anp4comb.M(), anp4comb.Vect().Pt());
+          }
+
+	}
+	 
+      } //inner track loop 
+
+  } //outer track loop 
+  
+ } // end fAnalysisType == DATA
+
+}
 //____________________________________________________________________//
 Float_t AliResonanceKink::GetSigmaToVertex(AliESDtrack* esdTrack) const {
   // Calculates the number of sigma to the vertex.
@@ -716,7 +872,7 @@ Bool_t AliResonanceKink::IsKink(AliESDEvent *localesd, Int_t kinkIndex, TVector3
          Float_t p3Daughter=TMath::Sqrt(((p1XM-p2XM)*(p1XM-p2XM))+((p1YM-p2YM)*(p1YM-p2YM))+((p1ZM-p2ZM)*(p1ZM-p2ZM)));
          Double_t invariantMassKmu= TMath::Sqrt((energyDaughterMu+p3Daughter)*(energyDaughterMu+p3Daughter)-motherMfromKink.Mag()*motherMfromKink.Mag());
 
-         if((kinkAngle>maxDecAngpimu)&&(qt>0.05)&&(qt<0.25)&&((kink->GetR()>120.)&&(kink->GetR()<220.))&&(TMath::Abs(trackMom.Eta())<0.9)&&(invariantMassKmu<0.6)) {
+         if((kinkAngle>maxDecAngpimu)&&(qt>fminQt)&&(qt<fmaxQt)&&((kink->GetR()>fminKinkRadius)&&(kink->GetR()<fmaxKinkRadius))&&(TMath::Abs(trackMom.Eta())<fupeta)&&(invariantMassKmu<0.6)) {
 
            if(trackMom.Mag()<=1.1) {
 		return kTRUE;

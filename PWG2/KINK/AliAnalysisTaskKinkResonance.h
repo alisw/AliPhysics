@@ -5,15 +5,14 @@
 
 //------------------------------------------------------------------------------
 //                   class AliAnalysisTaskKinkResonance
-//         This task is an example of an analysis task
-//        for analysing resonances having one kaon kink
+//This is an analysis task for analysing resonances having one kaon kink
 //Author: Paraskevi Ganoti, University of Athens (pganoti@phys.uoa.gr)
 //------------------------------------------------------------------------------
 
-#include "AliAnalysisTaskSE.h"
-
-class AliResonanceKink;
 class TList;
+class AliResonanceKink;
+
+#include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskKinkResonance : public AliAnalysisTaskSE {
  public:

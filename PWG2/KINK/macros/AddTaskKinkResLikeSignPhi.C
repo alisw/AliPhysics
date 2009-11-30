@@ -24,7 +24,8 @@ AliResonanceKinkLikeSign *AddTaskKinkResLikeSignPhi(Short_t lCollidingSystems=0 
    // Create and configure the task
 	AliResonanceKinkLikeSign *taskkinkreslikesignPhi = new AliResonanceKinkLikeSign("TaskResLikeSignphi");
         taskkinkreslikesignPhi->SetPDGCodes(kKPlus, kKPlus);
-        taskkinkreslikesignPhi->SetHistoSettings(70,0.99,1.088);
+        taskkinkreslikesignPhi->SetHistoSettings(70,0.99,1.088, 100, 0.0, 10.0);
+        taskkinkreslikesignPhi->SetEtaLimits(-0.9, 0.9);
         taskkinkreslikesignPhi->SetMaxNsigmaToVertex(4.0);
         taskkinkreslikesignPhi->SetMaxDCAxy(3.0);
         taskkinkreslikesignPhi->SetMaxDCAzaxis(3.0);
@@ -36,6 +37,9 @@ AliResonanceKinkLikeSign *AddTaskKinkResLikeSignPhi(Short_t lCollidingSystems=0 
         taskkinkreslikesignPhi->SetMaxCov5(0.5);
         taskkinkreslikesignPhi->SetMaxCov9(0.5);
         taskkinkreslikesignPhi->SetMaxCov14(2.0);
+        taskkinkreslikesignPhi->SetMinKinkRadius(120.);
+        taskkinkreslikesignPhi->SetMaxKinkRadius(220.);
+        taskkinkreslikesignPhi->SetQtLimits(0.05, 0.5);
 
    mgr->AddTask(taskkinkreslikesignPhi);
 
