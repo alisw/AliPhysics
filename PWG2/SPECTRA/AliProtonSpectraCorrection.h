@@ -1,8 +1,8 @@
-#ifndef ALIPROTONABSORPTIONCORRECTION_H
-#define ALIPROTONABSORPTIONCORRECTION_H
+#ifndef ALIPROTONSPECTRACORRECTION_H
+#define ALIPROTONSPECTRACORRECTION_H
 
 //-------------------------------------------------------------------------
-//               Class AliProtonAbsorptionCorrection
+//               Class AliProtonSpectraCorrection
 //   This is the class for the absorption corrections used for 
 //   the baryon (proton) ratio analysis
 //
@@ -31,17 +31,19 @@ class AliESDVertex;
 class AliProtonAnalysisBase;
 class AliMCEvent;
 
-class AliProtonAbsorptionCorrection : public TObject {
+class AliProtonSpectraCorrection : public TObject {
  public:
   enum {
     kStepGenerated       = 0,
     kStepReconstructible = 1,
     kStepReconstructed   = 2,
-    kNSteps = 3
+    kStepIdentified      = 3,
+    kStepSelected        = 4,
+    kNSteps = 5
   };
 
-  AliProtonAbsorptionCorrection();
-  virtual ~AliProtonAbsorptionCorrection();
+  AliProtonSpectraCorrection();
+  virtual ~AliProtonSpectraCorrection();
   
   void SetBaseAnalysis(AliProtonAnalysisBase * const baseAnalysis) {
     fProtonAnalysisBase = baseAnalysis;}
@@ -50,10 +52,10 @@ class AliProtonAbsorptionCorrection : public TObject {
 		
   void InitAnalysisHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY, 
 			      Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
-  void FillAbsorptionMaps(AliESDEvent *fESD, 
+  void FillCorrectionMaps(AliESDEvent *fESD, 
 			  const AliESDVertex *vertex,
 			  AliMCEvent *mcEvent);
-  void FillAbsorptionMaps(AliAODEvent *fAOD);
+  void FillCorrectionMaps(AliAODEvent *fAOD);
 		
   AliCFContainer *GetProtonContainer() const {
     return fCFManagerProtons->GetParticleContainer();}
@@ -61,8 +63,8 @@ class AliProtonAbsorptionCorrection : public TObject {
     return fCFManagerAntiProtons->GetParticleContainer();}
   
  private:
-  AliProtonAbsorptionCorrection(const AliProtonAbsorptionCorrection&); // Not implemented
-  AliProtonAbsorptionCorrection& operator=(const AliProtonAbsorptionCorrection&); // Not implemented
+  AliProtonSpectraCorrection(const AliProtonSpectraCorrection&); // Not implemented
+  AliProtonSpectraCorrection& operator=(const AliProtonSpectraCorrection&); // Not implemented
   
   AliProtonAnalysisBase *fProtonAnalysisBase;//base analysis object
   
@@ -75,7 +77,7 @@ class AliProtonAbsorptionCorrection : public TObject {
   AliCFManager   *fCFManagerProtons;      // CF manager protons
   AliCFManager   *fCFManagerAntiProtons;  // CF manager antiprotons
     
-  ClassDef(AliProtonAbsorptionCorrection,1);
+  ClassDef(AliProtonSpectraCorrection,1);
 };
 
 #endif
