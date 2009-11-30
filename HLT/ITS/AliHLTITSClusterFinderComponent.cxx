@@ -288,7 +288,7 @@ int AliHLTITSClusterFinderComponent::DoEvent
     HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
 	       evtData.fEventID, evtData.fEventID, 
 	       DataType2Text(iter->fDataType).c_str(), 
-	       DataType2Text(datatype).c_str());
+	       DataType2Text(fInputDataType).c_str());
     
     // -- Check for the correct data type
     if ( iter->fDataType != (fInputDataType) )  
