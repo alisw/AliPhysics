@@ -223,7 +223,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
       if(fitter->GetSignalQuality() > fSampleQualityCut && !(fitter->IsOverflow()))
 	continue ;
       
-//       energy = CalibrateE(energy,relId,lowGainFlag) ;
+      energy = CalibrateE(energy,relId,!caloFlag) ;
 //       time   = CalibrateT(time,relId,lowGainFlag) ;
 
       //convert time from sample bin units to s
