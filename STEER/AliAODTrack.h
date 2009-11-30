@@ -11,6 +11,7 @@
 //-------------------------------------------------------------------------
 
 #include <TRef.h>
+#include <TBits.h>
 
 #include "AliVTrack.h"
 #include "AliAODVertex.h"
@@ -194,6 +195,11 @@ class AliAODTrack : public AliVTrack {
   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & fFilterMap) != 0);}
   Bool_t  TestFilterMask(UInt_t filterMask) const {return (Bool_t) ((filterMask & fFilterMap) == filterMask);}
 
+  const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
+  const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
+  void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
+  void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
+  
   AliAODPid    *GetDetPid() const { return fDetPid; }
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
   
@@ -271,16 +277,19 @@ class AliAODTrack : public AliVTrack {
                                     // (ITS: bit 1-8, muon trigger: bit 9-16, muon tracker: bit 17-26, muon match trigger: bit 31-32) 
   UInt_t        fFilterMap;         // filter information, one bit per set of cuts
 
+  TBits         fTPCClusterMap;     // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
+  TBits         fTPCSharedMap;      // Map of clusters, one bit per padrow; 1 if has a shared cluster on given padrow
+
   Short_t       fID;                // unique track ID, points back to the ESD track
 
   Char_t        fCharge;            // particle charge
   Char_t        fType;              // Track Type
-
+  
   AliAODRedCov<6> *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
   AliAODPid    *fDetPid;            // more detailed or detector specific pid information
   TRef          fProdVertex;        // vertex of origin
 
-  ClassDef(AliAODTrack,8);
+  ClassDef(AliAODTrack, 9);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const
