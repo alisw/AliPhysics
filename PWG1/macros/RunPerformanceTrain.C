@@ -13,16 +13,16 @@ Quick Start:
 1. Start train macro (real data from GSI::SE). Source your own Alien environment.
 
 source /u/jacek/alien/set_alien_env.sh
-aliroot -b -q 'RunPerformanceTrainTPC.C("AliESDs.root",2,kFALSE,kTRUE,kTRUE)'
+aliroot -b -q 'RunPerformanceTrain.C("AliESDs.root",2,kFALSE,kTRUE,kTRUE)'
 
 3. Start train macro (real data from lustre)
 
-aliroot -b -q 'RunPerformanceTrainTPC.C("AliESDs.root",2,kFALSE,kTRUE,kFALSE)'
+aliroot -b -q 'RunPerformanceTrain.C("AliESDs.root",2,kFALSE,kTRUE,kFALSE)'
 
 */
 
 //_____________________________________________________________________________
-void RunPerformanceTrainTPC(Char_t *file="esd.root", Int_t magField = 2, Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, Bool_t bGrid=kTRUE)
+void RunPerformanceTrain(Char_t *file="esd.root", Int_t magField = 2, Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, Bool_t bGrid=kTRUE)
 {
   //
   // Grid settings
