@@ -44,6 +44,7 @@
 #include "AliITSgeomTGeo.h"
 #include "AliTracker.h"
 #include <TRandom.h>
+#include <TGeoMatrix.h>
 
 ClassImp(AliITSTPArrayFit)
 
@@ -227,14 +228,60 @@ Bool_t AliITSTPArrayFit::InvertPointsCovMat()
   // invert the cov.matrices of the points
   for (int i=fPntFirst;i<=fPntLast;i++) {
     //
-    const float *cov = fPoints->GetCov() + i*6; // pointer on cov.matrix
+    float *cov = (float*)fPoints->GetCov() + i*6; // pointer on cov.matrix
     //
     Double_t t0 = cov[kYY]*cov[kZZ] - cov[kYZ]*cov[kYZ];
     Double_t t1 = cov[kXY]*cov[kZZ] - cov[kXZ]*cov[kYZ];
     Double_t t2 = cov[kXY]*cov[kYZ] - cov[kXZ]*cov[kYY];
     Double_t det = cov[kXX]*t0 - cov[kXY]*t1 + cov[kXZ]*t2;
+    if (IsZero(det,1e-18)) { // one of errors is 0, fix this
+      double norm[3];
+      TGeoHMatrix hcov;
+      TGeoRotation hrot,hrotI;
+      GetNormal(norm,cov);
+      double phi = TMath::ATan2(norm[1],norm[0]);
+      hrot.SetAngles(-phi*TMath::RadToDeg(),0.,0.);
+      hrotI.SetAngles(phi*TMath::RadToDeg(),0.,0.);
+      //      
+      Double_t hcovel[9];
+      hcovel[0] = cov[kXX];
+      hcovel[1] = cov[kXY];
+      hcovel[2] = cov[kXZ];
+      hcovel[3] = cov[kXY];
+      hcovel[4] = cov[kYY];
+      hcovel[5] = cov[kYZ];
+      hcovel[6] = cov[kXZ];
+      hcovel[7] = cov[kYZ];
+      hcovel[8] = cov[kZZ];
+      hcov.SetRotation(hcovel);
+      //
+      Double_t *hcovscl = hcov.GetRotationMatrix(); 
+      //      printf(">> %+e %+e %+e\n   %+e %+e %+e\n   %+e %+e %+e\n\n",hcovscl[0],hcovscl[1],hcovscl[2],hcovscl[3],hcovscl[4],hcovscl[5],hcovscl[6],hcovscl[7],hcovscl[8]);
+      //      printf("Rot by %+.e (%+.e %+.e %+.e)\n",phi, norm[0],norm[1],norm[2]);
+      hcov.Multiply(&hrotI);
+      hcov.MultiplyLeft(&hrot);
+      //      printf("|| %+e %+e %+e\n   %+e %+e %+e\n   %+e %+e %+e\n\n",hcovscl[0],hcovscl[1],hcovscl[2],hcovscl[3],hcovscl[4],hcovscl[5],hcovscl[6],hcovscl[7],hcovscl[8]);
+      if (hcovscl[0]<1e-8) hcovscl[0] = 1e-8;
+      if (hcovscl[4]<1e-8) hcovscl[4] = 1e-8;
+      if (hcovscl[8]<1e-8) hcovscl[8] = 1e-8;
+      //      printf("** %+e %+e %+e\n   %+e %+e %+e\n   %+e %+e %+e\n\n",hcovscl[0],hcovscl[1],hcovscl[2],hcovscl[3],hcovscl[4],hcovscl[5],hcovscl[6],hcovscl[7],hcovscl[8]);
+      hcov.Multiply(&hrot);
+      hcov.MultiplyLeft(&hrotI);
+      //      printf("^^ %+e %+e %+e\n   %+e %+e %+e\n   %+e %+e %+e\n\n",hcovscl[0],hcovscl[1],hcovscl[2],hcovscl[3],hcovscl[4],hcovscl[5],hcovscl[6],hcovscl[7],hcovscl[8]);
+      cov[kXX] = hcovscl[0];
+      cov[kXY] = hcovscl[1];
+      cov[kXZ] = hcovscl[2];
+      cov[kYY] = hcovscl[4];
+      cov[kYZ] = hcovscl[5];
+      cov[kZZ] = hcovscl[8];
+    }
+    t0 = cov[kYY]*cov[kZZ] - cov[kYZ]*cov[kYZ];
+    t1 = cov[kXY]*cov[kZZ] - cov[kXZ]*cov[kYZ];
+    t2 = cov[kXY]*cov[kYZ] - cov[kXZ]*cov[kYY];
+    det = cov[kXX]*t0 - cov[kXY]*t1 + cov[kXZ]*t2;
+    //
     AliDebug(2,Form("%+.4e %+.4e %+.4e -> %+.4e",t0,t1,t2,det));
-    if (TMath::Abs(det)<fgkAlmostZero) {
+    if (IsZero(det,fgkAlmostZero)) {
       AliInfo(Form("Cov.Matrix for point %d is singular",i));
       return kFALSE;
     }
@@ -856,13 +903,25 @@ void AliITSTPArrayFit::GetDirCos(Double_t *dircos, Double_t t) const
     dircos[kY] =-TMath::Cos(t);
     double gam = TMath::Sign(1/TMath::Sqrt(dircos[kZ]*dircos[kZ]+dircos[kY]*dircos[kY]+dircos[kX]*dircos[kX]),fParams[kR0]);
     for (int i=3;i--;) dircos[i] *= gam;
+    if (GetSignQB()>0) for (int i=3;i--;) dircos[i] = -dircos[i]; // positive tracks move along decreasing t
   }
   else {
     double gam = 1/TMath::Sqrt( fParams[kB0]*fParams[kB0] + fParams[kB1]*fParams[kB1] + 1.);
     dircos[ fkAxID[kX] ] = fParams[kB0]*gam;
     dircos[ fkAxID[kY] ] = fParams[kB1]*gam;
     dircos[ fParAxis   ] = gam;
+    // decide direction
+    if (IsTypeCollision()) {
+      static double xyzF[3],xyzL[3];
+      GetPosition(xyzF,fPntFirst);
+      GetPosition(xyzL,fPntLast);
+      double dif = fCurT[fPntLast] - fCurT[fPntFirst];
+      double dr = (xyzL[kX]-xyzF[kX])*(xyzL[kX]+xyzF[kX]) + (xyzL[kY]-xyzF[kY])*(xyzL[kY]+xyzF[kY]);
+      if (dr*dif<0) for (int i=3;i--;) dircos[i] = -dircos[i]; // with increasing t the tracks comes closer to origin
+    }
+    else if (dircos[kY]>0) for (int i=3;i--;) dircos[i] = -dircos[i];  // cosmic tracks have negative angle to Y axis
   }
+  //
 }
 
 //________________________________________________________________________________________________________
@@ -1491,7 +1550,6 @@ void AliITSTPArrayFit::BuildMaterialLUT(Int_t ntri)
   return;
 }
 
-
 //____________________________________________________
 Double_t AliITSTPArrayFit::GetPCA2PlaneInfo(Double_t *xyz, Double_t *dir, Int_t axis, Double_t axval) const
 {
@@ -1509,3 +1567,39 @@ Double_t AliITSTPArrayFit::GetPCA2PlaneInfo(Double_t *xyz, Double_t *dir, Int_t 
   return t;
 }
 
+//____________________________________________________
+void AliITSTPArrayFit::GetT0Info(Double_t* xyz, Double_t *dir) const
+{
+  // get direction cosines for t = 0;
+  GetPosition(xyz, 0);
+  if (dir) GetDirCos(dir,0);
+}
+
+//____________________________________________________
+Bool_t AliITSTPArrayFit::CalcErrorMatrix()
+{
+  // compute covariance matrix in lenear approximation of residuals on parameters
+  static AliSymMatrix cv(5);
+  static Double_t dres[5][3]; 
+  cv.Reset();
+  int npar = IsFieldON() ? 5:4;
+  //
+  for (int ip=fPntFirst;ip<=fPntLast;ip++) {
+    GetDResDParams(&dres[0][0],ip);
+    Double_t* covI = GetCovI(ip);
+    for (int i=npar;i--;) 
+      for (int j=i+1;j--;)
+	cv(i,j) += dres[i][kX]*(dres[j][kX]*covI[ kXX ] + dres[j][kY]*covI[ kXY ] + dres[j][kZ]*covI[ kXZ ])
+	  +        dres[i][kY]*(dres[j][kX]*covI[ kXY ] + dres[j][kY]*covI[ kYY ] + dres[j][kZ]*covI[ kYZ ])
+	  +        dres[i][kZ]*(dres[j][kX]*covI[ kXZ ] + dres[j][kY]*covI[ kYZ ] + dres[j][kZ]*covI[ kZZ ]);
+  }
+  cv.SetSizeUsed(npar);
+  if (cv.InvertChol()) {
+    cv.Print("l");
+    int cnt = 0;
+    for (int i=npar;i--;) for (int j=i+1;j--;)fParamsCov[cnt++] = cv(i,j);
+    return kTRUE;
+  }
+  //
+  return kFALSE;
+}

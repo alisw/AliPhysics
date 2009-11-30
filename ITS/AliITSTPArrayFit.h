@@ -79,9 +79,11 @@ class AliITSTPArrayFit : public TObject
   void          GetPosition(Double_t *xyz, Int_t pnt)       const;
   void          GetDirCos(Double_t *dircos, Double_t t)     const;
   Double_t      GetPCA2PlaneInfo(Double_t *xyz, Double_t *dir=0, Int_t axis=kY, Double_t axval=0) const;
+  void          GetT0Info(Double_t *xyz, Double_t *dir=0)   const;
   Double_t      CalcChi2NDF()                               const;
   Double_t      GetChi2NDF()                                const {return fChi2NDF;}
   Double_t      GetParPCA(const double *xyz, const double *covI=0)        const;
+  Bool_t        CalcErrorMatrix();
   //
   void          GetDResDParamsLine (Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0) const;
   void          GetDResDParamsLine (Double_t *dXYZdP, Int_t ipnt) const;
