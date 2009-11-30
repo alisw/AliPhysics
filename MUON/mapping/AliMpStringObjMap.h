@@ -22,6 +22,7 @@ class AliMpStringObjMap : public TObject
 {
   public:
     AliMpStringObjMap(Bool_t isOwner = false);
+    AliMpStringObjMap(Bool_t minSize, Bool_t isOwner);
     virtual ~AliMpStringObjMap();
     
     // methods

@@ -74,21 +74,28 @@ AliMpManuStore* AliMpManuStore::Instance(Bool_t warn)
 
 //______________________________________________________________________________
 AliMpManuStore* AliMpManuStore::ReadData(const AliMpDataStreams& dataStreams, 
-                                         Bool_t warn) 
+                                         Bool_t warn, Bool_t empty) 
 {
     /// Load the DDL store from ASCII data files
     /// and return its instance
 
     if ( fgInstance ) {
         if ( warn )
-            AliWarningClass("DDL Store has been already loaded");
+            AliWarningClass("Manu Store has been already loaded");
         return fgInstance;
     }
 
-    if ( dataStreams.GetReadFromFiles() )
-      AliInfoClass("Reading Manu Store from ASCII files.");
+    if ( ! empty ) {
+      if ( dataStreams.GetReadFromFiles() )
+        AliInfoClass("Reading Manu Store from ASCII files.");
 
-    fgInstance = new AliMpManuStore(dataStreams);
+      fgInstance = new AliMpManuStore(dataStreams);
+    }
+    else {
+      AliInfoClass("Creating invalid Manu Store of minimum size.");
+      fgInstance = new AliMpManuStore(dataStreams, true);
+    }   
+        
     return fgInstance;
 }
 
@@ -117,8 +124,24 @@ AliMpManuStore::AliMpManuStore(const AliMpDataStreams& dataStreams)
        << endl;
      return;
   }      
-
+  
   ReadManuSerial();
+}
+
+//______________________________________________________________________________
+AliMpManuStore::AliMpManuStore(const AliMpDataStreams& dataStreams, Bool_t empty)
+: TObject(),
+  fkDataStreams(dataStreams),
+  fManuToSerialNbs(0),
+  fSerialNbToManus(0),
+  fNofManusInDE(0),
+  fNofManus(0)
+{  
+/// The special constructor for creating a minimum size object
+/// The argument minSize is used only to distinguish this ctor
+/// from the standard one, its value is not used.
+
+  AliDebug(1,"");
 }
 
 //______________________________________________________________________________

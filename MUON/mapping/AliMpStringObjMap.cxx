@@ -52,6 +52,25 @@ AliMpStringObjMap::AliMpStringObjMap(Bool_t isOwner)
 }
 
 //______________________________________________________________________________
+AliMpStringObjMap::AliMpStringObjMap(Bool_t /*minSize*/, Bool_t isOwner)
+ : TObject(),
+   fNofItems(0),
+   fFirstArray(0),
+   fSecondArray(0),
+   fCurrentIndex(0)
+{
+/// Special constructor to create an object of minimum size.
+/// The argument minSize is used only to distinguish this ctor
+/// from the standard one, its value is not used.
+/// When setting the initial size to 0, Root will adapt it to a minimal
+/// allowed size: 
+/// - TCollection::kInitCapacity for TObjArray (fObjects)
+
+  fFirstArray.SetOwner(true);
+  fSecondArray.SetOwner(isOwner);
+}
+
+//______________________________________________________________________________
 AliMpStringObjMap::~AliMpStringObjMap()
 {
 /// Destructor

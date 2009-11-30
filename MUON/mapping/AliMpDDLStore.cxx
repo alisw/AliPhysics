@@ -87,7 +87,7 @@ AliMpDDLStore* AliMpDDLStore::Instance(Bool_t warn)
 
 //______________________________________________________________________________
 AliMpDDLStore* AliMpDDLStore::ReadData(const AliMpDataStreams& dataStreams,
-                                       Bool_t warn) 
+                                       Bool_t warn, Bool_t empty) 
 {
     /// Load the DDL store from ASCII data files
     /// and return its instance
@@ -98,10 +98,17 @@ AliMpDDLStore* AliMpDDLStore::ReadData(const AliMpDataStreams& dataStreams,
         return fgInstance;
     }
 
-    if ( dataStreams.GetReadFromFiles() )
-      AliInfoClass("Reading Manu Store from ASCII files.");
+    if ( ! empty ) {
+      if ( dataStreams.GetReadFromFiles() )
+        AliInfoClass("Reading DDL Store from ASCII files.");
 
-    fgInstance = new AliMpDDLStore(dataStreams);
+      fgInstance = new AliMpDDLStore(dataStreams);
+    }
+    else {
+      AliInfoClass("Creating invalid DDL Store of minimum size.");
+      fgInstance = new AliMpDDLStore(dataStreams, true);
+    }   
+
     return fgInstance;
 }
 
@@ -124,6 +131,7 @@ AliMpDDLStore::AliMpDDLStore(const AliMpDataStreams& dataStreams)
   AliDebug(1,"");
   fDDLs.SetOwner(true);
   fBusPatches.SetOwner(true);
+  
   fBusPatches.SetSize(900);
 
   // Load segmentation & DE store data
@@ -138,6 +146,25 @@ AliMpDDLStore::AliMpDDLStore(const AliMpDataStreams& dataStreams)
   ReadBusPatchSpecial();
   SetPatchModules();
   ReadBusPatchInfo();
+}
+
+//______________________________________________________________________________
+AliMpDDLStore::AliMpDDLStore(const AliMpDataStreams& dataStreams, Bool_t /*empty*/)
+        : TObject(),
+        fkDataStreams(dataStreams),
+        fDDLs(fgkNofDDLs+fgkNofTriggerDDLs), // FIXEME
+        fBusPatches(true),
+        fManuList12(),
+        fManuBridge2(),
+        fRegionalTrigger()
+{
+  /// The special constructor for creating a minimum size object
+  /// The argument minSize is used only to distinguish this ctor
+  /// from the standard one, its value is not used.
+  
+  AliDebug(1,"");
+  fDDLs.SetOwner(true);
+  fBusPatches.SetOwner(true);
 }
 
 //______________________________________________________________________________

@@ -82,10 +82,12 @@ AliMpSegmentation* AliMpSegmentation::Instance(Bool_t warn)
 
 //______________________________________________________________________________
 AliMpSegmentation* AliMpSegmentation::ReadData(const AliMpDataStreams& dataStreams,
-                                               Bool_t warn)
+                                               Bool_t warn, Bool_t empty)
 {
 /// Load the sementation from ASCII data files
-/// and return its instance
+/// and return its instance. \n
+/// If empty parameter is true, then no data is loaded and 
+/// an empty object is created.
 
   if ( fgInstance ) {
     if ( warn )
@@ -93,10 +95,17 @@ AliMpSegmentation* AliMpSegmentation::ReadData(const AliMpDataStreams& dataStrea
     return fgInstance;
   }  
   
-  if ( dataStreams.GetReadFromFiles() )
-    AliInfoClass("Reading segmentation from ASCII files.");
+  if ( ! empty ) {
+    if ( dataStreams.GetReadFromFiles() )
+      AliInfoClass("Reading segmentation from ASCII files.");
 
-  fgInstance = new AliMpSegmentation(dataStreams);
+    fgInstance = new AliMpSegmentation(dataStreams);
+  }  
+  else {
+    AliInfoClass("Creating invalid segmentation of minimum size.");
+    fgInstance = new AliMpSegmentation(dataStreams, empty);
+  }   
+    
   return fgInstance;
 }    
 
@@ -123,7 +132,7 @@ AliMpSegmentation::AliMpSegmentation(const AliMpDataStreams& dataStreams)
   if ( ! AliMpDEStore::Instance(false) )  
     AliMpDEStore::ReadData(dataStreams);
   fDetElements = AliMpDEStore::Instance();  
-
+  
   // Create mapping segmentations for all detection elements
   AliMpDEIterator it;
   for ( it.First(); ! it.IsDone(); it.Next() ) 
@@ -143,6 +152,25 @@ AliMpSegmentation::AliMpSegmentation(const AliMpDataStreams& dataStreams)
         FillElCardsMap(it.CurrentDEId());
     }      
   } 
+}
+
+//______________________________________________________________________________
+AliMpSegmentation::AliMpSegmentation(const AliMpDataStreams& dataStreams, 
+                                     Bool_t /*empty*/)
+: TObject(),
+  fkDataStreams(dataStreams),
+  fDetElements(0x0),
+  fMpSegmentations(true, true),
+  fElCardsMap(true),
+  fSlatMotifMap(0x0)
+{  
+/// The special constructor for creating a minimum size object
+/// The argument minSize is used only to distinguish this ctor
+/// from the standard one, its value is not used.
+
+  AliDebug(1,"");
+  
+  fElCardsMap.SetOwner(kTRUE);
 }
 
 //______________________________________________________________________________

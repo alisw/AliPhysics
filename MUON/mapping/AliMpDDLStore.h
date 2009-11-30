@@ -41,7 +41,8 @@ class AliMpDDLStore : public  TObject {
     // static access method
     static AliMpDDLStore* Instance(Bool_t warn = true); 
     static AliMpDDLStore* ReadData(const AliMpDataStreams& dataStreams,
-                                   Bool_t warn = true);
+                                   Bool_t warn = true,
+                                   Bool_t empty = false);
     
     // methods
     AliMpDDL*          GetDDL(Int_t ddlId, Bool_t warn = true) const;
@@ -74,6 +75,7 @@ class AliMpDDLStore : public  TObject {
     
   private:
     AliMpDDLStore(const AliMpDataStreams& dataStreams);
+    AliMpDDLStore(const AliMpDataStreams& dataStreams, Bool_t empty);
     /// Not implemented
     AliMpDDLStore();
     /// Not implemented
