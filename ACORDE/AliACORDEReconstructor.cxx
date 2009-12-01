@@ -33,7 +33,8 @@ AliACORDEReconstructor:: AliACORDEReconstructor():
   AliReconstructor(),
   fESDACORDE(0x0),
   fAcordeRecoParam(0x0),
-  fCalibData(0x0)
+  fCalibData(0x0),
+  fDigitsArray(0)
 {
   // Default constructor  
   // Get calibration data
@@ -66,7 +67,8 @@ AliACORDEReconstructor& AliACORDEReconstructor::operator =
 AliACORDEReconstructor::~AliACORDEReconstructor()
 {
 // destructor
-  delete fESDACORDE; 
+  delete fESDACORDE;
+  delete fDigitsArray;
 }
 
 //_____________________________________________________________________________
@@ -84,8 +86,10 @@ void AliACORDEReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digit
     return;
   }
 
-  TClonesArray* digitsArray = new TClonesArray("AliACORDEdigit");
-  digitsTree->Branch("ACORDEdigit", &digitsArray);
+  if (!fDigitsArray)
+    fDigitsArray = new TClonesArray("AliACORDEdigit", 60);
+
+  digitsTree->Branch("ACORDEdigit", &fDigitsArray);
 
   rawReader->Reset();
   AliACORDERawStream rawStream(rawReader);
@@ -94,12 +98,13 @@ void AliACORDEReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digit
       Int_t  index = iChannel / 30;
       Int_t  bit   = iChannel % 30;
       if (rawStream.GetWord(index) & (1 << bit))
-        new ((*digitsArray)[digitsArray->GetEntriesFast()]) AliACORDEdigit(iChannel+1,0);
+        new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()]) AliACORDEdigit(iChannel+1,0);
     }
   }
 
   digitsTree->Fill();
-			
+
+  fDigitsArray->Clear();
 }
 
 void AliACORDEReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliESDEvent* esd) const
@@ -113,23 +118,22 @@ void AliACORDEReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
       return;
     }
 
-  TClonesArray* digitsArray = NULL;
   TBranch* digitBranch = digitsTree->GetBranch("ACORDEdigit");
   if (!digitBranch) {
     AliError("No ACORDE digits branch found!");
     return;
   }
-  digitBranch->SetAddress(&digitsArray);
+  digitBranch->SetAddress(&fDigitsArray);
 
   digitsTree->GetEvent(0);
 
   Bool_t AcoHitSingle[60],AcoHitMulti[60];
   for(Int_t i = 0; i < 60; i++) { AcoHitSingle[i] = AcoHitMulti[i] = kFALSE; }
 
-  Int_t nDigits = digitsArray->GetEntriesFast();
+  Int_t nDigits = fDigitsArray->GetEntriesFast();
     
   for (Int_t d=0; d<nDigits; d++) {    
-    AliACORDEdigit* digit = (AliACORDEdigit*)digitsArray->At(d);
+    AliACORDEdigit* digit = (AliACORDEdigit*) fDigitsArray->At(d);
     Int_t module = digit->GetModule();
 
     AcoHitSingle[module-1] = kTRUE;
@@ -144,7 +148,9 @@ void AliACORDEReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     {
       AliDebug(1, Form("Writing ACORDE data to ESD Tree"));
       esd->SetACORDEData(fESDACORDE);
-    }	
+    }
+
+  fDigitsArray->Clear();
 }
 
 

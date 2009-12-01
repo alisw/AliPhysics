@@ -68,7 +68,9 @@ private:
 
   Int_t              fCollisionMode;  // =0->p-p, =1->A-A
   Float_t            fBeamEnergy;     // beam energy
-    
+
+  mutable TClonesArray *fDigitsArray; // clones-array for ConvertDigits() and FillESD()
+
   ClassDef(AliVZEROReconstructor, 1)  // class for the VZERO reconstruction
 };
 

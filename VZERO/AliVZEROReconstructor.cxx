@@ -46,7 +46,8 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
                         fESDVZEROfriend(0x0),
                         fCalibData(GetCalibData()),
                         fCollisionMode(0),
-                        fBeamEnergy(0.)
+                        fBeamEnergy(0.),
+                        fDigitsArray(0)
 {
   // Default constructor  
   // Get calibration data
@@ -73,6 +74,7 @@ AliVZEROReconstructor::~AliVZEROReconstructor()
 
    delete fESDVZERO;
    delete fESDVZEROfriend;
+   delete fDigitsArray;
 }
 
 //_____________________________________________________________________________
@@ -96,8 +98,9 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     return;
   }
 
-  TClonesArray* digitsArray = new TClonesArray("AliVZEROdigit");
-  digitsTree->Branch("VZERODigit", &digitsArray);
+  if (!fDigitsArray)
+    fDigitsArray = new TClonesArray("AliVZEROdigit", 64);
+  digitsTree->Branch("VZERODigit", &fDigitsArray);
 
   fESDVZEROfriend->Reset();
 
@@ -199,13 +202,15 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	    time[iChannel] = (Float_t) kInvalidTime;	 
          }
 	 if (adc[iChannel] > 0)
-	   new ((*digitsArray)[digitsArray->GetEntriesFast()])
+	   new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()])
              AliVZEROdigit(iChannel, adc[iChannel], time[iChannel],
 	                   width[iChannel], BBFlag[iChannel], BGFlag[iChannel],integrator[iChannel]);
         
      }          
      digitsTree->Fill();
   }
+
+  fDigitsArray->Clear();
 }
 
 //______________________________________________________________________
@@ -219,9 +224,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
       return;
   }
 
-  TClonesArray* digitsArray = NULL;
   TBranch* digitBranch = digitsTree->GetBranch("VZERODigit");
-  digitBranch->SetAddress(&digitsArray);
+  digitBranch->SetAddress(&fDigitsArray);
 
   Float_t   mult[64];  
   Float_t    adc[64]; 
@@ -244,10 +248,10 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   for (Int_t e=0; e<nEntries; e++) {
     digitsTree->GetEvent(e);
 
-    Int_t nDigits = digitsArray->GetEntriesFast();
+    Int_t nDigits = fDigitsArray->GetEntriesFast();
     
     for (Int_t d=0; d<nDigits; d++) {    
-        AliVZEROdigit* digit = (AliVZEROdigit*)digitsArray->At(d);      
+        AliVZEROdigit* digit = (AliVZEROdigit*) fDigitsArray->At(d);      
         Int_t  pmNumber      = digit->PMNumber(); 
         // Pedestal retrieval and suppression: 
 	Bool_t   integrator  = digit->Integrator();
@@ -282,7 +286,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   TriggerMask->SetTimeWindowWidthBGA(20);
   TriggerMask->SetTimeWindowWidthBBC(50);
   TriggerMask->SetTimeWindowWidthBGC(20);
-  TriggerMask->FillMasks(digitsTree,digitsArray);
+  TriggerMask->FillMasks(digitsTree, fDigitsArray);
 
   fESDVZERO->SetBBtriggerV0A(TriggerMask->GetBBtriggerV0A());
   fESDVZERO->SetBGtriggerV0A(TriggerMask->GetBGtriggerV0A());
@@ -301,6 +305,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
         fr->SetVZEROfriend(fESDVZEROfriend);
     }
   }
+
+  fDigitsArray->Clear();
 }
 
 //_____________________________________________________________________________
