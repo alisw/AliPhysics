@@ -219,7 +219,7 @@ const UInt_t AliMUONTriggerDDLDecoder<EventHandler>::fgkErrorWord    = 0xCAFEDEA
 template <class EventHandler>
 const UInt_t AliMUONTriggerDDLDecoder<EventHandler>::fgkEndOfLocal   = 0xCAFEFADE;
 template <class EventHandler>
-const UInt_t AliMUONTriggerDDLDecoder<EventHandler>::fgkDisableWord  = 0x010CDEAD;
+const UInt_t AliMUONTriggerDDLDecoder<EventHandler>::fgkDisableWord  = 0x10CADEAD;
 template <class EventHandler>
 const UInt_t AliMUONTriggerDDLDecoder<EventHandler>::fgkDarcDefaultType = 0x6;
 template <class EventHandler>
