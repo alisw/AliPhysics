@@ -56,6 +56,7 @@ class AliESD;
 class AliESDcascade;
 class TRefArray;
 class AliESDACORDE;
+class AliESDHLTDecision;
 
 class AliESDEvent : public AliVEvent {
 public:

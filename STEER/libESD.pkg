@@ -18,6 +18,7 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfri
        AliSelector.cxx \
        AliESDRun.cxx \
        AliESDHeader.cxx \
+       AliESDHLTDecision.cxx \
        AliESDZDC.cxx \
        AliESDTZERO.cxx \
        AliESDCaloTrigger.cxx \

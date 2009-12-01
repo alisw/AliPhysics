@@ -17,6 +17,7 @@
 #pragma link C++ class  AliESDInputHandlerRP+;
 #pragma link C++ class  AliESDRun+;
 #pragma link C++ class  AliESDHeader+;
+#pragma link C++ class  AliESDHLTDecision+;
 #pragma link C++ class  AliESDZDC+;
 #pragma link C++ class  AliESDCaloTrigger+;
 #pragma link C++ class  AliESDfriend+;                                                                                                           

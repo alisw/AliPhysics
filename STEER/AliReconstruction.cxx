@@ -191,6 +191,7 @@
 #include "AliVertexerTracks.h"
 #include "AliTriggerRunScalers.h"
 #include "AliCTPTimeParams.h" 
+#include "AliESDHLTDecision.h"
 
 ClassImp(AliReconstruction)
 
@@ -1497,6 +1498,10 @@ void AliReconstruction::SlaveBegin(TTree*)
   fesd = new AliESDEvent();
   fesd->CreateStdContent();
 
+  // add a so far non-std object to the ESD, this will
+  // become part of the std content
+  fesd->AddObject(new AliESDHLTDecision);
+
   fesd->WriteToTree(ftree);
   if (fWriteESDfriend) {
     // careful:
@@ -1916,6 +1921,15 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       qadm->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
     if (qadm && IsInTasks(AliQAv1::kESDS))
       qadm->Exec(AliQAv1::kESDS, fesd);
+  }
+
+  // copy HLT decision from HLTesd to esd
+  // the most relevant information is stored in a reduced container in the esd,
+  // while the full information can be found in the HLTesd
+  TObject* pHLTSrc=fhltesd->FindListObject(AliESDHLTDecision::Name());
+  TObject* pHLTTgt=fesd->FindListObject(AliESDHLTDecision::Name());
+  if (pHLTSrc && pHLTTgt) {
+    pHLTSrc->Copy(*pHLTTgt);
   }
 
     if (fWriteESDfriend) {
