@@ -1288,9 +1288,14 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos()
       Float_t ratio4434;
       Float_t errorRatio4434;
 
+    if(totalNumberOf34!=0){
       ratio4434 = totalNumberOf44/totalNumberOf34;
       errorRatio4434 = sqrt(totalNumberOf44*(1-ratio4434))/totalNumberOf34;
-  
+    }else{
+      ratio4434 = 0;
+      errorRatio4434 = 0;
+    }
+    
       ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(numEvent,ratio4434);
       ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinError(numEvent,errorRatio4434);
 
@@ -1300,9 +1305,14 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos()
       Float_t ratio4434Update;
       Float_t errorRatio4434Update;
 
+    if(NumberOf34Update!=0){
       ratio4434Update = NumberOf44Update/NumberOf34Update;
       errorRatio4434Update = sqrt(NumberOf44Update*(1-ratio4434Update))/NumberOf34Update;
-
+    }else{
+      ratio4434Update = 0;
+      errorRatio4434Update = 0;
+    }
+    
       ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinContent(numEvent,ratio4434Update);
       ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinError(numEvent,errorRatio4434Update);
 
