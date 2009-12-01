@@ -209,8 +209,8 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   Int_t fCharge;
   TLorentzVector fEPvector;
 
-  Float_t fZVertexCut    = 10.0; 
-  Float_t fRhoVertexCut  =  2.0; 
+  Float_t fZVertexCut    = 40.0; 
+  Float_t fRhoVertexCut  = 600.0; 
 
   Float_t fLowPtCut      =  1.0;
   Float_t fHighPtCut     =  3.0;
@@ -584,8 +584,8 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
   Int_t fCharge;
   TLorentzVector fEPvector;
 
-  Float_t fZVertexCut = 10.0; 
-  Float_t fRhoVertexCut = 2.0; 
+  Float_t fZVertexCut = 40.0; 
+  Float_t fRhoVertexCut = 600.0; 
 
   Float_t fLowPtCut = 1.0;
   Float_t fHighPtCut = 3.0;
@@ -939,8 +939,8 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
   Int_t fCharge;
   TLorentzVector fEPvector;
 
-  Float_t fZVertexCut = 10.0; 
-  Float_t fRhoVertexCut = 2.0; 
+  Float_t fZVertexCut = 40.0; 
+  Float_t fRhoVertexCut = 600.0; 
 
   Float_t fLowPtCut = 1.0;
   Float_t fHighPtCut = 3.0;
@@ -1286,8 +1286,8 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   Int_t fCharge;
   TLorentzVector fEPvector;
 
-  Float_t fZVertexCut = 10.0; 
-  Float_t fRhoVertexCut = 2.0; 
+  Float_t fZVertexCut = 40.0; 
+  Float_t fRhoVertexCut = 600.0; 
 
   Float_t fLowPtCut = 1.0;
   Float_t fHighPtCut = 3.0;
