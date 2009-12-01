@@ -1,13 +1,13 @@
 #-*- Mode: Makefile -*-
 
-SRCS          =  AliEMCALGeoUtils.cxx AliEMCALEMCGeometry.cxx  \
+SRCS          =  AliEMCALGeoParams.cxx AliEMCALGeoUtils.cxx AliEMCALEMCGeometry.cxx  \
                  AliEMCALShishKebabTrd1Module.cxx AliEMCALPIDUtils.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= EMCALUtilsLinkDef.h
 
-EXPORT:=AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h
+EXPORT:=AliEMCALGeoParams.h AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h
 
 CXXFLAGS+=-D__EMCALUTIL__
 
