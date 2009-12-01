@@ -188,8 +188,8 @@ void AliProtonAbsorptionCorrection::FillAbsorptionMaps(AliESDEvent *esd,
 						       const AliESDVertex *vertex,
 						       AliMCEvent *mcEvent) {	
   //Function to fill the correction containers
-  fCFManagerProtons->SetEventInfo(mcEvent);
-  fCFManagerAntiProtons->SetEventInfo(mcEvent);
+  fCFManagerProtons->SetMCEventInfo(mcEvent);
+  fCFManagerAntiProtons->SetMCEventInfo(mcEvent);
  
   //Dummy container
   Double_t containerInput[2];
