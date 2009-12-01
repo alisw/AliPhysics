@@ -149,7 +149,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
       TPMERegexp filere(".*/([^/]+$");
       if (filere.Match(fi.fFilename) != 2)
       {
-        Warning("AliEvePopupHandler", "file '%s' bad.", file.Data());
+        Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
         return;
       }
       printf("Saving...\n");
