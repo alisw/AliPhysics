@@ -931,6 +931,7 @@ void AliTRDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 	
       //}
     }
+    clusterArray->Delete();
   }
 
   /*
