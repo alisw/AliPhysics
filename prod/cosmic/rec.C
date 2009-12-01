@@ -8,8 +8,8 @@ void rec(const char *filename="raw.root")
   /////////////////////////////////////////////////////////////////////////////////////////
   gSystem->Load("libRAliEn.so");
   gSystem->Load("libNet.so");
-  gSystem->Load("libMonaLisa.so");
-  new TMonaLisaWriter(0, "GridAliRoot-rec.C", 0, 0, "global");
+    //  gSystem->Load("libMonaLisa.so");
+    //new TMonaLisaWriter(0, "GridAliRoot-rec.C", 0, 0, "global");
   gSystem->Setenv("APMON_INTERVAL", "120");
 
   // Set the CDB storage location

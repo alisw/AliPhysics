@@ -14,6 +14,7 @@
 # ---------------------------------------
 export YEAR=09
 # ---------------------------------------
+kill -9 `ps | grep aliroot | awk '{print $1}'`
 
 export RUNNUM=$1
 
@@ -73,12 +74,12 @@ for filename in $CHUNKS; do
      rm $RUNNUM"/"*.QA.$RUNNUM.$SUBCHUNK.root 
      rm $RUNNUM"/"QA.$SUBCHUNK.root 
      cd       $RUNNUM"/"$CHUNK
-$PROGRAM -b <<EOF
+$PROGRAM -b<<EOF
 .L $ALICE_ROOT/prod/cosmic/rawqa.C+
 rawqa($filename, $RUNNUM)
 EOF
 
-$PROGRAM -b <<EOF
+$PROGRAM -b -q <<EOF
 AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kRECMODE) ; 
  qam.Merge(atoi(gSystem->Getenv("RUNNUM"))) ;
 EOF
@@ -87,7 +88,7 @@ EOF
 done
 ls */Merged.QA.Data.root > merged.list
 outfile="Merged.QA.Data."$RUNNUM".root"
-$PROGRAM -b <<EOF
+$PROGRAM -b -q <<EOF
 .L $ALICE_ROOT/test/cosmic/MergeQAMerged.C
 MergeQAMerged("$outfile", "merged.list") ; 
 EOF
