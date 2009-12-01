@@ -371,7 +371,7 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet, Bool_t keepStart){
   
   Float_t *x = new Float_t[nentries];
   Float_t *y = new Float_t[nentries];
-  Int_t time0=0;
+  Int_t time0=0, previousTime=0;
   TTimeStamp firstTime(0);
   TTimeStamp lastTime(0);
   if (keepStart) { 
@@ -418,6 +418,8 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet, Bool_t keepStart){
       skipped=0;
     }					      
     if (val->GetTimeStamp()-time0>1000000) continue;
+    if (val->GetTimeStamp()-previousTime < 1 ) continue;   // refuse duplicate recordings
+    previousTime=val->GetTimeStamp();
     lastTime=TTimeStamp((time_t)val->GetTimeStamp(),0);
     x[out] = (val->GetTimeStamp()-time0)/kSecInHour; // give times in fractions of hours 
     y[out] = val->GetFloat();
