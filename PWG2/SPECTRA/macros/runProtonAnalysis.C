@@ -22,14 +22,14 @@ void runProtonAnalysis(const char* esdAnalysisType = "Hybrid",
   TStopwatch timer;
   timer.Start();
   
-  /*runLocal("ESD",
+  runLocal("ESD",
 	   esdAnalysisType,
 	   pidMode,
-	   "/home/pchrist/ALICE/Baryons/QA/Local");*/
+	   "/home/pchrist/ALICE/Baryons/Analysis/Protons/Local/data");
   //runInteractive("ESD",esdAnalysisType,pidMode,"tag.xml");
   //runBatch("ESD",esdAnalysisType,pidMode,"wn.xml");  
-  runProof("ESD",esdAnalysisType,pidMode,
-	   500000,0,"/COMMON/COMMON/LHC09a4_run8100X#esdTree");
+  /*runProof("ESD",esdAnalysisType,pidMode,
+    500000,0,"/COMMON/COMMON/LHC09a4_run8100X#esdTree");*/
   
   timer.Stop();
   timer.Print();
@@ -102,9 +102,7 @@ void runLocal(const char* mode = "ESD",
   mgr->AddTask(taskProtons);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-							   TChain::Class(),
-							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -193,9 +191,7 @@ void runInteractive(const char* mode = "ESD",
   mgr->AddTask(taskProtons);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-							   TChain::Class(),
-							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -274,9 +270,7 @@ void runBatch(const char* mode = "ESD",
   mgr->AddTask(taskProtons);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-							   TChain::Class(),
-							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -347,9 +341,6 @@ void runProof(const char* mode = "ESD",
   mgr->AddTask(taskProtons);
 
   // Create containers for input/output
-  /*AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-							   TChain::Class(),
-							   AliAnalysisManager::kInputContainer);*/
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
                                                             TList::Class(),
