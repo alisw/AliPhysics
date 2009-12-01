@@ -36,7 +36,6 @@ using namespace std;
 //#include "AliHLTSystem.h"
 
 typedef vector<AliHLTDataBuffer::AliHLTDataSegment> AliHLTDataSegmentList;
-typedef vector<AliHLTDataBuffer::AliHLTRawBuffer*>  AliHLTRawBufferPList;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataBuffer)
@@ -65,8 +64,8 @@ AliHLTDataBuffer::AliHLTDataBuffer()
 }
 
 int AliHLTDataBuffer::fgNofInstances=0;
-AliHLTRawBufferPList AliHLTDataBuffer::fgFreeBuffers;
-AliHLTRawBufferPList AliHLTDataBuffer::fgActiveBuffers;
+AliHLTDataBuffer::AliHLTRawBufferPList AliHLTDataBuffer::fgFreeBuffers;
+AliHLTDataBuffer::AliHLTRawBufferPList AliHLTDataBuffer::fgActiveBuffers;
 AliHLTUInt32_t AliHLTDataBuffer::fgMargin=1024;
 AliHLTLogging AliHLTDataBuffer::fgLogging;
 const Int_t AliHLTDataBuffer::fgkSafetyPatternSize=16;
@@ -724,11 +723,11 @@ int AliHLTDataBuffer::FindConsumer(const AliHLTComponent* pConsumer, int bAllLis
 }
 
 AliHLTDataBuffer::AliHLTRawBuffer::AliHLTRawBuffer(AliHLTUInt32_t size)
-  :
-  fSize(0),
-  fTotalSize(size),
-  fPtr(static_cast<AliHLTUInt8_t*>(malloc(size))),
-  fLastEventCount(0)
+  : fSize(0)
+  , fTotalSize(size)
+  , fExternalPtr(NULL)
+  , fPtr(static_cast<AliHLTUInt8_t*>(malloc(size)))
+  , fLastEventCount(0)
 {
   // see header file for class documentation
   // or
@@ -741,9 +740,19 @@ AliHLTDataBuffer::AliHLTRawBuffer::AliHLTRawBuffer(AliHLTUInt32_t size)
   }
 }
 
+AliHLTDataBuffer::AliHLTRawBuffer::AliHLTRawBuffer(AliHLTUInt32_t size, AliHLTUInt8_t* buffer)
+  : fSize(0)
+  , fTotalSize(size)
+  , fExternalPtr(buffer)
+  , fPtr(fExternalPtr)
+  , fLastEventCount(0)
+{
+  // see header file for class documentation
+}
+
 AliHLTDataBuffer::AliHLTRawBuffer::~AliHLTRawBuffer()
 {
-  if (fPtr) {
+  if (fExternalPtr==NULL && fPtr) {
     free(fPtr);
   }
   fPtr=NULL;
@@ -755,6 +764,14 @@ int AliHLTDataBuffer::AliHLTRawBuffer::operator==(void* ptr) const
 {
   // see header file for function documentation
   return fPtr == static_cast<AliHLTUInt8_t*>(ptr);
+}
+
+int AliHLTDataBuffer::AliHLTRawBuffer::operator<(void* ptr) const
+{
+  // see header file for function documentation
+  int iResult=fPtr < static_cast<AliHLTUInt8_t*>(ptr);
+  //printf("%p: %p <= %p (%d)\n", this, fPtr, ptr, iResult);
+  return iResult;
 }
 
 int AliHLTDataBuffer::AliHLTRawBuffer::operator<=(void* ptr) const
@@ -779,13 +796,47 @@ int AliHLTDataBuffer::AliHLTRawBuffer::operator-(void* ptr) const
   return static_cast<int>(static_cast<AliHLTUInt8_t*>(ptr)-fPtr);
 }
 
-AliHLTUInt8_t* AliHLTDataBuffer::AliHLTRawBuffer::UseBuffer(AliHLTUInt32_t size)
+int AliHLTDataBuffer::AliHLTRawBuffer::operator<(const AliHLTRawBuffer& op) const
 {
   // see header file for function documentation
+  return (fPtr+fSize < op.fPtr);
+}
+
+int AliHLTDataBuffer::AliHLTRawBuffer::operator<=(const AliHLTRawBuffer& op) const
+{
+  // see header file for function documentation
+  return (fPtr+fSize <= op.fPtr);
+}
+
+int AliHLTDataBuffer::AliHLTRawBuffer::operator>(const AliHLTRawBuffer& op) const
+{
+  // see header file for function documentation
+  return (fPtr > op.fPtr+op.fSize);
+}
+
+AliHLTUInt8_t* AliHLTDataBuffer::AliHLTRawBuffer::UseBuffer(AliHLTUInt32_t size)
+{
+  // mark a portion of the buffer as used
   if (size>0 && fTotalSize>=size) {
     fSize=size;
     fLastEventCount=AliHLTDataBuffer::fgEventCount;
     return fPtr;
+  }
+  return NULL;
+}
+
+AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawBuffer::Split(AliHLTUInt32_t size)
+{
+  // split a buffer at specified size
+  // only possible for buffers with external memory
+  if (size>0 && fTotalSize>size && 
+      (fSize==0 || fSize<size) &&
+      fExternalPtr!=NULL) {
+    AliHLTRawBuffer* part2=new AliHLTRawBuffer(fTotalSize-size, fPtr+size);
+    if (part2) {
+      fTotalSize=size;
+    }
+    return part2;
   }
   return NULL;
 }
@@ -835,4 +886,159 @@ int AliHLTDataBuffer::AliHLTRawBuffer::CheckPattern(const char* pattern, int siz
     }
   }
   return iResult;
+}
+
+int AliHLTDataBuffer::AliHLTRawBuffer::Merge(const AliHLTDataBuffer::AliHLTRawBuffer& neighbor)
+{
+  // Merge buffer with neighboring buffer.
+  // Only possible if the buffers are consecutive with out any gap.
+
+  if (!fExternalPtr || !neighbor.fExternalPtr) return -EPERM;
+
+  if (fPtr+fTotalSize == neighbor.fPtr) {
+    fTotalSize+=neighbor.fTotalSize;
+    fSize=0;
+    return 0;
+  }
+  if (fPtr == neighbor.fPtr+neighbor.fTotalSize) {
+    fPtr=neighbor.fPtr;
+    fExternalPtr=fPtr;
+    fTotalSize+=neighbor.fTotalSize;
+    fSize=0;
+    return 0;
+  }
+  return -EINVAL;
+}
+
+void AliHLTDataBuffer::AliHLTRawBuffer::Print(const char* option)
+{
+  /// print buffer information
+  if (strcmp(option, "min")!=0) {
+    cout << "************* AliHLTRawBuffer status ***********" << endl;
+  }
+  cout << "  " << fPtr << " (" << fExternalPtr << ") size " << fTotalSize << " used " << fSize << endl;
+}
+
+AliHLTDataBuffer::AliHLTRawPage::AliHLTRawPage(AliHLTUInt32_t pagesize)
+  : fSize(pagesize)
+  , fPtr(static_cast<AliHLTUInt8_t*>(malloc(pagesize)))
+  , fFreeBuffers()
+  , fUsedBuffers()
+{
+  // constructor
+  if (fPtr) {
+    fFreeBuffers.push_back(new AliHLTRawBuffer(fSize, fPtr));
+  } else {
+    fSize=0;
+  }
+}
+
+AliHLTDataBuffer::AliHLTRawPage::~AliHLTRawPage()
+{
+  // destructor
+  if (fUsedBuffers.size()>0) {
+    // do not free if the resources have not been completely freed
+    HLTError("memory mismatch: not all allocated intances have been released");
+  } else {
+    if (fFreeBuffers.size()>0) {
+      HLTWarning("page still fragmented");
+    }
+    AliHLTRawBufferPList::iterator element=fFreeBuffers.begin();
+    while (element!=fFreeBuffers.end()) {
+      if (*element) delete *element;
+      element=fFreeBuffers.erase(element);
+    }
+    if (fPtr) {
+      free(fPtr);
+    }
+    fPtr=NULL;
+    fSize=0;
+  }
+}
+
+AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawPage::Alloc(AliHLTUInt32_t size)
+{
+  /// alloc a buffer of specified size
+  if (fFreeBuffers.size()>0) return NULL;
+  
+  AliHLTRawBuffer* buffer=NULL;
+  for (AliHLTRawBufferPList::iterator iter=fFreeBuffers.begin();
+       iter!=fFreeBuffers.end() && buffer==NULL;
+       iter++) {
+    if ((*iter)->GetTotalSize()>=size) {
+      buffer=(*iter)->Split(size);
+      if (buffer) {
+	fFreeBuffers.insert(iter, buffer);
+	buffer=*iter;
+	fFreeBuffers.erase(iter);
+	fUsedBuffers.push_back(buffer);
+	return buffer;
+      } else {
+	HLTWarning("failed to split raw buffer %p", *iter);
+      }
+    }
+  }
+  return NULL;
+}
+
+int AliHLTDataBuffer::AliHLTRawPage::Free(AliHLTRawBuffer* pBuffer)
+{
+  /// free a buffer and merge consecutive free buffers
+  int iResult=0;
+  for (AliHLTRawBufferPList::iterator iter=fUsedBuffers.begin();
+       iter!=fUsedBuffers.end() && iResult>=0;
+       iter++) {
+    if ((*iter)==pBuffer) {
+      fUsedBuffers.erase(iter);
+      for (AliHLTRawBufferPList::iterator prev=fFreeBuffers.begin();
+	   prev!=fFreeBuffers.end() && iResult>=0;
+	   prev++) {
+	if ((*pBuffer)<(*(*prev))) {
+	  // check consecutive buffers
+	  if ((*(*prev)) == (pBuffer->GetPointer()+pBuffer->GetTotalSize())) {
+	    // the buffer to be released has a consecutive free buffer -> merge them
+	    if ((iResult=pBuffer->Merge(*(*prev)))>=0) {
+	      fFreeBuffers.insert(prev, pBuffer);
+	      delete *prev;
+	      fFreeBuffers.erase(prev);
+	    }
+	    break;
+	  }
+	  continue;
+	}
+	if ((*pBuffer)>(*(*prev))) {
+	  // check consecutive buffers
+	  if ((*(*prev)) == ((*prev)->GetPointer()+(*prev)->GetTotalSize())) {
+	    // the buffer to be released is consecutive to a free buffer -> merge them
+	    if ((iResult=pBuffer->Merge(*(*prev)))>=0) {
+	      fFreeBuffers.insert(prev, pBuffer);
+	      delete *prev;
+	      fFreeBuffers.erase(prev);
+	    }
+	  } else {
+	    fFreeBuffers.push_back(pBuffer);
+	  }
+	  break;
+	}	
+      }	
+      return 0;
+    }
+  }
+  return 1;
+}
+
+void AliHLTDataBuffer::AliHLTRawPage::Print(const char* /*option*/)
+{
+  /// print page information
+  cout << "************* AliHLTRawPage status ***********" << endl;
+  cout << "  used buffers:" << endl;
+  AliHLTRawBufferPList::iterator iter=fUsedBuffers.begin();
+  for (; iter!=fUsedBuffers.end(); iter++) {
+    cout << "    "; (*iter)->Print("min");
+  }
+  cout << "  used buffers:" << endl;
+  iter=fFreeBuffers.begin();
+  for (; iter!=fFreeBuffers.end(); iter++) {
+    cout << "    "; (*iter)->Print("min");
+  }
 }

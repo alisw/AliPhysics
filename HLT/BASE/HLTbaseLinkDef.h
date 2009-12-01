@@ -17,6 +17,8 @@
 #pragma link C++ class AliHLTControlTask+;
 #pragma link C++ class AliHLTLogging+;
 #pragma link C++ class AliHLTDataBuffer+;
+#pragma link C++ class AliHLTDataBuffer::AliHLTRawBuffer+;
+#pragma link C++ class AliHLTDataBuffer::AliHLTRawPage+;
 #pragma link C++ class AliHLTConsumerDescriptor+;
 #pragma link C++ class AliHLTDataSource+;
 #pragma link C++ class AliHLTDataSink+;
