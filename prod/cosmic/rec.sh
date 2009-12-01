@@ -33,8 +33,8 @@ VERSION=1.0
 TITLE="Standalone reconstruction of Grid rawdata chunks. v$VERSION"
 
 # Retrieve the list of chunks from AliEn.......
-BASEDIR="/alice/data/20"$YEAR
-PATTERN="/raw/"$YEAR"0000"$RUNNUM"*0.root"
+export BASEDIR="/alice/data/20"$YEAR/LHC${YEAR}*
+PATTERN="$RUNNUM/raw/${YEAR}*${RUNNUM}*.root"
 gbbox find $BASEDIR $PATTERN | head -n 500 > collection.tmp
 
 [ $(wc -l collection.tmp) -eq 0 ] && { echo "No chunks found for the given run"; exit 1; }
