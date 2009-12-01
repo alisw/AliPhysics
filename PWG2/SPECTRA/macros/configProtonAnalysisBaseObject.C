@@ -1,7 +1,7 @@
 AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "ESD",
 						   const char* esdAnalysisType = "Hybrid",
 						   const char* pidMode = "Bayesian") {
-						   
+  
   //Function to setup the AliProtonAnalysisBase object and return it
   AliProtonAnalysisBase *baseAnalysis = new AliProtonAnalysisBase();
   //baseAnalysis->SetDebugMode();
@@ -103,7 +103,7 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
   }//ESD
   if(analysisLevel == "MC") 
     baseAnalysis->SetPhaseSpace(10, -0.5, 0.5, 16, 0.5, 0.9);
-  if(analysisLevel == "AOD") {  
+  if(analysisLevel == "AOD")
     baseAnalysis->SetPhaseSpace(10, -0.5, 0.5, 16, 0.5, 0.9);
 
   return baseAnalysis;
