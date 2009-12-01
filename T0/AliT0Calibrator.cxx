@@ -107,7 +107,7 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_
     grY = fu1->GetY();
     fMaxValue[ipmt]=grY[refAmp-1];
     //    TGraph* fu  = param ->GetAmpLEDRec(i);
-    walk = Int_t (fMaxValue[ipmt]) + Int_t(fu1->Eval(Double_t(qt)));
+    walk = Int_t (fMaxValue[ipmt]) - Int_t(fu1->Eval(Double_t(qt)));
   }
   
   timeWalk = time + walk   ;
@@ -115,7 +115,7 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_
   AliDebug(10,Form(" ipmt %i time before %i timeWalk %i , walk %i  qt %i timeEq %i \n ",
 		   ipmt, time,timeWalk, walk, qt, timeEq ));
   
-  return timeEq;
+   return timeEq;
 }
 
 

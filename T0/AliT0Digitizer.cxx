@@ -322,7 +322,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  Float_t slew=fu->Eval(Float_t(qtCh));
 
 	  //	  trCFD=trCFD-Int_t(fMaxValue[i]-slew);
-	  trCFD = trCFD - slew; //for the same channel as cosmic
+	  trCFD = trCFD + slew; //for the same channel as cosmic
 	  ftimeCFD->AddAt(Int_t (trCFD),i);
 	  trLED = Int_t(trCFD  + sl );
 	  ftimeLED->AddAt(trLED,i); 
