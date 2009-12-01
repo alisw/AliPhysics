@@ -572,6 +572,8 @@ Bool_t AliMpDDLStore::ReadBusPatchSpecial()
         }
       }
     }
+    
+    delete stringList;
   }
   
   delete &in;
