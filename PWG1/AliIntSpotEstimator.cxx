@@ -6,6 +6,7 @@
 #include "AliLog.h"
 #include <TH1.h>
 #include <TH1F.h>
+#include <TNtuple.h>
 #include <TObjArray.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
@@ -15,23 +16,23 @@
 ClassImp(AliIntSpotEstimator)
 
 //______________________________________________________________________________________
-AliIntSpotEstimator::AliIntSpotEstimator(const char* name,Double_t outcut,
+AliIntSpotEstimator::AliIntSpotEstimator(const char* name,Double_t outcut,Int_t ntrIP,
 					 Int_t nPhiBins,Int_t nestb,
 					 Double_t estmin,Double_t estmax,
 					 Int_t ntrBins,Int_t ntMn,Int_t ntMx,
-					 Int_t nPBins,Double_t pmn,Double_t pmx) 
+					 Int_t nPBins,Double_t pmn,Double_t pmx,Bool_t ntuple) 
 : TNamed(name,""),
-  fEvProc(0),fIPCenterStat(0),fOutlierCut(outcut),fEstimIP(0),fEstimVtx(0),fEstimTrc(0),
-  fVertexer(0),fTracks(0)
+  fEvProc(0),fIPCenterStat(0),fMinTracksForIP(ntrIP>2?ntrIP:2),fOutlierCut(outcut),fEstimIP(0),
+  fEstimVtx(0),fEstimTrc(0),fHVtxXY(0),fNtuple(0),fVertexer(0),fTracks(0)
 {
-  InitEstimators(nPhiBins,nestb,estmin,estmax,ntrBins,ntMn,ntMx,nPBins,pmn,pmx);
+  InitEstimators(nPhiBins,nestb,estmin,estmax,ntrBins,ntMn,ntMx,nPBins,pmn,pmx,ntuple);
 }
 
 //______________________________________________________________________________________                                    
 AliIntSpotEstimator::AliIntSpotEstimator(Bool_t initDef) 
   : TNamed("IPEstimator",""),
-    fEvProc(0),fIPCenterStat(0),fOutlierCut(1e-4),
-    fEstimIP(0),fEstimVtx(0),fEstimTrc(0),fVertexer(0),fTracks(0)
+    fEvProc(0),fIPCenterStat(0),fMinTracksForIP(2),fOutlierCut(1e-4),
+    fEstimIP(0),fEstimVtx(0),fEstimTrc(0),fHVtxXY(0),fNtuple(0),fVertexer(0),fTracks(0)
 {
   if (initDef) InitEstimators();
   //
@@ -44,6 +45,7 @@ AliIntSpotEstimator::~AliIntSpotEstimator()
   delete fEstimVtx;
   delete fEstimTrc;
   delete fVertexer;
+  delete fNtuple;
 }
 
 //______________________________________________________________________________________
@@ -54,9 +56,13 @@ Bool_t AliIntSpotEstimator::ProcessIPCenter(const AliESDVertex* vtx)
   double xyz[3];
   vtx->GetXYZ(xyz);
   double r = xyz[0]*xyz[0] + xyz[1]*xyz[1];
-  if (r>1.) return kFALSE;
-  for (int i=3;i--;) fIPCenter[i] += xyz[i];
+  if (r>2.) return kFALSE;
+  for (int i=3;i--;) {
+    fIPCenter[i] += xyz[i];
+    fIPCen2[i] += xyz[i]*xyz[i];
+  }
   fIPCenterStat++;
+  fHVtxXY->Fill(xyz[0],xyz[1]);
   return kTRUE;
   //
 }
@@ -116,14 +122,13 @@ Bool_t AliIntSpotEstimator::ProcessTracks()
   UShort_t selTrackID,movTrackID=0;
   //
   AliESDVertex* recNewVtx = fVertexer->VertexForSelectedTracks(fTracks,trackID,kTRUE,kFALSE,kFALSE);
-  if (!recNewVtx || 
-      ((nTracks=recNewVtx->GetNIndices())<GetMinTracks()) ||  // in case some tracks were rejected
-      !ProcessIPCenter(recNewVtx)) { 
+  if (!recNewVtx || ((nTracks=recNewVtx->GetNIndices())<GetMinTracks())) {
     if (recNewVtx) delete recNewVtx;
     fTracks->Clear();
     delete[] trackID;
     return kFALSE;
   }
+  if (nTracks>=fMinTracksForIP) ProcessIPCenter(recNewVtx);
   //
   double pmn = GetTrackMinP();
   double pmx = GetTrackMaxP();
@@ -152,10 +157,22 @@ Bool_t AliIntSpotEstimator::ProcessTracks()
       double phiTrack = selTrack->Phi();
       double cs = TMath::Cos(phiTrack);
       double sn = TMath::Sin(phiTrack);
-      double trDCA = xyzDCA[0]         *sn - xyzDCA[1]         *cs;  // track signed DCA to origin
-      double vtDCA = recNewVtx->GetXv()*sn - recNewVtx->GetYv()*cs;  // vertex signed DCA to origin
+      double trDCA = (xyzDCA[0]-fIPCenIni[0])         *sn - (xyzDCA[1]-fIPCenIni[1])         *cs;  // track signed DCA to origin
+      double vtDCA = (recNewVtx->GetXv()-fIPCenIni[0])*sn - (recNewVtx->GetYv()-fIPCenIni[1])*cs;  // vertex signed DCA to origin
       UpdateEstimators(vtDCA,trDCA, nTracks1, pTrack, phiTrack);
       selTrack->PropagateTo(told,fieldVal);    // restore the track
+      if (fNtuple) {
+	static float ntf[8];
+	ntf[0] = float(nTracks1);
+	ntf[1] = recNewVtx->GetXv();
+	ntf[2] = recNewVtx->GetYv();
+	ntf[3] = recNewVtx->GetZv();
+	ntf[4] = xyzDCA[0];
+	ntf[5] = xyzDCA[1];
+	ntf[6] = phiTrack;
+	ntf[7] = pTrack;
+	fNtuple->Fill(ntf);
+      }
     }
     delete recNewVtx;
     // restore the track indices
@@ -181,7 +198,7 @@ void AliIntSpotEstimator::UpdateEstimators(double rvD, double rtD, double nTrack
   double estVtx = rvD*(rvD - rtD);
   double estTrc = rtD*(rtD - rvD);
   //
-  fEstimIP->Fill(phiTrack, estIP);
+  if (nTracks >= fMinTracksForIP) fEstimIP->Fill(phiTrack, estIP);
   fEstimVtx->Fill(nTracks, estVtx);
   if (pTrack<1e-6) pTrack = GetTrackMinP()+1e6;
   fEstimTrc->Fill(1./pTrack,estTrc);
@@ -191,7 +208,7 @@ void AliIntSpotEstimator::UpdateEstimators(double rvD, double rtD, double nTrack
 //______________________________________________________________________________________
 void AliIntSpotEstimator::InitEstimators(Int_t nPhiBins,Int_t nestb,Double_t estmin,Double_t estmax,
 					 Int_t ntrBins,Int_t ntMn,Int_t ntMx,
-					 Int_t nPBins,Double_t pmn,Double_t pmx)
+					 Int_t nPBins,Double_t pmn,Double_t pmx,Bool_t ntuple)
 {
   Clear();
   // regularize binning/limits for DCA resolution
@@ -227,6 +244,16 @@ void AliIntSpotEstimator::InitEstimators(Int_t nPhiBins,Int_t nestb,Double_t est
   nm = GetName();  
   nm += "dcaEst";   
   fEstimTrc = new TH2F(nm.Data(),nm.Data(),nPBins,1./pmx,1./pmn,      nestb,estmin,estmax);
+  // 
+  nm = GetName();  
+  nm += "VtxXY";   
+  fHVtxXY = new TH2F(nm.Data(),nm.Data(),200, -1,1, 200,-1,1);
+  //
+  if (ntuple) {
+    nm = GetName();  
+    nm += "ntuple";
+    fNtuple = new TNtuple(nm.Data(),nm.Data(),"ntrack:xv:yv:zv:xt:yt:phi:p");
+  }
   //
   fVertexer = new AliVertexerTracks(); // the field is set dynamically
   fVertexer->SetConstraintOff();
@@ -236,20 +263,35 @@ void AliIntSpotEstimator::InitEstimators(Int_t nPhiBins,Int_t nestb,Double_t est
 }
 
 //______________________________________________________________________________________                                                                                             
-Double_t AliIntSpotEstimator::GetIPSigma(Int_t bin) const
+Double_t AliIntSpotEstimator::GetIPSigma(Int_t bin, Double_t *err) const
 {                                                                                                                                                                                    
   // get estimate for the IP sigma
   if (!IsValid()) {AliError("Not initialized yet"); return -999;}
-  double cx  = GetIPCenter(0);
-  double cy  = GetIPCenter(1);
+  double cxe,cye;
+  double cx  = GetIPCenter(0,&cxe) - GetIPCenIni(0);
+  double cy  = GetIPCenter(1,&cye) - GetIPCenIni(1);
   TH1* proj = fEstimIP->ProjectionY("ipProj",bin<1 ? 1:bin, bin<1 ? GetNPhiBins():bin,"e");
-  double est = CalcMean(proj, fOutlierCut) - (cx*cx + cy*cy)/2.;
+  double merr = 0;
+  double est = CalcMean(proj, fOutlierCut, &merr) - (cx*cx + cy*cy)/2.;
+  if (est>0) {
+    est = TMath::Sqrt(est);
+    if (err) {
+      *err = 0;
+      *err = merr*merr;
+      *err += cx*cx*cxe*cxe + cy*cy*cye*cye;
+      *err = TMath::Sqrt(*err)/est/2.;
+    }
+  }
+  else {
+    est = 0;
+    if (err) *err = 0;
+  }
   delete proj;
-  return est>0 ? TMath::Sqrt(est) : 0;
+  return est;
 }
 
 //______________________________________________________________________________________                                                                                             
-Double_t AliIntSpotEstimator::GetVtxSigma(int ntr) const
+Double_t AliIntSpotEstimator::GetVtxSigma(int ntr, double* err) const
 {                                                                                                                                                                                    
   // get estimate for the IP sigma^2
   if (!IsValid()) {AliError("Not initialized yet"); return -999;}
@@ -260,14 +302,22 @@ Double_t AliIntSpotEstimator::GetVtxSigma(int ntr) const
     return -1;
   }
   TH1* proj = fEstimVtx->ProjectionY("vrProj",bin,bin,"e");
-  double est = CalcMean(proj, fOutlierCut);
+  double est = CalcMean(proj, fOutlierCut, err);
   delete proj;
-  return est>0 ? TMath::Sqrt(est) : 0;
+  if (est>0) {
+    est = TMath::Sqrt(est);
+    if (err) *err /= 2*est;
+  }
+  else {
+    est = 0;
+    if (err) *err = 0;
+  }
+  return est;
   //
 }
 
 //______________________________________________________________________________________                                                                                             
-Double_t AliIntSpotEstimator::GetDCASigma(double pt) const
+Double_t AliIntSpotEstimator::GetDCASigma(double pt, double *err) const
 {                                                                                                                                                                                    
   // get estimate for the IP sigma^2
   if (!IsValid()) {AliError("Not initialized yet"); return -999;}
@@ -279,30 +329,46 @@ Double_t AliIntSpotEstimator::GetDCASigma(double pt) const
     return -1;
   }
   TH1* proj = fEstimTrc->ProjectionY("trProj",bin,bin,"e");
-  double est = CalcMean(proj, fOutlierCut);
+  double est = CalcMean(proj, fOutlierCut, err);
   delete proj;
-  return est>0 ? TMath::Sqrt(est) : 0;
+   if (est>0) {
+    est = TMath::Sqrt(est);
+    if (err) *err /= 2*est;
+  }
+  else {
+    est = 0;
+    if (err) *err = 0;
+  }
+  return est;
   //
 }
 
 //______________________________________________________________________________________                                                                                             
-Double_t AliIntSpotEstimator::CalcMean(TH1* histo, Double_t ctfact)
+Double_t AliIntSpotEstimator::CalcMean(TH1* histo, Double_t ctfact, Double_t *err)
 {
   // calculate mean applying the cut on the outliers
   //
   double max = histo->GetMaximum();
-  double cut = (ctfact>0&&ctfact<1.) ? TMath::Max(1.0,max*ctfact) : 0;
+  double cut = (ctfact>0&&ctfact<1.) ? max*ctfact : 0;//TMath::Max(1.0,max*ctfact) : 0;
   int nb = histo->GetNbinsX();
-  double mean = 0.,cumul = 0;
+  double mean = 0.,cumul = 0, rms = 0;
   for (int i=1;i<=nb;i++) {
     double vl = histo->GetBinContent(i) - cut;
     if (vl<1e-10) continue;
-    mean  += vl*histo->GetBinCenter(i);
+    double x = histo->GetBinCenter(i);
+    mean  += vl*x;
+    rms   += vl*x*x;
     cumul += vl;
   }
   //
-  return cumul>0 ? mean/cumul : 0;
+  mean = cumul>0 ? mean/cumul : 0;
+  rms -= mean*mean*cumul;
+  if (err) {
+    *err = cumul > 1 ? rms/(cumul-1) : 0;
+    if (*err>0) *err = TMath::Sqrt(*err/cumul);
+  }
   //
+  return mean;
 }
 
 //______________________________________________________________________________________
@@ -310,29 +376,35 @@ void AliIntSpotEstimator::Print(Option_t *) const
 {   
   if (!IsValid()) {printf("Not initialized yet\n"); return;}
   //
+  double cx,cy,cz,cxe,cye,cze;
+  cx = GetIPCenter(0,&cxe);
+  cy = GetIPCenter(1,&cye);
+  cz = GetIPCenter(2,&cze);
   printf("Processed %d events\n",fEvProc);
-  printf("Estimator for IP center: %+.4e %+.4e %+.4e\n",
-	 GetIPCenter(0),GetIPCenter(1),GetIPCenter(2));
-  double sgIP = GetIPSigma();
-  printf("Estimator for IP sigma : %.4e\n",sgIP);
+  printf("Estimator for IP center: %+.4e+-%.3e | %+.4e+-%.3e | %+.4e+-%.3e\n",
+	 cx,cxe,cy,cye,cz,cze);
+  printf("Initial IP center was  : %+.4e %+.4e %+.4e\n",
+	 GetIPCenIni(0),GetIPCenIni(1),GetIPCenIni(2));
+  double sgIP = GetIPSigma(0,&cxe);
+  printf("Estimator for IP sigma : %.4e+-%.3e\n",sgIP,cxe);
   //
   printf("Estimators for vertex resolution vs Ntracks:\n");
   
   for (int i=1;i<=GetNTrackBins();i++) {
-    double sig = GetVtxSigma( (int)fEstimVtx->GetXaxis()->GetBinCenter(i) );
+    double sig = GetVtxSigma( (int)fEstimVtx->GetXaxis()->GetBinCenter(i), &cxe );
     if (IsZero(sig)) continue;
     int tmin = TMath::Nint(fEstimVtx->GetXaxis()->GetBinLowEdge(i));
     int tmax = tmin + int(fEstimVtx->GetXaxis()->GetBinWidth(i));
-    printf("%3d-%3d : %.4e\n",tmin,tmax,sig);
+    printf("%3d-%3d : %.4e+-%.3e\n",tmin,tmax,sig,cxe);
   }
   //
   printf("Estimators for track DCA resolution vs P:\n");
   for (int i=1;i<=GetNPBins();i++) {
-    double sig = GetDCASigma( 1./fEstimTrc->GetXaxis()->GetBinCenter(i) );
+    double sig = GetDCASigma( 1./fEstimTrc->GetXaxis()->GetBinCenter(i), &cxe );
     if (IsZero(sig)) continue;
     double pmax = 1./fEstimTrc->GetXaxis()->GetBinLowEdge(i);
     double pmin = 1./(fEstimTrc->GetXaxis()->GetBinLowEdge(i)+fEstimTrc->GetXaxis()->GetBinWidth(i));
-    printf("%.2f-%.2f : %.4e\n",pmin,pmax,sig);
+    printf("%.2f-%.2f : %.4e+-%.3e\n",pmin,pmax,sig, cxe);
   }
 }
 
@@ -342,7 +414,7 @@ void AliIntSpotEstimator::Clear(Option_t *)
   // reset all
   fEvProc = 0;
   fIPCenterStat = 0;
-  fIPCenter[0]  = fIPCenter[1]  = fIPCenter[2]  = 0;
+  for (int i=3;i--;) fIPCenter[i] = fIPCenIni[i] = 0.;
   if (fEstimIP)  fEstimIP->Reset();
   if (fEstimVtx) fEstimVtx->Reset();
   if (fEstimTrc) fEstimTrc->Reset();
@@ -357,6 +429,7 @@ AliIntSpotEstimator &AliIntSpotEstimator::operator += (const AliIntSpotEstimator
   if (fEstimIP  && src.fEstimIP ) fEstimIP->Add(src.fEstimIP);
   if (fEstimVtx && src.fEstimVtx) fEstimVtx->Add(src.fEstimVtx);
   if (fEstimTrc && src.fEstimTrc) fEstimTrc->Add(src.fEstimTrc);
+  if (fHVtxXY   && src.fHVtxXY)   fHVtxXY->Add(src.fHVtxXY);
   //
   return *this;
 }
@@ -374,8 +447,6 @@ TCanvas* AliIntSpotEstimator::CreateReport(const char* outname)
   //
   char buff[200];
   //
-  double sigIPtot = GetIPSigma()*1e4;
-  //  
   cnv->Divide(2,2);
   cnv->cd(1);
   //
@@ -389,10 +460,17 @@ TCanvas* AliIntSpotEstimator::CreateReport(const char* outname)
   sprintf(buff,"Accepted  Events\n%d",fIPCenterStat);
   pt->AddText(buff);
   //
-  sprintf(buff,"Int.Spot X:Y:Z (cm)\n%+.4e : %+.4e : %+.4e",GetIPCenter(0),GetIPCenter(1),GetIPCenter(2));
+  double cx,cy,cz,cxe,cye,cze;
+  cx = GetIPCenter(0,&cxe);
+  cy = GetIPCenter(1,&cye);
+  cz = GetIPCenter(2,&cze);
+  //  
+  sprintf(buff,"Int.Spot (#mum)\n%+d#pm%d\n%+d#pm%d\n%+d#pm%d",
+	  int(cx*1e4),int(cxe*1e4),int(cy*1e4),int(cye*1e4),int(cz*1e4),int(cze*1e4));
   pt->AddText(buff);
   //
-  sprintf(buff,"Int.Spot #sigma (#mum):\n%d",int(sigIPtot));
+  cx = GetIPSigma(0,&cxe);
+  sprintf(buff,"Int.Spot #sigma (#mum):\n%d#pm%d",int(cx*1e4),int(cxe*1e4));
   pt->AddText(buff);
   pt->Draw();
   gPad->Modified();
@@ -402,7 +480,11 @@ TCanvas* AliIntSpotEstimator::CreateReport(const char* outname)
   TH1* iph = fEstimIP->ProjectionX();
   iph->Reset();
   iph->SetTitle("Int.Spot size vs #phi");
-  for (int i=1;i<=iph->GetNbinsX();i++) iph->SetBinContent(i,GetIPSigma(i)*1e4);
+  for (int i=1;i<=iph->GetNbinsX();i++) {
+    cx = GetIPSigma(i,&cxe);
+    iph->SetBinContent(i,cx*1e4);
+    iph->SetBinError(i,cxe*1e4);
+  }
   iph->GetXaxis()->SetTitle("#phi");
   iph->GetYaxis()->SetTitle("#sigma_{IP} [#mum]");
   iph->SetMarkerStyle(20);
@@ -415,7 +497,11 @@ TCanvas* AliIntSpotEstimator::CreateReport(const char* outname)
   TH1* vrh = fEstimVtx->ProjectionX();
   vrh->Reset();
   vrh->SetTitle("Vertex resolution vs N tracks");
-  for (int i=1;i<=vrh->GetNbinsX();i++) vrh->SetBinContent(i,GetVtxSigma(TMath::Nint(vrh->GetBinCenter(i)))*1e4);
+  for (int i=1;i<=vrh->GetNbinsX();i++) {
+    cx = GetVtxSigma( TMath::Nint(vrh->GetBinCenter(i)), &cxe);
+    vrh->SetBinContent(i,cx*1e4);
+    vrh->SetBinError(i,cxe*1e4);
+  }
   vrh->GetXaxis()->SetTitle("n tracks");
   vrh->GetYaxis()->SetTitle("#sigma_{VTX} [#mum]");
   vrh->SetMarkerStyle(20);
@@ -428,7 +514,11 @@ TCanvas* AliIntSpotEstimator::CreateReport(const char* outname)
   TH1* trh = fEstimTrc->ProjectionX();
   trh->Reset();
   trh->SetTitle("Track DCA resolution vs 1/P");
-  for (int i=1;i<=trh->GetNbinsX();i++) trh->SetBinContent(i,GetDCASigma(1./trh->GetBinCenter(i))*1e4);
+  for (int i=1;i<=trh->GetNbinsX();i++) {
+    cx = GetDCASigma(1./trh->GetBinCenter(i), &cxe);
+    trh->SetBinContent(i,cx*1e4);
+    trh->SetBinError(i,cxe*1e4);
+  }
   trh->GetXaxis()->SetTitle("1/p [GeV]");
   trh->GetYaxis()->SetTitle("#sigma_{DCA} [#mum]");
   trh->SetMarkerStyle(20);
@@ -463,3 +553,14 @@ Long64_t AliIntSpotEstimator::Merge(TCollection *coll)
   //
 }
 
+//_____________________________________________________________________
+Double_t AliIntSpotEstimator::GetIPCenter(Int_t id,Double_t *err) const
+{
+  // calculate IP center in axis id and error
+  double cen = fIPCenterStat>0 ? fIPCenter[id]/fIPCenterStat:0;
+  if (err) {
+    *err = fIPCenterStat>1 ? (fIPCen2[id] - cen*cen*fIPCenterStat)/(fIPCenterStat-1) : 0;
+    *err = *err > 0 ? TMath::Sqrt(*err/fIPCenterStat) : 0;
+  }
+  return cen;
+}

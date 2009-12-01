@@ -14,12 +14,20 @@ AliAnalysisTaskIPInfo* AddTaskIntSpotESD()
 
   // Create the task
   AliAnalysisTaskIPInfo *taskIP = new AliAnalysisTaskIPInfo("IPInfo");
-  taskIP->SetOptions(AliAnalysisTaskIPInfo::kTPC, kFALSE, 1e-4,	12,1000,
-		     -5,5,  10,2,32,  14,0.2,3.);
-  taskIP->SetOptions(AliAnalysisTaskIPInfo::kITS, kFALSE, 1e-4,	12,1000,
-		     -4e-2,8e-2,  10,2,32,  14,0.2,3.);
-
-
+  taskIP->SetOptions(AliAnalysisTaskIPInfo::kITSTPC, kFALSE, 1e-4, 2, 12,1000,
+		     -4e-2,8e-2,  10,2,32,  14,0.2,3., kFALSE);
+  taskIP->SetIPCenIni(AliAnalysisTaskIPInfo::kITSTPC, -0.0764,0.2481,0);
+  //
+  //
+  taskIP->SetOptions(AliAnalysisTaskIPInfo::kTPC, kFALSE, 1e-4,	2, 12,1000,
+		     -4e-2,8e-2,  10,2,32,  14,0.2,3., kFALSE);
+  taskIP->SetIPCenIni(AliAnalysisTaskIPInfo::kTPC, -0.0764,0.2481,0);
+  //
+  //
+  taskIP->SetOptions(AliAnalysisTaskIPInfo::kSPD, kFALSE, 1e-4,	2, 12,1000,
+		     -4e-2,8e-2,  10,2,32,  14,0.2,3., kTRUE);
+  taskIP->SetIPCenIni(AliAnalysisTaskIPInfo::kSPD, -0.0764,0.2481,0);
+  //
   mgr->AddTask(taskIP);
 
   // Create containers for input/output
