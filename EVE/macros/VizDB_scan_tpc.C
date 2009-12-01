@@ -1,9 +1,10 @@
-void VizDB_scan()
+void VizDB_scan_tpc()
 {
 
   TEvePointSet        *ps = 0;
   TEveStraightLineSet *ls = 0;
-  TEveTrackList       *tl = 0;
+//  TEveTrackList       *tltemp;
+//  TEveTrackList       *tl;
 
   //============================================================================
   // Hits
@@ -86,13 +87,13 @@ void VizDB_scan()
   gEve->InsertVizDBEntry("Clusters", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(kBlue);
+  ps->SetMarkerColor(5);
   ps->SetMarkerSize(0.2);
   ps->SetMarkerStyle(2);
   gEve->InsertVizDBEntry("REC Clusters ITS", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(kBlue);
+  ps->SetMarkerColor(4);
   ps->SetMarkerSize(0.2);
   ps->SetMarkerStyle(2);
   gEve->InsertVizDBEntry("REC Clusters TPC", ps);
@@ -104,7 +105,7 @@ void VizDB_scan()
   gEve->InsertVizDBEntry("REC Clusters TRD", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(kOrange+9);
+  ps->SetMarkerColor(kOrange);
   ps->SetMarkerSize(0.5);
   ps->SetMarkerStyle(4);
   gEve->InsertVizDBEntry("REC Clusters TOF", ps);
@@ -194,97 +195,99 @@ void VizDB_scan()
   ls->SetLineWidth(1);
   gEve->InsertVizDBEntry("REC PVTX Box TPC", ls);
 
-
-  //============================================================================
-  // Tracks
-  //============================================================================
+  //Tracks
 
   tl = new TEveTrackList("ESD Tracks");
   tl->SetLineStyle(6);
   tl->SetMainColor(1);
   tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks", tl);
+  gEve->InsertVizDBEntry("REC Tracks",tl);
 
   tl = new TEveTrackList("ESD Tracks MI");
   tl->SetLineStyle(6);
   tl->SetMainColor(1);
   tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks MI", tl);
+  gEve->InsertVizDBEntry("REC Tracks MI",tl);
 
+  TEveElementList* el = new TEveElementList("ESD Tracks by category");
+  TEveTrackList *tltemp[7];
+  tltemp[0] = new TEveTrackList("Sigma < 3");
+  tltemp[0]->SetLineStyle(6);
+  tltemp[0]->SetLineColor(1);
+  tltemp[0]->SetLineWidth(1);
+  el->AddElement(tltemp[0]);
 
-  // esd_tracks_by_category()
+  tltemp[1] = new TEveTrackList("3 < Sigma < 5");
+  tltemp[1]->SetLineStyle(6);
+  tltemp[1]->SetLineColor(1);
+  tltemp[1]->SetLineWidth(1);
+  el->AddElement(tltemp[1]);
 
-  tl = new TEveTrackList("Sigma < 3");
-  tl->SetLineStyle(6);
-  tl->SetLineColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks ByCat 0", tl);
+  tltemp[2] = new TEveTrackList("5 < Sigma");
+  tltemp[2]->SetLineStyle(6);
+  tltemp[2]->SetLineColor(1);
+  tltemp[2]->SetLineWidth(1);
+  el->AddElement(tltemp[2]);
 
-  tl = new TEveTrackList("3 < Sigma < 5");
-  tl->SetLineStyle(6);
-  tl->SetLineColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks ByCat 1", tl);
+  tltemp[3] = new TEveTrackList("no ITS refit; Sigma < 5");
+  tltemp[3]->SetLineStyle(6);
+  tltemp[3]->SetLineColor(1);
+  tltemp[3]->SetLineWidth(1);
+  el->AddElement(tltemp[3]);
 
-  tl = new TEveTrackList("5 < Sigma");
-  tl->SetLineStyle(6);
-  tl->SetLineColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks ByCat 2", tl);
+  tltemp[4] = new TEveTrackList("no ITS refit; Sigma > 5");
+  tltemp[4]->SetLineStyle(6);
+  tltemp[4]->SetLineColor(1);
+  tltemp[4]->SetLineWidth(1);
+  el->AddElement(tltemp[4]);
 
-  tl = new TEveTrackList("no ITS refit; Sigma < 5");
-  tl->SetLineStyle(6);
-  tl->SetLineColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks ByCat 3", tl);
+  tltemp[5] = new TEveTrackList("no TPC refit");
+  tltemp[5]->SetLineStyle(6);
+  tltemp[5]->SetLineColor(1);
+  tltemp[5]->SetLineWidth(1);
+  el->AddElement(tltemp[5]);
 
-  tl = new TEveTrackList("no ITS refit; Sigma > 5");
-  tl->SetLineStyle(6);
-  tl->SetLineColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks ByCat 4", tl);
+  tltemp[6] = new TEveTrackList("ITS stand-alone");
+  tltemp[6]->SetLineStyle(6);
+  tltemp[6]->SetLineColor(1);
+  tltemp[6]->SetLineWidth(1);
+  el->AddElement(tltemp[6]);
 
-  tl = new TEveTrackList("no TPC refit");
-  tl->SetLineStyle(6);
-  tl->SetLineColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks ByCat 5", tl);
+  el->SetVizTag("ESD Tracks by category");
+  gEve->AddElement(el);
 
-  tl = new TEveTrackList("ITS stand-alone");
-  tl->SetLineStyle(6);
-  tl->SetLineColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks ByCat 6", tl);
+  TEveElementList* el = new TEveElementList("ESD Tracks by anal cuts");
+  TEveTrackList *tlac[2];
+  tlac[0] = new TEveTrackList("Passed");
+  tlac[0]->SetLineStyle(6);
+  tlac[0]->SetMainColor(1);
+  tlac[0]->SetLineWidth(1);
+  el->AddElement(tlac[0]);
 
+  tlac[1] = new TEveTrackList("Rejected");
+  tlac[1]->SetLineStyle(6);
+  tlac[1]->SetMainColor(1);
+  tlac[1]->SetLineWidth(1);
+  el->AddElement(tlac[1]);
 
-  // esd_tracks_by_anal_cuts()
+  el->SetVizTag("ESD Tracks by anal cut");
+  gEve->AddElement(el);
 
-  tl = new TEveTrackList("Passed");
-  tl->SetLineStyle(6);
-  tl->SetMainColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks ByAnCuts Passed", tl);
+  TEveElementList* el = new TEveElementList("ESD Tracklets SPD");
+  TEveTrackList *tlac[2];
+  tlac[0] = new TEveTrackList("Good");
+  tlac[0]->SetLineStyle(6);
+  tlac[0]->SetMainColor(1);
+  tlac[0]->SetLineWidth(1);
+  el->AddElement(tlac[0]);
 
-  tl = new TEveTrackList("Rejected");
-  tl->SetLineStyle(6);
-  tl->SetMainColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracks ByAnCuts Rejected", tl);
+  tlac[1] = new TEveTrackList("Bad");
+  tlac[1]->SetLineStyle(6);
+  tlac[1]->SetMainColor(1);
+  tlac[1]->SetLineWidth(1);
+  el->AddElement(tlac[1]);
 
+  el->SetVizTag("ESD Tracklets SPD");
+  gEve->AddElement(el);
 
-  //============================================================================
-  // SPD tracklets
-  //============================================================================
-
-  tl = new TEveTrackList("Good");
-  tl->SetLineStyle(6);
-  tl->SetMainColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracklet Good", tl);
-
-  tl = new TEveTrackList("Bad");
-  tl->SetLineStyle(6);
-  tl->SetMainColor(1);
-  tl->SetLineWidth(1);
-  gEve->InsertVizDBEntry("REC Tracklet Bad", tl);
 }

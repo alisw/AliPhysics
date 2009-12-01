@@ -76,7 +76,11 @@ TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=2,
   }
   else
   {
-    tb->SetLineStyle(6);
+//==========================================
+    tb->SetLineStyle(1);
+    tb->SetLineWidth(2);
+//==========================================
+
   }
 
   gEve->Redraw3D();

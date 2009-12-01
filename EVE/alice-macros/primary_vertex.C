@@ -177,7 +177,7 @@ primary_vertex(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
   }
 
   TEveStraightLineSet* ls = make_vertex_cross(pv, use_sigma, fx, fy, fz);
-  ls->ApplyVizTag("PVTX");
+  ls->ApplyVizTag("REC PVTX");
   assert_vertex_parent("Primary Vertex", 7)->AddElement(ls);
   gEve->Redraw3D();
   return ls;
@@ -194,7 +194,7 @@ primary_vertex_spd(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t f
   }
 
   TEveStraightLineSet* ls = make_vertex_cross(spdv, use_sigma, fx, fy, fz);
-  ls->ApplyVizTag("PVTX SPD");
+  ls->ApplyVizTag("REC PVTX SPD");
   assert_vertex_parent("Primary Vertex SPD", 6)->AddElement(ls);
   gEve->Redraw3D();
   return ls;
@@ -211,7 +211,7 @@ primary_vertex_tpc(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t f
   }
 
   TEveStraightLineSet* ls = make_vertex_cross(tpcv, use_sigma, fx, fy, fz);
-  ls->ApplyVizTag("PVTX TPC");
+  ls->ApplyVizTag("REC PVTX TPC");
   assert_vertex_parent("Primary Vertex TPC", 5)->AddElement(ls);
   gEve->Redraw3D();
   return ls;
@@ -232,7 +232,7 @@ primary_vertex_ellipse(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Flo
   }
 
   TEveStraightLineSet* ls = make_vertex_ellipse(pv, use_sigma, fx, fy, fz);
-  ls->ApplyVizTag("PVTX Ellipse");
+  ls->ApplyVizTag("REC PVTX Ellipse");
   assert_vertex_parent("Primary Vertex", 7)->AddElement(ls);
   gEve->Redraw3D();
   return ls;
@@ -249,7 +249,7 @@ primary_vertex_ellipse_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30,
   }
 
   TEveStraightLineSet* ls = make_vertex_ellipse(spdv, use_sigma, fx, fy, fz);
-  ls->ApplyVizTag("PVTX Ellipse SPD");
+  ls->ApplyVizTag("REC PVTX Ellipse SPD");
   assert_vertex_parent("Primary Vertex SPD", 6)->AddElement(ls);
   gEve->Redraw3D();
   return ls;
@@ -266,7 +266,7 @@ primary_vertex_ellipse_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30,
   }
 
   TEveStraightLineSet* ls = make_vertex_ellipse(tpcv, use_sigma, fx, fy, fz);
-  ls->ApplyVizTag("PVTX Ellipse TPC");
+  ls->ApplyVizTag("REC PVTX Ellipse TPC");
   assert_vertex_parent("Primary Vertex TPC", 5)->AddElement(ls);
   gEve->Redraw3D();
   return ls;
@@ -287,7 +287,7 @@ primary_vertex_box(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t
   }
 
   TEveStraightLineSet* ls = make_vertex_box(pv, use_sigma, fx, fy, fz);
-  ls->ApplyVizTag("PVTX Box");
+  ls->ApplyVizTag("REC PVTX Box");
   assert_vertex_parent("Primary Vertex", 7)->AddElement(ls);
   gEve->Redraw3D();
   return ls;
@@ -304,7 +304,7 @@ primary_vertex_box_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Flo
   }
 
   TEveStraightLineSet* ls = make_vertex_box(spdv, use_sigma, fx, fy, fz);
-  ls->ApplyVizTag("PVTX Box SPD");
+  ls->ApplyVizTag("REC PVTX Box SPD");
   assert_vertex_parent("Primary Vertex SPD", 6)->AddElement(ls);
   gEve->Redraw3D();
   return ls;
@@ -321,7 +321,7 @@ primary_vertex_box_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Flo
   }
 
   TEveStraightLineSet* ls = make_vertex_box(tpcv, use_sigma, fx, fy, fz);
-  ls->ApplyVizTag("PVTX Box TPC");
+  ls->ApplyVizTag("REC PVTX Box TPC");
   assert_vertex_parent("Primary Vertex TPC", 5)->AddElement(ls);
   gEve->Redraw3D();
   return ls;
