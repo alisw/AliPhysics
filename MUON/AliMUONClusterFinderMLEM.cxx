@@ -84,7 +84,7 @@ fNClusters(0),
 fNAddVirtualPads(0)
 {
   /// Constructor
- 
+
   fkSegmentation[1] = fkSegmentation[0] = 0x0; 
 
   if (fPlot) fDebug = 1;
@@ -129,7 +129,8 @@ AliMUONClusterFinderMLEM::Prepare(Int_t detElemId,
   fEventNumber = runLoader ? runLoader->GetEventNumber() : 0;
   fClusterNumber = -1;
   fClusterList.Delete();
-  
+  fPixArray->Delete();
+
   AliDebug(3,Form("EVT %d DE %d",fEventNumber,fDetElemId));
   
   if ( fPreClusterFinder->NeedSegmentation() )
@@ -162,6 +163,7 @@ AliMUONClusterFinderMLEM::NextCluster()
 
   fPreCluster = fPreClusterFinder->NextCluster();
 
+  fPixArray->Delete();
   fClusterList.Delete(); // reset the list of clusters for this pre-cluster
   fClusterNumber = -1; //AZ
     

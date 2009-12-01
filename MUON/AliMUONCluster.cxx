@@ -144,6 +144,7 @@ AliMUONCluster::operator=(const AliMUONCluster& src)
 AliMUONCluster::~AliMUONCluster()
 {
   /// dtor : note that we're owner of our pads
+//   fPads.Delete();
 }
 
 //_____________________________________________________________________________
@@ -152,6 +153,7 @@ AliMUONCluster::Clear(Option_t*)
 {
   /// Clear our pad array
   fPads.Clear();
+//  fPads.Delete();
 }
 
 //_____________________________________________________________________________
@@ -345,8 +347,15 @@ AliMUONCluster::Copy(TObject& obj) const
   ///
   TObject::Copy(obj);
   AliMUONCluster& dest = static_cast<AliMUONCluster&>(obj);
-  dest.fPads.Delete();
-  dest.fPads = fPads;
+
+//  dest.fPads.Delete();
+  dest.fPads.Clear();
+  
+  for ( Int_t i = 0; i <= fPads.GetLast(); ++i ) 
+  {
+    AliMUONPad* p = static_cast<AliMUONPad*>(fPads.UncheckedAt(i));
+    dest.fPads.AddLast(new AliMUONPad(*p));
+  }
   dest.fHasPosition = fHasPosition;
   dest.fPosition = fPosition;
   dest.fPositionError = fPositionError;
@@ -744,6 +753,7 @@ AliMUONCluster::RemovePad(AliMUONPad* pad)
   
   fPads.Remove(pad);
   fPads.Compress();
+  delete pad;
   // update cluster's data
   fIsSaturated[0]=fIsSaturated[1]=kFALSE;
   fMultiplicity[0]=fMultiplicity[1]=0;

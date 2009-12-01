@@ -148,6 +148,9 @@ AliMUONClusterFinderPeakCOG::NextCluster()
   // if the cluster list is exhausted, we need to go to the next
   // pre-cluster and treat it
 
+  fClusterList.Delete(); // reset the list of clusters for this pre-cluster
+  fClusterNumber = -1; 
+    
   fPreCluster = fPreClusterFinder->NextCluster();
   
   if (!fPreCluster)
@@ -156,9 +159,6 @@ AliMUONClusterFinderPeakCOG::NextCluster()
     return 0x0;
   }
     
-  fClusterList.Delete(); // reset the list of clusters for this pre-cluster
-  fClusterNumber = -1; 
-  
   WorkOnPreCluster();
 
   // WorkOnPreCluster may have used only part of the pads, so we check that
@@ -821,8 +821,8 @@ void AliMUONClusterFinderPeakCOG::FindCluster(AliMUONCluster& cluster,
   Double_t yc = fHistAnode->GetYaxis()->GetBinCenter(ic);
   Double_t xc = fHistAnode->GetXaxis()->GetBinCenter(jc);
   Double_t cont = fHistAnode->GetCellContent(jc,ic);
-  AliMUONPad* pixPtr = new AliMUONPad (xc, yc, wx, wy, cont);
-  if (fDebug) pixPtr->Print("full"); 
+  AliMUONPad pixel(xc, yc, wx, wy, cont);
+  if (fDebug) pixel.Print("full"); 
 
   Int_t npad = cluster.Multiplicity();
   
@@ -832,7 +832,7 @@ void AliMUONClusterFinderPeakCOG::FindCluster(AliMUONCluster& cluster,
   for (Int_t j = 0; j < npad; ++j) 
   {
     AliMUONPad* pad = cluster.Pad(j);
-    if ( Overlap(*pad,*pixPtr) )
+    if ( Overlap(*pad,pixel) )
     {
       if (fDebug) { cout << j << " "; pad->Print("full"); }
       if (pad->Charge() > qMax[pad->Cathode()]) {

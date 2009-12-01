@@ -189,17 +189,36 @@ AliMUONPreClusterFinder::GetNextPad(Int_t cathode) const
 
 //_____________________________________________________________________________
 AliMUONCluster* 
+AliMUONPreClusterFinder::NewCluster()
+{
+  /// Create a new (empty) cluster
+  Int_t id = fClusters.GetLast()+1;
+  AliMUONCluster* cluster = new (fClusters[id]) AliMUONCluster;
+  cluster->SetUniqueID(id);
+  return cluster;
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONPreClusterFinder::RemoveCluster(AliMUONCluster* cluster)
+{
+  /// Remove a cluster
+  fClusters.Remove(cluster);
+  fClusters.Compress();
+}
+
+//_____________________________________________________________________________
+AliMUONCluster* 
 AliMUONPreClusterFinder::NextCluster()
 {
   /// Builds the next cluster, and returns it.
 //  AliCodeTimerAuto("pre-clustering",0)
   
   // Start a new cluster
-  Int_t id = fClusters.GetLast()+1;
-  AliMUONCluster* cluster = new (fClusters[id]) AliMUONCluster;
-  cluster->SetUniqueID(id);
   
   AliMUONPad* pad = GetNextPad(0);
+  
+  AliMUONCluster* cluster(0x0);
   
   if (!pad) // protection against no pad in first cathode, which might happen
   {
@@ -207,15 +226,20 @@ AliMUONPreClusterFinder::NextCluster()
     pad = GetNextPad(1);
     if (!pad) 
     {
-      // we are done.
       return 0x0;
     }
-    // Builds (recursively) a cluster on second cathode only
-    AddPad(*cluster,pad);
+    else
+    {
+      cluster = NewCluster();
+      // Builds (recursively) a cluster on second cathode only
+      AddPad(*cluster,pad);
+    }
   }
   else
   {
     // Builds (recursively) a cluster on first cathode only
+    
+    cluster = NewCluster();
     AddPad(*cluster,pad);
     
     if ( !ShouldAbort() ) 
@@ -238,8 +262,7 @@ AliMUONPreClusterFinder::NextCluster()
   if ( ShouldAbort() ) 
   {
     AliError(Form("Aborting clustering of DE %d because we've got too many pads",fDetElemId));
-    fClusters.Remove(cluster);
-    fClusters.Compress();
+    RemoveCluster(cluster);
     return 0x0;
   }
   
@@ -252,8 +275,7 @@ AliMUONPreClusterFinder::NextCluster()
     }
     // else only 1 pad (not suspicious, but kind of useless, probably noise)
     // so we remove it from our list
-    fClusters.Remove(cluster);
-    fClusters.Compress();
+    RemoveCluster(cluster);
     // then proceed further
     return NextCluster();
   }

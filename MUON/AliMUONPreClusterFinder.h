@@ -54,6 +54,9 @@ private:
   /// Whether we should stop working...
   virtual Bool_t ShouldAbort() const { return fShouldAbort; }
   
+  AliMUONCluster* NewCluster();
+  void RemoveCluster(AliMUONCluster* cluster);
+  
 private:
   TClonesArray fClusters; //!< the clusters we've found (owner)
   TClonesArray** fPads; //!< the pads corresponding to the digits (not owner)
