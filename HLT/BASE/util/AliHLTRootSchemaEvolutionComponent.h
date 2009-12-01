@@ -14,6 +14,7 @@
 */
 
 #include "AliHLTProcessor.h"
+#include "TString.h"
 
 class TObjArray;
 
@@ -39,6 +40,8 @@ class TObjArray;
  * \li -hltout<=[all,first,eor,off]> <br>
  *      push streamer info to output, the streamer info is stored in the
  *      events in all, the first, and/or the EOR.
+ * \li -file=<filename> <br>
+ *      write to file at EOR
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -118,6 +121,7 @@ class AliHLTRootSchemaEvolutionComponent : public AliHLTProcessor
   void SetBits(AliHLTUInt32_t b) {fFlags|=b;}
   void ClearBits(AliHLTUInt32_t b) {fFlags&=~b;}
   bool TestBits(AliHLTUInt32_t b) {return (fFlags&b) != 0;}
+  int WriteToFile(const char* filename, const TObjArray* infos) const;
 
 private:
   /** copy constructor prohibited */
@@ -131,8 +135,10 @@ private:
 
   AliHLTUInt32_t fFXSPrescaler; //! prescalar for the publishing to FXS
 
+  TString fFileName; //! file name for dump at EOR
+
   static const char* fgkConfigurationObject; //! configuration object
 
-  ClassDef(AliHLTRootSchemaEvolutionComponent, 1) // ROOT schema evolution component
+  ClassDef(AliHLTRootSchemaEvolutionComponent, 2) // ROOT schema evolution component
 };
 #endif
