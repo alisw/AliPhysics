@@ -1417,6 +1417,19 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
     if (bHaveOutput) {
       // there are components in the chain which produce data which need to be
       // piped to an HLTOUT
+
+      // add the SchemaEvolutionComponent which analyzes the ROOT objects in
+      // the output stream
+      if (fpComponentHandler->FindComponentIndex("ROOTSchemaEvolutionComponent")>=0 ||
+	  fpComponentHandler->LoadLibrary("libAliHLTUtil.so")>=0) {
+	AliHLTConfiguration schemaevo("_schemaevolution_", "ROOTSchemaEvolutionComponent", 
+				      chains.Data(), "-file=HLT.StreamerInfo.root");
+	iResult=BuildTaskList("_schemaevolution_");
+      } else {
+	HLTWarning("can not load libAliHLTUtil.so and ROOTSchemaEvolutionComponent");
+      }
+
+      // add the HLTOUT component
       if (fpComponentHandler->FindComponentIndex("HLTOUT")>=0 ||
 	  fpComponentHandler->LoadLibrary("libHLTsim.so")>=0) {
 	AliHLTConfiguration globalout("_globalout_", "HLTOUT", chains.Data(), NULL);
