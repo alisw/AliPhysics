@@ -150,7 +150,9 @@ Bool_t AliZDCDigitizer::Init()
     AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
     beamEnergy = 0.;
   }
-  
+  // LHC: "multiply by 120 to get the energy in MeV"
+  beamEnergy *= 0.120;
+
   if((beamType.CompareTo("P-P")) == 0){
     //PTM gains rescaled to beam energy for p-p
     if(beamEnergy != 0){
