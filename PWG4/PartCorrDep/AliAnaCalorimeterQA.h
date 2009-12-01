@@ -180,27 +180,27 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH1F *fhGenPi0AccPhi ; // phi of primary pi0		
 	
   //Histograms for track-matching
-  TH1F *fh1pOverE;     //! p/E for track-cluster matches
+  TH2F *fh1pOverE;     //! p/E for track-cluster matches
   TH1F *fh1dR;         //! distance between projected track and cluster
   TH2F *fh2EledEdx;    //! dE/dx vs. momentum for electron candidates
   TH2F *fh2MatchdEdx;  //! dE/dx vs. momentum for all matches
 	
-  TH1F *fhMCEle1pOverE;     //! p/E for track-cluster matches, MC electrons
+  TH2F *fhMCEle1pOverE;     //! p/E for track-cluster matches, MC electrons
   TH1F *fhMCEle1dR;         //! distance between projected track and cluster, MC electrons
   TH2F *fhMCEle2MatchdEdx;  //! dE/dx vs. momentum for all matches, MC electrons	
 	
-  TH1F *fhMCChHad1pOverE;     //! p/E for track-cluster matches, MC charged hadrons
+  TH2F *fhMCChHad1pOverE;     //! p/E for track-cluster matches, MC charged hadrons
   TH1F *fhMCChHad1dR;         //! distance between projected track and cluster, MC charged hadrons
   TH2F *fhMCChHad2MatchdEdx;  //! dE/dx vs. momentum for all matches, MC charged
 	
-  TH1F *fhMCNeutral1pOverE;     //! p/E for track-cluster matches, MC neutral
+  TH2F *fhMCNeutral1pOverE;     //! p/E for track-cluster matches, MC neutral
   TH1F *fhMCNeutral1dR;         //! distance between projected track and cluster, MC neutral
   TH2F *fhMCNeutral2MatchdEdx;  //! dE/dx vs. momentum for all matches, MC neutral	
 	
-  TH1F *fh1pOverER02;           //! p/E for track-cluster matches, dR > 0.2	
-  TH1F *fhMCEle1pOverER02;      //! p/E for track-cluster matches, dR > 0.2, MC electrons
-  TH1F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
-  TH1F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
+  TH2F *fh1pOverER02;           //! p/E for track-cluster matches, dR > 0.2	
+  TH2F *fhMCEle1pOverER02;      //! p/E for track-cluster matches, dR > 0.2, MC electrons
+  TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
+  TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
 	ClassDef(AliAnaCalorimeterQA,1)
 } ;
