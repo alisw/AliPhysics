@@ -529,7 +529,7 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 // calibType must be a valid CDB path! (3 level folder structure)
 
 
-	if(!fDefaultStorage) {
+	if(!fDefaultStorage && !fRaw) {
 		AliError("Please activate a default storage first!");
 		return;
 	}
