@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id$ */
+//* $Id$ */
 
 //________________________________________________________________________
 //
@@ -34,7 +34,9 @@
 // The pseudo-code examples above were from the first implementation in MOOD (summer 2007).
 //________________________________________________________________________
 
+//#include "TCanvas.h"
 #include "TH1.h"
+#include "TF1.h"
 #include "TFile.h"
 #include <fstream>
 #include <sstream>
@@ -60,6 +62,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fPedestalRMSHighGain(),
   fPeakMinusPedLowGain(),
   fPeakMinusPedHighGain(),
+  fPeakMinusPedHighGainHisto(),
   fPedestalLowGainDiff(),
   fPedestalHighGainDiff(),
   fPeakMinusPedLowGainDiff(),
@@ -87,7 +90,11 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fRunNumber(-1),
   fSelectPedestalSamples(kTRUE), 
   fFirstPedestalSample(0),
-  fLastPedestalSample(15)
+  fLastPedestalSample(15),
+  fDeadThreshold(5),
+  fWarningThreshold(50),
+  fWarningFraction(0.002),
+  fHotSigma(5)
 {
   //Default constructor. First we set the detector-type related constants.
   if (detectorType == kPhos) {
@@ -168,7 +175,16 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     fPeakMinusPedHighGain.Add(new TProfile2D(name, title,
 					     fColumns, 0.0, fColumns, 
 					     fRows, fRowMin, fRowMax,"s"));
-  
+
+    //Peak-Pedestals, high gain - TH2F histo
+    name = "hPeakMinusPedhighgainHisto";
+    name += i;
+    title = "Peak-Pedestal, high gain, module ";
+    title += i; 
+    fPeakMinusPedHighGainHisto.Add(new TH2F(name, title,
+					    fColumns*fRows, 0.0, fColumns*fRows, 
+					    100, 0, 1000));
+ 
     name = "hDeadMap";
     name += i;
     title = "Dead map, module ";
@@ -185,6 +201,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fPedestalRMSHighGain.Compress();
   fPeakMinusPedLowGain.Compress();
   fPeakMinusPedHighGain.Compress();
+  fPeakMinusPedHighGainHisto.Compress();
   fDeadMap.Compress();
   //Make them the owners of the profiles, so we don't need to care about deleting them
   //fPedestalLowGain.SetOwner();
@@ -212,6 +229,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   fPedestalRMSHighGain(),
   fPeakMinusPedLowGain(),
   fPeakMinusPedHighGain(),
+  fPeakMinusPedHighGainHisto(),
   fPedestalLowGainDiff(),
   fPedestalHighGainDiff(),
   fPeakMinusPedLowGainDiff(),
@@ -239,7 +257,11 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   fRunNumber(ped.GetRunNumber()),
   fSelectPedestalSamples(ped.GetSelectPedestalSamples()),
   fFirstPedestalSample(ped.GetFirstPedestalSample()),
-  fLastPedestalSample(ped.GetLastPedestalSample())
+  fLastPedestalSample(ped.GetLastPedestalSample()),
+  fDeadThreshold(ped.GetDeadThreshold()),
+  fWarningThreshold(ped.GetWarningThreshold()),
+  fWarningFraction(ped.GetWarningFraction()),
+  fHotSigma(ped.GetHotSigma())
 {
   // Then the ObjArray ones; we add the histograms rather than trying TObjArray = assignment
   //DS: this has not really been tested yet..
@@ -250,6 +272,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
     fPedestalRMSHighGain.Add( ped.GetPedRMSProfileHighGain(i) );
     fPeakMinusPedLowGain.Add( ped.GetPeakProfileLowGain(i) );
     fPeakMinusPedHighGain.Add( ped.GetPeakProfileHighGain(i) );
+    fPeakMinusPedHighGainHisto.Add( ped.GetPeakHighGainHisto(i) );
 
     fDeadMap.Add( ped.GetDeadMap(i) );  
   }//end for nModules 
@@ -261,6 +284,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   fPedestalRMSHighGain.Compress();
   fPeakMinusPedLowGain.Compress();
   fPeakMinusPedHighGain.Compress();
+  fPeakMinusPedHighGainHisto.Compress();
+
   fDeadMap.Compress();
 }
 
@@ -284,6 +309,7 @@ void AliCaloCalibPedestal::Reset()
     GetPedProfileHighGain(i)->Reset();
     GetPeakProfileLowGain(i)->Reset();
     GetPeakProfileHighGain(i)->Reset();
+    GetPeakHighGainHisto(i)->Reset();
     GetDeadMap(i)->Reset();
     
     if (!fPedestalLowGainDiff.IsEmpty()) {
@@ -370,7 +396,7 @@ void AliCaloCalibPedestal::SetParametersFromFile(const char *parameterFile)
       // if the key matches with something we expect, we assign the new value
       istringstream iss(value);
       // the comparison strings defined at the beginning of this method
-      if ( (key == "fFirstPedestalSample") || (key == "fLastPedestalSample") ) {
+      if ( (key == "fFirstPedestalSample") || (key == "fLastPedestalSample") || (key == "fDeadThreshold") || (key == "fWarningThreshold") || (key == "fWarningFraction") || (key == "fHotSigma") ) {
 	printf("AliCaloCalibPedestal::SetParametersFromFile - key %s value %s\n", key.c_str(), value.c_str());
 
 	if (key == "fFirstPedestalSample") { 
@@ -379,6 +405,19 @@ void AliCaloCalibPedestal::SetParametersFromFile(const char *parameterFile)
 	else if (key == "fLastPedestalSample") { 
 	  iss >> fLastPedestalSample; 
 	}
+	else if (key == "fDeadThreshold") { 
+	  iss >> fDeadThreshold; 
+	}
+	else if (key == "fWarningThreshold") { 
+	  iss >> fWarningThreshold; 
+	}
+	else if (key == "fWarningFraction") { 
+	  iss >> fWarningFraction; 
+	}
+	else if (key == "fHotSigma") { 
+	  iss >> fHotSigma; 
+	}
+
       } // some match
 
     }		
@@ -399,6 +438,10 @@ void AliCaloCalibPedestal::WriteParametersToFile(const char *parameterFile)
   out << "// " << parameterFile << endl;
   out << "fFirstPedestalSample" << "::" << fFirstPedestalSample << endl;
   out << "fLastPedestalSample" << "::" << fLastPedestalSample << endl;
+  out << "fDeadThreshold" << "::" << fDeadThreshold << endl;
+  out << "fWarningThreshold" << "::" << fWarningThreshold << endl;
+  out << "fWarningFraction" << "::" << fWarningFraction << endl;
+  out << "fHotSigma" << "::" << fHotSigma << endl;
 
   out.close();
   return;
@@ -414,6 +457,8 @@ Bool_t AliCaloCalibPedestal::AddInfo(const AliCaloCalibPedestal *ped)
     GetPedProfileHighGain(i)->Add( ped->GetPedProfileHighGain(i) );
     GetPeakProfileLowGain(i)->Add( ped->GetPeakProfileLowGain(i) );
     GetPeakProfileHighGain(i)->Add( ped->GetPeakProfileHighGain(i) );
+    GetPeakHighGainHisto(i)->Add( ped->GetPeakHighGainHisto(i) );
+
   }//end for nModules 
 
   // DeadMap; Diff profiles etc would need to be redone after this operation
@@ -529,13 +574,16 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
 	  ((TProfile2D*)fPedestalRMSLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), rms);
 	}
       } 
-      else if (gain == 1) {
+      else if (gain == 1) {	
       	//fill the high gain ones
 	((TProfile2D*)fPeakMinusPedHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), max - min);
 	if (nSum>0) { // only fill pedestal info in case it could be calculated
 	  ((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), mean); 
 	  ((TProfile2D*)fPedestalRMSHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), rms);
 	}
+	// for warning checks
+	int idx = in->GetRow() + fRows * in->GetColumn();
+	((TH2F*)fPeakMinusPedHighGainHisto[arrayPos])->Fill(idx, max - min);
       }//end if valid gain
 
       } // nsamples>0 check, some data found for this channel; not only trailer/header
@@ -572,7 +620,6 @@ Bool_t AliCaloCalibPedestal::SaveHistograms(TString fileName, Bool_t saveEmptyHi
     }
     if( ((TProfile2D *)fPedestalHighGain[i])->GetEntries() || saveEmptyHistos) {
       fPedestalHighGain[i]->Write();
-      Printf("save %d", i);
     }
     if( ((TProfile2D *)fPedestalRMSLowGain[i])->GetEntries() || saveEmptyHistos) {
       fPedestalRMSLowGain[i]->Write();
@@ -580,6 +627,10 @@ Bool_t AliCaloCalibPedestal::SaveHistograms(TString fileName, Bool_t saveEmptyHi
     if( ((TProfile2D *)fPedestalRMSHighGain[i])->GetEntries() || saveEmptyHistos) {
       fPedestalRMSHighGain[i]->Write();
     }
+    if( ((TH2F *)fPeakMinusPedHighGainHisto[i])->GetEntries() || saveEmptyHistos) { 
+      fPeakMinusPedHighGainHisto[i]->Write();
+    }
+
   } 
   
   destFile.Close();
@@ -743,7 +794,87 @@ void AliCaloCalibPedestal::ComputeDiffAndRatio()
 }
 
 //_____________________________________________________________________
-void AliCaloCalibPedestal::ComputeDeadTowers(int threshold, const char * deadMapFile)
+void AliCaloCalibPedestal::ComputeHotAndWarningTowers(const char * hotMapFile)
+{ // look for hot/noisy towers
+  ofstream * fout = 0;
+  char name[512];//Quite a long temp buffer, just in case the filename includes a path
+
+  if (hotMapFile) {
+    snprintf(name, 512, "%s.txt", hotMapFile);
+    fout = new ofstream(name);
+    if (!fout->is_open()) {
+      delete fout;
+      fout = 0;//Set the pointer to empty if the file was not opened
+    }
+  }
+ 
+  for(int i = 0; i < fModules; i++){
+		
+    //first we compute the peak-pedestal distribution for each supermodule...
+    if( GetPeakHighGainHisto(i)->GetEntries() > 0 ) {
+      double min = GetPeakProfileHighGain(i)->GetBinContent(GetPeakProfileHighGain(i)->GetMinimumBin());
+      double max = GetPeakProfileHighGain(i)->GetBinContent(GetPeakProfileHighGain(i)->GetMaximumBin());
+      TH1D *hPeakFit = new TH1D(Form("hFit_%d", i), Form("hFit_%d", i), (int)((max-min)*10), min-1, max+1);
+
+      for (int j = 1; j <= fColumns; j++) {
+	for (int k = 1; k <= fRows; k++) {	  
+	  hPeakFit->Fill(GetPeakProfileHighGain(i)->GetBinContent(j, k));
+	}
+      }
+
+      //...and then we fit it
+      hPeakFit->Fit("gaus", "OQ", "",  hPeakFit->GetMean() - 3*hPeakFit->GetRMS(), 
+		    hPeakFit->GetMean() + 3*hPeakFit->GetRMS()); 
+      //hPeakFit->Draw();
+      double mean  = hPeakFit->GetFunction("gaus")->GetParameter(1);
+      double sigma = hPeakFit->GetFunction("gaus")->GetParameter(2);
+
+      delete hPeakFit;
+
+      //Then we look for warm/hot towers
+      TH2F * hPeak2D = GetPeakHighGainHisto(i);
+      hPeak2D->GetYaxis()->SetRangeUser( fWarningThreshold, hPeak2D->GetYaxis()->GetBinUpEdge(hPeak2D->GetNbinsY()) );
+
+      int idx = 0 ;
+      int warnCounter = 0;
+      for (int j = 1; j <= fColumns; j++) {
+	for (int k = 1; k <= fRows; k++) {				
+	  //we start looking for warm/warning towers...
+	  // histogram x-axis index
+	  idx = k-1 + fRows*(j-1); // this is what is used in the Fill call
+	  hPeak2D->GetXaxis()->SetRangeUser(idx, idx);
+	  warnCounter = (int) hPeak2D->Integral();
+	  if(warnCounter > fNEvents * fWarningFraction) {
+	    ((TH2D*)fDeadMap[i])->SetBinContent(j, k, kWarning); 	    
+	    /* printf("mod %d col %d row %d warnCounter %d - status %d\n", 
+	       i, j-1, k-1, warnCounter, (int) (kWarning)); */  
+	  }
+	  //...then we look for hot ones (towers whose values are greater than mean + X*sigma)	
+	  if(GetPeakProfileHighGain(i)->GetBinContent(j, k) > mean + fHotSigma*sigma ) {
+	    ((TH2D*)fDeadMap[i])->SetBinContent(j, k, kHot); 
+	    /* printf("mod %d col %d row %d  binc %d - status %d\n", 
+	       i, j-1, k-1, (int)(GetPeakProfileHighGain(i)->GetBinContent(j, k)), (int) (kHot)); */	  
+	  }
+
+	  //Write the status to the hot/warm map file, if the file is open.
+	  // module - column - row - status (1=dead, 2= warm/warning , 3 = hot, see .h file enum)
+	  if (fout && ((TH2D*)fDeadMap[i])->GetBinContent(j, k) > 1) {
+	    
+	    (*fout) << i << " " 
+		    << (j - 1) << " " 
+		    << (k - 1) << " " 
+		    << ((TH2D*)fDeadMap[i])->GetBinContent(j, k) << endl;	    	}
+	  
+	}
+      }
+
+    } 
+  }
+  return;
+}
+
+//_____________________________________________________________________
+void AliCaloCalibPedestal::ComputeDeadTowers(const char * deadMapFile)
 {
   //Computes the number of dead towers etc etc into memory, after this you can call the GetDead... -functions
   int countTot = 0;
@@ -773,23 +904,23 @@ void AliCaloCalibPedestal::ComputeDeadTowers(int threshold, const char * deadMap
       for (int j = 1; j <= fColumns; j++) {
 	for (int k = 1; k <= fRows; k++) {
 
-	  if (GetPeakProfileHighGain(i)->GetBinContent(j, k) < threshold) {//It's dead
+	  if (GetPeakProfileHighGain(i)->GetBinContent(j, k) < fDeadThreshold) {//It's dead
 	    countTot++;//One more dead total
 	    if (fout) {
 	      (*fout) << i << " " 
-		      << (fRows - k) << " " 
-		      << (j-1) << " " 
+		      << (j - 1) << " " 
+		      << (k - 1) << " " 
 		      << "1" << " " 
 		      << "0" << endl;//Write the status to the deadmap file, if the file is open.
 	    }
 	    
-	    if (fReference && fReference->GetPeakProfileHighGain(i)->GetBinContent(j, k) >= threshold) {
+	    if (fReference && fReference->GetPeakProfileHighGain(i)->GetBinContent(j, k) >= fDeadThreshold) {
 	      ((TH2D*)fDeadMap[i])->SetBinContent(j, k, kRecentlyDeceased); 
 	      countNew++;//This tower wasn't dead before!
 	      if (diff) {
 		( *diff) << i << " " 
-			 << (fRows - k) << " " 
 			 << (j - 1) << " " 
+			 << (k - 1) << " " 
 			 << "1" << " " 
 			 << "0" << endl;//Write the status to the deadmap difference file, if the file is open.
 	      }
@@ -800,19 +931,13 @@ void AliCaloCalibPedestal::ComputeDeadTowers(int threshold, const char * deadMap
 	  } 
 	  else { //It's ALIVE!!
 	    //Don't bother with writing the live ones.
-	    //if (fout)
-	    //  (*fout) << i << " " 
-	    //     << (fRows - k) << " " 
-	    //     << (j - 1) << " " 
-	    //     << "1" << " " 
-	    //     << "1" << endl;//Write the status to the deadmap file, if the file is open.
-	    if (fReference && fReference->GetPeakProfileHighGain(i)->GetBinContent(j, k) < threshold) {
+	    if (fReference && fReference->GetPeakProfileHighGain(i)->GetBinContent(j, k) < fDeadThreshold) {
 	      ((TH2D*)fDeadMap[i])->SetBinContent(j, k, kResurrected);
 	      countRes++; //This tower was dead before => it's a miracle! :P
 	      if (diff) {
 		(*diff) << i << " " 
-			<< (fRows - k) << " " 
 			<< (j - 1) << " " 
+			<< (k - 1) << " " 
 			<< "1" << " " 
 			<< "1" << endl;//Write the status to the deadmap difference file, if the file is open.
 	      }
@@ -841,21 +966,18 @@ void AliCaloCalibPedestal::ComputeDeadTowers(int threshold, const char * deadMap
 //_____________________________________________________________________
 Bool_t AliCaloCalibPedestal::IsBadChannel(int imod, int icol, int irow) const
 {
-	//Check if channel is dead or hot.
-	
-	Int_t status =  (Int_t) ( ((TH2D*)fDeadMap[imod])->GetBinContent(icol,irow) );
-	if(status == kAlive)
-		return kFALSE;
-	else 
-		return kTRUE;
-	
+  //Check if channel is dead or hot.  
+  Int_t status =  (Int_t) ( ((TH2D*)fDeadMap[imod])->GetBinContent(icol,irow) );
+  if(status == kAlive)
+    return kFALSE;
+  else 
+    return kTRUE;
+  
 }
 
 //_____________________________________________________________________
 void AliCaloCalibPedestal::SetChannelStatus(int imod, int icol, int irow, int status)
 {
-	//Set status of channel dead, hot, alive ...
-	
-	((TH2D*)fDeadMap[imod])->SetBinContent(icol,irow, status);
-	
+  //Set status of channel dead, hot, alive ...  
+  ((TH2D*)fDeadMap[imod])->SetBinContent(icol, irow, status);	
 }

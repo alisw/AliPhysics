@@ -211,7 +211,11 @@ int main(int argc, char **argv) {
   //
   
   printf ("%d physics/calibration events processed.\n",nevents);
-  
+
+  // look for dead, hot and noisy towers
+  calibPedestal->ComputeDeadTowers();
+  calibPedestal->ComputeHotAndWarningTowers();
+
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 
     f.cd();
