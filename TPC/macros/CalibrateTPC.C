@@ -5,7 +5,15 @@
   //
   TMemStat *memstat = new TMemStat("new,gnubuildin");
   AliSysInfo::AddCallBack(TMemStatManager::GetInstance()->fStampCallBack);
-  AliSysInfo::AddStamp("Start");  
+  AliSysInfo::AddStamp("Start"); 
+
+  gSystem->Load("$ROOTSYS/lib/libXrdClient.so");
+  gSystem->Load("libNetx.so");
+
+  gSystem->Setenv("alien_CLOSE_SE","ALICE::GSI::SE") 
+  TGrid * alien =     TGrid::Connect("alien://",0,0,"t"); 
+  gSystem->Setenv("alien_CLOSE_SE","ALICE::GSI::SE") 
+ 
   //1. Load needed libraries
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
@@ -20,7 +28,8 @@
 
   //
   // Process data - chain
-  //
+  // 
+  //gEnv->SetValue("TFile.Recover", 0);  // dont try to recover anything
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool; 
@@ -51,7 +60,7 @@ void SetupCalibTaskTrain2(TObject * task2);
 char * prefix = "/V6/";
 // Global parameters to set
 TTimeStamp startTime(2009,8,7,0,0,0);
-TTimeStamp stopTime(2009,9,15,0,0,0);
+TTimeStamp stopTime(2009,12,31,0,0,0);
 Int_t debugLevel  = 2;
 Int_t streamLevel = 20;
 
@@ -122,7 +131,7 @@ void AddCalibCalib(TObject* task){
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
   AliTPCcalibCalib *calibCalib = new AliTPCcalibCalib("calibTPC","calibTPC");
   calibCalib->SetDebugLevel(debugLevel);
-  calibCalib->SetStreamLevel(streamLevel);
+  calibCalib->SetStreamLevel(0);
   calibCalib->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
   myTask->AddJob(calibCalib);
 
@@ -140,7 +149,7 @@ void AddCalibTimeGain(TObject* task){
   calibTimeGain->SetUseMax(kFALSE);
   calibTimeGain->SetDebugLevel(debugLevel);
   calibTimeGain->SetStreamLevel(streamLevel);
-  calibTimeGain->SetTriggerMask(-1,-1,kTRUE);        //accept everything 
+  calibTimeGain->SetTriggerMask(-1,-1,kTRUE);        //reject laser
   myTask->AddJob(calibTimeGain);
 }
 
@@ -184,6 +193,38 @@ void AddCalibCosmic(TObject* task){
   myTask->AddJob(calibCosmic);
 }
 
+void AddCalibLaser(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  // 
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibLaser *calibLaser = new AliTPCcalibLaser("laserTPC","laserTPC");
+  calibLaser->SetDebugLevel(debugLevel);
+  calibLaser->SetStreamLevel(streamLevel);
+  calibLaser->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
+  myTask->AddJob(calibLaser);
+}
+
+
+void AddCalibAlign(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  // 
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors");
+  calibAlign->SetDebugLevel(debugLevel);
+  calibAlign->SetStreamLevel(streamLevel);
+  calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything 
+  myTask->AddJob(calibAlign);
+}
+
+
+
+
+
+
 void AddCalibPID(TObject* task){
   //
   // Responsible: Marian Ivanov, Alexander Kalweit
@@ -193,6 +234,9 @@ void AddCalibPID(TObject* task){
   AliTPCcalibPID *calibPID06 = new AliTPCcalibPID("calibPID06","calibPID06");
   AliTPCcalibPID *calibPID08 = new AliTPCcalibPID("calibPID08","calibPID08");
   AliTPCcalibPID *calibPID10 = new AliTPCcalibPID("calibPID10","calibPID10");
+  calibPID06->SetTriggerMask(-1,-1,kTRUE);        //reject laser
+  calibPID08->SetTriggerMask(-1,-1,kTRUE);        //reject laser
+  calibPID10->SetTriggerMask(-1,-1,kTRUE);        //reject laser
   calibPID06->SetUpperTrunc(0.6);
   calibPID08->SetUpperTrunc(0.8);
   calibPID10->SetUpperTrunc(0.99);
@@ -208,9 +252,9 @@ void AddCalibPID(TObject* task){
   calibPID06->SetPadNorm(0);
   calibPID08->SetPadNorm(0);
   calibPID10->SetPadNorm(0);
-  calibPID06->SetMIPvalue(50*3);
-  calibPID08->SetMIPvalue(50*3);
-  calibPID08->SetMIPvalue(50*3);
+  calibPID06->SetMIPvalue(50);
+  calibPID08->SetMIPvalue(50);
+  calibPID08->SetMIPvalue(50);
   //
   //
   //
@@ -229,6 +273,8 @@ void AddCalibPID(TObject* task){
 }
 
 
+
+
 //
 //
 
@@ -242,8 +288,7 @@ void SetupCalibTaskTrain1(TObject* task){
   AddCalibTimeGain(task);
   AddCalibTime(task);
   AddCalibCosmic(task);
-  AddCalibTrigger(task);
-  AddCalibPID(task);
+  //AddCalibTrigger(task);
   //
   TString path=gSystem->pwd();
   path+=prefix;
@@ -259,7 +304,8 @@ void SetupCalibTaskTrain2(TObject* task){
   AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam(); 
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
   // AddCalibCalib(task);
-  // AddCalibAlign()
+  //AddCalibAlign(task);
+  AddCalibLaser(task);
   // AddCalibTracks()
   AddCalibPID(task);
   //
@@ -410,11 +456,15 @@ void SetupCalibTask(TObject* task1){
 
 
 void CalibrateTPC(Int_t first, Int_t last, Int_t run, const char*closeSE="ALICE::GSI::SE"){
+  gSystem->Load("$ROOTSYS/lib/libXrdClient.so");
+  gSystem->Load("libNetx.so");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
-  gEnv->SetValue("TFile.Recover", 0);  // dont try to recover anything
+  //gEnv->SetValue("TFile.Recover", 0);  // dont try to recover anything
   gSystem->Setenv("alien_CLOSE_SE",closeSE);
   TGrid * alien =     TGrid::Connect("alien://",0,0,"t"); 
+  gSystem->Setenv("alien_CLOSE_SE",closeSE);
+
   gSystem->Exec("touch nonOK");
   gSystem->Exec("rm -f isOK");
   gROOT->Macro(Form("ConfigOCDB.C\(%d\)",run));
@@ -429,13 +479,18 @@ void CalibrateTPC(Int_t first, Int_t last, Int_t run, const char*closeSE="ALICE:
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
   AliXRDPROOFtoolkit tool; 
-  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,last-first,last);
+  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,last-first,first);
   chain->Lookup();
   // memory
-  mgr->SetNSysInfo(5000); 
+  mgr->SetNSysInfo(100); 
   //
-  mgr->SetDebugLevel(1);
+  mgr->SetDebugLevel(0);
   mgr->StartAnalysis("local",chain);
   gSystem->Exec("touch isOK");
   gSystem->Exec("rm -f nonOK");
+  printf("Kill ourself\n");
+  printf("Kill ourself\n");
+  printf("Kill ourself\n");
+  printf("Kill ourself\n");
+  gSystem->Exec(Form("kill -9 %d",gSystem->GetPid()));
 }

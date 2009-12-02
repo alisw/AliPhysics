@@ -683,6 +683,9 @@ Bool_t  AliXRDPROOFtoolkit::FilterList(const char*inputList, const char*fileList
       char fname[1000];
       if (!isZip){
 	sprintf(fname, "%s/%s",dirname,array->At(i)->GetName());
+        if (((TObjString*)array->At(i))->String().Contains("*")){
+	  sprintf(fname, "%s", currentFile.Data());
+	}
       }
       if (isZip) {
 	const char * fileName   =  gSystem->BaseName(currentFile.Data());
@@ -692,7 +695,7 @@ Bool_t  AliXRDPROOFtoolkit::FilterList(const char*inputList, const char*fileList
 	printf(fname, "To check %s%s#%s\n",dirname,fstring.Data(),array->At(i)->GetName());
       }
 
-      printf("\nFile to be checked %s",fname);
+      printf("\nFile to be checked %s\n",fname);
       //cout <<"\n arguments: "<< array->At(i+1)->GetName()<<" "<<checkLevel<<endl;
       Int_t cstatus = CheckTreeInFile(fname, array->At(i+1)->GetName(), checkLevel,0);
       //printf("  CheckTreeInFile returns %d",cstatus);

@@ -25,7 +25,7 @@
 
   //
   // 2. Initialization of proof
-  //
+  // 
   TProofMgr * proofmgr = TProof::Mgr("lxgrid5.gsi.de");
   TProof * proof = proofmgr->CreateSession();
   proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)1000);
@@ -34,6 +34,7 @@
   gProof->Exec("gSystem->Load(\"libANALYSIS.so\")",kTRUE);
   gProof->Exec("gSystem->Load(\"libSTAT.so\")",kTRUE);
   gProof->Exec("gSystem->Load(\"libTPCcalib.so\")",kTRUE);
+  gProof->Exec(".x $ALICE_ROOT/TPC/macros/ConfigOCDB.C");
 
   //
   // 3 Run analysis on PROOF
@@ -47,6 +48,26 @@
   RunAliTPCCalibKrTask(kTRUE);
   
   
+  //
+  // Check the cuts for clusters
+  //
+  AliXRDPROOFtoolkit tool; 
+  TChain * chain = tool.MakeChain("list.txt","Kr",0,1000);
+  chain->Lookup();
+  chain->SetProof(kTRUE);
+
+  TCut cutR0("cutR0","fADCcluster/fSize<200");        // adjust it according v seetings - 
+  TCut cutR1("cutR1","fADCcluster/fSize>7");          // cosmic tracks and noise removal
+  TCut cutR2("cutR2","fMax.fAdc/fADCcluster<0.4");    // digital noise removal
+  TCut cutR3("cutR3","fMax.fAdc/fADCcluster>0.01");   // noise removal
+  TCut cutR4("cutR4","fMax.fTime>200");   // noise removal
+  TCut cutR5("cutR5","fMax.fTime<600");   // noise removal
+  TCut cutS1("cutS1","fSize<200");    // adjust it according v seetings - cosmic tracks
+  TCut cutAll = cutR0+cutR1+cutR2+cutR3+cutR4+cutR5+cutS1;
+
+
+
+
   //..
   //
   //
