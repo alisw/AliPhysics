@@ -611,7 +611,8 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
     } //end loop on innLay
   } // end search 1-point tracks
   
-  Info("FindTracks","Number of found tracks: %d",event->GetNumberOfTracks());
+  AliInfo(Form("Number of found tracks: %d",event->GetNumberOfTracks()));
+  ResetForFinding();
   return 0;
 
 }
