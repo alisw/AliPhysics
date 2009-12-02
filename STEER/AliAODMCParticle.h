@@ -75,8 +75,23 @@ class AliAODMCParticle: public AliVParticle {
     virtual Int_t GetPdgCode() const { return fPdgCode;}
 
     enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1 };
-    void SetFlag(Int_t flag){fFlag = flag;}
-    Int_t GetFlag() const {return fFlag;}
+    void SetFlag(UInt_t flag){fFlag = flag;}
+    UInt_t GetFlag() const {return fFlag;}
+
+
+    // for the status we use the upper 16 bits/2 bytes of the flag word
+    void SetStatus(Int_t status){
+      // a TParticle can have a negative stuts, catch this here and do nothing
+      if(status<0)return;
+      // reset the upper bins keep the lower bins
+      fFlag &= 0xffff;
+      // bit shift by 16
+      fFlag |= (((UInt_t)status)<<16);
+    }
+    UInt_t GetStatus() const {
+      // bit shift by 16
+      return fFlag>>16;
+    }
 
     // Bitwise operations
     void SetPrimary(Bool_t b = kTRUE){
@@ -98,7 +113,7 @@ class AliAODMCParticle: public AliVParticle {
 
 
   Int_t            fPdgCode;              // PDG code of the particle
-  Int_t            fFlag;                 // Flag for indication of primary etc
+  UInt_t           fFlag;                 // Flag for indication of primary etc
   Int_t            fLabel;                // Label of the original MCParticle 
   Int_t            fMother;               // Index of the mother particles
   Int_t            fDaughter[2];          // Indices of the daughter particles
@@ -114,7 +129,7 @@ class AliAODMCParticle: public AliVParticle {
 
   // Copy the uniquID to another data member? unique ID is correctly handled 
   // via TOBject Copy construct but not by AliVParticle ctor (no passing of 
-  // TParicles
+  // TParticles
   // Need a flag for primaries?
 
   /*
@@ -129,10 +144,7 @@ class AliAODMCParticle: public AliVParticle {
     };
   */
 
- 
-
-
-  ClassDef(AliAODMCParticle,3)  // AliVParticle realisation for AODMCParticles
+  ClassDef(AliAODMCParticle,4)  // AliVParticle realisation for AODMCParticles
 
 };
 

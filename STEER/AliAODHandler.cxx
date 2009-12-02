@@ -260,6 +260,7 @@ void AliAODHandler::StoreMCParticles(){
 
 	  AliAODMCParticle mcpart_tmp(mcpart,i,flag);
 	  
+	  mcpart_tmp.SetStatus(mcpart->Particle()->GetStatusCode());
 	  // 
 	  Int_t d0 =  mcpart_tmp.GetDaughter(0);
 	  Int_t d1 =  mcpart_tmp.GetDaughter(1);
@@ -311,7 +312,7 @@ void AliAODHandler::StoreMCParticles(){
 	      if(fMCEventH->IsParticleSelected(m))mcpart_tmp.SetMother(fMCEventH->GetNewLabel(m));
 	      else AliError(Form("PROBLEM Mother not selected %d \n", m));
 	  }
-	  
+
 	  new (l[j++]) AliAODMCParticle(mcpart_tmp);
 	  
       }
