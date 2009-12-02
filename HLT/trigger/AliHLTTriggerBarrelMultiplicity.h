@@ -13,6 +13,7 @@
 ///         the central barrel.
 
 #include "AliHLTTrigger.h"
+#include "TString.h"
 
 class AliESDtrack;
 
@@ -21,7 +22,14 @@ class AliESDtrack;
  * HLT trigger component for charged particle multiplicity in the
  * central barrel.
  * 
- * Triggers on charged particle number in a certain pt range.
+ * Triggers on charged particle number in a certain pt range and geometrical
+ * acceptance
+ * 
+ * Multiple instances of this component can serve different trigger
+ * conditions, i.e. component parameters. The different instances get
+ * different names, specified by the '-triggername' component argument.
+ * The configuration is loaded from OCDB entries according to the name, see
+ * below.
  *
  * <h2>General properties:</h2>
  *
@@ -55,15 +63,15 @@ class AliESDtrack;
  *      minimum transverse dca to reference point
  * \li -max-tdca    <i> dca  </i> <br>
  *      maximum transverse dca to reference point
- * \li  -solenoidBz    <i> field  </i> <br>
- *      magnetic field needed if the input is not an ESD object
+ * \li  -triggername    <i> name  </i> <br>
+ *      The name of this specific trigger.
  *
  * By default, configuration is loaded from OCDB, can be overridden by
  * component arguments.
  *
  * <h2>Default CDB entries:</h2>
- * HLT/ConfigHLT/BarrelMultiplicityTrigger: TObjString storing the arguments
- * HLT/ConfigHLT/Solenoidbz: TObjString -solenoidBz field
+ * HLT/ConfigHLT/BarrelMultiplicityTrigger: TObjString storing the arguments <br>
+ * HLT/ConfigHLT/<name>: for triggers with specific names
  *
  * <h2>Performance:</h2>
  * 
@@ -125,18 +133,20 @@ class AliHLTTriggerBarrelMultiplicity : public AliHLTTrigger
   /// reference point for the transverse and longitudinal dca cut
   float fDCAReference[fgkDCAReferenceSize];
   /// minimum longitudinal dca to reference point
-  float fMinLDca;
+  float fMinLDca; //!transient
   /// maximum longitudinal dca to reference point
-  float fMaxLDca;
+  float fMaxLDca; //!transient
   /// minimum transverse dca to reference point
-  float fMinTDca;
+  float fMinTDca; //!transient
   /// maximum transverse dca to reference point
-  float fMaxTDca;
+  float fMaxTDca; //!transient
   /// magnetic field (dca estimation for)
-  float fSolenoidBz;
+  float fSolenoidBz; //!transient
+  /// name of the trigger
+  TString fName; //!transient
 
   /// the default configuration entry for this component
-  static const char* fgkOCDBEntry; //!transient
+  static const char* fgkDefaultOCDBEntry; //!transient
 
   ClassDef(AliHLTTriggerBarrelMultiplicity, 0)
 };

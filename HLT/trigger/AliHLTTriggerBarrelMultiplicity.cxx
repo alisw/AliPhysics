@@ -49,6 +49,7 @@ AliHLTTriggerBarrelMultiplicity::AliHLTTriggerBarrelMultiplicity()
   , fMinTDca(-1.)
   , fMaxTDca(-1.)
   , fSolenoidBz(0.0)
+  , fName()
 {
   // see header file for class documentation
   // or
@@ -59,7 +60,7 @@ AliHLTTriggerBarrelMultiplicity::AliHLTTriggerBarrelMultiplicity()
   for (int i=0; i<fgkDCAReferenceSize; i++) fDCAReference[i]=0.0;
 }
 
-const char* AliHLTTriggerBarrelMultiplicity::fgkOCDBEntry="HLT/ConfigHLT/BarrelMultiplicityTrigger";
+const char* AliHLTTriggerBarrelMultiplicity::fgkDefaultOCDBEntry="HLT/ConfigHLT/BarrelMultiplicityTrigger";
 
 AliHLTTriggerBarrelMultiplicity::~AliHLTTriggerBarrelMultiplicity()
 {
@@ -116,6 +117,7 @@ int AliHLTTriggerBarrelMultiplicity::DoTrigger()
     }
   }
 
+  bool condition=false;
   if (iResult>=0 && numberOfTracks>=0) {
     if (fPtMax>fPtMin) {
       ptcut.Form(" %.02f GeV/c <= pt < %.02f GeV/c", fPtMin, fPtMax);
@@ -173,13 +175,11 @@ int AliHLTTriggerBarrelMultiplicity::DoTrigger()
 			      AliHLTReadoutList::kTRD |
 			      AliHLTReadoutList::kTOF |
 			      AliHLTReadoutList::kHMPID |
-			      AliHLTReadoutList::kPHOS
+			      AliHLTReadoutList::kPHOS |
+			      AliHLTReadoutList::kEMCAL
 			      );
-      // Add the available HLT information for readout too.
-      GetTriggerDomain().Add("CLUSTERS", "TPC ");
-      TriggerEvent(true);
-      return 0;
-    }
+      condition=true;
+    } else {
     description.Form("No tracks matching the tresholds found in the central barrel (min tracks %d, ", fMinTracks);
     description+=ptcut;
     description+=op1st;
@@ -188,11 +188,21 @@ int AliHLTTriggerBarrelMultiplicity::DoTrigger()
     description+=tdca;
     description+=dcaref;
     description+=")";
+    }
   } else {
     description.Form("No input blocks found");
   }
-  SetDescription(description.Data());
-  TriggerEvent(false);
+
+  // add a specific trigger decision object with initialized name
+  // the readout list however is fixed 
+  AliHLTTriggerDecision decision(
+				 condition,
+				 fName.IsNull()?GetTriggerName():fName.Data(),
+				 GetReadoutList(),
+				 description.Data()
+				 );
+  TriggerEvent(&decision, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+
   return iResult;
 }
 
@@ -224,17 +234,39 @@ bool AliHLTTriggerBarrelMultiplicity::CheckCondition(T* track, float b)
 int AliHLTTriggerBarrelMultiplicity::DoInit(int argc, const char** argv)
 {
   // see header file for class documentation
+  int iResult=0;
+
+  // check if the -triggername argument is used
+  // the name of the trigger determines the following initialization
+  vector<const char*> remainingArgs;
+  for (int i=0; i<argc; i++) {
+    if (strcmp(argv[i], "-triggername")==0) {
+      if (++i<argc) fName=argv[i];
+      else {
+	HLTError("invalid parameter for argument '-triggername', string expected");
+	return -EINVAL;
+      }
+      continue;
+    }
+    remainingArgs.push_back(argv[i]);
+  }
 
   // first configure the default
-  int iResult=0;
-  iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
+  TString cdbPath;
+  if (!fName.IsNull()) {
+    cdbPath="HLT/ConfigHLT/";
+    cdbPath+=fName;
+  } else {
+    cdbPath=fgkDefaultOCDBEntry;
+  }
+  iResult=ConfigureFromCDBTObjString(cdbPath);
 
   // configure from the command line parameters if specified
   if (iResult>=0 && argc>0)
-    iResult=ConfigureFromArgumentString(argc, argv);
-  return iResult;
+    iResult=ConfigureFromArgumentString(remainingArgs.size(), &(remainingArgs[0]));
 
   fSolenoidBz=GetBz();
+  return iResult;
 }
 
 int AliHLTTriggerBarrelMultiplicity::DoDeinit()
@@ -248,12 +280,19 @@ int AliHLTTriggerBarrelMultiplicity::Reconfigure(const char* cdbEntry, const cha
   // see header file for class documentation
 
   // configure from the specified antry or the default one
-  const char* entry=cdbEntry;
-  if (!entry || entry[0]==0) {
-    entry=fgkOCDBEntry;
+  TString cdbPath;
+  if (!cdbEntry || cdbEntry[0]==0) {
+    if (!fName.IsNull()) {
+      cdbPath="HLT/ConfigHLT/";
+      cdbPath+=fName;
+    } else {
+      cdbPath=fgkDefaultOCDBEntry;
+    }
+  } else {
+    cdbPath=cdbEntry;
   }
 
-  return ConfigureFromCDBTObjString(entry);
+  return ConfigureFromCDBTObjString(cdbPath);
 }
 
 int AliHLTTriggerBarrelMultiplicity::ReadPreprocessorValues(const char* /*modules*/)
