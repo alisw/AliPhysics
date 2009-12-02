@@ -114,6 +114,8 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
     fHistCosPointAngleZoom(0),
     fHistProdRadius(0),
     fHistProdRadiusMI(0),
+    fHistV0Multiplicity(0),
+    fHistV0MultiplicityMI(0),
     fHistPtVsYK0s(0),
     fHistPtVsYK0sMI(0),
     fHistPtVsYLambda(0),
@@ -338,6 +340,8 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistCosPointAngleZoom(0),
     fHistProdRadius(0),
     fHistProdRadiusMI(0),
+    fHistV0Multiplicity(0),
+    fHistV0MultiplicityMI(0),
     fHistPtVsYK0s(0),
     fHistPtVsYK0sMI(0),
     fHistPtVsYLambda(0),
@@ -680,6 +684,23 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
   fHistProdRadiusMI            = new TH2F("h2ProdRadiusMI", "Production position, V0s MI;x (cm);y (cm)", 100,-50,50,100,-50,50);
   fListHist->Add(fHistProdRadiusMI);
+
+  // V0 Multiplicity
+  if (!fHistV0Multiplicity) {
+    if (fCollidingSystems)
+      fHistV0Multiplicity = new TH1F("fHistV0Multiplicity", "Multiplicity distribution;Number of Offline V0s;Events", 200, 0, 40000);
+    else
+      fHistV0Multiplicity = new TH1F("fHistV0Multiplicity", "Multiplicity distribution;Number of Offline V0s;Events", 10, 0, 10); 
+    fListHist->Add(fHistV0Multiplicity);
+  }
+
+  if (!fHistV0MultiplicityMI) {
+    if (fCollidingSystems)
+      fHistV0MultiplicityMI = new TH1F("fHistV0MultiplicityMI", "Multiplicity distribution;Number of On-the-fly V0s;Events", 200, 0, 40000);
+    else
+      fHistV0MultiplicityMI = new TH1F("fHistV0MultiplicityMI", "Multiplicity distribution;Number of On-the-fly V0s;Events", 10, 0, 10); 
+    fListHist->Add(fHistV0MultiplicityMI);
+  }
 
   // Pt and rapidity distribution:
   fHistPtVsYK0s                = new TH2F("h2PtVsYK0s", "K^{0} candidates;p_{t} (GeV/c);rapidity",150,0,15,30,-1.5,1.5);
@@ -1136,8 +1157,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   // Main loop
   // Called for each event
 
-  TClonesArray *mcArray;
-  AliStack* stack;
+  AliStack*     stack   = 0;
+  TClonesArray *mcArray = 0;
 
   AliVEvent* lEvent = InputEvent();
  
@@ -1554,6 +1575,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   //************************************
 
   Double_t lMagneticField = 999;
+
+  //Multiplcity:
+  Int_t    nv0sTot= 0, nv0s = 0, nv0sMI = 0;
   
   // Variables:
   
@@ -1687,8 +1711,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   
   //*************************
   // V0 loop
+      
+  nv0sTot = lEvent->GetNumberOfV0s();
 
-  for (Int_t iV0 = 0; iV0 < lEvent->GetNumberOfV0s(); iV0++) {
+  for (Int_t iV0 = 0; iV0 < nv0sTot; iV0++) {
 
 
     lIndexPosMother     = 0; lIndexNegMother     = 0; lIndexMotherOfMother       = 0;
@@ -1724,6 +1750,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
       lLabelTrackPos = (UInt_t)TMath::Abs(myTrackPos->GetLabel());
       lLabelTrackNeg = (UInt_t)TMath::Abs(myTrackNeg->GetLabel());
+
 
       // Tracks quality cuts 
       if ( ( (myTrackPos->GetTPCNcls()) < 80 ) || ( (myTrackNeg->GetTPCNcls()) < 80 ) ) continue;
@@ -1764,6 +1791,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       rcPosY   = lV0Position[1];
       rcPosZ   = lV0Position[2];
       rcPosR   = lV0Radius;
+
+      //Multiplicity:
+      if(!lOnFlyStatus) nv0s++;
+      else  if(lOnFlyStatus) nv0sMI++;
 
       // Invariant mass
       v0->ChangeMassHypothesis(310);
@@ -1823,7 +1854,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       
       
       // Monte-Carlo particle associated to reconstructed particles:      
-      if (lLabelTrackPos < 0 || lLabelTrackNeg < 0) continue;
+      //if (lLabelTrackPos < 0 || lLabelTrackNeg < 0) continue;
       TParticle  *lMCESDPartPos  = stack->Particle(lLabelTrackPos);
       if(!lMCESDPartPos) { 
 	Printf("no MC particle for positive and/or negative daughter\n");
@@ -1879,6 +1910,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       rcPosY              = myAODv0->DecayVertexV0Y();
       rcPosZ              = myAODv0->DecayVertexV0Z();
 
+      //Multiplicity:
+      if(!lOnFlyStatus) nv0s++;
+      else  if(lOnFlyStatus) nv0sMI++;
+
       lInvMassK0s = myAODv0->MassK0Short();
       lInvMassLambda = myAODv0->MassLambda();
       lInvMassAntiLambda = myAODv0->MassAntiLambda();
@@ -1915,6 +1950,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       lLabelTrackPos  = TMath::Abs(lVPartPos->GetLabel());
       lLabelTrackNeg  = TMath::Abs(lVPartNeg->GetLabel());
 
+    
       // Armenteros variables:
       lAlphaV0   = myAODv0->AlphaV0();
       lPtArmV0   = myAODv0->PtArmV0();
@@ -2414,10 +2450,12 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
  
   } // end V0 loop
 
+  fHistV0Multiplicity->Fill(nv0s);
+  fHistV0MultiplicityMI->Fill(nv0sMI);
+
   if (fAnalysisType == "ESD") { if(myPrimaryVertex) delete myPrimaryVertex;}
   if (myPosAodTrack) delete myPosAodTrack;
   if (myNegAodTrack) delete myNegAodTrack;
-  //if (myAODVertex) delete myAODVertex; // Don't !!
 
 
 
@@ -2431,6 +2469,30 @@ void AliAnalysisTaskPerformanceStrange::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
+
+  fHistV0Multiplicity = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0Multiplicity"));
+  if (!fHistV0Multiplicity) {
+    Printf("ERROR: fHistV0Multiplicity not available");
+    return;
+  }
+
+  fHistV0MultiplicityMI = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0MultiplicityMI"));
+  if (!fHistV0MultiplicityMI) {
+    Printf("ERROR: fHistV0MultiplicityMI not available");
+    return;
+  }
+
+  TCanvas *canPerformanceStrange = new TCanvas("AliAnalysisTaskPerformanceStrange","Multiplicity",10,10,510,510);
+  canPerformanceStrange->Divide(2,1);
+  if (fHistV0Multiplicity->GetMaximum() > 0.) canPerformanceStrange->cd(1)->SetLogy();
+  fHistV0Multiplicity->SetMarkerStyle(25);
+  fHistV0Multiplicity->DrawCopy("E");
+  if (fHistV0MultiplicityMI->GetMaximum() > 0.) canPerformanceStrange->cd(2)->SetLogy();
+  fHistV0MultiplicityMI->SetMarkerStyle(24);
+  fHistV0MultiplicityMI->DrawCopy("E");
+  
+
+
   
 }
 
