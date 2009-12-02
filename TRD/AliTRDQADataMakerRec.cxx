@@ -770,8 +770,8 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  mADC->Fill(value);
 	  
 	  // simple clusterizer
-	  if (col < 1 || col > digits->GetNcol()-1) continue;
-	  if (tb < 1 || tb > digits->GetNtime()-1) continue;
+	  if (col < 1 || col > digits->GetNcol()-2) continue;
+	  if (tb < 1 || tb > digits->GetNtime()-2) continue;
 	  
 	  value -= baseline;
 
