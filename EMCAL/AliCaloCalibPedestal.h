@@ -36,7 +36,7 @@ class AliCaloCalibPedestal : public TObject {
  public:
 
   enum kDetType {kPhos, kEmCal, kNone};//The detector types
-  enum kDeadMapEntry{kAlive = 0, kDead, kHot, kResurrected, kRecentlyDeceased, kNumDeadMapStates};//The entries being put to the deadmap
+  enum kDeadMapEntry{kAlive = 0, kDead, kWarning, kHot, kResurrected, kRecentlyDeceased, kNumDeadMapStates};//The entries being put to the deadmap
   
   AliCaloCalibPedestal(kDetType detectorType = kPhos);
   virtual ~AliCaloCalibPedestal();
@@ -80,6 +80,9 @@ class AliCaloCalibPedestal : public TObject {
   TProfile2D * GetPeakProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainRatio[i];};	// Return a pointer to the low-gain peak-pedestal profile ratio
   TProfile2D * GetPeakProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainRatio[i];};	// Return a pointer to the high-gain peak-pedestal profile ratio
   
+  TH2F * GetPeakHighGainHisto(int i) const {return (TH2F*)fPeakMinusPedHighGainHisto[i];};	// Return a pointer to the high-gain peak-pedestal histo
+
+
   TH2D * GetDeadMap(int i) const {return (TH2D*)fDeadMap[i];}
   //void SetDeadMap(int i, TH2D *h) const {((TH2D*)fDeadMap[i])=h;}
 	
@@ -113,6 +116,17 @@ class AliCaloCalibPedestal : public TObject {
   int GetFirstPedestalSample() const {return fFirstPedestalSample;}; // first sample to use
   int GetLastPedestalSample() const {return fLastPedestalSample;}; // last sample to use
 
+  //Set threshold/event fraction for tower warnings
+  void SetDeadThreshold(int i) {fDeadThreshold = i;} // peak - pedestal dead threshold
+  void SetWarningThreshold(int i) {fWarningThreshold = i;} // peak - pedestal warning threshold
+  void SetWarningFraction(double d) {fWarningFraction = d;} // event fraction for warnings
+  int GetDeadThreshold() const {return fDeadThreshold;}; // peak - pedestal dead threshold
+  int GetWarningThreshold() const {return fWarningThreshold;}; // peak - pedestal warning threshold
+  double GetWarningFraction() const {return fWarningFraction;}; // event fraction for warnings
+  // hot towers
+  void SetHotSigma(double d) {fHotSigma = d;} // rms away from normal
+  double GetHotSigma() const {return fHotSigma;}; // rms away from normal
+
   // Basic counters
   int GetNEvents() const {return fNEvents;};
   int GetNChanFills() const {return fNChanFills;};
@@ -133,8 +147,9 @@ class AliCaloCalibPedestal : public TObject {
   Bool_t LoadReferenceCalib(TString fileName, TString objectName); //Loads another AliCaloCalibPedestal by name "objectName" from the file "fileName", for reference
   void ComputeDiffAndRatio();//Actually computes the difference and ratio into the histo's in memory
   AliCaloCalibPedestal * GetReference() const {return fReference;}; //Get the reference object. Needed for debug, will probably be removed later
-  void ComputeDeadTowers(int threshold = 5, const char * deadMapFile = 0);//Computes the dead tower values
-  
+  void ComputeDeadTowers(const char * deadMapFile = 0);//Computes the dead tower values
+  void ComputeHotAndWarningTowers(const char * hotMapFile = 0);//Computes the hot tower values
+
   //Saving functions
   Bool_t SaveHistograms(TString fileName, Bool_t saveEmptyHistos = kFALSE); //Saves the histograms to a .root file
   
@@ -151,6 +166,8 @@ class AliCaloCalibPedestal : public TObject {
   TObjArray fPedestalRMSHighGain; // pedestal rms info for high gain
   TObjArray fPeakMinusPedLowGain; // (peak-pedestal) info for low gain
   TObjArray fPeakMinusPedHighGain; // (peak-pedestal) info for high gain
+
+  TObjArray fPeakMinusPedHighGainHisto; // (peak-pedestal TH2F) info for high gain, used for hot towers eveluation
   
   //The difference of profiles between this and the reference object
   TObjArray fPedestalLowGainDiff; //!
@@ -191,12 +208,17 @@ class AliCaloCalibPedestal : public TObject {
   int fFirstPedestalSample; // first sample to use
   int fLastPedestalSample; // last sample to use
 
+  int fDeadThreshold; // Peak - ped threshold used for dead towers evaluation
+  int fWarningThreshold; // Peak - ped threshold used for warm/warning towers evaluation
+  double fWarningFraction; //if(Peak - ped) > threshold in more than this fraction of event -> tower is assigned kWarning
+  double fHotSigma; // if pedestal rms more than fHotSigma away from normal -> tower is assigned kHot
+
   //Constants needed by the class: EMCAL ones are kept in AliEMCALGeoParams.h
   static const int fgkPhosRows = 64; // number of rows per module for PHOS
   static const int fgkPhosCols = 56; // number of columns per module for PHOS
   static const int fgkPhosModules = 5; // number of modules for PHOS
   
-  ClassDef(AliCaloCalibPedestal, 6)
+  ClassDef(AliCaloCalibPedestal, 7)
 
 };
     
