@@ -387,10 +387,18 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
       }
     }
     dmar[i]=0;
-    delete fCluLayer[i];
-    fCluLayer[i] = new TClonesArray("AliITSRecPoint",nclusters[i]);
-    delete fCluCoord[i];
-    fCluCoord[i] = new TClonesArray("AliITSclusterTable",nclusters[i]);
+    if(!fCluLayer[i]){
+      fCluLayer[i] = new TClonesArray("AliITSRecPoint",nclusters[i]);
+    }else{
+      fCluLayer[i]->Delete();
+      fCluLayer[i]->Expand(nclusters[i]);
+    }
+    if(!fCluCoord[i]){
+      fCluCoord[i] = new TClonesArray("AliITSclusterTable",nclusters[i]);
+    }else{
+      fCluCoord[i]->Delete();
+      fCluCoord[i]->Expand(nclusters[i]);
+    }
   }
 
   for(Int_t ilay=0;ilay<AliITSgeomTGeo::GetNLayers();ilay++){
