@@ -36,6 +36,12 @@ class AliProtonAnalysisBase;
 
 class AliProtonAnalysis : public TObject {
  public:
+  enum {
+    kStepIdentified      = 0,
+    kStepSurvived        = 1,
+    kStepInPhaseSpace    = 2,
+    kNSteps = 3
+  };
   AliProtonAnalysis();
   AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
 		    Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
