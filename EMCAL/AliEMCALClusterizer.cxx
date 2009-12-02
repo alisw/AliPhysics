@@ -69,7 +69,8 @@ void AliEMCALClusterizer::SetInput(TTree *digitsTree)
     AliError("can't get the branch with the EMCAL digits !");
     return;
   }
-  fDigitsArr = new TClonesArray("AliEMCALDigit",100);
+  if (!fDigitsArr)
+    fDigitsArr = new TClonesArray("AliEMCALDigit",100);
   branch->SetAddress(&fDigitsArr);
   branch->GetEntry(0);
 }

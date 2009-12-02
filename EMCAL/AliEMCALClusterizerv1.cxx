@@ -248,6 +248,8 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
 
   AliDebug(1,Form("EMCAL Clusterizer found %d Rec Points",fRecPoints->GetEntriesFast()));
 
+  fRecPoints->Delete();
+
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALClusterizer");
     printf("Exec took %f seconds for Clusterizing", 
