@@ -103,6 +103,9 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistProdRadius;       //! Histo
   TH2F        *fHistProdRadiusMI;       //! Histo
 
+  TH1F        *fHistV0Multiplicity;  //! Histo
+  TH1F        *fHistV0MultiplicityMI; //! Histo
+
   TH2F        *fHistPtVsYK0s;       //! Histo
   TH2F        *fHistPtVsYK0sMI;       //! Histo
   TH2F        *fHistPtVsYLambda;       //! Histo
