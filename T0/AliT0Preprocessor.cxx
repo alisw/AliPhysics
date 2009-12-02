@@ -66,7 +66,7 @@ AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) :
   //constructor
   AddRunType("PHYSICS");
   AddRunType("STANDALONE");
-  AddRunType("LASER");
+  //  AddRunType("LASER");
 }
 //____________________________________________________
 
@@ -93,8 +93,8 @@ Bool_t AliT0Preprocessor::ProcessDCS(){
 	Log(Form("ProcessDCS - RunType: %s",runType.Data()));
 
 	if((runType == "STANDALONE")||
-	   (runType == "PHYSICS")||
-	   (runType == "LASER")){
+	   (runType == "PHYSICS")){
+	   //	   (runType == "LASER")){
 	  return kFALSE;
 	  //	return kTRUE;
 	}else{
@@ -140,7 +140,7 @@ UInt_t AliT0Preprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap){
 	return 0;
 }
 //____________________________________________________
-
+/*
 UInt_t AliT0Preprocessor::ProcessLaser(){
 	// Processing data from DAQ Standalone run
   Log("Processing Laser calibration - Walk Correction");
@@ -247,6 +247,7 @@ UInt_t AliT0Preprocessor::ProcessLaser(){
 	  }
 	return 0;
 }
+*/
 //____________________________________________________
 
 UInt_t AliT0Preprocessor::ProcessPhysics(){
@@ -296,53 +297,6 @@ UInt_t AliT0Preprocessor::ProcessPhysics(){
 }
 //____________________________________________________
 
-UInt_t AliT0Preprocessor::ProcessCosmic(){
-	//Processing data from DAQ Physics run
-	Log("Processing Laser Physics");
-
-	Bool_t resultLaserOnline=kFALSE; 
-	//processing DAQ
-	TList* listLaser = GetFileSources(kDAQ, "COSMIC");
-        if (listLaser)
-          {
-            TIter iter(listLaser);
-            TObjString *sourceLaser;
-            while ((sourceLaser = dynamic_cast<TObjString *> (iter.Next())))
-            {
-              const char *fileLaser = GetFile(kDAQ, "COSMIC", sourceLaser->GetName());
-              if (fileLaser)
-              {
-                AliT0CalibTimeEq *onlineLaser = new AliT0CalibTimeEq();
-                onlineLaser->Reset();
-                onlineLaser->ComputeOnlineParams(fileLaser);
-                AliCDBMetaData metaData;
-                metaData.SetBeamPeriod(0);
-                metaData.SetResponsible("Tomek&Michal");
-                metaData.SetComment("Time equalizing result.");
-                resultLaserOnline = Store("Calib","LaserTimeDelay", onlineLaser, &metaData, 0, 1);
-		Log(Form("resultLaserOnline = %d",resultLaserOnline));
-                delete onlineLaser;
-              }
-		else
-              {
-                Log(Form("Could not find file with Id COSMIC in source %s!", sourceLaser->GetName()));
-                return 0;
-              }
-              
-            }
-            if (!resultLaserOnline)
-            {
-              Log("No Laser Data stored");
-              return 0;//return error code for failure in storing OCDB Data
-            }
-          } else {
-	  	Log("No sources found for id COSMIC!");
-		return 0;
-	  }
-	return 0;
-}
-//____________________________________________________
-
 UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 {
   // T0 preprocessor return codes:
@@ -365,7 +319,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 	    return iresultDCS;
 	  }
 	}
- 	if(runType == "LASER"){
+	/*if(runType == "LASER"){
 	  Int_t iresultLaser = ProcessLaser();
 	  if(dcsDP==1){
             Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
@@ -374,6 +328,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 	  Log(Form("iresultLaser = %d",iresultLaser));
 	  return iresultLaser;
 	}
+	*/
 	else if(runType == "PHYSICS"){
 	  Int_t iresultPhysics = ProcessPhysics();
 	 //	 Int_t iresultCosmic = ProcessCosmic();
