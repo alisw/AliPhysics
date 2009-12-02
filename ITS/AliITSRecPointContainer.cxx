@@ -97,8 +97,17 @@ void AliITSRecPointContainer::CookEntries(){
 }
 //______________________________________________________________________
 TClonesArray* AliITSRecPointContainer::FetchClusters(Int_t mod, TTree* tR){
-  // retrieves Recpoints for module mod
+  // retrieves Recpoints for module mod (offline mode: the event number is
+  // retrieved via the AliRunLoader object)
   Int_t cureve=AliRunLoader::Instance()->GetEventNumber();
+  return FetchClusters(mod,tR,cureve);
+}
+//______________________________________________________________________
+TClonesArray* AliITSRecPointContainer::FetchClusters(Int_t mod, TTree* tR,Int_t cureve){
+  // retrieves Recpoints for module mod
+  // cureve is the current event number. If it is different w.r.t.
+  // the event number stored in fCurrentEve, the recpoints are read from
+  // the TTree. Otherwise, the RP stored in memory are used. 
   if(cureve != fCurrentEve){
     fCurrentEve = cureve;
     Reset();

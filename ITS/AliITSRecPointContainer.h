@@ -29,6 +29,7 @@ class AliITSRecPointContainer : public TObject {
 
   static AliITSRecPointContainer* Instance(const AliITSRecoParam *ptr=NULL);
   TClonesArray* FetchClusters(Int_t mod, TTree* tR);
+  TClonesArray* FetchClusters(Int_t mod, TTree* tR,Int_t cureve);
   TClonesArray* UncheckedGetClusters(Int_t mod) const {return fArray[mod];}
 
  private:
