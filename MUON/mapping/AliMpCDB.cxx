@@ -400,10 +400,9 @@ Bool_t AliMpCDB::WriteMpRunData()
 }
 
 //______________________________________________________________________________
-Bool_t AliMpCDB::WriteMpSegmentation(Bool_t readData, Bool_t empty)
+Bool_t AliMpCDB::WriteMpSegmentation(Bool_t readData)
 {
-/// Write mapping segmentation in OCDB;
-/// if empty is true then a non-valid object of minimum size is written
+/// Write mapping segmentation in OCDB
 
   if ( ! readData && ! AliMpSegmentation::Instance() ) return false;
 
@@ -419,18 +418,17 @@ Bool_t AliMpCDB::WriteMpSegmentation(Bool_t readData, Bool_t empty)
 
   if ( readData ) {
     AliMpDataStreams dataStreams;
-    AliMpSegmentation::ReadData(dataStreams, false, empty);
-    AliMpDDLStore::ReadData(dataStreams, false, empty);
+    AliMpSegmentation::ReadData(dataStreams, false);
+    AliMpDDLStore::ReadData(dataStreams, false);
   }
   
   return cdbManager->Put(AliMpSegmentation::Instance(), id, cdbData);
 }
 
 //______________________________________________________________________________
-Bool_t AliMpCDB::WriteDDLStore(Bool_t readData, Bool_t empty)
+Bool_t AliMpCDB::WriteDDLStore(Bool_t readData)
 {
 /// Write mapping DDL store in OCDB
-/// if empty is true then a non-valid object of minimum size is written
 
   if ( ! readData && ! AliMpDDLStore::Instance() ) return false;
 
@@ -446,17 +444,16 @@ Bool_t AliMpCDB::WriteDDLStore(Bool_t readData, Bool_t empty)
 
   if ( readData ) {
     AliMpDataStreams dataStreams;
-    AliMpSegmentation::ReadData(dataStreams, false, empty);
-    AliMpDDLStore::ReadData(dataStreams, false, empty);
+    AliMpSegmentation::ReadData(dataStreams, false);
+    AliMpDDLStore::ReadData(dataStreams, false);
   }
   return cdbManager->Put(AliMpDDLStore::Instance(), id, cdbData);
 }   
 
 //______________________________________________________________________________
-Bool_t AliMpCDB::WriteManuStore(Bool_t readData, Bool_t empty)
+Bool_t AliMpCDB::WriteManuStore(Bool_t readData)
 {
 /// Write mapping Manu store in OCDB
-/// if empty is true then a non-valid object of minimum size is written
 
   if ( ! readData && ! AliMpManuStore::Instance() ) return false;
 
@@ -472,8 +469,8 @@ Bool_t AliMpCDB::WriteManuStore(Bool_t readData, Bool_t empty)
 
   if ( readData ) {
     AliMpDataStreams dataStreams;
-    AliMpSegmentation::ReadData(dataStreams, false, empty);
-    AliMpManuStore::ReadData(dataStreams, false, empty);
+    AliMpSegmentation::ReadData(dataStreams, false);
+    AliMpManuStore::ReadData(dataStreams, false);
   }
   return cdbManager->Put(AliMpManuStore::Instance(), id, cdbData);
 }   

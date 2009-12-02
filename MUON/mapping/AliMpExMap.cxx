@@ -104,25 +104,6 @@ AliMpExMap::AliMpExMap()
 }
 
 //_____________________________________________________________________________
-AliMpExMap::AliMpExMap(Bool_t /*minSize*/) 
-  : TObject(),
-    fMap(0),
-    fObjects(0),
-    fKeys(0)
-{
-      /// Special constructor for creating an object with minimum size.
-      /// The argument minSize is used only to distinguish this ctor
-      /// from the standard one, its value is not used.
-      /// When setting the initial size to 0, Root will adapt it to a minimal
-      /// allowed size: 
-      /// - 5 for TExMap (fMap)
-      /// - TCollection::kInitCapacity for TObjArray (fObjects)
-      /// - 0 for TArrayL (fKeys)
-
-  fObjects.SetOwner(fgkDefaultOwnership);
-}
-
-//_____________________________________________________________________________
 AliMpExMap::AliMpExMap(TRootIOCtor*) 
   : TObject(),
     fMap(),

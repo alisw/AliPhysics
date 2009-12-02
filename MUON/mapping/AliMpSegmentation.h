@@ -56,8 +56,7 @@ class AliMpSegmentation : public  TObject {
     // static methods
     static AliMpSegmentation* Instance(Bool_t warn = true);
     static AliMpSegmentation* ReadData(const AliMpDataStreams& dataStreams, 
-                                       Bool_t warn = true,
-                                       Bool_t empty = false);
+                                       Bool_t warn = true);
 
     // methods
     
@@ -99,7 +98,6 @@ class AliMpSegmentation : public  TObject {
   
   private:
     AliMpSegmentation(const AliMpDataStreams& dataStreams);
-    AliMpSegmentation(const AliMpDataStreams& dataStreams, Bool_t empty);
     /// Not implemented
     AliMpSegmentation(const AliMpSegmentation& rhs);
     /// Not implemented

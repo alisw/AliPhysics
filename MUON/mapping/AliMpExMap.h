@@ -31,7 +31,6 @@ class AliMpExMap : public TObject
   
   public:
     AliMpExMap();
-    AliMpExMap(Bool_t minSize);
     AliMpExMap(TRootIOCtor* /*ioCtor*/);
     AliMpExMap(const AliMpExMap& rhs);
     AliMpExMap& operator=(const AliMpExMap& rhs);

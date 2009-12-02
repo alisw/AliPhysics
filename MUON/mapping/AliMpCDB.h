@@ -61,9 +61,9 @@ class AliMpCDB : public  TObject {
   
     static Bool_t WriteMpData();
     static Bool_t WriteMpRunData();
-    static Bool_t WriteMpSegmentation(Bool_t readData = true, Bool_t empty = true);
-    static Bool_t WriteDDLStore(Bool_t readData= true, Bool_t empty = true);
-    static Bool_t WriteManuStore(Bool_t readData= true, Bool_t empty = true);
+    static Bool_t WriteMpSegmentation(Bool_t readData = true);
+    static Bool_t WriteDDLStore(Bool_t readData= true);
+    static Bool_t WriteManuStore(Bool_t readData= true);
     
     static Bool_t GenerateMpData(
                     const char* cdbpath = "local://$ALICE_ROOT/OCDB",

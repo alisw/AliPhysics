@@ -35,8 +35,7 @@ class AliMpManuStore : public  TObject {
     // static access method
     static AliMpManuStore* Instance(Bool_t warn = true); 
     static AliMpManuStore* ReadData(const AliMpDataStreams& dataStreams,
-                                    Bool_t warn = true,
-                                    Bool_t empty = false);
+                                    Bool_t warn = true);
                                     
     static void SetWarnIfDoublon(Bool_t warn);                             
     
@@ -52,7 +51,6 @@ class AliMpManuStore : public  TObject {
 
   private:
     AliMpManuStore(const AliMpDataStreams& dataStreams);
-    AliMpManuStore(const AliMpDataStreams& dataStreams, Bool_t empty);
      /// Not implemented
     AliMpManuStore();
      /// Not implemented
