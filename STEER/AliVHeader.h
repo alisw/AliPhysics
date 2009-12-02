@@ -38,7 +38,7 @@ class AliVHeader : public TNamed {
 
   virtual void Print(Option_t* option = "") const  = 0;
     
-  ClassDef(AliVHeader,0);
+  ClassDef(AliVHeader,1);
 };
 
 #endif

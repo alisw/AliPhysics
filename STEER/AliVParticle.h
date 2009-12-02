@@ -64,7 +64,7 @@ public:
   Bool_t   Global2LocalMomentum(Double_t p[3], Short_t charge, Double_t &alpha) const;
   Bool_t   Global2LocalPosition(Double_t r[3], Double_t alpha) const;
 
-  ClassDef(AliVParticle,0)  // base class for particles
+  ClassDef(AliVParticle, 1)  // base class for particles
 };
 
 #endif
