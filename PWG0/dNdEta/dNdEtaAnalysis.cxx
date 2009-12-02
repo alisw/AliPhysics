@@ -15,6 +15,7 @@
 #include <TLine.h>
 #include <TParameter.h>
 
+#include <AliLog.h>
 #include "AlidNdEtaCorrection.h"
 #include <AliCorrection.h>
 #include <AliPWG0Helper.h>
@@ -308,6 +309,8 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Double_t mcEvents = vertexDist->GetBinContent(i) * eTrig->GetBinContent(i, 1) / eTrigVtx_projx->GetBinContent(i) * fData->GetEventCorrection()->GetCorrectionHistogram()->GetBinContent(i, 1);
 
       Printf("Bin %d, alpha is %.2f, fZ is %.3f, number of events with 0 mult.: %.2f (MC comparison: %.2f)", i, alpha * 100., fZ, events, mcEvents);
+      Printf("Using MC value for 0-bin correction!");
+      events = mcEvents;
 
       correctedEvents->SetBinContent(i, 1, events);
     }
@@ -412,28 +415,25 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Int_t vertexBinEnd   = vertexHist->GetXaxis()->FindBin(vertexRangeEnd[vertexPos]);
 
       const Int_t *binBegin = 0;
-      const Int_t maxBins = 60;
+      const Int_t maxBins = 14;
+      
+      if (dataHist->GetNbinsY() != maxBins)
+        AliFatal(Form("Binning of acceptance is different from data histogram: data=%d, acceptance=%d", dataHist->GetNbinsY(), maxBins));
 
       // adjust acceptance range
       // produce with drawPlots.C: DetermineAcceptance(...)
       if (fAnalysisMode & AliPWG0Helper::kSPD)
       {
-        //const Int_t binBeginSPD[30] = { 18, 16, 15, 14, 13, 13, 12, 11, 9, 7, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 }; // by eye
-        //const Int_t binBeginSPD[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
-
-        //const Int_t binBegin[30] = { -1, -1, -1, 17, 15, 14, 12, 10, 8, 7, 6, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, -1, -1, -1};  // limit in correction map is 10
-
-        //const Int_t binBeginSPD[30] = { -1, -1, -1, -1, 16, 15, 13, 11, 9, 8, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, -1, -1, -1, -1}; // limit 2
-        const Int_t binBeginSPD[maxBins] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, 14, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}; //limit 5
+        const Int_t binBeginSPD[maxBins] = {-1, 16, 13, 9, 7, 5, 4, 4, 3, 3, 2, 2, 2, -1};
 
         binBegin = binBeginSPD;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPC)
       {
         //const Int_t binBeginTPC[30] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5, pt cut off 0.2 mev/c
-        const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5
+        //const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5
 
-        binBegin = binBeginTPC;
+        //binBegin = binBeginTPC;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPCITS)
       {

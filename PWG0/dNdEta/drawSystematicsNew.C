@@ -72,6 +72,7 @@ TPad* DrawChange(Bool_t spd, const char* basename, const char** changes, Int_t n
 
   TH1F* hRatios[100];
   for(Int_t i=0; i<nChanges; i++) {
+    Printf("%d", i);
     hRatios[i] = (TH1F*)gFile->Get(Form("%s%s",basename,changes[i]));
     hRatios[i]->SetLineWidth(1);
     hRatios[i]->SetMarkerStyle(22);
@@ -171,12 +172,13 @@ void DrawEffectOfChangeInCrossSection(Bool_t spd = kFALSE, const char* fileName 
 {
   TFile::Open(fileName);
 
-  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25" };
+//  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25" };
+  const Char_t* changes[]  = { "ua5","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdlessddmore", "sdmoreddless" };
   //const Char_t* changes[]  = { "pythia", "qgsm", "phojet" };
   //const Int_t nChanges = 3;
   Int_t colors[] = {1,1,4,1,2,2,4,2,1};
 
-  c = DrawChange(spd, "ratio_vertexReco_triggerBias_", changes, 17, 9, colors, 0);
+  c = DrawChange(spd, "ratio_vertexReco_triggerBias_", changes, 9, 9, colors, 0);
   c->SaveAs("cross_sections.eps");
 }
 

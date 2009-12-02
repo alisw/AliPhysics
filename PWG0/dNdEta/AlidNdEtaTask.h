@@ -36,6 +36,8 @@ class AlidNdEtaTask : public AliAnalysisTask {
     void SetTrigger(AliTriggerAnalysis::Trigger trigger) { fTrigger = trigger; }
     void SetFillPhi(Bool_t flag = kTRUE) { fFillPhi = flag; }
     void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
+    void SetCheckEventType(Bool_t flag = kTRUE) { fCheckEventType = flag; }
+    void SetSymmetrize(Bool_t flag = kTRUE) { fSymmetrize = flag; }
     
     void SetOption(const char* opt) { fOption = opt; }
 
@@ -53,6 +55,8 @@ class AlidNdEtaTask : public AliAnalysisTask {
     Bool_t  fUseMCVertex;  // the MC vtx is used instead of the ESD vertex (for syst. check)
     Bool_t  fOnlyPrimaries;// Process only primaries by using the MC information (for syst. check)
     Bool_t  fUseMCKine;    // use the MC values for each found track/tracklet (for syst. check)
+    Bool_t  fCheckEventType;  // check if event type is physics (for real data)
+    Bool_t  fSymmetrize;     // move all negative to positive eta
 
     AliESDtrackCuts* fEsdTrackCuts;         // Object containing the parameters of the esd track cuts
 
@@ -78,6 +82,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
 
     // control histograms (ESD)
     TH3F* fVertex;                //! 3d vertex distribution
+    TH3F* fVertexVsMult;          //! x-vtx vs y-vtx vs multiplicity
     TH1F* fPhi;                   //! raw phi distribution
     TH1F* fRawPt;                 //! raw pt distribution
     TH2F* fEtaPhi;                //! raw eta - phi distribution
@@ -85,8 +90,11 @@ class AlidNdEtaTask : public AliAnalysisTask {
     TH1F* fDeltaPhi;              //! histogram of delta_phi values for tracklets (only for SPD analysis)
     TH1F* fDeltaTheta;            //! histogram of delta_theta values for tracklets (only for SPD analysis)
     TH2F* fFiredChips;            //! fired chips l1+l2 vs. number of tracklets (only for SPD analysis)
+    TH2F* fTrackletsVsClusters;   //! number of tracklets vs. clusters in all ITS detectors (only for SPD analysis)
+    TH2F* fTrackletsVsUnassigned; //! number of tracklets vs. number of unassigned clusters in L1 (only for SPD analysis)
     TGraph* fTriggerVsTime;       //! trigger as function of event time
-    TH1F* fStats;                 //! further statistics : bin 1 = vertexer 3d, bin 2 = vertexer z
+    TH1F* fStats;                 //! further statistics : bin 1 = vertexer 3d, bin 2 = vertexer z, etc (see CreateOutputObjects)
+    TH2F* fStats2;                //! V0 vs SPD statistics
 
  private:
     AlidNdEtaTask(const AlidNdEtaTask&);

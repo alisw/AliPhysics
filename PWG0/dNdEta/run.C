@@ -97,12 +97,14 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   mgr = new AliAnalysisManager;
 
   // Add ESD handler
-  AliESDInputHandler* esdH = new AliESDInputHandler;
+  //AliESDInputHandler* esdH = new AliESDInputHandler;
+  AliESDInputHandler* esdH = new AliESDInputHandlerRP; // for RecPoints
+  
   esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDVZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks Kinks Cascades AliESDTZERO ALIESDACORDE MuonTracks TrdTracks CaloClusters");
   mgr->SetInputEventHandler(esdH);
 
   AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn;
-  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kMB1 | AliTriggerAnalysis::kOfflineFlag; // AcceptAll;
+  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kSPDGFOBits | AliTriggerAnalysis::kOfflineFlag; // AcceptAll;
 
   AliPWG0Helper::PrintConf(analysisMode, trigger);
 
@@ -145,11 +147,14 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     //task->SetUseMCKine();
     //task->SetOnlyPrimaries();
     //task->SetFillPhi();
+    //task->SetSymmetrize();
     
     task->SetTrigger(trigger);
     task->SetAnalysisMode(analysisMode);
     task->SetTrackCuts(esdTrackCuts);
     //task->SetDeltaPhiCut(0.05);
+    
+    task->SetCheckEventType();
 
     mgr->AddTask(task);
 
@@ -168,6 +173,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     // syst. error flags
     //task2->SetFillPhi();
     //task2->SetOnlyPrimaries();
+    //task2->SetSymmetrize();
 
     task2->SetTrigger(trigger);
     task2->SetAnalysisMode(analysisMode);
@@ -210,16 +216,14 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
       TString path("maps/");
       path += TString(data).Tokenize("/")->Last()->GetName();
       
-      switch (trigger)
+      UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) AliTriggerAnalysis::kStartOfFlags;
+      switch (triggerNoFlags)
       {
-        case AliPWG0Helper::kMB1:
-        case AliPWG0Helper::kOfflineMB1: path += "/mb1"; break;
-        case AliPWG0Helper::kMB2:
-        case AliPWG0Helper::kOfflineMB2: path += "/mb2"; break;
-        case AliPWG0Helper::kMB3:
-        case AliPWG0Helper::kOfflineMB3: path += "/mb3"; break;
-        case AliPWG0Helper::kFASTOR:
-        case AliPWG0Helper::kOfflineFASTOR: path += "/fastor"; break;
+        case AliTriggerAnalysis::kMB1: path += "/mb1"; break;
+        case AliTriggerAnalysis::kMB2: path += "/mb2"; break;
+        case AliTriggerAnalysis::kMB3: path += "/mb3"; break;
+        case AliTriggerAnalysis::kSPDGFO: path += "/spdgfo"; break;
+        case AliTriggerAnalysis::kSPDGFOBits: path += "/spdgfobits"; break;
         default: Printf("ERROR: Trigger undefined for path to files"); return;
       }
       
@@ -231,10 +235,13 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
         
       gSystem->mkdir(path, kTRUE);
       if (runWhat == 0 || runWhat == 2)
+      {
         gSystem->Rename("analysis_esd_raw.root", path + "/analysis_esd_raw.root");
+        if (mc)
+          gSystem->Rename("analysis_mc.root", path + "/analysis_mc.root");
+      }
       if (runWhat == 1 || runWhat == 2)
       {
-        gSystem->Rename("analysis_mc.root", path + "/analysis_mc.root");
         gSystem->Rename("correction_map.root", path + "/correction_map.root");
       }
       

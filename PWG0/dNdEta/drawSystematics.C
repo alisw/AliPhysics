@@ -794,15 +794,26 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
 
   const Char_t* typeName[] = { "vertexreco", "trigger", "vtxtrigger" };
 
+  //Karel:
+//     fsd = 0.153 +- 0.031 (0.050 to take into account SD definition) --> change
+//     fdd = 0.080 +- 0.050 --> change 
+//     fnd = 0.767 +- 0.059 --> keep (error small)
 
-
-  const Char_t* changes[]  = { "pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdlessddmore", "sdmoreddless", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdlessddmore25", "sdmoreddless25"};
-  Float_t scalesND[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0 };
+//  const Char_t* changes[]  = { "pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdlessddmore", "sdmoreddless", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdlessddmore25", "sdmoreddless25"};
+  //Float_t scalesND[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0 };
   //Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
   //Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
-  Float_t scalesDD[] = {1.0, 1.4, 0.6, 1.0, 1.0, 1.4, 0.6, 1.4, 0.6, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
-  Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.4, 0.6, 1.4, 0.6, 0.4, 1.6, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
-  Int_t nChanges = 17;
+  //Float_t scalesDD[] = {1.0, 1.4, 0.6, 1.0, 1.0, 1.4, 0.6, 1.4, 0.6, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
+  //Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.4, 0.6, 1.4, 0.6, 0.4, 1.6, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
+  Int_t nChanges = 9;
+
+  const Char_t* changes[]  = { "ua5","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdlessddmore", "sdmoreddless" };
+  Float_t scalesND[] = {0.767, 0.767, 0.767, 0.767, 0.767, 0.767, 0.767, 0.767, 0.767};
+  Float_t scalesDD[] = {0.080, 0.130, 0.030, 0.080, 0.080, 0.130, 0.030, 0.130, 0.030};
+  Float_t scalesSD[] = {0.153, 0.153, 0.153, 0.203, 0.103, 0.203, 0.103, 0.103, 0.203};
+  
+  for (Int_t i=0; i<9; i++)
+    scalesND[i] = 1.0 - scalesDD[i] - scalesSD[i];
 
   /*
   const Char_t* changes[]  = { "pythia", "qgsm", "phojet"};
@@ -834,7 +845,7 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
   TH1F* hRatios[100];
 
   Int_t counter = 0;
-  for (Int_t j=0; j<3; j++) { // j = 0 (change vtx), j = 1 (change trg), j = 2 (change both)
+  for (Int_t j=2; j<3; j++) { // j = 0 (change vtx), j = 1 (change trg), j = 2 (change both)
 
     for (Int_t i=0; i<nChanges; i++) {
       TFile::Open(correctionFileName);
@@ -856,34 +867,51 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
       dNdEtaCorrectionSD->LoadHistograms();
 
       // calculating relative
-      Float_t nd = 100 * sigmaND/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
+      Float_t nd = dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral();
+      Float_t dd = dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral();
+      Float_t sd = dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral();
+      Float_t total = nd + dd + sd;
+      
+      nd /= total;
+      sd /= total;
+      dd /= total;
+      
+      Printf("Ratios in the correction map are: ND=%f, DD=%f, SD=%f", nd, dd, sd);
+      
+      Float_t scaleND = scalesND[i] / nd;
+      Float_t scaleDD = scalesDD[i] / dd;
+      Float_t scaleSD = scalesSD[i] / sd;
+      
+      Printf("ND=%.2f, DD=%.2f, SD=%.2f",scaleND, scaleDD, scaleSD);      
+      
+/*      Float_t nd = 100 * sigmaND/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
       Float_t dd = 100 * (scalesDD[i]*sigmaDD)/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
       Float_t sd = 100 * (scalesSD[i]*sigmaSD)/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
 
-      printf(Form("%s : ND=%.2f\%, DD=%.2f\%, SD=%.2f\% \n",changes[i],nd,dd,sd));
-      current->SetTitle(Form("ND=%.2f\%,DD=%.2f\%,SD=%.2f\%",nd,dd,sd));
+      printf(Form("%s : ND=%.2f\%, DD=%.2f\%, SD=%.2f\% \n",changes[i],nd,dd,sd));*/
+      current->SetTitle(Form("ND=%.2f\%,DD=%.2f\%,SD=%.2f\%",scaleND,scaleDD,scaleSD));
       current->SetTitle(name);
 
       // scale
       if (j == 0 || j == 2)
       {
-        dNdEtaCorrectionND->GetVertexRecoCorrection()->Scale(scalesND[i]);
-        dNdEtaCorrectionDD->GetVertexRecoCorrection()->Scale(scalesDD[i]);
-        dNdEtaCorrectionSD->GetVertexRecoCorrection()->Scale(scalesSD[i]);
+        dNdEtaCorrectionND->GetVertexRecoCorrection()->Scale(scaleND);
+        dNdEtaCorrectionDD->GetVertexRecoCorrection()->Scale(scaleDD);
+        dNdEtaCorrectionSD->GetVertexRecoCorrection()->Scale(scaleSD);
       }
       if (j == 1 || j == 2)
       {
-        dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->Scale(scalesND[i]);
+        dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->Scale(scaleND);
         dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->Scale(scalesDD[i]);
         dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->Scale(scalesSD[i]);
 
-        dNdEtaCorrectionND->GetTriggerBiasCorrectionNSD()->Scale(scalesND[i]);
-        dNdEtaCorrectionDD->GetTriggerBiasCorrectionNSD()->Scale(scalesDD[i]);
-        dNdEtaCorrectionSD->GetTriggerBiasCorrectionNSD()->Scale(scalesSD[i]);
+        dNdEtaCorrectionND->GetTriggerBiasCorrectionNSD()->Scale(scaleND);
+        dNdEtaCorrectionDD->GetTriggerBiasCorrectionNSD()->Scale(scaleDD);
+        dNdEtaCorrectionSD->GetTriggerBiasCorrectionNSD()->Scale(scaleSD);
 
-        dNdEtaCorrectionND->GetTriggerBiasCorrectionND()->Scale(scalesND[i]);
-        dNdEtaCorrectionDD->GetTriggerBiasCorrectionND()->Scale(scalesDD[i]);
-        dNdEtaCorrectionSD->GetTriggerBiasCorrectionND()->Scale(scalesSD[i]);
+        dNdEtaCorrectionND->GetTriggerBiasCorrectionND()->Scale(scaleND);
+        dNdEtaCorrectionDD->GetTriggerBiasCorrectionND()->Scale(scaleDD);
+        dNdEtaCorrectionSD->GetTriggerBiasCorrectionND()->Scale(scaleSD);
       }
 
       //clear track in correction
@@ -918,7 +946,7 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
 
       hRatios[counter] = (TH1F*) fdNdEtaAnalysis->GetdNdEtaHistogram()->Clone(name);
 
-      name.Form("DD #times %0.2f, SD #times %0.2f",scalesDD[i],scalesSD[i]);
+      name.Form("ND #times %0.2f DD #times %0.2f, SD #times %0.2f",scaleND,scaleDD,scaleSD);
       hRatios[counter]->SetTitle(name.Data());
       hRatios[counter]->SetYTitle("dN_{ch}/d#eta ratio #frac{default cross-section}{modified cross-sections}");
 
@@ -936,7 +964,7 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
   // to make everything consistent
   hRatios[0]->Divide(hRatios[0],hRatios[0],1,1);
 
-  for (Int_t i=0; i<nChanges * 3; i++)
+  for (Int_t i=0; i<counter; i++)
   {
     corrections[i]->SaveHistograms();
     hRatios[i]->Write();
@@ -944,6 +972,128 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
 
   fout->Write();
   fout->Close();
+}
+
+void CreateCorrectionsWithUA5CrossSections(const Char_t* correctionFileName="correction_mapprocess-types.root", const Char_t* outputFileName="correction_map2.root") {
+  //
+  // Function used to merge standard corrections with vertex
+  // reconstruction corrections obtained by a certain mix of ND, DD
+  // and SD events.
+  //
+
+  loadlibs();
+
+  const Char_t* typeName[] = { "vertexreco", "trigger", "vtxtrigger" };
+  
+  Float_t ua5_SD = 0.153;
+  Float_t ua5_DD = 0.080;
+  Float_t ua5_ND = 0.767;
+
+  //Karel:
+//     fsd = 0.153 +- 0.031
+//     fdd = 0.080 +- 0.050
+//     fnd = 0.767 +- 0.059
+
+  // Pythia, as test
+/*  ua5_SD = 0.223788;
+  ua5_DD = 0.123315;
+  ua5_ND = 0.652897; */
+  
+  // standard correction
+  TFile::Open(correctionFileName);
+  AlidNdEtaCorrection* correctionStandard = new AlidNdEtaCorrection("dndeta_correction","dndeta_correction");
+  correctionStandard->LoadHistograms();
+
+  // dont take vertexreco from this one
+  correctionStandard->GetVertexRecoCorrection()->Reset();
+  // dont take triggerbias from this one
+  correctionStandard->GetTriggerBiasCorrectionINEL()->Reset();
+  correctionStandard->GetTriggerBiasCorrectionNSD()->Reset();
+  correctionStandard->GetTriggerBiasCorrectionND()->Reset();
+
+  AlidNdEtaCorrection* corrections[100];
+  TH1F* hRatios[100];
+
+  Int_t counter = 0;
+      
+  TFile::Open(correctionFileName);
+
+  AlidNdEtaCorrection* current = new AlidNdEtaCorrection("dndeta_correction_ua5", "dndeta_correction_ua5");
+  current->LoadHistograms("dndeta_correction");
+  current->Reset();
+
+  TString name;
+  name.Form("dndeta_correction_ND");
+  AlidNdEtaCorrection* dNdEtaCorrectionND = new AlidNdEtaCorrection(name,name);
+  dNdEtaCorrectionND->LoadHistograms();
+  name.Form("dndeta_correction_DD");
+  AlidNdEtaCorrection* dNdEtaCorrectionDD = new AlidNdEtaCorrection(name,name);
+  dNdEtaCorrectionDD->LoadHistograms();
+  name.Form("dndeta_correction_SD");
+  AlidNdEtaCorrection* dNdEtaCorrectionSD = new AlidNdEtaCorrection(name,name);
+  dNdEtaCorrectionSD->LoadHistograms();
+
+  // calculating relative
+  Float_t nd = dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral();
+  Float_t dd = dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral();
+  Float_t sd = dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral();
+  Float_t total = nd + dd + sd;
+  
+  nd /= total;
+  sd /= total;
+  dd /= total;
+  
+  Printf("Ratios in the correction map are: ND=%f, DD=%f, SD=%f", nd, dd, sd);
+  
+  Float_t scaleND = ua5_ND / nd;
+  Float_t scaleDD = ua5_DD / dd;
+  Float_t scaleSD = ua5_SD / sd;
+  
+  Printf("ND=%.2f, DD=%.2f, SD=%.2f",scaleND, scaleDD, scaleSD);
+
+  // scale
+  dNdEtaCorrectionND->GetVertexRecoCorrection()->Scale(scaleND);
+  dNdEtaCorrectionDD->GetVertexRecoCorrection()->Scale(scaleDD);
+  dNdEtaCorrectionSD->GetVertexRecoCorrection()->Scale(scaleSD);
+    
+  dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->Scale(scaleND);
+  dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->Scale(scaleDD);
+  dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->Scale(scaleSD);
+
+  dNdEtaCorrectionND->GetTriggerBiasCorrectionNSD()->Scale(scaleND);
+  dNdEtaCorrectionDD->GetTriggerBiasCorrectionNSD()->Scale(scaleDD);
+  dNdEtaCorrectionSD->GetTriggerBiasCorrectionNSD()->Scale(scaleSD);
+
+  dNdEtaCorrectionND->GetTriggerBiasCorrectionND()->Scale(scaleND);
+  dNdEtaCorrectionDD->GetTriggerBiasCorrectionND()->Scale(scaleDD);
+  dNdEtaCorrectionSD->GetTriggerBiasCorrectionND()->Scale(scaleSD);
+
+  //clear track in correction
+  dNdEtaCorrectionND->GetTrack2ParticleCorrection()->Reset();
+  dNdEtaCorrectionDD->GetTrack2ParticleCorrection()->Reset();
+  dNdEtaCorrectionSD->GetTrack2ParticleCorrection()->Reset();
+
+  TList collection;
+  collection.Add(correctionStandard);
+  collection.Add(dNdEtaCorrectionND);
+  collection.Add(dNdEtaCorrectionDD);
+  collection.Add(dNdEtaCorrectionSD);
+
+  current->Merge(&collection);
+  current->Finish();
+
+  TFile* fout = new TFile(outputFileName,"RECREATE");
+  current->SaveHistograms();
+
+  fout->Write();
+  fout->Close();
+
+  Printf("Trigger efficiencies:");
+  Printf("ND: %.2f %%", 100.0 * dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetMeasuredHistogram()->Integral() / dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral());
+  Printf("SD: %.2f %%", 100.0 * dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetMeasuredHistogram()->Integral() / dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral());
+  Printf("DD: %.2f %%", 100.0 * dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetMeasuredHistogram()->Integral() / dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral());
+  Printf("INEL: %.2f %%", 100.0 * current->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetMeasuredHistogram()->Integral() / current->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral());
+  Printf("NSD: %.2f %%", 100.0 * (dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetMeasuredHistogram()->Integral() + dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetMeasuredHistogram()->Integral()) / (dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral() + dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram()->Integral()));
 }
 
 DrawTriggerEfficiency(Char_t* fileName) {

@@ -35,6 +35,7 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     void SetTrigger(AliTriggerAnalysis::Trigger trigger) { fTrigger = trigger; }
     void SetFillPhi(Bool_t flag = kTRUE) { fFillPhi = flag; }
     void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
+    void SetSymmetrize(Bool_t flag = kTRUE) { fSymmetrize = flag; }
 
     void SetOption(const char* opt) { fOption = opt; }
 
@@ -49,6 +50,7 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     AliTriggerAnalysis::Trigger fTrigger;      // trigger used in the analysis
     Bool_t fFillPhi;                           // if true phi is filled as 3rd coordinate in all maps
     Float_t fDeltaPhiCut;                      // cut in delta phi (only SPD)
+    Bool_t  fSymmetrize;     // move all negative to positive eta
 
     Int_t fSignMode;                 // if 0 process all particles, if +-1 process only particles with that sign
     Bool_t fOnlyPrimaries;           // only process primaries (syst. studies)

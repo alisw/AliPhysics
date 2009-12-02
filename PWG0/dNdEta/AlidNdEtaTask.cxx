@@ -29,6 +29,7 @@
 #include <AliMCEventHandler.h>
 #include <AliMCEvent.h>
 #include <AliESDInputHandler.h>
+#include <AliESDInputHandlerRP.h>
 #include <AliESDHeader.h>
 
 #include "AliESDtrackCuts.h"
@@ -53,6 +54,8 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fUseMCVertex(kFALSE),
   fOnlyPrimaries(kFALSE),
   fUseMCKine(kFALSE),
+  fCheckEventType(kFALSE),
+  fSymmetrize(kFALSE),
   fEsdTrackCuts(0),
   fdNdEtaAnalysisESD(0),
   fMult(0),
@@ -67,14 +70,18 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fdNdEtaAnalysisTracks(0),
   fPartPt(0),
   fVertex(0),
+  fVertexVsMult(0),
   fPhi(0),
   fRawPt(0),
   fEtaPhi(0),
   fDeltaPhi(0),
   fDeltaTheta(0),
   fFiredChips(0),
+  fTrackletsVsClusters(0),
+  fTrackletsVsUnassigned(0),
   fTriggerVsTime(0),
-  fStats(0)
+  fStats(0),
+  fStats2(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -197,11 +204,29 @@ void AlidNdEtaTask::CreateOutputObjects()
   fTriggerVsTime->GetYaxis()->SetTitle("count");
   fOutput->Add(fTriggerVsTime);
 
-  fStats = new TH1F("fStats", "fStats", 3, 0.5, 3.5);
+  fStats = new TH1F("fStats", "fStats", 5, 0.5, 5.5);
   fStats->GetXaxis()->SetBinLabel(1, "vertexer 3d");
   fStats->GetXaxis()->SetBinLabel(2, "vertexer z");
   fStats->GetXaxis()->SetBinLabel(3, "trigger");
+  fStats->GetXaxis()->SetBinLabel(4, "physics events");
+  fStats->GetXaxis()->SetBinLabel(5, "physics events after veto");
   fOutput->Add(fStats);
+  
+  fStats2 = new TH2F("fStats2", "fStats2", 6, -0.5, 5.5, 7, -0.5, 6.5);
+  fStats2->GetXaxis()->SetBinLabel(1, "No Vertex");
+  fStats2->GetXaxis()->SetBinLabel(2, "|z-vtx| > 10");
+  fStats2->GetXaxis()->SetBinLabel(3, "0 tracklets");
+  fStats2->GetXaxis()->SetBinLabel(4, "Splash identification");
+  fStats2->GetXaxis()->SetBinLabel(5, "Scan Veto");
+  fStats2->GetXaxis()->SetBinLabel(6, "Selected");
+  fStats2->GetYaxis()->SetBinLabel(1, "n/a");
+  fStats2->GetYaxis()->SetBinLabel(2, "emptyA");
+  fStats2->GetYaxis()->SetBinLabel(3, "emptyC");
+  fStats2->GetYaxis()->SetBinLabel(4, "emptyAC");
+  fStats2->GetYaxis()->SetBinLabel(5, "BB");
+  fStats2->GetYaxis()->SetBinLabel(6, "BGA");
+  fStats2->GetYaxis()->SetBinLabel(7, "BGC");
+  fOutput->Add(fStats2);
 
   if (fAnalysisMode & AliPWG0Helper::kSPD)
   {
@@ -211,6 +236,10 @@ void AlidNdEtaTask::CreateOutputObjects()
     fOutput->Add(fDeltaTheta);
     fFiredChips = new TH2F("fFiredChips", "fFiredChips;Chips L1 + L2;tracklets", 1201, -0.5, 1201, 50, -0.5, 49.5);
     fOutput->Add(fFiredChips);
+    fTrackletsVsClusters = new TH2F("fTrackletsVsClusters", ";tracklets;clusters in ITS", 50, -0.5, 49.5, 1000, -0.5, 999.5);
+    fOutput->Add(fTrackletsVsClusters);
+    fTrackletsVsUnassigned = new TH2F("fTrackletsVsUnassigned", ";tracklets;unassigned clusters in L0", 50, -0.5, 49.5, 200, -0.5, 199.5);
+    fOutput->Add(fTrackletsVsUnassigned);
     for (Int_t i=0; i<2; i++)
     {
       fZPhi[i] = new TH2F(Form("fZPhi_%d", i), Form("fZPhi Layer %d;z (cm);#phi (rad.)", i), 200, -20, 20, 180, 0, TMath::Pi() * 2);
@@ -224,8 +253,11 @@ void AlidNdEtaTask::CreateOutputObjects()
     fOutput->Add(fRawPt);
   }
 
-  fVertex = new TH3F("vertex_check", "vertex_check", 100, -1, 1, 100, -1, 1, 100, -30, 30);
+  fVertex = new TH3F("vertex_check", "vertex_check;x;y;z", 100, -1, 1, 100, -1, 1, 100, -30, 30);
   fOutput->Add(fVertex);
+  
+  fVertexVsMult = new TH3F("fVertexVsMult", "fVertexVsMult;x;y;multiplicity", 100, -1, 1, 100, -1, 1, 100, -0.5, 99.5);
+  fOutput->Add(fVertexVsMult);
 
   if (fReadMC)
   {
@@ -273,7 +305,6 @@ void AlidNdEtaTask::Exec(Option_t*)
   // ESD analysis
   if (fESD)
   {
-    // check event type (should be PHYSICS = 7)
     AliESDHeader* esdHeader = fESD->GetHeader();
     if (!esdHeader)
     {
@@ -281,15 +312,580 @@ void AlidNdEtaTask::Exec(Option_t*)
       return;
     }
     
-    Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
+    //Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
 
-//    UInt_t eventType = esdHeader->GetEventType();
-//     if (eventType != 7)
-//     {
-//       Printf("Skipping event because it is of type %d", eventType);
-//       return;
-//     }
+    // check event type (should be PHYSICS = 7)
+    if (fCheckEventType)
+    {
+      UInt_t eventType = esdHeader->GetEventType();
+      if (eventType != 7)
+      {
+        Printf("Skipping event because it is of type %d", eventType);
+        return;
+      }
+      
+      fStats->Fill(4);
+      
+      const Int_t kMaxEvents = 30;
+      UInt_t maskedEvents[kMaxEvents][2] = { 
+      {0, 0x1ac4a5},
+      {0, 0x4a34af}, 
+      {0, 0x697b0f}, 
+      {0, 0x74a07d}, 
+      {0, 0x864339}, 
+      {0, 0x94fbfb}, 
+      {0, 0xb87d2b}, 
+      {0, 0xd471f3}, 
+      {0, 0xddb0e3}, 
+      {0, 0xf30af3}, 
+      {1, 0xef46f}, 
+      {1, 0x12cdd1}, 
+      {1, 0x2d7591}, 
+      {1, 0x925245}, 
+      {1, 0x9af0fd}, 
+      {1, 0xb880d5}, 
+      {1, 0xb91b0b}, 
+      {0, 0x134066}, 
+      {0, 0x140dbc}, 
+      {0, 0x1d85f6}, 
+      {0, 0x8cb1da}, 
+      {0, 0xf9b31c}, 
+      {1, 0x500dbc}, 
+      {1, 0x587134}, 
+      {1, 0x687dbe}, 
+      {1, 0x6eab78}, 
+      {1, 0x894caa},
+      {0, 0x845fb3}, 
+      {0, 0x22b966}, 
+      {0, 0xb1d576}
+   
+//      {0, 0xbe8f99}, //put back in after discussion with adam
+//      {1, 0x2b43d4}, //put back in after discussion with adam
 
+/*      ,{0, 0x23585E}, // jet test
+      {0, 0x50EF2F},
+      {0, 0x672ADD}*/
+      };
+      
+      Bool_t veto = kFALSE;
+
+      for (Int_t i=0; i<kMaxEvents; i++)
+      {
+        if (fESD->GetPeriodNumber() == maskedEvents[i][0] && fESD->GetOrbitNumber() == maskedEvents[i][1])
+        {
+           Printf("Skipping event because it is masked: period: %d orbit: %x", fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
+           veto = kTRUE;
+        }
+      }
+      
+      Int_t decision = (veto) ? 4 : -1;
+      
+      if (!veto)
+      {
+        // ITS cluster tree
+        AliESDInputHandlerRP* handlerRP = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+        if (!handlerRP)
+          return;
+          
+        TTree* itsClusterTree = handlerRP->GetTreeR("ITS");  
+        if (!itsClusterTree)
+          return;
+          
+        TClonesArray* itsClusters = new TClonesArray("AliITSRecPoint");
+        TBranch* itsClusterBranch=itsClusterTree->GetBranch("ITSRecPoints");
+      
+        itsClusterBranch->SetAddress(&itsClusters);
+      
+        Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();  
+      
+        Int_t totalClusters = 0;
+          
+        // loop over the its subdetectors
+        for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
+          
+          if (!itsClusterTree->GetEvent(iIts)) 
+            continue;
+          
+          Int_t nClusters = itsClusters->GetEntriesFast();
+          totalClusters += nClusters;
+        }
+                
+        const AliMultiplicity* mult = fESD->GetMultiplicity();
+        if (!mult)
+          return;
+        
+        fTrackletsVsClusters->Fill(mult->GetNumberOfTracklets(), totalClusters);
+              
+        Int_t limit = 80 + mult->GetNumberOfTracklets() * 220/20;
+        
+        if (totalClusters > limit)
+        {
+          Printf("Skipping event because %d clusters is above limit of %d from %d tracklets: Period number: %d Orbit number: %x", totalClusters, limit, mult->GetNumberOfTracklets(), fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
+          decision = 3;
+        }
+        else 
+        {
+          vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
+          if (!vtxESD)
+          {
+            decision = 0;
+          }
+          else
+          {
+            Double_t vtx[3];
+            vtxESD->GetXYZ(vtx);
+            
+            if (TMath::Abs(vtx[2]) > 10)
+            {
+              decision = 1;
+            }
+            else
+            {
+              if (mult->GetNumberOfTracklets() == 0)
+              {
+                decision = 2;
+              }
+              else
+              {
+                decision = 5;
+              }
+            }
+          }
+        }
+      }
+      
+      const Int_t kMaxVZero = 190;
+      
+      #define emptyA 1
+      #define emptyC 2
+      #define BBA 3
+      #define BBC 4
+      #define BGA 5
+      #define BGC 6
+      UInt_t vzeroAnalysis[kMaxVZero][4] = {
+        
+        {0, 0x5d31bc, emptyA, BBC},
+        {0, 0x5e4dcc, BBA, BBC},
+        {0, 0x6063a8, BBA, BBC},
+        {0, 0x613d53, BBA, BBC},
+        {0, 0x655069, BBA, BBC},
+        {0, 0x65e1cf, BBA, BBC},
+        {0, 0x66cea0, BBA, BBC},
+        {0, 0x672add, BBA, BBC},
+        {0, 0x68e567, BBA, BBC},
+        {0, 0x697b0f, BBA, emptyC},
+        {0, 0x6a686d, BGA, BBC},
+        {0, 0x6c4c2f, BBA, BBC},
+        {0, 0x6ca84d, BBA, BBC},
+        {0, 0x6ee60b, BBA, BBC},
+        {0, 0x6fa64f, BBA, BBC},
+        {0, 0x71cc8d, BBA, BBC},
+        {0, 0x74a07d, BBA, BBC},
+        {0, 0x77761b, BGA, BBC},
+        {0, 0x783454, BBA, BBC},
+        {0, 0x7d2414, BBA, BBC},
+        {0, 0x7f443f, BBA, BBC},
+        {0, 0x815daa, BBA, BBC},
+        {0, 0x8367dd, BBA, BBC},
+        {0, 0x838852, BBA, BBC},
+        {0, 0x845fb3, BBA, BBC},
+        {0, 0x84c722, emptyA, BBC},
+        {0, 0x86256e, BBA, BBC},
+        {0, 0x864339, BBA, BBC},
+        {0, 0x869be0, BGA, BBC},
+        {0, 0x895222, BBA, BBC},
+        {0, 0x8c1a56, emptyA, BBC},
+        {0, 0x8cb1da, BBA, BBC},
+        {0, 0x8e954e, BBA, BGC},
+        {0, 0x8fe645, BBA, BBC},
+        {0, 0x91bafc, BBA, BBC},
+        {0, 0x93ae80, BBA, BBC},
+        {0, 0x94f793, BBA, BBC},
+        {0, 0x94fbfb, BBA, BBC},
+        {0, 0x954c20, emptyA, BBC},
+        {0, 0x965e0f, BBA, BBC},
+        {0, 0x96a30e, BBA, BBC},
+        {0, 0x972f1d, BBA, BBC},
+        {0, 0x98fd10, BBA, BBC},
+        {0, 0x9a0472, BBA, BBC},
+        {0, 0x9c4894, BBA, BBC},
+        {0, 0x9e6dc8, emptyA, emptyC},
+        {0, 0x9f5e8b, BBA, BBC},
+        {0, 0xa035bb, BBA, BGC},
+        {0, 0xa53f7c, BBA, BBC},
+        {0, 0xa56537, BBA, BBC},
+        {0, 0xa60957, BBA, BBC},
+        {0, 0xa689db, BBA, BBC},
+        {0, 0xa6d494, BBA, BBC},
+        {0, 0xa6d935, BBA, BBC},
+        {0, 0xa8671a, BBA, BBC},
+        {0, 0xaa7956, BBA, BBC},
+        {0, 0xaee392, BBA, BBC},
+        {0, 0xb1d576, BBA, BBC},
+        {0, 0xb235c3, BBA, BGC},
+        {0, 0xb24b2d, BBA, BBC},
+        {0, 0xb2f999, BBA, emptyC},
+        {0, 0xb5acac, BBA, BBC},
+        {0, 0xb60ef4, BBA, BBC},
+        {0, 0xb7f38a, BBA, BBC},
+        {0, 0xb87d2b, BBA, BBC},
+        {0, 0xb8d564, BGA, BBC},
+        {0, 0xb9722e, BBA, BBC},
+        {0, 0xb98a5b, BBA, BBC},
+        {0, 0xb99f55, BBA, BBC},
+        {0, 0xbda770, BBA, BBC},
+        {0, 0xbe8f99, BBA, BBC},
+        {0, 0xc226a0, emptyA, BBC},
+        {0, 0xc2b248, BBA, BBC},
+        {0, 0xc56f42, emptyA, emptyC},
+        {0, 0xc6ec01, BBA, emptyC},
+        {0, 0xc768f2, BBA, BBC},
+        {0, 0xc7f149, BBA, BBC},
+        {0, 0xc94a96, BBA, BBC},
+        {0, 0xcbf834, BBA, BBC},
+        {0, 0xce4b94, BBA, BBC},
+        {0, 0xcf1b7b, BBA, BBC},
+        {0, 0xcf7257, BBA, BBC},
+        {0, 0xcffe10, BBA, BBC},
+        {0, 0xd471f3, BBA, BBC},
+        {0, 0xd5b0c6, BBA, BGC},
+        {0, 0xd5c7e7, BBA, BBC},
+        {0, 0xd8b421, emptyA, emptyC},
+        {0, 0xd978ed, BBA, BBC},
+        {0, 0xdbee52, BBA, emptyC},
+        {0, 0xdc0425, BBA, BBC},
+        {0, 0xdcc9e1, BBA, BBC},
+        {0, 0xddb0e3, BBA, BBC},
+        {0, 0xddd1a7, BGA, BBC},
+        {0, 0xdfd2c6, BBA, BBC},
+        {0, 0xe1db66, BBA, BBC},
+        {0, 0xe27106, BBA, BBC},
+        {0, 0xe69c79, BBA, BBC},
+        {0, 0xe71d7b, BBA, BBC},
+        {0, 0xe80a68, BBA, BBC},
+        {0, 0xea06fc, BBA, BBC},
+        {0, 0xf01c8e, BBA, BBC},
+        {0, 0xf08660, BBA, BBC},
+        {0, 0xf1a165, BBA, BBC},
+        {0, 0xf30af3, BBA, BBC},
+        {0, 0xf7635b, BGA, BBC},
+        {0, 0xf7a36c, emptyA, BBC},
+        {0, 0xf9b31c, BBA, BBC},
+        {0, 0xfb35f9, emptyA, BBC},
+        {0, 0xfc22dd, BBA, BBC},
+        {0, 0xfe58ba, BBA, BBC},
+        {0, 0xff5c1f, BBA, BBC},
+        {0, 0xff93b5, emptyA, BBC},
+        {1, 0x3513, BBA, BBC},
+        {1, 0x20656, BBA, BBC},
+        {1, 0x4345d, BBA, BBC},
+        {1, 0x5ec2f, BBA, BBC},
+        {1, 0x8140f, BBA, BBC},
+        {1, 0x93898, BBA, BBC},
+        {1, 0xef46f, BBA, BBC},
+        {1, 0xfff01, BGA, BBC},
+        {1, 0x10ce3e, BBA, BBC},
+        {1, 0x117f6a, BBA, BBC},
+        {1, 0x12cdd1, BBA, emptyC},
+        {1, 0x14b973, BBA, BGC},
+        {1, 0x155e84, BBA, BBC},
+        {1, 0x181dda, BBA, BBC},
+        {1, 0x1bd5b5, BBA, BBC},
+        {1, 0x1ca304, BBA, BBC},
+        {1, 0x1d095a, emptyA, BBC},
+        {1, 0x1e0125, BBA, BBC},
+        {1, 0x24a1c5, BBA, BBC},
+        {1, 0x24c960, BBA, BBC},
+        {1, 0x2638f4, BBA, BBC},
+        {1, 0x27cdee, BBA, BBC},
+        {1, 0x283e0d, BBA, BBC},
+        {1, 0x29b1f3, BBA, BBC},
+        {1, 0x2b43d4, BBA, BBC},
+        {1, 0x2bb918, BBA, BBC},
+        {1, 0x2d7591, BBA, BBC},
+        {1, 0x2da5ac, BGA, BBC},
+        {1, 0x2e2d65, BBA, BBC},
+        {1, 0x33bef9, BBA, BBC},
+        {1, 0x35505d, BBA, BBC},
+        {1, 0x36084d, BBA, BBC},
+        {1, 0x380b1f, emptyA, emptyC},
+        {1, 0x38d478, BBA, BBC},
+        {1, 0x3a0622, BBA, BBC},
+        {1, 0x3a194e, emptyA, emptyC},
+        {1, 0x3b5972, emptyA, BBC},
+        {1, 0x3ed6f5, BBA, BBC},
+        {1, 0x3ef093, BBA, BBC},
+        {1, 0x422847, BBA, BBC},
+        {1, 0x426bbb, BBA, BBC},
+        {1, 0x4b2f9b, BBA, BBC},
+        {1, 0x4c5781, emptyA, BBC},
+        {1, 0x4f1137, BBA, BBC},
+        {1, 0x4fe5ae, BBA, BBC},
+        {1, 0x500dbc, BBA, BBC},
+        {1, 0x502a5e, BGA, BBC},
+        {1, 0x505769, BBA, BBC},
+        {1, 0x507bd3, BBA, BBC},
+        {1, 0x55b3ef, BBA, BBC},
+        {1, 0x56333f, BBA, BBC},
+        {1, 0x587134, BBA, BBC},
+        {1, 0x5b4847, BBA, BGC},
+        {1, 0x5b777a, BBA, BBC},
+        {1, 0x5b7dde, BBA, BBC},
+        {1, 0x5b7e14, BBA, BBC},
+        {1, 0x5cd9ca, BBA, BBC},
+        {1, 0x5e7c42, BBA, BBC},
+        {1, 0x5facec, BBA, BBC},
+        {1, 0x6030ae, BBA, BBC},
+        {1, 0x64a772, BBA, BBC},
+        {1, 0x687dbe, BBA, BBC},
+        {1, 0x68c5dd, BBA, BGC},
+        {1, 0x692064, BBA, BBC},
+        {1, 0x6949da, BBA, BBC},
+        {1, 0x6db110, BBA, BBC},
+        {1, 0x6eab78, BBA, BBC},
+        {1, 0x6fc13d, BGA, BBC},
+        {1, 0x7463b6, BBA, BBC},
+        {1, 0x749cec, BBA, BBC},
+        {1, 0x756547, BBA, BBC},
+        {1, 0x77819e, BBA, BBC},
+        {1, 0x785e0b, BBA, BBC},
+        {1, 0x7b3caa, BBA, BBC},
+        {1, 0x7cccbb, BBA, BBC},
+        {1, 0x7e7e17, BBA, BBC},
+        {1, 0x7fc0f5, BBA, BBC},
+        {1, 0x806ee5, BBA, emptyC}
+        
+/* first cvetan list         
+        {0, 0x5d31bc, emptyA, emptyC},
+        {0, 0x5e4dcc, BBA, BBC},
+        {0, 0x6063a8, BBA, BBC},
+        {0, 0x613d53, BBA, BBC},
+        {0, 0x655069, BBA, BBC},
+        {0, 0x65e1cf, BBA, BBC},
+        {0, 0x66cea0, BBA, BBC},
+        {0, 0x672add, BBA, BBC},
+        {0, 0x68e567, BBA, BBC},
+        {0, 0x697b0f, emptyA, emptyC},
+        {0, 0x6a686d, BGA, BBC},
+        {0, 0x6c4c2f, BBA, BBC},
+        {0, 0x6ca84d, BBA, BBC},
+        {0, 0x6ee60b, BBA, BBC},
+        {0, 0x6fa64f, BBA, BBC},
+        {0, 0x71cc8d, BBA, BBC},
+        {0, 0x74a07d, BBA, BBC},
+        {0, 0x77761b, BGA, BBC},
+        {0, 0x783454, BBA, BBC},
+        {0, 0x7d2414, BBA, BBC},
+        {0, 0x7f443f, BBA, BBC},
+        {0, 0x815daa, BBA, BBC},
+        {0, 0x8367dd, BBA, BBC},
+        {0, 0x838852, BBA, BBC},
+        {0, 0x845fb3, BBA, BBC},
+        {0, 0x84c722, emptyA, emptyC},
+        {0, 0x86256e, BBA, BBC},
+        {0, 0x864339, BBA, BBC},
+        {0, 0x869be0, BGA, BBC},
+        {0, 0x895222, BBA, BBC},
+        {0, 0x8c1a56, emptyA, emptyC},
+        {0, 0x8cb1da, BBA, BBC},
+        {0, 0x8e954e, BBA, BGC},
+        {0, 0x8fe645, BBA, BBC},
+        {0, 0x91bafc, BBA, BBC},
+        {0, 0x93ae80, BBA, BBC},
+        {0, 0x94f793, BBA, BBC},
+        {0, 0x94fbfb, BBA, BBC},
+        {0, 0x954c20, emptyA, emptyC},
+        {0, 0x965e0f, BBA, BBC},
+        {0, 0x96a30e, BBA, BBC},
+        {0, 0x972f1d, BBA, BBC},
+        {0, 0x98fd10, BBA, BBC},
+        {0, 0x9a0472, BBA, BBC},
+        {0, 0x9c4894, BBA, BBC},
+        {0, 0x9e6dc8, emptyA, emptyC},
+        {0, 0x9f5e8b, BBA, BBC},
+        {0, 0xa035bb, BBA, BGC},
+        {0, 0xa53f7c, BBA, BBC},
+        {0, 0xa56537, BBA, BBC},
+        {0, 0xa60957, BBA, BBC},
+        {0, 0xa689db, BBA, BBC},
+        {0, 0xa6d494, BBA, BBC},
+        {0, 0xa6d935, BBA, BBC},
+        {0, 0xa8671a, BBA, BBC},
+        {0, 0xaa7956, BBA, BBC},
+        {0, 0xaee392, BBA, BBC},
+        {0, 0xb1d576, BBA, BBC},
+        {0, 0xb235c3, BBA, BGC},
+        {0, 0xb24b2d, BBA, BBC},
+        {0, 0xb2f999, emptyA, emptyC},
+        {0, 0xb5acac, BBA, BBC},
+        {0, 0xb60ef4, BBA, BBC},
+        {0, 0xb7f38a, BBA, BBC},
+        {0, 0xb87d2b, BBA, BBC},
+        {0, 0xb8d564, BGA, BBC},
+        {0, 0xb9722e, BBA, BBC},
+        {0, 0xb98a5b, BBA, BBC},
+        {0, 0xb99f55, BBA, BBC},
+        {0, 0xbda770, BBA, BBC},
+        {0, 0xbe8f99, BBA, BBC},
+        {0, 0xc226a0, BBA, BBC},
+        {0, 0xc2b248, BBA, BBC},
+        {0, 0xc56f42, emptyA, emptyC},
+        {0, 0xc6ec01, emptyA, emptyC},
+        {0, 0xc768f2, BBA, BBC},
+        {0, 0xc7f149, BBA, BBC},
+        {0, 0xc94a96, BBA, BBC},
+        {0, 0xcbf834, BBA, BBC},
+        {0, 0xce4b94, BBA, BBC},
+        {0, 0xcf1b7b, BBA, BBC},
+        {0, 0xcf7257, BBA, BBC},
+        {0, 0xcffe10, BBA, BBC},
+        {0, 0xd471f3, BBA, BBC},
+        {0, 0xd5b0c6, BBA, BGC},
+        {0, 0xd5c7e7, BBA, BBC},
+        {0, 0xd8b421, emptyA, emptyC},
+        {0, 0xd978ed, BBA, BBC},
+        {0, 0xdbee52, BBA, emptyC},
+        {0, 0xdc0425, BBA, BBC},
+        {0, 0xdcc9e1, BBA, BBC},
+        {0, 0xddb0e3, BBA, BBC},
+        {0, 0xddd1a7, BGA, BBC},
+        {0, 0xdfd2c6, BBA, BBC},
+        {0, 0xe1db66, BBA, BBC},
+        {0, 0xe27106, BBA, BBC},
+        {0, 0xe69c79, BBA, BBC},
+        {0, 0xe71d7b, BBA, BBC},
+        {0, 0xe80a68, BBA, BBC},
+        {0, 0xea06fc, BBA, BBC},
+        {0, 0xf01c8e, BBA, BBC},
+        {0, 0xf08660, BBA, BBC},
+        {0, 0xf1a165, BBA, BBC},
+        {0, 0xf30af3, BBA, BBC},
+        {0, 0xf7635b, BGA, BBC},
+        {0, 0xf7a36c, emptyA, emptyC},
+        {0, 0xf9b31c, BBA, BBC},
+        {0, 0xfb35f9, emptyA, emptyC},
+        {0, 0xfc22dd, BBA, BBC},
+        {0, 0xfe58ba, BBA, BBC},
+        {0, 0xff5c1f, BBA, BBC},
+        {0, 0xff93b5, emptyA, emptyC},
+        {1, 0x3513, BBA, BBC},
+        {1, 0x20656, BBA, BBC},
+        {1, 0x4345d, BBA, BBC},
+        {1, 0x5ec2f, BBA, BBC},
+        {1, 0x8140f, BBA, BBC},
+        {1, 0x93898, BBA, BBC},
+        {1, 0xef46f, BBA, BBC},
+        {1, 0xfff01, BGA, BBC},
+        {1, 0x10ce3e, BBA, BBC},
+        {1, 0x117f6a, BBA, BBC},
+        {1, 0x12cdd1, BBA, emptyC},
+        {1, 0x14b973, BBA, BGC},
+        {1, 0x155e84, BBA, BBC},
+        {1, 0x181dda, BBA, BBC},
+        {1, 0x1bd5b5, BBA, BBC},
+        {1, 0x1ca304, BBA, BBC},
+        {1, 0x1d095a, emptyA, emptyC},
+        {1, 0x1e0125, BBA, BBC},
+        {1, 0x24a1c5, BBA, BBC},
+        {1, 0x24c960, BBA, BBC},
+        {1, 0x2638f4, BBA, BBC},
+        {1, 0x27cdee, BBA, BBC},
+        {1, 0x283e0d, BBA, BBC},
+        {1, 0x29b1f3, BBA, BBC},
+        {1, 0x2b43d4, BBA, BBC},
+        {1, 0x2bb918, BBA, BBC},
+        {1, 0x2d7591, BBA, BBC},
+        {1, 0x2da5ac, BGA, BBC},
+        {1, 0x2e2d65, BBA, BBC},
+        {1, 0x33bef9, BBA, BBC},
+        {1, 0x35505d, BBA, BBC},
+        {1, 0x36084d, BBA, BBC},
+        {1, 0x380b1f, emptyA, emptyC},
+        {1, 0x38d478, BBA, BBC},
+        {1, 0x3a0622, BBA, BBC},
+        {1, 0x3a194e, emptyA, emptyC},
+        {1, 0x3b5972, emptyA, emptyC},
+        {1, 0x3ed6f5, BBA, BBC},
+        {1, 0x3ef093, BBA, BBC},
+        {1, 0x422847, BBA, BBC},
+        {1, 0x426bbb, BBA, BBC},
+        {1, 0x4b2f9b, BBA, BBC},
+        {1, 0x4c5781, emptyA, emptyC},
+        {1, 0x4f1137, BBA, BBC},
+        {1, 0x4fe5ae, BBA, BBC},
+        {1, 0x500dbc, BBA, BBC},
+        {1, 0x502a5e, BGA, BBC},
+        {1, 0x505769, BBA, BBC},
+        {1, 0x507bd3, BBA, BBC},
+        {1, 0x55b3ef, BBA, BBC},
+        {1, 0x56333f, BBA, BBC},
+        {1, 0x587134, BBA, BBC},
+        {1, 0x5b4847, BBA, BGC},
+        {1, 0x5b777a, BBA, BBC},
+        {1, 0x5b7dde, BBA, BBC},
+        {1, 0x5b7e14, BBA, BBC},
+        {1, 0x5cd9ca, BBA, BBC},
+        {1, 0x5e7c42, BBA, BBC},
+        {1, 0x5facec, BBA, BBC},
+        {1, 0x6030ae, BBA, BBC},
+        {1, 0x64a772, BBA, BBC},
+        {1, 0x687dbe, BBA, BBC},
+        {1, 0x68c5dd, BBA, BGC},
+        {1, 0x692064, BBA, BBC},
+        {1, 0x6949da, BBA, BBC},
+        {1, 0x6db110, BBA, BBC},
+        {1, 0x6eab78, BBA, BBC},
+        {1, 0x6fc13d, BGA, BBC},
+        {1, 0x7463b6, BBA, BBC},
+        {1, 0x749cec, BBA, BBC},
+        {1, 0x756547, BBA, BBC},
+        {1, 0x77819e, BBA, BBC},
+        {1, 0x785e0b, BBA, BBC},
+        {1, 0x7b3caa, BBA, BBC},
+        {1, 0x7cccbb, BBA, BBC},
+        {1, 0x7e7e17, BBA, BBC},
+        {1, 0x7fc0f5, BBA, BBC},
+        {1, 0x806ee5, BBA, emptyC} */
+        };
+      
+      Bool_t found = kFALSE;
+      
+      for (Int_t i=1; i<kMaxVZero; i++)
+      {
+        if (fESD->GetPeriodNumber() == vzeroAnalysis[i-1][0] && fESD->GetOrbitNumber() == vzeroAnalysis[i-1][1])
+        {
+          found = kTRUE;
+          Int_t vZero = -1;
+          if (vzeroAnalysis[i][2] == emptyA && vzeroAnalysis[i][3] == BBC)
+            vZero = 1;
+          if (vzeroAnalysis[i][2] == BBA && vzeroAnalysis[i][3] == emptyC)
+            vZero = 2;
+          if (vzeroAnalysis[i][2] == emptyA && vzeroAnalysis[i][3] == emptyC)
+            vZero = 3;
+          if (vzeroAnalysis[i][2] == BBA && vzeroAnalysis[i][3] == BBC)
+            vZero = 4;
+          if (vzeroAnalysis[i][2] == BGA && vzeroAnalysis[i][3] == BBC)
+            vZero = 5;
+          if (vzeroAnalysis[i][2] == BBA && vzeroAnalysis[i][3] == BGC)
+            vZero = 6;
+            
+          fStats2->Fill(decision, vZero);
+          break;
+        }
+      }
+      
+      if (!found)
+        fStats2->Fill(decision, 0);
+      
+      if (decision == 3 || decision == 4)
+      {
+        Printf("Skipping event %d: Period number: %d Orbit number: %x", decision, fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
+        return;
+      }
+    }
+      
+    fStats->Fill(5);
+    
     // trigger definition
     static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
     eventTriggered = triggerAnalysis->IsTriggerFired(fESD, fTrigger);
@@ -307,8 +903,11 @@ void AlidNdEtaTask::Exec(Option_t*)
     if (vtxESD)
     {
       fVertexResolution->Fill(vtxESD->GetZRes());
-      fVertex->Fill(vtxESD->GetXv(), vtxESD->GetYv(), vtxESD->GetZv());
-
+      //if (strcmp(vtxESD->GetTitle(), "vertexer: 3D") == 0)
+      {
+        fVertex->Fill(vtxESD->GetXv(), vtxESD->GetYv(), vtxESD->GetZv());
+      }
+      
       if (AliPWG0Helper::TestVertex(vtxESD, fAnalysisMode))
       {
           vtxESD->GetXYZ(vtx);
@@ -317,9 +916,19 @@ void AlidNdEtaTask::Exec(Option_t*)
           if (strcmp(vtxESD->GetTitle(), "vertexer: 3D") == 0)
           {
             fStats->Fill(1);
+            if (fCheckEventType && TMath::Abs(vtx[0] > 0.3))
+            {
+              Printf("Suspicious x-vertex x=%f y=%f z=%f (period: %d orbit %x)", vtx[0], vtx[1], vtx[2], fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
+            }
+            if (fCheckEventType && vtx[1] < 0.05 || vtx[1] > 0.5)
+            {
+              Printf("Suspicious y-vertex x=%f y=%f z=%f (period: %d orbit %x)", vtx[0], vtx[1], vtx[2], fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
+            }
           }
           else if (strcmp(vtxESD->GetTitle(), "vertexer: Z") == 0)
+          {
             fStats->Fill(2);
+          }
       }
       else
         vtxESD = 0;
@@ -414,7 +1023,7 @@ void AlidNdEtaTask::Exec(Option_t*)
 
         Int_t label = mult->GetLabel(i, 0);
         Float_t eta = mult->GetEta(i);
-
+        
         // control histograms
         Float_t phi = mult->GetPhi(i);
         if (phi < 0)
@@ -432,9 +1041,12 @@ void AlidNdEtaTask::Exec(Option_t*)
           fZPhi[1]->Fill(z, phi);
         }
 
-        fDeltaPhi->Fill(deltaPhi);
-        fDeltaTheta->Fill(mult->GetDeltaTheta(i));
-
+        if (vtxESD && TMath::Abs(vtx[2]) < 10)
+        {
+          fDeltaPhi->Fill(deltaPhi);
+          fDeltaTheta->Fill(mult->GetDeltaTheta(i));
+        }
+        
         if (fDeltaPhiCut > 0 && TMath::Abs(deltaPhi) > fDeltaPhiCut)
           continue;
 
@@ -450,6 +1062,9 @@ void AlidNdEtaTask::Exec(Option_t*)
             Printf("WARNING: fUseMCKine set without fOnlyPrimaries and no label found");
         }
         
+        if (fSymmetrize)
+          eta = TMath::Abs(eta);
+
         etaArr[inputCount] = eta;
         labelArr[inputCount] = label;
         thirdDimArr[inputCount] = phi;
@@ -466,6 +1081,8 @@ void AlidNdEtaTask::Exec(Option_t*)
       Int_t firedChips = mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
       fFiredChips->Fill(firedChips, inputCount);
       Printf("Accepted %d tracklets (%d fired chips)", inputCount, firedChips);
+      
+      fTrackletsVsUnassigned->Fill(inputCount, mult->GetNumberOfSingleClusters());
     }
     else if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
     {
@@ -534,6 +1151,8 @@ void AlidNdEtaTask::Exec(Option_t*)
               Printf("WARNING: fUseMCKine set without fOnlyPrimaries and no label found");
           }
   
+          if (fSymmetrize)
+            eta = TMath::Abs(eta);
           etaArr[inputCount] = eta;
           labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
           thirdDimArr[inputCount] = pT;
@@ -560,6 +1179,10 @@ void AlidNdEtaTask::Exec(Option_t*)
       if (vtxESD)
       {
         // control hist
+        
+        if (strcmp(vtxESD->GetTitle(), "vertexer: 3D") == 0)
+          fVertexVsMult->Fill(vtxESD->GetXv(), vtxESD->GetYv(), inputCount);
+      
         fMultVtx->Fill(inputCount);
 
         for (Int_t i=0; i<inputCount; ++i)
@@ -584,7 +1207,8 @@ void AlidNdEtaTask::Exec(Option_t*)
         fdNdEtaAnalysisESD->FillEvent(vtx[2], inputCount);
 
         // control hist
-        fEvents->Fill(vtx[2]);
+	if (inputCount > 0)
+	        fEvents->Fill(vtx[2]);
 
         if (fReadMC)
         {
@@ -618,7 +1242,10 @@ void AlidNdEtaTask::Exec(Option_t*)
             else
               thirdDim = particle->Pt();
 
-            fdNdEtaAnalysisTracks->FillTrack(vtxMC[2], particle->Eta(), thirdDim);
+            Float_t eta = particle->Eta();
+            if (fSymmetrize)
+              eta = TMath::Abs(eta);
+            fdNdEtaAnalysisTracks->FillTrack(vtxMC[2], eta, thirdDim);
           } // end of track loop
 
           // for event count per vertex
@@ -724,6 +1351,9 @@ void AlidNdEtaTask::Exec(Option_t*)
         continue;
 
       Float_t eta = particle->Eta();
+      if (fSymmetrize)
+        eta = TMath::Abs(eta);
+
       Float_t thirdDim = -1;
 
       if (fAnalysisMode & AliPWG0Helper::kSPD)
@@ -755,7 +1385,8 @@ void AlidNdEtaTask::Exec(Option_t*)
 
       if (TMath::Abs(eta) < 1.0 && particle->Pt() > 0 && particle->P() > 0)
       {
-        Float_t value = 1. / TMath::TwoPi() / particle->Pt() * particle->Energy() / particle->P();
+        //Float_t value = 1. / TMath::TwoPi() / particle->Pt() * particle->Energy() / particle->P();
+        Float_t value = 1;
         fPartPt->Fill(particle->Pt(), value);
       }
     }
@@ -795,6 +1426,8 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fEvents = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_vertex"));
     fVertexResolution = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_vertex_resolution_z"));
 
+    fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("vertex_check"));
+    fVertexVsMult = dynamic_cast<TH3F*> (fOutput->FindObject("fVertexVsMult"));
     fPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fPhi"));
     fRawPt = dynamic_cast<TH1F*> (fOutput->FindObject("fRawPt"));
     fEtaPhi = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaPhi"));
@@ -803,8 +1436,11 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fDeltaPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fDeltaPhi"));
     fDeltaTheta = dynamic_cast<TH1F*> (fOutput->FindObject("fDeltaTheta"));
     fFiredChips = dynamic_cast<TH2F*> (fOutput->FindObject("fFiredChips"));
+    fTrackletsVsClusters = dynamic_cast<TH2F*> (fOutput->FindObject("fTrackletsVsClusters"));
+    fTrackletsVsUnassigned = dynamic_cast<TH2F*> (fOutput->FindObject("fTrackletsVsUnassigned"));
     fTriggerVsTime = dynamic_cast<TGraph*> (fOutput->FindObject("fTriggerVsTime"));
     fStats = dynamic_cast<TH1F*> (fOutput->FindObject("fStats"));
+    fStats2 = dynamic_cast<TH2F*> (fOutput->FindObject("fStats2"));
 
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCuts"));
   }
@@ -906,16 +1542,27 @@ void AlidNdEtaTask::Terminate(Option_t *)
     if (fFiredChips)
       fFiredChips->Write();
 
+    if (fTrackletsVsClusters)
+      fTrackletsVsClusters->Write();
+    
+    if (fTrackletsVsUnassigned)
+      fTrackletsVsUnassigned->Write();
+    
     if (fTriggerVsTime)
       fTriggerVsTime->Write();
 
     if (fStats)
       fStats->Write();
 
-    fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("vertex_check"));
+    if (fStats2)
+      fStats2->Write();
+    
     if (fVertex)
       fVertex->Write();
 
+    if (fVertexVsMult)
+      fVertexVsMult->Write();
+    
     fout->Write();
     fout->Close();
 
