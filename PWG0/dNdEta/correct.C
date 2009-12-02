@@ -8,12 +8,13 @@ void loadlibs()
   gSystem->Load("libPWG0base");
 }
 
-void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const char* dataOutput = "analysis_esd.root", const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction")
+void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const char* dataOutput = "analysis_esd.root", const char* correctionMapFile = "correction_map2.root", const char* correctionMapFolder = "dndeta_correction_ua5")
 {
   loadlibs();
 
   AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(correctionMapFolder, correctionMapFolder);
-  TFile::Open(correctionMapFile);
+  if (!TFile::Open(correctionMapFile))
+    return;
   dNdEtaCorrection->LoadHistograms();
 
   TFile* file = TFile::Open(dataInput);

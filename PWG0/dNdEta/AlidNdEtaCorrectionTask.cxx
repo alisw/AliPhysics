@@ -42,6 +42,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask() :
   fTrigger(AliTriggerAnalysis::kMB1),
   fFillPhi(kFALSE),
   fDeltaPhiCut(-1),
+  fSymmetrize(kFALSE),
   fSignMode(0),
   fOnlyPrimaries(kFALSE),
   fStatError(0),
@@ -91,6 +92,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fTrigger(AliTriggerAnalysis::kMB1),
   fFillPhi(kFALSE),
   fDeltaPhiCut(0),
+  fSymmetrize(kFALSE),
   fSignMode(0),
   fOnlyPrimaries(kFALSE),
   fStatError(0),
@@ -457,6 +459,8 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
         continue;
       
       etaArr[inputCount] = mult->GetEta(i);
+      if (fSymmetrize)
+        etaArr[inputCount] = TMath::Abs(etaArr[inputCount]);
       labelArr[inputCount] = mult->GetLabel(i, 0);
       labelArr2[inputCount] = mult->GetLabel(i, 1);
       thirdDimArr[inputCount] = phi;
@@ -509,6 +513,8 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
         }        
   
         etaArr[inputCount] = esdTrack->Eta();
+        if (fSymmetrize)
+          etaArr[inputCount] = TMath::Abs(etaArr[inputCount]);
         labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
         labelArr2[inputCount] = labelArr[inputCount]; // no second label for tracks
         thirdDimArr[inputCount] = esdTrack->Pt();
@@ -608,6 +614,8 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       fPIDParticles->Fill(particle->GetPdgCode());
 
     Float_t eta = particle->Eta();
+    if (fSymmetrize)
+      eta = TMath::Abs(eta);
     
     Float_t thirdDim = -1;
     if (fAnalysisMode & AliPWG0Helper::kSPD)
@@ -740,7 +748,10 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       processed++;
 
       // resolutions
-      fEtaResolution->Fill(particle->Eta() - etaArr[i]);
+      if (fSymmetrize)
+        fEtaResolution->Fill(TMath::Abs(particle->Eta()) - etaArr[i]);
+      else
+        fEtaResolution->Fill(particle->Eta() - etaArr[i]);
 
       if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
         if (TMath::Abs(particle->Eta() < 0.9) && particle->Pt() > 0)
@@ -754,6 +765,8 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       if (label == label2)
       {
         eta = particle->Eta();
+        if (fSymmetrize)
+          eta = TMath::Abs(eta);
         
         if (fAnalysisMode & AliPWG0Helper::kSPD)
         {
@@ -808,12 +821,19 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       // eta comparison for tracklets with the same label (others are background)
       if (label == label2)
       {
-        fEtaProfile->Fill(particle->Eta(), particle->Eta() - etaArr[i]);
-        fEtaCorrelation->Fill(etaArr[i], particle->Eta());
-        fEtaCorrelationShift->Fill(particle->Eta(), particle->Eta() - etaArr[i]);
+        Float_t eta2 = particle->Eta();
+        if (fSymmetrize)
+          eta2 = TMath::Abs(eta2);
+        
+        fEtaProfile->Fill(eta2, eta2 - etaArr[i]);
+        fEtaCorrelation->Fill(etaArr[i], eta2);
+        fEtaCorrelationShift->Fill(eta2, eta2 - etaArr[i]);
       }
 
-      fdNdEtaAnalysisESD->FillTrack(vtxMC[2], particle->Eta(), thirdDim);
+      if (fSymmetrize)
+        fdNdEtaAnalysisESD->FillTrack(vtxMC[2], TMath::Abs(particle->Eta()), thirdDim);
+      else
+        fdNdEtaAnalysisESD->FillTrack(vtxMC[2], particle->Eta(), thirdDim);
 
       if (fOption.Contains("process-types"))
       {
