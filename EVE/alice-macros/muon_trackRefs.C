@@ -45,10 +45,6 @@
 
 #endif
 
-AliMUONRecoParam* gRecoParam = 0x0;
-UInt_t gRequestedStationMask = 0;
-Bool_t gRequest2ChInSameSt45 = kFALSE;
-
 //______________________________________________________________________________
 void muon_trackRef_propagator_setup(TEveTrackPropagator* trkProp, Bool_t showVertex)
 {
@@ -78,6 +74,21 @@ void muon_trackRef_propagator_setup(TEveTrackPropagator* trkProp, Bool_t showVer
 //______________________________________________________________________________
 Bool_t isReconstructible(Bool_t* chHit)
 {
+  // load recoParam from OCDB
+  static AliMUONRecoParam* gRecoParam = 0x0;
+  static UInt_t gRequestedStationMask = 0;
+  static Bool_t gRequest2ChInSameSt45 = kFALSE;
+  if (!gRecoParam)
+  {
+    gRecoParam = AliMUONCDB::LoadRecoParam();
+    if (!gRecoParam) exit(-1);
+    // compute the mask of requested stations
+    gRequestedStationMask = 0;
+    for (Int_t i = 0; i < 5; i++) if (gRecoParam->RequestStation(i)) gRequestedStationMask |= ( 1 << i );
+    // get whether a track need 2 chambers hit in the same station (4 or 5) or not to be reconstructible
+    gRequest2ChInSameSt45 = !gRecoParam->MakeMoreTrackCandidates();
+  }
+  
   // check which chambers are hit
   UInt_t presentStationMask(0);
   Int_t nChHitInSt4 = 0, nChHitInSt5 = 0;
@@ -237,18 +248,6 @@ void muon_trackRefs(Bool_t showSimClusters)
   rl->LoadTrackRefs();
   TTree* treeTR = rl->TreeTR();  
   if (!treeTR) return;
-  
-  // load recoParam from OCDB
-  if (!gRecoParam)
-  {
-    gRecoParam = AliMUONCDB::LoadRecoParam();
-    if (!gRecoParam) return;
-    // compute the mask of requested stations
-    gRequestedStationMask = 0;
-    for (Int_t i = 0; i < 5; i++) if (gRecoParam->RequestStation(i)) gRequestedStationMask |= ( 1 << i );
-    // get whether a track need 2 chambers hit in the same station (4 or 5) or not to be reconstructible
-    gRequest2ChInSameSt45 = !gRecoParam->MakeMoreTrackCandidates();
-  }
   
   // track containers
   TEveElementList* trackCont = new TEveElementList("Sim MUON Tracks");

@@ -46,9 +46,6 @@
 
 #endif
 
-AliMUONGeometryTransformer* gMUONGeometryTransformer(0x0);
-AliMUONTriggerCircuit* gTriggerCircuit(0x0);
-
 //______________________________________________________________________________
 void esd_muon_track_propagator_setup(TEveTrackPropagator* trkProp, Bool_t tracker, Bool_t trigger)
 {
@@ -93,6 +90,16 @@ void esd_muon_track_propagator_setup(TEveTrackPropagator* trkProp, Bool_t tracke
 void add_esd_muon_tracks(AliESDEvent* esd, AliMUONESDInterface* data,
 			 TEveTrackList* match, TEveTrackList* nomatch, TEveTrackList* ghost)
 {
+  // load trigger circuit
+  static AliMUONTriggerCircuit* gTriggerCircuit = 0x0;
+  if (!gTriggerCircuit) 
+  {
+    AliEveEventManager::AssertGeometry();
+    AliMUONGeometryTransformer* fMUONGeometryTransformer = new AliMUONGeometryTransformer();
+    fMUONGeometryTransformer->LoadGeometryData();
+    gTriggerCircuit = new AliMUONTriggerCircuit(fMUONGeometryTransformer);
+  }
+  
   Int_t nTrack(esd->GetNumberOfMuonTracks());
   TEveRecTrack recTrack;
   TEveTrack* track;
@@ -189,15 +196,6 @@ void esd_muon_tracks(Bool_t showClusters, Bool_t showDigits)
   
   // load mapping
   AliMpCDB::LoadAll(kFALSE);
-  
-  // load geometry
-  if (gMUONGeometryTransformer == 0) 
-  {
-    AliEveEventManager::AssertGeometry();
-    gMUONGeometryTransformer = new AliMUONGeometryTransformer();
-    gMUONGeometryTransformer->LoadGeometryData();
-    gTriggerCircuit = new AliMUONTriggerCircuit(gMUONGeometryTransformer);
-  }
   
   // convert ESD objects to MUON objects
   AliMUONESDInterface data;

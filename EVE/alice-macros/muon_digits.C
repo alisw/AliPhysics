@@ -37,8 +37,6 @@
 
 #endif
 
-AliMUONGeometryTransformer* gMUONGeometryTransformer(0x0);
-
 //______________________________________________________________________________
 void add_muon_digits(TIter* next, TEveQuadSet* bending, TEveQuadSet* nonBending, Bool_t fromRaw)
 {
@@ -46,7 +44,8 @@ void add_muon_digits(TIter* next, TEveQuadSet* bending, TEveQuadSet* nonBending,
   AliMpCDB::LoadAll(kFALSE);
   
   // load geometry
-  if (gMUONGeometryTransformer == 0) 
+  static AliMUONGeometryTransformer* gMUONGeometryTransformer = 0x0;
+  if (!gMUONGeometryTransformer) 
   {
     AliEveEventManager::AssertGeometry();
     gMUONGeometryTransformer = new AliMUONGeometryTransformer();
@@ -86,7 +85,7 @@ void add_muon_digits(TIter* next, TEveQuadSet* bending, TEveQuadSet* nonBending,
 		  2.*pad.GetDimensionX(),2.*pad.GetDimensionY());
     
     if (fromRaw && !digit->IsTrigger()) pads->QuadValue(digit->ADC());
-    else pads->QuadValue(digit->Charge());
+    else pads->QuadValue((Int_t) digit->Charge());
   }
   
 }
