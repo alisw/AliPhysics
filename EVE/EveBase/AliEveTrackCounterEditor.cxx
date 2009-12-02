@@ -10,6 +10,7 @@
 #include "AliEveTrackCounterEditor.h"
 #include "AliEveTrackCounter.h"
 #include "AliEveEventManager.h"
+#include "AliESDEvent.h"
 
 #include "TGedEditor.h"
 #include "TVirtualPad.h"
@@ -21,6 +22,8 @@
 #include "TGComboBox.h"
 #include "TGMsgBox.h"
 
+#include "TGButtonGroup.h"
+
 #include "TTree.h"
 #include "TH1F.h"
 
@@ -30,6 +33,7 @@
 
 #include "TROOT.h"
 #include "TSystem.h" // File input/output for track-count status.
+#include "TDatime.h"
 
 //______________________________________________________________________________
 // GUI editor for AliEveTrackCounter.
@@ -45,7 +49,9 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
    fClickAction(0),
    fInfoLabelTracks   (0),
    fInfoLabelTracklets(0),
-   fEventId(0)
+   fEventId(0),
+   fEventCat(0),
+   fScanSummaryFile(0)
 {
    // Constructor.
 
@@ -164,6 +170,21 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
 
       fAF->AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0));
    }
+   {
+      TGHorizontalFrame* f = new TGHorizontalFrame(fAF, 210, 20, kFixedWidth);
+
+      TGButtonGroup *fTypeSelector = new TGButtonGroup(f, "Event Categorization");
+      new TGRadioButton(fTypeSelector, "Good");
+      new TGRadioButton(fTypeSelector, "Splash");
+      new TGRadioButton(fTypeSelector, "Empty");
+      new TGRadioButton(fTypeSelector, "Background");
+      new TGRadioButton(fTypeSelector, "Unclear/Other");
+      fTypeSelector->Connect("Clicked(Int_t)", "AliEveTrackCounterEditor", this, "DoEventCategorization(Int_t)");
+
+      f->AddFrame(fTypeSelector, new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 2, 3, 2, 2));
+   
+      fAF->AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0));
+   }
 
    AddFrame(fAF, new TGLayoutHints(kLHintsNormal|kLHintsExpandX|kLHintsExpandY));
 
@@ -192,6 +213,12 @@ AliEveTrackCounterEditor::~AliEveTrackCounterEditor()
   // Destructor.
 
   AliEveEventManager::GetMaster()->Disconnect("NewEventLoaded()", this);
+
+  if (fScanSummaryFile) {
+    fScanSummaryFile->close();
+    delete fScanSummaryFile;
+    fScanSummaryFile = 0;
+  }
 }
 
 /******************************************************************************/
@@ -237,6 +264,20 @@ void AliEveTrackCounterEditor::DoActivate()
    fM->SetActive(kTRUE);
    AliEveEventManager::GetMaster()->GotoEvent(AliEveEventManager::GetMaster()->GetEventId());
    fGedEditor->Layout();
+
+   if (fScanSummaryFile) {
+     fScanSummaryFile->close();
+     delete fScanSummaryFile;
+   }
+
+   char fname[200];
+   TDatime dat;
+   sprintf(fname, "ScanSummary.%i.%i.txt", dat.GetDate(), dat.GetTime());
+   fScanSummaryFile = new ofstream(fname);
+   (*fScanSummaryFile) << "Scan summary" << std::endl;
+   (*fScanSummaryFile) << "Scan started at " << dat.GetDate() << " " << dat.GetTime() << std::endl;
+   AliESDEvent *esd = AliEveEventManager::AssertESD();
+   (*fScanSummaryFile) << "Run number " << esd->GetRunNumber() << std::endl;
 }
 
 void AliEveTrackCounterEditor::DoDeactivate()
@@ -245,6 +286,12 @@ void AliEveTrackCounterEditor::DoDeactivate()
 
    fM->SetActive(kFALSE);
    AliEveEventManager::GetMaster()->GotoEvent(AliEveEventManager::GetMaster()->GetEventId());
+
+   if (fScanSummaryFile) {
+     fScanSummaryFile->close();
+     delete fScanSummaryFile;
+     fScanSummaryFile = 0;
+   }
 }
 
 /******************************************************************************/
@@ -261,6 +308,35 @@ void AliEveTrackCounterEditor::DoPrev()
 void AliEveTrackCounterEditor::DoNext()
 {
    // Slot for Next.
+
+   if (fScanSummaryFile) {
+     AliESDEvent *esd = AliEveEventManager::AssertESD();
+     (*fScanSummaryFile) << std::hex << std::right ;
+     fScanSummaryFile->width(5); (*fScanSummaryFile) << esd->GetPeriodNumber() << "   " ;
+     fScanSummaryFile->width(6); (*fScanSummaryFile) << esd->GetOrbitNumber() << "   ";
+     fScanSummaryFile->width(4); (*fScanSummaryFile) << esd->GetBunchCrossNumber() << "   ";
+     switch (fEventCat) {
+     case 1: (*fScanSummaryFile) << "GOOD        "; break;
+     case 2: (*fScanSummaryFile) << "SPLASH      "; break;
+     case 3: (*fScanSummaryFile) << "EMPTY       "; break;
+     case 4: (*fScanSummaryFile) << "BACKGROUND  "; break;
+     case 5: (*fScanSummaryFile) << "OTHER       "; break;
+     default: break;
+     }
+     if (fM->GetActive())
+       {
+	 (*fScanSummaryFile) << std::dec;
+	 fScanSummaryFile->width(5); (*fScanSummaryFile) << fM->fAllTracks << "  ";
+	 fScanSummaryFile->width(5); (*fScanSummaryFile) << fM->fGoodTracks << "     ";
+	 fScanSummaryFile->width(5); (*fScanSummaryFile) << fM->fAllTracklets << "  ";
+	 fScanSummaryFile->width(5); (*fScanSummaryFile) << fM->fGoodTracklets << "   ";
+       }
+     if ((esd->GetPrimaryVertex()) && (esd->GetPrimaryVertex()->GetStatus()))
+       { fScanSummaryFile->width(9); (*fScanSummaryFile) << esd->GetPrimaryVertex()->GetZ(); }
+     else { (*fScanSummaryFile) << "NOVTX    "; }
+
+     (*fScanSummaryFile) << std::endl;
+   }
 
    AliEveEventManager::GetMaster()->NextEvent();
 }
@@ -308,4 +384,13 @@ void AliEveTrackCounterEditor::DoClickAction(Int_t mode)
    // Slot for ClickAction.
 
    fM->SetClickAction(mode);
+}
+
+//______________________________________________________________________________
+void AliEveTrackCounterEditor::DoEventCategorization(Int_t mode)
+{
+   // Slot for ClickAction.
+
+  printf("Mode is %i\n", mode);
+  fEventCat = mode;
 }

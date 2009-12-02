@@ -11,6 +11,7 @@
 #define AliEveTrackCounterEditor_H
 
 #include "TGedFrame.h"
+#include <fstream>
 
 class TGComboBox;
 class TGLabel;
@@ -45,6 +46,7 @@ public:
    void DoShowHistos();
 
    void DoClickAction(Int_t);
+   void DoEventCategorization(Int_t);
 
 protected:
    AliEveTrackCounter *fM; // Model object.
@@ -57,6 +59,9 @@ protected:
    TGLabel          *fInfoLabelTracklets;
    TGNumberEntry    *fEventId;
 
+   int               fEventCat;
+   ofstream         *fScanSummaryFile;
+   
 private:
    AliEveTrackCounterEditor(const AliEveTrackCounterEditor&);            // Not implemented
    AliEveTrackCounterEditor& operator=(const AliEveTrackCounterEditor&); // Not implemented
