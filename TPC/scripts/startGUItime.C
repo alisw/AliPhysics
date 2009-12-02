@@ -18,8 +18,4 @@ void startGUItime(const char* file=""){
   TString cacheDir=gSystem->ExpandPathName("$GUI_OUTDIR_RUNS");
   if (cacheDir=="$GUI_OUTDIR_RUNS") cacheDir="/tmp";
   guiTime->SetCacheDir(cacheDir.Data());
-  TString refDataTree=gSystem->ExpandPathName("$REF_DATA_TREE");
-  if (!refDataTree.IsNull()&&refDataTree!="$REF_DATA_TREE"){
-    guiTime->AddReferenceTree(refDataTree.Data(),"Ref");
-  }
 }

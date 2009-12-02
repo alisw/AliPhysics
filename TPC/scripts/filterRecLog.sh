@@ -9,10 +9,12 @@
 isOK=0 
 nonOK=0
 #
-rm abort.log
-rm abortout.log
-rm syswatchAbort.log
-rm syswatchAll.log
+rm -f abort.log
+rm -f abortout.log
+rm -f syswatchAbort.log
+rm -f syswatchAll.log
+rm -f seg0.out
+
 echo hname/C:sname/C:id0/I:id1/I:id2/I:first/D:stampSec/D:mi.fMemUsed/D:mi.fSwapUsed/D:cI.fUser/D:cI.fSys/D:pI.fMemResident/D:pI.fMemVirtual/D:pI.fCpuUser/D:pI.fCpuSys/D:stampOldSec/D:miOld.fMemUsed/D:miOld.fSwapUsed/D:cIOld.fUser/D:cIOld.fSys/D:pIOld.fMemResident/D:pIOld.fMemVirtual/D:pIOld.fCpuUser/D:pIOld.fCpuSys/D > syswatchAbort.log
 echo hname/C:sname/C:id0/I:id1/I:id2/I:first/D:stampSec/D:mi.fMemUsed/D:mi.fSwapUsed/D:cI.fUser/D:cI.fSys/D:pI.fMemResident/D:pI.fMemVirtual/D:pI.fCpuUser/D:pI.fCpuSys/D:stampOldSec/D:miOld.fMemUsed/D:miOld.fSwapUsed/D:cIOld.fUser/D:cIOld.fSys/D:pIOld.fMemResident/D:pIOld.fMemVirtual/D:pIOld.fCpuUser/D:pIOld.fCpuSys/D > syswatchAll.log
 
@@ -64,7 +66,6 @@ echo netOK=$netOK netNonOK=$netNonOK
 #
 # filter segmentation fault
 #
-rm seg0.out
 for a in `cat  abort.log |sed s_err_out_ ` ;do
     cat $a | grep 0x | grep \# >> seg0.out
 done;

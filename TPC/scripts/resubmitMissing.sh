@@ -44,5 +44,5 @@ $ALICE_ROOT/TPC/scripts/makeWorkspace.sh runMissing.list
 #
 # 3. Sumbmit calibration jobs for mssing directories
 #
-$ALICE_ROOT/TPC/scripts/submitCalib.sh runMissing.list $bqueue $nchunks
+$ALICE_ROOT/TPC/scripts/submitCalib.sh runMissing.list "$bqueue"  $nchunks
 

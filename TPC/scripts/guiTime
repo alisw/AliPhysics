@@ -8,4 +8,4 @@ if [ "x$SCRIPTDIR" == "x" ]; then
 fi
 source $SCRIPTDIR/guiEnv.sh
 test -d $GUI_OUTDIR_RUNS || mkdir -p $GUI_OUTDIR_RUNS
-root.exe $SCRIPTDIR/loadlibsREC.C $SCRIPTDIR/ConfigOCDB.C $SCRIPTDIR/startGUItime.C\(\"$1\"\)
+root.exe $SCRIPTDIR/loadlibsREC.C $SCRIPTDIR/ConfigOCDB.C $SCRIPTDIR/startGUItime.C\(\"$1\"\) $ALICE_ROOT/TPC/CalibMacros/guiAlias.C

@@ -15,6 +15,7 @@ backupdir=`pwd`/
 mkdirhier $workdir
 cd $workdir
 source guiEnv.sh
+source halloWorld.sh
 #
 aliroot -q -b $SCRIPTDIR/ConfigOCDB.C  $ALICE_ROOT/TPC/CalibMacros/CalibEnv.C+\(\"$runList\",$startRun,$endRun\)
 cp dcsTime.root $GUI_OUTDIR/time/calibTreeTime_$startRun_$endRun.root
