@@ -25,8 +25,8 @@ public:
   
 private:
   virtual void   InitESDs(); 
-  virtual void   InitDigits(); 
-  virtual void   InitRecPoints(); 
+  virtual void   InitDigits() ; 
+  virtual void   InitRecPoints();
   virtual void   InitRaws(); 
   virtual void   MakeDigits(TTree * /*recTree*/) ;
   virtual void   MakeDigits()  {return;}

@@ -45,10 +45,8 @@ public:
   const Double_t * GetZP1TowerEnergyLR() const {return fZP1TowerEnergyLR;}
   const Double_t * GetZP2TowerEnergyLR() const {return fZP2TowerEnergyLR;}
   //
-  const Double_t * GetZNCCentroidInPbPb(Float_t beamEne);
-  const Double_t * GetZNACentroidInPbPb(Float_t beamEne);
-  const Double_t * GetZNCCentroidInpp();
-  const Double_t * GetZNACentroidInpp();
+  Bool_t GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Double_t centrZNA[2]);
+  Bool_t GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2]);
   //
   void  SetZDC(Double_t n1Energy, Double_t p1Energy, 
   	       Double_t emEnergy0, Double_t emEnergy1,
