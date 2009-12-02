@@ -65,6 +65,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fAPIVersion(),
                   fROOTVersion(),
                   fAliROOTVersion(),
+                  fExternalPackages(),
                   fUser(),
                   fGridWorkingDir(),
                   fGridDataDir(),
@@ -80,6 +81,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fCloseSE(),
                   fFriendChainName(),
                   fJobTag(),
+                  fOutputSingle(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -112,6 +114,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fAPIVersion(),
                   fROOTVersion(),
                   fAliROOTVersion(),
+                  fExternalPackages(),
                   fUser(),
                   fGridWorkingDir(),
                   fGridDataDir(),
@@ -127,6 +130,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fCloseSE(),
                   fFriendChainName(),
                   fJobTag(),
+                  fOutputSingle(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -159,6 +163,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fAPIVersion(other.fAPIVersion),
                   fROOTVersion(other.fROOTVersion),
                   fAliROOTVersion(other.fAliROOTVersion),
+                  fExternalPackages(other.fExternalPackages),
                   fUser(other.fUser),
                   fGridWorkingDir(other.fGridWorkingDir),
                   fGridDataDir(other.fGridDataDir),
@@ -174,6 +179,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fCloseSE(other.fCloseSE),
                   fFriendChainName(other.fFriendChainName),
                   fJobTag(other.fJobTag),
+                  fOutputSingle(other.fOutputSingle),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -234,6 +240,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fAPIVersion              = other.fAPIVersion;
       fROOTVersion             = other.fROOTVersion;
       fAliROOTVersion          = other.fAliROOTVersion;
+      fExternalPackages        = other.fExternalPackages;
       fUser                    = other.fUser;
       fGridWorkingDir          = other.fGridWorkingDir;
       fGridDataDir             = other.fGridDataDir;
@@ -249,6 +256,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fCloseSE                 = other.fCloseSE;
       fFriendChainName         = other.fFriendChainName;
       fJobTag                  = other.fJobTag;
+      fOutputSingle            = other.fOutputSingle;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -300,7 +308,15 @@ void AliAnalysisAlien::AddDataFile(const char *lfn)
    if (!fInputFiles) fInputFiles = new TObjArray();
    fInputFiles->Add(new TObjString(lfn));
 }
-   
+
+//______________________________________________________________________________
+void AliAnalysisAlien::AddExternalPackage(const char *package)
+{
+// Adds external packages w.r.t to the default ones (root,aliroot and gapi)
+   if (fExternalPackages) fExternalPackages += " ";
+   fExternalPackages += package;
+}   
+      
 //______________________________________________________________________________
 Bool_t AliAnalysisAlien::Connect()
 {
@@ -773,6 +789,18 @@ Bool_t AliAnalysisAlien::CreateJDL()
          fGridJDL->AddToPackages("ROOT", fROOTVersion);
       if (fAPIVersion.Length()) 
          fGridJDL->AddToPackages("APISCONFIG", fAPIVersion);
+      if (!fExternalPackages.IsNull()) {
+         arr = fExternalPackages.Tokenize(" ");
+         TIter next(arr);
+         while ((os=(TObjString*)next())) {
+            TString pkgname = os->GetString();
+            Int_t index = pkgname.Index("::");
+            TString pkgversion = pkgname(index+2, pkgname.Length());
+            pkgname.Remove(index);
+            fGridJDL->AddToPackages(pkgname, pkgversion);
+         }   
+         delete arr;   
+      }   
       fGridJDL->SetInputDataListFormat(fInputFormat);
       fGridJDL->SetInputDataList("wn.xml");
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), fAnalysisMacro.Data()));
@@ -830,6 +858,14 @@ Bool_t AliAnalysisAlien::CreateJDL()
    }
    // Copy jdl to grid workspace   
    if (copy) {
+      if (TestBit(AliAnalysisGrid::kSubmit)) {
+         Info("CreateJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
+         TString locjdl = Form("%s/%s", fGridOutputDir.Data(),fJDLName.Data());
+         if (fProductionMode)
+            locjdl = Form("%s/%s", workdir.Data(),fJDLName.Data());
+         if (FileExists(locjdl)) gGrid->Rm(locjdl);
+         TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
+      }
       if (fAdditionalLibs.Length()) {
          arr = fAdditionalLibs.Tokenize(" ");
          TObjString *os;
@@ -870,10 +906,15 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
       TIter next(fInputFiles);
       while ((os=(TObjString*)next()))
          fGridJDL->AddToInputDataCollection(Form("LF:%s,nodownload", os->GetString().Data()));
-      fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_03i#", fGridOutputDir.Data()));
+      if (!fOutputSingle.IsNull())
+         fGridJDL->SetOutputDirectory(Form("#alienfulldir#/%s",fOutputSingle.Data()));
+      else                                    
+         fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_03i#", fGridOutputDir.Data()));
    } else {
       // One jdl to be submitted with 2 input parameters: data collection name and output dir prefix
       fGridJDL->AddToInputDataCollection(Form("LF:%s/$1,nodownload", workdir.Data()));
+      if (!fOutputSingle.IsNull())
+         fGridJDL->SetOutputDirectory(Form("#alienfulldir#/%s",fOutputSingle.Data()));
       fGridJDL->SetOutputDirectory(Form("%s/$2/#alien_counter_03i#", fGridOutputDir.Data()));
    }
       
@@ -884,7 +925,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    index = sjdl.Index("Executable");
    if (index >= 0) sjdl.Insert(index, "\n# This is the startup script\n");
    index = sjdl.Index("Split ");
-   if (index >= 0) sjdl.Insert(index, "\n# We split per storage element\n");
+   if (index >= 0) sjdl.Insert(index, "\n# We split per SE or file\n");
    index = sjdl.Index("SplitMaxInputFileNumber");
    if (index >= 0) sjdl.Insert(index, "\n# We want each subjob to get maximum this number of input files\n");
    index = sjdl.Index("InputDataCollection");
@@ -1692,6 +1733,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   gSystem->Load(\"libGeom\");" << endl;
       out << "   gSystem->Load(\"libVMC\");" << endl;
       out << "   gSystem->Load(\"libPhysics\");" << endl << endl;
+      out << "   gSystem->Load(\"libMinuit\");" << endl << endl;
       out << "// Load analysis framework libraries" << endl;
       if (!fPackages) {
          out << "   gSystem->Load(\"libSTEERBase\");" << endl;

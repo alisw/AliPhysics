@@ -34,6 +34,7 @@ public:
    virtual void        AddRunNumber(Int_t run);
    virtual void        AddRunNumber(const char *run);
    virtual void        AddDataFile(const char *lfn);
+   virtual void        AddExternalPackage(const char *name);
    virtual void        SetExecutable(const char *name="analysis.sh")     {fExecutable = name;}
    virtual void        SetExecutableCommand(const char *command="root -b -q") {fExecutableCommand = command;}
    virtual void        SetArguments(const char *name="")                 {fArguments = name;}
@@ -68,6 +69,7 @@ public:
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
    virtual void        SetPreferedSE(const char *se)                     {fCloseSE = se;}
    virtual void        SetProductionMode(Int_t mode=1)                   {fProductionMode = mode;}
+   virtual void        SetOutputSingleFolder(const char *folder)         {fOutputSingle = folder; fSplitMode="file"; fSplitMaxInputFileNumber=1;}
 
    TGridJDL           *GetGridJDL() {return fGridJDL;}
    const char         *GetGridOutputDir() const                          {return fGridOutputDir;}
@@ -124,6 +126,7 @@ private:
    TString          fAPIVersion;      // API version
    TString          fROOTVersion;     // ROOT version
    TString          fAliROOTVersion;  // AliROOT version
+   TString          fExternalPackages; // External packages
    TString          fUser;            // AliEn user name
    TString          fGridWorkingDir;  // AliEn directory containing the input packages
    TString          fGridDataDir;     // AliEn data production directory
@@ -139,9 +142,10 @@ private:
    TString          fCloseSE;         // Preffered storage element. Taken from alien_CLOSE_SE environment.
    TString          fFriendChainName; // File name to construct friend chain (for AOD)
    TString          fJobTag;          // Job tag
+   TString          fOutputSingle;    // Directory name for the output when split is per file
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 7)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 8)   // Class providing some AliEn utilities
 };
 #endif
