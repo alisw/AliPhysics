@@ -33,14 +33,16 @@ void MakeITSRecoParam_pp2009(AliRecoParam::EventSpecie_t default=AliRecoParam::k
     //itsRecoParam->SetSAOnePointTracks();
     itsRecoParam->SetClusterMisalError(0.1); // [cm]
     itsRecoParam->SetSAUseAllClusters();
+    itsRecoParam->SetMinNPointsSA(2);
     itsRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
     recoParamArray->AddLast(itsRecoParam);
   }
   {
     AliITSRecoParam * itsRecoParam = AliITSRecoParam::GetLowFluxParam();
     itsRecoParam->SetClusterErrorsParam(2);
-    //****** FIRST PHYSICS 2009 (same as COSMICS 2009) *********************
+    //****** FIRST PHYSICS 2009 *********************
 
+    /* //  First Collisions 23.11.2009 (same as COSMICS 2009) 
     // find independently ITS SA tracks 
     itsRecoParam->SetSAUseAllClusters();
     itsRecoParam->SetOuterStartLayerSA(AliITSgeomTGeo::GetNLayers()-2);
@@ -58,6 +60,26 @@ void MakeITSRecoParam_pp2009(AliRecoParam::EventSpecie_t default=AliRecoParam::k
     // additional error due to misal (B on)
     itsRecoParam->SetClusterMisalErrorYBOn(0.0,0.0,0.1,0.1,0.1,0.1); // [cm]
     itsRecoParam->SetClusterMisalErrorZBOn(0.1,0.1,0.1,0.1,0.1,0.1); // [cm]
+    */
+
+    //----  Collisions since 03.12.2009 
+    // find independently ITS SA tracks 
+    itsRecoParam->SetSAUseAllClusters();
+    itsRecoParam->SetOuterStartLayerSA(2);
+
+    // to maximize efficiency
+    itsRecoParam->SetAllowProlongationWithEmptyRoad(kFALSE);
+    
+    // larger seach windows for SA (in case of large misalignments)
+    itsRecoParam->SetFactorSAWindowSizes(2);
+    
+    // additional error due to misal (B off)
+    itsRecoParam->SetClusterMisalErrorY(0.01,0.01,0.1,0.1,0.1,0.1); // [cm]
+    itsRecoParam->SetClusterMisalErrorZ(0.01,0.01,0.1,0.1,0.1,0.1); // [cm]
+    // additional error due to misal (B on)
+    itsRecoParam->SetClusterMisalErrorYBOn(0.01,0.01,0.1,0.1,0.1,0.1); // [cm]
+    itsRecoParam->SetClusterMisalErrorZBOn(0.01,0.01,0.1,0.1,0.1,0.1); // [cm]
+    //----
 
     // SDD configuration 
     itsRecoParam->SetUseSDDCorrectionMaps(kFALSE);
