@@ -600,6 +600,9 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
     Double_t signal = signalF.Eval(iTime) ;     
 
+	// Next lines commeted for the moment but in principle it is not necessary to add
+    // extra noise since noise already added at the digits level.	
+	  
     //According to Terry Awes, 13-Apr-2008
     //add gaussian noise in quadrature to each sample
     //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
@@ -607,8 +610,8 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
 
     // March 17,09 for fast fit simulations by Alexei Pavlinov.
     // Get from PHOS analysis. In some sense it is open questions.
-    Double_t noise = gRandom->Gaus(0.,fgFEENoise);
-    signal += noise; 
+    //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
+    //signal += noise; 
  
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     if ( adcH[iTime] > fgkRawSignalOverflow ){  // larger than 10 bits 
