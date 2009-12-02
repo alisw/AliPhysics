@@ -31,7 +31,7 @@ public:
   AliITSQASDDChecker():fSubDetOffset(0),fStepBitSDD(NULL),fLowSDDValue(NULL),fHighSDDValue(NULL),fCalibration(NULL) {;}          // ctor
   AliITSQASDDChecker& operator = (const AliITSQASDDChecker& qac) ; //operator =
   virtual ~AliITSQASDDChecker(); /*{if(fStepBitSDD) delete[] fStepBitSDD ;if(fLowSDDValue)delete[]fLowSDDValue;if(fHighSDDValue) delete[]fHighSDDValue;if(fCalibration)delete fCalibration;} */// dtor
-  virtual Double_t Check(AliQAv1::ALITASK_t index, TObjArray * list);
+  virtual Double_t Check(AliQAv1::ALITASK_t index, TObjArray * list, const AliDetectorRecoParam * recoParam);
   virtual void SetTaskOffset(Int_t taskoffset);
   virtual void SetStepBit(Double_t *steprange);
   virtual Double_t *GetStepBit(){return fStepBitSDD;};

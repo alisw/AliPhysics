@@ -40,7 +40,7 @@ AliHLTQAChecker::~AliHLTQAChecker()
 {
 }
 
-Double_t * AliHLTQAChecker::Check(AliQAv1::ALITASK_t /*task*/, TObjArray ** /*pTarget*/, AliDetectorRecoParam * /*recoParam*/)
+Double_t * AliHLTQAChecker::Check(AliQAv1::ALITASK_t /*task*/, TObjArray ** /*pTarget*/, const AliDetectorRecoParam * /*recoParam*/)
 {
   return NULL;
 }

@@ -28,7 +28,7 @@ public:
  protected:
 
   virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list,
-		   AliDetectorRecoParam * recoParam=0) ;
+		   const AliDetectorRecoParam * recoParam=0) ;
   
   ClassDef(AliTOFQAChecker,2)  // description 
 

@@ -159,7 +159,7 @@ AliMUONTrackerQAChecker::AliMUONTrackerQAChecker(const AliMUONTrackerQAChecker& 
 
 //______________________________________________________________________________
 AliMUONVQAChecker::ECheckCode*
-AliMUONTrackerQAChecker::CheckRecPoints(TObjArray ** list, AliMUONRecoParam* /*recoParam*/)
+AliMUONTrackerQAChecker::CheckRecPoints(TObjArray ** list, const AliMUONRecoParam* /*recoParam*/)
 {
   /// Check rec points
   /// Very binary check for the moment. 
@@ -198,7 +198,7 @@ AliMUONTrackerQAChecker::MarkHisto(TH1& histo, AliMUONVQAChecker::ECheckCode val
 
 //______________________________________________________________________________
 AliMUONVQAChecker::ECheckCode*
-AliMUONTrackerQAChecker::CheckESD(TObjArray ** list, AliMUONRecoParam* /*recoParam*/)
+AliMUONTrackerQAChecker::CheckESD(TObjArray ** list, const AliMUONRecoParam* /*recoParam*/)
 {
   /// Check ESD
   
@@ -227,7 +227,7 @@ AliMUONTrackerQAChecker::CheckESD(TObjArray ** list, AliMUONRecoParam* /*recoPar
 
 //______________________________________________________________________________
 AliMUONVQAChecker::ECheckCode*
-AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, AliMUONRecoParam* recoParam)
+AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, const AliMUONRecoParam* recoParam)
 {
   /// Check raws
 
@@ -271,7 +271,7 @@ AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hbp,
                                                           const TH1* hbuspatchconfig, 
                                                           const TH1& hnpads, 
                                                           Int_t nevents,
-                                                          AliMUONRecoParam& recoParam)
+                                                          const AliMUONRecoParam& recoParam)
 {
   /// Put labels, limits and so on on the TrackerBusPatchOccupancy histogram
   /// hbuspatchconfig and hbp must have the same bin definitions

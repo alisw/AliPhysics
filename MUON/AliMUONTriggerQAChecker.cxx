@@ -68,7 +68,7 @@ AliMUONTriggerQAChecker::MarkHisto(TH1& histo, AliMUONVQAChecker::ECheckCode val
 
 //__________________________________________________________________
 AliMUONVQAChecker::ECheckCode* 
-AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, AliMUONRecoParam* )
+AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
 {
   /// Check raw data
 
@@ -133,7 +133,7 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, AliMUONRecoParam* )
 
 //__________________________________________________________________
 AliMUONVQAChecker::ECheckCode* 
-AliMUONTriggerQAChecker::CheckRecPoints(TObjArray** , AliMUONRecoParam* )
+AliMUONTriggerQAChecker::CheckRecPoints(TObjArray** , const AliMUONRecoParam* )
 {
   /// Check rec points
   return 0x0;
@@ -141,7 +141,7 @@ AliMUONTriggerQAChecker::CheckRecPoints(TObjArray** , AliMUONRecoParam* )
 
 //__________________________________________________________________
 AliMUONVQAChecker::ECheckCode* 
-AliMUONTriggerQAChecker::CheckESD(TObjArray** , AliMUONRecoParam* )
+AliMUONTriggerQAChecker::CheckESD(TObjArray** , const AliMUONRecoParam* )
 {
   /// Check esd
   return 0x0;

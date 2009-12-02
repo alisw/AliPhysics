@@ -33,13 +33,13 @@ public:
   virtual ~AliMUONVQAChecker();
   
   /// Check the QA object(s) for the raw data
-  virtual ECheckCode * CheckRaws(TObjArray** list, AliMUONRecoParam* recoParam) = 0;
+  virtual ECheckCode * CheckRaws(TObjArray** list, const AliMUONRecoParam* recoParam) = 0;
   
   /// Check the QA object(s) for the RecPoints
-  virtual ECheckCode * CheckRecPoints(TObjArray** list, AliMUONRecoParam* recoParam) = 0;
+  virtual ECheckCode * CheckRecPoints(TObjArray** list, const AliMUONRecoParam* recoParam) = 0;
   
   /// Check the QA object(s) for the ESD
-  virtual ECheckCode * CheckESD(TObjArray** list, AliMUONRecoParam* recoParam) = 0;
+  virtual ECheckCode * CheckESD(TObjArray** list, const AliMUONRecoParam* recoParam) = 0;
   
   ClassDef(AliMUONVQAChecker,1) // Interface for a MUON QA checker
 };

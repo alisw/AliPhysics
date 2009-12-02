@@ -21,7 +21,7 @@ public:
   {}          
   /** Destructor */
   virtual ~AliFMDQAChecker() {}
-  Double_t * Check(AliQAv1::ALITASK_t what, TObjArray ** list, AliDetectorRecoParam* t);
+  Double_t * Check(AliQAv1::ALITASK_t what, TObjArray ** list, const AliDetectorRecoParam* t);
 private:
   ClassDef(AliFMDQAChecker,0)  // Yves? what to do? 
 };

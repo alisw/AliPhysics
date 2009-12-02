@@ -51,7 +51,7 @@ public:
   void           SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
 
 protected:
-  virtual      Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, AliDetectorRecoParam * recoParam) ; 
+  virtual      Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, const AliDetectorRecoParam * recoParam) ; 
 
   Double_t     DiffC(const TH1 * href, const TH1 * hin) const ;   
   Double_t     DiffK(const TH1 * href, const TH1 * hin) const ;   
@@ -69,7 +69,7 @@ protected:
   TList       * fExternParamList; //List of external parameters (TParameter<double>)  
 
 private:
-  Double_t * Check(AliQAv1::ALITASK_t index, AliDetectorRecoParam * recoParam) ;
+  Double_t * Check(AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) ;
 
   ClassDef(AliQACheckerBase,3)  // description 
 

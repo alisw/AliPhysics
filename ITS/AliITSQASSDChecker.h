@@ -30,7 +30,7 @@ public:
   AliITSQASSDChecker():fSubDetOffset(0),fStepBitSSD(NULL),fLowSSDValue(NULL),fHighSSDValue(NULL) {;}          // ctor
   AliITSQASSDChecker& operator = (const AliITSQASSDChecker& qac) ; //operator =
   virtual ~AliITSQASSDChecker() {if(fStepBitSSD) delete[] fStepBitSSD ;if(fLowSSDValue)delete[]fLowSSDValue;if(fHighSSDValue) delete[]fHighSSDValue; } // dtor
-  Double_t Check(AliQAv1::ALITASK_t /*index*/, TObjArray * /*list*/);
+  virtual Double_t Check(AliQAv1::ALITASK_t /*index*/, TObjArray * /*list*/, const AliDetectorRecoParam * recoParam);
 
   void SetStepBit(Double_t *steprange);
   Double_t *GetStepBit(){return fStepBitSSD;};

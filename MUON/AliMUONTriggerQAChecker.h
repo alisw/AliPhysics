@@ -21,9 +21,9 @@ public:
   AliMUONTriggerQAChecker();
   virtual ~AliMUONTriggerQAChecker();
 
-  virtual ECheckCode * CheckRaws(TObjArray** list, AliMUONRecoParam* recoParam);
-  virtual ECheckCode * CheckRecPoints(TObjArray** list, AliMUONRecoParam* recoParam);
-  virtual ECheckCode * CheckESD(TObjArray** list, AliMUONRecoParam* recoParam);
+  virtual ECheckCode * CheckRaws(TObjArray** list, const AliMUONRecoParam* recoParam);
+  virtual ECheckCode * CheckRecPoints(TObjArray** list, const AliMUONRecoParam* recoParam);
+  virtual ECheckCode * CheckESD(TObjArray** list, const AliMUONRecoParam* recoParam);
   
 private:
 

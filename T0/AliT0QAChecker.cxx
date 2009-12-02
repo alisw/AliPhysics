@@ -53,7 +53,7 @@
 ClassImp(AliT0QAChecker)
 
 //__________________________________________________________________
-Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
+Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
 {
 
   // Super-basic check on the QA histograms on the input list:

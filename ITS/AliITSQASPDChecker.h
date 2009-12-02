@@ -30,7 +30,7 @@ public:
   AliITSQASPDChecker():fSubDetOffset(0),fStepBitSPD(NULL),fLowSPDValue(NULL),fHighSPDValue(NULL) {;}          // ctor
   AliITSQASPDChecker& operator = (const AliITSQASPDChecker& qac) ; //operator =
   virtual ~AliITSQASPDChecker() {if(fStepBitSPD) delete[] fStepBitSPD ;if(fLowSPDValue)delete[]fLowSPDValue;if(fHighSPDValue) delete[]fHighSPDValue;} // dtor
-  Double_t Check(AliQAv1::ALITASK_t index, TObjArray * list);
+  virtual Double_t Check(AliQAv1::ALITASK_t index, TObjArray * list, const AliDetectorRecoParam * recoParam);
   void SetTaskOffset(Int_t TaskOffset);
 
   void SetStepBit(Double_t *steprange);

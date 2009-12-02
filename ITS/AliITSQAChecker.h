@@ -58,7 +58,7 @@ public:
 
 
 protected:
-  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam) ;
+  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam) ;
   virtual void SetSPDTaskOffset(Int_t SPDOffset){fSPDOffset = SPDOffset;} ;
   virtual void SetSDDTaskOffset(Int_t SDDOffset){fSDDOffset = SDDOffset;} ;
   virtual void SetSSDTaskOffset(Int_t SSDOffset){fSSDOffset = SSDOffset;} ;

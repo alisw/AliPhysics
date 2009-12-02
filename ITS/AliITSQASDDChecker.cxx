@@ -76,7 +76,7 @@ AliITSQASDDChecker::~AliITSQASDDChecker()
 } // dtor
 
 //__________________________________________________________________
-Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list/*, AliDetectorRecoParam *recoparam*/) 
+Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, const AliDetectorRecoParam * /*recoparam*/) 
 {  
   AliInfo(Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset) );
 

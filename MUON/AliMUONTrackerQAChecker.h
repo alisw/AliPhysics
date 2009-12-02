@@ -22,9 +22,9 @@ public:
   AliMUONTrackerQAChecker(const AliMUONTrackerQAChecker& qac);
   virtual ~AliMUONTrackerQAChecker();
 
-  virtual AliMUONVQAChecker::ECheckCode* CheckRaws(TObjArray** list, AliMUONRecoParam* recoParam);
-  virtual AliMUONVQAChecker::ECheckCode* CheckRecPoints(TObjArray** list, AliMUONRecoParam* recoParam);
-  virtual AliMUONVQAChecker::ECheckCode* CheckESD(TObjArray** list, AliMUONRecoParam* recoParam);
+  virtual AliMUONVQAChecker::ECheckCode* CheckRaws(TObjArray** list, const AliMUONRecoParam* recoParam);
+  virtual AliMUONVQAChecker::ECheckCode* CheckRecPoints(TObjArray** list, const AliMUONRecoParam* recoParam);
+  virtual AliMUONVQAChecker::ECheckCode* CheckESD(TObjArray** list, const AliMUONRecoParam* recoParam);
 
 private:
   
@@ -34,7 +34,7 @@ private:
                                                                  const TH1* hbuspatchconfig, 
                                                                  const TH1& hnpads, 
                                                                  Int_t nevents,
-                                                                 AliMUONRecoParam& recoParam);
+                                                                 const AliMUONRecoParam& recoParam);
 
   ClassDef(AliMUONTrackerQAChecker,1)  // MUON quality assurance checker
 

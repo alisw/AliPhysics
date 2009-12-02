@@ -101,7 +101,7 @@ AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac)
 
 //______________________________________________________________________________
 Double_t *
-AliEMCALQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
+AliEMCALQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
 {
 	/// Check objects in list
 	

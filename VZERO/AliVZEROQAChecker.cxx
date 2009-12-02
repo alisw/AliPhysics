@@ -42,7 +42,7 @@
 ClassImp(AliVZEROQAChecker)
 
 //__________________________________________________________________
-Double_t * AliVZEROQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/) 
+Double_t * AliVZEROQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/) 
 {
 
 // Main check function: Depending on the TASK, different checks will be applied

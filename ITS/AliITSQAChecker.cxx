@@ -95,7 +95,7 @@ AliITSQAChecker& AliITSQAChecker::operator=(const AliITSQAChecker& qac){
 }
 
 //____________________________________________________________________________
-Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
+Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam)
 {
 
 
@@ -268,7 +268,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
 	      Double_t *stepSPD=new Double_t[AliQAv1::kNBIT];
 	      CreateStepForBit(histoSPD,stepSPD);
 	      fSPDChecker->SetStepBit(stepSPD);
-	      spdCheck[specie] = fSPDChecker->Check(index, list[specie]);
+	      spdCheck[specie] = fSPDChecker->Check(index, list[specie], recoParam);
 	      if(spdCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||spdCheck[specie]<0.)
 		{
 		  AliInfo(Form("SPD check result for %s  is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),spdCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
@@ -285,7 +285,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
 	      Double_t *stepSDD=new Double_t[AliQAv1::kNBIT];
 	      CreateStepForBit(histoSDD,stepSDD);
 	      fSDDChecker->SetStepBit(stepSDD);
-	      sddCheck[specie] = fSDDChecker->Check(index, list[specie]);
+	      sddCheck[specie] = fSDDChecker->Check(index, list[specie], recoParam);
 	      if(sddCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||sddCheck[specie]<0.)
 		{
 		  AliInfo(Form("SDD check result for %s  is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),sddCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
@@ -302,7 +302,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, A
 	      Double_t *stepSSD=new Double_t[AliQAv1::kNBIT];
 	      CreateStepForBit(histoSSD,stepSSD);
 	      fSSDChecker->SetStepBit(stepSSD);
-	      ssdCheck[specie] = fSSDChecker->Check(index, list[specie]);
+	      ssdCheck[specie] = fSSDChecker->Check(index, list[specie], recoParam);
 	      if(ssdCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||ssdCheck[specie]<0.)
 		{
 		  AliInfo(Form("SSD check result for %s is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),ssdCheck[specie],AliRecoParam::GetEventSpecieName(specie)));

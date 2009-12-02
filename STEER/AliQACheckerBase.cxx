@@ -149,7 +149,7 @@ AliQACheckerBase::~AliQACheckerBase()
 }
 
 //____________________________________________________________________________
-Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index, AliDetectorRecoParam * recoParam) 
+Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) 
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
@@ -190,7 +190,7 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index, AliDetectorRecoPara
 }  
 
 //____________________________________________________________________________
-Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t task, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/) 
+Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t task, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list

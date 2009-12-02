@@ -179,7 +179,7 @@ void AliITSQASSDChecker::CheckRecPoints(TH1* /*histo*/) {
 }
 
 //__________________________________________________________________
-Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * list) {  
+Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * list, const AliDetectorRecoParam * /*recoParam*/) {  
   AliDebug(AliQAv1::GetQADebugLevel(),Form("AliITSQASSDChecker called with offset: %d\n", fSubDetOffset));
 
   AliInfo(Form("AliITSQASSDChecker called with offset: %d\n", fSubDetOffset) );

@@ -54,7 +54,7 @@ AliMUONQAChecker::~AliMUONQAChecker()
 Double_t *
 AliMUONQAChecker::Check(AliQAv1::ALITASK_t index, 
                         TObjArray** list, 
-                        AliDetectorRecoParam * recoParam)
+                        const AliDetectorRecoParam * recoParam)
 {
   /// Check objects in list
   
@@ -62,7 +62,7 @@ AliMUONQAChecker::Check(AliQAv1::ALITASK_t index,
   
   TIter next(fCheckers);
   AliMUONVQAChecker* qac;
-  AliMUONRecoParam* muonRecoParam = static_cast<AliMUONRecoParam*>(recoParam);
+  const AliMUONRecoParam* muonRecoParam = static_cast<const AliMUONRecoParam*>(recoParam);
   AliMUONVQAChecker::ECheckCode* ecc(0x0);
   Double_t* rv = new Double_t[AliRecoParam::kNSpecies];
   for ( Int_t i = 0; i < AliRecoParam::kNSpecies; ++i ) 

@@ -51,7 +51,7 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/)
   return rv ;  
 }
 //____________________________________________________________________________
-Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
+Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
 {
 
 // Close version to the final one for the ACORDE QA Checker

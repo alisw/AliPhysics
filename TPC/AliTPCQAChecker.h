@@ -26,7 +26,7 @@ class AliTPCQAChecker: public AliQACheckerBase {
  AliTPCQAChecker(const AliTPCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fDebug(qac.GetDebugLevel()) {;} // cpy ctor   
   virtual ~AliTPCQAChecker() {;} // dtor
 
-  virtual Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, AliDetectorRecoParam * recoParam); 
+  virtual Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, const AliDetectorRecoParam * recoParam); 
   void Init(const AliQAv1::DETECTORINDEX_t det); 
   void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const;
 

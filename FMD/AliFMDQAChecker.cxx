@@ -45,7 +45,7 @@ ClassImp(AliFMDQAChecker)
 ; // This is for Emacs! - do not delete
 #endif
 //__________________________________________________________________
-Double_t* AliFMDQAChecker::Check(AliQAv1::ALITASK_t what, TObjArray ** list, AliDetectorRecoParam* /*t*/) {
+Double_t* AliFMDQAChecker::Check(AliQAv1::ALITASK_t what, TObjArray ** list, const AliDetectorRecoParam* /*t*/) {
   
   Double_t* rv = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
