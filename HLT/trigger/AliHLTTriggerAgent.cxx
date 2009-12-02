@@ -106,7 +106,7 @@ int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandle
   // a central barrel charged particle multiplicity trigger
   configurationId="TRIGGER-Barrel-Multiplicity";
 
-  // define the inputsfor the BarrelMultiplicityTrigger
+  // define the inputs for the BarrelMultiplicityTrigger
   triggerInputs="GLOBAL-esd-converter";
 
   // check for the availibility
@@ -123,9 +123,35 @@ int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandle
     delete pTokens;
   }
 
+  TString arg;
   if (triggerInputs.Length()>0) {
+    // define multiple instances of the BarrelMultiplicityTrigger with different settings
     HLTInfo("Configuring inputs for %s: %s", configurationId.Data(), triggerInputs.Data());
     pHandler->CreateConfiguration(configurationId.Data(), "BarrelMultiplicityTrigger", triggerInputs.Data(), "");
+    if (triggerOutputs.Length()>0) triggerOutputs+=" ";
+    triggerOutputs+=configurationId;
+
+    configurationId="TRIGGER-Barrel-HighMultiplicity";
+    arg="-triggername BarrelHighMultiplicity";
+    pHandler->CreateConfiguration(configurationId.Data(), "BarrelMultiplicityTrigger", triggerInputs.Data(), arg.Data());
+    if (triggerOutputs.Length()>0) triggerOutputs+=" ";
+    triggerOutputs+=configurationId;
+
+    configurationId="TRIGGER-Barrel-Pt_v01";
+    arg="-triggername BarrelPt_v01";
+    pHandler->CreateConfiguration(configurationId.Data(), "BarrelMultiplicityTrigger", triggerInputs.Data(), arg.Data());
+    if (triggerOutputs.Length()>0) triggerOutputs+=" ";
+    triggerOutputs+=configurationId;
+
+    configurationId="TRIGGER-Barrel-Pt_v02";
+    arg="-triggername BarrelPt_v02";
+    pHandler->CreateConfiguration(configurationId.Data(), "BarrelMultiplicityTrigger", triggerInputs.Data(), arg.Data());
+    if (triggerOutputs.Length()>0) triggerOutputs+=" ";
+    triggerOutputs+=configurationId;
+
+    configurationId="TRIGGER-Barrel-Pt_v03";
+    arg="-triggername BarrelPt_v03";
+    pHandler->CreateConfiguration(configurationId.Data(), "BarrelMultiplicityTrigger", triggerInputs.Data(), arg.Data());
     if (triggerOutputs.Length()>0) triggerOutputs+=" ";
     triggerOutputs+=configurationId;
   } else {
