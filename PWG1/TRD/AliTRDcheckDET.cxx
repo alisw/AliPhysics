@@ -599,7 +599,8 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
-    nclusters += tracklet->GetN();
+    Int_t n(tracklet->GetN());
+    nclusters += n;
     if(DebugLevel() > 2){
       Int_t crossing = Int_t(tracklet->IsRowCross());
       Int_t detector = tracklet->GetDetector();
@@ -622,7 +623,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
         << "phi="				<< phi
         << "kinkIndex="	<< kinkIndex
         << "TPCncls="		<< nclsTPC
-        << "nclusters=" << nclusters
+        << "TRDncls="   << n
         << "\n";
     }
   }
