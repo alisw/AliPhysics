@@ -1,4 +1,8 @@
 /*
+Draw result of perfomance test:
+
+aliroot -b -q  $ALICE_ROOT/TPC/scripts/loadTPCcalib.C $ALICE_ROOT/TPC/CalibMacros/CalibCosmic.C
+
   //gROOT->Macro("~/NimStyle.C");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
@@ -9,11 +13,16 @@
   //
   MakeDefaultPlots();
 
+  gROOT->Macro("~/NimStyle.C");
+  TFile f("cosmicPlots.root");
+  TBrowser b
+  b.Add(CosmicPlots,"CosmicPlot");
 
 */  
 
 AliTPCcalibCosmic * cosmic =0;
 TObjArray fitArr;
+Int_t colors[3]={1,3,4};
 
 void CalibCosmic(){
   // init
@@ -64,11 +73,11 @@ void SetDefaultCut(){
     cosmic->fHistoDelta[i]->GetAxis(1)->SetRangeUser(120,200);
     cosmic->fHistoPull[i]->GetAxis(1)->SetRangeUser(120,200);
     //cut on DCA r
-    cosmic->fHistoDelta[i]->GetAxis(2)->SetRangeUser(0,30);
-    cosmic->fHistoPull[i]->GetAxis(2)->SetRangeUser(0,30);
+    cosmic->fHistoDelta[i]->GetAxis(2)->SetRangeUser(0,15);
+    cosmic->fHistoPull[i]->GetAxis(2)->SetRangeUser(0,15);
     //cut on z at
-    cosmic->fHistoDelta[i]->GetAxis(3)->SetRangeUser(-0,100);
-    cosmic->fHistoPull[i]->GetAxis(3)->SetRangeUser(-0,100);
+    cosmic->fHistoDelta[i]->GetAxis(3)->SetRangeUser(20,200);
+    cosmic->fHistoPull[i]->GetAxis(3)->SetRangeUser(20,200);
   }
   cosmic->fHistoDelta[0]->GetAxis(0)->SetRangeUser(-1,1);
   cosmic->fHistoDelta[1]->GetAxis(0)->SetRangeUser(-1,1);
@@ -93,6 +102,8 @@ TH1* GetFit2D(Int_t type, Int_t var, Bool_t resol){
   if (!resol) hres = (TH1*)(fitArr.At(1)->Clone());
   hres->SetMarkerStyle(20);
   hres->SetMarkerColor(2);
+  hres->GetYaxis()->SetTitleOffset(1.8);
+  hres->GetYaxis()->SetDecimals(kTRUE);
   return hres;
 }
 
@@ -197,7 +208,7 @@ void DrawStat(Int_t coord, TObjArray *array=0){
   //
   //
   TCanvas *cStat = new TCanvas(Form("Cosmic stat%d",coord), Form("CosmicStat%d",coord),800,600);
-  Float_t mx0=0.12, mx1=0.1, my0=0.15, my1=0.1;
+  Float_t mx0=0.2, mx1=0.05, my0=0.15, my1=0.1;
   //pad->SetMargin(mx0,mx1,my0,my1);
   cStat->Divide(3,3);
   for (Int_t i=0; i<8; i++){
@@ -208,7 +219,7 @@ void DrawStat(Int_t coord, TObjArray *array=0){
 }
 
 void SetStylePad(TVirtualPad *pad){
-  Float_t mx0=0.12, mx1=0.1, my0=0.15, my1=0.1;
+  Float_t mx0=0.2, mx1=0.05, my0=0.15, my1=0.1;
   pad->SetMargin(mx0,mx1,my0,my1);
   pad->SetTicks(1,1);
   pad->SetGrid(1,1); 
@@ -224,28 +235,85 @@ void MakePlotPt(TObjArray * array){
   //
   TH1 * hisRes=0;
   TH1 * hisMean=0;
-  hisRes  = GetFit2D(5,7,kTRUE);
-  hisMean = GetFit2D(5,7,kFALSE);
-  hisRes->SetMarkerStyle(20);
-  hisMean->SetMarkerStyle(20);
-  hisRes->Scale(100);
-  hisMean->Scale(100);
-  hisRes->SetMaximum(30);
-  hisRes->SetMinimum(0);
-  hisMean->SetMaximum(3);
-  hisMean->SetMinimum(-3);
-  hisRes->SetName("Pt resol");
-  hisRes->SetName("p_{t} resolution");
-  hisRes->SetYTitle("#sigma_{p_{t}}/p_{t} (%)");
-  hisMean->SetYTitle("#Delta_{p_{t}}/p_{t} (%)");
-  hisRes->GetXaxis()->SetRangeUser(0,20);
-  hisMean->GetXaxis()->SetRangeUser(0,20);  
-  cptRes->cd(2); 
-  hisRes->Draw("");
-  cptRes->cd(1);
-  hisMean->Draw();
+  for (Int_t i=0; i<3; i++){
+    if (i==0) cosmic->fHistoDelta[5]->GetAxis(6)->SetRangeUser(0,2);
+    if (i==1) cosmic->fHistoDelta[5]->GetAxis(6)->SetRangeUser(-2,0);
+    if (i==2) cosmic->fHistoDelta[5]->GetAxis(6)->SetRangeUser(-2,2);  
+    hisRes  = GetFit2D(5,7,kTRUE);
+    hisMean = GetFit2D(5,7,kFALSE);
+    hisRes->SetMarkerStyle(20);
+    hisMean->SetMarkerStyle(20);
+    hisRes->SetMarkerColor(colors[i]);
+    hisMean->SetMarkerColor(colors[i]);
+    hisRes->Scale(100);
+    hisMean->Scale(100);
+    hisRes->SetMaximum(30);
+    hisRes->SetMinimum(0);
+    hisMean->SetMaximum(20);
+    hisMean->SetMinimum(-20);
+    hisRes->SetName("Pt resol");
+    hisRes->SetName("p_{t} resolution");
+    hisRes->SetYTitle("#sigma_{p_{t}}/p_{t} (%)");
+    hisMean->SetYTitle("#Delta_{p_{t}}/p_{t} (%)");
+    hisRes->GetXaxis()->SetRangeUser(0,10);
+    hisMean->GetXaxis()->SetRangeUser(0,10);  
+    cptRes->cd(2); 
+    hisRes->Draw("same");
+    if (i==0) hisRes->Draw("");
+    cptRes->cd(1);
+    hisMean->Draw("same");
+    if (i==0) hisMean->Draw("");
+  }
   if (array) array->AddLast(cptRes);
 }
+
+
+void MakePlotP4(TObjArray * array){
+  //
+  //
+  TCanvas *cptRes = new TCanvas("TPCP4Resol","TPCP4Resol",600,500);
+  cptRes->Divide(2,1);
+  SetStylePad(cptRes->cd(1));
+  SetStylePad(cptRes->cd(2));
+  //
+  TH1 * hisRes  =0;
+  TH1 * hisMeanP=0;
+  
+  for (Int_t i=0; i<3; i++){
+    if (i==0) cosmic->fHistoDelta[4]->GetAxis(6)->SetRangeUser(0,2);
+    if (i==1) cosmic->fHistoDelta[4]->GetAxis(6)->SetRangeUser(-2,0);
+    if (i==2) cosmic->fHistoDelta[4]->GetAxis(6)->SetRangeUser(-2,2);
+    hisRes  = GetFit2D(4,7,kTRUE);
+    hisMean = GetFit2D(4,7,kFALSE);
+    hisRes->SetMarkerStyle(20+i);
+    hisMean->SetMarkerStyle(20+i);
+    hisMean->SetMarkerColor(colors[i]);
+    hisRes->SetMarkerColor(colors[i]);
+    hisRes->SetMaximum(0.04);
+    hisRes->SetMinimum(-0.0);
+    hisMean->SetMaximum(0.02);
+    hisMean->SetMinimum(-0.02);
+    hisRes->SetName("C resol");
+    hisRes->SetName("C resolution");
+    hisRes->SetYTitle("#sigma_{C} (1/GeV)");
+    hisMean->SetYTitle("#Delta_{C} (1/GeV)");
+    hisMean->SetXTitle("p_{t} (GeV)");
+    hisRes->SetXTitle("p_{t} (GeV)");
+    hisRes->GetXaxis()->SetRangeUser(0,10);
+    hisMean->GetXaxis()->SetRangeUser(0,10);      
+    cptRes->cd(2); 
+    hisRes->Draw("same");
+    if (i==0) hisRes->Draw("");
+    cptRes->cd(1);
+    hisMean->Draw("same");
+    if (i==0) hisMean->Draw("");
+  }
+  if (array) array->AddLast(cptRes);
+}
+
+
+
+
 
 
 void MakePlotPosY(TObjArray * array){
@@ -258,22 +326,35 @@ void MakePlotPosY(TObjArray * array){
   //
   TH1 * hisRes=0;
   TH1 * hisMean=0;
-  hisRes  = GetFit2D(0,7,kTRUE);
-  hisMean = GetFit2D(0,7,kFALSE);
-  hisRes->SetMaximum(0.4);
-  hisRes->SetMinimum(0.0);
-  hisMean->SetMaximum(0.2);
-  hisMean->SetMinimum(-0.2);
-  hisRes->SetName("Y resol");
-  hisRes->SetName("Y resolution");
-  hisRes->SetYTitle("#sigma_{y} (cm)");
-  hisMean->SetYTitle("#Delta_{y} (cm)");
-  hisRes->GetXaxis()->SetRangeUser(0,20);
-  hisMean->GetXaxis()->SetRangeUser(0,20);  
-  cptRes->cd(2); 
-  hisRes->Draw("");
-  cptRes->cd(1);
-  hisMean->Draw();
+  for (Int_t i=0; i<3; i++){
+    if (i==0) cosmic->fHistoDelta[0]->GetAxis(6)->SetRangeUser(0,2);
+    if (i==1) cosmic->fHistoDelta[0]->GetAxis(6)->SetRangeUser(-2,0);
+    if (i==2) cosmic->fHistoDelta[0]->GetAxis(6)->SetRangeUser(-2,2);
+    hisRes  = GetFit2D(0,7,kTRUE);
+    hisMean = GetFit2D(0,7,kFALSE);
+    hisRes->SetMarkerStyle(20+i);
+    hisMean->SetMarkerStyle(20+i);
+    hisMean->SetMarkerColor(colors[i]);
+    hisRes->SetMarkerColor(colors[i]);
+    
+    //
+    hisRes->SetMaximum(0.4);
+    hisRes->SetMinimum(0.0);
+    hisMean->SetMaximum(0.4);
+    hisMean->SetMinimum(-0.4);
+    hisRes->SetName("Y resol");
+    hisRes->SetName("Y resolution");
+    hisRes->SetYTitle("#sigma_{y} (cm)");
+    hisMean->SetYTitle("#Delta_{y} (cm)");
+    hisRes->GetXaxis()->SetRangeUser(0,10);
+    hisMean->GetXaxis()->SetRangeUser(0,10);  
+    cptRes->cd(2); 
+    hisRes->Draw("same");
+    if (i==0) hisRes->Draw("");
+    cptRes->cd(1);
+    hisMean->Draw("same");
+    if (i==0) hisMean->Draw("");
+  }
   if (array) array->AddLast(cptRes);
 }
 
@@ -287,22 +368,35 @@ void MakePlotPosZ(TObjArray * array){
   //
   TH1 * hisRes=0;
   TH1 * hisMean=0;
-  hisRes  = GetFit2D(1,7,kTRUE);
-  hisMean = GetFit2D(1,7,kFALSE);
-  hisRes->SetMaximum(0.4);
-  hisRes->SetMinimum(0.0);
-  hisMean->SetMaximum(0.2);
-  hisMean->SetMinimum(-0.2);
-  hisRes->SetName("Z resol");
-  hisRes->SetName("Z resolution");
-  hisRes->SetYTitle("#sigma_{z} (cm)");
-  hisMean->SetYTitle("#Delta_{z} (cm)");
-  hisRes->GetXaxis()->SetRangeUser(0,20);
-  hisMean->GetXaxis()->SetRangeUser(0,20);  
-  cptRes->cd(2); 
-  hisRes->Draw("");
-  cptRes->cd(1);
-  hisMean->Draw();
+  for (Int_t i=0; i<3; i++){
+    if (i==0) cosmic->fHistoDelta[1]->GetAxis(6)->SetRangeUser(0,2);
+    if (i==1) cosmic->fHistoDelta[1]->GetAxis(6)->SetRangeUser(-2,0);
+    if (i==2) cosmic->fHistoDelta[1]->GetAxis(6)->SetRangeUser(-2,2);
+    
+    hisRes  = GetFit2D(1,7,kTRUE);
+    hisMean = GetFit2D(1,7,kFALSE);
+    hisRes->SetMaximum(0.4);
+    hisRes->SetMinimum(0.0);
+    hisMean->SetMaximum(0.2);
+    hisMean->SetMinimum(-0.2); 
+    hisRes->SetMarkerStyle(20);
+    hisMean->SetMarkerStyle(20);
+    hisRes->SetMarkerColor(colors[i]);
+    hisMean->SetMarkerColor(colors[i]);
+ 
+    hisRes->SetName("Z resol");
+    hisRes->SetName("Z resolution");
+    hisRes->SetYTitle("#sigma_{z} (cm)");
+    hisMean->SetYTitle("#Delta_{z} (cm)");
+    hisRes->GetXaxis()->SetRangeUser(0,10);
+    hisMean->GetXaxis()->SetRangeUser(0,10);  
+    cptRes->cd(2); 
+    hisRes->Draw("same");
+    if (i==0) hisRes->Draw();
+    cptRes->cd(1);
+    hisMean->Draw("same");
+    if (i==0) hisMean->Draw();
+  }
   if (array) array->AddLast(cptRes);
 }
 
@@ -316,7 +410,21 @@ void  MakeDefaultPlots(){
   MakePlotPt(picArray);
   MakePlotPosY(picArray);
   MakePlotPosZ(picArray);
+  MakePlotP4(picArray);
   TFile f("cosmicPlots.root","recreate");
   picArray->Write("CosmicPlots",TObject::kSingleKey);
   f.Close();
+  TPostScript *ps=new TPostScript("cosmicPerformance.ps", 112);
+  for (Int_t ipad=0;ipad<picArray->GetEntries();ipad++){
+    TCanvas *c =dynamic_cast<TCanvas*> picArray->At(ipad);
+    if (c) {
+      c->SaveAs(Form("pic/cosmic/%s.gif",c->GetName()));
+      c->SaveAs(Form("pic/cosmic/%s.eps",c->GetName()));
+      ps->NewPage();
+      c->Draw();
+      c->Update();
+    }
+  } 
+  ps->Close();
+  delete ps;
 }

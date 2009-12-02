@@ -1,6 +1,16 @@
  
 /* 
    //
+   // 0. Make a calibration
+   // 1. Make a laser scan list
+   //    e.g in TPC workscape 
+   find `pwd`/*/laserMean.root >laserScan.txt
+   // 2. Define a reference data 
+   rrunA=84469/; for a in `cat laserScan.txt`; do echo `pwd`/$rrunA/laserMean.root; done >laserScanRefA.txt
+   rrunC=84469; for a in `cat laserScan.txt`; do echo `pwd`/$rrunC/laserMean.root; done >laserScanRefC.txt
+   rrun=84469; for a in `cat laserScan.txt`; do echo `pwd`/$rrun/laserMean.root; done >laserScanRef.txt
+										  // 
+   //
    .x ~/rootlogon.C
    gSystem->Load("libANALYSIS");
    gSystem->Load("libTPCcalib"); 

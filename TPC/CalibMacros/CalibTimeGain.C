@@ -10,7 +10,7 @@ gSystem->Load("libSTAT");
 gSystem->Load("libTPCcalib");
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
 
-.L $ALICE_ROOT/TPC/CalibMacros/CalibTimeGain.C++
+.L $ALICE_ROOT/TPC/CalibMacros/CalibTimeGain.C+
 
 TFile fcalib("CalibObjectsTrain1.root");
 //TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
@@ -18,7 +18,7 @@ TFile fcalib("CalibObjectsTrain1.root");
 AliTPCcalibTimeGain * gain = ( AliTPCcalibTimeGain *)fcalib.Get("calibTimeGain")
 
 ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-CalibTimeGain(gain, ocdbStorage.Data(),70000,100000)
+CalibTimeGain(gain, ocdbStorage.Data(),70000,100000,kTRUE)
 
 */
 

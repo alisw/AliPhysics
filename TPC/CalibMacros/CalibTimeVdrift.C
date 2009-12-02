@@ -25,16 +25,26 @@ CalibTimeVdriftGlobal()
 //
 // 5. try to visualize new entry
 //
-ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-AliCDBManager::Instance()->SetSpecificStorage("/TPC/Calib/TimeDrift",ocdbStorage.Data());
 Int_t run=90000; //
-AliCDBEntry* entry = AliCDBManager::Instance()->Get("/TPC/Calib/TimeDrift",run)
+//.x ConfigOCDB.C(run);
+
+ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB")
+AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/TimeDrift",ocdbStorage.Data());
+
+AliCDBEntry* entry = AliCDBManager::Instance()->Get("TPC/Calib/TimeDrift",run)
 TObjArray * arr = (TObjArray*)entry->GetObject();
+
 TObjArray *picArray = new TObjArray;
 MakeDefaultPlots(arr,picArray);
 
+//
+//  7. Tricky part - hopefully not neccessary
+//     change the default time 0
+//     BUG in OCDB - we can not change the SpecificStorage once we read given
+//                   entry
 
+   .x ConfigOCDB.C(
 
 */
 
@@ -60,6 +70,7 @@ MakeDefaultPlots(arr,picArray);
 #include "AliTPCcalibDB.h"
 #include "AliTPCcalibDButil.h"
 #include "AliRelAlignerKalman.h"
+#include "AliTPCParamSR.h"
 
 TString ocdbStorage="dummy";
 //
@@ -147,6 +158,32 @@ void CalibTimeVdriftGlobal(Char_t* file="CalibObjectsTrain1.root"){
  
 }
 
+
+void UpdateDriftParam(AliTPCParam *param, TObjArray *arr, Int_t startRun){
+  //
+  //  update the OCDB entry for the nominal time0
+  //
+  //
+  //  AliTPCParam * param = AliTPCcalibDB::Instance()->GetParameters();
+  AliTPCParam *paramNew = (AliTPCParam *)param->Clone();
+  TGraphErrors *grT =  (TGraphErrors *)arr->FindObject("ALIGN_ITSM_TPC_T0");
+  Double_t deltaTcm = TMath::Median(grT->GetN(),grT->GetY());
+  Double_t deltaT   = deltaTcm/param->GetDriftV();
+  paramNew->SetL1Delay(param->GetL1Delay()-deltaT);
+  paramNew->Update();
+
+  AliCDBMetaData *metaData= new AliCDBMetaData();
+  metaData->SetObjectClassName("TObjArray");
+  metaData->SetResponsible("Marian Ivanov");
+  metaData->SetBeamPeriod(1);
+  metaData->SetAliRootVersion("05-25-02"); //root version
+  metaData->SetComment("Updated calibration of nominal time 0");
+  AliCDBId* id1=NULL;
+  id1=new AliCDBId("TPC/Calib/Parameters", startRun, AliCDBRunRange::Infinity());
+  AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
+  gStorage->Put(param, (*id1), metaData);
+
+}
 
 void CalibTimeVdrift(Int_t runNumber, AliTPCcalibTime* vdrift, Int_t end=false){
   TObjArray* vdriftArray = new TObjArray();
@@ -663,30 +700,35 @@ void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift){
   //
   TObjArray * arrayITSP= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 0, 5.);
   TObjArray * arrayITSM= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 1, 5.);
+  TObjArray * arrayITSB= AliTPCcalibDButil::SmoothRelKalman(arrayITSP,arrayITSM);
   TObjArray * arrayTOFP= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,*mstatTOF, 0, 5.);
   TObjArray * arrayTOFM= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,*mstatTOF, 1, 5.);
+  TObjArray * arrayTOFB= AliTPCcalibDButil::SmoothRelKalman(arrayTOFP,arrayTOFM);
+
   TObjArray * arrayTRDP= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,*mstatTRD, 0, 5.);
   TObjArray * arrayTRDM= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,*mstatTRD, 1, 5.);
+  TObjArray * arrayTRDB= AliTPCcalibDButil::SmoothRelKalman(arrayTRDP,arrayTRDM);
+
   //
   //
   Int_t entries=TMath::Max(arrayITS->GetEntriesFast(),arrayTOF->GetEntriesFast());
-  TObjArray *arrays[9]={arrayITS, arrayITSP, arrayITSM,
-			arrayTRD, arrayTRDP, arrayTRDM,
-			arrayTOF, arrayTOFP, arrayTOFM};
-  TString   grnames[9]={"ALIGN_ITS", "ALIGN_ITSP", "ALIGN_ITSM",
-			"ALIGN_TRD", "ALIGN_TRDP", "ALIGN_TRDM",
-			"ALIGN_TOF", "ALIGN_TOFP", "ALIGN_TOFM"};
+  TObjArray *arrays[12]={arrayITS, arrayITSP, arrayITSM, arrayITSB,
+			 arrayTRD, arrayTRDP, arrayTRDM, arrayTRDB,
+			 arrayTOF, arrayTOFP, arrayTOFM, arrayTOFB};
+  TString   grnames[12]={"ALIGN_ITS", "ALIGN_ITSP", "ALIGN_ITSM", "ALIGN_ITSB",
+			 "ALIGN_TRD", "ALIGN_TRDP", "ALIGN_TRDM","ALIGN_TRDB",
+			 "ALIGN_TOF", "ALIGN_TOFP", "ALIGN_TOFM","ALIGN_TOFB"};
   TString   grpar[9]={"DELTAPSI", "DELTATHETA", "DELTAPHI",
 		      "DELTAX", "DELTAY", "DELTAZ",
 		      "DRIFTVD", "T0", "VDGY"};
 
-
+  
   TVectorD vX(entries);
   TVectorD vY(entries);
   TVectorD vEx(entries);
   TVectorD vEy(entries);
   TObjArray *arr=0;
-  for (Int_t iarray=0; iarray<9; iarray++){
+  for (Int_t iarray=0; iarray<12; iarray++){
     arr = arrays[iarray];
     if (arr==0) continue;
     for (Int_t ipar=0; ipar<9; ipar++){      
