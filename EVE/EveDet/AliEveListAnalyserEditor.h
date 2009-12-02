@@ -34,7 +34,6 @@
 #include <TGFrame.h>
 #endif
 
-//class AliEveTRDTrack;
 class AliEveListAnalyser;
 class AliTRDReconstructor;
 class TCanvas;     
@@ -82,8 +81,6 @@ public:
   void    NewMacros();
   void    RemoveMacros();
   void    SaveMacroList(TMap* list);
-//  void    SetTrackColor(Int_t ind);
-//  void    SetTrackModel(Int_t ind);
   void    UpdateDataFromMacroListSelection();
   void    UpdateHistoList();
   void    UpdateMacroList();
@@ -107,21 +104,10 @@ private:
   Bool_t            fInheritSettings;        // Flag indicating, whether the macro list will be inherited from
                                              // the previously loaded analyse object list within the next call of SetModel
 
-// TODO: Old version with "style" still alive has comment:
-// Flag indicating, whether the macro list and the style settings will be 
-// inherited from the previously loaded track list within the next call 
-// of SetModel
-
-//  TGHorizontalFrame* fStyleFrame;            // Frame for the style stuff
   TGVerticalFrame*   fMainFrame;             // Top frame for macro functionality.
   TGVerticalFrame*   fHistoFrame;            // Top frame for the histogram stuff
   TGVerticalFrame*   fHistoSubFrame;         // Frame for the histogram buttons themselves
   TGHorizontalFrame* fBrowseFrame;           // Frame for features corresponding to searching macros
-//  TGButtonGroup*     fbgStyleColor;          // Button group for the color model
-//  TGButtonGroup*     fbgStyleTrack;          // Button group for the track model
-  
-//  TGRadioButton**    frbColor;               // Radio buttons for the color model
-//  TGRadioButton**    frbTrack;               // Radio buttons for the track model
 
   TGTextButton*   fbBrowse;                  // "Browse" button
   TGTextButton*   fbNew;                     // "New" button
@@ -145,8 +131,7 @@ private:
   TGHorizontal3DLine *fLine1;
   TGHorizontal3DLine *fLine2;
   TGHorizontal3DLine *fLine3;
-  TGHorizontal3DLine *fLine4;
-//  TGHorizontal3DLine *fLine5;  
+  TGHorizontal3DLine *fLine4; 
 
   TGCheckButton** fCheckButtons;            // Check buttons for histograms
 

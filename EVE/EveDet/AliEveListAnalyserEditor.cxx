@@ -5,6 +5,7 @@
  * All rights reserved.                                                  *
  *************************************************************************/
 
+//TODO: Documentation
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // AliEveListAnalyserEditor                                     //
@@ -20,13 +21,10 @@
 // the file and how to access the data.                                 //
 //////////////////////////////////////////////////////////////////////////
 
-#include <EveDet/AliEveTRDData.h>
 #include <EveDet/AliEveListAnalyser.h>
 #include "AliEveListAnalyserEditor.h"
 
 #include <EveBase/AliEveEventManager.h>
-#include <AliTRDReconstructor.h>
-//#include <AliTRDtrackV1.h>
 #include <TCanvas.h>     
 #include <TEveBrowser.h>
 #include <TEveGedEditor.h> 
@@ -67,15 +65,10 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
   fHistoCanvasName(0),
   fInheritedMacroList(0),
   fInheritSettings(kFALSE),
-//  fStyleFrame(0),
   fMainFrame(0),
   fHistoFrame(0),
   fHistoSubFrame(0),
   fBrowseFrame(0),
-//  fbgStyleColor(0),
-//  fbgStyleTrack(0),
-//  frbColor(new TGRadioButton*[3]),
-//  frbTrack(new TGRadioButton*[3]),
   fbBrowse(0),
   fbNew(0),
   fbApplyMacros(0),
@@ -88,50 +81,9 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
   fFileTypes(0),
   fLabel1(0), fLabel2(0), fLabel3(0), fLabel4(0),
   fLine1(0), fLine2(0), fLine3(0), fLine4(0),
-// fLine5(0),
   fCheckButtons(0)
 {
   // Creates the AliEveListAnalyserEditor.
-
-/*
-  // Style stuff
-  fLine5 = new TGHorizontal3DLine(this, 194, 8);
-  AddFrame(fLine5, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 8));
-  fStyleFrame = new TGHorizontalFrame(this);
-  AddFrame(fStyleFrame);
-
-  // Style - Track model
-  fbgStyleTrack = new TGButtonGroup(fStyleFrame, "Track model");
-  fbgStyleTrack->SetMapSubwindows(kTRUE);
-  fbgStyleTrack->Resize(194, 200);
-  fStyleFrame->AddFrame(fbgStyleTrack);
-
-  frbTrack[0] = new TGRadioButton(fbgStyleTrack, "Rieman", 0);
-  frbTrack[0]->SetToolTipText("Set the track model to \"Rieman\" (i.e. the used fit method)");
-  fbgStyleTrack->AddFrame(frbTrack[0]);
-  frbTrack[1] = new TGRadioButton(fbgStyleTrack, "Kalman", 1);
-  frbTrack[1]->SetToolTipText("Set the track model to \"Kalman\" (i.e. the used fit method)");
-  fbgStyleTrack->AddFrame(frbTrack[1]);
-  frbTrack[2] = new TGRadioButton(fbgStyleTrack, "Line", 2);
-  frbTrack[2]->SetToolTipText("Set the track model to \"Line\" (i.e. the used fit method)");
-  fbgStyleTrack->AddFrame(frbTrack[2]);  
-
-  // Style - Color model
-  fbgStyleColor = new TGButtonGroup(fStyleFrame, "Color model");
-  fbgStyleColor->SetMapSubwindows(kTRUE);
-  fbgStyleColor->Resize(194, 200);
-  fStyleFrame->AddFrame(fbgStyleColor);
-
-  frbColor[0] = new TGRadioButton(fbgStyleColor, "PID LQ", 0);
-  frbColor[0]->SetToolTipText("Set color model to \"PID LQ\" -> 2 dimensional likelihood particle identification");
-  fbgStyleColor->AddFrame(frbColor[0]);
-  frbColor[1] = new TGRadioButton(fbgStyleColor, "PID NN", 1);
-  frbColor[1]->SetToolTipText("Set color model to \"PID NN\" -> Neural network particle identification");
-  fbgStyleColor->AddFrame(frbColor[1]);
-  frbColor[2] = new TGRadioButton(fbgStyleColor, "ESD Source", 2);
-  frbColor[2]->SetToolTipText("Set color model to \"ESD Source\" -> By source (TPC track prolongation or TRD stand alone)");
-  fbgStyleColor->AddFrame(frbColor[2]);  
-*/  
 
   // Functionality for adding macros  
   fMainFrame = CreateEditorTabSubFrame("Process");
@@ -223,12 +175,6 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
 
   fHistoCanvasName = new TGString("");
 
-/*
-  // Handle style changed signals:
-  fbgStyleTrack->Connect("Clicked(Int_t)", "AliEveListAnalyserEditor", this, "SetTrackModel(Int_t)");
-  fbgStyleColor->Connect("Clicked(Int_t)", "AliEveListAnalyserEditor", this, "SetTrackColor(Int_t)");
-*/
-
   // Handle the signal "Selected(Int_t ind)"
   ftlMacroList->Connect("Selected(Int_t)", "AliEveListAnalyserEditor", this, "UpdateMacroListSelection(Int_t)");
   ftlMacroSelList->Connect("Selected(Int_t)", "AliEveListAnalyserEditor", this, "UpdateMacroListSelection(Int_t)");
@@ -265,6 +211,7 @@ AliEveListAnalyserEditor::~AliEveListAnalyserEditor()
     delete fHistoCanvasName;
     fHistoCanvasName = 0;
   }
+  
   if (fInheritedMacroList != 0)
   {
     fInheritedMacroList->Delete();
@@ -295,7 +242,7 @@ void AliEveListAnalyserEditor::AddMacro(const Char_t* name, const Char_t* path)
     break;
   case SIGNATURE_ERROR:
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
-                 "Macro has not the signature of...\n...a single object selection macro: Bool_t YourMacro(const TObject*)\n...a correlated objects selection macro: Bool_t YourMacro(const TObject*, const TObject*)\n...a single object analyse macro: void YourMacro(const TObject*, Double_t*&, Int_t&)\n...a correlated objects analyse macro: void YourMacro(const TObject*, const TObject*, Double_t*&, Int_t&)\n...a single object histo macro: TH1* YourMacro(const TObject*)\n...a correlated objects histo macro: TH1* YourMacro(const TObject*, const TObject*)", 
+                 "Macro has not the signature of...\n...a single object selection macro: Bool_t YourMacro(const YourObjectType*)\n...a correlated objects selection macro: Bool_t YourMacro(const YourObjectType*, const YourObjectType*)\n...a single object analyse macro: void YourMacro(const YourObjectType*, Double_t*&, Int_t&)\n...a correlated objects analyse macro: void YourMacro(const YourObjectType*, const YourObjectType*, Double_t*&, Int_t&)\n...a single object histo macro: TH1* YourMacro(const YourObjectType*)\n...a correlated objects histo macro: TH1* YourMacro(const YourObjectType*, const YourObjectType*)", 
                  kMBIconExclamation, kMBOk);
     break;               
   case NOT_EXIST_ERROR:
@@ -387,11 +334,6 @@ void AliEveListAnalyserEditor::BrowseMacros()
       iter = (TObjString*)fFileInfo->fFileNamesList->After(iter);
     }
   }
-
-  // -> The following problem has been fixed (trunk -> Changes according to 03 September 2008):
-  // Some error occurs, when one ends the filedialog with "cancel": fileInfo->fFileNamesList is set to 0x0, but
-  // in the next launch no new memory is allocated. So do this manually.
-  //if (fileInfo->fFileNamesList == 0)  fileInfo->fFileNamesList = new TList();
 }
 
 //______________________________________________________
@@ -720,11 +662,8 @@ void AliEveListAnalyserEditor::HandleMacroPathSet()
 void AliEveListAnalyserEditor::HandleNewEventLoaded()
 {
   // Closes the tabs created by this object and sets a flag that will
-  // cause the function SetModel() to inherit the macro lists + style
+  // cause the function SetModel() to inherit the macro lists
   // for the next AliEveListAnalyser from the current one.
-
-//TODO: Old version with style tab....
-  // Inherit the macro list and track style for the next track list!
 
   // Inherit the macro list for the next analyse object list!
   fInheritSettings = kTRUE;
@@ -776,33 +715,6 @@ void AliEveListAnalyserEditor::InheritMacroList()
   fInheritedMacroList = 0;
 }
 
-/*
-//______________________________________________________
-void AliEveListAnalyserEditor::InheritStyle()
-{
-  // The old styles are stored in the corresponding button groups. This function will replace
-  // the style settings of the newly loaded AliEveListAnalyser with the old styles. With this, the settings
-  // will be inherited from the previously loaded AliEveListAnalyser.
-
-  for (Int_t ind = 0; ind < 3; ind++)
-  {
-    if (fbgStyleTrack->GetButton(ind)->IsOn())
-    {
-      SetTrackModel(ind);
-      break;
-    }
-  }
-  for (Int_t ind = 0; ind < 3; ind++)
-  {
-    if (fbgStyleColor->GetButton(ind)->IsOn())
-    {
-      SetTrackColor(ind);
-      break;
-    }
-  }
-}
-*/
-
 //______________________________________________________
 void AliEveListAnalyserEditor::NewMacros()
 {
@@ -836,6 +748,37 @@ void AliEveListAnalyserEditor::RemoveMacros()
 
   if (iterator != 0)  delete iterator;
   iterator = 0;
+}
+
+//______________________________________________________
+void AliEveListAnalyserEditor::SaveMacroList(TMap* list)
+{
+  // Saves the provided macro list in an interior list. This list will be used by
+  // InheritMacroList() to restore the data in "list". With this method one is able
+  // to inherit the macro list from analyse object list to analyse object list (i.e. from event to event).
+
+  if (fInheritedMacroList != 0)
+  {
+    fInheritedMacroList->Delete();
+    delete fInheritedMacroList;
+  }
+  fInheritedMacroList = new TMap();
+  fInheritedMacroList->SetOwnerKeyValue(kTRUE, kTRUE);
+
+  TMapIter* iter = (TMapIter*)list->MakeIterator();
+  TObject* key = 0;
+  TGeneralMacroData* macro = 0;
+  
+  while ((key = iter->Next()) != 0)
+  {
+    macro = (TGeneralMacroData*)fM->fMacroList->GetValue(key);
+    if (macro != 0) fInheritedMacroList->Add(new TObjString(key->GetName()), 
+                                             new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
+    else
+    {
+      Error("AliEveListAnalyserEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+    }
+  }
 }
 
 //______________________________________________________
@@ -883,116 +826,16 @@ void AliEveListAnalyserEditor::SetModel(TObject* obj)
   if (fInheritSettings)
   {
     InheritMacroList();
-    //TODO
-    //InheritStyle();
 
     fInheritSettings = kFALSE;
   }
-//TODO
-/*
-  // Select the correct styles
-  Int_t b = 0;
-  UChar_t style = fM->GetSelectedTrackStyle();
-  if (TESTBIT(style, AliEveTRDTrack::kSource)) b = 2;
-  else 
-  {
-    if (TESTBIT(style, AliEveTRDTrack::kPID)) b = 1;
-    else b = 0;
-  } 
-  fbgStyleColor->SetButton(b, kTRUE);
 
-
-  if (TESTBIT(style, AliEveTRDTrack::kTrackCosmics)) b = 2;
-  else
-  {
-    if (TESTBIT(style, AliEveTRDTrack::kTrackModel)) b = 1;
-    else b = 0;
-  }
-  fbgStyleTrack->SetButton(b, kTRUE);
-*/  
   UpdateMacroList();
   UpdateHistoList(); 
 
   // View correct tab
   GetGedEditor()->GetTab()->SetTab(fM->GetSelectedTab()); 
 }
-
-//______________________________________________________
-void AliEveListAnalyserEditor::SaveMacroList(TMap* list)
-{
-  // Saves the provided macro list in an interior list. This list will be used by
-  // InheritMacroList() to restore the data in "list". With this method one is able
-  // to inherit the macro list from analyse object list to analyse object list (i.e. from event to event).
-
-  if (fInheritedMacroList != 0)
-  {
-    fInheritedMacroList->Delete();
-    delete fInheritedMacroList;
-  }
-  fInheritedMacroList = new TMap();
-  fInheritedMacroList->SetOwnerKeyValue(kTRUE, kTRUE);
-
-  TMapIter* iter = (TMapIter*)list->MakeIterator();
-  TObject* key = 0;
-  TGeneralMacroData* macro = 0;
-  
-  while ((key = iter->Next()) != 0)
-  {
-    macro = (TGeneralMacroData*)fM->fMacroList->GetValue(key);
-    if (macro != 0) fInheritedMacroList->Add(new TObjString(key->GetName()), 
-                                             new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
-    else
-    {
-      Error("AliEveListAnalyserEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
-    }
-  }
-}
-
-/*
-//______________________________________________________
-void AliEveListAnalyserEditor::SetTrackColor(Int_t ind)
-{
-  // Sets the color model for the tracks, updates the tracks with this model and
-  // redraws the scene.
-
-  switch(ind)
-  { 
-    case AliTRDpidUtil::kLQ:
-      fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDpidUtil::kLQ);
-      break;
-    case AliTRDpidUtil::kNN:
-      fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDpidUtil::kNN);
-      break;
-    default:
-      fM->UpdateTrackStyle(AliEveTRDTrack::kSource);
-      break;
-  }
-
-  gEve->Redraw3D();
-}
-
-//______________________________________________________
-void AliEveListAnalyserEditor::SetTrackModel(Int_t ind)
-{
-  // Sets the track model for the tracks, updates the tracks with this model and
-  // redraws the scene.
-
-  switch(ind)
-  { 
-    case AliEveTRDTrack::kRieman:
-      fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kRieman);
-      break;
-    case AliEveTRDTrack::kKalman:
-      fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kKalman);
-      break;
-    default:
-      fM->UpdateTrackStyle(AliEveTRDTrack::kTrackCosmics);
-      break;
-  }
-
-  gEve->Redraw3D();
-}
-*/
 
 //______________________________________________________
 void AliEveListAnalyserEditor::UpdateDataFromMacroListSelection()
@@ -1116,8 +959,14 @@ void AliEveListAnalyserEditor::UpdateMacroListSelection(Int_t ind)
 }
 
 
+//______________________________________________________
+//______________________________________________________
+//______________________________________________________
+
+
 /////////////////////////////////////////////////
 ClassImp(AliEveGeneralMacroWizard)
+/////////////////////////////////////////////////
 
 //______________________________________________________
 AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
@@ -1297,6 +1146,8 @@ const Char_t *fGeneralMacroTemplate[7] = {
 };
 
 
+//TODO: Needed?
+/*
 const Char_t *fGeneralMacroTemplate_WithType[7] = {
 ""
 ,"  if (!object) return kFALSE;\n"
@@ -1365,13 +1216,15 @@ const Char_t *fGeneralMacroTemplate_WithType[7] = {
 "    h->GetYaxis()->SetTitle("");\n"
 "  } else h->Reset();\n"
 };
+*/
 
 //______________________________________________________
 void AliEveGeneralMacroWizard::Create(Int_t type)
 {
   const Char_t* name = fTextName->GetText();
-  if(strcmp(name,"")==0){
-    AliInfo("Please specify a name for your macro.");
+  if(strcmp(name,"") == 0)
+  {
+    Error("AliEveGeneralMacroWizard::Create", "Please specify a name for your macro.");
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  "Please specify a name for your macro.", kMBIconExclamation, kMBOk);
     //fCombo->Select(-1);
@@ -1417,9 +1270,10 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   }
 
   // Note: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
-  if(!gSystem->AccessPathName(Form("./%s.C", name))){
+  if(!gSystem->AccessPathName(Form("./%s.C", name)))
+  {
     // If there is already a file with this name -> Error
-    AliInfo(Form("A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name));
+    Error("AliEveGeneralMacroWizard::Create", Form("A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name));
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  Form("A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name), kMBIconExclamation, kMBOk);
     //fCombo->Select(-1);
@@ -1428,7 +1282,7 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
 
   FILE* fp = 0x0;
   if(!(fp = fopen(Form("%s.C", name), "wt"))){
-    AliInfo("Couldn't create macro file.");
+    Error("AliEveGeneralMacroWizard::Create", "Couldn't create macro file.");
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  "Couldn't create macro file.", kMBIconExclamation, kMBOk);
     //fCombo->Select(-1);
@@ -1482,7 +1336,7 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
     fprintf(fp, tempStr->Data());
     break;
   default:
-    AliInfo(Form("Unknown type[%d]", type));
+    Error("AliEveGeneralMacroWizard::Create", Form("Unknown type[%d]", type));
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  Form("Unknown type[%d]", type), kMBIconExclamation, kMBOk);
     fclose(fp);
@@ -1507,7 +1361,10 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   typeStr->Clear();
   if (typeStr != 0) delete typeStr;
   typeStr = 0;
-      
+
+//TODO: Version below?!
+  fprintf(fp, "{\n%s\n", fGeneralMacroTemplate[type]);
+/*      
   if (useGivenType)
   {
     // Replace "OBJECTTYPE" with the class name
@@ -1529,6 +1386,7 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   {
     fprintf(fp, "{\n%s\n", fGeneralMacroTemplate[type]);
   }
+*/
   fprintf(fp, "// add your own code here\n\n\n}\n");
   fclose(fp);
 

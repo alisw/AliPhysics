@@ -38,15 +38,15 @@
 //                                                                      //
 // Currently, the following macro types are supported:                  //
 // Selection macros:                                                    //
-// Bool_t YourMacro(const AliTRDtrackV1*);                              //
-// Bool_t YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*);        //
+// Bool_t YourMacro(const YourObjectType*);                              //
+// Bool_t YourMacro(const YourObjectType*, const YourObjectType*);        //
 //                                                                      //
 // Process macros:                                                      //
-// void YourMacro(const AliTRDtrackV1*, Double_t*&, Int_t&);            //
-// void YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*,           //
+// void YourMacro(const YourObjectType*, Double_t*&, Int_t&);            //
+// void YourMacro(const YourObjectType*, const YourObjectType*,           //
 //                Double_t*&, Int_t&);                                  //
-// TH1* YourMacro(const AliTRDtrackV1*);                                //
-// TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*);          //
+// TH1* YourMacro(const YourObjectType*);                                //
+// TH1* YourMacro(const YourObjectType*, const YourObjectType*);          //
 //                                                                      //
 // The macros which take 2 tracks are applied to all track pairs        //
 // (whereby BOTH tracks of the pair have to be selected by the single   //
@@ -78,10 +78,6 @@
 #include <EveDet/AliEveListAnalyser.h>
 #include <EveDet/AliEveListAnalyserEditor.h>
 
-// TODO: Are these files required?
-//#include <../PWG1/TRD/AliTRDrecoTask.h>
-//#include <../PWG1/TRD/macros/AliTRDperformanceTrain.h>
-
 ClassImp(AliEveListAnalyser)
 
 ///////////////////////////////////////////////////////////
@@ -96,14 +92,6 @@ AliEveListAnalyser::AliEveListAnalyser(const Text_t* n, const Text_t* t, Bool_t 
   fHistoDataSelected(0),
   fMacroListSelected(0),
   fSelectedTab(1)                               // Standard tab: "Apply macros" (index 1)
-
-
-// TODO: Old version with style tab
-/*
-  fSelectedTab(1),                              // Standard tab: "Apply macros" (index 1)
-  fSelectedStyle(0)
-*/
-
 {
   // Creates the AliEveListAnalyser.
 
@@ -162,19 +150,20 @@ AliEveListAnalyser::~AliEveListAnalyser()
 //______________________________________________________
 Int_t AliEveListAnalyser::AddMacro(const Char_t* path, const Char_t* nameC, Bool_t forceReload)
 {
+// TODO: Update the comment concerning the supported types: TObject->'OBJECTTYPE'
   // Checks, if the file exists and if the signature is correct.
   // If these criteria are fullfilled, the library for this macro is built
   // and the macro is added to the corresponding list.
   // Supported macro types:
   // Selection macros:                                                    
-  // Bool_t YourMacro(const TObject*)
-  // Bool_t YourMacro(const TObject*, const TObject*)
+  // Bool_t YourMacro(const YourObjectType*)
+  // Bool_t YourMacro(const YourObjectType*, const YourObjectType*)
   //
   // Process macros:                                                      
-  // void YourMacro(const TObject*, Double_t*&, Int_t&)             
-  // void YourMacro(const TObject*, const TObject*, Double_t*&, Int_t&)                                   
-  // TH1* YourMacro(const TObject*)                                 
-  // TH1* YourMacro(const TObject*, const TObject*)                              
+  // void YourMacro(const YourObjectType*, Double_t*&, Int_t&)             
+  // void YourMacro(const YourObjectType*, const TObject*, Double_t*&, Int_t&)                                   
+  // TH1* YourMacro(const YourObjectType*)                                 
+  // TH1* YourMacro(const YourObjectType*, const YourObjectType*)                              
 
   Char_t pathname[fkMaxMacroPathNameLength];
   memset(pathname, '\0', sizeof(Char_t) * fkMaxMacroPathNameLength);
@@ -287,40 +276,7 @@ void AliEveListAnalyser::AddStandardContent()
   // -> If the file does not exist, nothing happens. So if you want to handle this,
   // use the return value of AddMacro (NOT_EXIST_ERROR is returned, if file does not exist)
   // (-> You can also check for other return values (see AddMacro(...)))
-/*
-  const Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libPWG1.so"};
-  Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
-  for(Int_t ilib=0; ilib<nlibs; ilib++){
-    if(gSystem->Load(libs[ilib]) >= 0) continue;
-    AliError(Form("Fail loading %s.", libs[ilib]));
-    return;
-  }
 
-  AliTRDrecoTask *task = 0x0;
-  TList *fPlots = 0x0;
-  for(Int_t it=2; it<NTRDQATASKS; it++){
-    TClass c(fgkTRDtaskClassName[it]);
-    task = (AliTRDrecoTask*)c.New();
-    task->SetMCdata(kFALSE);
-    if(!(fPlots = task->GetPlotFunctors())){
-      //AliWarning(Form("No Plot functors defined for task \"%s\"", fgkTRDtaskClassName[it]));
-      delete task;
-      continue;
-    }
-    if(!(task->Histos())){
-      //AliWarning(Form("No Ref Histograms defined for task \"%s\"", fgkTRDtaskClassName[it]));
-      delete task;
-      continue;
-    }
-
-    // export task to CINT and add functions
-    gROOT->ProcessLine(Form("%s* %s = (%s*)0x%lx;", fgkTRDtaskClassName[it], task->GetName(), fgkTRDtaskClassName[it], (void*)task));
-    TIter iter(fPlots); TMethodCall *m = 0x0;
-    while((m = dynamic_cast<TMethodCall*>(iter()))){
-      AddMacroFast("", Form("%s->%s", task->GetName(), m->GetMethodName()), kSingleTrackHisto);
-    }
-  }
-*/
 }
 
 //______________________________________________________
@@ -371,12 +327,24 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     procCmds = new Char_t*[procIterator->GetEntries()];
     mProcType = new AliEveListAnalyserMacroType[procIterator->GetEntries()];
   }
+  
+  //TODO
+  TClass** mProcObjectType = 0;
+  if (procIterator->GetEntries() > 0) {
+    mProcObjectType = new TClass*[procIterator->GetEntries()];
+  }
 
   Char_t** selCmds  = 0;
   AliEveListAnalyserMacroType* mSelType = 0;
   if (selIterator->GetEntries() > 0) {
     selCmds = new Char_t*[selIterator->GetEntries()];
     mSelType = new AliEveListAnalyserMacroType[selIterator->GetEntries()];
+  }
+
+  //TODO
+  TClass** mSelObjectType = 0;
+  if (selIterator->GetEntries() > 0) {
+    mSelObjectType = new TClass*[selIterator->GetEntries()];
   }
   
   Bool_t selectedByCorrSelMacro = kFALSE;
@@ -406,6 +374,10 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     printf("AliEveListAnalyser: Checking process macro: %s\n", macro->GetName());
 #endif 
            
+//TODO
+    // Find the object type of the macro
+    mProcObjectType[i] = macro->GetObjectType();
+
     // Find the type of the process macro
     macroType = macro->GetType();
     if (macroType == kSingleObjectHisto || macroType == kCorrelObjectHisto){
@@ -448,6 +420,10 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 #ifdef AliEveListAnalyser_DEBUG
     printf("AliEveListAnalyser: Checking selection macro: %s\n", macro->GetName());
 #endif
+
+//TODO
+    // Find the object type of the macro
+    mSelObjectType[i] = macro->GetObjectType();
        
     // Find the type of the process macro
     macroType = macro->GetType();
@@ -491,6 +467,18 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
     // Collect data for each macro
     for (Int_t i = 0, histoIndex = 0; i < procIterator->GetEntries(); i++){
+//TODO
+      // Find the type of the object and relate it to the macro object type
+      // Only apply macro to this object, if...
+      // ... the macro takes objects of exactly this type.
+      // ... the macro object type is a child of this object's type.
+      // Otherwise: Continue
+
+      // Finally, via procCmds[i], the automatic objects are casted to the correct type and analysed by each macro!
+      if (((TObject*)object1->GetUserData())->IsA() != mProcObjectType[i] && 
+          !((TObject*)object1->GetUserData())->InheritsFrom(mProcObjectType[i]))  continue;
+
+        
       // Single object histo
       if (mProcType[i] == kSingleObjectHisto){
         histos[histoIndex++] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
@@ -509,6 +497,11 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
           // Skip objects that have not been selected
           if (!object2->GetRnrState())  continue;
+
+//TODO
+          // Same check of the macro object type as before
+          if (((TObject*)object2->GetUserData())->IsA() != mProcObjectType[i] && 
+              !((TObject*)object2->GetUserData())->InheritsFrom(mProcObjectType[i]))  continue;
       
           // Cast to the "real" object behind
           gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", object2));
@@ -518,6 +511,14 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           selectedByCorrSelMacro = kTRUE;
           for (Int_t j = 0; j < selIterator->GetEntries(); j++){
             if (mSelType[j] == kCorrelObjectSelect){
+//TODO
+          // Check, whether the macro can deal with both objects. If not, skip it.
+          // Note: Again, via selCmds[i], the automatic objects are casted to the correct type!
+          if (((TObject*)object1->GetUserData())->IsA() != mSelObjectType[j] && 
+              !((TObject*)object1->GetUserData())->InheritsFrom(mSelObjectType[j]))  continue;
+          if (((TObject*)object2->GetUserData())->IsA() != mSelObjectType[j] && 
+              !((TObject*)object2->GetUserData())->InheritsFrom(mSelObjectType[j]))  continue;
+
               selectedByCorrSelMacro = (Bool_t)gROOT->ProcessLineSync(selCmds[j]);
               if (!selectedByCorrSelMacro)  break;
             }
@@ -565,6 +566,11 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
  
           // Skip objects that have not been selected
           if (!object2->GetRnrState())  continue;
+
+//TODO
+          // Same check of the macro object type as before
+          if (((TObject*)object2->GetUserData())->IsA() != mProcObjectType[i] && 
+              !((TObject*)object2->GetUserData())->InheritsFrom(mProcObjectType[i]))  continue;
     
           // Cast to the "real" object behind
           gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", object2));
@@ -574,6 +580,14 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           selectedByCorrSelMacro = kTRUE;
           for (Int_t j = 0; j < selIterator->GetEntries(); j++) {
             if (mSelType[j] == kCorrelObjectSelect) {
+//TODO
+              // Check, whether the macro can deal with both objects. If not, skip it.
+              // Note: Again, via selCmds[i], the automatic objects are casted to the correct type!
+              if (((TObject*)object1->GetUserData())->IsA() != mSelObjectType[j] && 
+                  !((TObject*)object1->GetUserData())->InheritsFrom(mSelObjectType[j]))  continue;
+              if (((TObject*)object2->GetUserData())->IsA() != mSelObjectType[j] && 
+                  !((TObject*)object2->GetUserData())->InheritsFrom(mSelObjectType[j]))  continue;
+
               selectedByCorrSelMacro = (Bool_t)gROOT->ProcessLineSync(selCmds[j]);
               if (!selectedByCorrSelMacro)  break;
             }
@@ -619,11 +633,15 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
   if (procCmds != 0)  delete [] procCmds;
   procCmds = 0;
+  if (mProcObjectType != 0) delete mProcObjectType;
+  mProcObjectType = 0;
   if (mProcType != 0)  delete mProcType;
   mProcType = 0;
 
   if (selCmds != 0)  delete [] selCmds;
   selCmds = 0;
+  if (mSelObjectType != 0)  delete mSelObjectType;
+  mSelObjectType = 0;
   if (mSelType != 0)  delete mSelType;
   mSelType = 0;
 
@@ -692,10 +710,20 @@ void AliEveListAnalyser::ApplySTSelectionMacros(const TList* iterator)
         // If the object has already been deselected, nothing is to do here
         if (!object1->GetRnrState()) continue;
 
+//TODO
+        // Find the type of the object and relate it to the macro object type
+        // Only apply macro to this object, if...
+        // ... the macro takes objects of exactly this type.
+        // ... the macro object type is a child of this object's type.
+        // Otherwise: Continue
+        if (((TObject*)object1->GetUserData())->IsA() != macro->GetObjectType() && 
+            !((TObject*)object1->GetUserData())->InheritsFrom(macro->GetObjectType()))  continue;
+
         // Cast to the "real" object behind
         gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", object1));
         gROOT->ProcessLineSync("TObject* automaticObject_1 = (TObject*)automaticEveElement->GetUserData();");
 
+        // GetCmd() will cast the automatic objects to the correct type for each macro!
         selectedByMacro = (Bool_t)gROOT->ProcessLineSync(macro->GetCmd());
         object1->SetRnrState(selectedByMacro && object1->GetRnrState());               
       }
@@ -715,7 +743,6 @@ void AliEveListAnalyser::ApplySTSelectionMacros(const TList* iterator)
   // A.B. gROOT->Reset();  
 }
 
-// TODO -> Type checking
 //______________________________________________________
 AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType(const Char_t* name, const Char_t* objectType, Bool_t UseList) const
 {
@@ -911,7 +938,7 @@ AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType
   return type;
 }
 
-// TODO: IMPLEMENTATION + DOCUMENTATION
+// TODO: DOCUMENTATION
 //______________________________________________________
 TClass* AliEveListAnalyser::GetMacroObjectType(const Char_t* name) const
 {

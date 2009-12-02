@@ -105,13 +105,10 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 
   frbTrack[0] = new TGRadioButton(fbgStyleTrack, "Rieman", 0);
   frbTrack[0]->SetToolTipText("Set the track model to \"Rieman\" (i.e. the used fit method)");
-  fbgStyleTrack->AddFrame(frbTrack[0]);
   frbTrack[1] = new TGRadioButton(fbgStyleTrack, "Kalman", 1);
   frbTrack[1]->SetToolTipText("Set the track model to \"Kalman\" (i.e. the used fit method)");
-  fbgStyleTrack->AddFrame(frbTrack[1]);
   frbTrack[2] = new TGRadioButton(fbgStyleTrack, "Line", 2);
   frbTrack[2]->SetToolTipText("Set the track model to \"Line\" (i.e. the used fit method)");
-  fbgStyleTrack->AddFrame(frbTrack[2]);  
 
   // Style - Color model
   fbgStyleColor = new TGButtonGroup(fStyleFrame, "Color model");
@@ -121,15 +118,11 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 
   frbColor[0] = new TGRadioButton(fbgStyleColor, "PID LQ", 0);
   frbColor[0]->SetToolTipText("Set color model to \"PID LQ\" -> 2 dimensional likelihood particle identification");
-  fbgStyleColor->AddFrame(frbColor[0]);
   frbColor[1] = new TGRadioButton(fbgStyleColor, "PID NN", 1);
   frbColor[1]->SetToolTipText("Set color model to \"PID NN\" -> Neural network particle identification");
-  fbgStyleColor->AddFrame(frbColor[1]);
   frbColor[2] = new TGRadioButton(fbgStyleColor, "ESD Source", 2);
   frbColor[2]->SetToolTipText("Set color model to \"ESD Source\" -> By source (TPC track prolongation or TRD stand alone)");
-  fbgStyleColor->AddFrame(frbColor[2]);  
   
-
   // Functionality for adding macros  
   fMainFrame = CreateEditorTabSubFrame("Process");
    
@@ -826,6 +819,37 @@ void AliEveTRDTrackListEditor::RemoveMacros()
 }
 
 //______________________________________________________
+void AliEveTRDTrackListEditor::SaveMacroList(TMap* list)
+{
+  // Saves the provided macro list in an interior list. This list will be used by
+  // InheritMacroList() to restore the data in "list". With this method one is able
+  // to inherit the macro list from track list to track list (i.e. from event to event).
+
+  if (fInheritedMacroList != 0)
+  {
+    fInheritedMacroList->Delete();
+    delete fInheritedMacroList;
+  }
+  fInheritedMacroList = new TMap();
+  fInheritedMacroList->SetOwnerKeyValue(kTRUE, kTRUE);
+
+  TMapIter* iter = (TMapIter*)list->MakeIterator();
+  TObject* key = 0;
+  TMacroData* macro = 0;
+  
+  while ((key = iter->Next()) != 0)
+  {
+    macro = (TMacroData*)fM->fMacroList->GetValue(key);
+    if (macro != 0) fInheritedMacroList->Add(new TObjString(key->GetName()), 
+                                             new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
+    else
+    {
+      Error("AliEveTRDTrackListEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+    }
+  }
+}
+
+//______________________________________________________
 void AliEveTRDTrackListEditor::SetDrawingToHistoCanvasTab()
 {
   // Sets gPad to the tab with the name of the current AliEveTRDTrackList. If this tab does
@@ -900,37 +924,6 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
 
   // View correct tab
   GetGedEditor()->GetTab()->SetTab(fM->GetSelectedTab()); 
-}
-
-//______________________________________________________
-void AliEveTRDTrackListEditor::SaveMacroList(TMap* list)
-{
-  // Saves the provided macro list in an interior list. This list will be used by
-  // InheritMacroList() to restore the data in "list". With this method one is able
-  // to inherit the macro list from track list to track list (i.e. from event to event).
-
-  if (fInheritedMacroList != 0)
-  {
-    fInheritedMacroList->Delete();
-    delete fInheritedMacroList;
-  }
-  fInheritedMacroList = new TMap();
-  fInheritedMacroList->SetOwnerKeyValue(kTRUE, kTRUE);
-
-  TMapIter* iter = (TMapIter*)list->MakeIterator();
-  TObject* key = 0;
-  TMacroData* macro = 0;
-  
-  while ((key = iter->Next()) != 0)
-  {
-    macro = (TMacroData*)fM->fMacroList->GetValue(key);
-    if (macro != 0) fInheritedMacroList->Add(new TObjString(key->GetName()), 
-                                             new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
-    else
-    {
-      Error("AliEveTRDTrackListEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
-    }
-  }
 }
 
 //______________________________________________________

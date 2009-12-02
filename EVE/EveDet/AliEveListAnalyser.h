@@ -41,15 +41,15 @@
 //                                                                      //
 // Currently, the following macro types are supported:                  //
 // Selection macros:                                                    //
-// Bool_t YourMacro(const AliTRDtrackV1*);                              //
-// Bool_t YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*);        //
+// Bool_t YourMacro(const YourObjectType*);                              //
+// Bool_t YourMacro(const YourObjectType*, const YourObjectType*);        //
 //                                                                      //
 // Process macros:                                                      //
-// void YourMacro(const AliTRDtrackV1*, Double_t*&, Int_t&);            //
-// void YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*,           //
+// void YourMacro(const YourObjectType*, Double_t*&, Int_t&);            //
+// void YourMacro(const YourObjectType*, const YourObjectType*,           //
 //                Double_t*&, Int_t&);                                  //
-// TH1* YourMacro(const AliTRDtrackV1*);                                //
-// TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*);          //
+// TH1* YourMacro(const YourObjectType*);                                //
+// TH1* YourMacro(const YourObjectType*, const YourObjectType*);          //
 //                                                                      //
 // The macros which take 2 tracks are applied to all track pairs        //
 // (whereby BOTH tracks of the pair have to be selected by the single   //
@@ -61,6 +61,7 @@
 
 
 #include <TEveElement.h>
+#include <TClass.h>
 #include <EveDet/AliEveTRDData.h>
 
 #define SIGNATURE_ERROR           -1
@@ -157,13 +158,9 @@ protected:
   Int_t fMacroListSelected;          // Stores the selection of the macro list
 
   Char_t fSelectedTab;               // Holds the index of the selected tab
-//  UChar_t fSelectedStyle;            // Holds the selected track style
 
   Char_t GetSelectedTab() const                          // Gets the selected tab
     { return fSelectedTab;  }
-
-//  UChar_t GetSelectedTrackStyle() const                  // Gets the selected track style
-//    { return fSelectedStyle;  }
 
   Bool_t HistoDataIsSelected(Int_t index) const          // Is entry in list selected?
     { return TESTBIT(fHistoDataSelected, index);  }  
@@ -179,11 +176,6 @@ protected:
     
   void SetSelectedTab(Int_t index)                          // Sets the selected tab
     { fSelectedTab = (Char_t)index; }  
-
-//  void SetSelectedTrackStyle(UChar_t index)                 // Sets the selected track style
-//    { fSelectedStyle = index;  }
-
-//  void UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss = 0);      
 
 private:
   AliEveListAnalyser(const AliEveListAnalyser&);            // Not implemented
@@ -220,24 +212,26 @@ public:
     SetType(type);
 
     // Register the commands for each type here
+    // Note: The framework will cast all data objects to "TObject*"
+    // -> We need to cast to the correct type for the macro!
     switch (type)
     {
       case AliEveListAnalyser::kSingleObjectSelect:
       case AliEveListAnalyser::kSingleObjectHisto:
-        SetCmd(Form("%s(automaticObject_1);", name));
+        SetCmd(Form("%s((%s*)automaticObject_1);", name, fObjectType->GetName()));
         break;
 
       case AliEveListAnalyser::kSingleObjectAnalyse:
-        SetCmd(Form("%s(automaticObject_1, results, n);", name));
+        SetCmd(Form("%s((%s*)automaticObject_1, results, n);", name, fObjectType->GetName()));
         break;
 
       case AliEveListAnalyser::kCorrelObjectSelect:
       case AliEveListAnalyser::kCorrelObjectHisto:
-        SetCmd(Form("%s(automaticObject_1, automaticObject_2);", name));
+        SetCmd(Form("%s((%s*)automaticObject_1, (%s*)automaticObject_2);", name, fObjectType->GetName(), fObjectType->GetName()));
         break;
 
       case AliEveListAnalyser::kCorrelObjectAnalyse:
-        SetCmd(Form("%s(automaticObject_1, automaticObject_2, results, n);", name));
+        SetCmd(Form("%s((%s*)automaticObject_1, (%s*)automaticObject_2, results, n);", name, fObjectType->GetName(), fObjectType->GetName()));
         break;
 
       default:
