@@ -480,7 +480,10 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	      AliDebug(2,Form("---NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]));
 	      AliITStrackV2* tr2 = 0;
 	      tr2 = FitTrack(trs,primaryVertex);
-	      if(!tr2) continue;
+	      if(!tr2){ 
+		delete trs;
+		continue;
+	      }
 	      AliDebug(2,Form("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 	      
 	      StoreTrack(tr2,event);
@@ -542,7 +545,10 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	      AliDebug(2,Form("---NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]));
 	      AliITStrackV2* tr2 = 0;
 	      tr2 = FitTrack(trs,primaryVertex);
-	      if(!tr2) continue;
+	      if(!tr2){ 
+		delete trs;
+		continue;
+	      }
 	      AliDebug(2,Form("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 	      
 	      StoreTrack(tr2,event);
@@ -604,7 +610,10 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	    AliITStrackV2* tr2 = 0;
 	    Bool_t onePoint = kTRUE;
 	    tr2 = FitTrack(trs,primaryVertex,onePoint);
-	    if(!tr2) continue;
+	    if(!tr2){
+	      delete trs;
+	      continue;
+	    }
 	    AliDebug(2,Form("----NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 	    
 	    StoreTrack(tr2,event);
