@@ -52,7 +52,6 @@ Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
 
   Double_t * check = new Double_t[AliRecoParam::kNSpecies] ; 
   
-  AliInfo(Form("Fix needed ....."));
   char * detOCDBDir = Form("HMPID/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
   AliCDBEntry *QARefRec = AliQAManager::QAManager()->Get(detOCDBDir);
   if(!QARefRec){
