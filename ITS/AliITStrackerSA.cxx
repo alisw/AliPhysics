@@ -629,15 +629,11 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   
   static Int_t clind[AliITSgeomTGeo::kNLayers][kMaxClu];
   static Int_t clmark[AliITSgeomTGeo::kNLayers][kMaxClu];
-  static Int_t nnn[AliITSgeomTGeo::kNLayers];
-  static Int_t kkk[AliITSgeomTGeo::kNLayers];
   static Int_t end[AliITSgeomTGeo::kNLayers];
   static AliITSRecPoint *listlayer[AliITSgeomTGeo::kNLayers][kMaxClu];
 
   for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++) {
     firstmod[i]=AliITSgeomTGeo::GetModuleIndex(i+1,1,1);
-    nnn[i]=0;
-    kkk[i]=0;
     end[i]=0;
     for(Int_t j=0;j<kMaxClu; j++){
       clind[i][j]=0;
@@ -655,16 +651,14 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     Int_t lay = (index & 0xf0000000) >> 28;
     Int_t nInLay=end[lay];
     listlayer[lay][nInLay]=cl;
-    Int_t ind=nnn[lay];
-    clind[lay][ind]=index;
+    clind[lay][nInLay]=index;
     end[lay]++;
   }
 
   for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
     for(Int_t ncl=0;ncl<tr->GetNumberOfMarked(nlay);ncl++){
       Int_t mark = tr->GetClusterMark(nlay,ncl);
-      Int_t ind=kkk[nlay];
-      clmark[nlay][ind]=mark;
+      clmark[nlay][ncl]=mark;
     }
   }
 
@@ -1286,4 +1280,3 @@ void AliITStrackerSA::GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, 
   sz = TMath::Sqrt(cl->GetSigmaZ2());
 */
 }
-
