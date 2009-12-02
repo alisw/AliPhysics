@@ -647,7 +647,13 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
   Int_t lay, lad, det; 
   //AliInfo("get the branch with the ITS clusters !\n");
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
-  TClonesArray *recpoints = rpcont->FetchClusters(0,clustersTree); 
+  TClonesArray *recpoints=NULL; 
+  if(fkOnline){
+    recpoints = rpcont->FetchClusters(0,clustersTree,fAliITSQADataMakerRec->GetEventNumber());
+  }
+  else{
+    recpoints = rpcont->FetchClusters(0,clustersTree); 
+  }
   if(!rpcont->GetStatusOK() || !rpcont->IsSDDActive()){
     AliError("can't get SDD clusters !");
     return rv;

@@ -57,6 +57,7 @@ fkOnline(kMode),
 fSubDetector(subDet),
 fLDC(ldc),
 fRunNumber(0),
+fEventNumber(0),
 fSPDDataMaker(NULL),
 fSDDDataMaker(NULL),
 fSSDDataMaker(NULL)
@@ -96,7 +97,8 @@ AliQADataMakerRec(),
 fkOnline(qadm.fkOnline),
 fSubDetector(qadm.fSubDetector),
 fLDC(qadm.fLDC),
-fRunNumber(0),
+fRunNumber(qadm.fRunNumber),
+fEventNumber(qadm.fEventNumber),
 fSPDDataMaker(NULL),
 fSDDDataMaker(NULL),
 fSSDDataMaker(NULL)
@@ -320,7 +322,7 @@ void AliITSQADataMakerRec::InitRecPoints()
 void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 { 
   // Fill QA for recpoints
- 
+
   if(fSubDetector == 0 || fSubDetector == 1) {
     fSPDDataMaker->MakeRecPoints(clustersTree) ; 
   }
@@ -332,16 +334,23 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeRecPoints(clustersTree);
 
 
-
+  
   if(fSubDetector == 0){
+
     // Check id histograms already created for this Event Specie
     AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
-    TClonesArray *recpoints = rpcont->FetchClusters(0,clustersTree); 
+    TClonesArray *recpoints =NULL;
+    if(fkOnline){
+      recpoints= rpcont->FetchClusters(0,clustersTree,GetEventNumber());
+    } 
+    else{
+      recpoints= rpcont->FetchClusters(0,clustersTree);
+    }
     if(!rpcont->GetStatusOK()){
-      AliError("connot access to ITS recpoints");
+      AliError("cannot access to ITS recpoints");
       return;
     }
-    
+  
     Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
     Float_t cluGlo[3] = {0.,0.,0.};
     Int_t lay, lad, det; 

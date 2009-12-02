@@ -61,9 +61,11 @@ public:
  TH2F *GetITSGlobalHisto(Int_t layer);
  Bool_t AreEqual(Double_t a1, Double_t a2);
 
- virtual void SetRunNumber(Int_t runnumber=0){fRunNumber=runnumber;};
+ virtual void SetRunNumber(Int_t runnumber){fRunNumber=runnumber;};
  Int_t GetRunNumber(){return fRunNumber;};
 
+ virtual void SetEventNumber(Int_t eventnumber){fEventNumber=eventnumber;};
+ Int_t GetEventNumber() const {return fEventNumber;};
 
 private:
 
@@ -71,12 +73,13 @@ private:
   Short_t fSubDetector;                    // subDetector: 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)
   Short_t fLDC;				   // number of LDC: 0 (one LDC for the whole subdetector)
   Int_t fRunNumber;                        //run number
+  Int_t fEventNumber;                        //Event number (online mode)
 
   AliITSQASPDDataMakerRec *fSPDDataMaker;  // SPD Data Maker 
   AliITSQASDDDataMakerRec *fSDDDataMaker;  // SDD Data Maker 
   AliITSQASSDDataMakerRec *fSSDDataMaker;  // SSD Data Maker 
 
-  ClassDef(AliITSQADataMakerRec,6)         // description 
+  ClassDef(AliITSQADataMakerRec,7)         // description 
 
 };
 
