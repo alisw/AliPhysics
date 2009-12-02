@@ -3492,6 +3492,7 @@ void AliTRDtrackerV1::GetExtrapolationConfig(Int_t iconfig, Int_t planes[2])
 //____________________________________________________________________
 AliCluster* AliTRDtrackerV1::GetCluster(Int_t idx) const
 {
+  if(!fClusters) return NULL;
   Int_t ncls = fClusters->GetEntriesFast();
   return idx >= 0 && idx < ncls ? (AliCluster*)fClusters->UncheckedAt(idx) : NULL;
 }
@@ -3499,6 +3500,7 @@ AliCluster* AliTRDtrackerV1::GetCluster(Int_t idx) const
 //____________________________________________________________________
 AliTRDseedV1* AliTRDtrackerV1::GetTracklet(Int_t idx) const
 {
+  if(!fTracklets) return NULL;
   Int_t ntrklt = fTracklets->GetEntriesFast();
   return idx >= 0 && idx < ntrklt ? (AliTRDseedV1*)fTracklets->UncheckedAt(idx) : NULL;
 }
@@ -3506,6 +3508,7 @@ AliTRDseedV1* AliTRDtrackerV1::GetTracklet(Int_t idx) const
 //____________________________________________________________________
 AliKalmanTrack* AliTRDtrackerV1::GetTrack(Int_t idx) const
 {
+  if(!fTracks) return NULL;
   Int_t ntrk = fTracks->GetEntriesFast();
   return idx >= 0 && idx < ntrk ? (AliKalmanTrack*)fTracks->UncheckedAt(idx) : NULL;
 }
