@@ -87,8 +87,7 @@ Bool_t AddTrainPerformanceTRD(Bool_t mc, Bool_t fr, Char_t *trd="ALL")
 
   // initialize TRD settings
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-  AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
-
+  AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBinsDCS());
   for(Int_t it=0; it<NTRDQATASKS; it++){
     if(gROOT->LoadMacro(Form("$ALICE_ROOT/PWG1/TRD/macros/Add%s.C+", TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
       Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
