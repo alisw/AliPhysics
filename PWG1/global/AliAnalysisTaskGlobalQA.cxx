@@ -31,6 +31,9 @@
 #include "AliESDEvent.h"
 #include "AliESDv0.h"
 #include "AliESDInputHandler.h"
+#include "AliESDVZERO.h"
+#include "AliMultiplicity.h" 
+
 
 #include "AliAnalysisTaskGlobalQA.h"
 
@@ -64,16 +67,19 @@ void AliAnalysisTaskGlobalQA::UserCreateOutputObjects()
     const Char_t *name[]={
       "hGlobalFractionAssignedClustersITS",
       "hGlobalFractionAssignedClustersTPC",
-      "hGlobalFractionAssignedClustersTRD"
-    };
+      "hGlobalFractionAssignedClustersTRD",
+      "hGlobalClustersPerITSModule"
+     };
   const Char_t *title[]={
     "Fraction of the assigned clusters in ITS",
     "Fraction of the assigned clusters in TPC",
-    "Fraction of the assigned clusters in TRD"
+    "Fraction of the assigned clusters in TRD",
+    "Number of clusters per an ITS module"
   };
   Add2ESDsList(new TH1F(name[0],title[0],100,0.,2.),kClr0);
   Add2ESDsList(new TH1F(name[1],title[1],100,0.,2.),kClr1);
   Add2ESDsList(new TH1F(name[2],title[2],100,0.,2.),kClr2);
+  Add2ESDsList(new TH1F(name[3],title[3],2240,0.,2240.),kClr3);
   }
 
   {// Track related QA
@@ -154,6 +160,21 @@ void AliAnalysisTaskGlobalQA::UserCreateOutputObjects()
   Add2ESDsList(new TH2F(name[3],title[3],1500,0.05,15.,700,0.,700.),kPid3);
   }
 
+  {// Multiplicity related QA
+    const Char_t *name[]={
+      "hGlobalV0AvsITS",
+      "hGlobalV0CvsITS"
+    };
+    const Char_t *title[]={
+      "Multiplicity: V0A vs ITS",
+      "Multiplicity: V0C vs ITS"
+    };
+    TH2F *h0=new TH2F(name[0],title[0],40,0.,40., 32,0.,32.);
+    Add2ESDsList(h0,kMlt0);
+    TH2F *h1=new TH2F(name[1],title[1],40,0.,40., 32,0.,32.);
+    Add2ESDsList(h1,kMlt1);
+  }
+
 }
 
 //________________________________________________________________________
@@ -181,6 +202,15 @@ void AliAnalysisTaskGlobalQA::UserExec(Option_t *)
     if (track->IsOn(AliESDtrack::kITSrefit)) {
       Int_t n=track->GetITSclusters(0);
       GetESDsData(kClr0)->Fill(Float_t(n)/6.); //6 is the number of ITS layers
+    }
+
+    for (Int_t i=0; i<6; i++) {
+      Int_t idet, sts;
+      Float_t xloc,zloc;
+      if (!track->GetITSModuleIndexInfo(i,idet,sts,xloc,zloc)) continue;
+      if (i>=2) idet+=240;
+      if (i>=4) idet+=260;
+      if ((sts==1)||(sts==2)||(sts==4)) GetESDsData(kClr3)->Fill(idet);
     }
 
     if (track->IsOn(AliESDtrack::kTPCrefit)) {
@@ -267,6 +297,20 @@ void AliAnalysisTaskGlobalQA::UserExec(Option_t *)
       h->Fill(pp,dedx);
     }
   }
+
+  // Multiplicity related QA
+  AliESDVZERO     *mltV0 =esd->GetVZEROData();
+  const AliMultiplicity *mltITS=esd->GetMultiplicity();
+  if (mltV0)
+    if (mltITS) {
+       Short_t nv0a=mltV0->GetNbPMV0A();
+       Short_t nv0c=mltV0->GetNbPMV0C();
+       Int_t   nits=mltITS->GetNumberOfTracklets();
+       TH2F *h0=dynamic_cast<TH2F*>(GetESDsData(kMlt0));
+       h0->Fill(nits,nv0a);
+       TH2F *h1=dynamic_cast<TH2F*>(GetESDsData(kMlt1));
+       h1->Fill(nits,nv0c);
+    }
 
   // V0 related QA
   Int_t nV0=esd->GetNumberOfV0s();
