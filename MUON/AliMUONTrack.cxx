@@ -57,7 +57,6 @@ AliMUONTrack::AliMUONTrack()
     fGlobalChi2(-1.),
     fImproved(kFALSE),
     fMatchTrigger(-1),
-    floTrgNum(-1),
     fChi2MatchTrigger(0.),
     fTrackID(-1),
     fTrackParamAtVertex(0x0),
@@ -81,7 +80,6 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment, Double_t bendingVertexDis
     fGlobalChi2(0.),
     fImproved(kFALSE),
     fMatchTrigger(-1),
-    floTrgNum(-1),    
     fChi2MatchTrigger(0.),
     fTrackID(-1),
     fTrackParamAtVertex(0x0),
@@ -190,7 +188,6 @@ AliMUONTrack::AliMUONTrack(const AliMUONTrack& track)
     fGlobalChi2(track.fGlobalChi2),
     fImproved(track.fImproved),
     fMatchTrigger(track.fMatchTrigger),
-    floTrgNum(track.floTrgNum),    
     fChi2MatchTrigger(track.fChi2MatchTrigger),
     fTrackID(track.fTrackID),
     fTrackParamAtVertex(0x0),
@@ -275,7 +272,6 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& track)
   fGlobalChi2         =  track.fGlobalChi2;
   fImproved           =  track.fImproved;
   fMatchTrigger       =  track.fMatchTrigger;
-  floTrgNum           =  track.floTrgNum;
   fChi2MatchTrigger   =  track.fChi2MatchTrigger;
   fTrackID            =  track.fTrackID; 
   fHitsPatternInTrigCh = track.fHitsPatternInTrigCh;
@@ -320,7 +316,6 @@ void AliMUONTrack::Reset()
   fGlobalChi2 = -1.;
   fImproved = kFALSE;
   fMatchTrigger = -1;
-  floTrgNum = -1;
   fChi2MatchTrigger = 0.;
   fTrackID = -1;
   fHitsPatternInTrigCh = 0;
@@ -1186,7 +1181,7 @@ void AliMUONTrack::Print(Option_t*) const
 
   cout << "<AliMUONTrack> No.Clusters=" << setw(2)   << GetNClusters() << 
       ", Match2Trig=" << setw(1) << GetMatchTrigger()  << 
-      ", LoTrgNum=" << setw(3) << GetLoTrgNum()  << 
+      ", LoTrgNum=" << setw(3) << LoCircuit()  << 
     ", Chi2-tracking-trigger=" << setw(8) << setprecision(5) <<  GetChi2MatchTrigger();
   cout << Form(" HitTriggerPattern %x",fHitsPatternInTrigCh);
   cout << Form(" MClabel=%d",fTrackID) << endl;

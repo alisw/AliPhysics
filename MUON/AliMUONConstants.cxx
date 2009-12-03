@@ -99,8 +99,10 @@ const Double_t AliMUONConstants::fgkAbsZBeg = -90.;
 const Double_t AliMUONConstants::fgkAbsZEnd = -505.;
     
 // Default trigger chamber resolution (cm)
-const Double_t AliMUONConstants::fgkTriggerNonBendingReso = 1.;
-const Double_t AliMUONConstants::fgkTriggerBendingReso = 1.;
+// Warning: the resolution refers only to ALIGNMENT
+// For the total resolution the strip width should be taken into account!
+const Double_t AliMUONConstants::fgkTriggerNonBendingReso = 0.2;
+const Double_t AliMUONConstants::fgkTriggerBendingReso = 0.2;
 
 // Defaults parameters for muon filter (19/11/07)
 const Double_t AliMUONConstants::fgkMuonFilterZBeg = -1471.;

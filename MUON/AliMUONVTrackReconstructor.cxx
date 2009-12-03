@@ -78,6 +78,11 @@
 #include "AliMpDEManager.h"
 #include "AliMpArea.h"
 
+#include "AliMpDDLStore.h"
+#include "AliMpVSegmentation.h"
+#include "AliMpSegmentation.h"
+#include "AliMpPad.h"
+
 #include "AliLog.h"
 #include "AliCodeTimer.h"
 #include "AliTracker.h"
@@ -1241,7 +1246,7 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
   /// To make the trigger tracks from Local Trigger
   AliDebug(1, "");
   AliCodeTimerAuto("",0);
-  
+
   AliMUONGlobalTrigger* globalTrigger = triggerStore.Global();
   
   UChar_t gloTrigPat = 0;
@@ -1254,57 +1259,61 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
   TIter next(triggerStore.CreateIterator());
   AliMUONLocalTrigger* locTrg(0x0);
 
-  Float_t z11 = AliMUONConstants::DefaultChamberZ(10);
-  Float_t z21 = AliMUONConstants::DefaultChamberZ(12);
+  const Double_t kTrigNonBendReso = AliMUONConstants::TriggerNonBendingReso();
+  const Double_t kTrigBendReso = AliMUONConstants::TriggerBendingReso();
+  const Double_t kSqrt12 = TMath::Sqrt(12.);
       
   AliMUONTriggerTrack triggerTrack;
+  TMatrixD trigCov(3,3);
   
   while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(next()) ) )
   {
-    Bool_t xTrig=locTrg->IsTrigX();
-    Bool_t yTrig=locTrg->IsTrigY();
-    
-    Int_t localBoardId = locTrg->LoCircuit();
-    
-    if (xTrig && yTrig) 
+    if ( locTrg->IsTrigX() && locTrg->IsTrigY() ) 
     { // make Trigger Track if trigger in X and Y
-      
+
+      Int_t localBoardId = locTrg->LoCircuit();
+
       Float_t y11 = circuit.GetY11Pos(localBoardId, locTrg->LoStripX()); 
+      Float_t z11 = circuit.GetZ11Pos(localBoardId, locTrg->LoStripX());
       // need first to convert deviation to [0-30] 
       // (see AliMUONLocalTriggerBoard::LocalTrigger)
       Int_t deviation = locTrg->GetDeviation(); 
       Int_t stripX21 = locTrg->LoStripX()+deviation+1;
       Float_t y21 = circuit.GetY21Pos(localBoardId, stripX21);       
+      Float_t z21 = circuit.GetZ21Pos(localBoardId, stripX21);
       Float_t x11 = circuit.GetX11Pos(localBoardId, locTrg->LoStripY());
       
-      AliDebug(1, Form(" MakeTriggerTrack %d %d %d %d %f %f %f \n",locTrg->LoCircuit(),
-                       locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11));
-      
-      Float_t thetax = TMath::ATan2( x11 , z11 );
-      Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
+      AliDebug(1, Form(" MakeTriggerTrack %3d %2d %2d %2d (%f %f %f) (%f %f)\n",locTrg->LoCircuit(),
+                       locTrg->LoStripX(),locTrg->LoStripX()+deviation+1,locTrg->LoStripY(),x11, y11, z11, y21, z21));
 
-      CorrectThetaRange(thetax);
-      CorrectThetaRange(thetay);
+ 
+      Double_t deltaZ = z11 - z21;
       
+      Float_t slopeX = x11/z11;
+      Float_t slopeY = (y11-y21) / deltaZ;
+
+      Float_t sigmaX = circuit.GetX11Width(localBoardId, locTrg->LoStripY()) / kSqrt12;
+      Float_t sigmaY = circuit.GetY11Width(localBoardId, locTrg->LoStripX()) / kSqrt12;
+      Float_t sigmaY21 = circuit.GetY21Width(localBoardId, locTrg->LoStripX()) / kSqrt12;
+
+      trigCov.Zero();
+      trigCov(0,0) = kTrigNonBendReso * kTrigNonBendReso + sigmaX * sigmaX;
+      trigCov(1,1) = kTrigBendReso * kTrigBendReso + sigmaY * sigmaY;
+      trigCov(2,2) = 
+	(2. * kTrigBendReso * kTrigBendReso + sigmaY * sigmaY + sigmaY21 * sigmaY21 ) / deltaZ / deltaZ;
+      trigCov(1,2) = trigCov(2,1) = trigCov(1,1) / deltaZ;
+
       triggerTrack.SetX11(x11);
       triggerTrack.SetY11(y11);
-      triggerTrack.SetThetax(thetax);
-      triggerTrack.SetThetay(thetay);
+      triggerTrack.SetZ11(z11);
+      triggerTrack.SetZ21(z21);
+      triggerTrack.SetSlopeX(slopeX);
+      triggerTrack.SetSlopeY(slopeY);
       triggerTrack.SetGTPattern(gloTrigPat);
       triggerTrack.SetLoTrgNum(localBoardId);
-      
+      triggerTrack.SetCovariances(trigCov);
+
       triggerTrackStore.Add(triggerTrack);
     } // board is fired 
   } // end of loop on Local Trigger
-}
-
-//__________________________________________________________________________
-void AliMUONVTrackReconstructor::CorrectThetaRange(Float_t& theta)
-{
-  /// The angles of the trigger tracks, obtained with ATan2, 
-  /// have values around +pi and -pi. On the contrary, the angles 
-  /// used in the tracker tracks have values around 0.
-  /// This function sets the same range for the trigger tracks angles.
-  if (theta < -TMath::PiOver2()) theta += TMath::Pi();
-  else if(theta > TMath::PiOver2()) theta -= TMath::Pi();
 }

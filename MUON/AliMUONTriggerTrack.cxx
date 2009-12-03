@@ -26,6 +26,7 @@
 
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONTrackReconstructor.h" 
+#include "TString.h"
 #include <Riostream.h>
 #include "AliLog.h"
 
@@ -38,30 +39,35 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
   : TObject(),
     fx11(0),
     fy11(0),
-    fthetax(0),
-    fthetay(0),
+    fz11(0.),
+    fz21(0.),
+    fSlopeX(0),
+    fSlopeY(0),
     floTrgNum(0),
     fGTPattern(0),
-    fHitsPatternInTrigCh(0)
-
+    fHitsPatternInTrigCh(0),
+    fCovariances(0x0)
 {
   /// default ctr
       AliDebug(1,Form("this=%p",this));
 }
 //__________________________________________________________________________
-AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Int_t loTrgNum, Long_t theGTPattern, UShort_t hitsPatternInTrigCh)
+AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t z11, Float_t z21, Float_t slopeX, Float_t slopeY, Int_t loTrgNum, Long_t theGTPattern, UShort_t hitsPatternInTrigCh)
     : TObject(),
       fx11(x11),
       fy11(y11),
-      fthetax(thetax),
-      fthetay(thetay),
+      fz11(z11),
+      fz21(z21),
+      fSlopeX(slopeX),
+      fSlopeY(slopeY),
       floTrgNum(loTrgNum),
       fGTPattern(theGTPattern),
-      fHitsPatternInTrigCh(hitsPatternInTrigCh)
+      fHitsPatternInTrigCh(hitsPatternInTrigCh),
+      fCovariances(0x0)
 {
 /// ctor from local trigger output
-        AliDebug(1,Form("this=%p x11=%f y11=%f thetax=%f thetay=%f loTrgNum=%d GTPattern=%ld HitsPatternInTrigCh %i",
-                        this,x11,y11,thetax,thetay,loTrgNum,theGTPattern,fHitsPatternInTrigCh));
+        AliDebug(1,Form("this=%p x11=%f y11=%f z11=%f z21=%f slopeX=%f slopeY=%f loTrgNum=%d GTPattern=%ld HitsPatternInTrigCh %i",
+                        this,x11,y11,z11,z21,slopeX,slopeY,loTrgNum,theGTPattern,fHitsPatternInTrigCh));
 
 }
 
@@ -70,6 +76,10 @@ AliMUONTriggerTrack::~AliMUONTriggerTrack()
 {
   /// Destructor
   AliDebug(1,Form("this=%p",this));
+  if (fCovariances) {
+    delete fCovariances;
+    fCovariances = 0x0;
+  }
 }
 
 //__________________________________________________________________________
@@ -77,16 +87,20 @@ AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& theMUONTrig
     : TObject(theMUONTriggerTrack),
       fx11(theMUONTriggerTrack.fx11),
       fy11(theMUONTriggerTrack.fy11),
-      fthetax(theMUONTriggerTrack.fthetax),
-      fthetay(theMUONTriggerTrack.fthetay),
+      fz11(theMUONTriggerTrack.fz11),
+      fz21(theMUONTriggerTrack.fz21),
+      fSlopeX(theMUONTriggerTrack.fSlopeX),
+      fSlopeY(theMUONTriggerTrack.fSlopeY),
       floTrgNum(theMUONTriggerTrack.floTrgNum),
       fGTPattern(theMUONTriggerTrack.fGTPattern),
-      fHitsPatternInTrigCh(theMUONTriggerTrack.fHitsPatternInTrigCh)  
+      fHitsPatternInTrigCh(theMUONTriggerTrack.fHitsPatternInTrigCh),
+      fCovariances(0x0)
 {
 ///
 /// copy ctor
 ///
-        AliDebug(1,Form("this=%p copy ctor",this));
+  if (theMUONTriggerTrack.fCovariances) fCovariances = new TMatrixD(*(theMUONTriggerTrack.fCovariances));
+  AliDebug(1,Form("this=%p copy ctor",this));
 
 }
       
@@ -105,21 +119,67 @@ theMUONTriggerTrack)
 
     fx11 = theMUONTriggerTrack.fx11;
     fy11 = theMUONTriggerTrack.fy11;
-    fthetax = theMUONTriggerTrack.fthetax;
-    fthetay = theMUONTriggerTrack.fthetay;
+    fz11 = theMUONTriggerTrack.fz11;
+    fz21 = theMUONTriggerTrack.fz21;
+    fSlopeX = theMUONTriggerTrack.fSlopeX;
+    fSlopeY = theMUONTriggerTrack.fSlopeY;
     floTrgNum = theMUONTriggerTrack.floTrgNum;
     fGTPattern = theMUONTriggerTrack.fGTPattern;
     fHitsPatternInTrigCh = theMUONTriggerTrack.fHitsPatternInTrigCh;
+
+    if (theMUONTriggerTrack.fCovariances) {
+      if (fCovariances) *fCovariances = *(theMUONTriggerTrack.fCovariances);
+      else fCovariances = new TMatrixD(*(theMUONTriggerTrack.fCovariances));
+    } else {
+      delete fCovariances;
+      fCovariances = 0x0;
+    }
 
     return *this;
 }
 
 //__________________________________________________________________________
 void
-AliMUONTriggerTrack::Print(Option_t*) const
+AliMUONTriggerTrack::Print(Option_t* opt) const
 {
 /// Printing
+  TString optString(opt);
+  optString.ToUpper();
+  if ( optString.Contains("FULL") ) optString = "PARAM COV";
 
-  cout << Form("(X,Y)11=(%7.2f,%7.2f) Theta(X,Y)=(%7.2f,%7.2f) LocalBoard #%3d GlobalTriggerPattern %x HitsPatternInTrigCh %x",
-               fx11,fy11,fthetax,fthetay,floTrgNum,fGTPattern,fHitsPatternInTrigCh) << endl;
+  if ( optString.Contains("PARAM"))
+    cout << Form("(X,Y,Z)11=(%7.2f,%7.2f,%7.2f) Z21=%7.2f Slope(X,Y)=(%7.2f,%7.2f) LocalBoard #%3d GlobalTriggerPattern %x HitsPatternInTrigCh %x",
+		 fx11,fy11,fz11,fz21,fSlopeX,fSlopeY,floTrgNum,fGTPattern,fHitsPatternInTrigCh) << endl;
+
+  if ( optString.Contains("COV") ){
+    if ( ! fCovariances ) cout << "Covariances not initialized " << endl;
+    else fCovariances->Print();
+  }
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerTrack::SetCovariances(const TMatrixD& covariances)
+{
+  /// Set the covariance matrix
+  if (fCovariances) *fCovariances = covariances;
+  else fCovariances = new TMatrixD(covariances);
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerTrack::SetCovariances(const Double_t matrix[3][3])
+{
+  /// Set the covariance matrix
+  if (fCovariances) fCovariances->SetMatrixArray(&(matrix[0][0]));
+  else fCovariances = new TMatrixD(3,3,&(matrix[0][0]));
+}
+
+//__________________________________________________________________________
+const TMatrixD& AliMUONTriggerTrack::GetCovariances() const
+{
+  /// Return the covariance matrix (create it before if needed)
+  if (!fCovariances) {
+    fCovariances = new TMatrixD(3,3);
+    fCovariances->Zero();
+  }
+  return *fCovariances;
 }

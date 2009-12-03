@@ -86,12 +86,9 @@ AliMUONTrackHitPattern::AliMUONTrackHitPattern(const AliMUONRecoParam* recoParam
 fkRecoParam(recoParam),
 fkTransformer(transformer),
 fkDigitMaker(digitMaker),
-fDeltaZ(0.0),
-fTrigCovariance(0x0),
 fkMaxDistance(99999.)
 {
     /// Default constructor
-    InitMembers();
     AliMUONTrackExtrap::SetField();
 }
 
@@ -100,30 +97,7 @@ fkMaxDistance(99999.)
 AliMUONTrackHitPattern::~AliMUONTrackHitPattern(void)
 {
   /// Destructor
-  delete fTrigCovariance;
 }
-
-
-//______________________________________________________________________________
-void AliMUONTrackHitPattern::InitMembers()
-{
-  //
-  /// Initialize data members
-  //
-  fDeltaZ = AliMUONConstants::DefaultChamberZ(10) - AliMUONConstants::DefaultChamberZ(12);
-
-  const Double_t kTrigNonBendReso = AliMUONConstants::TriggerNonBendingReso();
-  const Double_t kTrigBendReso = AliMUONConstants::TriggerBendingReso();
-
-  // Covariance matrix 3x3 (X,Y,slopeY) for trigger tracks
-  fTrigCovariance = new TMatrixD(3,3);
-  fTrigCovariance->Zero();
-  (*fTrigCovariance)(0,0) = kTrigNonBendReso * kTrigNonBendReso;
-  (*fTrigCovariance)(1,1) = kTrigBendReso * kTrigBendReso;
-  (*fTrigCovariance)(2,2) = 2. * (*fTrigCovariance)(1,1) / fDeltaZ / fDeltaZ;
-  (*fTrigCovariance)(1,2) = (*fTrigCovariance)(2,1) = (*fTrigCovariance)(1,1) / fDeltaZ;
-}
-
 
 //_____________________________________________________________________________
 void AliMUONTrackHitPattern::CheckConstants() const
@@ -201,7 +175,7 @@ AliMUONTrackHitPattern::MatchTriggerTrack(AliMUONTrack* track,
 
   Int_t matchTrigger = 0;
   Int_t loTrgNum(-1);
-  Double_t distTriggerTrack[3], sigma2[3];
+  TMatrixD paramDiff(3,1);
   Double_t chi2;
   Double_t chi2MatchTrigger = 0., minChi2MatchTrigger = 999.;
   Int_t doubleMatch = -1; // Check if track matches 2 trigger tracks
@@ -209,60 +183,51 @@ AliMUONTrackHitPattern::MatchTriggerTrack(AliMUONTrack* track,
   AliMUONTriggerTrack* doubleTriggerTrack = 0x0;
   AliMUONTriggerTrack* matchedTriggerTrack = 0x0;
     
-  const TMatrixD& kParamCov = trackParam.GetCovariances();
-    
-  Double_t xTrack = trackParam.GetNonBendingCoor();
-  Double_t yTrack = trackParam.GetBendingCoor();
-  Double_t ySlopeTrack = trackParam.GetBendingSlope();
 
-  // Covariance matrix 3x3 (X,Y,slopeY) for tracker tracks
+  // Covariance matrix 3x3 (X,Y,slopeY) for trigger tracks
   TMatrixD trackCov(3,3);
-  trackCov.Zero();
-  trackCov(0,0) = kParamCov(0,0);
-  trackCov(1,1) = kParamCov(2,2);
-  trackCov(2,2) = kParamCov(3,3);
-  trackCov(1,2) = kParamCov(2,3);
-  trackCov(2,1) = kParamCov(3,2);
-
-  TMatrixD sumCov(trackCov,TMatrixD::kPlus,*fTrigCovariance);
-
-  Bool_t isCovOK = kTRUE;
-
-  if (sumCov.Determinant() != 0) {
-    sumCov.Invert();
-  } else {
-    AliWarning(" Determinant = 0");
-    isCovOK = kFALSE;
-    sigma2[0] = kParamCov(0,0);
-    sigma2[1] = kParamCov(2,2);
-    sigma2[2] = kParamCov(3,3);
-    // sigma of distributions (trigger-track) X,Y,slopeY
-    const Double_t kDistSigma[3]={AliMUONConstants::TriggerNonBendingReso(),
-				  AliMUONConstants::TriggerBendingReso(),
-				  1.414 * AliMUONConstants::TriggerBendingReso()/fDeltaZ};
-    for (Int_t iVar = 0; iVar < 3; iVar++) sigma2[iVar] += kDistSigma[iVar] * kDistSigma[iVar];
-  }
 
   AliMUONTriggerTrack *triggerTrack;
   TIter itTriggerTrack(triggerTrackStore.CreateIterator());
   while ( ( triggerTrack = static_cast<AliMUONTriggerTrack*>(itTriggerTrack() ) ) )
   {
-    distTriggerTrack[0] = triggerTrack->GetX11() - xTrack;
-    distTriggerTrack[1] = triggerTrack->GetY11() - yTrack;
-    distTriggerTrack[2] = TMath::Tan(triggerTrack->GetThetay()) - ySlopeTrack;
+    AliMUONTrackExtrap::LinearExtrapToZCov(&trackParam, triggerTrack->GetZ11());
+    const TMatrixD& kParamCov = trackParam.GetCovariances();
+    
+    Double_t xTrack = trackParam.GetNonBendingCoor();
+    Double_t yTrack = trackParam.GetBendingCoor();
+    Double_t ySlopeTrack = trackParam.GetBendingSlope();
 
-    if(isCovOK){
-      TMatrixD paramDiff(3,1);
-      for(Int_t iVar = 0; iVar < 3; iVar++)
-	paramDiff(iVar,0) = distTriggerTrack[iVar];
-	
+    paramDiff(0,0) = triggerTrack->GetX11() - xTrack;
+    paramDiff(1,0) = triggerTrack->GetY11() - yTrack;
+    paramDiff(2,0) = triggerTrack->GetSlopeY() - ySlopeTrack;
+
+    // Covariance matrix 3x3 (X,Y,slopeY) for tracker tracks
+    trackCov.Zero();
+    trackCov(0,0) = kParamCov(0,0);
+    trackCov(1,1) = kParamCov(2,2);
+    trackCov(2,2) = kParamCov(3,3);
+    trackCov(1,2) = kParamCov(2,3);
+    trackCov(2,1) = kParamCov(3,2);
+
+    // Covariance matrix 3x3 (X,Y,slopeY) for trigger tracks
+    TMatrixD trigCov(triggerTrack->GetCovariances());
+
+    TMatrixD sumCov(trackCov,TMatrixD::kPlus,trigCov);
+    if (sumCov.Determinant() != 0) {
+      sumCov.Invert();
+      
       TMatrixD tmp(sumCov,TMatrixD::kMult,paramDiff);
       TMatrixD chi2M(paramDiff,TMatrixD::kTransposeMult,tmp);
-      chi2 = chi2M(0,0);
-    }
-    else {
+      chi2 = chi2M(0,0);      
+    } else {
+      AliWarning(" Determinant = 0");
+      Double_t sigma2 = 0.;
       chi2 = 0.;
-      for (Int_t iVar = 0; iVar < 3; iVar++) chi2 += distTriggerTrack[iVar]*distTriggerTrack[iVar]/sigma2[iVar];
+      for (Int_t iVar = 0; iVar < 3; iVar++) {
+	sigma2 = trackCov(iVar,iVar) + trigCov(iVar,iVar);
+	chi2 += paramDiff(iVar,0) * paramDiff(iVar,0) / sigma2;
+      }
     }
 
     chi2 /= 3.; // Normalized Chi2: 3 degrees of freedom (X,Y,slopeY)
@@ -308,7 +273,6 @@ AliMUONTrackHitPattern::MatchTriggerTrack(AliMUONTrack* track,
   }
     
   track->SetMatchTrigger(matchTrigger);
-  track->SetLoTrgNum(loTrgNum);
   track->SetChi2MatchTrigger(chi2MatchTrigger);
 
   AliMUONLocalTrigger* locTrg = static_cast<AliMUONLocalTrigger*>(triggerStore.FindLocal(loTrgNum));
@@ -448,7 +412,7 @@ AliMUONTrackHitPattern::MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t z
     //
 
     AliMUONTrackParam trackParamAtPadZ(trackParam);
-    AliMUONTrackExtrap::ExtrapToZCov(&trackParamAtPadZ, zPad);
+    AliMUONTrackExtrap::LinearExtrapToZCov(&trackParamAtPadZ, zPad);
 
     Float_t xTrackAtPad = trackParamAtPadZ.GetNonBendingCoor();
     Float_t yTrackAtPad = trackParamAtPadZ.GetBendingCoor();
@@ -700,7 +664,6 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
   Int_t chOrder[fgkNchambers] = {0,2,1,3};
 
   TArrayF zRealMatch(fgkNchambers);
-  TArrayF correctFactor(fgkNcathodes);
 
   Bool_t isMatch[fgkNcathodes];
   for(Int_t cath=0; cath<fgkNcathodes; cath++){
@@ -708,9 +671,10 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
   }
 
   TArrayF zMeanChamber(fgkNchambers);
-  for(Int_t ch=0; ch<fgkNchambers; ch++){
-    zMeanChamber[ch] = AliMUONConstants::DefaultChamberZ(10+ch);
-  }
+  zMeanChamber[0] = matchedTrigTrack->GetZ11();
+  zMeanChamber[1] = matchedTrigTrack->GetZ11() + AliMUONConstants::DefaultChamberZ(11) - AliMUONConstants::DefaultChamberZ(10);
+  zMeanChamber[2] = matchedTrigTrack->GetZ21();
+  zMeanChamber[3] = matchedTrigTrack->GetZ21() + AliMUONConstants::DefaultChamberZ(13) - AliMUONConstants::DefaultChamberZ(12);
 
   TArrayI digitPerTrack(fgkNcathodes);
 
@@ -754,26 +718,18 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
 
   Bool_t isClearEvent = kTRUE;
 
-  //Float_t x11 = matchedTrigTrack->GetX11();// x position (info from non-bending plane)
   Float_t y11 = matchedTrigTrack->GetY11();// y position (info from bending plane)
-  Float_t thetaX = matchedTrigTrack->GetThetax();
-  Float_t thetaY = matchedTrigTrack->GetThetay();
+  Float_t slopeX = matchedTrigTrack->GetSlopeX();
+  Float_t slopeY = matchedTrigTrack->GetSlopeY();
 
   for(Int_t ch=0; ch<fgkNchambers; ch++) { // chamber loop
     Int_t currCh = chOrder[ch];
     AliDebug(3, Form("zMeanChamber[%i] = %.2f\tzRealMatch[0] = %.2f\n",currCh,zMeanChamber[currCh],zRealMatch[0]));
 
-    for(Int_t cath=0; cath<fgkNcathodes; cath++){
-      correctFactor[cath]=1.;
-    }
-    // calculate corrections to trigger track theta
-    if(ch>=1) correctFactor[kNonBending] = zMeanChamber[0]/zRealMatch[0];// corrects x position
-    if(ch>=2) correctFactor[kBending] = (zMeanChamber[2] - zMeanChamber[0]) / (zRealMatch[2] - zRealMatch[0]);// corrects y position
-
     // searching track intersection with chambers (first approximation)
     Float_t deltaZ = zMeanChamber[currCh] - zMeanChamber[0];
-    trackIntersectCh[currCh][0] = zMeanChamber[currCh] * TMath::Tan(thetaX) * correctFactor[kNonBending];// x position (info from non-bending plane) 
-    trackIntersectCh[currCh][1] = y11 + deltaZ * TMath::Tan(thetaY) * correctFactor[kBending];// y position (info from bending plane)
+    trackIntersectCh[currCh][0] = zMeanChamber[currCh] * slopeX;
+    trackIntersectCh[currCh][1] = y11 + deltaZ * slopeY;
     Int_t detElemIdFromTrack = DetElemIdFromPos(trackIntersectCh[currCh][0], trackIntersectCh[currCh][1], 11+currCh, 0);
     if(detElemIdFromTrack<0) {
       AliDebug(1, "Warning: trigger track outside trigger chamber\n");

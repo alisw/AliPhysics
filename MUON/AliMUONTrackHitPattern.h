@@ -54,8 +54,6 @@ public:
 protected:
   void ApplyMCSCorrections(AliMUONTrackParam& trackParam) const;
   
-  void InitMembers();
-  
   // Methods for hit pattern from tracker track
   void FindPadMatchingTrack(const AliMUONVDigitStore& digitStore,
 			    const AliMUONTrackParam& trackParam,
@@ -96,10 +94,6 @@ private:
   const AliMUONRecoParam* fkRecoParam; //!< pointer to reco parameters
   const AliMUONGeometryTransformer& fkTransformer; //!< geometry transformer
   const AliMUONDigitMaker& fkDigitMaker; //!< pointer to digit maker
-
-  Double_t fDeltaZ; //!< distance between stations
-
-  TMatrixD* fTrigCovariance; //!< Covariance matrix 3x3 (X,Y,slopeY) for trigger tracks
 
   const Float_t fkMaxDistance; //!< Maximum distance for reference
   static const Int_t fgkNcathodes=2; //!<Number of cathodes

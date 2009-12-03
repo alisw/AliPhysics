@@ -65,6 +65,11 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONGeometryTransformer* t
       fXpos11[i].Set(16); 
       fYpos11[i].Set(31);
       fYpos21[i].Set(63);
+      fZpos11[i].Set(31);
+      fZpos21[i].Set(63);
+      fXwidth11[i].Set(16); 
+      fYwidth11[i].Set(31);
+      fYwidth21[i].Set(63);
     }
 
     for (Int_t i = 1; i < AliMpConstants::NofLocalBoards()+1; ++i) { // board begins at 1
@@ -92,6 +97,11 @@ AliMUONTriggerCircuit::~AliMUONTriggerCircuit()
      fXpos11[i].Reset();
      fYpos11[i].Reset();
      fYpos21[i].Reset();
+     fZpos11[i].Reset();
+     fZpos21[i].Reset();
+     fXwidth11[i].Reset();
+     fYwidth11[i].Reset();
+     fYwidth21[i].Reset();
     }
 
 } 
@@ -110,6 +120,11 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONTriggerCircuit& circui
       fXpos11[i] = circuit.fXpos11[i];
       fYpos11[i] = circuit.fYpos11[i];
       fYpos21[i] = circuit.fYpos21[i];
+      fZpos11[i] = circuit.fZpos11[i];
+      fZpos21[i] = circuit.fZpos21[i];
+      fXwidth11[i] = circuit.fXwidth11[i];
+      fYwidth11[i] = circuit.fYwidth11[i];
+      fYwidth21[i] = circuit.fYwidth21[i];
     }
 
 }
@@ -129,6 +144,11 @@ AliMUONTriggerCircuit& AliMUONTriggerCircuit::operator=(const AliMUONTriggerCirc
     fXpos11[i] = circuit.fXpos11[i];
     fYpos11[i] = circuit.fYpos11[i];
     fYpos21[i] = circuit.fYpos21[i];
+    fZpos11[i] = circuit.fZpos11[i];
+    fZpos21[i] = circuit.fZpos21[i];
+    fXwidth11[i] = circuit.fXwidth11[i];
+    fYwidth11[i] = circuit.fYwidth11[i];
+    fYwidth21[i] = circuit.fYwidth21[i];
   }
 
   return *this;
@@ -163,7 +183,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* const localBoard)
   Int_t iStripCircuit = 0;
 
   FillXstrips(icol, iFirstStrip, iLastStrip, 
-	      iStripCircuit, fYpos11[fCurrentLocalBoard]);
+	      iStripCircuit, kTRUE);
   
   //--- second plane 
   ichamber = 12;
@@ -178,7 +198,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* const localBoard)
   iStripCircuit = 8;
 
   FillXstrips(icol, iFirstStripMiddle, iLastStripMiddle,
-	      iStripCircuit, fYpos21[fCurrentLocalBoard]);
+	      iStripCircuit, kFALSE);
   
   // second plane upper part
   if (zeroUp == 0) { // something up
@@ -208,11 +228,15 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* const localBoard)
     
     iStripCircuit = 24;
     FillXstrips(icolUp, iFirstStripUp, iLastStripUp,
-		iStripCircuit, fYpos21[fCurrentLocalBoard]);
+		iStripCircuit, kFALSE);
     
     // fill strip between middle and upper part
     fYpos21[fCurrentLocalBoard][47] = (fYpos21[fCurrentLocalBoard][46] + 
 				       fYpos21[fCurrentLocalBoard][48])/2.;
+    fZpos21[fCurrentLocalBoard][47] = (fZpos21[fCurrentLocalBoard][46] + 
+				       fZpos21[fCurrentLocalBoard][48])/2.;
+    fYwidth21[fCurrentLocalBoard][47] = (fYwidth21[fCurrentLocalBoard][46] + 
+					 fYwidth21[fCurrentLocalBoard][48])/2.;
   } // end of something up
   
   // restore current detElemId & segmentation
@@ -253,11 +277,15 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* const localBoard)
     
     iStripCircuit = 0;
     FillXstrips(icolDo, iFirstStripDo, iLastStripDo,
-		iStripCircuit, fYpos21[fCurrentLocalBoard]);
+		iStripCircuit, kFALSE);
     
     // fill strip between middle and upper part
     fYpos21[fCurrentLocalBoard][15] = (fYpos21[fCurrentLocalBoard][14] + 
 				       fYpos21[fCurrentLocalBoard][16])/2.;
+    fZpos21[fCurrentLocalBoard][15] = (fZpos21[fCurrentLocalBoard][14] + 
+				       fZpos21[fCurrentLocalBoard][16])/2.;
+    fYwidth21[fCurrentLocalBoard][15] = (fYwidth21[fCurrentLocalBoard][14] + 
+					 fYwidth21[fCurrentLocalBoard][16])/2.;
   } // end of something down
   
 }
@@ -265,10 +293,14 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* const localBoard)
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuit::FillXstrips(const Int_t icol, 
 					const Int_t iFirstStrip, const Int_t iLastStrip, 
-					Int_t liStripCircuit, TArrayF& ypos)
+					Int_t liStripCircuit, const Bool_t is11)
 {    
 /// fill 
-  Double_t xyGlobal[2] = {0.};
+  TArrayF& ypos   = (is11) ? fYpos11[fCurrentLocalBoard] : fYpos21[fCurrentLocalBoard];
+  TArrayF& zpos   = (is11) ? fZpos11[fCurrentLocalBoard] : fZpos21[fCurrentLocalBoard];
+  TArrayF& ywidth = (is11) ? fYwidth11[fCurrentLocalBoard] : fYwidth21[fCurrentLocalBoard];
+
+  Double_t xyGlobal[3] = {0.};
   for (Int_t istrip = iFirstStrip; istrip < iLastStrip; ++istrip) {
 
     AliMpPad pad = fkCurrentSeg->PadByIndices(icol-1,istrip,kTRUE);
@@ -283,7 +315,13 @@ void AliMUONTriggerCircuit::FillXstrips(const Int_t icol,
     XYGlobal(pad,xyGlobal);
     
     ypos[2*liStripCircuit] = xyGlobal[1];
-    if (istrip != (iLastStrip - 1)) ypos[2*liStripCircuit+1] = xyGlobal[1] + yDim;
+    zpos[2*liStripCircuit] = xyGlobal[2];
+    ywidth[2*liStripCircuit] = 2. * yDim;
+    if (istrip != (iLastStrip - 1)) {
+      ypos[2*liStripCircuit+1] = xyGlobal[1] + yDim;
+      zpos[2*liStripCircuit+1] = xyGlobal[2];
+      ywidth[2*liStripCircuit+1] = 2. * yDim;
+    }
     liStripCircuit++;
   }    
 }
@@ -348,7 +386,7 @@ void AliMUONTriggerCircuit::FillYstrips(const Int_t iFirstStrip, const Int_t iLa
 					const Bool_t doubling)
 {    
 /// fill
-  Double_t xyGlobal[2] = {0.};
+  Double_t xyGlobal[3] = {0.};
 
   for (Int_t istrip = iFirstStrip; istrip < iLastStrip; ++istrip) {
 
@@ -367,14 +405,17 @@ void AliMUONTriggerCircuit::FillYstrips(const Int_t iFirstStrip, const Int_t iLa
     
     if (!doubling) {	
       fXpos11[fCurrentLocalBoard].AddAt(xyGlobal[0], liStripCircuit);
+      fXwidth11[fCurrentLocalBoard].AddAt(2. * xDim, liStripCircuit);
     } else if (doubling) {
 
       fXpos11[fCurrentLocalBoard].AddAt(TMath::Sign(1.,xyGlobal[0]) * 
 				  (TMath::Abs(xyGlobal[0]) - xDim/2.), 2*liStripCircuit);
+      fXwidth11[fCurrentLocalBoard].AddAt(2. * xDim, 2*liStripCircuit);
 
       fXpos11[fCurrentLocalBoard].AddAt(TMath::Sign(1.,xyGlobal[0]) *
 				  (TMath::Abs(fXpos11[fCurrentLocalBoard][2*liStripCircuit]) + xDim),
 					2*liStripCircuit + 1); 
+      fXwidth11[fCurrentLocalBoard].AddAt(2. * xDim, 2*liStripCircuit + 1);
     }
 
     liStripCircuit++;
@@ -391,17 +432,22 @@ void AliMUONTriggerCircuit::XYGlobal(const AliMpPad& pad,
   // get the pad position and dimensions
   Double_t xl1 = pad.GetPositionX();
   Double_t yl1 = pad.GetPositionY();
-  Double_t zg1 = 0;
   
   // positions from local to global 
   fkTransformer->Local2Global(fCurrentDetElem, xl1, yl1, 0, 
-                                 xyGlobal[0], xyGlobal[1], zg1);
+                                 xyGlobal[0], xyGlobal[1], xyGlobal[2]);
 }
 
 
 //----------------------------------------------------------------------
 //--- methods which return member data related info
 //----------------------------------------------------------------------
+//----------------------------------------------------------------------
+Float_t AliMUONTriggerCircuit::GetX11Pos(Int_t localBoardId, Int_t istrip) const 
+{
+/// returns X position of Y strip istrip in MC11
+  return fXpos11[localBoardId][istrip];
+}
 Float_t AliMUONTriggerCircuit::GetY11Pos(Int_t localBoardId, Int_t istrip) const 
 {
 /// returns Y position of X strip istrip in MC11
@@ -414,10 +460,32 @@ Float_t AliMUONTriggerCircuit::GetY21Pos(Int_t localBoardId, Int_t istrip) const
   return fYpos21[localBoardId][istrip];
 }
 //----------------------------------------------------------------------
-Float_t AliMUONTriggerCircuit::GetX11Pos(Int_t localBoardId, Int_t istrip) const 
+Float_t AliMUONTriggerCircuit::GetZ11Pos(Int_t localBoardId, Int_t istrip) const 
 {
-/// returns X position of Y strip istrip in MC11
-  return fXpos11[localBoardId][istrip];
+/// returns Z position of X strip istrip in MC11
+  return fZpos11[localBoardId][istrip];
+}
+//----------------------------------------------------------------------
+Float_t AliMUONTriggerCircuit::GetZ21Pos(Int_t localBoardId, Int_t istrip) const 
+{
+/// returns Z position of X strip istrip in MC21
+  return fZpos21[localBoardId][istrip];
+}
+Float_t AliMUONTriggerCircuit::GetX11Width(Int_t localBoardId, Int_t istrip) const 
+{
+/// returns width of Y strip istrip in MC11
+  return fXwidth11[localBoardId][istrip];
+}
+Float_t AliMUONTriggerCircuit::GetY11Width(Int_t localBoardId, Int_t istrip) const 
+{
+/// returns width of X strip istrip in MC11
+  return fYwidth11[localBoardId][istrip];
+}
+//----------------------------------------------------------------------
+Float_t AliMUONTriggerCircuit::GetY21Width(Int_t localBoardId, Int_t istrip) const 
+{
+/// returns width of X strip istrip in MC21
+  return fYwidth21[localBoardId][istrip];
 }
 
 //----------------------------------------------------------------------

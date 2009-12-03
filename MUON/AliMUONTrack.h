@@ -77,12 +77,10 @@ class AliMUONTrack : public TObject
   
   /// return 1,2,3 if track matches with trigger track, 0 if not
   Int_t    GetMatchTrigger(void) const {return fMatchTrigger;}
-  /// returns the local trigger number corresponding to the trigger track 
-  Int_t    GetLoTrgNum(void) const {return floTrgNum;}
+  /// returns the local trigger number corresponding to the trigger track (obsolete)
+  Int_t    GetLoTrgNum(void) const {return LoCircuit();}
   /// set the flag telling whether track matches with trigger track or not
   void	   SetMatchTrigger(Int_t matchTrigger) {fMatchTrigger = matchTrigger;}
-  /// set the local trigger number corresponding to the trigger track
-  void	   SetLoTrgNum(Int_t loTrgNum) {floTrgNum = loTrgNum;}
   /// return the chi2 of trigger/track matching 
   Double_t GetChi2MatchTrigger(void) const {return fChi2MatchTrigger;}
   /// set the chi2 of trigger/track matching 
@@ -167,7 +165,6 @@ class AliMUONTrack : public TObject
                         ///<  1 track match but does not pass pt cut
                         ///<  2 track match Low pt cut
                         ///<  3 track match High pt cut
-  Int_t floTrgNum; ///< the number of the corresponding loTrg, -1 if no matching
   Double_t fChi2MatchTrigger; ///< chi2 of trigger/track matching 
   
   Int_t fTrackID; ///< Point to the corresponding MC track
@@ -185,7 +182,7 @@ class AliMUONTrack : public TObject
   void   ComputeMCSCovariances(TMatrixD& mcsCovariances) const;
   
   
-  ClassDef(AliMUONTrack, 8) // Reconstructed track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrack, 9) // Reconstructed track in ALICE dimuon spectrometer
 };
 	
 #endif

@@ -84,9 +84,9 @@ class AliMUONConstants : public TObject {
     static Double_t ChamberThicknessInX0(Int_t chId) {return (chId >= 0 && chId < 10) ? fgChamberThicknessInX0[chId] : 0.;}
     /// Return Trigger ToF Limit (75 ns)
     static Float_t TriggerTofLimit() {return fgkTriggerTofLimit;}
-    /// Return default trigger chamber resolution in non bending direction
+    /// Return default trigger chamber resolution DUE TO ALIGNMENT ONLY in non bending direction
     static Double_t TriggerNonBendingReso() {return fgkTriggerNonBendingReso;}
-    /// Return default trigger chamber resolution in bending direction
+    /// Return default trigger chamber resolution DUE TO ALIGNMENT ONLY in bending direction
     static Double_t TriggerBendingReso() {return fgkTriggerBendingReso;}
     /// Return z-position of muon filter begining
     static Double_t MuonFilterZBeg() {return fgkMuonFilterZBeg;}
@@ -144,8 +144,8 @@ class AliMUONConstants : public TObject {
     static Int_t    fgMaxZoom;          ///< Maximum Zoom for event display
     static Float_t  fgkTriggerTofLimit; ///< Particle above this threshold are discarded in trigger algorithm
     
-    static const Double_t fgkTriggerNonBendingReso; ///< default trigger chamber resolution in the non-bending direction
-    static const Double_t fgkTriggerBendingReso; ///< default trigger chamber resolution in the bending direction
+    static const Double_t fgkTriggerNonBendingReso; ///< default trigger chamber resolution in the non-bending direction, DUE TO ALIGNMENT ONLY
+    static const Double_t fgkTriggerBendingReso; ///< default trigger chamber resolution in the bending direction, DUE TO ALIGNMENT ONLY 
     
     static const Double_t fgkMuonFilterZBeg; ///< z-position of the begining of the muon filter
     static const Double_t fgkMuonFilterZEnd; ///< z-position of the end of the muon filter

@@ -108,8 +108,6 @@ class AliMUONVTrackReconstructor : public TObject {
   Bool_t FollowLinearTrackInChamber(AliMUONTrack &trackCandidate, const AliMUONVClusterStore& clusterStore, Int_t nextChamber);
   Bool_t FollowLinearTrackInStation(AliMUONTrack &trackCandidate, const AliMUONVClusterStore& clusterStore, Int_t nextStation);
 
-  void CorrectThetaRange(Float_t&);
-
  private:
   
   // Functions

@@ -31,9 +31,14 @@ public:
   AliMUONTriggerCircuit& operator=(const AliMUONTriggerCircuit& AliMUONTriggerCircuit); 
 
   //--- methods which return member data related info
+  Float_t GetX11Pos(Int_t localBoardId, Int_t istrip) const;
   Float_t GetY11Pos(Int_t localBoardId, Int_t istrip) const;
   Float_t GetY21Pos(Int_t localBoardId, Int_t istrip) const;
-  Float_t GetX11Pos(Int_t localBoardId, Int_t istrip) const;
+  Float_t GetZ11Pos(Int_t localBoardId, Int_t istrip) const;
+  Float_t GetZ21Pos(Int_t localBoardId, Int_t istrip) const;
+  Float_t GetX11Width(Int_t localBoardId, Int_t istrip) const;
+  Float_t GetY11Width(Int_t localBoardId, Int_t istrip) const;
+  Float_t GetY21Width(Int_t localBoardId, Int_t istrip) const;
 
   //  void Print(Option_t* opt="") const;
   //  void dump(const char* what, const Float_t* array, Int_t size);
@@ -54,7 +59,7 @@ private:
 
   void FillXstrips(const Int_t icol, 
                    const Int_t iFirstStrip, const Int_t iLastStrip,
-                   Int_t liStripCircuit, TArrayF& ypos);
+                   Int_t liStripCircuit, const Bool_t is11);
   
   void FillYstrips(const Int_t iFirstStrip,
                    const Int_t iLastStrip, Int_t liStripCircuit,
@@ -68,6 +73,11 @@ private:
   TArrayF fXpos11[235];         ///< X position of Y strips in MC11
   TArrayF fYpos11[235];         ///< Y position of X strips in MC11
   TArrayF fYpos21[235];         ///< Y position of X strips in MC21
+  TArrayF fZpos11[235];         ///< Z position of X strips in MC11
+  TArrayF fZpos21[235];         ///< Z position of X strips in MC21
+  TArrayF fXwidth11[235];         ///< width of Y strips in MC11
+  TArrayF fYwidth11[235];         ///< width of X strips in MC11
+  TArrayF fYwidth21[235];         ///< width of X strips in MC21
 
   const AliMUONGeometryTransformer* fkTransformer; //!< pointer to transformation
   const AliMpVSegmentation* fkCurrentSeg;          //!< current segmentation
@@ -75,6 +85,6 @@ private:
   Int_t fCurrentDetElem;                          //!< current detection elt id
   Int_t fCurrentLocalBoard;                       //!< current local board id
 
-  ClassDef(AliMUONTriggerCircuit,1) // Trigger Circuit class
+  ClassDef(AliMUONTriggerCircuit,2) // Trigger Circuit class
 };
 #endif
