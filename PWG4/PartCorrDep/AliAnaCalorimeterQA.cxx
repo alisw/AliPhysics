@@ -57,12 +57,13 @@ ClassImp(AliAnaCalorimeterQA)
   
 //____________________________________________________________________________
   AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
-    AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), fMakePlots(kFALSE),
-	fhE(0),fhPt(0),fhPhi(0),fhEta(0), fhEtaPhi(0), 
+	AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), fMakePlots(kFALSE), fCorrelateCalos(kFALSE),
+    fhE(0),fhPt(0),fhPhi(0),fhEta(0), fhEtaPhi(0), 
     fhECharged(0),fhPtCharged(0),fhPhiCharged(0),fhEtaCharged(0), fhEtaPhiCharged(0), 
     fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
     fhDeltaE(0), fhDeltaPt(0),fhDeltaPhi(0),fhDeltaEta(0), fhRatioE(0), fhRatioPt(0),fhRatioPhi(0),fhRatioEta(0),
     fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0), fhIM(0), fhAsym(0), fhNCellsPerCluster(0), fhNClusters(0), fhNCells(0), fhAmplitude(0), 
+	fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
     fhGenGamPt(0),fhGenGamEta(0),fhGenGamPhi(0),fhGenPi0Pt(0),fhGenPi0Eta(0),fhGenPi0Phi(0),
     fhGenEtaPt(0),fhGenEtaEta(0),fhGenEtaPhi(0),fhGenOmegaPt(0),fhGenOmegaEta(0),fhGenOmegaPhi(0),
     fhGenElePt(0),fhGenEleEta(0),fhGenElePhi(0), fhEMVxyz(0),  fhEMR(0), fhHaVxyz(0),  fhHaR(0),
@@ -71,15 +72,15 @@ ClassImp(AliAnaCalorimeterQA)
     fhEleE(0),fhElePt(0),fhElePhi(0),fhEleEta(0),
     fhPi0E(0),fhPi0Pt(0),fhPi0Phi(0),fhPi0Eta(0), fhNeHadE(0),fhNeHadPt(0),fhNeHadPhi(0),fhNeHadEta(0), 
     fhChHadE(0),fhChHadPt(0),fhChHadPhi(0),fhChHadEta(0),
-	fhGamECharged(0),fhGamPtCharged(0),fhGamPhiCharged(0),fhGamEtaCharged(0), 
-	fhEleECharged(0),fhElePtCharged(0),fhElePhiCharged(0),fhEleEtaCharged(0),
-	fhPi0ECharged(0),fhPi0PtCharged(0),fhPi0PhiCharged(0),fhPi0EtaCharged(0), 
-	fhNeHadECharged(0),fhNeHadPtCharged(0),fhNeHadPhiCharged(0),fhNeHadEtaCharged(0), 
-	fhChHadECharged(0),fhChHadPtCharged(0),fhChHadPhiCharged(0),fhChHadEtaCharged(0),
+    fhGamECharged(0),fhGamPtCharged(0),fhGamPhiCharged(0),fhGamEtaCharged(0), 
+    fhEleECharged(0),fhElePtCharged(0),fhElePhiCharged(0),fhEleEtaCharged(0),
+    fhPi0ECharged(0),fhPi0PtCharged(0),fhPi0PhiCharged(0),fhPi0EtaCharged(0), 
+    fhNeHadECharged(0),fhNeHadPtCharged(0),fhNeHadPhiCharged(0),fhNeHadEtaCharged(0), 
+    fhChHadECharged(0),fhChHadPtCharged(0),fhChHadPhiCharged(0),fhChHadEtaCharged(0),
     fhGenGamAccE(0),fhGenGamAccPt(0),fhGenGamAccEta(0),fhGenGamAccPhi(0),
     fhGenPi0AccE(0),fhGenPi0AccPt(0),fhGenPi0AccEta(0),fhGenPi0AccPhi(0),
     fh1pOverE(0),fh1dR(0),fh2EledEdx(0), fh2MatchdEdx(0),fhMCEle1pOverE(0),fhMCEle1dR(0),fhMCEle2MatchdEdx(0),
-	fhMCChHad1pOverE(0),fhMCChHad1dR(0),fhMCChHad2MatchdEdx(0),fhMCNeutral1pOverE(0),fhMCNeutral1dR(0),fhMCNeutral2MatchdEdx(0),
+    fhMCChHad1pOverE(0),fhMCChHad1dR(0),fhMCChHad2MatchdEdx(0),fhMCNeutral1pOverE(0),fhMCNeutral1dR(0),fhMCNeutral2MatchdEdx(0),
     fh1pOverER02(0), fhMCEle1pOverER02(0), fhMCChHad1pOverER02(0), fhMCNeutral1pOverER02(0)
 {
   //Default Ctor
@@ -90,7 +91,8 @@ ClassImp(AliAnaCalorimeterQA)
 
 //____________________________________________________________________________
 AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :   
-  AliAnaPartCorrBaseClass(qa), fCalorimeter(qa.fCalorimeter), fStyleMacro(qa.fStyleMacro), fMakePlots(qa.fMakePlots),
+  AliAnaPartCorrBaseClass(qa), fCalorimeter(qa.fCalorimeter), fStyleMacro(qa.fStyleMacro), 
+  fMakePlots(qa.fMakePlots), fCorrelateCalos(qa.fCorrelateCalos),
   fhE(qa.fhE),fhPt(qa.fhPt), fhPhi(qa.fhPhi), fhEta(qa.fhEta), 
   fhEtaPhi(qa.fhEtaPhi), fhECharged(qa.fhECharged),fhPtCharged(qa.fhPtCharged),fhPhiCharged(qa.fhPhiCharged),
   fhEtaCharged(qa.fhEtaCharged), fhEtaPhiCharged(qa.fhEtaPhiCharged), 
@@ -101,6 +103,8 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
   fh2E(qa.fh2E), fh2Pt(qa.fh2Pt), fh2Phi(qa.fh2Phi),fh2Eta(qa.fh2Eta), 
   fhIM(qa.fhIM), fhAsym(qa.fhAsym), fhNCellsPerCluster(qa.fhNCellsPerCluster), fhNClusters(qa.fhNClusters), 
   fhNCells(qa.fhNCells), fhAmplitude(qa.fhAmplitude),
+  fhCaloCorrNClusters(qa.fhCaloCorrNClusters), fhCaloCorrEClusters(qa.fhCaloCorrEClusters),
+  fhCaloCorrNCells(qa.fhCaloCorrNCells), fhCaloCorrECells(qa.fhCaloCorrECells),
   fhGenGamPt(qa.fhGenGamPt), fhGenGamEta(qa.fhGenGamEta), fhGenGamPhi(qa.fhGenGamPhi),
   fhGenPi0Pt(qa.fhGenPi0Pt), fhGenPi0Eta(qa.fhGenPi0Eta), fhGenPi0Phi(qa.fhGenPi0Phi),
   fhGenEtaPt(qa.fhGenEtaPt), fhGenEtaEta(qa.fhGenEtaEta), fhGenEtaPhi(qa.fhGenEtaPhi),
@@ -142,6 +146,7 @@ AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA
   fCalorimeter     = qa.fCalorimeter;
   fStyleMacro      = qa.fStyleMacro;	
   fMakePlots       = qa.fMakePlots;
+  fCorrelateCalos  = qa.fCorrelateCalos;
 	
   fhE      = qa.fhE;
   fhPt     = qa.fhPt;
@@ -186,6 +191,9 @@ AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA
   fhNCells    = qa.fhNCells;
   fhAmplitude = qa.fhAmplitude;
 
+  fhCaloCorrNClusters = qa.fhCaloCorrNClusters; fhCaloCorrEClusters = qa.fhCaloCorrEClusters;
+  fhCaloCorrNCells = qa.fhCaloCorrNCells;  fhCaloCorrECells = qa.fhCaloCorrECells;
+	
   fhGenGamPt = qa.fhGenGamPt  ; fhGenGamEta = qa.fhGenGamEta  ; fhGenGamPhi = qa.fhGenGamPhi  ;
   fhGenPi0Pt = qa.fhGenPi0Pt  ; fhGenPi0Eta = qa.fhGenPi0Eta  ; fhGenPi0Phi = qa.fhGenPi0Phi  ;
   fhGenEtaPt = qa.fhGenEtaPt  ; fhGenEtaEta = qa.fhGenEtaEta  ; fhGenEtaPhi = qa.fhGenEtaPhi  ;
@@ -270,6 +278,8 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhEtaPhi->SetYTitle("#phi ");
 	outputContainer->Add(fhEtaPhi);
 	
+	//Track Matching
+
 	fhECharged  = new TH1F ("hECharged","E reconstructed, matched with track", nptbins,ptmin,ptmax); 
 	fhECharged->SetXTitle("E (GeV)");
 	outputContainer->Add(fhECharged);
@@ -290,7 +300,6 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhEtaPhiCharged->SetXTitle("#eta ");
 	fhEtaPhiCharged->SetYTitle("#phi ");
 	outputContainer->Add(fhEtaPhiCharged);	
-	
 
 	fhEChargedNoOut  = new TH1F ("hEChargedNoOut","E reconstructed, matched with track, no output track params", nptbins,ptmin,ptmax); 
 	fhEChargedNoOut->SetXTitle("E (GeV)");
@@ -313,6 +322,30 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhEtaPhiChargedNoOut->SetYTitle("#phi ");
 	outputContainer->Add(fhEtaPhiChargedNoOut);	
 
+	fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",200.,0.,100., 100,0.,10.);
+	fh1pOverE->SetYTitle("p/E");
+	fh1pOverE->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fh1pOverE);
+	
+	fh1dR = new TH1F("h1dR","TRACK matches dR",300, 0.,TMath::Pi());
+	fh1dR->SetXTitle("#Delta R (rad)");
+	outputContainer->Add(fh1dR) ;
+	
+	fh2MatchdEdx = new TH2F("h2MatchdEdx","dE/dx vs. p for all matches",200,0.,50.,200,0.,400.);
+	fh2MatchdEdx->SetXTitle("p (GeV/c)");
+	fh2MatchdEdx->SetYTitle("<dE/dx>");
+	outputContainer->Add(fh2MatchdEdx);
+	
+	fh2EledEdx = new TH2F("h2EledEdx","dE/dx vs. p for electrons",200,0.,50.,200,0.,400.);
+	fh2EledEdx->SetXTitle("p (GeV/c)");
+	fh2EledEdx->SetYTitle("<dE/dx>");
+	outputContainer->Add(fh2EledEdx) ;
+	
+	fh1pOverER02 = new TH2F("h1pOverER02","TRACK matches p/E, all",200.,0.,100.,100,0.,10.);
+	fh1pOverER02->SetYTitle("p/E");
+	fh1pOverER02->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fh1pOverER02);	
+	
 	fhIM  = new TH2F ("hIM","Cluster pairs Invariant mass vs reconstructed pair energy",nptbins,ptmin,ptmax,200,0,1); 
 	fhIM->SetXTitle("E_{cluster pairs} (GeV) ");
 	fhIM->SetYTitle("M_{cluster pairs} (GeV/c^{2})");
@@ -341,6 +374,29 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhAmplitude->SetXTitle("Amplitude ");
 	outputContainer->Add(fhAmplitude);
 	
+	if(fCorrelateCalos){
+		fhCaloCorrNClusters  = new TH2F ("hCaloCorrNClusters","# clusters in EMCAL vs PHOS", 300,0,300, 300,0,300); 
+		fhCaloCorrNClusters->SetXTitle("number of clusters in EMCAL");
+		fhCaloCorrNClusters->SetYTitle("number of clusters in PHOS");
+		outputContainer->Add(fhCaloCorrNClusters);
+	
+		fhCaloCorrEClusters  = new TH2F ("hCaloCorrEClusters","summed energy of clusters in EMCAL vs PHOS", 300,0,300, 300,0,300); 
+		fhCaloCorrEClusters->SetXTitle("#Sigma E of clusters in EMCAL (GeV)");
+		fhCaloCorrEClusters->SetYTitle("#Sigma E of clusters in PHOS (GeV)");
+		outputContainer->Add(fhCaloCorrEClusters);
+	
+		fhCaloCorrNCells  = new TH2F ("hCaloCorrNCells","# Cells in EMCAL vs PHOS", 300,0,300, 300,0,300); 
+		fhCaloCorrNCells->SetXTitle("number of Cells in EMCAL");
+		fhCaloCorrNCells->SetYTitle("number of Cells in PHOS");
+		outputContainer->Add(fhCaloCorrNCells);
+	
+		fhCaloCorrECells  = new TH2F ("hCaloCorrECells","summed energy of Cells in EMCAL vs PHOS", 300,0,300, 300,0,300); 
+		fhCaloCorrECells->SetXTitle("#Sigma E of Cells in EMCAL (GeV)");
+		fhCaloCorrECells->SetYTitle("#Sigma E of Cells in PHOS (GeV)");
+		outputContainer->Add(fhCaloCorrECells);
+	}//correlate calorimeters
+	
+	//Monte Carlo Histograms
 	if(IsDataMC()){
 		
 		fhDeltaE  = new TH1F ("hDeltaE","MC - Reco E ", 200,-50,50); 
@@ -741,90 +797,66 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		outputContainer->Add(fhGenPi0AccEta);
 		outputContainer->Add(fhGenPi0AccPhi);
 		
+		//Track Matching 
+		
+	  fhMCEle1pOverE = new TH2F("hMCEle1pOverE","TRACK matches p/E, MC electrons",200.,0.,100.,100,0.,10.);
+	  fhMCEle1pOverE->SetYTitle("p/E");
+	  fhMCEle1pOverE->SetXTitle("p_{T} (GeV/c)");
+	  outputContainer->Add(fhMCEle1pOverE);
+	  
+	  fhMCEle1dR = new TH1F("hMCEle1dR","TRACK matches dR, MC electrons",300, 0.,TMath::Pi());
+	  fhMCEle1dR->SetXTitle("#Delta R (rad)");
+	  outputContainer->Add(fhMCEle1dR) ;
+	  
+	  fhMCEle2MatchdEdx = new TH2F("hMCEle2MatchdEdx","dE/dx vs. p for all matches, MC electrons",200,0.,50.,200,0.,400.);
+	  fhMCEle2MatchdEdx->SetXTitle("p (GeV/c)");
+	  fhMCEle2MatchdEdx->SetYTitle("<dE/dx>");
+	  outputContainer->Add(fhMCEle2MatchdEdx);
+	  
+	  fhMCChHad1pOverE = new TH2F("hMCChHad1pOverE","TRACK matches p/E, MC charged hadrons",200.,0.,100.,100,0.,10.);
+	  fhMCChHad1pOverE->SetYTitle("p/E");
+	  fhMCChHad1pOverE->SetXTitle("p_{T} (GeV/c)");
+	  outputContainer->Add(fhMCChHad1pOverE);
+	  
+	  fhMCChHad1dR = new TH1F("hMCChHad1dR","TRACK matches dR, MC charged hadrons",300, 0.,TMath::Pi());
+	  fhMCChHad1dR->SetXTitle("#Delta R (rad)");
+	  outputContainer->Add(fhMCChHad1dR) ;
+	  
+	  fhMCChHad2MatchdEdx = new TH2F("hMCChHad2MatchdEdx","dE/dx vs. p for all matches, MC charged hadrons",200,0.,50.,200,0.,400.);
+	  fhMCChHad2MatchdEdx->SetXTitle("p (GeV/c)");
+	  fhMCChHad2MatchdEdx->SetYTitle("<dE/dx>");
+	  outputContainer->Add(fhMCChHad2MatchdEdx);
+	  
+	  fhMCNeutral1pOverE = new TH2F("hMCNeutral1pOverE","TRACK matches p/E, MC neutrals",200.,0.,100.,100,0.,10.);
+	  fhMCNeutral1pOverE->SetYTitle("p/E");
+	  fhMCNeutral1pOverE->SetXTitle("p_{T} (GeV/c)");
+	  outputContainer->Add(fhMCNeutral1pOverE);
+	  
+	  fhMCNeutral1dR = new TH1F("hMCNeutral1dR","TRACK matches dR, MC neutrals",300, 0.,TMath::Pi());
+	  fhMCNeutral1dR->SetXTitle("#Delta R (rad)");
+	  outputContainer->Add(fhMCNeutral1dR) ;
+	  
+	  fhMCNeutral2MatchdEdx = new TH2F("hMCNeutral2MatchdEdx","dE/dx vs. p for all matches, MC neutrals",200,0.,50.,200,0.,400.);
+	  fhMCNeutral2MatchdEdx->SetXTitle("p (GeV/c)");
+	  fhMCNeutral2MatchdEdx->SetYTitle("<dE/dx>");
+	  outputContainer->Add(fhMCNeutral2MatchdEdx);
+	  	  
+	  fhMCEle1pOverER02 = new TH2F("hMCEle1pOverER02","TRACK matches p/E, MC electrons",200.,0.,100.,100,0.,10.);
+	  fhMCEle1pOverER02->SetYTitle("p/E");
+	  fhMCEle1pOverER02->SetXTitle("p_{T} (GeV/c)");
+	  outputContainer->Add(fhMCEle1pOverER02);
+	  
+	  fhMCChHad1pOverER02 = new TH2F("hMCChHad1pOverER02","TRACK matches p/E, MC charged hadrons",200.,0.,100.,100,0.,10.);
+	  fhMCChHad1pOverER02->SetYTitle("p/E");
+	  fhMCChHad1pOverER02->SetXTitle("p_{T} (GeV/c)");
+	  outputContainer->Add(fhMCChHad1pOverER02);
+	  
+	  fhMCNeutral1pOverER02 = new TH2F("hMCNeutral1pOverER02","TRACK matches p/E, MC neutrals",200.,0.,100.,100,0.,10.);
+	  fhMCNeutral1pOverER02->SetYTitle("p/E");
+	  fhMCNeutral1pOverER02->SetXTitle("p_{T} (GeV/c)");
+	  outputContainer->Add(fhMCNeutral1pOverER02);
 	}
-	
-	
-	fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",200.,0.,100., 100,0.,10.);
-	fh1pOverE->SetYTitle("p/E");
-	fh1pOverE->SetXTitle("p_{T} (GeV/c)");
-	outputContainer->Add(fh1pOverE);
-	
-	fh1dR = new TH1F("h1dR","TRACK matches dR",300, 0.,TMath::Pi());
-	fh1dR->SetXTitle("#Delta R (rad)");
-	outputContainer->Add(fh1dR) ;
-	
-	fh2MatchdEdx = new TH2F("h2MatchdEdx","dE/dx vs. p for all matches",200,0.,50.,200,0.,400.);
-	fh2MatchdEdx->SetXTitle("p (GeV/c)");
-	fh2MatchdEdx->SetYTitle("<dE/dx>");
-	outputContainer->Add(fh2MatchdEdx);
-	
-	fh2EledEdx = new TH2F("h2EledEdx","dE/dx vs. p for electrons",200,0.,50.,200,0.,400.);
-	fh2EledEdx->SetXTitle("p (GeV/c)");
-	fh2EledEdx->SetYTitle("<dE/dx>");
-	outputContainer->Add(fh2EledEdx) ;
-	
-	fhMCEle1pOverE = new TH2F("hMCEle1pOverE","TRACK matches p/E, MC electrons",200.,0.,100.,100,0.,10.);
-	fhMCEle1pOverE->SetYTitle("p/E");
-	fhMCEle1pOverE->SetXTitle("p_{T} (GeV/c)");
-	outputContainer->Add(fhMCEle1pOverE);
-	
-	fhMCEle1dR = new TH1F("hMCEle1dR","TRACK matches dR, MC electrons",300, 0.,TMath::Pi());
-	fhMCEle1dR->SetXTitle("#Delta R (rad)");
-	outputContainer->Add(fhMCEle1dR) ;
-	
-	fhMCEle2MatchdEdx = new TH2F("hMCEle2MatchdEdx","dE/dx vs. p for all matches, MC electrons",200,0.,50.,200,0.,400.);
-	fhMCEle2MatchdEdx->SetXTitle("p (GeV/c)");
-	fhMCEle2MatchdEdx->SetYTitle("<dE/dx>");
-	outputContainer->Add(fhMCEle2MatchdEdx);
-	
-	fhMCChHad1pOverE = new TH2F("hMCChHad1pOverE","TRACK matches p/E, MC charged hadrons",200.,0.,100.,100,0.,10.);
-	fhMCChHad1pOverE->SetYTitle("p/E");
-	fhMCChHad1pOverE->SetXTitle("p_{T} (GeV/c)");
-	outputContainer->Add(fhMCChHad1pOverE);
-	
-	fhMCChHad1dR = new TH1F("hMCChHad1dR","TRACK matches dR, MC charged hadrons",300, 0.,TMath::Pi());
-	fhMCChHad1dR->SetXTitle("#Delta R (rad)");
-	outputContainer->Add(fhMCChHad1dR) ;
-	
-	fhMCChHad2MatchdEdx = new TH2F("hMCChHad2MatchdEdx","dE/dx vs. p for all matches, MC charged hadrons",200,0.,50.,200,0.,400.);
-	fhMCChHad2MatchdEdx->SetXTitle("p (GeV/c)");
-	fhMCChHad2MatchdEdx->SetYTitle("<dE/dx>");
-	outputContainer->Add(fhMCChHad2MatchdEdx);
-	
-	fhMCNeutral1pOverE = new TH2F("hMCNeutral1pOverE","TRACK matches p/E, MC neutrals",200.,0.,100.,100,0.,10.);
-	fhMCNeutral1pOverE->SetYTitle("p/E");
-	fhMCNeutral1pOverE->SetXTitle("p_{T} (GeV/c)");
-	outputContainer->Add(fhMCNeutral1pOverE);
-	
-	fhMCNeutral1dR = new TH1F("hMCNeutral1dR","TRACK matches dR, MC neutrals",300, 0.,TMath::Pi());
-	fhMCNeutral1dR->SetXTitle("#Delta R (rad)");
-	outputContainer->Add(fhMCNeutral1dR) ;
-	
-	fhMCNeutral2MatchdEdx = new TH2F("hMCNeutral2MatchdEdx","dE/dx vs. p for all matches, MC neutrals",200,0.,50.,200,0.,400.);
-	fhMCNeutral2MatchdEdx->SetXTitle("p (GeV/c)");
-	fhMCNeutral2MatchdEdx->SetYTitle("<dE/dx>");
-	outputContainer->Add(fhMCNeutral2MatchdEdx);
-	
-	fh1pOverER02 = new TH2F("h1pOverER02","TRACK matches p/E, all",200.,0.,100.,100,0.,10.);
-	fh1pOverER02->SetYTitle("p/E");
-	fh1pOverER02->SetXTitle("p_{T} (GeV/c)");
-	outputContainer->Add(fh1pOverER02);
-	
-	fhMCEle1pOverER02 = new TH2F("hMCEle1pOverER02","TRACK matches p/E, MC electrons",200.,0.,100.,100,0.,10.);
-	fhMCEle1pOverER02->SetYTitle("p/E");
-	fhMCEle1pOverER02->SetXTitle("p_{T} (GeV/c)");
-	outputContainer->Add(fhMCEle1pOverER02);
-	
-	fhMCChHad1pOverER02 = new TH2F("hMCChHad1pOverER02","TRACK matches p/E, MC charged hadrons",200.,0.,100.,100,0.,10.);
-	fhMCChHad1pOverER02->SetYTitle("p/E");
-	fhMCChHad1pOverER02->SetXTitle("p_{T} (GeV/c)");
-	outputContainer->Add(fhMCChHad1pOverER02);
-	
-	fhMCNeutral1pOverER02 = new TH2F("hMCNeutral1pOverER02","TRACK matches p/E, MC neutrals",200.,0.,100.,100,0.,10.);
-	fhMCNeutral1pOverER02->SetYTitle("p/E");
-	fhMCNeutral1pOverER02->SetXTitle("p_{T} (GeV/c)");
-	outputContainer->Add(fhMCNeutral1pOverER02);
-	
+
 	return outputContainer;
 }
 
@@ -948,6 +980,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		abort();
 	}
 	
+	//Correlate Calorimeters
+	if(fCorrelateCalos)	CorrelateCalorimeters(caloClusters);
+		
+	
 	nCaloClusters = caloClusters->GetEntriesFast() ; 
 	fhNClusters->Fill(nCaloClusters);
 
@@ -1048,11 +1084,11 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		
 	}//ESD
 	else{//AOD
-		AliESDCaloCells * cell = 0x0; 
+		AliAODCaloCells * cell = 0x0; 
 		Int_t ncells = 0;
 		
-		if(fCalorimeter == "PHOS") cell = (AliESDCaloCells *) ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-		else					   cell = (AliESDCaloCells *) ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();	
+		if(fCalorimeter == "PHOS") cell = ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+		else					   cell = ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();	
 		
 		if(!cell) {
 			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No CELLS available for analysis");
@@ -1074,6 +1110,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	if(GetDebug() > 0)
 		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - End \n");
 }
+
 
 //__________________________________
 void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_t nCaloCellsPerCluster,
@@ -1525,6 +1562,104 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_
 	
 }// Clusters
 	
+//__________________________________
+void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
+	// Correlate information from PHOS and EMCAL
+	TRefArray * caloClustersEMCAL = new TRefArray;
+	TRefArray * caloClustersPHOS  = new TRefArray;
+	
+	// Get once the array of clusters per calorimeter, avoid an extra loop.
+	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+		if(fCalorimeter == "EMCAL"){ 
+			((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSClusters(caloClustersPHOS);
+			caloClustersEMCAL = refArray;
+		}
+		else if(fCalorimeter == "PHOS") { 
+			((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALClusters (caloClustersEMCAL);
+			caloClustersEMCAL = refArray;
+		}
+		
+		//Fill histograms with clusters
+		
+		fhCaloCorrNClusters->Fill(caloClustersEMCAL->GetEntriesFast(),caloClustersPHOS->GetEntriesFast());
+		Float_t sumClusterEnergyEMCAL = 0;
+		Float_t sumClusterEnergyPHOS  = 0;
+		Int_t iclus = 0;
+		for(iclus = 0 ; iclus <  caloClustersEMCAL->GetEntriesFast() ; iclus++) 
+				sumClusterEnergyEMCAL += ((AliESDCaloCluster*) (caloClustersEMCAL->At(iclus)))->E();
+		for(iclus = 0 ; iclus <  caloClustersPHOS->GetEntriesFast(); iclus++) 
+			sumClusterEnergyPHOS += ((AliESDCaloCluster*) (caloClustersPHOS->At(iclus)))->E();
+		fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
+		
+		//Fill histograms with cells
+		
+		AliESDCaloCells * cellsEMCAL = ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
+		AliESDCaloCells * cellsPHOS  = ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+		fhCaloCorrNCells   ->Fill(cellsEMCAL->GetNumberOfCells(),cellsPHOS->GetNumberOfCells());
+		
+		Int_t icell = 0;
+		Float_t sumCellEnergyEMCAL = 0;
+		Float_t sumCellEnergyPHOS  = 0;
+		for(icell = 0 ; icell < cellsEMCAL->GetNumberOfCells()  ; icell++) 
+			sumCellEnergyEMCAL += cellsEMCAL->GetAmplitude(icell);
+		for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
+			sumCellEnergyPHOS += cellsPHOS->GetAmplitude(icell);
+		fhCaloCorrECells->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);
+		if(GetDebug() > 0 ){
+			printf("AliAnaCalorimeterQA::CorrelateCalorimeters() - ESD: \n");
+			printf("\t EMCAL: N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
+				   cellsEMCAL->GetNumberOfCells(),caloClustersEMCAL->GetEntriesFast(),sumCellEnergyEMCAL,sumClusterEnergyEMCAL);
+			printf("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
+				   cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
+		}
+	}//ESD
+	else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) {
+		if(fCalorimeter == "EMCAL"){ 
+			((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSClusters(caloClustersPHOS);
+			caloClustersEMCAL = refArray;
+		}
+		else if(fCalorimeter == "PHOS") { 
+			((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALClusters (caloClustersEMCAL);
+			caloClustersEMCAL = refArray;
+		}
+		
+		//Fill histograms with clusters
+		
+		fhCaloCorrNClusters->Fill(caloClustersEMCAL->GetEntriesFast(),caloClustersPHOS->GetEntriesFast());
+		Float_t sumClusterEnergyEMCAL = 0;
+		Float_t sumClusterEnergyPHOS  = 0;
+		Int_t iclus = 0;
+		for(iclus = 0 ; iclus <  caloClustersEMCAL->GetEntriesFast() ; iclus++) 
+			sumClusterEnergyEMCAL += ((AliAODCaloCluster*) (caloClustersEMCAL->At(iclus)))->E();
+		for(iclus = 0 ; iclus <  caloClustersPHOS->GetEntriesFast(); iclus++) 
+			sumClusterEnergyPHOS += ((AliAODCaloCluster*) (caloClustersPHOS->At(iclus)))->E();
+		fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
+		
+		//Fill histograms with cells
+		
+		AliAODCaloCells * cellsEMCAL = ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
+		AliAODCaloCells * cellsPHOS  = ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+		fhCaloCorrNCells   ->Fill(cellsEMCAL->GetNumberOfCells(),cellsPHOS->GetNumberOfCells());
+		
+		Int_t icell = 0;
+		Float_t sumCellEnergyEMCAL = 0;
+		Float_t sumCellEnergyPHOS  = 0;
+		for(icell = 0 ; icell < cellsEMCAL->GetNumberOfCells()  ; icell++) 
+			sumCellEnergyEMCAL += cellsEMCAL->GetAmplitude(icell);
+		for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
+			sumCellEnergyPHOS += cellsPHOS->GetAmplitude(icell);
+		fhCaloCorrECells->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);		
+		if(GetDebug() > 0 ){
+			printf("AliAnaCalorimeterQA::CorrelateCalorimeters() - ESD: \n");
+			printf("\t EMCAL: N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
+				   cellsEMCAL->GetNumberOfCells(),caloClustersEMCAL->GetEntriesFast(),sumCellEnergyEMCAL,sumClusterEnergyEMCAL);
+			printf("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
+				   cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
+		}
+	}//AOD	
+	
+}
+
 //______________________________________________________________________________
 void AliAnaCalorimeterQA::MCHistograms(const TLorentzVector mom, const Int_t pdg){
 	//Fill pure monte carlo related histograms
@@ -1610,6 +1745,12 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	fhEtaChargedNoOut    = (TH1F *) outputList->At(index++);
 	fhEtaPhiChargedNoOut = (TH2F *) outputList->At(index++);
 
+	fh1pOverE =    (TH2F *) outputList->At(index++);
+	fh1dR =        (TH1F *) outputList->At(index++);
+	fh2MatchdEdx = (TH2F *) outputList->At(index++);
+	fh2EledEdx =   (TH2F *) outputList->At(index++);
+	fh1pOverER02 = (TH2F *) outputList->At(index++);
+	
 	fhIM     = (TH2F *) outputList->At(index++);
 	fhAsym   = (TH2F *) outputList->At(index++);
 	
@@ -1617,6 +1758,13 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	fhNClusters  = (TH1F *) outputList->At(index++); 
 	fhNCells     = (TH1F *) outputList->At(index++); 
 	fhAmplitude  = (TH1F *) outputList->At(index++); 
+	
+	if(fCorrelateCalos){
+		fhCaloCorrNClusters = (TH2F *) outputList->At(index++);
+		fhCaloCorrEClusters = (TH2F *) outputList->At(index++); 
+		fhCaloCorrNCells    = (TH2F *) outputList->At(index++); 
+		fhCaloCorrECells    = (TH2F *) outputList->At(index++); 
+	}
 	
 	if(IsDataMC()){
 		fhDeltaE   = (TH1F *) outputList->At(index++); 
@@ -1732,14 +1880,6 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhGenPi0AccEta = (TH1F *) outputList->At(index++); 
 		fhGenPi0AccPhi = (TH1F *) outputList->At(index++); 
 		
-	}//Is data MC	
-	
-	fh1pOverE =    (TH2F *) outputList->At(index++);
-	fh1dR =        (TH1F *) outputList->At(index++);
-	fh2MatchdEdx = (TH2F *) outputList->At(index++);
-	fh2EledEdx =   (TH2F *) outputList->At(index++);
-	
-	if(IsDataMC()){
 		fhMCEle1pOverE =    (TH2F *) outputList->At(index++);
 		fhMCEle1dR =        (TH1F *) outputList->At(index++);
 		fhMCEle2MatchdEdx = (TH2F *) outputList->At(index++);
@@ -1752,7 +1892,6 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhMCNeutral1dR        = (TH1F *) outputList->At(index++);
 		fhMCNeutral2MatchdEdx = (TH2F *) outputList->At(index++);
 		
-		fh1pOverER02          =    (TH2F *) outputList->At(index++);
 		fhMCEle1pOverER02     =    (TH2F *) outputList->At(index++);
 		fhMCChHad1pOverER02   =    (TH2F *) outputList->At(index++);
 		fhMCNeutral1pOverER02 =    (TH2F *) outputList->At(index++);
@@ -1817,6 +1956,36 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	sprintf(name,"QA_%s_CaloClustersAndCaloCells.eps",fCalorimeter.Data());
 	c9->Print(name); printf("Plot: %s\n",name);
 	
+	if(fCorrelateCalos){
+		//Calorimeter Correlation, PHOS vs EMCAL
+		//printf("c9\n");
+		sprintf(cname,"QA_%s_CaloCorr_EMCALvsPHOS",fCalorimeter.Data());
+		TCanvas  * ccorr = new TCanvas(cname, " EMCAL vs PHOS", 400, 400) ;
+		ccorr->Divide(2, 2);
+	
+		ccorr->cd(1) ; 
+		//gPad->SetLogy();
+		//gPad->SetLogx();
+		fhCaloCorrNClusters ->Draw();
+	
+		ccorr->cd(2) ; 
+		//gPad->SetLogy();
+		//gPad->SetLogx();
+		fhCaloCorrNCells->Draw();
+	
+		ccorr->cd(3) ; 
+		//gPad->SetLogy();
+		//gPad->SetLogx();
+		fhCaloCorrEClusters->Draw();
+	
+		ccorr->cd(4) ; 
+		//gPad->SetLogy();
+		//gPad->SetLogx();
+		fhCaloCorrECells->Draw();
+	
+		sprintf(name,"QA_%s_CaloCorr_EMCALvsPHOS.eps",fCalorimeter.Data());
+		ccorr->Print(name); printf("Plot: %s\n",name);
+	}
 	
 	//Reconstructed distributions
 	//printf("c1\n");
