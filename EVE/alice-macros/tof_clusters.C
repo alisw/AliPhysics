@@ -12,6 +12,8 @@ class TEvePointSet;
 
 #else
 
+#include <TMath.h>
+
 #include <TEveManager.h>
 #include <TEvePointSet.h>
 #include <EveBase/AliEveEventManager.h>

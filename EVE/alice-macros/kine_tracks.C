@@ -12,6 +12,7 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+#include <TParticle.h>
 #include <TParticlePDG.h>
 
 #include <TEveManager.h>
