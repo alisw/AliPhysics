@@ -331,7 +331,7 @@ void  AliAnalysisTaskUE::AnalyseUE()
       }else{
       	jet = fAODjets->GetJet(index1);
       }
-      jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+      if(jet)jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
     if( index2 != -1 ) {
       AliAODJet* jet = 0;
@@ -340,16 +340,16 @@ void  AliAnalysisTaskUE::AnalyseUE()
 	}else{
       	jet= fAODjets->GetJet(index2);
 	}
-      jetVect[1].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+      if(jet)jetVect[1].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
     if( index3 != -1 ) {
       AliAODJet* jet = 0;
       if (fDeltaAOD) {
       	jet= (AliAODJet*) fArrayJets->At(index3);
-     }else{
+      }else{
      	fAODjets->GetJet(index3);
-     }
-     jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+      }
+      if(jet)jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
     
   } else {
