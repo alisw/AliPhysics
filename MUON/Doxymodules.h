@@ -180,5 +180,14 @@
  
 /** @} */
 
+/** @} */
+
+/** @defgroup evemacros MUON macros in EVE
+ *  \brief The macros for running & testing MUON Event display
+ *  @{
+ */
+ 
+/** @} */
+
 
 
