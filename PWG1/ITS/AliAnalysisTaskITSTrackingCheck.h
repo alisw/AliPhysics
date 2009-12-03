@@ -35,17 +35,20 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   Bool_t         GetReadMC() const { return fReadMC; }
   void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; }
   void           SetReadRPLabels(Bool_t flag=kTRUE) { fReadRPLabels=flag; }
+  void           SetFillNtuples(Bool_t flag=kTRUE) { fFillNtuples=flag; }
 
   
  protected:
   Bool_t       fReadMC; // read Monte Carlo
   Bool_t       fReadRPLabels; // read MC labels from ITS.RecPoints
+  Bool_t       fFillNtuples; // fill expert ntuples
   AliESDEvent  *fESD;    // ESD object
   AliESDfriend *fESDfriend; // ESD friend object
   TList        *fOutput; //! list send on output slot 0
   TH1F         *fHistNtracks; //! output hist
   TH1F         *fHistNclsITSMI; //! output hist
   TH1F         *fHistNclsITSSA; //! output hist
+  TH1F         *fHistNclsITSSAInAcc; //! output hist
   TH1F         *fHistClusterMapITSMI; //! output hist
   TH1F         *fHistClusterMapITSMIok; //! output hist
   TH1F         *fHistClusterMapITSMIbad; //! output hist
@@ -53,6 +56,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   TH1F         *fHistClusterMapITSMIoutinz; //! output hist
   TH1F         *fHistClusterMapITSMInorefit; //! output hist
   TH1F         *fHistClusterMapITSMInocls; //! output hist
+  TH1F         *fHistClusterMapITSMIokoutinzbad; //! output hist
   TH1F         *fHistClusterMapITSSA; //! output hist
   TH1F         *fHistClusterMapITSSAok; //! output hist
   TH1F         *fHistClusterMapITSSAbad; //! output hist
@@ -60,6 +64,18 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   TH1F         *fHistClusterMapITSSAoutinz; //! output hist
   TH1F         *fHistClusterMapITSSAnorefit; //! output hist
   TH1F         *fHistClusterMapITSSAnocls; //! output hist
+  TH1F         *fHistClusterMapITSSAokoutinzbad; //! output hist
+  TH1F         *fHistClusterMapITSSAInAcc; //! output hist
+  TH1F         *fHistClusterMapITSSAokInAcc; //! output hist
+  TH1F         *fHistClusterMapITSSAbadInAcc; //! output hist
+  TH1F         *fHistClusterMapITSSAskippedInAcc; //! output hist
+  TH1F         *fHistClusterMapITSSAoutinzInAcc; //! output hist
+  TH1F         *fHistClusterMapITSSAnorefitInAcc; //! output hist
+  TH1F         *fHistClusterMapITSSAnoclsInAcc; //! output hist
+  TH1F         *fHistClusterMapITSSAokoutinzbadInAcc; //! output hist
+  TH1F         *fHistClusterMapModuleITSSAokInAcc; //! output hist
+  TH1F         *fHistClusterMapModuleITSSAbadInAcc; //! output hist
+  TH1F         *fHistClusterMapModuleITSSAnoclsInAcc; //! output hist
   TH1F         *fHistPhiTPC; //! output hist
   TH1F         *fHistPtTPC; //! output hist
   TH1F         *fHistPtITSMI2; //! output hist

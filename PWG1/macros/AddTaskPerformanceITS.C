@@ -1,5 +1,6 @@
-AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kTRUE,
-						       Bool_t readRP=kFALSE) 
+AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
+						       Bool_t readRP=kFALSE,
+						       Bool_t fillNtuples=kFALSE) 
 {
   //
   // Task for check of ITS tracking
@@ -20,6 +21,7 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kTRUE,
   AliAnalysisTaskITSTrackingCheck *taskITS = new AliAnalysisTaskITSTrackingCheck("ITStracking");
   taskITS->SetReadMC(readMC);
   taskITS->SetReadRPLabels(readRP);
+  taskITS->SetFillNtuples(fillNtuples);
   AliLog::SetClassDebugLevel("AliAnalysisTaskITSTrackingCheck",10);
   // Add to the manager
   mgr->AddTask(taskITS);
