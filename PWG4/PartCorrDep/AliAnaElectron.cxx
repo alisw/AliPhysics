@@ -1368,9 +1368,6 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   Double_t massE = 0.000511;
   Double_t massK = 0.493677;
 
-  Double_t bfield = 5.; //kG
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
-
   Double_t vertex[3] = {-999.,-999.,-999}; //vertex
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
     GetReader()->GetVertex(vertex); //If only one file, get the vertex from there
@@ -1387,11 +1384,15 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   AliExternalTrackParam *param1 = new AliExternalTrackParam(tr);
   AliExternalTrackParam *param2 = new AliExternalTrackParam(tr2);
 
-  Double_t xplane1 = 0.; Double_t xplane2 = 0.;
-  Double_t pairdca = param1->GetDCA(param2,bfield,xplane1,xplane2);
+  Double_t bfield[3];
+  param1->GetBxByBz(bfield);
+  Double_t bz = param1->GetBz();
 
-  param1->PropagateTo(xplane1,bfield);
-  param2->PropagateTo(xplane2,bfield);
+  Double_t xplane1 = 0.; Double_t xplane2 = 0.;
+  Double_t pairdca = param1->GetDCA(param2,bz,xplane1,xplane2);
+
+  param1->PropagateToBxByBz(xplane1,bfield);
+  param2->PropagateToBxByBz(xplane2,bfield);
 
   Int_t id1 = 0, id2 = 0;
   AliESDv0 bvertex(*param1,id1,*param2,id2);
@@ -1408,6 +1409,8 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   TVector3 decayvector(0,0,0);
   decayvector = secvtxpt - primV; //decay vector from PrimVtx
   Double_t decaylength = decayvector.Mag();
+
+  printf("\t JLK pairDCA = %2.2f\n",pairdca);
 
   if(GetDebug() > 0) {
     printf(">>ComputeSdca:: mom1=%f, mom2=%f \n", emomAtB.Perp(), hmomAtB.Perp() );
@@ -1461,7 +1464,6 @@ Double_t AliAnaElectron::GetIPSignificance(AliAODTrack *tr, Double_t jetPhi)
   }
 
   Double_t significance=0;
-  Double_t magField = 0;
   Double_t maxD = 10000.;
   Double_t impPar[] = {0,0};
   Double_t ipCov[]={0,0,0};
@@ -1474,7 +1476,9 @@ Double_t AliAnaElectron::GetIPSignificance(AliAODTrack *tr, Double_t jetPhi)
   AliVTrack* vTrack = (AliVTrack*)vEvent->GetTrack(trackIndex);
   if(!vTrack) return -99;
   AliESDtrack esdTrack(vTrack);
-  if(!esdTrack.PropagateToDCA(vv, magField, maxD, impPar, ipCov)) return -100;
+  Double_t bfield[3];
+  esdTrack.GetBxByBz(bfield);
+  if(!esdTrack.PropagateToDCABxByBz(vv, bfield, maxD, impPar, ipCov)) return -100;
   if(ipCov[0]<0) return -101;
 
   Double_t Pxy[] = {esdTrack.Px(), esdTrack.Py()};
@@ -1485,6 +1489,7 @@ Double_t AliAnaElectron::GetIPSignificance(AliAODTrack *tr, Double_t jetPhi)
   Double_t cosTheta = TMath::Cos(jetPhi - phiIP);
   Double_t sign = cosTheta/TMath::Abs(cosTheta);
   significance = TMath::Abs(impPar[0])/TMath::Sqrt(ipCov[0])*sign;
+  printf("\t JLK significance = %2.2f\n",significance);
   //ip = fabs(impPar[0]);
   fhIPSigBtagQA2->Fill(significance);
   return significance;
@@ -1530,9 +1535,6 @@ Bool_t AliAnaElectron::PhotonicPrim(const AliAODPWG4Particle* part)
   Double_t massRho0 = 0.770;
   Double_t massOmega = 0.782;
   Double_t massPhi = 1.020;
-
-  Double_t bfield = 5.; //kG
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
   Int_t pdg1 = part->GetPdg();
   Int_t trackId = part->GetTrackLabel(0);
@@ -1655,14 +1657,15 @@ Bool_t AliAnaElectron::GetDCA(const AliAODTrack* track,Double_t impPar[2], Doubl
   //Once alice-off gets its act together and fixes the AOD, this
   //should become obsolete.
 
-  Double_t bfield = 5.; //kG
   Double_t maxD = 100000.; //max transverse IP
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
-    bfield = GetReader()->GetBField();
     AliVEvent* ve = (AliVEvent*)GetReader()->GetInputEvent();
     AliVVertex *vv = (AliVVertex*)ve->GetPrimaryVertex();
     AliESDtrack esdTrack(track);
-    Bool_t gotit = esdTrack.PropagateToDCA(vv,bfield,maxD,impPar,cov);
+    Double_t bfield[3];
+    esdTrack.GetBxByBz(bfield);
+    Bool_t gotit = esdTrack.PropagateToDCABxByBz(vv,bfield,maxD,impPar,cov);
+    printf("\t JLK impPar = %2.2f\n",impPar[0]);
     return gotit;
   }
 
