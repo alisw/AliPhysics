@@ -14,6 +14,7 @@
 
 #include <TGLRnrCtx.h>
 #include <TGLIncludes.h>
+#include <TMath.h>
 
 
 //______________________________________________________________________________

@@ -16,6 +16,7 @@
 #include <TVirtualPad.h>
 #include <TVirtualViewer3D.h>
 #include <TStyle.h>
+#include <TMath.h>
 
 
 //______________________________________________________________________________

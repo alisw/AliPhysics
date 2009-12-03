@@ -17,6 +17,8 @@
 #include <TRefArray.h>
 #include <TClonesArray.h>
 #include <TEvePointSet.h>
+#include <TMath.h>
+#include <TLorentzVector.h>
 
 #include "AliRun.h"
 #include "AliRunLoader.h"

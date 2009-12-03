@@ -16,6 +16,7 @@
 #include <TTree.h>
 #include <TBranchElement.h>
 #include <TClonesArray.h>
+#include <TParticle.h>
 
 #include <map>
 
