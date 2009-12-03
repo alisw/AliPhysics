@@ -7,6 +7,11 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+/// \ingroup evemacros
+/// \file MUON_displayData.C
+///
+/// \author B. Vulpescu, LPC
+
 class AliEveMUONData;
 class AliEveEventManager;
 

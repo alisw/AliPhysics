@@ -6,6 +6,11 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+/// \ingroup evemacros
+/// \file muon_init.C
+///
+/// \author P. Pillot, L. Aphecetche; Subatech
+
 class AliEveMacroExecutor;
 class TEveProjectionManager;
 class TEveGeoShape;

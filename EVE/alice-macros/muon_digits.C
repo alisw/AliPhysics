@@ -6,12 +6,16 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-// Macro to visualise digits from MUON spectrometer 
-// (both tracker and trigger).
-//
-// Use muon_digits() in order to run it
-//
-// Needs that alieve_init() is already called
+/// \ingroup evemacros
+/// \file muon_digits.C
+/// \brief  Macro to visualise digits from MUON spectrometer 
+/// (both tracker and trigger).
+///
+/// Use muon_digits() in order to run it
+///
+/// Needs that alieve_init() is already called
+///
+/// \author P. Pillot, L. Aphecetche; Subatech
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

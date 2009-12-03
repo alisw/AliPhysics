@@ -6,12 +6,16 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-// Macro to visualise ESD tracks from MUON spectrometer 
-// (both tracker and trigger).
-//
-// Use esd_muon_tracks(Bool_t showClusters, Bool_t showDigits) in order to run it
-//
-// Needs that alieve_init() is already called
+/// \ingroup evemacros
+/// \file esd_muon_tracks.C
+/// \brief Macro to visualise ESD tracks from MUON spectrometer 
+/// (both tracker and trigger).
+///
+/// Use esd_muon_tracks(Bool_t showClusters, Bool_t showDigits) in order to run it
+///
+/// Needs that alieve_init() is already called
+///
+/// \author P. Pillot, L. Aphecetche; Subatech
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

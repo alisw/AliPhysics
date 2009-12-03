@@ -6,12 +6,16 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-// Macro to visualise clusters from MUON spectrometer 
-// (both tracker and trigger).
-//
-// Use muon_clusters() in order to run it
-//
-// Needs that alieve_init() is already called
+/// \ingroup evemacros
+/// \file muon_clusters.C
+/// \brief Macro to visualise clusters from MUON spectrometer 
+/// (both tracker and trigger).
+///
+/// Use muon_clusters() in order to run it.
+///
+/// Needs that alieve_init() is already called.
+///
+/// \author P. Pillot, L. Aphecetche; Subatech
 
 #ifndef __CINT__
 

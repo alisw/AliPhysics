@@ -6,12 +6,16 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-// Macro to visualise trackRef in MUON spectrometer 
-// (both tracker and trigger).
-//
-// Use muon_trackRefs(Bool_t showSimClusters) in order to run it
-//
-// Needs that alieve_init() is already called
+/// \ingroup evemacros
+/// \file muon_trackRefs.C
+/// \brief Macro to visualise trackRef in MUON spectrometer 
+/// (both tracker and trigger).
+///
+/// Use muon_trackRefs(Bool_t showSimClusters) in order to run it
+///
+/// Needs that alieve_init() is already called
+///
+/// \author P. Pillot, L. Aphecetche; Subatech
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

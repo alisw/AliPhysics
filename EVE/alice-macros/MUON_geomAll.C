@@ -7,6 +7,11 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+/// \ingroup evemacros
+/// \file MUON_geomAll.C
+///
+/// \author B. Vulpescu, LPC
+
 void MUON_geomAll()
 {
   gGeoManager = gEve->GetGeometry("geometry.root");

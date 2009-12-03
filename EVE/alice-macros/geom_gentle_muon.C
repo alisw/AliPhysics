@@ -1,3 +1,16 @@
+// $Id$
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+
+/// \ingroup evemacros
+/// \file geom_gentle_muon.C
+///
+/// \author B. Vulpescu, LPC; M. Tadel, CERN
+
 void DrawDeep(TEveGeoShape *gsre) {
   
   for (TEveElement::List_i i = gsre->BeginChildren(); i != gsre->EndChildren(); ++i) {
