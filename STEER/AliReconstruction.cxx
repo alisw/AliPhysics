@@ -3270,21 +3270,7 @@ Bool_t AliReconstruction::SetRunQA(TString detAndAction)
 	}
 	Int_t colon = detAndAction.Index(":") ; 
 	fQADetectors = detAndAction(0, colon) ; 
-	if (fQADetectors.Contains("ALL") ){
-    TString tmp = fFillESD ;
-    Int_t minus = fQADetectors.Last('-') ; 
-    TString toKeep = fFillESD ; 
-    TString toRemove("") ;
-    while (minus >= 0) {
-      toRemove = fQADetectors(minus+1, fQADetectors.Length()) ; 
-      toRemove = toRemove.Strip() ; 
-      toKeep.ReplaceAll(toRemove, "") ; 
-      fQADetectors.ReplaceAll(Form("-%s", toRemove.Data()), "") ; 
-      minus = fQADetectors.Last('-') ; 
-    }
-    fQADetectors = toKeep ; 
-  }  
-  fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
+	fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
 	if (fQATasks.Contains("ALL") ) {
 		fQATasks = Form("%d %d %d %d", AliQAv1::kRAWS, AliQAv1::kDIGITSR, AliQAv1::kRECPOINTS, AliQAv1::kESDS) ; 
 	} else {
