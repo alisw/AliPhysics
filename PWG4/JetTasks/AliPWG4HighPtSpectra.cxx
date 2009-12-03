@@ -156,29 +156,28 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
 
   // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
   // This handler can return the current MC event
-
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!eventHandler) {
-    AliDebug(2,Form("ERROR: Could not retrieve MC event handler"));
-    return;
+  AliStack* stack = 0x0;
+  AliMCEvent* mcEvent = 0x0;
+
+  if(eventHandler) {
+    mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      AliDebug(2,Form("ERROR: Could not retrieve MC event"));
+      return;
+    }
+    
+    AliDebug(2,Form("MC particles: %d", mcEvent->GetNumberOfTracks()));
+    
+    stack = mcEvent->Stack();                //Particles Stack
+    
+    AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
   }
-
-  AliMCEvent* mcEvent = eventHandler->MCEvent();
-  if (!mcEvent) {
-    AliDebug(2,Form("ERROR: Could not retrieve MC event"));
-    return;
-  }
-
-  AliDebug(2,Form("MC particles: %d", mcEvent->GetNumberOfTracks()));
-
+  
   if (!fESD) {
     AliDebug(2,Form("ERROR: fESD not available"));
     return;
   }
-
-  AliStack* stack = mcEvent->Stack();                //Particles Stack
-
-  AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
 
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
 
@@ -193,16 +192,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
 
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d", nTracks));
- 
-  // AliVEvent*    fEvent = fInputEvent ;
-  
-//   if (!fEvent) {
-//     Error("UserExec","NO EVENT FOUND!");
-//     return;
-//   }
-
-//   //pass the MC evt handler to the cuts that need it 
-//   fCFManager->SetEventInfo(fMCEvent);
 
   Double_t containerInputRec[1] ;
   Double_t containerInputTPConly[1] ;
@@ -216,51 +205,49 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
       AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)track->GetTPCInnerParam();
       if(!track || !trackTPC) continue;
 
-      Int_t label = TMath::Abs(track->GetLabel());
-      TParticle *particle = stack->Particle(label) ;
-      if(!particle) continue;
-
-      
+    
       //fill the container
       containerInputRec[0] = track->Pt();
       containerInputTPConly[0] = trackTPC->Pt();
-      containerInputMC[0] = particle->Pt();
-      
+
       if (fTrackCuts->AcceptTrack(track)) {
 	fCFManager->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
 	fCFManager->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
-	fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
-      }
-      //      if (!fCFManager->CheckParticleCuts(1,track)) continue ;
-      if ( fTrackCuts->AcceptTrack(track) && !stack->IsPhysicalPrimary(label) ) {
-	fCFManager->GetParticleContainer()->Fill(containerInputRec,kStepSecondaries);
-	// 	int label_mom = TMath::Abs(particle->GetFirstMother());
-	// 	TParticle *mother = stack->Particle(label_mom);
-	// 	if(!mother) continue;
-	// 	cout << "#Daughters mom: " << mother->GetNDaughters() << "\tPDGmom: " << mother->GetPdgCode() << "\tPDGdaughter: " << particle->GetPdgCode() << endl;
+	
+	//Only fill the secondary particle container if MC information is available
+	if(eventHandler) {
+	  Int_t label = TMath::Abs(track->GetLabel());
+	  TParticle *particle = stack->Particle(label) ;
+	  if(!particle) continue;
+	  containerInputMC[0] = particle->Pt();      
+	  fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
+	  if (!stack->IsPhysicalPrimary(label) ) {
+	    fCFManager->GetParticleContainer()->Fill(containerInputRec,kStepSecondaries);
+	  }
+	}
       }
       
     }
 
-  for(int iPart = 1; iPart<(mcEvent->GetNumberOfTracks()); iPart++)//stack->GetNprimary();
-     {
-       //       TParticle *part = stack->Particle(iPart);
-       AliMCParticle *mcPart  = (AliMCParticle*)mcEvent->GetTrack(iPart);
-       if(!mcPart) continue;
-
-       //fill the container
-       containerInputMC[0] = mcPart->Pt();
- 
-       if (!fCFManager->CheckParticleCuts(3,mcPart)) continue ;
- 
-       int counter;
- 
-       Float_t trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
-       //       printf("TPCTrackLength %f \t %f  \n", TPCTrackLength,fESD->GetMagneticField());
-
-       if(trackLengthTPC>80.) fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
-
-     }
+  if(eventHandler) {
+    for(int iPart = 1; iPart<(mcEvent->GetNumberOfTracks()); iPart++)//stack->GetNprimary();
+      {
+	AliMCParticle *mcPart  = (AliMCParticle*)mcEvent->GetTrack(iPart);
+	if(!mcPart) continue;
+	
+	//fill the container
+	containerInputMC[0] = mcPart->Pt();
+	
+	if (!fCFManager->CheckParticleCuts(3,mcPart)) continue ;
+	
+	int counter;
+	
+	Float_t trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
+	
+	if(trackLengthTPC>80.) fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
+	
+      }
+  }
 
    fHistEventsProcessed->Fill(0);
    PostData(0,fHistList);
@@ -286,17 +273,12 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   //
   AliDebug(2,Form("CreateOutputObjects","CreateOutputObjects of task %s", GetName()));
 
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE); 
-
   OpenFile(0);
   fHistList = new TList();
   //slot #1
   //  OpenFile(0);
   fHistEventsProcessed = new TH1I("fHistEventsProcessed","",1,0,1) ;
   fHistList->Add(fHistEventsProcessed);
-
-  TH1::AddDirectory(oldStatus); 
 
 }
 
