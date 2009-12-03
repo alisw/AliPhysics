@@ -7,6 +7,7 @@
 
 #include <TPDGCode.h>
 #include <TH1F.h>
+#include <TH2F.h>
 
 #include "AliQAChecker.h"
 #include "AliGlobalQADataMaker.h"
@@ -14,6 +15,8 @@
 #include "AliESDEvent.h"
 #include "AliESDv0.h"
 #include "AliRawReader.h"
+#include "AliESDVZERO.h"
+#include "AliMultiplicity.h" 
 
 ClassImp(AliGlobalQADataMaker)
  
@@ -146,16 +149,19 @@ void AliGlobalQADataMaker::InitESDs() {
     const Char_t *name[]={
       "hGlobalFractionAssignedClustersITS",
       "hGlobalFractionAssignedClustersTPC",
-      "hGlobalFractionAssignedClustersTRD"
+      "hGlobalFractionAssignedClustersTRD",
+      "hGlobalClustersPerITSModule"
     };
     const Char_t *title[]={
       "Fraction of the assigned clusters in ITS",
       "Fraction of the assigned clusters in TPC",
-      "Fraction of the assigned clusters in TRD"
+      "Fraction of the assigned clusters in TRD",
+      "Number of clusters per an ITS module"
     };
     Add2ESDsList(new TH1F(name[0],title[0],100,0.,2.),kClr0, !expert, image);
     Add2ESDsList(new TH1F(name[1],title[1],100,0.,2.),kClr1, !expert, image);
     Add2ESDsList(new TH1F(name[2],title[2],100,0.,2.),kClr2, !expert, image);
+    Add2ESDsList(new TH1F(name[3],title[3],2240,0.,2240.),kClr3, !expert, image);
   }
 
   {// Track related QA
@@ -221,16 +227,33 @@ void AliGlobalQADataMaker::InitESDs() {
   const Char_t *name[]={
     "hGlobalITSdEdx",
     "hGlobalTPCdEdx",
-    "hGlobalTOFTrackingvsMeasured"
-  };
+    "hGlobalTOFTrackingvsMeasured",
+    "hGlobalTPCdEdxvsMomentum"
+   };
     const Char_t *title[]={
       "ITS: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
       "TPC: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
-      "TOF: tracking - measured (ps)"
-    };
+      "TOF: tracking - measured (ps)",
+      "TPC: dEdx (A.U.) vs momentum (GeV)"
+     };
     Add2ESDsList(new TH1F(name[0],title[0],50,0.00,200.),kPid0, !expert, image);
     Add2ESDsList(new TH1F(name[1],title[1],50,0.00,100.),kPid1, !expert, image);
     Add2ESDsList(new TH1F(name[2],title[2],50,-3500.,3500.),kPid2, !expert, image);
+    Add2ESDsList(new TH2F(name[3],title[3],1500,0.05,15.,700,0.,700.),kPid3,!expert,image);
+   }
+  {// Multiplicity related QA
+    const Char_t *name[]={
+      "hGlobalV0AvsITS",
+      "hGlobalV0CvsITS"
+    };
+    const Char_t *title[]={
+      "Multiplicity: V0A vs ITS",
+      "Multiplicity: V0C vs ITS"
+    };
+    TH2F *h0=new TH2F(name[0],title[0],40,0.,40., 32,0.,32.);
+    Add2ESDsList(h0,kMlt0, !expert, image);
+    TH2F *h1=new TH2F(name[1],title[1],40,0.,40., 32,0.,32.);
+    Add2ESDsList(h1,kMlt1, !expert, image);
   }
 
 }
@@ -264,6 +287,15 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
     if (track->IsOn(AliESDtrack::kITSrefit)) {
       Int_t n=track->GetITSclusters(0);
       GetESDsData(kClr0)->Fill(Float_t(n)/6.); //6 is the number of ITS layers
+    }
+
+    for (Int_t i=0; i<6; i++) {
+      Int_t idet, sts;
+      Float_t xloc,zloc;
+      if (!track->GetITSModuleIndexInfo(i,idet,sts,xloc,zloc)) continue;
+      if (i>=2) idet+=240;
+      if (i>=4) idet+=260;
+      if ((sts==1)||(sts==2)||(sts==4)) GetESDsData(kClr3)->Fill(idet);  
     }
 
     if (track->IsOn(AliESDtrack::kTPCrefit)) {
@@ -342,7 +374,30 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
         GetESDsData(kPid2)->Fill(times[2]-tof);
       }
     }
+    const AliExternalTrackParam *par=track->GetInnerParam();
+    if (par) {
+      Double_t pp=par->GetP();
+      Double_t dedx=track->GetTPCsignal();
+      TH2F *h = dynamic_cast<TH2F*>(GetESDsData(kPid3));
+      h->Fill(pp,dedx);
+    }
+ 
   }
+
+  // Multiplicity related QA
+  AliESDVZERO     *mltV0 =esd->GetVZEROData();
+  const AliMultiplicity *mltITS=esd->GetMultiplicity();
+  if (mltV0)
+    if (mltITS) {
+       Short_t nv0a=mltV0->GetNbPMV0A();
+       Short_t nv0c=mltV0->GetNbPMV0C();
+       Int_t   nits=mltITS->GetNumberOfTracklets();
+       TH2F *h0=dynamic_cast<TH2F*>(GetESDsData(kMlt0));
+       h0->Fill(nits,nv0a);
+       TH2F *h1=dynamic_cast<TH2F*>(GetESDsData(kMlt1));
+       h1->Fill(nits,nv0c);
+    }
+
 
   TH1 *tpc=GetESDsData(kTrk2); tpc->Sumw2();
   TH1 *its=GetESDsData(kTrk3); its->Sumw2();
