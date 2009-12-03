@@ -196,9 +196,17 @@ int AliHLTTrigger::CreateEventDoneReadoutFilter(const AliHLTTriggerDomain& domai
   vector<const AliHLTDomainEntry*> entries;
   for (block=0; block<nofEntries; block++) {
     // skip all DAQ readout entries as they are handled by the readout list
-    if (domain[block]==AliHLTDomainEntry(kAliHLTDataTypeDAQRDOUT)) continue;
+    // 2009-12-03: this turned out to cause a bug, since all blocks with data type
+    // id 'any' will also match this condition. In fact, it is not necessary to
+    // filter the entries, disable this condition. Code can be cleaned up later
+    // if this schema has been established and tested
+    // https://savannah.cern.ch/bugs/index.php?60082
+    //if (domain[block]==AliHLTDomainEntry(kAliHLTDataTypeDAQRDOUT)) continue;
     if (domain[block].Exclusive()) {
-      HLTWarning("exclusive trigger domain entries are currently not handled, skipping entry %s", domain[block].AsString().Data());
+      // 2009-12-03 comment out that warning for the moment
+      // there are suddenly exclusive entries in the list
+      // https://savannah.cern.ch/bugs/index.php?60083
+      //HLTWarning("exclusive trigger domain entries are currently not handled, skipping entry %s", domain[block].AsString().Data());
       continue;
     }
     entries.push_back(&(domain[block]));
