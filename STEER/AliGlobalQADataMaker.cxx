@@ -161,7 +161,7 @@ void AliGlobalQADataMaker::InitESDs() {
     Add2ESDsList(new TH1F(name[0],title[0],100,0.,2.),kClr0, !expert, image);
     Add2ESDsList(new TH1F(name[1],title[1],100,0.,2.),kClr1, !expert, image);
     Add2ESDsList(new TH1F(name[2],title[2],100,0.,2.),kClr2, !expert, image);
-    Add2ESDsList(new TH1F(name[3],title[3],2240,0.,2240.),kClr3, !expert, image);
+    Add2ESDsList(new TH1F(name[3],title[3],2201,-0.5,2200.5),kClr3, !expert, image);
   }
 
   {// Track related QA
@@ -250,9 +250,9 @@ void AliGlobalQADataMaker::InitESDs() {
       "Multiplicity: V0A vs ITS",
       "Multiplicity: V0C vs ITS"
     };
-    TH2F *h0=new TH2F(name[0],title[0],40,0.,40., 32,0.,32.);
+    TH2F *h0=new TH2F(name[0],title[0],41,-0.5,40.5, 33,-0.5,32.5);
     Add2ESDsList(h0,kMlt0, !expert, image);
-    TH2F *h1=new TH2F(name[1],title[1],40,0.,40., 32,0.,32.);
+    TH2F *h1=new TH2F(name[1],title[1],41,-0.5,40.5, 33,-0.5,32.5);
     Add2ESDsList(h1,kMlt1, !expert, image);
   }
 

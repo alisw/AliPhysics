@@ -79,7 +79,7 @@ void AliAnalysisTaskGlobalQA::UserCreateOutputObjects()
   Add2ESDsList(new TH1F(name[0],title[0],100,0.,2.),kClr0);
   Add2ESDsList(new TH1F(name[1],title[1],100,0.,2.),kClr1);
   Add2ESDsList(new TH1F(name[2],title[2],100,0.,2.),kClr2);
-  Add2ESDsList(new TH1F(name[3],title[3],2240,0.,2240.),kClr3);
+  Add2ESDsList(new TH1F(name[3],title[3],2201,-0.5,2200.5),kClr3);
   }
 
   {// Track related QA
@@ -169,9 +169,9 @@ void AliAnalysisTaskGlobalQA::UserCreateOutputObjects()
       "Multiplicity: V0A vs ITS",
       "Multiplicity: V0C vs ITS"
     };
-    TH2F *h0=new TH2F(name[0],title[0],40,0.,40., 32,0.,32.);
+    TH2F *h0=new TH2F(name[0],title[0],41,-0.5,40.5, 33,-0.5,32.5);
     Add2ESDsList(h0,kMlt0);
-    TH2F *h1=new TH2F(name[1],title[1],40,0.,40., 32,0.,32.);
+    TH2F *h1=new TH2F(name[1],title[1],41,-0.5,40.5, 33,-0.5,32.5);
     Add2ESDsList(h1,kMlt1);
   }
 
