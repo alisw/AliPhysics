@@ -175,6 +175,10 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
       TIter next(list) ; 
       TParameter<double> * p ; 
       while ( (p = static_cast<TParameter<double>*>(next()) ) ) {
+	if (index >= kSize) {
+	  AliError(Form("Variables list size exceeded (%d) !",index));
+	  break;
+	}
         varvalue[index++] = p->GetVal() ; 
       }
     }
