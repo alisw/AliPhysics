@@ -46,6 +46,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliTrackReference.h"
+//#include "AliTriggerAnalysis.h"
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -67,26 +68,7 @@ fRecoVtxITSTPC(kFALSE),
 fESD(0), 
 fOutput(0), 
 fNtupleVertexESD(0),
-fhTrackRefs(0),
-fhVtxTPCx(0),
-fhVtxTPCy(0),
-fhVtxTPCz(0),
-fhVtxTRKx(0),
-fhVtxTRKy(0),
-fhVtxTRKz(0),
-fhVtxSPDx(0),
-fhVtxSPDy(0),
-fhVtxSPDz3D(0),
-fhVtxSPDzZ(0),
-fhVtxTPCvsSPDx(0),
-fhVtxTPCvsSPDy(0),
-fhVtxTPCvsSPDz(0),
-fhVtxTRKvsSPDx(0),
-fhVtxTRKvsSPDy(0),
-fhVtxTRKvsSPDz(0),
-fhVtxSPDContrvsMult(0),
-fhVtxTRKContrvsTrks56(0),
-fhVtxTPCContrvsTrks(0)
+fhTrackRefs(0)
 {
   // Constructor
 
@@ -151,50 +133,6 @@ void AliAnalysisTaskVertexESD::CreateOutputObjects()
   fhTrackRefs = new TH2F("fhTrackRefs","Track references; x; y",1000,-4,4,1000,-4,4);
   fOutput->Add(fhTrackRefs);
 
-  fhVtxTPCx = new TH1F("fhVtxTPCx","VtxTPC; x [cm]; events",1000,-1,1);
-  fOutput->Add(fhVtxTPCx);
-  fhVtxTPCy = new TH1F("fhVtxTPCy","VtxTPC; y [cm]; events",1000,-1,1);
-  fOutput->Add(fhVtxTPCx);
-  fhVtxTPCz = new TH1F("fhVtxTPCz","VtxTPC; z [cm]; events",1000,-20,20);
-  fOutput->Add(fhVtxTPCz);
-  fhVtxTRKx = new TH1F("fhVtxTRKx","VtxTRK; x [cm]; events",1000,-1,1);
-  fOutput->Add(fhVtxTRKx);
-  fhVtxTRKy = new TH1F("fhVtxTRKy","VtxTRK; y [cm]; events",1000,-1,1);
-  fOutput->Add(fhVtxTRKx);
-  fhVtxTRKz = new TH1F("fhVtxTRKz","VtxTRK; z [cm]; events",1000,-20,20);
-  fOutput->Add(fhVtxTRKz);
-  fhVtxSPDx = new TH1F("fhVtxSPDx","VtxSPD3D; x [cm]; events",1000,-1,1);
-  fOutput->Add(fhVtxSPDx);
-  fhVtxSPDy = new TH1F("fhVtxSPDy","VtxSPD3D; y [cm]; events",1000,-1,1);
-  fOutput->Add(fhVtxSPDx);
-  fhVtxSPDz3D = new TH1F("fhVtxSPDz3D","VtxSPD3D; z [cm]; events",1000,-20,20);
-  fOutput->Add(fhVtxSPDz3D);
-  fhVtxSPDzZ = new TH1F("fhVtxSPDzZ","VtxSPDZ; z [cm]; events",1000,-20,20);
-  fOutput->Add(fhVtxSPDzZ);
-
-  fhVtxTPCvsSPDx = new TH2F("fhVtxTPCvsSPDx","TPC vs SPD ; x SPD [cm]; x TPC [cm]",100,-.1,.1,100,-1,1);
-  fOutput->Add(fhVtxTPCvsSPDx);
-  fhVtxTPCvsSPDy = new TH2F("fhVtxTPCvsSPDy","TPC vs SPD ; y SPD [cm]; y TPC [cm]",100,-.1,.1,100,-1,1);
-  fOutput->Add(fhVtxTPCvsSPDy);
-  fhVtxTPCvsSPDz = new TH2F("fhVtxTPCvsSPDz","TPC vs SPD ; z SPD [cm]; z TPC [cm]",100,-20,20,100,20,20);
-  fOutput->Add(fhVtxTPCvsSPDz);
-
-  fhVtxTRKvsSPDx = new TH2F("fhVtxTRKvsSPDx","TRK vs SPD ; x SPD [cm]; x TRK [cm]",100,-.1,.1,100,-.1,.1);
-  fOutput->Add(fhVtxTRKvsSPDx);
-  fhVtxTRKvsSPDy = new TH2F("fhVtxTRKvsSPDy","TRK vs SPD ; y SPD [cm]; y TRK [cm]",100,-.1,.1,100,-.1,.1);
-  fOutput->Add(fhVtxTRKvsSPDy);
-  fhVtxTRKvsSPDz = new TH2F("fhVtxTRKvsSPDz","TRK vs SPD ; z SPD [cm]; z TRK [cm]",100,-20,20,100,20,20);
-  fOutput->Add(fhVtxTRKvsSPDz);
-
-  fhVtxSPDContrvsMult = new TH2F("fhVtxSPDContrvsMult","SPD vertex: contributors VS SPD tracklets; contributors; SPD tracklets (AliMult)",100,-0.5,99.5,100,-0.5,99.5);
-  fOutput->Add(fhVtxSPDContrvsMult);
-
-  fhVtxTRKContrvsTrks56 = new TH2F("fhVtxTRKContrvsTrks56","TRK vertex: contributors VS trks with #ge 5 ITS cls; contributors; tracks",100,-0.5,99.5,100,-0.5,99.5);
-  fOutput->Add(fhVtxTRKContrvsTrks56);
-
-  fhVtxTPCContrvsTrks = new TH2F("fhVtxTPCContrvsTrks","TPC vertex: contributors VS TPC trks (all); contributors; tracks",100,-0.5,99.5,100,-0.5,99.5);
-  fOutput->Add(fhVtxTPCContrvsTrks);
-
   return;
 }
 
@@ -209,7 +147,9 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
     return;
   }
 
-  
+  if(!fReadMC && (fESD->GetEventType())!=7) return; 
+
+
   TArrayF mcVertex(3);
   mcVertex[0]=9999.; mcVertex[1]=9999.; mcVertex[2]=9999.;
   Float_t dNchdy=-999.;
@@ -274,17 +214,20 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
 
     
   // Trigger
-  ULong64_t triggerMask;
-  ULong64_t spdFO = (1 << 14);
-  ULong64_t v0left = (1 << 11);
-  ULong64_t v0right = (1 << 12);
+  //ULong64_t triggerMask;
+  //ULong64_t spdFO = (1 << 14);
+  //ULong64_t v0left = (1 << 10);
+  //ULong64_t v0right = (1 << 11);
   
-  triggerMask=fESD->GetTriggerMask();
+  //triggerMask=fESD->GetTriggerMask();
   // MB1: SPDFO || V0L || V0R
-  Bool_t eventTriggered = (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right))); 
+  //Bool_t eventTriggered = (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right))); 
   //MB2: GFO && V0R
   //triggerMask & spdFO && ((triggerMask&v0left) || (triggerMask&v0right))
+  //Bool_t eventTriggered = (triggerMask & spdFO); 
  
+  //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis();
+  Bool_t eventTriggered = 0;//triggerAnalysis->IsTriggerFired(fESD, AliTriggerAnalysis::kSPDGFO /*| AliTriggerAnalysis::kOfflineFlag*/); 
 
   Int_t ntracks = fESD->GetNumberOfTracks();
   Int_t nITS5or6=0,nTPCin=0,nTPCinEta09=0;
@@ -302,7 +245,7 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
     
   const AliESDVertex *spdv=fESD->GetPrimaryVertexSPD();
   const AliESDVertex *tpcv=fESD->GetPrimaryVertexTPC();
-  const AliESDVertex *trkv=fESD->GetPrimaryVertex();
+  const AliESDVertex *trkv=fESD->GetPrimaryVertexTracks();
 
   //Float_t tpccontrorig=tpcv->GetNContributors();
 
@@ -388,29 +331,6 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
   if(index!=isize) printf("AliAnalysisTaskVertexESD: ERROR, index!=isize\n");
 
   fNtupleVertexESD->Fill(xnt);
-  
-  fhVtxTPCx->Fill(tpcv->GetXv());
-  fhVtxTPCy->Fill(tpcv->GetYv());
-  fhVtxTPCz->Fill(tpcv->GetZv());
-  fhVtxTRKx->Fill(trkv->GetXv());
-  fhVtxTRKy->Fill(trkv->GetYv());
-  fhVtxTRKz->Fill(trkv->GetZv());
-  fhVtxSPDx->Fill(spdv->GetXv());
-  fhVtxSPDy->Fill(spdv->GetYv());
-  if(spdtitle.Contains("vertexer: 3D")) {
-    fhVtxSPDz3D->Fill(spdv->GetZv());
-  } else {
-    fhVtxSPDzZ->Fill(spdv->GetZv());
-  }
-  fhVtxTPCvsSPDx->Fill(spdv->GetXv(),tpcv->GetXv());
-  fhVtxTPCvsSPDy->Fill(spdv->GetYv(),tpcv->GetYv());
-  fhVtxTPCvsSPDz->Fill(spdv->GetZv(),tpcv->GetZv());
-  fhVtxTRKvsSPDx->Fill(spdv->GetXv(),trkv->GetXv());
-  fhVtxTRKvsSPDy->Fill(spdv->GetYv(),trkv->GetYv());
-  fhVtxTRKvsSPDz->Fill(spdv->GetZv(),trkv->GetZv());
-  fhVtxSPDContrvsMult->Fill(ntrklets,spdv->GetNContributors());
-  fhVtxTRKContrvsTrks56->Fill(nITS5or6,trkv->GetNContributors());   
-  fhVtxTPCContrvsTrks->Fill(nTPCin,tpcv->GetNContributors());
   
   // Post the data already here
   PostData(0, fOutput);
