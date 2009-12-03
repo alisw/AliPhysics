@@ -2311,7 +2311,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
           fakeTrack[trackIndex] = kTRUE;
           continue;
         }
-        if (Float_t(nused)/ncl >= .25){
+        if (ncl>0 && Float_t(nused)/ncl >= .25){
           //printf("Skip %d nused/ncl >= .25\n", trackIndex);
           fakeTrack[trackIndex] = kTRUE;
           continue;
@@ -2346,9 +2346,10 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
         }
         if(skip){
           candidates++;
-          //printf("REJECTED : %d [%d] nlayers %d trackQuality = %e nused %d\n", itrack, trackIndex, nlayers, fTrackQuality[trackIndex], nused);
+          AliDebug(4, Form("REJECTED : %d idx[%d] quality[%e] tracklets[%d] usedClusters[%d]", itrack, trackIndex, fTrackQuality[trackIndex], nlayers, nused));
           continue;
-        }
+        } else AliDebug(4, Form("ACCEPTED : %d idx[%d] quality[%e] tracklets[%d] usedClusters[%d]", itrack, trackIndex, fTrackQuality[trackIndex], nlayers, nused));
+
         signedTrack[trackIndex] = kTRUE;
 
         // Build track parameters
