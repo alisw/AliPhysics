@@ -35,8 +35,8 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
 	baseAnalysis->SetMaxDCAZ(1.5);*/
       baseAnalysis->SetPointOnITSLayer6();
       baseAnalysis->SetPointOnITSLayer5();
-      baseAnalysis->SetPointOnITSLayer4();
-      baseAnalysis->SetPointOnITSLayer3();
+      //baseAnalysis->SetPointOnITSLayer4();
+      //baseAnalysis->SetPointOnITSLayer3();
       baseAnalysis->SetPointOnITSLayer2();
       baseAnalysis->SetPointOnITSLayer1();
       baseAnalysis->SetMinITSClusters(4);
