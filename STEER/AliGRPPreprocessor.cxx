@@ -217,6 +217,7 @@ AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
 	AddRunType("NOISE");
 	AddRunType("PULSER");
         AddRunType("STANDALONE_PULSER");
+        AddRunType("STANDALONE_BC");
 
 	fmaxFloat = FLT_MAX;
 	fminFloat = -FLT_MAX;
