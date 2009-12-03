@@ -4,6 +4,7 @@ void SETUP()
     CheckLoadLibrary("libTree");
     CheckLoadLibrary("libGeom");
     CheckLoadLibrary("libVMC");
+    CheckLoadLibrary("libMinuit");
 
     // Load the ESD library
     CheckLoadLibrary("libANALYSIS");
