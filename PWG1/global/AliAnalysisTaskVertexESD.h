@@ -48,25 +48,6 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   TList       *fOutput;         //! list send on output slot 0
   TNtuple     *fNtupleVertexESD;//! output ntuple
   TH2F        *fhTrackRefs;     //! output histo
-  TH1F *fhVtxTPCx;  //! output histo
-  TH1F *fhVtxTPCy;  //! output histo
-  TH1F *fhVtxTPCz;  //! output histo
-  TH1F *fhVtxTRKx;  //! output histo
-  TH1F *fhVtxTRKy;  //! output histo
-  TH1F *fhVtxTRKz;  //! output histo
-  TH1F *fhVtxSPDx;  //! output histo
-  TH1F *fhVtxSPDy;  //! output histo
-  TH1F *fhVtxSPDz3D;  //! output histo
-  TH1F *fhVtxSPDzZ;  //! output histo
-  TH2F *fhVtxTPCvsSPDx;  //! output histo
-  TH2F *fhVtxTPCvsSPDy;  //! output histo
-  TH2F *fhVtxTPCvsSPDz;  //! output histo
-  TH2F *fhVtxTRKvsSPDx;  //! output histo
-  TH2F *fhVtxTRKvsSPDy;  //! output histo
-  TH2F *fhVtxTRKvsSPDz;  //! output histo
-  TH2F *fhVtxSPDContrvsMult;  //! output histo
-  TH2F *fhVtxTRKContrvsTrks56;  //! output histo
-  TH2F *fhVtxTPCContrvsTrks;  //! output histo
 
  private:    
 
@@ -75,7 +56,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   AliESDVertex* ReconstructPrimaryVertexTPC() const;
   AliESDVertex* ReconstructPrimaryVertexITSTPC() const;
   
-  ClassDef(AliAnalysisTaskVertexESD,3); // primary vertex analysis
+  ClassDef(AliAnalysisTaskVertexESD,4); // primary vertex analysis
 };
 
 #endif
