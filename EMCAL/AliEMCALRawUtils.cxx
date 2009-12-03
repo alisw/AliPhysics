@@ -375,18 +375,19 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
       lowGain = in.IsLowGain();
 
       gSig->Set(maxTime+1);
-       if ( (max - min) > fNoiseThreshold) FitRaw(gSig, signalF, amp, time) ; 
-    
-      //if (caloFlag == 0 || caloFlag == 1) { // low gain or high gain 
+		  
+	  //Initialize the variables, do not keep previous value.
+	  amp  = -1. ;
+	  time = -1. ;
+	  if ( (max - min) > fNoiseThreshold) FitRaw(gSig, signalF, amp, time) ; 
+	
 	if (amp > 0 && amp < 2000) {  //check both high and low end of
-	//result, 2000 is somewhat arbitrary - not nice with magic numbers in the code..
+	  //result, 2000 is somewhat arbitrary - not nice with magic numbers in the code..
 	  AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
 	
 	  AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
 	}
 	
-      //}
-
       // Reset graph
       for (Int_t index = 0; index < gSig->GetN(); index++) {
 	gSig->SetPoint(index, index, 0) ;  
@@ -422,7 +423,7 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
   }
 
   if (!digit) { // no digit existed for this tower; create one
-    if (lowGain) 
+    if (lowGain && amp > fgkOverflowCut) 
       amp = Int_t(fHighLowGainFactor * amp); 
     Int_t idigit = digitsArr->GetEntries();
     new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, idigit) ;	
