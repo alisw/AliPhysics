@@ -164,8 +164,7 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
       InitRaws() ; 
   
   if ( fMaxRawVar > 0 ) {
-    const Int_t kSize = fMaxRawVar ; 
-    Double_t  *varvalue = new Double_t[kSize] ;
+    Double_t  *varvalue = new Double_t[fMaxRawVar] ;
     Int_t index = 0 ;
     for ( Int_t detIndex = 0 ; detIndex < AliQAv1::kNDET ; detIndex++ ) {
       AliQADataMaker * qadm = fqadm[detIndex] ; 
@@ -175,10 +174,10 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
       TIter next(list) ; 
       TParameter<double> * p ; 
       while ( (p = static_cast<TParameter<double>*>(next()) ) ) {
-	if (index >= kSize) {
-	  AliError(Form("Variables list size exceeded (%d) !",index));
-	  break;
-	}
+//	if (index >= kSize) {
+//	  AliError(Form("Variables list size exceeded (%d) !",index));
+//	  break;
+//	}
         varvalue[index++] = p->GetVal() ; 
       }
     }
