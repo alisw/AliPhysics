@@ -22,15 +22,15 @@ void runProtonAnalysis(const char* esdAnalysisType = "Hybrid",
   TStopwatch timer;
   timer.Start();
   
-  runLocal("ESD",
+  /*runLocal("ESD",
 	   esdAnalysisType,
 	   pidMode,
-	   "/home/pchrist/ALICE/Baryons/Analysis/Protons/Local/data");
+	   "/home/pchrist/ALICE/Baryons/Analysis/Protons/Local/data");*/
   //runInteractive("ESD",esdAnalysisType,pidMode,"tag.xml");
   //runBatch("ESD",esdAnalysisType,pidMode,"wn.xml");  
-  /*runProof("ESD",esdAnalysisType,pidMode,
-    500000,0,"/COMMON/COMMON/LHC09a4_run8100X#esdTree");*/
-  
+  runProof("ESD",esdAnalysisType,pidMode,
+	   500000,0,"/COMMON/COMMON/LHC09d1_0.9TeV_0.5T#esdTree");
+
   timer.Stop();
   timer.Print();
 }
