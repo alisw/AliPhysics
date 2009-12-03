@@ -45,7 +45,7 @@
 #include "AliESDInputHandler.h"
 #include "AliESDInputHandlerRP.h"
 #include "AliTrackPointArray.h"
-#include "AliITSRecPoint.h"
+#include "../ITS/AliITSRecPoint.h"
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -61,14 +61,16 @@ ClassImp(AliAnalysisTaskITSTrackingCheck)
 //________________________________________________________________________
 AliAnalysisTaskITSTrackingCheck::AliAnalysisTaskITSTrackingCheck(const char *name) : 
 AliAnalysisTask(name, "ITSTrackingCheckTask"), 
-fReadMC(kTRUE),
+fReadMC(kFALSE),
 fReadRPLabels(kFALSE),
+fFillNtuples(kFALSE),
 fESD(0), 
 fESDfriend(0),
 fOutput(0), 
 fHistNtracks(0),
 fHistNclsITSMI(0),
 fHistNclsITSSA(0),
+fHistNclsITSSAInAcc(0),
 fHistClusterMapITSMI(0),
 fHistClusterMapITSMIok(0),
 fHistClusterMapITSMIbad(0),
@@ -76,6 +78,7 @@ fHistClusterMapITSMIskipped(0),
 fHistClusterMapITSMIoutinz(0),
 fHistClusterMapITSMInorefit(0),
 fHistClusterMapITSMInocls(0),
+fHistClusterMapITSMIokoutinzbad(0),
 fHistClusterMapITSSA(0),
 fHistClusterMapITSSAok(0),
 fHistClusterMapITSSAbad(0),
@@ -83,6 +86,18 @@ fHistClusterMapITSSAskipped(0),
 fHistClusterMapITSSAoutinz(0),
 fHistClusterMapITSSAnorefit(0),
 fHistClusterMapITSSAnocls(0),
+fHistClusterMapITSSAokoutinzbad(0),
+fHistClusterMapITSSAInAcc(0),
+fHistClusterMapITSSAokInAcc(0),
+fHistClusterMapITSSAbadInAcc(0),
+fHistClusterMapITSSAskippedInAcc(0),
+fHistClusterMapITSSAoutinzInAcc(0),
+fHistClusterMapITSSAnorefitInAcc(0),
+fHistClusterMapITSSAnoclsInAcc(0),
+fHistClusterMapITSSAokoutinzbadInAcc(0),
+fHistClusterMapModuleITSSAokInAcc(0),
+fHistClusterMapModuleITSSAbadInAcc(0),
+fHistClusterMapModuleITSSAnoclsInAcc(0),
 fHistPhiTPC(0),
 fHistPtTPC(0),
 fHistPtITSMI2(0),
@@ -171,6 +186,11 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
   fHistNclsITSMI->SetMinimum(0);
   fOutput->Add(fHistNclsITSMI);
 
+  fHistNclsITSSAInAcc = new TH1F("fHistNclsITSSAInAcc", "N ITS clusters per track (SA); N clusters; Counts",7, -0.5, 6.5);
+  fHistNclsITSSAInAcc->Sumw2();
+  fHistNclsITSSAInAcc->SetMinimum(0);
+  fOutput->Add(fHistNclsITSSAInAcc);  
+
   fHistNclsITSSA = new TH1F("fHistNclsITSSA", "N ITS clusters per track (SA); N clusters; Counts",7, -0.5, 6.5);
   fHistNclsITSSA->Sumw2();
   fHistNclsITSSA->SetMinimum(0);
@@ -186,11 +206,25 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
   fHistClusterMapITSSA->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSSA);
 
+  fHistClusterMapITSSAInAcc = new TH1F("fHistClusterMapITSSAInAcc", "N tracks with point on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSSAInAcc->Sumw2();
+  fHistClusterMapITSSAInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSSAInAcc);
+
   fHistClusterMapITSMIok = new TH1F("fHistClusterMapITSMIok", "N tracks with ok on Layer (MI); Layer; N tracks",6, -0.5, 5.5);
   fHistClusterMapITSMIok->Sumw2();
   fHistClusterMapITSMIok->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSMIok);
   
+  fHistClusterMapITSSAokInAcc = new TH1F("fHistClusterMapITSSAokInAcc", "N tracks with ok on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSSAokInAcc->Sumw2();
+  fHistClusterMapITSSAokInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSSAokInAcc);
+
+  fHistClusterMapModuleITSSAokInAcc = new TH1F("fHistClusterMapModuleITSSAokInAcc", "N tracks with ok on Module (SA); Module; N tracks",2198, -0.5, 2197.5);
+  fHistClusterMapModuleITSSAokInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapModuleITSSAokInAcc);
+
   fHistClusterMapITSSAok = new TH1F("fHistClusterMapITSSAok", "N tracks with ok on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
   fHistClusterMapITSSAok->Sumw2();
   fHistClusterMapITSSAok->SetMinimum(0);
@@ -201,6 +235,15 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
   fHistClusterMapITSMIbad->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSMIbad);
   
+  fHistClusterMapITSSAbadInAcc = new TH1F("fHistClusterMapITSSAbadInAcc", "N tracks with bad on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSSAbadInAcc->Sumw2();
+  fHistClusterMapITSSAbadInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSSAbadInAcc);
+
+  fHistClusterMapModuleITSSAbadInAcc = new TH1F("fHistClusterMapModuleITSSAbadInAcc", "N tracks with bad on Module (SA); Module; N tracks",2198, -0.5, 2197.5);
+  fHistClusterMapModuleITSSAbadInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapModuleITSSAbadInAcc);
+
   fHistClusterMapITSSAbad = new TH1F("fHistClusterMapITSSAbad", "N tracks with bad on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
   fHistClusterMapITSSAbad->Sumw2();
   fHistClusterMapITSSAbad->SetMinimum(0);
@@ -211,6 +254,11 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
   fHistClusterMapITSMIskipped->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSMIskipped);
   
+  fHistClusterMapITSSAskippedInAcc = new TH1F("fHistClusterMapITSSAskippedInAcc", "N tracks with skip on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSSAskippedInAcc->Sumw2();
+  fHistClusterMapITSSAskippedInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSSAskippedInAcc);
+
   fHistClusterMapITSSAskipped = new TH1F("fHistClusterMapITSSAskipped", "N tracks with skip on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
   fHistClusterMapITSSAskipped->Sumw2();
   fHistClusterMapITSSAskipped->SetMinimum(0);
@@ -221,16 +269,41 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
   fHistClusterMapITSMIoutinz->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSMIoutinz);
   
+  fHistClusterMapITSSAoutinzInAcc = new TH1F("fHistClusterMapITSSAoutinzInAcc", "N tracks with out in z on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSSAoutinzInAcc->Sumw2();
+  fHistClusterMapITSSAoutinzInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSSAoutinzInAcc);
+
   fHistClusterMapITSSAoutinz = new TH1F("fHistClusterMapITSSAoutinz", "N tracks with out in z on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
   fHistClusterMapITSSAoutinz->Sumw2();
   fHistClusterMapITSSAoutinz->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSSAoutinz);
+
+  fHistClusterMapITSSAokoutinzbad = new TH1F("fHistClusterMapITSSAokoutinzbad", "N tracks with cluster or bad zone or out in z (SA); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSSAokoutinzbad->Sumw2();
+  fHistClusterMapITSSAokoutinzbad->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSSAokoutinzbad);
+
+  fHistClusterMapITSMIokoutinzbad = new TH1F("fHistClusterMapITSMIokoutinzbad", "N tracks with cluster or bad zone or out in z (MI); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSMIokoutinzbad->Sumw2();
+  fHistClusterMapITSMIokoutinzbad->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSMIokoutinzbad);
+
+  fHistClusterMapITSSAokoutinzbadInAcc = new TH1F("fHistClusterMapITSSAokoutinzbadInAcc", "N tracks with cluster or bad zone or out in z (SA); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSSAokoutinzbadInAcc->Sumw2();
+  fHistClusterMapITSSAokoutinzbadInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSSAokoutinzbadInAcc);
 
   fHistClusterMapITSMInorefit = new TH1F("fHistClusterMapITSMInorefit", "N tracks with norefit on Layer (MI); Layer; N tracks",6, -0.5, 5.5);
   fHistClusterMapITSMInorefit->Sumw2();
   fHistClusterMapITSMInorefit->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSMInorefit);
   
+  fHistClusterMapITSSAnorefitInAcc = new TH1F("fHistClusterMapITSSAnorefitInAcc", "N tracks with norefit on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSSAnorefitInAcc->Sumw2();
+  fHistClusterMapITSSAnorefitInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSSAnorefitInAcc);
+
   fHistClusterMapITSSAnorefit = new TH1F("fHistClusterMapITSSAnorefit", "N tracks with norefit on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
   fHistClusterMapITSSAnorefit->Sumw2();
   fHistClusterMapITSSAnorefit->SetMinimum(0);
@@ -241,6 +314,15 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
   fHistClusterMapITSMInocls->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSMInocls);
   
+  fHistClusterMapITSSAnoclsInAcc = new TH1F("fHistClusterMapITSSAnoclsInAcc", "N tracks with nocls on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
+  fHistClusterMapITSSAnoclsInAcc->Sumw2();
+  fHistClusterMapITSSAnoclsInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapITSSAnoclsInAcc);
+  
+  fHistClusterMapModuleITSSAnoclsInAcc = new TH1F("fHistClusterMapModuleITSSAnoclsInAcc", "N tracks with nocls on Module (SA); Module; N tracks",2198, -0.5, 2197.5);
+  fHistClusterMapModuleITSSAnoclsInAcc->SetMinimum(0);
+  fOutput->Add(fHistClusterMapModuleITSSAnoclsInAcc);
+
   fHistClusterMapITSSAnocls = new TH1F("fHistClusterMapITSSAnocls", "N tracks with nocls on Layer (SA); Layer; N tracks",6, -0.5, 5.5);
   fHistClusterMapITSSAnocls->Sumw2();
   fHistClusterMapITSSAnocls->SetMinimum(0);
@@ -312,11 +394,9 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
     Printf("ERROR: fESD not available");
     return;
   }
-
+  //if(fESD->GetEventType()!=7) return;
 
   const AliESDVertex *vertexESD = fESD->GetPrimaryVertexTracks();
-  if(!vertexESD) return;
-  if(!(vertexESD->GetStatus())) return;
 
   // ***********  MC info ***************
   TArrayF mcVertex(3);
@@ -383,7 +463,8 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
   if(!fESDfriend) printf("no ESD friend\n");
 
   //
-    
+  
+  /*  
   // **********  Trigger *****************
   ULong64_t triggerMask;
   ULong64_t spdFO = (1 << 14);
@@ -397,6 +478,7 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
   //triggerMask & spdFO && ((triggerMask&v0left) || (triggerMask&v0right))
   // ************ Trigger ******************
   if(!eventTriggered) return;
+  */
 
   // SPD vertex
   const AliESDVertex *spdv=fESD->GetPrimaryVertexSPD();
@@ -415,21 +497,60 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
   for(Int_t itr=0; itr<ntracks; itr++) {
     AliESDtrack *track = fESD->GetTrack(itr);
 
+    // remove kink daughters
     if(track->GetKinkIndex(0)>0) continue;
 
-    Int_t trkLabel = TMath::Abs(track->GetLabel());
-    Int_t nclsITS = track->GetNcls(0);
 
-    
     Bool_t itsrefit=kFALSE,tpcin=kFALSE,itsfindableAcc=kFALSE;
     if ((track->GetStatus() & AliESDtrack::kITSrefit)) itsrefit=kTRUE;
     if ((track->GetStatus() & AliESDtrack::kTPCin)) tpcin=kTRUE;
 
-    if(tpcin) {
-      fHistNclsITSMI->Fill(nclsITS);
-    } else {
-      fHistNclsITSSA->Fill(nclsITS);
-    }
+
+    //if(TMath::Abs(track->GetD(0,0,0))>1) continue;
+
+    Int_t trkLabel = TMath::Abs(track->GetLabel());
+    Int_t nclsITS = track->GetNcls(0);
+
+    Bool_t outInZ=kFALSE;
+
+    for(Int_t layer=0; layer<6; layer++) {
+      track->GetITSModuleIndexInfo(layer,idet,status,xloc,zloc);
+      if(layer>=2) idet+=240; // add n SPD modules
+      if(layer>=4) idet+=260; // add n SPD modules
+      if(status==4) outInZ=kTRUE;
+      if(tpcin) {
+	if(status==1) fHistClusterMapITSMIok->Fill(layer);
+	if(status==2) fHistClusterMapITSMIbad->Fill(layer);
+	if(status==3) fHistClusterMapITSMIskipped->Fill(layer);
+	if(status==4) fHistClusterMapITSMIoutinz->Fill(layer);
+	if(status==5) fHistClusterMapITSMInocls->Fill(layer);
+	if(status==6) fHistClusterMapITSMInorefit->Fill(layer);
+	if(status==1 || status==2 || status==4) fHistClusterMapITSMIokoutinzbad->Fill(layer);
+      } else {
+	if(status==1) fHistClusterMapITSSAok->Fill(layer);
+	if(status==2) fHistClusterMapITSSAbad->Fill(layer);
+	if(status==3) fHistClusterMapITSSAskipped->Fill(layer);
+	if(status==4) fHistClusterMapITSSAoutinz->Fill(layer);
+	if(status==5) fHistClusterMapITSSAnocls->Fill(layer);
+	if(status==6) fHistClusterMapITSSAnorefit->Fill(layer);
+	if(status==1 || status==2 || status==4) fHistClusterMapITSSAokoutinzbad->Fill(layer);
+	if(status==1 && !outInZ) {fHistClusterMapITSSAokInAcc->Fill(layer);fHistClusterMapModuleITSSAokInAcc->Fill(idet);}
+	if(status==2 && !outInZ) {fHistClusterMapITSSAbadInAcc->Fill(layer);fHistClusterMapModuleITSSAbadInAcc->Fill(idet);}
+	if(status==3 && !outInZ) fHistClusterMapITSSAskippedInAcc->Fill(layer);
+	if(status==4 && !outInZ) fHistClusterMapITSSAoutinzInAcc->Fill(layer);
+	if(status==5 && !outInZ) {fHistClusterMapITSSAnoclsInAcc->Fill(layer);fHistClusterMapModuleITSSAnoclsInAcc->Fill(idet);}
+	if(status==6 && !outInZ) fHistClusterMapITSSAnorefitInAcc->Fill(layer);
+	if((status==1 || status==2 || status==4) && !outInZ) fHistClusterMapITSSAokoutinzbadInAcc->Fill(layer);
+      }
+      if(TESTBIT(track->GetITSClusterMap(),layer)) {
+	if(tpcin) {
+	  fHistClusterMapITSMI->Fill(layer);
+	} else {
+	  fHistClusterMapITSSA->Fill(layer);
+	  if(!outInZ) fHistClusterMapITSSAInAcc->Fill(layer);
+	}
+      }
+    }  
 
     // TPC track in ITS acceptance
     if(tpcin && TMath::Abs(track->Eta())<0.9 && track->GetNcls(1)>50) {
@@ -438,33 +559,6 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       fHistPhiTPC->Fill(track->Phi());  
     }
   
-
-    for(Int_t layer=0; layer<6; layer++) {
-      if(TESTBIT(track->GetITSClusterMap(),layer)) {
-	if(tpcin) {
-	  fHistClusterMapITSMI->Fill(layer);
-	} else {
-	  fHistClusterMapITSSA->Fill(layer);
-	}
-      }
-      track->GetITSModuleIndexInfo(layer,idet,status,xloc,zloc);
-      if(tpcin) {
-	if(status==1) fHistClusterMapITSMIok->Fill(layer);
-	if(status==2) fHistClusterMapITSMIbad->Fill(layer);
-	if(status==3) fHistClusterMapITSMIskipped->Fill(layer);
-	if(status==4) fHistClusterMapITSMIoutinz->Fill(layer);
-	if(status==5) fHistClusterMapITSMInocls->Fill(layer);
-	if(status==6) fHistClusterMapITSMInorefit->Fill(layer);
-      } else {
-	if(status==1) fHistClusterMapITSSAok->Fill(layer);
-	if(status==2) fHistClusterMapITSSAbad->Fill(layer);
-	if(status==3) fHistClusterMapITSSAskipped->Fill(layer);
-	if(status==4) fHistClusterMapITSSAoutinz->Fill(layer);
-	if(status==5) fHistClusterMapITSSAnocls->Fill(layer);
-	if(status==6) fHistClusterMapITSSAnorefit->Fill(layer);
-      }
-    }  
-
     if(itsfindableAcc) {
       if(nclsITS==6) fHistPtITSMI6->Fill(track->Pt());
       if(nclsITS==5) fHistPtITSMI5->Fill(track->Pt());
@@ -473,6 +567,14 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       if(nclsITS==2) fHistPtITSMI2->Fill(track->Pt());
       if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))
 	fHistPtITSMISPD->Fill(track->Pt());
+    }
+
+
+    if(tpcin) {
+      fHistNclsITSMI->Fill(nclsITS);
+    } else {
+      fHistNclsITSSA->Fill(nclsITS);
+      if(!outInZ) fHistNclsITSSAInAcc->Fill(nclsITS);
     }
 
 
@@ -502,6 +604,9 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       if(nITSclsMC>=0) iITSflag += 10000*nITSclsMC;    
     }
 
+    if(!vertexESD) return;
+    if(!(vertexESD->GetStatus())) return;
+
     // impact parameter to VertexTracks
     Double_t d0z0[2],covd0z0[3];
     track->PropagateToDCA(vertexESD,fESD->GetMagneticField(),100.,d0z0,covd0z0);
@@ -525,7 +630,7 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
     if(!itsrefit) sigmad0MCv *= -1.;
 
     // fill ntuple with track properties
-    if(SelectPt(track->Pt())) {
+    if(fFillNtuples && SelectPt(track->Pt())) {
       Float_t fillArray[19]={track->Pt(),track->Eta(),track->Phi(),d0z0[0],d0z0[1],TMath::Sqrt(covd0z0[0]),TMath::Sqrt(covd0z0[2]),ptMC,pdgMC,d0MC,d0z0MCv[0],d0z0MCv[1],sigmad0MCv,TMath::Sqrt(covd0z0MCv[2]),(Float_t)iITSflag};
       fNtupleESDTracks->Fill(fillArray);
     }
@@ -533,10 +638,12 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
     //---------------------------------------------    
     // AliTrackPoints: alignment checks
     // 
+    if(!fFillNtuples) continue;
     if(!fESDfriend) continue;
 
 
     const AliTrackPointArray *array = track->GetTrackPointArray();
+    if(!array) continue;
     AliTrackPoint point;
     Int_t pointOnLayer[6]={0,0,0,0,0,0};
     Int_t indexAssociated[6]={-1,-1,-1,-1,-1,-1},indexExtra=-1;
@@ -592,7 +699,8 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       Float_t dz[2];
       // distance to primary SPD (only if 3D and high multiplicity)
       if(spdv->GetNContributors()>10) { 
-	tracklet.GetDZ(spdv->GetXv(),spdv->GetYv(),spdv->GetZv(),0,dz);
+	//tracklet.GetDZ(spdv->GetXv(),spdv->GetYv(),spdv->GetZv(),0,dz);
+	tracklet.GetDZ(-0.07,0.25,spdv->GetZv(),0,dz);
 	fNtupleITSAlignSPDTracklets->Fill(phi,theta,0.5*(pointSPD1.GetZ()+pointSPD2.GetZ()),dz[0],dz[1]);
       }
     }
@@ -659,7 +767,7 @@ Int_t AliAnalysisTaskITSTrackingCheck::NumberOfITSClustersMC(Int_t label) const
   //
   // Return number of ITS clusters produced by MC particle with given label
   //
-
+  
   AliESDInputHandlerRP *esdHRP = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!esdHRP) return -1;
   TTree *cTree = (TTree*)esdHRP->GetTreeR("ITS");
@@ -687,6 +795,7 @@ Int_t AliAnalysisTaskITSTrackingCheck::NumberOfITSClustersMC(Int_t label) const
   for(i=0;i<6;i++) { if(ncls[i]) nclstot++; }
 
   return nclstot;
+    //return label*0;
 }
 //---------------------------------------------------------------------------
 Double_t AliAnalysisTaskITSTrackingCheck::ParticleImpParMC(TParticle *part,
@@ -732,6 +841,7 @@ Bool_t AliAnalysisTaskITSTrackingCheck::SelectPt(Double_t pt)
     }
   }
   return kFALSE;
+  //return kTRUE;
 }
 
 
