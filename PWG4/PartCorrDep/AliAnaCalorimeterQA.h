@@ -49,6 +49,10 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   void SwitchOnPlotsMaking()  {fMakePlots = kTRUE;}
   void SwitchOffPlotsMaking() {fMakePlots = kFALSE;}
 	
+  void SwitchOnCalorimetersCorrelation()  {fCorrelateCalos = kTRUE;}
+  void SwitchOffCalorimetersCorrelation() {fCorrelateCalos = kFALSE;}
+  void CorrelateCalorimeters(TRefArray* caloClusters);
+	
   void Terminate(TList * outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 
@@ -57,6 +61,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TString fCalorimeter ;   //Calorimeter selection
   TString fStyleMacro  ;   //Location of macro for plots style
   Bool_t fMakePlots    ;   //Print plots
+  Bool_t fCorrelateCalos;  //Correlate PHOS/EMCAL clusters
 	
   //Histograms
   //CaloClusters 
@@ -96,6 +101,12 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH1F * fhNCells; //! Number of towers/crystals with signal
   TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
 
+  //Calorimeters Correlation
+  TH2F * fhCaloCorrNClusters; // EMCAL vs PHOS, number of clusters	
+  TH2F * fhCaloCorrEClusters; // EMCAL vs PHOS, total measured cluster energy
+  TH2F * fhCaloCorrNCells; // EMCAL vs PHOS, number of cells
+  TH2F * fhCaloCorrECells; // EMCAL vs PHOS,  total measured cell energy
+	
   //MC  
   TH1F *fhGenGamPt  ; // pt of primary gamma
   TH1F *fhGenGamEta ; // eta of primart gamma
@@ -202,7 +213,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,1)
+	ClassDef(AliAnaCalorimeterQA,2)
 } ;
 
 
