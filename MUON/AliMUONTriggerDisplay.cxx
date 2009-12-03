@@ -254,7 +254,7 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
 	// get pad from electronics
 
 	Int_t offset = 0;
-	if (cath && localBoard->GetSwitch(6)) offset = -8;
+	if (cath && localBoard->GetSwitch(AliMpLocalBoard::kZeroAllYLSB)) offset = -8;
 
 	AliMpPad pad = seg[cath]->PadByLocation(iBoard,iStrip+offset,kFALSE);
 

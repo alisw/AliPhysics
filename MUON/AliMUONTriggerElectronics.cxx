@@ -217,7 +217,7 @@ void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
         
         if (b) 
         {
-          if (cathode && b->GetSwitch(6)) ibitxy += 8;
+          if (cathode && b->GetSwitch(AliMpLocalBoard::kZeroAllYLSB)) ibitxy += 8;
           
           b->SetbitM(ibitxy,cathode,ichamber-10);
         }
