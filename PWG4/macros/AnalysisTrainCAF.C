@@ -147,7 +147,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
 
     //  
     // We are local or on grid
-    // access remote files in lcoal case as well so open alien conection
+    // access remote files in lcoal case as well so open alien connection
 
     /*
     printf("*** Connect to AliEn ***\n");
@@ -238,7 +238,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
       gSystem->Load("libCORRFW.so");
       gSystem->Load("libPWG3muon.so");
 
-      gROOT->LoadMacro(Form("%s/ANALYSIS/macros/AddTaskESDfilter.C",gSystem->ExpandPathName("${ALICE_ROOT}")));
+      gROOT->LoadMacro(Form("%s/ANALYSIS/macros/AddTaskESDFilter.C",gSystem->ExpandPathName("${ALICE_ROOT}")));
       //      gROOT->LoadMacro("AddTaskESDfilter.C");
       AliAnalysisTaskESDfilter *esdfilter = AddTaskESDFilter();
       Printf("esdFilter %p",esdfilter); 
