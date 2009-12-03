@@ -268,16 +268,18 @@ Bool_t AliEMCALTrack::PropagateToGlobal(Double_t x, Double_t y, Double_t z, Doub
 //
 Bool_t AliEMCALTrack::SimplePropagation(Double_t xk, Double_t d, Double_t x0)
 {
-	//
-	// Recall base class method for track propagation.
-	//
+  //
+  // Recall base class method for track propagation.
+  //
+  
+  Double_t field[3];
+
+  GetBxByBz(field);
 	
-	Double_t field = GetBz();
-	
-	// propagation...
-	if (!AliExternalTrackParam::PropagateTo(xk, field)) return kFALSE;
-	
-	// EL correction is computed only if requested...
-	if (!fgCorrectForEL) return kTRUE;
-	return AliExternalTrackParam::CorrectForMeanMaterial(d, x0, GetMass());
+  // propagation...
+  if (!AliExternalTrackParam::PropagateToBxByBz(xk, field)) return kFALSE;
+  
+  // EL correction is computed only if requested...
+  if (!fgCorrectForEL) return kTRUE;
+  return AliExternalTrackParam::CorrectForMeanMaterial(d, x0, GetMass());
 }
