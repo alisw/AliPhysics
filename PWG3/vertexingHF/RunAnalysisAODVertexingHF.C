@@ -115,22 +115,10 @@ void RunAnalysisAODVertexingHF()
       parFile="PWG3vertexingHF.par"; parFile.Prepend(parDir.Data());
       gProof->UploadPackage(parFile.Data());
       gProof->EnablePackage("PWG3vertexingHF");
-      // --- Enable the JETAN Package
-      parFile="JETAN.par"; parFile.Prepend(parDir.Data());
-      gProof->UploadPackage(parFile.Data());
-      gProof->EnablePackage("JETAN");
       // --- Enable the PWG3muon Package
       parFile="PWG3muon.par"; parFile.Prepend(parDir.Data());
       gProof->UploadPackage(parFile.Data());
       gProof->EnablePackage("PWG3muon");
-      // --- Enable the PWG4PartCorrBase Package
-      parFile="PWG4PartCorrBase.par"; parFile.Prepend(parDir.Data());
-      gProof->UploadPackage(parFile.Data());
-      gProof->EnablePackage("PWG4PartCorrBase");
-      // --- Enable the PWG4PartCorrDep Package
-      parFile="PWG4PartCorrDep.par"; parFile.Prepend(parDir.Data());
-      gProof->UploadPackage(parFile.Data());
-      gProof->EnablePackage("PWG4PartCorrDep");
     }
     gProof->ShowEnabledPackages(); // show a list of enabled packages
   }

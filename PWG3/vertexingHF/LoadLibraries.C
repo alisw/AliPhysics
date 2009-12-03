@@ -4,6 +4,7 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
   gSystem->Load("libGeom.so");
   gSystem->Load("libPhysics.so");
   gSystem->Load("libVMC.so");
+  gSystem->Load("libMinuit.so");
   gSystem->Load("libSTEERBase.so");
   gSystem->Load("libESD.so");
   gSystem->Load("libAOD.so"); 
@@ -12,10 +13,7 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3vertexingHF.so");
-  gSystem->Load("libJETAN.so");
   gSystem->Load("libPWG3muon.so");
-  gSystem->Load("libPWG4PartCorrBase.so");
-  gSystem->Load("libPWG4PartCorrDep.so");
  
 
   if(useParFiles) {
@@ -27,10 +25,7 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
     setupPar("CORRFW");  
     setupPar("PWG3base");
     setupPar("PWG3vertexingHF");
-    setupPar("JETAN");
     setupPar("PWG3muon");
-    setupPar("PWG4PartCorrBase");
-    setupPar("PWG4PartCorrDep"); 
   }
 
   return;
