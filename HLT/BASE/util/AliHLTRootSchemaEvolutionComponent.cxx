@@ -178,6 +178,7 @@ int AliHLTRootSchemaEvolutionComponent::UpdateStreamerInfos(const TList* list, T
     if (!pInfo) continue;
     TString name=pInfo->GetName();
     int i=0;
+    if (pInfo->GetClassVersion()==0) continue; // skip classes which are not for storage
     for (; i<infos->GetEntriesFast(); i++) {
       if (name.CompareTo(infos->At(i)->GetName())==0 &&
 	  pInfo->GetClassVersion() == ((TStreamerInfo*)infos->At(i))->GetClassVersion()) {
@@ -186,8 +187,10 @@ int AliHLTRootSchemaEvolutionComponent::UpdateStreamerInfos(const TList* list, T
       }
     }
 
-    // Add streamer info
-    infos->Add(pInfo);
+    // Add streamer info if not yet there
+    if (i>=infos->GetEntriesFast()) {
+      infos->Add(pInfo);
+    }
   }
 
   return iResult;
@@ -224,8 +227,8 @@ int AliHLTRootSchemaEvolutionComponent::ScanConfigurationArgument(int argc, cons
   if (argument.Contains("-fxs")) {
     argument.ReplaceAll("-fxs", "");
     argument.ReplaceAll("=", "");
+    SetBits(kFXS);
     if (argument.IsNull()) {
-      SetBits(kFXS);
     } else if (argument.CompareTo("off")) {
       ClearBits(kFXS);
     } else if (argument.IsDigit()) {
@@ -272,9 +275,9 @@ int AliHLTRootSchemaEvolutionComponent::WriteToFile(const char* filename, const 
   version++;
 
   AliCDBPath cdbPath(entrypath);
-  AliCDBId cdbId(cdbPath, GetRunNo(), AliCDBRunRange::Infinity(), version, 0);
+  AliCDBId cdbId(cdbPath, AliCDBManager::Instance()->GetRun(), AliCDBRunRange::Infinity(), version, 0);
   AliCDBMetaData* cdbMetaData=new AliCDBMetaData;
-  cdbMetaData->SetResponsible("ALICE HLT");
+  cdbMetaData->SetResponsible("ALICE HLT Matthias.Richter@cern.ch");
   cdbMetaData->SetComment("Streamer info for HLTOUT payload");
   AliCDBEntry* entry=new AliCDBEntry(infos->Clone(), cdbId, cdbMetaData, kTRUE);
 
