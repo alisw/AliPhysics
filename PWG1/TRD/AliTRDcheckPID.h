@@ -19,6 +19,10 @@
 #include "AliTRDrecoTask.h"
 #endif
 
+#ifndef ALIPID_H
+#include "AliPID.h"
+#endif
+
 class AliTRDReconstructor;
 class AliTRDpidUtil;
 class AliTRDcheckPID : public AliTRDrecoTask 
@@ -26,15 +30,19 @@ class AliTRDcheckPID : public AliTRDrecoTask
 public:
   // Plots registered for this task
   enum{
-     kEfficiency     =  0     // pi Efficiency plot
-    ,kdEdx           =  1     // dE/dx spectra
-    ,kdEdxSlice      =  2     // dE/dx spectra
-    ,kPH             =  3     // pulse height spectra
-    ,kNClus          =  4     //  number of clusters per track
-    ,kMomentum       =  5     // momentum distribution
-    ,kMomentumBin    =  6     // momentum distribution
-    ,kNTracklets     =  7     // Number of tracklets per track
-    ,kNPlots         =  8     // Number of plots for this tasks 
+    kEfficiency        =  0     // e Efficiency plot
+    ,kdEdx             =  1     // dE/dx spectra
+    ,kdEdxSlice        =  2     // dE/dx spectra
+    ,kPH               =  3     // pulse height spectra
+    ,kNClus            =  4     //  number of clusters per track
+    ,kMomentum         =  5     // momentum distribution
+    ,kMomentumBin      =  6     // momentum distribution
+    ,kNTracklets       =  7     // Number of tracklets per track
+    ,kEfficiencyMu     =  8     // mu Efficiency plot
+    ,kEfficiencyPi     =  9     // pi Efficiency plot
+    ,kEfficiencyKa     =  10    // K Efficiency plot
+    ,kEfficiencyPr     =  11    // pr Efficiency plot
+    ,kNPlots           =  12    // Number of plots for this tasks 
   };
   AliTRDcheckPID();
   virtual ~AliTRDcheckPID();
@@ -58,9 +66,10 @@ public:
   void SetRequireMaxNTracklets(Int_t maxtracklets) { fMaxNTracklets = maxtracklets; }
 
   TObjArray *GetGraphs() const { return fGraph; };
+  static Char_t const* MethodName(Int_t id) { return fgMethod[id]; };
   //TObjArray *GetHistos() { return fContainer; };
   virtual TObjArray *Histos();
-  void EvaluatePionEfficiency(TObjArray * const histoContainer, TObjArray *results, Float_t electronEfficiency);
+  void EvaluateEfficiency(TObjArray* const histoContainer, TObjArray *results, Int_t species, Float_t electronEfficiency);
   inline void SetMomentumBinning(Int_t nBins, Double_t *bins);
   inline Int_t FindBin(Int_t species, Double_t momentum);
   inline Bool_t IsInRange(Double_t momentum);
@@ -71,15 +80,15 @@ private:
 
   Int_t  CalcPDG(AliTRDtrackV1* track = 0x0);
   Bool_t CheckTrackQuality(const AliTRDtrackV1* track = 0x0) const;
-  
+  static Char_t const *fgMethod[3];        // PID method name
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
   AliTRDpidUtil       *fUtil;              //! utility class for PID calculations
   TObjArray           *fGraph;             //! array of graphs filled in PostProcess
-  TObjArray           *fEfficiency;        //! array of histograms with efficiency
+  TObjArray           *fEfficiency[AliPID::kSPECIES];      //! array of histograms with efficiency
   TAxis               *fMomentumAxis;      //! helper mementum binning
   Int_t                fMinNTracklets;     // minimum number of required Tracklets (for systematic studies)
   Int_t                fMaxNTracklets;     // maximum number of required Tracklets (for systematic studies) 
-  ClassDef(AliTRDcheckPID, 1); // TRD PID checker
+  ClassDef(AliTRDcheckPID, 2); // TRD PID checker
 };
 
 //________________________________________________________________________
