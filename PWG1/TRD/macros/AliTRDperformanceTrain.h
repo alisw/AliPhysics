@@ -8,7 +8,6 @@
 
 #define NTRDQATASKS 6
 #define NTRDCALIBTASKS 6
-/* #define NTRDCALIBTASKS 7 */
 const Int_t NTRDTASKS = NTRDQATASKS+NTRDCALIBTASKS;
 
 enum AliTRDrecoTasks{
@@ -21,16 +20,12 @@ enum AliTRDrecoTasks{
   ,kCalibration   = 6
   ,kEfficiencyMC  = 7
   ,kAlignment     = 8
-  ,kPIDRefMaker = 9
-/*   ,kPIDRefMakerLQ = 9 */
-/*   ,kPIDRefMakerNN =10 */
-/*   ,kClErrParam    =11 */
-/*   ,kMultiplicity  =12 */
+  ,kPIDRefMaker   = 9
   ,kClErrParam    =10
   ,kMultiplicity  =11
 };
 
-const Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
+Char_t const* fgkTRDtaskClassName[NTRDTASKS] = {
   "AliTRDcheckESD"
   ,"AliTRDinfoGen"
   ,"AliTRDcheckDET"
@@ -41,13 +36,11 @@ const Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
   ,"AliTRDefficiencyMC"
   ,"AliTRDalignmentTask"
   ,"AliTRDpidRefMaker"
-/*   ,"AliTRDpidRefMakerLQ" */
-/*   ,"AliTRDpidRefMakerNN" */
   ,"AliTRDclusterResolution"
   ,"AliTRDmultiplicity"
 };
 
-const Char_t *fgkTRDtaskOpt[NTRDTASKS+1] = {
+Char_t const* fgkTRDtaskOpt[NTRDTASKS+1] = {
   ""
   ,"GEN"
   ,"DET"
@@ -58,8 +51,6 @@ const Char_t *fgkTRDtaskOpt[NTRDTASKS+1] = {
   ,"EFFC"
   ,"ALGN"
   ,"PIDR"
-/*   ,"LQR" */
-/*   ,"NNR" */
   ,"CLRES"
   ,"MULT"
   ,"ALL"

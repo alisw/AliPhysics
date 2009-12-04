@@ -42,7 +42,7 @@
 // gSystem->Load("libMemStatGui.so")
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTRDqaRec.so")
+// gSystem->Load("libTENDER.so")
 // gSystem->Load("libSTAT.so")
 // gSystem->Load("libPWG1.so");
 // gSystem->Load("libNetx.so") ;
@@ -55,7 +55,8 @@
 
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 
-#include "qaRec/AliTRDrecoTask.h"
+#include "AliLog.h"
+#include "PWG1/TRD/AliTRDrecoTask.h"
 #include <fstream>
 #include <TCanvas.h>
 #include <TStyle.h>
@@ -69,13 +70,16 @@
 #include "helper.C"
 //#include "../../PWG1/macros/AddPerformanceTask.h"
 
-Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so", "libSTAT.so"};
-// define setup
-TCanvas *c = 0x0;
-Bool_t mc(kFALSE), friends(kFALSE);
+Char_t const *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libSTAT.so", "libPWG1.so"};
 
-void calibrateTRD(TNamed* task, Int_t itask);
-void makeCalibResults(Char_t *opt, const Char_t *files=0x0, Bool_t kGRID=kFALSE)
+// define setup
+TClass *ctask = new TClass;
+TCanvas *c(NULL);
+Bool_t fMC(kFALSE), fFriends(kFALSE);
+Char_t const *fFiles(NULL);
+
+void calibrateTRD(Int_t itask, Char_t const* ntask=NULL, Char_t const* nfile=NULL);
+void makeCalibResults(Char_t *opt, Char_t const *files=NULL, Bool_t kGRID=kFALSE)
 {
   if(kGRID){
     if(!gSystem->Getenv("GSHELL_ROOT")){
@@ -93,8 +97,9 @@ void makeCalibResults(Char_t *opt, const Char_t *files=0x0, Bool_t kGRID=kFALSE)
     return;
   }
 
-  mc = HasReadMCData(opt);
-  friends = HasReadFriendData(opt);
+  fMC = HasReadMCData(opt);
+  fFriends = HasReadFriendData(opt);
+  fFiles = files;
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -102,15 +107,17 @@ void makeCalibResults(Char_t *opt, const Char_t *files=0x0, Bool_t kGRID=kFALSE)
 
   if(!c) c=new TCanvas("c", "Calibration", 10, 10, 800, 500);
 
-  TClass *ctask = new TClass;
-  AliAnalysisTask *task = 0x0;
   for(Int_t itask = NTRDQATASKS; itask<NTRDTASKS; itask++){
     if(!TSTBIT(fSteerTask, itask)) continue;
-    new(ctask) TClass(fgkTRDtaskClassName[itask]);
-    task = (AliAnalysisTask*)ctask->New();
-    if(files) mergeProd(Form("TRD.Calib%s.root", task->GetName()), files);
-
-    if(task->IsA()->InheritsFrom("AliTRDrecoTask")) calibrateTRD(task, itask);
+    switch(itask){
+    case kPIDRefMaker:
+      calibrateTRD(itask, "AliTRDpidRefMakerLQ", "PIDrefMaker");
+      //calibrateTRD(itask, "AliTRDpidRefMakerNN", "PIDrefMaker");
+      break;
+    default:
+      calibrateTRD(itask);
+      break;
+    }
   }
   delete ctask;
   delete c;
@@ -118,17 +125,33 @@ void makeCalibResults(Char_t *opt, const Char_t *files=0x0, Bool_t kGRID=kFALSE)
 
 
 //______________________________________________________
-void calibrateTRD(TNamed *otask, Int_t itask)
+void calibrateTRD(Int_t itask, Char_t const* ntask, Char_t const* nfile)
 {
-  AliTRDrecoTask *task = dynamic_cast<AliTRDrecoTask*>(otask);
+  if(!ntask) ntask=fgkTRDtaskClassName[itask];
+  new(ctask) TClass(ntask);
+  if(!ctask){
+    Error("makeCalibResults.C", Form("Asking for wrong class name [%s].", ntask));
+    return;
+  }
+  AliTRDrecoTask *task = static_cast<AliTRDrecoTask*>(ctask->New());
+  if(!task){
+    Error("makeCalibResults.C", Form("Class name [%s] does not inherit from AliTRDrecoTask.", ntask));
+    return;
+  }
+  if(!nfile) nfile=task->GetName();
+  if(fFiles) mergeProd(Form("TRD.Calib%s.root", nfile), fFiles);
   task->SetDebugLevel(0);
- 
-  AliLog::SetClassDebugLevel(fgkTRDtaskClassName[itask], 3); 
-  task->SetMCdata(mc);
-  task->SetFriends(friends);
+  task->SetMCdata(fMC);
+  task->SetFriends(fFriends);
+  AliLog::SetClassDebugLevel(ntask, 3); 
 
+  if(!task->Load(nfile)){
+    Error("makeCalibResults.C", Form("Loading data container for task[%s] failed.", ntask));
+    delete task;
+    return;
+  }
   if(!task->PostProcess()){
-    Error("makeCalibResults.C", Form("Processing data container for task %s failed.", task->GetName()));
+    Error("makeCalibResults.C", Form("Processing data container for task[%s] failed.", ntask));
     delete task;
     return;
   }
