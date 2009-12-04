@@ -6,6 +6,7 @@
 
 // $Id$
 
+/// \ingroup base
 /// 
 /// Definition of enums needed by the MUON QA data makers and checkers (both
 /// tracker and trigger)
