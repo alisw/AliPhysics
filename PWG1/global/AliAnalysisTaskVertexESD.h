@@ -35,12 +35,14 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  void           SetCheckEventType(Bool_t check=kTRUE) {fCheckEventType=check;}
   Bool_t         GetReadMC() const { return fReadMC; }
-  void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; }
+  void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; if(flag) fCheckEventType=kFALSE;}
   void           SetRerecoVertexTPC(Bool_t flag=kTRUE) { fRecoVtxTPC=flag; }
   void           SetRerecoVertexITSTPC(Bool_t flag=kTRUE) { fRecoVtxITSTPC=flag; }
   
  protected:
+  Bool_t       fCheckEventType; // read only events of type 7
   Bool_t       fReadMC;         // read Monte Carlo
   Bool_t       fRecoVtxTPC;     // reco TPC vertex on the flight
   Bool_t       fRecoVtxITSTPC;  // reco ITS+TPC vertex on the flight
@@ -56,7 +58,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   AliESDVertex* ReconstructPrimaryVertexTPC() const;
   AliESDVertex* ReconstructPrimaryVertexITSTPC() const;
   
-  ClassDef(AliAnalysisTaskVertexESD,4); // primary vertex analysis
+  ClassDef(AliAnalysisTaskVertexESD,5); // primary vertex analysis
 };
 
 #endif

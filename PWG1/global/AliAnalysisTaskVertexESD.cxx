@@ -62,6 +62,7 @@ ClassImp(AliAnalysisTaskVertexESD)
 //________________________________________________________________________
 AliAnalysisTaskVertexESD::AliAnalysisTaskVertexESD(const char *name) : 
 AliAnalysisTask(name, "VertexESDTask"), 
+fCheckEventType(kTRUE),
 fReadMC(kFALSE),
 fRecoVtxTPC(kFALSE),
 fRecoVtxITSTPC(kFALSE),
@@ -147,7 +148,7 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
     return;
   }
 
-  if(!fReadMC && (fESD->GetEventType())!=7) return; 
+  if(fCheckEventType && (fESD->GetEventType())!=7) return; 
 
 
   TArrayF mcVertex(3);
