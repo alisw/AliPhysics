@@ -216,9 +216,9 @@ void HM_PHYSICS_V0001(
 
   // /////////////////////////////////////////////////////////////////////////////////////////	
   // configuration of BarrelMultiplicityTrigger instances
-  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelMultiplicityTrigger", "-mintracks 10");
-  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelHighMultiplicity", "-mintracks 100");
-  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelPt_v01", "-mintracks 1 -minpt 0.5");
-  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelPt_v02", "-mintracks 1 -minpt 1.0");
-  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelPt_v03", "-mintracks 1 -minpt 5.0");
+  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelMultiplicityTrigger", "-mintracks 10", cdbPath, firstRun, lastRun);
+  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelHighMultiplicity", "-mintracks 100"  , cdbPath, firstRun, lastRun);
+  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelPt_v01", "-mintracks 1 -minpt 0.5"   , cdbPath, firstRun, lastRun);
+  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelPt_v02", "-mintracks 1 -minpt 1.0"   , cdbPath, firstRun, lastRun);
+  makeComponentConfigurationObject("HLT/ConfigHLT/BarrelPt_v03", "-mintracks 1 -minpt 5.0"   , cdbPath, firstRun, lastRun);
 }
