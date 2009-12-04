@@ -356,7 +356,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhAsym->SetYTitle("Asymmetry");
 	outputContainer->Add(fhAsym);	
 	
-	fhNCellsPerCluster  = new TH2F ("hNCellsPerCluster","# cells per cluster vs cluster energy", nptbins,ptmin,ptmax, 100,0,1000); 
+	fhNCellsPerCluster  = new TH2F ("hNCellsPerCluster","# cells per cluster vs cluster energy", nptbins,ptmin,ptmax, 200,0,200); 
 	fhNCellsPerCluster->SetXTitle("E (GeV)");
 	fhNCellsPerCluster->SetYTitle("n cells");
 	outputContainer->Add(fhNCellsPerCluster);
@@ -370,8 +370,8 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhNCells->SetXTitle("n cells");
 	outputContainer->Add(fhNCells);
     
-	fhAmplitude  = new TH1F ("hAmplitude","Amplitude", 100,0,1000); 
-	fhAmplitude->SetXTitle("Amplitude ");
+	fhAmplitude  = new TH1F ("hAmplitude","Amplitude", 500,0,100); 
+	fhAmplitude->SetXTitle("Amplitude (GeV)");
 	outputContainer->Add(fhAmplitude);
 	
 	if(fCorrelateCalos){
@@ -1949,7 +1949,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 	c9->cd(4) ; 
 	if(fhAmplitude->GetEntries() > 0) gPad->SetLogy();
-	//gPad->SetLogx();
+	gPad->SetLogx();
 	fhAmplitude->SetLineColor(4);
 	fhAmplitude->Draw();
 	

@@ -332,7 +332,7 @@ void ReadHistograms(TString name, Bool_t isDataMC, Bool_t  fCorrelateCalos)
 
 
 //__________________________________________________________________
-void  DrawCaloQA(TString fCalorimeter = "PHOS", Bool_t isDataMC = kFALSE) 
+void  DrawCaloQA(TString fCalorimeter = "EMCAL", Bool_t isDataMC = kFALSE) 
 {
 	//Macro for replotting Calorimeter QA histograms
 	Bool_t fCorrelateCalos = kFALSE;
@@ -644,25 +644,26 @@ void  DrawCaloQA(TString fCalorimeter = "PHOS", Bool_t isDataMC = kFALSE)
 		
 		c5->cd(2) ; 
 		binmin = 0;
-		binmax =  (Int_t) (5-emin)*nebins/emax;
+		binmax =  -1;//(Int_t) (5-emin)*nebins/emax;
 		TH1D *pyim5 = fhIM->ProjectionY("pyim5",binmin,binmax);
-		pyim5->SetTitle("E_{pair} < 5 GeV");
+		//pyim5->SetTitle("E_{pair} < 5 GeV");
+		pyim5->SetTitle("All pairs");
 		pyim5->SetLineColor(4);
 		pyim5->Draw();
 		
 		c5->cd(3) ; 
-		binmin =  (Int_t) (5-emin)*nebins/emax;
-		binmax =  (Int_t) (10-emin)*nebins/emax;
+		binmin =  0;//(Int_t) (5-emin)*nebins/emax;
+		binmax = (Int_t) (1-emin)*nebins/emax; ;//(Int_t) (10-emin)*nebins/emax;
 		TH1D *pyim510 = fhIM->ProjectionY("pyim5_10",binmin,binmax);
-		pyim510->SetTitle("5 < E_{pair} < 10 GeV");
+		pyim510->SetTitle("0 < E_{pair} < 1 GeV");
 		pyim510->SetLineColor(4);
 		pyim510->Draw();
 		
 		c5->cd(4) ;
-		binmin =  (Int_t) (10-emin)*nebins/emax;
-		binmax = -1;
+		binmin =  (Int_t) (1-emin)*nebins/emax;
+		binmax =(Int_t) (2-emin)*nebins/emax; ;//(Int_t) (10-emin)*nebins/emax;
 		TH1D *pyim10 = fhIM->ProjectionY("pyim10",binmin,binmax);
-		pyim10->SetTitle("E_{pair} > 10 GeV");
+		pyim10->SetTitle("1 < E_{pair} < 2 GeV");
 		pyim10->SetLineColor(4);
 		pyim10->Draw();
 		
