@@ -4,6 +4,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliTenderSupplyTRD+;
+
 #pragma link C++ class AliAnaFwdDetsQA+;
 #pragma link C++ class AliAnalysisTaskVtXY+;
 #pragma link C++ class AliESDresolParams+;
@@ -72,9 +74,11 @@
 #pragma link C++ class  AliTRDclusterInfo+;
 #pragma link C++ class  AliTRDv0Info+;
 #pragma link C++ class  AliTRDtrackInfo+;
-#pragma link C++ class  AliTRDeventInfo+;
 #pragma link C++ class  AliTRDtrackInfo::AliESDinfo+;
 #pragma link C++ class  AliTRDtrackInfo::AliMCinfo+;
+#pragma link C++ class  AliTRDeventInfo+;
+#pragma link C++ class  AliTRDpidInfo+;
+#pragma link C++ class  AliTRDpidInfo::AliTRDpidData+;
 #pragma link C++ class  AliTRDcheckESD+;
 #pragma link C++ class  AliTRDinfoGen+;
 #pragma link C++ class  AliTRDrecoTask+;

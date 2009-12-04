@@ -36,7 +36,7 @@ ClassImp(AliTRDpidRefMaker::AliTRDpidRefDataArray)
 //________________________________________________________________________
 AliTRDpidRefMaker::AliTRDpidRefDataArray::AliTRDpidRefDataArray() :
   fNtracklets(0)
-  ,fData(0x0)
+  ,fData(NULL)
 {
   // Constructor of data array
   fData = new AliTRDpidRefData[AliTRDgeometry::kNlayer];
@@ -74,10 +74,11 @@ void AliTRDpidRefMaker::AliTRDpidRefDataArray::Reset()
 //________________________________________________________________________
 AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title) 
   :AliTRDrecoTask(name, title)
-  ,fReconstructor(0x0)
-  ,fV0s(0x0)
-  ,fData(0x0)
-  ,fPIDdataArray(0x0)
+  ,fReconstructor(NULL)
+  ,fV0s(NULL)
+  ,fData(NULL)
+  ,fInfo(NULL)
+  ,fPIDdataArray(NULL)
   ,fRefPID(kMC)
   ,fRefP(kMC)
   ,fPIDbin(0xff)
@@ -95,6 +96,7 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
   memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
 
   DefineInput(1, TObjArray::Class());
+  DefineInput(2, TObjArray::Class());
   DefineOutput(1, TTree::Class());
 }
 
@@ -127,8 +129,9 @@ Float_t* AliTRDpidRefMaker::CookdEdx(AliTRDseedV1 *trklt)
 void AliTRDpidRefMaker::ConnectInputData(Option_t *opt)
 {
   AliTRDrecoTask::ConnectInputData(opt);
-  fV0s = dynamic_cast<TObjArray*>(GetInputData(1));
-}
+  fV0s  = dynamic_cast<TObjArray*>(GetInputData(1));
+  fInfo = dynamic_cast<TObjArray*>(GetInputData(2));
+} 
 
 //________________________________________________________________________
 void AliTRDpidRefMaker::CreateOutputObjects()
@@ -161,10 +164,10 @@ void AliTRDpidRefMaker::Exec(Option_t *)
   // Main loop
   // Called for each event
 
-  AliTRDtrackInfo     *track = 0x0;
-  AliTRDtrackV1    *trackTRD = 0x0;
-  AliTrackReference     *ref = 0x0;
-  const AliTRDtrackInfo::AliESDinfo *infoESD = 0x0;
+  AliTRDtrackInfo     *track = NULL;
+  AliTRDtrackV1    *trackTRD = NULL;
+  AliTrackReference     *ref = NULL;
+  const AliTRDtrackInfo::AliESDinfo *infoESD = NULL;
   for(Int_t itrk=0; itrk<fTracks->GetEntriesFast(); itrk++){
     track = (AliTRDtrackInfo*)fTracks->UncheckedAt(itrk);
     if(!track->HasESDtrack()) continue;
@@ -192,7 +195,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
       // fill P & dE/dx information
       if(HasFriends()){ // from TRD track
         if(!trackTRD) continue;
-        AliTRDseedV1 *trackletTRD(0x0);
+        AliTRDseedV1 *trackletTRD(NULL);
         trackTRD -> SetReconstructor(fReconstructor);
         if(!(trackletTRD = trackTRD -> GetTracklet(ily))) continue;
         if(!CheckQuality(trackletTRD)) continue;

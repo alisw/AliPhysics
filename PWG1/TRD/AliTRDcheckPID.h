@@ -49,6 +49,7 @@ public:
   
   virtual void    CreateOutputObjects();
   virtual Bool_t  GetRefFigure(Int_t ifig);
+  virtual void    Exec(Option_t *opt);
   virtual Bool_t  PostProcess();
 
   TH1 *PlotLQ(const AliTRDtrackV1 *track = 0x0);
@@ -84,6 +85,7 @@ private:
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
   AliTRDpidUtil       *fUtil;              //! utility class for PID calculations
   TObjArray           *fGraph;             //! array of graphs filled in PostProcess
+  TObjArray           *fPID;               //! array of PID info/track for calibration
   TObjArray           *fEfficiency[AliPID::kSPECIES];      //! array of histograms with efficiency
   TAxis               *fMomentumAxis;      //! helper mementum binning
   Int_t                fMinNTracklets;     // minimum number of required Tracklets (for systematic studies)
