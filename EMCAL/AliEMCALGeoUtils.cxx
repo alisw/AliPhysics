@@ -600,12 +600,19 @@ Bool_t AliEMCALGeoUtils::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi, ieta); 
  
   xr = fCentersOfCellsXDir.At(ieta);
-  zr = fCentersOfCellsEtaDir.At(ieta);
-
-  if(nSupMod<10) {
-    yr = fCentersOfCellsPhiDir.At(iphi);
+  zr = fCentersOfCellsEtaDir.At(ieta); 
+	
+  Int_t iphi2 = iphi;
+	
+  if(nSupMod<10) { 
+		if(nSupMod%2 != 0) 
+			iphi2 = (fCentersOfCellsPhiDir.GetSize()-1)-iphi;// 23-iphi, revert the ordering on C side in order to keep convention.
+		yr = fCentersOfCellsPhiDir.At(iphi2);
+	  
   } else {
-    yr = fCentersOfCellsPhiDir.At(iphi + kphiIndexShift);
+		if(nSupMod%2 != 0) 
+			iphi2 = (fCentersOfCellsPhiDir.GetSize()/2-1)-iphi;// 11-iphi, revert the ordering on C side in order to keep convention.
+		yr = fCentersOfCellsPhiDir.At(iphi2 + kphiIndexShift);
   }
   AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
 
