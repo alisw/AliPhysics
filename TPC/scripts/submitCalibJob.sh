@@ -7,7 +7,7 @@
 
 fstart=$1
 fend=$2
-cdbrun=$4
+cdbrun=$(echo $4 | sed 's|^0*||')
 run=$4
 echo $1   $2  $3 $4
 
