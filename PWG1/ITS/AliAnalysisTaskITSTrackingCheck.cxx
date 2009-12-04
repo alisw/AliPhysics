@@ -64,6 +64,7 @@ AliAnalysisTask(name, "ITSTrackingCheckTask"),
 fReadMC(kFALSE),
 fReadRPLabels(kFALSE),
 fFillNtuples(kFALSE),
+fUseITSSAforNtuples(kFALSE),
 fESD(0), 
 fESDfriend(0),
 fOutput(0), 
@@ -98,14 +99,24 @@ fHistClusterMapITSSAokoutinzbadInAcc(0),
 fHistClusterMapModuleITSSAokInAcc(0),
 fHistClusterMapModuleITSSAbadInAcc(0),
 fHistClusterMapModuleITSSAnoclsInAcc(0),
-fHistPhiTPC(0),
+fHistPhiTPCInAcc(0),
 fHistPtTPC(0),
+fHistPtTPCInAcc(0),
 fHistPtITSMI2(0),
 fHistPtITSMI3(0),
 fHistPtITSMI4(0),
 fHistPtITSMI5(0),
 fHistPtITSMI6(0),
 fHistPtITSMISPD(0),
+fHistPtITSMI2InAcc(0),
+fHistPtITSMI3InAcc(0),
+fHistPtITSMI4InAcc(0),
+fHistPtITSMI5InAcc(0),
+fHistPtITSMI6InAcc(0),
+fHistPtITSMISPDInAcc(0),
+fHistPtITSMIokbadoutinz6(0),
+fHistPtITSMIokbadoutinz6InAcc(0),
+fHistPhiITSMIokbadoutinz6InAcc(0),
 fNtupleESDTracks(0),
 fNtupleITSAlignExtra(0),
 fNtupleITSAlignSPDTracklets(0)
@@ -169,6 +180,9 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
 {
   // Create histograms
   // Called once
+
+  Int_t nPtBins=18;
+  Float_t xPtBins[19]={0,0.2,0.4,0.6,0.8,1.0,1.5,2.,2.5,3,4,5,6,8,10,15,20,25,30};
 
   for(Int_t i=0; i<10; i++) fCountsPerPtBin[i]=0;
 
@@ -328,47 +342,95 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
   fHistClusterMapITSSAnocls->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSSAnocls);
   
-  fHistPhiTPC = new TH1F("fHistPhiTPC","Azimuthal distribution of TPC tracks; #phi; N tracks",100, -3.1415, 3.1415);
-  fHistPhiTPC->Sumw2();
-  fHistPhiTPC->SetMinimum(0);
-  fOutput->Add(fHistPhiTPC);
+  fHistPhiTPCInAcc = new TH1F("fHistPhiTPCInAcc","Azimuthal distribution of TPC tracks; #phi; N tracks",100, 0, 2.*3.1415);
+  fHistPhiTPCInAcc->Sumw2();
+  fHistPhiTPCInAcc->SetMinimum(0);
+  fOutput->Add(fHistPhiTPCInAcc);
+
+  fHistPhiITSMIokbadoutinz6InAcc = new TH1F("fHistPhiITSMIokbadoutinz6InAcc","Azimuthal distribution of ITSMI tracks with 6 layers OK; #phi; N tracks",100,0,2.*3.1415);
+  fHistPhiITSMIokbadoutinz6InAcc->Sumw2();
+  fHistPhiITSMIokbadoutinz6InAcc->SetMinimum(0);
+  fOutput->Add(fHistPhiITSMIokbadoutinz6InAcc);
   
-  fHistPtTPC = new TH1F("fHistPtTPC","pt distribution of TPC tracks; p_{t} [GeV/c]; N tracks",80, 0, 40);
+  fHistPtTPC = new TH1F("fHistPtTPC","pt distribution of TPC tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtTPC->Sumw2();
   fHistPtTPC->SetMinimum(0);
   fOutput->Add(fHistPtTPC);
   
-  fHistPtITSMI6 = new TH1F("fHistPtITSMI6","pt distribution of ITSMI6 tracks; p_{t} [GeV/c]; N tracks",80, 0, 40);
+  fHistPtITSMI6 = new TH1F("fHistPtITSMI6","pt distribution of ITSMI6 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSMI6->Sumw2();
   fHistPtITSMI6->SetMinimum(0);
   fOutput->Add(fHistPtITSMI6);
   
-  fHistPtITSMI5 = new TH1F("fHistPtITSMI5","pt distribution of ITSMI5 tracks; p_{t} [GeV/c]; N tracks",80, 0, 40);
+  fHistPtITSMI5 = new TH1F("fHistPtITSMI5","pt distribution of ITSMI5 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSMI5->Sumw2();
   fHistPtITSMI5->SetMinimum(0);
   fOutput->Add(fHistPtITSMI5);
   
-  fHistPtITSMI4 = new TH1F("fHistPtITSMI4","pt distribution of ITSMI4 tracks; p_{t} [GeV/c]; N tracks",80, 0, 40);
+  fHistPtITSMI4 = new TH1F("fHistPtITSMI4","pt distribution of ITSMI4 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSMI4->Sumw2();
   fHistPtITSMI4->SetMinimum(0);
   fOutput->Add(fHistPtITSMI4);
   
-  fHistPtITSMI3 = new TH1F("fHistPtITSMI3","pt distribution of ITSMI3 tracks; p_{t} [GeV/c]; N tracks",80, 0, 40);
+  fHistPtITSMI3 = new TH1F("fHistPtITSMI3","pt distribution of ITSMI3 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSMI3->Sumw2();
   fHistPtITSMI3->SetMinimum(0);
   fOutput->Add(fHistPtITSMI3);
   
-  fHistPtITSMI2 = new TH1F("fHistPtITSMI2","pt distribution of ITSMI2 tracks; p_{t} [GeV/c]; N tracks",80, 0, 40);
+  fHistPtITSMI2 = new TH1F("fHistPtITSMI2","pt distribution of ITSMI2 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSMI2->Sumw2();
   fHistPtITSMI2->SetMinimum(0);
   fOutput->Add(fHistPtITSMI2);
   
-  fHistPtITSMISPD = new TH1F("fHistPtITSMISPD","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",80, 0, 40);
+  fHistPtITSMISPD = new TH1F("fHistPtITSMISPD","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSMISPD->Sumw2();
   fHistPtITSMISPD->SetMinimum(0);
   fOutput->Add(fHistPtITSMISPD);
-  
 
+  fHistPtTPCInAcc = new TH1F("fHistPtTPCInAcc","pt distribution of TPC tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtTPCInAcc->Sumw2();
+  fHistPtTPCInAcc->SetMinimum(0);
+  fOutput->Add(fHistPtTPCInAcc);
+  
+  fHistPtITSMI6InAcc = new TH1F("fHistPtITSMI6InAcc","pt distribution of ITSMI6 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI6InAcc->Sumw2();
+  fHistPtITSMI6InAcc->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI6InAcc);
+  
+  fHistPtITSMI5InAcc = new TH1F("fHistPtITSMI5InAcc","pt distribution of ITSMI5 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI5InAcc->Sumw2();
+  fHistPtITSMI5InAcc->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI5InAcc);
+  
+  fHistPtITSMI4InAcc = new TH1F("fHistPtITSMI4InAcc","pt distribution of ITSMI4 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI4InAcc->Sumw2();
+  fHistPtITSMI4InAcc->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI4InAcc);
+  
+  fHistPtITSMI3InAcc = new TH1F("fHistPtITSMI3InAcc","pt distribution of ITSMI3 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI3InAcc->Sumw2();
+  fHistPtITSMI3InAcc->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI3InAcc);
+  
+  fHistPtITSMI2InAcc = new TH1F("fHistPtITSMI2InAcc","pt distribution of ITSMI2 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI2InAcc->Sumw2();
+  fHistPtITSMI2InAcc->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI2InAcc);
+  
+  fHistPtITSMISPDInAcc = new TH1F("fHistPtITSMISPDInAcc","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMISPDInAcc->Sumw2();
+  fHistPtITSMISPDInAcc->SetMinimum(0);
+  fOutput->Add(fHistPtITSMISPDInAcc);
+  
+  fHistPtITSMIokbadoutinz6 = new TH1F("fHistPtITSMIokbadoutinz6","pt distribution of ITSMI tracks with 6 layers OK; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMIokbadoutinz6->Sumw2();
+  fHistPtITSMIokbadoutinz6->SetMinimum(0);
+  fOutput->Add(fHistPtITSMIokbadoutinz6);
+
+  fHistPtITSMIokbadoutinz6InAcc = new TH1F("fHistPtITSMIokbadoutinz6InAcc","pt distribution of ITSMI tracks with 6 layers OK; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMIokbadoutinz6InAcc->Sumw2();
+  fHistPtITSMIokbadoutinz6InAcc->SetMinimum(0);
+  fOutput->Add(fHistPtITSMIokbadoutinz6InAcc);
 
   // ntuples
   //
@@ -492,7 +554,9 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
   PostData(0, fOutput);
 
   Int_t idet,status; Float_t xloc,zloc;
-  
+  Double_t rSPDouter=7.6,rSDDouter=23.9,rSSDouter=43.1;  
+  Double_t zSPDouter=14.1,zSDDouter=29.7,zSSDouter=48.9;  
+
   // loop on tracks
   for(Int_t itr=0; itr<ntracks; itr++) {
     AliESDtrack *track = fESD->GetTrack(itr);
@@ -500,17 +564,20 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
     // remove kink daughters
     if(track->GetKinkIndex(0)>0) continue;
 
+    // remove tracks not reco in ITS or TPC
+    if (!(track->GetStatus() & AliESDtrack::kITSin) &&
+	!(track->GetStatus() & AliESDtrack::kTPCin)) continue;
 
-    Bool_t itsrefit=kFALSE,tpcin=kFALSE,itsfindableAcc=kFALSE;
+
+    Bool_t itsrefit=kFALSE,tpcin=kFALSE,itsfindable=kFALSE,itsfindableAcc=kFALSE;
     if ((track->GetStatus() & AliESDtrack::kITSrefit)) itsrefit=kTRUE;
     if ((track->GetStatus() & AliESDtrack::kTPCin)) tpcin=kTRUE;
 
 
-    //if(TMath::Abs(track->GetD(0,0,0))>1) continue;
 
     Int_t trkLabel = TMath::Abs(track->GetLabel());
     Int_t nclsITS = track->GetNcls(0);
-
+    Int_t nclsokbadoutinzITS = 0;
     Bool_t outInZ=kFALSE;
 
     for(Int_t layer=0; layer<6; layer++) {
@@ -525,7 +592,10 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
 	if(status==4) fHistClusterMapITSMIoutinz->Fill(layer);
 	if(status==5) fHistClusterMapITSMInocls->Fill(layer);
 	if(status==6) fHistClusterMapITSMInorefit->Fill(layer);
-	if(status==1 || status==2 || status==4) fHistClusterMapITSMIokoutinzbad->Fill(layer);
+	if(status==1 || status==2 || status==4) {
+	  fHistClusterMapITSMIokoutinzbad->Fill(layer);
+	  nclsokbadoutinzITS++;
+	}
       } else {
 	if(status==1) fHistClusterMapITSSAok->Fill(layer);
 	if(status==2) fHistClusterMapITSSAbad->Fill(layer);
@@ -552,14 +622,26 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       }
     }  
 
-    // TPC track in ITS acceptance
-    if(tpcin && TMath::Abs(track->Eta())<0.9 && track->GetNcls(1)>50) {
-      itsfindableAcc=kTRUE;
+    // TPC track findable in ITS
+    if(tpcin && track->GetNcls(1)>=50 &&
+       TMath::Abs(track->GetD(0,0,fESD->GetMagneticField()))<2.) {
+      itsfindable=kTRUE;
+      Double_t zAtSSDouter=100,zAtSDDouter=100,zAtSPDouter=100;
+      track->GetZAt(rSSDouter,fESD->GetMagneticField(),zAtSSDouter);
+      track->GetZAt(rSDDouter,fESD->GetMagneticField(),zAtSDDouter);
+      track->GetZAt(rSPDouter,fESD->GetMagneticField(),zAtSPDouter);
       fHistPtTPC->Fill(track->Pt());  
-      fHistPhiTPC->Fill(track->Phi());  
+      if(TMath::Abs(track->Eta())<0.9 && 
+	 TMath::Abs(zAtSSDouter)<zSSDouter &&
+	 TMath::Abs(zAtSDDouter)<zSDDouter &&
+	 TMath::Abs(zAtSPDouter)<zSPDouter) {
+	itsfindableAcc=kTRUE;
+	fHistPtTPCInAcc->Fill(track->Pt());  
+	fHistPhiTPCInAcc->Fill(track->Phi());  
+      }
     }
   
-    if(itsfindableAcc) {
+    if(itsfindable) {
       if(nclsITS==6) fHistPtITSMI6->Fill(track->Pt());
       if(nclsITS==5) fHistPtITSMI5->Fill(track->Pt());
       if(nclsITS==4) fHistPtITSMI4->Fill(track->Pt());
@@ -567,6 +649,18 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       if(nclsITS==2) fHistPtITSMI2->Fill(track->Pt());
       if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))
 	fHistPtITSMISPD->Fill(track->Pt());
+      if(nclsokbadoutinzITS==6) fHistPtITSMIokbadoutinz6->Fill(track->Pt());
+    }
+    if(itsfindableAcc) {
+      if(nclsITS==6) fHistPtITSMI6InAcc->Fill(track->Pt());
+      if(nclsITS==5) fHistPtITSMI5InAcc->Fill(track->Pt());
+      if(nclsITS==4) fHistPtITSMI4InAcc->Fill(track->Pt());
+      if(nclsITS==3) fHistPtITSMI3InAcc->Fill(track->Pt());
+      if(nclsITS==2) fHistPtITSMI2InAcc->Fill(track->Pt());
+      if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))
+	fHistPtITSMISPDInAcc->Fill(track->Pt());
+      if(nclsokbadoutinzITS==6) fHistPtITSMIokbadoutinz6InAcc->Fill(track->Pt());
+      if(nclsokbadoutinzITS==6) fHistPhiITSMIokbadoutinz6InAcc->Fill(track->Phi());  
     }
 
 
@@ -577,6 +671,7 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       if(!outInZ) fHistNclsITSSAInAcc->Fill(nclsITS);
     }
 
+    if(tpcin && fUseITSSAforNtuples) continue;
 
     Int_t iITSflag=0; //ITSflag takes the value 0 if the track has no cluster assigned in the SPDs, 1 (2) if one cluster is assigned in SPD1(2), 3 if two clusters are present. Then the same adding 10,20 or 30 for SDD and 100,200 or 300 for SSD
 
@@ -641,7 +736,6 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
     if(!fFillNtuples) continue;
     if(!fESDfriend) continue;
 
-
     const AliTrackPointArray *array = track->GetTrackPointArray();
     if(!array) continue;
     AliTrackPoint point;
@@ -659,11 +753,11 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
 	layerId = 1;
       } else if(r>8 && r<18) {
 	layerId = 2;
-      } else if(r>18 && r<25) {
+      } else if(r>18 && r<30) {
 	layerId = 3;
-      } else if(r>25 && r<38) {
+      } else if(r>30 && r<40) {
 	layerId = 4;
-      } else if(r>38 && r<50) {
+      } else if(r>40 && r<50) {
 	layerId = 5;
       } else {
 	layerId=100;
@@ -699,14 +793,14 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       Float_t dz[2];
       // distance to primary SPD (only if 3D and high multiplicity)
       if(spdv->GetNContributors()>10) { 
-	//tracklet.GetDZ(spdv->GetXv(),spdv->GetYv(),spdv->GetZv(),0,dz);
-	tracklet.GetDZ(-0.07,0.25,spdv->GetZv(),0,dz);
+	tracklet.GetDZ(spdv->GetXv(),spdv->GetYv(),spdv->GetZv(),0,dz);
+	//tracklet.GetDZ(-0.07,0.25,spdv->GetZv(),0,dz);
 	fNtupleITSAlignSPDTracklets->Fill(phi,theta,0.5*(pointSPD1.GetZ()+pointSPD2.GetZ()),dz[0],dz[1]);
       }
     }
 
     // distance to extra
-    if(extra && spdv->GetNContributors()>4) {
+    if(extra && spdv->GetNContributors()>4 && indexAssociated[layerExtra]>-1) {
       AliTrackPoint pointExtra,pointAssociated;
       array->GetPoint(pointAssociated,indexAssociated[layerExtra]);
       array->GetPoint(pointExtra,indexExtra);
@@ -718,7 +812,7 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       dzExtra[0] = (phiExtra-phiAssociated)*0.5*(rExtra+rAssociated);
       dzExtra[1] = pointExtra.GetZ()-pointAssociated.GetZ()-(rExtra-rAssociated)*(pointAssociated.GetZ()-spdv->GetZv())/rAssociated;
       Float_t xlocExtra=-100.,zlocExtra=-100.;
-      fNtupleITSAlignExtra->Fill(layerExtra,pointExtra.GetX(),pointExtra.GetY(),pointExtra.GetZ(),xlocExtra,zlocExtra,dzExtra[0],dzExtra[1],nclsITS);  
+      fNtupleITSAlignExtra->Fill(layerExtra,pointExtra.GetX(),pointExtra.GetY(),pointExtra.GetZ(),dzExtra[0],dzExtra[1],xlocExtra,zlocExtra,nclsITS);  
     }
     
 
