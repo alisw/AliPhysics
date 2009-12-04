@@ -15,6 +15,15 @@
 #include <TList.h>
 #include <TROOT.h>
 
+#include <TEveManager.h>
+#include <TGFileDialog.h>
+#include <TGMenu.h>
+
+#include <TSystem.h>
+#include <TPRegexp.h>
+#include <RVersion.h>
+
+
 //______________________________________________________________________________
 //
 // Contains a list of AliEveMacros.
@@ -53,7 +62,7 @@ void AliEveMacroExecutor::AddMacro(AliEveMacro* mac)
   const TString mname = mac->GetMacro();
   if ( ! mname.IsNull() && TEveUtil::CheckMacro(mname) == kFALSE)
   {
-    TEveUtil::LoadMacro(mname);
+    TEveUtil::LoadMacro(mname);  
   }
   fMacros->Add(mac);
 }
@@ -71,6 +80,13 @@ AliEveMacro* AliEveMacroExecutor::FindMacro(const TString& func)
       return mac;
   }
   return 0;
+}
+
+/******************************************************************************/
+
+void AliEveMacroExecutor::RemoveMacros()
+{
+  fMacros->Clear();
 }
 
 /******************************************************************************/
@@ -154,4 +170,74 @@ void AliEveMacroExecutor::ExecMacros()
 	    mac->GetMacro().Data(), cmd.Data(), exc.Data());
     }
   }
+}
+
+/******************************************************************************/
+
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+namespace
+{
+const char *gMacroSaveAsTypes[] = {"CINT Macro", "*.C",
+                                   0, 0};
+}
+
+void AliEveMacroExecutor::SaveAddedMacros()
+{
+
+  TGFileInfo fi;
+  fi.fFileTypes   = gMacroSaveAsTypes;
+  fi.fIniDir      = StrDup(""); // current directory
+  fi.fFileTypeIdx = 0;
+  fi.fOverwrite   = kTRUE;
+  new TGFileDialog(gClient->GetDefaultRoot(), gEve->GetMainWindow(), kFDSave, &fi);
+  if (!fi.fFilename) return;
+
+  TPMERegexp filere(".*/([^/]+$)");
+  if (filere.Match(fi.fFilename) != 2)
+  {
+    Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+    return;
+  }
+  printf("Saving...\n");
+
+  TString file(filere[1]);
+  TString file1;
+  if (!file.EndsWith(".C"))
+  file1 = file + ".C";
+  gSystem->ChangeDirectory(fi.fIniDir);
+  ofstream myfile;
+  myfile.open (file1);
+
+  TIter next(fMacros);
+  AliEveMacro* mac;
+
+
+  myfile <<"//Macro generated automatically by AliEveMacroExecutor\n\n";
+
+  myfile <<"void "<<file<<"(){\n\n";
+  myfile <<"  AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();\n";
+  myfile <<"  exec->RemoveMacros();\n";
+  myfile <<"  TEveBrowser *browser = gEve->GetBrowser();\n";
+  myfile <<"  browser->ShowCloseTab(kFALSE);\n";
+      
+  while ((mac = (AliEveMacro*) next()))
+  {
+    myfile <<"  exec->AddMacro(new AliEveMacro("<<mac->GetSources()<<", "<<char(34)<<mac->GetTags()<<char(34)<<", "
+     <<char(34)<<mac->GetMacro()<<char(34)<<", "<<char(34)<<mac->GetFunc()<<char(34)<<", "<<char(34)<<mac->GetArgs()
+     <<char(34)<<", "<<mac->GetActive()<<"));\n\n";
+  }
+
+  myfile <<"  TEveWindowSlot *slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());\n";
+  myfile <<"  slot->StartEmbedding();\n";
+  myfile <<"  AliEveMacroExecutorWindow* exewin = new AliEveMacroExecutorWindow(exec);\n";
+  myfile <<"  slot->StopEmbedding("<<char(34)<<"DataSelection"<<char(34)<<");\n";
+  myfile <<"  exewin->PopulateMacros();\n\n";
+
+  myfile <<"\n}";
+  myfile.close();
+  printf("Saved...\n");
+
 }

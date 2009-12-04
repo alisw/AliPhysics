@@ -217,3 +217,13 @@ void AliEveMultiView::SetCenterRhoZ(Double_t x, Double_t y, Double_t z)
   fRhoZMgr->SetCenter(x, y, z);
 }
 
+void AliEveMultiView::DestroyAllGeometries()
+{
+  // Destroy 3d, r-phi and rho-z geometries.
+
+  fGeomGentle->DestroyElements();
+  fGeomGentleRPhi->DestroyElements();
+  fGeomGentleRhoZ->DestroyElements();
+
+}
+

@@ -67,7 +67,7 @@ void geom_gentle_transparentdark(Bool_t register_as_global=kTRUE)
   TEveElement::List_i k = lvl2->BeginChildren();
 
   TEveGeoShape* lvl3 = (TEveGeoShape*) *k;
-  lvl3->SetRnrSelf(kFALSE);
+  lvl3->SetRnrSelf(kTRUE);
   lvl3->SetMainColor(0);
   lvl3->SetMainTransparency(80);
   TEveElement::List_i l = lvl3->BeginChildren();
@@ -100,16 +100,18 @@ void geom_gentle_transparentdark(Bool_t register_as_global=kTRUE)
 
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
-//  TEveElement::List_i j = lvl1->BeginChildren();
+  TEveElement::List_i j = lvl1->BeginChildren();
 
-  for (TEveElement::List_i j = lvl1->BeginChildren(); j != lvl1->EndChildren(); ++j)
-    {
-      TEveGeoShape* lvl2 = (TEveGeoShape*) *j;
-      lvl2->SetRnrSelf(kTRUE);
-      lvl2->SetMainColor(0);
-      lvl2->SetMainTransparency(80);
+  TEveGeoShape* lvl2 = (TEveGeoShape*) *j;
+  lvl2->SetRnrSelf(kTRUE);
+  lvl2->SetMainColor(0);
+  lvl2->SetMainTransparency(80);
+  j++;
 
-    }
+  TEveGeoShape* lvl2 = (TEveGeoShape*) *j;
+  lvl2->SetRnrSelf(kTRUE);
+  lvl2->SetMainColor(0);
+  lvl2->SetMainTransparency(80);
 
 //PHOS
 
@@ -188,7 +190,6 @@ void geom_gentle_transparentdark(Bool_t register_as_global=kTRUE)
 //TPC
 
   i++;
-  i++;
 
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
@@ -204,6 +205,7 @@ void geom_gentle_transparentdark(Bool_t register_as_global=kTRUE)
 
 //PHOS
 
+  i++;
   i++;
 
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
@@ -276,7 +278,6 @@ void geom_gentle_transparentdark(Bool_t register_as_global=kTRUE)
 //TPC
 
   i++;
-  i++;
 
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
@@ -293,6 +294,7 @@ void geom_gentle_transparentdark(Bool_t register_as_global=kTRUE)
 
 //PHOS
 
+  i++;
   i++;
 
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
@@ -322,9 +324,6 @@ void geom_gentle_transparentdark(Bool_t register_as_global=kTRUE)
       lvl2->SetMainColor(0);
       lvl2->SetMainTransparency(80);
     }
-
-//======================================
-
 
   TEveElement* top = gEve->GetCurrentEvent();
 

@@ -1,4 +1,4 @@
-void geom_gentle_transparent(Bool_t register_as_global=kTRUE)
+void geom_gentle_notransparency(Bool_t register_as_global=kTRUE)
 {
 
   TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
@@ -28,17 +28,17 @@ void geom_gentle_transparent(Bool_t register_as_global=kTRUE)
 
   TEveGeoShape* its1 = (TEveGeoShape*) *k;
   its1->SetRnrSelf(kTRUE);
-  its1->SetMainTransparency(80);
+  its1->SetMainTransparency(5);
   k++;
 
   TEveGeoShape* its2 = (TEveGeoShape*) *k;
   its2->SetRnrSelf(kTRUE);
-  its2->SetMainTransparency(80);
+  its2->SetMainTransparency(5);
   k++;
 
   TEveGeoShape* its3 = (TEveGeoShape*) *k;
   its3->SetRnrSelf(kTRUE);
-  its3->SetMainTransparency(80);
+  its3->SetMainTransparency(5);
 
 //TPC
 
@@ -54,7 +54,7 @@ void geom_gentle_transparent(Bool_t register_as_global=kTRUE)
 
   TEveGeoShape* lvl3 = (TEveGeoShape*) *k;
   lvl3->SetRnrSelf(kTRUE);
-  lvl3->SetMainTransparency(80);
+  lvl3->SetMainTransparency(5);
   TEveElement::List_i l = lvl3->BeginChildren();
 
   TEveGeoShape* lvl4 = (TEveGeoShape*) *l;
@@ -63,17 +63,17 @@ void geom_gentle_transparent(Bool_t register_as_global=kTRUE)
 
   TEveGeoShape* tpc1 = (TEveGeoShape*) *m;
   tpc1->SetRnrSelf(kTRUE);
-  tpc1->SetMainTransparency(80);
+  tpc1->SetMainTransparency(5);
   m++;
 
   TEveGeoShape* tpc2 = (TEveGeoShape*) *m;
   tpc2->SetMainColor(kGray);
-  tpc2->SetMainTransparency(80);
+  tpc2->SetMainTransparency(5);
   m++;
 
   TEveGeoShape* tpc3 = (TEveGeoShape*) *m;
   tpc3->SetRnrSelf(kTRUE);
-  tpc3->SetMainTransparency(80);
+  tpc3->SetMainTransparency(5);
   m++;
 
 //TRD+TOF
@@ -86,12 +86,12 @@ void geom_gentle_transparent(Bool_t register_as_global=kTRUE)
 
   TEveGeoShape* lvl2 = (TEveGeoShape*) *j;
   lvl2->SetRnrSelf(kTRUE);
-  lvl2->SetMainTransparency(80);
+  lvl2->SetMainTransparency(5);
   j++;
 
   TEveGeoShape* lvl2 = (TEveGeoShape*) *j;
   lvl2->SetRnrSelf(kTRUE);
-  lvl2->SetMainTransparency(80);
+  lvl2->SetMainTransparency(5);
   j++;
 
 //PHOS
@@ -105,7 +105,7 @@ void geom_gentle_transparent(Bool_t register_as_global=kTRUE)
     {
       TEveGeoShape* lvl2 = (TEveGeoShape*) *j;
       lvl2->SetRnrSelf(kTRUE);
-      lvl2->SetMainTransparency(80);
+      lvl2->SetMainTransparency(5);
     }
 
 //HMPID
@@ -119,7 +119,7 @@ void geom_gentle_transparent(Bool_t register_as_global=kTRUE)
     {
       TEveGeoShape* lvl2 = (TEveGeoShape*) *j;
       lvl2->SetRnrSelf(kTRUE);
-      lvl2->SetMainTransparency(80);
+      lvl2->SetMainTransparency(5);
     }
 
 

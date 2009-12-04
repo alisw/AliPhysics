@@ -1,4 +1,4 @@
-void VizDB_scan_transparentdark()
+void VizDB_scan_yellow()
 {
 
   TEvePointSet        *ps = 0;
@@ -80,44 +80,44 @@ void VizDB_scan_transparentdark()
 
   ps = new TEvePointSet();
   ps->SetMarkerColor(2);
-  ps->SetMarkerSize(0.4);
+  ps->SetMarkerSize(0.5);
   ps->SetMarkerStyle(2);
   gEve->InsertVizDBEntry("Clusters", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(kRed);
+  ps->SetMarkerColor(kRed+4);
   ps->SetMarkerSize(0.4);
   ps->SetMarkerStyle(8);
   gEve->InsertVizDBEntry("REC Clusters ITS", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(kOrange-3);
+  ps->SetMarkerColor(1);
   ps->SetMarkerSize(0.3);
   ps->SetMarkerStyle(8);
   gEve->InsertVizDBEntry("REC Clusters TPC", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(kYellow);
+  ps->SetMarkerColor(kBlue);
   ps->SetMarkerSize(0.5);
   ps->SetMarkerStyle(8);
   gEve->InsertVizDBEntry("REC Clusters TRD", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(0);
+  ps->SetMarkerColor(kCyan);
   ps->SetMarkerSize(0.9);
   ps->SetMarkerStyle(8);
   gEve->InsertVizDBEntry("REC Clusters TOF", ps);
 
   ps = new TEvePointSet();
   ps->SetMarkerColor(4);
-  ps->SetMarkerSize(0.9);
-  ps->SetMarkerStyle(8);
+  ps->SetMarkerSize(0.2);
+  ps->SetMarkerStyle(2);
   gEve->InsertVizDBEntry("REC Clusters HMPID", ps);
 
   ps = new TEvePointSet();
   ps->SetMarkerColor(4);
   ps->SetMarkerSize(0.5);
-  ps->SetMarkerStyle(8);
+  ps->SetMarkerStyle(2);
   gEve->InsertVizDBEntry("REC Clusters PHOS", ps);
 
   //============================================================================

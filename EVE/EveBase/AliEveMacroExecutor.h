@@ -31,6 +31,10 @@ public:
 
   void ExecMacros();
 
+  void SaveAddedMacros();
+
+  void RemoveMacros();
+
 protected:
   TList*   fMacros;
 

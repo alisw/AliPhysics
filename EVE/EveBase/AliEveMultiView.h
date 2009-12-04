@@ -57,6 +57,8 @@ public:
   void SetCenterRPhi(Double_t x, Double_t y, Double_t z);
   void SetCenterRhoZ(Double_t x, Double_t y, Double_t z);
 
+  void DestroyAllGeometries();
+
   //-------------------------------------------------------------------------
 
   TEveViewer* Get3DView()   { return f3DView; }

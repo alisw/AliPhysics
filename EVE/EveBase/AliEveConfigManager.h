@@ -33,6 +33,8 @@ protected:
 
   TGPopupMenu      *fAliEvePopup; // AliEve menu.
 
+  Bool_t           fLoadCheck; //for Data Selection Save/Load
+
 private:
   AliEveConfigManager();
 

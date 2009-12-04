@@ -12,8 +12,14 @@
 #include <AliEveMultiView.h>
 #include <TEveManager.h>
 #include <TEveBrowser.h>
+#include <TEveWindow.h>
 #include <TGFileDialog.h>
 #include <TGMenu.h>
+
+#include "AliEveEventManager.h"
+#include "AliEveMacroExecutor.h"
+#include "AliEveMacroExecutorWindow.h"
+#include "AliEveMacro.h"
 
 class AliEveMacroExecutor;
 class TEveProjectionManager;
@@ -36,7 +42,7 @@ namespace
 {
  enum EAliEveMenu_e
  {
-   kAEMSave, kAEMLoad, kAEMDefault, kAEMScreen, kAEMProjector, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMTpc
+   kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen
  };
 }
  
@@ -76,14 +82,14 @@ AliEveConfigManager::AliEveConfigManager() :
   // Expected TEveManager is already initialized.
 
   fAliEvePopup = new TGPopupMenu(gClient->GetRoot());
-  fAliEvePopup->AddEntry("&Save", kAEMSave);
-  fAliEvePopup->AddEntry("&Load", kAEMLoad);
-
-  fAliEvePopup->AddSeparator();
 
   fAliEvePopup->AddEntry("&Default", kAEMDefault);
   fAliEvePopup->AddEntry("&Screen", kAEMScreen);
   fAliEvePopup->AddEntry("&Projector", kAEMProjector);
+
+  fAliEvePopup->AddSeparator();
+
+  fAliEvePopup->AddEntry("&Low transparency", kAEMNotransparency);
 
   fAliEvePopup->AddSeparator();
 
@@ -94,12 +100,49 @@ AliEveConfigManager::AliEveConfigManager() :
 
   fAliEvePopup->AddSeparator();
 
-  fAliEvePopup->AddEntry("&TPC", kAEMTpc);
+  fAliEvePopup->AddEntry("&First collision setup", kAEMGreen);
+  fAliEvePopup->AddEntry("&Bright", kAEMBright);
+
+  fAliEvePopup->AddSeparator();
+
+  fAliEvePopup->AddEntry("&TPC Yellow", kAEMYellow);
+  fAliEvePopup->AddEntry("&TPC Blue", kAEMTpc);
+
+  fAliEvePopup->AddSeparator();
+  fAliEvePopup->AddSeparator();
+  fAliEvePopup->AddSeparator();
+
+  fAliEvePopup->AddEntry("&Save all views", kAEMAll);
+  fAliEvePopup->AddEntry("&Save 3D View",   kAEM3d);
+  fAliEvePopup->AddEntry("&Save RPhi View", kAEMRphi);
+  fAliEvePopup->AddEntry("&Save RhoZ View", kAEMRhoz);
+
+  fAliEvePopup->AddSeparator();
+
+  fAliEvePopup->AddEntry("&Save all views HR", kAEMAllhr);
+  fAliEvePopup->AddEntry("&Save 3D View HR",   kAEM3dhr);
+  fAliEvePopup->AddEntry("&Save RPhi View HR", kAEMRphihr);
+  fAliEvePopup->AddEntry("&Save RhoZ View HR", kAEMRhozhr);
+
+  fAliEvePopup->AddSeparator();
+  fAliEvePopup->AddSeparator();
+  fAliEvePopup->AddSeparator();
+
+  fAliEvePopup->AddEntry("&Save Data Selection macros", kAEMSavemacros);
+  fAliEvePopup->AddEntry("&Load Data Selection macros",   kAEMLoadmacros);
+
+  fAliEvePopup->AddSeparator();
+  fAliEvePopup->AddSeparator();
+  fAliEvePopup->AddSeparator();
+
+  fAliEvePopup->AddEntry("&Save VizDB", kAEMSave);
+  fAliEvePopup->AddEntry("&Load VizDB", kAEMOpen);
 
   fAliEvePopup->AddSeparator();
 
   fAliEvePopup->Connect("Activated(Int_t)", "AliEveConfigManager",
                         this, "AliEvePopupHandler(Int_t)");
+  fLoadCheck = kFALSE;
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4)
   TGMenuBar *mBar = gEve->GetBrowser()->GetMenuBar();
@@ -122,10 +165,21 @@ AliEveConfigManager::AliEveConfigManager() :
 
 //==============================================================================
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+
+using namespace std;
+
 namespace
 {
 const char *gMacroSaveAsTypes[] = {"CINT Macro", "*.C",
-                                   0, 0};
+                                   0, 0}; //for saving/loading macros
+
+const char *gPictureSaveAsTypes[] = {"PNG Image", "*.png",
+                                   0, 0}; //for saving pictures
+
 }
 
 void AliEveConfigManager::AliEvePopupHandler(Int_t id)
@@ -136,78 +190,32 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
   switch (id)
   {
-    case kAEMSave:
+
+    case kAEMDefault: //default geometry and VizDB
     {
-      TGFileInfo fi;
-      fi.fFileTypes   = gMacroSaveAsTypes;
-      fi.fIniDir      = StrDup(""); // current directory
-      fi.fFileTypeIdx = 0;
-      fi.fOverwrite   = kTRUE;
-      new TGFileDialog(gClient->GetDefaultRoot(), gEve->GetMainWindow(), kFDSave, &fi);
-      if (!fi.fFilename) return;
+      AliEveMultiView *mv = AliEveMultiView::Instance();
 
-      TPMERegexp filere(".*/([^/]+$");
-      if (filere.Match(fi.fFilename) != 2)
-      {
-        Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
-        return;
-      }
-      printf("Saving...\n");
+      mv->DestroyAllGeometries(); //destroy RPhi and Rhoz geometries before putting new
 
-      TString file(filere[1]);
-      if (!file.EndsWith(".C"))
-        file += ".C";
-      gSystem->ChangeDirectory(fi.fIniDir);
-      gEve->SaveVizDB(file);
+      gEve->LoadVizDB("geom_gentle_default.C", kTRUE, kTRUE); //loading geometry
 
-      printf("Saved\n");
-      break;
+      gEve->LoadVizDB("VizDB_scan.C", kTRUE, kTRUE); //loading VizDB
 
-    }
-
-    case kAEMLoad:
-    {
-
-      printf("Loading...\n");
-
-      gEve->LoadVizDB("VizDB_custom.C", kTRUE, kTRUE);
-
-      printf("Loaded\n");
-      break;
-
-    }
-
-    case kAEMDefault:
-    {
-
-      gEve->GetScenes()->FirstChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RPhi Geometry")->LastChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RhoZ Geometry")->LastChild()->DestroyElements();
-
-      gEve->LoadVizDB("geom_gentle_default.C", kTRUE, kTRUE);
-
-      gEve->LoadVizDB("VizDB_scan.C", kTRUE, kTRUE);
-
-      if(gEve->GetViewers()->UseLightColorSet())
-        gEve->GetViewers()->SwitchColorSet();
+      if(!gEve->GetViewers()->UseLightColorSet())
+        gEve->GetViewers()->SwitchColorSet(); //white background
 
       gEve->FullRedraw3D();   
       
       break;
     }
 
-    case kAEMScreen:
+    case kAEMScreen: //default geometry with black background
     {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
 
-      gEve->GetScenes()->FirstChild()->DestroyElements();
+      mv->DestroyAllGeometries();
 
-      gEve->GetScenes()->FindChild("RPhi Geometry")->LastChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RhoZ Geometry")->LastChild()->DestroyElements();
-
-      gEve->LoadVizDB("geom_gentle.C", kTRUE, kTRUE);
+      gEve->LoadVizDB("geom_gentle_default.C", kTRUE, kTRUE);
 
       gEve->LoadVizDB("VizDB_scan_screen.C", kTRUE, kTRUE);
 
@@ -219,16 +227,13 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
       break;
     }
 
-    case kAEMProjector:
+    case kAEMProjector: //default geometry with white background
     {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
 
-      gEve->GetScenes()->FirstChild()->DestroyElements();
+      mv->DestroyAllGeometries();
 
-      gEve->GetScenes()->FindChild("RPhi Geometry")->LastChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RhoZ Geometry")->LastChild()->DestroyElements();
-
-      gEve->LoadVizDB("geom_gentle.C", kTRUE, kTRUE);
+      gEve->LoadVizDB("geom_gentle_default.C", kTRUE, kTRUE);
 
       gEve->LoadVizDB("VizDB_scan_projector.C", kTRUE, kTRUE);
 
@@ -240,14 +245,30 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
       break;
     }
 
-    case kAEMTransparentDark:
+    case kAEMNotransparency: //default geometry with low transparency (5%)
     {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
 
-      gEve->GetScenes()->FirstChild()->DestroyElements();
+      mv->DestroyAllGeometries();
 
-      gEve->GetScenes()->FindChild("RPhi Geometry")->LastChild()->DestroyElements();
+      gEve->LoadVizDB("geom_gentle_notransparency.C", kTRUE, kTRUE);
 
-      gEve->GetScenes()->FindChild("RhoZ Geometry")->LastChild()->DestroyElements();
+      gEve->LoadVizDB("VizDB_scan.C", kTRUE, kTRUE);
+
+      if(!gEve->GetViewers()->UseLightColorSet())
+        gEve->GetViewers()->SwitchColorSet();
+
+      gEve->FullRedraw3D();    
+
+      break;
+    }
+
+
+    case kAEMTransparentDark: //default geometry with black background, high transparency (80%)
+    {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
+
+      mv->DestroyAllGeometries();
 
       gEve->LoadVizDB("geom_gentle_transparent.C", kTRUE, kTRUE);
 
@@ -261,14 +282,11 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
       break;
     }
 
-    case kAEMTransparentLight:
+    case kAEMTransparentLight: //default geometry with white background, high transparency (80%)
     {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
 
-      gEve->GetScenes()->FirstChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RPhi Geometry")->LastChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RhoZ Geometry")->LastChild()->DestroyElements();
+      mv->DestroyAllGeometries();
 
       gEve->LoadVizDB("geom_gentle_transparent.C", kTRUE, kTRUE);
 
@@ -284,12 +302,9 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
     case kAEMTransparentMonoDark:
     {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
 
-      gEve->GetScenes()->FirstChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RPhi Geometry")->LastChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RhoZ Geometry")->LastChild()->DestroyElements();
+      mv->DestroyAllGeometries();
 
       gEve->LoadVizDB("geom_gentle_transparentdark.C", kTRUE, kTRUE);
 
@@ -305,12 +320,9 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
     case kAEMTransparentMonoLight:
     {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
 
-      gEve->GetScenes()->FirstChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RPhi Geometry")->LastChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RhoZ Geometry")->LastChild()->DestroyElements();
+      mv->DestroyAllGeometries();
 
       gEve->LoadVizDB("geom_gentle_transparentlight.C", kTRUE, kTRUE);
 
@@ -324,14 +336,65 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
       break;
     }
 
+    case kAEMGreen:
+    {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
+
+      mv->DestroyAllGeometries();
+
+      gEve->LoadVizDB("geom_gentle_green.C", kTRUE, kTRUE);
+
+      gEve->LoadVizDB("VizDB_scan.C", kTRUE, kTRUE);
+
+      if(!gEve->GetViewers()->UseLightColorSet())
+        gEve->GetViewers()->SwitchColorSet();
+
+      gEve->FullRedraw3D();    
+
+      break;
+    }
+
+    case kAEMBright:
+    {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
+
+      mv->DestroyAllGeometries();
+
+      gEve->LoadVizDB("geom_gentle_bright.C", kTRUE, kTRUE);
+
+      gEve->LoadVizDB("VizDB_scan.C", kTRUE, kTRUE);
+
+      if(gEve->GetViewers()->UseLightColorSet())
+        gEve->GetViewers()->SwitchColorSet();
+
+      gEve->FullRedraw3D();
+
+      break;
+    }
+
+    case kAEMYellow:
+    {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
+
+      mv->DestroyAllGeometries();
+
+      gEve->LoadVizDB("geom_gentle_yellow.C", kTRUE, kTRUE);
+
+      gEve->LoadVizDB("VizDB_scan_yellow.C", kTRUE, kTRUE);
+
+      if(!gEve->GetViewers()->UseLightColorSet())
+        gEve->GetViewers()->SwitchColorSet();
+
+      gEve->FullRedraw3D();    
+
+      break;
+    }
+
     case kAEMTpc:
     {
+      AliEveMultiView *mv = AliEveMultiView::Instance();
 
-      gEve->GetScenes()->FirstChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RPhi Geometry")->LastChild()->DestroyElements();
-
-      gEve->GetScenes()->FindChild("RhoZ Geometry")->LastChild()->DestroyElements();
+      mv->DestroyAllGeometries();
 
       gEve->LoadVizDB("geom_gentle_tpc.C", kTRUE, kTRUE);
 
@@ -343,6 +406,497 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
       gEve->FullRedraw3D();
 
       break;
+    }
+
+    case kAEMAll: //saving pictures from all three viewers
+    {
+      
+     TGFileInfo fi;
+     fi.fFileTypes   = gPictureSaveAsTypes;
+     fi.fIniDir      = StrDup(""); // current directory
+     fi.fFileTypeIdx = 0;
+     fi.fOverwrite   = kTRUE;
+     new TGFileDialog(gClient->GetDefaultRoot(),
+     gEve->GetMainWindow(), kFDSave, &fi); // dialog 
+     if (!fi.fFilename) return;
+
+     TPMERegexp filere(".*/([^/]+$)");
+     if (filere.Match(fi.fFilename) != 2)
+     {
+       Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+       return;
+     }
+
+     TString file1(filere[1]);
+     TString file2(filere[1]);
+     TString file3(filere[1]);
+     
+     if (!file1.EndsWith(".png"))
+       file1 += "_3D.png"; // adding extensions
+       
+     if (!file2.EndsWith(".png"))
+       file2 += "_RPhi.png"; // adding extensions
+       
+     if (!file3.EndsWith(".png"))
+       file3 += "_RhoZ.png"; // adding extensions
+
+     gSystem->ChangeDirectory(fi.fIniDir);
+      
+     printf("Saving...\n");
+
+     TEveViewerList *viewers = gEve->GetViewers();
+     TEveElement::List_i i = viewers->BeginChildren();
+     i++;
+     TEveViewer* view3d = ((TEveViewer*)*i);
+     view3d->GetGLViewer()->SavePicture(file1); // saving pictures
+     i++;
+     TEveViewer* viewrphi = ((TEveViewer*)*i);
+     viewrphi->GetGLViewer()->SavePicture(file2); // saving pictures
+     i++;
+     TEveViewer* viewrhoz = ((TEveViewer*)*i);
+     viewrhoz->GetGLViewer()->SavePicture(file3); // saving pictures
+     
+     printf("Done.\n"); 
+      
+      break;
+    }
+    
+    case kAEM3d: // saving only 3d view
+    {
+      
+     TGFileInfo fi;
+     fi.fFileTypes   = gPictureSaveAsTypes;
+     fi.fIniDir      = StrDup(""); // current directory
+     fi.fFileTypeIdx = 0;
+     fi.fOverwrite   = kTRUE;
+     new TGFileDialog(gClient->GetDefaultRoot(),
+     gEve->GetMainWindow(), kFDSave, &fi);
+     if (!fi.fFilename) return;
+
+     TPMERegexp filere(".*/([^/]+$)");
+     if (filere.Match(fi.fFilename) != 2)
+     {
+       Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+       return;
+     }
+
+     TString file1(filere[1]);
+     
+     if (!file1.EndsWith(".png"))
+       file1 += ".png";
+
+     gSystem->ChangeDirectory(fi.fIniDir);
+      
+     printf("Saving...\n");
+
+     TEveViewerList *viewers = gEve->GetViewers();
+     TEveElement::List_i i = viewers->BeginChildren();
+     i++;
+     TEveViewer* view3d = ((TEveViewer*)*i);
+     view3d->GetGLViewer()->SavePicture(file1);
+     
+     printf("Done.\n"); 
+      
+      break;
+    }
+    
+     case kAEMRphi: // saving only RPhi view
+    {
+      
+     TGFileInfo fi;
+     fi.fFileTypes   = gPictureSaveAsTypes;
+     fi.fIniDir      = StrDup(""); // current directory
+     fi.fFileTypeIdx = 0;
+     fi.fOverwrite   = kTRUE;
+     new TGFileDialog(gClient->GetDefaultRoot(),
+     gEve->GetMainWindow(), kFDSave, &fi);
+     if (!fi.fFilename) return;
+
+     TPMERegexp filere(".*/([^/]+$)");
+     if (filere.Match(fi.fFilename) != 2)
+     {
+       Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+       return;
+     }
+
+     TString file1(filere[1]);
+     
+     if (!file1.EndsWith(".png"))
+       file1 += ".png";
+     
+     gSystem->ChangeDirectory(fi.fIniDir);
+      
+     printf("Saving...\n");
+
+     TEveViewerList *viewers = gEve->GetViewers();
+     TEveElement::List_i i = viewers->BeginChildren();
+     i++;
+     i++;
+     TEveViewer* viewrphi = ((TEveViewer*)*i);
+     viewrphi->GetGLViewer()->SavePicture(file1);
+     
+     printf("Done.\n"); 
+      
+      break;
+    }
+    
+     case kAEMRhoz: // saving only RhoZ view
+    {
+    
+     TGFileInfo fi;
+     fi.fFileTypes   = gMacroSaveAsTypes;
+     fi.fIniDir      = StrDup(""); // current directory
+     fi.fFileTypeIdx = 0;
+     fi.fOverwrite   = kTRUE;
+     new TGFileDialog(gClient->GetDefaultRoot(),
+     gEve->GetMainWindow(), kFDSave, &fi);
+     if (!fi.fFilename) return;
+
+     TPMERegexp filere(".*/([^/]+$)");
+     if (filere.Match(fi.fFilename) != 2)
+     {
+       Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+       return;
+     }
+
+     TString file1(filere[1]);
+       
+     if (!file1.EndsWith(".png"))
+       file1 += ".png";
+
+     gSystem->ChangeDirectory(fi.fIniDir);
+     
+     printf("Saving...\n");
+
+     TEveViewerList *viewers = gEve->GetViewers();
+     TEveElement::List_i i = viewers->BeginChildren();
+     i++;
+     i++;
+     i++;
+     TEveViewer* viewrhoz = ((TEveViewer*)*i);
+     viewrhoz->GetGLViewer()->SavePicture(file1);
+     
+     printf("Done.\n"); 
+      
+      break;
+    }
+
+    case kAEMAllhr: // saving all three views in high resolution
+    {
+      
+     TGFileInfo fi;
+     fi.fFileTypes   = gPictureSaveAsTypes;
+     fi.fIniDir      = StrDup(""); // current directory
+     fi.fFileTypeIdx = 0;
+     fi.fOverwrite   = kTRUE;
+     new TGFileDialog(gClient->GetDefaultRoot(),
+     gEve->GetMainWindow(), kFDSave, &fi);
+     if (!fi.fFilename) return;
+
+     TPMERegexp filere(".*/([^/]+$)");
+     if (filere.Match(fi.fFilename) != 2)
+     {
+       Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+       return;
+     }
+
+     TString file1(filere[1]);
+     TString file2(filere[1]);
+     TString file3(filere[1]);
+     
+     if (!file1.EndsWith(".png"))
+       file1 += "_3D.png";
+       
+     if (!file2.EndsWith(".png"))
+       file2 += "_RPhi.png";
+       
+     if (!file3.EndsWith(".png"))
+       file3 += "_RhoZ.png";
+
+     gSystem->ChangeDirectory(fi.fIniDir);
+      
+     printf("Saving...\n");
+
+     TEveViewerList *viewers = gEve->GetViewers();
+     TEveElement::List_i i = viewers->BeginChildren();
+     i++;
+     TEveViewer* view3d = ((TEveViewer*)*i);
+     view3d->GetGLViewer()->SavePictureScale(file1,4.0); // getting high resolution
+     i++;
+     TEveViewer* viewrphi = ((TEveViewer*)*i);
+     viewrphi->GetGLViewer()->SavePictureScale(file2,4.0);
+     i++;
+     TEveViewer* viewrhoz = ((TEveViewer*)*i);
+     viewrhoz->GetGLViewer()->SavePictureScale(file3,4.0);
+     
+     printf("Done.\n"); 
+      
+      break;
+    }
+    
+    case kAEM3dhr: // saving only 3d view in high resolution
+    {
+      
+     TGFileInfo fi;
+     fi.fFileTypes   = gPictureSaveAsTypes;
+     fi.fIniDir      = StrDup(""); // current directory
+     fi.fFileTypeIdx = 0;
+     fi.fOverwrite   = kTRUE;
+     new TGFileDialog(gClient->GetDefaultRoot(),
+     gEve->GetMainWindow(), kFDSave, &fi);
+     if (!fi.fFilename) return;
+
+     TPMERegexp filere(".*/([^/]+$)");
+     if (filere.Match(fi.fFilename) != 2)
+     {
+       Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+       return;
+     }
+
+     TString file1(filere[1]);
+     
+     if (!file1.EndsWith(".png"))
+       file1 += ".png";
+
+     gSystem->ChangeDirectory(fi.fIniDir);
+      
+     printf("Saving...\n");
+
+     TEveViewerList *viewers = gEve->GetViewers();
+     TEveElement::List_i i = viewers->BeginChildren();
+     i++;
+     TEveViewer* view3d = ((TEveViewer*)*i);
+     view3d->GetGLViewer()->SavePictureScale(file1,4.0);
+     
+     printf("Done.\n"); 
+      
+      break;
+    }
+    
+     case kAEMRphihr: // saving only RPhi view in high resolution
+    {
+      
+     TGFileInfo fi;
+     fi.fFileTypes   = gPictureSaveAsTypes;
+     fi.fIniDir      = StrDup(""); // current directory
+     fi.fFileTypeIdx = 0;
+     fi.fOverwrite   = kTRUE;
+     new TGFileDialog(gClient->GetDefaultRoot(),
+     gEve->GetMainWindow(), kFDSave, &fi);
+     if (!fi.fFilename) return;
+
+     TPMERegexp filere(".*/([^/]+$)");
+     if (filere.Match(fi.fFilename) != 2)
+     {
+       Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+       return;
+     }
+
+     TString file1(filere[1]);
+     
+     if (!file1.EndsWith(".png"))
+       file1 += ".png";
+     
+     gSystem->ChangeDirectory(fi.fIniDir);
+      
+     printf("Saving...\n");
+
+     TEveViewerList *viewers = gEve->GetViewers();
+     TEveElement::List_i i = viewers->BeginChildren();
+     i++;
+     i++;
+     TEveViewer* viewrphi = ((TEveViewer*)*i);
+     viewrphi->GetGLViewer()->SavePictureScale(file1,4.0);
+     
+     printf("Done.\n"); 
+      
+      break;
+    }
+    
+     case kAEMRhozhr: // saving only RhoZ view in high resolution
+    {
+    
+     TGFileInfo fi;
+     fi.fFileTypes   = gMacroSaveAsTypes;
+     fi.fIniDir      = StrDup(""); // current directory
+     fi.fFileTypeIdx = 0;
+     fi.fOverwrite   = kTRUE;
+     new TGFileDialog(gClient->GetDefaultRoot(),
+     gEve->GetMainWindow(), kFDSave, &fi);
+     if (!fi.fFilename) return;
+
+     TPMERegexp filere(".*/([^/]+$)");
+     if (filere.Match(fi.fFilename) != 2)
+     {
+       Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+       return;
+     }
+
+     TString file1(filere[1]);
+       
+     if (!file1.EndsWith(".png"))
+       file1 += ".png";
+
+     gSystem->ChangeDirectory(fi.fIniDir);
+     
+     printf("Saving...\n");
+
+     TEveViewerList *viewers = gEve->GetViewers();
+     TEveElement::List_i i = viewers->BeginChildren();
+     i++;
+     i++;
+     i++;
+     TEveViewer* viewrhoz = ((TEveViewer*)*i);
+     viewrhoz->GetGLViewer()->SavePictureScale(file1,4.0);
+     
+     printf("Done.\n"); 
+      
+      break;
+    }
+
+     case kAEMSavemacros:// Saving Data Selection macros
+    {
+
+      AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
+
+      exec->SaveAddedMacros();
+
+      break;
+    }
+ 
+   case kAEMLoadmacros://Loading Data Selection macros
+    {
+
+      TEveBrowser *browser = gEve->GetBrowser();
+      browser->ShowCloseTab(kFALSE);
+
+      if(fLoadCheck)
+        browser->RemoveTab(TRootBrowser::kRight, 5);//remove the tab with previous DataSelection window
+      else
+        browser->RemoveTab(TRootBrowser::kRight, 2);
+
+
+      TGFileInfo fi;
+      fi.fFileTypes   = gMacroSaveAsTypes;
+      fi.fIniDir      = StrDup(""); // current directory
+      fi.fFileTypeIdx = 0;
+      fi.fOverwrite   = kTRUE;
+      new TGFileDialog(gClient->GetDefaultRoot(), gEve->GetMainWindow(), kFDOpen, &fi);//dialog
+      if (!fi.fFilename) return;
+
+      TPMERegexp filere(".*/([^/]+$)");
+      if (filere.Match(fi.fFilename) != 2)
+      {
+        Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+        return;
+      }
+      printf("Loading...\n");
+
+      TString file(filere[1]);
+      gSystem->ChangeDirectory(fi.fIniDir);
+
+      TEveUtil::Macro(file);//run macro
+
+      AliEveEventManager *eman = AliEveEventManager::GetMaster();//reload event (gEve->Refresh() crashes)
+      Int_t ev = eman->GetEventId();
+      eman->Close();
+      eman->Open();
+      eman->GotoEvent(ev);
+
+      printf("Done.\n");
+
+      fLoadCheck = kTRUE;
+
+      break;
+
+    }
+
+    case kAEMSave://saving VizDB
+    {
+      TGFileInfo fi;
+      fi.fFileTypes   = gMacroSaveAsTypes;
+      fi.fIniDir      = StrDup(""); // current directory
+      fi.fFileTypeIdx = 0;
+      fi.fOverwrite   = kTRUE;
+      new TGFileDialog(gClient->GetDefaultRoot(), gEve->GetMainWindow(), kFDSave, &fi);
+      if (!fi.fFilename) return;
+
+      TPMERegexp filere(".*/([^/]+$)");
+      if (filere.Match(fi.fFilename) != 2)
+      {
+        Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+        return;
+      }
+      printf("Saving...\n");
+
+      TString file(filere[1]);
+      if (!file.EndsWith(".C"))
+        file += ".C";
+      gSystem->ChangeDirectory(fi.fIniDir);
+      gEve->SaveVizDB(file);
+
+//Last line "gEve->SaveVizDB(file);" gives macro with many unnecessary
+//lines like "x038->SetMinPt(0);" tahat are not interpreted properly later
+
+      string text;
+      string all;
+
+      ifstream myfile1(file);
+      if(myfile1.is_open())
+        {
+        while(!myfile1.eof())
+          {
+            getline(myfile1,text);
+            TString check(text);
+            if(!(check.EndsWith("MinPt(0);")||check.EndsWith("MaxPt(0);")
+               ||check.EndsWith("LimPt(0);")||check.EndsWith("MinP(0);")
+               ||check.EndsWith("MaxP(0);")||check.EndsWith("LimP(0);")))
+              {
+              all += text; //Cut off unnecessary lines and bring everything together
+              all += "\n";
+              }
+          }
+        myfile1.close();
+        }
+
+      ofstream myfile2(file); //Replacing old file with the one without "bad" lines
+      myfile2 << all;
+      myfile2.close();
+
+      printf("Done.\n");
+      break;
+
+    }
+
+    case kAEMOpen://Opening VizDB
+    {
+      TGFileInfo fi;
+      fi.fFileTypes   = gMacroSaveAsTypes;
+      fi.fIniDir      = StrDup(""); // current directory
+      fi.fFileTypeIdx = 0;
+      fi.fOverwrite   = kTRUE;
+      new TGFileDialog(gClient->GetDefaultRoot(), gEve->GetMainWindow(), kFDOpen, &fi);
+      if (!fi.fFilename) return;
+
+      TPMERegexp filere(".*/([^/]+$)");
+      if (filere.Match(fi.fFilename) != 2)
+      {
+        Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+        return;
+      }
+      printf("Opening...\n");
+
+      TString file(filere[1]);
+
+      gSystem->ChangeDirectory(fi.fIniDir);
+
+      gEve->LoadVizDB(file, kTRUE, kTRUE);
+
+      gEve->Redraw3D(kTRUE);
+
+      printf("Done.\n");
+      break;
+
     }
 
     default:
