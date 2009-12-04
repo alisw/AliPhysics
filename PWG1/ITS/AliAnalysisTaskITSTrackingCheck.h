@@ -36,12 +36,14 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; }
   void           SetReadRPLabels(Bool_t flag=kTRUE) { fReadRPLabels=flag; }
   void           SetFillNtuples(Bool_t flag=kTRUE) { fFillNtuples=flag; }
+  void           SetUseITSSAforNtuples(Bool_t flag=kTRUE) { fUseITSSAforNtuples=flag; }
 
   
  protected:
   Bool_t       fReadMC; // read Monte Carlo
   Bool_t       fReadRPLabels; // read MC labels from ITS.RecPoints
   Bool_t       fFillNtuples; // fill expert ntuples
+  Bool_t       fUseITSSAforNtuples; // fill expert ntuples with ITSSA tracks
   AliESDEvent  *fESD;    // ESD object
   AliESDfriend *fESDfriend; // ESD friend object
   TList        *fOutput; //! list send on output slot 0
@@ -76,14 +78,24 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   TH1F         *fHistClusterMapModuleITSSAokInAcc; //! output hist
   TH1F         *fHistClusterMapModuleITSSAbadInAcc; //! output hist
   TH1F         *fHistClusterMapModuleITSSAnoclsInAcc; //! output hist
-  TH1F         *fHistPhiTPC; //! output hist
+  TH1F         *fHistPhiTPCInAcc; //! output hist
   TH1F         *fHistPtTPC; //! output hist
+  TH1F         *fHistPtTPCInAcc; //! output hist
   TH1F         *fHistPtITSMI2; //! output hist
   TH1F         *fHistPtITSMI3; //! output hist
   TH1F         *fHistPtITSMI4; //! output hist
   TH1F         *fHistPtITSMI5; //! output hist
   TH1F         *fHistPtITSMI6; //! output hist
   TH1F         *fHistPtITSMISPD; //! output hist
+  TH1F         *fHistPtITSMI2InAcc; //! output hist
+  TH1F         *fHistPtITSMI3InAcc; //! output hist
+  TH1F         *fHistPtITSMI4InAcc; //! output hist
+  TH1F         *fHistPtITSMI5InAcc; //! output hist
+  TH1F         *fHistPtITSMI6InAcc; //! output hist
+  TH1F         *fHistPtITSMISPDInAcc; //! output hist
+  TH1F         *fHistPtITSMIokbadoutinz6; //! output hist
+  TH1F         *fHistPtITSMIokbadoutinz6InAcc; //! output hist
+  TH1F         *fHistPhiITSMIokbadoutinz6InAcc; //! output hist
   TNtuple      *fNtupleESDTracks; //! output ntuple
   TNtuple      *fNtupleITSAlignExtra; //! output ntuple
   TNtuple      *fNtupleITSAlignSPDTracklets; //! output ntuple
