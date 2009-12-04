@@ -18,9 +18,6 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTDataTypes.h"
 
-class TH1F;
-class TH2F;
-
 
 /**
  * @class AliHLTITSVertexerSPDComponent
@@ -129,31 +126,29 @@ class AliHLTITSVertexerSPDComponent : public AliHLTProcessor
   struct AliHLTITSVZCluster{
     float fX, fY, fZ;
   };
- 
-    /** magnetic field */
-    double fSolenoidBz; // see above
-    Bool_t fProduceHistos;// flag to produce histogramms(def = 1)
+  
   Int_t   fAutoCalibration;//  n of events for recalibration of run vertex(-1=no, def = 1000);
-
+  Double_t fZRange;// Z range for the vertex seearch
+  Double_t fZBinSize; // size of the Z bin [cm] 
   double fDefRunVtx[3];// default vertex position
-    double fFullTime; //* total time for DoEvent() [s]
-    double fRecoTime; //* total reconstruction time [s]
-    Long_t    fNEvents;  //* number of reconstructed events
-    double fRunVtx[4]; //!
-    double fRunVtxNew[4]; //!
+  double fFullTime; //* total time for DoEvent() [s]
+  double fRecoTime; //* total reconstruction time [s]
+  Long_t fNEvents;  //* number of reconstructed events
+  double fRunVtx[4]; // the run vertex which is currently used in finder
+  double fRunVtxNew[4]; // new estimation of the run vertex, 
+  double *fSum[9]; // coefficients for the LSM method
+  double *fSumW; // sum of weights per Z bin 
+  int *fSumN; // N entries per Z bin
+  double fZMin; // Z of the first bin ( == -fZRange)
+  int fNZBins; // N of bins
 
-   TH2F *fHistoVertexXY;//!
-   TH1F *fHistoVertexX;//!
-   TH1F *fHistoVertexY;//!
-   TH1F *fHistoVertexZ;//!
- 
-    /** set configuration parameters **/
-    void SetDefaultConfiguration();
-    int ReadConfigurationString(  const char* arguments );
-    int ReadCDBEntry( const char* cdbEntry, const char* chainId );
-    int Configure( const char* cdbEntry, const char* chainId, const char *commandLine  );
-
-    ClassDef( AliHLTITSVertexerSPDComponent, 0 );
-
+  /** set configuration parameters **/
+  void SetDefaultConfiguration();
+  int ReadConfigurationString(  const char* arguments );
+  int ReadCDBEntry( const char* cdbEntry, const char* chainId );
+  int Configure( const char* cdbEntry, const char* chainId, const char *commandLine  );
+  
+  ClassDef( AliHLTITSVertexerSPDComponent, 0 );
+  
 };
 #endif

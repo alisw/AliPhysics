@@ -50,31 +50,30 @@ using namespace std;
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliGeomManager.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "AliESDVertex.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp( AliHLTITSVertexerSPDComponent )
 AliHLTITSVertexerSPDComponent::AliHLTITSVertexerSPDComponent()
     :
-    fSolenoidBz( 0 ),
-    fProduceHistos(1),
     fAutoCalibration(1000),
+    fZRange(40),
+    fZBinSize(1),
     fFullTime( 0 ),
     fRecoTime( 0 ),
-    fNEvents( 0 ),    
-    fHistoVertexXY(0),
-    fHistoVertexX(0),
-    fHistoVertexY(0),
-  fHistoVertexZ(0)
-
+    fNEvents( 0 ),
+    fSumW(0),
+    fSumN(0),
+    fZMin(0),
+    fNZBins(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+  for( int i=0; i<9; i++ ) fSum[i] = 0;
 
   fDefRunVtx[0] = 0;
   fDefRunVtx[1] = 0;
@@ -84,16 +83,16 @@ AliHLTITSVertexerSPDComponent::AliHLTITSVertexerSPDComponent()
 AliHLTITSVertexerSPDComponent::AliHLTITSVertexerSPDComponent( const AliHLTITSVertexerSPDComponent& )
     :
     AliHLTProcessor(),
-    fSolenoidBz( 0 ),
-    fProduceHistos(1),
     fAutoCalibration(1000),
+    fZRange(40),
+    fZBinSize(1),
     fFullTime( 0 ),
     fRecoTime( 0 ),
-    fNEvents( 0 ),    
-    fHistoVertexXY(0),
-    fHistoVertexX(0),
-    fHistoVertexY(0),
-  fHistoVertexZ(0)
+    fNEvents( 0 ),
+    fSumW(0),
+    fSumN(0),
+    fZMin(0),
+    fNZBins(0)
 {
   // see header file for class documentation
   HLTFatal( "copy constructor untested" );
@@ -108,12 +107,13 @@ AliHLTITSVertexerSPDComponent& AliHLTITSVertexerSPDComponent::operator=( const A
 
 AliHLTITSVertexerSPDComponent::~AliHLTITSVertexerSPDComponent()
 {
-  // see header file for class documentation
-  
-  delete fHistoVertexXY;
-  delete fHistoVertexX;
-  delete fHistoVertexY;
-  delete fHistoVertexZ;
+  // see header file for class documentation  
+  for( int i=0; i<9; i++ ){
+    delete[] fSum[i];
+    fSum[i] = 0;
+  }
+  delete[] fSumW;
+  delete[] fSumN;
 }
 
 //
@@ -146,7 +146,6 @@ int AliHLTITSVertexerSPDComponent::GetOutputDataTypes(AliHLTComponentDataTypeLis
   // see header file for class documentation
   tgtList.clear();
   tgtList.push_back( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS);
-  tgtList.push_back(kAliHLTDataTypeHistogram);
   return tgtList.size();
 }
 
@@ -168,12 +167,12 @@ void AliHLTITSVertexerSPDComponent::SetDefaultConfiguration()
   // Set default configuration for the CA tracker component
   // Some parameters can be later overwritten from the OCDB
 
-  fSolenoidBz = -5.00668;
-  fProduceHistos=1;
   fAutoCalibration = 1000;
   fDefRunVtx[0] = 0;
   fDefRunVtx[1] = 0;
   fDefRunVtx[2] = 0;
+  fZRange = 40;
+  fZBinSize = 1;
   fFullTime = 0;
   fRecoTime = 0;
   fNEvents = 0;
@@ -198,19 +197,6 @@ int AliHLTITSVertexerSPDComponent::ReadConfigurationString(  const char* argumen
     argument = ( ( TObjString* )pTokens->At( i ) )->GetString();
     if ( argument.IsNull() ) continue;
 
-    if ( argument.CompareTo( "-solenoidBz" ) == 0 ) {
-      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-      HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
-      continue;
-    }
-
-    if ( argument.CompareTo( "-produceHistos" ) == 0 ) {
-      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-      fProduceHistos = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
-      HLTInfo( "fProduceHistos set to: %d", fProduceHistos );
-      continue;
-    }
-
     if ( argument.CompareTo( "-runVertex" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fDefRunVtx[0] = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
@@ -220,6 +206,20 @@ int AliHLTITSVertexerSPDComponent::ReadConfigurationString(  const char* argumen
       fDefRunVtx[2] = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
       HLTInfo( "Default run vertex is set to (%f,%f,%f)",fDefRunVtx[0],
 	       fDefRunVtx[1],fDefRunVtx[2] );
+      continue;
+    }
+
+    if ( argument.CompareTo( "-zRange" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fZRange = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
+      HLTInfo( "Z range for the vertex search is set to +-%f cm", fZRange );
+      continue;
+    }
+
+    if ( argument.CompareTo( "-zBinSize" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fZBinSize = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
+      HLTInfo( "Size of the Z bin for the vertex search is set to %f cm", fZBinSize );
       continue;
     }
 
@@ -293,27 +293,22 @@ int AliHLTITSVertexerSPDComponent::Configure( const char* cdbEntry, const char* 
 
   int iResult1 = ReadCDBEntry( NULL, chainId );
 
-  //* read magnetic field
-
-  int iResult2 = 0; //ReadCDBEntry( kAliHLTCDBSolenoidBz, chainId );
-  fSolenoidBz = GetBz();
-
   //* read the actual CDB entry if required
 
-  int iResult3 = ( cdbEntry ) ? ReadCDBEntry( cdbEntry, chainId ) : 0;
-
+  int iResult2 = ( cdbEntry ) ? ReadCDBEntry( cdbEntry, chainId ) : 0;
+  
   //* read extra parameters from input (if they are)
 
-  int iResult4 = 0;
+  int iResult3 = 0;
 
   if ( commandLine && commandLine[0] != '\0' ) {
     HLTInfo( "received configuration string from HLT framework: \"%s\"", commandLine );
-    iResult4 = ReadConfigurationString( commandLine );
+    iResult3 = ReadConfigurationString( commandLine );
   }
 
   // Initialise the tracker here
 
-  return iResult1 ? iResult1 : ( iResult2 ? iResult2 : ( iResult3 ? iResult3 : iResult4 ) );
+  return iResult1 ? iResult1 : ( iResult2 ? iResult2 : iResult3 );
 }
 
 
@@ -322,15 +317,7 @@ int AliHLTITSVertexerSPDComponent::DoInit( int argc, const char** argv )
 {
   // Configure the ITS tracker component
   
-  fProduceHistos = 1;
-  fAutoCalibration = 1000;
-
-  // Check field
-  if (!TGeoGlobalMagField::Instance()) {
-    HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
-    return -ENODEV;
-  }
-  fSolenoidBz=GetBz();
+  SetDefaultConfiguration();
 
   if(AliGeomManager::GetGeometry()==NULL){
     AliGeomManager::LoadGeometry("");
@@ -345,19 +332,24 @@ int AliHLTITSVertexerSPDComponent::DoInit( int argc, const char** argv )
 
   int ret = Configure( NULL, NULL, arguments.Data() );
 
-  if( fProduceHistos ){
-    fHistoVertexXY = new TH2F("hITSvertexXY", "ITSSPD vertex in XY", 100,-2,2,100,-2,2);
-    fHistoVertexX = new TH1F("hITSvertexX", "ITSSPD vertex X", 100,-2,2);
-    fHistoVertexY = new TH1F("hITSvertexY", "ITSSPD vertex Y", 100,-2,2);
-    fHistoVertexZ = new TH1F("hITSvertexZ", "ITSSPD vertex Z", 100,-15,15);
-  }
-
   for( int i=0; i<3; i++){
     fRunVtx[i] = fDefRunVtx[i];
     fRunVtxNew[i] = fDefRunVtx[i];
   }
   fRunVtx[3] = 0.;
   fRunVtxNew[3] = 0.;
+
+  for( int i=0; i<9; i++ ) delete[] fSum[i];
+  delete[] fSumW;
+  delete[] fSumN;
+
+  fZMin = -fZRange;
+  fNZBins = ( (int) (2*fZRange/fZBinSize ))+1;
+
+  for( int i=0; i<9; i++ ) fSum[i] = new double [fNZBins];
+
+  fSumW = new double [fNZBins];
+  fSumN = new int [fNZBins];
 
   return ret;
 }
@@ -367,17 +359,17 @@ int AliHLTITSVertexerSPDComponent::DoDeinit()
 {
   // see header file for class documentation
 
-  delete fHistoVertexXY;
-  delete fHistoVertexX;
-  delete fHistoVertexY;
-  delete fHistoVertexZ;
+  for( int i=0; i<9; i++ ){    
+    delete[] fSum[i];
+    fSum[i] = 0;
+  }
+  delete[] fSumW;
+  delete[] fSumN;
+  fSumW = 0;
+  fSumN = 0;
+  
+  SetDefaultConfiguration();
 
-  fHistoVertexXY = 0;
-  fHistoVertexX = 0;
-  fHistoVertexY = 0;
-  fHistoVertexZ = 0;
-  fAutoCalibration = 1000;
-  fProduceHistos = 1;
   return 0;
 }
 
@@ -412,7 +404,6 @@ int AliHLTITSVertexerSPDComponent::DoEvent
     return 0;
   }
 
-
   TStopwatch timer;
 
   // Event reconstruction in ITS
@@ -426,7 +417,6 @@ int AliHLTITSVertexerSPDComponent::DoEvent
   const int kNPhiBins = 20;
   const double kDPhi = TMath::TwoPi() / kNPhiBins;
   double vtxX = fRunVtx[0], vtxY = fRunVtx[1], vtxZ = fRunVtx[2];
-
 
   std::vector<AliHLTITSVertexerSPDComponent::AliHLTITSVZCluster> clusters[2][ kNPhiBins ];
 
@@ -479,33 +469,35 @@ int AliHLTITSVertexerSPDComponent::DoEvent
 
   TStopwatch timerReco;
     
+  double zScale = 1./fZBinSize;
 
-  const double kZBinMin = -10;
-  const int kNZBins = 40;
-  const double kZStep = 1./kNZBins;
+  // fit few times decreasing the radius cut
 
-  double histX[kNZBins];
-  double histY[kNZBins];
-  double histZ[kNZBins];
-  double histW[kNZBins];
-  int histN[kNZBins];
-  
-  // fit few times with decreasing of the radius cut
-
-  double vtxDR2[2] = { 2.*2., .2*.2};
-  double  maxW = 0;  
+  double vtxDR2[5] = { 1.*1., .5*.5, .4*.4, .4*.4, .2*.2};
+  double vtxDZ [5] = { 1., .5, .3, .3, .3};
+  double  maxW = 0;
   int bestBin = -1;
   
-  for( int iter = 0; iter<2; iter++ ){
-    
-    for( int i=0; i<kNZBins; i++ ){
-      histX[i] = 0;
-      histY[i] = 0;
-      histZ[i] = 0;
-      histW[i] = 0;
-      histN[i] = 0;
+  for( int iter = 0; iter<3; iter++ ){
+
+    bool doZBins = (iter<2);
+    int nSearchBins = doZBins ?fNZBins :1;
+    {
+      for( int i=0; i<nSearchBins; i++ ){
+	fSum[0][i] = 0;
+	fSum[1][i] = 0;
+	fSum[2][i] = 0;
+	fSum[3][i] = 0;
+	fSum[4][i] = 0;
+	fSum[5][i] = 0;
+	fSum[6][i] = 0;
+	fSum[7][i] = 0;
+	fSum[8][i] = 0;
+	fSumW[i] = 0;
+	fSumN[i] = 0;
+      }
     }
- 
+
     for( int iPhi=0; iPhi<kNPhiBins; iPhi++ ){
       int nCluUp = clusters[1][iPhi].size();    
       int nCluDn = clusters[0][iPhi].size();    
@@ -513,61 +505,167 @@ int AliHLTITSVertexerSPDComponent::DoEvent
 	AliHLTITSVZCluster &cu = clusters[1][iPhi][icUp];
 	double x0 = cu.fX - vtxX;
 	double y0 = cu.fY - vtxY;
-	double z0 = cu.fZ - vtxZ;
+	double z0 = cu.fZ;// - vtxZ;
 	double bestR2 = 1.e10;
 	int bestDn=-1, bestBinDn =0;
-	double bestV[3]={0,0,0};
+	double bestP[3]={0,0,0};
 	for( int icDn=0; icDn<nCluDn; icDn++ ){
 	  AliHLTITSVZCluster &cd = clusters[0][iPhi][icDn];
 	  double x1 = cd.fX - vtxX;
 	  double y1 = cd.fY - vtxY;
-	  double z1 = cd.fZ - vtxZ;
+	  double z1 = cd.fZ;// - vtxZ;
 	  double dx = x1 - x0;
 	  double dy = y1 - y0;
 	  double l2 = 1./(dx*dx + dy*dy);
 	  double a = x1*y0 - x0*y1;
 	  double r2 = a*a*l2; 
-	  if( r2>vtxDR2[iter] ) continue;
-	  double xv = -dy*a*l2;
-	  double yv =  dx*a*l2;
+	  if( r2 > vtxDR2[iter] ) continue;
+	  if( r2 > bestR2 ) continue;
+	  //double xv = -dy*a*l2;
+	  //double yv =  dx*a*l2;
 	  double zv = ( (x1*z0-x0*z1)*dx + (y1*z0-y0*z1)*dy )*l2;
-	  int zbin = (int)((zv - kZBinMin)*kZStep);
-	  if( zbin<0 || zbin>=kNZBins ) continue;
-	  if( r2<bestR2 ){
-	    bestR2 = r2;
-	    bestDn = icDn;
-	    bestV[0] = xv;
-	    bestV[1] = yv;
-	    bestV[2] = zv;
-	    bestBinDn = zbin;
+	  int zbin;
+	  if( doZBins ){
+	    zbin = (int)((zv - fZMin)*zScale);
+	    if( zbin<0 || zbin>=fNZBins ) continue;	  
+	  } else {
+	    zbin = 0;
+	    if( TMath::Abs( zv - vtxZ ) > vtxDZ[ iter ] ) continue;
 	  }
+	  bestR2 = r2;
+	  bestDn = icDn;
+	  bestP[0] = x1;
+	  bestP[1] = y1;
+	  bestP[2] = z1;
+	  bestBinDn = zbin;	  
 	}
-	if( bestDn>=0 ){
-	  double w = 1./(1.+bestR2);
-	  histX[bestBinDn]+=bestV[0]*w;
-	  histY[bestBinDn]+=bestV[1]*w;
-	  histZ[bestBinDn]+=bestV[2]*w;
-	  histW[bestBinDn]+=w;
-	  histN[bestBinDn]+=1;
+	if( bestDn < 0 ) continue;
+
+	double dx = bestP[0] - x0;
+	double dy = bestP[1] - y0;
+	double dz = bestP[2] - z0;	  
+	double w = 1./(1.+bestR2);
+	  
+	// Equations:
+	//
+	// A_i*x + B_i*y + C_i*z = D_i
+	//
+	// Sum[0] = sum A_i*A_i
+	// Sum[1] = sum B_i*A_i
+	// Sum[2] = sum B_i*B_i
+	// Sum[3] = sum C_i*A_i
+	// Sum[4] = sum C_i*B_i
+	// Sum[5] = sum C_i*C_i	  
+	// Sum[6] = sum A_i*D_i
+	// Sum[7] = sum B_i*D_i
+	// Sum[8] = sum C_i*D_i
+	
+	double n = w / TMath::Sqrt(dx*dx + dy*dy + dz*dz);	  
+	dy*=n;
+	dx*=n;
+	dz*=n;
+	double a, b, c, d;
+	a = dy; b = -dx; c = 0; d = dy*x0 - dx*y0;
+	{
+	  fSum[0][bestBinDn]+= a*a;
+	  fSum[1][bestBinDn]+= b*a;
+	  fSum[2][bestBinDn]+= b*b;
+	  //fSum[3][bestBinDn]+= c*a;
+	  //fSum[4][bestBinDn]+= c*b;
+	  //fSum[5][bestBinDn]+= c*c;
+	  fSum[6][bestBinDn]+= a*d;
+	  fSum[7][bestBinDn]+= b*d;
+	  //fSum[8][bestBinDn]+= c*d;
 	}
-      }
+	a = dz; b = 0; c = -dx; d = dz*x0 - dx*z0;
+	{
+	  fSum[0][bestBinDn]+= a*a;
+	  //fSum[1][bestBinDn]+= b*a;
+	  //fSum[2][bestBinDn]+= b*b;
+	  fSum[3][bestBinDn]+= c*a;
+	  //fSum[4][bestBinDn]+= c*b;
+	  fSum[5][bestBinDn]+= c*c;
+	  fSum[6][bestBinDn]+= a*d;
+	  //fSum[7][bestBinDn]+= b*d;
+	  fSum[8][bestBinDn]+= c*d;
+	}
+	
+	a = 0; b = dz; c = -dy; d = dz*y0 - dy*z0;
+	{
+	  //fSum[0][bestBinDn]+= a*a;
+	  //fSum[1][bestBinDn]+= b*a;
+	  fSum[2][bestBinDn]+= b*b;
+	  //fSum[3][bestBinDn]+= c*a;
+	  fSum[4][bestBinDn]+= c*b;
+	  fSum[5][bestBinDn]+= c*c;
+	  //fSum[6][bestBinDn]+= a*d;
+	  fSum[7][bestBinDn]+= b*d;
+	  fSum[8][bestBinDn]+= c*d;
+	}
+
+	a = dz; b = 0; c = -dx; d = dz*x0 - dx*z0;
+	{
+	  fSum[0][bestBinDn]+= a*a;
+	  //fSum[1][bestBinDn]+= b*a;
+	  //fSum[2][bestBinDn]+= b*b;
+	  fSum[3][bestBinDn]+= c*a;
+	  //fSum[4][bestBinDn]+= c*b;
+	  fSum[5][bestBinDn]+= c*c;
+	  fSum[6][bestBinDn]+= a*d;
+	  //fSum[7][bestBinDn]+= b*d;
+	  fSum[8][bestBinDn]+= c*d;
+	}
+	
+	fSumW[bestBinDn]+=w;
+	fSumN[bestBinDn]+=1;
+      }    
     }
     
     maxW = 0;  
     bestBin = -1;
-    for( int i=0; i<kNZBins; i++ ){
-      if( histW[i]>maxW ){
+    for( int i=0; i<nSearchBins; i++ ){
+      if( fSumN[i]>maxW ){
 	bestBin = i;
-	maxW = histW[i];
+	maxW = fSumN[i];
       }
     }
-    if( bestBin<0 || histN[bestBin] <3 ){
+    if( bestBin<0 || fSumN[bestBin] < 5 ){
       bestBin = -1;
       break;
     }
-    vtxX +=histX[bestBin]/maxW;
-    vtxY +=histY[bestBin]/maxW;
-    vtxZ +=histZ[bestBin]/maxW;    
+    
+    // calculate the vertex position in the best bin
+    Double_t w[6] = { fSum[0][bestBin],
+		      fSum[1][bestBin], fSum[2][bestBin],
+		      fSum[3][bestBin], fSum[4][bestBin], fSum[5][bestBin] };
+    Double_t wI[6];
+    {
+      wI[0] = w[2]*w[5] - w[4]*w[4];
+      wI[1] = w[3]*w[4] - w[1]*w[5];
+      wI[2] = w[0]*w[5] - w[3]*w[3];
+      wI[3] = w[1]*w[4] - w[2]*w[3];
+      wI[4] = w[1]*w[3] - w[0]*w[4];
+      wI[5] = w[0]*w[2] - w[1]*w[1];	 
+      
+      Double_t s = ( w[0]*wI[0] + w[1]*wI[1] + w[3]*wI[3] );
+      cout<<"SG: s="<<s<<endl;
+      if( s<1.e-10 ){
+	bestBin = -1;
+	break;
+      }
+      s = 1./s;	  
+      wI[0]*=s;
+      wI[1]*=s;
+      wI[2]*=s;
+      wI[3]*=s;
+      wI[4]*=s;
+      wI[5]*=s;
+    }    
+
+    vtxX += wI[0]*fSum[6][bestBin] + wI[1]*fSum[7][bestBin] + wI[3]*fSum[8][bestBin];
+    vtxY += wI[1]*fSum[6][bestBin] + wI[2]*fSum[7][bestBin] + wI[4]*fSum[8][bestBin];
+    vtxZ = wI[3]*fSum[6][bestBin] + wI[4]*fSum[7][bestBin] + wI[5]*fSum[8][bestBin];
+    //cout<<"SG: "<<iter<<": "<<vtxX<<" "<<vtxY<<" "<<vtxZ<<endl;
   }
 
   if( bestBin>=0 ){
@@ -602,22 +700,11 @@ int AliHLTITSVertexerSPDComponent::DoEvent
     double pos[3] = {vtxX, vtxY, vtxZ};
     double s = 400.E-4;
     double cov[6] = {s*s,0,s*s,0,0,s*s};
-    AliESDVertex v(pos, cov, 0, histN[bestBin]);
+    AliESDVertex v(pos, cov, 0, fSumN[bestBin]);
     PushBack( (TObject*) &v, kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS,0 );
 
     //cout<<"ITSVertexerSPD: vtx found "<<vtxX<<" "<<vtxY<<" "<<vtxZ<<endl;
-
-    if( fHistoVertexXY ) fHistoVertexXY->Fill( vtxX, vtxY );
-    if( fHistoVertexX ) fHistoVertexX->Fill( vtxX );
-    if( fHistoVertexY ) fHistoVertexY->Fill( vtxY );
-    if( fHistoVertexZ ) fHistoVertexZ->Fill( vtxZ );
   }
-
-  if( fHistoVertexXY ) PushBack( (TObject*) fHistoVertexXY, kAliHLTDataTypeHistogram,0);
-  if( fHistoVertexX ) PushBack( (TObject*) fHistoVertexX, kAliHLTDataTypeHistogram,0);
-  if( fHistoVertexY ) PushBack( (TObject*) fHistoVertexY, kAliHLTDataTypeHistogram,0);
-  if( fHistoVertexZ ) PushBack( (TObject*) fHistoVertexZ, kAliHLTDataTypeHistogram,0);
-
 
   timer.Stop();
   fFullTime += timer.RealTime();
