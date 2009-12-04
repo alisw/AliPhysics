@@ -493,8 +493,14 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
 
   if (!TestBit(kSkipCTP) && CTPData()) decision.AddInputObject(CTPData());
 
+  // add readout filter to event done data
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
+  // add monitoring filter to event done data
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 4);
+  if (decision.Result()) {
+    // add monitoring event command for triggered events
+    CreateEventDoneReadoutFilter(decision.TriggerDomain(), 5);
+  }
   if (TriggerEvent(&decision) == -ENOSPC)
   {
     // Increase the estimated buffer space required if the PushBack methods in TriggerEvent

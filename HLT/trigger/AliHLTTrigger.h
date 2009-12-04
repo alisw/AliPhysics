@@ -280,7 +280,9 @@ class AliHLTTrigger : public AliHLTProcessor
    * from a Trigger domain object.
    * @param domain   the domain as calculated by the (Global)trigger
    * @param type     type of the readout list, defined by PubSub
+   *                  3 monitoring filter
    *                  4 monitoring filter
+   *                  5 monitoring filter
    */
   int CreateEventDoneReadoutFilter(const AliHLTTriggerDomain& domain, unsigned type);
 
