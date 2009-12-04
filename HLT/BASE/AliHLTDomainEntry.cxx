@@ -45,7 +45,7 @@ AliHLTDomainEntry::AliHLTDomainEntry() :
   fExclude(kFALSE),
   fUseSpec(kFALSE),
   fType(kAliHLTVoidDataType),
-  fSpecification(0x0)
+  fSpecification(kAliHLTVoidDataSpec)
 {
   // Default constructor.
 }
@@ -66,7 +66,7 @@ AliHLTDomainEntry::AliHLTDomainEntry(const AliHLTComponentDataType& type) :
   fExclude(kFALSE),
   fUseSpec(kFALSE),
   fType(type),
-  fSpecification(0x0)
+  fSpecification(kAliHLTVoidDataSpec)
 {
   // Constructs a domain entry with a particular data type and any specification.
   // See header file for more information.
@@ -78,7 +78,7 @@ AliHLTDomainEntry::AliHLTDomainEntry(const char* blocktype, const char* origin) 
   fExclude(kFALSE),
   fUseSpec(kFALSE),
   fType(),
-  fSpecification(0x0)
+  fSpecification(kAliHLTVoidDataSpec)
 {
   // Constructs a domain entry with a particular data type and any specification.
   // See header file for more information.
@@ -142,7 +142,7 @@ AliHLTDomainEntry::AliHLTDomainEntry(Bool_t exclude, const AliHLTComponentDataTy
   fExclude(exclude),
   fUseSpec(kFALSE),
   fType(type),
-  fSpecification(0x0)
+  fSpecification(kAliHLTVoidDataSpec)
 {
   // Constructs a domain entry with the given data type, any specification
   // and the exclude flag set.
@@ -155,7 +155,7 @@ AliHLTDomainEntry::AliHLTDomainEntry(Bool_t exclude, const char* blocktype, cons
   fExclude(exclude),
   fUseSpec(kFALSE),
   fType(),
-  fSpecification(0x0)
+  fSpecification(kAliHLTVoidDataSpec)
 {
   // Constructs a domain entry with a particular data type, any specification
   // and the exclude flag set.
@@ -379,7 +379,10 @@ int AliHLTDomainEntry::AsBinary(AliHLTUInt32_t buffer[4]) const
   tgt++;
   
   // specification
-  *tgt = fSpecification;
+  if (fUseSpec)
+    *tgt = fSpecification;
+  else
+    *tgt = kAliHLTVoidDataSpec;
 
   return 0;
 }
