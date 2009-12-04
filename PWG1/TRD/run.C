@@ -160,7 +160,7 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
     AliAnalysisTask *task=(AliAnalysisTask*)taskList->At(itask);
     printf(" %s [%s]\n", task->GetName(), task->GetTitle());
   }
-
+  //mgr->PrintStatus();
   mgr->StartAnalysis("local", chain, nev, first);
 
   timer.Stop();

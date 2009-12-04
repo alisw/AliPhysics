@@ -38,7 +38,7 @@ public:
   
   void           ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects() = 0;
-  virtual void   Exec(Option_t *);
+  virtual void   Exec(Option_t *opt);
 
   Int_t          GetNRefFigures() const  { return fNRefFigures; } 
   TList*         GetPlotFunctors() const { return fPlotFuncList;}

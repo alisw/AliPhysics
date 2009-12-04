@@ -100,6 +100,7 @@ protected:
   AliTRDReconstructor *fReconstructor;  //! reconstructor needed for recalculation the PID
   TObjArray     *fV0s;                  //! v0 array
   TTree         *fData;                 //! dEdx-P data
+  TObjArray     *fInfo;                 //! list of PID info
   AliTRDpidRefDataArray *fPIDdataArray; //! pid data array
   ETRDpidRefMakerSource  fRefPID;       // reference PID source
   ETRDpidRefMakerSource  fRefP;         // reference momentum source

@@ -21,26 +21,21 @@
 //  TRD calibration class for building reference data for PID
 //  - 2D reference histograms (responsible A.Bercuci) 
 //  - 3D reference histograms (not yet implemented) (responsible A.Bercuci)
-//  - Neural Network (responsible A.Wilk)
 //
 //   Origin
 //   Alex Bercuci  (A.Bercuci@gsi.de)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TFile.h>
+#include <TSystem.h>
 #include <TROOT.h>
+#include <TFile.h>
 #include <TTree.h>
 #include <TMath.h>
 #include <TEventList.h>
 #include <TH2D.h>
 #include <TH2I.h>
-#include <TPrincipal.h>
-//#include <TVector3.h>
-//#include <TLinearFitter.h>
 #include <TCanvas.h>
-//#include <TEllipse.h>
-//#include <TMarker.h>
 
 #include "AliLog.h"
 #include "../STAT/TKDPDF.h"
@@ -54,8 +49,8 @@
 ClassImp(AliTRDpidRefMakerLQ)
 
 //__________________________________________________________________
-AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ()
-  :AliTRDpidRefMaker("PIDrefMakerLQ", "PID(LQ) Reference Maker")
+AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ() :
+  AliTRDpidRefMaker("PIDrefMakerLQ", "PID(LQ) Reference Maker")
 {
   //
   // AliTRDpidRefMakerLQ default constructor
@@ -70,45 +65,46 @@ AliTRDpidRefMakerLQ::~AliTRDpidRefMakerLQ()
   //
 }
 
-//________________________________________________________________________
+// //________________________________________________________________________
 void AliTRDpidRefMakerLQ::CreateOutputObjects()
 {
   // Create histograms
   // Called once
 
-  AliTRDpidRefMaker::CreateOutputObjects();
+  //OpenFile(0, "RECREATE");
+  fContainer = Histos();
+}
+
+
+//__________________________________________________________________
+TObjArray* AliTRDpidRefMakerLQ::Histos()
+{
+  // Create histograms
+
+  if(fContainer) return fContainer;
+
+  fContainer = new TObjArray(AliTRDCalPID::kNMom);
+  //fContainer->SetOwner(kTRUE);
+  //fContainer->SetName(Form("Moni%s", GetName()));
 
   // save dE/dx references
   TH2 *h2 = 0x0;
   for(Int_t ip=AliTRDCalPID::kNMom; ip--;){ 
     TObjArray *arr = new TObjArray(AliPID::kSPECIES);
-    arr->SetName(Form("Pbin%02d", ip));
+    arr->SetName(Form("Pbin%02d", ip)); arr->SetOwner();
     for(Int_t is=AliPID::kSPECIES; is--;) {
-      h2 = new TH2D(Form("h%s%d", AliPID::ParticleShortName(is), ip), Form("%s ref. dEdx @ Pbin[%d]", AliPID::ParticleName(is), ip), 50, 5., 10., 50, 5., 10.);
+      h2 = new TH2D(Form("h%s%d", AliPID::ParticleShortName(is), ip), Form("%s @ Pbin[%d]", AliPID::ParticleName(is), ip), 50, 5., 10., 50, 5., 10.);
       h2->GetXaxis()->SetTitle("log(dE/dx_{am}) [au]");
       h2->GetYaxis()->SetTitle("log(dE/dx_{dr}) [au]");
       h2->GetZaxis()->SetTitle("#");
       arr->AddAt(h2, is);
     }
-    fContainer->AddAt(arr, 1+ip);
+    fContainer->AddAt(arr, ip);
   }
+  fNRefFigures=AliTRDCalPID::kNMom;
+  return fContainer;
 }
 
-/*
-//________________________________________________________________________
-Float_t* AliTRDpidRefMakerLQ::CookdEdx(AliTRDseedV1 *trklt)
-{
-// Fill dEdx array for multidim LQ PID
-
-  trklt->CookdEdx(AliTRDpidUtil::kLQslices);
-  const Float_t *dedx = trklt->GetdEdx();
-  if(dedx[0]+dedx[1] <= 0.) return 0x0;
-  if(dedx[2] <= 0.) return 0x0;
-
-  fdEdx[0] = TMath::Log(dedx[0]+dedx[1]);
-  fdEdx[1] = TMath::Log(dedx[2]);
-  return fdEdx;
-}*/
 
 //__________________________________________________________________
 TObject* AliTRDpidRefMakerLQ::GetOCDBEntry(Option_t *opt)
@@ -128,7 +124,7 @@ Bool_t AliTRDpidRefMakerLQ::GetRefFigure(Int_t ifig)
 {
 // Steering reference picture
 
-  if(ifig<0 || ifig>AliTRDCalPID::kNMom-1){ 
+  if(ifig<0 || ifig>=fNRefFigures){ 
     AliError("Ref fig requested outside definition.");
     return kFALSE;
   }
@@ -137,16 +133,69 @@ Bool_t AliTRDpidRefMakerLQ::GetRefFigure(Int_t ifig)
     return kFALSE;
   }
 
-  TObjArray *arr = (TObjArray*)fContainer->At(ifig);
-  gPad->Divide(3, 2, 1.e-5, 1.e-5); 
-  TList *l=gPad->GetListOfPrimitives(); 
-  for(Int_t is=0; is<AliPID::kSPECIES; is++){
-    ((TVirtualPad*)l->At(is))->cd();
-    ((TH2*)arr->At(is))->Draw("cont4z");
+  TObjArray *arr(NULL);TList *l(NULL);TH2 *h2(NULL);
+  switch(ifig){
+  case 0: // PDG plot
+    if(!(h2=(TH2*)fContainer->At(0))){
+      AliError("Abundance Plot missing.");
+      return kFALSE;
+    }
+    h2->Draw("cont4z");
+    break;
+  default:
+    if(!(arr = (TObjArray*)fContainer->At(ifig))){
+      AliError(Form("2D container @ pBin[%d] missing.", ifig-1));
+      return kFALSE;
+    }
+    gPad->Divide(3, 2, 1.e-5, 1.e-5);l=gPad->GetListOfPrimitives(); 
+    for(Int_t is=0; is<AliPID::kSPECIES; is++){
+      ((TVirtualPad*)l->At(is))->cd();
+      if(!(h2=(TH2*)arr->At(is))){
+        AliError(Form("2D for %s @ pBin[%d] missing.", AliPID::ParticleShortName(is), ifig-1));
+        return kFALSE;
+      }
+      h2->Draw("cont4z");
+    }
   }
-
   return kTRUE;
 }
+
+
+//________________________________________________________________________
+Bool_t AliTRDpidRefMakerLQ::Load(const Char_t */*fname*/)
+{
+  const Char_t *name("PIDrefMaker");
+  if(gSystem->AccessPathName(Form("TRD.Calib%s.root", name), kReadPermission)){
+    AliError(Form("File TRD.Calib%s.root not readable", name));
+    return kFALSE;
+  }
+  if(!TFile::Open(Form("TRD.Calib%s.root", name))){
+    AliError(Form("File TRD.Calib%s.root corrupted", name));
+    return kFALSE;
+  }
+  if (!(fData = dynamic_cast<TTree*>(gFile->Get(name)))) {
+    AliError(Form("Tree %s not available", name));
+    return kFALSE;
+  }
+  LinkPIDdata();
+
+  TObjArray *o(NULL);
+  if(!(o = (TObjArray*)gFile->Get(Form("Moni%s", name)))){
+    AliWarning(Form("Monitor container Moni%s not available.", name));
+    return kFALSE;
+  }
+  fContainer = (TObjArray*)o->Clone("monitor");
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliTRDpidRefMakerLQ::Exec(Option_t */*opt*/)
+{
+// Mock up function to load PID data into local data storage
+  AliInfo(Form("fInfo[%d]\n", fInfo->GetEntriesFast()));
+  PostData(0, fContainer);
+}
+
 
 //________________________________________________________________________
 Bool_t AliTRDpidRefMakerLQ::PostProcess()
@@ -159,20 +208,6 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
 //   - write pdf to file for loading to OCDB
 // 
 
-
-  TFile *fCalib = TFile::Open(Form("TRD.Calib%s.root", GetName()), "update");
-  fData = dynamic_cast<TTree*>(gFile->Get(GetName()));
-  if (!fData) {
-    AliError("Calibration data not available");
-    return kFALSE;
-  }
-  TObjArray *o = 0x0;
-  if(!(o = (TObjArray*)gFile->Get(Form("Moni%s", GetName())))){
-    AliWarning("Missing monitoring container.");
-    return kFALSE;
-  }
-  fContainer = (TObjArray*)o->Clone("monitor");
-
   TDatime d;
   TDirectoryFile *pdfs = new TDirectoryFile(Form("PDF_%d", d.GetDate()), "PDFs for LQ TRD-PID", "", gFile);
   pdfs->Write();
@@ -180,10 +215,10 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
   pdfs->cd();
 
   //TCanvas *cc = new TCanvas("cc", "", 500, 500);
-  LinkPIDdata();
-  Float_t *data[] = {0x0, 0x0};
-  // allocate storage
-  data[0] = new Float_t[kMaxStat];data[1] = new Float_t[kMaxStat];
+  // allocate working storage
+  Float_t *data[] = {
+    new Float_t[kMaxStat], 
+    new Float_t[kMaxStat]};
   for(Int_t ip=AliTRDCalPID::kNMom; ip--; ){ 
     for(Int_t is=AliPID::kSPECIES; is--;) {
       Int_t n(0); // index of data
@@ -264,7 +299,7 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
   }
   delete [] data[0]; delete [] data[1];
   pdfs->Write();
-  fCalib->Close(); delete fCalib;
+  //fCalib->Close(); delete fCalib;
 
   return kTRUE; // testing protection
 }

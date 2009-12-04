@@ -34,17 +34,19 @@ public:
   };
   AliTRDpidRefMakerLQ();
   ~AliTRDpidRefMakerLQ();
- 
-  void      CreateOutputObjects();
-  TObject*  GetOCDBEntry(Option_t *opt);
-  Bool_t    GetRefFigure(Int_t ifig);
-  Bool_t    PostProcess();
+
+  void        CreateOutputObjects();
+  void        Exec(Option_t *opt);
+  TObject*    GetOCDBEntry(Option_t *opt);
+  Bool_t      GetRefFigure(Int_t ifig);
+  TObjArray*  Histos();
+  Bool_t      Load(const Char_t *filename = "TRD.CalibPIDrefMaker.root");
+  Bool_t      PostProcess();
 
 private:
   AliTRDpidRefMakerLQ(const AliTRDpidRefMakerLQ &ref);
   AliTRDpidRefMakerLQ& operator=(const AliTRDpidRefMakerLQ &ref);
  
-private:
   ClassDef(AliTRDpidRefMakerLQ, 5)  // Reference builder for Multidim-LQ TRD-PID
 
 };

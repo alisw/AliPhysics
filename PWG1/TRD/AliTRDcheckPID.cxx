@@ -51,6 +51,7 @@
 #include "Cal/AliTRDCalPIDNN.h"
 #include "AliTRDcheckPID.h"
 #include "info/AliTRDtrackInfo.h"
+#include "info/AliTRDpidInfo.h"
 
 Char_t const * AliTRDcheckPID::fgMethod[3] = {"LQ", "NN", "ESD"};
 
@@ -59,10 +60,11 @@ ClassImp(AliTRDcheckPID)
 //________________________________________________________________________
 AliTRDcheckPID::AliTRDcheckPID() 
   :AliTRDrecoTask("checkPID", "TRD PID checker")
-  ,fReconstructor(0x0)
-  ,fUtil(0x0)
-  ,fGraph(0x0)
-  ,fMomentumAxis(0x0)
+  ,fReconstructor(NULL)
+  ,fUtil(NULL)
+  ,fGraph(NULL)
+  ,fPID(NULL)
+  ,fMomentumAxis(NULL)
   ,fMinNTracklets(AliTRDgeometry::kNlayer)
   ,fMaxNTracklets(AliTRDgeometry::kNlayer)
  {
@@ -83,15 +85,17 @@ AliTRDcheckPID::AliTRDcheckPID()
 
   fUtil = new AliTRDpidUtil();
   InitFunctorList();
+  DefineOutput(1, TObjArray::Class()); // PID for reference maker
 }
 
 
 //________________________________________________________________________
 AliTRDcheckPID::~AliTRDcheckPID() 
 {
- if(fGraph){fGraph->Delete(); delete fGraph;}
- if(fReconstructor) delete fReconstructor;
- if(fUtil) delete fUtil;
+  if(fPID){fPID->Delete(); delete fPID;}
+  if(fGraph){fGraph->Delete(); delete fGraph;}
+  if(fReconstructor) delete fReconstructor;
+  if(fUtil) delete fUtil;
 }
 
 
@@ -103,6 +107,23 @@ void AliTRDcheckPID::CreateOutputObjects()
 
   OpenFile(0, "RECREATE");
   fContainer = Histos();
+
+  fPID = new TObjArray();
+  fPID->SetOwner(kTRUE);
+}
+
+//________________________________________________________
+void AliTRDcheckPID::Exec(Option_t *opt)
+{
+  //
+  // Execution part
+  //
+
+  fPID->Delete();
+
+  AliTRDrecoTask::Exec(opt);
+
+  PostData(1, fPID);
 }
 
 
@@ -118,7 +139,7 @@ TObjArray * AliTRDcheckPID::Histos(){
   fContainer = new TObjArray(); fContainer->Expand(kNPlots);
 
   const Float_t epsilon = 1./(2*(AliTRDpidUtil::kBins-1));     // get nice histos with bin center at 0 and 1
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
 
   const Int_t kNmethodsPID=Int_t(sizeof(fgMethod)/sizeof(Char_t*));
   // histos with posterior probabilities for all particle species
@@ -427,7 +448,9 @@ TH1 *AliTRDcheckPID::PlotESD(const AliTRDtrackV1 *track)
       AliWarning("No Histogram defined.");
       return NULL;
     }
-  
+
+    AliTRDpidInfo *pid = new AliTRDpidInfo();
+    fPID->Add(pid);
     hPID->Fill(FindBin(species, momentum), pidESD[is]);
   }
   return hPID;
@@ -475,7 +498,7 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
 //   (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
   Float_t sumdEdx = 0;
   Int_t iBin = FindBin(species, momentum);
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
     sumdEdx = 0;
     tracklet = cTrack.GetTracklet(iChamb);
@@ -530,7 +553,7 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
   Int_t iMomBin = fMomentumAxis->FindBin(momentum);
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   Float_t *fdEdx;
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
     tracklet = cTrack.GetTracklet(iChamb);
     if(!tracklet) continue;
@@ -560,7 +583,7 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
   
   if(!CheckTrackQuality(fkTrack)) return NULL;
   
-  TObjArray *arr = 0x0;
+  TObjArray *arr = NULL;
   TProfile2D *hPHX, *hPHT;
   if(!(arr = dynamic_cast<TObjArray *>(fContainer->At(kPH)))){
     AliWarning("No Histogram defined.");
@@ -583,8 +606,8 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return NULL;;
 
-  AliTRDseedV1 *tracklet = 0x0;
-  AliTRDcluster *cluster = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
+  AliTRDcluster *cluster = NULL;
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   Int_t iBin = FindBin(species, momentum);
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
@@ -639,7 +662,7 @@ TH1 *AliTRDcheckPID::PlotNClus(const AliTRDtrackV1 *track)
 
   Int_t species = AliTRDpidUtil::AliTRDpidUtil::Pdg2Pid(pdg);
   Int_t iBin = FindBin(species, momentum); 
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
     tracklet = fkTrack->GetTracklet(iChamb);
     if(!tracklet) continue;
@@ -772,12 +795,12 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
 // Steering function to retrieve performance plots
 
   Bool_t kFIRST = kTRUE;
-  TGraphErrors *g = 0x0;
-  TAxis *ax = 0x0;
-  TObjArray *arr = 0x0;
-  TH1 *h1 = 0x0, *h=0x0;
-  TH2 *h2 = 0x0;
-  TList *content = 0x0;
+  TGraphErrors *g = NULL;
+  TAxis *ax = NULL;
+  TObjArray *arr = NULL;
+  TH1 *h1 = NULL, *h=NULL;
+  TH2 *h2 = NULL;
+  TList *content = NULL;
   switch(ifig){
   case kEfficiency:{
     gPad->Divide(2, 1, 1.e-5, 1.e-5);
