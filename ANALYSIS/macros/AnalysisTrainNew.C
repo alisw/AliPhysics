@@ -98,6 +98,7 @@ Int_t        iPWG3LSd0         = 1;      // LS D0 analysis (PWG3D2H)
 Int_t        iPWG3LSjpsi       = 1;      // LS J/Psi analysis (PWG3D2H)                                                                    
 Int_t        iPWG3CFd0         = 1;      // CF D0 analysis (PWG3D2H)                                                                       
 Int_t        iPWG3promptd0     = 1;      // prompt D0 analysis (PWG3D2H)                                                                   
+Int_t       iPWG3MuonTrain     = 1;      // Muon analysis train
 Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra tasks (PWG2
 Int_t        iPWG2protons      = 1;         // Proton-antiproton analysis
@@ -204,6 +205,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       if (iPWG3CFd0)         printf("=     PWG3 CF D0                                                 =\n");                               
       if (iPWG3promptd0)     printf("=     PWG3 prompt D0                                             =\n");                               
    }         
+   if (iPWG3MuonTrain) printf("=  PWG3 muon train                                               =\n");
    if (iPWG4partcorr)  printf("=  PWG4 gamma-hadron, pi0 and gamma-jet correlations             =\n");
    if (iPWG4gammaconv) printf("=  PWG4 gamma conversion                                         =\n");
    if (iPWG4omega3pi)  printf("=  PWG4 omega to 3 pions                                         =\n");
@@ -536,6 +538,17 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddD2HTrain.C");
       TFile::Cp(gSystem->ExpandPathName(configPWG3d2h.Data()), Form("%s/ConfigVertexingHF.C", train_name.Data()));
       AddD2HTrain(iPWG3d0mass,iPWG3d0massLS,iPWG3dplus, iPWG3LSd0, iPWG3LSjpsi, iPWG3CFd0, iPWG3promptd0);                                 
+   }   
+
+   // PWG3 muon
+   if (iPWG3MuonTrain) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/AddPWG3MuonTrain.C");
+      // iESDAnalysis, iAODAnalysis -> flags to select if the train is AOD or ESD based
+      // iMuonDistributions, iSingleMuonANAlysis -> flags to switch on/off analysis wagons
+      Bool_t iESDAnalysis = !iAODanalysis;
+      Bool_t iMuonDistributions = kTRUE;
+      Bool_t iSingleMuonAnalysis = kTRUE;
+      AddPWG3MuonTrain(iESDAnalysis,iAODanalysis,iMuonDistributions,iSingleMuonAnalysis);
    }   
       
 // ********** PWG4 wagons ******************************************************
@@ -878,7 +891,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 {
 // Load common analysis libraries.
    Bool_t success = kTRUE;
-   if (iESDfilter) {
+   if (iESDfilter || iPWG3MuonTrain) {
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
           !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
    }   
@@ -1377,6 +1390,7 @@ void WriteConfig()
    out << "     iPWG3LSjpsi       = " << iPWG3LSjpsi << ";" << endl;
    out << "     iPWG3CFd0         = " << iPWG3CFd0 << ";" << endl;
    out << "     iPWG3promptd0     = " << iPWG3promptd0 << ";" << endl;
+   out << "   iPWG3MuonTrain      = " << iPWG3MuonTrain << ";" << endl;   
    out << "   iPWG2femto      = " << iPWG2femto << ";" << endl;
    out << "   iPWG2spectra    = " << iPWG2spectra << ";" << endl;
    out << "     iPWG2protons      = " << iPWG2protons << ";" << endl;
