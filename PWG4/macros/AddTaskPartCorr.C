@@ -113,6 +113,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SetCalorimeter(calorimeter);
   anapi0->SwitchOnFiducialCut();
   anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+  if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
+  else  anapi0->SetNumberOfModules(4); //EMCAL first year
   if(kPrintSettings) anapi0->Print("");
   
 	

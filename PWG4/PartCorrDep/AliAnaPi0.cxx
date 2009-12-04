@@ -44,6 +44,9 @@
 #include "AliVEvent.h"
 #include "AliPHOSGeoUtils.h"
 #include "AliEMCALGeoUtils.h"
+#include "AliESDCaloCluster.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliAnaPi0)
 
@@ -51,7 +54,7 @@ ClassImp(AliAnaPi0)
 AliAnaPi0::AliAnaPi0() : AliAnaPartCorrBaseClass(),
 fNCentrBin(0),fNZvertBin(0),fNrpBin(0),
 fNPID(0),fNmaxMixEv(0), fZvtxCut(0.),fCalorimeter(""),
-fEMCALGeoName("EMCAL_COMPLETE"),fEventsList(0x0), fhEtalon(0x0),
+fEMCALGeoName("EMCAL_COMPLETE"), fNModules(12), fEventsList(0x0), fhEtalon(0x0), fhReMod(0x0),
 fhRe1(0x0),fhMi1(0x0),fhRe2(0x0),fhMi2(0x0),fhRe3(0x0),fhMi3(0x0),fhEvents(0x0),
 fhPrimPt(0x0), fhPrimAccPt(0x0), fhPrimY(0x0), fhPrimAccY(0x0), fhPrimPhi(0x0), fhPrimAccPhi(0x0), 
 fPHOSGeo(0x0),fEMCALGeo(0x0)
@@ -65,7 +68,7 @@ fPHOSGeo(0x0),fEMCALGeo(0x0)
 AliAnaPi0::AliAnaPi0(const AliAnaPi0 & ex) : AliAnaPartCorrBaseClass(ex),  
 fNCentrBin(ex.fNCentrBin),fNZvertBin(ex.fNZvertBin),fNrpBin(ex.fNrpBin),
 fNPID(ex.fNPID),fNmaxMixEv(ex.fNmaxMixEv),fZvtxCut(ex.fZvtxCut), fCalorimeter(ex.fCalorimeter),
-fEMCALGeoName(ex.fEMCALGeoName), fEventsList(ex.fEventsList), fhEtalon(ex.fhEtalon),
+fEMCALGeoName(ex.fEMCALGeoName), fNModules(ex.fNModules), fEventsList(ex.fEventsList), fhEtalon(ex.fhEtalon), fhReMod(ex.fhReMod),
 fhRe1(ex.fhRe1),fhMi1(ex.fhMi1),fhRe2(ex.fhRe2),fhMi2(ex.fhMi2),fhRe3(ex.fhRe3),fhMi3(ex.fhMi3),fhEvents(ex.fhEvents),
 fhPrimPt(ex.fhPrimPt), fhPrimAccPt(ex.fhPrimAccPt), fhPrimY(ex.fhPrimY), 
 fhPrimAccY(ex.fhPrimAccY), fhPrimPhi(ex.fhPrimPhi), fhPrimAccPhi(ex.fhPrimAccPhi),
@@ -85,8 +88,8 @@ AliAnaPi0 & AliAnaPi0::operator = (const AliAnaPi0 & ex)
   
   fNCentrBin = ex.fNCentrBin  ; fNZvertBin = ex.fNZvertBin  ; fNrpBin = ex.fNrpBin  ; 
   fNPID = ex.fNPID  ; fNmaxMixEv = ex.fNmaxMixEv  ; fZvtxCut = ex.fZvtxCut  ;  fCalorimeter = ex.fCalorimeter  ;  
-  fEMCALGeoName = ex.fEMCALGeoName ; fEventsList = ex.fEventsList  ;  fhEtalon = ex.fhEtalon  ; 
-  fhRe1 = ex.fhRe1  ; fhMi1 = ex.fhMi1  ; fhRe2 = ex.fhRe2  ; fhMi2 = ex.fhMi2  ; 
+  fEMCALGeoName = ex.fEMCALGeoName ; fNModules = ex.fNModules; fEventsList = ex.fEventsList  ;  fhEtalon = ex.fhEtalon  ; 
+  fhRe1 = ex.fhRe1  ; fhMi1 = ex.fhMi1  ; fhRe2 = ex.fhRe2  ; fhMi2 = ex.fhMi2  ; fhReMod = ex.fhReMod; 
   fhRe3 = ex.fhRe3  ; fhMi3 = ex.fhMi3  ; fhEvents = ex.fhEvents  ; 
   fhPrimPt = ex.fhPrimPt  ;  fhPrimAccPt = ex.fhPrimAccPt  ;  fhPrimY = ex.fhPrimY  ;  
   fhPrimAccY = ex.fhPrimAccY  ;  fhPrimPhi = ex.fhPrimPhi  ;  fhPrimAccPhi = ex.fhPrimAccPhi ;
@@ -124,7 +127,7 @@ void AliAnaPi0::InitParameters()
   SetInputAODName("PWG4Particle");
   
   AddToHistogramsName("AnaPi0_");
-
+  fNModules = 12; // set maximum to maximum number of EMCAL modules
   fNCentrBin = 1;
   fNZvertBin = 1;
   fNrpBin    = 1;
@@ -175,7 +178,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
   TList * outputContainer = new TList() ; 
   outputContainer->SetName(GetName()); 
-  
+	
+  fhReMod = new TH3D*[fNModules] ;
   fhRe1 = new TH3D*[fNCentrBin*fNPID] ;
   fhRe2 = new TH3D*[fNCentrBin*fNPID] ;
   fhRe3 = new TH3D*[fNCentrBin*fNPID] ;
@@ -185,10 +189,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   char key[255] ;
   char title[255] ;
-  
+  	
   for(Int_t ic=0; ic<fNCentrBin; ic++){
     for(Int_t ipid=0; ipid<fNPID; ipid++){
-      
+		
       //Distance to bad module 1
       sprintf(key,"hRe_cen%d_pid%d_dist1",ic,ipid) ;
       sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
@@ -271,6 +275,18 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimAccPhi) ;
   }
 
+  for(Int_t imod=0; imod<fNModules; imod++){
+	//Module dependent invariant mass
+	sprintf(key,"hReMod_%d",imod) ;
+	sprintf(title,"Real m_{#gamma#gamma} distr. for Module %d",imod) ;
+	fhEtalon->Clone(key);
+	fhReMod[imod]=(TH3D*)fhEtalon->Clone(key) ;
+	fhReMod[imod]->SetName(key) ;
+	fhReMod[imod]->SetTitle(title) ;
+	outputContainer->Add(fhReMod[imod]) ;
+  }
+	
+	
   //Save parameters used for analysis
   TString parList ; //this will be list of parameters used for this analysis.
   char onePar[255] ;
@@ -291,6 +307,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   sprintf(onePar,"Z vertex position: -%f < z < %f \n",fZvtxCut,fZvtxCut) ;
   parList+=onePar ;
   sprintf(onePar,"Calorimeter: %s \n",fCalorimeter.Data()) ;
+  parList+=onePar ;
+  sprintf(onePar,"Number of modules: %d \n",fNModules) ;
   parList+=onePar ;
   
   TObjString *oString= new TObjString(parList) ;
@@ -313,9 +331,57 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   printf("Number of different PID used:  %d \n",fNPID) ;
   printf("Cuts: \n") ;
   printf("Z vertex position: -%2.3f < z < %2.3f \n",fZvtxCut,fZvtxCut) ;
+  printf("Number of modules: %d \n",fNModules) ;
   printf("------------------------------------------------------\n") ;
 } 
 
+//____________________________________________________________________________________________________________________________________________________
+Int_t AliAnaPi0::GetModuleNumber(AliAODPWG4Particle * particle) 
+{
+	//Get the EMCAL/PHOS module number that corresponds to this particle
+	
+	Int_t absId = -1;
+	if(fCalorimeter=="EMCAL"){
+		fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
+		if(GetDebug() > 2) 
+			printf("EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
+				   particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
+		return fEMCALGeo->GetSuperModuleNumber(absId) ;
+	}//EMCAL
+	else{//PHOS
+		Int_t    relId[4];
+		if(!strcmp((GetReader()->GetInputEvent())->GetName(),"AliESDEvent"))   {
+			AliESDCaloCluster *cluster = ((AliESDEvent*)GetReader()->GetInputEvent())->GetCaloCluster(particle->GetCaloLabel(0));
+			if ( cluster->GetNCells() > 0) {
+				absId = cluster->GetCellAbsId(0);
+				if(GetDebug() > 2) 
+					printf("PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
+						   particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
+			}
+			else return -1;
+		}//ESDs
+		else{
+			AliAODCaloCluster *cluster = ((AliAODEvent*)GetReader()->GetInputEvent())->GetCaloCluster(particle->GetCaloLabel(0));
+			if ( cluster->GetNCells() > 0) {
+				absId = cluster->GetCellAbsId(0);
+				if(GetDebug() > 2) 
+					printf("PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
+						   particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
+			}
+			else return -1;
+		}//AODs
+
+		if ( absId >= 0) {
+			fPHOSGeo->AbsToRelNumbering(absId,relId);
+			if(GetDebug() > 2) 
+				printf("PHOS: Module %d\n",relId[0]-1);
+			return relId[0]-1;
+		}
+		else return -1;
+	}//PHOS
+	
+	return -1;
+}
 
 //____________________________________________________________________________________________________________________________________________________
 void AliAnaPi0::MakeAnalysisFillHistograms() 
@@ -345,19 +411,29 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   
   Int_t nPhot = GetInputAODBranch()->GetEntriesFast() ;
   if(GetDebug() > 1) printf("AliAnaPi0::MakeAnalysisFillHistograms() - Photon entries %d\n", nPhot);
-  
+  Int_t module1 = -1;
+  Int_t module2 = -1;
   for(Int_t i1=0; i1<nPhot-1; i1++){
     AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
     TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
+	//Get Module number
+	module1 = GetModuleNumber(p1);
     for(Int_t i2=i1+1; i2<nPhot; i2++){
       AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
       TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
+	  //Get module number
+	  module2 = GetModuleNumber(p2);
       Double_t m  = (photon1 + photon2).M() ;
       Double_t pt = (photon1 + photon2).Pt();
       Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
       if(GetDebug() > 2)
 	printf("AliAnaPi0::MakeAnalysisFillHistograms() - Current Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
 	       p1->Pt(), p2->Pt(), pt,m,a);
+		//Fill module dependent histograms
+		//if(module1==module2) printf("mod1 %d\n",module1);
+		if(module1==module2 && module1 >=0 && module1<fNModules)
+			fhReMod[module1]->Fill(pt,a,m) ;
+		
       for(Int_t ipid=0; ipid<fNPID; ipid++)
 	{
 	  if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
@@ -525,6 +601,7 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
 	if(!fhMi1) fhMi1 = new TH3D*[fNCentrBin*fNPID] ;
 	if(!fhMi2) fhMi2 = new TH3D*[fNCentrBin*fNPID] ;
 	if(!fhMi3) fhMi3 = new TH3D*[fNCentrBin*fNPID] ;	
+	if(!fhReMod) fhReMod = new TH3D*[fNModules] ;	
 	
     for(Int_t ic=0; ic<fNCentrBin; ic++){
         for(Int_t ipid=0; ipid<fNPID; ipid++){
@@ -546,9 +623,12 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
 		 fhPrimY      = (TH1D*)  outputList->At(index++);
 		 fhPrimAccY   = (TH1D*)  outputList->At(index++);
 		 fhPrimPhi    = (TH1D*)  outputList->At(index++);
-		 fhPrimAccPhi = (TH1D*)  outputList->At(index);
+		 fhPrimAccPhi = (TH1D*)  outputList->At(index++);
 	}
 	
+	for(Int_t imod=0; imod < fNModules; imod++)
+			fhReMod[imod] = (TH3D*) outputList->At(index++);
+			
 }
 
 
