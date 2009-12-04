@@ -82,6 +82,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fFriendChainName(),
                   fJobTag(),
                   fOutputSingle(),
+                  fRunPrefix(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -131,6 +132,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fFriendChainName(),
                   fJobTag(),
                   fOutputSingle(),
+                  fRunPrefix(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -180,6 +182,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fFriendChainName(other.fFriendChainName),
                   fJobTag(other.fJobTag),
                   fOutputSingle(other.fOutputSingle),
+                  fRunPrefix(other.fRunPrefix),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -257,6 +260,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fFriendChainName         = other.fFriendChainName;
       fJobTag                  = other.fJobTag;
       fOutputSingle            = other.fOutputSingle;
+      fRunPrefix               = other.fRunPrefix;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -289,7 +293,7 @@ void AliAnalysisAlien::AddRunNumber(Int_t run)
 {
 // Add a run number to the list of runs to be processed.
    if (fRunNumbers.Length()) fRunNumbers += " ";
-   fRunNumbers += Form("%d", run);
+   fRunNumbers += Form("%s%d", fRunPrefix.Data(), run);
 }   
 
 //______________________________________________________________________________
@@ -488,12 +492,12 @@ Bool_t AliAnalysisAlien::CheckInputData()
    } else {
       Info("CheckDataType", "Using run range [%d, %d]", fRunRange[0], fRunRange[1]);
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
-         path = Form("%s/%d ", fGridDataDir.Data(), irun);
+         path = Form("%s/%s%d ", fGridDataDir.Data(), fRunPrefix.Data(), irun);
          if (!DirectoryExists(path)) {
 //            Warning("CheckInputData", "Run number %d not found in path: <%s>", irun, path.Data());
             continue;
          }
-         path = Form("%s/%d.xml", workdir.Data(),irun);
+         path = Form("%s/%s%d.xml", workdir.Data(),fRunPrefix.Data(),irun);
          TString msg = "\n#####   file: ";
          msg += path;
          msg += " type: xml_collection;";
@@ -501,14 +505,14 @@ Bool_t AliAnalysisAlien::CheckInputData()
          else          msg += " using_tags: No";
          Info("CheckDataType", msg.Data());
          if (fNrunsPerMaster<2) {
-            AddDataFile(Form("%d.xml",irun));
+            AddDataFile(Form("%s%d.xml",fRunPrefix.Data(),irun));
          } else {
             nruns++;
             if (((nruns-1)%fNrunsPerMaster) == 0) {
-               schunk = Form("%d", irun);
+               schunk = Form("%s%d", fRunPrefix.Data(),irun);
             }
             if ((nruns%fNrunsPerMaster)!=0 && irun != fRunRange[1]) continue;
-            schunk += Form("_%d.xml",  irun);
+            schunk += Form("_%s%d.xml", fRunPrefix.Data(), irun);
             AddDataFile(schunk);
          }   
       }
@@ -648,11 +652,11 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    } else {
       // Process a full run range.
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
-         path = Form("%s/%d ", fGridDataDir.Data(), irun);
+         path = Form("%s/%s%d ", fGridDataDir.Data(), fRunPrefix.Data(), irun);
          if (!DirectoryExists(path)) continue;
 //         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
-         else file = Form("%d.xml", irun);
+         else file = Form("%s%d.xml", fRunPrefix.Data(), irun);
          if (FileExists(file) && fNrunsPerMaster<2 && !TestBit(AliAnalysisGrid::kTest)) {
             Info("CreateDataset", "\n#####   Dataset %s exist. Skipping creation...", file.Data());
 //            gGrid->Rm(file); 
@@ -1216,7 +1220,7 @@ void AliAnalysisAlien::Print(Option_t *) const
    if (fRunNumbers.Length()) 
    printf("=   Run numbers to be processed: _________________ %s\n", fRunNumbers.Data());
    if (fRunRange[0])
-   printf("=   Run range to be processed: ___________________ %d-%d\n", fRunRange[0], fRunRange[1]);
+   printf("=   Run range to be processed: ___________________ %s%d-%s%d\n", fRunPrefix.Data(), fRunRange[0], fRunPrefix.Data(), fRunRange[1]);
    if (!fRunRange[0] && !fRunNumbers.Length()) {
       TIter next(fInputFiles);
       TObject *obj;

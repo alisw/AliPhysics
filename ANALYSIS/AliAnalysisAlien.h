@@ -69,6 +69,7 @@ public:
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
    virtual void        SetPreferedSE(const char *se)                     {fCloseSE = se;}
    virtual void        SetProductionMode(Int_t mode=1)                   {fProductionMode = mode;}
+   virtual void        SetRunPrefix(const char *prefix)                  {fRunPrefix = prefix;}
    virtual void        SetOutputSingleFolder(const char *folder)         {fOutputSingle = folder; fSplitMode="file"; fSplitMaxInputFileNumber=1;}
 
    TGridJDL           *GetGridJDL() {return fGridJDL;}
@@ -143,9 +144,10 @@ private:
    TString          fFriendChainName; // File name to construct friend chain (for AOD)
    TString          fJobTag;          // Job tag
    TString          fOutputSingle;    // Directory name for the output when split is per file
+   TString          fRunPrefix;       // Run prefix to be applied to run numbers
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 8)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 9)   // Class providing some AliEn utilities
 };
 #endif
