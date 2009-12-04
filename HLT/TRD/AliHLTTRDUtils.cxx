@@ -23,6 +23,7 @@
 #include "AliHLTTRDUtils.h"
 #include <TClonesArray.h>
 #include "AliHLTTRDTrack.h"
+#include "AliHLTTRDTracklet.h"
 #include "AliHLTTRDCluster.h"
 #include "AliHLTExternalTrackParam.h"
 #include "AliESDEvent.h"
@@ -106,7 +107,7 @@ AliHLTUInt32_t AliHLTTRDUtils::ReadClusters(TClonesArray *outArray, void* inputP
   //HLTDebug("\nReading clusters from the Memory\n ============= \n");
   AliHLTTRDCluster * curCluster;
   UInt_t clusterSize = sizeof(AliHLTTRDCluster), curSize = 0;
-  Int_t i=0;
+  Int_t counter=outArray->GetEntriesFast();
 
   if(nTimeBins){
     *nTimeBins=*(Int_t*)(((AliHLTUInt8_t*)inputPtr)+size-sizeof(Int_t));
@@ -115,21 +116,20 @@ AliHLTUInt32_t AliHLTTRDUtils::ReadClusters(TClonesArray *outArray, void* inputP
   size-=sizeof(*nTimeBins);
 
   curCluster = (AliHLTTRDCluster*) inputPtr;
-  while (curSize + clusterSize <= size)
+  while (curSize < size)
     {
       //HLTDebug(" fX = %f; fY = %f; fZ = %f", curCluster->fX, curCluster->fY, curCluster->fZ);
 
-      AliTRDcluster* curTRDCluster = new((*outArray)[i]) AliTRDcluster();
+      AliTRDcluster* curTRDCluster = new((*outArray)[counter]) AliTRDcluster();
       curCluster->ExportTRDCluster(curTRDCluster);
-      curTRDCluster->SetRPhiMethod(AliTRDcluster::kCOG);
       //HLTDebug(" fX = %f; fY = %f; fZ = %f", curTRDCluster->GetX(), curTRDCluster->GetY(), curTRDCluster->GetZ());
       curSize += clusterSize; 
-      i++;
+      counter++;
       curCluster++;
       //cout << " current readed size is " << curSize << "/" << size << endl;
     }
   
-  return i;
+  return counter;
 }
 
 AliHLTUInt32_t AliHLTTRDUtils::ReadTracks(TClonesArray *outArray, void* inputPtr, AliHLTUInt32_t size, Int_t* nTimeBins)
@@ -145,7 +145,7 @@ AliHLTUInt32_t AliHLTTRDUtils::ReadTracks(TClonesArray *outArray, void* inputPtr
   //HLTDebug ("\nReading tracks from the Memory\n ============= \n");
   AliHLTTRDTrack * hltTrack;
   AliHLTUInt32_t trackSize = 0, curSize = sizeof(*nTimeBins);
-  Int_t counter=0;
+  Int_t counter=outArray->GetEntriesFast();
   
   while (curSize < size)
     {
@@ -215,4 +215,24 @@ AliHLTUInt32_t AliHLTTRDUtils::AddESDToOutput(const AliESDEvent* const esd, AliH
     }
   }
   return iterPtr - outBlockPtr;
+}
+
+void AliHLTTRDUtils::EmulateHLTClusters(TClonesArray* clusterArray)
+{
+  AliHLTUInt32_t estimatedSize = (clusterArray->GetEntriesFast()+1)*sizeof(AliHLTTRDCluster);
+  AliHLTUInt8_t* pBlock = (AliHLTUInt8_t*)malloc(estimatedSize);
+  AliHLTUInt32_t size = AddClustersToOutput(clusterArray, pBlock);
+  clusterArray->Delete();
+  ReadClusters(clusterArray, pBlock, size);
+  free(pBlock);
+}
+
+void AliHLTTRDUtils::EmulateHLTTracks(TClonesArray* trackArray)
+{
+  AliHLTUInt32_t estimatedSize = trackArray->GetEntriesFast()*(sizeof(AliHLTTRDTrack)+6*(sizeof(AliHLTTRDTracklet)+30*sizeof(AliHLTTRDCluster)));
+  AliHLTUInt8_t* pBlock = (AliHLTUInt8_t*)malloc(estimatedSize);
+  AliHLTUInt32_t size = AddTracksToOutput(trackArray, pBlock);
+  trackArray->Delete();
+  ReadTracks(trackArray, pBlock, size);
+  free(pBlock);
 }
