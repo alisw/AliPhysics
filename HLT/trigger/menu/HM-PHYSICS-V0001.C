@@ -31,6 +31,10 @@
  *  -----------------------------
  *  every 100th event
  *
+ * ChangeLog:
+ *  2009-12-04    adding explicite trigger domain entries for blocks to be
+ *                included in 'domainHLTOUT' in order to avoid wildcards in
+ *                the definition of domain entries
  * @author Matthias.Richter@ift.uib.no
  */
 
@@ -85,7 +89,29 @@ void HM_PHYSICS_V0001(
   
   // /////////////////////////////////////////////////////////////////////////////////////////	
   // the domain definitions for the global HLT output and the HLT DDLs
-  config.AddSymbol("domainHLTOUT", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:HLT \")");
+  //config.AddSymbol("domainHLTOUT", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:HLT \")");
+  config.AddSymbol("domainHLTDDL", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"DAQRDOUT:HLT\\0\")");
+
+  // some explicite domain entries
+  config.AddSymbol("domainTObject"   , "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"ROOTTOBJ:HLT \")");
+  config.AddSymbol("domainESD"       , "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"ALIESDV0:HLT \")");
+  config.AddSymbol("domainHistogram" , "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"ROOTHIST:HLT \")");
+
+  config.AddSymbol("domainSPDCluster", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"CLUSTERS:ISPD\")");
+  config.AddSymbol("domainSDDCluster", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"CLUSTERS:ISDD\")");
+  config.AddSymbol("domainSSDCluster", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"CLUSTERS:ISSD\")");
+  config.AddSymbol("domainTPCCluster", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"CLUSTERS:TPC \")");
+
+  // an explicite HLTOUT selection which avoids wildcards
+  config.AddSymbol("domainHLTOUT", "AliHLTTriggerDomain", "", 
+		   "domainTObject    | "
+		   "domainESD        | "
+		   "domainHistogram  | "
+		   "domainSPDCluster | "
+		   "domainSDDCluster | "
+		   "domainSSDCluster | "
+		   "domainTPCCluster"
+		   );
 
   // /////////////////////////////////////////////////////////////////////////////////////////	
   // -- DETECTOR READOUT DOMAINS
@@ -111,8 +137,6 @@ void HM_PHYSICS_V0001(
 
   // /////////////////////////////////////////////////////////////////////////////////////////	
   // -- DETECTOR READOUT DOMAINS - SPECIAL
-  config.AddSymbol("domainHLTDDL", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"DAQRDOUT:HLT\\0\")");
-
   config.AddSymbol("domainALLDDL", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"DAQRDOUT:***\\0\")");
   
   // /////////////////////////////////////////////////////////////////////////////////////////	
