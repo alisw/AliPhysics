@@ -7,8 +7,13 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-// Import tracks from kinematics-tree / particle-stack.
-// Preliminary/minimal solution.
+/// \ingroup evemacros
+/// \file kine_tracks.C
+/// \brief Import tracks from kinematics-tree / particle-stack.
+///
+/// Preliminary/minimal solution.
+///
+/// \author Matevz Tadel & Alja Mrak-Tadel: 2006, 2007 
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

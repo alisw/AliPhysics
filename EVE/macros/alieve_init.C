@@ -7,6 +7,9 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+/// \ingroup evemacros
+/// \file alieve_init.C
+
 void alieve_init(const TString& cdburi = "",
 		 const TString& path   = ".", Int_t event=0,
                  const Text_t* esdfile = 0,

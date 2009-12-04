@@ -7,6 +7,9 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+/// \ingroup evemacros
+/// \file event_goto.C
+
 void event_goto(Int_t event=0)
 {
   if (AliEveEventManager::GetMaster() == 0) {
