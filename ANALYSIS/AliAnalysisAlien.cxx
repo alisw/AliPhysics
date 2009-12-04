@@ -448,7 +448,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
    TObjArray *arr;
    TObjString *os;
    Int_t nruns = 0;
-   TString schunk;
+   TString schunk, schunk2;
    TString path;
    if (!checked) {
       checked = kTRUE;
@@ -511,11 +511,16 @@ Bool_t AliAnalysisAlien::CheckInputData()
             if (((nruns-1)%fNrunsPerMaster) == 0) {
                schunk = Form("%s%d", fRunPrefix.Data(),irun);
             }
+            schunk2 = Form("_%s%d.xml", fRunPrefix.Data(), irun);
             if ((nruns%fNrunsPerMaster)!=0 && irun != fRunRange[1]) continue;
-            schunk += Form("_%s%d.xml", fRunPrefix.Data(), irun);
+            schunk += schunk2;
             AddDataFile(schunk);
          }   
       }
+      if (!fInputFiles) {
+         schunk += schunk2;
+         AddDataFile(schunk);
+      }   
    }
    return kTRUE;      
 }   
@@ -544,7 +549,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    TString file;
    TString path;
    Int_t nruns = 0;
-   TString schunk;
+   TString schunk, schunk2;
    TGridCollection *cbase=0, *cadd=0;
    if (!fRunNumbers.Length() && !fRunRange[0]) {
       if (fInputFiles && fInputFiles->GetEntries()) return kTRUE;
@@ -694,17 +699,18 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             if (FileExists(fInputFiles->At(nchunk)->GetName())) continue;
             printf("   Merging collection <%s> into %d runs chunk...\n",file.Data(),fNrunsPerMaster);
             if (((nruns-1)%fNrunsPerMaster) == 0) {
-               schunk = Form("%d", irun);
+               schunk = Form("%s%d", fRunPrefix.Data(), irun);
                cbase = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
             } else {
                cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
                cbase->Add(cadd);
                delete cadd;
             }
-            if ((nruns%fNrunsPerMaster)!=0 && irun!=fRunRange[1]) {
+            schunk2 = Form("%s_%s%d.xml", schunk.Data(), fRunPrefix.Data(), irun);
+            if ((nruns%fNrunsPerMaster)!=0 && irun!=fRunRange[1] && schunk2 != fInputFiles->Last()->GetName()) {
                continue;
             }   
-            schunk += Form("_%d.xml", irun);
+            schunk = schunk2;
             if (FileExists(schunk)) {
                Info("CreateDataset", "\n#####   Dataset %s exist. Skipping creation...", schunk.Data());
                continue;
