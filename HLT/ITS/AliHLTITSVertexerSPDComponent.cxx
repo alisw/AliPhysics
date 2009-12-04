@@ -648,7 +648,7 @@ int AliHLTITSVertexerSPDComponent::DoEvent
       wI[5] = w[0]*w[2] - w[1]*w[1];	 
       
       Double_t s = ( w[0]*wI[0] + w[1]*wI[1] + w[3]*wI[3] );
-      cout<<"SG: s="<<s<<endl;
+      
       if( s<1.e-10 ){
 	bestBin = -1;
 	break;
