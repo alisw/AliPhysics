@@ -42,7 +42,7 @@ geom_gentle_muon.C
 </pre>
 -# Initialize the EVE environment with your data
 <pre>
-alieve_init("directory_to_data",event_number)
+alieve_init("local://$ALICE_ROOT/OCDB","directory_to_data",event_number)
 </pre>
 -# Display the current event
 <pre>
