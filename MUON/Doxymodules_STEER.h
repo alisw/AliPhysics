@@ -11,7 +11,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERBaseLinkDef.h 34435 2009-08-27 13:32:45Z morsch
+// From STEERBaseLinkDef.h 37215 2009-11-25 09:13:40Z morsch
 
     enum  AliLog::EType_t {};
  
@@ -59,6 +59,7 @@
 
     class AliMCEvent {};
     class AliMCParticle {};
+    class AliMCVertex {};
 
     class AliMagF {};
     class AliMagWrapCheb {};
@@ -248,7 +249,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h 35648 2009-10-17 10:12:51Z morsch
+// From ESDLinkDef.h 37480 2009-12-01 21:59:07Z cvetan
 
     enum   AliESDEvent::ESDListIndex {};
 
@@ -259,6 +260,7 @@
     class  AliESDInputHandlerRP {};
     class  AliESDRun {};
     class  AliESDHeader {};
+    class  AliESDHLTDecision {};
     class  AliESDZDC {};
     class  AliESDCaloTrigger {};
     class  AliESDfriend {};
@@ -373,7 +375,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From AODLinkDef.h 36380 2009-11-04 16:04:01Z morsch
+// From AODLinkDef.h 37138 2009-11-23 12:19:02Z morsch
 
     enum   AliAODVertex::AODVtx_t {};
     enum   AliAODTrack::AODTrk_t {};
@@ -408,6 +410,8 @@
     class AliAODDiJet {};
     class AliAODMCParticle {};
     class AliAODMCHeader {};
+    class AliAODPWG4Particle {};
+    class AliAODPWG4ParticleCorrelation {};
 
 /** @} */
 
