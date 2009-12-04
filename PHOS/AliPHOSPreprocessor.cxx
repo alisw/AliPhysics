@@ -182,8 +182,8 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
   //Store the updated High Gain/Low Gain ratios
   AliCDBMetaData emcMetaData;
 
-  //Data valid from current run fRun until updated (validityInfinite=kTRUE)
-  Bool_t result = Store("Calib","EmcGainPedestals",&calibData,&emcMetaData,fRun,kTRUE);
+  //Data valid from current run until updated (validityInfinite=kTRUE)
+  Bool_t result = Store("Calib","EmcGainPedestals",&calibData,&emcMetaData,0,kTRUE);
   return result;
 
 }
@@ -273,8 +273,8 @@ Bool_t AliPHOSPreprocessor::FindBadChannelsEmc()
     else 
       path = "HLT";
   
-    // Data valid from current run fRun until being updated (validityInfinite=kTRUE)
-    result[i] *= Store(path.Data(), "EmcBadChannels", &badMap, &md, fRun, kTRUE);
+    // Data valid from current run until being updated (validityInfinite=kTRUE)
+    result[i] *= Store(path.Data(), "EmcBadChannels", &badMap, &md, 0, kTRUE);
     
   }
   
@@ -415,9 +415,9 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
     AliCDBMetaData emcMetaData;
     
     if(lastCalib)
-      result[i] *= Store(path.Data(), "EmcGainPedestals", lastCalib, &emcMetaData, fRun, kTRUE);
+      result[i] *= Store(path.Data(), "EmcGainPedestals", lastCalib, &emcMetaData, 0, kTRUE);
     else
-      result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, fRun, kTRUE);
+      result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, 0, kTRUE);
     
   }
   
