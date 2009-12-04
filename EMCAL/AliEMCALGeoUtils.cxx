@@ -598,12 +598,16 @@ Bool_t AliEMCALGeoUtils::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
 
   GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
   GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi, ieta); 
- 
-  xr = fCentersOfCellsXDir.At(ieta);
-  zr = fCentersOfCellsEtaDir.At(ieta); 
 	
+  //Get eta position. Careful with ALICE conventions (increase index decrease eta)	
+  Int_t ieta2 = ieta;
+  if(nSupMod%2 == 0)		  
+	  ieta2 = (fCentersOfCellsEtaDir.GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
+  zr = fCentersOfCellsEtaDir.At(ieta2); 
+  xr = fCentersOfCellsXDir.At(ieta2);
+
+  //Get phi position. Careful with ALICE conventions (increase index increase phi)
   Int_t iphi2 = iphi;
-	
   if(nSupMod<10) { 
 		if(nSupMod%2 != 0) 
 			iphi2 = (fCentersOfCellsPhiDir.GetSize()-1)-iphi;// 23-iphi, revert the ordering on C side in order to keep convention.
