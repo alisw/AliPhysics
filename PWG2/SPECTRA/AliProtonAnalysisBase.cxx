@@ -22,6 +22,8 @@
 #include <TCanvas.h>
 #include <TLatex.h>
 #include <TF1.h>
+#include <TList.h>
+#include <TH1F.h>
 
 #include <AliExternalTrackParam.h>
 #include <AliESDEvent.h>
@@ -77,6 +79,37 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
     fdEdxMean[i] = 0.0;
     fdEdxSigma[i] = 0.0;
   }
+  fListVertexQA = new TList();
+  fListVertexQA->SetName("fListVertexQA");
+  TH1F *gHistVx = new TH1F("gHistVx",
+			   "Vx distribution;V_{x} [cm];Entries",
+			   100,-5.,5.);
+  gHistVx->SetFillColor(kRed-2);
+  fListVertexQA->Add(gHistVx);
+  TH1F *gHistVxAccepted = new TH1F("gHistVxaccepted",
+				   "Vx distribution;V_{x} [cm];Entries",
+				   100,-5.,5.);
+  fListVertexQA->Add(gHistVxAccepted);
+  TH1F *gHistVy = new TH1F("gHistVy",
+			   "Vy distribution;V_{y} [cm];Entries",
+			   100,-5.,5.);
+  gHistVy->SetFillColor(kRed-2);
+  fListVertexQA->Add(gHistVy);
+  TH1F *gHistVyAccepted = new TH1F("gHistVyaccepted",
+				   "Vy distribution;V_{y} [cm];Entries",
+				   100,-5.,5.);
+  fListVertexQA->Add(gHistVyAccepted);
+  TH1F *gHistVz = new TH1F("gHistVz",
+			   "Vz distribution;V_{z} [cm];Entries",
+			   100,-25.,25.);
+  gHistVz->SetFillColor(kRed-2);
+  fListVertexQA->Add(gHistVz);
+  TH1F *gHistVzAccepted = new TH1F("gHistVzaccepted",
+				   "Vz distribution;V_{z} [cm];Entries",
+				   100,-25.,25.);
+  fListVertexQA->Add(gHistVzAccepted);
+
+
 }
 
 //____________________________________________________________________//
@@ -87,6 +120,7 @@ AliProtonAnalysisBase::~AliProtonAnalysisBase() {
   if(fPionFunction) delete fPionFunction;
   if(fKaonFunction) delete fKaonFunction;
   if(fProtonFunction) delete fProtonFunction;
+  if(fListVertexQA) delete fListVertexQA;
 }
 
 //____________________________________________________________________//
@@ -520,7 +554,9 @@ const AliESDVertex* AliProtonAnalysisBase::GetVertex(AliESDEvent* esd,
       Printf("GetVertex: Event rejected because the value of the vertex resolution in z is 0");
     return 0;
   }
-  
+  ((TH1F *)(fListVertexQA->At(0)))->Fill(vertex->GetXv());
+  ((TH1F *)(fListVertexQA->At(2)))->Fill(vertex->GetYv());
+  ((TH1F *)(fListVertexQA->At(4)))->Fill(vertex->GetZv());
   //check position
   if(TMath::Abs(vertex->GetXv()) > gVxMax) {
     if(fDebugMode)
@@ -537,6 +573,9 @@ const AliESDVertex* AliProtonAnalysisBase::GetVertex(AliESDEvent* esd,
       Printf("GetVertex: Event rejected because it has a Vz value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetZv()),gVzMax,gVzMax);
     return 0;
   }
+  ((TH1F *)(fListVertexQA->At(1)))->Fill(vertex->GetXv());
+  ((TH1F *)(fListVertexQA->At(3)))->Fill(vertex->GetYv());
+  ((TH1F *)(fListVertexQA->At(5)))->Fill(vertex->GetZv());
   
   return vertex;
 }
