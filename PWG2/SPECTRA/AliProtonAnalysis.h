@@ -64,6 +64,13 @@ class AliProtonAnalysis : public TObject {
   void Analyze(AliAODEvent *fAOD);
   void Analyze(AliStack *stack, Bool_t iInclusive);
   
+  //QA for real data
+  void InitQA();
+  void FillQA(AliESDEvent *esd,
+	      const AliESDVertex *vertex, 
+	      AliESDtrack* track);
+  TList *GetQAList() {return fGlobalQAList;}
+
   AliCFContainer *GetProtonContainer() const {return fProtonContainer;}
   AliCFContainer *GetAntiProtonContainer() const {return fAntiProtonContainer;}
 
@@ -138,6 +145,15 @@ class AliProtonAnalysis : public TObject {
   TList *fCorrectionListAntiProtons1D; //list for the 1d corrections 
   AliCFDataGrid *fCorrectProtons; //corrected data grid for protons
   AliCFDataGrid *fCorrectAntiProtons; //corrected data grid for antiprotons
+
+  //QA lists
+  TList *fGlobalQAList; //global list
+  TList *fQA2DList; //QA 2D list
+  TList *fQAProtonsAcceptedList; //accepted protons
+  TList *fQAProtonsRejectedList; //rejected protons
+  TList *fQAAntiProtonsAcceptedList; //accepted antiprotons
+  TList *fQAAntiProtonsRejectedList; //rejected antiprotons
+  Bool_t fInitQAFlag;//Init flag
 
   ClassDef(AliProtonAnalysis,1);
 };

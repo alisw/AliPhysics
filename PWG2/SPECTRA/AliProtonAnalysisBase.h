@@ -17,6 +17,7 @@
 #include "TString.h"
 class TF1;
 class TCanvas;
+class TList;
 
 #include "AliPID.h"
 class AliESDEvent;
@@ -245,6 +246,8 @@ class AliProtonAnalysisBase : public TObject {
   void SetDebugMode() {fDebugMode = kTRUE;}
   Bool_t GetDebugMode() const {return fDebugMode;}
 
+  TList *GetVertexQAList() {return fListVertexQA;}
+
  private:
   AliProtonAnalysisBase(const AliProtonAnalysisBase&); // Not implemented
   AliProtonAnalysisBase& operator=(const AliProtonAnalysisBase&); // Not implemented
@@ -303,6 +306,9 @@ class AliProtonAnalysisBase : public TObject {
 
   //Debug
   Bool_t fDebugMode; //Enable the debug mode
+
+  //QA list
+  TList *fListVertexQA; //vertex QA list
 
   ClassDef(AliProtonAnalysisBase,1);
 };

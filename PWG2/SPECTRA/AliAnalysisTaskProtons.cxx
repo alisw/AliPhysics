@@ -34,7 +34,8 @@ ClassImp(AliAnalysisTaskProtons)
 //________________________________________________________________________ 
 AliAnalysisTaskProtons::AliAnalysisTaskProtons()
   : AliAnalysisTask(), fESD(0), fAOD(0), fMC(0),
-    fList(0), fProtonAnalysis(0) {
+    fListAnalysis(0), fListQA(0), 
+    fProtonAnalysis(0) {
   //Dummy constructor
   
 }
@@ -42,7 +43,7 @@ AliAnalysisTaskProtons::AliAnalysisTaskProtons()
 //________________________________________________________________________
 AliAnalysisTaskProtons::AliAnalysisTaskProtons(const char *name) 
   : AliAnalysisTask(name, ""), fESD(0), fAOD(0), fMC(0),
-    fList(0), fProtonAnalysis(0) {
+    fListAnalysis(0), fListQA(0), fProtonAnalysis(0) {
   // Constructor
   
   // Define input and output slots here
@@ -50,6 +51,7 @@ AliAnalysisTaskProtons::AliAnalysisTaskProtons(const char *name)
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -95,12 +97,17 @@ void AliAnalysisTaskProtons::ConnectInputData(Option_t *) {
 void AliAnalysisTaskProtons::CreateOutputObjects() {
   // Create output objects
   // Called once
-  fList = new TList();
-  fList->Add(fProtonAnalysis->GetProtonYPtHistogram());
-  fList->Add(fProtonAnalysis->GetAntiProtonYPtHistogram());
-  fList->Add(fProtonAnalysis->GetEventHistogram());
-  fList->Add(fProtonAnalysis->GetProtonContainer());
-  fList->Add(fProtonAnalysis->GetAntiProtonContainer());
+  fListAnalysis = new TList();
+  fListAnalysis->Add(fProtonAnalysis->GetProtonYPtHistogram());
+  fListAnalysis->Add(fProtonAnalysis->GetAntiProtonYPtHistogram());
+  fListAnalysis->Add(fProtonAnalysis->GetEventHistogram());
+  fListAnalysis->Add(fProtonAnalysis->GetProtonContainer());
+  fListAnalysis->Add(fProtonAnalysis->GetAntiProtonContainer());
+
+  fListQA = new TList();
+  fListQA->SetName("fListQA");
+  fListQA->Add(fProtonAnalysis->GetQAList());
+  fListQA->Add(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertexQAList());
 }
 
 //________________________________________________________________________
@@ -152,7 +159,8 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
   }//MC analysis                      
 
   // Post output data.
-  PostData(0, fList);
+  PostData(0, fListAnalysis);
+  PostData(1, fListQA);
 }      
 
 //________________________________________________________________________
@@ -161,14 +169,14 @@ void AliAnalysisTaskProtons::Terminate(Option_t *) {
   // Called once at the end of the query
   gStyle->SetPalette(1,0);
 
-  fList = dynamic_cast<TList*> (GetOutputData(0));
-  if (!fList) {
-    Printf("ERROR: fList not available");
+  fListAnalysis = dynamic_cast<TList*> (GetOutputData(0));
+  if (!fListAnalysis) {
+    Printf("ERROR: fListAnalysis not available");
     return;
   }
    
-  TH2F *fHistYPtProtons = (TH2F *)fList->At(0);
-  TH2F *fHistYPtAntiProtons = (TH2F *)fList->At(1);
+  TH2F *fHistYPtProtons = (TH2F *)fListAnalysis->At(0);
+  TH2F *fHistYPtAntiProtons = (TH2F *)fListAnalysis->At(1);
     
   TCanvas *c1 = new TCanvas("c1","p-\bar{p}",200,0,800,400);
   c1->SetFillColor(10); c1->SetHighLightColor(10); c1->Divide(2,1);

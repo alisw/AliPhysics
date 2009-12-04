@@ -107,10 +107,15 @@ void runLocal(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("outputQAList",
+                                                            TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+                                                            outputFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
+  mgr->ConnectOutput(taskProtons,1,coutput2);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -196,10 +201,15 @@ void runInteractive(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
-  
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("outputQAList",
+                                                            TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+                                                            outputFilename.Data());
+
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
+  mgr->ConnectOutput(taskProtons,1,coutput2);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -275,10 +285,15 @@ void runBatch(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
-
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("outputQAList",
+                                                            TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+                                                            outputFilename.Data());
+  
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
+  mgr->ConnectOutput(taskProtons,1,coutput2);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("grid",chain);
@@ -346,10 +361,15 @@ void runProof(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("outputQAList",
+                                                            TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+                                                            outputFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
+  mgr->ConnectOutput(taskProtons,1,coutput2);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 
