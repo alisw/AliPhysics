@@ -17,13 +17,14 @@
 void PlotVertexESD(TString vtxtype="SPD",
 		   TString fname="Vertex.Performance.root",
 		   TString ntname="fNtupleVertexESD",
-		   Bool_t useztrue=kTRUE,
-		   Int_t optgif=0) {
+		   Bool_t useztrue=kFALSE,
+		   Int_t optgif=0,
+		   Bool_t doFits = kFALSE){
   //-------------------------------------------------------------------------
   // 
   // Plot output of AliAnalysisTaskVertexESD.
-  // Origin: francesco.prino@to.infn.it
-  //
+  // Origin: francesco.prino@to.infn.it 
+  //         davide.caffarri@pd.infn.it
   //-------------------------------------------------------------------------
 
   // ranges for ideal geometry
@@ -86,13 +87,7 @@ void PlotVertexESD(TString vtxtype="SPD",
   TH1F **htrks3Daux=new TH1F*[nbinseff];
 
   Char_t hisnam[10];
-  TCanvas *c1=new TCanvas("c1","Residuals",1000,700);
-  c1->Divide(nbinsmult,3,0.001,0.001);
-  TCanvas *c1z=new TCanvas("c1z","Residuals z",1000,700);
-  c1z->Divide(nbinz,3,0.001,0.001);
-  TCanvas *cp=new TCanvas("cp","Pulls",1000,700);
-  cp->Divide(nbinsmult,3,0.001,0.001);
-
+  
   TGraphErrors *gavexm=new TGraphErrors(0);
   TGraphErrors *gaveym=new TGraphErrors(0);
   TGraphErrors *gavezm=new TGraphErrors(0);
@@ -133,8 +128,6 @@ void PlotVertexESD(TString vtxtype="SPD",
   TH1F *hbeamx = new TH1F("hbeamx","",1000,-1.5,1.5);
   TH1F *hbeamy = new TH1F("hbeamy","",1000,-1.5,1.5);
   TH2F *hbeamxy = new TH2F("hbeamxy","",100,-1.5,1.5,100,-1.5,1.5);
-
-
 
   gavexm->SetName("gavexm");
   grmsxm->SetName("grmsxm");
@@ -292,19 +285,19 @@ void PlotVertexESD(TString vtxtype="SPD",
   TString ntrks="ntrks"; ntrks.Append(vtxtype.Data());
   nt->SetBranchAddress(ntrks.Data(),&ncontrVtx);
   nt->SetBranchAddress("dndygen",&dndy);
-  
   nt->SetBranchAddress("xtrue",&xtrue);
   nt->SetBranchAddress("ytrue",&ytrue);
   nt->SetBranchAddress("ztrue",&ztrue);
-
   nt->SetBranchAddress("triggered",&triggered);
-
   nt->SetBranchAddress("SPD3D",&vtx3D);
-
 
   // loop on events
   for(Int_t iev=0;iev<nnnev;iev++){
     nt->GetEvent(iev);
+
+    xtrue=0;
+    ytrue=0;
+    ztrue=0;
 
     xdiffVtx=10000.*(xVtx-xtrue);
     ydiffVtx=10000.*(yVtx-ytrue);
@@ -313,7 +306,7 @@ void PlotVertexESD(TString vtxtype="SPD",
 
     zref = (useztrue ? ztrue : zVtx);
     if(!vtxtype.Contains("SPD")) vtx3D=1.;
-    if(triggered<0.5) continue; // not triggered
+    //if(triggered>0.5) continue; // not triggered
     totevtriggered += 1.;
     if(ncontrVtx>0) {
       htot->Fill(zdiffVtx);
@@ -398,70 +391,79 @@ void PlotVertexESD(TString vtxtype="SPD",
     cout<<"Eff. dNch/dy bin "<<khis<<" ("<<limeff[khis]<<"-"<<limeff[khis+1]<<")  # Events ="<<nEv<<" with vertex ="<<haux[khis]->GetEntries()<<endl;
     if(nEv>0) trkeff=(Float_t)(haux[khis]->GetEntries())/nEv;
     geffm->SetPoint(khis,x,trkeff);
-    geffm->SetPointError(khis,ex,0.);
+    if (nEv>0) Float_t effMultErr = (trkeff*(1-trkeff))/nEv;
+    geffm->SetPointError(khis,ex,effMultErr);
   }
+
   for(Int_t khis=0;khis<nbinseff;khis++){
     Double_t x=htrkseff[khis]->GetMean();
     Double_t ex=htrkseff[khis]->GetRMS();;
     Float_t nEv=(Float_t)(htrkseff[khis]->GetEntries());
     Float_t trkeff=-1.;
-    cout<<"Eff. trks bin "<<khis<<" ("<<limeff[khis]<<"-"<<limeff[khis+1]<<")  # Events ="<<nEv<<" with vertex ="<<htrksaux[khis]->GetEntries()<<endl;
+    cout<<"Eff.trks bin "<<khis<<" ("<<limeff[khis]<<"-"<<limeff[khis+1]<<")  # Events ="<<nEv<<" with vertex ="<<htrksaux[khis]->GetEntries()<<endl;
     if(nEv>0) trkeff=(Float_t)(htrksaux[khis]->GetEntries())/nEv;
     gefftrks->SetPoint(khis,x,trkeff);
-    gefftrks->SetPointError(khis,ex,0.);
+    if(nEv>0) Float_t effTrackErr = (trkeff*(1-trkeff))/nEv;
+    gefftrks->SetPointError(khis,ex,effTrackErr);
     if(nEv>0) trkeff=(Float_t)(htrks3Daux[khis]->GetEntries())/nEv;
     geff3Dtrks->SetPoint(khis,x,trkeff);
-    geff3Dtrks->SetPointError(khis,ex,0.);
+    if(nEv>0) Float_t effTrack3DErr = (trkeff*(1-trkeff))/nEv;
+    geff3Dtrks->SetPointError(khis,ex, effTrack3DErr);
   }
 
+  TCanvas *c1=new TCanvas("c1","Residuals",1000,700);
+  c1->Divide(nbinsmult,3,0.001,0.001);
+  
   for(Int_t khis=0;khis<nbinsmult;khis++){ 
-
-    c1->cd(khis+1);
-    if(hxm[khis]->GetEntries()<10) continue;
-    hxm[khis]->Draw();
-    hxm[khis]->Fit("gaus","Q0");
-    fitf= hxm[khis]->GetFunction("gaus");
-    Double_t avexg=fitf->GetParameter(1);
-    Double_t eavexg=fitf->GetParError(1);
-    Double_t rmsxg=fitf->GetParameter(2);
-    Double_t ermsxg=fitf->GetParError(2);
-    c1->cd(nbinsmult+khis+1);
-    hym[khis]->Draw();
-    hym[khis]->Fit("gaus","Q0");
-    fitf= hym[khis]->GetFunction("gaus");
-    Double_t aveyg=fitf->GetParameter(1);
-    Double_t eaveyg=fitf->GetParError(1);
-    Double_t rmsyg=fitf->GetParameter(2);
-    Double_t ermsyg=fitf->GetParError(2);
-    c1->cd(2*nbinsmult+khis+1);
-    hzm[khis]->Draw();
-    hzm[khis]->Fit("gaus","Q0");
-    fitf= hzm[khis]->GetFunction("gaus");
-    Double_t avezg=fitf->GetParameter(1);
-    Double_t eavezg=fitf->GetParError(1);
-    Double_t rmszg=fitf->GetParameter(2);
-    Double_t ermszg=fitf->GetParError(2);
-
-    cp->cd(khis+1);
-    hxpullm[khis]->Draw();
-    hxpullm[khis]->Fit("gaus","Q0");
-    fitf= hxpullm[khis]->GetFunction("gaus");
-    Double_t pullxg=fitf->GetParameter(2);
-    Double_t epullxg=fitf->GetParError(2);
-    cp->cd(nbinsmult+khis+1);
-    hypullm[khis]->Draw();
-    hypullm[khis]->Fit("gaus","Q0");
-    fitf= hypullm[khis]->GetFunction("gaus");
-    Double_t pullyg=fitf->GetParameter(2);
-    Double_t epullyg=fitf->GetParError(2);
-    cp->cd(2*nbinsmult+khis+1);
-    hzpullm[khis]->Draw();
-    hzpullm[khis]->Fit("gaus","Q0");
-    fitf= hzpullm[khis]->GetFunction("gaus");
-    Double_t pullzg=fitf->GetParameter(2);
-    Double_t epullzg=fitf->GetParError(2);
- 
-
+      c1->cd(khis+1);
+      if(hxm[khis]->GetEntries()<10) continue;
+      hxm[khis]->Draw();
+      hxm[khis]->Fit("gaus","Q0");
+      fitf= hxm[khis]->GetFunction("gaus");
+      Double_t avexg=fitf->GetParameter(1);
+      Double_t eavexg=fitf->GetParError(1);
+      Double_t rmsxg=fitf->GetParameter(2);
+      Double_t ermsxg=fitf->GetParError(2);
+      c1->cd(nbinsmult+khis+1);
+      hym[khis]->Draw();
+      hym[khis]->Fit("gaus","Q0");
+      fitf= hym[khis]->GetFunction("gaus");
+      Double_t aveyg=fitf->GetParameter(1);
+      Double_t eaveyg=fitf->GetParError(1);
+      Double_t rmsyg=fitf->GetParameter(2);
+      Double_t ermsyg=fitf->GetParError(2);
+      c1->cd(2*nbinsmult+khis+1);
+      hzm[khis]->Draw();
+      hzm[khis]->Fit("gaus","Q0");
+      fitf= hzm[khis]->GetFunction("gaus");
+      Double_t avezg=fitf->GetParameter(1);
+      Double_t eavezg=fitf->GetParError(1);
+      Double_t rmszg=fitf->GetParameter(2);
+      Double_t ermszg=fitf->GetParError(2);
+      
+      if (doFits){
+	TCanvas *cp=new TCanvas("cp","Pulls",1000,700);
+	cp->Divide(nbinsmult,3,0.001,0.001);
+	cp->cd(khis+1);
+	hxpullm[khis]->Draw();
+	hxpullm[khis]->Fit("gaus","Q0");
+	fitf= hxpullm[khis]->GetFunction("gaus");
+	Double_t pullxg=fitf->GetParameter(2);
+	Double_t epullxg=fitf->GetParError(2);
+	cp->cd(nbinsmult+khis+1);
+	hypullm[khis]->Draw();
+	hypullm[khis]->Fit("gaus","Q0");
+	fitf= hypullm[khis]->GetFunction("gaus");
+	Double_t pullyg=fitf->GetParameter(2);
+	Double_t epullyg=fitf->GetParError(2);
+	cp->cd(2*nbinsmult+khis+1);
+	hzpullm[khis]->Draw();
+	hzpullm[khis]->Fit("gaus","Q0");
+	fitf= hzpullm[khis]->GetFunction("gaus");
+	Double_t pullzg=fitf->GetParameter(2);
+	Double_t epullzg=fitf->GetParError(2);
+      }
+    
     Double_t rmsxt=hxm[khis]->GetRMS();
     Double_t rmsyt=hym[khis]->GetRMS();
     Double_t rmszt=hzm[khis]->GetRMS();
@@ -498,6 +500,7 @@ void PlotVertexESD(TString vtxtype="SPD",
     grmszm->SetPoint(khis,x,rmszt);
     grmszm->SetPointError(khis,ex,ermszt);
 
+
     gavexmg->SetPoint(khis,x,avexg);
     gavexmg->SetPointError(khis,ex,eavexg);
     gaveymg->SetPoint(khis,x,aveyg);
@@ -510,27 +513,28 @@ void PlotVertexESD(TString vtxtype="SPD",
     grmsymg->SetPointError(khis,ex,ermsyg);
     grmszmg->SetPoint(khis,x,rmszg);
     grmszmg->SetPointError(khis,ex,ermszg);
-
-    gpullxm->SetPoint(khis,x,pullxt);
-    gpullxm->SetPointError(khis,ex,epullxt);
-    gpullym->SetPoint(khis,x,pullyt);
-    gpullym->SetPointError(khis,ex,epullyt);
-    gpullzm->SetPoint(khis,x,pullzt);
-    gpullzm->SetPointError(khis,ex,epullzt);
-
-    gpullxmg->SetPoint(khis,x,pullxg);
-    gpullxmg->SetPointError(khis,ex,epullxg);
-    gpullymg->SetPoint(khis,x,pullyg);
-    gpullymg->SetPointError(khis,ex,epullyg);
-    gpullzmg->SetPoint(khis,x,pullzg);
-    gpullzmg->SetPointError(khis,ex,epullzg);
-
+    
+    if (doFits){
+      gpullxm->SetPoint(khis,x,pullxt);
+      gpullxm->SetPointError(khis,ex,epullxt);
+      gpullym->SetPoint(khis,x,pullyt);
+      gpullym->SetPointError(khis,ex,epullyt);
+      gpullzm->SetPoint(khis,x,pullzt);
+      gpullzm->SetPointError(khis,ex,epullzt);
+      gpullxmg->SetPoint(khis,x,pullxg);
+      gpullxmg->SetPointError(khis,ex,epullxg);
+      gpullymg->SetPoint(khis,x,pullyg);
+      gpullymg->SetPointError(khis,ex,epullyg);
+      gpullzmg->SetPoint(khis,x,pullzg);
+      gpullzmg->SetPointError(khis,ex,epullzg);
+    }
+    
     Float_t nEv=hmult[khis]->GetEntries();
     cout<<"Mult. bin "<<khis<<"  # Events ="<<nEv<<endl;
   }
-
+  
   for(Int_t khis=0;khis<8;khis++){
-
+    
     Double_t rmsxt=hxc[khis]->GetRMS();
     Double_t rmsyt=hyc[khis]->GetRMS();
     Double_t rmszt=hzc[khis]->GetRMS();
@@ -566,19 +570,21 @@ void PlotVertexESD(TString vtxtype="SPD",
     grmszc->SetPoint(khis,x,rmszt);
     grmszc->SetPointError(khis,ex,ermszt);
 
-    gpullxc->SetPoint(khis,x,pullxt);
-    gpullxc->SetPointError(khis,ex,epullxt);
-    gpullyc->SetPoint(khis,x,pullyt);
-    gpullyc->SetPointError(khis,ex,epullyt);
-    gpullzc->SetPoint(khis,x,pullzt);
-    gpullzc->SetPointError(khis,ex,epullzt);
-
+    if (doFits){
+      gpullxc->SetPoint(khis,x,pullxt);
+      gpullxc->SetPointError(khis,ex,epullxt);
+      gpullyc->SetPoint(khis,x,pullyt);
+      gpullyc->SetPointError(khis,ex,epullyt);
+      gpullzc->SetPoint(khis,x,pullzt);
+      gpullzc->SetPointError(khis,ex,epullzt);
+    }
+    
     Float_t nEv=hcont[khis]->GetEntries();
     cout<<"Contrib. bin "<<khis<<"  # Events ="<<nEv<<endl;
   }
-
+  
   for(Int_t khis=0; khis<nbinz; khis++){
-
+    
     Double_t rmsxt=hxz[khis]->GetRMS();
     Double_t rmsyt=hyz[khis]->GetRMS();
     Double_t rmszt=hzz[khis]->GetRMS();
@@ -610,54 +616,59 @@ void PlotVertexESD(TString vtxtype="SPD",
     grmszz->SetPoint(khis,x,rmszt);
     grmszz->SetPointError(khis,ex,ermszt);
 
-    c1z->cd(khis+1);
-    hxz[khis]->Draw();
-    hxz[khis]->Fit("gaus","Q0");
-    fitf= hxz[khis]->GetFunction("gaus");
-    Double_t avexg=fitf->GetParameter(1);
-    Double_t eavexg=fitf->GetParError(1);
-    Double_t rmsxg=fitf->GetParameter(2);
-    Double_t ermsxg=fitf->GetParError(2);
-    c1z->cd(1*nbinz+khis+1);
-    hyz[khis]->Draw();
-    hyz[khis]->Fit("gaus","Q0");
-    fitf= hyz[khis]->GetFunction("gaus");
-    Double_t aveyg=fitf->GetParameter(1);
-    Double_t eaveyg=fitf->GetParError(1);
-    Double_t rmsyg=fitf->GetParameter(2);
-    Double_t ermsyg=fitf->GetParError(2);
-    c1z->cd(2*nbinz+khis+1);
-    hzz[khis]->Draw();
-    hzz[khis]->Fit("gaus","Q0");
-    fitf= hzz[khis]->GetFunction("gaus");
-    Double_t avezg=fitf->GetParameter(1);
-    Double_t eavezg=fitf->GetParError(1);
-    Double_t rmszg=fitf->GetParameter(2);
-    Double_t ermszg=fitf->GetParError(2);
-
-    gavexzg->SetPoint(khis,x,avexg);
-    gavexzg->SetPointError(khis,ex,eavexg);
-    gaveyzg->SetPoint(khis,x,aveyg);
-    gaveyzg->SetPointError(khis,ex,eaveyg);
-    gavezzg->SetPoint(khis,x,avezg);
-    gavezzg->SetPointError(khis,ex,eavezg);
-    grmsxzg->SetPoint(khis,x,rmsxg);
-    grmsxzg->SetPointError(khis,ex,ermsxg);
-    grmsyzg->SetPoint(khis,x,rmsyg);
-    grmsyzg->SetPointError(khis,ex,ermsyg);
-    grmszzg->SetPoint(khis,x,rmszg);
-    grmszzg->SetPointError(khis,ex,ermszg);
-
+    if (doFits){
+      TCanvas *c1z = new TCanvas("c1z","Residuals z", 1000, 700);
+      c1z->Divide(nbinz,3,0.001,0.001);
+      
+      c1z->cd(khis+1);
+      hxz[khis]->Draw();
+      hxz[khis]->Fit("gaus","Q0");
+      fitf= hxz[khis]->GetFunction("gaus");
+      Double_t avexg=fitf->GetParameter(1);
+      Double_t eavexg=fitf->GetParError(1);
+      Double_t rmsxg=fitf->GetParameter(2);
+      Double_t ermsxg=fitf->GetParError(2);
+      c1z->cd(1*nbinz+khis+1);
+      hyz[khis]->Draw();
+      hyz[khis]->Fit("gaus","Q0");
+      fitf= hyz[khis]->GetFunction("gaus");
+      Double_t aveyg=fitf->GetParameter(1);
+      Double_t eaveyg=fitf->GetParError(1);
+      Double_t rmsyg=fitf->GetParameter(2);
+      Double_t ermsyg=fitf->GetParError(2);
+      c1z->cd(2*nbinz+khis+1);
+      hzz[khis]->Draw();
+      hzz[khis]->Fit("gaus","Q0");
+      fitf= hzz[khis]->GetFunction("gaus");
+      Double_t avezg=fitf->GetParameter(1);
+      Double_t eavezg=fitf->GetParError(1);
+      Double_t rmszg=fitf->GetParameter(2);
+      Double_t ermszg=fitf->GetParError(2);
+      gavexzg->SetPoint(khis,x,avexg);
+      gavexzg->SetPointError(khis,ex,eavexg);
+      gaveyzg->SetPoint(khis,x,aveyg);
+      gaveyzg->SetPointError(khis,ex,eaveyg);
+      gavezzg->SetPoint(khis,x,avezg);
+      gavezzg->SetPointError(khis,ex,eavezg);
+      grmsxzg->SetPoint(khis,x,rmsxg);
+      grmsxzg->SetPointError(khis,ex,ermsxg);
+      grmsyzg->SetPoint(khis,x,rmsyg);
+      grmsyzg->SetPointError(khis,ex,ermsyg);
+      grmszzg->SetPoint(khis,x,rmszg);
+      grmszzg->SetPointError(khis,ex,ermszg);
+    }
+    
     Float_t zeff=-999.;
     if(nEv>0) zeff=hzz[khis]->GetEntries()/nEv;
     geffz->SetPoint(khis,x,zeff);
-    geffz->SetPointError(khis,ex,0.);
+    if (nEv>0) Double_t effError = (zeff*(1-zeff))/nEv;
+    geffz->SetPointError(khis,ex,effError);
     
     cout<<"Z bin "<<khis<<"  # Events ="<<nEv<<endl;
   }
- 
-  Double_t efftrk=htot->GetEntries()/totevtriggered;
-
+  
+  Double_t efftrk=(htot->GetEntries())/totevtriggered;
+  
   printf("EVENTS STATISTICS:\n Total: %d\n Triggered (MB1): %d\n Triggered and with vertex %d\n",totev,totevtriggered,htot->GetEntries());
   if(vtxtype.Contains("SPD")) printf("  %d with Vertexer3D, %d with VertexerZ\n",nvtx3D,nvtxZ);
   printf("Overall efficiency (for triggered evts) Vertexer%s = %f / %f = %f\n",vtxtype.Data(),htot->GetEntries(),totevtriggered,efftrk);
@@ -666,34 +677,19 @@ void PlotVertexESD(TString vtxtype="SPD",
   gbeamxz->Write("gbeamxz");
   gbeamyz->Write("gbeamyz");
   grmsxm->Write();
-  grmsxmg->Write();
-  gpullxm->Write();
-  gpullxmg->Write();
   gavexm->Write();
-  gavexmg->Write();
   grmsym->Write();
-  grmsymg->Write();
-  gpullym->Write();
-  gpullymg->Write();
   gaveym->Write();
-  gaveymg->Write();
   grmszm->Write();
-  grmszmg->Write();
-  gpullzm->Write();
-  gpullzmg->Write();
   gavezm->Write();
-  gavezmg->Write();
   geffm->Write();
   gefftrks->Write();
   geff3Dtrks->Write();
   grmsxc->Write();
-  gpullxc->Write();
   gavexc->Write();
   grmsyc->Write();
-  gpullyc->Write();
   gaveyc->Write();
   grmszc->Write();
-  gpullzc->Write();
   gavezc->Write();
   gavexz->Write();
   gaveyz->Write();
@@ -701,119 +697,139 @@ void PlotVertexESD(TString vtxtype="SPD",
   grmsxz->Write();
   grmsyz->Write();
   grmszz->Write();
+  grmsxmg->Write();   
+  gavexmg->Write();
+  grmsymg->Write();
+  gaveymg->Write();
+  grmszmg->Write();
+  gavezmg->Write();
+  
+  grmsxzg->Write();
   gavexzg->Write();
   gaveyzg->Write();
   gavezzg->Write();
-  grmsxzg->Write();
   grmsyzg->Write();
   grmszzg->Write();
+  
+  if (doFits){
+    gpullxm->Write();
+    gpullym->Write();
+    gpullzm->Write();
+    gpullxc->Write();
+    gpullyc->Write();
+    gpullzc->Write();
+    gpullxmg->Write();
+    gpullymg->Write();
+    gpullzmg->Write();
+  
 
+  }
+  
   in->Close();
-
+  
   gStyle->SetOptTitle(0);
 
   Char_t outgif[100];
+
   TLine *lin0=new TLine(0,0,60,0);
   lin0->SetLineStyle(2);
-
-  TCanvas *cg1=new TCanvas("cg1","Histo mean");
-  cg1->SetBottomMargin(0.14);
-  cg1->SetTopMargin(0.08);
-  cg1->SetLeftMargin(0.14);
-  cg1->SetRightMargin(0.08);
-  gavexm->SetMarkerStyle(20);
-  gavexm->SetMarkerColor(1);
-  gaveym->SetMarkerStyle(21);
-  gaveym->SetMarkerColor(2);
-  gavezm->SetMarkerStyle(22);
-  gavezm->SetMarkerColor(4);
   TLegend *leg=new TLegend(0.18,0.70,0.25,0.90);
-  leg->SetBorderSize(0);
-  leg->SetFillStyle(0);
   TLegendEntry *ent=leg->AddEntry(gavexm,"x","P");
   ent->SetTextColor(1);
   ent=leg->AddEntry(gaveym,"y","P");
   ent->SetTextColor(2);
   ent=leg->AddEntry(gavezm,"z","P");
   ent->SetTextColor(4);
-  gavezm->GetXaxis()->SetLimits(0.,60.);
-  gavezm->SetMinimum(-rangeGrAve);
-  gavezm->SetMaximum(rangeGrAve);
-  gavezm->Draw("AP");
-  gavezm->GetXaxis()->SetTitle(trkstitle.Data());
-  gavezm->GetXaxis()->SetTitleSize(0.05);
-  gavezm->GetYaxis()->SetTitle("<Pos_{found}-Pos_{true}> [#mum]");
-  gavezm->GetYaxis()->SetTitleSize(0.05);
-  gavexm->Draw("PSAME");
+  
+  TCanvas *cg1=new TCanvas("cg1","Histo mean");
+  cg1->SetBottomMargin(0.14);
+  cg1->SetTopMargin(0.08);
+  cg1->SetLeftMargin(0.14);
+  cg1->SetRightMargin(0.08);
+  gavezm->SetMarkerStyle(22);
+  gavezm->SetMarkerColor(4);
+  gaveym->SetMarkerStyle(21);
+  gaveym->SetMarkerColor(2);
+  gavexm->SetMarkerStyle(20);
+  gavexm->SetMarkerColor(1);
+  leg->SetBorderSize(0);
+  leg->SetFillStyle(0);
+  gavexm->GetXaxis()->SetLimits(0.,60.);
+  gavexm->SetMinimum(-rangeGrAve);
+  gavexm->SetMaximum(rangeGrAve);
+  gavexm->Draw("AP");
+  gavexm->GetXaxis()->SetTitle(trkstitle.Data());
+  gavexm->GetXaxis()->SetTitleSize(0.05);
+  gavexm->GetYaxis()->SetTitle("<Pos_{mean}> [#mum]");
+  gavexm->GetYaxis()->SetTitleSize(0.05);
+  //gavezm->Draw("PSAME");
   gaveym->Draw("PSAME");
   leg->Draw();
   lin0->Draw();
   sprintf(outgif,"vert%s-ave-mult.gif",vtxtype.Data());
   if(optgif) cg1->SaveAs(outgif);
-
-
+  
   TCanvas *cg2=new TCanvas("cg2","Histo RMS");
   cg2->SetBottomMargin(0.14);
   cg2->SetTopMargin(0.08);
   cg2->SetLeftMargin(0.14);
   cg2->SetRightMargin(0.08);
-  grmsxm->SetMarkerStyle(20);
-  grmsxm->SetMarkerColor(1);
-  grmsym->SetMarkerStyle(21);
-  grmsym->SetMarkerColor(2);
   grmszm->SetMarkerStyle(22);
   grmszm->SetMarkerColor(4);
-  grmszm->SetMinimum(0);
-  grmszm->SetMaximum(rangeGrRms);
-  grmszm->GetXaxis()->SetLimits(0,60);
-  grmszm->Draw("AP");
-  grmszm->GetXaxis()->SetTitle(trkstitle.Data());
-  grmszm->GetXaxis()->SetTitleSize(0.05);
-  grmszm->GetYaxis()->SetTitle("Resolution [#mum]");
-  grmszm->GetYaxis()->SetTitleSize(0.05);
+  grmsym->SetMarkerStyle(21);
+  grmsym->SetMarkerColor(2);
+  grmsxm->SetMarkerStyle(20);
+  grmsxm->SetMarkerColor(1);
+  grmsxm->SetMinimum(0);
+  grmsxm->SetMaximum(rangeGrRms);
+  grmsxm->GetXaxis()->SetLimits(0,60);
+  grmsxm->Draw("AP");
+  grmsxm->GetXaxis()->SetTitle(trkstitle.Data());
+  grmsxm->GetXaxis()->SetTitleSize(0.05);
+  grmsxm->GetYaxis()->SetTitle("Resolution [#mum]");
+  grmsxm->GetYaxis()->SetTitleSize(0.05);
   grmsym->Draw("PSAME");
-  grmsxm->Draw("PSAME");
-  grmsxmg->SetMarkerStyle(24);
-  grmsxmg->SetMarkerColor(1);
-  grmsymg->SetMarkerStyle(25);
-  grmsymg->SetMarkerColor(2);
+  //grmszm->Draw("PSAME");
   grmszmg->SetMarkerStyle(26);
   grmszmg->SetMarkerColor(4);
-  grmszmg->SetMinimum(0);
-  grmszmg->SetMaximum(rangeGrRms);
-  grmszmg->GetXaxis()->SetLimits(0,60);
-  grmszmg->Draw("PSAME");
-  grmszmg->GetXaxis()->SetTitle(trkstitle.Data());
-  grmszmg->GetXaxis()->SetTitleSize(0.05);
-  grmszmg->GetYaxis()->SetTitle("Resolution [#mum]");
-  grmszmg->GetYaxis()->SetTitleSize(0.05);
-  grmsymg->Draw("PSAME");
+  grmsymg->SetMarkerStyle(25);
+  grmsymg->SetMarkerColor(2);
+  grmsxmg->SetMarkerStyle(24);
+  grmsxmg->SetMarkerColor(1);
+  grmsxmg->SetMinimum(0);
+  grmsxmg->SetMaximum(rangeGrRms);
+  grmsxmg->GetXaxis()->SetLimits(0,60);
   grmsxmg->Draw("PSAME");
+  grmsxmg->GetXaxis()->SetTitle(trkstitle.Data());
+  grmsxmg->GetXaxis()->SetTitleSize(0.05);
+  grmsxmg->GetYaxis()->SetTitle("Resolution [#mum]");
+  grmsxmg->GetYaxis()->SetTitleSize(0.05);
+  grmsymg->Draw("PSAME");
+  //grmszmg->Draw("PSAME");
   leg->Draw();
   sprintf(outgif,"vert%s-rms-mult.gif",vtxtype.Data());
   if(optgif) cg2->SaveAs(outgif);
 
 
-
-
-  TCanvas *cg3=new TCanvas("cg3","Efficiency vs dNch/dy");
-  cg3->SetBottomMargin(0.14);
-  cg3->SetTopMargin(0.08);
-  cg3->SetLeftMargin(0.14);
-  cg3->SetRightMargin(0.08);
-  geffm->SetMarkerStyle(22);
-  geffm->SetMarkerColor(1);
-  geffm->GetXaxis()->SetLimits(0.,40.);
-  geffm->SetMinimum(0.);
-  geffm->SetMaximum(1.2);
-  geffm->Draw("AP");
-  geffm->GetXaxis()->SetTitle("MC dN_{ch}/dy in |y|<1");
-  geffm->GetXaxis()->SetTitleSize(0.05);
-  geffm->GetYaxis()->SetTitle("efficiency");
-  geffm->GetYaxis()->SetTitleSize(0.05);
-  sprintf(outgif,"vert%s-eff-mult.gif",vtxtype.Data());
-  if(optgif) cg3->SaveAs(outgif);
-
+  if (doFits){
+    TCanvas *cg3=new TCanvas("cg3","Efficiency vs dNch/dy");
+    cg3->SetBottomMargin(0.14);
+    cg3->SetTopMargin(0.08);
+    cg3->SetLeftMargin(0.14);
+    cg3->SetRightMargin(0.08);
+    geffm->SetMarkerStyle(22);
+    geffm->SetMarkerColor(1);
+    geffm->GetXaxis()->SetLimits(0.,40.);
+    geffm->SetMinimum(0.);
+    geffm->SetMaximum(1.2);
+    geffm->Draw("AP");
+    geffm->GetXaxis()->SetTitle("MC dN_{ch}/dy in |y|<1");
+    geffm->GetXaxis()->SetTitleSize(0.05);
+    geffm->GetYaxis()->SetTitle("efficiency");
+    geffm->GetYaxis()->SetTitleSize(0.05);
+    sprintf(outgif,"vert%s-eff-mult.gif",vtxtype.Data());
+    if(optgif) cg3->SaveAs(outgif);
+  }
 
   TCanvas *cg3b=new TCanvas("cg3b","Efficiency vs tracks");
   cg3b->SetBottomMargin(0.14);
@@ -831,61 +847,59 @@ void PlotVertexESD(TString vtxtype="SPD",
   gefftrks->GetYaxis()->SetTitle("efficiency");
   gefftrks->GetYaxis()->SetTitleSize(0.05);
   if(vtxtype.Contains("SPD")) {
-    geff3Dtrks->SetMarkerStyle(26);
-    geff3Dtrks->SetMarkerColor(1);
+    geff3Dtrks->SetMarkerStyle(28);
+    geff3Dtrks->SetMarkerColor(2);
     geff3Dtrks->Draw("P");
   }
   sprintf(outgif,"vert%s-eff-mult.gif",vtxtype.Data());
   if(optgif) cg3b->SaveAs(outgif);
-
-
-  TCanvas *cg4=new TCanvas("cg4","Pulls");
-  cg4->SetBottomMargin(0.14);
-  cg4->SetTopMargin(0.08);
-  cg4->SetLeftMargin(0.14);
-  cg4->SetRightMargin(0.08);
-  gpullxm->SetMarkerStyle(20);
-  gpullxm->SetMarkerColor(1);
-  gpullym->SetMarkerStyle(21);
-  gpullym->SetMarkerColor(2);
-  gpullzm->SetMarkerStyle(22);
-  gpullzm->SetMarkerColor(4);
-  gpullzm->GetXaxis()->SetLimits(0,60);
-  gpullzm->SetMinimum(0);
-  gpullzm->SetMaximum(rangeGrPull);
-  gpullzm->Draw("AP");
-  gpullzm->GetXaxis()->SetTitle(trkstitle.Data());
-  gpullzm->GetXaxis()->SetTitleSize(0.05);
-  gpullzm->GetYaxis()->SetTitle("PULL");
-  gpullzm->GetYaxis()->SetTitleSize(0.05);
-  gpullxm->Draw("PSAME");
-  gpullym->Draw("PSAME");
-  gpullxmg->SetMarkerStyle(24);
-  gpullxmg->SetMarkerColor(1);
-  gpullymg->SetMarkerStyle(25);
-  gpullymg->SetMarkerColor(2);
-  gpullzmg->SetMarkerStyle(26);
-  gpullzmg->SetMarkerColor(4);
-  gpullzmg->GetXaxis()->SetLimits(0,60);
-  gpullzmg->SetMinimum(0);
-  gpullzmg->SetMaximum(rangeGrPull);
-  gpullzmg->Draw("PSAME");
-  gpullzmg->GetXaxis()->SetTitle(trkstitle.Data());
-  gpullzmg->GetXaxis()->SetTitleSize(0.05);
-  gpullzmg->GetYaxis()->SetTitle("PULL");
-  gpullzmg->GetYaxis()->SetTitleSize(0.05);
-  gpullxmg->Draw("PSAME");
-  gpullymg->Draw("PSAME");
-  TLine *lin=new TLine(0,1,60,1);
-  lin->SetLineStyle(2);
-  lin->Draw();
-  leg->Draw();
-  sprintf(outgif,"vert%s-pull-mult.gif",vtxtype.Data());
-  if(optgif) cg4->SaveAs(outgif);
-
-
-
-
+  
+  if (doFits){
+    TCanvas *cg4=new TCanvas("cg4","Pulls");
+    cg4->SetBottomMargin(0.14);
+    cg4->SetTopMargin(0.08);
+    cg4->SetLeftMargin(0.14);
+    cg4->SetRightMargin(0.08);
+    gpullxm->SetMarkerStyle(20);
+    gpullxm->SetMarkerColor(1);
+    gpullym->SetMarkerStyle(21);
+    gpullym->SetMarkerColor(2);
+    gpullzm->SetMarkerStyle(22);
+    gpullzm->SetMarkerColor(4);
+    gpullzm->GetXaxis()->SetLimits(0,60);
+    gpullzm->SetMinimum(0);
+    gpullzm->SetMaximum(rangeGrPull);
+    gpullzm->Draw("AP");
+    gpullzm->GetXaxis()->SetTitle(trkstitle.Data());
+    gpullzm->GetXaxis()->SetTitleSize(0.05);
+    gpullzm->GetYaxis()->SetTitle("PULL");
+    gpullzm->GetYaxis()->SetTitleSize(0.05);
+    gpullxm->Draw("PSAME");
+    gpullym->Draw("PSAME");
+    gpullxmg->SetMarkerStyle(24);
+    gpullxmg->SetMarkerColor(1);
+    gpullymg->SetMarkerStyle(25);
+    gpullymg->SetMarkerColor(2);
+    gpullzmg->SetMarkerStyle(26);
+    gpullzmg->SetMarkerColor(4);
+    gpullzmg->GetXaxis()->SetLimits(0,60);
+    gpullzmg->SetMinimum(0);
+    gpullzmg->SetMaximum(rangeGrPull);
+    gpullzmg->Draw("PSAME");
+    gpullzmg->GetXaxis()->SetTitle(trkstitle.Data());
+    gpullzmg->GetXaxis()->SetTitleSize(0.05);
+    gpullzmg->GetYaxis()->SetTitle("PULL");
+    gpullzmg->GetYaxis()->SetTitleSize(0.05);
+    gpullxmg->Draw("PSAME");
+    gpullymg->Draw("PSAME");
+    TLine *lin=new TLine(0,1,60,1);
+    lin->SetLineStyle(2);
+    lin->Draw();
+    leg->Draw();
+    sprintf(outgif,"vert%s-pull-mult.gif",vtxtype.Data());
+    if(optgif) cg4->SaveAs(outgif);
+  }
+  
   TCanvas *cz1=new TCanvas("cz1","Efficiency vs. Z");
   cz1->SetBottomMargin(0.14);
   cz1->SetTopMargin(0.08);
@@ -903,45 +917,47 @@ void PlotVertexESD(TString vtxtype="SPD",
   geffz->GetYaxis()->SetTitleSize(0.05);
   sprintf(outgif,"vert%s-eff-z.gif",vtxtype.Data());
   if(optgif) cz1->SaveAs(outgif);
-
-
+  
+  
   TLine *lin0z=new TLine(-20,0,20,0);
   lin0z->SetLineStyle(2);
-  TCanvas *cz2=new TCanvas("cz2","Mean vs. Z");
-  cz2->SetBottomMargin(0.14);
-  cz2->SetTopMargin(0.08);
-  cz2->SetLeftMargin(0.14);
-  cz2->SetRightMargin(0.08);
-  gavexz->SetMarkerStyle(20);
-  gavexz->SetMarkerColor(1);
-  gaveyz->SetMarkerStyle(21);
-  gaveyz->SetMarkerColor(2);
-  gavezz->SetMarkerStyle(22);
-  gavezz->SetMarkerColor(4);
-  gavezz->GetXaxis()->SetLimits(-20,20.);
-  gavezz->SetMinimum(-rangeGrAve);
-  gavezz->SetMaximum(rangeGrAve);
-  gavezz->Draw("AP");
-  gavezz->GetXaxis()->SetTitle("Z [cm]");
-  gavezz->GetXaxis()->SetTitleSize(0.05);
-  gavezz->GetYaxis()->SetTitle("<Pos_{found}-Pos_{true}> [#mum]");
-  gavezz->GetYaxis()->SetTitleSize(0.05);
-  gavexz->Draw("PSAME");
-  gaveyz->Draw("PSAME");
-  lin0z->Draw();
-  gavexzg->SetMarkerStyle(24);
-  gavexzg->SetMarkerColor(1);
-  gavexzg->Draw("P");
-  gaveyzg->SetMarkerStyle(25);
-  gaveyzg->SetMarkerColor(2);
-  gaveyzg->Draw("P");
-  gavezzg->SetMarkerStyle(26);
-  gavezzg->SetMarkerColor(4);
-  gavezzg->Draw("P");
-  leg->Draw();
-  sprintf(outgif,"vert%s-ave-z.gif",vtxtype.Data());
-  if(optgif) cz2->SaveAs(outgif);
-
+  if (doFits){  
+    TCanvas *cz2=new TCanvas("cz2","Mean vs. Z");
+    cz2->SetBottomMargin(0.14);
+    cz2->SetTopMargin(0.08);
+    cz2->SetLeftMargin(0.14);
+    cz2->SetRightMargin(0.08);
+    gavexz->SetMarkerStyle(20);
+    gavexz->SetMarkerColor(1);
+    gaveyz->SetMarkerStyle(21);
+    gaveyz->SetMarkerColor(2);
+    gavezz->SetMarkerStyle(22);
+    gavezz->SetMarkerColor(4);
+    gavezz->GetXaxis()->SetLimits(-20,20.);
+    gavezz->SetMinimum(-rangeGrAve);
+    gavezz->SetMaximum(rangeGrAve);
+    gavezz->Draw("AP");
+    gavezz->GetXaxis()->SetTitle("Z [cm]");
+    gavezz->GetXaxis()->SetTitleSize(0.05);
+    gavezz->GetYaxis()->SetTitle("<Pos_{mean}> [#mum]");
+    gavezz->GetYaxis()->SetTitleSize(0.05);
+    gavexz->Draw("PSAME");
+    gaveyz->Draw("PSAME");
+    lin0z->Draw();
+    gavexzg->SetMarkerStyle(24);
+    gavexzg->SetMarkerColor(1);
+    gavexzg->Draw("P");
+    gaveyzg->SetMarkerStyle(25);
+    gaveyzg->SetMarkerColor(2);
+    gaveyzg->Draw("P");
+    gavezzg->SetMarkerStyle(26);
+    gavezzg->SetMarkerColor(4);
+    gavezzg->Draw("P");
+    leg->Draw();
+    
+    sprintf(outgif,"vert%s-ave-z.gif",vtxtype.Data());
+    if(optgif) cz2->SaveAs(outgif);
+  }
 
   TCanvas *cz3=new TCanvas("cz3","Resolution vs. Z");
   cz3->SetBottomMargin(0.14);
@@ -1017,10 +1033,12 @@ void PlotVertexESD(TString vtxtype="SPD",
   cbeam2->Modified();
   cbeam2->Update();
 
+  vertexStudy();
+
   return;
 }
 //----------------------------------------------------------------------------
-void ComputeVtxMean(TString vtxtype="TRK",
+void ComputeVtxMean(TString vtxtype="SPD",
 		    TString fname="Vertex.Performance.root",
 		    TString ntname="fNtupleVertexESD",
 		    Int_t nEventsToUse=10000,
@@ -1054,10 +1072,10 @@ void ComputeVtxMean(TString vtxtype="TRK",
   Double_t covyz=0.;
   Double_t eavx,eavy,eavz,ewgtavx,ewgtavy,ewgtavz;
 
-  TH1F* hx = new TH1F("hx","",200,-0.1,0.1);
+  TH1F* hx = new TH1F("hx","",1000,-1,1);
   hx->SetXTitle("vertex x [#mu m]");
   hx->SetYTitle("events");
-  TH1F* hy = new TH1F("hy","",200,-0.1,0.1);
+  TH1F* hy = new TH1F("hy","",1000,-1,1);
   hy->SetXTitle("vertex y [#mu m]");
   hy->SetYTitle("events");
   TH1F* hz = new TH1F("hz","",200,-20,20);
@@ -1110,15 +1128,14 @@ void ComputeVtxMean(TString vtxtype="TRK",
 
   Int_t total=0;
 
-  Int_t divider=(Int_t)(nnnev/nEventsToUse);
   // first loop on events
   for(Int_t iev=0;iev<nnnev;iev++) {
-    if(iev%divider!=0) continue;
+    //if(iev%nnnev!=100) continue;
     total++;
     nt->GetEvent(iev);
     if(!vtxtype.Contains("SPD")) vtx3D=1.;
-    //if(vtx3D<0.5) continue;
-    if(triggered<0.5) continue; // not triggered
+    if(vtx3D<0.5) continue;
+    //if(triggered<0.5) continue; // not triggered
     if(ncontrVtx<=0) continue; // no vertex
 
     if(ncontrVtx<mincontr) continue;
@@ -1127,13 +1144,14 @@ void ComputeVtxMean(TString vtxtype="TRK",
     avy += yVtx;
     avz += zVtx;
     sum += 1.;
+   
     wgtavx += xVtx/xerrVtx/xerrVtx;
     wgtavy += yVtx/yerrVtx/yerrVtx;
     wgtavz += zVtx/zerrVtx/zerrVtx;
     sumwgtx += 1./xerrVtx/xerrVtx;
     sumwgty += 1./yerrVtx/yerrVtx;
     sumwgtz += 1./zerrVtx/zerrVtx;
-     
+  
     hx->Fill(xVtx);
     hy->Fill(yVtx);
     hz->Fill(zVtx);
@@ -1152,11 +1170,11 @@ void ComputeVtxMean(TString vtxtype="TRK",
 
   // second loop on events
   for(Int_t iev=0;iev<nnnev;iev++){
-    if(iev%divider!=0) continue;
+    //if(iev%divider!=0) continue;
     nt->GetEvent(iev);
     if(!vtxtype.Contains("SPD")) vtx3D=1.;
     if(vtx3D<0.5) continue;
-    if(triggered<0.5) continue; // not triggered
+    //if(triggered<0.5) continue; // not triggered
     if(ncontrVtx<=0) continue; // no vertex
 
     if(ncontrVtx<mincontr) continue;
@@ -1221,4 +1239,216 @@ void ComputeVtxMean(TString vtxtype="TRK",
 
 
   return;
+}
+  
+
+void vertexStudy(TString vtxtype="SPD",
+		     TString fname="Vertex.Performance.root",
+		     TString ntname="fNtupleVertexESD"){
+  
+  TFile *f=new TFile(fname.Data());
+  TList *cOutput = (TList*)f->Get("cOutput");
+  TNtuple *nt=(TNtuple*)cOutput->FindObject(ntname.Data());
+  
+  TCanvas *spdCanvas = new TCanvas ("spdCanvas", "spdCanvas");
+  spdCanvas->Divide(3);
+  TCanvas *trkCanvas = new TCanvas ("trkCanvas", "trkCanvas");
+  trkCanvas->Divide(3);
+  TCanvas *tpcCanvas = new TCanvas ("tpcCanvas", "tpcCanvas");
+  tpcCanvas->Divide(3);
+  TCanvas *stampCanvas = new TCanvas ("stampCanvas", "stampCanvas");
+  stampCanvas->Divide(3);
+  TCanvas *vtxTRKvsSPDCanvas = new TCanvas ("TRKvsSPDCanvas", "TRKvsSPDCanvas");
+  vtxTRKvsSPDCanvas->Divide(3);
+  TCanvas *vtxTPCvsSPDCanvas = new TCanvas ("TPCvsSPDCanvas", "TPCvsSPDCanvas");
+  vtxTPCvsSPDCanvas->Divide(3);
+  TCanvas *vtxMultCanvas =new TCanvas ("vtx Multiplicity", "vtx Multiplicity");
+  vtxMultCanvas->Divide(3);
+
+  TCanvas *corrCanvas = new TCanvas("corr", "corr");
+  corrCanvas->Divide(3);
+  
+  /*
+    TFile *foutput = new TFile("Vertex.Performance.root");
+    TList *fListOutput = (TList*)foutput->Get("cOutput");
+    TNtuple *fNtupleVertexESD = (TNtuple*)fListOutput->FindObject("fNtupleVertexESD"); 
+  */
+  
+  Float_t xSPD, ySPD, zSPD;
+  Float_t xTRK, yTRK, zTRK;
+  Float_t xTPC, yTPC, zTPC;
+  Float_t SPD3D, ntrksSPD, ntrksTRK, ntrksTPC;
+  Float_t ntrklets, tstamp, nTPCin, nITSrefit5or6;
+
+  TH1F *histXspd = new TH1F("xSPDvertex", "xSPDvertex", 125, -1, 1);
+  TH1F *histYspd = new TH1F("ySPDvertex", "ySPDvertex", 125, -1, 1);
+  TH1F *histZspd = new TH1F ("zSPDvertex", "zSPDvertex", 40, -40, 40);
+
+  TH1F *histXtrack = new TH1F("xTRKvertex", "xTRKvertex", 125, -1, 1);
+  TH1F *histYtrack = new TH1F("yTRKvertex", "yTRKvertex", 125, -1, 1);
+  TH1F *histZtrack = new TH1F("zTRKvertex", "zTRKvertex", 40, -40, 40);
+
+  TH1F *histXtpc = new TH1F("xTPCvertex", "xTPCvertex", 125, -1, 1);
+  TH1F *histYtpc = new TH1F("yTPCvertex", "yTPCvertex", 125, -1, 1);
+  TH1F *histZtpc = new TH1F("zTPCvertex", "zTPCvertex", 40, -40, 40);
+
+  TH2F *hntrkletsnTRK = new TH2F ("TRK vertex corr", "TRK vertex corr", 100, -4, 20, 100, -4, 20);
+  TH2F *hntrkletsnSPD = new TH2F ("SPD vertex corr", "SPD vertex corr", 100, 0, 20, 100, 0, 20);
+  TH2F *hntrkletsnTPC = new TH2F ("TPC vertex corr", "TPC vertex corr", 100, -4, 20, 100, -4, 20);
+
+  TH2F *htstampX = new TH2F("tstamp Vx SPD","tstamp Vx SPD", 22, 1258.9900E6, 1258.9940E6, 125, -1, 1 );
+  TH2F *htstampY = new TH2F("tstamp Vy SPD","tstamp Vy SPD", 22 ,1258.9900E6, 1258.9940E6, 125, -1, 1 );
+  TH2F *htstampZ = new TH2F("tstamp Vz SPD","tstamp Vz SPD", 22, 1258.9900E6, 1258.9940E6, 40, -40, 40 );
+
+  TH2F *htstampXtpc = new TH2F("tstamp Vx TPC","tstamp Vx TPC", 22, 1258.9900E6, 1258.9940E6, 125, -1, 1 );
+  TH2F *htstampYtpc = new TH2F("tstamp Vy TPC","tstamp Vy TPC", 22 ,1258.9900E6, 1258.9940E6, 125, -1, 1 );
+  TH2F *htstampZtpc = new TH2F("tstamp Vz TPC","tstamp Vz TPC", 22, 1258.9900E6, 1258.9940E6, 40, -40, 40 );
+
+  TH2F *hvertexX = new TH2F("Vx TRK vs SPD","Vx TRK vs SPD", 100, -1, 1, 100, -1, 1 );
+  TH2F *hvertexY = new TH2F("Vy TRK vs SPD","Vy TRK vs SPD", 100, -1, 1, 100, -1, 1 );
+  TH2F *hvertexZ = new TH2F("Vz TRK vs SPD","Vz TRK vs SPD", 100, -20, 20, 100, -20, 20 );
+
+  
+  TH2F *fhVtxTPCvsSPDx = new TH2F("fhVtxTPCvsSPDx","TPC vs SPD ; x SPD [cm]; x TPC [cm]",100,-1,1,100,-1,1);
+  //fOutput->Add(fhVtxTPCvsSPDx);
+  TH2F *fhVtxTPCvsSPDy = new TH2F("fhVtxTPCvsSPDy","TPC vs SPD ; y SPD [cm]; y TPC [cm]",100,-1,1,100,-1,1);
+  //fOutput->Add(fhVtxTPCvsSPDy);
+  TH2F *fhVtxTPCvsSPDz = new TH2F("fhVtxTPCvsSPDz","TPC vs SPD ; z SPD [cm]; z TPC [cm]",100,-20,20,100,-20,20);
+
+  TH2F *fhVtxSPDContrvsMult = new TH2F("fhVtxSPDContrvsMult","SPD vertex: contributors VS SPD tracklets; contributors; SPD tracklets (AliMult)",100,-0.5,99.5,100,-0.5,99.5);
+  TH2F *fhVtxTRKContrvsTrks56 = new TH2F("fhVtxTRKContrvsTrks56","TRK vertex: contributors VS trks with #ge 5 ITS cls; contributors; tracks with ncluster>4",100,-0.5,99.5,100,-0.5,99.5);
+  TH2F *fhVtxTPCContrvsTrks = new TH2F("fhVtxTPCContrvsTrks","TPC vertex: contributors VS TPC trks (all); contributors; TPC tracks",100,-0.5,99.5,100,-0.5,99.5);
+
+  nt->SetBranchAddress("SPD3D", &SPD3D);
+  nt->SetBranchAddress("xSPD",&xSPD);
+  nt->SetBranchAddress("ySPD",&ySPD); 
+  nt->SetBranchAddress("zSPD",&zSPD);
+  
+  nt->SetBranchAddress("xTRK",&xTRK);
+  nt->SetBranchAddress("yTRK",&yTRK); 
+  nt->SetBranchAddress("zTRK",&zTRK);
+
+  nt->SetBranchAddress("xTPC",&xTPC);
+  nt->SetBranchAddress("yTPC",&yTPC); 
+  nt->SetBranchAddress("zTPC",&zTPC);
+  
+  nt->SetBranchAddress("ntrksTRK",&ntrksTRK);
+  nt->SetBranchAddress("ntrksSPD",&ntrksSPD); 
+  nt->SetBranchAddress("ntrksTPC", &ntrksTPC);
+  
+  nt->SetBranchAddress("ntrklets",&ntrklets);
+  nt->SetBranchAddress("tstamp", &tstamp);
+  nt->SetBranchAddress("nTPCin", &nTPCin);
+  nt->SetBranchAddress("nITSrefit5or6", &nITSrefit5or6);
+  
+  for (Int_t ientries; ientries<nt->GetEntriesFast(); ientries++){
+    nt->GetEntry(ientries);
+
+    if (ntrksSPD > 0) {
+      
+      histZspd->Fill(zSPD);
+      fhVtxSPDContrvsMult->Fill(ntrklets,ntrksSPD);
+      
+      if (SPD3D > 0.5){    
+	histYspd->Fill(ySPD);
+	histXspd->Fill(xSPD);
+      }
+      
+      htstampX->Fill(tstamp, xSPD);
+      htstampY->Fill(tstamp, ySPD);
+      htstampZ->Fill(tstamp, zSPD);
+
+      hntrkletsnSPD->Fill(ntrklets, ntrksSPD);
+      hntrkletsnTRK->Fill(ntrklets, ntrksTRK);
+      hntrkletsnTPC->Fill(ntrklets, ntrksTPC);
+    }
+    
+    if (ntrksTRK>0){
+      histXtrack->Fill(xTRK);
+      histYtrack->Fill(yTRK);
+      histZtrack->Fill(zTRK);
+      
+      hvertexX->Fill(xSPD,xTRK);
+      hvertexY->Fill(ySPD,yTRK);
+      hvertexZ->Fill(zSPD,zTRK);
+
+      fhVtxTRKContrvsTrks56->Fill(nITSrefit5or6,ntrksTRK);   
+    }
+    
+    if (ntrksTPC>0){
+      histXtpc->Fill(xTPC);
+      histYtpc->Fill(yTPC);
+      histZtpc->Fill(zTPC);
+      
+      fhVtxTPCvsSPDx->Fill(xSPD,xTPC);
+      fhVtxTPCvsSPDy->Fill(ySPD,yTPC);
+      fhVtxTPCvsSPDz->Fill(zSPD,zTPC);
+
+      htstampXtpc->Fill(tstamp, xTPC);
+      htstampYtpc->Fill(tstamp, yTPC);
+      htstampZtpc->Fill(tstamp, zTPC);
+
+
+      fhVtxTPCContrvsTrks->Fill(nTPCin,ntrksTPC);
+    }
+    
+  } 
+  spdCanvas->cd(1);
+  histXspd->Draw();
+  spdCanvas->cd(2);
+  histYspd->Draw();
+  spdCanvas->cd(3);
+  histZspd->Draw();
+  
+  trkCanvas->cd(1);
+  histXtrack->Draw();
+  trkCanvas->cd(2);
+  histYtrack->Draw();
+  trkCanvas->cd(3);
+  histZtrack->Draw();
+
+  tpcCanvas->cd(1);
+  histXtpc->Draw();
+  tpcCanvas->cd(2);
+  histYtpc->Draw();
+  tpcCanvas->cd(3);
+  histZtpc->Draw();
+
+  stampCanvas->cd(1);
+  htstampX->ProfileX()->Draw();
+  htstampXtpc->ProfileX()->Draw("SAME");
+  stampCanvas->cd(2);
+  htstampY->ProfileX()->Draw();
+  htstampYtpc->ProfileX()->Draw("SAME");
+  stampCanvas->cd(3);
+  htstampZ->ProfileX()->Draw();
+  htstampZtpc->ProfileX()->Draw("SAME");  
+
+  vtxTRKvsSPDCanvas->cd(1);
+  hvertexX->Draw();
+  vtxTRKvsSPDCanvas->cd(2);
+  hvertexY->Draw();
+  vtxTRKvsSPDCanvas->cd(3);
+  hvertexZ->Draw();
+
+  vtxTPCvsSPDCanvas->cd(1);
+  fhVtxTPCvsSPDx->Draw();
+  vtxTPCvsSPDCanvas->cd(2);
+  fhVtxTPCvsSPDy->Draw();
+  vtxTPCvsSPDCanvas->cd(3);
+  fhVtxTPCvsSPDz->Draw();
+
+  corrCanvas->cd(1);
+  hntrkletsnSPD->Draw();
+  corrCanvas->cd(2);
+  hntrkletsnTRK->Draw();
+  corrCanvas->cd(3);
+  hntrkletsnTPC->Draw();
+  
+  vtxMultCanvas->cd(1);
+  fhVtxSPDContrvsMult->Draw();
+  vtxMultCanvas->cd(2);
+  fhVtxTRKContrvsTrks56->Draw();
+  vtxMultCanvas->cd(3);
+  fhVtxTPCContrvsTrks->Draw();
 }
