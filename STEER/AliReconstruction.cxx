@@ -1641,13 +1641,16 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
         const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
         reconstructor->SetRecoParam(par);
-	reconstructor->SetEventInfo(&fEventInfo);
+        reconstructor->SetEventInfo(&fEventInfo);
         if (fRunQA) {
           AliQAManager::QAManager()->SetRecoParam(iDet, par) ; 
           AliQAManager::QAManager()->SetEventSpecie(AliRecoParam::Convert(par->GetEventSpecie())) ;
         }
       }
     }
+    const AliDetectorRecoParam *grppar = fRecoParam.GetDetRecoParam(kNDetectors);
+    AliQAManager::QAManager()->SetRecoParam(AliQAv1::kGLOBAL, grppar) ; 
+    AliQAManager::QAManager()->SetEventSpecie(AliRecoParam::Convert(grppar->GetEventSpecie())) ;
   }
 
     // QA on single raw 
