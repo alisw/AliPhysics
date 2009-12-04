@@ -178,6 +178,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SelectJets(kTRUE);
     jh->SetRadius(0.7);
     if(radius>0)jh->SetRadius(radius);
+    jh->SetEtMin(5.);
     jetFinder = new AliDAJetFinder();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
