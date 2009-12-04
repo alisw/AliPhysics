@@ -33,7 +33,7 @@ class AliVEventPool : public TNamed
     AliVEventPool& operator=(const AliVEventPool& other);
  protected:
     TChain* fChain;   // Chain of trees
-    ClassDef(AliVEventPool, 0); 
+    ClassDef(AliVEventPool, 1); 
 };
  
 #endif

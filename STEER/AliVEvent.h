@@ -149,7 +149,7 @@ public:
 
   */
 
-  ClassDef(AliVEvent,0)  // base class for AliEvent data
+  ClassDef(AliVEvent,1)  // base class for AliEvent data
 };
 #endif 
 
