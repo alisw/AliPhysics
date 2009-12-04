@@ -62,7 +62,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   if(kPrintSettings) emcalQA->Print("");	
   emcalQA->SwitchOnPlotsMaking();
   emcalQA->SwitchOnCalorimetersCorrelation();
-
+  //Set Histrograms bins and ranges
+  emcalQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
+  emcalQA->SetHistoPhiRangeAndNBins(75*TMath::DegToRad(), 125*TMath::DegToRad(), 100) ;
+  emcalQA->SetHistoEtaRangeAndNBins(-0.8, 0.8, 160) ;
 
   //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
 	
@@ -77,7 +80,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
    if(kPrintSettings)phosQA->Print("");	
    //phosQA->GetMCAnalysisUtils()->SetDebug(10);
    phosQA->SwitchOnPlotsMaking();
-  
+    //Set Histrograms bins and ranges
+  phosQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
+  phosQA->SetHistoPhiRangeAndNBins(215*TMath::DegToRad(), 325*TMath::DegToRad(), 100) ;
+  phosQA->SetHistoEtaRangeAndNBins(-0.13, 0.13, 100) ;
+
+
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader

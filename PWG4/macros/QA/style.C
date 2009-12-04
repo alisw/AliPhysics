@@ -46,7 +46,7 @@
   gStyle->SetTitleOffset(1.7,"Y");
 
   gStyle->SetOptDate(0);
-  gStyle->SetOptTitle(0);
+//  gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(000000);
 
