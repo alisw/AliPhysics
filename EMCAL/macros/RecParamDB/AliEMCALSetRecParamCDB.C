@@ -16,7 +16,7 @@
 #endif
 
 
-void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::kDefault)
+void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::kLowMult)
 {
   
   // Create an object AliEMCALRecParam and store it to OCDB
@@ -37,6 +37,7 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
     //Add to the recParamArray
     recParamDB->SetEventSpecie(AliRecoParam::kDefault);
     recParamArray->AddLast(recParamDB);
+	  
   }
   
   //Add other options here, if desired, for

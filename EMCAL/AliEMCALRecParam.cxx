@@ -91,7 +91,7 @@ AliEMCALRecParam::AliEMCALRecParam() :
     
     
   }
-  // Pb Pb 
+  // Set here default parameters for Pb+Pb (high flux)
   
   fGamma[0][0] = -7.656908e-01; 
   fGamma[0][1] =  2.352536e-01; 
@@ -209,9 +209,7 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fPiZero[5][2] = -6.040360e-02;
   fPiZero[5][3] = -6.137459e-04;
   fPiZero[5][4] =  1.847328e-05;
-  
-  // High flux ones pp 
-  
+    
   fHadronEnergyProb[0]= 0.;
   fHadronEnergyProb[1]= 0.;
   fHadronEnergyProb[2]=  6.188452e-02;
@@ -317,9 +315,9 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
 AliEMCALRecParam* AliEMCALRecParam::GetDefaultParameters()
 {
   //default parameters for the reconstruction
-  AliEMCALRecParam* params = new AliEMCALRecParam();
-  params->SetName("Default - Pb+Pb");
-  params->SetTitle("Default - Pb+Pb");
+  AliEMCALRecParam* params = GetLowFluxParam();
+  params->SetName("Default - p+p");
+  params->SetTitle("Default - p+p");
   return params;
   
 }
