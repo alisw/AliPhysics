@@ -66,6 +66,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void Terminate(TList* outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 	
+  Int_t GetModuleNumber(AliAODPWG4Particle * particle);
+  void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
+	
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
   
@@ -78,6 +81,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Float_t fZvtxCut ;	  // Cut on vertex position
   TString fCalorimeter ;  // Select Calorimeter for IM
   TString fEMCALGeoName;  // Name of geometry to use.
+  Int_t fNModules ;       // Number of EMCAL/PHOS modules, set as many histogras as modules 
 
   TList ** fEventsList ;  //! containers for photons in stored events
   
@@ -85,6 +89,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   TH3D * fhEtalon ; //Etalon histo, all distributions will have same binning as this one
   
+  TH3D ** fhReMod ;  //!REAL two-photon invariant mass distribution for different calorimeter modules.
+	
   TH3D ** fhRe1 ;  //!REAL two-photon invariant mass distribution for different centralities and PID 
   TH3D ** fhMi1 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
   TH3D ** fhRe2 ;  //!REAL two-photon invariant mass distribution for different centralities and PID 
@@ -92,7 +98,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH3D ** fhRe3 ;  //!REAL two-photon invariant mass distribution for different centralities and PID 
   TH3D ** fhMi3 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
   TH3D * fhEvents;  //!Number of events per centrality, RP, zbin
-  
+
   //Acceptance
   TH1D * fhPrimPt ;    //! Spectrum of Primary 
   TH1D * fhPrimAccPt ; //! Spectrum of primary with accepted daughters 
@@ -104,7 +110,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   AliPHOSGeoUtils  * fPHOSGeo  ; //! PHOS geometry pointer  
   AliEMCALGeoUtils * fEMCALGeo ; //! EMCAL geometry pointer
 
-  ClassDef(AliAnaPi0,4)
+  ClassDef(AliAnaPi0,5)
 } ;
 
 
