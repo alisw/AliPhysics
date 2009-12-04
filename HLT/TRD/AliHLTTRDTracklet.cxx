@@ -14,7 +14,7 @@ AliHLTTRDTracklet::AliHLTTRDTracklet():
   fDet(-1),
   fCount(0),
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  fSize(sizeof(AliHLTTRDTracklet)-sizeof(IndexAndCluster))
+  fSize(sizeof(AliHLTTRDTracklet)-sizeof(AliHLTTRDCluster)),
 #else
   fSize(sizeof(AliHLTTRDTracklet))
 #endif
@@ -37,7 +37,7 @@ AliHLTTRDTracklet::AliHLTTRDTracklet(const AliTRDseedV1* const inTracklet):
   fDet(inTracklet->fDet),
   fCount(0),
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  fSize(sizeof(AliHLTTRDTracklet)-sizeof(IndexAndCluster))
+  fSize(sizeof(AliHLTTRDTracklet)-sizeof(AliHLTTRDCluster)),
 #else
   fSize(sizeof(AliHLTTRDTracklet))
 #endif
@@ -72,10 +72,9 @@ void AliHLTTRDTracklet::CopyDataMembers(const AliTRDseedV1* const inTracklet)
     {
       AliTRDcluster* trdCluster = inTracklet->GetClusters(iTimeBin);
       if (trdCluster){
-	fClusters[fCount].Index = inTracklet->fIndexes[iTimeBin];
-  	new (&fClusters[fCount].Cluster) AliHLTTRDCluster(trdCluster);
+  	new (&fClusters[fCount]) AliHLTTRDCluster(trdCluster);
   	fCount++;
-  	fSize += sizeof(IndexAndCluster);
+  	fSize += sizeof(AliHLTTRDCluster);
       }
     }
   
@@ -117,10 +116,9 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1* const outTracklet) const
 
   for (UInt_t iCluster=0; iCluster < fCount; iCluster++){
     AliTRDcluster *trdCluster = new AliTRDcluster();
-    fClusters[iCluster].Cluster.ExportTRDCluster(trdCluster);
+    fClusters[iCluster].ExportTRDCluster(trdCluster);
     outTracklet->fClusters[iCluster] = trdCluster;
-    outTracklet->fIndexes[iCluster] = fClusters[iCluster].Index;
-    iCluster++;
+    outTracklet->fIndexes[iCluster] = iCluster;
   }
 }
 
@@ -151,10 +149,9 @@ void AliHLTTRDTracklet::Print(Bool_t printClusters) const
   printf("      fDet %i; fPt %f; fdX %f fN %i\n", fDet, fPt, fdX, fN);
 
   if(!printClusters) return;
-  for (UInt_t iCount=0, iCluster = 0; iCluster < fCount; iCount++){
-    printf(" [%i] ",iCount);
-    fClusters[iCluster].Cluster.Print();
-    iCluster++;
+  for (UInt_t iCluster = 0; iCluster < fCount; iCluster++){
+    printf(" [%i] ",iCluster);
+    fClusters[iCluster].Print();
   }
 }
 

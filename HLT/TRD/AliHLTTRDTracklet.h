@@ -68,15 +68,10 @@ class AliHLTTRDTracklet
   AliHLTUInt16_t fCount;                  // Number of clusters saved in the open array
   AliHLTUInt32_t fSize;                   // Size of the tracklet with clusters in the memory
 
-  struct IndexAndCluster{
-    Int_t            Index;
-    AliHLTTRDCluster Cluster;
-    IndexAndCluster():Index(),Cluster() {}
-  }
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-    fClusters[1];                         // Open array of clusters and their index
+  AliHLTTRDCluster fClusters[1];                         // Open array of clusters and their index
 #else
-    fClusters[0];                         // Open array of clusters and their index
+  AliHLTTRDCluster fClusters[0];                         // Open array of clusters and their index
 #endif
 
 };
