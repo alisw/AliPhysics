@@ -167,8 +167,8 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
   rawRead.Exec();
   AliFMDAltroMapping* map = AliFMDParameters::Instance()->GetAltroMap();
   for (size_t i = 1; i <= 3; i++) { 
-    fZS[i]       = rawRead.IsZeroSuppressed(map->Detector2DDL(i));
-    fZSFactor[i] = rawRead.NoiseFactor(map->Detector2DDL(i));
+    fZS[i-1]       = rawRead.IsZeroSuppressed(map->Detector2DDL(i));
+    fZSFactor[i-1] = rawRead.NoiseFactor(map->Detector2DDL(i));
   }
 }
 
