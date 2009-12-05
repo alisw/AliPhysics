@@ -40,12 +40,16 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; if(flag) fCheckEventType=kFALSE;}
   void           SetRerecoVertexTPC(Bool_t flag=kTRUE) { fRecoVtxTPC=flag; }
   void           SetRerecoVertexITSTPC(Bool_t flag=kTRUE) { fRecoVtxITSTPC=flag; }
+  void           SetOnlyITSTPCTracks() {fOnlyITSTPCTracks=kTRUE;}
+  void           SetOnlyITSSATracks() {fOnlyITSSATracks=kTRUE;}
   
  protected:
   Bool_t       fCheckEventType; // read only events of type 7
   Bool_t       fReadMC;         // read Monte Carlo
   Bool_t       fRecoVtxTPC;     // reco TPC vertex on the flight
   Bool_t       fRecoVtxITSTPC;  // reco ITS+TPC vertex on the flight
+  Bool_t       fOnlyITSTPCTracks; // only ITS-TPC tracks to redo ITSTPC vertex
+  Bool_t       fOnlyITSSATracks;  // only ITS-SA tracks to redo ITSTPC vertex
   AliESDEvent *fESD;            // ESD object
   TList       *fOutput;         //! list send on output slot 0
   TNtuple     *fNtupleVertexESD;//! output ntuple

@@ -66,6 +66,8 @@ fCheckEventType(kTRUE),
 fReadMC(kFALSE),
 fRecoVtxTPC(kFALSE),
 fRecoVtxITSTPC(kFALSE),
+fOnlyITSTPCTracks(kFALSE),
+fOnlyITSSATracks(kFALSE),
 fESD(0), 
 fOutput(0), 
 fNtupleVertexESD(0),
@@ -385,6 +387,23 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC() const {
   vertexer.SetVtxStart(initVertex);
   delete initVertex;
   vertexer.SetConstraintOff();
+
+  // use only ITS-TPC or only ITS-SA tracks
+  if(fOnlyITSTPCTracks || fOnlyITSSATracks) {
+    Int_t iskip=0;
+    Int_t *skip = new Int_t[fESD->GetNumberOfTracks()];
+    for(Int_t itr=0;itr<fESD->GetNumberOfTracks(); itr++) {
+      AliESDtrack* track = fESD->GetTrack(itr);
+      if(fOnlyITSTPCTracks && track->GetNcls(1)==0) { // skip ITSSA
+	skip[iskip++]=itr;
+      }
+      if(fOnlyITSSATracks && track->GetNcls(1)>0) { // skip ITSTPC
+	skip[iskip++]=itr;
+      }
+    }
+    vertexer.SetSkipTracks(iskip,skip);
+    delete [] skip; skip=NULL;
+  }
 
   return vertexer.FindPrimaryVertex(fESD);
 }
