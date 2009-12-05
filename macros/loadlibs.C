@@ -81,6 +81,7 @@ void loadlibs ()
   gSystem->Load("libVZERObase");
   gSystem->Load("libVZEROrec");
   gSystem->Load("libVZEROsim");
+  gSystem->Load("libEMCALUtils");
   gSystem->Load("libEMCALbase");
   gSystem->Load("libEMCALsim");
   gSystem->Load("libEMCALrec");
