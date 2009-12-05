@@ -62,6 +62,11 @@ AliEveTrack* hlt_esd_make_track(AliESDtrack *at, TEveTrackList* cont)
   else if( at->GetInnerParam() ){
     trackParam = *(at->GetInnerParam());
   }
+  if( at->GetStatus()&AliESDtrack::kTRDin ){
+    // transport to TRD in
+    trackParam = *at;
+    trackParam.PropagateTo( 290.45, -10.*( cont->GetPropagator()->GetMagField(0,0,0).fZ) );
+  }
 
   TEveRecTrack rt;
   {
