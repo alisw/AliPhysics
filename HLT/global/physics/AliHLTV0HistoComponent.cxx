@@ -249,8 +249,8 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
       AliESDtrack *t1=event->GetTrack( event->GetV0(iv)->GetNindex());
       AliESDtrack *t2=event->GetTrack( event->GetV0(iv)->GetPindex());      
 
-      AliKFParticle kf1( *t1->GetInnerParam(), 11 );
-      AliKFParticle kf2( *t2->GetInnerParam(), 11 );
+      AliKFParticle kf1( *t1, 11 );
+      AliKFParticle kf2( *t2, 11 );
 
       AliKFVertex primVtx( *event->GetPrimaryVertexTracks() );
       double dev1 = kf1.GetDeviationFromVertex( primVtx );
@@ -349,8 +349,8 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	 && r <= fKsCuts[5]
 	 ){	
     
-	AliKFParticle piN( *t1->GetInnerParam(), 211 );	
-	AliKFParticle piP( *t2->GetInnerParam(), 211 );	
+	AliKFParticle piN( *t1, 211 );	
+	AliKFParticle piP( *t2, 211 );	
 	
 	AliKFParticle Ks( piN, piP );
 	Ks.SetProductionVertex( primVtx );
@@ -382,11 +382,11 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	
 	AliKFParticle kP, kpi;
 	if( ap<0 ){ 
-	  kP = AliKFParticle( *t2->GetInnerParam(), 2212 );
-	  kpi = AliKFParticle( *t1->GetInnerParam(), 211 );
+	  kP = AliKFParticle( *t2, 2212 );
+	  kpi = AliKFParticle( *t1, 211 );
 	} else {
-	  kP = AliKFParticle( *t1->GetInnerParam(), 2212 );
-	  kpi = AliKFParticle( *t2->GetInnerParam(), 211 );
+	  kP = AliKFParticle( *t1, 2212 );
+	  kpi = AliKFParticle( *t2, 211 );
 	}
 
 	AliKFParticle lambda = AliKFParticle( kP, kpi );

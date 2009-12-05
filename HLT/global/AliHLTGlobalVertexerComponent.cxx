@@ -376,11 +376,11 @@ void AliHLTGlobalVertexerComponent::SetESD( AliESDEvent *event )
     
     //* Construct KFParticle for the track
 
-    if(  pTrack->GetStatus()&AliESDtrack::kITSin ){
+    //if(  pTrack->GetStatus()&AliESDtrack::kITSin ){
       info.fParticle = AliKFParticle( *pTrack, 211 );    
-    } else {
-      info.fParticle = AliKFParticle( *pTrack->GetInnerParam(), 211 );    
-    }
+      //} else {
+      //info.fParticle = AliKFParticle( *pTrack->GetInnerParam(), 211 );    
+      //}
     info.fOK = 1;
   }
 }

@@ -66,8 +66,9 @@ private:
   int Reconfigure(const char* cdbEntry, const char* chainId);
 
   TH2F fPrimaryXY;  //X and Y coords.
-  TH2F fPrimaryZX;  //Z and X coords.
-  TH2F fPrimaryZY;  //Z and Y coords.
+  TH1F fPrimaryX;  // X coords.
+  TH1F fPrimaryY;  // Y coords.
+  TH1F fPrimaryZ;  // Z coords.
 
   TH2F fSPDVertexXY;// ITS SPD vertex
   TH1F fSPDVertexX;// ITS SPD vertex

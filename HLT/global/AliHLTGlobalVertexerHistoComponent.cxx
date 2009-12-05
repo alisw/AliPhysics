@@ -29,8 +29,9 @@ ClassImp(AliHLTGlobalVertexerHistoComponent)
 AliHLTGlobalVertexerHistoComponent::AliHLTGlobalVertexerHistoComponent()
   : 
   fPrimaryXY(),
-  fPrimaryZX(),
-  fPrimaryZY(),
+  fPrimaryX(),
+  fPrimaryY(),
+  fPrimaryZ(),
   fSPDVertexXY(),
   fSPDVertexX(),
   fSPDVertexY(),
@@ -43,26 +44,32 @@ AliHLTGlobalVertexerHistoComponent::AliHLTGlobalVertexerHistoComponent()
   fPrimaryXY.SetMarkerSize(0.4);
   fPrimaryXY.SetYTitle("Y [cm]");
   fPrimaryXY.SetXTitle("X [cm]");
-  fPrimaryXY.SetStats(0);
-  fPrimaryXY.SetBit(TH1::kCanRebin);
+  //fPrimaryXY.SetStats(0);
+  //fPrimaryXY.SetBit(TH1::kCanRebin);
 
-  fPrimaryZX.SetName("primVertexZX");
-  fPrimaryZX.SetTitle("HLT: Primary vertex distribution in ZX");
-  fPrimaryZX.SetMarkerStyle(8);
-  fPrimaryZX.SetMarkerSize(0.4);
-  fPrimaryZX.SetYTitle("X [cm]");
-  fPrimaryZX.SetXTitle("Z [cm]");
-  fPrimaryZX.SetStats(0);
-  fPrimaryZX.SetBit(TH1::kCanRebin);
+  fPrimaryX.SetName("primVertexX");
+  fPrimaryX.SetTitle("HLT: Primary vertex distribution in X");
+  fPrimaryX.SetMarkerStyle(8);
+  fPrimaryX.SetMarkerSize(0.4);
+  fPrimaryX.SetXTitle("X [cm]");
+  //fPrimaryX.SetStats(0);
+  //fPrimaryX.SetBit(TH1::kCanRebin);
 
-  fPrimaryZY.SetName("primVertexZY");
-  fPrimaryZY.SetTitle("HLT: Primary vertex distribution in ZY");
-  fPrimaryZY.SetMarkerStyle(8);
-  fPrimaryZY.SetMarkerSize(0.4);
-  fPrimaryZY.SetYTitle("Y [cm]");
-  fPrimaryZY.SetXTitle("Z [cm]");
-  fPrimaryZY.SetStats(0);
-  fPrimaryZY.SetBit(TH1::kCanRebin);
+  fPrimaryY.SetName("primVertexY");
+  fPrimaryY.SetTitle("HLT: Primary vertex distribution in Y");
+  fPrimaryY.SetMarkerStyle(8);
+  fPrimaryY.SetMarkerSize(0.4);
+  fPrimaryY.SetXTitle("Y [cm]");
+  //fPrimaryY.SetStats(0);
+  //fPrimaryX.SetBit(TH1::kCanRebin);
+
+  fPrimaryZ.SetName("primVertexZ");
+  fPrimaryZ.SetTitle("HLT: Primary vertex distribution in Z");
+  fPrimaryZ.SetMarkerStyle(8);
+  fPrimaryZ.SetMarkerSize(0.4);
+  fPrimaryZ.SetXTitle("Z [cm]");
+  //fPrimaryZ.SetStats(0);
+  //fPrimaryX.SetBit(TH1::kCanRebin);
 
 
   fSPDVertexXY.SetName("spdVertexXY");
@@ -72,7 +79,7 @@ AliHLTGlobalVertexerHistoComponent::AliHLTGlobalVertexerHistoComponent()
   fSPDVertexXY.SetYTitle("Y [cm]");
   fSPDVertexXY.SetXTitle("X [cm]");
   fSPDVertexXY.SetStats(0);
-  fSPDVertexXY.SetBit(TH1::kCanRebin);
+  //fSPDVertexXY.SetBit(TH1::kCanRebin);
 
   fSPDVertexX.SetName("spdVertexX");
   fSPDVertexX.SetTitle("HLT: SPD vertex distribution in X");
@@ -80,7 +87,7 @@ AliHLTGlobalVertexerHistoComponent::AliHLTGlobalVertexerHistoComponent()
   fSPDVertexX.SetMarkerSize(0.4);
   fSPDVertexX.SetXTitle("X [cm]");
   //fSPDVertexX.SetStats(0);
-  fSPDVertexX.SetBit(TH1::kCanRebin);
+  //fSPDVertexX.SetBit(TH1::kCanRebin);
 
   fSPDVertexY.SetName("spdVertexY");
   fSPDVertexY.SetTitle("HLT: SPD vertex distribution in Y");
@@ -88,7 +95,7 @@ AliHLTGlobalVertexerHistoComponent::AliHLTGlobalVertexerHistoComponent()
   fSPDVertexY.SetMarkerSize(0.4);
   fSPDVertexY.SetXTitle("Y [cm]");
   //fSPDVertexY.SetStats(0);
-  fSPDVertexY.SetBit(TH1::kCanRebin);
+  //fSPDVertexY.SetBit(TH1::kCanRebin);
  
   fSPDVertexZ.SetName("spdVertexZ");
   fSPDVertexZ.SetTitle("HLT: SPD vertex distribution in Z");
@@ -96,7 +103,7 @@ AliHLTGlobalVertexerHistoComponent::AliHLTGlobalVertexerHistoComponent()
   fSPDVertexZ.SetMarkerSize(0.4);
   fSPDVertexZ.SetXTitle("Z [cm]");
   //fSPDVertexZ.SetStats(0);
-  fSPDVertexZ.SetBit(TH1::kCanRebin);
+  //fSPDVertexZ.SetBit(TH1::kCanRebin);
 }
 
 const char* AliHLTGlobalVertexerHistoComponent::GetComponentID()
@@ -150,20 +157,22 @@ int AliHLTGlobalVertexerHistoComponent::DoInit(int /*argc*/, const char** /*argv
 {
   //Clear all bin contents and statistics.
   fPrimaryXY.Reset();
-  fPrimaryZX.Reset();
-  fPrimaryZY.Reset();
+  fPrimaryX.Reset();
+  fPrimaryY.Reset();
+  fPrimaryZ.Reset();
   fSPDVertexXY.Reset();
   fSPDVertexX.Reset();
   fSPDVertexY.Reset();
   fSPDVertexZ.Reset();
   //Set bin numbers and axis ranges.
-  fPrimaryXY.SetBins(60,  -2.,  2., 60, -2., 2.);
-  fPrimaryZX.SetBins(60, -15., 15., 60, -2., 2.);
-  fPrimaryZY.SetBins(60, -10., 10., 60, -2., 2.);
-  fSPDVertexXY.SetBins(1000,  -2.,  2., 1000, -2., 2.);
-  fSPDVertexX.SetBins(1000,  -2.,  2.);
-  fSPDVertexY.SetBins(1000,  -2.,  2.);
-  fSPDVertexZ.SetBins(1000,  -15.,  15.);
+  fPrimaryXY.SetBins(1000,  -1.,  1., 1000, -1., 1.);
+  fPrimaryX.SetBins( 1000, -1., 1.);
+  fPrimaryY.SetBins( 1000, -1., 1.);
+  fPrimaryZ.SetBins( 1000, -30., 30.); 
+  fSPDVertexXY.SetBins(1000,  -1.,  1., 1000, -1., 1.);
+  fSPDVertexX.SetBins(1000,  -1.,  1.);
+  fSPDVertexY.SetBins(1000,  -1.,  1.);
+  fSPDVertexZ.SetBins(1000,  -30.,  30.);
 
   return 0;
 }
@@ -197,7 +206,7 @@ int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& 
   bool wasITS = 0;
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); iter != NULL; iter = GetNextInputObject() ) {
     if( AliESDVertex *vertex = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) ) ){
-      if( vertex && vertex->GetNContributors() >= 3 ){
+      if( vertex && vertex->GetNContributors() >= 5 ){
 	fSPDVertexXY.Fill(vertex->GetX(), vertex->GetY());
 	fSPDVertexX.Fill(vertex->GetX() );
 	fSPDVertexY.Fill(vertex->GetY() );
@@ -214,10 +223,11 @@ int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& 
     if (AliESDEvent* event = dynamic_cast<AliESDEvent*>((TObject*)iter)) {
       event->GetStdContent();
       const AliESDVertex* vertex = event->GetPrimaryVertexTracks();
-      if (vertex && vertex->GetNContributors() >= 3) {
+      if (vertex && vertex->GetNContributors() >= 5) {
         fPrimaryXY.Fill(vertex->GetX(), vertex->GetY());
-        fPrimaryZX.Fill(vertex->GetZ(), vertex->GetX());
-        fPrimaryZY.Fill(vertex->GetZ(), vertex->GetY());
+        fPrimaryX.Fill(vertex->GetX());
+        fPrimaryY.Fill(vertex->GetY());
+        fPrimaryZ.Fill(vertex->GetZ());
       }
       if( !wasITS ){
 	vertex = event->GetPrimaryVertexSPD();
@@ -235,8 +245,9 @@ int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& 
   }
  
   PushBack(&fPrimaryXY, kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
-  PushBack(&fPrimaryZX, kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
-  PushBack(&fPrimaryZY, kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
+  PushBack(&fPrimaryZ, kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
+  PushBack(&fPrimaryX, kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
+  PushBack(&fPrimaryY, kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
 
   PushBack(&fSPDVertexXY, kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
   PushBack(&fSPDVertexZ, kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
