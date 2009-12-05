@@ -69,6 +69,9 @@
 #pragma link C++ class AliRelAlignerKalmanArray+;
 #pragma link C++ class AliAnalysisTaskITSTPCalignment+;
 
+#pragma link C++ class AliAnalysisTaskQASym+;
+
+
 // TRD performance classes
 #pragma link C++ class  AliTenderSupplyTRD+;
 #pragma link C++ class  AliTRDclusterInfo+;
