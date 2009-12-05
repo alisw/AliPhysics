@@ -31,23 +31,21 @@
   RunPerformanceTask(chain, kTRUE, kTRUE, kTRUE);
 
 
-  //3. Run only on static PROOF at GSI e.g.
-
-  TProof::Reset("jacek@lxgrid5.gsi.de");
-  TProofMgr * proofmgr = TProof::Mgr("jacek@lxgrid5.gsi.de");
-  //proofmgr->SetROOTVersion("523-04");
+  //3. Run only on PoD at GSI e.g.
+  TProofMgr * proofmgr = TProof::Mgr("lxialpod2.gsi.de:21001");
   TProof * proof = proofmgr->CreateSession();
   proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)10000);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/ProofEnableAliRoot.C");
-  ProofEnableAliRoot("/u/jacek/alice/AliRoot/HEAD/");
+  ProofEnableAliRoot("/d/alice11/jacek/alice/x86_64/AliRoot/trunk");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("esd_v4-16-Rev-08-grid.txt", 200, 0);
+  TChain* chain = CreateESDChain("../input/ffprod_v4-17-Rev-19_900kPythia6D6T.list", 200, 0);
   chain->Lookup();
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/RunPerformanceTask.C");
-  RunPerformanceTask(chain, kTRUE, kTRUE, kTRUE); 
+  //gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/RunPerformanceTask.C");
+  gROOT->LoadMacro("/d/alice11/jacek/alice/TPC/macros/RunPerformanceTask.C");
+  RunPerformanceTask(chain, kFALSE, kTRUE, kTRUE); 
 
   //4. Make final spectra and store them in the
   // output folder and generate control pictures e.g.

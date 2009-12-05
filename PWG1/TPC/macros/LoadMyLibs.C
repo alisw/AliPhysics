@@ -35,6 +35,7 @@ void LoadMyLibs() {
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libAOD");
   CheckLoadLibrary("libANALYSISalice");
+  CheckLoadLibrary("libTENDER");
   CheckLoadLibrary("libTPCcalib");
   CheckLoadLibrary("libPWG1");
 }
