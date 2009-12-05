@@ -234,6 +234,10 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
 
   Int_t iResult = 0;
 
+  // HAck Jochen
+  //----
+  detector="ALL";
+
   // -- Check if LibManager is present
   if ( ! fLibManager ) {
     HLTError(Form("No LibManager present."));
@@ -525,8 +529,9 @@ void AliHLTHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
     // -- If detector NO detector name given
     if ( ! detector.CompareTo("ALL") ) {
       // -- Continue if source is not selected
-      if ( ! source->IsSelected() )
-	continue;
+      // HACK Jochen
+      //if ( ! source->IsSelected() )
+      //	continue;
     }
     // -- DetectorName given
     else {
