@@ -85,10 +85,10 @@ private:
 
   static AliZDCRecoParam *fRecoParam; // reconstruction parameters
 
-  AliZDCPedestals  *fPedData; 	    //! pedestal calibration data
-  AliZDCEnCalib    *fEnCalibData;   //! energy calibration data
-  AliZDCTowerCalib *fTowCalibData;  //! equalization calibration data
-  AliZDCMBCalib    *fMBCalibData;   //! mb calibration data
+  static AliZDCMBCalib   *fMBCalibData;   //! mb calibration data
+  AliZDCPedestals  *fPedData; 	    	  //! pedestal calibration data
+  AliZDCEnCalib    *fEnCalibData;   	  //! energy calibration data
+  AliZDCTowerCalib *fTowCalibData;  	  //! equalization calibration data
   
   Int_t   fRecoMode;	    // =1->p-p, =2->A-A
   Float_t fBeamEnergy;	    // beam energy

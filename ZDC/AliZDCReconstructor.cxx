@@ -51,13 +51,13 @@
 
 ClassImp(AliZDCReconstructor)
 AliZDCRecoParam *AliZDCReconstructor::fRecoParam=0;  //reconstruction parameters
+AliZDCMBCalib *AliZDCReconstructor::fMBCalibData=0;  //calibration parameters for A-A reconstruction
 
 //_____________________________________________________________________________
 AliZDCReconstructor:: AliZDCReconstructor() :
   fPedData(GetPedestalData()),
   fEnCalibData(GetEnergyCalibData()),
   fTowCalibData(GetTowerCalibData()),
-  fMBCalibData(GetMBCalibData()),
   fRecoMode(0),
   fBeamEnergy(0.),
   fNRun(0),
@@ -271,7 +271,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
     ReconstructEventPbPb(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
       dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2, 
       kFALSE, counts, 
-      evQualityBlock,  triggerBlock,  chBlock, puBits);
+      evQualityBlock,  triggerBlock,  chBlock, puBits);    
 }
 
 //_____________________________________________________________________________
@@ -564,7 +564,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
       isScalerOn, scalerData, 
       evQualityBlock, triggerBlock, chBlock, puBits);
   else if(fRecoMode==2) // Pb-Pb data
-    ReconstructEventPbPb(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
+      ReconstructEventPbPb(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
       dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2, 
       isScalerOn, scalerData, 
       evQualityBlock, triggerBlock, chBlock, puBits);
@@ -919,6 +919,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   if(fIsCalibrationMB == kFALSE){
     // ******	Reconstruction parameters ------------------ 
     if (!fRecoParam) fRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam()); 
+    if(!fMBCalibData) fMBCalibData = const_cast<AliZDCMBCalib*>(GetMBCalibData()); 
  
     TH2F *hZDCvsZEM  = fMBCalibData->GethZDCvsZEM();
     TH2F *hZDCCvsZEM = fMBCalibData->GethZDCCvsZEM();
