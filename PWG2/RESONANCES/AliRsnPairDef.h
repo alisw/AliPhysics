@@ -22,9 +22,9 @@ class AliRsnPairDef : public TObject
 
     AliRsnPairDef();
     AliRsnPairDef(Char_t sign1, AliPID::EParticleType type1,
-                  Char_t sign2, AliPID::EParticleType type2, Int_t motherPDG = 0);
+                  Char_t sign2, AliPID::EParticleType type2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
     AliRsnPairDef(AliPID::EParticleType type1, Char_t sign1,
-                  AliPID::EParticleType type2, Char_t sign2, Int_t motherPDG = 0);
+                  AliPID::EParticleType type2, Char_t sign2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
     AliRsnPairDef(const AliRsnPairDef &copy);
     const AliRsnPairDef& operator= (const AliRsnPairDef &copy);
     virtual ~AliRsnPairDef() { }
@@ -35,6 +35,7 @@ class AliRsnPairDef : public TObject
     AliPID::EParticleType GetType(Int_t i) const {if (i>=0&&i<2) return fType[i]; else return AliPID::kUnknown;}
     Double_t              GetMass(Int_t i) const {if (i>=0&&i<2) return fMass[i]; else return 0.0;}
     Int_t                 GetMotherPDG() const {return fMotherPDG;}
+    Double_t              GetMotherMass() const {return fMotherMass;}
     TString               GetPairName() const;
 
     // setters
@@ -49,6 +50,7 @@ class AliRsnPairDef : public TObject
   private:
 
     // pair parameters
+    Double_t               fMotherMass; // nominal mass of true mother
     Int_t                  fMotherPDG;  // PDG code of true mother (if known)
     Double_t               fMass[2];    // mass of particles
     Char_t                 fCharge[2];  // charge of particles
