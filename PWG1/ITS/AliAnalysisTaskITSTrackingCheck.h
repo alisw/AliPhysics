@@ -111,7 +111,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   Double_t ParticleImpParMC(TParticle *part,AliESDVertex *vert,Double_t bzT) const;
   Bool_t SelectPt(Double_t pt);
 
-  ClassDef(AliAnalysisTaskITSTrackingCheck,1); // ITS tracks analysis
+  ClassDef(AliAnalysisTaskITSTrackingCheck,2); // ITS tracks analysis
 };
 
 #endif
