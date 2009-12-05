@@ -197,17 +197,14 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
       
       fGeom->RelToAbsNumbering(relId, absId);
       
-      Int_t nBunches = 0;
-      while (fRawStream->NextBunch()) {
-	nBunches++;
-	if (nBunches > 1) continue;
+      fitter->SetNBunches(0);
+      while (fRawStream->NextBunch()) { //Take first in time banch
 	const UShort_t *sig = fRawStream->GetSignals();
 	Int_t sigStart  = fRawStream->GetStartTimeBin();
 	Int_t sigLength = fRawStream->GetBunchLength();
 	fitter->Eval(sig,sigStart,sigLength);
       } // End of NextBunch()
 
-      fitter->SetNBunches(nBunches);
       
       Double_t energy = fitter->GetEnergy() ; 
       Double_t time   = fitter->GetTime() ;
