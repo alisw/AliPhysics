@@ -62,7 +62,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   AliESDVertex* ReconstructPrimaryVertexTPC() const;
   AliESDVertex* ReconstructPrimaryVertexITSTPC() const;
   
-  ClassDef(AliAnalysisTaskVertexESD,5); // primary vertex analysis
+  ClassDef(AliAnalysisTaskVertexESD,6); // primary vertex analysis
 };
 
 #endif
