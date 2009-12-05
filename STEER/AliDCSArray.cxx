@@ -23,9 +23,13 @@
 
 
 #include "AliDCSArray.h"
+#include "AliLog.h"
 
-#include "TTimeStamp.h"
+//#include "TTimeStamp.h"
+#include <TObjArray.h>
+#include <TObjString.h>
 #include <TString.h>
+#include <TMath.h>
 
 ClassImp(AliDCSArray)
 	
@@ -38,8 +42,9 @@ AliDCSArray::AliDCSArray() :
 		fInt(0x0),
 		fUInt(0x0),
 		fFloat(0x0),
-		fString(0x0),
-		fTimeStamp(0)
+		fStringArray(0x0),
+		fTimeStamp(-1.),
+		fDouble(0x0)
 {
 	//
 	// default constructor
@@ -47,7 +52,7 @@ AliDCSArray::AliDCSArray() :
 }
 
 //--------------------------------------------------------------------------
-AliDCSArray::AliDCSArray(Int_t nentries, Bool_t* value, TTimeStamp* timeStamp) : 
+AliDCSArray::AliDCSArray(Int_t nentries, Bool_t* value, Double_t timeStamp) : 
 	TObject(),
 	fType(kBool),
 	fnentries(nentries),
@@ -56,8 +61,9 @@ AliDCSArray::AliDCSArray(Int_t nentries, Bool_t* value, TTimeStamp* timeStamp) :
 	fInt(0x0),
 	fUInt(0x0),
 	fFloat(0x0),
-	fString(0x0),
-	fTimeStamp(timeStamp)
+	fStringArray(0x0),
+	fTimeStamp(timeStamp),
+	fDouble(0x0)
 {
 	//
 	// constructor for Bool
@@ -69,7 +75,7 @@ AliDCSArray::AliDCSArray(Int_t nentries, Bool_t* value, TTimeStamp* timeStamp) :
 }
 
 //--------------------------------------------------------------------------
-AliDCSArray::AliDCSArray(Int_t nentries, Char_t* value, TTimeStamp* timeStamp) :
+AliDCSArray::AliDCSArray(Int_t nentries, Char_t* value, Double_t timeStamp) :
 	TObject(),
 	fType(kChar),
 	fnentries(nentries),
@@ -78,8 +84,9 @@ AliDCSArray::AliDCSArray(Int_t nentries, Char_t* value, TTimeStamp* timeStamp) :
 	fInt(0x0),
 	fUInt(0x0),
 	fFloat(0x0),
-	fString(0x0),
-	fTimeStamp(timeStamp)
+	fStringArray(0x0),
+	fTimeStamp(timeStamp),
+	fDouble(0x0)
 {
 	//
 	// constructor for Char
@@ -90,7 +97,7 @@ AliDCSArray::AliDCSArray(Int_t nentries, Char_t* value, TTimeStamp* timeStamp) :
 }
 
 //-------------------------------------------------------------------------
-AliDCSArray::AliDCSArray(Int_t nentries, Int_t* value, TTimeStamp* timeStamp) :
+AliDCSArray::AliDCSArray(Int_t nentries, Int_t* value, Double_t timeStamp) :
 	TObject(),
 	fType(kInt),
 	fnentries(nentries),
@@ -99,8 +106,9 @@ AliDCSArray::AliDCSArray(Int_t nentries, Int_t* value, TTimeStamp* timeStamp) :
 	fInt(new Int_t[fnentries]),
 	fUInt(0x0),
 	fFloat(0x0),
-	fString(0x0),
-	fTimeStamp(timeStamp)
+	fStringArray(0x0),
+	fTimeStamp(timeStamp),
+	fDouble(0x0)
 {
 	//
 	// constructor for Int
@@ -111,7 +119,7 @@ AliDCSArray::AliDCSArray(Int_t nentries, Int_t* value, TTimeStamp* timeStamp) :
 }
 
 //-------------------------------------------------------------------------
-AliDCSArray::AliDCSArray(Int_t nentries, UInt_t* value, TTimeStamp* timeStamp) :
+AliDCSArray::AliDCSArray(Int_t nentries, UInt_t* value, Double_t timeStamp) :
 	TObject(),
 	fType(kUInt),
 	fnentries(nentries),
@@ -120,8 +128,9 @@ AliDCSArray::AliDCSArray(Int_t nentries, UInt_t* value, TTimeStamp* timeStamp) :
 	fInt(0x0),
 	fUInt(new UInt_t[fnentries]),
 	fFloat(0x0),
-	fString(0x0),
-	fTimeStamp(timeStamp)
+	fStringArray(0x0),
+	fTimeStamp(timeStamp),
+	fDouble(0x0)
 {
 	//
 	// constructor for UInt
@@ -133,7 +142,7 @@ AliDCSArray::AliDCSArray(Int_t nentries, UInt_t* value, TTimeStamp* timeStamp) :
 }
 
 //-------------------------------------------------------------------------
-AliDCSArray::AliDCSArray(Int_t nentries, Float_t* value, TTimeStamp* timeStamp) :
+AliDCSArray::AliDCSArray(Int_t nentries, Float_t* value, Double_t timeStamp) :
 	TObject(),
 	fType(kFloat),
 	fnentries(nentries),
@@ -142,8 +151,9 @@ AliDCSArray::AliDCSArray(Int_t nentries, Float_t* value, TTimeStamp* timeStamp) 
 	fInt(0x0),
 	fUInt(0x0),
 	fFloat(new Float_t[fnentries]),
-	fString(0x0),
-	fTimeStamp(timeStamp)
+	fStringArray(0x0),
+	fTimeStamp(timeStamp),
+	fDouble(0x0)
 {
 	//
 	// constructor for Float
@@ -153,9 +163,31 @@ AliDCSArray::AliDCSArray(Int_t nentries, Float_t* value, TTimeStamp* timeStamp) 
 		fFloat[i] = value[i];
 	}
 }
+//-------------------------------------------------------------------------
+AliDCSArray::AliDCSArray(Int_t nentries, Double_t* value, Double_t timeStamp) :
+	TObject(),
+	fType(kDouble),
+	fnentries(nentries),
+	fBool(0x0),
+	fChar(0x0),
+	fInt(0x0),
+	fUInt(0x0),
+	fFloat(0x0),
+	fStringArray(0x0),
+	fTimeStamp(timeStamp),
+	fDouble(new Double_t[fnentries])
+{
+	//
+	// constructor for Double
+	//
+
+	for (Int_t i = 0; i<fnentries; i++){
+		fDouble[i] = value[i];
+	}
+}
 
 //------------------------------------------------------------------------
-AliDCSArray::AliDCSArray(Int_t nentries, TString* value, TTimeStamp* timeStamp) :
+AliDCSArray::AliDCSArray(Int_t nentries, TObjArray* value, Double_t timeStamp) :
 	TObject(),
 	fType(kString),
 	fnentries(nentries),
@@ -164,15 +196,19 @@ AliDCSArray::AliDCSArray(Int_t nentries, TString* value, TTimeStamp* timeStamp) 
 	fInt(0x0),
 	fUInt(0x0),
 	fFloat(0x0),
-	fString(new TString[fnentries]),
-	fTimeStamp(timeStamp)
+	fStringArray(new TObjArray()),
+	fTimeStamp(timeStamp),
+	fDouble(0x0)
 {
 	//
 	// constructor for String
 	//
 
+	fStringArray->SetOwner(1);
 	for (Int_t i = 0; i<fnentries; i++){
-		fString[i] = value[i];
+		TObjString* strobj = new TObjString();
+		strobj->SetString(((TObjString*)value->At(i))->String());
+		fStringArray->Add(strobj);
 	}
 }
 
@@ -186,8 +222,9 @@ AliDCSArray::AliDCSArray(const AliDCSArray& c) :
 	fInt(0x0),
 	fUInt(0x0),
 	fFloat(0x0),
-	fString(0x0),
-	fTimeStamp(c.fTimeStamp)
+	fStringArray(0x0),
+	fTimeStamp(c.fTimeStamp),
+	fDouble(0x0)
 {
 	//
 	// copy constructor
@@ -213,10 +250,18 @@ AliDCSArray::AliDCSArray(const AliDCSArray& c) :
 		fFloat = new Float_t[fnentries];
 		memcpy(fFloat,c.fFloat,fnentries*sizeof(Float_t));
 	} 
- 	if (fType == kString && c.fString){
-		fString = new TString[fnentries];
-		memcpy(fString,c.fString,fnentries*sizeof(TString));
+ 	if (fType == kDouble && c.fDouble){
+		fDouble = new Double_t[fnentries];
+		memcpy(fDouble,c.fDouble,fnentries*sizeof(Double_t));
 	} 
+ 	if (fType == kString && c.fStringArray){
+		fStringArray = new TObjArray();
+		fStringArray->SetOwner(1);
+		for (Int_t i = 0; i<fnentries; i++){
+			TObjString* strobj = new TObjString(*(TObjString*)(c.fStringArray->At(i)));
+			fStringArray->Add(strobj);
+		}
+	}
 
 }
 
@@ -228,32 +273,33 @@ AliDCSArray::~AliDCSArray()
 	//
 
 	if (fBool){
-		fBool = 0x0;
 		delete fBool;
+		fBool = 0x0;
 	}
 	if (fChar){
-		fChar = 0x0;
 		delete fChar;
+		fChar = 0x0;
 	}
 	if (fUInt){
-		fUInt = 0x0;
 		delete fUInt;
+		fUInt = 0x0;
 	}
 	if (fInt){
-		fInt = 0x0;
 		delete fInt;
+		fInt = 0x0;
 	}
 	if (fFloat){
-		fFloat = 0x0;
 		delete fFloat;
+		fFloat = 0x0;
 	}
-	if (fString){
-		fString = 0x0;
-		delete fString;
+	if (fStringArray!=0x0){
+		AliInfo("Deleting...");
+		delete fStringArray;
+		fStringArray = 0x0;
 	}
-	if (fTimeStamp){
-		fTimeStamp = 0x0;
-		delete fTimeStamp;
+	if (fDouble){
+		delete fDouble;
+		fDouble = 0x0;
 	}
 }
 
@@ -285,11 +331,19 @@ AliDCSArray &AliDCSArray::operator=(const AliDCSArray &c)
 		fFloat = new Float_t[fnentries];
 		memcpy(fFloat,c.fFloat,fnentries*sizeof(Float_t));
 	} 
- 	if (fType == kString && c.fString){
-		fString = new TString[fnentries];
-		memcpy(fString,c.fString,fnentries*sizeof(TString));
+ 	if (fType == kDouble && c.fDouble){
+		fDouble = new Double_t[fnentries];
+		memcpy(fDouble,c.fDouble,fnentries*sizeof(Double_t));
 	} 
-	
+ 	if (fType == kString && c.fStringArray){
+		fStringArray = new TObjArray();
+		fStringArray->SetOwner(1);
+		for (Int_t i = 0; i<fnentries; i++){
+			TObjString* strobj = new TObjString(*(TObjString*)(c.fStringArray->At(i)));
+			fStringArray->Add(strobj);
+		}
+	}
+
 	return *this;
 }
 
@@ -308,7 +362,9 @@ void AliDCSArray::Init()
 	fInt = 0x0;
 	fUInt = 0x0;
 	fFloat = 0x0;
-	fString = 0x0;
+	fDouble = 0x0;
+	fStringArray = 0x0;
 	
-	fTimeStamp = 0x0;
+	fTimeStamp = -1.;
 }
+
