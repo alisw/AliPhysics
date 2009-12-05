@@ -36,8 +36,9 @@ AliRsnPairDef::AliRsnPairDef() : fMotherPDG(0)
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
-(Char_t sign1, AliPID::EParticleType type1, Char_t sign2, AliPID::EParticleType type2, Int_t motherPDG) :
-    fMotherPDG(motherPDG)
+(Char_t sign1, AliPID::EParticleType type1, Char_t sign2, AliPID::EParticleType type2, Int_t motherPDG, Double_t motherMass) :
+  fMotherMass(motherMass),
+  fMotherPDG(motherPDG)
 {
 //
 // Constructor with arguments.
@@ -49,8 +50,9 @@ AliRsnPairDef::AliRsnPairDef
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
-(AliPID::EParticleType type1, Char_t sign1, AliPID::EParticleType type2, Char_t sign2, Int_t motherPDG) :
-    fMotherPDG(motherPDG)
+(AliPID::EParticleType type1, Char_t sign1, AliPID::EParticleType type2, Char_t sign2, Int_t motherPDG, Double_t motherMass) :
+  fMotherMass(motherMass),
+  fMotherPDG(motherPDG)
 {
 //
 // Constructor with arguments.

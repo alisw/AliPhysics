@@ -219,6 +219,8 @@ void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEven
       AliDebug(AliLog::kDebug+1,"daughter2 is OK ...");
       // assign the required PID type to track #2
       fTrack2.SetRequiredPID(fPairDef->GetType(1));
+      // skip by default the case where the two tracks have the same index
+      if (ev1 == ev2 && a1->At(i) == a2->At(j)) continue;
       // cuts on track #2
       if (!CutPass(&fTrack2)) continue;
       AliDebug(AliLog::kDebug+1,"daughter2 cut passed ...");
