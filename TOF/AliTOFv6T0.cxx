@@ -127,7 +127,9 @@ const Float_t AliTOFv6T0::fgkInterCentrModBorder1  =  49.5 ; // cm
 const Float_t AliTOFv6T0::fgkInterCentrModBorder2  =  57.5 ; // cm
 const Float_t AliTOFv6T0::fgkExterInterModBorder1  = 196.0 ; // cm
 const Float_t AliTOFv6T0::fgkExterInterModBorder2  = 203.5 ; // cm
-const Float_t AliTOFv6T0::fgkLengthInCeModBorder   =   7.2 ; // cm // it was 4.7 cm (AdC)
+//const Float_t AliTOFv6T0::fgkLengthInCeModBorder   =   7.2 ; // cm // it was 4.7 cm (AdC)
+const Float_t AliTOFv6T0::fgkLengthInCeModBorderU  =   5.0 ; // cm
+const Float_t AliTOFv6T0::fgkLengthInCeModBorderD  =   7.0 ; // cm
 const Float_t AliTOFv6T0::fgkLengthExInModBorder   =   5.0 ; // cm // it was 7.0 cm (AdC)
 const Float_t AliTOFv6T0::fgkModuleCoverThickness  =   2.0 ; // cm
 const Float_t AliTOFv6T0::fgkFEAwidth1    = 19.0; // cm
@@ -465,7 +467,8 @@ void AliTOFv6T0::CreateModules(Float_t xtof,  Float_t ytof, Float_t zlenA,
   // Definition and positioning
   // of the fibre glass walls between central and intermediate modules (FWZ1 and FWZ2)
   Float_t alpha, tgal, beta, tgbe, trpa[11];
-  tgal  = (yFLT - 2.*fgkLengthInCeModBorder)/(fgkInterCentrModBorder2 - fgkInterCentrModBorder1);
+  //tgal  = (yFLT - 2.*fgkLengthInCeModBorder)/(fgkInterCentrModBorder2 - fgkInterCentrModBorder1);
+  tgal  = (yFLT - fgkLengthInCeModBorderU - fgkLengthInCeModBorderD)/(fgkInterCentrModBorder2 - fgkInterCentrModBorder1);
   alpha = TMath::ATan(tgal);
   beta  = (kPi*0.5 - alpha)*0.5;
   tgbe  = TMath::Tan(beta);
@@ -473,28 +476,34 @@ void AliTOFv6T0::CreateModules(Float_t xtof,  Float_t ytof, Float_t zlenA,
   trpa[1]  = 0.;
   trpa[2]  = 0.;
   trpa[3]  = 2.*fgkModuleWallThickness;
-  trpa[4]  = (fgkLengthInCeModBorder - 2.*fgkModuleWallThickness*tgbe)*0.5;
-  trpa[5]  = (fgkLengthInCeModBorder + 2.*fgkModuleWallThickness*tgbe)*0.5;
+  //trpa[4]  = (fgkLengthInCeModBorder - 2.*fgkModuleWallThickness*tgbe)*0.5;
+  //trpa[5]  = (fgkLengthInCeModBorder + 2.*fgkModuleWallThickness*tgbe)*0.5;
+  trpa[4]  = (fgkLengthInCeModBorderD - 2.*fgkModuleWallThickness*tgbe)*0.5;
+  trpa[5]  = (fgkLengthInCeModBorderD + 2.*fgkModuleWallThickness*tgbe)*0.5;
   trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
   trpa[7]  = 2.*fgkModuleWallThickness;
-  trpa[8]  = (fgkLengthInCeModBorder - 2.*fgkModuleWallThickness*tgbe)*0.5;
-  trpa[9]  = (fgkLengthInCeModBorder + 2.*fgkModuleWallThickness*tgbe)*0.5;
+  trpa[8]  = (fgkLengthInCeModBorderD - 2.*fgkModuleWallThickness*tgbe)*0.5;
+  trpa[9]  = (fgkLengthInCeModBorderD + 2.*fgkModuleWallThickness*tgbe)*0.5;
+  //trpa[8]  = (fgkLengthInCeModBorder - 2.*fgkModuleWallThickness*tgbe)*0.5;
+  //trpa[9]  = (fgkLengthInCeModBorder + 2.*fgkModuleWallThickness*tgbe)*0.5;
   trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
-  gMC->Gsvolu("FWZ1", "TRAP", idtmed[503], trpa, 11); // Fibre glass
+  gMC->Gsvolu("FWZ1D", "TRAP", idtmed[503], trpa, 11); // Fibre glass
 
   AliMatrix (idrotm[0],90., 90.,180.,0.,90.,180.);
   AliMatrix (idrotm[1],90., 90.,  0.,0.,90.,  0.);
 
   //xcoor = 0.;
-  ycoor = -(yFLT - fgkLengthInCeModBorder)*0.5;
+  //ycoor = -(yFLT - fgkLengthInCeModBorder)*0.5;
+  ycoor = -(yFLT - fgkLengthInCeModBorderD)*0.5;
   zcoor = fgkInterCentrModBorder1;
-  gMC->Gspos("FWZ1", 1, "FLTA", xcoor, ycoor, zcoor, idrotm[0], "ONLY");
-  gMC->Gspos("FWZ1", 2, "FLTA", xcoor, ycoor,-zcoor, idrotm[1], "ONLY");
+  gMC->Gspos("FWZ1D", 1, "FLTA", xcoor, ycoor, zcoor, idrotm[0], "ONLY");
+  gMC->Gspos("FWZ1D", 2, "FLTA", xcoor, ycoor,-zcoor, idrotm[1], "ONLY");
 
   Float_t y0B, ycoorB, zcoorB;
 
   if (fTOFHoles) {
-    y0B = fgkLengthInCeModBorder - fgkModuleWallThickness*tgbe;
+    //y0B = fgkLengthInCeModBorder - fgkModuleWallThickness*tgbe;
+    y0B = fgkLengthInCeModBorderD - fgkModuleWallThickness*tgbe;
     trpa[0]  = xFLT*0.5;
     trpa[1]  = 0.;
     trpa[2]  = 0.;
@@ -509,22 +518,48 @@ void AliTOFv6T0::CreateModules(Float_t xtof,  Float_t ytof, Float_t zlenA,
     //xcoor = 0.;
     ycoorB = ycoor - fgkModuleWallThickness*0.5*tgbe;
     zcoorB = (zlenA*0.5 - 2.*fgkModuleWallThickness - fgkInterCentrModBorder1)*0.5 - 2.*fgkModuleWallThickness;
-    gMC->Gsvolu("FWZA", "TRAP", idtmed[503], trpa, 11); // Fibre glass
-    gMC->Gspos("FWZA", 1, "FLTB", xcoor, ycoorB, zcoorB, idrotm[1], "ONLY");
-    gMC->Gspos("FWZA", 2, "FLTC", xcoor, ycoorB,-zcoorB, idrotm[0], "ONLY");
+    gMC->Gsvolu("FWZAD", "TRAP", idtmed[503], trpa, 11); // Fibre glass
+    gMC->Gspos("FWZAD", 1, "FLTB", xcoor, ycoorB, zcoorB, idrotm[1], "ONLY");
+    gMC->Gspos("FWZAD", 2, "FLTC", xcoor, ycoorB,-zcoorB, idrotm[0], "ONLY");
   }
+
+
+
+  tgal  = (yFLT - fgkLengthInCeModBorderU - fgkLengthInCeModBorderD)/(fgkInterCentrModBorder2 - fgkInterCentrModBorder1);
+  alpha = TMath::ATan(tgal);
+  beta  = (kPi*0.5 - alpha)*0.5;
+  tgbe  = TMath::Tan(beta);
+  trpa[0]  = xFLT*0.5;
+  trpa[1]  = 0.;
+  trpa[2]  = 0.;
+  trpa[3]  = 2.*fgkModuleWallThickness;
+  //trpa[4]  = (fgkLengthInCeModBorder - 2.*fgkModuleWallThickness*tgbe)*0.5;
+  //trpa[5]  = (fgkLengthInCeModBorder + 2.*fgkModuleWallThickness*tgbe)*0.5;
+  trpa[4]  = (fgkLengthInCeModBorderU - 2.*fgkModuleWallThickness*tgbe)*0.5;
+  trpa[5]  = (fgkLengthInCeModBorderU + 2.*fgkModuleWallThickness*tgbe)*0.5;
+  trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
+  trpa[7]  = 2.*fgkModuleWallThickness;
+  trpa[8]  = (fgkLengthInCeModBorderU - 2.*fgkModuleWallThickness*tgbe)*0.5;
+  trpa[9]  = (fgkLengthInCeModBorderU + 2.*fgkModuleWallThickness*tgbe)*0.5;
+  //trpa[8]  = (fgkLengthInCeModBorder - 2.*fgkModuleWallThickness*tgbe)*0.5;
+  //trpa[9]  = (fgkLengthInCeModBorder + 2.*fgkModuleWallThickness*tgbe)*0.5;
+  trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
+  gMC->Gsvolu("FWZ1U", "TRAP", idtmed[503], trpa, 11); // Fibre glass
+
 
   AliMatrix (idrotm[2],90.,270.,  0.,0.,90.,180.);
   AliMatrix (idrotm[3],90.,270.,180.,0.,90.,  0.);
 
   //xcoor = 0.;
-  ycoor = (yFLT - fgkLengthInCeModBorder)*0.5;
+  //ycoor = (yFLT - fgkLengthInCeModBorder)*0.5;
+  ycoor = (yFLT - fgkLengthInCeModBorderU)*0.5;
   zcoor = fgkInterCentrModBorder2;
-  gMC->Gspos("FWZ1", 3, "FLTA", xcoor, ycoor, zcoor,idrotm[2], "ONLY");
-  gMC->Gspos("FWZ1", 4, "FLTA", xcoor, ycoor,-zcoor,idrotm[3], "ONLY");
+  gMC->Gspos("FWZ1U", 1, "FLTA", xcoor, ycoor, zcoor,idrotm[2], "ONLY");
+  gMC->Gspos("FWZ1U", 2, "FLTA", xcoor, ycoor,-zcoor,idrotm[3], "ONLY");
 
   if (fTOFHoles) {
-    y0B = fgkLengthInCeModBorder + fgkModuleWallThickness*tgbe;
+    //y0B = fgkLengthInCeModBorder + fgkModuleWallThickness*tgbe;
+    y0B = fgkLengthInCeModBorderU + fgkModuleWallThickness*tgbe;
     trpa[0]  = xFLT*0.5;
     trpa[1]  = 0.;
     trpa[2]  = 0.;
@@ -536,13 +571,13 @@ void AliTOFv6T0::CreateModules(Float_t xtof,  Float_t ytof, Float_t zlenA,
     trpa[8]  = (y0B - fgkModuleWallThickness*tgbe)*0.5;
     trpa[9]  = (y0B + fgkModuleWallThickness*tgbe)*0.5;
     trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
-    gMC->Gsvolu("FWZB", "TRAP", idtmed[503], trpa, 11); // Fibre glass
+    gMC->Gsvolu("FWZBU", "TRAP", idtmed[503], trpa, 11); // Fibre glass
     //xcoor = 0.;
     ycoorB = ycoor - fgkModuleWallThickness*0.5*tgbe;
     zcoorB = (zlenA*0.5 - 2.*fgkModuleWallThickness - fgkInterCentrModBorder1)*0.5 -
       (fgkInterCentrModBorder2 - fgkInterCentrModBorder1) - 2.*fgkModuleWallThickness;
-    gMC->Gspos("FWZB", 1, "FLTB", xcoor, ycoorB, zcoorB, idrotm[3], "ONLY");
-    gMC->Gspos("FWZB", 2, "FLTC", xcoor, ycoorB,-zcoorB, idrotm[2], "ONLY");
+    gMC->Gspos("FWZBU", 1, "FLTB", xcoor, ycoorB, zcoorB, idrotm[3], "ONLY");
+    gMC->Gspos("FWZBU", 2, "FLTC", xcoor, ycoorB,-zcoorB, idrotm[2], "ONLY");
   }
 
   trpa[0] = 0.5*(fgkInterCentrModBorder2 - fgkInterCentrModBorder1)/TMath::Cos(alpha);
@@ -557,7 +592,8 @@ void AliTOFv6T0::CreateModules(Float_t xtof,  Float_t ytof, Float_t zlenA,
   AliMatrix (idrotm[5],180.-alpha*kRaddeg,90.,90.-alpha*kRaddeg,90.,90.,  0.);
 
   //xcoor = 0.;
-  ycoor = 0.;
+  //ycoor = 0.;
+  ycoor = (fgkLengthInCeModBorderD - fgkLengthInCeModBorderU)*0.5;
   zcoor = (fgkInterCentrModBorder2 + fgkInterCentrModBorder1)*0.5;
   gMC->Gspos("FWZ2", 1, "FLTA", xcoor, ycoor, zcoor, idrotm[4], "ONLY");
   gMC->Gspos("FWZ2", 2, "FLTA", xcoor, ycoor,-zcoor, idrotm[5], "ONLY");

@@ -95,7 +95,17 @@ private:
 						// modules respect to
 						// the central module
 						// centre (cm)
+  /*
   static const Float_t fgkLengthInCeModBorder;  // height of border
+						// between the central
+						// and intermediate
+						// modules (cm)
+						*/
+  static const Float_t fgkLengthInCeModBorderU; // height of upper border
+						// between the central
+						// and intermediate
+						// modules (cm)
+  static const Float_t fgkLengthInCeModBorderD; // height of lower border
 						// between the central
 						// and intermediate
 						// modules (cm)
