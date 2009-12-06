@@ -11,10 +11,16 @@
 //-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- Root system ---
+class TH3F;
 class TH2F;
 class TH1F;
 
 // --- Analysis system --- 
+class AliPHOSGeoUtils;
+class AliEMCALGeoUtils;
+class AliESDCaloCluster;
+class AliAODCaloCluster;
+
 #include "AliAnaPartCorrBaseClass.h"
  
 class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
@@ -24,9 +30,9 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   AliAnaCalorimeterQA() ; // default ctor
   AliAnaCalorimeterQA(const AliAnaCalorimeterQA & g) ; // cpy ctor
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
-  virtual ~AliAnaCalorimeterQA() {;} //virtual dtor
+  virtual ~AliAnaCalorimeterQA() ; //virtual dtor
   
-  void ClusterHistograms(const TLorentzVector mom, const Int_t nCaloCellsPerCluster,
+  void ClusterHistograms(const TLorentzVector mom, const Int_t nCaloCellsPerCluster, const Int_t nModule,
 						 const Int_t nTracksMatched, const TObject* track, 
 						 const Int_t * labels, const Int_t nLabels);
 	
@@ -56,12 +62,25 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   void Terminate(TList * outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 
+  void SetEMCALGeometryName(TString name)   { fEMCALGeoName = name ; }
+  TString EMCALGeometryName() const { return fEMCALGeoName ; }
+
+  Int_t GetModuleNumber(AliESDCaloCluster * cluster);
+  Int_t GetModuleNumber(AliAODCaloCluster * cluster);
+  Int_t GetModuleNumberCellIndexes(const Int_t absId, Int_t & icol, Int_t & irow);
+
+  void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
+
  private:
   
   TString fCalorimeter ;   //Calorimeter selection
   TString fStyleMacro  ;   //Location of macro for plots style
   Bool_t fMakePlots    ;   //Print plots
   Bool_t fCorrelateCalos;  //Correlate PHOS/EMCAL clusters
+  AliPHOSGeoUtils  * fPHOSGeo  ; //! PHOS geometry pointer  
+  AliEMCALGeoUtils * fEMCALGeo ; //! EMCAL geometry pointer
+  TString fEMCALGeoName;  // Name of geometry to use.
+  Int_t fNModules ;        // Number of EMCAL/PHOS modules, set as many histogras as modules 
 	
   //Histograms
   //CaloClusters 
@@ -70,6 +89,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH1F * fhPhi; //! phi distribution, Reco 
   TH1F * fhEta; //! eta distribution, Reco 
   TH2F * fhEtaPhi  ; //! eta vs phi, Reco 
+  TH3F * fhEtaPhiE  ; //! eta vs phi vs E, Reco
   TH1F * fhECharged  ; //! E distribution, Reco, matched with track
   TH1F * fhPtCharged ; //! pT distribution, Reco, matched with track
   TH1F * fhPhiCharged; //! phi distribution, Reco, matched with track 
@@ -93,6 +113,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F * fh2Phi; //! phi distribution, Reco vs MC
   TH2F * fh2Eta; //! eta distribution, Reco vs MC
   TH2F * fhIM; //! cluster pairs invariant mass
+  TH2F * fhIMCellCut; //! cluster pairs invariant mass, n cells > 1 per cluster
   TH2F * fhAsym; //! cluster pairs invariant mass	
   TH2F * fhNCellsPerCluster; //! N cells per cluster	
   TH1F * fhNClusters; //! Number of clusters
@@ -107,6 +128,17 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F * fhCaloCorrNCells; // EMCAL vs PHOS, number of cells
   TH2F * fhCaloCorrECells; // EMCAL vs PHOS,  total measured cell energy
 	
+  //Module histograms
+  TH1F ** fhEMod  ;               //! E distribution for different module, Reco
+  TH1F ** fhNClustersMod ;        //! Number of clusters for different module, Reco
+  TH2F ** fhNCellsPerClusterMod ; //! N cells per clusters different module, Reco
+  TH1F ** fhNCellsMod ;           //! Number of towers/crystals with signal different module, Reco
+  TH2F ** fhGridCellsMod ;        //! Cells ordered in column/row for different module, Reco
+  TH2F ** fhGridCellsEMod ;       //! Cells ordered in column/row for different module, weighted with energy, Reco
+  TH1F ** fhAmplitudeMod ;        //! Amplitude measured in towers/crystals different module, Reco
+  TH2F ** fhIMMod;                //! cluster pairs invariant mass, different module,
+  TH2F ** fhIMCellCutMod;         //! cluster pairs invariant mass, n cells > 1 per cluster, different module
+
   //MC  
   TH1F *fhGenGamPt  ; // pt of primary gamma
   TH1F *fhGenGamEta ; // eta of primart gamma
@@ -213,7 +245,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,2)
+	ClassDef(AliAnaCalorimeterQA,3)
 } ;
 
 

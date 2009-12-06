@@ -5,6 +5,7 @@ TH1F * fhPt ; //! pT distribution, Reco
 TH1F * fhPhi; //! phi distribution, Reco 
 TH1F * fhEta; //! eta distribution, Reco 
 TH2F * fhEtaPhi  ; //! eta vs phi, Reco 
+TH3F * fhEtaPhiE  ; //! eta vs phi vs E, Reco
 TH1F * fhECharged  ; //! E distribution, Reco, matched with track
 TH1F * fhPtCharged ; //! pT distribution, Reco, matched with track
 TH1F * fhPhiCharged; //! phi distribution, Reco, matched with track 
@@ -28,6 +29,7 @@ TH2F * fh2Pt ; //! pT distribution, Reco vs MC
 TH2F * fh2Phi; //! phi distribution, Reco vs MC
 TH2F * fh2Eta; //! eta distribution, Reco vs MC
 TH2F * fhIM; //! cluster pairs invariant mass
+TH2F * fhIMCellCut; //! cluster pairs invariant mass, n cells > 1 per cluster
 TH2F * fhAsym; //! cluster pairs invariant mass	
 TH2F * fhNCellsPerCluster; //! N cells per cluster	
 TH1F * fhNClusters; //! Number of clusters
@@ -41,6 +43,18 @@ TH2F * fhCaloCorrNClusters; // EMCAL vs PHOS, number of clusters
 TH2F * fhCaloCorrEClusters; // EMCAL vs PHOS, total measured cluster energy
 TH2F * fhCaloCorrNCells; // EMCAL vs PHOS, number of cells
 TH2F * fhCaloCorrECells; // EMCAL vs PHOS,  total measured cell energy
+
+//Module histograms
+TH1F ** fhEMod  ;               //! E distribution for different module, Reco
+TH1F ** fhNClustersMod ;        //! Number of clusters for different module, Reco
+TH2F ** fhNCellsPerClusterMod ; //! N cells per clusters different module, Reco
+TH1F ** fhNCellsMod ;           //! Number of towers/crystals with signal different module, Reco
+TH2F ** fhGridCellsMod ;        //! Cells ordered in column/row for different module, Reco
+TH2F ** fhGridCellsEMod ;       //! Cells ordered in column/row for different module, weighted with energy, Reco
+TH1F ** fhAmplitudeMod ;        //! Amplitude measured in towers/crystals different module, Reco
+TH2F ** fhIMMod;                //! cluster pairs invariant mass, different module,
+TH2F ** fhIMCellCutMod;         //! cluster pairs invariant mass, n cells > 1 per cluster, different module
+
 
 //MC  
 TH1F *fhGenGamPt  ; // pt of primary gamma
@@ -148,10 +162,22 @@ TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC ch
 TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 
 //________________________________________________________________________
-void ReadHistograms(TString name, Bool_t isDataMC, Bool_t  fCorrelateCalos)
+void ReadHistograms(TString name, Bool_t isDataMC, Bool_t  fCorrelateCalos, Int_t fNModules)
 {
 	TFile *f = new TFile("Calo.Performance.root","read");
 	TList* outputList = f->Get("Calo.Performance");
+	
+	//Module histograms
+	fhEMod                = new TH1F*[fNModules];
+	fhNClustersMod        = new TH1F*[fNModules];
+	fhNCellsPerClusterMod = new TH2F*[fNModules];
+	fhNCellsMod           = new TH1F*[fNModules];
+	fhGridCellsMod        = new TH2F*[fNModules];
+	fhGridCellsEMod       = new TH2F*[fNModules];
+	fhAmplitudeMod        = new TH1F*[fNModules];
+	fhIMMod               = new TH2F*[fNModules];
+	fhIMCellCutMod        = new TH2F*[fNModules];
+	
 	
 	// Histograms of this analsys are kept in the same list as other analysis, recover the position of
 	// the first one and then add the next 
@@ -163,7 +189,8 @@ void ReadHistograms(TString name, Bool_t isDataMC, Bool_t  fCorrelateCalos)
 	fhPhi    = (TH1F *) outputList->At(index++); 
 	fhEta    = (TH1F *) outputList->At(index++);
 	fhEtaPhi = (TH2F *) outputList->At(index++);
-	
+	fhEtaPhiE = (TH3F *) outputList->At(index++);
+
 	fhECharged      = (TH1F *) outputList->At(index++); 	
 	fhPtCharged     = (TH1F *) outputList->At(index++); 
 	fhPhiCharged    = (TH1F *) outputList->At(index++); 
@@ -183,6 +210,7 @@ void ReadHistograms(TString name, Bool_t isDataMC, Bool_t  fCorrelateCalos)
 	fh1pOverER02 = (TH2F *) outputList->At(index++); 
 
 	fhIM     = (TH2F *) outputList->At(index++);
+	fhIMCellCut = (TH2F *) outputList->At(index++);
 	fhAsym   = (TH2F *) outputList->At(index++);
 	
 	fhNCellsPerCluster = (TH2F *) outputList->At(index++);
@@ -197,7 +225,19 @@ void ReadHistograms(TString name, Bool_t isDataMC, Bool_t  fCorrelateCalos)
 		fhCaloCorrECells    = (TH2F *) outputList->At(index++); 
 	}
 	
-
+	for(Int_t imod = 0 ; imod < fNModules; imod++){
+		fhEMod[imod]                = (TH1F *) outputList->At(index++);
+		fhNClustersMod[imod]        = (TH1F *) outputList->At(index++); 
+		fhNCellsPerClusterMod[imod] = (TH2F *) outputList->At(index++); 
+		fhNCellsMod[imod]           = (TH1F *) outputList->At(index++); 	
+		fhGridCellsMod[imod]        = (TH2F *) outputList->At(index++);
+		fhGridCellsEMod[imod]       = (TH2F *) outputList->At(index++); 
+		fhAmplitudeMod[imod]        = (TH1F *) outputList->At(index++); 
+		fhIMMod[imod]               = (TH2F *) outputList->At(index++); 
+		fhIMCellCutMod[imod]        = (TH2F *) outputList->At(index++); 	
+		
+	}
+	
 	if(isDataMC){
 		fhDeltaE   = (TH1F *) outputList->At(index++); 
 		fhDeltaPt  = (TH1F *) outputList->At(index++); 
@@ -336,14 +376,21 @@ void  DrawCaloQA(TString fCalorimeter = "EMCAL", Bool_t isDataMC = kFALSE)
 {
 	//Macro for replotting Calorimeter QA histograms
 	Bool_t fCorrelateCalos = kFALSE;
+	Int_t fNModules = 12;
 	//By default when PHOS QA is called correlation not done
-	if(fCalorimeter == "PHOS") fCorrelateCalos = kFALSE;
-	else fCorrelateCalos = kTRUE;
+	if(fCalorimeter == "PHOS") {
+	fCorrelateCalos = kFALSE;
+	fNModules = 3;//5
+	}
+	else {
+		fCorrelateCalos = kTRUE;
+	fNModules = 4;//12
+	}
 	cout<<"Calo? "<<fCalorimeter<<" Correlate plots? "<<fCorrelateCalos<<" MC plots?"<<isDataMC<<endl;
 	//Do some plots to end
 	gROOT->Macro("./style.C");//Set different root style parameters
 	//Recover histograms from output histograms list, needed for distributed analysis.	
-	ReadHistograms(fCalorimeter+"_", isDataMC, fCorrelateCalos);
+	ReadHistograms(fCalorimeter+"_", isDataMC, fCorrelateCalos,fNModules);
 	Float_t minx = 0;
 	Float_t maxx = 10;
 	
@@ -360,9 +407,21 @@ void  DrawCaloQA(TString fCalorimeter = "EMCAL", Bool_t isDataMC = kFALSE)
 	fhPt->SetAxisRange(minx,maxx,"X");
 	
 	c->cd(1) ; 
-	gPad->SetLogy();
-	fhE->SetLineColor(4);
+	if(fhE->GetEntries() > 0) gPad->SetLogy();
+	TLegend pLegendE(0.7,0.6,0.9,0.8);
+	pLegendE.SetTextSize(0.03);
+	pLegendE.AddEntry(fhE,"all modules","L");
+	pLegendE.SetFillColor(10);
+	pLegendE.SetBorderSize(1);
+	
+	fhE->SetLineColor(1);
 	fhE->Draw();
+	for(Int_t imod = 0; imod < fNModules; imod++){
+		fhEMod[imod]->SetLineColor(imod+1);
+		fhEMod[imod]->Draw("same");
+		pLegendE.AddEntry(fhEMod[imod],Form("module %d",imod),"L");
+	}
+	pLegendE.Draw();
 	
 	c->cd(2) ; 
 	gPad->SetLogy();
@@ -622,10 +681,13 @@ void  DrawCaloQA(TString fCalorimeter = "EMCAL", Bool_t isDataMC = kFALSE)
 	sprintf(name,"QA_%s_ReconstructedEtaVsPhi.eps",fCalorimeter.Data());
 	c4->Print(name);
 	
+	sprintf(name,"QA_%s_ReconstructedEtaVsPhiVsE.eps",fCalorimeter.Data());
+	c4->Print(name); printf("Plot: %s\n",name);
+	
 	//Invariant mass
 	Int_t binmin = -1;
 	Int_t binmax = -1;
-	//printf("c5\n");
+	
 	if(fhIM->GetEntries() > 1){
 		Int_t nebins  = fhIM->GetNbinsX();
 		Int_t emax = (Int_t) fhIM->GetXaxis()->GetXmax();
@@ -635,42 +697,203 @@ void  DrawCaloQA(TString fCalorimeter = "EMCAL", Bool_t isDataMC = kFALSE)
 		
 		sprintf(cname,"QA_%s_IM",fCalorimeter.Data());
 		//	printf("c5\n");
-		TCanvas  * c5 = new TCanvas(cname, "Invariant mass", 400, 400) ;
-		c5->Divide(2, 2);
+		TCanvas  * c5 = new TCanvas(cname, "Invariant mass", 600, 400) ;
+		c5->Divide(2, 3);
 		
 		c5->cd(1) ; 
-		fhIM->SetLineColor(4);
-		fhIM->Draw();
+		//fhIM->SetLineColor(4);
+		//fhIM->Draw();
+		binmin = 0;
+		binmax =  (Int_t) (1-emin)*nebins/emax;
+		TH1D *pyim1 = fhIM->ProjectionY("pyim1",binmin,binmax);
+		pyim1->SetTitle("E_{pair} < 1 GeV");
+		pyim1->SetLineColor(1);
+		pyim1->Draw();
+		TLegend pLegendIM(0.7,0.6,0.9,0.8);
+		pLegendIM.SetTextSize(0.03);
+		pLegendIM.AddEntry(pyim1,"all modules","L");
+		pLegendIM.SetFillColor(10);
+		pLegendIM.SetBorderSize(1);
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyim1 = fhIMMod[imod]->ProjectionY(Form("pyim1_%d",imod),binmin,binmax);
+			pLegendIM.AddEntry(pyim1,Form("module %d",imod),"L");
+			pyim1->SetLineColor(imod+1);
+			pyim1->Draw("same");
+		}
+		pLegendIM.Draw();
 		
 		c5->cd(2) ; 
-		binmin = 0;
-		binmax =  -1;//(Int_t) (5-emin)*nebins/emax;
-		TH1D *pyim5 = fhIM->ProjectionY("pyim5",binmin,binmax);
-		//pyim5->SetTitle("E_{pair} < 5 GeV");
-		pyim5->SetTitle("All pairs");
-		pyim5->SetLineColor(4);
-		pyim5->Draw();
+		binmin =  (Int_t) (1-emin)*nebins/emax;
+		binmax =  (Int_t) (2-emin)*nebins/emax;
+		TH1D *pyim2 = fhIM->ProjectionY("pyim2",binmin,binmax);
+		pyim2->SetTitle("1 < E_{pair} < 2 GeV");
+		pyim2->SetLineColor(1);
+		pyim2->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyim2 = fhIMMod[imod]->ProjectionY(Form("pyim2_%d",imod),binmin,binmax);
+			pyim2->SetLineColor(imod+1);
+			pyim2->Draw("same");
+		}
 		
 		c5->cd(3) ; 
-		binmin =  0;//(Int_t) (5-emin)*nebins/emax;
-		binmax = (Int_t) (1-emin)*nebins/emax; ;//(Int_t) (10-emin)*nebins/emax;
-		TH1D *pyim510 = fhIM->ProjectionY("pyim5_10",binmin,binmax);
-		pyim510->SetTitle("0 < E_{pair} < 1 GeV");
-		pyim510->SetLineColor(4);
-		pyim510->Draw();
+		binmin =  (Int_t) (2-emin)*nebins/emax;
+		binmax =  (Int_t) (3-emin)*nebins/emax;
+		TH1D *pyim3 = fhIM->ProjectionY("pyim3",binmin,binmax);
+		pyim3->SetTitle("2 < E_{pair} < 3 GeV");
+		pyim3->SetLineColor(1);
+		pyim3->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyim3 = fhIMMod[imod]->ProjectionY(Form("pyim3_%d",imod),binmin,binmax);
+			pyim3->SetLineColor(imod+1);
+			pyim3->Draw("same");
+		}
 		
 		c5->cd(4) ;
-		binmin =  (Int_t) (1-emin)*nebins/emax;
-		binmax =(Int_t) (2-emin)*nebins/emax; ;//(Int_t) (10-emin)*nebins/emax;
+		binmin =  (Int_t) (3-emin)*nebins/emax;
+		binmax =  (Int_t) (4-emin)*nebins/emax;
+		TH1D *pyim4 = fhIM->ProjectionY("pyim4",binmin,binmax);
+		pyim4->SetTitle("3 < E_{pair} < 4 GeV");
+		pyim4->SetLineColor(1);
+		pyim4->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyim4 = fhIMMod[imod]->ProjectionY(Form("pyim4_%d",imod),binmin,binmax);
+			pyim4->SetLineColor(imod+1);
+			pyim4->Draw("same");
+		}
+		
+		c5->cd(5) ;
+		binmin =  (Int_t) (4-emin)*nebins/emax;
+		binmax =  (Int_t) (5-emin)*nebins/emax;
+		TH1D *pyim5 = fhIM->ProjectionY("pyim5",binmin,binmax);
+		pyim5->SetTitle("4< E_{pair} < 5 GeV");
+		pyim5->SetLineColor(1);
+		pyim5->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyim5 = fhIMMod[imod]->ProjectionY(Form("pyim5_%d",imod),binmin,binmax);
+			pyim5->SetLineColor(imod+1);
+			pyim5->Draw("same");
+		}
+		
+		c5->cd(6) ;
+		binmin =  (Int_t) (5-emin)*nebins/emax;
+		binmax =  -1;
 		TH1D *pyim10 = fhIM->ProjectionY("pyim10",binmin,binmax);
-		pyim10->SetTitle("1 < E_{pair} < 2 GeV");
-		pyim10->SetLineColor(4);
+		pyim10->SetTitle("E_{pair} > 5 GeV");
+		pyim10->SetLineColor(1);
 		pyim10->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyim10 = fhIMMod[imod]->ProjectionY(Form("pyim10_%d",imod),binmin,binmax);
+			pyim10->SetLineColor(imod+1);
+			pyim10->Draw("same");
+		}
 		
 		sprintf(name,"QA_%s_InvariantMass.eps",fCalorimeter.Data());
-		c5->Print(name);
+		c5->Print(name); printf("Plot: %s\n",name);
 	}
 	
+	
+	if(fhIMCellCut->GetEntries() > 1){
+		Int_t nebins  = fhIMCellCut->GetNbinsX();
+		Int_t emax = (Int_t) fhIMCellCut->GetXaxis()->GetXmax();
+		Int_t emin = (Int_t) fhIMCellCut->GetXaxis()->GetXmin();
+		if (emin != 0 ) printf("emin != 0 \n");
+		//printf("IMCellCut: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
+		
+		sprintf(cname,"QA_%s_IMCellCut",fCalorimeter.Data());
+		//	printf("c5cc\n");
+		TCanvas  * c5cc = new TCanvas(cname, "Invariant mass, Cell Cut", 600, 400) ;
+		c5cc->Divide(2, 3);
+		
+		c5cc->cd(1) ; 
+		//fhIMCellCut->SetLineColor(4);
+		//fhIMCellCut->Draw();
+		binmin = 0;
+		binmax =  (Int_t) (1-emin)*nebins/emax;
+		TH1D *pyimcc1 = fhIMCellCut->ProjectionY("pyimcc1",binmin,binmax);
+		pyimcc1->SetTitle("E_{pair} < 1 GeV");
+		pyimcc1->SetLineColor(1);
+		pyimcc1->Draw();
+		TLegend pLegendIMCellCut(0.7,0.6,0.9,0.8);
+		pLegendIMCellCut.SetTextSize(0.03);
+		pLegendIMCellCut.AddEntry(pyimcc1,"all modules","L");
+		pLegendIMCellCut.SetFillColor(10);
+		pLegendIMCellCut.SetBorderSize(1);
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyimcc1 = fhIMCellCutMod[imod]->ProjectionY(Form("pyimcc1_%d",imod),binmin,binmax);
+			pLegendIMCellCut.AddEntry(pyimcc1,Form("module %d",imod),"L");
+			pyimcc1->SetLineColor(imod+1);
+			pyimcc1->Draw("same");
+		}
+		pLegendIMCellCut.Draw();
+		
+		c5cc->cd(2) ; 
+		binmin =  (Int_t) (1-emin)*nebins/emax;
+		binmax =  (Int_t) (2-emin)*nebins/emax;
+		TH1D *pyimcc2 = fhIMCellCut->ProjectionY("pyimcc2",binmin,binmax);
+		pyimcc2->SetTitle("1 < E_{pair} < 2 GeV");
+		pyimcc2->SetLineColor(1);
+		pyimcc2->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyimcc2 = fhIMCellCutMod[imod]->ProjectionY(Form("pyimcc2_%d",imod),binmin,binmax);
+			pyimcc2->SetLineColor(imod+1);
+			pyimcc2->Draw("same");
+		}
+		
+		c5cc->cd(3) ; 
+		binmin =  (Int_t) (2-emin)*nebins/emax;
+		binmax =  (Int_t) (3-emin)*nebins/emax;
+		TH1D *pyimcc3 = fhIMCellCut->ProjectionY("pyimcc3",binmin,binmax);
+		pyimcc3->SetTitle("2 < E_{pair} < 3 GeV");
+		pyimcc3->SetLineColor(1);
+		pyimcc3->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyimcc3 = fhIMCellCutMod[imod]->ProjectionY(Form("pyimcc3_%d",imod),binmin,binmax);
+			pyimcc3->SetLineColor(imod+1);
+			pyimcc3->Draw("same");
+		}
+		
+		c5cc->cd(4) ;
+		binmin =  (Int_t) (3-emin)*nebins/emax;
+		binmax =  (Int_t) (4-emin)*nebins/emax;
+		TH1D *pyimcc4 = fhIMCellCut->ProjectionY("pyimcc4",binmin,binmax);
+		pyimcc4->SetTitle("3 < E_{pair} < 4 GeV");
+		pyimcc4->SetLineColor(1);
+		pyimcc4->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyimcc4 = fhIMCellCutMod[imod]->ProjectionY(Form("pyimcc4_%d",imod),binmin,binmax);
+			pyimcc4->SetLineColor(imod+1);
+			pyimcc4->Draw("same");
+		}
+		
+		c5cc->cd(5) ;
+		binmin =  (Int_t) (4-emin)*nebins/emax;
+		binmax =  (Int_t) (5-emin)*nebins/emax;
+		TH1D *pyimcc5cc = fhIMCellCut->ProjectionY("pyimcc5cc",binmin,binmax);
+		pyimcc5cc->SetTitle("4< E_{pair} < 5 GeV");
+		pyimcc5cc->SetLineColor(1);
+		pyimcc5cc->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyimcc5cc = fhIMCellCutMod[imod]->ProjectionY(Form("pyimcc5cc_%d",imod),binmin,binmax);
+			pyimcc5cc->SetLineColor(imod+1);
+			pyimcc5cc->Draw("same");
+		}
+		
+		c5cc->cd(6) ;
+		binmin =  (Int_t) (5-emin)*nebins/emax;
+		binmax =  -1;
+		TH1D *pyimcc10 = fhIMCellCut->ProjectionY("pyimcc10",binmin,binmax);
+		pyimcc10->SetTitle("E_{pair} > 5 GeV");
+		pyimcc10->SetLineColor(1);
+		pyimcc10->Draw();
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			pyimcc10 = fhIMCellCutMod[imod]->ProjectionY(Form("pyimcc10_%d",imod),binmin,binmax);
+			pyimcc10->SetLineColor(imod+1);
+			pyimcc10->Draw("same");
+		}
+		
+		sprintf(name,"QA_%s_InvariantMass_CellCut.eps",fCalorimeter.Data());
+		c5cc->Print(name); printf("Plot: %s\n",name);
+	}
 	//Asymmetry
 	//printf("c5b\n");
 	if(fhAsym->GetEntries() > 1){
@@ -719,39 +942,65 @@ void  DrawCaloQA(TString fCalorimeter = "EMCAL", Bool_t isDataMC = kFALSE)
 	}
 		
 	
-	// CaloClusters CaloCells
+	//CaloCells
 	//printf("c9\n");
 	sprintf(cname,"QA_%s_nclustercellsamp",fCalorimeter.Data());
 	TCanvas  * c9 = new TCanvas(cname, " CaloClusters and CaloCells", 400, 400) ;
 	c9->Divide(2, 2);
 	
 	c9->cd(1) ; 
-	gPad->SetLogy();
+	
+	TLegend pLegendN(0.7,0.6,0.9,0.8);
+	pLegendN.SetTextSize(0.03);
+	pLegendN.AddEntry(fhNClusters,"all modules","L");
+	pLegendN.SetFillColor(10);
+	pLegendN.SetBorderSize(1);
+	
+	if(fhNClusters->GetEntries() > 0) gPad->SetLogy();
 	gPad->SetLogx();
-	fhNClusters->SetLineColor(4);
+	fhNClusters->SetLineColor(1);
 	fhNClusters->Draw();
+	for(Int_t imod = 0; imod < fNModules; imod++){
+		fhNClustersMod[imod]->SetLineColor(imod+1);
+		fhNClustersMod[imod]->Draw("same");
+		pLegendN.AddEntry(fhNClustersMod[imod],Form("module %d",imod),"L");
+	}
+	pLegendN.Draw();
 	
 	c9->cd(2) ; 
-	gPad->SetLogy();
+	if(fhNCells->GetEntries() > 0) gPad->SetLogy();
 	gPad->SetLogx();
-	fhNCells->SetLineColor(4);
+	fhNCells->SetLineColor(1);
 	fhNCells->Draw();
-	
+	for(Int_t imod = 0; imod < fNModules; imod++){
+		fhNCellsMod[imod]->SetLineColor(imod+1);
+		fhNCellsMod[imod]->Draw("same");
+	}
 	c9->cd(3) ; 
-	gPad->SetLogy();
+	if(fhNCellsPerCluster->GetEntries() > 0) gPad->SetLogy();
 	gPad->SetLogx();
-	fhNCellsPerCluster->SetLineColor(4);
-	fhNCellsPerCluster->Draw();
+	TH1D *cpc = fhNCellsPerCluster->ProjectionY("cpc",-1,-1);
+	cpc->SetLineColor(1);
+	cpc->Draw();
+	for(Int_t imod = 0; imod < fNModules; imod++){
+		cpc = fhNCellsPerClusterMod[imod]->ProjectionY(Form("cpc_%d",imod),-1,-1);
+		cpc->SetLineColor(imod+1);
+		cpc->Draw("same");
+	}
 	
 	c9->cd(4) ; 
-	gPad->SetLogy();
-	//gPad->SetLogx();
-	fhAmplitude->SetLineColor(4);
+	if(fhAmplitude->GetEntries() > 0) gPad->SetLogy();
+	gPad->SetLogx();
+	fhAmplitude->SetLineColor(1);
 	fhAmplitude->Draw();
+	for(Int_t imod = 0; imod < fNModules; imod++){
+		fhAmplitudeMod[imod]->SetLineColor(imod+1);
+		fhAmplitudeMod[imod]->Draw("same");
+	}
 	
 	sprintf(name,"QA_%s_CaloClustersAndCaloCells.eps",fCalorimeter.Data());
-	c9->Print(name);
-	//printf("corr\n");
+	c9->Print(name); printf("Plot: %s\n",name);
+
 	if(fCorrelateCalos){
 		//Calorimeter Correlation, PHOS vs EMCAL
 		sprintf(cname,"QA_%s_CaloCorr_EMCALvsPHOS",fCalorimeter.Data());
@@ -782,6 +1031,60 @@ void  DrawCaloQA(TString fCalorimeter = "EMCAL", Bool_t isDataMC = kFALSE)
 		ccorr->Print(name); printf("Plot: %s\n",name);
 	}
 	
+	//Grid of cell per module plots 
+    {
+		gStyle->SetOptStat(0);
+		sprintf(cname,"QA_%s_GridCellEntries",fCalorimeter.Data());
+		//	printf("c5\n");
+		TCanvas *cgrid   = new TCanvas("cgrid","Number of entries per cell", 12,12,800,400);
+		if(fNModules%2 == 0)
+			cgrid->Divide(fNModules/2,2); 
+		else
+			cgrid->Divide(fNModules/2+1,2); 
+		
+		for(Int_t imod = 0; imod < fNModules ; imod++){
+			cgrid->cd(imod+1);
+			gPad->SetLogz();
+			gPad->SetGridy();
+			gPad->SetGridx();
+			fhGridCellsMod[imod]->SetLabelSize(0.025,"z");
+			fhGridCellsMod[imod]->Draw("colz");
+		}
+		sprintf(name,"QA_%s_GridCellsEntries.eps",fCalorimeter.Data());
+		cgrid->Print(name); printf("Plot: %s\n",name);
+		
+		sprintf(cname,"QA_%s_GridCellAccumEnergy",fCalorimeter.Data());
+		//	printf("c5\n");
+		TCanvas *cgridE   = new TCanvas("cgridE","Summed energy per cell", 12,12,800,400);
+		cgridE->Divide(fNModules/2,2); 
+		for(Int_t imod = 0; imod < fNModules ; imod++){
+			cgridE->cd(imod+1);
+			gPad->SetLogz();
+			gPad->SetGridy();
+			gPad->SetGridx();
+			fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
+			fhGridCellsEMod[imod]->Draw("colz");
+		}
+		sprintf(name,"QA_%s_GridCellsAccumEnergy.eps",fCalorimeter.Data());
+		cgridE->Print(name); printf("Plot: %s\n",name);
+		
+		sprintf(cname,"QA_%s_GridCellAverageEnergy",fCalorimeter.Data());
+		//	printf("c5\n");
+		TCanvas *cgridEA   = new TCanvas("cgridEA","Average energy per cell", 12,12,800,400);
+		cgridEA->Divide(fNModules/2,2); 
+		for(Int_t imod = 0; imod < fNModules ; imod++){
+			cgridEA->cd(imod+1);
+			gPad->SetLogz();
+			gPad->SetGridy();
+			gPad->SetGridx();
+			fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
+			fhGridCellsEMod[imod]->Divide(fhGridCellsMod[imod]);
+			fhGridCellsEMod[imod]->Draw("colz");
+		}
+		sprintf(name,"QA_%s_GridCellsAverageEnergy.eps",fCalorimeter.Data());
+		cgridEA->Print(name); printf("Plot: %s\n",name);
+		
+	}	
 	
 	if(isDataMC){
 	  //Reconstructed vs MC distributions

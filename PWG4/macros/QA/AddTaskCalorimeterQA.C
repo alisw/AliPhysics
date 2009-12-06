@@ -66,7 +66,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   emcalQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
   emcalQA->SetHistoPhiRangeAndNBins(75*TMath::DegToRad(), 125*TMath::DegToRad(), 100) ;
   emcalQA->SetHistoEtaRangeAndNBins(-0.8, 0.8, 160) ;
-
+  emcalQA->SetNumberOfModules(4); //EMCAL first year
   //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
 	
    AliAnaCalorimeterQA *phosQA = new AliAnaCalorimeterQA();
@@ -84,6 +84,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   phosQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
   phosQA->SetHistoPhiRangeAndNBins(215*TMath::DegToRad(), 325*TMath::DegToRad(), 100) ;
   phosQA->SetHistoEtaRangeAndNBins(-0.13, 0.13, 100) ;
+  phosQA->SetNumberOfModules(3); //PHOS first year
 
 
   // #### Configure Maker ####

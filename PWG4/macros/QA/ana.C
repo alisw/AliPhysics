@@ -123,8 +123,6 @@ void ana(Int_t mode=mLocal)
     //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCalorimeterQA.C");
     gROOT->LoadMacro("AddTaskCalorimeterQA.C");
     AliAnalysisTaskParticleCorrelation *taskQA = AddTaskCalorimeterQA(kInputData,kFALSE,kTRUE);
-    mgr->AddTask(taskQA);
-
 
     //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskomega3pi.C");
     //AliAnalysisTaskOmegaPi0PiPi * taskomega = AddTaskomega3pi();
