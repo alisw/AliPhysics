@@ -344,7 +344,7 @@ Int_t AliAnaPi0::GetModuleNumber(AliAODPWG4Particle * particle)
 	if(fCalorimeter=="EMCAL"){
 		fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
 		if(GetDebug() > 2) 
-			printf("EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
+			printf("AliAnaPi0::GetModuleNumber() - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
 				   particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
@@ -355,7 +355,7 @@ Int_t AliAnaPi0::GetModuleNumber(AliAODPWG4Particle * particle)
 			if ( cluster->GetNCells() > 0) {
 				absId = cluster->GetCellAbsId(0);
 				if(GetDebug() > 2) 
-					printf("PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
+					printf("AliAnaPi0::GetModuleNumber(ESD) - PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
 						   particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
 			}
 			else return -1;
@@ -365,7 +365,7 @@ Int_t AliAnaPi0::GetModuleNumber(AliAODPWG4Particle * particle)
 			if ( cluster->GetNCells() > 0) {
 				absId = cluster->GetCellAbsId(0);
 				if(GetDebug() > 2) 
-					printf("PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
+					printf("AliAnaPi0::GetModuleNumber(AOD) - PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
 						   particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
 			}
 			else return -1;
