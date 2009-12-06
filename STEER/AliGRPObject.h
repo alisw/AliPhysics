@@ -13,6 +13,7 @@
 // 
 
 #include <time.h>
+#include <TString.h>
 
 class TMap;
 
