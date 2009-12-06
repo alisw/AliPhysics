@@ -2072,6 +2072,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	grpObj->SetDipoleCurrent(dipoleCurrent,(AliGRPObject::Stats)0);
 	grpObj->SetL3Polarity(l3Polarity);
 	grpObj->SetDipolePolarity(dipolePolarity);
+	grpObj->SetPolarityConventionLHC();  // after the dipole cables swap we comply with LHC convention
 
 	delete row;
 	row = 0;
