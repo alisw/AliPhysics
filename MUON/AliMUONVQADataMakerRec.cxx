@@ -31,6 +31,7 @@ ClassImp(AliMUONVQADataMakerRec)
 #include "AliQADataMakerRec.h"
 #include "AliMUONRecoParam.h"
 #include "AliCDBManager.h"
+#include "TH1.h"
 
 //_____________________________________________________________________________
 AliMUONVQADataMakerRec::AliMUONVQADataMakerRec(AliQADataMakerRec* master)
@@ -123,6 +124,35 @@ AliMUONVQADataMakerRec::GetRawsData(Int_t index) const
 {
   /// fwd
   return fMaster ? fMaster->GetRawsData(index) : 0x0;
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONVQADataMakerRec::ResetDetector(TObjArray* list)
+{
+  /// Reset all histograms found in list, that match either trigger or tracker
+
+  TString cn(ClassName());
+  TString pattern;
+  
+  if ( cn.Contains("Trigger") ) pattern = "Trigger";
+  if ( cn.Contains("Tracker") ) pattern = "Tracker";
+  
+  TIter next(list); 
+  TObject* o;
+  while ( (o = next()) ) 
+  {
+    TH1* h = dynamic_cast<TH1*>(o);
+    if ( h ) 
+    {
+      h->Reset();
+      TString hcn(h->ClassName());
+      if ( hcn.Contains(pattern) ) 
+      {
+        h->Reset();
+      }
+    }
+  }
 }
 
 //_____________________________________________________________________________

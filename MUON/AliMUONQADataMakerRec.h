@@ -42,6 +42,8 @@ public:
   
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list);
 
+  virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
+  
 private:
   /// Not implemented
   AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm);   

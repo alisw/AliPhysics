@@ -111,9 +111,10 @@ AliMUONQAChecker::Check(AliQAv1::ALITASK_t index,
         }
       }
     }
+
+    delete[] ecc;
   }
   
-  delete[] ecc;
   
   return rv;
 }

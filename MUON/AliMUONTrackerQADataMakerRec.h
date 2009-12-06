@@ -49,6 +49,8 @@ public:
   virtual void MakeRaws(AliRawReader* rawReader); 
   virtual void MakeRecPoints(TTree* recpo); 
   
+  void ResetDetectorRaws(TObjArray* list);
+  
 private:
   
   void InsertTrackerData(Int_t specie, TObjArray** list, TObject* object, 

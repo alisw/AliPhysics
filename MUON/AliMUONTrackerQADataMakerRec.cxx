@@ -1156,3 +1156,50 @@ AliMUONVTrackerData* AliMUONTrackerQADataMakerRec::GetTrackerData() const
   return fTrackerDataMaker->Data(); 
   
 }
+
+//____________________________________________________________________________ 
+void
+AliMUONTrackerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
+{
+  /// Reset those histograms that must be reset (and only those), plus
+  /// the trackerdata itself.
+  
+  TIter next(list);
+  TObject* o;
+  while ( ( o = next() ) )
+  {
+    TH1* h = dynamic_cast<TH1*>(o);
+    if (h)
+    {
+      TString hn(h->GetName());
+      
+      if ( hn.Contains("Tracker") )
+      {
+        if ( hn != "hTrackerBusPatchNofPads" && 
+            hn != "hTrackerBusPatchNofManus" &&
+            hn != "hTrackerBusPatchConfig" )
+        {
+          AliDebug(1,Form("Resetting %s",hn.Data()));
+          h->Reset();                  
+        }
+      }
+      else
+      {
+        AliDebug(1,Form("Will not reset histogram %s",hn.Data()));
+      }
+    }
+    else
+    {
+      AliMUONVTrackerData* d = dynamic_cast<AliMUONVTrackerData*>(o);
+      if (d)
+      {
+        AliDebug(1,Form("Resetting %s",d->GetName()));
+        d->Clear();
+      }
+      else
+      {
+        AliError(Form("Found an object of class %s. Do not know how to reset.",o->ClassName()));
+      }
+    }
+  }
+}

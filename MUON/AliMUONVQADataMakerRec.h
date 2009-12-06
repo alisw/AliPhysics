@@ -61,8 +61,19 @@ public:
   /// Wrap up things at each cycle for Digits
   virtual void EndOfDetectorCycleDigits(Int_t specie, TObjArray** list) = 0;
 
+  /// Reset anything that must be reset for Raws
+  virtual void ResetDetectorRaws(TObjArray* list) { ResetDetector(list); }
+  /// Reset anything that must be reset for RecPoints
+  virtual void ResetDetectorRecPoints(TObjArray* list) { ResetDetector(list); }
+  /// Reset anything that must be reset for ESD
+  virtual void ResetDetectorESDs(TObjArray* list) { ResetDetector(list); }
+  /// Reset anything that must be reset for Digits
+  virtual void ResetDetectorDigits(TObjArray* list) { ResetDetector(list); }
+  
 protected:
 
+  void ResetDetector(TObjArray* list);
+  
   Int_t RunNumber() const;
   
   AliRecoParam::EventSpecie_t CurrentEventSpecie() const;

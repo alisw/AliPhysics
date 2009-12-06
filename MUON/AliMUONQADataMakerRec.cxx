@@ -192,6 +192,43 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
  }
 
 //____________________________________________________________________________ 
+void AliMUONQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
+{
+  /// Reset internals
+  
+  for (int spec = 0; spec < AliRecoParam::kNSpecies; ++spec) 
+  {
+    if (!AliQAv1::Instance()->IsEventSpecieSet(AliRecoParam::ConvertIndex(spec)))
+      continue;
+    
+    if ( task == AliQAv1::kRAWS ) 
+    {
+      if (fTracker) fTracker->ResetDetectorRaws(fRawsQAList[spec]);
+      if (fTrigger) fTrigger->ResetDetectorRaws(fRawsQAList[spec]);
+    }
+    else if ( task == AliQAv1::kRECPOINTS )
+    {
+      if (fTracker) fTracker->ResetDetectorRecPoints(fRecPointsQAList[spec]);
+      if (fTrigger) fTrigger->ResetDetectorRecPoints(fRecPointsQAList[spec]);
+    }
+    else if ( task == AliQAv1::kESDS ) 
+    {
+      if (fTracker) fTracker->ResetDetectorESDs(fESDsQAList[spec]);
+      if (fTrigger) fTrigger->ResetDetectorESDs(fESDsQAList[spec]);
+    }
+    else if ( task == AliQAv1::kDIGITS ) 
+    {
+      if (fTracker) fTracker->ResetDetectorDigits(fDigitsQAList[spec]);
+      if (fTrigger) fTrigger->ResetDetectorDigits(fDigitsQAList[spec]);
+    }
+    else
+    {
+      AliError("Not implemented");
+    }
+  }
+}
+
+//____________________________________________________________________________ 
 void AliMUONQADataMakerRec::StartOfDetectorCycle()
 {
     /// Detector specific actions at start of cycle  
