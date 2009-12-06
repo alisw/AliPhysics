@@ -769,7 +769,7 @@ Int_t processEvent() {
 
   if ( gSPDClusters )  gSPDClusters->Reset();
   if ( gSSDClusters )  gSSDClusters->Reset();
-  if ( gSDDClusters )  gSSDClusters->Reset();
+  if ( gSDDClusters )  gSDDClusters->Reset();
   if ( gTPCClusters )  gTPCClusters->Reset();
   if ( gTPCTestClusters )  gTPCTestClusters->Reset();
   if ( gTRDClusters )  gTRDClusters->Reset();
