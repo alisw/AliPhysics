@@ -25,7 +25,7 @@ void ConfigOCDB(Int_t crun=-1){
   //
   TString ocdbStorage="local://";
   ocdbStorage+=gSystem->Getenv("workdir");
-  ocdbStorage+="calibNoDrift/OCDB";
+  ocdbStorage+="../calibNoDrift/OCDB";
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/TimeGain",ocdbStorage.Data());
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/TimeDrift",ocdbStorage.Data());
 
