@@ -65,15 +65,22 @@ private:
   /** interface function, see AliHLTComponent for description */
   int Reconfigure(const char* cdbEntry, const char* chainId);
 
-  TH2F fPrimaryXY;  //X and Y coords.
-  TH1F fPrimaryX;  // X coords.
-  TH1F fPrimaryY;  // Y coords.
-  TH1F fPrimaryZ;  // Z coords.
+  void SetDefaultConfiguration();
+  int ReadConfigurationString(  const char* arguments );
 
-  TH2F fSPDVertexXY;// ITS SPD vertex
-  TH1F fSPDVertexX;// ITS SPD vertex
-  TH1F fSPDVertexY;// ITS SPD vertex
-  TH1F fSPDVertexZ;// ITS SPD vertex
+  Int_t   fRefreshPeriod;//  histos will refresh after fRefreshPeriod number of events
+  Int_t fFillSecond;//!
+  Int_t fFillSecondSPD ;//!
+
+  TH2F fPrimaryXY[2];  //X and Y coords.
+  TH1F fPrimaryX[2];  // X coords.
+  TH1F fPrimaryY[2];  // Y coords.
+  TH1F fPrimaryZ[2];  // Z coords.
+
+  TH2F fSPDVertexXY[2];// ITS SPD vertex
+  TH1F fSPDVertexX[2];// ITS SPD vertex
+  TH1F fSPDVertexY[2];// ITS SPD vertex
+  TH1F fSPDVertexZ[2];// ITS SPD vertex
 
   //Aux. function.
   unsigned long GetOutputDataSize()const;
