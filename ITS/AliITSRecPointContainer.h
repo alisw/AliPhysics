@@ -28,6 +28,7 @@ class AliITSRecPointContainer : public TObject {
   Int_t GetNumberOfModules() const {return fActualSize; }
 
   static AliITSRecPointContainer* Instance(const AliITSRecoParam *ptr=NULL);
+  void PrepareToRead(){if(fNextEvent<0){fNextEvent=0;} else {++fNextEvent;}}
   TClonesArray* FetchClusters(Int_t mod, TTree* tR);
   TClonesArray* FetchClusters(Int_t mod, TTree* tR,Int_t cureve);
   TClonesArray* UncheckedGetClusters(Int_t mod) const {return fArray[mod];}
@@ -49,7 +50,9 @@ class AliITSRecPointContainer : public TObject {
   Int_t fSDDNModules; //! number of SDD modules
   Int_t fSSDNModules; //! number of SDD modules
   TClonesArray* fArray[fgkNModules];  //! container - 1 TClonesArray per module
-  Int_t fCurrentEve; //!run number
+  Int_t fCurrentEve; //! event number
+  Int_t fNextEvent; //! number of the next event to be read; used only when
+                    //! the run loader is not available. It is just a counter.
   Int_t fActualSize; //! actual number of ITS modules in TTree R 
   TString fDet; //! ITS subdetectors active for the current run 
   Bool_t fStatusOK; //! kFALSE is RP branch is absent or if there are anomalies

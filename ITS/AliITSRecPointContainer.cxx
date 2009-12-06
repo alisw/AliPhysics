@@ -27,6 +27,7 @@ fSDDNModules(0),
 fSSDNModules(0),
 fArray(),
 fCurrentEve(-1000),
+fNextEvent(-1000),
 fActualSize(0),
 fDet(""),
 fStatusOK(kTRUE){
@@ -45,7 +46,7 @@ fStatusOK(kTRUE){
   const Int_t kLimits[12]={25,25,20,20,10,10,300,300,200,200,100,100};
   Int_t offset=0;
   if(!krp){
-    AliWarning("AliITSRecoPoint is missing. Using defaults");
+    AliWarning("AliITSRecoParam is missing. Using defaults");
   }
   else {
     if(krp->GetEventSpecie() == AliRecoParam::kHighMult)offset=6;
@@ -99,7 +100,24 @@ void AliITSRecPointContainer::CookEntries(){
 TClonesArray* AliITSRecPointContainer::FetchClusters(Int_t mod, TTree* tR){
   // retrieves Recpoints for module mod (offline mode: the event number is
   // retrieved via the AliRunLoader object)
-  Int_t cureve=AliRunLoader::Instance()->GetEventNumber();
+  // The actual access to the RP TTree is done as follows:
+  // If the AliRunLoader object exists, the event number is taken from it
+  // If not, the data member fNextEvent is used. 
+  // To set fNextEvent it is necessary to call PrepareToRead in advance.
+  // if this is never done, fNextEvent will have its default negative value
+  // and an error message will be delivered.
+  AliRunLoader* rl = AliRunLoader::Instance();
+  Int_t cureve;
+  if(rl){
+    cureve = rl->GetEventNumber();
+  }
+  else if(fNextEvent>=0){
+    cureve = fNextEvent;
+  }
+  else {
+    AliError("The RunLoader is not defined, PrepareToRead was not invoked. Revise calling sequence. Nothing done");
+    return NULL;
+  }
   return FetchClusters(mod,tR,cureve);
 }
 //______________________________________________________________________
