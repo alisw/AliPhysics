@@ -84,7 +84,8 @@ int main(int argc, char **argv)
 
   app->Run(kTRUE);
 
-  gEve->GetBrowser()->UnmapWindow();
+  if (gEve && gEve->GetBrowser())
+    gEve->GetBrowser()->UnmapWindow();
   TEveManager::Terminate();
 
   app->Terminate(0);
