@@ -56,7 +56,6 @@ using namespace std;
 ClassImp( AliHLTITSVertexerSPDComponent )
 AliHLTITSVertexerSPDComponent::AliHLTITSVertexerSPDComponent()
     :
-    fAutoCalibration(1000),
     fZRange(40),
     fZBinSize(1),
     fFullTime( 0 ),
@@ -75,15 +74,14 @@ AliHLTITSVertexerSPDComponent::AliHLTITSVertexerSPDComponent()
 
   for( int i=0; i<9; i++ ) fSum[i] = 0;
 
-  fDefRunVtx[0] = 0;
-  fDefRunVtx[1] = 0;
-  fDefRunVtx[2] = 0;
+  fRunVtx[0] = 0;
+  fRunVtx[1] = 0;
+  fRunVtx[2] = 0;
 }
 
 AliHLTITSVertexerSPDComponent::AliHLTITSVertexerSPDComponent( const AliHLTITSVertexerSPDComponent& )
     :
     AliHLTProcessor(),
-    fAutoCalibration(1000),
     fZRange(40),
     fZBinSize(1),
     fFullTime( 0 ),
@@ -167,10 +165,9 @@ void AliHLTITSVertexerSPDComponent::SetDefaultConfiguration()
   // Set default configuration for the CA tracker component
   // Some parameters can be later overwritten from the OCDB
 
-  fAutoCalibration = 1000;
-  fDefRunVtx[0] = 0;
-  fDefRunVtx[1] = 0;
-  fDefRunVtx[2] = 0;
+  fRunVtx[0] = 0;
+  fRunVtx[1] = 0;
+  fRunVtx[2] = 0;
   fZRange = 40;
   fZBinSize = 1;
   fFullTime = 0;
@@ -199,13 +196,13 @@ int AliHLTITSVertexerSPDComponent::ReadConfigurationString(  const char* argumen
 
     if ( argument.CompareTo( "-runVertex" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-      fDefRunVtx[0] = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
+      fRunVtx[0] = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-      fDefRunVtx[1] = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
+      fRunVtx[1] = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-      fDefRunVtx[2] = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
-      HLTInfo( "Default run vertex is set to (%f,%f,%f)",fDefRunVtx[0],
-	       fDefRunVtx[1],fDefRunVtx[2] );
+      fRunVtx[2] = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
+      HLTInfo( "Default run vertex is set to (%f,%f,%f)",fRunVtx[0],
+	       fRunVtx[1],fRunVtx[2] );
       continue;
     }
 
@@ -222,14 +219,6 @@ int AliHLTITSVertexerSPDComponent::ReadConfigurationString(  const char* argumen
       HLTInfo( "Size of the Z bin for the vertex search is set to %f cm", fZBinSize );
       continue;
     }
-
-    if ( argument.CompareTo( "-beamDiamondCalibration" ) == 0 ) {
-      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-      fAutoCalibration = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
-      HLTInfo( "N events for recalibration of the run vertex is set to: %d", fAutoCalibration );
-      continue;
-    }
-    
 
     HLTError( "Unknown option \"%s\"", argument.Data() );
     iResult = -EINVAL;
@@ -331,13 +320,6 @@ int AliHLTITSVertexerSPDComponent::DoInit( int argc, const char** argv )
   }
 
   int ret = Configure( NULL, NULL, arguments.Data() );
-
-  for( int i=0; i<3; i++){
-    fRunVtx[i] = fDefRunVtx[i];
-    fRunVtxNew[i] = fDefRunVtx[i];
-  }
-  fRunVtx[3] = 0.;
-  fRunVtxNew[3] = 0.;
 
   for( int i=0; i<9; i++ ) delete[] fSum[i];
   delete[] fSumW;
@@ -666,30 +648,6 @@ int AliHLTITSVertexerSPDComponent::DoEvent
     vtxY += wI[1]*fSum[6][bestBin] + wI[2]*fSum[7][bestBin] + wI[4]*fSum[8][bestBin];
     vtxZ = wI[3]*fSum[6][bestBin] + wI[4]*fSum[7][bestBin] + wI[5]*fSum[8][bestBin];
     //cout<<"SG: "<<iter<<": "<<vtxX<<" "<<vtxY<<" "<<vtxZ<<endl;
-  }
-
-  if( bestBin>=0 ){
-    double nv = 1;
-    double nNew = fRunVtxNew[3] + nv;
-    double v[3] = {vtxX, vtxY, vtxZ};
-    for( int i=0; i<3; i++){
-      fRunVtxNew[i] = ( fRunVtxNew[i]*fRunVtxNew[3] + v[i]*nv )/nNew;
-    }
-    fRunVtxNew[3] = nNew;
-  }  
-  
-  if( fAutoCalibration>0 && fRunVtxNew[3] >= fAutoCalibration ){
-    for( int i=0; i<4; i++ ){
-      fRunVtx[i] = fRunVtxNew[i];
-      fRunVtxNew[i] = 0;
-    }
-    //cout<<"ITSVertexerSPD: set run vtx to "<<fRunVtx[0]<<" "<<fRunVtx[1]<<" "<<fRunVtx[2]<<endl;  
-    if( fRunVtx[0]>3. ) fRunVtx[0] = 3;
-    if( fRunVtx[0]<-3. ) fRunVtx[0] = -3;
-    if( fRunVtx[1]>3. ) fRunVtx[1] = 3;
-    if( fRunVtx[1]<-3. ) fRunVtx[1] = -3;
-    if( fRunVtx[2]>30. ) fRunVtx[2] = 30;
-    if( fRunVtx[2]<30. ) fRunVtx[2] = -30;
   }
 
   timerReco.Stop();

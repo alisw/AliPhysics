@@ -127,15 +127,12 @@ class AliHLTITSVertexerSPDComponent : public AliHLTProcessor
     float fX, fY, fZ;
   };
   
-  Int_t   fAutoCalibration;//  n of events for recalibration of run vertex(-1=no, def = 1000);
   Double_t fZRange;// Z range for the vertex seearch
   Double_t fZBinSize; // size of the Z bin [cm] 
-  double fDefRunVtx[3];// default vertex position
+  double fRunVtx[3];// default vertex position
   double fFullTime; //* total time for DoEvent() [s]
   double fRecoTime; //* total reconstruction time [s]
   Long_t fNEvents;  //* number of reconstructed events
-  double fRunVtx[4]; // the run vertex which is currently used in finder
-  double fRunVtxNew[4]; // new estimation of the run vertex, 
   double *fSum[9]; // coefficients for the LSM method
   double *fSumW; // sum of weights per Z bin 
   int *fSumN; // N entries per Z bin
