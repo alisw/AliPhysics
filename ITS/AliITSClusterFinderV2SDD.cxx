@@ -486,7 +486,7 @@ Bool_t AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid, AliBin* bins,
   Int_t wW=bins[k+fNZbins].GetQ();
   if(wW>tL) nLow++;
   if(wW>tH) nHigh++;
-  if(nLow<3 || nHigh<1) return kTRUE;
+  if(nLow<2 || nHigh<1) return kTRUE;
   else return kFALSE;
 }
 

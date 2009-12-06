@@ -874,7 +874,7 @@ void AliITSsimulationSDD::Compress2D(){
 	if(sS>tL) nLow++;
 	if(sS>tH) nHigh++;
  	
-	if(nLow>=3 && nHigh>=1){
+	if(nLow>=2 && nHigh>=1){
 	  Int_t signal=(Int_t)cC;
 	  Int_t signalc = Convert10to8(signal);
 	  Int_t signale = Convert8to10(signalc);
