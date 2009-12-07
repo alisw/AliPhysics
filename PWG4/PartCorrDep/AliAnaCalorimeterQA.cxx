@@ -495,7 +495,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhGridCellsEMod[imod]->SetXTitle("column (eta direction)");
 		outputContainer->Add(fhGridCellsEMod[imod]);
 		
-		fhAmplitudeMod[imod]  = new TH1F (Form("hAmplitude",imod),Form("Cell Energy in Module %d",imod), 500,0,50); 
+		fhAmplitudeMod[imod]  = new TH1F (Form("hAmplitude_Mod%d",imod),Form("Cell Energy in Module %d",imod), 500,0,50); 
 		fhAmplitudeMod[imod]->SetXTitle("Cell Energy (GeV)");
 		outputContainer->Add(fhAmplitudeMod[imod]);
 		
@@ -1272,7 +1272,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		}
 
         //Fill histograms related to single cluster or track matching
-		ClusterHistograms(mom, nCaloCellsPerCluster, nTracksMatched, nModule, track, labels, nLabel);	
+		ClusterHistograms(mom, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
 		if(GetDebug()>1) printf("Invariant mass \n");
 		//Invariant mass
 		Int_t nModule2 = -1;
@@ -1413,7 +1413,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_
 		}
 	}
 
-	fhE     ->Fill(e);		
+	fhE     ->Fill(e);	
 	fhEMod[nModule]->Fill(e);
 	fhPt    ->Fill(pt);
 	fhPhi   ->Fill(phi);
