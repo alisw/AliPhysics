@@ -28,11 +28,15 @@ using namespace std;
 
 #include "AliHLTProcessor.h"
 #include <string.h>
+#include "TDatime.h"
+#include "TString.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTProcessor)
 
 AliHLTProcessor::AliHLTProcessor()
+  : AliHLTComponent()
+  , fpDebugCounters(NULL)
 { 
   // see header file for class documentation
   // or
@@ -44,6 +48,8 @@ AliHLTProcessor::AliHLTProcessor()
 AliHLTProcessor::~AliHLTProcessor()
 { 
   // see header file for class documentation
+  if (fpDebugCounters) delete fpDebugCounters;
+  fpDebugCounters=NULL;
 }
 
 int AliHLTProcessor::DoProcessing( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
@@ -71,6 +77,55 @@ int AliHLTProcessor::DoProcessing( const AliHLTComponentEventData& evtData, cons
     edd->fDataSize = eddTmp->fDataSize;
     edd->fData = reinterpret_cast<AliHLTUInt8_t*>(edd)+edd->fStructSize;
     memcpy( edd->fData, eddTmp->fData, eddTmp->fDataSize );
+
+    // 2009-12-07 want to make this switchable, but this first needs some
+    // extension in the online framework to change the log level settings
+    // in the component while running
+    if (false/*CheckFilter(kHLTLogDebug)*/) {
+      if (!fpDebugCounters) {
+	fpDebugCounters=new AliHLTProcessorCounters;
+      }
+      if (fpDebugCounters) {
+	int wordCnt=edd->fDataSize/4;
+	AliHLTUInt32_t* buffer=reinterpret_cast<AliHLTUInt32_t*>(edd->fData);
+	int word=0;
+	while (word<wordCnt) {
+	  switch (buffer[word]) {
+	  case 3: 
+	    fpDebugCounters->fReadoutFilter++; 
+	    word+=1+buffer[word+1]*4;
+	    break;
+	  case 4:
+	    fpDebugCounters->fMonitoringFilter++; 
+	    word+=1+buffer[word+1]*4;
+	    break;
+	  case 5:
+	    fpDebugCounters->fMonitoringEvent++; 
+	    break;
+	  default:
+	    fpDebugCounters->fMismatch++;
+	    break;
+	  }
+	  word++;
+	}
+
+	static UInt_t lastTime=0;
+	TDatime time;
+	if (time.Get()-lastTime>1) {
+	  lastTime=time.Get();
+	  HLTImportant("EventDoneData size %d: readout %d, monitoring filter %d, monitoring event %d, format error %d", 
+		       edd->fDataSize, fpDebugCounters->fReadoutFilter, fpDebugCounters->fMonitoringFilter, fpDebugCounters->fMonitoringEvent, fpDebugCounters->fMismatch);
+	  for (int i=0; i< wordCnt; ) {
+	    TString message;
+	    for (int j=0; j<4 && i<wordCnt; j++) {
+	      TString number; number.Form("0x%08x ", buffer[i++]);
+	      message+=number;
+	    }
+	    HLTImportant("   %s", message.Data());
+	  }
+	}
+      }
+    }
   }
   return iResult;
 }

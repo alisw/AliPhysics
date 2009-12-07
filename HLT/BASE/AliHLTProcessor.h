@@ -97,6 +97,23 @@ class AliHLTProcessor : public AliHLTComponent {
    */
   virtual int DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
 
-  ClassDef(AliHLTProcessor, 1)
+  // collection of debug counters
+  struct AliHLTProcessorCounters {
+    AliHLTProcessorCounters() : fReadoutFilter(0), fMonitoringFilter(0), fMonitoringEvent(0), fMismatch(0) {}
+    int fReadoutFilter;    // counter for the EDD readout filter
+    int fMonitoringFilter; // counter for the EDD monitoring filter
+    int fMonitoringEvent;  // counter for the EDD monitoring event
+    int fMismatch;         // counter for EDD format mismatch
+  };
+
+private:
+  /// copy contructor prohibited
+  AliHLTProcessor(const AliHLTProcessor&);
+  /// assignment operator prohibited
+  AliHLTProcessor& operator=(const AliHLTProcessor&);
+
+  AliHLTProcessorCounters* fpDebugCounters; // optional debugging counters
+
+  ClassDef(AliHLTProcessor, 2)
 };
 #endif
