@@ -15,12 +15,5 @@ startGUI(char *file=0x0){
     viewer2=gui2->GetViewer();
     calPads=viewer->GetTree();
     calPads2=viewer2->GetTree();
-    TString refDataTree=gSystem->ExpandPathName("$REF_DATA_TREE");
-    if (!refDataTree.IsNull()&&refDataTree!="$REF_DATA_TREE"){
-      viewer->AddReferenceTree(refDataTree.Data(),"calPads","Ref");
-      viewer2->AddReferenceTree(refDataTree.Data(),"calPads","Ref");
-      gui->Reload();
-      gui2->Reload();
-    }
   }
 }

@@ -32,7 +32,7 @@ function createRangeList {
   local command=ls
   if [ $WITHALIEN -eq 1 ]; then command=alien_ls; fi
   local dir=$AUTOFILES
-  RUNS=($($command $dir | sed 's|Run\([0-9]\{5\}\)_.*|\1|'))
+  RUNS=($($command $dir | sed 's|Run\([0-9]\{1,6\}\)_.*|\1|' | sort -n))
   #define filename
   local filename=calibTreeTime_${first}_${last}
   #remove old files
@@ -54,7 +54,7 @@ function createGuiLists {
   local command=ls
   if [ $WITHALIEN -eq 1 ]; then command=alien_ls; fi
   local dir=$AUTOFILES
-  RUNS=($($command $dir | sed 's|Run\([0-9]\{5\}\)_.*|\1|'))
+  RUNS=($($command $dir | sed 's|Run\([0-9]\{1,6\}\)_.*|\1|' | sort -n))
   local count=0
   local iter=0
   local skip=0
@@ -69,10 +69,13 @@ function createGuiLists {
   if [ "x$RANGE" != "x" ]; then
     first=$(echo $RANGE | sed 's|\(.*\)-.*|\1|')
     last=$(echo $RANGE | sed 's|.*-\(.*\)|\1|')
+    echo $first-$last
     for (( i=0; i<${#RUNS[*]}; i=i+1 )); do
       if [ ${RUNS[i]} -ge $first ]&&[ $ifirst -eq 0 ]; then ifirst=$i; fi
       if [ ${RUNS[i]} -gt $last ]&&[ $ilast -eq ${#RUNS[*]} ]; then ilast=$i; fi
     done
+      echo $ifirst-$ilast
+      echo ${RUNS[$ifirst]}-${RUNS[$ilast-1]}
   fi
   #remove old files
   #test -d $TMPLISTDIR  && rm -rf $TMPLISTDIR
@@ -85,8 +88,9 @@ function createGuiLists {
     fi
     if [ $count -eq 0 ]; then
        local firstLocal=$(echo "$iter*$nfiles+$ifirst" | bc)
-       local lastLocal=$(echo "if ($firstLocal+$nfiles-1>=$ilast-$ifirst) $ilast-1 else $firstLocal+$nfiles-1" | bc)
-       filename=calibTreeTime_${RUNS[$firstLocal]}_${RUNS[$lastLocal]}
+#       local lastLocal=$(echo "if ($firstLocal+$nfiles-1>=$ilast-$ifirst) $ilast-1 else $firstLocal+$nfiles-1" | bc)
+       local lastLocal=$(echo "if (($iter+1)*$nfiles>=$ilast-$ifirst) $ilast-1 else $firstLocal+$nfiles-1" | bc)
+      filename=calibTreeTime_${RUNS[$firstLocal]}_${RUNS[$lastLocal]}
     fi
     echo ${RUNS[$i]} >> $TMPLISTDIR/$filename
     let count=$count+1

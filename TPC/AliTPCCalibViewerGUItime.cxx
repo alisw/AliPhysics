@@ -325,7 +325,7 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
   fLblRunNumber->SetTextJustify(kTextLeft);
   fContValues->AddFrame(fLblRunNumber, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
   //run number
-  fLblRunNumberVal = new TGLabel(fContValues, "00000");
+  fLblRunNumberVal = new TGLabel(fContValues, "000000");
   fLblRunNumberVal->SetTextJustify(kTextLeft);
   fContValues->AddFrame(fLblRunNumberVal, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 0, 0, 0, 0));
   //time stamp label
@@ -1140,7 +1140,7 @@ void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject 
   UInt_t dd=0,mm=0,yy=0,HH=0,MM=0,SS=0,run=0;
   Double_t valx=0.,valy=0.;
   if (!fCurrentGraph) {
-    fLblRunNumberVal->SetText(Form("%05u",run));
+    fLblRunNumberVal->SetText(Form("%06u",run));
     fLblRunTimeVal->SetText(Form("%02u.%02u.%04u\n%02u:%02u:%02u",dd,mm,yy,HH,MM,SS));
     fLblValueXVal->SetText(Form("%.3e", valx));
     fLblValueYVal->SetText(Form("%.3e", valy));
@@ -1175,7 +1175,7 @@ void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject 
     valx=0.;
     valy=0.;
   }
-  fLblRunNumberVal->SetText(Form("%05u",run));
+  fLblRunNumberVal->SetText(Form("%06u",run));
   fLblRunTimeVal->SetText(Form("%02u.%02u.%04u\n%02u.%02u.%02u",dd,mm,yy,HH,MM,SS));
   if (fIsCustomDraw){
     fLblValueXVal->SetText(Form("%.3e", valx));

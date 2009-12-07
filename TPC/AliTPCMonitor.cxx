@@ -579,15 +579,33 @@ Int_t AliTPCMonitor::ReadDataNew(Int_t secid)
            eventType==AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
            eventType==AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent) ) {
              if (fVerb) cout<< "Skipping event! Its neither of 'physics, calibration and software trigger event'" << endl;
+             if(fRawReader->IsA()==AliRawReaderRoot::Class()){
+               if (fEventNumber<fRawReader->GetNumberOfEvents()-1) ++fEventNumber;
+               else {AliError("No more events");return 11;}
+             }
              continue;
            }
     skip=kFALSE;
     //test if the TPC has data
     UChar_t *data=0;
     fRawReader->Select("TPC");
-    if (!fRawReader->ReadNextData(data)) skip=kTRUE;
-    fEventNumber = fRawReader->GetEventIndex();
-    fEventNumberOld = fRawReader->GetEventIndex();
+    Int_t eventNr=fRawReader->GetEventIndex();
+    if (!fRawReader->ReadNextData(data)) {
+      skip=kTRUE;
+      printf("%d - %d\n",fEventNumber,fRawReader->GetNumberOfEvents());
+      if(fRawReader->IsA()==AliRawReaderRoot::Class()){
+        if (fEventNumber<fRawReader->GetNumberOfEvents()-1){
+          ++eventNr;
+          printf("inc conter\n");
+        }
+        else {
+          AliError("No more events");
+          return 11;
+        }
+      }
+    }
+    fEventNumber = eventNr;
+    fEventNumberOld = eventNr;
   }
   
 //   printf("secid: %d\n",secid);
