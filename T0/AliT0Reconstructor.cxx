@@ -290,10 +290,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     adc[ipmt] = 0;
 	   
 
-	   time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt], timeCFD[ipmt] ) ;
+	   //	   time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt], timeCFD[ipmt] ) ;
 	   
       	   Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
-	     //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt] ) ;
+	   time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl), timeCFD[ipmt] ) ;
 	   AliDebug(10,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
 			    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
 	   Double_t ampMip =( (TGraph*)fAmpLED.At(ipmt))->Eval(sl);
