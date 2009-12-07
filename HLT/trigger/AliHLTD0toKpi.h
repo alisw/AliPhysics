@@ -13,20 +13,21 @@
 
 #include "TObject.h"
 
-class AliESDtrack;
-class AliAODVertex;
 class AliESDVertex;
 class TObjArray;
+class AliExternalTrackParam;
+class AliAODVertex;
 
 class AliHLTD0toKpi : public TObject
 {
 public:
   AliHLTD0toKpi();
-  Double_t InvMass(AliESDtrack* d1, AliESDtrack* d2);
-  void cosThetaStar(AliESDtrack* n, AliESDtrack* p,Double_t &D0,Double_t &D0bar);
-  Double_t pointingAngle(AliESDtrack* n, AliESDtrack* p, Double_t *pv, Double_t *sv);
 
-  AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, const AliESDVertex *v);
+  Double_t InvMass(AliExternalTrackParam* d1, AliExternalTrackParam* d2);
+  void cosThetaStar(AliExternalTrackParam* n, AliExternalTrackParam* p,Double_t &D0,Double_t &D0bar);
+  Double_t pointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv);
+
+  AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, AliESDVertex *v);
 
 private:
   

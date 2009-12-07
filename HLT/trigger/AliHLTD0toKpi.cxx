@@ -8,7 +8,8 @@
 #include "AliESDVertex.h"
 #include "TObjArray.h"
 #include "AliVertexerTracks.h"
-
+#include "AliHLTGlobalBarrelTrack.h"
+#include "AliExternalTrackParam.h"
 
 ClassImp(AliHLTD0toKpi)
 
@@ -16,7 +17,7 @@ AliHLTD0toKpi::AliHLTD0toKpi()
 {
 }
 
-Double_t AliHLTD0toKpi::InvMass(AliESDtrack* d1, AliESDtrack* d2)
+Double_t AliHLTD0toKpi::InvMass(AliExternalTrackParam* d1, AliExternalTrackParam* d2)
 {
   Double_t mpi=TDatabasePDG::Instance()->GetParticle(211)->Mass();
   Double_t mK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
@@ -36,7 +37,7 @@ Double_t AliHLTD0toKpi::InvMass(AliESDtrack* d1, AliESDtrack* d2)
   return TMath::Sqrt((energy[0]+energy[1])*(energy[0]+energy[1])-momTot2);
 
 }
-void AliHLTD0toKpi::cosThetaStar(AliESDtrack* d1, AliESDtrack* d2,Double_t &D0,Double_t &D0bar)
+void AliHLTD0toKpi::cosThetaStar(AliExternalTrackParam* d1, AliExternalTrackParam* d2,Double_t &D0,Double_t &D0bar)
 {
   Double_t mD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   Double_t mpi=TDatabasePDG::Instance()->GetParticle(211)->Mass();
@@ -67,7 +68,7 @@ void AliHLTD0toKpi::cosThetaStar(AliESDtrack* d1, AliESDtrack* d2,Double_t &D0,D
   D0bar = (qL/gamma-beta*TMath::Sqrt(pStar*pStar+mK*mK))/pStar;
 
 }
-Double_t AliHLTD0toKpi::pointingAngle(AliESDtrack* n, AliESDtrack* p, Double_t *pv, Double_t *sv)
+Double_t AliHLTD0toKpi::pointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv)
 {
 
   TVector3 mom(n->Px()+p->Px(),n->Py()+p->Py(),n->Pz()+p->Pz());
@@ -78,16 +79,22 @@ Double_t AliHLTD0toKpi::pointingAngle(AliESDtrack* n, AliESDtrack* p, Double_t *
   return TMath::Cos(pta); 
 }
 
-AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, const AliESDVertex *v)
+AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, AliESDVertex *v)
 {
   
   AliESDVertex *vertexESD = 0;
   AliAODVertex *vertexAOD = 0;
   
   AliVertexerTracks *vertexer = new AliVertexerTracks(b);
-  AliESDVertex* fV1 = new AliESDVertex(*v);
-  vertexer->SetVtxStart(fV1);
-  vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);
+  vertexer->SetVtxStart(v);
+  //if(isESD){vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);}
+  UShort_t *id = new UShort_t[2];
+  AliHLTGlobalBarrelTrack *t1 = (AliHLTGlobalBarrelTrack*) trkArray->At(0);
+  AliHLTGlobalBarrelTrack *t2 = (AliHLTGlobalBarrelTrack*) trkArray->At(1);
+  id[0]=(UShort_t) t1->GetID();
+  id[1]=(UShort_t) t2->GetID();
+  vertexESD = (AliESDVertex*)vertexer->VertexForSelectedTracks(trkArray,id);
+  delete id;
   delete vertexer; vertexer=NULL;
   
   if(!vertexESD) return vertexAOD;

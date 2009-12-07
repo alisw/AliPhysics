@@ -13,11 +13,12 @@
 
 #include "AliHLTTrigger.h"
 #include <vector>
-#include "AliESDtrack.h"
+#include "AliHLTD0toKpi.h"
 
 class TH1F;
 class TObjArray;
-class AliHLTD0toKpi;
+class AliESDVertex;
+class AliExternalTrackParam;
 
 /**
  * @class  AliHLTD0Trigger
@@ -99,11 +100,10 @@ class AliHLTD0Trigger : public AliHLTTrigger
 
   /// inherited from AliHLTTrigger: calculate the trigger
   virtual int DoTrigger();
-
-  void SingleTrackSelect(AliESDtrack*,Double_t,Double_t*);
-  Int_t RecESDTracks(const TObject* iter);
+  
+  void SingleTrackSelect(AliExternalTrackParam*);
   Int_t RecV0(const TObject* iter);
-  Int_t RecBarrelTracks(const TObject* iter);
+  Int_t RecD0();
 
   /// pt cut for decay, minimum [GeV/c]
   float fPtMin;                                            //! transient
@@ -128,14 +128,16 @@ class AliHLTD0Trigger : public AliHLTTrigger
   /// D0 inv. mass plot
   TH1F *fD0mass;                                           //! transient  
 
-  vector<AliESDtrack*> fPos;                                //! transient
-  vector<AliESDtrack*> fNeg;                                //! transient
+  vector<AliExternalTrackParam*> fPos;                       //! transient
+  vector<AliExternalTrackParam*> fNeg;                       //! transient
 
-  AliHLTD0toKpi *fd0calc;                                    //! transient
-  TObjArray *ftwoTrackArray;                                 //! transient
+  AliHLTD0toKpi *fd0calc;                                   //! transient
+  TObjArray *ftwoTrackArray;                                //! transient
 
-  Int_t fTotalD0;                                            //! transient
-
+  Int_t fTotalD0;                                           //! transient
+  AliESDVertex *fVertex;                                 //! transient
+  Double_t fField;                                         //!transient
+  
   /// the default configuration entry for this component
   static const char* fgkOCDBEntry; //!transient
 
