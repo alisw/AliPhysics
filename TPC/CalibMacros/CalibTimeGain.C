@@ -44,7 +44,7 @@ Bool_t CalibTimeGain(AliTPCcalibTimeGain * gain, Char_t * storagePath, Int_t sta
   gain->GetHistGainTime()->GetAxis(2)->SetRangeUser(1.51,2.49); // only beam data
   gain->GetHistGainTime()->GetAxis(4)->SetRangeUser(0.39,0.51); // only MIP pions
   //
-  TGraphErrors * graphMIP = AliTPCcalibBase::FitSlices(gain->GetHistGainTime(),0,1,minEntriesGaussFit,10);
+  TGraphErrors * graphMIP = AliTPCcalibBase::FitSlices(gain->GetHistGainTime(),0,1,minEntriesGaussFit,10,0.1,0.7);
   if (graphMIP->GetN()==0) graphMIP = 0x0;
   AliSplineFit * fitMIP = 0;
   if (graphMIP) fitMIP = AliTPCcalibTimeGain::MakeSplineFit(graphMIP);

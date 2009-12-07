@@ -1,4 +1,4 @@
-void MakeOCDB(Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity()){
+void MakeOCDB(Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity(),TString inputFile="CalibObjectsTrain1.root"){
   //
   //
   //
@@ -15,13 +15,14 @@ void MakeOCDB(Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity()){
   //
   // Make gain calibration
   //
-  TFile fcalib("CalibObjectsTrain1.root");
+  TFile fcalib(inputFile.Data());
   AliTPCcalibTimeGain * gain = ( AliTPCcalibTimeGain *)fcalib.Get("calibTimeGain");    
+  if (gain==0) return;
   CalibTimeGain(gain, ocdbStorage.Data(),startRun,endRun,kTRUE);
   //
   // Make vdrift calibration
   //
-  CalibTimeVdriftGlobal();
+  CalibTimeVdriftGlobal(inputFile.Data(),startRun,AliCDBRunRange::Infinity());
 
 
 }

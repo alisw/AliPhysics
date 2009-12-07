@@ -22,8 +22,8 @@ for adir in `cat $runlist`; do
     nesd=`wc -l < esd.txt.Good`
     if [ $nesd -gt 0 ] ; then
 	rm -f CalibObjects*.root
-	find  `pwd`/*_*  | grep CalibObjectsTrain1.root > mergelistTrain1.txt
-	find  `pwd`/*_*  | grep CalibObjectsTrain2.root > mergelistTrain2.txt
+	find  `pwd`/*_*  | grep CalibObjectsTrain1.root | grep -v lxb  > mergelistTrain1.txt
+	find  `pwd`/*_*  | grep CalibObjectsTrain2.root | grep -v lxb > mergelistTrain2.txt
 	nfiles=`cat mergelistTrain1.txt  | grep -c .root`
 	if [ $nfiles -gt 0 ] ; then
 	    bsub -q $bqueues -g $bgroup -oo outm1_$myvar.log aliroot $ALICE_ROOT/TPC/macros/CalibFileMerger.C+\(\"CalibObjectsTrain1.root\",10000,\"mergelistTrain1.txt\"\)

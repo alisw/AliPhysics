@@ -2,24 +2,19 @@
 # parameters:
 # 1 - basedir
 # 2 - number of chunks processed
+# 3 - cosmic or collisions
 # Example: 
 # source  /usr/local/grid/AliRoot/HEAD0108/TPC/scripts/tpcCalibTrain.sh `pwd`
 # source /lustre/alice/marin/soft64/AliRoot/v4-17-Rev-18/TPC/scripts/tpcCalibTrain.sh `pwd`
 #  work directory for test /lustre/alice/marin/rec/testRec1
 
 
-#export balice=/u/miranov/.balice
-#export balice=/lustre/alice/marin/soft64/setvar0417rev18.sh 
-export balice=/lustre/alice/marin/soft64/setvartrunk021209.sh 
+
+export balice=/lustre/alice/marin/soft64/setvar0417rev20.sh 
+#export balice=/lustre/alice/marin/soft64/setvartrunk021209.sh 
 source $balice
 export aliensetup=$HOME/alienSetup.sh
 source $aliensetup 
-
-
-#export PASS0_DIR=/usr/local/grid/AliRoot/HEAD0108
-#export PASS0_DIR=/lustre/alice/marin/soft64/AliRoot/v4-17-Rev-18
-export PASS0_DIR=/lustre/alice/marin/soft64/AliRoot/trunk021209
-#export PASS0_DIR=$ALICE_ROOT
 
 echo $ALICE_ROOT
 
@@ -29,6 +24,14 @@ echo $ALICE_ROOT
 #
 export workdir=$1
 export nChunks=$2
+export isCosmic=0
+if [ $# -eq 3 ]; then
+  isCosmic=$3
+fi
+echo IsComic  $isCosmic 
+
+
+
 if [ ! -n length ]; then 
   echo \############################  
   echo Directory was not specified. Exiting
@@ -63,9 +66,19 @@ mkdirhier  $workdir/calibQA
 #
 # copy predefined Config files 
 #
+
 cp   $ALICE_ROOT/TPC/macros/CalibrateTPC.C      calibNoDrift/CalibrateTPC.C
 cat  $ALICE_ROOT/TPC/macros/CalibrateTPC.C |    grep -v AddCalibCalib\(task\) > calibNoRefit/CalibrateTPC.C
 cp   $ALICE_ROOT/TPC/macros/CalibrateTPC.C      calibQA/CalibrateTPC.C
+
+if [ $isCosmic -eq 1 ] ; then
+cat  $ALICE_ROOT/TPC/macros/CalibrateTPC.C|grep -v  calibTimeGain\-\>SetIsCosmic\(kFALSE\)\; > calibNoDrift/CalibrateTPC.C
+
+cat  $ALICE_ROOT/TPC/macros/CalibrateTPC.C |grep -v AddCalibCalib\(task\) | grep -v  calibTimeGain\-\>SetIsCosmic\(kFALSE\)\; > calibNoRefit/CalibrateTPC.C
+
+cat   $ALICE_ROOT/TPC/macros/CalibrateTPC.C |grep -v  calibTimeGain\-\>SetIsCosmic\(kFALSE\)\; >     calibQA/CalibrateTPC.C
+fi
+
 cp   $ALICE_ROOT/TPC/macros/ConfigOCDBNoDrift.C calibNoDrift/ConfigOCDB.C
 cp   $ALICE_ROOT/TPC/macros/ConfigOCDBNoRefit.C calibNoRefit/ConfigOCDB.C
 cp   $ALICE_ROOT/TPC/macros/ConfigOCDBQA.C      calibQA/ConfigOCDB.C
@@ -130,21 +143,6 @@ while [ $restTime -gt 0 ];do
     if [ $nJobsNoDriftSub -eq 0 ]; then
 	let ratioNoDriftRunSub=0
     fi
-
-  #  nJobsGrNoDrift=`bjobs -g $bgroupNoDrift`
-
-    # Finding Jobs that crashed but still in queue To be debugged, does not work properly
-#    comp='Break'
-#    for a in `bjobs -g /recalib/calibNoDrift| gawk '{print $1}'` ; do
-#	iszombie=`bpeek  $a | grep "segmentation violation"| gawk '{print $2}'`;  
-#	echo Status  $iszombie , $comp
-#	if [ "x$iszombie" == "x$comp" ];  then  
-#	    echo The jobs id $a needs to be killed
-#	    bkill  $a 
-#	fi
-#    done
-    
-
     
     echo \############################   
     echo Info $nJobsNoDriftSub calibNoDrift jobs submitted  $nJobsNoDriftRun  $nJobsGrNoDrift still running $ratioNoDriftRunSub %
@@ -157,17 +155,6 @@ while [ $restTime -gt 0 ];do
     fi
 
 
- #   nJobsGrNoRefit=`bjobs -g $bgroupNoRefit`
-
-    # Finding Jobs that crashed but still in queue To be debugged does not work properly
- #   for a in `bjobs -g /recalib/calibNoRefit| gawk '{print $1}'` ; do
-#	iszombie=`bpeek  $a | grep "segmentation violation"| gawk '{print $2}'`;  
-#	echo Status  $iszombie , $comp
-#	if [ "x$iszombie" == "x$comp" ];  then  
-#	    echo The jobs id $a needs to  be killed
-	#    bkill  $a 
-#	fi
-#    done
     
 
 
@@ -249,34 +236,6 @@ echo \############################
 #nJobsNoDriftMergeRun=`bjobs -W | grep -c CalibFileMerger`
 
 
-#export totalTime=3600
-#export timeSleep=60
-#export restTime=$totalTime
-
-#while [ $restTime -ge 0 ];do
-#    nJobsNoDriftMergeRun=`bjobs -W | grep -c CalibFileMerger`
-
-#    echo \############################   
-#    echo Info $nJobsNoDriftMergeRun jobs for merging
-#    echo \############################   
-
-
-#    echo Sleeping $timeSleep , time to go $restTime    
-#    let restTime=restTime-timeSleep
-
-
-#    if [ $nJobsNoDriftMergeRun -ge 0 ]; then
-#	echo Jobs finished
-#	let restTime=0;
-#    fi
-
-
-#    sleep $timeSleep ;
-#done
-
-
-echo You are done
-
 
 #################
 # Step 7
@@ -303,17 +262,167 @@ $ALICE_ROOT/TPC/scripts/filterRecLog.sh errRec.log
 
 
 echo \############################   
-echo Step 7 running tpcCalibTrain script done
+echo MakeOCDB 
+echo \############################   
+
+cd $workdir/calibNoDrift
+test -d OCDB && mv OCDB OCDB.$(date +%y%m%d_%H%M)
+mkdir OCDB
+
+runLow=$(cat ../lists/run.list | sort | head -1)
+runHig=$(cat ../lists/run.list | sort | tail -1)
+
+
+runL=$(echo $runLow | sed 's|^0*||')
+runH=$(echo $runHig | sed 's|^0*||')
+
+aliroot -x -q $ALICE_ROOT/TPC/CalibMacros/MakeOCDB.C\($runL,$runH,\"mergerun.list/CalibObjectsTrain1.root\"\)
+
+
+
+
+cd $workdir/calibQA
+$ALICE_ROOT/TPC/scripts/makeWorkspace.sh run.list 
+bgroupQA=/recalib/`pwd | xargs basename`
+bgadd $bgroupQA
+echo  $bgroupQA
+$ALICE_ROOT/TPC/scripts/resubmitMissing.sh run.list "alice-t3 -c 3:00 -g $bgroupQA " $nChunks
+nJobsQASub=`bjobs -W | grep submitCalibJob.sh | grep -c calibQA`
+
+echo \############################   
+echo Info $nJobsQASub  JobsQA submitted
+echo \############################   
+
+nJobsQARun=`bjobs -W | grep submitCalibJob.sh | grep -c calibQA`
+
+
+
+export totalTime=5400
+export timeSleep=60
+export restTime=$totalTime
+
+while [ $restTime -gt 0 ];do
+    nJobsQARun=`bjobs -g $bgroupQA  -W | grep submitCalibJob.sh | grep -c calibQA`
+    let ratioQARunSub=100*nJobsQARun/nJobsQASub
+    if [ $nJobsQASub -eq 0 ]; then
+	let ratioQARunSub=0
+    fi
+    
+    echo \############################   
+    echo Info $nJobsQASub calibQA jobs submitted  $nJobsQARun  still running $ratioQARunSub %
+    echo \############################   
+    
+
+
+    echo Sleeping $timeSleep , time to go $restTime    
+    let restTime=restTime-timeSleep
+    
+
+    if [ $ratioQARunSub -le  10 ]; then
+	let restTime=0
+    fi
+
+
+    sleep $timeSleep ;
+
+done
+
+##############################################
+# Submit merging when the QA jobs are done
+##############################################
+
+echo \############################   
+echo Going to Merge individual directories
 echo \############################   
 
 
+cd $workdir/calibQA
+bgroupMgQA=/mergecalibQA/`pwd | xargs basename`
+bgadd $bgroupMgQA
+echo $bgroupMgQA
+$ALICE_ROOT/TPC/scripts/submitMerging.sh runMissing.list "alice-t3_8h -c 3:00"  "$bgroupMgQA"
 
 
+echo \####################################   
+echo Waiting for calibQA merging to finish 
+echo \####################################   
+
+
+nJobsQAMergeSub=`bjobs -W | grep -c CalibFileMerger`
+nJobsQAMergeRun=`bjobs -W | grep -c CalibFileMerger`
+
+
+export totalTime=3600
+export timeSleep=60
+export restTime=$totalTime
+
+while [ $restTime -gt 0 ];do
+    nJobsQAMergeRun=`bjobs -W | grep -c CalibFileMerger`
+    let ratioQAMergeRunSub=100*nJobsQAMergeRun/nJobsQAMergeSub
+    if [ $nJobsQAMergeSub -eq 0 ] ; then
+	let ratioQAMergeRunSub=0
+    fi
+
+
+    echo \############################   
+    echo Info $nJobsQAMergeSub jobs submitted for merging, $nJobsQAMergeRun running  $ratioQAMergeRunSub % left
+    echo \############################   
+
+
+    echo Sleeping $timeSleep , time to go $restTime    
+    let restTime=restTime-timeSleep
+
+
+    if [ $ratioQAMergeRunSub -le  10 ]; then
+	let restTime=0
+    fi
+
+
+     sleep $timeSleep ;
+done
+
+
+
+
+echo \#####################################   
+echo Going to do the last Merge in calibQA 
+echo \#####################################   
+
+
+cd $workdir/calibQA
+$ALICE_ROOT/TPC/scripts/mergeCalibRun.sh run.list alice-t3_8h
+
+
+
+
+
+echo \#####################################   
+echo Last Merge in calibQA is done 
+echo \#####################################   
+
+
+
+
+
+echo \#####################################   
+echo Starting validation of calibQA 
+echo \#####################################   
+
+
+echo \##################################   
+echo MakeOCDB in the calibQA directory NEEDS TO BE IMPLEMENTED
+echo \##################################   
+# Step to be verified
 
 #cd $workdir/calibQA
-#$ALICE_ROOT/TPC/scripts/makeWorkspace.sh run.list 
-#$ALICE_ROOT/TPC/scripts/resubmitMissing.sh run.list alice-t3 20
-#cd $workdir/
-#
-#
-#
+#test -d OCDB && mv OCDB OCDB.$(date +%y%m%d_%H%M)
+#mkdir OCDB
+
+#runLow=$(cat ../lists/run.list | sort | head -1)
+#runHig=$(cat ../lists/run.list | sort | tail -1)
+
+
+#runL=$(echo $runLow | sed 's|^0*||')
+#runH=$(echo $runHig | sed 's|^0*||')
+
+#aliroot -x -q $ALICE_ROOT/TPC/CalibMacros/MakeOCDB.C\($runL,$runH,\"mergerun.list/CalibObjectsTrain1.root\"\)

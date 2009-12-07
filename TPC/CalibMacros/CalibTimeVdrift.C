@@ -85,35 +85,37 @@ TGraphErrors* FilterGraphMedianAbs(TGraphErrors * graph, Float_t cut,Double_t &m
 TGraphErrors* FilterGraphDrift(TGraphErrors * graph, Float_t errSigmaCut, Float_t medianCutAbs);
 
 
-
-
-void CalibTimeVdriftGlobal(Char_t* file="CalibObjectsTrain1.root"){
+void CalibTimeVdriftGlobal(Char_t* file="CalibObjectsTrain1.root", Int_t startRun=0, Int_t endRun=0){
 
   const Int_t    kMinEntries=500;     // minimal number of entries
   //
   // 1. Initialization and run range setting
   TFile fcalib(file);
   AliTPCcalibTime* timeDrift=(AliTPCcalibTime*)fcalib.Get("calibTime");
-  Int_t startRun=0, endRun=0;
+//   Int_t startRun=0, endRun=0;
   Int_t startTime=0, endTime=0;
   //Int_t startPT=-1, endPT=-1;
-  //
-  // find the fist and last run
-  //
+
+
   TObjArray *hisArray =timeDrift->GetHistoDrift();
   {for (Int_t i=0; i<hisArray->GetEntriesFast(); i++){
     THnSparse* addHist=(THnSparse*)hisArray->UncheckedAt(i);
     if (addHist->GetEntries()<kMinEntries) continue;
     if (!addHist) continue;
     TH1D* histo    =addHist->Projection(3);
-    TH1D* histoTime=addHist->Projection(0);
+    
     if (startRun==0){ 
       startRun=histo->FindFirstBinAbove(0);
       endRun  =histo->FindLastBinAbove(0);
-    }else{
-      startRun=TMath::Min(histo->FindFirstBinAbove(0),startRun);
-      endRun  =TMath::Max(histo->FindLastBinAbove(0),endRun);
     }
+//     else{
+//       startRun=TMath::Min(histo->FindFirstBinAbove(0),startRun);
+//       endRun  =TMath::Max(histo->FindLastBinAbove(0),endRun);
+//     }
+
+    addHist->GetAxis(3)->SetRangeUser(startRun,endRun);
+    addHist->GetAxis(0)->SetRange(1,addHist->GetAxis(0)->GetNbins());
+    TH1D* histoTime=addHist->Projection(0);
     if (startTime==0){ 
       startTime=histoTime->FindFirstBinAbove(0);
       endTime  =histoTime->FindLastBinAbove(0);
@@ -124,7 +126,10 @@ void CalibTimeVdriftGlobal(Char_t* file="CalibObjectsTrain1.root"){
     delete histo;
     delete histoTime;
   }}
-  {for (Int_t i=0; i<hisArray->GetEntriesFast(); i++){
+
+
+  {
+    for (Int_t i=0; i<hisArray->GetEntriesFast(); i++){
       THnSparse* addHist=(THnSparse*)hisArray->At(i);
       if (!addHist) continue;
       addHist->GetAxis(0)->SetRange(startTime-1,endTime+1);
@@ -147,12 +152,12 @@ void CalibTimeVdriftGlobal(Char_t* file="CalibObjectsTrain1.root"){
   //
   AliCDBMetaData *metaData= new AliCDBMetaData();
   metaData->SetObjectClassName("TObjArray");
-  metaData->SetResponsible("Dag Toppe Larsen");
+  metaData->SetResponsible("Marian Ivanov");
   metaData->SetBeamPeriod(1);
   metaData->SetAliRootVersion("05-25-01"); //root version
   metaData->SetComment("Calibration of the time dependence of the drift velocity due to pressure and temperature changes");
   AliCDBId* id1=NULL;
-  id1=new AliCDBId("TPC/Calib/TimeDrift", startRun, AliCDBRunRange::Infinity());
+  id1=new AliCDBId("TPC/Calib/TimeDrift", startRun, endRun);
   AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
   gStorage->Put(vdriftArray, (*id1), metaData);
  
@@ -694,9 +699,23 @@ void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift){
   arrayITS=timeDrift->GetAlignITSTPC();
   arrayTRD=timeDrift->GetAlignTRDTPC();
   arrayTOF=timeDrift->GetAlignTOFTPC();
+
+  // additional protection
+  Int_t nacceptTRD=0;
+  Int_t entriesFastTRD = arrayTRD->GetEntriesFast();
+  for (Int_t ikalman=0; ikalman<entriesFastTRD; ikalman++){
+    AliRelAlignerKalman * kalman = (AliRelAlignerKalman *) arrayTRD->UncheckedAt(ikalman);
+    if (!kalman) continue;
+    if (TMath::Abs(kalman->GetTPCvdCorr()-1)>0.025) continue;
+    if (kalman->GetNUpdates()<50) continue;
+    if (kalman->GetNUpdates()/kalman->GetNTracks()<0.9) continue;
+    nacceptTRD++;
+  }
+  //
+
   mstatITS= AliTPCcalibDButil::MakeStatRelKalman(arrayITS,0.9,50,0.025);
   mstatTOF= AliTPCcalibDButil::MakeStatRelKalman(arrayTOF,0.9,1000,0.025);
-  mstatTRD= AliTPCcalibDButil::MakeStatRelKalman(arrayTRD,0.9,50,0.025);
+  if (nacceptTRD>0) mstatTRD= AliTPCcalibDButil::MakeStatRelKalman(arrayTRD,0.9,50,0.025);
   //
   TObjArray * arrayITSP= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 0, 5.);
   TObjArray * arrayITSM= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 1, 5.);
@@ -705,9 +724,12 @@ void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift){
   TObjArray * arrayTOFM= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,*mstatTOF, 1, 5.);
   TObjArray * arrayTOFB= AliTPCcalibDButil::SmoothRelKalman(arrayTOFP,arrayTOFM);
 
-  TObjArray * arrayTRDP= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,*mstatTRD, 0, 5.);
-  TObjArray * arrayTRDM= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,*mstatTRD, 1, 5.);
-  TObjArray * arrayTRDB= AliTPCcalibDButil::SmoothRelKalman(arrayTRDP,arrayTRDM);
+  TObjArray * arrayTRDP= 0x0;
+  TObjArray * arrayTRDM= 0x0;
+  TObjArray * arrayTRDB= 0x0;
+  if (nacceptTRD>0) arrayTRDP= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,*mstatTRD, 0, 5.);
+  if (nacceptTRD>0) arrayTRDM= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,*mstatTRD, 1, 5.);
+  if (nacceptTRD>0) arrayTRDB= AliTPCcalibDButil::SmoothRelKalman(arrayTRDP,arrayTRDM);
 
   //
   //
