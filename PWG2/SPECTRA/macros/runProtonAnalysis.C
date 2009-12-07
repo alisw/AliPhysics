@@ -1,4 +1,5 @@
-void runProtonAnalysis(const char* esdAnalysisType = "Hybrid",
+void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
+		       const char* esdAnalysisType = "Hybrid",
 		       const char* pidMode = "Bayesian") {
   //Macro to run the proton analysis tested for local, proof & GRID.
   //Local: Takes four arguments, the analysis mode, the type of the ESD 
@@ -22,14 +23,15 @@ void runProtonAnalysis(const char* esdAnalysisType = "Hybrid",
   TStopwatch timer;
   timer.Start();
   
-  /*runLocal("ESD",
+  runLocal("ESD", 
+	   kAnalyzeMC,
 	   esdAnalysisType,
 	   pidMode,
-	   "/home/pchrist/ALICE/Baryons/Analysis/Protons/Local/data");*/
-  //runInteractive("ESD",esdAnalysisType,pidMode,"tag.xml");
-  //runBatch("ESD",esdAnalysisType,pidMode,"wn.xml");  
-  runProof("ESD",esdAnalysisType,pidMode,
-	   500000,0,"/COMMON/COMMON/LHC09d1_0.9TeV_0.5T#esdTree");
+	   "/home/pchrist/ALICE/Baryons/Data/104070");
+  //runInteractive("ESD",kAnalyzeMC, esdAnalysisType,pidMode,"tag.xml");
+  //runBatch("ESD",kAnalyzeMC, esdAnalysisType,pidMode,"wn.xml");  
+  //runProof("ESD",kAnalyzeMC, esdAnalysisType,pidMode,
+  //500000,0,"/COMMON/COMMON/LHC09d1_0.9TeV_0.5T#esdTree");
 
   timer.Stop();
   timer.Print();
@@ -37,6 +39,7 @@ void runProtonAnalysis(const char* esdAnalysisType = "Hybrid",
 
 //_________________________________________________//
 void runLocal(const char* mode = "ESD",
+	      Bool_t kAnalyzeMC = kTRUE,
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
 	      const char* path = "/home/pchrist/ALICE/Alien/Tutorial/November2007/Tags") {
@@ -82,7 +85,7 @@ void runLocal(const char* mode = "ESD",
 
   //____________________________________________//
   gROOT->LoadMacro("configProtonAnalysis.C");
-  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,
+  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,kAnalyzeMC,
 							analysisType,
 							pidMode);
   //____________________________________________//
@@ -123,6 +126,7 @@ void runLocal(const char* mode = "ESD",
 
 //_________________________________________________//
 void runInteractive(const char* mode = "ESD",
+		    Bool_t kAnalyzeMC = kTRUE,
 		    const char* analysisType = 0x0,
 		    const char* pidMode = 0x0,
 		    const char* collectionName = "tag.xml") {
@@ -176,7 +180,7 @@ void runInteractive(const char* mode = "ESD",
   
   //____________________________________________//
   gROOT->LoadMacro("configProtonAnalysis.C");
-  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,
+  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,kAnalyzeMC,
 							analysisType,
 							pidMode);
   //____________________________________________//
@@ -217,6 +221,7 @@ void runInteractive(const char* mode = "ESD",
 
 //_________________________________________________//
 void runBatch(const char* mode = "ESD",
+	      Bool_t kAnalyzeMC = kTRUE,
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
 	      const char *collectionfile = "wn.xml") {
@@ -260,7 +265,7 @@ void runBatch(const char* mode = "ESD",
 
   //____________________________________________//
   gROOT->LoadMacro("configProtonAnalysis.C");
-  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,
+  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,kAnalyzeMC,
 							analysisType,
 							pidMode);
   //____________________________________________//
@@ -301,6 +306,7 @@ void runBatch(const char* mode = "ESD",
 
 //_________________________________________________//
 void runProof(const char* mode = "ESD",
+	      Bool_t kAnalyzeMC = kTRUE,
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
 	      Int_t stats = 0, Int_t startingPoint = 0,
@@ -335,7 +341,7 @@ void runProof(const char* mode = "ESD",
   
   //____________________________________________//
   gROOT->LoadMacro("configProtonAnalysis.C");
-  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,
+  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,kAnalyzeMC,
 							analysisType,
 							pidMode);
   //____________________________________________//

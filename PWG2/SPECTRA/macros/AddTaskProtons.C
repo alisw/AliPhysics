@@ -1,4 +1,5 @@
-AliAnalysisTaskProtons *AddTaskProtons(const char *analysisType="Hybrid",
+AliAnalysisTaskProtons *AddTaskProtons(Bool_t kAnalyzeMC = kFALSE,
+				       const char *analysisType="Hybrid",
 				       const char *pidMode="Bayesian")
 {
   // Creates a proton analysis task and adds it to the analysis manager.
@@ -20,9 +21,11 @@ AliAnalysisTaskProtons *AddTaskProtons(const char *analysisType="Hybrid",
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysis.C");
   AliProtonAnalysis *pa = 0;
-  if (type=="ESD") pa = GetProtonAnalysisObject("ESD", analysisType, pidMode);
-  else if (type=="AOD") pa = GetProtonAnalysisObject("AOD", analysisType, pidMode);
-  else pa = GetProtonAnalysisObject("MC", analysisType, pidMode);
+  if (type=="ESD") pa = GetProtonAnalysisObject("ESD", kAnalyzeMC, 
+						analysisType, pidMode);
+  else if (type=="AOD") pa = GetProtonAnalysisObject("AOD", kAnalyzeMC, 
+						     analysisType, pidMode);
+  else pa = GetProtonAnalysisObject("MC", analysisType, kAnalyzeMC, pidMode);
 
   // Create the task, add it to manager and configure it.
   //===========================================================================
