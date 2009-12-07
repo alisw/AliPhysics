@@ -195,7 +195,7 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   if (fEnergy < kBaseLine) fEnergy = 0;
 
   //Evaluate time
-  fTime = sigStart; 
+  fTime = sigStart-sigLength-3; 
   const Int_t nLine= 6 ;        //Parameters of fitting
   const Float_t eMinTOF = 10. ; //Choosed from beam-test and cosmic analyis
   const Float_t kAmp=0.35 ;     //Result slightly depends on them, so no getters
