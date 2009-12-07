@@ -29,12 +29,9 @@
 #include "AliGRPManager.h"
 #include "AliRawReader.h"
 #include "AliTracker.h"
-// AliESDEvent.h includes AliESDHLTDecision.h
-// and switches the functionality
-#include "AliESDEvent.h"
-#ifdef ALIESDHLTDECISION_H
+#ifndef HAVE_NOT_ALIESDHLTDECISION
 #include "AliESDHLTDecision.h"
-#endif //ALIESDHLTDECISION_H
+#endif //HAVE_NOT_ALIESDHLTDECISION
 #include "TGeoGlobalMagField.h"
 #include "AliHLTGlobalTriggerDecision.h"
 
@@ -174,18 +171,18 @@ void AliHLTMiscImplementation::GetBxByBz(const Double_t r[3], Double_t b[3])
 const TClass* AliHLTMiscImplementation::IsAliESDHLTDecision() const
 {
   // Return the IsA of the AliESDHLTDecision class
-#ifdef ALIESDHLTDECISION_H
+#ifndef HAVE_NOT_ALIESDHLTDECISION
   return AliESDHLTDecision::Class();
-#else // ALIESDHLTDECISION_H
+#else // HAVE_NOT_ALIESDHLTDECISION
   return NULL;
-#endif // ALIESDHLTDECISION_H
+#endif // HAVE_NOT_ALIESDHLTDECISION
 }
 
 int AliHLTMiscImplementation::Copy(const AliHLTGlobalTriggerDecision* pDecision, TObject* object) const
 {
   // Copy HLT global trigger decision to AliESDHLTDecision container
   if (!pDecision || !object) return -EINVAL;
-#ifdef ALIESDHLTDECISION_H
+#ifndef HAVE_NOT_ALIESDHLTDECISION
   AliESDHLTDecision* pESDHLTDecision=NULL;
   if (object->IsA()==NULL ||
       object->IsA() != AliESDHLTDecision::Class() ||
@@ -198,6 +195,6 @@ int AliHLTMiscImplementation::Copy(const AliHLTGlobalTriggerDecision* pDecision,
   pESDHLTDecision->~AliESDHLTDecision();
   new (pESDHLTDecision) AliESDHLTDecision(pDecision->Result(), pDecision->GetTitle());
 
-#endif // ALIESDHLTDECISION_H
+#endif // HAVE_NOT_ALIESDHLTDECISION
   return 0;
 }
