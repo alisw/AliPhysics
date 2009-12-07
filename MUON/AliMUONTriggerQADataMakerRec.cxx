@@ -405,7 +405,9 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRawNAnalyzedEvents, expert, !image, !saveCorr);
 
   fNumberOf34Dec = new TH1F("hNumberOf34Dec", "hNumberOf34Dec",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
+  fNumberOf34Dec->SetDirectory(0); // Detach histo from file to avoid double delete
   fNumberOf44Dec = new TH1F("hNumberOf44Dec", "hNumberOf44Dec",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
+  fNumberOf44Dec->SetDirectory(0); // Detach histo from file to avoid double delete
 }
 
 //__________________________________________________________________
@@ -460,8 +462,6 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
     AliCodeTimerAuto("",0);
 	
-    GetRawsData(AliMUONQAIndices::kTriggerRawNAnalyzedEvents)->Fill(1.);
-
     // Init Local/Regional/Global decision with fake values
 
     UInt_t globalInput[4];
@@ -509,9 +509,12 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     // This should allow to correctly count the local boards
     Int_t countNotifiedBoards = 0, countAllBoards = 0;
 
+    Bool_t containTriggerData = kFALSE;
     AliMUONRawStreamTriggerHP rawStreamTrig(rawReader);
     while (rawStreamTrig.NextDDL()) 
     {
+      containTriggerData = kTRUE;
+
       Bool_t scalerEvent =  rawReader->GetDataHeader()->GetL1TriggerMessage() & 0x1;
 
       Bool_t fillScalerHistos = ( scalerEvent && 
@@ -535,7 +538,7 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	inputGlobalTrigger.SetFromGlobalResponse(darcHeader->GetGlobalOutput());
 	Bool_t resp[6] = {inputGlobalTrigger.PairUnlikeHpt(), inputGlobalTrigger.PairUnlikeLpt(),
 			  inputGlobalTrigger.PairLikeHpt(), inputGlobalTrigger.PairLikeLpt(),
-			  inputGlobalTrigger.SingleHpt(), inputGlobalTrigger.SingleHpt()}; 
+			  inputGlobalTrigger.SingleHpt(), inputGlobalTrigger.SingleLpt()}; 
 	for (Int_t bit=0; bit<6; bit++){
 	  if ( ! resp[bit] ){
 	    if ( fillScalerHistos )
@@ -668,6 +671,9 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerReadOutErrors))->Fill(ibin, readoutErrors[ibin]);
       }
     } // NextDDL
+
+    if ( ! containTriggerData ) return;
+    GetRawsData(AliMUONQAIndices::kTriggerRawNAnalyzedEvents)->Fill(1.);
 
     nDeadLocal += AliMUONConstants::NTriggerCircuit() - countNotifiedBoards;
     Int_t nStripsTot = digitStoreAll.GetSize();
@@ -1263,11 +1269,11 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutGlobal(AliMUONGlobalTrigger
 
   Bool_t inputResp[6] = {inputGlobalTrigger.PairUnlikeHpt(), inputGlobalTrigger.PairUnlikeLpt(),
 			 inputGlobalTrigger.PairLikeHpt(), inputGlobalTrigger.PairLikeLpt(),
-			 inputGlobalTrigger.SingleHpt(), inputGlobalTrigger.SingleHpt()};
+			 inputGlobalTrigger.SingleHpt(), inputGlobalTrigger.SingleLpt()};
 
   Bool_t recoResp[6] = {recoGlobalTrigger.PairUnlikeHpt(), recoGlobalTrigger.PairUnlikeLpt(),
 			recoGlobalTrigger.PairLikeHpt(), recoGlobalTrigger.PairLikeLpt(),
-			recoGlobalTrigger.SingleHpt(), recoGlobalTrigger.SingleHpt()};
+			recoGlobalTrigger.SingleHpt(), recoGlobalTrigger.SingleLpt()};
 
   for (int bit=0;bit<6;bit++){
     if ( recoResp[bit] != inputResp[bit] )
