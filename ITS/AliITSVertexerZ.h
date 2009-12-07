@@ -30,7 +30,7 @@ class AliITSVertexerZ : public AliITSVertexer {
   virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
   virtual void PrintStatus() const;
   void SetDiffPhiMax(Float_t pm = 0.01){fDiffPhiMax = pm;}
-  void ConfigIterations(Int_t noiter=3,Float_t *ptr=0);
+  void ConfigIterations(Int_t noiter=4,Float_t *ptr=0);
   void SetFirstLayerModules(Int_t m1 = 0, Int_t m2 = 79){fFirstL1 = m1; fLastL1 = m2;}
   void SetSecondLayerModules(Int_t m1 = 80, Int_t m2 = 239){fFirstL2 = m1; fLastL2 = m2;}
   void SetLowLimit(Float_t lim=-40.){fLowLim = lim;}

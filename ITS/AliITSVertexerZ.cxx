@@ -106,7 +106,7 @@ AliITSVertexerZ::~AliITSVertexerZ() {
 void AliITSVertexerZ::ConfigIterations(Int_t noiter,Float_t *ptr){
   // configure the iterative procedure to gain efficiency for
   // pp events with very low multiplicity
-  Float_t defaults[5]={0.05,0.1,0.2,0.3,0.5};
+  Float_t defaults[5]={0.02,0.05,0.1,0.2,0.3};
   fMaxIter=noiter;
   if(noiter>5){
     Error("ConfigIterations","Maximum number of iterations is 5\n");
@@ -357,6 +357,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   } while(niter<10 && TMath::Abs((zm-lim1)-(lim2-zm))>fTolerance);
   fCurrentVertex = new AliESDVertex(zm,ezm,ncontr);
   fCurrentVertex->SetTitle("vertexer: Z");
+  fCurrentVertex->SetDispersion(fDiffPhiMax);
   fNoVertices=1;
   points.Clear();
   if(ncontr>fMinTrackletsForPilup){ 

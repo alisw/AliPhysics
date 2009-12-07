@@ -144,6 +144,7 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
       Double_t chi2=99999.;
       Int_t    nContr=vtxz->GetNContributors();
       fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nContr);    
+      fCurrentVertex->SetDispersion(vtxz->GetDispersion());
       fCurrentVertex->SetTitle("vertexer: Z");
       fCurrentVertex->SetName("SPDVertexZ");
       delete vtxz;
