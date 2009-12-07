@@ -868,6 +868,22 @@ Bool_t AliAnalysisAlien::CreateJDL()
    }
    // Copy jdl to grid workspace   
    if (copy) {
+      // Check if an output directory was defined and valid
+      if (!fGridOutputDir.Length()) {
+         Error("CreateJDL", "You must define AliEn output directory");
+         return kFALSE;
+      } else {
+         if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s", workdir.Data(), fGridOutputDir.Data());
+         if (!DirectoryExists(fGridOutputDir)) {
+            if (gGrid->Mkdir(fGridOutputDir)) {
+               Info("CreateJDL", "\n#####   Created alien output directory %s", fGridOutputDir.Data());
+            } else {
+               Error("CreateJDL", "Could not create alien output directory %s", fGridOutputDir.Data());
+               return kFALSE;
+            }
+         }
+         gGrid->Cd(workdir);
+      }   
       if (TestBit(AliAnalysisGrid::kSubmit)) {
          Info("CreateJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
          TString locjdl = Form("%s/%s", fGridOutputDir.Data(),fJDLName.Data());
