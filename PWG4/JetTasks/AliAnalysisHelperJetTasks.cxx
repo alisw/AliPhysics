@@ -644,8 +644,6 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(ULong64_t triggerMask, Trigg
   // checks if an event is fired using the trigger bits
   //
   // this function needs the branch TriggerMask in the ESD
-  Printf("Triggermask %d",triggerMask);
-
 
   // definitions from p-p.cfg
   ULong64_t spdFO = (1 << 14);
