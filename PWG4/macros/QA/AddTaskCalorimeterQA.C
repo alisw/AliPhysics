@@ -92,7 +92,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   maker->SetReader(reader);//pointer to reader
   maker->AddAnalysis(emcalQA,0);
   maker->AddAnalysis(phosQA,1);
-  maker->SetAnaDebug(0)  ;
+  maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOffAODsMaker()  ;
   if(kPrintSettings) maker->Print("");

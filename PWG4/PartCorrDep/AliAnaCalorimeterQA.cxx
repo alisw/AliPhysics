@@ -367,7 +367,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhEtaPhiChargedNoOut->SetYTitle("#phi ");
 	outputContainer->Add(fhEtaPhiChargedNoOut);	
 
-	fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",200.,0.,100., 100,0.,10.);
+	fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",200,0.,100., 100,0.,10.);
 	fh1pOverE->SetYTitle("p/E");
 	fh1pOverE->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fh1pOverE);
@@ -386,7 +386,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fh2EledEdx->SetYTitle("<dE/dx>");
 	outputContainer->Add(fh2EledEdx) ;
 	
-	fh1pOverER02 = new TH2F("h1pOverER02","TRACK matches p/E, all",200.,0.,100.,100,0.,10.);
+	fh1pOverER02 = new TH2F("h1pOverER02","TRACK matches p/E, all",200,0.,100.,100,0.,10.);
 	fh1pOverER02->SetYTitle("p/E");
 	fh1pOverER02->SetXTitle("p_{T} (GeV/c)");
 	outputContainer->Add(fh1pOverER02);	
@@ -919,7 +919,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		
 		//Track Matching 
 		
-	  fhMCEle1pOverE = new TH2F("hMCEle1pOverE","TRACK matches p/E, MC electrons",200.,0.,100.,100,0.,10.);
+	  fhMCEle1pOverE = new TH2F("hMCEle1pOverE","TRACK matches p/E, MC electrons",200,0.,100.,100,0.,10.);
 	  fhMCEle1pOverE->SetYTitle("p/E");
 	  fhMCEle1pOverE->SetXTitle("p_{T} (GeV/c)");
 	  outputContainer->Add(fhMCEle1pOverE);
@@ -933,7 +933,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	  fhMCEle2MatchdEdx->SetYTitle("<dE/dx>");
 	  outputContainer->Add(fhMCEle2MatchdEdx);
 	  
-	  fhMCChHad1pOverE = new TH2F("hMCChHad1pOverE","TRACK matches p/E, MC charged hadrons",200.,0.,100.,100,0.,10.);
+	  fhMCChHad1pOverE = new TH2F("hMCChHad1pOverE","TRACK matches p/E, MC charged hadrons",200,0.,100.,100,0.,10.);
 	  fhMCChHad1pOverE->SetYTitle("p/E");
 	  fhMCChHad1pOverE->SetXTitle("p_{T} (GeV/c)");
 	  outputContainer->Add(fhMCChHad1pOverE);
@@ -947,7 +947,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	  fhMCChHad2MatchdEdx->SetYTitle("<dE/dx>");
 	  outputContainer->Add(fhMCChHad2MatchdEdx);
 	  
-	  fhMCNeutral1pOverE = new TH2F("hMCNeutral1pOverE","TRACK matches p/E, MC neutrals",200.,0.,100.,100,0.,10.);
+	  fhMCNeutral1pOverE = new TH2F("hMCNeutral1pOverE","TRACK matches p/E, MC neutrals",200,0.,100.,100,0.,10.);
 	  fhMCNeutral1pOverE->SetYTitle("p/E");
 	  fhMCNeutral1pOverE->SetXTitle("p_{T} (GeV/c)");
 	  outputContainer->Add(fhMCNeutral1pOverE);
@@ -961,17 +961,17 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	  fhMCNeutral2MatchdEdx->SetYTitle("<dE/dx>");
 	  outputContainer->Add(fhMCNeutral2MatchdEdx);
 	  	  
-	  fhMCEle1pOverER02 = new TH2F("hMCEle1pOverER02","TRACK matches p/E, MC electrons",200.,0.,100.,100,0.,10.);
+	  fhMCEle1pOverER02 = new TH2F("hMCEle1pOverER02","TRACK matches p/E, MC electrons",200,0.,100.,100,0.,10.);
 	  fhMCEle1pOverER02->SetYTitle("p/E");
 	  fhMCEle1pOverER02->SetXTitle("p_{T} (GeV/c)");
 	  outputContainer->Add(fhMCEle1pOverER02);
 	  
-	  fhMCChHad1pOverER02 = new TH2F("hMCChHad1pOverER02","TRACK matches p/E, MC charged hadrons",200.,0.,100.,100,0.,10.);
+	  fhMCChHad1pOverER02 = new TH2F("hMCChHad1pOverER02","TRACK matches p/E, MC charged hadrons",200,0.,100.,100,0.,10.);
 	  fhMCChHad1pOverER02->SetYTitle("p/E");
 	  fhMCChHad1pOverER02->SetXTitle("p_{T} (GeV/c)");
 	  outputContainer->Add(fhMCChHad1pOverER02);
 	  
-	  fhMCNeutral1pOverER02 = new TH2F("hMCNeutral1pOverER02","TRACK matches p/E, MC neutrals",200.,0.,100.,100,0.,10.);
+	  fhMCNeutral1pOverER02 = new TH2F("hMCNeutral1pOverER02","TRACK matches p/E, MC neutrals",200,0.,100.,100,0.,10.);
 	  fhMCNeutral1pOverER02->SetYTitle("p/E");
 	  fhMCNeutral1pOverER02->SetXTitle("p_{T} (GeV/c)");
 	  outputContainer->Add(fhMCNeutral1pOverER02);
@@ -1213,7 +1213,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		
 	nCaloClusters = caloClusters->GetEntriesFast() ; 
 	fhNClusters->Fill(nCaloClusters);
-	Int_t nClustersInModule[fNModules];
+	Int_t *nClustersInModule = new Int_t[fNModules];
 	for(Int_t imod = 0; imod < fNModules; imod++ ) nClustersInModule[imod] = 0;
 	
 	if(GetDebug() > 0)
@@ -1315,7 +1315,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	for(Int_t imod = 0; imod < fNModules; imod++ ) fhNClustersMod[imod]->Fill(nClustersInModule[imod]);
 	
 	//CaloCells
-	Int_t nCellsInModule[fNModules];
+	Int_t *nCellsInModule = new Int_t[fNModules];
 	for(Int_t imod = 0; imod < fNModules; imod++ ) nCellsInModule[imod] = 0;
 	Int_t icol = -1;
 	Int_t irow = -1;
@@ -1407,7 +1407,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_
 	if(GetDebug() > 0) {
 		printf("AliAnaCalorimeterQA::ClusterHistograms() - cluster: E %2.3f, pT %2.3f, eta %2.3f, phi %2.3f \n",e,pt,eta,phi*TMath::RadToDeg());
 		if(IsDataMC()) {
-			printf("\t Primaries: nlabels %d, labels pointer %p\n",nLabels,labels);
+			//printf("\t Primaries: nlabels %d, labels pointer %p\n",nLabels,labels);
+			printf("\t Primaries: nlabels %d\n",nLabels);
 			if(!nLabels || !labels) printf("\t Strange, no labels!!!\n");
 		}
 	}
