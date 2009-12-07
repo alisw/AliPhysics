@@ -164,7 +164,7 @@ int AliHLTMUONClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*e
                                                 const AliHLTComponentBlockData* /*blocks*/,
                                                 AliHLTComponentTriggerData& /*trigData*/,
                                                 AliHLTUInt8_t* /*outputPtr*/,
-                                                AliHLTUInt32_t& size,
+                                                AliHLTUInt32_t& /*size*/,
                                                 AliHLTComponentBlockDataList& /*outputBlocks*/)
 {
   AliHLTUInt32_t specification = 0x0;
@@ -177,7 +177,7 @@ int AliHLTMUONClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*e
     if (block->fDataType != AliHLTMUONConstants::ClusterBlockDataType()) continue;
     specification |= block->fSpecification;  // The specification bit pattern should indicate all the DDLs that contributed.
     
-    HLTDebug("Handling block: with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
+    HLTDebug("Handling block with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
 	     DataType2Text(block->fDataType).c_str(), block->fPtr, block->fSize
 	     );
     
@@ -196,8 +196,8 @@ int AliHLTMUONClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*e
       //commented for future use
       //AliHLTInt32_t detelement=cluster->fDetElemId;  // Detector ID number from AliRoot geometry
 
-      AliHLTUInt16_t nchannelsB=cluster->fNchannelsB; // Number of channels/pads in the cluster in bending plane.
-      AliHLTUInt16_t nchannelsNB=cluster->fNchannelsNB; // Number of channels/pads in the cluster in non-bending plane.
+      //AliHLTUInt16_t nchannelsB=cluster->fNchannelsB; // Number of channels/pads in the cluster in bending plane.
+      //AliHLTUInt16_t nchannelsNB=cluster->fNchannelsNB; // Number of channels/pads in the cluster in non-bending plane.
       
 
       AliHLTFloat32_t BCharge= cluster->fChargeB; // Cluster charge in bending plane. Can be -1 if invalid or uncomputed.
