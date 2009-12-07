@@ -1,0 +1,460 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//------------------------------
+// Analysis task for quality-assurance
+// of VZERO ESD
+//
+// 05/12/2009 cvetan.cheshkov@cern.ch
+//------------------------------
+
+#include "TChain.h"
+#include "TROOT.h"
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TF1.h"
+#include "TCanvas.h"
+#include "AliLog.h"
+#include "AliESDEvent.h"
+#include "AliESDVZERO.h"
+
+#include "AliAnaVZEROQA.h"
+
+ClassImp(AliAnaVZEROQA)
+
+AliAnaVZEROQA::AliAnaVZEROQA():
+AliAnalysisTaskSE("AliAnaVZEROQA"),
+  fListOfHistos(0),
+
+  fhAdcNoTimeA(0),
+  fhAdcWithTimeA(0),
+  fhAdcNoTimeC(0),
+  fhAdcWithTimeC(0),
+
+  fhAdcPMTNoTime(0),
+  fhAdcPMTWithTime(0),
+ 
+  fhTimeA(0),
+  fhTimeC(0),
+
+  fhWidthA(0),
+  fhWidthC(0),
+
+  fhTimePMT(0),
+  fhWidthPMT(0),
+
+  fhAdcWidthA(0),
+  fhAdcWidthC(0),
+
+  fhTimeCorr(0),
+
+  fhAdcTimeA(0),
+  fhAdcTimeC(0),
+
+  fV0a(0),
+  fV0c(0),
+  fV0multA(0),
+  fV0multC(0),
+  fV0ampl(0)
+{
+  // Default constructor
+  // Define input and output slots here
+  // Input slot #0 works with a TChain
+  DefineInput(0, TChain::Class());
+  // Output slot #1 TList
+  DefineOutput(1, TList::Class());
+}
+
+AliAnaVZEROQA::AliAnaVZEROQA(const char* name):
+AliAnalysisTaskSE(name),
+  fListOfHistos(0),
+  fhAdcNoTimeA(0),
+  fhAdcWithTimeA(0),
+  fhAdcNoTimeC(0),
+  fhAdcWithTimeC(0),
+
+  fhAdcPMTNoTime(0),
+  fhAdcPMTWithTime(0),
+ 
+  fhTimeA(0),
+  fhTimeC(0),
+
+  fhWidthA(0),
+  fhWidthC(0),
+
+  fhTimePMT(0),
+  fhWidthPMT(0),
+
+  fhAdcWidthA(0),
+  fhAdcWidthC(0),
+
+  fhTimeCorr(0),
+
+  fhAdcTimeA(0),
+  fhAdcTimeC(0),
+
+  fV0a(0),
+  fV0c(0),
+  fV0multA(0),
+  fV0multC(0),
+  fV0ampl(0)
+{
+  // Constructor
+  AliInfo("Constructor AliAnaVZEROQA");
+  // Define input and output slots here
+  // Input slot #0 works with a TChain
+  DefineInput(0, TChain::Class());
+  // Output slot #1 TList
+  DefineOutput(1, TList::Class());
+}
+
+TH1F * AliAnaVZEROQA::CreateHisto1D(const char* name, const char* title,Int_t nBins, 
+				    Double_t xMin, Double_t xMax,
+				    const char* xLabel, const char* yLabel)
+{
+  // create a histogram
+  TH1F* result = new TH1F(name, title, nBins, xMin, xMax);
+  result->SetOption("E");
+  if (xLabel) result->GetXaxis()->SetTitle(xLabel);
+  if (yLabel) result->GetYaxis()->SetTitle(yLabel);
+  result->SetMarkerStyle(kFullCircle);
+  return result;
+}
+
+TH2F * AliAnaVZEROQA::CreateHisto2D(const char* name, const char* title,Int_t nBinsX, 
+				    Double_t xMin, Double_t xMax,
+				    Int_t nBinsY,
+				    Double_t yMin, Double_t yMax,
+				    const char* xLabel, const char* yLabel)
+{
+  // create a histogram
+  TH2F* result = new TH2F(name, title, nBinsX, xMin, xMax, nBinsY, yMin, yMax);
+  if (xLabel) result->GetXaxis()->SetTitle(xLabel);
+  if (yLabel) result->GetYaxis()->SetTitle(yLabel);
+  return result;
+}
+
+void AliAnaVZEROQA::UserCreateOutputObjects()
+{
+  // Create histograms
+  AliInfo("AliAnaVZEROQA::UserCreateOutputObjects");
+  // Create output container
+  fListOfHistos = new TList();
+
+  fhAdcNoTimeA = CreateHisto1D("hAdcNoTimeA","ADC (no Leading Time) V0A",200,0,200,"ADC charge","Entries");
+  fhAdcWithTimeA = CreateHisto1D("hAdcWithTimeA","ADC ( with Leading Time) V0A",200,0,200,"ADC charge","Entries");
+  fhAdcNoTimeC = CreateHisto1D("hAdcNoTimeC","ADC (no Leading Time) V0C",200,0,200,"ADC charge","Entries");
+  fhAdcWithTimeC = CreateHisto1D("hAdcWithTimeC","ADC ( with Leading Time) V0C",200,0,200,"ADC charge","Entries");
+  
+  fhAdcPMTNoTime = CreateHisto2D("hadcpmtnotime","ADC vs PMT index (no leading time)",64,-0.5,63.5,200,0,200,"PMT index","ADC charge");
+  fhAdcPMTWithTime = CreateHisto2D("hadcpmtwithtime","ADC vs PMT index (with leading time)",64,-0.5,63.5,200,0,200,"PMT index","ADC charge");
+
+  fhTimeA = CreateHisto1D("htimepmtA","Time measured by TDC V0A",400,-100,100,"Leading time (ns)","Entries");
+  fhTimeC = CreateHisto1D("htimepmtC","Time measured by TDC V0C",400,-100,100,"Leading time (ns)","Entries");
+
+  fhWidthA = CreateHisto1D("hwidthA","Signal width measured by TDC V0A",200,0,100,"Signal width (ns)","Entries");
+  fhWidthC = CreateHisto1D("hwidthC","Signal width measured by TDC V0C",200,0,100,"Signal width (ns)","Entries");
+
+  fhTimePMT = CreateHisto2D("htimepmt","Time measured by TDC vs PMT index",64,-0.5,63.5,200,0,100,"PMT Index","Leading time (ns)");
+  fhWidthPMT = CreateHisto2D("hwidthpmt","Time width vs PMT index",64,-0.5,63.5,200,0,100,"PMT Index","Signal width (ns)");
+
+  fhAdcWidthA = CreateHisto2D("hadcwidthA","Time width vs ADC V0A",200,0,200,200,0,100,"ADC charge","Width (ns)");
+  fhAdcWidthC = CreateHisto2D("hadcwidthC","Time width vs ADC V0C",200,0,200,200,0,100,"ADC charge","Width (ns)");
+
+  fhTimeCorr = CreateHisto2D("htimecorr","Average time C side vs. A side",200,0,100,200,0,100,"Time V0A (ns)","Time V0C (ns");
+
+  fhAdcTimeA = CreateHisto2D("hAdcTimeA","ADC vs Time V0A",1000,-100,100,200,0,200,"Time (ns)","ADC charge");
+  fhAdcTimeC = CreateHisto2D("hAdcTimeC","ADC vs Time V0C",1000,-100,100,200,0,200,"Time (ns)","ADC charge");
+
+  fV0a = CreateHisto1D("hV0a","Number of fired PMTs (V0A)",65,-0.5,64.5);
+  fV0c = CreateHisto1D("hV0c","Number of fired PMTs (V0C)",65,-0.5,64.5);
+  fV0multA = CreateHisto1D("hV0multA","Total reconstructed multiplicity (V0A)",100,0.,1000.);
+  fV0multC = CreateHisto1D("hV0multC","Total reconstructed multiplicity (V0C)",100,0.,1000.);
+  fV0ampl  = CreateHisto1D("hV0ampl","V0 multiplicity in single channel (all V0 channels)",400,-0.5,99.5);
+
+  fListOfHistos->Add(fhAdcNoTimeA);
+  fListOfHistos->Add(fhAdcWithTimeA);
+  fListOfHistos->Add(fhAdcNoTimeC);
+  fListOfHistos->Add(fhAdcWithTimeC);
+
+  fListOfHistos->Add(fhAdcPMTNoTime);
+  fListOfHistos->Add(fhAdcPMTWithTime);
+ 
+  fListOfHistos->Add(fhTimeA);
+  fListOfHistos->Add(fhTimeC);
+
+  fListOfHistos->Add(fhWidthA);
+  fListOfHistos->Add(fhWidthC);
+
+  fListOfHistos->Add(fhTimePMT);
+  fListOfHistos->Add(fhWidthPMT);
+
+  fListOfHistos->Add(fhAdcWidthA);
+  fListOfHistos->Add(fhAdcWidthC);
+
+  fListOfHistos->Add(fhTimeCorr);
+
+  fListOfHistos->Add(fhAdcTimeA);
+  fListOfHistos->Add(fhAdcTimeC);
+
+  fListOfHistos->Add(fV0a);
+  fListOfHistos->Add(fV0c);
+  fListOfHistos->Add(fV0multA);
+  fListOfHistos->Add(fV0multC);
+  fListOfHistos->Add(fV0ampl);
+}
+
+void AliAnaVZEROQA::UserExec(Option_t */*option*/)
+{
+  AliVEvent* event = InputEvent();
+  if (!event) {
+    Printf("ERROR: Could not retrieve event");
+    return;
+  }
+
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+  AliESDVZERO* esdV0 = esd->GetVZEROData();
+
+  Float_t timeA = 0,timeC = 0;
+  Int_t ntimeA = 0, ntimeC = 0;
+  for (Int_t i=0; i<64; ++i) {
+      if (esdV0->GetTime(i) < 1e-6) {
+	if (i >= 32) {
+	  fhAdcNoTimeA->Fill(esdV0->GetAdc(i));
+	}
+	else {
+	  fhAdcNoTimeC->Fill(esdV0->GetAdc(i));
+	}
+	fhAdcPMTNoTime->Fill(i,esdV0->GetAdc(i));
+      }
+      else {
+	if (i >= 32) {
+	  fhAdcWithTimeA->Fill(esdV0->GetAdc(i));
+	}
+	else {
+	  fhAdcWithTimeC->Fill(esdV0->GetAdc(i));
+	}
+	fhAdcPMTWithTime->Fill(i,esdV0->GetAdc(i));
+      }
+
+      if (i >= 32) {
+	fhTimeA->Fill(esdV0->GetTime(i));
+	fhWidthA->Fill(esdV0->GetWidth(i));
+	fhAdcWidthA->Fill(esdV0->GetAdc(i),esdV0->GetTime(i));
+	fhAdcTimeA->Fill(esdV0->GetTime(i),esdV0->GetAdc(i));
+      }
+      else {
+	fhTimeC->Fill(esdV0->GetTime(i));
+	fhWidthC->Fill(esdV0->GetWidth(i));
+	fhAdcWidthC->Fill(esdV0->GetAdc(i),esdV0->GetTime(i));
+	fhAdcTimeC->Fill(esdV0->GetTime(i),esdV0->GetAdc(i));
+       }
+      fhTimePMT->Fill(i,esdV0->GetTime(i));
+      fhWidthPMT->Fill(i,esdV0->GetWidth(i));
+
+      if (esdV0->GetTime(i) > 1e-6) {
+	if (i >= 32) {
+	  timeA += esdV0->GetTime(i);
+	  ntimeA++;
+	}
+	else {
+	  timeC += esdV0->GetTime(i);
+	  ntimeC++;
+	}
+      }
+  }
+
+  if (ntimeA > 0) timeA = timeA/ntimeA;
+  if (ntimeC > 0) timeC = timeC/ntimeC;
+
+  fhTimeCorr->Fill(timeA,timeC);
+
+  fV0a->Fill(esdV0->GetNbPMV0A());
+  fV0c->Fill(esdV0->GetNbPMV0C());
+  fV0multA->Fill(esdV0->GetMTotV0A());
+  fV0multC->Fill(esdV0->GetMTotV0C());
+  for(Int_t i = 0; i < 64; i++) {
+    fV0ampl->Fill(esdV0->GetMultiplicity(i));
+  }
+
+  // Post output data.
+  PostData(1, fListOfHistos);
+}
+
+void AliAnaVZEROQA::Terminate(Option_t *)
+{
+  fListOfHistos = dynamic_cast<TList*>(GetOutputData(1));
+  if (!fListOfHistos) {
+    Printf("ERROR: fListOfHistos not available");
+    return;
+  }
+	
+  fhAdcNoTimeA = dynamic_cast<TH1F*>(fListOfHistos->At(0));
+  fhAdcWithTimeA = dynamic_cast<TH1F*>(fListOfHistos->At(1));
+  fhAdcNoTimeC = dynamic_cast<TH1F*>(fListOfHistos->At(2));
+  fhAdcWithTimeC = dynamic_cast<TH1F*>(fListOfHistos->At(3));
+
+  fhAdcPMTNoTime = dynamic_cast<TH2F*>(fListOfHistos->At(4));
+  fhAdcPMTWithTime = dynamic_cast<TH2F*>(fListOfHistos->At(5));
+
+  fhTimeA = dynamic_cast<TH1F*>(fListOfHistos->At(6));
+  fhTimeC = dynamic_cast<TH1F*>(fListOfHistos->At(7));
+
+  fhWidthA = dynamic_cast<TH1F*>(fListOfHistos->At(8));
+  fhWidthC = dynamic_cast<TH1F*>(fListOfHistos->At(9));
+
+  fhTimePMT = dynamic_cast<TH2F*>(fListOfHistos->At(10));
+  fhWidthPMT = dynamic_cast<TH2F*>(fListOfHistos->At(11));
+
+  fhAdcWidthA = dynamic_cast<TH2F*>(fListOfHistos->At(12));
+  fhAdcWidthC = dynamic_cast<TH2F*>(fListOfHistos->At(13));
+
+  fhTimeCorr = dynamic_cast<TH2F*>(fListOfHistos->At(14));
+
+  fhAdcTimeA = dynamic_cast<TH2F*>(fListOfHistos->At(15));
+  fhAdcTimeC = dynamic_cast<TH2F*>(fListOfHistos->At(16));
+
+  fV0a = dynamic_cast<TH1F*>(fListOfHistos->At(17));
+  fV0c = dynamic_cast<TH1F*>(fListOfHistos->At(18));
+  fV0multA = dynamic_cast<TH1F*>(fListOfHistos->At(19));
+  fV0multC = dynamic_cast<TH1F*>(fListOfHistos->At(20));
+  fV0ampl  = dynamic_cast<TH1F*>(fListOfHistos->At(21));
+
+  // draw the histograms if not in batch mode
+  if (!gROOT->IsBatch()) {
+    new TCanvas;
+    fhTimePMT->DrawCopy();
+    new TCanvas;
+    fhAdcTimeA->DrawCopy();
+    new TCanvas;
+    fhAdcTimeC->DrawCopy();
+    new TCanvas;
+    fhAdcPMTNoTime->DrawCopy();
+    new TCanvas;
+    fhAdcPMTWithTime->DrawCopy();
+    new TCanvas;
+    fhTimeCorr->DrawCopy("E");
+    new TCanvas;
+    fV0ampl->DrawCopy("E");
+  }
+
+  // write the output histograms to a file
+  TFile* outputFile = TFile::Open("VZEROQA.root", "recreate");
+  if (!outputFile || !outputFile->IsOpen())
+    {
+      Error("AliAnaVZEROQA", "opening output file VZEROQA.root failed");
+      return;
+    }
+
+  fhAdcNoTimeA->Write();
+  fhAdcWithTimeA->Write();
+  fhAdcNoTimeC->Write();
+  fhAdcWithTimeC->Write();
+
+  fhAdcPMTNoTime->Write();
+  fhAdcPMTWithTime->Write();
+ 
+  fhTimeA->Write();
+  fhTimeC->Write();
+
+  fhWidthA->Write();
+  fhWidthC->Write();
+
+  fhTimePMT->Write();
+  fhWidthPMT->Write();
+
+  fhAdcWidthA->Write();
+  fhAdcWidthC->Write();
+
+  fhTimeCorr->Write();
+
+  fhAdcTimeA->Write();
+  fhAdcTimeC->Write();
+
+  fV0a->Write();
+  fV0c->Write();
+  fV0multA->Write();
+  fV0multC->Write();
+  fV0ampl->Write();
+
+  outputFile->Close();
+  delete outputFile;
+
+  //delete esd;
+  Info("AliAnaVZEROQA", "Successfully finished");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
