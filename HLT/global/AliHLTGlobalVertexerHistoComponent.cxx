@@ -21,6 +21,8 @@
 
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
+#include "TTimeStamp.h"
+#include "TSystem.h"
 
 #include "AliHLTGlobalVertexerHistoComponent.h"
 
@@ -28,6 +30,7 @@ ClassImp(AliHLTGlobalVertexerHistoComponent)
 
 AliHLTGlobalVertexerHistoComponent::AliHLTGlobalVertexerHistoComponent()
   : 
+  fUID(0),
   fRefreshPeriod(1000),
   fFillSecond(0),
   fFillSecondSPD(0)
@@ -74,7 +77,7 @@ AliHLTGlobalVertexerHistoComponent::AliHLTGlobalVertexerHistoComponent()
     fSPDVertexXY[i].SetMarkerSize(0.4);
     fSPDVertexXY[i].SetYTitle("Y [cm]");
     fSPDVertexXY[i].SetXTitle("X [cm]");
-    fSPDVertexXY[i].SetStats(0);
+    //fSPDVertexXY[i].SetStats(0);
     //fSPDVertexXY[i].SetBit(TH1::kCanRebin);
     
     fSPDVertexX[i].SetName("spdVertexX");
@@ -234,17 +237,18 @@ int AliHLTGlobalVertexerHistoComponent::DoInit(int argc, const char** argv)
   }
   fFillSecond = 0;
   fFillSecondSPD = 0;
-
+  fUID = 0;
   return ret;
 }
 
 int AliHLTGlobalVertexerHistoComponent::DoDeinit()
 {
   //Nothing to delete or "do de init" yet.
+  fUID = 0;
   return 0;
 }
 
-int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
+int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& evtData,
                                                 const AliHLTComponentBlockData* /*blocks*/,
                                                 AliHLTComponentTriggerData& /*trigData*/,
                                                 AliHLTUInt8_t* /*outputPtr*/,
@@ -254,6 +258,12 @@ int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& 
   //Fill histogramms.
   if (GetFirstInputBlock(kAliHLTDataTypeSOR) || GetFirstInputBlock(kAliHLTDataTypeEOR))
     return 0;
+
+  if( fUID == 0 ){
+    TTimeStamp t;
+    fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
+    //cout<<"\nSet id to "<<fUID<<endl;
+  }
 
   if (GetOutputDataSize() > size) {
     Logging(kHLTLogFatal, "HLT::AliHLTGlobalVertexerHistoComponent::DoEvent", "Too much data", 
@@ -336,20 +346,20 @@ int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& 
   
   int i = ( fPrimaryXY[1].GetEntries() > fPrimaryXY[0].GetEntries() );
 
-  PushBack(&fPrimaryXY[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
-  PushBack(&fPrimaryZ[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
-  PushBack(&fPrimaryX[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
-  PushBack(&fPrimaryY[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, 0);
+  PushBack(&fPrimaryXY[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, fUID);
+  PushBack(&fPrimaryZ[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, fUID);
+  PushBack(&fPrimaryX[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, fUID);
+  PushBack(&fPrimaryY[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginOut, fUID);
 
   i = ( fSPDVertexXY[1].GetEntries() > fSPDVertexXY[0].GetEntries() );
 
   //cout<<"bla NEntr     = "<<fPrimaryXY[0].GetEntries()<<" / "<<fPrimaryXY[1].GetEntries()<<endl;
   //cout<<"bla NEntr SPD = "<<fSPDVertexXY[0].GetEntries()<<" / "<<fSPDVertexXY[1].GetEntries()<<endl;
   
-  PushBack(&fSPDVertexXY[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
-  PushBack(&fSPDVertexZ[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
-  PushBack(&fSPDVertexX[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
-  PushBack(&fSPDVertexY[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, 0);
+  PushBack(&fSPDVertexXY[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, fUID);
+  PushBack(&fSPDVertexZ[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, fUID);
+  PushBack(&fSPDVertexX[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, fUID);
+  PushBack(&fSPDVertexY[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginITSSPD, fUID);
   
   return iResult; 
 }

@@ -78,6 +78,8 @@ private:
   // [6] == 3.5  --- (v0 mass - true value)/sigma <= cut (for identification)
   // [7] == 0.05 --- (v0 mass - true value)       <= cut (for identification)
 
+  AliHLTUInt32_t fUID;// uID of the component
+
   Double_t fGammaCuts[8]; // cuts for gammas
   Double_t fKsCuts[8]; // cuts for Ks
   Double_t fLambdaCuts[8]; // cuts for Lambdas
@@ -94,7 +96,7 @@ private:
   Int_t fNKShorts; // n found total
   Int_t fNLambdas; // n found total
   Int_t fNPi0s; // n found total
-
+  
   ClassDef(AliHLTV0HistoComponent, 0);
 
 };

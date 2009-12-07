@@ -68,6 +68,8 @@ private:
   void SetDefaultConfiguration();
   int ReadConfigurationString(  const char* arguments );
 
+  AliHLTUInt32_t fUID;// uID of the component
+
   Int_t   fRefreshPeriod;//  histos will refresh after fRefreshPeriod number of events
   Int_t fFillSecond;//!
   Int_t fFillSecondSPD ;//!

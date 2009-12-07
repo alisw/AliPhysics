@@ -38,6 +38,7 @@ using namespace std;
 #include "AliESDtrack.h"
 #include "AliESDv0.h"
 #include "AliHLTMessage.h"
+#include "TTimeStamp.h"
 
 //#include "AliHLTTPC.h"
 //#include <stdlib.h>
@@ -48,6 +49,7 @@ ClassImp(AliHLTV0HistoComponent)
 
 AliHLTV0HistoComponent::AliHLTV0HistoComponent()
 :
+  fUID(0),
   fGamma(0),
   fKShort(0),
   fLambda(0),
@@ -113,7 +115,9 @@ AliHLTComponent* AliHLTV0HistoComponent::Spawn()
 int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
 {
   // init
-  
+
+  fUID = 0;
+
   fGamma = new TH1F("hGamma","HLT:  #gamma inv mass",50,-.06,.2); 
   fGamma->SetFillColor(kGreen);
   fGamma->SetStats(0);
@@ -220,14 +224,20 @@ int AliHLTV0HistoComponent::DoDeinit()
   delete fLambda;
   delete fAP;
   delete fGammaXY;
+  fUID = 0;
   return 0;
 }
 
-int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
+int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/)
 {
   
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
+
+  if( fUID == 0 ){
+    TTimeStamp t;
+    fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
+  }
 
   fNEvents++;
 
@@ -417,17 +427,17 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
     }
 
   
-    if( fGamma ) PushBack( (TObject*) fGamma, kAliHLTDataTypeHistogram,0);
+    if( fGamma ) PushBack( (TObject*) fGamma, kAliHLTDataTypeHistogram,fUID);
     
-    if( fKShort ) PushBack( (TObject*) fKShort, kAliHLTDataTypeHistogram,0);
+    if( fKShort ) PushBack( (TObject*) fKShort, kAliHLTDataTypeHistogram,fUID);
     
-    if( fLambda ) PushBack( (TObject*) fLambda, kAliHLTDataTypeHistogram, 0);
+    if( fLambda ) PushBack( (TObject*) fLambda, kAliHLTDataTypeHistogram, fUID);
  
-    if( fPi0 ) PushBack( (TObject*) fPi0, kAliHLTDataTypeHistogram, 0);
+    if( fPi0 ) PushBack( (TObject*) fPi0, kAliHLTDataTypeHistogram, fUID);
     
-    if( fAP ) PushBack( (TObject*) fAP, kAliHLTDataTypeHistogram,0);    
+    if( fAP ) PushBack( (TObject*) fAP, kAliHLTDataTypeHistogram, fUID);    
 
-    if( fGammaXY ) PushBack( (TObject*) fGammaXY, kAliHLTDataTypeHistogram,0);
+    if( fGammaXY ) PushBack( (TObject*) fGammaXY, kAliHLTDataTypeHistogram, fUID);
   }  
   if( fNPi0s>0 ){
     HLTInfo("Found %d Gammas, %d KShorts, %d Lambdas and %d Pi0's in %d events", fNGammas, fNKShorts, fNLambdas, fNPi0s, fNEvents );    
