@@ -4,6 +4,7 @@
 
 class AliMCEvent;
 class AliAODJet;
+class AliVEvent;
 class TString;
 class AliGenPythiaEventHeader;
 class TVector3;
@@ -29,6 +30,17 @@ class AliAnalysisHelperJetTasks : public TObject {
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
   static Bool_t GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes);
   enum {kMaxJets = 6}; //  needed for array size not to fragemnt memory on the heap by many new/delete 
+
+  enum Trigger {kAcceptAll = 0,kMB1,kMB2,kMB3, kSPDGFO,kTrigger}; // 
+
+  static Bool_t Selected(Bool_t bSet = kFALSE,Bool_t bNew = kTRUE); // static function to store the state of selection from service task
+  
+  // these methods have been essentially copied from PWG0/AliTriggerAnalysis and expanded to use with AOD
+  static Bool_t IsTriggerFired(const AliVEvent* aEsd, Trigger trigger);
+  static Bool_t IsTriggerBitFired(const AliVEvent* aEv, Trigger trigger);
+  static Bool_t IsTriggerBitFired(ULong64_t triggerMask, Trigger trigger);
+  static Bool_t IsTriggerBitFired(const AliVEvent* aEv, ULong64_t tclass);
+
   private:
   
   ClassDef(AliAnalysisHelperJetTasks, 1) 

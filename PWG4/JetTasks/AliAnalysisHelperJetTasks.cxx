@@ -10,6 +10,7 @@
 #include "TString.h"
 #include "AliMCEvent.h"
 #include "AliLog.h"
+#include "AliESDEvent.h"
 #include "AliAODJet.h"
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
@@ -374,6 +375,14 @@ Bool_t AliAnalysisHelperJetTasks::PythiaInfoFromFile(const char* currFile,Float_
   return kTRUE;
 }
 
+Bool_t  AliAnalysisHelperJetTasks::Selected(Bool_t bSet,Bool_t bNew){
+  static Bool_t bSelected = kTRUE; // if service task is not run we acccpet all
+  if(bSet){
+    bSelected = bNew;
+  }
+  return bSelected;
+}
+
 //___________________________________________________________________________________________________________
 
 Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes)
@@ -613,3 +622,79 @@ Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01, TVector3 * pTrac
 
 
  //__________________________________________________________________________________________________________________________
+// Trigger Decisions copid from PWG0/AliTriggerAnalysis
+
+
+Bool_t AliAnalysisHelperJetTasks::IsTriggerFired(const AliVEvent* aEv, Trigger trigger)
+{
+  // checks if an event has been triggered
+  // no usage of ofline trigger here yet
+  return IsTriggerBitFired(aEv, trigger);
+}
+
+Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigger trigger)
+{
+  // checks if an event is fired using the trigger bits
+
+  return IsTriggerBitFired(aEv->GetTriggerMask(), trigger);
+}
+
+Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(ULong64_t triggerMask, Trigger trigger)
+{
+  // checks if an event is fired using the trigger bits
+  //
+  // this function needs the branch TriggerMask in the ESD
+  Printf("Triggermask %d",triggerMask);
+
+
+  // definitions from p-p.cfg
+  ULong64_t spdFO = (1 << 14);
+  ULong64_t v0left = (1 << 10);
+  ULong64_t v0right = (1 << 11);
+
+  switch (trigger)
+  {
+    case kAcceptAll:
+    {
+      return kTRUE;
+      break;
+    }
+    case kMB1:
+    {
+      if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
+        return kTRUE;
+      break;
+    }
+    case kMB2:
+    {
+      if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
+        return kTRUE;
+      break;
+    }
+    case kMB3:
+    {
+      if (triggerMask & spdFO && (triggerMask & v0left) && (triggerMask & v0right))
+        return kTRUE;
+      break;
+    }
+    case kSPDGFO:
+    {
+      if (triggerMask & spdFO)
+        return kTRUE;
+      break;
+    }
+    default:
+      Printf("IsEventTriggered: ERROR: Trigger type %d not implemented in this method", (Int_t) trigger);
+      break;
+  }
+
+  return kFALSE;
+}
+
+Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, ULong64_t tclass)
+{
+  // Checks if corresponding bit in mask is on
+  
+  ULong64_t trigmask = aEv->GetTriggerMask();
+  return (trigmask & (1ull << (tclass-1)));
+}
