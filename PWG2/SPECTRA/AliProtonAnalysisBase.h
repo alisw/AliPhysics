@@ -36,7 +36,8 @@ class AliProtonAnalysisBase : public TObject {
   void SetAnalysisLevel(const char* type) {fProtonAnalysisLevel = type;}
   void SetAnalysisMode(AnalysisMode analysismode) {fProtonAnalysisMode = analysismode;}
   void SetEtaMode() {fAnalysisEtaMode = kTRUE;}
-  void SetTriggerMode(TriggerMode triggermode) {fTriggerMode = triggermode;}
+  void SetTriggerMode(TriggerMode triggermode) {
+    fAnalysisMC = kTRUE; fTriggerMode = triggermode;}
   void SetPIDMode(PIDMode pidmode) {fProtonPIDMode = pidmode;}
 
   const char *GetAnalysisLevel() {return fProtonAnalysisLevel.Data();}
@@ -44,6 +45,7 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t GetEtaMode() const {return fAnalysisEtaMode;}
   TriggerMode GetTriggerMode() const {return fTriggerMode;}
   PIDMode GetPIDMode() const {return fProtonPIDMode;}
+  Bool_t GetMCAnalysisMode() {return fAnalysisMC;}
 
   const  AliESDVertex *GetVertex(AliESDEvent *esd,
 				 AnalysisMode mode,
@@ -253,6 +255,7 @@ class AliProtonAnalysisBase : public TObject {
   AliProtonAnalysisBase& operator=(const AliProtonAnalysisBase&); // Not implemented
 
   TString fProtonAnalysisLevel;//"ESD", "AOD" or "MC"
+  Bool_t fAnalysisMC; //kTRUE if MC analysis
   TriggerMode fTriggerMode; //Trigger mode
   AnalysisMode fProtonAnalysisMode; //Analysis mode: TPC-Hybrid-Global
   PIDMode fProtonPIDMode; //PID mode: Bayesian-dE/dx ratio-Nsigma areas

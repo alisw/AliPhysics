@@ -1,7 +1,24 @@
 void drawProtonResults(const char* esdFileName) {
   //Macro to visualize the proton ratio results
   //It also visualizes the QA plots
+  gStyle->SetPalette(1,0);
+  drawResults(esdFileName);
   drawQAPlots(esdFileName);
+}
+
+//___________________________________________________//
+void drawResults(const char* esdFileName) {
+  //Draws the main results from the ratio analysis
+  TFile *f = TFile::Open(esdFileName);
+  TList *analysisList = dynamic_cast<TList *>(f->Get("outputList"));
+  analysisList->ls();
+  TH2D *gHistYPtProtons = dynamic_cast<TH2D *>(analysisList->At(0));
+  TH2D *gHistYPtAntiProtons = dynamic_cast<TH2D *>(analysisList->At(1));
+
+  TCanvas *c2D = new TCanvas("c2D","eta-pT (anti)protons",0,0,700,400);
+  c2D->SetFillColor(10); c2D->SetHighLightColor(10); c2D->Divide(2,1);
+  c2D->cd(1); gHistYPtProtons->Draw("col");
+  c2D->cd(2); gHistYPtAntiProtons->Draw("col");
 }
 
 //___________________________________________________//
@@ -21,6 +38,14 @@ void drawQAPlots(const char* esdFileName) {
 
   //================QA plots================//
   TList *fQA2DList = dynamic_cast<TList *>(gListGlobalQA->At(0));
+  TH2F *gHistdEdxP = dynamic_cast<TH2F *>(fQA2DList->At(0));
+  gHistdEdxP->SetStats(kFALSE);
+  TH2F *gHistProtonsdEdxP = dynamic_cast<TH2F *>(fQA2DList->At(1));
+  gHistProtonsdEdxP->SetStats(kFALSE);
+  TCanvas *cdEdx = new TCanvas("cdEdx","dE/dx (TPC)",0,0,700,400);
+  cdEdx->SetFillColor(10); cdEdx->SetHighLightColor(10); cdEdx->Divide(2,1);
+  cdEdx->cd(1)->SetLogx(); gHistdEdxP->Draw("col");
+  cdEdx->cd(2)->SetLogx(); gHistProtonsdEdxP->Draw("col");
 
   //Accepted protons
   TList *fQAProtonsAcceptedList = dynamic_cast<TList *>(gListGlobalQA->At(1));
@@ -143,7 +168,7 @@ void drawQAPlots(const char* esdFileName) {
   TH1F *gAntiProtonsNumberOfTPCdEdxPointsReject = dynamic_cast<TH1F *>(fQAAntiProtonsRejectedList->At(26));
 
   //__________________________________________________//
-  TCanvas *c1 = new TCanvas("c1","",0,0,600,400);
+  TCanvas *c1 = new TCanvas("c1","ITS clusters",0,0,600,400);
   c1->SetFillColor(10); c1->SetHighLightColor(10);
   c1->Divide(2,1);
   c1->cd(1); gProtonsITSClustersPass->Draw(); 
@@ -151,7 +176,7 @@ void drawQAPlots(const char* esdFileName) {
   c1->cd(2); gAntiProtonsITSClustersPass->Draw(); 
   gAntiProtonsITSClustersReject->Draw("same");
 
-  TCanvas *c2 = new TCanvas("c2","",0,100,600,400);
+  TCanvas *c2 = new TCanvas("c2","chi^2 per ITS cluster",0,100,600,400);
   c2->SetFillColor(10); c2->SetHighLightColor(10);
   c2->Divide(2,1);
   c2->cd(1); gProtonsChi2PerClusterITSPass->Draw(); 
@@ -159,7 +184,7 @@ void drawQAPlots(const char* esdFileName) {
   c2->cd(2); gAntiProtonsChi2PerClusterITSPass->Draw(); 
   gAntiProtonsChi2PerClusterITSReject->Draw("same");
 
-  TCanvas *c3 = new TCanvas("c3","",0,200,600,400);
+  TCanvas *c3 = new TCanvas("c3","TPC clusters",0,200,600,400);
   c3->SetFillColor(10); c3->SetHighLightColor(10);
   c3->Divide(2,1);
   c3->cd(1); gProtonsTPCClustersPass->Draw();
@@ -167,7 +192,7 @@ void drawQAPlots(const char* esdFileName) {
   c3->cd(2); gAntiProtonsTPCClustersPass->Draw();
   gAntiProtonsTPCClustersReject->Draw("same");
 
-  TCanvas *c4 = new TCanvas("c4","",0,300,600,400);
+  TCanvas *c4 = new TCanvas("c4","chi^2 per TPC cluster",0,300,600,400);
   c4->SetFillColor(10); c4->SetHighLightColor(10);
   c4->Divide(2,1);
   c4->cd(1); gProtonsChi2PerClusterTPCPass->Draw(); 
@@ -175,95 +200,95 @@ void drawQAPlots(const char* esdFileName) {
   c4->cd(2); gAntiProtonsChi2PerClusterTPCPass->Draw(); 
   gAntiProtonsChi2PerClusterTPCReject->Draw("same");
 
-  TCanvas *c5 = new TCanvas("c5","",0,400,600,400);
+  TCanvas *c5 = new TCanvas("c5","Cov11",0,400,600,400);
   c5->SetFillColor(10); c5->SetHighLightColor(10);
   c5->Divide(2,1);
-  c5->cd(1); gProtonsExtCov11Pass->Draw(); 
+  c5->cd(1)->SetLogy(); gProtonsExtCov11Pass->Draw(); 
   gProtonsExtCov11Reject->Draw("same");
-  c5->cd(2); gAntiProtonsExtCov11Pass->Draw(); 
+  c5->cd(2)->SetLogy(); gAntiProtonsExtCov11Pass->Draw(); 
   gAntiProtonsExtCov11Reject->Draw("same");
 
-  TCanvas *c6 = new TCanvas("c6","",0,500,600,400);
+  TCanvas *c6 = new TCanvas("c6","Cov22",0,500,600,400);
   c6->SetFillColor(10); c6->SetHighLightColor(10);
   c6->Divide(2,1);
-  c6->cd(1); gProtonsExtCov22Pass->Draw(); 
+  c6->cd(1)->SetLogy(); gProtonsExtCov22Pass->Draw(); 
   gProtonsExtCov22Reject->Draw("same");
-  c6->cd(2); gAntiProtonsExtCov22Pass->Draw(); 
+  c6->cd(2)->SetLogy(); gAntiProtonsExtCov22Pass->Draw(); 
   gAntiProtonsExtCov22Reject->Draw("same");
 
-  TCanvas *c7 = new TCanvas("c7","",600,0,600,400);
+  TCanvas *c7 = new TCanvas("c7","Cov33",600,0,600,400);
   c7->SetFillColor(10); c7->SetHighLightColor(10);
   c7->Divide(2,1);
-  c7->cd(1); gProtonsExtCov33Pass->Draw(); 
+  c7->cd(1)->SetLogy(); gProtonsExtCov33Pass->Draw(); 
   gProtonsExtCov33Reject->Draw("same");
-  c7->cd(2); gAntiProtonsExtCov33Pass->Draw(); 
+  c7->cd(2)->SetLogy(); gAntiProtonsExtCov33Pass->Draw(); 
   gAntiProtonsExtCov33Reject->Draw("same");
 
-  TCanvas *c8 = new TCanvas("c8","",600,100,600,400);
+  TCanvas *c8 = new TCanvas("c8","Cov44",600,100,600,400);
   c8->SetFillColor(10); c8->SetHighLightColor(10);
   c8->Divide(2,1);
-  c8->cd(1); gProtonsExtCov44Pass->Draw(); 
+  c8->cd(1)->SetLogy(); gProtonsExtCov44Pass->Draw(); 
   gProtonsExtCov44Reject->Draw("same");
-  c8->cd(2); gAntiProtonsExtCov44Pass->Draw(); 
+  c8->cd(2)->SetLogy(); gAntiProtonsExtCov44Pass->Draw(); 
   gAntiProtonsExtCov44Reject->Draw("same");
 
-  TCanvas *c9 = new TCanvas("c9","",600,200,600,400);
+  TCanvas *c9 = new TCanvas("c9","Cov55",600,200,600,400);
   c9->SetFillColor(10); c9->SetHighLightColor(10);
   c9->Divide(2,1);
-  c9->cd(1); gProtonsExtCov55Pass->Draw(); 
+  c9->cd(1)->SetLogy(); gProtonsExtCov55Pass->Draw(); 
   gProtonsExtCov55Reject->Draw("same");
-  c9->cd(2); gAntiProtonsExtCov55Pass->Draw(); 
+  c9->cd(2)->SetLogy(); gAntiProtonsExtCov55Pass->Draw(); 
   gAntiProtonsExtCov55Reject->Draw("same");
 
-  TCanvas *c10 = new TCanvas("c10","",600,300,600,400);
+  TCanvas *c10 = new TCanvas("c10","N-sigma to Vertex",600,300,600,400);
   c10->SetFillColor(10); c10->SetHighLightColor(10);
   c10->Divide(2,1);
-  c10->cd(1); gProtonsSigmaToVertexPass->Draw(); 
+  c10->cd(1)->SetLogy(); gProtonsSigmaToVertexPass->Draw(); 
   gProtonsSigmaToVertexReject->Draw("same");
-  c10->cd(2); gAntiProtonsSigmaToVertexPass->Draw(); 
+  c10->cd(2)->SetLogy(); gAntiProtonsSigmaToVertexPass->Draw(); 
   gAntiProtonsSigmaToVertexReject->Draw("same");
 
-  TCanvas *c11 = new TCanvas("c11","",600,400,600,400);
+  TCanvas *c11 = new TCanvas("c11","N-sigma to Vertex (TPC)",600,400,600,400);
   c11->SetFillColor(10); c11->SetHighLightColor(10);
   c11->Divide(2,1);
-  c11->cd(1); gProtonsSigmaToVertexTPCPass->Draw(); 
+  c11->cd(1)->SetLogy(); gProtonsSigmaToVertexTPCPass->Draw(); 
   gProtonsSigmaToVertexTPCReject->Draw("same");
-  c11->cd(2); gAntiProtonsSigmaToVertexTPCPass->Draw(); 
+  c11->cd(2)->SetLogy(); gAntiProtonsSigmaToVertexTPCPass->Draw(); 
   gAntiProtonsSigmaToVertexTPCReject->Draw("same");
 
-  TCanvas *c12 = new TCanvas("c12","",600,500,600,400);
+  TCanvas *c12 = new TCanvas("c12","dca(xy)",600,500,600,400);
   c12->SetFillColor(10); c12->SetHighLightColor(10);
   c12->Divide(2,1);
-  c12->cd(1); gProtonsDCAXYPass->Draw(); 
+  c12->cd(1)->SetLogy(); gProtonsDCAXYPass->Draw(); 
   gProtonsDCAXYReject->Draw("same");
-  c12->cd(2); gAntiProtonsDCAXYPass->Draw(); 
+  c12->cd(2)->SetLogy(); gAntiProtonsDCAXYPass->Draw(); 
   gAntiProtonsDCAXYReject->Draw("same");
 
-  TCanvas *c13 = new TCanvas("c13","",1200,0,600,400);
+  TCanvas *c13 = new TCanvas("c13","dca(xy - TPC)",1200,0,600,400);
   c13->SetFillColor(10); c13->SetHighLightColor(10);
   c13->Divide(2,1);
-  c13->cd(1); gProtonsDCAXYTPCPass->Draw(); 
+  c13->cd(1)->SetLogy(); gProtonsDCAXYTPCPass->Draw(); 
   gProtonsDCAXYTPCReject->Draw("same");
-  c13->cd(2); gAntiProtonsDCAXYTPCPass->Draw(); 
+  c13->cd(2)->SetLogy(); gAntiProtonsDCAXYTPCPass->Draw(); 
   gAntiProtonsDCAXYTPCReject->Draw("same");
 
-  TCanvas *c14 = new TCanvas("c14","",1200,100,600,400);
+  TCanvas *c14 = new TCanvas("c14","dca(z)",1200,100,600,400);
   c14->SetFillColor(10); c14->SetHighLightColor(10);
   c14->Divide(2,1);
-  c14->cd(1); gProtonsDCAZPass->Draw(); 
+  c14->cd(1)->SetLogy(); gProtonsDCAZPass->Draw(); 
   gProtonsDCAZReject->Draw("same");
-  c14->cd(2); gAntiProtonsDCAZPass->Draw(); 
+  c14->cd(2)->SetLogy(); gAntiProtonsDCAZPass->Draw(); 
   gAntiProtonsDCAZReject->Draw("same");
 
-  TCanvas *c15 = new TCanvas("c15","",1200,200,600,400);
+  TCanvas *c15 = new TCanvas("c15","dca(z - TPC)",1200,200,600,400);
   c15->SetFillColor(10); c15->SetHighLightColor(10);
   c15->Divide(2,1);
-  c15->cd(1); gProtonsDCAZTPCPass->Draw(); 
+  c15->cd(1)->SetLogy(); gProtonsDCAZTPCPass->Draw(); 
   gProtonsDCAZTPCReject->Draw("same");
-  c15->cd(2); gAntiProtonsDCAZTPCPass->Draw(); 
+  c15->cd(2)->SetLogy(); gAntiProtonsDCAZTPCPass->Draw(); 
   gAntiProtonsDCAZTPCReject->Draw("same");
 
-  TCanvas *c16 = new TCanvas("c16","",1200,300,600,400);
+  TCanvas *c16 = new TCanvas("c16","TPC clusters (dE/dx)",1200,300,600,400);
   c16->SetFillColor(10); c16->SetHighLightColor(10);
   c16->Divide(2,1);
   c16->cd(1); gProtonsNumberOfTPCdEdxPointsPass->Draw(); 
@@ -283,11 +308,11 @@ void drawQAPlots(const char* esdFileName) {
   TH1F *gHistVzAccepted = dynamic_cast<TH1F *>(gListVertexQA->At(5));
   gHistVzAccepted->SetFillColor(10);
 
-  TCanvas *cVertex = new TCanvas("cVertex","Veretx QA",0,0,900,400);
+  TCanvas *cVertex = new TCanvas("cVertex","Vertex QA",0,0,900,400);
   cVertex->SetFillColor(10); cVertex->SetHighLightColor(10);
   cVertex->Divide(3,1);
-  cVertex->cd(1); gHistVx->Draw(); gHistVxAccepted->Draw("same");
-  cVertex->cd(2); gHistVy->Draw(); gHistVyAccepted->Draw("same");
-  cVertex->cd(3); gHistVz->Draw(); gHistVzAccepted->Draw("same");
+  cVertex->cd(1)->SetLogy(); gHistVx->Draw(); gHistVxAccepted->Draw("same");
+  cVertex->cd(2)->SetLogy(); gHistVy->Draw(); gHistVyAccepted->Draw("same");
+  cVertex->cd(3)->SetLogy(); gHistVz->Draw(); gHistVzAccepted->Draw("same");
 }
   

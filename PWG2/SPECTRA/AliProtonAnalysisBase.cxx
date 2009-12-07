@@ -39,7 +39,7 @@ ClassImp(AliProtonAnalysisBase)
 
 //____________________________________________________________________//
 AliProtonAnalysisBase::AliProtonAnalysisBase() : 
-  TObject(),  fProtonAnalysisLevel("ESD"),
+  TObject(),  fProtonAnalysisLevel("ESD"), fAnalysisMC(kFALSE),
   fTriggerMode(kMB2), fProtonAnalysisMode(kTPC), fProtonPIDMode(kBayesian),
   fAnalysisEtaMode(kFALSE),
   fVxMax(100.), fVyMax(100.), fVzMax(100.),

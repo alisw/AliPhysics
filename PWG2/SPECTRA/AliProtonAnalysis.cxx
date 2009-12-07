@@ -696,7 +696,12 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       gPt = tpcTrack->Pt();
       gP = tpcTrack->P();
       
+      if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+	((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
+
       if(fProtonAnalysisBase->IsProton(track)) {
+	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+	  ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
 	FillQA(esd,vertex,track);
 	if(tpcTrack->Charge() > 0) {
 	  nIdentifiedProtons += 1;
@@ -786,7 +791,11 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       gPt = track->Pt();
       gP = track->P();
       
+      if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+	((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
       if(fProtonAnalysisBase->IsProton(track)) {
+	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+	  ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
 	FillQA(esd,vertex,track);
 	if(track->Charge() > 0) {
 	  nIdentifiedProtons += 1;
@@ -1252,6 +1261,11 @@ void AliProtonAnalysis::InitQA() {
   fQA2DList = new TList();
   fQA2DList->SetName("fQA2DList");
   fGlobalQAList->Add(fQA2DList);
+  //dEdx plots
+  TH2F *gHistdEdxP = new TH2F("gHistdEdxP","dE/dx (TPC); P [GeV/c]; dE/dx [a.u]",100,0.01,10.1,100,0,600);
+  fQA2DList->Add(gHistdEdxP);
+  TH2F *gHistProtonsdEdxP = new TH2F("gHistProtonsdEdxP","Accepted protons dE/dx (TPC); P [GeV/c]; dE/dx [a.u]",100,0.01,10.1,100,0,600);
+  fQA2DList->Add(gHistProtonsdEdxP);
   
   //========================================================//
   fQAProtonsAcceptedList = new TList();

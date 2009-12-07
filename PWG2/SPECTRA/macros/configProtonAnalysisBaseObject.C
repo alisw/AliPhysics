@@ -1,4 +1,5 @@
 AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "ESD",
+						   Bool_t kAnalyzeMC = kTRUE,
 						   const char* esdAnalysisType = "Hybrid",
 						   const char* pidMode = "Bayesian") {
   
@@ -6,8 +7,9 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
   AliProtonAnalysisBase *baseAnalysis = new AliProtonAnalysisBase();
   //baseAnalysis->SetDebugMode();
   baseAnalysis->SetAnalysisLevel(analysisLevel);
-  if(analysisLevel == "ESD") {  
-    baseAnalysis->SetTriggerMode(AliProtonAnalysisBase::kMB2);
+  if(analysisLevel == "ESD") {
+    if(kAnalyzeMC)
+      baseAnalysis->SetTriggerMode(AliProtonAnalysisBase::kMB2);
     baseAnalysis->SetMinTPCClusters(110);
     baseAnalysis->SetMaxChi2PerTPCCluster(2.2);
     baseAnalysis->SetMaxCov11(0.5);
@@ -62,7 +64,7 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
     default:
       break;
     }
-    baseAnalysis->SetAcceptedVertexDiamond(5.,5.,15.);
+    baseAnalysis->SetAcceptedVertexDiamond(5.,5.,25.);
     baseAnalysis->SetEtaMode();
     switch(pidMode) {
     case "Bayesian":

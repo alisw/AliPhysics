@@ -1,12 +1,13 @@
 //__________________________________________________//
-AliProtonAnalysis *GetProtonAnalysisObject(const char* analysisLevel = "ESD", 
+AliProtonAnalysis *GetProtonAnalysisObject(const char* analysisLevel = "ESD",
+					   Bool_t kAnalyzeMC = kTRUE,
 					   const char* esdAnalysisType = "Hybrid", 
 					   const char* pidMode = "Bayesian") {
 					   
 					   
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysisBaseObject.C");  
   //Function to setup the AliProtonAnalysis object and return it
-  AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,esdAnalysisType,pidMode);
+  AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,kAnalyzeMC,esdAnalysisType,pidMode);
 
   AliProtonAnalysis *analysis = new AliProtonAnalysis();
   analysis->SetBaseAnalysis(baseAnalysis);
