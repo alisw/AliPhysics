@@ -97,6 +97,7 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  *             corrupt in the raw data, without trying to recover the data inside. <br>
  *         - parityerrors  Will only continue decoding if parity errors are found
  *             but the decoder will stop if any other corruption is found. <br>
+ *      if no <i>mode</i> option is specified then full recovery logic is enabled. <br>
  * \li -skipparityerrors <br>
  *      Skips any ADC digit data words that contain parity errors. <br>
  * \li -dontprintparityerrors <br>

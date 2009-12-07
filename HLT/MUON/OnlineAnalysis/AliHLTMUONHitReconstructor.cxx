@@ -313,21 +313,33 @@ bool AliHLTMUONHitReconstructor::DecodeDDL(const AliHLTUInt32_t* rawData,AliHLTU
   handler.SetMaxFiredPerDetElem(fMaxFiredPerDetElem);
   handler.SetMaxEntryPerBusPatch(fMaxEntryPerBusPatch);
  
-  if(!fHLTMUONDecoder.Decode(rawData,bufferSize))
+  if (not fHLTMUONDecoder.Decode(rawData,bufferSize))
   {
 	switch (TryRecover())
 	{
 	case kRecoverFull:
-		HLTWarning("There was a problem with the raw data."
-			" Recovered as much data as possible."
-			" Will continue processing the next event."
-		);
+		// Do not print the following warning for option "-dontprintparityerrors" if there
+		// were only parity errors.
+		if (fHLTMUONDecoder.GetHandler().NonParityErrorFound() or
+		    (fHLTMUONDecoder.GetHandler().ParityErrorFound() and not fHLTMUONDecoder.GetHandler().DontPrintParityErrors())
+		   )
+		{
+			HLTWarning("There was a problem with the raw data."
+				" Recovered as much data as possible."
+				" Will continue processing the next event."
+			);
+		}
 		break;
 	case kRecoverJustSkip:
-		HLTWarning("There was a problem with the raw data."
-			" Skipped corrupted data structures."
-			" Will continue processing the next event."
-		);
+		if (fHLTMUONDecoder.GetHandler().NonParityErrorFound() or
+		    (fHLTMUONDecoder.GetHandler().ParityErrorFound() and not fHLTMUONDecoder.GetHandler().DontPrintParityErrors())
+		   )
+		{
+			HLTWarning("There was a problem with the raw data."
+				" Skipped corrupted data structures."
+				" Will continue processing the next event."
+			);
+		}
 		break;
 	case kRecoverFromParityErrorsOnly:
 		if (fHLTMUONDecoder.GetHandler().NonParityErrorFound())
@@ -335,9 +347,13 @@ bool AliHLTMUONHitReconstructor::DecodeDDL(const AliHLTUInt32_t* rawData,AliHLTU
 			HLTError("Failed to decode the tracker DDL raw data.");
 			return false;
 		}
-		HLTWarning("Found parity errors in the raw data,"
-			" but will continue processing."
-		);
+		if (not fHLTMUONDecoder.GetHandler().DontPrintParityErrors())
+		{
+			assert( fHLTMUONDecoder.GetHandler().ParityErrorFound() );
+			HLTWarning("Found parity errors in the raw data,"
+				" but will continue processing."
+			);
+		}
 		break;
 	default:
 		HLTError("Failed to decode the tracker DDL raw data.");
@@ -1221,6 +1237,7 @@ AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::AliHLTMUONRawDecoder() :
 	fSkipParityErrors(false),
 	fDontPrintParityErrors(false),
 	fPrintParityErrorAsWarning(false),
+	fParityErrorFound(false),
 	fNonParityErrorFound(false),
 	fIsMuchNoisy(false)
 {
@@ -1245,7 +1262,8 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnNewBuffer(const void* b
 	// dataCount starts from 1 because the 0-th element of fPadData is used as null value.
 	fDataCount = 1;
 	*fNofFiredDetElem = 0;
-	fPrevDetElemId = 0 ;
+	fPrevDetElemId = 0;
+	fParityErrorFound = false;
 	fNonParityErrorFound = false;
 };
 
@@ -1258,7 +1276,14 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnError(ErrorCode code, c
 	/// \param location  A pointer to the location in the raw data buffer
 	///      where the problem was found.
 	
-	if (code != kParityError) fNonParityErrorFound = true;
+	if (code == kParityError)
+	{
+		fParityErrorFound = true;
+	}
+	else
+	{
+		fNonParityErrorFound = true;
+	}
 	if (fDontPrintParityErrors and code == kParityError) return;
 	
 	long bytepos = long(location) - long(fBufferStart) + sizeof(AliRawDataHeader);

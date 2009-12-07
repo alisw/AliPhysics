@@ -125,6 +125,9 @@ class AliHLTMUONTriggerReconstructor;
  *      if an error occurs. <br>
  * \li -makedebuginfo <br>
  *      If specified then the trigger record debug informaiton data blocks are generated. <br>
+ * \li -dontprintwrongeventerror <br>
+ *      If specified the error message about an incorrect event type found in the DDL DARC
+ *      header is not generated or logged. <br>
  *
  * <h2>Standard configuration:</h2>
  * The configuration is taken from the CDB by default. It can be overridden with

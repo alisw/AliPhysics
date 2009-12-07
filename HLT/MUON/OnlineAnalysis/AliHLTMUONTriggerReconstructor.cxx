@@ -107,10 +107,16 @@ bool AliHLTMUONTriggerReconstructor::Run(
 	{
 		if (TryRecover())
 		{
-			HLTWarning("There was a problem with the raw data."
-				" Recovered as much data as possible."
-				" Will continue processing the next event."
-			);
+			/// Fix as long as the DARC header problem is not fixed in hardware by trigger colleagues
+			if (fDecoder.GetHandler().HadNonWrongEventTypeError() or
+			    (fDecoder.GetHandler().HadWrongEventTypeError() and not fDecoder.GetHandler().DontPrintWrongEventError())
+			   )
+			{
+				HLTWarning("There was a problem with the raw data."
+					" Recovered as much data as possible."
+					" Will continue processing the next event."
+				);
+			}
 		}
 		else
 		{
@@ -161,7 +167,10 @@ AliHLTMUONTriggerReconstructor::AliDecoderHandler::AliDecoderHandler() :
 	fStoreInfo(false),
 	fInfoBufferSize(0),
 	fInfoBufferCount(0),
-	fInfoBuffer(NULL)
+	fInfoBuffer(NULL),
+	fDontPrintWrongEventError(false),
+	fHadWrongEventTypeError(false),
+	fHadNonWrongEventTypeError(false)
 {
 	/// Default constructor just resets the lookup table to zero and local
 	/// structure marker pointers to NULL.
@@ -1118,6 +1127,17 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnError(
 	/// Logs an error message if there was a decoding problem with the DDL payload.
 	
 	long bytepos = long(location) - long(fBufferStart) + sizeof(AliRawDataHeader);
+	if (code == kWrongEventType)
+	{
+		fHadWrongEventTypeError = true;
+		
+		/// Do not generate an error message if the fDontPrintWrongEventError option is set.
+		if (fDontPrintWrongEventError) return;
+	}
+	else
+	{
+		fHadNonWrongEventTypeError = true;
+	}
 	if (fWarnOnly)
 	{
 		HLTWarning("There is a problem with decoding the raw data."

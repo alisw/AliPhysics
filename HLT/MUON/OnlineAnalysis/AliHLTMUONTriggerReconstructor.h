@@ -133,6 +133,18 @@ public:
 	/// Empty the info buffer.
 	void ZeroInfoBuffer() { fDecoder.GetHandler().ZeroInfoBuffer(); }
 	
+	/**
+	 * Returns the flag indicating if the error message for a wrong event type found
+	 * in the DARC header should be suppressed.
+	 */
+	bool DontPrintWrongEventError() const { return fDecoder.GetHandler().DontPrintWrongEventError(); }
+	
+	/**
+	 * Sets the flag indicating if the error message for a wrong event type found
+	 * in the DARC header should be suppressed.
+	 */
+	void DontPrintWrongEventError(bool value) { fDecoder.GetHandler().DontPrintWrongEventError(value); }
+	
 private:
 
 	class AliDecoderHandler : public AliMUONTriggerDDLDecoderEventHandler, public AliHLTLogging
@@ -252,6 +264,7 @@ private:
 		{
 			assert( buffer != NULL );
 			fBufferStart = buffer;
+			fHadWrongEventTypeError = fHadNonWrongEventTypeError = false;
 		}
 		
 		/**
@@ -305,7 +318,28 @@ private:
 		
 		/// Empty the info buffer.
 		void ZeroInfoBuffer() { fInfoBufferCount = 0; }
-	
+		
+		/**
+		 * Returns the flag indicating if the error message for a wrong event type found
+		 * in the DARC header should be suppressed.
+		 */
+		bool DontPrintWrongEventError() const { return fDontPrintWrongEventError; }
+		
+		/**
+		 * Sets the flag indicating if the error message for a wrong event type found
+		 * in the DARC header should be suppressed.
+		 */
+		void DontPrintWrongEventError(bool value) { fDontPrintWrongEventError = value; }
+		
+		/// Returns true if the last decoded DDL had a wrong event type error in the DARC header.
+		bool HadWrongEventTypeError() const { return fHadWrongEventTypeError; }
+		
+		/**
+		 * Returns true if the last decoded DDL had a different error than just a
+		 * wrong event type error in the DARC header.
+		 */
+		bool HadNonWrongEventTypeError() const { return fHadNonWrongEventTypeError; }
+		
 	private:
 		// Do not allow copying of this class.
 		/// Not implemented
@@ -389,7 +423,10 @@ private:
 		AliHLTUInt32_t fInfoBufferSize;  ///< Number of elements storable in fInfoBuffer.
 		AliHLTUInt32_t fInfoBufferCount;  ///< Number of elements stored in the fInfoBuffer.
 		AliHLTMUONTrigRecInfoStruct* fInfoBuffer;  ///< Buffer for storing the debug information.
-		
+		bool fDontPrintWrongEventError;    ///< Flag indicating if the error message for kWrongEventType is suppressed or not.
+		bool fHadWrongEventTypeError;  ///< Flag indicating if a kWrongEventType error was found in the last decoded DDL.
+		bool fHadNonWrongEventTypeError;  ///< Flag indicating if a different error than kWrongEventType was found in the last decoded DDL.
+
 		static const AliMUONLocalInfoStruct fgkNullStruct; ///< Empty structure marker.
 	};
 

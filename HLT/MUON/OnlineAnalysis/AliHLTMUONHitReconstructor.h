@@ -254,6 +254,11 @@ private:
 		void PrintParityErrorAsWarning(bool value) { fPrintParityErrorAsWarning = value; }
 		
 		/**
+		 * Returns true if a parity error was found during the last call to Decode.
+		 */
+		bool ParityErrorFound() const { return fParityErrorFound; }
+		
+		/**
 		 * Returns true if a non-parity error was found during the last call to Decode.
 		 */
 		bool NonParityErrorFound() const { return fNonParityErrorFound; }
@@ -286,9 +291,9 @@ private:
 		bool fSkipParityErrors;  ///< Flag indicating if ADC digits with parity errors should be skipped.
 		bool fDontPrintParityErrors;  ///< Flag for controlling if messages about parity errors should be printed.
 		bool fPrintParityErrorAsWarning;  ///< Flag for controlling if parity error messages are printed as warnings.
+		bool fParityErrorFound;  ///< Flag if a parity error was found after a decoding pass.
 		bool fNonParityErrorFound;  ///< Flag which indicates if a non parity error code was found after a decoding pass.
-
-	       bool fIsMuchNoisy;  ///< tag for noisy buspatch.
+		bool fIsMuchNoisy;  ///< tag for noisy buspatch.
 	};
 
 	AliMUONTrackerDDLDecoder<AliHLTMUONRawDecoder> fHLTMUONDecoder; // robust HLTMUON Decoder

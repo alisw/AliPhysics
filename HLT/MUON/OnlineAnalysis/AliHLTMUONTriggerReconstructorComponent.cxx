@@ -181,6 +181,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	bool tryRecover = false;
 	bool useLocalId = true;
 	bool makeDebugInfo = false;
+	bool dontPrintWrongEventError = false;
 	double zmiddle = 0;
 	double bfieldintegral = 0;
 	
@@ -396,6 +397,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			continue;
 		}
 		
+		if (strcmp( argv[i], "-dontprintwrongeventerror" ) == 0)
+		{
+			dontPrintWrongEventError = true;
+			continue;
+		}
+		
 		HLTError("Unknown option '%s'.", argv[i]);
 		return -EINVAL;
 		
@@ -510,6 +517,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	fTrigRec->UseCrateId(fUseCrateId);
 	fTrigRec->UseLocalId(useLocalId);
 	fTrigRec->StoreDebugInfo(makeDebugInfo);
+	fTrigRec->DontPrintWrongEventError(dontPrintWrongEventError);
 	
 	return 0;
 }
