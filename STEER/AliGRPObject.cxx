@@ -128,7 +128,6 @@ AliGRPObject::AliGRPObject():
 		fDipoleCurrent[i] = fgkInvalidFloat;
 		fCavernTemperature[i] = fgkInvalidFloat;
 	}
-	SetBit(kPolConvLHC);
 }
 
 //-----------------------------------------------------------------------------
