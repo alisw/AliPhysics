@@ -136,17 +136,17 @@ Double_t AliHMPIDQAChecker::CheckSim(TObjArray *listsim, TObjArray *listref) con
    TIter next(listsim) ;
    TH1* histo;
    while ( (histo = dynamic_cast<TH1 *>(next())) ) {
-     //PH The histogram should have at least 3 bins with entries
+     //PH The histogram should have at least 10 bins with at least 5 entries
      Int_t nbinsabove = 0;
-     for (Int_t ibin=histo->FindBin(1); ibin<=histo->FindBin(50); ibin++) { //1,50 is the fit region, see histo->Fit("expo","Q0","",1,50);
-       if (histo->GetBinContent(ibin)>0) nbinsabove++;
+     for (Int_t ibin=histo->FindBin(1); ibin<=histo->FindBin(50); ibin++) { 
+       if (histo->GetBinContent(ibin)>5) nbinsabove++;
      }
 
-   if( nbinsabove < 3 ) counter++;
+   if( nbinsabove < 10 ) counter++;
    else {
     TString h = histo->GetTitle();
     if(h.Contains("Zoom")){
-    histo->Fit("expo","LQ0","",1,50);
+    histo->Fit("expo","LQ0","",5,50);
     if(histo->GetFunction("expo")->GetParameter(1) !=0 ) if(TMath::Abs((-1./(histo->GetFunction("expo"))->GetParameter(1)) - 35 ) > 5) counter++;
     }
     if(h.Contains("size  MIP"))   if(TMath::Abs(histo->GetMean()-5) > 2) counter++;
@@ -176,17 +176,17 @@ Double_t AliHMPIDQAChecker::CheckRec(TObjArray *listrec, TObjArray *listref) con
    TIter next(listrec) ;
    TH1* histo;
    while ( (histo = dynamic_cast<TH1 *>(next())) ) {
-     //PH The histogram should have at least 3 bins with entries
+     //PH The histogram should have at least 10 bins with at least 5 entries
      Int_t nbinsabove = 0;
-     for (Int_t ibin=histo->FindBin(1); ibin<=histo->FindBin(50); ibin++) { //1,50 is the fit region, see histo->Fit("expo","Q0","",1,50);
-       if (histo->GetBinContent(ibin)>0) nbinsabove++;
+     for (Int_t ibin=histo->FindBin(1); ibin<=histo->FindBin(50); ibin++) { 
+       if (histo->GetBinContent(ibin)>5) nbinsabove++;
      }
 
-   if( nbinsabove < 3 ) counter++;
+   if( nbinsabove < 10 ) counter++;
    else {
     TString h = histo->GetTitle();
     if(h.Contains("Zoom")){
-    histo->Fit("expo","LQ0","",1,50);
+    histo->Fit("expo","LQ0","",5,50);
     if(histo->GetFunction("expo")->GetParameter(1) !=0 ) if(TMath::Abs((-1./(histo->GetFunction("expo"))->GetParameter(1)) - 35 ) > 5) counter++;
     }
     if(h.Contains("size  MIP"))   if(TMath::Abs(histo->GetMean()-5) > 2) counter++;
