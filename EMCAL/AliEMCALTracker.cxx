@@ -945,35 +945,6 @@ Int_t AliEMCALTracker::CreateMatches()
 			}
 		}
 	}
-		
-	/*
-	// loop on clusters and tracks
-	Int_t icBest;
-	Double_t dist, distBest;
-	for (it = 0; it < nTracks; it++) {
-		AliEMCALTrack *track = (AliEMCALTrack*)fTracks->At(it);
-		if (!track) continue;
-		icBest = -1;
-		distBest = fMaxDist;
-		for (ic = 0; ic < nClusters; ic++) {
-			AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
-			if (!cluster) continue;
-			dist = CheckPair(track, cluster);
-			if (dist < distBest) {
-				distBest = dist;
-				icBest = ic;
-			}
-		}
-		if (icBest >= 0) {
-			track->SetMatchedClusterIndex(icBest);
-			track->SetMatchedClusterDist(distBest);
-			count++;
-		}
-		else {
-			track->SetMatchedClusterIndex(-1);
-		}
-	}
-	*/
 	
 	return count;
 }
@@ -1022,29 +993,6 @@ Int_t AliEMCALTracker::SolveCompetitions()
 		}
 	}
 	
-	/*
-	Int_t it1, it2, nTracks = (Int_t)fTracks->GetEntries();
-	AliEMCALTrack *track1 = 0, *track2 = 0;
-	for (it1 = 0; it1 < nTracks; it1++) {
-		track1 = (AliEMCALTrack*)fTracks->At(it1);
-		if (!track1) continue;
-		if (track1->GetMatchedClusterIndex() < 0) continue;
-		for (it2 = it1+1; it2 < nTracks; it2++) {
-			track2 = (AliEMCALTrack*)fTracks->At(it2);
-			if (!track2) continue;
-			if (track2->GetMatchedClusterIndex() < 0) continue;
-			if (track1->GetMatchedClusterIndex() != track2->GetMatchedClusterIndex()) continue;
-			count++;
-			if (track1->GetMatchedClusterDist() < track2->GetMatchedClusterDist()) {
-				track2->SetMatchedClusterIndex(-1);
-			}
-			else if (track2->GetMatchedClusterDist() < track1->GetMatchedClusterDist()) {
-				track1->SetMatchedClusterIndex(-1);
-			}
-		}
-	}
-	*/
-	
 	delete [] usedC;
 	delete [] usedT;
 
@@ -1063,6 +1011,23 @@ void AliEMCALTracker::UnloadClusters()
 	
   	Clear();
 }
+//
+//------------------------------------------------------------------------------
+//
+TVector3 AliEMCALTracker::FindExtrapolationPoint(Double_t x,Double_t y,Double_t z, AliESDtrack *track)
+{
+  //Method to determine extrapolation point of track at location x,y,z
+  AliEMCALTrack *tr = new AliEMCALTrack(*track);
+  TVector3 error(-100.,-100.,-100.);
+  if (!tr->PropagateToGlobal(x,y,z, 0.0, 0.0)) {
+    return error;
+  }
+  Double_t pos[3];
+  tr->GetXYZ(pos);
+  TVector3 ExTrPos(pos[0],pos[1],pos[2]);
+  return ExTrPos;
+}
+
 //
 //------------------------------------------------------------------------------
 //
