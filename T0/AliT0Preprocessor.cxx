@@ -54,7 +54,6 @@ Preliminary test version (T.Malkiewicz)
 #include "AliT0Dqclass.h"
 #include "TClass.h"
 
-// #include "iostream.h"
 
 ClassImp(AliT0Preprocessor)
 
@@ -93,10 +92,11 @@ Bool_t AliT0Preprocessor::ProcessDCS(){
 	Log(Form("ProcessDCS - RunType: %s",runType.Data()));
 
 	if((runType == "STANDALONE")||
-	   (runType == "PHYSICS")){
-	   //	   (runType == "LASER")){
-	  return kFALSE;
-	  //	return kTRUE;
+	   (runType == "PHYSICS") ) {
+	   //	  || (runType == "LASER")){
+
+	  //	  return kFALSE;
+	  	return kTRUE;
 	}else{
 	return kFALSE;
 	}
@@ -140,7 +140,7 @@ UInt_t AliT0Preprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap){
 	return 0;
 }
 //____________________________________________________
-/*
+
 UInt_t AliT0Preprocessor::ProcessLaser(){
 	// Processing data from DAQ Standalone run
   Log("Processing Laser calibration - Walk Correction");
@@ -155,7 +155,7 @@ UInt_t AliT0Preprocessor::ProcessLaser(){
   memset(parledold, 0, sizeof(parledold));
   memset(parlednew, 0, sizeof(parlednew));
   Int_t iStore=0;
-  Bool_t clbold = true;
+
 
   AliT0CalibWalk* clb=0;
   AliCDBEntry* entryCalib = GetFromOCDB("Calib", "Slewing_Walk");
@@ -172,7 +172,7 @@ UInt_t AliT0Preprocessor::ProcessLaser(){
 	    parledold[i][ipar] = clb->GetLEDpar(i, ipar);
 	    goodqtc[i][ipar] = 999;
 	    goodled[i][ipar] = 999;
-	    //	    cout<<" old "<<i<<" "<<ipar<<" qtc "<< parqtcold[i][ipar]<<" led "<<parledold[i][ipar]<<endl;
+	    //    std:: cout<<" old "<<i<<" "<<ipar<<" qtc "<< parqtcold[i][ipar]<<" led "<<parledold[i][ipar]<< std::endl;
 	  }
       }
   }
@@ -205,18 +205,18 @@ UInt_t AliT0Preprocessor::ProcessLaser(){
 			    {
 			      goodqtc[i][ifit] = 
 				(parqtcnew[i][ifit] - parqtcold[i][ifit])/parqtcold[i][ifit];
-			      //			      cout<<"qtc "<<i<<" "<<ifit<<" "<< goodqtc[i][ifit]<<endl;
+			      //			       std::cout<<"qtc "<<i<<" "<<ifit<<" "<< goodqtc[i][ifit]<< std::endl;
 			    }
 			  parlednew[i][ifit] = laser->GetLEDpar(i,ifit);
 			  if(parledold[i][ifit] != 0 && parlednew[i][ifit]!= 0 ) 
 			    {
 			      goodled[i][ifit]= 
 				(parlednew[i][ifit] - parledold[i][ifit])/parledold[i][ifit];   
-			      //			      cout<<"led "<<i<<" "<<ifit<<" "<< goodled[i][ifit]<<endl;
+			      //			       std::cout<<"led "<<i<<" "<<ifit<<" "<< goodled[i][ifit]<< std::endl;
 			    }			
-			  if(TMath::Abs(goodqtc[i][ifit])>0.1 || 
-			     TMath::Abs(goodled[i][ifit])>0.1) 
-			    iStore = 0;
+			  //	  if(TMath::Abs(goodqtc[i][ifit])>0.1 || 
+			  //	     TMath::Abs(goodled[i][ifit])>0.1) 
+			  //	    iStore = 0;
 			}
 		    }
 		}
@@ -247,13 +247,13 @@ UInt_t AliT0Preprocessor::ProcessLaser(){
 	  }
 	return 0;
 }
-*/
+
 //____________________________________________________
 
 UInt_t AliT0Preprocessor::ProcessPhysics(){
 	//Processing data from DAQ Physics run
 	Log("Processing Physics");
-
+	
 	Bool_t resultOnline=kFALSE; 
 	//processing DAQ
 	TList* listPhys = GetFileSources(kDAQ, "PHYSICS");
@@ -268,12 +268,18 @@ UInt_t AliT0Preprocessor::ProcessPhysics(){
               {
                 AliT0CalibTimeEq *online = new AliT0CalibTimeEq();
                 online->Reset();
-                online->ComputeOnlineParams(filePhys);
+                Bool_t writeok = online->ComputeOnlineParams(filePhys);
                 AliCDBMetaData metaData;
                 metaData.SetBeamPeriod(0);
-                metaData.SetResponsible("Tomek&Michal");
+                metaData.SetResponsible("Alla Maevskaya");
                 metaData.SetComment("Time equalizing result.");
-                resultOnline = Store("Calib","TimeDelay", online, &metaData, 0, 1);
+
+                if (writeok) resultOnline = Store("Calib","TimeDelay", online, &metaData, 0, 1);
+		else {
+		  
+		  Log(Form("writeok = %d not enough data for equalizing",resultOnline));
+		  return 0;
+		}		  
 		Log(Form("resultOnline = %d",resultOnline));
                 delete online;
               }
@@ -308,39 +314,41 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
   // return=5 : no DAQ input for OCDB
   // return=6 : failed to retrieve DAQ data from OCDB
   // return=7 : failed to store T0 OCDB data
-	Bool_t dcsDP = ProcessDCS();
-	Log(Form("dcsDP = %d",dcsDP));	
-        TString runType = GetRunType();
-	Log(Form("RunType: %s",runType.Data()));
-	//processing
- 	if(runType == "STANDALONE"){
-	  if(dcsDP==1){
-	    Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-	    return iresultDCS;
-	  }
-	}
-	/*if(runType == "LASER"){
-	  Int_t iresultLaser = ProcessLaser();
-	  if(dcsDP==1){
-            Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-            return iresultDCS;
-          }
-	  Log(Form("iresultLaser = %d",iresultLaser));
-	  return iresultLaser;
-	}
-	*/
-	else if(runType == "PHYSICS"){
-	  Int_t iresultPhysics = ProcessPhysics();
-	 //	 Int_t iresultCosmic = ProcessCosmic();
-	  if(dcsDP==1){
-	    Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-	    return iresultDCS;
-	  }
-	  Log(Form("iresultPhysics = %d",iresultPhysics));
+  // return=8 : not enough data for equalizing
+  Bool_t dcsDP = ProcessDCS();
+  Log(Form("dcsDP = %d",dcsDP));	
+  TString runType = GetRunType();
+  Log(Form("RunType: %s",runType.Data()));
+  //processing
+  if(runType == "STANDALONE"){
+    if(dcsDP==1){
+      Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+      return iresultDCS;
+    }
+  }
+  /*
+  if(runType == "LASER"){
+    Int_t iresultLaser = ProcessLaser();
+    if(dcsDP==1){
+      Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+      return iresultDCS;
+    }
+    
+    Log(Form("iresultLaser = %d",iresultLaser));
+    return iresultLaser;
+  }
+  */
+  else if(runType == "PHYSICS"){
+    Int_t iresultPhysics = ProcessPhysics();
+    if(dcsDP==1){
+      Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+      return iresultDCS;
+    }
+    Log(Form("iresultPhysics = %d",iresultPhysics));
 	  return iresultPhysics; 
-	  //		Log(Form("iresultPhysics =iresultCosmic %d",iresultCosmic));
-	  //	return iresultCosmic; 
-	}	
+      }
+  
+	
 	
 	return 0;
 }

@@ -33,7 +33,7 @@ class AliT0Preprocessor: public AliPreprocessor
 	AliT0Preprocessor(const AliT0Preprocessor & proc); // copy constructor	
 	AliT0Preprocessor& operator=(const AliT0Preprocessor&); //operator
 	UInt_t ProcessDCSDataPoints(TMap* dcsAliasMap);
-	// 	UInt_t ProcessLaser();
+	UInt_t ProcessLaser();
  	UInt_t ProcessPhysics();
  	AliT0DataDCS *fData;			// Data member to process DCS data	
  

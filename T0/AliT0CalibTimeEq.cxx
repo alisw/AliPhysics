@@ -106,18 +106,20 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
 
 
 //________________________________________________________________
-void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
+Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 {
   // compute online equalized time
   Double_t mean=0, meanver=0;
   Double_t rms=0, rmsver=0;
-
+  Int_t nent=0;
+  Bool_t ok=false;
   gFile = TFile::Open(filePhys);
     if(!gFile) {
     AliError("No input PHYS data found ");
   }
   else
     {
+      ok=true;
       Char_t buf1[30];
       for (Int_t i=0; i<24; i++)
 	{
@@ -128,6 +130,9 @@ void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  if(cfd) {
 	    mean=cfd->GetMean();
 	    rms=cfd->GetRMS();
+	    nent=cfd->GetEntries();
+	    //	    printf ("%f %f %i \n",mean,rms,nent);
+	    if(nent<50 || rms>10 ) ok=false;
 	  }
 	   SetTimeEq(i,mean);
 	   SetTimeEqRms(i,rms);
@@ -144,7 +149,9 @@ void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
       
       gFile->Close();
       delete gFile;
-    } 
+
     }
+    return ok; 
+}
 
 
