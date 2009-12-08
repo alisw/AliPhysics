@@ -100,6 +100,7 @@ AliV0Reader::AliV0Reader() :
   fUseImprovedVertex(kFALSE),
   fUseOwnXYZCalculation(kFALSE),
   fDoCF(kFALSE),
+  fUseOnFlyV0Finder(kTRUE),
   fUpdateV0AlreadyCalled(kFALSE),
   fCurrentEventGoodV0s(),
   fPreviousEventGoodV0s()
@@ -164,6 +165,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fUseImprovedVertex(original.fUseImprovedVertex),
   fUseOwnXYZCalculation(original.fUseOwnXYZCalculation),
   fDoCF(original.fDoCF),
+  fUseOnFlyV0Finder(original.fUseOnFlyV0Finder),
   fUpdateV0AlreadyCalled(original.fUpdateV0AlreadyCalled),
   fCurrentEventGoodV0s(original.fCurrentEventGoodV0s),
   fPreviousEventGoodV0s(original.fPreviousEventGoodV0s)
@@ -238,6 +240,27 @@ AliESDv0* AliV0Reader::GetV0(Int_t index){
 Bool_t AliV0Reader::CheckForPrimaryVertex(){
   return fESDEvent->GetPrimaryVertex()->GetNContributors()>0;
 }
+
+
+Bool_t AliV0Reader::CheckV0FinderStatus(Int_t index){
+
+  if(fUseOnFlyV0Finder){
+    cout<<"using on fly status"<<endl;
+    if(!GetV0(index)->GetOnFlyStatus()){
+      return kFALSE;
+    }
+  }
+  if(!fUseOnFlyV0Finder){
+    cout<<"using offline v0 finder"<<endl;
+    if(!GetV0(index)->GetOnFlyStatus()){
+      return kFALSE;
+    }
+  }
+  cout<<"returning true"<<endl;
+  return kTRUE;
+}
+
+
 
 Bool_t AliV0Reader::NextV0(){
   //see header file for documentation

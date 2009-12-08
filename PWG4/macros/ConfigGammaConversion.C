@@ -53,6 +53,8 @@ Double_t kGCsigmaCutGammaMass=0.0001;
 
 Bool_t kGCuseImprovedVertex = kTRUE;
 
+Bool_t kGCUseOnFlyV0Finder = kTRUE;
+
 // define masses of different particles, this will be used by the KF particle
 // together with the width to set mass constraints. Units in GeV.
 Double_t kGCelectronMass = 0.00051099892;
@@ -691,7 +693,7 @@ Bool_t kGCuseESDTrack   = kFALSE;
 /**------------------------------Flag to apply dEdx cut base on sigmas to electron line----------*/
 Bool_t kGCdodEdxSigmaCut= kTRUE;
 /**------------------------------end Flag to apply NsigmadEdx cut ----------*/
-Double_t kGCPIDnSigmaAboveElectronLine=6;
+Double_t kGCPIDnSigmaAboveElectronLine=10;
 Double_t kGCPIDnSigmaBelowElectronLine=-4;
 Double_t kGCPIDnSigmaAbovePionLine=0;
 Double_t kGCPIDMinPnSigmaAbovePionLine=5;
@@ -736,6 +738,9 @@ Bool_t scanArguments(TString arguments){
 	else{
 	  cout<<"Setting output file name to: "<<kGCoutputFileName<<endl;
 	}
+      }
+      else if (argument.CompareTo("-use-offline-finder") == 0){
+	kGCUseOnFlyV0Finder = kFALSE;
       }
       else if (argument.CompareTo("-write-ntuple") == 0){
 	cout<<"Writing ntuple to file."<<endl;
@@ -1089,7 +1094,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
   v0Reader->SetPIDnSigmaBelowElectronLine(kGCPIDnSigmaBelowElectronLine);
   v0Reader->SetPIDnSigmaAbovePionLine(kGCPIDnSigmaAbovePionLine);
   v0Reader->SetPIDMinPnSigmaAbovePionLine(kGCPIDMinPnSigmaAbovePionLine);
- 
+  v0Reader->SetOnFlyFlag(kGCUseOnFlyV0Finder);
 	
   // Create the GammaConversionTask
   AliAnalysisTaskGammaConversion *gammaconversion = new AliAnalysisTaskGammaConversion("GammaConversionTask");
