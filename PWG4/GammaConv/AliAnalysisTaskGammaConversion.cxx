@@ -335,9 +335,10 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
   if(fDoNeutralMeson == kTRUE){
     ProcessGammasForNeutralMesonAnalysis();
   }
-	
-  CheckV0Efficiency();
-	
+
+  if(fDoMCTruth == kTRUE){
+    CheckV0Efficiency();
+  }
   //Process reconstructed gammas electrons for Chi_c Analysis
   if(fDoChic == kTRUE){
     ProcessGammaElectronsForChicAnalysis();
@@ -938,7 +939,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
       continue;
     }
 
-    if( !fV0Reader->GetV0(i)->GetOnFlyStatus()){
+    //    if( !fV0Reader->GetV0(i)->GetOnFlyStatus()){
+    if( !fV0Reader->CheckV0FinderStatus(i)){
       continue;
     }
 

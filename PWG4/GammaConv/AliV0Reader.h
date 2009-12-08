@@ -589,6 +589,11 @@ class AliV0Reader : public TObject {
 
   void SetDoCF(Bool_t flag){fDoCF = flag;}
 
+  Bool_t CheckV0FinderStatus(Int_t index);
+
+  void SetOnFlyFlag(Bool_t flag){fUseOnFlyV0Finder = flag;}
+
+
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
   AliMCEventHandler* fMCTruth;   // for CF    pointer to the MC object
@@ -667,12 +672,14 @@ class AliV0Reader : public TObject {
 
   Bool_t fDoCF; //flag
 
+  Bool_t fUseOnFlyV0Finder;
+
   Bool_t fUpdateV0AlreadyCalled; //flag
 	
   vector<AliKFParticle> fCurrentEventGoodV0s; //vector of good v0s
   vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
 	
-  ClassDef(AliV0Reader,6)
+  ClassDef(AliV0Reader,7)
 };
 #endif
 
