@@ -188,19 +188,17 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
     if( slice > fMaxSlice ) fMaxSlice = slice;
             
     fESDevent = dynamic_cast<AliESDEvent*>(iter);
-    fESDevent->CreateStdContent();
+    fESDevent->GetStdContent();
     
     AliESDfriend *f = new AliESDfriend();
     fESDevent->AddObject(f);
     
     //fESDevent->SetTimeStamp(1256910155);
     //fESDevent->SetRunNumber(84714);
-    //HLTInfo("time stamp and event number -----: %d, %d\n", fESDevent->GetTimeStamp(), fESDevent->GetRunNumber());
-    //fCalibTime->UpdateEventInfo(fESDevent);
-      
+              
     HLTDebug("# Seeds: %i\n", fSeedArray->GetEntriesFast());
     
-    AliTPCcalibCalib *cal = new AliTPCcalibCalib();
+    //AliTPCcalibCalib *cal = new AliTPCcalibCalib();
       
     for(Int_t i=0; i<fSeedArray->GetEntriesFast(); i++){        
         
@@ -209,20 +207,24 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
                     
         fESDtrack = fESDevent->GetTrack(i);
 	if(!fESDtrack) continue;
-        
-	//fESDfriendTrack = const_cast<AliESDfriendTrack*>(fESDtrack->GetFriendTrack());
-	//if(!fESDfriendTrack) continue;
-      
-        cal->RefitTrack(fESDtrack, seed, GetBz());
+             
+        //cal->RefitTrack(fESDtrack, seed, GetBz());
 	
+	fESDfriendTrack = const_cast<AliESDfriendTrack*>(fESDtrack->GetFriendTrack());
+        if(!fESDfriendTrack) continue;
+      
         AliTPCseed *seedCopy = new AliTPCseed(*seed, kTRUE); 
-	fESDtrack->AddCalibObject(seedCopy);        
-    }
+	fESDtrack->AddCalibObject(seedCopy);                
+	
+	//fCalibTime->ProcessAlignITS(fESDtrack,fESDfriendTrack); 
+	//fCalibTime->ProcessAlignITS(fESDtrack,fESDfriendTrack->GetITSOut()); 
+   }
   } 
-    
+  
+  
   if(!fCalibTime) {
-    Int_t startTime=fESDevent->GetTimeStamp()-60*60*1;  //Start time one hour before first event, will make precise cuts later.
-    Int_t   endTime=fESDevent->GetTimeStamp()+60*60*23; //End time 23 hours after first event.
+    Int_t startTime = fESDevent->GetTimeStamp()-60*60*1;  //Start time one hour before first event, will make precise cuts later.
+    Int_t   endTime = fESDevent->GetTimeStamp()+60*60*23; //End time 23 hours after first event.
     fCalibTime = new AliTPCcalibTime("calibTime","time dependent Vdrift calibration", startTime, endTime, 20*60);
     printf("fCalibTime=%i, startTime=%i, endTime=%i\n", fCalibTime!=0, startTime, endTime);
   }
