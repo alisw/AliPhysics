@@ -96,7 +96,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fEtaBinWidth(0),
  fHarmonic(2),
  fAnalysisLabel(NULL),
- // 2.) weights:
+ // 2a.) particle weights:
  fWeightsList(NULL),
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
@@ -105,6 +105,8 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fPhiWeights(NULL),
  fPtWeights(NULL),
  fEtaWeights(NULL),
+ // 2b.) event weights:
+ fMultiplicityWeight(NULL),
  // 3.) integrated flow:
  fIntFlowList(NULL), 
  fIntFlowProfiles(NULL),
@@ -156,6 +158,9 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
   
   // list to hold histograms with phi, pt and eta weights:      
   fWeightsList = new TList();
+  
+  // multiplicity weight:
+  fMultiplicityWeight = new TString("combinations");
     
   // analysis label;
   fAnalysisLabel = new TString();
@@ -2049,9 +2054,23 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   
   // store separetately <2> (to be improved: do I really need this?)
   fIntFlowCorrelationsEBE->SetBinContent(1,two1n1n); // <2>
-  fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(1,dMult*(dMult-1.)); // eW_<2>
-  fIntFlowCorrelationsPro->Fill(0.5,two1n1n,dMult*(dMult-1.));
   
+  // to be improved (this can be implemented better):
+  Double_t mWeight2p = 0.;
+  if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+  {
+   mWeight2p = dMult*(dMult-1.);
+  } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+    {
+     mWeight2p = 1.;    
+    } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+      {
+       mWeight2p = dMult;           
+      }
+            
+  fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(1,mWeight2p); // eW_<2>
+  fIntFlowCorrelationsPro->Fill(0.5,two1n1n,mWeight2p);
+    
   // distribution of <cos(n*(phi1-phi2))>:
   //f2pDistribution->Fill(two1n1n,dMult*(dMult-1.)); 
  } // end of if(dMult>1)
@@ -2160,8 +2179,22 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   
   // store separetately <4> (to be improved: do I really need this?)
   fIntFlowCorrelationsEBE->SetBinContent(2,four1n1n1n1n); // <4>
-  fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(2,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); // eW_<4>
-  fIntFlowCorrelationsPro->Fill(1.5,four1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  
+  // to be improved (this can be implemented better):
+  Double_t mWeight4p = 0.;
+  if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+  {
+   mWeight4p = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.);
+  } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+    {
+     mWeight4p = 1.;    
+    } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+      {
+       mWeight4p = dMult;           
+      }
+      
+  fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(2,mWeight4p); // eW_<4>
+  fIntFlowCorrelationsPro->Fill(1.5,four1n1n1n1n,mWeight4p);
   
   // distribution of <cos(n*(phi1+phi2-phi3-phi4))>
   //f4pDistribution->Fill(four1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
@@ -2306,8 +2339,22 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
 
   // store separetately <6> (to be improved: do I really need this?)
   fIntFlowCorrelationsEBE->SetBinContent(3,six1n1n1n1n1n1n); // <6>
-  fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(3,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)); // eW_<6>
-  fIntFlowCorrelationsPro->Fill(2.5,six1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
+  
+  // to be improved (this can be implemented better):
+  Double_t mWeight6p = 0.;
+  if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+  {
+   mWeight6p = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.);
+  } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+    {
+     mWeight6p = 1.;    
+    } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+      {
+       mWeight6p = dMult;           
+      }
+      
+  fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(3,mWeight6p); // eW_<6>
+  fIntFlowCorrelationsPro->Fill(2.5,six1n1n1n1n1n1n,mWeight6p);
  
   // distribution of <cos(n*(phi1+phi2+phi3-phi4-phi5-phi6))>
   //f6pDistribution->Fill(six1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)); 
@@ -2368,8 +2415,22 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  
   // store separetately <8> (to be improved: do I really need this?)
   fIntFlowCorrelationsEBE->SetBinContent(4,eight1n1n1n1n1n1n1n1n); // <8>
-  fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(4,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.)); // eW_<8>
-  fIntFlowCorrelationsPro->Fill(3.5,eight1n1n1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.));
+  
+  // to be improved (this can be implemented better):
+  Double_t mWeight8p = 0.;
+  if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+  {
+   mWeight8p = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.);
+  } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+    {
+     mWeight8p = 1.;    
+    } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+      {
+       mWeight8p = dMult;           
+      }
+        
+  fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(4,mWeight8p); // eW_<8>
+  fIntFlowCorrelationsPro->Fill(3.5,eight1n1n1n1n1n1n1n1n,mWeight8p);  
   
   // distribution of <cos(n*(phi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8))>
   //f8pDistribution->Fill(eight1n1n1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.));
