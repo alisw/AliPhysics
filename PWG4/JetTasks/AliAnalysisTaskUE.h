@@ -27,7 +27,10 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     virtual     void   CreateOutputObjects();
     virtual     void   Exec(Option_t *option);
     virtual     void   Terminate(Option_t *);
-    
+
+    //Select the trigger
+    void SelectTrigger(Int_t trig) { fTrigger = trig; }
+
     //  Setters
     virtual     void   SetDebugLevel( Int_t level )  { fDebug = level; }
     void   SetPtRangeInHist( Int_t bin, Double_t min, Double_t max ) {
@@ -81,6 +84,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   QSortTracks(TObjArray &a, Int_t first, Int_t last);
     void   WriteSettings();
     
+    Int_t      fTrigger;         //Trigger flag as defined in AliAnalysisHelperJetTasks.h
     Int_t      fDebug;           //  Debug flag
     Bool_t      fDeltaAOD;        //  Read jets from delta AOD 
     TString     fDeltaAODBranch;  //  Jet branch name from delta AOD

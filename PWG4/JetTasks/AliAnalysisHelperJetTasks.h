@@ -31,7 +31,7 @@ class AliAnalysisHelperJetTasks : public TObject {
   static Bool_t GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes);
   enum {kMaxJets = 6}; //  needed for array size not to fragemnt memory on the heap by many new/delete 
 
-  enum Trigger {kAcceptAll = 0,kMB1,kMB2,kMB3, kSPDGFO,kTrigger}; // 
+  enum Trigger {kAcceptAll = 0,kMB1,kMB2,kMB3,kSPDGFO,kTrigger}; // 
 
   static Bool_t Selected(Bool_t bSet = kFALSE,Bool_t bNew = kTRUE); // static function to store the state of selection from service task
   

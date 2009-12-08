@@ -635,8 +635,47 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerFired(const AliVEvent* aEv, Trigger t
 Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigger trigger)
 {
   // checks if an event is fired using the trigger bits
+  // here we do a dirty hack to take also into account the
+  // missing trigger bits and Bunch crossing paatern for real data 
 
-  return IsTriggerBitFired(aEv->GetTriggerMask(), trigger);
+  Bool_t bitFired = IsTriggerBitFired(aEv->GetTriggerMask(), trigger);
+  Bool_t isStringFired = false;
+
+  if(aEv->InheritsFrom("AliESDEvent")){
+    const AliESDEvent *esd = (AliESDEvent*)(aEv);
+    switch (trigger)
+      {
+      case kAcceptAll:
+	{
+	  isStringFired = kTRUE;
+	  break;
+	}
+      case kMB1:
+	{
+	  if(esd->GetFiredTriggerClasses().Contains("CINT1B"))isStringFired = true;;
+	  break;
+	}
+      case kMB2:
+	{
+	  break;
+	}
+      case kMB3:
+	{
+	  break;
+	}
+      case kSPDGFO:
+	{
+	  if(esd->GetFiredTriggerClasses().Contains("CSMBB"))isStringFired = true;;	  
+	  break;
+	}
+      default:
+	{
+	  Printf("IsEventTriggered: ERROR: Trigger type %d not implemented in this method", (Int_t) trigger);
+	  break;
+	}
+      }
+  }
+  return bitFired||isStringFired;
 }
 
 Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(ULong64_t triggerMask, Trigger trigger)
