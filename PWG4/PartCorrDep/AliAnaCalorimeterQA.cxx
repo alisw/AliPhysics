@@ -1125,7 +1125,8 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
   AliAnaPartCorrBaseClass::Print(" ");
 
   printf("Select Calorimeter %s \n",fCalorimeter.Data());
-  printf("Plots style macro %s \n",fStyleMacro.Data()); 
+  printf("Make plots?        %d \n",fMakePlots); 	
+  printf("Plots style macro  %s \n",fStyleMacro.Data()); 
 } 
 
 //__________________________________________________________________
@@ -1235,7 +1236,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			clus->GetMomentum(mom,v);
 			//Get module of cluster
 			nModule = GetModuleNumber(clus);
-			nClustersInModule[nModule]++;
+			if(nModule < fNModules) nClustersInModule[nModule]++;
 			//MC labels
 			nLabel = clus->GetNLabels();
 			if(clus->GetLabels()) labels =  (clus->GetLabels())->GetArray();
@@ -1259,7 +1260,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			clus->GetMomentum(mom,v);
 			//Get module of cluster
 			nModule = GetModuleNumber(clus);
-			nClustersInModule[nModule]++;
+			if(nModule < fNModules)  nClustersInModule[nModule]++;
 			//MC labels
 			nLabel = clus->GetNLabel();
 			if(clus->GetLabels()) labels =  clus->GetLabels();
@@ -1303,7 +1304,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				fhIMMod[nModule]->Fill((mom+mom2).E(),(mom+mom2).M());
 				if(nCaloCellsPerCluster > 1 && nCaloCellsPerCluster2 > 1) {
 					fhIMCellCut  ->Fill((mom+mom2).E(),(mom+mom2).M());
-					fhIMCellCutMod[nModule]->Fill((mom+mom2).E(),(mom+mom2).M());
+					if(nModule < fNModules) fhIMCellCutMod[nModule]->Fill((mom+mom2).E(),(mom+mom2).M());
 				}
 				fhAsym->Fill((mom+mom2).E(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
 					
@@ -1312,7 +1313,11 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	}//cluster loop
 	
 	//Number of clusters per module
-	for(Int_t imod = 0; imod < fNModules; imod++ ) fhNClustersMod[imod]->Fill(nClustersInModule[imod]);
+	for(Int_t imod = 0; imod < fNModules; imod++ ){ 
+		if(GetDebug() > 1) 
+			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - module %d calo %s clusters %d\n", imod, fCalorimeter.Data(), nClustersInModule[imod]); 
+		fhNClustersMod[imod]->Fill(nClustersInModule[imod]);
+	}
 	
 	//CaloCells
 	Int_t *nCellsInModule = new Int_t[fNModules];
@@ -1372,17 +1377,22 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
 			amp     = cell->GetAmplitude(iCell);
 			fhAmplitude->Fill(amp);
-			fhAmplitudeMod[nModule]->Fill(cell->GetAmplitude(iCell));
-			nCellsInModule[nModule]++;
-			fhGridCellsMod[nModule]->Fill(icol,irow);
-			fhGridCellsEMod[nModule]->Fill(icol,irow,amp);
-
+			if(nModule < fNModules) {
+				fhAmplitudeMod[nModule]->Fill(cell->GetAmplitude(iCell));
+				nCellsInModule[nModule]++;
+				fhGridCellsMod[nModule]->Fill(icol,irow);
+				fhGridCellsEMod[nModule]->Fill(icol,irow,amp);
+			}
 		}
 	
 	}//AOD
 
 	//Number of cells per module
-	for(Int_t imod = 0; imod < fNModules; imod++ ) fhNCellsMod[imod]->Fill(nCellsInModule[imod]) ;
+	for(Int_t imod = 0; imod < fNModules; imod++ ) {
+		if(GetDebug() > 1) 
+			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - module %d calo %s cells %d\n", imod, fCalorimeter.Data(), nCellsInModule[imod]); 
+		fhNCellsMod[imod]->Fill(nCellsInModule[imod]) ;
+	}
 
 	if(GetDebug() > 0)
 		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - End \n");
@@ -1414,7 +1424,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_
 	}
 
 	fhE     ->Fill(e);	
-	fhEMod[nModule]->Fill(e);
+	if(nModule < fNModules) fhEMod[nModule]->Fill(e);
 	fhPt    ->Fill(pt);
 	fhPhi   ->Fill(phi);
 	fhEta   ->Fill(eta);
@@ -1422,7 +1432,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_
 	fhEtaPhiE->Fill(eta,phi,e);
 	//Cells per cluster
 	fhNCellsPerCluster->Fill(e, nCaloCellsPerCluster);
-	fhNCellsPerClusterMod[nModule]->Fill(e, nCaloCellsPerCluster);
+	if(nModule < fNModules) fhNCellsPerClusterMod[nModule]->Fill(e, nCaloCellsPerCluster);
 
 	//Fill histograms only possible when simulation
 	if(IsDataMC() && nLabels > 0 && labels){
@@ -2006,7 +2016,8 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	// Histograms of this analsys are kept in the same list as other analysis, recover the position of
 	// the first one and then add the next 
 	Int_t index = outputList->IndexOf(outputList->FindObject(GetAddedHistogramsStringToName()+"hE"));
-	//printf("Calo: %s, index: %d\n",fCalorimeter.Data(),index);
+	printf("Calo: %s, index: %d, nmodules %d\n",fCalorimeter.Data(),index,fNModules);
+	
 	//Read histograms, must be in the same order as in GetCreateOutputObject.
 	fhE       = (TH1F *) outputList->At(index++); 	
 	fhPt      = (TH1F *) outputList->At(index++); 
@@ -2048,6 +2059,18 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhCaloCorrNCells    = (TH2F *) outputList->At(index++); 
 		fhCaloCorrECells    = (TH2F *) outputList->At(index++); 
 	}
+	
+	//Module histograms
+	fhEMod                = new TH1F*[fNModules];
+	fhNClustersMod        = new TH1F*[fNModules];
+	fhNCellsPerClusterMod = new TH2F*[fNModules];
+	fhNCellsMod           = new TH1F*[fNModules];
+	fhGridCellsMod        = new TH2F*[fNModules];
+	fhGridCellsEMod       = new TH2F*[fNModules];
+	fhAmplitudeMod        = new TH1F*[fNModules];
+	fhIMMod               = new TH2F*[fNModules];
+	fhIMCellCutMod        = new TH2F*[fNModules];
+		
 	for(Int_t imod = 0 ; imod < fNModules; imod++){
 		fhEMod[imod]                = (TH1F *) outputList->At(index++);
 		fhNClustersMod[imod]        = (TH1F *) outputList->At(index++); 
@@ -2204,7 +2227,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	//	sprintf(line, ".!rm -fR %s",((AliVEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()))->GetOutputFileName()); 
 	//	gROOT->ProcessLine(line);
 	//}
-	
+	printf("AliAnaCalorimeterQA::Terminate() - Make plots? %d\n",fMakePlots);
 	if(!fMakePlots) return;
 	
 	//Do some plots to end
@@ -2212,8 +2235,8 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	//Recover histograms from output histograms list, needed for distributed analysis.	
 	ReadHistograms(outputList);
 	
-	//printf(" AliAnaCalorimeterQA::Terminate()  *** %s Report:", GetName()) ; 
-	//printf(" AliAnaCalorimeterQA::Terminate()        pt         : %5.3f , RMS : %5.3f \n", fhPt->GetMean(),   fhPt->GetRMS() ) ;
+	printf(" AliAnaCalorimeterQA::Terminate()  *** %s Report:", GetName()) ; 
+	printf(" AliAnaCalorimeterQA::Terminate()        pt         : %5.3f , RMS : %5.3f \n", fhPt->GetMean(),   fhPt->GetRMS() ) ;
 
 	char name[128];
 	char cname[128];
