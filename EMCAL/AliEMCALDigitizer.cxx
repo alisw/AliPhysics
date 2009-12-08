@@ -628,11 +628,11 @@ void AliEMCALDigitizer::InitParameters()
   // New parameters JLK 14-Apr-2008
 
   fMeanPhotonElectron = 4400;  // electrons per GeV 
-  fPinNoise           = 0.037; // pin noise in GEV from analysis test beam data 
+  fPinNoise           = 0.012; // pin noise in GEV from analysis test beam data 
   if (fPinNoise == 0. ) 
     Warning("InitParameters", "No noise added\n") ; 
-  fDigitThreshold     = fPinNoise * 3; // 3 * sigma
-  fTimeResolution     = 0.3e-9 ; // 300 psc
+  fDigitThreshold     = fPinNoise * 4; // 3 * sigma
+  fTimeResolution     = 0.6e-9 ; // 600 psc
   fTimeSignalLength   = 1.0e-9 ;
 
   // These defaults are normally not used. 
