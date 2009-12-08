@@ -73,7 +73,7 @@ public :
 private:
 
   // DCA histograms
-  THnSparseF *fDCAHisto; //-> dca_r:dca_z:eta:pt 
+  THnSparseF *fDCAHisto; //-> dca_r:dca_z:eta:pt:phi 
  
   // Global cuts objects
   AliRecInfoCuts* fCutsRC; // selection cuts for reconstructed tracks

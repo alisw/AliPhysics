@@ -71,7 +71,7 @@ public :
 private:
 
   // TPC histogram
-  THnSparseF *fTPCEventHisto; //-> Xv:Yv:Zv:mult:multP:multN
+  THnSparseF *fTPCEventHisto; //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
   THnSparseF *fTPCTrackHisto; //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge
 
   // Global cuts objects
