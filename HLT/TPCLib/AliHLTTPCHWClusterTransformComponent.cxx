@@ -119,42 +119,18 @@ int AliHLTTPCHWClusterTransformComponent::DoInit( int argc, const char** argv ) 
   fOfflineTransform->SetCurrentRecoParam(&fOfflineTPCRecoParam);
   
   pCalib->SetExBField(GetBz());
-  
-  //Int_t i = 0;
-  //Char_t* cpErr;
 
   int iResult=0;
-
   iResult = ConfigureFromCDBTObjString(fgkOCDBEntryHWTransform);
 
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
 
   return iResult;
-
-  /*
-  TString configuration="";
-  TString argument="";
-  for(int j=0; j<argc && iResult>=0; j++){
-      argument=argv[j];
-      if (!configuration.IsNull()) configuration+=" ";
-      configuration+=argument;	
-  }
-  
-  if (!configuration.IsNull()) {
-    iResult=Configure(configuration.Data());
-  } 
-  else {
-    //iResult=Reconfigure(NULL, NULL);
-  }
-  
-  return 0;
-  */
 } // end DoInit()
 
 int AliHLTTPCHWClusterTransformComponent::DoDeinit() { 
-  // see header file for class documentation 
-   
+  // see header file for class documentation   
   return 0;
 }
 
@@ -164,10 +140,12 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 					          AliHLTUInt32_t& size, 
 					          vector<AliHLTComponentBlockData>& outputBlocks ){
   // see header file for class documentation
+   
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )){
      size = 0;
      return 0;
   }
+ 
   const AliHLTComponentBlockData *iter = NULL;    
   unsigned long ndx;
 
@@ -182,7 +160,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
   AliHLTTPCSpacePointData *spacePoints = outPtr->fSpacePoints;
 
   unsigned long maxPoints = 0;
-
+    
   for(ndx=0; ndx<evtData.fBlockCnt; ndx++){
      
      iter   = blocks+ndx;
@@ -244,7 +222,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      
      for(UInt_t nWords=0; nWords<(iter->fSize/sizeof(AliHLTUInt32_t)); nWords+=5){
      //     for(UInt_t nWords=0; nWords<5; nWords+=5){
-         
+
     	// check if bit 31 and 30 of the 32-bit word is 11 -> cluster (10 is RCU trailer)
 	AliHLTUInt32_t bit3130 = (buffer[nWords]>>30); // shift 30 to the right
        
@@ -257,24 +235,22 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	      HLTWarning("No more space to add clusters, exiting!");
               break;
            }
+
 	   
 	   AliHLTTPCSpacePointData cluster = { 0.,0.,0.,0,0,0.,0.,0,0,kFALSE,0 };
               
-
 	   //get the first word
     	   AliHLTUInt32_t  rowCharge = buffer[nWords];
     	   AliHLTUInt8_t  *rowPtr    = reinterpret_cast<AliHLTUInt8_t*>(&rowCharge);	  
 	   rowPtr+=3; // this is to run for little endian architecture, the word is read from right to left
-
 	
     	   cluster.fPadRow  = (UChar_t)((*rowPtr)&0x3f);
   	   cluster.fCharge  = ((UInt_t)rowCharge&0xFFFFFF)>>6; //24-bit mask to get out the charge and division with 64(>>6) for the gain correction
 
-
 	   Float_t tmpPad   = *((Float_t*)&buffer[nWords+1]);
 	   Float_t tmpTime  = *((Float_t*)&buffer[nWords+2]);
-	   //cluster.fSigmaY2 = *((Float_t*)&buffer[nWords+3]);
-    	   //cluster.fSigmaZ2 = *((Float_t*)&buffer[nWords+4]);
+	   cluster.fSigmaY2 = *((Float_t*)&buffer[nWords+3]);
+    	   cluster.fSigmaZ2 = *((Float_t*)&buffer[nWords+4]);
 	   
 	   // correct expressions for the error calculation
 	   // Kenneth: 12.11.2009 I'm not sure if this is a correct calculation. Leave it out for now since it is anyway not used later since it caused segfaults.
@@ -284,10 +260,8 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = -99.;
     	  	   
 	   HLTDebug("padrow: %d, charge: %f, pad: %f, time: %f, errY: %f, errZ: %f \n", cluster.fPadRow, (Float_t)cluster.fCharge, tmpPad, tmpTime, cluster.fSigmaY2, cluster.fSigmaZ2);        	   
-	   
-
+	      
 	   if(fOfflineTransform == NULL){	   	   
-
 	      cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
 	      AliHLTTPCTransform::Slice2Sector(minSlice, cluster.fPadRow, sector, thisrow);	      
     	      AliHLTTPCTransform::Raw2Local(xyz, sector, thisrow, tmpPad, tmpTime); 
@@ -295,19 +269,17 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	      cluster.fX = xyz[0];
     	      cluster.fY = xyz[1];
     	      cluster.fZ = xyz[2]; 
-	      
-
-     	   } else {
-	     cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
-	     AliHLTTPCTransform::Slice2Sector(minSlice, (UInt_t)cluster.fPadRow, sector, thisrow);	      
+     	   } else {	    
+	     cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);    
+	     AliHLTTPCTransform::Slice2Sector(minSlice, (UInt_t)cluster.fPadRow, sector, thisrow);	     
+	     cluster.fPadRow -= AliHLTTPCTransform::GetFirstRow(minPartition);   	    
 	     Double_t x[3] = {(Double_t)cluster.fPadRow,tmpPad+.5,tmpTime}; 
 	     Int_t iSector[1]= {sector};
 	     fOfflineTransform->Transform(x,iSector,0,1);
 	     cluster.fX = x[0];
 	     cluster.fY = x[1];
-	     cluster.fZ = x[2];	      
- 	   }
-	   
+	     cluster.fZ = x[2];		     
+ 	   }	   
 
 	   HLTDebug("cluster X: %f, Y: %f, Z: %f \n", cluster.fX, cluster.fY, cluster.fZ);
 	   spacePoints[nAddedClusters] = cluster;
@@ -360,7 +332,7 @@ int AliHLTTPCHWClusterTransformComponent::ScanConfigurationArgument(int argc, co
     argument=argv[i];
     AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
     if(!calib){
-      HLTError("CalibDB not availible");
+      HLTError("CalibDB not available");
     }
     Float_t magneticField = argument.Atof();
     calib->SetExBField(magneticField);
@@ -376,47 +348,6 @@ int AliHLTTPCHWClusterTransformComponent::ScanConfigurationArgument(int argc, co
 
   // unknown argument
   return -EINVAL;
-}
-
-
-  
-int AliHLTTPCHWClusterTransformComponent::Configure(const char* arguments) { 
-  // see header file for class documentation
-  
-  int iResult=0;
-  if (!arguments) return iResult;
-  HLTInfo("parsing configuration string \'%s\'", arguments);
-
-  TString allArgs=arguments;
-  TString argument;
-  int bMissingParam=0;
-
-  TObjArray* pTokens=allArgs.Tokenize(" ");
-  if (pTokens) {
-    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-      argument=((TObjString*)pTokens->At(i))->GetString();
-      if (argument.IsNull()) continue;
-     
-      if (argument.CompareTo("-change-dataId")==0) {
-	fDataId = kTRUE;
-	HLTInfo("got \'-change-dataId\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());	
-      } 
-      else {
-	HLTError("unknown argument %s", argument.Data());
-	iResult=-EINVAL;
-	break;
-      }
-    } // end for
-  
-    delete pTokens;
-  
-  } // end if pTokens
-  
-  if (bMissingParam) {
-    HLTError("missing parameter for argument %s", argument.Data());
-    iResult=-EINVAL;
-  }
-  return iResult;
 }
 
 int AliHLTTPCHWClusterTransformComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 

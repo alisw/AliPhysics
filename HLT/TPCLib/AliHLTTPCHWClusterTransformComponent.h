@@ -119,7 +119,7 @@ public:
   AliHLTComponent* Spawn(); 							   
 
   void PrintDebug(AliHLTUInt32_t * buffer, Int_t size);
-
+  
 protected:
 	
   // Protected functions to implement AliHLTComponent's interface.
@@ -139,8 +139,6 @@ protected:
 
 private:
    
-  int Configure(const char* arguments);
-
   int ScanConfigurationArgument(int argc, const char** argv);
           
   /** copy constructor prohibited */
