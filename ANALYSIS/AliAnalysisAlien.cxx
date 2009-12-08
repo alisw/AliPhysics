@@ -2056,12 +2056,20 @@ void AliAnalysisAlien::WriteExecutable()
       out << "echo $ALICE_ROOT" << endl;
       out << "echo \"############## which aliroot : ##############\"" << endl;
       out << "which aliroot" << endl;
+      out << "echo \"############## system limits : ##############\"" << endl;
+      out << "ulimit -a" << endl;
+      out << "echo \"############## memory : ##############\"" << endl;
+      out << "free -m" << endl;
       out << "echo \"=========================================\"" << endl << endl;
       // Make sure we can properly compile par files
       if (TObject::TestBit(AliAnalysisGrid::kUsePars)) out << "export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH" << endl;
       out << fExecutableCommand << " "; 
       out << fAnalysisMacro.Data() << endl << endl;
-      out << "echo \"======== " << fAnalysisMacro.Data() << " finished ========\"" << endl;
+      out << "echo \"======== " << fAnalysisMacro.Data() << " finished with exit code: $? ========\"" << endl;
+      out << "echo \"############## memory after: ##############\"" << endl;
+      out << "free -m" << endl;
+      out << "echo \"############## Last 10 lines from dmesg : ##############\"" << endl;
+      out << "dmesg | tail -n 10" << endl;
    }   
    Bool_t copy = kTRUE;
    if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
