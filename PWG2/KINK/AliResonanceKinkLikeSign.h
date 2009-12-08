@@ -107,9 +107,13 @@ class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
   
   void SetQtLimits(Float_t minQt, Float_t maxQt) {fminQt=minQt; fmaxQt=maxQt;}     
   
+  void SetUpperAbsEtaCut(Double_t maxAbsEtaCut) {
+    fmaxAbsEtaCut=maxAbsEtaCut;
+  }
+  Double_t GetUpperAbsEtaCut() const {return fmaxAbsEtaCut;}   
+  
  private:
   Int_t       fDebug;        //  Debug flag
- // AliESDEvent *fESD;    // ESD object
   TList       *fListOfHistos; // List 
   TF1         *f1; //upper limit curve for the decay K->mu
   TF1         *f2;  //upper limit curve for the decay pi->mu
@@ -140,7 +144,8 @@ class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
   Int_t       fptbins; // number of bins in pt
   Float_t     flowpt; // pt lower limit
   Float_t     fupperpt; // pt upper limit 
-    
+  Double_t    fmaxAbsEtaCut; // max abolute eta cut for analysis
+      
   AliResonanceKinkLikeSign(const AliResonanceKinkLikeSign&); // not implemented
   AliResonanceKinkLikeSign& operator=(const AliResonanceKinkLikeSign&); // not implemented
 
