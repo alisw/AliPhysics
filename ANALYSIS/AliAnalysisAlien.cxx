@@ -784,6 +784,8 @@ Bool_t AliAnalysisAlien::CreateJDL()
       // Set JDL fields
       fGridJDL->SetValue("User", Form("\"%s\"", fUser.Data()));
       fGridJDL->SetExecutable(fExecutable);
+      if (!fArguments.IsNull())
+         fGridJDL->SetArguments(fArguments, "Arguments for the executable command");
 //      fGridJDL->SetTTL((UInt_t)fTTL);
       fGridJDL->SetValue("TTL", Form("\"%d\"", fTTL));
       if (fMaxInitFailed > 0) 
@@ -1266,7 +1268,8 @@ void AliAnalysisAlien::Print(Option_t *) const
    if (fNrunsPerMaster>0)
    printf("=   Number of runs per master job: _______________ %d\n", fNrunsPerMaster);
    printf("=   Number of files in one chunk to be merged: ___ %d\n", fMaxMergeFiles);
-   printf("=   Name of the generated execution script: ______ %s\n",fExecutable.Data());
+   printf("=   Name of the generated execution script: ______ %s\n", fExecutable.Data());
+   printf("=   Executable command: __________________________ %s\n", fExecutableCommand.Data());
    if (fArguments.Length()) 
    printf("=   Arguments for the execution script: __________ %s\n",fArguments.Data());
    printf("=   Name of the generated analysis macro: ________ %s\n",fAnalysisMacro.Data());
