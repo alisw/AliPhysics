@@ -249,6 +249,7 @@ void PlotVertexESD(TString vtxtype="SPD",
   }
 
   Float_t totev=0,totevtriggered=0,nvtx3D=0,nvtxZ=0;
+
   TFile *f=new TFile(fname.Data());
   TList *cOutput = (TList*)f->Get("cOutput");
   TNtuple *nt=(TNtuple*)cOutput->FindObject(ntname.Data());
@@ -416,7 +417,7 @@ void PlotVertexESD(TString vtxtype="SPD",
   
   for(Int_t khis=0;khis<nbinsmult;khis++){ 
       c1->cd(khis+1);
-      if(hxm[khis]->GetEntries()<10) continue;
+      if(hxm[khis]->GetEffectiveEntries()<3) continue;
       hxm[khis]->Draw();
       hxm[khis]->Fit("gaus","Q0");
       fitf= hxm[khis]->GetFunction("gaus");
@@ -425,6 +426,7 @@ void PlotVertexESD(TString vtxtype="SPD",
       Double_t rmsxg=fitf->GetParameter(2);
       Double_t ermsxg=fitf->GetParError(2);
       c1->cd(nbinsmult+khis+1);
+      if(hym[khis]->GetEffectiveEntries()<3) continue;
       hym[khis]->Draw();
       hym[khis]->Fit("gaus","Q0");
       fitf= hym[khis]->GetFunction("gaus");
@@ -433,6 +435,7 @@ void PlotVertexESD(TString vtxtype="SPD",
       Double_t rmsyg=fitf->GetParameter(2);
       Double_t ermsyg=fitf->GetParError(2);
       c1->cd(2*nbinsmult+khis+1);
+      if(hzm[khis]->GetEffectiveEntries()<3) continue;
       hzm[khis]->Draw();
       hzm[khis]->Fit("gaus","Q0");
       fitf= hzm[khis]->GetFunction("gaus");
@@ -805,6 +808,9 @@ void PlotVertexESD(TString vtxtype="SPD",
   grmsxmg->GetYaxis()->SetTitle("Resolution [#mum]");
   grmsxmg->GetYaxis()->SetTitleSize(0.05);
   grmsymg->Draw("PSAME");
+  TF1 *f1 = new TF1("f1","TMath::Sqrt([0]*[0]+[1]*[1]/x) ", 0, 40);
+  grmsxmg->Fit("f1", "R");
+
   //grmszmg->Draw("PSAME");
   leg->Draw();
   sprintf(outgif,"vert%s-rms-mult.gif",vtxtype.Data());
@@ -1296,10 +1302,6 @@ void vertexStudy(TString vtxtype="SPD",
   TH2F *hntrkletsnSPD = new TH2F ("SPD vertex corr", "SPD vertex corr", 100, 0, 20, 100, 0, 20);
   TH2F *hntrkletsnTPC = new TH2F ("TPC vertex corr", "TPC vertex corr", 100, -4, 20, 100, -4, 20);
 
-  TH2F *htstampX = new TH2F("tstamp Vx SPD","tstamp Vx SPD", 22, 1258.9900E6, 1258.9940E6, 125, -1, 1 );
-  TH2F *htstampY = new TH2F("tstamp Vy SPD","tstamp Vy SPD", 22 ,1258.9900E6, 1258.9940E6, 125, -1, 1 );
-  TH2F *htstampZ = new TH2F("tstamp Vz SPD","tstamp Vz SPD", 22, 1258.9900E6, 1258.9940E6, 40, -40, 40 );
-
   TH2F *htstampXtpc = new TH2F("tstamp Vx TPC","tstamp Vx TPC", 22, 1258.9900E6, 1258.9940E6, 125, -1, 1 );
   TH2F *htstampYtpc = new TH2F("tstamp Vy TPC","tstamp Vy TPC", 22 ,1258.9900E6, 1258.9940E6, 125, -1, 1 );
   TH2F *htstampZtpc = new TH2F("tstamp Vz TPC","tstamp Vz TPC", 22, 1258.9900E6, 1258.9940E6, 40, -40, 40 );
@@ -1340,8 +1342,22 @@ void vertexStudy(TString vtxtype="SPD",
   nt->SetBranchAddress("tstamp", &tstamp);
   nt->SetBranchAddress("nTPCin", &nTPCin);
   nt->SetBranchAddress("nITSrefit5or6", &nITSrefit5or6);
+
+  Float_t minTstamp=10E+13;
+  Float_t maxTstamp=-1;
+
+  for (Int_t ientries=0; ientries<nt->GetEntriesFast(); ientries++){
+    nt->GetEntry(ientries);
   
-  for (Int_t ientries; ientries<nt->GetEntriesFast(); ientries++){
+    if (tstamp<minTstamp) minTstamp=tstamp;
+    if (tstamp>maxTstamp) maxTstamp=tstamp;
+  }
+  
+ TH2F *htstampX = new TH2F("tstamp Vx SPD","tstamp Vx SPD", 22, minTstamp, maxTstamp, 125, -1, 1 );
+ TH2F *htstampY = new TH2F("tstamp Vy SPD","tstamp Vy SPD", 22, minTstamp, maxTstamp, 125, -1, 1 );
+ TH2F *htstampZ = new TH2F("tstamp Vz SPD","tstamp Vz SPD", 22, minTstamp, maxTstamp, 40, -40, 40 );
+
+ for (Int_t ientries=0; ientries<nt->GetEntriesFast(); ientries++){
     nt->GetEntry(ientries);
 
     if (ntrksSPD > 0) {
@@ -1368,10 +1384,14 @@ void vertexStudy(TString vtxtype="SPD",
       histYtrack->Fill(yTRK);
       histZtrack->Fill(zTRK);
       
-      hvertexX->Fill(xSPD,xTRK);
-      hvertexY->Fill(ySPD,yTRK);
-      hvertexZ->Fill(zSPD,zTRK);
-
+      if (ntrksSPD>0){
+	if (SPD3D>0.5){ 
+	  hvertexX->Fill(xSPD,xTRK);
+	  hvertexY->Fill(ySPD,yTRK);
+	}
+	hvertexZ->Fill(zSPD,zTRK);
+      }
+      
       fhVtxTRKContrvsTrks56->Fill(nITSrefit5or6,ntrksTRK);   
     }
     
@@ -1380,15 +1400,19 @@ void vertexStudy(TString vtxtype="SPD",
       histYtpc->Fill(yTPC);
       histZtpc->Fill(zTPC);
       
-      fhVtxTPCvsSPDx->Fill(xSPD,xTPC);
-      fhVtxTPCvsSPDy->Fill(ySPD,yTPC);
-      fhVtxTPCvsSPDz->Fill(zSPD,zTPC);
-
+ 
+      if (ntrksSPD>0){
+	if (SPD3D>0.5){
+	  fhVtxTPCvsSPDx->Fill(xSPD,xTPC);
+	  fhVtxTPCvsSPDy->Fill(ySPD,yTPC);
+	}
+	fhVtxTPCvsSPDz->Fill(zSPD,zTPC);
+      }
+      
       htstampXtpc->Fill(tstamp, xTPC);
       htstampYtpc->Fill(tstamp, yTPC);
       htstampZtpc->Fill(tstamp, zTPC);
-
-
+ 
       fhVtxTPCContrvsTrks->Fill(nTPCin,ntrksTPC);
     }
     
