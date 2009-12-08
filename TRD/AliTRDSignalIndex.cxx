@@ -337,7 +337,7 @@ Bool_t  AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
     return kTRUE;
   }
   else {
-    if(fSortedWasInit)
+    if(fSortedWasInit || fCountRC==1)
       { //we already reached the end of the array
         ResetCounters();
 	row = fCurrRow;

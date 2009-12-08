@@ -582,8 +582,8 @@ void AliTRDarrayADC::ConditionalReset(AliTRDSignalIndex* idx)
     {
       Int_t row, col;
       while(idx->NextRCIndex(row, col)){
-	for(Int_t time=0; time<fNtime; time++)
-	  SetData(row, col, time, 0);
+	Int_t colnumb = fgLutPadNumbering[col];
+	memset(&fADC[(row*fNumberOfChannels+colnumb)*fNtime],0,fNtime);
       }
     }
 
