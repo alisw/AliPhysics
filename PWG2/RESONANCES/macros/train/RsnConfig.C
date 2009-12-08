@@ -168,8 +168,8 @@ AliRsnPairManager* RsnConfig
   // define all binnings
   AliRsnFunctionAxis *axisIM   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairInvMass,    4000,  0.0,   2.0);
   AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           50,  0.0,  10.0);
-  //AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          15, -1.5,   1.5);
-  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairY,          15, -1.5,   1.5);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          15, -1.5,   1.5);
+  //AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairY,          15, -1.5,   1.5);
   AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
 
   AliRsnFunction *fcn = new AliRsnFunction;
