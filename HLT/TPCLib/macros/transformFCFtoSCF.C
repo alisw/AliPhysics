@@ -30,7 +30,11 @@
  *
  * In order for the reconstruction to work properly at the absence of raw/ folders,
  * a directory has to be specified as the input argument of the function
- * and an empty raw0 folder has to be created in it.
+ * and an empty raw0 folder will be created if not present.
+ *
+ * The macro looks for a folder called FCFFiles by default, where the produced FCF files 
+ * should be (format TPC_ddlnumber.fcf). Argument number 2 can be set to look in a different
+ * folder if wanted.
  *
  * In addition, since the $ALICE_ROOT/OCDB/GRP/GRP/Data entry has been removed as obsolete,
  * the user needs to produce 1 simulated event, in order to create a proper GRP entry in the
@@ -41,10 +45,10 @@
  * The component runs without arguments, except for the case when we want to differentiate
  * between the FCF and the SFC output. Then the argument -change-dataId will change the 
  * data Id of the FCF output.
- * 
+ *
  */
 
-void transformFCFtoSCF(const char* input="./"){
+void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
   
   
   if(!gSystem->AccessPathName("galice.root")){
@@ -57,7 +61,35 @@ void transformFCFtoSCF(const char* input="./"){
     return;
   }
   
+  TString inputStr;
+  inputStr.Form("%s",input);
+  //  if(inputStr.)
+
+  if(inputStr.CompareTo("./") == 0){
+    if(gSystem->AccessPathName("./raw0")){
+      cout<<"No raw folder found, making dummy raw0 directory...."<<endl;
+      gSystem->Exec("mkdir raw0");
+    }
+    inputStr.Form("%s/",gSystem->pwd());
+  }
+
+  if(!inputStr.EndsWith("/")){
+    inputStr+="/";
+  }
+
+  TString dir;
+  dir.Form("%s%s/raw0",inputStr.Data(),dirName);
+
+  if(!dir.EndsWith("/")){
+    dir+="/";
+  }
+
+  if(gSystem->AccessPathName(dir)){
+    cerr << "Input directory does not exist: "<<dir.Data() << endl;
+    return;
+  }
   
+
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // 
   // init the HLT system in order to define the analysis chain below
@@ -71,25 +103,84 @@ void transformFCFtoSCF(const char* input="./"){
   //
     
   int iMinSlice = 0; 
-  int iMaxSlice = 0;
+  int iMaxSlice = 35;
   int iMinPart  = 0;
-  int iMaxPart  = 0;
+  int iMaxPart  = 5;
 
+  TString dumpOutput;
   TString FCFInput;
-  //for(int slice=iMinSlice; slice<=iMaxSlice; slice++){
-    // for(int part=iMinPart; slice<=iMaxPart; part++){
-  
-         TString argument;
-         argument.Form("-datatype 'HWCLUST1' 'TPC '  -datafile /scratch/FCF/Cluster.fcf -dataspec 0x%02x%02x%02x%02x", iMinSlice, iMaxSlice, iMinPart, iMaxPart);
-         AliHLTConfiguration pubconf("FP", "FilePublisher", NULL, argument.Data());
-	 if(FCFInput.Length()>0) FCFInput+=" ";
-         FCFInput+="FP";
-    // }
- // }
+  TString mergerInput;
+  TString allclusters;
 
-  AliHLTConfiguration hwconf("FCF", "TPCHWClusterTransform", FCFInput.Data(), "");  
+  for(int slice=iMinSlice; slice<=iMaxSlice; slice++){ 
+      
+      TString trackerInput;
+
+      for(int part=iMinPart; part<=iMaxPart; part++){
+
+          int ddlno=768;
+          if (part>1) ddlno+=72+4*slice+(part-2);
+          else ddlno+=2*slice+part;
+
+          TString file;
+          file.Form("raw0/TPC_%d.fcf",ddlno);
+          
+	  if(gSystem->AccessPathName(file)){
+      	    cerr << "Input file does not exist: "<< file.Data() << endl;
+      	    continue;
+          }
+	  	  
+          TString publisher, fcf, dumpout;
+          publisher.Form("DP_%02d_%d", slice, part);
+          TString argument;
+          argument.Form("-datatype 'HWCLUST1' 'TPC '  -datafile %s -dataspec 0x%02x%02x%02x%02x", file.Data(), slice, slice, part, part);
+        	
+          AliHLTConfiguration pubconf(publisher.Data(), "FilePublisher", NULL, argument.Data());
+          fcf.Form("FCF_%02d_%d", slice, part);
+                        
+          AliHLTConfiguration hwconf(fcf.Data(), "TPCHWClusterTransform", publisher.Data(), "");
+          
+	  if(trackerInput.Length()>0) trackerInput+=" ";
+          trackerInput+=fcf;
+	  if(allclusters.Length()>0) allclusters+=" ";
+          allclusters+=fcf;
+	  
+          dumpout.Form("DUMP_%02d_%d", slice, part);
+          
+	  TString argDump, dFile;
+          dFile.Form("FCF_%d.dump",ddlno);
+          argDump.Form("-directory FCFClusterDump -subdir=raw -datafile %s -specfmt= -blcknofmt= -idfmt= -skip-datatype", dFile.Data());
+          
+	  AliHLTConfiguration clusDumpconf(dumpout.Data(), "TPCClusterDump", fcf.Data(), argDump.Data());               
+         
+          if(dumpOutput.Length()>0) dumpOutput+=",";
+          dumpOutput+=dumpout;
+      }
+      
+      TString tracker;
+      tracker.Form("TR_%02d", slice);
+      AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
+      
+      if(mergerInput.Length()>0) mergerInput+=" ";
+      mergerInput+=tracker;
+  }
+  
+  AliHLTConfiguration mergerconf("globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
+  AliHLTConfiguration esdconf("ESD","GlobalEsdConverter","globalmerger","");
+ 
+  TString histoInput; 
+  if(histoInput.Length()>0) histoInput+=" ";
+  histoInput+=allclusters;
+  histoInput+=" ";
+  histoInput+="globalmerger";
+  
+  AliHLTConfiguration histconf("histo","TPCTrackHisto",histoInput.Data(),"");
+  AliHLTConfiguration rfwconf("RFW","ROOTFileWriter","histo","-datafile FCF_trackhisto -overwrite -concatenate-events");
+
+  
+  //USED  AliHLTConfiguration hwconf("FCF", "TPCHWClusterTransform", FCFInput.Data(), "");  
   //AliHLTConfiguration hwconf("FCF", "TPCHWClusterTransform", FCFInput.Data(), "-change-dataId");  
-  AliHLTConfiguration clusDumpconf("sink1", "TPCClusterDump", "FCF", "-directory ClusterDump");
+  //USED  AliHLTConfiguration clusDumpconf("sink1", "TPCClusterDump", "FCF", "-directory FCFClusterDump -subdir=raw -datafile %s -specfmt= -blcknofmt= -idfmt= -skip-datatype");
   
    
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,6 +198,8 @@ void transformFCFtoSCF(const char* input="./"){
   rec.SetFillESD("");  
   rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");  
   rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
-  rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c chains=sink1");
+  TString option;
+  option.Form("libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=RFW,ESD,%s",dumpOutput.Data());
+  rec.SetOption("HLT", option);
   rec.Run();
 }
