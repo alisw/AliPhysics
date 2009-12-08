@@ -38,6 +38,7 @@ public:
    virtual void        SetExecutable(const char *name="analysis.sh")     {fExecutable = name;}
    virtual void        SetExecutableCommand(const char *command="root -b -q") {fExecutableCommand = command;}
    virtual void        SetArguments(const char *name="")                 {fArguments = name;}
+   virtual void        SetExecutableArgs(const char *name="")            {fExecutableArgs = name;}
    virtual void        SetAnalysisMacro(const char *name="myAnalysis.C") {fAnalysisMacro = name;}
    virtual void        SetAnalysisSource(const char *name="myAnalysisClass.cxx") {fAnalysisSource = name;}
    virtual void        SetAdditionalLibs(const char *list)               {fAdditionalLibs = list;}
@@ -120,6 +121,7 @@ private:
    TString          fExecutable;      // Executable script for AliEn job
    TString          fExecutableCommand;  // Command(s) to be executed in the executable script
    TString          fArguments;       // Arguments for the executable script
+   TString          fExecutableArgs;  // arguments added to the executable script after the analysis macro
    TString          fAnalysisMacro;   // Root macro steering the analysis
    TString          fAnalysisSource;  // User analysis implementation (.cxx) file(s)
    TString          fAdditionalLibs;  // List (separated by blacs) of additional libraries needed for the analysis

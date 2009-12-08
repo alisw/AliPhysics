@@ -58,6 +58,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fExecutable(),
                   fExecutableCommand(),
                   fArguments(),
+                  fExecutableArgs(),
                   fAnalysisMacro(),
                   fAnalysisSource(),
                   fAdditionalLibs(),
@@ -108,6 +109,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fExecutable(),
                   fExecutableCommand(),
                   fArguments(),
+                  fExecutableArgs(),
                   fAnalysisMacro(),
                   fAnalysisSource(),
                   fAdditionalLibs(),
@@ -158,6 +160,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fExecutable(other.fExecutable),
                   fExecutableCommand(other.fExecutableCommand),
                   fArguments(other.fArguments),
+                  fExecutableArgs(other.fExecutableArgs),
                   fAnalysisMacro(other.fAnalysisMacro),
                   fAnalysisSource(other.fAnalysisSource),
                   fAdditionalLibs(other.fAdditionalLibs),
@@ -236,6 +239,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fExecutable              = other.fExecutable;
       fExecutableCommand       = other.fExecutableCommand;
       fArguments               = other.fArguments;
+      fExecutableArgs          = other.fExecutableArgs;
       fAnalysisMacro           = other.fAnalysisMacro;
       fAnalysisSource          = other.fAnalysisSource;
       fAdditionalLibs          = other.fAdditionalLibs;
@@ -1272,6 +1276,8 @@ void AliAnalysisAlien::Print(Option_t *) const
    printf("=   Executable command: __________________________ %s\n", fExecutableCommand.Data());
    if (fArguments.Length()) 
    printf("=   Arguments for the execution script: __________ %s\n",fArguments.Data());
+   if (fExecutableArgs.Length()) 
+   printf("=   Arguments after macro name in executable______ %s\n",fExecutableArgs.Data());
    printf("=   Name of the generated analysis macro: ________ %s\n",fAnalysisMacro.Data());
    printf("=   User analysis files to be deployed: __________ %s\n",fAnalysisSource.Data());
    printf("=   Additional libs to be loaded or souces to be compiled runtime: <%s>\n",fAdditionalLibs.Data());
@@ -1314,6 +1320,7 @@ void AliAnalysisAlien::SetDefaults()
    fExecutable                 = "analysis.sh";
    fExecutableCommand          = "root -b -q";
    fArguments                  = "";
+   fExecutableArgs             = "";
    fAnalysisMacro              = "myAnalysis.C";
    fAnalysisSource             = "";
    fAdditionalLibs             = "";
@@ -2064,7 +2071,7 @@ void AliAnalysisAlien::WriteExecutable()
       // Make sure we can properly compile par files
       if (TObject::TestBit(AliAnalysisGrid::kUsePars)) out << "export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH" << endl;
       out << fExecutableCommand << " "; 
-      out << fAnalysisMacro.Data() << endl << endl;
+      out << fAnalysisMacro.Data() << " " << fExecutableArgs.Data() << endl << endl;
       out << "echo \"======== " << fAnalysisMacro.Data() << " finished with exit code: $? ========\"" << endl;
       out << "echo \"############## memory after: ##############\"" << endl;
       out << "free -m" << endl;
