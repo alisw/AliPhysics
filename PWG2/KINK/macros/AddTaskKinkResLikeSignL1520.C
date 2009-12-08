@@ -40,7 +40,7 @@ AliResonanceKinkLikeSign *AddTaskKinkResLikeSignL1520(Short_t lCollidingSystems=
         taskkinkreslikesignL1520->SetMinKinkRadius(120.);
         taskkinkreslikesignL1520->SetMaxKinkRadius(220.);
         taskkinkreslikesignL1520->SetQtLimits(0.05, 0.5);
-
+        taskkinkreslikesignL1520->SetUpperAbsEtaCut(0.9);
    mgr->AddTask(taskkinkreslikesignL1520);
 
    // Create ONLY the output containers for the data produced by the task.

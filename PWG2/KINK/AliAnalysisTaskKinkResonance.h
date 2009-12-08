@@ -5,7 +5,8 @@
 
 //------------------------------------------------------------------------------
 //                   class AliAnalysisTaskKinkResonance
-//This is an analysis task for analysing resonances having one kaon kink
+//         This task is an example of an analysis task
+//        for analysing resonances having one kaon kink
 //Author: Paraskevi Ganoti, University of Athens (pganoti@phys.uoa.gr)
 //------------------------------------------------------------------------------
 

@@ -66,7 +66,7 @@ void AliAnalysisTaskKinkResonance::UserExec(Option_t *)
      Printf("ERROR: Could not retrieve esd");
      return;
   }
-  
+ 
   if((fKinkResonance->GetAnalysisType() == "MC")||(fKinkResonance->GetAnalysisType() == "ESD")) {
     AliMCEvent* mcEvent = MCEvent();
     if (!mcEvent) {

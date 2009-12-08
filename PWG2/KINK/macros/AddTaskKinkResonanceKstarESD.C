@@ -45,6 +45,7 @@ if (!mgr->GetMCtruthEventHandler()) {
   kinkResonanceObjectKESD->SetMinKinkRadius(120.);
   kinkResonanceObjectKESD->SetMaxKinkRadius(220.);
   kinkResonanceObjectKESD->SetQtLimits(0.05, 0.5);
+  kinkResonanceObjectKESD->SetUpperAbsEtaCut(0.9);
 
 // Create and configure the task
 AliAnalysisTaskKinkResonance *taskresonanceKstarESD = new AliAnalysisTaskKinkResonance("TaskResKstarESDKinkPID");

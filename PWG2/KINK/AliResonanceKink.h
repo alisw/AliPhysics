@@ -5,7 +5,7 @@
 
 //------------------------------------------------------------------------------
 //                   class AliResonanceKink
-//                 This task is the base class
+//         This task is an example of an analysis task
 //        for analysing resonances having one kaon kink
 //Author: Paraskevi Ganoti, University of Athens (pganoti@phys.uoa.gr)
 //------------------------------------------------------------------------------
@@ -111,6 +111,11 @@ class AliResonanceKink : public TObject {
   Float_t GetMaxKinkRadius() const {return fmaxKinkRadius;}    
   
   void SetQtLimits(Float_t minQt, Float_t maxQt) {fminQt=minQt; fmaxQt=maxQt;}    
+  
+  void SetUpperAbsEtaCut(Double_t maxAbsEtaCut) {
+    fmaxAbsEtaCut=maxAbsEtaCut;
+  }
+  Double_t GetUpperAbsEtaCut() const {return fmaxAbsEtaCut;} 
 
   //void SetTPCrefit() {Int_t fTPCrefitFlag=kTRUE;}
      
@@ -134,8 +139,6 @@ class AliResonanceKink : public TObject {
   TH1D        *fSimPtKink; // pT Sim one kaon kink spectrum  
   TH1D        *fSimEtaKink; // Eta Sim one kaon kink spectrum spectrum
   TH2D        *fSimEtaPtKink; // Eta pT Sim one kaon kink spectrum   
-  TH1D        *fhdr ; // radial impact  
-  TH1D        *fhdz ; // z impact
   TF1         *f1; //upper limit curve for the decay K->mu
   TF1         *f2;  //upper limit curve for the decay pi->mu
   TString     fAnalysisType;//"ESD" or "MC"
@@ -168,7 +171,7 @@ class AliResonanceKink : public TObject {
   Int_t       fptbins; // number of bins in pt
   Float_t     flowpt; // pt lower limit
   Float_t     fupperpt; // pt upper limit
-  
+  Double_t    fmaxAbsEtaCut; // max abolute eta cut for analysis
 //  Bool_t      fTPCrefitFlag;
   
   AliResonanceKink(const AliResonanceKink&); // not implemented

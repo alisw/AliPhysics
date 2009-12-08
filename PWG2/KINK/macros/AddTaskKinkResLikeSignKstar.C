@@ -40,6 +40,7 @@ AliResonanceKinkLikeSign *AddTaskKinkResLikeSignKstar(Short_t lCollidingSystems=
         taskkinkreslikesignKstar->SetMinKinkRadius(120.);
         taskkinkreslikesignKstar->SetMaxKinkRadius(220.);
         taskkinkreslikesignKstar->SetQtLimits(0.05, 0.5);
+        taskkinkreslikesignKstar->SetUpperAbsEtaCut(0.9);
 
    mgr->AddTask(taskkinkreslikesignKstar);
 
