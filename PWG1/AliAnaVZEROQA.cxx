@@ -68,7 +68,17 @@ AliAnalysisTaskSE("AliAnaVZEROQA"),
   fV0c(0),
   fV0multA(0),
   fV0multC(0),
-  fV0ampl(0)
+  fV0ampl(0),
+
+  fhTimePMTCorr(0),
+  fhEvents(0),
+
+  fhVtxXYBB(0),
+  fhVtxZBB(0),
+  fhVtxXYBGA(0),
+  fhVtxZBGA(0),
+  fhVtxXYBGC(0),
+  fhVtxZBGC(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -110,7 +120,17 @@ AliAnalysisTaskSE(name),
   fV0c(0),
   fV0multA(0),
   fV0multC(0),
-  fV0ampl(0)
+  fV0ampl(0),
+
+  fhTimePMTCorr(0),
+  fhEvents(0),
+
+  fhVtxXYBB(0),
+  fhVtxZBB(0),
+  fhVtxXYBGA(0),
+  fhVtxZBGA(0),
+  fhVtxXYBGC(0),
+  fhVtxZBGC(0)
 {
   // Constructor
   AliInfo("Constructor AliAnaVZEROQA");
@@ -185,6 +205,16 @@ void AliAnaVZEROQA::UserCreateOutputObjects()
   fV0multC = CreateHisto1D("hV0multC","Total reconstructed multiplicity (V0C)",100,0.,1000.);
   fV0ampl  = CreateHisto1D("hV0ampl","V0 multiplicity in single channel (all V0 channels)",400,-0.5,99.5);
 
+  fhTimePMTCorr = CreateHisto2D("htimepmtcorr","Time measured by TDC (corrected for slewing, channels aligned) vs PMT index",64,-0.5,63.5,200,0,100,"PMT Index","Leading time (ns)");
+  fhEvents = CreateHisto2D("hEvents","V0C vs V0A (empty,bb,bg)",3,-0.5,2.5,3,-0.5,2.5);
+
+  fhVtxXYBB = CreateHisto2D("fhVtxXYBB","XY SPD vertex (bb)",200,-2,2,200,-2,2);
+  fhVtxZBB = CreateHisto1D("fhVtxZBB","Z SPD vertex (bb)",400,-50,50);
+  fhVtxXYBGA = CreateHisto2D("fhVtxXYBGA","XY SPD vertex (bga)",200,-2,2,200,-2,2);
+  fhVtxZBGA = CreateHisto1D("fhVtxZBGA","Z SPD vertex (bga)",400,-50,50);
+  fhVtxXYBGC = CreateHisto2D("fhVtxXYBGC","XY SPD vertex (bgc)",200,-2,2,200,-2,2);
+  fhVtxZBGC = CreateHisto1D("fhVtxZBGC","Z SPD vertex (bgc)",400,-50,50);
+
   fListOfHistos->Add(fhAdcNoTimeA);
   fListOfHistos->Add(fhAdcWithTimeA);
   fListOfHistos->Add(fhAdcNoTimeC);
@@ -215,6 +245,16 @@ void AliAnaVZEROQA::UserCreateOutputObjects()
   fListOfHistos->Add(fV0multA);
   fListOfHistos->Add(fV0multC);
   fListOfHistos->Add(fV0ampl);
+
+  fListOfHistos->Add(fhTimePMTCorr);
+  fListOfHistos->Add(fhEvents);
+
+  fListOfHistos->Add(fhVtxXYBB);
+  fListOfHistos->Add(fhVtxZBB);
+  fListOfHistos->Add(fhVtxXYBGA);
+  fListOfHistos->Add(fhVtxZBGA);
+  fListOfHistos->Add(fhVtxXYBGC);
+  fListOfHistos->Add(fhVtxZBGC);
 }
 
 void AliAnaVZEROQA::UserExec(Option_t */*option*/)
@@ -265,13 +305,16 @@ void AliAnaVZEROQA::UserExec(Option_t */*option*/)
       fhTimePMT->Fill(i,esdV0->GetTime(i));
       fhWidthPMT->Fill(i,esdV0->GetWidth(i));
 
+      Float_t correctedTime = CorrectLeadingTime(i,esdV0->GetTime(i),esdV0->GetAdc(i));
+      fhTimePMTCorr->Fill(i,correctedTime);
+
       if (esdV0->GetTime(i) > 1e-6) {
 	if (i >= 32) {
-	  timeA += esdV0->GetTime(i);
+	  timeA += correctedTime;
 	  ntimeA++;
 	}
 	else {
-	  timeC += esdV0->GetTime(i);
+	  timeC += correctedTime;
 	  ntimeC++;
 	}
       }
@@ -281,6 +324,32 @@ void AliAnaVZEROQA::UserExec(Option_t */*option*/)
   if (ntimeC > 0) timeC = timeC/ntimeC;
 
   fhTimeCorr->Fill(timeA,timeC);
+
+  Int_t flaga = 0, flagc = 0;
+  TString stra("emptyA"),strc("emptyC");
+  if (timeA > 48 && timeA < 62) { flaga = 1; stra = "BBA"; }
+  if (timeA > 26  && timeA < 33) { flaga = 2; stra = "BGA"; }
+  if (timeC > 49 && timeC < 60) { flagc = 1; strc = "BBC"; }
+  if (timeC > 43 && timeC < 48.5) { flagc = 2; strc = "BGC"; }
+
+  fhEvents->Fill(flaga,flagc);
+
+  const AliESDVertex *vtx = esd->GetPrimaryVertexSPD();
+
+  if (flaga <= 1 && flagc <=1) {
+    fhVtxXYBB->Fill(vtx->GetXv(),vtx->GetYv());
+    fhVtxZBB->Fill(vtx->GetZv());
+  }
+  else {
+    if (flaga == 2) {
+      fhVtxXYBGA->Fill(vtx->GetXv(),vtx->GetYv());
+      fhVtxZBGA->Fill(vtx->GetZv());
+    }
+    if (flagc == 2) {
+      fhVtxXYBGC->Fill(vtx->GetXv(),vtx->GetYv());
+      fhVtxZBGC->Fill(vtx->GetZv());
+    }
+  }
 
   fV0a->Fill(esdV0->GetNbPMV0A());
   fV0c->Fill(esdV0->GetNbPMV0C());
@@ -333,7 +402,17 @@ void AliAnaVZEROQA::Terminate(Option_t *)
   fV0multC = dynamic_cast<TH1F*>(fListOfHistos->At(20));
   fV0ampl  = dynamic_cast<TH1F*>(fListOfHistos->At(21));
 
-  // draw the histograms if not in batch mode
+  fhTimePMTCorr = dynamic_cast<TH2F*>(fListOfHistos->At(22));
+  fhEvents = dynamic_cast<TH2F*>(fListOfHistos->At(23));
+
+  fhVtxXYBB = dynamic_cast<TH2F*>(fListOfHistos->At(24));
+  fhVtxZBB = dynamic_cast<TH1F*>(fListOfHistos->At(25));
+  fhVtxXYBGA = dynamic_cast<TH2F*>(fListOfHistos->At(26));
+  fhVtxZBGA = dynamic_cast<TH1F*>(fListOfHistos->At(27));
+  fhVtxXYBGC = dynamic_cast<TH2F*>(fListOfHistos->At(28));
+  fhVtxZBGC = dynamic_cast<TH1F*>(fListOfHistos->At(29));
+
+ // draw the histograms if not in batch mode
   if (!gROOT->IsBatch()) {
     new TCanvas;
     fhTimePMT->DrawCopy();
@@ -349,6 +428,10 @@ void AliAnaVZEROQA::Terminate(Option_t *)
     fhTimeCorr->DrawCopy("E");
     new TCanvas;
     fV0ampl->DrawCopy("E");
+    new TCanvas;
+    fhTimePMTCorr->DrawCopy("colz");
+    new TCanvas;
+    fhEvents->DrawCopy("colz");
   }
 
   // write the output histograms to a file
@@ -390,6 +473,16 @@ void AliAnaVZEROQA::Terminate(Option_t *)
   fV0multC->Write();
   fV0ampl->Write();
 
+  fhTimePMTCorr->Write();
+  fhEvents->Write();
+
+  fhVtxXYBB->Write();
+  fhVtxZBB->Write();
+  fhVtxXYBGA->Write();
+  fhVtxZBGA->Write();
+  fhVtxXYBGC->Write();
+  fhVtxZBGC->Write();
+
   outputFile->Close();
   delete outputFile;
 
@@ -397,6 +490,37 @@ void AliAnaVZEROQA::Terminate(Option_t *)
   Info("AliAnaVZEROQA", "Successfully finished");
 }
 
+Float_t AliAnaVZEROQA::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc)
+{
+  // Correct for slewing and align the channels
+
+  if (time == 0) return 0;
+
+  // Time offsets between channels
+  Float_t timeShift[64] = {30.2914 , 30.0019 , 30.7429 , 30.1997 , 30.1511 , 29.6437 , 30.0609 , 29.5452 , 30.1437 , 30.745 , 30.7537 , 30.446 , 30.2771 , 30.838 , 30.3748 , 30.0635 , 30.1786 , 30.282 , 31.0992 , 30.7491 , 30.624 , 30.9268 , 30.6585 , 30.4895 , 31.5815 , 31.3871 , 31.2032 , 31.5778 , 31.0838 , 31.2259 , 31.2122 , 31.5989 , 28.3792 , 28.8325 , 27.8719 , 28.3475 , 26.9925 , 27.9300 , 28.4223 , 28.4996 , 28.2934 , 28.1281 , 27.209 , 28.5327 , 28.1181 , 28.0888 , 29.5111 , 28.6601 , 29.7705 , 29.6531 , 30.3373 , 30.2345 , 30.5935 , 29.8164 , 30.2235 , 29.6505 , 30.1225 , 31.2045 , 30.8399 , 30.6789 , 30.2784 , 31.7028 , 31.4239 , 30.1814};
+  time -= timeShift[i];
+
+  // Slewing correction
+  if (adc == 0) return time;
+
+  time += 30.;
+  if (adc > 300.) adc = 300.;
+  if (adc > 70.) {
+    return (time -
+	    2.93028e+01 +
+	    adc*1.25188e-02 -
+	    adc*adc*2.68348e-05);
+  }
+  else {
+    return (time -
+	    3.52314e+01 +
+	    adc*5.99289e-01 -
+	    adc*adc*2.74668e-02 +
+	    adc*adc*adc*6.61224e-04 -
+	    adc*adc*adc*adc*7.77105e-06 +
+	    adc*adc*adc*adc*adc*3.51229e-08);
+  }
+}
 
 
 

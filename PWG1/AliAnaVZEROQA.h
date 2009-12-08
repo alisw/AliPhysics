@@ -26,6 +26,8 @@ class AliAnaVZEROQA : public AliAnalysisTaskSE
   TH2F* CreateHisto2D(const char* name, const char* title, Int_t nBinsX, Double_t xMin, Double_t xMax,
 		      Int_t nBinsY, Double_t yMin, Double_t yMax,
 		      const char* xLabel = NULL, const char* yLabel = NULL);
+
+  Float_t CorrectLeadingTime(Int_t i, Float_t time, Float_t adc);
   
  private:
 
@@ -61,6 +63,16 @@ class AliAnaVZEROQA : public AliAnalysisTaskSE
   TH1F *fV0multA;
   TH1F *fV0multC;
   TH1F *fV0ampl;
+
+  TH2F *fhTimePMTCorr;
+  TH2F *fhEvents;
+
+  TH2F *fhVtxXYBB;
+  TH1F *fhVtxZBB;
+  TH2F *fhVtxXYBGA;
+  TH1F *fhVtxZBGA;
+  TH2F *fhVtxXYBGC;
+  TH1F *fhVtxZBGC;
 
   AliAnaVZEROQA(const AliAnaVZEROQA&); // not implemented
   AliAnaVZEROQA& operator=(const AliAnaVZEROQA&); // not implemented
