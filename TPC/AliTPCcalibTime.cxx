@@ -195,9 +195,9 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fVdriftBins = 500;
   fVdriftStart= -0.1;
   fVdriftEnd  =  0.1;
-  fRunBins    = 100001;
+  fRunBins    = 1000001;
   fRunStart   = -1.5;
-  fRunEnd     = 99999.5;
+  fRunEnd     = 999999.5;
 
   Int_t    binsVdriftLaser[4] = {fTimeBins , fPtBins , fVdriftBins*20, fRunBins };
   Double_t xminVdriftLaser[4] = {fTimeStart, fPtStart, fVdriftStart  , fRunStart};
@@ -390,6 +390,7 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
       Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
       Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
       Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
+      Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
       TVectorD vecGoofie(20);
       AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
       if (goofieArray){
@@ -412,6 +413,7 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
 	"temp0="<<temp0<<
 	"temp1="<<temp1<<
 	"vecGoofie.="<<&vecGoofie<<
+	"vdcorr="<<vdcorr<<
 	//laser
 	"rejectA="<<isReject[0]<<
 	"rejectC="<<isReject[1]<<
@@ -720,6 +722,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
       Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
       Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
       Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
+      Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
       TVectorD vecGoofie(20);
       AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
       if (goofieArray){
@@ -742,6 +745,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
 	"temp0="<<temp0<<
 	"temp1="<<temp1<<
 	"vecGoofie.=<<"<<&vecGoofie<<
+	"vdcorr="<<vdcorr<<
 	//
 	// accumulated values
 	//
@@ -1103,6 +1107,7 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack* track, AliESDfriendTrack *friend
     TTimeStamp tstamp(fTime);
     Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
     Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+    Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
     (*cstream)<<"tpctpc"<<
       "run="<<fRun<<              //  run number
       "event="<<fEvent<<          //  event number
@@ -1111,6 +1116,7 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack* track, AliESDfriendTrack *friend
       "mag="<<fMagF<<             //  magnetic field
       "ptrel0.="<<ptrelative0<<
       "ptrel1.="<<ptrelative1<<
+      "vdcorr="<<vdcorr<<        // drift correction applied
       //
       "xyz.="<<&gxyz<<             // global position
       "tIn.="<<&trackIn<<         // refitterd track in 
@@ -1276,6 +1282,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
     pTPC.GetDirection(gdTPC.GetMatrixArray());
     pITS.GetXYZ(gpITS.GetMatrixArray());
     pITS.GetDirection(gdITS.GetMatrixArray());
+    Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
     (*cstream)<<"itstpc"<<
       "run="<<fRun<<              //  run number
       "event="<<fEvent<<          //  event number
@@ -1290,6 +1297,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
       "temp0="<<temp0<<
       "temp1="<<temp1<<
       "vecGoofie.="<<&vecGoofie<<
+      "vdcorr="<<vdcorr<<        // drift correction applied
       //
       "nmed="<<kglast<<        // number of entries to define median and RMS
       "vMed.="<<&vecMedian<<    // median of deltas
@@ -1432,6 +1440,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *fr
     pTPC.GetDirection(gdTPC.GetMatrixArray());
     pTRD.GetXYZ(gpTRD.GetMatrixArray());
     pTRD.GetDirection(gdTRD.GetMatrixArray());
+    Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
     (*cstream)<<"trdtpc"<<
       "run="<<fRun<<              //  run number
       "event="<<fEvent<<          //  event number
@@ -1446,6 +1455,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *fr
       "temp0="<<temp0<<
       "temp1="<<temp1<<
       "vecGoofie.="<<&vecGoofie<<
+      "vdcorr="<<vdcorr<<        // drift correction applied
       //
       "nmed="<<kglast<<        // number of entries to define median and RMS
       "vMed.="<<&vecMedian<<    // median of deltas
@@ -1615,6 +1625,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *fr
     pTPC.GetDirection(gdTPC.GetMatrixArray());
     pTOF.GetXYZ(gpTOF.GetMatrixArray());
     pTOF.GetDirection(gdTOF.GetMatrixArray());
+    Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
     (*cstream)<<"toftpc"<<
       "run="<<fRun<<              //  run number
       "event="<<fEvent<<          //  event number
@@ -1629,6 +1640,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *fr
       "temp0="<<temp0<<
       "temp1="<<temp1<<
       "vecGoofie.="<<&vecGoofie<<
+      "vdcorr="<<vdcorr<<        // drift correction applied
       //
       "nmed="<<kglast<<        // number of entries to define median and RMS
       "vMed.="<<&vecMedian<<    // median of deltas

@@ -69,10 +69,10 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;
-  AliXRDPROOFtoolkit::FilterList("laser.txt","* driftvN",1) 
+  AliXRDPROOFtoolkit::FilterList("laserDebug.list","* driftvN",1) 
   TChain * chainDrift = tool.MakeChainRandom("laser.txt.Good","driftv",0,50);
   chainDrift->Lookup();
-  TChain * chainDriftN = tool.MakeChainRandom("laser.txt.Good","driftvN",0,300);
+  TChain * chainDriftN = tool.MakeChainRandom("laserDebug.list.Good","driftvN",0,300);
   chainDriftN->Lookup();
 
 

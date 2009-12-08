@@ -677,7 +677,7 @@ void AliTPCcalibDButil::ProcessNoiseVariations(TVectorF &noiseDeviations)
         //don't use masked channels;
         if (mROC   ->GetValue(irow,ipad)) continue;
         if (mRefROC->GetValue(irow,ipad)) continue;
-	if (nRefROC->GetValue(irow,ipad)==0) continue;
+        if (nRefROC->GetValue(irow,ipad)==0) continue;
         Float_t deviation=(nROC->GetValue(irow,ipad)/nRefROC->GetValue(irow,ipad))-1;
         for (Int_t i=0;i<npar;++i){
           if (deviation>vThres[i])
@@ -2800,6 +2800,7 @@ TMatrixD* AliTPCcalibDButil::MakeStatRelKalman(TObjArray *array, Float_t minFrac
       (*valArray[ipar])[naccept]=state[ipar];
     naccept++;
   }
+  if (naccept<2) return 0;
   TMatrixD *pstat=new TMatrixD(9,3);
   TMatrixD &stat=*pstat;
   for (Int_t ipar=0; ipar<9; ipar++){
@@ -2821,6 +2822,7 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray *array,TMatrixD & stat, 
   //   sigmaCut  - maximal allowed deviation from mean in terms of RMS 
   if (!array) return 0;
   if (array->GetEntries()<=0) return 0;
+  if (!(&stat)) return 0;
   // error increase in 1 hour
   const Double_t kerrsTime[9]={
     0.00001,  0.00001, 0.00001,
