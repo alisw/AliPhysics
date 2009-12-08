@@ -206,6 +206,7 @@ private:
   TClonesArray        *fClusters;                       // List of clusters
   TClonesArray        *fTracklets;                      // List of tracklets
   TClonesArray        *fTracks;                         // List of tracks
+  TClonesArray        *fTracksESD;                      // List of ESD tracks in current SM
   Float_t              fR[kNPlanes];                    //! rough radial position of each TRD layer
 
   // should go to the recoParam
@@ -228,7 +229,7 @@ private:
   static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
   static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
   
-  ClassDef(AliTRDtrackerV1, 3)                          //  TRD tracker - tracklet based tracking
+  ClassDef(AliTRDtrackerV1, 4)                          //  TRD tracker - tracklet based tracking
 
 };
 #endif

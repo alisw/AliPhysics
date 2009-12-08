@@ -86,6 +86,7 @@ AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec)
   ,fClusters(NULL)
   ,fTracklets(NULL)
   ,fTracks(NULL)
+  ,fTracksESD(NULL)
   ,fSieveSeeding(0)
 {
   //
@@ -122,6 +123,8 @@ AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec)
   memset(fTrackQuality, 0, kMaxTracksStack*sizeof(Double_t));
   memset(fSeedLayer, 0, kMaxTracksStack*sizeof(Int_t));
   memset(fSeedTB, 0, kNSeedPlanes*sizeof(AliTRDchamberTimeBin*));
+  fTracksESD = new TClonesArray("AliESDtrack", 2*kMaxTracksStack);
+  fTracksESD->SetOwner();
 }
 
 //____________________________________________________________________
@@ -135,6 +138,7 @@ AliTRDtrackerV1::~AliTRDtrackerV1()
   if(fgTiltedRieman) delete fgTiltedRieman; fgTiltedRieman = NULL;
   if(fgTiltedRiemanConstrained) delete fgTiltedRiemanConstrained; fgTiltedRiemanConstrained = NULL;
   for(Int_t isl =0; isl<kNSeedPlanes; isl++) if(fSeedTB[isl]) delete fSeedTB[isl];
+  if(fTracksESD){ fTracksESD->Delete(); delete fTracksESD; }
   if(fTracks) {fTracks->Delete(); delete fTracks;}
   if(fTracklets) {fTracklets->Delete(); delete fTracklets;}
   if(fClusters) {
@@ -2149,10 +2153,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(Int_t sector, AliESDEvent *esd)
   // 3. Pack results in the ESD event.
   //
   
-  // allocate space for esd tracks in this SM
-  TClonesArray esdTrackList("AliESDtrack", 2*kMaxTracksStack);
-  esdTrackList.SetOwner();
-  
   Int_t nTracks   = 0;
   Int_t nChambers = 0;
   AliTRDtrackingChamber **stack = NULL, *chamber = NULL;
@@ -2167,16 +2167,19 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(Int_t sector, AliESDEvent *esd)
     }
     if(nChambers < 4) continue;
     //AliInfo(Form("Doing stack %d", istack));
-    nTracks += Clusters2TracksStack(stack, &esdTrackList);
+    nTracks += Clusters2TracksStack(stack, fTracksESD);
   }
   //AliInfo(Form("Found %d tracks in SM %d [%d]\n", nTracks, sector, esd->GetNumberOfTracks()));
   
   for(int itrack=0; itrack<nTracks; itrack++)
-    esd->AddTrack((AliESDtrack*)esdTrackList[itrack]);
+    esd->AddTrack((AliESDtrack*)(fTracksESD->operator[](itrack)));
 
   // Reset Track and Candidate Number
   AliTRDtrackerDebug::SetCandidateNumber(0);
   AliTRDtrackerDebug::SetTrackNumber(0);
+
+  // delete ESD tracks in the array
+  fTracksESD->Delete();
   return nTracks;
 }
 
@@ -2981,7 +2984,8 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 * const seeds, Double_t *
     return ptrTrack;
   }
 
-  if(TMath::Abs(track.GetY())>1000) 
+  // prevent the error message in AliTracker::MeanMaterialBudget: "start point out of geometry"
+  if(TMath::Abs(track.GetX()) + TMath::Abs(track.GetY()) + TMath::Abs(track.GetZ()) > 10000) 
     return NULL;
 
   track.ResetCovariance(1);
