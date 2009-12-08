@@ -151,7 +151,7 @@ Int_t AliHLTHOMERManager::Initialize() {
   // -- Initialize asynchronous BlockList
   if( !fAsyncBlockList ) {
     fAsyncBlockList = new TList();
-    fAsyncBlockList->SetOwner(kFALSE);
+    fAsyncBlockList->SetOwner(kTRUE);
   }
 
   // -- Initialize Event Buffer and EventID array
@@ -374,7 +374,6 @@ Int_t AliHLTHOMERManager::NextEvent(){
  
   // see header file for class documentation
   
-
   Int_t iResult = 0;
   Int_t iRetryCount = 0;
   
@@ -442,11 +441,10 @@ Int_t AliHLTHOMERManager::NextEvent(){
 
     } // while( 1 ) {
     
-    
     // -- Check if event could be read
     if ( iResult )
       continue;
-
+    
     // -- Handle Blocks from current reader
     iResult = HandleBlocks();
     if ( iResult ) {
@@ -652,13 +650,11 @@ void AliHLTHOMERManager::AddToAsyncBlockList() {
 
   HLTInfo("Adding blocks to the asynchroneous block list");
 
-
   GetFirstBlk();
 
   // -- Fill block list
   do {
     
-
     // -- Create new block
     AliHLTHOMERBlockDesc * block = new AliHLTHOMERBlockDesc();
     block->SetBlock( GetBlk(), GetBlkSize(), GetBlkOrigin(),
@@ -714,7 +710,7 @@ Int_t AliHLTHOMERManager::HandleBlocks() {
 
   HLTInfo(Form("Event 0x%016LX (%Lu) with %lu blocks", eventID, eventID, fNBlks));
 
-#if 1// EVE_DEBUG
+#if EVE_DEBUG
   // Loop for Debug only
   for ( ULong_t ii = 0; ii < fNBlks; ii++ ) {
     Char_t tmp1[9], tmp2[5];
@@ -733,10 +729,10 @@ Int_t AliHLTHOMERManager::HandleBlocks() {
     
   // -- Check if blocks are from syncronous source
 
-  if ( IsSyncBlocks() )
-    AddBlockListToBuffer();
-  else
-    AddToAsyncBlockList();
+   if ( IsSyncBlocks() )
+     AddBlockListToBuffer();
+   else
+     AddToAsyncBlockList();
     
   return iResult;
 }
@@ -749,17 +745,11 @@ Bool_t AliHLTHOMERManager::IsSyncBlocks() {
 
   GetFirstBlk();
   
-  do {
-  
-          
-    //    if ( !GetBlkType().CompareTo("ALIESDV0") ||
-   
-    if ( !GetBlkType().CompareTo("ALIESDV0")  ||
-	 !GetBlkType().CompareTo("CLUSTERS")  ) {
-      
+  do {          
+    
+    if ( !GetBlkType().CompareTo("ALIESDV0")) {
       bResult = kTRUE;
       break;
-    
     }
     
     if ( !GetBlkType().CompareTo("ROOTTOBJ") ) {

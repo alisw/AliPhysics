@@ -28,7 +28,7 @@
 
 #include "AliHLTLoggingVariadicFree.h"
 
-#define BUFFERSIZE 100
+#define BUFFERSIZE 10
 
 class AliHLTHOMERLibManager;
 
@@ -142,11 +142,7 @@ public:
   /** Get pointer to last asynchrounous BlockList 
    *  @return     ptr to buffer, NULL if none present
    */
-  TList* GetAsyncBlockList() { 
-    cout << "Returning asyncblocklist size : " <<
-      fAsyncBlockList->GetSize() << endl;
-    return fAsyncBlockList; 
-  }
+  TList* GetAsyncBlockList() { return fAsyncBlockList; }
 
   /** Navigate backwards in event buffer 
    *  @return      index in buffer, -1 if boundary reached                

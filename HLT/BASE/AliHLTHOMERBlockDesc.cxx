@@ -80,6 +80,10 @@ AliHLTHOMERBlockDesc::~AliHLTHOMERBlockDesc() {
   if ( fData )
     delete [] fData;
   fData = NULL;
+
+  if ( fTObject ) 
+    delete fTObject;
+  fTObject = NULL;
 }
 
 /*
