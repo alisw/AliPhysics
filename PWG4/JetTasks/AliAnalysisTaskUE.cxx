@@ -78,6 +78,7 @@ ClassImp( AliAnalysisTaskUE)
 //____________________________________________________________________
 AliAnalysisTaskUE:: AliAnalysisTaskUE(const char* name):
 AliAnalysisTask(name, ""),
+fTrigger(0),
 fDebug(0),
 fDeltaAOD(kFALSE),
 fDeltaAODBranch(""),
@@ -232,7 +233,7 @@ void  AliAnalysisTaskUE::CreateOutputObjects()
   //
   //  Histograms
 
-  OpenFile(0);
+  // OpenFile(0);
   CreateHistos();
   //  fListOfHistos->SetOwner(kTRUE);  
 
@@ -243,6 +244,16 @@ void  AliAnalysisTaskUE::CreateOutputObjects()
 //____________________________________________________________________
 void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
 {
+  //Trigger selection
+  AliAnalysisHelperJetTasks::Trigger trig;
+  trig = (const enum AliAnalysisHelperJetTasks::Trigger)fTrigger;
+  if (AliAnalysisHelperJetTasks::IsTriggerFired(fAOD,trig)){
+  	if (fDebug > 1) AliInfo(" Trigger Selection: event ACCEPTED ... ");
+  }else{
+  	if (fDebug > 1) AliInfo(" Trigger Selection: event REJECTED ... ");
+  	return;
+  }
+
   // Execute analysis for current event
   //
   if ( fDebug > 3 ) AliInfo( " Processing event..." );

@@ -273,7 +273,7 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   //
   AliDebug(2,Form("CreateOutputObjects","CreateOutputObjects of task %s", GetName()));
 
-  OpenFile(0);
+  //  OpenFile(0);
   fHistList = new TList();
   //slot #1
   //  OpenFile(0);

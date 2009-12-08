@@ -299,7 +299,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   //
   // Execute analysis for current event
   //
- 
+  AliESDEvent *fESD = 0;
   if(fUseAODInput){    
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD){
@@ -315,6 +315,11 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       Printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
       return;
     }
+    if(fDebug>0){
+      fESD = dynamic_cast<AliESDEvent*> (InputEvent());
+    }
+
+
   }
   
 
@@ -537,6 +542,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     }
   }// loop over generated jets
 
+  
+  
 
   // loop over reconstructed jets
   for(int ir = 0;ir < nRecJets;++ir){
@@ -547,6 +554,24 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     container[0] = ptRec;
     container[1] = etaRec;
     container[2] = phiRec;
+
+    if(ptRec>20.&&fDebug>0){
+      // need to cast to int, otherwise the printf overwrites
+      Printf("Jet found in Event %d with p_T, %E",(int)Entry(),ptRec);
+      fAOD->GetHeader()->Print();
+      for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
+	AliAODTrack *tr = fAOD->GetTrack(it);
+	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+	tr->Print();
+	tr->Dump();
+	if(fESD){
+	  AliESDtrack *esdTr = (AliESDtrack*)fESD->GetTrack(tr->GetID());
+	  esdTr->Print("");
+	  esdTr->Dump();
+	}
+      }
+    }
+  
 
     fhnJetContainer[kStep0+kMaxStep]->Fill(container,eventW);
     if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);

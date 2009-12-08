@@ -47,6 +47,7 @@ class AliAnalysisTaskThreeJets : public AliAnalysisTaskSE
   virtual void Terminate(Option_t * option);
 
   virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
+  virtual void SetUseMC(Bool_t b){fUseMC = b;}
 
   virtual void SetBranchGen(const char* c){fBranchGen = c;}
   virtual void SetBranchRec(const char* c){fBranchRec = c;}
@@ -71,7 +72,8 @@ class AliAnalysisTaskThreeJets : public AliAnalysisTaskSE
   enum {kTracks = 1000};
 
   AliAODEvent  *fAOD; // where we take the jets from can be input or output AOD
-  
+  Bool_t       fUseMC; //switch for using MC info  
+
   TString       fBranchRec;  // AOD branch name for reconstructed
   TString       fBranchGen;  // AOD brnach for genereated
   
