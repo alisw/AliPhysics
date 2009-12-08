@@ -18,21 +18,22 @@ void ConfigOCDB(Int_t crun=-1){
   // 
   printf("SETUP OCBD for TPC\n");
   //
+  Int_t run =crun;
+  if (run<0) run =0;
   AliCDBManager::Instance()->SetDefaultStorage("local:///lustre/alice/alien/alice/data/2009/OCDB/");
+  AliCDBManager::Instance()->SetRun(run);
   //
   //
   // custom calibration to test before committing
   //
   TString ocdbStorage="local://";
   ocdbStorage+=gSystem->Getenv("workdir");
-  ocdbStorage+="../calibNoDrift/OCDB";
+  ocdbStorage+="/calibNoDrift/OCDB";
+  printf("OCDB storage\t%s\n",ocdbStorage.Data());
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/TimeGain",ocdbStorage.Data());
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/TimeDrift",ocdbStorage.Data());
 
-  
-  Int_t run =crun;
-  if (run<0) run =0;
-  AliCDBManager::Instance()->SetRun(run);
+  AliCDBManager::Instance()->Get("TPC/Calib/TimeDrift",run)->Dump();
   SetupCustom(run);
   AliTPCcalibDB::Instance()->SetRun(run);
 }
