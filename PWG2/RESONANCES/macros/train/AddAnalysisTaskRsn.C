@@ -25,21 +25,21 @@ Bool_t AddAnalysisTaskRsn
   task->DumpPriors();
 
   // load config macros
-  gROOT->LoadMacro("RsnConfig.C");
+  gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/RsnConfig.C");
 
   // initialize analysis manager with pairs from config
   AliRsnAnalysisManager *anaMgr = 0x0;
 
   // manager #0: phi
   anaMgr = task->GetAnalysisManager(0);
-  anaMgr->Add(RsnConfig("PHI_NOPID", 333, 1019.3, AliPID::kKaon, AliPID::kKaon));
-  anaMgr->Add(RsnConfig("PHI_BB"   , 333, 1019.3, AliPID::kKaon, AliPID::kKaon));
-  anaMgr->Add(RsnConfig("PHI_PID"  , 333, 1019.3, AliPID::kKaon, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("PHI_NOPID", 333, 1.019455, AliPID::kKaon, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("PHI_BB"   , 333, 1.019455, AliPID::kKaon, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("PHI_PID"  , 333, 1.019455, AliPID::kKaon, AliPID::kKaon));
   // manager #1: kstar
   anaMgr = task->GetAnalysisManager(1);
-  anaMgr->Add(RsnConfig("KSTAR_NOPID", 313, 896.0, AliPID::kPion, AliPID::kKaon));
-  anaMgr->Add(RsnConfig("KSTAR_BB"   , 313, 896.0, AliPID::kPion, AliPID::kKaon));
-  anaMgr->Add(RsnConfig("KSTAR_PID"  , 313, 896.0, AliPID::kPion, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("KSTAR_NOPID", 313, 0.896, AliPID::kPion, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("KSTAR_BB"   , 313, 0.896, AliPID::kPion, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("KSTAR_PID"  , 313, 0.896, AliPID::kPion, AliPID::kKaon));
 
   // setup cuts for events (good primary vertex)
   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 3);

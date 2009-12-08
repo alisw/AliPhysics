@@ -8,7 +8,7 @@
 //  3) subset of (2) whose daughters satisfy primary track cuts (nsigma to vertex, no kink daughters)
 //  4) subset of (3) whose daughters satisty the BB TPC compatibility cut at 3 sigma
 //
-Bool_t AddAnalysisTaskRsnEff
+Bool_t AddAnalysisTaskRsnEffNew
 (
   Bool_t      useBB    = kFALSE,
   Double_t    sigmaTPC = 0.065,

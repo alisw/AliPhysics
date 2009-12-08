@@ -1,7 +1,7 @@
 //
 // Macro to create the full analysis manager for Resonances
 //
-Bool_t AddAnalysisTaskRsn(const char *configMacro = "ConfigTaskRsn.C")
+Bool_t AddAnalysisTaskRsnNew(const char *configMacro = "ConfigTaskRsn.C")
 {
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
