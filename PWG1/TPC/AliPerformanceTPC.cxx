@@ -133,18 +133,19 @@ void AliPerformanceTPC::Init(){
   }
   */
 
-  // Xv:Yv:Zv:mult:multP:multN
-  Int_t binsTPCEventHisto[6]=  {100,  100,   100,  101,   101,   101   };
-  Double_t minTPCEventHisto[6]={-10., -10., -30.,  -0.5,  -0.5,  -0.5  };
-  Double_t maxTPCEventHisto[6]={ 10.,  10.,  30.,  100.5, 100.5, 100.5 };
+  // Xv:Yv:Zv:mult:multP:multN:vertStatus
+  Int_t binsTPCEventHisto[7]=  {100,  100,   100,  151,   151,   151, 2   };
+  Double_t minTPCEventHisto[7]={-10., -10., -30.,  -0.5,  -0.5,  -0.5, 0.  };
+  Double_t maxTPCEventHisto[7]={ 10.,  10.,  30.,  150.5, 150.5, 150.5, 2. };
 
-  fTPCEventHisto = new THnSparseF("fTPCEventHisto","Xv:Yv:Zv:mult:multP:multN",6,binsTPCEventHisto,minTPCEventHisto,maxTPCEventHisto);
+  fTPCEventHisto = new THnSparseF("fTPCEventHisto","Xv:Yv:Zv:mult:multP:multN:vertStatus",7,binsTPCEventHisto,minTPCEventHisto,maxTPCEventHisto);
   fTPCEventHisto->GetAxis(0)->SetTitle("Xv (cm)");
   fTPCEventHisto->GetAxis(1)->SetTitle("Yv (cm)");
   fTPCEventHisto->GetAxis(2)->SetTitle("Zv (cm)");
   fTPCEventHisto->GetAxis(3)->SetTitle("mult");
   fTPCEventHisto->GetAxis(4)->SetTitle("multP");
   fTPCEventHisto->GetAxis(5)->SetTitle("multN");
+  fTPCEventHisto->GetAxis(6)->SetTitle("vertStatus");
   fTPCEventHisto->Sumw2();
 
 
@@ -318,7 +319,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   }
   //
   const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
-  Double_t vTPCEvent[6] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),mult,multP,multN};
+  Double_t vTPCEvent[7] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),mult,multP,multN,vtxESD->GetStatus()};
   fTPCEventHisto->Fill(vTPCEvent);
 }
 
@@ -346,6 +347,21 @@ void AliPerformanceTPC::Analyse() {
       h->GetXaxis()->SetTitle(fTPCEventHisto->GetAxis(i)->GetTitle());
       h->GetYaxis()->SetTitle("events");
       sprintf(title,"%s",fTPCEventHisto->GetAxis(i)->GetTitle());
+      h->SetTitle(title);
+
+      aFolderObj->Add(h);
+  }
+
+  // reconstructed vertex status > 0
+  fTPCEventHisto->GetAxis(6)->SetRange(2,2);
+  for(Int_t i=0; i<6; i++) 
+  {
+      h = (TH1F*)fTPCEventHisto->Projection(i);
+      sprintf(name,"h_tpc_event_recVertex%d",i);
+      h->SetName(name);
+      h->GetXaxis()->SetTitle(fTPCEventHisto->GetAxis(i)->GetTitle());
+      h->GetYaxis()->SetTitle("events");
+      sprintf(title,"%s rec. vertex",fTPCEventHisto->GetAxis(i)->GetTitle());
       h->SetTitle(title);
 
       aFolderObj->Add(h);
