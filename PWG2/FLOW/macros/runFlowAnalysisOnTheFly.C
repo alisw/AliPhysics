@@ -223,7 +223,10 @@ int runFlowAnalysisOnTheFly( Int_t nEvts=440, Int_t mode=mLocal)
    if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
    // qc->SetHarmonic(2); // default is v2
    // qc->SetApplyCorrectionForNUA(kTRUE); // default
-   // qc->SetCalculate2DFlow(kFALSE); // default  
+   // qc->SetCalculate2DFlow(kFALSE); // default
+   // qc->SetMultiplicityWeight("combinations"); // default
+   // qc->SetMultiplicityWeight("unit");
+   // qc->SetMultiplicityWeight("multiplicity");  
    qc->Init();  
  }
   

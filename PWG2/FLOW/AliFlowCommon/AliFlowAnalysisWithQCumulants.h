@@ -166,10 +166,10 @@ class AliFlowAnalysisWithQCumulants{
   AliFlowCommonHistResults* GetCommonHistsResults8th() const {return this->fCommonHistsResults8th;};
   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
   Int_t GetHarmonic() const {return this->fHarmonic;};
-  void SetAnalysisLabel(const char *aLabel) {this->fAnalysisLabel->Append(*aLabel);};
+  void SetAnalysisLabel(const char *aLabel) {this->fAnalysisLabel->Append(*aLabel);}; // to be improved (Append(*aLabel) changed into Append(aLabel)) 
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   
-  // 2.) particle weights:
+  // 2a.) particle weights:
   void SetWeightsList(TList* const wlist) {this->fWeightsList = (TList*)wlist->Clone();}
   TList* GetWeightsList() const {return this->fWeightsList;}  
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
@@ -186,6 +186,9 @@ class AliFlowAnalysisWithQCumulants{
   TH1D* GetPtWeights() const {return this->fPtWeights;};
   void SetEtaWeights(TH1D* const histEtaWeights) {this->fEtaWeights = histEtaWeights;};
   TH1D* GetEtaWeights() const {return this->fEtaWeights;};
+  
+  // 2b.) event weights:
+  void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
   
   // 3.) integrated flow:
   // flags:
@@ -323,7 +326,7 @@ class AliFlowAnalysisWithQCumulants{
   Int_t fHarmonic; // harmonic 
   TString *fAnalysisLabel; // analysis label (all histograms and output file will have this label)
   
-  // 2.) weights
+  // 2a.) particle weights:
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
   Bool_t fUsePhiWeights; // use phi weights
   Bool_t fUsePtWeights; // use pt weights
@@ -332,6 +335,9 @@ class AliFlowAnalysisWithQCumulants{
   TH1F *fPhiWeights; // histogram holding phi weights
   TH1D *fPtWeights; // histogram holding phi weights
   TH1D *fEtaWeights; // histogram holding phi weights 
+  
+  // 2b.) event weights:
+  TString *fMultiplicityWeight; // event-by-event weights for multiparticle correlations
   
   // 3.) integrated flow       
   //  3a.) lists:
