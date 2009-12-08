@@ -245,18 +245,15 @@ Bool_t AliV0Reader::CheckForPrimaryVertex(){
 Bool_t AliV0Reader::CheckV0FinderStatus(Int_t index){
 
   if(fUseOnFlyV0Finder){
-    cout<<"using on fly status"<<endl;
     if(!GetV0(index)->GetOnFlyStatus()){
       return kFALSE;
     }
   }
   if(!fUseOnFlyV0Finder){
-    cout<<"using offline v0 finder"<<endl;
     if(!GetV0(index)->GetOnFlyStatus()){
       return kFALSE;
     }
   }
-  cout<<"returning true"<<endl;
   return kTRUE;
 }
 
