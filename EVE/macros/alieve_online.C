@@ -54,6 +54,7 @@ void alieve_online_init()
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus ITS",   "its_clusters.C++",   "its_clusters"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TPC",   "tpc_clusters.C++",   "tpc_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TRD",   "trd_clusters.C++",   "trd_clusters"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TOF",   "tof_clusters.C++",   "tof_clusters"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus HMPID", "hmpid_clusters.C++", "hmpid_clusters"));
 
