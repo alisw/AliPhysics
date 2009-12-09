@@ -36,12 +36,12 @@ char * kmydataset = "/COMMON/COMMON/LHC09a4_run8101X";
 //Put name of file containing xsection 
 //Put number of events per ESD file
 //This is an specific case for normalization of Pythia files.
-const Bool_t kGetXSectionFromFileAndScale = kTRUE;
+Bool_t kGetXSectionFromFileAndScale = kTRUE;
 const char * kXSFileName = "pyxsec.root";
 const Int_t kNumberOfEventsPerFile = 200; 
 //---------------------------------------------------------------------------
 
-const Bool_t kMC = kTRUE; //With real data kMC = kFALSE
+Bool_t kMC = kTRUE; //With real data kMC = kFALSE
 TString kInputData = "ESD";//ESD, AOD, MC
 TString kTreeName = "esdTree";
 //const   Bool_t kMergeAODs = kTRUE; //uncomment for AOD merging
@@ -65,7 +65,11 @@ void anaJete()
 
   //Process environmental variables from command line:
   ProcessEnvironment();	
-  printf("Final    Variables: kInputData %s, mode %d, config2 %s, config3 %s, sevent %d\n",kInputData.Data(),mode,sconfig2,sconfig3,sevent);
+  printf("Final    Variables: kInputData %s, kMC %d, mode %d, config2 %s, config3 %s, sevent %d\n",kInputData.Data(),kMC,mode,sconfig2,sconfig3,sevent);
+
+  if(!kMC) {
+    kGetXSectionFromFileAndScale = kFALSE;
+  }
 
   //--------------------------------------------------------------------
   // Load analysis libraries
@@ -702,6 +706,9 @@ void ProcessEnvironment(){
   if (gSystem->Getenv("anaInputData"))
      kInputData = gSystem->Getenv("anaInputData");
 
+  if (gSystem->Getenv("anakMC"))
+     kMC = atoi(gSystem->Getenv("anakMC"));
+
   if (gSystem->Getenv("MODE"))
      mode = atoi(gSystem->Getenv("MODE"));
 
@@ -717,6 +724,6 @@ void ProcessEnvironment(){
   if (gSystem->Getenv("SEVENT"))
       sevent = atoi (gSystem->Getenv("SEVENT"));
 	
-      printf("Process: Variables: kInputData %s, mode %d, config2 %s, config3 %s, sevent %d\n",kInputData.Data(),mode,sconfig2,sconfig3,sevent);
+      printf("Process: Variables: kInputData %s, kMC %d, mode %d, config2 %s, config3 %s, sevent %d\n",kInputData.Data(),kMC,mode,sconfig2,sconfig3,sevent);
 
 }

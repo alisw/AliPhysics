@@ -19,6 +19,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 //Bool_t kInputIsESD = kFALSE;    //uncomment for input AODs
   Bool_t kFollowsFilter = kTRUE;  //uncomment if follows ESD filter task
 //Bool_t kFollowsFilter = kFALSE; //uncomment if no ESD filter task
+  Bool_t kMC = kTRUE; //set to kFALSE for data
 
   //enum for the different electron cut sets
   //defined for dR and p/E
@@ -56,6 +57,11 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
     }
   }
 
+  //Alternatively, adjust for real data based on kMC value.
+  if (gSystem->Getenv("anakMC")){
+    kMC = atoi(gSystem->Getenv("anakMC"));
+  }
+
   //Detector Fiducial Cuts
   AliFiducialCut * fidCut = new AliFiducialCut();
   fidCut->DoCTSFiducialCut(kFALSE) ;
@@ -83,10 +89,13 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   //reader->SwitchOffPHOSCells();	
 
   //Kine
-  if(!kInputIsESD){
+  if(kMC && !kInputIsESD){
     reader->SwitchOffStack();          // On  by default, remember to SwitchOnMCData() in analysis classes
     reader->SwitchOnAODMCParticles();  // Off by default, remember to SwitchOnMCData() in analysis classes
   }
+
+  //Select Trigger Class for real data
+  if(!kMC) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
 
   //Min particle pT
   reader->SetCTSPtMin(0.0);   //new
@@ -134,8 +143,10 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   AliAnaElectron *anaelectron = new AliAnaElectron();
   anaelectron->SetDebug(-1); //10 for lots of messages
   anaelectron->SetCalorimeter("EMCAL");
-  anaelectron->SwitchOnDataMC();
-  anaelectron->SetMinPt(1.);
+  if(kMC){
+    anaelectron->SwitchOnDataMC();
+    anaelectron->SetMinPt(1.);
+  }
   anaelectron->SetOutputAODName("Electrons");
   anaelectron->SetOutputAODClassName("AliAODPWG4Particle");
   anaelectron->SetWriteNtuple(kFALSE);
