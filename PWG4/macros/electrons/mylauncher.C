@@ -15,7 +15,7 @@ void mylauncher()
   // List any other files to upload in string filenames separated by blanks.
   TString execfilename = "";
   // List any other files to upload in string filenames separated by blanks.
-  TString filelist = "run.C validate.sh anaJete.C ConfigJetAnalysisFastJet.C ConfigAnalysisElectron.C mergeout.jdl mergeoutscaled.jdl ANALYSIS.par ANALYSISalice.par AOD.par ESD.par STEERBase.par JETAN.par FASTJETAN.par PWG4PartCorrBase.par PWG4PartCorrDep.par";
+  TString filelist = "run.C validate.sh anaJete.C ConfigJetAnalysisFastJet.C ConfigAnalysisElectron.C mergeout.jdl mergeoutscaled.jdl ANALYSIS.par ANALYSISalice.par AOD.par EMCALUtils.par ESD.par PHOSUtils.par STEERBase.par JETAN.par FASTJETAN.par PWG4PartCorrBase.par PWG4PartCorrDep.par";
   TString filename;
 
   Bool_t kMultiMode = kFALSE;//uncomment for regular mode
