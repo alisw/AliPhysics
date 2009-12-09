@@ -13,6 +13,7 @@
 
 #include "AliITSOnlineCalibrationSPDhandler.h"
 #include "AliITSOnlineCalibrationSPD.h"
+#include "AliITSTriggerConditions.h"
 #include "AliITSIntMap.h"
 #include <TObjArray.h>
 #include <TArrayI.h>
@@ -42,6 +43,7 @@ AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler():
   }
   ActivateALL();
   UnSetDeadALL();
+  fTriggerConditions = 0x0;
 }
 //____________________________________________________________________________________________
 AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler(const AliITSOnlineCalibrationSPDhandler& handle): 
@@ -380,6 +382,14 @@ UInt_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromText(const char *fileName
     textFile.close();
   }
   return newNrNoisy;
+}
+//____________________________________________________________________________________________
+void AliITSOnlineCalibrationSPDhandler::ReadPITConditionsFromText(const char *fileName) {
+  // read PIT conditions file from text as printed out at P2
+  //  !!! please note that the chip numbering goes from 9 to 0 in the text. In PVSS panels is the opposite.
+  if(fTriggerConditions) fTriggerConditions->ResetAll();
+  else fTriggerConditions = new AliITSTriggerConditions();
+  fTriggerConditions->ReadFromTextFile(fileName);
 }
 //____________________________________________________________________________________________
 void AliITSOnlineCalibrationSPDhandler::WriteToFilesAlways() {
@@ -2926,4 +2936,43 @@ Bool_t AliITSOnlineCalibrationSPDhandler::IsNoisyChip(UInt_t eq, UInt_t hs, UInt
   }
   return isNoisy;
 }
+//____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::WritePITConditionsToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage) {
+  // writes noisy pixels to DB for given runNrs
+  // overwrites any previous entries
+  AliCDBManager* man = AliCDBManager::Instance();
+  TString storageSTR = Form("%s",storage);
+  if (storageSTR.CompareTo("default")==0) {
+    if(!man->IsDefaultStorageSet()) {
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    }
+  }
+  else {
+    storageSTR = Form("local://%s",storage);
+    man->SetDefaultStorage(storageSTR.Data());
+  }
+  AliCDBMetaData* metaData = new AliCDBMetaData();
+  metaData->SetResponsible("Annalisa Mastroserio");
+  metaData->SetComment("Created by AliITSOnlineCalibrationSPDhandler.");
+  AliCDBId idCalSPD("TRIGGER/SPD/PITConditions",runNrStart,runNrEnd);
+  AliCDBEntry* cdbEntry = new AliCDBEntry((TObject*)fTriggerConditions,idCalSPD,metaData);
+  man->Put(cdbEntry);
+  delete cdbEntry;
+  delete metaData;
+  return kTRUE;
+}
+
+//____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::SetInactiveChipInPITmask(UInt_t eq, UInt_t hs, UInt_t chip){
+
+fTriggerConditions->SetInActiveChip(eq,hs,chip);
+
+}
+//____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::UnSetInactiveChipInPITmask(UInt_t eq, UInt_t hs, UInt_t chip){
+
+fTriggerConditions->SetInActiveChip(eq,hs,chip);
+
+}
+
 

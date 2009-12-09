@@ -76,7 +76,8 @@ AliITSTriggerConditions& AliITSTriggerConditions::operator=(const AliITSTriggerC
 }
 //__________________________________________________________________________________
 void AliITSTriggerConditions::DumpAll() const {
-  // Dumps all conditions data
+  // Dumps all conditions data. This is as it is shown in PVSS, whereas the content of
+  // the txt file they are read from has a swap in the chip numbering
 
   printf("[Header]\n");
   printf("RUN_NUMBER = %d\n",fRunNumber);
@@ -572,4 +573,50 @@ Bool_t AliITSTriggerConditions::IsEqualTo(AliITSTriggerConditions *cond) const {
   }
 
   return kTRUE;
+}
+//__________________________________________________________________________________
+void AliITSTriggerConditions::PrintAsInPIT() const {
+
+  // Prints conditions data
+
+  printf("[Header]\n");
+  printf("RUN_NUMBER = %d\n",fRunNumber);
+  printf("PROCESSING_FIRMWARE_VERSION = %d\n",fFirmWareVersion);
+  printf("GLOBAL_DESCRIPTION = %s\n",fGlobalDescription.Data());
+  printf("VERSION_REGISTER_VALUE = %d\n",fVersionRegister);
+  printf("INPUT_CONDITIONS_VERSION = %d\n",fInputConditionsVersion);
+  printf("PARAMETERS_VERSION = %d\n",fParametersVersion);
+  printf("\n");
+
+  printf("[Outputs]\n");
+  for (UInt_t i=0; i<fNumAlgo; i++) {
+    printf("%d = '%s', '%s'\n", GetAlgoIDI(i), GetAlgoLabelI(i), GetAlgoDescriptionI(i));
+  }
+  printf("\n");
+
+  printf("[Output_parameters]\n");
+  for (UInt_t i=0; i<fNumAlgo; i++) {
+    printf("%d =", GetAlgoIDI(i));
+    for (Short_t p=0; p<GetNumAlgoParamI(i); p++) {
+      printf(" '%s', %d;", GetAlgoParamNameII(i,p), GetAlgoParamValueII(i,p));
+    }
+    printf("\n");
+  }
+  printf("\n");
+
+  printf("[Active_chips]\n");
+  for (UInt_t eq=0; eq<20; eq++) {
+    for (UInt_t hs=0; hs<6; hs++) {
+      UInt_t nActiveOnHs = 0;
+      TString inactiveStr = "";
+      for (UInt_t chip=0; chip<10; chip++) {
+        Bool_t isChipActive = IsChipActive(eq,hs,9-chip);
+        inactiveStr.Append(Form("%d",isChipActive));
+        nActiveOnHs+=isChipActive;
+      }
+      if (nActiveOnHs<10) {
+        printf("%d,%c,%d=%s\n", eq%10, eq<10 ? 'A' : 'C', hs, inactiveStr.Data());
+      }
+    }
+  }
 }

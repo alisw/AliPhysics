@@ -31,6 +31,7 @@ class AliITSTriggerConditions : public TObject{
     virtual Bool_t        IsEqualTo(AliITSTriggerConditions *cond) const;
 
     virtual void          DumpAll() const;
+    virtual void          PrintAsInPIT() const;
     virtual void          ResetAll();
 
     virtual void          SetRunNumber(UInt_t num) {fRunNumber=num;}
