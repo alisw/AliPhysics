@@ -52,14 +52,14 @@ void ConfigTaskUE(AliAnalysisTaskUE * ueana){
   // common config, extend with different cases
   Int_t anaType =1; 
   Int_t regType =1;
-  Double_t jetEtaCut=0.2;
-  Double_t trackPtCut=0.5; 
-  Double_t trackEtaCut= 0.9; 
-  Double_t rad=0.7; 
+  Double_t jetEtaCut=0.5;
+  Double_t trackPtCut=0.1;
+  Double_t trackEtaCut= 0.9;
+  Double_t rad=0.4;
   Double_t deltaPhiCut = 2.616;
-  
+  ueana->SelectTrigger(AliAnalysisHelperJetTasks::kMB1);
   ueana->SetDebugLevel(0); 
-  ueana->SetPtRangeInHist(25, 0., 250.);
+  ueana->SetPtRangeInHist(25, 0., 50.);
   ueana->SetAnaTopology(anaType);      
   ueana->SetRegionType(regType);        
   ueana->SetJet1EtaCut(jetEtaCut);     

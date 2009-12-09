@@ -22,11 +22,15 @@ AliAnalysisTaskThreeJets * AddTaskThreeJets(char *bRec = "jets",char * bGen = "j
   threeJets->SetBranchGen(bGen); 
   //  threeJets->SetDebugLevel(10);
   threeJets->SetR(.5); 
+  //  threeJets->SetUseMC(kFALSE); // explicitly switch of use of MC/search for MC Jets
+
   
   TString type = mgr->GetInputEventHandler()->GetDataType();
   if(type == "AOD"){
     threeJets->SetAODInput(kTRUE);
   }
+  
+
 
   mgr->AddTask(threeJets);
    
