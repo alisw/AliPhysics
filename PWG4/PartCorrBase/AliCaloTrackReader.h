@@ -170,6 +170,10 @@ class AliCaloTrackReader : public TObject {
 	
   void SetDeltaAODFileName(TString name ) {fDeltaAODFileName = name ; }
   TString GetDeltaAODFileName() const {return fDeltaAODFileName ; }
+
+  void SetFiredTriggerClassName(TString name ) {fFiredTriggerClassName = name ; }
+  TString GetFiredTriggerClassName() const {return fFiredTriggerClassName ; }
+  virtual TString GetFiredTriggerClasses() {return "";}
 	
  protected:
   Int_t	           fEventNumber; // Event number
@@ -216,8 +220,9 @@ class AliCaloTrackReader : public TObject {
 	
   Bool_t	     fCleanOutputStdAOD;   // clean the written standard tracks and caloclusters in output AOD
   TString        fDeltaAODFileName ;   // Delta AOD file name
-
-  ClassDef(AliCaloTrackReader,8)
+  TString        fFiredTriggerClassName  ;  // Name of trigger event type used to do the analysis
+	
+  ClassDef(AliCaloTrackReader,9)
 } ;
 
 

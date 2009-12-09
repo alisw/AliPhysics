@@ -35,7 +35,6 @@
 
 //---- ANALYSIS system ----
 #include "AliCaloTrackESDReader.h" 
-#include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODTrack.h"

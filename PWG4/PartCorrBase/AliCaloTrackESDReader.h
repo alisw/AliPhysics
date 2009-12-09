@@ -20,6 +20,7 @@
 
 // --- AliRoot system ---
 #include "AliCaloTrackReader.h" 
+#include "AliESDEvent.h"
 
 class AliCaloTrackESDReader : public AliCaloTrackReader {
   
@@ -39,7 +40,9 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
   void GetVertex(Double_t v[3]) const ;
   Double_t GetBField() const;
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
-  
+	
+  TString GetFiredTriggerClasses() {return ((AliESDEvent*)GetInputEvent())->GetFiredTriggerClasses();}
+	
   ClassDef(AliCaloTrackESDReader,1)
     } ;
 

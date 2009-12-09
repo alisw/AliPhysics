@@ -17,6 +17,7 @@
 
 // --- AliRoot system ---
 #include "AliCaloTrackReader.h" 
+#include "AliAODEvent.h"
 
 class AliCaloTrackAODReader : public AliCaloTrackReader {
 	
@@ -42,6 +43,8 @@ public:
   void SwitchOnWriteStdAOD()  {fWriteOutputStdAOD = kTRUE;}
   void SwitchOffWriteStdAOD() {fWriteOutputStdAOD = kFALSE;}
 
+  TString GetFiredTriggerClasses() {return ((AliAODEvent*)GetInputEvent())->GetFiredTriggerClasses();}
+	
   void Print(const Option_t * opt) const;
 	
 private:
