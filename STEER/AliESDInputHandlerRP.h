@@ -35,7 +35,7 @@ class AliESDInputHandlerRP : public AliESDInputHandler {
     virtual Bool_t       Notify(const char* path);
     virtual void         ResetIO();
     //
-    virtual TTree*       GetTreeR(char* det);
+    virtual TTree*       GetTreeR(const char* det);
  private:
     Bool_t      OpenFile(Int_t i);
     AliESDInputHandlerRP(const AliESDInputHandlerRP& handler);             

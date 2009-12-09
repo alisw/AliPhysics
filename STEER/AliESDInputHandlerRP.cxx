@@ -281,7 +281,7 @@ void AliESDInputHandlerRP::ResetIO()
     fExtension="";
 }
 
-TTree* AliESDInputHandlerRP::GetTreeR(char* det)
+TTree* AliESDInputHandlerRP::GetTreeR(const char* det)
 {
 // Return pointer to RecPoint tree for detector det
     TNamed* entry = (TNamed*) (fDetectors->FindObject(det));
