@@ -59,9 +59,6 @@
 #include "AliTRDCalibraVector.h"
 #include "./Cal/AliTRDCalPad.h"
 #include "./Cal/AliTRDCalDet.h"
-#include "AliCDBMetaData.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 
 #include "AliLog.h"
 
@@ -89,6 +86,8 @@ AliTRDcalibration::AliTRDcalibration()
   ,fNbClusters(0)
   ,fNbClustersOffline(0)
   ,fNbClustersStandalone(0)
+  ,fPHSM(0)
+  ,fCHSM(0)
   ,fPHSum(0)
   ,fCHSum(0)
   ,fDetSum(0)
@@ -105,9 +104,8 @@ AliTRDcalibration::AliTRDcalibration()
   ,fOfflineTracks(kFALSE)
   ,fStandaloneTracks(kFALSE)
   ,fCompressPerDetector(kFALSE)
-  ,fRunNumber(0)
-  ,fkNameDirectory("local://.")
   ,fGraph(0x0)
+  ,fArrayCalib(0x0)
   ,fPostProcess(kFALSE)
 {
   // Constructor
@@ -138,13 +136,15 @@ AliTRDcalibration::~AliTRDcalibration()
   if(fNbClusters) delete fNbClusters;
   if(fNbClustersOffline) delete fNbClustersOffline;
   if(fNbClustersStandalone) delete fNbClustersStandalone;
+  if(fPHSM) delete fPHSM;
+  if(fCHSM) delete fCHSM;
   if(fPHSum) delete fPHSum;
   if(fCHSum) delete fCHSum;
   if(fDetSum) delete fDetSum;
   if(fDetSumVector) delete fDetSumVector;
-  if(fkNameDirectory) delete fkNameDirectory;
   if(fGraph){fGraph->Delete(); delete fGraph;}
-
+  if(fArrayCalib){fArrayCalib->Delete(); delete fArrayCalib;}
+   
 }
 //________________________________________________________________________
 void AliTRDcalibration::CreateOutputObjects() 
@@ -244,15 +244,30 @@ void AliTRDcalibration::CreateOutputObjects()
     fNbClustersStandalone = new TH1F("NbClustersStandalone","",35,0,35);
     fNbClustersStandalone->Sumw2();
     //
-    fPHSum = new TProfile2D("PH2dSum","Nz0Nrphi0"
-			    ,fNbTimeBins,-0.05,(Double_t)(fNbTimeBins/10.0)-0.05
-			    ,540,0,540);
+    fPHSM = new TProfile2D("PH2dSM","Nz10Nrphi10"
+			    ,fNbTimeBins,-0.05,(Double_t)((fNbTimeBins-0.5)/10.0)
+			    ,18,0,18);
+    fPHSM->SetYTitle("Det/pad groups");
+    fPHSM->SetXTitle("time [#mus]");
+    fPHSM->SetZTitle("<PH> [a.u.]");
+    fPHSM->SetStats(0);
+    //
+    fCHSM = new TH2I("CH2dSM","Nz10Nrphi10",50,0,300,18,0,18);
+    fCHSM->SetYTitle("Det/pad groups");
+    fCHSM->SetXTitle("charge deposit [a.u]");
+    fCHSM->SetZTitle("counts");
+    fCHSM->SetStats(0);
+    fCHSM->Sumw2();
+    //
+    fPHSum = new TProfile2D("PH2dSum","Nz100Nrphi100"
+			    ,fNbTimeBins,-0.05,(Double_t)((fNbTimeBins-0.5)/10.0)
+			    ,1,0,1);
     fPHSum->SetYTitle("Det/pad groups");
     fPHSum->SetXTitle("time [#mus]");
     fPHSum->SetZTitle("<PH> [a.u.]");
     fPHSum->SetStats(0);
     //
-    fCHSum = new TH2I("CH2dSum","Nz0Nrphi0",100,0,300,540,0,540);
+    fCHSum = new TH2I("CH2dSum","Nz100Nrphi100",50,0,300,1,0,1);
     fCHSum->SetYTitle("Det/pad groups");
     fCHSum->SetXTitle("charge deposit [a.u]");
     fCHSum->SetZTitle("counts");
@@ -272,6 +287,8 @@ void AliTRDcalibration::CreateOutputObjects()
     fContainer->Add(fNbClusters);
     fContainer->Add(fNbClustersOffline);
     fContainer->Add(fNbClustersStandalone);
+    fContainer->Add(fPHSM);
+    fContainer->Add(fCHSM);
     fContainer->Add(fPHSum);
     fContainer->Add(fCHSum);
 
@@ -334,12 +351,14 @@ void AliTRDcalibration::Exec(Option_t *)
 	// normalisation
 	Float_t normalisation = 6.67;
 	Int_t detector = 0;
+	Int_t sector = 0;
 	Int_t crossrow = 0;
+	// Check no shared clusters
+	for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
+	  if((fcl = tracklet->GetClusters(icc)))  crossrow = 1;
+	}
+	// Loop on clusters
 	for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
-	  // Check no shared clusters
-	  for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
-	    if((fcl = tracklet->GetClusters(icc)))  crossrow = 1;
-	  }
 	  if(!(fcl = tracklet->GetClusters(ic))) continue;
 	  nbclusters++;
 	  Int_t time = fcl->GetPadTime();
@@ -352,6 +371,7 @@ void AliTRDcalibration::Exec(Option_t *)
 	  if(tracklet->IsStandAlone()) fNbTimeBinStandalone->Fill(time);
 	  else fNbTimeBinOffline->Fill(time);
 	}
+	sector = AliTRDgeometry::GetSector(detector);
 
 	fNbTRDTracklet->Fill(detector);
 	if(tracklet->IsStandAlone()) fNbTRDTrackletStandalone->Fill(detector);
@@ -362,12 +382,18 @@ void AliTRDcalibration::Exec(Option_t *)
 	else  fNbClustersOffline->Fill(nbclusters);
 	
 	if((nbclusters > flow) && (nbclusters < fhigh)){
-	  fCHSum->Fill(sum/20.0,0.0);
+	  fCHSM->Fill(sum/20.0,sector+0.5);
+	  fCHSum->Fill(sum/20.0,0.5);
 	  for(int ic=0; ic<fNbTimeBins; ic++){
-	    //printf("ic %d and time %f and cluster %f \n",ic,(Double_t)(ic/10.0),(Double_t)phtb[ic]);
-	    if(ffillZero) fPHSum->Fill((Double_t)(ic/10.0),0.0,(Double_t)phtb[ic]);
+	    if(ffillZero) {
+	      fPHSum->Fill((Double_t)(ic/10.0),0.5,(Double_t)phtb[ic]);
+	      fPHSM->Fill((Double_t)(ic/10.0),sector+0.5,(Double_t)phtb[ic]);
+	    }
 	    else {
-	      if(phtb[ic] > 0.0) fPHSum->Fill((Double_t)(ic/10.0),0.0,(Double_t)phtb[ic]);
+	      if(phtb[ic] > 0.0) {
+		fPHSum->Fill((Double_t)(ic/10.0),0.0,(Double_t)phtb[ic]);
+		fPHSM->Fill((Double_t)(ic/10.0),sector+0.5,(Double_t)phtb[ic]);
+	      }
 	    }
 	  }
 	}
@@ -391,10 +417,6 @@ void AliTRDcalibration::Exec(Option_t *)
 
   //printf("Nbof tracks %d\n",nbTrdTracks);
   
-  TFile *file = TFile::Open("test.root","RECREATE");
-  fContainer->Write();
-  file->Close();
-
   // Post output data
   PostData(0, fContainer);
 
@@ -713,8 +735,24 @@ Bool_t AliTRDcalibration::PostProcess()
 {
   // 
   // Fit the filled histos
+  // Put the calibration object in fArrayCalib
+  // 0 and 1 AliTRDCalDet and AliTRDCalPad gain
+  // 2 and 3 AliTRDCalDet and AliTRDCalPad vdrift PH
+  // 4 and 5 AliTRDCalDet and AliTRDCalPad timeoffset PH
+  // 6 AliTRDCalPad PRF
+  // 7 and 8 AliTRDCalDet and AliTRDCalPad vdrift second
+  // 9 and 10 AliTRDCalDet and AliTRDCalPad lorentz angle second
   //
 
+  if(!fArrayCalib){
+    fArrayCalib = new TObjArray(11);
+    fArrayCalib->SetOwner();
+  }
+  else {
+    delete fArrayCalib;
+    PostProcess();
+  }
+  
   if(!fGraph){
     fGraph = new TObjArray(6);
     fGraph->SetOwner();
@@ -726,20 +764,6 @@ Bool_t AliTRDcalibration::PostProcess()
 
   Bool_t storage[3] = {kFALSE,kFALSE,kFALSE};
 
-  // storage element
-  AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBStorage* storLoc = man->GetStorage(fkNameDirectory);
-  if (!storLoc)
-    return kFALSE;
-  man->SetRun(fRunNumber);
-
-  // MetaData
-  AliCDBMetaData mdDet; 
-  mdDet.SetObjectClassName("AliTRDCalDet");
-  AliCDBMetaData mdPad; 
-  mdPad.SetObjectClassName("AliTRDCalPad");
-  
   // Objects for fitting
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
   calibra->SetDebugLevel(2); // 0 rien, 1 fitvoir, 2 debug files, 3 one detector  
@@ -796,10 +820,8 @@ Bool_t AliTRDcalibration::PostProcess()
 	  AliTRDCalDet *objgaindet   = calibra->CreateDetObjectGain(&object);
 	  TObject *objgainpad        = calibra->CreatePadObjectGain();
 	  // store
-	  AliCDBId id1("TRD/Calib/ChamberGainFactor",fRunNumber, AliCDBRunRange::Infinity()); 
-	  storLoc->Put((TObject *)objgaindet, id1, &mdDet); 
-	  AliCDBId id2("TRD/Calib/LocalGainFactor",fRunNumber, AliCDBRunRange::Infinity()); 
-	  storLoc->Put((TObject *)objgainpad, id2, &mdPad);
+	  fArrayCalib->AddAt(objgaindet,0);
+	  fArrayCalib->AddAt(objgainpad,1);
 	  storage[0] = kTRUE;
 	  // Make graph
 	  TGraph *graph = 0x0;
@@ -858,15 +880,11 @@ Bool_t AliTRDcalibration::PostProcess()
 	AliTRDCalDet *objtime0det  = calibra->CreateDetObjectT0(&object,kTRUE);
 	TObject *objtime0pad       = calibra->CreatePadObjectT0();
 	// store
-	AliCDBId id1("TRD/Calib/ChamberVdrift",fRunNumber, AliCDBRunRange::Infinity()); 
-	storLoc->Put((TObject *)objdriftvelocitydet, id1, &mdDet); 
-	AliCDBId id2("TRD/Calib/LocalVdrift",fRunNumber, AliCDBRunRange::Infinity()); 
-	storLoc->Put((TObject *)objdriftvelocitypad, id2, &mdPad); 
+	fArrayCalib->AddAt(objdriftvelocitydet,2);
+	fArrayCalib->AddAt(objdriftvelocitypad,3);
 	//
-	AliCDBId idd1("TRD/Calib/ChamberT0",fRunNumber, AliCDBRunRange::Infinity()); 
-	storLoc->Put((TObject *)objtime0det, idd1, &mdDet); 
-	AliCDBId idd2("TRD/Calib/LocalT0",fRunNumber, AliCDBRunRange::Infinity()); 
-	storLoc->Put((TObject *)objtime0pad, idd2, &mdPad); 
+	fArrayCalib->AddAt(objtime0det,4);
+	fArrayCalib->AddAt(objtime0pad,5);
 	// Make graph
 	TGraph *graph = 0x0;
 	if(FillGraphIndex(&object,graph)){ 
@@ -918,8 +936,7 @@ Bool_t AliTRDcalibration::PostProcess()
       TObjArray object            = calibra->GetVectorFit();
       TObject *objPRFpad          = calibra->CreatePadObjectPRF(&object);
       // store
-      AliCDBId id2("TRD/Calib/PRFWidth",fRunNumber, AliCDBRunRange::Infinity()); 
-      storLoc->Put((TObject *)objPRFpad, id2, &mdPad); 
+      fArrayCalib->AddAt(objPRFpad,6);
       // Make graph
       TGraph *graph = 0x0;
       if(FillGraphIndex(&object,graph)){ 
@@ -956,15 +973,11 @@ Bool_t AliTRDcalibration::PostProcess()
 	  AliTRDCalDet *objtime0det  = calibra->CreateDetObjectT0(&object,kTRUE);
 	  TObject *objtime0pad       = calibra->CreatePadObjectT0();
 	  // store dummy
-	  AliCDBId id1("TRD/Calib/ChamberVdriftLinear",fRunNumber, AliCDBRunRange::Infinity()); 
-	  storLoc->Put((TObject *)objdriftvelocitydet, id1, &mdDet); 
-	  AliCDBId id2("TRD/Calib/LocalVdriftLinear",fRunNumber, AliCDBRunRange::Infinity()); 
-	  storLoc->Put((TObject *)objdriftvelocitypad, id2, &mdPad); 
+	  fArrayCalib->AddAt(objdriftvelocitydet,7);
+	  fArrayCalib->AddAt(objdriftvelocitypad,8);
 	  //
-	  AliCDBId idd1("TRD/Calib/ChamberLorentzAngle",fRunNumber, AliCDBRunRange::Infinity()); 
-	  storLoc->Put((TObject *)objtime0det, idd1, &mdDet); 
-	  AliCDBId idd2("TRD/Calib/LocalLorentzAngle",fRunNumber, AliCDBRunRange::Infinity()); 
-	  storLoc->Put((TObject *)objtime0pad, idd2, &mdPad); 
+	  fArrayCalib->AddAt(objtime0det,9);
+	  fArrayCalib->AddAt(objtime0pad,10);
 	  // Make graph
 	  TGraph *graph = 0x0;
 	  if(FillGraphIndex(&object,graph)){ 
