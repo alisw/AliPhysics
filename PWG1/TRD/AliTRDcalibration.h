@@ -74,8 +74,8 @@ public:
   TH2I  *GetSumCH() const                                           { return fCHSum; };
   TH2D  *GetSumDet() const                                          { return fDetSum;};
   AliTRDCalibraVector  *GetSumDetVector() const                     { return fDetSumVector;};
+  TObjArray *GetArrayCalib() const                                  { return fArrayCalib;  };
 
-  
 
   void SetHisto2d(Bool_t histo2d)                                   {fHisto2d=histo2d;};
   void SetVector2d(Bool_t vector2d)                                 {fVector2d=vector2d;};
@@ -91,9 +91,7 @@ public:
   void SetOfflineTracks()                                           {fOfflineTracks=kTRUE; fStandaloneTracks=kFALSE; };
   void SetStandaloneTracks()                                        {fStandaloneTracks=kTRUE; fOfflineTracks=kFALSE; };
   void SetCompressPerDetector(Bool_t compressPerDetector=kTRUE)     {fCompressPerDetector=compressPerDetector; };
-  void SetRunNumber(Int_t runNumber)                                {fRunNumber=runNumber; };
-  void SetNameDirectoryOutput(const char *nameDirectory)            {fkNameDirectory=nameDirectory; };
-  
+   
 private:
   AliTRDtrackInfo  *fTrackInfo;                  //track info
 
@@ -113,17 +111,18 @@ private:
   TH1F        *fNbClusters;                      //! nb Clusters
   TH1F        *fNbClustersOffline;               //! nb Clusters offline
   TH1F        *fNbClustersStandalone;            //! nb Clusters standalone
+  TProfile2D  *fPHSM;                            //! Per SM
+  TH2I        *fCHSM;                            //! Per SM
 
-
-  TProfile2D  *fPHSum;                           //! sum PH
-  TH2I        *fCHSum;                           //! sum CH
-  TH2D        *fDetSum;                          //! sum Det
-  AliTRDCalibraVector *fDetSumVector;            //! sum Det Vect
+  TProfile2D  *fPHSum;                           //! All together PH
+  TH2I        *fCHSum;                           //! All together CH during the task, used also if want to use AddStatsPerDetector
+  TH2D        *fDetSum;                          //! AddStatsPerDetector
+  AliTRDCalibraVector *fDetSumVector;            //! AddStatsPerDetector
   
   Bool_t      fHisto2d;                          //! histo
   Bool_t      fVector2d;                         //! vector
   Bool_t      fVdriftLinear;                     //! vdrift Linear
-
+  
   Int_t       flow;                              //! lower limit nb of clusters
   Int_t       fhigh;                             //! higher limit nb of clusters
   Int_t       fNbTimeBins;                       //! number of timebins 
@@ -137,10 +136,8 @@ private:
 
   Bool_t      fCompressPerDetector;              //! Compress per detector 
 
-  Int_t       fRunNumber;                        //! Run number
-  const char *fkNameDirectory;                   //! Name output directory fit parameters
-
   TObjArray  *fGraph;                            //! array of graphs filled in PostProcess
+  TObjArray  *fArrayCalib;                       //! array of calibration objects filled in PostProcess
   Bool_t      fPostProcess;                      //Post process 
 
   AliTRDcalibration(const AliTRDcalibration&); 
