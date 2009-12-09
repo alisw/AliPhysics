@@ -55,7 +55,7 @@ ClassImp(AliCaloTrackReader)
 	fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
     fAODPHOSNormalInputEntries(0), fTrackStatus(0), 
 	fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
-	fCleanOutputStdAOD(kFALSE), fDeltaAODFileName("deltaAODPartCorr.root")
+	fCleanOutputStdAOD(kFALSE), fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName("")
 {
   //Ctor
   
@@ -88,7 +88,8 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
   fAODPHOSNormalInputEntries(g.fAODPHOSNormalInputEntries),
   fTrackStatus(g.fTrackStatus),
   fReadStack(g.fReadStack), fReadAODMCParticles(g.fReadAODMCParticles),
-  fCleanOutputStdAOD(g.fCleanOutputStdAOD), fDeltaAODFileName(g.fDeltaAODFileName)
+  fCleanOutputStdAOD(g.fCleanOutputStdAOD), fDeltaAODFileName(g.fDeltaAODFileName),
+   fFiredTriggerClassName(g.fFiredTriggerClassName  )
 {
   // cpy ctor
   
@@ -145,6 +146,7 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
 	
   fCleanOutputStdAOD  = source.fCleanOutputStdAOD;
   fDeltaAODFileName   = source.fDeltaAODFileName;
+  fFiredTriggerClassName = source.fFiredTriggerClassName  ;
 	
   return *this;
   
@@ -358,6 +360,7 @@ void AliCaloTrackReader::InitParameters()
   fReadAODMCParticles    = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
   fCleanOutputStdAOD     = kFALSE; // Clean the standard clusters/tracks?
   fDeltaAODFileName      = "deltaAODPartCorr.root";
+  fFiredTriggerClassName      = "";
 }
 
 
@@ -401,7 +404,15 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 
   fEventNumber = iEntry;
   fCurrentFileName = TString(currentFileName);
-	
+
+  //Select events only fired by a certain trigger configuration if it is provided
+  if( fFiredTriggerClassName  !=""){
+	if(fDebug > 0) 
+		printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>, selected class <%s>, compare name %d\n",
+				GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(), GetFiredTriggerClasses().Contains(fFiredTriggerClassName));
+	  if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
+  }
+
   if(fOutputEvent && (fDataType != kAOD) && ((fOutputEvent->GetCaloClusters())->GetEntriesFast()!=0 ||(fOutputEvent->GetTracks())->GetEntriesFast()!=0)){
     printf("AliCaloTrackReader::AODCaloClusters or AODTracks already filled by the filter, do not use the ESD reader, use the AOD reader, STOP\n");
     abort();
@@ -422,8 +433,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 			 printf("AliCaloTrackReader::FillInputEvent() - Skip events from event %d, no more events in second AOD file \n", iEntry);
 		 return kFALSE;
 	 }
-	  printf("Reader 4 \n");
-
+	  
 	 //Get the Event
 	 Int_t nbytes = fSecondInputAODTree->GetEvent(iEntry+fSecondInputFirstEvent);
 	 if ( nbytes == 0 ) {//If nothing in AOD

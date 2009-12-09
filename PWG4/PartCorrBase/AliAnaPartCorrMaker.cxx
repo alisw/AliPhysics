@@ -243,7 +243,7 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   if(!ok){
-	  printf("*** Skip event *** %d \n",iEntry);
+	  if(fAnaDebug >= 1 )printf("*** Skip event *** %d \n",iEntry);
 	  return ;
   }
 	
