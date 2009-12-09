@@ -3489,8 +3489,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						   particle->Pt());
 	else
 	  ((TH2D *)(fEfficiencyList->At(1)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							    particle->Py(),
-							    particle->Pz()),
+										 particle->Py(),
+										 particle->Pz()),
 						   particle->Pt());
       }//antiprotons
     }//primaries
@@ -3509,8 +3509,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						     particle->Pt());
 	  else
 	    ((TH2D *)(fEfficiencyList->At(2)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							      particle->Py(),
-							      particle->Pz()),
+										   particle->Py(),
+										   particle->Pz()),
 						     particle->Pt());
 	}//weak decays
 	if((particle->GetUniqueID() == 13)) {
@@ -3531,8 +3531,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						     particle->Pt());
 	  else
 	    ((TH2D *)(fEfficiencyList->At(3)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							      particle->Py(),
-							      particle->Pz()),
+										   particle->Py(),
+										   particle->Pz()),
 						     particle->Pt());
 	}//weak decays
 	if((particle->GetUniqueID() == 13)) {
@@ -3596,8 +3596,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						     particle->Pt());
 	  else
 	    ((TH2D *)(fEfficiencyList->At(6)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							      particle->Py(),
-							      particle->Pz()),
+										   particle->Py(),
+										   particle->Pz()),
 						     particle->Pt());
 	}//primaries
 	if(label > stack->GetNprimary()) {
@@ -3613,8 +3613,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						       particle->Pt());
 	    else
 	      ((TH2D *)(fEfficiencyList->At(8)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								particle->Py(),
-								particle->Pz()),
+										     particle->Py(),
+										     particle->Pz()),
 						       particle->Pt());
 	  }//weak decays
 	  if((particle->GetUniqueID() == 13)) {
@@ -3623,8 +3623,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 							particle->Pt());
 	    else
 	      ((TH2D *)(fEfficiencyList->At(10)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								 particle->Py(),
-								 particle->Pz()),
+										      particle->Py(),
+										      particle->Pz()),
 							particle->Pt());
 	  }//hadronic interactions
 	}//secondaries
@@ -3636,8 +3636,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						     particle->Pt());
 	  else
 	    ((TH2D *)(fEfficiencyList->At(7)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							      particle->Py(),
-							      particle->Pz()),
+										   particle->Py(),
+										   particle->Pz()),
 						     particle->Pt());
 	}//primaries
 	if(label > stack->GetNprimary()) {
@@ -3653,8 +3653,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						       particle->Pt());
 	    else
 	      ((TH2D *)(fEfficiencyList->At(9)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								particle->Py(),
-								particle->Pz()),
+										     particle->Py(),
+										     particle->Pz()),
 						       particle->Pt());
 	  }//weak decays
 	  if((particle->GetUniqueID() == 13)) {
@@ -3663,8 +3663,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 							particle->Pt());
 	    else
 	      ((TH2D *)(fEfficiencyList->At(11)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								 particle->Py(),
-								 particle->Pz()),
+										      particle->Py(),
+										      particle->Pz()),
 							particle->Pt());
 	  }//hadronic interactions
 	}//secondaries
@@ -3691,8 +3691,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						     particle->Pt());
 	  else
 	    ((TH2D *)(fEfficiencyList->At(6)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							      particle->Py(),
-							      particle->Pz()),
+										   particle->Py(),
+										   particle->Pz()),
 						     particle->Pt());
 	}//primaries
 	if(label > stack->GetNprimary()) {
@@ -3708,8 +3708,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						       particle->Pt());
 	    else
 	      ((TH2D *)(fEfficiencyList->At(8)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								particle->Py(),
-								particle->Pz()),
+										     particle->Py(),
+										     particle->Pz()),
 						       particle->Pt());
 	  }//weak decays
 	  if((particle->GetUniqueID() == 13)) {
@@ -3718,8 +3718,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 							particle->Pt());
 	    else
 	      ((TH2D *)(fEfficiencyList->At(10)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								 particle->Py(),
-								 particle->Pz()),
+										      particle->Py(),
+										      particle->Pz()),
 							particle->Pt());
 	  }//hadronic interactions
 	}//secondaries
@@ -3730,8 +3730,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						    particle->Pt());
 	else
 	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							     particle->Py(),
-							     particle->Pz()),
+										  particle->Py(),
+										  particle->Pz()),
 						    particle->Pt());
 	if(label <= stack->GetNprimary()) {
 	  if(fProtonAnalysisBase->GetEtaMode())
@@ -3739,8 +3739,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						     particle->Pt());
 	  else
 	    ((TH2D *)(fEfficiencyList->At(7)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							      particle->Py(),
-							      particle->Pz()),
+										   particle->Py(),
+										   particle->Pz()),
 						     particle->Pt());
 	}//primaries
 	if(label > stack->GetNprimary()) {
@@ -3756,8 +3756,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 						       particle->Pt());
 	    else
 	      ((TH2D *)(fEfficiencyList->At(9)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								particle->Py(),
-								particle->Pz()),
+										     particle->Py(),
+										     particle->Pz()),
 						       particle->Pt());
 	  }//weak decays
 	  if((particle->GetUniqueID() == 13)) {
@@ -3766,8 +3766,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 							particle->Pt());
 	    else
 	      ((TH2D *)(fEfficiencyList->At(11)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								 particle->Py(),
-								 particle->Pz()),
+										      particle->Py(),
+										      particle->Pz()),
 							particle->Pt());
 	  }//hadronic interactions
 	}//secondaries
@@ -3895,8 +3895,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 					   particle->Pt());
       else
 	((TH2D *)(fQA2DList->At(8)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-						    particle->Py(),
-						    particle->Pz()),
+									 particle->Py(),
+									 particle->Pz()),
 					   particle->Pt());
     }
     if(pdgcode == -2212) {
@@ -3905,8 +3905,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 					   particle->Pt());
       else
 	((TH2D *)(fQA2DList->At(9)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-						    particle->Py(),
-						    particle->Pz()),
+									 particle->Py(),
+									 particle->Pz()),
 					   particle->Pt());
     }
   }//MC loop
@@ -4012,8 +4012,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 		((TH2D *)(fQA2DList->At(0)))->Fill(tpcTrack->Eta(),gPt);
 	      else
 		((TH2D *)(fQA2DList->At(0)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-							    tpcTrack->Py(),
-							    tpcTrack->Pz()),
+										 tpcTrack->Py(),
+										 tpcTrack->Pz()),
 						   gPt);
 	    }//accepted primary protons
 	    else if(track->Charge() < 0) {
@@ -4049,8 +4049,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 		((TH2D *)(fQA2DList->At(4)))->Fill(tpcTrack->Eta(),gPt);
 	      else
 		((TH2D *)(fQA2DList->At(4)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-							    tpcTrack->Py(),
-							    tpcTrack->Pz()),
+										 tpcTrack->Py(),
+										 tpcTrack->Pz()),
 						   gPt);
 	    }//accepted primary antiprotons
 	  }//accepted primary particles
@@ -4101,8 +4101,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 		((TH2D *)(fQA2DList->At(2)))->Fill(tpcTrack->Eta(),gPt);
 	      else
 		((TH2D *)(fQA2DList->At(2)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-							    tpcTrack->Py(),
-							    tpcTrack->Pz()),
+										 tpcTrack->Py(),
+										 tpcTrack->Pz()),
 						   gPt);
 	      if(fProtonAnalysisBase->GetEtaMode())
 	      ((TH3F *)(fQA2DList->At(10)))->Fill(tpcTrack->Eta(),gPt,
@@ -4147,8 +4147,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 		((TH2D *)(fQA2DList->At(6)))->Fill(tpcTrack->Eta(),gPt);
 	      else
 		((TH2D *)(fQA2DList->At(6)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-							    tpcTrack->Py(),
-							    tpcTrack->Pz()),
+										 tpcTrack->Py(),
+										 tpcTrack->Pz()),
 						   gPt);
 	      if(fProtonAnalysisBase->GetEtaMode())
 		((TH3F *)(fQA2DList->At(11)))->Fill(tpcTrack->Eta(),gPt,
@@ -4179,8 +4179,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 		((TH2D *)(fQA2DList->At(1)))->Fill(tpcTrack->Eta(),gPt);
 	      else
 		((TH2D *)(fQA2DList->At(1)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-							    tpcTrack->Py(),
-							    tpcTrack->Pz()),
+										 tpcTrack->Py(),
+										 tpcTrack->Pz()),
 						   gPt);
 	    }
 	    else if(track->Charge() < 0) {
