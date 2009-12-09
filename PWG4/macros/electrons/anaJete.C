@@ -112,7 +112,7 @@ void anaJete()
       //plugin->AddRunNumber(30010); //dummy
       plugin->AddDataFile("mycollect.xml");
       plugin->SetGridWorkingDir("work3");
-      plugin->SetAdditionalLibs("anaJet.C ConfigJetAnalysisFastJet.C ConfigAnalysisElectron.C ANALYSIS.par ANALYSISalice.par AOD.par ESD.par STEERBase.par JETAN.par FASTJETAN.par");
+      plugin->SetAdditionalLibs("anaJet.C ConfigJetAnalysisFastJet.C ConfigAnalysisElectron.C ANALYSIS.par ANALYSISalice.par AOD.par EMCALUtils.par ESD.par PHOSUtils.par STEERBase.par JETAN.par FASTJETAN.par");
       plugin->SetJDLName("anaJet.jdl");
       plugin->SetExecutable("anaJet.sh");
       plugin->SetOutputFiles("histos.root");
@@ -388,7 +388,7 @@ void  LoadLibraries(const anaModes mode) {
     //TProof::Reset("myproofname",kTRUE);
     gEnv->SetValue("XSec.GSI.DelegProxy","2");   
     //TProof::Mgr(myproofname)->ShowROOTVersions();
-    //TProof::Mgr(myproofname)->SetROOTVersion("v5-23-04");
+    //TProof::Mgr(myproofname)->SetROOTVersion("v5-24-00");
     TProof::Open(myproofname);
 
     // gProof->ClearPackages();
@@ -398,10 +398,14 @@ void  LoadLibraries(const anaModes mode) {
     // gProof->ClearPackage("AOD");
     // gProof->ClearPackage("ANALYSIS");
     // gProof->ClearPackage("ANALYSISalice");
+    // gProof->ClearPackage("PHOSUtils");
+    // gProof->ClearPackage("EMCALUtils");
     // if( kDoJetTask ){
     //   gProof->ClearPackage("JETAN");
     //   gProof->ClearPackage("FASTJETAN");
     // }
+    // gProof->ClearPackage("PWG4PartCorrBase");
+    // gProof->ClearPackage("PWG4PartCorrDep");
     // gProof->ShowEnabledPackages();
 
     // Enable the STEERBase Package
@@ -419,6 +423,12 @@ void  LoadLibraries(const anaModes mode) {
     // Enable the Analysis Package
     gProof->UploadPackage("ANALYSISalice.par");
     gProof->EnablePackage("ANALYSISalice");
+    // Enable the PHOSUtils Package
+    gProof->UploadPackage("PHOSUtils.par");
+    gProof->EnablePackage("PHOSUtils");
+    // Enable the EMCALUtils Package
+    gProof->UploadPackage("EMCALUtils.par");
+    gProof->EnablePackage("EMCALUtils");
     if( kDoJetTask ){
       // Enable JETAN analysis
       gProof->UploadPackage("JETAN.par");
@@ -427,6 +437,12 @@ void  LoadLibraries(const anaModes mode) {
       gProof->UploadPackage("FASTJETAN.par");
       gProof->EnablePackage("FASTJETAN");
     }
+    // Enable the PWG4PartCorrBase Package
+    gProof->UploadPackage("PWG4PartCorrBase.par");
+    gProof->EnablePackage("PWG4PartCorrBase");
+    // Enable the PWG4PartCorrDep Package
+    gProof->UploadPackage("PWG4PartCorrDep.par");
+    gProof->EnablePackage("PWG4PartCorrDep");
 
     gProof->ShowEnabledPackages();
   }  
