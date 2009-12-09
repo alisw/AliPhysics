@@ -42,6 +42,8 @@
 #include "TLine.h"
 #include "TMath.h"
 #include "TPaveText.h"
+#include "TGaxis.h"
+#include "TVirtualPad.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackerQAChecker)
@@ -252,14 +254,16 @@ AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, const AliMUONRecoParam* re
 
     TH1* hnevents = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerNofRawEventSeen,AliRecoParam::ConvertIndex(specie));
 
-    if ( !hbp || !hnpads || !hnevents ) 
+    TH1* hddl = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerDDLOccupancy,AliRecoParam::ConvertIndex(specie));
+    
+    if ( !hbp || !hnpads || !hnevents || !hddl ) 
     {
       continue;
     }
-
-    Int_t nevents = TMath::Nint(hnevents->GetBinContent(1));
     
-    rv[specie] = BeautifyTrackerBusPatchOccupancy(*hbp,hbpconfig,*hnpads,nevents,*recoParam);    
+    Int_t nevents = TMath::Nint(hnevents->GetBinContent(1));
+        
+    rv[specie] = BeautifyTrackerBusPatchOccupancy(*hddl,*hbp,hbpconfig,*hnpads,nevents,*recoParam);    
   }
   
   return rv;
@@ -267,7 +271,8 @@ AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, const AliMUONRecoParam* re
 
 //____________________________________________________________________________ 
 AliMUONVQAChecker::ECheckCode
-AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hbp, 
+AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hddl,
+                                                          TH1& hbp, 
                                                           const TH1* hbuspatchconfig, 
                                                           const TH1& hnpads, 
                                                           Int_t nevents,
@@ -390,7 +395,7 @@ AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hbp,
   
   hbp.SetMaximum(ymax*1.4);
   
-  TPaveText* text = new TPaveText(0.50,0.60,0.99,0.99,"NDC");
+  TPaveText* text = new TPaveText(0.30,0.50,0.99,0.99,"NDC");
   
   text->AddText(Form("MCH RUN %d - %d events",AliCDBManager::Instance()->GetRun(),nevents));
   
@@ -415,7 +420,7 @@ AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hbp,
     text->AddText(Form("%5.2f %% of missing pads (%d out of %d)",missingPadFraction,nMissingPads,nPads));
     text->AddText(Form("%5.2f %% bus patches above the %5.2f %% limit",aboveLimitFraction,maxToleratedOccupancy));
     text->AddText(Form("%5.2f %% bus patches below the %e %% limit",belowLimitFraction,minToleratedOccupancy));
-    text->AddText(Form("Truncated mean at %2d %% is %7.2f %%",(Int_t)(alpha*100),tmean));
+    text->AddText(Form("Bus patch mean occupancy (truncated at %2d %%) is %7.2f %%",(Int_t)(alpha*100),tmean));
     
     if ( missingPadFraction >= 100.0 ) 
     {
@@ -453,6 +458,35 @@ AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hbp,
     text->SetFillColor(6); // pink = ERROR
   }
   
+  /// Make as well a version for DDL occupancy, that'll be used by the shifter
+  
+  hddl.GetListOfFunctions()->Add(text->Clone());
+  
+  Bool_t aboveOnePercent(kFALSE);
+  Bool_t aboveTwoPercent(kFALSE);
+  
+  for ( Int_t i = 1; i <= hddl.GetXaxis()->GetNbins(); ++i )
+  {
+    Double_t b = hddl.GetBinContent(i);
+    if ( b > 1.0 ) aboveOnePercent = kTRUE;
+    if ( b > 2.0 ) aboveTwoPercent = kTRUE;
+    
+  }
+  
+  hddl.SetMaximum(2);
+  hddl.SetFillStyle(0);
+  if ( aboveOnePercent ) 
+  {
+    hddl.SetFillStyle(1001);
+    hddl.SetFillColor(kOrange);    
+  }
+  if ( aboveTwoPercent ) 
+  {
+    hddl.SetFillStyle(1001);
+    hddl.SetFillColor(kRed);
+  }
+  hddl.SetLineWidth(3);
+  hddl.SetStats(kFALSE);
+  
   return rv;
 }
-

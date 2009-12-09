@@ -18,7 +18,9 @@
 // --- MUON header files ---
 #include "AliMUONTrackerQADataMakerRec.h"
 
+#include "AliDAQ.h"
 #include "AliQAv1.h"
+#include "AliMpDDL.h"
 #include "AliMUONConstants.h"  
 #include "AliMUONDigitMaker.h"
 #include "AliMUONQAIndices.h"
@@ -382,8 +384,10 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArra
 
   if ( fTrackerDataMaker ) 
   {
+    /// put the trackerdata in the pipeline
     InsertTrackerData(specie,list,fTrackerDataMaker->Data(),AliMUONQAIndices::kTrackerData);
 
+    /// project the tracerdata into buspatch occupancies (for the experts)
     TH1* hbp = GetRawsData(AliMUONQAIndices::kTrackerBusPatchOccupancy);
     hbp->Reset();
     TIter nextBP(AliMpDDLStore::Instance()->CreateBusPatchIterator());
@@ -398,6 +402,7 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArra
       hbp->SetBinContent(bin,data->BusPatch(busPatchId,occDim)*100.0); // occupancy, in percent
     }
     
+    /// log the readout errors (for the shifter)
     TH1* hnevents = GetRawsData(AliMUONQAIndices::kTrackerNofRawEventSeen);
     hnevents->Reset();
     hnevents->Fill(0.0,fTrackerDataMaker->Data()->NumberOfEvents(-1));
@@ -407,6 +412,45 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArra
       // readout errors      
       FillErrors(*fLogger);      
       fLogger->Clear();
+    }
+
+    /// project tracker data into DDL occupancies (for the shifter)
+    TH1* hddl = GetRawsData(AliMUONQAIndices::kTrackerDDLOccupancy);
+    hddl->Reset();
+    TH1* hddlevents = GetRawsData(AliMUONQAIndices::kTrackerDDLNofEvents);
+    hddlevents->Reset();
+    
+    const Int_t nddls = AliDAQ::NumberOfDdls("MUONTRK");
+    const Int_t offset = AliDAQ::DdlIDOffset("MUONTRK");
+    
+    for ( Int_t iddl = 0; iddl < nddls; ++iddl )
+    {
+      AliMpDDL* ddl = AliMpDDLStore::Instance()->GetDDL(iddl);
+      
+      Int_t ddlId = offset + ddl->GetId();
+      Int_t npads = 0;
+      
+      Int_t nevents = data->NumberOfEvents(iddl);
+      
+      hddlevents->Fill(ddlId,nevents);
+      
+      Double_t occ(0.0);
+      
+      for ( Int_t ide = 0; ide < ddl->GetNofDEs(); ++ide )
+      {
+        Int_t de = ddl->GetDEId(ide);
+        
+        npads += TMath::Nint(data->DetectionElement(de,3));
+        
+        occ +=  data->DetectionElement(de,4);
+      }
+      
+      if ( nevents > 0 && npads > 0 )
+      {
+        occ = occ/npads/nevents;
+      }
+
+      hddl->Fill(ddlId,100.0*occ); // occ in percent
     }
   }
 }
@@ -516,7 +560,7 @@ void AliMUONTrackerQADataMakerRec::InitRaws()
 
   TH1* hbpnmanus = new TH1F("hTrackerBusPatchNofManus","Number of manus per bus patch",nbins,xmin,xmax);
 
-  Add2RawsList(hbp,AliMUONQAIndices::kTrackerBusPatchOccupancy, !expert, image, !saveCorr);
+  Add2RawsList(hbp,AliMUONQAIndices::kTrackerBusPatchOccupancy, expert, image, !saveCorr);
   Add2RawsList(hbpnpads,AliMUONQAIndices::kTrackerBusPatchNofPads, expert, !image, !saveCorr);
   Add2RawsList(hbpnmanus,AliMUONQAIndices::kTrackerBusPatchNofManus, expert, !image, !saveCorr);
 
@@ -606,6 +650,18 @@ void AliMUONTrackerQADataMakerRec::InitRaws()
       hbpconfig->Fill(bp->GetId());
     }
   }
+  
+  nbins = AliDAQ::NumberOfDdls("MUONTRK");
+  const Int_t offset = AliDAQ::DdlIDOffset("MUONTRK");
+  
+  xmin = offset - 0.5;
+  xmax  = offset + nbins - 0.5;
+  
+  Add2RawsList(new TH1F("hTrackerDDLOccupancy",";DDLId;DDL Occupancy in %",nbins,xmin,xmax),
+               AliMUONQAIndices::kTrackerDDLOccupancy,!expert,image,!saveCorr);
+  Add2RawsList(new TH1F("hTrackerDDLNofEvents","Number of events seen by DDL;DDLId",nbins,xmin,xmax),
+               AliMUONQAIndices::kTrackerDDLNofEvents,expert,!image,!saveCorr);
+  
 }
 
 //__________________________________________________________________
@@ -1175,9 +1231,9 @@ AliMUONTrackerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
       
       if ( hn.Contains("Tracker") )
       {
-        if ( hn != "hTrackerBusPatchNofPads" && 
-            hn != "hTrackerBusPatchNofManus" &&
-            hn != "hTrackerBusPatchConfig" )
+        if ( !hn.Contains("hTrackerBusPatchNofPads") && 
+            !hn.Contains("hTrackerBusPatchNofManus") &&
+            !hn.Contains("hTrackerBusPatchConfig" ) )
         {
           AliDebug(1,Form("Resetting %s",hn.Data()));
           h->Reset();                  

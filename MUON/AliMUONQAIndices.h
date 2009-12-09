@@ -27,6 +27,8 @@ namespace AliMUONQAIndices
     kTrackerBusPatchPaddingErrors   = 10, ///< Padding errors during readout of the tracker
     kTrackerNofRawEventSeen         = 11, ///< Number of events seen (and used)
     kTrackerReadoutErrors           = 12,  ///< Integrated number of errors (and events for 1st bin)
+    kTrackerDDLOccupancy            = 13, ///< DDL occupancy in percent
+    kTrackerDDLNofEvents            = 14, ///< nof of events per DDL
     kTriggerScalersTime       = 22, ///< Trigger scalers acquisition time index
     kTriggerScalers           = 23, ///< Trigger scalers histogram per plane index
     kTriggerScalersDisplay    = 31, ///< Trigger scalers display histogram per plane index

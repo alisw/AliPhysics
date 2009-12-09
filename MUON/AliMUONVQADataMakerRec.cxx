@@ -145,7 +145,6 @@ AliMUONVQADataMakerRec::ResetDetector(TObjArray* list)
     TH1* h = dynamic_cast<TH1*>(o);
     if ( h ) 
     {
-      h->Reset();
       TString hcn(h->ClassName());
       if ( hcn.Contains(pattern) ) 
       {
