@@ -2,7 +2,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask); // Common config
 AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius = -1);
 
 AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf,Float_t radius = -1,UInt_t filterMask = 0); // for the new AF
-Int_t AddTaskJetsDelta(char *nonStdFile = "",UInt_t filterMask = 0);
+Int_t AddTaskJetsDelta(char *nonStdFile = "",UInt_t filterMask = 0,Bool_t kUseAODMC = kTRUE);
 AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask = 0);
 
 AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask ){
@@ -23,7 +23,7 @@ AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask ){
 
 
 
-Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask){
+Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC){
 
   // Adds a whole set of jet finders  all to be written
   // to a delta AOD
@@ -60,13 +60,15 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask){
 
   const char *cJF[7]        = {"UA1","UA1","UA1","CDF","DA","SISCONE","FASTJET"};
   const Float_t radius[7]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4};
-  const UInt_t  flag[7]     = {    6,    7,    7,    7,   7,        7,        7};
+  UInt_t  flag[7]     = {    6,    7,    7,    7,   7,        7,        7};
+  flag[5] = 0; // set siscone to 0 for proof mode...
   // flag first bit AOD, second bit AODMC2 third bit AODMC2
   // i.e. 7 all, 6 only MC2 and MC
   // this stay at three
   const char *cReader[3] = {"AOD","AODMC","AODMC2"};  
 
   for(int i = 0; i< 7;i++){
+    if(!kUseAODMC)flag[i]&=1;
     for(int ib = 0;ib<3;ib++){      
       if(flag[i]&(1<<ib)){
 	jetana = AddTaskJets(cReader[ib],cJF[i],radius[i],filterMask);
@@ -140,7 +142,11 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
 
    AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist_%s_%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
 							     AliAnalysisManager::kOutputContainer, Form("%s:PWG4_jethist_%s_%s%s",AliAnalysisManager::GetCommonFileName(),
-													c_jr.Data(),c_jf.Data(),cRadius));
+							     c_jr.Data(),c_jf.Data(),cRadius));
+   /*
+   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist_%s_%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
+							     AliAnalysisManager::kOutputContainer,"ckb_test.root");
+   */
    // Connect jet finder to task.
    jetana->SetJetFinder(jetFinder);
    jetana->SetConfigFile("");
