@@ -109,6 +109,7 @@ int main(int argc, char **argv) {
   //man->SetRun(0);
   //Instance of AliTRDCalibraFillHisto
   AliTRDCalibraFillHisto *calibra      = AliTRDCalibraFillHisto::Instance();
+  calibra->SetNumberClustersProcent(0.9);
   // everythings are okey for vdrift
   Bool_t passvdrift  = kTRUE;    // if timebin okey
   Int_t  nbvdrift    = 0;     // number of events with entries for vdrift
@@ -156,7 +157,6 @@ int main(int argc, char **argv) {
     }
 
     if( ((Int_t)neventstotal)%1000 == 0 ) printf(" event number %d (physic event number %d) will be processed\n",(Int_t) neventstotal,(Int_t) neventsphysics);  
-
 
     /* use event - here, just write event id to result file */
     eventT=event->eventType;

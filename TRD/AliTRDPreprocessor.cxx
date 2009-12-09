@@ -681,13 +681,16 @@ Bool_t AliTRDPreprocessor::ExtractDriftVelocityDAQ()
       Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(1))
 	+ 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(1));
       Int_t nbfit        = calibra->GetNumberFit();
+      Int_t nbfitSuccess = calibra->GetNumberFitSuccess();
       Int_t nbE        = calibra->GetNumberEnt();
       
       // if enough statistics store the results
       if ((nbtg >                  0) && 
-	  (nbfit        >= 0.5*nbE) && (nbE > 30)) {
+	  (nbfit        >= 0.5*nbE) && (nbE > 30) && (nbfitSuccess > 30)) {
 	// create the cal objects
+	calibra->RemoveOutliers(1,kTRUE);
 	calibra->PutMeanValueOtherVectorFit(1,kTRUE);
+	calibra->RemoveOutliers2(kTRUE);
 	calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
 	TObjArray object      = calibra->GetVectorFit();
 	AliTRDCalDet *objdriftvelocitydet = calibra->CreateDetObjectVdrift(&object,kTRUE);
@@ -834,12 +837,15 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
       Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(1))
 	+ 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(1));
       Int_t nbfit        = calibra->GetNumberFit();
+      Int_t nbfitSuccess = calibra->GetNumberFitSuccess();
       Int_t nbE          = calibra->GetNumberEnt();
       // enough statistics
       if ((nbtg >                  0) && 
-	  (nbfit        >= 0.5*nbE) && (nbE > 30)) {
+	  (nbfit        >= 0.5*nbE) && (nbE > 30) && (nbfitSuccess > 30)) {
 	// create the cal objects
+	calibra->RemoveOutliers(1,kTRUE);
 	calibra->PutMeanValueOtherVectorFit(1,kTRUE);
+	calibra->RemoveOutliers2(kTRUE);
 	calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
 	TObjArray object  = calibra->GetVectorFit();
 	AliTRDCalDet *objdriftvelocitydet = calibra->CreateDetObjectVdrift(&object,kTRUE);

@@ -142,6 +142,10 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fROBPrevious(-1)
   ,fNumberClusters(1)
   ,fNumberClustersf(30)
+  ,fNumberClustersProcent(0.5)
+  ,fThresholdClustersDAQ(120.0)
+  ,fNumberRowDAQ(2)
+  ,fNumberColDAQ(4)
   ,fProcent(6.0)
   ,fDifference(17)
   ,fNumberTrack(0)
@@ -210,6 +214,10 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fROBPrevious(c.fROBPrevious)
   ,fNumberClusters(c.fNumberClusters)
   ,fNumberClustersf(c.fNumberClustersf)
+  ,fNumberClustersProcent(c.fNumberClustersProcent)
+  ,fThresholdClustersDAQ(c.fThresholdClustersDAQ)
+  ,fNumberRowDAQ(c.fNumberRowDAQ)
+  ,fNumberColDAQ(c.fNumberColDAQ)  
   ,fProcent(c.fProcent)
   ,fDifference(c.fDifference)
   ,fNumberTrack(c.fNumberTrack)
@@ -370,7 +378,7 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
   if(!fNormalizeNbOfCluster) fRelativeScale = 20.0;
   else fRelativeScale = 1.18;
   fNumberClustersf    = fTimeMax;
-  fNumberClusters     = (Int_t)(0.5*fTimeMax);
+  fNumberClusters     = (Int_t)(fNumberClustersProcent*fTimeMax);
  
   // Init linear fitter
   if(!fLinearFitterTracklet) {
@@ -919,6 +927,15 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   ////////////////////////////
   Int_t  nbli = 0;
   AliTRDcluster *cl                   = 0x0;
+  //////////////////////////////
+  // Check no shared clusters
+  //////////////////////////////
+  for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
+    if((cl = tracklet->GetClusters(icc)))  crossrow = 1;
+  }
+  //////////////////////////////////
+  // Loop clusters
+  //////////////////////////////////
   for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     if(!(cl = tracklet->GetClusters(ic))) continue;
     if((fLimitChargeIntegration) && (!cl->IsInChamber())) continue;
@@ -934,12 +951,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     fLinearFitterTracklet->AddPoint(&timeis,ycluster,1);
     nbli++;  
 
-    //////////////////////////////
-    // Check no shared clusters
-    //////////////////////////////
-    for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
-      if((cl = tracklet->GetClusters(icc)))  crossrow = 1;
-    }
+   
   }
   
   ////////////////////////////////////
@@ -2365,7 +2377,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
 
       //baseline          = rawStream->GetCommonAdditive();                // common additive baseline
       fNumberClustersf    = fTimeMax;
-      fNumberClusters     = (Int_t)(0.6*fTimeMax);
+      fNumberClusters     = (Int_t)(fNumberClustersProcent*fTimeMax);
 
 
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
@@ -2431,7 +2443,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
       
       fTimeMax          = rawStream->GetNumberOfTimeBins();              //  number of time bins read from data
       fNumberClustersf    = fTimeMax;
-      fNumberClusters     = (Int_t)(0.6*fTimeMax);
+      fNumberClusters     = (Int_t)(fNumberClustersProcent*fTimeMax);
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
       Int_t col         = rawStream->GetCol();
       Int_t row         = rawStream->GetRow();   
@@ -2544,9 +2556,9 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
       for (Int_t ic = 2; ic <= 142; ic++)
 	{
 	  Double_t integral = 0;		  
-	  for (Int_t ishiftR = 0; ishiftR < 2; ishiftR++)
+	  for (Int_t ishiftR = 0; ishiftR < fNumberRowDAQ; ishiftR++)
 	    {
-	      for (Int_t ishiftC = -2; ishiftC < 2; ishiftC++)
+	      for (Int_t ishiftC = -fNumberColDAQ; ishiftC < fNumberColDAQ; ishiftC++)
 		{
 		  if (ir + ishiftR >= 1 && ir + ishiftR <= 16 &&
 		      ic + ishiftC >= 1 && ic + ishiftC <= 144)
@@ -2570,7 +2582,12 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
 
   //printf("imaxRow %d, imaxCol %d, fTimeMax %d, integralMax %f\n",imaxRow,imaxCol,fTimeMax, integralMax);
 
-  if((imaxRow == 0) || (imaxCol == 0)) {
+  //if((imaxRow == 0) || (imaxRow >= 15) || (imaxCol <= 3) || (imaxCol >= 140)) {
+  //  used=1;
+  //  return used;
+  // }
+  
+  if(((imaxRow + fNumberRowDAQ) > 16) || (imaxRow == 0) || ((imaxCol - fNumberColDAQ) <= 1) || ((imaxCol + fNumberColDAQ) >= 144)) {
     used=1;
     return used;
   }
@@ -2582,21 +2599,25 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
   //  ////////////////////////////////////////////////////	  
   
   
-  for (Int_t ir = imaxRow - 1; ir < imaxRow + 1; ir++)
+  for (Int_t ishiftR = 0; ishiftR < fNumberRowDAQ; ishiftR++)
     {
-      for (Int_t ic = imaxCol - 2; ic < imaxCol + 2; ic++)
+      for (Int_t ishiftC = -fNumberColDAQ; ishiftC < fNumberColDAQ; ishiftC++)
 	{
-	  for(Int_t it = 0; it < fTimeMax; it++){
-	    sum[it] += phvalue[ir][ic][it];
-	  }
-	}//ic
-    }//ir  
+	  if (imaxRow + ishiftR >= 1 && imaxRow + ishiftR <= 16 &&
+	      imaxCol + ishiftC >= 1 && imaxCol + ishiftC <= 144)
+	    { 
+	      for(Int_t it = 0; it < fTimeMax; it++){
+		sum[it] += phvalue[imaxRow + ishiftR-1][imaxCol + ishiftC-1][it];
+	      } 
+	    }
+	} // col shift
+    }// row shift
 
   Int_t nbcl = 0;
   Double_t sumcharge = 0.0;
   for(Int_t it = 0; it < fTimeMax; it++){
     sumcharge += sum[it];
-    if(sum[it] > 20.0) nbcl++;
+    if(sum[it] > fThresholdClustersDAQ) nbcl++;
   }
 
 
@@ -2629,6 +2650,7 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
       "clustera="<<clustera<<
       "it="<<it<<
       "rms="<<rms<<
+      "nbcl="<<nbcl<<
       "\n"; 
     }
   }
@@ -2636,6 +2658,7 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
   ////////////////////////////////////////////////////////
   // fill
   ///////////////////////////////////////////////////////
+  //printf("fNumberClusters %d, fNumberClustersf %d\n",fNumberClusters,fNumberClustersf);
   if(sum[0] > 100.0) used = 1; 
   if(nbcl < fNumberClusters) used = 1;
   if(nbcl > fNumberClustersf) used = 1;
@@ -2648,8 +2671,12 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
     for(Int_t it = 0; it < fTimeMax; it++){
       if(fFillWithZero) UpdateDAQ(fDetectorPreviousTrack,0,0,it,sum[it],fTimeMax); 
       else{
-	if(sum[it] > 0.0) UpdateDAQ(fDetectorPreviousTrack,0,0,it,sum[it],fTimeMax); 
+      	if(sum[it] > 0.0) UpdateDAQ(fDetectorPreviousTrack,0,0,it,sum[it],fTimeMax); 
       } 
+      //if(fFillWithZero) UpdateDAQ(0,0,0,it,sum[it],fTimeMax); 
+      //else{
+      // if(sum[it] > 0.0) UpdateDAQ(0,0,0,it,sum[it],fTimeMax); 
+      //} 
     }
     
    
@@ -3192,4 +3219,3 @@ void AliTRDCalibraFillHisto::AnalyseLinearFitter()
     }
   }
 }
-

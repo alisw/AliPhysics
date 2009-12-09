@@ -52,90 +52,92 @@ class AliTRDCalibraFit : public TObject {
   AliTRDCalibraFit(const AliTRDCalibraFit &c);
   AliTRDCalibraFit &operator=(const AliTRDCalibraFit &) { return *this; }
 
-       // Function for integration range of the charge 
-       void     RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end) const;
+  // Function for integration range of the charge 
+  void     RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end) const;
   
-       // Functions fit for CH
-       Bool_t   AnalyseCH(const TH2I *ch);
-       Bool_t   AnalyseCH(AliTRDCalibraVector *calvect);
+  // Functions fit for CH
+  Bool_t   AnalyseCH(const TH2I *ch);
+  Bool_t   AnalyseCH(AliTRDCalibraVector *calvect);
+  
+  // Functions fit for PH       
+  Bool_t   AnalysePH(const TProfile2D *ph);
+  Bool_t   AnalysePH(AliTRDCalibraVector *calvect);
+  
+  // Functions fit for PRF
+  Bool_t   AnalysePRF(const TProfile2D *prf);
+  Bool_t   AnalysePRF(AliTRDCalibraVector *calvect);
+  
+  Bool_t   AnalysePRFMarianFit(const TProfile2D *prf);
+  Bool_t   AnalysePRFMarianFit(AliTRDCalibraVector *calvect);
+  
+  // Functions fit for vdrift/lorentzangle
+  Bool_t   AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *calivdli);
+  
+  // Pad Calibration
+  Bool_t   SetModeCalibration(const char *name, Int_t i);
+  
+  //Reset Function
+  void     ResetVectorFit();
+  
+  // Some functions
+  Double_t *CalculPolynomeLagrange2(const Double_t *x, const Double_t *y) const;
+  Double_t *CalculPolynomeLagrange3(const Double_t *x, const Double_t *y) const;
+  Double_t *CalculPolynomeLagrange4(const Double_t *x, const Double_t *y) const;
+  
+  // Fill the database
+  void         RemoveOutliers(Int_t type, Bool_t perdetector = kFALSE);
+  void         RemoveOutliers2(Bool_t perdetector = kFALSE);
+  void         PutMeanValueOtherVectorFit(Int_t ofwhat = 1, Bool_t perdetector = kFALSE);
+  void         PutMeanValueOtherVectorFit2(Int_t ofwhat = 1, Bool_t perdetector = kFALSE);
+  AliTRDCalDet *CreateDetObjectVdrift(const TObjArray *vectorFit, Bool_t perdetector = kFALSE);
+  AliTRDCalDet *CreateDetObjectGain(const TObjArray *vectorFit, Bool_t meanOtherBefore=kTRUE, Double_t scaleFitFactor = 0.02431, Bool_t perdetector = kTRUE);
+  AliTRDCalDet *CreateDetObjectT0(const TObjArray *vectorFit, Bool_t perdetector = kFALSE);
+  AliTRDCalDet *CreateDetObjectLorentzAngle(const TObjArray *vectorFit);
+  
+  TObject      *CreatePadObjectGain(const TObjArray *vectorFit = 0, Double_t scaleFitFactor = 1.0, const AliTRDCalDet *detobject = 0);
+  TObject      *CreatePadObjectVdrift(const TObjArray *vectorFit = 0, const AliTRDCalDet *detobject = 0);
+  TObject      *CreatePadObjectT0(const TObjArray *vectorFit = 0, const AliTRDCalDet *detobject = 0);
+  TObject      *CreatePadObjectPRF(const TObjArray *vectorFit);
+  
+  // Outliers stats
+  AliTRDCalDet *MakeOutliersStatDet(const TObjArray *vectorFit, const char *name, Double_t &mean);
+  TObject      *MakeOutliersStatPad(const TObjArray *vectorFit, const char *name, Double_t &mean);
        
-       // Functions fit for PH       
-       Bool_t   AnalysePH(const TProfile2D *ph);
-       Bool_t   AnalysePH(AliTRDCalibraVector *calvect);
+  //
+  // Set or Get the variables
+  //
+  
+  // Fit
+  void     ChooseMethod(Short_t method)                              { fMethod = method;               }
+  void     SetBeginFitCharge(Float_t beginFitCharge);   
+  void     SetPeriodeFitPH(Int_t periodeFitPH);   
+  void     SetTakeTheMaxPH()                                         { fTakeTheMaxPH   = kTRUE;        }
+  void     SetT0Shift0(Float_t t0Shift0); 
+  void     SetT0Shift1(Float_t t0Shift1); 
+  void     SetRangeFitPRF(Float_t rangeFitPRF);     
+  void     SetAccCDB()                                               { fAccCDB         = kTRUE;        }
+  void     SetMinEntries(Int_t minEntries);                    
+  void     SetRebin(Short_t rebin);
+  
+  Int_t    GetPeriodeFitPH() const                                   { return fFitPHPeriode;           }
+  Bool_t   GetTakeTheMaxPH() const                                   { return fTakeTheMaxPH;           }
+  Float_t  GetT0Shift0() const                                       { return fT0Shift0;               }
+  Float_t  GetT0Shift1() const                                       { return fT0Shift1;               }
+  Float_t  GetRangeFitPRF() const                                    { return fRangeFitPRF;            }
+  Bool_t   GetAccCDB() const                                         { return fAccCDB;                 }
+  Int_t    GetMinEntries() const                                     { return fMinEntries;             }
+  Short_t  GetRebin() const                                          { return fRebin;                  }
+  
+  // Statistics
+  Int_t    GetNumberFit() const                                      { return fNumberFit;              }
+  Int_t    GetNumberFitSuccess() const                               { return fNumberFitSuccess;       }
+  Int_t    GetNumberEnt() const                                      { return fNumberEnt;              }
+  Double_t GetStatisticMean() const                                  { return fStatisticMean;          }
+  
        
-       // Functions fit for PRF
-       Bool_t   AnalysePRF(const TProfile2D *prf);
-       Bool_t   AnalysePRF(AliTRDCalibraVector *calvect);
-       
-       Bool_t   AnalysePRFMarianFit(const TProfile2D *prf);
-       Bool_t   AnalysePRFMarianFit(AliTRDCalibraVector *calvect);
-       
-       // Functions fit for vdrift/lorentzangle
-       Bool_t   AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *calivdli);
-       
-       // Pad Calibration
-       Bool_t   SetModeCalibration(const char *name, Int_t i);
-       
-       //Reset Function
-       void     ResetVectorFit();
-       
-       // Some functions
-       Double_t *CalculPolynomeLagrange2(const Double_t *x, const Double_t *y) const;
-       Double_t *CalculPolynomeLagrange3(const Double_t *x, const Double_t *y) const;
-       Double_t *CalculPolynomeLagrange4(const Double_t *x, const Double_t *y) const;
-       
-       // Fill the database
-       void         PutMeanValueOtherVectorFit(Int_t ofwhat = 1, Bool_t perdetector = kFALSE);
-       void         PutMeanValueOtherVectorFit2(Int_t ofwhat = 1, Bool_t perdetector = kFALSE);
-       AliTRDCalDet *CreateDetObjectVdrift(const TObjArray *vectorFit, Bool_t perdetector = kFALSE);
-       AliTRDCalDet *CreateDetObjectGain(const TObjArray *vectorFit, Bool_t meanOtherBefore=kTRUE, Double_t scaleFitFactor = 0.02431, Bool_t perdetector = kTRUE);
-       AliTRDCalDet *CreateDetObjectT0(const TObjArray *vectorFit, Bool_t perdetector = kFALSE);
-       AliTRDCalDet *CreateDetObjectLorentzAngle(const TObjArray *vectorFit);
-       
-       TObject      *CreatePadObjectGain(const TObjArray *vectorFit = 0, Double_t scaleFitFactor = 1.0, const AliTRDCalDet *detobject = 0);
-       TObject      *CreatePadObjectVdrift(const TObjArray *vectorFit = 0, const AliTRDCalDet *detobject = 0);
-       TObject      *CreatePadObjectT0(const TObjArray *vectorFit = 0, const AliTRDCalDet *detobject = 0);
-       TObject      *CreatePadObjectPRF(const TObjArray *vectorFit);
-       
-       // Outliers stats
-       AliTRDCalDet *MakeOutliersStatDet(const TObjArray *vectorFit, const char *name, Double_t &mean);
-       TObject      *MakeOutliersStatPad(const TObjArray *vectorFit, const char *name, Double_t &mean);
-       
-       //
-       // Set or Get the variables
-       //
-       
-       // Fit
-       void     ChooseMethod(Short_t method)                              { fMethod = method;               }
-       void     SetBeginFitCharge(Float_t beginFitCharge);   
-       void     SetPeriodeFitPH(Int_t periodeFitPH);   
-       void     SetTakeTheMaxPH()                                         { fTakeTheMaxPH   = kTRUE;        }
-       void     SetT0Shift0(Float_t t0Shift0); 
-       void     SetT0Shift1(Float_t t0Shift1); 
-       void     SetRangeFitPRF(Float_t rangeFitPRF);     
-       void     SetAccCDB()                                               { fAccCDB         = kTRUE;        }
-       void     SetMinEntries(Int_t minEntries);                    
-       void     SetRebin(Short_t rebin);
-       
-       Int_t    GetPeriodeFitPH() const                                   { return fFitPHPeriode;           }
-       Bool_t   GetTakeTheMaxPH() const                                   { return fTakeTheMaxPH;           }
-       Float_t  GetT0Shift0() const                                       { return fT0Shift0;               }
-       Float_t  GetT0Shift1() const                                       { return fT0Shift1;               }
-       Float_t  GetRangeFitPRF() const                                    { return fRangeFitPRF;            }
-       Bool_t   GetAccCDB() const                                         { return fAccCDB;                 }
-       Int_t    GetMinEntries() const                                     { return fMinEntries;             }
-       Short_t  GetRebin() const                                          { return fRebin;                  }
-       
-       // Statistics
-       Int_t    GetNumberFit() const                                      { return fNumberFit;              }
-       Int_t    GetNumberFitSuccess() const                               { return fNumberFitSuccess;       }
-       Int_t    GetNumberEnt() const                                      { return fNumberEnt;              }
-       Double_t GetStatisticMean() const                                  { return fStatisticMean;          }
-       
-       
-       // Debug
-       void     SetDebugLevel(Short_t level)                              { fDebugLevel = level;            }
-       void     SetDet(Int_t iLayer, Int_t iStack, Int_t iSector)         { fDet[0]  = iLayer; 
+  // Debug
+  void     SetDebugLevel(Short_t level)                              { fDebugLevel = level;            }
+  void     SetDet(Int_t iLayer, Int_t iStack, Int_t iSector)         { fDet[0]  = iLayer; 
                                                                             fDet[1]  = iStack; 
                                                                             fDet[2]  = iSector;             }
        void     SetFitVoir(Int_t fitVoir)                                 { fFitVoir = fitVoir;             }
@@ -180,6 +182,8 @@ class AliTRDCalibraFit : public TObject {
 	 
        };
 
+       // Fit function
+       void     FitLagrangePoly(TH1* projPH);
 
  protected:
        
@@ -313,7 +317,6 @@ class AliTRDCalibraFit : public TObject {
        Bool_t   FitPRFGausMI(Double_t *arraye,Double_t *arraym,Double_t *arrayme,Int_t nBins,Float_t xMin,Float_t xMax);
        Double_t FitGausMI(Double_t *arraye,Double_t *arraym,Double_t *arrayme,Int_t nBins, Float_t xMin,Float_t xMax,TVectorD *param, Bool_t kError= kTRUE);
        void     FitPente(TH1 *projPH);
-       void     FitLagrangePoly(TH1* projPH);
        void     FitTnpRange(Double_t *arraye,Double_t *arraym,Double_t *arrayme,Int_t nbg,Int_t nybins);
        TH1I    *ReBin(const TH1I *hist) const;
        TH1F    *ReBin(const TH1F *hist) const;

@@ -135,6 +135,10 @@ class AliTRDCalibraFillHisto : public TObject {
           void     SetDifference(Short_t difference)                         { fDifference           = difference;           }
           void     SetNumberClusters(Short_t numberClusters)                 { if(numberClusters >= 0) fNumberClusters       = numberClusters;       }
 	  void     SetNumberClustersf(Short_t numberClustersf)               { fNumberClustersf      = numberClustersf;      }
+	  void     SetNumberClustersProcent(Float_t numberClustersProcent)   { fNumberClustersProcent = numberClustersProcent;                       }
+	  void     SetThresholdClustersDAQ(Float_t thresholdClustersDAQ)     { fThresholdClustersDAQ = thresholdClustersDAQ;                         }
+	  void     SetNumberRowDAQ(Short_t numberRowDAQ)                     { fNumberRowDAQ         = numberRowDAQ;         }
+	  void     SetNumberColDAQ(Short_t numberColDAQ)                     { fNumberColDAQ         = numberColDAQ;         }
           void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;      }
           void     SetNumberBinPRF(Short_t numberBinPRF)                     { fNumberBinPRF         = numberBinPRF;         }
 	  void     SetNumberGroupsPRF(Short_t numberGroupsPRF);
@@ -202,6 +206,10 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  Int_t    fROBPrevious;            // Change of ROB
 	  Short_t  fNumberClusters;         // Minimum number of clusters in the tracklets
 	  Short_t  fNumberClustersf;        // Maximum number of clusters in the tracklets
+	  Float_t  fNumberClustersProcent;  // Procent of number of time bins for fNumberClusters
+	  Float_t  fThresholdClustersDAQ;   // Threshold clusters for DAQ algorithm
+	  Short_t  fNumberRowDAQ;           // Size of the spot for DAQ algorithm
+	  Short_t  fNumberColDAQ;           // Size of the spot for DAQ algorithm
           Float_t  fProcent;                // Limit to take the info of the most important calibration group if the track goes through 2 groups (CH)
           Short_t  fDifference;             // Limit to take the info of the most important calibration group if the track goes through 2 groups (CH)
           Int_t    fNumberTrack;            // How many tracks could be used (Debug for the moment)

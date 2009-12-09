@@ -556,23 +556,34 @@ Bool_t AliTRDCalibraFit::AnalysePH(const TProfile2D *ph)
   const char *name = ph->GetTitle();
   if(!SetModeCalibration(name,1)) return kFALSE;
   
+  //printf("Mode calibration set\n");
+
   // Number of Xbins (detectors or groups of pads)
   Int_t    nbins   = ph->GetNbinsX();// time
   Int_t    nybins  = ph->GetNbinsY();// calibration group
   if (!InitFit(nybins,1)) {
     return kFALSE;
   }
+
+  //printf("Init fit\n");
+
   if (!InitFitPH()) {
     return kFALSE;
   }
+
+  //printf("Init fit PH\n");
+
   fStatisticMean        = 0.0;
   fNumberFit            = 0;
   fNumberFitSuccess     = 0;
   fNumberEnt            = 0;
   // Init fCountDet and fCount
   InitfCountDetAndfCount(1);
+  //printf("Init Count Det and fCount %d, %d\n",fDect1,fDect2);
+
   // Beginning of the loop
   for (Int_t idect = fDect1; idect < fDect2; idect++) {
+    //printf("idect = %d\n",idect);
     // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi.......
     UpdatefCountDetAndfCount(idect,1);
     ReconstructFitRowMinRowMax(idect,1);
@@ -605,6 +616,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(const TProfile2D *ph)
     CalculVdriftCoefMean();
     CalculT0CoefMean();
     //Method choosen
+    //printf("Method\n");
     switch(fMethod)
       {
       case 0: FitLagrangePoly((TH1 *) projph); break;
@@ -1387,6 +1399,166 @@ Bool_t AliTRDCalibraFit::SetNzFromTObject(const char *name, Int_t i)
   return kFALSE;
 }
 //______________________________________________________________________
+void AliTRDCalibraFit::RemoveOutliers(Int_t type, Bool_t perdetector){
+  //
+  // Remove the results too far from the mean value and rms
+  // type: 0 gain, 1 vdrift
+  // perdetector
+  //
+
+  Int_t loop = (Int_t) fVectorFit.GetEntriesFast();
+  if(loop != 540) {
+    AliInfo("The Vector Fit is not complete!");
+    return;
+  }
+  Int_t detector = -1;
+  Int_t sector = -1;
+  Float_t value  = 0.0;
+
+  /////////////////////////////////
+  // Calculate the mean values
+  ////////////////////////////////
+  // Initialisation
+  ////////////////////////
+  Double_t meanAll = 0.0;
+   Double_t rmsAll = 0.0;
+   Int_t countAll = 0;
+   ////////////
+  // compute
+  ////////////
+  for (Int_t k = 0; k < loop; k++) {
+    detector  = ((AliTRDFitInfo *) fVectorFit.At(k))->GetDetector();
+    sector = GetSector(detector);
+    if(perdetector){
+      value = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef()[0];
+      if(value > 0.0) {
+	rmsAll += value*value;
+	meanAll += value;
+	countAll++;
+      }
+    }
+    else {
+      Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+      Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
+      for (Int_t row = 0; row < rowMax; row++) {
+	for (Int_t col = 0; col < colMax; col++) {
+	  value = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
+	  if(value > 0.0) {
+	    rmsAll += value*value;
+	    meanAll += value;
+	    countAll++;
+	  }
+	  
+	} // Col
+      } // Row
+    }
+  }  
+  if(countAll > 0) {
+    meanAll = meanAll/countAll;
+    rmsAll = TMath::Sqrt(TMath::Abs(rmsAll/countAll - (meanAll*meanAll)));
+  }
+  //printf("RemoveOutliers: meanAll %f and rmsAll %f\n",meanAll,rmsAll);
+  /////////////////////////////////////////////////
+  // Remove outliers
+  ////////////////////////////////////////////////
+  Double_t defaultvalue = -1.0;
+  if(type==1) defaultvalue = -1.5;
+  for (Int_t k = 0; k < loop; k++) {
+    detector  = ((AliTRDFitInfo *) fVectorFit.At(k))->GetDetector();
+    sector = GetSector(detector);
+    Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+    Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
+    Float_t *coef = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef();
+  
+    // remove the results too far away  
+    for (Int_t row = 0; row < rowMax; row++) {
+      for (Int_t col = 0; col < colMax; col++) {
+	value = coef[(Int_t)(col*rowMax+row)];
+	if((value > 0.0) && (rmsAll > 0.0) && (TMath::Abs(value-meanAll) > (2*rmsAll))) {
+	  coef[(Int_t)(col*rowMax+row)] = defaultvalue;
+	}
+      } // Col
+    } // Row
+  }
+}
+//______________________________________________________________________
+void AliTRDCalibraFit::RemoveOutliers2(Bool_t perdetector){
+  //
+  // Remove the results too far from the mean and rms
+  // perdetector
+  //
+
+  Int_t loop = (Int_t) fVectorFit2.GetEntriesFast();
+  if(loop != 540) {
+    AliInfo("The Vector Fit is not complete!");
+    return;
+  }
+  Int_t detector = -1;
+  Int_t sector = -1;
+  Float_t value  = 0.0;
+
+  /////////////////////////////////
+  // Calculate the mean values
+  ////////////////////////////////
+  // Initialisation
+  ////////////////////////
+  Double_t meanAll = 0.0;
+  Double_t rmsAll = 0.0;
+  Int_t countAll = 0;
+  /////////////
+  // compute
+  ////////////
+  for (Int_t k = 0; k < loop; k++) {
+    detector  = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetDetector();
+    sector = GetSector(detector);
+    if(perdetector){
+      value = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef()[0];
+      if(value < 70.0) {
+	meanAll += value;
+	rmsAll += value*value;
+	countAll++;
+      }
+    }
+    else {
+      Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+      Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
+      for (Int_t row = 0; row < rowMax; row++) {
+	for (Int_t col = 0; col < colMax; col++) {
+	  value = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
+	  if(value < 70.0) {
+	    rmsAll += value*value;
+	    meanAll += value;
+	    countAll++;
+	  }	  
+	} // Col
+      } // Row
+    }
+  }  
+  if(countAll > 0) {
+    meanAll = meanAll/countAll;
+    rmsAll = TMath::Sqrt(TMath::Abs(rmsAll/countAll - (meanAll*meanAll)));
+  }
+  //printf("Remove outliers 2: meanAll %f, rmsAll %f\n",meanAll,rmsAll);
+  /////////////////////////////////////////////////
+  // Remove outliers
+  ////////////////////////////////////////////////
+  for (Int_t k = 0; k < loop; k++) {
+    detector  = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetDetector();
+    sector = GetSector(detector);
+    Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+    Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
+    Float_t *coef = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef();
+  
+    // remove the results too far away  
+    for (Int_t row = 0; row < rowMax; row++) {
+      for (Int_t col = 0; col < colMax; col++) {
+	value = coef[(Int_t)(col*rowMax+row)];
+	if((value < 70.0) && (rmsAll > 0.0) && (TMath::Abs(value-meanAll) > (2.5*rmsAll))) coef[(Int_t)(col*rowMax+row)] = 100.0;
+      } // Col
+    } // Row
+  }
+}
+//______________________________________________________________________
 void AliTRDCalibraFit::PutMeanValueOtherVectorFit(Int_t ofwhat, Bool_t perdetector){
   //
   // ofwhat is equaled to 0: mean value of all passing detectors
@@ -1410,17 +1582,23 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit(Int_t ofwhat, Bool_t perdetect
   Double_t meanAll = 0.0;
   Double_t meanSupermodule[18];
   Double_t meanDetector[540];
+  Double_t rmsAll = 0.0;
+  Double_t rmsSupermodule[18];
+  Double_t rmsDetector[540];
   Int_t countAll = 0;
   Int_t countSupermodule[18];
   Int_t countDetector[540];
   for(Int_t sm = 0; sm < 18; sm++){
+    rmsSupermodule[sm] = 0.0;
     meanSupermodule[sm] = 0.0;
     countSupermodule[sm] = 0;
   }
   for(Int_t det = 0; det < 540; det++){
+    rmsDetector[det] = 0.0;
     meanDetector[det] = 0.0;
     countDetector[det] = 0;
   }
+  ////////////
   // compute
   ////////////
   for (Int_t k = 0; k < loop; k++) {
@@ -1429,10 +1607,13 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit(Int_t ofwhat, Bool_t perdetect
     if(perdetector){
       value = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef()[0];
       if(value > 0.0) {
+	rmsDetector[detector] += value*value;
 	meanDetector[detector] += value;
 	countDetector[detector]++;
+	rmsSupermodule[sector] += value*value;
 	meanSupermodule[sector] += value;
 	countSupermodule[sector]++;
+	rmsAll += value*value;
 	meanAll += value;
 	countAll++;
       }
@@ -1444,10 +1625,13 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit(Int_t ofwhat, Bool_t perdetect
 	for (Int_t col = 0; col < colMax; col++) {
 	  value = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
 	  if(value > 0.0) {
+	    rmsDetector[detector] += value*value;
 	    meanDetector[detector] += value;
 	    countDetector[detector]++;
+	    rmsSupermodule[sector] += value*value;
 	    meanSupermodule[sector] += value;
 	    countSupermodule[sector]++;
+	    rmsAll += value*value;
 	    meanAll += value;
 	    countAll++;
 	  }
@@ -1456,13 +1640,24 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit(Int_t ofwhat, Bool_t perdetect
       } // Row
     }
   }  
-  if(countAll > 0) meanAll = meanAll/countAll;
+  if(countAll > 0) {
+    meanAll = meanAll/countAll;
+    rmsAll = TMath::Abs(rmsAll/countAll - (meanAll*meanAll));
+  }
   for(Int_t sm = 0; sm < 18; sm++){
-    if(countSupermodule[sm] > 0) meanSupermodule[sm] = meanSupermodule[sm]/countSupermodule[sm];
+    if(countSupermodule[sm] > 0) {
+      meanSupermodule[sm] = meanSupermodule[sm]/countSupermodule[sm];
+      rmsSupermodule[sm] = TMath::Abs(rmsSupermodule[sm]/countSupermodule[sm] - (meanSupermodule[sm]*meanSupermodule[sm]));
+    }
   }
   for(Int_t det = 0; det < 540; det++){
-    if(countDetector[det] > 0) meanDetector[det] = meanDetector[det]/countDetector[det];
+    if(countDetector[det] > 0) {
+      meanDetector[det] = meanDetector[det]/countDetector[det];
+      rmsDetector[det] = TMath::Abs(rmsDetector[det]/countDetector[det] - (meanDetector[det]*meanDetector[det]));
+    }
   }
+  //printf("Put mean value, meanAll %f, rmsAll %f\n",meanAll,rmsAll);
+  ///////////////////////////////////////////////
   // Put the mean value for the no-fitted
   /////////////////////////////////////////////  
   for (Int_t k = 0; k < loop; k++) {
@@ -1476,11 +1671,11 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit(Int_t ofwhat, Bool_t perdetect
       for (Int_t col = 0; col < colMax; col++) {
 	value = coef[(Int_t)(col*rowMax+row)];
 	if(value < 0.0) {
-	  if((ofwhat == 0) && (meanAll > 0.0)) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanAll);
+	  if((ofwhat == 0) && (meanAll > 0.0) && (countAll > 15)) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanAll);
 	  if(ofwhat == 1){
-	    if(meanDetector[detector] > 0.0) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanDetector[detector]);
-	    else if(meanSupermodule[sector] > 0.0) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanSupermodule[sector]);
-	    else if(meanAll > 0.0) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanAll);
+	    if((meanDetector[detector] > 0.0) && (countDetector[detector] > 20)) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanDetector[detector]);
+	    else if((meanSupermodule[sector] > 0.0) && (countSupermodule[sector] > 15)) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanSupermodule[sector]);
+	    else if((meanAll > 0.0) && (countAll > 15)) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanAll);
 	  }  
 	}
 	// Debug
@@ -1507,7 +1702,6 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit(Int_t ofwhat, Bool_t perdetect
       } // Col
     } // Row
   }
-  
 }
 //______________________________________________________________________
 void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetector){
@@ -1531,16 +1725,21 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetec
   // Initialisation
   ////////////////////////
   Double_t meanAll = 0.0;
+  Double_t rmsAll = 0.0;
   Double_t meanSupermodule[18];
+  Double_t rmsSupermodule[18];
   Double_t meanDetector[540];
+  Double_t rmsDetector[540];
   Int_t countAll = 0;
   Int_t countSupermodule[18];
   Int_t countDetector[540];
   for(Int_t sm = 0; sm < 18; sm++){
+    rmsSupermodule[sm] = 0.0;
     meanSupermodule[sm] = 0.0;
     countSupermodule[sm] = 0;
   }
   for(Int_t det = 0; det < 540; det++){
+    rmsDetector[det] = 0.0;
     meanDetector[det] = 0.0;
     countDetector[det] = 0;
   }
@@ -1552,11 +1751,14 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetec
     if(perdetector){
       value = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef()[0];
       if(value < 70.0) {
+	rmsDetector[detector] += value*value;
 	meanDetector[detector] += value;
 	countDetector[detector]++;
+	rmsSupermodule[sector] += value*value;
 	meanSupermodule[sector] += value;
 	countSupermodule[sector]++;
 	meanAll += value;
+	rmsAll += value*value;
 	countAll++;
       }
     }
@@ -1567,10 +1769,13 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetec
 	for (Int_t col = 0; col < colMax; col++) {
 	  value = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
 	  if(value < 70.0) {
+	    rmsDetector[detector] += value*value;
 	    meanDetector[detector] += value;
 	    countDetector[detector]++;
+	    rmsSupermodule[sector] += value*value;
 	    meanSupermodule[sector] += value;
 	    countSupermodule[sector]++;
+	    rmsAll += value*value;
 	    meanAll += value;
 	    countAll++;
 	  }
@@ -1579,13 +1784,24 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetec
       } // Row
     }
   }  
-  if(countAll > 0) meanAll = meanAll/countAll;
+  if(countAll > 0) {
+    meanAll = meanAll/countAll;
+    rmsAll = TMath::Abs(rmsAll/countAll - (meanAll*meanAll));
+  }
   for(Int_t sm = 0; sm < 18; sm++){
-    if(countSupermodule[sm] > 0) meanSupermodule[sm] = meanSupermodule[sm]/countSupermodule[sm];
+    if(countSupermodule[sm] > 0) {
+      meanSupermodule[sm] = meanSupermodule[sm]/countSupermodule[sm];
+      rmsSupermodule[sm] = TMath::Abs(rmsSupermodule[sm]/countSupermodule[sm] - (meanSupermodule[sm]*meanSupermodule[sm]));
+    }
   }
   for(Int_t det = 0; det < 540; det++){
-    if(countDetector[det] > 0) meanDetector[det] = meanDetector[det]/countDetector[det];
+    if(countDetector[det] > 0) {
+      meanDetector[det] = meanDetector[det]/countDetector[det];
+      rmsDetector[det] = TMath::Abs(rmsDetector[det]/countDetector[det] - (meanDetector[det]*meanDetector[det]));
+    }
   }
+  //printf("Put mean value 2: meanAll %f, rmsAll %f\n",meanAll,rmsAll);
+  ////////////////////////////////////////////
   // Put the mean value for the no-fitted
   /////////////////////////////////////////////  
   for (Int_t k = 0; k < loop; k++) {
@@ -1599,11 +1815,11 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetec
       for (Int_t col = 0; col < colMax; col++) {
 	value = coef[(Int_t)(col*rowMax+row)];
 	if(value > 70.0) {
-	  if((ofwhat == 0) && (meanAll > -1.5)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
+	  if((ofwhat == 0) && (meanAll > -1.5) && (countAll > 15)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
 	  if(ofwhat == 1){
-	    if(meanDetector[detector] > -1.5) coef[(Int_t)(col*rowMax+row)] = meanDetector[detector]+100.0;
-	    else if(meanSupermodule[sector] > -1.5) coef[(Int_t)(col*rowMax+row)] = meanSupermodule[sector]+100.0;
-	    else if(meanAll > -1.5) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
+	    if((meanDetector[detector] > -1.5) && (countDetector[detector] > 20)) coef[(Int_t)(col*rowMax+row)] = meanDetector[detector]+100.0;
+	    else if((meanSupermodule[sector] > -1.5) && (countSupermodule[sector] > 15)) coef[(Int_t)(col*rowMax+row)] = meanSupermodule[sector]+100.0;
+	    else if((meanAll > -1.5) && (countAll > 15)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
 	  }  
 	}
 	// Debug
@@ -2488,10 +2704,16 @@ void AliTRDCalibraFit::InitfCountDetAndfCount(Int_t i)
   if(fDebugLevel == 1) {
     fCountDet = 0;
     fCalibraMode->CalculXBins(fCountDet,i);
-    while(fCalibraMode->GetXbins(i) <=fFitVoir){
+    if((fCalibraMode->GetNz(i)!=100) && (fCalibraMode->GetNrphi(i)!=100)){
+      while(fCalibraMode->GetXbins(i) <=fFitVoir){
+	fCountDet++;
+	fCalibraMode->CalculXBins(fCountDet,i);
+	//printf("GetXBins %d\n",fCalibraMode->GetXbins(i));
+      }      
+    }
+    else {
       fCountDet++;
-      fCalibraMode->CalculXBins(fCountDet,i);
-    }      
+    }
     fCount    = fCalibraMode->GetXbins(i);
     fCountDet--;
     // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
@@ -4079,7 +4301,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   //
   // Slope methode but with polynomes de Lagrange
   //
-  
+
   // Constants
   const Float_t kDrWidth = AliTRDgeometry::DrThick();
   Int_t binmax      = 0;
@@ -4601,7 +4823,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
       (put)) {
     fCurrentCoef[0] = (kDrWidth) / (fPhd[2]-fPhd[1]);
     if(fCurrentCoef[0] > 2.5) fCurrentCoef[0] =  -TMath::Abs(fCurrentCoef[1]);
-    fNumberFitSuccess++;
+    else fNumberFitSuccess++;
     if (fPhdt0 >= 0.0) {
       fCurrentCoef2[0] = (fPhdt0 - t0Shift) / widbins;
       if (fCurrentCoef2[0] < -1.0) {
