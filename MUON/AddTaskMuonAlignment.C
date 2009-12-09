@@ -4,7 +4,7 @@
 ///
 /// \author Javier Castillo, CEA/Saclay - Irfu/SPhN
 
-AliMUONAlignmentTask *AddTaskMuonAlignment()
+AliMUONAlignmentTask *AddTaskMuonAlignment(const char *name = "Muon alignment", const char *geofilename = "geometry.root", const char *defaultocdb = "raw://", const char *misalignocdb = "local://ReAlignOCDB")
 {
 /// Creates a filter task and adds it to the analysis manager.
 
@@ -28,7 +28,7 @@ AliMUONAlignmentTask *AddTaskMuonAlignment()
    // Create the task, add it to the manager and configure it.
    //===========================================================================   
    // Muons
-   AliMUONAlignmentTask *muonalign = new AliMUONAlignmentTask("Muon alignment");
+   AliMUONAlignmentTask *muonalign = new AliMUONAlignmentTask(name, geofilename, defaultocdb, misalignocdb);
    mgr->AddTask(muonalign);
    
 //    // Cuts on primary tracks
