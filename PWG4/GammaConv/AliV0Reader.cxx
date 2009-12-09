@@ -218,7 +218,7 @@ void AliV0Reader::Initialize(){
 	
   // for CF
   //Get pointer to the mc event
-  if(fDoCF){
+  if(fDoCF && fDoMC){
     fMCEvent = fMCTruth->MCEvent();
     if(fMCEvent == NULL){
       //print warning here
