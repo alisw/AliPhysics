@@ -555,6 +555,10 @@ TGraph* AliTPCCalibRaw::MakeGraphOccupancy(const Int_t type, const Int_t xType)
   TVectorF *vSum=&fVSignalSumEvent;
   TVectorF *vPads=&fVNfiredPadsSenEvent;
   Double_t norm=557568.;
+  if (type!=14&&fVOccupancyEvent.GetNrows()==0){
+    AliWarning("In non debug mode only occupancy in sensitive regions vs. event awailable!!!");
+    return 0;
+  }
   if (type>=10){
     vOcc=&fVOccupancySenEvent;
     vSum=&fVSignalSumSenEvent;
@@ -563,9 +567,16 @@ TGraph* AliTPCCalibRaw::MakeGraphOccupancy(const Int_t type, const Int_t xType)
   }
   for (Int_t i=0;i<GetNevents(); ++i){
     Double_t nAboveThreshold=vOcc->GetMatrixArray()[i];
-    Double_t nSumADC        =vSum->GetMatrixArray()[i];
-    Double_t timestamp      =fVTimeStampEvent.GetMatrixArray()[i]+fFirstTimeStamp;
-    Double_t nPads          =vPads->GetMatrixArray()[i];
+    
+    Double_t nSumADC        =1;
+    Double_t timestamp      =1;
+    Double_t nPads          =1;
+
+    if (fVOccupancyEvent.GetNrows()>0){
+      nSumADC        =vSum->GetMatrixArray()[i];
+      timestamp      =fVTimeStampEvent.GetMatrixArray()[i]+fFirstTimeStamp;
+      nPads          =vPads->GetMatrixArray()[i];
+    }
     Double_t x=timestamp;
     Double_t y=0;
     //
