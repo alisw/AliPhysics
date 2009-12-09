@@ -22,6 +22,7 @@
 #include <TFile.h>
 #include <TSystem.h>
 #include <TF1.h>
+#include <TH3F.h>
 #include <TH2D.h>
 #include <TH1D.h>
 #include <TH1I.h>
@@ -690,18 +691,47 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       track = &trackTPC ;
       }*/
 
+    Int_t  fIdxInt[200];
+    Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
+    Int_t npointsTPCdEdx = track->GetTPCsignalN();
+
     if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)||(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
       AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
       if(!tpcTrack) continue;
       gPt = tpcTrack->Pt();
       gP = tpcTrack->P();
       
-      if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+      if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
 	((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
-
+	((TH3F *)(fQA2DList->At(2)))->Fill(tpcTrack->Eta(),
+					   tpcTrack->Phi()*180./TMath::Pi(),
+					   npointsTPCdEdx);
+	((TH3F *)(fQA2DList->At(4)))->Fill(tpcTrack->Eta(),
+					   tpcTrack->Phi()*180./TMath::Pi(),
+					   nClustersTPC);
+	((TH3F *)(fQA2DList->At(6)))->Fill(gPt,
+					   tpcTrack->Phi()*180./TMath::Pi(),
+					   npointsTPCdEdx);
+	((TH3F *)(fQA2DList->At(8)))->Fill(gPt,
+					   tpcTrack->Phi()*180./TMath::Pi(),
+					   nClustersTPC);	
+      }
       if(fProtonAnalysisBase->IsProton(track)) {
-	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) { 
 	  ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
+	  ((TH3F *)(fQA2DList->At(3)))->Fill(tpcTrack->Eta(),
+					     tpcTrack->Phi()*180./TMath::Pi(),
+					     npointsTPCdEdx);
+	  ((TH3F *)(fQA2DList->At(5)))->Fill(tpcTrack->Eta(),
+					     tpcTrack->Phi()*180./TMath::Pi(),
+					     nClustersTPC);
+	  ((TH3F *)(fQA2DList->At(7)))->Fill(gPt,
+					     tpcTrack->Phi()*180./TMath::Pi(),
+					     npointsTPCdEdx);
+	  ((TH3F *)(fQA2DList->At(9)))->Fill(gPt,
+					     tpcTrack->Phi()*180./TMath::Pi(),
+					     nClustersTPC);
+	}
 	FillQA(esd,vertex,track);
 	if(tpcTrack->Charge() > 0) {
 	  nIdentifiedProtons += 1;
@@ -791,11 +821,37 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       gPt = track->Pt();
       gP = track->P();
       
-      if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+      if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
 	((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
+	((TH3F *)(fQA2DList->At(2)))->Fill(track->Eta(),
+					   track->Phi()*180./TMath::Pi(),
+					   npointsTPCdEdx);
+	((TH3F *)(fQA2DList->At(4)))->Fill(track->Eta(),
+					   track->Phi()*180./TMath::Pi(),
+					   nClustersTPC);
+	((TH3F *)(fQA2DList->At(6)))->Fill(gPt,
+					   track->Phi()*180./TMath::Pi(),
+					   npointsTPCdEdx);
+	((TH3F *)(fQA2DList->At(8)))->Fill(gPt,
+					   track->Phi()*180./TMath::Pi(),
+					   nClustersTPC);	
+      }
       if(fProtonAnalysisBase->IsProton(track)) {
-	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
 	  ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
+	  ((TH3F *)(fQA2DList->At(3)))->Fill(track->Eta(),
+					     track->Phi()*180./TMath::Pi(),
+					     npointsTPCdEdx);
+	  ((TH3F *)(fQA2DList->At(5)))->Fill(track->Eta(),
+					     track->Phi()*180./TMath::Pi(),
+					     nClustersTPC);
+	  ((TH3F *)(fQA2DList->At(7)))->Fill(gPt,
+					     track->Phi()*180./TMath::Pi(),
+					     npointsTPCdEdx);
+	  ((TH3F *)(fQA2DList->At(9)))->Fill(gPt,
+					     track->Phi()*180./TMath::Pi(),
+					     nClustersTPC);	
+	}
 	FillQA(esd,vertex,track);
 	if(track->Charge() > 0) {
 	  nIdentifiedProtons += 1;
@@ -1261,12 +1317,77 @@ void AliProtonAnalysis::InitQA() {
   fQA2DList = new TList();
   fQA2DList->SetName("fQA2DList");
   fGlobalQAList->Add(fQA2DList);
+
   //dEdx plots
-  TH2F *gHistdEdxP = new TH2F("gHistdEdxP","dE/dx (TPC); P [GeV/c]; dE/dx [a.u]",100,0.01,10.1,100,0,600);
+  TH2F *gHistdEdxP = new TH2F("gHistdEdxP","dE/dx (TPC); P [GeV/c]; dE/dx [a.u]",1000,0.05,20.05,600,0,600);
   fQA2DList->Add(gHistdEdxP);
-  TH2F *gHistProtonsdEdxP = new TH2F("gHistProtonsdEdxP","Accepted protons dE/dx (TPC); P [GeV/c]; dE/dx [a.u]",100,0.01,10.1,100,0,600);
+  TH2F *gHistProtonsdEdxP = new TH2F("gHistProtonsdEdxP","Accepted protons dE/dx (TPC); P [GeV/c]; dE/dx [a.u]",1000,0.05,20.05,600,0,600);
   fQA2DList->Add(gHistProtonsdEdxP);
-  
+
+  //eta-phi-Npoints(dEdx)
+  TH3F *gHistEtaPhiTPCdEdxNPoints = new TH3F("gHistEtaPhiTPCdEdxNPoints",
+					     ";#eta;#phi;N_{points}(TPC)",
+					     fNBinsY,fMinY,fMaxY,
+					     100,0,360,
+					     100,0,200);
+  gHistEtaPhiTPCdEdxNPoints->SetStats(kTRUE);
+  fQA2DList->Add(gHistEtaPhiTPCdEdxNPoints);
+  TH3F *gHistProtonsEtaPhiTPCdEdxNPoints = new TH3F("gHistProtonsEtaPhiTPCdEdxNPoints",
+						    ";#eta;#phi;N_{points}(TPC)",
+						    fNBinsY,fMinY,fMaxY,
+						    100,0,360,
+						    100,0,200);
+  gHistProtonsEtaPhiTPCdEdxNPoints->SetStats(kTRUE);
+  fQA2DList->Add(gHistProtonsEtaPhiTPCdEdxNPoints);
+
+  //eta-phi-Npoints
+  TH3F *gHistEtaPhiTPCNPoints = new TH3F("gHistEtaPhiTPCNPoints",
+					 ";#eta;#phi;N_{points}(TPC)",
+					 fNBinsY,fMinY,fMaxY,
+					 100,0,360,
+					 100,0,200);
+  gHistEtaPhiTPCNPoints->SetStats(kTRUE);
+  fQA2DList->Add(gHistEtaPhiTPCNPoints);
+  TH3F *gHistProtonsEtaPhiTPCNPoints = new TH3F("gHistProtonsEtaPhiTPCNPoints",
+						";#eta;#phi;N_{points}(TPC)",
+						fNBinsY,fMinY,fMaxY,
+						100,0,360,
+						100,0,200);
+  gHistProtonsEtaPhiTPCNPoints->SetStats(kTRUE);
+  fQA2DList->Add(gHistProtonsEtaPhiTPCNPoints);
+
+  //pt-phi-Npoints(dEdx)
+  TH3F *gHistPtPhiTPCdEdxNPoints = new TH3F("gHistPtPhiTPCdEdxNPoints",
+					    ";P_{T} [GeV/c];#phi;N_{points}(TPC)",
+					    fNBinsPt,fMinPt,fMaxPt,
+					    100,0,360,
+					    100,0,200);
+  gHistPtPhiTPCdEdxNPoints->SetStats(kTRUE);
+  fQA2DList->Add(gHistPtPhiTPCdEdxNPoints);
+  TH3F *gHistProtonsPtPhiTPCdEdxNPoints = new TH3F("gHistProtonsPtPhiTPCdEdxNPoints",
+						    ";P_{T} [GeV/c];#phi;N_{points}(TPC)",
+						    fNBinsPt,fMinPt,fMaxPt,
+						    100,0,360,
+						    100,0,200);
+  gHistProtonsPtPhiTPCdEdxNPoints->SetStats(kTRUE);
+  fQA2DList->Add(gHistProtonsPtPhiTPCdEdxNPoints);
+
+  //pt-phi-Npoints
+  TH3F *gHistPtPhiTPCNPoints = new TH3F("gHistPtPhiTPCNPoints",
+					";P_{T} [GeV/c];#phi;N_{points}(TPC)",
+					fNBinsPt,fMinPt,fMaxPt,
+					100,0,360,
+					100,0,200);
+  gHistPtPhiTPCNPoints->SetStats(kTRUE);
+  fQA2DList->Add(gHistPtPhiTPCNPoints);
+  TH3F *gHistProtonsPtPhiTPCNPoints = new TH3F("gHistProtonsPtPhiTPCNPoints",
+					       ";P_{T} [GeV/c];#phi;N_{points}(TPC)",
+					       fNBinsPt,fMinPt,fMaxPt,
+					       100,0,360,
+					       100,0,200);
+  gHistProtonsPtPhiTPCNPoints->SetStats(kTRUE);
+  fQA2DList->Add(gHistProtonsPtPhiTPCNPoints);
+
   //========================================================//
   fQAProtonsAcceptedList = new TList();
   fQAProtonsAcceptedList->SetName("fQAProtonsAcceptedList");

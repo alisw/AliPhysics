@@ -11,7 +11,6 @@ void drawResults(const char* esdFileName) {
   //Draws the main results from the ratio analysis
   TFile *f = TFile::Open(esdFileName);
   TList *analysisList = dynamic_cast<TList *>(f->Get("outputList"));
-  analysisList->ls();
   TH2D *gHistYPtProtons = dynamic_cast<TH2D *>(analysisList->At(0));
   TH2D *gHistYPtAntiProtons = dynamic_cast<TH2D *>(analysisList->At(1));
 
@@ -38,14 +37,138 @@ void drawQAPlots(const char* esdFileName) {
 
   //================QA plots================//
   TList *fQA2DList = dynamic_cast<TList *>(gListGlobalQA->At(0));
+  //2D de/dx vs P
   TH2F *gHistdEdxP = dynamic_cast<TH2F *>(fQA2DList->At(0));
   gHistdEdxP->SetStats(kFALSE);
   TH2F *gHistProtonsdEdxP = dynamic_cast<TH2F *>(fQA2DList->At(1));
   gHistProtonsdEdxP->SetStats(kFALSE);
+
+  //3D eta-phi-NPoints(dEdx)
+  TH3F *gHistEtaPhiTPCdEdxNPoints = dynamic_cast<TH3F *>(fQA2DList->At(2));
+  TH2D *gHistEtaPhi = dynamic_cast<TH2D *>gHistEtaPhiTPCdEdxNPoints->Project3D("yx");
+  gHistEtaPhi->SetStats(kFALSE);
+  TH2D *gHistEtaTPCdEdxNPoints = dynamic_cast<TH2D *>gHistEtaPhiTPCdEdxNPoints->Project3D("zx");
+  gHistEtaTPCdEdxNPoints->SetStats(kFALSE);
+  TH2D *gHistPhiTPCdEdxNPoints = dynamic_cast<TH2D *>gHistEtaPhiTPCdEdxNPoints->Project3D("zy");
+  gHistPhiTPCdEdxNPoints->SetStats(kFALSE);
+
+  //3D eta-phi-NPoints(dEdx): protons
+  TH3F *gHistProtonsEtaPhiTPCdEdxNPoints = dynamic_cast<TH3F *>(fQA2DList->At(3));
+  TH2D *gHistProtonsEtaPhi = dynamic_cast<TH2D *>gHistProtonsEtaPhiTPCdEdxNPoints->Project3D("yx");
+  gHistProtonsEtaPhi->SetStats(kFALSE);
+  TH2D *gHistProtonsEtaTPCdEdxNPoints = dynamic_cast<TH2D *>gHistProtonsEtaPhiTPCdEdxNPoints->Project3D("zx");
+  gHistProtonsEtaTPCdEdxNPoints->SetStats(kFALSE);
+  TH2D *gHistProtonsPhiTPCdEdxNPoints = dynamic_cast<TH2D *>gHistProtonsEtaPhiTPCdEdxNPoints->Project3D("zy");
+  gHistProtonsPhiTPCdEdxNPoints->SetStats(kFALSE);
+
+  //3D eta-phi-NPoints
+  TH3F *gHistEtaPhiTPCNPoints = dynamic_cast<TH3F *>(fQA2DList->At(4));
+  TH2D *gHistEtaPhi = dynamic_cast<TH2D *>gHistEtaPhiTPCNPoints->Project3D("yx");
+  gHistEtaPhi->SetStats(kFALSE);
+  TH2D *gHistEtaTPCNPoints = dynamic_cast<TH2D *>gHistEtaPhiTPCNPoints->Project3D("zx");
+  gHistEtaTPCNPoints->SetStats(kFALSE);
+  TH2D *gHistPhiTPCNPoints = dynamic_cast<TH2D *>gHistEtaPhiTPCNPoints->Project3D("zy");
+  gHistPhiTPCNPoints->SetStats(kFALSE);
+
+  //3D eta-phi-NPoints: protons
+  TH3F *gHistProtonsEtaPhiTPCNPoints = dynamic_cast<TH3F *>(fQA2DList->At(5));
+  TH2D *gHistProtonsEtaPhi = dynamic_cast<TH2D *>gHistProtonsEtaPhiTPCNPoints->Project3D("yx");
+  gHistProtonsEtaPhi->SetStats(kFALSE);
+  TH2D *gHistProtonsEtaTPCNPoints = dynamic_cast<TH2D *>gHistProtonsEtaPhiTPCNPoints->Project3D("zx");
+  gHistProtonsEtaTPCNPoints->SetStats(kFALSE);
+  TH2D *gHistProtonsPhiTPCNPoints = dynamic_cast<TH2D *>gHistProtonsEtaPhiTPCNPoints->Project3D("zy");
+  gHistProtonsPhiTPCNPoints->SetStats(kFALSE);
+
+  //3D pt-phi-NPoints(dEdx)
+  TH3F *gHistPtPhiTPCdEdxNPoints = dynamic_cast<TH3F *>(fQA2DList->At(6));
+  TH2D *gHistPtPhi = dynamic_cast<TH2D *>gHistPtPhiTPCdEdxNPoints->Project3D("yx");
+  gHistPtPhi->SetStats(kFALSE);
+  TH2D *gHistPtTPCdEdxNPoints = dynamic_cast<TH2D *>gHistPtPhiTPCdEdxNPoints->Project3D("zx");
+  gHistPtTPCdEdxNPoints->SetStats(kFALSE);
+  TH2D *gHistPhiTPCdEdxNPoints = dynamic_cast<TH2D *>gHistPtPhiTPCdEdxNPoints->Project3D("zy");
+  gHistPhiTPCdEdxNPoints->SetStats(kFALSE);
+
+  //3D pt-phi-NPoints(dEdx): protons
+  TH3F *gHistProtonsPtPhiTPCdEdxNPoints = dynamic_cast<TH3F *>(fQA2DList->At(7));
+  TH2D *gHistProtonsPtPhi = dynamic_cast<TH2D *>gHistProtonsPtPhiTPCdEdxNPoints->Project3D("yx");
+  gHistProtonsPtPhi->SetStats(kFALSE);
+  TH2D *gHistProtonsPtTPCdEdxNPoints = dynamic_cast<TH2D *>gHistProtonsPtPhiTPCdEdxNPoints->Project3D("zx");
+  gHistProtonsPtTPCdEdxNPoints->SetStats(kFALSE);
+  TH2D *gHistProtonsPhiTPCdEdxNPoints = dynamic_cast<TH2D *>gHistProtonsPtPhiTPCdEdxNPoints->Project3D("zy");
+  gHistProtonsPhiTPCdEdxNPoints->SetStats(kFALSE);
+
+  //3D pt-phi-NPoints
+  TH3F *gHistPtPhiTPCNPoints = dynamic_cast<TH3F *>(fQA2DList->At(8));
+  TH2D *gHistPtPhi = dynamic_cast<TH2D *>gHistPtPhiTPCNPoints->Project3D("yx");
+  gHistPtPhi->SetStats(kFALSE);
+  TH2D *gHistPtTPCNPoints = dynamic_cast<TH2D *>gHistPtPhiTPCNPoints->Project3D("zx");
+  gHistPtTPCNPoints->SetStats(kFALSE);
+  TH2D *gHistPhiTPCNPoints = dynamic_cast<TH2D *>gHistPtPhiTPCNPoints->Project3D("zy");
+  gHistPhiTPCNPoints->SetStats(kFALSE);
+
+  //3D pt-phi-NPoints: protons
+  TH3F *gHistProtonsPtPhiTPCNPoints = dynamic_cast<TH3F *>(fQA2DList->At(9));
+  TH2D *gHistProtonsPtPhi = dynamic_cast<TH2D *>gHistProtonsPtPhiTPCNPoints->Project3D("yx");
+  gHistProtonsPtPhi->SetStats(kFALSE);
+  TH2D *gHistProtonsPtTPCNPoints = dynamic_cast<TH2D *>gHistProtonsPtPhiTPCNPoints->Project3D("zx");
+  gHistProtonsPtTPCNPoints->SetStats(kFALSE);
+  TH2D *gHistProtonsPhiTPCNPoints = dynamic_cast<TH2D *>gHistProtonsPtPhiTPCNPoints->Project3D("zy");
+  gHistProtonsPhiTPCNPoints->SetStats(kFALSE);
+
+
+  //__________________________________________________//
   TCanvas *cdEdx = new TCanvas("cdEdx","dE/dx (TPC)",0,0,700,400);
   cdEdx->SetFillColor(10); cdEdx->SetHighLightColor(10); cdEdx->Divide(2,1);
   cdEdx->cd(1)->SetLogx(); gHistdEdxP->Draw("col");
   cdEdx->cd(2)->SetLogx(); gHistProtonsdEdxP->Draw("col");
+
+  TCanvas *cEtaPhiNPointsdEdx = new TCanvas("cEtaPhiNPointsdEdx",
+					    "eta-phi-NPoints(dE/dx)",
+					    0,0,900,600);
+  cEtaPhiNPointsdEdx->SetFillColor(10); 
+  cEtaPhiNPointsdEdx->SetHighLightColor(10); cEtaPhiNPointsdEdx->Divide(3,2);
+  cEtaPhiNPointsdEdx->cd(1); gHistEtaPhi->Draw("col");
+  cEtaPhiNPointsdEdx->cd(2); gHistEtaTPCdEdxNPoints->Draw("col");
+  cEtaPhiNPointsdEdx->cd(3); gHistPhiTPCdEdxNPoints->Draw("col");
+  cEtaPhiNPointsdEdx->cd(4); gHistProtonsEtaPhi->Draw("col");
+  cEtaPhiNPointsdEdx->cd(5); gHistProtonsEtaTPCdEdxNPoints->Draw("col");
+  cEtaPhiNPointsdEdx->cd(6); gHistProtonsPhiTPCdEdxNPoints->Draw("col");
+
+  TCanvas *cEtaPhiNPoints = new TCanvas("cEtaPhiNPoints",
+					"eta-phi-NPoints",
+					0,0,900,600);
+  cEtaPhiNPoints->SetFillColor(10); 
+  cEtaPhiNPoints->SetHighLightColor(10); cEtaPhiNPoints->Divide(3,2);
+  cEtaPhiNPoints->cd(1); gHistEtaPhi->Draw("col");
+  cEtaPhiNPoints->cd(2); gHistEtaTPCNPoints->Draw("col");
+  cEtaPhiNPoints->cd(3); gHistPhiTPCNPoints->Draw("col");
+  cEtaPhiNPoints->cd(4); gHistProtonsEtaPhi->Draw("col");
+  cEtaPhiNPoints->cd(5); gHistProtonsEtaTPCNPoints->Draw("col");
+  cEtaPhiNPoints->cd(6); gHistProtonsPhiTPCNPoints->Draw("col");
+
+  TCanvas *cPtPhiNPointsdEdx = new TCanvas("cPtPhiNPointsdEdx",
+					   "pt-phi-NPoints(dE/dx)",
+					   0,0,900,600);
+  cPtPhiNPointsdEdx->SetFillColor(10); 
+  cPtPhiNPointsdEdx->SetHighLightColor(10); cPtPhiNPointsdEdx->Divide(3,2);
+  cPtPhiNPointsdEdx->cd(1); gHistPtPhi->Draw("col");
+  cPtPhiNPointsdEdx->cd(2); gHistPtTPCdEdxNPoints->Draw("col");
+  cPtPhiNPointsdEdx->cd(3); gHistPhiTPCdEdxNPoints->Draw("col");
+  cPtPhiNPointsdEdx->cd(4); gHistProtonsPtPhi->Draw("col");
+  cPtPhiNPointsdEdx->cd(5); gHistProtonsPtTPCdEdxNPoints->Draw("col");
+  cPtPhiNPointsdEdx->cd(6); gHistProtonsPhiTPCdEdxNPoints->Draw("col");
+
+  TCanvas *cPtPhiNPoints = new TCanvas("cPtPhiNPoints",
+				       "pt-phi-NPoints",
+				       0,0,900,600);
+  cPtPhiNPoints->SetFillColor(10); 
+  cPtPhiNPoints->SetHighLightColor(10); cPtPhiNPoints->Divide(3,2);
+  cPtPhiNPoints->cd(1); gHistPtPhi->Draw("col");
+  cPtPhiNPoints->cd(2); gHistPtTPCNPoints->Draw("col");
+  cPtPhiNPoints->cd(3); gHistPhiTPCNPoints->Draw("col");
+  cPtPhiNPoints->cd(4); gHistProtonsPtPhi->Draw("col");
+  cPtPhiNPoints->cd(5); gHistProtonsPtTPCNPoints->Draw("col");
+  cPtPhiNPoints->cd(6); gHistProtonsPhiTPCNPoints->Draw("col");
 
   //Accepted protons
   TList *fQAProtonsAcceptedList = dynamic_cast<TList *>(gListGlobalQA->At(1));
@@ -200,93 +323,115 @@ void drawQAPlots(const char* esdFileName) {
   c4->cd(2); gAntiProtonsChi2PerClusterTPCPass->Draw(); 
   gAntiProtonsChi2PerClusterTPCReject->Draw("same");
 
-  TCanvas *c5 = new TCanvas("c5","Cov11",0,400,600,400);
-  c5->SetFillColor(10); c5->SetHighLightColor(10);
-  c5->Divide(2,1);
-  c5->cd(1)->SetLogy(); gProtonsExtCov11Pass->Draw(); 
-  gProtonsExtCov11Reject->Draw("same");
-  c5->cd(2)->SetLogy(); gAntiProtonsExtCov11Pass->Draw(); 
-  gAntiProtonsExtCov11Reject->Draw("same");
+  if(gProtonsExtCov11Pass->GetEntries() != 0) {
+    TCanvas *c5 = new TCanvas("c5","Cov11",0,400,600,400);
+    c5->SetFillColor(10); c5->SetHighLightColor(10);
+    c5->Divide(2,1);
+    c5->cd(1)->SetLogy(); gProtonsExtCov11Pass->Draw(); 
+    gProtonsExtCov11Reject->Draw("same");
+    c5->cd(2)->SetLogy(); gAntiProtonsExtCov11Pass->Draw(); 
+    gAntiProtonsExtCov11Reject->Draw("same");
+  }
 
-  TCanvas *c6 = new TCanvas("c6","Cov22",0,500,600,400);
-  c6->SetFillColor(10); c6->SetHighLightColor(10);
-  c6->Divide(2,1);
-  c6->cd(1)->SetLogy(); gProtonsExtCov22Pass->Draw(); 
-  gProtonsExtCov22Reject->Draw("same");
-  c6->cd(2)->SetLogy(); gAntiProtonsExtCov22Pass->Draw(); 
-  gAntiProtonsExtCov22Reject->Draw("same");
+  if(gProtonsExtCov11Pass->GetEntries() != 0) {
+    TCanvas *c6 = new TCanvas("c6","Cov22",0,500,600,400);
+    c6->SetFillColor(10); c6->SetHighLightColor(10);
+    c6->Divide(2,1);
+    c6->cd(1)->SetLogy(); gProtonsExtCov22Pass->Draw(); 
+    gProtonsExtCov22Reject->Draw("same");
+    c6->cd(2)->SetLogy(); gAntiProtonsExtCov22Pass->Draw(); 
+    gAntiProtonsExtCov22Reject->Draw("same");
+  }
 
-  TCanvas *c7 = new TCanvas("c7","Cov33",600,0,600,400);
-  c7->SetFillColor(10); c7->SetHighLightColor(10);
-  c7->Divide(2,1);
-  c7->cd(1)->SetLogy(); gProtonsExtCov33Pass->Draw(); 
-  gProtonsExtCov33Reject->Draw("same");
-  c7->cd(2)->SetLogy(); gAntiProtonsExtCov33Pass->Draw(); 
-  gAntiProtonsExtCov33Reject->Draw("same");
+  if(gProtonsExtCov11Pass->GetEntries() != 0) {
+    TCanvas *c7 = new TCanvas("c7","Cov33",600,0,600,400);
+    c7->SetFillColor(10); c7->SetHighLightColor(10);
+    c7->Divide(2,1);
+    c7->cd(1)->SetLogy(); gProtonsExtCov33Pass->Draw(); 
+    gProtonsExtCov33Reject->Draw("same");
+    c7->cd(2)->SetLogy(); gAntiProtonsExtCov33Pass->Draw(); 
+    gAntiProtonsExtCov33Reject->Draw("same");
+  }
 
-  TCanvas *c8 = new TCanvas("c8","Cov44",600,100,600,400);
-  c8->SetFillColor(10); c8->SetHighLightColor(10);
-  c8->Divide(2,1);
-  c8->cd(1)->SetLogy(); gProtonsExtCov44Pass->Draw(); 
-  gProtonsExtCov44Reject->Draw("same");
-  c8->cd(2)->SetLogy(); gAntiProtonsExtCov44Pass->Draw(); 
-  gAntiProtonsExtCov44Reject->Draw("same");
+  if(gProtonsExtCov11Pass->GetEntries() != 0) {
+    TCanvas *c8 = new TCanvas("c8","Cov44",600,100,600,400);
+    c8->SetFillColor(10); c8->SetHighLightColor(10);
+    c8->Divide(2,1);
+    c8->cd(1)->SetLogy(); gProtonsExtCov44Pass->Draw(); 
+    gProtonsExtCov44Reject->Draw("same");
+    c8->cd(2)->SetLogy(); gAntiProtonsExtCov44Pass->Draw(); 
+    gAntiProtonsExtCov44Reject->Draw("same");
+  }
 
-  TCanvas *c9 = new TCanvas("c9","Cov55",600,200,600,400);
-  c9->SetFillColor(10); c9->SetHighLightColor(10);
-  c9->Divide(2,1);
-  c9->cd(1)->SetLogy(); gProtonsExtCov55Pass->Draw(); 
-  gProtonsExtCov55Reject->Draw("same");
-  c9->cd(2)->SetLogy(); gAntiProtonsExtCov55Pass->Draw(); 
-  gAntiProtonsExtCov55Reject->Draw("same");
+  if(gProtonsExtCov11Pass->GetEntries() != 0) {
+    TCanvas *c9 = new TCanvas("c9","Cov55",600,200,600,400);
+    c9->SetFillColor(10); c9->SetHighLightColor(10);
+    c9->Divide(2,1);
+    c9->cd(1)->SetLogy(); gProtonsExtCov55Pass->Draw(); 
+    gProtonsExtCov55Reject->Draw("same");
+    c9->cd(2)->SetLogy(); gAntiProtonsExtCov55Pass->Draw(); 
+    gAntiProtonsExtCov55Reject->Draw("same");
+  }
 
-  TCanvas *c10 = new TCanvas("c10","N-sigma to Vertex",600,300,600,400);
-  c10->SetFillColor(10); c10->SetHighLightColor(10);
-  c10->Divide(2,1);
-  c10->cd(1)->SetLogy(); gProtonsSigmaToVertexPass->Draw(); 
-  gProtonsSigmaToVertexReject->Draw("same");
-  c10->cd(2)->SetLogy(); gAntiProtonsSigmaToVertexPass->Draw(); 
-  gAntiProtonsSigmaToVertexReject->Draw("same");
+  if(gProtonsSigmaToVertexPass->GetEntries() != 0) {
+    TCanvas *c10 = new TCanvas("c10","N-sigma to Vertex",600,300,600,400);
+    c10->SetFillColor(10); c10->SetHighLightColor(10);
+    c10->Divide(2,1);
+    c10->cd(1)->SetLogy(); gProtonsSigmaToVertexPass->Draw(); 
+    gProtonsSigmaToVertexReject->Draw("same");
+    c10->cd(2)->SetLogy(); gAntiProtonsSigmaToVertexPass->Draw(); 
+    gAntiProtonsSigmaToVertexReject->Draw("same");
+  }
 
-  TCanvas *c11 = new TCanvas("c11","N-sigma to Vertex (TPC)",600,400,600,400);
-  c11->SetFillColor(10); c11->SetHighLightColor(10);
-  c11->Divide(2,1);
-  c11->cd(1)->SetLogy(); gProtonsSigmaToVertexTPCPass->Draw(); 
-  gProtonsSigmaToVertexTPCReject->Draw("same");
-  c11->cd(2)->SetLogy(); gAntiProtonsSigmaToVertexTPCPass->Draw(); 
-  gAntiProtonsSigmaToVertexTPCReject->Draw("same");
+  if(gProtonsSigmaToVertexTPCPass->GetEntries() != 0) {
+    TCanvas *c11 = new TCanvas("c11","N-sigma to Vertex (TPC)",600,400,600,400);
+    c11->SetFillColor(10); c11->SetHighLightColor(10);
+    c11->Divide(2,1);
+    c11->cd(1)->SetLogy(); gProtonsSigmaToVertexTPCPass->Draw(); 
+    gProtonsSigmaToVertexTPCReject->Draw("same");
+    c11->cd(2)->SetLogy(); gAntiProtonsSigmaToVertexTPCPass->Draw(); 
+    gAntiProtonsSigmaToVertexTPCReject->Draw("same");
+  }
 
-  TCanvas *c12 = new TCanvas("c12","dca(xy)",600,500,600,400);
-  c12->SetFillColor(10); c12->SetHighLightColor(10);
-  c12->Divide(2,1);
-  c12->cd(1)->SetLogy(); gProtonsDCAXYPass->Draw(); 
-  gProtonsDCAXYReject->Draw("same");
-  c12->cd(2)->SetLogy(); gAntiProtonsDCAXYPass->Draw(); 
-  gAntiProtonsDCAXYReject->Draw("same");
+  if(gProtonsDCAXYPass->GetEntries() != 0) {
+    TCanvas *c12 = new TCanvas("c12","dca(xy)",600,500,600,400);
+    c12->SetFillColor(10); c12->SetHighLightColor(10);
+    c12->Divide(2,1);
+    c12->cd(1)->SetLogy(); gProtonsDCAXYPass->Draw(); 
+    gProtonsDCAXYReject->Draw("same");
+    c12->cd(2)->SetLogy(); gAntiProtonsDCAXYPass->Draw(); 
+    gAntiProtonsDCAXYReject->Draw("same");
+  }
 
-  TCanvas *c13 = new TCanvas("c13","dca(xy - TPC)",1200,0,600,400);
-  c13->SetFillColor(10); c13->SetHighLightColor(10);
-  c13->Divide(2,1);
-  c13->cd(1)->SetLogy(); gProtonsDCAXYTPCPass->Draw(); 
-  gProtonsDCAXYTPCReject->Draw("same");
-  c13->cd(2)->SetLogy(); gAntiProtonsDCAXYTPCPass->Draw(); 
-  gAntiProtonsDCAXYTPCReject->Draw("same");
+  if(gProtonsDCAXYTPCPass->GetEntries() != 0) {
+    TCanvas *c13 = new TCanvas("c13","dca(xy - TPC)",1200,0,600,400);
+    c13->SetFillColor(10); c13->SetHighLightColor(10);
+    c13->Divide(2,1);
+    c13->cd(1)->SetLogy(); gProtonsDCAXYTPCPass->Draw(); 
+    gProtonsDCAXYTPCReject->Draw("same");
+    c13->cd(2)->SetLogy(); gAntiProtonsDCAXYTPCPass->Draw(); 
+    gAntiProtonsDCAXYTPCReject->Draw("same");
+  }
 
-  TCanvas *c14 = new TCanvas("c14","dca(z)",1200,100,600,400);
-  c14->SetFillColor(10); c14->SetHighLightColor(10);
-  c14->Divide(2,1);
-  c14->cd(1)->SetLogy(); gProtonsDCAZPass->Draw(); 
-  gProtonsDCAZReject->Draw("same");
-  c14->cd(2)->SetLogy(); gAntiProtonsDCAZPass->Draw(); 
-  gAntiProtonsDCAZReject->Draw("same");
+  if(gProtonsDCAZPass->GetEntries() != 0) {
+    TCanvas *c14 = new TCanvas("c14","dca(z)",1200,100,600,400);
+    c14->SetFillColor(10); c14->SetHighLightColor(10);
+    c14->Divide(2,1);
+    c14->cd(1)->SetLogy(); gProtonsDCAZPass->Draw(); 
+    gProtonsDCAZReject->Draw("same");
+    c14->cd(2)->SetLogy(); gAntiProtonsDCAZPass->Draw(); 
+    gAntiProtonsDCAZReject->Draw("same");
+  }
 
-  TCanvas *c15 = new TCanvas("c15","dca(z - TPC)",1200,200,600,400);
-  c15->SetFillColor(10); c15->SetHighLightColor(10);
-  c15->Divide(2,1);
-  c15->cd(1)->SetLogy(); gProtonsDCAZTPCPass->Draw(); 
-  gProtonsDCAZTPCReject->Draw("same");
-  c15->cd(2)->SetLogy(); gAntiProtonsDCAZTPCPass->Draw(); 
-  gAntiProtonsDCAZTPCReject->Draw("same");
+  if(gProtonsDCAZTPCPass->GetEntries() != 0) {
+    TCanvas *c15 = new TCanvas("c15","dca(z - TPC)",1200,200,600,400);
+    c15->SetFillColor(10); c15->SetHighLightColor(10);
+    c15->Divide(2,1);
+    c15->cd(1)->SetLogy(); gProtonsDCAZTPCPass->Draw(); 
+    gProtonsDCAZTPCReject->Draw("same");
+    c15->cd(2)->SetLogy(); gAntiProtonsDCAZTPCPass->Draw(); 
+    gAntiProtonsDCAZTPCReject->Draw("same");
+  }
 
   TCanvas *c16 = new TCanvas("c16","TPC clusters (dE/dx)",1200,300,600,400);
   c16->SetFillColor(10); c16->SetHighLightColor(10);
