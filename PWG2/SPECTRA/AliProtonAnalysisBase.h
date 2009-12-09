@@ -70,8 +70,8 @@ class AliProtonAnalysisBase : public TObject {
   Double_t GetMaxX() const {return fMaxX;}
   Double_t GetMaxY() const {return fMaxY;}
 
-  static Bool_t IsEventTriggered(const AliESDEvent *esd,
-                                 TriggerMode trigger = kMB2);
+  Bool_t IsEventTriggered(const AliESDEvent *esd,
+			  TriggerMode trigger = kMB2);
   Bool_t IsAccepted(AliESDEvent *esd,
 		    const AliESDVertex *vertex, 
 		    AliESDtrack *track);

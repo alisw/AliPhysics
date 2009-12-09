@@ -585,29 +585,36 @@ Bool_t AliProtonAnalysisBase::IsEventTriggered(const AliESDEvent *esd,
 					       TriggerMode trigger) {
   // check if the event was triggered
   ULong64_t triggerMask = esd->GetTriggerMask();
-  
-  // definitions from p-p.cfg
-  ULong64_t spdFO = (1 << 14);
-  ULong64_t v0left = (1 << 11);
-  ULong64_t v0right = (1 << 12);
+  TString firedTriggerClass = esd->GetFiredTriggerClasses();
 
-  switch (trigger) {
-  case kMB1: {
-    if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
-      return kTRUE;
-    break;
+  if(fAnalysisMC) {
+    // definitions from p-p.cfg
+    ULong64_t spdFO = (1 << 14);
+    ULong64_t v0left = (1 << 11);
+    ULong64_t v0right = (1 << 12);
+    
+    switch (trigger) {
+    case kMB1: {
+      if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
+	return kTRUE;
+      break;
+    }
+    case kMB2: {
+      if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
+	return kTRUE;
+      break;
+    }
+    case kSPDFASTOR: {
+      if (triggerMask & spdFO)
+	return kTRUE;
+      break;
+    }
+    }//switch
   }
-  case kMB2: {
-    if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
+  else {
+    if(firedTriggerClass.Contains("CINT1B-ABCE-NOPF-ALL"))
       return kTRUE;
-    break;
   }
-  case kSPDFASTOR: {
-    if (triggerMask & spdFO)
-      return kTRUE;
-    break;
-  }
-  }//switch
 
   return kFALSE;
 }

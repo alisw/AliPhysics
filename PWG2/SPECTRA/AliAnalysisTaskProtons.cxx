@@ -1,3 +1,4 @@
+#include "Riostream.h"
 #include "TStyle.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -122,24 +123,15 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
       return;
     }
 
-    if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetMCAnalysisMode()) {
-      if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
-	const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
-	if(vertex) {
-	  AliDebug(1,Form("Proton ESD analysis task: There are %d tracks in this event",fESD->GetNumberOfTracks()));
-	  //Printf("Proton ESD analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
-	  fProtonAnalysis->Analyze(fESD,vertex);
-	}//reconstructed vertex
-      }//triggered event
-    }//MC analysis
-    else {
+    if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
+      AliDebug(1,Form("Fired trigger class: %s",fESD->GetFiredTriggerClasses().Data()));
       const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
       if(vertex) {
 	AliDebug(1,Form("Proton ESD analysis task: There are %d tracks in this event",fESD->GetNumberOfTracks()));
 	//Printf("Proton ESD analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
 	fProtonAnalysis->Analyze(fESD,vertex);
       }//reconstructed vertex
-    }//real data analysis
+    }//triggered event
   }//ESD analysis              
   
   else if(gAnalysisLevel == "AOD") {
