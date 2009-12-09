@@ -1838,16 +1838,26 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 		
 		
 		
-    Int_t labelMC = TMath::Abs(curTrack->GetLabel());
-    TParticle* curParticle = fStack->Particle(labelMC);
-		
-		
 		
 		
     TLorentzVector curElec;
     curElec.SetXYZM(p[0],p[1],p[2],fElectronMass);
 		
 		
+    if(fDoMCTruth){		
+      Int_t labelMC = TMath::Abs(curTrack->GetLabel());
+      TParticle* curParticle = fStack->Particle(labelMC);
+      if(curTrack->GetSign() > 0){
+	if( pid == 0){
+	  fHistograms->FillHistogram("MC_ElectronPosNegPt",curParticle->Pt());
+	  fHistograms->FillHistogram("MC_ElectronPosNegEta",curParticle->Eta());
+	}
+	else{
+	  fHistograms->FillHistogram("MC_ElectronPosNegPt",curParticle->Pt());
+	  fHistograms->FillHistogram("MC_ElectronPosNegEta",curParticle->Eta());
+	}
+      }
+    }
 		
 		
     if(curTrack->GetSign() > 0){
@@ -1859,9 +1869,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 				
 	fHistograms->FillHistogram("ESD_ElectronPosNegPt",curElec.Pt());
 	fHistograms->FillHistogram("ESD_ElectronPosPt",curElec.Pt());
-	fHistograms->FillHistogram("MC_ElectronPosNegPt",curParticle->Pt());
+	//	fHistograms->FillHistogram("MC_ElectronPosNegPt",curParticle->Pt());
 	fHistograms->FillHistogram("ESD_ElectronPosNegEta",curElec.Eta());
-	fHistograms->FillHistogram("MC_ElectronPosNegEta",curParticle->Eta());
+	//	fHistograms->FillHistogram("MC_ElectronPosNegEta",curParticle->Eta());
 	//	vESDePosTemp.push_back(curTrack);
 	new((*vESDePosTemp)[vESDePosTemp->GetEntriesFast()])  AliESDtrack(*curTrack);
 				
@@ -1883,9 +1893,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 				
 	fHistograms->FillHistogram("ESD_ElectronPosNegPt",curElec.Pt());
 	fHistograms->FillHistogram("ESD_ElectronNegPt",curElec.Pt());
-	fHistograms->FillHistogram("MC_ElectronPosNegPt",curParticle->Pt());
 	fHistograms->FillHistogram("ESD_ElectronPosNegEta",curElec.Eta());
-	fHistograms->FillHistogram("MC_ElectronPosNegEta",curParticle->Eta());
+	//	fHistograms->FillHistogram("MC_ElectronPosNegPt",curParticle->Pt());
+	//	fHistograms->FillHistogram("MC_ElectronPosNegEta",curParticle->Eta());
 	//vESDeNegTemp.push_back(curTrack);
 	new((*vESDeNegTemp)[vESDeNegTemp->GetEntriesFast()])  AliESDtrack(*curTrack);
 				
