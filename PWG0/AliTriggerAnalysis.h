@@ -19,12 +19,14 @@ class AliESDEvent;
 class TH1;
 class TH2;
 class TCollection;
+class TMap;
 
 class AliTriggerAnalysis : public TObject
 {
   public:
-    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
+    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
+    enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG };
     
     AliTriggerAnalysis();
     virtual ~AliTriggerAnalysis() {}
@@ -44,9 +46,16 @@ class AliTriggerAnalysis : public TObject
     // using trigger classes in ESD
     Bool_t IsTriggerClassFired(const AliESDEvent* aEsd, const Char_t* tclass) const;
     
+    // some "raw" trigger functions
+    Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin) const;
+    V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE) const;
+    Bool_t ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const;
+    Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side) const;
+    
     static const char* GetTriggerName(Trigger trigger);
     
     void FillHistograms(const AliESDEvent* aEsd);
+    void FillTriggerClasses(const AliESDEvent* aEsd);
     
     void SetSPDGFOThreshhold(Int_t t) { fSPDGFOThreshold = t; }
     void SetV0Threshhold(Int_t aSide, Int_t cSide) { fV0AThreshold = aSide; fV0CThreshold = cSide; }
@@ -60,6 +69,8 @@ class AliTriggerAnalysis : public TObject
     
     virtual Long64_t Merge(TCollection* list);
     void WriteHistograms() const;
+    
+    void PrintTriggerClasses() const;
 
   protected:
     Bool_t IsL0InputFired(const AliESDEvent* aEsd, UInt_t input) const;
@@ -68,15 +79,10 @@ class AliTriggerAnalysis : public TObject
     Bool_t IsInputFired(const AliESDEvent* aEsd, Char_t level, UInt_t input) const;
     
     Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE) const;
-    Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin) const;
     
-    Int_t V0BBTriggers(const AliESDEvent* aEsd, AliceSide side) const;
-    Bool_t V0Trigger(const AliESDEvent* aEsd, AliceSide side) const;
-    
-    Bool_t ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const;
+    Float_t V0CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
     
     Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHistograms) const;
-    Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side) const;
 
     Int_t fSPDGFOThreshold;         // number of chips to accept a SPD GF0 trigger
     Int_t fV0AThreshold;            // threshold for number of BB triggers in V0A
@@ -85,8 +91,7 @@ class AliTriggerAnalysis : public TObject
     Float_t fFMDLowCut;		    // 
     Float_t fFMDHitCut;		    // 
     
-    TH1* fHistSPD;            // histograms that histogram the criterion the cut is applied on: fired chips
-    TH2* fHistBitsSPD;        // offline trigger bits vs hardware trigger bits
+    TH2* fHistBitsSPD;        // offline trigger bits (calculated from clusters) vs hardware trigger bits
     TH1* fHistFiredBitsSPD;   // fired hardware bits
     TH1* fHistV0A;            // histograms that histogram the criterion the cut is applied on: bb triggers
     TH1* fHistV0C;            // histograms that histogram the criterion the cut is applied on: bb triggers
@@ -95,8 +100,11 @@ class AliTriggerAnalysis : public TObject
     TH1* fHistFMDC;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
     TH1* fHistFMDSingle;      // histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
     TH1* fHistFMDSum;         // histograms that histogram the criterion the cut is applied on: summed mult value (more than one entry per event)
+    
+    TMap* fTriggerClasses;    // counts the active trigger classes (uses the full string)
+    
 
-    ClassDef(AliTriggerAnalysis, 2)
+    ClassDef(AliTriggerAnalysis, 3)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);

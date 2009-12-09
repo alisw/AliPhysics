@@ -154,24 +154,45 @@ void AliTriggerTask::Exec(Option_t*)
     return;
   }
   
-  /*
   UInt_t eventType = esdHeader->GetEventType();
   if (eventType != 7)
   {
     Printf("Skipping event because it is of type %d", eventType);
     return;
   }
-  */
-  //Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
+  
+  Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
+  Printf("Bits: %lx %ld", fESD->GetTriggerMask(), fESD->GetTriggerMask());
+  
+  fTrigger->FillTriggerClasses(fESD);
+  
+  //if (!fESD->IsTriggerClassFired("CBEAMB-ABCE-NOPF-ALL"))
+  //if (!fESD->IsTriggerClassFired("CSMBB-ABCE-NOPF-ALL"))
+  //if (!fESD->IsTriggerClassFired("CBEAMB-ABCE-NOPF-ALL")) // run 104160
+  //if (!fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL"))
+/*  if (!fESD->IsTriggerClassFired("CINT1A-ABCE-NOPF-ALL"))
+  {
+    Printf("Skipping event because it has not the desired (hardware) trigger. The event has %s", fESD->GetFiredTriggerClasses().Data());
+    return;
+  }*/
   
   fTrigger->FillHistograms(fESD);
   
-  UInt_t timeStamp = 0;
+  Long64_t timeStamp = 0;
   if (fUseOrbits)
-    timeStamp = fESD->GetOrbitNumber();
+  {
+    timeStamp = fESD->GetBunchCrossNumber();
+    timeStamp += (Long64_t) 3564 * (fESD->GetOrbitNumber() + fESD->GetPeriodNumber() * 16777215);
+    timeStamp = (Long64_t) (25e-9 * timeStamp);
+    timeStamp -= fStartTime;
+  }
   else
     timeStamp = fESD->GetTimeStamp() - fStartTime;
+    
+  
   //Printf("%d", timeStamp);
+  
+  //Annalisa Time (s) = 1440*period + 88*10-6 * orbit + 25*10-9 *bc
   
   for (Int_t i = 0; i < fNTriggers; i++)
   {
@@ -182,11 +203,11 @@ void AliTriggerTask::Exec(Option_t*)
   }
   
   if (fFirstOrbit->GetVal() == 0)
-    fFirstOrbit->SetVal(esdHeader->GetOrbitNumber());
+    fFirstOrbit->SetVal(timeStamp);
   else
-    fFirstOrbit->SetVal(TMath::Min(fFirstOrbit->GetVal(), (Long_t) esdHeader->GetOrbitNumber()));
+    fFirstOrbit->SetVal(TMath::Min(fFirstOrbit->GetVal(), (Long_t) timeStamp));
   
-  fLastOrbit->SetVal(TMath::Max(fLastOrbit->GetVal(), (Long_t) esdHeader->GetOrbitNumber()));
+  fLastOrbit->SetVal(TMath::Max(fLastOrbit->GetVal(), (Long_t) timeStamp));
 }
 
 void AliTriggerTask::Terminate(Option_t *)
@@ -214,7 +235,10 @@ void AliTriggerTask::Terminate(Option_t *)
     if (fStats[i])
       fStats[i]->Write();
   if (fTrigger)
+  {
     fTrigger->WriteHistograms();
+    fTrigger->PrintTriggerClasses();
+  }
     
   if (fFirstOrbit)
     fFirstOrbit->Dump();

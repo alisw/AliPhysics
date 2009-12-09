@@ -53,12 +53,22 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
  .x run.C("/PWG0/jgrosseo/ERP_run98097", -1, 0, kFALSE, 2, 1258045012, 1258045458)
  .x run.C("/PWG0/jgrosseo/ERP_run98576", -1, 0, kFALSE, 2, 1258123911, 1258124103)
  .x run.C("/PWG0/jgrosseo/ERP_run98569", -1, 0, kFALSE, 2, 1258122187, 1258122524)
- .x run.C("/PWG0/jgrosseo/run101235", 10000, 0, kFALSE, 2, 1258821541, 1258822595) 
+ .x run.C("/PWG0/jgrosseo/run101235", -1, 0, kFALSE, 2, 1258821541, 1258822595) 
+ .x run.C("/PWG0/jgrosseo/bgRuns_101424to102689_allITS_2", -1, 0, kFALSE, 2, 1258950519, 1259567587) 
+ .x run.C("/PWG0/jgrosseo/run000102556", -1, 0, kFALSE, 2, 1259481473, 1259494364) 
  
   timestamps:
- .x run.C("/ALIREC/aliprod/run101498", 10000, 0, kFALSE, 2, 1258990726, 1258993311) 
+ .x run.C("/ALIREC/aliprod/run101498", -1, 0, kFALSE, 2, 1258990726, 1258993311) 
   orbits:
- .x run.C("/ALIREC/aliprod/run101498", 10000, 0, kFALSE, 2, 13587, 16749493) 
+ .x run.C("/ALIREC/aliprod/run101498", -1, 0, kFALSE, 2, 13587, 16749493) 
+ 
+ .x run.C("/ALIREC/aliprod/run104044", -1, 0, 1, 2, 1260078397, 1260082975) 
+ 
+ .x run.C("/ALIREC/aliprod/run104065", -1, 0, 1, 2, 1260084071, 1260084250)
+ .x run.C("/ALIREC/aliprod/run104065", -1, 0, 1, 2, 1353, 1504)
+
+ .x run.C("/ALIREC/aliprod/run104321", -1, 0, 1, 2, 1260237771, 1260249377)
+
 */
   
   if (nRuns < 0)
@@ -66,11 +76,12 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
 
   if (aProof)
   {
+    TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a"); 
     TProof::Open("alicecaf"); 
     //gProof->SetParallel(1);
 
     // Enable the needed package
-    if (1)
+    if (0)
     {
       gProof->UploadPackage("$ALICE_ROOT/STEERBase");
       gProof->EnablePackage("$ALICE_ROOT/STEERBase");
@@ -85,8 +96,8 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
     }
     else
     {
-      gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release/AF-v4-17");
-      gProof->EnablePackage("AF-v4-17");
+      gProof->UploadPackage("$ALICE_ROOT/AF-v4-18-12-AN.par");
+      gProof->EnablePackage("AF-v4-18-12-AN");
     }
 
     gProof->UploadPackage("$ALICE_ROOT/PWG0base");
@@ -126,6 +137,15 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
   
   Load("AliTriggerTask", aDebug);
   TString optStr(option);
+  
+  // remove SAVE option if set
+  Bool_t save = kFALSE;
+  if (optStr.Contains("SAVE"))
+  {
+    optStr = optStr(0,optStr.Index("SAVE")) + optStr(optStr.Index("SAVE")+4, optStr.Length());
+    save = kTRUE;
+  }
+  
   task = new AliTriggerTask(optStr);
   task->SetTimes(startTime, endTime);
   //task->SetUseOrbits(kTRUE);
@@ -152,6 +172,17 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
     // process dataset
 
     mgr->StartAnalysis("proof", data, nRuns, offset);
+
+    if (save)
+    {
+      TString path("maps/");
+      path += TString(data).Tokenize("/")->Last()->GetName();
+      
+      gSystem->mkdir(path, kTRUE);
+      gSystem->Rename("trigger.root", path + "/trigger.root");
+      
+      Printf(">>>>> Moved files to %s", path.Data());
+    }  
   }
   else if (aProof == 3)
   {
@@ -170,4 +201,5 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
 
     mgr->StartAnalysis((aProof > 0) ? "proof" : "local", chain);
   }
+
 }
