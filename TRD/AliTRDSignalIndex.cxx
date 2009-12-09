@@ -213,6 +213,8 @@ void AliTRDSignalIndex::Allocate(const Int_t nrow, const Int_t ncol, const Int_t
   fBoolIndex = new Bool_t[fMaxLimit];
   fSortedIndex = new RowCol[fMaxLimit+1];
 
+  fCountRC = fMaxLimit+1;
+
   ResetArrays();
   ResetCounters();
 
@@ -224,7 +226,7 @@ void AliTRDSignalIndex::Allocate(const Int_t nrow, const Int_t ncol, const Int_t
 void AliTRDSignalIndex::ResetArrays()
 {
   memset(fBoolIndex,0x00,sizeof(Bool_t)*fMaxLimit);
-  memset(fSortedIndex,0xFF,sizeof(RowCol)*(fMaxLimit+1)); 
+  memset(fSortedIndex,0xFF,sizeof(RowCol)*fCountRC); 
   fSortedWasInit = kFALSE;
 }
 
