@@ -4,10 +4,14 @@
 # Author: K. Read
 #
 
-# export ELECUTSET=0 #kTight2     - default
- export ELECUTSET=1 #kLooseTight - loose p/E, tight dR
-# export ELECUTSET=2 #kTightLoose - tight p/E, loose dR
-# export ELECUTSET=3 #kLoose2     - both loose
+ export ELECUTSET=0 #kTight2     - default
+#export ELECUTSET=1 #kLooseTight - loose p/E, tight dR
+#export ELECUTSET=2 #kTightLoose - tight p/E, loose dR
+#export ELECUTSET=3 #kLoose2     - both loose
+
+# Set anaKMC=0 for data or 1 for MC
+ export anakMC=1
+
  export anaInputData=ESD
  export INDIR=/work2/data/test
  export PATTERN=
