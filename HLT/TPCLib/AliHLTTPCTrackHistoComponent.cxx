@@ -114,7 +114,7 @@ int AliHLTTPCTrackHistoComponent::GetOutputDataTypes(AliHLTComponentDataTypeList
 void AliHLTTPCTrackHistoComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ){
 // see header file for class documentation
   
-  constBase = 0;
+  constBase = 5000;
   inputMultiplier = 1;// XXX TODO: Find more realistic value
 }
 
