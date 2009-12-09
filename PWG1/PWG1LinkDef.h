@@ -70,6 +70,7 @@
 #pragma link C++ class AliAnalysisTaskITSTPCalignment+;
 
 #pragma link C++ class AliAnalysisTaskQASym+;
+#pragma link C++ class AliAnaVZEROQA+;
 
 
 // TRD performance classes
