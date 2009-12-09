@@ -42,6 +42,7 @@ class AliTriggerTask : public AliAnalysisTask {
     TH1** fStats;                 //! trigger stats
     
     AliTriggerAnalysis* fTrigger; // trigger object
+    // TODO put three of those here...
 
  private:
     AliTriggerTask(const AliTriggerTask&);
