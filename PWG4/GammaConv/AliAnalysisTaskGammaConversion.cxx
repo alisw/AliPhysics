@@ -1627,6 +1627,7 @@ void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
   }
   if(fOutputContainer == NULL){
     fOutputContainer = new TList();
+    fOutputContainer->SetOwner(kTRUE);
   }
 	
   //Adding the histograms to the output container
@@ -1641,6 +1642,7 @@ void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
       fNeutralMesonNtuple = new TNtuple("NeutralMesonNtuple","NeutralMesonNtuple","test");
     }
     TList * ntupleTList = new TList();
+    ntupleTList->SetOwner(kTRUE);
     ntupleTList->SetName("Ntuple");
     ntupleTList->Add((TNtuple*)fGammaNtuple);
     fOutputContainer->Add(ntupleTList);

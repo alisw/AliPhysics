@@ -183,6 +183,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
       if(histogramString.Contains("Mapping")){// means it should be put in the mapping folder
 	if(fMappingContainer == NULL){
 	  fMappingContainer = new TList();
+	  fMappingContainer->SetOwner(kTRUE);
 	  fMappingContainer->SetName("Mapping histograms");
 	}
 	if(fMappingContainer != NULL){
@@ -192,6 +193,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
       else if(histogramString.Contains("Background")){// means it should be put in the background folder
 	if(fBackgroundContainer == NULL){
 	  fBackgroundContainer = new TList();
+	  fBackgroundContainer->SetOwner(kTRUE);
 	  fBackgroundContainer->SetName("Background histograms");
 	}
 	if(fBackgroundContainer != NULL){
@@ -201,6 +203,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
       else if(histogramString.Contains("Debug")){// means it should be put in the debug folder
 	if(fDebugContainer == NULL){
 	  fDebugContainer = new TList();
+	  fDebugContainer->SetOwner(kTRUE);
 	  fDebugContainer->SetName("Debug histograms");
 	}
 	if(fDebugContainer != NULL){
@@ -210,6 +213,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
       else if(histogramString.Contains("Resolution")){// means it should be put in the resolution folder
 	if(fResolutionContainer == NULL){
 	  fResolutionContainer = new TList();
+	  fResolutionContainer->SetOwner(kTRUE);
 	  fResolutionContainer->SetName("Resolution histograms");
 	}
 	if(fResolutionContainer != NULL){
@@ -219,6 +223,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
       else if(histogramString.Contains("TrueConv")){// means it should be put in the true conv folder
 	if(fMatchContainer == NULL){
 	  fMatchContainer = new TList();
+	  fMatchContainer->SetOwner(kTRUE);
 	  fMatchContainer->SetName("True conversion histograms");
 	}
 	if(fMatchContainer != NULL){
@@ -228,6 +233,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
       else if(histogramString.Contains("ESD")){// means it should be put in the ESD folder
 	if(fESDContainer == NULL){
 	  fESDContainer = new TList();
+	  fESDContainer->SetOwner(kTRUE);
 	  fESDContainer->SetName("ESD histograms");
 	}
 	if(fESDContainer != NULL){
@@ -237,6 +243,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
       else if(histogramString.Contains("MC")){// means it should be put in the MC folder
 	if(fMCContainer == NULL){
 	  fMCContainer = new TList();
+	  fMCContainer->SetOwner(kTRUE);
 	  fMCContainer->SetName("MC histograms");
 	}
 	if(fMCContainer != NULL){
@@ -246,6 +253,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
       else if(histogramString.Contains("Table")){// means it should be put in the Table Folder
 	if(fTableContainer == NULL){
 	   fTableContainer = new TList();
+	   fTableContainer->SetOwner(kTRUE);
 	   fTableContainer->SetName("Tables");
 	}
 	if(fTableContainer != NULL){
@@ -255,6 +263,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
       else{
 	if(fOtherContainer == NULL){
 	  fOtherContainer = new TList();
+	  fOtherContainer->SetOwner(kTRUE);
 	  fOtherContainer->SetName("Other histograms");
 	}
 	if(fOtherContainer != NULL){
