@@ -19,13 +19,14 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec = "jets",char* bGen 
 
    TString type = mgr->GetInputEventHandler()->GetDataType();
    TString typeMC(bGen);
+   typeMC.ToUpper();
    // Create the task and configure it.
    //===========================================================================
    
    AliAnalysisTaskJetSpectrum2* pwg4spec = new  AliAnalysisTaskJetSpectrum2(Form("Jet Spectrum %s %s",bRec,bGen));
       
    // or a config file
-   pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum2::kAnaMC);
+   // pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum2::kAnaMC);
    // if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
    // pwg4spec->SetDebugLevel(11); 
    pwg4spec->SetBranchRec(bRec); 
@@ -38,9 +39,20 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec = "jets",char* bGen 
    }
    else pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODOut);
 
-   if(typeMC.Contains("AODMC2"))pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
-   else pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
-   
+   if(typeMC.Contains("AODMC2")){
+     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
+   }
+   else if (typeMC.Contains("AODMC2")){
+     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
+   }
+   else if (typeMC.Contains("AOD")) {
+     if(type == "AOD"){
+       pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODIn);
+     }
+     else{
+       pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODOut);
+     }
+   }
    mgr->AddTask(pwg4spec);
      
    // Create ONLY the output containers for the data produced by the task.
