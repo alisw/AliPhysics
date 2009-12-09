@@ -175,13 +175,17 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       
       AliHMPIDCluster *pClu=(AliHMPIDCluster*)pMipCluLst->UncheckedAt(iClu);                    //get the cluster
 // evaluate qThre
-      if(pQthre->GetEntriesFast()==pParam->kMaxCh+1) {                                             // just for backward compatibility
-        qthre=((TF1*)pQthre->At(pClu->Ch()))->Eval(pEsd->GetTimeStamp());                          //
-      } else {                                                                                     // in the past just 1 qthre
-        hvsec = pParam->InHVSector(pClu->Y());                                              //  per chamber
-        if(hvsec>=0)
-	  qthre=((TF1*)pQthre->At(6*ipCh+hvsec))->Eval(pEsd->GetTimeStamp());                      //
-      }                                                                                            //
+      if(pQthre->GetEntriesFast()==pParam->kMaxCh+1) {
+        if(pEsd->GetTimeStamp()==0)   qthre=pParam->QCut();                                     // just for backward compatibility
+        else qthre=((TF1*)pQthre->At(pClu->Ch()))->Eval(pEsd->GetTimeStamp());                  //
+      } else {                                                                                  // in the past just 1 qthre
+        hvsec = pParam->InHVSector(pClu->Y());                                                  //  per chamber
+        if(hvsec>=0){
+          if(pEsd->GetTimeStamp()==0)   qthre=pParam->QCut();                                   // just for backward compatibility
+          else  qthre=((TF1*)pQthre->At(6*ipCh+hvsec))->Eval(pEsd->GetTimeStamp());             //
+        }
+
+       }                                                                                            //
 //
       if(pClu->Q()<qthre) continue;                                                                      //charge compartible with MIP clusters      
       isOkQcut = kTRUE;
