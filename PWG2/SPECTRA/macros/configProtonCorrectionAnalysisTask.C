@@ -3,7 +3,7 @@ AliProtonCorrectionAnalysisTask* GetAliProtonCorrectionAnalysisTask(const char* 
   AliProtonCorrectionAnalysisTask *taskProtons = new AliProtonCorrectionAnalysisTask("TaskProtonsProtonCorrection");
   if(fIsOn_AliProtonAbsorptionCorrection||fIsOn_AliProtonFeedDownAnalysis||fIsOn_AliProtonSpectraCorrection) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysisBaseObject.C"); 
-    AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(mode,analysisType,pidMode);
+    AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(mode,kTRUE,analysisType,pidMode);
     taskProtons->SetBaseAnalysis(baseAnalysis);
   }	
   else
