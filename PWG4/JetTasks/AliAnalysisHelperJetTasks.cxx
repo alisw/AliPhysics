@@ -12,6 +12,7 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliAODJet.h"
+#include "AliAODEvent.h"
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
@@ -637,22 +638,23 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigge
   // checks if an event is fired using the trigger bits
   // here we do a dirty hack to take also into account the
   // missing trigger bits and Bunch crossing paatern for real data 
+  
 
   Bool_t bitFired = IsTriggerBitFired(aEv->GetTriggerMask(), trigger);
-  Bool_t isStringFired = false;
 
+  if(bitFired)return kTRUE;// TODO add protection in case the upper trigger bit are set in the real data too and not correspond to simulated ones...
   if(aEv->InheritsFrom("AliESDEvent")){
-    const AliESDEvent *esd = (AliESDEvent*)(aEv);
+    const AliESDEvent *esd = (AliESDEvent*)aEv;
     switch (trigger)
       {
       case kAcceptAll:
 	{
-	  isStringFired = kTRUE;
+	  return kTRUE;
 	  break;
 	}
       case kMB1:
 	{
-	  if(esd->GetFiredTriggerClasses().Contains("CINT1B"))isStringFired = true;;
+	  if(esd->GetFiredTriggerClasses().Contains("CINT1B"))return kTRUE;
 	  break;
 	}
       case kMB2:
@@ -665,7 +667,7 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigge
 	}
       case kSPDGFO:
 	{
-	  if(esd->GetFiredTriggerClasses().Contains("CSMBB"))isStringFired = true;;	  
+	  if(esd->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;	  
 	  break;
 	}
       default:
@@ -675,7 +677,41 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigge
 	}
       }
   }
-  return bitFired||isStringFired;
+  else if(aEv->InheritsFrom("AliAODEvent")){
+    const AliAODEvent *aod = (AliAODEvent*)aEv;
+    switch (trigger)
+      {
+      case kAcceptAll:
+	{
+	  return kTRUE;
+	  break;
+	}
+      case kMB1:
+	{
+	  if(aod->GetFiredTriggerClasses().Contains("CINT1B"))return kTRUE;
+	  break;
+	}
+      case kMB2:
+	{
+	  break;
+	}
+      case kMB3:
+	{
+	  break;
+	}
+      case kSPDGFO:
+	{
+	  if(aod->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;	  
+	  break;
+	}
+      default:
+	{
+	  Printf("IsEventTriggered: ERROR: Trigger type %d not implemented in this method", (Int_t) trigger);
+	  break;
+	}
+      }
+  }
+    return kFALSE;
 }
 
 Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(ULong64_t triggerMask, Trigger trigger)
