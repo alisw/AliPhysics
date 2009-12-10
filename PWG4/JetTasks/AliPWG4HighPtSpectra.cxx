@@ -41,6 +41,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDInputHandler.h"
+#include "AliAnalysisHelperJetTasks.h"
 
 using namespace std; //required for resolving the 'cout' symbol
 
@@ -52,8 +53,11 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fCFManager(0x0),
   fESD(0),
   fTrackCuts(0),
+  fTrigger(0),
   fHistList(0),
-  fHistEventsProcessed(0x0)
+  fNEventAll(0),
+  fNEventSel(0)
+  //  fHistEventsProcessed(0x0)
 {
   //
   //Default ctor
@@ -66,8 +70,11 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fCFManager(0x0),
   fESD(0),
   fTrackCuts(),//new AliESDtrackCuts),
+  fTrigger(0),
   fHistList(0),
-  fHistEventsProcessed(0x0)
+  fNEventAll(0),
+  fNEventSel(0)
+  //  fHistEventsProcessed(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -90,7 +97,9 @@ AliPWG4HighPtSpectra& AliPWG4HighPtSpectra::operator=(const AliPWG4HighPtSpectra
     fReadAODData = c.fReadAODData ;
     fCFManager  = c.fCFManager;
     fHistList = c.fHistList;
-    fHistEventsProcessed = c.fHistEventsProcessed;
+    fNEventAll = c.fNEventAll;
+    fNEventSel = c.fNEventSel;
+    //    fHistEventsProcessed = c.fHistEventsProcessed;
   }
   return *this;
 }
@@ -102,8 +111,11 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra& c) :
   fCFManager(c.fCFManager),
   fESD(c.fESD),
   fTrackCuts(c.fTrackCuts),
+  fTrigger(c.fTrigger),
   fHistList(c.fHistList),
-  fHistEventsProcessed(c.fHistEventsProcessed)
+  fNEventAll(c.fNEventAll),
+  fNEventSel(c.fNEventSel)
+  //  fHistEventsProcessed(c.fHistEventsProcessed)
 {
   //
   // Copy Constructor
@@ -117,7 +129,8 @@ AliPWG4HighPtSpectra::~AliPWG4HighPtSpectra() {
   //
   Info("~AliPWG4HighPtSpectra","Calling Destructor");
   if (fCFManager)           delete fCFManager ;
-  if (fHistEventsProcessed) delete fHistEventsProcessed ;
+  if (fNEventAll) delete fNEventAll ;
+  if (fNEventSel) delete fNEventSel ;
 }
 //________________________________________________________________________
 void AliPWG4HighPtSpectra::ConnectInputData(Option_t *) 
@@ -149,10 +162,24 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
   //
   AliDebug(2,Form(">> AliPWG4HighPtSpectra::Exec \n"));  
 
+  // All events without selection
+  fNEventAll->Fill(0.);
+
   if (!fESD) {
     AliDebug(2,Form("ERROR: fESD not available"));
     return;
   }
+
+  //Trigger selection
+  AliAnalysisHelperJetTasks::Trigger trig;
+  trig = (const enum AliAnalysisHelperJetTasks::Trigger)fTrigger;
+  if (AliAnalysisHelperJetTasks::IsTriggerFired(fESD,trig)){
+    AliDebug(2,Form(" Trigger Selection: event ACCEPTED ... "));
+  }else{
+    AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
+    return;
+  } 
+  //  if(!fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL") || !fESD->IsTriggerClassFired("CSMBB-ABCE-NOPF-ALL")) return;
 
   // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
   // This handler can return the current MC event
@@ -174,24 +201,21 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
     AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
   }
   
-  if (!fESD) {
-    AliDebug(2,Form("ERROR: fESD not available"));
-    return;
-  }
-
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
-
   // Need vertex cut
   if (vtx->GetNContributors() < 2) return;
-  double pvtx[3];
-  vtx->GetXYZ(pvtx);
-  if(TMath::Abs(pvtx[2])>10.) return;
+  double primVtx[3];
+  vtx->GetXYZ(primVtx);
+  //  printf("primVtx: %g  %g  %g \n",primVtx[0],primVtx[1],primVtx[2]);
+  if(primVtx[0]>1. || primVtx[1]>1. || primVtx[2]>10.) return;
 
   AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
-  // Need to keep track of evts without vertex
 
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d", nTracks));
+
+  // Selected events for analysis
+  fNEventSel->Fill(0.);
 
   Double_t containerInputRec[1] ;
   Double_t containerInputTPConly[1] ;
@@ -249,7 +273,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
       }
   }
 
-   fHistEventsProcessed->Fill(0);
    PostData(0,fHistList);
    PostData(1,fCFManager->GetParticleContainer());
 
@@ -273,12 +296,13 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   //
   AliDebug(2,Form("CreateOutputObjects","CreateOutputObjects of task %s", GetName()));
 
-  //  OpenFile(0);
-  fHistList = new TList();
   //slot #1
-  //  OpenFile(0);
-  fHistEventsProcessed = new TH1I("fHistEventsProcessed","",1,0,1) ;
-  fHistList->Add(fHistEventsProcessed);
+  OpenFile(0);
+  fHistList = new TList();
+  fNEventAll = new TH1F("fNEventAll","NEventAll",1,-0.5,0.5);
+  fHistList->Add(fNEventAll);
+  fNEventSel = new TH1F("fNEventSel","NEvent Selected for analysis",1,-0.5,0.5);
+  fHistList->Add(fNEventSel);
 
 }
 

@@ -24,6 +24,7 @@
 #include "AliCFManager.h"
 
 class TH1I;
+class TH1F;
 class TH1D;
 class TFile ;
 class AliCFManager;
@@ -31,7 +32,7 @@ class AliESDtrackCuts;
 class AliESDEvent;
 
 class AliPWG4HighPtSpectra : public AliAnalysisTask {
-  public:
+ public:
 
   enum {
     kStepReconstructed    = 0,
@@ -59,26 +60,31 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
 
   //AliESDtrackCuts setters
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
+  //Select the trigger
+  void SelectTrigger(Int_t trig) { fTrigger = trig; } 
 
   // Data types
   Bool_t IsReadAODData()   const {return fReadAODData;}
-  void   SetReadAODData   (Bool_t flag=kTRUE) {fReadAODData=flag;}
-
+  void   SetReadAODData(Bool_t flag=kTRUE) {fReadAODData=flag;}
+  
  protected:
-  Bool_t          fReadAODData ;   // flag for AOD/ESD input files
-  const AliCFManager   *fCFManager    ;  // pointer to the CF manager
+  Bool_t              fReadAODData ;    // flag for AOD/ESD input files
+  const AliCFManager  *fCFManager    ;  // pointer to the CF manager
 
-  AliESDEvent *fESD;    //! ESD object
-  //AliESDtrackCuts options. Must be setted in AliCFPWG4Task.C. They correspond with different steps in container.
-  AliESDtrackCuts *fTrackCuts; // trackCuts applied
+  AliESDEvent *fESD;              //! ESD object
+  //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPtQAMC.C. They correspond with different steps in container.
+  AliESDtrackCuts *fTrackCuts;    // trackCuts applied
+  Int_t fTrigger;                 //Trigger flag as defined in AliAnalysisHelperJetTasks.h 
 
  private:
 
   // Histograms
   //Number of events
   TList *fHistList;            // List of output histograms
-  TH1I  *fHistEventsProcessed; // simple histo for monitoring the number of events processed
-  
+  //  TH1I  *fHistEventsProcessed; // simple histo for monitoring the number of events processed
+  TH1F *fNEventAll;            //! Event counter
+  TH1F *fNEventSel;            //! Event counter: Selected events for analysis
+
   ClassDef(AliPWG4HighPtSpectra,1);
 };
 

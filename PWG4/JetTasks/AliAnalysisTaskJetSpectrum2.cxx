@@ -70,6 +70,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fBranchRec("jets"),
   fBranchGen(""),
   fUseAODInput(kFALSE),
+  fUseGlobalSelection(kFALSE),
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
   fFilterMask(0),
@@ -107,6 +108,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fBranchRec("jets"),
   fBranchGen(""),
   fUseAODInput(kFALSE),
+  fUseGlobalSelection(kFALSE),
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
   fFilterMask(0),
@@ -296,6 +298,14 @@ void AliAnalysisTaskJetSpectrum2::Init()
 
 void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 {
+
+  if(! AliAnalysisHelperJetTasks::Selected()&&fUseGlobalSelection){
+    // no selection by the service task, we continue
+    if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+    PostData(1, fHistList);
+    return;
+  }
+
   //
   // Execute analysis for current event
   //
