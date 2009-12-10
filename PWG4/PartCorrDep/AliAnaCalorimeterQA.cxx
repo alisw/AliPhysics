@@ -273,17 +273,20 @@ AliAnaCalorimeterQA::~AliAnaCalorimeterQA() {
 TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 {  
 	// Create histograms to be saved in output file and 
-	// store them in fOutputContainer
+	// store them in outputContainer
     
 	//If Geometry library loaded, do geometry selection during analysis.
-	printf("AliAnaPi0::GetCreateOutputObjects() - PHOS geometry initialized!\n");
-	fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ;
+	if(fCalorimeter=="PHOS"){
+		fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ; 
+		printf("AliAnaPi0::GetCreateOutputObjects() - PHOS geometry initialized!\n");
+	}
+	else if(fCalorimeter=="EMCAL"){
+		fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName) ;
+		printf("AliAnaPi0::GetCreateOutputObjects() - EMCAL geometry initialized!\n");
+	}
 	
-	printf("AliAnaPi0::GetCreateOutputObjects() - EMCAL geometry initialized!\n");
-	fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName) ;	
 	TList * outputContainer = new TList() ; 
 	outputContainer->SetName("QAHistos") ; 
-	
 	
 	//Histograms
 	Int_t nptbins  = GetHistoNPtBins();
