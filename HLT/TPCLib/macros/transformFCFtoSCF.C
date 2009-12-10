@@ -167,7 +167,8 @@ void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
   
   AliHLTConfiguration mergerconf("globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
   AliHLTConfiguration esdconf("ESD","GlobalEsdConverter","globalmerger","");
- 
+  AliHLTConfiguration sink("esdfile", "EsdCollector", "ESD", "-directory hlt-tpc-esd"); 
+
   TString histoInput; 
   if(histoInput.Length()>0) histoInput+=" ";
   histoInput+=allclusters;
@@ -188,18 +189,20 @@ void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
   // Init and run the reconstruction
   // All but HLT reconstruction is switched off
   //
+
   AliReconstruction rec;
   rec.SetInput(input);
   rec.SetRunVertexFinder(kFALSE);
-  rec.SetRunLocalReconstruction("HLT");
+  rec.SetRunReconstruction("HLT");
   rec.SetRunTracking("");
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
-  rec.SetFillESD("");  
   rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");  
   rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
   TString option;
-  option.Form("libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=RFW,ESD,%s",dumpOutput.Data());
+  option.Form("libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=RFW,ESD,esdfile,%s",dumpOutput.Data());
   rec.SetOption("HLT", option);
   rec.Run();
+
+
 }
