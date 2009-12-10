@@ -1548,7 +1548,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       if(TMath::Abs(minv-mPDG)<fLcCuts[0]) retval=kTRUE; 
       break;
     case 3:                  // D*->D0pi
-      pdg2[0]=421; pdg2[1]=211;
+      pdg2[0]=211; pdg2[1]=421; // in twoTrackArrayCasc we put the pion first
       mPDG=TDatabasePDG::Instance()->GetParticle(413)->Mass();
       minv = rd->InvMass(nprongs,pdg2);
       if(TMath::Abs(minv-mPDG)<fDstarCuts[0]) retval=kTRUE;
