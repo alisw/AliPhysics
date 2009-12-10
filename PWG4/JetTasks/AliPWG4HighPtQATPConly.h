@@ -28,6 +28,7 @@ class TH2F;
 class TH3F;
 class TList;
 class AliESDEvent;
+class AliVEvent;
 class AliESDtrackCuts;
 
 class AliPWG4HighPtQATPConly: public AliAnalysisTask {
@@ -44,6 +45,8 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
 
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
+  //Select the trigger
+  void SelectTrigger(Int_t trig) { fTrigger = trig; } 
 
  protected:
 
@@ -56,9 +59,10 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   AliESDEvent *fESD;              //! ESD object
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global vs TPConly comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
-
+  Int_t fTrigger;                 //Trigger flag as defined in AliAnalysisHelperJetTasks.h 
   
-  TH1F *fNEvent;                                //! Event counter
+  TH1F *fNEventAll;                             //! Event counter
+  TH1F *fNEventSel;                             //! Event counter: Selected events for analysis
   TH1F *fPtAll;                                 //! Pt spectrum all charged particles
   TH1F *fPtSel;                                 //! Pt spectrum all selected charged particles by fTrackCuts
   TH2F *fPtAllminPtTPCvsPtAll;                  //! Momentum resolution (global vs TPConly)
@@ -91,7 +95,6 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
 
   TList *fHistListITS; //! List of Histograms
 
- 
   ClassDef(AliPWG4HighPtQATPConly,1) 
   
 };

@@ -42,7 +42,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void Terminate(Option_t *option);
     virtual Bool_t Notify();
 
-
+    virtual void SetUseGlobalSelection(Bool_t b){fUseGlobalSelection = b;}
     virtual void SetExternalWeight(Float_t f){fExternalWeight = f;}
     virtual void SetUseExternalWeightOnly(Bool_t b){fUseExternalWeightOnly = b;}
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
@@ -97,6 +97,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TString       fBranchGen;  // AOD brnach for genereated
 
     Bool_t        fUseAODInput;           // take jet from input AOD not from ouptu AOD
+    Bool_t        fUseGlobalSelection;    // Limit the eta of the generated jets
     Bool_t        fUseExternalWeightOnly; // use only external weight
     Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
     UInt_t        fFilterMask;             // filter bit for slecected tracks

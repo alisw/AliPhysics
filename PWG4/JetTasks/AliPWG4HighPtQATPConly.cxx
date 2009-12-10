@@ -27,18 +27,22 @@
 
 #include "AliPWG4HighPtQATPConly.h"
 
+#include "TVector3.h"
+#include <iostream>
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
 #include "TList.h"
 #include "TChain.h"
 #include "TH3F.h"
+
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliExternalTrackParam.h"
 #include "AliLog.h"
+#include "AliAnalysisHelperJetTasks.h"
 
 using namespace std; //required for resolving the 'cout' symbol
 
@@ -48,7 +52,9 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fESD(0), 
   fTrackCuts(0), 
   fTrackCutsITS(0),
-  fNEvent(0),
+  fTrigger(0),
+  fNEventAll(0),
+  fNEventSel(0),
   fPtAll(0),
   fPtSel(0),
   fPtAllminPtTPCvsPtAll(0),
@@ -85,7 +91,9 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fESD(0),
   fTrackCuts(),
   fTrackCutsITS(),
-  fNEvent(0),
+  fTrigger(0),
+  fNEventAll(0),
+  fNEventSel(0),
   fPtAll(0),
   fPtSel(0),
   fPtAllminPtTPCvsPtAll(0),
@@ -143,8 +151,9 @@ void AliPWG4HighPtQATPConly::ConnectInputData(Option_t *)
     
     if (!esdH) {
       AliDebug(2,Form("ERROR: Could not get ESDInputHandler")); 
-    } else
+    } else {
       fESD = esdH->GetEvent();
+    }
   }
 }
 
@@ -170,10 +179,12 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   Int_t fgkNPtBins=98;
   Float_t fgkPtMin=2.;
   Float_t fgkPtMax=100.;
-  Int_t fgkResPtBins=40;
+  Int_t fgkResPtBins=80;
 
-  fNEvent = new TH1F("fNEvent","NEvent",1,-0.5,0.5);
-  fHistList->Add(fNEvent);
+  fNEventAll = new TH1F("fNEventAll","NEventAll",1,-0.5,0.5);
+  fHistList->Add(fNEventAll);
+  fNEventSel = new TH1F("fNEventSel","NEvent Selected for analysis",1,-0.5,0.5);
+  fHistList->Add(fNEventSel);
   fPtAll = new TH1F("fPtAll","PtAll",fgkNPtBins, fgkPtMin, fgkPtMax);
   fHistList->Add(fPtAll);
   fPtSel = new TH1F("fPtSel","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
@@ -305,33 +316,55 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
   // Called for each event
   AliDebug(2,Form(">> AliPWG4HighPtQATPConly::Exec \n"));  
 
+  // All events without selection
+  cout << "Fill fNEventAll" << endl;
+  fNEventAll->Fill(0.);
+
   if (!fESD) {
     AliDebug(2,Form("ERROR: fESD not available"));
     return;
   }
 
-  const AliESDVertex *vtx = fESD->GetPrimaryVertex();
+  //Trigger selection
+  AliAnalysisHelperJetTasks::Trigger trig;
+  trig = (const enum AliAnalysisHelperJetTasks::Trigger)fTrigger;
+  if (AliAnalysisHelperJetTasks::IsTriggerFired(fESD,trig)){
+    AliDebug(2,Form(" Trigger Selection: event ACCEPTED ... "));
+  }else{
+    AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
+    return;
+  } 
 
+//  if(!fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL") || !fESD->IsTriggerClassFired("CSMBB-ABCE-NOPF-ALL")) return;
+  
+  const AliESDVertex *vtx = fESD->GetPrimaryVertexTracks();
   // Need vertex cut
   if (vtx->GetNContributors() < 2)
     return;
 
   AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
-
-  // Need to keep track of evts without vertex
-  fNEvent->Fill(0.);
+  double primVtx[3];
+  vtx->GetXYZ(primVtx);
+  //  printf("primVtx: %g  %g  %g \n",primVtx[0],primVtx[1],primVtx[2]);
+  if(primVtx[0]>1. || primVtx[1]>1. || primVtx[2]>10.) return;
 
   if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2) return;
   Int_t nTracks = fESD->GetNumberOfTracks();
-  AliDebug(2,Form("nTracks %d", nTracks));
+  AliDebug(2,Form("nTracks %d\n", nTracks));
+
+  if(!fTrackCuts) return;
+
+  // Selected events for analysis
+  fNEventSel->Fill(0.);
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     
     AliESDtrack *track = fESD->GetTrack(iTrack);
     AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)track->GetTPCInnerParam();
-    AliESDtrack *trackTPConly = fTrackCuts->GetTPCOnlyTrack(fESD,iTrack); 
-    if(!track || !trackTPC || !trackTPConly) continue;
-
+    //    AliESDtrack *trackTPConly = fTrackCuts->GetTPCOnlyTrack(fESD,iTrack); 
+    if(!track) continue;
+    if(!trackTPC) continue;
+//     if(!trackTPConly) continue;
     Float_t pt = track->Pt();
     Float_t ptTPC = trackTPC->Pt();
     Float_t phi = track->Phi();
@@ -345,10 +378,11 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       if (itsMap & (1 << i))
 	nPointITS ++;
     }
+    double mom[3];
+    track->GetPxPyPz(mom);
     Float_t nSigmaToVertex = fTrackCuts->GetSigmaToVertex(track);// Calculates the number of sigma to the vertex for a track.
     Float_t chi2C = track->GetConstrainedChi2();
-    // Float_t relUncertainty1Pt = TMath::Sqrt(extCov[14])*pt;
-    Float_t relUncertainty1Pt = TMath::Sqrt(track->GetSigma1Pt2())*pt;
+    Float_t relUncertainty1Pt = TMath::Sqrt(TMath::Abs(track->GetSigma1Pt2()))*pt;
 
     fPtAll->Fill(pt);
     fPtAllTPC->Fill(ptTPC);
