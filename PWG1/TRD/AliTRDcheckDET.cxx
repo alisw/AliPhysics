@@ -28,6 +28,7 @@
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH1I.h>
+#include <TH2F.h>
 #include <TF1.h>
 #include <TGaxis.h>
 #include <TGraph.h>
@@ -49,6 +50,7 @@
 #include "AliESDHeader.h"
 #include "AliESDRun.h"
 #include "AliESDtrack.h"
+#include "AliExternalTrackParam.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDSimParam.h"
@@ -360,10 +362,18 @@ TObjArray *AliTRDcheckDET::Histos(){
   }
   fContainer->AddAt(h, kNtrackletsSTA);
 
+  // Binning for momentum dependent tracklet Plots
+  const Int_t kNPbins = 11;
+  Double_t binTracklets[AliTRDgeometry::kNlayer + 1];
+  for(Int_t il = 0; il <= AliTRDgeometry::kNlayer; il++) binTracklets[il] = 0.5 + il;
+  Double_t binMomentum[kNPbins + 1] = {0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.5, 2., 3., 4., 5., 10};
+
   if(!(h = (TH1F *)gROOT->FindObject("htlsBAR"))){
-    h = new TH1F("hNtlsBAR", "N_{tracklets} / track (Barrel)", AliTRDgeometry::kNlayer, 0.5, 6.5);
-    h->GetXaxis()->SetTitle("N^{tracklet}");
-    h->GetYaxis()->SetTitle("freq. [%]");
+    // Make tracklets for barrel tracks momentum dependent (if we do not exceed min and max values)
+    h = new TH2F("hNtlsBAR", "N_{tracklets} / track (Barrel)", kNPbins, binMomentum, AliTRDgeometry::kNlayer, binTracklets);
+    h->GetXaxis()->SetTitle("p / GeV/c");
+    h->GetYaxis()->SetTitle("N^{tracklet}");
+    h->GetZaxis()->SetTitle("freq. [%]");
   }
   fContainer->AddAt(h, kNtrackletsBAR);
 
@@ -642,7 +652,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
     AliWarning("No Track defined.");
     return 0x0;
   }
-  TH1 *h = 0x0, *hMethod = 0x0;
+  TH1 *h = NULL, *hSta = NULL; TH2 *hBarrel = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsTrack)))){
     AliWarning("No Histogram defined.");
     return 0x0;
@@ -651,17 +661,30 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
   h->Fill(nTracklets);
   if(!fkESD) return h;
   Int_t status = fkESD->GetStatus();
+
 /*  printf("in/out/refit/pid: TRD[%d|%d|%d|%d]\n", status &AliESDtrack::kTRDin ? 1 : 0, status &AliESDtrack::kTRDout ? 1 : 0, status &AliESDtrack::kTRDrefit ? 1 : 0, status &AliESDtrack::kTRDpid ? 1 : 0);*/
+  Double_t p = 0.;
   if((status & AliESDtrack::kTRDin) != 0){
-    // Full BarrelTrack
-    if(!(hMethod = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsBAR))))
+    // Full Barrel Track: Save momentum dependence
+    if(!(hBarrel = dynamic_cast<TH2F *>(fContainer->At(kNtrackletsBAR)))){
       AliWarning("Method: Barrel.  Histogram not processed!");
+    } else {
+      AliExternalTrackParam *par = fkTrack->GetTrackHigh() ? fkTrack->GetTrackHigh() : fkTrack->GetTrackLow();
+      if(!par){
+       AliError("Outer track params missing");
+      } else {
+        p = par->P();
+      }
+      hBarrel->Fill(p, nTracklets);
+    }
   } else {
-    // Stand alone Track
-    if(!(hMethod = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsSTA))))
+    // Stand alone Track: momentum dependence not usefull
+    if(!(hSta = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsSTA)))) {
       AliWarning("Method: StandAlone.  Histogram not processed!");
+    } else {
+      hSta->Fill(nTracklets);
+    }
   }
-  hMethod->Fill(nTracklets);
 
   if(DebugLevel() > 3){
     if(nTracklets == 1){
@@ -671,9 +694,12 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
       for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
         if((tracklet = fkTrack->GetTracklet(il)) && tracklet->IsOK()){layer =  il; break;}
       }
-      (*DebugStream()) << "NTrackletsTrack"
-        << "Layer=" << layer
-        << "\n";
+      if(layer >= 0){
+        (*DebugStream()) << "NTrackletsTrack"
+          << "Layer=" << layer
+          << "p=" << p
+          << "\n";
+      }
     }
   }
   return h;
@@ -1120,7 +1146,8 @@ TH1* AliTRDcheckDET::MakePlotNTracklets(){
   //
   // Make nice bar plot of the number of tracklets in each method
   //
-  TH1F *hBAR = (TH1F *)fContainer->FindObject("hNtlsBAR");
+  TH2F *tmp = (TH2F *)fContainer->FindObject("hNtlsBAR");
+  TH1D *hBAR = tmp->ProjectionY();
   TH1F *hSTA = (TH1F *)fContainer->FindObject("hNtlsSTA");
   TH1F *hCON = (TH1F *)fContainer->FindObject("hNtls");
   TLegend *leg = new TLegend(0.13, 0.75, 0.39, 0.89);
