@@ -269,7 +269,7 @@ void makeCM(const char* filename, Int_t nEvents, TList *list) {
       if(TMath::Abs(gSSDStream.GetStrip()) < 7)
 	((TH1*)list->At((gSSDStream.GetModuleID()-500)*fgkNumOfChips+gSSDStream.GetStrip()))->Fill(gSSDStream.GetSignal());
       if(TMath::Abs(gSSDStream.GetStrip()) > 6)
-	((TH1*)list->At(fgkSSDMODULES*fgkNumOfChips+(gSSDStream.GetModuleID()-500)*fgkNumOfChips+gSSDStream.GetStrip()-fgkNumOfChips))->Fill(gSSDStream.GetSignal());
+	((TH1*)list->At(fgkSSDMODULES*fgkNumOfChips+(gSSDStream.GetModuleID()-500)*fgkNumOfChips+gSSDStream.GetStrip()))->Fill(gSSDStream.GetSignal());
     }//streamer loop
   }//event loop
   
@@ -488,3 +488,120 @@ void compareChipLists(TString inputFile1,
   fInput1->Close();
   fInput2->Close();
 }
+
+//__________________________________________________________//
+void makeCM2D(const char* filename, Int_t nEvents) {
+  //Function to read the CM values
+  gStyle->SetPalette(1,0);
+  Int_t gStripNumber = 0;
+  Int_t gLayer = 0,gLadder = 0, gModule = 0;
+  
+  //==================================================//
+  AliCDBManager *fCDBManager = AliCDBManager::Instance();
+  fCDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  Int_t runNumber = atoi(gSystem->Getenv("DATE_RUN_NUMBER"));
+  if(!runNumber) 
+    Printf("DATE_RUN_NUMBER not defined!!!\n");
+  
+  fCDBManager->SetRun(runNumber);
+  AliCDBEntry *geomGRP = fCDBManager->Get("GRP/Geometry/Data");
+  if(!geomGRP) cout<<"GRP geometry not found!!!"<<endl;;
+  //==================================================//
+    
+  //==================================================//
+  TList *list = new TList();
+  TH2F *gHistCM2D[fgkSSDMODULES];
+  TString gHistoTitle, gArrayTitle;
+  Int_t gHistCounter = 0;
+  for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
+    AliITSgeomTGeo::GetModuleId(iModule,gLayer,gLadder,gModule);    
+    gHistoTitle = "SSD_CM_Layer"; gHistoTitle += gLayer;
+    gHistoTitle += "_Ladder"; gHistoTitle += gLadder;
+    gHistoTitle += "_Module"; gHistoTitle += gModule;
+    //Printf("Title: %s",gHistoTitle.Data());
+    gHistCM2D[gHistCounter] = new TH2F(gHistoTitle.Data(),
+				       gHistoTitle.Data(),
+				       12,0.5,12.5,
+				       120,-60.,60.);
+    gHistCM2D[gHistCounter]->SetStats(kFALSE);
+    gHistCM2D[gHistCounter]->GetXaxis()->SetTitleColor(1);
+    gHistCM2D[gHistCounter]->GetZaxis()->SetTitle("Entries");
+    gHistCM2D[gHistCounter]->GetYaxis()->SetTitle("CM");
+    gHistCM2D[gHistCounter]->GetXaxis()->SetTitle("Chip number");
+    gHistCM2D[gHistCounter]->GetXaxis()->SetNdivisions(12);
+    list->Add(gHistCM2D[gHistCounter]);
+    gHistCounter += 1;
+  }
+  //Printf("List entries: %d",list->GetEntries());
+  //==================================================//
+
+  TChain *chain = new TChain("RAW");
+  chain->Add(filename);
+  Int_t nTotalEvents = chain->GetEntries();
+  if(nEvents == -1) nEvents = nTotalEvents;
+  
+  AliRawReaderRoot *rawReader = new AliRawReaderRoot(filename);
+  Int_t iEvent = 0;
+  Int_t fSSDEvent = 0;
+  for(iEvent = 0; iEvent < nEvents; iEvent++) {
+    cout<<"Event: "<<iEvent+1<<"/"<<nEvents<<endl;
+    rawReader->Select("ITSSSD",-1,-1);  
+    rawReader->Reset(); 
+    rawReader->NextEvent();   
+    
+    if(rawReader->GetType() != 7) continue;
+    
+    fSSDEvent += 1;
+    AliITSRawStreamSSD gSSDStream(rawReader);    
+    while (gSSDStream.Next()) {
+      if(gSSDStream.GetModuleID() < 0) continue;
+      AliITSgeomTGeo::GetModuleId(gSSDStream.GetModuleID(),gLayer,gLadder,gModule);
+      //if(gSSDStream.GetModuleID() != 500) continue;
+      //Printf("Module id: %d - Layer: %d - Ladder: %d - Module: %d",gSSDStream.GetModuleID(),gLayer,gLadder,gModule);
+
+      if(gSSDStream.GetStrip() >= 0) continue;
+      gStripNumber = (gSSDStream.GetSideFlag() == 0) ? gSSDStream.GetStrip() : -gSSDStream.GetStrip() + 2*fgkNumberOfPSideStrips;
+      //Printf("Module id: %d - Strip: %d - strip number: %d - Signal: %lf",gSSDStream.GetModuleID(),gSSDStream.GetStrip(),gStripNumber,gSSDStream.GetSignal());
+      gHistCM2D[gSSDStream.GetModuleID()-500]->Fill(TMath::Abs(gSSDStream.GetStrip()),gSSDStream.GetSignal());      
+    }//streamer loop
+  }//event loop
+  
+  TCanvas *cLayer5[34];
+  TCanvas *cLayer6[38];
+  TString canvasTitle;
+  for(Int_t iLadder = 1; iLadder < 35; iLadder++) {
+    canvasTitle = "SSD_CM_Layer5_Ladder"; canvasTitle += iLadder;
+    cLayer5[iLadder-1] = new TCanvas(canvasTitle.Data(),
+				     canvasTitle.Data());
+    cLayer5[iLadder-1]->Divide(5,5);    
+    for(Int_t iModule = 1; iModule < 23; iModule++) {
+      cLayer5[iLadder-1]->cd(iModule);
+      gHistCM2D[(iLadder-1)*fgkSSDMODULESPERLADDERLAYER5 + iModule - 1]->Draw("colz");
+    }
+    if(iLadder == 1) cLayer5[iLadder-1]->Print("CommonModePlotsLayer5.ps(");
+    if(iLadder == 34) cLayer5[iLadder-1]->Print("CommonModePlotsLayer5.ps)");
+    else cLayer5[iLadder-1]->Print("CommonModePlotsLayer5.ps");
+    //Printf("Ladder %d finished...",499+iLadder);
+  }
+
+  for(Int_t iLadder = 1; iLadder < 39; iLadder++) {
+    canvasTitle = "SSD_CM_Layer6_Ladder"; canvasTitle += iLadder;
+    cLayer6[iLadder-1] = new TCanvas(canvasTitle.Data(),
+				     canvasTitle.Data());
+    cLayer6[iLadder-1]->Divide(5,5);    
+    for(Int_t iModule = 1; iModule < 26; iModule++) {
+      cLayer6[iLadder-1]->cd(iModule);
+      gHistCM2D[fgkSSDMODULESLAYER5 + (iLadder-1)*fgkSSDMODULESPERLADDERLAYER6 + iModule - 1]->Draw("colz");
+    }
+    if(iLadder == 1) cLayer6[iLadder-1]->Print("CommonModePlotsLayer6.ps(");
+    if(iLadder == 38) cLayer6[iLadder-1]->Print("CommonModePlotsLayer6.ps)");
+    else cLayer6[iLadder-1]->Print("CommonModePlotsLayer6.ps");
+    //Printf("Ladder %d finished...",599+iLadder);
+  }
+
+
+  TFile *foutput = TFile::Open("SSD.CM2D.root","recreate");
+  list->Write();
+  foutput->Close();
+}
+ 
