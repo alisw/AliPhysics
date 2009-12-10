@@ -9,15 +9,35 @@ void drawProtonResults(const char* esdFileName) {
 //___________________________________________________//
 void drawResults(const char* esdFileName) {
   //Draws the main results from the ratio analysis
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libCORRFW.so");
+
+  //Open the input file and get the objects
   TFile *f = TFile::Open(esdFileName);
   TList *analysisList = dynamic_cast<TList *>(f->Get("outputList"));
   TH2D *gHistYPtProtons = dynamic_cast<TH2D *>(analysisList->At(0));
   TH2D *gHistYPtAntiProtons = dynamic_cast<TH2D *>(analysisList->At(1));
+  AliCFContainer *cfProtons = dynamic_cast<AliCFContainer *>(analysisList->At(3));
+  AliCFContainer *cfAntiProtons = dynamic_cast<AliCFContainer *>(analysisList->At(4));
+  TH1F *gHistEventStats = dynamic_cast<TH1F *>(analysisList->At(5));
+  gHistEventStats->SetStats(kFALSE);
+  if(gHistEventStats->GetBinContent(1) != 0) {
+    gHistEventStats->GetYaxis()->SetTitle("N_{events} [%]");
+    gHistEventStats->Scale(100./gHistEventStats->GetBinContent(1));
+  }
 
+  //==================================================================//
   TCanvas *c2D = new TCanvas("c2D","eta-pT (anti)protons",0,0,700,400);
   c2D->SetFillColor(10); c2D->SetHighLightColor(10); c2D->Divide(2,1);
   c2D->cd(1); gHistYPtProtons->Draw("col");
   c2D->cd(2); gHistYPtAntiProtons->Draw("col");
+
+  TCanvas *cEventStats = new TCanvas("cEventStats","Event statistics",
+				     0,0,500,500);
+  cEventStats->SetFillColor(10); cEventStats->SetHighLightColor(10);
+  gHistEventStats->Draw();
+  
 }
 
 //___________________________________________________//

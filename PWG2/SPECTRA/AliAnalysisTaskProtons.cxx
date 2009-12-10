@@ -6,6 +6,7 @@
 #include "TList.h"
 #include "TFile.h"
 #include "TH2F.h"
+#include "TH1F.h"
 #include "TCanvas.h"
 
 #include "AliAnalysisTask.h"
@@ -35,7 +36,7 @@ ClassImp(AliAnalysisTaskProtons)
 //________________________________________________________________________ 
 AliAnalysisTaskProtons::AliAnalysisTaskProtons()
   : AliAnalysisTask(), fESD(0), fAOD(0), fMC(0),
-    fListAnalysis(0), fListQA(0), 
+    fListAnalysis(0), fListQA(0), fHistEventStats(0), 
     fProtonAnalysis(0) {
   //Dummy constructor
   
@@ -44,7 +45,8 @@ AliAnalysisTaskProtons::AliAnalysisTaskProtons()
 //________________________________________________________________________
 AliAnalysisTaskProtons::AliAnalysisTaskProtons(const char *name) 
   : AliAnalysisTask(name, ""), fESD(0), fAOD(0), fMC(0),
-    fListAnalysis(0), fListQA(0), fProtonAnalysis(0) {
+    fListAnalysis(0), fListQA(0), fHistEventStats(0), 
+    fProtonAnalysis(0) {
   // Constructor
   
   // Define input and output slots here
@@ -98,12 +100,20 @@ void AliAnalysisTaskProtons::ConnectInputData(Option_t *) {
 void AliAnalysisTaskProtons::CreateOutputObjects() {
   // Create output objects
   // Called once
+  char *gCutName[4] = {"Total","Triggered","Vertex","Analyzed"};
+  fHistEventStats = new TH1F("fHistEventStats",
+			     "Event statistics;;N_{events}",
+			     4,0.5,4.5);
+  for(Int_t i = 1; i <= 4; i++) 
+    fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1]);
+
   fListAnalysis = new TList();
   fListAnalysis->Add(fProtonAnalysis->GetProtonYPtHistogram());
   fListAnalysis->Add(fProtonAnalysis->GetAntiProtonYPtHistogram());
   fListAnalysis->Add(fProtonAnalysis->GetEventHistogram());
   fListAnalysis->Add(fProtonAnalysis->GetProtonContainer());
   fListAnalysis->Add(fProtonAnalysis->GetAntiProtonContainer());
+  fListAnalysis->Add(fHistEventStats);
 
   fListQA = new TList();
   fListQA->SetName("fListQA");
@@ -122,14 +132,18 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
       Printf("ERROR: fESD not available");
       return;
     }
-
+    
+    fHistEventStats->Fill(1);
     if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
+      fHistEventStats->Fill(2);
       AliDebug(1,Form("Fired trigger class: %s",fESD->GetFiredTriggerClasses().Data()));
       const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
+      fHistEventStats->Fill(3);
       if(vertex) {
 	AliDebug(1,Form("Proton ESD analysis task: There are %d tracks in this event",fESD->GetNumberOfTracks()));
 	//Printf("Proton ESD analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
 	fProtonAnalysis->Analyze(fESD,vertex);
+	fHistEventStats->Fill(4);
       }//reconstructed vertex
     }//triggered event
   }//ESD analysis              
