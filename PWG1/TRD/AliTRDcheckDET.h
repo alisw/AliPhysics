@@ -45,7 +45,8 @@ public:
     kNeventsTriggerTracks=14,
     kTriggerPurity      = 15,
     kTrackStatus        = 16,
-    kTrackletStatus     = 17
+    kTrackletStatus     = 17,
+    kNTrackletsP        = 18
   };
 
   AliTRDcheckDET();
@@ -89,6 +90,7 @@ private:
   TH1* MakePlotChi2();
   TH1* MakePlotNTracklets();
   TH1* MakePlotPulseHeight();
+  void MakePlotnTrackletsVsP();
   Bool_t MakeBarPlot(TH1 *histo, Int_t Color);
 
   AliTRDeventInfo *fEventInfo;         //! ESD Header
