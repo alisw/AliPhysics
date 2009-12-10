@@ -47,6 +47,8 @@
 #include "AliRunLoader.h"
 #include "AliITSReconstructor.h"
 #include "AliITSRecPoint.h"
+#include "AliESDEvent.h"
+#include "AliESDVertex.h"
 //____________________________________________________________________
 ClassImp(AliITSTrackleterSPDEff)
 
@@ -91,6 +93,7 @@ fPhiWindowL1(0),
 fZetaWindowL1(0),
 fOnlyOneTrackletPerC1(0),
 fUpdateOncePerEventPlaneEff(0),
+fMinContVtx(0),
 fChipUpdatedInEvent(0),
 fPlaneEffSPD(0),
 fPlaneEffBkg(0),
@@ -206,6 +209,7 @@ fPhiWindowL1(mr.fPhiWindowL1),
 fZetaWindowL1(mr.fZetaWindowL1),
 fOnlyOneTrackletPerC1(mr.fOnlyOneTrackletPerC1),
 fUpdateOncePerEventPlaneEff(mr.fUpdateOncePerEventPlaneEff),
+fMinContVtx(mr.fMinContVtx),
 fChipUpdatedInEvent(mr.fChipUpdatedInEvent),
 fPlaneEffSPD(mr.fPlaneEffSPD),
 fPlaneEffBkg(mr.fPlaneEffBkg),
@@ -1366,7 +1370,8 @@ void AliITSTrackleterSPDEff::PrintAscii(ostream *os)const{
     //   none.
     *os << fPhiWindowL1 <<" "<< fZetaWindowL1 << " " << fPhiWindowL2 <<" "<< fZetaWindowL2 
         << " " << fOnlyOneTrackletPerC1 << " " << fOnlyOneTrackletPerC2 
-        << " " << fUpdateOncePerEventPlaneEff << " " << fReflectClusterAroundZAxisForLayer0
+        << " " << fUpdateOncePerEventPlaneEff << " " << fMinContVtx 
+        << " " << fReflectClusterAroundZAxisForLayer0
         << " " << fReflectClusterAroundZAxisForLayer1;
     *os << " " << fMC;
     if(!fMC) {AliInfo("Writing only cuts, no MC info"); return;}
@@ -1400,7 +1405,8 @@ void AliITSTrackleterSPDEff::ReadAscii(istream *is){
     Bool_t tmp= fMC;
     *is >> fPhiWindowL1 >> fZetaWindowL1 >> fPhiWindowL2 >> fZetaWindowL2 
         >> fOnlyOneTrackletPerC1 >> fOnlyOneTrackletPerC2  
-        >> fUpdateOncePerEventPlaneEff >> fReflectClusterAroundZAxisForLayer0
+        >> fUpdateOncePerEventPlaneEff >> fMinContVtx 
+        >> fReflectClusterAroundZAxisForLayer0
         >> fReflectClusterAroundZAxisForLayer1;
     //if(!fMC) {AliInfo("Reading only cuts, no MC info available");return;}
     *is >> fMC;
@@ -1474,7 +1480,7 @@ void AliITSTrackleterSPDEff::SavePredictionMC(TString filename) const {
  }
  else {
     TFile* mcfile = TFile::Open(filename, "RECREATE");
-    TH1F* cuts = new TH1F("cuts", "list of cuts", 10, 0, 10); // TH1I containing cuts 
+    TH1F* cuts = new TH1F("cuts", "list of cuts", 11, 0, 11); // TH1I containing cuts 
     cuts->SetBinContent(1,fPhiWindowL1);
     cuts->SetBinContent(2,fZetaWindowL1);
     cuts->SetBinContent(3,fPhiWindowL2);
@@ -1482,9 +1488,10 @@ void AliITSTrackleterSPDEff::SavePredictionMC(TString filename) const {
     cuts->SetBinContent(5,fOnlyOneTrackletPerC1);
     cuts->SetBinContent(6,fOnlyOneTrackletPerC2);
     cuts->SetBinContent(7,fUpdateOncePerEventPlaneEff);
-    cuts->SetBinContent(8,fReflectClusterAroundZAxisForLayer0);
-    cuts->SetBinContent(9,fReflectClusterAroundZAxisForLayer1);
-    cuts->SetBinContent(10,fMC);
+    cuts->SetBinContent(8,fMinContVtx);
+    cuts->SetBinContent(9,fReflectClusterAroundZAxisForLayer0);
+    cuts->SetBinContent(10,fReflectClusterAroundZAxisForLayer1);
+    cuts->SetBinContent(11,fMC);
     cuts->Write();
     delete cuts;
     if(!fMC) {AliInfo("Writing only cuts, no MC info");}
@@ -1501,47 +1508,36 @@ void AliITSTrackleterSPDEff::SavePredictionMC(TString filename) const {
       mc1 = new TH1I("mc1", "mc info PredictionPrimary", 1200, 0, 1200); 
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetPredictionPrimary(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc2", "mc info PredictionSecondary", 1200, 0, 1200); 
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetPredictionSecondary(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc3", "mc info ClusterPrimary", 1200, 0, 1200); 
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetClusterPrimary(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc4", "mc info ClusterSecondary", 1200, 0, 1200);
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetClusterSecondary(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc5", "mc info SuccessPP", 1200, 0, 1200);
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetSuccessPP(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc6", "mc info SuccessTT", 1200, 0, 1200);
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetSuccessTT(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc7", "mc info SuccessS", 1200, 0, 1200);
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetSuccessS(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc8", "mc info SuccessP", 1200, 0, 1200);
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetSuccessP(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc9", "mc info FailureS", 1200, 0, 1200);
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetFailureS(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc10", "mc info FailureP", 1200, 0, 1200);
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetFailureP(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc11", "mc info Recons", 1200, 0, 1200);
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetRecons(i)) ;
       mc1->Write();
-      delete mc1;
       mc1 = new TH1I("mc12", "mc info NonRecons", 1200, 0, 1200);
       for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetNonRecons(i)) ;
       mc1->Write();
@@ -1584,9 +1580,10 @@ void AliITSTrackleterSPDEff::ReadPredictionMC(TString filename) {
     fOnlyOneTrackletPerC1=(Bool_t)cuts->GetBinContent(5);
     fOnlyOneTrackletPerC2=(Bool_t)cuts->GetBinContent(6);
     fUpdateOncePerEventPlaneEff=(Bool_t)cuts->GetBinContent(7);
-    fReflectClusterAroundZAxisForLayer0=(Bool_t)cuts->GetBinContent(8);
-    fReflectClusterAroundZAxisForLayer1=(Bool_t)cuts->GetBinContent(9);
-    fMC=(Bool_t)cuts->GetBinContent(10);
+    fMinContVtx=(Int_t)cuts->GetBinContent(8);
+    fReflectClusterAroundZAxisForLayer0=(Bool_t)cuts->GetBinContent(9);
+    fReflectClusterAroundZAxisForLayer1=(Bool_t)cuts->GetBinContent(10);
+    fMC=(Bool_t)cuts->GetBinContent(11);
     if(!fMC) {AliInfo("Reading only cuts, no MC info"); if(tmp) SetMC(kFALSE); }
     else { // only if file with MC predictions 
       if(!tmp) {AliInfo("Calling SetMC() to read this file wtih MC info"); SetMC();}
@@ -1857,7 +1854,7 @@ Bool_t AliITSTrackleterSPDEff::IsReconstructableAt(Int_t layer,Int_t iC,Int_t ip
 // are available. 
 // It is used to asses whether a tracklet prediction is reconstructable or not at the other layer
 // Input: 
-//      - Int_t layer (either 0 or 1): layer which you want to chech if the tracklete can be 
+//      - Int_t layer (either 0 or 1): layer which you want to check if the tracklete can be 
 //                                     reconstructed at
 //      - Int_t iC : cluster index used to build the tracklet prediction 
 //                   if layer=0 ==> iC=iC2 ; elseif layer=1 ==> iC=iC1
@@ -1970,7 +1967,7 @@ if(ilayer==1) {
 return;
 }
 //____________________________________________________________________________
-Int_t AliITSTrackleterSPDEff::Clusters2Tracks(AliESDEvent *){
+Int_t AliITSTrackleterSPDEff::Clusters2Tracks(AliESDEvent *esd){
 // This method is used to find the tracklets. 
 // It is called from AliReconstruction
 // The vertex is supposed to be associated to the Tracker (i.e. to this) already
@@ -1978,6 +1975,10 @@ Int_t AliITSTrackleterSPDEff::Clusters2Tracks(AliESDEvent *){
 // In case Monte Carlo is required, the appropriate linking to Stack and TrackRef is attempted 
 //
   Int_t rc=1;
+  // apply cuts on the vertex quality
+  const AliESDVertex *vertex = esd->GetVertex();
+  if(vertex->GetNContributors()<fMinContVtx) return rc;
+  //
   AliRunLoader* runLoader = AliRunLoader::Instance();
   if (!runLoader) {
     Error("Clusters2Tracks", "no run loader found");
@@ -2127,3 +2128,4 @@ AliITSTrackleterSPDEff::SetLightBkgStudyInParallel(Bool_t b) {
     fPlaneEffBkg=0;
   }
 }
+

@@ -35,7 +35,7 @@ class AliITSTrackleterSPDEff : public  AliTracker
 public:
   AliITSTrackleterSPDEff();
   virtual ~AliITSTrackleterSPDEff();
-  Int_t Clusters2Tracks(AliESDEvent *);
+  Int_t Clusters2Tracks(AliESDEvent *esd);
   Int_t PostProcess(AliESDEvent *);
 
   virtual Int_t PropagateBack(AliESDEvent*) {return 0;}
@@ -67,6 +67,7 @@ public:
   void SetPhiWindowL1(Float_t w=0.08) {fPhiWindowL1=w;}  // method to set the cuts in the interpolation
   void SetZetaWindowL1(Float_t w=1.) {fZetaWindowL1=w;}  // phase; use method of the base class for extrap.
   void SetOnlyOneTrackletPerC1(Bool_t b = kTRUE) {fOnlyOneTrackletPerC1 = b;} // as in the base class but 
+  void SetMinContVtx(Int_t min=3) {fMinContVtx=min;} // set minimum n. of contributors to vertex
 
   Int_t GetNClustersLayer1() const {return fNClustersLay1;}
   Int_t GetNClustersLayer2() const {return fNClustersLay2;}
@@ -205,6 +206,7 @@ protected:
   Float_t       fZetaWindowL1;    // SEarch window in zeta (Layer 1)
   Bool_t        fOnlyOneTrackletPerC1; // only one tracklet per cluster in L. 1
   Bool_t        fUpdateOncePerEventPlaneEff;  //  If this is kTRUE, then you can update the chip efficiency only once
+  Int_t		fMinContVtx;  // minimum number of contributors (tracklets) to the vertex for the event to be used 
                                               //  per event in that chip. This to avoid double counting from the
                                               //  same tracklets which has two rec-points on one layer.
   Bool_t*       fChipUpdatedInEvent;          //!  boolean (chip by chip) to flag which chip has been updated its efficiency
@@ -288,3 +290,4 @@ protected:
 ostream &operator<<(ostream &os,const AliITSTrackleterSPDEff &s);
 istream &operator>>(istream &is, AliITSTrackleterSPDEff &s);
 #endif
+

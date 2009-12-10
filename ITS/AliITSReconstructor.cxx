@@ -122,7 +122,7 @@ AliTracker* AliITSReconstructor::CreateTrackleter() const
   spdtrackleter->SetPhiWindowL1(GetRecoParam()->GetTrackleterPhiWindowL1());
   spdtrackleter->SetZetaWindowL1(GetRecoParam()->GetTrackleterZetaWindowL1());
   if(GetRecoParam()->GetUpdateOncePerEventPlaneEff()) spdtrackleter->SetUpdateOncePerEventPlaneEff();
-  //spdtrackleter->(GetRecoParam()->GetMinContVtxPlaneEff()); // to be implemented
+  spdtrackleter->SetMinContVtx(GetRecoParam()->GetMinContVtxPlaneEff());
   return trackleter;
 }
 
