@@ -10,7 +10,7 @@
 //
 Bool_t AddAnalysisTaskRsnEffNew
 (
-  Bool_t      useBB    = kFALSE,
+  Bool_t      useY     = kTRUE,
   Double_t    sigmaTPC = 0.065,
   const char *outFile  = "eff"
 )
@@ -57,16 +57,15 @@ Bool_t AddAnalysisTaskRsnEffNew
   //  1) pseudo-rapidity
   //  2) multiplicity (estimated with SPD tracklets - uncorrected)
   // define all binnings
-  //AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           50,  0.0,  10.0);
-  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairMt,           50,  0.0,  10.0);
-  //AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          15, -1.5,   1.5);
-  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairY,          15, -1.5,   1.5);
+  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           50,  0.0,  10.0);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          18, -0.9,   0.9);
+  AliRsnFunctionAxis *axisY    = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairY,            18, -0.9,   0.9);
   AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
   for (Int_t i = 0; i < 2; i++)
   {
     task[i]->AddAxis(axisMult);
     task[i]->AddAxis(axisPt);
-    task[i]->AddAxis(axisEta);
+    if (useY) task[i]->AddAxis(axisY); else task[i]->AddAxis(axisEta);
   }
 
   // define cuts for event selection:
@@ -190,6 +189,10 @@ Bool_t AddAnalysisTaskRsnEffNew
     task[i]->AddStepESD(cutMgrESD_step3);
     task[i]->AddStepESD(cutMgrESD_step4[i]);
   }
+  
+  // create paths for the output in the common file
+  Char_t commonPath[500];
+  sprintf(commonPath, "%s:PWG2RSN", AliAnalysisManager::GetCommonFileName());
 
   // connect containers and finalize
   for (Int_t i = 0; i < 2; i++)
@@ -199,13 +202,13 @@ Bool_t AddAnalysisTaskRsnEffNew
 
     // create paths for the output in the common file
     Char_t infoPath[500], effPath[500];
-    sprintf(infoPath , "%s:PWG2RSNINFO" , AliAnalysisManager::GetCommonFileName());
-    sprintf(effPath  , "%s:PWG2RSNEFF%s", AliAnalysisManager::GetCommonFileName(), suf[i].Data());
+    sprintf(infoPath , "%s:PWG2RSN", AliAnalysisManager::GetCommonFileName());
+    sprintf(effPath  , "%s:PWG2RSN", AliAnalysisManager::GetCommonFileName(), suf[i].Data());
 
     // initialize and connect container for the output
     AliAnalysisDataContainer *info = 0x0, *out = 0x0;
-    info = mgr->CreateContainer(Form("EffInfo_%s", suf[i].Data()), TList::Class(), AliAnalysisManager::kOutputContainer, infoPath);
-    out  = mgr->CreateContainer(Form("EFF_%s", suf[i].Data()), TList::Class(), AliAnalysisManager::kOutputContainer, effPath);
+    info = mgr->CreateContainer(Form("RsnEffInfo_%s", suf[i].Data()), TList::Class(), AliAnalysisManager::kOutputContainer, infoPath);
+    out  = mgr->CreateContainer(Form("RsnEffCorr_%s", suf[i].Data()), TList::Class(), AliAnalysisManager::kOutputContainer, effPath);
 
     mgr->ConnectOutput(task[i], 1, info);
     mgr->ConnectOutput(task[i], 2, out);

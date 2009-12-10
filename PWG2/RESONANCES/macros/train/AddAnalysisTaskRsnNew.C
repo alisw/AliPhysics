@@ -8,6 +8,7 @@ Bool_t AddAnalysisTaskRsnNew(const char *configMacro = "ConfigTaskRsn.C")
 
   // initialize task with all available slots, even if not all of them will be used:
   AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis", 1);
+  task->SetZeroEventPercentWarning(100.0);
 
   // load and execute configuration macro
   // if we are in a PROOF environment, it must be loaded by gProof
