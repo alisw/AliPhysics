@@ -60,6 +60,7 @@ class AliITSAlignMille2: public TObject
   Int_t     IsVIDContained(UShort_t voluid)                       const;
   Int_t     IsSymDefined(const Char_t* name)                      const;
   Int_t     IsSymContained(const Char_t* name)                    const;
+  Int_t     GetRequestedModID(UShort_t voluid)                    const;
   //
   Int_t     GetModuleIndex(const Char_t *symname);
   Int_t     GetModuleIndex(UShort_t voluid);

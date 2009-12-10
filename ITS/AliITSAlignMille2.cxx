@@ -413,6 +413,20 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
     // =========== 3: now read modules to align ===================================
     //
     rewind(pfc);
+    // create fixed modules
+    for (int j=0; j<fNSuperModules; j++) {
+      AliITSAlignMille2Module* proto = GetSuperModule(j);
+      if (!proto->IsAlignable()) continue;
+      AliITSAlignMille2Module* mod = new AliITSAlignMille2Module(*proto);
+      // the matrix might be updated in case some prealignment was applied, check 
+      TGeoHMatrix* mup = AliGeomManager::GetMatrix(mod->GetName());
+      if (mup) *(mod->GetMatrix()) = *mup;
+      fMilleModule.AddAtAndExpand(mod,fNModules);
+      mod->SetGeomParamsGlobal(fUseGlobalDelta);
+      mod->SetUniqueID(fNModules++);
+      mod->SetNotInConf(kTRUE);
+    }
+    //
     while( (recArr=GetConfigRecord(pfc,recTitle="",recOpt,0)) ) {
       if (!(recTitle==fgkRecKeys[ kModVolID ] || recTitle==fgkRecKeys[ kModIndex ])) continue;
       // Expected format: MODULE id tolX tolY tolZ tolPsi tolTh tolPhi [[sigX sigY sigZ]  extra params]
@@ -427,20 +441,28 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       AliITSAlignMille2Module* mod = 0;
       //
       if (voluid>=kMinITSSupeModuleID) { // custom supermodule
-	for (int j=0; j<fNSuperModules; j++) {
-	  if (voluid==GetSuperModule(j)->GetVolumeID()) {
-	    mod = new AliITSAlignMille2Module(*GetSuperModule(j));
-	    // the matrix might be updated in case some prealignment was applied, check 
-	    TGeoHMatrix* mup = AliGeomManager::GetMatrix(mod->GetName());
-	    if (mup) *(mod->GetMatrix()) = *mup;
-	    fMilleModule.AddAtAndExpand(mod,fNModules);
-	    break;
-	  }	
+	mod = GetMilleModuleByVID(voluid);
+	if (!mod) { // need to create
+	  for (int j=0; j<fNSuperModules; j++) {
+	    if (voluid==GetSuperModule(j)->GetVolumeID()) {
+	      mod = new AliITSAlignMille2Module(*GetSuperModule(j));
+	      // the matrix might be updated in case some prealignment was applied, check 
+	      TGeoHMatrix* mup = AliGeomManager::GetMatrix(mod->GetName());
+	      if (mup) *(mod->GetMatrix()) = *mup;
+	      fMilleModule.AddAtAndExpand(mod,fNModules);
+	      mod->SetGeomParamsGlobal(fUseGlobalDelta);
+	      mod->SetUniqueID(fNModules++);
+	      break;
+	    }	
+	  }
 	}
+	mod->SetNotInConf(kFALSE);
       }
       else if (idx<=kMaxITSSensVID) {
 	mod = new AliITSAlignMille2Module(voluid);
 	fMilleModule.AddAtAndExpand(mod,fNModules);
+	mod->SetGeomParamsGlobal(fUseGlobalDelta);
+	mod->SetUniqueID(fNModules++);
       }
       if (!mod) {stopped = kTRUE; break;}  // bad volid
       //
@@ -466,7 +488,6 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       }     
       if (stopped) break;
       //
-      mod->SetGeomParamsGlobal(fUseGlobalDelta);
       // now comes special detectors treatment
       if (mod->IsSDD()) {
 	double vl = 0;
@@ -488,9 +509,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
 	mod->SetFreeDOF(AliITSAlignMille2Module::kDOFDV,vl);
       }
       //
-      mod->SetUniqueID(fNModules);
       mod->EvaluateDOF();
-      fNModules++;
       //
       // now check if there are local constraints on this module
       for (++irec;irec<nrecElems;irec++) {
@@ -1245,7 +1264,7 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
   Int_t ngoodpts=0;
   Int_t intidx[20];
   for (int j=0; j<npts; j++) {
-    intidx[j] = IsVIDContained(atp->GetVolumeID()[j]);
+    intidx[j] = GetRequestedModID(atp->GetVolumeID()[j]);
     if (intidx[j]<0) continue;
     ngoodpts++;
     Float_t xx=atp->GetX()[j];
@@ -1823,7 +1842,7 @@ void trackFit2D(Int_t &, Double_t *, double &chi2, double *par, int flag)
   static Bool_t fullErr2D;
   //
   if (flag==1) fullErr2D = kFALSE;//kTRUE;
-  fullErr2D = kTRUE;
+  //  fullErr2D = kTRUE;
   enum {kAX,kAZ,kBX,kBZ};
   enum {kXX=0,kXY=1,kXZ=2,kYX=kXY,kYY=3,kYZ=4,kZX=kXZ,kZY=kYZ,kZZ=5};
   //
@@ -1988,6 +2007,22 @@ Int_t AliITSAlignMille2::IsVIDContained(UShort_t voluid) const
 }
 
 //________________________________________________________________________________________________________
+Int_t AliITSAlignMille2::GetRequestedModID(UShort_t voluid) const
+{
+  // checks if the sensitive module 'voluid' is contained inside a supermodule 
+  // and return the internal index of the last identified supermodule
+  // return -1 if error
+  // IMPORTANT: always start from the end to start from the sensors
+  if (AliITSAlignMille2Module::GetIndexFromVolumeID(voluid)<0) return -1;
+  int k;
+  for (k=fNModules;k--;) if (GetMilleModule(k)->IsIn(voluid)) break;
+  if (k<0) return -1;
+  AliITSAlignMille2Module* md = GetMilleModule(k);
+  while (md && md->IsNotInConf()) md = md->GetParent();
+  return md ? md->GetUniqueID() : -1; 
+}
+
+//________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::CheckCurrentTrack() 
 {
   /// checks if AliTrackPoints belongs to defined modules
@@ -2093,7 +2128,8 @@ Int_t AliITSAlignMille2::ProcessTrack(const AliTrackPointArray *track)
     AliDebug(2,Form("    Preprocessed Point = ( %f , %f , %f ) \n",fCluster.GetX(),fCluster.GetY(),fCluster.GetZ()));
     int res = fTPAFitter ? AddLocalEquationTPA(md[nloceq]) : AddLocalEquation(md[nloceq]);
     if (res<0) {fTotBadLocEqPoints++; nloceq = 0; break;}
-    else if (res>0) {nloceq++; ngloeq++;}
+    else if (res==0) nloceq++;
+    else {nloceq++; ngloeq++;}
   } // end loop over points
   //
   fTrack=NULL;
@@ -2353,6 +2389,7 @@ Int_t AliITSAlignMille2::AddLocalEquation(Mille2Data &m)
   if (zeroX) {AliInfo("Skipping: zero local X derivatives!"); return -1;}
   if (zeroZ) {AliInfo("Skipping: zero local Z derivatives!"); return -1;}
   //
+  int status = 0;
   int ifill = 0;
   //
   AliITSAlignMille2Module* endModule = fCurrentModule;
@@ -2479,7 +2516,8 @@ Int_t AliITSAlignMille2::AddLocalEquation(Mille2Data &m)
   m.fNGlobFilled = ifill;
   fCurrentModule = endModule;
   //
-  return Int_t(!zeroX && !zeroZ);
+  status += Int_t(!zeroX && !zeroZ); // 0 - only locals, 1 locals + globals
+  return status;
 }
 
 //________________________________________________________________________________________________________
@@ -2497,6 +2535,7 @@ Int_t AliITSAlignMille2::AddLocalEquationTPA(Mille2Data &m)
   fTPAFitter->GetDResDParams(&fDerivativeLoc[0][0], curpoint);    // resid. derivatives over the track parameters 
   for (Int_t i=fNLocal; i--;) tempHMat->MasterToLocalVect(fDerivativeLoc[i],m.fDerLoc[i]); 
   //
+  int status = 0;
   // derivatives over the global parameters ---------------------------------------->>>
   Double_t dRdP[3][3]; // derivative of local residuals vs local position
   Double_t dPdG[AliITSAlignMille2Module::kMaxParGeom][3]; // derivatives of local position vs global params
@@ -2510,6 +2549,7 @@ Int_t AliITSAlignMille2::AddLocalEquationTPA(Mille2Data &m)
   //
   do {
     if (fCurrentModule->GetNParFree()==0) continue;
+    status = 1;
     if (!fUseGlobalDelta) dfDone = 0; // for local deltas the derivatives at diff. levels are different
     Bool_t jacobOK = kFALSE;
     //
@@ -2584,7 +2624,7 @@ Int_t AliITSAlignMille2::AddLocalEquationTPA(Mille2Data &m)
   m.fNGlobFilled = ifill;
   fCurrentModule = endModule;
   //
-  return 1;
+  return status;
 }
 
 //________________________________________________________________________________________________________
@@ -2601,9 +2641,9 @@ void AliITSAlignMille2::SetLocalEquations(const Mille2Data *marr, Int_t neq)
     for (int ic=3;ic--;) {
       if (ic==kY && !fUseLocalYErr) continue;
       AliDebug(2,Form("setting local equation %c with fMeas=%.6f  and fSigma=%.6f",fgkXYZ[ic],m.fMeas[ic], m.fSigma[ic]));      
-      Bool_t zero = kTRUE;
-      for (int i=fNLocal; i--;)       zero &= SetLocalDerivative(  i,                 m.fDerLoc[i][ic] );
-      for (int i=m.fNGlobFilled;i--;) zero &= SetGlobalDerivative( m.fParMilleID[i] , m.fDerGlo[i][ic] );
+      Bool_t zero = kFALSE;
+      for (int i=fNLocal; i--;)       zero |= SetLocalDerivative(  i,                 m.fDerLoc[i][ic] );
+      for (int i=m.fNGlobFilled;i--;) SetGlobalDerivative( m.fParMilleID[i] , m.fDerGlo[i][ic] );
       if (zero) { AliInfo(Form("Skipping %c residual due to the zero derivatives!",fgkXYZ[ic])); continue; }
       fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, m.fMeas[ic], m.fSigma[ic]);  
       filled = kTRUE;
@@ -3628,6 +3668,7 @@ TClonesArray* AliITSAlignMille2::CreateDeltas()
     tempMatX.MultiplyLeft(&tempMatY);
     tempMatX.Multiply(&tempMatY.Inverse());
     //
+    if (tempMatX.IsIdentity()) continue; // do not store dummy matrices
     UShort_t vid = AliITSAlignMille2Module::GetVolumeIDFromSymname(algname);
     new(alobj[idx++]) AliAlignObjParams(algname,vid,tempMatX,kTRUE);
     //

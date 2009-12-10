@@ -28,7 +28,7 @@ class AliITSAlignMille2Module : public TNamed
 { 
 public: 
   enum {kSPD,kSDD,kSSD};
-  enum {kMaxParGeom=6,kMaxParTot=8,kSensDefBit=0,kGlobalGeomBit=1};
+  enum {kMaxParGeom=6,kMaxParTot=8,kSensDefBit=BIT(14),kGlobalGeomBit=BIT(15),kNotInConfBit=BIT(16)};
   enum {kDOFTX,kDOFTY,kDOFTZ,kDOFPS,kDOFTH,kDOFPH,kDOFT0,kDOFDV};
   //
   AliITSAlignMille2Module(); 
@@ -54,8 +54,9 @@ public:
   Float_t      GetSigmaZFactor()                      const {return fSigmaFactor[2];}
   Int_t        GetNProcessedPoints()                  const {return fNProcPoints;}
   Bool_t       IsFreeDOF(Int_t dof)                   const {return fParCstr[dof]>0;}
-  Bool_t       AreSensorsProvided()                   const {return TestBit(1<<(kSensDefBit+1));}
-  Bool_t       GeomParamsGlobal()                     const {return TestBit(1<<(kGlobalGeomBit+1));}
+  Bool_t       AreSensorsProvided()                   const {return TestBit(kSensDefBit);}
+  Bool_t       GeomParamsGlobal()                     const {return TestBit(kGlobalGeomBit);}
+  Bool_t       IsNotInConf()                          const {return TestBit(kNotInConfBit);}
   Bool_t       IsIn(UShort_t volid)                   const;
   Bool_t       IsAlignable()                          const;
   Bool_t       BelongsTo(AliITSAlignMille2Module* parent) const;
@@ -95,8 +96,9 @@ public:
   void         SetParent(AliITSAlignMille2Module* par)      {fParent = par;}
   void         AddChild(AliITSAlignMille2Module* cld)       {fChildren.Add(cld);}
   void         SetFreeDOF(Int_t dof,Double_t cstr);
-  void         SetSensorsProvided(Bool_t v=kTRUE)           {SetBit(1<<(kSensDefBit+1),v);}
-  void         SetGeomParamsGlobal(Bool_t v=kTRUE)          {SetBit(1<<(kGlobalGeomBit+1),v);}
+  void         SetSensorsProvided(Bool_t v=kTRUE)           {SetBit(kSensDefBit,v);}
+  void         SetGeomParamsGlobal(Bool_t v=kTRUE)          {SetBit(kGlobalGeomBit,v);}
+  void         SetNotInConf(Bool_t v=kTRUE)                 {SetBit(kNotInConfBit,v);}
   Int_t        Set(Int_t index,UShort_t volid, const char* symname, const TGeoHMatrix *m,Int_t nsv=0, const UShort_t *volidsv=0);
   //
   void         AddSensitiveVolume(UShort_t volid);

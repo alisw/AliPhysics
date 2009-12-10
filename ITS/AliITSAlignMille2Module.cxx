@@ -334,7 +334,7 @@ void AliITSAlignMille2Module::AddSensitiveVolume(UShort_t voluid)
   if (GetIndexFromVolumeID(voluid)<0) return; // bad volid
   //
   // in principle, the correct size of fSensVol... arrays was set outside but check anyway
-  if (fSensVolVolumeID.GetSize()<fNSensVol) {
+  if (fSensVolVolumeID.GetSize()<fNSensVol+1) {
     fSensVolVolumeID.Set(fNSensVol+1);
     fSensVolIndex.Set(fNSensVol+1);
   }
