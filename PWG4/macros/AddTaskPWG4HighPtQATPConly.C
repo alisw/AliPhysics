@@ -30,7 +30,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
   //Standard Cuts
   trackCuts->SetAcceptKinkDaughters(kFALSE);//
-  trackCuts->SetRequireTPCRefit(kTRUE);//
+  trackCuts->SetRequireTPCRefit(kTRUE);
   trackCuts->SetEtaRange(-0.9,0.9);//-0.5,0.5);//
   trackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);//
   trackCuts->SetPtRange(0.15, 1e10);//
@@ -58,6 +58,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   AliPWG4HighPtQATPConly *taskPWG4QA = new AliPWG4HighPtQATPConly("AliPWG4HighPtQATPConly");
   taskPWG4QA->SetCuts(trackCuts);
   taskPWG4QA->SetCutsITS(trackCutsITS);
+  taskPWG4QA->SelectTrigger(AliAnalysisHelperJetTasks::kMB1); 
   
  
   // E. Create ONLY the output containers for the data produced by the task.

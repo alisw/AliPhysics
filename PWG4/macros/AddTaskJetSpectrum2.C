@@ -32,6 +32,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec = "jets",char* bGen 
    pwg4spec->SetBranchRec(bRec); 
    pwg4spec->SetBranchGen(bGen); 
    pwg4spec->SetFilterMask(filterMask); 
+   pwg4spec->SetUseGlobalSelection(kTRUE); 
 
    if(type == "AOD"){
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODIn);

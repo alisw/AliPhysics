@@ -8,7 +8,7 @@ const Int_t    charge  = 1 ;
 
 AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()//<some_parameters>)
 {
-  // Creates a proton analysis task and adds it to the analysis manager.
+  // Creates a HighPtSpectra analysis task and adds it to the analysis manager.
   
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -111,7 +111,8 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()//<some_parameters>)
   AliPWG4HighPtSpectra *taskPWG4HighPtSpectra = new AliPWG4HighPtSpectra("taskPWG4HighPtSpectra");
   taskPWG4HighPtSpectra->SetCuts(trackCuts);
   taskPWG4HighPtSpectra->SetCFManager(man); //here is set the CF manager
- 
+  taskPWG4HighPtSpectra->SelectTrigger(AliAnalysisHelperJetTasks::kMB1); 
+
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
