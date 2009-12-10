@@ -96,7 +96,7 @@ kine_tracks(Double_t min_pt,  Double_t min_p,
   AliStack* stack = rl->Stack();
   if (!stack)
   {
-    Error("kine_tracks.C", "can not get kinematics.");
+    Error("kine_tracks", "can not get kinematics.");
     return 0;
   }
 
@@ -274,6 +274,11 @@ kine_track(Int_t  label,
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
+  if (!stack)
+  {
+     Warning("kine_track", "can not get kinematics.");
+    return 0;
+  }
   if (label >= stack->GetNtrack())
   {
     Warning("kine_track", "label out of range.");
