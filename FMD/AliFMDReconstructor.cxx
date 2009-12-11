@@ -76,7 +76,7 @@ AliFMDReconstructor::AliFMDReconstructor()
     fAngleCorrect(kTRUE),
     fVertexType(kNoVertex),
     fESD(0x0),
-    fDiagnostics(kTRUE),
+    fDiagnostics(kFALSE),
     fDiagStep1(0), 
     fDiagStep2(0),
     fDiagStep3(0),
