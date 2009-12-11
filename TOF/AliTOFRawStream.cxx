@@ -1392,6 +1392,8 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
     if (fDecoder->Decode((UInt_t *)data, kDataWords, currentCDH) == kTRUE) {
       fRawReader->AddMajorErrorLog(kDDLDecoder,Form("DDL # = %d",currentDDL));
       AliWarning(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
+      ResetDataBuffer(currentDDL);
+      ResetPackedDataBuffer(currentDDL);
     }
     
     delete [] data;
