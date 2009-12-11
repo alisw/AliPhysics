@@ -172,11 +172,13 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
 
   //Trigger selection
   AliAnalysisHelperJetTasks::Trigger trig;
-  trig = (const enum AliAnalysisHelperJetTasks::Trigger)fTrigger;
+  trig = (AliAnalysisHelperJetTasks::Trigger)fTrigger;
   if (AliAnalysisHelperJetTasks::IsTriggerFired(fESD,trig)){
     AliDebug(2,Form(" Trigger Selection: event ACCEPTED ... "));
   }else{
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
+    PostData(0,fHistList);
+    PostData(1,fCFManager->GetParticleContainer());
     return;
   } 
   //  if(!fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL") || !fESD->IsTriggerClassFired("CSMBB-ABCE-NOPF-ALL")) return;
@@ -203,12 +205,18 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
   
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
   // Need vertex cut
-  if (vtx->GetNContributors() < 2) return;
+  if (vtx->GetNContributors() < 2){
+    PostData(0,fHistList);
+    PostData(1,fCFManager->GetParticleContainer());
+    return;
+  }
   double primVtx[3];
   vtx->GetXYZ(primVtx);
-  //  printf("primVtx: %g  %g  %g \n",primVtx[0],primVtx[1],primVtx[2]);
-  if(primVtx[0]>1. || primVtx[1]>1. || primVtx[2]>10.) return;
-
+  if(TMath::Abs(primVtx[0]>1. )|| TMath::Abs(primVtx[1]>1.) || TMath::Abs(primVtx[2]>10.)){
+    PostData(0,fHistList);
+    PostData(1,fCFManager->GetParticleContainer());
+    return;
+  }
   AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
 
   Int_t nTracks = fESD->GetNumberOfTracks();
