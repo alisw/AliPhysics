@@ -26,7 +26,7 @@ class AliTRDCalPID : public TNamed
 
   enum {
     kNMom   = 11,
-    kNSlicesLQ = 3,
+    kNSlicesLQ = 2,
     kNSlicesNN = 8
   };
 
@@ -40,6 +40,7 @@ class AliTRDCalPID : public TNamed
   static  Double_t GetMomentumBinning(Int_t ip) { 
     return (ip<0 || ip>=kNMom+1) ? -1.0 : fgTrackMomentumBinning[ip]; }
   virtual TObject *GetModel(Int_t ip, Int_t iType, Int_t iPlane) const = 0;
+  //virtual static Int_t GetModelID(Int_t mom, Int_t spec, Int_t plane) = 0;
   virtual Double_t GetProbability(Int_t spec, Float_t mom
                                 , const Float_t * const dedx
                                 , Float_t length, Int_t plane) const = 0;
@@ -52,9 +53,7 @@ class AliTRDCalPID : public TNamed
           void     SetPartSymb(Int_t i, const Char_t *symb) { fPartSymb[i] = symb;   }
 
  protected:
-
   virtual void     Init() = 0;
-  virtual Int_t    GetModelID(Int_t mom, Int_t spec, Int_t plane) const = 0;
 
   static const Char_t   *fPartName[AliPID::kSPECIES];     //! Names of particle species
   static const Char_t   *fPartSymb[AliPID::kSPECIES];     //! Symbols of particle species

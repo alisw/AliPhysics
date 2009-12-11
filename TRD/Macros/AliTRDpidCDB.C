@@ -5,26 +5,9 @@
 // 
 
 
-//___________________________________________________________________
-void makePIDRefs(const char *dir = ".", const char *file="Refs.root")
-{
-// Build the reference data for PID. The simulations have to fulfill
-// the directory structure defined inside AliTRDCalPIDRefMaker.
-// Parameters:
-// 1. "dir" - the root directory of the production
-// 2. "file" - output file containing reference data saved in directory
-//             "dir" 
-
-  AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  man->SetRun(0);
-
-  AliTRDCalPIDRefMaker maker;
-  maker.BuildLQReferences(file, dir);
-}
 
 //___________________________________________________________________
-void generatePIDDB()
+void generatePIDDBLQ(const char *file = "TRD.CalibPIDrefMakerLQ.root")
 {
 // Write TRD PID DB using the reference data from file "file"
 
@@ -37,15 +20,16 @@ void generatePIDDB()
   AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT/OCDB");
   if (!gStorLoc) return;
 
-  AliTRDpidRefMakerLQ pidMaker;
-  TObject *o = pidMaker.GetOCDBEntry("20091101");
+  if(gSystem->Load("libSTAT.so")<0) return;
+  AliTRDCalPID *pid = new AliTRDCalPIDLQ("pidLQ", "LQ TRD PID object");    
+  if(!pid->LoadReferences(file)) return;
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetObjectClassName("AliTRDCalPIDLQ");
   md->SetResponsible("Alexandru Bercuci");
   md->SetBeamPeriod(1);
-  md->SetAliRootVersion("v4-16-Release"); //root version
+  md->SetAliRootVersion("v4-17-Release"); //root version
   md->SetComment("2D PID for TRD");
-  gStorLoc->Put(o, AliCDBId("TRD/Calib/PIDLQ", 0, 999999999, 0, 1), md, AliCDBManager::kReference);
+  gStorLoc->Put(pid, AliCDBId("TRD/Calib/PIDLQ", 0, 999999999, 0, 1), md, AliCDBManager::kReference);
 }
 
 //___________________________________________________________________

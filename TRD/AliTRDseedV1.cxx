@@ -387,13 +387,10 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 // 3. cluster size
 //
 
-  Int_t nclusters[kNslices]; 
-  memset(nclusters, 0, kNslices*sizeof(Int_t));
   memset(fdEdx, 0, kNslices*sizeof(Float_t));
-
   const Double_t kDriftLength = (.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 
-  AliTRDcluster *c = NULL;
+  AliTRDcluster *c(NULL);
   for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++){
     if(!(c = fClusters[ic]) && !(c = fClusters[ic+kNtb])) continue;
     Float_t dx = TMath::Abs(fX0 - c->GetX());
@@ -415,16 +412,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
     
     //CHECK !!!
     fdEdx[slice]   += w * GetdQdl(ic); //fdQdl[ic];
-    nclusters[slice]++;
   } // End of loop over clusters
-
-  //if(fkReconstructor->GetPIDMethod() == AliTRDReconstructor::kLQPID){
-  if(nslices == AliTRDpidUtil::kLQslices){
-  // calculate mean charge per slice (only LQ PID)
-    for(int is=0; is<nslices; is++){ 
-      if(nclusters[is]) fdEdx[is] /= nclusters[is];
-    }
-  }
 }
 
 //_____________________________________________________________________________
@@ -593,8 +581,8 @@ Bool_t AliTRDseedV1::CookPID()
   Float_t length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick())/ TMath::Sqrt((1.0 - GetSnp()*GetSnp()) / (1.0 + GetTgl()*GetTgl()));
   
   //calculate dE/dx
-  CookdEdx(fkReconstructor->GetNdEdxSlices());
-  AliDebug(4, Form("PID p[%f] dEdx[%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f] l[%f]", GetMomentum(), fdEdx[0], fdEdx[1], fdEdx[2], fdEdx[3], fdEdx[4], fdEdx[5], fdEdx[6], fdEdx[7], length));
+  CookdEdx(AliTRDCalPID::kNSlicesNN);
+  AliDebug(4, Form("p=%6.4f[GeV/c] dEdx{%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f} l=%4.2f[cm]", GetMomentum(), fdEdx[0], fdEdx[1], fdEdx[2], fdEdx[3], fdEdx[4], fdEdx[5], fdEdx[6], fdEdx[7], length));
 
   // Sets the a priori probabilities
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++)

@@ -29,6 +29,7 @@ class AliTRDCalPIDNN : public AliTRDCalPID
   virtual  ~AliTRDCalPIDNN();
   Bool_t    LoadReferences(Char_t *refFile);
   TObject  *GetModel(Int_t ip, Int_t iType, Int_t iPlane) const;
+  static Int_t GetModelID(Int_t mom, Int_t ii, Int_t plane);
   Double_t  GetProbability(Int_t spec, Float_t mom
                          , const Float_t * const dedx
                          , Float_t length, Int_t plane) const;
@@ -39,7 +40,6 @@ class AliTRDCalPIDNN : public AliTRDCalPID
   AliTRDCalPIDNN &operator=(const AliTRDCalPIDNN &c);
            
   void     Init();
-  Int_t    GetModelID(Int_t mom, Int_t ii, Int_t plane) const;
 
   ClassDef(AliTRDCalPIDNN, 1) // NN PID reference manager
 

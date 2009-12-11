@@ -26,14 +26,14 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <TH2F.h>
 #include <TFile.h>
 #include <TROOT.h>
+#include <TSystem.h>
 
 #include "AliLog.h"
 #include "AliPID.h"
 
-#include "../../STAT/TKDPDF.h"
+#include "TKDPDF.h"
 #include "AliTRDCalPIDLQ.h"
 #include "AliTRDcalibDB.h"
 
@@ -65,32 +65,7 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ(const Text_t *name, const Text_t *title)
 
 }
 
-//_________________________________________________________________________
-AliTRDCalPIDLQ::~AliTRDCalPIDLQ()
-{
-  //
-  // Destructor
-  //
-  
-}
 
-//_________________________________________________________________________
-Bool_t AliTRDCalPIDLQ::LoadPDF(TDirectoryFile *d)
-{
-  // Read histograms
-  TKDPDF *pdf = 0x0;
-  for (Int_t is=0; is < AliPID::kSPECIES; is++){
-    for (Int_t ip = 0; ip < kNMom; ip++){
-      if(!(pdf = (TKDPDF*)d->Get(Form("%s[%d]", AliPID::ParticleShortName(is), ip)))){ 
-        AliWarning(Form("Reference for %s[%d] missing.", AliPID::ParticleShortName(is), ip));
-        continue;
-      }
-      fModel->AddAt(pdf->Clone(), GetModelID(ip, is, 0));
-    }
-  }
-  return kTRUE;
-}
-  //
 //_________________________________________________________________________
 Bool_t AliTRDCalPIDLQ::LoadReferences(Char_t *refFile)
 {
@@ -98,52 +73,22 @@ Bool_t AliTRDCalPIDLQ::LoadReferences(Char_t *refFile)
   // Read the TRD dEdx histograms.
   //
 
-  Int_t nTimeBins = 22;
-  // Get number of time bins from CDB
-  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
-  if(!calibration){
-    AliWarning(Form("No AliTRDcalibDB available. Using %d time bins.", nTimeBins));
-  }else{
-    if(calibration->GetRun() > -1) nTimeBins = calibration->GetNumberOfTimeBinsDCS();
-    else AliWarning(Form("Run number not set. Using %d time bins.", nTimeBins));
-  }
-
-  
-  // Read histogram Root file  
-  TFile *histFile = TFile::Open(refFile, "READ");
-  if (!histFile || !histFile->IsOpen()) {
-    AliError(Form("Opening TRD histgram file %s failed", refFile));
+  if(gSystem->AccessPathName(refFile, kReadPermission)){
+    AliError(Form("File %s.root not readable", refFile));
     return kFALSE;
   }
-  gROOT->cd();
-
-  // Read histograms
-  for (Int_t iparticle = 0; iparticle < AliPID::kSPECIES; iparticle++){
-    for (Int_t imom = 0; imom < kNMom; imom++){
-      TH2D* hist = (TH2D*)histFile->Get(Form("h2dEdx%s%d", fPartSymb[iparticle], imom/*, ilength*/))->Clone();
-      hist->Scale(1./hist->Integral());
-      fModel->AddAt(hist, GetModelID(imom, iparticle, 0));
-
-// 			if (iparticle != AliPID::kElectron && iparticle != AliPID::kPion) continue;
-// 
-// 			TH1F* ht = (TH1F*)histFile->Get(Form("h1MaxTB%s%02d", fPartSymb[iparticle], imom))->Clone();
-// 			if(ht->GetNbinsX() != nTimeBins) AliWarning(Form("The number of time bins %d defined in h1MaxTB%s%02d differs from calibration value of %d. This may lead to erroneous results.", ht->GetNbinsX(), fPartSymb[iparticle], imom, nTimeBins));
-// 			ht->Scale(1./ht->Integral());
-// 			fHistTimeBin->AddAt(ht, ((iparticle==AliPID::kElectron)?0:1)*kNMom + imom);
-    }
+  if(!TFile::Open(refFile)){
+    AliError(Form("File %s corrupted", refFile));
+    return kFALSE;
   }
-  
-  histFile->Close();
-  delete histFile;
-  
-  // Number of bins and bin size
-  //TH1F* hist = (TH1F*) fHistdEdx->At(GetHistID(AliPID::kPion, 1));
-  //fNbins   = hist->GetNbinsX();
-  //fBinSize = hist->GetBinWidth(1);
-  
+  TObjArray *pdf(NULL);
+  if (!( pdf = dynamic_cast<TObjArray*>(gFile->Get("PDF_2DLQ")))) {
+    AliError("PID data not available");
+    return kFALSE;
+  }
+  fModel=(TObjArray*)pdf->Clone("PDF");
+  gFile->Close();
   return kTRUE;
-
-
 }
 
 //_________________________________________________________________________
@@ -153,11 +98,10 @@ TObject* AliTRDCalPIDLQ::GetModel(Int_t ip, Int_t iType, Int_t iplane) const    
   // Returns one selected dEdx histogram
   //
 
-  if (iType < 0 || iType >= AliPID::kSPECIES) return 0x0;
-  if(ip<0 || ip>= kNMom ) return 0x0;
+  if (iType < 0 || iType >= AliPID::kSPECIES) return NULL;
+  if(ip<0 || ip>= kNMom ) return NULL;
 
-  AliInfo(Form("Retrive dEdx histogram for %s of %5.2f GeV/c", fPartName[iType], fgTrackMomentum[ip]));
-  
+  AliDebug(2, Form("Retrive dEdx distribution for %s @ p=%5.2f [GeV/c].", AliPID::ParticleShortName(iType), fgTrackMomentum[ip]));
   return fModel->At(GetModelID(ip, iType, iplane));
 }
 
@@ -174,77 +118,54 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom
   //
 
   if (spec < 0 || spec >= AliPID::kSPECIES) return 0.;
+  Double_t x[AliTRDCalPID::kNSlicesLQ];
+  if(!CookdEdx(dedx, x)) return 0.;
     
-  //Double_t dedx   = dedx1/fMeanChargeRatio;
-  
   // find the interval in momentum and track segment length which applies for this data
-  Int_t ilength = 1;
+/*  Int_t ilength = 1;
   while(ilength<kNLength-1 && length>fgTrackSegLength[ilength]){
     ilength++;
-  }
+  }*/
   Int_t imom = 1;
   while(imom<kNMom-1 && mom>fgTrackMomentum[imom]) imom++;
 
-  Int_t nbinsx, nbinsy;
-  TAxis *ax = 0x0, *ay = 0x0;
-  Double_t lq1, lq2;
-  Double_t mom1 = fgTrackMomentum[imom-1], mom2 = fgTrackMomentum[imom];
-  TH2 *hist = 0x0;
-  if(!(hist = (TH2D*)fModel->At(GetModelID(imom-1, spec, iplane)))){
-    AliInfo(Form("Looking for spec(%d) mom(%f) Ex(%f) Ey(%f) length(%f)", spec, mom, dedx[0], dedx[1], length));
-    AliError(Form("EHistogram id %d not found in DB.", GetModelID(imom-1, spec, iplane)));
+  Double_t p[2], e[2], r;
+  TKDPDF *pdf(NULL);
+
+  AliDebug(2, Form("Looking for %s@p=%6.4f[GeV/c] dEdx={%7.2f %7.2f}[a.u.] l=%4.2f[cm].", AliPID::ParticleShortName(spec), mom, dedx[0], dedx[1], length));
+  if(!(pdf = dynamic_cast<TKDPDF*>(fModel->At(GetModelID(imom-1, spec, iplane))))) {
+    AliError(Form("Ref data @ idx[%d] not found in DB.", GetModelID(imom-1, spec, iplane)));
+    fModel->ls();
     return 0.;
   }
-  ax = hist->GetXaxis(); nbinsx = ax->GetNbins();
-  ay = hist->GetYaxis(); nbinsy = ay->GetNbins();
-  Float_t x = dedx[0]+dedx[1], y = dedx[2];
-        Bool_t kX = (x < ax->GetBinUpEdge(nbinsx));
-  Bool_t kY = (y < ay->GetBinUpEdge(nbinsy));
-  if(kX)
-    if(kY) lq1 = hist->GetBinContent( hist->FindBin(x, y)); 
-    //fEstimator->Estimate2D2(hist, x, y);
-    else lq1 = hist->GetBinContent(ax->FindBin(x), nbinsy);
-  else
-    if(kY) lq1 = hist->GetBinContent(nbinsx, ay->FindBin(y));
-    else lq1 = hist->GetBinContent(nbinsx, nbinsy);
+  pdf->Eval(x, r, e[0], kFALSE);
+  p[0]=TMath::Abs(r); // conversion from interpolation to PDF
+  AliDebug(2, Form("LQ=%6.3f+-%5.2f%% @ %4.1f[GeV/c]", p[0], 1.E2*e[0]/p[0], fgTrackMomentum[imom-1]));
 
-
-  if(!(hist = (TH2D*)fModel->At(GetModelID(imom, spec, iplane)))){
-    AliInfo(Form("Looking for spec(%d) mom(%f) Ex(%f) Ey(%f) length(%f)", spec, mom, dedx[0], dedx[1], length));
-    AliError(Form("EHistogram id %d not found in DB.", GetModelID(imom, spec, iplane)));
-    return lq1;
+  if(!(pdf = dynamic_cast<TKDPDF*>(fModel->At(GetModelID(imom, spec, iplane))))){
+    AliError(Form("Ref data @ idx[%d] not found in DB.", GetModelID(imom, spec, iplane)));
+    fModel->ls();
+    return p[0];
   }
-  if(kX)
-    if(kY) lq2 = hist->GetBinContent( hist->FindBin(x, y)); 
-    //fEstimator->Estimate2D2(hist, x, y);
-    else lq2 = hist->GetBinContent(ax->FindBin(x), nbinsy);
-  else
-    if(kY) lq2 = hist->GetBinContent(nbinsx, ay->FindBin(y));
-    else lq2 = hist->GetBinContent(nbinsx, nbinsy);
+  pdf->Eval(x, r, e[1], kFALSE);
+  p[1]=TMath::Abs(r); // conversion from interpolation to PDF
+  AliDebug(2, Form("LQ=%6.3f+-%5.2f%% @ %4.1f[GeV/c]", p[1], 1.E2*e[1]/p[1], fgTrackMomentum[imom]));
   
-        // return interpolation over momentum binning
-        if(mom < fgTrackMomentum[0]) return lq1;
-        else if(mom > fgTrackMomentum[kNMom-1]) return lq2;
-        else return lq1 + (lq2 - lq1)*(mom - mom1)/(mom2 - mom1);
-
+  // return interpolation over momentum binning
+  if(mom < fgTrackMomentum[0]) return p[0];
+  else if(mom > fgTrackMomentum[kNMom-1]) return p[1];
+  else{ 
+    Double_t lmom[2] = {fgTrackMomentum[imom-1],  fgTrackMomentum[imom]};
+    return p[0] + (p[1] - p[0])*(mom - lmom[0])/(lmom[1] - lmom[0]);
+  }
 }
 
 //_________________________________________________________________________
 void AliTRDCalPIDLQ::Init()
 {
-  //
-  // Initialization
-  //
-
+//
+// PID LQ list initialization
+//
   fModel = new TObjArray(AliPID::kSPECIES  * kNMom);
   fModel -> SetOwner();
-
-}
-
-//_________________________________________________________________________
-Int_t AliTRDCalPIDLQ::GetModelID(Int_t mom, Int_t spec, Int_t /*ii*/) const
-{  
-  // returns the ID of the LQ distribution (55 Histos, ID from 1 to 55)
-
-  return spec * AliTRDCalPID::kNMom + mom;
 }

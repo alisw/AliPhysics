@@ -204,7 +204,7 @@ void AliTRDCalPIDNN::Init()
 }
 
 //_________________________________________________________________________
-Int_t AliTRDCalPIDNN::GetModelID(Int_t mom, Int_t /*ii*/, Int_t plane) const
+Int_t AliTRDCalPIDNN::GetModelID(Int_t mom, Int_t /*ii*/, Int_t plane)
 {
   
   // returns the ID of the NN distribution (66 MLPs, ID from 56 to 121)
