@@ -10,7 +10,6 @@
 //
 Bool_t AddAnalysisTaskRsnEffNew
 (
-  Bool_t      useY     = kTRUE,
   Double_t    sigmaTPC = 0.065,
   const char *outFile  = "eff"
 )
@@ -65,7 +64,8 @@ Bool_t AddAnalysisTaskRsnEffNew
   {
     task[i]->AddAxis(axisMult);
     task[i]->AddAxis(axisPt);
-    if (useY) task[i]->AddAxis(axisY); else task[i]->AddAxis(axisEta);
+    task[i]->AddAxis(axisY); 
+    task[i]->AddAxis(axisEta);
   }
 
   // define cuts for event selection:
@@ -131,13 +131,13 @@ Bool_t AddAnalysisTaskRsnEffNew
   // and set only the cuts we are interested in
   // we also disable the cuts we applied before, for clarity
   AliRsnCutESDPrimary *cutESDPrimary = new AliRsnCutESDPrimary("cutESDPrimary");
-  cutESDPrimary->GetCuts()->SetMaxCovDiagonalElements(100.0, 100.0, 100.0, 100.0, 100.0);
+  cutESDPrimary->GetCuts()->SetMaxCovDiagonalElements(2.0, 2.0, 0.5, 0.5, 2.0);
   cutESDPrimary->GetCuts()->SetRequireSigmaToVertex(kTRUE);
   cutESDPrimary->GetCuts()->SetMaxNsigmaToVertex(3.0);
-  cutESDPrimary->GetCuts()->SetRequireTPCRefit(kFALSE);
+  cutESDPrimary->GetCuts()->SetRequireTPCRefit(kTRUE);
   cutESDPrimary->GetCuts()->SetAcceptKinkDaughters(kFALSE);
-  cutESDPrimary->GetCuts()->SetMinNClustersTPC(0);
-  cutESDPrimary->GetCuts()->SetMaxChi2PerClusterTPC(100000000.0);
+  cutESDPrimary->GetCuts()->SetMinNClustersTPC(50);
+  cutESDPrimary->GetCuts()->SetMaxChi2PerClusterTPC(3.5);
 
   AliRsnCutMgr *cutMgrESD_step3   = new AliRsnCutMgr("esd_step3", "");
   AliRsnCutSet *cutSetTrack_step3 = new AliRsnCutSet("esd_step3_tracks");
