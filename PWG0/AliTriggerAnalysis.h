@@ -29,11 +29,11 @@ class AliTriggerAnalysis : public TObject
     enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG };
     
     AliTriggerAnalysis();
-    virtual ~AliTriggerAnalysis() {}
+    virtual ~AliTriggerAnalysis();
     
     void EnableHistograms();
-
-    Bool_t IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger) const;
+    
+    Bool_t IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger);
     
     // using trigger bits in ESD
     Bool_t IsTriggerBitFired(const AliESDEvent* aEsd, Trigger trigger) const;
@@ -41,16 +41,16 @@ class AliTriggerAnalysis : public TObject
     Bool_t IsTriggerBitFired(const AliESDEvent* aEsd, ULong64_t tclass) const;
     
     // using ESD data from detectors
-    Bool_t IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger) const;
+    Bool_t IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger);
 
     // using trigger classes in ESD
     Bool_t IsTriggerClassFired(const AliESDEvent* aEsd, const Char_t* tclass) const;
     
     // some "raw" trigger functions
-    Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin) const;
-    V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE) const;
+    Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin);
+    V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE);
     Bool_t ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const;
-    Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side) const;
+    Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side);
     
     static const char* GetTriggerName(Trigger trigger);
     
@@ -58,17 +58,16 @@ class AliTriggerAnalysis : public TObject
     void FillTriggerClasses(const AliESDEvent* aEsd);
     
     void SetSPDGFOThreshhold(Int_t t) { fSPDGFOThreshold = t; }
-    void SetV0Threshhold(Int_t aSide, Int_t cSide) { fV0AThreshold = aSide; fV0CThreshold = cSide; }
+    void SetV0TimeOffset(Float_t offset) { fV0TimeOffset = offset; }
     void SetFMDThreshold(Float_t low, Float_t hit) { fFMDLowCut = low; fFMDHitCut = hit; }
     
     Int_t GetSPDGFOThreshhold() const { return fSPDGFOThreshold; }
-    Int_t GetV0AThreshold() const { return fV0AThreshold; }
-    Int_t GetV0CThreshold() const { return fV0CThreshold; }
+    Float_t GetV0TimeOffset() const { return fV0TimeOffset; }
     Float_t GetFMDLowThreshold() const { return fFMDLowCut; }
     Float_t GetFMDHitThreshold() const { return fFMDHitCut; }
     
     virtual Long64_t Merge(TCollection* list);
-    void WriteHistograms() const;
+    void SaveHistograms() const;
     
     void PrintTriggerClasses() const;
 
@@ -78,15 +77,14 @@ class AliTriggerAnalysis : public TObject
     Bool_t IsL2InputFired(const AliESDEvent* aEsd, UInt_t input) const;
     Bool_t IsInputFired(const AliESDEvent* aEsd, Char_t level, UInt_t input) const;
     
-    Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE) const;
+    Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE);
     
     Float_t V0CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
     
-    Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHistograms) const;
+    Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE);
 
     Int_t fSPDGFOThreshold;         // number of chips to accept a SPD GF0 trigger
-    Int_t fV0AThreshold;            // threshold for number of BB triggers in V0A
-    Int_t fV0CThreshold;            // threshold for number of BB triggers in V0C
+    Float_t fV0TimeOffset;          // time offset applied to the times read from the V0 (in ns)
  
     Float_t fFMDLowCut;		    // 
     Float_t fFMDHitCut;		    // 
@@ -104,7 +102,7 @@ class AliTriggerAnalysis : public TObject
     TMap* fTriggerClasses;    // counts the active trigger classes (uses the full string)
     
 
-    ClassDef(AliTriggerAnalysis, 3)
+    ClassDef(AliTriggerAnalysis, 5)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);

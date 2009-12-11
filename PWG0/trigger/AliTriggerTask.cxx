@@ -236,7 +236,7 @@ void AliTriggerTask::Terminate(Option_t *)
       fStats[i]->Write();
   if (fTrigger)
   {
-    fTrigger->WriteHistograms();
+    fTrigger->SaveHistograms();
     fTrigger->PrintTriggerClasses();
   }
     

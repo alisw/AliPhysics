@@ -27,10 +27,10 @@ void GetTimes(UInt_t run, UInt_t* startTime = 0, UInt_t* endTime = 0)
   gSystem->Load("libSTEER");
   
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("raw://");
-  man->SetRun(run);
+  man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB");
+  //man->SetRun(run);
   AliCDBPath cdb("GRP", "GRP", "Data");
-  obj = man->Get(cdb);
+  obj = man->Get(cdb, run);
   grp = (AliGRPObject*) obj->GetObject();
   
   if (startTime)

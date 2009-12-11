@@ -17,6 +17,7 @@
 
 #pragma link C++ class AliPWG0Helper+;
 #pragma link C++ class AliTriggerAnalysis+;
+#pragma link C++ class AliPhysicsSelection+;
 
 #pragma link C++ class AliCorrection+;
 #pragma link C++ class AliUnfolding+;
