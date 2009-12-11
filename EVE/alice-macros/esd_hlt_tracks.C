@@ -37,17 +37,6 @@
  */
 TEveTrackList* esd_hlt_tracks()
 {
-  TString macroPath=getenv("ALICE_ROOT");
-  macroPath+="/EVE/alice-macros/esd_tracks.C";
-  if (!gROOT->GetInterpreter()->IsLoaded(macroPath)) {
-    if (gSystem->AccessPathName(macroPath)) {
-      Error("hlt_tpc_clusters.C", "can not load %s, please load the esd_tracks.C macro before", macroPath.Data());
-      return NULL;
-    } else {
-      gROOT->GetInterpreter()->LoadMacro(macroPath);
-    }
-  }
-
   if (!TClass::GetClass("AliEveEventManager")) {
     Error("hlt_tpc_clusters.C", "EVE library not loaded, please start alieve correctly");
     return NULL;
@@ -58,6 +47,8 @@ TEveTrackList* esd_hlt_tracks()
     Error("esd_hlt_tracks.C", "EVE manager not initialized");
     return NULL;
   }
+
+  TEveUtil::LoadMacro("esd_tracks.C");
 
   int eventId=eveManager->GetEventId();
   TFile* esdFile=eveManager->GetESDFile();
