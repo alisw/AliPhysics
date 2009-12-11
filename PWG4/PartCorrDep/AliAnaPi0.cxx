@@ -419,24 +419,24 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   for(Int_t i1=0; i1<nPhot-1; i1++){
     AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
     TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
-	//Get Module number
-	module1 = GetModuleNumber(p1);
+    //Get Module number
+    module1 = GetModuleNumber(p1);
     for(Int_t i2=i1+1; i2<nPhot; i2++){
       AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
       TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
-	  //Get module number
-	  module2 = GetModuleNumber(p2);
+      //Get module number
+      module2 = GetModuleNumber(p2);
       Double_t m  = (photon1 + photon2).M() ;
       Double_t pt = (photon1 + photon2).Pt();
       Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
       if(GetDebug() > 2)
 	printf("AliAnaPi0::MakeAnalysisFillHistograms() - Current Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
 	       p1->Pt(), p2->Pt(), pt,m,a);
-		//Fill module dependent histograms
-		//if(module1==module2) printf("mod1 %d\n",module1);
-		if(module1==module2 && module1 >=0 && module1<fNModules)
-			fhReMod[module1]->Fill(pt,a,m) ;
-		
+      //Fill module dependent histograms
+      //if(module1==module2) printf("mod1 %d\n",module1);
+      if(module1==module2 && module1 >=0 && module1<fNModules)
+	fhReMod[module1]->Fill(pt,a,m) ;
+      
       for(Int_t ipid=0; ipid<fNPID; ipid++)
 	{
 	  if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
