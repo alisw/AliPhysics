@@ -36,6 +36,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliPHOSEMCAGeometry.h"
 #include "AliPHOSCPVGeometry.h"
 #include "AliPHOSSupportGeometry.h"
@@ -269,7 +270,7 @@ void AliPHOSGeoUtils::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t 
   //(the only place where this method used currently)
   Int_t relid[4]={module,0,1,1} ;
   relid[2] = static_cast<Int_t>(TMath::Ceil( x/ fCellStep + fNPhi / 2.) );
-  relid[3] = static_cast<Int_t>(TMath::Ceil(-z/ fCellStep + fNZ   / 2.) ) ;
+  relid[3] = fNZ+1-static_cast<Int_t>(TMath::Ceil(-z/ fCellStep + fNZ   / 2.) ) ;
   if(relid[2]<1)relid[2]=1 ;
   if(relid[3]<1)relid[3]=1 ;
   if(relid[2]>fNPhi)relid[2]=fNPhi ;
@@ -417,8 +418,13 @@ void AliPHOSGeoUtils::Global2Local(TVector3& localPosition,
   Double_t posG[3]={globalPosition.X(),globalPosition.Y(),globalPosition.Z()} ;
   Double_t posL[3]={0.,0.,0.} ;
   const TGeoHMatrix *mPHOS = GetMatrixForModule(module) ;
-  mPHOS->MasterToLocal(posG,posL);
-  localPosition.SetXYZ(posL[0],posL[1]+fCrystalShift,-posL[2]) ;  
+  if(mPHOS){
+    mPHOS->MasterToLocal(posG,posL);
+    localPosition.SetXYZ(posL[0],posL[1]+fCrystalShift,-posL[2]) ;  
+  }
+  else{
+    localPosition.SetXYZ(999.,999.,999.) ; //module does not exist in given configuration
+  }
  
 }
 //____________________________________________________________________________
@@ -427,7 +433,7 @@ Bool_t AliPHOSGeoUtils::GlobalPos2RelId(TVector3 & global, Int_t * relId){
   //returns false if x,z coordinates are beyond PHOS
   //distande to PHOS surface is NOT calculated 
   TVector3 loc ;
-  for(Int_t mod=1; mod<fNModules; mod++){
+  for(Int_t mod=1; mod<=fNModules; mod++){
     Global2Local(loc,global,mod) ;
     //If in Acceptance
     if((TMath::Abs(loc.Z())<fXtlArrSize[2]) && (TMath::Abs(loc.X())<fXtlArrSize[0])){
@@ -470,6 +476,8 @@ Bool_t AliPHOSGeoUtils::ImpactOnEmc(const Double_t * vtx, const TVector3 &p,
     Double_t tmp[3]={0.,-fCrystalShift,0.} ;
  
     const TGeoHMatrix *m = GetMatrixForModule(imod) ;
+    if(!m) //module does not exist in given configuration
+      continue ; 
     Double_t posG[3]={0.,0.,0.} ;
     m->LocalToMaster(tmp,posG);
     TVector3 n(posG[0],posG[1],posG[2]) ; 
@@ -513,8 +521,8 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
     sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",mod) ;
     //    sprintf(path,"/ALIC_1/PHOS_%d",relid[0]) ;
     if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort();
+      AliWarning(Form("Geo manager can not find path %s \n",path));
+      return 0;
     }
     return gGeoManager->GetCurrentMatrix();
   }
@@ -522,11 +530,11 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
     return fEMCMatrix[mod-1] ;
   }
   else{
-    printf("Can not find PHOS misalignment matrixes\n") ;
-    printf("Either import TGeoManager from geometry.root or \n");
-    printf("read stored matrixes from AliESD Header: \n") ;
-    printf("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ; 
-    abort() ;
+    AliWarning("Can not find PHOS misalignment matrixes\n") ;
+    AliWarning("Either import TGeoManager from geometry.root or \n");
+    AliWarning("read stored matrixes from AliESD Header: \n") ;
+    AliWarning("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ; 
+    return 0 ;
   }
   return 0 ;
 }
@@ -539,8 +547,8 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)co
     char path[255] ;
     sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d",mod,strip) ;
     if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort() ;
+      AliWarning(Form("Geo manager can not find path %s \n",path));
+      return 0 ;
     }
     return gGeoManager->GetCurrentMatrix();
   } 
@@ -548,11 +556,11 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)co
     return fStripMatrix[mod-1][strip-1] ;
   }
   else{
-    printf("Can not find PHOS misalignment matrixes\n") ;
-    printf("Either import TGeoManager from geometry.root or \n");
-    printf("read stored matrixes from AliESD Header: \n") ; 
-    printf("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ;
-    abort() ;
+    AliWarning("Can not find PHOS misalignment matrixes\n") ;
+    AliWarning("Either import TGeoManager from geometry.root or \n");
+    AliWarning("read stored matrixes from AliESD Header: \n") ; 
+    AliWarning("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ;
+    return 0 ;
   } 
   return 0 ;
 }
@@ -566,8 +574,8 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
     //now apply possible shifts and rotations
     sprintf(path,"/ALIC_1/PHOS_%d/PCPV_1",mod) ;
     if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort() ;
+      AliWarning(Form("Geo manager can not find path %s \n",path));
+      return 0 ;
     }
     return gGeoManager->GetCurrentMatrix();
   }
@@ -575,11 +583,11 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
     return fCPVMatrix[mod-1] ;
   }
   else{
-    printf("Can not find PHOS misalignment matrixes\n") ;
-    printf("Either import TGeoManager from geometry.root or \n");
-    printf("read stored matrixes from AliESD Header: \n") ;  
-    printf("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ;
-    abort() ;
+    AliWarning("Can not find PHOS misalignment matrixes\n") ;
+    AliWarning("Either import TGeoManager from geometry.root or \n");
+    AliWarning("read stored matrixes from AliESD Header: \n") ;  
+    AliWarning("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ;
+    return 0 ;
   }
   return 0 ;
 } 
@@ -592,8 +600,8 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
     char path[255] ;
     sprintf(path,"/ALIC_1/PHOS_%d",mod) ;
     if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort() ;
+      AliWarning(Form("Geo manager can not find path %s \n",path));
+      return 0 ;
     }
     return gGeoManager->GetCurrentMatrix();
   }
@@ -601,11 +609,11 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
     return fPHOSMatrix[mod-1] ;
   }
   else{
-    printf("Can not find PHOS misalignment matrixes\n") ;
-    printf("Either import TGeoManager from geometry.root or \n");
-    printf("read stored matrixes from AliESD Header:  \n") ;   
-    printf("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ;
-    abort() ;
+    AliWarning("Can not find PHOS misalignment matrixes\n") ;
+    AliWarning("Either import TGeoManager from geometry.root or \n");
+    AliWarning("read stored matrixes from AliESD Header:  \n") ;   
+    AliWarning("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ;
+    return 0 ;
   }
   return 0 ;
 }
