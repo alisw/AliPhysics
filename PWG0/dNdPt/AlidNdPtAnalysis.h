@@ -111,6 +111,7 @@ public :
   THnSparseF *GetRecTrackNSDEventMatrix() {return fRecTrackNSDEventMatrix;}
 
   //
+  THnSparseF *GetGenTrackMatrix() {return fGenTrackMatrix;}
   THnSparseF *GetGenPrimTrackMatrix() {return fGenPrimTrackMatrix;}
   THnSparseF *GetRecPrimTrackMatrix() {return fRecPrimTrackMatrix;}
 
@@ -137,6 +138,8 @@ public :
 
   THnSparseF *GetRecMCTrackHist1() {return fRecMCTrackHist1;}
   THnSparseF *GetMCMultRecTrackHist1() {return fMCMultRecTrackHist1;}
+
+  THnSparseF *GetRecTrackHist2() {return fRecTrackHist2;}
 
 private:
 
@@ -210,6 +213,7 @@ private:
   //
 
   // track rec. efficiency correction (fRecPrimTrackMatrix / fGenPrimTrackMatrix)
+  THnSparseF *fGenTrackMatrix; //-> mcZv:mcPt:mcEta
   THnSparseF *fGenPrimTrackMatrix; //-> mcZv:mcPt:mcEta
   THnSparseF *fRecPrimTrackMatrix; //-> mcZv:mcPt:mcEta
 
@@ -246,6 +250,9 @@ private:
 
   //multple reconstructed tracks
   THnSparseF *fMCMultRecTrackHist1; //-> mcPt:mcEta:pid
+
+  // track control histograms
+  THnSparseF *fRecTrackHist2;  //-> nclust:chi2:Pt:Eta:Phi
 
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented

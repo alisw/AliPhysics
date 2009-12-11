@@ -42,6 +42,7 @@ ClassImp(AlidNdPtCutAnalysis)
 //_____________________________________________________________________________
   AlidNdPtCutAnalysis::AlidNdPtCutAnalysis(): AlidNdPt(),
   fAnalysisFolder(0),
+  fEventCount(0),
   fRecEventHist(0),
   fMCEventHist(0),
   fRecMCEventHist(0),
@@ -54,6 +55,7 @@ ClassImp(AlidNdPtCutAnalysis)
 //_____________________________________________________________________________
 AlidNdPtCutAnalysis::AlidNdPtCutAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,title),
   fAnalysisFolder(0),
+  fEventCount(0),
   fRecEventHist(0),
   fMCEventHist(0),
   fRecMCEventHist(0),
@@ -66,6 +68,7 @@ AlidNdPtCutAnalysis::AlidNdPtCutAnalysis(Char_t* name, Char_t* title): AlidNdPt(
 //_____________________________________________________________________________
 AlidNdPtCutAnalysis::~AlidNdPtCutAnalysis() {
   // 
+  if(fEventCount) delete fEventCount; fEventCount=0;
   if(fRecEventHist) delete fRecEventHist; fRecEventHist=0;
   if(fMCEventHist) delete fMCEventHist; fMCEventHist=0;
   if(fRecMCEventHist) delete fRecMCEventHist; fRecMCEventHist=0;
@@ -84,6 +87,15 @@ void AlidNdPtCutAnalysis::Init(){
   const Double_t ptMax = 16.; 
 
   Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0};
+
+  // 
+  Int_t binsEventCount[2]={2,2};
+  Double_t minEventCount[2]={0,0}; 
+  Double_t maxEventCount[2]={2,2}; 
+  fEventCount = new THnSparseF("fEventCount","trig vs trig+vertex",2,binsEventCount,minEventCount,maxEventCount);
+  fEventCount->GetAxis(0)->SetTitle("trig");
+  fEventCount->GetAxis(1)->SetTitle("trig+vert");
+  fEventCount->Sumw2();
 
   //Xv:Yv:Zv:ResZv:Mult
   Int_t binsRecEventHist[5]={100,100,140,100,150};
@@ -171,8 +183,9 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   if(evtCuts->IsTriggerRequired())  {
-    static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-    isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+    //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+    //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+    isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
   }
 
   // use MC information
@@ -233,6 +246,15 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
 
   TObjArray *allChargedTracks=0;
   Int_t multAll=0;
+  
+  //
+  // event counter
+  // 
+  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK,isEventTriggered);
+
+  Bool_t isTrigAndVertex = isEventTriggered && isEventOK;
+  Double_t vEventCount[2] = { isEventTriggered, isTrigAndVertex};
+  fEventCount->Fill(vEventCount);
 
   // check event cuts
   if(isEventOK && isEventTriggered)
@@ -332,6 +354,7 @@ Long64_t AlidNdPtCutAnalysis::Merge(TCollection* list)
     if (entry == 0) continue; 
   
     // event histo
+    fEventCount->Add(entry->fEventCount);
     fRecEventHist->Add(entry->fRecEventHist);
     fRecMCEventHist->Add(entry->fRecMCEventHist);
     fMCEventHist->Add(entry->fMCEventHist);
@@ -380,8 +403,37 @@ void AlidNdPtCutAnalysis::Analyse()
   Double_t maxDCAr = accCuts->GetMaxDCAr();
 
   //
+  // Event counters
+  //
+  h2D = (TH2D*)fEventCount->Projection(0,1);
+  h2D->SetName("trig_vs_trigANDvertex");
+  aFolderObj->Add(h2D);
+
+  fEventCount->GetAxis(0)->SetRange(1,1); // triggered
+  h1D = (TH2D*)fEventCount->Projection(1);
+  h1D->SetTitle("rec. vertex for triggered events");
+  h1D->SetName("trigANDvertex");
+  aFolderObj->Add(h1D);
+
+  //
   // Create rec. event histograms
   //
+  h1D = (TH1D *)fRecEventHist->Projection(0);
+  h1D->SetName("rec_xv");
+  aFolderObj->Add(h1D);
+
+  h1D = (TH1D *)fRecEventHist->Projection(1);
+  h1D->SetName("rec_yv");
+  aFolderObj->Add(h1D);
+
+  h1D = (TH1D *)fRecEventHist->Projection(2);
+  h1D->SetName("rec_zv");
+  aFolderObj->Add(h1D);
+
+  h2D = (TH2D *)fRecEventHist->Projection(3,4);
+  h2D->SetName("rec_resZv_vs_Mult");
+  aFolderObj->Add(h2D);
+
   h2D = (TH2D *)fRecEventHist->Projection(0,1);
   h2D->SetName("rec_xv_vs_yv");
   aFolderObj->Add(h2D);
@@ -393,7 +445,6 @@ void AlidNdPtCutAnalysis::Analyse()
   h2D = (TH2D *)fRecEventHist->Projection(3,4);
   h2D->SetName("rec_resZv_vs_Mult");
   aFolderObj->Add(h2D);
-
 
   //
   // MC available
@@ -456,8 +507,12 @@ void AlidNdPtCutAnalysis::Analyse()
   h2D->SetName("ratio_nClust_nFindableClust_vs_eta");
   aFolderObj->Add(h2D);
 
+  h2D = (TH2D *)fRecMCTrackHist->Projection(5,6);
+  h2D->SetName("eta_vs_phi");
+  aFolderObj->Add(h2D);
+
   //
-  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minEta,maxEta);  
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minEta,maxEta);  
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(0,6);
   h2D->SetName("nClust_vs_phi");
@@ -469,10 +524,6 @@ void AlidNdPtCutAnalysis::Analyse()
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(2,6);
   h2D->SetName("ratio_nClust_nFindableClust_vs_phi");
-  aFolderObj->Add(h2D);
-
-  h2D = (TH2D *)fRecMCTrackHist->Projection(5,6);
-  h2D->SetName("eta_vs_phi");
   aFolderObj->Add(h2D);
 
   //
@@ -511,9 +562,14 @@ void AlidNdPtCutAnalysis::Analyse()
   h2D->SetName("nClust_vs_ratio_nClust_nFindableClust");
   aFolderObj->Add(h2D);
 
+  //
   // DCAy cuts
+  //
+  fRecMCTrackHist->GetAxis(0)->SetRange(50,160); // nClust/track > 50
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,3.9999); // chi2/cluster < 4.0
   fRecMCTrackHist->GetAxis(3)->SetRange(1,fRecMCTrackHist->GetAxis(3)->GetNbins());
-  fRecMCTrackHist->GetAxis(4)->SetRangeUser(-1.0,1.0);
+  //fRecMCTrackHist->GetAxis(4)->SetRangeUser(-1.0,1.0);
+  fRecMCTrackHist->GetAxis(4)->SetRange(1,fRecMCTrackHist->GetAxis(4)->GetNbins());
 
   // sec
   fRecMCTrackHist->GetAxis(9)->SetRange(1,1);
@@ -528,7 +584,7 @@ void AlidNdPtCutAnalysis::Analyse()
   aFolderObj->Add(h1D);
 
   // DCAz cuts
-  fRecMCTrackHist->GetAxis(3)->SetRangeUser(-1.0,1.0);
+  //fRecMCTrackHist->GetAxis(3)->SetRangeUser(-1.0,1.0);
   fRecMCTrackHist->GetAxis(4)->SetRange(1,fRecMCTrackHist->GetAxis(4)->GetNbins());
 
   // sec
