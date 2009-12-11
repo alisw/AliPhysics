@@ -748,13 +748,33 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
   if(!dcsArr){
     return -1;
   }
-  const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1)); // Take EOR
-  
-  if(!calDCS){
-    return -1;
-  }
-  return calDCS->GetGlobalNumberOfTimeBins();
+  const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0)); // Take SOR
+  const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0));
 
+  // prefer SOR
+  if(!calDCSsor){
+    if(!calDCSeor)
+      return -1;
+    return calDCSeor->GetGlobalNumberOfTimeBins();
+  }
+  // if SOR is available and the number of timebins is > -1, take this, otherwise check EOR
+  Int_t nTimeSOR = calDCSsor->GetGlobalNumberOfTimeBins();
+  if(nTimeSOR > -1){
+    // Make a consistency check
+    if(calDCSeor){
+      Int_t nTimeEOR = calDCSeor->GetGlobalNumberOfTimeBins();
+      if((nTimeEOR > -1) && (nTimeSOR != nTimeEOR)){
+        // Parameter inconsistency found, return -2 to be able to catch the error
+        return -2;
+      }
+    }
+    // Consisency check passed or not done
+    return nTimeSOR;
+  } else {
+    // SOR has unphysical time parameter, take EOR
+    if(calDCSeor) return calDCSeor->GetGlobalNumberOfTimeBins(); 
+    return -1;  // Both SOR and EOR not available
+  }
 }
 
 //_____________________________________________________________________________
@@ -1189,4 +1209,3 @@ Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
   }
 
 }
-
