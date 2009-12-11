@@ -1,7 +1,12 @@
-#ifndef AliTRDCalibTask_cxx
-#define AliTRDCalibTask_cxx
+#ifndef ALITRDCALIBTASK_H
+#define ALITRDCALIBTASK_H
 
-// macro for extremely simple analysis
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD calibration task for offline calibration                             //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 
 class TList;
 class TObject;
@@ -48,7 +53,7 @@ class AliTRDCalibTask : public AliAnalysisTask {
   void AddSelectedTriggerClass(const char*name)                        {fSelectedTrigger->Add(new TObjString(name));};
   void SetReject(Bool_t rejected)                                      {fRejected = rejected;};
   
-  void SetESDtrackCuts(AliESDtrackCuts *esdtrackCuts)                  {fEsdTrackCuts = esdtrackCuts;};
+  void SetESDtrackCuts(AliESDtrackCuts * const esdtrackCuts)                  {fEsdTrackCuts = esdtrackCuts;};
   void SetRequirePrimaryVertex(Bool_t requirePrimaryVertex)            {fRequirePrimaryVertex = requirePrimaryVertex;};
   void SetMinNbOfContributors(Int_t minNbOfContributors)               {fMinNbContributors = minNbOfContributors;};  
   
@@ -61,7 +66,7 @@ class AliTRDCalibTask : public AliAnalysisTask {
   void SetOfflineTracks()                                              {fOfflineTracks=kTRUE; fStandaloneTracks=kFALSE; };
   void SetStandaloneTracks()                                           {fStandaloneTracks=kTRUE; fOfflineTracks=kFALSE; };
 
-  void SetCalDetGain(AliTRDCalDet *calDetGain)                         {fCalDetGain = calDetGain;};  
+  void SetCalDetGain(AliTRDCalDet * const calDetGain)                         {fCalDetGain = calDetGain;};  
 
   void SetMaxEvent(Int_t nbevents)                                     { fMaxEvent = nbevents; };
   void SetDebug(Int_t debug)                                           { fDebug = debug; };
@@ -69,7 +74,7 @@ class AliTRDCalibTask : public AliAnalysisTask {
  private:
   AliESDEvent  *fESD;                            //! ESD object
   AliESDfriend *fESDfriend;                      //! ESD friend
-  const AliESDtrack *fEsdTrack;                  //! ESD track
+  const AliESDtrack *fkEsdTrack;                  //! ESD track
   AliESDfriendTrack *fFriendTrack;               //! ESD friend track
   TObject *fCalibObject;                         //! calibration objects attached to the ESD friend
   AliTRDtrackV1 *fTrdTrack;                      //! trdtrack

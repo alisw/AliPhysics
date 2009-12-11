@@ -14,7 +14,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// macro for very simple analysis
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             
+// AliTRDCalibTask                                                               
+//                                                                             
+// Offline TRD calibration task                                
+//                        
+// Author:
+//   R. Bailhache (R.Bailhache@gsi.de)
+//                            
+//////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -56,7 +65,6 @@
 #include "AliTRDCalibraFillHisto.h"
 #include "AliTRDCalibraVdriftLinearFit.h" 
 
-#include "AliCDBManager.h"
 #include "AliTRDcalibDB.h"
 
 
@@ -68,7 +76,7 @@ ClassImp(AliTRDCalibTask)
 //________________________________________________________________________
   AliTRDCalibTask::AliTRDCalibTask(const char *name) 
     : AliAnalysisTask(name, ""), fESD(0), fESDfriend(0),
-      fEsdTrack(0),
+      fkEsdTrack(0),
       fFriendTrack(0),
       fCalibObject(0),
       fTrdTrack(0),
@@ -200,7 +208,9 @@ void AliTRDCalibTask::ConnectInputData(Option_t *)
 //________________________________________________________________________
 void AliTRDCalibTask::CreateOutputObjects() 
 {
-  
+  //
+  // Create the histos
+  //
 
   // Number of time bins
   if(fNbTimeBins==0) {
@@ -362,6 +372,10 @@ void AliTRDCalibTask::CreateOutputObjects()
  //________________________________________________________________________
  void AliTRDCalibTask::Exec(Option_t *) 
  {
+   //
+   // Filling of the histos
+   //
+
    AliLog::SetGlobalLogLevel(AliLog::kError);
 
    if (!fESD) {
@@ -457,8 +471,8 @@ void AliTRDCalibTask::CreateOutputObjects()
    ///////////////////////////////////
    for(Int_t itrk = 0; itrk < nbTracks; itrk++){
      // Get ESD track
-     fEsdTrack = fESD->GetTrack(itrk);
-     ULong_t status = fEsdTrack->GetStatus(); 
+     fkEsdTrack = fESD->GetTrack(itrk);
+     ULong_t status = fkEsdTrack->GetStatus(); 
      if(status&(AliESDtrack::kTPCout)) nbtrackTPC++;
      // Check that the calibration object is here
      if(fESDfriend && (fESDfriend->GetTrack(itrk))) {
@@ -505,11 +519,11 @@ void AliTRDCalibTask::CreateOutputObjects()
    for(int itrk=0; itrk < nbTracks; itrk++){
 
      // Get ESD track
-     fEsdTrack = fESD->GetTrack(itrk);
-     if(!fEsdTrack) continue;
+     fkEsdTrack = fESD->GetTrack(itrk);
+     if(!fkEsdTrack) continue;
 
      // Quality cuts on the AliESDtrack
-     if((fEsdTrackCuts) && (!fEsdTrackCuts->IsSelected((AliVParticle *)fEsdTrack))) {
+     if((fEsdTrackCuts) && (!fEsdTrackCuts->IsSelected((AliVParticle *)fkEsdTrack))) {
        //printf("Not a good track\n");
        continue;
      }
@@ -518,7 +532,7 @@ void AliTRDCalibTask::CreateOutputObjects()
      Bool_t good = kTRUE;
      Bool_t standalonetrack = kFALSE;
      Bool_t offlinetrack = kFALSE;
-     ULong_t status = fEsdTrack->GetStatus();
+     ULong_t status = fkEsdTrack->GetStatus();
      
      if(!(fESDfriend->GetTrack(itrk)))  continue;   
      
@@ -665,6 +679,9 @@ void AliTRDCalibTask::CreateOutputObjects()
 //________________________________________________________________________
 void AliTRDCalibTask::Terminate(Option_t *) 
 {
+  //
+  // Terminate
+  //
   
   if(fTRDCalibraFillHisto) fTRDCalibraFillHisto->DestroyDebugStreamer();
 
