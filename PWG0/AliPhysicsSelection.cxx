@@ -17,8 +17,25 @@
 
 //-------------------------------------------------------------------------
 //                      Implementation of   Class AliPhysicsSelection
-//   This class provides function to check if events have been triggered based on the data in the ESD
-//   The trigger bits, trigger class inputs and only the data (offline trigger) can be used
+// This class selects collision candidates from data runs, applying selection cuts on triggers 
+// and background rejection based on the content of the ESD
+//
+// Usage:
+//
+// Create the object and initialize it with the correct run number:
+//   fPhysicsSelection = new AliPhysicsSelection;
+//   fPhysicsSelection->Initialize(104160);
+//
+// To check if an event is a collision candidate, use:
+//   fPhysicsSelection->IsCollisionCandidate(fESD)
+//
+// After processing save the resulting histograms to a file with (a folder physics_selection 
+//   will be created that contains the histograms):
+//   fPhysicsSelection->SaveHistograms("physics_selection")
+//
+// To print statistics after processing use:
+//   fPhysicsSelection->Print();
+//
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN
 //-------------------------------------------------------------------------
 
@@ -214,7 +231,7 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
 {
   // print the configuration
   
-  AliInfo("Initialized with:");
+  AliInfo("Configuration:");
   
   TString str("Required trigger classes: ");
   for (Int_t i=0; i < fRequTrigClasses.GetEntries(); i++)
@@ -231,7 +248,16 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
   if (fTriggerAnalysis->GetV0TimeOffset() > 0)
     AliInfo(Form("V0 time offset active: %.2f ns", fTriggerAnalysis->GetV0TimeOffset()));
     
+  AliInfo("");
+  
+  AliInfo("Selection statistics:");
+    
+  AliInfo("Total available events:");
   fTriggerAnalysis->PrintTriggerClasses();
+  
+  AliInfo(Form("Total events: %d", (Int_t) fHistStatistics->GetBinContent(1)));
+  AliInfo(Form("Correct trigger class: %d", (Int_t) fHistStatistics->GetBinContent(2)));
+  AliInfo(Form("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(9)));
 }
 
 Long64_t AliPhysicsSelection::Merge(TCollection* list)
