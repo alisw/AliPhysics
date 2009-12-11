@@ -145,6 +145,7 @@ void AddCalibTimeGain(TObject* task){
   AliTPCcalibTimeGain *calibTimeGain = new AliTPCcalibTimeGain("calibTimeGain","calibTimeGain", startTime.GetSec(), stopTime.GetSec(), 30*60);
   //calibTimeGain->SetLowMemoryConsumption(kTRUE);
   //calibTimeGain->SetMIP(25.);
+  calibTimeGain->IsCosmic(kFALSE);
   calibTimeGain->SetUseCookAnalytical(kTRUE);
   calibTimeGain->SetUseMax(kFALSE);
   calibTimeGain->SetDebugLevel(debugLevel);
