@@ -23,6 +23,9 @@
 #define ALIRSNFUNCTION_H
 
 #include <TClonesArray.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
 #include <THnSparse.h>
 #include <TNamed.h>
 
@@ -37,9 +40,9 @@ class AliRsnFunction : public TNamed
 
   public:
 
-    AliRsnFunction();
+    AliRsnFunction(Bool_t useTH1 = kTRUE);
     AliRsnFunction(const AliRsnFunction &copy);
-    virtual ~AliRsnFunction() { delete fHistogram; }
+    virtual ~AliRsnFunction() { delete fH1; delete fHSparse; }
     const AliRsnFunction& operator=(const AliRsnFunction &copy);
 
     void                 SetPairDef(AliRsnPairDef * const def) {fPairDef = def;}
@@ -53,9 +56,13 @@ class AliRsnFunction : public TNamed
     AliRsnEvent*         GetEvent() const {return fEvent;}
     virtual const char*  GetName() const;
 
+    Bool_t               IsUsingTH1() {return fUseTH1;}
+    void                 UseTH1() {fUseTH1 = kTRUE;}
+    void                 UseSparse() {fUseTH1 = kFALSE;}
     void                 AddAxis(AliRsnFunctionAxis*const axis);
     Int_t                GetNumberOfAxes() {return fAxisList.GetEntries();}
-    THnSparseD*          CreateHistogram(const char *histoName, const char *histoTitle);
+    TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
+    THnSparseD*          CreateHistogramSparse(const char *histoName, const char *histoTitle);
 
     Bool_t               Fill();
 
@@ -68,7 +75,10 @@ class AliRsnFunction : public TNamed
     AliRsnPairParticle *fPair;        // processed pair
     AliRsnEvent        *fEvent;       // processed event
 
-    THnSparseD         *fHistogram;   // output histogram
+    Bool_t              fUseTH1;      // use TH1 or not?
+    Int_t               fSize;        // number of dim of output histogram
+    TH1                *fH1;          // output histogram (standard type)
+    THnSparseD         *fHSparse;     // output histogram (sparse type)
 
     // ROOT dictionary
     ClassDef(AliRsnFunction, 3)

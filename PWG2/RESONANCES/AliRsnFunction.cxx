@@ -34,14 +34,17 @@
 ClassImp(AliRsnFunction)
 
 //________________________________________________________________________________________
-AliRsnFunction::AliRsnFunction() :
+AliRsnFunction::AliRsnFunction(Bool_t useTH1) :
     TNamed(),
     fPairDef(0x0),
     fAxisList("AliRsnFunctionAxis", 0),
     fTrack(0x0),
     fPair(0x0),
     fEvent(0x0),
-    fHistogram(0x0)
+    fUseTH1(useTH1),
+    fSize(0),
+    fH1(0x0),
+    fHSparse(0x0)
 {
 //
 // Constructor.
@@ -56,7 +59,10 @@ AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
     fTrack(copy.fTrack),
     fPair(copy.fPair),
     fEvent(copy.fEvent),
-    fHistogram(0x0)
+    fUseTH1(copy.fUseTH1),
+    fSize(copy.fSize),
+    fH1(0x0),
+    fHSparse(0x0)
 {
 //
 // Copy constructor.
@@ -77,9 +83,14 @@ const AliRsnFunction& AliRsnFunction::operator=(const AliRsnFunction& copy)
   fTrack = copy.fTrack;
   fPair = copy.fPair;
   fEvent = copy.fEvent;
+  fUseTH1 = copy.fUseTH1;
+  fSize = copy.fSize;
 
-  if (fHistogram) delete fHistogram;
-  fHistogram = 0x0;
+  if (fH1) delete fH1;
+  fH1 = 0x0;
+  
+  if (fHSparse) delete fHSparse;
+  fHSparse = 0x0;
 
   return (*this);
 }
@@ -109,11 +120,16 @@ const char* AliRsnFunction::GetName() const
 void AliRsnFunction::AddAxis(AliRsnFunctionAxis *const axis)
 {
   Int_t size = fAxisList.GetEntries();
+  if (size >= 3 && fUseTH1)
+  {
+    AliWarning("A TH1-type output cannot add more than 3 axes: switching to THnSparse -- THIS COULD CAUSE VERY LARGE FILES!!!");
+    fUseTH1 = kFALSE;
+  }
   new(fAxisList[size]) AliRsnFunctionAxis(*axis);
 }
 
 //________________________________________________________________________________________
-THnSparseD* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTitle)
+TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTitle)
 {
 //
 // Creates and returns the histogram defined using
@@ -122,6 +138,96 @@ THnSparseD* AliRsnFunction::CreateHistogram(const char *histoName, const char *h
 // even if the bins are equal, since they are defined in this class.
 // Eventually present histoDef's in other slots of array (1, 2) are ignored.
 //
+// This version produces a THnSparseD.
+//
+
+  fSize = fAxisList.GetEntries();
+  if (!fSize) {
+    AliError("No axes defined");
+    return 0x0;
+  }
+  else if (fSize < 1 || fSize > 3)
+  {
+    AliError("Too few or too many axes defined");
+    return 0x0;
+  }
+
+  Int_t    *nbins = new Int_t   [fSize];
+  Double_t *min   = new Double_t[fSize];
+  Double_t *max   = new Double_t[fSize];
+
+  // retrieve binnings for main and secondary axes
+  AliRsnFunctionAxis *fcnAxis = 0;
+  for (Int_t i = 0; i < fSize; i++) {
+    fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
+    if (!fcnAxis) {
+      nbins[i] = 0;
+      min[i]   = 0.0;
+      max[i]   = 0.0;
+      AliError("Empty axis");
+      continue;
+    }
+    nbins[i] = fcnAxis->GetNBins();
+    min[i]   = fcnAxis->GetMin();
+    max[i]   = fcnAxis->GetMax();
+  }
+
+  // create histogram depending on the number of axes
+  switch (fSize)
+  {
+    case 1:
+      fH1 = new TH1D(histoName, histoTitle, nbins[0], min[0], max[0]);
+      break;
+    case 2:
+      fH1 = new TH2D(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1]);
+      break;
+    case 3:
+      fH1 = new TH3D(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1], nbins[2], min[2], max[2]);
+      break;
+  }
+  fH1->Sumw2();
+
+  return fH1;
+}
+
+//________________________________________________________________________________________
+THnSparseD* AliRsnFunction::CreateHistogramSparse(const char *histoName, const char *histoTitle)
+{
+//
+// Creates and returns the histogram defined using
+// arguments fo name and title, and the first histoDef for binning.
+// Variable-sized histogram binning is always called, due to use of histoDef,
+// even if the bins are equal, since they are defined in this class.
+// Eventually present histoDef's in other slots of array (1, 2) are ignored.
+//
+// This version produces a THnSparseD.
+//
+
+  fSize = fAxisList.GetEntries();
+  if (!fSize) {
+    AliError("No axes defined");
+    return 0x0;
+  }
+
+  Int_t    *nbins = new Int_t   [fSize];
+  Double_t *min   = new Double_t[fSize];
+  Double_t *max   = new Double_t[fSize];
+
+  // retrieve binnings for main and secondary axes
+  AliRsnFunctionAxis *fcnAxis = 0;
+  for (Int_t i = 0; i < fSize; i++) {
+    fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
+    if (!fcnAxis) {
+      nbins[i] = 0;
+      min[i]   = 0.0;
+      max[i]   = 0.0;
+      AliError("Empty axis");
+      continue;
+    }
+    nbins[i] = fcnAxis->GetNBins();
+    min[i]   = fcnAxis->GetMin();
+    max[i]   = fcnAxis->GetMax();
+  }
 
   Int_t size = fAxisList.GetEntries();
   if (!size) {
@@ -129,32 +235,18 @@ THnSparseD* AliRsnFunction::CreateHistogram(const char *histoName, const char *h
     return 0x0;
   }
 
-  Int_t    *nbins = new Int_t[size];
-  Double_t *min   = new Double_t[size];
-  Double_t *max   = new Double_t[size];
-
-  // retrieve binnings for main and secondary axes
-  AliRsnFunctionAxis *fcnAxis = 0;
-  for (Int_t i = 0; i < size; i++) {
-    fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
-    if (!fcnAxis) {
-      nbins[i] = 0;
-      min[i] = 0.0;
-      max[i] = 0.0;
-      AliError("Empty axis");
-      continue;
-    }
-    nbins[i] = fcnAxis->GetNBins();
-    min[i] = fcnAxis->GetMin();
-    max[i] = fcnAxis->GetMax();
-  }
-
   // create histogram
-  fHistogram = new THnSparseD(histoName, histoTitle, size, nbins, min, max);
-  fHistogram->Sumw2();
+  fHSparse = new THnSparseD(histoName, histoTitle, size, nbins, min, max);
+  fHSparse->Sumw2();
+  
+  // clean heap
+  delete [] nbins;
+  delete [] min;
+  delete [] max;
 
-  return fHistogram;
+  return fHSparse;
 }
+
 
 //________________________________________________________________________________________
 Bool_t AliRsnFunction::Fill()
@@ -165,11 +257,11 @@ Bool_t AliRsnFunction::Fill()
 
   AliDebug(AliLog::kDebug +2,"->");
 
-  Int_t  i, nAxes = fAxisList.GetEntries();
-  Double_t *values = new Double_t[nAxes];
+  Int_t  i;
+  Double_t *values = new Double_t[fSize];
 
   AliRsnFunctionAxis *fcnAxis = 0;
-  for (i = 0; i < nAxes; i++) {
+  for (i = 0; i < fSize; i++) {
     fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
     if (!fcnAxis) {
       values[i] = 0.0;
@@ -189,14 +281,54 @@ Bool_t AliRsnFunction::Fill()
       values[i] = 0.0;
     }
   }
-
-  // check presence of output histogram
-  if (!fHistogram) {
-    AliError("Histogram is not yet initialized");
-    return kFALSE;
+  
+  // fill histogram
+  if (fUseTH1)
+  {
+    // check presence of output histogram
+    if (!fH1) {
+      AliError("Required a TH1 whish is not initialized");
+      return kFALSE;
+    }
+    
+    // fill according to dimensions
+    switch (fSize)
+    {
+      case 1:
+        {
+          TH1D *h1 = (TH1D*)fH1;
+          h1->Fill(values[0]);
+        }
+        break;
+      case 2:
+        {
+          TH2D *h2 = (TH2D*)fH1;
+          h2->Fill(values[0], values[1]);
+        }
+        break;
+      case 3:
+        {
+          TH3D *h3 = (TH3D*)fH1;
+          h3->Fill(values[0], values[1], values[2]);
+        }
+        break;
+      default:
+        AliError(Form("Wrong size : %d", fSize));
+        return kFALSE;
+    }
   }
-  //TArrayD val(values); val->Print();
-  fHistogram->Fill(values);
+  else
+  {
+    // check presence of output histogram
+    if (!fHSparse) {
+      AliError("Required a THnSparseD whish is not initialized");
+      return kFALSE;
+    }
+    
+    fHSparse->Fill(values);
+  }
+  
+  delete [] values;
 
   AliDebug(AliLog::kDebug +2,"->");
   return kTRUE;

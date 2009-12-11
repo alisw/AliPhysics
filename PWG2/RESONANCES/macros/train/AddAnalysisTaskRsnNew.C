@@ -1,7 +1,10 @@
 //
 // Macro to create the full analysis manager for Resonances
 //
-Bool_t AddAnalysisTaskRsnNew(const char *configMacro = "ConfigTaskRsn.C")
+Bool_t AddAnalysisTaskRsnNew
+(
+  const char *configMacro = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/ConfigTaskRsn.C"
+)
 {
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

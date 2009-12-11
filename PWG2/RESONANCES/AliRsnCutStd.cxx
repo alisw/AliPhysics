@@ -31,7 +31,8 @@ ClassImp(AliRsnCutStd)
 AliRsnCutStd::AliRsnCutStd() :
     AliRsnCut(),
     fType(kLastType),
-    fUseMC(kFALSE)
+    fUseMC(kFALSE),
+    fMass(0.0)
 {
 //
 // Default constructor.
@@ -43,7 +44,8 @@ AliRsnCutStd::AliRsnCutStd
 (const char *name, EType type, Int_t val1, Int_t val2, Bool_t useMC) :
     AliRsnCut(name, val1, val2),
     fType(type),
-    fUseMC(useMC)
+    fUseMC(useMC),
+    fMass(0.0)
 {
 //
 // Main constructor.
@@ -75,6 +77,7 @@ AliRsnCutStd::AliRsnCutStd
   case kP:
   case kPt:
   case kEta:
+  case kY:
   case kThetaDeg:
   case kDr:
   case kDz:
@@ -98,7 +101,8 @@ AliRsnCutStd::AliRsnCutStd
 (const char *name, EType type, ULong_t val1, ULong_t val2, Bool_t useMC) :
     AliRsnCut(name, val1, val2),
     fType(type),
-    fUseMC(useMC)
+    fUseMC(useMC),
+    fMass(0.0)
 {
 //
 // Main constructor.
@@ -130,6 +134,7 @@ AliRsnCutStd::AliRsnCutStd
   case kP:
   case kPt:
   case kEta:
+  case kY:
   case kThetaDeg:
   case kDr:
   case kDz:
@@ -153,7 +158,8 @@ AliRsnCutStd::AliRsnCutStd
 (const char *name, EType type, Double_t val1, Double_t val2, Bool_t useMC) :
     AliRsnCut(name, val1, val2),
     fType(type),
-    fUseMC(useMC)
+    fUseMC(useMC),
+    fMass(0.0)
 {
 //
 // Main constructor.
@@ -190,6 +196,7 @@ AliRsnCutStd::AliRsnCutStd
   case kP:
   case kPt:
   case kEta:
+  case kY:
   case kThetaDeg:
   case kDr:
   case kDz:
@@ -305,6 +312,9 @@ Bool_t AliRsnCutStd::IsSelected(ETarget tgt, AliRsnPairParticle * const pair)
     return OkRange();
   case kEta:
     fCutValueD = (fUseMC ? pair->GetEtaMC() : pair->GetEta());
+    return OkRange();
+  case kY:
+    fCutValueD = (fUseMC ? pair->GetYMC(fMass) : pair->GetY(fMass));
     return OkRange();
   case kSameLabel:
     return pair->IsLabelEqual();
