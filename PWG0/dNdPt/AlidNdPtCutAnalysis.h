@@ -60,6 +60,7 @@ public :
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack);
 
   // Getters
+  THnSparseF *GetEventCount()   {return fEventCount;}
   THnSparseF *GetRecEventHist()   {return fRecEventHist;}
   THnSparseF *GetMCEventHist()    {return fMCEventHist;}
   THnSparseF *GetRecMCEventHist() {return fRecMCEventHist;}
@@ -75,6 +76,8 @@ private:
   //
   // THnSparse event histograms
   //
+  THnSparseF *fEventCount; //-> trig, trig + vertex
+
   THnSparseF *fRecEventHist;   //-> Xv:Yv:Zv:ResZv:Mult
   THnSparseF *fMCEventHist;    //-> mcXv:mcYv:mcZv
   THnSparseF *fRecMCEventHist; //-> Xv-mcXv:Yv-mcYv:Zv-mcZv:Mult

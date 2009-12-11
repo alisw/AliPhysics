@@ -92,6 +92,7 @@ ClassImp(AlidNdPtAnalysis)
   fRecTrackNSDEventMatrix(0),
 
   // track rec. efficiency correction (fRecPrimTrackMatrix / fGenPrimTrackMatrix)
+  fGenTrackMatrix(0),
   fGenPrimTrackMatrix(0),
   fRecPrimTrackMatrix(0),
 
@@ -114,7 +115,10 @@ ClassImp(AlidNdPtAnalysis)
   fRecMCTrackHist1(0),
 
   //multple reconstructed tracks
-  fMCMultRecTrackHist1(0) 
+  fMCMultRecTrackHist1(0), 
+
+  // rec. track control histograms
+  fRecTrackHist2(0)
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -179,6 +183,7 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fRecTrackNSDEventMatrix(0),
 
   // track rec. efficiency correction (fRecPrimTrackMatrix / fGenPrimTrackMatrix)
+  fGenTrackMatrix(0),
   fGenPrimTrackMatrix(0),
   fRecPrimTrackMatrix(0),
 
@@ -201,7 +206,10 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fRecMCTrackHist1(0),
 
   //multple reconstructed tracks
-  fMCMultRecTrackHist1(0) 
+  fMCMultRecTrackHist1(0), 
+
+  // rec. track control histograms
+  fRecTrackHist2(0)
 {
   // constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -260,6 +268,7 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   if(fRecTrackNSDEventMatrix) delete fRecTrackNSDEventMatrix; fRecTrackNSDEventMatrix=0;
 
   //
+  if(fGenTrackMatrix) delete fGenTrackMatrix; fGenTrackMatrix=0;
   if(fGenPrimTrackMatrix) delete fGenPrimTrackMatrix; fGenPrimTrackMatrix=0;
   if(fRecPrimTrackMatrix) delete fRecPrimTrackMatrix; fRecPrimTrackMatrix=0;
   //
@@ -286,6 +295,7 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   }
   if(fRecMCTrackHist1) delete fRecMCTrackHist1; fRecMCTrackHist1=0;
   if(fMCMultRecTrackHist1) delete fMCMultRecTrackHist1; fMCMultRecTrackHist1=0; 
+  if(fRecTrackHist2) delete fRecTrackHist2; fRecTrackHist2=0; 
   //
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
@@ -575,6 +585,15 @@ void AlidNdPtAnalysis::Init(){
   //
   // tracks correction matrices
   //
+  fGenTrackMatrix = new THnSparseF("fGenTrackMatrix","mcZv:mcPt:mcEta",3,binsTrackMatrix);
+  fGenTrackMatrix->SetBinEdges(0,binsZv);
+  fGenTrackMatrix->SetBinEdges(1,binsPt);
+  fGenTrackMatrix->SetBinEdges(2,binsEta);
+  fGenTrackMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
+  fGenTrackMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
+  fGenTrackMatrix->GetAxis(2)->SetTitle("mcEta");
+  fGenTrackMatrix->Sumw2();
+
   fGenPrimTrackMatrix = new THnSparseF("fGenPrimTrackMatrix","mcZv:mcPt:mcEta",3,binsTrackMatrix);
   fGenPrimTrackMatrix->SetBinEdges(0,binsZv);
   fGenPrimTrackMatrix->SetBinEdges(1,binsPt);
@@ -756,9 +775,9 @@ void AlidNdPtAnalysis::Init(){
   fRecTrackHist1[i] = new THnSparseF(name,title,3,binsRecTrackHist1,minRecTrackHist1,maxRecTrackHist1);
   fRecTrackHist1[i]->SetBinEdges(0,binsPt);
   fRecTrackHist1[i]->SetBinEdges(1,binsEta);
-  fRecTrackHist1[i]->GetAxis(0)->SetTitle("Pt (GeV/c)");
-  fRecTrackHist1[i]->GetAxis(1)->SetTitle("Eta");
-  fRecTrackHist1[i]->GetAxis(2)->SetTitle("Phi (rad)");
+  fRecTrackHist1[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+  fRecTrackHist1[i]->GetAxis(1)->SetTitle("#eta");
+  fRecTrackHist1[i]->GetAxis(2)->SetTitle("#phi (rad)");
   fRecTrackHist1[i]->Sumw2();
 
   // 
@@ -799,6 +818,21 @@ void AlidNdPtAnalysis::Init(){
   fMCMultRecTrackHist1->GetAxis(1)->SetTitle("mcEta");
   fMCMultRecTrackHist1->GetAxis(2)->SetTitle("pid");
 
+  //nClust:chi2PerClust:pt:eta:phi
+  Int_t binsRecTrackHist2[5]={160,100,ptNbins,etaNbins,90};
+  Double_t minRecTrackHist2[5]={0., 0., 0, -1.5, 0.};
+  Double_t maxRecRecTrackHist2[5]={160.,10., 16, 1.5, 2.*TMath::Pi()};
+
+  fRecTrackHist2 = new THnSparseF("fRecTrackHist2","nClust:chi2PerClust:pt:eta:phi",5,binsRecTrackHist2,minRecTrackHist2,maxRecRecTrackHist2);
+  fRecTrackHist2->SetBinEdges(2,binsPt);
+  fRecTrackHist2->SetBinEdges(3,binsEta);
+  fRecTrackHist2->GetAxis(0)->SetTitle("nClust");
+  fRecTrackHist2->GetAxis(1)->SetTitle("chi2PerClust");
+  fRecTrackHist2->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  fRecTrackHist2->GetAxis(3)->SetTitle("#eta");
+  fRecTrackHist2->GetAxis(4)->SetTitle("#phi (rad)");
+  fRecTrackHist2->Sumw2();
+
   // init folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
 }
@@ -827,8 +861,9 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   if(evtCuts->IsTriggerRequired())  {
-    static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-    isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+    //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+    //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+    isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
   }
 
   // use MC information
@@ -836,7 +871,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
   TArrayF vtxMC(3);
-  //AlidNdPtHelper::MCProcessType evtType = AlidNdPtHelper::kInvalidProcess;
   AliPWG0Helper::MCProcessType evtType = AliPWG0Helper::kInvalidProcess;
 
   Int_t multMCTrueTracks = 0;
@@ -860,7 +894,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       return;
     }
     // get event type (ND=0x1, DD=0x2, SD=0x4)
-    //evtType = AlidNdPtHelper::GetEventProcessType(header);
     evtType = AliPWG0Helper::GetEventProcessType(header);
     AliDebug(AliLog::kDebug+1, Form("Found process type %d", evtType));
 
@@ -896,7 +929,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     isRecVertex = kTRUE;
   }
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex; 
-  //printf("isEventOK %d \n",isEventOK);
+  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
 
   // MB bias tracks
   Int_t multMBTracks = 0; 
@@ -987,7 +1020,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      if(isEventOK && isEventTriggered) fRecEventMatrix->Fill(vEventMatrix);
 
      // single diffractive
-     //if(evtType == AlidNdPtHelper::kSD) {
      if(evtType == AliPWG0Helper::kSD) {
        fGenSDEventMatrix->Fill(vEventMatrix); 
        if(isEventTriggered) fTriggerSDEventMatrix->Fill(vEventMatrix);
@@ -995,7 +1027,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      }
 
      // double diffractive
-     //if(evtType == AlidNdPtHelper::kDD) {
      if(evtType == AliPWG0Helper::kDD) {
        fGenDDEventMatrix->Fill(vEventMatrix); 
        if(isEventTriggered) fTriggerDDEventMatrix->Fill(vEventMatrix);
@@ -1003,7 +1034,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      }
 
      // non diffractive
-     //if(evtType == AlidNdPtHelper::kND) {
      if(evtType == AliPWG0Helper::kND) {
        fGenNDEventMatrix->Fill(vEventMatrix); 
        if(isEventTriggered) fTriggerNDEventMatrix->Fill(vEventMatrix);
@@ -1011,7 +1041,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      }
 
      // non single diffractive
-     //if(evtType != AlidNdPtHelper::kSD) {
      if(evtType != AliPWG0Helper::kSD) {
        fGenNSDEventMatrix->Fill(vEventMatrix); 
        if(isEventTriggered) fTriggerNSDEventMatrix->Fill(vEventMatrix);
@@ -1126,6 +1155,13 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          if (!particle)
          continue;
 
+         Double_t vTrackMatrix[3] = {vtxMC[2],particle->Pt(),particle->Eta()}; 
+
+	 // all genertated primaries including neutral
+         if( iMc < stack->GetNprimary() ) {
+           fGenTrackMatrix->Fill(vTrackMatrix);
+	 }
+
          // only charged particles
          Double_t charge = particle->GetPDG()->Charge()/3.;
          if (charge == 0.0)
@@ -1145,8 +1181,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          // check accepted
          if(accCuts->AcceptTrack(particle)) 
 	 {
-           Double_t vTrackMatrix[3] = {vtxMC[2],particle->Pt(),particle->Eta()}; 
-           //if(prim) fGenPrimTrackMatrix->Fill(vTrackMatrix);
+
            if( AlidNdPtHelper::IsPrimaryParticle(stack, iMc, GetAnalysisMode()) ) fGenPrimTrackMatrix->Fill(vTrackMatrix);
 
 	   // fill control histograms
@@ -1261,10 +1296,21 @@ void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *con
   Float_t dca[2], bCov[3];
   esdTrack->GetImpactParameters(dca,bCov);
 
+  Int_t nClust = esdTrack->GetTPCclusters(0);
+  Float_t chi2PerCluster = 0.;
+  if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2()/Float_t(nClust);
+
 
   // fill histograms
   Double_t values[3] = {pt,eta,phi};	  
   fRecTrackHist1[trackObj]->Fill(values);
+
+  Double_t values1[5] = {nClust,chi2PerCluster,pt,eta,phi};	  
+  if(trackObj == AlidNdPtHelper::kRecTracks)  
+  {
+    if(fHistogramsOn)
+      fRecTrackHist2->Fill(values1);
+  }
  
   //
   // Fill rec vs MC information
@@ -1308,7 +1354,6 @@ void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *con
 
     Double_t vRecMCTrackHist1[4]={gpt,geta,dpt,deta};
     fRecMCTrackHist1->Fill(vRecMCTrackHist1);
-
   }
 }
 
@@ -1423,6 +1468,7 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* list)
     fRecTrackNSDEventMatrix->Add(entry->fRecTrackNSDEventMatrix);
 
     //
+    fGenTrackMatrix->Add(entry->fGenTrackMatrix);
     fGenPrimTrackMatrix->Add(entry->fGenPrimTrackMatrix);
     fRecPrimTrackMatrix->Add(entry->fRecPrimTrackMatrix);
     //
@@ -1452,6 +1498,7 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* list)
     }
     fRecMCTrackHist1->Add(entry->fRecMCTrackHist1);
     fMCMultRecTrackHist1->Add(entry->fMCMultRecTrackHist1);
+    fRecTrackHist2->Add(entry->fRecTrackHist2);
 
   count++;
   }
@@ -1528,14 +1575,17 @@ void AlidNdPtAnalysis::Analyse()
   // reconstructed pt histograms
   //
   h = fRecTrackHist1[0]->Projection(0);
+  h->Scale(1.,"width");
   h->SetName("pt_all_ch");
   aFolderObj->Add(h);
 
   h = fRecTrackHist1[1]->Projection(0);
+  h->Scale(1.,"width");
   h->SetName("pt_acc");
   aFolderObj->Add(h);
 
   h = fRecTrackHist1[2]->Projection(0);
+  h->Scale(1.,"width");
   h->SetName("pt_rec");
   aFolderObj->Add(h);
 
@@ -1613,6 +1663,41 @@ void AlidNdPtAnalysis::Analyse()
   h2D = fRecTrackHist1[2]->Projection(2,1);
   h2D->SetName("eta_phi_rec");
   aFolderObj->Add(h2D);
+
+  //
+  // reconstructed nClust, chi2 vs pt, eta, phi
+  //
+  if(fHistogramsOn) {
+
+    h2D = fRecTrackHist2->Projection(0,1);
+    h2D->SetName("nClust_chi2_rec");
+    aFolderObj->Add(h2D);
+
+    h2D = fRecTrackHist2->Projection(0,2);
+    h2D->SetName("nClust_pt_rec");
+    aFolderObj->Add(h2D);
+
+    h2D = fRecTrackHist2->Projection(0,3);
+    h2D->SetName("nClust_eta_rec");
+    aFolderObj->Add(h2D);
+
+    h2D = fRecTrackHist2->Projection(0,4);
+    h2D->SetName("nClust_phi_rec");
+    aFolderObj->Add(h2D);
+
+    h2D = fRecTrackHist2->Projection(1,2);
+    h2D->SetName("chi2_pt_rec");
+    aFolderObj->Add(h2D);
+
+    h2D = fRecTrackHist2->Projection(1,3);
+    h2D->SetName("chi2_eta_rec");
+    aFolderObj->Add(h2D);
+
+    h2D = fRecTrackHist2->Projection(1,4);
+    h2D->SetName("chi2_phi_rec");
+    aFolderObj->Add(h2D);
+
+  }
 
   //
   // calculate corrections for empty events

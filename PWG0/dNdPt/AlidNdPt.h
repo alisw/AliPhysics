@@ -50,6 +50,7 @@ public:
   void SetUseMCInfo(const Bool_t info)                          { fUseMCInfo = info; }
   void SetAnalysisMode(const AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
   void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; }
+  void SetTriggerClass(const Char_t *triggerClass)              { fTriggerClass = triggerClass; }
 
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
@@ -57,6 +58,7 @@ public:
   Bool_t IsUseMCInfo() const                                    { return fUseMCInfo; }
   AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
   AliTriggerAnalysis::Trigger GetTrigger() const                { return fTrigger; }
+  const Char_t* GetTriggerClass() const                         { return fTriggerClass; }
 
 private:
 
@@ -67,6 +69,7 @@ private:
   Bool_t fUseMCInfo;                            // use MC information
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
   AliTriggerAnalysis::Trigger fTrigger;         // trigger definition MB1, MB2 ...
+  const Char_t * fTriggerClass;                 // trigger class
 
   ClassDef(AlidNdPt,1);
 };

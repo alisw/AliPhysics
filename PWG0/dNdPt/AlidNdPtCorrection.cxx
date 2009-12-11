@@ -525,8 +525,9 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   if(evtCuts->IsTriggerRequired())  {
-    static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-    isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+    //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+    //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+    isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
   }
 
   // use MC information
