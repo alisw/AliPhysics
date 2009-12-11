@@ -410,7 +410,7 @@ void AlidNdPtCutAnalysis::Analyse()
   aFolderObj->Add(h2D);
 
   fEventCount->GetAxis(0)->SetRange(1,1); // triggered
-  h1D = (TH2D*)fEventCount->Projection(1);
+  h1D = (TH1D*)fEventCount->Projection(1);
   h1D->SetTitle("rec. vertex for triggered events");
   h1D->SetName("trigANDvertex");
   aFolderObj->Add(h1D);
