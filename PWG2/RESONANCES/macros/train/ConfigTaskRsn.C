@@ -157,7 +157,7 @@ AliRsnPairManager* RsnConfigPairManager
   //AliRsnCutStd *cutEtaPair = new AliRsnCutStd("cutEtaPair", AliRsnCutStd::kEta, -0.9,  0.9);
   //AliRsnCutStd *cutPtPair  = new AliRsnCutStd("cutPtPair" , AliRsnCutStd::kPt ,  0.0, 10.0);
   //AliRsnCutStd *cutYPair   = new AliRsnCutStd("cutYPair"  , AliRsnCutStd::kEta, -0.9,  0.9);
-  cutYPair->SetMass(resonanceMass);
+  //cutYPair->SetMass(resonanceMass);
    
   // cuts on event (specific for this analysis):
   // -- whole interval in multiplicity
@@ -234,22 +234,26 @@ AliRsnPairManager* RsnConfigPairManager
   AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
    
   AliRsnFunction *fcnPt   = new AliRsnFunction();
-  AliRsnFunction *fcnEtaY = new AliRsnFunction();
+  AliRsnFunction *fcnEta  = new AliRsnFunction();
+  AliRsnFunction *fcnY    = new AliRsnFunction();
   AliRsnFunction *fcnMult = new AliRsnFunction();
   
   fcnPt  ->AddAxis(axisIM);
-  fcnEtaY->AddAxis(axisIM);
+  fcnEta ->AddAxis(axisIM);
+  fcnY   ->AddAxis(axisIM);
   fcnMult->AddAxis(axisIM);
    
   fcnPt  ->AddAxis(axisPt);
-  if (useY) fcnEtaY->AddAxis(axisY); else fcnEtaY->AddAxis(axisEta);
+  fcnY   ->AddAxis(axisY); 
+  fcnEta ->AddAxis(axisEta);
   fcnMult->AddAxis(axisMult);
    
   // add functions to pairs
   for (i = 0; i < nArray; i++) {
     for (j = 0; j < 4; j++) {
       pair[i][j]->AddFunction(fcnPt);
-      pair[i][j]->AddFunction(fcnEtaY);
+      pair[i][j]->AddFunction(fcnEta);
+      pair[i][j]->AddFunction(fcnY);
       pair[i][j]->AddFunction(fcnMult);
     }
   }
@@ -309,8 +313,8 @@ void RsnConfigTask(AliRsnAnalysisSE* &task, Bool_t useY = kTRUE)
   anaMgr->Add(RsnConfigPairManager("KSTAR_PID"  , 313, 0.896, AliPID::kPion, AliPID::kKaon, useY, kTRUE));
   
   // setup cuts for events (good primary vertex)
-  AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 3);
-  AliRsnCutSet *cutSetEvent = new AliRsnCutSet("eventCuts");
+  AliRsnCutPrimaryVertex *cutVertex   = new AliRsnCutPrimaryVertex("cutVertex", 3);
+  AliRsnCutSet           *cutSetEvent = new AliRsnCutSet("eventCuts");
   cutSetEvent->AddCut(cutVertex);
   cutSetEvent->SetCutScheme("cutVertex");
   task->SetEventCuts(cutSetEvent);
