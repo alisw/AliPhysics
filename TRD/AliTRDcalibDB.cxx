@@ -749,7 +749,7 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
     return -1;
   }
   const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0)); // Take SOR
-  const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0));
+  const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1));
 
   // prefer SOR
   if(!calDCSsor){
