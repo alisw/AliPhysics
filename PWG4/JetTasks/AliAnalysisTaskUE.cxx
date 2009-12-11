@@ -171,7 +171,7 @@ Bool_t AliAnalysisTaskUE::Notify()
     fh1Xsec->Fill("<#sigma>",xsection);
    // construct average trials
    Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
-   if(ftrials>=nEntries)fAvgTrials = ftrials/nEntries;
+   if(ftrials>=nEntries && nEntries>0.)fAvgTrials = ftrials/nEntries;
   }
   
   return kTRUE;

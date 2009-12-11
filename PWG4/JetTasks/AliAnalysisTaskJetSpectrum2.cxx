@@ -166,7 +166,7 @@ Bool_t AliAnalysisTaskJetSpectrum2::Notify()
     fh1Xsec->Fill("<#sigma>",xsection);
     // construct a poor man average trials 
     Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
-    if(ftrials>=nEntries)fAvgTrials = ftrials/nEntries; 
+    if(ftrials>=nEntries && nEntries>0.)fAvgTrials = ftrials/nEntries;
   }  
   return kTRUE;
 }
@@ -299,9 +299,9 @@ void AliAnalysisTaskJetSpectrum2::Init()
 void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 {
 
-  if(! AliAnalysisHelperJetTasks::Selected()&&fUseGlobalSelection){
+  if(!AliAnalysisHelperJetTasks::Selected()&&fUseGlobalSelection){
     // no selection by the service task, we continue
-    if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+    if (fDebug > 1)Printf("Not selected %s:%d",(char*)__FILE__,__LINE__);
     PostData(1, fHistList);
     return;
   }
@@ -569,6 +569,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       // need to cast to int, otherwise the printf overwrites
       Printf("Jet found in Event %d with p_T, %E",(int)Entry(),ptRec);
       fAOD->GetHeader()->Print();
+      Printf("TriggerClasses: %s",fAOD->GetFiredTriggerClasses().Data());
       for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
 	AliAODTrack *tr = fAOD->GetTrack(it);
 	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
