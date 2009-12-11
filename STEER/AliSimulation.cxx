@@ -114,6 +114,7 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TVirtualMCApplication.h>
+#include <TDatime.h>
 
 #include "AliAlignObj.h"
 #include "AliCDBEntry.h"
@@ -2216,11 +2217,14 @@ void AliSimulation::WriteGRPEntry()
 
   grpObj->SetRunType("PHYSICS");
   grpObj->SetTimeStart(0);
-  grpObj->SetTimeEnd(9999);
+  TDatime curtime;
+  grpObj->SetTimeStart(0);
+  grpObj->SetTimeEnd(curtime.Convert()); 
+  grpObj->SetBeamEnergyIsSqrtSHalfGeV(); // new format of GRP: store sqrt(s)/2 in GeV
 
   const AliGenerator *gen = gAlice->GetMCApp()->Generator();
   if (gen) {
-    grpObj->SetBeamEnergy(gen->GetEnergyCMS()/0.120);
+    grpObj->SetBeamEnergy(gen->GetEnergyCMS()/2);
     TString projectile;
     Int_t a,z;
     gen->GetProjectile(projectile,a,z);

@@ -163,8 +163,6 @@ Bool_t AliGRPManager::SetMagField()
     beamEnergy = 0;
     //ok = kFALSE;  // temprorary suppressed to make read cosmics data
   }
-  // LHC: "multiply by 120 to get the energy in MeV"
-  beamEnergy *= 0.120;
   
   // read special bits for the polarity convention and map type
   Int_t  polConvention = fGRPData->IsPolarityConventionLHC() ? AliMagF::kConvLHC : AliMagF::kConvDCS2008;

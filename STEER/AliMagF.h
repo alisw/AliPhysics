@@ -67,7 +67,7 @@ class AliMagF : public TVirtualMagField
   static Int_t GetPolarityConvention()                                {return Int_t(fgkPolarityConvention);}
   static AliMagF* CreateFieldMap(Float_t l3Current=-30000., Float_t diCurrent=-6000., 
 				 Int_t convention=0, Bool_t uniform = kFALSE, 
-				 Float_t sqrts=14000, const Char_t* btype="pp",
+				 Float_t beamenergy=7000, const Char_t* btype="pp",
 				 const Char_t* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   //
  protected:

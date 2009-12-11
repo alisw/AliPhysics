@@ -197,7 +197,7 @@ void AliESDRun::Reset()
   fCurrentDip = 0;
   fBeamEnergy = 0;
   fBeamType = "";
-  ResetBit(kBInfoStored|kUniformBMap);
+  ResetBit(kBInfoStored|kUniformBMap|kConvSqrtSHalfGeV);
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
@@ -312,7 +312,7 @@ Bool_t AliESDRun::InitMagneticField() const
   }
   //
   AliMagF* fld = AliMagF::CreateFieldMap(fCurrentL3,fCurrentDip,AliMagF::kConvLHC,
-					 TestBit(kUniformBMap), 2. * fBeamEnergy, fBeamType.Data());
+					 TestBit(kUniformBMap), GetBeamEnergy(), GetBeamType());
   if (fld) {
     TGeoGlobalMagField::Instance()->SetField( fld );
     TGeoGlobalMagField::Instance()->Lock();

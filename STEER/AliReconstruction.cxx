@@ -986,8 +986,6 @@ Bool_t AliReconstruction::InitGRP() {
     AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
     beamEnergy = 0;
   }
-  // LHC: "multiply by 120 to get the energy in MeV"
-  beamEnergy *= 0.120;
 
   TString runType = fGRPData->GetRunType();
   if (runType==AliGRPObject::GetInvalidString()) {
@@ -1497,7 +1495,7 @@ void AliReconstruction::SlaveBegin(TTree*)
   ftree = new TTree("esdTree", "Tree with ESD objects");
   fesd = new AliESDEvent();
   fesd->CreateStdContent();
-
+  if (fesd->GetESDRun()) ((AliESDRun*)fesd->GetESDRun())->SetBeamEnergyIsSqrtSHalfGeV();
   // add a so far non-std object to the ESD, this will
   // become part of the std content
   fesd->AddObject(new AliESDHLTDecision);
@@ -1523,7 +1521,7 @@ void AliReconstruction::SlaveBegin(TTree*)
   fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
   fhltesd = new AliESDEvent();
   fhltesd->CreateStdContent();
-
+  if (fhltesd->GetESDRun()) ((AliESDRun*)fhltesd->GetESDRun())->SetBeamEnergyIsSqrtSHalfGeV();
   // read the ESD template from CDB
   // HLT is allowed to put non-std content to its ESD, the non-std
   // objects need to be created before invocation of WriteToTree in

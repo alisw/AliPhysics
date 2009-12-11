@@ -26,7 +26,7 @@ class AliGRPObject : public TObject {
 
 	enum Stats {kMean = 0, kTruncMean = 1, kMedian = 2, kSDMean = 3, kSDMedian = 4};
  	
- 	enum StatusBits {kPolConvLHC = BIT(14), kUniformBMap = BIT(15)};
+ 	enum StatusBits {kPolConvLHC = BIT(14), kUniformBMap = BIT(15),kConvSqrtSHalfGeV = BIT(16)};
 
 	enum DP_HallProbes { 
 		 khpL3bsf17H1= 0 , khpL3bsf17H2, khpL3bsf17H3, khpL3bsf17Temperature, 
@@ -47,12 +47,12 @@ class AliGRPObject : public TObject {
 	~AliGRPObject();
 
 	// getters
-
+	Bool_t    IsBeamEnergyIsSqrtSHalfGeV() const {return TestBit(kConvSqrtSHalfGeV);}
  	Bool_t    IsPolarityConventionLHC() const {return TestBit(kPolConvLHC);}
  	Bool_t    IsUniformBMap() const {return TestBit(kUniformBMap);}
 	time_t    GetTimeStart() const {return fTimeStart;}
 	time_t    GetTimeEnd() const {return fTimeEnd;}
-	Float_t   GetBeamEnergy() const {return fBeamEnergy;}
+	Float_t   GetBeamEnergy() const {return IsBeamEnergyIsSqrtSHalfGeV() ? fBeamEnergy : fBeamEnergy/2;}
 	TString   GetBeamType() const {return fBeamType;}
 	Char_t    GetNumberOfDetectors() const {return fNumberOfDetectors;}
 	UInt_t    GetDetectorMask() const {return fDetectorMask;}
@@ -85,7 +85,7 @@ class AliGRPObject : public TObject {
 	Int_t    GetDimension() const {return fDimension;}
 
 	// setters
-
+ 	void SetBeamEnergyIsSqrtSHalfGeV(Bool_t v=kTRUE) {SetBit(kConvSqrtSHalfGeV,v);}
  	void SetPolarityConventionLHC(Bool_t v=kTRUE) {return SetBit(kPolConvLHC,v);}
  	void SetUniformBMap(Bool_t v=kTRUE) {return SetBit(kUniformBMap,v);}
 	void SetTimeStart(time_t timeStart)  {fTimeStart = timeStart;}

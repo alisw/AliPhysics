@@ -292,7 +292,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	TString detector = (TString)GetRunParameter("detector");   
 
 	AliGRPObject *grpobj = new AliGRPObject();  // object to store data
-
+	grpobj->SetBeamEnergyIsSqrtSHalfGeV(); // new format
 	//=================//
 	// DAQ logbook     //
 	//=================//

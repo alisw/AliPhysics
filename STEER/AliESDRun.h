@@ -21,7 +21,7 @@ class AliESDVertex;
 class AliESDRun: public TObject {
 public:
 
-  enum StatusBits {kBInfoStored = BIT(14), kUniformBMap = BIT(15)};
+  enum StatusBits {kBInfoStored = BIT(14), kUniformBMap = BIT(15), kConvSqrtSHalfGeV = BIT(16)};
 
   AliESDRun();
   AliESDRun(const AliESDRun& esd);
@@ -44,7 +44,9 @@ public:
   void    SetCurrentDip(Float_t cur)   {fCurrentDip = cur;}
   void    SetBeamEnergy(Float_t be)    {fBeamEnergy = be;}
   void    SetBeamType(const char* bt)  {fBeamType = bt;}
-  
+  void    SetBeamEnergyIsSqrtSHalfGeV(Bool_t v=kTRUE) {SetBit(kConvSqrtSHalfGeV,v);}
+
+  Bool_t  IsBeamEnergyIsSqrtSHalfGeV() const {return TestBit(kConvSqrtSHalfGeV);}  
   Double_t GetDiamondX() const {return fDiamondXY[0];}
   Double_t GetDiamondY() const {return fDiamondXY[1];}
   Double_t GetSigma2DiamondX() const {return fDiamondCovXY[0];}
@@ -58,7 +60,7 @@ public:
   Bool_t      IsTriggerClassFired(ULong64_t mask, const char *name) const;
   Float_t     GetCurrentL3()               const {return fCurrentL3;}
   Float_t     GetCurrentDip()              const {return fCurrentDip;}
-  Float_t     GetBeamEnergy()              const {return fBeamEnergy;}
+  Float_t     GetBeamEnergy()              const {return IsBeamEnergyIsSqrtSHalfGeV() ? fBeamEnergy : fBeamEnergy/2;}
   const char* GetBeamType()                const {return fBeamType.Data();}
 
   void    SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {

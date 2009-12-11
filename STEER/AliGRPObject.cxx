@@ -333,7 +333,9 @@ void AliGRPObject::ReadValuesFromMap(const TMap* mapGRP){
 	}
 
 	if(mapGRP->GetValue("fAliceBeamEnergy")){
-		SetBeamEnergy((((TObjString*)(mapGRP->GetValue("fAliceBeamEnergy")))->GetString()).Atof());
+	  double be = (((TObjString*)(mapGRP->GetValue("fAliceBeamEnergy")))->GetString()).Atof();
+	  if (IsBeamEnergyIsSqrtSHalfGeV()) be/=2;   // old format was storig sqrt(s)
+	  SetBeamEnergy(be);
 	}
 	else { 
 		AliError(Form("No fAliceBeamEnergy value found in GRP map!"));

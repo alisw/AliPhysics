@@ -423,7 +423,7 @@ Double_t AliMagF::GetFactorDip() const
 
 //_____________________________________________________________________________
 AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention, Bool_t uniform,
-				 Float_t sqrts, const Char_t *beamtype, const Char_t *path) 
+				 Float_t beamenergy, const Char_t *beamtype, const Char_t *path) 
 {
   //------------------------------------------------
   // The magnetic field map, defined externally...
@@ -499,7 +499,7 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
   // LHC and DCS08 conventions have opposite dipole polarities
   if ( GetPolarityConvention() != convention) sclDip = -sclDip;
   //
-  return new AliMagF("MagneticFieldMap", ttl,sclL3,sclDip,map,btype,sqrts/2,2,10.,path);
+  return new AliMagF("MagneticFieldMap", ttl,sclL3,sclDip,map,btype,beamenergy,2,10.,path);
   //
 }
 
