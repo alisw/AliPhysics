@@ -20,6 +20,10 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   pid->SetMCdata(mgr->GetMCtruthEventHandler());
   mgr->ConnectInput(pid, 0, ci[0]);
   mgr->ConnectOutput(pid, 0, mgr->CreateContainer(pid->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+  // define PID exchange container
+  AliAnalysisDataContainer *ce = mgr->CreateContainer("InfoPID", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  mgr->ConnectOutput(pid, 1, ce);
+  
 
   if(TSTBIT(map, kPIDRefMaker)){
     // TRD pid reference maker 
@@ -29,10 +33,6 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
     AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
     ref->SetMCdata(mgr->GetMCtruthEventHandler());
     ref->SetFriends(kTRUE);
-
-    // define PID exchange container
-    AliAnalysisDataContainer *ce = mgr->CreateContainer(Form("%sArr", ref->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-    mgr->ConnectOutput(pid, 1, ce);
 
     // link basic ref maker
     mgr->ConnectInput( ref, 0, ci[0]);
@@ -53,6 +53,7 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
     mgr->ConnectInput(lq, 2, ce);
     mgr->ConnectOutput(lq, 0, mgr->CreateContainer(Form("Moni%s", lq->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
     mgr->ConnectOutput(lq, 1, mgr->CreateContainer(lq->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
+    mgr->ConnectOutput(lq, 2, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", lq->GetName())));
   }
 }
 

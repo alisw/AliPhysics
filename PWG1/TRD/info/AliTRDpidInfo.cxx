@@ -13,9 +13,10 @@ AliTRDpidInfo::AliTRDpidData::AliTRDpidData() : fPLbin(0xff)
 }
 
 //________________________________________________________________________
-AliTRDpidInfo::AliTRDpidInfo() : 
-  TObject()
-  , fNtracklets(0)
+AliTRDpidInfo::AliTRDpidInfo()
+  :TObject()
+  ,fPID(-1)
+  ,fNtracklets(0)
   ,fData(0x0)
 {
   // Constructor of data array
@@ -26,7 +27,21 @@ AliTRDpidInfo::AliTRDpidInfo() :
 AliTRDpidInfo::~AliTRDpidInfo()
 {
   // Destructor
-  delete [] fData;
+  if(fData) delete [] fData;
+}
+
+//________________________________________________________________________
+AliTRDpidInfo::AliTRDpidData const* AliTRDpidInfo::GetDataInLayer(Int_t ily) const
+{
+  if(!fData) return NULL;
+  if(ily<0 || ily>=AliTRDgeometry::kNlayer) return NULL;
+
+  AliTRDpidData *data(NULL);
+  for(Int_t itrklt=fNtracklets; itrklt--;){
+    if(!(data=&fData[itrklt])) return NULL;
+    if(data->Layer()==ily) return data;
+  }
+  return NULL;
 }
 
 //________________________________________________________________________
@@ -49,5 +64,6 @@ void AliTRDpidInfo::Reset()
     memset(fData[fNtracklets].fdEdx, 0, 8*sizeof(Float_t));
   }
   fNtracklets=0;
+  fPID=-1;
 }
 

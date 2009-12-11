@@ -14,6 +14,9 @@ public:
   struct AliTRDpidData {
     AliTRDpidData();
     virtual ~AliTRDpidData(){}
+    Int_t   Layer() const    { return (fPLbin&0xf0)>>4;}
+    Int_t   Momentum() const { return fPLbin&0xf;}
+
     UChar_t fPLbin;   // momentum / layer bin
     Float_t fdEdx[8]; // dEdx array
     ClassDef(AliTRDpidData, 1)  // PID layer representation
@@ -21,12 +24,15 @@ public:
 
   AliTRDpidInfo();
   virtual ~AliTRDpidInfo();
-  AliTRDpidData const* GetData() const { return fData;}
+  inline AliTRDpidData const* GetData(Int_t itrklt) const;
+  AliTRDpidData const* GetDataInLayer(Int_t ily) const;
   Int_t   GetNtracklets() const        { return fNtracklets;}
+  Char_t  GetPID() const               { return fPID;}
   void    PushBack(Int_t ly, Int_t p, Float_t *dedx);
   void    Reset();
 
 private:
+  Char_t        fPID;         // reference PID
   Int_t         fNtracklets;  // number of tracklets
   AliTRDpidData *fData;       //[fNtracklets] PID data array
 
@@ -35,6 +41,18 @@ private:
 
   ClassDef(AliTRDpidInfo, 1)  // track PID data representation
 };
+
+
+//________________________________________________________________________
+AliTRDpidInfo::AliTRDpidData const* AliTRDpidInfo::GetData(Int_t itrklt) const
+{
+// Retrive itrklt-th tracklet independent of layer
+// For the layer specific getter see GetDataInLayer().
+
+  if(!fData) return NULL;
+  if(itrklt<0 || itrklt>=fNtracklets) return NULL;
+  return &fData[itrklt];
+}
 
 #endif
 

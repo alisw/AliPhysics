@@ -23,6 +23,8 @@
 #include "AliTRDpidUtil.h"
 #endif
 
+class TKDNodeInfo;
+class TKDInterpolator;
 class TObjArray;
 class AliTRDpidRefMakerLQ : public AliTRDpidRefMaker {
 public:
@@ -30,7 +32,6 @@ public:
     kMaxStat    = 180000 // maximum statistics/PID bin
    ,kMinStat    = 50     // minimum statistics/bucket 14%
    ,kMinBuckets = 450    // minimum number of buckets [lambda(6)*alpha(1.5)*regions(50)]
-   ,kNN2LQtransition = 4 // index of NN slices where first LQ slice ends 
   };
   AliTRDpidRefMakerLQ();
   ~AliTRDpidRefMakerLQ();
@@ -46,8 +47,11 @@ public:
 private:
   AliTRDpidRefMakerLQ(const AliTRDpidRefMakerLQ &ref);
   AliTRDpidRefMakerLQ& operator=(const AliTRDpidRefMakerLQ &ref);
- 
-  ClassDef(AliTRDpidRefMakerLQ, 5)  // Reference builder for Multidim-LQ TRD-PID
+  void        SetZeroes(TKDInterpolator *in, TKDNodeInfo *node, Int_t n0, Int_t& idx, Float_t x, Float_t dx, Float_t y, Float_t dy, const Char_t opt='x');
+
+  TObjArray   *fPDF;          // list of PDF estimations
+
+  ClassDef(AliTRDpidRefMakerLQ, 6)  // Reference builder for Multidim-LQ TRD-PID
 
 };
 

@@ -39,22 +39,26 @@
 
 #include "AliLog.h"
 #include "../STAT/TKDPDF.h"
+#include "../STAT/TKDInterpolator.h"
 #include "AliTRDpidRefMakerLQ.h"
 #include "Cal/AliTRDCalPID.h"
 #include "Cal/AliTRDCalPIDLQ.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
+#include "info/AliTRDpidInfo.h"
 
 ClassImp(AliTRDpidRefMakerLQ)
 
 //__________________________________________________________________
-AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ() :
-  AliTRDpidRefMaker("PIDrefMakerLQ", "PID(LQ) Reference Maker")
+AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ() 
+  : AliTRDpidRefMaker("PIDrefMakerLQ", "PID(LQ) Reference Maker")
+  , fPDF(NULL)
 {
   //
   // AliTRDpidRefMakerLQ default constructor
   //
+  DefineOutput(2, TObjArray::Class());
 }
 
 //__________________________________________________________________
@@ -63,6 +67,11 @@ AliTRDpidRefMakerLQ::~AliTRDpidRefMakerLQ()
   //
   // AliTRDCalPIDQRef destructor
   //
+  if(fPDF){
+    fPDF->Write("PDF_2DLQ", TObject::kSingleKey);
+    fPDF->Delete();
+    delete fPDF;
+  }
 }
 
 // //________________________________________________________________________
@@ -73,6 +82,10 @@ void AliTRDpidRefMakerLQ::CreateOutputObjects()
 
   //OpenFile(0, "RECREATE");
   fContainer = Histos();
+
+  OpenFile(2, "RECREATE");
+  fPDF = new TObjArray(AliTRDCalPID::kNMom*AliPID::kSPECIES);
+  fPDF->SetOwner();fPDF->SetName("PDF_2DLQ");
 }
 
 
@@ -93,7 +106,7 @@ TObjArray* AliTRDpidRefMakerLQ::Histos()
     TObjArray *arr = new TObjArray(AliPID::kSPECIES);
     arr->SetName(Form("Pbin%02d", ip)); arr->SetOwner();
     for(Int_t is=AliPID::kSPECIES; is--;) {
-      h2 = new TH2D(Form("h%s%d", AliPID::ParticleShortName(is), ip), Form("%s @ Pbin[%d]", AliPID::ParticleName(is), ip), 50, 5., 10., 50, 5., 10.);
+      h2 = new TH2D(Form("h%s%d", AliPID::ParticleShortName(is), ip), Form("%s @ Pbin[%d]", AliPID::ParticleName(is), ip), 50, 7., 12., 50, 6.5, 11.);
       h2->GetXaxis()->SetTitle("log(dE/dx_{am}) [au]");
       h2->GetYaxis()->SetTitle("log(dE/dx_{dr}) [au]");
       h2->GetZaxis()->SetTitle("#");
@@ -107,15 +120,16 @@ TObjArray* AliTRDpidRefMakerLQ::Histos()
 
 
 //__________________________________________________________________
-TObject* AliTRDpidRefMakerLQ::GetOCDBEntry(Option_t *opt)
+TObject* AliTRDpidRefMakerLQ::GetOCDBEntry(Option_t */*opt*/)
 {
 // Steer loading of OCDB LQ PID
 
-  TDirectoryFile *d = 0x0;
-  if(!TFile::Open(Form("TRD.Calib%s.root", GetName()))) return 0x0;
-  if(!(d=(TDirectoryFile*)gFile->Get(Form("PDF_%s", opt)))) return 0x0;
+  if(gSystem->AccessPathName(Form("TRD.Calib%s.root", GetName()), kReadPermission)){
+    AliError(Form("File TRD.Calib%s.root not readable", GetName()));
+    return NULL;
+  }
   AliTRDCalPIDLQ *cal = new AliTRDCalPIDLQ("pidLQ", "LQ TRD PID object");
-  cal->LoadPDF(d);
+  cal->LoadReferences(Form("TRD.Calib%s.root", GetName()));
   return cal;
 }
 
@@ -180,20 +194,52 @@ Bool_t AliTRDpidRefMakerLQ::Load(const Char_t */*fname*/)
   LinkPIDdata();
 
   TObjArray *o(NULL);
-  if(!(o = (TObjArray*)gFile->Get(Form("Moni%s", name)))){
+  if(!(o = (TObjArray*)gFile->Get(Form("Moni%s", GetName())))){
     AliWarning(Form("Monitor container Moni%s not available.", name));
     return kFALSE;
   }
   fContainer = (TObjArray*)o->Clone("monitor");
+  fNRefFigures=AliTRDCalPID::kNMom;
+
+
+  if(!TFile::Open(Form("TRD.Calib%s.root", GetName()), "UPDATE")){
+    AliError(Form("File TRD.Calib%s.root corrupted", GetName()));
+    return kFALSE;
+  }
+  if(!(o = (TObjArray*)gFile->Get(Form("PDF_2DLQ")))) {
+    AliInfo("PDF container PDF_2DLQ not available. Create.");
+    fPDF = new TObjArray(AliTRDCalPID::kNMom*AliPID::kSPECIES);
+    fPDF->SetOwner();fPDF->SetName("PDF_2DLQ");
+  } else fPDF = (TObjArray*)o->Clone("PDF_2DLQ");
+
   return kTRUE;
 }
+
 
 //________________________________________________________________________
 void AliTRDpidRefMakerLQ::Exec(Option_t */*opt*/)
 {
-// Mock up function to load PID data into local data storage
-  AliInfo(Form("fInfo[%d]\n", fInfo->GetEntriesFast()));
+// Load PID data into local data storage
+
+  AliTRDpidInfo *pid(NULL);
+  const AliTRDpidInfo::AliTRDpidData *data(NULL);
+  Char_t s(-1);
+  for(Int_t itrk=fInfo->GetEntriesFast(); itrk--;){
+    if(!(pid=(AliTRDpidInfo*)fInfo->At(itrk))) continue;
+    if((s=pid->GetPID())<0) continue;
+    for(Int_t itrklt=pid->GetNtracklets();itrklt--;){
+      data=pid->GetData(itrklt);
+      Int_t ip(data->Momentum());
+      
+
+      Double_t dedx[] = {0., 0.};
+      if(!AliTRDCalPIDLQ::CookdEdx(data->fdEdx, dedx)) continue;
+      ((TH2*)((TObjArray*)fContainer->At(ip))->At(s))->Fill(dedx[0], dedx[1]);
+    }
+  }
+
   PostData(0, fContainer);
+  PostData(2, fPDF);
 }
 
 
@@ -208,18 +254,12 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
 //   - write pdf to file for loading to OCDB
 // 
 
-  TDatime d;
-  TDirectoryFile *pdfs = new TDirectoryFile(Form("PDF_%d", d.GetDate()), "PDFs for LQ TRD-PID", "", gFile);
-  pdfs->Write();
-  AliDebug(2, Form("Data[%d]", fData->GetEntries()));
-  pdfs->cd();
-
-  //TCanvas *cc = new TCanvas("cc", "", 500, 500);
+  TCanvas *cc = new TCanvas("cc", "", 500, 500);
   // allocate working storage
   Float_t *data[] = {
     new Float_t[kMaxStat], 
     new Float_t[kMaxStat]};
-  for(Int_t ip=AliTRDCalPID::kNMom; ip--; ){ 
+  for(Int_t ip=0;ip<AliTRDCalPID::kNMom;ip++){ 
     for(Int_t is=AliPID::kSPECIES; is--;) {
       Int_t n(0); // index of data
       for(Int_t itrk=0; (itrk < fData->GetEntries()) && (n<kMaxStat); itrk++){
@@ -228,19 +268,11 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
         for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){
           if((fPIDdataArray->fData[ily].fPLbin & 0xf)!= ip) continue;
           
-          Float_t dedx[] = {0., 0.};
-          for(Int_t islice=AliTRDCalPID::kNSlicesNN; islice--;){
-            Int_t jslice = islice>kNN2LQtransition;
-            dedx[jslice]+=fPIDdataArray->fData[ily].fdEdx[islice];
-          }
-          
-          // check data integrity
-          if(dedx[0]<1.e-30) continue;
-          if(dedx[1]<1.e-30) continue;
-
+          Double_t dedx[] = {0., 0.};
+          if(!AliTRDCalPIDLQ::CookdEdx(fPIDdataArray->fData[ily].fdEdx, dedx)) continue;
           // store data
-          data[0][n] = TMath::Log(dedx[0]);
-          data[1][n] = TMath::Log(dedx[1]);
+          data[0][n] = dedx[0];
+          data[1][n] = dedx[1];
           n++; if(n==kMaxStat) break;
         }
       }
@@ -258,24 +290,62 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
         continue;
       }
 
-      // build PDF
-      TKDPDF pdf(n, 2, ns, data);
-      pdf.SetCOG(kFALSE);
-      pdf.SetWeights();
-      pdf.SetStore();
-      pdf.SetAlpha(5.);
-      pdf.GetStatus();
-      Float_t *c, v, ve; Double_t r, e, rxy[2];
-      for(Int_t in=pdf.GetNTNodes(); in--;){
-        pdf.GetCOGPoint(in, c, v, ve);
-        rxy[0] = (Double_t)c[0];rxy[1] = (Double_t)c[1];
-        pdf.Eval(rxy, r, e, kTRUE);
+      // build helper PDF
+      TKDPDF *pdf = new TKDPDF(n, 2, ns, data);
+      pdf->SetCOG(kFALSE);
+      pdf->SetWeights();
+      pdf->SetStore();
+      pdf->SetAlpha(5.);
+      //pdf.GetStatus();
+      fPDF->AddAt(pdf, AliTRDCalPIDLQ::GetModelID(ip,is));
+      Int_t in=pdf->GetNTNodes(); Float_t par[6], *pp=&par[0];
+      while(in--){
+        const TKDNodeInfo *nn = pdf->GetNodeInfo(in);
+        nn->GetCOG(pp);
+        //printf("evaluate for node[%d] @ [%f %f]\n",in, par[0], par[1]);
+        Double_t p[] = {par[0], par[1]}, r,e;
+        pdf->Eval(p,r,e,1);
       }
-//       // visual on-line monitoring
-//       pdf.DrawProjection();cc->Modified(); cc->Update(); cc->SaveAs(Form("pdf_%s%02d.gif", AliPID::ParticleShortName(is), ip));
-//       cc->SaveAs(Form("%s_%s%02d.gif", GetName(), AliPID::ParticleShortName(is), ip));
+/*
+      Int_t nnodes = pdf.GetNTNodes(),
+            nside = Int_t(0.05*nnodes),
+            nzeros = 4*(nside+1);
+      printf("nnodes[%d] nside[%d] nzeros[%d]\n", nnodes, nside, nzeros);
+    
 
+      // Build interpolator on the pdf skeleton
+      TKDInterpolator interpolator(2, nnodes+nzeros); 
+      for(Int_t in=nnodes; in--;)
+        interpolator.SetNode(in, *pdf.GetNodeInfo(in));
+      TKDNodeInfo *nodes = new TKDNodeInfo[nzeros], *node = &nodes[0];
+      Float_t ax0min, ax0max, ax1min, ax1max;
+      pdf.GetRange(0, ax0min, ax0max); Float_t dx = (ax0max-ax0min)/nside;
+      pdf.GetRange(1, ax1min, ax1max); Float_t dy = (ax1max-ax1min)/nside;
+      printf("x=[%f %f] y[%f %f]\n", ax0min, ax0max, ax1min, ax1max);
+
+      Int_t jn = nnodes; 
+      SetZeroes(&interpolator, node, nside, jn, ax0min, dx, ax1min, -dy, 'x');
+      SetZeroes(&interpolator, node, nside, jn, ax1min, dy, ax0max, dx, 'y');
+      SetZeroes(&interpolator, node, nside, jn, ax0max,-dx, ax1max, dy, 'x');
+      SetZeroes(&interpolator, node, nside, jn ,ax1max, -dy, ax0min, -dx, 'y');
+      delete [] nodes;
+      Int_t in=interpolator.GetNTNodes(); Float_t par[6], *pp=&par[0];
+      while(in--){
+        const TKDNodeInfo *nn = interpolator.GetNodeInfo(in);
+        nn->GetCOG(pp);
+        //printf("evaluate for node[%d] @ [%f %f]\n",in, par[0], par[1]);
+        Double_t p[] = {par[0], par[1]}, r,e;
+        interpolator.Eval(p,r,e,1);
+      }
+*/
+      // visual on-line monitoring
+      pdf->DrawProjection();cc->Modified(); cc->Update(); cc->SaveAs(Form("pdf_%s%02d.gif", AliPID::ParticleShortName(is), ip));
+      cc->SaveAs(Form("%s_%s%02d.gif", GetName(), AliPID::ParticleShortName(is), ip));
+
+
+      //fContainer->ls();
       // save a discretization of the PDF for result monitoring
+      Double_t rxy[]={0.,0.};
       TH2 *h2s = (TH2D*)((TObjArray*)fContainer->At(ip))->At(is);
       TAxis *ax = h2s->GetXaxis(), *ay = h2s->GetYaxis();
       h2s->Clear();
@@ -285,23 +355,48 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
           rxy[1] = ay->GetBinCenter(iy);
       
           Double_t rr,ee;
-          pdf.Eval(rxy, rr, ee, kFALSE);
+          pdf->Eval(rxy, rr, ee, kFALSE);
           if(rr<0. || ee/rr>.15) continue; // 15% relative error
           //printf("x[%2d] x[%2d] r[%f] e[%f]\n", ix, iy, rr, ee);
           h2s->SetBinContent(ix, iy, rr);
         }
       }
-
-      // write results to output array
-      //pdf.GetStatus();
-      pdf.Write(Form("%s[%d]", AliPID::ParticleShortName(is), ip));
     }
   }
-  delete [] data[0]; delete [] data[1];
-  pdfs->Write();
-  //fCalib->Close(); delete fCalib;
-
-  return kTRUE; // testing protection
+  return kTRUE;
 }
 
+
+//__________________________________________________________________
+void AliTRDpidRefMakerLQ::SetZeroes(TKDInterpolator *interpolator, TKDNodeInfo *node, Int_t n, Int_t& idx, Float_t x, Float_t dx, Float_t y, Float_t dy, const Char_t opt)
+{
+// Set extra nodes to ensure boundary conditions
+  
+  printf("SetZeroes(%c)\n", opt);
+  Float_t par[6], val[] = {0., 1.};
+  Int_t a[6];
+  if(opt=='x'){
+    a[0]=0; a[1]=1; a[2]=2; a[3]=3; a[4]=4; a[5]=5;
+  } else if(opt=='y'){
+    a[0]=1; a[1]=0; a[2]=4; a[3]=5; a[4]=2; a[5]=3;
+  } else return;
+  Float_t tmp;
+  par[a[1]] = y;
+  par[a[4]] = y; par[a[5]] = y+dy;
+  if(dy<0.){tmp=par[a[4]]; par[a[4]]=par[a[5]]; par[a[5]]=tmp;}
+  for(Int_t in=n; in--; node++, idx++, x+=dx){
+    par[a[0]] = x+.5*dx;
+    par[a[2]] = x;  par[a[3]] = x+dx;
+    if(dx<0.){tmp=par[a[2]]; par[a[2]]=par[a[3]]; par[a[3]]=tmp;}
+    node->SetNode(2, par, val);
+    printf("\n\tnode[%d]\n", idx); node->Print();
+    interpolator->SetNode(idx, *node);
+  }
+  par[a[0]] = x;
+  par[a[2]] = x;  par[a[3]] = x+dx;
+  if(dx<0.){tmp=par[a[2]]; par[a[2]]=par[a[3]]; par[a[3]]=tmp;}
+  node->SetNode(2, par, val);
+  printf("\n\tnode[%d]\n", idx); node->Print();
+  interpolator->SetNode(idx, *node);node++;idx++;
+}
 
