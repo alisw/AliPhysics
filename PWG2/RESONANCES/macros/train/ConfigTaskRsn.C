@@ -154,9 +154,9 @@ AliRsnPairManager* RsnConfigPairManager
   // -- true daughters of a phi resonance (only for true pairs histogram)
   AliRsnCutStd *cutTruePair = new AliRsnCutStd("cutTrue", AliRsnCutStd::kTruePair, resonancePDG);
   // -- whole interval in Pt and Eta
-  AliRsnCutStd *cutEtaPair = new AliRsnCutStd("cutEtaPair", AliRsnCutStd::kEta, -0.9, 0.9);
-  AliRsnCutStd *cutPtPair  = new AliRsnCutStd("cutPtPair", AliRsnCutStd::kPt, 0.0, 10.0);
-  AliRsnCutStd *cutYPair   = new AliRsnCutStd("cutYPair", AliRsnCutStd::kEta, -0.9, 0.9);
+  //AliRsnCutStd *cutEtaPair = new AliRsnCutStd("cutEtaPair", AliRsnCutStd::kEta, -0.9,  0.9);
+  //AliRsnCutStd *cutPtPair  = new AliRsnCutStd("cutPtPair" , AliRsnCutStd::kPt ,  0.0, 10.0);
+  //AliRsnCutStd *cutYPair   = new AliRsnCutStd("cutYPair"  , AliRsnCutStd::kEta, -0.9,  0.9);
   cutYPair->SetMass(resonanceMass);
    
   // cuts on event (specific for this analysis):
@@ -178,42 +178,43 @@ AliRsnPairManager* RsnConfigPairManager
    
   // cut set definition for true pairs
   AliRsnCutSet *cutSetPairTrue = new AliRsnCutSet("truePairs");
-  cutSetPairTrue->AddCut(cutPtPair);
-  cutSetPairTrue->AddCut(cutEtaPair);
-  cutSetPairTrue->AddCut(cutTruePair);
-  cutSetPairTrue->SetCutScheme("cutPtPair&cutEtaPair&cutTrue");
+  //cutSetPairTrue->AddCut(cutPtPair);
+  //cutSetPairTrue->AddCut(cutEtaPair);
+  //cutSetPairTrue->AddCut(cutTruePair);
+  //cutSetPairTrue->SetCutScheme("cutPtPair&cutEtaPair&cutTrue");
+  cutSetPairTrue->SetCutScheme("cutTrue");
    
   // cut set definition for all pairs
-  AliRsnCutSet *cutSetPairAll = new AliRsnCutSet("allPairs");
-  cutSetPairAll->AddCut(cutPtPair);
-  if (useY) 
-  {
-    cutSetPairAll->AddCut(cutYPair); 
-    cutSetPairAll->SetCutScheme("cutPtPair&cutYPair");
-  }
-  else 
-  {
-    cutSetPairAll->AddCut(cutEtaPair);
-    cutSetPairAll->SetCutScheme("cutPtPair&cutEtaPair");
-  }
+  //AliRsnCutSet *cutSetPairAll = new AliRsnCutSet("allPairs");
+  //cutSetPairAll->AddCut(cutPtPair);
+  //if (useY) 
+  //{
+  //  cutSetPairAll->AddCut(cutYPair); 
+  //  cutSetPairAll->SetCutScheme("cutPtPair&cutYPair");
+  //}
+  //else 
+  //{
+  //  cutSetPairAll->AddCut(cutEtaPair);
+  //  cutSetPairAll->SetCutScheme("cutPtPair&cutEtaPair");
+  //}
    
   // cut set definition for events
-  AliRsnCutSet *cutSetEvent = new AliRsnCutSet("cutSetMult");
-  cutSetEvent->AddCut(cutMultiplicity);
-  cutSetEvent->SetCutScheme("cutMult");
+  //AliRsnCutSet *cutSetEvent = new AliRsnCutSet("cutSetMult");
+  //cutSetEvent->AddCut(cutMultiplicity);
+  //cutSetEvent->SetCutScheme("cutMult");
    
   // cut manager for all pairs
   // define a proper name for each mult bin, to avoid omonyme output histos
   AliRsnCutMgr *cutMgrAll = new AliRsnCutMgr("std", "All");
   cutMgrAll->SetCutSet(AliRsnCut::kParticle, cutSetParticle);
-  cutMgrAll->SetCutSet(AliRsnCut::kPair, cutSetPairAll);
-  cutMgrAll->SetCutSet(AliRsnCut::kEvent, cutSetEvent);
+  //cutMgrAll->SetCutSet(AliRsnCut::kPair, cutSetPairAll);
+  //cutMgrAll->SetCutSet(AliRsnCut::kEvent, cutSetEvent);
   
   // cut manager for true pairs
   AliRsnCutMgr *cutMgrTrue = new AliRsnCutMgr("true", "True");
   cutMgrTrue->SetCutSet(AliRsnCut::kParticle, cutSetParticle);
   cutMgrTrue->SetCutSet(AliRsnCut::kPair, cutSetPairTrue);
-  cutMgrAll->SetCutSet(AliRsnCut::kEvent, cutSetEvent);
+  //cutMgrAll->SetCutSet(AliRsnCut::kEvent, cutSetEvent);
    
   for (i = 0; i < nArray; i++) {
     pair[i][0]->SetCutMgr(cutMgrTrue);
@@ -228,8 +229,8 @@ AliRsnPairManager* RsnConfigPairManager
   // define all binnings
   AliRsnFunctionAxis *axisIM   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairInvMass,    4000,  0.0,   2.0);
   AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           50,  0.0,  10.0);
-  AliRsnFunctionAxis *axisY    = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairY,            18, -0.9,   0.9);
-  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          18, -0.9,   0.9);
+  AliRsnFunctionAxis *axisY    = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairY,            20, -1.0,   1.0);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          20, -1.0,   1.0);
   AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
    
   AliRsnFunction *fcnPt   = new AliRsnFunction();
