@@ -45,14 +45,13 @@ ClassImp(AliTriggerAnalysis)
 
 AliTriggerAnalysis::AliTriggerAnalysis() :
   fSPDGFOThreshold(2),
-  fV0AThreshold(1),
-  fV0CThreshold(1),
+  fV0TimeOffset(0),
   fFMDLowCut(0.2),
   fFMDHitCut(0.5),
   fHistBitsSPD(0),
   fHistFiredBitsSPD(0),
   fHistV0A(0),       
-  fHistV0C(0),    
+  fHistV0C(0),
   fHistZDC(0),    
   fHistFMDA(0),    
   fHistFMDC(0),   
@@ -60,6 +59,72 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fHistFMDSum(0),
   fTriggerClasses(0)
 {
+  // constructor
+}
+
+AliTriggerAnalysis::~AliTriggerAnalysis()
+{
+  // destructor
+  
+  if (fHistBitsSPD)
+  {
+    delete fHistBitsSPD;
+    fHistBitsSPD = 0;
+  }
+
+  if (fHistFiredBitsSPD)
+  {
+    delete fHistFiredBitsSPD;
+    fHistFiredBitsSPD = 0;
+  }
+
+  if (fHistV0A)
+  {
+    delete fHistV0A;
+    fHistV0A = 0;
+  }
+
+  if (fHistV0C)
+  {
+    delete fHistV0C;
+    fHistV0C = 0;
+  }
+
+  if (fHistZDC)
+  {
+    delete fHistZDC;
+    fHistZDC = 0;
+  }
+
+  if (fHistFMDA)
+  {
+    delete fHistFMDA;
+    fHistFMDA = 0;
+  }
+
+  if (fHistFMDC)
+  {
+    delete fHistFMDC;
+    fHistFMDC = 0;
+  }
+
+  if (fHistFMDSingle)
+  {
+    delete fHistFMDSingle;
+    fHistFMDSingle = 0;
+  }
+
+  if (fHistFMDSum)
+  {
+    delete fHistFMDSum;
+    fHistFMDSum = 0;
+  }
+
+  if (fTriggerClasses)
+  {
+    delete fTriggerClasses;
+    fTriggerClasses = 0;
+  }
 }
 
 void AliTriggerAnalysis::EnableHistograms()
@@ -79,6 +144,7 @@ void AliTriggerAnalysis::EnableHistograms()
   fHistFMDSum = new TH1F("fHistFMDSum", "FMD sum;multiplicity value;counts", 1000, 0, 10);
   
   fTriggerClasses = new TMap;
+  fTriggerClasses->SetOwner();
 }
 
 //____________________________________________________________________
@@ -99,8 +165,10 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kMB3 : str = "MB3"; break;
     case kSPDGFO : str = "SPD GFO"; break;
     case kSPDGFOBits : str = "SPD GFO Bits"; break;
-    case kV0A : str = "V0 A"; break;
-    case kV0C : str = "V0 C"; break;
+    case kV0A : str = "V0 A BB"; break;
+    case kV0C : str = "V0 C BB"; break;
+    case kV0ABG : str = "V0 A BG"; break;
+    case kV0CBG : str = "V0 C BG"; break;
     case kZDC : str = "ZDC"; break;
     case kZDCA : str = "ZDC A"; break;
     case kZDCC : str = "ZDC C"; break;
@@ -116,7 +184,7 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
   return str;
 }
 
-Bool_t AliTriggerAnalysis::IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger) const
+Bool_t AliTriggerAnalysis::IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger)
 {
   // checks if an event has been triggered
 
@@ -191,7 +259,7 @@ Bool_t AliTriggerAnalysis::IsTriggerBitFired(const AliESDEvent* aEsd, ULong64_t 
   return (trigmask & (1ull << (tclass-1)));
 }
 
-Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger) const
+Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger)
 {
   // checks if an event has been triggered "offline"
 
@@ -243,6 +311,18 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     case kV0C:
     {
       if (V0Trigger(aEsd, kCSide) == kV0BB)
+        return kTRUE;
+      break;
+    }
+    case kV0ABG:
+    {
+      if (V0Trigger(aEsd, kASide) == kV0BG)
+        return kTRUE;
+      break;
+    }
+    case kV0CBG:
+    {
+      if (V0Trigger(aEsd, kCSide) == kV0BG)
         return kTRUE;
       break;
     }
@@ -419,7 +499,7 @@ void AliTriggerAnalysis::FillTriggerClasses(const AliESDEvent* aEsd)
   // TODO add first and last orbit number here
 }
 
-Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHist) const
+Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists)
 {
   // returns the number of fired chips in the SPD
   //
@@ -443,7 +523,7 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, B
       if (mult->TestFastOrFiredChips(i) == kTRUE)
       {
         nChips++;
-        if (fillHist)
+        if (fillHists)
           fHistFiredBitsSPD->Fill(i);
       }
     return nChips;
@@ -452,7 +532,7 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, B
   return -1;
 }
 
-Bool_t AliTriggerAnalysis::SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin) const
+Bool_t AliTriggerAnalysis::SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin)
 {
   // Returns if the SPD gave a global Fast OR trigger
   
@@ -463,7 +543,7 @@ Bool_t AliTriggerAnalysis::SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin) 
   return kFALSE;
 }
 
-AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists) const
+AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists)
 {
   // Returns the V0 trigger decision in V0A | V0C
   //
@@ -495,10 +575,12 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
   Float_t time = 0;
   Int_t ntime = 0;
   for (Int_t i = begin; i < end; ++i) {
-    if (esdV0->GetTime(i) > 1e-6) {
+    if (esdV0->GetTime(i) > 1e-6 && esdV0->GetAdc(i) > 6.0) {
       Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i));
     
       time += correctedTime;
+      time += fV0TimeOffset;
+      
       ntime++;
     }
   }
@@ -598,7 +680,7 @@ Bool_t AliTriggerAnalysis::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) c
   return kFALSE;
 }
 
-Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHistograms) const
+Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists)
 {
   // returns number of hit combinations agove threshold
   //
@@ -628,7 +710,7 @@ Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide 
           Float_t mult = fmdData->Multiplicity(det,ring,sec,strip);
           if (mult == AliESDFMD::kInvalidMult) continue;
           
-          if (fillHistograms)
+          if (fillHists)
             fHistFMDSingle->Fill(mult);
           
           if (mult > fFMDLowCut)
@@ -638,7 +720,7 @@ Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide 
             if (totalMult > fFMDHitCut)
               triggers++;
               
-            if (fillHistograms)
+            if (fillHists)
               fHistFMDSum->Fill(totalMult);
               
             totalMult = 0;
@@ -651,7 +733,7 @@ Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide 
   return triggers;
 }
 
-Bool_t AliTriggerAnalysis::FMDTrigger(const AliESDEvent* aEsd, AliceSide side) const
+Bool_t AliTriggerAnalysis::FMDTrigger(const AliESDEvent* aEsd, AliceSide side)
 {
   // Returns if the FMD triggered
   //
@@ -742,7 +824,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   return count+1;
 }
 
-void AliTriggerAnalysis::WriteHistograms() const
+void AliTriggerAnalysis::SaveHistograms() const
 {
   // write histograms to current directory
   
@@ -750,8 +832,8 @@ void AliTriggerAnalysis::WriteHistograms() const
     return;
     
   fHistBitsSPD->Write();
-  fHistBitsSPD->ProjectionX()->Write();
-  fHistBitsSPD->ProjectionY()->Write();
+  fHistBitsSPD->ProjectionX();
+  fHistBitsSPD->ProjectionY();
   fHistFiredBitsSPD->Write();
   fHistV0A->Write();
   fHistV0C->Write();

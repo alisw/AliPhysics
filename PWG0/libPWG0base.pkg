@@ -12,6 +12,7 @@ SRCS = dNdEta/dNdEtaAnalysis.cxx \
       AliUnfolding.cxx \
       multiplicity/AliMultiplicityCorrection.cxx \
       AliTriggerAnalysis.cxx \
+      AliPhysicsSelection.cxx
 
 HDRS = $(SRCS:.cxx=.h)
 
