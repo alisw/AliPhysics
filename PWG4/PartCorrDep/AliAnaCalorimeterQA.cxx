@@ -1293,7 +1293,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 					nCaloCellsPerCluster2 = clus2->GetNCells();
 
 				}
-				if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD){
+				else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD){
 					AliAODCaloCluster* clus2 =  (AliAODCaloCluster*) (caloClusters->At(jclus));
 					//Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
@@ -1302,13 +1302,24 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 					//Cells per cluster
 					nCaloCellsPerCluster2 = clus2->GetNCells();
 				}
-				
+
+				//Fill invariant mass histograms
+				//All modules
 				fhIM  ->Fill((mom+mom2).E(),(mom+mom2).M());
-				fhIMMod[nModule]->Fill((mom+mom2).E(),(mom+mom2).M());
+				//Single module
+				if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
+				  fhIMMod[nModule]->Fill((mom+mom2).E(),(mom+mom2).M());
+
+				//Select only clusters with at least 2 cells
 				if(nCaloCellsPerCluster > 1 && nCaloCellsPerCluster2 > 1) {
-					fhIMCellCut  ->Fill((mom+mom2).E(),(mom+mom2).M());
-					if(nModule < fNModules) fhIMCellCutMod[nModule]->Fill((mom+mom2).E(),(mom+mom2).M());
+				  //All modules
+				  fhIMCellCut  ->Fill((mom+mom2).E(),(mom+mom2).M());
+				  //Single modules
+				  if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
+				    fhIMCellCutMod[nModule]->Fill((mom+mom2).E(),(mom+mom2).M());
 				}
+
+				//Asymetry histograms
 				fhAsym->Fill((mom+mom2).E(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
 					
 			}// 2nd cluster loop
