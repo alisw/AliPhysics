@@ -317,7 +317,6 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
   AliDebug(2,Form(">> AliPWG4HighPtQATPConly::Exec \n"));  
 
   // All events without selection
-  cout << "Fill fNEventAll" << endl;
   fNEventAll->Fill(0.);
 
   if (!fESD) {
@@ -327,11 +326,15 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
 
   //Trigger selection
   AliAnalysisHelperJetTasks::Trigger trig;
-  trig = (const enum AliAnalysisHelperJetTasks::Trigger)fTrigger;
+  trig = (AliAnalysisHelperJetTasks::Trigger)fTrigger;
   if (AliAnalysisHelperJetTasks::IsTriggerFired(fESD,trig)){
     AliDebug(2,Form(" Trigger Selection: event ACCEPTED ... "));
   }else{
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
+    // Post output data
+    PostData(0, fHistList);
+    PostData(1, fHistListTPC);
+    PostData(2, fHistListITS);
     return;
   } 
 
@@ -346,9 +349,20 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
   double primVtx[3];
   vtx->GetXYZ(primVtx);
   //  printf("primVtx: %g  %g  %g \n",primVtx[0],primVtx[1],primVtx[2]);
-  if(primVtx[0]>1. || primVtx[1]>1. || primVtx[2]>10.) return;
-
-  if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2) return;
+  if(TMath::Abs(primVtx[0]>1.) || TMath::Abs(primVtx[1]>1.) || TMath::Abs(primVtx[2])>10.){
+    // Post output data
+    PostData(0, fHistList);
+    PostData(1, fHistListTPC);
+    PostData(2, fHistListITS);
+    return;
+  }
+  if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2){ 
+    // Post output data
+    PostData(0, fHistList);
+    PostData(1, fHistListTPC);
+    PostData(2, fHistListITS);
+    return;
+  }
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d\n", nTracks));
 

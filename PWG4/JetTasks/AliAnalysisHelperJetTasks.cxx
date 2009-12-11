@@ -655,6 +655,8 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigge
       case kMB1:
 	{
 	  if(esd->GetFiredTriggerClasses().Contains("CINT1B"))return kTRUE;
+	  // does the same but without or'ed V0s
+	  if(esd->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;   
 	  break;
 	}
       case kMB2:
@@ -667,7 +669,7 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigge
 	}
       case kSPDGFO:
 	{
-	  if(esd->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;	  
+	  if(esd->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;
 	  break;
 	}
       default:
@@ -689,6 +691,8 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigge
       case kMB1:
 	{
 	  if(aod->GetFiredTriggerClasses().Contains("CINT1B"))return kTRUE;
+	  // does the same but without or'ed V0s
+	  if(aod->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;   
 	  break;
 	}
       case kMB2:
