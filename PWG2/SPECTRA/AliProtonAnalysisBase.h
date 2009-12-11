@@ -255,7 +255,7 @@ class AliProtonAnalysisBase : public TObject {
   AliProtonAnalysisBase& operator=(const AliProtonAnalysisBase&); // Not implemented
 
   TString fProtonAnalysisLevel;//"ESD", "AOD" or "MC"
-  Bool_t fAnalysisMC; //kTRUE if MC analysis
+  Bool_t fAnalysisMC; //kTRUE if MC analysis while reading the ESDs
   TriggerMode fTriggerMode; //Trigger mode
   AnalysisMode fProtonAnalysisMode; //Analysis mode: TPC-Hybrid-Global
   PIDMode fProtonPIDMode; //PID mode: Bayesian-dE/dx ratio-Nsigma areas

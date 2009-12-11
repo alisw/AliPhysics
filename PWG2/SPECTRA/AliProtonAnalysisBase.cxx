@@ -848,11 +848,20 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
   //Definition of an N-sigma area around the dE/dx vs P band
   else if(fProtonPIDMode == kSigma1) {
     Double_t fAlephParameters[5];
-    fAlephParameters[0] = 4.23232575531564326e+00; //50*0.76176e-1;
-    fAlephParameters[1] = 8.68482806165147636e+00; //10.632;
-    fAlephParameters[2] = 1.34000000000000005e-05; //0.13279e-4;
-    fAlephParameters[3] = 2.30445734159456084e+00; //1.8631;
-    fAlephParameters[4] = 2.25624744086878559e+00; //1.9479;
+    if(fAnalysisMC) {
+      fAlephParameters[0] = 4.23232575531564326e+00;
+      fAlephParameters[1] = 8.68482806165147636e+00;
+      fAlephParameters[2] = 1.34000000000000005e-05;
+      fAlephParameters[3] = 2.30445734159456084e+00;
+      fAlephParameters[4] = 2.25624744086878559e+00;
+    }
+    else {
+      fAlephParameters[0] = 50*0.76176e-1;
+      fAlephParameters[1] = 10.632;
+      fAlephParameters[2] = 0.13279e-4;
+      fAlephParameters[3] = 1.8631;
+      fAlephParameters[4] = 1.9479;
+    }
 
     AliTPCpidESD *fPidObject = new AliTPCpidESD(); 
     fPidObject->SetBetheBlochParameters(fAlephParameters[0]/50.,fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
