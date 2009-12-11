@@ -56,7 +56,7 @@ Bool_t AddAnalysisTaskRsnEff
   //  0) transverse momentum
   //  1) pseudo-rapidity
   //  2) multiplicity (estimated with SPD tracklets - uncorrected)
-  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,       40,  0.0,  10.0);
+  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,       50,  0.0,  10.0);
   AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,      20, -1.5,   1.5);
   AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,     8,  0.0, 200.0);
   for (Int_t i = 0; i < 2; i++)
