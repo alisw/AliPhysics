@@ -20,6 +20,7 @@ AliRsnPairManager* RsnConfigPairManager
   Double_t               resonanceMass,
   AliPID::EParticleType  type1,
   AliPID::EParticleType  type2,
+  Bool_t                 useY,
   Bool_t                 addTruePairs
 )
 //
@@ -224,7 +225,7 @@ AliRsnPairManager* RsnConfigPairManager
   }
    
   // === FUNCTIONS ================================================================================
-  
+   
   // resonance type defines IM binning
   Double_t imMin, imMax, imBin;
   Int_t    nbins;
@@ -252,26 +253,27 @@ AliRsnPairManager* RsnConfigPairManager
   AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          20, -1.0,   1.0);
   AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
    
-  AliRsnFunction *fcnPtY   = new AliRsnFunction();
-  AliRsnFunction *fcnPtEta = new AliRsnFunction();
-  AliRsnFunction *fcnMult  = new AliRsnFunction();
+  AliRsnFunction *fcnPt   = new AliRsnFunction();
+  AliRsnFunction *fcnEta  = new AliRsnFunction();
+  AliRsnFunction *fcnY    = new AliRsnFunction();
+  AliRsnFunction *fcnMult = new AliRsnFunction();
   
-  fcnPtY  ->AddAxis(axisIM);
-  fcnPtEta->AddAxis(axisIM);
-  fcnMult ->AddAxis(axisIM);
+  fcnPt  ->AddAxis(axisIM);
+  fcnEta ->AddAxis(axisIM);
+  fcnY   ->AddAxis(axisIM);
+  fcnMult->AddAxis(axisIM);
    
-  fcnPtY  ->AddAxis(axisPt);
-  fcnPtEta->AddAxis(axisPt);
-  fcnMult ->AddAxis(axisMult);
-  
-  fcnPtY  ->AddAxis(axisY);
-  fcnPtEta->AddAxis(axisEta);
+  fcnPt  ->AddAxis(axisPt);
+  fcnY   ->AddAxis(axisY); 
+  fcnEta ->AddAxis(axisEta);
+  fcnMult->AddAxis(axisMult);
    
   // add functions to pairs
   for (i = 0; i < nArray; i++) {
     for (j = 0; j < 4; j++) {
-      pair[i][j]->AddFunction(fcnPtY);
-      pair[i][j]->AddFunction(fcnPtEta);
+      pair[i][j]->AddFunction(fcnPt);
+      pair[i][j]->AddFunction(fcnEta);
+      pair[i][j]->AddFunction(fcnY);
       pair[i][j]->AddFunction(fcnMult);
     }
   }
@@ -294,7 +296,7 @@ AliRsnPairManager* RsnConfigPairManager
 }
 
 //_________________________________________________________________________________________________
-void RsnConfigTask(AliRsnAnalysisSE* &task)
+void RsnConfigTask(AliRsnAnalysisSE* &task, Bool_t useY = kTRUE)
 //
 // -- RsnConfigTask --
 //
@@ -322,13 +324,13 @@ void RsnConfigTask(AliRsnAnalysisSE* &task)
   AliRsnAnalysisManager *anaMgr = task->GetAnalysisManager(0);
     
   // create pair managers for phi
-  anaMgr->Add(RsnConfigPairManager("PHI_NOPID", 333, 1.0193, AliPID::kKaon, AliPID::kKaon, kTRUE));
-  anaMgr->Add(RsnConfigPairManager("PHI_BB"   , 333, 1.0193, AliPID::kKaon, AliPID::kKaon, kTRUE));
-  anaMgr->Add(RsnConfigPairManager("PHI_PID"  , 333, 1.0193, AliPID::kKaon, AliPID::kKaon, kTRUE));
+  anaMgr->Add(RsnConfigPairManager("PHI_NOPID", 333, 1.0193, AliPID::kKaon, AliPID::kKaon, useY, kTRUE));
+  anaMgr->Add(RsnConfigPairManager("PHI_BB"   , 333, 1.0193, AliPID::kKaon, AliPID::kKaon, useY, kTRUE));
+  anaMgr->Add(RsnConfigPairManager("PHI_PID"  , 333, 1.0193, AliPID::kKaon, AliPID::kKaon, useY, kTRUE));
   // create pair managers for kstar
-  anaMgr->Add(RsnConfigPairManager("KSTAR_NOPID", 313, 0.896, AliPID::kPion, AliPID::kKaon, kTRUE));
-  anaMgr->Add(RsnConfigPairManager("KSTAR_BB"   , 313, 0.896, AliPID::kPion, AliPID::kKaon, kTRUE));
-  anaMgr->Add(RsnConfigPairManager("KSTAR_PID"  , 313, 0.896, AliPID::kPion, AliPID::kKaon, kTRUE));
+  anaMgr->Add(RsnConfigPairManager("KSTAR_NOPID", 313, 0.896, AliPID::kPion, AliPID::kKaon, useY, kTRUE));
+  anaMgr->Add(RsnConfigPairManager("KSTAR_BB"   , 313, 0.896, AliPID::kPion, AliPID::kKaon, useY, kTRUE));
+  anaMgr->Add(RsnConfigPairManager("KSTAR_PID"  , 313, 0.896, AliPID::kPion, AliPID::kKaon, useY, kTRUE));
   
   // setup cuts for events (good primary vertex)
   AliRsnCutPrimaryVertex *cutVertex   = new AliRsnCutPrimaryVertex("cutVertex", 3);
