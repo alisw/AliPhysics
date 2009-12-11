@@ -276,7 +276,8 @@ TList * AliRsnPair::GenerateHistograms(TString prefix,TList *list)
     sprintf(hName, "%s_%s", prefix.Data(), GetPairHistName(fcn).Data());
     sprintf(hTitle, "%s", GetPairHistTitle(fcn).Data());
     //TList *histos = fcn->Init(hName, hTitle);
-    list->Add(fcn->CreateHistogram(hName, hTitle));
+    if (fcn->IsUsingTH1()) list->Add(fcn->CreateHistogram(hName, hTitle));
+    else list->Add(fcn->CreateHistogramSparse(hName, hTitle));
     //histos->Print();
     //list->Add(histos);
   }

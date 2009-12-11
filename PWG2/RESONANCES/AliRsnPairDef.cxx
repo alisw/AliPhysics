@@ -15,7 +15,7 @@
 ClassImp(AliRsnPairDef)
 
 //_____________________________________________________________________________
-AliRsnPairDef::AliRsnPairDef() : fMotherPDG(0)
+AliRsnPairDef::AliRsnPairDef() : fMotherMass(0.0), fMotherPDG(0)
 {
 //
 // Empty constructor.
@@ -66,6 +66,7 @@ AliRsnPairDef::AliRsnPairDef
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef(const AliRsnPairDef &copy) :
     TObject(copy),
+    fMotherMass(copy.fMotherMass),
     fMotherPDG(copy.fMotherPDG)
 {
 //
@@ -82,6 +83,7 @@ const AliRsnPairDef& AliRsnPairDef::operator=(const AliRsnPairDef &copy)
 // Assignment operator with standard behavior.
 //
 
+  fMotherMass = copy.fMotherMass;
   fMotherPDG = copy.fMotherPDG;
   SetPair(copy.fCharge[0], copy.fType[0], copy.fCharge[1], copy.fType[1]);
 

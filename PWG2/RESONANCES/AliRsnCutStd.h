@@ -24,6 +24,7 @@ class AliRsnCutStd : public AliRsnCut
       kP = 0,
       kPt,
       kEta,
+      kY,
       kThetaDeg,
       kDr,
       kDz,
@@ -60,11 +61,14 @@ class AliRsnCutStd : public AliRsnCut
     virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnPairParticle*const pair);
     virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnEvent*const event);
     virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnEvent*const ev1, AliRsnEvent*const ev2);
+    
+    void SetMass(Double_t mass) {fMass = mass;}
 
   protected:
 
     EType     fType;       // cut type
     Bool_t    fUseMC;      // use or not MC values (when applicable)
+    Double_t  fMass;       // mass hypothesis (used for Y and Mt)
 
     ClassDef(AliRsnCutStd, 1)
 };
