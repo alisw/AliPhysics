@@ -41,7 +41,8 @@ ClassImp(AliPerformanceObject)
 AliPerformanceObject::AliPerformanceObject():
   TNamed("AliPerformanceObject","AliPerformanceObject"),
   fAnalysisMode(-1),
-  fHptGenerator(kFALSE)
+  fHptGenerator(kFALSE),
+  fTriggerClass(0)
 {
   // constructor
 }
@@ -50,7 +51,8 @@ AliPerformanceObject::AliPerformanceObject():
 AliPerformanceObject::AliPerformanceObject(const char* name, const char* title):
   TNamed(name,title),
   fAnalysisMode(-1),
-  fHptGenerator(kFALSE)
+  fHptGenerator(kFALSE),
+  fTriggerClass(0)
 {
   // constructor
 }

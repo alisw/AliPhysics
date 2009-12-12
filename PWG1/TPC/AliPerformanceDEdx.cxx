@@ -140,7 +140,7 @@ void AliPerformanceDEdx::Init()
    //Int_t binsQA[8]    = {300, 50, 50,  50, 50, 50, 80, nPBins};
    //Double_t xminQA[8] = {0, -4,-20,-250, -1, -2, 0, pMin};
    //Double_t xmaxQA[8] = {300, 4, 20, 250,  1,  2, 160, pMax};
-   Int_t binsQA[8]    = {300, 90, 50,  50, 50, 50, 80, nPBins};
+   Int_t binsQA[8]    = {300, 144, 50,  50, 50, 50, 80, nPBins};
    Double_t xminQA[8] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin};
    Double_t xmaxQA[8] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax};
 
@@ -318,8 +318,13 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdE
     }
   }
 
+  // trigger
+  Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+  if(!isEventTriggered) return; 
 
-
+  // get TPC event vertex
+  const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
+  if(vtxESD && (vtxESD->GetStatus()<=0)) return;
 
   //  Process events
   for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 

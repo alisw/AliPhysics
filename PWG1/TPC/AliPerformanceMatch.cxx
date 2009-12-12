@@ -513,6 +513,14 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esd
     }
   }
 
+  // trigger
+  Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+  if(!isEventTriggered) return; 
+
+  // get TPC event vertex
+  const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
+  if(vtxESD && (vtxESD->GetStatus()<=0)) return;
+
   //  Process events
   for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
   { 

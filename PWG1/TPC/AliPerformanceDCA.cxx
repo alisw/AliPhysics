@@ -131,7 +131,7 @@ void AliPerformanceDCA::Init()
    */
 
    //dca_r, dca_z, eta, pt
-   Int_t binsQA[5]    = {100,100,30,nPtBins,90};
+   Int_t binsQA[5]    = {100,100,30,nPtBins,144};
    Double_t xminQA[5] = {-10.,-10.,-1.5,ptMin,0.};
    Double_t xmaxQA[5] = {10.,10.,1.5,ptMax,2*TMath::Pi()};
 
@@ -287,6 +287,14 @@ void AliPerformanceDCA::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
       return;
     }
   }
+
+  // trigger
+  Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+  if(!isEventTriggered) return; 
+
+  // get TPC event vertex
+  const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
+  if(vtxESD && (vtxESD->GetStatus()<=0)) return;
 
   //  Process events
   for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 

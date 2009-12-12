@@ -58,6 +58,10 @@ public :
   // create log axis 
   Double_t *CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax); 
 
+  // trigger class selection
+  void SetTriggerClass(const Char_t *triggerClass) { fTriggerClass = triggerClass; }
+  const Char_t* GetTriggerClass() const { return fTriggerClass; }
+
 protected: 
 
  // analysis mode
@@ -65,6 +69,12 @@ protected:
 
  // hpt generator
  Bool_t fHptGenerator; // hpt event generator
+
+ // trigger class
+ const Char_t * fTriggerClass;
+
+  AliPerformanceObject(const AliPerformanceObject&); // not implemented
+  AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
   ClassDef(AliPerformanceObject,1);
 };
