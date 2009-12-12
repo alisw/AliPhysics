@@ -12,9 +12,10 @@ void drawResults(const char* esdFileName) {
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
+  gSystem->Load("libPWG2spectra.so");
 
   //Open the input file and get the objects
-  TFile *f = TFile::Open(esdFileName);
+  /*TFile *f = TFile::Open(esdFileName);
   TList *analysisList = dynamic_cast<TList *>(f->Get("outputList"));
   TH2D *gHistYPtProtons = dynamic_cast<TH2D *>(analysisList->At(0));
   TH2D *gHistYPtAntiProtons = dynamic_cast<TH2D *>(analysisList->At(1));
@@ -25,9 +26,34 @@ void drawResults(const char* esdFileName) {
   if(gHistEventStats->GetBinContent(1) != 0) {
     gHistEventStats->GetYaxis()->SetTitle("N_{events} [%]");
     gHistEventStats->Scale(100./gHistEventStats->GetBinContent(1));
-  }
+    }*/
+
+  //Create the AliProtonAnalysis object
+  AliProtonAnalysis *analysis = new AliProtonAnalysis();
+  analysis->ReadFromFile(esdFileName);
+  TH1F *gHistEventStats = dynamic_cast<TH1F *>(analysis->GetEventStatistics());
+  TH2D *gHistYPtProtons = dynamic_cast<TH2D *>(analysis->GetProtonYPtHistogram());
+  TH2D *gHistYPtAntiProtons = dynamic_cast<TH2D *>(analysis->GetAntiProtonYPtHistogram());
+  TH1D *gHistYProtons = dynamic_cast<TH1D *>(analysis->GetProtonYHistogram());
+  TH1D *gHistYAntiProtons = dynamic_cast<TH1D *>(analysis->GetAntiProtonYHistogram());
+  TH1D *gHistPtProtons = dynamic_cast<TH1D *>(analysis->GetProtonPtHistogram());
+  TH1D *gHistPtAntiProtons = dynamic_cast<TH1D *>(analysis->GetAntiProtonPtHistogram());
+  TH1D *gHistYRatio = dynamic_cast<TH1D *>(analysis->GetYRatioHistogram());
+  TH1D *gHistPtRatio = dynamic_cast<TH1D *>(analysis->GetPtRatioHistogram());
 
   //==================================================================//
+  TH2F *hEmptyRatio = new TH2F("hEmptyRatio",";;#bar{p}/p",100,-0.7,1.1,100,0.1,1.1);
+  hEmptyRatio->SetStats(kFALSE);
+  hEmptyRatio->GetXaxis()->SetNdivisions(10);
+  hEmptyRatio->GetYaxis()->SetNdivisions(10);
+
+  TLatex *latex = new TLatex();
+  latex->SetTextSize(0.04);
+  latex->SetTextColor(2);
+
+  TF1 *fFitFunction = new TF1("fFitFunction","[0]",-0.5,0.5);
+  fFitFunction->SetParameter(0,0.7);
+
   TCanvas *c2D = new TCanvas("c2D","eta-pT (anti)protons",0,0,700,400);
   c2D->SetFillColor(10); c2D->SetHighLightColor(10); c2D->Divide(2,1);
   c2D->cd(1); gHistYPtProtons->Draw("col");
@@ -37,7 +63,36 @@ void drawResults(const char* esdFileName) {
 				     0,0,500,500);
   cEventStats->SetFillColor(10); cEventStats->SetHighLightColor(10);
   gHistEventStats->Draw();
-  
+
+  TCanvas *cEta = new TCanvas("cEta","Eta",100,0,600,400);
+  cEta->SetFillColor(10); cEta->SetHighLightColor(10); cEta->Divide(2,1);
+  cEta->cd(1); gHistYProtons->Draw("E");
+  cEta->cd(2); gHistYAntiProtons->Draw("E");
+
+  TCanvas *cPt = new TCanvas("cPt","Pt",100,200,600,400);
+  cPt->SetFillColor(10); cPt->SetHighLightColor(10); cPt->Divide(2,1);
+  cPt->cd(1)->SetLogy(); gHistPtProtons->Draw("E");
+  cPt->cd(2)->SetLogy(); gHistPtAntiProtons->Draw("E");
+
+  TCanvas *cRatio = new TCanvas("cRatio","Ratio",300,0,600,400);
+  cRatio->SetFillColor(10); cRatio->SetHighLightColor(10); cRatio->Divide(2,1);
+  cRatio->cd(1); hEmptyRatio->GetXaxis()->SetTitle("eta"); 
+  hEmptyRatio->GetXaxis()->SetRangeUser(-0.7,0.7); 
+  hEmptyRatio->DrawCopy(); gHistYRatio->Draw("ESAME");
+  gHistYRatio->Fit("fFitFunction","N");
+  latex->DrawLatex(-0.1,0.45,"ALICE PRELIMINARY");
+  latex->DrawLatex(-0.1,0.4,"p-p: #sqrt{s} = 900 GeV");
+  cRatio->cd(2);  hEmptyRatio->GetXaxis()->SetTitle("P_{T} [GeV/c]"); 
+  hEmptyRatio->GetXaxis()->SetRangeUser(0.3,1.1); 
+  hEmptyRatio->DrawCopy(); gHistPtRatio->Draw("ESAME");
+  latex->DrawLatex(0.6,0.45,"ALICE PRELIMINARY");
+  latex->DrawLatex(0.6,0.4,"p-p: #sqrt{s} = 900 GeV");
+
+
+  Printf("==========================================");
+  Printf("Fit result: %lf - %lf",fFitFunction->GetParameter(0),fFitFunction->GetParError(0));
+  analysis->PrintMean(gHistYRatio,0.5);
+  Printf("==========================================");
 }
 
 //___________________________________________________//
@@ -134,7 +189,6 @@ void drawQAPlots(const char* esdFileName) {
   gHistProtonsPtTPCNPoints->SetStats(kFALSE);
   TH2D *gHistProtonsPhiTPCNPoints = dynamic_cast<TH2D *>gHistProtonsPtPhiTPCNPoints->Project3D("zy");
   gHistProtonsPhiTPCNPoints->SetStats(kFALSE);
-
 
   //__________________________________________________//
   TCanvas *cdEdx = new TCanvas("cdEdx","dE/dx (TPC)",0,0,700,400);
@@ -480,4 +534,3 @@ void drawQAPlots(const char* esdFileName) {
   cVertex->cd(2)->SetLogy(); gHistVy->Draw(); gHistVyAccepted->Draw("same");
   cVertex->cd(3)->SetLogy(); gHistVz->Draw(); gHistVzAccepted->Draw("same");
 }
-  

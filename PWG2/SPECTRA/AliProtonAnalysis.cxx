@@ -53,7 +53,7 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fNBinsY(0), fMinY(0), fMaxY(0),
   fNBinsPt(0), fMinPt(0), fMaxPt(0),
   fProtonContainer(0), fAntiProtonContainer(0),
-  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
+  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), fHistEventStats(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
@@ -75,7 +75,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fNBinsY(nbinsY), fMinY(fLowY), fMaxY(fHighY),
   fNBinsPt(nbinsPt), fMinPt(fLowPt), fMaxPt(fHighPt),
   fProtonContainer(0), fAntiProtonContainer(0),
-  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
+  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), fHistEventStats(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
@@ -142,7 +142,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fNBinsY(nbinsY), fMinY(gY[0]), fMaxY(gY[nbinsY]),
   fNBinsPt(nbinsPt), fMinPt(gPt[0]), fMaxPt(gPt[nbinsPt]),
   fProtonContainer(0), fAntiProtonContainer(0),
-  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
+  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), fHistEventStats(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
@@ -200,6 +200,7 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fHistEvents) delete fHistEvents;
   if(fHistYPtProtons) delete fHistYPtProtons;
   if(fHistYPtAntiProtons) delete fHistYPtAntiProtons;
+  if(fHistEventStats) delete fHistEventStats;
   if(fProtonContainer) delete fProtonContainer;
   if(fAntiProtonContainer) delete fAntiProtonContainer;
 
@@ -355,6 +356,7 @@ Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
     fHistEvents = (TH1I *)list->At(2);
     fProtonContainer = (AliCFContainer *)list->At(3);
     fAntiProtonContainer = (AliCFContainer *)list->At(4);
+    fHistEventStats = (TH1F *)list->At(5);
   }
   else if(!list) {
     cout<<"Retrieving objects from the file... "<<endl;
@@ -363,9 +365,10 @@ Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
     fHistEvents = (TH1I *)file->Get("fHistEvents");
     fProtonContainer = (AliCFContainer *)file->Get("containerProtons");
     fAntiProtonContainer = (AliCFContainer *)file->Get("containerAntiProtons");
+    fHistEventStats = (TH1F *)file->Get("fHistEventStats");
   }
   if((!fHistYPtProtons)||(!fHistYPtAntiProtons)||(!fHistEvents)
-     ||(!fProtonContainer)||(!fAntiProtonContainer)) {
+     ||(!fProtonContainer)||(!fAntiProtonContainer)||(!fHistEventStats)) {
     cout<<"Input containers were not found!!!"<<endl;
     status = kFALSE;
   }
