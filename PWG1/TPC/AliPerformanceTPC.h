@@ -66,11 +66,13 @@ public :
 
   // getters
   //
+  THnSparse *GetTPCClustHisto() const  { return fTPCClustHisto; }
   THnSparse *GetTPCEventHisto() const  { return fTPCEventHisto; }
   THnSparse *GetTPCTrackHisto() const  { return fTPCTrackHisto; }
 private:
 
   // TPC histogram
+  THnSparseF *fTPCClustHisto; //-> gclX:gclY:TPCSide
   THnSparseF *fTPCEventHisto; //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
   THnSparseF *fTPCTrackHisto; //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge
 

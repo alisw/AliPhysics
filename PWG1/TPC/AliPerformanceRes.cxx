@@ -135,7 +135,7 @@ void AliPerformanceRes::Init(){
   }
 
   // res_y:res_z:res_phi,res_lambda:res_pt:y:z:eta:phi:pt
-  Int_t binsResolHisto[10]={100,100,100,100,100,25,50,90,30,nPtBins};
+  Int_t binsResolHisto[10]={100,100,100,100,100,25,50,144,30,nPtBins};
   Double_t minResolHisto[10]={-1.,-1.,-0.03,-0.03,-0.2, yMin, zMin, 0., -1.5, ptMin};
   Double_t maxResolHisto[10]={ 1., 1., 0.03, 0.03, 0.2, yMax, zMax, 2.*TMath::Pi(), 1.5, ptMax};
 
@@ -155,7 +155,7 @@ void AliPerformanceRes::Init(){
   fResolHisto->Sumw2();
 
   ////pull_y:pull_z:pull_phi:pull_lambda:pull_1pt:y:z:eta:phi:pt
-  //Int_t binsPullHisto[10]={100,100,100,100,100,50,50,30,90,nPtBins};
+  //Int_t binsPullHisto[10]={100,100,100,100,100,50,50,30,144,nPtBins};
   //Double_t minPullHisto[10]={-5.,-5.,-5.,-5.,-5.,yMin, zMin,-1.5, 0., ptMin};
   //Double_t maxPullHisto[10]={ 5., 5., 5., 5., 5., yMax, zMax, 1.5, 2.*TMath::Pi(),ptMax};
   //fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_phi:pull_lambda:pull_1pt:y:z:eta:phi:pt",10,binsPullHisto,minPullHisto,maxPullHisto);

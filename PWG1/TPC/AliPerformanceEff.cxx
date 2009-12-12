@@ -138,7 +138,7 @@ void AliPerformanceEff::Init()
   */
 
   //mceta:mcphi:mcpt:pid:recStatus:findable
-  Int_t binsEffHisto[6]={30,90,nPtBins,5,2,2};
+  Int_t binsEffHisto[6]={30,144,nPtBins,5,2,2};
   Double_t minEffHisto[6]={-1.5,0.,ptMin,0.,0.,0.};
   Double_t maxEffHisto[6]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.};
 
