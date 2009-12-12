@@ -519,11 +519,12 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
     for(ipt=0; ipt<array->GetNPoints(); ipt++) {
       array->GetPoint(point,ipt);
       volId = point.GetVolumeID();
+      if(volId<=0) continue;
       layerId = AliGeomManager::VolUIDToLayer(volId,modId);
-      AliDebug(2,Form("%d %d\n",ipt,layerId-1));
+      AliDebug(2,Form("%d %d %d  %f\n",ipt,layerId-1,volId,TMath::Sqrt(point.GetX()*point.GetX()+point.GetY()*point.GetY())));
       if(point.IsExtra() && 
 	 (GetRecoParam()->GetAlignFilterSkipExtra())) continue;
-      if(layerId>6) continue;
+      if(layerId<1 || layerId>6) continue;
       if(!GetRecoParam()->GetAlignFilterUseLayer(layerId-1)) continue;
       // check minAngleWrtITSModulePlanes
       Double_t p[3]; track->GetDirection(p);
@@ -590,8 +591,9 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
     for(ipt=0; ipt<array->GetNPoints(); ipt++) {
       array->GetPoint(point,ipt);
       volId = point.GetVolumeID();
+      if(volId<=0) continue;
       layerId = AliGeomManager::VolUIDToLayer(volId,modId);
-      if(layerId>6 || !layerOK[layerId-1][itrack]) continue;
+      if(layerId<1 || layerId>6 || !layerOK[layerId-1][itrack]) continue;
       arrayForTree->AddPoint(jpt,&point);
       jpt++;
       switch(layerId) {
@@ -631,6 +633,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
       Float_t radius,radiusT,phiv,phivT,thetav,thetavT;
       for(Int_t lll=0;lll<ipt;lll++) {
 	array->GetPoint(pointT,lll);
+	if(pointT.GetVolumeID()<=0) continue;
 	Int_t layerIdT = AliGeomManager::VolUIDToLayer(pointT.GetVolumeID(),modId);
 	if(layerIdT!=layerId) continue;
 	radius=TMath::Sqrt((point.GetX()-vtxpos[0])*(point.GetX()-vtxpos[0])+(point.GetY()-vtxpos[1])*(point.GetY()-vtxpos[1]));
@@ -800,6 +803,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
     for(ipt=0; ipt<array->GetNPoints(); ipt++) {
       array->GetPoint(point,ipt);
       volId = point.GetVolumeID();
+      if(volId<=0) continue;
       layerId = AliGeomManager::VolUIDToLayer(volId,modId);
       if(layerId<1 || layerId>6) continue;
       if(point.IsExtra() && 
