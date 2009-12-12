@@ -23,6 +23,18 @@ void MakeOCDB(Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity(),TString in
   // Make vdrift calibration
   //
   CalibTimeVdriftGlobal(inputFile.Data(),startRun,AliCDBRunRange::Infinity());
-
-
+  //
+  // Make calibration plot
+  //
+  Int_t run=endRun;
+  ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/TimeDrift",ocdbStorage.Data());  
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("TPC/Calib/TimeDrift",run);
+  TObjArray * arr = (TObjArray*)entry->GetObject();
+  TObjArray *picArray = new TObjArray;
+  MakeDefaultPlots(arr,picArray);
+  TFile fdrift("vdrift.root","recreate");
+  picArray->Write("drift Plot");
+  fdrift.Close();  
 }
