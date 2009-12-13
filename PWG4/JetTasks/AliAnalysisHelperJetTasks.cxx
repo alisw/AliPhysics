@@ -639,10 +639,6 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigge
   // here we do a dirty hack to take also into account the
   // missing trigger bits and Bunch crossing paatern for real data 
   
-
-  Bool_t bitFired = IsTriggerBitFired(aEv->GetTriggerMask(), trigger);
-
-  if(bitFired)return kTRUE;// TODO add protection in case the upper trigger bit are set in the real data too and not correspond to simulated ones...
   if(aEv->InheritsFrom("AliESDEvent")){
     const AliESDEvent *esd = (AliESDEvent*)aEv;
     switch (trigger)
@@ -654,22 +650,27 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigge
 	}
       case kMB1:
 	{
-	  if(esd->GetFiredTriggerClasses().Contains("CINT1B"))return kTRUE;
+	  if(esd->GetFiredTriggerClasses().Contains("CINT1B-"))return kTRUE;
 	  // does the same but without or'ed V0s
 	  if(esd->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;   
+	  // this is for simulated data
+	  if(esd->GetFiredTriggerClasses().Contains("MB1"))return kTRUE;   
 	  break;
 	}
       case kMB2:
 	{
+	  if(esd->GetFiredTriggerClasses().Contains("MB2"))return kTRUE;   
 	  break;
 	}
       case kMB3:
 	{
+	  if(esd->GetFiredTriggerClasses().Contains("MB3"))return kTRUE;   
 	  break;
 	}
       case kSPDGFO:
 	{
 	  if(esd->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;
+	  if(esd->GetFiredTriggerClasses().Contains("GFO"))return kTRUE;
 	  break;
 	}
       default:
@@ -693,19 +694,24 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerBitFired(const AliVEvent* aEv, Trigge
 	  if(aod->GetFiredTriggerClasses().Contains("CINT1B"))return kTRUE;
 	  // does the same but without or'ed V0s
 	  if(aod->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;   
+	  // for sim data
+	  if(aod->GetFiredTriggerClasses().Contains("MB1"))return kTRUE;   
 	  break;
 	}
       case kMB2:
 	{
+	  if(aod->GetFiredTriggerClasses().Contains("MB2"))return kTRUE;   
 	  break;
 	}
       case kMB3:
 	{
+	  if(aod->GetFiredTriggerClasses().Contains("MB3"))return kTRUE;   
 	  break;
 	}
       case kSPDGFO:
 	{
 	  if(aod->GetFiredTriggerClasses().Contains("CSMBB"))return kTRUE;	  
+	  if(aod->GetFiredTriggerClasses().Contains("GFO"))return kTRUE;   
 	  break;
 	}
       default:
