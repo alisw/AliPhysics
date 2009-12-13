@@ -43,6 +43,7 @@
 #include "AliAODJet.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliKFVertex.h"
 
 #include "AliGenPythiaEventHeader.h"
 #include "AliAnalysisHelperJetTasks.h"
@@ -244,7 +245,7 @@ void  AliAnalysisTaskUE::CreateOutputObjects()
 //____________________________________________________________________
 void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
 {
-  //Trigger selection
+  //Trigger selection ************************************************
   AliAnalysisHelperJetTasks::Trigger trig;
   trig = (const enum AliAnalysisHelperJetTasks::Trigger)fTrigger;
   if (AliAnalysisHelperJetTasks::IsTriggerFired(fAOD,trig)){
@@ -253,7 +254,17 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
   	if (fDebug > 1) AliInfo(" Trigger Selection: event REJECTED ... ");
   	return;
   }
-
+  //Event selection (vertex) *****************************************
+  AliKFVertex primVtx(*(fAOD->GetPrimaryVertex()));
+  Int_t nTracksPrim=primVtx.GetNContributors();
+  if (fDebug > 1) AliInfo(Form(" Primary-vertex Selection: %d",nTracksPrim));
+  if(!nTracksPrim){
+  	if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
+  	return; 
+	}
+  if (fDebug > 1) AliInfo(" Primary-vertex Selection: event ACCEPTED ...");
+ 
+  
   // Execute analysis for current event
   //
   if ( fDebug > 3 ) AliInfo( " Processing event..." );
@@ -1127,6 +1138,7 @@ void  AliAnalysisTaskUE::CreateHistos()
   fListOfHistos->Add( fh1Trials ); //At(22)
   
   fSettingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
+  fSettingsTree->Branch("fTrigger", &fTrigger,"TriggerFlag/I");
   fSettingsTree->Branch("fConeRadius", &fConeRadius,"Rad/D");
   fSettingsTree->Branch("fJet1EtaCut", &fJet1EtaCut, "LeadJetEtaCut/D");
   fSettingsTree->Branch("fJet2DeltaPhiCut", &fJet2DeltaPhiCut, "DeltaPhi/D");
