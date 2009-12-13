@@ -1,4 +1,27 @@
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec = "jets",char* bGen = "jetsAODMC_UA104",UInt_t filterMask = 16)
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec = "jets",char* bGen = "jetsAODMC_UA104",UInt_t filterMask = 16);
+
+
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE){
+  AliAnalysisTaskJetSpectrum2 *js = 0;
+  if(kUseAODMC){
+  js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104",filterMask);
+    js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104",filterMask);
+
+    js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",filterMask);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",filterMask);
+
+  js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107",filterMask);
+  }
+  js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",filterMask);
+  js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",filterMask);
+  js = AddTaskJetSpectrum2("jetsAOD_UA107","",filterMask);
+  js->SetRecEtaWindow(0.2);
+
+  return js;
+}
+
+
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t filterMask)
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
 
@@ -59,7 +82,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec = "jets",char* bGen 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer("pwg4spec2", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_spec2_%s_%s",AliAnalysisManager::GetCommonFileName(),bRec,bGen));
+   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwg4spec2_%s_%s",bRec,bGen), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_spec2_%s_%s",AliAnalysisManager::GetCommonFileName(),bRec,bGen));
 
    mgr->ConnectInput  (pwg4spec, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (pwg4spec, 0, mgr->GetCommonOutputContainer());

@@ -60,7 +60,6 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   taskPWG4QA->SetCutsITS(trackCutsITS);
   taskPWG4QA->SelectTrigger(AliAnalysisHelperJetTasks::kMB1); 
   
- 
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
@@ -74,7 +73,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   AliAnalysisDataContainer *cout_hist1 = mgr->CreateContainer("qa_histsTPC", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *cout_hist2 = mgr->CreateContainer("qa_histsITS", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
 
- 
+
   mgr->AddTask(taskPWG4QA);
 
   mgr->ConnectInput(taskPWG4QA,0,mgr->GetCommonInputContainer());
