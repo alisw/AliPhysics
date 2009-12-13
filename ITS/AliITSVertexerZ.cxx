@@ -207,17 +207,9 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
 
   Int_t nrpL1 = 0;
   Int_t nrpL2 = 0;
+  nrpL1=rpcont->GetNClustersInLayerFast(1);
+  nrpL2=rpcont->GetNClustersInLayerFast(2);
 
-  // By default fFirstL1=0 and fLastL1=79
-  for(Int_t module= fFirstL1; module<=fLastL1;module++){
-    itsRec=rpcont->UncheckedGetClusters(module);
-    nrpL1+= itsRec->GetEntries();
-  }
-  //By default fFirstL2=80 and fLastL2=239
-  for(Int_t module= fFirstL2; module<=fLastL2;module++){
-    itsRec=rpcont->UncheckedGetClusters(module);
-    nrpL2+= itsRec->GetEntries();
-  }
   if(nrpL1 == 0 || nrpL2 == 0){
     AliDebug(1,Form("No RecPoints in at least one SPD layer (%d %d)",nrpL1,nrpL2));
     ResetHistograms();

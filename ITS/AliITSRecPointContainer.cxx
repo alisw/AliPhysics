@@ -33,6 +33,7 @@ fDet(""),
 fStatusOK(kTRUE){
   // Default constructor
 
+  for(Int_t i=0;i<6;i++)fNClusters[i]=0;
   if(fgkNModules != AliITSgeomTGeo::GetNModules())AliError(Form("The total number of modules is not %d, but %d",fgkNModules,AliITSgeomTGeo::GetNModules()));
 
   Int_t modperlay[6];
@@ -140,34 +141,54 @@ TClonesArray* AliITSRecPointContainer::FetchClusters(Int_t mod, TTree* tR,Int_t 
     fActualSize = branch->GetEntries();
     CookEntries();
     if(fDet.IsNull())return NULL;
-
     // it is assumed that the filling order of the tree is SPD, SDD, SSD
     // even if one or two subdetector are missing
+    Int_t modL1=AliITSgeomTGeo::GetNDetectors(1)*AliITSgeomTGeo::GetNLadders(1);
     if(IsSPDActive()){
       for(Int_t i=0;i<fSPDNModules;i++){
 	branch->SetAddress(&fArray[i]);
 	branch->GetEvent(i);
+	if(i<modL1){
+	  fNClusters[0]+=fArray[i]->GetEntries();
+	}
+	else {
+	  fNClusters[1]+=fArray[i]->GetEntries();
+	}
       }
     }
     if(IsSDDActive()){
       Int_t start=0;
       if(IsSPDActive())start+=fSPDNModules;
+      Int_t modL3=AliITSgeomTGeo::GetNDetectors(3)*AliITSgeomTGeo::GetNLadders(3);
       Int_t counter = fSPDNModules;
       for(Int_t i=start;i<start+fSDDNModules;i++){
 	branch->SetAddress(&fArray[counter]);
 	++counter;
 	branch->GetEvent(i);
+	if((i-start)<modL3){
+	  fNClusters[2]+=fArray[i]->GetEntries();
+	}
+	else {
+	  fNClusters[3]+=fArray[i]->GetEntries();
+	}
       }
     }
     if(IsSSDActive()){
       Int_t start=0;
       if(IsSPDActive())start+=fSPDNModules;
       if(IsSDDActive())start+=fSDDNModules;
+      Int_t modL5=AliITSgeomTGeo::GetNDetectors(5)*AliITSgeomTGeo::GetNLadders(5);
       Int_t counter = fSPDNModules+fSDDNModules;
       for(Int_t i=start;i<start+fSSDNModules;i++){
 	branch->SetAddress(&fArray[counter]);
 	++counter;
 	branch->GetEvent(i);
+	if((i-start)<modL5){
+	  fNClusters[4]+=fArray[i]->GetEntries();
+	}
+	else {
+	  fNClusters[5]+=fArray[i]->GetEntries();
+	}
       }
     }
   }
@@ -181,7 +202,34 @@ TClonesArray* AliITSRecPointContainer::FetchClusters(Int_t mod, TTree* tR,Int_t 
   }
   
 }
-
+//______________________________________________________________________
+UInt_t AliITSRecPointContainer::GetNClustersInLayer(Int_t lay, TTree* tR, Int_t eventN){
+  // returns the number of clusters for laier lay
+  // layers are numbered from 1 to 6
+  if(lay<1 || lay >6){
+    AliError(Form("Layer %d is out of range",lay));
+    return 0;
+  }
+  if(eventN>=0){
+    FetchClusters(0,tR,eventN);
+  }
+  else {
+    FetchClusters(0,tR);
+  }
+  return fNClusters[lay-1];
+}
+//______________________________________________________________________
+UInt_t AliITSRecPointContainer::GetNClustersInLayerFast(Int_t lay) const {
+  // returns the number of clusters for laier lay
+  // layers are numbered from 1 to 6
+  // No checks are done on the event number: the numer of clusters 
+  // for the event stored in memory is returned
+  if(lay<1 || lay >6){
+    AliError(Form("Layer %d is out of range",lay));
+    return 0;
+  }
+  return fNClusters[lay-1];
+}
 //______________________________________________________________________
 AliITSRecPointContainer* AliITSRecPointContainer::Instance(const AliITSRecoParam* kptr){
   // returns AliITSRecPointContainer instance (singleton)
@@ -203,4 +251,5 @@ void AliITSRecPointContainer::Reset(){
     (fArray[i])->Clear();
   }
   fDet="";
+  for(Int_t i=0;i<6;i++)fNClusters[i]=0;
 }

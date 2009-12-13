@@ -33,6 +33,10 @@ class AliITSRecPointContainer : public TObject {
   TClonesArray* FetchClusters(Int_t mod, TTree* tR,Int_t cureve);
   TClonesArray* UncheckedGetClusters(Int_t mod) const {return fArray[mod];}
 
+  // In the following two methods: 1<=lay<=6  (i.e. layers numbered from 1) 
+  UInt_t GetNClustersInLayer(Int_t lay, TTree* tR, Int_t eventN=-1);
+  UInt_t GetNClustersInLayerFast(Int_t lay) const;
+
  private:
   // methods
   AliITSRecPointContainer(const AliITSRecoParam* krp=NULL);   // Default constructor
@@ -57,6 +61,7 @@ class AliITSRecPointContainer : public TObject {
   TString fDet; //! ITS subdetectors active for the current run 
   Bool_t fStatusOK; //! kFALSE is RP branch is absent or if there are anomalies
                     //! in the number of active modules
+  UInt_t fNClusters[6]; //! Number of clusters per layer
 
   ClassDef(AliITSRecPointContainer,0)
 };

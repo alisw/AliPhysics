@@ -515,21 +515,8 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 
   Int_t nrpL1 = 0;    // number of rec points on layer 1
   Int_t nrpL2 = 0;    // number of rec points on layer 2
-
-  // By default irstL1=0 and lastL1=79
-  Int_t firstL1 = AliITSgeomTGeo::GetModuleIndex(1,1,1);
-  Int_t lastL1 = AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;
-  for(Int_t module= firstL1; module<=lastL1;module++){  // count number of recopints on layer 1
-    itsRec=rpcont->UncheckedGetClusters(module);
-    nrpL1+= itsRec->GetEntries();
-  }
-  //By default firstL2=80 and lastL2=239
-  Int_t firstL2 = AliITSgeomTGeo::GetModuleIndex(2,1,1);
-  Int_t lastL2 = AliITSgeomTGeo::GetModuleIndex(3,1,1)-1;
-  for(Int_t module= firstL2; module<=lastL2;module++){  // count number of recopints on layer 2
-    itsRec=rpcont->UncheckedGetClusters(module);
-    nrpL2+= itsRec->GetEntries();
-  }
+  nrpL1=rpcont->GetNClustersInLayerFast(1);
+  nrpL2=rpcont->GetNClustersInLayerFast(2);
   if(nrpL1 == 0 || nrpL2 == 0){
     AliDebug(1,Form("No RecPoints in at least one SPD layer (%d %d)",nrpL1,nrpL2));
     return -1;
@@ -548,6 +535,8 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 
   Int_t nolines = 0;
   // Loop on modules of layer 1
+  Int_t firstL1 = AliITSgeomTGeo::GetModuleIndex(1,1,1);
+  Int_t lastL1 = AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;
   for(Int_t modul1= firstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
     if(!fUseModule[modul1]) continue;
     UShort_t ladder=int(modul1/4)+1; // ladders are numbered starting from 1
