@@ -74,3 +74,30 @@ void AliAODDiJet::SetJetRefs(AliAODJet* jet1, AliAODJet* jet2)
     fJet2 = jet2;
 }
 
+
+//______________________________________________________________________________
+Float_t AliAODDiJet::DeltaPhi()
+{
+  // phi distance between the two jets
+  // the result is in the interval [0,pi]
+
+    Float_t phi1 = Jet(0)->Phi();
+    Float_t phi2 = Jet(1)->Phi();
+    Float_t dphi = TMath::Abs(phi1 - phi2);
+    dphi = (dphi > TMath::Pi()) ? (2*TMath::Pi()-dphi) : dphi;
+    return dphi;
+}
+
+
+//______________________________________________________________________________
+Float_t AliAODDiJet::PhiImbalance()
+{
+  // phi imbalance wrt back-to-back
+  // the result is in the interval [-pi,pi]
+
+    Float_t phi1 = Jet(0)->Phi();
+    Float_t phi2 = Jet(1)->Phi();
+    Float_t dphi = phi1 - phi2;
+    dphi = dphi - TMath::Sign((Float_t)TMath::Pi(),dphi);
+    return dphi;
+}

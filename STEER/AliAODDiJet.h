@@ -23,16 +23,21 @@ class AliAODDiJet : public AliAODJet {
     AliAODDiJet();
     AliAODDiJet(Double_t px, Double_t py, Double_t pz, Double_t e);
     AliAODDiJet(TLorentzVector & p);
+    virtual ~AliAODDiJet();
+
     void SetJetRefs(AliAODJet* jet1, AliAODJet* jet2);
     AliAODJet* Jet(Int_t i) {return ((AliAODJet*) (fJetR->At(i)));}
-    virtual ~AliAODDiJet();
+    Float_t    DeltaPhi();
+    Float_t    PhiImbalance();
+
  private:
-    AliAODDiJet(const AliAODDiJet& jet); 
+    AliAODDiJet(const AliAODDiJet& jet);
     AliAODDiJet& operator=(const AliAODDiJet& jet);
+
  private:
     TRefArray*  fJetR;
     TRef        fJet1;
-    TRef        fJet2;    
+    TRef        fJet2;
     ClassDef(AliAODDiJet, 1);
 };
 #endif
