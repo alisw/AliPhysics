@@ -79,6 +79,7 @@ ClassImp(AliEventTag)
     fNumberOfElectronsAbove10GeV(-10),
     fNumberOfElectrons(-10),
     fNumberOfFWMuons(-10),
+    fNumberOfFWMatchedMuons(-10),
     fNumberOfMuons(-10),
     fNumberOfPions(-10),
     fNumberOfKaons(-10),
@@ -165,6 +166,7 @@ AliEventTag::AliEventTag(const AliEventTag & evTag) :
   fNumberOfElectronsAbove10GeV(evTag.fNumberOfElectronsAbove10GeV),
   fNumberOfElectrons(evTag.fNumberOfElectrons),
   fNumberOfFWMuons(evTag.fNumberOfFWMuons),
+  fNumberOfFWMatchedMuons(evTag.fNumberOfFWMatchedMuons),
   fNumberOfMuons(evTag.fNumberOfMuons),
   fNumberOfPions(evTag.fNumberOfPions),
   fNumberOfKaons(evTag.fNumberOfKaons),
@@ -253,6 +255,7 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &evTag) {
     SetNumOfElectronsAbove10GeV(evTag.GetNumOfElectronsAbove10GeV());
     SetNumOfElectrons(evTag.GetNumOfElectrons());
     SetNumOfFWMuons(evTag.GetNumOfFWMuons());
+    SetNumOfFWMatchedMuons(evTag.GetNumOfFWMatchedMuons());
     SetNumOfMuons(evTag.GetNumOfMuons());
     SetNumOfPions(evTag.GetNumOfPions());
     SetNumOfKaons(evTag.GetNumOfKaons());

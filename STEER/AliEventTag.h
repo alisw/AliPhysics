@@ -81,6 +81,7 @@ class AliEventTag : public TObject {
   void SetNumOfElectronsAbove10GeV(Int_t i) {fNumberOfElectronsAbove10GeV = i;}
   void SetNumOfElectrons(Int_t Ptr) {fNumberOfElectrons = Ptr;}
   void SetNumOfFWMuons(Int_t Ptr) {fNumberOfFWMuons = Ptr;}
+  void SetNumOfFWMatchedMuons(Int_t Ptr) {fNumberOfFWMatchedMuons = Ptr;}
   void SetNumOfMuons(Int_t Ptr) {fNumberOfMuons = Ptr;}
   void SetNumOfPions(Int_t Ptr) {fNumberOfPions = Ptr;}
   void SetNumOfKaons(Int_t Ptr) {fNumberOfKaons = Ptr;}
@@ -166,6 +167,7 @@ class AliEventTag : public TObject {
   Int_t       GetNumOfElectronsAbove10GeV() const {return fNumberOfElectronsAbove10GeV;}
   Int_t       GetNumOfElectrons() const {return fNumberOfElectrons;}
   Int_t       GetNumOfFWMuons() const {return fNumberOfFWMuons;}
+  Int_t       GetNumOfFWMatchedMuons() const {return fNumberOfFWMatchedMuons;}
   Int_t       GetNumOfMuons() const {return fNumberOfMuons;}
   Int_t       GetNumOfPions() const {return fNumberOfPions;}
   Int_t       GetNumOfKaons() const {return fNumberOfKaons;}
@@ -251,6 +253,7 @@ class AliEventTag : public TObject {
   Int_t     fNumberOfElectronsAbove10GeV;   //Number of electrons above 10 GeV/c
   Int_t     fNumberOfElectrons;		    //Number of electrons
   Int_t     fNumberOfFWMuons;		    //Number of forward muons
+  Int_t     fNumberOfFWMatchedMuons;	    //Number of forward matched muons
   Int_t     fNumberOfMuons;		    //Number of muons
   Int_t     fNumberOfPions;		    //Number of pions
   Int_t     fNumberOfKaons;		    //Number of kaons

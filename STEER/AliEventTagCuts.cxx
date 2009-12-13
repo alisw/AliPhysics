@@ -127,6 +127,8 @@ AliEventTagCuts::AliEventTagCuts() :
   fNElectronsFlag(kFALSE),
   fNFWMuonsMin(-1), fNFWMuonsMax(100000),
   fNFWMuonsFlag(kFALSE),
+  fNFWMatchedMuonsMin(-1), fNFWMatchedMuonsMax(100000),
+  fNFWMatchedMuonsFlag(kFALSE),
   fNMuonsMin(-1), fNMuonsMax(100000),
   fNMuonsFlag(kFALSE),
   fNPionsMin(-1), fNPionsMax(100000),
@@ -235,6 +237,7 @@ void AliEventTagCuts::Reset() {
   fNElectronsAbove10GeVFlag = kFALSE;
   fNElectronsFlag = kFALSE;
   fNFWMuonsFlag = kFALSE;
+  fNFWMatchedMuonsFlag = kFALSE;
   fNMuonsFlag = kFALSE;
   fNPionsFlag = kFALSE;
   fNKaonsFlag = kFALSE;
@@ -310,6 +313,7 @@ void AliEventTagCuts::Reset() {
   fNElectronsAbove10GeVMin = -1; fNElectronsAbove10GeVMax = 100000;
   fNElectronsMin = -1; fNElectronsMax = 100000;
   fNFWMuonsMin = -1; fNFWMuonsMax = 100000;
+  fNFWMatchedMuonsMin = -1; fNFWMatchedMuonsMax = 100000;
   fNMuonsMin = -1; fNMuonsMax = 100000;
   fNPionsMin = -1; fNPionsMax = 100000;
   fNKaonsMin = -1; fNKaonsMax = 100000;
@@ -777,6 +781,15 @@ void AliEventTagCuts::SetNFWMuonRange(Int_t low, Int_t high) {
 }
 
 //___________________________________________________________________________
+void AliEventTagCuts::SetNFWMatchedMuonRange(Int_t low, Int_t high) {
+  //Sets the forward trigger matched muon multiplicity range
+  //and the corresponding flag to kTRUE if the cut is used.
+  fNFWMatchedMuonsMin = low;
+  fNFWMatchedMuonsMax = high;
+  fNFWMatchedMuonsFlag = kTRUE;
+}
+
+//___________________________________________________________________________
 void AliEventTagCuts::SetNMuonRange(Int_t low, Int_t high) {
   //Sets the muon multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
@@ -1121,6 +1134,10 @@ Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const {
   
   if(fNFWMuonsFlag)
     if((EvTag->GetNumOfFWMuons() < fNFWMuonsMin) || (EvTag->GetNumOfFWMuons() > fNFWMuonsMax))
+      return kFALSE; 
+  
+  if(fNFWMatchedMuonsFlag)
+    if((EvTag->GetNumOfFWMatchedMuons() < fNFWMatchedMuonsMin) || (EvTag->GetNumOfFWMatchedMuons() > fNFWMatchedMuonsMax))
       return kFALSE; 
   
   if(fNMuonsFlag)
