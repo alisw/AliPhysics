@@ -389,12 +389,38 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
   //------------------------------------------------------------------
   //This function improves angular track parameters
   //------------------------------------------------------------------
+  //Store the initail track parameters
+
+  return kTRUE; //PH temporary switched off
+
+  Double_t x = GetX();
+  Double_t alpha = GetAlpha();
+  Double_t par[] = {GetY(),GetZ(),GetSnp(),GetTgl(),GetSigned1Pt()};
+  Double_t cov[] = {
+    GetSigmaY2(),
+    GetSigmaZY(),
+    GetSigmaZ2(),
+    GetSigmaSnpY(),
+    GetSigmaSnpZ(),
+    GetSigmaSnp2(),
+    GetSigmaTglY(),
+    GetSigmaTglZ(),
+    GetSigmaTglSnp(),
+    GetSigmaTgl2(),
+    GetSigma1PtY(),
+    GetSigma1PtZ(),
+    GetSigma1PtSnp(),
+    GetSigma1PtTgl(),
+    GetSigma1Pt2()
+  }; 
+
+
   Double_t cs=TMath::Cos(GetAlpha()), sn=TMath::Sin(GetAlpha());
 //Double_t xv = xyz[0]*cs + xyz[1]*sn; // vertex
   Double_t yv =-xyz[0]*sn + xyz[1]*cs; // in the
   Double_t zv = xyz[2];                // local frame
 
-  Double_t dy = Par(0) - yv, dz = Par(1) - zv;
+  Double_t dy = par[0] - yv, dz = par[1] - zv;
   Double_t r2=GetX()*GetX() + dy*dy;
   Double_t p2=(1.+ GetTgl()*GetTgl())/(GetSigned1Pt()*GetSigned1Pt());
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
@@ -410,28 +436,31 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
     Double_t sigma2p = theta2*(1.-GetSnp())*(1.+GetSnp())*(1. + GetTgl()*GetTgl());
     Double_t ovSqr2 = 1./TMath::Sqrt(r2);
     Double_t tfact = ovSqr2*(1.-dy*ovSqr2)*(1.+dy*ovSqr2);
-    sigma2p += Cov(0)*tfact*tfact;
+    sigma2p += cov[0]*tfact*tfact;
     sigma2p += ers[1]*ers[1]/r2;
-    sigma2p += 0.25*Cov(14)*cnv*cnv*GetX()*GetX();
-    Double_t eps2p=sigma2p/(Cov(5) + sigma2p);
-    Par(0) += Cov(3)/(Cov(5) + sigma2p)*(parp - GetSnp());
-    Par(2)  = eps2p*GetSnp() + (1 - eps2p)*parp;
-    Cov(5) *= eps2p;
-    Cov(3) *= eps2p;
+    sigma2p += 0.25*cov[14]*cnv*cnv*GetX()*GetX();
+    Double_t eps2p=sigma2p/(cov[5] + sigma2p);
+    par[0] += cov[3]/(cov[5] + sigma2p)*(parp - GetSnp());
+    par[2]  = eps2p*GetSnp() + (1 - eps2p)*parp;
+    cov[5] *= eps2p;
+    cov[3] *= eps2p;
   }
   {
     Double_t parl=0.5*GetC()*dz/TMath::ASin(0.5*GetC()*TMath::Sqrt(r2));
     Double_t sigma2l=theta2;
-    sigma2l += Cov(2)/r2 + Cov(0)*dy*dy*dz*dz/(r2*r2*r2);
+    sigma2l += cov[2]/r2 + cov[0]*dy*dy*dz*dz/(r2*r2*r2);
     sigma2l += ers[2]*ers[2]/r2;
-    Double_t eps2l = sigma2l/(Cov(9) + sigma2l);
-    Par(1) += Cov(7 )/(Cov(9) + sigma2l)*(parl - Par(3));
-    Par(4) += Cov(13)/(Cov(9) + sigma2l)*(parl - Par(3));
-    Par(3)  = eps2l*Par(3) + (1-eps2l)*parl;
-    Cov(9) *= eps2l; 
-    Cov(13)*= eps2l; 
-    Cov(7) *= eps2l; 
+    Double_t eps2l = sigma2l/(cov[9] + sigma2l);
+    par[1] += cov[7 ]/(cov[9] + sigma2l)*(parl - par[3]);
+    par[4] += cov[13]/(cov[9] + sigma2l)*(parl - par[3]);
+    par[3]  = eps2l*par[3] + (1-eps2l)*parl;
+    cov[9] *= eps2l; 
+    cov[13]*= eps2l; 
+    cov[7] *= eps2l; 
   }
+
+  Set(x,alpha,par,cov);
+
   if (!Invariant()) return kFALSE;
 
   return kTRUE;

@@ -28,6 +28,12 @@ const Double_t kMostProbablePt=0.35;
 class AliVVertex;
 class TPolyMarker3D; 
 
+const Double_t kC0max=100*100, // SigmaY<=100cm
+               kC2max=100*100, // SigmaZ<=100cm
+               kC5max=1*1,     // SigmaSin<=1
+               kC9max=1*1,     // SigmaTan<=1
+               kC14max=100*100; // Sigma1/Pt<=100 1/GeV
+
 class AliExternalTrackParam: public AliVTrack {
  public:
   AliExternalTrackParam();
@@ -46,6 +52,9 @@ class AliExternalTrackParam: public AliVTrack {
     fX=x; fAlpha=alpha;
     for (Int_t i = 0; i < 5; i++)  fP[i] = param[i];
     for (Int_t i = 0; i < 15; i++) fC[i] = covar[i];
+
+    CheckCovariance();
+
   }
 
   void Set(Double_t xyz[3],Double_t pxpypz[3],Double_t cv[21],Short_t sign);
@@ -204,7 +213,10 @@ class AliExternalTrackParam: public AliVTrack {
 
   virtual Bool_t Translate(Double_t *vTrasl,Double_t *covV);
 
- protected:
+  void CheckCovariance();
+
+/*  protected: */
+ private:
   Double_t &Par(Int_t i) {return fP[i];}
   Double_t &Cov(Int_t i) {return fC[i];}
   
@@ -223,11 +235,26 @@ inline void AliExternalTrackParam::ResetCovariance(Double_t s2) {
   //
   // Reset the covarince matrix to "something big"
   //
-    fC[0]*= s2;
-    fC[1] = 0.;  fC[2]*= s2;
-    fC[3] = 0.;  fC[4] = 0.;  fC[5]*= s2;
-    fC[6] = 0.;  fC[7] = 0.;  fC[8] = 0.;  fC[9]*= s2;
-    fC[10]= 0.;  fC[11]= 0.;  fC[12]= 0.;  fC[13]= 0.;  fC[14]*=s2;
+
+  s2 = TMath::Abs(s2);
+  Double_t fC0=fC[0]*s2,
+           fC2=fC[2]*s2,
+           fC5=fC[5]*s2,
+           fC9=fC[9]*s2,
+           fC14=fC[14]*s2;
+ 
+  if (fC0>kC0max)  fC0 = kC0max;
+  if (fC2>kC2max)  fC2 = kC2max;
+  if (fC5>kC5max)  fC5 = kC5max;
+  if (fC9>kC9max)  fC9 = kC9max;
+  if (fC14>kC14max)  fC14 = kC14max;
+
+
+    fC[0] = fC0;
+    fC[1] = 0.;  fC[2] = fC2;
+    fC[3] = 0.;  fC[4] = 0.;  fC[5] = fC5;
+    fC[6] = 0.;  fC[7] = 0.;  fC[8] = 0.;  fC[9] = fC9;
+    fC[10]= 0.;  fC[11]= 0.;  fC[12]= 0.;  fC[13]= 0.;  fC[14] = fC14;
 }
 
 
