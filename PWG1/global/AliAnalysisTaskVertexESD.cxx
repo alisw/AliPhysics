@@ -68,9 +68,19 @@ fRecoVtxTPC(kFALSE),
 fRecoVtxITSTPC(kFALSE),
 fOnlyITSTPCTracks(kFALSE),
 fOnlyITSSATracks(kFALSE),
+fFillNtuple(kFALSE),
 fESD(0), 
 fOutput(0), 
 fNtupleVertexESD(0),
+fhSPDVertexX(0),
+fhSPDVertexY(0),
+fhSPDVertexZ(0),
+fhTRKVertexX(0),
+fhTRKVertexY(0),
+fhTRKVertexZ(0),
+fhTPCVertexX(0),
+fhTPCVertexY(0),
+fhTPCVertexZ(0),
 fhTrackRefs(0)
 {
   // Constructor
@@ -132,6 +142,25 @@ void AliAnalysisTaskVertexESD::CreateOutputObjects()
   fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:dndygen:triggered:SPD3D:SPD0cls:constrTRK:constrTPC");
 
   fOutput->Add(fNtupleVertexESD);
+
+  fhSPDVertexX = new TH1F("fhSPDVertexX","SPDVertex x; x vertex [cm]; events",200,-1,1);
+  fOutput->Add(fhSPDVertexX);
+  fhSPDVertexY = new TH1F("fhSPDVertexY","SPDVertex y; y vertex [cm]; events",200,-1,1);
+  fOutput->Add(fhSPDVertexY);
+  fhSPDVertexZ = new TH1F("fhSPDVertexZ","SPDVertex z; z vertex [cm]; events",200,-20,20);
+  fOutput->Add(fhSPDVertexZ);
+  fhTRKVertexX = new TH1F("fhTRKVertexX","TRKVertex x; x vertex [cm]; events",200,-1,1);
+  fOutput->Add(fhTRKVertexX);
+  fhTRKVertexY = new TH1F("fhTRKVertexY","TRKVertex y; y vertex [cm]; events",200,-1,1);
+  fOutput->Add(fhTRKVertexY);
+  fhTRKVertexZ = new TH1F("fhTRKVertexZ","TRKVertex z; z vertex [cm]; events",200,-20,20);
+  fOutput->Add(fhTRKVertexZ);
+  fhTPCVertexX = new TH1F("fhTPCVertexX","TPCVertex x; x vertex [cm]; events",200,-3,3);
+  fOutput->Add(fhTPCVertexX);
+  fhTPCVertexY = new TH1F("fhTPCVertexY","TPCVertex y; y vertex [cm]; events",200,-3,3);
+  fOutput->Add(fhTPCVertexY);
+  fhTPCVertexZ = new TH1F("fhTPCVertexZ","TPCVertex z; z vertex [cm]; events",200,-20,20);
+  fOutput->Add(fhTPCVertexZ);
 
   fhTrackRefs = new TH2F("fhTrackRefs","Track references; x; y",1000,-4,4,1000,-4,4);
   fOutput->Add(fhTrackRefs);
@@ -270,8 +299,38 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
     }
     spd0cls = alimult->GetNumberOfSingleClusters()+ntrklets;
   }
+  
+  // fill histos
+  
+  if(spdv) {
+    if(spdv->GetNContributors()>0) {
+      TString title=spdv->GetTitle();
+      if(title.Contains("3D")) {
+	fhSPDVertexX->Fill(spdv->GetXv());
+	fhSPDVertexY->Fill(spdv->GetYv());
+      }
+      fhSPDVertexZ->Fill(spdv->GetZv());
+    }
+  }
+  
+  if(trkv) {
+    if(trkv->GetNContributors()>0) {
+      fhTRKVertexX->Fill(trkv->GetXv());
+      fhTRKVertexY->Fill(trkv->GetYv());
+      fhTRKVertexZ->Fill(trkv->GetZv());
+    }
+  }
+  
+  if(tpcv) {
+    if(tpcv->GetNContributors()>0) {
+      fhTPCVertexX->Fill(tpcv->GetXv());
+      fhTPCVertexY->Fill(tpcv->GetYv());
+      fhTPCVertexZ->Fill(tpcv->GetZv());
+    }
+  } 
+  
 
-
+  // fill ntuple
   Int_t isize=37;
   Float_t xnt[37];
   
@@ -333,7 +392,7 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
 
   if(index!=isize) printf("AliAnalysisTaskVertexESD: ERROR, index!=isize\n");
 
-  fNtupleVertexESD->Fill(xnt);
+  if(fFillNtuple) fNtupleVertexESD->Fill(xnt);
   
   // Post the data already here
   PostData(0, fOutput);
