@@ -30,7 +30,6 @@
   
 #include "TF1.h"
 #include "TGraph.h"
-#include <TRandom.h>
 class TSystem;
   
 class AliLog;
@@ -52,7 +51,7 @@ class AliEMCALDigitizer;
 ClassImp(AliEMCALRawUtils)
   
 // Signal shape parameters
-Int_t    AliEMCALRawUtils::fgTimeBins = 256;           // number of time bins for EMCAL
+Int_t    AliEMCALRawUtils::fgTimeBins = 100; // number of sampling bins of the raw RO signal (we typically use 15-50; theoretical max is 1k+) 
 Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
 Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 musec
 
@@ -72,8 +71,8 @@ AliEMCALRawUtils::AliEMCALRawUtils()
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
   fOrder = 2;                         // order of gamma fn
   fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
-  fNoiseThreshold = 3;
-  fNPedSamples = 5;
+  fNoiseThreshold = 3; // 3 ADC counts is approx. noise level
+  fNPedSamples = 4;    // less than this value => likely pedestal samples
 
   //Get Mapping RCU files from the AliEMCALRecParam                                 
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
@@ -115,8 +114,8 @@ AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry)
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits)
   fOrder = 2;                         // order of gamma fn
   fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
-  fNoiseThreshold = 3;
-  fNPedSamples = 5;
+  fNoiseThreshold = 3; // 3 ADC counts is approx. noise level
+  fNPedSamples = 4;    // less than this value => likely pedestal samples
 
   //Get Mapping RCU files from the AliEMCALRecParam
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
@@ -301,7 +300,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 
   AliCaloRawStreamV3 in(reader,"EMCAL",fMapping);
   // Select EMCAL DDL's;
-  reader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL's 
+  reader->Select("EMCAL",0,43); // 43 = AliEMCALGeoParams::fgkLastAltroDDL
 
   //Updated fitting routine from 2007 beam test takes into account
   //possibility of two peaks in data and selects first one for fitting
@@ -309,16 +308,18 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   //given raw signal being fit
 
   TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeBins(), 5);
-  signalF->SetParameters(10.,0.,fTau,fOrder,5.); //set all defaults once, just to be safe
+  signalF->SetParameters(10.,5.,fTau,fOrder,0.); //set all defaults once, just to be safe
   signalF->SetParNames("amp","t0","tau","N","ped");
-  signalF->SetParameter(2,fTau); // tau in units of time bin
-  signalF->SetParLimits(2,2,-1);
-  signalF->SetParameter(3,fOrder); // order
-  signalF->SetParLimits(3,2,-1);
+  signalF->FixParameter(2,fTau); // tau in units of time bin
+  signalF->FixParameter(3,fOrder); // order
   
   Int_t id =  -1;
   Float_t time = 0. ; 
   Float_t amp = 0. ; 
+  Float_t ped = 0. ;
+  Float_t ampEstimate  = 0;
+  Float_t timeEstimate = 0;
+  Float_t pedEstimate = 0;
   Int_t i = 0;
   Int_t startBin = 0;
 
@@ -332,70 +333,90 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   // start loop over input stream 
   while (in.NextDDL()) {
     while (in.NextChannel()) {
-      
-		//Check if the signal  is high or low gain and then do the fit, 
-		//if it  is from TRU do not fit
-		caloFlag = in.GetCaloFlag();
-		if (caloFlag != 0 && caloFlag != 1) continue; 
-		
+
+      //Check if the signal  is high or low gain and then do the fit, 
+      //if it  is from TRU do not fit
+      caloFlag = in.GetCaloFlag();
+      if (caloFlag != 0 && caloFlag != 1) continue; 
+	      
       // There can be zero-suppression in the raw data, 
       // so set up the TGraph in advance
       for (i=0; i < GetRawFormatTimeBins(); i++) {
-	gSig->SetPoint(i, i , 0);
+	gSig->SetPoint(i, i , -1); // init to out-of-range values
       }
-		
-      Int_t maxTime = 0;
-	  Int_t min = 0x3ff; // init to 10-bit max
-	  Int_t max = 0; // init to 10-bit min
-      int nsamples = 0;
+
+      Int_t maxTimeBin = 0;
+      Int_t min = 0x3ff; // init to 10-bit max
+      Int_t max = 0; // init to 10-bit min
       while (in.NextBunch()) {
+
 	const UShort_t *sig = in.GetSignals();
 	startBin = in.GetStartTimeBin();
-
-	if (((UInt_t) maxTime) < in.GetStartTimeBin()) {
-	  maxTime = in.GetStartTimeBin(); // timebins come in reverse order
+	if (maxTimeBin < startBin) {
+	  maxTimeBin = startBin; // timebins come in reverse order
+	}	
+	if (maxTimeBin < 0 || maxTimeBin >= GetRawFormatTimeBins()) {
+	  AliWarning(Form("Invalid time bin %d",maxTimeBin));
+	  maxTimeBin = GetRawFormatTimeBins();
 	}
-
-	if (maxTime < 0 || maxTime >= GetRawFormatTimeBins()) {
-	  AliWarning(Form("Invalid time bin %d",maxTime));
-	  maxTime = GetRawFormatTimeBins();
-	}
-	nsamples += in.GetBunchLength();
+	
 	for (i = 0; i < in.GetBunchLength(); i++) {
 	  time = startBin--;
-	  gSig->SetPoint(time, time, (Double_t) sig[i]) ;
-	  if (max < sig[i]) max= sig[i];
+	  gSig->SetPoint((Int_t)time, time, (Double_t) sig[i]) ;
+	  if (max < sig[i]) max = sig[i];
 	  if (min > sig[i]) min = sig[i];
+	  
 	}
       } // loop over bunches
-    
-      if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
 
-      id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-      lowGain = in.IsLowGain();
+      gSig->Set(maxTimeBin+1); // set actual max size of TGraph
+      
+      //Initialize the variables, do not keep previous values.
+      // not really necessary to reset all of them (only amp and time at the moment), but better safe than sorry
+      amp  = -1 ;
+      time = -1 ;
+      ped = -1;
+      ampEstimate  = -1 ;
+      timeEstimate = -1 ;
+      pedEstimate = -1;
+      if ( (max - min) > fNoiseThreshold) {
+	FitRaw(gSig, signalF, maxTimeBin, amp, time, ped,
+	       ampEstimate, timeEstimate, pedEstimate);
+      }
+           
+      if ( amp>0 && amp<2000 && time>0 && time<(maxTimeBin*GetRawFormatTimeBinWidth()) ) {  //check both high and low end of amplitude result, and time
+	//2000 is somewhat arbitrary - not nice with magic numbers in the code..
+	id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
+	lowGain = in.IsLowGain();
 
-      gSig->Set(maxTime+1);
-		  
-	  //Initialize the variables, do not keep previous value.
-	  amp  = -1. ;
-	  time = -1. ;
-	  if ( (max - min) > fNoiseThreshold) FitRaw(gSig, signalF, amp, time) ; 
-	
-	if (amp > 0 && amp < 2000) {  //check both high and low end of
-	  //result, 2000 is somewhat arbitrary - not nice with magic numbers in the code..
-	  AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
-	
-	  AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
+	// check fit results: should be consistent with initial estimates
+	// more magic numbers, but very loose cuts, for now..
+	// We have checked that amp an time values are positive so division for assymmetry
+	// calculation should be OK/safe
+	Float_t ampAsymm = (amp - ampEstimate)/(amp + ampEstimate);
+	if ( (TMath::Abs(ampAsymm) > 0.1) ||
+	     (TMath::Abs(time - timeEstimate) > 2*GetRawFormatTimeBinWidth()) ) {
+	  AliDebug(2,Form("Fit results ped %f amp %f tine %f not consistent with expectations ped %f max-ped %f time %d",
+		      ped, amp, time, pedEstimate, ampEstimate, timeEstimate));
+	  // what should do we do then? skip this channel or assign the simple estimate? 
+	  // for now just overwrite the fit results with the simple estimate
+	  amp = ampEstimate;
+	  time = timeEstimate; 
 	}
-	
+
+	AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
+	// printf("Added tower: SM %d, row %d, column %d, amp %3.2f\n",in.GetModule(), in.GetRow(), in.GetColumn(),amp);
+	// round off amplitude value to nearest integer
+	AddDigit(digitsArr, id, lowGain, TMath::Nint(amp), time); 
+      }
+      
       // Reset graph
       for (Int_t index = 0; index < gSig->GetN(); index++) {
-	gSig->SetPoint(index, index, 0) ;  
+	gSig->SetPoint(index, index, -1) ;  
       } 
       // Reset starting parameters for fit function
-      signalF->SetParameters(10.,0.,fTau,fOrder,5.); //reset all defaults just to be safe
+      signalF->SetParameters(10.,5.,fTau,fOrder,0.); //reset all defaults just to be safe
 
-      } // nsamples>0 check, some data found for this channel; not only trailer/header
    } // end while over channel   
   } //end while over DDL's, of input stream 
   
@@ -415,7 +436,6 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
   // Called by Raw2Digits
   
   AliEMCALDigit *digit = 0, *tmpdigit = 0;
-  
   TIter nextdigit(digitsArr);
   while (digit == 0 && (tmpdigit = (AliEMCALDigit*) nextdigit())) {
     if (tmpdigit->GetId() == id)
@@ -444,103 +464,181 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 }
 
 //____________________________________________________________________________ 
-void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time) const 
+void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Float_t & ped, Float_t & ampEstimate, Float_t & timeEstimate, Float_t & pedEstimate, const Float_t cut) const 
 {
   // Fits the raw signal time distribution; from AliEMCALGetter 
-  amp = time = 0. ; 
-  Double_t ped = 0;
-  Int_t nPed = 0;
+  // last argument: Float_t cut = 0.0; // indicating how much of amplitude w.r.t. max value fit should be above noise and pedestal 
 
-  for (Int_t index = 0; index < fNPedSamples; index++) {
-    Double_t ttime, signal;
+  // initialize return values
+  amp = 0; 
+  time = 0; 
+  ped = 0;
+  ampEstimate = 0;
+  timeEstimate = 0;
+  pedEstimate = 0;
+
+  // 0th step: remove plateau / overflow candidates
+  // before trying to estimate amplitude, search for maxima etc.
+  //
+  Int_t nOrig = gSig->GetN(); // number of samples before we remove any overflows
+  // Values for readback from input graph
+  Double_t ttime = 0;
+  Double_t signal = 0;
+
+  /*
+  // start: tmp dump of all values
+  for (Int_t i=0; i<gSig->GetN(); i++) {
+    gSig->GetPoint(i, ttime, signal) ; // get values
+    printf("orig: i %d, time %f, signal %f\n",i, ttime, signal);
+  }
+  // end: tmp dump of all values
+  */
+
+  // start from back of TGraph since RemovePoint will downshift indices
+  for (Int_t i=nOrig-1; i>=0; i--) {
+    gSig->GetPoint(i, ttime, signal) ; // get values
+    if (signal >= (pedEstimate + fgkOverflowCut) ) {
+      gSig->RemovePoint(i);
+    }
+  }
+
+  // 1st step: we try to estimate the pedestal value
+  Int_t nPed = 0;
+  for (Int_t index = 0; index < gSig->GetN(); index++) {
     gSig->GetPoint(index, ttime, signal) ; 
-    if (signal > 0) {
-      ped += signal;
+    // ttime < fNPedsamples used for pedestal estimate; 
+    // ttime >= fNPedSamples used for signal checks
+    if (signal >= 0 && ttime<fNPedSamples) { // valid value
+      pedEstimate += signal;
       nPed++;
     }
   }
 
   if (nPed > 0)
-    ped /= nPed;
+    pedEstimate /= nPed;
   else {
-    AliWarning("Could not determine pedestal");	  
-    ped = 10; // put some small value as first guess
+    //AliWarning("Could not determine pedestal");	  
+    AliDebug(1,"Could not determine pedestal");
+    pedEstimate = 0; // good estimate for ZeroSupp data (non ZS data should have no problem with pedestal estimate)
   }
 
+  // 2nd step: we look through the rest of the time-bins/ADC values and
+  // see if we have something that looks like a signal.
+  // We look for a first local maxima, as well as for a global maxima 
+  Int_t locMaxFound = 0;
+  Int_t locMaxId = 0; // time-bin index at first local max
+  Float_t locMaxSig = -1; // actual local max value
+  Int_t globMaxId = 0; // time-bin index at global max
+  Float_t globMaxSig = -1; // actual global max value
+  // We will also look for any values that look like they are in overflow region
+  for (Int_t i=0; i<gSig->GetN(); i++) {
+    gSig->GetPoint(i, ttime, signal) ; // get values
 
-  Int_t maxFound = 0;
-  Int_t iMax = 0;
-  Float_t max = -1;
-  Float_t maxFit = gSig->GetN();
-  Float_t minAfterSig = 9999;
-  Int_t tminAfterSig = gSig->GetN();
-  Int_t nPedAfterSig = 0;
-  Int_t plateauWidth = 0;
-  Int_t plateauStart = 9999;
-  Float_t cut = 0.3;
+    // ttime < fNPedsamples used for pedestal estimate; 
+    // ttime >= fNPedSamples used for signal checks
+    if (ttime >= fNPedSamples) { 
 
-  for (Int_t i=fNPedSamples; i < gSig->GetN(); i++) {
-    Double_t ttime, signal;
-    gSig->GetPoint(i, ttime, signal) ;
-    if (!maxFound && signal > max) {
-      iMax = i;
-      max = signal;
-    }
-    else if ( max > ped + fNoiseThreshold ) {
-      maxFound = 1;
-      minAfterSig = signal;
-      tminAfterSig = i;
-    }
-    if (maxFound) {
-      if ( signal < minAfterSig) {
-        minAfterSig = signal;
-	tminAfterSig = i;
+      // look for first local maximum signal=ADC value
+      if (!locMaxFound && signal > locMaxSig) {
+	locMaxId = i;
+	locMaxSig = signal;
       }
-      if (i > tminAfterSig + 5) {  // Two close peaks; end fit at minimum
-        maxFit = tminAfterSig;
-        break;
+      else if ( locMaxSig > (pedEstimate + fNoiseThreshold) ) { 
+	// we enter this condition after signal<=max, but previous
+	// max value was large enough. I.e. at least a significant local 
+	// maxima has been found (just before)
+	locMaxFound = 1;
       }
-      if ( signal < cut*max){   //stop fit at 30% amplitude(avoid the pulse shape falling edge)
-        maxFit = i;
-        break;
+
+      // also check for global maximum..
+      if (signal > globMaxSig) {
+	globMaxId = i;
+	globMaxSig = signal;
       }
-      if ( signal < ped + fNoiseThreshold)
-        nPedAfterSig++;
-      if (nPedAfterSig >= 5) {  // include 5 pedestal bins after peak
-        maxFit = i;
-        break;
+    } // ttime check
+  } // end for-loop over samples after pedestal
+
+  // OK, we have looked through the signal spectra, let's see if we should try to make the fit
+  ampEstimate = locMaxSig - pedEstimate; // estimate using first local maxima 
+  if ( ampEstimate > fNoiseThreshold ) { // else it's just noise 
+
+    //Check that the local maximum we will use is not at the end or beginning of time sample range
+    Double_t timeMax = -1;
+    Int_t iMax = locMaxId;
+    gSig->GetPoint(locMaxId, timeMax, signal) ;
+    if (timeMax < 2 || timeMax > lastTimeBin-1) { // lastTimeBin is the lowest kept time-sample; current (Dec 2009) case
+      //    if (timeMax < 2 || timeMax > lastTimeBin-2) { // for when lastTimeBin is the lowest read-out time-sample, future (2010) case
+      AliDebug(1,Form("Skip fit, maximum of the sample close to the edges : timeMax %3.2f, ampEstimate %3.2f",timeMax, ampEstimate));
+      return;
+    }
+
+    // Check if the local and global maximum disagree
+    if (locMaxId != globMaxId) {
+      AliDebug(1,Form("Warning, local first maximum %d does not agree with global maximum %d\n", locMaxId, globMaxId));
+      return;
+    }
+    
+    // Get the maximum and find the lowest timebin (tailmin) where the ADC value is not 
+    // significantly different from the pedestal
+    // first lower times edge a.k.a. tailmin
+    Int_t tailMin = 0;
+    Double_t tmptime = 0;
+    for (Int_t i=iMax-1; i > 0; i--) {
+      gSig->GetPoint(i, tmptime, signal) ;
+      if((signal-pedEstimate) < fNoiseThreshold){
+	tailMin = i;
+	break;
       }
     }
-    //Add check on plateau
-    if (signal >= fgkRawSignalOverflow - fNoiseThreshold) {
-      if(plateauWidth == 0) plateauStart = i;
-      plateauWidth++;
+    // then same exercise for the higher times edge a.k.a. tailmax
+    Int_t tailMax = lastTimeBin;
+    for (Int_t i=iMax+1; i < gSig->GetN(); i++) {
+      gSig->GetPoint(i, tmptime, signal) ;
+      if ((signal-pedEstimate) <= (ampEstimate*cut + fNoiseThreshold)) { // stop fit at cut-fraction of amplitude above noise-threshold (cut>0 would mean avoid the pulse shape falling edge)
+	tailMax = i;
+	break;
+      }
     }
-  }
 
-  if(plateauWidth > 0) {
-    for(int j = 0; j < plateauWidth; j++) {
-      //Note, have to remove the same point N times because after each
-      //remove, the positions of all subsequent points have shifted down
-      gSig->RemovePoint(plateauStart);
+    // remove all points which are not in the distribution around maximum
+    // i.e. up to tailmin, and from tailmax
+    if ( tailMax != (gSig->GetN()-1) ){ // else nothing to remove
+      nOrig = gSig->GetN(); // can't use GetN call in for loop below since gSig size changes..
+      for(int j = tailMax; j < nOrig; j++) gSig->RemovePoint(tailMax);
     }
-  }
+    for(int j = 0; j<=tailMin; j++) gSig->RemovePoint(0);
 
-  if ( max - ped > fNoiseThreshold ) { // else its noise 
-    AliDebug(2,Form("Fitting max %d ped %d", max, ped));
-    signalF->SetRange(0,maxFit);
+    if(gSig->GetN() < 3) {
+      AliDebug(2,Form("Skip fit, number of entries in sample smaller than number of fitting parameters: in sample %d, fitting param 3", 
+		      gSig->GetN() ));
+      return;
+    }
 
-    if(max-ped > 50) 
-      signalF->SetParLimits(2,1,3);
+    timeEstimate = timeMax * GetRawFormatTimeBinWidth();
 
-    signalF->SetParameter(4, ped) ; 
-    signalF->SetParameter(1, iMax);
-    signalF->SetParameter(0, max);
+    // determine what the valid fit range is
+    Double_t minFit = 9999;
+    Double_t maxFit = 0;
+    for (Int_t i=0; i < gSig->GetN(); i++) {
+      gSig->GetPoint(i, ttime, signal); 
+      if (minFit > ttime) minFit=ttime;
+      if (maxFit < ttime) maxFit=ttime;
+      //debug: printf("no tail: i %d, time %f, signal %f\n",i, ttime, signal); 
+    } 
+    signalF->SetRange(minFit, maxFit);
+
+    signalF->FixParameter(4, pedEstimate) ; 
+    signalF->SetParameter(1, timeMax);
+    signalF->SetParameter(0, ampEstimate);
     
     gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
+
+    // assign fit results
     amp = signalF->GetParameter(0); 
-    time = signalF->GetParameter(1)*GetRawFormatTimeBinWidth() - fgTimeTrigger;
-  }
+    time = signalF->GetParameter(1) * GetRawFormatTimeBinWidth(); // skip subtraction of fgTimeTrigger?
+    ped = signalF->GetParameter(4); 
+
+  } // ampEstimate > fNoiseThreshold
   return;
 }
 //__________________________________________________________________
@@ -551,9 +649,9 @@ Double_t AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
   // Shape of the electronics raw reponse:
   // It is a semi-gaussian, 2nd order Gamma function of the general form
   //
-  // t' = (t - t0 + tau) / tau
-  // F = A * t**N * exp( N * ( 1 - t) )   for t >= 0
-  // F = 0                                for t < 0 
+  // xx = (t - t0 + tau) / tau  [xx is just a convenient help variable]
+  // F = A * (xx**N * exp( N * ( 1 - xx) )   for xx >= 0
+  // F = 0                                   for xx < 0 
   //
   // parameters:
   // A:   par[0]   // Amplitude = peak value
@@ -601,9 +699,9 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
     Double_t signal = signalF.Eval(iTime) ;     
 
-	// Next lines commeted for the moment but in principle it is not necessary to add
+    // Next lines commeted for the moment but in principle it is not necessary to add
     // extra noise since noise already added at the digits level.	
-	  
+
     //According to Terry Awes, 13-Apr-2008
     //add gaussian noise in quadrature to each sample
     //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
@@ -613,7 +711,7 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
     // Get from PHOS analysis. In some sense it is open questions.
     //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
     //signal += noise; 
- 
+
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     if ( adcH[iTime] > fgkRawSignalOverflow ){  // larger than 10 bits 
       adcH[iTime] = fgkRawSignalOverflow ;
