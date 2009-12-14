@@ -97,6 +97,11 @@ class AliV0Reader : public TObject {
   Int_t GetNumberOfV0s() const{return fESDEvent->GetNumberOfV0s();}
 	
   /*
+   *Returns the number of contributors to the vertex
+   */
+  Int_t GetNumberOfContributorsVtx() const{return fESDEvent->GetPrimaryVertex()->GetNContributors();}
+  
+  /*
    * Check if there are any more good v0s left in the v0 stack
    * if so, fCurrent v0 is set to this v0 and can be retrieved
    * by GetCurrentV0 function.

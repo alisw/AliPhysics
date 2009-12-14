@@ -61,6 +61,7 @@ AliAnalysisTaskSE(),
   fOutputContainer(NULL),
   fCFManager(0x0),   // for CF
   fHistograms(NULL),
+  fTriggerCINT1B(kFALSE),
   fDoMCTruth(kFALSE),
   fDoNeutralMeson(kFALSE),
   fDoJet(kFALSE),
@@ -134,6 +135,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fOutputContainer(0x0),
   fCFManager(0x0),   // for CF
   fHistograms(NULL),
+  fTriggerCINT1B(kFALSE),
   fDoMCTruth(kFALSE),
   fDoNeutralMeson(kFALSE),
   fDoJet(kFALSE),
@@ -310,7 +312,12 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
 	
   //Clear the data in the v0Reader
   fV0Reader->UpdateEventByEventData();
-	
+
+  //Take Only events with proper trigger
+  if(fTriggerCINT1B){
+    if(!fV0Reader->GetESDEvent()->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
+  }
+
 	
   // Process the MC information
   if(fDoMCTruth){
@@ -1232,6 +1239,7 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
   }//while(fV0Reader->NextV0)
   fHistograms->FillHistogram("ESD_NumberOfSurvivingV0s", nSurvivingV0s);
   fHistograms->FillHistogram("ESD_NumberOfV0s", fV0Reader->GetNumberOfV0s());
+  fHistograms->FillHistogram("ESD_NumberOfContributorsVtx", fV0Reader->GetNumberOfContributorsVtx());
 
   fV0Reader->ResetV0IndexNumber();
 
