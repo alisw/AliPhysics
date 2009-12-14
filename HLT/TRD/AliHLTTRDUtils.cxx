@@ -229,7 +229,7 @@ void AliHLTTRDUtils::EmulateHLTClusters(TClonesArray* clusterArray)
 
 void AliHLTTRDUtils::EmulateHLTTracks(TClonesArray* trackArray)
 {
-  AliHLTUInt32_t estimatedSize = trackArray->GetEntriesFast()*(sizeof(AliHLTTRDTrack)+6*(sizeof(AliHLTTRDTracklet)+30*sizeof(AliHLTTRDCluster)));
+  AliHLTUInt32_t estimatedSize = (trackArray->GetEntriesFast()+1)*(sizeof(AliHLTTRDTrack)+6*(sizeof(AliHLTTRDTracklet)+30*sizeof(AliHLTTRDCluster)));
   AliHLTUInt8_t* pBlock = (AliHLTUInt8_t*)malloc(estimatedSize);
   AliHLTUInt32_t size = AddTracksToOutput(trackArray, pBlock);
   trackArray->Delete();
