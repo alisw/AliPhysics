@@ -408,13 +408,13 @@ void AliPerformanceTPC::Analyse() {
   // Cluster histograms
   //
   fTPCClustHisto->GetAxis(2)->SetRange(1,1); // A-side
-  h2D = fTPCClustHisto->Projection(0,1);
+  h2D = fTPCClustHisto->Projection(1,0);
   h2D->SetName("h_clust_A_side");
   h2D->SetTitle("gclX:gclY - A_side");
   aFolderObj->Add(h2D);
 
   fTPCClustHisto->GetAxis(2)->SetRange(2,2); // C-side
-  h2D = fTPCClustHisto->Projection(0,1);
+  h2D = fTPCClustHisto->Projection(1,0);
   h2D->SetName("h_clust_C_side");
   h2D->SetTitle("gclX:gclY - C_side");
   aFolderObj->Add(h2D);
