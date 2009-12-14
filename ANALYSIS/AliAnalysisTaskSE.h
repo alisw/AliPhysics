@@ -45,8 +45,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual void   AddAODBranch(const char* cname, void* addobj, const char *fname="");
     // Event Selection
     virtual void   SelectCollisionCandidates() {fSelectCollisions = kTRUE;}
-    
-    
+    static  void   SetCollisionSelector(AliAnalysisCuts* selector) {fgCollisionSelector = selector;}
 // Getters
     virtual Int_t        DebugLevel()  {return fDebug;     }
     virtual AliVEvent*   InputEvent()  {return fInputEvent;}
