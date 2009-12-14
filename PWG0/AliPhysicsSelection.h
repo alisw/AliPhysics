@@ -15,7 +15,7 @@
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
+#include <AliAnalysisCuts.h>
 #include <TList.h>
 
 class AliESDEvent;
@@ -24,30 +24,41 @@ class TH2;
 class TCollection;
 class AliTriggerAnalysis;
 
-class AliPhysicsSelection : public TObject
+class AliPhysicsSelection : public AliAnalysisCuts
 {
   public:
     AliPhysicsSelection();
     virtual ~AliPhysicsSelection();
     
+    // AliAnalysisCuts interface
+    virtual Bool_t IsSelected(TObject* obj) { return IsCollisionCandidate((const AliESDEvent*) obj); }
+    virtual Bool_t IsSelected(TList*) { return kFALSE; }
+    
     Bool_t IsCollisionCandidate(const AliESDEvent* aEsd);
     Bool_t Initialize(UInt_t runNumber);
+    
+    void AddBackgroundIdentification(AliAnalysisCuts* background) { fBackgroundIdentification = background; }
     
     virtual void Print(Option_t* option = "") const;
     virtual Long64_t Merge(TCollection* list);
     void SaveHistograms(const char* folder = 0) const;
     
-    TList* GetRequiredTriggerClasses() { return &fRequTrigClasses; }
-    TList* GetRejectedTriggerClasses() { return &fRejTrigClasses; }
+    TList* GetCollisionTriggerClasses() { return &fCollTrigClasses; }
+    TList* GetBGTriggerClasses() { return &fBGTrigClasses; }
     
   protected:
-    AliTriggerAnalysis* fTriggerAnalysis; // offline trigger object
-  
-    TList fRequTrigClasses; // list of trigger class required for collision candidates
-    TList fRejTrigClasses;  // list of trigger classes not allowed for collision candidates
+    Bool_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
     
-    TH1* fHistStatistics;      // how many events are cut away why
-    TH1* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers
+    Int_t fCurrentRun;      // run number for which the object is initialized
+    TList fCollTrigClasses; // trigger class identifying collision candidates
+    TList fBGTrigClasses;   // trigger classes identifying background events
+    
+    TList fTriggerAnalysis; // list of offline trigger objects (several are needed to keep the control histograms separate per trigger class)
+  
+    AliAnalysisCuts* fBackgroundIdentification; // class that performs additional background identification
+    
+    TH2* fHistStatistics;      // how many events are cut away why
+    TH2* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers
     
     ClassDef(AliPhysicsSelection, 1)
     
