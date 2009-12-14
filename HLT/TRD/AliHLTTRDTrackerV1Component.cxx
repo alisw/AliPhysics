@@ -112,7 +112,7 @@ int AliHLTTRDTrackerV1Component::GetOutputDataTypes(AliHLTComponentDataTypeList&
   tgtList.clear();
   //tgtList.push_back(AliHLTTRDDefinitions::fgkTimeBinPropagationDataType);
   tgtList.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
-  tgtList.push_back(AliHLTTRDDefinitions::fgkTRDSATracksDataType);
+  tgtList.push_back(AliHLTTRDDefinitions::fgkTracksDataType);
   return tgtList.size();
 }
 
@@ -291,7 +291,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	  bd.fOffset = offset;
 	  bd.fSize = addedSize;
 	  bd.fSpecification = block.fSpecification;
-	  bd.fDataType = AliHLTTRDDefinitions::fgkTRDSATracksDataType;
+	  bd.fDataType = AliHLTTRDDefinitions::fgkTracksDataType;
 	  outputBlocks.push_back( bd );
 	  HLTDebug("BD ptr 0x%x, offset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), bd.fSpecification);
 	  offset = totalSize;
@@ -299,9 +299,9 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       }
       if(fOffline){
 	if(trdTracks)
-	  PushBack(trdTracks, AliHLTTRDDefinitions::fgkTRDOffTracksDataType, 0); 
+	  PushBack(trdTracks, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0); 
 	else
-	  PushBack(new TObject, AliHLTTRDDefinitions::fgkTRDOffTracksDataType, 0);
+	  PushBack(new TObject, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
       }
 
       HLTDebug("totalSize: %i", totalSize);

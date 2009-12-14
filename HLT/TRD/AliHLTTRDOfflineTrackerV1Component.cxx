@@ -46,8 +46,7 @@ int AliHLTTRDOfflineTrackerV1Component::GetOutputDataTypes(AliHLTComponentDataTy
 {
   // Get the output data types
   tgtList.clear();
-  AliHLTTRDTrackerV1Component::GetOutputDataTypes(tgtList);
-  tgtList.push_back(AliHLTTRDDefinitions::fgkTRDOffTracksDataType);
+  tgtList.push_back(AliHLTTRDDefinitions::fgkHiLvlTracksDataType);
   return tgtList.size();
 }
 

@@ -28,9 +28,11 @@ public:
   AliHLTTRDDefinitions();
   virtual ~AliHLTTRDDefinitions();
   
-  static const AliHLTComponentDataType fgkClusterDataType; // TRD Cluster Data
-  static const AliHLTComponentDataType fgkTRDSATracksDataType; // Stand Alone tracks
-  static const AliHLTComponentDataType fgkTRDOffTracksDataType; // Stand Alone tracks for offline comparation
+  static const AliHLTComponentDataType fgkDigitsDataType;  // TRD digits 
+  static const AliHLTComponentDataType fgkClusterDataType; // Cluster
+  static const AliHLTComponentDataType fgkHiLvlClusterDataType; // Cluster for offline comparation
+  static const AliHLTComponentDataType fgkTracksDataType; // Stand Alone tracks
+  static const AliHLTComponentDataType fgkHiLvlTracksDataType; // Stand Alone tracks for offline comparation
   static const AliHLTComponentDataType fgkMCMtrackletDataType; // MCM tracklet Data
   static const AliHLTComponentDataType fgkMCMcalibrationDataType; // MCM Calibration data
   static const AliHLTComponentDataType fgkCalibrationDataType; // Calibration with TRDtracks

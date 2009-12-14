@@ -27,11 +27,15 @@
 
 ClassImp(AliHLTTRDDefinitions)
 
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkDigitsDataType = { sizeof(AliHLTComponentDataType), {'A','L','I','T','R','E','E','D'},{'T','R','D',' '}};;
+
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkClusterDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},{'T','R','D',' '}};;
 
-const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDSATracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S','S','A'},{'T','R','D',' '}};;
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkHiLvlClusterDataType = { sizeof(AliHLTComponentDataType), {'H','I','C','L','U','S','T','S'},{'T','R','D',' '}};;
 
-const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDOffTracksDataType = { sizeof(AliHLTComponentDataType), {'O','F','F','T','R','A','C','K'},{'T','R','D',' '}};;
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S','S','A'},{'T','R','D',' '}};;
+
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkHiLvlTracksDataType = { sizeof(AliHLTComponentDataType), {'H','I','T','R','A','C','K','S'},{'T','R','D',' '}};;
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkMCMtrackletDataType = { sizeof(AliHLTComponentDataType), {'M','C','M','T','R','L','E','T'},{'T','R','D',' '}};;
 

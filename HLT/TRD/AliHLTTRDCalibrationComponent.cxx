@@ -89,7 +89,7 @@ void AliHLTTRDCalibrationComponent::GetInputDataTypes( vector<AliHLTComponentDat
 {
   // Get the list of input data
   list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back(AliHLTTRDDefinitions::fgkTRDSATracksDataType);
+  list.push_back(AliHLTTRDDefinitions::fgkTracksDataType);
 }
 
 AliHLTComponentDataType AliHLTTRDCalibrationComponent::GetOutputDataType()
