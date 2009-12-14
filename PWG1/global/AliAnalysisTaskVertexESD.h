@@ -42,7 +42,8 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   void           SetRerecoVertexITSTPC(Bool_t flag=kTRUE) { fRecoVtxITSTPC=flag; }
   void           SetOnlyITSTPCTracks() {fOnlyITSTPCTracks=kTRUE;}
   void           SetOnlyITSSATracks() {fOnlyITSSATracks=kTRUE;}
-  
+  void           SetFillNtuple(Bool_t fill=kTRUE) {fFillNtuple=fill;}  
+
  protected:
   Bool_t       fCheckEventType; // read only events of type 7
   Bool_t       fReadMC;         // read Monte Carlo
@@ -50,9 +51,19 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   Bool_t       fRecoVtxITSTPC;  // reco ITS+TPC vertex on the flight
   Bool_t       fOnlyITSTPCTracks; // only ITS-TPC tracks to redo ITSTPC vertex
   Bool_t       fOnlyITSSATracks;  // only ITS-SA tracks to redo ITSTPC vertex
+  Bool_t       fFillNtuple;      // fill ntuple 
   AliESDEvent *fESD;            // ESD object
   TList       *fOutput;         //! list send on output slot 0
   TNtuple     *fNtupleVertexESD;//! output ntuple
+  TH1F        *fhSPDVertexX; //! output histo
+  TH1F        *fhSPDVertexY; //! output histo
+  TH1F        *fhSPDVertexZ; //! output histo
+  TH1F        *fhTRKVertexX; //! output histo
+  TH1F        *fhTRKVertexY; //! output histo
+  TH1F        *fhTRKVertexZ; //! output histo
+  TH1F        *fhTPCVertexX; //! output histo
+  TH1F        *fhTPCVertexY; //! output histo
+  TH1F        *fhTPCVertexZ; //! output histo
   TH2F        *fhTrackRefs;     //! output histo
 
  private:    
@@ -62,7 +73,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   AliESDVertex* ReconstructPrimaryVertexTPC() const;
   AliESDVertex* ReconstructPrimaryVertexITSTPC() const;
   
-  ClassDef(AliAnalysisTaskVertexESD,6); // primary vertex analysis
+  ClassDef(AliAnalysisTaskVertexESD,7); // primary vertex analysis
 };
 
 #endif
