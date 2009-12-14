@@ -588,6 +588,7 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
   for(Int_t itr=0; itr<ntracks; itr++) {
     AliESDtrack *track = fESD->GetTrack(itr);
 
+    //if( TMath::Abs(TMath::Abs(track->Phi()-TMath::Pi())-0.5*TMath::Pi()) < 0.25*TMath::Pi() ) continue;
 
     // remove kink daughters
     if(track->GetKinkIndex(0)>0) continue;
@@ -704,7 +705,8 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       if(!outInZ) fHistNclsITSSAInAcc->Fill(nclsITS);
     }
 
-    if(tpcin && fUseITSSAforNtuples) continue;
+    if(tpcin && fUseITSSAforNtuples) continue; // only ITS-SA for ntuples
+    if(!tpcin && !fUseITSSAforNtuples) continue; // only ITS-TPC for ntuples
 
     Int_t iITSflag=0; //ITSflag takes the value 0 if the track has no cluster assigned in the SPDs, 1 (2) if one cluster is assigned in SPD1(2), 3 if two clusters are present. Then the same adding 10,20 or 30 for SDD and 100,200 or 300 for SSD
 
