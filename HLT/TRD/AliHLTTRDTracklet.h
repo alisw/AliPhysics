@@ -34,10 +34,10 @@ class AliHLTTRDTracklet
   /* Defenitely need */
   UInt_t         fN;                     // number of clusters attached/used/shared
   Float_t        fdX;                    // length of time bin
-  Float_t        fYref[2];               //  Reference y
-  Float_t        fZref[2];               //  Reference z
-  Float_t        fS2Y;                   //  "Robust" sigma in Y - line fit
-  Float_t        fPt;                    //  Momentum estimate for tracklet [GeV/c]
+  Float_t        fYref[2];               // Reference y
+  Float_t        fZref[2];               // Reference z
+  Float_t        fS2Y;                   // estimated resolution in the r-phi direction
+  Float_t        fPt;                    // Momentum estimate for tracklet [GeV/c]
  
   /* Probably need */
   Float_t        fPad[3];                //  local pad definition : length/width/tilt 
@@ -47,31 +47,33 @@ class AliHLTTRDTracklet
   Float_t        fC;                     //  Curvature
   Float_t        fChi2;                  //  Global chi2
   Float_t        fProb[AliPID::kSPECIES];// PID probabilities
-  Short_t        fDet;                   //  TRD detector
 
   /* Not needed */
-  //Int_t          fLabels[3];            //  Labels
-  //Float_t        fX[knTimebins];        //! X position
-  //Float_t        fY[knTimebins];        //! Y position
-  //Float_t        fZ[knTimebins];        //! Z position
-  //Float_t        fYfitR[2];             //  Y fit position +derivation
-  //Float_t        fZfitR[2];             //  Z fit position
-  //Float_t        fMeanz;                //  Mean vaue of z
-  //Float_t        fZProb;                //  Max probbable z
-  //Int_t          fFreq;                 //  Frequency
-  //Int_t          fNChange;              //  Change z counter
-  //Float_t        fMPads;                //  Mean number of pads per cluster
+  // Float_t        fExB;                    // tg(a_L) @ tracklet location
+  // Float_t        fVD;                     // drift velocity @ tracklet location
+  // Float_t        fT0;                     // time 0 @ tracklet location
+  // Float_t        fS2PRF;                  // sigma^2 PRF for xd->0 and phi=a_L 
+  // Float_t        fDiffL;                  // longitudinal diffusion coefficient
+  // Float_t        fDiffT;                  // transversal diffusion coefficient
+  // Float_t        fX;                      // radial position of the tracklet
+  // Float_t        fY;                      // r-phi position of the tracklet
+  // Float_t        fZ;                      // z position of the tracklet
+  // Float_t        fS2Z;                    // estimated resolution in the z direction 
+  // Float_t        fdEdx[AliTRDseedV1::kNslices];         // dE/dx measurements for tracklet
+  // Float_t        fRefCov[7];              // covariance matrix of the track in the yz plane + the rest of the diagonal elements
+  // Float_t        fCov[3];                 // covariance matrix of the tracklet in the xy plane
 
-  //Float_t        fCC;                   //  Curvature with constrain
-  //Float_t        fChi2Z;                //  Global chi2
+  UChar_t        fPos[AliTRDseedV1::kNclusters]; // position of the cluster in the original array
 
-  AliHLTUInt16_t fCount;                  // Number of clusters saved in the open array
-  AliHLTUInt32_t fSize;                   // Size of the tracklet with clusters in the memory
+  Short_t        fDet;                   // TRD detector
+  UChar_t        fBits;                  // Bits of the tracklet
+  AliHLTUInt8_t  fCount;                 // Number of clusters saved in the open array
+  AliHLTUInt32_t fSize;                  // Size of the tracklet with clusters in the memory
 
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  AliHLTTRDCluster fClusters[1];                         // Open array of clusters and their index
+  AliHLTTRDCluster fClusters[1];                         // Open array of clusters
 #else
-  AliHLTTRDCluster fClusters[0];                         // Open array of clusters and their index
+  AliHLTTRDCluster fClusters[0];                         // Open array of clusters
 #endif
 
 };

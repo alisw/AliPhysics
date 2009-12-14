@@ -31,10 +31,7 @@ class AliHLTTRDTrack
   AliHLTTRDTrack(const AliHLTTRDTrack& inTrack);
   AliHLTTRDTrack& operator=(const AliHLTTRDTrack& inTrack);
   void InitArrays();
-  
-  /* Defenitely need */
-  //UChar_t      fPIDquality;         //  No of planes used for PID calculation	
-  
+
   /* Probably need */
   Float_t      fPID[AliPID::kSPECIES];//  PID probabilities
   Float_t      fBudget[3];            //  Integrated material budget
@@ -45,8 +42,8 @@ class AliHLTTRDTrack
   /* Defenitely need */
   Float_t      fFakeRatio;            // fake ratio
   Float_t      fChi2;                 // total chi2 value for this track
-  //Float_t      fMass;                 // mass hypothesis
-  //Int_t        fLab;                  // track label
+  // Float_t      fMass;                 // mass hypothesis
+  // Int_t        fLab;                  // track label
 
   /* Probably need */
   Int_t        fN;                    // number of associated clusters
@@ -64,6 +61,7 @@ class AliHLTTRDTrack
   //  static Float_t    fgMostProbablePt; // "Most probable" pt (to be used if Bz=0)
 
   AliHLTUInt32_t fSize;               // Size of the track with tracklets and clusters in the memory
+  UChar_t      fBits;
   Bool_t       fTrackletAtPlane[AliTRDtrackV1::kNplane];   // Used positions in the original array of tracklets
 
 

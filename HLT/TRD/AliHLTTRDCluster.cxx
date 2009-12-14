@@ -8,15 +8,13 @@ AliHLTTRDCluster::AliHLTTRDCluster():
   fX(0),
   fY(0),
   fZ(0),
-  fQ(0),
   fDetector(-1),
   fLocalTimeBin(0),
   fClusterMasking(0),
   fPadCol(0),
   fPadRow(0),
   fPadTime(0),
-  fIsInChamber(kFALSE),
-  fIsShared(kFALSE)
+  fBits(0)
 {
 }
 
@@ -28,18 +26,19 @@ AliHLTTRDCluster::AliHLTTRDCluster(const AliTRDcluster* const inCluster):
   fX (inCluster->GetX()),
   fY (inCluster->GetY()),
   fZ (inCluster->GetZ()),
-  fQ (inCluster->fQ),
   fDetector (inCluster->fDetector),
   fLocalTimeBin (inCluster->fLocalTimeBin),
   fClusterMasking (inCluster->fClusterMasking),
   fPadCol (inCluster->fPadCol),
   fPadRow (inCluster->fPadRow),
   fPadTime (inCluster->fPadTime),
-  fIsInChamber(inCluster->IsInChamber()),
-  fIsShared (inCluster->IsShared())
+  fBits(0)
 {
+
   for(int i=0; i<3; i++)
     fSignals[i]=inCluster->fSignals[i+2];
+
+  fBits = UInt_t(inCluster->TestBits(-1)) >> 14; 
 }
 
 
@@ -49,13 +48,9 @@ AliHLTTRDCluster::AliHLTTRDCluster(const AliTRDcluster* const inCluster):
 //============================================================================
 void AliHLTTRDCluster::ExportTRDCluster(AliTRDcluster* const outCluster) const
 {
-  //  Print();
   outCluster->SetX(fX);
   outCluster->SetY(fY);
   outCluster->SetZ(fZ);
-  outCluster->fQ=fQ;
-  outCluster->SetInChamber(fIsInChamber);
-  outCluster->SetShared(fIsShared);
   outCluster->fDetector=fDetector;
   outCluster->fLocalTimeBin=fLocalTimeBin;
   outCluster->fClusterMasking=fClusterMasking;
@@ -63,8 +58,12 @@ void AliHLTTRDCluster::ExportTRDCluster(AliTRDcluster* const outCluster) const
   outCluster->fPadRow=fPadRow;
   outCluster->fPadTime=fPadTime;
 
-  for(int i=0; i<3; i++)
+  for(int i=0; i<3; i++){
     outCluster->fSignals[i+2]=fSignals[i];
+    outCluster->fQ+=fSignals[i];
+  }
+
+  outCluster->SetBit(UInt_t(fBits)<<14);
 }
 
 /**

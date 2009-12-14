@@ -10,11 +10,13 @@ AliHLTTRDTrack::AliHLTTRDTrack():
   fDE(-1),
   fFakeRatio(-1),
   fChi2(-1),
+  // fMass(-1),
   fN(-1),
   fIntegratedLength(-1),
   fX(-1),
   fAlpha(-1),
-  fSize(sizeof(AliHLTTRDTrack))
+  fSize(sizeof(AliHLTTRDTrack)),
+  fBits(0)
 {
   InitArrays();
   // not to be used
@@ -29,11 +31,13 @@ AliHLTTRDTrack::AliHLTTRDTrack(const AliTRDtrackV1* const inTrack):
   fDE(inTrack->fDE),
   fFakeRatio(inTrack->fFakeRatio),
   fChi2(inTrack->fChi2),
+  // fMass(inTrack->fMass),
   fN(inTrack->fN),
   fIntegratedLength(inTrack->GetIntegratedLength()),
   fX(inTrack->GetX()),
   fAlpha(inTrack->GetAlpha()),
-  fSize(sizeof(AliHLTTRDTrack))
+  fSize(sizeof(AliHLTTRDTrack)),
+  fBits(0)
 {
   CopyDataMembers(inTrack);
 }
@@ -61,7 +65,7 @@ void AliHLTTRDTrack::CopyDataMembers(const AliTRDtrackV1* const inTrack)
   
   for (Int_t i = 0; i < 3; i++)
     {
-      fBudget[i] = inTrack->GetBudget(i);
+      fBudget[i] = inTrack->fBudget[i];
     }
   
   const Double_t* const Ptemp = inTrack->GetParameter();
@@ -69,11 +73,15 @@ void AliHLTTRDTrack::CopyDataMembers(const AliTRDtrackV1* const inTrack)
     {
       fP[i] = Ptemp[i];
     }
+
   const Double_t* const Ctemp = inTrack->GetCovariance();
   for (Int_t i = 0; i < 15; i++)
     {
       fC[i] = Ctemp[i];
     }
+
+  UInt_t mask = inTrack->TestBits(-1);
+  fBits = mask >> 14;
 
   for (Int_t iTracklet = 0; iTracklet < AliTRDtrackV1::kNplane; iTracklet++)
     {
@@ -99,6 +107,7 @@ void AliHLTTRDTrack::ExportTRDTrack(AliTRDtrackV1* const outTrack) const
   outTrack->fDE=fDE;
   outTrack->fFakeRatio=fFakeRatio;
   outTrack->fChi2=fChi2;
+  // outTrack->fMass=fMass;
   outTrack->fN=fN;
   outTrack->SetIntegratedLength(fIntegratedLength);
   outTrack->Set(fX, fAlpha, fP, fC);
@@ -109,8 +118,10 @@ void AliHLTTRDTrack::ExportTRDTrack(AliTRDtrackV1* const outTrack) const
     }
   for (Int_t i = 0; i < 3; i++)
     {
-      outTrack->SetBudget(i, fBudget[i]);
+      outTrack->fBudget[i]=fBudget[i];
     }
+
+  outTrack->SetBit(UInt_t(fBits)<<14);
 
   AliHLTUInt8_t *iterPtr = (AliHLTUInt8_t*)this+sizeof(*this);
   AliHLTTRDTracklet* hltTracklet;
