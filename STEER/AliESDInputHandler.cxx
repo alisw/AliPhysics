@@ -109,6 +109,8 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
       fHLTTree->GetEntry(entry);
   }
   
+  fNewEvent = kTRUE;
+
   return kTRUE;
 }
 

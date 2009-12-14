@@ -32,7 +32,8 @@ AliInputEventHandler::AliInputEventHandler() :
     AliVEventHandler(),
     fTree(0),
     fBranches(""),
-    fBranchesOn("")
+    fBranchesOn(""),
+    fNewEvent(kTRUE)
 {
   // default constructor
 }
@@ -48,7 +49,8 @@ AliInputEventHandler::AliInputEventHandler(const char* name, const char* title):
   AliVEventHandler(name, title),
   fTree(0),
   fBranches(""),
-  fBranchesOn("")
+  fBranchesOn(""),
+  fNewEvent(kTRUE)
 {
 }
 
@@ -80,3 +82,8 @@ void AliInputEventHandler::SwitchOnBranches() const {
       AliInfo(Form("Branch %s switched on \n", str.Data()));
   }
 }
+
+
+
+Long64_t AliInputEventHandler::GetReadEntry() const 
+{return fTree->GetReadEntry();}

@@ -28,7 +28,7 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual Bool_t       Init(Option_t* /*opt*/)                      {return kTRUE;}
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/)     {return kTRUE;}
     virtual Bool_t       BeginEvent(Long64_t /*entry*/)               {return kTRUE;}
-    virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
+    virtual Bool_t       Notify() { return AliVEventHandler::Notify();}
     virtual Bool_t       Notify(const char */*path*/)                 {return kTRUE;}
     virtual Bool_t       FinishEvent()                                {return kTRUE;}        
     virtual Bool_t       Terminate()                                  {return kTRUE;}
@@ -43,7 +43,9 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual AliRunTag   *GetRunTag()       const                      {return 0;}
     virtual Option_t    *GetAnalysisType() const                      {return 0;}
     virtual TTree       *GetTree( )        const                      {return fTree;}
-    virtual Long64_t     GetReadEntry()    const                      {return fTree->GetReadEntry();}
+    virtual Long64_t     GetReadEntry()    const;
+    virtual Bool_t       NewEvent()
+	{Bool_t ne = fNewEvent; fNewEvent = kFALSE; return ne;}
  protected:
     void SwitchOffBranches() const;
     void SwitchOnBranches()  const;
@@ -54,6 +56,7 @@ class AliInputEventHandler : public AliVEventHandler {
     TTree          *fTree;         //! Pointer to the tree
     TString         fBranches;     //  List of branches to be switched off (separated by space)
     TString         fBranchesOn;   //  List of branches to be switched on  (separated by space)
+    Bool_t          fNewEvent;     //  New event flag 
     ClassDef(AliInputEventHandler, 2);
 };
 

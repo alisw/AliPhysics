@@ -14,6 +14,7 @@ class AliAODTracklets;
 class AliAODCaloCells;
 class AliMCEvent;
 class AliInputEventHandler;
+class AliAnalysisCuts;
 
 class TTree;
 class TList;
@@ -28,20 +29,24 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     AliAnalysisTaskSE& operator=(const AliAnalysisTaskSE& other);
     virtual ~AliAnalysisTaskSE() {;}
     // Implementation of interface methods
-    virtual void ConnectInputData(Option_t *option = "");
-    virtual void CreateOutputObjects();
-    virtual void Exec(Option_t* option);
-    virtual void SetDebugLevel(Int_t level) {fDebug = level;}
-    virtual void Init() {;}
+    virtual void   ConnectInputData(Option_t *option = "");
+    virtual void   CreateOutputObjects();
+    virtual void   Exec(Option_t* option);
+    virtual void   SetDebugLevel(Int_t level) {fDebug = level;}
+    virtual void   Init() {;}
     virtual Bool_t Notify();
     // To be implemented by user
-    virtual void UserCreateOutputObjects()  {;}
-    virtual void UserExec(Option_t* /*option*/) {;}
+    virtual void   UserCreateOutputObjects()  {;}
+    virtual void   UserExec(Option_t* /*option*/) {;}
     virtual Bool_t UserNotify() {return kTRUE;}
     virtual void   NotifyRun()  {;}
-
+    
     // Helpers for adding branches to the AOD
-   virtual void AddAODBranch(const char* cname, void* addobj, const char *fname="");
+    virtual void   AddAODBranch(const char* cname, void* addobj, const char *fname="");
+    // Event Selection
+    virtual void   SelectCollisionCandidates() {fSelectCollisions = kTRUE;}
+    
+    
 // Getters
     virtual Int_t        DebugLevel()  {return fDebug;     }
     virtual AliVEvent*   InputEvent()  {return fInputEvent;}
@@ -77,7 +82,11 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static AliAODTracklets* fgAODTracklets;     //! Tracklets for replication
     static AliAODCaloCells* fgAODEmcalCells;    //! Emcal Cell replication
     static AliAODCaloCells* fgAODPhosCells;     //! Phos  Cell replication
-	
+    // Event selection
+    static AliAnalysisCuts* fgCollisionSelector; //! Cuts to select collision events
+    static Bool_t           fgIsCollision;       //! Collision flag 
+    Bool_t                  fSelectCollisions;   //  Task processes collision candidates only
+     
     ClassDef(AliAnalysisTaskSE, 1); // Analysis task for standard jet analysis
 };
  
