@@ -109,12 +109,14 @@ fHistPtITSMI4(0),
 fHistPtITSMI5(0),
 fHistPtITSMI6(0),
 fHistPtITSMISPD(0),
+fHistPtITSMIoneSPD(0),
 fHistPtITSMI2InAcc(0),
 fHistPtITSMI3InAcc(0),
 fHistPtITSMI4InAcc(0),
 fHistPtITSMI5InAcc(0),
 fHistPtITSMI6InAcc(0),
 fHistPtITSMISPDInAcc(0),
+fHistPtITSMIoneSPDInAcc(0),
 fHistPtITSMIokbadoutinz6(0),
 fHistPtITSMIokbadoutinz4InAcc(0),
 fHistPtITSMIokbadoutinz5InAcc(0),
@@ -392,6 +394,11 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
   fHistPtITSMISPD->SetMinimum(0);
   fOutput->Add(fHistPtITSMISPD);
 
+  fHistPtITSMIoneSPD = new TH1F("fHistPtITSMIoneSPD","pt distribution of ITSMIoneSPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMIoneSPD->Sumw2();
+  fHistPtITSMIoneSPD->SetMinimum(0);
+  fOutput->Add(fHistPtITSMIoneSPD);
+
   fHistPtTPCInAcc = new TH1F("fHistPtTPCInAcc","pt distribution of TPC tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtTPCInAcc->Sumw2();
   fHistPtTPCInAcc->SetMinimum(0);
@@ -426,6 +433,11 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
   fHistPtITSMISPDInAcc->Sumw2();
   fHistPtITSMISPDInAcc->SetMinimum(0);
   fOutput->Add(fHistPtITSMISPDInAcc);
+  
+  fHistPtITSMIoneSPDInAcc = new TH1F("fHistPtITSMIoneSPDInAcc","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMIoneSPDInAcc->Sumw2();
+  fHistPtITSMIoneSPDInAcc->SetMinimum(0);
+  fOutput->Add(fHistPtITSMIoneSPDInAcc);
   
   fHistPtITSMIokbadoutinz6 = new TH1F("fHistPtITSMIokbadoutinz6","pt distribution of ITSMI tracks with 6 layers OK; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSMIokbadoutinz6->Sumw2();
@@ -562,7 +574,7 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
  
   
   Int_t ntracks = fESD->GetNumberOfTracks();
-  //printf("Tracks # = %d\n",fESD->GetNumberOfTracks());
+  printf("Tracks # = %d\n",fESD->GetNumberOfTracks());
 
   fHistNtracks->Fill(ntracks);
   // Post the data already here
@@ -576,13 +588,13 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
   for(Int_t itr=0; itr<ntracks; itr++) {
     AliESDtrack *track = fESD->GetTrack(itr);
 
+
     // remove kink daughters
     if(track->GetKinkIndex(0)>0) continue;
 
     // remove tracks not reco in ITS or TPC
     if (!(track->GetStatus() & AliESDtrack::kITSin) &&
 	!(track->GetStatus() & AliESDtrack::kTPCin)) continue;
-
 
     Bool_t itsrefit=kFALSE,tpcin=kFALSE,itsfindable=kFALSE,itsfindableAcc=kFALSE;
     if ((track->GetStatus() & AliESDtrack::kITSrefit)) itsrefit=kTRUE;
@@ -664,6 +676,8 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       if(nclsITS==2) fHistPtITSMI2->Fill(track->Pt());
       if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))
 	fHistPtITSMISPD->Fill(track->Pt());
+      if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+	fHistPtITSMIoneSPD->Fill(track->Pt());
       if(nclsokbadoutinzITS==6) fHistPtITSMIokbadoutinz6->Fill(track->Pt());
     }
     if(itsfindableAcc&&itsrefit) {
@@ -674,6 +688,8 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       if(nclsITS==2) fHistPtITSMI2InAcc->Fill(track->Pt());
       if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))
 	fHistPtITSMISPDInAcc->Fill(track->Pt());
+      if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+	fHistPtITSMIoneSPDInAcc->Fill(track->Pt());
       if(nclsokbadoutinzITS==6) fHistPtITSMIokbadoutinz6InAcc->Fill(track->Pt());
       if(nclsokbadoutinzITS==5) fHistPtITSMIokbadoutinz5InAcc->Fill(track->Pt());
       if(nclsokbadoutinzITS==4) fHistPtITSMIokbadoutinz4InAcc->Fill(track->Pt());
@@ -716,8 +732,8 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       if(nITSclsMC>=0) iITSflag += 10000*nITSclsMC;    
     }
 
-    if(!vertexESD) return;
-    if(!(vertexESD->GetStatus())) return;
+    if(!vertexESD) continue;
+    if(!(vertexESD->GetStatus())) continue;
 
     // impact parameter to VertexTracks
     Double_t d0z0[2],covd0z0[3];

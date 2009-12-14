@@ -87,12 +87,14 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   TH1F         *fHistPtITSMI5; //! output hist
   TH1F         *fHistPtITSMI6; //! output hist
   TH1F         *fHistPtITSMISPD; //! output hist
+  TH1F         *fHistPtITSMIoneSPD; //! output hist
   TH1F         *fHistPtITSMI2InAcc; //! output hist
   TH1F         *fHistPtITSMI3InAcc; //! output hist
   TH1F         *fHistPtITSMI4InAcc; //! output hist
   TH1F         *fHistPtITSMI5InAcc; //! output hist
   TH1F         *fHistPtITSMI6InAcc; //! output hist
   TH1F         *fHistPtITSMISPDInAcc; //! output hist
+  TH1F         *fHistPtITSMIoneSPDInAcc; //! output hist
   TH1F         *fHistPtITSMIokbadoutinz6; //! output hist
   TH1F         *fHistPtITSMIokbadoutinz4InAcc; //! output hist
   TH1F         *fHistPtITSMIokbadoutinz5InAcc; //! output hist
@@ -113,7 +115,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   Double_t ParticleImpParMC(TParticle *part,AliESDVertex *vert,Double_t bzT) const;
   Bool_t SelectPt(Double_t pt);
 
-  ClassDef(AliAnalysisTaskITSTrackingCheck,3); // ITS tracks analysis
+  ClassDef(AliAnalysisTaskITSTrackingCheck,4); // ITS tracks analysis
 };
 
 #endif
