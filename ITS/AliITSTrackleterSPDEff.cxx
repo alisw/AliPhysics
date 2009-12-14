@@ -860,7 +860,10 @@ Bool_t AliITSTrackleterSPDEff::FindChip(UInt_t &key, Int_t layer,  Float_t* vtx,
   Double_t zAbs,phiAbs; // those are the polar coordinate, in the Absolute ALICE Reference 
                         // of the intersection of the tracklet with the pixel layer.  
   if (TMath::Abs(zVtx)<100) zAbs=zVtx + vtx[2]; // this is fine only for the cluster, not for the track prediction
-  else zAbs=r/TMath::Tan(thetaVtx) + vtx[2]; // this is the only way to do for the tracklet prediction
+  else {
+    if(TMath::Abs(thetaVtx)<1E-6) return kFALSE;
+    zAbs=r/TMath::Tan(thetaVtx) + vtx[2]; // this is the only way to do for the tracklet prediction
+  }
   AliDebug(1,Form("FindChip: vtx[0] = %f, vtx[1] = %f, vtx[2] = %f",vtx[0],vtx[1],vtx[2]));
   Double_t vtxy[2]={vtx[0],vtx[1]};
   if (vtxy[0]*vtxy[1]+vtxy[1]*vtxy[1]>0) { // this method holds only for displaced vertices 
