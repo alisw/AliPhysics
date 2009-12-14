@@ -38,6 +38,12 @@ protected:
   AliTRDclusterizer* fOffClusterizer;
   Bool_t             fDataOutputType; // 0 = HLT data (low level), 1 = Emulated HLT data (high level), 2 = offline data (high level)
 
+private:
+  /// copy constructor prohibited
+  AliHLTTRDOfflineClusterizerComponent(const AliHLTTRDOfflineClusterizerComponent&);
+  /// assignment operator prohibited
+  AliHLTTRDOfflineClusterizerComponent& operator=(const AliHLTTRDOfflineClusterizerComponent&);
+
   ClassDef(AliHLTTRDOfflineClusterizerComponent, 1)
 
 };

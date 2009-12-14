@@ -27,7 +27,6 @@ using namespace std;
 
 #include "AliHLTTRDClusterHistoComponent.h"
 #include "AliHLTTRDDefinitions.h"
-#include "AliHLTTRDCluster.h"
 #include "AliTRDcluster.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
