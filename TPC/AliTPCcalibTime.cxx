@@ -1171,12 +1171,13 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
   const Int_t    kMinTPC  = 80;    // minimal number of TPC cluster
   const Int_t    kMinITS  = 3;     // minimal number of ITS cluster
   const Double_t kMinZ    = 10;    // maximal dz distance
-  const Double_t kMaxDy   = 1.;    // maximal dy distance
-  const Double_t kMaxAngle= 0.01;  // maximal angular distance
+  const Double_t kMaxDy   = 2.;    // maximal dy distance
+  const Double_t kMaxAngle= 0.015;  // maximal angular distance
   const Double_t kSigmaCut= 5;     // maximal sigma distance to median
   const Double_t kVdErr   = 0.1;  // initial uncertainty of the vd correction 
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
   const Double_t kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
+  const Double_t kMinPt   = 0.3;   // minimal pt
   const  Int_t     kN=500;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
@@ -1190,12 +1191,15 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
   Int_t dummycl[1000];
   if (track->GetITSclusters(dummycl)<kMinITS) return;  // minimal amount of clusters
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
+  if (!track->IsOn(AliESDtrack::kTPCrefit)) return;
   if (!friendTrack->GetITSOut()) return;  
   if (!track->GetInnerParam())   return;
   if (!track->GetOuterParam())   return;
+  if (track->Pt()<kMinPt)  return;
   // exclude crossing track
   if (track->GetOuterParam()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
   if (TMath::Abs(track->GetInnerParam()->GetZ())<kMinZ)   return;
+  if (track->GetInnerParam()->GetX()>90)   return;
   //
   AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(track->GetInnerParam()));
   AliExternalTrackParam pITS(*(friendTrack->GetITSOut()));
@@ -1331,8 +1335,8 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *fr
   const Int_t    kMinTPC  = 80;    // minimal number of TPC cluster
   const Int_t    kMinTRD  = 50;    // minimal number of TRD cluster
   const Double_t kMinZ    = 20;    // maximal dz distance
-  const Double_t kMaxDy   = 1.;    // maximal dy distance
-  const Double_t kMaxAngle= 0.01;  // maximal angular distance
+  const Double_t kMaxDy   = 2.;    // maximal dy distance
+  const Double_t kMaxAngle= 0.015;  // maximal angular distance
   const Double_t kSigmaCut= 5;     // maximal sigma distance to median
   const Double_t kVdErr   = 0.1;  // initial uncertainty of the vd correction 
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
@@ -1489,7 +1493,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *fr
   const Int_t      kMinTPC  = 80;    // minimal number of TPC cluster
   const Double_t   kMinZ    = 10;    // maximal dz distance
   const Double_t   kMaxDy   = 5.;    // maximal dy distance
-  const Double_t   kMaxAngle= 0.01;  // maximal angular distance
+  const Double_t   kMaxAngle= 0.015;  // maximal angular distance
   const Double_t   kSigmaCut= 5;     // maximal sigma distance to median
   const Double_t   kVdErr   = 0.1;  // initial uncertainty of the vd correction 
   const Double_t   kVdYErr  = 0.05;  // initial uncertainty of the vd correction 

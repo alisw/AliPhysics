@@ -851,7 +851,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   //
   // - > Don't use it for reconstruction - Only for Calibration studies
   //
-  if (run<0) return;
+  if (run<=0) return;
   AliCDBEntry * entry = 0;
   if (run>= fRunList.fN){
     fRunList.Set(run*2+1);

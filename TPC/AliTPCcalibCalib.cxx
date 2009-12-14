@@ -177,6 +177,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   // 0 - Setup transform object
   //
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
   transform->SetCurrentRun(fRun);
   transform->SetCurrentTimeStamp((UInt_t)fTime);
   if(!fApplyExBCorrection) { // disable ExB correction in transform
@@ -248,6 +249,27 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
     cluster->SetX(x[0]);
     cluster->SetY(x[1]);
     cluster->SetZ(x[2]);
+    
+    //
+    // Apply alignemnt
+    //
+    
+//     if (!param->IsGeoRead()) param->ReadGeoMatrices();
+//     TGeoHMatrix  *mat = param->GetClusterMatrix(cluster->GetDetector());
+//     //TGeoHMatrix  mat;
+//     Double_t pos[3]= {cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+//     Double_t posC[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+//     if (mat) mat->LocalToMaster(pos,posC);
+//     else{
+//       // chack Loading of Geo matrices from GeoManager - TEMPORARY FIX
+//     }
+//     cluster->SetX(posC[0]);
+//     cluster->SetY(posC[1]);
+//     cluster->SetZ(posC[2]);
+
+
+
+
     if (fStreamLevel>2){
       TTreeSRedirector *cstream = GetDebugStreamer();
       if (cstream){
