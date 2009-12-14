@@ -1,3 +1,4 @@
+
 #ifndef ALIPERFANALYZEINVPT_H
 #define ALIPERFANALYZEINVPT_H
 
@@ -39,7 +40,7 @@ public:
    void SetProjBinsPhi(const Double_t *pBins,const Int_t sizep);
    void SetProjBinsTheta(const Double_t *tBins, const Int_t sizet);
    void SetMakeFitOption(const Bool_t setGausFit, const Double_t exclusionR,const Double_t fitR );
- 
+   void SetDoRebin(const Int_t rebin){if(rebin) {fDoRebin = kTRUE; fRebin = rebin;}}
   
 protected:
    Double_t fThetaBins[100];// array of theta bins for projection and fit
@@ -50,7 +51,8 @@ protected:
    Double_t fRange;// fit range of 1/pt spectrum
    Double_t fExclRange ;// range of exlusion of points around 0 when fitting 1/pt
    Bool_t fFitGaus;// set this flag for usage of gaussian fit function instead of polynomial (default)
-   
+   Bool_t  fDoRebin;
+   Int_t  fRebin;
    // projection histos
    TH1F *fHistFitTheta[100];// projection histos for analysis in theta bins
    TH1F *fHistFitPhi[100];// projection histos for analysis in phi bins

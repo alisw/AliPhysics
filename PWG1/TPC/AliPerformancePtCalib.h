@@ -90,6 +90,7 @@ public:
    void SetProjBinsPhi(const Double_t *pBins,const Int_t sizep);// set phi bins for projection
    void SetProjBinsTheta(const Double_t *tBins, const Int_t sizet);// set theta bins for projection
    void SetMakeFitOption(const Bool_t setGausFit, const Double_t exclusionR,const Double_t fitR );//set fit options
+   void SetDoRebin(const Int_t rebin){if(rebin) {fDoRebin = kTRUE; fRebin = rebin;}}
    const TList *GetHistoList() {return fList;}// get list of histograms for analysis
    
    // Create folder for analysed histograms
@@ -114,7 +115,9 @@ protected:
    Double_t fRange;// sets fit range
    Double_t fExclRange ;// sets range of rejection of points around 0
    Bool_t fFitGaus ;// flag for usage of gaussian fit function
-
+   Bool_t fDoRebin;
+   Int_t fRebin;
+   
 private:
 
    Bool_t fShift;//flag for shift in charge/pt

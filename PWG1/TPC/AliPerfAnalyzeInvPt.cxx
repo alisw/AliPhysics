@@ -56,29 +56,32 @@ ClassImp(AliPerfAnalyzeInvPt)
 {
    // fit function for fitting of 1/pt with a polynomial of 4th order, rejecting points between  +/-par[4]
 
-
+  
    if (x[0] > -par[4] && x[0] < par[4]) {
       TF1::RejectPoint();
       return 0;
    }
+   
    return  par[2]+par[0]*pow((x[0]-par[1]),2)+par[3]*pow((x[0]-par[1]),4);
-  
+
 }
 //____________________________________________________________________________________________________________________________________________
 Double_t AliPerfAnalyzeInvPt::PolynomialRejP(Double_t *x, const Double_t *par)
 {
    // fit function for fitting of 1/pt with a polynomial of 4th order to improve result (fit range and rejection zone is adjusted to first guess of minimum position)
- 
+     
    Double_t pos  = par[5];
    Double_t neg = - par[5];
    pos += par[4];
    neg += par[4];
-  
+   
    if (x[0] > neg && x[0] < pos) {
       TF1::RejectPoint();
       return 0;
    }
+   
    return   par[2]+par[0]*pow((x[0]-par[1]),2)+par[3]*pow((x[0]-par[1]),4);
+ 
 }
 //____________________________________________________________________________________________________________________________________________
 Double_t AliPerfAnalyzeInvPt::InvGauss(Double_t *x, const Double_t *par)
@@ -118,6 +121,8 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
    fRange(0),
    fExclRange(0),
    fFitGaus(0) ,
+   fDoRebin(0),
+   fRebin(0),
    fHistH2InvPtTheta(0),
    fHistH2InvPtPhi(0), 
    fGrMinPosTheta(0),
@@ -135,6 +140,8 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
    fRange = 0;
    fExclRange = 0;
    fFitGaus = 0;
+   fDoRebin = kFALSE;
+   fRebin = 0;
    
    for(Int_t i=0;i<100;i++){
       
@@ -152,6 +159,8 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(Char_t* name="AliAnalyzeInvPt",Char_t* 
    fRange(0),
    fExclRange(0),
    fFitGaus(0) ,
+   fDoRebin(0),
+   fRebin(0),
    fHistH2InvPtTheta(0),
    fHistH2InvPtPhi(0), 
    fGrMinPosTheta(0),
@@ -168,7 +177,9 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(Char_t* name="AliAnalyzeInvPt",Char_t* 
    fRange = 0;
    fExclRange = 0;
    fFitGaus = 0;
-
+   fDoRebin = kFALSE;
+   fRebin = 0;
+    
    for(Int_t i=0;i<100;i++){
     
       fHistFitTheta[i] = NULL;
@@ -322,7 +333,7 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
       Double_t invPtMinPosImpr  = 0;
       Double_t invPtMinPosErrImpr = 0;
    
-
+      if(fDoRebin) fHistFitTheta[i]->Rebin(fRebin);
       //start fitting
       if(!fFitGaus){
 	 Printf("making polynomial fit in 1/pt in theta bins");
@@ -385,7 +396,7 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
       Double_t invPtMinPosErr = 0;
       Double_t invPtMinPosImpr  = 0;
       Double_t invPtMinPosErrImpr = 0;
-    
+     if(fDoRebin) fHistFitPhi[i]->Rebin(fRebin);
       if(!fFitGaus){
 	 Printf("making polynomial fit in 1/pt in phi bins");
 	 phiCan->cd(countPad);
@@ -424,9 +435,9 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
    canFitVal->Divide(2,1);
 
    canFitVal->cd(1);
-   fGrMinPosTheta->Draw("ALP");
+   fGrMinPosTheta->Draw("AP");
    canFitVal->cd(2);
-   fGrMinPosPhi->Draw("ALP");
+   fGrMinPosPhi->Draw("AP");
 
    Printf("AliPerfAnalyzeInvPt: NOTE: last bin is always fit result  of integral over all angle ranges which have been set by user!");
 
