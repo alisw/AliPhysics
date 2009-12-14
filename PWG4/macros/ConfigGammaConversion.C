@@ -338,6 +338,7 @@ Bool_t kGCplotResolutionESDZ  = kTRUE;
 
 Bool_t kGCplotESDNumberOfV0s          = kTRUE;
 Bool_t kGCplotESDNumberOfSurvivingV0s = kTRUE;
+Bool_t kGCplotESDNumberOfContributorsVtx = kTRUE;
 
 //  debug histograms
 Bool_t kGCplotESDCutGetOnFly      = kTRUE;
@@ -685,6 +686,10 @@ Bool_t kGCrunOnTrain = kFALSE;
 Bool_t kGCdoMCTruth = kTRUE;
 /** ---------------------------- end Monte Carlo flag ---------------------------------------*/
 
+/** ------------------------------ Selecting trigger CINT1B -----------------------------------*/
+Bool_t kGCtriggerCINT1B = kFALSE;
+/** ---------------------------- end Monte Carlo flag ---------------------------------------*/
+
 /** ------------------------- Choose KFParticle OR ESDTrack  --------------------------------*/
 Bool_t kGCuseKFParticle = kTRUE;
 Bool_t kGCuseESDTrack   = kFALSE;
@@ -790,6 +795,10 @@ Bool_t scanArguments(TString arguments){
       else if (argument.CompareTo("-mc-off") == 0){
 	cout<<"Switching off kGCdoMCTruth"<<endl;
 	kGCdoMCTruth = kFALSE;
+      }
+      else if (argument.CompareTo("-trigger-CINT1B") == 0){
+        cout<<"Selecting ONLY kGCtriggerCINT1B"<<endl;
+        kGCtriggerCINT1B = kTRUE;
       }
       else if (argument.CompareTo("-use-own-xyz") == 0){
 	cout<<"Switching on use own xyz calculation"<<endl;
@@ -1124,7 +1133,8 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
 	
   gammaconversion->SetHistograms(histograms);
   v0Reader->SetHistograms(histograms);// also give the pointer to the v0reader, for debugging cuts
-	
+
+  gammaconversion->SetTriggerCINT1B(kGCtriggerCINT1B);
   gammaconversion->SetDoMCTruth(kGCdoMCTruth);
 	
   gammaconversion->SetDoNeutralMeson(kGCrunNeutralMeson);
@@ -1609,6 +1619,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 		
     if(kGCplotESDNumberOfV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfV0s","Number of v0s",100, 0, 100,"","");}
     if(kGCplotESDNumberOfSurvivingV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfSurvivingV0s","Number of surviving v0s",100, 0, 100,"","");}
+    if(kGCplotESDNumberOfContributorsVtx == kTRUE){histograms->AddHistogram("ESD_NumberOfContributorsVtx","Number of contributors to vertex",100, 0, 100,"","");}
 		
     //  debug histograms
     if(kGCplotESDCutGetOnFly == kTRUE){histograms->AddHistogram("ESD_CutGetOnFly_InvMass" ,"Not GetOnFly" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}

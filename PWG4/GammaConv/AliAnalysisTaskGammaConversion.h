@@ -84,6 +84,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 
 		
   void SetHistograms(AliGammaConversionHistograms *const histograms){fHistograms=histograms;}
+  void SetTriggerCINT1B(Bool_t flag){fTriggerCINT1B=flag;}
   void SetDoMCTruth(Bool_t flag){fDoMCTruth=flag;}
   void SetDoNeutralMeson(Bool_t flag){fDoNeutralMeson=flag;}
   void SetDoJet(Bool_t flag){fDoJet=flag;}
@@ -156,7 +157,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 		
 		
   AliGammaConversionHistograms *fHistograms; // Pointer to the histogram handling class
-		
+  Bool_t fTriggerCINT1B; //Flag to select trigger CINT1B
   Bool_t fDoMCTruth; // Flag to switch on/off MC truth 
   Bool_t fDoNeutralMeson; // flag
   Bool_t fDoJet; // flag
