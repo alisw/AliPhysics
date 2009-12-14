@@ -4,6 +4,7 @@
 #include "AliITSVertexer.h"
 #include "AliITSLoader.h"
 #include "AliITSMultReconstructor.h"
+#include "AliITSRecPointContainer.h"
 
 const Float_t AliITSVertexer::fgkPipeRadius = 3.0;
 
@@ -94,6 +95,11 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
     Short_t nfcL1 = multReco.GetNFiredChips(0);
     Short_t nfcL2 = multReco.GetNFiredChips(1);
     fMult = new AliMultiplicity(0,0,0,0,0,0,0,0,0,0,nfcL1,nfcL2,fastOrFiredMap);
+    AliITSRecPointContainer* rcont = AliITSRecPointContainer::Instance();
+    fMult->SetITSClusters(0,rcont->GetNClustersInLayer(1,itsClusterTree));
+    for(Int_t kk=2;kk<=6;kk++){
+      fMult->SetITSClusters(kk-1,rcont->GetNClustersInLayerFast(kk));
+    }
     return;
   }
 
@@ -132,7 +138,11 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   Short_t nfcL1 = multReco.GetNFiredChips(0);
   Short_t nfcL2 = multReco.GetNFiredChips(1);
   fMult = new AliMultiplicity(notracks,tht,phi,dtht,dphi,labels,labelsL2,nosingleclus,ths,phs,nfcL1,nfcL2,fastOrFiredMap);
-
+  AliITSRecPointContainer* rcont = AliITSRecPointContainer::Instance();
+  fMult->SetITSClusters(0,rcont->GetNClustersInLayer(1,itsClusterTree));
+  for(Int_t kk=2;kk<=6;kk++){
+    fMult->SetITSClusters(kk-1,rcont->GetNClustersInLayerFast(kk));
+  }
   delete [] tht;
   delete [] phi;
   delete [] dtht;

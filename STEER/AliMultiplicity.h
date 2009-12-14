@@ -48,6 +48,10 @@ class AliMultiplicity : public TObject {
   Short_t GetNumberOfFiredChips(Int_t layer) const { return fFiredChips[layer]; }
   void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
 
+  UInt_t GetNumberOfITSClusters(Int_t layer) const { return layer<6 ? fITSClusters[layer] : 0; }
+  UInt_t GetNumberOfITSClusters(Int_t layMin, Int_t layMax) const ;
+  void SetITSClusters(Int_t layer, UInt_t clusters) { fITSClusters[layer] = clusters; }
+
   void   SetFastOrFiredChips(UInt_t chipKey){fFastOrFiredChips.SetBitNumber(chipKey);}
   TBits  GetFastOrFiredChips() const {return fFastOrFiredChips;}
   Bool_t TestFastOrFiredChips(UInt_t chipKey) const {return fFastOrFiredChips.TestBitNumber(chipKey);}
@@ -67,10 +71,10 @@ class AliMultiplicity : public TObject {
   Double32_t *fThsingle;     //[fNsingle] array with theta values of L1 clusters
   Double32_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
   Short_t fFiredChips[2];    // Number of fired chips in the two SPD layers
-
+  UInt_t fITSClusters[6];   // Number of ITS cluster per layer
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
 
-  ClassDef(AliMultiplicity,9);
+  ClassDef(AliMultiplicity,10);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const
