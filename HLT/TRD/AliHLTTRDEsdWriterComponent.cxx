@@ -21,24 +21,26 @@
 
                                                                           */
 #include "AliHLTTRDEsdWriterComponent.h"
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
-#include "TTree.h"
 #include "AliHLTTRDDefinitions.h"
-#include "AliHLTTRDUtils.h"			\
-
-/** global instance for component registration */
-AliHLTTRDEsdWriterComponent gTRDEsdWriter;
+#include "AliHLTTRDUtils.h"
+#include "AliHLTCTPData.h"
+#include "AliESDEvent.h"
+#include "AliESDfriend.h"
+#include "AliESDtrack.h"
+#include "AliTRDtrackV1.h"
+#include "TTree.h"
+#include "TFile.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTRDEsdWriterComponent)
 
 AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent()
-  :
-  AliHLTRootFileWriterComponent(),
-  fTree(NULL),
-  fOutputPercentage(100),
-  fESD(NULL)
+:AliHLTRootFileWriterComponent()
+  ,fTree(NULL)
+  ,fESD(NULL)
+  ,fESDfriend(NULL)
+  ,fFile(NULL)
+  ,fTracksArray(NULL)
 {
   // see header file for class documentation
   // or
@@ -48,17 +50,13 @@ AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent()
 }
 
 AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent(const AliHLTTRDEsdWriterComponent&)
-  :
-  AliHLTRootFileWriterComponent(),
-  fTree(NULL),
-  fOutputPercentage(100),
-  fESD(NULL)
+  :AliHLTRootFileWriterComponent()
+  ,fTree(NULL)
+  ,fESD(NULL)
+  ,fESDfriend(NULL)
+  ,fFile(NULL)
+  ,fTracksArray(NULL)
 {
-}
-
-AliHLTTRDEsdWriterComponent& AliHLTTRDEsdWriterComponent::operator=(const AliHLTTRDEsdWriterComponent&)
-{
-  return *this;
 }
 
 void AliHLTTRDEsdWriterComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
@@ -66,6 +64,7 @@ void AliHLTTRDEsdWriterComponent::GetInputDataTypes( vector<AliHLTComponent_Data
   // Get the list of input data  
   list.clear(); // We do not have any requirements for our input data type(s).
   list.push_back( AliHLTTRDDefinitions::fgkTracksDataType );
+  list.push_back( AliHLTTRDDefinitions::fgkHiLvlTracksDataType );
 }
 
 AliHLTTRDEsdWriterComponent::~AliHLTTRDEsdWriterComponent()
@@ -76,148 +75,115 @@ AliHLTTRDEsdWriterComponent::~AliHLTTRDEsdWriterComponent()
 int AliHLTTRDEsdWriterComponent::InitWriter()
 {
   // see header file for class documentation
-  int iResult=0;
+  
+  fFile = new TFile("AliHLTTRDESDs.root", "recreate");
+  fFile->cd();
   fESD = new AliESDEvent;
-  if (fESD) {
-    fESD->CreateStdContent();
-    fTree = new TTree("esdTree", "Tree with HLT ESD objects");
-    if (fTree) {
-      fESD->WriteToTree(fTree);
-    }
-  }
-  if (fTree==NULL) {
-    iResult=-ENOMEM;
-  }
-  return iResult;
+  fESD->CreateStdContent();
+  fTree = new TTree("esdTree", "Tree with HLT ESD objects");
+  fESD->WriteToTree(fTree);
+  fESDfriend = new AliESDfriend();
+  /*TBranch* br=*/fTree->Branch("ESDfriend.","AliESDfriend", &fESDfriend);
+  //br->SetFile("AliHLTTRDESDfriends.root");
+  fESD->AddObject(fESDfriend);
+  fTree->GetUserInfo()->Add(fESD);
+  fTracksArray = new TClonesArray("AliTRDtrackV1");
+
+  SetupCTPData();
+
+  return 0;
 }
 
 int AliHLTTRDEsdWriterComponent::CloseWriter()
 {
   // see header file for class documentation
-  int iResult=0;
-  if (fTree) {
-    WriteObject(kAliHLTVoidEventID, fTree);
-    TTree* pTree=fTree;
-    fTree=NULL;
-    delete pTree;
-  } else {
-    HLTWarning("not initialized");
+
+  //fTree->Print();
+  fFile->Write();
+  fFile->Close();
+  delete fFile; fFile=0;
+  //delete fTree;
+  delete fTracksArray; fTracksArray=0;
+
+  return AliHLTRootFileWriterComponent::CloseWriter();
+}
+
+int AliHLTTRDEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& /*evtData*/,
+					    const AliHLTComponentBlockData* /*blocks*/, 
+					    AliHLTComponentTriggerData& trigData )
+{
+  TClonesArray* TCAarray[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  Int_t usedEntries = 0;
+  Int_t blockOrObject = 0;
+
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTracksDataType); pBlock; pBlock=GetNextInputBlock()) 
+    {
+      TCAarray[0] = fTracksArray;
+      AliHLTTRDUtils::ReadTracks(TCAarray[0], pBlock->fPtr, pBlock->fSize);
+      usedEntries = 1;
+      blockOrObject = -1;
+    }
+
+  for(const TObject *iter = GetFirstInputObject(AliHLTTRDDefinitions::fgkHiLvlTracksDataType); iter; iter = GetNextInputObject()) 
+    {
+      if(blockOrObject<0){
+	HLTError("You may not mix high level and low level!");
+	return -1;
+      }
+
+      TCAarray[usedEntries] = dynamic_cast<TClonesArray*>(const_cast<TObject*>(iter));
+      if(!TCAarray[usedEntries])continue;
+      usedEntries++;
+      blockOrObject = 1;
+    }
+
+  if(!blockOrObject)
+    return 0;
+
+  fESD->Reset(); 
+  fESD->SetMagneticField(GetBz());
+  fESD->SetRunNumber(GetRunNo());
+  fESD->SetPeriodNumber(GetPeriodNumber());
+  fESD->SetOrbitNumber(GetOrbitNumber());
+  fESD->SetBunchCrossNumber(GetBunchCrossNumber());
+  fESD->SetTimeStamp(GetTimeStamp());
+
+  const AliHLTCTPData* pCTPData=CTPData();
+  if (pCTPData) {
+    AliHLTUInt64_t mask=pCTPData->ActiveTriggers(trigData);
+    for (int index=0; index<gkNCTPTriggerClasses; index++) {
+      if ((mask&((AliHLTUInt64_t)0x1<<index)) == 0) continue;
+      fESD->SetTriggerClass(pCTPData->Name(index), index);
+    }
+    fESD->SetTriggerMask(mask);
   }
-  iResult=AliHLTRootFileWriterComponent::CloseWriter();
-  return iResult;
-}
-
-int AliHLTTRDEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData,
-					    const AliHLTComponentBlockData*  blocks, 
-					    AliHLTComponentTriggerData& /*trigData*/ )
-{
-int result=0;
-
-for ( unsigned long iBlock = 0; iBlock < evtData.fBlockCnt; iBlock++ )
-    {
-    // HLTDebug("i am a debug message"); // y does it not print out debug messages???
-    /*HLTInfo("Block # %i/%i; Event 0x%08LX (%Lu)",
-		    iBlock, evtData.fBlockCnt,
-		    evtData.fEventID, evtData.fEventID);*/
-    
-
-    TClonesArray* tracksArray = NULL;
-    const AliHLTComponentBlockData &block = blocks[iBlock];
-    tracksArray = new TClonesArray("AliTRDtrackV1");
-    
-    //HLTInfo("BLOCK fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x, fDataType %s", block.fPtr, block.fOffset, block.fSize, block.fSpecification, DataType2Text(block.fDataType).c_str()); //HLTInfo instead of HLTDebug, because debug gives no output... -> strange
-
-    AliHLTTRDUtils::ReadTracks(tracksArray, block.fPtr, block.fSize); 
-
-    // give out number of tracklets in tracksArray
-    Int_t nbEntries = tracksArray->GetEntries();
-    HLTInfo(" %i TRDtracks in tracksArray", nbEntries); 
-    
+  
+  for(int i=0; i<usedEntries; i++){
+    const TClonesArray* inArr = TCAarray[i];
+    for(int ii=0; ii<inArr->GetEntriesFast(); ii++){
+      AliTRDtrackV1* inV1 = (AliTRDtrackV1*)inArr->UncheckedAt(ii);
+      AliESDtrack *esdTrack = new AliESDtrack();
+      esdTrack->UpdateTrackParams(inV1, AliESDtrack::kTRDout);
+      esdTrack->SetLabel(inV1->GetLabel());
+      inV1->UpdateESDtrack(esdTrack);
+      AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(*inV1);
+      calibTrack->SetOwner();
+      esdTrack->AddCalibObject(calibTrack);
+      fESD->AddTrack(esdTrack);
+      delete esdTrack;
     }
+  }
+  
+  fESD->GetESDfriend(fESDfriend);
+  Int_t nb = fTree->Fill();  //endless-
+  printf("Tree filled with %i bytes\n", nb);
+  fESD->Reset();
+  fESDfriend->~AliESDfriend();
+  new (fESDfriend) AliESDfriend();
 
- /*  AliESDtrack* track = (AliESDtrack *)tobjin;
-  if (!track)
-    {
-      Logging( kHLTLogWarning, "HLT::TRDEsdWriter::DumpEvent", "DATAIN", "First Input Block not a ESDtrack! 0x%x", tobjin);
-      return -1;
-    }
-
-  Int_t nTracks = 0;
-  while (tobjin != 0)
-    {
-      if (track != 0)
-	{
-	  //Logging( kHLTLogInfo, "HLT::TRDEsdWriter::DumpEvent", "Track found", "0x%x", track);	  
-	  Logging( kHLTLogInfo, "HLT::TRDEsdWriter::DumpEvent", "DONE", "Track %d 0x%x Pt %1.2f", nTracks, track, track->Pt());
-	  fESD->AddTrack(track);
-	  nTracks++;
-	}
-
-      track = 0;
-      tobjin = 0;
-      tobjin = (TObject *)GetNextInputObject( ibForce );
-      //Logging( kHLTLogInfo, "HLT::TRDEsdWriter::DumpEvent", "nextBLOCK", "Pointer = 0x%x", tobjin);
-      track = (AliESDtrack *)tobjin;
-    }
-
-  Logging( kHLTLogInfo, "HLT::TRDEsdWriter::DumpEvent", "Fill", "Ntracks: %d", nTracks);	  
-  pTree->Fill();
-  fESD->Reset(); */
-
-  return result;
-}
-
-// int AliHLTTRDEsdWriterComponent::ScanArgument(int argc, const char** argv)
-// {
-//   // see header file for class documentation
-//   int iResult=AliHLTRootFileWriterComponent::ScanArgument(argc, argv);
-//   return iResult;
-// }
-
-int AliHLTTRDEsdWriterComponent::DoEvent(	const AliHLTComponent_EventData& /*evtData*/,
-						const AliHLTComponent_BlockData* /*blocks*/,
-						AliHLTComponent_TriggerData& /*trigData*/,
-						AliHLTUInt8_t* /*outputPtr*/,
-						AliHLTUInt32_t& /*size*/,
-						vector<AliHLTComponent_BlockData>& /*outputBlocks*/)
-{
-HLTDebug("ignor me");
-return 0;
-
-}
-
-Int_t AliHLTTRDEsdWriterComponent::ScanArgument( int argc, const char** argv )
-{
-  // perform initialization. We check whether our relative output size is specified in the arguments.
-  int i = 0;
-  char* cpErr;
-  HLTDebug("argv[%d] == %s", i, argv[i] );
-      if ( !strcmp( argv[i], "output_percentage" ) )
-	{
-	  if ( i+1>=argc )
-	    {
-	      HLTError("Missing output_percentage parameter");
-	      return ENOTSUP;
-	    }
-	  HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
-	  fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
-	  if ( *cpErr )
-	    {
-	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
-	      return EINVAL;
-	    }
-	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
-	
-    }
-    //AliHLTRootFileWriterComponent::ScanArgument(argc, argv);
+  if(blockOrObject<0){
+    TCAarray[0]->Delete();
+  }
 
   return 0;
-}
-
-
-void AliHLTTRDEsdWriterComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-{
-  // Get the output data size
-  constBase = 0;
-  inputMultiplier = ((double)fOutputPercentage)/100.0;
 }
