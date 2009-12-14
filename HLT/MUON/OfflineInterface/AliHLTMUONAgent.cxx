@@ -31,6 +31,7 @@
 #include "AliHLTMUONHitReconstructorComponent.h"
 #include "AliHLTMUONTriggerReconstructorComponent.h"
 #include "AliHLTMUONMansoTrackerFSMComponent.h"
+#include "AliHLTMUONFullTrackerComponent.h"
 #include "AliHLTMUONDecisionComponent.h"
 #include "AliHLTMUONESDMaker.h"
 #include "AliHLTMUONEmptyEventFilterComponent.h"
@@ -214,6 +215,7 @@ int AliHLTMUONAgent::CreateConfigurations(
 	if (handler == NULL) return 0;
 	
 	const char* trackerId = AliHLTMUONConstants::MansoTrackerFSMId();
+	const char* fullTrackerId = AliHLTMUONConstants::FullTrackerId();
 	const char* decCompId = AliHLTMUONConstants::DecisionComponentId();
 	
 	if (rawReader != NULL)
@@ -221,6 +223,18 @@ int AliHLTMUONAgent::CreateConfigurations(
 		// Implement the dHLT-sim-fromRaw dHLT simulation chain reading
 		// from raw data.
 		const char* rawPubComp = "AliRawReaderPublisher";
+		const char* cmd1 = "-minid 2560 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000001";
+		const char* cmd2 = "-minid 2561 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000002";
+		const char* cmd3 = "-minid 2562 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000004";
+		const char* cmd4 = "-minid 2563 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000008";
+		const char* cmd5 = "-minid 2564 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000010";
+		const char* cmd6 = "-minid 2565 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000020";
+		const char* cmd7 = "-minid 2566 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000040";
+		const char* cmd8 = "-minid 2567 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000080";
+		const char* cmd9 = "-minid 2568 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000100";
+		const char* cmd10 = "-minid 2569 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000200";
+		const char* cmd11 = "-minid 2570 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000400";
+		const char* cmd12 = "-minid 2571 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000800";
 		const char* cmd13 = "-minid 2572 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x001000";
 		const char* cmd14 = "-minid 2573 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x002000";
 		const char* cmd15 = "-minid 2574 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x004000";
@@ -231,6 +245,18 @@ int AliHLTMUONAgent::CreateConfigurations(
 		const char* cmd20 = "-minid 2579 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x080000";
 		const char* cmd21 = "-minid 2816 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x100000";
 		const char* cmd22 = "-minid 2817 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x200000";
+		handler->CreateConfiguration("RawDDL1", rawPubComp, NULL, cmd1);
+		handler->CreateConfiguration("RawDDL2", rawPubComp, NULL, cmd2);
+		handler->CreateConfiguration("RawDDL3", rawPubComp, NULL, cmd3);
+		handler->CreateConfiguration("RawDDL4", rawPubComp, NULL, cmd4);
+		handler->CreateConfiguration("RawDDL5", rawPubComp, NULL, cmd5);
+		handler->CreateConfiguration("RawDDL6", rawPubComp, NULL, cmd6);
+		handler->CreateConfiguration("RawDDL7", rawPubComp, NULL, cmd7);
+		handler->CreateConfiguration("RawDDL8", rawPubComp, NULL, cmd8);
+		handler->CreateConfiguration("RawDDL9", rawPubComp, NULL, cmd9);
+		handler->CreateConfiguration("RawDDL10", rawPubComp, NULL, cmd10);
+		handler->CreateConfiguration("RawDDL11", rawPubComp, NULL, cmd11);
+		handler->CreateConfiguration("RawDDL12", rawPubComp, NULL, cmd12);
 		handler->CreateConfiguration("RawDDL13", rawPubComp, NULL, cmd13);
 		handler->CreateConfiguration("RawDDL14", rawPubComp, NULL, cmd14);
 		handler->CreateConfiguration("RawDDL15", rawPubComp, NULL, cmd15);
@@ -243,6 +269,18 @@ int AliHLTMUONAgent::CreateConfigurations(
 		handler->CreateConfiguration("RawDDL22", rawPubComp, NULL, cmd22);
 		const char* hrId = AliHLTMUONConstants::HitReconstructorId();
 		const char* trId = AliHLTMUONConstants::TriggerReconstructorId();
+		handler->CreateConfiguration("RecoRawDDL1", hrId, "RawDDL1", "-ddl 1 -cdb");
+		handler->CreateConfiguration("RecoRawDDL2", hrId, "RawDDL2", "-ddl 2 -cdb");
+		handler->CreateConfiguration("RecoRawDDL3", hrId, "RawDDL3", "-ddl 3 -cdb");
+		handler->CreateConfiguration("RecoRawDDL4", hrId, "RawDDL4", "-ddl 4 -cdb");
+		handler->CreateConfiguration("RecoRawDDL5", hrId, "RawDDL5", "-ddl 5 -cdb");
+		handler->CreateConfiguration("RecoRawDDL6", hrId, "RawDDL6", "-ddl 6 -cdb");
+		handler->CreateConfiguration("RecoRawDDL7", hrId, "RawDDL7", "-ddl 7 -cdb");
+		handler->CreateConfiguration("RecoRawDDL8", hrId, "RawDDL8", "-ddl 8 -cdb");
+		handler->CreateConfiguration("RecoRawDDL9", hrId, "RawDDL9", "-ddl 9 -cdb");
+		handler->CreateConfiguration("RecoRawDDL10", hrId, "RawDDL10", "-ddl 10 -cdb");
+		handler->CreateConfiguration("RecoRawDDL11", hrId, "RawDDL11", "-ddl 11 -cdb");
+		handler->CreateConfiguration("RecoRawDDL12", hrId, "RawDDL12", "-ddl 12 -cdb");
 		handler->CreateConfiguration("RecoRawDDL13", hrId, "RawDDL13", "-ddl 13 -cdb");
 		handler->CreateConfiguration("RecoRawDDL14", hrId, "RawDDL14", "-ddl 14 -cdb");
 		handler->CreateConfiguration("RecoRawDDL15", hrId, "RawDDL15", "-ddl 15 -cdb");
@@ -263,6 +301,19 @@ int AliHLTMUONAgent::CreateConfigurations(
 		TString outputSrcs = "DecisionForRaw MansoTrackerForRaw ";
 		outputSrcs += recoSrcs;
 		handler->CreateConfiguration("dHLT-sim-fromRaw", "BlockFilter", outputSrcs, "");
+		
+		// For reconstruction using full tracker.
+		const char* recoSrcsFull = " RecoRawDDL1 RecoRawDDL2 RecoRawDDL3 RecoRawDDL4 RecoRawDDL5 RecoRawDDL6 "
+			" RecoRawDDL7 RecoRawDDL8 RecoRawDDL9 RecoRawDDL10 RecoRawDDL11 RecoRawDDL12 "
+			" RecoRawDDL13 RecoRawDDL14 RecoRawDDL15 RecoRawDDL16 RecoRawDDL17 "
+			" RecoRawDDL18 RecoRawDDL19 RecoRawDDL20 RecoRawDDL21 RecoRawDDL22 ";
+		handler->CreateConfiguration("FullTrackerForRaw", fullTrackerId, recoSrcsFull, "");
+		
+		handler->CreateConfiguration("DecisionForRawFullTrk", decCompId, "FullTrackerForRaw", "");
+		
+		TString outputSrcsFull = " DecisionForRawFullTrk FullTrackerForRaw ";
+		outputSrcsFull += recoSrcsFull;
+		handler->CreateConfiguration("dHLT-sim-fromRaw-fullTracker", "BlockFilter", outputSrcsFull, "");
 	}
 	
 	if (runloader != NULL)
@@ -382,6 +433,7 @@ int AliHLTMUONAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 	pHandler->AddComponent(new AliHLTMUONHitReconstructorComponent);
 	pHandler->AddComponent(new AliHLTMUONTriggerReconstructorComponent);
 	pHandler->AddComponent(new AliHLTMUONMansoTrackerFSMComponent);
+	pHandler->AddComponent(new AliHLTMUONFullTrackerComponent);
 	pHandler->AddComponent(new AliHLTMUONDecisionComponent);
 	pHandler->AddComponent(new AliHLTMUONESDMaker);
 	pHandler->AddComponent(new AliHLTMUONEmptyEventFilterComponent);

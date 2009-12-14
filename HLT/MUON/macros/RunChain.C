@@ -61,10 +61,11 @@ using std::endl;
  *
  * @param chainType  Specifies the type of chain to run. This can be one of the
  *     following:
- *       "full" - Run the full dHLT chain. (default)
+ *       "full" - Run the full dHLT chain with manso tracker. (default)
+ *       "full-tracker" - Run the full dHLT chain with the full tracker.
  *       "ddlreco" - Run only the reconstruction of the DDL raw data up to hits
  *                   and trigger records.
- *       "tracker" - Run the tracker only using hits and trigger records from
+ *       "tracker" - Run the Manso tracker only using hits and trigger records from
  *                   AliRoot simulation or offline reconstruction.
  * @param firstEvent  The event number of the first event to process. (default = 0)
  * @param lastEvent  The event number of the last event to process. If this is
@@ -175,12 +176,13 @@ void RunChain(
 	bool buildSimDataPubs = false;
 	bool buildRecDataPubs = false;
 	bool buildTrackerComp = false;
+	bool buildFullTrackerComp = false;
 	bool maxLogging = false;
 	bool debugLogging = false;
 	bool minLogging = false;
 	bool useRootWriter = false;
 	bool makeTracksOnly = false;
-	bool buildDecisionComp = true;
+	bool buildDecisionComp = false;
 	
 	// Parse the chainType, output, dataSource and logLevel option strings:
 	TString outOpt = output;
@@ -213,6 +215,29 @@ void RunChain(
 	{
 		buildDDLRecoComps = true;
 		buildTrackerComp = true;
+		buildDecisionComp = true;
+		
+		TString dataOpt = dataSource;
+		if (dataOpt.CompareTo("file", TString::kIgnoreCase) == 0)
+		{
+			buildDDLFilePubs = true;
+		}
+		else if (dataOpt.CompareTo("rawreader", TString::kIgnoreCase) == 0)
+		{
+			buildRawReaderPubs = true;
+		}
+		else
+		{
+			cerr << "ERROR: Unknown option for dataSource: '" << dataSource
+				<< "'. Valid options are: 'file' or 'rawreader'" << endl;
+			return;
+		}
+	}
+	else if (chainOpt.CompareTo("full-tracker", TString::kIgnoreCase) == 0)
+	{
+		buildDDLRecoComps = true;
+		buildFullTrackerComp = true;
+		buildDecisionComp = true;
 		
 		TString dataOpt = dataSource;
 		if (dataOpt.CompareTo("file", TString::kIgnoreCase) == 0)
@@ -254,6 +279,7 @@ void RunChain(
 	else if (chainOpt.CompareTo("tracker", TString::kIgnoreCase) == 0)
 	{
 		buildTrackerComp = true;
+		buildDecisionComp = true;
 		
 		TString dataOpt = dataSource;
 		if (dataOpt.CompareTo("sim", TString::kIgnoreCase) == 0)
@@ -336,6 +362,18 @@ void RunChain(
 	// directory structure.
 	if (buildDDLFilePubs)
 	{
+		string cmd1 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000001";
+		string cmd2 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000002";
+		string cmd3 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000004";
+		string cmd4 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000008";
+		string cmd5 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000010";
+		string cmd6 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000020";
+		string cmd7 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000040";
+		string cmd8 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000080";
+		string cmd9 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000100";
+		string cmd10 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000200";
+		string cmd11 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000400";
+		string cmd12 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x000800";
 		string cmd13 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x001000";
 		string cmd14 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x002000";
 		string cmd15 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x004000";
@@ -363,6 +401,18 @@ void RunChain(
 			}
 			char buf[16];
 			sprintf(buf, "%d", i);
+			cmd1 += " -datafile "; cmd1 += rawDataPath; cmd1 += "raw"; cmd1 += buf; cmd1 += "/MUONTRK_2560.ddl";
+			cmd2 += " -datafile "; cmd2 += rawDataPath; cmd2 += "raw"; cmd2 += buf; cmd2 += "/MUONTRK_2561.ddl";
+			cmd3 += " -datafile "; cmd3 += rawDataPath; cmd3 += "raw"; cmd3 += buf; cmd3 += "/MUONTRK_2562.ddl";
+			cmd4 += " -datafile "; cmd4 += rawDataPath; cmd4 += "raw"; cmd4 += buf; cmd4 += "/MUONTRK_2563.ddl";
+			cmd5 += " -datafile "; cmd5 += rawDataPath; cmd5 += "raw"; cmd5 += buf; cmd5 += "/MUONTRK_2564.ddl";
+			cmd6 += " -datafile "; cmd6 += rawDataPath; cmd6 += "raw"; cmd6 += buf; cmd6 += "/MUONTRK_2565.ddl";
+			cmd7 += " -datafile "; cmd7 += rawDataPath; cmd7 += "raw"; cmd7 += buf; cmd7 += "/MUONTRK_2566.ddl";
+			cmd8 += " -datafile "; cmd8 += rawDataPath; cmd8 += "raw"; cmd8 += buf; cmd8 += "/MUONTRK_2567.ddl";
+			cmd9 += " -datafile "; cmd9 += rawDataPath; cmd9 += "raw"; cmd9 += buf; cmd9 += "/MUONTRK_2568.ddl";
+			cmd10 += " -datafile "; cmd10 += rawDataPath; cmd10 += "raw"; cmd10 += buf; cmd10 += "/MUONTRK_2569.ddl";
+			cmd11 += " -datafile "; cmd11 += rawDataPath; cmd11 += "raw"; cmd11 += buf; cmd11 += "/MUONTRK_2570.ddl";
+			cmd12 += " -datafile "; cmd12 += rawDataPath; cmd12 += "raw"; cmd12 += buf; cmd12 += "/MUONTRK_2571.ddl";
 			cmd13 += " -datafile "; cmd13 += rawDataPath; cmd13 += "raw"; cmd13 += buf; cmd13 += "/MUONTRK_2572.ddl";
 			cmd14 += " -datafile "; cmd14 += rawDataPath; cmd14 += "raw"; cmd14 += buf; cmd14 += "/MUONTRK_2573.ddl";
 			cmd15 += " -datafile "; cmd15 += rawDataPath; cmd15 += "raw"; cmd15 += buf; cmd15 += "/MUONTRK_2574.ddl";
@@ -374,7 +424,19 @@ void RunChain(
 			cmd21 += " -datafile "; cmd21 += rawDataPath; cmd21 += "raw"; cmd21 += buf; cmd21 += "/MUONTRG_2816.ddl";
 			cmd22 += " -datafile "; cmd22 += rawDataPath; cmd22 += "raw"; cmd22 += buf; cmd22 += "/MUONTRG_2817.ddl";
 		}
-
+		
+		AliHLTConfiguration pubDDL1("pubDDL1", "FilePublisher", NULL, cmd1.c_str());
+		AliHLTConfiguration pubDDL2("pubDDL2", "FilePublisher", NULL, cmd2.c_str());
+		AliHLTConfiguration pubDDL3("pubDDL3", "FilePublisher", NULL, cmd3.c_str());
+		AliHLTConfiguration pubDDL4("pubDDL4", "FilePublisher", NULL, cmd4.c_str());
+		AliHLTConfiguration pubDDL5("pubDDL5", "FilePublisher", NULL, cmd5.c_str());
+		AliHLTConfiguration pubDDL6("pubDDL6", "FilePublisher", NULL, cmd6.c_str());
+		AliHLTConfiguration pubDDL7("pubDDL7", "FilePublisher", NULL, cmd7.c_str());
+		AliHLTConfiguration pubDDL8("pubDDL8", "FilePublisher", NULL, cmd8.c_str());
+		AliHLTConfiguration pubDDL9("pubDDL9", "FilePublisher", NULL, cmd9.c_str());
+		AliHLTConfiguration pubDDL10("pubDDL10", "FilePublisher", NULL, cmd10.c_str());
+		AliHLTConfiguration pubDDL11("pubDDL11", "FilePublisher", NULL, cmd11.c_str());
+		AliHLTConfiguration pubDDL12("pubDDL12", "FilePublisher", NULL, cmd12.c_str());
 		AliHLTConfiguration pubDDL13("pubDDL13", "FilePublisher", NULL, cmd13.c_str());
 		AliHLTConfiguration pubDDL14("pubDDL14", "FilePublisher", NULL, cmd14.c_str());
 		AliHLTConfiguration pubDDL15("pubDDL15", "FilePublisher", NULL, cmd15.c_str());
@@ -390,6 +452,18 @@ void RunChain(
 	// Build the DDL file publishers using AliRawReaderPublisher components.
 	if (buildRawReaderPubs)
 	{
+		string cmd1 = "-skipempty -minid 2560 -maxid 2560 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000001";
+		string cmd2 = "-skipempty -minid 2561 -maxid 2561 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000002";
+		string cmd3 = "-skipempty -minid 2562 -maxid 2562 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000004";
+		string cmd4 = "-skipempty -minid 2563 -maxid 2563 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000008";
+		string cmd5 = "-skipempty -minid 2564 -maxid 2564 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000010";
+		string cmd6 = "-skipempty -minid 2565 -maxid 2565 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000020";
+		string cmd7 = "-skipempty -minid 2566 -maxid 2566 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000040";
+		string cmd8 = "-skipempty -minid 2567 -maxid 2567 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000080";
+		string cmd9 = "-skipempty -minid 2568 -maxid 2568 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000100";
+		string cmd10 = "-skipempty -minid 2569 -maxid 2569 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000200";
+		string cmd11 = "-skipempty -minid 2570 -maxid 2570 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000400";
+		string cmd12 = "-skipempty -minid 2571 -maxid 2571 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x000800";
 		string cmd13 = "-skipempty -minid 2572 -maxid 2572 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x001000";
 		string cmd14 = "-skipempty -minid 2573 -maxid 2573 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x002000";
 		string cmd15 = "-skipempty -minid 2574 -maxid 2574 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x004000";
@@ -401,6 +475,18 @@ void RunChain(
 		string cmd21 = "-skipempty -minid 2816 -maxid 2816 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x100000";
 		string cmd22 = "-skipempty -minid 2817 -maxid 2817 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x200000";
 
+		AliHLTConfiguration pubDDL1("pubDDL1", "AliRawReaderPublisher", NULL, cmd1.c_str());
+		AliHLTConfiguration pubDDL2("pubDDL2", "AliRawReaderPublisher", NULL, cmd2.c_str());
+		AliHLTConfiguration pubDDL3("pubDDL3", "AliRawReaderPublisher", NULL, cmd3.c_str());
+		AliHLTConfiguration pubDDL4("pubDDL4", "AliRawReaderPublisher", NULL, cmd4.c_str());
+		AliHLTConfiguration pubDDL5("pubDDL5", "AliRawReaderPublisher", NULL, cmd5.c_str());
+		AliHLTConfiguration pubDDL6("pubDDL6", "AliRawReaderPublisher", NULL, cmd6.c_str());
+		AliHLTConfiguration pubDDL7("pubDDL7", "AliRawReaderPublisher", NULL, cmd7.c_str());
+		AliHLTConfiguration pubDDL8("pubDDL8", "AliRawReaderPublisher", NULL, cmd8.c_str());
+		AliHLTConfiguration pubDDL9("pubDDL9", "AliRawReaderPublisher", NULL, cmd9.c_str());
+		AliHLTConfiguration pubDDL10("pubDDL10", "AliRawReaderPublisher", NULL, cmd10.c_str());
+		AliHLTConfiguration pubDDL11("pubDDL11", "AliRawReaderPublisher", NULL, cmd11.c_str());
+		AliHLTConfiguration pubDDL12("pubDDL12", "AliRawReaderPublisher", NULL, cmd12.c_str());
 		AliHLTConfiguration pubDDL13("pubDDL13", "AliRawReaderPublisher", NULL, cmd13.c_str());
 		AliHLTConfiguration pubDDL14("pubDDL14", "AliRawReaderPublisher", NULL, cmd14.c_str());
 		AliHLTConfiguration pubDDL15("pubDDL15", "AliRawReaderPublisher", NULL, cmd15.c_str());
@@ -419,7 +505,7 @@ void RunChain(
 	if (buildDDLRecoComps)
 	{
 		const char* recoverFlag = tryrecover ? "-tryrecover" : "";
-		for (int k = 13; k <= 22; k++)
+		for (int k = 1; k <= 22; k++)
 		{
 			string compId = Form("recDDL%d", k);
 			string name = (k <= 20) ? "MUONHitReconstructor" : "MUONTriggerReconstructor";
@@ -454,6 +540,18 @@ void RunChain(
 	// we are building the tracker only chain with the 'sim' data source.
 	if (buildSimDataPubs)
 	{
+		AliHLTConfiguration recDDL1("recDDL1", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 1");
+		AliHLTConfiguration recDDL2("recDDL2", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 1");
+		AliHLTConfiguration recDDL3("recDDL3", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 2");
+		AliHLTConfiguration recDDL4("recDDL4", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 2");
+		AliHLTConfiguration recDDL5("recDDL5", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 3");
+		AliHLTConfiguration recDDL6("recDDL6", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 3");
+		AliHLTConfiguration recDDL7("recDDL7", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 4");
+		AliHLTConfiguration recDDL8("recDDL8", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 4");
+		AliHLTConfiguration recDDL9("recDDL9", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 5");
+		AliHLTConfiguration recDDL10("recDDL10", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 5");
+		AliHLTConfiguration recDDL11("recDDL11", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 6");
+		AliHLTConfiguration recDDL12("recDDL12", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 6");
 		AliHLTConfiguration recDDL13("recDDL13", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 7");
 		AliHLTConfiguration recDDL14("recDDL14", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 7");
 		AliHLTConfiguration recDDL15("recDDL15", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 8");
@@ -470,6 +568,18 @@ void RunChain(
         // objects if we are building the tracker only chain with the 'rec' data source.
 	if (buildRecDataPubs)
 	{
+		AliHLTConfiguration recDDL1("recDDL1", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 1");
+		AliHLTConfiguration recDDL2("recDDL2", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 1");
+		AliHLTConfiguration recDDL3("recDDL3", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 2");
+		AliHLTConfiguration recDDL4("recDDL4", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 2");
+		AliHLTConfiguration recDDL5("recDDL5", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 3");
+		AliHLTConfiguration recDDL6("recDDL6", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 3");
+		AliHLTConfiguration recDDL7("recDDL7", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 4");
+		AliHLTConfiguration recDDL8("recDDL8", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 4");
+		AliHLTConfiguration recDDL9("recDDL9", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 5");
+		AliHLTConfiguration recDDL10("recDDL10", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 5");
+		AliHLTConfiguration recDDL11("recDDL11", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 6");
+		AliHLTConfiguration recDDL12("recDDL12", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 6");
 		AliHLTConfiguration recDDL13("recDDL13", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 7");
 		AliHLTConfiguration recDDL14("recDDL14", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 7");
 		AliHLTConfiguration recDDL15("recDDL15", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 8");
@@ -493,11 +603,23 @@ void RunChain(
 			"-makecandidates"
 		);
 	}
+	if (buildFullTrackerComp)
+	{
+		AliHLTConfiguration fulltracker(
+			"tracker-full",
+			"MUONFullTracker",
+			"recDDL1 recDDL2 recDDL3 recDDL4 recDDL5 recDDL6 recDDL7 recDDL8 recDDL9 recDDL10 recDDL11"
+			" recDDL12 recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22",
+			""
+		);
+	}
 	
 	// Build the dHLT trigger decision component if enabled.
 	if (buildDecisionComp)
 	{
-		AliHLTConfiguration decision("decision", "MUONDecisionComponent", "tracker", "");
+		const char* decisionSource = "tracker";
+		if (buildFullTrackerComp) decisionSource = "tracker-full";
+		AliHLTConfiguration decision("decision", "MUONDecisionComponent", decisionSource, "");
 	}
 
 	// Build the data sink to subscribe only to what has been created and
@@ -509,9 +631,10 @@ void RunChain(
 	}
 	else
 	{
-		if (buildTrackerComp)
-			sources += "tracker ";
-		sources += "recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22";
+		if (buildTrackerComp) sources += "tracker ";
+		if (buildFullTrackerComp) sources += "tracker-full ";
+		sources += "recDDL1 recDDL2 recDDL3 recDDL4 recDDL5 recDDL6 recDDL7 recDDL8 recDDL9 recDDL10 recDDL11"
+			" recDDL12 recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22";
 	}
 	if (buildDecisionComp)
 	{

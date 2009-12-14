@@ -148,6 +148,7 @@ const char* AliHLTMUONConstants::fgkDigitPublisherId = "MUONDigitPublisher";
 const char* AliHLTMUONConstants::fgkTriggerReconstructorId = "MUONTriggerReconstructor";
 const char* AliHLTMUONConstants::fgkHitReconstructorId = "MUONHitReconstructor";
 const char* AliHLTMUONConstants::fgkMansoTrackerFSMId = "MUONMansoTrackerFSM";
+const char* AliHLTMUONConstants::fgkFullTrackerId = "MUONFullTracker";
 const char* AliHLTMUONConstants::fgkDecisionComponentId = "MUONDecisionComponent";
 const char* AliHLTMUONConstants::fgkESDMakerId = "MUONESDMaker";
 const char* AliHLTMUONConstants::fgkRootifierComponentId = "MUONRootifier";

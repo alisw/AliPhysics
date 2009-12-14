@@ -13,6 +13,7 @@ CLASS_HDRS := 	AliHLTMUONUtils.h \
 		OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.h \
+		OnlineAnalysis/AliHLTMUONFullTrackerComponent.h \
 		OnlineAnalysis/AliHLTMUONDecisionComponent.h \
 		OnlineAnalysis/AliHLTMUONClusterFinderComponent.h \
 		utils/AliHLTMUONEmptyEventFilterComponent.h \
@@ -41,7 +42,8 @@ MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
 		OnlineAnalysis/AliHLTMUONCalculations.cxx \
 		OnlineAnalysis/AliHLTMUONTriggerReconstructor.cxx \
 		OnlineAnalysis/AliHLTMUONHitReconstructor.cxx \
-		OnlineAnalysis/AliHLTMUONMansoTrackerFSM.cxx
+		OnlineAnalysis/AliHLTMUONMansoTrackerFSM.cxx \
+		OnlineAnalysis/AliHLTMUONFullTracker.cxx
 
 MODULE_HDRS := 	$(MODULE_SRCS:.cxx=.h) \
 		AliHLTMUONDataBlockReader.h \

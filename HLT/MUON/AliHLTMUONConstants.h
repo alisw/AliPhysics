@@ -213,6 +213,11 @@ public:
 		return fgkMansoTrackerFSMId;
 	}
 	
+	static const char* FullTrackerId()
+	{
+		return fgkFullTrackerId;
+	}
+	
 	static const char* DecisionComponentId()
 	{
 		return fgkDecisionComponentId;
@@ -329,6 +334,7 @@ private:
 	static const char* fgkTriggerReconstructorId; // Trigger record reconstructor component name.
 	static const char* fgkHitReconstructorId; // Centre of gravity cluster finder component name.
 	static const char* fgkMansoTrackerFSMId; // Manso tracker FSM implementation component name.
+	static const char* fgkFullTrackerId; // Full tracker implementation component name.
 	static const char* fgkDecisionComponentId; // dHLT decision component name.
 	static const char* fgkESDMakerId; // Name of ESD maker component which converts dHLT data to AliESDEvent classes.
 	static const char* fgkRootifierComponentId; // The name of the event filter debugging component.
