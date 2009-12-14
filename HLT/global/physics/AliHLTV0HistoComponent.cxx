@@ -295,7 +295,7 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& evtData, Ali
 	double l1 = (px*px1 + py*py1 + pz*pz1)/p;
 	double l2 = (px*px2 + py*py2 + pz*pz2)/p;
 	pt = sqrt(px1*px1+py1*py1+pz1*pz1 - l1*l1);
-	ap = (l1-l2)/(l1+l2);
+	ap = (l2-l1)/(l1+l2);
       }
       
       if( 
