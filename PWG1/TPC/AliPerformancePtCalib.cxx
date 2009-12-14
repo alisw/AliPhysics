@@ -11,6 +11,7 @@
 // a data member of AliPerformancePtCalib*.
 //
 // Author: S.Schuchmann 11/13/2009 
+//         sschuchm@ikf.uni-frankfurt.de
 //------------------------------------------------------------------------------
 
 /*
@@ -63,6 +64,8 @@ ClassImp(AliPerformancePtCalib)
       fRange(0),
       fExclRange(0),
       fFitGaus(0) ,
+      fDoRebin(0),
+      fRebin(0),
       // option for user defined charge/pt shift
       fShift(0),
       fDeltaInvP(0),
@@ -146,7 +149,9 @@ ClassImp(AliPerformancePtCalib)
    fNPhiBins = 0; //number of phi bins
    fRange = 0; //fit range around 0
    fExclRange =0; //range of rejection of points around 0
-    
+   fDoRebin = kFALSE;
+   fRebin = 0;
+   
    Init();
 }
 
@@ -160,10 +165,11 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    fRange(0),
    fExclRange(0),
    fFitGaus(0) ,
+   fDoRebin(0),
+   fRebin(0),
    fShift(0),
    fDeltaInvP(0),
-   
-   //options for cuts
+     //options for cuts
    fOptTPC(0),
    fESDcuts(0),
    fRefitTPC(0),
@@ -241,7 +247,8 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    fNPhiBins = 0; //number of phi bins
    fRange = 0; //fit range around 0
    fExclRange =0; //range of rejection of points around 0
-  
+   fDoRebin = kFALSE;
+   fRebin = 0;
   
    Init();
 }
@@ -342,6 +349,10 @@ void AliPerformancePtCalib::Exec(AliMCEvent*, AliESDEvent* const esdEvent, AliES
       return;
    }
 
+    Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+    if(!isEventTriggered) return;
+
+   
    if(fShift) fHistUserPtShift->Fill(fDeltaInvP);
   
    fHistTrackMultiplicity->Fill(esdEvent->GetNumberOfTracks());
@@ -502,7 +513,7 @@ void AliPerformancePtCalib::Analyse()
    ana->SetProjBinsTheta(fThetaBins,fNThetaBins);
    ana->SetProjBinsPhi(fPhiBins,fNPhiBins);
    ana->SetMakeFitOption(fFitGaus,fExclRange,fRange);
-  
+   ana->SetDoRebin(fRebin);		   
    TObjArray *aFolderObj = new TObjArray;
    ana->StartAnalysis(fHistInvPtTheta,fHistInvPtPhi, aFolderObj);
   
