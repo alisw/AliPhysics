@@ -61,7 +61,7 @@ ClassImp(AliAnalysisTaskVertexESD)
 
 //________________________________________________________________________
 AliAnalysisTaskVertexESD::AliAnalysisTaskVertexESD(const char *name) : 
-AliAnalysisTask(name, "VertexESDTask"), 
+AliAnalysisTaskSE(name), 
 fCheckEventType(kTRUE),
 fReadMC(kFALSE),
 fRecoVtxTPC(kFALSE),
@@ -105,32 +105,9 @@ AliAnalysisTaskVertexESD::~AliAnalysisTaskVertexESD()
   }
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskVertexESD::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } else {
-
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else {
-      fESD = esdH->GetEvent();
-    }
-
-  }
-  
-  return;
-}
 
 //________________________________________________________________________
-void AliAnalysisTaskVertexESD::CreateOutputObjects()
+void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -169,17 +146,19 @@ void AliAnalysisTaskVertexESD::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskVertexESD::Exec(Option_t *) 
+void AliAnalysisTaskVertexESD::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
   
-  if (!fESD) {
+  if (!InputEvent()) {
     Printf("ERROR: fESD not available");
     return;
   }
 
-  if(fCheckEventType && (fESD->GetEventType())!=7) return; 
+  AliESDEvent* esdE = (AliESDEvent*) InputEvent();
+  
+  if(fCheckEventType && (esdE->GetEventType())!=7) return; 
 
 
   TArrayF mcVertex(3);
@@ -251,7 +230,7 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
   //ULong64_t v0left = (1 << 10);
   //ULong64_t v0right = (1 << 11);
   
-  //triggerMask=fESD->GetTriggerMask();
+  //triggerMask=esdE->GetTriggerMask();
   // MB1: SPDFO || V0L || V0R
   //Bool_t eventTriggered = (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right))); 
   //MB2: GFO && V0R
@@ -259,25 +238,25 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
   //Bool_t eventTriggered = (triggerMask & spdFO); 
  
   //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis();
-  Bool_t eventTriggered = 0;//triggerAnalysis->IsTriggerFired(fESD, AliTriggerAnalysis::kSPDGFO /*| AliTriggerAnalysis::kOfflineFlag*/); 
+  Bool_t eventTriggered = 0;//triggerAnalysis->IsTriggerFired(esdE, AliTriggerAnalysis::kSPDGFO /*| AliTriggerAnalysis::kOfflineFlag*/); 
 
-  Int_t ntracks = fESD->GetNumberOfTracks();
+  Int_t ntracks = esdE->GetNumberOfTracks();
   Int_t nITS5or6=0,nTPCin=0,nTPCinEta09=0;
-  //printf("Tracks # = %d\n",fESD->GetNumberOfTracks());
+  //printf("Tracks # = %d\n",esdE->GetNumberOfTracks());
   for(Int_t itr=0; itr<ntracks; itr++) {
-    AliESDtrack *t = fESD->GetTrack(itr);
+    AliESDtrack *t = esdE->GetTrack(itr);
     if(t->GetNcls(0)>=5) nITS5or6++;
-    Double_t z0; t->GetZAt(0,fESD->GetMagneticField(),z0);
-    if(t->GetNcls(1)>0 && TMath::Abs(t->GetD(0,0,fESD->GetMagneticField()))<2.8 && TMath::Abs(z0)<20) {
+    Double_t z0; t->GetZAt(0,esdE->GetMagneticField(),z0);
+    if(t->GetNcls(1)>0 && TMath::Abs(t->GetD(0,0,esdE->GetMagneticField()))<2.8 && TMath::Abs(z0)<20) {
       nTPCin++;
       if(TMath::Abs(t->GetTgl())<1.5) nTPCinEta09++;
     }
   }
 
     
-  const AliESDVertex *spdv=fESD->GetPrimaryVertexSPD();
-  const AliESDVertex *tpcv=fESD->GetPrimaryVertexTPC();
-  const AliESDVertex *trkv=fESD->GetPrimaryVertexTracks();
+  const AliESDVertex *spdv=esdE->GetPrimaryVertexSPD();
+  const AliESDVertex *tpcv=esdE->GetPrimaryVertexTPC();
+  const AliESDVertex *trkv=esdE->GetPrimaryVertexTracks();
 
   //Float_t tpccontrorig=tpcv->GetNContributors();
 
@@ -290,7 +269,7 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
     trkv = ReconstructPrimaryVertexITSTPC();
   }
 
-  const AliMultiplicity *alimult = fESD->GetMultiplicity();
+  const AliMultiplicity *alimult = esdE->GetMultiplicity();
   Int_t ntrklets=0,spd0cls=0;
   if(alimult) {
     ntrklets = alimult->GetNumberOfTracklets();
@@ -336,8 +315,8 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
   
   Int_t index=0;
 
-  xnt[index++]=(Float_t)fESD->GetRunNumber();
-  xnt[index++]=(Float_t)fESD->GetTimeStamp();
+  xnt[index++]=(Float_t)esdE->GetRunNumber();
+  xnt[index++]=(Float_t)esdE->GetTimeStamp();
 
   xnt[index++]=mcVertex[0];
   xnt[index++]=mcVertex[1];
@@ -419,8 +398,8 @@ void AliAnalysisTaskVertexESD::Terminate(Option_t *)
 //_________________________________________________________________________
 AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexTPC() const {
   // On the fly reco of TPC vertex from ESD
-
-  AliVertexerTracks vertexer(fESD->GetMagneticField());
+  AliESDEvent* evt = (AliESDEvent*) fInputEvent;
+  AliVertexerTracks vertexer(evt->GetMagneticField());
   vertexer.SetTPCMode(); // defaults
   //vertexer.SetTPCMode(0.1,1.0,5.,0,1,3.,0.1,1.5);
   Double_t pos[3]={+0.0220,-0.0340,+0.270}; 
@@ -430,14 +409,14 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexTPC() const {
   delete initVertex;
   vertexer.SetConstraintOff();
 
-  return vertexer.FindPrimaryVertex(fESD);
+  return vertexer.FindPrimaryVertex(evt);
 }
 
 //_________________________________________________________________________
 AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC() const {
   // On the fly reco of ITS+TPC vertex from ESD
-
-  AliVertexerTracks vertexer(fESD->GetMagneticField());
+  AliESDEvent* evt = (AliESDEvent*) fInputEvent;
+  AliVertexerTracks vertexer(evt->GetMagneticField());
   vertexer.SetITSMode(); // defaults
   //vertexer.SetTPCMode(0.1,1.0,5.,0,1,3.,0.1,1.5);
   Double_t pos[3]={+0.0220,-0.0340,+0.270}; 
@@ -450,9 +429,9 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC() const {
   // use only ITS-TPC or only ITS-SA tracks
   if(fOnlyITSTPCTracks || fOnlyITSSATracks) {
     Int_t iskip=0;
-    Int_t *skip = new Int_t[fESD->GetNumberOfTracks()];
-    for(Int_t itr=0;itr<fESD->GetNumberOfTracks(); itr++) {
-      AliESDtrack* track = fESD->GetTrack(itr);
+    Int_t *skip = new Int_t[evt->GetNumberOfTracks()];
+    for(Int_t itr=0;itr<evt->GetNumberOfTracks(); itr++) {
+      AliESDtrack* track = evt->GetTrack(itr);
       if(fOnlyITSTPCTracks && track->GetNcls(1)==0) { // skip ITSSA
 	skip[iskip++]=itr;
       }
@@ -464,5 +443,5 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC() const {
     delete [] skip; skip=NULL;
   }
 
-  return vertexer.FindPrimaryVertex(fESD);
+  return vertexer.FindPrimaryVertex(evt);
 }
