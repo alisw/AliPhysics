@@ -20,6 +20,7 @@
 class TClass;
 class TTree;
 class TFile;
+class TStopwatch;
 class AliAnalysisSelector;
 class AliAnalysisDataContainer;
 class AliAnalysisTask;
@@ -148,6 +149,7 @@ enum EAliAnalysisFlags {
    void                 ExecAnalysis(Option_t *option="");
    void                 FinishAnalysis();
    void                 PrintStatus(Option_t *option="all") const;
+   static void          ProgressBar(const char *opname, Long64_t current, Long64_t size, TStopwatch *watch=0, Bool_t last=kFALSE, Bool_t refresh=kFALSE);
    Bool_t               ValidateOutputFiles() const;
 
 protected:

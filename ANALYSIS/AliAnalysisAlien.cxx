@@ -54,6 +54,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fMaxMergeFiles(0),
                   fNsubmitted(0),
                   fProductionMode(0),
+                  fOutputToRunNo(0),
                   fRunNumbers(),
                   fExecutable(),
                   fExecutableCommand(),
@@ -105,6 +106,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fMaxMergeFiles(0),
                   fNsubmitted(0),
                   fProductionMode(0),
+                  fOutputToRunNo(0),
                   fRunNumbers(),
                   fExecutable(),
                   fExecutableCommand(),
@@ -156,6 +158,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fMaxMergeFiles(other.fMaxMergeFiles),
                   fNsubmitted(other.fNsubmitted),
                   fProductionMode(other.fProductionMode),
+                  fOutputToRunNo(other.fOutputToRunNo),
                   fRunNumbers(other.fRunNumbers),
                   fExecutable(other.fExecutable),
                   fExecutableCommand(other.fExecutableCommand),
@@ -235,6 +238,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fMaxMergeFiles           = other.fMaxMergeFiles;
       fNsubmitted              = other.fNsubmitted;
       fProductionMode          = other.fProductionMode;
+      fOutputToRunNo           = other.fOutputToRunNo;
       fRunNumbers              = other.fRunNumbers;
       fExecutable              = other.fExecutable;
       fExecutableCommand       = other.fExecutableCommand;
@@ -945,9 +949,12 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    } else {
       // One jdl to be submitted with 2 input parameters: data collection name and output dir prefix
       fGridJDL->AddToInputDataCollection(Form("LF:%s/$1,nodownload", workdir.Data()));
-      if (!fOutputSingle.IsNull())
-         fGridJDL->SetOutputDirectory(Form("#alienfulldir#/%s",fOutputSingle.Data()));
-      fGridJDL->SetOutputDirectory(Form("%s/$2/#alien_counter_03i#", fGridOutputDir.Data()));
+      if (!fOutputSingle.IsNull()) {
+         if (!fOutputToRunNo) fGridJDL->SetOutputDirectory(Form("#alienfulldir#/%s",fOutputSingle.Data()));
+         else fGridJDL->SetOutputDirectory(Form("%s/$2",fGridOutputDir.Data()));
+      } else {   
+         fGridJDL->SetOutputDirectory(Form("%s/$2/#alien_counter_03i#", fGridOutputDir.Data()));
+      }   
    }
       
 
@@ -1664,7 +1671,12 @@ void AliAnalysisAlien::SubmitNext()
       // Submit for a range of enumeration of runs.
       if (fNsubmitted>=nmasterjobs) {iscalled = kFALSE; return;}
       TString query;
-      query = Form("submit %s %s %03d", fJDLName.Data(), fInputFiles->At(fNsubmitted)->GetName(), fNsubmitted);
+      TString runOutDir = gSystem->BaseName(fInputFiles->At(fNsubmitted)->GetName());
+      runOutDir.ReplaceAll(".xml", "");
+      if (fOutputToRunNo)
+         query = Form("submit %s %s %s", fJDLName.Data(), fInputFiles->At(fNsubmitted)->GetName(), runOutDir.Data());
+      else
+         query = Form("submit %s %s %03d", fJDLName.Data(), fInputFiles->At(fNsubmitted)->GetName(), fNsubmitted);
       printf("********* %s\n",query.Data());
       res = gGrid->Command(query);
       if (res) {

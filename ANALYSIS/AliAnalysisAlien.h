@@ -62,6 +62,7 @@ public:
    virtual void        SetGridOutputDir(const char *name="output")       {fGridOutputDir = name;}
    virtual void        SetOutputArchive(const char *list="log_archive.zip:stdout,stderr root_archive.zip:*.root") {fOutputArchive = list;}
    virtual void        SetOutputFiles(const char *list)                  {fOutputFiles = list;}
+   virtual void        SetOutputToRunNo(Int_t mode=1)                    {fOutputToRunNo = mode;}
    virtual void        SetInputFormat(const char *format="xml-single")   {fInputFormat = format;}
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   {fMaxInitFailed = nfail;}
    virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list;};
@@ -117,6 +118,7 @@ private:
    Int_t            fMaxMergeFiles;   // Maximum number of files to be merged in one chunk
    Int_t            fNsubmitted;      // Number of jobs submitted
    Int_t            fProductionMode;  // Production mode (0-off, 1-on)
+   Int_t            fOutputToRunNo;   // Use run number as output directory
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
    TString          fExecutableCommand;  // Command(s) to be executed in the executable script

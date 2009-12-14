@@ -1612,3 +1612,90 @@ Bool_t AliAnalysisManager::ValidateOutputFiles() const
    cdir->cd();
    return kTRUE;
 }   
+
+//______________________________________________________________________________
+void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long64_t size, TStopwatch *watch, Bool_t last, Bool_t refresh)
+{
+// Implements a nice text mode progress bar.
+   static Long64_t icount = 0;
+   static TString oname;
+   static TString nname;
+   static Long64_t ocurrent = 0;
+   static Long64_t osize = 0;
+   static Int_t oseconds = 0;
+   static TStopwatch *owatch = 0;
+   static Bool_t oneoftwo = kFALSE;
+   static Int_t nrefresh = 0;
+   static Int_t nchecks = 0;
+   const char symbol[4] = {'=','\\','|','/'}; 
+   char progress[11] = "          ";
+   Int_t ichar = icount%4;
+   
+   if (!refresh) {
+      nrefresh = 0;
+      if (!size) return;
+      owatch = watch;
+      oname = opname;
+      ocurrent = TMath::Abs(current);
+      osize = TMath::Abs(size);
+      if (ocurrent > osize) ocurrent=osize;
+   } else {
+      nrefresh++;
+      if (!osize) return;
+   }     
+   icount++;
+   Double_t time = 0.;
+   Int_t hours = 0;
+   Int_t minutes = 0;
+   Int_t seconds = 0;
+   if (owatch && !last) {
+      owatch->Stop();
+      time = owatch->RealTime();
+      hours = (Int_t)(time/3600.);
+      time -= 3600*hours;
+      minutes = (Int_t)(time/60.);
+      time -= 60*minutes;
+      seconds = (Int_t)time;
+      if (refresh)  {
+         if (oseconds==seconds) {
+            owatch->Continue();
+            return;
+         }
+         oneoftwo = !oneoftwo;   
+      }
+      oseconds = seconds;   
+   }
+   if (refresh && oneoftwo) {
+      nname = oname;
+      if (nchecks <= 0) nchecks = nrefresh+1;
+      Int_t pctdone = (Int_t)(100.*nrefresh/nchecks);
+      oname = Form("     == %d%% ==", pctdone);
+   }         
+   Double_t percent = 100.0*ocurrent/osize;
+   Int_t nchar = Int_t(percent/10);
+   if (nchar>10) nchar=10;
+   Int_t i;
+   for (i=0; i<nchar; i++)  progress[i] = '=';
+   progress[nchar] = symbol[ichar];
+   for (i=nchar+1; i<10; i++) progress[i] = ' ';
+   progress[10] = '\0';
+   oname += "                    ";
+   oname.Remove(20);
+   if(size<10000) fprintf(stderr, "%s [%10s] %4lld ", oname.Data(), progress, ocurrent);
+   else if(size<100000) fprintf(stderr, "%s [%10s] %5lld ",oname.Data(), progress, ocurrent);
+   else fprintf(stderr, "%s [%10s] %7lld ",oname.Data(), progress, ocurrent);
+   if (time>0.) fprintf(stderr, "[%6.2f %%]   TIME %.2d:%.2d:%.2d             \r", percent, hours, minutes, seconds);
+   else fprintf(stderr, "[%6.2f %%]\r", percent);
+   if (refresh && oneoftwo) oname = nname;
+   if (owatch) owatch->Continue();
+   if (last) {
+      icount = 0;
+      owatch = 0;
+      ocurrent = 0;
+      osize = 0;
+      oseconds = 0;
+      oneoftwo = kFALSE;
+      nrefresh = 0;
+      fprintf(stderr, "\n");
+   }   
+}
