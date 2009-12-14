@@ -1,5 +1,8 @@
 void MakeFinalSpectra(const char *file,  const char* comp) 
 {
+  gStyle->SetPalette(1);
+  gStyle->SetNumberContours(50);
+
   // open proper input file
   TFile *inFile = TFile::Open(file);
   inFile->cd();
