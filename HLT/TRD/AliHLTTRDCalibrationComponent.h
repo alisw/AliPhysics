@@ -84,8 +84,8 @@ private:
   TClonesArray* fTracksArray;    // array containing the input
   TObjArray* fOutArray;          // array containing the output
   TObjArray* fAfterRunArray;     // array with after run processing output 
-  TObjArray* fDisplayArray;        //array with online display histos
-  Bool_t fRecievedTimeBins;      // already recived the number of time bins?
+  TObjArray* fDisplayArray;      // array with online display histos
+  Bool_t fSavedTimeBins;         // already saved the number of time bins?
   TObjArray *fTrgStrings;        // name of trigger classes to accept or reject
   Int_t  fAccRejTrg;             // do we actually accept or reject the trigger strings?
   

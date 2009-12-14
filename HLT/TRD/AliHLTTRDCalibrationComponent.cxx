@@ -52,6 +52,8 @@ using namespace std;
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibraVector.h"
 #include "AliTRDCalibraVdriftLinearFit.h"
+#include "AliTRDReconstructor.h"
+#include "AliTRDrecoParam.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -67,7 +69,7 @@ AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent()
     fOutArray(NULL),
     fAfterRunArray(NULL),
     fDisplayArray(NULL),
-    fRecievedTimeBins(kFALSE),
+    fSavedTimeBins(kFALSE),
     fTrgStrings(NULL),
     fAccRejTrg(0)
 {
@@ -261,7 +263,7 @@ Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
 }
 
 Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_EventData& evtData,
-                                                        const AliHLTComponent_BlockData* blocks,
+                                                        const AliHLTComponent_BlockData* /*blocks*/,
                                                         AliHLTComponent_TriggerData& trigData,
                                                         AliHLTUInt8_t* /*outputPtr*/,
                                                         AliHLTUInt32_t& /*size*/,
@@ -270,91 +272,96 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
   HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
 	
-  
-  // Loop over all input blocks in the event
-  vector<AliHLTComponent_DataType> expectedDataTypes;
-  GetInputDataTypes(expectedDataTypes);
-  for ( unsigned long iBlock = 0; iBlock < evtData.fBlockCnt; iBlock++ )
+  TClonesArray* TCAarray[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  Int_t usedEntries = 0;
+  Int_t blockOrObject = 0;
+  Int_t nTimeBins = -1;
+
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTracksDataType); pBlock; pBlock=GetNextInputBlock()) 
     {
-      const AliHLTComponentBlockData &block = blocks[iBlock];
-      AliHLTComponentDataType inputDataType = block.fDataType;
-      Bool_t correctDataType = kFALSE;
+      TCAarray[0] = fTracksArray;
+      AliHLTTRDUtils::ReadTracks(TCAarray[0], pBlock->fPtr, pBlock->fSize, &nTimeBins);
+      usedEntries = 1;
+      blockOrObject = -1;
+    }  
 
-      for(UInt_t i = 0; i < expectedDataTypes.size(); i++)
-        if( expectedDataTypes.at(i) == inputDataType)
-          correctDataType = kTRUE;
-      if (!correctDataType) {
-        HLTDebug( "Block # %i/%i; Event 0x%08LX (%Lu) Wrong received datatype: %s - Skipping",
-                  iBlock, evtData.fBlockCnt,
-                  evtData.fEventID, evtData.fEventID,
-                  DataType2Text(inputDataType).c_str());
-        continue;
-      }
-      else {
-        HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s; Block Size: %i",
-                 iBlock, evtData.fBlockCnt-1,
-                 evtData.fEventID, evtData.fEventID,
-                 DataType2Text(inputDataType).c_str(),
-		 block.fSize);
+  for(const TObject *iter = GetFirstInputObject(AliHLTTRDDefinitions::fgkHiLvlTracksDataType); iter; iter = GetNextInputObject()) 
+    {
+      if(blockOrObject<0){
+	HLTError("You may not mix high level and low level!");
+	return -1;
       }
 
-      Int_t nTimeBins;
-      AliHLTTRDUtils::ReadTracks(fTracksArray, block.fPtr, block.fSize, &nTimeBins);
-      
-          
-      if(!fRecievedTimeBins){
-	HLTDebug("Reading number of time bins from input block. Value is: %d", nTimeBins);
-	fTRDCalibraFillHisto->Init2Dhistos(nTimeBins); // initialise the histos
-	fTRDCalibraFillHisto->SetNumberClusters(0); // At least 1 clusters
-	fTRDCalibraFillHisto->SetNumberClustersf(nTimeBins); // Not more than %d  clusters
-	fRecievedTimeBins=kTRUE;
-      }
-      
-	
-      Bool_t TriggerPassed=kFALSE;
-      		
-      if(fAccRejTrg){
-	if(fAccRejTrg>0){
-	  TriggerPassed=kFALSE;
-	  for(int i = 0; i < fTrgStrings->GetEntriesFast(); i++){
-	    const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
-	    const TString tString=obString->GetString();
-	    //printf("Trigger Output: %i\n",EvaluateCTPTriggerClass(tString.Data(),trigData));
-	    if(EvaluateCTPTriggerClass(tString.Data(),trigData)){TriggerPassed=kTRUE; break;}
-	  }
-	}
-	else{
-	  TriggerPassed=kTRUE;
-	  for(int i = 0; i < fTrgStrings->GetEntriesFast(); i++){
-	    const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
-	    const TString tString=obString->GetString();
-	    if(EvaluateCTPTriggerClass(tString.Data(),trigData)){TriggerPassed=kFALSE; break;}
-	  }
-	}
-      }
-      
-      
-      Int_t nbEntries = fTracksArray->GetEntries();
-      HLTDebug(" %i TRDtracks in tracksArray", nbEntries);
-      AliTRDtrackV1* trdTrack = 0x0;
-      for (Int_t i = 0; i < nbEntries; i++){
-	HLTDebug("%i/%i: ", i+1, nbEntries);
-	trdTrack = (AliTRDtrackV1*)fTracksArray->At(i);
-	//trdTrack->Print();
-	fTRDCalibraFillHisto->SetCH2dOn(TriggerPassed);
-	fTRDCalibraFillHisto->UpdateHistogramsV1(trdTrack);
-	fTRDCalibraFillHisto->SetCH2dOn(kTRUE);
-      }
-      
+      TCAarray[usedEntries] = dynamic_cast<TClonesArray*>(const_cast<TObject*>(iter));
+      if(!TCAarray[usedEntries])continue;
+      TObjString* strg = dynamic_cast<TObjString*>(const_cast<TObject*>(GetNextInputObject()));
+      if(!strg)continue;
 
-      if(!fOutArray->At(0))FormOutput(0);
-      if(!fDisplayArray->At(0))FormOutput(1);
-      PushBack(fDisplayArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
-      
-      fTracksArray->Delete();
-      
+      nTimeBins = strg->String().Atoi();
+      usedEntries++;
+      blockOrObject = 1;
     }
- 
+
+  if(!blockOrObject)
+    return 0;
+
+  if(!fSavedTimeBins){
+    if(nTimeBins<0){
+      HLTFatal("Number of timebins is negative!");
+      return -1;
+    }
+    HLTDebug("Saving number of time bins which was read from input block. Value is: %d", nTimeBins);
+    fTRDCalibraFillHisto->Init2Dhistos(nTimeBins); // initialise the histos
+    fTRDCalibraFillHisto->SetNumberClusters(0); // At least 1 clusters
+    fTRDCalibraFillHisto->SetNumberClustersf(nTimeBins); // Not more than %d  clusters
+    fSavedTimeBins=kTRUE;
+  }
+
+  Bool_t TriggerPassed=kFALSE;
+
+  if(fAccRejTrg){
+    if(fAccRejTrg>0){
+      TriggerPassed=kFALSE;
+      for(int i = 0; i < fTrgStrings->GetEntriesFast(); i++){
+	const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
+	const TString tString=obString->GetString();
+	//printf("Trigger Output: %i\n",EvaluateCTPTriggerClass(tString.Data(),trigData));
+	if(EvaluateCTPTriggerClass(tString.Data(),trigData)){TriggerPassed=kTRUE; break;}
+      }
+    }
+    else{
+      TriggerPassed=kTRUE;
+      for(int i = 0; i < fTrgStrings->GetEntriesFast(); i++){
+	const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
+	const TString tString=obString->GetString();
+	if(EvaluateCTPTriggerClass(tString.Data(),trigData)){TriggerPassed=kFALSE; break;}
+      }
+    }
+  }
+  
+  fTRDCalibraFillHisto->SetCH2dOn(TriggerPassed);
+  for(int i=0; i<usedEntries; i++){
+    const TClonesArray* inArr = TCAarray[i];
+    Int_t nbEntries = inArr->GetEntries();
+    HLTDebug(" %i TRDtracks in tracksArray", nbEntries);
+    AliTRDtrackV1* trdTrack = 0x0;
+    for (Int_t i = 0; i < nbEntries; i++){
+      HLTDebug("%i/%i: ", i+1, nbEntries);
+      trdTrack = (AliTRDtrackV1*)inArr->At(i);
+      // for(int i=0; i<7; i++)
+      //   if(trdTrack->GetTracklet(i))trdTrack->GetTracklet(i)->Bootstrap(fReconstructor);
+      fTRDCalibraFillHisto->UpdateHistogramsV1(trdTrack);
+    }
+  }
+
+  if(!fOutArray->At(0))FormOutput(0);
+  if(!fDisplayArray->At(0))FormOutput(1);
+  PushBack(fDisplayArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
+
+  if(blockOrObject<0){
+    TCAarray[0]->Delete();
+  }
+
   return 0;
 
 }
