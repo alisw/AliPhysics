@@ -21,7 +21,9 @@
 //
 // Origin: F. Prino (prino@to.infn.it)
 
-void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/Run0_9999999_v0_s0.root", Int_t firstmod=0, Int_t lastmod=260){
+Bool_t kNoDraw = kFALSE; // set to kTRUE to eliminate module dependent plots
+
+void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/Run0_9999999_v0_s0.root", Int_t firstmod=0, Int_t lastmod=260,Int_t nrun=0){
   TFile *f= TFile::Open(filnam);
   AliCDBEntry *ent=(AliCDBEntry*)f->Get("AliCDBEntry");
   TObjArray *drspSDD = (TObjArray *)ent->GetObject();
@@ -29,18 +31,23 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   AliITSDriftSpeedArraySDD *vdriftarr1;
   TGraph **gvdr0=new TGraph*[260];
   TGraph **gvdr1=new TGraph*[260];
-
-  TCanvas *c0=new TCanvas("c0","Module Drift Speed",1100,500);
+  TCanvas *c0=NULL;
+  if(!kNoDraw)c0=new TCanvas("c0","Module Drift Speed",1100,500);
 
   TGraph *vvsmod0=new TGraph(0);
   TGraph *vvsmod1=new TGraph(0);
-  vvsmod0->SetTitle("Drift Speed vs. mod. number");
-  vvsmod1->SetTitle("Drift Speed vs. mod. number");
+  char tit0[100];
+  sprintf(tit0,"Drift Speed vs. mod. number");
+  if(nrun!=0)sprintf(tit0,"Drift Speed vs. mod. number - Run %d",nrun);
+  vvsmod0->SetTitle(tit0);
+  vvsmod1->SetTitle(tit0);
   Char_t tit[100];
   for(Int_t i=firstmod; i<lastmod; i++){
     Int_t iMod=i+240;
-    c0->Clear();
-    c0->Divide(2,1);
+    if(!kNoDraw){
+      c0->Clear();
+      c0->Divide(2,1);
+    }
     Int_t i0=2*i;
     Int_t i1=1+2*i;
     vdriftarr0=(AliITSDriftSpeedArraySDD*)drspSDD->At(i0);
@@ -68,16 +75,17 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     }
     printf(" Mod. %d \tStatusLR=%X %X \t v(an 128l)= %f",iMod,vdriftarr0->GetInjectorStatus(),vdriftarr1->GetInjectorStatus(),vdriftarr0->GetDriftSpeed(0,128));
     printf("        \t v(an 128r)= %f\n",vdriftarr1->GetDriftSpeed(0,128));
-    c0->cd(1);
-    gvdr0[i]->Draw("AP");
-    gvdr0[i]->GetXaxis()->SetTitle("Anode");
-    gvdr0[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
-    c0->cd(2);
-    gvdr1[i]->Draw("AP");
-    gvdr1[i]->GetXaxis()->SetTitle("Anode");
-    gvdr1[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
-    c0->Update();
-     
+    if(!kNoDraw){
+      c0->cd(1);
+      gvdr0[i]->Draw("AP");
+      gvdr0[i]->GetXaxis()->SetTitle("Anode");
+      gvdr0[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
+      c0->cd(2);
+      gvdr1[i]->Draw("AP");
+      gvdr1[i]->GetXaxis()->SetTitle("Anode");
+      gvdr1[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
+      c0->Update();
+    }
     Float_t vel0=0;
     if(vdriftarr0) vel0=vdriftarr0->GetDriftSpeed(0,128);
     Float_t vel1=0;
@@ -96,11 +104,11 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   vvsmod1->SetMarkerStyle(21);
   vvsmod1->SetMarkerColor(2);
   vvsmod1->Draw("SAMEP");
-  TLatex* tleft=new TLatex(0.7,0.82,"Side 0");
+  TLatex* tleft=new TLatex(0.2,0.82,"Side 0");
   tleft->SetNDC();
   tleft->SetTextColor(1);
   tleft->Draw();
-  TLatex* tright=new TLatex(0.7,0.75,"Side 1");
+  TLatex* tright=new TLatex(0.2,0.75,"Side 1");
   tright->SetNDC();
   tright->SetTextColor(2);
   tright->Draw();
@@ -125,7 +133,7 @@ void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2009){
   sprintf(filnamalien,"alien://%s",filnam);
   
   printf("Open file: %s\n",filnamalien);
-  ShowDriftSpeedSDD(filnamalien,0,260);
+  ShowDriftSpeedSDD(filnamalien,0,260,nrun);
   fclose(runtxt);
   gSystem->Exec("rm run.txt");
   
