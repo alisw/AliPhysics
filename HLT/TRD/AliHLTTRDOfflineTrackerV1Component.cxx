@@ -23,9 +23,19 @@
 */
 
 #include "AliHLTTRDOfflineTrackerV1Component.h"
-#include "AliCDBManager.h"
-#include "AliTRDrecoParam.h"
 #include "AliHLTTRDDefinitions.h"
+#include "AliHLTTRDUtils.h"
+#include "AliTRDrecoParam.h"
+#include "AliTRDtrackerV1.h"
+#include "AliTRDReconstructor.h"
+#include "AliCDBManager.h"
+#include "AliESDEvent.h"
+#include "TClonesArray.h"
+#include "TObjString.h"
+
+#include "AliTRDtrackV1.h"
+#include "AliTRDseedV1.h"
+#include "AliTRDcluster.h"
 
 ClassImp(AliHLTTRDOfflineTrackerV1Component)
     
@@ -33,13 +43,26 @@ AliHLTTRDOfflineTrackerV1Component::AliHLTTRDOfflineTrackerV1Component()
   :AliHLTTRDTrackerV1Component()
 {
   // Default constructor
-  fOffline=kTRUE;
 }
 
 AliHLTTRDOfflineTrackerV1Component::~AliHLTTRDOfflineTrackerV1Component()
 {
   // Destructor
   // Work is Done in DoDeInit()
+}
+
+void AliHLTTRDOfflineTrackerV1Component::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+{
+  // Get the list of input data
+  list.clear();
+  AliHLTTRDTrackerV1Component::GetInputDataTypes(list);
+  list.push_back(AliHLTTRDDefinitions::fgkHiLvlClusterDataType);
+}
+
+AliHLTComponentDataType AliHLTTRDOfflineTrackerV1Component::GetOutputDataType()
+{
+  // Get the output data type
+  return kAliHLTMultipleDataType;
 }
 
 int AliHLTTRDOfflineTrackerV1Component::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
@@ -53,8 +76,8 @@ int AliHLTTRDOfflineTrackerV1Component::GetOutputDataTypes(AliHLTComponentDataTy
 void AliHLTTRDOfflineTrackerV1Component::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // Get the output data size
-  constBase = 1000000;
-  inputMultiplier = 4*((double)fOutputPercentage);
+  AliHLTTRDTrackerV1Component::GetOutputDataSize(constBase, inputMultiplier);
+  constBase += 500;
 }
 
 AliHLTComponent* AliHLTTRDOfflineTrackerV1Component::Spawn()
@@ -66,9 +89,8 @@ AliHLTComponent* AliHLTTRDOfflineTrackerV1Component::Spawn()
 int AliHLTTRDOfflineTrackerV1Component::DoInit( int argc, const char** argv )
 {
   int iResult = 0;
-  SetOfflineParams();
   iResult=AliHLTTRDTrackerV1Component::DoInit(argc, argv);
-  fRecoParam->SetStreamLevel(AliTRDrecoParam::kTracker, 1); //in order to have the friends written
+  fRecoParam->SetStreamLevel(AliTRDrecoParam::kTracker, 1); // in order to have the friends written
   return iResult;
 }
 
@@ -78,29 +100,47 @@ const char* AliHLTTRDOfflineTrackerV1Component::GetComponentID()
   return "TRDOfflineTrackerV1"; // The ID of this component
 }
 
-void AliHLTTRDOfflineTrackerV1Component::SetOfflineParams(){
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    HLTFatal("You are resetting the Default Storage of the CDBManager!");
-    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  }
-  if(AliCDBManager::Instance()->GetRun()<0){
-    HLTFatal("You are resetting the CDB run number to 0!");
-    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
-    AliCDBManager::Instance()->SetRun(0);
-  }
-}
-
-int AliHLTTRDOfflineTrackerV1Component::DoDeinit()
-{
-  return AliHLTTRDTrackerV1Component::DoDeinit();
-}
-
 int AliHLTTRDOfflineTrackerV1Component::DoEvent(const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
 						  AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 						  AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
 {
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
-  return AliHLTTRDTrackerV1Component::DoEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks );
+  
+  if(!GetFirstInputBlock(AliHLTTRDDefinitions::fgkHiLvlClusterDataType))
+    return AliHLTTRDTrackerV1Component::DoEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks );
+
+  for(const TObject *iter = GetFirstInputObject(AliHLTTRDDefinitions::fgkHiLvlClusterDataType); iter; iter = GetNextInputObject()) 
+    {
+      TClonesArray* clusterArray = dynamic_cast<TClonesArray*>(const_cast<TObject*>(iter));
+      if(!clusterArray)continue;
+      TObjString* strg = dynamic_cast<TObjString*>(const_cast<TObject*>(GetNextInputObject()));
+      if(!strg)continue;
+      
+      fNtimeBins = strg->String().Atoi();
+      fESD->Reset();
+      AliTRDtrackerV1::SetNTimeBins(fNtimeBins);
+      HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
+      fTracker->LoadClusters(clusterArray);
+      fTracker->Clusters2Tracks(fESD);
+      Int_t nTracks = fESD->GetNumberOfTracks();
+      HLTInfo("Number of tracks  == %d ==", nTracks);  
+      TClonesArray* trdTracks = fTracker->GetListOfTracks();
+
+      if(fEmulateHLTTracks && trdTracks){
+	trdTracks = new TClonesArray(*trdTracks);
+	AliHLTTRDUtils::EmulateHLTTracks(trdTracks);
+      }
+
+      PushBack(trdTracks, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+      PushBack(strg, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+      fTracker->UnloadClusters();
+      AliTRDReconstructor::SetClusters(0x0);
+
+      if(fEmulateHLTTracks && trdTracks){
+	trdTracks->Delete();
+	delete trdTracks;
+      }
+    }
+  return 0;
 }

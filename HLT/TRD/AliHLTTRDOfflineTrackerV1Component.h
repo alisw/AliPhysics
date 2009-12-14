@@ -21,18 +21,18 @@ public:
   virtual ~AliHLTTRDOfflineTrackerV1Component();
 
   const char* GetComponentID();
+  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  AliHLTComponentDataType GetOutputDataType();
   int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
 
   int DoInit( int argc, const char** argv );
-  int DoDeinit();
   int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
   	       AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
   	       AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
 
 protected:
-  void SetOfflineParams();
 
   ClassDef(AliHLTTRDOfflineTrackerV1Component, 1)
 

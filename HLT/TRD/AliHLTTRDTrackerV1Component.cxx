@@ -28,7 +28,6 @@ using namespace std;
 
 #include "AliHLTTRDTrackerV1Component.h"
 #include "AliHLTTRDDefinitions.h"
-#include "AliHLTTRDCluster.h"
 #include "AliHLTTRDTrack.h"
 #include "AliHLTTRDUtils.h"
 
@@ -51,13 +50,6 @@ using namespace std;
 #include <cerrno>
 #include <string>
 
-#ifdef HAVE_VALGRIND_CALLGRIND_H
-#include <valgrind/callgrind.h>
-#else
-#define CALLGRIND_START_INSTRUMENTATION do { } while (0)
-#define CALLGRIND_STOP_INSTRUMENTATION do { } while (0)
-#endif
-
 ClassImp(AliHLTTRDTrackerV1Component)
     
 AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
@@ -70,13 +62,13 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   fClusterArray(NULL),
   fRecoParamType(-1),
   fNtimeBins(-1),
-  fMagneticField(-1),
   fPIDmethod(1),
   fgeometryFileName(""),
-  fieldStrength(-101),
-  fSlowTracking(kFALSE),
+  fHLTflag(kTRUE),
   fOutputV1Tracks(kTRUE),
-  fOffline(kFALSE)
+  fHighLevelOutput(kFALSE),
+  fEmulateHLTTracks(kFALSE),
+  fImproveTracklets(kTRUE)
 {
   // Default constructor
 
@@ -110,7 +102,6 @@ int AliHLTTRDTrackerV1Component::GetOutputDataTypes(AliHLTComponentDataTypeList&
 {
   // Get the output data types
   tgtList.clear();
-  //tgtList.push_back(AliHLTTRDDefinitions::fgkTimeBinPropagationDataType);
   tgtList.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
   tgtList.push_back(AliHLTTRDDefinitions::fgkTracksDataType);
   return tgtList.size();
@@ -200,9 +191,6 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 {
   // Process an event
 
-  if (evtData.fEventID == 1)
-    CALLGRIND_START_INSTRUMENTATION;
-
   HLTDebug("NofBlocks %i", evtData.fBlockCnt );
   
   fESD->Reset();
@@ -210,19 +198,13 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 
   AliHLTUInt32_t totalSize = 0, offset = 0;
 
-  vector<AliHLTComponent_DataType> expectedDataTypes;
-  GetInputDataTypes(expectedDataTypes);
+  AliHLTComponentDataType expectedDataType = AliHLTTRDDefinitions::fgkClusterDataType;
   for ( unsigned long iBlock = 0; iBlock < evtData.fBlockCnt; iBlock++ ) 
     {
       const AliHLTComponentBlockData &block = blocks[iBlock];
       AliHLTComponentDataType inputDataType = block.fDataType;
-      Bool_t correctDataType = kFALSE;
 
-      for(UInt_t i = 0; i < expectedDataTypes.size(); i++){
-	if( expectedDataTypes.at(i) == inputDataType)
-	  correctDataType = kTRUE;
-      }
-      if (!correctDataType)
+      if(inputDataType != expectedDataType)
 	{
 	  HLTDebug( "Block # %i/%i; Event 0x%08LX (%Lu) Wrong received datatype: %s - Skipping",
 		    iBlock, evtData.fBlockCnt-1,
@@ -262,7 +244,30 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       TClonesArray* trdTracks;
       trdTracks = fTracker->GetListOfTracks();
       
-      if(!fOffline && nTracks>0){
+      if(fHighLevelOutput){
+	if(fEmulateHLTTracks && trdTracks){
+	  // TClonesArray* oldArr = trdTracks;
+	  trdTracks = new TClonesArray(*trdTracks);
+	  AliHLTTRDUtils::EmulateHLTTracks(trdTracks);
+	  // if(oldArr->At(0)){
+	  //   HLTInfo("Old Track:");
+	  //   ((AliTRDtrackV1*)oldArr->At(0))->Print("a");
+	  //   HLTInfo("\nNew Track:");
+	  //   ((AliTRDtrackV1*)trdTracks->At(0))->Print("a");
+	  // }
+	}
+
+	TObjString strg;
+	strg.String() += fNtimeBins;
+	PushBack(trdTracks, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+	PushBack(&strg, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+
+	if(fEmulateHLTTracks && trdTracks){
+	  trdTracks->Delete();
+	  delete trdTracks;
+	}
+      }
+      else if(nTracks>0){
 	HLTDebug("We have an output ESDEvent: 0x%x with %i tracks", fESD, nTracks);
 	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddESDToOutput(fESD, outputPtr+offset);
 	totalSize += addedSize;
@@ -296,12 +301,6 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	  HLTDebug("BD ptr 0x%x, offset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), bd.fSpecification);
 	  offset = totalSize;
 	}
-      }
-      if(fOffline){
-	if(trdTracks)
-	  PushBack(trdTracks, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0); 
-	else
-	  PushBack(new TObject, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
       }
 
       HLTDebug("totalSize: %i", totalSize);
@@ -350,11 +349,6 @@ int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
 	HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
 	continue;
       } 
-      else if (argument.CompareTo("-NTimeBins")==0) {
-	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Option depreceated");
-	continue;
-      } 
       else if (argument.CompareTo("-geometry")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Setting geometry to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
@@ -376,19 +370,22 @@ int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
 	HLTInfo("Cosmics reconstruction selected");
 	continue;
       }
-      else if (argument.CompareTo("-magnetic_field_ON")==0) {
- 	fMagneticField = 1;
-	HLTInfo("Reconstructon with magnetic field");
-	continue;
-      }
-      else if (argument.CompareTo("-magnetic_field_OFF")==0) {
-	fMagneticField = 0;
-	HLTInfo("Reconstructon without magnetic field");
-	continue;
-      }
-      else if (argument.CompareTo("-slowTracking")==0) {
-	fSlowTracking = kTRUE;
-	HLTInfo("Using slow tracking");
+      else if (argument.CompareTo("-HLTflag")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
+	if (toCompareTo.CompareTo("yes")==0){
+	  HLTInfo("Setting HLTflag to: %s", toCompareTo.Data());
+	  fHLTflag=kTRUE;
+	}
+	else if (toCompareTo.CompareTo("no")==0){
+	  HLTInfo("Setting HLTflag to: %s", toCompareTo.Data());
+	  fHLTflag=kFALSE;
+	}
+	else {
+	  HLTError("unknown argument for HLTflag: %s", toCompareTo.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
 	continue;
       }
       else if (argument.CompareTo("-outputV1Tracks")==0) {
@@ -408,7 +405,43 @@ int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
 	  break;
 	}
 	continue;
-      } 
+      }
+      else if (argument.CompareTo("-highLevelOutput")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
+	if (toCompareTo.CompareTo("yes")==0){
+	  HLTWarning("Setting highLevelOutput to: %s", toCompareTo.Data());
+	  fHighLevelOutput=kTRUE;
+	}
+	else if (toCompareTo.CompareTo("no")==0){
+	  HLTInfo("Setting highLevelOutput to: %s", toCompareTo.Data());
+	  fHighLevelOutput=kFALSE;
+	}
+	else {
+	  HLTError("unknown argument for highLevelOutput: %s", toCompareTo.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
+	continue;
+      }
+      else if (argument.CompareTo("-emulateHLTTracks")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
+	if (toCompareTo.CompareTo("yes")==0){
+	  HLTWarning("Setting emulateHLTTracks to: %s", toCompareTo.Data());
+	  fEmulateHLTTracks=kTRUE;
+	}
+	else if (toCompareTo.CompareTo("no")==0){
+	  HLTInfo("Setting emulateHLTTracks to: %s", toCompareTo.Data());
+	  fEmulateHLTTracks=kFALSE;
+	}
+	else {
+	  HLTError("unknown argument for emulateHLTTracks: %s", toCompareTo.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
+	continue;
+      }
       else if (argument.CompareTo("-PIDmethod")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
@@ -482,25 +515,25 @@ int AliHLTTRDTrackerV1Component::SetParams()
     HLTInfo("Geometry Already Loaded!");
   }
   
-  if (fRecoParamType == 0)
-    {
+  if(fReconstructor->GetRecoParam()){
+    fRecoParam = new AliTRDrecoParam(*fReconstructor->GetRecoParam());
+    HLTInfo("RecoParam already set!");
+  }else{
+    if(fRecoParamType == 0){
       HLTDebug("Low flux params init.");
       fRecoParam = AliTRDrecoParam::GetLowFluxParam();
     }
-
-  if (fRecoParamType == 1)
-    {
+    if(fRecoParamType == 1){
       HLTDebug("High flux params init.");
       fRecoParam = AliTRDrecoParam::GetHighFluxParam();
     }
-  
-  if (fRecoParamType == 2)
-    {
+    if(fRecoParamType == 2){
       HLTDebug("Cosmic Test params init.");
       fRecoParam = AliTRDrecoParam::GetCosmicTestParam();
     }
+  }
 
-  if (fRecoParam == 0)
+  if(!fRecoParam)
     {
       HLTError("No reco params initialized. Sniffing big trouble!");
       return -EINVAL;
@@ -519,12 +552,14 @@ int AliHLTTRDTrackerV1Component::SetParams()
   case 2: AliTRDRecoParamSetPIDNeuralNetwork(kFALSE); break;
   }
 
+  fRecoParam->SetImproveTracklets(fImproveTracklets);
+
   fRecoParam->SetStreamLevel(AliTRDrecoParam::kTracker, 0);
   fReconstructor->SetRecoParam(fRecoParam);
 
   TString recoOptions="sa,!cw";
   
-  if(!fSlowTracking)
+  if(fHLTflag)
     recoOptions += ",hlt";
 
   HLTDebug("Reconstructor options are: %s",recoOptions.Data());

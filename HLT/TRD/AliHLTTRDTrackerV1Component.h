@@ -86,13 +86,13 @@ protected:
 
   Int_t fRecoParamType;       // default will be the low flux
   Int_t fNtimeBins;           // number of time bins for the tracker to use
-  Int_t fMagneticField;       // magnetic field: 0==OFF and 1==ON
   Int_t fPIDmethod;           // 0=LikelyHood(LH) 1=NeuronalNetwork(NN) 2=TruncatedMean(TM)
   TString fgeometryFileName;
-  Double_t fieldStrength;
-  Bool_t fSlowTracking;
-  Bool_t fOutputV1Tracks;
-  Bool_t fOffline;            // mode to compare HLT data with offline
+  Bool_t fHLTflag;            // use HLT flag in reconstructor
+  Bool_t fOutputV1Tracks;     // output TRD tracks, needed for calibration and ESDfriends
+  Bool_t fHighLevelOutput;    // do we what to have high level output (only for debuging)
+  Bool_t fEmulateHLTTracks;   // for debugging data containers
+  Bool_t fImproveTracklets;   // improve tracklets?
 
   ClassDef(AliHLTTRDTrackerV1Component, 4)
 
