@@ -22,18 +22,17 @@ class TH2F;
 class AliESDEvent;
 class AliESDVertex;
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskVertexESD : public AliAnalysisTask 
+class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE 
 {
  public:
 
   AliAnalysisTaskVertexESD(const char *name = "AliAnalysisTaskVertexESD");
   virtual ~AliAnalysisTaskVertexESD(); 
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   void           SetCheckEventType(Bool_t check=kTRUE) {fCheckEventType=check;}
   Bool_t         GetReadMC() const { return fReadMC; }
