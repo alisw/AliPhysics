@@ -55,7 +55,7 @@ cat  */esd*.txt.Good > esdGood.txt
 ################################################################## 
 bgroup=/recalib/`pwd | xargs basename`
 bgadd $bgroup
-$ALICE_ROOT/TPC/scripts/submitCalib.sh run.list "alice-t3 -g $bgroup"  20
+$ALICE_ROOT/TPC/scripts/submitCalib.sh run.list "alice-t3 -g $bgroup -c 3:00 "  20
 #$ALICE_ROOT/TPC/scripts/submitCalib.sh run85034.list alice-t3 2
 #$ALICE_ROOT/TPC/scripts/submitCalib.sh run85034.list alice-t3 5
 #$ALICE_ROOT/TPC/scripts/submitCalib.sh run90000.list alice-t3 10
@@ -89,7 +89,7 @@ $ALICE_ROOT/TPC/scripts/submitMerging.sh run.list "alice-t3_8h -c 0:10" $bgroup
 ################################################################## 
 bgroup=/recalib/`pwd | xargs basename`
 bgadd $bgroup
-$ALICE_ROOT/TPC/scripts/resubmitMissing.sh  run.list "alice-t3 -c 3:00  -g $bgroup"  10
+$ALICE_ROOT/TPC/scripts/resubmitMissing.sh  run.list "alice-t3 -c 3:00  -g $bgroup"  5
 #
 #
 #$ALICE_ROOT/TPC/scripts/resubmitMissing.sh  runLaser.list alice-t3 5
@@ -100,6 +100,7 @@ $ALICE_ROOT/TPC/scripts/resubmitMissing.sh  run.list "alice-t3 -c 3:00  -g $bgro
 # 7. Merge separatelly sub run list
 ################################################################## 
 
+$ALICE_ROOT/TPC/scripts/mergeCalibRun.sh run.list 
 $ALICE_ROOT/TPC/scripts/mergeCalibRun.sh runMag05.list 
 $ALICE_ROOT/TPC/scripts/mergeCalibRun.sh runMag02.list
 $ALICE_ROOT/TPC/scripts/mergeCalibRun.sh runMag0.list
