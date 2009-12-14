@@ -25,7 +25,7 @@
 // gSystem->Load("libPWG1.so");
 //
 // gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceTPC.C");
-// AliPerformanceTask *tpcQA = AddTaskPerformanceTPC("kTRUE","kTRUE"); 
+// AliPerformanceTask *tpcQA = AddTaskPerformanceTPC("kTRUE","kTRUE","triggerClass"); 
 // 
 // Output:
 // TPC.Performance.root file with TPC performance components is created.
@@ -38,7 +38,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 //____________________________________________
-AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfriend=kTRUE)
+AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfriend=kTRUE, const char *triggerClass="CINT1B-ABCE-NOPF-ALL")
 {
   //
   // Add AliPerformanceTask with TPC performance components
@@ -85,6 +85,7 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
   if(pRecInfoCutsTPC) {
     pRecInfoCutsTPC->SetMaxDCAToVertexXY(3.0);
     pRecInfoCutsTPC->SetMaxDCAToVertexZ(30.0);
+    //pRecInfoCutsTPC->SetMaxDCAToVertexZ(3.0);
     pRecInfoCutsTPC->SetRequireSigmaToVertex(kFALSE);
     pRecInfoCutsTPC->SetRequireTPCRefit(kFALSE);
     pRecInfoCutsTPC->SetAcceptKinkDaughters(kTRUE);
@@ -115,7 +116,7 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
     pRecInfoCutsMATCH->SetDCAToVertex2D(kFALSE);
     pRecInfoCutsMATCH->SetTPCITSMatchingRadius(70); 
     pRecInfoCutsMATCH->SetTPCTRDMatchingRadius(260); 
-    pRecInfoCutsMATCH->SetMinNClustersITS(2);
+    pRecInfoCutsMATCH->SetMinNClustersITS(3);
 
     pRecInfoCutsMATCH->SetHistogramsOn(kFALSE); 
   } 
@@ -250,6 +251,14 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
   if(bUseMCInfo) task->AddPerformanceObject( pCompRes3 );
   if(bUseMCInfo) task->AddPerformanceObject( pCompRes4 );
   if(bUseMCInfo)task->AddPerformanceObject( pCompEff0 );
+  //
+  pCompDEdx3->SetTriggerClass(triggerClass);
+  pCompDCA0->SetTriggerClass(triggerClass);
+  pCompTPC0->SetTriggerClass(triggerClass);
+  pCompMatch0->SetTriggerClass(triggerClass);
+  pCompMatch1->SetTriggerClass(triggerClass);
+  pCompMatch2->SetTriggerClass(triggerClass);
+  //
   task->AddPerformanceObject( pCompDEdx3 );
   task->AddPerformanceObject( pCompDCA0 );
   task->AddPerformanceObject( pCompTPC0 );
