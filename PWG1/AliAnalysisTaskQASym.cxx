@@ -14,7 +14,7 @@
 #include "AliAnalysisManager.h"
 
 #include "AliESDEvent.h"
-
+#include "AliLog.h"
 #include "AliESDVertex.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
@@ -43,6 +43,7 @@ AliAnalysisTaskQASym::AliAnalysisTaskQASym(const char *name)
     ,fHists(0)
     ,fHistRECpt(0)
     ,fEta(0)
+    ,fEtaPhi(0)
     ,fEtaPt(0)
     ,fQPt(0)
     ,fDca(0)
@@ -62,6 +63,7 @@ AliAnalysisTaskQASym::AliAnalysisTaskQASym(const char *name)
     ,fRecDcaNegInv(0)
     ,fRecDPos(0)
     ,fRecDNeg(0)
+
 
     ,fRecQPtPosEta(0)
     ,fRecQPtNegEta(0)
@@ -144,18 +146,22 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  Double_t range = 300.;
+  Double_t range = 1.;
   Double_t pt = 20.;
 
   fHists = new TList();
-  test   = new TNtuple("test","test",  
-			  "pt:phi:theta:x:y:z:charge");
+  //  test   = new TNtuple("test","test",  
+  //			  "pt:phi:theta:x:y:z:charge");
   fHistRECpt   = new TH1F("fHistRECpt", 
 			  " p_{T}",
 			  100, 0., pt);
   fEta   = new TH1F("fEta", 
 			  " #eta",
 			  200, -2., 2.);
+  fEtaPhi   = new TH2F("fEtaPhi", 
+			  " #eta - #phi",
+			  200, -2., 2., 128, 0., 2. * TMath::Pi());
+  
   fThetaRec   = new TH1F("fThetaRec", 
 			  " #theta",
 			  180, 0., TMath::Pi());
@@ -167,13 +173,13 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 		       50, 0.5, 49.5);
   fVx   = new TH1F("fVx", 
 		   "X of vertex",
-		   500, -500., 500.);
+		   100, -5., 5.);
   fVy   = new TH1F("fVy", 
 		   "Y of vertex",
-		   500, -500., 500.);
+		   100, -5., 5.);
   fVz   = new TH1F("fVz", 
 		   "Z of vertex",
-		   500, -500., 500.);
+		   500, -50., 50.);
 
   fEtaPt   = new TH1F("fEtaPt", 
 			  " #eta/p_{T} ",
@@ -533,9 +539,9 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
   fHists->SetOwner();
 
-  fHists->Add(test);
   fHists->Add(fHistRECpt);
   fHists->Add(fEta);
+  fHists->Add(fEtaPhi);
   fHists->Add(fThetaRec);
   fHists->Add(fPhiRec);
   fHists->Add(fNumber);
@@ -645,6 +651,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
 void AliAnalysisTaskQASym::UserExec(Option_t *) 
 {
+  printf("I'm here \n");
   AliVEvent *event = InputEvent();
   if (!event) {
      Printf("ERROR: Could not retrieve event");
@@ -670,6 +677,10 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
   if(event->GetNumberOfTracks()!=0) fNumber->Fill(event->GetNumberOfTracks());
 
+  const AliVVertex* vertex = event->GetPrimaryVertex();
+  Float_t vz = vertex->GetZ();
+  if (TMath::Abs(vz) > 10.) return;
+
   for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
     
 
@@ -680,12 +691,20 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       continue;
     }
     
-    if (!fCuts->AcceptTrack(esdtrack)) continue;
-    const AliExternalTrackParam * tpcP = esdtrack->GetTPCInnerParam();
+    //if (!fCuts->AcceptTrack(esdtrack)) continue;
+    const AliExternalTrackParam * tpcPSO = esdtrack->GetTPCInnerParam();
+    const AliExternalTrackParam *  tpcP = esdtrack;
     if (!tpcP) continue;
    
-  
+
+    if (tpcP->Pt() > 50. && tpcPSO) {
+      printf("High Pt %5d %5d %13.3f %13.3f \n", event->GetPeriodNumber(), event->GetOrbitNumber(),
+	     tpcPSO->Pt(), esdtrack->Pt());
+      // AliFatal("Jet");
+    } 
     
+//    if (tpcPSO) fRecPt12->Fill(tpcPSO->Pt(), esdtrack->Pt());
+
     if(tpcP->E()>LeadingEnergy){
       LeadingTrack=iTrack;
       LeadingEnergy=tpcP->E();
@@ -763,8 +782,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     fqPtRec[cas]->Fill(tpcP->Charge()/tpcP->Pt());
     
     
-    test->Fill(tpcP->Pt(),tpcP->Phi(), tpcP->Theta(), 
-	       tpcP->Xv(),tpcP->Yv(), tpcP->Zv(), tpcP->Charge());
+    //    test->Fill(tpcP->Pt(),tpcP->Phi(), tpcP->Theta(), 
+    //	       tpcP->Xv(),tpcP->Yv(), tpcP->Zv(), tpcP->Charge());
     fHistRECpt->Fill(tpcP->Pt());
     fEta->Fill(tpcP->Eta());
     fThetaRec->Fill(tpcP->Theta());
@@ -786,6 +805,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
    
     
     //for positive particles
+
     if(tpcP->Charge()>0){
       fRecPtPos->Fill(tpcP->Pt());
       fRecPtPosLadder[cas]->Fill(tpcP->Pt());

@@ -42,6 +42,7 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   //old
   TH1F        *fHistRECpt;      // pt 
   TH1F        *fEta;            // eta
+  TH2F        *fEtaPhi;         // eta-phi
   TH1F        *fEtaPt;          // eta over pt 
   TH1F        *fQPt;            // charge over pt 
   TH1F        *fDca;            // distance of closest approach
