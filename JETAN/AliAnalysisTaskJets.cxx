@@ -21,6 +21,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TList.h>
+#include <TH1.h>
 
 #include "AliAnalysisTaskJets.h"
 #include "AliAnalysisManager.h"
@@ -156,6 +157,11 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
       }
     }
 
+  // do not add the histograms in the directory
+  // all handled by the list
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
 
   // Histograms
   fListOfHistos = new TList();
@@ -175,6 +181,10 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
       fH->SetName(Form("AliJetHeader_%s",fNonStdBranch.Data()));
     }
   }
+
+  TH1::AddDirectory(oldStatus);
+  
+  
   if(!fAODExtension)OutputTree()->GetUserInfo()->Add(fH);
   else fAODExtension->GetTree()->GetUserInfo()->Add(fH);
 }

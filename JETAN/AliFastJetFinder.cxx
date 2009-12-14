@@ -102,7 +102,7 @@ void AliFastJetFinder::FindJets()
 
   vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
   if(inputParticles.size()==0){
-    Printf("%s:%d No input particles found, skipping event",(char*)__FILE__,__LINE__);
+    if(debug)Printf("%s:%d No input particles found, skipping event",(char*)__FILE__,__LINE__);
     return;
   }
 
