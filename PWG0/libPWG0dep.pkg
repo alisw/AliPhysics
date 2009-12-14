@@ -13,7 +13,8 @@ SRCS = TPC/AliTPCClusterHistograms.cxx \
       dNdPt/AlidNdPtEventCuts.cxx \
       dNdPt/AlidNdPt.cxx \
       dNdPt/AlidNdPtCutAnalysis.cxx \
-       dNdPt/AlidNdPtTask.cxx
+       dNdPt/AlidNdPtTask.cxx \
+       AliBackgroundSelection.cxx
 
 HDRS = $(SRCS:.cxx=.h)
 

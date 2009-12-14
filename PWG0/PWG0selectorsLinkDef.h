@@ -17,5 +17,6 @@
 #pragma link C++ class AliTriggerTask+;
 #pragma link C++ class AlidNdEtaTask+;
 #pragma link C++ class AlidNdEtaCorrectionTask+;
+#pragma link C++ class AliEventStatsTask+;
 
 #endif

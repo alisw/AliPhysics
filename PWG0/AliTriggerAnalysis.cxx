@@ -131,6 +131,10 @@ void AliTriggerAnalysis::EnableHistograms()
 {
   // creates the monitoring histograms
   
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
   fHistBitsSPD = new TH2F("fHistBitsSPD", "SPD GFO;number of fired chips (offline);number of fired chips (hardware)", 1202, -1.5, 1200.5, 1202, -1.5, 1200.5);
   fHistFiredBitsSPD = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
   fHistV0A = new TH1F("fHistV0A", "V0A;leading time (ns);events", 200, 0, 100);
@@ -145,6 +149,8 @@ void AliTriggerAnalysis::EnableHistograms()
   
   fTriggerClasses = new TMap;
   fTriggerClasses->SetOwner();
+  
+  TH1::AddDirectory(oldStatus);
 }
 
 //____________________________________________________________________

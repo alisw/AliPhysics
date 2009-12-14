@@ -13,7 +13,8 @@ SRCS = dNdEta/AlidNdEtaTask.cxx \
        highMultiplicity/AliHighMultiplicitySelector.cxx \
        multiplicity/AliMultiplicityTask.cxx \
        esdTrackCuts/AliCutTask.cxx \
-       trigger/AliTriggerTask.cxx
+       trigger/AliTriggerTask.cxx \
+       eventStats/AliEventStatsTask.cxx
 
 HDRS = $(SRCS:.cxx=.h)
 

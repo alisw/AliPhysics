@@ -45,6 +45,7 @@
 #include <TList.h>
 #include <TIterator.h>
 #include <TDirectory.h>
+#include <TObjArray.h>
 
 #include <AliPhysicsSelection.h>
 
@@ -56,11 +57,20 @@
 ClassImp(AliPhysicsSelection)
 
 AliPhysicsSelection::AliPhysicsSelection() :
-  fTriggerAnalysis(0),
+  AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
+  fCurrentRun(-1),
+  fCollTrigClasses(),
+  fBGTrigClasses(),
+  fTriggerAnalysis(),
+  fBackgroundIdentification(0),
   fHistStatistics(0),
   fHistBunchCrossing(0)
 {
   // constructor
+  
+  fCollTrigClasses.SetOwner(1);
+  fBGTrigClasses.SetOwner(1);
+  fTriggerAnalysis.SetOwner(1);
   
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
@@ -69,11 +79,9 @@ AliPhysicsSelection::~AliPhysicsSelection()
 {
   // destructor
   
-  if (fTriggerAnalysis)
-  {
-    delete fTriggerAnalysis;
-    fTriggerAnalysis = 0;
-  }
+  fCollTrigClasses.Delete();
+  fBGTrigClasses.Delete();
+  fTriggerAnalysis.Delete();
 
   if (fHistStatistics)
   {
@@ -87,14 +95,49 @@ AliPhysicsSelection::~AliPhysicsSelection()
     fHistBunchCrossing = 0;
   }
 }
+
+Bool_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const
+{
+  // checks if the given trigger class(es) are found for the current event
+  // format of trigger: +TRIGGER1 -TRIGGER2
+  //   requires TRIGGER1 and rejects TRIGGER2
+  
+  TString str(trigger);
+  TObjArray* tokens = str.Tokenize(" ");
+  
+  for (Int_t i=0; i < tokens->GetEntries(); i++)
+  {
+    TString str2(((TObjString*) tokens->At(i))->String());
+    
+    if (str2[0] != '+' && str2[0] != '-')
+      AliFatal(Form("Invalid trigger syntax: %s", trigger));
+      
+    Bool_t flag = (str2[0] == '+');
+    
+    str2.Remove(0, 1);
+    
+    if (flag && !aEsd->IsTriggerClassFired(str2))
+    {
+      AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is not present", str2.Data()));
+      delete tokens;
+      return kFALSE;
+    }
+    if (!flag && aEsd->IsTriggerClassFired(str2))
+    {
+      AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is present", str2.Data()));
+      delete tokens;
+      return kFALSE;
+    }
+  }
+  
+  delete tokens;
+  return kTRUE;
+}
     
 Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 {
   // checks if the given event is a collision candidate
   
-  if (!fTriggerAnalysis)
-    AliFatal("Not initialized!");
-    
   const AliESDHeader* esdHeader = aEsd->GetHeader();
   if (!esdHeader)
   {
@@ -105,72 +148,93 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   // check event type (should be PHYSICS = 7)
   if (esdHeader->GetEventType() != 7)
     return kFALSE;  
-  
-  fHistStatistics->Fill(1);
-  
-  fTriggerAnalysis->FillTriggerClasses(aEsd);
     
-  for (Int_t i=0; i < fRequTrigClasses.GetEntries(); i++)
+  if (fCurrentRun != aEsd->GetRunNumber())
+    if (!Initialize(aEsd->GetRunNumber()))
+      AliFatal(Form("Could not initialize for run %d", aEsd->GetRunNumber()));
+    
+  Bool_t accept = kFALSE;
+    
+  Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
+  for (Int_t i=0; i < count; i++)
   {
-    const char* triggerClass = ((TObjString*) fRequTrigClasses.At(i))->String();
-    if (!aEsd->IsTriggerClassFired(triggerClass))
+    const char* triggerClass = 0;
+    if (i < fCollTrigClasses.GetEntries())
+      triggerClass = ((TObjString*) fCollTrigClasses.At(i))->String();
+    else
+      triggerClass = ((TObjString*) fBGTrigClasses.At(i - fCollTrigClasses.GetEntries()))->String();
+  
+    AliDebug(AliLog::kDebug, Form("Processing trigger class %s", triggerClass));
+  
+    AliTriggerAnalysis* triggerAnalysis = static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i));
+  
+    triggerAnalysis->FillTriggerClasses(aEsd);
+    
+    if (CheckTriggerClass(aEsd, triggerClass))
     {
-      AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is not present", triggerClass));
-      return kFALSE;
-    }
-  }      
+      triggerAnalysis->FillHistograms(aEsd);
   
-  for (Int_t i=0; i < fRejTrigClasses.GetEntries(); i++)
-  {
-    const char* triggerClass = ((TObjString*) fRejTrigClasses.At(i))->String();
-    if (aEsd->IsTriggerClassFired(triggerClass))
-    {
-      AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is present", triggerClass));
-      return kFALSE;
-    }
-  }
-  
-  fTriggerAnalysis->FillHistograms(aEsd);
-  
-  fHistStatistics->Fill(2);
+      fHistStatistics->Fill(1, i);
     
-  Bool_t fastOR = fTriggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kSPDGFO);
-  Bool_t v0BB = fTriggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0A) || fTriggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0C);
-  Bool_t v0BG = fTriggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0ABG) || fTriggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0CBG);
- 
-  if (fastOR)
-    fHistStatistics->Fill(3);
-  if (v0BB)
-    fHistStatistics->Fill(4);
-  if (v0BG)
-    fHistStatistics->Fill(5);
+      Int_t fastOR = triggerAnalysis->SPDFiredChips(aEsd, 0);
+      Bool_t v0A = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0A);
+      Bool_t v0C = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0C);
+      Bool_t v0BG = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0ABG) || triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0CBG);
     
-  if (fastOR || v0BB)
-    fHistStatistics->Fill(6);
+      if (fastOR > 0)
+        fHistStatistics->Fill(2, i);
+      if (fastOR > 1)
+        fHistStatistics->Fill(3, i);
+        
+      if (v0A)
+        fHistStatistics->Fill(4, i);
+      if (v0C)
+        fHistStatistics->Fill(5, i);
+      if (v0BG)
+        fHistStatistics->Fill(6, i);
+        
+      if ((fastOR > 0 || v0A || v0C) && !v0BG)
+        fHistStatistics->Fill(7, i);
     
-  if (!fastOR && !v0BB)
-  {
-    AliDebug(AliLog::kDebug, "Rejecting event because neither FO nor V0 has triggered");
-    return kFALSE;
-  }
+      if (fastOR > 0 && (v0A || v0C) && !v0BG)
+        fHistStatistics->Fill(8, i);
   
-  if (v0BG)
-  {
-    AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
-    return kFALSE;
-  }
+      if (v0A && v0C && !v0BG)
+        fHistStatistics->Fill(9, i);
+        
+      if (fastOR > 1 || (fastOR > 0 && (v0A || v0C)) || (v0A && v0C))
+      {
+        if (!v0BG)
+        {
+          fHistStatistics->Fill(10, i);
       
-  fHistStatistics->Fill(7);
+          if (fBackgroundIdentification && !fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd)))
+          {
+            AliDebug(AliLog::kDebug, "Rejecting event because of background identification");
+            fHistStatistics->Fill(11, i);
+          }
+          else
+          {
+            AliDebug(AliLog::kDebug, "Accepted event for histograms");
+            
+            fHistStatistics->Fill(12, i);
+            fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i);
+            if (count < fCollTrigClasses.GetEntries())
+              accept = kTRUE;
+          }
+        }
+        else
+          AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
+      }
+      else
+        AliDebug(AliLog::kDebug, "Rejecting event because trigger condition is not fulfilled");
+    }
+  }
+ 
+  if (accept)
+    AliDebug(AliLog::kDebug, "Accepted event as collision candidate");
   
-  // TODO additional background identification
-  
-  fHistStatistics->Fill(9);
-  
-  fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber());
-  
-  AliDebug(AliLog::kDebug, "Accepted event");
-  
-  return kTRUE;
+  return accept;
 }
     
 Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
@@ -178,51 +242,72 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   // initializes the object for the given run
   // TODO having the run number here and parameters hardcoded is clearly temporary, a way needs to be found to have a CDB-like configuration also for analysis
   
+  if (fCurrentRun != -1)
+    AliFatal("Processing several runs is not supported, yet");
+  
   AliInfo(Form("Initializing for run %d", runNumber));
+  fCurrentRun = runNumber;
   
-  fRequTrigClasses.Clear();
-  fRejTrigClasses.Clear();
+  fTriggerAnalysis.Delete();
+  fCollTrigClasses.Delete();
+  fBGTrigClasses.Delete();
   
-  fRequTrigClasses.Add(new TObjString("CINT1B-ABCE-NOPF-ALL"));
+  fCollTrigClasses.Add(new TObjString("+CINT1B-ABCE-NOPF-ALL"));
+  fBGTrigClasses.Add(new TObjString("+CINT1A-ABCE-NOPF-ALL"));
+  fBGTrigClasses.Add(new TObjString("+CINT1C-ABCE-NOPF-ALL"));
+  fBGTrigClasses.Add(new TObjString("+CINT1-E-NOPF-ALL"));
   
-  if (!fTriggerAnalysis)
+  Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
+  
+  for (Int_t i=0; i<count; i++)
   {
-    fTriggerAnalysis = new AliTriggerAnalysis;
-    fTriggerAnalysis->EnableHistograms();
-  }
+    AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+    triggerAnalysis->EnableHistograms();
+    triggerAnalysis->SetSPDGFOThreshhold(1);
+    triggerAnalysis->SetV0TimeOffset(0);
     
-  fTriggerAnalysis->SetSPDGFOThreshhold(1);
-  fTriggerAnalysis->SetV0TimeOffset(0);
+    switch (runNumber)
+    {
+      case 104316:
+      case 104320:
+      case 104321: //OK
+      case 104439:
+        triggerAnalysis->SetV0TimeOffset(7.5);
+        break;
+    }
   
-  if (runNumber == 104321)
-    fTriggerAnalysis->SetV0TimeOffset(7.5);
-  
+    fTriggerAnalysis.Add(triggerAnalysis);
+  }
+      
   if (fHistStatistics)
-  {
-    fHistStatistics->Reset();
-  }
-  else
-  {
-    fHistStatistics = new TH1F("fHistStatistics", "fHistStatistics;;event count", 10, 0.5, 10.5);
+    delete fHistStatistics;
+
+  fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 12, 0.5, 12.5, count, -0.5, -0.5 + count);
     
-    Int_t n = 1;
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Total");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Correct trigger class(es)");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0 BB");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0 BG");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO | V0 BB");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO | V0 BB) & !V0 BG");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Background identification");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Accepted");
-  }
+  Int_t n = 1;
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "Correct trigger class(es)");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 1 | V0A | VOC) & !V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1 & (V0A | VOC) & !V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A & VOC & !V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 2 | (FO >= 1 & (V0A | VOC)) | (V0A & VOC)) & !V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "Background identification");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "Accepted");
+  
+  n = 1;
+  for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
+    fHistStatistics->GetYaxis()->SetBinLabel(n++, ((TObjString*) fCollTrigClasses.At(i))->String());
+  for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
+    fHistStatistics->GetYaxis()->SetBinLabel(n++, ((TObjString*) fBGTrigClasses.At(i))->String());
   
   if (fHistBunchCrossing)
-  {
-    fHistBunchCrossing->Reset();
-  }
-  else
-    fHistBunchCrossing = new TH1F("fHistBunchCrossing", "fHistBunchCrossing;bunch crossing number;accepted events", 4000, -0.5, 3999.5);
+    delete fHistBunchCrossing;
+
+  fHistBunchCrossing = new TH2F("fHistBunchCrossing", "fHistBunchCrossing;bunch crossing number;", 4000, -0.5, 3999.5,  count, -0.5, -0.5 + count);
     
   return kTRUE;
 }
@@ -231,33 +316,32 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
 {
   // print the configuration
   
-  AliInfo("Configuration:");
+  Printf("Configuration:");
   
-  TString str("Required trigger classes: ");
-  for (Int_t i=0; i < fRequTrigClasses.GetEntries(); i++)
-    str += ((TObjString*) fRequTrigClasses.At(i))->String() + " ";
-  AliInfo(str);
+  Printf("Collision trigger classes:");
+  for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
+    Printf("%s", ((TObjString*) fCollTrigClasses.At(i))->String().Data());
   
-  str = "Rejected trigger classes: ";
-  for (Int_t i=0; i < fRejTrigClasses.GetEntries(); i++)
-    str += ((TObjString*) fRejTrigClasses.At(i))->String() + " ";
-  AliInfo(str);
+  Printf("Background trigger classes:");
+  for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
+    Printf("%s", ((TObjString*) fBGTrigClasses.At(i))->String().Data());
+
+  AliTriggerAnalysis* triggerAnalysis = dynamic_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(0));
   
-  AliInfo(Form("Requiring %d FO chips (offline) or V0A or V0C and no V0 BG flag", fTriggerAnalysis->GetSPDGFOThreshhold()));
-  
-  if (fTriggerAnalysis->GetV0TimeOffset() > 0)
-    AliInfo(Form("V0 time offset active: %.2f ns", fTriggerAnalysis->GetV0TimeOffset()));
+  if (triggerAnalysis)
+  {
+    if (triggerAnalysis->GetV0TimeOffset() > 0)
+      Printf("V0 time offset active: %.2f ns", triggerAnalysis->GetV0TimeOffset());
     
-  AliInfo("");
-  
-  AliInfo("Selection statistics:");
+    Printf("\nTotal available events:");
     
-  AliInfo("Total available events:");
-  fTriggerAnalysis->PrintTriggerClasses();
+    triggerAnalysis->PrintTriggerClasses();
+  }
   
-  AliInfo(Form("Total events: %d", (Int_t) fHistStatistics->GetBinContent(1)));
-  AliInfo(Form("Correct trigger class: %d", (Int_t) fHistStatistics->GetBinContent(2)));
-  AliInfo(Form("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(9)));
+  Printf("\nSelection statistics for first collision trigger:");
+  
+  Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics->GetBinContent(1, 1));
+  Printf("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(12, 1));
 }
 
 Long64_t AliPhysicsSelection::Merge(TCollection* list)
@@ -287,17 +371,21 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
       continue;
 
     Int_t n = 0;
-    collections[n++].Add(entry->fTriggerAnalysis);
+    collections[n++].Add(&(entry->fTriggerAnalysis));
     collections[n++].Add(entry->fHistStatistics);
     collections[n++].Add(entry->fHistBunchCrossing);
+    if (entry->fBackgroundIdentification)
+      collections[n++].Add(entry->fBackgroundIdentification);
 
     count++;
   }
 
   Int_t n = 0;
-  fTriggerAnalysis->Merge(&collections[n++]);
+  fTriggerAnalysis.Merge(&collections[n++]);
   fHistStatistics->Merge(&collections[n++]);
   fHistBunchCrossing->Merge(&collections[n++]);
+  if (fBackgroundIdentification)
+    fBackgroundIdentification->Merge(&collections[n++]);
   
   delete iter;
 
@@ -320,12 +408,32 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
   fHistStatistics->Write();
   fHistBunchCrossing->Write();
   
-  gDirectory->mkdir("trigger_histograms");
-  gDirectory->cd("trigger_histograms");
+  Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
+  for (Int_t i=0; i < count; i++)
+  {
+    TString triggerClass = "trigger_histograms_";
+    if (i < fCollTrigClasses.GetEntries())
+      triggerClass += ((TObjString*) fCollTrigClasses.At(i))->String();
+    else
+      triggerClass += ((TObjString*) fBGTrigClasses.At(i - fCollTrigClasses.GetEntries()))->String();
   
-  fTriggerAnalysis->SaveHistograms();
+    gDirectory->mkdir(triggerClass);
+    gDirectory->cd(triggerClass);
   
-  gDirectory->cd("..");
+    static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i))->SaveHistograms();
+    
+    gDirectory->cd("..");
+  }
+ 
+  if (fBackgroundIdentification)
+  {
+    gDirectory->mkdir("background_identification");
+    gDirectory->cd("background_identification");
+      
+    fBackgroundIdentification->GetOutput()->Write();
+      
+    gDirectory->cd("..");
+  }
   
   if (folder)
     gDirectory->cd("..");
