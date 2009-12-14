@@ -24,6 +24,9 @@
 #include <TVector3.h>
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
+#include "AliKFVertex.h"
+#include "AliVVertex.h"
+#include "AliESDVertex.h"
 
 ClassImp(AliAODRecoDecayHF)
 
@@ -147,3 +150,71 @@ AliAODRecoDecayHF::~AliAODRecoDecayHF() {
   if(fProngID) delete [] fProngID;
 }
 //---------------------------------------------------------------------------
+AliKFParticle *AliAODRecoDecayHF::ApplyVertexingKF(Int_t *iprongs,Int_t nprongs,Int_t *pdgs,Bool_t topoCostraint, Double_t bzkG, Double_t *mass) const {
+  //
+  // Applies the KF vertexer 
+  // Int_t iprongs[nprongs] = indices of the prongs to be used from the vertexer
+  // Int_t pdgs[nprongs] = pdgs assigned to the prongs, needed to define the AliKFParticle
+  // Bool_t topoCostraint = if kTRUE, the topological constraint is applied
+  // Double_t bzkG = magnetic field
+  // Double_t mass[2] = {mass, sigma} for the mass constraint (if mass[0]>0 the constraint is applied).
+  //
+
+  AliKFParticle::SetField(bzkG);
+  AliKFParticle *vertexKF=0;
+  
+  AliKFVertex copyKF;
+  Int_t nt=0,ntcheck=0;
+
+  Double_t pos[3]={0.,0.,0.};
+  if(!fOwnPrimaryVtx) {
+    printf("AliAODRecoDecayHF::ApplyVertexingKF(): cannot apply because primary vertex is not found\n");
+    return vertexKF;
+  }
+  fOwnPrimaryVtx->GetXYZ(pos);
+  Int_t contr=fOwnPrimaryVtx->GetNContributors();
+  Double_t covmatrix[6]={0.,0.,0.,0.,0.,0.};
+  fOwnPrimaryVtx->GetCovarianceMatrix(covmatrix);
+  Double_t chi2=fOwnPrimaryVtx->GetChi2();
+  AliESDVertex primaryVtx2(pos,covmatrix,chi2,contr,"Vertex");
+ 
+
+  if(topoCostraint){
+   copyKF=AliKFVertex(primaryVtx2);
+   nt=primaryVtx2.GetNContributors();
+   ntcheck=nt;
+  }
+
+  vertexKF = new AliKFParticle();
+  for(Int_t i= 0;i<nprongs;i++){
+    Int_t ipr=iprongs[i];
+    AliAODTrack *aodTrack = (AliAODTrack*)GetDaughter(ipr);
+    if(!aodTrack) {
+      printf("AliAODRecoDecayHF::ApplyVertexingKF(): no daughters available\n");
+      delete vertexKF; vertexKF=NULL;
+      return vertexKF;
+    }
+    AliKFParticle daughterKF(*aodTrack,pdgs[i]);
+    vertexKF->AddDaughter(daughterKF);
+    
+    if(topoCostraint && nt>0){
+      //Int_t index=(Int_t)GetProngID(ipr);
+      if(!aodTrack->GetUsedForPrimVtxFit()) continue;
+      copyKF -= daughterKF;
+      ntcheck--;
+    }
+  }
+  
+  if(topoCostraint){
+    if(ntcheck>0) {
+      copyKF += (*vertexKF);
+      vertexKF->SetProductionVertex(copyKF);
+    }
+ }
+  
+  if(mass[0]>0.){
+    vertexKF->SetMassConstraint(mass[0],mass[1]);
+  }
+  
+  return vertexKF;
+}

@@ -12,6 +12,8 @@
 #include <TRef.h>
 #include "AliAODRecoDecay.h"
 
+class AliKFParticle;
+
 class AliAODRecoDecayHF : public AliAODRecoDecay {
 
  public:
@@ -81,6 +83,12 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   // check if it is like-sign
   Bool_t IsLikeSign() const;
 
+
+  // vertexing KF:
+  AliKFParticle *ApplyVertexingKF(Int_t *iprongs,Int_t nprongs,Int_t *pdgs,
+				 Bool_t topoCostraint,Double_t bzkG,
+				 Double_t *mass) const;
+  
  protected:
 
   AliAODVertex *fOwnPrimaryVtx; // primary vertex for this candidate
