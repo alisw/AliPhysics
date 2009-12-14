@@ -26,8 +26,18 @@ void MergeOutput(const char* filename, const char* comp, Int_t max);
 //void MakeFinalSpectra(const char* filename, const char* comp);
 void MakeFinalSpectra(const char* comp);
 
-void MakeResults(const char* filename = "list.txt", const char* comp = "NO_MC", Int_t max=-1)
+void MakeResults(const char* filename = "parf.list", const char* comp = "NO_MC", Int_t max=-1)
 {
+  gStyle->SetPalette(1);
+  gStyle->SetNumberContours(50);
+
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTENDER");
+
+  gSystem->Load("libTPCcalib.so");
+  gSystem->Load("libPWG1");
+
   // Merge performance objects
   MergeOutput(filename, comp, max);
 
