@@ -233,7 +233,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
       mv->DestroyAllGeometries();
 
-      gEve->LoadVizDB("geom_gentle_default.C", kTRUE, kTRUE);
+      gEve->LoadVizDB("geom_gentle_projector.C", kTRUE, kTRUE);
 
       gEve->LoadVizDB("VizDB_scan_projector.C", kTRUE, kTRUE);
 
@@ -544,7 +544,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
     {
     
      TGFileInfo fi;
-     fi.fFileTypes   = gMacroSaveAsTypes;
+     fi.fFileTypes   = gPictureSaveAsTypes;
      fi.fIniDir      = StrDup(""); // current directory
      fi.fFileTypeIdx = 0;
      fi.fOverwrite   = kTRUE;
@@ -717,7 +717,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
     {
     
      TGFileInfo fi;
-     fi.fFileTypes   = gMacroSaveAsTypes;
+     fi.fFileTypes   = gPictureSaveAsTypes;
      fi.fIniDir      = StrDup(""); // current directory
      fi.fFileTypeIdx = 0;
      fi.fOverwrite   = kTRUE;

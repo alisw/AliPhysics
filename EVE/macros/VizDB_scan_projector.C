@@ -85,25 +85,25 @@ void VizDB_scan_projector()
   gEve->InsertVizDBEntry("Clusters", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(5);
-  ps->SetMarkerSize(0.2);
+  ps->SetMarkerColor(6);
+  ps->SetMarkerSize(0.4);
   ps->SetMarkerStyle(2);
   gEve->InsertVizDBEntry("REC Clusters ITS", ps);
 
   ps = new TEvePointSet();
   ps->SetMarkerColor(4);
-  ps->SetMarkerSize(0.2);
+  ps->SetMarkerSize(0.3);
   ps->SetMarkerStyle(2);
   gEve->InsertVizDBEntry("REC Clusters TPC", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(7);
+  ps->SetMarkerColor(9);
   ps->SetMarkerSize(0.5);
   ps->SetMarkerStyle(4);
   gEve->InsertVizDBEntry("REC Clusters TRD", ps);
 
   ps = new TEvePointSet();
-  ps->SetMarkerColor(kOrange);
+  ps->SetMarkerColor(kRed);
   ps->SetMarkerSize(0.5);
   ps->SetMarkerStyle(4);
   gEve->InsertVizDBEntry("REC Clusters TOF", ps);
