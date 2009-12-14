@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskUE+;
+#pragma link C++ class AliAnalysisTaskJetServices+;
 #pragma link C++ class AliAnalysisTaskJetSpectrum+;
 #pragma link C++ class AliAnalysisTaskJetSpectrum2+;
 #pragma link C++ class AliAnalysisTaskJFSystematics+;
