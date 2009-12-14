@@ -4,12 +4,15 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
   if(bProof) { 
     
     //cout << "*** START PROOF Lite SESSION ***" << endl;
-    //TProof::Open(""); // 1. Enter your username here
+    TProof::Open(""); // 1. Enter your username here
     
+    /*
     TProofMgr * proofmgr = TProof::Mgr("lxialpod2.gsi.de:21001");
+    //TProofMgr * proofmgr = TProof::Mgr("lxialpod.gsi.de:21001");
     //TProofMgr * proofmgr = TProof::Mgr("lxial39.gsi.de:21001");
     TProof * proof = proofmgr->CreateSession();
-    proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)1000);
+    proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)10000);
+    */
 
     // -- Load AliRoot Libraries
     gROOT->LoadMacro("ProofEnableAliRootGSI.C");
@@ -62,8 +65,18 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     fdNdPtCutAnalysis->SetAcceptanceCuts(accCuts);
     fdNdPtCutAnalysis->SetTrackCuts(esdTrackCuts);
     fdNdPtCutAnalysis->SetAnalysisMode(analysisMode); 
-    fdNdPtCutAnalysis->SetTrigger(AliTriggerAnalysis::kMB1); 
-    if (bUseMCInfo) fdNdPtCutAnalysis->SetUseMCInfo(kTRUE);
+    if(bUseMCInfo) 
+    {
+       fdNdPtCutAnalysis->SetTrigger(AliTriggerAnalysis::kMB1); 
+       fdNdPtCutAnalysis->SetUseMCInfo(kTRUE);
+    }
+    else { // online trigger
+    //fdNdPtCutAnalysis->SetTriggerClass("CBEAMB-ABCE-NOPF-ALL"); 
+    fdNdPtCutAnalysis->SetTriggerClass("CINT1B-ABCE-NOPF-ALL");
+    //fdNdPtCutAnalysis->SetTriggerClass("CINT1A-ABCE-NOPF-ALL"); 
+    //fdNdPtCutAnalysis->SetTriggerClass("CINT1C-ABCE-NOPF-ALL"); 
+    //fdNdPtCutAnalysis->SetTriggerClass("CINT1-E-NOPF-ALL"); 
+    }
 
     task->AddAnalysisObject( fdNdPtCutAnalysis );
   }
@@ -76,8 +89,18 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     fdNdPtAnalysis->SetAcceptanceCuts(accCuts);
     fdNdPtAnalysis->SetTrackCuts(esdTrackCuts);
     fdNdPtAnalysis->SetAnalysisMode(analysisMode); 
-    fdNdPtAnalysis->SetTrigger(AliTriggerAnalysis::kMB1); 
-    if (bUseMCInfo) fdNdPtAnalysis->SetUseMCInfo(kTRUE);
+    if(bUseMCInfo) 
+    {
+       fdNdPtAnalysis->SetTrigger(AliTriggerAnalysis::kMB1); 
+       fdNdPtAnalysis->SetUseMCInfo(kTRUE);
+    }
+    else { // online trigger
+    //fdNdPtAnalysis->SetTriggerClass("CBEAMB-ABCE-NOPF-ALL"); 
+    fdNdPtAnalysis->SetTriggerClass("CINT1B-ABCE-NOPF-ALL");
+    //fdNdPtAnalysis->SetTriggerClass("CINT1A-ABCE-NOPF-ALL"); 
+    //fdNdPtAnalysis->SetTriggerClass("CINT1C-ABCE-NOPF-ALL"); 
+    //fdNdPtAnalysis->SetTriggerClass("CINT1-E-NOPF-ALL"); 
+    }
 
     fdNdPtAnalysis->SetHistogramsOn(kTRUE);
     //fdNdPtAnalysis->SetHistogramsOn(kFALSE);
@@ -93,8 +116,18 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     fdNdPtCorrection->SetAcceptanceCuts(accCuts);
     fdNdPtCorrection->SetTrackCuts(esdTrackCuts);
     fdNdPtCorrection->SetAnalysisMode(analysisMode); 
-    fdNdPtCorrection->SetTrigger(AliTriggerAnalysis::kMB1); 
-    if (bUseMCInfo) fdNdPtCorrection->SetUseMCInfo(kTRUE);
+    if(bUseMCInfo) 
+    {
+       fdNdPtCorrection->SetTrigger(AliTriggerAnalysis::kMB1); 
+       fdNdPtCorrection->SetUseMCInfo(kTRUE);
+    }
+    else { // online trigger
+    //fdNdPtCorrection->SetTriggerClass("CBEAMB-ABCE-NOPF-ALL"); 
+    fdNdPtCorrection->SetTriggerClass("CINT1B-ABCE-NOPF-ALL");
+    //fdNdPtCorrection->SetTriggerClass("CINT1A-ABCE-NOPF-ALL"); 
+    //fdNdPtCorrection->SetTriggerClass("CINT1C-ABCE-NOPF-ALL"); 
+    //fdNdPtCorrection->SetTriggerClass("CINT1-E-NOPF-ALL"); 
+    }
 
     task->AddAnalysisObject( fdNdPtCorrection );
   }
