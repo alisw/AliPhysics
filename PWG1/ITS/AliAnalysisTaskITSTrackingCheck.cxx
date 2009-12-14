@@ -651,7 +651,7 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
 
     // TPC track findable in ITS
     if(tpcin && track->GetNcls(1)>=50 &&
-       TMath::Abs(track->GetD(0,0,fESD->GetMagneticField()))<2.) {
+       TMath::Abs(track->GetTPCInnerParam()->GetD(0,0,fESD->GetMagneticField()))<3.) {
       itsfindable=kTRUE;
       Double_t zAtSSDouter=100,zAtSDDouter=100,zAtSPDouter=100;
       track->GetZAt(rSSDouter,fESD->GetMagneticField(),zAtSSDouter);
