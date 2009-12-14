@@ -396,7 +396,7 @@ AliTOFcalibHisto::WriteCalibHisto()
 	    dummy = det[3]; det[3] = det[4]; det[4] = dummy;
 	    
 	    /* check detector indices */
-	    if (det[0] < 0 || det[0] > 71 ||
+	    if (det[0] < 0 || det[0] > 17 ||
 		det[1] < 0 || det[1] > 4 ||
 		det[2] < 0 || det[2] > 18 ||
 		det[3] < 0 || det[3] > 1 ||
