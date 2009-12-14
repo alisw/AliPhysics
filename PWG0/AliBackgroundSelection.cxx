@@ -15,6 +15,10 @@ AliBackgroundSelection::AliBackgroundSelection():
   AliAnalysisCuts(), fOutputHist(0), fACut(0), fBCut(0)
 {
   
+  fOutputHist = new TList();
+  fOutputHist->SetOwner();
+  fACut = 45;
+  fBCut = 6.5;
   
 
 }
@@ -25,6 +29,8 @@ AliBackgroundSelection::AliBackgroundSelection(const char* name, const char* tit
 
   fOutputHist = new TList();
   fOutputHist->SetOwner();
+  fACut = 45;
+  fBCut = 6.5;
 }
 
 AliBackgroundSelection::AliBackgroundSelection(const AliBackgroundSelection& obj) : AliAnalysisCuts(obj),
@@ -112,7 +118,7 @@ Bool_t AliBackgroundSelection::IsSelected(TObject* obj){
     TString trg = tok->GetString();
     trg.Strip(TString::kTrailing, ' ');
     trg.Strip(TString::kLeading, ' ');
-    Printf("TRG: [%s]\n",trg.Data());
+    //    Printf("TRG: [%s]\n",trg.Data());
     TH2F * hCvsT = GetClusterVsTrackletsHisto(trg.Data());
     if(!hCvsT) {
       // if histo does not exist, book it on the fly (also books accepted histo)
@@ -124,7 +130,7 @@ Bool_t AliBackgroundSelection::IsSelected(TObject* obj){
     if(Selected()) hCvsTa->Fill(ntracklet,spdClusters);
 
   }
-  
+  if(tokens) delete tokens;
   // return decision
 
   return Selected();
