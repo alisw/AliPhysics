@@ -22,7 +22,7 @@ aliroot -b -q 'RunPerformanceTrain.C("AliESDs.root",2,kFALSE,kTRUE,kFALSE)'
 */
 
 //_____________________________________________________________________________
-void RunPerformanceTrain(Char_t *file="esd.root", Int_t magField = 2, Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, Bool_t bGrid=kTRUE)
+void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const char* triggerClass ="CINT1B-ABCE-NOPF-ALL", Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, Bool_t bGrid=kFALSE)
 {
   //
   // Grid settings
@@ -68,23 +68,26 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t magField = 2, Bool_t bUs
   // OCDB Configuration 
   //
   AliCDBManager *cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  cdbManager->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
-  cdbManager->SetRun(0);
+  cdbManager->SetDefaultStorage("local:///lustre/alice/alien/alice/data/2009/OCDB");
+  //cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  //cdbManager->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
+  cdbManager->SetRun(runNumber);
   //cdbManager->SetCacheFlag(kFALSE);
   // initialize magnetic field from the GRP manager.
-  if(magField==0) TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 0., 0., AliMagF::k2kG));
-  if(magField==1) TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k2kG));
-  if(magField==2) TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
+  //if(magField==0) TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 0., 0., AliMagF::k2kG));
+  //if(magField==1) TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k2kG));
+  //if(magField==2) TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
 
-  //AliGRPManager grpMan;
-  //grpMan.ReadGRPEntry();
-  //grpMan.SetMagField();
-  //AliRunInfo *runInfo = grpMan.GetRunInfo();
+  /*
+  AliGRPManager grpMan;
+  grpMan.ReadGRPEntry();
+  grpMan.SetMagField();
+  AliRunInfo *runInfo = grpMan.GetRunInfo();
  
   //
   // Load geometry
   //
+  */
   AliGeomManager::LoadGeometry();
 
   //
@@ -167,7 +170,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t magField = 2, Bool_t bUs
   //
   if(iPWG1perfTPC) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceTPC.C");
-    AliPerformanceTask *tpcQA = AddTaskPerformanceTPC(bUseMCInfo,bUseESDfriend);
+    AliPerformanceTask *tpcQA = AddTaskPerformanceTPC(bUseMCInfo,bUseESDfriend,triggerClass);
     if(!tpcQA) { 
       Error("RunPerformanceTrain","AliPerformanceTask not created!");
       return;
