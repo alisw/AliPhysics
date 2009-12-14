@@ -25,6 +25,7 @@ class AliHLTTRDClusterizer : public AliTRDclusterizer
   AliHLTTRDClusterizer(const AliTRDReconstructor *const rec = 0x0);
   AliHLTTRDClusterizer(const Text_t *const name, const Text_t *const title, const AliTRDReconstructor *const rec = 0x0);
   AliHLTTRDClusterizer(const AliHLTTRDClusterizer& c);
+  virtual ~AliHLTTRDClusterizer() {};
   AliHLTTRDClusterizer& operator=(const AliHLTTRDClusterizer& c);
 
   void            Copy(TObject& c) const;
@@ -42,7 +43,6 @@ class AliHLTTRDClusterizer : public AliTRDclusterizer
   UInt_t          GetAddedClSize(){return fNoOfClusters*sizeof(AliHLTTRDCluster);}
   UInt_t          GetAddedTrSize(){return (AliHLTUInt8_t*)fTrMemCurrPtr-(AliHLTUInt8_t*)fTrMemBlock;}
   UInt_t          GetTrMemBlockSize(){return 30*(sizeof(AliHLTTRDTrackletWordArray)+512*sizeof(UInt_t));}
-  Int_t           GetNTimeBins() const {return fTimeTotal;}
 
  protected:
   void            AddClusterToArray(AliTRDcluster *cluster);

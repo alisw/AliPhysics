@@ -38,14 +38,13 @@ using namespace std;
 
 #include "AliHLTTRDClusterizerComponent.h"
 #include "AliHLTTRDDefinitions.h"
-#include "AliHLTTRDCluster.h"
+#include "AliHLTTRDClusterizer.h"
 
 #include "AliGeomManager.h"
 #include "AliTRDReconstructor.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
-#include "AliHLTTRDClusterizer.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDrawStreamBase.h"
 #include "AliTRDcluster.h"
@@ -84,7 +83,9 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
   fProcessTracklets(kFALSE),
   fHLTstreamer(kTRUE),
   fTC(kFALSE),
-  fOffline(kFALSE)
+  fHLTflag(kTRUE),
+  fHighLevelOutput(kFALSE),
+  fEmulateHLTClusters(kFALSE)
 {
   // Default constructor
 
@@ -237,6 +238,8 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 		    evtData.fEventID, evtData.fEventID, 
 		    DataType2Text(inputDataType).c_str(), 
 		    DataType2Text(expectedDataType).c_str());
+	  if(block.fDataType == kAliHLTDataTypeEOR)
+	    CALLGRIND_STOP_INSTRUMENTATION;
 	  continue;
 	}
       else 
@@ -425,6 +428,24 @@ int AliHLTTRDClusterizerComponent::Configure(const char* arguments){
 	HLTInfo("Awaiting non zero surpressed data");
 	continue;
       }
+      else if (argument.CompareTo("-HLTflag")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
+	if (toCompareTo.CompareTo("yes")==0){
+	  HLTInfo("Setting HLTflag to: %s", toCompareTo.Data());
+	  fHLTflag=kTRUE;
+	}
+	else if (toCompareTo.CompareTo("no")==0){
+	  HLTInfo("Setting HLTflag to: %s", toCompareTo.Data());
+	  fHLTflag=kFALSE;
+	}
+	else {
+	  HLTError("unknown argument for HLTflag: %s", toCompareTo.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
+	continue;
+      }
       else if (argument.CompareTo("-faststreamer")==0) {
 	fHLTstreamer = kTRUE;
 	HLTInfo("Useing fast raw streamer");
@@ -446,6 +467,42 @@ int AliHLTTRDClusterizerComponent::Configure(const char* arguments){
 	fRawDataVersion=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       } 
+      else if (argument.CompareTo("-highLevelOutput")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
+	if (toCompareTo.CompareTo("yes")==0){
+	  HLTWarning("Setting highLevelOutput to: %s", toCompareTo.Data());
+	  fHighLevelOutput=kTRUE;
+	}
+	else if (toCompareTo.CompareTo("no")==0){
+	  HLTInfo("Setting highLevelOutput to: %s", toCompareTo.Data());
+	  fHighLevelOutput=kFALSE;
+	}
+	else {
+	  HLTError("unknown argument for highLevelOutput: %s", toCompareTo.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
+	continue;
+      }
+      else if (argument.CompareTo("-emulateHLTClusters")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
+	if (toCompareTo.CompareTo("yes")==0){
+	  HLTWarning("Setting emulateHLTTracks to: %s", toCompareTo.Data());
+	  fEmulateHLTClusters=kTRUE;
+	}
+	else if (toCompareTo.CompareTo("no")==0){
+	  HLTInfo("Setting emulateHLTTracks to: %s", toCompareTo.Data());
+	  fEmulateHLTClusters=kFALSE;
+	}
+	else {
+	  HLTError("unknown argument for emulateHLTTracks: %s", toCompareTo.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
+	continue;
+      }
       else if (argument.CompareTo("-yPosMethod")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
@@ -519,25 +576,25 @@ int AliHLTTRDClusterizerComponent::SetParams()
     HLTInfo("Geometry Already Loaded!");
   }
 
-  if (fRecoParamType == 0)
-    {
+  if(fReconstructor->GetRecoParam()){
+    fRecoParam = new AliTRDrecoParam(*fReconstructor->GetRecoParam());
+    HLTInfo("RecoParam already set!");
+  }else{
+    if(fRecoParamType == 0){
       HLTDebug("Low flux params init.");
       fRecoParam = AliTRDrecoParam::GetLowFluxParam();
     }
-
-  if (fRecoParamType == 1)
-    {
+    if(fRecoParamType == 1){
       HLTDebug("High flux params init.");
       fRecoParam = AliTRDrecoParam::GetHighFluxParam();
     }
-  
-  if (fRecoParamType == 2)
-    {
+    if(fRecoParamType == 2){
       HLTDebug("Cosmic Test params init.");
       fRecoParam = AliTRDrecoParam::GetCosmicTestParam();
     }
+  }
 
-  if (fRecoParam == 0)
+  if (!fRecoParam)
     {
       HLTError("No reco params initialized. Sniffing big trouble!");
       return -EINVAL;
@@ -554,8 +611,8 @@ int AliHLTTRDClusterizerComponent::SetParams()
 #   define AliTRDRecoParamSetLUT(b) fRecoParam->SetLUT()
 # endif
 
-  if(fTC){AliTRDRecoParamSetTailCancelation(kTRUE); HLTDebug("Enableing Tail Cancelation"); }
-  else{AliTRDRecoParamSetTailCancelation(kFALSE); HLTDebug("Enableing Tail Cancelation"); }
+  if(fTC){fRecoParam->SetTailCancelation(kTRUE); HLTDebug("Enableing Tail Cancelation"); }
+  else{fRecoParam->SetTailCancelation(kFALSE); HLTDebug("Disableing Tail Cancelation"); }
 
   switch(fyPosMethod){
   case 0: AliTRDRecoParamSetGAUS(kFALSE); AliTRDRecoParamSetLUT(kFALSE); break;
@@ -566,7 +623,9 @@ int AliHLTTRDClusterizerComponent::SetParams()
   fRecoParam->SetStreamLevel(AliTRDrecoParam::kClusterizer, 0);
   fReconstructor->SetRecoParam(fRecoParam);
 
-  TString recoOptions="hlt,!cw";
+  TString recoOptions="!cw";
+  if(fHLTflag)
+    recoOptions += ",hlt";
   if(fProcessTracklets) recoOptions += ",tp";
   else  recoOptions += ",!tp";
 
