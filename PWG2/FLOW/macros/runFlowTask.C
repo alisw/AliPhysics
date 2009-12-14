@@ -15,7 +15,7 @@ Bool_t LYZEP    = kFALSE;
 Bool_t GFC      = kTRUE;
 Bool_t QC       = kTRUE;
 Bool_t FQD      = kTRUE;
-Bool_t MCEP     = kTRUE; //not for pp 
+Bool_t MCEP     = kFALSE; //not for pp 
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP};
 
@@ -57,17 +57,19 @@ void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000000,
   if (type == "ESD"){
     AliVEventHandler* esdH = new AliESDInputHandler;
     mgr->SetInputEventHandler(esdH);
-    
-    AliMCEventHandler *mc = new AliMCEventHandler();
-    mgr->SetMCtruthEventHandler(mc); 
+    if (MCEP) { 
+      AliMCEventHandler *mc = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mc); 
+    }
   }
   
   if (type == "AOD"){
     AliVEventHandler* aodH = new AliAODInputHandler;
     mgr->SetInputEventHandler(aodH); 
-    
-    AliMCEventHandler *mc = new AliMCEventHandler();
-    mgr->SetMCtruthEventHandler(mc); 
+    if (MCEP) { 
+      AliMCEventHandler *mc = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mc);
+    } 
   }
   
   if (type == "MC" || type == "ESDMC0" || type == "ESDMC1"){
