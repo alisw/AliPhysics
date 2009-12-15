@@ -252,6 +252,9 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   cluster.fSigmaY2 = *((Float_t*)&buffer[nWords+3]);
     	   cluster.fSigmaZ2 = *((Float_t*)&buffer[nWords+4]);
 	   
+	   
+	   if(cluster.fCharge<10) continue;
+	   
 	   // correct expressions for the error calculation
 	   // Kenneth: 12.11.2009 I'm not sure if this is a correct calculation. Leave it out for now since it is anyway not used later since it caused segfaults.
 	   // cluster.fSigmaY2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
@@ -260,7 +263,9 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = -99.;
     	  	   
 	   HLTDebug("padrow: %d, charge: %f, pad: %f, time: %f, errY: %f, errZ: %f \n", cluster.fPadRow, (Float_t)cluster.fCharge, tmpPad, tmpTime, cluster.fSigmaY2, cluster.fSigmaZ2);        	   
-	      
+	   
+	   //fOfflineTransform=NULL;
+	   
 	   if(fOfflineTransform == NULL){	   	   
 	      cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
 	      AliHLTTPCTransform::Slice2Sector(minSlice, cluster.fPadRow, sector, thisrow);	      
@@ -269,11 +274,16 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	      cluster.fX = xyz[0];
     	      cluster.fY = xyz[1];
     	      cluster.fZ = xyz[2]; 
-     	   } else {	    
-	     cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);    
+     	   } else {	
+	   
+	         
+	    
+	     cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);
+	     
 	     AliHLTTPCTransform::Slice2Sector(minSlice, (UInt_t)cluster.fPadRow, sector, thisrow);	     
-	     cluster.fPadRow -= AliHLTTPCTransform::GetFirstRow(minPartition);   	    
-	     Double_t x[3] = {(Double_t)cluster.fPadRow,tmpPad+.5,tmpTime}; 
+	     
+	      
+	     Double_t x[3] = {thisrow,tmpPad+.5,tmpTime}; 
 	     Int_t iSector[1]= {sector};
 	     fOfflineTransform->Transform(x,iSector,0,1);
 	     cluster.fX = x[0];
