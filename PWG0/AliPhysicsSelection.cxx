@@ -316,7 +316,7 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
 {
   // print the configuration
   
-  Printf("Configuration:");
+  Printf("Configuration initialized for run %d:", fCurrentRun);
   
   Printf("Collision trigger classes:");
   for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
@@ -338,10 +338,13 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
     triggerAnalysis->PrintTriggerClasses();
   }
   
-  Printf("\nSelection statistics for first collision trigger:");
-  
-  Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics->GetBinContent(1, 1));
-  Printf("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(12, 1));
+  if (fHistStatistics)
+  {
+    Printf("\nSelection statistics for first collision trigger:");
+    
+    Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics->GetBinContent(1, 1));
+    Printf("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(12, 1));
+  }
 }
 
 Long64_t AliPhysicsSelection::Merge(TCollection* list)

@@ -95,7 +95,9 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
   }
   
   task = new AliEventStatsTask(optStr);
-
+  physicsSelection = new AliPhysicsSelection;
+  task->SetPhysicsSelection(physicsSelection);
+  
   mgr->AddTask(task);
 
   // Attach input

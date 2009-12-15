@@ -17,13 +17,15 @@ class AliEventStatsTask : public AliAnalysisTaskSE {
     virtual void   Terminate(Option_t*);
 
     void SetOption(const char* opt) { fOption = opt; }
+    
+    void SetPhysicsSelection(AliPhysicsSelection* physicsSelection) { fPhysicsSelection = physicsSelection; }
 
  protected:
     TList* fOutput;                  //! list send on output slot 1
 
     TString fOption;      // option string  
     
-    AliPhysicsSelection* fPhysicsSelection; //! event selection class
+    AliPhysicsSelection* fPhysicsSelection; // event selection class
 
  private:
     AliEventStatsTask(const AliEventStatsTask&);
