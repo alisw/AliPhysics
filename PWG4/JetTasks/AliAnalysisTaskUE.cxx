@@ -248,7 +248,8 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
   //Trigger selection ************************************************
   AliAnalysisHelperJetTasks::Trigger trig;
   trig = (const enum AliAnalysisHelperJetTasks::Trigger)fTrigger;
-  if (AliAnalysisHelperJetTasks::IsTriggerFired(fAOD,trig)){
+  //ckb tmp  if (AliAnalysisHelperJetTasks::IsTriggerFired(fAOD,trig)){
+  if (AliAnalysisHelperJetTasks::Selected()){
   	if (fDebug > 1) AliInfo(" Trigger Selection: event ACCEPTED ... ");
   }else{
   	if (fDebug > 1) AliInfo(" Trigger Selection: event REJECTED ... ");

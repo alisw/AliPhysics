@@ -115,9 +115,16 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtHardTrials;  // Number of trials 
     TH1F*         fh1NGenJets;      // nr of gen jets
     TH1F*         fh1NRecJets;      // nr of rec jets
-    
+    TH1F*         fh1PtTrackRec;    // track pt
+    TH1F*         fh1SumPtTrackRec; // sum over all track pT    
+    TH1F*         fh1SumPtTrackAreaRec; // sum over all track pT    
+
+
     TH1F*         fh1PtRecIn[kMaxJets];  // Jet pt for all this info is also in the THNsparse      
     TH1F*         fh1PtGenIn[kMaxJets];  // Jet pt with corellated generated jet    
+
+    TH2F*         fh2PhiPt[kMaxJets];    // delta phi correlation of tracks with the jet      
+    TH2F*         fh2PhiEta[kMaxJets];   // eta   phi correlation of tracks with the jet      
 
     TH2F*         fh2FragRec[kMaxJets];     // fragmentation function
     TH2F*         fh2FragLnRec[kMaxJets];   // fragmetation in xi

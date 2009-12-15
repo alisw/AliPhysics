@@ -87,13 +87,16 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh1PtHardTrials(0x0),
   fh1NGenJets(0x0),
   fh1NRecJets(0x0),
+  fh1PtTrackRec(0x0),   
+  fh1SumPtTrackRec(0x0),  
+  fh1SumPtTrackAreaRec(0x0),  
   fHistList(0x0)  
 {
   for(int i = 0;i < kMaxStep*2;++i){
     fhnJetContainer[i] = 0;
   }
   for(int i = 0;i < kMaxJets;++i){
-    fh2FragRec[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
+    fh2PhiPt[i] = fh2PhiEta[i] = fh2FragRec[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
     fh1PtRecIn[i] = fh1PtGenIn[i] = 0;
   }  
 
@@ -125,6 +128,9 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh1PtHardTrials(0x0),
   fh1NGenJets(0x0),
   fh1NRecJets(0x0),
+  fh1PtTrackRec(0x0),   
+  fh1SumPtTrackRec(0x0),  
+  fh1SumPtTrackAreaRec(0x0),  
   fHistList(0x0)
 {
 
@@ -132,7 +138,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fhnJetContainer[i] = 0;
   }  
   for(int i = 0;i < kMaxJets;++i){
-    fh2FragRec[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
+    fh2PhiPt[i] = fh2PhiEta[i] = fh2FragRec[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
     fh1PtRecIn[i] = fh1PtGenIn[i] = 0;
   }
   DefineOutput(1, TList::Class());  
@@ -203,18 +209,31 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       binLimitsPt[iPt] = 0.0;
     }
     else {// 1.0
-      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.5;
+      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 1.0;
     }
   }
   
-  const Int_t nBinPhi = 30;
+  const Int_t nBinPhi = 90;
   Double_t binLimitsPhi[nBinPhi+1];
   for(Int_t iPhi = 0;iPhi<=nBinPhi;iPhi++){
     if(iPhi==0){
-      binLimitsPhi[iPhi] = 0;
+      binLimitsPhi[iPhi] = -0.5*TMath::Pi();
     }
     else{
       binLimitsPhi[iPhi] = binLimitsPhi[iPhi-1] + 1/(Float_t)nBinPhi * TMath::Pi()*2;
+    }
+  }
+
+
+
+  const Int_t nBinEta = 40;
+  Double_t binLimitsEta[nBinEta+1];
+  for(Int_t iEta = 0;iEta<=nBinEta;iEta++){
+    if(iEta==0){
+      binLimitsEta[iEta] = -2.0;
+    }
+    else{
+      binLimitsEta[iEta] = binLimitsEta[iEta-1] + 1/(Float_t)nBinEta + 0.1;
     }
   }
 
@@ -234,10 +253,21 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1NGenJets  = new TH1F("fh1NGenJets","N generated jets",20,-0.5,19.5);
   fh1NRecJets = new TH1F("fh1NRecJets","N reconstructed jets",20,-0.5,19.5);
 
+  fh1PtTrackRec = new TH1F("fh1PtTrackRec","Rec track P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
+  fh1SumPtTrackRec = new TH1F("fh1SumPtTrackRec","Sum Rec track P_T #eta <0.9;p_{T,sum} (GeV/c)",nBinPt,binLimitsPt);
+  fh1SumPtTrackAreaRec = new TH1F("fh1SumPtTrackAreaRec","Sum Rec track P_T #eta <0.9 / 1.8 * 2 * 0.4*0.4;p_{T,sum} (GeV/c)",nBinPt,binLimitsPt);
+
   // 
   for(int ij = 0;ij < kMaxJets;++ij){
     fh1PtRecIn[ij] = new TH1F(Form("fh1PtRecIn_j%d",ij),"rec p_T input ;p_{T,rec}",nBinPt,binLimitsPt);
     fh1PtGenIn[ij] = new TH1F(Form("fh1PtGenIn_j%d",ij),"found p_T input ;p_{T,gen}",nBinPt,binLimitsPt);
+
+    fh2PhiPt[ij] =  new TH2F(Form("fh2PhiPtRec_j%d",ij),"Jet pt vs delta phi;#Delta#phi;p_{T,jet}",
+			     nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
+
+    fh2PhiEta[ij] =  new TH2F(Form("fh2PhiEtaRec_j%d",ij),"delta eta vs delta phi for jets;#Delta#phi;p_{T,jet}",
+			      nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
+
 
     fh2FragRec[ij] = new TH2F(Form("fh2FragRec_j%d",ij),"Jet Fragmentation;x=p_{T,i}/p_{T,jet};p_{T,jet};1/N_{jet}dN_{ch}/dx",
 			   nBinFrag,0.,1.,nBinPt,binLimitsPt);
@@ -260,10 +290,15 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh1PtHardTrials);
     fHistList->Add(fh1NGenJets);
     fHistList->Add(fh1NRecJets);
+    fHistList->Add(fh1PtTrackRec);
+    fHistList->Add(fh1SumPtTrackRec);
+    fHistList->Add(fh1SumPtTrackAreaRec);
     for(int i = 0;i<kMaxStep*2;++i)fHistList->Add(fhnJetContainer[i]);
     for(int ij = 0;ij<kMaxJets;++ij){
       fHistList->Add( fh1PtRecIn[ij]);
       fHistList->Add( fh1PtGenIn[ij]);
+      fHistList->Add( fh2PhiPt[ij]);
+      fHistList->Add( fh2PhiEta[ij]);
       fHistList->Add( fh2FragRec[ij]);
       fHistList->Add( fh2FragLnRec[ij]);
       fHistList->Add( fh2FragGen[ij]);
@@ -328,8 +363,6 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     if(fDebug>0){
       fESD = dynamic_cast<AliESDEvent*> (InputEvent());
     }
-
-
   }
   
 
@@ -553,7 +586,19 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   }// loop over generated jets
 
   
-  
+  Float_t sumPt = 0;
+  for(int it = 0;it<recParticles.GetEntries();++it){
+    AliVParticle *part = (AliVParticle*)recParticles.At(it);
+    // fill sum pt and P_t of all paritles
+    if(TMath::Abs(part->Eta())<0.9){
+      Float_t pt = part->Pt();
+      fh1PtTrackRec->Fill(pt,eventW);
+      sumPt += pt;
+    }
+  }
+  fh1SumPtTrackAreaRec->Fill(sumPt*0.4*0.4/(2.*1.8),eventW);
+  fh1SumPtTrackRec->Fill(sumPt,eventW);
+
 
   // loop over reconstructed jets
   for(int ir = 0;ir < nRecJets;++ir){
@@ -565,7 +610,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     container[1] = etaRec;
     container[2] = phiRec;
 
-    if(ptRec>20.&&fDebug>0){
+    if(ptRec>15.&&fDebug>0){
       // need to cast to int, otherwise the printf overwrites
       Printf("Jet found in Event %d with p_T, %E",(int)Entry(),ptRec);
       fAOD->GetHeader()->Print();
@@ -592,6 +637,16 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       // fill the fragmentation function
       for(int it = 0;it<recParticles.GetEntries();++it){
 	AliVParticle *part = (AliVParticle*)recParticles.At(it);
+	Float_t eta = part->Eta();
+	if(TMath::Abs(eta)<0.9){
+	  Float_t phi = part->Phi();
+	  if(phi<0)phi+=TMath::Pi()*2.;    
+	  Float_t dPhi = phi - phiRec;
+	  Float_t dEta = eta - etaRec;
+	  if(dPhi<(-1.*TMath::Pi()/2))phiRec+=TMath::Pi()*2.;    
+	  fh2PhiPt[ir]->Fill(dPhi,ptRec,eventW);
+	  fh2PhiEta[ir]->Fill(dPhi,dEta,eventW);
+	}
 	if(recJets[ir].DeltaR(part)<radiusRec){
 	  Float_t z = part->Pt()/ptRec;
 	  Float_t lnz =  -1.*TMath::Log(z);
