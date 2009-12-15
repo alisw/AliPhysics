@@ -21,7 +21,7 @@
 
 ClassImp(AliAnalysisTaskSDDRP)
 //______________________________________________________________________________
-AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTask("SDD RecPoints",""), 
+AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"), 
   fOutput(0),
   fHistNEvents(0),
   fRecPMod(0),
@@ -33,6 +33,8 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTask("SDD RecPoints","
   fTrackPLadLay4(0),
   fGoodAnLadLay3(0),
   fGoodAnLadLay4(0),
+  fDriftTimeRP(0),
+  fDriftTimeTP(0),
   fESD(0),
   fESDfriend(0),
   fResp(0),
@@ -42,8 +44,7 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTask("SDD RecPoints","
   fOnlyCINT1BTrig(0)
 {
   //
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
 }
 
 
@@ -56,29 +57,15 @@ AliAnalysisTaskSDDRP::~AliAnalysisTaskSDDRP(){
   }
 }
 
-//___________________________________________________________________________
-void AliAnalysisTaskSDDRP::ConnectInputData(Option_t *) {
-  //
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if(!tree) {
-    printf("ERROR: Could not read chain from input slot 0\n");
-  }else{
-    tree->SetBranchStatus("ESDfriend*", 1);
-    tree->SetBranchAddress("ESDfriend.",&fESDfriend);
-    AliESDInputHandlerRP *hand = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    fESD=hand->GetEvent();
-  }
-  return;
-}
+
 //___________________________________________________________________________
 
-void AliAnalysisTaskSDDRP::CreateOutputObjects() {
-  //
-  AliGeomManager::LoadGeometry(fGeomFile.Data());
+void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
+
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("raw://");
   man->SetRun(fRunNumber);
-  AliGeomManager::ApplyAlignObjsFromCDB("ITS");
+
   
   AliCDBEntry* eR=(AliCDBEntry*)man->Get("ITS/Calib/RespSDD");
   fResp=(AliITSresponseSDD*)eR->GetObject();
@@ -165,6 +152,16 @@ void AliAnalysisTaskSDDRP::CreateOutputObjects() {
   fGoodAnLadLay4->SetMinimum(0);
   fOutput->Add(fGoodAnLadLay4);
 
+  fDriftTimeRP=new TH1F("hDrTimRP","Drift Time from Rec Points (ns)",100,0.,6400.);
+  fDriftTimeRP->Sumw2();
+  fDriftTimeRP->SetMinimum(0.);
+  fOutput->Add(fDriftTimeRP);
+
+  fDriftTimeTP=new TH1F("hDrTimTP","Drift Time from Track Points (ns)",100,0.,6400.);
+  fDriftTimeTP->Sumw2();
+  fDriftTimeTP->SetMinimum(0.);
+  fOutput->Add(fDriftTimeTP);
+
   for(Int_t it=0; it<8; it++){
     fSignalTime[it]=new TH1F(Form("hSigTimeInt%d",it),Form("hSigTimeInt%d",it),100,0.,300.);
     fSignalTime[it]->Sumw2();
@@ -173,17 +170,25 @@ void AliAnalysisTaskSDDRP::CreateOutputObjects() {
   }
 }
 //______________________________________________________________________________
-void AliAnalysisTaskSDDRP::Exec(Option_t *)
+void AliAnalysisTaskSDDRP::UserExec(Option_t *)
 {
+  //
+  fESD = (AliESDEvent*) (InputEvent());
+
   if(!fESD) {
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
     return;
   } 
+
+  fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+
+
+
   if(!fESDfriend) {
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESDfriend\n");
     return;
   } 
-  PostData(0,fOutput);
+  PostData(1, fOutput);
   fESD->SetESDfriend(fESDfriend);
   fHistNEvents->Fill(0);
   if(fOnlyCINT1BTrig){
@@ -213,6 +218,7 @@ void AliAnalysisTaskSDDRP::Exec(Option_t *)
       AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
       if(!CheckModule(lay,lad,det)) continue;
       fTrackPMod->Fill(modId);
+      fDriftTimeTP->Fill(point.GetDriftTime());
       Float_t dtime=point.GetDriftTime()-fResp->GetTimeZero(modId);
       Int_t theBin=int(dtime/6500.*8.);
       if(layerId==3){ 
@@ -240,7 +246,10 @@ void AliAnalysisTaskSDDRP::Exec(Option_t *)
     fRecPMod->Fill(modId,nrecp);	  
     if(lay==3) fRecPLadLay3->Fill(lad-1,nrecp);
     if(lay==4) fRecPLadLay4->Fill(lad-1,nrecp);
-    
+    for(Int_t irec=0;irec<nrecp;irec++) {
+      AliITSRecPoint *recp = (AliITSRecPoint*)ITSrec->At(irec);
+      fDriftTimeRP->Fill(recp->GetDriftTime());
+    }
   }
   ITSrec->Delete();
   delete ITSrec;
@@ -257,8 +266,7 @@ Bool_t AliAnalysisTaskSDDRP::CheckModule(Int_t lay, Int_t lad, Int_t det) const{
     if(lad==3 && det==7) return kFALSE; // 1500 V
     if(lad==4 && det==1) return kFALSE; // 0 V
     if(lad==4 && det==2) return kFALSE; // 1500 V
-    if(lad==7 && det==3) return kFALSE; // noisy
-    if(lad==7 && det==5) return kFALSE; // 0 MV + noisy
+    if(lad==7 && det==5) return kFALSE; // 0 MV
     if(lad==9 && det==3) return kFALSE; // 1500 V
     if(lad==9 && det==4) return kFALSE; // 0 V
     if(lad==9 && det==5) return kFALSE; // 1500 V
@@ -274,9 +282,6 @@ Bool_t AliAnalysisTaskSDDRP::CheckModule(Int_t lay, Int_t lad, Int_t det) const{
   if(lay==3){
     if(lad==4 && det==4) return kFALSE; // 1500 V 
     if(lad==3) return kFALSE;  // swapped in geometry
-    if(lad==5 && det==1) return kFALSE; // noisy
-    if(lad==5 && det==2) return kFALSE; // noisy
-    if(lad==6 && det==1) return kFALSE; // noisy
   }
   return kTRUE;
 }
@@ -285,7 +290,7 @@ Bool_t AliAnalysisTaskSDDRP::CheckModule(Int_t lay, Int_t lad, Int_t det) const{
 void AliAnalysisTaskSDDRP::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
-  fOutput = dynamic_cast<TList*> (GetOutputData(0));
+  fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {     
     printf("ERROR: fOutput not available\n");
     return;
@@ -301,6 +306,9 @@ void AliAnalysisTaskSDDRP::Terminate(Option_t */*option*/)
   fTrackPLadLay4= dynamic_cast<TH1F*>(fOutput->FindObject("hTPLad4"));
   fGoodAnLadLay3= dynamic_cast<TH1F*>(fOutput->FindObject("hGALad3"));
   fGoodAnLadLay4= dynamic_cast<TH1F*>(fOutput->FindObject("hGALad4"));
+
+  fDriftTimeRP= dynamic_cast<TH1F*>(fOutput->FindObject("hDrTimRP"));
+  fDriftTimeTP= dynamic_cast<TH1F*>(fOutput->FindObject("hDrTimTP"));
 
   for(Int_t it=0; it<8; it++){
     fSignalTime[it]= dynamic_cast<TH1F*>(fOutput->FindObject(Form("hSigTimeInt%d",it)));

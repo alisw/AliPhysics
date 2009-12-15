@@ -9,22 +9,18 @@ class AliESDEvent;
 class AliESDfriend;
 class AliITSresponseSDD;
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskSDDRP : public AliAnalysisTask {
+class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
 
  public:
   
   AliAnalysisTaskSDDRP();
   virtual ~AliAnalysisTaskSDDRP();
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   Exec(Option_t *option);
-  virtual void   CreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
   virtual void   Terminate(Option_t *option);
 
-  void SetGeometryFile(Char_t* geo){
-    fGeomFile=geo;
-  }
   void SetRunNumber(Int_t nrun){
     fRunNumber=nrun;
   }
@@ -55,11 +51,12 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTask {
   TH1F*   fTrackPLadLay4;   //! histo with ladder occupancy on layer4 (TrP)
   TH1F*   fGoodAnLadLay3;   //! histo good anodes per ladder on layer3 
   TH1F*   fGoodAnLadLay4;   //! histo good anodes per ladder on layer4 
+  TH1F*   fDriftTimeRP;     //! histo with drift time distribution (RecP)
+  TH1F*   fDriftTimeTP;     //! histo with drift time distribution (TrP)
   TH1F*   fSignalTime[8];   //! histos of dE/dx in time windows
   AliESDEvent  *fESD;       // ESD object
   AliESDfriend *fESDfriend; // ESD friend object
   AliITSresponseSDD* fResp; // ResponseSDD object
-  TString fGeomFile;        // geometry file name
   Int_t   fRunNumber;       // Run number
   Int_t   fMinITSpts;       // Minimum number of points per track
   Float_t fMinPfordEdx;     // Minimum momentum for dE/dx
