@@ -194,7 +194,7 @@ void AliPerformanceTask::Terminate(Option_t *)
   // Called one at the end 
   
   // check output data
-  fOutput = dynamic_cast<TList*> (GetOutputData(0));
+  fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {
     Printf("ERROR: AliPerformanceTask::Terminate(): Output data not avaiable GetOutputData(0)==0x0 ..." );
     return;
