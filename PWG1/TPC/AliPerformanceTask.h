@@ -14,17 +14,16 @@ class AliPerformanceObject;
 class AliMagF;
 class TList;
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliPerformanceTask : public AliAnalysisTask {
+class AliPerformanceTask : public AliAnalysisTaskSE {
  public:
   AliPerformanceTask();
   AliPerformanceTask(const char *name, const char *title);
   virtual ~AliPerformanceTask();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   virtual Bool_t Notify();
 
