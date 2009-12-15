@@ -37,9 +37,6 @@ class AliAnalysisHelperJetTasks : public TObject {
   
   // these methods have been essentially copied from PWG0/AliTriggerAnalysis and expanded to use with AOD
   static Bool_t IsTriggerFired(const AliVEvent* aEsd, Trigger trigger);
-  static Bool_t IsTriggerBitFired(const AliVEvent* aEv, Trigger trigger);
-  static Bool_t IsTriggerBitFired(ULong64_t triggerMask, Trigger trigger);
-  static Bool_t IsTriggerBitFired(const AliVEvent* aEv, ULong64_t tclass);
 
   private:
   
