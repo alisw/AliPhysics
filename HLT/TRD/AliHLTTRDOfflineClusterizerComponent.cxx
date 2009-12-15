@@ -42,7 +42,6 @@ ClassImp(AliHLTTRDOfflineClusterizerComponent)
 AliHLTTRDOfflineClusterizerComponent::AliHLTTRDOfflineClusterizerComponent()
   :AliHLTTRDClusterizerComponent()
   ,fOffClusterizer(NULL)
-  ,fDataOutputType(0)
 {
   // Default constructor
 }
