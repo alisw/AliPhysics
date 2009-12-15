@@ -2,23 +2,16 @@
 
 #include "AliEventStatsTask.h"
 
-#include <TCanvas.h>
 #include <TFile.h>
-#include <TChain.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH3F.h>
 
 #include <AliLog.h>
 #include <AliESDEvent.h>
 #include <AliHeader.h>
-#include <AliAnalysisManager.h>
-#include <AliESDInputHandler.h>
-#include <AliESDHeader.h>
-#include <AliTriggerAnalysis.h>
 
 #include "AliPhysicsSelection.h"
-#include "AliBackgroundSelection.h"
+//#include "AliBackgroundSelection.h"
 
 ClassImp(AliEventStatsTask)
 
@@ -62,12 +55,15 @@ void AliEventStatsTask::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
   
-  fPhysicsSelection = new AliPhysicsSelection;
-  AliBackgroundSelection* background = new AliBackgroundSelection("AliBackgroundSelection", "AliBackgroundSelection");
-  background->Init();
-  //fPhysicsSelection->AddBackgroundIdentification(background);
-  //AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
-
+  if (!fPhysicsSelection)
+  {
+    fPhysicsSelection = new AliPhysicsSelection;
+    //AliBackgroundSelection* background = new AliBackgroundSelection("AliBackgroundSelection", "AliBackgroundSelection");
+    //background->Init();
+    //fPhysicsSelection->AddBackgroundIdentification(background);
+    //AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
+  }
+  
   fOutput->Add(fPhysicsSelection);
 }
 
