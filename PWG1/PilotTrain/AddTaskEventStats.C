@@ -1,6 +1,6 @@
 
 
-AliAnalysisTaskSE* AddTaskEventStats() {
+AliEventStatsTask* AddTaskEventStats() {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
