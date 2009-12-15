@@ -60,7 +60,7 @@ ClassImp(AliPerformanceTask)
 
 //_____________________________________________________________________________
 AliPerformanceTask::AliPerformanceTask() 
-  : AliAnalysisTask("Performance","Detector Performance")
+  : AliAnalysisTaskSE("Performance")
   , fESD(0)
   , fESDfriend(0)
   , fMC(0)
@@ -75,8 +75,8 @@ AliPerformanceTask::AliPerformanceTask()
 }
 
 //_____________________________________________________________________________
-AliPerformanceTask::AliPerformanceTask(const char *name, const char *title) 
-  : AliAnalysisTask(name, title)
+AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/) 
+  : AliAnalysisTaskSE(name)
   , fESD(0)
   , fESDfriend(0)
   , fMC(0)
@@ -104,44 +104,6 @@ AliPerformanceTask::~AliPerformanceTask()
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTask::ConnectInputData(Option_t *) 
-{
-  // Connect input data 
-  // Called once
-
-  TTree *tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-    return;
-  }
-
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if (!esdH) {
-    Printf("ERROR: Could not get ESDInputHandler");
-  } else {
-    fESD = esdH->GetEvent();
-
-    if(fUseESDfriend)
-    {
-      fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
-      if(!fESDfriend) {
-        Printf("ERROR: ESD friends not available");
-      }
-    }
-  }
-
-  // use MC information
-  if(fUseMCInfo) {
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-    } else {
-      fMC = eventHandler->MCEvent();
-    }
-  }
-}
-
-//_____________________________________________________________________________
 Bool_t AliPerformanceTask::AddPerformanceObject(AliPerformanceObject *pObj) 
 {
   // add comparison object to the list
@@ -157,7 +119,7 @@ return kTRUE;
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTask::CreateOutputObjects()
+void AliPerformanceTask::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -180,11 +142,24 @@ void AliPerformanceTask::CreateOutputObjects()
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTask::Exec(Option_t *) 
+void AliPerformanceTask::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
+  fESD = (AliESDEvent*) (InputEvent());
+  if(fUseESDfriend)
+    {
+      fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+      if(!fESDfriend) {
+        Printf("ERROR: ESD friends not available");
+      }
+    }
+  
+  if(fUseMCInfo) {
+      fMC = MCEvent();
+  }  
 
+  //
   AliPerformanceObject *pObj=0;
 
   if (!fESD) {
