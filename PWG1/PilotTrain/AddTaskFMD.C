@@ -22,7 +22,8 @@ AliFMDAnalysisTaskSE* AddTaskFMD() {
   pars->SetProcessPrimary(kFALSE);
   pars->SetProcessHits(kFALSE);
   pars->SetEnergy(AliFMDAnaParameters::k900);
-  
+  pars->SetCentralTriggerSelection(kTRUE);
+
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += Form(":%s",pars->GetDndetaAnalysisName());
 
