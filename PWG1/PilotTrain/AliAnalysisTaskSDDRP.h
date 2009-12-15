@@ -61,7 +61,7 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   Int_t   fMinITSpts;       // Minimum number of points per track
   Float_t fMinPfordEdx;     // Minimum momentum for dE/dx
   Bool_t  fOnlyCINT1BTrig;  // Flag for using all events or only intections
-
+  Bool_t  fInitialised;     // True if initialised
   ClassDef(AliAnalysisTaskSDDRP,1);  
 };
 
