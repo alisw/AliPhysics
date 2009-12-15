@@ -41,7 +41,8 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"
   fRunNumber(0),
   fMinITSpts(3),
   fMinPfordEdx(1.5),
-  fOnlyCINT1BTrig(0)
+  fOnlyCINT1BTrig(0),
+  fInitialised(0)
 {
   //
   DefineOutput(1, TList::Class());
@@ -61,38 +62,6 @@ AliAnalysisTaskSDDRP::~AliAnalysisTaskSDDRP(){
 //___________________________________________________________________________
 
 void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
-
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("raw://");
-  man->SetRun(fRunNumber);
-
-  
-  AliCDBEntry* eR=(AliCDBEntry*)man->Get("ITS/Calib/RespSDD");
-  fResp=(AliITSresponseSDD*)eR->GetObject();
-
-  AliCDBEntry* eC=(AliCDBEntry*)man->Get("ITS/Calib/CalibSDD");
-  TObjArray* calsdd=(TObjArray*)eC->GetObject();
-  Int_t countGood3[14];
-  Int_t countGood4[22];
-  Int_t countGoodMod[260];
-  for(Int_t ilad=0;ilad<14;ilad++) countGood3[ilad]=0;
-  for(Int_t ilad=0;ilad<22;ilad++) countGood4[ilad]=0;
-  for(Int_t imod=0;imod<260;imod++) countGoodMod[imod]=0;
-  for(Int_t imod=0;imod<260;imod++){
-    AliITSCalibrationSDD* cal=(AliITSCalibrationSDD*)calsdd->At(imod);
-    if(cal->IsBad()) continue;
-    Int_t modId=imod+AliITSgeomTGeo::GetModuleIndex(3,1,1);
-    Int_t lay,lad,det;
-    AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
-    if(!CheckModule(lay,lad,det)) continue;
-    for(Int_t ian=0; ian<512; ian++){
-      if(cal->IsBadChannel(ian)) continue;
-      countGoodMod[imod]++;
-      if(lay==3) countGood3[lad-1]++;
-      else if(lay==4) countGood4[lad-1]++;
-    }
-  }
-
 
   fOutput = new TList();
   fOutput->SetOwner();
@@ -116,8 +85,6 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   fOutput->Add(fTrackPMod);
 
   fGoodAnMod = new TH1F("hGAMod","Good Anodes per Module",260,239.5,499.5);
-  for(Int_t imod=0;imod<260;imod++) fGoodAnMod->SetBinContent(imod+1,countGoodMod[imod]);
-  fGoodAnMod->SetMinimum(0);
   fOutput->Add(fGoodAnMod);
 
   // -- Ladder histos
@@ -143,13 +110,9 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   fOutput->Add(fTrackPLadLay4);
 
   fGoodAnLadLay3 = new TH1F("hGALad3","Good Anodes per Ladder Layer 3",14,-0.5,13.5);
-  for(Int_t ilad=0;ilad<14;ilad++) fGoodAnLadLay3->SetBinContent(ilad+1,countGood3[ilad]);
-  fGoodAnLadLay3->SetMinimum(0);
   fOutput->Add(fGoodAnLadLay3);
 
   fGoodAnLadLay4 = new TH1F("hGALad4","Good Anodes per Ladder Layer 4",22,-0.5,21.5);
-  for(Int_t ilad=0;ilad<22;ilad++) fGoodAnLadLay4->SetBinContent(ilad+1,countGood4[ilad]);
-  fGoodAnLadLay4->SetMinimum(0);
   fOutput->Add(fGoodAnLadLay4);
 
   fDriftTimeRP=new TH1F("hDrTimRP","Drift Time from Rec Points (ns)",100,0.,6400.);
@@ -190,6 +153,49 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
   } 
   PostData(1, fOutput);
   fESD->SetESDfriend(fESDfriend);
+
+  if (!fInitialised) {
+    fInitialised = 1;
+
+    AliCDBManager* man = AliCDBManager::Instance();
+    man->SetDefaultStorage("raw://");
+    man->SetRun(fESD->GetRunNumber());
+    
+    
+    AliCDBEntry* eR=(AliCDBEntry*)man->Get("ITS/Calib/RespSDD");
+    fResp=(AliITSresponseSDD*)eR->GetObject();
+    
+    AliCDBEntry* eC=(AliCDBEntry*)man->Get("ITS/Calib/CalibSDD");
+    TObjArray* calsdd=(TObjArray*)eC->GetObject();
+    Int_t countGood3[14];
+    Int_t countGood4[22];
+    Int_t countGoodMod[260];
+    for(Int_t ilad=0;ilad<14;ilad++) countGood3[ilad]=0;
+    for(Int_t ilad=0;ilad<22;ilad++) countGood4[ilad]=0;
+    for(Int_t imod=0;imod<260;imod++) countGoodMod[imod]=0;
+    for(Int_t imod=0;imod<260;imod++){
+      AliITSCalibrationSDD* cal=(AliITSCalibrationSDD*)calsdd->At(imod);
+      if(cal->IsBad()) continue;
+      Int_t modId=imod+AliITSgeomTGeo::GetModuleIndex(3,1,1);
+      Int_t lay,lad,det;
+      AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
+      if(!CheckModule(lay,lad,det)) continue;
+      for(Int_t ian=0; ian<512; ian++){
+	if(cal->IsBadChannel(ian)) continue;
+	countGoodMod[imod]++;
+	if(lay==3) countGood3[lad-1]++;
+	else if(lay==4) countGood4[lad-1]++;
+      }
+    }
+    for(Int_t imod=0;imod<260;imod++) fGoodAnMod->SetBinContent(imod+1,countGoodMod[imod]);
+    fGoodAnMod->SetMinimum(0);
+    for(Int_t ilad=0;ilad<14;ilad++) fGoodAnLadLay3->SetBinContent(ilad+1,countGood3[ilad]);
+    fGoodAnLadLay3->SetMinimum(0);    
+    for(Int_t ilad=0;ilad<22;ilad++) fGoodAnLadLay4->SetBinContent(ilad+1,countGood4[ilad]);
+    fGoodAnLadLay4->SetMinimum(0);
+  }
+
+
   fHistNEvents->Fill(0);
   if(fOnlyCINT1BTrig){
     if(!fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
