@@ -61,7 +61,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Double_t fLsNormalization;  //  normalization
 
 
-  ClassDef(AliAnalysisTaskSED0Mass,3); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,4); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
