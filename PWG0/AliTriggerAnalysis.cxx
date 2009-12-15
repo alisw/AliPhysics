@@ -579,20 +579,20 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
     return kV0Invalid;
   
   Float_t time = 0;
-  Int_t ntime = 0;
+  Float_t weight = 0;
   for (Int_t i = begin; i < end; ++i) {
-    if (esdV0->GetTime(i) > 1e-6 && esdV0->GetAdc(i) > 6.0) {
+    if (esdV0->GetTime(i) > 1e-6) {
       Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i));
-    
-      time += correctedTime;
+      Float_t timeWeight = V0LeadingTimeWeight(esdV0->GetAdc(i));
+      time += correctedTime*timeWeight;
       time += fV0TimeOffset;
       
-      ntime++;
+      weight += timeWeight;
     }
   }
 
-  if (ntime > 0) 
-    time /= ntime;
+  if (weight > 0) 
+    time /= weight;
 
   if (fillHists)
   {
@@ -604,17 +604,17 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
   
   if (side == kASide)
   {
-    if (time > 48 && time < 62)
+    if (time > 75 && time < 83)
       return kV0BB;
-    if (time > 26 && time < 33) 
+    if (time > 54 && time < 57.5) 
       return kV0BG;
   }
   
   if (side == kCSide)
   {
-    if (time > 49 && time < 60)
+    if (time > 75.5 && time < 82)
       return kV0BB;
-    if (time > 43 && time < 48.5)
+    if (time > 69.5 && time < 73)
       return kV0BG; 
   }
   
@@ -625,34 +625,33 @@ Float_t AliTriggerAnalysis::V0CorrectLeadingTime(Int_t i, Float_t time, Float_t 
 {
   // Correct for slewing and align the channels
   //
-  // Author: Cvetan Cheshkov
+  // Authors: Cvetan Cheshkov / Raphael Tieulent
 
   if (time == 0) return 0;
 
-  // Time offsets between channels
-  Float_t timeShift[64] = {30.2914 , 30.0019 , 30.7429 , 30.1997 , 30.1511 , 29.6437 , 30.0609 , 29.5452 , 30.1437 , 30.745 , 30.7537 , 30.446 , 30.2771 , 30.838 , 30.3748 , 30.0635 , 30.1786 , 30.282 , 31.0992 , 30.7491 , 30.624 , 30.9268 , 30.6585 , 30.4895 , 31.5815 , 31.3871 , 31.2032 , 31.5778 , 31.0838 , 31.2259 , 31.2122 , 31.5989 , 28.3792 , 28.8325 , 27.8719 , 28.3475 , 26.9925 , 27.9300 , 28.4223 , 28.4996 , 28.2934 , 28.1281 , 27.209 , 28.5327 , 28.1181 , 28.0888 , 29.5111 , 28.6601 , 29.7705 , 29.6531 , 30.3373 , 30.2345 , 30.5935 , 29.8164 , 30.2235 , 29.6505 , 30.1225 , 31.2045 , 30.8399 , 30.6789 , 30.2784 , 31.7028 , 31.4239 , 30.1814};
+  // Time alignment
+  Float_t timeShift[64] = {0.477957 , 0.0889999 , 0.757669 , 0.205439 , 0.239666 , -0.183705 , 0.442873 , -0.281366 , 0.260976 , 0.788995 , 0.974758 , 0.548532 , 0.495023 , 0.868472 , 0.661167 , 0.358307 , 0.221243 , 0.530179 , 1.26696 , 1.33082 , 1.27086 , 1.77133 , 1.10253 , 0.634806 , 2.14838 , 1.50212 , 1.59253 , 1.66122 , 1.16957 , 1.52056 , 1.47791 , 1.81905 , -1.94123 , -1.29124 , -2.16045 , -1.78939 , -3.11111 , -1.87178 , -1.57671 , -1.70311 , -1.81208 , -1.94475 , -2.53058 , -1.7042 , -2.08109 , -1.84416 , -0.61073 , -1.77145 , 0.16999 , -0.0585339 , 0.00401133 , 0.397726 , 0.851111 , 0.264187 , 0.59573 , -0.158263 , 0.584362 , 1.20835 , 0.927573 , 1.13895 , 0.64648 , 2.18747 , 1.68909 , 0.451194};
+
   time -= timeShift[i];
 
   // Slewing correction
   if (adc == 0) return time;
 
-  time += 30.;
-  if (adc > 300.) adc = 300.;
-  if (adc > 70.) {
-    return (time -
-	    2.93028e+01 +
-	    adc*1.25188e-02 -
-	    adc*adc*2.68348e-05);
-  }
-  else {
-    return (time -
-	    3.52314e+01 +
-	    adc*5.99289e-01 -
-	    adc*adc*2.74668e-02 +
-	    adc*adc*adc*6.61224e-04 -
-	    adc*adc*adc*adc*7.77105e-06 +
-	    adc*adc*adc*adc*adc*3.51229e-08);
-  }
+  Float_t p1 = 1.57345e1;
+  Float_t p2 =-4.25603e-1;
+
+  return (time - p1*TMath::Power(adc,p2));
+}
+
+Float_t AliTriggerAnalysis::V0LeadingTimeWeight(Float_t adc) const
+{
+  if (adc < 1e-6) return 0;
+
+  Float_t p1 = 40.211;
+  Float_t p2 =-4.25603e-1;
+  Float_t p3 = 0.5646;
+
+  return 1./(p1*p1*TMath::Power(adc,2.*(p2-1.))+p3*p3);
 }
 
 Bool_t AliTriggerAnalysis::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const
