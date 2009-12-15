@@ -47,6 +47,7 @@ class AliCaloAltroMapping;
 class AliEMCALDigitizer;
 #include "AliEMCALDigit.h"
 #include "AliEMCAL.h"
+#include "AliCaloCalibPedestal.h"  
   
 ClassImp(AliEMCALRawUtils)
   
@@ -283,7 +284,7 @@ void AliEMCALRawUtils::Digits2Raw()
 }
 
 //____________________________________________________________________________
-void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
+void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, AliCaloCalibPedestal* pedbadmap)
 {
   // convert raw data of the current event to digits                                                                                     
 
@@ -339,6 +340,12 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
       caloFlag = in.GetCaloFlag();
       if (caloFlag != 0 && caloFlag != 1) continue; 
 	      
+      //Do not fit bad channels
+      if(pedbadmap->IsBadChannel(in.GetModule(),in.GetColumn(),in.GetRow())) {
+	//printf("Tower from SM %d, column %d, row %d is BAD!!! Skip \n", in.GetModule(),in.GetColumn(),in.GetRow());
+	continue;
+      }  
+
       // There can be zero-suppression in the raw data, 
       // so set up the TGraph in advance
       for (i=0; i < GetRawFormatTimeBins(); i++) {
@@ -396,8 +403,9 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 	Float_t ampAsymm = (amp - ampEstimate)/(amp + ampEstimate);
 	if ( (TMath::Abs(ampAsymm) > 0.1) ||
 	     (TMath::Abs(time - timeEstimate) > 2*GetRawFormatTimeBinWidth()) ) {
-	  AliDebug(2,Form("Fit results ped %f amp %f tine %f not consistent with expectations ped %f max-ped %f time %d",
+	  AliDebug(2,Form("Fit results ped %f amp %f time %f not consistent with expectations ped %f max-ped %f time %d",
 		      ped, amp, time, pedEstimate, ampEstimate, timeEstimate));
+
 	  // what should do we do then? skip this channel or assign the simple estimate? 
 	  // for now just overwrite the fit results with the simple estimate
 	  amp = ampEstimate;
@@ -637,6 +645,62 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, const Int_t lastTimeB
     amp = signalF->GetParameter(0); 
     time = signalF->GetParameter(1) * GetRawFormatTimeBinWidth(); // skip subtraction of fgTimeTrigger?
     ped = signalF->GetParameter(4); 
+
+    //BEG YS alternative methods to calculate the amplitude
+    Double_t * ymx = gSig->GetX() ; 
+    Double_t * ymy = gSig->GetY() ; 
+    const Int_t kN = 3 ; 
+    Double_t ymMaxX[kN] = {0., 0., 0.} ; 
+    Double_t ymMaxY[kN] = {0., 0., 0.} ; 
+    Double_t ymax = 0. ; 
+      // find the maximum amplitude
+    Int_t ymiMax = 0 ;  
+    for (Int_t ymi = 0; ymi < gSig->GetN(); ymi++) {
+      if (ymy[ymi] > ymMaxY[0] ) {
+        ymMaxY[0] = ymy[ymi] ; //<========== This is the maximum amplitude
+        ymMaxX[0] = ymx[ymi] ;
+        ymiMax = ymi ; 
+      }
+    }
+      // find the maximum by fitting a parabola through the max and the two adjacent samples
+    if ( ymiMax < gSig->GetN()-1 && ymiMax > 0) {
+      ymMaxY[1] = ymy[ymiMax+1] ;
+      ymMaxY[2] = ymy[ymiMax-1] ; 
+      ymMaxX[1] = ymx[ymiMax+1] ;
+      ymMaxX[2] = ymx[ymiMax-1] ; 
+      if (ymMaxY[0]*ymMaxY[1]*ymMaxY[2] > 0) {
+          //fit a parabola through the 3 points y= a+bx+x*x*x
+        Double_t sy = 0 ; 
+        Double_t sx = 0 ; 
+        Double_t sx2 = 0 ; 
+        Double_t sx3 = 0 ; 
+        Double_t sx4 = 0 ; 
+        Double_t sxy = 0 ; 
+        Double_t sx2y = 0 ; 
+      	for (Int_t i = 0; i < kN ; i++) {
+          sy += ymMaxY[i] ; 
+          sx += ymMaxX[i] ; 		
+          sx2 += ymMaxX[i]*ymMaxX[i] ; 
+          sx3 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
+          sx4 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
+          sxy += ymMaxX[i]*ymMaxY[i] ; 
+          sx2y += ymMaxX[i]*ymMaxX[i]*ymMaxY[i] ; 
+        }
+        Double_t cN = (sx2y*kN-sy*sx2)*(sx3*sx-sx2*sx2)-(sx2y*sx-sxy*sx2)*(sx3*kN-sx*sx2); 
+        Double_t cD = (sx4*kN-sx2*sx2)*(sx3*sx-sx2*sx2)-(sx4*sx-sx3*sx2)*(sx3*kN-sx*sx2) ;
+        Double_t c  = cN / cD ; 
+        Double_t b  = ((sx2y*kN-sy*sx2)-c*(sx4*kN-sx2*sx2))/(sx3*kN-sx*sx2) ;
+        Double_t a  = (sy-b*sx-c*sx2)/kN  ;
+        Double_t xmax = -b/(2*c) ; 
+        ymax = a + b*xmax + c*xmax*xmax ;//<========== This is the maximum amplitude
+      }
+    }
+
+    Double_t diff = TMath::Abs(1-ymMaxY[0]/amp) ; 
+    if (diff > 0.1) 
+      amp = ymMaxY[0] ; 
+
+      //END YS
 
   } // ampEstimate > fNoiseThreshold
   return;

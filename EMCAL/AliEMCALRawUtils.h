@@ -26,6 +26,7 @@ class TGraph;
 class TF1;
 class AliRawReader;
 class AliEMCALGeometry;
+class AliCaloCalibPedestal;
 
 class AliEMCALRawUtils : public TObject {
  public:
@@ -37,7 +38,7 @@ class AliEMCALRawUtils : public TObject {
   AliEMCALRawUtils& operator =(const AliEMCALRawUtils& rawUtils);
 
   void Digits2Raw();
-  void Raw2Digits(AliRawReader *reader,TClonesArray *digitsArr);
+  void Raw2Digits(AliRawReader *reader,TClonesArray *digitsArr, AliCaloCalibPedestal* pedbadmap);
 
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Int_t amp, Float_t time);
 

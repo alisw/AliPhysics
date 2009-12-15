@@ -118,6 +118,9 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
 {
   // dtor
   delete fGeom;
+  delete fgRawUtils;
+  delete fgClusterizer;
+	
   AliCodeTimer::Instance()->Print();
 } 
 
@@ -181,11 +184,11 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   fgRawUtils->SetNoiseThreshold(GetRecParam()->GetNoiseThreshold());
   fgRawUtils->SetNPedSamples(GetRecParam()->GetNPedSamples());
 
-  fgRawUtils->Raw2Digits(rawReader,digitsArr);
+  fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData);
 
   digitsTree->Fill();
-  digitsArr->Delete();
-  delete digitsArr;
+  //digitsArr->Delete(); //Do not delete digits array are not created here.
+  //delete digitsArr;
 
 }
 
@@ -445,7 +448,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   pid->RunPID(esd);
   delete pid;
   
-  delete digits;
+  //delete digits;
   delete clusters;
   
   // printf(" ## AliEMCALReconstructor::FillESD() is ended : ncl %i -> %i ### \n ",nClusters, nClustersNew); 
@@ -472,7 +475,7 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
 	}
 	//Note, that owner of copied marixes will be header
 	char path[255] ;
-	TGeoHMatrix * m ;
+	TGeoHMatrix * m = 0x0;
 	for(Int_t sm = 0; sm < 12; sm++){
 		sprintf(path,"/ALIC_1/XEN1_1/SMOD_%d",sm+1) ; //In Geometry modules numbered 1,2,.,5
 		if(sm >= 10) sprintf(path,"/ALIC_1/XEN1_1/SM10_%d",sm-10+1) ;
@@ -485,7 +488,6 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
 			esd->SetEMCALMatrix(NULL,sm) ;
 		}
 	}
-	
 }
 
 
