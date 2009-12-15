@@ -188,7 +188,7 @@ protected:
   Energy   fEnergy;                   // CM energy
   MagField fMagField;                 //Magnetic field
   Species  fSpecies;                  //PbPb or pp ?
-  Bool_t   fCentralSelection          //if event selection is done centrally
+  Bool_t   fCentralSelection;         //if event selection is done centrally
   
   ClassDef(AliFMDAnaParameters,1) // Manager of parameters
 };
