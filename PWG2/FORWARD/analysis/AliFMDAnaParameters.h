@@ -121,7 +121,7 @@ public:
   void     PrintStatus() const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
   char*    GetDndetaAnalysisName() {return "PWG2forwardDnDeta";}
-  
+  void     SetCentralTriggerSelection(Bool_t selection) {fCentralSelection = selection;}
 protected:
   
   AliFMDAnaParameters(const AliFMDAnaParameters& o) 
@@ -142,7 +142,8 @@ protected:
       fTrigger(o.fTrigger),
       fEnergy(o.fEnergy),
       fMagField(o.fMagField),
-      fSpecies(o.fSpecies)
+      fSpecies(o.fSpecies),
+      fCentralSelection(o.fCentralSelection)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -187,6 +188,7 @@ protected:
   Energy   fEnergy;                   // CM energy
   MagField fMagField;                 //Magnetic field
   Species  fSpecies;                  //PbPb or pp ?
+  Bool_t   fCentralSelection          //if event selection is done centrally
   
   ClassDef(AliFMDAnaParameters,1) // Manager of parameters
 };
