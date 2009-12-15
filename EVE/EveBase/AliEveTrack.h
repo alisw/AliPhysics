@@ -12,6 +12,7 @@
 
 #include <TEveTrack.h>
 
+class AliExternalTrackParam;
 class AliESDtrack;
 class AliAODTrack;
 
@@ -30,6 +31,8 @@ public:
   AliEveTrack(AliAODTrack*  t, TEveTrackPropagator* prop=0);
   AliEveTrack(const AliEveTrack& t);
   virtual ~AliEveTrack();
+
+  void SetStartParams(const AliExternalTrackParam* tp);
 
   void ImportHits();      // *MENU*
   

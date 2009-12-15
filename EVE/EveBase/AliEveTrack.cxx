@@ -105,6 +105,17 @@ AliEveTrack::~AliEveTrack()
   // Destructor.
 }
 
+//______________________________________________________________________________
+void AliEveTrack::SetStartParams(const AliExternalTrackParam* tp)
+{
+  // Set the initial vertex / momentum of eve track from 'tp'.
+
+  Double_t buf[3];
+
+  tp->GetXYZ(buf); fV.Set(buf);
+  tp->PxPyPz(buf); fP.Set(buf);
+}
+
 /******************************************************************************/
 
 //______________________________________________________________________________
