@@ -1,4 +1,5 @@
-AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE)
+AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
+				     Bool_t readMC=kTRUE)
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for D+ candidates 
@@ -17,7 +18,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE)
 
   // Aanalysis task                                                                                                                     
   AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",storeNtuple);
-  dplusTask->SetReadMC(kTRUE);
+  dplusTask->SetReadMC(readMC);
   dplusTask->SetDoLikeSign(kTRUE);
   dplusTask->SetDebugLevel(0);
   mgr->AddTask(dplusTask);
