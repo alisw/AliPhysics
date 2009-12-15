@@ -233,7 +233,7 @@ void AliPHOSDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
 	  
       // Energy vs TOF
       for(Int_t iGain=0; iGain<2; iGain++) {
-	if(e[iX][iZ][iGain]<10) continue;
+	continue;
 
 	if(fTimeEnergy[iX][iZ][iGain]) 
 	  fTimeEnergy[iX][iZ][iGain]->Fill(e[iX][iZ][iGain],t[iX][iZ][iGain]);
