@@ -35,6 +35,7 @@
 #pragma link C++ class  AliTRDgtuParam+;
 
 #pragma link C++ class  AliTRDcalibDB+;
+#pragma link C++ class  AliTRDCalFEE+;
 #pragma link C++ class  AliTRDCalROC+;
 #pragma link C++ class  AliTRDCalPad+;
 #pragma link C++ class  AliTRDCalDet+;
