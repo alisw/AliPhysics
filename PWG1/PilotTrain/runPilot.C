@@ -1,4 +1,4 @@
-void runPilot() {
+void runPilot(Int_t run) {
   TStopwatch timer;
   timer.Start();
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS");
@@ -12,10 +12,18 @@ void runPilot() {
   gSystem->Load("libPWG2.so");
   gSystem->Load("libPWG2forward.so");
   
-  gROOT->LoadMacro("AliAnalysisTaskSPD.cxx++g");
-  gROOT->LoadMacro("AliAnalysisTaskSDDRP.cxx++g");
+ 
+
   
-  
+
+  Bool_t doQAsym        = 1;
+  Bool_t doVZERO        = 1;
+  Bool_t doVertex       = 1;
+  Bool_t doSPD          = 1;  
+  Bool_t doFMD          = 1;
+  Bool_t doTPC          = 1;
+  Bool_t doEventStat    = 1;
+  Bool_t doSDD          = 1;
    //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
@@ -34,50 +42,81 @@ void runPilot() {
   //
   // Collision Selector (static)
   AliPhysicsSelection* colsel =  new AliPhysicsSelection();
-  
   AliAnalysisTaskSE::SetCollisionSelector(colsel);
   
 
   // TPC QA (E. Sicking)
   //
-  gROOT->LoadMacro("AddTaskQAsym.C");
-  AliAnalysisTaskSE* task1 = AddTaskQAsym();
-  task1->SelectCollisionCandidates();
+  if (doQAsym) {
+      gROOT->LoadMacro("AddTaskQAsym.C");
+      AliAnalysisTaskSE* task1 = AddTaskQAsym();
+      task1->SelectCollisionCandidates();
+  }
   
   //
   // VZERO QA  (C. Cheshkov)
   //
-  gROOT->LoadMacro("AddTaskVZEROQA.C");
-  AliAnalysisTaskSE* task2 =  AddTaskVZEROQA(0);
-  task2->SelectCollisionCandidates();
+  if (doVZERO) {
+      gROOT->LoadMacro("AddTaskVZEROQA.C");
+      AliAnalysisTaskSE* task2 =  AddTaskVZEROQA(0);
+      task2->SelectCollisionCandidates();
+  }
+  
   //
   // Vertexing (A. Dainese)
   // 
-  gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/macros/AddTaskVertexESD.C");
-  AliAnalysisTaskVertexESD* task3 =  AddTaskVertexESD();
-//  task3->SelectCollisionCandidates();
+  if (doVertex) {
+      gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/macros/AddTaskVertexESD.C");
+      AliAnalysisTaskVertexESD* task3 =  AddTaskVertexESD();
+      task3->SelectCollisionCandidates();
+  }
+  
   //
   // SPD (A. Mastroserio)
   //
-  gROOT->LoadMacro("AddTaskSPDQA.C");
-  AliAnalysisTaskSE* task4 = AddTaskSPDQA();
-  task4->SelectCollisionCandidates();
+  if (doSPD) {
+      gROOT->LoadMacro("AliAnalysisTaskSPD.cxx++g");
+      gROOT->LoadMacro("AddTaskSPDQA.C");
+      AliAnalysisTaskSE* task4 = AddTaskSPDQA();
+      task4->SelectCollisionCandidates();
+  }
+
+  //
+  // SDD (F. Prino)
+  //
+  if (doSDD) {
+      gROOT->LoadMacro("AliAnalysisTaskSDDRP.cxx++g");
+      gROOT->LoadMacro("AddSDDPoints.C");
+      AliAnalysisTaskSE* task5 = AddSDDPoints(run);
+      task5->SelectCollisionCandidates();
+  }
+  
   //
   // FMD (Hans Hjersing Dalsgaard)
   //
-  gROOT->LoadMacro("AddTaskFMD.C");
-  AliAnalysisTaskSE* task5 = AddTaskFMD();
-  task5->SelectCollisionCandidates();
+  if (doFMD) {
+      gROOT->LoadMacro("AddTaskFMD.C");
+      AliAnalysisTaskSE* task6 = AddTaskFMD();
+      task6->SelectCollisionCandidates();
+  }
+  
   //
   // TPC (Jacek Otwinowski)
   //
-  gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
-  AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
-    //
+  if (doTPC) {
+      gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
+      AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
+  }
+
+  //
   // Event Statistics (Jan Fiete)
   //
-  gROOT->LoadMacro("AddTaskEventStats.C");
-  AddTaskEventStats();
+
+  if (doEventStat) {
+      gROOT->LoadMacro("AddTaskEventStats.C");
+      AddTaskEventStats();
+  }
+
   
   
   // Init
@@ -85,7 +124,7 @@ void runPilot() {
       mgr->PrintStatus();
   
   // Run on dataset
-  mgr->StartAnalysis("local", chain);
+  mgr->StartAnalysis("local", chain, 500);
   timer.Stop();
   timer.Print();
 }
