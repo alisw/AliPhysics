@@ -58,6 +58,7 @@ void ConfigTaskUE(AliAnalysisTaskUE * ueana){
   Double_t rad=0.4;
   Double_t deltaPhiCut = 2.616;
   ueana->SelectTrigger(AliAnalysisHelperJetTasks::kMB1);
+  ueana->SetFilterBit(16);
   ueana->SetDebugLevel(0); 
   ueana->SetPtRangeInHist(25, 0., 50.);
   ueana->SetAnaTopology(anaType);      
