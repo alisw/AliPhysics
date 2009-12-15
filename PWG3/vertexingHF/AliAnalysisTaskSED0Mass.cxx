@@ -25,6 +25,7 @@
 
 #include <Riostream.h>
 #include <TClonesArray.h>
+#include <TCanvas.h>
 #include <TNtuple.h>
 #include <TList.h>
 #include <TH1F.h>
@@ -52,11 +53,11 @@ ClassImp(AliAnalysisTaskSED0Mass)
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
 AliAnalysisTaskSE(),
 fOutputPPR(0),
-fOutputloose(0),
+fOutputmycuts(0),
 fDistr(0), 
 fNentries(0),
 fVHFPPR(0),
-fVHFloose(0),
+fVHFmycuts(0),
 fArray(0),
 fReadMC(0),
 fLsNormalization(1.)
@@ -70,11 +71,11 @@ fLsNormalization(1.)
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name):
 AliAnalysisTaskSE(name),
 fOutputPPR(0), 
-fOutputloose(0), 
+fOutputmycuts(0), 
 fDistr(0),
 fNentries(0),
 fVHFPPR(0),
-fVHFloose(0),
+fVHFmycuts(0),
 fArray(0),
 fReadMC(0),
 fLsNormalization(1.)
@@ -103,9 +104,9 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     delete fVHFPPR;
     fVHFPPR = 0;
   }
-  if (fOutputloose) {
-    delete fOutputloose;
-    fOutputloose = 0;
+  if (fOutputmycuts) {
+    delete fOutputmycuts;
+    fOutputmycuts = 0;
   }
 
   if (fDistr) {
@@ -113,9 +114,9 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     fDistr = 0;
   }
 
-  if (fVHFloose) {
-    delete fVHFloose;
-    fVHFloose = 0;
+  if (fVHFmycuts) {
+    delete fVHFmycuts;
+    fVHFmycuts = 0;
   }
   if (fNentries){
     delete fNentries;
@@ -136,7 +137,7 @@ void AliAnalysisTaskSED0Mass::Init()
 
   // 2 sets of dedidcated cuts -- defined in UserExec
   fVHFPPR = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");
-  fVHFloose = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
+  fVHFmycuts = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
   
   return;
 }
@@ -154,9 +155,9 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fOutputPPR->SetOwner();
   fOutputPPR->SetName("listPPR");
 
-  fOutputloose = new TList();
-  fOutputloose->SetOwner();
-  fOutputloose->SetName("listloose");
+  fOutputmycuts = new TList();
+  fOutputmycuts->SetOwner();
+  fOutputmycuts->SetName("listloose");
 
   fDistr = new TList();
   fDistr->SetOwner();
@@ -214,11 +215,11 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     fOutputPPR->Add(tmpBt);
     fOutputPPR->Add(tmpRt);
 
-    fOutputloose->Add(tmpMl);
-    fOutputloose->Add(tmpSl);
-    fOutputloose->Add(tmpS27l);
-    fOutputloose->Add(tmpBl);
-    fOutputloose->Add(tmpRl);
+    fOutputmycuts->Add(tmpMl);
+    fOutputmycuts->Add(tmpSl);
+    fOutputmycuts->Add(tmpS27l);
+    fOutputmycuts->Add(tmpBl);
+    fOutputmycuts->Add(tmpRl);
     
   }
 
@@ -491,9 +492,9 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     if (pt>0. && pt<=1.) {
       ptbin=1;
       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
-      fVHFloose->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
 //       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.7);
-//       fVHFloose->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
+//       fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
       //printf("I'm in the bin %d\n",ptbin);
       
     }
@@ -502,20 +503,20 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       if(pt>1. && pt<=2.) ptbin=2;  
       if(pt>2. && pt<=3.) ptbin=3;  
       fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0002,0.8);
-      fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
       //printf("I'm in the bin %d\n",ptbin);
     }
  
     if(pt>3. && pt<=5.){
 	ptbin=4;  
 	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
-	fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
 	//printf("I'm in the bin %d\n",ptbin);
     }
     if(pt>5.){
       ptbin=5;
       fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
-      fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
     }//if(pt>5)
   
     //printf("I'm in the bin %d\n",ptbin);
@@ -523,7 +524,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     //fVHF->SetD0toKpiCuts(0.7,0.03,0.8,0.06,0.06,0.05,0.05,-0.0002,0.6); //2.p-p vertex reconstructed    
     if(prongsinacc){
       FillHists(ptbin,d,mcArray,fVHFPPR,fOutputPPR);
-      FillHists(ptbin,d,mcArray,fVHFloose,fOutputloose);
+      FillHists(ptbin,d,mcArray,fVHFmycuts,fOutputmycuts);
     }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
@@ -533,7 +534,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
    
   // Post the data
   PostData(1,fOutputPPR);
-  PostData(2,fOutputloose);
+  PostData(2,fOutputmycuts);
   PostData(4,fDistr);
   return;
 }
@@ -656,9 +657,9 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
     printf("ERROR: fOutputthight not available\n");
     return;
   }
-  fOutputloose = dynamic_cast<TList*> (GetOutputData(2));
-  if (!fOutputloose) {     
-    printf("ERROR: fOutputloose not available\n");
+  fOutputmycuts = dynamic_cast<TList*> (GetOutputData(2));
+  if (!fOutputmycuts) {     
+    printf("ERROR: fOutputmycuts not available\n");
     return;
   }
   fDistr = dynamic_cast<TList*> (GetOutputData(4));
@@ -677,7 +678,7 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 	TString massName="histMass_";
 	massName+=ipt+1;
 	((TH1F*)fOutputPPR->FindObject(massName))->Scale((1/fLsNormalization)*((TH1F*)fOutputPPR->FindObject(massName))->GetEntries());
-	((TH1F*)fOutputloose->FindObject(massName))->Scale((1/fLsNormalization)*((TH1F*)fOutputloose->FindObject(massName))->GetEntries());
+	((TH1F*)fOutputmycuts->FindObject(massName))->Scale((1/fLsNormalization)*((TH1F*)fOutputmycuts->FindObject(massName))->GetEntries());
       }
     }
 
@@ -702,6 +703,17 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 
     }
   }
+
+  TString cvname;
+
+  if (fArray==0){
+    cvname="D0invmass";
+  } else cvname="LSinvmass";
+
+  TCanvas *c1=new TCanvas(cvname,cvname);
+  c1->cd();
+  ((TH1F*)fOutputPPR->FindObject("histMass_4"))->Draw();
+
 
   return;
 }
