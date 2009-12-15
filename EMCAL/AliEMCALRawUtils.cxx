@@ -52,7 +52,7 @@ class AliEMCALDigitizer;
 ClassImp(AliEMCALRawUtils)
   
 // Signal shape parameters
-Int_t    AliEMCALRawUtils::fgTimeBins = 100; // number of sampling bins of the raw RO signal (we typically use 15-50; theoretical max is 1k+) 
+Int_t    AliEMCALRawUtils::fgTimeBins = 256; // number of sampling bins of the raw RO signal (we typically use 15-50; theoretical max is 1k+) 
 Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
 Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 musec
 

@@ -187,8 +187,8 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData);
 
   digitsTree->Fill();
-  //digitsArr->Delete(); //Do not delete digits array are not created here.
-  //delete digitsArr;
+  digitsArr->Delete();
+  delete digitsArr;
 
 }
 
@@ -448,7 +448,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   pid->RunPID(esd);
   delete pid;
   
-  //delete digits;
+  delete digits;
   delete clusters;
   
   // printf(" ## AliEMCALReconstructor::FillESD() is ended : ncl %i -> %i ### \n ",nClusters, nClustersNew); 
