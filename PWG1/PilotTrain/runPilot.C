@@ -117,7 +117,9 @@ void runPilot(Int_t run) {
 
   if (doEventStat) {
       gROOT->LoadMacro("AddTaskEventStats.C");
-      AddTaskEventStats();
+      evtStats = AddTaskEventStats();
+      evtStats->SetPhysicsSelection(colsel);
+      AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
   }
 
   
@@ -127,7 +129,7 @@ void runPilot(Int_t run) {
       mgr->PrintStatus();
   
   // Run on dataset
-  mgr->StartAnalysis("local", chain, 1000);
+  mgr->StartAnalysis("local", chain);
   timer.Stop();
   timer.Print();
 }
