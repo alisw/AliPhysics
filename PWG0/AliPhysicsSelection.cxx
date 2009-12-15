@@ -179,7 +179,9 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Int_t fastOR = triggerAnalysis->SPDFiredChips(aEsd, 0);
       Bool_t v0A = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0A);
       Bool_t v0C = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0C);
-      Bool_t v0BG = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0ABG) || triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0CBG);
+      Bool_t v0ABG = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0ABG);
+      Bool_t v0CBG = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0CBG);
+      Bool_t v0BG = v0ABG || v0CBG;
     
       if (fastOR > 0)
         fHistStatistics->Fill(2, i);
@@ -190,34 +192,36 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
         fHistStatistics->Fill(4, i);
       if (v0C)
         fHistStatistics->Fill(5, i);
-      if (v0BG)
+      if (v0ABG)
         fHistStatistics->Fill(6, i);
+      if (v0CBG)
+        fHistStatistics->Fill(7, i);
         
       if ((fastOR > 0 || v0A || v0C) && !v0BG)
-        fHistStatistics->Fill(7, i);
+        fHistStatistics->Fill(8, i);
     
       if (fastOR > 0 && (v0A || v0C) && !v0BG)
-        fHistStatistics->Fill(8, i);
+        fHistStatistics->Fill(9, i);
   
       if (v0A && v0C && !v0BG)
-        fHistStatistics->Fill(9, i);
+        fHistStatistics->Fill(10, i);
         
       if (fastOR > 1 || (fastOR > 0 && (v0A || v0C)) || (v0A && v0C))
       {
         if (!v0BG)
         {
-          fHistStatistics->Fill(10, i);
+          fHistStatistics->Fill(11, i);
       
           if (fBackgroundIdentification && !fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd)))
           {
             AliDebug(AliLog::kDebug, "Rejecting event because of background identification");
-            fHistStatistics->Fill(11, i);
+            fHistStatistics->Fill(12, i);
           }
           else
           {
             AliDebug(AliLog::kDebug, "Accepted event for histograms");
             
-            fHistStatistics->Fill(12, i);
+            fHistStatistics->Fill(13, i);
             fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i);
             if (i < fCollTrigClasses.GetEntries())
               accept = kTRUE;
@@ -282,7 +286,7 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   if (fHistStatistics)
     delete fHistStatistics;
 
-  fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 12, 0.5, 12.5, count, -0.5, -0.5 + count);
+  fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 13, 0.5, 13.5, count, -0.5, -0.5 + count);
     
   Int_t n = 1;
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "Correct trigger class(es)");
@@ -290,7 +294,8 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C BG");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 1 | V0A | VOC) & !V0 BG");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1 & (V0A | VOC) & !V0 BG");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A & VOC & !V0 BG");
@@ -298,16 +303,24 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "Background identification");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "Accepted");
   
-  n = 1;
-  for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
-    fHistStatistics->GetYaxis()->SetBinLabel(n++, ((TObjString*) fCollTrigClasses.At(i))->String());
-  for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
-    fHistStatistics->GetYaxis()->SetBinLabel(n++, ((TObjString*) fBGTrigClasses.At(i))->String());
-  
   if (fHistBunchCrossing)
     delete fHistBunchCrossing;
 
   fHistBunchCrossing = new TH2F("fHistBunchCrossing", "fHistBunchCrossing;bunch crossing number;", 4000, -0.5, 3999.5,  count, -0.5, -0.5 + count);
+    
+  n = 1;
+  for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
+  {
+    fHistStatistics->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
+    fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
+    n++;
+  }
+  for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
+  {
+    fHistStatistics->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
+    fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
+    n++;
+  }
     
   return kTRUE;
 }
@@ -343,7 +356,7 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
     Printf("\nSelection statistics for first collision trigger:");
     
     Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics->GetBinContent(1, 1));
-    Printf("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(12, 1));
+    Printf("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(13, 1));
   }
 }
 

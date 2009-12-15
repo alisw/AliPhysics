@@ -56,13 +56,7 @@ void AliEventStatsTask::UserCreateOutputObjects()
   fOutput->SetOwner();
   
   if (!fPhysicsSelection)
-  {
     fPhysicsSelection = new AliPhysicsSelection;
-    //AliBackgroundSelection* background = new AliBackgroundSelection("AliBackgroundSelection", "AliBackgroundSelection");
-    //background->Init();
-    //fPhysicsSelection->AddBackgroundIdentification(background);
-    //AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
-  }
   
   fOutput->Add(fPhysicsSelection);
 }
