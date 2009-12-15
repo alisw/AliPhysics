@@ -82,6 +82,7 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
   // Execute analysis for current event
   //
   //  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+    PostData(1, fListOfHistos);
   AliESDEvent* fESD = (AliESDEvent*)InputEvent();
   fSharing.SetInputESD(fESD);
   
@@ -99,7 +100,7 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
   
   //fListOfHistos = fBackground.GetOutputList();
   
-  PostData(1, fListOfHistos);
+ 
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
