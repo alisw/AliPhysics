@@ -326,8 +326,8 @@ Bool_t AliHLTMUONFullTracker::Run( Int_t /*iEvent*/,AliHLTMUONMansoTrackStruct *
   KalmanChi2Test();
   ExtrapolateToOrigin(true);
   FillOutData(data,size);
-  HLTDebug("iEvent: %d, has : %d tracks, triggers : %d, nof slat tracks : %d, quad tracks : %d, connected : %d\n",
-	 iEvent,size,fNofPoints[10],fNofbackTrackSeg,fNoffrontTrackSeg,fNofConnected);
+//   HLTDebug("iEvent: %d, has : %d tracks, triggers : %d, nof slat tracks : %d, quad tracks : %d, connected : %d\n",
+// 	 iEvent,size,fNofPoints[10],fNofbackTrackSeg,fNoffrontTrackSeg,fNofConnected);
   Clear();
   return true;
 }
