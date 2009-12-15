@@ -287,7 +287,7 @@ Bool_t AliESDInputHandlerRP::FinishEvent()
 void AliESDInputHandlerRP::ResetIO()
 {
 // Delete trees and files
-    fRFiles->Delete();
+    fRFiles->Clear("nodelete");
     fExtension="";
 }
 
