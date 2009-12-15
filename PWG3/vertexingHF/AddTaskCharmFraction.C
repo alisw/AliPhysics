@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskCharmFraction(TString fileout="d0D0",Int_t switchMC[5])
+AliAnalysisTaskSECharmFraction* AddTaskCharmFraction(TString fileout="d0D0",Int_t switchMC[5],Bool_t readMC=kTRUE)
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -32,7 +32,7 @@ AliAnalysisTaskSECharmFraction* AddTaskCharmFraction(TString fileout="d0D0",Int_
   AliAnalysisTaskSECharmFraction *hfTask;
  
   hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction");
-  hfTask->SetReadMC(kTRUE);    
+  hfTask->SetReadMC(readMC);    
 
   /*  ############### HERE THE POSSIBILITY TO SWITCH ON/OFF THE TLISTS AND MC SELECTION WILL BE SET #########à
 

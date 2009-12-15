@@ -1,4 +1,5 @@
-Int_t AddD2HTrain(Int_t addD0Mass=1,
+Int_t AddD2HTrain(Bool_t readMC=kTRUE,
+		  Int_t addD0Mass=1,
 		  Int_t addD0MassLS=1,
 		  Int_t addDplus=1,
 		  Int_t addLSD0=1,
@@ -29,11 +30,11 @@ Int_t AddD2HTrain(Int_t addD0Mass=1,
     taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     if(addD0Mass) {
-      AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
+      AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass(0,readMC);
       ntasks++;
     }
     if(addD0MassLS) {
-      AliAnalysisTaskSED0Mass *d0massLikeSignTask = AddTaskD0Mass(1); 
+      AliAnalysisTaskSED0Mass *d0massLikeSignTask = AddTaskD0Mass(1,readMC); 
       ntasks++;
     }
   }
@@ -41,7 +42,7 @@ Int_t AddD2HTrain(Int_t addD0Mass=1,
   if(addDplus) {
     taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
-    AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
+    AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus(kFALSE,readMC);
     ntasks++;
   }  
 
@@ -49,14 +50,14 @@ Int_t AddD2HTrain(Int_t addD0Mass=1,
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
   
-  if(addLSD0) {
+  if(addLSD0 && readMC) {
     taskName="AddTaskBkgLikeSignD0.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEBkgLikeSignD0 *lsD0Task = AddTaskBkgLikeSignD0();
     ntasks++;
   }
 
-  if(addLSJpsi) {
+  if(addLSJpsi && readMC) {
     taskName="AddTaskBkgLikeSignJPSI.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEBkgLikeSignJPSI *lsJPSITask = AddTaskBkgLikeSignJPSI();
@@ -66,8 +67,8 @@ Int_t AddD2HTrain(Int_t addD0Mass=1,
   //taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSEBtoJPSItoEle *jpsiTask = AddTaskBtoJPSItoEle();
-  
-  if(addCFD0) {
+ 
+  if(addCFD0 && readMC) {
     taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
@@ -78,7 +79,7 @@ Int_t AddD2HTrain(Int_t addD0Mass=1,
     taskName="AddTaskCharmFraction.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     Int_t switchMC[5]={1,1,1,1,1};
-    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0.root",switchMC);
+    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0.root",switchMC,readMC);
     ntasks++;
   }
 
