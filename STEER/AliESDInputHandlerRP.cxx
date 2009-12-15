@@ -29,6 +29,7 @@
 #include <TObjString.h>
 #include <TObjArray.h>
 #include <TProcessID.h>
+#include <TSystem.h>
 
 #include "AliESDInputHandlerRP.h"
 #include "AliESDEvent.h"
@@ -110,7 +111,7 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
     fEventNumber      = -1;
     fFileNumber       =  0;
     // Get number of events from esd tree 
-    printf("AliESDInputHandler::Init() %d %d\n",__LINE__, fNEvents);
+    printf("AliESDInputHandlerRP::Init() %d %d\n",__LINE__, fNEvents);
     return kTRUE;
 }
 
@@ -200,6 +201,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
   // Notify about directory change
   // The directory is taken from the 'path' argument
   // 
+    AliInfo(Form("Directory change %s \n", path));
     // Get path to directory
     TString fileName(path);
 
@@ -226,8 +228,10 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 	members = arch->GetMembers();
     } else {
 	// Directory
+	TString wd = gSystem->WorkingDirectory();
 	TSystemDirectory dir(".", fPathName->Data());
 	members = dir.GetListOfFiles();
+	gSystem->cd(wd);
     }
 
     TIter next(members);
@@ -250,6 +254,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 	    ent->SetUniqueID(ien++);
 	    fDetectors->Add(ent);
 	}
+	if(tokens) delete tokens;
     } // loop over files
 
 
