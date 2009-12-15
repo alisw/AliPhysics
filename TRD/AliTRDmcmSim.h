@@ -11,21 +11,17 @@
 //                                                   //
 ///////////////////////////////////////////////////////
 
-#include <TObject.h>
-#include "AliTRDCommonParam.h"
-#include "AliTRDcalibDB.h"
+#include <iostream>
 
+class TObject;
 class TClonesArray;
 class TH2F;
 
 class AliRunLoader;
 class AliTRDfeeParam;
-class AliTRDSimParam;
 class AliTRDtrapConfig;
-class AliTRDcalibDB;
-class AliTRDgeometry;
-class AliTRDpadPlane;
 class AliTRDarrayADC;
+class AliTRDarrayDictionary;
 class AliTRDdigitsManager;
 
 class AliTRDmcmSim : public TObject {
@@ -33,40 +29,49 @@ class AliTRDmcmSim : public TObject {
                     AliTRDmcmSim();
   virtual          ~AliTRDmcmSim();
 
-          void      Init( Int_t cha, Int_t rob, Int_t mcm, Bool_t newEvent = kFALSE );   // Initialize MCM by the position parameters
-	  void      Reset();                                   // clears filter registers and internal data
-	  void      SetNTimebins(Int_t ntimebins); 
+          void      Init(Int_t det, Int_t rob, Int_t mcm, Bool_t newEvent = kFALSE);   
+	  // Initialize MCM by the position parameters
+
+	  void      Reset();                                                             
+	  // clears filter registers and internal data
 
 	  Bool_t    LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm);
+
 	  void      NoiseTest(Int_t nsamples, Int_t mean, Int_t sigma, Int_t inputGain = 1, Int_t inputTail = 2);
 
-	  Int_t     GetDataRaw(Int_t iadc, Int_t timebin)      const { return (fADCR[iadc][timebin] >> 2); } // Get unfiltered ADC data 
-	  Int_t     GetDataFiltered(Int_t iadc, Int_t timebin) const { return (fADCF[iadc][timebin] >> 2); } // Get filtered ADC data
+	  Int_t     GetDataRaw(Int_t iadc, Int_t timebin)      const { return (fADCR[iadc][timebin] >> 2); } 
+	  // Get unfiltered ADC data 
+	  Int_t     GetDataFiltered(Int_t iadc, Int_t timebin) const { return (fADCF[iadc][timebin] >> 2); } 
+	  // Get filtered ADC data
+
           void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 
-          void      SetData(Int_t iadc, Int_t it, Int_t adc ); // Set ADC data
+          void      SetData(Int_t iadc, Int_t it, Int_t adc); // Set ADC data
 	  void      SetData(AliTRDarrayADC *adcArray, 
 			    AliTRDdigitsManager *digitsManager = 0x0);         // Set ADC data from adcArray
-          void      SetDataPedestal(Int_t iadc );              // Fill ADC data with pedestal values
+          void      SetDataPedestal(Int_t iadc);              // Fill ADC data with pedestal values
+
+  static  Bool_t    GetApplyCut() { return fgApplyCut; }
   static  void      SetApplyCut(Bool_t applyCut) { fgApplyCut = applyCut; }
 
-  static  Float_t   GetChargeNorm() { return fgChargeNorm; }
-  static  void      SetChargeNorm(Float_t chargenorm) { fgChargeNorm = chargenorm; }
-
-  static  Int_t     GetAddBaseline() { return fgAddBaseline; }
-  static  void      SetAddBaseline(Int_t baseline) { fgAddBaseline = baseline; }
+  static  Int_t     GetAddBaseline() { return fgAddBaseline; }                   
+  static  void      SetAddBaseline(Int_t baseline) { fgAddBaseline = baseline; } 
+  // Additional baseline which is added for the processing 
+  // in the TRAP and removed when writing back the data. 
+  // This is needed to run with TRAP parameters set for a 
+  // different baseline but it will not change the baseline 
+  // of the output. 
 
           Int_t     GetDetector() const  { return fDetector;  };     // Returns Chamber ID (0-539)
-          Int_t     GetRobPos() const { return fRobPos; };     // Returns ROB position (0-7)
-          Int_t     GetMcmPos() const { return fMcmPos; };     // Returns MCM position (0-17) (16,17 are mergers)
-          Int_t     GetRow() const    { return fRow;    };     // Returns Row number on chamber where the MCM is sitting
-	  Int_t     GetCol( Int_t iadc );                      // Get corresponding column (0-143) from for ADC channel iadc = [0:20]
+          Int_t     GetRobPos() const { return fRobPos; };           // Returns ROB position (0-7)
+          Int_t     GetMcmPos() const { return fMcmPos; };           // Returns MCM position (0-17) (16,17 are mergers)
+          Int_t     GetRow() const    { return fRow;    };           // Returns Row number on chamber where the MCM is sitting
+	  Int_t     GetCol( Int_t iadc );                            // Get corresponding column (0-143) from for ADC channel iadc = [0:20]
 	  // for the ADC/Col mapping, see: http://wiki.kip.uni-heidelberg.de/ti/TRD/index.php/Image:ROB_MCM_numbering.pdf
-  static  Bool_t    GetApplyCut() { return fgApplyCut; }
 
 	  void      WriteData(AliTRDarrayADC *digits);
 	  Bool_t    StoreTracklets();                          // Stores tracklets via runloader
 
-	  Int_t     ProduceRawStream( UInt_t *buf, Int_t bufsize, UInt_t iEv = 0 ); // Produce raw data stream - Read data format
+	  Int_t     ProduceRawStream( UInt_t *buf, Int_t bufsize, UInt_t iEv = 0 ) const; // Produce raw data stream - Real data format
 	  Int_t     ProduceTrackletStream( UInt_t *buf, Int_t bufsize ); // produce the tracklet stream for this MCM
 		
 	  // different stages of processing in the TRAP
@@ -80,13 +85,13 @@ class AliTRDmcmSim : public TObject {
 	  void      FilterTail();                       // Apply tail filter
 
 	  // filter initialization (resets internal registers)
-	  void      FilterPedestalInit();
+	  void      FilterPedestalInit(Int_t baseline = 10);
 	  void      FilterGainInit();
-	  void      FilterTailInit(Int_t baseline); //??? automatic baseline??
+	  void      FilterTailInit(Int_t baseline = -1); 
 
 	  // feed single sample to individual filter
 	  // this changes the internal registers
-	  // all filters operate on 12-bit values!
+	  // all filters operate on (10+2)-bit values!
 	  UShort_t  FilterPedestalNextSample(Int_t adc, Int_t timebin, UShort_t value);
 	  UShort_t  FilterGainNextSample(Int_t adc, UShort_t value);
 	  UShort_t  FilterTailNextSample(Int_t adc, UShort_t value);
@@ -97,54 +102,57 @@ class AliTRDmcmSim : public TObject {
 	  void      TrackletSelection();
 	  void      FitTracklet();
 
-  static  Int_t     GetPIDNBinsQ0() { return fgPidNBinsQ0; }
-  static  Int_t     GetPIDNBinsQ1() { return fgPidNBinsQ1; }
-  static  Int_t     GetPID(Float_t q0, Float_t q1);
-
-  static  void      SetPIDlut(TH2F *lut);
-  static  void      SetPIDlut(Int_t *lut, Int_t nbinsq0, Int_t nbinsq1);
-  static  void      SetPIDlutDefault();
-
+	  Int_t         GetNHits() const { return fNHits; }
+	  Bool_t        GetHit(Int_t index, Int_t &channel, Int_t &timebin, Int_t &qtot, Int_t &ypos, Float_t &y, Int_t &label) const;
 	  TClonesArray* GetTrackletArray() const { return fTrackletArray; }
 
 	  // data display
 	  void      Print(Option_t* const option="") const;   // print stored data to stdout
 	  void      Draw(Option_t* const option ="");         // draw data (ADC data, hits and tracklets)
-	  void      DumpData( const char *const f, const char *const target );  // Dump data stored (only for debugging)
+
+  friend  std::ostream& operator<<(std::ostream &os, const AliTRDmcmSim &mcm); // data output using ostream (e.g. cout << mcm;)
+  static  ostream&  cfdat(ostream &os);                       // manipulator to activate cfdat output
+  static  ostream&  raw  (ostream &os);                       // manipulator to activate raw output
+  static  ostream&  text (ostream &os);                       // manipulator to activate text output
 
  protected:
-	  Bool_t    CheckInitialized();                 // Check whether the class is initialized
+	  Bool_t    CheckInitialized() const;           // Check whether the class is initialized
 	  
-	  Bool_t    fInitialized;                       // Status whether the class is initialized or not
-	  Int_t     fMaxTracklets;                      // maximum number of tracklet-words submitted per mcm **new** //???
-	  Int_t     fDetector;                             // Chamber ID
+	  void      SetNTimebins(Int_t ntimebins);      // allocate data arrays corr. to the no. of timebins
+
+ static const Int_t fgkFormatIndex;                     // index for format settings in stream
+
+ static const Int_t fgkNADC;                            // Number of ADC 
+ static const Int_t fgkMaxTracklets = 4;                // maximum number of tracklet-words submitted per MCM (one per CPU)
+ static const Int_t fgkAddDigits = 2;                   // additional digits used for internal representation of ADC data
+	                                                // all internal data as after data control block (i.e. 12 bit), s. TRAP manual
+ static const Int_t fgkNCPU = 4;                        // Number of CPUs in the TRAP
+ static const Int_t fgkNHitsMC = 100;                   // maximum number of hits for which MC information is kept
+
+ static const UShort_t fgkFPshifts[4];                  // shifts for pedestal filter
+
+
+	  Bool_t    fInitialized;                       // memory is allocated if initialized
+	  Int_t     fDetector;                          // Chamber ID
 	  Int_t     fRobPos;                            // ROB Position on chamber 
 	  Int_t     fMcmPos;                            // MCM Position on chamber 
 	  Int_t     fRow;                               // Pad row number (0-11 or 0-15) of the MCM on chamber
-	  Int_t     fNADC;                              // Number of ADC (usually 21) //??? static const
-	  Int_t     fNTimeBin;                          // Number of Timebins (variable)  //??? why stored here? taken from TRAPconfig
+	  Int_t     fNTimeBin;                          // Number of timebins currently allocated
 	  Int_t   **fADCR;                              // Array with MCM ADC values (Raw, 12 bit)
 	  Int_t   **fADCF;                              // Array with MCM ADC values (Filtered, 12 bit)
-	  UInt_t   *fMCMT;                              // tracklet word for one mcm/trap-chip **new** //??? needed?
+	  UInt_t   *fMCMT;                              // tracklet word for one mcm/trap-chip 
 	  TClonesArray *fTrackletArray;                 // Array of AliTRDtrackletMCM which contains MC information in addition to the tracklet word
-	  Int_t   **fZSM;                               // Zero suppression map
-	  Int_t    *fZSM1Dim;                           // Zero suppression map (1 dimensional projection)
+	  Int_t    *fZSMap;                             // Zero suppression map (1 dimensional projection)
 
-	  static const Int_t fgkAddDigits = 2;          // additional digits used for internal representation
-	                                                // all internal data as after data control block (i.e. 12 bit), s. TRAP manual
-	  static const Int_t fgkNCPU = 4;               // Number of CPUs in the TRAP
 	  Int_t     fFitPtr[fgkNCPU];                   // pointer to the tracklet to be calculated by CPU i
-	  static const Int_t fgkNHitsMC = 100;          // maximum number of hits for which MC information is kept
 
 	  // Parameter classes
 	  AliTRDfeeParam    *fFeeParam;                 // FEE parameters
 	  AliTRDtrapConfig  *fTrapConfig;               // TRAP config
-	  AliTRDSimParam    *fSimParam;                 // Simulation parameters
-	  AliTRDCommonParam *fCommonParam;              // common parameters
-	  AliTRDcalibDB     *fCal;                      // Calibration interface
-	  AliTRDgeometry    *fGeo;                      // Geometry
 
 	  AliTRDdigitsManager *fDigitsManager;          // pointer to digits manager used for MC label calculation
+	  AliTRDarrayDictionary* fDict[3];              // pointers to label dictionaries
+
 
 	  // internal filter registers
 	  UInt_t*   fPedAcc;                            // Accumulator for pedestal filter
@@ -166,17 +174,17 @@ class AliTRDmcmSim : public TObject {
 
 	  // tracklet calculation
 	  struct FitReg_t {                             // pointer to the 18 fit registers 
-	    Int_t   fNhits;                             // number of hits
+	    Int_t  fNhits;                              // number of hits
 	    UInt_t fQ0;                                 // charge accumulated in first window
 	    UInt_t fQ1;                                 // charge accumulated in second window
 	    UInt_t fSumX;                               // sum x
-	    Int_t fSumY;                                // sum y 
+	    Int_t  fSumY;                               // sum y 
 	    UInt_t fSumX2;                              // sum x**2
 	    UInt_t fSumY2;                              // sum y**2
-	    Int_t fSumXY;                               // sum x*y
+	    Int_t  fSumXY;                              // sum x*y
 	  } *fFitReg;
 
-	  //??? cleaning up
+	  // Sort functions as in TRAP
 	  void Sort2(UShort_t  idx1i, UShort_t  idx2i, UShort_t  val1i, UShort_t  val2i, 
 		     UShort_t *idx1o, UShort_t *idx2o, UShort_t *val1o, UShort_t *val2o) const;
 	  void Sort3(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, 
@@ -191,7 +199,8 @@ class AliTRDmcmSim : public TObject {
 			     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, 
 			     UShort_t *idx5o, UShort_t *idx6o);
 
-	  UInt_t AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const;  // Add a and b (unsigned) with clipping to the maximum value representable by nbits
+	  UInt_t AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const;  
+	  // Add a and b (unsigned) with clipping to the maximum value representable by nbits
 
  private:
 	  AliTRDmcmSim(const AliTRDmcmSim &m);             // not implemented
@@ -201,14 +210,9 @@ class AliTRDmcmSim : public TObject {
 
   static Int_t fgAddBaseline;             // add baseline to the ADC values 
 
-  static Float_t fgChargeNorm;            // normalization factor for charge (for PID)
-  static Int_t fgPidNBinsQ0;              // number of bins in the PID LUT for Q0
-  static Int_t fgPidNBinsQ1;              // number of bins in the PID LUT for Q1  
-  static Int_t fgPidLutDefault[40][50];   // the default PID LUT
-  static Int_t *fgPidLut;                 // pointer to user defined PID LUT
-  static Bool_t fgPidLutDelete;           // owns the LUT
-
-  ClassDef(AliTRDmcmSim,4)
+  ClassDef(AliTRDmcmSim,6)
 };
+
+std::ostream& operator<<(std::ostream& os, const AliTRDmcmSim& mcm);
 
 #endif

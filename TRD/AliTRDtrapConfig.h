@@ -468,11 +468,24 @@ class AliTRDtrapConfig : public TObject
   Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det);
   Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det, Int_t rob, Int_t mcm);
 
+  Int_t  Peek(Int_t addr, Int_t det, Int_t rob, Int_t mcm);
+  Bool_t Poke(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm);
+
   void InitRegs();
   void ResetRegs();
 
+  // DMEM 
+  Bool_t SetDmem(Int_t addr, Int_t value);
+  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det);
+  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm);
+
+  Int_t GetDmem(Int_t addr, Int_t det, Int_t rob, Int_t mcm);
+
+  // configuration handling
   Bool_t LoadConfig();
   Bool_t LoadConfig(Int_t det, TString filename);
+
+  Bool_t ReadPackedConfig(UInt_t *data, Int_t size);
 
   Int_t  ExtAliToAli( UInt_t dest, UShort_t linkpair, UShort_t rocType);
 
@@ -484,7 +497,7 @@ class AliTRDtrapConfig : public TObject
     UShort_t  fAddr;       // Address in GIO of TRAP
     UShort_t  fNbits;      // Number of bits, from 1 to 32
     UInt_t    fResetValue; // reset value
-    SimpleReg_t(char *nnn = 0, UShort_t a = 0, UShort_t n = 0, UInt_t r = 0) : 
+    SimpleReg_t(const char *nnn = 0, UShort_t a = 0, UShort_t n = 0, UInt_t r = 0) : 
       fName(nnn), fAddr(a), fNbits(n), fResetValue(r) {}
   };
 
@@ -500,10 +513,11 @@ class AliTRDtrapConfig : public TObject
     };
   };
 
+  // configuration registers
   SimpleReg_t fRegs[kLastReg];          // array of TRAP registers
   RegValue_t fRegisterValue[kLastReg];  // array of TRAP register values in use
 
-  Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, UInt_t addr, UInt_t data);
+  Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t addr, UInt_t data);
   Short_t GetRobAB( UShort_t robsel, UShort_t linkpair ) const;  // Converts the ROB part of the extended ALICE ID to robs
   Short_t ChipmaskToMCMlist( Int_t cmA, Int_t cmB, UShort_t linkpair ); // Converts the chipmask to a list of MCMs 
 
@@ -513,6 +527,12 @@ class AliTRDtrapConfig : public TObject
   static const Int_t fgkMcmlistSize=256;     // list of MCMs to which a value has to be written
 
   Int_t fMcmlist[fgkMcmlistSize];  // stores the list of MCMs after the conversion from extAliID -> AliID
+
+  // DMEM
+  static const Int_t fgkDmemStartAddress; // = 0xc000;  // start address in TRAP GIO
+  static const Int_t fgkDmemWords = 0x400;          // number of words in DMEM
+  UInt_t fDmem[540*8*18][fgkDmemWords];
+  Bool_t fDmemValid[540*8*18][fgkDmemWords];
 
   AliTRDtrapConfig(); // private constructor due to singleton implementation
 

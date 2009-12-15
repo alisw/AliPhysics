@@ -654,6 +654,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   } // for: detector
 
+  if (!fSDigits) 
+    AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")->WriteData("OVERWRITE");
+    
   delete [] hits;
   delete [] nhit;
 
@@ -1689,6 +1692,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
 
   } // for: detector numbers
 
+  AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")->WriteData("OVERWRITE");
   // Save the values for the raw data headers
   fDigitsManager->GetDigitsParam()->SetNTimeBins(AliTRDSimParam::Instance()->GetNTimeBins());
   fDigitsManager->GetDigitsParam()->SetADCbaseline(AliTRDSimParam::Instance()->GetADCbaseline());
