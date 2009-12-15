@@ -90,7 +90,7 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
 
   // Define input and output slots here
   DefineInput(0, TChain::Class());
-  DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
 
   // create the list for comparison objects
   fCompList = new TList;
@@ -186,7 +186,7 @@ void AliPerformanceTask::UserExec(Option_t *)
   }
 
   // Post output data.
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
