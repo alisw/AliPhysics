@@ -31,7 +31,7 @@ AliAnalysisTaskVertexESD *AddTaskVertexESD()
   // Attach input
   mgr->ConnectInput(taskVtxESD,0,mgr->GetCommonInputContainer());
   // Attach output
-  mgr->ConnectOutput(taskVtxESD,0,cOutputVtxESD);
+  mgr->ConnectOutput(taskVtxESD,1,cOutputVtxESD);
   
   return taskVtxESD;
 }
