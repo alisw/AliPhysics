@@ -202,20 +202,19 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
   // 
     // Get path to directory
     TString fileName(path);
-    if(fileName.Contains("AliESDs.root")){
-	fileName.ReplaceAll("AliESDs.root", "");
-    }
-    // If this is an archive it will contain a # 
+
     if(fileName.Contains("#")){
-	fileName.ReplaceAll("#", "");
+    // If this is an archive it will contain a # 
+      fIsArchive = kTRUE;
+    } else  if(fileName.Contains("AliESDs.root")){
+      fileName.ReplaceAll("AliESDs.root", "");
     }
+
     //
-    // At this point we have a path to the directory or to the archive
+    // At this point we have a path to the directory or to the archive anchor
     *fPathName = fileName;
     //
     // Now filter the files containing RecPoints *.RecPoints.*
-    fIsArchive = kFALSE;
-    if (fPathName->Contains(".zip")) fIsArchive = kTRUE;
 
     TSeqCollection* members;
 
