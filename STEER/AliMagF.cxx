@@ -466,7 +466,7 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
   else {
     if      (TMath::Abs((sclL3=l3Cur/l3NominalCurrent1)-1.) < tolerance) map  = k5kG;
     else if (TMath::Abs((sclL3=l3Cur/l3NominalCurrent2)-1.) < tolerance) map  = k2kG;
-    else if (l3Cur <= zero)                                { sclL3 = 0;  map  = k5kGUniform;}
+    else if (l3Cur <= zero && diCur<=zero)   { sclL3=0; sclDip=0; map  = k5kGUniform;}
     else {
       AliErrorGeneral("AliMagF",Form("Wrong L3 current (%f A)!",l3Cur));
       return 0;
