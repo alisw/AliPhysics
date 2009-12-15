@@ -246,6 +246,9 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   // initializes the object for the given run
   // TODO having the run number here and parameters hardcoded is clearly temporary, a way needs to be found to have a CDB-like configuration also for analysis
   
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
   if (fCurrentRun != -1)
     AliFatal("Processing several runs is not supported, yet");
   
@@ -322,6 +325,8 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
     n++;
   }
     
+  TH1::AddDirectory(oldStatus);
+  
   return kTRUE;
 }
 
