@@ -78,7 +78,8 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fTrigger(kMB1),
   fEnergy(k10000),
   fMagField(k5G),
-  fSpecies(kPP)
+  fSpecies(kPP),
+  fCentralSelection(kFALSE)
 {
   // Do not use this - it is only for IO 
   fgInstance = this;
@@ -568,6 +569,8 @@ Bool_t AliFMDAnaParameters::GetVertex(AliESDEvent* esd, Double_t* vertexXYZ)
 //____________________________________________________________________
 Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent *esd) const {
   // check if the event was triggered
+  
+  if (fCentralSelection) return kTRUE;
   ULong64_t triggerMask = esd->GetTriggerMask();
   
   // definitions from p-p.cfg
