@@ -382,7 +382,7 @@ void AliAnalysisTaskVertexESD::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
-  fOutput = dynamic_cast<TList*> (GetOutputData(0));
+  fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {     
     Printf("ERROR: fOutput not available");
     return;
