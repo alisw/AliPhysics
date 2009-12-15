@@ -289,7 +289,6 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
        fEntry = fInputHandler->GetReadEntry();
        if (fInputHandler->NewEvent()) {
 	   if (fgCollisionSelector) {
-	       AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
 	       fgIsCollision = fgCollisionSelector->IsSelected(InputEvent());
 	       printf("Event # %5d Decision %5d \n", Entry(), fgIsCollision);
 	   }

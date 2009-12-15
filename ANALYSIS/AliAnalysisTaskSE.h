@@ -86,7 +86,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static Bool_t           fgIsCollision;       //! Collision flag 
     Bool_t                  fSelectCollisions;   //  Task processes collision candidates only
      
-    ClassDef(AliAnalysisTaskSE, 1); // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskSE, 2); // Analysis task for standard jet analysis
 };
  
 #endif
