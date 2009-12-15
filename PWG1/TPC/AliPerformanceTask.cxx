@@ -89,7 +89,6 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
   // Constructor
 
   // Define input and output slots here
-  DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 
   // create the list for comparison objects
@@ -99,8 +98,8 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
 //_____________________________________________________________________________
 AliPerformanceTask::~AliPerformanceTask()
 {
-  if(fOutput)   delete fOutput;  fOutput =0; 
-  if(fCompList)   delete fCompList;  fCompList =0; 
+  if(fOutput)     delete fOutput;    fOutput   = 0; 
+  if(fCompList)   delete fCompList;  fCompList = 0; 
 }
 
 //_____________________________________________________________________________

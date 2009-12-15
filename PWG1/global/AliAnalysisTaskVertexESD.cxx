@@ -86,8 +86,6 @@ fhTrackRefs(0)
   // Constructor
 
   // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(1, TList::Class());  //My private output
 }
