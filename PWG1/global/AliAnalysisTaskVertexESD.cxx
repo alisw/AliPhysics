@@ -89,7 +89,7 @@ fhTrackRefs(0)
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());  //My private output
+  DefineOutput(1, TList::Class());  //My private output
 }
 //________________________________________________________________________
 AliAnalysisTaskVertexESD::~AliAnalysisTaskVertexESD()
@@ -374,7 +374,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   if(fFillNtuple) fNtupleVertexESD->Fill(xnt);
   
   // Post the data already here
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 
   return;
 }      
