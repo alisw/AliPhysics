@@ -330,6 +330,13 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     AliHLTRawBuffer* Alloc(AliHLTUInt32_t size);
     /** free a buffer and merge consecutive free buffers */
     int Free(AliHLTRawBuffer* pBuffer);
+    /** set the size of a raw buffer and release the remaining part */
+    int SetSize(AliHLTRawBuffer* pBuffer, AliHLTUInt32_t size);
+
+    AliHLTUInt32_t Size() const {return fSize;}
+    AliHLTUInt32_t Capacity() const;
+    bool IsUsed() const {return fUsedBuffers.size()>0;}
+    bool IsFragmented() const {return (fFreeBuffers.size()+fUsedBuffers.size()>0)>1;}
 
     /**
      * Print page information

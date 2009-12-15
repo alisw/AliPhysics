@@ -811,7 +811,7 @@ int AliHLTDataBuffer::AliHLTRawBuffer::operator<=(const AliHLTRawBuffer& op) con
 int AliHLTDataBuffer::AliHLTRawBuffer::operator>(const AliHLTRawBuffer& op) const
 {
   // see header file for function documentation
-  return (fPtr > op.fPtr+op.fSize);
+  return (fPtr >= op.fPtr+op.fSize);
 }
 
 AliHLTUInt8_t* AliHLTDataBuffer::AliHLTRawBuffer::UseBuffer(AliHLTUInt32_t size)
@@ -916,7 +916,7 @@ void AliHLTDataBuffer::AliHLTRawBuffer::Print(const char* option)
   if (strcmp(option, "min")!=0) {
     cout << "************* AliHLTRawBuffer status ***********" << endl;
   }
-  cout << "  " << fPtr << " (" << fExternalPtr << ") size " << fTotalSize << " used " << fSize << endl;
+  printf("  %p: buffer %p%s size %d used %d\n", this, fPtr, fExternalPtr?" (external)":"", fTotalSize, fSize); fflush(stdout);
 }
 
 AliHLTDataBuffer::AliHLTRawPage::AliHLTRawPage(AliHLTUInt32_t pagesize)
@@ -959,20 +959,18 @@ AliHLTDataBuffer::AliHLTRawPage::~AliHLTRawPage()
 AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawPage::Alloc(AliHLTUInt32_t size)
 {
   /// alloc a buffer of specified size
-  if (fFreeBuffers.size()>0) return NULL;
+  if (fFreeBuffers.size()==0) return NULL;
   
-  AliHLTRawBuffer* buffer=NULL;
   for (AliHLTRawBufferPList::iterator iter=fFreeBuffers.begin();
-       iter!=fFreeBuffers.end() && buffer==NULL;
+       iter!=fFreeBuffers.end();
        iter++) {
     if ((*iter)->GetTotalSize()>=size) {
-      buffer=(*iter)->Split(size);
-      if (buffer) {
-	fFreeBuffers.insert(iter, buffer);
-	buffer=*iter;
-	fFreeBuffers.erase(iter);
-	fUsedBuffers.push_back(buffer);
-	return buffer;
+      AliHLTRawBuffer* thisbuffer=*iter;
+      AliHLTRawBuffer* newbuffer=thisbuffer->Split(size);
+      if (newbuffer) {
+	*iter=newbuffer;
+	fUsedBuffers.push_back(thisbuffer);
+	return thisbuffer;
       } else {
 	HLTWarning("failed to split raw buffer %p", *iter);
       }
@@ -990,55 +988,99 @@ int AliHLTDataBuffer::AliHLTRawPage::Free(AliHLTRawBuffer* pBuffer)
        iter++) {
     if ((*iter)==pBuffer) {
       fUsedBuffers.erase(iter);
-      for (AliHLTRawBufferPList::iterator prev=fFreeBuffers.begin();
-	   prev!=fFreeBuffers.end() && iResult>=0;
-	   prev++) {
+      AliHLTRawBufferPList::iterator prev=fFreeBuffers.begin();
+      for (; prev!=fFreeBuffers.end() && iResult>=0; prev++) {
 	if ((*pBuffer)<(*(*prev))) {
 	  // check consecutive buffers
 	  if ((*(*prev)) == (pBuffer->GetPointer()+pBuffer->GetTotalSize())) {
 	    // the buffer to be released has a consecutive free buffer -> merge them
 	    if ((iResult=pBuffer->Merge(*(*prev)))>=0) {
-	      fFreeBuffers.insert(prev, pBuffer);
 	      delete *prev;
-	      fFreeBuffers.erase(prev);
+	      *prev=pBuffer;
 	    }
 	    break;
 	  }
-	  continue;
+	  fFreeBuffers.insert(prev, pBuffer);
+	  break;
 	}
 	if ((*pBuffer)>(*(*prev))) {
 	  // check consecutive buffers
-	  if ((*(*prev)) == ((*prev)->GetPointer()+(*prev)->GetTotalSize())) {
+	  if ((*pBuffer) == ((*prev)->GetPointer()+(*prev)->GetTotalSize())) {
 	    // the buffer to be released is consecutive to a free buffer -> merge them
 	    if ((iResult=pBuffer->Merge(*(*prev)))>=0) {
-	      fFreeBuffers.insert(prev, pBuffer);
+	      AliHLTRawBufferPList::iterator succ=prev+1;
 	      delete *prev;
-	      fFreeBuffers.erase(prev);
+	      *prev=pBuffer;
+	      // check if the buffer and the following one are consecutive
+	      if (succ!=fFreeBuffers.end() &&
+		  (*(*succ)) == (pBuffer->GetPointer()+pBuffer->GetTotalSize())) {
+		if ((iResult=pBuffer->Merge(*(*succ)))>=0) {
+		  delete *succ;
+		  fFreeBuffers.erase(succ);
+		}
+	      }
 	    }
-	  } else {
-	    fFreeBuffers.push_back(pBuffer);
+	    break;
 	  }
-	  break;
-	}	
-      }	
+	}
+      }
+      if (prev==fFreeBuffers.end()) {
+	fFreeBuffers.push_back(pBuffer);
+      }
+      // buffer was part of this page
       return 0;
     }
   }
+  // buffer not found in this page
   return 1;
+}
+
+int AliHLTDataBuffer::AliHLTRawPage::SetSize(AliHLTDataBuffer::AliHLTRawBuffer* pBuffer, AliHLTUInt32_t size)
+{
+  /// set the size of a raw buffer and release the remaining part
+  int iResult=0;
+  for (AliHLTRawBufferPList::iterator iter=fUsedBuffers.begin();
+       iter!=fUsedBuffers.end() && iResult>=0;
+       iter++) {
+    if ((*iter)==pBuffer) {      // buffer was part of this page
+      AliHLTDataBuffer::AliHLTRawBuffer* freespace=(*iter)->Split(size);
+      if (freespace) {
+	fUsedBuffers.push_back(freespace);
+	Free(freespace);
+      } else {
+	HLTWarning("failed to split raw buffer %p in order to relase unused memory", *iter);	
+      }
+      return 0;
+    }
+  }
+  // buffer not found in this page
+  return 1;
+}
+
+AliHLTUInt32_t AliHLTDataBuffer::AliHLTRawPage::Capacity() const 
+{
+  /// get max available contiguous buffer
+  AliHLTUInt32_t capacity=0;
+  for (unsigned i=0; i<fFreeBuffers.size(); i++) {
+    if (fFreeBuffers[i]->GetTotalSize()>capacity) 
+      capacity=fFreeBuffers[i]->GetTotalSize();
+  }
+  return capacity;
 }
 
 void AliHLTDataBuffer::AliHLTRawPage::Print(const char* /*option*/)
 {
   /// print page information
   cout << "************* AliHLTRawPage status ***********" << endl;
-  cout << "  used buffers:" << endl;
+  printf("  buffer %p  size %d", fPtr, fSize);
+  cout << "  used buffers: " << fUsedBuffers.size() << endl;
   AliHLTRawBufferPList::iterator iter=fUsedBuffers.begin();
   for (; iter!=fUsedBuffers.end(); iter++) {
-    cout << "    "; (*iter)->Print("min");
+    cout << "  "; (*iter)->Print("min");
   }
-  cout << "  used buffers:" << endl;
+  cout << "  free buffers: " << fFreeBuffers.size() << endl;
   iter=fFreeBuffers.begin();
   for (; iter!=fFreeBuffers.end(); iter++) {
-    cout << "    "; (*iter)->Print("min");
+    cout << "  "; (*iter)->Print("min");
   }
 }
