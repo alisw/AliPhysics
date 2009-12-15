@@ -473,12 +473,12 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
     }
   }
   //
-  if (sclDip!=0 && (map==k5kG || map==k2kG) &&
-      ((convention==kConvLHC     && l3Pol!=diPol) ||
-       (convention==kConvDCS2008 && l3Pol==diPol)) ) { 
-    AliErrorGeneral("AliMagF",Form("Wrong combination for L3/Dipole polarities (%c/%c) for convention %d",
-				   l3Pol>0?'+':'-',diPol>0?'+':'-',GetPolarityConvention()));
-    return 0;
+  if (sclDip!=0 && map!=k5kGUniform) {
+    if ( (l3Cur<=zero) || ((convention==kConvLHC && l3Pol!=diPol) || (convention==kConvDCS2008 && l3Pol==diPol)) ) { 
+      AliErrorGeneral("AliMagF",Form("Wrong combination for L3/Dipole polarities (%c/%c) for convention %d",
+				     l3Pol>0?'+':'-',diPol>0?'+':'-',GetPolarityConvention()));
+      return 0;
+    }
   }
   //
   if (l3Pol<0) sclL3  = -sclL3;
