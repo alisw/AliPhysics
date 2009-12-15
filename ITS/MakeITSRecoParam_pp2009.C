@@ -67,8 +67,9 @@ void MakeITSRecoParam_pp2009(AliRecoParam::EventSpecie_t default=AliRecoParam::k
     itsRecoParam->SetSAUseAllClusters();
     itsRecoParam->SetOuterStartLayerSA(2);
 
-    // to maximize efficiency
-    itsRecoParam->SetAllowProlongationWithEmptyRoad(kFALSE);
+    // to maximize efficiency (change to kTRUE on 15.12.2009)
+    //itsRecoParam->SetAllowProlongationWithEmptyRoad(kFALSE);
+    itsRecoParam->SetAllowProlongationWithEmptyRoad(kTRUE);
     
     // larger seach windows for SA (in case of large misalignments)
     itsRecoParam->SetFactorSAWindowSizes(2);
