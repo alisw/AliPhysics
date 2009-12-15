@@ -1675,6 +1675,11 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       }
     }
 
+  
+    // fill Event header information from the RawEventHeader
+    if (fRawReader){FillRawEventHeaderESD(fesd);}
+    if (fRawReader){FillRawEventHeaderESD(fhltesd);}
+
     fesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     fhltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     fesd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
@@ -1765,11 +1770,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
-  
-    // fill Event header information from the RawEventHeader
-    if (fRawReader){FillRawEventHeaderESD(fesd);}
-    if (fRawReader){FillRawEventHeaderESD(fhltesd);}
-
+ 
     // combined PID
     AliESDpid::MakePID(fesd);
 
