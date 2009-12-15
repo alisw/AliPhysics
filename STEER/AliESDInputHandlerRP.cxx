@@ -223,15 +223,21 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     
     if (fIsArchive) {
 	// Archive
-	TFile* file = TFile::Open(fPathName->Data());
-	TArchiveFile* arch = file->GetArchive();
-	members = arch->GetMembers();
+      TFile* file = TFile::Open(fPathName->Data());
+      TArchiveFile* arch = file->GetArchive();
+      members = arch->GetMembers();
     } else {
-	// Directory
-	TString wd = gSystem->WorkingDirectory();
-	TSystemDirectory dir(".", fPathName->Data());
-	members = dir.GetListOfFiles();
-	gSystem->cd(wd);
+	// Directory or alien archive
+      if (fileName.BeginsWith("alien:")) {
+        TFile* file = TFile::Open(Form("%s/root_archive.zip", fPathName->Data()));
+        TArchiveFile* arch = file->GetArchive();
+        members = arch->GetMembers();
+      } else {  
+        TString wd = gSystem->WorkingDirectory();
+        TSystemDirectory dir(".", fPathName->Data());
+        members = dir.GetListOfFiles();
+        gSystem->cd(wd);
+      }  
     }
 
     TIter next(members);
