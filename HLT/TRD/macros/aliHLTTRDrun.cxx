@@ -19,6 +19,7 @@
 #include <sys/time.h>
 #endif
 
+#include <algorithm>
 #include "initGRP.h"
 
 void aliHLTTRDrun(const TString inDir = gSystem->pwd());
@@ -83,8 +84,7 @@ void aliHLTTRDrun(const TString inDir)
 
   gHLT.LoadComponentLibraries("libAliHLTUtil.so libAliHLTTRD.so libAliHLTMUON.so libAliHLTGlobal.so libAliHLTTrigger.so");
 
-  InitGRP("local://$ALICE_ROOT/OCDB","/software/data/ppbench"/*inDir.Data()*/);
-  //TString sGeomPath = " -geometry "+inDir+"/geometry.root";
+  InitGRP("local://$ALICE_ROOT/OCDB",inDir.Data());
   TString inFolder = inDir+"/raw", inFile = "/TRD_", inExt = ".ddl";
   TString sinput = " -datatype 'DDL_RAW ' 'TRD '";
   TString temp1, temp2;

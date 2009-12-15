@@ -1,5 +1,5 @@
 // This macro is used to make performace studies with MC info
-// usage: aliroot rec-hlt-trd-digits.cxx("/data/run/raw.root")    reconstruct local digits file
+// usage: aliroot rec-hlt-trd-digits.cxx("/data/run/")    reconstruct local digits file
 //    or copy into folder and aliroot rec-hlt-trd.cxx             reconstruct local digits file in pwd
 
 #if !defined (__CINT__) || defined (__MAKECINT__)
@@ -39,7 +39,7 @@ int rec_hlt_trd_digits(const TString input){
   Bool_t customArgs=kTRUE;
 
   // Disable HLT flag?
-  Bool_t disableHLTflag=kTRUE;
+  Bool_t disableHLTflag=kFALSE;
 
 
 
