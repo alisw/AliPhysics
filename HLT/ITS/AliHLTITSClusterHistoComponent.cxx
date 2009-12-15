@@ -46,7 +46,7 @@ AliHLTITSClusterHistoComponent::AliHLTITSClusterHistoComponent()
   fCharge(NULL),   
   fPlotCharge(kFALSE),   
   fPlotXYPhiEta(kTRUE),
-  fOutputSize(5000)
+  fOutputSize(20000)
 {
   // see header file for class documentation
   // or
@@ -73,6 +73,7 @@ void AliHLTITSClusterHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeLi
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD );
+  list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITS );
 }
 
 AliHLTComponentDataType AliHLTITSClusterHistoComponent::GetOutputDataType(){
@@ -84,7 +85,7 @@ void AliHLTITSClusterHistoComponent::GetOutputDataSize( unsigned long& constBase
   // see header file for class documentation
   // XXX TODO: Find more realistic values.
   constBase = fOutputSize;
-  inputMultiplier = 2;
+  inputMultiplier = 20;
 }
 
 AliHLTComponent* AliHLTITSClusterHistoComponent::Spawn(){
@@ -163,7 +164,8 @@ int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   
       if(iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSPD) && 
          iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSDD) && 
-         iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSSD))
+         iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSSD) &&
+	 iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITS))	
          continue;
 
       const AliHLTITSClusterData* clusterData = (const AliHLTITSClusterData*) iter->fPtr;

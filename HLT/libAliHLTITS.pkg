@@ -11,6 +11,7 @@ CLASS_HDRS:=  	AliHLTITStrack.h \
 		AliHLTITSCompressRawDataSDDComponent.h \
 		AliHLTITSSSDQARecPointsComponent.h \
 		AliHLTITSQAComponent.h \
+		AliHLTITSDigitPublisherComponent.h \
 		tracking/AliITStrackerHLT.h \
 		tracking/AliHLTITSTrackerComponent.h \
 		tracking/AliHLTITSDetector.h \

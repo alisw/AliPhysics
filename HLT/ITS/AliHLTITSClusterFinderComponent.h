@@ -20,6 +20,7 @@
 #include "AliITSInitGeometry.h"
 #include "TClonesArray.h"
 #include "AliHLTDataTypes.h"
+#include "TTree.h"
 
 class AliHLTITSClusterFinderSPD;
 class AliHLTITSClusterFinderSSD;
@@ -75,7 +76,8 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   enum {
     kClusterFinderSPD,
     kClusterFinderSDD,
-    kClusterFinderSSD
+    kClusterFinderSSD,
+    kClusterFinderDigits    
   };
   /*
    * ---------------------------------------------------------------------------------
@@ -160,6 +162,8 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
    * properties.
    */
   int Configure(const char* arguments);
+
+  void RecPointToSpacePoint(AliHLTUInt8_t* outputPtr,AliHLTUInt32_t& size);
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private
@@ -171,6 +175,7 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
    * use fModeSwitch = 0 for SPD
    * use fModeSwitch = 1 for SDD
    * use fModeSwitch = 2 for SSD
+   * use fModeSwitch = 3 for ClusterFinding on Digits (Full ITS)
    */
   Int_t fModeSwitch;      // !
   AliHLTComponentDataType fInputDataType; // !
@@ -189,10 +194,14 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   AliITSDetTypeRec* fDettype;                                 //!transient
   AliITSgeom* fgeom;                                          //!transient
   AliITSInitGeometry* fgeomInit;                              //!transient
+ 
+  AliHLTITSClusterFinderSPD *fSPD;                            //!transient
+  AliHLTITSClusterFinderSSD *fSSD;                            //!transient
 
-  AliHLTITSClusterFinderSPD *fSPD;
-  AliHLTITSClusterFinderSSD *fSSD;
+  TTree *tD;                                                  //!transient
+  TTree *tR;                                                  //!transient
 
+  std::vector<AliITSRecPoint> fclusters;                      //!transient
   /*
   int fStatNEv;
   double fStatTime;
