@@ -284,7 +284,7 @@ class AliEventTag : public TObject {
   Short_t   fNbPMV0A;                       //Total number of fired channels in V0 A side
   Short_t   fNbPMV0C;                       //Total number of fired channels in V0 C side
 
-  ClassDef(AliEventTag,14)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,15)  //(ClassName, ClassVersion)
       };
 //___________________________________________________________________________
 
