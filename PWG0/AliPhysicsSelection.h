@@ -45,6 +45,7 @@ class AliPhysicsSelection : public AliAnalysisCuts
     
     TList* GetCollisionTriggerClasses() { return &fCollTrigClasses; }
     TList* GetBGTriggerClasses() { return &fBGTrigClasses; }
+    AliTriggerAnalysis* GetTriggerAnalysis() { (fTriggerAnalysis.GetEntries() > 0) ? (AliTriggerAnalysis*) fTriggerAnalysis.At(0) ? 0; }    
     
   protected:
     Bool_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
