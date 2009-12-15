@@ -1,4 +1,4 @@
-void runPilot(Int_t run) {
+void runPilot() {
   TStopwatch timer;
   timer.Start();
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS");
@@ -90,7 +90,7 @@ void runPilot(Int_t run) {
   //
   if (doSDD) {
       gROOT->LoadMacro("AddSDDPoints.C");
-      AliAnalysisTaskSE* task5 = AddSDDPoints(run);
+      AliAnalysisTaskSE* task5 = AddSDDPoints();
       task5->SelectCollisionCandidates();
   }
   
