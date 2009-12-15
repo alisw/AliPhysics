@@ -7,6 +7,7 @@
 #include "AliHMPIDRecoParamV1.h"   //Recon()
 #include "AliHMPIDReconstructor.h"//Recon()
 #include "AliHMPIDReconHTA.h"    //ReconHTA()
+#include <AliLog.h>              //Recon()  
 #include <AliESDEvent.h>         //PropagateBack(),Recon()  
 #include <AliESDtrack.h>         //Intersect() 
 #include <AliTracker.h> 
@@ -129,8 +130,16 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 //  Double_t d3d=0;
   Double_t qthre = 0;   Double_t nmean=0; Int_t hvsec=0;
   Int_t nClusCh[AliHMPIDParam::kMaxCh+1];
- 
+
+  UInt_t tsmin = (UInt_t)((TF1*)pQthre->At(0))->GetXmin();                                        //
+  UInt_t tsmax = (UInt_t)((TF1*)pQthre->At(0))->GetXmax();                                        //
+  UInt_t ts = pEsd->GetTimeStamp();
   
+  if(ts<tsmin || ts>tsmax) {
+    AliWarning(Form(" in HMPID time stamp out of range!!! Please check!!! ts = %i",ts));
+    return 1;
+  }
+   
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                        //loop on the ESD tracks in the event
            
 //    Double_t bestChi2=99999;chi2=99999;                                                          //init. track matching params
@@ -176,13 +185,11 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       AliHMPIDCluster *pClu=(AliHMPIDCluster*)pMipCluLst->UncheckedAt(iClu);                    //get the cluster
 // evaluate qThre
       if(pQthre->GetEntriesFast()==pParam->kMaxCh+1) {
-        if(pEsd->GetTimeStamp()==0)   qthre=pParam->QCut();                                     // just for backward compatibility
-        else qthre=((TF1*)pQthre->At(pClu->Ch()))->Eval(pEsd->GetTimeStamp());                  //
+        qthre=((TF1*)pQthre->At(pClu->Ch()))->Eval(ts);                                         //
       } else {                                                                                  // in the past just 1 qthre
         hvsec = pParam->InHVSector(pClu->Y());                                                  //  per chamber
         if(hvsec>=0){
-          if(pEsd->GetTimeStamp()==0)   qthre=pParam->QCut();                                   // just for backward compatibility
-          else  qthre=((TF1*)pQthre->At(6*ipCh+hvsec))->Eval(pEsd->GetTimeStamp());             //
+          qthre=((TF1*)pQthre->At(6*ipCh+hvsec))->Eval(ts);                                     //
         }
 
        }                                                                                            //
@@ -252,14 +259,14 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     
     //evaluate nMean
     if(pNmean->GetEntries()==21) {                                                              //for backward compatibility
-      nmean=((TF1*)pNmean->At(3*ipCh))->Eval(pEsd->GetTimeStamp());                             //C6F14 Nmean for this chamber
+      nmean=((TF1*)pNmean->At(3*ipCh))->Eval(ts);                                               //C6F14 Nmean for this chamber
     } else {
       Int_t iRad     = pParam->Radiator(yRa);                                                   //evaluate the radiator involved
       if(iRad < 0) {
 	nmean = -1;
       } else {
-      Double_t tLow  = ((TF1*)pNmean->At(6*ipCh+2*iRad  ))->Eval(pEsd->GetTimeStamp());         //C6F14 low  temp for this chamber
-      Double_t tHigh = ((TF1*)pNmean->At(6*ipCh+2*iRad+1))->Eval(pEsd->GetTimeStamp());         //C6F14 high temp for this chamber
+      Double_t tLow  = ((TF1*)pNmean->At(6*ipCh+2*iRad  ))->Eval(ts);                           //C6F14 low  temp for this chamber
+      Double_t tHigh = ((TF1*)pNmean->At(6*ipCh+2*iRad+1))->Eval(ts);                           //C6F14 high temp for this chamber
       Double_t tExp  = pParam->FindTemp(tLow,tHigh,yRa);                                        //estimated temp for that chamber at that y
       nmean = pParam->NIdxRad(AliHMPIDParam::Instance()->GetEPhotMean(),tExp);                  //mean ref idx @ a given temp
       }
@@ -297,6 +304,15 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArr
   
   AliHMPIDParam *pParam = AliHMPIDParam::Instance();                                             //Instance of AliHMPIDParam
   
+  UInt_t tsmin = (UInt_t)((TF1*)pQthre->At(0))->GetXmin();                                        //
+  UInt_t tsmax = (UInt_t)((TF1*)pQthre->At(0))->GetXmax();                                        //
+  UInt_t ts = pEsd->GetTimeStamp();
+
+  if(ts<tsmin || ts>tsmax) {
+    AliWarning(Form(" in HMPID time stamp out of range!!! Please check!!! ts = %i",ts));
+    return 1;
+  }
+   
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                        //loop on the ESD tracks in the event
     
     AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                     //here it is simulated or just empty track
@@ -334,14 +350,14 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArr
     Double_t qthre=0;
 // evaluate qThre
     if(pQthre->GetEntriesFast()==pParam->kMaxCh+1) {                                              // just for backward compatibility
-      qthre=((TF1*)pQthre->At(chMip))->Eval(pEsd->GetTimeStamp());                                //
+      qthre=((TF1*)pQthre->At(chMip))->Eval(ts);                                                  //
     } else {                                                                                      // in the past just 1 qthre
       hvsec = pParam->InHVSector(yMip);                                                           //  per chamber
-      if(hvsec>=0) qthre=((TF1*)pQthre->At(6*chMip+hvsec))->Eval(pEsd->GetTimeStamp());           //
+      if(hvsec>=0) qthre=((TF1*)pQthre->At(6*chMip+hvsec))->Eval(ts);                             //
     }
 //
     if(qMip<qthre) {
-      pTrk->SetHMPIDmip(xMip,yMip,(Int_t)qMip,0);                                                        //store mip info in any case 
+      pTrk->SetHMPIDmip(xMip,yMip,(Int_t)qMip,0);                                                 //store mip info in any case 
       pTrk->SetHMPIDcluIdx(chMip,indMip+1000*cluMipSiz);                                                          
       pTrk->SetHMPIDsignal(pParam->kMipQdcCut);
       return 1;                                                                                   //charge compatible with MIP clusters      
@@ -354,14 +370,14 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArr
     Double_t nmean;
     //evaluate nMean
     if(pNmean->GetEntries()==21) {                                                              //for backward compatibility
-      nmean=((TF1*)pNmean->At(3*chMip))->Eval(pEsd->GetTimeStamp());                            //C6F14 Nmean for this chamber
+      nmean=((TF1*)pNmean->At(3*chMip))->Eval(ts);                                              //C6F14 Nmean for this chamber
     } else {
       Int_t iRad     = pParam->Radiator(yRa);                                                   //evaluate the radiator involved
       if(iRad < 0) {
 	nmean = -1;
       } else {
-      Double_t tLow  = ((TF1*)pNmean->At(6*chMip+2*iRad  ))->Eval(pEsd->GetTimeStamp());        //C6F14 low  temp for this chamber
-      Double_t tHigh = ((TF1*)pNmean->At(6*chMip+2*iRad+1))->Eval(pEsd->GetTimeStamp());        //C6F14 high temp for this chamber
+      Double_t tLow  = ((TF1*)pNmean->At(6*chMip+2*iRad  ))->Eval(ts);                          //C6F14 low  temp for this chamber
+      Double_t tHigh = ((TF1*)pNmean->At(6*chMip+2*iRad+1))->Eval(ts);                          //C6F14 high temp for this chamber
       Double_t tExp  = pParam->FindTemp(tLow,tHigh,yRa);                                        //estimated temp for that chamber at that y
       nmean = pParam->NIdxRad(AliHMPIDParam::Instance()->GetEPhotMean(),tExp);                  //mean ref idx @ a given temp
       }
