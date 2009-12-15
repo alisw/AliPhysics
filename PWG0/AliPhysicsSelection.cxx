@@ -219,7 +219,7 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
             
             fHistStatistics->Fill(12, i);
             fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i);
-            if (count < fCollTrigClasses.GetEntries())
+            if (i < fCollTrigClasses.GetEntries())
               accept = kTRUE;
           }
         }

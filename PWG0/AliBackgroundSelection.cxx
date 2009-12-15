@@ -17,8 +17,8 @@ AliBackgroundSelection::AliBackgroundSelection():
   
   fOutputHist = new TList();
   fOutputHist->SetOwner();
-  fACut = 45;
-  fBCut = 6.5;
+  fACut = 65;
+  fBCut = 4;
   
 
 }
@@ -29,8 +29,8 @@ AliBackgroundSelection::AliBackgroundSelection(const char* name, const char* tit
 
   fOutputHist = new TList();
   fOutputHist->SetOwner();
-  fACut = 45;
-  fBCut = 6.5;
+  fACut = 65;
+  fBCut = 4;
 }
 
 AliBackgroundSelection::AliBackgroundSelection(const AliBackgroundSelection& obj) : AliAnalysisCuts(obj),
@@ -133,14 +133,16 @@ Bool_t AliBackgroundSelection::IsSelected(TObject* obj){
   if(tokens) delete tokens;
   // return decision
 
+  if(itsClusters) delete itsClusters;
+
   return Selected();
 }
 
 
 void   AliBackgroundSelection::Init(){
 
-  fACut = 45;
-  fBCut = 6.5;
+  fACut = 65;
+  fBCut = 4;
 
 }
 
