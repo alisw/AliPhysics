@@ -54,14 +54,15 @@ AliUnicorAnalCorrel::AliUnicorAnalCorrel(Char_t *nam, Double_t emi, Double_t ema
 
   TAxis *ax[8];
   ax[0] = new TAxis(3,-0.5,2.5);ax[0]->SetTitle("trumixrot");
-  ax[1] = new TAxis(5,0,0.5);   ax[1]->SetTitle("centrality");
+  ax[1] = new TAxis(5,0,1.0);   ax[1]->SetTitle("centrality");
   ax[2] = new TAxis(3,emi,ema); ax[2]->SetTitle("pair y");
   //ax[3] = new TAxis(8,-pi,pi);  ax[3]->SetTitle("pair phi"); // wrt event plane
   ax[3] = new TAxis(1,-pi,pi);  ax[3]->SetTitle("pair phi"); // wrt event plane
   ax[4] = new TAxis(7,ptbins);  ax[4]->SetTitle("(pair pt)/2 (GeV)");
   ax[5] = new TAxis(8,0,pi);    ax[5]->SetTitle("q-theta");
   ax[6] = new TAxis(16,-pi,pi); ax[6]->SetTitle("q-phi");
-  ax[7] = new TAxis(64,qbins);  ax[7]->SetTitle("q (GeV/c)");
+  //ax[7] = new TAxis(64,qbins);  ax[7]->SetTitle("q (GeV/c)");
+  ax[7] = new TAxis(100,0,2.0); ax[7]->SetTitle("q (GeV/c)");
   AliUnicorHN *pair = new AliUnicorHN("pair",8,ax);
   for (int i=0; i<8; i++) delete ax[i];
   fHistos.Add(pair);
@@ -123,6 +124,8 @@ void AliUnicorAnalCorrel::Process(Int_t tmr, const AliUnicorEvent * const ev0, c
       fPa.CalcPairCM();
       if (fPa.QCM()==0) return; // should not be too frequent
       double phi = TVector2::Phi_mpi_pi(fPa.Phi()-rpphi);
+      double weigth = 1.0;
+      //if (tmr==0) weigth = 1.0+0.3*exp(-fPa.QCM()*fPa.QCM()*1*1/0.197/0.197); 
       pair->Fill((double) tmr,           // 0 for tru, 1 for mix, 2 for rot
 		 cent,                   // centrality
 		 fPa.Rapidity(),         // pair rapidity
@@ -131,7 +134,7 @@ void AliUnicorAnalCorrel::Process(Int_t tmr, const AliUnicorEvent * const ev0, c
 		 fPa.QCMTheta(),         // polar angle of Q
 		 fPa.QCMPhiOut(),        // azimuthal angle of Q w.r.t. out
 		 fPa.QCM(),              // |p2-p1| in c.m.s.
-		 1.0);                   // weigth
+		 weigth);                // weigth
     }
   }
 }

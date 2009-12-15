@@ -45,6 +45,7 @@ class AliUnicorHN : public TH1D {
   TH1D *ProjectOn(char *nam, Int_t dim, const Double_t * const first, const Double_t * const last);
   // project on 2-dim histogram
   TH2D *ProjectOn(char *nam, Int_t dim0, Int_t dim1, const Int_t * const first=0, const Int_t * const last=0) const;
+  void  OneToMul(Int_t n, Int_t *k) const;      // calc n-dim indices from 1-dim index
 
  protected:
 
@@ -56,7 +57,6 @@ class AliUnicorHN : public TH1D {
   static Int_t Albins(Int_t n, TAxis **ax);     // product of nbins of ax[0]...ax[n-1]
   Int_t MulToOne(const Int_t * const k) const;  // calc 1-dim index from n-dim indices
   Int_t MulToOne(Double_t *x);                  // calc 1-dim index from n-dim vector
-  void  OneToMul(Int_t n, Int_t *k) const;      // calc n-dim indices from 1-dim index
 
   ClassDef(AliUnicorHN,1)
 };
