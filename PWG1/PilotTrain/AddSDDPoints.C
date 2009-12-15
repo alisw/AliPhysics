@@ -1,5 +1,5 @@
 
-AliAnalysisTaskSE* AddSDDPoints(Int_t run) {
+AliAnalysisTaskSE* AddSDDPoints() {
     gROOT->LoadMacro("AliAnalysisTaskSDDRP.cxx++g");
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -9,7 +9,6 @@ AliAnalysisTaskSE* AddSDDPoints(Int_t run) {
     }   
 
     AliAnalysisTaskSDDRP *task= new AliAnalysisTaskSDDRP();
-    task->SetRunNumber(run);
     mgr->AddTask(task);
     mgr->SetDebugLevel(2);
     
