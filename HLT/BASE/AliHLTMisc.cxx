@@ -130,7 +130,7 @@ Double_t AliHLTMisc::GetBz()
   return 0.0;
 }
 
-Double_t AliHLTMisc::GetBz(const Double_t *r)
+Double_t AliHLTMisc::GetBz(const Double_t */*r*/)
 {
   // default method, functionality is implemented in the child class
   return 0.0;
@@ -139,6 +139,7 @@ Double_t AliHLTMisc::GetBz(const Double_t *r)
 void AliHLTMisc::GetBxByBz(const Double_t r[3], Double_t b[3])
 {
   // default method, functionality is implemented in the child class
+  if (!r || !b) return;
   return;
 }
 
