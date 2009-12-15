@@ -16,20 +16,22 @@ void runPilot(Int_t run) {
 
   
 
-  Bool_t doQAsym        = 1;
-  Bool_t doVZERO        = 1;
-  Bool_t doVertex       = 1;
-  Bool_t doSPD          = 1;  
-  Bool_t doFMD          = 1;
-  Bool_t doTPC          = 1;
-  Bool_t doEventStat    = 1;
-  Bool_t doSDD          = 1;
+  Bool_t doQAsym        = 1;   // output ok
+  Bool_t doVZERO        = 1;   // output ok but there is a 2nd file
+  Bool_t doVertex       = 1;   // output ok
+  Bool_t doSPD          = 1;   // output ok, needs RP   
+  Bool_t doFMD          = 1;   // output ok
+  Bool_t doTPC          = 1;   // output ok
+  Bool_t doEventStat    = 1;   // output ok
+  Bool_t doSDD          = 1;   // outout ok needs RP
    //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
   mgr->SetDebugLevel(2);
   
-  AliVEventHandler* esdH = new AliESDInputHandlerRP;
+
+  AliInputEventHandler* esdH = new AliESDInputHandlerRP();
+  esdH->SetActiveBranches("ESDfriend");
   mgr->SetInputEventHandler(esdH);  
 
   // Chain 
@@ -42,6 +44,8 @@ void runPilot(Int_t run) {
   //
   // Collision Selector (static)
   AliPhysicsSelection* colsel =  new AliPhysicsSelection();
+  colsel->AddBackgroundIdentification(new AliBackgroundSelection());
+
   AliAnalysisTaskSE::SetCollisionSelector(colsel);
   
 
@@ -59,7 +63,7 @@ void runPilot(Int_t run) {
   if (doVZERO) {
       gROOT->LoadMacro("AddTaskVZEROQA.C");
       AliAnalysisTaskSE* task2 =  AddTaskVZEROQA(0);
-      task2->SelectCollisionCandidates();
+//      task2->SelectCollisionCandidates();
   }
   
   //
@@ -85,7 +89,6 @@ void runPilot(Int_t run) {
   // SDD (F. Prino)
   //
   if (doSDD) {
-      gROOT->LoadMacro("AliAnalysisTaskSDDRP.cxx++g");
       gROOT->LoadMacro("AddSDDPoints.C");
       AliAnalysisTaskSE* task5 = AddSDDPoints(run);
       task5->SelectCollisionCandidates();
@@ -124,7 +127,7 @@ void runPilot(Int_t run) {
       mgr->PrintStatus();
   
   // Run on dataset
-  mgr->StartAnalysis("local", chain, 500);
+  mgr->StartAnalysis("local", chain, 1000);
   timer.Stop();
   timer.Print();
 }
