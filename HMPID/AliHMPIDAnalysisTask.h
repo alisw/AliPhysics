@@ -24,6 +24,7 @@ class TParticle ;
 class TFile ;
 class AliStack ;
 class AliESDtrack;
+class AliESDEvent;
 
 class AliHMPIDAnalysisTask : public AliAnalysisTaskSE {
   public:
@@ -32,28 +33,39 @@ class AliHMPIDAnalysisTask : public AliAnalysisTaskSE {
 
   AliHMPIDAnalysisTask();
   AliHMPIDAnalysisTask(const Char_t* name);
-  AliHMPIDAnalysisTask& operator= (const AliHMPIDAnalysisTask& c);
-  AliHMPIDAnalysisTask(const AliHMPIDAnalysisTask& c);
   virtual ~AliHMPIDAnalysisTask();
-
-  // ANALYSIS FRAMEWORK STUFF
-  void     UserCreateOutputObjects();
-  void     UserExec(Option_t *option);
-  void     Terminate(Option_t *);
-
-  // setter
-  void   SetTrigger(Int_t trigger) {fTrigger = trigger;}
-
- protected:
-  TList          *fHistList ;  // list of histograms
   
-  //Number of events
-  TH1I  *fHistEventsProcessed ;  // simple histo for monitoring number of processed events
+  virtual void   ConnectInputData(Option_t *);
+  virtual void   CreateOutputObjects();
+  virtual void   Exec(Option_t *option);
+  virtual void   Terminate(Option_t *);
+
+  
+ protected:
+     
+ private:     
+ 
+  void   SetTrigger(Int_t trigger) {fTrigger = trigger;}
+  AliESDEvent *fESD;              //! ESD object
+  TList          *fHmpHistList ;  // list of histograms 
   Int_t          fNevts       ;  //event numbering
   Int_t          fTrigNevts   ;  //event numbering with the requested trigger
   Int_t          fTrigger     ;  //requested trigger
+  TH2F          *fHmpInner;
+  TH2F          *fHmpPesdPhmp;
+  TH2F          *fHmpCkovPesd;
+  TH2F          *fHmpCkovPhmp;
   
-  ClassDef(AliHMPIDAnalysisTask,1);
+  TH1F          *fHmpMipTrkDist;
+  TH1F          *fHmpMipTrkDistX;
+  TH1F          *fHmpMipTrkDistY;
+  TH1F          *fHmpMipCharge3cm;
+  TH1F          *fHmpMipCharge1cm;
+  TH1F          *fHmpNumPhots;
+  
+  TH1F          *fHmpTrkFlags;
+  
+  ClassDef(AliHMPIDAnalysisTask,2);
 };
 
 #endif
