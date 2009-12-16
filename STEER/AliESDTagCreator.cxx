@@ -472,6 +472,9 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     evTag->SetTriggerMask(esd->GetTriggerMask());
     evTag->SetTriggerCluster(esd->GetTriggerCluster());
     
+    evTag->SetEventType(esd->GetEventType());
+    evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
+
     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
     evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
@@ -818,6 +821,9 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     evTag->SetTriggerMask(esd->GetTriggerMask());
     evTag->SetTriggerCluster(esd->GetTriggerCluster());
     
+    evTag->SetEventType(esd->GetEventType());
+    evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
+
     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
     evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
@@ -1165,6 +1171,9 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     evTag->SetTriggerMask(esd->GetTriggerMask());
     evTag->SetTriggerCluster(esd->GetTriggerCluster());
     
+    evTag->SetEventType(esd->GetEventType());
+    evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
+
     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
     evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
@@ -1329,7 +1338,8 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   Int_t iInitRunNumber = esd->GetRunNumber();
   
   Int_t iNumberOfEvents = (Int_t)b->GetEntries();
-  if(fLastEvent == -1) lastEvent = (Int_t)b->GetEntries();
+  if ((fLastEvent == -1) || ((Int_t) b->GetEntries() < fLastEvent))
+    lastEvent = (Int_t)b->GetEntries();
   else lastEvent = fLastEvent;
 
   char fileName[256];
@@ -1346,7 +1356,8 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   TBranch * btag = ttag->Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
 
-  if(fLastEvent != -1) iNumberOfEvents = fLastEvent + 1;
+  if ((fLastEvent != -1) && ((Int_t) b->GetEntries() > fLastEvent)) 
+    iNumberOfEvents = fLastEvent + 1;
   for (Int_t iEventNumber = fFirstEvent; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;
     nPos = 0;
@@ -1528,6 +1539,9 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     evTag->SetTriggerMask(esd->GetTriggerMask());
     evTag->SetTriggerCluster(esd->GetTriggerCluster());
     
+    evTag->SetEventType(esd->GetEventType());
+    evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
+
     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
     evTag->SetZDCNeutron2Energy(esd->GetZDCN2Energy());
