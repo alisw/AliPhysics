@@ -42,7 +42,7 @@ namespace
 {
  enum EAliEveMenu_e
  {
-   kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen
+   kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault
  };
 }
  
@@ -81,63 +81,79 @@ AliEveConfigManager::AliEveConfigManager() :
   // Constructor.
   // Expected TEveManager is already initialized.
 
+
+  fAliEveGeometries = new TGPopupMenu(gClient->GetRoot());
+  fAliEveGeometries->AddEntry("&Default", kAEMDefault);
+  fAliEveGeometries->AddEntry("&Screen", kAEMScreen);
+  fAliEveGeometries->AddEntry("&Projector", kAEMProjector);
+
+  fAliEveGeometries->AddSeparator();
+
+  fAliEveGeometries->AddEntry("&Low transparency", kAEMNotransparency);
+
+  fAliEveGeometries->AddSeparator();
+
+  fAliEveGeometries->AddEntry("&Transparent screen", kAEMTransparentDark);
+  fAliEveGeometries->AddEntry("&Transparent projector", kAEMTransparentLight);
+  fAliEveGeometries->AddEntry("&Transparent mono dark", kAEMTransparentMonoDark);
+  fAliEveGeometries->AddEntry("&Transparent mono light", kAEMTransparentMonoLight);
+
+  fAliEveGeometries->AddSeparator();
+
+  fAliEveGeometries->AddEntry("&First collision setup", kAEMGreen);
+  fAliEveGeometries->AddEntry("&Bright", kAEMBright);
+
+  fAliEveGeometries->AddSeparator();
+
+  fAliEveGeometries->AddEntry("&TPC Yellow", kAEMYellow);
+  fAliEveGeometries->AddEntry("&TPC Blue", kAEMTpc);
+
+  fAliEveGeometries->AddSeparator();
+
+  fAliEvePictures = new TGPopupMenu(gClient->GetRoot());
+
+  fAliEvePictures->AddEntry("&Save all views", kAEMAll);
+  fAliEvePictures->AddEntry("&Save 3D View",   kAEM3d);
+  fAliEvePictures->AddEntry("&Save RPhi View", kAEMRphi);
+  fAliEvePictures->AddEntry("&Save RhoZ View", kAEMRhoz);
+
+  fAliEvePictures->AddSeparator();
+
+  fAliEvePicturesHR = new TGPopupMenu(gClient->GetRoot());
+
+  fAliEvePicturesHR->AddEntry("&Save all views HR", kAEMAllhr);
+  fAliEvePicturesHR->AddEntry("&Save 3D View HR",   kAEM3dhr);
+  fAliEvePicturesHR->AddEntry("&Save RPhi View HR", kAEMRphihr);
+  fAliEvePicturesHR->AddEntry("&Save RhoZ View HR", kAEMRhozhr);
+
+  fAliEvePicturesHR->AddSeparator();
+
+  fAliEveDataSelection = new TGPopupMenu(gClient->GetRoot());
+
+  fAliEveDataSelection->AddEntry("&Save Data Selection macros", kAEMSavemacros);
+  fAliEveDataSelection->AddEntry("&Load Data Selection macros",   kAEMLoadmacros);
+
+  fAliEveDataSelection->AddSeparator();
+
+  fAliEveVizDBs = new TGPopupMenu(gClient->GetRoot());
+
+  fAliEveVizDBs->AddEntry("&Save VizDB", kAEMSave);
+  fAliEveVizDBs->AddEntry("&Load VizDB", kAEMOpen);
+
+  fAliEveVizDBs->AddSeparator();
+
   fAliEvePopup = new TGPopupMenu(gClient->GetRoot());
-
-  fAliEvePopup->AddEntry("&Default", kAEMDefault);
-  fAliEvePopup->AddEntry("&Screen", kAEMScreen);
-  fAliEvePopup->AddEntry("&Projector", kAEMProjector);
-
+  fAliEvePopup->AddEntry("&Set Default Settings", kAEMSetDefault);
   fAliEvePopup->AddSeparator();
-
-  fAliEvePopup->AddEntry("&Low transparency", kAEMNotransparency);
-
+  fAliEvePopup->AddPopup("&Geometries/VizDBs", fAliEveGeometries);
   fAliEvePopup->AddSeparator();
-
-  fAliEvePopup->AddEntry("&Transparent screen", kAEMTransparentDark);
-  fAliEvePopup->AddEntry("&Transparent projector", kAEMTransparentLight);
-  fAliEvePopup->AddEntry("&Transparent mono dark", kAEMTransparentMonoDark);
-  fAliEvePopup->AddEntry("&Transparent mono light", kAEMTransparentMonoLight);
-
+  fAliEvePopup->AddPopup("&Pictures", fAliEvePictures);
   fAliEvePopup->AddSeparator();
-
-  fAliEvePopup->AddEntry("&First collision setup", kAEMGreen);
-  fAliEvePopup->AddEntry("&Bright", kAEMBright);
-
+  fAliEvePopup->AddPopup("&PicturesHR", fAliEvePicturesHR);
   fAliEvePopup->AddSeparator();
-
-  fAliEvePopup->AddEntry("&TPC Yellow", kAEMYellow);
-  fAliEvePopup->AddEntry("&TPC Blue", kAEMTpc);
-
+  fAliEvePopup->AddPopup("&VizDBs",  fAliEveVizDBs);
   fAliEvePopup->AddSeparator();
-  fAliEvePopup->AddSeparator();
-  fAliEvePopup->AddSeparator();
-
-  fAliEvePopup->AddEntry("&Save all views", kAEMAll);
-  fAliEvePopup->AddEntry("&Save 3D View",   kAEM3d);
-  fAliEvePopup->AddEntry("&Save RPhi View", kAEMRphi);
-  fAliEvePopup->AddEntry("&Save RhoZ View", kAEMRhoz);
-
-  fAliEvePopup->AddSeparator();
-
-  fAliEvePopup->AddEntry("&Save all views HR", kAEMAllhr);
-  fAliEvePopup->AddEntry("&Save 3D View HR",   kAEM3dhr);
-  fAliEvePopup->AddEntry("&Save RPhi View HR", kAEMRphihr);
-  fAliEvePopup->AddEntry("&Save RhoZ View HR", kAEMRhozhr);
-
-  fAliEvePopup->AddSeparator();
-  fAliEvePopup->AddSeparator();
-  fAliEvePopup->AddSeparator();
-
-  fAliEvePopup->AddEntry("&Save Data Selection macros", kAEMSavemacros);
-  fAliEvePopup->AddEntry("&Load Data Selection macros",   kAEMLoadmacros);
-
-  fAliEvePopup->AddSeparator();
-  fAliEvePopup->AddSeparator();
-  fAliEvePopup->AddSeparator();
-
-  fAliEvePopup->AddEntry("&Save VizDB", kAEMSave);
-  fAliEvePopup->AddEntry("&Load VizDB", kAEMOpen);
-
+  fAliEvePopup->AddPopup("&DataSelection", fAliEveDataSelection);
   fAliEvePopup->AddSeparator();
 
   fAliEvePopup->Connect("Activated(Int_t)", "AliEveConfigManager",
@@ -896,6 +912,41 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
       printf("Done.\n");
       break;
+
+    }
+
+    case kAEMSetDefault://Restore default settings
+    {
+
+      printf("Setting...\n");
+
+      TEveBrowser *browser = gEve->GetBrowser();
+      browser->ShowCloseTab(kFALSE);
+
+      if(fLoadCheck)
+        browser->RemoveTab(TRootBrowser::kRight, 5);//remove the tab with previous DataSelection window
+      else
+        browser->RemoveTab(TRootBrowser::kRight, 2);
+
+      TEveUtil::Macro("geom_gentle_default.C");
+      gEve->LoadVizDB("VizDB_scan.C", kTRUE, kTRUE);
+      TEveUtil::Macro("DataSelection_init.C");
+
+      if(!gEve->GetViewers()->UseLightColorSet())
+        gEve->GetViewers()->SwitchColorSet(); //white background
+
+      AliEveEventManager *eman = AliEveEventManager::GetMaster();//reload event (gEve->Refresh() crashes)
+      Int_t ev = eman->GetEventId();
+      eman->Close();
+      eman->Open();
+      eman->GotoEvent(ev);
+
+      printf("Done.\n");
+
+      fLoadCheck = kTRUE;
+
+      gEve->Redraw3D(kTRUE);
+
 
     }
 

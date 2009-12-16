@@ -33,6 +33,16 @@ protected:
 
   TGPopupMenu      *fAliEvePopup; // AliEve menu.
 
+  TGPopupMenu      *fAliEveGeometries; // AliEve submenu - geometries.
+
+  TGPopupMenu      *fAliEvePictures; // AliEve submenu - saving pictures.
+
+  TGPopupMenu      *fAliEvePicturesHR; // AliEve submenu - saving pictures in high resolution.
+
+  TGPopupMenu      *fAliEveDataSelection; // AliEve submenu - Saving/Opening DataSelection macros.
+
+  TGPopupMenu      *fAliEveVizDBs; // AliEve submenu - Saving/Opening VizDB macros.
+
   Bool_t           fLoadCheck; //for Data Selection Save/Load
 
 private:
