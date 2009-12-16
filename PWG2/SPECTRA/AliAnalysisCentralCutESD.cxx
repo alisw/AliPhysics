@@ -70,7 +70,6 @@ AliAnalysisCentralCutESD::AliAnalysisCentralCutESD(const Char_t* name, const Cha
 	fProtonFunction = (TF1 *)f->Get("fitProtons");
     }
 
-	printf("AliAnalysisCentralCutESD::Constructor\n");
 }
 
 AliAnalysisCentralCutESD::~AliAnalysisCentralCutESD() {
@@ -85,7 +84,6 @@ AliAnalysisCentralCutESD::~AliAnalysisCentralCutESD() {
 	if(fKaonFunction) delete fKaonFunction;
 	if(fProtonFunction) delete fProtonFunction;
 
-	printf("AliAnalysisCentralCutESD::Destructor\n");
 }
 
 
@@ -133,6 +131,14 @@ Double_t priors=0;
 
 Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t fPartType){
 // Determines the type of the particle
+    Int_t charge;
+
+	if(fPartType < 0){
+		charge = -1;
+	}
+	else{
+		charge = 1;
+	}
 
     Double_t probability[5];
     Double_t w[5];
@@ -178,15 +184,16 @@ Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t fPartType){
 		return kFALSE;
     }
 
+	if(track->Charge() != charge) return kFALSE;
 
     return kTRUE;
 
 }
 
 Bool_t AliAnalysisCentralCutESD::IsCharged(AliESDtrack* const track) const{
-    
+
     if(track->Charge() == 0) return kFALSE;
-    
+
     return kTRUE;
 
 }

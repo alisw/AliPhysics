@@ -178,7 +178,7 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
 // 	efficiency->Draw();
 
 
-	TH1F *hNoEvt = dynamic_cast<TH1F*>(fInputList->FindObject("TaskCentral_NoEvt"));
+	TH1D *hNoEvt = dynamic_cast<TH1D*>(fInputList->FindObject("TaskCentral_NoEvt"));
 	if(!hNoEvt){
 		printf("Unable to get the number of events! \n");
 		return;
@@ -320,7 +320,7 @@ void AliAnalysisCentralExtrapolate::TsallisFit(){
 
 
 // create a new, "extended" histogram
-    TH1F *hPtExtTsallis = new TH1F("PtExtTsallis","Pt Corr Norm Ext",25,0.0,5.0);
+    TH1D *hPtExtTsallis = new TH1D("PtExtTsallis","Pt Corr Norm Ext",25,0.0,5.0);
     
     Double_t bin, binerr, test;
     
@@ -467,7 +467,7 @@ void AliAnalysisCentralExtrapolate::BoltzmannFit(){
     printf("p2 = %f\tparam2Err = %f\n", p2, param2Err);
 
 
-    TH1F *hPtExtBoltzmann = new TH1F("PtExtBoltzmann","Pt Corr Norm Ext",25,0.0,5.0);
+    TH1D *hPtExtBoltzmann = new TH1D("PtExtBoltzmann","Pt Corr Norm Ext",25,0.0,5.0);
 
     Double_t bin, binerr, test;
 

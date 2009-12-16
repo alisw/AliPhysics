@@ -49,12 +49,12 @@ AliAnalysisCentralCutEvtMC::AliAnalysisCentralCutEvtMC(const Char_t* name, const
 
 {
     //constructor
-	printf("AliAnalysisCentralCutEvtMC::Constructor\n");
+
 }
 
 AliAnalysisCentralCutEvtMC::~AliAnalysisCentralCutEvtMC(){
 //destructor
-printf("AliAnalysisCentralCutEvtMC::Destructor\n");
+
 }
 
 //___________________________________________________________________________

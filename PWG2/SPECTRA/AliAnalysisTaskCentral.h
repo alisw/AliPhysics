@@ -16,7 +16,7 @@
 
 #include "AliAnalysisTask.h"
 
-class TH1F;
+class TH1D;
 class TObject;
 class TObjArray;
 class TList;
@@ -30,7 +30,7 @@ class AliAnalysisTaskCentral : public AliAnalysisTask {
  public:
   AliAnalysisTaskCentral(const char *name="AliAnalysisTaskCentral");
   virtual ~AliAnalysisTaskCentral();
-  
+
   void SetCuts(Int_t const  no, TObjArray* const array) {fCutsList[no] = array;} //used to set the cuts to the Task
 
   void SendEvent(TObject *obj) const;  //used to send the MCEvent to the cuts that need it (i.e MC IsPrimary)
@@ -43,7 +43,7 @@ class AliAnalysisTaskCentral : public AliAnalysisTask {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  
+
  private:
   AliAnalysisTaskCentral(const AliAnalysisTaskCentral& ref);
   AliAnalysisTaskCentral& operator=(const AliAnalysisTaskCentral& ref);
@@ -53,7 +53,7 @@ class AliAnalysisTaskCentral : public AliAnalysisTask {
   AliESDEvent *fESD;   //ESD object
   AliMCEvent  *fMC;    //MC Object
 
-  TH1F        *fNoEvt;  //Number of events processed
+  TH1D *fNoEvt;  //Number of events processed
 
   AliCFContainer *fCFContainerPi; // CF Container used to calc/apply eff - Pions
   AliCFContainer *fCFContainerK; // CF Container used to calc/apply eff - Kaons
