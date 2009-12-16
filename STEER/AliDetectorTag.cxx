@@ -57,7 +57,7 @@ AliDetectorTag::AliDetectorTag() :
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
   TObject(detTag),
-  fDetectorArray(detTag.fDetectorArray),
+  fDetectorArray(new TObjArray(*detTag.fDetectorArray)),
   fMask(detTag.fMask),
   fITSSPD(detTag.fITSSPD),
   fITSSDD(detTag.fITSSDD),
@@ -85,7 +85,7 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
   if (this != &detTag) {
     TObject::operator=(detTag);
     
-    fDetectorArray = detTag.fDetectorArray;
+    fDetectorArray = new TObjArray(*detTag.fDetectorArray);
     fMask = detTag.fMask;   
     fITSSPD = detTag.fITSSPD;
     fITSSDD = detTag.fITSSDD;
@@ -110,7 +110,8 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
 //___________________________________________________________________________
 AliDetectorTag::~AliDetectorTag() {
   // Destructor
-  delete fDetectorArray;
+  if (fDetectorArray)
+    delete fDetectorArray;
 }
 
 //___________________________________________________________________________

@@ -223,4 +223,10 @@ void AliRunTag::Clear(const char *) {
   fNumEvents = 0;
   fDetectorTag.Clear();
   fNumDetectors = 0;
+  if ( fQAArray ) 
+    delete [] fQAArray ; 
+  fQALength=0;
+  if ( fEventSpecies )
+    delete [] fEventSpecies ; 
+  fESLength=0;
 }

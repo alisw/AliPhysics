@@ -101,11 +101,13 @@ AliQA::AliQA() :
 AliQA::AliQA(const AliQA& qa) :
   TNamed(qa),
   fNdet(qa.fNdet), 
-  fQA(qa.fQA), 
+  fQA(new ULong_t[qa.fNdet]), 
   fDet(qa.fDet),
   fTask(qa.fTask)
 { 
   // cpy ctor
+  for (Int_t index = 0 ; index < fNdet ; index++) 
+	fQA[index] = qa.fQA[index] ; 
 }
 
 //_____________________________________________________________________________
