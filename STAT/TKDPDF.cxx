@@ -80,26 +80,26 @@ TKDPDF::~TKDPDF()
 }
 
 //_________________________________________________________________
-void TKDPDF::Build(Int_t)
+Bool_t TKDPDF::Build(Int_t)
 {
 // Fill interpolator's data array i.e.
 //  - estimation points 
 //  - corresponding PDF values
 
   TKDTreeIF::Build();
-  fNTNodes = fNPoints/fBucketSize + ((fNPoints%fBucketSize)?1:0);/*TKDTreeIF::GetNTNodes();*/
   if(!fBoundaries) MakeBoundaries();
   fLambda = 1 + fNDim + (fNDim*(fNDim+1)>>1);
   //printf("after MakeBoundaries() %d\n", memory());
   
   // allocate interpolation nodes
+  Int_t fNTNodes = fNPoints/fBucketSize + ((fNPoints%fBucketSize)?1:0);/*TKDTreeIF::GetNTNodes();*/
   TKDInterpolatorBase::Build(fNTNodes);
 
-  TKDNodeInfo *node = 0x0;
-  Float_t *bounds = 0x0;
+  TKDNodeInfo *node = NULL;
+  Float_t *bounds = NULL;
   Int_t *indexPoints;
   for(int inode=0, tnode = fNNodes; inode<fNTNodes-1; inode++, tnode++){
-    node = (TKDNodeInfo*)(*fTNodes)[inode];
+    node = (TKDNodeInfo*)(*fNodes)[inode];
     node->Val()[0] =  Float_t(fBucketSize)/fNPoints;
     bounds = GetBoundary(tnode);
     for(int idim=0; idim<fNDim; idim++) node->Val()[0] /= (bounds[2*idim+1] - bounds[2*idim]);
@@ -119,7 +119,7 @@ void TKDPDF::Build(Int_t)
   Int_t counts = fNPoints%fBucketSize;
   counts = counts ? counts : fBucketSize;
   Int_t inode = fNTNodes - 1, tnode = inode + fNNodes;
-  node = (TKDNodeInfo*)(*fTNodes)[inode];
+  node = (TKDNodeInfo*)(*fNodes)[inode];
   node->Val()[0] =  Float_t(counts)/fNPoints;
   bounds = GetBoundary(tnode);
   for(int idim=0; idim<fNDim; idim++){ 
@@ -142,7 +142,9 @@ void TKDPDF::Build(Int_t)
   memcpy(&(node->Data()[fNDim]), bounds, fNDimm*sizeof(Float_t));
 
   delete [] fBoundaries;
-  fBoundaries = 0x0;
+  fBoundaries = NULL;
+
+  return kTRUE;
 }
 
 
@@ -155,7 +157,7 @@ void TKDPDF::DrawNode(Int_t tnode, UInt_t ax1, UInt_t ax2)
 // This function creates some graphical objects
 // but don't delete it. Abusing this function may cause memory leaks !
 
-  if(tnode < 0 || tnode >= fNTNodes){
+  if(tnode < 0 || tnode >= GetNTNodes()){
     Warning("DrawNode()", Form("Terminal node %d outside defined range.", tnode));
     return;
   }
@@ -172,7 +174,7 @@ void TKDPDF::DrawNode(Int_t tnode, UInt_t ax1, UInt_t ax2)
   for(int ip = 0; ip<nPoints; ip++) g->SetPoint(ip, fData[ax1][index[ip]], fData[ax2][index[ip]]);
 
   // draw estimation point
-  TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[inode];
+  TKDNodeInfo *node = (TKDNodeInfo*)(*fNodes)[inode];
   TMarker *m=new TMarker(node->Data()[ax1], node->Data()[ax2], 20);
   m->SetMarkerColor(2);
   m->SetMarkerSize(1.7);

@@ -50,33 +50,42 @@ public:
   TKDNodeInfo(const TKDNodeInfo & ref);
   TKDNodeInfo& operator=(const TKDNodeInfo & ref);
   virtual ~TKDNodeInfo();
-  Double_t      CookPDF(const Double_t *point, Double_t &result, Double_t &error);
+  Bool_t        CookPDF(const Double_t *point, Double_t &result, Double_t &error) const;
   inline void   GetBoundary(Int_t ax, Float_t &min, Float_t &max) const;
   inline void   GetCOG(Float_t* &p) const;
   Int_t         GetDimension() const { return fNDim/3; }
   void          GetPDF(Float_t &pdf, Float_t &error) const {pdf=fVal[0]; error=fVal[1];}
   Int_t         GetSize() const { return fNDim; }
+  Int_t         GetNcov() const { return fNcov; }
+  Int_t         GetNpar() const { return fNpar; }
   inline Bool_t Has(const Float_t *p) const;
   void          Print(const Option_t * = "") const;
-  void          Store(const TVectorD &par, const TMatrixD &cov);
+  void          Store(TVectorD const *par, TMatrixD const *cov=NULL);
 
-  TMatrixD*     Cov() const  { return fCov; }
-  TVectorD*     Par() const  { return fPar; }
+  Double_t*      Cov() const  { return fCov; }
+  Double_t*      Par() const  { return fPar; }
 
   void          SetNode(Int_t ndim, Float_t *data, Float_t *pdf);
 protected:
+  void          Bootstrap();
+  void          Build(Int_t ndim);
+  void          SetNcov() { fNcov=Int_t(.5*fNpar*(fNpar+1.));}
+  void          SetNpar() { Int_t dim=Int_t(fNDim/3); fNpar=Int_t(1 + dim + .5*dim*(dim+1));}
   Float_t*      Data() { return fData;}
   Float_t*      Val()  { return &fVal[0]; }
-  void          Build(Int_t ndim);
+
 
 private:
-  Int_t     fNDim;          // 3 times data dimension
-  Float_t   *fData;         //[fNDim] node's data
-  Float_t   fVal[2];        // measured value for node
-  TMatrixD  *fCov;          // interpolator covariance matrix
-  TVectorD  *fPar;          // interpolator parameters
+  Int_t     fNDim;          //! 3 times data dimension
+  Float_t   *fData;         //![fNDim] node's data
+  Float_t   fVal[2];        //!measured value for node
+  Int_t     fNpar;          //number of parameters
+  Int_t     fNcov;          //number of covarince elements
+  Double_t  *fPar;          //[fNpar] interpolator parameters
+  Double_t  *fCov;          //[fNcov] interpolator covariance matrix
 
-  ClassDef(TKDNodeInfo, 1)  // node info for interpolator
+
+  ClassDef(TKDNodeInfo, 2)  // node info for interpolator
 };
 
 //_____________________________________________________________________

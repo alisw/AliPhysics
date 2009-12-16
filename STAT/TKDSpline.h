@@ -12,7 +12,7 @@ public:
 	TKDSpline(Int_t npoints, Int_t ndim);
 
 private:
-	void		Build(Int_t ndim = 0);
+	Bool_t		Build(Int_t ndim=0){return kTRUE;}
 	
 protected:
 

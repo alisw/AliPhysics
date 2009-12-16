@@ -41,41 +41,39 @@ public:
   TKDInterpolatorBase(Int_t size = 0);
   virtual ~TKDInterpolatorBase();
 
-  Double_t   Eval(const Double_t *point, Double_t &result, Double_t &error, Bool_t force = kFALSE);
+  Bool_t        Bootstrap();
+  Double_t      Eval(const Double_t *point, Double_t &result, Double_t &error, Bool_t force = kFALSE);
   virtual Int_t GetNodeIndex(const Float_t *p) = 0;
-  Float_t    GetAlpha() const {return fAlpha;}
-  Bool_t     GetCOGPoint(Int_t node, Float_t *&coord, Float_t &val, Float_t &error) const;
-  TKDNodeInfo* GetNodeInfo(Int_t inode) const;
-  Int_t      GetNTNodes() const {return fNTNodes;}
-  Bool_t     GetRange(Int_t ax, Float_t &min, Float_t &max) const;
-  void       GetStatus(Option_t *opt="");
+  Float_t       GetAlpha() const {return fAlpha;}
+  Int_t         GetLambda() const {return fLambda;}
+  Int_t         GetSize() const {return fNSize;}
+  Bool_t        GetCOGPoint(Int_t node, Float_t *&coord, Float_t &val, Float_t &error) const;
+  TKDNodeInfo*  GetNodeInfo(Int_t inode) const;
+  Int_t         GetNTNodes() const;
+  Bool_t        GetRange(Int_t ax, Float_t &min, Float_t &max) const;
+  void          GetStatus(Option_t *opt="");
 
-  Bool_t     HasStore() const {return TESTBIT(fStatus, kSTORE);}
-  Bool_t     UseCOG() const {return TESTBIT(fStatus, kCOG);}
-  Bool_t     UseWeights() const {return TESTBIT(fStatus, kWEIGHTS);}
+  Bool_t        HasStore() const {return TESTBIT(fStatus, kSTORE);}
+  Bool_t        UseCOG() const {return TESTBIT(fStatus, kCOG);}
+  Bool_t        UseWeights() const {return TESTBIT(fStatus, kWEIGHTS);}
 
-  void       DrawProjection(UInt_t ax1 = 0, UInt_t ax2 = 1);
-  void       SetAlpha(Float_t a);
-  void       SetCOG(Bool_t on = kTRUE) {on ? SETBIT(fStatus, kCOG) : CLRBIT(fStatus, kCOG);}
-  void       SetStore(Bool_t on = kTRUE) {on ? SETBIT(fStatus, kSTORE) : CLRBIT(fStatus, kSTORE);}
-  void       SetWeights(Bool_t on = kTRUE) {on ? SETBIT(fStatus, kWEIGHTS) : CLRBIT(fStatus, kWEIGHTS);}
-
-protected:
-  virtual void      Build(Int_t nnodes);
-
-private:
-  TKDInterpolatorBase(const TKDInterpolatorBase &);
-  TKDInterpolatorBase& operator=(const TKDInterpolatorBase &);
+  void          DrawProjection(UInt_t ax1 = 0, UInt_t ax2 = 1);
+  void          SetAlpha(Float_t a);
+  void          SetCOG(Bool_t on = kTRUE) {on ? SETBIT(fStatus, kCOG) : CLRBIT(fStatus, kCOG);}
+  void          SetStore(Bool_t on = kTRUE) {on ? SETBIT(fStatus, kSTORE) : CLRBIT(fStatus, kSTORE);}
+  void          SetWeights(Bool_t on = kTRUE) {on ? SETBIT(fStatus, kWEIGHTS) : CLRBIT(fStatus, kWEIGHTS);}
 
 protected:
-  Int_t         fNSize;       // data dimension
-  Int_t         fNTNodes;     //Number of evaluation data points
-  TClonesArray  *fTNodes;     //interpolation nodes
-  TKDNodeInfo::TKDNodeDraw  *fTNodesDraw; //graphical representation of interpolation nodes
+  virtual Bool_t    Build(Int_t nnodes);
+
+
+  Int_t         fNSize;       //!data dimension
+  TClonesArray  *fNodes;     //interpolation nodes
+  TKDNodeInfo::TKDNodeDraw  *fNodesDraw; //!graphical representation of interpolation nodes
 
 //private:
   UChar_t       fStatus;      // status of the interpolator
-  UChar_t       fLambda;      // number of parameters in polynom
+  UChar_t       fLambda;      //! number of parameters in polynom
   Short_t		    fDepth;       //! depth of the KD Tree structure used
   Float_t       fAlpha;       // parameter controlling the size of the region to interpolate n = (1+alpha)*lambda
   Float_t       **fRefPoints; //! temporary storage of COG data
@@ -83,7 +81,11 @@ protected:
   TKDTree<Int_t, Float_t> *fKDhelper;      //! kNN finder
   TLinearFitter *fFitter;     //! linear fitter	
 
-  ClassDef(TKDInterpolatorBase, 1)   // data interpolator based on KD tree
+private:
+  TKDInterpolatorBase(const TKDInterpolatorBase &);
+  TKDInterpolatorBase& operator=(const TKDInterpolatorBase &);
+
+  ClassDef(TKDInterpolatorBase, 3)   // data interpolator based on KD tree
 };
 
 

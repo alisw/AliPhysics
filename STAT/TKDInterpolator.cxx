@@ -34,19 +34,20 @@ TKDInterpolator::~TKDInterpolator()
 //_________________________________________________________________
 void TKDInterpolator::AddNode(const TKDNodeInfo &node)
 {
-  if(!fTNodes){
+  if(!fNodes){
     Warning("TKDInterpolator::SetNode()", "Node array not defined.");
     return;
   }
 
-  new((*fTNodes)[fNTNodes++]) TKDNodeInfo(node);
+  Int_t n(GetNTNodes());
+  new((*fNodes)[n++]) TKDNodeInfo(node);
 }
 
 //_________________________________________________________________
-void TKDInterpolator::Build(Int_t npoints, Int_t ndim)
+Bool_t TKDInterpolator::Build(Int_t npoints, Int_t ndim)
 {
   fNSize = ndim;
-  TKDInterpolatorBase::Build(npoints);
+  return TKDInterpolatorBase::Build(npoints);
 }
 
 //_________________________________________________________________
@@ -57,8 +58,8 @@ Int_t TKDInterpolator::GetNodeIndex(const Float_t *p)
 //   for(int i=0; i<fNSize; i++) printf("%f ", p[i]);
 //   printf("] ...\n");
 
-  for(Int_t i=fNTNodes; i--;)
-    if(((TKDNodeInfo*)(*fTNodes)[i])->Has(p)) return i;
+  for(Int_t i=GetNTNodes(); i--;)
+    if(((TKDNodeInfo*)(*fNodes)[i])->Has(p)) return i;
   
   printf("Point p[");
   for(int i=0; i<fNSize; i++) printf("%f ", p[i]);
@@ -70,15 +71,15 @@ Int_t TKDInterpolator::GetNodeIndex(const Float_t *p)
 //_________________________________________________________________
 Bool_t TKDInterpolator::SetNode(Int_t inode, const TKDNodeInfo &ref)
 {
-  if(!fTNodes){
+  if(!fNodes){
     Warning("TKDInterpolator::SetNode()", "Node array not defined.");
     return kFALSE;
   }
-  if(inode >= fNTNodes){
-    Warning("TKDInterpolator::SetNode()", Form("Node array defined up to %d.", fNTNodes));
+  if(inode >= GetNTNodes()){
+    Warning("TKDInterpolator::SetNode()", Form("Node array defined up to %d.", GetNTNodes()));
     return kFALSE;
   }
-  TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[inode];
+  TKDNodeInfo *node = (TKDNodeInfo*)(*fNodes)[inode];
   (*node) = ref;
   return kTRUE;
 }
