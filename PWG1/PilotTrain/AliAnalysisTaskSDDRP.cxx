@@ -260,7 +260,7 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
   ITSrec->Delete();
   delete ITSrec;
 
-  PostData(0,fOutput);
+  PostData(1,fOutput);
   
 }
 //______________________________________________________________________________
