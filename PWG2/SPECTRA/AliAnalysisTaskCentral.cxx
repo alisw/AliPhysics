@@ -22,11 +22,13 @@
 
 #include "TChain.h"
 #include "TTree.h"
-#include "TH1F.h"
+#include "TH1D.h"
 #include "TList.h"
 #include "TObjArray.h"
 #include "TString.h"
 #include "TFile.h"
+#include "TCanvas.h"
+#include "TLegend.h"
 
 #include "AliAnalysisManager.h"
 #include "AliMCEvent.h"
@@ -72,15 +74,14 @@ AliAnalysisTaskCentral::AliAnalysisTaskCentral(const char *name)
 
 	for(Int_t i=0; i<10; i++){
 		fCutsList[i] = 0;
-    } 
+    }
 
 	InitCuts(); //initialize the analysis specific cuts	
     if (!fCutsList) {
 		Printf("ERROR: fCutsList not available");
 		return;
     }
-	
-	printf("AliAnalysisTaskCentral::Constructor\n");
+
 }
 
 
@@ -92,20 +93,20 @@ AliAnalysisTaskCentral::~AliAnalysisTaskCentral()
 
 	if(fESD) delete fESD;
 	if(fMC) delete fMC;
-	
+
 	if(fCutsList){ 
     	delete [] fCutsList;
   	}
-	
+
 	if(fNoEvt) delete fNoEvt;
-	
+
 	if(fCFContainerPi) delete fCFContainerPi;
 	if(fCFContainerPi) delete fCFContainerK;
 	if(fCFContainerPi) delete fCFContainerP;
-	
+
 	if(fOutList) delete fOutList;
 
-	printf("AliAnalysisTaskCentral::Destructor\n");
+
 }
 
 //________________________________________________________________________
@@ -121,15 +122,15 @@ void AliAnalysisTaskCentral::ConnectInputData(Option_t *) {
 	AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 	if (!esdH) {
     	    Printf("ERROR: Could not get ESDInputHandler");
-	} 
+	}
 	else fESD = esdH->GetEvent();
-  
+
 	AliMCEventHandler *mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
 	if (!mcH) {
 	    Printf("ERROR: Could not get MCInputHandler");
 	}
 	else fMC = mcH->MCEvent();
-    }	
+    }
 }
 
 //________________________________________________________________________
@@ -138,27 +139,26 @@ void AliAnalysisTaskCentral::CreateOutputObjects(){
 
 // 	fNoEvt = new TH1F(Form("%s_NoEvt",GetName()), "Number of processed events", 1, 0.0, 1.0);
 
-	fNoEvt = new TH1F("TaskCentral_NoEvt", "Number of processed events", 1, 0.0, 1.0);
-//set here the:     
-    //min and max variable values (to do: move these to a separate cuts class)
+	fNoEvt = new TH1D("TaskCentral_NoEvt", "Number of processed events", 1, 0.0, 1.0);
+//set here the min and max variable values (to do: move these to a separate cuts class)
     const Double_t ptmin  = 0.0 ; //bins in pt
-    const Double_t ptmax  = 5.0 ; //bins in y 
+    const Double_t ptmax  = 5.0 ; //bins in y
     const Double_t etamin  = -0.9 ; //bins in pt
-    const Double_t etamax  = 0.9 ; //bins in y 
+    const Double_t etamax  = 0.9 ; //bins in y
     //apropiate number of bins for histos and CF Container
     const Int_t nbinpt  = 25 ; //bins in pt
-    const Int_t nbineta  = 25 ; //bins in y 
+    const Int_t nbineta  = 25 ; //bins in y
 
 //Correction Framework CONTAINER DEFINITION
     //the sensitive variables, their indices
 	UInt_t ipt = 0;
 	UInt_t ieta  = 1;
-    //Setting up the container grid... 
+    //Setting up the container grid...
     const UInt_t nstep = 2 ; //number of selection steps MC & ESD 
     const Int_t nvar = 2 ; //number of variables on the grid:pt,eta
-	
+
     //arrays for the number of bins in each dimension
-    //nbin is defined above =
+    //nbin is defined above
     Int_t iBin[nvar];
     iBin[0]=nbinpt;
     iBin[1]=nbineta;
@@ -168,24 +168,24 @@ void AliAnalysisTaskCentral::CreateOutputObjects(){
     Double_t *binLim2=new Double_t[nbineta+1];
 
     //values for bin lower bounds
-    for(Int_t i=0; i<=nbinpt; i++) binLim1[i]=(Double_t)ptmin + (ptmax-ptmin)/nbinpt*(Double_t)i ; 
+    for(Int_t i=0; i<=nbinpt; i++) binLim1[i]=(Double_t)ptmin + (ptmax-ptmin)/nbinpt*(Double_t)i ;
     for(Int_t i=0; i<=nbineta; i++) binLim2[i]=(Double_t)etamin  + (etamax-etamin)  /nbineta*(Double_t)i ;
 
 	//container creation
 	fCFContainerPi = new AliCFContainer("TaskCentral_CFCont_Pi","container for tracks",nstep,nvar,iBin);
 	fCFContainerK = new AliCFContainer("TaskCentral_CFCont_K","container for tracks",nstep,nvar,iBin);
 	fCFContainerP = new AliCFContainer("TaskCentral_CFCont_P","container for tracks",nstep,nvar,iBin);
-	
+
     //setting the bin limits
     fCFContainerPi -> SetBinLimits(ipt,binLim1);
     fCFContainerPi -> SetBinLimits(ieta,binLim2);
-	
+
 	fCFContainerK -> SetBinLimits(ipt,binLim1);
 	fCFContainerK -> SetBinLimits(ieta,binLim2);
-	
+
 	fCFContainerP -> SetBinLimits(ipt,binLim1);
 	fCFContainerP -> SetBinLimits(ieta,binLim2);
-	
+
 //outout list creation
 	fOutList = new TList();
 	fOutList->Add(fNoEvt);
@@ -294,16 +294,16 @@ void AliAnalysisTaskCentral::InitCuts(){
 	esdListP->AddLast(esdCutsP);
 
 //------set the cuts to the RIGHT! fCutsList slots-------
-// // event level cuts
+// event level cuts
 	SetCuts(0, mcEventCuts);
 	SetCuts(1, esdEventCuts);
- 
- //particle level cuts
+
+// particle level cuts
 	SetCuts(2, mcListGen);
 	SetCuts(3, mcListPi);
 	SetCuts(4, mcListK);
 	SetCuts(5, mcListP);
- 
+
 	SetCuts(6, esdListGen);
 	SetCuts(7, esdListPi);
 	SetCuts(8, esdListK);
@@ -384,19 +384,19 @@ void AliAnalysisTaskCentral::Exec(Option_t *) {
 
 // Main loop
 // Called for each event
-	
+
 	Double_t pt, eta;
-	Double_t w = 1.0;    
+	Double_t w = 1.0;
 	const Int_t nvar=2; //number of variables on the grid:pt,vtx
 	Double_t value[nvar];//used to fill the CF container
-	
+
 	if(fSim){  // if running on simulations -> look at MC Truth
 		
 		if (!fMC) {
 			Printf("ERROR: fMC not available");
 			return;
 		}
-    
+
 		if(CheckCuts(0, fMC)){ //check event level cuts
 	
 			SendEvent(fMC);
@@ -433,7 +433,7 @@ void AliAnalysisTaskCentral::Exec(Option_t *) {
 			} //end MC particle loop 
 		}
 	}
-	else{  // if we DONT run in simulated data we fill the MC step of the CFCont with 0 
+	else{  // if we DONT run in simulated data we fill the MC step of the CFCont with 0
 		value[0]=0;
 		value[1]=0;
 			
@@ -485,12 +485,12 @@ void AliAnalysisTaskCentral::Exec(Option_t *) {
 		} //end ESD track loop 
 		
 		fNoEvt->Fill(0); //get the number of analyzed events
-	}	
+	}
 
   // Post output data.
 	PostData(0, fOutList);
 
-} 
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskCentral::Terminate(Option_t *) {
@@ -504,7 +504,7 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 		printf("Unable to get output list! \n");
 		return;
 	}
- 
+
 	AliAnalysisCentralExtrapolate *extPi = new AliAnalysisCentralExtrapolate("extrapolationpi");
 	extPi->SetInputList(outList);  //send the outlist to the extrapolation class
 	extPi->SetParticle("kPiPlus"); //set the particle type
@@ -512,15 +512,15 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 	extPi->BoltzmannFit();         //fit and extrapolate using Boltzmann-Gibbs Blast wave model
 	extPi->TsallisFit();           //fit and extrapolate using Tsallis Blast wave model
 	TList *extOutListPi = extPi->GetOutputList();
-	
+
 	AliAnalysisCentralExtrapolate *extK = new AliAnalysisCentralExtrapolate("extrapolationK");
 	extK->SetInputList(outList);
 	extK->SetParticle("kKPlus");
 	extK->ApplyEff();
 	extK->BoltzmannFit();
- 	extK->TsallisFit();
+	extK->TsallisFit();
 	TList *extOutListK = extK->GetOutputList();
-	
+
 	AliAnalysisCentralExtrapolate *extP = new AliAnalysisCentralExtrapolate("extrapolationP");
 	extP->SetInputList(outList);
 	extP->SetParticle("kProton");
@@ -530,6 +530,55 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 	TList *extOutListP = extP->GetOutputList();
 
 
+//----------- Plot the extrapolated spectra -----------------
+	TCanvas *ccorrdata = new TCanvas();
+	ccorrdata->Divide(3,2);
+	
+	ccorrdata->cd(1);
+	ccorrdata->cd(1)->SetLogy();
+	TH1D *extBoltzPi = dynamic_cast<TH1D*>(extOutListPi->FindObject("PtExtBoltzmann"));
+	if(extBoltzPi){
+		extBoltzPi->Draw("p e1");
+	}
+
+	ccorrdata->cd(4);
+	ccorrdata->cd(4)->SetLogy();
+	TH1D *extTsallisPi = dynamic_cast<TH1D*>(extOutListPi->FindObject("PtExtTsallis"));
+	if(extTsallisPi){
+		extTsallisPi->Draw("p e1");
+	}
+
+
+	ccorrdata->cd(2);
+	ccorrdata->cd(2)->SetLogy();
+	TH1D *extBoltzK = dynamic_cast<TH1D*>(extOutListK->FindObject("PtExtBoltzmann"));
+	if(extBoltzK){
+		extBoltzK->Draw("p e1");
+	}
+
+	ccorrdata->cd(5);
+	ccorrdata->cd(5)->SetLogy();
+	TH1D *extTsallisK = dynamic_cast<TH1D*>(extOutListK->FindObject("PtExtTsallis"));
+	if(extTsallisK){
+		extTsallisK->Draw("p e1");
+	}
+
+
+	ccorrdata->cd(3);
+	ccorrdata->cd(3)->SetLogy();
+	TH1D *extBoltzP = dynamic_cast<TH1D*>(extOutListP->FindObject("PtExtBoltzmann"));
+	if(extBoltzP){
+		extBoltzP->Draw("p e1");
+	}
+
+	ccorrdata->cd(6);
+	ccorrdata->cd(6)->SetLogy();
+	TH1D *extTsallisP = dynamic_cast<TH1D*>(extOutListP->FindObject("PtExtTsallis"));
+	if(extTsallisP){
+		extTsallisP->Draw("p e1");
+	}
+
+// ------------------ Save the results -----------------------
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if(!mgr){
 		printf("Unable to get AnalysisManager! \n");
@@ -550,17 +599,16 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 			printf("Unable to get DataContainer! \n");
 			return;
 		}
-	
+
 		printf("file name = %s\n", cont->GetFileName());
 		TFile file(cont->GetFileName(),"update");
-	
+
 		file.cd("PWG2Central");
-	
+
 		gFile->WriteObject(extOutListPi,"pion_list","SingleKey");
 		gFile->WriteObject(extOutListK,"kaon_list","SingleKey");
 		gFile->WriteObject(extOutListP,"proton_list","SingleKey");
 		file.Close();
 	}
-
 
 }

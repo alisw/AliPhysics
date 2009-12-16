@@ -35,22 +35,22 @@ public:
                                                        //suported: kPi*, kK* and kProton
 
 	void ApplyEff(); //apply the eff correction
-	
+
 	void TsallisFit();  //fit the corrected spectrum with TBW model
 	void BoltzmannFit(); //fit the corrected spectrum with BGBW model
-	
+
 	TList *GetOutputList() const {return fResultsList;} //return the results
-	
+
 private:
 	AliAnalysisCentralExtrapolate(const AliAnalysisCentralExtrapolate& ref);
 	AliAnalysisCentralExtrapolate& operator=(const AliAnalysisCentralExtrapolate& ref);
-	
+
 	TString fPartType; //can be kPi*, kK* or kProton
-	
+
 	TList *fInputList; //the input list = the output of the analysis Task
 
 	TList *fResultsList; //List containing the results: corrected, normalized and extrapolated spectra
-	
+
 	ClassDef(AliAnalysisCentralExtrapolate, 1); 
 };
 

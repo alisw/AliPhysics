@@ -45,14 +45,13 @@ AliAnalysisCentralCutMC::AliAnalysisCentralCutMC(const Char_t* name, const Char_
     ,fEtaMax(0)
 {
     //constructor
-    
-    fOnlyPrim = kFALSE; //implicit consider si part secundare
-    
+
+    fOnlyPrim = kFALSE;
+
     SetPDGCode();
     SetPtRange();
     SetEtaRange();
 
-	printf("AliAnalysisCentralCutMC::Constructor\n");
 }
 
 //____________________________________________________________________
@@ -61,7 +60,6 @@ AliAnalysisCentralCutMC::~AliAnalysisCentralCutMC(){
 
     if(fMCEvt) delete fMCEvt;
 
-	printf("AliAnalysisCentralCutMC::Destructor\n");
 }
 
 //___________________________________________________________________________
@@ -74,12 +72,12 @@ Bool_t AliAnalysisCentralCutMC::IsSelected(TObject* const obj){
 		printf("AliAnalysisCentralCutMC:IsSelected ->Can't get particle!\n");
 		return kFALSE;
     }
-    
+
     if(!fMCEvt){
 		printf("AliAnalysisCentralCutMC:IsSelected ->Can't get MCEvent!\n");
 		return kFALSE;    
     }
-    
+
     AliStack *stack = fMCEvt->Stack();
 		if(!stack){
 		printf("AliAnalysisCentralCutMC:IsSelected ->Can't get Stack!\n");
@@ -90,17 +88,16 @@ Bool_t AliAnalysisCentralCutMC::IsSelected(TObject* const obj){
 
     Double_t eta = part->Eta();
 
-    
     if(fOnlyPrim){
 		if(!IsPrimary(part, stack)) return kFALSE;
     }
-    
+
     if(fPDGCode != 0){
 		if(!CheckPDG(part, fPDGCode)) return kFALSE;
-    }	
+    }
 
     if((pt < fPtMin) || (pt > fPtMax)) return kFALSE;
-    
+
     if((eta < fEtaMin) || (eta > fEtaMax)) return kFALSE;
 
 
@@ -112,7 +109,7 @@ Bool_t AliAnalysisCentralCutMC::IsPrimary(AliMCParticle* const part, AliStack* c
 // Check if the particle is primary
 
     Int_t index = part->GetLabel();
-    
+
     TParticle* p = stack->Particle(index);
     if(!p){
 	printf("AliAnalysisCentralCutMC:IsPrimary -> Can't get TParticle!\n");
@@ -164,7 +161,7 @@ Bool_t AliAnalysisCentralCutMC::CheckPDG(AliMCParticle* const mcPart, Int_t cons
     Int_t pdgCode = part->GetPdgCode();
 
     if (pdgCode != pdg ) return kFALSE;
-    
+
     return kTRUE;
-    
+
 }

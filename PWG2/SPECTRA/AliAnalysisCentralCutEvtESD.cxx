@@ -66,7 +66,6 @@ AliAnalysisCentralCutEvtESD::AliAnalysisCentralCutEvtESD(const Char_t* name, con
 		return;
     }
 
-	printf("AliAnalysisCentralCutEvtESD::Constructor\n");
 }
 
 AliAnalysisCentralCutEvtESD::~AliAnalysisCentralCutEvtESD() {
@@ -75,7 +74,6 @@ AliAnalysisCentralCutEvtESD::~AliAnalysisCentralCutEvtESD() {
 		delete [] fCutsList;
 	}
 
-	printf("AliAnalysisCentralCutEvtESD::Destructor\n");
 }
 
 
@@ -149,7 +147,6 @@ void AliAnalysisCentralCutEvtESD::InitCuts(){
     esdCutsSPD->SetMaxNsigmaToVertex(2.0);
     esdCutsSPD->SetRequireSigmaToVertex(kTRUE);
 
-
 //--------------set the cuts ----------------------
     TObjArray* esdListMult = new TObjArray();
     esdListMult->AddLast(esdCutsGen);
@@ -204,8 +201,6 @@ Double_t AliAnalysisCentralCutEvtESD::CalcDir(AliESDEvent* const esdEv) {
 
 //Compute the directivity - FULL ALICE
 
-//     InitCuts();
-
     Double_t dir;
     Double_t px,py;
     Double_t sumaPt = 0;
@@ -258,8 +253,6 @@ Int_t AliAnalysisCentralCutEvtESD::CalcMult(AliESDEvent* const esdEv) {
 
 //Compute multiplicity - FULL ALICE
 
-//     InitCuts();
-
     Int_t charged = 0;
 
     if (!esdEv){
@@ -294,8 +287,6 @@ Int_t AliAnalysisCentralCutEvtESD::CalcMult(AliESDEvent* const esdEv) {
 Double_t AliAnalysisCentralCutEvtESD::CalcSPDDir(AliESDEvent* const esdEv) {
 
 //Compute directivity - SPD ONLY
-
-//     InitCuts();
 
     Double_t dirU;
     Double_t pxU,pyU;
@@ -352,8 +343,6 @@ Double_t AliAnalysisCentralCutEvtESD::CalcSPDDir(AliESDEvent* const esdEv) {
 Int_t AliAnalysisCentralCutEvtESD::CalcSPDMult(AliESDEvent* const esdEv) {
 
 	//Compute multiplicity - SPD ONLY
-
-//     InitCuts();
 
     const AliMultiplicity *spdMult=esdEv->GetMultiplicity();
     if(!spdMult){
