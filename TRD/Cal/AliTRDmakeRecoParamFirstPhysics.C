@@ -26,27 +26,11 @@ TObjArray* CreateRecoParamObject()
   TObjArray *recos = new TObjArray(5);
 
   AliTRDrecoParam *rec = 0x0;
-  recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
-  rec->SetAsDefault();
-  rec->SetNameTitle("Default", "TRD Default Reco Param");
-  rec->SetRawStreamVersion("FAST");
-  rec->SetXenon();
-  rec->SetVertexConstrained();
-  Double_t cov[5] = {2.,2.,0.,0.,0.}
-  rec->SetSysCovMatrix(cov);
-  rec->SetChi2YSlope(0.11853);
-  rec->SetChi2ZSlope(0.04527);
-  rec->SetChi2YCut(1.);
-  rec->SetPhiSlope(10.); //3.17954;
-  rec->SetMaxTheta(2.1445);
-  rec->SetMaxPhi(2.7475);
-  rec->SetNMeanClusters(12.89);
-  rec->SetNSigmaClusters(2.095);
-  rec->SetRoadzMultiplicator(3.);
-  rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
 
   recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
   rec->SetEventSpecie(AliRecoParam::kLowMult);
+  rec->SetAsDefault();
+  rec->SetNameTitle("Default", "TRD Default Reco Param");
   rec->SetNameTitle("LOW", "TRD Low Flux Reco Param");
   rec->SetRawStreamVersion("FAST");
   rec->SetXenon();
