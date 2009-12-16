@@ -284,7 +284,7 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
       // estimate bucket statistics
       Int_t idx(AliTRDCalPIDLQ::GetModelID(ip,is)),
             nb(kMinBuckets), // number of buckets
-	ns((Int_t)((Float_t)(ndata[idx])/nb));    //statistics/bucket
+	ns((Int_t)(((Float_t)(ndata[idx]))/nb));    //statistics/bucket
             
       AliDebug(2, Form("pBin[%d] sBin[%d] n[%d] ns[%d] nb[%d]", ip, is, ndata[idx], ns, nb));
       if(ns<Int_t(kMinStat)){
