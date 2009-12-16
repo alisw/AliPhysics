@@ -162,8 +162,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     }
     // Trigger
     const AliESDRun* esdRun = esd->GetESDRun();
-    TString tclasses = esdRun->GetActiveTriggerClasses();
-    header->SetFiredTriggerClasses(tclasses.Data());
+    header->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
     header->SetTriggerMask(esd->GetTriggerMask()); 
     header->SetTriggerCluster(esd->GetTriggerCluster());
     
