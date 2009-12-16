@@ -25,7 +25,7 @@ ELIBS    := EveBase EveDet EveHLT \
   hijing THbtp TEPEMGEN \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
-  HLTbase XMLParser
+  HLTbase XMLParser STAT
 
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL -lEve $(SYSLIBS)
 

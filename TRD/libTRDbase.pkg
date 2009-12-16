@@ -73,8 +73,7 @@ HDRS= $(SRCS:.cxx=.h)
 DHDR= TRDbaseLinkDef.h
 
 EINCLUDE:= RAW TRD/Cal STAT
-ELIBSDIR:= $(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)
-ELIBS:=STAT
+
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEER -lCDB -lESD -lSTEERBase \

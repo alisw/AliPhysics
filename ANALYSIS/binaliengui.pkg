@@ -19,7 +19,7 @@ ELIBS    := Aliengui \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
   HLTbase \
-  ANALYSIS ANALYSISalice
+  ANALYSIS ANALYSISalice STAT
 
 ifeq (yes,$(CHECKXML))
 PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML

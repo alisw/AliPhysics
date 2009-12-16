@@ -20,7 +20,7 @@ ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONc
         THijing hijing \
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
-	HLTbase MUONevaluation TRIGGERbase 
+	HLTbase MUONevaluation TRIGGERbase STAT
 #       THbtp TEPEMGEN \
 #	THerwig herwig TPHIC
 
