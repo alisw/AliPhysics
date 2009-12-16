@@ -58,16 +58,16 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC){
   Int_t iCount = 0;
 
 
-  const char *cJF[7]        = {"UA1","UA1","UA1","CDF","DA","SISCONE","FASTJET"};
-  const Float_t radius[7]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4};
-  UInt_t  flag[7]     = {    6,    7,    7,    7,   7,        7,        7};
-  flag[5] = 0; // set siscone to 0 for proof mode...
+  const char *cJF[9]        = {"UA1","UA1","UA1","CDF","DA","SISCONE","FASTJET","FASTKT","UA1LO"};
+  const Float_t radius[9]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4,     0.4,    0.4};
+  UInt_t  flag[9]           = {    6,    7,    7,    7,   7,        7,        7,       7,       7};
+  // flag[5] = 0; // set siscone to 0 for proof mode...
   // flag first bit AOD, second bit AODMC2 third bit AODMC2
   // i.e. 7 all, 6 only MC2 and MC
   // this stay at three
   const char *cReader[3] = {"AOD","AODMC","AODMC2"};  
 
-  for(int i = 0; i< 7;i++){
+  for(int i = 0; i< 9;i++){
     if(!kUseAODMC)flag[i]&=1;
     for(int ib = 0;ib<3;ib++){      
       if(flag[i]&(1<<ib)){
@@ -196,6 +196,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     if(radius>0)jh->SetRparam(radius);
     jh->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
     jetFinder = new AliFastJetFinder();
+    jh->SetPtMin(1);
     if (jh) jetFinder->SetJetHeader(jh);
     break;
 
@@ -204,6 +205,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetRparam(0.4); // setup parameters                                  
     if(radius>0)jh->SetRparam(radius);
     jh->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh
+    jh->SetPtMin(1);
     jetFinder = new AliFastJetFinder();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
@@ -246,7 +248,6 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetRadius(0.4);
     if(radius>0)jh->SetRadius(radius);
     jh->SetEtSeed(4.);
-    jh->SetEtSeed(4.);
     jh->SetNAcceptJets(6);
     jh->SetLegoNbinPhi(432);
     jh->SetLegoNbinEta(274);
@@ -259,6 +260,27 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jetFinder = new AliUA1JetFinderV1();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
+  case "UA1LO":
+    AliUA1JetHeaderV1 *jh=new AliUA1JetHeaderV1();
+    jh->SetComment("UA1 jet code with Lo Pt settings parameters");
+    jh->BackgMode(0);
+    jh->SetRadius(0.4);
+    if(radius>0)jh->SetRadius(radius);
+    jh->SetEtSeed(1.);
+    jh->SetNAcceptJets(6);
+    jh->SetLegoNbinPhi(432);
+    jh->SetLegoNbinEta(274);
+    jh->SetLegoEtaMin(-2);
+    jh->SetLegoEtaMax(+2);
+    jh->SetMinJetEt(1.);
+    jh->SetJetEtaMax(1.5);
+    jh->SetJetEtaMin(-1.5);
+
+    jetFinder = new AliUA1JetFinderV1();
+    if (jh) jetFinder->SetJetHeader(jh);
+    break;
+
+
 
   case "UA1MC":
     AliUA1JetHeaderV1 *jh=new AliUA1JetHeaderV1();
