@@ -138,6 +138,7 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom
     fModel->ls();
     return 0.;
   }
+  if(!pdf->GetSize()) pdf->Bootstrap();
   pdf->Eval(x, r, e[0], kFALSE);
   p[0]=TMath::Abs(r); // conversion from interpolation to PDF
   AliDebug(2, Form("LQ=%6.3f+-%5.2f%% @ %4.1f[GeV/c]", p[0], 1.E2*e[0]/p[0], fgTrackMomentum[imom-1]));
@@ -147,6 +148,7 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom
     fModel->ls();
     return p[0];
   }
+  if(!pdf->GetSize()) pdf->Bootstrap();
   pdf->Eval(x, r, e[1], kFALSE);
   p[1]=TMath::Abs(r); // conversion from interpolation to PDF
   AliDebug(2, Form("LQ=%6.3f+-%5.2f%% @ %4.1f[GeV/c]", p[1], 1.E2*e[1]/p[1], fgTrackMomentum[imom]));
