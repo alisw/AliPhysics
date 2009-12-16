@@ -1,5 +1,5 @@
 void
-MakeRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult)
+MakeRecoParam(AliRecoParam::EventSpecie_t thedefault=AliRecoParam::kLowMult)
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
@@ -41,7 +41,7 @@ MakeRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult)
   for(Int_t i =0; i < recoParamArray->GetEntriesFast(); i++) {
     AliDetectorRecoParam *param = (AliDetectorRecoParam *)recoParamArray->UncheckedAt(i);
     if (!param) continue;
-    if (default & param->GetEventSpecie()) {
+    if (thedefault & param->GetEventSpecie()) {
       param->SetAsDefault();
       defaultIsSet = kTRUE;
     }
