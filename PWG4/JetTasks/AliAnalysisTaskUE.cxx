@@ -1139,6 +1139,7 @@ void  AliAnalysisTaskUE::CreateHistos()
   fListOfHistos->Add( fh1Trials ); //At(22)
   
   fSettingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
+  fSettingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
   fSettingsTree->Branch("fTrigger", &fTrigger,"TriggerFlag/I");
   fSettingsTree->Branch("fConeRadius", &fConeRadius,"Rad/D");
   fSettingsTree->Branch("fJet1EtaCut", &fJet1EtaCut, "LeadJetEtaCut/D");
