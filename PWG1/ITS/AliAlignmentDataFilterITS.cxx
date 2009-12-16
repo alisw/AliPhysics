@@ -658,7 +658,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   }
 
   if(GetRecoParam()->GetAlignFilterCosmicMergeTracks()) {
-    curv = 0.5*(curvArray[0]+curvArray[1]);
+    curv = 0.5*(curvArray[0]-curvArray[1]);  // the "-" is because the two tracks have opposite curvature!
     curverr = 0.5*TMath::Sqrt(curverrArray[0]*curverrArray[0]+curverrArray[1]*curverrArray[1]);
     fspTree->Fill();
   }
