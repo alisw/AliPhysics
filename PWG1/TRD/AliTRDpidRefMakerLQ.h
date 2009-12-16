@@ -29,9 +29,9 @@ class TObjArray;
 class AliTRDpidRefMakerLQ : public AliTRDpidRefMaker {
 public:
   enum ETRDpidRefMakerLQsteer{
-    kMaxStat    = 180000 // maximum statistics/PID bin
+    kMaxStat    = 40000 // maximum statistics/PID bin
    ,kMinStat    = 50     // minimum statistics/bucket 14%
-   ,kMinBuckets = 450    // minimum number of buckets [lambda(6)*alpha(1.5)*regions(50)]
+   ,kMinBuckets = 100    // minimum number of buckets [lambda(6)*alpha(1.5)*regions(50)]
   };
   AliTRDpidRefMakerLQ();
   ~AliTRDpidRefMakerLQ();
@@ -40,6 +40,7 @@ public:
   void        Exec(Option_t *opt);
   TObject*    GetOCDBEntry(Option_t *opt);
   Bool_t      GetRefFigure(Int_t ifig);
+  Bool_t      HasOnlineMonitor() const {return kTRUE;}
   TObjArray*  Histos();
   Bool_t      Load(const Char_t *filename = "TRD.CalibPIDrefMaker.root");
   Bool_t      PostProcess();

@@ -254,55 +254,57 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
 //   - write pdf to file for loading to OCDB
 // 
 
-  TCanvas *cc = new TCanvas("cc", "", 500, 500);
+  TCanvas *fMonitor(NULL);
   // allocate working storage
-  Float_t *data[] = {
-    new Float_t[kMaxStat], 
-    new Float_t[kMaxStat]};
+  const Int_t kWS(AliPID::kSPECIES*AliTRDCalPID::kNMom);
+  Float_t *data[2*kWS];
+  for(Int_t i(0); i<2*kWS; i++) data[i]=new Float_t[kMaxStat];
+  Int_t ndata[kWS]; memset(ndata, 0, kWS*sizeof(Int_t));
+
+  AliDebug(1, Form("Loading data[%d]", fData->GetEntries()));
+  for(Int_t itrk=0; itrk < fData->GetEntries(); itrk++){
+    if(!(fData->GetEntry(itrk))) continue;
+    Int_t sbin(fPIDbin);
+    for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){
+      Int_t pbin(fPIDdataArray->fData[ily].fPLbin & 0xf);
+      
+      Double_t dedx[] = {0., 0.};
+      if(!AliTRDCalPIDLQ::CookdEdx(fPIDdataArray->fData[ily].fdEdx, dedx)) continue;
+      Int_t idx=AliTRDCalPIDLQ::GetModelID(pbin,sbin);
+      if(ndata[idx]==kMaxStat) continue;
+
+      // store data
+      data[idx][ndata[idx]] = dedx[0];
+      data[idx+kWS][ndata[idx]] = dedx[1];
+      ndata[idx]++;
+    }
+  }
   for(Int_t ip=0;ip<AliTRDCalPID::kNMom;ip++){ 
     for(Int_t is=AliPID::kSPECIES; is--;) {
-      Int_t n(0); // index of data
-      for(Int_t itrk=0; (itrk < fData->GetEntries()) && (n<kMaxStat); itrk++){
-        if(!(fData->GetEntry(itrk))) continue;
-        if(fPIDbin!=is) continue;
-        for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){
-          if((fPIDdataArray->fData[ily].fPLbin & 0xf)!= ip) continue;
-          
-          Double_t dedx[] = {0., 0.};
-          if(!AliTRDCalPIDLQ::CookdEdx(fPIDdataArray->fData[ily].fdEdx, dedx)) continue;
-          // store data
-          data[0][n] = dedx[0];
-          data[1][n] = dedx[1];
-          n++; if(n==kMaxStat) break;
-        }
-      }
-
       // estimate bucket statistics
-      Int_t nb(kMinBuckets), // number of buckets
-            ns(Int_t(Float_t(n)/nb));    //statistics/bucket
+      Int_t idx(AliTRDCalPIDLQ::GetModelID(ip,is)),
+            nb(kMinBuckets), // number of buckets
+            ns(Int_t(Float_t(ndata[idx])/nb));    //statistics/bucket
             
-// if(Float_t(n)/nb < 220.) ns = 200; // 7% stat error
-//       else if(Float_t(n)/nb < 420.) ns = 400; // 5% stat error
-
-      AliDebug(2, Form("pBin[%d] sBin[%d] n[%d] ns[%d] nb[%d]", ip, is, n, ns, nb));
+      AliDebug(2, Form("pBin[%d] sBin[%d] n[%d] ns[%d] nb[%d]", ip, is, ndata[idx], ns, nb));
       if(ns<Int_t(kMinStat)){
-        AliWarning(Form("Not enough entries [%d] for %s[%d].", n, AliPID::ParticleShortName(is), ip));
+        AliWarning(Form("Not enough entries [%d] for %s[%d].", ndata[idx], AliPID::ParticleShortName(is), ip));
         continue;
       }
 
       // build helper PDF
-      TKDPDF *pdf = new TKDPDF(n, 2, ns, data);
+      Float_t *ldata[2]={data[idx], data[kWS+idx]};
+      TKDPDF *pdf = new TKDPDF(ndata[idx], 2, ns, ldata);
       pdf->SetCOG(kFALSE);
       pdf->SetWeights();
-      pdf->SetStore();
+      //pdf->SetStore();
       pdf->SetAlpha(5.);
       //pdf.GetStatus();
-      fPDF->AddAt(pdf, AliTRDCalPIDLQ::GetModelID(ip,is));
+      fPDF->AddAt(pdf, idx);
       Int_t in=pdf->GetNTNodes(); Float_t par[6], *pp=&par[0];
       while(in--){
         const TKDNodeInfo *nn = pdf->GetNodeInfo(in);
         nn->GetCOG(pp);
-        //printf("evaluate for node[%d] @ [%f %f]\n",in, par[0], par[1]);
         Double_t p[] = {par[0], par[1]}, r,e;
         pdf->Eval(p,r,e,1);
       }
@@ -329,7 +331,7 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
       SetZeroes(&interpolator, node, nside, jn, ax0max,-dx, ax1max, dy, 'x');
       SetZeroes(&interpolator, node, nside, jn ,ax1max, -dy, ax0min, -dx, 'y');
       delete [] nodes;
-      Int_t in=interpolator.GetNTNodes(); Float_t par[6], *pp=&par[0];
+      Int_t in=nnodes; Float_t par[6], *pp=&par[0];
       while(in--){
         const TKDNodeInfo *nn = interpolator.GetNodeInfo(in);
         nn->GetCOG(pp);
@@ -339,9 +341,12 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
       }
 */
       // visual on-line monitoring
-      pdf->DrawProjection();cc->Modified(); cc->Update(); cc->SaveAs(Form("pdf_%s%02d.gif", AliPID::ParticleShortName(is), ip));
-      cc->SaveAs(Form("%s_%s%02d.gif", GetName(), AliPID::ParticleShortName(is), ip));
-
+      if(HasOnlineMonitor()){
+        if(!fMonitor) fMonitor = new TCanvas("cc", "PDF 2D LQ", 500, 500);
+        pdf->DrawProjection();
+        fMonitor->Modified(); fMonitor->Update(); 
+        fMonitor->SaveAs(Form("pdf_%s%02d.gif", AliPID::ParticleShortName(is), ip));
+      }
 
       //fContainer->ls();
       // save a discretization of the PDF for result monitoring
@@ -363,6 +368,7 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
       }
     }
   }
+  for(Int_t i(0); i<2*kWS; i++) delete [] data[i];
   return kTRUE;
 }
 
