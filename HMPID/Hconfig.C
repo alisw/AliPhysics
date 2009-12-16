@@ -2,6 +2,7 @@
 
 
 #include <TPDGCode.h>
+#include "AliHMPIDParam.h"
 
 Bool_t gGun1      =kFALSE;
 Bool_t gGun7      =kFALSE;
@@ -199,13 +200,13 @@ void HmpConfig::GuiGen(TGCompositeFrame *pMainF)
   fGenF->AddFrame(fGenBG=new TGButtonGroup(fGenF,"Gene"));//add type button group to vertical generator frame
   fGenBG->Connect("Pressed(Int_t)","HmpConfig",this,"GenAddSlot(Int_t)"); fGenBG->Connect("Released(Int_t)","HmpConfig",this,"GenRemSlot(Int_t)");
     new TGCheckButton(fGenBG,"gun along z"           ,kGunZ);
-    new TGCheckButton(fGenBG,"gun to 1 chamber"      ,kGun1);
-    new TGCheckButton(fGenBG,"gun to 7 chambers"     ,kGun7);
-    new TGCheckButton(fGenBG,"box HMPID phase space"  ,kBox );  
+    new TGCheckButton(fGenBG,"box in 1 chamber"      ,kGun1);
+    new TGCheckButton(fGenBG,"box in 7 chambers"     ,kGun7);
+    new TGCheckButton(fGenBG,"box HMPID phase space" ,kBox );  
     new TGCheckButton(fGenBG,"HIJING"                ,kHijing);
     new TGCheckButton(fGenBG,"HIJING para"           ,kHijingPara);
     new TGCheckButton(fGenBG,"Pythia"                ,kPythia);
-    new TGCheckButton(fGenBG,"HMPID lib"              ,kHmpLib);
+    new TGCheckButton(fGenBG,"HMPID lib"             ,kHmpLib);
 //N prims for box and Hijing para    
   fGenF->AddFrame(fGenNprimCO=new TGComboBox(fGenF,100)); //add N prims combo to generator vertical frame
   fGenNprimCO->AddEntry("not used"    ,kNotUsed);
@@ -337,6 +338,11 @@ void HmpConfig::GenRemSlot(Int_t id)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void HmpConfig::WriteGen(FILE *pF)
 {
+
+  CheckGeometry();
+  
+  AliHMPIDParam *pP = AliHMPIDParam::Instance();
+
   Int_t pid=fGenPidCO->GetSelected();
   Float_t pmin=0.1*fGenPminCO->GetSelected(); //particle momentum, GeV
   Float_t pmax=0.1*fGenPmaxCO->GetSelected(); //particle momentum, GeV
@@ -350,39 +356,18 @@ void HmpConfig::WriteGen(FILE *pF)
     fprintf(pF,"  AliGenFixed *pGz=new AliGenFixed(1); pGz->SetPart(%i); pGz->SetMomentum(%.1f); pGz->SetOrigin(0,0,-200); pG->AddGenerator(pGz,\"Gz\",1);\n",pid,pmin);
   
   if(fGenBG->GetButton(kGun1)->GetState()==kButtonDown){//1 gun towards 1 HMPID chamber
-    switch(fGenChamCO->GetSelected()){
-     case 1: fprintf(pF,"  AliGenFixed *pG1=new AliGenFixed(1); pG1->SetPart(%i); pG1->SetMomentum(%.1f);\n",pid,pmin); 
-             fprintf(pF,"               pG1->SetTheta(109.5);   pG1->SetPhi(10);  pG->AddGenerator(pG1,\"g1\",1);\n"); break;
-     case 2: fprintf(pF,"  AliGenFixed *pG2=new AliGenFixed(1); pG2->SetPart(%i); pG2->SetMomentum(%.1f);\n",pid,pmin);
-	     fprintf(pF,"               pG2->SetTheta( 90.0);   pG2->SetPhi(10);  pG->AddGenerator(pG2,\"g2\",1);\n"); break;
-     case 3: fprintf(pF,"  AliGenFixed *pG3=new AliGenFixed(1); pG3->SetPart(%i); pG3->SetMomentum(%.1f);\n",pid,pmin);
-	     fprintf(pF,"               pG3->SetTheta(109.5);   pG3->SetPhi(30);  pG->AddGenerator(pG3,\"g3\",1);\n"); break;
-     case 4: fprintf(pF,"  AliGenFixed *pG4=new AliGenFixed(1); pG4->SetPart(%i); pG4->SetMomentum(%.1f);\n",pid,pmin);
-             fprintf(pF,"               pG4->SetTheta( 87.0);   pG4->SetPhi(30);  pG->AddGenerator(pG4,\"g4\",1);\n"); break;
-     case 5: fprintf(pF,"  AliGenFixed *pG5=new AliGenFixed(1); pG5->SetPart(%i); pG5->SetMomentum(%.1f);\n",pid,pmin);
-             fprintf(pF,"               pG5->SetTheta( 70.5);   pG5->SetPhi(30);  pG->AddGenerator(pG5,\"g5\",1);\n"); break;
-     case 6: fprintf(pF,"  AliGenFixed *pG6=new AliGenFixed(1); pG6->SetPart(%i); pG6->SetMomentum(%.1f);\n",pid,pmin);
-             fprintf(pF,"               pG6->SetTheta( 90.0);   pG6->SetPhi(50);  pG->AddGenerator(pG6,\"g6\",1);\n"); break;
-     case 7: fprintf(pF,"  AliGenFixed *pG7=new AliGenFixed(1); pG7->SetPart(%i); pG7->SetMomentum(%.1f);\n",pid,pmin);
-             fprintf(pF,"               pG7->SetTheta( 70.5);   pG7->SetPhi(50);  pG->AddGenerator(pG7,\"g7\",1);\n"); break;
-    }    
+    Int_t ch = fGenChamCO->GetSelected()-1;
+    fprintf(pF,"  AliGenBox *pGB=new AliGenBox(1); pGB->SetPart(%i); pGB->SetMomentumRange(%.1f,%.1f);\n",pid,pmin,pmin+0.5); 
+    fprintf(pF,"   pGB->SetThetaRange(%.1f,%.1f);   pGB->SetPhiRange(%.1f,%.1f);  pG->AddGenerator(pGB,\"g\",1);//Chamber %i\n",
+                                                       pP->ChThMin(ch),pP->ChThMax(ch),pP->ChPhiMin(ch),pP->ChPhiMax(ch),ch);
   }
   
   if(fGenBG->GetButton(kGun7)->GetState()==kButtonDown){//7 guns towards 7 HMPID chambers
-    fprintf(pF,"  AliGenFixed *pG1=new AliGenFixed(1); pG1->SetPart(%i); pG1->SetMomentum(%.1f);pG1->SetTheta(109.5-3); pG1->SetPhi(10);\n",pid,pmin); 
-    fprintf(pF,"               pG->AddGenerator(pG1,\"g1\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG2=new AliGenFixed(1); pG2->SetPart(%i); pG2->SetMomentum(%.1f);pG2->SetTheta( 90.0-3); pG2->SetPhi(10);\n",pid,pmin); 
-    fprintf(pF,"               pG->AddGenerator(pG2,\"g2\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG3=new AliGenFixed(1); pG3->SetPart(%i); pG3->SetMomentum(%.1f);pG3->SetTheta(109.5-3); pG3->SetPhi(30);\n",pid,pmin); 
-    fprintf(pF,"               pG->AddGenerator(pG3,\"g3\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG4=new AliGenFixed(1); pG4->SetPart(%i); pG4->SetMomentum(%.1f);pG4->SetTheta( 90.0-3); pG4->SetPhi(30);\n",pid,pmin); 
-    fprintf(pF,"               pG->AddGenerator(pG4,\"g4\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG5=new AliGenFixed(1); pG5->SetPart(%i); pG5->SetMomentum(%.1f);pG5->SetTheta( 70.0-3); pG5->SetPhi(30);\n",pid,pmin); 
-    fprintf(pF,"               pG->AddGenerator(pG5,\"g5\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG6=new AliGenFixed(1); pG6->SetPart(%i); pG6->SetMomentum(%.1f);pG6->SetTheta( 90.0-3); pG6->SetPhi(50);\n",pid,pmin); 
-    fprintf(pF,"               pG->AddGenerator(pG6,\"g6\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG7=new AliGenFixed(1); pG7->SetPart(%i); pG7->SetMomentum(%.1f);pG7->SetTheta( 70.0-3); pG7->SetPhi(50);\n",pid,pmin); 
-    fprintf(pF,"               pG->AddGenerator(pG7,\"g7\",1);\n");
+    for(Int_t ich=0;ich<7;ich++) {
+      fprintf(pF,"  AliGenBox *pGB%i=new AliGenBox(1); pGB%i->SetPart(%i); pGB%i->SetMomentumRange(%.1f,%.1f);\n",ich,ich,pid,ich,pmin,pmin+0.5); 
+      fprintf(pF,"   pGB%i->SetThetaRange(%.1f,%.1f);   pGB%i->SetPhiRange(%.1f,%.1f);  pG->AddGenerator(pGB%i,\"g%i\",1);//Chamber %i\n",
+                                        ich,pP->ChThMin(ich),pP->ChThMax(ich),ich,pP->ChPhiMin(ich),pP->ChPhiMax(ich),ich,ich,ich);
+    }
   }  
     
   if(fGenBG->GetButton(kBox)->GetState()==kButtonDown){// box towards HMPID phase space
@@ -805,3 +790,13 @@ void Hconfig()
 {
    new HmpConfig("Config.C");
 }   
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void CheckGeometry()
+{
+  if(!(gSystem->IsFileInIncludePath("geometry.root"))) {
+    Printf("");
+    Printf("HConfig needs for the geometry.root file. Please put it in the current dir!. Bye.");
+    Printf("");
+    gApplication->Terminate(0);
+  }
+}
