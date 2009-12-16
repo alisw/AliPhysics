@@ -22,7 +22,7 @@
 //              3. Supply an AliCFContainer meant to define the optimised topological selections
 //              4. Rough azimuthal correlation study (Eta, Phi)
 //            Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
-//            Modified :           A.Maire Nov2009, antonin.maire@ires.in2p3.fr
+//            Modified :           A.Maire Dec2009, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
 
 
@@ -50,6 +50,7 @@ class AliAODv0;
 #include "TVector3.h"
 #include "TCanvas.h"
 #include "TMath.h"
+#include "TLegend.h"
 
 
 #include "AliLog.h"
@@ -72,7 +73,7 @@ ClassImp(AliAnalysisTaskCheckCascade)
 
 //________________________________________________________________________
 AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade() 
-  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fTpcPidManager(0),
+  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fRealData(0), fTpcPidManager(0),
 
     	// - Cascade part initialisation
     fListHistCascade(0),
@@ -144,7 +145,7 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade()
 
 //________________________________________________________________________
 AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade(const char *name) 
-  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fTpcPidManager(0),
+  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fRealData(0), fTpcPidManager(0),
      
     	// - Cascade part initialisation
     fListHistCascade(0),
@@ -239,7 +240,7 @@ if(! fHistTrackMultiplicity) {
 	else // pp collisions
 		fHistTrackMultiplicity = new TH1F("fHistTrackMultiplicity", 
 			"Track Multiplicity;Nbr of tracks/Evt;Events", 
-			200, 0, 200);
+			250, 0, 250);
 	fListHistCascade->Add(fHistTrackMultiplicity);
 }
 
@@ -247,11 +248,11 @@ if(! fHistCascadeMultiplicity) {
 	if(fCollidingSystems)// AA collisions
 		fHistCascadeMultiplicity = new TH1F("fHistCascadeMultiplicity", 
 			"Multiplicity distribution;Number of Cascades;Events", 
-			50, 0, 50); 		
+			100, 0, 100); 		
 	else // pp collisions
 	  	fHistCascadeMultiplicity = new TH1F("fHistCascadeMultiplicity", 
 			"Cascades per event;Nbr of Cascades/Evt;Events", 
-			10, 0, 10);
+			25, 0, 25);
 	fListHistCascade->Add(fHistCascadeMultiplicity);
 }
 
@@ -649,7 +650,7 @@ if(! fCFContCascadePIDXiMinus)  {
   lNbBinsPerVar[0] = 100;
   lNbBinsPerVar[1] = 400;
   lNbBinsPerVar[2] = 48;
-  lNbBinsPerVar[3] = 200;
+  lNbBinsPerVar[3] = 250;
    
   
   fCFContCascadePIDXiMinus = new AliCFContainer("fCFContCascadePIDXiMinus","Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
@@ -661,7 +662,7 @@ if(! fCFContCascadePIDXiMinus)  {
   if(fCollidingSystems) 
 	fCFContCascadePIDXiMinus->SetBinLimits(3, 0.0, 20000.0  );    // TrackMultiplicity
   else
-	fCFContCascadePIDXiMinus->SetBinLimits(3, 0.0, 200.0  );     // TrackMultiplicity
+	fCFContCascadePIDXiMinus->SetBinLimits(3, 0.0, 250.0  );     // TrackMultiplicity
   
   // Setting the step title : one per PID case
   fCFContCascadePIDXiMinus->SetStepTitle(0, "No PID");
@@ -691,7 +692,7 @@ if(! fCFContCascadePIDXiPlus)  {
   lNbBinsPerVar[0] = 100;
   lNbBinsPerVar[1] = 400;
   lNbBinsPerVar[2] = 48;
-  lNbBinsPerVar[3] = 200;
+  lNbBinsPerVar[3] = 250;
    
   
   fCFContCascadePIDXiPlus = new AliCFContainer("fCFContCascadePIDXiPlus","Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
@@ -704,7 +705,7 @@ if(! fCFContCascadePIDXiPlus)  {
   if(fCollidingSystems) 
 	fCFContCascadePIDXiPlus->SetBinLimits(3, 0.0, 20000.0  );    // TrackMultiplicity
   else
-	fCFContCascadePIDXiPlus->SetBinLimits(3, 0.0, 200.0  );     // TrackMultiplicity
+	fCFContCascadePIDXiPlus->SetBinLimits(3, 0.0, 250.0  );     // TrackMultiplicity
   
   // Setting the step title : one per PID case
   fCFContCascadePIDXiPlus->SetStepTitle(0, "No PID");
@@ -735,7 +736,7 @@ if(! fCFContCascadePIDOmegaMinus)  {
   lNbBinsPerVar[0] = 100;
   lNbBinsPerVar[1] = 500;
   lNbBinsPerVar[2] = 48;
-  lNbBinsPerVar[3] = 200;
+  lNbBinsPerVar[3] = 250;
    
   
   fCFContCascadePIDOmegaMinus = new AliCFContainer("fCFContCascadePIDOmegaMinus","Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
@@ -748,7 +749,7 @@ if(! fCFContCascadePIDOmegaMinus)  {
   if(fCollidingSystems) 
 	fCFContCascadePIDOmegaMinus->SetBinLimits(3, 0.0, 20000.0  );    // TrackMultiplicity
   else
-	fCFContCascadePIDOmegaMinus->SetBinLimits(3, 0.0, 200.0  );     // TrackMultiplicity
+	fCFContCascadePIDOmegaMinus->SetBinLimits(3, 0.0, 250.0  );     // TrackMultiplicity
   
   // Setting the step title : one per PID case
   fCFContCascadePIDOmegaMinus->SetStepTitle(0, "No PID");
@@ -778,7 +779,7 @@ if(! fCFContCascadePIDOmegaPlus)  {
   lNbBinsPerVar[0] = 100;
   lNbBinsPerVar[1] = 500;
   lNbBinsPerVar[2] = 48;
-  lNbBinsPerVar[3] = 200;
+  lNbBinsPerVar[3] = 250;
    
   
   fCFContCascadePIDOmegaPlus = new AliCFContainer("fCFContCascadePIDOmegaPlus","Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
@@ -791,7 +792,7 @@ if(! fCFContCascadePIDOmegaPlus)  {
   if(fCollidingSystems) 
 	fCFContCascadePIDOmegaPlus->SetBinLimits(3, 0.0, 20000.0  );    // TrackMultiplicity
   else
-	fCFContCascadePIDOmegaPlus->SetBinLimits(3, 0.0, 200.0  );     // TrackMultiplicity
+	fCFContCascadePIDOmegaPlus->SetBinLimits(3, 0.0, 250.0  );     // TrackMultiplicity
   
   // Setting the step title : one per PID case
   fCFContCascadePIDOmegaPlus->SetStepTitle(0, "No PID");
@@ -853,8 +854,8 @@ if(! fCFContCascadeCuts){
   lNbBinsPerVar[13] = 20;
   lNbBinsPerVar[14] = 20;
  
-  lNbBinsPerVar[15] = 40;
-  lNbBinsPerVar[16] = 40;
+  lNbBinsPerVar[15] = 50;
+  lNbBinsPerVar[16] = 50;
   lNbBinsPerVar[17] = 35;
     
  fCFContCascadeCuts = new AliCFContainer("fCFContCascadeCuts","Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar );
@@ -881,8 +882,8 @@ if(! fCFContCascadeCuts){
   	fCFContCascadeCuts->SetBinLimits(16,   0.0, 10000.0  );    // SPDTrackletsMultiplicity
   }
   else{  
-  	fCFContCascadeCuts->SetBinLimits(15,   0.0, 200.0  );     // TrackMultiplicity
-  	fCFContCascadeCuts->SetBinLimits(16,   0.0, 200.0  );     // SPDTrackletsMultiplicity
+  	fCFContCascadeCuts->SetBinLimits(15,   0.0, 250.0  );     // TrackMultiplicity
+  	fCFContCascadeCuts->SetBinLimits(16,   0.0, 250.0  );     // SPDTrackletsMultiplicity
   }
   fCFContCascadeCuts->SetBinLimits(17,  25.0  ,165.0  );	// BachTPCClusters
   
@@ -1033,6 +1034,10 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		Printf("ERROR: lESDevent not available \n");
 		return;
 	}
+	// FIXME : Check the availability of the proper trigger 
+	if(fRealData){ // 0 = MC data or 1 = real data 
+		if ( !( lESDevent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) ) return;
+	}
 	ncascades = lESDevent->GetNumberOfCascades();
   }
   
@@ -1058,7 +1063,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	//  	CascVtxer.V0sTracks2CascadeVertices(lESDevent);
 	//     }
   
-  
+	
   // ---------------------------------------------------------------
   // I - General histos (filled for any event)
 
@@ -1166,10 +1171,12 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	AliESDcascade *xi = lESDevent->GetCascade(iXi);
 	if (!xi) continue;
 
-	// Just to know which file is currently open : locate the file containing Xi
-	// cout << "Name of the file containing Xi candidate(s) :" 
-	//	<< fInputHandler->GetTree()->GetCurrentFile()->GetName() 
-	//	<< endl;
+	// FIXME : Just to know which file is currently open : locate the file containing Xi
+	//  cout << "Name of the file containing Xi candidate(s) :" 
+	//       << CurrentFileName() 
+	//       << " / evt "
+	//       << Entry()
+	//       << " : mass(Xi) = " << xi->GetEffMassXi() << endl;
 	
 		// - II.Step 1 : Characteristics of the event : prim. Vtx + magnetic field (ESD)
 		//-------------
@@ -1305,6 +1312,8 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 					    			lBestPrimaryVtxPos[1], 
 					    			lMagneticField  )     ); 
 	
+	//FIXME : Extra-cut = sufficient decay length for Lambda
+	//	if(TMath::Abs(lV0RadiusXi - lXiRadius) < 0.3 ) continue;
 	
 		// - II.Step 3' : extra-selection for cascade candidates
 		// Towards optimisation of AA selection
@@ -1531,6 +1540,24 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	lPtArmXi  = xi->PtArmXi();
 	
 	
+	//FIXME : Extra-cut = Anti-splitting cut for lambda daughters
+	Bool_t kAntiSplittingLambda = kTRUE;
+	
+	if(kAntiSplittingLambda){
+		Double_t lNMomX = 0., lNMomY = 0., lNMomZ = 0.;
+		Double_t lPMomX = 0., lPMomY = 0., lPMomZ = 0.;
+		
+		xi->GetPPxPyPz(lPMomX, lPMomY, lPMomZ); 
+		xi->GetNPxPyPz(lNMomX, lNMomY, lNMomZ); 
+		
+		if( xi->Charge() < 0){// Xi- or Omega-
+			if(TMath::Abs(lBachTransvMom - TMath::Sqrt( lNMomX*lNMomX + lNMomY*lNMomY )  ) < 0.100) continue;
+		}
+		else {                //Xi+ or Omega+
+			if(TMath::Abs(lBachTransvMom - TMath::Sqrt( lPMomX*lPMomX + lPMomY*lPMomY ) ) < 0.100) continue;
+		}
+	}
+	
 	
 		// II.Step 7 - Complementary info for monitoring the cascade cut variables
 	
@@ -1705,7 +1732,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	lPtArmXi  = xi->PtArmXi();
 
 		// II.Step 7 - Complementary info for monitoring the cascade cut variables
-	//FIXME
+	//FIXME : missing for AOD : Tacklet Multiplicity + TPCCluster
 	
 		// II.Step 8 - Azimuthal correlation study
 		//-------------
@@ -2170,32 +2197,82 @@ void AliAnalysisTaskCheckCascade::Terminate(Option_t *)
 		Printf("ERROR - AliAnalysisTaskCheckCascade: fHistMassOmegaPlus not available\n"); return;
 	}
   
-  TCanvas *canCheckCascade = new TCanvas("AliAnalysisTaskCheckCascade","CheckCascade overview",10,10,510,510);
+  TCanvas *canCheckCascade = new TCanvas("AliAnalysisTaskCheckCascade","CheckCascade overview",10,10,1010,660);
   canCheckCascade->Divide(2,2);
   
   canCheckCascade->cd(1);
   canCheckCascade->cd(1)->SetLogy();
+  fHistTrackMultiplicity->SetMarkerStyle(kFullStar);  
+  fHistTrackMultiplicity->GetXaxis()->SetLabelFont(42);
+  fHistTrackMultiplicity->GetYaxis()->SetLabelFont(42);
+  fHistTrackMultiplicity->SetTitleFont(42, "xy");
+  fHistTrackMultiplicity->GetXaxis()->SetTitleOffset(1.1);
   fHistTrackMultiplicity->DrawCopy("H");
   
   canCheckCascade->cd(2);  
   canCheckCascade->cd(2)->SetLogy();
   fHistCascadeMultiplicity->SetMarkerStyle(kOpenSquare);
+  fHistCascadeMultiplicity->GetXaxis()->SetLabelFont(42);
+  fHistCascadeMultiplicity->GetYaxis()->SetLabelFont(42);
+  fHistCascadeMultiplicity->SetTitleFont(42, "xy");
+  fHistCascadeMultiplicity->GetXaxis()->SetTitleOffset(1.1);
   fHistCascadeMultiplicity->DrawCopy("E");
   
   canCheckCascade->cd(3);  
-  fHistMassXiMinus->SetMarkerStyle(kFullCircle);
+  fHistMassXiMinus ->SetMarkerStyle(kFullCircle);
   fHistMassXiMinus ->SetMarkerSize(0.5);
-  fHistMassXiMinus->DrawCopy("E");
+  fHistMassXiMinus ->GetXaxis()->SetLabelFont(42);
+  fHistMassXiMinus ->GetYaxis()->SetLabelFont(42);
+  fHistMassXiMinus ->SetTitleFont(42, "xy");
+  fHistMassXiMinus ->GetXaxis()->SetTitleOffset(1.1);
+  fHistMassXiMinus ->GetYaxis()->SetTitleOffset(1.3);
+   // fHistMassXiMinus->Rebin(2);
+  fHistMassXiMinus ->GetXaxis()->SetRangeUser(1.24, 1.42);
+  fHistMassXiMinus ->DrawCopy("E");
+  
   fHistMassXiPlus ->SetMarkerStyle(kOpenCircle);
+  fHistMassXiPlus ->SetMarkerColor(kRed+2);
+  fHistMassXiPlus ->SetLineColor(kRed+2);
   fHistMassXiPlus ->SetMarkerSize(0.5);
+  // fHistMassXiPlus ->Rebin(2);
   fHistMassXiPlus ->DrawCopy("ESAME");
   
+  
+  TLegend *legendeXi =new TLegend(0.67,0.34,0.97,0.54);
+ 		legendeXi->SetTextFont(42);
+ 		legendeXi->SetTextSize(0.05);
+ 		legendeXi->SetFillColor(kWhite);
+ 		legendeXi->AddEntry( fHistMassXiMinus,"#Xi^{-} candidates","lp");
+ 		legendeXi->AddEntry( fHistMassXiPlus,"#Xi^{+} candidates","lp");
+ 		legendeXi->Draw();
+  
+  
   canCheckCascade->cd(4);  
+  fHistMassOmegaPlus ->SetMarkerStyle(kOpenCircle);
+  fHistMassOmegaPlus ->SetMarkerColor(kRed+2);
+  fHistMassOmegaPlus ->SetLineColor(kRed+2);
+  fHistMassOmegaPlus ->SetMarkerSize(0.5);
+  fHistMassOmegaPlus ->GetXaxis()->SetLabelFont(42);
+  fHistMassOmegaPlus ->GetYaxis()->SetLabelFont(42);
+  fHistMassOmegaPlus ->SetTitleFont(42, "xy");
+  fHistMassOmegaPlus ->GetXaxis()->SetTitleOffset(1.1);
+  fHistMassOmegaPlus ->GetYaxis()->SetTitleOffset(1.25);
+  // fHistMassOmegaPlus ->Rebin(2);
+  fHistMassOmegaPlus ->GetXaxis()->SetRangeUser(1.6, 1.84);
+  fHistMassOmegaPlus ->DrawCopy("E");
+  
   fHistMassOmegaMinus->SetMarkerStyle(kFullCircle);
   fHistMassOmegaMinus->SetMarkerSize(0.5);
-  fHistMassOmegaMinus->DrawCopy("E");
-  fHistMassOmegaPlus ->SetMarkerStyle(kOpenCircle);
-  fHistMassOmegaPlus ->SetMarkerSize(0.5);
-  fHistMassOmegaPlus ->DrawCopy("ESAME");
+  // fHistMassOmegaMinus->Rebin(2);
+  fHistMassOmegaMinus->DrawCopy("ESAME");
+
+  
+   TLegend *legendeOmega = new TLegend(0.67,0.34,0.97,0.54);
+ 		legendeOmega->SetTextFont(42);
+ 		legendeOmega->SetTextSize(0.05);
+ 		legendeOmega->SetFillColor(kWhite);
+ 		legendeOmega->AddEntry( fHistMassOmegaMinus,"#Omega^{-} candidates","lp");
+ 		legendeOmega->AddEntry( fHistMassOmegaPlus,"#Omega^{+} candidates","lp");
+ 		legendeOmega->Draw();
 
 }
