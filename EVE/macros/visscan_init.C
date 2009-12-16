@@ -121,6 +121,8 @@ void visscan_init(const TString& cdburi = "",
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink.C",            "esd_kink"));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks",              "esd_tracks.C+", "esd_tracks",              "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks ITS",          "esd_tracks.C+", "esd_tracks_ITS",              "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks TPC",           "esd_tracks.C+", "esd_tracks_TPC",              "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MI",           "esd_tracks.C+", "esd_tracks_MI",           "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C+", "esd_tracks_by_category",  "", kTRUE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by anal cuts", "esd_tracks.C+", "esd_tracks_by_anal_cuts", "", kFALSE));

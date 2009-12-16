@@ -25,8 +25,10 @@
 #include <EveBase/AliEveEventManager.h>
 
 #include <AliESDEvent.h>
+#include <AliESDfriend.h>
 #include <AliESDtrackCuts.h>
 #include <AliESDtrack.h>
+#include <AliESDfriendTrack.h>
 #include <AliExternalTrackParam.h>
 
 #include <AliPWG0Helper.h>
@@ -137,6 +139,46 @@ void esd_track_add_param(AliEveTrack* track, const AliExternalTrackParam* tp)
 
 //==============================================================================
 
+AliEveTrack* esd_make_track_TPC(AliESDtrack *at, AliESDfriendTrack* aft, TEveTrackList* cont)
+{
+  // Make a TPC track representation and put it into given container.
+
+  AliEveTrack* track = new AliEveTrack(at, cont->GetPropagator());
+  track->SetAttLineAttMarker(cont);
+  track->SetName(Form("AliEveTrack %d", at->GetID()));
+  track->SetElementTitle(esd_track_title(at));
+  track->SetSourceObject(at);
+
+  // Add inner/outer track parameters as start point and pathmark.
+  if (at->GetInnerParam()) track->SetStartParams(at->GetInnerParam());
+  else return NULL;
+  if (aft->GetTPCOut()) esd_track_add_param(track, aft->GetTPCOut());
+  else return NULL;
+
+  return track;
+}
+
+AliEveTrack* esd_make_track_ITS(AliESDtrack *at, AliESDfriendTrack* aft, TEveTrackList* cont)
+{
+  // Make a ITS track representation and put it into given container.
+
+  AliEveTrack* track = new AliEveTrack(at, cont->GetPropagator());
+  track->SetAttLineAttMarker(cont);
+  track->SetName(Form("AliEveTrack %d", at->GetID()));
+  track->SetElementTitle(esd_track_title(at));
+  track->SetSourceObject(at);
+
+  // Add inner/outer track parameters as path-marks.
+  if (aft->GetITSOut())
+  {
+    esd_track_add_param(track, at);
+    esd_track_add_param(track, aft->GetITSOut());
+  }
+  else return NULL;
+
+  return track;
+}
+
 AliEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
 {
   // Make a standard track representation and put it into given container.
@@ -177,6 +219,72 @@ AliEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
 //==============================================================================
 // esd_tracks()
 //==============================================================================
+
+TEveTrackList* esd_tracks_TPC()
+{
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDfriend* esd_friend = AliEveEventManager::AssertESDfriend();
+
+  TEveTrackList* cont = new TEveTrackList("TPC Tracks");
+  cont->SetMainColor(6);
+
+  esd_track_propagator_setup(cont->GetPropagator(),
+			     0.1*esd->GetMagneticField(), 520);
+
+  gEve->AddElement(cont);
+
+  Int_t count = 0;
+  for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+  {
+    ++count;
+    if (!esd->GetTrack(n)) continue;
+    if (!esd_friend->GetTrack(n)) continue;
+    AliEveTrack* track = esd_make_track_TPC(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
+    if (!track) continue;
+
+    cont->AddElement(track);
+  }
+  cont->SetTitle(Form("N=%d", count));
+  cont->MakeTracks();
+
+  gEve->Redraw3D();
+
+  return cont;
+}
+
+TEveTrackList* esd_tracks_ITS()
+{
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDfriend* esd_friend = AliEveEventManager::AssertESDfriend();
+
+  TEveTrackList* cont = new TEveTrackList("ITS Tracks");
+  cont->SetMainColor(4);
+
+  esd_track_propagator_setup(cont->GetPropagator(),
+			     0.1*esd->GetMagneticField(), 520);
+  cont->GetPropagator()->SetMaxR(85.0);
+  cont->SetLineWidth(1);
+
+  gEve->AddElement(cont);
+
+  Int_t count = 0;
+  for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+  {
+    ++count;
+    if (!esd->GetTrack(n)) continue;
+    if (!esd_friend->GetTrack(n)) continue;
+    AliEveTrack* track = esd_make_track_ITS(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
+    if (!track) continue;
+
+    cont->AddElement(track);
+  }
+  cont->SetTitle(Form("N=%d", count));
+  cont->MakeTracks();
+
+  gEve->Redraw3D();
+
+  return cont;
+}
 
 TEveTrackList* esd_tracks()
 {
