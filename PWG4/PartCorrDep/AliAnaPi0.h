@@ -69,6 +69,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Int_t GetModuleNumber(AliAODPWG4Particle * particle);
   void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
 	
+  Int_t GetNPID()   const {return fNPID ; }
+  void SetNPID(Int_t n)    {fNPID = n ; }
+	
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
   
