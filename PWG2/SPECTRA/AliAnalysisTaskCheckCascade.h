@@ -13,7 +13,7 @@
 //              3. Supply an AliCFContainer meant to define the optimised topological selections
 //              4. Rough azimuthal correlation study (Eta, Phi)
 //            Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
-//            Modified :           A.Maire Nov2009, antonin.maire@ires.in2p3.fr
+//            Modified :           A.Maire Dec2009, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
 
 class TList;
@@ -46,12 +46,14 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 				            Double_t  lEtaXi);
   virtual void   Terminate(Option_t *);
   
+  void SetRealDataFlag    (Short_t realData = 0)             {fRealData = realData;}
   void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
   void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
     
  private:
   	TString 	fAnalysisType;			// "ESD" or "AOD" analysis type	
 	Short_t 	fCollidingSystems;		// 0 = pp collisions or 1 = AA collisions
+	Short_t 	fRealData;			// 0 = MC data or 1 = real data (needed for trigger issues)
 	AliTPCpidESD*	fTpcPidManager;			//! Tool data member to manage the TPC Bethe-Bloch info
 	
 	
@@ -187,7 +189,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascade, 7);
+  ClassDef(AliAnalysisTaskCheckCascade, 8);
 };
 
 #endif

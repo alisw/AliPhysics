@@ -1,4 +1,7 @@
-AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t lCollidingSystems=0  /*0 = pp, 1 = AA*/)
+AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t lCollidingSystems=0  /*0 = pp, 1 = AA*/,
+						 Short_t lRealData=0 /* 0 = MC data or 1 = real data (needed for trigger issues) */,
+						 const TString* lMasterJobSessionFlag = "")
+
 {
 // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -21,16 +24,31 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t lCollidingSystems=0  /*
 	AliAnalysisTaskCheckCascade *taskcheckcascade = new AliAnalysisTaskCheckCascade("TaskCheckCascade");
    taskcheckcascade->SetCollidingSystems(lCollidingSystems);
    taskcheckcascade->SetAnalysisType(type);
+   taskcheckcascade->SetRealDataFlag(lRealData);
+   
    mgr->AddTask(taskcheckcascade);
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
+
+   // User file name (if need be)
+   /*
+   TString lCommonFileName = "sLHC09dxx-CheckCascade";
+   if(lMasterJobSessionFlag->Length()){
+        lCommonFileName += "-";
+        lCommonFileName += lMasterJobSessionFlag->Data();
+   }
+        lCommonFileName += ".root"; 
+   mgr->SetCommonFileName( lCommonFileName.Data );
+   */
+
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    outputFileName += ":PWG2CheckCascade";
-   if (lCollidingSystems) outputFileName += "_AA";
-   else outputFileName += "_PP";
-   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+   if (lCollidingSystems) outputFileName += "_AA_";
+   else outputFileName += "_PP_";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "MC_";
+   if(lMasterJobSessionFlag->Length()) outputFileName += lMasterJobSessionFlag->Data();
 
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCasc",
 							     TList::Class(),
@@ -38,6 +56,7 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t lCollidingSystems=0  /*
 							     outputFileName );
    
    mgr->ConnectInput(taskcheckcascade, 0, mgr->GetCommonInputContainer());
+
    mgr->ConnectOutput(taskcheckcascade, 1, coutput1);
    return taskcheckcascade;
 }   
