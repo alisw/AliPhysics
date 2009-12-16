@@ -11,7 +11,6 @@
 
 #include <TObject.h>
 #include <TString.h>
-#include <TClonesArray.h>
 
 class AliTRDtrapConfig : public TObject
 {
@@ -531,8 +530,8 @@ class AliTRDtrapConfig : public TObject
   // DMEM
   static const Int_t fgkDmemStartAddress; // = 0xc000;  // start address in TRAP GIO
   static const Int_t fgkDmemWords = 0x400;          // number of words in DMEM
-  UInt_t fDmem[540*8*18][fgkDmemWords];
-  Bool_t fDmemValid[540*8*18][fgkDmemWords];
+  UInt_t fDmem[540*8*18][fgkDmemWords]; // DMEM storage
+  Bool_t fDmemValid[540*8*18][fgkDmemWords]; // DMEM valid flag storage
 
   AliTRDtrapConfig(); // private constructor due to singleton implementation
 

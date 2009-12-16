@@ -692,6 +692,8 @@ Bool_t AliTRDtrapConfig::Poke(Int_t addr, Int_t value, Int_t /* det */, Int_t /*
 
 Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value)
 {
+  // Set the content of the given DMEM address 
+
   if ( (addr >> 14) != 0x3) {
     AliError(Form("No DMEM address: 0x%08x", addr));
     return kFALSE;
@@ -711,6 +713,8 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value)
 
 Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value, Int_t det)
 {
+  // Set the content of the given DMEM address 
+
   for (Int_t iROB = 0; iROB < AliTRDfeeParam::GetNrobC1(); iROB++) {
     for (Int_t iMCM = 0; iMCM < fgkMaxMcm; iMCM++) {
       fDmem[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + iROB*fgkMaxMcm + iMCM]
@@ -723,6 +727,8 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value, Int_t det)
 
 Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm)
 {
+  // Set the content of the given DMEM address 
+
   fDmem[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm]
     [addr - fgkDmemStartAddress] = value;
   return kTRUE;
@@ -731,6 +737,8 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value, Int_t det, Int_t rob, 
 
 Int_t AliTRDtrapConfig::GetDmem(Int_t addr, Int_t det, Int_t rob, Int_t mcm)
 {
+  // Set the content of the given DMEM address 
+
   return fDmem[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm]
     [addr - fgkDmemStartAddress];
 }
@@ -861,12 +869,17 @@ Bool_t  AliTRDtrapConfig::LoadConfig(Int_t det, TString filename)
 
 Bool_t AliTRDtrapConfig::ReadPackedConfig(UInt_t *data, Int_t size) 
 {
+  // Read the packed configuration from the passed memory block
+  //
+  // To be used to retrieve the TRAP configuration from the 
+  // configuration as sent in the raw data. 
+
   Int_t idx = 0;
   Int_t err = 0;
-  Int_t step, bwidth, nwords, exit_flag, bitcnt;
+  Int_t step, bwidth, nwords, exitFlag, bitcnt;
   
   UShort_t caddr;
-  UInt_t dat, msk, header, data_hi;
+  UInt_t dat, msk, header, dataHi;
   
   while (idx < size) {
     
@@ -885,12 +898,12 @@ Bool_t AliTRDtrapConfig::ReadPackedConfig(UInt_t *data, Int_t size)
       {
         if (header & 0x02) // check if > 16 bits                                                                                                                                                              
         {
-          data_hi = *data;
-          AliDebug(5, Form("read: 0x%08x", data_hi));
+          dataHi = *data;
+          AliDebug(5, Form("read: 0x%08x", dataHi));
           data++;
           idx++;
-          err += ((data_hi ^ (dat | 1)) & 0xFFFF) != 0;
-          dat = (data_hi & 0xFFFF0000) | dat;
+          err += ((dataHi ^ (dat | 1)) & 0xFFFF) != 0;
+          dat = (dataHi & 0xFFFF0000) | dat;
         }
         AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, GetRegName(GetRegByAddress(caddr)), dat));
         if ( ! Poke(caddr, dat, 0, 0, 0) )
@@ -914,9 +927,9 @@ Bool_t AliTRDtrapConfig::ReadPackedConfig(UInt_t *data, Int_t size)
       bwidth = ((header >>  3) & 0x001F) + 1;
       nwords =  (header >>  8) & 0x00FF;
       caddr  =  (header >> 16) & 0xFFFF;
-      exit_flag = (step == 0) || (step == 3) || (nwords == 0);
+      exitFlag = (step == 0) || (step == 3) || (nwords == 0);
       
-      if (exit_flag) 
+      if (exitFlag) 
         return err;
       
       switch (bwidth)

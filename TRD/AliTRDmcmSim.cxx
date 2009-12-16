@@ -1881,7 +1881,7 @@ void AliTRDmcmSim::Sort6To2Worst(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx
 
 // ----- I/O implementation -----
 
-ostream& AliTRDmcmSim::text(ostream& os)
+ostream& AliTRDmcmSim::Text(ostream& os)
 {
   // manipulator to activate output in text format (default)
 
@@ -1889,7 +1889,7 @@ ostream& AliTRDmcmSim::text(ostream& os)
   return os;
 }
 
-ostream& AliTRDmcmSim::cfdat(ostream& os)
+ostream& AliTRDmcmSim::Cfdat(ostream& os)
 {
   // manipulator to activate output in CFDAT format 
   // to send to the FEE via SCSN
@@ -1898,7 +1898,7 @@ ostream& AliTRDmcmSim::cfdat(ostream& os)
   return os;
 }
 
-ostream& AliTRDmcmSim::raw(ostream& os)
+ostream& AliTRDmcmSim::Raw(ostream& os)
 {
   // manipulator to activate output as raw data dump
 

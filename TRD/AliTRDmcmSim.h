@@ -111,9 +111,9 @@ class AliTRDmcmSim : public TObject {
 	  void      Draw(Option_t* const option ="");         // draw data (ADC data, hits and tracklets)
 
   friend  std::ostream& operator<<(std::ostream &os, const AliTRDmcmSim &mcm); // data output using ostream (e.g. cout << mcm;)
-  static  ostream&  cfdat(ostream &os);                       // manipulator to activate cfdat output
-  static  ostream&  raw  (ostream &os);                       // manipulator to activate raw output
-  static  ostream&  text (ostream &os);                       // manipulator to activate text output
+  static  ostream&  Cfdat(ostream &os);                       // manipulator to activate cfdat output
+  static  ostream&  Raw  (ostream &os);                       // manipulator to activate raw output
+  static  ostream&  Text (ostream &os);                       // manipulator to activate text output
 
  protected:
 	  Bool_t    CheckInitialized() const;           // Check whether the class is initialized
