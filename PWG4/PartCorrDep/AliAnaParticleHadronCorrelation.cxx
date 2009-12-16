@@ -328,13 +328,13 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       ("DeltaPhiNeutralPt","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T #pi^{0}}}",
        nptbins,ptmin,ptmax,700,-2.,5.); 
     fhDeltaPhiNeutralPt->SetYTitle("#Delta #phi");
-    fhDeltaPhiNeutralPt->SetXTitle("p_{T h^{0} (GeV/c)");
+    fhDeltaPhiNeutralPt->SetXTitle("p_{T h^{0}} (GeV/c)");
 
     fhDeltaPhiUeNeutralPt  = new TH2F
       ("DeltaPhiUeNeutralPt","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T #pi^{0}}}",
        nptbins,ptmin,ptmax,700,-2.,5.); 
     fhDeltaPhiUeNeutralPt->SetYTitle("#Delta #phi");
-    fhDeltaPhiUeNeutralPt->SetXTitle("p_{T h^{0} (GeV/c)");
+    fhDeltaPhiUeNeutralPt->SetXTitle("p_{T h^{0}} (GeV/c)");
     
     fhDeltaEtaNeutral  = new TH2F
       ("DeltaEtaNeutral","#eta_{trigger} - #eta_{#pi^{0}} vs p_{T trigger}",

@@ -509,7 +509,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   }
   
   //Acceptance
-  if(GetReader()->ReadStack()){	
+  if(IsDataMC() && GetReader()->ReadStack()){	
 	  AliStack * stack = GetMCStack();
 	  if(stack && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
 	     for(Int_t i=0 ; i<stack->GetNprimary(); i++){

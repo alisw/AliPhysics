@@ -278,11 +278,11 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	//If Geometry library loaded, do geometry selection during analysis.
 	if(fCalorimeter=="PHOS"){
 		fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ; 
-		printf("AliAnaPi0::GetCreateOutputObjects() - PHOS geometry initialized!\n");
+		printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - PHOS geometry initialized!\n");
 	}
 	else if(fCalorimeter=="EMCAL"){
 		fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName) ;
-		printf("AliAnaPi0::GetCreateOutputObjects() - EMCAL geometry initialized!\n");
+		printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - EMCAL geometry initialized!\n");
 	}
 	
 	TList * outputContainer = new TList() ; 
