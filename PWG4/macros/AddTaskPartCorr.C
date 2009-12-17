@@ -20,45 +20,46 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
    //cout<<"DATA TYPE :: "<<inputDataType<<endl;
    // inputDataType: data managed by the input handler
    // data: can be same as one managed by input handler, or the output AOD created by the filter. By default use AOD
-	
+   
    // Configure analysis
    //===========================================================================
-  
-  //Reader
-  AliCaloTrackReader * reader = 0x0;
-  if(data=="AOD") reader = new AliCaloTrackAODReader();
-  else if(data=="ESD") reader = new AliCaloTrackESDReader();
-  else if(data=="MC" && dataType == "ESD") reader = new AliCaloTrackMCReader();
-  //reader->SetDebug(10);//10 for lots of messages
-  reader->SwitchOnCTS();
-  if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
+   
+   //Reader
+   AliCaloTrackReader * reader = 0x0;
+   if(data=="AOD") reader = new AliCaloTrackAODReader();
+   else if(data=="ESD") reader = new AliCaloTrackESDReader();
+   else if(data=="MC" && dataType == "ESD") reader = new AliCaloTrackMCReader();
+   //reader->SetDebug(10);//10 for lots of messages
+   reader->SwitchOnCTS();
+   //reader->SetDeltaAODFileName("");
+   if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
   if(calorimeter == "EMCAL") {
-	  reader->SwitchOnEMCALCells();  
-	  reader->SwitchOnEMCAL();
+    reader->SwitchOnEMCALCells();  
+    reader->SwitchOnEMCAL();
   }
   if(calorimeter == "PHOS") { 
-	  reader->SwitchOnPHOSCells();  
-	  reader->SwitchOnPHOS();
+    reader->SwitchOnPHOSCells();  
+    reader->SwitchOnPHOS();
   }
   if(kUseKinematics){
-	if(inputDataType == "ESD"){
-		reader->SwitchOnStack();          
-		reader->SwitchOffAODMCParticles(); 
-	}
-	else if(inputDataType == "AOD"){
-		reader->SwitchOffStack();          
-		reader->SwitchOnAODMCParticles(); 
-	}
+    if(inputDataType == "ESD"){
+      reader->SwitchOnStack();          
+      reader->SwitchOffAODMCParticles(); 
+    }
+    else if(inputDataType == "AOD"){
+      reader->SwitchOffStack();          
+      reader->SwitchOnAODMCParticles(); 
+    }
   }
-	
+  
   //Min particle pT
   reader->SetEMCALPtMin(0.1); 
   reader->SetPHOSPtMin(0.);
   reader->SetCTSPtMin(0.);
   if(kPrintSettings) reader->Print("");
-	
+  
   // ##### Analysis algorithm settings ####
-
+  
   // --------------------
   // --- Pi0 Analysis ---
   // --------------------
@@ -75,34 +76,34 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   fidCut->DoPHOSFiducialCut(kTRUE) ;
 	
   AliAnaCalorimeterQA *qa = new AliAnaCalorimeterQA();
-  qa->SetDebug(-1); //10 for lots of messages
+  //qa->SetDebug(10); //10 for lots of messages
   qa->SetCalorimeter(calorimeter);
   if(kUseKinematics && inputDataType!="AOD") qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else  qa->SwitchOffDataMC() ;
   qa->AddToHistogramsName("AnaCaloQA_");
   qa->SetFiducialCut(fidCut);
   qa->SwitchOnFiducialCut();
-  if(qa=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
+  if(qa=="PHOS") qa->SetNumberOfModules(3); //PHOS first year
   else  qa->SetNumberOfModules(4); //EMCAL first year
   //Set Histograms bins and ranges
-  qa->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  qa->SetHistoPtRangeAndNBins(0, 50, 500) ;
 	//      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
 	//      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) qa->Print("");	
-	
+  
   AliFiducialCut * fidCut1stYear = new AliFiducialCut();
   fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
   if(kSimulation){
-	  fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
-	  fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
-	  fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
-	  fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
+    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
   } 
   else{
-	  fidCut1stYear->DoEMCALFiducialCut(kFALSE) ;
-	  fidCut1stYear->DoPHOSFiducialCut(kFALSE) ;
+    fidCut1stYear->DoEMCALFiducialCut(kFALSE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kFALSE) ;
   }	
-	
+  
   AliAnaPhoton *anaphoton1 = new AliAnaPhoton();
   anaphoton1->SetDebug(-1); //10 for lots of messages
   anaphoton1->SetMinPt(0.);
@@ -114,15 +115,15 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton1->SwitchOffCaloPID();
   anaphoton1->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
   if(kSimulation){
-		anaphoton1->SwitchOnFiducialCut();
-		anaphoton1->SetFiducialCut(fidCut1stYear);
+    anaphoton1->SwitchOnFiducialCut();
+    anaphoton1->SetFiducialCut(fidCut1stYear);
   }
   anaphoton1->SetOutputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
   //Set Histograms bins and ranges
-  anaphoton1->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  anaphoton1->SetHistoPtRangeAndNBins(0, 50, 500) ;
   //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-	
+  
   if(kPrintSettings) anaphoton1->Print("");
 
   AliAnaPi0 *anapi0 = new AliAnaPi0();
@@ -132,12 +133,20 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SetCalorimeter(calorimeter);
   anapi0->SwitchOnFiducialCut();
   anapi0->SetNPID(1); //Available from tag AliRoot::v4-18-15-AN
+  //settings for pp collision
+  anapi0->SetNCentrBin(1);
+  anapi0->SetNZvertBin(1);
+  anapi0->SetNRPBin(1);
+  anapi0->SetNMaxEvMix(10);
+  //TH3D * h = new TH3D("binning","Histo with binning parameters",500,0.,50.,10,0.,1.,100,0.,1.) ;
+  //anapi0->SetEtalonHisto(h);
+  // anapi0->SetZvertexCut(40);
   anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
   if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
   else  anapi0->SetNumberOfModules(4); //EMCAL first year
   if(kPrintSettings) anapi0->Print("");
   
-	
+  
   // -------------------------------------------------
   // --- Photon Isolation and Correlation Analysis ---
   // -------------------------------------------------
@@ -155,9 +164,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton2->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   anaphoton2->AddToHistogramsName("AnaPhotonCorr_");
   //Set Histograms bins and ranges
-  anaphoton2->SetHistoPtRangeAndNBins(0, 50, 200) ;
-	//      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-	//      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  anaphoton2->SetHistoPtRangeAndNBins(0, 50, 500) ;
+  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anaphoton2->Print("");
   // ### Isolation analysis ###	
   
@@ -185,7 +194,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //Multiple IC
   anaisol->SwitchOffSeveralIsolation() ;
   //Set Histograms bins and ranges
-  anaisol->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  anaisol->SetHistoPtRangeAndNBins(0, 50, 500) ;
   //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   anaisol->AddToHistogramsName("AnaIsolPhoton_");
@@ -203,9 +212,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrjet->SetRatioCutRange(0.01,3); //Mostly Open Cuts
   anacorrjet->UseJetRefTracks(kFALSE); //Not working now
   //Set Histograms bins and ranges
-  anacorrjet->SetHistoPtRangeAndNBins(0, 50, 200) ;
-	//      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-	//      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  anacorrjet->SetHistoPtRangeAndNBins(0, 50, 500) ;
+  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anacorrjet->Print("");
   
   // ### Correlation with hadrons
@@ -220,56 +229,58 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrhadron->SetPtCutRange(0.1,100);
   anacorrhadron->SetDeltaPhiCutRange(1.5,4.5);
   anacorrhadron->SwitchOnSeveralUECalculation();
+  anacorrhadron->SetUeDeltaPhiCutRange(TMath::Pi()/3, 2*TMath::Pi()/3);
   anacorrhadron->SelectIsolated(kFALSE); // do correlation with isolated photons
   if(kUseKinematics) anacorrhadron->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else  anacorrhadron->SwitchOffDataMC() ;
   //if(calorimeter=="PHOS"){
-    //Correlate with particles in EMCAL
-    //anacorrhadron->SwitchOnCaloPID();
-    //anacorrhadron->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
+  //Correlate with particles in EMCAL
+  //anacorrhadron->SwitchOnCaloPID();
+  //anacorrhadron->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
   //}
   //Set Histograms bins and ranges
-  anacorrhadron->SetHistoPtRangeAndNBins(0, 50, 200) ;
-	//      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-	//      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  anacorrhadron->SetHistoPtRangeAndNBins(0, 50, 500) ;
+  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anacorrhadron->Print("");
   
-	// ### Correlation with hadrons
-	AliAnaParticleHadronCorrelation *anacorrisohadron = new AliAnaParticleHadronCorrelation();
-	anacorrisohadron->SetInputAODName(Form("Photons%s",calorimeter.Data()));
-	anacorrisohadron->SetOutputAODName(Form("CorrIsoGammaHadrons%s",calorimeter.Data()));
-	anacorrisohadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-	anacorrisohadron->AddToHistogramsName("AnaHadronCorrIsoPhoton_");
-	anacorrisohadron->SetDebug(-1);
-	anacorrisohadron->SwitchOffCaloPID();
-	anacorrisohadron->SwitchOffFiducialCut();
-	anacorrisohadron->SetPtCutRange(0.1,100);
-	anacorrisohadron->SetDeltaPhiCutRange(1.5,4.5);
-	anacorrisohadron->SwitchOnSeveralUECalculation();
-	anacorrisohadron->SelectIsolated(kTRUE); // do correlation with isolated photons
-	if(kUseKinematics) anacorrisohadron->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-	else  anacorrisohadron->SwitchOffDataMC() ;
-	//if(calorimeter=="PHOS"){
-    //Correlate with particles in EMCAL
-    //anacorrhadron->SwitchOnCaloPID();
-    //anacorrhadron->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
-	//}
-	//Set Histograms bins and ranges
-	anacorrisohadron->SetHistoPtRangeAndNBins(0, 50, 200) ;
-	//      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-	//      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-	if(kPrintSettings) anacorrisohadron->Print("");
-	
-	
+  // ### Correlation with hadrons
+  AliAnaParticleHadronCorrelation *anacorrisohadron = new AliAnaParticleHadronCorrelation();
+  anacorrisohadron->SetInputAODName(Form("Photons%s",calorimeter.Data()));
+  anacorrisohadron->SetOutputAODName(Form("CorrIsoGammaHadrons%s",calorimeter.Data()));
+  anacorrisohadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  anacorrisohadron->AddToHistogramsName("AnaHadronCorrIsoPhoton_");
+  anacorrisohadron->SetDebug(-1);
+  anacorrisohadron->SwitchOffCaloPID();
+  anacorrisohadron->SwitchOffFiducialCut();
+  anacorrisohadron->SetPtCutRange(0.1,100);
+  anacorrisohadron->SetDeltaPhiCutRange(1.5,4.5);
+  anacorrisohadron->SwitchOnSeveralUECalculation();
+  anacorrisohadron->SetUeDeltaPhiCutRange(TMath::Pi()/3, 2*TMath::Pi()/3);
+  anacorrisohadron->SelectIsolated(kTRUE); // do correlation with isolated photons
+  if(kUseKinematics) anacorrisohadron->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  anacorrisohadron->SwitchOffDataMC() ;
+  //if(calorimeter=="PHOS"){
+  //Correlate with particles in EMCAL
+  //anacorrhadron->SwitchOnCaloPID();
+  //anacorrhadron->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
+  //}
+  //Set Histograms bins and ranges
+  anacorrisohadron->SetHistoPtRangeAndNBins(0, 50, 500) ;
+  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  if(kPrintSettings) anacorrisohadron->Print("");
+  
+  
   AliNeutralMesonSelection *nms = new AliNeutralMesonSelection();
   nms->SetInvMassCutRange(0.05, 0.2)     ;
   nms->KeepNeutralMesonSelectionHistos(kTRUE);
   //Set Histrograms bins and ranges
-  nms->SetHistoERangeAndNBins(0, 50, 200) ;
+  nms->SetHistoERangeAndNBins(0, 50, 500) ;
   //      nms->SetHistoPtRangeAndNBins(0, 50, 100) ;
   //      nms->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
   //      nsm->SetHistoIMRangeAndNBins(0, 0.4, 100) ;  
-	
+  
   AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
   anapi0ebe->SetDebug(-1);//10 for lots of messages
   anapi0ebe->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
@@ -282,62 +293,90 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else  anapi0ebe->SwitchOffDataMC() ;	
   anapi0ebe->SetNeutralMesonSelection(nms);
   //Set Histrograms bins and ranges
-  anapi0ebe->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  anapi0ebe->SetHistoPtRangeAndNBins(0, 50, 500) ;
   //      anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   //      anapi0->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anapi0ebe->Print("");
-	
-	AliAnaParticleIsolation *anaisolpi0 = new AliAnaParticleIsolation();
-	anaisolpi0->SetDebug(-1);
-	anaisolpi0->SetMinPt(2);
-	anaisolpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
-	anaisolpi0->AddToHistogramsName("AnaIsolPi0_");
-	anaisolpi0->SetCalorimeter(calorimeter);
-	if(kUseKinematics) anaisolpi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-	else  anaisolpi0->SwitchOffDataMC() ;
-	//Select clusters with no pair, if both clusters with pi0 mass
-	anaisolpi0->SwitchOffInvariantMass();
-	//anaisol->SetNeutralMesonSelection(nms);
-	//Do isolation cut
-	anaisolpi0->SetIsolationCut(ic);	
-	//Do or not do isolation with previously produced AODs.
-	//No effect if use of SwitchOnSeveralIsolation()
-	anaisolpi0->SwitchOffReIsolation();
-	//Multiple IC
-	anaisolpi0->SwitchOffSeveralIsolation() ;
-	//Set Histograms bins and ranges
-	anaisolpi0->SetHistoPtRangeAndNBins(0, 50, 200) ;
-	//      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-	//      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-	if(kPrintSettings) anaisol->Print("");
-	
-	
-	// ### Pi0 Correlation with hadrons, not isolated
-	AliAnaParticleHadronCorrelation *anacorrhadronpi0 = new AliAnaParticleHadronCorrelation();
-	anacorrhadronpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
-	anacorrhadronpi0->SetOutputAODName(Form("CorrPi0Hadrons%s",calorimeter.Data()));
-	anacorrhadronpi0->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-	anacorrhadronpi0->AddToHistogramsName("AnaHadronCorrPi0_");
-	anacorrhadronpi0->SetDebug(-1);
-	anacorrhadronpi0->SwitchOffCaloPID();
-	anacorrhadronpi0->SwitchOffFiducialCut();
-	anacorrhadronpi0->SetPtCutRange(0.1,100);
-	anacorrhadronpi0->SetDeltaPhiCutRange(1.5,4.5);
-	anacorrhadronpi0->SelectIsolated(kFALSE); // do correlation with isolated photons
-	if(kUseKinematics) anacorrhadronpi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-	else  anacorrhadronpi0->SwitchOffDataMC() ;
-	//if(calorimeter=="PHOS"){
-	//	//Correlate with particles in EMCAL
-	//	anacorrhadronpi0->SwitchOnCaloPID();
-	//	anacorrhadronpi0->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
-	//}
-	//Set Histograms bins and ranges
-	anacorrhadronpi0->SetHistoPtRangeAndNBins(0, 50, 200) ;
-	//      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-	//      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-	if(kPrintSettings) anacorrhadronpi0->Print("");
-	
-	
+  
+  AliAnaParticleIsolation *anaisolpi0 = new AliAnaParticleIsolation();
+  anaisolpi0->SetDebug(-1);
+  anaisolpi0->SetMinPt(2);
+  anaisolpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
+  anaisolpi0->AddToHistogramsName("AnaIsolPi0_");
+  anaisolpi0->SetCalorimeter(calorimeter);
+  if(kUseKinematics) anaisolpi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  anaisolpi0->SwitchOffDataMC() ;
+  //Select clusters with no pair, if both clusters with pi0 mass
+  anaisolpi0->SwitchOffInvariantMass();
+  //anaisol->SetNeutralMesonSelection(nms);
+  //Do isolation cut
+  anaisolpi0->SetIsolationCut(ic);	
+  //Do or not do isolation with previously produced AODs.
+  //No effect if use of SwitchOnSeveralIsolation()
+  anaisolpi0->SwitchOffReIsolation();
+  //Multiple IC
+  anaisolpi0->SwitchOffSeveralIsolation() ;
+  //Set Histograms bins and ranges
+  anaisolpi0->SetHistoPtRangeAndNBins(0, 50, 500) ;
+  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  if(kPrintSettings) anaisol->Print("");
+  
+  
+  // ### Pi0 Correlation with hadrons, not isolated
+  AliAnaParticleHadronCorrelation *anacorrhadronpi0 = new AliAnaParticleHadronCorrelation();
+  anacorrhadronpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
+  anacorrhadronpi0->SetOutputAODName(Form("CorrPi0Hadrons%s",calorimeter.Data()));
+  anacorrhadronpi0->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  anacorrhadronpi0->AddToHistogramsName("AnaHadronCorrPi0_");
+  anacorrhadronpi0->SetDebug(-1);
+  anacorrhadronpi0->SwitchOffCaloPID();
+  anacorrhadronpi0->SwitchOffFiducialCut();
+  anacorrhadronpi0->SetPtCutRange(0.1,100);
+  anacorrhadronpi0->SetDeltaPhiCutRange(1.5,4.5);
+  anacorrhadronpi0->SelectIsolated(kFALSE); // do correlation with non isolated pi0
+  anacorrhadronpi0->SwitchOnSeveralUECalculation();
+  anacorrhadronpi0->SetUeDeltaPhiCutRange(TMath::Pi()/3, 2*TMath::Pi()/3);
+  if(kUseKinematics) anacorrhadronpi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  anacorrhadronpi0->SwitchOffDataMC() ;
+  //if(calorimeter=="PHOS"){
+  //	//Correlate with particles in EMCAL
+  //	anacorrhadronpi0->SwitchOnCaloPID();
+  //	anacorrhadronpi0->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
+  //}
+  //Set Histograms bins and ranges
+  anacorrhadronpi0->SetHistoPtRangeAndNBins(0, 50, 500) ;
+  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  if(kPrintSettings) anacorrhadronpi0->Print("");
+  
+  // ### Pi0 Correlation with hadrons, isolated
+  AliAnaParticleHadronCorrelation *anacorrhadronisopi0 = new AliAnaParticleHadronCorrelation();
+  anacorrhadronisopi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
+  anacorrhadronisopi0->SetOutputAODName(Form("CorrIsoPi0Hadrons%s",calorimeter.Data()));
+  anacorrhadronisopi0->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  anacorrhadronisopi0->AddToHistogramsName("AnaHadronCorrIsoPi0_");
+  anacorrhadronisopi0->SetDebug(-1);
+  anacorrhadronisopi0->SwitchOffCaloPID();
+  anacorrhadronisopi0->SwitchOffFiducialCut();
+  anacorrhadronisopi0->SetPtCutRange(0.1,100);
+  anacorrhadronisopi0->SetDeltaPhiCutRange(1.5,4.5);
+  anacorrhadronisopi0->SelectIsolated(kTRUE); // do correlation with isolated pi0
+  anacorrhadronisopi0->SwitchOnSeveralUECalculation();
+  anacorrhadronisopi0->SetUeDeltaPhiCutRange(TMath::Pi()/3, 2*TMath::Pi()/3);
+  if(kUseKinematics) anacorrhadronisopi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  anacorrhadronisopi0->SwitchOffDataMC() ;
+  //if(calorimeter=="PHOS"){
+  //	//Correlate with particles in EMCAL
+  //	anacorrhadronpi0->SwitchOnCaloPID();
+  //	anacorrhadronpi0->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
+  //}
+  //Set Histograms bins and ranges
+  anacorrhadronisopi0->SetHistoPtRangeAndNBins(0, 50, 500) ;
+  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  if(kPrintSettings) anacorrhadronisopi0->Print("");
+  
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
@@ -352,7 +391,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anapi0ebe,8);
   maker->AddAnalysis(anaisolpi0,9);
   maker->AddAnalysis(anacorrhadronpi0,10);
-	
+  maker->AddAnalysis(anacorrhadronisopi0,11);
+  
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
@@ -362,8 +402,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   printf(" End Configuration of PartCorr analysis with detector %s \n",calorimeter.Data());
   printf("======================== \n");
   
-   // Create task
-   //===========================================================================
+  // Create task
+  //===========================================================================
   AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (Form("PartCorr%s",calorimeter.Data()));
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
@@ -374,12 +414,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   sprintf(name,"PartCorr_%s",calorimeter.Data());
   cout<<"Name of task "<<name<<endl;
   //AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form(name),TList::Class(),
-  	//					   AliAnalysisManager::kOutputContainer, Form("PartCorr_%s.root",calorimeter.Data()));
+  //					   AliAnalysisManager::kOutputContainer, Form("PartCorr_%s.root",calorimeter.Data()));
   
   TString outputfile = AliAnalysisManager::GetCommonFileName(); 
   //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form("PartCorr_%s",calorimeter.Data()),  TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PartCorr_%s",outputfile.Data(),calorimeter.Data()));
   AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(calorimeter.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PartCorr",outputfile.Data()));
-
+  
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================

@@ -53,23 +53,20 @@
 #include "AliAODMCParticle.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliAODPid.h"
-#include "AliPHOSGeoUtils.h"
-#include "AliEMCALGeoUtils.h"
 
 ClassImp(AliAnaCalorimeterQA)
   
 //____________________________________________________________________________
   AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
-	AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), fMakePlots(kFALSE), fCorrelateCalos(kFALSE),
-	fPHOSGeo(0x0),fEMCALGeo(0x0), fEMCALGeoName("EMCAL_COMPLETE"), fNModules(12),
-    fhE(0),fhPt(0),fhPhi(0),fhEta(0), fhEtaPhi(0),  fhEtaPhiE(0),
+    AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), fMakePlots(kFALSE), fCorrelateCalos(kFALSE),
+    fNModules(12), fhE(0),fhPt(0),fhPhi(0),fhEta(0), fhEtaPhi(0),  fhEtaPhiE(0),
     fhECharged(0),fhPtCharged(0),fhPhiCharged(0),fhEtaCharged(0), fhEtaPhiCharged(0), 
     fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
     fhDeltaE(0), fhDeltaPt(0),fhDeltaPhi(0),fhDeltaEta(0), fhRatioE(0), fhRatioPt(0),fhRatioPhi(0),fhRatioEta(0),
     fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0), fhIM(0), fhIMCellCut(0),fhAsym(0), fhNCellsPerCluster(0), fhNClusters(0), fhNCells(0), fhAmplitude(0), 
-	fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
-	fhEMod(0),fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
-	fhGridCellsMod(0),  fhGridCellsEMod(0), fhAmplitudeMod(0), fhIMMod(0),  fhIMCellCutMod(0),
+    fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
+    fhEMod(0),fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
+    fhGridCellsMod(0),  fhGridCellsEMod(0), fhAmplitudeMod(0), fhIMMod(0),  fhIMCellCutMod(0),
     fhGenGamPt(0),fhGenGamEta(0),fhGenGamPhi(0),fhGenPi0Pt(0),fhGenPi0Eta(0),fhGenPi0Phi(0),
     fhGenEtaPt(0),fhGenEtaEta(0),fhGenEtaPhi(0),fhGenOmegaPt(0),fhGenOmegaEta(0),fhGenOmegaPhi(0),
     fhGenElePt(0),fhGenEleEta(0),fhGenElePhi(0), fhEMVxyz(0),  fhEMR(0), fhHaVxyz(0),  fhHaR(0),
@@ -90,7 +87,7 @@ ClassImp(AliAnaCalorimeterQA)
     fh1pOverER02(0), fhMCEle1pOverER02(0), fhMCChHad1pOverER02(0), fhMCNeutral1pOverER02(0)
 {
   //Default Ctor
-
+  
   //Initialize parameters
   InitParameters();
 }
@@ -98,8 +95,7 @@ ClassImp(AliAnaCalorimeterQA)
 //____________________________________________________________________________
 AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :   
   AliAnaPartCorrBaseClass(qa), fCalorimeter(qa.fCalorimeter), fStyleMacro(qa.fStyleMacro), 
-  fMakePlots(qa.fMakePlots), fCorrelateCalos(qa.fCorrelateCalos),
-  fPHOSGeo(qa.fPHOSGeo),fEMCALGeo(qa.fEMCALGeo), fEMCALGeoName(qa.fEMCALGeoName), fNModules(qa.fNModules),
+  fMakePlots(qa.fMakePlots), fCorrelateCalos(qa.fCorrelateCalos), fNModules(qa.fNModules),
   fhE(qa.fhE),fhPt(qa.fhPt), fhPhi(qa.fhPhi), fhEta(qa.fhEta), 
   fhEtaPhi(qa.fhEtaPhi),  fhEtaPhiE(qa.fhEtaPhiE), fhECharged(qa.fhECharged),fhPtCharged(qa.fhPtCharged),fhPhiCharged(qa.fhPhiCharged),
   fhEtaCharged(qa.fhEtaCharged), fhEtaPhiCharged(qa.fhEtaPhiCharged), 
@@ -158,9 +154,6 @@ AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA
   fMakePlots       = qa.fMakePlots;
   fCorrelateCalos  = qa.fCorrelateCalos;
 
-  fPHOSGeo      = qa.fPHOSGeo;
-  fEMCALGeo     = qa.fEMCALGeo;
-  fEMCALGeoName = qa.fEMCALGeoName ; 
   fNModules     = qa.fNModules; 
 	
   fhE      = qa.fhE;
@@ -260,13 +253,10 @@ AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA
 }
 
 //________________________________________________________________________________________________________________________________________________
-AliAnaCalorimeterQA::~AliAnaCalorimeterQA() {
+//AliAnaCalorimeterQA::~AliAnaCalorimeterQA() {
 	// dtor
 	
-	if(fPHOSGeo)  delete fPHOSGeo  ;
-	if(fEMCALGeo) delete fEMCALGeo ;
-	
-}
+//}
 
 
 //________________________________________________________________________
@@ -277,13 +267,15 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     
 	//If Geometry library loaded, do geometry selection during analysis.
 	if(fCalorimeter=="PHOS"){
-		fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ; 
-		printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - PHOS geometry initialized!\n");
+		if(!GetReader()->GetPHOSGeometry()) printf("AliAnaPi0::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
+		GetReader()->InitPHOSGeometry();
+		
 	}
 	else if(fCalorimeter=="EMCAL"){
-		fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName) ;
-		printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - EMCAL geometry initialized!\n");
+		if(!GetReader()->GetEMCALGeometry()) printf("AliAnaPi0::GetCreateOutputObjects() - Initialize EMCAL geometry!\n");
+		GetReader()->InitEMCALGeometry();
 	}
+	
 	
 	TList * outputContainer = new TList() ; 
 	outputContainer->SetName("QAHistos") ; 
@@ -994,11 +986,11 @@ Int_t AliAnaCalorimeterQA::GetModuleNumber(AliESDCaloCluster * cluster)
 	if(phi < 0) phi+=TMath::TwoPi();	
 	Int_t absId = -1;
 	if(fCalorimeter=="EMCAL"){
-		fEMCALGeo->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
+		GetReader()->GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
 		if(GetDebug() > 2) 
 			printf("AliAnaCalorimeterQA::GetModuleNumber(ESD) - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-				   lv.Eta(), phi*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
-		return fEMCALGeo->GetSuperModuleNumber(absId) ;
+				   lv.Eta(), phi*TMath::RadToDeg(),absId, GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId));
+		return GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId) ;
 	}//EMCAL
 	else{//PHOS
 		Int_t    relId[4];
@@ -1011,7 +1003,7 @@ Int_t AliAnaCalorimeterQA::GetModuleNumber(AliESDCaloCluster * cluster)
 		else return -1;
 		
 		if ( absId >= 0) {
-			fPHOSGeo->AbsToRelNumbering(absId,relId);
+			GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
 			if(GetDebug() > 2) 
 				printf("AliAnaCalorimeterQA::GetModuleNumber(ESD) - PHOS: Module %d\n",relId[0]-1);
 			return relId[0]-1;
@@ -1033,11 +1025,11 @@ Int_t AliAnaCalorimeterQA::GetModuleNumber(AliAODCaloCluster * cluster)
 	if(phi < 0) phi+=TMath::TwoPi();	
 	Int_t absId = -1;
 	if(fCalorimeter=="EMCAL"){
-		fEMCALGeo->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
+		GetReader()->GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
 		if(GetDebug() > 2) 
 			printf("AliAnaCalorimeterQA::GetModuleNumber(ESD) - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-				   lv.Eta(), phi*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
-		return fEMCALGeo->GetSuperModuleNumber(absId) ;
+				   lv.Eta(), phi*TMath::RadToDeg(),absId, GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId));
+		return GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId) ;
 	}//EMCAL
 	else{//PHOS
 		Int_t    relId[4];
@@ -1050,7 +1042,7 @@ Int_t AliAnaCalorimeterQA::GetModuleNumber(AliAODCaloCluster * cluster)
 		else return -1;
 		
 		if ( absId >= 0) {
-			fPHOSGeo->AbsToRelNumbering(absId,relId);
+			GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
 			if(GetDebug() > 2) 
 				printf("AliAnaCalorimeterQA::GetModuleNumber(AOD) - PHOS: Module %d\n",relId[0]-1);
 			return relId[0]-1;
@@ -1068,14 +1060,14 @@ Int_t AliAnaCalorimeterQA::GetModuleNumberCellIndexes(const Int_t absId, Int_t &
 	if ( absId >= 0) {
 		if(fCalorimeter=="EMCAL"){
 			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
-			fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-            fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,
+			GetReader()->GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
+            GetReader()->GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
                                               iIphi, iIeta,irow,icol);
 			return imod ;
 		}//EMCAL
 		else{//PHOS
 			Int_t    relId[4];
-			fPHOSGeo->AbsToRelNumbering(absId,relId);
+			GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
 			irow = relId[2];
 			icol = relId[3];
 			imod = relId[0]-1;
@@ -1112,7 +1104,6 @@ void AliAnaCalorimeterQA::InitParameters()
 
   fCalorimeter = "EMCAL"; //or PHOS
   fStyleMacro = "" ;
-  fEMCALGeoName = "EMCAL_COMPLETE";
   fNModules = 12; // set maximum to maximum number of EMCAL modules
 
 }
