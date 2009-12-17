@@ -97,6 +97,8 @@ public:
   static AliITSDDLModuleMapSDD *fgDDLMapSDD;  // Mapping DDL/module to SDD-module number.
 
   static TObjArray             *fgDeadModSPD; // Dead modules of SPD.
+  static TObjArray             *fgDeadModSDD; // Dead modules of SDD.
+  static TObjArray             *fgDeadModSSD; // Dead modules of SSD.
 
   AliEveITSDigitsInfo();
   virtual ~AliEveITSDigitsInfo();

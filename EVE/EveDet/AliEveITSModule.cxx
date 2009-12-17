@@ -31,10 +31,12 @@ ClassImp(AliEveITSModule)
 
 Bool_t AliEveITSModule::fgStaticInitDone = kFALSE;
 
-TEveFrameBox*    AliEveITSModule::fgSPDFrameBox = 0;
+TEveFrameBox*    AliEveITSModule::fgSPDFrameBox     = 0;
 TEveFrameBox*    AliEveITSModule::fgSPDFrameBoxDead = 0;
-TEveFrameBox*    AliEveITSModule::fgSDDFrameBox = 0;
-TEveFrameBox*    AliEveITSModule::fgSSDFrameBox = 0;
+TEveFrameBox*    AliEveITSModule::fgSDDFrameBox     = 0;
+TEveFrameBox*    AliEveITSModule::fgSDDFrameBoxDead = 0;
+TEveFrameBox*    AliEveITSModule::fgSSDFrameBox     = 0;
+TEveFrameBox*    AliEveITSModule::fgSSDFrameBoxDead = 0;
 
 TEveRGBAPalette* AliEveITSModule::fgSPDPalette  = 0;
 TEveRGBAPalette* AliEveITSModule::fgSDDPalette  = 0;
@@ -115,6 +117,12 @@ void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
     fgSDDPalette  = new TEveRGBAPalette(info->fSDDMinVal,info->fSDDMaxVal);
     fgSDDPalette->SetLimits(0, info->fSDDHighLim); // Set proper ADC range.
     fgSDDPalette->IncRefCount();
+
+    fgSDDFrameBoxDead = new TEveFrameBox();
+    fgSDDFrameBoxDead->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
+    fgSDDFrameBoxDead->SetFrameColor(kRed);
+    fgSDDFrameBoxDead->SetFrameFill(kTRUE);
+    fgSDDFrameBoxDead->IncRefCount();
   }
 
   {
@@ -129,6 +137,12 @@ void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
     fgSSDPalette  = new TEveRGBAPalette(info->fSSDMinVal,info->fSSDMaxVal);
     fgSSDPalette->SetLimits(0, info->fSSDHighLim); // Set proper ADC range.
     fgSSDPalette->IncRefCount();
+
+    fgSSDFrameBoxDead = new TEveFrameBox();
+    fgSSDFrameBoxDead->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
+    fgSSDFrameBoxDead->SetFrameColor(kRed);
+    fgSSDFrameBoxDead->SetFrameFill(kTRUE);
+    fgSSDFrameBoxDead->IncRefCount();
   }
 
 }
@@ -214,7 +228,7 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 
     fDetID = 1;
 
-    SetFrame(fgSDDFrameBox);
+    SetFrame(fInfo->IsDead(fID, fDetID) ? fgSDDFrameBoxDead : fgSDDFrameBox);
     SetPalette(fgSDDPalette);
 
     symname += strSensor;
@@ -242,7 +256,7 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 
     fDetID = 2;
 
-    SetFrame(fgSSDFrameBox);
+    SetFrame(fInfo->IsDead(fID, fDetID) ? fgSSDFrameBoxDead : fgSSDFrameBox);
     SetPalette(fgSSDPalette);
 
     symname += strSensor;

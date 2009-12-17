@@ -38,10 +38,12 @@ public:
 
   virtual void Print(Option_t* opt="") const;
 
-  static TEveFrameBox    *fgSPDFrameBox; // Module frame for SPD.
-  static TEveFrameBox    *fgSPDFrameBoxDead; // Module frame for SPD.
-  static TEveFrameBox    *fgSDDFrameBox; // Module frame for SDD.
-  static TEveFrameBox    *fgSSDFrameBox; // Module frame for SSD.
+  static TEveFrameBox    *fgSPDFrameBox;     // Module frame for SPD.
+  static TEveFrameBox    *fgSPDFrameBoxDead; // Dead-module frame for SPD.
+  static TEveFrameBox    *fgSDDFrameBox;     // Module frame for SDD.
+  static TEveFrameBox    *fgSDDFrameBoxDead; // Dead-module frame for SPD.
+  static TEveFrameBox    *fgSSDFrameBox;     // Module frame for SSD.
+  static TEveFrameBox    *fgSSDFrameBoxDead; // Dead-module frame for SPD.
 
   static TEveRGBAPalette *fgSPDPalette;  // Signal to color mapping for SPD.
   static TEveRGBAPalette *fgSDDPalette;  // Signal to color mapping for SDD.

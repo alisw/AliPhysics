@@ -22,11 +22,8 @@ AliEveITSModule* its_make_module(Int_t i, TEveElement* parent,
   if (i > 239 && i < 500) det_id = 1;
   else if (i >= 500)      det_id = 2;
 
-  printf("Mod %d, %d %d\n", i, di->HasData(i, det_id), di->IsDead(i, det_id));
-
   if (!check_empty || di->HasData(i, det_id) || di->IsDead(i, det_id))
   {
-    printf("Creating module: %d\n", i);
     if (scaled_modules)
       m = new AliEveITSScaledModule(i, di, si);
     else
