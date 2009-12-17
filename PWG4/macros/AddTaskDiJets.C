@@ -21,7 +21,7 @@ AliAnalysisTaskDiJets *AddTaskDiJets()
    //===========================================================================
 
    AliAnalysisTaskDiJets *dijetana = new AliAnalysisTaskDiJets("DiJetAnalysis");
-   dijetana->SetDebugLevel(10);
+   dijetana->SetDebugLevel(0);
    mgr->AddTask(dijetana);
 
    AliAnalysisDataContainer *cout_dijet = mgr->CreateContainer("DiJet", TList::Class(),AliAnalysisManager::kOutputContainer,
