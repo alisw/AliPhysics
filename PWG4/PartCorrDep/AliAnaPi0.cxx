@@ -42,8 +42,6 @@
 #include "TParticle.h"
 #include "AliAODCaloCluster.h"
 #include "AliVEvent.h"
-#include "AliPHOSGeoUtils.h"
-#include "AliEMCALGeoUtils.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -54,10 +52,9 @@ ClassImp(AliAnaPi0)
 AliAnaPi0::AliAnaPi0() : AliAnaPartCorrBaseClass(),
 fNCentrBin(0),fNZvertBin(0),fNrpBin(0),
 fNPID(0),fNmaxMixEv(0), fZvtxCut(0.),fCalorimeter(""),
-fEMCALGeoName("EMCAL_COMPLETE"), fNModules(12), fEventsList(0x0), fhEtalon(0x0), fhReMod(0x0),
+fNModules(12), fEventsList(0x0), fhEtalon(0x0), fhReMod(0x0),
 fhRe1(0x0),fhMi1(0x0),fhRe2(0x0),fhMi2(0x0),fhRe3(0x0),fhMi3(0x0),fhEvents(0x0),
-fhPrimPt(0x0), fhPrimAccPt(0x0), fhPrimY(0x0), fhPrimAccY(0x0), fhPrimPhi(0x0), fhPrimAccPhi(0x0), 
-fPHOSGeo(0x0),fEMCALGeo(0x0)
+fhPrimPt(0x0), fhPrimAccPt(0x0), fhPrimY(0x0), fhPrimAccY(0x0), fhPrimPhi(0x0), fhPrimAccPhi(0x0)
 {
 //Default Ctor
  InitParameters();
@@ -68,11 +65,10 @@ fPHOSGeo(0x0),fEMCALGeo(0x0)
 AliAnaPi0::AliAnaPi0(const AliAnaPi0 & ex) : AliAnaPartCorrBaseClass(ex),  
 fNCentrBin(ex.fNCentrBin),fNZvertBin(ex.fNZvertBin),fNrpBin(ex.fNrpBin),
 fNPID(ex.fNPID),fNmaxMixEv(ex.fNmaxMixEv),fZvtxCut(ex.fZvtxCut), fCalorimeter(ex.fCalorimeter),
-fEMCALGeoName(ex.fEMCALGeoName), fNModules(ex.fNModules), fEventsList(ex.fEventsList), fhEtalon(ex.fhEtalon), fhReMod(ex.fhReMod),
+fNModules(ex.fNModules), fEventsList(ex.fEventsList), fhEtalon(ex.fhEtalon), fhReMod(ex.fhReMod),
 fhRe1(ex.fhRe1),fhMi1(ex.fhMi1),fhRe2(ex.fhRe2),fhMi2(ex.fhMi2),fhRe3(ex.fhRe3),fhMi3(ex.fhMi3),fhEvents(ex.fhEvents),
 fhPrimPt(ex.fhPrimPt), fhPrimAccPt(ex.fhPrimAccPt), fhPrimY(ex.fhPrimY), 
-fhPrimAccY(ex.fhPrimAccY), fhPrimPhi(ex.fhPrimPhi), fhPrimAccPhi(ex.fhPrimAccPhi),
-fPHOSGeo(ex.fPHOSGeo),fEMCALGeo(ex.fEMCALGeo)
+fhPrimAccY(ex.fhPrimAccY), fhPrimPhi(ex.fhPrimPhi), fhPrimAccPhi(ex.fhPrimAccPhi)
 {
   // cpy ctor
   //Do not need it
@@ -88,7 +84,7 @@ AliAnaPi0 & AliAnaPi0::operator = (const AliAnaPi0 & ex)
   
   fNCentrBin = ex.fNCentrBin  ; fNZvertBin = ex.fNZvertBin  ; fNrpBin = ex.fNrpBin  ; 
   fNPID = ex.fNPID  ; fNmaxMixEv = ex.fNmaxMixEv  ; fZvtxCut = ex.fZvtxCut  ;  fCalorimeter = ex.fCalorimeter  ;  
-  fEMCALGeoName = ex.fEMCALGeoName ; fNModules = ex.fNModules; fEventsList = ex.fEventsList  ;  fhEtalon = ex.fhEtalon  ; 
+ fNModules = ex.fNModules; fEventsList = ex.fEventsList  ;  fhEtalon = ex.fhEtalon  ; 
   fhRe1 = ex.fhRe1  ; fhMi1 = ex.fhMi1  ; fhRe2 = ex.fhRe2  ; fhMi2 = ex.fhMi2  ; fhReMod = ex.fhReMod; 
   fhRe3 = ex.fhRe3  ; fhMi3 = ex.fhMi3  ; fhEvents = ex.fhEvents  ; 
   fhPrimPt = ex.fhPrimPt  ;  fhPrimAccPt = ex.fhPrimAccPt  ;  fhPrimY = ex.fhPrimY  ;  
@@ -113,9 +109,6 @@ AliAnaPi0::~AliAnaPi0() {
     delete[] fEventsList; 
     fEventsList=0 ;
   }
-  
-  if(fPHOSGeo)  delete fPHOSGeo  ;
-  if(fEMCALGeo) delete fEMCALGeo ;
 	
 }
 
@@ -135,7 +128,6 @@ void AliAnaPi0::InitParameters()
   fNmaxMixEv = 10;
   fZvtxCut   = 40;
   fCalorimeter  = "PHOS";
-  fEMCALGeoName = "EMCAL_COMPLETE";
 }
 //________________________________________________________________________________________________________________________________________________
 void AliAnaPi0::Init()
@@ -171,12 +163,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   //If Geometry library loaded, do geometry selection during analysis.
   if(fCalorimeter=="PHOS"){
-		fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ; 
-		printf("AliAnaPi0::GetCreateOutputObjects() - PHOS geometry initialized!\n");
+    if(!GetReader()->GetPHOSGeometry()) printf("AliAnaPi0::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
+    GetReader()->InitPHOSGeometry();
+    
   }
   else if(fCalorimeter=="EMCAL"){
-	  fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName) ;
-	  printf("AliAnaPi0::GetCreateOutputObjects() - EMCAL geometry initialized!\n");
+    if(!GetReader()->GetEMCALGeometry()) printf("AliAnaPi0::GetCreateOutputObjects() - Initialize EMCAL geometry!\n");
+    GetReader()->InitEMCALGeometry();
   }
 	
   TList * outputContainer = new TList() ; 
@@ -345,11 +338,11 @@ Int_t AliAnaPi0::GetModuleNumber(AliAODPWG4Particle * particle)
 	
 	Int_t absId = -1;
 	if(fCalorimeter=="EMCAL"){
-		fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
+		GetReader()->GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
 		if(GetDebug() > 2) 
 			printf("AliAnaPi0::GetModuleNumber() - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-				   particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
-		return fEMCALGeo->GetSuperModuleNumber(absId) ;
+				   particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId));
+		return GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId) ;
 	}//EMCAL
 	else{//PHOS
 		Int_t    relId[4];
@@ -375,7 +368,7 @@ Int_t AliAnaPi0::GetModuleNumber(AliAODPWG4Particle * particle)
 		}//AODs
 
 		if ( absId >= 0) {
-			fPHOSGeo->AbsToRelNumbering(absId,relId);
+			GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
 			if(GetDebug() > 2) 
 				printf("PHOS: Module %d\n",relId[0]-1);
 			return relId[0]-1;
@@ -538,10 +531,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 	           Bool_t inacceptance = kFALSE;
 
 			   if(fCalorimeter == "PHOS"){
-				   if(fPHOSGeo){
+				   if(GetReader()->GetPHOSGeometry()){
 					   Int_t mod ;
 					   Double_t x,z ;
-					   if(fPHOSGeo->ImpactOnEmc(phot1,mod,z,x) && fPHOSGeo->ImpactOnEmc(phot2,mod,z,x)) 
+					   if(GetReader()->GetPHOSGeometry()->ImpactOnEmc(phot1,mod,z,x) && GetReader()->GetPHOSGeometry()->ImpactOnEmc(phot2,mod,z,x)) 
 						   inacceptance = kTRUE;
 					   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
 				   }
@@ -556,8 +549,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 				   
 			   }	   
 			   else if(fCalorimeter == "EMCAL"){
-				   if(fEMCALGeo){
-					   if(fEMCALGeo->Impact(phot1) && fEMCALGeo->Impact(phot2)) 
+				   if(GetReader()->GetEMCALGeometry()){
+					   if(GetReader()->GetEMCALGeometry()->Impact(phot1) && GetReader()->GetEMCALGeometry()->Impact(phot2)) 
 						   inacceptance = kTRUE;
 					   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
 					}

@@ -16,8 +16,6 @@ class TH2F;
 class TH1F;
 
 // --- Analysis system --- 
-class AliPHOSGeoUtils;
-class AliEMCALGeoUtils;
 class AliESDCaloCluster;
 class AliAODCaloCluster;
 
@@ -30,7 +28,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   AliAnaCalorimeterQA() ; // default ctor
   AliAnaCalorimeterQA(const AliAnaCalorimeterQA & g) ; // cpy ctor
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
-  virtual ~AliAnaCalorimeterQA() ; //virtual dtor
+  virtual ~AliAnaCalorimeterQA() {;} //virtual dtor
   
   void ClusterHistograms(const TLorentzVector mom, const Int_t nCaloCellsPerCluster, const Int_t nModule,
 						 const Int_t nTracksMatched, const TObject* track, 
@@ -62,9 +60,6 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   void Terminate(TList * outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 
-  void SetEMCALGeometryName(TString name)   { fEMCALGeoName = name ; }
-  TString EMCALGeometryName() const { return fEMCALGeoName ; }
-
   Int_t GetModuleNumber(AliESDCaloCluster * cluster);
   Int_t GetModuleNumber(AliAODCaloCluster * cluster);
   Int_t GetModuleNumberCellIndexes(const Int_t absId, Int_t & icol, Int_t & irow);
@@ -77,9 +72,6 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TString fStyleMacro  ;   //Location of macro for plots style
   Bool_t fMakePlots    ;   //Print plots
   Bool_t fCorrelateCalos;  //Correlate PHOS/EMCAL clusters
-  AliPHOSGeoUtils  * fPHOSGeo  ; //! PHOS geometry pointer  
-  AliEMCALGeoUtils * fEMCALGeo ; //! EMCAL geometry pointer
-  TString fEMCALGeoName;  // Name of geometry to use.
   Int_t fNModules ;        // Number of EMCAL/PHOS modules, set as many histogras as modules 
 	
   //Histograms
@@ -245,7 +237,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,3)
+	ClassDef(AliAnaCalorimeterQA,4)
 } ;
 
 

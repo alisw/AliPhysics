@@ -21,9 +21,6 @@ class AliAODEvent ;
 class AliESDEvent ;
 #include "AliAnaPartCorrBaseClass.h"
 
-class AliPHOSGeoUtils;
-class AliEMCALGeoUtils;
-
 class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   public: 
@@ -59,10 +56,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   TString GetCalorimeter()   const {return fCalorimeter ; }
   void SetCalorimeter(TString det)    {fCalorimeter = det ; }
-  
-  void SetEMCALGeometryName(TString name)   { fEMCALGeoName = name ; }
-  TString EMCALGeometryName() const { return fEMCALGeoName ; }
-	
+  	
   void Terminate(TList* outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 	
@@ -83,7 +77,6 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Int_t fNmaxMixEv ;	  // Maximal number of events stored in buffer for mixing
   Float_t fZvtxCut ;	  // Cut on vertex position
   TString fCalorimeter ;  // Select Calorimeter for IM
-  TString fEMCALGeoName;  // Name of geometry to use.
   Int_t fNModules ;       // Number of EMCAL/PHOS modules, set as many histogras as modules 
 
   TList ** fEventsList ;  //! containers for photons in stored events
@@ -109,11 +102,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH1D * fhPrimAccY ;  //! Rapidity distribution of primary with accepted daughters
   TH1D * fhPrimPhi ;   //! Azimutal distribution of primary particles
   TH1D * fhPrimAccPhi; //! Azimutal distribution of primary with accepted daughters	
-  
-  AliPHOSGeoUtils  * fPHOSGeo  ; //! PHOS geometry pointer  
-  AliEMCALGeoUtils * fEMCALGeo ; //! EMCAL geometry pointer
 
-  ClassDef(AliAnaPi0,5)
+  ClassDef(AliAnaPi0,6)
 } ;
 
 

@@ -32,6 +32,8 @@ class AliAODEvent;
 class AliMCEvent;
 class AliFiducialCut;
 class AliAODMCHeader;
+#include "AliPHOSGeoUtils.h"
+#include "AliEMCALGeoUtils.h"
 
 class AliCaloTrackReader : public TObject {
 
@@ -175,6 +177,16 @@ class AliCaloTrackReader : public TObject {
   TString GetFiredTriggerClassName() const {return fFiredTriggerClassName ; }
   virtual TString GetFiredTriggerClasses() {return "";}
 	
+  void SetEMCALGeometryName(TString name)   { fEMCALGeoName = name ; }
+  TString EMCALGeometryName() const { return fEMCALGeoName ; }
+	void InitEMCALGeometry() {if (!fEMCALGeo) fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName); }
+  AliEMCALGeoUtils * GetEMCALGeometry() const {return fEMCALGeo;}
+	
+  void SetPHOSGeometryName(TString name)   { fPHOSGeoName = name ; }
+  TString PHOSGeometryName() const { return fPHOSGeoName ; }
+  void InitPHOSGeometry() {if (!fPHOSGeo) fPHOSGeo = new AliPHOSGeoUtils(fPHOSGeoName); }
+  AliPHOSGeoUtils * GetPHOSGeometry() const {return fPHOSGeo;}
+	
  protected:
   Int_t	           fEventNumber; // Event number
   TString          fCurrentFileName; // Current file name under analysis
@@ -221,8 +233,13 @@ class AliCaloTrackReader : public TObject {
   Bool_t	     fCleanOutputStdAOD;   // clean the written standard tracks and caloclusters in output AOD
   TString        fDeltaAODFileName ;   // Delta AOD file name
   TString        fFiredTriggerClassName  ;  // Name of trigger event type used to do the analysis
-	
-  ClassDef(AliCaloTrackReader,9)
+
+  TString        fEMCALGeoName;  // Name of geometry to use for EMCAL.
+  TString        fPHOSGeoName;   // Name of geometry to use for PHOS.	
+  AliEMCALGeoUtils * fEMCALGeo ; //! EMCAL geometry pointer
+  AliPHOSGeoUtils  * fPHOSGeo  ; //! PHOS geometry pointer  
+
+  ClassDef(AliCaloTrackReader,10)
 } ;
 
 

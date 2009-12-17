@@ -50,12 +50,13 @@ ClassImp(AliCaloTrackReader)
     fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
     fFillEMCALCells(0),fFillPHOSCells(0), 
-	fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
-	fSecondInputFileName(""),fSecondInputFirstEvent(0), 
-	fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
+    fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
+    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
+    fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
     fAODPHOSNormalInputEntries(0), fTrackStatus(0), 
-	fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
-	fCleanOutputStdAOD(kFALSE), fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName("")
+    fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
+    fCleanOutputStdAOD(kFALSE), fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
+    fEMCALGeoName("EMCAL_COMPLETE"),fPHOSGeoName("PHOSgeo"), fEMCALGeo(0x0), fPHOSGeo(0x0)
 {
   //Ctor
   
@@ -89,7 +90,9 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
   fTrackStatus(g.fTrackStatus),
   fReadStack(g.fReadStack), fReadAODMCParticles(g.fReadAODMCParticles),
   fCleanOutputStdAOD(g.fCleanOutputStdAOD), fDeltaAODFileName(g.fDeltaAODFileName),
-   fFiredTriggerClassName(g.fFiredTriggerClassName  )
+  fFiredTriggerClassName(g.fFiredTriggerClassName),
+  fEMCALGeoName(g.fEMCALGeoName),fPHOSGeoName(g.fPHOSGeoName),
+  fEMCALGeo(g.fEMCALGeo), fPHOSGeo(g.fPHOSGeo)
 {
   // cpy ctor
   
@@ -148,6 +151,10 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
   fDeltaAODFileName   = source.fDeltaAODFileName;
   fFiredTriggerClassName = source.fFiredTriggerClassName  ;
 	
+  fEMCALGeoName = source.fEMCALGeoName ; 
+  fPHOSGeoName  = source.fPHOSGeoName ; 
+  fEMCALGeo = source.fEMCALGeo;  fPHOSGeo = source.fPHOSGeo;
+	
   return *this;
   
 }
@@ -188,12 +195,15 @@ AliCaloTrackReader::~AliCaloTrackReader() {
   if(fMC)          delete fMC ;  
 	
   if(fSecondInputAODTree){
-	fSecondInputAODTree->Clear();
-	delete fSecondInputAODTree;
+    fSecondInputAODTree->Clear();
+    delete fSecondInputAODTree;
   }
 	
   if(fSecondInputAODEvent) delete fSecondInputAODEvent ;
 
+  if(fPHOSGeo)  delete fPHOSGeo  ;
+  if(fEMCALGeo) delete fEMCALGeo ;
+	
 }
 
 
@@ -361,6 +371,9 @@ void AliCaloTrackReader::InitParameters()
   fCleanOutputStdAOD     = kFALSE; // Clean the standard clusters/tracks?
   fDeltaAODFileName      = "deltaAODPartCorr.root";
   fFiredTriggerClassName      = "";
+  fEMCALGeoName = "EMCAL_COMPLETE";
+  fPHOSGeoName  = "PHOSgeo";
+	
 }
 
 
@@ -426,23 +439,23 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
   //In case of mixing events with other AOD file	
   if(fDataType == kAOD && fSecondInputAODTree){
 	 
-	 if(fDebug > 1) 
-		 printf("AliCaloTrackReader::FillInputEvent() - Get event %d from second input AOD file \n", iEntry+fSecondInputFirstEvent);
-	 if(fSecondInputAODTree->GetEntriesFast() <= iEntry+fSecondInputFirstEvent) {
-		 if(fSecondInputAODTree->GetEntriesFast() == iEntry+fSecondInputFirstEvent) 
+    if(fDebug > 1) 
+      printf("AliCaloTrackReader::FillInputEvent() - Get event %d from second input AOD file \n", iEntry+fSecondInputFirstEvent);
+    if(fSecondInputAODTree->GetEntriesFast() <= iEntry+fSecondInputFirstEvent) {
+      if(fSecondInputAODTree->GetEntriesFast() == iEntry+fSecondInputFirstEvent) 
 			 printf("AliCaloTrackReader::FillInputEvent() - Skip events from event %d, no more events in second AOD file \n", iEntry);
-		 return kFALSE;
-	 }
-	  
-	 //Get the Event
-	 Int_t nbytes = fSecondInputAODTree->GetEvent(iEntry+fSecondInputFirstEvent);
-	 if ( nbytes == 0 ) {//If nothing in AOD
-		 printf("AliCaloTrackReader::FillInputEvent() - Nothing in Second AOD input, STOP\n");
-		 abort() ; 
-	 }
-	  
+      return kFALSE;
+    }
+    
+    //Get the Event
+    Int_t nbytes = fSecondInputAODTree->GetEvent(iEntry+fSecondInputFirstEvent);
+    if ( nbytes == 0 ) {//If nothing in AOD
+      printf("AliCaloTrackReader::FillInputEvent() - Nothing in Second AOD input, STOP\n");
+      abort() ; 
+    }
+    
   }
-
+  
   if(fFillCTS)   FillInputCTS();
   if(fFillEMCAL) FillInputEMCAL();
   if(fFillPHOS)  FillInputPHOS();
@@ -462,8 +475,8 @@ void AliCaloTrackReader::ResetLists() {
   if(fEMCALCells) fEMCALCells -> Clear();
   if(fPHOSCells)  fPHOSCells -> Clear();
   if(fCleanOutputStdAOD && fOutputEvent ){
-	  //Only keep copied tracks and clusters if requested
-	  fOutputEvent->GetTracks()      ->Clear();
-	  fOutputEvent->GetCaloClusters()->Clear();
+    //Only keep copied tracks and clusters if requested
+    fOutputEvent->GetTracks()      ->Clear();
+    fOutputEvent->GetCaloClusters()->Clear();
   }
 }
