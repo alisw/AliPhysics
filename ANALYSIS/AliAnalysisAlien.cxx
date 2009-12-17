@@ -1237,6 +1237,13 @@ Bool_t AliAnalysisAlien::IsCollection(const char *lfn) const
 }   
 
 //______________________________________________________________________________
+Bool_t AliAnalysisAlien::IsSingleOutput() const
+{
+// Check if single-ouput option is on.
+   return (!fOutputSingle.IsNull());
+}
+   
+//______________________________________________________________________________
 void AliAnalysisAlien::Print(Option_t *) const
 {
 // Print current plugin settings.
@@ -1725,8 +1732,14 @@ void AliAnalysisAlien::WriteAnalysisFile()
       TDirectory *cdir = gDirectory;
       TFile *file = TFile::Open(analysisFile, "RECREATE");
       if (file) {
+         // Skip task Terminate calls for the grid job
+         mgr->SetSkipTerminate(kTRUE);
+         // Unless merging makes no sense
+         if (IsSingleOutput()) mgr->SetSkipTerminate(kFALSE);
          mgr->Write();
          delete file;
+         // Enable termination for local jobs
+         mgr->SetSkipTerminate(kFALSE);
       }
       if (cdir) cdir->cd();
       Info("WriteAnalysisFile", "\n#####   Analysis manager: %s wrote to file <%s>\n", mgr->GetName(),analysisFile.Data());

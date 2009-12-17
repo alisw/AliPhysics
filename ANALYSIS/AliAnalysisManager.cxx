@@ -1094,7 +1094,6 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
    Bool_t runlocalinit = kTRUE;
    if (anaType.Contains("file")) {
       runlocalinit = kFALSE;
-      SetSkipTerminate(kTRUE);
    }   
    if (anaType.Contains("proof"))     fMode = kProofAnalysis;
    else if (anaType.Contains("grid")) fMode = kGridAnalysis;

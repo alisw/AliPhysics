@@ -103,6 +103,7 @@ protected:
    void                SubmitNext();
 
    Bool_t              IsCollection(const char *lfn) const;
+   virtual Bool_t      IsSingleOutput() const;
    Bool_t              IsUsingTags() const {return TObject::TestBit(AliAnalysisGrid::kUseTags);}
 
 private:
