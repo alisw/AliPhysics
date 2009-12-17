@@ -51,13 +51,14 @@ void PlotDriftSpeedSDDVsTime(Int_t firstRun=76172,
     iPt[iMod]=0;
   }
   Float_t Edrift=(1800-45)/291/0.012;  
-  Int_t nrun,nrun2,dum;
+  Int_t nrun,nrun2,nv,ns;
 
   while(!feof(listruns)){
     fscanf(listruns,"%s\n",filnam);
     if(!strstr(filnam,"/alice/data/2009")) continue;
-    sscanf(filnam,"/alice/data/2009/OCDB/ITS/Calib/DriftSpeedSDD/Run%d_%d_v%d_s%d.root",&nrun,&nrun2,&dum,&dum);
-    if(nrun<85639 && nrun2> 85639) continue;
+    sscanf(filnam,"/alice/data/2009/OCDB/ITS/Calib/DriftSpeedSDD/Run%d_%d_v%d_s%d.root",&nrun,&nrun2,&nv,&ns);
+    if(nrun<85639 && nrun2> 85639) continue;// protection for files with swapped ladders 4-5 of layer 3 
+    if(nrun>100000 && nv< 271) continue; // protection for files with swapped ladder 0-1 of layer 4
     if(nrun<firstRun) continue;
     if(nrun>lastRun) continue;
     sprintf(filnamalien,"alien://%s",filnam);

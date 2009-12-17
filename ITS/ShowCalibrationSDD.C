@@ -49,14 +49,14 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   hlay4->GetYaxis()->SetTitle("Ladder");
   hlay4->SetStats(0);
   hlay4->SetMinimum(-1);
-  TH2I* hdeadlay3=new TH2I("hlay3","Layer 3",6,-0.5,5.5,14,-0.5,13.5);
+  TH2I* hdeadlay3=new TH2I("hdlay3","Layer 3",6,-0.5,5.5,14,-0.5,13.5);
   hdeadlay3->GetXaxis()->SetTitle("Detector");
   hdeadlay3->GetYaxis()->SetTitle("Ladder");
   hdeadlay3->GetXaxis()->SetTickLength(0);
   hdeadlay3->GetYaxis()->SetTickLength(0);
   hdeadlay3->SetStats(0);
   hdeadlay3->SetMinimum(-1.);
-  TH2I* hdeadlay4=new TH2I("hlay4","Layer 4",8,-0.5,7.5,22,-0.5,21.5);
+  TH2I* hdeadlay4=new TH2I("hdlay4","Layer 4",8,-0.5,7.5,22,-0.5,21.5);
   hdeadlay4->GetXaxis()->SetTitle("Detector");
   hdeadlay4->GetYaxis()->SetTitle("Ladder");
   hdeadlay4->GetXaxis()->SetTickLength(0);
