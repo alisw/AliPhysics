@@ -389,3 +389,56 @@ To run the analysis task in local mode with the example macro, simply run
 the AnalysisTrainCreateMixedDimuons.C macro (without compiling it) with 
 appropriate arguments.
 
+===============================================================================
+Analysis Task for (di)muons continuum from heavy flavors
+X. M. Zhang, Clermont-Ferrand and Wuhan
+===============================================================================
+1) AliAnalysisTaskSEMuonsHF.h (.cxx) -- analysis class for (di)muons continuum
+   from heavy flavors.
+2) AliMuonsHFHeader.h (.cxx) -- class used to collect and save the information
+   at event level (eg. vertex position and trigger mask).
+3) AliAODMuonTrack.h (.cxx) -- class used to extract and save information of
+   reconstracted muon tracks (from both AOD and ESD), selection the muon with
+   the set cuts.
+4) AliAODMuonPair.h (.cxx) -- class used to extract and save information of
+   muon pairs (both for like-sign and unlike-sign), the corresponding two
+   single muon tracks are linked by TRef.
+5) AliMCMuonTrack.h (.cxx) -- inherit from AliAODMuonTrack, class used to
+   extract and save the Monte-Carlo information of reconstracted muon tracks,
+   the generated kinematics and the history of the muon are filled in this
+   class.
+6) AliMCMuonPair.h (.cxx) -- inherit from AliAODMuonPair, class used to
+   extract and save the information of muon pair at Monte-Carlo level, the
+   relation between two muons can be obtain from this class.
+
+- the input of AOD and ESD are detected automatically.
+- three analysis modes:
+  mode0, analyze both single muon and dimuon
+  mode1, analyze only the single muon
+  mode2, analyze only the dimuon
+- two kinds of outputs:
+  - histogram, histograms for single muon and/or dimuon will be outputed
+    according to different running mode. Events with unreconstructed vertex
+    are discarded, cuts are set for (di)muons selection.
+  - tree, if flag for output tree switch on, tree with braches of event header
+    and/or single muon and/or dimuon will be gotten according to different
+    running mode. All events and all recontructed tracks are used to fill the
+    tree.
+- running with and without MC information:
+  - without MC information, AliAODMuonTrack and/or AliAODMuonPair are/is used
+    and filled in the tree (if switch on), output the histograms just with
+    reconstructed information.
+  - with MC information, AliMCMuonTrack and/or AliMCMuonPair are/is used and
+    filled in the tree (if switch on), additional histograms for different
+    single muon and/or dimuon source are outputed.
+  - at present the methods used to get the MC information from ESD is not
+    implemented for they depend on the MUON module. Although, we still keep
+    these codes in AliMCMuonTrack for private running, more details can be
+    found in AliMCMuonTrack.cxx 
+- all the flags and cuts are set in AddTaskMuonsHF.C
+    Int_t mode = 0;          \\ = 0 analyze both single muon and dimuon
+                             \\ = 1 analyze the single muon only
+                             \\ = 2 analyze the dimuon only
+    Bool_t isMC = kTRUE;     \\ get MC information
+    Bool_t isTree = kFALSE;  \\ flag for tree output
+    AliAnalysisTaskSEMuonsHF *taskMuonsHF = AddTaskMuonsHF(mode, isMC, isTree);
