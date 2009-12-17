@@ -425,7 +425,8 @@ void AliEMCALClusterizerv1::InitParameters()
 { 
   // Initializes the parameters for the Clusterizer
   fNumberOfECAClusters = 0;
-  fTimeCut = 300e-9 ; // 300 ns time cut (to be tuned) 
+  fTimeCut = 1. ; // Originally 300 ns time cut, in data time found to be between 350 ns and 1500 ns, relax the cut for the moment.
+  //Gustavo, 17-12-09
 
   fCalibData               = 0 ;
   fCaloPed                 = 0 ;
