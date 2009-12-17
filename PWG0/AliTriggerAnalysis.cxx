@@ -585,7 +585,6 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
       Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i));
       Float_t timeWeight = V0LeadingTimeWeight(esdV0->GetAdc(i));
       time += correctedTime*timeWeight;
-      time += fV0TimeOffset;
       
       weight += timeWeight;
     }
@@ -593,6 +592,7 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
 
   if (weight > 0) 
     time /= weight;
+  time += fV0TimeOffset;
 
   if (fillHists)
   {
