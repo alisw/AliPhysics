@@ -52,6 +52,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   SetAnaTopology( Int_t val )    { fAnaType = val;    }
     void   SetRegionType( Int_t val )     { fRegionType = val; }
     void   SetUseChPartJet( Int_t val )   { fUseChPartJet = val; }
+    void   SetUseChargeHadrons( Bool_t val ){ fUseChargeHadrons = val; }
     void   SetPtSumOrdering( Bool_t val ) { fOrdering = val;   }
     void   SetFilterBit( UInt_t val )     { fFilterBit = val;  }
     void   SetJetsOnFly( Bool_t val )     { fJetsOnFly = val;  }
@@ -134,13 +135,13 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     // if fRegionType = 2 not always it is included within eta range
     Bool_t   fUseChPartJet;     // Use "Charged Particle Jet" instead of jets from AOD
     // see FindChargedParticleJets()
+    Bool_t     fUseChargeHadrons;   // Only use charge hadrons
     
     // Theoreticians ask for tools charge-aware
     // especially those which are related to multiplicity and MC-tunings
     // see arXiv:hep-ph/0507008v3
     Bool_t   fUseSingleCharge;     //Make analysis for a single type of charge (=kFALSE default)
     Bool_t   fUsePositiveCharge;   //If Single type of charge used then set which one (=kTRUE default positive)
-    
     Int_t   fOrdering;         //  Pt and multiplicity summation ordering:
     //     1=CDF-like -independent sorting according quantity to be scored: Double sorting- (default)
     //       if Pt summation will be scored take Pt minimum between both zones and 
@@ -179,7 +180,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     TH1F*  fhMinRegMaxPtPart;        //!
     TH1F*  fhMinRegSumPtvsMult;      //!
     
-    TH1F*  fhdNdEtaPhiDist;         //!
+    TH2F*  fhdNdEtaPhiDist;          //!
     TH2F*  fhFullRegPartPtDistVsEt;  //!
     TH2F*  fhTransRegPartPtDistVsEt; //!
     
@@ -204,7 +205,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     
     
     
-    ClassDef( AliAnalysisTaskUE, 3); // Analysis task for Underlying Event analysis
+    ClassDef( AliAnalysisTaskUE, 4); // Analysis task for Underlying Event analysis
   };
 
 #endif
