@@ -107,18 +107,14 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   //We tryed individual taus for each channel, but
   //this approach seems to be unstable. Much better results are obtaned with
   //fixed decay time for all channels.
-  const Double_t tau=21. ;
+  const Double_t tau=22.18 ;
 
   TArrayD samples(sigLength); // array of sample amplitudes
   TArrayD times(sigLength); // array of sample time stamps
-  for (Int_t i=0; i<sigLength; i++) {
-    if (i<kPreSamples) {
-      nPed++;
-      pedMean += signal[i];
-      pedRMS  += signal[i]*signal[i] ;
-    }
-    samples.AddAt(signal[i],sigLength-i-1);
-    times.AddAt(i/tau ,i);
+  for (Int_t i=sigLength-kPreSamples; i<sigLength; i++) {
+    nPed++;
+    pedMean += signal[i];
+    pedRMS  += signal[i]*signal[i] ;
   }
 
   fEnergy = -111;
@@ -131,7 +127,8 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       fPedestalRMS=(pedRMS - pedMean*pedMean/nPed)/nPed ;
       if(fPedestalRMS > 0.) 
 	fPedestalRMS = TMath::Sqrt(fPedestalRMS) ;
-      fEnergy -= (Double_t)(pedMean/nPed); // pedestal subtraction
+      pedestal = (Double_t)(pedMean/nPed); // pedestal subtraction
+      fEnergy -= pedestal; // pedestal subtraction
     }
     else
       return kFALSE;
@@ -145,14 +142,18 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       pedestal += truePed - altroSettings ;
     }
     else{
-      AliWarning(Form("Can not read data from OCDB")) ;
+//      AliWarning(Form("Can not read data from OCDB")) ;
     }
     fEnergy-=pedestal ;
   }
 
   if (fEnergy < kBaseLine) fEnergy = 0;
   //Evaluate time
-  fTime = sigStart; 
+   fTime = sigStart-sigLength-3;
+  for (Int_t i=0; i<sigLength; i++) {
+    samples.AddAt(signal[i]-pedestal,sigLength-i-1);
+    times.AddAt(i/tau ,i);
+  }
   
   //calculate time and energy
   Int_t    maxBin=0 ;
@@ -174,8 +175,9 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
         nMax=0;
 	maxBin = i ;
       }
-      if(signal[i] == maxAmp)
+      if(signal[i] == maxAmp){
         nMax++;
+      }
     }
   }
 
@@ -209,10 +211,6 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     else
       fQuality =   0. ;
     //Evaluate time of signal arriving
-    Int_t i=0;
-    while(signal[sigLength-i-1]<pedestal+kBaseLine  && i<sigLength)
-     i++ ;
-    fTime+=i ;
     return kTRUE ;
   }
       
@@ -224,8 +222,11 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   }
   // First estimate t0
   Double_t a=0,b=0,c=0 ;
-  for(Int_t i=0; i<sigLength; i++){
-    if(samples.At(i)<=pedestal)
+  Int_t minI=0 ;
+  if (fPedSubtract) 
+    minI=kPreSamples ;
+  for(Int_t i=minI; i<sigLength; i++){
+    if(samples.At(i)<=0.)
       continue ;
     Double_t t= times.At(i) ;
     Double_t f02 = TMath::Exp(-2.*t);
@@ -235,60 +236,25 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     Double_t f02d = -2.*f02;
     Double_t f12d = f02 - 2.*f12;
     Double_t f22d = 2.*(f12 - f22);
-    a += f02d * (samples.At(i)-pedestal) ;
-    b -= f12d * (samples.At(i)-pedestal) ;
-    c += f22d * (samples.At(i)-pedestal) ;
+    a += f02d * samples.At(i) ;
+    b -= f12d * samples.At(i) ;
+    c += f22d * samples.At(i) ;
   }
   
-  //Find 2 roots
-  Double_t det = b*b - a*c;
-  if(det>=1.e-6 && det<0.0) {
-    det = 0.0; //rounding error
-  }
-  if(det<0.){ //Problem
-    fQuality = 1500. ;
-    if(AliLog::GetDebugLevel("PHOS","AliPHOSRawFitterv3")>3){
-      printf(" det=%e \n",det) ;
-      goto plot ;
+  //Find roots
+  if(a==0.){
+    if(b==0.){ //no roots
+      fQuality = 2000. ;
+      if(AliLog::GetDebugLevel("PHOS","AliPHOSRawFitterv3")>3){
+        printf(" a=%f, b=%f, c=%f \n",a,b,c) ;
+        goto plot ;
+      }
+      return kTRUE ;
     }
-    return kTRUE ;
-  }
-
-  if(det>0.0 && a!=0.) {
-    det = TMath::Sqrt(det);
-    Double_t t1 = (-b + det) / a;
-//    Double_t t2 = (-b - det) / a; //second root is wrong one
-    Double_t amp1=0., den1=0. ;
-    for(Int_t i=0; i<sigLength; i++){
-      if(samples.At(i)<pedestal)
-        continue ;
-      Double_t dt1 = times.At(i) - t1;
-      Double_t f01 = dt1*dt1*TMath::Exp(-2.*dt1);
-      amp1 += f01*(samples.At(i)-pedestal);
-      den1 += f01*f01;
-    }
-    if(den1>0.0) amp1 /= den1;
-    Double_t chi1=0.; // chi2=0. ;
-    for(Int_t i=0; i<sigLength; i++){
-      if(samples.At(i)<=pedestal)
-        continue ;
-      Double_t dt1 = times.At(i)- t1;
-      Double_t dy1 = samples.At(i)-pedestal- amp1*dt1*dt1*TMath::Exp(-2.*dt1) ;
-      chi1 += dy1*dy1;
-    }
-    fEnergy=amp1*TMath::Exp(-2.) ; ; 
-    fTime+=t1*tau ;
-    fQuality=chi1/sigLength ;
-  } 
-  else { 
-    Double_t t1 ;
-    if(a!=0.)
-      t1=-b/a ;
-    else
-      t1=-c/b ;
+    Double_t t1=-c/b ;
     Double_t amp=0.,den=0.; ;
-    for(Int_t i=0; i<sigLength; i++){
-      if(samples.At(i)<=pedestal)
+    for(Int_t i=minI; i<sigLength; i++){
+      if(samples.At(i)<=0.)
         continue ;
       Double_t dt = times.At(i) - t1;
       Double_t f = dt*dt*TMath::Exp(-2.*dt);
@@ -298,8 +264,8 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     if(den>0.0) amp /= den;
     // chi2 calculation
     fQuality=0.;
-    for(Int_t i=0; i<sigLength; i++){
-      if(samples.At(i)<=pedestal)
+    for(Int_t i=minI; i<sigLength; i++){
+      if(samples.At(i)<=0.)
         continue ;
       Double_t t = times.At(i)- t1;
       Double_t dy = samples.At(i)- amp*t*t*TMath::Exp(-2.*t) ;
@@ -309,6 +275,45 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     fEnergy = amp*TMath::Exp(-2.);
     fQuality/= sigLength ; //If we have overflow the number of actually fitted points is smaller, but chi2 in this case is not important.
   }
+  else{
+    Double_t det = b*b - a*c;
+    if(det>=1.e-6 && det<0.0) {
+      det = 0.0; //rounding error
+    }
+    if(det<0.){ //Problem
+      fQuality = 1500. ;
+      if(AliLog::GetDebugLevel("PHOS","AliPHOSRawFitterv3")>3){
+        printf(" det=%e \n",det) ;
+        goto plot ;
+      }
+      return kTRUE ;
+    }
+
+    det = TMath::Sqrt(det);
+    Double_t t1 = (-b + det) / a;
+//    Double_t t2 = (-b - det) / a; //second root is wrong one
+    Double_t amp1=0., den1=0. ;
+    for(Int_t i=minI; i<sigLength; i++){
+      if(samples.At(i)<=0.)
+        continue ;
+      Double_t dt1 = times.At(i) - t1;
+      Double_t f01 = dt1*dt1*TMath::Exp(-2.*dt1);
+      amp1 += f01*samples.At(i);
+      den1 += f01*f01;
+    }
+    if(den1>0.0) amp1 /= den1;
+    Double_t chi1=0.; // chi2=0. ;
+    for(Int_t i=minI; i<sigLength; i++){
+      if(samples.At(i)<=0.)
+        continue ;
+      Double_t dt1 = times.At(i)- t1;
+      Double_t dy1 = samples.At(i)- amp1*dt1*dt1*TMath::Exp(-2.*dt1) ;
+      chi1 += dy1*dy1;
+    }
+    fEnergy=amp1*TMath::Exp(-2.) ; ; 
+    fTime+=t1*tau ;
+    fQuality=chi1/sigLength ;
+  } 
 
   //Impose cut on quality
   fQuality/=2.+0.004*fEnergy*fEnergy ;
@@ -316,20 +321,21 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   //Draw corrupted samples
   if(AliLog::GetDebugLevel("PHOS","AliPHOSRawFitterv3")>3){
     plot:
-    if(fQuality >1. && !fOverflow ){ //Draw only bad samples
+    if(fEnergy > 30. && fQuality >1. && !fOverflow ){ //Draw only bad samples
+//    if(!fOverflow ){ //Draw only bad samples
       printf("Sample par: amp=%f,  t0=%f, Quality=%f \n",fEnergy,fTime,fQuality) ;
       TH1I * h = (TH1I*)gROOT->FindObjectAny("hSamples") ;
-      if(!h) h = new TH1I("h","Samples",50,0.,50.) ;
+      if(!h) h = new TH1I("hSamples","Samples",65,0.,65.) ;
       h->Reset() ;
       for (Int_t i=0; i<sigLength; i++) {
-        h->SetBinContent(i,samples.At(i)) ;
+        h->SetBinContent(i+1,samples.At(i)+pedestal) ;
       }
       TF1 * fffit = new TF1("fffit","[0]+[1]*((x-[2])/[3])^2*exp(2.-2.*(x-[2])/[3])",0.,200.) ;
-      fffit->SetParameters(pedestal,fEnergy,fTime-sigStart,tau) ;
+      fffit->SetParameters(pedestal,fEnergy,fTime,tau) ;
       fffit->SetLineColor(2) ;
       TCanvas * can = (TCanvas*)gROOT->FindObjectAny("cSamples") ;
       if(!can){
-        can = new TCanvas("cSamples","cSamples",10,10,400,400) ;
+        can = new TCanvas("cSamples","cSamples",10,10,600,600) ;
         can->SetFillColor(0) ;
         can->SetFillStyle(0) ;
         can->Range(0,0,1,1);
@@ -355,7 +361,7 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       h->Draw() ;
       fffit->Draw("same") ;
 
-      sprintf(title,"mod%d_x%d_z%d_HG",fModule,fCellX,fCellZ) ;
+      sprintf(title,"mod%d_x%d_z%d_HG_qu%4.1f",fModule,fCellX,fCellZ,fQuality) ;
       TFile fout("samples_bad.root","update") ;
       h->Write(title);
       fout.Close() ;
@@ -376,17 +382,17 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       spectrum_2->cd() ;
 
       TH1I * hd = (TH1I*)gROOT->FindObjectAny("hSamplesDif") ;
-      if(!hd) hd = new TH1I("hd","Samples",50,0.,50.) ;
+      if(!hd) hd = new TH1I("hd","Samples",65,0.,65.) ;
       hd->Reset() ;
       for (Int_t i=0; i<sigLength; i++) {
-        hd->SetBinContent(i,TMath::Max(-1023.,TMath::Min(1023.,samples.At(i)-fffit->Eval(i)))) ;
+        hd->SetBinContent(i+1,TMath::Max(-1023.,TMath::Min(1023.,samples.At(i)+pedestal-fffit->Eval(i)))) ;
       }
       hd->Draw();
- 
+/* 
       can->Update() ;
       printf("Press <enter> to continue\n") ;
       getchar();
-
+*/
 
       delete fffit ;
       delete spectrum_1 ;
