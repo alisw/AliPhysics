@@ -40,6 +40,7 @@ class AliITSAlignMille2: public TObject
 {
  public:
   enum {kX,kY,kZ};
+  enum {kCosmics, kCollision, kNDataType};
   enum {kNLocal=5,kMaxPoints=100,
 	kNParChGeom = AliITSAlignMille2Module::kMaxParGeom,
 	kNParCh     = AliITSAlignMille2Module::kMaxParTot,
@@ -124,14 +125,19 @@ class AliITSAlignMille2: public TObject
   Double_t  GetMeasLoc(Int_t dim)                                 const {return fMeasLoc[dim];}
   Int_t     GetCurrentLayer()                                     const;
   void      SetBField(Double_t b=0);
+  void      SetTypeCosmics()                                            {fDataType = kCosmics;}
+  void      SetTypeCollision()                                          {fDataType = kCollision;}
+  void      SetDataType(Int_t tp=kCosmics)                              {fDataType = tp>=0&&tp< kNDataType ? tp:kCosmics;}
   void      SetUseLocalYErrors(Bool_t v=kTRUE)                          {fUseLocalYErr = v && fTPAFitter;}
   void      SetMinPointsPerSensor( Int_t n )                            {fMinPntPerSens = n>0 ? n:0;}
   Int_t     GetMinPointsPerSensor()                               const {return fMinPntPerSens;}
   void      ConstrainHelixFitPT(  Int_t q=0,Double_t pt=-1, Double_t err=-1);
   void      ConstrainHelixFitCurv(Int_t q=0,Double_t crv=-1,Double_t crverr=-1);
+  void      RemoveHelixFitConstraint();
   Double_t  GetHelixContraintCharge()                             const {return fConstrCharge;}
   Double_t  GetHelixContraintPT()                                 const {return fConstrPT;}
   Double_t  GetHelixContraintPTErr()                              const {return fConstrPTErr;}
+  Int_t     GetDataType()                                         const {return fDataType;}
   //
   TGeoHMatrix* GetSensorOrigMatrixSID(Int_t sid)                  const;
   TGeoHMatrix* GetSensorOrigMatrixVID(Int_t vid)                  const;
@@ -173,9 +179,12 @@ class AliITSAlignMille2: public TObject
   // debug stuffs
   void       FetchCluster(int ip)                                      {fTrack->GetPoint(fCluster,ip);fCluster.SetUniqueID(ip);} 
   void       SetLocalInitParams(const Double_t *par)                   {for (int i=kNLocal;i--;) fLocalInitParam[i]=par[i];}
+  Bool_t     IsTypeCosmics()                                     const {return fDataType==kCosmics;}
+  Bool_t     IsTypeCollision()                                   const {return fDataType==kCollision;}
   Double_t  *GetMeasLoc()                                        const {return (Double_t*)fMeasLoc;}
   Double_t  *GetSigmaLoc()                                       const {return (Double_t*)fSigmaLoc;}
   Double_t   GetBField()                                         const {return fBField;}
+  Bool_t     IsFieldON()                                         const {return fBOn;}
   Double_t  *GetLocalInitParam()                                 const {return (Double_t*)fLocalInitParam;}
   Double_t  *GetLocalInitParEr()                                 const {return (Double_t*)fLocalInitParEr;}
   Double_t   GetLocalDif(int par, int coor)                      const {return fDerivativeLoc[par][coor];}
@@ -199,11 +208,11 @@ class AliITSAlignMille2: public TObject
   Int_t     IsDefined(UShort_t voluid) const {return IsVIDDefined(voluid);}
   Int_t     IsContained(UShort_t voluid) const {return IsVIDContained(voluid);}
   // moved from private to public
-  void      SetRequiredPoint(Char_t* where, Int_t ndet, Int_t updw, Int_t nreqpts); 
+  void      SetRequiredPoint(Char_t* where, Int_t ndet, Int_t updw, Int_t nreqpts,Int_t runtype=-1); 
   Bool_t    InitRiemanFit();
   void      SetMinNPtsPerTrack(Int_t pts=3)  {fMinNPtsPerTrack=pts;}
   //
-  static Bool_t    IsZero(Double_t v,Double_t threshold = 1e-16)       { return TMath::Abs(v)<threshold; }
+  static Bool_t    IsZero(Double_t v,Double_t threshold = 1e-15)       { return TMath::Abs(v)<threshold; }
   static void      SetWordBit(UInt_t word,Int_t bitID)                 { word |= (1<<bitID);}
   static void      ResetWordBit(UInt_t word,Int_t bitID)               { word &= ~(1<<bitID);}
   static Bool_t    TestWordBit(UInt_t word,Int_t bitID)                { return (Bool_t)(word&(1<<bitID));}      
@@ -348,14 +357,14 @@ class AliITSAlignMille2: public TObject
   TObjArray     fCacheMatrixOrig;               // cach for original geom matrices
   TObjArray     fCacheMatrixCurr;               // cach for prealigned geom matrices
   // >> new members
-  Bool_t        fUseGlobalDelta;  // intetpret deltas as global 
-  Bool_t        fRequirePoints;   // required points in specific layers
-  Int_t         fNReqLayUp[6];    /// number of points required in layer[n] with Y>0
-  Int_t         fNReqLayDown[6];  /// number of points required in layer[n] with Y<0
-  Int_t         fNReqLay[6];      /// number of points required in layer[n] 
-  Int_t         fNReqDetUp[3];    /// number of points required in Detector[n] with Y>0
-  Int_t         fNReqDetDown[3];  /// number of points required in Detector[n] with Y<0
-  Int_t         fNReqDet[3];      /// number of points required in Detector[n]
+  Bool_t        fUseGlobalDelta;                // intetpret deltas as global 
+  Bool_t        fRequirePoints[kNDataType];     // required points in specific layers
+  Int_t         fNReqLayUp[kNDataType][6];      // number of points required in layer[n] with Y>0
+  Int_t         fNReqLayDown[kNDataType][6];    // number of points required in layer[n] with Y<0
+  Int_t         fNReqLay[kNDataType][6];        // number of points required in layer[n] 
+  Int_t         fNReqDetUp[kNDataType][3];      // number of points required in Detector[n] with Y>0
+  Int_t         fNReqDetDown[kNDataType][3];    // number of points required in Detector[n] with Y<0
+  Int_t         fNReqDet[kNDataType][3];        // number of points required in Detector[n]
   Int_t         fTempExcludedModule; /// single module temporary excluded from initial fit
   // << new members
   //
@@ -384,6 +393,7 @@ class AliITSAlignMille2: public TObject
   Bool_t        fUseLocalYErr;                  // use local Yerror due to the sensor thickness
   Bool_t        fBOn;                           // magentic field ON
   Double_t      fBField;                        // value of magnetic field
+  Int_t         fDataType;                      // is this cosmics or collision processing?
   Int_t         fMinPntPerSens;                 // min number of points per module to vary it
   Int_t         fBug;                           /// tag for temporary bug correction
   // pepo

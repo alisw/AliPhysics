@@ -136,7 +136,6 @@ AliITSAlignMille2::AliITSAlignMille2(const Char_t *configFilename,TList *userInf
   fCacheMatrixCurr(kMaxITSSensID+1),
   //
   fUseGlobalDelta(kFALSE),
-  fRequirePoints(kFALSE),
   fTempExcludedModule(-1),
   //
   fDefCDBpath("local://$ALICE_ROOT/OCDB"),
@@ -162,6 +161,7 @@ AliITSAlignMille2::AliITSAlignMille2(const Char_t *configFilename,TList *userInf
   fUseLocalYErr(kFALSE),
   fBOn(kFALSE),
   fBField(0.0),
+  fDataType(kCosmics),
   fMinPntPerSens(0),
   fBug(0),
   fMilleVersion(2),
@@ -171,15 +171,21 @@ AliITSAlignMille2::AliITSAlignMille2(const Char_t *configFilename,TList *userInf
   for (int i=3;i--;) fSigmaFactor[i] = 1.0;
   //
   // new RS
-  for (Int_t i=0; i<6; i++) {
-    fNReqLayUp[i]=0;
-    fNReqLayDown[i]=0;
-    fNReqLay[i]=0;
+  for (int i=0;i<3;i++) {
+    
   }
-  for (Int_t i=0; i<3; i++) {
-    fNReqDetUp[i]=0;
-    fNReqDetDown[i]=0;
-    fNReqDet[i]=0;
+  for (int itp=0;itp<kNDataType;itp++) {
+    fRequirePoints[itp] = kFALSE;
+    for (Int_t i=0; i<6; i++) {
+      fNReqLayUp[itp][i]=0;
+      fNReqLayDown[itp][i]=0;
+      fNReqLay[itp][i]=0;
+    }
+    for (Int_t i=0; i<3; i++) {
+      fNReqDetUp[itp][i]=0;
+      fNReqDetDown[itp][i]=0;
+      fNReqDet[itp][i]=0;
+    }
   }
   //
   if (ProcessUserInfo(userInfo)) exit(1);
@@ -630,20 +636,34 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
 	  int lr = ((TObjString*)recArr->At(2))->GetString().Atoi() - 1;
 	  int hb = ((TObjString*)recArr->At(3))->GetString().Atoi();
 	  int np = ((TObjString*)recArr->At(4))->GetString().Atoi();
-	  fRequirePoints = kTRUE;
-	  if (recOpt == "LAYER") {
-	    if (lr<0 || lr>5) {stopped = kTRUE; break;}
-	    if (hb>0) fNReqLayUp[lr] = np;
-	    else if (hb<0) fNReqLayDown[lr] = np;
-	    else fNReqLay[lr] = np;
+	  //
+	  int rtp = -1; // use for run type
+	  if (nrecElems>5) {
+	    TString tpstr = ((TObjString*)recArr->At(5))->GetString();
+	    if ( tpstr.Contains("cosmics",TString::kIgnoreCase) ) rtp = kCosmics;
+	    else if ( tpstr.Contains("collision",TString::kIgnoreCase) ) rtp = kCollision;
+	    else {stopped = kTRUE; break;}
 	  }
-	  else if (recOpt == "DETECTOR") {
-	    if (lr<0 || lr>2) {stopped = kTRUE; break;}
-	    if (hb>0) fNReqDetUp[lr] = np;
-	    else if (hb<0) fNReqDetDown[lr] = np;
-	    else fNReqDet[lr] = np;
+	  //
+	  int tpmn= rtp<0 ? 0 : rtp;
+	  int tpmx= rtp<0 ? kNDataType-1 : rtp;
+	  for (int itp=tpmn;itp<=tpmx;itp++) {
+	    fRequirePoints[itp]=kTRUE;
+	    if (recOpt == "LAYER") {
+	      if (lr<0 || lr>5) {stopped = kTRUE; break;}
+	      if (hb>0) fNReqLayUp[itp][lr]=np;
+	      else if (hb<0) fNReqLayDown[itp][lr]=np;
+	      else fNReqLay[itp][lr]=np;
+	    }
+	    else if (recOpt == "DETECTOR") {
+	      if (lr<0 || lr>2) {stopped = kTRUE; break;}
+	      if (hb>0) fNReqDetUp[itp][lr]=np;
+	      else if (hb<0) fNReqDetDown[itp][lr]=np;
+	      else fNReqDet[itp][lr]=np;
+	    }
+	    else {stopped = kTRUE; break;}
 	  }
-	  else {stopped = kTRUE; break;}
+	  if (stopped) break;
 	}
 	else {stopped = kTRUE; break;}
       }
@@ -902,7 +922,7 @@ void AliITSAlignMille2::SetCurrentModule(Int_t id)
 }
 // endpepo
 //________________________________________________________________________________________________________
-void AliITSAlignMille2::SetRequiredPoint(Char_t* where, Int_t ndet, Int_t updw, Int_t nreqpts) 
+void AliITSAlignMille2::SetRequiredPoint(Char_t* where, Int_t ndet, Int_t updw, Int_t nreqpts,Int_t runtype) 
 {
   // set minimum number of points in specific detector or layer
   // where = LAYER or DETECTOR
@@ -910,19 +930,23 @@ void AliITSAlignMille2::SetRequiredPoint(Char_t* where, Int_t ndet, Int_t updw, 
   // updw = 1 for Y>0, -1 for Y<0, 0 if not specified
   // nreqpts = minimum number of points of that type
   ndet--;
-  if (strstr(where,"LAYER")) {
-    if (ndet<0 || ndet>5) return;
-    if (updw>0) fNReqLayUp[ndet]=nreqpts;
-    else if (updw<0) fNReqLayDown[ndet]=nreqpts;
-    else fNReqLay[ndet]=nreqpts;
-    fRequirePoints=kTRUE;
-  }
-  else if (strstr(where,"DETECTOR")) {
-    if (ndet<0 || ndet>2) return;
-    if (updw>0) fNReqDetUp[ndet]=nreqpts;
-    else if (updw<0) fNReqDetDown[ndet]=nreqpts;
-    else fNReqDet[ndet]=nreqpts;	
-    fRequirePoints=kTRUE;
+  int tpmn= runtype<0 ? 0 : runtype;
+  int tpmx= runtype<0 ? kNDataType-1 : runtype;
+  //
+  for (int itp=tpmn;itp<=tpmx;itp++) {
+    fRequirePoints[itp]=kTRUE;
+    if (strstr(where,"LAYER")) {
+      if (ndet<0 || ndet>5) return;
+      if (updw>0) fNReqLayUp[itp][ndet]=nreqpts;
+      else if (updw<0) fNReqLayDown[itp][ndet]=nreqpts;
+      else fNReqLay[itp][ndet]=nreqpts;
+    }
+    else if (strstr(where,"DETECTOR")) {
+      if (ndet<0 || ndet>2) return;
+      if (updw>0) fNReqDetUp[itp][ndet]=nreqpts;
+      else if (updw<0) fNReqDetDown[itp][ndet]=nreqpts;
+      else fNReqDet[itp][ndet]=nreqpts;	
+    }
   }
 }
 
@@ -1371,7 +1395,7 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
   // >> RS
   AliTrackPoint p;
   // check points in specific places
-  if (fRequirePoints) {
+  if (fRequirePoints[fDataType]) {
     Int_t nlayup[6],nlaydown[6],nlay[6];
     Int_t ndetup[3],ndetdown[3],ndet[3];
     for (Int_t j=0; j<6; j++) {nlayup[j]=0; nlaydown[j]=0; nlay[j]=0;}
@@ -1403,14 +1427,14 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     // checks minimum values
     Bool_t isok=kTRUE;
     for (Int_t j=0; j<6; j++) {
-      if (nlayup[j]<fNReqLayUp[j]) isok=kFALSE; 
-      if (nlaydown[j]<fNReqLayDown[j]) isok=kFALSE; 
-      if (nlay[j]<fNReqLay[j]) isok=kFALSE; 
+      if (nlayup[j]<fNReqLayUp[fDataType][j]) isok=kFALSE; 
+      if (nlaydown[j]<fNReqLayDown[fDataType][j]) isok=kFALSE; 
+      if (nlay[j]<fNReqLay[fDataType][j]) isok=kFALSE; 
     }
     for (Int_t j=0; j<3; j++) {
-      if (ndetup[j]<fNReqDetUp[j]) isok=kFALSE; 
-      if (ndetdown[j]<fNReqDetDown[j]) isok=kFALSE; 
-      if (ndet[j]<fNReqDet[j]) isok=kFALSE; 
+      if (ndetup[j]<fNReqDetUp[fDataType][j]) isok=kFALSE; 
+      if (ndetdown[j]<fNReqDetDown[fDataType][j]) isok=kFALSE; 
+      if (ndet[j]<fNReqDet[fDataType][j]) isok=kFALSE; 
     }
     if (!isok) {
       AliDebug(2,Form("Track does not meet all location point requirements!"));
@@ -1714,16 +1738,18 @@ void AliITSAlignMille2::Print(Option_t*) const
   //
   printf("Using local Y error due to the sensor thickness: %s\n",(fUseLocalYErr && fTPAFitter) ? "ON":"OFF");
   //
-  if (fRequirePoints) printf("    Required points in tracks:\n");
-  for (Int_t i=0; i<6; i++) {
-    if (fNReqLayUp[i]>0) printf("        Layer %d : %d points with Y>0\n",i+1,fNReqLayUp[i]);
-    if (fNReqLayDown[i]>0) printf("        Layer %d : %d points with Y<0\n",i+1,fNReqLayDown[i]);
-    if (fNReqLay[i]>0) printf("        Layer %d : %d points \n",i+1,fNReqLay[i]);
-  }
-  for (Int_t i=0; i<3; i++) {
-    if (fNReqDetUp[i]>0) printf("        Detector %d : %d points with Y>0\n",i+1,fNReqDetUp[i]);
-    if (fNReqDetDown[i]>0) printf("        Detector %d : %d points with Y<0\n",i+1,fNReqDetDown[i]);
-    if (fNReqDet[i]>0) printf("        Detector %d : %d points \n",i+1,fNReqDet[i]);
+  for (int itp=0;itp<kNDataType;itp++) {
+    if (fRequirePoints[itp]) printf("    Required points in %s tracks:\n",itp==kCosmics? "cosmics" : "collisions");
+    for (Int_t i=0; i<6; i++) {
+      if (fNReqLayUp[itp][i]>0) printf("        Layer %d : %d points with Y>0\n",i+1,fNReqLayUp[itp][i]);
+      if (fNReqLayDown[itp][i]>0) printf("        Layer %d : %d points with Y<0\n",i+1,fNReqLayDown[itp][i]);
+      if (fNReqLay[itp][i]>0) printf("        Layer %d : %d points \n",i+1,fNReqLay[itp][i]);
+    }
+    for (Int_t i=0; i<3; i++) {
+      if (fNReqDetUp[itp][i]>0) printf("        Detector %d : %d points with Y>0\n",i+1,fNReqDetUp[itp][i]);
+      if (fNReqDetDown[itp][i]>0) printf("        Detector %d : %d points with Y<0\n",i+1,fNReqDetDown[itp][i]);
+      if (fNReqDet[itp][i]>0) printf("        Detector %d : %d points \n",i+1,fNReqDet[itp][i]);
+    }
   }
   //  
   printf("\n    Millepede configuration parameters:\n");
@@ -2055,8 +2081,10 @@ Int_t AliITSAlignMille2::ProcessTrack(const AliTrackPointArray *track)
   // move points if prealignment is set, sort by Yglo if required
   
   fTrack=PrepareTrack(track);
-  if (!fTrack) return -1;
-
+  if (!fTrack) {
+    RemoveHelixFitConstraint();
+    return -1;
+  }
   npts = fTrack->GetNPoints();
   if (npts>kMaxPoints) {
     AliError(Form("Compiled with kMaxPoints=%d, current track has %d points",kMaxPoints,npts));
@@ -2066,20 +2094,25 @@ Int_t AliITSAlignMille2::ProcessTrack(const AliTrackPointArray *track)
   if (fTPAFitter) {  // use dediacted fitter
     //
     fTPAFitter->AttachPoints(fTrack);
-    if (fBOn) fTPAFitter->SetBz(fBField);
+    fTPAFitter->SetBz(fBField);
+    fTPAFitter->SetTypeCosmics(IsTypeCosmics());
     if (fInitTrackParamsMeth==1) fTPAFitter->SetIgnoreCov();
     double chi2 = fTPAFitter->Fit(fConstrCharge,fConstrPT,fConstrPTErr);
     //
     // suppress eventual constraints to not affect fit of the next track
-    fConstrCharge = 0;
-    fConstrPT = fConstrPTErr = -1;
+    RemoveHelixFitConstraint();
     //
-    if ( chi2<0 || (fTPAFitter->GetNIterations()>=fTPAFitter->GetMaxIterations()) ) {
+    if ( chi2<0 || (chi2>fStartFac && fTPAFitter->GetNIterations()>=fTPAFitter->GetMaxIterations()) ) { //RRR
       AliInfo("Track fit failed! skipping this track...");
+      fTrack->Print("");
+      fTPAFitter->FitHelixCrude();
+      fTPAFitter->SetFitDone();
+      fTPAFitter->Print();
       fTPAFitter->Reset();
       fTrack = NULL;
       return -5;
     }
+    fNLocal = fTPAFitter->IsFieldON() ? 5:4; // Attantion: the fitter might have decided to work in line mode
     /*
     double *pr = fTPAFitter->GetParams();
     printf("FtPar: %+.5e  %+.5e  %+.5e  %+.5e | chi2:%.3e\n",pr[2],pr[0],pr[3],pr[1],chi2); // RRR
@@ -3415,8 +3448,9 @@ Int_t AliITSAlignMille2::ProcessUserInfo(TList* userInfo)
     //
   }  
   //
-  objStr = (TObjString*)userInfo->FindObject("BzkGauss");
-  if (objStr) {
+  TList *bzlst = (TList*)userInfo->FindObject("BzkGauss");
+  if (bzlst && bzlst->At(0)) {
+    objStr = (TObjString*)bzlst->At(0);
     SetBField( objStr->GetString().Atof() );
     AliInfo(Form("Magentic field from UserInfo: %+.2e",GetBField()));
   }
@@ -3556,6 +3590,14 @@ Int_t AliITSAlignMille2::CacheMatricesOrig()
 }
 
 //________________________________________________________________________________________________________
+void AliITSAlignMille2::RemoveHelixFitConstraint()
+{
+  // suppress constraint
+  fConstrCharge = 0;
+  fConstrPT = fConstrPTErr = -1;
+}
+
+//________________________________________________________________________________________________________
 void AliITSAlignMille2::ConstrainHelixFitPT(Int_t q,Double_t pt,Double_t pterr)
 {
   // constrain q and pT of the helical fit of the track (should be set before process.track)
@@ -3579,7 +3621,7 @@ void AliITSAlignMille2::ConstrainHelixFitCurv(Int_t q,Double_t crv,Double_t crve
   }
   else {
     fConstrPT    = 1./crv*fBField*kCQConv;
-    fConstrPTErr =fConstrPT/crv*crverr;
+    fConstrPTErr = crverr>1e-10 ? fConstrPT/crv*crverr : 0.;
   }
 }
 

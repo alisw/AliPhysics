@@ -65,7 +65,7 @@ class AliITSTPArrayFit : public TObject
   //
   void          SetBz(Double_t bz)                                {fBz = bz;}
   Double_t      GetBz()                                     const {return fBz;}
-  Bool_t        IsFieldON()                                 const {return TMath::Abs(fBz)>1e-5;}
+  Bool_t        IsFieldON()                                 const {return TMath::Abs(fBz)>1e-5 && !IsSwitched2Line();}
   Bool_t        IsTypeCosmics()                             const {return TestBit(kCosmicsBit);}
   Bool_t        IsTypeCollision()                           const {return !IsTypeCosmics();}
   Int_t         GetCharge()                                 const {return fCharge;}
@@ -83,6 +83,7 @@ class AliITSTPArrayFit : public TObject
   Double_t      CalcChi2NDF()                               const;
   Double_t      GetChi2NDF()                                const {return fChi2NDF;}
   Double_t      GetParPCA(const double *xyz, const double *covI=0)        const;
+  Double_t      CalcParPCA(Int_t ipnt)                      const;
   Bool_t        CalcErrorMatrix();
   //
   void          GetDResDParamsLine (Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0) const;
@@ -113,7 +114,7 @@ class AliITSTPArrayFit : public TObject
   Int_t         GetNParams()                                const {return IsFieldON() ? 5:4;}
   Bool_t        InvertPointsCovMat();
   //
-  Int_t*     GetElsId() const {return fElsId;}
+  Int_t*        GetElsId() const {return fElsId;}
   Double_t*     GetElsDR() const {return fElsDR;}
   //
   Double_t*     GetCovI(Int_t ip)                           const {return fCovI + ip*6;}
@@ -125,6 +126,7 @@ class AliITSTPArrayFit : public TObject
   Double_t      GetLineOffset(Int_t axis)                   const;
   Double_t      GetLineSlope(Int_t axis)                    const;
   //
+  Bool_t        IsSwitched2Line()                           const {return fSwitch2Line;}
   Bool_t        IsELossON()                                 const {return TestBit(kELossBit)&&IsFieldON();}
   Bool_t        IsFitDone()                                 const {return TestBit(kFitDoneBit);}
   Bool_t        IsCovInv()                                  const {return TestBit(kCovInvBit);}
@@ -134,6 +136,8 @@ class AliITSTPArrayFit : public TObject
   Double_t      GetEps()                                    const {return fEps;}
   Double_t      GetMass()                                   const {return fMass;}
   //
+  void          Switch2Line(Bool_t v=kTRUE)                       {fSwitch2Line = v;}
+  void          SetMaxRforHelix(Double_t r)                       {fMaxRforHelix = r>0 ? r : 1e9;}
   void          SetCharge(Int_t q=1)                              {fCharge = q<0 ? -1:1;}
   void          SetELossON(Bool_t v=kTRUE)                        {SetBit(kELossBit,v);}
   void          SetTypeCosmics(Bool_t v=kTRUE)                    {SetBit(kCosmicsBit,v);}
@@ -187,6 +191,8 @@ class AliITSTPArrayFit : public TObject
   Int_t     fIter;                                 // real number of iterations
   Double_t  fEps;                                  // precision
   Double_t  fMass;                                 // assumed particle mass for ELoss Calculation
+  Bool_t    fSwitch2Line;                          // decided to switch to line
+  Double_t  fMaxRforHelix;                         // above this radius use straight line fit
   //
   const Int_t  *fkAxID;                            // axis IDs
   const Int_t  *fkAxCID;                           // axis combinations IDs

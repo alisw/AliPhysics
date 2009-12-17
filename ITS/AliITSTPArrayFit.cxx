@@ -88,7 +88,8 @@ Double_t AliITSTPArrayFit::fgRhoLITS[AliITSTPArrayFit::kMaxLrITS] = {
 AliITSTPArrayFit::AliITSTPArrayFit() :
   fPoints(0),fParSol(0),fBz(0),fCharge(0),fPntFirst(-1),
   fPntLast(-1),fNPBooked(0),fParAxis(-1),fCovI(0),fChi2NDF(0),
-  fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fkAxID(0),fkAxCID(0),fCurT(0),
+  fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fSwitch2Line(kFALSE),fMaxRforHelix(1.e6),
+  fkAxID(0),fkAxCID(0),fCurT(0),
   fFirstPosT(0),fNElsPnt(0),fElsId(0),fElsDR(0)
 {
   // default constructor
@@ -101,8 +102,8 @@ AliITSTPArrayFit::AliITSTPArrayFit() :
 AliITSTPArrayFit::AliITSTPArrayFit(Int_t np) :
   fPoints(0),fParSol(0),fBz(0),fCharge(0),fPntFirst(-1),
   fPntLast(-1),fNPBooked(np),fParAxis(-1),fCovI(0),fChi2NDF(0),
-  fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fkAxID(0),fkAxCID(0),fCurT(0),
-  fFirstPosT(0),fNElsPnt(0),fElsId(0),fElsDR(0)
+  fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fSwitch2Line(kFALSE),fMaxRforHelix(2.e3),
+  fkAxID(0),fkAxCID(0),fCurT(0),fFirstPosT(0),fNElsPnt(0),fElsId(0),fElsDR(0)
 {
   // constructor with booking of np points
   for (int i=kMaxParam;i--;)   fParams[i] = 0;
@@ -118,7 +119,8 @@ AliITSTPArrayFit::AliITSTPArrayFit(const AliITSTPArrayFit &src) :
   TObject(src),fPoints(src.fPoints),fParSol(0),fBz(src.fBz),
   fCharge(src.fCharge),fPntFirst(src.fPntFirst),fPntLast(src.fPntLast),fNPBooked(src.fNPBooked),
   fParAxis(src.fParAxis),fCovI(0),fChi2NDF(0),fMaxIter(20),fIter(0),fEps(0),fMass(src.fMass),
-  fkAxID(0),fkAxCID(0),fCurT(0),fFirstPosT(0),fNElsPnt(0),fElsId(0),fElsDR(0)
+  fSwitch2Line(src.fSwitch2Line),fMaxRforHelix(src.fMaxRforHelix),fkAxID(0),fkAxCID(0),fCurT(0),
+  fFirstPosT(0),fNElsPnt(0),fElsId(0),fElsDR(0)
 {
   // copy constructor
   InitAux();
@@ -187,6 +189,7 @@ void AliITSTPArrayFit::Reset()
   fIter = 0;
   fPntFirst=fPntLast=-1; 
   SetParAxis(-1);
+  fSwitch2Line = kFALSE;
   ResetBit(kFitDoneBit|kCovInvBit);
 }
 
@@ -946,7 +949,7 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
   Bool_t eloss = IsELossON();
   //
   int np = fPntLast - fPntFirst + 1;
-  if (np<2) { AliError("At least 3 points are needed for helix fit"); return kFALSE; }
+  if (np<3) { AliError("At least 3 points are needed for helix fit"); return kFALSE; }
   //
   const float *x=fPoints->GetX(),*y=fPoints->GetY(),*z=fPoints->GetZ(),*cov=fPoints->GetCov();
   //
@@ -1005,11 +1008,11 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
   Double_t yc   = -(rhs0*mi01 + rhs1*mi11 + rhs2*mi12)/2;
   Double_t rho2 =  (rhs0*mi02 + rhs1*mi12 + rhs2*mi22);
   //
-  Double_t dcen = xc*xc + yc*yc;
-  Double_t rad = dcen - rho2;
+  Double_t rad = xc*xc + yc*yc - rho2;
   rad = (rad>fgkAlmostZero) ? (TMath::Sqrt(rad)):fgkAlmostZero;
   //
   //  printf("Rad: %+e xc: %+e yc: %+e\n",rad,xc,yc);
+
   // linear circle fit --------------------------------------------------- <<<
   //
   // decide sign(Q*B) and fill cicrle parameters ------------------------- >>>
@@ -1028,14 +1031,13 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
     SetCharge( fBz<0 ? -sqb : sqb);
   }
   //
-  dcen = TMath::Sqrt(dcen);
-  fParams[kD0] = dcen-rad;
   Double_t phi = TMath::ATan2(yc,xc);
   if (sqb<0) phi += TMath::Pi();
   if      (phi > TMath::Pi()) phi -= 2.*TMath::Pi();
   else if (phi <-TMath::Pi()) phi += 2.*TMath::Pi();
   fParams[kPhi0] = phi;  
   fParams[kR0]   = sqb<0 ? -rad:rad;  
+  fParams[kD0] = xc*TMath::Cos(phi) + yc*TMath::Sin(phi) - fParams[kR0];
   //
   // decide sign(Q*B) and fill cicrle parameters ------------------------- <<<
   //
@@ -1199,6 +1201,12 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
   //
   if (!FitHelixCrude(extQ)) return -1; // get initial estimate, ignoring the errors
   //
+  if (TMath::Abs(fParams[kR0])>fMaxRforHelix && extPT<=0) {
+    fSwitch2Line = kTRUE;
+    return FitLine();
+  }
+  //
+  //
   if (!IsCovInv()) InvertPointsCovMat();    // prepare inverted errors
   if (!fParSol) fParSol = new AliParamSolver(5);
   fParSol->SetNGlobal(5);
@@ -1225,8 +1233,8 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
       dXYZdGlo[offs + kZ] = 0;
       //
       offs = kPhi0*3;                  // dXYZ/dPhi0
-      dXYZdGlo[offs + kX] = -rrho*sn0;
-      dXYZdGlo[offs + kY] =  rrho*cs0;
+      dXYZdGlo[offs + kX] = -rrho*sn0 + fParams[kR0]*snt;
+      dXYZdGlo[offs + kY] =  rrho*cs0 - fParams[kR0]*cst;
       dXYZdGlo[offs + kZ] = 0;
       //
       offs = kR0*3;                   // dXYZ/dR0
@@ -1263,7 +1271,11 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
     Double_t *deltaG = fParSol->GetGlobals();
     Double_t *deltaT = fParSol->GetLocals();
     for (int ipar=5;ipar--;) fParams[ipar] -= deltaG[ipar];
-    for (int ip=fPntFirst;ip<=fPntLast;ip++) fCurT[ip] -= deltaT[ip-fPntFirst];
+    for (int ip=fPntFirst;ip<=fPntLast;ip++) {
+      fCurT[ip] = CalcParPCA(ip);
+      //      printf("iter%d : delta%2d : expl: %+e | %+e | R=%+e p0=%+e\n",iter,ip,deltaT[ip-fPntFirst], fCurT[ip],fParams[kR0],fParams[kPhi0]);
+      //      fCurT[ip] -= deltaT[ip-fPntFirst];
+    }
     iter++;
     //
     fChi2NDF = CalcChi2NDF();
@@ -1602,4 +1614,14 @@ Bool_t AliITSTPArrayFit::CalcErrorMatrix()
   }
   //
   return kFALSE;
+}
+
+//____________________________________________________
+Double_t AliITSTPArrayFit::CalcParPCA(Int_t ipnt) const
+{
+  // get parameter for the point with least weighted distance to the point
+  const double *xyz  = GetPoint(ipnt);
+  const double *covI = GetCovI(ipnt);
+  if (IsFieldON()) return GetParPCAHelix(xyz,covI);
+  else             return GetParPCALine(xyz,covI);
 }
