@@ -1,3 +1,4 @@
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -77,7 +78,7 @@ void AliHLTITSDigitPublisherComponent::GetInputDataTypes( vector<AliHLTComponent
 AliHLTComponentDataType AliHLTITSDigitPublisherComponent::GetOutputDataType() {
   // see header file for class documentation
 
-  return kAliHLTDataTypeTTree|kAliHLTDataOriginITS;
+  return kAliHLTDataTypeAliTreeD|kAliHLTDataOriginITS;
 }
 
 void AliHLTITSDigitPublisherComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
@@ -133,7 +134,7 @@ Int_t AliHLTITSDigitPublisherComponent::GetEvent(const AliHLTComponentEventData&
   } 
   //tD->GetEntry(fEventNumber);
   
-  PushBack((TObject*)tD,kAliHLTDataTypeTTree|kAliHLTDataOriginITS,0x00000000);
+  PushBack((TObject*)tD,kAliHLTDataTypeAliTreeD|kAliHLTDataOriginITS,0x00000000);
   fEventNumber++;
   return 0;
 }

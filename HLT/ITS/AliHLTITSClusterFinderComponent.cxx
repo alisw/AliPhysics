@@ -90,7 +90,7 @@ AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
     fOutputDataType = kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD;
     break;
   case kClusterFinderDigits:
-    fInputDataType  = kAliHLTDataTypeTTree|kAliHLTDataOriginITS;
+    fInputDataType  = kAliHLTDataTypeAliTreeD|kAliHLTDataOriginITS;
     fOutputDataType = kAliHLTDataTypeClusters|kAliHLTDataOriginITS;
     break;
   default:
