@@ -197,31 +197,34 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       if (v0CBG)
         fHistStatistics->Fill(7, i);
         
-      if ((fastOR > 0 || v0A || v0C) && !v0BG)
+      if (fastOR > 1 && !v0BG)
         fHistStatistics->Fill(8, i);
+        
+      if ((fastOR > 0 || v0A || v0C) && !v0BG)
+        fHistStatistics->Fill(9, i);
     
       if (fastOR > 0 && (v0A || v0C) && !v0BG)
-        fHistStatistics->Fill(9, i);
+        fHistStatistics->Fill(10, i);
   
       if (v0A && v0C && !v0BG)
-        fHistStatistics->Fill(10, i);
+        fHistStatistics->Fill(11, i);
         
       if (fastOR > 1 || (fastOR > 0 && (v0A || v0C)) || (v0A && v0C))
       {
         if (!v0BG)
         {
-          fHistStatistics->Fill(11, i);
+          fHistStatistics->Fill(12, i);
       
           if (fBackgroundIdentification && !fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd)))
           {
             AliDebug(AliLog::kDebug, "Rejecting event because of background identification");
-            fHistStatistics->Fill(12, i);
+            fHistStatistics->Fill(13, i);
           }
           else
           {
             AliDebug(AliLog::kDebug, "Accepted event for histograms");
             
-            fHistStatistics->Fill(13, i);
+            fHistStatistics->Fill(14, i);
             fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i);
             if (i < fCollTrigClasses.GetEntries())
               accept = kTRUE;
@@ -289,20 +292,21 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   if (fHistStatistics)
     delete fHistStatistics;
 
-  fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 13, 0.5, 13.5, count, -0.5, -0.5 + count);
+  fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 14, 0.5, 14.5, count, -0.5, -0.5 + count);
     
   Int_t n = 1;
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "Correct trigger class(es)");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "Triggered");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A BG");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 1 | V0A | VOC) & !V0 BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1 & (V0A | VOC) & !V0 BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A & VOC & !V0 BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 2 | (FO >= 1 & (V0A | VOC)) | (V0A & VOC)) & !V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2 &!V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 1 | V0A | V0C) & !V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1 & (V0A | V0C) & !V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A & V0C & !V0 BG");
+  fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 2 | (FO >= 1 & (V0A | V0C)) | (V0A & V0C)) & !V0 BG");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "Background identification");
   fHistStatistics->GetXaxis()->SetBinLabel(n++, "Accepted");
   
@@ -361,7 +365,36 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
     Printf("\nSelection statistics for first collision trigger:");
     
     Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics->GetBinContent(1, 1));
-    Printf("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(13, 1));
+    Printf("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(fHistStatistics->GetXaxis()->FindBin("Accepted"), 1));
+  }
+  
+  if (fHistBunchCrossing)
+  {
+    Printf("\nBunch crossing statistics:");
+    
+    for (Int_t i=1; i<=fHistBunchCrossing->GetNbinsY(); i++)
+    {
+      TString str;
+      str.Form("Trigger %s has accepted events in the bunch crossings: ", fHistBunchCrossing->GetYaxis()->GetBinLabel(i));
+      
+      for (Int_t j=1; j<=fHistBunchCrossing->GetNbinsX(); j++)
+        if (fHistBunchCrossing->GetBinContent(j, i) > 0)
+          str += Form("%d, ", (Int_t) fHistBunchCrossing->GetXaxis()->GetBinCenter(j));
+       
+      Printf("%s", str.Data());
+    }
+    
+    for (Int_t j=1; j<=fHistBunchCrossing->GetNbinsX(); j++)
+    {
+      Int_t count = 0;
+      for (Int_t i=1; i<=fHistBunchCrossing->GetNbinsY(); i++)
+      {
+        if (fHistBunchCrossing->GetBinContent(j, i) > 0)
+          count++;
+      }
+      if (count > 1)
+        Printf("WARNING: Bunch crossing %d has more than one trigger class active. Check BPTX functioning for this run!", (Int_t) fHistBunchCrossing->GetXaxis()->GetBinCenter(j));
+    }
   }
 }
 
@@ -379,7 +412,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
 
   TIterator* iter = list->MakeIterator();
   TObject* obj;
-
+  
   // collections of all histograms
   const Int_t nHists = 9;
   TList collections[nHists];
@@ -390,23 +423,25 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
     AliPhysicsSelection* entry = dynamic_cast<AliPhysicsSelection*> (obj);
     if (entry == 0) 
       continue;
-
-    Int_t n = 0;
-    collections[n++].Add(&(entry->fTriggerAnalysis));
-    collections[n++].Add(entry->fHistStatistics);
-    collections[n++].Add(entry->fHistBunchCrossing);
+      
+    collections[0].Add(&(entry->fTriggerAnalysis));
+    if (entry->fHistStatistics)
+      collections[1].Add(entry->fHistStatistics);
+    if (entry->fHistBunchCrossing)
+      collections[2].Add(entry->fHistBunchCrossing);
     if (entry->fBackgroundIdentification)
-      collections[n++].Add(entry->fBackgroundIdentification);
+      collections[3].Add(entry->fBackgroundIdentification);
 
     count++;
   }
 
-  Int_t n = 0;
-  fTriggerAnalysis.Merge(&collections[n++]);
-  fHistStatistics->Merge(&collections[n++]);
-  fHistBunchCrossing->Merge(&collections[n++]);
+  fTriggerAnalysis.Merge(&collections[0]);
+  if (fHistStatistics)
+    fHistStatistics->Merge(&collections[1]);
+  if (fHistBunchCrossing)
+    fHistBunchCrossing->Merge(&collections[2]);
   if (fBackgroundIdentification)
-    fBackgroundIdentification->Merge(&collections[n++]);
+    fBackgroundIdentification->Merge(&collections[3]);
   
   delete iter;
 
