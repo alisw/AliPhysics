@@ -159,8 +159,10 @@ void AliAnalysisTaskDiJets::UserExec(Option_t */*option*/)
     Int_t nj = jets->GetEntriesFast();
     if (fDebug >1) printf("There are %5d jets in the event \n", nj);
 
-    if (nj < 2) return;
-
+    if (nj < 2){
+      PostData(1, fHistList);
+      return;
+    }
     AliAODJet* jet1 = (AliAODJet*) (jets->At(0));
     TLorentzVector v1 = *(jet1->MomentumVector());
     AliAODJet* jet2 = (AliAODJet*) (jets->At(1));
