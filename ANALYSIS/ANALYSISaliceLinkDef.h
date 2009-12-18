@@ -22,6 +22,9 @@
 
 #pragma link C++ class AliMultiEventInputHandler+;
 
+#pragma link C++ class AliTriggerAnalysis+;
+#pragma link C++ class AliPhysicsSelection+;
+
 
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;

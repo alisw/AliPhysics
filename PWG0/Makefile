@@ -18,6 +18,9 @@ ifneq ($(ESD_INCLUDE),)
 	ifneq ($(ANALYSIS_INCLUDE),)
 		ALICEINC += -I../$(ANALYSIS_INCLUDE)
 	endif
+	ifneq ($(ANALYSISalice_INCLUDE),)
+		ALICEINC += -I../$(ANALYSISalice_INCLUDE)
+	endif
 else
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PYTHIA6 -I$(ALICE_ROOT)/EVGEN -I$(ALICE_ROOT)/RAW -I$(ALICE_ROOT)/TPC
