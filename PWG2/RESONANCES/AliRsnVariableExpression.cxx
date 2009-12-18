@@ -1,5 +1,6 @@
 //
-// AliRsnVariableExpresion class is used
+// AliRsnVariableExpresion class
+// is used
 // to help AliRsnExpresion class
 //
 // authors: Martin Vala (martin.vala@cern.ch)

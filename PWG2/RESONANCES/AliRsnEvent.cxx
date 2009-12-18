@@ -27,9 +27,9 @@ ClassImp(AliRsnEvent)
 
 //_____________________________________________________________________________
 AliRsnEvent::AliRsnEvent(AliVEvent *ref, AliMCEvent *refMC) :
-  fRef(ref),
-  fRefMC(refMC),
-  fPIDDefESD()
+    fRef(ref),
+    fRefMC(refMC),
+    fPIDDefESD()
 {
 //
 // Default constructor.
@@ -45,10 +45,10 @@ AliRsnEvent::AliRsnEvent(AliVEvent *ref, AliMCEvent *refMC) :
 
 //_____________________________________________________________________________
 AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
-  TObject(event),
-  fRef(event.fRef),
-  fRefMC(event.fRefMC),
-  fPIDDefESD(event.fPIDDefESD)
+    TObject(event),
+    fRef(event.fRef),
+    fRefMC(event.fRefMC),
+    fPIDDefESD(event.fPIDDefESD)
 {
 //
 // Copy constructor.
@@ -56,7 +56,7 @@ AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
 }
 
 //_____________________________________________________________________________
-AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent &event)
+AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent & event)
 {
 //
 // Works in the same way as the copy constructor.
@@ -102,40 +102,41 @@ void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i)
     out.SetParticle(refMC);
     out.FindMotherPDG(fRefMC->Stack());
   }
-  
+
   // if fRef is MC event return
-  AliMCEvent *mc = dynamic_cast<AliMCEvent *> (fRef);
+  AliMCEvent *mc = dynamic_cast<AliMCEvent *>(fRef);
   if (mc) return;
-
-  // retrieve vertex and set impact parameters
-  Double_t dx = out.Xv(), dy = out.Yv(), dz = out.Zv();
-  const AliVVertex *v = fRef->GetPrimaryVertex();
-  if (v) {
-    dx -= v->GetX();
-    dy -= v->GetY();
-    dz -= v->GetZ();
-  } else if (fRefMC) {
-    // if reference is an MC event, no primary vertex is supplied
-    // but it is possible to retrieve it from header
-    TArrayF fvertex(3);
-    fRefMC->GenEventHeader()->PrimaryVertex(fvertex);
-    dx -= fvertex[0];
-    dy -= fvertex[1];
-    dz -= fvertex[2];
-  }
-  out.SetDr(TMath::Sqrt(dx*dx + dy*dy));
-  out.SetDz(dz);
-
-  // compute PID probabilities by combining
-  // the PID weights in the source with priors
-  // and eventually using the PIDDefESD
-  // (the AliRsnDaughter objec knows how to manage the latter)
-  out.CombineWithPriors(fPrior, &fPIDDefESD);
 
   // dynamic reference to true nature of referenced event
   // to get kink index
   AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fRef);
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fRef);
+
+  if (esd) {
+    // retrieve vertex and set impact parameters
+    Double_t dx = out.Xv(), dy = out.Yv(), dz = out.Zv();
+    const AliVVertex *v = fRef->GetPrimaryVertex();
+    if (v) {
+      dx -= v->GetX();
+      dy -= v->GetY();
+      dz -= v->GetZ();
+    } else if (fRefMC) {
+      // if reference is an MC event, no primary vertex is supplied
+      // but it is possible to retrieve it from header
+      TArrayF fvertex(3);
+      fRefMC->GenEventHeader()->PrimaryVertex(fvertex);
+      dx -= fvertex[0];
+      dy -= fvertex[1];
+      dz -= fvertex[2];
+    }
+    out.SetDr(TMath::Sqrt(dx*dx + dy*dy));
+    out.SetDz(dz);
+  }
+  // compute PID probabilities by combining
+  // the PID weights in the source with priors
+  // and eventually using the PIDDefESD
+  // (the AliRsnDaughter objec knows how to manage the latter)
+  out.CombineWithPriors(fPrior, &fPIDDefESD);
 
   if (esd) {
     AliESDtrack *esdTrack = esd->GetTrack(i);
@@ -266,7 +267,7 @@ Bool_t AliRsnEvent::GetAngleDistr
 
   angleMean /= (Double_t)count;
   angle2Mean /= (Double_t)count;
-  angleRMS = TMath::Sqrt(angle2Mean - angleMean*angleMean);
+  angleRMS = TMath::Sqrt(angle2Mean - angleMean * angleMean);
 
   return kTRUE;
 }
@@ -280,8 +281,7 @@ void AliRsnEvent::SetPriorProbability(Double_t *const out)
 
   Int_t i;
 
-  for (i = 0; i < AliPID::kSPECIES; i++)
-  {
+  for (i = 0; i < AliPID::kSPECIES; i++) {
     fPrior[i] = out[i];
   }
 }
@@ -296,9 +296,8 @@ void AliRsnEvent::DumpPriors()
 //
 
   Int_t i;
-  
-  for (i = 0; i < AliPID::kSPECIES; i++)
-  {
+
+  for (i = 0; i < AliPID::kSPECIES; i++) {
     AliInfo(Form("Prior probability for %10s = %3.5f", AliPID::ParticleName((AliPID::EParticleType)i), fPrior[i]));
   }
 }
@@ -312,8 +311,7 @@ void AliRsnEvent::GetPriorProbability(Double_t *out) const
 
   Int_t i;
 
-  for (i = 0; i < AliPID::kSPECIES; i++)
-  {
+  for (i = 0; i < AliPID::kSPECIES; i++) {
     out[i] = fPrior[i];
   }
 

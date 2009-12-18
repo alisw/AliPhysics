@@ -34,10 +34,10 @@ class AliRsnVATProcessInfo : public TNamed
 
   private:
 
-    TH1I         *fHistUsedEvents;
-    Int_t         fEventUsed;
+    TH1I         *fHistUsedEvents;      // hist of used events
+    Int_t         fEventUsed;           // number of used events
 
-    Long64_t      fPrintInfoNumber;
+    Long64_t      fPrintInfoNumber;     // print info number 
 
     ClassDef(AliRsnVATProcessInfo, 1)
 };

@@ -83,8 +83,7 @@ void AliRsnVAnalysisTaskSE::LocalInit()
 // Defines the debug message level and calls the mother class LocalInit().
 //
 
-  AliLog::SetClassDebugLevel(GetName(), fLogType);
-  SetDebugForOtherClasses();
+  SetDebugForAllClasses();
 
   AliDebug(AliLog::kDebug+2, "<-");
   AliAnalysisTaskSE::LocalInit();
@@ -164,9 +163,7 @@ void AliRsnVAnalysisTaskSE::UserCreateOutputObjects()
 // in output slot #1.
 //
 
-  AliLog::SetClassDebugLevel(GetName(), fLogType);
-
-  SetDebugForOtherClasses();
+  SetDebugForAllClasses();
 
   AliDebug(AliLog::kDebug+2, "<-");
 
@@ -305,7 +302,7 @@ void AliRsnVAnalysisTaskSE::FillInfo()
 }
 
 //_____________________________________________________________________________
-void AliRsnVAnalysisTaskSE::SetLogType(AliLog::EType_t type, TString otherClasses)
+void AliRsnVAnalysisTaskSE::SetLogType(AliLog::EType_t type, TString allClasses)
 {
 //
 // Set Log level for this and other classes (list of their names)
@@ -313,12 +310,12 @@ void AliRsnVAnalysisTaskSE::SetLogType(AliLog::EType_t type, TString otherClasse
 
   AliDebug(AliLog::kDebug+2,"<-");
   fLogType = type;
-  fLogClassesString = otherClasses;
+  fLogClassesString = allClasses;
   AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
-void AliRsnVAnalysisTaskSE::SetDebugForOtherClasses()
+void AliRsnVAnalysisTaskSE::SetDebugForAllClasses()
 {
 //
 // Set debug level for all classes for which it is required
@@ -332,6 +329,7 @@ void AliRsnVAnalysisTaskSE::SetDebugForOtherClasses()
     str = (TObjString *) array->At(i);
     strr = str->GetString();
     AliLog::SetClassDebugLevel(strr.Data(), fLogType);
+    AliInfo(Form("Setting Debug to %s",strr.Data()));
   }
   AliDebug(AliLog::kDebug+2,"->");
 }

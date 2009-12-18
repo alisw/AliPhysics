@@ -62,7 +62,7 @@ class AliRsnFunctionAxis : public TObject
     void     SetBins(Double_t min, Double_t max, Double_t step);
     void     SetMass(Double_t mass) {fMass = mass;}
 
-    Double_t Eval(AliRsnDaughter *daughter) const;
+    Double_t Eval(AliRsnDaughter * const daughter) const;
     Double_t Eval(AliRsnPairParticle*const pair, AliRsnPairDef*const pairDef) const;
     Double_t Eval(AliRsnEvent *const event) const;
 

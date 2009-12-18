@@ -47,7 +47,7 @@ class AliRsnAnalysisSE : public AliRsnVAnalysisTaskSE
 
     AliRsnAnalysisSE& operator=(const AliRsnAnalysisSE& /*copy*/) {return *this;}
 
-    AliRsnAnalysisManager fRsnAnalysisManager[10];  // analysis main engine
+    AliRsnAnalysisManager fRsnAnalysisManager[kMaxNumberOfOutputs];  // analysis main engine
     AliRsnCutSet         *fEventCuts;               // event cuts
 
     Double_t              fZeroEventPercentWarning; //! Percent Number for Zero Event Warning

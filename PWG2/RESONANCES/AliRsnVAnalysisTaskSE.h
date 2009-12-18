@@ -59,13 +59,13 @@ class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE
     void            GetPriorProbability(Double_t *out) const {fRsnEvent.GetPriorProbability(out);}
 
     void SetMCOnly(Bool_t mcOnly = kTRUE) {fMCOnly = mcOnly;}
-    void SetLogType(AliLog::EType_t type, TString otherClasses = "");
+    void SetLogType(AliLog::EType_t type, TString allClasses = "");
     void SetPrintInfoNumber(const Long64_t &num = 100) { fTaskInfo.SetPrintInfoNumber(num); }
 
   protected:
 
-    AliLog::EType_t         fLogType;
-    TString                 fLogClassesString;
+    AliLog::EType_t         fLogType;         // log type
+    TString                 fLogClassesString;// all classes string divided with ":"
 
     AliESDEvent            *fESDEvent;        // ESD event
     AliMCEvent             *fMCEvent;         // MC event
@@ -76,11 +76,11 @@ class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE
     AliRsnEvent             fRsnEvent;        // interface to event for RSN package
     AliRsnPIDIndex          fRsnPIDIndex;     // PID method sorter
 
-    Int_t                   fNumberOfOutputs;
+    Int_t                   fNumberOfOutputs; // number of outputs
     TList                  *fOutList[kMaxNumberOfOutputs+1]; //!
-    AliRsnVATProcessInfo    fTaskInfo;
+    AliRsnVATProcessInfo    fTaskInfo;        // task info
 
-    void SetDebugForOtherClasses();
+    void                    SetDebugForAllClasses();
 
     ClassDef(AliRsnVAnalysisTaskSE, 1)
 };

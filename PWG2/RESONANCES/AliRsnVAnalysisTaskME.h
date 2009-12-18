@@ -22,11 +22,14 @@ class AliAODEvent;
 class AliRsnVAnalysisTaskME : public AliAnalysisTaskME
 {
   public:
-    AliRsnVAnalysisTaskME(const char *name = "AliRsnVAnalysisTaskME");
+
+    enum {
+      kMaxNumberOfOutputs = 10
+    };
+
+    AliRsnVAnalysisTaskME(const char *name = "AliRsnVAnalysisTaskME", Int_t numOfOutputs = 1);
     AliRsnVAnalysisTaskME(const AliRsnVAnalysisTaskME& copy);
-    AliRsnVAnalysisTaskME& operator= (const AliRsnVAnalysisTaskME& /*copy*/) {
-      return *this;
-    }
+    AliRsnVAnalysisTaskME& operator= (const AliRsnVAnalysisTaskME& /*copy*/) { return *this; }
     virtual ~AliRsnVAnalysisTaskME() {/* Does nothing*/}
 
     virtual void    LocalInit();
@@ -44,22 +47,24 @@ class AliRsnVAnalysisTaskME : public AliAnalysisTaskME
 
     virtual void    FillInfo();
 
-    void            SetLogType(AliLog::EType_t type,TString otherClasses="");
-    void            SetPrintInfoNumber(const Long64_t &num=100) { fTaskInfo.SetPrintInfoNumber(num); }
+    void            SetLogType(AliLog::EType_t type, TString allClasses = "");
+    void            SetPrintInfoNumber(const Long64_t &num = 100) { fTaskInfo.SetPrintInfoNumber(num); }
+    Bool_t          CheckAndPrintEvents();
 
   protected:
 
-    AliLog::EType_t         fLogType;
-    TString                 fLogClassesString;
+    AliLog::EType_t         fLogType;         // log type
+    TString                 fLogClassesString;// all classes string divided with ":"
 
     AliESDEvent            *fESDEvent;        // AliVEvent event
     AliMCEvent             *fMCEvent;         // ESD event
     AliAODEvent            *fAODEvent;        // AOD event
 
-    TList                  *fOutList;
-    AliRsnVATProcessInfo    fTaskInfo;
+    Int_t                   fNumberOfOutputs; // number of outputs
+    TList                  *fOutList[kMaxNumberOfOutputs+1]; //!
+    AliRsnVATProcessInfo    fTaskInfo;        // task info
 
-    void            SetDebugForOtherClasses();
+    void                    SetDebugForAllClasses();
 
     ClassDef(AliRsnVAnalysisTaskME, 1)
 };

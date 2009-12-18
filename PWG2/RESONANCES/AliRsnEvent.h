@@ -32,8 +32,8 @@ class AliRsnEvent : public TObject
 
     void             SetRef(AliVEvent *const event, AliMCEvent *const mc = 0) {fRef = event; fRefMC = mc;}
     void             SetRefMC(AliMCEvent * const mc) {fRefMC = mc;}
-    AliVEvent*       GetRef() {return fRef;}
-    AliMCEvent*      GetRefMC() {return fRefMC;}
+    AliVEvent*       GetRef() const {return fRef;}
+    AliMCEvent*      GetRefMC() const {return fRefMC;}
     AliRsnPIDDefESD* GetPIDDefESD() {return &fPIDDefESD;}
 
     void             SetDaughter(AliRsnDaughter &daughter, Int_t index);

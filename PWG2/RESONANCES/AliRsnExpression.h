@@ -1,5 +1,7 @@
 //
-// AliRsnExpresion class is used to handle operators &|! in AliRsnCut
+// AliRsnExpresion class is used to
+// handle operators &|!
+// in AliRsnCut
 //
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
@@ -40,7 +42,7 @@ class AliRsnExpression : public TObject
 
 
     TString                     fVname;   // Variable name
-    static AliRsnCutSet        *fgCutSet;
+    static AliRsnCutSet        *fgCutSet; // global cutset
 
   private:
     AliRsnExpression*           fArg1;         // left argument
