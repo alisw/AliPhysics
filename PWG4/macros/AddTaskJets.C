@@ -59,8 +59,8 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC){
 
 
   const char *cJF[9]        = {"UA1","UA1","UA1","CDF","DA","SISCONE","FASTJET","FASTKT","UA1LO"};
-  const Float_t radius[9]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4,     0.4,    0.4};
-  UInt_t  flag[9]           = {    6,    7,    7,    7,   7,        7,        7,       7,       7};
+  const Float_t radius[9]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4,     0.4,    0.7};
+  UInt_t  flag[9]           = {    6,    7,    7,    7,   7,        7,        7,       7,      7};
   // flag[5] = 0; // set siscone to 0 for proof mode...
   // flag first bit AOD, second bit AODMC2 third bit AODMC2
   // i.e. 7 all, 6 only MC2 and MC
