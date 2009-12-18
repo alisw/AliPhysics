@@ -19,7 +19,6 @@ SRCS= AliTRDarraySignal.cxx \
       AliTRDfeeParam.cxx \
       AliTRDgtuParam.cxx \
       AliTRDcalibDB.cxx \
-      Cal/AliTRDCalFEE.cxx \
       Cal/AliTRDCalROC.cxx \
       Cal/AliTRDCalPad.cxx \
       Cal/AliTRDCalDet.cxx \
