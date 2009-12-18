@@ -19,8 +19,7 @@
 #include <TList.h>
 
 class AliESDEvent;
-class TH1;
-class TH2;
+class TH2F;
 class TCollection;
 class AliTriggerAnalysis;
 
@@ -47,6 +46,9 @@ class AliPhysicsSelection : public AliAnalysisCuts
     TList* GetBGTriggerClasses() { return &fBGTrigClasses; }
     AliTriggerAnalysis* GetTriggerAnalysis() { return (fTriggerAnalysis.GetEntries() > 0) ? (AliTriggerAnalysis*) fTriggerAnalysis.At(0) : 0; }    
     
+    const TH2F* GetStatisticsHistogram() const { return fHistStatistics; }
+    const TH2F* GetBunchCrossingHistogram() const { return fHistBunchCrossing; }
+    
   protected:
     Bool_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
     
@@ -58,8 +60,8 @@ class AliPhysicsSelection : public AliAnalysisCuts
   
     AliAnalysisCuts* fBackgroundIdentification; // class that performs additional background identification
     
-    TH2* fHistStatistics;      // how many events are cut away why
-    TH2* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers
+    TH2F* fHistStatistics;      // how many events are cut away why
+    TH2F* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers
     
     ClassDef(AliPhysicsSelection, 1)
     
