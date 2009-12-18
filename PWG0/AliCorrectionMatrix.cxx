@@ -372,3 +372,17 @@ void AliCorrectionMatrix::Scale(Double_t factor)
   fhMeas->Scale(factor);
   fhGene->Scale(factor);
 }
+
+//____________________________________________________________________
+void AliCorrectionMatrix::ResetErrorsOnCorrections()
+{
+  // set the errors on the correction matrix to 0
+
+  if (!fhCorr)
+    return;
+
+  for (Int_t x=0; x<=fhCorr->GetNbinsX()+1; ++x)
+    for (Int_t y=0; y<=fhCorr->GetNbinsY()+1; ++y)
+      for (Int_t z=0; z<=fhCorr->GetNbinsZ()+1; ++z)
+        fhCorr->SetBinError(x, y, z, 0);
+}
