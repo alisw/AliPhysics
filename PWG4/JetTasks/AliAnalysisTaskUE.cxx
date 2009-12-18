@@ -83,6 +83,7 @@ fTrigger(0),
 fDebug(0),
 fDeltaAOD(kFALSE),
 fDeltaAODBranch(""),
+fAODBranch("jets"),
 fArrayJets(0x0),           
 fAOD(0x0),            
 fAODjets(0x0),
@@ -130,9 +131,9 @@ fhRegionSumPtMaxVsEt(0x0),
 fhRegionMultMax(0x0),         
 fhRegionMultMaxVsEt(0x0),     
 fhRegionSumPtMinVsEt(0x0), //fhRegionMultMin(0x0),         
-fhRegionMultMinVsEt(0x0),     
-fhRegionAveSumPtVsEt(0x0),    
-fhRegionDiffSumPtVsEt(0x0),   
+fhRegionMultMinVsEt(0x0),
+fhRegionAveSumPtVsEt(0x0),
+fhRegionDiffSumPtVsEt(0x0),
 fhRegionAvePartPtMaxVsEt(0x0),
 fhRegionAvePartPtMinVsEt(0x0),
 fhRegionMaxPartPtMaxVsEt(0x0),
@@ -325,17 +326,19 @@ void  AliAnalysisTaskUE::AnalyseUE()
 	}
 	nJets=fArrayJets->GetEntries();
     }else{
-      if (fDebug > 1) AliInfo(" ==== Read Standard-AODs !");
-      nJets = fAODjets->GetNJets();
+      if (fDebug > 1) AliInfo(" ==== Read Standard-AODs  !");
+      if (fDebug > 1) AliInfo(Form(" ====  Reading Branch: %s  ",fAODBranch.Data()));
+      
+      nJets = ((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->GetEntries();
     }
     //printf("AOD %d jets \n", nJets);
 
     for( Int_t i=0; i<nJets; ++i ) {
        AliAODJet* jet;
       if (fDeltaAOD){
-      jet =(AliAODJet*)fArrayJets->At(i);
+	jet =(AliAODJet*)fArrayJets->At(i);
       }else{
-      jet = fAODjets->GetJet(i);
+	jet = (AliAODJet*)((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->At(i);
       }
       Double_t jetPt = jet->Pt();//*1.666; // FIXME Jet Pt Correction ?????!!!
  
@@ -356,7 +359,7 @@ void  AliAnalysisTaskUE::AnalyseUE()
       if (fDeltaAOD) {
       	jet =(AliAODJet*) fArrayJets->At(index1);
       }else{
-      	jet = fAODjets->GetJet(index1);
+      	jet = (AliAODJet*)((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->At(index1);
       }
       if(jet)jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
@@ -365,7 +368,7 @@ void  AliAnalysisTaskUE::AnalyseUE()
       if (fDeltaAOD) {
       	jet= (AliAODJet*) fArrayJets->At(index2);
 	}else{
-      	jet= fAODjets->GetJet(index2);
+      	jet=(AliAODJet*) ((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->At(index2);
 	}
       if(jet)jetVect[1].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
@@ -374,7 +377,7 @@ void  AliAnalysisTaskUE::AnalyseUE()
       if (fDeltaAOD) {
       	jet= (AliAODJet*) fArrayJets->At(index3);
       }else{
-     	fAODjets->GetJet(index3);
+     	((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->At(index3);
       }
       if(jet)jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
@@ -1183,6 +1186,8 @@ void  AliAnalysisTaskUE::CreateHistos()
    fListOfHistos->Add( fhValidRegion );  // At(15)
    */
 }
+
+
 
 //____________________________________________________________________
 void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)

@@ -42,6 +42,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     // Read deltaAODs
     void   ReadDeltaAOD()                   { fDeltaAOD = kTRUE; }
     void   SelectDeltaAODBranch(const char* val)     { fDeltaAODBranch = val;   }
+    void   SelectAODBranch(const char* val)     { fAODBranch = val;   }
 
     // Setters for MC
     void  SetUseMCBranch(){fUseMCParticleBranch = kTRUE;}
@@ -53,7 +54,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   SetRegionType( Int_t val )     { fRegionType = val; }
     void   SetUseChPartJet( Int_t val )   { fUseChPartJet = val; }
     void   SetUseChargeHadrons( Bool_t val ){ fUseChargeHadrons = val; }
-    void   SetPtSumOrdering( Bool_t val ) { fOrdering = val;   }
+    void   SetPtSumOrdering( Int_t val ) { fOrdering = val;   }
     void   SetFilterBit( UInt_t val )     { fFilterBit = val;  }
     void   SetJetsOnFly( Bool_t val )     { fJetsOnFly = val;  }
     void   SetConeRadius( Double_t val )  { fConeRadius = val; }
@@ -73,7 +74,6 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
   private:
     AliAnalysisTaskUE(const  AliAnalysisTaskUE &det);
     AliAnalysisTaskUE&   operator=(const  AliAnalysisTaskUE &det);
-    
     void   AnalyseUE();
     Int_t   IsTrackInsideRegion(TVector3 *jetVect, TVector3 *partVect);
     void   CreateHistos();
@@ -89,6 +89,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     Int_t      fDebug;           //  Debug flag
     Bool_t      fDeltaAOD;        //  Read jets from delta AOD 
     TString     fDeltaAODBranch;  //  Jet branch name from delta AOD
+    TString     fAODBranch;       //  Jet branch name from standard AOD
     TClonesArray*  fArrayJets;       //  Array of Jets from delta AOD
 
     AliAODEvent*  fAOD;             //! AOD Event 
