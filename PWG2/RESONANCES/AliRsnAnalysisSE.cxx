@@ -1,11 +1,13 @@
 //
-// Class AliRsnAnalysisME
+// Class AliRsnAnalysisSE
 //
-// TODO
+// Virtual Class derivated from AliRsnVAnalysisTaskSE which will be base class
+// for all RSN SE tasks
 //
-// authors: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
-//          Martin Vala (martin.vala@cern.ch)
+// authors: Martin Vala (martin.vala@cern.ch)
+//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
+
 #include <Riostream.h>
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -67,7 +69,7 @@ void AliRsnAnalysisSE::RsnUserCreateOutputObjects()
   Int_t i;
   for (i = 1; i < kMaxNumberOfOutputs + 1; i++)
   {
-    if (i <= fNumberOfOutputs + 1) OpenFile(i+1);
+    if (i <= fNumberOfOutputs + 1) OpenFile(i);
     fOutList[i] = new TList();
     fOutList[i]->SetOwner();
   }
@@ -75,7 +77,6 @@ void AliRsnAnalysisSE::RsnUserCreateOutputObjects()
   for (i = 0; i < fNumberOfOutputs; i++)
   {
     fRsnAnalysisManager[i].InitAllPairMgrs(fOutList[i+1]);
-    fOutList[i+1]->Print();
   }
 
   AliDebug(AliLog::kDebug+2,"->");
@@ -118,8 +119,7 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
     {
       TH1I *hist = (TH1I*)fOutList[0]->FindObject(fTaskInfo.GetEventHistogramName());
       if (!hist) return;
-      Double_t zeroEventPercent = 0.0;
-      if (hist->Integral() > 0.0) zeroEventPercent = (Double_t)hist->GetBinContent(1) / hist->Integral() * 100.0;
+      Double_t zeroEventPercent = (Double_t)hist->GetBinContent(1) / hist->Integral() * 100;
       if ((zeroEventPercent>fZeroEventPercentWarning)&&(fEntry>100))
         AliWarning(Form("%3.2f%% Events are with zero tracks (CurrentEvent=%d)!!!",zeroEventPercent,fEntry));
     }

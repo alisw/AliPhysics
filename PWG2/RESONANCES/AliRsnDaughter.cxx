@@ -100,7 +100,7 @@ AliRsnDaughter::~AliRsnDaughter()
 
 //_____________________________________________________________________________
 void AliRsnDaughter::RotateP
-(Double_t angle, Double_t &x, Double_t &y, Bool_t isDegrees)
+(Double_t angle, Double_t &x, Double_t &y, Bool_t isDegrees) const
 {
 //
 // Rotate the transverse momentum by an angle (in DEGREES)

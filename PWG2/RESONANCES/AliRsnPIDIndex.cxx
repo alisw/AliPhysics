@@ -141,7 +141,7 @@ void AliRsnPIDIndex::Print(Option_t* /*option*/) const
   for (l = 0; l < AliRsnDaughter::kMethods; l++) {
     for (i = 0; i < 2; i++) {
       for (j = 0; j <= AliPID::kSPECIES; j++) {
-        AliInfo(Form(" [%d][%d][%d] %d %d",l, i, j, fIndex[l][i][j].GetSize(), fNumOfIndex[i][j]));
+        AliInfo(Form(" [%d][%d][%d] %d %d",l, i, j, fIndex[l][i][j].GetSize(), fNumOfIndex[l][i][j]));
       }
     }
   }

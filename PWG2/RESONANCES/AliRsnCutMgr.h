@@ -27,7 +27,7 @@ class AliRsnCutMgr : public TNamed
     ~AliRsnCutMgr();
 
     void          SetCutSet(AliRsnCut::ETarget type, AliRsnCutSet*const cutset);
-    AliRsnCutSet* GetCutSet(AliRsnCut::ETarget type) {return fCutSets[type];}
+    AliRsnCutSet* GetCutSet(AliRsnCut::ETarget type) const {return fCutSets[type];}
     Bool_t        IsSelected(AliRsnCut::ETarget type, TObject *const obj);
 
   private:

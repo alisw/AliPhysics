@@ -181,6 +181,10 @@ void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEven
     ev2 = ev1;
   }
 
+  if (!(ev1 == ev2)) {
+    AliDebug(AliLog::kDebug+1,"ev1 is different then ev2 ...");
+  }
+
   if (!a1) {AliDebug(AliLog::kDebug+1, "No TArrayI 1 from currentEvent->GetTracksArray(...)"); return;}
   if (!a2) {AliDebug(AliLog::kDebug+1, "No TArrayI 2 from currentEvent->GetTracksArray(...)"); return;}
 
@@ -239,7 +243,7 @@ void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEven
 
       if (AliLog::GetDebugLevel("",GetName()) == AliLog::kDebug)
         fPairParticle.PrintInfo();
-
+      AliDebug(AliLog::kDebug, "================= FILLING TO HISTOGRAM ==================");
       // fill all histograms
       TObjArrayIter nextFcn(&fFunctions);
       while ((fcn = (AliRsnFunction*)nextFcn())) {
@@ -276,6 +280,7 @@ TList * AliRsnPair::GenerateHistograms(TString prefix,TList *list)
     sprintf(hName, "%s_%s", prefix.Data(), GetPairHistName(fcn).Data());
     sprintf(hTitle, "%s", GetPairHistTitle(fcn).Data());
     //TList *histos = fcn->Init(hName, hTitle);
+    //list->Add(fcn->CreateHistogram(hName, hTitle));
     if (fcn->IsUsingTH1()) list->Add(fcn->CreateHistogram(hName, hTitle));
     else list->Add(fcn->CreateHistogramSparse(hName, hTitle));
     //histos->Print();

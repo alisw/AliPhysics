@@ -9,31 +9,41 @@
 //
 
 #include <TH1.h>
-
+#include <AliLog.h>
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
-
+#include "AliAODTrack.h"
+#include "AliMultiEventInputHandler.h"
 #include "AliRsnVAnalysisTaskME.h"
 
 ClassImp(AliRsnVAnalysisTaskME)
 
 //_____________________________________________________________________________
-AliRsnVAnalysisTaskME::AliRsnVAnalysisTaskME(const char *name) :
+AliRsnVAnalysisTaskME::AliRsnVAnalysisTaskME(const char *name, Int_t numOfOutputs) :
     AliAnalysisTaskME(name),
     fLogType(AliLog::kInfo),
     fLogClassesString(""),
     fESDEvent(0x0),
     fMCEvent(0x0),
     fAODEvent(0x0),
-    fOutList(0x0),
+    fNumberOfOutputs(numOfOutputs),
     fTaskInfo(name)
 {
 //
 // Default constructor
 //
   AliDebug(AliLog::kDebug+2,"<-");
+
+  if (fNumberOfOutputs < 0) fNumberOfOutputs = 0;
+  if (fNumberOfOutputs > kMaxNumberOfOutputs) {
+    AliWarning(Form("We support only %d outputs. If you need more ask for it.", kMaxNumberOfOutputs));
+    AliWarning(Form("For now we are setting it to %d.", kMaxNumberOfOutputs));
+    fNumberOfOutputs = kMaxNumberOfOutputs;
+  }
+
   DefineOutput(1, TList::Class());
+
   AliDebug(AliLog::kDebug+2,"->");
 }
 
@@ -43,7 +53,6 @@ AliRsnVAnalysisTaskME::AliRsnVAnalysisTaskME(const AliRsnVAnalysisTaskME& copy) 
     fESDEvent(copy.fESDEvent),
     fMCEvent(copy.fMCEvent),
     fAODEvent(copy.fAODEvent),
-    fOutList(copy.fOutList),
     fTaskInfo(copy.fTaskInfo)
 {
   AliDebug(AliLog::kDebug+2,"<-");
@@ -56,9 +65,8 @@ void AliRsnVAnalysisTaskME::LocalInit()
 //
 // LocalInit()
 //
-  AliLog::SetClassDebugLevel(GetName(), fLogType);
-  SetDebugForOtherClasses();
 
+  SetDebugForAllClasses();
   AliDebug(AliLog::kDebug+2,"<-");
   AliAnalysisTaskME::LocalInit();
   AliDebug(AliLog::kDebug+2,"->");
@@ -70,9 +78,12 @@ Bool_t AliRsnVAnalysisTaskME::Notify()
 //
 // Notify()
 //
+
   AliDebug(AliLog::kDebug+2,"<-");
-  return AliAnalysisTaskME::Notify();
+  if (!AliAnalysisTaskME::Notify()) return kFALSE;
   AliDebug(AliLog::kDebug+2,"->");
+
+  return kTRUE;
 }
 
 
@@ -80,31 +91,14 @@ Bool_t AliRsnVAnalysisTaskME::Notify()
 void AliRsnVAnalysisTaskME::ConnectInputData(Option_t *opt)
 {
 //
-// TODO
+// ConnectInputData
 //
+
+  SetDebugForAllClasses();
 
   AliDebug(AliLog::kDebug+2,"<-");
+
   AliAnalysisTaskME::ConnectInputData(opt);
-
-//     fESDEvent = dynamic_cast<AliESDEvent *> (fInputEvent);
-//     if (fESDEvent)
-//         AliInfo(Form("Input is ESD (%p)",fESDEvent));
-//
-//     fMCEvent = (AliMCEvent*) MCEvent();
-//     if (fMCEvent)
-//         AliInfo(Form("Input is MC (%p)",fMCEvent));
-//
-//     fAODEvent = dynamic_cast<AliAODEvent *> (fInputEvent);
-//     if (fAODEvent)
-//         AliInfo(Form("Input is AOD INPUT (%p)",fAODEvent));
-//
-//     if (!fAODEvent) {
-//         fAODEvent = dynamic_cast<AliAODEvent *> (AODEvent());
-//         if (fAODEvent)
-//             AliInfo(Form("Input is AOD OUTPUT (%p)",fAODEvent));
-//     }
-
-
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -113,7 +107,7 @@ void AliRsnVAnalysisTaskME::ConnectInputData(Option_t *opt)
 void AliRsnVAnalysisTaskME::RsnUserCreateOutputObjects()
 {
 //
-// TODO
+// Rsn User Create Output Objects
 //
 
   AliDebug(AliLog::kDebug+2,"<-");
@@ -126,20 +120,16 @@ void AliRsnVAnalysisTaskME::RsnUserCreateOutputObjects()
 void AliRsnVAnalysisTaskME::UserCreateOutputObjects()
 {
 //
-// TODO
+// User Create Output Objects
 //
 
-  AliLog::SetClassDebugLevel(GetName(), fLogType);
-
-  SetDebugForOtherClasses();
+  SetDebugForAllClasses();
 
   AliDebug(AliLog::kDebug+2,"<-");
 
-  fOutList = new TList();
-  fOutList->SetOwner();
-
-//   fOutList->Add();
-  fTaskInfo.GenerateInfoList(fOutList);
+  fOutList[0] = new TList();
+  fOutList[0]->SetOwner();
+  fTaskInfo.GenerateInfoList(fOutList[0]);
   RsnUserCreateOutputObjects();
 
   AliDebug(AliLog::kDebug+2,"<-");
@@ -149,7 +139,7 @@ void AliRsnVAnalysisTaskME::UserCreateOutputObjects()
 void AliRsnVAnalysisTaskME::UserExec(Option_t* opt)
 {
 //
-// TODO
+// User Exec
 //
 
   AliDebug(AliLog::kDebug+2,"<-");
@@ -160,7 +150,7 @@ void AliRsnVAnalysisTaskME::UserExec(Option_t* opt)
 
   fTaskInfo.PrintInfo(fEntry);
 
-  PostData(1, fOutList);
+  PostData(1, fOutList[0]);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -169,60 +159,90 @@ void AliRsnVAnalysisTaskME::UserExec(Option_t* opt)
 void AliRsnVAnalysisTaskME::RsnUserExec(Option_t*)
 {
 //
-// TODO
+// Rsn User Exec
 //
 
   AliDebug(AliLog::kDebug+2,"<-");
-//     if (fESDEvent) {
-//         AliDebug(AliLog::kDebug+1,Form("fESDEvent if %p",fESDEvent));
-//         AliDebug(AliLog::kDebug,Form("ESD tracks %d",fESDEvent->GetNumberOfTracks()));
-//     }
-//     if (fMCEvent) {
-//         AliDebug(AliLog::kDebug+1,Form("fMCEvent if %p",fMCEvent));
-//         AliDebug(AliLog::kDebug,Form("MC tracks %d",fMCEvent->GetNumberOfTracks()));
-//     }
-//     if (fAODEvent) {
-//         AliDebug(AliLog::kDebug+1,Form("fAODEvent if %p",fAODEvent));
-//         AliDebug(AliLog::kDebug,Form("AOD tracks %d",fAODEvent->GetNumberOfTracks()));
-//
-//
-//     }
-  AliAODEvent* aod1 = (AliAODEvent*)GetEvent(0);
-  AliAODEvent* aod2 = (AliAODEvent*)GetEvent(1);
-  AliDebug(AliLog::kDebug,Form("AOD tracks %d",aod1->GetNumberOfTracks()));
-  AliDebug(AliLog::kDebug,Form("AOD tracks %d",aod2->GetNumberOfTracks()));
+
+  if (!CheckAndPrintEvents()) return;
+
   AliDebug(AliLog::kDebug+2,"->");
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnVAnalysisTaskME::CheckAndPrintEvents()
+{
+//
+// Check for supported events
+// return false in the case of unkown format
+// or number of events is less or equal 1
+//
+
+  AliInfo(Form("Current Entry %d", Entry()));
+  Int_t nEvents = fInputHandler->GetBufferSize();
+  if (nEvents <= 1) return kFALSE;
+  fESDEvent = dynamic_cast<AliESDEvent*>(GetEvent(0));
+  fAODEvent = dynamic_cast<AliAODEvent*>(GetEvent(0));
+
+  if (fESDEvent) {
+    AliESDEvent **allESDEvents = new AliESDEvent*[nEvents];
+    for (Int_t i = 0; i < nEvents; i++) {
+      allESDEvents[i] = dynamic_cast<AliESDEvent*>(GetEvent(i));
+      if (!allESDEvents[i]) {
+        AliWarning(Form("Null ESD event in index %d", i));
+        continue;
+      }
+      AliDebug(AliLog::kDebug, Form("ESD event %d has %d tracks", i, allESDEvents[i]->GetNumberOfTracks()));
+    }
+    delete [] allESDEvents;
+  } else if (fAODEvent) {
+    AliAODEvent **allAODEvents = new AliAODEvent*[nEvents];
+    for (Int_t i = 0; i < nEvents; i++) {
+      allAODEvents[i] = dynamic_cast<AliAODEvent*>(GetEvent(i));
+      if (!allAODEvents[i]) {
+        AliWarning(Form("Null AOD event in index %d", i));
+        continue;
+      }
+      AliDebug(AliLog::kDebug, Form("AOD event %d has %d tracks", i, allAODEvents[i]->GetNumberOfTracks()));
+    }
+    delete [] allAODEvents;
+  } else {
+    AliWarning("Unknown input format");
+    return kFALSE;
+  }
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
 void AliRsnVAnalysisTaskME::Terminate(Option_t* opt)
 {
 //
-// TODO
+// Terminate
 //
 
   AliDebug(AliLog::kDebug+2,"<-");
   AliAnalysisTask::Terminate();
 
-  fOutList = dynamic_cast<TList*>(GetOutputData(1));
-  if (!fOutList) {
-    AliError(Form("At end of analysis, fOutList is %p",fOutList));
+  fOutList[0] = dynamic_cast<TList*>(GetOutputData(1));
+  if (!fOutList[0]) {
+    AliError(Form("At end of analysis, fOutList is %p", fOutList));
     return;
   }
 
   RsnTerminate(opt);
 
-  TH1I *hEventInfo = (TH1I*) fOutList->FindObject(fTaskInfo.GetEventHistogramName());
+  TH1I *hEventInfo = (TH1I*) fOutList[0]->FindObject(fTaskInfo.GetEventHistogramName());
   if (!hEventInfo) {
-    AliError(Form("hEventInfo is %p",hEventInfo));
+    AliError(Form("hEventInfo is %p", hEventInfo));
     return;
   }
 
-  AliInfo(Form("=== %s ==================",GetName()));
-  AliInfo(Form("Number Of Events Processed : %10d",(Long64_t)hEventInfo->Integral()));
-  AliInfo(Form("Number Of Events Accepted  : %10d",(Long64_t)hEventInfo->GetBinContent(2)));
-  AliInfo(Form("Number Of Events Skipped   : %10d",(Long64_t)hEventInfo->GetBinContent(1)));
-  AliInfo(Form("=== end %s ==============",GetName()));
+  AliInfo(Form("=== %s ==================", GetName()));
+  AliInfo(Form("Number Of Events Processed : %10d", (Long64_t)hEventInfo->Integral()));
+  AliInfo(Form("Number Of Events Accepted  : %10d", (Long64_t)hEventInfo->GetBinContent(2)));
+  AliInfo(Form("Number Of Events Skipped   : %10d", (Long64_t)hEventInfo->GetBinContent(1)));
+  AliInfo(Form("=== end %s ==============", GetName()));
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -231,7 +251,7 @@ void AliRsnVAnalysisTaskME::Terminate(Option_t* opt)
 void AliRsnVAnalysisTaskME::RsnTerminate(Option_t*)
 {
 //
-// TODO
+// RsnTerminate
 //
 
   AliDebug(AliLog::kDebug+2,"<-");
@@ -242,45 +262,40 @@ void AliRsnVAnalysisTaskME::RsnTerminate(Option_t*)
 void AliRsnVAnalysisTaskME::FillInfo()
 {
 //
-// TODO
+// Fills Info
 //
-
-  if (fESDEvent) {
-    fTaskInfo.SetEventUsed(kTRUE);
-  } else if (fAODEvent) {
-    fTaskInfo.SetEventUsed(kTRUE);
-  }
 
   fTaskInfo.FillInfo();
 }
 
 //_____________________________________________________________________________
-void AliRsnVAnalysisTaskME::SetLogType(AliLog::EType_t type,TString otherClasses)
+void AliRsnVAnalysisTaskME::SetLogType(AliLog::EType_t type, TString allClasses)
 {
 //
-// TODO
+// Sets Log Type
 //
 
   AliDebug(AliLog::kDebug+2,"<-");
   fLogType = type;
-  fLogClassesString = otherClasses;
+  fLogClassesString = allClasses;
   AliDebug(AliLog::kDebug+2,"->");
 }
 //_____________________________________________________________________________
-void AliRsnVAnalysisTaskME::SetDebugForOtherClasses()
+void AliRsnVAnalysisTaskME::SetDebugForAllClasses()
 {
 //
-// TODOss ss
+// Set Debug For All Classes
 //
 
   AliDebug(AliLog::kDebug+2,"<-");
   TObjArray* array = fLogClassesString.Tokenize(":");
   TObjString *str;
   TString strr;
-  for (Int_t i=0;i< array->GetEntriesFast();i++) {
+  for (Int_t i = 0;i < array->GetEntriesFast();i++) {
     str = (TObjString *) array->At(i);
     strr = str->GetString();
     AliLog::SetClassDebugLevel(strr.Data(), fLogType);
+    AliInfo(Form("Setting Debug to %s", strr.Data()));
   }
   AliDebug(AliLog::kDebug+2,"->");
 }

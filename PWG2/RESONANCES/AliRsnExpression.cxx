@@ -1,5 +1,7 @@
 //
-// AliRsnExpresion class is used to handle operators &|! in AliRsnCut
+// AliRsnExpresion class is used to
+// handle operators &|!
+// in AliRsnCut
 //
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)

@@ -65,7 +65,7 @@ class AliRsnDaughter : public TObject
     Double_t Theta() const {return fRef->Theta();}
     Double_t PhiDeg() const {return TMath::RadToDeg() * Phi();}
     Double_t ThetaDeg() const {return TMath::RadToDeg() * Theta();}
-    void     RotateP(Double_t angle, Double_t &x, Double_t &y, Bool_t isDegrees = kTRUE);
+    void     RotateP(Double_t angle, Double_t &x, Double_t &y, Bool_t isDegrees = kTRUE) const;
     Double_t AngleTo(AliRsnDaughter d, Bool_t outInDegrees = kTRUE);
 
     // DCA vertex
@@ -95,7 +95,7 @@ class AliRsnDaughter : public TObject
     Bool_t  IsPos() const {return (fRef->Charge() > 0);}
     Bool_t  IsNeg() const {return (fRef->Charge() < 0);}
     Bool_t  IsNeutral() const {return (!IsPos() && !IsNeg());}
-    Bool_t  IsSign(Char_t sign) { if (sign=='+') return IsPos(); else if (sign=='-') return IsNeg(); else return IsNeutral();}
+    Bool_t  IsSign(Char_t sign) const { if (sign=='+') return IsPos(); else if (sign=='-') return IsNeg(); else return IsNeutral();}
     Short_t Charge() const {if (IsPos()) return 1; else if (IsNeg()) return -1; else return 0;}
     Char_t  ChargeC() const {if (IsPos()) return '+'; else if (IsNeg()) return '-'; else return '0';}
     Int_t   GetLabel() const {return fRef->GetLabel();}
