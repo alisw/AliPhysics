@@ -114,7 +114,8 @@ void AliTRDcheckESD::CreateOutputObjects()
   //
   // Create Output Containers (TObjectArray containing 1D histograms)
   //
-  OpenFile(0, "RECREATE");  
+  //OpenFile(0, "RECREATE");  
+
   Histos();
 }
 
@@ -375,6 +376,7 @@ Bool_t AliTRDcheckESD::Load(const Char_t *filename, const Char_t *name)
   }
   fHistos = (TObjArray*)o->Clone(GetName());
   gFile->Close();
+  SETBIT(fStatus, kLoad);
   return kTRUE;
 }
 
@@ -394,10 +396,12 @@ Bool_t AliTRDcheckESD::PutTrendValue(const Char_t *name, Double_t val)
 void AliTRDcheckESD::Terminate(Option_t *)
 {
 // Steer post-processing 
-  fHistos = dynamic_cast<TObjArray *>(GetOutputData(0));
-  if(!fHistos){
-    AliError("Histogram container not found in output");
-    return;
+  if(!IsLoad()){
+    fHistos = dynamic_cast<TObjArray *>(GetOutputData(0));
+    if(!fHistos){
+      AliError("Histogram container not found in output");
+      return;
+    }
   }
 
   // geometrical efficiency

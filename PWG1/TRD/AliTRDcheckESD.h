@@ -27,7 +27,8 @@ class TGraphErrors;
 class AliTRDcheckESD : public AliAnalysisTask {
 public:
   enum ETRDcheckESDstatus {
-    kMC = BIT(0)
+     kMC   = BIT(0)  // use MC info
+    ,kLoad = BIT(1)  // container from file
   };
   enum ETRDcheckESDhistos {
     kNCl  = 0    // number of clusters per track
@@ -53,6 +54,7 @@ public:
   void          Exec(Option_t *);
 
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
+  Bool_t        IsLoad() const { return TESTBIT(fStatus, kLoad);}
   TObjArray*    Histos();
   Bool_t        Load(const Char_t *fn, const Char_t *name=0x0);
   void          SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
@@ -69,9 +71,9 @@ private:
   void          PrintStatus(ULong_t s);
 
   Int_t            fStatus;            // bit mask for controlling the task
-  AliESDEvent      *fESD;              // ESD event
-  AliMCEvent       *fMC;               // MC event
-  TObjArray        *fHistos;           // QA histos
+  AliESDEvent      *fESD;              //! ESD event
+  AliMCEvent       *fMC;               //! MC event
+  TObjArray        *fHistos;           //! QA histos
   TObjArray        *fResults;          // QA graphs
   static FILE *fgFile;                 //! trend file streamer
   ClassDef(AliTRDcheckESD, 3)          // user oriented TRD analysis based on ESD-MC data
