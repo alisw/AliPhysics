@@ -38,6 +38,17 @@
 #include "AliCorrectionMatrix3D.h"
 #include "dNdEta/dNdEtaAnalysis.h"
 #include "AliTriggerAnalysis.h"
+#include "AliPhysicsSelection.h"
+
+//#define FULLALIROOT
+
+#ifdef FULLALIROOT
+  #include "../ITS/AliITSRecPoint.h"
+  #include "AliCDBManager.h"
+  #include "AliCDBEntry.h"
+  #include "AliGeomManager.h"
+  #include "TGeoManager.h"
+#endif
 
 ClassImp(AlidNdEtaTask)
 
@@ -48,6 +59,8 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fOption(opt),
   fAnalysisMode((AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn)),
   fTrigger(AliTriggerAnalysis::kMB1),
+  fRequireTriggerClass(),
+  fRejectTriggerClass(),
   fFillPhi(kFALSE),
   fDeltaPhiCut(-1),
   fReadMC(kFALSE),
@@ -57,6 +70,8 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fCheckEventType(kFALSE),
   fSymmetrize(kFALSE),
   fEsdTrackCuts(0),
+  fPhysicsSelection(0),
+  fTriggerAnalysis(0),
   fdNdEtaAnalysisESD(0),
   fMult(0),
   fMultVtx(0),
@@ -74,6 +89,7 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fPhi(0),
   fRawPt(0),
   fEtaPhi(0),
+  fModuleMap(0),
   fDeltaPhi(0),
   fDeltaTheta(0),
   fFiredChips(0),
@@ -149,6 +165,21 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
 
   // disable info messages of AliMCEvent (per event)
   AliLog::SetClassDebugLevel("AliMCEvent", AliLog::kWarning - AliLog::kDebug + 1);
+  
+  #ifdef FULLALIROOT
+    if (fCheckEventType)
+      AliCDBManager::Instance()->SetDefaultStorage("raw://");
+    else
+      AliCDBManager::Instance()->SetDefaultStorage("MC", "Residual");
+    AliCDBManager::Instance()->SetRun(0);
+    
+    AliCDBManager* mgr = AliCDBManager::Instance();
+    AliCDBEntry* obj = mgr->Get(AliCDBPath("GRP", "Geometry", "Data"));
+    AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
+    
+    AliGeomManager::GetNalignable("ITS");
+    AliGeomManager::ApplyAlignObjsFromCDB("ITS");
+  #endif
 }
 
 void AlidNdEtaTask::CreateOutputObjects()
@@ -197,7 +228,7 @@ void AlidNdEtaTask::CreateOutputObjects()
 
   fEtaPhi = new TH2F("fEtaPhi", "fEtaPhi;#eta;#phi in rad.;count", 80, -4, 4, 18*5, 0, 2 * TMath::Pi());
   fOutput->Add(fEtaPhi);
-
+  
   fTriggerVsTime = new TGraph; //TH1F("fTriggerVsTime", "fTriggerVsTime;trigger time;count", 100, 0, 100);
   fTriggerVsTime->SetName("fTriggerVsTime");
   fTriggerVsTime->GetXaxis()->SetTitle("trigger time");
@@ -212,22 +243,31 @@ void AlidNdEtaTask::CreateOutputObjects()
   fStats->GetXaxis()->SetBinLabel(5, "physics events after veto");
   fOutput->Add(fStats);
   
-  fStats2 = new TH2F("fStats2", "fStats2", 6, -0.5, 5.5, 7, -0.5, 6.5);
-  fStats2->GetXaxis()->SetBinLabel(1, "No Vertex");
-  fStats2->GetXaxis()->SetBinLabel(2, "|z-vtx| > 10");
-  fStats2->GetXaxis()->SetBinLabel(3, "0 tracklets");
-  fStats2->GetXaxis()->SetBinLabel(4, "Splash identification");
-  fStats2->GetXaxis()->SetBinLabel(5, "Scan Veto");
-  fStats2->GetXaxis()->SetBinLabel(6, "Selected");
+  fStats2 = new TH2F("fStats2", "fStats2", 7, -0.5, 6.5, 10, -0.5, 9.5);
+  
+  fStats2->GetXaxis()->SetBinLabel(1, "No trigger");
+  fStats2->GetXaxis()->SetBinLabel(2, "Splash identification");
+  fStats2->GetXaxis()->SetBinLabel(3, "No Vertex");
+  fStats2->GetXaxis()->SetBinLabel(4, "|z-vtx| > 10");
+  fStats2->GetXaxis()->SetBinLabel(5, "0 tracklets");
+  fStats2->GetXaxis()->SetBinLabel(6, "V0 Veto");
+  fStats2->GetXaxis()->SetBinLabel(7, "Selected");
+  
   fStats2->GetYaxis()->SetBinLabel(1, "n/a");
-  fStats2->GetYaxis()->SetBinLabel(2, "emptyA");
-  fStats2->GetYaxis()->SetBinLabel(3, "emptyC");
-  fStats2->GetYaxis()->SetBinLabel(4, "emptyAC");
-  fStats2->GetYaxis()->SetBinLabel(5, "BB");
+  fStats2->GetYaxis()->SetBinLabel(2, "empty");
+  fStats2->GetYaxis()->SetBinLabel(3, "BBA");
+  fStats2->GetYaxis()->SetBinLabel(4, "BBC");
+  fStats2->GetYaxis()->SetBinLabel(5, "BBA BBC");
   fStats2->GetYaxis()->SetBinLabel(6, "BGA");
   fStats2->GetYaxis()->SetBinLabel(7, "BGC");
+  fStats2->GetYaxis()->SetBinLabel(8, "BGA BGC");
+  fStats2->GetYaxis()->SetBinLabel(9, "BBA BGC");
+  fStats2->GetYaxis()->SetBinLabel(10, "BGA BBC");
   fOutput->Add(fStats2);
 
+  fTrackletsVsClusters = new TH2F("fTrackletsVsClusters", ";tracklets;clusters in ITS", 50, -0.5, 49.5, 1000, -0.5, 999.5);
+  fOutput->Add(fTrackletsVsClusters);
+  
   if (fAnalysisMode & AliPWG0Helper::kSPD)
   {
     fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 500, -0.2, 0.2);
@@ -236,15 +276,16 @@ void AlidNdEtaTask::CreateOutputObjects()
     fOutput->Add(fDeltaTheta);
     fFiredChips = new TH2F("fFiredChips", "fFiredChips;Chips L1 + L2;tracklets", 1201, -0.5, 1201, 50, -0.5, 49.5);
     fOutput->Add(fFiredChips);
-    fTrackletsVsClusters = new TH2F("fTrackletsVsClusters", ";tracklets;clusters in ITS", 50, -0.5, 49.5, 1000, -0.5, 999.5);
-    fOutput->Add(fTrackletsVsClusters);
     fTrackletsVsUnassigned = new TH2F("fTrackletsVsUnassigned", ";tracklets;unassigned clusters in L0", 50, -0.5, 49.5, 200, -0.5, 199.5);
     fOutput->Add(fTrackletsVsUnassigned);
     for (Int_t i=0; i<2; i++)
     {
-      fZPhi[i] = new TH2F(Form("fZPhi_%d", i), Form("fZPhi Layer %d;z (cm);#phi (rad.)", i), 200, -20, 20, 180, 0, TMath::Pi() * 2);
+      fZPhi[i] = new TH2F(Form("fZPhi_%d", i), Form("fZPhi Layer %d;z (cm);#phi (rad.)", i), 200, -15, 15, 200, 0, TMath::Pi() * 2);
       fOutput->Add(fZPhi[i]);
     }
+    
+    fModuleMap = new TH1F("fModuleMap", "fModuleMap;module number;cluster count", 240, -0.5, 239.5);
+    fOutput->Add(fModuleMap);
   }
 
   if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
@@ -289,6 +330,18 @@ void AlidNdEtaTask::CreateOutputObjects()
     fEsdTrackCuts->SetName("fEsdTrackCuts");
     fOutput->Add(fEsdTrackCuts);
   }
+  
+  if (!fPhysicsSelection)
+    fPhysicsSelection = new AliPhysicsSelection;
+    
+  fPhysicsSelection->SetName("AliPhysicsSelection_outputlist"); // to prevent conflict with object that is automatically streamed back
+  //AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
+  //fOutput->Add(fPhysicsSelection);
+  
+  fTriggerAnalysis = new AliTriggerAnalysis;
+  fTriggerAnalysis->EnableHistograms();
+  fTriggerAnalysis->SetSPDGFOThreshhold(2);
+  fOutput->Add(fTriggerAnalysis);
 }
 
 void AlidNdEtaTask::Exec(Option_t*)
@@ -312,8 +365,9 @@ void AlidNdEtaTask::Exec(Option_t*)
       return;
     }
     
-    //Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
-
+//    if (fCheckEventType)
+//      eventTriggered = fPhysicsSelection->IsCollisionCandidate(fESD);
+    
     // check event type (should be PHYSICS = 7)
     if (fCheckEventType)
     {
@@ -324,69 +378,86 @@ void AlidNdEtaTask::Exec(Option_t*)
         return;
       }
       
+      //Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
+      
+      Bool_t accept = kTRUE;
+      if (fRequireTriggerClass.Length() > 0 && !fESD->IsTriggerClassFired(fRequireTriggerClass))
+        accept = kFALSE;
+      if (fRejectTriggerClass.Length() > 0 && fESD->IsTriggerClassFired(fRejectTriggerClass))
+        accept = kFALSE;
+        
+      if (!accept)
+      {
+        Printf("Skipping event because it does not have the correct trigger class(es): %s", fESD->GetFiredTriggerClasses().Data());
+        return;
+      }
+
       fStats->Fill(4);
+    }
+    
+    fTriggerAnalysis->FillHistograms(fESD);
+    
+    AliTriggerAnalysis::V0Decision v0A = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide);
+    AliTriggerAnalysis::V0Decision v0C = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide);
+    
+    Int_t vZero = 0;
+    if (v0A != AliTriggerAnalysis::kV0Invalid && v0C != AliTriggerAnalysis::kV0Invalid)
+    {
+      if (v0A == AliTriggerAnalysis::kV0Empty && v0C == AliTriggerAnalysis::kV0Empty) vZero = 1;
+      if (v0A == AliTriggerAnalysis::kV0BB    && v0C == AliTriggerAnalysis::kV0Empty) vZero = 2;
+      if (v0A == AliTriggerAnalysis::kV0Empty && v0C == AliTriggerAnalysis::kV0BB)    vZero = 3;
+      if (v0A == AliTriggerAnalysis::kV0BB    && v0C == AliTriggerAnalysis::kV0BB)    vZero = 4;
+      if (v0A == AliTriggerAnalysis::kV0BG    && v0C == AliTriggerAnalysis::kV0Empty) vZero = 5;
+      if (v0A == AliTriggerAnalysis::kV0Empty && v0C == AliTriggerAnalysis::kV0BG)    vZero = 6;
+      if (v0A == AliTriggerAnalysis::kV0BG    && v0C == AliTriggerAnalysis::kV0BG)    vZero = 7;
+      if (v0A == AliTriggerAnalysis::kV0BB    && v0C == AliTriggerAnalysis::kV0BG)    vZero = 8;
+      if (v0A == AliTriggerAnalysis::kV0BG    && v0C == AliTriggerAnalysis::kV0BB)    vZero = 9;
+    }
       
-      const Int_t kMaxEvents = 30;
+    Bool_t filled = kFALSE;
+      
+    // trigger 
+    eventTriggered = fTriggerAnalysis->IsTriggerFired(fESD, fTrigger);
+    
+    if (!eventTriggered)
+    {
+      fStats2->Fill(0.0, vZero);
+      filled = kTRUE;
+    }
+    
+    if (v0A == AliTriggerAnalysis::kV0BG || v0C == AliTriggerAnalysis::kV0BG)
+      eventTriggered = kFALSE;
+    
+    if (eventTriggered)
+    {
+      fStats->Fill(3);
+    }
+      
+    if (fCheckEventType)
+    {
+      /*const Int_t kMaxEvents = 1;
       UInt_t maskedEvents[kMaxEvents][2] = { 
-      {0, 0x1ac4a5},
-      {0, 0x4a34af}, 
-      {0, 0x697b0f}, 
-      {0, 0x74a07d}, 
-      {0, 0x864339}, 
-      {0, 0x94fbfb}, 
-      {0, 0xb87d2b}, 
-      {0, 0xd471f3}, 
-      {0, 0xddb0e3}, 
-      {0, 0xf30af3}, 
-      {1, 0xef46f}, 
-      {1, 0x12cdd1}, 
-      {1, 0x2d7591}, 
-      {1, 0x925245}, 
-      {1, 0x9af0fd}, 
-      {1, 0xb880d5}, 
-      {1, 0xb91b0b}, 
-      {0, 0x134066}, 
-      {0, 0x140dbc}, 
-      {0, 0x1d85f6}, 
-      {0, 0x8cb1da}, 
-      {0, 0xf9b31c}, 
-      {1, 0x500dbc}, 
-      {1, 0x587134}, 
-      {1, 0x687dbe}, 
-      {1, 0x6eab78}, 
-      {1, 0x894caa},
-      {0, 0x845fb3}, 
-      {0, 0x22b966}, 
-      {0, 0xb1d576}
-   
-//      {0, 0xbe8f99}, //put back in after discussion with adam
-//      {1, 0x2b43d4}, //put back in after discussion with adam
-
-/*      ,{0, 0x23585E}, // jet test
-      {0, 0x50EF2F},
-      {0, 0x672ADD}*/
+        {-1, -1}
       };
-      
-      Bool_t veto = kFALSE;
-
+    
       for (Int_t i=0; i<kMaxEvents; i++)
       {
         if (fESD->GetPeriodNumber() == maskedEvents[i][0] && fESD->GetOrbitNumber() == maskedEvents[i][1])
         {
-           Printf("Skipping event because it is masked: period: %d orbit: %x", fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
-           veto = kTRUE;
-        }
-      }
-      
-      Int_t decision = (veto) ? 4 : -1;
-      
-      if (!veto)
-      {
-        // ITS cluster tree
-        AliESDInputHandlerRP* handlerRP = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-        if (!handlerRP)
+          Printf("Skipping event because it is masked: period: %d orbit: %x", fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
+          if (!filled)
+          {
+            fStats2->Fill(1, vZero);
+            filled = kTRUE;
+          }
           return;
-          
+        }
+      }*/
+      
+      // ITS cluster tree
+      AliESDInputHandlerRP* handlerRP = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+      if (handlerRP)
+      {
         TTree* itsClusterTree = handlerRP->GetTreeR("ITS");  
         if (!itsClusterTree)
           return;
@@ -408,6 +479,30 @@ void AlidNdEtaTask::Exec(Option_t*)
           
           Int_t nClusters = itsClusters->GetEntriesFast();
           totalClusters += nClusters;
+          
+          #ifdef FULLALIROOT
+            if (fAnalysisMode & AliPWG0Helper::kSPD)
+            {
+              // loop over clusters
+              while (nClusters--) {
+                AliITSRecPoint* cluster = (AliITSRecPoint*) itsClusters->UncheckedAt(nClusters);
+                
+                Int_t layer = cluster->GetLayer();
+                
+                if (layer > 1)
+                  continue;
+                  
+                Float_t xyz[3] = {0., 0., 0.};
+                cluster->GetGlobalXYZ(xyz);
+                
+                Float_t phi = TMath::Pi() + TMath::ATan2(-xyz[1], -xyz[0]);
+                Float_t z = xyz[2];
+                
+                fZPhi[layer]->Fill(z, phi);
+                fModuleMap->Fill(layer * 80 + cluster->GetDetectorIndex());
+              }
+            }
+          #endif
         }
                 
         const AliMultiplicity* mult = fESD->GetMultiplicity();
@@ -421,477 +516,73 @@ void AlidNdEtaTask::Exec(Option_t*)
         if (totalClusters > limit)
         {
           Printf("Skipping event because %d clusters is above limit of %d from %d tracklets: Period number: %d Orbit number: %x", totalClusters, limit, mult->GetNumberOfTracklets(), fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
-          decision = 3;
-        }
-        else 
-        {
-          vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
-          if (!vtxESD)
+          if (!filled)
           {
-            decision = 0;
+            fStats2->Fill(1, vZero);
+            filled = kTRUE;
           }
-          else
-          {
-            Double_t vtx[3];
-            vtxESD->GetXYZ(vtx);
-            
-            if (TMath::Abs(vtx[2]) > 10)
-            {
-              decision = 1;
-            }
-            else
-            {
-              if (mult->GetNumberOfTracklets() == 0)
-              {
-                decision = 2;
-              }
-              else
-              {
-                decision = 5;
-              }
-            }
-          }
+          return; // TODO we skip this also for the MC. not good...
         }
       }
-      
-      const Int_t kMaxVZero = 190;
-      
-      #define emptyA 1
-      #define emptyC 2
-      #define BBA 3
-      #define BBC 4
-      #define BGA 5
-      #define BGC 6
-      UInt_t vzeroAnalysis[kMaxVZero][4] = {
-        
-        {0, 0x5d31bc, emptyA, BBC},
-        {0, 0x5e4dcc, BBA, BBC},
-        {0, 0x6063a8, BBA, BBC},
-        {0, 0x613d53, BBA, BBC},
-        {0, 0x655069, BBA, BBC},
-        {0, 0x65e1cf, BBA, BBC},
-        {0, 0x66cea0, BBA, BBC},
-        {0, 0x672add, BBA, BBC},
-        {0, 0x68e567, BBA, BBC},
-        {0, 0x697b0f, BBA, emptyC},
-        {0, 0x6a686d, BGA, BBC},
-        {0, 0x6c4c2f, BBA, BBC},
-        {0, 0x6ca84d, BBA, BBC},
-        {0, 0x6ee60b, BBA, BBC},
-        {0, 0x6fa64f, BBA, BBC},
-        {0, 0x71cc8d, BBA, BBC},
-        {0, 0x74a07d, BBA, BBC},
-        {0, 0x77761b, BGA, BBC},
-        {0, 0x783454, BBA, BBC},
-        {0, 0x7d2414, BBA, BBC},
-        {0, 0x7f443f, BBA, BBC},
-        {0, 0x815daa, BBA, BBC},
-        {0, 0x8367dd, BBA, BBC},
-        {0, 0x838852, BBA, BBC},
-        {0, 0x845fb3, BBA, BBC},
-        {0, 0x84c722, emptyA, BBC},
-        {0, 0x86256e, BBA, BBC},
-        {0, 0x864339, BBA, BBC},
-        {0, 0x869be0, BGA, BBC},
-        {0, 0x895222, BBA, BBC},
-        {0, 0x8c1a56, emptyA, BBC},
-        {0, 0x8cb1da, BBA, BBC},
-        {0, 0x8e954e, BBA, BGC},
-        {0, 0x8fe645, BBA, BBC},
-        {0, 0x91bafc, BBA, BBC},
-        {0, 0x93ae80, BBA, BBC},
-        {0, 0x94f793, BBA, BBC},
-        {0, 0x94fbfb, BBA, BBC},
-        {0, 0x954c20, emptyA, BBC},
-        {0, 0x965e0f, BBA, BBC},
-        {0, 0x96a30e, BBA, BBC},
-        {0, 0x972f1d, BBA, BBC},
-        {0, 0x98fd10, BBA, BBC},
-        {0, 0x9a0472, BBA, BBC},
-        {0, 0x9c4894, BBA, BBC},
-        {0, 0x9e6dc8, emptyA, emptyC},
-        {0, 0x9f5e8b, BBA, BBC},
-        {0, 0xa035bb, BBA, BGC},
-        {0, 0xa53f7c, BBA, BBC},
-        {0, 0xa56537, BBA, BBC},
-        {0, 0xa60957, BBA, BBC},
-        {0, 0xa689db, BBA, BBC},
-        {0, 0xa6d494, BBA, BBC},
-        {0, 0xa6d935, BBA, BBC},
-        {0, 0xa8671a, BBA, BBC},
-        {0, 0xaa7956, BBA, BBC},
-        {0, 0xaee392, BBA, BBC},
-        {0, 0xb1d576, BBA, BBC},
-        {0, 0xb235c3, BBA, BGC},
-        {0, 0xb24b2d, BBA, BBC},
-        {0, 0xb2f999, BBA, emptyC},
-        {0, 0xb5acac, BBA, BBC},
-        {0, 0xb60ef4, BBA, BBC},
-        {0, 0xb7f38a, BBA, BBC},
-        {0, 0xb87d2b, BBA, BBC},
-        {0, 0xb8d564, BGA, BBC},
-        {0, 0xb9722e, BBA, BBC},
-        {0, 0xb98a5b, BBA, BBC},
-        {0, 0xb99f55, BBA, BBC},
-        {0, 0xbda770, BBA, BBC},
-        {0, 0xbe8f99, BBA, BBC},
-        {0, 0xc226a0, emptyA, BBC},
-        {0, 0xc2b248, BBA, BBC},
-        {0, 0xc56f42, emptyA, emptyC},
-        {0, 0xc6ec01, BBA, emptyC},
-        {0, 0xc768f2, BBA, BBC},
-        {0, 0xc7f149, BBA, BBC},
-        {0, 0xc94a96, BBA, BBC},
-        {0, 0xcbf834, BBA, BBC},
-        {0, 0xce4b94, BBA, BBC},
-        {0, 0xcf1b7b, BBA, BBC},
-        {0, 0xcf7257, BBA, BBC},
-        {0, 0xcffe10, BBA, BBC},
-        {0, 0xd471f3, BBA, BBC},
-        {0, 0xd5b0c6, BBA, BGC},
-        {0, 0xd5c7e7, BBA, BBC},
-        {0, 0xd8b421, emptyA, emptyC},
-        {0, 0xd978ed, BBA, BBC},
-        {0, 0xdbee52, BBA, emptyC},
-        {0, 0xdc0425, BBA, BBC},
-        {0, 0xdcc9e1, BBA, BBC},
-        {0, 0xddb0e3, BBA, BBC},
-        {0, 0xddd1a7, BGA, BBC},
-        {0, 0xdfd2c6, BBA, BBC},
-        {0, 0xe1db66, BBA, BBC},
-        {0, 0xe27106, BBA, BBC},
-        {0, 0xe69c79, BBA, BBC},
-        {0, 0xe71d7b, BBA, BBC},
-        {0, 0xe80a68, BBA, BBC},
-        {0, 0xea06fc, BBA, BBC},
-        {0, 0xf01c8e, BBA, BBC},
-        {0, 0xf08660, BBA, BBC},
-        {0, 0xf1a165, BBA, BBC},
-        {0, 0xf30af3, BBA, BBC},
-        {0, 0xf7635b, BGA, BBC},
-        {0, 0xf7a36c, emptyA, BBC},
-        {0, 0xf9b31c, BBA, BBC},
-        {0, 0xfb35f9, emptyA, BBC},
-        {0, 0xfc22dd, BBA, BBC},
-        {0, 0xfe58ba, BBA, BBC},
-        {0, 0xff5c1f, BBA, BBC},
-        {0, 0xff93b5, emptyA, BBC},
-        {1, 0x3513, BBA, BBC},
-        {1, 0x20656, BBA, BBC},
-        {1, 0x4345d, BBA, BBC},
-        {1, 0x5ec2f, BBA, BBC},
-        {1, 0x8140f, BBA, BBC},
-        {1, 0x93898, BBA, BBC},
-        {1, 0xef46f, BBA, BBC},
-        {1, 0xfff01, BGA, BBC},
-        {1, 0x10ce3e, BBA, BBC},
-        {1, 0x117f6a, BBA, BBC},
-        {1, 0x12cdd1, BBA, emptyC},
-        {1, 0x14b973, BBA, BGC},
-        {1, 0x155e84, BBA, BBC},
-        {1, 0x181dda, BBA, BBC},
-        {1, 0x1bd5b5, BBA, BBC},
-        {1, 0x1ca304, BBA, BBC},
-        {1, 0x1d095a, emptyA, BBC},
-        {1, 0x1e0125, BBA, BBC},
-        {1, 0x24a1c5, BBA, BBC},
-        {1, 0x24c960, BBA, BBC},
-        {1, 0x2638f4, BBA, BBC},
-        {1, 0x27cdee, BBA, BBC},
-        {1, 0x283e0d, BBA, BBC},
-        {1, 0x29b1f3, BBA, BBC},
-        {1, 0x2b43d4, BBA, BBC},
-        {1, 0x2bb918, BBA, BBC},
-        {1, 0x2d7591, BBA, BBC},
-        {1, 0x2da5ac, BGA, BBC},
-        {1, 0x2e2d65, BBA, BBC},
-        {1, 0x33bef9, BBA, BBC},
-        {1, 0x35505d, BBA, BBC},
-        {1, 0x36084d, BBA, BBC},
-        {1, 0x380b1f, emptyA, emptyC},
-        {1, 0x38d478, BBA, BBC},
-        {1, 0x3a0622, BBA, BBC},
-        {1, 0x3a194e, emptyA, emptyC},
-        {1, 0x3b5972, emptyA, BBC},
-        {1, 0x3ed6f5, BBA, BBC},
-        {1, 0x3ef093, BBA, BBC},
-        {1, 0x422847, BBA, BBC},
-        {1, 0x426bbb, BBA, BBC},
-        {1, 0x4b2f9b, BBA, BBC},
-        {1, 0x4c5781, emptyA, BBC},
-        {1, 0x4f1137, BBA, BBC},
-        {1, 0x4fe5ae, BBA, BBC},
-        {1, 0x500dbc, BBA, BBC},
-        {1, 0x502a5e, BGA, BBC},
-        {1, 0x505769, BBA, BBC},
-        {1, 0x507bd3, BBA, BBC},
-        {1, 0x55b3ef, BBA, BBC},
-        {1, 0x56333f, BBA, BBC},
-        {1, 0x587134, BBA, BBC},
-        {1, 0x5b4847, BBA, BGC},
-        {1, 0x5b777a, BBA, BBC},
-        {1, 0x5b7dde, BBA, BBC},
-        {1, 0x5b7e14, BBA, BBC},
-        {1, 0x5cd9ca, BBA, BBC},
-        {1, 0x5e7c42, BBA, BBC},
-        {1, 0x5facec, BBA, BBC},
-        {1, 0x6030ae, BBA, BBC},
-        {1, 0x64a772, BBA, BBC},
-        {1, 0x687dbe, BBA, BBC},
-        {1, 0x68c5dd, BBA, BGC},
-        {1, 0x692064, BBA, BBC},
-        {1, 0x6949da, BBA, BBC},
-        {1, 0x6db110, BBA, BBC},
-        {1, 0x6eab78, BBA, BBC},
-        {1, 0x6fc13d, BGA, BBC},
-        {1, 0x7463b6, BBA, BBC},
-        {1, 0x749cec, BBA, BBC},
-        {1, 0x756547, BBA, BBC},
-        {1, 0x77819e, BBA, BBC},
-        {1, 0x785e0b, BBA, BBC},
-        {1, 0x7b3caa, BBA, BBC},
-        {1, 0x7cccbb, BBA, BBC},
-        {1, 0x7e7e17, BBA, BBC},
-        {1, 0x7fc0f5, BBA, BBC},
-        {1, 0x806ee5, BBA, emptyC}
-        
-/* first cvetan list         
-        {0, 0x5d31bc, emptyA, emptyC},
-        {0, 0x5e4dcc, BBA, BBC},
-        {0, 0x6063a8, BBA, BBC},
-        {0, 0x613d53, BBA, BBC},
-        {0, 0x655069, BBA, BBC},
-        {0, 0x65e1cf, BBA, BBC},
-        {0, 0x66cea0, BBA, BBC},
-        {0, 0x672add, BBA, BBC},
-        {0, 0x68e567, BBA, BBC},
-        {0, 0x697b0f, emptyA, emptyC},
-        {0, 0x6a686d, BGA, BBC},
-        {0, 0x6c4c2f, BBA, BBC},
-        {0, 0x6ca84d, BBA, BBC},
-        {0, 0x6ee60b, BBA, BBC},
-        {0, 0x6fa64f, BBA, BBC},
-        {0, 0x71cc8d, BBA, BBC},
-        {0, 0x74a07d, BBA, BBC},
-        {0, 0x77761b, BGA, BBC},
-        {0, 0x783454, BBA, BBC},
-        {0, 0x7d2414, BBA, BBC},
-        {0, 0x7f443f, BBA, BBC},
-        {0, 0x815daa, BBA, BBC},
-        {0, 0x8367dd, BBA, BBC},
-        {0, 0x838852, BBA, BBC},
-        {0, 0x845fb3, BBA, BBC},
-        {0, 0x84c722, emptyA, emptyC},
-        {0, 0x86256e, BBA, BBC},
-        {0, 0x864339, BBA, BBC},
-        {0, 0x869be0, BGA, BBC},
-        {0, 0x895222, BBA, BBC},
-        {0, 0x8c1a56, emptyA, emptyC},
-        {0, 0x8cb1da, BBA, BBC},
-        {0, 0x8e954e, BBA, BGC},
-        {0, 0x8fe645, BBA, BBC},
-        {0, 0x91bafc, BBA, BBC},
-        {0, 0x93ae80, BBA, BBC},
-        {0, 0x94f793, BBA, BBC},
-        {0, 0x94fbfb, BBA, BBC},
-        {0, 0x954c20, emptyA, emptyC},
-        {0, 0x965e0f, BBA, BBC},
-        {0, 0x96a30e, BBA, BBC},
-        {0, 0x972f1d, BBA, BBC},
-        {0, 0x98fd10, BBA, BBC},
-        {0, 0x9a0472, BBA, BBC},
-        {0, 0x9c4894, BBA, BBC},
-        {0, 0x9e6dc8, emptyA, emptyC},
-        {0, 0x9f5e8b, BBA, BBC},
-        {0, 0xa035bb, BBA, BGC},
-        {0, 0xa53f7c, BBA, BBC},
-        {0, 0xa56537, BBA, BBC},
-        {0, 0xa60957, BBA, BBC},
-        {0, 0xa689db, BBA, BBC},
-        {0, 0xa6d494, BBA, BBC},
-        {0, 0xa6d935, BBA, BBC},
-        {0, 0xa8671a, BBA, BBC},
-        {0, 0xaa7956, BBA, BBC},
-        {0, 0xaee392, BBA, BBC},
-        {0, 0xb1d576, BBA, BBC},
-        {0, 0xb235c3, BBA, BGC},
-        {0, 0xb24b2d, BBA, BBC},
-        {0, 0xb2f999, emptyA, emptyC},
-        {0, 0xb5acac, BBA, BBC},
-        {0, 0xb60ef4, BBA, BBC},
-        {0, 0xb7f38a, BBA, BBC},
-        {0, 0xb87d2b, BBA, BBC},
-        {0, 0xb8d564, BGA, BBC},
-        {0, 0xb9722e, BBA, BBC},
-        {0, 0xb98a5b, BBA, BBC},
-        {0, 0xb99f55, BBA, BBC},
-        {0, 0xbda770, BBA, BBC},
-        {0, 0xbe8f99, BBA, BBC},
-        {0, 0xc226a0, BBA, BBC},
-        {0, 0xc2b248, BBA, BBC},
-        {0, 0xc56f42, emptyA, emptyC},
-        {0, 0xc6ec01, emptyA, emptyC},
-        {0, 0xc768f2, BBA, BBC},
-        {0, 0xc7f149, BBA, BBC},
-        {0, 0xc94a96, BBA, BBC},
-        {0, 0xcbf834, BBA, BBC},
-        {0, 0xce4b94, BBA, BBC},
-        {0, 0xcf1b7b, BBA, BBC},
-        {0, 0xcf7257, BBA, BBC},
-        {0, 0xcffe10, BBA, BBC},
-        {0, 0xd471f3, BBA, BBC},
-        {0, 0xd5b0c6, BBA, BGC},
-        {0, 0xd5c7e7, BBA, BBC},
-        {0, 0xd8b421, emptyA, emptyC},
-        {0, 0xd978ed, BBA, BBC},
-        {0, 0xdbee52, BBA, emptyC},
-        {0, 0xdc0425, BBA, BBC},
-        {0, 0xdcc9e1, BBA, BBC},
-        {0, 0xddb0e3, BBA, BBC},
-        {0, 0xddd1a7, BGA, BBC},
-        {0, 0xdfd2c6, BBA, BBC},
-        {0, 0xe1db66, BBA, BBC},
-        {0, 0xe27106, BBA, BBC},
-        {0, 0xe69c79, BBA, BBC},
-        {0, 0xe71d7b, BBA, BBC},
-        {0, 0xe80a68, BBA, BBC},
-        {0, 0xea06fc, BBA, BBC},
-        {0, 0xf01c8e, BBA, BBC},
-        {0, 0xf08660, BBA, BBC},
-        {0, 0xf1a165, BBA, BBC},
-        {0, 0xf30af3, BBA, BBC},
-        {0, 0xf7635b, BGA, BBC},
-        {0, 0xf7a36c, emptyA, emptyC},
-        {0, 0xf9b31c, BBA, BBC},
-        {0, 0xfb35f9, emptyA, emptyC},
-        {0, 0xfc22dd, BBA, BBC},
-        {0, 0xfe58ba, BBA, BBC},
-        {0, 0xff5c1f, BBA, BBC},
-        {0, 0xff93b5, emptyA, emptyC},
-        {1, 0x3513, BBA, BBC},
-        {1, 0x20656, BBA, BBC},
-        {1, 0x4345d, BBA, BBC},
-        {1, 0x5ec2f, BBA, BBC},
-        {1, 0x8140f, BBA, BBC},
-        {1, 0x93898, BBA, BBC},
-        {1, 0xef46f, BBA, BBC},
-        {1, 0xfff01, BGA, BBC},
-        {1, 0x10ce3e, BBA, BBC},
-        {1, 0x117f6a, BBA, BBC},
-        {1, 0x12cdd1, BBA, emptyC},
-        {1, 0x14b973, BBA, BGC},
-        {1, 0x155e84, BBA, BBC},
-        {1, 0x181dda, BBA, BBC},
-        {1, 0x1bd5b5, BBA, BBC},
-        {1, 0x1ca304, BBA, BBC},
-        {1, 0x1d095a, emptyA, emptyC},
-        {1, 0x1e0125, BBA, BBC},
-        {1, 0x24a1c5, BBA, BBC},
-        {1, 0x24c960, BBA, BBC},
-        {1, 0x2638f4, BBA, BBC},
-        {1, 0x27cdee, BBA, BBC},
-        {1, 0x283e0d, BBA, BBC},
-        {1, 0x29b1f3, BBA, BBC},
-        {1, 0x2b43d4, BBA, BBC},
-        {1, 0x2bb918, BBA, BBC},
-        {1, 0x2d7591, BBA, BBC},
-        {1, 0x2da5ac, BGA, BBC},
-        {1, 0x2e2d65, BBA, BBC},
-        {1, 0x33bef9, BBA, BBC},
-        {1, 0x35505d, BBA, BBC},
-        {1, 0x36084d, BBA, BBC},
-        {1, 0x380b1f, emptyA, emptyC},
-        {1, 0x38d478, BBA, BBC},
-        {1, 0x3a0622, BBA, BBC},
-        {1, 0x3a194e, emptyA, emptyC},
-        {1, 0x3b5972, emptyA, emptyC},
-        {1, 0x3ed6f5, BBA, BBC},
-        {1, 0x3ef093, BBA, BBC},
-        {1, 0x422847, BBA, BBC},
-        {1, 0x426bbb, BBA, BBC},
-        {1, 0x4b2f9b, BBA, BBC},
-        {1, 0x4c5781, emptyA, emptyC},
-        {1, 0x4f1137, BBA, BBC},
-        {1, 0x4fe5ae, BBA, BBC},
-        {1, 0x500dbc, BBA, BBC},
-        {1, 0x502a5e, BGA, BBC},
-        {1, 0x505769, BBA, BBC},
-        {1, 0x507bd3, BBA, BBC},
-        {1, 0x55b3ef, BBA, BBC},
-        {1, 0x56333f, BBA, BBC},
-        {1, 0x587134, BBA, BBC},
-        {1, 0x5b4847, BBA, BGC},
-        {1, 0x5b777a, BBA, BBC},
-        {1, 0x5b7dde, BBA, BBC},
-        {1, 0x5b7e14, BBA, BBC},
-        {1, 0x5cd9ca, BBA, BBC},
-        {1, 0x5e7c42, BBA, BBC},
-        {1, 0x5facec, BBA, BBC},
-        {1, 0x6030ae, BBA, BBC},
-        {1, 0x64a772, BBA, BBC},
-        {1, 0x687dbe, BBA, BBC},
-        {1, 0x68c5dd, BBA, BGC},
-        {1, 0x692064, BBA, BBC},
-        {1, 0x6949da, BBA, BBC},
-        {1, 0x6db110, BBA, BBC},
-        {1, 0x6eab78, BBA, BBC},
-        {1, 0x6fc13d, BGA, BBC},
-        {1, 0x7463b6, BBA, BBC},
-        {1, 0x749cec, BBA, BBC},
-        {1, 0x756547, BBA, BBC},
-        {1, 0x77819e, BBA, BBC},
-        {1, 0x785e0b, BBA, BBC},
-        {1, 0x7b3caa, BBA, BBC},
-        {1, 0x7cccbb, BBA, BBC},
-        {1, 0x7e7e17, BBA, BBC},
-        {1, 0x7fc0f5, BBA, BBC},
-        {1, 0x806ee5, BBA, emptyC} */
-        };
-      
-      Bool_t found = kFALSE;
-      
-      for (Int_t i=1; i<kMaxVZero; i++)
+    }
+          
+    vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
+    if (!vtxESD)
+    {
+      if (!filled)
       {
-        if (fESD->GetPeriodNumber() == vzeroAnalysis[i-1][0] && fESD->GetOrbitNumber() == vzeroAnalysis[i-1][1])
+        fStats2->Fill(2, vZero);
+        filled = kTRUE;
+      }
+    }
+    else
+    {
+      Double_t vtx[3];
+      vtxESD->GetXYZ(vtx);
+      
+      if (TMath::Abs(vtx[2]) > 10)
+      {
+        if (!filled)
         {
-          found = kTRUE;
-          Int_t vZero = -1;
-          if (vzeroAnalysis[i][2] == emptyA && vzeroAnalysis[i][3] == BBC)
-            vZero = 1;
-          if (vzeroAnalysis[i][2] == BBA && vzeroAnalysis[i][3] == emptyC)
-            vZero = 2;
-          if (vzeroAnalysis[i][2] == emptyA && vzeroAnalysis[i][3] == emptyC)
-            vZero = 3;
-          if (vzeroAnalysis[i][2] == BBA && vzeroAnalysis[i][3] == BBC)
-            vZero = 4;
-          if (vzeroAnalysis[i][2] == BGA && vzeroAnalysis[i][3] == BBC)
-            vZero = 5;
-          if (vzeroAnalysis[i][2] == BBA && vzeroAnalysis[i][3] == BGC)
-            vZero = 6;
-            
-          fStats2->Fill(decision, vZero);
-          break;
+          fStats2->Fill(3, vZero);
+          filled = kTRUE;
         }
       }
+        
+      const AliMultiplicity* mult = fESD->GetMultiplicity();
+      if (!mult)
+        return;
       
-      if (!found)
-        fStats2->Fill(decision, 0);
-      
-      if (decision == 3 || decision == 4)
+      if (mult->GetNumberOfTracklets() == 0)
       {
-        Printf("Skipping event %d: Period number: %d Orbit number: %x", decision, fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
+        if (!filled)
+        {
+          fStats2->Fill(4, vZero);
+          filled = kTRUE;
+        }
+      }
+    }
+    
+    if (fCheckEventType)
+    {
+      if (vZero >= 5)
+      {
+        if (!filled)
+          fStats2->Fill(5, vZero);
         return;
       }
     }
+        
+    if (!filled)
+      fStats2->Fill(6, vZero);
       
-    fStats->Fill(5);
-    
-    // trigger definition
-    static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-    eventTriggered = triggerAnalysis->IsTriggerFired(fESD, fTrigger);
+    //Printf("Skipping event %d: Period number: %d Orbit number: %x", decision, fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
+      
     if (eventTriggered)
       fStats->Fill(3);
-
+    
+    fStats->Fill(5);
+    
     // get the ESD vertex
     vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
     
@@ -1031,15 +722,15 @@ void AlidNdEtaTask::Exec(Option_t*)
         fPhi->Fill(phi);
         fEtaPhi->Fill(eta, phi);
         
-        if (deltaPhi < 0.01)
-        {
-          // layer 0
-          Float_t z = vtx[2] + 3.9 / TMath::Tan(2 * TMath::ATan(TMath::Exp(- eta)));
-          fZPhi[0]->Fill(z, phi);
-          // layer 1
-          z = vtx[2] + 7.6 / TMath::Tan(2 * TMath::ATan(TMath::Exp(- eta)));
-          fZPhi[1]->Fill(z, phi);
-        }
+//         if (deltaPhi < 0.01)
+//         {
+//           // layer 0
+//           Float_t z = vtx[2] + 3.9 / TMath::Tan(2 * TMath::ATan(TMath::Exp(- eta)));
+//           fZPhi[0]->Fill(z, phi);
+//           // layer 1
+//           z = vtx[2] + 7.6 / TMath::Tan(2 * TMath::ATan(TMath::Exp(- eta)));
+//           fZPhi[1]->Fill(z, phi);
+//         }
 
         if (vtxESD && TMath::Abs(vtx[2]) < 10)
         {
@@ -1159,6 +850,9 @@ void AlidNdEtaTask::Exec(Option_t*)
           ++inputCount;
         }
         
+        if (inputCount > 30)
+          Printf("Event with %d accepted TPC tracks. Period number: %d Orbit number: %x Bunch crossing number: %d", inputCount, fESD->GetPeriodNumber(), fESD->GetOrbitNumber(), fESD->GetBunchCrossNumber());
+        
         // TODO restrict inputCount used as measure for the multiplicity to |eta| < 1
   
         delete list;
@@ -1207,8 +901,8 @@ void AlidNdEtaTask::Exec(Option_t*)
         fdNdEtaAnalysisESD->FillEvent(vtx[2], inputCount);
 
         // control hist
-	if (inputCount > 0)
-	        fEvents->Fill(vtx[2]);
+        if (inputCount > 0)
+          fEvents->Fill(vtx[2]);
 
         if (fReadMC)
         {
@@ -1433,6 +1127,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fEtaPhi = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaPhi"));
     for (Int_t i=0; i<2; ++i)
       fZPhi[i] = dynamic_cast<TH2F*> (fOutput->FindObject(Form("fZPhi_%d", i)));
+    fModuleMap = dynamic_cast<TH1F*> (fOutput->FindObject("fModuleMap"));
     fDeltaPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fDeltaPhi"));
     fDeltaTheta = dynamic_cast<TH1F*> (fOutput->FindObject("fDeltaTheta"));
     fFiredChips = dynamic_cast<TH2F*> (fOutput->FindObject("fFiredChips"));
@@ -1443,6 +1138,8 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fStats2 = dynamic_cast<TH2F*> (fOutput->FindObject("fStats2"));
 
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCuts"));
+    fPhysicsSelection = dynamic_cast<AliPhysicsSelection*> (fOutput->FindObject("AliPhysicsSelection_outputlist"));
+    fTriggerAnalysis = dynamic_cast<AliTriggerAnalysis*> (fOutput->FindObject("AliTriggerAnalysis"));
   }
 
   if (!fdNdEtaAnalysisESD)
@@ -1495,6 +1192,12 @@ void AlidNdEtaTask::Terminate(Option_t *)
         new TCanvas("control3", "control3", 500, 500);
         fEvents->Draw();
     }
+    
+    if (fStats2)
+    {
+      new TCanvas;
+      fStats2->Draw("TEXT");
+    }
 
     TFile* fout = new TFile("analysis_esd_raw.root", "RECREATE");
 
@@ -1503,6 +1206,15 @@ void AlidNdEtaTask::Terminate(Option_t *)
 
     if (fEsdTrackCuts)
       fEsdTrackCuts->SaveHistograms("esd_track_cuts");
+
+    if (fPhysicsSelection)
+    {
+      fPhysicsSelection->SaveHistograms("physics_selection");
+      fPhysicsSelection->Print();
+    }
+    
+    if (fTriggerAnalysis)
+      fTriggerAnalysis->SaveHistograms();
 
     if (fMult)
       fMult->Write();
@@ -1538,6 +1250,9 @@ void AlidNdEtaTask::Terminate(Option_t *)
     for (Int_t i=0; i<2; ++i)
       if (fZPhi[i])
         fZPhi[i]->Write();
+    
+    if (fModuleMap)
+      fModuleMap->Write();
     
     if (fFiredChips)
       fFiredChips->Write();

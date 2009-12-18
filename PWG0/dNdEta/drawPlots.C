@@ -3164,7 +3164,7 @@ void FitDiamondVsMult()
   gStyle->SetPadGridX(kTRUE);
   gStyle->SetPadGridY(kTRUE);
   
-  Int_t max = 25;
+  Int_t max = 40;
   
   for (Int_t i=0; i<2; i++)
   {
@@ -3190,7 +3190,7 @@ void FitDiamondVsMult()
   }
 }
 
-void CompareQualityHists(const char* fileName1, const char* fileName2, const char* plotName, Int_t rebin1 = 1, Int_t rebin2 = 1)
+void CompareQualityHists(const char* fileName1, const char* fileName2, const char* plotName, Int_t rebin1 = 1, Int_t rebin2 = 1, const char* exec = 0)
 {
   file1 = TFile::Open(fileName1);
   hist1 = (TH1*) file1->Get(plotName);
@@ -3198,6 +3198,17 @@ void CompareQualityHists(const char* fileName1, const char* fileName2, const cha
   file2 = TFile::Open(fileName2);
   hist2 = (TH1*) file2->Get(plotName);
   
+  if (exec)
+  {
+    hist1 = (TH1*) gROOT->ProcessLine(Form(exec, hist1, "hist1a"));
+    hist2 = (TH1*) gROOT->ProcessLine(Form(exec, hist2, "hist2a"));
+  }
+  
+  CompareQualityHists(hist1, hist2, rebin1, rebin2);
+}
+
+void CompareQualityHists(TH1* hist1, TH1* hist2, Int_t rebin1 = 1, Int_t rebin2 = 1)
+{
   hist1->SetLineColor(1);
   hist2->SetLineColor(2);
  
@@ -3216,12 +3227,30 @@ void CompareQualityHists(const char* fileName1, const char* fileName2, const cha
   }
 
   c = new TCanvas;
+  hist1->GetYaxis()->SetRangeUser(0, hist1->GetMaximum() * 1.3);
   hist1->DrawCopy();
   hist2->DrawCopy("SAME");
+  c->SaveAs(Form("%s_1.png", hist1->GetName()));
   
-  c2 = new TCanvas;
-  hist1->Divide(hist2);
-  hist1->DrawCopy();
+  for (Int_t i=1; i<=hist1->GetNbinsX(); i++)
+    if (hist1->GetBinContent(i) == 0 && hist2->GetBinContent(i) > 0 || hist1->GetBinContent(i) > 0 && hist2->GetBinContent(i) == 0)
+      Printf("Inconsistent bin %d: %f %f", i, hist1->GetBinContent(i), hist2->GetBinContent(i));
+  
+  if (rebin1 == rebin2)
+  {
+    c2 = new TCanvas;
+    hist1->Divide(hist2);
+    hist1->DrawCopy();
+    c2->SaveAs(Form("%s_2.png", hist1->GetName()));
+    
+    for (Int_t i=1; i<=hist1->GetNbinsX(); i++)
+      if (hist1->GetBinContent(i) > 0.9 && hist1->GetBinContent(i) < 1.1)
+        hist1->SetBinContent(i, 0);
+        
+    new TCanvas;
+    hist1->SetMarkerStyle(20);
+    hist1->DrawCopy("P");
+  }
 }
 
 void DrawClustersVsTracklets()
@@ -3265,4 +3294,82 @@ void VertexPlotBackgroundNote()
   proj->Draw("SAME");
   
   
+}
+
+void BackgroundAnalysis(const char* signal, const char* background)
+{
+  TFile::Open(signal);
+  signalHist = (TH2*) gFile->Get("fTrackletsVsClusters");
+  
+  TFile::Open(background);
+  backgroundHist = (TH2*) gFile->Get("fTrackletsVsClusters");
+  
+  Printf("For events with >= 1 tracklet:");
+  
+  func = new TF1("func", "[0] + x * 11", 0, 30);
+  for (Int_t a = 50; a <= 100; a += 10)
+  {
+    func->SetParameter(0, a);
+    
+    Float_t signalCount = 0;
+    Float_t backgroundCount = 0;
+    for (Int_t x = 2; x <= signalHist->GetNbinsX(); x++)
+    {
+      signalCount += signalHist->Integral(x, x, signalHist->GetYaxis()->FindBin(func->Eval(signalHist->GetXaxis()->GetBinCenter(x))), signalHist->GetNbinsY());
+      backgroundCount += backgroundHist->Integral(x, x, signalHist->GetYaxis()->FindBin(func->Eval(signalHist->GetXaxis()->GetBinCenter(x))), signalHist->GetNbinsY());
+    }
+    
+    Float_t signalFraction = 100.0 * signalCount / signalHist->Integral(2, signalHist->GetNbinsX(), 1, signalHist->GetNbinsY());
+    Float_t backgroundFraction = 100.0 * backgroundCount / backgroundHist->Integral(2, signalHist->GetNbinsX(), 1, signalHist->GetNbinsY());
+    
+    Printf("Cut at a = %d; Removed %.2f %% of the background (%.0f events); Removed %.2f %% of the signal", a, backgroundFraction, backgroundCount, signalFraction);
+  }
+}
+
+void ZPhiPlots()
+{
+  TFile::Open("analysis_esd_raw.root");
+  
+  for (Int_t i=0; i<2; i++)
+  {  
+    hist = (TH2*) gFile->Get(Form("fZPhi_%d", i));
+    
+    c = new TCanvas;
+    hist->SetStats(0);
+    hist->Draw("COLZ");
+    c->SaveAs(Form("ZPhi_%d.png", i));
+  }
+}
+
+void DrawStats(Bool_t all = kFALSE)
+{
+  if (all)
+  {
+    Int_t count = 4;
+    const char* list[] = { "CINT1B-ABCE-NOPF-ALL/spd", "CINT1A-ABCE-NOPF-ALL/spd", "CINT1C-ABCE-NOPF-ALL/spd", "CINT1-E-NOPF-ALL/spd" };
+  }
+  else
+  {
+    Int_t count = 1;
+    const char* list[] = { "." };
+  }
+  
+  for (Int_t i=0; i<count; i++)
+  {
+    TFile::Open(Form("%s/analysis_esd_raw.root", list[i]));
+  
+    hist = (TH2*) gFile->Get("fStats2");
+    
+    c = new TCanvas(list[i], list[i], 800, 600);
+    gPad->SetBottomMargin(0.2);
+    gPad->SetLeftMargin(0.2);
+    gPad->SetRightMargin(0.2);
+    hist->Draw("TEXT");
+    hist->SetMarkerSize(2);
+    //hist->GetYaxis()->SetRangeUser(0, 0);
+    
+    gROOT->Macro("increaseFonts.C");
+  
+    c->SaveAs(Form("%s/stats.png", list[i]));
+  }
 }

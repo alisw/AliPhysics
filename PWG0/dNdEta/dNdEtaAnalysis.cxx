@@ -254,6 +254,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
   TH2F* rawMeasured = (TH2F*) fData->GetEventCorrection()->GetMeasuredHistogram()->Clone("rawMeasured");
 
+  fData->ResetErrorsOnCorrections();
   fData->Multiply();
 
   if (correctionType >= AlidNdEtaCorrection::kVertexReco)
