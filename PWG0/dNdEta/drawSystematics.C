@@ -974,30 +974,76 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
   fout->Close();
 }
 
-void CreateCorrectionsWithUA5CrossSections(const Char_t* correctionFileName="correction_mapprocess-types.root", const Char_t* outputFileName="correction_map2.root") {
+void CreateCorrectionsWithUA5CrossSections(Int_t origin, const Char_t* correctionFileName="correction_mapprocess-types.root", const Char_t* outputFileName="correction_map2.root") {
   //
   // Function used to merge standard corrections with vertex
   // reconstruction corrections obtained by a certain mix of ND, DD
   // and SD events.
+  //
+  // origin: 
+  //   -1 = Pythia (test)
+  //   0 = UA5
+  //   1 = Data 1.8 TeV
+  //   2 = Tel-Aviv
+  //   3 = Durham
   //
 
   loadlibs();
 
   const Char_t* typeName[] = { "vertexreco", "trigger", "vtxtrigger" };
   
-  Float_t ua5_SD = 0.153;
-  Float_t ua5_DD = 0.080;
-  Float_t ua5_ND = 0.767;
-
-  //Karel:
+  Float_t ref_SD = -1;
+  Float_t ref_DD = -1;
+  Float_t ref_ND = -1;
+  
+  switch (origin)
+  {
+    case -1: // Pythia, as test
+      ref_SD = 0.223788;
+      ref_DD = 0.123315;
+      ref_ND = 0.652897;
+      break;
+      
+    case 0: // UA5
+      ref_SD = 0.153;
+      ref_DD = 0.080;
+      ref_ND = 0.767;
+      break;
+      
+    case 1: // data 1.8 TeV
+      ref_SD = 0.152;
+      ref_DD = 0.092;
+      ref_ND = 1 - ref_SD - ref_DD;
+      break;
+      
+    case 2: // tel-aviv model
+      ref_SD = 0.171;
+      ref_DD = 0.094;
+      ref_ND = 1 - ref_SD - ref_DD;
+      break;
+    
+    case 3: // durham model
+      ref_SD = 0.190;
+      ref_DD = 0.125;
+      ref_ND = 1 - ref_SD - ref_DD;
+      break;
+    
+    default:
+      return;
+  }
+      
+  //Karel (UA5):
 //     fsd = 0.153 +- 0.031
 //     fdd = 0.080 +- 0.050
 //     fnd = 0.767 +- 0.059
 
-  // Pythia, as test
-/*  ua5_SD = 0.223788;
-  ua5_DD = 0.123315;
-  ua5_ND = 0.652897; */
+//       Karel (1.8 TeV):
+//       
+//       Tel-Aviv model Sd/Inel = 0.171           Dd/Inel = 0.094
+//       Durham model   Sd/Inel = 0.190           Dd/Inel = 0.125
+//       Data           Sd/Inel = 0.152 +- 0.030  Dd/Inel = 0.092 +- 0.45
+
+
   
   // standard correction
   TFile::Open(correctionFileName);
@@ -1045,9 +1091,9 @@ void CreateCorrectionsWithUA5CrossSections(const Char_t* correctionFileName="cor
   
   Printf("Ratios in the correction map are: ND=%f, DD=%f, SD=%f", nd, dd, sd);
   
-  Float_t scaleND = ua5_ND / nd;
-  Float_t scaleDD = ua5_DD / dd;
-  Float_t scaleSD = ua5_SD / sd;
+  Float_t scaleND = ref_ND / nd;
+  Float_t scaleDD = ref_DD / dd;
+  Float_t scaleSD = ref_SD / sd;
   
   Printf("ND=%.2f, DD=%.2f, SD=%.2f",scaleND, scaleDD, scaleSD);
 

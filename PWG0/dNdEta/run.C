@@ -19,7 +19,7 @@ void Load(const char* taskName, Bool_t debug)
     AliLog::SetClassDebugLevel(taskName, AliLog::kWarning);
 }
 
-void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Bool_t mc = kTRUE, const char* option = "")
+void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Int_t requiredData = 1, const char* option = "", const char* requireClass = "", const char* rejectClass = "")
 {
   // runWhat options: 0 = AlidNdEtaTask
   //                  1 = AlidNdEtaCorrectionTask
@@ -28,6 +28,10 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   // aProof option: 0 no proof
   //                1 proof with chain
   //                2 proof with dataset
+  //
+  // requiredData option: 0 = only ESD
+  //                      1 = ESD+MC
+  //                      2 = RAW (ESD+check on event type)
   //
   // option is passed to the task(s)
   //   option SAVE is removed and results in moving the output files to maps/<ds name>/<trigger>/<det>
@@ -41,7 +45,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   if (runWhat == 1 || runWhat == 2)
   {
     Printf("Running AlidNdEtaCorrectionTask");
-    if (!mc)
+    if (requiredData != 1)
     {
       Printf("AlidNdEtaCorrectionTask needs MC. Exiting...");
       return;
@@ -53,9 +57,12 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
   if (aProof)
   {
+    TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a"); 
     TProof::Open("alicecaf"); 
-    //gProof->SetParallel(1);
+    //gProof->SetParallel(2);
+    //gProof->SetParameter("PROOF_Packetizer", "TPacketizer");
 
+    Bool_t fullAliroot = kFALSE;
     // Enable the needed package
     if (1)
     {
@@ -70,10 +77,21 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
       gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
       gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
     }
+    else if (!fullAliroot)
+    {
+      gProof->UploadPackage("$ALICE_ROOT/AF-v4-18-12-AN.par");
+      gProof->EnablePackage("AF-v4-18-12-AN");
+    }
     else
     {
-      gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release/AF-v4-17");
-      gProof->EnablePackage("AF-v4-17");
+      // needed if ITS recpoints are accessed, see AlidNdEtaTask, FULLALIROOT define statement
+      gProof->UploadPackage("$ALICE_ROOT/v4-18-12-AN-all.par");
+      gProof->EnablePackage("v4-18-12-AN-all");
+    
+      gProof->Exec("TGrid::Connect(\"alien://\")", kTRUE);
+      
+      // TODO add this to loadlibs.C
+      gProof->Exec("gSystem->Load(\"libXMLParser\")", kTRUE);
     }
 
     gProof->UploadPackage("$ALICE_ROOT/PWG0base");
@@ -97,10 +115,13 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   mgr = new AliAnalysisManager;
 
   // Add ESD handler
-  //AliESDInputHandler* esdH = new AliESDInputHandler;
-  AliESDInputHandler* esdH = new AliESDInputHandlerRP; // for RecPoints
   
-  esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDVZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks Kinks Cascades AliESDTZERO ALIESDACORDE MuonTracks TrdTracks CaloClusters");
+  if (fullAliroot)
+    AliESDInputHandler* esdH = new AliESDInputHandlerRP; // for RecPoints
+  else
+    AliESDInputHandler* esdH = new AliESDInputHandlerRP;
+  
+  esdH->SetInactiveBranches("AliESDACORDE FMD AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks Kinks Cascades ALIESDACORDE MuonTracks TrdTracks CaloClusters");
   mgr->SetInputEventHandler(esdH);
 
   AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn;
@@ -139,7 +160,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     Load("AlidNdEtaTask", aDebug);
     task = new AlidNdEtaTask(optStr);
 
-    if (mc)
+    if (requiredData == 1)
       task->SetReadMC();
 
     // syst. error flags
@@ -154,7 +175,9 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     task->SetTrackCuts(esdTrackCuts);
     //task->SetDeltaPhiCut(0.05);
     
-    task->SetCheckEventType();
+    if (requiredData == 2)
+      task->SetCheckEventType();
+    task->SetTriggerClasses(requireClass, rejectClass);
 
     mgr->AddTask(task);
 
@@ -190,7 +213,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     mgr->ConnectOutput(task2, 0, cOutput);
   }
 
-  if (mc) {
+  if (requiredData == 1) {
     // Enable MC event handler
     AliMCEventHandler* handler = new AliMCEventHandler;
     handler->SetReadTR(kFALSE);
@@ -227,6 +250,13 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
         default: Printf("ERROR: Trigger undefined for path to files"); return;
       }
       
+      if (strlen(requireClass) > 0 && strlen(rejectClass) == 0)
+      {
+        path += Form("/%s", requireClass);
+      }
+      else if (strlen(rejectClass) > 0)
+        path += Form("/%s--%s", requireClass, rejectClass);
+      
       if (analysisMode & AliPWG0Helper::kSPD)
         path += "/spd";
       
@@ -237,7 +267,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
       if (runWhat == 0 || runWhat == 2)
       {
         gSystem->Rename("analysis_esd_raw.root", path + "/analysis_esd_raw.root");
-        if (mc)
+        if (requiredData == 1)
           gSystem->Rename("analysis_mc.root", path + "/analysis_mc.root");
       }
       if (runWhat == 1 || runWhat == 2)
