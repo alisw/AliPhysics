@@ -477,3 +477,12 @@ void AliCorrection::PrintInfo(Float_t ptCut)
   PrintStats(10, 0.8, ptCut);
   PrintStats(10, 1.5, ptCut);
 }
+
+//____________________________________________________________________
+void AliCorrection::ResetErrorsOnCorrections()
+{
+  // resets the errors in the correction matrix
+  
+  fEventCorr->ResetErrorsOnCorrections();
+  fTrackCorr->ResetErrorsOnCorrections();  
+}

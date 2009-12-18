@@ -41,6 +41,7 @@ public:
   void Divide();
   void Multiply();
   void SetCorrectionToUnity();
+  void ResetErrorsOnCorrections();
   void Scale(Double_t factor);
 
   void Add(AliCorrection* aCorrectionToAdd, Float_t c=1);
