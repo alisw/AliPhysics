@@ -10,9 +10,7 @@ SRCS = dNdEta/dNdEtaAnalysis.cxx \
       AliCorrection.cxx \
       AliPWG0Helper.cxx \
       AliUnfolding.cxx \
-      multiplicity/AliMultiplicityCorrection.cxx \
-      AliTriggerAnalysis.cxx \
-      AliPhysicsSelection.cxx
+      multiplicity/AliMultiplicityCorrection.cxx
 
 HDRS = $(SRCS:.cxx=.h)
 
@@ -26,4 +24,4 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
                          -L$(ROOTLIBDIR) -lEG
 endif
 
-EXPORT=AliPhysicsSelection.h AliTriggerAnalysis.h AliUnfolding.h
+EXPORT=AliUnfolding.h
