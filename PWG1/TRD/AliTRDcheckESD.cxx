@@ -58,16 +58,16 @@ ClassImp(AliTRDcheckESD)
 
 const Float_t AliTRDcheckESD::fgkxTPC = 290.;
 const Float_t AliTRDcheckESD::fgkxTOF = 365.;
-FILE* AliTRDcheckESD::fgFile = 0x0;
+FILE* AliTRDcheckESD::fgFile = NULL;
 
 //____________________________________________________________________
 AliTRDcheckESD::AliTRDcheckESD():
   AliAnalysisTask("checkESD", "ESD checker for TRD info")
   ,fStatus(0)
-  ,fESD(0x0)
-  ,fMC(0x0)
-  ,fHistos(0x0)
-  ,fResults(0x0)
+  ,fESD(NULL)
+  ,fMC(NULL)
+  ,fHistos(NULL)
+  ,fResults(NULL)
 {
   //
   // Default constructor
@@ -101,11 +101,11 @@ void AliTRDcheckESD::ConnectInputData(Option_t *)
   if(tree) tree->SetBranchStatus("Tracks", 1);
 
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  fESD = esdH ? esdH->GetEvent() : 0x0;
+  fESD = esdH ? esdH->GetEvent() : NULL;
 
   if(!HasMC()) return;
   AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  fMC = mcH ? mcH->MCEvent() : 0x0;
+  fMC = mcH ? mcH->MCEvent() : NULL;
 }
 
 //____________________________________________________________________
@@ -143,7 +143,7 @@ TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
   const Int_t ngr = sizeof(name)/sizeof(Char_t*);
   if(ngr != kNgraphs){
     AliWarning("No of graphs defined different from definition");
-    return 0x0;
+    return NULL;
   }
 
   if(!fResults){
@@ -152,7 +152,7 @@ TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
     fResults->SetName("results");
   }
 
-  TGraph *g = 0x0;
+  TGraph *g = NULL;
   if((g = dynamic_cast<TGraph*>(fResults->At(id)))){
     if(kCLEAR){ 
       for(Int_t ip=g->GetN(); ip--;) g->RemovePoint(ip);
@@ -187,7 +187,7 @@ TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
         break;
       default:
         AliWarning(Form("Graph index[%d] missing/not defined.", id));
-        return 0x0;
+        return NULL;
       }
       g->SetNameTitle(name[id], title[id]);
       fResults->AddAt(g, id);
@@ -207,7 +207,7 @@ void AliTRDcheckESD::Exec(Option_t *){
   }
 
   // Get MC information if available
-  AliStack * fStack = 0x0;
+  AliStack * fStack = NULL;
   if(HasMC()){
     if(!fMC){ 
       AliWarning("MC event missing");
@@ -219,11 +219,10 @@ void AliTRDcheckESD::Exec(Option_t *){
       }
     }
   }
-  Bool_t bTRDin(0), bTRDout(0), bTRDpid(0);
-
-  AliESDtrack *esdTrack = 0x0;
+  TH2 *h(NULL);
+  
+  AliESDtrack *esdTrack(NULL);
   for(Int_t itrk = 0; itrk < fESD->GetNumberOfTracks(); itrk++){
-    bTRDin=0;bTRDout=0;bTRDpid=0;
     esdTrack = fESD->GetTrack(itrk);
 
 //     if(esdTrack->GetNcls(1)) nTPC++;
@@ -245,68 +244,67 @@ void AliTRDcheckESD::Exec(Option_t *){
     // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
     const AliExternalTrackParam *ip = esdTrack->GetInnerParam();
-    Double_t xyz[3];
-    if(op){
-      op->GetXYZ(xyz);
-      op->Global2LocalPosition(xyz, op->GetAlpha());
-      //printf("op @ X[%7.3f]\n", xyz[0]);
-    }
 
-    // read MC info
-    if(!HasMC()) continue;
+    Float_t pt(0.); Bool_t kFOUND(kFALSE);
 
-    Int_t fLabel = esdTrack->GetLabel();
-    if(TMath::Abs(fLabel) > fStack->GetNtrack()) continue; 
-    
-    // read MC particle
-    AliMCParticle *mcParticle = 0x0; 
-    if(!(mcParticle = (AliMCParticle*) fMC->GetTrack(TMath::Abs(fLabel)))){
-      AliWarning(Form("MC particle missing. Label[ %d].", fLabel));
-      continue;
-    }
-
-    AliTrackReference *ref = 0x0; 
-    Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
-    if(!nRefs){
-      AliWarning(Form("Track refs missing. Label[%d].", fLabel));
-      continue;
-    }
-    Int_t iref = 0;
-    while(iref<nRefs){
-      ref = mcParticle->GetTrackReference(iref);
-      if(ref->LocalX() > fgkxTPC) break;
-      ref=0x0; iref++;
-    }
-
-    // read TParticle
-    //TParticle *tParticle = mcParticle->Particle(); 
-    //Int_t fPdg = tParticle->GetPdgCode();
-    // reject secondaries
-    //if(!tParticle->IsPrimary()) continue;
-
-    if(ref){ 
-      if(ref->LocalX() > fgkxTOF){ // track skipping TRD fiducial volume
-        ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
-      } else {
-        bTRDin=1;
-        if(esdTrack->GetNcls(2)) bTRDout=1;
-        if(esdTrack->GetTRDntrackletsPID()>=4) bTRDpid=1;
+    // read MC info if available
+    if(HasMC()){
+      AliTrackReference *ref(NULL); 
+      Int_t fLabel(esdTrack->GetLabel());
+      if(TMath::Abs(fLabel) > fStack->GetNtrack()) continue; 
+      
+      // read MC particle
+      AliMCParticle *mcParticle(NULL); 
+      if(!(mcParticle = (AliMCParticle*) fMC->GetTrack(TMath::Abs(fLabel)))){
+        AliWarning(Form("MC particle missing. Label[ %d].", fLabel));
+        continue;
       }
-    } else { // track stopped in TPC 
-      ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
-    }
-    // get the MC pt !!
-    Float_t pt = ref->Pt();
+  
+      Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
+      if(!nRefs){
+        AliWarning(Form("Track refs missing. Label[%d].", fLabel));
+        continue;
+      }
+      Int_t iref = 0;
+      while(iref<nRefs){
+        ref = mcParticle->GetTrackReference(iref);
+        if(ref->LocalX() > fgkxTPC) break;
+        ref=NULL; iref++;
+      }
+      if(ref){ 
+        if(ref->LocalX() > fgkxTOF){ // track skipping TRD fiducial volume
+          ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
+        }
+      } else { // track stopped in TPC 
+        ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
+      }
+      pt = ref->Pt();kFOUND=kTRUE;
+    } else { // use reconstructed values
+      if(op){
+        Double_t x(op->GetX());
+        if(x<fgkxTOF && x>fgkxTPC){
+          pt=op->Pt();
+          kFOUND=kTRUE;
+        }
+      }
 
-    TH2 *h = (TH2I*)fHistos->At(kTRDstat);
-    if(status & AliESDtrack::kTPCout) h->Fill(pt, kTPCout);
-    if(/*status & AliESDtrack::k*/bTRDin) h->Fill(pt, kTRDin);
-    if(/*status & AliESDtrack::k*/bTRDout){ 
-      ((TH1*)fHistos->At(kNCl))->Fill(esdTrack->GetNcls(2));
-      h->Fill(pt, kTRDout);
+      if(!kFOUND && ip){
+        pt=ip->Pt();
+        kFOUND=kTRUE;
+      }
     }
-    if(/*status & AliESDtrack::k*/bTRDpid) h->Fill(pt, kTRDpid);
-    if(status & AliESDtrack::kTRDrefit) h->Fill(pt, kTRDref);
+
+    if(kFOUND){
+      h = (TH2I*)fHistos->At(kTRDstat);
+      if(status & AliESDtrack::kTPCout) h->Fill(pt, kTPCout);
+      if(status & AliESDtrack::kTRDin) h->Fill(pt, kTRDin);
+      if(status & AliESDtrack::kTRDout){ 
+        ((TH1*)fHistos->At(kNCl))->Fill(esdTrack->GetNcls(2));
+        h->Fill(pt, kTRDout);
+      }
+      if(status & AliESDtrack::kTRDpid) h->Fill(pt, kTRDpid);
+      if(status & AliESDtrack::kTRDrefit) h->Fill(pt, kTRDref);
+    }
 
     if(ip){
       h = (TH2I*)fHistos->At(kTRDmom);
@@ -330,7 +328,7 @@ TObjArray* AliTRDcheckESD::Histos()
   fHistos = new TObjArray(kNhistos);
   //fHistos->SetOwner(kTRUE);
   
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
 
   // clusters per tracklet
   if(!(h = (TH1I*)gROOT->FindObject("hNCl"))){
@@ -370,7 +368,7 @@ Bool_t AliTRDcheckESD::Load(const Char_t *filename, const Char_t *name)
     AliWarning(Form("Couldn't open file %s.", filename));
     return kFALSE;
   }
-  TObjArray *o = 0x0;
+  TObjArray *o = NULL;
   if(!(o = (TObjArray*)gFile->Get(name ? name : GetName()))){
     AliWarning("Missing histogram container.");
     return kFALSE;
@@ -396,11 +394,15 @@ Bool_t AliTRDcheckESD::PutTrendValue(const Char_t *name, Double_t val)
 void AliTRDcheckESD::Terminate(Option_t *)
 {
 // Steer post-processing 
-
+  fHistos = dynamic_cast<TObjArray *>(GetOutputData(0));
+  if(!fHistos){
+    AliError("Histogram container not found in output");
+    return;
+  }
 
   // geometrical efficiency
   TH2I *h2 = (TH2I*)fHistos->At(kTRDstat);
-  TH1 *h1[2] = {0x0, 0x0};
+  TH1 *h1[2] = {NULL, NULL};
   h1[0] = h2->ProjectionX("checkESDx0", kTPCout, kTPCout);
   h1[1] = h2->ProjectionX("checkESDx1", kTRDin, kTRDin);
   Process(h1, (TGraphErrors*)GetGraph(0));
