@@ -103,7 +103,7 @@ void AliAnalysisTaskGlobalQA::UserCreateOutputObjects()
     "TPC-ITS matched: track momentum distribution (GeV)",   // kTrk3
     "TPC-TOF matched: track momentum distribution (GeV)",   // kTrk4
     "TPC-ITS track-matching probability",                   // kTrk5
-    "TPC-TOF track-matching probability"                    // kTrk6
+    "TPC-TOF track-matching probability",                   // kTrk6
     "TPC side A: DCA for the positive tracks (mm)",         // kTrk7
     "TPC side A: DCA for the negative tracks (mm)",         // kTrk8
     "TPC side C: DCA for the positive tracks (mm)",         // kTrk9
