@@ -347,7 +347,7 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks){
   TTreeSRedirector cstream(fname);
   for (Int_t itr=0; itr<ntracks; itr++){
     //
-    fast.fMNprim=(10+20*gRandom->Rndm());
+    fast.fMNprim=(5+50*gRandom->Rndm());
     fast.fDiff =0.01 +0.35*gRandom->Rndm();
     //
     fast.fAngleY   = 4.0*(gRandom->Rndm()-0.5);

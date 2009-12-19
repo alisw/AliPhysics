@@ -121,3 +121,63 @@ void DrawDedxMC(THnSparse * hstat){
   c->SaveAs(Form("pic/%s.root",fname.Data()));
 }
 
+
+
+
+void DrawDedxN(THnSparse * hstat){
+  //
+  //
+  //
+  TH1 * hisMean[7];
+  TH1 * hisSigma[7];
+  TObjArray arr;
+  for (Int_t ifrac=0; ifrac<6; ifrac++){
+    Float_t frac = 0.5+0.1*Float_t(ifrac);
+    hstat->GetAxis(3)->SetRange(ifrac+1,ifrac+1);
+    hstat->GetAxis(2)->SetRangeUser(80,160);
+    hstat->GetAxis(1)->SetRangeUser(15,18);
+    TH2F * his = (TH2F*)hstat->Projection(0,2);
+    his->FitSlicesY(0,0,-1,0,"QNR",&arr);
+    delete his;
+    hisMean[ifrac]  = (TH1*) arr.At(1)->Clone();
+    hisSigma[ifrac] = (TH1*) arr.At(2)->Clone();
+    arr.SetOwner(kTRUE); arr.Delete();
+    //
+    hisSigma[ifrac]->Divide(hisMean[ifrac]);
+    hisMean[ifrac]->SetMaximum(6);
+    hisMean[ifrac]->SetMinimum(0);
+    hisSigma[ifrac]->SetMaximum(0.07);
+    hisSigma[ifrac]->SetMinimum(0.03);
+    //
+    hisMean[ifrac]->SetDirectory(0);
+    hisSigma[ifrac]->SetDirectory(0);
+    hisMean[ifrac]->SetXTitle("N_{cl}");
+    hisSigma[ifrac]->SetXTitle("N_{cl}");
+    hisMean[ifrac]->SetYTitle("Q/N_{prim}");
+    hisSigma[ifrac]->SetYTitle("#sigma_{Q/N_{prim}}/(Q/N_{prim})");
+    hisMean[ifrac]->SetMarkerColor(kmicolors[ifrac+1]);
+    hisMean[ifrac]->SetMarkerStyle(kmimarkers[ifrac+1]);
+    hisSigma[ifrac]->SetMarkerColor(kmicolors[ifrac+1]);
+    hisSigma[ifrac]->SetMarkerStyle(kmimarkers[ifrac+1]);
+  }
+  TCanvas * c = new TCanvas(hstat->GetName(),hstat->GetName(),600,800);
+  TLegend *legend = new TLegend(0.55,0.70,0.95,0.95, hstat->GetName());
+  c->Divide(1,2);
+  for (Int_t ifrac=0; ifrac<6; ifrac++){
+    c->cd(1);
+    if (ifrac==0) hisMean[ifrac]->Draw();
+    legend->AddEntry(hisMean[ifrac],Form("%f",0.5+0.1*ifrac));
+    hisMean[ifrac]->Draw("same");
+    c->cd(2);
+    if (ifrac==0) hisSigma[ifrac]->Draw();
+    hisSigma[ifrac]->Draw("same");
+  }
+  c->Draw();
+  legend->Draw();
+  TString fname=hstat->GetName();
+  fname+="NCl";
+  fname.ReplaceAll("/","_");
+  c->SaveAs(Form("pic/%s.eps",fname.Data()));
+  c->SaveAs(Form("pic/%s.gif",fname.Data()));
+  c->SaveAs(Form("pic/%s.root",fname.Data()));
+}

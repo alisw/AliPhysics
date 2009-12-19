@@ -8,7 +8,7 @@
 # Example
 # myvar=0
 # $ALICE_ROOT/TPC/fastSimul/simul.sh  /u/miranov/.balice64HEAD0108 $myvar 1000 `pwd`
-
+# while [ $myvar -ne 100 ] ; do bsub  do something ;  myvar=$(( $myvar + 1 )) ; echo $myvar ; done
 #
 # 1 SETUP given ROOT and ALIROOT
 #
