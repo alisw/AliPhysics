@@ -40,6 +40,9 @@ void AliGlobalQADataMaker::InitRecPoints() {
   // This function books the histograms of *track*residuals*
   // as a part of global QA
   //------------------------------------------------------
+  static Bool_t first = kTRUE ; 
+  if ( ! first ) 
+    return ; 
   const Char_t *name[]={
     "hGlobalSPD1ResidualsY","SPD1ResidualsZ",
     "hGlobalSPD2ResidualsY","SPD2ResidualsZ",
@@ -134,6 +137,7 @@ void AliGlobalQADataMaker::InitRecPoints() {
   new TH1F("hGlobalSSD2AbsoluteResidualsZPosZ",
            "SSD2Absolute Residuals Z Pos Z",100,-3.,3.),47);
   
+  first = kFALSE ; 
 }
 
 //____________________________________________________________________________ 
@@ -272,10 +276,6 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
   // This function fills the ESD QA histograms
   // as a part of global QA
   //-----------------------------------------------------------
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(kClr0) )
-    InitESDs() ;
-
 
   const AliESDEvent *esd=event;
 
