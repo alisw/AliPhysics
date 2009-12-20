@@ -15,7 +15,9 @@
 
 
 class AliVEvent;
+class AliVCuts;
 class AliRunTag;
+
 
 class AliInputEventHandler : public AliVEventHandler {
 
@@ -35,6 +37,7 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual Bool_t       TerminateIO()                                {return kTRUE;}
     // Setters
     virtual void         SetInputTree(TTree* tree)                    {fTree = tree;}
+    virtual void         SetEventSelection(AliVCuts* cuts)            {fEventCuts = cuts;}
     //
     void SetInactiveBranches(const char* branches) {fBranches   = branches;}
     void SetActiveBranches  (const char* branches) {fBranchesOn = branches;}
@@ -46,6 +49,8 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual Long64_t     GetReadEntry()    const;
     virtual Bool_t       NewEvent()
 	{Bool_t ne = fNewEvent; fNewEvent = kFALSE; return ne;}
+    virtual Bool_t       IsEventSelected() 
+        {return fIsSelected;}
  protected:
     void SwitchOffBranches() const;
     void SwitchOnBranches()  const;
@@ -57,7 +62,9 @@ class AliInputEventHandler : public AliVEventHandler {
     TString         fBranches;     //  List of branches to be switched off (separated by space)
     TString         fBranchesOn;   //  List of branches to be switched on  (separated by space)
     Bool_t          fNewEvent;     //  New event flag 
-    ClassDef(AliInputEventHandler, 2);
+    AliVCuts*       fEventCuts;    //  Cuts on the event level
+    Bool_t          fIsSelected;   //  Selection result
+    ClassDef(AliInputEventHandler, 3);
 };
 
 #endif

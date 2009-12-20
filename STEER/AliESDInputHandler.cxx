@@ -33,6 +33,7 @@
 
 #include "AliESDInputHandler.h"
 #include "AliESDEvent.h"
+#include "AliVCuts.h"
 #include "AliESD.h"
 #include "AliRunTag.h"
 #include "AliEventTag.h"
@@ -110,6 +111,11 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   }
   
   fNewEvent = kTRUE;
+  //
+  // Event selection
+  // 
+  if (fEventCuts)
+    fIsSelected = fEventCuts->IsSelected(fEvent); 
 
   return kTRUE;
 }

@@ -23,7 +23,9 @@
 
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
+#include "AliVCuts.h"
 #include "AliLog.h"
+
 
 ClassImp(AliInputEventHandler)
 
@@ -33,7 +35,9 @@ AliInputEventHandler::AliInputEventHandler() :
     fTree(0),
     fBranches(""),
     fBranchesOn(""),
-    fNewEvent(kTRUE)
+    fNewEvent(kTRUE),
+    fEventCuts(0),
+    fIsSelected(kFALSE)
 {
   // default constructor
 }
@@ -50,7 +54,9 @@ AliInputEventHandler::AliInputEventHandler(const char* name, const char* title):
   fTree(0),
   fBranches(""),
   fBranchesOn(""),
-  fNewEvent(kTRUE)
+  fNewEvent(kTRUE),
+  fEventCuts(0),
+  fIsSelected(kFALSE)
 {
 }
 
