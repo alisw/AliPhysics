@@ -45,8 +45,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual void   AddAODBranch(const char* cname, void* addobj, const char *fname="");
     // Event Selection
     virtual void   SelectCollisionCandidates() {fSelectCollisions = kTRUE;}
-    static  void   SetCollisionSelector(AliAnalysisCuts* selector) {fgCollisionSelector = selector;}
-// Getters
+ // Getters
     virtual Int_t        DebugLevel()  {return fDebug;     }
     virtual AliVEvent*   InputEvent()  {return fInputEvent;}
     virtual AliAODEvent* AODEvent()    {return fOutputAOD; }
@@ -81,9 +80,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static AliAODTracklets* fgAODTracklets;     //! Tracklets for replication
     static AliAODCaloCells* fgAODEmcalCells;    //! Emcal Cell replication
     static AliAODCaloCells* fgAODPhosCells;     //! Phos  Cell replication
-    // Event selection
-    static AliAnalysisCuts* fgCollisionSelector; //! Cuts to select collision events
-    static Bool_t           fgIsCollision;       //! Collision flag 
+    // Event Selection
     Bool_t                  fSelectCollisions;   //  Task processes collision candidates only
      
     ClassDef(AliAnalysisTaskSE, 2); // Analysis task for standard jet analysis

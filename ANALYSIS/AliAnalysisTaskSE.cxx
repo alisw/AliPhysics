@@ -59,10 +59,6 @@ TClonesArray*    AliAnalysisTaskSE::fgAODMCParticles    = NULL;
 AliAODTracklets* AliAnalysisTaskSE::fgAODTracklets      = NULL;
 AliAODCaloCells* AliAnalysisTaskSE::fgAODEmcalCells     = NULL;
 AliAODCaloCells* AliAnalysisTaskSE::fgAODPhosCells      = NULL;
-AliAnalysisCuts* AliAnalysisTaskSE::fgCollisionSelector = NULL; 
-
-Bool_t           AliAnalysisTaskSE::fgIsCollision       = kTRUE; 
-
 
 AliAnalysisTaskSE::AliAnalysisTaskSE():
     AliAnalysisTask(),
@@ -285,19 +281,12 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 // Exec analysis of one event
     if (fDebug > 1) AliInfo("AliAnalysisTaskSE::Exec() \n");
 
+    Bool_t isSelected = kTRUE;
     if( fInputHandler ) {
-       fEntry = fInputHandler->GetReadEntry();
-       if (fInputHandler->NewEvent()) {
-	   if (fgCollisionSelector) {
-	       fgIsCollision = fgCollisionSelector->IsSelected(InputEvent());
-	       printf("Event # %5d Decision %5d \n", Entry(), fgIsCollision);
-	   }
-
-       } else {
-	   printf("Event # %5d already seen \n", Entry());
-       }
-       
+      isSelected = fInputHandler->IsEventSelected();
+      fEntry = fInputHandler->GetReadEntry();
     }
+
 // Notify the change of run number
     if (InputEvent()->GetRunNumber() != fCurrentRunNumber) {
 	fCurrentRunNumber = InputEvent()->GetRunNumber();
@@ -435,7 +424,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     }
 
 // Call the user analysis    
-    if (!fSelectCollisions || fgIsCollision) 
+    if (!fSelectCollisions || isSelected) 
 	UserExec(option);
     
 // Added protection in case the derived task is not an AOD producer.

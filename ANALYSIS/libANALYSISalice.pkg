@@ -6,8 +6,10 @@ SRCS = 	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx \
 	AliEventPoolOTF.cxx AliEventPoolLoop.cxx AliEventPoolSparse.cxx \
 	AliAnalysisTaskTagCreator.cxx \
         AliMultiEventInputHandler.cxx \
-      AliTriggerAnalysis.cxx \
-      AliPhysicsSelection.cxx
+	AliTriggerAnalysis.cxx \
+        AliPhysicsSelection.cxx \
+        AliAnalysisFilter.cxx AliAnalysisCuts.cxx 
+
 
 ifeq (yes,$(CHECKALIEN))
 PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN
