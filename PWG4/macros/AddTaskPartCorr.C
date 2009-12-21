@@ -61,7 +61,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // ##### Analysis algorithm settings ####
   
   // --------------------
-  // --- Pi0 Analysis ---
+  // --- QA Analysis ---
   // --------------------
   
   AliCaloPID * pid = new AliCaloPID();
@@ -87,10 +87,33 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else  qa->SetNumberOfModules(4); //EMCAL first year
   //Set Histograms bins and ranges
   qa->SetHistoPtRangeAndNBins(0, 50, 500) ;
-	//      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-	//      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  qa->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  if(calorimeter == "PHOS"){
+	  qa->SetHistoEtaRangeAndNBins(-0.13, 0.13, 100) ;
+	  qa->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 330*TMath::DegToRad() , 100) ;
+  }
+  else if(calorimeter == "EMCAL"){
+	  qa->SetHistoEtaRangeAndNBins(-0.8, 0.8, 100) ;
+	  qa->SetHistoPhiRangeAndNBins(70*TMath::DegToRad(), 130*TMath::DegToRad(), 100) ;
+  }
+  qa->SetHistoMassRangeAndNBins(0., 0.5, 500) ;
+  qa->SetHistoAsymmetryRangeAndNBins(0., 1. , 5) ;
+  qa->SetHistoPOverERangeAndNBins(0,10.,100);
+  qa->SetHistodEdxRangeAndNBins(0.,400.,200);
+  qa->SetHistodRRangeAndNBins(0.,TMath::Pi(),300);
+  qa->SetHistoTimeRangeAndNBins(0.,1000,1000);
+  qa->SetHistoRatioRangeAndNBins(0.,2.,100);
+  qa->SetHistoVertexDistRangeAndNBins(0.,500.,100);
+  qa->SetHistoNClusterCellRangeAndNBins(0,300,300);
+	
   if(kPrintSettings) qa->Print("");	
   
+	
+  // --------------------
+  // --- Pi0 Analysis ---
+  // --------------------
+	
+	
   AliFiducialCut * fidCut1stYear = new AliFiducialCut();
   fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
   if(kSimulation){
@@ -138,12 +161,14 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SetNZvertBin(1);
   anapi0->SetNRPBin(1);
   anapi0->SetNMaxEvMix(10);
-  //TH3D * h = new TH3D("binning","Histo with binning parameters",500,0.,50.,10,0.,1.,100,0.,1.) ;
-  //anapi0->SetEtalonHisto(h);
-  // anapi0->SetZvertexCut(40);
   anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
   if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
   else  anapi0->SetNumberOfModules(4); //EMCAL first year
+  anapi0->SetHistoPtRangeAndNBins(0, 50, 500) ;
+  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  anapi0->SetHistoMassRangeAndNBins(0., 0.5, 500) ;
+  anapi0->SetHistoAsymmetryRangeAndNBins(0., 1. , 5) ;
   if(kPrintSettings) anapi0->Print("");
   
   

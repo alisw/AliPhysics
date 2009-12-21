@@ -35,7 +35,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   void Print(const Option_t * opt) const;
   
-  void Init();
+  //void Init();
   void InitParameters();
   
   //void MakeAnalysisFillAOD() {;} //Not needed
@@ -43,7 +43,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   //    void SetBadRunsList(){;} ;     //Set list of runs which can be used for this analysis
   //To be defined in future.
-  void SetEtalonHisto(TH3D * h);//Provide etalon of binning for histograms
+  
+  //void SetEtalonHisto(TH3D * h);//Provide etalon of binning for histograms
   
   //Setters for parameters of event buffers
   void SetNCentrBin(Int_t n=5){fNCentrBin=n ;} //number of bins in centrality 
@@ -83,7 +84,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   //Histograms
   
-  TH3D * fhEtalon ; //Etalon histo, all distributions will have same binning as this one
+  //TH3D * fhEtalon ; //Etalon histo, all distributions will have same binning as this one
   
   TH3D ** fhReMod ;  //!REAL two-photon invariant mass distribution for different calorimeter modules.
 	
@@ -103,7 +104,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH1D * fhPrimPhi ;   //! Azimutal distribution of primary particles
   TH1D * fhPrimAccPhi; //! Azimutal distribution of primary with accepted daughters	
 
-  ClassDef(AliAnaPi0,6)
+  ClassDef(AliAnaPi0,7)
 } ;
 
 

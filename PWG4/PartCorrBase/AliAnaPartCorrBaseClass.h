@@ -146,36 +146,61 @@ public:
   {  fMaxPt=ptmax;   fMinPt=ptmin;}
   
   //Histogrammes setters and getters
+  //Pt, Energy 
   virtual void SetHistoPtRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-    fHistoNPtBins = n ;
+    fHistoPtBins = n ;
     fHistoPtMax = max ;
     fHistoPtMin = min ;
   }
   
-  Int_t   GetHistoNPtBins() const { return fHistoNPtBins ; }
+  Int_t   GetHistoPtBins()  const { return fHistoPtBins; }
   Float_t GetHistoPtMin()   const { return fHistoPtMin ; }
   Float_t GetHistoPtMax()   const { return fHistoPtMax ; }
   
+  //Azimuthal angle
   virtual void SetHistoPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-    fHistoNPhiBins = n ;
-    fHistoPhiMax = max ;
-    fHistoPhiMin = min ;
+    fHistoPhiBins  = n ;
+    fHistoPhiMax   = max ;
+    fHistoPhiMin   = min ;
   }
   
-  Int_t   GetHistoNPhiBins() const { return fHistoNPhiBins ; }
+  Int_t   GetHistoPhiBins()  const { return fHistoPhiBins; }
   Float_t GetHistoPhiMin()   const { return fHistoPhiMin ; }
   Float_t GetHistoPhiMax()   const { return fHistoPhiMax ; }
   
+  //Pseudorapidity-rapidity
   virtual void SetHistoEtaRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-    fHistoNEtaBins = n ;
-    fHistoEtaMax = max ;
-    fHistoEtaMin = min ;
+    fHistoEtaBins = n ;
+    fHistoEtaMax  = max ;
+    fHistoEtaMin  = min ;
   }
   
-  Int_t   GetHistoNEtaBins() const { return fHistoNEtaBins ; }
+  Int_t   GetHistoEtaBins()  const { return fHistoEtaBins; }
   Float_t GetHistoEtaMin()   const { return fHistoEtaMin ; }
   Float_t GetHistoEtaMax()   const { return fHistoEtaMax ; }
-    
+  
+  //Mass
+  virtual void SetHistoMassRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+	fHistoMassBins = n ;
+	fHistoMassMax  = max ;
+	fHistoMassMin  = min ;
+  }
+	
+  Int_t   GetHistoMassBins()  const { return fHistoMassBins ; }
+  Float_t GetHistoMassMin()   const { return fHistoMassMin ; }
+  Float_t GetHistoMassMax()   const { return fHistoMassMax ; }
+	
+  //Asymetry
+  virtual void SetHistoAsymmetryRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+	fHistoAsymBins = n ;
+	fHistoAsymMax  = max ;
+	fHistoAsymMin  = min ;
+  }
+	
+  Int_t   GetHistoAsymmetryBins()  const { return fHistoAsymBins ; }
+  Float_t GetHistoAsymmetryMin()   const { return fHistoAsymMin ; }
+  Float_t GetHistoAsymmetryMax()   const { return fHistoAsymMax ; }	
+	
  private:    
   
   Bool_t  fDataMC ;             // Flag to access MC data when using ESD or AOD     
@@ -208,17 +233,23 @@ public:
   AliNeutralMesonSelection * fNMS;     // Neutral Meson Selection
   
   //Histograms binning and range    
-  Int_t   fHistoNPtBins ;  // Number of bins in pt axis
-  Float_t fHistoPtMax ;    // Maximum value of pt histogram range
-  Float_t fHistoPtMin ;    // Minimum value of pt histogram range
-  Int_t   fHistoNPhiBins ; // Number of bins in phi axis
-  Float_t fHistoPhiMax ;   // Maximum value of phi histogram range
-  Float_t fHistoPhiMin ;   // Minimum value of phi histogram range
-  Int_t   fHistoNEtaBins ; // Number of bins in eta axis
-  Float_t fHistoEtaMax ;   // Maximum value of eta histogram range
-  Float_t fHistoEtaMin ;   // Minimum value of eta histogram range
-  
-  ClassDef(AliAnaPartCorrBaseClass,5)
+  Int_t   fHistoPtBins   ;  // Number of bins in pt axis
+  Float_t fHistoPtMax    ;  // Maximum value of pt histogram range
+  Float_t fHistoPtMin    ;  // Minimum value of pt histogram range
+  Int_t   fHistoPhiBins  ;  // Number of bins in phi axis
+  Float_t fHistoPhiMax   ;  // Maximum value of phi histogram range
+  Float_t fHistoPhiMin   ;  // Minimum value of phi histogram range
+  Int_t   fHistoEtaBins  ;  // Number of bins in eta axis
+  Float_t fHistoEtaMax   ;  // Maximum value of eta histogram range
+  Float_t fHistoEtaMin   ;  // Minimum value of eta histogram range
+  Int_t   fHistoMassBins ;  // Number of bins in mass axis
+  Float_t fHistoMassMax  ;  // Maximum value of mass histogram range
+  Float_t fHistoMassMin  ;  // Minimum value of mass histogram range
+  Int_t   fHistoAsymBins ;  // Number of bins in asymmetry axis
+  Float_t fHistoAsymMax  ;  // Maximum value of asymmetry histogram range
+  Float_t fHistoAsymMin  ;  // Minimum value of asymmetry histogram range
+	
+  ClassDef(AliAnaPartCorrBaseClass,6)
     } ;
 
 

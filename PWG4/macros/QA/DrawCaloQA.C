@@ -37,6 +37,9 @@ TH1F * fhNClusters; //! Number of clusters
 //Calo Cells
 TH1F * fhNCells; //! Number of towers/crystals with signal
 TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
+TH1F * fhTime;      //! Time measured in towers/crystals
+TH2F * fhTimeId;    //! Time vs Absolute cell Id
+TH2F * fhTimeAmp;   //! Time vs Amplitude 
 
 //Calorimeters Correlation
 TH2F * fhCaloCorrNClusters; // EMCAL vs PHOS, number of clusters	
@@ -162,7 +165,7 @@ TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC ch
 TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 
 //________________________________________________________________________
-void ReadHistograms(TString name, Bool_t isDataMC, Bool_t  fCorrelateCalos, Int_t fNModules)
+void ReadHistograms(TString name, TString dataType, Bool_t isDataMC, Bool_t  fCorrelateCalos, Int_t fNModules)
 {
 	TFile *f = new TFile("Calo.Performance.root","read");
 	TList* outputList = f->Get("Calo.Performance");
@@ -217,6 +220,11 @@ void ReadHistograms(TString name, Bool_t isDataMC, Bool_t  fCorrelateCalos, Int_
 	fhNClusters  = (TH1F *) outputList->At(index++); 
 	fhNCells     = (TH1F *) outputList->At(index++); 
 	fhAmplitude  = (TH1F *) outputList->At(index++); 
+	if(dataType=="ESD") {
+		fhTime       = (TH1F *) outputList->At(index++); 
+		fhTimeId     = (TH2F *) outputList->At(index++); 
+		fhTimeAmp    = (TH2F *) outputList->At(index++); 
+	}
 	
 	if(fCorrelateCalos){
 		fhCaloCorrNClusters = (TH2F *) outputList->At(index++);
@@ -372,25 +380,25 @@ void ReadHistograms(TString name, Bool_t isDataMC, Bool_t  fCorrelateCalos, Int_
 
 
 //__________________________________________________________________
-void  DrawCaloQA(TString fCalorimeter = "EMCAL", Bool_t isDataMC = kFALSE) 
+void  DrawCaloQA(TString fCalorimeter = "EMCAL", TString dataType = "ESD", Bool_t isDataMC = kFALSE) 
 {
 	//Macro for replotting Calorimeter QA histograms
 	Bool_t fCorrelateCalos = kFALSE;
 	Int_t fNModules = 12;
 	//By default when PHOS QA is called correlation not done
 	if(fCalorimeter == "PHOS") {
-	fCorrelateCalos = kFALSE;
-	fNModules = 3;//5
+		fCorrelateCalos = kFALSE;
+		fNModules = 3;//5
 	}
 	else {
 		fCorrelateCalos = kTRUE;
-	fNModules = 4;//12
+		fNModules = 4;//12
 	}
 	cout<<"Calo? "<<fCalorimeter<<" Correlate plots? "<<fCorrelateCalos<<" MC plots?"<<isDataMC<<endl;
 	//Do some plots to end
 	gROOT->Macro("./style.C");//Set different root style parameters
 	//Recover histograms from output histograms list, needed for distributed analysis.	
-	ReadHistograms(fCalorimeter+"_", isDataMC, fCorrelateCalos,fNModules);
+	ReadHistograms(fCalorimeter+"_", dataType, isDataMC, fCorrelateCalos,fNModules);
 	Float_t minx = 0;
 	Float_t maxx = 10;
 	
@@ -1001,6 +1009,30 @@ void  DrawCaloQA(TString fCalorimeter = "EMCAL", Bool_t isDataMC = kFALSE)
 	sprintf(name,"QA_%s_CaloClustersAndCaloCells.eps",fCalorimeter.Data());
 	c9->Print(name); printf("Plot: %s\n",name);
 
+	//Cell Time histograms, time only available in ESDs
+	if(dataType=="ESD") {
+		
+		sprintf(cname,"QA_%s_cellstime",fCalorimeter.Data());
+		TCanvas  * ctime = new TCanvas(cname, " Cells time", 1200, 400) ;
+		ctime->Divide(3, 1);
+		
+		ctime->cd(1) ; 
+		if(fhTime->GetEntries() > 0) gPad->SetLogy();
+		fhTime->Draw();
+		
+		ctime->cd(2) ; 
+		//if(fhTimeId->GetEntries() > 0) gPad->SetLogy();
+		fhTimeId->Draw("colz");
+		
+		ctime->cd(3) ; 
+		//if(fhTimeAmp->GetEntries() > 0) gPad->SetLogy();
+		fhTimeAmp->Draw("colz");
+		
+		sprintf(name,"QA_%s_CellsTime.eps",fCalorimeter.Data());
+		ctime->Print(name); printf("Plot: %s\n",name);
+	}
+	
+	
 	if(fCorrelateCalos){
 		//Calorimeter Correlation, PHOS vs EMCAL
 		sprintf(cname,"QA_%s_CaloCorr_EMCALvsPHOS",fCalorimeter.Data());
