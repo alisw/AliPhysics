@@ -1473,7 +1473,7 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
       /* DDL BC shift time correction */
       hitTimeBin += 1024 * fgkddlBCshift[indexDDL];
       /* deltaBC shift time correction */
-      hitTimeBin += 1024 * hitData->GetDeltaBunchID();
+      hitTimeBin += 1024 * (hitData->GetDeltaBunchID() - 37);
     }
 
     Int_t hitLeading = hitData->GetTimeBin();
