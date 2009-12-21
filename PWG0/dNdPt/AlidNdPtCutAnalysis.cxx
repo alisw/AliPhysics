@@ -98,7 +98,7 @@ void AlidNdPtCutAnalysis::Init(){
   fEventCount->Sumw2();
 
   //Xv:Yv:Zv:ResZv:Mult
-  Int_t binsRecEventHist[5]={100,100,140,100,150};
+  Int_t binsRecEventHist[5]={80,80,100,80,150};
   Double_t minRecEventHist[5]={-3.,-3.,-35.,0.,0.}; 
   Double_t maxRecEventHist[5]={3.,3.,35.,10.,150.}; 
   fRecEventHist = new THnSparseF("fRecEventHist","Xv:Yv:Zv:ResZv:Mult",5,binsRecEventHist,minRecEventHist,maxRecEventHist);
@@ -110,7 +110,7 @@ void AlidNdPtCutAnalysis::Init(){
   fRecEventHist->Sumw2();
 
   //Xv:Yv:Zv
-  Int_t binsMCEventHist[3]={100,100,140};
+  Int_t binsMCEventHist[3]={80,80,100};
   Double_t minMCEventHist[3]={-0.1,-0.1,-35.}; 
   Double_t maxMCEventHist[3]={0.1,0.1,35.}; 
   fMCEventHist = new THnSparseF("fMCEventHist","mcXv:mcYv:mcZv",3,binsMCEventHist,minMCEventHist,maxMCEventHist);
@@ -135,7 +135,7 @@ void AlidNdPtCutAnalysis::Init(){
   //
 
   //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim
-  Int_t binsRecMCTrackHist[10]={160,100,100,100,100,30,90,ptNbins, 2,2};
+  Int_t binsRecMCTrackHist[10]={160,80,80,80,80,30,90,ptNbins, 2,2};
   Double_t minRecMCTrackHist[10]={0., 0., 0., -10.,-10.,-1.5, 0., ptMin, 0., 0.};
   Double_t maxRecMCTrackHist[10]={160.,10.,1.2, 10.,10.,1.5, 2.*TMath::Pi(), ptMax, 2.,2.};
 
@@ -183,9 +183,13 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   if(evtCuts->IsTriggerRequired())  {
-    //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-    //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
-    isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+    if(IsUseMCInfo()) { 
+      static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+      isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+    }
+    else {
+      isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+    }
   }
 
   // use MC information
@@ -283,6 +287,7 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   }
 
   if(allChargedTracks) delete allChargedTracks; allChargedTracks = 0;
+
 }
 
 //_____________________________________________________________________________

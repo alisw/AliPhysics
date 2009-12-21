@@ -861,9 +861,13 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   if(evtCuts->IsTriggerRequired())  {
-    //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-    //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
-    isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+    if(IsUseMCInfo()) { 
+      static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+      isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+    }
+    else {
+      isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+    }
   }
 
   // use MC information
@@ -1518,29 +1522,7 @@ void AlidNdPtAnalysis::Analyse()
 
   char name[256];
   TObjArray *aFolderObj = new TObjArray;
-
-  //
-  // get cuts
-  //
-  AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
-  AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
-  AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
-
-  if(!evtCuts || !accCuts || !esdTrackCuts) {
-    Error("AlidNdPtCutAnalysis::Analyse()", "cuts not available");
-    return;
-  }
-
-  //
-  // set min and max values
-  //
-  Double_t minZv = evtCuts->GetMinZv();
-  Double_t maxZv = evtCuts->GetMaxZv()-0.00001;
-  Double_t minPt = accCuts->GetMinPt();
-  Double_t maxPt = accCuts->GetMaxPt();
-  Double_t minEta = accCuts->GetMinEta();
-  Double_t maxEta = accCuts->GetMaxEta()-0.00001;
-
+ 
   //
   // Reconstructed event vertex
   //
@@ -1780,14 +1762,10 @@ void AlidNdPtAnalysis::Analyse()
   h = AlidNdPtHelper::GenerateCorrMatrix(fGenNDEventMatrix->Projection(0),fTriggerEventMatrix->Projection(0),"zv_trig_MBtoND_corr_matrix");
   aFolderObj->Add(h);
 
-  fGenNDEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
-  fTriggerEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fGenNDEventMatrix->Projection(1),fTriggerEventMatrix->Projection(1),"mult_trig_MBtoND_corr_matrix");
 
   aFolderObj->Add(h);
-  fGenNDEventMatrix->GetAxis(0)->SetRange(1,fGenNDEventMatrix->GetAxis(0)->GetNbins());
-  fTriggerEventMatrix->GetAxis(0)->SetRange(1,fTriggerEventMatrix->GetAxis(0)->GetNbins());
 
   //
   // trigger bias correction (MB to NSD)
@@ -1801,14 +1779,10 @@ void AlidNdPtAnalysis::Analyse()
   h = AlidNdPtHelper::GenerateCorrMatrix(fGenNSDEventMatrix->Projection(0),fTriggerEventMatrix->Projection(0),"zv_trig_MBtoNSD_corr_matrix");
   aFolderObj->Add(h);
 
-  fGenNSDEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
-  fTriggerEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fGenNSDEventMatrix->Projection(1),fTriggerEventMatrix->Projection(1),"mult_trig_MBtoNSD_corr_matrix");
   aFolderObj->Add(h);
 
-  fGenNSDEventMatrix->GetAxis(0)->SetRange(1,fGenNSDEventMatrix->GetAxis(0)->GetNbins());
-  fTriggerEventMatrix->GetAxis(0)->SetRange(1,fTriggerEventMatrix->GetAxis(0)->GetNbins());
 
   //
   // trigger bias correction (MB to INEL)
@@ -1822,14 +1796,10 @@ void AlidNdPtAnalysis::Analyse()
   h2D = AlidNdPtHelper::GenerateCorrMatrix(fGenEventMatrix->Projection(0,1),fTriggerEventMatrix->Projection(0,1),"zv_mult_trig_MBtoInel_corr_matrix_2D");
   aFolderObj->Add(h2D);
 
-  fGenEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
-  fTriggerEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fGenEventMatrix->Projection(1),fTriggerEventMatrix->Projection(1),"mult_trig_MBtoInel_corr_matrix");
   aFolderObj->Add(h);
 
-  fGenEventMatrix->GetAxis(0)->SetRange(1,fGenEventMatrix->GetAxis(0)->GetNbins());
-  fTriggerEventMatrix->GetAxis(0)->SetRange(1,fTriggerEventMatrix->GetAxis(0)->GetNbins());
 
   //
   // event vertex reconstruction correction (MB)
@@ -1840,14 +1810,10 @@ void AlidNdPtAnalysis::Analyse()
   h2D = AlidNdPtHelper::GenerateCorrMatrix(fTriggerEventMatrix->Projection(0,1),fRecEventMatrix->Projection(0,1),"zv_mult_event_corr_matrix_2D");
   aFolderObj->Add(h2D);
 
-  fTriggerEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
-  fRecEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fTriggerEventMatrix->Projection(1),fRecEventMatrix->Projection(1),"mult_event_corr_matrix");
   aFolderObj->Add(h);
 
-  fTriggerEventMatrix->GetAxis(0)->SetRange(1,fTriggerEventMatrix->GetAxis(0)->GetNbins());
-  fRecEventMatrix->GetAxis(0)->SetRange(1,fRecEventMatrix->GetAxis(0)->GetNbins());
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fTriggerEventMatrix->Projection(0),fRecEventMatrix->Projection(0),"zv_event_corr_matrix");
   aFolderObj->Add(h);
@@ -1900,18 +1866,9 @@ void AlidNdPtAnalysis::Analyse()
   aFolderObj->Add(h2D);
 
   // efficiency
-  fTriggerTrackEventMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fGenTrackEventMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fTriggerTrackEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
-  fGenTrackEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fTriggerTrackEventMatrix->Projection(1),fGenTrackEventMatrix->Projection(1),"pt_track_trig_MBtoInel_eff_matrix");
   aFolderObj->Add(h);
-
-  fTriggerTrackEventMatrix->GetAxis(2)->SetRange(1,fTriggerTrackEventMatrix->GetAxis(2)->GetNbins());
-  fGenTrackEventMatrix->GetAxis(2)->SetRange(1,fGenTrackEventMatrix->GetAxis(2)->GetNbins());
-  fTriggerTrackEventMatrix->GetAxis(0)->SetRange(1,fTriggerTrackEventMatrix->GetAxis(0)->GetNbins());
-  fGenTrackEventMatrix->GetAxis(0)->SetRange(1,fGenTrackEventMatrix->GetAxis(0)->GetNbins());
 
 
   //
@@ -1930,18 +1887,10 @@ void AlidNdPtAnalysis::Analyse()
   aFolderObj->Add(h2D);
   
   // efficiency
-  fTriggerTrackEventMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fRecTrackEventMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fTriggerTrackEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
-  fRecTrackEventMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fRecTrackEventMatrix->Projection(1),fTriggerTrackEventMatrix->Projection(1),"pt_track_event_eff_matrix");
   aFolderObj->Add(h);
 
-  fTriggerTrackEventMatrix->GetAxis(2)->SetRange(1,fTriggerTrackEventMatrix->GetAxis(2)->GetNbins());
-  fRecTrackEventMatrix->GetAxis(2)->SetRange(1,fRecTrackEventMatrix->GetAxis(2)->GetNbins());
-  fTriggerTrackEventMatrix->GetAxis(0)->SetRange(1,fTriggerTrackEventMatrix->GetAxis(0)->GetNbins());
-  fRecTrackEventMatrix->GetAxis(0)->SetRange(1,fRecTrackEventMatrix->GetAxis(0)->GetNbins());
 
   //
   // track rec. efficiency correction
@@ -1958,18 +1907,9 @@ void AlidNdPtAnalysis::Analyse()
   h2D = AlidNdPtHelper::GenerateCorrMatrix(fGenPrimTrackMatrix->Projection(2,0),fRecPrimTrackMatrix->Projection(2,0),"zv_eta_track_corr_matrix");
   aFolderObj->Add(h2D);
 
-  fGenPrimTrackMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fRecPrimTrackMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fGenPrimTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-  fRecPrimTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
   
   h = AlidNdPtHelper::GenerateCorrMatrix(fGenPrimTrackMatrix->Projection(0),fRecPrimTrackMatrix->Projection(0),"zv_track_corr_matrix");
   aFolderObj->Add(h);
-
-  fGenPrimTrackMatrix->GetAxis(1)->SetRange(1,fGenPrimTrackMatrix->GetAxis(1)->GetNbins());
-  fRecPrimTrackMatrix->GetAxis(1)->SetRange(1,fRecPrimTrackMatrix->GetAxis(1)->GetNbins());
-  fGenPrimTrackMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
-  fRecPrimTrackMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fGenPrimTrackMatrix->Projection(1),fRecPrimTrackMatrix->Projection(1),"pt_track_corr_matrix");
   aFolderObj->Add(h);
@@ -1978,18 +1918,8 @@ void AlidNdPtAnalysis::Analyse()
   h = AlidNdPtHelper::GenerateCorrMatrix(fRecPrimTrackMatrix->Projection(1), fGenPrimTrackMatrix->Projection(1),"pt_track_eff_matrix");
   aFolderObj->Add(h);
 
-  fGenPrimTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-  fRecPrimTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-  fGenPrimTrackMatrix->GetAxis(2)->SetRange(1,fGenPrimTrackMatrix->GetAxis(2)->GetNbins());
-  fRecPrimTrackMatrix->GetAxis(2)->SetRange(1,fRecPrimTrackMatrix->GetAxis(2)->GetNbins());
-
   h = AlidNdPtHelper::GenerateCorrMatrix(fGenPrimTrackMatrix->Projection(2),fRecPrimTrackMatrix->Projection(2),"eta_track_corr_matrix");
   aFolderObj->Add(h);
-
-  fGenPrimTrackMatrix->GetAxis(1)->SetRange(1,fGenPrimTrackMatrix->GetAxis(1)->GetNbins());
-  fRecPrimTrackMatrix->GetAxis(1)->SetRange(1,fRecPrimTrackMatrix->GetAxis(1)->GetNbins());
-  fGenPrimTrackMatrix->GetAxis(0)->SetRange(1,fGenPrimTrackMatrix->GetAxis(0)->GetNbins());
-  fRecPrimTrackMatrix->GetAxis(0)->SetRange(1,fRecPrimTrackMatrix->GetAxis(0)->GetNbins());
 
   //
   // secondary track contamination correction
@@ -2007,35 +1937,14 @@ void AlidNdPtAnalysis::Analyse()
   h2D = AlidNdPtHelper::GenerateCorrMatrix(fRecSecTrackMatrix->Projection(2,0),fRecTrackMatrix->Projection(2,0),"zv_eta_track_cont_matrix");
   aFolderObj->Add(h2D);
 
-  fRecSecTrackMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fRecTrackMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fRecSecTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-  fRecTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-  
   h = AlidNdPtHelper::GenerateCorrMatrix(fRecSecTrackMatrix->Projection(0),fRecTrackMatrix->Projection(0),"zv_track_cont_matrix");
   aFolderObj->Add(h);
-
-  fRecSecTrackMatrix->GetAxis(1)->SetRange(1,fRecSecTrackMatrix->GetAxis(1)->GetNbins());
-  fRecTrackMatrix->GetAxis(1)->SetRange(1,fRecTrackMatrix->GetAxis(1)->GetNbins());
-  fRecSecTrackMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
-  fRecTrackMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fRecSecTrackMatrix->Projection(1),fRecTrackMatrix->Projection(1),"pt_track_cont_matrix");
   aFolderObj->Add(h);
 
-  fRecSecTrackMatrix->GetAxis(2)->SetRange(1,fRecSecTrackMatrix->GetAxis(2)->GetNbins());
-  fRecTrackMatrix->GetAxis(2)->SetRange(1,fRecTrackMatrix->GetAxis(2)->GetNbins());
-
-  fRecSecTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-  fRecTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-
   h = AlidNdPtHelper::GenerateCorrMatrix(fRecSecTrackMatrix->Projection(2),fRecTrackMatrix->Projection(2),"eta_track_cont_matrix");
   aFolderObj->Add(h);
-
-  fRecSecTrackMatrix->GetAxis(0)->SetRange(1,fRecSecTrackMatrix->GetAxis(0)->GetNbins());
-  fRecTrackMatrix->GetAxis(0)->SetRange(1,fRecTrackMatrix->GetAxis(0)->GetNbins());
-  fRecSecTrackMatrix->GetAxis(1)->SetRange(1,fRecSecTrackMatrix->GetAxis(1)->GetNbins());
-  fRecTrackMatrix->GetAxis(1)->SetRange(1,fRecTrackMatrix->GetAxis(1)->GetNbins());
 
   //
   // multiple track reconstruction correction
@@ -2053,36 +1962,14 @@ void AlidNdPtAnalysis::Analyse()
   h2D = AlidNdPtHelper::GenerateCorrMatrix(fRecMultTrackMatrix->Projection(2,0),fRecTrackMatrix->Projection(2,0),"zv_eta_mult_track_cont_matrix");
   aFolderObj->Add(h2D);
 
-  fRecMultTrackMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fRecTrackMatrix->GetAxis(2)->SetRangeUser(minEta,maxEta);
-  fRecMultTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-  fRecTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-  
   h = AlidNdPtHelper::GenerateCorrMatrix(fRecMultTrackMatrix->Projection(0),fRecTrackMatrix->Projection(0),"zv_mult_track_cont_matrix");
   aFolderObj->Add(h);
-
-  fRecMultTrackMatrix->GetAxis(1)->SetRangeUser(0.,maxPt);
-  fRecTrackMatrix->GetAxis(1)->SetRangeUser(0.,maxPt);
-  fRecMultTrackMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
-  fRecTrackMatrix->GetAxis(0)->SetRangeUser(minZv,maxZv);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fRecMultTrackMatrix->Projection(1),fRecTrackMatrix->Projection(1),"pt_mult_track_cont_matrix");
   aFolderObj->Add(h);
 
-  fRecMultTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-  fRecTrackMatrix->GetAxis(1)->SetRangeUser(minPt,maxPt);
-
-  fRecMultTrackMatrix->GetAxis(2)->SetRange(1,fRecMultTrackMatrix->GetAxis(2)->GetNbins());
-  fRecTrackMatrix->GetAxis(2)->SetRange(1,fRecTrackMatrix->GetAxis(2)->GetNbins());
-
   h = AlidNdPtHelper::GenerateCorrMatrix(fRecMultTrackMatrix->Projection(2),fRecTrackMatrix->Projection(2),"eta_mult_track_cont_matrix");
   aFolderObj->Add(h);
-
-  fRecMultTrackMatrix->GetAxis(1)->SetRangeUser(0.,maxPt);
-  fRecTrackMatrix->GetAxis(1)->SetRangeUser(0.,maxPt);
-
-  fRecMultTrackMatrix->GetAxis(0)->SetRange(1,fRecMultTrackMatrix->GetAxis(0)->GetNbins());
-  fRecTrackMatrix->GetAxis(0)->SetRange(1,fRecTrackMatrix->GetAxis(0)->GetNbins());
 
   //
   // Control histograms
@@ -2091,9 +1978,6 @@ void AlidNdPtAnalysis::Analyse()
   if(fHistogramsOn) {
 
   // Efficiency electrons, muons, pions, kaons, protons, all
-  fMCPrimTrackHist1[1]->GetAxis(1)->SetRangeUser(minEta,maxEta); 
-  fMCPrimTrackHist1[2]->GetAxis(1)->SetRangeUser(minEta,maxEta);
-
   fMCPrimTrackHist1[1]->GetAxis(2)->SetRange(1,1); 
   fMCPrimTrackHist1[2]->GetAxis(2)->SetRange(1,1); 
   h1 = fMCPrimTrackHist1[1]->Projection(0);
@@ -2327,7 +2211,6 @@ void AlidNdPtAnalysis::Analyse()
   
   // 
   fRecMCTrackHist1->GetAxis(1)->SetRange(1,fRecMCTrackHist1->GetAxis(1)->GetNbins()); 
-  fRecMCTrackHist1->GetAxis(0)->SetRangeUser(minPt,maxPt); 
 
   h2F = (TH2F*)fRecMCTrackHist1->Projection(2,1);
   h = AlidNdPtHelper::MakeResol(h2F,1,0,kTRUE,10);
