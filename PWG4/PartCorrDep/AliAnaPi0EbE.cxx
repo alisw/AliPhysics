@@ -119,9 +119,9 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("Pi0EbEHistos") ; 
   
-  Int_t nptbins  = GetHistoNPtBins();
-  Int_t nphibins = GetHistoNPhiBins();
-  Int_t netabins = GetHistoNEtaBins();
+  Int_t nptbins  = GetHistoPtBins();
+  Int_t nphibins = GetHistoPhiBins();
+  Int_t netabins = GetHistoEtaBins();
   Float_t ptmax  = GetHistoPtMax();
   Float_t phimax = GetHistoPhiMax();
   Float_t etamax = GetHistoEtaMax();

@@ -52,8 +52,8 @@ ClassImp(AliAnaPi0)
 AliAnaPi0::AliAnaPi0() : AliAnaPartCorrBaseClass(),
 fNCentrBin(0),fNZvertBin(0),fNrpBin(0),
 fNPID(0),fNmaxMixEv(0), fZvtxCut(0.),fCalorimeter(""),
-fNModules(12), fEventsList(0x0), fhEtalon(0x0), fhReMod(0x0),
-fhRe1(0x0),fhMi1(0x0),fhRe2(0x0),fhMi2(0x0),fhRe3(0x0),fhMi3(0x0),fhEvents(0x0),
+fNModules(12), fEventsList(0x0), //fhEtalon(0x0), 
+fhReMod(0x0), fhRe1(0x0),fhMi1(0x0),fhRe2(0x0),fhMi2(0x0),fhRe3(0x0),fhMi3(0x0),fhEvents(0x0),
 fhPrimPt(0x0), fhPrimAccPt(0x0), fhPrimY(0x0), fhPrimAccY(0x0), fhPrimPhi(0x0), fhPrimAccPhi(0x0)
 {
 //Default Ctor
@@ -65,8 +65,9 @@ fhPrimPt(0x0), fhPrimAccPt(0x0), fhPrimY(0x0), fhPrimAccY(0x0), fhPrimPhi(0x0), 
 AliAnaPi0::AliAnaPi0(const AliAnaPi0 & ex) : AliAnaPartCorrBaseClass(ex),  
 fNCentrBin(ex.fNCentrBin),fNZvertBin(ex.fNZvertBin),fNrpBin(ex.fNrpBin),
 fNPID(ex.fNPID),fNmaxMixEv(ex.fNmaxMixEv),fZvtxCut(ex.fZvtxCut), fCalorimeter(ex.fCalorimeter),
-fNModules(ex.fNModules), fEventsList(ex.fEventsList), fhEtalon(ex.fhEtalon), fhReMod(ex.fhReMod),
-fhRe1(ex.fhRe1),fhMi1(ex.fhMi1),fhRe2(ex.fhRe2),fhMi2(ex.fhMi2),fhRe3(ex.fhRe3),fhMi3(ex.fhMi3),fhEvents(ex.fhEvents),
+fNModules(ex.fNModules), fEventsList(ex.fEventsList), //fhEtalon(ex.fhEtalon), 
+fhReMod(ex.fhReMod), fhRe1(ex.fhRe1),fhMi1(ex.fhMi1),fhRe2(ex.fhRe2),fhMi2(ex.fhMi2),
+fhRe3(ex.fhRe3),fhMi3(ex.fhMi3),fhEvents(ex.fhEvents),
 fhPrimPt(ex.fhPrimPt), fhPrimAccPt(ex.fhPrimAccPt), fhPrimY(ex.fhPrimY), 
 fhPrimAccY(ex.fhPrimAccY), fhPrimPhi(ex.fhPrimPhi), fhPrimAccPhi(ex.fhPrimAccPhi)
 {
@@ -84,7 +85,7 @@ AliAnaPi0 & AliAnaPi0::operator = (const AliAnaPi0 & ex)
   
   fNCentrBin = ex.fNCentrBin  ; fNZvertBin = ex.fNZvertBin  ; fNrpBin = ex.fNrpBin  ; 
   fNPID = ex.fNPID  ; fNmaxMixEv = ex.fNmaxMixEv  ; fZvtxCut = ex.fZvtxCut  ;  fCalorimeter = ex.fCalorimeter  ;  
- fNModules = ex.fNModules; fEventsList = ex.fEventsList  ;  fhEtalon = ex.fhEtalon  ; 
+ fNModules = ex.fNModules; fEventsList = ex.fEventsList  ;  //fhEtalon = ex.fhEtalon  ; 
   fhRe1 = ex.fhRe1  ; fhMi1 = ex.fhMi1  ; fhRe2 = ex.fhRe2  ; fhMi2 = ex.fhMi2  ; fhReMod = ex.fhReMod; 
   fhRe3 = ex.fhRe3  ; fhMi3 = ex.fhMi3  ; fhEvents = ex.fhEvents  ; 
   fhPrimPt = ex.fhPrimPt  ;  fhPrimAccPt = ex.fhPrimAccPt  ;  fhPrimY = ex.fhPrimY  ;  
@@ -130,19 +131,19 @@ void AliAnaPi0::InitParameters()
   fCalorimeter  = "PHOS";
 }
 //________________________________________________________________________________________________________________________________________________
-void AliAnaPi0::Init()
-{  
+//void AliAnaPi0::Init()
+//{  
   //Init some data members needed in analysis
   
   //Histograms binning and range
-  if(!fhEtalon){                                                   //  p_T      alpha   d m_gg    
-    fhEtalon = new TH3D("hEtalon","Histo with binning parameters",50,0.,25.,10,0.,1.,200,0.,1.) ; 
-    fhEtalon->SetXTitle("P_{T} (GeV)") ;
-    fhEtalon->SetYTitle("#alpha") ;
-    fhEtalon->SetZTitle("m_{#gamma#gamma} (GeV)") ;
-  }
+ // if(!fhEtalon){                                                   //  p_T      alpha   d m_gg    
+ //   fhEtalon = new TH3D("hEtalon","Histo with binning parameters",50,0.,25.,10,0.,1.,200,0.,1.) ; 
+ //   fhEtalon->SetXTitle("P_{T} (GeV)") ;
+ //   fhEtalon->SetYTitle("#alpha") ;
+ //   fhEtalon->SetZTitle("m_{#gamma#gamma} (GeV)") ;
+ // }
   
-}
+//}
 
 //________________________________________________________________________________________________________________________________________________
 TList * AliAnaPi0::GetCreateOutputObjects()
@@ -185,7 +186,23 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   char key[255] ;
   char title[255] ;
-  	
+  Int_t nptbins   = GetHistoPtBins();
+  Int_t nphibins  = GetHistoPhiBins();
+  Int_t netabins  = GetHistoEtaBins();
+  Float_t ptmax   = GetHistoPtMax();
+  Float_t phimax  = GetHistoPhiMax();
+  Float_t etamax  = GetHistoEtaMax();
+  Float_t ptmin   = GetHistoPtMin();
+  Float_t phimin  = GetHistoPhiMin();
+  Float_t etamin  = GetHistoEtaMin();	
+	
+  Int_t nmassbins = GetHistoMassBins();
+  Int_t nasymbins = GetHistoAsymmetryBins();
+  Float_t massmax = GetHistoMassMax();
+  Float_t asymmax = GetHistoAsymmetryMax();
+  Float_t massmin = GetHistoMassMin();
+  Float_t asymmin = GetHistoAsymmetryMin();
+	
   for(Int_t ic=0; ic<fNCentrBin; ic++){
     for(Int_t ipid=0; ipid<fNPID; ipid++){
 		
@@ -193,47 +210,53 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       sprintf(key,"hRe_cen%d_pid%d_dist1",ic,ipid) ;
       sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
       
-      fhEtalon->Clone(key);
-      fhRe1[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-      fhRe1[ic*fNPID+ipid]->SetName(key) ;
-      fhRe1[ic*fNPID+ipid]->SetTitle(title) ;
+      //fhEtalon->Clone(key);
+      //fhRe1[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      //fhRe1[ic*fNPID+ipid]->SetName(key) ;
+      //fhRe1[ic*fNPID+ipid]->SetTitle(title) ;
+	  fhRe1[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhRe1[ic*fNPID+ipid]) ;
       
       sprintf(key,"hMi_cen%d_pid%d_dist1",ic,ipid) ;
       sprintf(title,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-      fhMi1[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-      fhMi1[ic*fNPID+ipid]->SetName(key) ;
-      fhMi1[ic*fNPID+ipid]->SetTitle(title) ;
+      //fhMi1[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      //fhMi1[ic*fNPID+ipid]->SetName(key) ;
+      //fhMi1[ic*fNPID+ipid]->SetTitle(title) ;
+	  fhMi1[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhMi1[ic*fNPID+ipid]) ;
       
       //Distance to bad module 2
       sprintf(key,"hRe_cen%d_pid%d_dist2",ic,ipid) ;
       sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-      fhRe2[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-      fhRe2[ic*fNPID+ipid]->SetName(key) ;
-      fhRe2[ic*fNPID+ipid]->SetTitle(title) ;
+      //fhRe2[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      //fhRe2[ic*fNPID+ipid]->SetName(key) ;
+      //fhRe2[ic*fNPID+ipid]->SetTitle(title) ;
+	  fhRe2[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhRe2[ic*fNPID+ipid]) ;
       
       sprintf(key,"hMi_cen%d_pid%d_dist2",ic,ipid) ;
       sprintf(title,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-      fhMi2[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-      fhMi2[ic*fNPID+ipid]->SetName(key) ;
-      fhMi2[ic*fNPID+ipid]->SetTitle(title) ;
+      //fhMi2[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      //fhMi2[ic*fNPID+ipid]->SetName(key) ;
+      //fhMi2[ic*fNPID+ipid]->SetTitle(title) ;
+	  fhMi2[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhMi2[ic*fNPID+ipid]) ;
       
       //Distance to bad module 3
       sprintf(key,"hRe_cen%d_pid%d_dist3",ic,ipid) ;
       sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-      fhRe3[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-      fhRe3[ic*fNPID+ipid]->SetName(key) ; 
-      fhRe3[ic*fNPID+ipid]->SetTitle(title) ;
+      //fhRe3[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      //fhRe3[ic*fNPID+ipid]->SetName(key) ; 
+      //fhRe3[ic*fNPID+ipid]->SetTitle(title) ;
+	  fhRe3[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhRe3[ic*fNPID+ipid]) ;
       
       sprintf(key,"hMi_cen%d_pid%d_dist3",ic,ipid) ;
       sprintf(title,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-      fhMi3[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-      fhMi3[ic*fNPID+ipid]->SetName(key) ;
-      fhMi3[ic*fNPID+ipid]->SetTitle(title) ;
+      //fhMi3[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      //fhMi3[ic*fNPID+ipid]->SetName(key) ;
+      //fhMi3[ic*fNPID+ipid]->SetTitle(title) ;
+	  fhMi3[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhMi3[ic*fNPID+ipid]) ;
     }
   }
@@ -245,29 +268,32 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   //Histograms filled only if MC data is requested 	
   if(IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC) ){
-    if(fhEtalon->GetXaxis()->GetXbins() && fhEtalon->GetXaxis()->GetXbins()->GetSize()){ //Variable bin size
-      fhPrimPt = new TH1D("hPrimPt","Primary pi0 pt",fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXbins()->GetArray()) ;
-      fhPrimAccPt = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",fhEtalon->GetXaxis()->GetNbins(),
-			     fhEtalon->GetXaxis()->GetXbins()->GetArray()) ;
-    }
-    else{
-      fhPrimPt = new TH1D("hPrimPt","Primary pi0 pt",fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXmin(),fhEtalon->GetXaxis()->GetXmax()) ;
-      fhPrimAccPt = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",
-			     fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXmin(),fhEtalon->GetXaxis()->GetXmax()) ;
-    }
+   // if(fhEtalon->GetXaxis()->GetXbins() && fhEtalon->GetXaxis()->GetXbins()->GetSize()){ //Variable bin size
+   //   fhPrimPt = new TH1D("hPrimPt","Primary pi0 pt",fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXbins()->GetArray()) ;
+   //   fhPrimAccPt = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",fhEtalon->GetXaxis()->GetNbins(),
+	//		     fhEtalon->GetXaxis()->GetXbins()->GetArray()) ;
+   // }
+   // else{
+   //   fhPrimPt = new TH1D("hPrimPt","Primary pi0 pt",fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXmin(),fhEtalon->GetXaxis()->GetXmax()) ;
+   //   fhPrimAccPt = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",
+	//		     fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXmin(),fhEtalon->GetXaxis()->GetXmax()) ;
+   // }
+
+	fhPrimPt     = new TH1D("hPrimPt","Primary pi0 pt",nptbins,ptmin,ptmax) ;
+    fhPrimAccPt  = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",nptbins,ptmin,ptmax) ;
     outputContainer->Add(fhPrimPt) ;
     outputContainer->Add(fhPrimAccPt) ;
     
-    fhPrimY = new TH1D("hPrimaryRapidity","Rapidity of primary pi0",100,-5.,5.) ; 
+    fhPrimY      = new TH1D("hPrimaryRapidity","Rapidity of primary pi0",netabins,etamin,etamax) ; 
     outputContainer->Add(fhPrimY) ;
     
-    fhPrimAccY = new TH1D("hPrimAccRapidity","Rapidity of primary pi0",100,-5.,5.) ; 
+    fhPrimAccY   = new TH1D("hPrimAccRapidity","Rapidity of primary pi0",netabins,etamin,etamax) ; 
     outputContainer->Add(fhPrimAccY) ;
     
-    fhPrimPhi = new TH1D("hPrimaryPhi","Azimithal of primary pi0",180,0.,360.) ; 
+	fhPrimPhi    = new TH1D("hPrimaryPhi","Azimithal of primary pi0",nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
     outputContainer->Add(fhPrimPhi) ;
     
-    fhPrimAccPhi = new TH1D("hPrimAccPhi","Azimithal of primary pi0 with accepted daughters",180,-0.,360.) ; 
+    fhPrimAccPhi = new TH1D("hPrimAccPhi","Azimithal of primary pi0 with accepted daughters",nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
     outputContainer->Add(fhPrimAccPhi) ;
   }
 
@@ -275,10 +301,11 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 	//Module dependent invariant mass
 	sprintf(key,"hReMod_%d",imod) ;
 	sprintf(title,"Real m_{#gamma#gamma} distr. for Module %d",imod) ;
-	fhEtalon->Clone(key);
-	fhReMod[imod]=(TH3D*)fhEtalon->Clone(key) ;
-	fhReMod[imod]->SetName(key) ;
-	fhReMod[imod]->SetTitle(title) ;
+	//fhEtalon->Clone(key);
+	//fhReMod[imod]=(TH3D*)fhEtalon->Clone(key) ;
+	//fhReMod[imod]->SetName(key) ;
+	//fhReMod[imod]->SetTitle(title) ;
+	fhReMod[imod]  = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
 	outputContainer->Add(fhReMod[imod]) ;
   }
 	

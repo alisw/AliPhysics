@@ -50,9 +50,11 @@ ClassImp(AliAnaPartCorrBaseClass)
     fAODObjArrayName(""), fAddToHistogramsName(""),
     fAODCaloCells(0x0),//fAODCaloClusters(0x0),  
     fCaloPID(0x0), fFidCut(0x0), fIC(0x0),fMCUtils(0x0), fNMS(0x0),
-    fHistoNPtBins(0),  fHistoPtMax(0.),  fHistoPtMin(0.),
-    fHistoNPhiBins(0), fHistoPhiMax(0.), fHistoPhiMin(0.),
-    fHistoNEtaBins(0), fHistoEtaMax(0.), fHistoEtaMin(0.)
+    fHistoPtBins(0),   fHistoPtMax(0.),   fHistoPtMin(0.),
+    fHistoPhiBins(0),  fHistoPhiMax(0.),  fHistoPhiMin(0.),
+    fHistoEtaBins(0),  fHistoEtaMax(0.),  fHistoEtaMin(0.),
+    fHistoMassBins(0), fHistoMassMax(0.), fHistoMassMin(0.),
+	fHistoAsymBins(0), fHistoAsymMax(0.), fHistoAsymMin(0.)
 {
   //Default Ctor
   
@@ -80,9 +82,11 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   //fAODCaloClusters(new TClonesArray(*abc.fAODCaloClusters)),
   fAODCaloCells(new AliAODCaloCells(*abc.fAODCaloCells)),
   fCaloPID(abc.fCaloPID), fFidCut(abc.fFidCut), fIC(abc.fIC),fMCUtils(abc.fMCUtils), fNMS(abc.fNMS),
-  fHistoNPtBins(abc.fHistoNPtBins),   fHistoPtMax(abc.fHistoPtMax),   fHistoPtMin(abc.fHistoPtMin),
-  fHistoNPhiBins(abc.fHistoNPhiBins), fHistoPhiMax(abc.fHistoPhiMax), fHistoPhiMin(abc.fHistoPhiMin),
-  fHistoNEtaBins(abc.fHistoNEtaBins), fHistoEtaMax(abc.fHistoEtaMax), fHistoEtaMin(abc.fHistoEtaMin)
+  fHistoPtBins(abc.fHistoPtBins),     fHistoPtMax(abc.fHistoPtMax),     fHistoPtMin(abc.fHistoPtMin),
+  fHistoPhiBins(abc.fHistoPhiBins),   fHistoPhiMax(abc.fHistoPhiMax),   fHistoPhiMin(abc.fHistoPhiMin),
+  fHistoEtaBins(abc.fHistoEtaBins),   fHistoEtaMax(abc.fHistoEtaMax),   fHistoEtaMin(abc.fHistoEtaMin),
+  fHistoMassBins(abc.fHistoMassBins), fHistoMassMax(abc.fHistoMassMax), fHistoMassMin(abc.fHistoMassMin),
+  fHistoAsymBins(abc.fHistoAsymBins), fHistoAsymMax(abc.fHistoAsymMax), fHistoAsymMin(abc.fHistoAsymMin)
 {
   // cpy ctor
   
@@ -123,9 +127,9 @@ AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartC
   fAddToHistogramsName = abc.fAddToHistogramsName;
   fAODObjArrayName     = abc.fAODObjArrayName;
 
-  fHistoNPtBins  = abc.fHistoNPtBins;  fHistoPtMax  = abc.fHistoPtMax;  fHistoPtMin  = abc.fHistoPtMin;
-  fHistoNPhiBins = abc.fHistoNPhiBins; fHistoPhiMax = abc.fHistoPhiMax; fHistoPhiMin = abc.fHistoPhiMin;
-  fHistoNEtaBins = abc.fHistoNEtaBins; fHistoEtaMax = abc.fHistoEtaMax; fHistoEtaMin = abc.fHistoEtaMin;
+  fHistoPtBins  = abc.fHistoPtBins;  fHistoPtMax  = abc.fHistoPtMax;  fHistoPtMin  = abc.fHistoPtMin;
+  fHistoPhiBins = abc.fHistoPhiBins; fHistoPhiMax = abc.fHistoPhiMax; fHistoPhiMin = abc.fHistoPhiMin;
+  fHistoEtaBins = abc.fHistoEtaBins; fHistoEtaMax = abc.fHistoEtaMax; fHistoEtaMin = abc.fHistoEtaMin;
   
   return *this;
   
@@ -437,19 +441,27 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fAddToHistogramsName = "";
   fAODObjArrayName="Ref";
 	  
-  //Histogrammes settings
-  fHistoNPtBins = 240 ;
-  fHistoPtMax   = 120 ;
-  fHistoPtMin   = 0.  ;
+  //Histogram settings
+  fHistoPtBins    = 240 ;
+  fHistoPtMax     = 120 ;
+  fHistoPtMin     = 0.  ;
 
-  fHistoNPhiBins = 120 ;
-  fHistoPhiMax   = TMath::TwoPi();
-  fHistoPhiMin   = 0.  ;
+  fHistoPhiBins   = 120 ;
+  fHistoPhiMax    = TMath::TwoPi();
+  fHistoPhiMin    = 0.  ;
 
-  fHistoNEtaBins = 100 ;
-  fHistoEtaMax   =  1  ;
-  fHistoEtaMin   = -1  ;
+  fHistoEtaBins   = 100 ;
+  fHistoEtaMax    =  1  ;
+  fHistoEtaMin    = -1  ;
 
+  fHistoMassBins  = 200;
+  fHistoMassMax   = 1. ;
+  fHistoMassMin   = 0. ;
+	
+  fHistoAsymBins  = 10 ;
+  fHistoAsymMax   = 1. ;
+  fHistoAsymMin   = 0. ;
+	
 }
 
 //__________________________________________________________________
@@ -471,9 +483,11 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   printf("Check Fiducial cut  =     %d\n",     fCheckFidCut) ;
   printf("Check MC labels     =     %d\n",     fDataMC);
   printf("Debug Level         =     %d\n",     fDebug);
-  printf("Histograms: %3.1f < pT < %3.1f,  Nbin = %d\n", fHistoPtMin,  fHistoPtMax,  fHistoNPtBins);
-  printf("Histograms: %3.1f < phi < %3.1f, Nbin = %d\n", fHistoPhiMin, fHistoPhiMax, fHistoNPhiBins);
-  printf("Histograms: %3.1f < eta < %3.1f, Nbin = %d\n", fHistoEtaMin, fHistoEtaMax, fHistoNEtaBins);
+  printf("Histograms: %3.1f < pT  < %3.1f,  Nbin = %d\n", fHistoPtMin,  fHistoPtMax,  fHistoPtBins);
+  printf("Histograms: %3.1f < phi < %3.1f, Nbin = %d\n", fHistoPhiMin, fHistoPhiMax, fHistoPhiBins);
+  printf("Histograms: %3.1f < eta < %3.1f, Nbin = %d\n", fHistoEtaMin, fHistoEtaMax, fHistoEtaBins);
+  printf("Histograms: %3.1f < mass < %3.1f, Nbin = %d\n", fHistoMassMin, fHistoMassMax, fHistoMassBins);
+  printf("Histograms: %3.1f < asymmetry < %3.1f, Nbin = %d\n", fHistoAsymMin, fHistoAsymMax, fHistoAsymBins);
   printf("Name of reference array      : %s\n", fAODObjArrayName.Data());	
   printf("String added histograms name : %s\n",fAddToHistogramsName.Data());
 	

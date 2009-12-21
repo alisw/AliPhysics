@@ -1,4 +1,4 @@
-AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kUseKinematics = kFALSE, Bool_t kPrintSettings = kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kUseKinematics = kFALSE, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE)
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
   
@@ -28,7 +28,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   if(data=="AOD")      reader = new AliCaloTrackAODReader();
   else if(data=="ESD") reader = new AliCaloTrackESDReader();
   //reader->SetDebug(10);//10 for lots of messages
-   if(kPrintSettings) reader->Print("");
   
   if(kUseKinematics){
 		if(inputDataType == "ESD"){
@@ -40,9 +39,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
 			reader->SwitchOnAODMCParticles(); 
 		}
    }
-	
+   if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
    reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
-
+   if(kPrintSettings) reader->Print("");
 	
   // ##### Analysis algorithm settings ####
    //Only needed now for MC data
@@ -59,16 +58,27 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   emcalQA->AddToHistogramsName("EMCAL_"); //Begining of histograms name
   //emcalQA->SetFiducialCut(fidCut);
   emcalQA->SwitchOffFiducialCut();
-  if(kPrintSettings) emcalQA->Print("");	
-  emcalQA->SwitchOnPlotsMaking();
+  emcalQA->SwitchOffPlotsMaking();
   emcalQA->SwitchOnCalorimetersCorrelation();
   //Set Histrograms bins and ranges
   emcalQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
   emcalQA->SetHistoPhiRangeAndNBins(75*TMath::DegToRad(), 125*TMath::DegToRad(), 100) ;
   emcalQA->SetHistoEtaRangeAndNBins(-0.8, 0.8, 160) ;
   emcalQA->SetNumberOfModules(4); //EMCAL first year
+  emcalQA->SetHistoMassRangeAndNBins(0., 0.5, 500) ;
+  emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 5) ;
+  emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
+  emcalQA->SetHistodEdxRangeAndNBins(0.,400.,200);
+  emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),300);
+  emcalQA->SetHistoTimeRangeAndNBins(0.,1000,1000);
+  emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
+  emcalQA->SetHistoVertexDistRangeAndNBins(0.,500.,100);
+  emcalQA->SetHistoNClusterCellRangeAndNBins(0,300,300);
+	
   //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
 	
+  if(kPrintSettings) emcalQA->Print("");	
+
    AliAnaCalorimeterQA *phosQA = new AliAnaCalorimeterQA();
    //phosQA->SetDebug(2); //10 for lots of messages
    phosQA->SetCalorimeter("PHOS");
@@ -79,14 +89,22 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
    phosQA->SwitchOffFiducialCut();
    if(kPrintSettings)phosQA->Print("");	
    //phosQA->GetMCAnalysisUtils()->SetDebug(10);
-   phosQA->SwitchOnPlotsMaking();
-    //Set Histrograms bins and ranges
-  phosQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
-  phosQA->SetHistoPhiRangeAndNBins(215*TMath::DegToRad(), 325*TMath::DegToRad(), 100) ;
-  phosQA->SetHistoEtaRangeAndNBins(-0.13, 0.13, 100) ;
-  phosQA->SetNumberOfModules(3); //PHOS first year
-
-
+   phosQA->SwitchOffPlotsMaking();
+   //Set Histrograms bins and ranges
+   phosQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
+   phosQA->SetHistoPhiRangeAndNBins(215*TMath::DegToRad(), 325*TMath::DegToRad(), 100) ;
+   phosQA->SetHistoEtaRangeAndNBins(-0.13, 0.13, 100) ;
+   phosQA->SetNumberOfModules(3); //PHOS first year
+   phosQA->SetHistoMassRangeAndNBins(0., 0.5, 500) ;
+   phosQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 5) ;
+   phosQA->SetHistoPOverERangeAndNBins(0,10.,100);
+   phosQA->SetHistodEdxRangeAndNBins(0.,400.,200);
+   phosQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),300);
+   phosQA->SetHistoTimeRangeAndNBins(0.,1000,1000);
+   phosQA->SetHistoRatioRangeAndNBins(0.,2.,100);
+   phosQA->SetHistoVertexDistRangeAndNBins(0.,500.,100);
+   phosQA->SetHistoNClusterCellRangeAndNBins(0,300,300);
+	
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader

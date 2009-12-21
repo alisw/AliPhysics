@@ -66,15 +66,110 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
 
   void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
 
+  //Histogram binning setters
+  virtual void SetHistoPOverERangeAndNBins(Float_t min, Float_t max, Int_t n) {
+	fHistoPOverEBins  = n ;
+	fHistoPOverEMax   = max ;
+	fHistoPOverEMin   = min ;
+  }
+	
+  Int_t   GetHistoPOverEBins()  const { return fHistoPOverEBins ; }
+  Float_t GetHistoPOverEMin()   const { return fHistoPOverEMin ; }
+  Float_t GetHistoPOverEMax()   const { return fHistoPOverEMax ; }	
+	
+	virtual void SetHistodEdxRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistodEdxBins  = n ;
+		fHistodEdxMax   = max ;
+		fHistodEdxMin   = min ;
+	}
+	
+	Int_t   GetHistodEdxBins()  const { return fHistodEdxBins ; }
+	Float_t GetHistodEdxMin()   const { return fHistodEdxMin ; }
+	Float_t GetHistodEdxMax()   const { return fHistodEdxMax ; }	
+
+	virtual void SetHistodRRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistodRBins  = n ;
+		fHistodRMax   = max ;
+		fHistodRMin   = min ;
+	}
+	
+	Int_t   GetHistodRBins()  const { return fHistodRBins ; }
+	Float_t GetHistodRMin()   const { return fHistodRMin ; }
+	Float_t GetHistodRMax()   const { return fHistodRMax ; }	
+
+	virtual void SetHistoTimeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistoTimeBins  = n ;
+		fHistoTimeMax   = max ;
+		fHistoTimeMin   = min ;
+	}	
+	
+	Int_t   GetHistoTimeBins()  const { return fHistoTimeBins ; }
+	Float_t GetHistoTimeMin()   const { return fHistoTimeMin ; }
+	Float_t GetHistoTimeMax()   const { return fHistoTimeMax ; }	
+
+	virtual void SetHistoNClusterCellRangeAndNBins(Int_t min, Int_t max, Int_t n) {
+		fHistoNBins  = n ;
+		fHistoNMax   = max ;
+		fHistoNMin   = min ;
+	}
+	
+	Int_t   GetHistoNClusterCellBins()  const { return fHistoNBins ; }
+	Float_t GetHistoNClusterCellMin()   const { return fHistoNMin ; }
+	Float_t GetHistoNClusterCellMax()   const { return fHistoNMax ; }	
+
+	virtual void SetHistoRatioRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistoRatioBins  = n ;
+		fHistoRatioMax   = max ;
+		fHistoRatioMin   = min ;
+	}
+	
+	Int_t   GetHistoRatioBins()  const { return fHistoRatioBins ; }
+	Float_t GetHistoRatioMin()   const { return fHistoRatioMin ; }
+	Float_t GetHistoRatioMax()   const { return fHistoRatioMax ; }	
+
+	virtual void SetHistoVertexDistRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistoVertexDistBins = n ;
+		fHistoVertexDistMax   = max ;
+		fHistoVertexDistMin   = min ;
+	}
+	
+	Int_t   GetHistoVertexDistBins()  const { return fHistoVertexDistBins ; }
+	Float_t GetHistoVertexDistMin()   const { return fHistoVertexDistMin ; }
+	Float_t GetHistoVertexDistMax()   const { return fHistoVertexDistMax ; }	
+	
+	
  private:
   
-  TString fCalorimeter ;   //Calorimeter selection
-  TString fStyleMacro  ;   //Location of macro for plots style
-  Bool_t fMakePlots    ;   //Print plots
-  Bool_t fCorrelateCalos;  //Correlate PHOS/EMCAL clusters
-  Int_t fNModules ;        // Number of EMCAL/PHOS modules, set as many histogras as modules 
+  TString fCalorimeter ;    // Calorimeter selection
+  TString fStyleMacro  ;    // Location of macro for plots style
+  Bool_t  fMakePlots   ;    // Print plots
+  Bool_t  fCorrelateCalos ; // Correlate PHOS/EMCAL clusters
+  Int_t   fNModules    ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
 	
   //Histograms
+  //Histogram Bins
+  Int_t   fHistoPOverEBins;        // p/E histogram number of bins
+  Float_t fHistoPOverEMax;         // p/E maximum value
+  Float_t fHistoPOverEMin;         // p/E minimum value
+  Int_t   fHistodEdxBins;          // dEdx histogram number of bins
+  Float_t fHistodEdxMax;           // dEdx maximum value
+  Float_t fHistodEdxMin;           // dEdx minimum value
+  Int_t   fHistodRBins;            // dR histogram number of bins
+  Float_t fHistodRMax;             // dR maximum value
+  Float_t fHistodRMin;             // dR minimum value
+  Int_t   fHistoTimeBins;          // cell time histogram number of bins
+  Float_t fHistoTimeMax;           // cell time maximum value
+  Float_t fHistoTimeMin;           // cell time minimum value
+  Int_t   fHistoNBins;             // number of clusters/cells histogram number of bins
+  Int_t   fHistoNMax;              // number maximum value
+  Int_t   fHistoNMin;              // number minimum value
+  Int_t   fHistoRatioBins;         // ratio histogram number of bins
+  Float_t fHistoRatioMax;          // ratio maximum value
+  Float_t fHistoRatioMin;          // ratio minimum value
+  Int_t   fHistoVertexDistBins;    // vertex distance histogram number of bins
+  Float_t fHistoVertexDistMax;     // vertex distance maximum value
+  Float_t fHistoVertexDistMin;     // vertex distance minimum value	
+	
   //CaloClusters 
   TH1F * fhE  ; //! E distribution, Reco
   TH1F * fhPt ; //! pT distribution, Reco
@@ -111,9 +206,12 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH1F * fhNClusters; //! Number of clusters
 	
   //Calo Cells
-  TH1F * fhNCells; //! Number of towers/crystals with signal
+  TH1F * fhNCells;    //! Number of towers/crystals with signal
   TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
-
+  TH1F * fhTime;      //! Time measured in towers/crystals
+  TH2F * fhTimeId;    //! Time vs Absolute cell Id
+  TH2F * fhTimeAmp;   //! Time vs Amplitude 
+	
   //Calorimeters Correlation
   TH2F * fhCaloCorrNClusters; // EMCAL vs PHOS, number of clusters	
   TH2F * fhCaloCorrEClusters; // EMCAL vs PHOS, total measured cluster energy
@@ -237,7 +335,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,4)
+	ClassDef(AliAnaCalorimeterQA,5)
 } ;
 
 
