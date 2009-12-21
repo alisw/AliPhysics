@@ -73,6 +73,12 @@
 #include <TTreeStream.h>
 #include <TMethodCall.h>
 
+//TODO - NEW -> Ordering! resp. remove the non-needed files 
+#include <TQObject.h>
+#include <TEveManager.h>
+#include <TGLSelectRecord.h>
+#include <TGLViewer.h>
+
 #include <AliTRDReconstructor.h>
 
 #include <EveDet/AliEveListAnalyser.h>
@@ -85,13 +91,14 @@ ClassImp(AliEveListAnalyser)
 ///////////////////////////////////////////////////////////
 AliEveListAnalyser::AliEveListAnalyser(const Text_t* n, const Text_t* t, Bool_t doColor):
   TEveElementList(n, t, doColor),
-  fEditor(0x0),
+  fConnected(kFALSE),
   fDataFromMacroList(0x0),
+  fEditor(0x0),
   fMacroList(0x0),
   fDataTree(0x0),
   fHistoDataSelected(0),
   fMacroListSelected(0),
-  fSelectedTab(1)                               // Standard tab: "Apply macros" (index 1)
+  fSelectedTab(2)                               // Standard tab: "Apply macros" (index 2)
 {
   // Creates the AliEveListAnalyser.
 
@@ -117,6 +124,9 @@ AliEveListAnalyser::AliEveListAnalyser(const Text_t* n, const Text_t* t, Bool_t 
 AliEveListAnalyser::~AliEveListAnalyser()
 {
   // Frees allocated memory (lists etc.).
+
+  // Stop adding objects
+  StopAddingObjects();
 
   // Let the editor know that the list will be destroyed -> The editor will save the data
   if (fEditor != 0)
@@ -150,7 +160,6 @@ AliEveListAnalyser::~AliEveListAnalyser()
 //______________________________________________________
 Int_t AliEveListAnalyser::AddMacro(const Char_t* path, const Char_t* nameC, Bool_t forceReload)
 {
-// TODO: Update the comment concerning the supported types: TObject->'OBJECTTYPE'
   // Checks, if the file exists and if the signature is correct.
   // If these criteria are fullfilled, the library for this macro is built
   // and the macro is added to the corresponding list.
@@ -265,6 +274,71 @@ Bool_t AliEveListAnalyser::AddMacroFast(const Char_t* path, const Char_t* name, 
   return success;
 }
 
+//TODO - NEW - To be implemented, tested, documented
+//______________________________________________________
+void AliEveListAnalyser::AddObjectToList(Int_t pointId)
+{
+  TEvePointSet* ps = dynamic_cast<TEvePointSet*>((TQObject*) gTQSender);
+  
+  if (!ps)
+  {
+    Error("AliEveListAnalyser::AddObjectToList", "Zero pointer!\n");
+    return;
+  }
+
+  // Check, if object is already there. If so, remove it!
+  
+  // 1st possibility: Object of the list clicked
+  if (this->HasChild(ps))
+  {
+    this->RemoveElement(ps);
+    return;
+  }
+    
+  TObject* obj = ps->GetPointId(pointId);
+  if (obj)
+  {
+    // 2nd possibility: Same object clicked again
+    TEveElement* listObj = 0x0;
+    listObj = this->FindChild(Form("[viewer:%d] %s%d", obj->GetUniqueID(), obj->GetName(), pointId));
+    if (listObj)
+    {
+      this->RemoveElement(listObj);  
+      return;
+    }
+
+    // Object clicked that is not in the list -> Add this object to list
+    TEvePointSet* newPS = new TEvePointSet(Form("[viewer:%d] %s%d", obj->GetUniqueID(), obj->GetName(), pointId));
+    Double_t x = 0, y = 0, z = 0;
+    ps->GetPoint(pointId, x, y, z);
+    newPS->SetPoint(0, x, y, z);
+    newPS->SetUserData(obj);
+    newPS->SetMarkerColor(5);
+    newPS->SetMarkerStyle(2);
+    newPS->SetMarkerSize(2.0);
+
+    AddElement(newPS);
+    gEve->Redraw3D();
+  }
+  else
+  {
+    Error("AliEveListAnalyser::AddObjectToList", "Selected object is NULL and therefore ignored!");
+  }
+
+/*
+  TGLSelectRecord rec = gEve->GetDefaultGLViewer()->GetSelRec();
+
+  printf("Objects (%d):\n", rec.GetN());
+  for (int i = 0; i < rec.GetN(); i++)
+  {
+    //printf("%s\n", ((TObject*)rec.GetItem(i))->IsA()->GetName());
+  }
+*/
+  
+  //printf("Type: %s\npointID: %s\n\n", ps->IsA()->GetName(), pointId);
+  //printf("Type objectsender: %s\nType sender: %s\n", ((TQObject*)gTQSender)->IsA()->GetName(), ((TQObjSender*)gTQSender)->IsA()->GetName());
+}
+
 //______________________________________________________
 void AliEveListAnalyser::AddStandardContent()
 {
@@ -328,7 +402,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     mProcType = new AliEveListAnalyserMacroType[procIterator->GetEntries()];
   }
   
-  //TODO
   TClass** mProcObjectType = 0;
   if (procIterator->GetEntries() > 0) {
     mProcObjectType = new TClass*[procIterator->GetEntries()];
@@ -341,7 +414,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     mSelType = new AliEveListAnalyserMacroType[selIterator->GetEntries()];
   }
 
-  //TODO
   TClass** mSelObjectType = 0;
   if (selIterator->GetEntries() > 0) {
     mSelObjectType = new TClass*[selIterator->GetEntries()];
@@ -374,7 +446,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     printf("AliEveListAnalyser: Checking process macro: %s\n", macro->GetName());
 #endif 
            
-//TODO
     // Find the object type of the macro
     mProcObjectType[i] = macro->GetObjectType();
 
@@ -421,7 +492,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     printf("AliEveListAnalyser: Checking selection macro: %s\n", macro->GetName());
 #endif
 
-//TODO
     // Find the object type of the macro
     mSelObjectType[i] = macro->GetObjectType();
        
@@ -467,7 +537,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
     // Collect data for each macro
     for (Int_t i = 0, histoIndex = 0; i < procIterator->GetEntries(); i++){
-//TODO
       // Find the type of the object and relate it to the macro object type
       // Only apply macro to this object, if...
       // ... the macro takes objects of exactly this type.
@@ -498,7 +567,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           // Skip objects that have not been selected
           if (!object2->GetRnrState())  continue;
 
-//TODO
           // Same check of the macro object type as before
           if (((TObject*)object2->GetUserData())->IsA() != mProcObjectType[i] && 
               !((TObject*)object2->GetUserData())->InheritsFrom(mProcObjectType[i]))  continue;
@@ -511,7 +579,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           selectedByCorrSelMacro = kTRUE;
           for (Int_t j = 0; j < selIterator->GetEntries(); j++){
             if (mSelType[j] == kCorrelObjectSelect){
-//TODO
           // Check, whether the macro can deal with both objects. If not, skip it.
           // Note: Again, via selCmds[i], the automatic objects are casted to the correct type!
           if (((TObject*)object1->GetUserData())->IsA() != mSelObjectType[j] && 
@@ -567,7 +634,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           // Skip objects that have not been selected
           if (!object2->GetRnrState())  continue;
 
-//TODO
           // Same check of the macro object type as before
           if (((TObject*)object2->GetUserData())->IsA() != mProcObjectType[i] && 
               !((TObject*)object2->GetUserData())->InheritsFrom(mProcObjectType[i]))  continue;
@@ -580,7 +646,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           selectedByCorrSelMacro = kTRUE;
           for (Int_t j = 0; j < selIterator->GetEntries(); j++) {
             if (mSelType[j] == kCorrelObjectSelect) {
-//TODO
               // Check, whether the macro can deal with both objects. If not, skip it.
               // Note: Again, via selCmds[i], the automatic objects are casted to the correct type!
               if (((TObject*)object1->GetUserData())->IsA() != mSelObjectType[j] && 
@@ -710,7 +775,6 @@ void AliEveListAnalyser::ApplySTSelectionMacros(const TList* iterator)
         // If the object has already been deselected, nothing is to do here
         if (!object1->GetRnrState()) continue;
 
-//TODO
         // Find the type of the object and relate it to the macro object type
         // Only apply macro to this object, if...
         // ... the macro takes objects of exactly this type.
@@ -1004,4 +1068,52 @@ void AliEveListAnalyser::RemoveSelectedMacros(const TList* iterator)
                                                                      iterator->At(i)->GetTitle()));
     }
   }
+}
+
+//______________________________________________________
+void AliEveListAnalyser::ResetObjectList()
+{
+  // Remove all objects from the list.
+
+  RemoveElements();
+}
+
+//______________________________________________________
+Bool_t AliEveListAnalyser::StartAddingObjects()
+{ 
+  // Start adding objects for the analysis. Returns kTRUE on success.
+
+  if (fConnected == kFALSE)
+  {
+    fConnected = TQObject::Connect("TEvePointSet", "PointSelected(Int_t)", "AliEveListAnalyser", this, "AddObjectToList(Int_t)");
+    //fConnected = TQObject::Connect("TEvePointSet", "Message(char*)", "AliEveListAnalyser", this, "AddObjectToList(char*)");
+    if (fConnected) return kTRUE;
+    
+    Error("AliEveListAnalyser::StartAddingObjects", "Connection failed!");
+  }
+
+  return kFALSE;
+}
+
+//______________________________________________________
+Bool_t AliEveListAnalyser::StopAddingObjects()
+{
+  // Stop adding objects for the analysis. Returns kTRUE on success.
+
+  if (fConnected)
+  {
+    //if (TQObject::Disconnect("TEvePointSet", "AddObjectToList(Char_t*)"))  fConnected = kFALSE;
+    if (TQObject::Disconnect("TEvePointSet", "PointSelected(Int_t)", this, "AddObjectToList(Int_t)"))
+    { 
+      fConnected = kFALSE;
+      return kTRUE;
+    }
+    else
+    {
+      Error("AliEveListAnalyser::StopAddingObjects", "Disconnection failed!");
+      return kFALSE;
+    }
+  }
+
+  return kTRUE;
 }

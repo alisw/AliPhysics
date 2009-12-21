@@ -73,6 +73,9 @@ public:
   void    ApplyMacros();
   void    BrowseMacros();
   void    CloseTabs();
+  void    DoResetObjectList();
+  void    DoStartAddingObjects();
+  void    DoStopAddingObjects();
   void    DrawHistos();
   Int_t   GetNSelectedHistograms() const;
   void    HandleMacroPathSet();
@@ -96,6 +99,10 @@ private:
   AliEveListAnalyserEditor(const AliEveListAnalyserEditor&);            // Not implemented
   AliEveListAnalyserEditor& operator=(const AliEveListAnalyserEditor&); // Not implemented 
 
+  // Help functions
+  void SetDrawingToHistoCanvasTab();        
+  void UpdateHistoCanvasTab();             
+
   TCanvas*          fHistoCanvas;            // Canvas for the histograms
   TGString*         fHistoCanvasName;        // Name of the histogram canvas
 
@@ -104,16 +111,20 @@ private:
   Bool_t            fInheritSettings;        // Flag indicating, whether the macro list will be inherited from
                                              // the previously loaded analyse object list within the next call of SetModel
 
-  TGVerticalFrame*   fMainFrame;             // Top frame for macro functionality.
+  TGHorizontalFrame* fBrowseFrame;           // Frame for features corresponding to searching macros
   TGVerticalFrame*   fHistoFrame;            // Top frame for the histogram stuff
   TGVerticalFrame*   fHistoSubFrame;         // Frame for the histogram buttons themselves
-  TGHorizontalFrame* fBrowseFrame;           // Frame for features corresponding to searching macros
-
-  TGTextButton*   fbBrowse;                  // "Browse" button
-  TGTextButton*   fbNew;                     // "New" button
+  TGVerticalFrame*   fMainFrame;             // Top frame for macro functionality.
+  TGVerticalFrame*   fObjectFrame;           // Frame for features corresponding to adding objects to the list
+  
   TGTextButton*   fbApplyMacros;             // "Apply macros" button
-  TGTextButton*   fbRemoveMacros;            // "Remove macros" button
+  TGTextButton*   fbBrowse;                  // "Browse" button
   TGTextButton*   fbDrawHisto;               // "Draw histogram" button
+  TGTextButton*   fbNew;                     // "New" button  
+  TGTextButton*   fbRemoveMacros;            // "Remove macros" button
+  TGTextButton*   fbReset;                   // "Reset" (list of added objects) button
+  TGTextButton*   fbStart;                   // "Start" (adding objects to list) button
+  TGTextButton*   fbStop;                    // "Stop" (adding objects to list) button
   TGTextEntry*    fteField;                  // Text field to insert macro path manually
   TGListBox*      ftlMacroList;              // To display the list of (process) macros
   TGListBox*      ftlMacroSelList;           // To display the list of (selection) macros
@@ -133,11 +144,7 @@ private:
   TGHorizontal3DLine *fLine3;
   TGHorizontal3DLine *fLine4; 
 
-  TGCheckButton** fCheckButtons;            // Check buttons for histograms
-
-  // Help functions
-  void SetDrawingToHistoCanvasTab();        
-  void UpdateHistoCanvasTab();              
+  TGCheckButton** fCheckButtons;            // Check buttons for histograms 
 
   ClassDef(AliEveListAnalyserEditor, 0);    // Editor for AliEveListAnalyser.
 };
@@ -165,12 +172,13 @@ private:
   AliEveGeneralMacroWizard(const AliEveGeneralMacroWizard&);
   AliEveGeneralMacroWizard& operator=(const AliEveGeneralMacroWizard&);
 
-  TGTextEntry *fTextName;
-  TGTextEntry *fTextObjectType;
-  TGComboBox  *fCombo;
-  TGTextEdit  *fTextEdit;
-  TGTextButton *fbCreate;                  // "Done" button
   TGTextButton *fbCancel;                  // "Cancel" button
+  TGTextButton *fbCreate;                  // "Done" button
+  TGComboBox  *fCombo;                     // "Type"
+  TGTextEdit  *fTextEdit;                  // "Comments"
+  TGTextEntry  *fTextIncludes;             // "Includes"
+  TGTextEntry *fTextName;                  // "Name"
+  TGTextEntry *fTextObjectType;            // "ObjectType"  
   
   ClassDef(AliEveGeneralMacroWizard, 0);      // Helper class to create macro templates 
 };

@@ -77,7 +77,7 @@
 
 #define UNSETBIT(n,i)  ((n) &= ~BIT(i))
 
-//class AliEveTRDTrack;
+
 class AliEveListAnalyserEditor;
 class AliTRDReconstructor;
 class TClass;
@@ -90,6 +90,10 @@ class TMap;
 class TPair;
 class TString;
 class TTreeSRedirector;
+
+// TODO - NEW
+class TGLViewer;
+class TEveManager;
 
 class AliEveListAnalyser: public TEveElementList
 {
@@ -126,11 +130,13 @@ public:
   virtual ~AliEveListAnalyser();
 
   Int_t AddMacro(const Char_t* path, const Char_t* name, Bool_t forceReload = kFALSE);                      
-  Bool_t AddMacroFast(const Char_t* path, const Char_t* name, AliEveListAnalyserMacroType type, TClass* objectType);        
+  Bool_t AddMacroFast(const Char_t* path, const Char_t* name, AliEveListAnalyserMacroType type, TClass* objectType);     
+  void AddObjectToList(Int_t pointId);   
   virtual void AddStandardContent();                           
   Bool_t ApplyProcessMacros(const TList* selIterator, const TList* procIterator);               
   void ApplySTSelectionMacros(const TList* iterator);
-
+  Bool_t GetConnected()             // Returns whether "adding objects by clicking" is enabled or not.
+    { return fConnected;  };
   // Returns the type of the macro of the corresponding entry (i.e. "macro.C (Path: path)"). 
   // If you have only the name and the path, you can simply use MakeMacroEntry.
   // If "UseList" is kTRUE, the type will be looked up in the internal list (very fast). But if this list
@@ -141,14 +147,18 @@ public:
   // Note: AddMacro(Fast) will update the internal list and RemoveProcess(/Selection)Macros respectively.
   AliEveListAnalyserMacroType GetMacroType(const Char_t* name, const Char_t* objectType = "TObject", Bool_t UseList = kTRUE) const; 
   
-  // TODO Documentation
   TClass* GetMacroObjectType(const Char_t* name) const;
-  void RemoveSelectedMacros(const TList* iterator);                                    
+  void RemoveSelectedMacros(const TList* iterator);
+  void ResetObjectList();
+  Bool_t StartAddingObjects();
+  Bool_t StopAddingObjects();
 
-protected:
-  AliEveListAnalyserEditor* fEditor; // Pointer to the editor of this list             
+protected:     
+  Bool_t fConnected;                 // Connection to the TEvePointSet signal
 
   TList* fDataFromMacroList;         // List of macros that currently have data for histograms
+
+  AliEveListAnalyserEditor* fEditor; // Pointer to the editor of this list
 
   TMap*  fMacroList;                 // Stores the names, paths, types and commands of all macros added to this list
 

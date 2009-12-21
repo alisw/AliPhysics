@@ -65,15 +65,19 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
   fHistoCanvasName(0),
   fInheritedMacroList(0),
   fInheritSettings(kFALSE),
-  fMainFrame(0),
+  fBrowseFrame(0),
   fHistoFrame(0),
   fHistoSubFrame(0),
-  fBrowseFrame(0),
-  fbBrowse(0),
-  fbNew(0),
+  fMainFrame(0),
+  fObjectFrame(0),  
   fbApplyMacros(0),
-  fbRemoveMacros(0),
+  fbBrowse(0),
   fbDrawHisto(0),
+  fbNew(0),
+  fbRemoveMacros(0),
+  fbReset(0),
+  fbStart(0),
+  fbStop(0),
   fteField(0),
   ftlMacroList(0),
   ftlMacroSelList(0),
@@ -84,6 +88,24 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
   fCheckButtons(0)
 {
   // Creates the AliEveListAnalyserEditor.
+
+  // Functionality for adding objects
+  fObjectFrame = CreateEditorTabSubFrame("List");
+
+  fbStart = new TGTextButton(fObjectFrame, "Start");
+  fObjectFrame->AddFrame(fbStart, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 3, 1));
+  fbStart->SetToolTipText("Start \"adding objects by clicking\":\nSimply hold ALT+CTRL and left-click an item in the viewer with your mouse\nto add this item to the list analyser.\nIf you click (in this way!) an item that is already in the list, it will be removed from it.\nNote: The key combination depends on your operating system!");
+  fbStart->Connect("Clicked()", "AliEveListAnalyserEditor", this, "DoStartAddingObjects()");
+
+  fbReset = new TGTextButton(fObjectFrame, "Reset");
+  fObjectFrame->AddFrame(fbReset, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 1, 1));
+  fbReset->SetToolTipText("Remove all objects from the list");
+  fbReset->Connect("Clicked()", "AliEveListAnalyserEditor", this, "DoResetObjectList()");
+
+  fbStop = new TGTextButton(fObjectFrame, "Stop");
+  fObjectFrame->AddFrame(fbStop, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 1, 4));
+  fbStop->SetToolTipText("Stop \"adding objects by clicking\"");
+  fbStop->Connect("Clicked()", "AliEveListAnalyserEditor", this, "DoStopAddingObjects()");
 
   // Functionality for adding macros  
   fMainFrame = CreateEditorTabSubFrame("Process");
@@ -354,6 +376,41 @@ void AliEveListAnalyserEditor::CloseTabs()
     }
     // With the tab removal, the canvas will be deleted automatically!
     fHistoCanvas = 0;
+  }
+}
+
+//______________________________________________________
+void AliEveListAnalyserEditor::DoResetObjectList()
+{
+  fM->ResetObjectList();
+  Update();
+}
+
+//______________________________________________________
+void AliEveListAnalyserEditor::DoStartAddingObjects()
+{
+  if (fM->StartAddingObjects())
+  {
+    fbStart->SetState(kButtonDisabled);
+    fbStop->SetState(kButtonUp);
+  }
+  else
+  {
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", "Failed to connect socket!", kMBIconExclamation, kMBOk);
+  }
+}
+
+//______________________________________________________
+void AliEveListAnalyserEditor::DoStopAddingObjects()
+{
+  if (fM->StopAddingObjects())
+  {
+    fbStop->SetState(kButtonDisabled);
+    fbStart->SetState(kButtonUp);
+  }
+  else
+  {
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", "Failed to disconnect socket!", kMBIconExclamation, kMBOk);
   }
 }
 
@@ -835,6 +892,19 @@ void AliEveListAnalyserEditor::SetModel(TObject* obj)
 
   // View correct tab
   GetGedEditor()->GetTab()->SetTab(fM->GetSelectedTab()); 
+
+  // Set connection buttons correctly
+  if(fM->GetConnected())
+  {
+    fbStart->SetState(kButtonDisabled);
+    fbStop->SetState(kButtonUp);
+  }
+  else
+  {
+    fbStop->SetState(kButtonDisabled);
+    fbStart->SetState(kButtonEngaged);
+    fbStart->SetState(kButtonUp);
+  }
 }
 
 //______________________________________________________
@@ -971,12 +1041,13 @@ ClassImp(AliEveGeneralMacroWizard)
 //______________________________________________________
 AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   :TGMainFrame(p ? p : gClient->GetRoot(), 10, 10, kMainFrame | kVerticalFrame)
-  ,fTextName(0x0)
-  ,fTextObjectType(0x0)
+  ,fbCancel(0x0)
+  ,fbCreate(0x0)
   ,fCombo(0x0)
   ,fTextEdit(0x0)
-  ,fbCreate(0x0)
-  ,fbCancel(0x0)
+  ,fTextIncludes(0x0)
+  ,fTextName(0x0)  
+  ,fTextObjectType(0x0)
 {
   const Int_t width = 300;
 
@@ -1005,7 +1076,6 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   fFrameObjectType->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
 
   fTextObjectType = new TGTextEntry(fFrameObjectType);
-  fTextObjectType->SetMaxLength(255);
   fTextObjectType->SetAlignment(kTextLeft);
   fTextObjectType->SetText("");
   // Limit max.length to 80 characters
@@ -1013,6 +1083,22 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   fTextObjectType->SetToolTipText("The type of objects, your macro will work with");
   fTextObjectType->Resize(width, fTextObjectType->GetDefaultHeight());
   fFrameObjectType->AddFrame(fTextObjectType, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
+
+  // horizontal frame
+  TGHorizontalFrame *fFrameIncludes = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
+  fLabel = new TGLabel(fFrameIncludes, "Include files");
+  fLabel->SetTextJustify(36);
+  fLabel->SetMargins(0,0,0,0);
+  fLabel->SetWrapLength(-1);
+  fFrameIncludes->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+
+  fTextIncludes = new TGTextEntry(fFrameIncludes);
+  fTextObjectType->SetAlignment(kTextLeft);
+  fTextIncludes->SetText("<TRD/AliTRDgeometry.h>,<TRD/AliTRDcluster.h>,<TRD/AliTRDseedV1.h>,<TRD/AliTRDtrackV1.h>");
+  fTextIncludes->SetCursorPosition(0);
+  fTextIncludes->SetToolTipText("The include files for your macro - separated by commas! -\n e.g. \"<TRD/AliTRDcluster.h>,<TRD/AliTRDtrackV1.h>\".\nThe suggested/default files can be used for track analysis");
+  fTextIncludes->Resize(width, fTextIncludes->GetDefaultHeight());
+  fFrameIncludes->AddFrame(fTextIncludes, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
 
   // horizontal frame
   TGHorizontalFrame *fFrameComment = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
@@ -1053,7 +1139,6 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   fbCreate->SetToolTipText("Use settings to create the macro");
   fFrameAction->AddFrame(fbCreate, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2)); 
 
-
   // horizontal frame
   TGHorizontalFrame *fFrameText = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
   fLabel = new TGLabel(fFrameText, "(*) Mandatory fields");
@@ -1065,6 +1150,7 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   // put things together  
   AddFrame(fFrameName, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameObjectType, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
+  AddFrame(fFrameIncludes, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameComment, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameType, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameAction, new TGLayoutHints(kLHintsRight | kLHintsTop | kLHintsExpandX,2,2,2,2));
@@ -1084,7 +1170,6 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   MapWindow();
 
   // Do the linking
-  //fCombo->Connect("Selected(Int_t)", "AliEveGeneralMacroWizard", this, "Create(Int_t)");
   fbCreate->Connect("Clicked()", "AliEveGeneralMacroWizard", this, "HandleCreate()");
   fbCancel->Connect("Clicked()", "AliEveGeneralMacroWizard", this, "CloseWindow()");
 
@@ -1093,15 +1178,9 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
 }  
 
 const Char_t *fGeneralIncludes = 
-// TODO: Remove include files corresponding to a track list
 "#if !defined(__CINT__) || defined(__MAKECINT__)\n"
 "#include <TROOT.h>\n"
-"#include <TH1.h>\n"
-"#include <TRD/AliTRDgeometry.h>\n"
-"#include <TRD/AliTRDcluster.h>\n"
-"#include <TRD/AliTRDseedV1.h>\n"
-"#include <TRD/AliTRDtrackV1.h>\n"
-"#endif\n";
+"#include <TH1.h>\n";
 
 const Char_t *fGeneralMacroTemplate[7] = {
 ""
@@ -1145,79 +1224,6 @@ const Char_t *fGeneralMacroTemplate[7] = {
 "  } else h->Reset();\n"
 };
 
-
-//TODO: Needed?
-/*
-const Char_t *fGeneralMacroTemplate_WithType[7] = {
-""
-,"  if (!object) return kFALSE;\n"
-"  if (object->IsA() != OBJECTTYPE::Class()) return kFALSE;\n\n"
-"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n" 
-"  if (!myObject) return kFALSE;\n"
-
-,"  n = 0;\n"
-"  r = 0x0;\n"
-"  if (!object) return;\n"
-"  if (object->IsA() != OBJECTTYPE::Class()) return;\n\n"
-"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n" 
-"  if (!myObject) return;\n"
-
-,"  if (!object) return 0x0;\n"
-"  if (object->IsA() != OBJECTTYPE::Class()) return 0x0;\n\n"
-"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n" 
-"  if (!myObject) return 0x0;\n\n"
-"  TH1* h = 0x0;\n\n"
-"// Set bins, xmin and xmax here\n"
-"  Int_t n = 1;\n"
-"  Double_t xmin = 0;\n"
-"  Double_t xmax = 100;\n\n" 
-"  if(!(h = (TH1*)gROOT->FindObject(\"h\"))){\n"
-"    h = new TH1(\"h\", \"Title\", n, xmin, xmax);\n"
-"    h->GetXaxis()->SetTitle("");\n"
-"    h->GetYaxis()->SetTitle("");\n"
-"  } else h->Reset();\n"
-
-,"  if (!object) return kFALSE;\n"
-"  if (!object2) return kFALSE;\n"
-"  if (object->IsA() != OBJECTTYPE::Class()) return kFALSE;\n"
-"  if (object2->IsA() != OBJECTTYPE::Class()) return kFALSE;\n\n"
-"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n"
-"  const OBJECTTYPE* myObject2 = dynamic_cast<const OBJECTTYPE*>(object2);\n" 
-"  if (!myObject) return kFALSE;\n"
-"  if (!myObject2) return kFALSE;\n"
-
-,"  n = 0;\n"
-"  r = 0x0;\n"
-"  if (!object) return;\n"
-"  if (!object2) return;\n"
-"  if (object->IsA() != OBJECTTYPE::Class()) return;\n"
-"  if (object2->IsA() != OBJECTTYPE::Class()) return;\n\n"
-"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n"
-"  const OBJECTTYPE* myObject2 = dynamic_cast<const OBJECTTYPE*>(object2);\n" 
-"  if (!myObject) return;\n"
-"  if (!myObject2) return;\n"
-
-,"  if (!object) return 0x0;\n"
-"  if (!object2) return 0x0;\n"
-"  if (object->IsA() != OBJECTTYPE::Class()) return 0x0;\n"
-"  if (object2->IsA() != OBJECTTYPE::Class()) return 0x0;\n\n"
-"  const OBJECTTYPE* myObject = dynamic_cast<const OBJECTTYPE*>(object);\n"
-"  const OBJECTTYPE* myObject2 = dynamic_cast<const OBJECTTYPE*>(object2);\n" 
-"  if (!myObject) return 0x0;\n"
-"  if (!myObject2) return 0x0;\n"
-"  TH1* h = 0x0;\n\n"
-"// Set bins, xmin and xmax here\n"
-"  Int_t n = 1;\n"
-"  Double_t xmin = 0;\n"
-"  Double_t xmax = 100;\n\n" 
-"  if(!(h = (TH1*)gROOT->FindObject(\"h\"))){\n"
-"    h = new TH1(\"h\", \"Title\", n, xmin, xmax);\n"
-"    h->GetXaxis()->SetTitle("");\n"
-"    h->GetYaxis()->SetTitle("");\n"
-"  } else h->Reset();\n"
-};
-*/
-
 //______________________________________________________
 void AliEveGeneralMacroWizard::Create(Int_t type)
 {
@@ -1227,7 +1233,6 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
     Error("AliEveGeneralMacroWizard::Create", "Please specify a name for your macro.");
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  "Please specify a name for your macro.", kMBIconExclamation, kMBOk);
-    //fCombo->Select(-1);
     return;
   }
 
@@ -1276,7 +1281,6 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
     Error("AliEveGeneralMacroWizard::Create", Form("A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name));
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  Form("A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name), kMBIconExclamation, kMBOk);
-    //fCombo->Select(-1);
     return;
   }
 
@@ -1285,7 +1289,6 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
     Error("AliEveGeneralMacroWizard::Create", "Couldn't create macro file.");
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  "Couldn't create macro file.", kMBIconExclamation, kMBOk);
-    //fCombo->Select(-1);
     return;
   }
 
@@ -1293,9 +1296,19 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   Char_t* line = 0x0; Int_t iline = 0;
   while((line = comment->GetLine(TGLongPosition(0,iline++), 200))) fprintf(fp, "// %s\n", line);
 
-  fprintf(fp, "\n%s\n", fGeneralIncludes);
-
   TString* tempStr = new TString();
+
+  // Add include files:
+  // Remove white-spaces and replace commas
+  tempStr->Append(fTextIncludes->GetText());  
+  tempStr->ReplaceAll(" ", "");
+  tempStr->ReplaceAll(",","\n#include ");
+  // If there are files, add the first "#include " in front
+  if (tempStr->Length() > 3)  tempStr->Prepend("#include "); 
+
+  fprintf(fp, "\n%s%s\n#endif\n\n", fGeneralIncludes, tempStr->Data());
+  
+  tempStr->Clear();
 
   // Use default type
   if (!useGivenType)
@@ -1341,7 +1354,6 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
                  Form("Unknown type[%d]", type), kMBIconExclamation, kMBOk);
     fclose(fp);
     gSystem->Exec(Form("rm -f %s.C", name));
-    //fCombo->Select(-1);
 
     tempStr->Clear();
     if (tempStr != 0) delete tempStr;
@@ -1362,31 +1374,8 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   if (typeStr != 0) delete typeStr;
   typeStr = 0;
 
-//TODO: Version below?!
   fprintf(fp, "{\n%s\n", fGeneralMacroTemplate[type]);
-/*      
-  if (useGivenType)
-  {
-    // Replace "OBJECTTYPE" with the class name
-    TString* tempStr = new TString();
-    tempStr->Append(fGeneralMacroTemplate_WithType[type]);
 
-    tempStr->ReplaceAll("OBJECTTYPE", fTextObjectType->GetText());
-
-    fprintf(fp, "{\n%s\n", tempStr->Data());
-
-    if (tempStr != 0)
-    {
-      tempStr->Clear();
-      delete tempStr;
-      tempStr = 0;
-    }
-  }
-  else
-  {
-    fprintf(fp, "{\n%s\n", fGeneralMacroTemplate[type]);
-  }
-*/
   fprintf(fp, "// add your own code here\n\n\n}\n");
   fclose(fp);
 
