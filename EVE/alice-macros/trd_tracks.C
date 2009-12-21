@@ -40,7 +40,7 @@ void trd_tracks(TEveElement *cont = 0)
       if(strcmp(cal->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
       AliTRDtrackV1 *trackObj = dynamic_cast<AliTRDtrackV1 *>(cal);
       trackObj->SetReconstructor(reco);
-      AliEveTRDTrack *trackEve = new AliEveTRDTrack(trackObj);
+      AliEveTRDTrack *trackEve = new AliEveTRDTrack(new AliTRDtrackV1(*trackObj));
       tracks->AddElement(trackEve);
       trackEve->SetESDstatus(esdTrack->GetStatus());
       trackEve->SetName(Form("[%4d] %s", n, trackEve->GetName()));

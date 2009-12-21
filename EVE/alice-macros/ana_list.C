@@ -1,96 +1,22 @@
-#ifndef __CINT__
-#include <TGLViewer.h>
-#include <TEveManager.h>
-#include <EveBase/AliEveEventManager.h>
-#include "TRD/AliTRDarrayADC.h"
-#include <EveDet/AliEveListAnalyser.h>
-
-#include "AliESDEvent.h"
-#include "AliESDfriend.h"
-#include "TRD/AliTRDReconstructor.h"
-#include "TRD/AliTRDtrackV1.h"
-#endif
+// Start the list analyser. No objects will be loaded into the list! To add e.g. AliTrackPoints you can do the following:
+// - Run the macro "esd_tracks.C" 
+// - Select some track you want to analyse as follows: Hold "shift" und right-click on the track (sometimes you have to hold the right mouse button). The menu pops up
+// -> Select "ImportClustersFromIndex"
+// -> To this for all tracks you want to analyse.
+// - Run this macro (ana_list.C)
+// - In the tab "eve" in the browser select the list analyser (called "Analysis objects" in the standard case)
+// - Select the "list" tab in the editor of this object.
+// - Click the button "start"
+// - Select e.g. clusters by holding "ctrl"+"alt" (depending on your system, holding the "alt" only can also be fine) and left-clicking on the desired cluster
+// Use the list analyser "as usual" (see class documentation)
 
 void ana_list(TEveElement *cont = 0)
 {
-  // Link data containers
-  AliESDfriend *eventESDfriend = 0x0;
-  if(!(eventESDfriend = AliEveEventManager::AssertESDfriend())){
-    Warning("trd_loadObjectList", "AliESDfriend not found");
-    return;
-  }
+  AliEveListAnalyser * objList = new AliEveListAnalyser("Analysis objects");
+  
+  objList->SetTitle("Analysis objects (0)");
 
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
-
-  AliEveEventManager::AssertGeometry();
-
-  AliTRDrecoParam *trdRecoParam = AliTRDrecoParam::GetLowFluxParam();
-  if (!trdRecoParam)
-  {
-    printf("Could not load AliTRDrecoParam\n");
-    return;
-  }
-  trdRecoParam->SetPIDNeuralNetwork();
-  AliTRDReconstructor *reco = new AliTRDReconstructor();
-  if (!reco)
-  {
-    printf("Could not load AliTRDReconstructor\n");
-    return;
-  }
-  reco->SetRecoParam(trdRecoParam);
-
-
-  AliEveListAnalyser *objects = new AliEveListAnalyser("TRD Analysis Object");
-
-  for (Int_t n = 0; n < esd->GetNumberOfTracks(); n++)
-  {
-    AliESDtrack* esdTrack = esd->GetTrack(n);
-    AliESDfriendTrack *friendTrack = eventESDfriend->GetTrack(n);
-
-    if (!esdTrack || !friendTrack)
-    {
-      printf("Problem with track %d\n", n);
-      continue;
-    }
-
-    TObject *cal = 0x0;
-    Int_t ical = 0;
-
-    while((cal = friendTrack->GetCalibObject(ical++))){
-      if(strcmp(cal->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
-      AliTRDtrackV1 *trackObj = dynamic_cast<AliTRDtrackV1 *>(cal);
-      if (!trackObj)
-      {
-        printf("Cast to AliTRDtrackV1 failed!\n");
-        continue;
-      }
-      trackObj->SetReconstructor(reco);
-      AliEveTRDTrack *trackEve = new AliEveTRDTrack(trackObj);
-      if (!trackEve)
-      {
-        printf("Cast to AliEveTRDTrack failed!\n");
-        continue;
-      }
-      objects->AddElement(trackEve);
-      trackEve->SetESDstatus(esdTrack->GetStatus());
-      trackEve->SetName(Form("[%4d] %s", n, trackEve->GetName()));
-    }
-  }
-
-  delete reco;
-
-  objects->SetTitle(Form("Objects %d", objects->NumChildren()));
-  objects->StampObjProps();
- 
-  gEve->AddElement(objects, cont);
-
+  gEve->AddElement(objList, cont);
 
   gEve->Redraw3D();
-
-  //  TGLViewer *v = gEve->GetDefaultGLViewer();
-  //  v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-  //  ((TGLOrthoCamera&)v->CurrentCamera()).SetEnableRotate(kTRUE);
-  //  v->UpdateScene();
-
-  return;
 }
