@@ -119,7 +119,8 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
     {
       TH1I *hist = (TH1I*)fOutList[0]->FindObject(fTaskInfo.GetEventHistogramName());
       if (!hist) return;
-      Double_t zeroEventPercent = (Double_t)hist->GetBinContent(1) / hist->Integral() * 100;
+      Double_t zeroEventPercent = 0.0;
+      if (hist->Integral() > 1) zeroEventPercent = (Double_t)hist->GetBinContent(1) / hist->Integral() * 100;
       if ((zeroEventPercent>fZeroEventPercentWarning)&&(fEntry>100))
         AliWarning(Form("%3.2f%% Events are with zero tracks (CurrentEvent=%d)!!!",zeroEventPercent,fEntry));
     }
