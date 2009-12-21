@@ -42,7 +42,8 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fW0(4.5),
   fMinECut(0.45), 
   fUnfold(kFALSE), 
-  fLocMaxCut(0.03), //clustering
+  fLocMaxCut(0.03), 
+  fTimeCut(1.),// high value, accept all//clustering
   fTrkCutX(6.0), 
   fTrkCutY(6.0), 
   fTrkCutZ(6.0),  
@@ -228,7 +229,8 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   fW0(rp.fW0),
   fMinECut(rp.fMinECut), 
   fUnfold(rp.fUnfold), 
-  fLocMaxCut(rp.fLocMaxCut), //clustering
+  fLocMaxCut(rp.fLocMaxCut), 
+  fTimeCut(rp.fTimeCut),//clustering
   fTrkCutX(rp.fTrkCutX), 
   fTrkCutY(rp.fTrkCutY), 
   fTrkCutZ(rp.fTrkCutZ),  
@@ -274,7 +276,8 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fW0 = rp.fW0;
     fMinECut = rp.fMinECut;
     fUnfold = rp.fUnfold;
-    fLocMaxCut = rp.fLocMaxCut; //clustering
+    fLocMaxCut = rp.fLocMaxCut; 
+	fTimeCut = rp.fTimeCut;//clustering
     fTrkCutX = rp.fTrkCutX;
     fTrkCutY = rp.fTrkCutY;
     fTrkCutZ = rp.fTrkCutZ;
@@ -535,8 +538,8 @@ AliEMCALRecParam* AliEMCALRecParam::GetHighFluxParam()
 void AliEMCALRecParam::Print(Option_t *) const
 {
   // Print reconstruction parameters to stdout
-  AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f \n",
-	       fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut));
+  AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%f \n",
+	       fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut));
   
   AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %\n", fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
   

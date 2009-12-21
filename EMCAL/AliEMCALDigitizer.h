@@ -1,13 +1,22 @@
-#ifndef ALIEMCALDigitizer_H
-#define ALIEMCALDigitizer_H
+#ifndef ALIEMCALDIGITIZER_H
+#define ALIEMCALDIGITIZER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Task Class for making Digits in EMCAL from SIMULATED DATA      
-//                  
+// Class that performs digitization of Summable digits from simulated data
+//  
+// In addition it performs mixing of summable digits from different events.
+//
+// For each event two branches are created in TreeD:
+//   "EMCAL" - list of digits
+//   "AliEMCALDigitizer" - AliEMCALDigitizer with all parameters used in digitization
+//
+// Note, that one cset title for new digits branch, and repeat digitization with
+// another set of parameters.
+//
 //*-- Author: Sahal Yacoob (LBL)
 // based on : AliPHOSDigit
 // July     2003 Yves Schutz : NewIO 
@@ -16,7 +25,6 @@
 
 
 // --- ROOT system ---
-#include "TObjString.h"
 class TClonesArray ; 
 class TBrowser;
 
@@ -25,8 +33,7 @@ class TBrowser;
 // --- AliRoot header files ---
 #include "AliDigitizer.h"
 #include "AliConfig.h"
-#include "AliEMCALCalibData.h"
-
+class AliEMCALCalibData ;
 class AliEMCALSDigitizer ;
 class AliRunDigitizer ;
 
@@ -113,4 +120,4 @@ private:
 };
 
 
-#endif // AliEMCALDigitizer_H
+#endif // AliEMCALDIGITIZER_H

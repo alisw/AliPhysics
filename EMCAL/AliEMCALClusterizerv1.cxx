@@ -77,7 +77,7 @@ class TSystem;
 #include "AliEMCALReconstructor.h"
 #include "AliCDBManager.h"
 #include "AliCaloCalibPedestal.h"
-
+#include "AliEMCALCalibData.h"
 class AliCDBStorage;
 #include "AliCDBEntry.h"
 
@@ -91,7 +91,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1()
     fToUnfold(kFALSE),
     fNumberOfECAClusters(0),fCalibData(0),fCaloPed(0),
     fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
-    fECAW0(0.),fTimeCut(0.),fMinECut(0.)
+    fECAW0(0.),fTimeCut(1.),fMinECut(0.)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
@@ -106,7 +106,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry)
     fToUnfold(kFALSE),
     fNumberOfECAClusters(0),fCalibData(0), fCaloPed(0),
     fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
-    fECAW0(0.),fTimeCut(0.),fMinECut(0.)
+    fECAW0(0.),fTimeCut(1.),fMinECut(0.)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   // use this contructor to avoid usage of Init() which uses runloader
@@ -135,7 +135,7 @@ fDefaultInit(kFALSE),
 fToUnfold(kFALSE),
 fNumberOfECAClusters(0),fCalibData(calib), fCaloPed(caloped),
 fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
-fECAW0(0.),fTimeCut(0.),fMinECut(0.)
+fECAW0(0.),fTimeCut(1.),fMinECut(0.)
 {
 	// ctor, geometry and calibration are initialized elsewhere.
 	
@@ -425,8 +425,6 @@ void AliEMCALClusterizerv1::InitParameters()
 { 
   // Initializes the parameters for the Clusterizer
   fNumberOfECAClusters = 0;
-  fTimeCut = 1. ; // Originally 300 ns time cut, in data time found to be between 350 ns and 1500 ns, relax the cut for the moment.
-  //Gustavo, 17-12-09
 
   fCalibData               = 0 ;
   fCaloPed                 = 0 ;
@@ -441,9 +439,10 @@ void AliEMCALClusterizerv1::InitParameters()
     fToUnfold               = recParam->GetUnfold();
     if(fToUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!"); 
     fECALocMaxCut           = recParam->GetLocMaxCut();
-    
-    AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f, fECAW=%.3f, fMinECut=%.3f, fToUnfold=%d, fECALocMaxCut=%.3f",
-		    fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut));
+	fTimeCut                = recParam->GetTimeCut();// Originally 300 ns time cut, in data time found to be between 350 ns and 1500 ns, relax the cut for the moment, 1s.
+
+    AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f, fECAW=%.3f, fMinECut=%.3f, fToUnfold=%d, fECALocMaxCut=%.3f, fTimeCut=%f",
+		    fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut));
   }
 
 }
@@ -505,7 +504,6 @@ void AliEMCALClusterizerv1::MakeClusters()
 
   double e = 0.0, ehs = 0.0;
   TIter nextdigitC(digitsC);
-
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // clean up digits
     e = Calibrate(digit->GetAmp(), digit->GetId());
     if ( e < fMinECut || digit->GetTimeR() > fTimeCut ) 
