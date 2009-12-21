@@ -104,8 +104,14 @@ Bool_t AliESDTagCreator::ReadGridCollection(TGridResult *fresult) {
     counter += 1;
   }//grid result loop
   
-  AliInfo(Form("ESD chain created......."));	
-  AliInfo(Form("Chain entries: %d",fChain->GetEntries()));	
+  if (fChain->GetEntries() > 0) {
+    AliInfo(Form("ESD chain created......."));	
+    AliInfo(Form("Chain entries: %d",fChain->GetEntries()));	
+  } else {
+    AliWarning(Form("No ESD files found !"));
+    return kFALSE;
+  }
+    
   // Switch of branches on user request
   SwitchOffBranches();
   CreateTag(fChain,"grid");
