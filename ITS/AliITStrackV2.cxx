@@ -37,6 +37,7 @@ ClassImp(AliITStrackV2)
 
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2() : AliKalmanTrack(),
+  fCheckInvariant(kTRUE),
   fdEdx(0),
   fESDtrack(0)
 {
@@ -48,6 +49,7 @@ AliITStrackV2::AliITStrackV2() : AliKalmanTrack(),
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
   AliKalmanTrack(),
+  fCheckInvariant(kTRUE),
   fdEdx(t.GetITSsignal()),
   fESDtrack(&t)
 {
@@ -105,6 +107,7 @@ void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) : 
   AliKalmanTrack(t),
+  fCheckInvariant(t.fCheckInvariant),
   fdEdx(t.fdEdx),
   fESDtrack(t.fESDtrack) 
 {
@@ -281,6 +284,8 @@ Bool_t AliITStrackV2::Invariant() const {
   //------------------------------------------------------------------
   // This function is for debugging purpose only
   //------------------------------------------------------------------
+  if(!fCheckInvariant) return kTRUE;
+
   Int_t n=GetNumberOfClusters();
 
   // take into account the misalignment error

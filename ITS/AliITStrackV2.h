@@ -28,6 +28,7 @@ public:
   AliITStrackV2(const AliITStrackV2& t);
   ~AliITStrackV2(){fESDtrack=0;}
 
+  void   SetCheckInvariant(Bool_t check=kTRUE) {fCheckInvariant=check;}
   Bool_t CorrectForMeanMaterial(Double_t xOverX0, Double_t xTimesRho,
 				Bool_t anglecorr=kFALSE) {
     return AliExternalTrackParam::CorrectForMeanMaterial(xOverX0,xTimesRho,GetMass(),anglecorr);
@@ -91,6 +92,9 @@ public:
   Int_t GetExtraModule(Int_t ilayer) const {return fModule[AliITSgeomTGeo::kNLayers+ilayer];}
 
 protected:
+
+  Bool_t fCheckInvariant;  // check the covariance matrix
+
   Double_t fdEdx;            // dE/dx
 
   static const Int_t fgkWARN; //! used for debugging purposes
@@ -104,7 +108,7 @@ protected:
 
 private:
   AliITStrackV2 &operator=(const AliITStrackV2 &tr);
-  ClassDef(AliITStrackV2,7)  //ITS reconstructed track
+  ClassDef(AliITStrackV2,8)  //ITS reconstructed track
 };
 
 inline void AliITStrackV2::SetSampledEdx(Float_t q, Int_t i) {

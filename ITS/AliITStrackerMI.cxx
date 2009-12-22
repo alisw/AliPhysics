@@ -2303,6 +2303,9 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 
 
      const AliITSdetector &det=layer.GetDetector(idet);
+     // only for ITS-SA tracks refit
+     if (ilayer>1 && fTrackingPhase.Contains("RefitInward") && !(track->GetStatus()&AliESDtrack::kTPCin)) track->SetCheckInvariant(kFALSE);
+     // 
      if (!track->Propagate(det.GetPhi(),det.GetR())) return kFALSE;
 
      track->SetDetectorIndex(idet);
@@ -2396,7 +2399,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      // cross material
      // add time if going outward
      if(!CorrectForLayerMaterial(track,ilayer,oldGlobXYZ,dir)) return kFALSE;
-                 
+     track->SetCheckInvariant(kTRUE);
   } // end loop on layers
 
   if (!track->PropagateTo(xx,0.,0.)) return kFALSE;
