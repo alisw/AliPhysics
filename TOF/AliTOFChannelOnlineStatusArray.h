@@ -38,16 +38,19 @@ public:
   void  SetHWStatus(Int_t pos, UChar_t parr);
   void  SetPulserStatus(Int_t pos, UChar_t parr);
   void  SetNoiseStatus(Int_t pos, UChar_t parr);
+  void SetLatencyWindow(Int_t pos, Int_t parr);
   UChar_t  GetStatus(Int_t pos) const;
   UChar_t  GetHWStatus(Int_t pos) const;
   UChar_t  GetPulserStatus(Int_t pos) const;
   UChar_t  GetNoiseStatus(Int_t pos) const;
+  Int_t GetLatencyWindow(Int_t pos) const;
 
 private:
   Int_t fSize;      // Size of the array of UChar_t
   UChar_t * fArray; //[fSize]
+  Int_t *fLatencyWindow; //[fSize]
 
-  ClassDef(AliTOFChannelOnlineStatusArray,1)    // TOF Sensor Online Calibration object
+  ClassDef(AliTOFChannelOnlineStatusArray,2)    // TOF Sensor Online Calibration object
 };
 
 #endif

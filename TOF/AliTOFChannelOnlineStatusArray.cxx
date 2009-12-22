@@ -31,7 +31,8 @@ ClassImp(AliTOFChannelOnlineStatusArray)
 AliTOFChannelOnlineStatusArray::AliTOFChannelOnlineStatusArray():
 	TObject(),
 	fSize(0),
-	fArray(0x0)
+	fArray(0x0),
+	fLatencyWindow(0x0)
 {
 	//default constructor
 }
@@ -40,23 +41,27 @@ AliTOFChannelOnlineStatusArray::~AliTOFChannelOnlineStatusArray()
 {
 	//distructor
 	delete [] fArray;
+	delete [] fLatencyWindow;
 }
 //________________________________________________________________
 AliTOFChannelOnlineStatusArray::AliTOFChannelOnlineStatusArray(Int_t size):
 	TObject(),
 	fSize(size),
-	fArray(new UChar_t[size])
+	fArray(new UChar_t[size]),
+	fLatencyWindow(new Int_t[size])
 {
 	// ctor with size
 	for (Int_t ich = 0; ich<size; ich ++){
 	  SetStatus(ich,kTOFOnlineUnknown);
+	  SetLatencyWindow(ich, -1);
 	}
 }
 //________________________________________________________________
 AliTOFChannelOnlineStatusArray::AliTOFChannelOnlineStatusArray(const AliTOFChannelOnlineStatusArray & source):
       TObject(),
       fSize(source.fSize),
-      fArray(source.fArray)
+      fArray(source.fArray),
+      fLatencyWindow(source.fLatencyWindow)
 { 
 	// copy constructor
 }
@@ -71,6 +76,7 @@ AliTOFChannelOnlineStatusArray &AliTOFChannelOnlineStatusArray::operator=(const 
   TObject::operator=(source);
   fSize= source.fSize;
   fArray= source.fArray;
+  fLatencyWindow= source.fLatencyWindow;
   return *this;
 }
 //________________________________________________________________
@@ -115,6 +121,16 @@ void AliTOFChannelOnlineStatusArray::SetNoiseStatus(Int_t pos, UChar_t parr)
 	AliDebug(2,Form("fArray[%d] = %d",pos,(UInt_t)fArray[pos]));
 }
 //________________________________________________________________
+void AliTOFChannelOnlineStatusArray::SetLatencyWindow(Int_t pos, Int_t parr)
+{
+	// setting latency window for channel at position = pos
+	AliDebug(2,Form("Latency window = %d",parr));
+	if (pos>-1 && pos < fSize){
+	  fLatencyWindow[pos] = parr;
+	}
+	AliDebug(2,Form("fLatencyWindow[%d] = %d",pos,fLatencyWindow[pos]));
+}
+//________________________________________________________________
 UChar_t AliTOFChannelOnlineStatusArray::GetStatus(Int_t pos) const 
 {
 	// getting the status for channel at position = pos 
@@ -154,4 +170,13 @@ UChar_t AliTOFChannelOnlineStatusArray::GetNoiseStatus(Int_t pos) const
 	UChar_t noiseSt = parr & kTOFNoise;
 	//	UChar_t noiseSt = parr & 0x30;
 	return noiseSt; 
+}
+//________________________________________________________________
+Int_t AliTOFChannelOnlineStatusArray::GetLatencyWindow(Int_t pos) const 
+{
+	// getting the latency window for channel at position = pos 
+  Int_t lw = -1; 
+  if  (pos>-1 && pos < fSize)lw = fLatencyWindow[pos];
+  AliDebug(2,Form("lw = %d ",lw));
+  return lw;
 }

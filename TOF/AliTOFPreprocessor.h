@@ -58,6 +58,8 @@ class AliTOFPreprocessor : public AliPreprocessor
     AliTOFChannelOnlineStatusArray *fStatus; // Array with TOF channels' status
     Int_t *fMatchingWindow;                  //[fNChannels]
                                              // Array of matching windows (one per channel) - to be used in noise runs
+    Int_t *fLatencyWindow;                   //[fNChannels]
+                                             // Array of latency windows (one per channel)
     ClassDef(AliTOFPreprocessor, 0);         
 };
 #endif

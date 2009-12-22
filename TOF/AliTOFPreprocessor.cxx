@@ -87,7 +87,8 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
   fStoreRefData(kTRUE),
   fFDRFlag(kFALSE),
   fStatus(0),
-  fMatchingWindow(0)
+  fMatchingWindow(0),
+  fLatencyWindow(0)
 {
   // constructor
   AddRunType("PHYSICS");
@@ -1004,7 +1005,8 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
    * if there is no stored FEE in OCDB set update flag */
   
   fMatchingWindow = new Int_t[fNChannels];
-
+  fLatencyWindow = new Int_t[fNChannels];
+  
   AliCDBEntry *cdbEntry = GetFromOCDB("Calib","Status");
   if (!cdbEntry) {
 	  /* no CDB entry found. set update flag */
@@ -1027,12 +1029,18 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 	   * if different set update flag and break loop */
 	  //AliDebug(2,Form( " channel %i status before FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
 	  fMatchingWindow[iChannel] = feeReader.GetMatchingWindow(iChannel);
+	  fLatencyWindow[iChannel] = feeReader.GetLatencyWindow(iChannel);
 	  if (feeReader.IsChannelEnabled(iChannel)) {
 		  hCurrentFEE.SetBinContent(iChannel + 1, 1);
 		  if (fStatus->GetHWStatus(iChannel)!=AliTOFChannelOnlineStatusArray::kTOFHWOk){
 			  updateOCDB = kTRUE;
 			  fStatus->SetHWStatus(iChannel,AliTOFChannelOnlineStatusArray::kTOFHWOk);
 			  AliDebug(3,Form( " changed into enabled: channel %i status after FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
+		  }
+		  if (fStatus->GetLatencyWindow(iChannel)!=fLatencyWindow[iChannel]){
+			  updateOCDB = kTRUE;
+			  fStatus->SetLatencyWindow(iChannel,fLatencyWindow[iChannel]);
+			  AliDebug(3,Form( " changed latency window: channel %i latency window after FEE = %i",iChannel,fStatus->GetLatencyWindow(iChannel)));
 		  }
 	  }
 	  else {
