@@ -94,6 +94,15 @@ AliITSQAChecker& AliITSQAChecker::operator=(const AliITSQAChecker& qac){
   return *this;
 }
 
+
+//____________________________________________________________________________
+AliITSQAChecker::~AliITSQAChecker(){
+  // destructor
+  if(fSPDChecker)delete fSPDChecker;
+  if(fSDDChecker)delete fSDDChecker;
+  if(fSSDChecker)delete fSSDChecker;
+
+}
 //____________________________________________________________________________
 Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam)
 {
