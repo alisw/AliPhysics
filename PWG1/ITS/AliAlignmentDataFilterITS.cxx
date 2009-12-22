@@ -281,7 +281,7 @@ void AliAlignmentDataFilterITS::CreateOutputObjects()
   fListOfHistos->Add(fHistLayer5);
 
 
-  fntExtra = new TNtuple("fntExtra","extra clusters in ITS","ncls:layer:ladder:volid:phi:x:y:z:xloc:zloc:dxy:dz:d0mu:z0mu");
+  fntExtra = new TNtuple("fntExtra","extra clusters in ITS","ncls:layer:ladder:volid:phi:x:y:z:xloc:zloc:dxy:dz:d0mu:z0mu:pt");
   fListOfHistos->Add(fntExtra);
 
   fntCosmicMatching = new TNtuple("fntCosmicMatching","cosmic tracks matching in ITS","ncls1:ncls2:pt1:pt2:sigmad01:sigmad02:sigmaz01:sigmaz02:dxy:dz:phimu:thetamu:d0mu:z0mu");
@@ -386,6 +386,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
 
 
   runNumber = (Float_t)esd->GetRunNumber();
+  Int_t uid=10000+fESD->GetEventNumberInFile();
 
   TTree* esdTree = dynamic_cast<TTree*> (GetInputData(0));
   // Get the list of OCDB objects used for reco 
@@ -570,9 +571,10 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   Float_t dzOverlap[2];
   Float_t curvArray[2],curverrArray[2];
   Double_t globExtra[3],locExtra[3];
-  if(GetRecoParam()->GetAlignFilterCosmicMergeTracks()) 
+  if(GetRecoParam()->GetAlignFilterCosmicMergeTracks()) {
     arrayForTree = new AliTrackPointArray(jpt);
-  
+    arrayForTree->SetUniqueID(uid);
+  }
   jpt=0;
   for(itrack=0; itrack<2; itrack++) {
     if(itrack==0) {
@@ -586,6 +588,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
     if(!(GetRecoParam()->GetAlignFilterCosmicMergeTracks())) {
       jpt=0;
       arrayForTree = new AliTrackPointArray(nclsTrk[itrack]);
+      arrayForTree->SetUniqueID(uid);
     }
     array = track->GetTrackPointArray();
     for(ipt=0; ipt<array->GetNPoints(); ipt++) {
@@ -646,7 +649,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
 	dzOverlap[0]=(Float_t)((phivT-phiv)*0.5*(radiusT+radius));
 	if(TMath::Abs(TMath::Tan(0.5*(thetav+thetavT)))<0.00001) continue;
 	dzOverlap[1]=(Float_t)((pointT.GetZ()-point.GetZ())-(radiusT-radius)/TMath::Tan(0.5*(thetav+thetavT)));
-	fntExtra->Fill((Float_t)nclsTrk[itrack],(Float_t)(layerId-1),lad,volId,TMath::ATan2(point.GetY(),point.GetX()),point.GetX(),point.GetY(),point.GetZ(),locExtra[0],locExtra[2],dzOverlap[0],dzOverlap[1],d0z0mu[0],d0z0mu[1]);
+	fntExtra->Fill((Float_t)nclsTrk[itrack],(Float_t)(layerId-1),lad,volId,TMath::ATan2(point.GetY(),point.GetX()),point.GetX(),point.GetY(),point.GetZ(),locExtra[0],locExtra[2],dzOverlap[0],dzOverlap[1],d0z0mu[0],d0z0mu[1],track->Pt());
       }
     }
 
@@ -734,6 +737,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 
 
   runNumber = (Float_t)esd->GetRunNumber();
+  Int_t uid=20000+fESD->GetEventNumberInFile();
 
   TTree* esdTree = dynamic_cast<TTree*> (GetInputData(0));
   // Get the list of OCDB objects used for reco 
@@ -821,6 +825,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
     Float_t dzOverlap[2];
     Double_t globExtra[3],locExtra[3];
     arrayForTree = new AliTrackPointArray(jpt);
+    arrayForTree->SetUniqueID(uid);
     jpt=0;
     array = track->GetTrackPointArray();
     if(!array) continue;
@@ -877,7 +882,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 	dzOverlap[0]=(Float_t)((phivT-phiv)*0.5*(radiusT+radius));
 	if(TMath::Abs(TMath::Tan(0.5*(thetav+thetavT)))<0.00001) continue;
 	dzOverlap[1]=(Float_t)((pointT.GetZ()-point.GetZ())-(radiusT-radius)/TMath::Tan(0.5*(thetav+thetavT)));
-	fntExtra->Fill((Float_t)ncls,(Float_t)(layerId-1),lad,volId,TMath::ATan2(point.GetY(),point.GetX()),point.GetX(),point.GetY(),point.GetZ(),locExtra[0],locExtra[2],dzOverlap[0],dzOverlap[1],d0z0[0],d0z0[1]);
+	fntExtra->Fill((Float_t)ncls,(Float_t)(layerId-1),lad,volId,TMath::ATan2(point.GetY(),point.GetX()),point.GetX(),point.GetY(),point.GetZ(),locExtra[0],locExtra[2],dzOverlap[0],dzOverlap[1],d0z0[0],d0z0[1],track->Pt());
       }
     }
 
