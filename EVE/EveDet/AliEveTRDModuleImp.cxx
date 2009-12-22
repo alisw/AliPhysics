@@ -461,6 +461,9 @@ void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
   Int_t  istk = geo->GetStack(fDet);
   Int_t  ilyr = geo->GetLayer(fDet);
   Int_t  icha = istk*6+ilyr;
+  Int_t idx(1); 
+  if(ism>12&&ism<16) idx=3;
+  else if(ism==11||ism==12) idx=2;
 
   // define pad plane size in pads
   AliTRDpadPlane *pp = fGeo->GetPadPlane(ilyr, istk);
@@ -482,7 +485,8 @@ void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
   }
 
   // define rendarable volumes
-  gGeoManager->cd(Form("/B077_1/BSEGMO%d_1/BTRD%d_1/UTR1_1/UTS1_1/UTI1_1/UT%02d_1", ism, ism, icha));
+  if(!gGeoManager->cd(Form("/B077_1/BSEGMO%d_1/BTRD%d_1/UTR%d_1/UTS%d_1/UTI%d_1/UT%02d_1", ism, ism, idx, idx, idx, icha))) return;
+
   fShape = new TEveGeoTopNode(gGeoManager, gGeoManager->GetCurrentNode());
   fShape->RefMainTrans().SetFrom(*gGeoManager->GetCurrentMatrix());
   fShape->DisableListElements();
