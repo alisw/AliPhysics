@@ -2090,19 +2090,24 @@ void AliTRDtrackerV1::CookNTimeBins()
   } else if(fkReconstructor && fkReconstructor->HasDigitsParam()) {
     // second look into digits param to avoid DB query
     fgNTimeBins = fkReconstructor->GetDigitsParam()->GetNTimeBins();
-    AliDebug(2, Form("NTimeBins [%d] (set from digits param)", fgNTimeBins));
-  } else { // third query DB
+    if(fgNTimeBins>0) AliDebug(2, Form("NTimeBins [%d] (set from digits param)", fgNTimeBins));
+    else AliWarning(Form("NTimeBins [%d] failed from digits param.", fgNTimeBins));
+  }
+
+  if(!fgNTimeBins){ // third query DB
     AliTRDcalibDB *trd(NULL);
     if((trd = AliTRDcalibDB::Instance())) {
       if((fgNTimeBins = trd->GetNumberOfTimeBinsDCS()) <= 0){
         AliError("Corrupted DCS Object in OCDB");
         fgNTimeBins = 24;
-        AliDebug(2, Form("NTimeBins [%d] (set to default)", fgNTimeBins));
+        AliDebug(2, Form("NTimeBins [%d] (set to default 24)", fgNTimeBins));
       } else AliDebug(2, Form("NTimeBins [%d] (set from DB)", fgNTimeBins));
     } else AliFatal("Could not get DB.");
   }
+
   if(fgNTimeBins<=0){
-    AliFatal("Could not get number of time bins.");
+    AliError("NTimeBins failed all settings. Use default 24 !");
+    fgNTimeBins = 24;
   }
 }
 
