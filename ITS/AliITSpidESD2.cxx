@@ -29,19 +29,18 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliITSLoader.h"
+#include "AliITSPidParams.h"
 #include "AliITSPident.h"
-#include "AliITSSteerPid.h"
 #include "AliLog.h"
 
 ClassImp(AliITSpidESD2)
 //_________________________________________________________________________
 AliITSpidESD2::AliITSpidESD2():
   AliITSpidESD(),
-  fSp(0)
+  fPidPars(0)
 { 
   //  The main constructor
-  fSp=new AliITSSteerPid();
-  fSp->InitLayer();
+  fPidPars=new AliITSPidParams("default");
 }
 
 
@@ -49,13 +48,13 @@ AliITSpidESD2::AliITSpidESD2():
 AliITSpidESD2::~AliITSpidESD2(){
   //destructor
 
-  if(fSp)delete fSp;
+  if(fPidPars)delete fPidPars;
 }
 
 
 //______________________________________________________________________
 AliITSpidESD2::AliITSpidESD2(const AliITSpidESD2 &ob) :AliITSpidESD(ob),
-fSp(ob.fSp) 
+fPidPars(ob.fPidPars) 
 {
   // Copy constructor
 }
@@ -74,27 +73,12 @@ AliITSpidESD2& AliITSpidESD2::operator=(const AliITSpidESD2& ob ){
 void AliITSpidESD2::GetITSpidSingleTrack(AliESDtrack* esdtr, Double_t condprobfun[]){
   // Method to calculate PID probabilities for a single track
   
-  Double_t momits=esdtr->GetP();
-  Double_t qclu[4];
-  esdtr->GetITSdEdxSamples(qclu);
-
-  Float_t qclucorr[8],nlay[8];
-  for(Int_t jj=0;jj<8;jj++){
-    if(jj<4 && qclu[jj]>0){
-      qclucorr[jj]=qclu[jj]; 
-      nlay[jj]=jj+2; // layers numbered from 0 to 5
-    }
-    else{ 
-      qclucorr[jj]=-1;
-      nlay[jj]=0;
-    }
-  }
   
-  Float_t prip=0.33;
-  Float_t prik=0.33;
-  Float_t pripi=0.33;
-  Float_t prie=0.;
-  AliITSPident mypid(momits,fSp,qclucorr,nlay,prip,prik,pripi,prie);
+  Double_t prip=0.33;
+  Double_t prik=0.33;
+  Double_t pripi=0.33;
+  Double_t prie=0.;
+  AliITSPident mypid(esdtr,fPidPars,prip,prik,pripi,prie);
   condprobfun[0]=mypid.GetProdCondFunPi();//el --PID in the ITS does not distinguish among Pi,el,mu
   condprobfun[1]=mypid.GetProdCondFunPi();//mu
   condprobfun[2]=mypid.GetProdCondFunPi();//pi

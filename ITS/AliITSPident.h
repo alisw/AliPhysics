@@ -11,19 +11,18 @@
 
 #include <TObject.h>
 class AliESDtrack;
-class AliITSSteerPid;
 class TF1;
-class AliITSPidParItem;
+class AliITSPidParams;
+
 class AliITSPident : public TObject{
 
  public:
   AliITSPident();
-  AliITSPident(Double_t mom,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
+  AliITSPident(Double_t mom,AliITSPidParams *pars,Double_t *Qlay,Double_t priorip=0.066,Double_t priorik=0.103,Double_t prioripi=0.83,Double_t priorie=0.001);
   
-  AliITSPident(AliESDtrack *track,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
+  AliITSPident(AliESDtrack *track,AliITSPidParams *pars,Double_t priorip=0.066,Double_t priorik=0.103,Double_t prioripi=0.83,Double_t priorie=0.001);
 
   virtual ~AliITSPident();
-  Float_t GetP() const {return fMom;}//local momentum (GeV/c)
   Double_t GetCondFunPro(Int_t lay) const {
     return fCondFunProLay[lay];
   }
@@ -36,42 +35,36 @@ class AliITSPident : public TObject{
     return fCondFunPiLay[lay];
   }
   Double_t GetProdCondFunPi() const;
-  void PrintParameters() const;
-  Float_t GetPBayesp()const {return fPBayesp;}
-  Float_t GetPBayesk()const {return fPBayesk;}
-  Float_t GetPBayespi()const {return fPBayespi;}
-  Float_t GetPPriorip() const {return fPPriorip;}
-  Float_t GetPPriorik() const {return fPPriorik;}
-  Float_t GetPPrioripi() const {return fPPrioripi;}
-  Float_t GetPPriorie() const {return fPPriorie;}
-  void GetNclsPerLayer(Int_t *ncls) const;
-  static Double_t Langaufun(Double_t *x, Double_t *par);
-  static Double_t Langaufun2(Double_t *x, Double_t *par);
-  static Double_t Langaufunnorm(Double_t *x, Double_t *par);
-  static Double_t Gaus2(Double_t *x, Double_t *par);
+
+  Double_t GetPBayesp()const {return fPBayesp;}
+  Double_t GetPBayesk()const {return fPBayesk;}
+  Double_t GetPBayespi()const {return fPBayespi;}
+  Double_t GetPPriorip() const {return fPPriorip;}
+  Double_t GetPPriorik() const {return fPPriorik;}
+  Double_t GetPPrioripi() const {return fPPrioripi;}
+  Double_t GetPPriorie() const {return fPPriorie;}
   
  private:
 
-  void CookFunItsLay(Int_t lay,Int_t opt,Double_t *par,Double_t dedx,Double_t mom,Double_t rangei,Double_t rangef,TString comment);
-  void CookBayes(Double_t *condfun,Float_t *prior);
-  Float_t CookCombinedBayes(Double_t condfun[][3],Float_t *prior,Int_t part)const;
-  Float_t CookProd(Double_t condfun[][3],Int_t part) const;
-  Float_t CookSum(Double_t condfun[][3],Float_t *prior) const;
+  void CalculateResponses(Double_t mom,AliITSPidParams *pars, Double_t *Qlay);
+  Double_t CookCombinedBayes(Double_t condfun[][3],Double_t *prior,Int_t part)const;
+  Double_t CookProd(Double_t condfun[][3],Int_t part) const;
+  Double_t CookSum(Double_t condfun[][3],Double_t *prior) const;
+
   AliITSPident(const AliITSPident &ob); // copy constructor
   AliITSPident& operator=(const AliITSPident & ob); // ass. op.
 
-  Float_t fMom;                   // Particle momentum
   Double_t fCondFunProLay[8];     // one for each silicon layer
   Double_t fCondFunKLay[8];       // cond. prob. function kaons per layer
   Double_t fCondFunPiLay[8];      // cond. prob. function pions per layer
-  Float_t fPBayesp;               // Bayes prob. 
-  Float_t fPBayesk;               // Bayes prob. for kaons
-  Float_t fPBayespi;              // Bayes prob. for pions 
-  Float_t fPPriorip;              // Priori prob. 
-  Float_t fPPriorik;              // Priori prob. for kaons
-  Float_t fPPrioripi;             // Priori prob. for pions
-  Float_t fPPriorie;              // Priori prob. for electrons
-  Int_t fNcls[4];                 // N. of clusters per layer (sdd1,sdd2,ssd1,ssd2) 
-  ClassDef(AliITSPident,3);
+  Double_t fPBayesp;               // Bayes prob. 
+  Double_t fPBayesk;               // Bayes prob. for kaons
+  Double_t fPBayespi;              // Bayes prob. for pions 
+  Double_t fPPriorip;              // Priori prob. 
+  Double_t fPPriorik;              // Priori prob. for kaons
+  Double_t fPPrioripi;             // Priori prob. for pions
+  Double_t fPPriorie;              // Priori prob. for electrons
+
+  ClassDef(AliITSPident,4);
 };
 #endif

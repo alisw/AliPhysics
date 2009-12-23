@@ -17,7 +17,7 @@
 #include "AliITSpidESD.h"
 #include "AliESDtrack.h"
 
-class AliITSSteerPid;
+class AliITSPidParams;
 
 class AliITSpidESD2 : public AliITSpidESD {
 public:
@@ -30,9 +30,9 @@ public:
   virtual Int_t MakePID(AliESDEvent *event);
 
 private:
-  AliITSSteerPid* fSp;       //!pointer to AliITSSteerPid
+  AliITSPidParams* fPidPars;       //!pointer to AliITSSteerPid
 
-  ClassDef(AliITSpidESD2,3)   // ITS PID class
+  ClassDef(AliITSpidESD2,4)   // ITS PID class
 };
 
 #endif

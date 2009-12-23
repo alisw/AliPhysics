@@ -6,14 +6,13 @@
 // Origin: Elena Bruna bruna@to.infn.it,, Massimo Masera masera@to.infn.it//
 //////////////////////////////////////////////////////////////////////////
 #include "AliESDtrack.h"
+#include "AliITSPidParams.h"
+#include "AliPID.h"
 #include "AliITSPident.h"
-#include "AliITSSteerPid.h"
-#include <Riostream.h>
 
 ClassImp(AliITSPident)
   //_______________________________________________________________________
 AliITSPident::AliITSPident():
-fMom(0),
 fPBayesp(0),
 fPBayesk(0),
 fPBayespi(0),
@@ -28,38 +27,13 @@ fPPriorie(0)
     fCondFunKLay[i]=0;
     fCondFunPiLay[i]=0;
   }
-  for (Int_t i=0;i<4;i++)fNcls[i]=0;
 }
 //_______________________________________________________________________
 AliITSPident::~AliITSPident(){
   // destructor
 }
-//______________________________________________________________________
-AliITSPident::AliITSPident(const AliITSPident &ob) :TObject(ob),
-fMom(ob.fMom),
-fPBayesp(ob.fPBayesp),
-fPBayesk(ob.fPBayesk),
-fPBayespi(ob.fPBayespi),
-fPPriorip(ob.fPPriorip),
-fPPriorik(ob.fPPriorik),
-fPPrioripi(ob.fPPrioripi),
-fPPriorie(ob.fPPriorie)
-{
-  // Copy constructor
-}
-
-//______________________________________________________________________
-AliITSPident& AliITSPident::operator=(const AliITSPident&  ob){
-  // Assignment operator
-  this->~AliITSPident();
-  new(this) AliITSPident(ob);
-  return *this;
-}
-
-
 //_______________________________________________________________________
-AliITSPident::AliITSPident(Double_t mom,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
-fMom(mom),
+AliITSPident::AliITSPident(Double_t mom,AliITSPidParams *pars, Double_t *Qlay,Double_t priorip,Double_t priorik,Double_t prioripi,Double_t priorie):
 fPBayesp(0),
 fPBayesk(0),
 fPBayespi(0),
@@ -69,59 +43,10 @@ fPPrioripi(prioripi),
 fPPriorie(priorie)
 {
   //
-  for (Int_t i=0;i<8;i++){
-    fCondFunProLay[i]=-1;
-    fCondFunKLay[i]=-1;
-    fCondFunPiLay[i]=-1;
-  }
-  for(Int_t la=0;la<4;la++){//loop on layers
-    Double_t parp[3];Double_t park[3];Double_t parpi[3];
-    fNcls[la]=0;
-    Double_t range[6];
-    range[0]=0.3*parp[1];
-    range[1]=2.*parp[1];
-
-    range[2]=0.3*park[1];
-    range[3]=2.*park[1];
-    
-    range[4]=0.3*parpi[1];
-    range[5]=2.*parpi[1];
-    Int_t layer=la+2;
-    for(Int_t ii=0;ii<8;ii++){
-      if(nlay[ii]==layer){
-	fNcls[la]++;
-	if(Qlay[ii]>0){
-	  sp->GetParFitLayer(la,fMom,parp,park,parpi);
-	  CookFunItsLay(ii,0,parp,Qlay[ii],fMom,range[0],range[1],"fPro");
-	  CookFunItsLay(ii,1,park,Qlay[ii],fMom,range[2],range[3],"fKao");
-	  CookFunItsLay(ii,2,parpi,Qlay[ii],fMom,range[4],range[5],"fPi");
-	}  
-      }
-    }
-    
-  }
- 
-  Float_t prior[4];Double_t condFun[8][3];
-
-  prior[0]=fPPriorip;
-  prior[1]=fPPriorik;
-  prior[2]=fPPrioripi;
-  prior[3]=fPPriorie;
-  for(Int_t la=0;la<8;la++){
-    condFun[la][0]= fCondFunProLay[la];
-    condFun[la][1]= fCondFunKLay[la]; 
-    condFun[la][2]= fCondFunPiLay[la];
-    
-  }
-
-  fPBayesp=CookCombinedBayes(condFun,prior,0);
-  fPBayesk=CookCombinedBayes(condFun,prior,1); 
-  fPBayespi=CookCombinedBayes(condFun,prior,2); 
+  CalculateResponses(mom,pars,Qlay);
 }
-
 //__________________________________________________________________________________________
-AliITSPident::AliITSPident(AliESDtrack *track,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
-fMom(0),
+AliITSPident::AliITSPident(AliESDtrack *track,AliITSPidParams *pars,Double_t priorip,Double_t priorik,Double_t prioripi,Double_t priorie):
 fPBayesp(0),
 fPBayesk(0),
 fPBayespi(0),
@@ -131,74 +56,52 @@ fPPrioripi(prioripi),
 fPPriorie(priorie)
 {
   //
+  Double_t mom=track->GetP();
+  Double_t Qlay[4]={0.,0.,0.,0.};
+  track->GetITSdEdxSamples(Qlay);
+  CalculateResponses(mom,pars,Qlay);
+} 
+//_______________________________________________________________________
+void AliITSPident::CalculateResponses(Double_t mom,AliITSPidParams *pars, Double_t *Qlay){
+  // calculates conditional probabilities
+
   for (Int_t i=0;i<8;i++){
     fCondFunProLay[i]=-1;
     fCondFunKLay[i]=-1;
     fCondFunPiLay[i]=-1;
   }
-  Double_t xr;
-  Double_t par[5];
-  track->GetExternalParameters(xr,par);
-  if (par[4]!=0) {
-    Float_t lamb=TMath::ATan(par[3]);
-    fMom=1/(TMath::Abs(par[4])*TMath::Cos(lamb));
-  }
- 
- 
-  for(Int_t la=0;la<4;la++){//loop on layers
-    Double_t parp[3];Double_t park[3];Double_t parpi[3];
-    fNcls[la]=0;
-    Double_t range[8];
-    range[0]=0.3*parp[1];
-    range[1]=2.*parp[1];
 
-    range[2]=0.3*park[1];
-    range[3]=2.*park[1];
-
-    range[4]=0.3*parpi[1];
-    range[5]=2.*parpi[1];
-
-    Int_t layer=la+2;
-    for(Int_t ii=0;ii<8;ii++){
-      if(nlay[ii]==layer){
-	fNcls[la]++;
-	if(Qlay[ii]>0){
-	  sp->GetParFitLayer(la,fMom,parp,park,parpi);
-	  CookFunItsLay(ii,0,parp,Qlay[ii],fMom,range[0],range[1],"fPro");
-	  CookFunItsLay(ii,1,park,Qlay[ii],fMom,range[2],range[3],"fKao");
-	  CookFunItsLay(ii,2,parpi,Qlay[ii],fMom,range[4],range[5],"fPi");
-	}  
-      }
+  for(Int_t iLay=0; iLay<4; iLay++){//loop on layers (3=SDD inner 6=SSD outer)
+    Double_t dedx=Qlay[iLay];
+    if(dedx>0){
+      fCondFunProLay[iLay]=pars->GetLandauGausNorm(dedx,AliPID::kProton,mom,iLay+3);
+      if(mom<0.4 && dedx<100)fCondFunProLay[iLay]=0.00001;
+      if(mom<0.4 &&dedx<50)fCondFunProLay[iLay]=0.0000001;
+      fCondFunKLay[iLay]=pars->GetLandauGausNorm(dedx,AliPID::kKaon,mom,iLay+3);
+      if(mom<0.25 && dedx<100)fCondFunKLay[iLay]=0.00001;
+      if(mom<0.4 &&dedx<30)fCondFunKLay[iLay]=0.0000001;   
+      fCondFunPiLay[iLay]=pars->GetLandauGausNorm(dedx,AliPID::kPion,mom,iLay+3);
+      if(mom<0.6 &&dedx<20)fCondFunPiLay[iLay]=0.001;
     }
-    
   }
-
-  Float_t prior[4];Double_t condFun[8][3];
+  Double_t prior[4];
+  Double_t condFun[8][3];
 
   prior[0]=fPPriorip;
   prior[1]=fPPriorik;
   prior[2]=fPPrioripi;
   prior[3]=fPPriorie;
-  for(Int_t la=0;la<8;la++){
-    condFun[la][0]= fCondFunProLay[la];
-    condFun[la][1]= fCondFunKLay[la]; 
-    condFun[la][2]= fCondFunPiLay[la];
-    
+  for(Int_t iLay=0;iLay<8;iLay++){
+    condFun[iLay][0]= fCondFunProLay[iLay];
+    condFun[iLay][1]= fCondFunKLay[iLay]; 
+    condFun[iLay][2]= fCondFunPiLay[iLay];
   }
 
   fPBayesp=CookCombinedBayes(condFun,prior,0);
   fPBayesk=CookCombinedBayes(condFun,prior,1); 
   fPBayespi=CookCombinedBayes(condFun,prior,2); 
-
 }
 //_______________________________________________________________________
-void AliITSPident::GetNclsPerLayer(Int_t *ncls) const{
-  //number of clusters for each layer (sdd1,sdd2,ssd1,ssd2)
- for(Int_t la=0;la<4;la++){
-   ncls[la]=fNcls[la];
- }
-
-}//_______________________________________________________________________
 Double_t AliITSPident::GetProdCondFunPro() const {
   //Product of conditional probability functions for protons
     Double_t rv=1.;
@@ -220,175 +123,30 @@ Double_t AliITSPident::GetProdCondFunK() const {
 //_______________________________________________________________________
 Double_t AliITSPident::GetProdCondFunPi() const {
   //Product of conditional probability functions for pions
-    Double_t rv=1.; 
-    for(Int_t i=0;i<8;i++){
-      Double_t fun=GetCondFunPi(i);
-      if(fun>=0)rv*=fun;
-    }
-    return rv;
-}
-//_______________________________________________________________________
-void AliITSPident::PrintParameters() const{
- //print parameters
-  cout<<"___________________________\n";
-  cout<<"Track Local Momentum = "<<"  "<<fMom<<endl;
-}
-
-//_______________________________________________________________________
-Double_t AliITSPident::Langaufun(Double_t *x, Double_t *par) {
-
-  //Fit parameters:
-  //par[0]=Width (scale) parameter of Landau density
-  //par[1]=Most Probable (MP, location) parameter of Landau density
-  //par[2]=Total area (integral -inf to inf, normalization constant)
-  //par[3]=Width (sigma) of convoluted Gaussian function
-  //
-  //In the Landau distribution (represented by the CERNLIB approximation), 
-  //the maximum is located at x=-0.22278298 with the location parameter=0.
-  //This shift is corrected within this function, so that the actual
-  //maximum is identical to the MP parameter.
-
-  // Numeric constants
-  Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
-  Double_t mpshift  = -0.22278298;       // Landau maximum location
-
-  // Control constants
-  Double_t np = 100.0;      // number of convolution steps
-  Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
-
-  // Variables
-  Double_t xx;
-  Double_t mpc;
-  Double_t fland;
-  Double_t sum = 0.0;
-  Double_t xlow,xupp;
-  Double_t step;
-  Double_t i;
-
-
-  // MP shift correction
-  mpc = par[1] - mpshift * par[0]; 
-
-  // Range of convolution integral
-  xlow = x[0] - sc * par[3];
-  xupp = x[0] + sc * par[3];
-
-  step = (xupp-xlow) / np;
-
-  // Convolution integral of Landau and Gaussian by sum
-  for(i=1.0; i<=np/2; i++) {
-    xx = xlow + (i-.5) * step;
-    fland = TMath::Landau(xx,mpc,par[0]) / par[0];
-    sum += fland * TMath::Gaus(x[0],xx,par[3]);
-
-    xx = xupp - (i-.5) * step;
-    fland = TMath::Landau(xx,mpc,par[0]) / par[0];
-    sum += fland * TMath::Gaus(x[0],xx,par[3]);
+  Double_t rv=1.; 
+  for(Int_t i=0;i<8;i++){
+    Double_t fun=GetCondFunPi(i);
+    if(fun>=0)rv*=fun;
   }
-
-  return (par[2] * step * sum * invsq2pi / par[3]);
-}
-
-//_______________________________________________________________________
-Double_t AliITSPident::Langaufun2(Double_t *x, Double_t *par){
-  //normalized langaufun
-  return 1/par[4]*Langaufun(x,par);
+  return rv;
 }
 //_______________________________________________________________________
-Double_t AliITSPident::Langaufunnorm(Double_t *x, Double_t *par){
-   //Fit parameters:
-  //par[0]=Width (scale) parameter of Landau density
-  //par[1]=Most Probable (MP, location) parameter of Landau density
-  
-  //par[2]=Width (sigma) of convoluted Gaussian function
-  //
-  //In the Landau distribution (represented by the CERNLIB approximation), 
-  //the maximum is located at x=-0.22278298 with the location parameter=0.
-  //This shift is corrected within this function, so that the actual
-  //maximum is identical to the MP parameter.
-
-  // Numeric constants
-  Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
-  Double_t mpshift  = -0.22278298;       // Landau maximum location
-
-  // Control constants
-  Double_t np = 100.0;      // number of convolution steps
-  Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
-
-  // Variables
-  Double_t xx;
-  Double_t mpc;
-  Double_t fland;
-  Double_t sum = 0.0;
-  Double_t xlow,xupp;
-  Double_t step;
-  Double_t i;
-
-
-  // MP shift correction
-  mpc = par[1] - mpshift * par[0]; 
-
-  // Range of convolution integral
-  xlow = x[0] - sc * par[2];
-  xupp = x[0] + sc * par[2];
-
-  step = (xupp-xlow) / np;
-
-  // Convolution integral of Landau and Gaussian by sum
-  for(i=1.0; i<=np/2; i++) {
-    xx = xlow + (i-.5) * step;
-    fland = TMath::Landau(xx,mpc,par[0]) / par[0];
-    sum += fland * TMath::Gaus(x[0],xx,par[2]);
-
-    xx = xupp - (i-.5) * step;
-    fland = TMath::Landau(xx,mpc,par[0]) / par[0];
-    sum += fland * TMath::Gaus(x[0],xx,par[2]);
-  }
-
-  return (step * sum * invsq2pi / par[2]);
-}
-//_______________________________________________________________________
-Double_t AliITSPident::Gaus2(Double_t *x, Double_t *par){
-  //normalized gaussian function
-  return 1/(sqrt(2*TMath::Pi())*par[1])*TMath::Gaus(x[0],par[0],par[1]);
-}
-//_______________________________________________________________________
-void AliITSPident::CookFunItsLay(Int_t lay,Int_t opt,Double_t *par,Double_t dedx,Double_t mom,Double_t rangei,Double_t rangef,TString comment){
-  //it gives the response functions
- TF1 funLay(comment,Langaufunnorm,rangei,rangef,3);
- funLay.SetParameters(par);
- Double_t condFun=funLay.Eval(dedx);
-  if(opt==0){
-    fCondFunProLay[lay]=condFun;
-    if(mom<0.4 && dedx<100)fCondFunProLay[lay]=0.00001;
-    if(mom<0.4 &&dedx<50)fCondFunProLay[lay]=0.0000001;
-  }
-  if(opt==1){
-    fCondFunKLay[lay]=condFun; 
-    if(mom<0.25 && dedx<100)fCondFunKLay[lay]=0.00001;
-    if(mom<0.4 &&dedx<30)fCondFunKLay[lay]=0.0000001;   
-  }
-  if(opt==2){
-    fCondFunPiLay[lay]=condFun;
-    if(mom<0.6 &&dedx<20)fCondFunPiLay[lay]=0.001;
-  }
-
-}
-//_______________________________________________________________________
-Float_t AliITSPident::CookCombinedBayes(Double_t condfun[][3],Float_t *prior,Int_t part)const {
+Double_t AliITSPident::CookCombinedBayes(Double_t condfun[][3],Double_t *prior,Int_t part)const {
   //Bayesian combined PID in the ITS
   Int_t test=0; 
-  Float_t bayes;
-  Float_t pprior[4]={0,0,0,0};
+  Double_t bayes;
+  Double_t pprior[4]={0,0,0,0};
   for(Int_t j=0;j<4;j++)pprior[j]=prior[j];
   pprior[2]+=pprior[3];//prior for electrons summed to priors for pions
   for(Int_t i=0;i<8;i++){//layer
     if (condfun[i][0]>0 || condfun[i][1]>0 ||condfun[i][2]>0) test++; 
   }
-  if(test>0){
-    if ((pprior[0]!=0 || pprior[1]!=0 ||pprior[2]!=0)&&CookSum(condfun,pprior)!=0){
 
-      bayes=pprior[part]*CookProd(condfun,part)*1/CookSum(condfun,pprior);
+  if(test>0){
+    Double_t sum=CookSum(condfun,pprior);
+    if ((pprior[0]!=0 || pprior[1]!=0 ||pprior[2]!=0)&&sum!=0.){
+
+      bayes=pprior[part]*CookProd(condfun,part)*1/sum;
   
     }
     else bayes=-100;
@@ -397,21 +155,20 @@ Float_t AliITSPident::CookCombinedBayes(Double_t condfun[][3],Float_t *prior,Int
   return bayes;
 }
 //_______________________________________________________________________
-Float_t AliITSPident::CookProd(Double_t condfun[][3],Int_t part)const{
+Double_t AliITSPident::CookProd(Double_t condfun[][3],Int_t part)const{
   //
-  Float_t p=1;
+  Double_t p=1;
   for(Int_t lay=0;lay<8;lay++){
-    if(condfun[lay][part]>=0)p=p*condfun[lay][part];
+    if(condfun[lay][part]>0.) p=p*condfun[lay][part];
   }
-
   return p;
 }
 //_______________________________________________________________________
-Float_t AliITSPident::CookSum(Double_t condfun[][3],Float_t *prior)const{
+Double_t AliITSPident::CookSum(Double_t condfun[][3],Double_t *prior)const{
   //
-  Float_t sum=0;
-  Float_t pprior[4]={0,0,0,0};
-  for(Int_t j=0;j<4;j++)pprior[j]=prior[j];
+  Double_t sum=0.;
+  Double_t pprior[4]={0,0,0,0};
+  for(Int_t j=0;j<4;j++) pprior[j]=prior[j];
   pprior[2]+=pprior[3];//prior for electrons summed to priors for pions
   for(Int_t i=0;i<3;i++){//sum over the particles--electrons excluded
     sum+=pprior[i]*CookProd(condfun,i);
