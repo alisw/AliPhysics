@@ -10,10 +10,14 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Boo
     js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",filterMask);
     js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",filterMask);
 
-  js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107",filterMask);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",filterMask);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04",filterMask);
+
+    js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107",filterMask);
   }
   js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",filterMask);
   js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",filterMask);
+  js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",filterMask);
   js = AddTaskJetSpectrum2("jetsAOD_UA107","",filterMask);
   js->SetRecEtaWindow(0.2);
 

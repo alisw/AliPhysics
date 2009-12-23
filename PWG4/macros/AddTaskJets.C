@@ -222,7 +222,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
 
     jh->SetOverlapThreshold(0.75);            // overlap parameter, between 0 and 1 excluded!! 0.75 value is advised
     jh->SetPtProtojetMin(0);                  // pt min of protojets
-    jh->SetMinJetPt(10);                      // Ptmin of jets (GeV)
+    jh->SetMinJetPt(5);                      // Ptmin of jets (GeV)
 
     //do you want to subtract BG (0 = no, 1 = yes)
     jh->SetBGMode(0);

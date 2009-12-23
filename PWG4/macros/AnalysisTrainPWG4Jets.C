@@ -48,6 +48,7 @@ TString     kCommonOutputFileName = "PWG4_JetTasksOutput.root";
 //==============================================================================
 Bool_t      kUseDate            = kFALSE; // use date in train name
 Bool_t      kUseDebug           = kTRUE; // activate debugging
+Bool_t      kUseSysInfo         = kTRUE; // activate debugging
 Bool_t      kUseMC              = kTRUE;  // use MC info
 Bool_t      kIsMC               = kTRUE;  // is MC info, if false it overwrites Use(AOD)MC
 Bool_t      kUseAODMC           = kTRUE;  // use MC infA
@@ -70,10 +71,10 @@ Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
 Int_t       iPWG4ThreeJets     = 0;      // Sona's thrust task
 Int_t       iPWG4PartCorr      = 0;      // Gustavo's part corr analysis
-
+Int_t       iPWG4GammaConv     = 0;      // Gamma Conversio
 Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Filter
 TString     kDeltaAODJetName   = "AliAOD.Jet.root";     
-TString     kDeltaAODPartCorrName   = "AliAOD.Jet.root";     
+TString     kDeltaAODPartCorrName   = "deltaAODPartCorr.root";     
 
 
 //==============================================================================
@@ -168,6 +169,19 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use debugging     %d\n", (UInt_t)kUseDebug);
    printf(":: use PAR files     %d\n", (UInt_t)kUsePAR);
    printf(":: use AliEn plugin  %d\n", (UInt_t)kPluginUse);
+   printf(":: use PWG1 QA sym       %d\n", iPWG1QASym);
+   printf(":: use PWG4 Jet tasks    %d\n",iPWG4JetTasks);
+   printf(":: use PWG4 Jet Services %d\n",iPWG4JetServices);     
+   printf(":: use PWG4 Jet Spectrum %d\n",iPWG4JetSpectrum);
+   printf(":: use PWG4 UE           %d \n",iPWG4UE); 
+   printf(":: use PWG4 Pt QA MC     %d\n",iPWG4PtQAMC);
+   printf(":: use PWG4 Pt Spectra   %d\n",iPWG4PtSpectra);
+   printf(":: use PWG4 Pt QA TPC    %d\n",iPWG4PtQATPC);     
+   printf(":: use PWG4 Three Jets   %d\n",iPWG4ThreeJets);
+   printf(":: use PWG4 Part Corr    %d\n",iPWG4PartCorr);
+   printf(":: use PWG4 Gamma Conv   %d\n",iPWG4GammaConv);
+   printf(":: use HighPt FilterMask %d\n",kHighPtFilterMask);    
+
 
    //==========================================================================
    // Connect to back-end system
@@ -187,6 +201,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (kCommonOutputFileName.Length()>0)mgr->SetCommonFileName(kCommonOutputFileName.Data());
    if (kProofSaveToAlien) mgr->SetSpecialOutputLocation(kProofOutdir);
    if (!strcmp(plugin_mode, "test")) mgr->SetNSysInfo(1);
+   if (kUseSysInfo)mgr->SetNSysInfo(kUseSysInfo);
    // Load analysis specific libraries
    if (!LoadAnalysisLibraries(smode)) {
       ::Error("AnalysisTrain", "Could not load analysis libraries");
@@ -289,6 +304,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskJetServices *taskjetServ = 0;
      taskjetServ = AddTaskJetServices();
      if (!taskjetServ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetServices cannot run for this train conditions - EXCLUDED");
+     if(kGridRunRange[0]>0)taskjetServ->SetRunRange(kGridRunRange[0],kGridRunRange[1]);
+     else taskjetServ->SetRunRange(104000,105000);
    }
 
 
@@ -344,6 +361,19 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL",kUseMC,kFALSE,kIsMC);
      if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation EMCAL cannot run for this train conditions - EXCLUDED");
      if(kDeltaAODPartCorrName.Length()>0)mgr->RegisterExtraFile(kDeltaAODPartCorrName.Data()); // hmm this is written anyway.... but at least we do not register it...
+   }   
+
+   // PWG4 gamma conversion analysis
+   if (iPWG4GammaConv) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskGammaConversion.C");
+      TString cdir = gSystem->WorkingDirectory();
+      gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT/PWG4/macros/"));
+      //      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
+      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf";
+      if(!kIsMC)gcArguments += " -mc-off";
+      AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
+      gSystem->ChangeDirectory(cdir);
+      if (!taskGammaConversion) ::Warning("AnalysisTrainNew", "AliAnalysisTaskGammaConversion cannot run for these train conditions - EXCLUDED");
    }   
 
    //==========================================================================
@@ -491,6 +521,9 @@ void CheckModuleFlags(const char *mode) {
       if (iPWG4PartCorr)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4partcorr disabled on AOD's");
       iPWG4PartCorr = 0;
       if(iPWG1QASym)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG1 QA Sym disabled in analysis on AOD's");
+      if (iPWG4GammaConv)::Info("AnalysisPWG4Jets.C::CheckModuleFlags", "PWG4gammaconv disabled on AOD's");
+      iPWG4GammaConv = 0;   
+
       iPWG1QASym     = 0;
    } else {   
    // ESD analysis
@@ -708,6 +741,9 @@ Bool_t LoadAnalysisLibraries(const char *mode)
           !LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
           !LoadLibrary("PWG4PartCorrDep", mode, kTRUE)) return kFALSE;
    }
+   if (iPWG4GammaConv) {
+      if (!LoadLibrary("PWG4GammaConv", mode, kTRUE)) return kFALSE;
+   }      
 
    ::Info("AnalysisTrainPWG4Jets.C::LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
    return kTRUE;
@@ -1075,7 +1111,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    while ((output=(AliAnalysisDataContainer*)next())) {
       const char *filename = output->GetFileName();
       if (!(strcmp(filename, "default"))) {
-         if (!mgr->GetOutputEventHandler()) continue;
+	if (!mgr->GetOutputEventHandler()) continue;
          filename = mgr->GetOutputEventHandler()->GetOutputFileName();
          if (listaods.Length()) listaods += ",";
 	 listaods += filename;
@@ -1084,25 +1120,38 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 	   listaods += "pyxsec_hists.root";
 	 }
       } else {
-
 	if(!listhists->Contains(filename)){
 	  if (listhists.Length()) listhists += ",";
 	  listhists += filename;
 	}
       }
    }
-   if (mgr->GetExtraFiles().Length()) {
-     if (!strcmp(filename, "pyxsec_hists.root")) continue;
-     if (listhists.Contains(filename)) continue;
+
+   if(kUseSysInfo){
      if (listhists.Length()) listhists += ",";
-     if (listaods.Length()) listaods += ",";
+     listhists += syswatch.root;
    }
+
+   if (mgr->GetExtraFiles().Length()) {
+     if (listaods.Length()) listaods += ",";
+     listaods += mgr->GetExtraFiles();
+     listaods.ReplaceAll(" ", ",");
+   }
+
+   // if we do not fill the aod we do not need to store it
+   if(!kFillAOD)listaods="";
+
    if (listhists.Length()) listhists = Form("hist_archive.zip:%s@%s", listhists.Data(), kGridOutputStorages.Data());;
    if (listaods.Length())  listaods  = Form("aod_archive.zip:%s@%s", listaods.Data(), kGridOutputStorages.Data());;
+
    if (!listhists.Length() && !listaods.Length()) {
       ::Fatal("AnalysisTrainPWG4Jets", "No task output !");
    }
+
+   kGridMergeExclude = listaods;
+
    TString outputArchive = "log_archive.zip:stdout,stderr@ALICE::CERN::SE";
+   if(kUseSysInfo)outputArchive = "log_archive.zip:stdout,stderr,syswatch.log@ALICE::CERN::SE";
    if (listaods.Length()) {
       outputArchive += " ";
       outputArchive += listaods;
