@@ -44,7 +44,8 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual Bool_t Notify();
 
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
-
+    virtual void SetRunRange(Float_t fLo,Float_t fUp){fRunRange[0] = fLo;fRunRange[1] = fUp;}
+    
     enum { kAllTriggered = 0,kTriggeredSPDVertex,kTriggeredVertexIn,kSelected,kConstraints};
 
  private:
@@ -54,7 +55,8 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 
     Bool_t        fUseAODInput;        // take jet from input AOD not from ouptu AOD
     Float_t       fAvgTrials;          // Average number of trials
-    Float_t       fZVtxCut;          // Average number of trials
+    Float_t       fZVtxCut;            // Average number of trials
+    Float_t       fRunRange[2];        // only important for real data for 
     TProfile*     fh1Xsec;             // pythia cross section and trials
     TH1F*         fh1Trials;           // trials are added
     TH1F*         fh1PtHard;           // Pt har of the event...       
@@ -63,10 +65,11 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH2F*         fh2ESDTriggerCount;  // number of fire triggers in each case
     TH2F*         fh2TriggerVtx;       // vtx. position vs. trigger decision
     TH2F*         fh2ESDTriggerVtx;  // vtx. position vs. trigger decision 
-
+    TH2F*         fh2ESDTriggerRun;  // fired triggers vs. run number
+    TH2F*         fh2VtxXY;          // XY position of VTX were available
     TList *fHistList; // Output list
    
-    ClassDef(AliAnalysisTaskJetServices,1)
+    ClassDef(AliAnalysisTaskJetServices,2)
 };
  
 #endif

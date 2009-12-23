@@ -74,9 +74,11 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
   fh2ESDTriggerVtx(0x0),
+  fh2ESDTriggerRun(0x0),
+  fh2VtxXY(0x0),
   fHistList(0x0)  
 {
-
+  fRunRange[0] = fRunRange[1] = 0; 
 }
 
 AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
@@ -92,8 +94,11 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
   fh2ESDTriggerVtx(0x0),
+  fh2ESDTriggerRun(0x0),
+  fh2VtxXY(0x0),
   fHistList(0x0)  
 {
+  fRunRange[0] = fRunRange[1] = 0; 
   DefineOutput(1,TList::Class());
 }
 
@@ -185,6 +190,14 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   fh1PtHardTrials = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",nBinPt,binLimitsPt);
   fHistList->Add(fh1PtHardTrials);
 
+  // 3 decisions, 0 trigger X, X + SPD vertex, X + SPD vertex in range  
+  // 3 triggers BB BE/EB EE
+
+  fh2ESDTriggerRun = new TH2F("fh2ESDTriggerRun","Trigger vs run number:run;trigger",(Int_t)(1+fRunRange[1]-fRunRange[0]),fRunRange[0]-0.5,fRunRange[1]+0.5,10,-0.5,9.5);
+  fHistList->Add(fh2ESDTriggerRun);
+
+  fh2VtxXY = new TH2F("fh2VtxXY","Beam Spot all INT triggered events;x (cm);y (cm)",160,-10,10,160,-10,10);
+  fHistList->Add(fh2VtxXY);
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fHistList->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fHistList->At(i));
@@ -241,6 +254,56 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     esd = dynamic_cast<AliESDEvent*>(InputEvent());
   }
   
+  if(esd){
+    Float_t run = (Float_t)esd->GetRunNumber();
+    const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
+    Float_t zvtx = -999;
+    Float_t xvtx = -999;
+    Float_t yvtx = -999;
+
+    if(vtxESD->GetNContributors()>0){
+      zvtx = vtxESD->GetZ();
+      yvtx = vtxESD->GetY();
+      xvtx = vtxESD->GetX();
+    }
+
+    Int_t iTrig = -1;
+    if(esd->GetFiredTriggerClasses().Contains("CINT1B")
+       ||esd->GetFiredTriggerClasses().Contains("CSMBB")
+       ||esd->GetFiredTriggerClasses().Contains("MB1")
+       ||esd->GetFiredTriggerClasses().Contains("CINT6B")){
+      iTrig = 0;
+    }
+    else if(esd->GetFiredTriggerClasses().Contains("CINT1A")
+	    ||esd->GetFiredTriggerClasses().Contains("CSMBA")
+	    ||esd->GetFiredTriggerClasses().Contains("CINT6A")
+	    ||esd->GetFiredTriggerClasses().Contains("CINT1C")
+	    ||esd->GetFiredTriggerClasses().Contains("CSMBC")
+	    ||esd->GetFiredTriggerClasses().Contains("CINT6C")){
+      // empty bunch or bunch empty
+      iTrig = 1;
+    }
+    if(esd->GetFiredTriggerClasses().Contains("CINT1-E")
+       ||esd->GetFiredTriggerClasses().Contains("CINT6-E")){
+      iTrig = 2;
+    }
+
+    
+    if(iTrig>=0){
+      iTrig *= 3;
+      fh2ESDTriggerRun->Fill(run,iTrig+1);
+      if(vtxESD->GetNContributors()>0){
+	fh2ESDTriggerRun->Fill(run,iTrig+2);
+	fh2VtxXY->Fill(xvtx,yvtx);
+      }
+      if(TMath::Abs(zvtx)<fZVtxCut&&TMath::Abs(xvtx)<0.5&&TMath::Abs(yvtx)<0.5)fh2ESDTriggerRun->Fill(run,iTrig+3);
+    }
+    else{
+      fh2ESDTriggerRun->Fill(run,0);
+    }
+
+
+  }
   
   // loop over all possible trigger and 
   for(int it = AliAnalysisHelperJetTasks::kAcceptAll;it < AliAnalysisHelperJetTasks::kTrigger;it++){
