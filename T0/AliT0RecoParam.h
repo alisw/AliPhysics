@@ -50,7 +50,7 @@ class AliT0RecoParam : public AliDetectorRecoParam
 
 
 
-  ClassDef(AliT0RecoParam, 1);
+  ClassDef(AliT0RecoParam, 2);
 
 };
 #endif
