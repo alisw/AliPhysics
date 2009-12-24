@@ -11,6 +11,9 @@ ALICEINC = -I.
 
 ### define include dir for local case and par case
 
+ifneq ($(STEERBase_INCLUDE),)
+  ALICEINC += -I../$(STEERBase_INCLUDE)
+endif
 
 # only if no par file was loaded before
 ifeq ($(ALICEINC),-I.)
