@@ -1060,7 +1060,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 	bool skippedPads = false;
 	Int_t chamberId;
 	
-	for(Int_t iCh = 6; iCh < 10; iCh++)
+	for(Int_t iCh = 0; iCh < 10; iCh++)
 	{
 		chamberId = iCh;
 		
