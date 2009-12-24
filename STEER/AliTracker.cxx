@@ -539,3 +539,25 @@ void AliTracker::FillResiduals(const AliExternalTrackParam *t,
   if (h) h->Fill(residuals[1]);
 
 }
+
+Double_t AliTracker::GetTrackPredictedChi2(AliExternalTrackParam *track,
+                                           Double_t mass, Double_t step,
+			             const AliExternalTrackParam *backup) {
+  //
+  // This function brings the "track" with particle "mass" [GeV] 
+  // to the same local coord. system and the same reference plane as 
+  // of the "backup", doing it in "steps" [cm].
+  // Then, it calculates the 5D predicted Chi2 for these two tracks
+  //
+  Double_t chi2=kVeryBig;
+  Double_t alpha=backup->GetAlpha();
+  if (!track->Rotate(alpha)) return chi2;
+
+  Double_t xb=backup->GetX();
+  Double_t sign=(xb < track->GetX()) ? 1. : -1.;
+  if (!PropagateTrackTo(track,xb,mass,step,kFALSE,kAlmost1,sign)) return chi2;
+
+  chi2=track->GetPredictedChi2(backup);
+
+  return chi2;
+}
