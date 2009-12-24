@@ -14,9 +14,23 @@
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
 #endif
-
 class AliTRDefficiencyMC : public AliTRDrecoTask{
 public:
+  enum ETRDefficiencyMC{
+    kFindable= 0
+   ,kNoChmb
+   ,kCurved
+   ,kPCut
+   ,kPhiCut
+   ,kThtCut
+   ,kLayer
+   ,kPrimary
+  };
+  enum ETRDefficiencyMCstatus{
+    kAccept = 0
+   ,kMiss
+   ,kFake
+  };
   AliTRDefficiencyMC();
   virtual ~AliTRDefficiencyMC(){;}
   
@@ -29,28 +43,25 @@ public:
     
 private:
   enum{
-    kEfficiencyHistogram = 0,
-    kContaminationHistogram = 1,
-    kEfficiencySpeciesHistogram = 2,
-    kContaminationSpeciesHistogram = 7,
-    kEfficiencyNoPID = 12,
-    kContaminationNoPID = 13
+    kEfficiencyHistogram = 0
+   ,kContaminationHistogram = 1
+   ,kEfficiencySpeciesHistogram = 2
   };
-  typedef enum{
-    kAccepted = 0,
-    kRejected = 1,
-    kContamination = 2
-  } FillingMode_t;
   AliTRDefficiencyMC(const AliTRDefficiencyMC &);
   AliTRDefficiencyMC& operator=(const AliTRDefficiencyMC &);
   
-  void    FillHistograms(Int_t ntracks, Int_t *indices, FillingMode_t mode);
+  void    FillHistograms(Int_t ntracks, Int_t *indices, ETRDefficiencyMCstatus mode);
   void    FillStreamTrackWOMC(AliTRDtrackInfo * const trkInf);
 
-  Bool_t  IsFindable(AliTRDtrackInfo * const trkInf);
-  Bool_t  IsRegistered(AliTRDtrackInfo * const trkInf, Int_t *indices, Int_t nTracks);
+  Int_t   IsFindableNot(AliTRDtrackInfo * const trkInf);
+  Int_t   IsRegistered(AliTRDtrackInfo * const trkInf, Int_t *indices, Int_t nTracks);
     
-  ClassDef(AliTRDefficiencyMC, 1); // Combined tracking efficiency
+  static Float_t      fgPCut;   // lower momentum cut
+  static Float_t      fgPhiCut; // higher phi cut
+  static Float_t      fgThtCut; // higher theta cut
+
+
+  ClassDef(AliTRDefficiencyMC, 2); // Combined tracking efficiency
 };
     
 #endif
