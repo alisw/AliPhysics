@@ -1160,7 +1160,7 @@ void AliAnaCalorimeterQA::InitParameters()
   fHistoPOverEBins     = 100 ;  fHistoPOverEMax     = 10.  ;  fHistoPOverEMin     = 0. ;
   fHistodEdxBins       = 200 ;  fHistodEdxMax       = 400. ;  fHistodEdxMin       = 0. ;  
   fHistodRBins         = 300 ;  fHistodRMax         = 3.15 ;  fHistodRMin         = 0. ;
-  fHistoTimeBins       = 1e3 ;  fHistoTimeMax       = 1.e3 ;  fHistoTimeMin       = 0. ;//ns
+  fHistoTimeBins       = 1000;  fHistoTimeMax       = 1.e3 ;  fHistoTimeMin       = 0. ;//ns
   fHistoNBins          = 300 ;  fHistoNMax          = 300  ;  fHistoNMin          = 0  ;
   fHistoRatioBins      = 200 ;  fHistoRatioMax      = 2    ;  fHistoRatioMin      = 0. ;
   fHistoVertexDistBins = 100 ;  fHistoVertexDistMax = 500. ;  fHistoVertexDistMin = 0. ;

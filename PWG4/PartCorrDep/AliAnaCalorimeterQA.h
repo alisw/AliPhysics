@@ -113,9 +113,9 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
 		fHistoNMin   = min ;
 	}
 	
-	Int_t   GetHistoNClusterCellBins()  const { return fHistoNBins ; }
-	Float_t GetHistoNClusterCellMin()   const { return fHistoNMin ; }
-	Float_t GetHistoNClusterCellMax()   const { return fHistoNMax ; }	
+	Int_t GetHistoNClusterCellBins()  const { return fHistoNBins ; }
+	Int_t GetHistoNClusterCellMin()   const { return fHistoNMin ; }
+	Int_t GetHistoNClusterCellMax()   const { return fHistoNMax ; }	
 
 	virtual void SetHistoRatioRangeAndNBins(Float_t min, Float_t max, Int_t n) {
 		fHistoRatioBins  = n ;
