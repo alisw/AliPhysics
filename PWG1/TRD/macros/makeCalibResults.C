@@ -138,7 +138,7 @@ void calibrateTRD(Int_t itask, Char_t const* ntask, Char_t const* nfile)
     Error("makeCalibResults.C", Form("Class name [%s] does not inherit from AliTRDrecoTask.", ntask));
     return;
   }
-  if(!nfile) nfile=task->GetName();
+  if(!nfile) nfile=Form("TRD.Calib%s.root", task->GetName());
   if(fFiles) mergeProd(Form("TRD.Calib%s.root", nfile), fFiles);
   task->SetDebugLevel(0);
   task->SetMCdata(fMC);
