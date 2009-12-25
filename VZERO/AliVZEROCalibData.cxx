@@ -168,7 +168,7 @@ void AliVZEROCalibData::FillDCSData(AliVZERODataDCS * data){
 		AliDCSValue* aValue = (AliDCSValue*) params->GetValue(aliasName);
 		Int_t val;
 		if(aValue) {
-			val = aValue->GetInt();
+			val = aValue->GetUInt();
 			AliInfo(Form("%s : %d",aliasName->String().Data(), val));
 			SetParameter(aliasName->String(),val);
 		}
