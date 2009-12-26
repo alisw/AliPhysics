@@ -24,7 +24,6 @@ AliAnalysisTaskCentral* AddTaskCentral(Bool_t *simulation=kFALSE){
 
 	// Create and configure the task
 	AliAnalysisTaskCentral *taskcentral = new AliAnalysisTaskCentral("TaskCentral");
-	taskcentral->SetSimulation(kTRUE); //kTRUE if we are running on simulated data 
 	mgr->AddTask(taskcentral);
 
 	// Create ONLY the output containers for the data produced by the task.
