@@ -37,7 +37,7 @@ class AliAnalysisTaskCentral : public AliAnalysisTask {
 
   Bool_t CheckCuts(Int_t no, TObject *obj) const; //used to check if a track/particle is selected
 
-  void SetSimulation(Bool_t type) {fSim = type;} // set to kTRUE if running on simulated data
+//  void SetSimulation(Bool_t type) {fSim = type;} // set to kTRUE if running on simulated data
 
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
