@@ -1,4 +1,4 @@
-AliAnalysisTaskCentral* AddTaskCentral(Bool_t *simulation=kFALSE){
+AliAnalysisTaskCentral* AddTaskCentral(){
 
 // Get the pointer to the existing analysis manager via the static access method.
 //==============================================================================
