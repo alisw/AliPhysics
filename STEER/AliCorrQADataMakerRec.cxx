@@ -45,7 +45,8 @@ ClassImp(AliCorrQADataMakerRec)
 AliCorrQADataMakerRec::AliCorrQADataMakerRec(AliQADataMaker ** qadm ) : 
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kCORR), "Corr Quality Assurance Data Maker"),
   fMaxRawVar(0),  
-  fqadm(qadm)
+  fqadm(qadm),
+  fVarvalue(NULL)
 {
   // ctor
   fCorrNt = new TNtupleD *[AliRecoParam::kNSpecies] ; 
@@ -57,11 +58,14 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kCORR), "Corr Quality Assurance D
 AliCorrQADataMakerRec::AliCorrQADataMakerRec(const AliCorrQADataMakerRec& qadm) :
   AliQADataMakerRec(),
   fMaxRawVar(qadm.fMaxRawVar), 
-  fqadm(qadm.fqadm)
+  fqadm(qadm.fqadm),
+  fVarvalue(NULL)
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
+  if ( fMaxRawVar > 0 ) 
+    fVarvalue = new Double_t[fMaxRawVar] ;
 }
 
 //__________________________________________________________________
@@ -85,6 +89,8 @@ AliCorrQADataMakerRec::~AliCorrQADataMakerRec()
 		delete[] fCorrNt ; 
     fCorrNt = 0x0;
 	}  
+  if ( fMaxRawVar > 0 ) 
+    delete [] fVarvalue ;
 }
   
 //____________________________________________________________________________ 
@@ -143,6 +149,7 @@ void AliCorrQADataMakerRec::InitRaws()
   } else {
     char * name = Form("%s_%s", AliQAv1::GetQACorrName(), AliRecoParam::GetEventSpecieName(fEventSpecie)) ; 
     fCorrNt[AliRecoParam::AConvert(fEventSpecie)] = new TNtupleD(name, "Raws data correlation among detectors", varlist.Data()) ;  
+    fVarvalue = new Double_t[fMaxRawVar] ;
   }  
 }
 
@@ -164,7 +171,6 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
       InitRaws() ; 
   
   if ( fMaxRawVar > 0 ) {
-    Double_t  *varvalue = new Double_t[fMaxRawVar] ;
     Int_t index = 0 ;
     for ( Int_t detIndex = 0 ; detIndex < AliQAv1::kNDET ; detIndex++ ) {
       AliQADataMaker * qadm = fqadm[detIndex] ; 
@@ -174,15 +180,11 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
       TIter next(list) ; 
       TParameter<double> * p ; 
       while ( (p = static_cast<TParameter<double>*>(next()) ) ) {
-//	if (index >= kSize) {
-//	  AliError(Form("Variables list size exceeded (%d) !",index));
-//	  break;
-//	}
-        varvalue[index++] = p->GetVal() ; 
+        fVarvalue[index] = p->GetVal() ; 
+        index++ ; 
       }
     }
-    static_cast<TNtupleD*>(fCorrNt[AliRecoParam::AConvert(fEventSpecie)])->Fill(varvalue);
-    delete [] varvalue;
+    static_cast<TNtupleD*>(fCorrNt[AliRecoParam::AConvert(fEventSpecie)])->Fill(fVarvalue);
   }
 }
 

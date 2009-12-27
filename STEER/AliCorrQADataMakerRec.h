@@ -44,6 +44,7 @@ private:
 
   Int_t fMaxRawVar ;              //! number of raw parameters in the ntuple
   AliQADataMaker **    fqadm ;    //! array of detectors QA data makers pointers
+  Double_t  * fVarvalue ;         //! array of value of the raw parameters
   ClassDef(AliCorrQADataMakerRec,1)  // description 
 
 };
