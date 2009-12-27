@@ -514,7 +514,7 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 	extPi->SetParticle("kPiPlus"); //set the particle type
 	extPi->ApplyEff();             //correct the pt distribution !!HAS TO RUN BEFORE extrapolation!!
 	extPi->BoltzmannFit();         //fit and extrapolate using Boltzmann-Gibbs Blast wave model
-//	extPi->TsallisFit();           //fit and extrapolate using Tsallis Blast wave model
+	extPi->TsallisFit();           //fit and extrapolate using Tsallis Blast wave model
 	TList *extOutListPi = extPi->GetOutputList();
 
 	AliAnalysisCentralExtrapolate *extK = new AliAnalysisCentralExtrapolate("extrapolationK");
@@ -522,7 +522,7 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 	extK->SetParticle("kKPlus");
 	extK->ApplyEff();
 	extK->BoltzmannFit();
-//	extK->TsallisFit();
+	extK->TsallisFit();
 	TList *extOutListK = extK->GetOutputList();
 
 	AliAnalysisCentralExtrapolate *extP = new AliAnalysisCentralExtrapolate("extrapolationP");
@@ -530,7 +530,7 @@ void AliAnalysisTaskCentral::Terminate(Option_t *) {
 	extP->SetParticle("kProton");
 	extP->ApplyEff();
 	extP->BoltzmannFit();
-//	extP->TsallisFit();
+	extP->TsallisFit();
 	TList *extOutListP = extP->GetOutputList();
 
 
