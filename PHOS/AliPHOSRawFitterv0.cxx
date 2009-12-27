@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
+/* $Id$ */
 
 // This class extracts the signal parameters (energy, time, quality)
 // from ALTRO samples. Energy is in ADC counts, time is in time bin units.
