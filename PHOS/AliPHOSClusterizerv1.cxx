@@ -1047,7 +1047,6 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
   //Author: Boris Polichtchouk 
 
   if(!fgCalibData->GetNumOfEmcBadChannels()) return;
-  AliInfo(Form("%d bad channel(s) found.\n",fgCalibData->GetNumOfEmcBadChannels()));
 
   Int_t badIds[8000];
   fgCalibData->EmcBadChannelIds(badIds);

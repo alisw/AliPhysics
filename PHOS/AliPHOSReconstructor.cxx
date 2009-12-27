@@ -76,6 +76,9 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   fgEMCRecPoints= new TObjArray(100) ;
   if (!fgCalibData)
     fgCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
+
+  AliInfo(Form("PHOS bad channel map contains %d bad channel(s).\n",
+               fgCalibData->GetNumOfEmcBadChannels()));
  
 }
 
