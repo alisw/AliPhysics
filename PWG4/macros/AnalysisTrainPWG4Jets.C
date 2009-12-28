@@ -48,7 +48,7 @@ TString     kCommonOutputFileName = "PWG4_JetTasksOutput.root";
 //==============================================================================
 Bool_t      kUseDate            = kFALSE; // use date in train name
 Bool_t      kUseDebug           = kTRUE; // activate debugging
-Bool_t      kUseSysInfo         = kTRUE; // activate debugging
+Int_t       kUseSysInfo         = 0; // activate debugging
 Bool_t      kUseMC              = kTRUE;  // use MC info
 Bool_t      kIsMC               = kTRUE;  // is MC info, if false it overwrites Use(AOD)MC
 Bool_t      kUseAODMC           = kTRUE;  // use MC infA
@@ -100,8 +100,8 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v20091109";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-18-13-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-25-04-1";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-18-14-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // TString kPluginExecutableCommand = "root -b -q";
 TString     kPluginExecutableCommand = "source /Users/kleinb/setup_32bit_aliroot_trunk_clean_root_trunk.sh; alienroot -b -q ";
 // == grid plugin input and output variables
@@ -116,7 +116,7 @@ Int_t       kGridMaxMergeFiles      = 50; // Number of files merged in a chunkgr
 TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be merged
 TString     kGridOutputStorages      = "ALICE::NIHAM::File,ALICE::CNAF::SE,ALICE::FZK::SE,ALICE::GSI::SE,ALICE::Legnaro::SE"; // Make replicas on the storages
 // == grid process variables
-Int_t       kGridRunsPerMaster     = 10; // Number of runs per master job
+Int_t       kGridRunsPerMaster     = 100; // Number of runs per master job
 Int_t       kGridFilesPerJob       = 200; // Maximum number of files per job (gives size of AOD)
 
 //==============================================================================
@@ -306,6 +306,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskjetServ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetServices cannot run for this train conditions - EXCLUDED");
      if(kGridRunRange[0]>0)taskjetServ->SetRunRange(kGridRunRange[0],kGridRunRange[1]);
      else taskjetServ->SetRunRange(104000,105000);
+     if(!kIsMC) taskjetServ->SetRealData(kTRUE);
    }
 
 
@@ -715,7 +716,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    // JETAN
    if (iJETAN||iDIJETAN) {
      if (!strcmp(mode, "PROOF")){
-       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libCGAL.so\"\)", kTRUE); 
+       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libCGALso\"\)", kTRUE); 
        gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libfastjet.so\"\)", kTRUE); 
        // problem when loading siscone copiled with different gcc version??
        // gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libsiscone.so\"\)", kTRUE); 
@@ -1018,7 +1019,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetNtestFiles(2);
 //   plugin->SetPreferedSE("ALICE::NIHAM::File");
 // Set versions of used packages
-   plugin->SetAPIVersion("V2.4");
+   plugin->SetAPIVersion("V1.0x");
    plugin->SetROOTVersion(kPluginRootVersion);
    plugin->SetAliROOTVersion(kPluginAliRootVersion);
 // Declare input data to be processed.
@@ -1127,9 +1128,9 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       }
    }
 
-   if(kUseSysInfo){
+   if(kUseSysInfo>0){
      if (listhists.Length()) listhists += ",";
-     listhists += syswatch.root;
+     listhists += "syswatch.root";
    }
 
    if (mgr->GetExtraFiles().Length()) {
@@ -1151,7 +1152,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    kGridMergeExclude = listaods;
 
    TString outputArchive = "log_archive.zip:stdout,stderr@ALICE::CERN::SE";
-   if(kUseSysInfo)outputArchive = "log_archive.zip:stdout,stderr,syswatch.log@ALICE::CERN::SE";
+   if(kUseSysInfo>0)outputArchive = "log_archive.zip:stdout,stderr,syswatch.log@ALICE::CERN::SE";
    if (listaods.Length()) {
       outputArchive += " ";
       outputArchive += listaods;
