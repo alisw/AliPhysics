@@ -1017,7 +1017,7 @@ void AliEMCALTrigger::FillJetMatrixFromSMs(TClonesArray *ampmatrixsmod, TMatrixD
       }
     }
   } // cycle on SM
-  if(ampSum <= 0.0) AliWarning(Form("FillJetMatrixFromSMs","ampSum %f (<=0.0) ", ampSum));
+  if(ampSum <= 0.0) AliDebug(1,Form("FillJetMatrixFromSMs","ampSum %f (<=0.0) ", ampSum));
 }
 
 //____________________________________________________________________________

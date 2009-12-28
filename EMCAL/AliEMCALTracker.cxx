@@ -287,9 +287,9 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
         clusters->Delete();
         delete clusters;
         if (fClusters->IsEmpty())
-           AliWarning("No clusters collected");
+           AliDebug(1,"No clusters collected");
 
-	AliInfo(Form("Collected %d clusters (RecPoints)", fClusters->GetEntries()));
+	AliDebug(1,Form("Collected %d clusters (RecPoints)", fClusters->GetEntries()));
 
 	return 0;
 }
@@ -321,9 +321,9 @@ Int_t AliEMCALTracker::LoadClusters(AliESDEvent *esd)
 		fClusters->AddLast(matchCluster);
 	}
         if (fClusters->IsEmpty())
-           AliWarning("No clusters collected");
+           AliDebug(1,"No clusters collected");
 	
-	AliInfo(Form("Collected %d clusters from ESD", fClusters->GetEntries()));
+	AliDebug(1,Form("Collected %d clusters from ESD", fClusters->GetEntries()));
 
 	return 0;
 }
@@ -372,10 +372,10 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
 		fTracks->AddLast(track);
 	}
 	if (fTracks->IsEmpty()) {
-		AliWarning("No tracks collected");
+		AliDebug(1,"No tracks collected");
 	}
 	
-	AliInfo(Form("Collected %d tracks", fTracks->GetEntries()));
+	AliDebug(1,Form("Collected %d tracks", fTracks->GetEntries()));
 
 	return 0;
 }
@@ -420,17 +420,17 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 	// IF no clusters lie within the maximum allowed distance, no matches are assigned.
 	Int_t nMatches = CreateMatches();
 	if (!nMatches) {
-		AliInfo(Form("#clusters = %d -- #tracks = %d --> No good matches found.", nClusters, nTracks));
+		AliDebug(1,Form("#clusters = %d -- #tracks = %d --> No good matches found.", nClusters, nTracks));
 		return 0;
 	}
 	else {
-		AliInfo(Form("#clusters = %d -- #tracks = %d --> Found %d matches.", nClusters, nTracks, nMatches));
+		AliDebug(1,Form("#clusters = %d -- #tracks = %d --> Found %d matches.", nClusters, nTracks, nMatches));
 	}
 	
 	// step 4:
 	// when more than 1 track share the same matched cluster, only the closest one is kept.
 	Int_t nRemoved = SolveCompetitions();
-	AliInfo(Form("Removed %d duplicate matches", nRemoved));
+	AliDebug(1,Form("Removed %d duplicate matches", nRemoved));
 	if (nRemoved >= nMatches) {
 		AliError("Removed ALL matches! Check the algorithm or data. Nothing to save");
 		return 5;
@@ -488,7 +488,7 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 		}
 	}
 	*/
-	AliInfo(Form("Saved %d matches [%d good + %d fake]", nSaved, nGood, nFake));
+	AliDebug(1,Form("Saved %d matches [%d good + %d fake]", nSaved, nGood, nFake));
 
 	return 0;
 }
