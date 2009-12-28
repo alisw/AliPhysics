@@ -37,6 +37,8 @@
 #include  "TDatabasePDG.h"
 
 #include "AliAnalysisTaskJetServices.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisDataSlot.h"
 #include "AliAnalysisManager.h"
 #include "AliJetFinder.h"
 #include "AliJetHeader.h"
@@ -56,6 +58,7 @@
 #include "AliJetKineReaderHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliInputEventHandler.h"
+#include "AliPhysicsSelection.h"
 
 
 #include "AliAnalysisHelperJetTasks.h"
@@ -65,7 +68,9 @@ ClassImp(AliAnalysisTaskJetServices)
 AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fUseAODInput(kFALSE),
   fAvgTrials(1),
-  fZVtxCut(10.),
+  fZVtxCut(8.),
+  fRealData(kFALSE),
+  fPhysicsSelection(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -85,7 +90,9 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   AliAnalysisTaskSE(name),
   fUseAODInput(kFALSE),
   fAvgTrials(1),
-  fZVtxCut(8),
+  fZVtxCut(8.),
+  fRealData(kFALSE),
+  fPhysicsSelection(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -143,8 +150,6 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   //
 
 
-  // Connect the AOD
-
   if (fDebug > 1) printf("AnalysisTaskJetServices::UserCreateOutputObjects() \n");
 
   OpenFile(1);
@@ -152,6 +157,12 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
+
+  if(!fPhysicsSelection)
+    fPhysicsSelection = new AliPhysicsSelection();
+  fPhysicsSelection->SetName("AliPhysicsSelection_outputlist"); // to prevent conflict with object that is automatically streamed back
+  //AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
+  fHistList->Add(fPhysicsSelection);
 
   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
@@ -338,6 +349,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     if(esd){
       const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
       //      Printf(">> ESDvtx %s %s",vtxESD->GetName(),vtxESD->GetTitle());vtxESD->Print();
+      Bool_t cand = fPhysicsSelection->IsCollisionCandidate(esd);
+      if(cand) fh2ESDTriggerCount->Fill(it,kSelectedALICE);
       if(vtxESD->GetNContributors()>0){
 	if(esdTrig)fh2ESDTriggerCount->Fill(it,kTriggeredSPDVertex);
 	Float_t zvtx = vtxESD->GetZ();
@@ -347,9 +360,19 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	if(TMath::Abs(zvtx)<fZVtxCut&&esdTrig&&TMath::Abs(xvtx)<0.5&&TMath::Abs(yvtx)<0.5){
 	  fh2ESDTriggerCount->Fill(it,kTriggeredVertexIn);
 	  // here we select based on ESD info...
-	  fh2ESDTriggerCount->Fill(it,kSelected);
-	  AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+	  if(fRealData){
+	    if(cand){
+	      fh2ESDTriggerCount->Fill(it,kSelected);
+	      AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+	    }
+	  }
+	  else{
+	    fh2ESDTriggerCount->Fill(it,kSelected);
+	    AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+	  }
 	}
+
+
       }
 
     }
@@ -398,5 +421,44 @@ void AliAnalysisTaskJetServices::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
   //
+
+  TDirectory* owd = gDirectory;
+
   if (fDebug > 1) printf("AnalysisJetServices: Terminate() \n");
+
+  fHistList = dynamic_cast<TList*> (GetOutputData(1));
+  if (!fHistList)
+    Printf("ERROR: fOutput not available");
+
+
+
+  AliAnalysisDataContainer *cont = GetOutputSlot(1)->GetContainer();
+  TString filename = cont->GetFileName();
+  TFile *f = NULL;
+  // Check first if the file is already opened
+  f = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+  if (f) {
+    // Cd to file
+    f->cd();
+    // Check for a folder request
+    TString dir = cont->GetFolderName(); 
+    if (!dir.IsNull()) {
+      if (!f->GetDirectory(dir)) f->mkdir(dir);
+      f->cd(dir);
+    }
+  }
+
+  if (fHistList)
+  {
+    fPhysicsSelection = dynamic_cast<AliPhysicsSelection*> (fHistList->FindObject("AliPhysicsSelection_outputlist"));
+  }
+
+  if (fPhysicsSelection)
+    {
+      fPhysicsSelection->SaveHistograms("physics_selection");
+      fPhysicsSelection->Print();
+    }
+
+  owd->cd();
+
 }
