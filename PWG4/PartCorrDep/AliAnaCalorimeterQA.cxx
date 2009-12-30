@@ -427,17 +427,17 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	outputContainer->Add(fh1pOverER02);	
 	
 	fhIM  = new TH2F ("hIM","Cluster pairs Invariant mass vs reconstructed pair energy",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-	fhIM->SetXTitle("E_{cluster pairs} (GeV) ");
+	fhIM->SetXTitle("p_{T, cluster pairs} (GeV) ");
 	fhIM->SetYTitle("M_{cluster pairs} (GeV/c^{2})");
 	outputContainer->Add(fhIM);
 	
 	fhIMCellCut  = new TH2F ("hIMCellCut","Cluster (n cell > 1) pairs Invariant mass vs reconstructed pair energy",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-	fhIMCellCut->SetXTitle("E_{cluster pairs} (GeV) ");
+	fhIMCellCut->SetXTitle("p_{T, cluster pairs} (GeV) ");
 	fhIMCellCut->SetYTitle("M_{cluster pairs} (GeV/c^{2})");
 	outputContainer->Add(fhIMCellCut);
 	
 	fhAsym  = new TH2F ("hAssym","Cluster pairs Asymmetry vs reconstructed pair energy",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax); 
-	fhAsym->SetXTitle("E_{cluster pairs} (GeV) ");
+	fhAsym->SetXTitle("p_{T, cluster pairs} (GeV) ");
 	fhAsym->SetYTitle("Asymmetry");
 	outputContainer->Add(fhAsym);	
 	
@@ -470,7 +470,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhTimeId->SetYTitle("Cell Absolute Id");
 		outputContainer->Add(fhTimeId);
 	
-		fhTimeAmp  = new TH2F ("hTimeId","Cell Time vs Absolute Id",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
+		fhTimeAmp  = new TH2F ("hTimeAmp","Cell Time vs Absolute Id",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
 		fhTimeAmp->SetYTitle("Cell Time (ns)");
 		fhTimeAmp->SetXTitle("Cell Energy (GeV)");
 		outputContainer->Add(fhTimeAmp);
@@ -548,14 +548,14 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhIMMod[imod]  = new TH2F (Form("hIM_Mod%d",imod),
 								   Form("Cluster pairs Invariant mass vs reconstructed pair energy in Module %d",imod),
 								   nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-		fhIMMod[imod]->SetXTitle("E_{cluster pairs} (GeV) ");
+		fhIMMod[imod]->SetXTitle("p_{T, cluster pairs} (GeV) ");
 		fhIMMod[imod]->SetYTitle("M_{cluster pairs} (GeV/c^{2})");
 		outputContainer->Add(fhIMMod[imod]);
 				
 		fhIMCellCutMod[imod]  = new TH2F (Form("hIMCellCut_Mod%d",imod),
 								   Form("Cluster (n cells > 1) pairs Invariant mass vs reconstructed pair energy in Module %d",imod),
 								   nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-		fhIMCellCutMod[imod]->SetXTitle("E_{cluster pairs} (GeV) ");
+		fhIMCellCutMod[imod]->SetXTitle("p_{T, cluster pairs} (GeV) ");
 		fhIMCellCutMod[imod]->SetYTitle("M_{cluster pairs} (GeV/c^{2})");
 		outputContainer->Add(fhIMCellCutMod[imod]);
 		
@@ -1364,22 +1364,22 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 
 				//Fill invariant mass histograms
 				//All modules
-				fhIM  ->Fill((mom+mom2).E(),(mom+mom2).M());
+				fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
 				//Single module
 				if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
-				  fhIMMod[nModule]->Fill((mom+mom2).E(),(mom+mom2).M());
+				  fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
 
 				//Select only clusters with at least 2 cells
 				if(nCaloCellsPerCluster > 1 && nCaloCellsPerCluster2 > 1) {
 				  //All modules
-				  fhIMCellCut  ->Fill((mom+mom2).E(),(mom+mom2).M());
+				  fhIMCellCut  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
 				  //Single modules
 				  if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
-				    fhIMCellCutMod[nModule]->Fill((mom+mom2).E(),(mom+mom2).M());
+				    fhIMCellCutMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
 				}
 
 				//Asymetry histograms
-				fhAsym->Fill((mom+mom2).E(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
+				fhAsym->Fill((mom+mom2).Pt(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
 					
 			}// 2nd cluster loop
 		}////more than 1 cluster in calorimeter  	
@@ -2400,7 +2400,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 		ctime->cd(3) ; 
 		//if(fhTimeAmp->GetEntries() > 0) gPad->SetLogy();
-		fhTimeAmp->Draw("colz");
+		fhTimeAmp->Draw("surf");
 	
 		sprintf(name,"QA_%s_CellsTime.eps",fCalorimeter.Data());
 		ctime->Print(name); printf("Plot: %s\n",name);

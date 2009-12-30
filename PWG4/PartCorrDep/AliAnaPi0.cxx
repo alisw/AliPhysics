@@ -679,31 +679,31 @@ void AliAnaPi0::Terminate(TList* outputList)
 
   cIM->cd(1) ; 
   //gPad->SetLogy();
-  TH1D * hIMAllPt = (TH1D*) fhRe1[0]->ProjectionZ();
+  TH1D * hIMAllPt = (TH1D*) fhRe1[0]->ProjectionZ(Form("IMPtAll_%s",fCalorimeter.Data()));
   hIMAllPt->SetLineColor(2);
   hIMAllPt->SetTitle("No cut on  p_{T, #gamma#gamma} ");
   hIMAllPt->Draw();
 
   cIM->cd(2) ; 
-  TH3F * hRe1Pt5 = (TH3F*)fhRe1[0]->Clone("IMPt5");
+  TH3F * hRe1Pt5 = (TH3F*)fhRe1[0]->Clone(Form("IMPt5_%s",fCalorimeter.Data()));
   hRe1Pt5->GetXaxis()->SetRangeUser(0,5);
-  TH1D * hIMPt5 = (TH1D*) hRe1Pt5->Project3D("z");
+  TH1D * hIMPt5 = (TH1D*) hRe1Pt5->Project3D(Form("IMPt5_%s_pz",fCalorimeter.Data()));
   hIMPt5->SetLineColor(2);  
   hIMPt5->SetTitle("0 < p_{T, #gamma#gamma} < 5 GeV/c");
   hIMPt5->Draw();
   
   cIM->cd(3) ; 
-  TH3F * hRe1Pt10 =  (TH3F*)fhRe1[0]->Clone("IMPt10");
+  TH3F * hRe1Pt10 =  (TH3F*)fhRe1[0]->Clone(Form("IMPt10_%s",fCalorimeter.Data()));
   hRe1Pt10->GetXaxis()->SetRangeUser(5,10);
-  TH1D * hIMPt10 = (TH1D*) hRe1Pt10->Project3D("z");
+  TH1D * hIMPt10 = (TH1D*) hRe1Pt10->Project3D(Form("IMPt10_%s_pz",fCalorimeter.Data()));
   hIMPt10->SetLineColor(2);  
   hIMPt10->SetTitle("5 < p_{T, #gamma#gamma} < 10 GeV/c");
   hIMPt10->Draw();
   
   cIM->cd(4) ; 
-  TH3F * hRe1Pt20 =  (TH3F*)fhRe1[0]->Clone("IMPt20");
+  TH3F * hRe1Pt20 =  (TH3F*)fhRe1[0]->Clone(Form("IMPt20_%s",fCalorimeter.Data()));
   hRe1Pt20->GetXaxis()->SetRangeUser(10,20);
-  TH1D * hIMPt20 = (TH1D*) hRe1Pt20->Project3D("z");
+  TH1D * hIMPt20 = (TH1D*) hRe1Pt20->Project3D(Form("IMPt20_%s_pz",fCalorimeter.Data()));
   hIMPt20->SetLineColor(2);  
   hIMPt20->SetTitle("10 < p_{T, #gamma#gamma} < 20 GeV/c");
   hIMPt20->Draw();
@@ -725,7 +725,7 @@ void AliAnaPi0::Terminate(TList* outputList)
   hPt->Draw();
 
   cPt->cd(2) ; 
-  TH3F * hRe1IM1 = (TH3F*)fhRe1[0]->Clone("PtIM1");
+  TH3F * hRe1IM1 = (TH3F*)fhRe1[0]->Clone(Form("Pt1_%s",fCalorimeter.Data()));
   hRe1IM1->GetZaxis()->SetRangeUser(0.05,0.21);
   TH1D * hPtIM1 = (TH1D*) hRe1IM1->Project3D("x");
   hPtIM1->SetLineColor(2);  
@@ -733,7 +733,7 @@ void AliAnaPi0::Terminate(TList* outputList)
   hPtIM1->Draw();
   
   cPt->cd(3) ; 
-  TH3F * hRe1IM2 = (TH3F*)fhRe1[0]->Clone("PtIM2");
+  TH3F * hRe1IM2 = (TH3F*)fhRe1[0]->Clone(Form("Pt2_%s",fCalorimeter.Data()));
   hRe1IM2->GetZaxis()->SetRangeUser(0.09,0.17);
   TH1D * hPtIM2 = (TH1D*) hRe1IM2->Project3D("x");
   hPtIM2->SetLineColor(2);  
@@ -741,7 +741,7 @@ void AliAnaPi0::Terminate(TList* outputList)
   hPtIM2->Draw();
 
   cPt->cd(4) ; 
-  TH3F * hRe1IM3 = (TH3F*)fhRe1[0]->Clone("PtIM3");
+  TH3F * hRe1IM3 = (TH3F*)fhRe1[0]->Clone(Form("Pt3_%s",fCalorimeter.Data()));
   hRe1IM3->GetZaxis()->SetRangeUser(0.11,0.15);
   TH1D * hPtIM3 = (TH1D*) hRe1IM1->Project3D("x");
   hPtIM3->SetLineColor(2);  
