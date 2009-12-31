@@ -1243,20 +1243,20 @@ void AliTRDclusterizer::TailCancelation()
   Int_t iCol  = 0;
   Int_t iTime = 0;
 
-  Double_t *inADC = new Double_t[fTimeTotal];  // ADC data before tail cancellation
-  Double_t *outADC = new Double_t[fTimeTotal];  // ADC data after tail cancellation
+  Float_t *arr = new Float_t[fTimeTotal];  // temp array containing the ADC signals
 
   TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDrecoParam::kClusterizer);
   Bool_t debugStreaming = fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming();
+  Int_t nexp = fReconstructor->GetRecoParam()->GetTCnexp();
   while(fIndexes->NextRCIndex(iRow, iCol))
     {
-      Bool_t corrupted = kFALSE;
-      if (fCalPadStatusROC->GetStatus(iCol, iRow)) corrupted = kTRUE;
+      // if corrupted then don't make the tail cancallation
+      if (fCalPadStatusROC->GetStatus(iCol, iRow)) continue;
 
       // Save data into the temporary processing array and substract the baseline,
       // since DeConvExp does not expect a baseline
       for (iTime = 0; iTime < fTimeTotal; iTime++) 
-	inADC[iTime]   = fDigits->GetData(iRow,iCol,iTime)-fBaseline;
+	arr[iTime] = fDigits->GetData(iRow,iCol,iTime)-fBaseline;
           
       if(debugStreaming){
 	for (iTime = 0; iTime < fTimeTotal; iTime++) 
@@ -1264,49 +1264,40 @@ void AliTRDclusterizer::TailCancelation()
 			  << "col="  << iCol
 			  << "row="  << iRow
 			  << "time=" << iTime
-			  << "inADC=" << inADC[iTime]
-			  << "outADC=" << outADC[iTime]
-			  << "corrupted=" << corrupted
+			  << "arr=" << arr[iTime]
 			  << "\n";
       }
       
-      if (!corrupted)
-        {
-          // Apply the tail cancelation via the digital filter
-          // (only for non-coorupted pads)
-	  DeConvExp(&inADC[0],&outADC[0],fTimeTotal,fReconstructor->GetRecoParam() ->GetTCnexp());
-        }
-      else memcpy(&outADC[0],&inADC[0],fTimeTotal*sizeof(inADC[0]));
+      // Apply the tail cancelation via the digital filter
+      DeConvExp(arr,fTimeTotal,nexp);
 
       // Save tailcancalled data and add the baseline
       for(iTime = 0; iTime < fTimeTotal; iTime++)
-	fDigits->SetData(iRow,iCol,iTime,(Short_t)(outADC[iTime] + fBaseline + 0.5));
+	fDigits->SetData(iRow,iCol,iTime,(Short_t)(arr[iTime] + fBaseline + 0.5f));
       
     } // while irow icol
 
-  delete [] inADC;
-  delete [] outADC;
+  delete [] arr;
 
   return;
 
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::DeConvExp(const Double_t *const source, Double_t *const target
-				  ,const Int_t n, const Int_t nexp) 
+void AliTRDclusterizer::DeConvExp(Float_t *const arr, const Int_t n, const Int_t nexp) 
 {
   //
   // Tail cancellation by deconvolution for PASA v4 TRF
   //
 
-  Double_t rates[2];
-  Double_t coefficients[2];
+  Float_t rates[2];
+  Float_t coefficients[2];
 
   // Initialization (coefficient = alpha, rates = lambda)
-  Double_t r1 = 1.0;
-  Double_t r2 = 1.0;
-  Double_t c1 = 0.5;
-  Double_t c2 = 0.5;
+  Float_t r1 = 1.0;
+  Float_t r2 = 1.0;
+  Float_t c1 = 0.5;
+  Float_t c2 = 0.5;
 
   if (nexp == 1) {   // 1 Exponentials
     r1 = 1.156;
@@ -1326,7 +1317,7 @@ void AliTRDclusterizer::DeConvExp(const Double_t *const source, Double_t *const 
   coefficients[0] = c1;
   coefficients[1] = c2;
 
-  Double_t dt = 0.1;
+  Float_t dt = 0.1;
 
   rates[0] = TMath::Exp(-dt/(r1));
   rates[1] = TMath::Exp(-dt/(r2));
@@ -1334,9 +1325,9 @@ void AliTRDclusterizer::DeConvExp(const Double_t *const source, Double_t *const 
   Int_t i = 0;
   Int_t k = 0;
 
-  Double_t reminder[2];
-  Double_t correction = 0.0;
-  Double_t result     = 0.0;
+  Float_t reminder[2];
+  Float_t correction = 0.0;
+  Float_t result     = 0.0;
 
   // Attention: computation order is important
   for (k = 0; k < nexp; k++) {
@@ -1345,8 +1336,8 @@ void AliTRDclusterizer::DeConvExp(const Double_t *const source, Double_t *const 
 
   for (i = 0; i < n; i++) {
 
-    result    = (source[i] - correction);    // No rescaling
-    target[i] = result;
+    result = (arr[i] - correction);    // No rescaling
+    arr[i] = result;
 
     for (k = 0; k < nexp; k++) {
       reminder[k] = rates[k] * (reminder[k] + coefficients[k] * result);

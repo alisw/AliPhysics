@@ -108,8 +108,7 @@ class AliTRDclusterizer : public TNamed
 
 protected:
 
-  void             DeConvExp (const Double_t *const source, Double_t *const target
-			     ,const Int_t nTimeTotal, const Int_t nexp);
+  void             DeConvExp (Float_t *const arr, const Int_t nTimeTotal, const Int_t nexp);
   void             TailCancelation();
 
   Float_t  Unfold(Double_t eps, Int_t layer, const Double_t *const padSignal) const;
