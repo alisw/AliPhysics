@@ -470,7 +470,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhTimeId->SetYTitle("Cell Absolute Id");
 		outputContainer->Add(fhTimeId);
 	
-		fhTimeAmp  = new TH2F ("hTimeAmp","Cell Time vs Absolute Id",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
+		fhTimeAmp  = new TH2F ("hTimeAmp","Cell Time vs Cell Energy",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
 		fhTimeAmp->SetYTitle("Cell Time (ns)");
 		fhTimeAmp->SetXTitle("Cell Energy (GeV)");
 		outputContainer->Add(fhTimeAmp);
@@ -531,13 +531,13 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		outputContainer->Add(fhNCellsMod[imod]);
 		fhGridCellsMod[imod]  = new TH2F (Form("hGridCells_Mod%d",imod),Form("Entries in grid of cells in Module %d",imod), 
 										  colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
-		fhGridCellsMod[imod]->SetXTitle("row (phi direction)");
+		fhGridCellsMod[imod]->SetYTitle("row (phi direction)");
 		fhGridCellsMod[imod]->SetXTitle("column (eta direction)");
 		outputContainer->Add(fhGridCellsMod[imod]);
 
 		fhGridCellsEMod[imod]  = new TH2F (Form("hGridCellsE_Mod%d",imod),Form("Accumulated energy in grid of cells in Module %d",imod), 
 										   colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
-		fhGridCellsEMod[imod]->SetXTitle("row (phi direction)");
+		fhGridCellsEMod[imod]->SetYTitle("row (phi direction)");
 		fhGridCellsEMod[imod]->SetXTitle("column (eta direction)");
 		outputContainer->Add(fhGridCellsEMod[imod]);
 		
@@ -1296,6 +1296,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			AliESDCaloCluster* clus =  (AliESDCaloCluster*) (caloClusters->At(iclus));
 			//Get cluster kinematics
 			clus->GetMomentum(mom,v);
+			//Check only certain regions
+			Bool_t in = kTRUE;
+			if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
+			if(!in) continue;
 			//Get module of cluster
 			nModule = GetModuleNumber(clus);
 			if(nModule < fNModules) nClustersInModule[nModule]++;
@@ -1320,6 +1324,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 
 			//Get cluster kinematics
 			clus->GetMomentum(mom,v);
+			//Check only certain regions
+			Bool_t in = kTRUE;
+			if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
+			if(!in) continue;			
 			//Get module of cluster
 			nModule = GetModuleNumber(clus);
 			if(nModule < fNModules)  nClustersInModule[nModule]++;
@@ -1346,6 +1354,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 					AliESDCaloCluster* clus2 =  (AliESDCaloCluster*) (caloClusters->At(jclus));
 					//Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
+					//Check only certain regions
+					Bool_t in2 = kTRUE;
+					if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
+					if(!in2) continue;	
 					//Get module of cluster
 					nModule2 = GetModuleNumber(clus2);
 					//Cells per cluster
@@ -1356,6 +1368,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 					AliAODCaloCluster* clus2 =  (AliAODCaloCluster*) (caloClusters->At(jclus));
 					//Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
+					//Check only certain regions
+					Bool_t in2 = kTRUE;
+					if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
+					if(!in2) continue;						
 					//Get module of cluster
 					nModule2 = GetModuleNumber(clus2);
 					//Cells per cluster
@@ -1420,16 +1436,16 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(GetDebug() > 2)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
 			nModule = GetModuleNumberCellIndexes(cell->GetCellNumber(iCell), icol, irow);
 		    if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
-			amp     = cell->GetAmplitude(iCell);
-			time    = cell->GetTime(iCell)*1e9;//transform time to ns
-			//printf("%s: time %g\n",fCalorimeter.Data(), time);
-			id      = cell->GetCellNumber(iCell);
-			fhAmplitude->Fill(amp);
-			fhTime     ->Fill(time);
-			fhTimeId   ->Fill(time,id);
-			fhTimeAmp  ->Fill(amp,time);
 			
-			if(nModule < fNModules) {
+			if(nModule < fNModules) {	
+				amp     = cell->GetAmplitude(iCell);
+				time    = cell->GetTime(iCell)*1e9;//transform time to ns
+				//printf("%s: time %g\n",fCalorimeter.Data(), time);
+				id      = cell->GetCellNumber(iCell);
+				fhAmplitude->Fill(amp);
+				fhTime     ->Fill(time);
+				fhTimeId   ->Fill(time,id);
+				fhTimeAmp  ->Fill(amp,time);
 				fhAmplitudeMod[nModule]->Fill(cell->GetAmplitude(iCell));
 				nCellsInModule[nModule]++;
 				fhGridCellsMod[nModule] ->Fill(icol,irow);
@@ -1458,10 +1474,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(GetDebug() > 2 )  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
 			nModule = GetModuleNumberCellIndexes(cell->GetCellNumber(iCell), icol, irow);
 			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
-			amp     = cell->GetAmplitude(iCell);
-			fhAmplitude->Fill(amp);
 			
-			if(nModule < fNModules) {
+			if(nModule < fNModules) {	
+				amp     = cell->GetAmplitude(iCell);
+				fhAmplitude->Fill(amp);
 				fhAmplitudeMod[nModule]->Fill(cell->GetAmplitude(iCell));
 				nCellsInModule[nModule]++;
 				fhGridCellsMod[nModule]->Fill(icol,irow);
