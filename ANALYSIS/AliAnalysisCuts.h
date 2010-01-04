@@ -22,7 +22,7 @@ class AliAnalysisCuts : public AliVCuts
     AliAnalysisCuts(const char* name, const char* title);
     AliAnalysisCuts(const AliAnalysisCuts& obj);  
     virtual ~AliAnalysisCuts() {;}
-    virtual Bool_t IsSelected(TObject* /* obj  */)   {;}
+    virtual Bool_t IsSelected(TObject* /* obj  */ )  {return kFALSE;}
     virtual Bool_t IsSelected(TList*   /* list */ ) = 0;
     virtual void   Init() {;}
     virtual void   SetFilterMask(UInt_t mask) {fFilterMask = mask;}
