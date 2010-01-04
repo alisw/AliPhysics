@@ -118,9 +118,7 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
 Bool_t AliESDInputHandlerRP::BeginEvent(Long64_t entry)
 {
     // Begin the next event
-    // Delegate first to base class
-    AliESDInputHandler::BeginEvent(entry);
-//
+    //
     if (entry == -1) {
 	fEventNumber++;
 	entry = fEventNumber;
@@ -132,7 +130,12 @@ Bool_t AliESDInputHandlerRP::BeginEvent(Long64_t entry)
 	AliWarning(Form("AliESDInputHandlerRP: Event number out of range %5d %5d\n", entry, fNEvents));
 	return kFALSE;
     }
-    return LoadEvent(entry);
+    
+    LoadEvent(entry);
+
+    // Delegate to base class
+    return AliESDInputHandler::BeginEvent(entry);
+
 }
 
 Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
