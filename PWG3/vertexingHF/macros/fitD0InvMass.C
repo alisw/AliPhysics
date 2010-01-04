@@ -2,6 +2,7 @@
 #include <TStyle.h>
 #include <TFile.h>
 #include <TList.h>
+#include <TDirectoryFile.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TCanvas.h>
@@ -12,31 +13,32 @@
 #include <cmath>
 
 //root[0] .x fitD0InvMass.C+
+//root[1] fitD0(...)
 
-//input: nsigma os the number of sigma in which the significance (, signal ancg background) is calculated
+//input: nsigma is the number of sigma in which significance, signal and background are calculated
 
-//fit of histograms in InvMassD0.root. Must specify the list name where the histo are stored. Produce a root file with the fitted histos and a text file with signal, background and significance
+//fit of histograms in the directory PWG3_D2H_D0InvMass of AnalysisResults.root . Must specify the list name where the histo are stored. Produce a root file with the fitted histos and a text file with signal, background and significance
 
-void fitD0InvMass(Int_t rebin=0,TString listname="coutputmassD02",Int_t nsigma=3, TString pathin="./",TString pathout="./",Int_t btype=2){
+void fitD0(Int_t rebin=0,TString listname="coutputmassD0mycuts",Int_t nsigma=3, TString pathin="./",TString pathout="./",Int_t btype=2){
 
-  gStyle->SetOptFit(0111);
-  gStyle->SetOptStat("nemrou");
-  TString file = "D0InvMass.root";
-  const Int_t npt=5;
+  TString file="AnalysisResults.root"; //"D0InvMass.root";
+
   file.Prepend(pathin);
   cout<<"Opening "<<file<<endl;
   TFile *fin=new TFile(file.Data());
   if(!fin->IsOpen()){
-    cout<<"File "<<file.Data()<<" not found, did you mean another? Please enter the name"<<endl;
-    cin>>file;
-    fin=new TFile(file.Data());
-    if(!fin->IsOpen()){
-      cout<<"File "<<file.Data()<<" not found, return"<<endl;
-      return;
-    }
+    cout<<"File "<<file.Data()<<" not found"<<endl;
+    return;
   }
 
-  TList *lista = (TList*) fin->Get(listname.Data());
+  gStyle->SetOptFit(0111);
+  gStyle->SetOptStat("nemrou");
+
+  const Int_t npt=5;
+  TString dirname="PWG3_D2H_D0InvMass";
+  TDirectoryFile *dir=(TDirectoryFile*)fin->GetDirectory(dirname);
+
+  TList *lista = (TList*) dir->Get(listname.Data());
   if(!lista) {
     cout<<listname<<" doesn't exist"<<endl;
     return;
@@ -221,7 +223,10 @@ void fitD0InvMass(Int_t rebin=0,TString listname="coutputmassD02",Int_t nsigma=3
       out<<": \nSgn  "<<sgn<<"+/-"<<errsgn<<" ("<<errsgn2<<")\tCompare with: "<<sgnMC<<endl;
       out<<"Bkg  "<<bkg<<"+/-"<<errbkg<<" ("<<errbkg2<<")\tCompare with: "<<bkgMC<<" + "<<rflMC<<" = "<<bkgMC+rflMC<<endl;
       out<<"Sgnf "<<sgnf<<"+/-"<<errsgnf<<"\tCompare with: "<<sgnfMC<<endl;
-      out<<"sigmaS/S = "<<errsgn/sgn<<"\tCompare with 1/signif: "<<1./sgnfMC<<endl;
+      if (sgn != 0 && sgnfMC != 0) out<<"sigmaS/S = "<<errsgn/sgn<<"\tCompare with 1/signif: "<<1./sgnfMC<<endl;
+      else {
+	out<<"sigmaS/S = "<<errsgn<<"/"<<sgn<<"\tCompare with 1/signif: 1./"<<sgnfMC<<endl;
+      }
       out<<"nsigma considered for comparison = \ndx: "<<(dxr-meanfrfit)/sigmafrfit<<"\nsx: "<<(meanfrfit-sxr)/sigmafrfit<<endl;
       out<<"Mean = "<<meanfrfit<<"\tSigma = "<<sigmafrfit<<endl;
       out<<"*************************************************\n";
