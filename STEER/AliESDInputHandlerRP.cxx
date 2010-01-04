@@ -42,6 +42,7 @@ ClassImp(AliESDInputHandlerRP)
 AliESDInputHandlerRP::AliESDInputHandlerRP() :
     AliESDInputHandler(),
     fRTrees(   new TObjArray()),
+    fRDirs (   new TObjArray()),
     fRFiles(   new TList()),
     fDetectors(new TList()),
     fDirR(0),
@@ -60,6 +61,7 @@ AliESDInputHandlerRP::AliESDInputHandlerRP() :
 AliESDInputHandlerRP::AliESDInputHandlerRP(const char* name, const char* title):
     AliESDInputHandler(name, title),
     fRTrees(   new TObjArray()),
+    fRDirs (   new TObjArray()),
     fRFiles(   new TList()),
     fDetectors(new TList()),
     fDirR(0),
@@ -156,18 +158,20 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
     // Tree R
     TIter next(fRFiles);
     TFile* file;
-    Int_t idx = 0;
+    Int_t idx  = 0;
     
     while ((file = (TFile*) next()))
     {
 	file->GetObject(folder, fDirR);
+	
 	if (!fDirR) {
 	    AliWarning(Form("AliESDInputHandlerRP: Event #%5d not found\n", iev));
 	    return kFALSE;
 	}
 	TTree* tree = 0;
 	fDirR->GetObject("TreeR", tree);
-	fRTrees->AddAt(tree, idx++);
+	fRDirs ->AddAt(fDirR, idx  );
+	fRTrees->AddAt(tree,  idx++);
     }
     return kTRUE;
 }
@@ -282,7 +286,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 Bool_t AliESDInputHandlerRP::FinishEvent()
 {
     // Clean-up after each event
-    delete fDirR;  fDirR = 0;
+    fRDirs->Delete();
     AliESDInputHandler::FinishEvent();
     return kTRUE;
 }
