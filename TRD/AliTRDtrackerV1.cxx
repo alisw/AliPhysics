@@ -359,10 +359,8 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
         seed->AddCalibObject(calibTrack);
       }
       //update ESD track
-      if ((track.GetNumberOfClusters() > 15) && (track.GetNumberOfClusters() > 0.5*expectedClr)) {
-        seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
-        track.UpdateESDtrack(seed);
-      }
+      seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
+      track.UpdateESDtrack(seed);
     }
 
     if ((TMath::Abs(track.GetC(track.GetBz()) - p4) / TMath::Abs(p4) < 0.2) ||(track.Pt() > 0.8)) {
@@ -436,7 +434,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
         seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
         continue;
       }
-      seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
+      //seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
       // TODO obsolete - delete
       seed->SetTRDQuality(track.StatusForTOF()); 
     }
@@ -473,8 +471,9 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
   AliTRDtrackV1 track;
   for (Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++) {
     AliESDtrack *seed = event->GetTrack(itrack);
-    new(&track) AliTRDtrackV1(*seed);
+    ULong_t status = seed->GetStatus();
 
+    new(&track) AliTRDtrackV1(*seed);
     if (track.GetX() < 270.0) {
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup);
       continue;
@@ -482,7 +481,6 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
 
     // reject tracks which failed propagation in the TRD or
     // are produced by the TRD stand alone tracker
-    ULong_t status = seed->GetStatus();
     if(!(status & AliESDtrack::kTRDout)) continue;
     if(!(status & AliESDtrack::kTRDin)) continue;
     nseed++; 
@@ -2174,8 +2172,8 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(Int_t sector, AliESDEvent *esd)
     //AliInfo(Form("Doing stack %d", istack));
     nTracks += Clusters2TracksStack(stack, fTracksESD);
   }
-  //AliInfo(Form("Found %d tracks in SM %d [%d]\n", nTracks, sector, esd->GetNumberOfTracks()));
-  
+  if(nTracks) AliDebug(2, Form("Number of tracks: SM_%02d[%d]", sector, nTracks));
+
   for(int itrack=0; itrack<nTracks; itrack++)
     esd->AddTrack((AliESDtrack*)(fTracksESD->operator[](itrack)));
 
