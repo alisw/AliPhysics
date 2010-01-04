@@ -62,6 +62,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fExecutableArgs(),
                   fAnalysisMacro(),
                   fAnalysisSource(),
+                  fAdditionalRootLibs(),
                   fAdditionalLibs(),
                   fSplitMode(),
                   fAPIVersion(),
@@ -114,6 +115,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fExecutableArgs(),
                   fAnalysisMacro(),
                   fAnalysisSource(),
+                  fAdditionalRootLibs(),
                   fAdditionalLibs(),
                   fSplitMode(),
                   fAPIVersion(),
@@ -166,6 +168,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fExecutableArgs(other.fExecutableArgs),
                   fAnalysisMacro(other.fAnalysisMacro),
                   fAnalysisSource(other.fAnalysisSource),
+                  fAdditionalRootLibs(other.fAdditionalRootLibs),
                   fAdditionalLibs(other.fAdditionalLibs),
                   fSplitMode(other.fSplitMode),
                   fAPIVersion(other.fAPIVersion),
@@ -246,6 +249,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fExecutableArgs          = other.fExecutableArgs;
       fAnalysisMacro           = other.fAnalysisMacro;
       fAnalysisSource          = other.fAnalysisSource;
+      fAdditionalRootLibs      = other.fAdditionalRootLibs;
       fAdditionalLibs          = other.fAdditionalLibs;
       fSplitMode               = other.fSplitMode;
       fAPIVersion              = other.fAPIVersion;
@@ -1795,7 +1799,21 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   gSystem->Load(\"libVMC\");" << endl;
       out << "   gSystem->Load(\"libPhysics\");" << endl << endl;
       out << "   gSystem->Load(\"libMinuit\");" << endl << endl;
+      if (fAdditionalRootLibs.Length()) {
+	// in principle libtree /lib geom libvmc etc. can go into this list, too
+	out << "// Add aditional libraries" << endl;
+	TObjArray *list = fAdditionalRootLibs.Tokenize(" ");
+	TIter next(list);
+	TObjString *str;
+	while((str=(TObjString*)next())) {
+	  if (str->GetString().Contains(".so"))
+	    out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
+         }
+	if (list) delete list;
+      }
       out << "// Load analysis framework libraries" << endl;
+
+
       if (!fPackages) {
          out << "   gSystem->Load(\"libSTEERBase\");" << endl;
          out << "   gSystem->Load(\"libESD\");" << endl;

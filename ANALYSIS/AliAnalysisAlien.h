@@ -42,6 +42,7 @@ public:
    virtual void        SetAnalysisMacro(const char *name="myAnalysis.C") {fAnalysisMacro = name;}
    virtual void        SetAnalysisSource(const char *name="myAnalysisClass.cxx") {fAnalysisSource = name;}
    virtual void        SetAdditionalLibs(const char *list)               {fAdditionalLibs = list;}
+   virtual void        SetAdditionalRootLibs(const char *list)           {fAdditionalRootLibs = list;}
    virtual void        SetPrice(Int_t price=1)                           {fPrice = price;}
    virtual void        SetRunRange(Int_t min, Int_t max)                 {fRunRange[0] = min; fRunRange[1] = max;}
    virtual void        SetJobTag(const char *tag="")                     {fJobTag = tag;}
@@ -127,7 +128,8 @@ private:
    TString          fExecutableArgs;  // arguments added to the executable script after the analysis macro
    TString          fAnalysisMacro;   // Root macro steering the analysis
    TString          fAnalysisSource;  // User analysis implementation (.cxx) file(s)
-   TString          fAdditionalLibs;  // List (separated by blacs) of additional libraries needed for the analysis
+   TString          fAdditionalRootLibs;  // List (separated by blacs) of additional libraries needed for/before analysis libs/par file compilation
+   TString          fAdditionalLibs;  // List (separated by blacs) of additional libraries needed for the analysis loaded AFTER all par files
    TString          fSplitMode;       // Job split mode
    TString          fAPIVersion;      // API version
    TString          fROOTVersion;     // ROOT version
@@ -153,6 +155,6 @@ private:
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 9)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 10)   // Class providing some AliEn utilities
 };
 #endif
