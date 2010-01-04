@@ -428,7 +428,7 @@ void AliAnalysisTaskJetServices::Terminate(Option_t */*option*/)
 
   fHistList = dynamic_cast<TList*> (GetOutputData(1));
   if (!fHistList)
-    Printf("ERROR: fOutput not available");
+    Printf("ERROR: fHistList not available");
 
 
 
