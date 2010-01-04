@@ -1703,7 +1703,7 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 * const t
     xyz1[0] =  x * TMath::Cos(alpha) - y * TMath::Sin(alpha); 
     xyz1[1] = +x * TMath::Sin(alpha) + y * TMath::Cos(alpha);
     xyz1[2] =  z;
-    if((xyz0[0] - xyz1[9] < 1e-3) && (xyz0[0] - xyz1[9] < 1e-3)) continue; // check wheter we are at the same global x position
+    if(TMath::Abs(xyz0[0] - xyz1[0]) < 1e-3 && TMath::Abs(xyz0[1] - xyz1[1]) < 1e-3) continue; // check wheter we are at the same global x position
     Double_t param[7];
     if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param) <=0.) break;	
     Double_t xrho = param[0]*param[4]; // density*length

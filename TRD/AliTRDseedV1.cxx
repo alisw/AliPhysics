@@ -749,9 +749,10 @@ Double_t AliTRDseedV1::GetCovInv(const Double_t * const c, Double_t *d)
 //____________________________________________________________________
 UShort_t AliTRDseedV1::GetVolumeId() const
 {
-  Int_t ic=0;
-  while(ic<kNclusters && !fClusters[ic]) ic++;
-  return fClusters[ic] ? fClusters[ic]->GetVolumeId() : 0;
+  for(Int_t ic(0);ic<kNclusters; ic++){
+    if(fClusters[ic]) return fClusters[ic]->GetVolumeId();
+  }
+  return 0;
 }
 
 
@@ -1322,6 +1323,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     //optional tilt correction
     if(tilt) yc[n] -= (GetTilt()*(zc[n] - zt)); 
 
+    AliDebug(5, Form("  tb[%2d] dx[%6.3f] y[%6.2f+-%6.3f]", c->GetLocalTimeBin(), xc[n], yc[n], sy[n]));
     fitterY.AddPoint(&xc[n], yc[n], sy[n]);
     if(IsRowCross()) fitterZ.AddPoint(&xc[n], qc[n], 1.);
     n++;
