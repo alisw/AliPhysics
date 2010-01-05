@@ -37,6 +37,7 @@
 #include "AliAODHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
+#include "AliMultiplicity.h"
 #include "AliESDVertex.h"
 #include "AliFMDAnaParameters.h"
 //#include "AliFMDGeometry.h"
@@ -66,7 +67,8 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector()
 : fDebug(0),
   fOutputList(0),
   fArray(0),
-  fZvtxDist(0)
+  fZvtxDist(0),
+  fEvents(0)
 {
   // Default constructor
   
@@ -78,7 +80,8 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector(const char* name):
     fDebug(0),
     fOutputList(0),
     fArray(0),
-    fZvtxDist(0)
+    fZvtxDist(0),
+    fEvents(0)
 {
   // Default constructor
   
@@ -97,8 +100,9 @@ void AliFMDAnalysisTaskCollector::UserCreateOutputObjects()
   fArray->SetName("FMD");
   fArray->SetOwner();
   TH1F* hEdist = 0;
- 
-  for(Int_t nEta = 0; nEta <= pars->GetNetaBins()+1; nEta++) {
+  TH1F* hEmptyEdist = 0;
+  TH1F* hRingEdist = 0;
+  for(Int_t nEta = 0; nEta < pars->GetNetaBins(); nEta++) {
     TObjArray* etaArray = new TObjArray();
     fArray->AddAtAndExpand(etaArray,nEta);
     for(Int_t det =1; det<=3;det++)
@@ -114,11 +118,27 @@ void AliFMDAnalysisTaskCollector::UserCreateOutputObjects()
 	    hEdist->SetXTitle("#Delta E / E_{MIP}");
 	    fOutputList->Add(hEdist);
 	    detArray->AddAtAndExpand(hEdist,ring);
+	    
 	  } 
       }
     
   }
   
+  for(Int_t det =1; det<=3;det++)
+    {
+      Int_t nRings = (det==1 ? 1 : 2);
+      for(Int_t ring = 0;ring<nRings;ring++)
+	{
+	  Char_t ringChar = (ring == 0 ? 'I' : 'O');
+	  hRingEdist = new TH1F(Form("ringFMD%d%c",det,ringChar),Form("ringFMD%d%c",det,ringChar),200,0,6);
+	  hRingEdist->SetXTitle("#Delta E / E_{MIP}");
+	  fOutputList->Add(hRingEdist);
+	  hEmptyEdist = new TH1F(Form("emptyFMD%d%c",det,ringChar),Form("emptyFMD%d%c",det,ringChar),200,0,6);
+	  hEmptyEdist->SetXTitle("#Delta E / E_{MIP}");
+	  fOutputList->Add(hEmptyEdist);
+	  
+	}
+    }
   fZvtxDist  = new TH1F("ZvtxDist","Vertex distribution",100,-30,30);
   fZvtxDist->SetXTitle("z vertex");
   fOutputList->Add(fZvtxDist);
@@ -134,33 +154,48 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
     esd->CopyFromOldESD();
   }
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  TString triggers = esd->GetFiredTriggerClasses();
+  //if(!triggers.IsNull()) return;
+  //Bool_t trigger = pars->IsEventTriggered(esd);
   
-  Bool_t trigger = pars->IsEventTriggered(esd);
-  if(!trigger)
-    return;
+  Bool_t physics = pars->IsEventTriggered(esd);
+  Bool_t empty   = pars->IsEventTriggered(esd,AliFMDAnaParameters::kEMPTY);
+  //std::cout<<physics<<"   "<<empty<<std::endl;
+  //if(!trigger)
+  //  physics = kFALSE;
   Double_t vertex[3];
   
-  pars->GetVertex(esd,vertex);
-  if(vertex[0] == 0 && vertex[1] == 0 && vertex[2] == 0)
-    return;
+  Bool_t vtxStatus =   pars->GetVertex(esd,vertex);
+  if(!vtxStatus)
+    physics = kFALSE;
   
-  fZvtxDist->Fill(vertex[2]);
-  
-  if(TMath::Abs(vertex[2]) > pars->GetVtxCutZ())
-    return;
+  if(physics) {
+    fZvtxDist->Fill(vertex[2]);
+    if(TMath::Abs(vertex[2]) > pars->GetVtxCutZ())
+      physics = kFALSE;
+  }
   
   AliESDFMD* fmd = esd->GetFMDData();
   if (!fmd) return;
+  if(physics)
+    fEvents++;
+  else if(empty)
+    fEmptyEvents++;
   
+  if(!physics && !empty)
+    return;
+  TH1F* Edist = 0;
+  TH1F* emptyEdist = 0;
+  TH1F* ringEdist = 0;
   for(UShort_t det=1;det<=3;det++) {
-      
+    
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
-  
       Char_t   ring = (ir == 0 ? 'I' : 'O');
+      emptyEdist = (TH1F*)fOutputList->FindObject(Form("emptyFMD%d%c",det,ring));
+      ringEdist = (TH1F*)fOutputList->FindObject(Form("ringFMD%d%c",det,ring));
       UShort_t nsec = (ir == 0 ? 20  : 40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
-      TH2F* hBg = pars->GetBackgroundCorrection(det,ring,0);
       
       for(UShort_t sec =0; sec < nsec;  sec++)  {
 	for(UShort_t strip = 0; strip < nstr; strip++) {
@@ -171,23 +206,61 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
 	  
 	  Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex[2]);
 	  
-	  Int_t nEta = hBg->GetXaxis()->FindBin(eta);
-	  
-	  TObjArray* etaArray = (TObjArray*)fArray->At(nEta);
-	  TObjArray* detArray = (TObjArray*)etaArray->At(det);
-	  TH1F* Edist = (TH1F*)detArray->At(ir);
-	  
-	  Edist->Fill(mult);
+	  Int_t nEta  = pars->GetEtaBin(eta);
+	  //	  std::cout<<det<<"  "<<ring<<"   "<<sec<<"    "<<strip<<"   "<<vertex[2]<<"   "<<eta<<"   "<<nEta<<std::endl;
+	  if(physics) {
+	    Edist = (TH1F*)fOutputList->FindObject(Form("FMD%d%c_etabin%d",det,ring,nEta));	  
+	    Edist->Fill(mult);
+	    ringEdist->Fill(mult);
+	  }
+	  else if(empty) {
+	    emptyEdist->Fill(mult);
+	    
+	  }
+	  else {
+	    AliWarning("Something is wrong - wrong trigger");
+	    continue;
+	  }
+	 
 	  
 	}
       }
     }
+    
+    PostData(1, fOutputList); 
+    
+  }
+}
+//____________________________________________________________________
+  
+void AliFMDAnalysisTaskCollector::Terminate(Option_t */*option*/) {
+  std::cout<<"Analysed "<<fEvents<<" events and "<<fEmptyEvents<<" empty"<<std::endl;
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+ 
+    
+    for(Int_t det = 1; det<=3; det++) {
+      Int_t nRings  =  (det == 1 ? 1 : 2);
+      for(Int_t ring = 0;ring<nRings; ring++) {
+	
+	Char_t ringChar = (ring == 0 ? 'I' : 'O');
+	TH1F* hRingEdist = (TH1F*)fOutputList->FindObject(Form("ringFMD%d%c",det,ringChar));
+	TH1F* hEmptyEdist = (TH1F*)fOutputList->FindObject(Form("emptyFMD%d%c",det,ringChar));
+	if(fEmptyEvents)
+	  hEmptyEdist->Scale(1./(Float_t)fEmptyEvents);
+	
+	if(fEvents)
+	  hRingEdist->Scale(1./(Float_t)fEvents);
+	for(Int_t nEta = 0; nEta < pars->GetNetaBins(); nEta++) {
+	  TH1F* hEdist = (TH1F*)fOutputList->FindObject(Form("FMD%d%c_etabin%d",det,ringChar,nEta));
+	  if(fEvents)
+	    hEdist->Scale(1./(Float_t)fEvents);
+	  
+	
+      }
+    }
   }
   
-  PostData(1, fOutputList); 
-  
 }
-
 //____________________________________________________________________
 void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t store, Int_t speciesOption)  {
 
@@ -207,40 +280,32 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
   EnergyDist->SetNetaBins(pars->GetNetaBins());
   EnergyDist->SetEtaLimits(pars->GetEtaMin(),pars->GetEtaMax());
     
-  for(Int_t nEta = 1; nEta <= pars->GetNetaBins(); nEta++) {
+  TF1* fitFunc = 0;
   
-    for(Int_t det = 1; det<=3; det++) {
-      Int_t nRings  =  (det == 1 ? 1 : 2);
-      for(Int_t ring = 0;ring<nRings; ring++) {
-	Char_t ringChar = (ring == 0 ? 'I' : 'O');
-	
+  for(Int_t det = 1; det<=3; det++) {
+    Int_t nRings  =  (det == 1 ? 1 : 2);
+    for(Int_t ring = 0;ring<nRings; ring++) {
+      Char_t ringChar = (ring == 0 ? 'I' : 'O');
+      TH1F* hEmptyEdist = (TH1F*)list->FindObject(Form("emptyFMD%d%c",det,ringChar));
+      TH1F* hRingEdist = (TH1F*)list->FindObject(Form("ringFMD%d%c",det,ringChar));
+      fitFunc = FitEnergyDistribution(hEmptyEdist, speciesOption) ;
+      if(fitFunc)
+	fitFunc->Write(Form("emptyFMD%d%c_fitfunc",det,ringChar),TObject::kWriteDelete);
+      fitFunc = FitEnergyDistribution(hRingEdist, speciesOption) ;
+      if(fitFunc)
+	fitFunc->Write(Form("FMD%d%c_fitfunc",det,ringChar),TObject::kWriteDelete);
+      
+      
+      EnergyDist->SetEmptyEnergyDistribution(det,ringChar,hEmptyEdist);
+      EnergyDist->SetRingEnergyDistribution(det,ringChar,hRingEdist);
+      for(Int_t nEta = 0; nEta < pars->GetNetaBins(); nEta++) {
 	TH1F* hEdist = (TH1F*)list->FindObject(Form("FMD%d%c_etabin%d",det,ringChar,nEta));
-	TF1* fitFunc = 0 ;
 	
-	if(hEdist->GetEntries() != 0) {
-	  
-	  hEdist->GetXaxis()->SetRangeUser(0.2,hEdist->GetXaxis()->GetXmax());
-	  
-	  if(speciesOption == 0)
-	    fitFunc =  new TF1("FMDfitFunc","landau",hEdist->GetBinCenter(hEdist->GetMaximumBin())-0.2,3);
-	  if(speciesOption == 1) {
-	    fitFunc = new TF1("FMDfitFunc",TripleLandau,hEdist->GetBinCenter(hEdist->GetMaximumBin())-0.2,5,5);
-	    fitFunc->SetParNames("constant","MPV","sigma","2-Mip weight","3-Mip weight");
-	    fitFunc->SetParameters(10,0.8,0.1,0.05,0.01);
-	    fitFunc->SetParLimits(1,0.6,1.2);
-	    fitFunc->SetParLimits(3,0,1);
-	    fitFunc->SetParLimits(4,0,1);
-	    
-	  }
-	  
-	  
-	  hEdist->Fit(fitFunc,"","",hEdist->GetBinCenter(hEdist->GetMaximumBin())-0.2,3);
+	fitFunc = FitEnergyDistribution(hEdist, speciesOption) ;
+	if(fitFunc)
 	  fitFunc->Write(Form("FMD%d%c_etabin%d_fitfunc",det,ringChar,nEta),TObject::kWriteDelete);
-	  
-	}
+	EnergyDist->SetEnergyDistribution(det,ringChar,nEta,hEdist);
 	
-	TH2F* hBg = pars->GetBackgroundCorrection(det,ringChar,0);
-	EnergyDist->SetEnergyDistribution(det,ringChar,hBg->GetXaxis()->GetBinCenter(nEta),hEdist);
       }
       
     }
@@ -259,7 +324,31 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
 
 
 }
-
+//____________________________________________________________________
+TF1* AliFMDAnalysisTaskCollector::FitEnergyDistribution(TH1F* hEnergy, Int_t speciesOption) {
+  
+  TF1* fitFunc = 0;
+  if(hEnergy->GetEntries() != 0) {
+	  
+    hEnergy->GetXaxis()->SetRangeUser(0.2,hEnergy->GetXaxis()->GetXmax());
+    
+    if(speciesOption == 0)
+      fitFunc =  new TF1("FMDfitFunc","landau",hEnergy->GetBinCenter(hEnergy->GetMaximumBin())-0.2,3);
+    if(speciesOption == 1) {
+      fitFunc = new TF1("FMDfitFunc",TripleLandau,hEnergy->GetBinCenter(hEnergy->GetMaximumBin())-0.2,5,5);
+      fitFunc->SetParNames("constant","MPV","sigma","2-Mip weight","3-Mip weight");
+      fitFunc->SetParameters(10,0.8,0.1,0.05,0.01);
+      fitFunc->SetParLimits(1,0.6,1.2);
+      fitFunc->SetParLimits(3,0,1);
+      fitFunc->SetParLimits(4,0,1);
+      
+    }
+    hEnergy->Fit(fitFunc,"","",hEnergy->GetBinCenter(hEnergy->GetMaximumBin())-0.2,3);
+    
+  }
+  return fitFunc;
+  
+}
 //____________________________________________________________________
 //
 // EOF
