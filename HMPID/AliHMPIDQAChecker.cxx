@@ -79,7 +79,7 @@ Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
     else check[specie] = 0.7 ; // /-> Corresponds to kINFO see AliQACheckerBase::Run 
   } // species loop
 
-  delete QARefRec;
+  //PH  delete QARefRec;
 
   return check;
 
