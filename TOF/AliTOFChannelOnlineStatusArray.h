@@ -44,6 +44,7 @@ public:
   UChar_t  GetPulserStatus(Int_t pos) const;
   UChar_t  GetNoiseStatus(Int_t pos) const;
   Int_t GetLatencyWindow(Int_t pos) const;
+  Bool_t HasLatencyWindow() {return fLatencyWindow != NULL;};
 
 private:
   Int_t fSize;      // Size of the array of UChar_t

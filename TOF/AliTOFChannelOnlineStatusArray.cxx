@@ -123,6 +123,10 @@ void AliTOFChannelOnlineStatusArray::SetNoiseStatus(Int_t pos, UChar_t parr)
 //________________________________________________________________
 void AliTOFChannelOnlineStatusArray::SetLatencyWindow(Int_t pos, Int_t parr)
 {
+  if (!fLatencyWindow) {
+    AliWarning("couldn't set latency window");
+    return;
+  }
 	// setting latency window for channel at position = pos
 	AliDebug(2,Form("Latency window = %d",parr));
 	if (pos>-1 && pos < fSize){
@@ -176,6 +180,10 @@ Int_t AliTOFChannelOnlineStatusArray::GetLatencyWindow(Int_t pos) const
 {
 	// getting the latency window for channel at position = pos 
   Int_t lw = -1; 
+  if (!fLatencyWindow) {
+    AliWarning("cannot get latency window");
+    return lw;
+  }
   if  (pos>-1 && pos < fSize)lw = fLatencyWindow[pos];
   AliDebug(2,Form("lw = %d ",lw));
   return lw;

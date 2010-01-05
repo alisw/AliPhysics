@@ -1022,6 +1022,16 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 	  fStatus = (AliTOFChannelOnlineStatusArray*) cdbEntry->GetObject();
 	  delete cdbEntry;
 	  cdbEntry = 0x0;
+	  /* cehck whether status object has latency window data */
+	  if (!fStatus->HasLatencyWindow()) {
+	    /* create new status object and update OCDB */
+	    Log("     ************ WARNING ************");
+	    Log("CDB Status entry found but has no latency window data, creating a new one!");
+	    Log("     *********************************");
+	    delete fStatus;
+	    fStatus = new AliTOFChannelOnlineStatusArray(fNChannels);
+	    updateOCDB = kTRUE;
+	  }
   }
   for (Int_t iChannel = 0; iChannel < fNChannels; iChannel++){
 	  //AliDebug(2,Form("********** channel %i",iChannel));
