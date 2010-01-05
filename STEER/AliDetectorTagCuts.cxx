@@ -46,16 +46,13 @@ AliDetectorTagCuts::~AliDetectorTagCuts() {
 //___________________________________________________________________________
 Bool_t AliDetectorTagCuts::IsAccepted(AliDetectorTag *detTag) const {
   //Returns true if the event is accepted otherwise false.
-  TString detStr = fDetectors;
-  TObjArray *activeDetectors = detTag->GetDetectorMask();
-  TString listOfDetectors[15];
-  for (Int_t iDet = 0; iDet < activeDetectors->GetEntries(); iDet++) {
-    TObjString *detectorString = (TObjString *)activeDetectors->At(iDet);
-    listOfDetectors[iDet] = detectorString->GetString();
-  }
-  if(fDetectorsFlag) {
+  if(fDetectorsFlag){
+    TString detStr = fDetectors;
+    TObjArray *activeDetectors = detTag->GetDetectorMask();
     for (Int_t iDet = 0; iDet < activeDetectors->GetEntries(); iDet++) {
-      if (!IsSelected(listOfDetectors[iDet], detStr)) return kFALSE; }
+      TObjString *detectorString = (TObjString *)activeDetectors->At(iDet);
+      if (!IsSelected(detectorString->GetString(), detStr))return kFALSE;
+    }
   }
   return kTRUE;
 }
