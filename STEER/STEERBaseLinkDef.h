@@ -14,6 +14,7 @@
 #pragma link C++ class AliVTrack+;
 #pragma link C++ class AliVVertex+;
 #pragma link C++ class AliVEvent+;
+#pragma link C++ class AliVCaloCells+;
 #pragma link C++ class AliVHeader+;
 #pragma link C++ class AliVEventHandler+;
 #pragma link C++ class AliVEventPool+;
@@ -45,6 +46,7 @@
 #pragma link C++ class AliGenHijingEventHeader+;
 #pragma link C++ class AliCollisionGeometry+;
 #pragma link C++ class AliGenDPMjetEventHeader+;
+#pragma link C++ class AliGenHerwigEventHeader+;
 #pragma link C++ class AliGenGeVSimEventHeader+;
 #pragma link C++ class AliGenEposEventHeader+;
 #pragma link C++ class AliStack+;

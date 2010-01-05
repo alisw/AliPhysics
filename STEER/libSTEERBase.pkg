@@ -4,6 +4,7 @@ SRCS = AliVParticle.cxx \
        AliVTrack.cxx \
        AliVVertex.cxx \
        AliVEvent.cxx \
+       AliVCaloCells.cxx \
        AliMixedEvent.cxx \
        AliVHeader.cxx \
        AliVEventHandler.cxx \
@@ -19,6 +20,7 @@ SRCS = AliVParticle.cxx \
        AliGenGeVSimEventHeader.cxx \
        AliGenHijingEventHeader.cxx AliCollisionGeometry.cxx \
        AliGenDPMjetEventHeader.cxx \
+       AliGenHerwigEventHeader.cxx \
        AliGenEposEventHeader.cxx \
        AliStack.cxx AliMCEventHandler.cxx AliInputEventHandler.cxx \
        AliTrackReference.cxx AliSysInfo.cxx \
