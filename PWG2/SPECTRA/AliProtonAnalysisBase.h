@@ -19,6 +19,7 @@ class TF1;
 class TCanvas;
 class TList;
 
+#include "AliPhysicsSelection.h"
 #include "AliPID.h"
 class AliESDEvent;
 class AliESDtrack;
@@ -72,6 +73,13 @@ class AliProtonAnalysisBase : public TObject {
 
   Bool_t IsEventTriggered(const AliESDEvent *esd,
 			  TriggerMode trigger = kMB2);
+  void OfflineTriggerInit(UInt_t runNumber) {
+    kUseOfflineTrigger = kTRUE;
+    fPhysicsSelection = new AliPhysicsSelection();
+    fPhysicsSelection->Initialize(runNumber);
+  }
+  Bool_t IsOfflineTriggerUsed() {return kUseOfflineTrigger;}
+  AliPhysicsSelection *GetPhysicsSelectionObject() {return fPhysicsSelection;}
   Bool_t IsAccepted(AliESDEvent *esd,
 		    const AliESDVertex *vertex, 
 		    AliESDtrack *track);
@@ -257,6 +265,8 @@ class AliProtonAnalysisBase : public TObject {
   TString fProtonAnalysisLevel;//"ESD", "AOD" or "MC"
   Bool_t fAnalysisMC; //kTRUE if MC analysis while reading the ESDs
   TriggerMode fTriggerMode; //Trigger mode
+  Bool_t kUseOfflineTrigger; //use the offline trigger or not
+  AliPhysicsSelection *fPhysicsSelection; //Trigger selection: offline
   AnalysisMode fProtonAnalysisMode; //Analysis mode: TPC-Hybrid-Global
   PIDMode fProtonPIDMode; //PID mode: Bayesian-dE/dx ratio-Nsigma areas
   Bool_t fAnalysisEtaMode; //run the analysis in eta or y

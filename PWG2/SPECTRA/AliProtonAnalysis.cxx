@@ -53,7 +53,8 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fNBinsY(0), fMinY(0), fMaxY(0),
   fNBinsPt(0), fMinPt(0), fMaxPt(0),
   fProtonContainer(0), fAntiProtonContainer(0),
-  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), fHistEventStats(0),
+  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), 
+  fHistEventStats(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
@@ -87,7 +88,10 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fInitQAFlag(kFALSE) {
   //Default constructor
   if(!fInitQAFlag) InitQA();
-  fHistEvents = new TH1I("fHistEvents","Analyzed events",1,0,1);
+
+  fHistEvents = new TH1I("fHistEvents","Analyzed events",2,0.5,2.5);
+  fHistEvents->GetXaxis()->SetBinLabel(1,"Analyzed events");
+  fHistEvents->GetXaxis()->SetBinLabel(2,"Events with (anti)protons");
 
   fHistYPtProtons = new TH2D("fHistYPtProtons","Protons",
 			     fNBinsY,fMinY,fMaxY,
@@ -154,7 +158,10 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fInitQAFlag(kFALSE) {
   //Default constructor
   if(!fInitQAFlag) InitQA();
-  fHistEvents = new TH1I("fHistEvents","Analyzed events",1,0,1);
+
+  fHistEvents = new TH1I("fHistEvents","Analyzed events",2,0.5,2.5);
+  fHistEvents->GetXaxis()->SetBinLabel(1,"Analyzed events");
+  fHistEvents->GetXaxis()->SetBinLabel(2,"Events with (anti)protons");
 
   fHistYPtProtons = new TH2D("fHistYPtProtons","Protons",
 			     fNBinsY,gY,fNBinsPt,gPt);
@@ -238,7 +245,9 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY,
   fMinPt = fLowPt;
   fMaxPt = fHighPt;
 
-  fHistEvents = new TH1I("fHistEvents","Analyzed events",1,0,1);
+  fHistEvents = new TH1I("fHistEvents","Analyzed events",2,0.5,2.5);
+  fHistEvents->GetXaxis()->SetBinLabel(1,"Analyzed events");
+  fHistEvents->GetXaxis()->SetBinLabel(2,"Events with (anti)protons");
 
   fHistYPtProtons = new TH2D("fHistYPtProtons","Protons",
 			     fNBinsY,fMinY,fMaxY,
@@ -298,7 +307,9 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY, Double_t *gY,
   fMinPt = gPt[0];
   fMaxPt = gPt[nbinsPt];
 
-  fHistEvents = new TH1I("fHistEvents","Analyzed events",1,0,1);
+  fHistEvents = new TH1I("fHistEvents","Analyzed events",2,0.5,2.5);
+  fHistEvents->GetXaxis()->SetBinLabel(1,"Analyzed events");
+  fHistEvents->GetXaxis()->SetBinLabel(2,"Events with (anti)protons");
 
   fHistYPtProtons = new TH2D("fHistYPtProtons","Protons",
 			     fNBinsY,gY,fNBinsPt,gPt);
@@ -387,8 +398,8 @@ TH1D *AliProtonAnalysis::GetProtonYHistogram() {
   //Get the y histogram for protons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fYProtons = (TH1D *)fHistYPtProtons->ProjectionX("fYProtons",0,fHistYPtProtons->GetYaxis()->GetNbins(),"");
-  //TH1D *fYProtons = fProtonContainer->ShowProjection(0,0); //variable-step
+  //TH1D *fYProtons = (TH1D *)fHistYPtProtons->ProjectionX("fYProtons",0,fHistYPtProtons->GetYaxis()->GetNbins(),"");
+  TH1D *fYProtons = fProtonContainer->ShowProjection(0,2); //variable-step
    
   fYProtons->SetStats(kFALSE);
   fYProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
@@ -406,8 +417,8 @@ TH1D *AliProtonAnalysis::GetAntiProtonYHistogram() {
   //Get the y histogram for antiprotons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   
-  TH1D *fYAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionX("fYAntiProtons",0,fHistYPtAntiProtons->GetYaxis()->GetNbins(),"");
-  //TH1D *fYAntiProtons = fAntiProtonContainer->ShowProjection(0,0);//variable-step 
+  //TH1D *fYAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionX("fYAntiProtons",0,fHistYPtAntiProtons->GetYaxis()->GetNbins(),"");
+  TH1D *fYAntiProtons = fAntiProtonContainer->ShowProjection(0,2);//variable-step 
  
   fYAntiProtons->SetStats(kFALSE);
   fYAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
@@ -425,8 +436,8 @@ TH1D *AliProtonAnalysis::GetProtonPtHistogram() {
   //Get the Pt histogram for protons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   
-  TH1D *fPtProtons = (TH1D *)fHistYPtProtons->ProjectionY("fPtProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),""); 
-  //TH1D *fPtProtons = fProtonContainer->ShowProjection(1,0); //variable-step
+  //TH1D *fPtProtons = (TH1D *)fHistYPtProtons->ProjectionY("fPtProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),""); 
+  TH1D *fPtProtons = fProtonContainer->ShowProjection(1,2); //variable-step
 
   fPtProtons->SetStats(kFALSE);
   fPtProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
@@ -444,8 +455,8 @@ TH1D *AliProtonAnalysis::GetAntiProtonPtHistogram() {
   //Get the Pt histogram for antiprotons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   
-  TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionY("fPtAntiProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),""); 
-  //TH1D *fPtAntiProtons = fAntiProtonContainer->ShowProjection(1,0); //variable-step
+  //TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionY("fPtAntiProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),""); 
+  TH1D *fPtAntiProtons = fAntiProtonContainer->ShowProjection(1,2); //variable-step
 
   fPtAntiProtons->SetStats(kFALSE);
   fPtAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
@@ -674,7 +685,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
   Int_t nIdentifiedProtons = 0, nIdentifiedAntiProtons = 0;
   Int_t nSurvivedProtons = 0, nSurvivedAntiProtons = 0;
 
-  fHistEvents->Fill(0); //number of analyzed events
+  fHistEvents->Fill(1); //number of analyzed events
   Double_t containerInput[2] ;
   Double_t gPt = 0.0, gP = 0.0;
   nTracks = esd->GetNumberOfTracks();
@@ -942,6 +953,9 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
     }//combined tracking
   }//track loop 
   
+  if((nIdentifiedProtons > 0)||(nIdentifiedAntiProtons > 0))
+    fHistEvents->Fill(2); //number of analyzed events with at least one (anti)proton
+
   if(fProtonAnalysisBase->GetDebugMode())
     Printf("Initial number of tracks: %d | Identified (anti)protons: %d - %d | Survived (anti)protons: %d - %d",nTracks,nIdentifiedProtons,nIdentifiedAntiProtons,nSurvivedProtons,nSurvivedAntiProtons);
 }
@@ -949,7 +963,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 //____________________________________________________________________//
 void AliProtonAnalysis::Analyze(AliAODEvent* const fAOD) {
   //Main analysis part - AOD
-  fHistEvents->Fill(0); //number of analyzed events
+  fHistEvents->Fill(1); //number of analyzed events
   Int_t nTracks = fAOD->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
@@ -978,7 +992,7 @@ void AliProtonAnalysis::Analyze(AliAODEvent* const fAOD) {
 void AliProtonAnalysis::Analyze(AliStack* const stack, 
 				Bool_t iInclusive) {
   //Main analysis part - MC
-  fHistEvents->Fill(0); //number of analyzed events
+  fHistEvents->Fill(1); //number of analyzed events
 
   Int_t nParticles = 0;
   //inclusive protons - 
