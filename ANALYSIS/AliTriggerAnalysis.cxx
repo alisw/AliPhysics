@@ -57,7 +57,8 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fHistFMDC(0),   
   fHistFMDSingle(0),
   fHistFMDSum(0),
-  fTriggerClasses(0)
+  fTriggerClasses(0),
+  fMC(kFALSE)
 {
   // constructor
 }
@@ -562,6 +563,26 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
     return kV0Invalid;
   }
   
+  if (fMC)
+  {
+    for (Int_t i = 0; i < 32; ++i) {
+      if (side == kASide) {
+        if (esdV0->BBTriggerV0A(i))
+          return kV0BB;
+        if (esdV0->BGTriggerV0A(i))
+          return kV0BG;
+      }
+      if (side == kCSide) {
+        if (esdV0->BBTriggerV0C(i))
+          return kV0BB;
+        if (esdV0->BGTriggerV0C(i))
+          return kV0BG;
+      }
+    }
+    
+    return kV0Empty;
+  }
+  
   Int_t begin = -1;
   Int_t end = -1;
   
@@ -577,7 +598,7 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
   }
   else
     return kV0Invalid;
-  
+    
   Float_t time = 0;
   Float_t weight = 0;
   for (Int_t i = begin; i < end; ++i) {

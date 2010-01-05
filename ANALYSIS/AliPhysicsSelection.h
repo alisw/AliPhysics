@@ -35,6 +35,7 @@ class AliPhysicsSelection : public AliAnalysisCuts
     
     Bool_t IsCollisionCandidate(const AliESDEvent* aEsd);
     Bool_t Initialize(UInt_t runNumber);
+    void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
     
     void AddBackgroundIdentification(AliAnalysisCuts* background) { fBackgroundIdentification = background; }
     
@@ -51,8 +52,10 @@ class AliPhysicsSelection : public AliAnalysisCuts
     
   protected:
     Bool_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
+    Int_t GetTriggerScheme(UInt_t runNumber);
     
     Int_t fCurrentRun;      // run number for which the object is initialized
+    Bool_t fMC;             // flag if MC is analyzed
     TList fCollTrigClasses; // trigger class identifying collision candidates
     TList fBGTrigClasses;   // trigger classes identifying background events
     
@@ -63,7 +66,7 @@ class AliPhysicsSelection : public AliAnalysisCuts
     TH2F* fHistStatistics;      // how many events are cut away why
     TH2F* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers
     
-    ClassDef(AliPhysicsSelection, 1)
+    ClassDef(AliPhysicsSelection, 2)
     
   private:
     AliPhysicsSelection(const AliPhysicsSelection&);

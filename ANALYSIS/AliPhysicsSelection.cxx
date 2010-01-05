@@ -22,9 +22,11 @@
 //
 // Usage:
 //
-// Create the object and initialize it with the correct run number:
+// Create the object:
 //   fPhysicsSelection = new AliPhysicsSelection;
-//   fPhysicsSelection->Initialize(104160);
+//
+// For MC data, call
+//   fPhysicsSelection->SetAnalyzeMC()
 //
 // To check if an event is a collision candidate, use:
 //   fPhysicsSelection->IsCollisionCandidate(fESD)
@@ -59,6 +61,7 @@ ClassImp(AliPhysicsSelection)
 AliPhysicsSelection::AliPhysicsSelection() :
   AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
   fCurrentRun(-1),
+  fMC(kFALSE),
   fCollTrigClasses(),
   fBGTrigClasses(),
   fTriggerAnalysis(),
@@ -145,9 +148,17 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
     return kFALSE;
   }
   
-  // check event type (should be PHYSICS = 7)
-  if (esdHeader->GetEventType() != 7)
-    return kFALSE;  
+  // check event type; should be PHYSICS = 7 for data and 0 for MC
+  if (!fMC)
+  {
+    if (esdHeader->GetEventType() != 7)
+      return kFALSE;
+  }
+  else
+  {
+    if (esdHeader->GetEventType() != 0)
+      AliFatal(Form("Invalid event type for MC: %d", esdHeader->GetEventType()));
+  }
     
   if (fCurrentRun != aEsd->GetRunNumber())
     if (!Initialize(aEsd->GetRunNumber()))
@@ -243,6 +254,17 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   
   return accept;
 }
+
+Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t /* runNumber */)
+{
+  // returns the current trigger scheme (classes that are accepted/rejected)
+  
+  if (fMC)
+    return 0;
+    
+  // TODO dependent on run number
+  return 1;
+}  
     
 Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
 {
@@ -252,81 +274,109 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
-  if (fCurrentRun != -1)
-    AliFatal("Processing several runs is not supported, yet");
+  Int_t triggerScheme = GetTriggerScheme(runNumber);
+  
+  if (fCurrentRun != -1 && triggerScheme != GetTriggerScheme(fCurrentRun))
+    AliFatal("Processing several runs with different trigger schemes is not supported");
   
   AliInfo(Form("Initializing for run %d", runNumber));
-  fCurrentRun = runNumber;
   
-  fTriggerAnalysis.Delete();
-  fCollTrigClasses.Delete();
-  fBGTrigClasses.Delete();
+  Bool_t firstTime = kFALSE;
+  if (fCurrentRun == -1)
+  {
+    // initialize first time
+    fCurrentRun = runNumber;
+    firstTime = kTRUE;
+  }
   
-  fCollTrigClasses.Add(new TObjString("+CINT1B-ABCE-NOPF-ALL"));
-  fBGTrigClasses.Add(new TObjString("+CINT1A-ABCE-NOPF-ALL"));
-  fBGTrigClasses.Add(new TObjString("+CINT1C-ABCE-NOPF-ALL"));
-  fBGTrigClasses.Add(new TObjString("+CINT1-E-NOPF-ALL"));
+  if (firstTime)
+  {
+    switch (triggerScheme)
+    {
+      case 0:
+        fCollTrigClasses.Add(new TObjString(""));
+        break;
+      
+      case 1:
+        fCollTrigClasses.Add(new TObjString("+CINT1B-ABCE-NOPF-ALL"));
+        fBGTrigClasses.Add(new TObjString("+CINT1A-ABCE-NOPF-ALL"));
+        fBGTrigClasses.Add(new TObjString("+CINT1C-ABCE-NOPF-ALL"));
+        fBGTrigClasses.Add(new TObjString("+CINT1-E-NOPF-ALL"));
+        break;
+        
+      default:
+        AliFatal(Form("Unsupported trigger scheme %d", triggerScheme));
+    }
   
+    Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
+    
+    for (Int_t i=0; i<count; i++)
+    {
+      AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+      triggerAnalysis->SetAnalyzeMC(fMC);
+      triggerAnalysis->EnableHistograms();
+      triggerAnalysis->SetSPDGFOThreshhold(1);
+      fTriggerAnalysis.Add(triggerAnalysis);
+    }
+      
+    if (fHistStatistics)
+      delete fHistStatistics;
+  
+    fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 14, 0.5, 14.5, count, -0.5, -0.5 + count);
+      
+    Int_t n = 1;
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Triggered");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A BG");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C BG");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2 &!V0 BG");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 1 | V0A | V0C) & !V0 BG");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1 & (V0A | V0C) & !V0 BG");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A & V0C & !V0 BG");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 2 | (FO >= 1 & (V0A | V0C)) | (V0A & V0C)) & !V0 BG");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Background identification");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Accepted");
+    
+    if (fHistBunchCrossing)
+      delete fHistBunchCrossing;
+  
+    fHistBunchCrossing = new TH2F("fHistBunchCrossing", "fHistBunchCrossing;bunch crossing number;", 4000, -0.5, 3999.5,  count, -0.5, -0.5 + count);
+      
+    n = 1;
+    for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
+    {
+      fHistStatistics->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
+      fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
+      n++;
+    }
+    for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
+    {
+      fHistStatistics->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
+      fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
+      n++;
+    }
+  }
+    
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
-  
   for (Int_t i=0; i<count; i++)
   {
-    AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-    triggerAnalysis->EnableHistograms();
-    triggerAnalysis->SetSPDGFOThreshhold(1);
-    triggerAnalysis->SetV0TimeOffset(0);
-    
+    AliTriggerAnalysis* triggerAnalysis = static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i));
+  
     switch (runNumber)
     {
+      case 104315:
       case 104316:
       case 104320:
-      case 104321: //OK
+      case 104321:
       case 104439:
         triggerAnalysis->SetV0TimeOffset(7.5);
         break;
+      default:
+        triggerAnalysis->SetV0TimeOffset(0);
     }
-  
-    fTriggerAnalysis.Add(triggerAnalysis);
-  }
-      
-  if (fHistStatistics)
-    delete fHistStatistics;
-
-  fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 14, 0.5, 14.5, count, -0.5, -0.5 + count);
-    
-  Int_t n = 1;
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "Triggered");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2 &!V0 BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 1 | V0A | V0C) & !V0 BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1 & (V0A | V0C) & !V0 BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A & V0C & !V0 BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 2 | (FO >= 1 & (V0A | V0C)) | (V0A & V0C)) & !V0 BG");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "Background identification");
-  fHistStatistics->GetXaxis()->SetBinLabel(n++, "Accepted");
-  
-  if (fHistBunchCrossing)
-    delete fHistBunchCrossing;
-
-  fHistBunchCrossing = new TH2F("fHistBunchCrossing", "fHistBunchCrossing;bunch crossing number;", 4000, -0.5, 3999.5,  count, -0.5, -0.5 + count);
-    
-  n = 1;
-  for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
-  {
-    fHistStatistics->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
-    fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
-    n++;
-  }
-  for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
-  {
-    fHistStatistics->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
-    fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
-    n++;
   }
     
   TH1::AddDirectory(oldStatus);
@@ -338,7 +388,7 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
 {
   // print the configuration
   
-  Printf("Configuration initialized for run %d:", fCurrentRun);
+  Printf("Configuration initialized for run %d (MC: %d):", fCurrentRun, fMC);
   
   Printf("Collision trigger classes:");
   for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)

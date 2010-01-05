@@ -32,6 +32,7 @@ class AliTriggerAnalysis : public TObject
     virtual ~AliTriggerAnalysis();
     
     void EnableHistograms();
+    void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
     
     Bool_t IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger);
     
@@ -101,8 +102,9 @@ class AliTriggerAnalysis : public TObject
     
     TMap* fTriggerClasses;    // counts the active trigger classes (uses the full string)
     
+    Bool_t fMC;              // flag if MC is analyzed
 
-    ClassDef(AliTriggerAnalysis, 5)
+    ClassDef(AliTriggerAnalysis, 6)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
