@@ -17,6 +17,7 @@
 #include <AliStructFuncType.h>
 
 class THerwig6;
+class AliGenHerwigEventHeader;
 class TArrayI;
 class TParticle;
 class TClonesArray;
@@ -82,11 +83,11 @@ class AliGenHerwig : public AliGenMC
 
  protected:
     Bool_t SelectFlavor(Int_t pid);
-
+    void   MakeHeader();    
  protected:
     TString     fAutPDF;         // PDF group
     Int_t       fModPDF;         // PDF set
-    StrucFunc_t fStrucFunc;      //Structure Function
+    StrucFunc_t fStrucFunc;      // Structure Function
     Int_t       fKeep;           // Flag to keep full event information
     Int_t       fDecaysOff;      // Flag to turn off decays of pi0, K_s, D, Lambda, sigma
     Int_t       fTrigger;        // Trigger type
@@ -116,7 +117,7 @@ class AliGenHerwig : public AliGenMC
     Float_t     fEtaMaxGamma;       // Maximum eta of triggered gamma
     Float_t     fPhiMinGamma;       // Minimum phi of triggered gamma
     Float_t     fPhiMaxGamma;       // Maximum phi of triggered gamma
-
+    AliGenHerwigEventHeader* fHeader;  //! Event header
  private:
     AliGenHerwig(const AliGenHerwig &Herwig);
     AliGenHerwig &  operator=(const AliGenHerwig & rhs);

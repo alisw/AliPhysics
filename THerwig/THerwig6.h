@@ -173,7 +173,8 @@ public:
   void        SetYBMAX    (double d);
   double      GetZJMAX        ()  const;
   void        SetZJMAX    (double d);
-
+  int         GetIHPRO        () const;
+  
   // /HWPROP/
   double      GetRMASS      (int i) const;
   void        SetRMASS    (int i, double r);

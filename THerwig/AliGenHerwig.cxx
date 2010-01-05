@@ -28,6 +28,7 @@
 #include <THerwig6.h>
 
 #include "AliGenHerwig.h"
+#include "AliGenHerwigEventHeader.h"
 #include "AliHerwigRndm.h"
 #include "AliMC.h"
 #include "AliRun.h"
@@ -69,7 +70,8 @@ ClassImp(AliGenHerwig)
     fEtaMinGamma(-20.),      
     fEtaMaxGamma(20.),      
     fPhiMinGamma(0.),      
-    fPhiMaxGamma(2. * TMath::Pi())  
+    fPhiMaxGamma(2. * TMath::Pi()),
+    fHeader(0)
 {
 // Constructor
   fEnergyCMS = 14000;
@@ -107,8 +109,9 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fPhiMaxParton(2.* TMath::Pi()),     
     fEtaMinGamma(-20.),      
     fEtaMaxGamma(20.),      
-    fPhiMinGamma(0.),      
-    fPhiMaxGamma(2. * TMath::Pi())  
+    fPhiMinGamma(0.),
+    fPhiMaxGamma(2. * TMath::Pi()),
+    fHeader(0)
 {
     fEnergyCMS = 14000;
     SetTarget();
@@ -267,10 +270,9 @@ void AliGenHerwig::Generate()
 {
   // Generate one event
 
-  Float_t polar[3] =   {0,0,0};
-  Float_t origin[3]=   {0,0,0};
-  Float_t origin0[3]=  {0,0,0};
-  Float_t p[4], random[6];
+  Float_t polar[3]  =   {0,0,0};
+  Float_t origin[3] =   {0,0,0};
+  Float_t p[4];
 
   static TClonesArray *particles;
   //  converts from mm/c to s
@@ -278,20 +280,15 @@ void AliGenHerwig::Generate()
   //
   Int_t nt=0;
   Int_t jev=0;
-  Int_t j, kf, ks, imo;
+  Int_t kf, ks, imo;
   kf=0;
 
   if(!particles) particles=new TClonesArray("TParticle",10000);
 
   fTrials=0;
-  for (j=0;j<3;j++) origin0[j]=fOrigin[j];
-  if(fVertexSmear==kPerEvent) {
-    Rndm(random,6);
-    for (j=0;j<3;j++) {
-      origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-	TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-    }
-  }
+
+  //  Set collision vertex position 
+  if (fVertexSmear == kPerEvent) Vertex();
 
   while(1)
     {
@@ -304,9 +301,9 @@ void AliGenHerwig::Generate()
 	//Check hard partons or direct gamma in kine range
 
 	if (fProcess == kHeJets || fProcess == kHeDirectGamma) {
-	  TParticle* parton1 = (TParticle *) particles->At(6);
-	  TParticle* parton2 = (TParticle *) particles->At(7);
-	  if (!CheckParton(parton1, parton2))  continue ;
+	    TParticle* parton1 = (TParticle *) particles->At(6);
+	    TParticle* parton2 = (TParticle *) particles->At(7);
+	    if (!CheckParton(parton1, parton2))  continue ;
 	} 
 
 	// 
@@ -317,8 +314,9 @@ void AliGenHerwig::Generate()
 	}
 
 	
-	Int_t nc=0;
-
+	Int_t nc = 0;
+	fNprimaries = 0;
+	
 	Int_t * newPos = new Int_t[np];
 	for (Int_t i = 0; i<np; i++) *(newPos+i)=-1;
 
@@ -335,9 +333,11 @@ void AliGenHerwig::Generate()
 		p[1]=iparticle->Py();
 		p[2]=iparticle->Pz();
 		p[3]=iparticle->Energy();
-		origin[0]=origin0[0]+iparticle->Vx()/10;
-		origin[1]=origin0[1]+iparticle->Vy()/10;
-		origin[2]=origin0[2]+iparticle->Vz()/10;
+
+		origin[0] = fVertex[0] + iparticle->Vx()/10; // [cm]
+		origin[1] = fVertex[1] + iparticle->Vy()/10; // [cm]
+		origin[2] = fVertex[2] + iparticle->Vz()/10; // [cm]
+
 		Float_t tof = kconv*iparticle->T();
 		Int_t   iparent = (imo > -1) ? newPos[imo] : -1;
 		Int_t   trackIt = (ks == 1) && fTrackIt;
@@ -349,10 +349,10 @@ void AliGenHerwig::Generate()
 			  kPPrimary, nt, fHerwig->GetEVWGT(), ks);
 		KeepTrack(nt);
 		newPos[i]=nt;
+		fNprimaries++;
 	    } // end of if: selection of particle
 	} // end of for: particle loop
 	if (newPos) delete[] newPos;
-	//      MakeHeader();
 	if (nc > 0) {
 	    jev+=nc;
 	    if (jev >= fNpart || fNpart == -1) {
@@ -361,6 +361,9 @@ void AliGenHerwig::Generate()
 	    }
 	}
     }
+//
+  MakeHeader();
+//  
   SetHighWaterMark(nt);
 //  adjust weight due to kinematic selection
   AdjustWeights();
@@ -502,3 +505,29 @@ void AliGenHerwig::FinishRunJimmy()
 
 }
 
+
+void AliGenHerwig::MakeHeader()
+{
+//
+// Make header for the simulated event
+// 
+  if (fHeader) delete fHeader;
+  fHeader = new AliGenHerwigEventHeader("Herwig");
+//
+// Event type  
+    ((AliGenHerwigEventHeader*) fHeader)->SetProcessType(fHerwig->GetIHPRO());
+//
+// Number of trials
+    ((AliGenHerwigEventHeader*) fHeader)->SetTrials(fTrials);
+//
+// Event Vertex 
+    fHeader->SetPrimaryVertex(fVertex);
+    
+//
+// Number of primaries
+    fHeader->SetNProduced(fNprimaries);
+//  Pass header
+//
+    AddHeader(fHeader);
+    fHeader = 0x0;  
+}

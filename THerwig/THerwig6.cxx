@@ -687,7 +687,7 @@ double      THerwig6::GetYBMAX         () const     { return HWHARD.YBMAX; }
 void        THerwig6::SetYBMAX    (double d)        { HWHARD.YBMAX = d; }
 double      THerwig6::GetZJMAX        ()  const     { return HWHARD.ZJMAX; }
 void        THerwig6::SetZJMAX    (double d)        { HWHARD.ZJMAX = d; }
-
+int         THerwig6::GetIHPRO        ()  const     { return HWHARD.IHPRO; }
 // /HWPROP/
 double      THerwig6::GetRMASS      (int i) const   { return HWPROP.RMASS[i]; }
 void        THerwig6::SetRMASS    (int i, double r) { HWPROP.RMASS[i] = r; }
