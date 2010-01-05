@@ -23,7 +23,9 @@
 #pragma link C++ class AliMultiEventInputHandler+;
 
 #pragma link C++ class AliTriggerAnalysis+;
+
 #pragma link C++ class AliPhysicsSelection+;
+#pragma link C++ class AliPhysicsSelectionTask+;
 
 #pragma link C++ class  AliAnalysisFilter+;
 #pragma link C++ class  AliAnalysisCuts+;

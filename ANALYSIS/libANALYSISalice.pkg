@@ -8,6 +8,7 @@ SRCS = 	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx \
         AliMultiEventInputHandler.cxx \
 	AliTriggerAnalysis.cxx \
         AliPhysicsSelection.cxx \
+        AliPhysicsSelectionTask.cxx \
         AliAnalysisFilter.cxx AliAnalysisCuts.cxx 
 
 
