@@ -39,10 +39,12 @@
 #include "AliFMDAnaCalibEnergyDistribution.h"
 #include "AliFMDAnaCalibEventSelectionEfficiency.h"
 #include "AliFMDAnaCalibSharingEfficiency.h"
+#include "AliPhysicsSelection.h"
 #include <TVector2.h>
 #include <TString.h>
 //#include "AliPWG0Helper.h"
-class AliESDEvent;
+#include "AliESDEvent.h"
+//class AliESDEvent;
 
 /**
  * @ingroup FMD_ana
@@ -59,7 +61,7 @@ public:
     kSharingEfficiency            = 0x8  // Sharing algorithm efficiency
   };
   
-  enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kNOCTP };
+  enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kNOCTP, kEMPTY };
   
   enum Energy { k900 , k10000, k14000 , k7000, k2400};
   
@@ -80,7 +82,9 @@ public:
   Int_t GetNetaBins();
   Float_t GetEtaMin();  
   Float_t GetEtaMax();
+  Int_t GetEtaBin(Float_t eta);
   Float_t GetMPV(Int_t det, Char_t ring, Float_t eta);
+  Float_t GetConstant(Int_t det, Char_t ring, Float_t eta);
   Float_t GetSigma(Int_t det, Char_t ring, Float_t eta);
   Float_t Get2MIPWeight(Int_t det, Char_t ring, Float_t eta);
   Float_t Get3MIPWeight(Int_t det, Char_t ring, Float_t eta);
@@ -113,7 +117,8 @@ public:
   Bool_t   GetVertex(AliESDEvent* esd, Double_t* vertexXYZ);
   void     SetTriggerDefinition(Trigger trigger) {fTrigger = trigger;}
   Trigger  GetTriggerDefinition() const {return fTrigger;}
-  Bool_t   IsEventTriggered(AliESDEvent* esd) const;
+  Bool_t   IsEventTriggered(const AliESDEvent *esd) const;
+  Bool_t   IsEventTriggered(const AliESDEvent *esd, Trigger trigger) ;
   void     SetEnergy(Energy energy) {fEnergy = energy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
   char*    GetPath(const char* species);
@@ -121,6 +126,16 @@ public:
   void     PrintStatus() const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
   char*    GetDndetaAnalysisName() {return "PWG2forwardDnDeta";}
+  TH1F*    GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
+  TH1F*    GetEmptyEnergyDistribution(Int_t det, Char_t ring);
+  TH1F*    GetRingEnergyDistribution(Int_t det, Char_t ring);
+  AliPhysicsSelection* GetPhysicsSelection() {return fPhysicsSelection;}
+  Bool_t   IsRealData() {return fRealData; }
+  void     SetRealData(Bool_t realdata) {fRealData = realdata;}
+  Float_t  GetLowSPDLimit() {return fSPDlowLimit;}
+  Float_t  GetHighSPDLimit() {return fSPDhighLimit;}
+  void     SetLowSPDLimit(Float_t cut) {fSPDlowLimit = cut;}
+  void     SetHighSPDLimit(Float_t cut) {fSPDhighLimit = cut;}
   void     SetCentralTriggerSelection(Bool_t selection) {fCentralSelection = selection;}
 protected:
   
@@ -143,6 +158,10 @@ protected:
       fEnergy(o.fEnergy),
       fMagField(o.fMagField),
       fSpecies(o.fSpecies),
+      fPhysicsSelection(o.fPhysicsSelection), 
+      fRealData(o.fRealData),
+      fSPDlowLimit(o.fSPDlowLimit),
+      fSPDhighLimit(o.fSPDhighLimit),   
       fCentralSelection(o.fCentralSelection)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
@@ -156,7 +175,7 @@ protected:
   void InitEventSelectionEff();
   void InitSharingEff();
   
-  TH1F* GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
+
   TObjArray* GetBackgroundArray();
   
   TAxis* GetRefAxis();
@@ -188,6 +207,10 @@ protected:
   Energy   fEnergy;                   // CM energy
   MagField fMagField;                 //Magnetic field
   Species  fSpecies;                  //PbPb or pp ?
+  AliPhysicsSelection* fPhysicsSelection; 
+  Bool_t   fRealData;                 // real or simulated
+  Float_t  fSPDlowLimit ;             // low limit of SPD tracklets
+  Float_t  fSPDhighLimit ;             // high limit of SPD tracklets
   Bool_t   fCentralSelection;         //if event selection is done centrally
   
   ClassDef(AliFMDAnaParameters,1) // Manager of parameters

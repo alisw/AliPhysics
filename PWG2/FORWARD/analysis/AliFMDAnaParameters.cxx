@@ -32,6 +32,9 @@
 #include <TH2D.h>
 #include <TF1.h>
 #include <TMath.h>
+#include "AliTriggerAnalysis.h"
+#include "AliPhysicsSelection.h"
+//#include "AliBackgroundSelection.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 
@@ -79,12 +82,19 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fEnergy(k10000),
   fMagField(k5G),
   fSpecies(kPP),
+  fPhysicsSelection(0),
+  fRealData(kFALSE),
+  fSPDlowLimit(0),
+  fSPDhighLimit(999999999),
   fCentralSelection(kFALSE)
 {
+  fPhysicsSelection = new AliPhysicsSelection;
+  //AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
+  
+  //fPhysicsSelection->AddBackgroundIdentification(backgroundSelection);
+  //fPhysicsSelection->Initialize(104792);
   // Do not use this - it is only for IO 
   fgInstance = this;
-  //fVerticies.Add(new TVector2(4.2231, 26.6638));
-  // fVerticies.Add(new TVector2(1.8357, 27.9500));
   // Default constructor 
 }
 //____________________________________________________________________
@@ -146,7 +156,9 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
   if (what & kEnergyDistributions)        InitEnergyDists();
   if (what & kEventSelectionEfficiency)   InitEventSelectionEff();
   if (what & kSharingEfficiency)          InitSharingEff();
+  
 
+  
   fIsInit = kTRUE;
 }
 //____________________________________________________________________
@@ -291,6 +303,16 @@ TH1F* AliFMDAnaParameters::GetEnergyDistribution(Int_t det, Char_t ring, Float_t
   return fEnergyDistribution->GetEnergyDistribution(det, ring, eta);
 }
 //____________________________________________________________________
+TH1F* AliFMDAnaParameters::GetEmptyEnergyDistribution(Int_t det, Char_t ring) {
+  
+  return fEnergyDistribution->GetEmptyEnergyDistribution(det, ring);
+}
+//____________________________________________________________________
+TH1F* AliFMDAnaParameters::GetRingEnergyDistribution(Int_t det, Char_t ring) {
+  
+  return fEnergyDistribution->GetRingEnergyDistribution(det, ring);
+}
+//____________________________________________________________________
 Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring, Float_t eta) {
   
   if(!fIsInit) {
@@ -301,7 +323,7 @@ Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring, Float_t eta) {
   TH1F* hEnergyDist       = GetEnergyDistribution(det,ring, eta);
   TF1*  fitFunc           = hEnergyDist->GetFunction("FMDfitFunc");
   if(!fitFunc) {
-    AliWarning(Form("No function for FMD%d%c, eta %f",det,ring,eta));
+    //AliWarning(Form("No function for FMD%d%c, eta %f",det,ring,eta));
     return 1024;
   }
   Float_t sigma           = fitFunc->GetParameter(2);
@@ -316,15 +338,34 @@ Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring, Float_t eta) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
   }
+  //AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  TH1F* hEnergyDist     = GetEnergyDistribution(det,ring,eta);
+  TF1*  fitFunc         = hEnergyDist->GetFunction("FMDfitFunc");
+  if(!fitFunc) {
+    AliWarning(Form("No function for FMD%d%c, eta %f",det,ring,eta));
+    std::cout<<hEnergyDist->GetEntries()<<"    "<<GetEtaBin(eta)<<std::endl;
+    return 1024;
+  }
+    
+  Float_t mpv           = fitFunc->GetParameter(1);
+  return mpv;
+}
+//____________________________________________________________________
+Float_t AliFMDAnaParameters::GetConstant(Int_t det, Char_t ring, Float_t eta) {
+  
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
   
   TH1F* hEnergyDist     = GetEnergyDistribution(det,ring,eta);
   TF1*  fitFunc         = hEnergyDist->GetFunction("FMDfitFunc");
   if(!fitFunc) {
     AliWarning(Form("No function for FMD%d%c, eta %f",det,ring,eta));
-    return 1024;
+    return 0;
   }
     
-  Float_t mpv           = fitFunc->GetParameter(1);
+  Float_t mpv           = fitFunc->GetParameter(0);
   return mpv;
 }
 //____________________________________________________________________
@@ -384,6 +425,14 @@ Float_t AliFMDAnaParameters::GetEtaMin() {
 Float_t AliFMDAnaParameters::GetEtaMax() {
 
 return GetBackgroundCorrection(1,'I',0)->GetXaxis()->GetXmax();
+
+}
+//____________________________________________________________________
+Int_t AliFMDAnaParameters::GetEtaBin(Float_t eta) {
+  TAxis testaxis(GetNetaBins(),GetEtaMin(),GetEtaMax());
+  Int_t binnumber = testaxis.FindBin(eta) ;
+  
+  return binnumber;
 
 }
 //____________________________________________________________________
@@ -556,35 +605,77 @@ Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t
 
 Bool_t AliFMDAnaParameters::GetVertex(AliESDEvent* esd, Double_t* vertexXYZ) 
 {
-  
   const AliESDVertex* vertex = 0;
   vertex = esd->GetPrimaryVertexSPD();
+  
   if(vertex)
     vertex->GetXYZ(vertexXYZ);
+    
+  //if(vertexXYZ[0] == 0 || vertexXYZ[1] == 0 )
+  //  return kFALSE;
+  
+  if(vertex->GetNContributors() <= 0)
+    return kFALSE;
+  
+  if(vertex->GetZRes() > 0.1 ) 
+    return kFALSE;
   
   return vertex->GetStatus();
   
 }
-
 //____________________________________________________________________
-Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent *esd) const {
+Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd, Trigger trig) {
+
+  Trigger old = fTrigger;
+  fTrigger = trig;
+  Bool_t retval = IsEventTriggered(esd);
+  fTrigger = old;
+  return retval;
+
+}
+//____________________________________________________________________
+Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
   // check if the event was triggered
   
   if (fCentralSelection) return kTRUE;
   ULong64_t triggerMask = esd->GetTriggerMask();
   
+  TString triggers = esd->GetFiredTriggerClasses();
+  // std::cout<<triggers.Data()<<std::endl;
+  //if(triggers.Contains("CINT1B-ABCE-NOPF-ALL") || triggers.Contains("CINT1B-E-NOPF-ALL")) return kTRUE;
+  //else return kFALSE;
+  //if(triggers.Contains("CINT1B-E-NOPF-ALL"))    return kFALSE;
+  
+  // if(triggers.Contains("CINT1A-ABCE-NOPF-ALL")) return kFALSE;
+  // if(triggers.Contains("CINT1C-ABCE-NOPF-ALL")) return kFALSE;
+  
   // definitions from p-p.cfg
   ULong64_t spdFO = (1 << 14);
   ULong64_t v0left = (1 << 11);
   ULong64_t v0right = (1 << 12);
+  AliTriggerAnalysis tAna;
+  
+  //REMOVE WHEN FINISHED PLAYING WITH TRIGGERS!
+  //fPhysicsSelection->IsCollisionCandidate(esd);
+  
   
   switch (fTrigger) {
   case kMB1: {
-    if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
-      return kTRUE;
+    //if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
+    //  if(/*tAna.IsOfflineTriggerFired(esd,AliTriggerAnalysis::kMB1) &&*/ (triggers.Contains("CINT1B-ABCE-NOPF-ALL")))// || triggers.Contains("CINT1-E-NOPF-ALL")))
+    if(fRealData) {
+      if( fPhysicsSelection->IsCollisionCandidate(esd))
+	return kTRUE;
+	
+       //  triggers.Contains("CINT1C-ABCE-NOPF-ALL") || triggers.Contains("CINT1A-ABCE-NOPF-ALL"))
+    
+    }
+    else
+      if(triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
+	return kTRUE;
     break;
   }
-  case kMB2: {
+  case kMB2: { 
     if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
       return kTRUE;
     break;
@@ -598,8 +689,13 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent *esd) const {
     return kTRUE;
     break;
   }
+  case kEMPTY: {
+    if(triggers.Contains("CBEAMB-ABCE-NOPF-ALL"))
+      return kTRUE;
+    break;
+  }
   }//switch
-
+  
   return kFALSE;
 }
 
