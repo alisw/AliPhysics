@@ -1,13 +1,17 @@
-void drawProtonResults(const char* esdFileName) {
+void drawProtonResults(const char* analysisOutput = 0x0,
+		       Bool_t kShowResults = kTRUE,
+		       Bool_t kShowQAPlots = kFALSE) {
   //Macro to visualize the proton ratio results
   //It also visualizes the QA plots
   gStyle->SetPalette(1,0);
-  drawResults(esdFileName);
-  drawQAPlots(esdFileName);
+  if(!analysisOutput)
+    Error("drawProtonResults::The analysis output was not defined!!!");
+  if(kShowResults) drawResults(analysisOutput);
+  if(kShowQAPlots) drawQAPlots(analysisOutput);
 }
 
 //___________________________________________________//
-void drawResults(const char* esdFileName) {
+void drawResults(const char* analysisOutput) {
   //Draws the main results from the ratio analysis
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
@@ -15,7 +19,7 @@ void drawResults(const char* esdFileName) {
   gSystem->Load("libPWG2spectra.so");
 
   //Open the input file and get the objects
-  /*TFile *f = TFile::Open(esdFileName);
+  /*TFile *f = TFile::Open(analysisOutput);
   TList *analysisList = dynamic_cast<TList *>(f->Get("outputList"));
   TH2D *gHistYPtProtons = dynamic_cast<TH2D *>(analysisList->At(0));
   TH2D *gHistYPtAntiProtons = dynamic_cast<TH2D *>(analysisList->At(1));
@@ -30,7 +34,7 @@ void drawResults(const char* esdFileName) {
 
   //Create the AliProtonAnalysis object
   AliProtonAnalysis *analysis = new AliProtonAnalysis();
-  analysis->ReadFromFile(esdFileName);
+  analysis->ReadFromFile(analysisOutput);
   TH1F *gHistEventStats = dynamic_cast<TH1F *>(analysis->GetEventStatistics());
   TH2D *gHistYPtProtons = dynamic_cast<TH2D *>(analysis->GetProtonYPtHistogram());
   TH2D *gHistYPtAntiProtons = dynamic_cast<TH2D *>(analysis->GetAntiProtonYPtHistogram());
@@ -96,7 +100,7 @@ void drawResults(const char* esdFileName) {
 }
 
 //___________________________________________________//
-void drawQAPlots(const char* esdFileName) {
+void drawQAPlots(const char* analysisOutput) {
   //Draws the QA plots from the output of the analysis
   //=========================================================//
   //List of cuts
@@ -106,7 +110,7 @@ void drawQAPlots(const char* esdFileName) {
 
   //=========================================================//
   //QA plots
-  TFile *f = TFile::Open(esdFileName);
+  TFile *f = TFile::Open(analysisOutput);
   TList *listQA = dynamic_cast<TList *>(f->Get("outputQAList"));
   TList *gListGlobalQA = dynamic_cast<TList *>(listQA->At(0));
 
