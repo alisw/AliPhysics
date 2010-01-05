@@ -170,9 +170,7 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
   //Matching Step
   MatchTracks();
 
-  AliInfo(Form("Number of matched tracks: %d",fnmatch));
-  AliInfo(Form("Number of good matched tracks: %d",fngoodmatch));
-  AliInfo(Form("Number of bad  matched tracks: %d",fnbadmatch));
+  AliInfo(Form("Number of matched tracks = %d (good = %d, bad = %d)",fnmatch,fngoodmatch,fnbadmatch));
 
   //Update the matched ESD tracks
 
@@ -371,9 +369,7 @@ void AliTOFtrackerV1::CollectESD() {
     }
   }
 
-  AliInfo(Form("Number of TOF seeds %d",fNseedsTOF));
-  AliInfo(Form("Number of TOF seeds Type 1 %d",seedsTOF1));
-  AliInfo(Form("Number of TOF seeds Type 2 %d",seedsTOF2));
+  AliInfo(Form("Number of TOF seeds = %d (Type 1 = %d, Type 2 = %d)",fNseedsTOF,seedsTOF1,seedsTOF2));
 
   // Sort according uncertainties on track position 
   fTracks->Sort();
