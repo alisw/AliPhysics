@@ -24,26 +24,41 @@ class AliMultiplicity : public TObject {
   virtual ~AliMultiplicity();
 // methods to access tracklet information
   Int_t GetNumberOfTracklets() const {return fNtracks;}
-  Double_t GetTheta(Int_t i) const { if(i>=0 && i<fNtracks) {return fTh[i];}
-  else {Error("GetTheta","Invalid track number %d",i); return -9999.;}}
-  Double_t GetEta(Int_t i) const { if(i>=0 && i<fNtracks) {return -TMath::Log(TMath::Tan(fTh[i]/2.));}
-  else {Error("GetEta","Invalid track number %d",i); return -9999.;}}
-  Double_t GetPhi(Int_t i) const { if(i>=0 && i<fNtracks) {return fPhi[i];}
-  else {Error("GetPhi","Invalid track number %d",i); return -9999.;}}
-  Double_t GetDeltaTheta(Int_t i) const {if(fDeltTh && i>=0 && i<fNtracks) {return fDeltTh[i];}
-  else {Error("GetDeltaTheta","DeltaTheta not available in data or Invalid track number %d(max %d)",i, fNtracks); return -9999.;}}
-  Double_t GetDeltaPhi(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltPhi[i];}
-  else {Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;}}
+  Double_t GetTheta(Int_t i) const { 
+    if(i>=0 && i<fNtracks) return fTh[i];
+    Error("GetTheta","Invalid track number %d",i); return -9999.;
+  }
+  Double_t GetEta(Int_t i) const { 
+    if(i>=0 && i<fNtracks) return -TMath::Log(TMath::Tan(fTh[i]/2.));
+    Error("GetEta","Invalid track number %d",i); return -9999.;
+  }
+  Double_t GetPhi(Int_t i) const { 
+    if(i>=0 && i<fNtracks) return fPhi[i];
+    Error("GetPhi","Invalid track number %d",i); return -9999.;
+  }
+  Double_t GetDeltaTheta(Int_t i) const {
+    if(fDeltTh && i>=0 && i<fNtracks) return fDeltTh[i];
+    Error("GetDeltaTheta","DeltaTheta not available in data or Invalid track number %d(max %d)",i, fNtracks); return -9999.;
+  }
+  Double_t GetDeltaPhi(Int_t i) const {
+    if(i>=0 && i<fNtracks) return fDeltPhi[i];
+    Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;
+  }
 
   Int_t GetLabel(Int_t i, Int_t layer) const;
   void  SetLabel(Int_t i, Int_t layer, Int_t label);
   
 // methods to access single cluster information
   Int_t GetNumberOfSingleClusters() const {return fNsingle;}
-  Double_t GetThetaSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fThsingle[i];}
-  else {Error("GetThetaSingle","Invalid cluster number %d",i); return -9999.;}}
-  Double_t GetPhiSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fPhisingle[i];}
-  else {Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;}}
+  Double_t GetThetaSingle(Int_t i) const { 
+    if(i>=0 && i<fNsingle) return fThsingle[i];
+    Error("GetThetaSingle","Invalid cluster number %d",i); return -9999.;
+  }
+
+  Double_t GetPhiSingle(Int_t i) const { 
+    if(i>=0 && i<fNsingle) return fPhisingle[i];
+    Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;
+  }
 
   Short_t GetNumberOfFiredChips(Int_t layer) const { return fFiredChips[layer]; }
   void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
@@ -95,5 +110,6 @@ inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const
     } else {
 	Error("GetLabel","Invalid track number %d",i); return -9999;
     }
+    return -9999;
 }
 #endif
