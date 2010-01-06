@@ -139,6 +139,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile* MakePtProjection(TProfile2D *profilePtEta) const;
   TProfile* MakeEtaProjection(TProfile2D *profilePtEta) const;
   virtual void WriteHistograms(TString outputFileName);
+  virtual void WriteHistograms(TDirectoryFile *outputFileName);
   
   // **** SETTERS and GETTERS ****
   

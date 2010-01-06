@@ -6,7 +6,7 @@ enum libModes {mLocal,mLocalSource};
 //mLocalSource: Analyze data on your computer using root + source files
 
 //void compareFlowResults(TString type="",Int_t mode=mLocalSource)
-void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
+void compareFlowResults(TString type="",Int_t mode=mLocal)
 { 
 
   // load needed libraries:                       
@@ -256,46 +256,52 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   //==================================================================================
   //                         accessing output files
   //==================================================================================
-  //open the output files:
+  TString outputFileName = "AnalysisResults.root"; // final output file name holding final results for large statistics sample
+  // access the merged, large statistics file obtained with macro mergeOutput.C:
+  TString pwd(gSystem->pwd());
+  pwd+="/";
+  pwd+=outputFileName.Data();
+  TFile *outputFile = NULL;
+  if(gSystem->AccessPathName(pwd.Data(),kFileExists))
+  {
+   cout<<"WARNING: You do not have an output file:"<<endl;
+   cout<<"         "<<pwd.Data()<<endl;
+   exit(0);
+  } else 
+    {
+     outputFile = TFile::Open(pwd.Data(),"READ");
+    }
+  
+  //open the output files for each method:
   TString inputFileNameMCEP = "outputMCEPanalysis";
-  TFile* fileMCEP = NULL;
-  fileMCEP = TFile::Open(((inputFileNameMCEP.Append(type)).Append(".root")).Data(), "READ"); 
-  
+  TFile* fileMCEP = (TFile*)outputFile->FindObjectAny((inputFileNameMCEP.Append(type)).Data());
+   
   TString inputFileNameSP = "outputSPanalysis";
-  TFile* fileSP = NULL;
-  fileSP = TFile::Open(((inputFileNameSP.Append(type)).Append(".root")).Data(), "READ"); 
-  
+  TFile* fileSP = (TFile*)outputFile->FindObjectAny((inputFileNameSP.Append(type)).Data());
+    
   TString inputFileNameLYZ1SUM = "outputLYZ1SUManalysis";
-  TFile* fileLYZ1SUM = NULL;
-  fileLYZ1SUM = TFile::Open(((inputFileNameLYZ1SUM.Append(type)).Append(".root")).Data(), "READ"); 
+  TFile* fileLYZ1SUM = (TFile*)outputFile->FindObjectAny((inputFileNameLYZ1SUM.Append(type)).Data());
   
   TString inputFileNameLYZ2SUM = "outputLYZ2SUManalysis";
-  TFile* fileLYZ2SUM = NULL;
-  fileLYZ2SUM = TFile::Open(((inputFileNameLYZ2SUM.Append(type)).Append(".root")).Data(), "READ"); 
-  
+  TFile* fileLYZ2SUM = (TFile*)outputFile->FindObjectAny((inputFileNameLYZ2SUM.Append(type)).Data());
+    
   TString inputFileNameLYZ1PROD = "outputLYZ1PRODanalysis";
-  TFile* fileLYZ1PROD = NULL;
-  fileLYZ1PROD = TFile::Open(((inputFileNameLYZ1PROD.Append(type)).Append(".root")).Data(), "READ"); 
+  TFile* fileLYZ1PROD = (TFile*)outputFile->FindObjectAny((inputFileNameLYZ1PROD.Append(type)).Data());
   
   TString inputFileNameLYZ2PROD = "outputLYZ2PRODanalysis";
-  TFile* fileLYZ2PROD = NULL;
-  fileLYZ2PROD = TFile::Open(((inputFileNameLYZ2PROD.Append(type)).Append(".root")).Data(), "READ"); 
+  TFile* fileLYZ2PROD = (TFile*)outputFile->FindObjectAny((inputFileNameLYZ2PROD.Append(type)).Data());
   
   TString inputFileNameLYZEP = "outputLYZEPanalysis";
-  TFile* fileLYZEP = NULL;
-  fileLYZEP = TFile::Open(((inputFileNameLYZEP.Append(type)).Append(".root")).Data(), "READ");
+  TFile* fileLYZEP = (TFile*)outputFile->FindObjectAny((inputFileNameLYZEP.Append(type)).Data());
   
   TString inputFileNameFQD = "outputFQDanalysis";
-  TFile* fileFQD = NULL;
-  fileFQD = TFile::Open(((inputFileNameFQD.Append(type)).Append(".root")).Data(), "READ"); 
+  TFile* fileFQD = (TFile*)outputFile->FindObjectAny((inputFileNameFQD.Append(type)).Data());
   
   TString inputFileNameGFC = "outputGFCanalysis";
-  TFile* fileGFC = NULL;
-  fileGFC = TFile::Open(((inputFileNameGFC.Append(type)).Append(".root")).Data(), "READ"); 
+  TFile* fileGFC = (TFile*)outputFile->FindObjectAny((inputFileNameGFC.Append(type)).Data());
   
   TString inputFileNameQC = "outputQCanalysis";
-  TFile* fileQC = NULL;
-  fileQC = TFile::Open(((inputFileNameQC.Append(type)).Append(".root")).Data(), "READ"); 
+  TFile* fileQC = (TFile*)outputFile->FindObjectAny((inputFileNameQC.Append(type)).Data());
   //==================================================================================
  
  
@@ -3526,7 +3532,7 @@ void LoadPlotLibraries(const libModes mode) {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree");
+  //gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libXMLIO");
@@ -3544,7 +3550,7 @@ void LoadPlotLibraries(const libModes mode) {
   //==================================================================================  
   //load needed libraries:
   gSystem->AddIncludePath("-I$ROOTSYS/include");
-  gSystem->Load("libTree");
+  //gSystem->Load("libTree");
 
   // for AliRoot
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");

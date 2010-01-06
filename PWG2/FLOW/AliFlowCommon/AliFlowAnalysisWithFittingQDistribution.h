@@ -61,6 +61,7 @@ class AliFlowAnalysisWithFittingQDistribution{
   virtual void GetOutputHistograms(TList *outputListHistos); 
   virtual void WriteHistograms(TString *outputFileName);
   virtual void WriteHistograms(TString outputFileName);
+  virtual void WriteHistograms(TDirectoryFile *outputFileName);
     
   // **** SETTERS and GETTERS ****
   

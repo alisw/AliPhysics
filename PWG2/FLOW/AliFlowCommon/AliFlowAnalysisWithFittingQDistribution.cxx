@@ -496,6 +496,19 @@ void AliFlowAnalysisWithFittingQDistribution::WriteHistograms(TString outputFile
 //================================================================================================================
 
 
+void AliFlowAnalysisWithFittingQDistribution::WriteHistograms(TDirectoryFile *outputFileName)
+{
+ //store the final results in output .root file
+ fHistList->SetName("cobjFQD");
+ fHistList->SetOwner(kTRUE);
+ outputFileName->Add(fHistList);
+ outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey);
+}
+
+
+//================================================================================================================
+
+
 void AliFlowAnalysisWithFittingQDistribution::InitializeArrays()
 {
  // initialize all arrays

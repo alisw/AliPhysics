@@ -98,6 +98,17 @@ void AliFlowAnalysisWithScalarProduct::WriteHistograms(TString outputFileName)
 }
 
 //-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithScalarProduct::WriteHistograms(TDirectoryFile *outputFileName)
+{
+ //store the final results in output .root file
+ fHistList->SetName("cobjSP");
+ fHistList->SetOwner(kTRUE);
+ outputFileName->Add(fHistList);
+ outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey);
+}
+
+//-----------------------------------------------------------------------
 void AliFlowAnalysisWithScalarProduct::Init() {
 
   //Define all histograms
