@@ -621,7 +621,9 @@ void AliRunLoader::MakeTree(Option_t *option)
       // create the CTP Trigger output file and tree
       TFile* file = gROOT->GetFile( fgkDefaultTriggerFileName );
       if( !file ) {
-         file = TFile::Open( gSystem->ConcatFileName( fUnixDirName.Data(), fgkDefaultTriggerFileName.Data() ), "RECREATE" ) ;
+        char* tmp = gSystem->ConcatFileName( fUnixDirName.Data(), fgkDefaultTriggerFileName.Data() );
+        file = TFile::Open(tmp , "RECREATE" ) ;
+        delete[] tmp;
       }
 
       file->cd();
@@ -729,8 +731,11 @@ Int_t AliRunLoader::LoadTrigger(Option_t* option)
       return 1;
    }
    // get the CTP Trigger output file and tree
-   TString trgfile = gSystem->ConcatFileName( fUnixDirName.Data(),
-                                              fgkDefaultTriggerFileName.Data() );
+  char* tmp = gSystem->ConcatFileName( fUnixDirName.Data(),
+                                      fgkDefaultTriggerFileName.Data() );
+  TString trgfile(tmp);
+  delete[] tmp;
+  
    TFile* file = gROOT->GetFile( trgfile );
    if( !file ) {
       file = TFile::Open( trgfile, option ) ;

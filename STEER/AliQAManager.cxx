@@ -1030,7 +1030,8 @@ Bool_t AliQAManager::MergeData(const Int_t runNumber, const char *fileName) cons
   for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
     Char_t * file = gSystem->Which(gSystem->WorkingDirectory(), Form("%s.%s.%d.root", AliQAv1::GetDetName(iDet), AliQAv1::GetQADataFileName(), runNumber)); 
     if (file) 
-      merger.AddFile(file) ; 
+      merger.AddFile(file);
+    delete[] file;
   }
   merger.Merge() ; 
 	return kTRUE ; 

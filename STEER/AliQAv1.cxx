@@ -473,23 +473,26 @@ TFile * AliQAv1::GetQADataFile(const char * fileName)
 TFile * AliQAv1::GetQAResultFile() 
 {
   // opens the file to store the  Quality Assurance Data Checker results	
-  if (fgQAResultFile) 
-    if (fgQAResultFile->IsOpen()) 
-      fgQAResultFile->Close();
+  if (fgQAResultFile && fgQAResultFile->IsOpen()) 
+  {
+    fgQAResultFile->Close();
+  }
+  delete fgQAResultFile;
+  fgQAResultFile=0x0;
   
-		TString dirName(fgQAResultDirName) ; 
-		if ( dirName.Contains(fgkLabLocalFile)) 
-			dirName.ReplaceAll(fgkLabLocalFile, "") ;
-		TString fileName(dirName + fgQAResultFileName) ; 
-		TString opt("") ; 
-		if ( !gSystem->AccessPathName(fileName) )
-			opt = "UPDATE" ; 
-		else { 
-			if ( gSystem->AccessPathName(dirName) )
-				gSystem->mkdir(dirName) ; 
-			opt = "NEW" ; 
-		}
-		fgQAResultFile = TFile::Open(fileName, opt) ;   
+  TString dirName(fgQAResultDirName) ; 
+  if ( dirName.Contains(fgkLabLocalFile)) 
+    dirName.ReplaceAll(fgkLabLocalFile, "") ;
+  TString fileName(dirName + fgQAResultFileName) ; 
+  TString opt("") ; 
+  if ( !gSystem->AccessPathName(fileName) )
+    opt = "UPDATE" ; 
+  else { 
+    if ( gSystem->AccessPathName(dirName) )
+      gSystem->mkdir(dirName) ; 
+    opt = "NEW" ; 
+  }
+  fgQAResultFile = TFile::Open(fileName, opt) ;   
 	
 	return fgQAResultFile ;
 }

@@ -1285,9 +1285,9 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
 
   detectorMask = grpData->GetDetectorMask();
   time_t startTime = grpData->GetTimeStart();
-  TTimeStamp *t1 = new TTimeStamp(startTime);
+  TTimeStamp t1(startTime);
   time_t endTime = grpData->GetTimeEnd();
-  TTimeStamp *t2 = new TTimeStamp(endTime);
+  TTimeStamp t2(endTime);
   const char* beamtype = grpData->GetBeamType();
   Float_t beamenergy = grpData->GetBeamEnergy();
 
@@ -1603,8 +1603,8 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     tag->SetDetectorTag(detectorMask);
 
     tag->SetRunId(iInitRunNumber);
-    tag->SetRunStartTime(t1->GetDate());
-    tag->SetRunStopTime(t2->GetDate());
+    tag->SetRunStartTime(t1.GetDate());
+    tag->SetRunStopTime(t2.GetDate());
     tag->SetBeamEnergy(beamenergy);
     tag->SetBeamType(beamtype);
     
@@ -1622,6 +1622,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   ftag->Close();
   file->cd();
   delete file;
+  delete ftag;
   delete esd;
   delete tag;
   delete evTag;

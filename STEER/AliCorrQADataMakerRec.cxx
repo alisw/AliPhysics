@@ -125,8 +125,11 @@ void AliCorrQADataMakerRec::InitRaws()
   // createa ntuple taking all the parameters declared by detectors
   if (fCorrNt[AliRecoParam::AConvert(fEventSpecie)]) 
     return ; 
-  delete fRawsQAList ; // not needed for the time being 
-  fRawsQAList = NULL ; 
+  if ( fRawsQAList ) 
+  {
+    delete[] fRawsQAList ; // not needed for the time being 
+    fRawsQAList = NULL ; 
+  }
   TString varlist("") ;
   for ( Int_t detIndex = 0 ; detIndex < AliQAv1::kNDET ; detIndex++ ) {
     AliQADataMaker * qadm = fqadm[detIndex] ; 

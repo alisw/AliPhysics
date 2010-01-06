@@ -414,11 +414,13 @@ void    AliConfig::Add (char *list)
   
   char   *token = strtok (path, ":");
   
-  TList  *dirlist = new TList;
+  TList dirlist;
+  
+  dirlist.SetOwner(kTRUE);
   
   while (token != NULL)	
     {
-      dirlist->Add (new TObjString(token));
+      dirlist.Add (new TObjString(token));
       token = strtok (NULL, ":");
     }
   
@@ -429,7 +431,7 @@ void    AliConfig::Add (char *list)
       AliInfo(Form("Configuring token=%s",token));
       
       TObject *obj;
-      TIter   next (dirlist);
+      TIter   next (&dirlist);
       TString found = "\0";
       
       while ((obj = next ()))
@@ -483,8 +485,6 @@ void    AliConfig::Add (char *list)
       
       token = strtok (NULL," ");
     }
-  
-  if (dirlist) delete dirlist;
   
 }
 
