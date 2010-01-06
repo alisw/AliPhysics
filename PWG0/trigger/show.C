@@ -1,4 +1,4 @@
-void show(const char* fileName = "trigger.root")
+void showAll(const char* fileName = "trigger.root")
 {
   TH1* fStats[100];
 
@@ -34,3 +34,27 @@ void show(const char* fileName = "trigger.root")
     }
 
 }
+
+void show(const char* fileName = "trigger.root")
+{
+  TFile::Open(fileName);
+  
+  c = new TCanvas("c", "c", 1500, 1000);
+  c->Divide(4, 3);
+  
+  for (Int_t i=0; i<4; i++)
+  {
+    for (Int_t j=6; j<=8; j++)
+    {
+      hist = (TH1*) gFile->Get(Form("fStats_%d_%d", i, j));
+      c->cd((j-6)*4+i+1);
+      hist->Rebin(2);
+      hist->Rebin(2);
+      hist->Rebin(2);
+      hist->Draw();
+    }
+  }  
+      
+  c->SaveAs("trigger_rates.png");
+}
+

@@ -19,7 +19,7 @@ void Load(const char* taskName, Bool_t debug)
     AliLog::SetClassDebugLevel(taskName, AliLog::kWarning);
 }
 
-void GetTimes(UInt_t run, UInt_t* startTime = 0, UInt_t* endTime = 0)
+void GetTimes(UInt_t run, Int_t* startTime = 0, Int_t* endTime = 0)
 {
   gSystem->Load("libXMLParser");
   gSystem->Load("libXMLIO");
@@ -41,7 +41,7 @@ void GetTimes(UInt_t run, UInt_t* startTime = 0, UInt_t* endTime = 0)
   Printf("Got start and endtime from OCDB: %d, %d", grp->GetTimeStart(), grp->GetTimeEnd());
 }
 
-void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, UInt_t startTime = 0, UInt_t endTime = 0, const char* option = "")
+void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Int_t startTime = 0, Int_t endTime = 0, const char* option = "")
 {
   // aProof option: 0 no proof
   //                1 proof with chain
@@ -76,12 +76,12 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
 
   if (aProof)
   {
-    TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a"); 
+    //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a"); 
     TProof::Open("alicecaf"); 
     //gProof->SetParallel(1);
 
     // Enable the needed package
-    if (0)
+    if (1)
     {
       gProof->UploadPackage("$ALICE_ROOT/STEERBase");
       gProof->EnablePackage("$ALICE_ROOT/STEERBase");
@@ -149,6 +149,13 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
   task = new AliTriggerTask(optStr);
   task->SetTimes(startTime, endTime);
   //task->SetUseOrbits(kTRUE);
+  
+  physicsSelection = new AliPhysicsSelection;
+  if (startTime == -1)
+    physicsSelection->SetAnalyzeMC();
+  task->SetPhysicsSelection(physicsSelection);
+  AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection;
+  physicsSelection->AddBackgroundIdentification(backgroundSelection);
 
   mgr->AddTask(task);
 
@@ -188,7 +195,7 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
   {
     gROOT->ProcessLine(".L CreateChainFromDataSet.C");
     ds = gProof->GetDataSet(data)->GetStagedSubset();
-    chain = CreateChainFromDataSet(ds);
+    chain = CreateChainFromDataSet(ds, "esdTree", nRuns);
     mgr->StartAnalysis("local", chain, nRuns, offset);
   }
   else
