@@ -9,7 +9,7 @@
 
 class TH1;
 class AliESDEvent;
-class AliTriggerAnalysis;
+class AliPhysicsSelection;
 
 class AliTriggerTask : public AliAnalysisTask {
   public:
@@ -24,6 +24,7 @@ class AliTriggerTask : public AliAnalysisTask {
     void SetOption(const char* opt) { fOption = opt; }
     void SetTimes(UInt_t start, UInt_t end) { fStartTime = start; fEndTime = end; }
     void SetUseOrbits(Bool_t flag) { fUseOrbits = flag; }
+    void SetPhysicsSelection(AliPhysicsSelection* selection) { fPhysicsSelection = selection; }
 
  protected:
     AliESDEvent *fESD;    //! ESD object
@@ -37,12 +38,13 @@ class AliTriggerTask : public AliAnalysisTask {
     TParameter<Long_t>* fFirstOrbit; // first orbit occuring
     TParameter<Long_t>* fLastOrbit; // first orbit occuring
 
-    Int_t fNTriggers;     //! number triggers
+    Int_t fNTriggers;                           //! number triggers
     AliTriggerAnalysis::Trigger* fTriggerList;  //! list of triggers
-    TH1** fStats;                 //! trigger stats
+    Int_t fNTriggerClasses;                     //! number of trigger classes
+    const char** fTriggerClassesList;           //! list of trigger classes
+    TH1*** fStats;                              //! trigger stats
     
-    AliTriggerAnalysis* fTrigger; // trigger object
-    // TODO put three of those here...
+    AliPhysicsSelection* fPhysicsSelection; // trigger object
 
  private:
     AliTriggerTask(const AliTriggerTask&);

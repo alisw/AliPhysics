@@ -15,7 +15,7 @@
 #include <AliAnalysisManager.h>
 #include <AliESDInputHandler.h>
 #include <AliESDHeader.h>
-#include <AliTriggerAnalysis.h>
+#include <AliPhysicsSelection.h>
 
 ClassImp(AliTriggerTask)
 
@@ -31,8 +31,10 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   fLastOrbit(0),
   fNTriggers(0),
   fTriggerList(0),
+  fNTriggerClasses(0),
+  fTriggerClassesList(0),
   fStats(0),
-  fTrigger(0)
+  fPhysicsSelection(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -47,12 +49,13 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   static AliTriggerAnalysis::Trigger triggerList[] = { AliTriggerAnalysis::kAcceptAll, AliTriggerAnalysis::kFPANY, AliTriggerAnalysis::kMB1, AliTriggerAnalysis::kMB2, AliTriggerAnalysis::kMB3, AliTriggerAnalysis::kSPDGFO, AliTriggerAnalysis::kSPDGFOBits, AliTriggerAnalysis::kV0A, AliTriggerAnalysis::kV0C, AliTriggerAnalysis::kZDC, AliTriggerAnalysis::kZDCA, AliTriggerAnalysis::kZDCC, AliTriggerAnalysis::kFMDA, AliTriggerAnalysis::kFMDC };
   fTriggerList = triggerList;
   
-  fStats = new TH1*[fNTriggers];
+  fNTriggerClasses = 4;
+  static const char* triggerClassesList[] = { "CINT1B-ABCE-NOPF-ALL", "CINT1C-ABCE-NOPF-ALL", "CINT1A-ABCE-NOPF-ALL", "CINT1-E-NOPF-ALL" };
+  fTriggerClassesList = triggerClassesList;
   
-  fTrigger = new AliTriggerAnalysis;
-  fTrigger->EnableHistograms();
-  
-  AliLog::SetClassDebugLevel("AliTriggerTask", AliLog::kWarning);
+  fStats = new TH1**[fNTriggerClasses];
+  for (Int_t i=0; i<fNTriggerClasses; i++)
+    fStats[i] = new TH1*[fNTriggers];
 }
 
 AliTriggerTask::~AliTriggerTask()
@@ -119,18 +122,23 @@ void AliTriggerTask::CreateOutputObjects()
     end = fEndTime;
   }
   
-  for (Int_t i=0; i<fNTriggers; i++)
+  for (Int_t j=0; j<fNTriggerClasses; j++)
   {
-    fStats[i] = new TH1F(Form("fStats_%d", i), Form("%s;%s;counts", AliTriggerAnalysis::GetTriggerName(fTriggerList[i]), (fUseOrbits) ? "orbit number" : "time"), nBins, start - 0.5, end + 0.5);
-    fOutput->Add(fStats[i]);
+    for (Int_t i=0; i<fNTriggers; i++)
+    {
+      fStats[j][i] = new TH1F(Form("fStats_%d_%d", j, i), Form("%s %s;%s;counts", fTriggerClassesList[j], AliTriggerAnalysis::GetTriggerName(fTriggerList[i]), (fUseOrbits) ? "orbit number" : "time"), nBins, start - 0.5, end + 0.5);
+      fOutput->Add(fStats[j][i]);
+    }
   }
-  
+    
   fFirstOrbit = new TParameter<Long_t> ("fFirstOrbit", 0);
   fLastOrbit = new TParameter<Long_t> ("fLastOrbit", 0);
   fOutput->Add(fFirstOrbit);
   fOutput->Add(fLastOrbit);
   
-  fOutput->Add(fTrigger);
+  fOutput->Add(fPhysicsSelection);
+  
+  AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
 }
 
 void AliTriggerTask::Exec(Option_t*)
@@ -145,6 +153,9 @@ void AliTriggerTask::Exec(Option_t*)
     AliError("ESD branch not available");
     return;
   }
+  
+  // fill histograms
+  fPhysicsSelection->IsCollisionCandidate(fESD);
   
   // check event type (should be PHYSICS = 7)
   AliESDHeader* esdHeader = fESD->GetHeader();
@@ -161,22 +172,15 @@ void AliTriggerTask::Exec(Option_t*)
     return;
   }
   
-  Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
-  Printf("Bits: %lx %ld", fESD->GetTriggerMask(), fESD->GetTriggerMask());
-  
-  fTrigger->FillTriggerClasses(fESD);
-  
-  //if (!fESD->IsTriggerClassFired("CBEAMB-ABCE-NOPF-ALL"))
-  //if (!fESD->IsTriggerClassFired("CSMBB-ABCE-NOPF-ALL"))
-  //if (!fESD->IsTriggerClassFired("CBEAMB-ABCE-NOPF-ALL")) // run 104160
-  //if (!fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL"))
-/*  if (!fESD->IsTriggerClassFired("CINT1A-ABCE-NOPF-ALL"))
+  // TODO select on hardware trigger for histograms...
+  Int_t triggerClass = 0;
+  while (triggerClass < fNTriggerClasses && !fESD->IsTriggerClassFired(fTriggerClassesList[triggerClass]))
+    triggerClass++;
+  if (triggerClass == fNTriggerClasses)
   {
-    Printf("Skipping event because it has not the desired (hardware) trigger. The event has %s", fESD->GetFiredTriggerClasses().Data());
+    Printf("Unknown trigger class %s. Skipping event", fESD->GetFiredTriggerClasses().Data());
     return;
-  }*/
-  
-  fTrigger->FillHistograms(fESD);
+  }
   
   Long64_t timeStamp = 0;
   if (fUseOrbits)
@@ -189,16 +193,15 @@ void AliTriggerTask::Exec(Option_t*)
   else
     timeStamp = fESD->GetTimeStamp() - fStartTime;
     
-  
   //Printf("%d", timeStamp);
   
   //Annalisa Time (s) = 1440*period + 88*10-6 * orbit + 25*10-9 *bc
   
   for (Int_t i = 0; i < fNTriggers; i++)
   {
-    Bool_t triggered = fTrigger->IsOfflineTriggerFired(fESD, fTriggerList[i]);
+    Bool_t triggered = fPhysicsSelection->GetTriggerAnalysis()->IsOfflineTriggerFired(fESD, fTriggerList[i]);
     if (triggered)
-      fStats[i]->Fill(timeStamp);
+      fStats[triggerClass][i]->Fill(timeStamp);
     //Printf("%s: %d", AliTriggerAnalysis::GetTriggerName(fTriggerList[i]), triggered);
   }
   
@@ -220,24 +223,27 @@ void AliTriggerTask::Terminate(Option_t *)
   if (!fOutput)
     Printf("ERROR: fOutput not available");
     
-  fOutput->Print();
+  //fOutput->Print();
 
   if (fOutput)
   {
-    for (Int_t i=0; i<fNTriggers; i++)
-      fStats[i] = dynamic_cast<TH1*> (fOutput->FindObject(Form("fStats_%d", i)));
-    fTrigger = dynamic_cast<AliTriggerAnalysis*> (fOutput->FindObject("AliTriggerAnalysis"));
+    for (Int_t j=0; j<fNTriggerClasses; j++)
+      for (Int_t i=0; i<fNTriggers; i++)
+        fStats[j][i] = dynamic_cast<TH1*> (fOutput->FindObject(Form("fStats_%d_%d", j, i)));
+    fPhysicsSelection = dynamic_cast<AliPhysicsSelection*> (fOutput->FindObject("AliPhysicsSelection"));
   }
 
   TFile* fout = new TFile("trigger.root", "RECREATE");
 
-  for (Int_t i=0; i<fNTriggers; i++)
-    if (fStats[i])
-      fStats[i]->Write();
-  if (fTrigger)
+  for (Int_t j=0; j<fNTriggerClasses; j++)
+    for (Int_t i=0; i<fNTriggers; i++)
+      if (fStats[j][i])
+        fStats[j][i]->Write();
+        
+  if (fPhysicsSelection)
   {
-    fTrigger->SaveHistograms();
-    fTrigger->PrintTriggerClasses();
+    fPhysicsSelection->SaveHistograms("physics_selection");
+    fPhysicsSelection->Print();
   }
     
   if (fFirstOrbit)
@@ -264,18 +270,20 @@ void AliTriggerTask::Terminate(Option_t *)
   
   Printf("+++++++++ TRIGGER STATS:");
 
+  Int_t triggerClass = 0;
+
   Int_t base = 1;
-  if (fStats[0])
-    base = (Int_t) fStats[0]->Integral();
+  if (fStats[triggerClass][0])
+    base = (Int_t) fStats[triggerClass][0]->Integral();
 
   Int_t length = fEndTime - fStartTime;
   
   for (Int_t i=0; i<fNTriggers; i++)
-    if (fStats[i])
+    if (fStats[triggerClass][i])
     {
       c->cd(i+1);
-      fStats[i]->Draw();
-      Printf("%s: %d triggers | %f %% of all triggered | Rate: %f Hz", AliTriggerAnalysis::GetTriggerName(fTriggerList[i]), (UInt_t) fStats[i]->Integral(), 100.0 * fStats[i]->Integral() / base, (length > 0) ? (fStats[i]->Integral() / length) : -1);
+      fStats[triggerClass][i]->Draw();
+      Printf("%s: %d triggers | %f %% of all triggered | Rate: %f Hz", AliTriggerAnalysis::GetTriggerName(fTriggerList[i]), (UInt_t) fStats[triggerClass][i]->Integral(), 100.0 * fStats[triggerClass][i]->Integral() / base, (length > 0) ? (fStats[triggerClass][i]->Integral() / length) : -1);
     }
 
   Printf("Writting result to trigger.root");
