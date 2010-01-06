@@ -4,14 +4,14 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection() {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-	::Error("AddTaskQAsym", "No analysis manager to connect to.");
+	::Error("AddTaskPhysicsSelection", "No analysis manager to connect to.");
 	return NULL;
     }  
     
     // Check the analysis type using the event handlers connected to the analysis manager.
     //==============================================================================
     if (!mgr->GetInputEventHandler()) {
-	::Error("AddTasQAsym", "This task requires an input event handler");
+	::Error("AddTaskPhysicsSelection", "This task requires an input event handler");
 	return NULL;
     }
     TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
