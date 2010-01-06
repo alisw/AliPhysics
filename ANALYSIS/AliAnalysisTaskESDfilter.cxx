@@ -75,7 +75,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
 
 void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
 {
-// Create the output container
+  //
+  // Create Output Objects conenct filter to outputtree
+  // 
     OutputTree()->GetUserInfo()->Add(fTrackFilter);
 }
 
@@ -161,7 +163,6 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	header->SetCentrality(-999.);        // FIXME
     }
     // Trigger
-    const AliESDRun* esdRun = esd->GetESDRun();
     header->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
     header->SetTriggerMask(esd->GetTriggerMask()); 
     header->SetTriggerCluster(esd->GetTriggerCluster());
