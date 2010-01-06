@@ -403,7 +403,7 @@ Double_t AliFlowCommonHist::GetMeanPt(Int_t aBin)
  Double_t AliFlowCommonHist::Merge(TCollection *aList)
 {
   //merge fuction
-  cout<<"entering merge function"<<endl;
+  //cout<<"entering merge function"<<endl;
   if (!aList) return 0;
   if (aList->IsEmpty()) return 0; //no merging is needed
 
@@ -421,7 +421,7 @@ Double_t AliFlowCommonHist::GetMeanPt(Int_t aBin)
   // Cleanup
   delete pTemp;
     
-  cout<<"Merged"<<endl;
+  //cout<<"Merged"<<endl;
   return (double)iCount;
     
 }
