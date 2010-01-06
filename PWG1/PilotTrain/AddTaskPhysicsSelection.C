@@ -1,6 +1,6 @@
 
 
-AliEventStatsTask* AddTaskEventStats() {
+AliPhysicsSelectionTask* AddTaskPhysicsSelection() {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -21,7 +21,7 @@ AliEventStatsTask* AddTaskEventStats() {
     
     
 
-  AliEventStatsTask *task= new AliEventStatsTask();
+  AliPhysicsSelectionTask *task= new AliPhysicsSelectionTask("");
   mgr->AddTask(task);
 
 

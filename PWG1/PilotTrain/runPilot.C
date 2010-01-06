@@ -14,7 +14,7 @@ void runPilot() {
   
  
 
-  gROOT->LoadMacro("AliESDInputHandlerRPITS.cxx++g");  
+//  gROOT->LoadMacro("AliESDInputHandlerRPITS.cxx++g");  
 
   Bool_t doQAsym        = 1;   // output ok
   Bool_t doVZERO        = 1;   // output ok but there is a 2nd file
@@ -30,7 +30,7 @@ void runPilot() {
   mgr->SetDebugLevel(2);
   
 
-  AliInputEventHandler* esdH = new AliESDInputHandlerRPITS();
+  AliInputEventHandler* esdH = new AliESDInputHandlerRP();
   esdH->SetActiveBranches("ESDfriend");
   mgr->SetInputEventHandler(esdH);  
 
@@ -44,13 +44,7 @@ void runPilot() {
   // Wagons
   //
   //
-  // Collision Selector (static)
-  AliPhysicsSelection* colsel =  new AliPhysicsSelection();
-  colsel->AddBackgroundIdentification(new AliBackgroundSelection());
-
-  AliAnalysisTaskSE::SetCollisionSelector(colsel);
   
-
   // TPC QA (E. Sicking)
   //
   if (doQAsym) {
@@ -118,10 +112,10 @@ void runPilot() {
   //
 
   if (doEventStat) {
-      gROOT->LoadMacro("AddTaskEventStats.C");
-      evtStats = AddTaskEventStats();
-      evtStats->SetPhysicsSelection(colsel);
-      AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
+      gROOT->LoadMacro("AddTaskPhysicsSelection.C");
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+      AliPhysicsSelection* physSel = physSelTask->GetPhysicsSelection();
+      physSel->AddBackgroundIdentification(new AliBackgroundSelection());
   }
 
   
