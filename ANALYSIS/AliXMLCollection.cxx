@@ -31,6 +31,7 @@
 #include <TObjString.h>
 #include <TString.h>
 #include <TXMLEngine.h>
+#include "AliLog.h"
 
 #include "AliXMLCollection.h"
 
@@ -106,10 +107,11 @@ AliXMLCollection::AliXMLCollection(const AliXMLCollection& collection):
 }
 
 //___________________________________________________________________________
-AliXMLCollection::~AliXMLCollection() {
+AliXMLCollection::~AliXMLCollection() 
+{
   //Destructor
-  if(fEventList) delete fEventList;
-  if(fEventListIter) delete fEventListIter;
+  delete fEventList;
+  delete fEventListIter;
 }
 
 //___________________________________________________________________________
@@ -161,7 +163,8 @@ Bool_t AliXMLCollection::WriteSummary(Int_t aTotal, Int_t aAccepted, Int_t aRejR
 }
 
 //___________________________________________________________________________
-Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* lfn, const char* turl, TEntryList *list) {
+Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* lfn, const char* turl, TEntryList* list) 
+{
   //Writes the body of the xml collection
   TString listline;
   for(Int_t i = 0; i < list->GetN(); i++) {
@@ -196,7 +199,7 @@ Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* 
   return kTRUE;
 }
 //___________________________________________________________________________
-Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char *lfn, const char *turl, TEntryList *list, Int_t accSum, Int_t rejSum)
+Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char *lfn, const char *turl, TEntryList* list, Int_t accSum, Int_t rejSum)
 {
   //Writes the body of the xml collection with tag cuts summary
   TString listline;
@@ -276,7 +279,7 @@ const char *AliXMLCollection::GetTURL(const char* filename) {
       }
     }
   }
-  Error("GetTURL","cannot get TURL of file %s",filename);
+  AliError(Form("cannot get TURL of file %s",filename));
   return 0;
 }
 
@@ -292,7 +295,7 @@ const char *AliXMLCollection::GetGUID(const char* filename) {
       }
     }
   }
-  Error("GetGUID","cannot get GUID of file %s",filename);
+  AliError(Form("cannot get GUID of file %s",filename));
   return 0;
 }
 
@@ -308,7 +311,7 @@ TEntryList *AliXMLCollection::GetEventList(const char *filename) const {
       }
     }
   }
-  Error("GetEvList", "cannot get evelist of file %s", filename);
+  AliError(Form("cannot get evelist of file %s", filename));
   return 0;
 }
 
@@ -334,7 +337,7 @@ const char *AliXMLCollection::GetLFN(const char* ) {
       }
     }
   }
-  Error("GetLFN", "cannot get LFN");
+  AliError("cannot get LFN");
   return 0;
 }
 
@@ -350,7 +353,7 @@ const char *AliXMLCollection::GetCutSumm() {
       }
     }
   }
-  Error("GetTagSumm", "cannot get Tag Cut Summary");
+  AliError("cannot get Tag Cut Summary");
   return 0;
 
 }
@@ -401,25 +404,25 @@ void AliXMLCollection::ParseXML() {
   
   XMLDocPointer_t xdoc = xml.ParseFile(fXmlFile);
   if (!xdoc) {
-    Error("ParseXML","cannot parse the xml file %s",fXmlFile.Data());
+    AliError(Form("cannot parse the xml file %s",fXmlFile.Data()));
     return;
   }
 
   XMLNodePointer_t xalien = xml.DocGetRootElement(xdoc);
   if (!xalien) {
-    Error("ParseXML","cannot find the <alien> tag in %s",fXmlFile.Data());
+    AliError(Form("cannot find the <alien> tag in %s",fXmlFile.Data()));
     return;
   }
   
   XMLNodePointer_t xcollection = xml.GetChild(xalien);
   if (!xcollection) {
-    Error("ParseXML","cannot find the <collection> tag in %s",fXmlFile.Data());
+    AliError(Form("cannot find the <collection> tag in %s",fXmlFile.Data()));
     return;
   }
   
   XMLNodePointer_t xevent = xml.GetChild(xcollection);;
   if (!xevent) {
-    Error("ParseXML","cannot find the <event> tag in %s",fXmlFile.Data());
+    AliError(Form("cannot find the <event> tag in %s",fXmlFile.Data()));
     return;
   }
   if (!xevent) return;
@@ -458,8 +461,8 @@ void AliXMLCollection::ParseXML() {
 	  otagsumm = 0;
 
 	if (oevlist) {
-	  Info("ParseXML","Collection: %s - turl: %s eventlist: %s",
-	       fXmlFile.Data(),oturl->GetName(),oevlist->GetName());
+	  AliDebug(1,Form("Collection: %s - turl: %s eventlist: %s",
+                    fXmlFile.Data(),oturl->GetName(),oevlist->GetName()));
 	  TEntryList *xmlevlist = new TEntryList(oturl->GetName(), oguid->GetName());
 	  if (strcmp(oevlist->GetName(),"") != 0) {
 	    TString stringevlist = oevlist->GetName();

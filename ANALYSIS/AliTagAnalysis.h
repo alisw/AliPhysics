@@ -46,7 +46,7 @@ class AliTagAnalysis : public TObject {
   
   void SetType(const char* type) {fAnalysisType = type;}
   const char* GetType() {return fAnalysisType.Data();}
-  Bool_t AddTagsFile(const char *alienUrl);
+  Bool_t AddTagsFile(const char *alienUrl, Bool_t checkFile=kTRUE);
   void ChainLocalTags(const char *dirname);
   TChain *ChainGridTags(TGridResult *result);
   
@@ -71,8 +71,8 @@ class AliTagAnalysis : public TObject {
 			     const char *fEventCut);
 
   TChain *GetInputChain(const char* system, const char *wn);
-  TChain *GetChainFromCollection(const char* collectionname, 
-				 const char* treename);
+  
+  static TChain* CreateChainFromCollection(const char* collectionname, const char* treename);
   
   TEntryList *GetGlobalList() {return fGlobalList;}
   //____________________________________________________//
