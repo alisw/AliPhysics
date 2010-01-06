@@ -45,6 +45,7 @@ class AliFlowAnalysisWithCumulants{
   virtual void Finish();
   virtual void WriteHistograms(TString* outputFileName);
   virtual void WriteHistograms(TString outputFileName);
+  virtual void WriteHistograms(TDirectoryFile *outputFileName);
   
 //----------------------------------------------------------------------------------------------------------------
 //                                            setters and getters                                                 

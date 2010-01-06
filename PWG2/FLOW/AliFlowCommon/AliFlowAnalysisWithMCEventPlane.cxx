@@ -107,6 +107,17 @@ void AliFlowAnalysisWithMCEventPlane::WriteHistograms(TString outputFileName)
 }
 
 //-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithMCEventPlane::WriteHistograms(TDirectoryFile *outputFileName)
+{
+ //store the final results in output .root file
+ fHistList->SetName("cobjMCEP");
+ fHistList->SetOwner(kTRUE);
+ outputFileName->Add(fHistList);
+ outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey);
+}
+
+//-----------------------------------------------------------------------
 void AliFlowAnalysisWithMCEventPlane::Init() {
 
   //Define all histograms

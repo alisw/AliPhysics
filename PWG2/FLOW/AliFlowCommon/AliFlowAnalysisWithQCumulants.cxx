@@ -1208,6 +1208,19 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TString outputFileName)
 //================================================================================================================================
 
 
+void AliFlowAnalysisWithQCumulants::WriteHistograms(TDirectoryFile *outputFileName)
+{
+ //store the final results in output .root file
+ fHistList->SetName("cobjQC");
+ fHistList->SetOwner(kTRUE);
+ outputFileName->Add(fHistList);
+ outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey);
+}
+
+
+//================================================================================================================================
+
+
 void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
 {
  // Book common control histograms and common histograms for final results.

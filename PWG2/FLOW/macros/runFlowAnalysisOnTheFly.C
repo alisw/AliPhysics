@@ -498,40 +498,38 @@ int runFlowAnalysisOnTheFly( Int_t nEvts=440, Int_t mode=mLocal)
 
 
  //---------------------------------------------------------------------------------------  
+ // create a new file which will hold the final results of all methods:
+ TString outputFileName = "AnalysisResults.root";  
+ TFile *outputFile = new TFile(outputFileName.Data(),"RECREATE");
+ // create a new file for each method wich will hold list with final results:
+ const Int_t nMethods = 10;
+ TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP"};
+ TDirectoryFile *dirFileFinal[nMethods] = {NULL};
+ TString fileName[nMethods]; 
+ for(Int_t i=0;i<nMethods;i++)
+ {
+  // form a file name for each method:
+  fileName[i]+="output";
+  fileName[i]+=method[i].Data();
+  fileName[i]+="analysis";
+  dirFileFinal[i] = new TDirectoryFile(fileName[i].Data(),fileName[i].Data());
+ } 
+ 
  // calculating and storing the final results of default flow analysis:
- if(MCEP)    {mcep->Finish();    mcep->WriteHistograms("outputMCEPanalysis.root");}
- if(SP)      {sp->Finish();      sp->WriteHistograms("outputSPanalysis.root");}
- if(QC)      {qc->Finish();      qc->WriteHistograms("outputQCanalysis.root");}
- if(GFC)     {gfc->Finish();     gfc->WriteHistograms("outputGFCanalysis.root");}
- if(FQD)     {fqd->Finish();     fqd->WriteHistograms("outputFQDanalysis.root");}
- if(LYZ1SUM) {lyz1sum->Finish(); lyz1sum->WriteHistograms("outputLYZ1SUManalysis.root");}
- if(LYZ1PROD){lyz1prod->Finish();lyz1prod->WriteHistograms("outputLYZ1PRODanalysis.root");}
- if(LYZ2SUM) {lyz2sum->Finish(); lyz2sum->WriteHistograms("outputLYZ2SUManalysis.root");}
- if(LYZ2PROD){lyz2prod->Finish();lyz2prod->WriteHistograms("outputLYZ2PRODanalysis.root");}
- if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms("outputLYZEPanalysis.root");}
+ if(MCEP)    {mcep->Finish();    mcep->WriteHistograms(dirFileFinal[0]);}
+ if(SP)      {sp->Finish();      sp->WriteHistograms(dirFileFinal[1]);}
+ if(GFC)     {gfc->Finish();     gfc->WriteHistograms(dirFileFinal[2]);}
+ if(QC)      {qc->Finish();      qc->WriteHistograms(dirFileFinal[3]);}
+ if(FQD)     {fqd->Finish();     fqd->WriteHistograms(dirFileFinal[4]);}
+ if(LYZ1SUM) {lyz1sum->Finish(); lyz1sum->WriteHistograms(dirFileFinal[5]);}
+ if(LYZ1PROD){lyz1prod->Finish();lyz1prod->WriteHistograms(dirFileFinal[6]);}
+ if(LYZ2SUM) {lyz2sum->Finish(); lyz2sum->WriteHistograms(dirFileFinal[7]);}
+ if(LYZ2PROD){lyz2prod->Finish();lyz2prod->WriteHistograms(dirFileFinal[8]);}
+ if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms(dirFileFinal[9]);}
  //---------------------------------------------------------------------------------------  
  
- //---------------------------------------------------------------------------------------  
- // calculating and storing the final results of flow analysis with different settings/aims:
- if(GFC_Additional_Analysis)
- {
-  // r0 = 1.5:
-  gfc_1->Finish();
-  gfc_1->WriteHistograms(gfcOutputFileName_1.Data());
- }
- if(QC_Additional_Analysis)
- {
-  // v1:
-  qc_1->Finish();
-  qc_1->WriteHistograms(qcOutputFileName_1.Data());
- }
- if(FQD_Additional_Analysis)
- {
-  // fixed sigma:
-  fqd_1->Finish();
-  fqd_1->WriteHistograms(fqdOutputFileName_1.Data());
- }
- //---------------------------------------------------------------------------------------
+ outputFile->Close();
+ delete outputFile;
  
  cout<<endl;
  cout<<endl;
@@ -597,7 +595,7 @@ void LoadLibraries(const anaModes mode) {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree");
+  //gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libXMLIO");

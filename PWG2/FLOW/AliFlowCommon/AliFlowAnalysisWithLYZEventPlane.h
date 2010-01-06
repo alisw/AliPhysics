@@ -38,6 +38,7 @@ class AliFlowAnalysisWithLYZEventPlane {
   virtual void   Finish();
   void           WriteHistograms(TString* outputFileName);
   void           WriteHistograms(TString outputFileName);
+  void           WriteHistograms(TDirectoryFile *outputFileName);
 
   void      SetEventNumber(Int_t n)      { this->fEventNumber = n; }
   Int_t     GetEventNumber() const       { return this->fEventNumber; }

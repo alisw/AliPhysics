@@ -127,6 +127,18 @@ void AliFlowAnalysisWithLYZEventPlane::WriteHistograms(TString outputFileName)
 }
 
 //-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithLYZEventPlane::WriteHistograms(TDirectoryFile *outputFileName)
+{
+ //store the final results in output .root file
+ fHistList->SetName("cobjLYZEP");
+ fHistList->SetOwner(kTRUE);
+ outputFileName->Add(fHistList);
+ outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey);
+}
+
+//-----------------------------------------------------------------------
+
 void AliFlowAnalysisWithLYZEventPlane::Init() {
 
   //Initialise all histograms

@@ -157,6 +157,27 @@ void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString outputFileName)
 
 //-----------------------------------------------------------------------
 
+void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TDirectoryFile *outputFileName)
+{
+ //store the final results in output .root file
+ if (GetFirstRun()) {
+   if (fUseSum) { fHistList->SetName("cobjLYZ1SUM");}
+   else {fHistList->SetName("cobjLYZ1PROD");}
+   fHistList->SetOwner(kTRUE);
+   outputFileName->Add(fHistList);
+   outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey); 
+ }
+ else {
+  if (fUseSum) { fHistList->SetName("cobjLYZ2SUM"); }
+  else { fHistList->SetName("cobjLYZ2PROD"); }
+  fHistList->SetOwner(kTRUE);
+  outputFileName->Add(fHistList);
+  outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey); 
+ }
+}
+
+//-----------------------------------------------------------------------
+
 Bool_t AliFlowAnalysisWithLeeYangZeros::Init() 
 {
   //init method 

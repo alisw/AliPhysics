@@ -1175,6 +1175,17 @@ void AliFlowAnalysisWithCumulants::WriteHistograms(TString outputFileName)
 
 //================================================================================================================
 
+//================================================================================================================
 
+void AliFlowAnalysisWithCumulants::WriteHistograms(TDirectoryFile *outputFileName)
+{
+ //store the final results in output .root file
+ fHistList->SetName("cobjGFC");
+ fHistList->SetOwner(kTRUE);
+ outputFileName->Add(fHistList);
+ outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey);
+}
+
+//================================================================================================================
 
 
