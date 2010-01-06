@@ -70,7 +70,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fAvgTrials(1),
   fZVtxCut(8.),
   fRealData(kFALSE),
-  fPhysicsSelection(0x0),
+  fPhysicsSelection(0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -92,7 +92,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fAvgTrials(1),
   fZVtxCut(8.),
   fRealData(kFALSE),
-  fPhysicsSelection(0x0),
+  fPhysicsSelection(0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -349,8 +349,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     if(esd){
       const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
       //      Printf(">> ESDvtx %s %s",vtxESD->GetName(),vtxESD->GetTitle());vtxESD->Print();
-      Bool_t cand = fPhysicsSelection->IsCollisionCandidate(esd);
-      if(cand) fh2ESDTriggerCount->Fill(it,kSelectedALICE);
+      Bool_t cand = true;
+      if(fRealData)cand = fPhysicsSelection->IsCollisionCandidate(esd);
+      if(cand) fh2ESDTriggerCount->Fill(it,kSelectedALICE); 
       if(vtxESD->GetNContributors()>0){
 	if(esdTrig)fh2ESDTriggerCount->Fill(it,kTriggeredSPDVertex);
 	Float_t zvtx = vtxESD->GetZ();
@@ -360,13 +361,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	if(TMath::Abs(zvtx)<fZVtxCut&&esdTrig&&TMath::Abs(xvtx)<0.5&&TMath::Abs(yvtx)<0.5){
 	  fh2ESDTriggerCount->Fill(it,kTriggeredVertexIn);
 	  // here we select based on ESD info...
-	  if(fRealData){
-	    if(cand){
-	      fh2ESDTriggerCount->Fill(it,kSelected);
-	      AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
-	    }
-	  }
-	  else{
+	  if(esdTrig&&(it==AliAnalysisHelperJetTasks::kMB1)){
 	    fh2ESDTriggerCount->Fill(it,kSelected);
 	    AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
 	  }
