@@ -558,35 +558,61 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     //cout<<"P_t = "<<pt<<endl;
     if (pt>0. && pt<=1.) {
       ptbin=1;
+      /*
+      //test d0 cut
+      fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.0002,0.5);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.00025,0.7);
+      */
+      //original
       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
       fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
+      
 //       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.7);
 //       fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
       //printf("I'm in the bin %d\n",ptbin);
       
     }
- 
-    //determination of pt bin   
+    
     if(pt>1. && pt<=3.) {
       if(pt>1. && pt<=2.) ptbin=2;  
       if(pt>2. && pt<=3.) ptbin=3;  
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0002,0.8);
+      /*
+      //test d0 cut
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0002,0.6);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,0.1,-0.00025,0.8);
+      */
+      //original
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0002,0.6);
       fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
+      
       //printf("I'm in the bin %d\n",ptbin);
     }
  
     if(pt>3. && pt<=5.){
 	ptbin=4;  
+	/*
+	//test d0 cut
+	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0001,0.8);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.8);
+	*/
+	//original
 	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
 	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
+	
 	//printf("I'm in the bin %d\n",ptbin);
     }
     if(pt>5.){
       ptbin=5;
+      /*
+      //test d0 cut
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00005,0.8);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.9);
+      */
+      //original
       fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
       fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-    }//if(pt>5)
-  
+      
+    }//if(pt>5)    if (pt>0. && pt<=1.) {
     //printf("I'm in the bin %d\n",ptbin);
     //old
     //fVHF->SetD0toKpiCuts(0.7,0.03,0.8,0.06,0.06,0.05,0.05,-0.0002,0.6); //2.p-p vertex reconstructed    
