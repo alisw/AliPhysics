@@ -21,6 +21,4 @@
 #pragma link C++ class AlidNdPt+;
 #pragma link C++ class AlidNdPtCutAnalysis+;
 
-#pragma link C++ class AliBackgroundSelection+;
-
 #endif
