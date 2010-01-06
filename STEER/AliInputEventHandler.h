@@ -46,6 +46,7 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual AliRunTag   *GetRunTag()       const                      {return 0;}
     virtual Option_t    *GetAnalysisType() const                      {return 0;}
     virtual TTree       *GetTree( )        const                      {return fTree;}
+    virtual AliVCuts    *GetEventSelection() const                    {return fEventCuts;}
     virtual Long64_t     GetReadEntry()    const;
     virtual Bool_t       NewEvent()
 	{Bool_t ne = fNewEvent; fNewEvent = kFALSE; return ne;}
