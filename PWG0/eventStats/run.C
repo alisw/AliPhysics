@@ -32,6 +32,8 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
 
   if (aProof > 0)
   {
+    //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a"); 
+    //TProof::Open("alicecaf", "valgrind=workers#4"); 
     TProof::Open("alicecaf"); 
     //gProof->SetParallel(2);
 
@@ -54,9 +56,6 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
       gProof->UploadPackage("$ALICE_ROOT/AF-v4-18-12-AN.par");
       gProof->EnablePackage("AF-v4-18-12-AN");
     }
-
-    gProof->UploadPackage("$ALICE_ROOT/PWG0base");
-    gProof->EnablePackage("$ALICE_ROOT/PWG0base");
   }
   else
   {

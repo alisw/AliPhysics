@@ -5,28 +5,31 @@ void show(const char* fileName = "event_stat.root")
 
   TFile::Open(fileName);
   
-  c = new TCanvas;
+  c = new TCanvas("c", "c", 1200, 600);
   hist = (TH1*) gFile->Get("physics_selection/fHistStatistics");
   hist->SetStats(0);
   hist->Draw("TEXT");
-  c->SetLeftMargin(0.25);
+  hist->SetTitle("");
+  hist->SetMarkerSize(1.5);
+  c->SetLeftMargin(0.20);
   c->SetBottomMargin(0.2);
   c->SaveAs("stat.png");
   
-  c = new TCanvas;
+  c = new TCanvas("c2", "c2", 800, 600);
   c->SetLeftMargin(0.25);
   hist = (TH1*) gFile->Get("physics_selection/fHistBunchCrossing");
   hist->SetStats(0);
-  hist->Draw("TEXT");
+  hist->SetTitle("");
+  hist->Draw("COL");
   c->SaveAs("bc.png");
 
   // BG
   gStyle->SetStatX(0.87);
   gStyle->SetStatY(0.93);
 
-  TH2F * hBB  = (TH2F*) gDirectory->Get("physics_selection/background_identification/h_CINT1B-ABCE-NOPF-ALL");
-  TH2F * hBE  = (TH2F*) gDirectory->Get("physics_selection/background_identification/h_CINT1C-ABCE-NOPF-ALL");
-  TH2F * hBEA = (TH2F*) gDirectory->Get("physics_selection/background_identification/h_CINT1A-ABCE-NOPF-ALL");
+  TH2F * hBB  = (TH2F*) gDirectory->Get("physics_selection/background_identification/hCvsT_CINT1B-ABCE-NOPF-ALL");
+  TH2F * hBE  = (TH2F*) gDirectory->Get("physics_selection/background_identification/hCvsT_CINT1C-ABCE-NOPF-ALL");
+  TH2F * hBEA = (TH2F*) gDirectory->Get("physics_selection/background_identification/hCvsT_CINT1A-ABCE-NOPF-ALL");
 
   if(!hBB || !hBE || !hBEA) {
     printf("WARNING: no BG histos\n");
