@@ -613,7 +613,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   }
 
   AliTRDReconstructor rec;
-  AliTRDseedV1 *fTracklet = NULL;  
+  AliTRDseedV1 *fTracklet(NULL); TObjArray *clInfoArr(NULL);
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     if(!(fTracklet = fkTrack->GetTracklet(ily)))/* ||
        !fTracklet->IsOK())*/ continue;
@@ -771,23 +771,25 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       d -= ((Int_t)(2 * d)) / 2.0;
       if (d > 0.25) d  = 0.5 - d;
       AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
-      fMCcl->Add(clInfo);
       clInfo->SetCluster(c);
       clInfo->SetMC(pdg, label);
       clInfo->SetGlobalPosition(ymc, zmc, dydx0, dzdx0);
       clInfo->SetResolution(dy);
       clInfo->SetAnisochronity(d);
-      clInfo->SetDriftLength(((c->GetPadTime()+0.5)*.1)*1.5);
-      //dx-.5*AliTRDgeometry::CamHght());
+      clInfo->SetDriftLength(dx-.5*AliTRDgeometry::CamHght());
       clInfo->SetTilt(tilt);
-
-      // Fill Debug Tree
-      if(DebugLevel()>=2){
-        //clInfo->Print();
-        (*DebugStream()) << "MCcluster"
-          <<"clInfo.=" << clInfo
-          << "\n";
+      fMCcl->Add(clInfo);
+      if(DebugLevel()>=2){ 
+        if(!clInfoArr) clInfoArr=new TObjArray(AliTRDseedV1::kNclusters);
+        clInfoArr->Add(clInfo);
       }
+    }
+    // Fill Debug Tree
+    if(DebugLevel()>=2 && clInfoArr){
+      (*DebugStream()) << "MCcluster"
+        <<"clInfo.=" << clInfoArr
+        << "\n";
+      delete clInfoArr; clInfoArr=NULL;
     }
   }
   return h;
