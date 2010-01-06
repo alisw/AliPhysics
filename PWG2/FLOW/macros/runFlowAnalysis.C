@@ -14,7 +14,7 @@ Bool_t LYZ2PROD = kFALSE;
 Bool_t LYZEP    = kFALSE; 
 Bool_t GFC      = kTRUE;
 Bool_t QC       = kTRUE;
-Bool_t FQD      = kFALSE;
+Bool_t FQD      = kTRUE;
 Bool_t MCEP     = kFALSE; //does not work yet 24/12/08
 //--------------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 10, const char* 
+int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char* 
 		    dir="/data/alice1/kolk/KineOnly3/")
 		    //		    dir="/Users/snelling/alice_data/KineOnly3/")
 		    //		    dir="/Users/snelling/alice_data/stoomboot/5b/")
@@ -401,20 +401,39 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 10, const char*
       delete evtsDir ;
     }
 
-  //--------------------------------------------------------------
-  //calculating and storing the final results of flow analysis
-  if(MCEP)    {mcep->Finish();    mcep->WriteHistograms("outputMCEPanalysis.root");}
-  if(SP)      {sp->Finish();      sp->WriteHistograms("outputSPanalysis.root");}
-  if(QC)      {qc->Finish();      qc->WriteHistograms("outputQCanalysis.root");}
-  if(GFC)     {gfc->Finish();     gfc->WriteHistograms("outputGFCanalysis.root");}
-  if(FQD)     {fqd->Finish();     fqd->WriteHistograms("outputFQDanalysis.root");}
-  if(LYZ1SUM) {lyz1sum->Finish(); lyz1sum->WriteHistograms("outputLYZ1SUManalysis.root");}
-  if(LYZ1PROD){lyz1prod->Finish();lyz1prod->WriteHistograms("outputLYZ1PRODanalysis.root");}
-  if(LYZ2SUM) {lyz2sum->Finish(); lyz2sum->WriteHistograms("outputLYZ2SUManalysis.root");}
-  if(LYZ2PROD){lyz2prod->Finish();lyz2prod->WriteHistograms("outputLYZ2PRODanalysis.root");}
-  if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms("outputLYZEPanalysis.root");}
-
-  //--------------------------------------------------------------
+ //---------------------------------------------------------------------------------------  
+ // create a new file which will hold the final results of all methods:
+ TString outputFileName = "AnalysisResults.root";  
+ TFile *outputFile = new TFile(outputFileName.Data(),"RECREATE");
+ // create a new file for each method wich will hold list with final results:
+ const Int_t nMethods = 10;
+ TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP"};
+ TDirectoryFile *dirFileFinal[nMethods] = {NULL};
+ TString fileNameMethod[nMethods]; 
+ for(Int_t i=0;i<nMethods;i++)
+ {
+  // form a file name for each method:
+  fileNameMethod[i]+="output";
+  fileNameMethod[i]+=method[i].Data();
+  fileNameMethod[i]+="analysis";
+  dirFileFinal[i] = new TDirectoryFile(fileNameMethod[i].Data(),fileNameMethod[i].Data());
+ } 
+ 
+ // calculating and storing the final results of default flow analysis:
+ if(MCEP)    {mcep->Finish();    mcep->WriteHistograms(dirFileFinal[0]);}
+ if(SP)      {sp->Finish();      sp->WriteHistograms(dirFileFinal[1]);}
+ if(GFC)     {gfc->Finish();     gfc->WriteHistograms(dirFileFinal[2]);}
+ if(QC)      {qc->Finish();      qc->WriteHistograms(dirFileFinal[3]);}
+ if(FQD)     {fqd->Finish();     fqd->WriteHistograms(dirFileFinal[4]);}
+ if(LYZ1SUM) {lyz1sum->Finish(); lyz1sum->WriteHistograms(dirFileFinal[5]);}
+ if(LYZ1PROD){lyz1prod->Finish();lyz1prod->WriteHistograms(dirFileFinal[6]);}
+ if(LYZ2SUM) {lyz2sum->Finish(); lyz2sum->WriteHistograms(dirFileFinal[7]);}
+ if(LYZ2PROD){lyz2prod->Finish();lyz2prod->WriteHistograms(dirFileFinal[8]);}
+ if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms(dirFileFinal[9]);}
+ //---------------------------------------------------------------------------------------  
+ 
+ outputFile->Close();
+ delete outputFile;
   
   cout << endl;
   cout << " Fini ... " << endl;
@@ -479,7 +498,7 @@ void LoadLibraries(const anaModes mode) {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree");
+  //gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libXMLIO");

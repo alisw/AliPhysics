@@ -175,13 +175,28 @@ void showSpread(TString type="", Int_t mode=mLocal)
    presentDirName += "/";
    presentDirName += presentDir->GetName();
    presentDirName += "/";
+   presentDirName += "AnalysisResults.root";
     
+   TFile *outputFileSmallSample = NULL;
+   if(gSystem->AccessPathName(presentDirName.Data(),kFileExists))
+   {
+    cout<<"WARNING: You do not have an output file:"<<endl;
+    cout<<"         "<<presentDirName.Data()<<endl;
+   } else 
+     {
+      outputFileSmallSample = TFile::Open(presentDirName.Data(),"READ");
+     } 
+   
+   if(!outputFileSmallSample)
+   {
+    cout<<"WARNING: outputFileSmallSample is NULL !!!!"<<endl; 
+    exit(0);
+   }
+      
    // accessing the small statistics output .root files for each method:
    // MCEP:     
-   TString fileNameMCEP = presentDirName;   
-   fileNameMCEP+="outputMCEPanalysis";
-   (fileNameMCEP+=type.Data())+=".root";
-   TFile *fileMCEP = TFile::Open(fileNameMCEP.Data(), "READ");      
+   TString inputFileNameMCEP = "outputMCEPanalysis";
+   TFile* fileMCEP = (TFile*)outputFileSmallSample->FindObjectAny((inputFileNameMCEP.Append(type)).Data());
    if(fileMCEP) 
    {
     TList *listMCEP = NULL;
@@ -206,10 +221,8 @@ void showSpread(TString type="", Int_t mode=mLocal)
    } // end of if(fileMCEP) 
   
    // SP:     
-   TString fileNameSP = presentDirName;   
-   fileNameSP+="outputSPanalysis";
-   (fileNameSP+=type.Data())+=".root";
-   TFile *fileSP = TFile::Open(fileNameSP.Data(), "READ");      
+   TString inputFileNameSP = "outputSPanalysis";
+   TFile* fileSP = (TFile*)outputFileSmallSample->FindObjectAny((inputFileNameSP.Append(type)).Data());
    if(fileSP) 
    {
     TList *listSP = NULL;
@@ -234,10 +247,8 @@ void showSpread(TString type="", Int_t mode=mLocal)
    } // end of if(fileSP) 
    
    // GFC:     
-   TString fileNameGFC = presentDirName;   
-   fileNameGFC+="outputGFCanalysis";
-   (fileNameGFC+=type.Data())+=".root";
-   TFile *fileGFC = TFile::Open(fileNameGFC.Data(), "READ");      
+   TString inputFileNameGFC = "outputGFCanalysis";
+   TFile* fileGFC = (TFile*)outputFileSmallSample->FindObjectAny((inputFileNameGFC.Append(type)).Data()); 
    if(fileGFC) 
    {
     TList *listGFC = NULL;
@@ -298,10 +309,8 @@ void showSpread(TString type="", Int_t mode=mLocal)
    } // end of if(fileGFC) 
    
    // QC:     
-   TString fileNameQC = presentDirName;   
-   fileNameQC+="outputQCanalysis";
-   (fileNameQC+=type.Data())+=".root";
-   TFile *fileQC = TFile::Open(fileNameQC.Data(), "READ");      
+   TString inputFileNameQC = "outputQCanalysis";
+   TFile* fileQC = (TFile*)outputFileSmallSample->FindObjectAny((inputFileNameQC.Append(type)).Data());   
    if(fileQC) 
    {
     TList *listQC = NULL;
@@ -362,10 +371,8 @@ void showSpread(TString type="", Int_t mode=mLocal)
    } // end of if(fileQC) 
   
    // FQD:     
-   TString fileNameFQD = presentDirName;   
-   fileNameFQD+="outputFQDanalysis";
-   (fileNameFQD+=type.Data())+=".root";
-   TFile *fileFQD = TFile::Open(fileNameFQD.Data(), "READ");      
+   TString inputFileNameFQD = "outputFQDanalysis";
+   TFile* fileFQD = (TFile*)outputFileSmallSample->FindObjectAny((inputFileNameFQD.Append(type)).Data());   
    if(fileFQD) 
    {
     TList *listFQD = NULL;
@@ -390,10 +397,8 @@ void showSpread(TString type="", Int_t mode=mLocal)
    } // end of if(fileFQD)   
   
    // LYZ1SUM:     
-   TString fileNameLYZ1SUM = presentDirName;   
-   fileNameLYZ1SUM+="outputLYZ1SUManalysis";
-   (fileNameLYZ1SUM+=type.Data())+=".root";
-   TFile *fileLYZ1SUM = TFile::Open(fileNameLYZ1SUM.Data(), "READ");      
+   TString inputFileNameLYZ1SUM = "outputLYZ1SUManalysis";
+   TFile* fileLYZ1SUM = (TFile*)outputFileSmallSample->FindObjectAny((inputFileNameLYZ1SUM.Append(type)).Data());  
    if(fileLYZ1SUM) 
    {
     TList *listLYZ1SUM = NULL;
@@ -418,10 +423,8 @@ void showSpread(TString type="", Int_t mode=mLocal)
    } // end of if(fileLYZ1SUM)   
   
    // LYZ1PROD:     
-   TString fileNameLYZ1PROD = presentDirName;   
-   fileNameLYZ1PROD+="outputLYZ1PRODanalysis";
-   (fileNameLYZ1PROD+=type.Data())+=".root";
-   TFile *fileLYZ1PROD = TFile::Open(fileNameLYZ1PROD.Data(), "READ");      
+   TString inputFileNameLYZ1PROD = "outputLYZ1PRODanalysis";
+   TFile* fileLYZ1PROD = (TFile*)outputFileSmallSample->FindObjectAny((inputFileNameLYZ1PROD.Append(type)).Data()); 
    if(fileLYZ1PROD) 
    {
     TList *listLYZ1PROD = NULL;
@@ -847,82 +850,94 @@ void showSpread(TString type="", Int_t mode=mLocal)
   } // end of for(Int_t iDir=0;iDir<nDirs;++iDir)  
  } // end of else if(nSubsets > 0)
  
- 
  // accessing the large statistics merged output .root files for each method:
- // MCEP:
- TString mergedOutputFileNameMCEP(pwd.Data());
- ((mergedOutputFileNameMCEP+="outputMCEPanalysis")+=type.Data())+=".root";
+ TString presentDirName(gSystem->pwd()); 
+ presentDirName += "/";
+ presentDirName += "AnalysisResults.root";
+ 
+ TFile *outputFileLargeSample = NULL;
+ if(gSystem->AccessPathName(presentDirName.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged, large statistics output file:"<<endl;
+  cout<<"         "<<presentDirName.Data()<<endl;
+ } else 
+   {
+    outputFileLargeSample = TFile::Open(presentDirName.Data(),"READ");
+   } 
+      
+ // accessing the large statistics output .root files for each method:
+ // MCEP:     
  TFile *mergedOutputFileMCEP = NULL;
+ TString inputFileNameMCEP = "outputMCEPanalysis";
+ if(outputFileLargeSample) mergedOutputFileMCEP = (TFile*)outputFileLargeSample->FindObjectAny((inputFileNameMCEP.Append(type)).Data()); 
  TList *mergedOutputListMCEP = NULL;
  Double_t mergedValueMCEP = 0.;
  Double_t mergedErrorMCEP = 0.; 
  Double_t mergedAvMMCEP = 0.; // average multiplicity 
  Double_t mergedNMCEP = 0.;  // number of events
- if(gSystem->AccessPathName(mergedOutputFileNameMCEP.Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameMCEP.Data()<<endl;
- } else 
-   {     
-    mergedOutputFileMCEP = TFile::Open(mergedOutputFileNameMCEP.Data(),"READ");      
-    if(mergedOutputFileMCEP) 
-    { 
-     mergedOutputFileMCEP->GetObject("cobjMCEP",mergedOutputListMCEP); 
-     mergedOutputFileMCEP->Close();
-     if(mergedOutputListMCEP) 
-     {
-      AliFlowCommonHistResults *mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
-                                                    (mergedOutputListMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
-      if(mcepCommonHistRes && mcepCommonHistRes->GetHistIntFlow())
-      {
-       mergedValueMCEP = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorMCEP = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
-      } 
+  
+ if(mergedOutputFileMCEP) 
+ { 
+  mergedOutputFileMCEP->GetObject("cobjMCEP",mergedOutputListMCEP); 
+  mergedOutputFileMCEP->Close();
+  if(mergedOutputListMCEP) 
+  {
+   AliFlowCommonHistResults *mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                 (mergedOutputListMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
+   if(mcepCommonHistRes && mcepCommonHistRes->GetHistIntFlow())
+   {
+    mergedValueMCEP = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorMCEP = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
+   } 
       
-      AliFlowCommonHist *mcepCommonHist = dynamic_cast<AliFlowCommonHist*> 
+   AliFlowCommonHist *mcepCommonHist = dynamic_cast<AliFlowCommonHist*> 
                                                     (mergedOutputListMCEP->FindObject("AliFlowCommonHistMCEP")); 
-      if(mcepCommonHist && mcepCommonHist->GetHistMultRP())
-      {
-       mergedAvMMCEP = (mcepCommonHist->GetHistMultRP())->GetMean();
-       mergedNMCEP = (mcepCommonHist->GetHistMultRP())->GetEntries();
-      }                                                                                                                                              
-     }
-    } // end of if(mergedOutputFileMCEP)
-   } // end of else 
+   if(mcepCommonHist && mcepCommonHist->GetHistMultRP())
+   {
+    mergedAvMMCEP = (mcepCommonHist->GetHistMultRP())->GetMean();
+    mergedNMCEP = (mcepCommonHist->GetHistMultRP())->GetEntries();
+   }                                                                                                                                              
+  }
+ } // end of if(mergedOutputFileMCEP)
    
- // SP:
- TString mergedOutputFileNameSP(pwd.Data());
- ((mergedOutputFileNameSP+="outputSPanalysis")+=type.Data())+=".root";
+ // SP:     
  TFile *mergedOutputFileSP = NULL;
+ TString inputFileNameSP = "outputSPanalysis";
+ if(outputFileLargeSample) mergedOutputFileSP = (TFile*)outputFileLargeSample->FindObjectAny((inputFileNameSP.Append(type)).Data()); 
  TList *mergedOutputListSP = NULL;
  Double_t mergedValueSP = 0.;
  Double_t mergedErrorSP = 0.; 
- if(gSystem->AccessPathName(mergedOutputFileNameSP.Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameSP.Data()<<endl;
- } else 
-   {     
-    mergedOutputFileSP = TFile::Open(mergedOutputFileNameSP.Data(),"READ");      
-    if(mergedOutputFileSP) 
-    { 
-     mergedOutputFileSP->GetObject("cobjSP",mergedOutputListSP); 
-     mergedOutputFileSP->Close();
-     if(mergedOutputListSP) 
-     {
-      AliFlowCommonHistResults *spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
-                                                    (mergedOutputListSP->FindObject("AliFlowCommonHistResultsSP")); 
-      if(spCommonHistRes && spCommonHistRes->GetHistIntFlow())
-      {
-       mergedValueSP = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorSP = (spCommonHistRes->GetHistIntFlow())->GetBinError(1);
-      } 
-     }
-    } // end of if(mergedOutputFileSP)
-   } // end of else 
+ Double_t mergedAvMSP = 0.; // average multiplicity 
+ Double_t mergedNSP = 0.;  // number of events
+  
+ if(mergedOutputFileSP) 
+ { 
+  mergedOutputFileSP->GetObject("cobjSP",mergedOutputListSP); 
+  mergedOutputFileSP->Close();
+  if(mergedOutputListSP) 
+  {
+   AliFlowCommonHistResults *spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                 (mergedOutputListSP->FindObject("AliFlowCommonHistResultsSP")); 
+   if(spCommonHistRes && spCommonHistRes->GetHistIntFlow())
+   {
+    mergedValueSP = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorSP = (spCommonHistRes->GetHistIntFlow())->GetBinError(1);
+   } 
+      
+   AliFlowCommonHist *spCommonHist = dynamic_cast<AliFlowCommonHist*> 
+                                                    (mergedOutputListSP->FindObject("AliFlowCommonHistSP")); 
+   if(spCommonHist && spCommonHist->GetHistMultRP())
+   {
+    mergedAvMSP = (spCommonHist->GetHistMultRP())->GetMean();
+    mergedNSP = (spCommonHist->GetHistMultRP())->GetEntries();
+   }                                                                                                                                              
+  }
+ } // end of if(mergedOutputFileSP)
  
  // GFC:
- TString mergedOutputFileNameGFC(pwd.Data());
- ((mergedOutputFileNameGFC+="outputGFCanalysis")+=type.Data())+=".root";
  TFile *mergedOutputFileGFC = NULL;
+ TString inputFileNameGFC = "outputGFCanalysis";
+ if(outputFileLargeSample) mergedOutputFileGFC = (TFile*)outputFileLargeSample->FindObjectAny((inputFileNameGFC.Append(type)).Data()); 
  TList *mergedOutputListGFC = NULL;
  Double_t mergedValueGFC2 = 0.;
  Double_t mergedErrorGFC2 = 0.; 
@@ -932,54 +947,47 @@ void showSpread(TString type="", Int_t mode=mLocal)
  Double_t mergedErrorGFC6 = 0.; 
  Double_t mergedValueGFC8 = 0.;
  Double_t mergedErrorGFC8 = 0.; 
- if(gSystem->AccessPathName(mergedOutputFileNameGFC.Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameGFC.Data()<<endl;
- } else 
-   {     
-    mergedOutputFileGFC = TFile::Open(mergedOutputFileNameGFC.Data(),"READ");      
-    if(mergedOutputFileGFC) 
-    { 
-     mergedOutputFileGFC->GetObject("cobjGFC",mergedOutputListGFC); 
-     mergedOutputFileGFC->Close();
-     if(mergedOutputListGFC) 
-     {
-      AliFlowCommonHistResults *gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+ if(mergedOutputFileGFC) 
+ { 
+  mergedOutputFileGFC->GetObject("cobjGFC",mergedOutputListGFC); 
+  mergedOutputFileGFC->Close();
+  if(mergedOutputListGFC) 
+  {
+   AliFlowCommonHistResults *gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC")); 
-      AliFlowCommonHistResults *gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+   AliFlowCommonHistResults *gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListGFC->FindObject("AliFlowCommonHistResults4thOrderGFC")); 
-      AliFlowCommonHistResults *gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+   AliFlowCommonHistResults *gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListGFC->FindObject("AliFlowCommonHistResults6thOrderGFC")); 
-      AliFlowCommonHistResults *gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+   AliFlowCommonHistResults *gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListGFC->FindObject("AliFlowCommonHistResults8thOrderGFC")); 
-      if(gfc2CommonHistRes && gfc2CommonHistRes->GetHistIntFlow())
-      {
-       mergedValueGFC2 = (gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorGFC2 = (gfc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
-      } 
-      if(gfc4CommonHistRes && gfc4CommonHistRes->GetHistIntFlow())
-      {
-       mergedValueGFC4 = (gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorGFC4 = (gfc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
-      }
-      if(gfc6CommonHistRes && gfc6CommonHistRes->GetHistIntFlow())
-      {
-       mergedValueGFC6 = (gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorGFC6 = (gfc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
-      } 
-      if(gfc8CommonHistRes && gfc8CommonHistRes->GetHistIntFlow())
-      {
-       mergedValueGFC8 = (gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorGFC8 = (gfc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
-      }  
-     }
-    } // end of if(mergedOutputFileGFC)
-   } // end of else  
+   if(gfc2CommonHistRes && gfc2CommonHistRes->GetHistIntFlow())
+   {
+    mergedValueGFC2 = (gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorGFC2 = (gfc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+   } 
+   if(gfc4CommonHistRes && gfc4CommonHistRes->GetHistIntFlow())
+   {
+    mergedValueGFC4 = (gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorGFC4 = (gfc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+   }
+   if(gfc6CommonHistRes && gfc6CommonHistRes->GetHistIntFlow())
+   {
+    mergedValueGFC6 = (gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorGFC6 = (gfc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+   } 
+   if(gfc8CommonHistRes && gfc8CommonHistRes->GetHistIntFlow())
+   {
+    mergedValueGFC8 = (gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorGFC8 = (gfc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+   }  
+  }
+ } // end of if(mergedOutputFileGFC)
 
  // QC:
- TString mergedOutputFileNameQC(pwd.Data());
- ((mergedOutputFileNameQC+="outputQCanalysis")+=type.Data())+=".root";
  TFile *mergedOutputFileQC = NULL;
+ TString inputFileNameQC = "outputQCanalysis";
+ if(outputFileLargeSample) mergedOutputFileQC = (TFile*)outputFileLargeSample->FindObjectAny((inputFileNameQC.Append(type)).Data()); 
  TList *mergedOutputListQC = NULL;
  Double_t mergedValueQC2 = 0.;
  Double_t mergedErrorQC2 = 0.; 
@@ -988,140 +996,112 @@ void showSpread(TString type="", Int_t mode=mLocal)
  Double_t mergedValueQC6 = 0.;
  Double_t mergedErrorQC6 = 0.; 
  Double_t mergedValueQC8 = 0.;
- Double_t mergedErrorQC8 = 0.; 
- if(gSystem->AccessPathName(mergedOutputFileNameQC.Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameQC.Data()<<endl;
- } else 
-   {     
-    mergedOutputFileQC = TFile::Open(mergedOutputFileNameQC.Data(),"READ");      
-    if(mergedOutputFileQC) 
-    { 
-     mergedOutputFileQC->GetObject("cobjQC",mergedOutputListQC); 
-     mergedOutputFileQC->Close();
-     if(mergedOutputListQC) 
-     {
-      AliFlowCommonHistResults *qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+ Double_t mergedErrorQC8 = 0.;   
+ if(mergedOutputFileQC) 
+ { 
+  mergedOutputFileQC->GetObject("cobjQC",mergedOutputListQC); 
+  mergedOutputFileQC->Close();
+  if(mergedOutputListQC) 
+  {
+   AliFlowCommonHistResults *qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListQC->FindObject("AliFlowCommonHistResults2ndOrderQC")); 
-      AliFlowCommonHistResults *qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+   AliFlowCommonHistResults *qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListQC->FindObject("AliFlowCommonHistResults4thOrderQC")); 
-      AliFlowCommonHistResults *qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+   AliFlowCommonHistResults *qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListQC->FindObject("AliFlowCommonHistResults6thOrderQC")); 
-      AliFlowCommonHistResults *qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+   AliFlowCommonHistResults *qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListQC->FindObject("AliFlowCommonHistResults8thOrderQC")); 
-      if(qc2CommonHistRes && qc2CommonHistRes->GetHistIntFlow())
-      {
-       mergedValueQC2 = (qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorQC2 = (qc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
-      } 
-      if(qc4CommonHistRes && qc4CommonHistRes->GetHistIntFlow())
-      {
-       mergedValueQC4 = (qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorQC4 = (qc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
-      }
-      if(qc6CommonHistRes && qc6CommonHistRes->GetHistIntFlow())
-      {
-       mergedValueQC6 = (qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorQC6 = (qc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
-      } 
-      if(qc8CommonHistRes && qc8CommonHistRes->GetHistIntFlow())
-      {
-       mergedValueQC8 = (qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorQC8 = (qc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
-      }  
-     }
-    } // end of if(mergedOutputFileGFC)
-   } // end of else  
+   if(qc2CommonHistRes && qc2CommonHistRes->GetHistIntFlow())
+   {
+    mergedValueQC2 = (qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorQC2 = (qc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+   } 
+   if(qc4CommonHistRes && qc4CommonHistRes->GetHistIntFlow())
+   {
+    mergedValueQC4 = (qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorQC4 = (qc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+   }
+   if(qc6CommonHistRes && qc6CommonHistRes->GetHistIntFlow())
+   {
+    mergedValueQC6 = (qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorQC6 = (qc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+   } 
+   if(qc8CommonHistRes && qc8CommonHistRes->GetHistIntFlow())
+   {
+    mergedValueQC8 = (qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorQC8 = (qc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+   }  
+  }
+ } // end of else  
 
  // FQD:
- TString mergedOutputFileNameFQD(pwd.Data());
- ((mergedOutputFileNameFQD+="outputFQDanalysis")+=type.Data())+=".root";
  TFile *mergedOutputFileFQD = NULL;
+ TString inputFileNameFQD = "outputFQDanalysis";
+ if(outputFileLargeSample) mergedOutputFileFQD = (TFile*)outputFileLargeSample->FindObjectAny((inputFileNameFQD.Append(type)).Data()); 
  TList *mergedOutputListFQD = NULL;
  Double_t mergedValueFQD = 0.;
  Double_t mergedErrorFQD = 0.; 
- if(gSystem->AccessPathName(mergedOutputFileNameFQD.Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameFQD.Data()<<endl;
- } else 
-   {     
-    mergedOutputFileFQD = TFile::Open(mergedOutputFileNameFQD.Data(),"READ");      
-    if(mergedOutputFileFQD) 
-    { 
-     mergedOutputFileFQD->GetObject("cobjFQD",mergedOutputListFQD); 
-     mergedOutputFileFQD->Close();
-     if(mergedOutputListFQD) 
-     {
-      AliFlowCommonHistResults *fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+ if(mergedOutputFileFQD) 
+ { 
+  mergedOutputFileFQD->GetObject("cobjFQD",mergedOutputListFQD); 
+  mergedOutputFileFQD->Close();
+  if(mergedOutputListFQD) 
+  {
+   AliFlowCommonHistResults *fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListFQD->FindObject("AliFlowCommonHistResultsFQD")); 
-      if(fqdCommonHistRes && fqdCommonHistRes->GetHistIntFlow())
-      {
-       mergedValueFQD = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorFQD = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
-      } 
-     }
-    } // end of if(mergedOutputFileFQD)
-   } // end of else  
+   if(fqdCommonHistRes && fqdCommonHistRes->GetHistIntFlow())
+   {
+    mergedValueFQD = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorFQD = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
+   } 
+  }
+ } // end of if(mergedOutputFileFQD)
    
  // LYZ1SUM:
- TString mergedOutputFileNameLYZ1SUM(pwd.Data());
- ((mergedOutputFileNameLYZ1SUM+="outputLYZ1SUManalysis")+=type.Data())+=".root";
  TFile *mergedOutputFileLYZ1SUM = NULL;
+ TString inputFileNameLYZ1SUM = "outputLYZ1SUManalysis";
+ if(outputFileLargeSample) mergedOutputFileLYZ1SUM = (TFile*)outputFileLargeSample->FindObjectAny((inputFileNameLYZ1SUM.Append(type)).Data()); 
  TList *mergedOutputListLYZ1SUM = NULL;
  Double_t mergedValueLYZ1SUM = 0.;
  Double_t mergedErrorLYZ1SUM = 0.; 
- if(gSystem->AccessPathName(mergedOutputFileNameLYZ1SUM.Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameLYZ1SUM.Data()<<endl;
- } else 
-   {     
-    mergedOutputFileLYZ1SUM = TFile::Open(mergedOutputFileNameLYZ1SUM.Data(),"READ");      
-    if(mergedOutputFileLYZ1SUM) 
-    { 
-     mergedOutputFileLYZ1SUM->GetObject("cobjLYZ1SUM",mergedOutputListLYZ1SUM); 
-     mergedOutputFileLYZ1SUM->Close();
-     if(mergedOutputListLYZ1SUM) 
-     {
-      AliFlowCommonHistResults *lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+ if(mergedOutputFileLYZ1SUM) 
+ { 
+  mergedOutputFileLYZ1SUM->GetObject("cobjLYZ1SUM",mergedOutputListLYZ1SUM); 
+  mergedOutputFileLYZ1SUM->Close();
+  if(mergedOutputListLYZ1SUM) 
+  {
+   AliFlowCommonHistResults *lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1SUM")); 
-      if(lyz1sumCommonHistRes && lyz1sumCommonHistRes->GetHistIntFlow())
-      {
-       mergedValueLYZ1SUM = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorLYZ1SUM = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);
-      } 
-     }
-    } // end of if(mergedOutputFileLYZ1SUM)
-   } // end of else  
+   if(lyz1sumCommonHistRes && lyz1sumCommonHistRes->GetHistIntFlow())
+   {
+    mergedValueLYZ1SUM = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorLYZ1SUM = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);  
+   } 
+  }
+ } // end of if(mergedOutputFileLYZ1SUM)
    
  // LYZ1PROD:
- TString mergedOutputFileNameLYZ1PROD(pwd.Data());
- ((mergedOutputFileNameLYZ1PROD+="outputLYZ1PRODanalysis")+=type.Data())+=".root";
  TFile *mergedOutputFileLYZ1PROD = NULL;
+ TString inputFileNameLYZ1PROD = "outputLYZ1PRODanalysis";
+ if(outputFileLargeSample) mergedOutputFileLYZ1PROD = (TFile*)outputFileLargeSample->FindObjectAny((inputFileNameLYZ1PROD.Append(type)).Data()); 
  TList *mergedOutputListLYZ1PROD = NULL;
  Double_t mergedValueLYZ1PROD = 0.;
  Double_t mergedErrorLYZ1PROD = 0.; 
- if(gSystem->AccessPathName(mergedOutputFileNameLYZ1PROD.Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameLYZ1PROD.Data()<<endl;
- } else 
-   {     
-    mergedOutputFileLYZ1PROD = TFile::Open(mergedOutputFileNameLYZ1PROD.Data(),"READ");      
-    if(mergedOutputFileLYZ1PROD) 
-    { 
-     mergedOutputFileLYZ1PROD->GetObject("cobjLYZ1PROD",mergedOutputListLYZ1PROD); 
-     mergedOutputFileLYZ1PROD->Close();
-     if(mergedOutputListLYZ1PROD) 
-     {
-      AliFlowCommonHistResults *lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+ if(mergedOutputFileLYZ1PROD) 
+ { 
+  mergedOutputFileLYZ1PROD->GetObject("cobjLYZ1PROD",mergedOutputListLYZ1PROD); 
+  mergedOutputFileLYZ1PROD->Close();
+  if(mergedOutputListLYZ1PROD) 
+  {
+   AliFlowCommonHistResults *lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
                                                     (mergedOutputListLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1PROD")); 
-      if(lyz1prodCommonHistRes && lyz1prodCommonHistRes->GetHistIntFlow())
-      {
-       mergedValueLYZ1PROD = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorLYZ1PROD = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
-      } 
-     }
-    } // end of if(mergedOutputFileLYZ1PROD)
-   } // end of else    
+   if(lyz1prodCommonHistRes && lyz1prodCommonHistRes->GetHistIntFlow())
+   {
+    mergedValueLYZ1PROD = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+    mergedErrorLYZ1PROD = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
+   } 
+  }
+ } // end of if(mergedOutputFileLYZ1PROD)
                    
  // removing the title and stat. box from all histograms:
  // gStyle->SetOptTitle(0);
@@ -1912,7 +1892,7 @@ void LoadSpreadLibraries(const libModes mode) {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree");
+  //gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libXMLIO");
@@ -1930,13 +1910,13 @@ void LoadSpreadLibraries(const libModes mode) {
   //==================================================================================  
   //load needed libraries:
   gSystem->AddIncludePath("-I$ROOTSYS/include");
-  gSystem->Load("libTree");
+  //gSystem->Load("libTree");
 
   // for AliRoot
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libPWG2flowCommon");
-  cerr<<"libPWG2flowCommon loaded ..."<<endl;
+  //cerr<<"libPWG2flowCommon loaded ..."<<endl;
   
   }
   
