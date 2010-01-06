@@ -1,0 +1,416 @@
+#include "AliBackgroundSelection.h"
+#include "TH2F.h"
+#include "TList.h"
+#include "AliLog.h"
+#include "TString.h"
+#include "AliESDInputHandlerRP.h"
+#include "AliAnalysisManager.h"
+#include "TTree.h"
+#ifdef PASS1RECO
+#include "../ITS/AliITSRecPoint.h"
+#endif
+#include "AliMultiplicity.h"
+
+ClassImp(AliBackgroundSelection)
+
+AliBackgroundSelection::AliBackgroundSelection():
+  AliAnalysisCuts(), fOutputHist(0), fACut(0), fBCut(0), fDeltaPhiCut(0)
+{
+  
+  fOutputHist = new TList();
+  fOutputHist->SetOwner();
+  fACut = 65;
+  fBCut = 4;
+  fDeltaPhiCut = 0.02;
+}
+
+AliBackgroundSelection::AliBackgroundSelection(const char* name, const char* title):
+  AliAnalysisCuts(name,title), fOutputHist(0), fACut(0), fBCut(0), fDeltaPhiCut(0)
+{
+
+  fOutputHist = new TList();
+  fOutputHist->SetOwner();
+  fACut = 65;
+  fBCut = 4;
+  fDeltaPhiCut = 0.02;
+
+}
+
+AliBackgroundSelection::AliBackgroundSelection(const AliBackgroundSelection& obj) : AliAnalysisCuts(obj),
+fOutputHist(0), fACut(0), fBCut(0), fDeltaPhiCut(0)
+{
+
+  fOutputHist  = obj.fOutputHist;
+  fACut        = obj.fACut;
+  fBCut        = obj.fBCut;
+  fDeltaPhiCut = obj.fDeltaPhiCut;
+}
+
+AliBackgroundSelection::~AliBackgroundSelection() {
+  if(fOutputHist) {
+    delete fOutputHist;
+    fOutputHist = 0;
+  }
+
+}
+
+Bool_t AliBackgroundSelection::IsSelected(TObject* obj){
+
+  // reset fSelected
+  SetSelected(kFALSE);
+#ifdef PASS1RECO
+  // Get rec points
+  AliESDInputHandlerRP* handlerRP = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!handlerRP)
+    AliFatal("Cannot get the AliESDInputHandlerRP");
+
+  TTree* itsClusterTree = handlerRP->GetTreeR("ITS");
+  if (!itsClusterTree){
+    AliError("Cannot get the ITS Cluster tree");
+    return kFALSE;
+  }
+  //    AliFatal("Cannot get the ITS Cluster tree");
+
+  TClonesArray* itsClusters = new TClonesArray("AliITSRecPoint");
+  TBranch* itsClusterBranch=itsClusterTree->GetBranch("ITSRecPoints");
+
+  itsClusterBranch->SetAddress(&itsClusters);
+
+  Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();
+#endif
+
+  AliESDEvent * esdEv = (AliESDEvent*) obj;
+
+#ifdef PASS1RECO
+  Float_t deltaPhi = 0.0; // deltaPhi is not available in pass1
+
+  // Get # spd clusters and of tracklets
+  Int_t spdClusters=0;
+
+
+  // loop over the its subdetectors
+  for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
+
+    if (!itsClusterTree->GetEvent(iIts))
+      continue;
+
+    Int_t nClusters = itsClusters->GetEntriesFast();
+
+    // loop over clusters
+    while (nClusters--) {
+      AliITSRecPoint* cluster = (AliITSRecPoint*) itsClusters->UncheckedAt(nClusters);
+
+      Int_t layer = cluster->GetLayer();
+
+      if (layer < 3) { // SPD
+	spdClusters++;
+      }
+    }
+  }
+#endif
+
+  const AliMultiplicity* mult = esdEv->GetMultiplicity();
+  if (!mult){
+    AliFatal("No multiplicity object"); // TODO: Should this be fatal?
+  }
+  Int_t ntracklet = mult->GetNumberOfTracklets();
+
+#ifndef PASS1RECO
+  // get deltaphi if vertexer z
+  Float_t deltaPhi = 0.0;
+  // Get Vertex
+  const AliESDVertex * vtxESD = esdEv->GetPrimaryVertexSPD();
+  if(vtxESD) {
+    if (vtxESD->IsFromVertexerZ()) deltaPhi = vtxESD->GetDispersion(); // dispersion contains deltaphi in case of vertexer Z
+  }
+  else {
+    AliWarning("No Vertex");
+  }
+
+  
+
+  // compute number of spd clusters
+  Float_t spdClusters = 0;
+  for(Int_t ilayer = 0; ilayer < 2; ilayer++){
+    spdClusters += mult->GetNumberOfITSClusters(ilayer);
+  }
+#endif
+
+  // Check cuts
+  Bool_t isCvsTOk     = kFALSE;
+  Bool_t isDeltaPhiOk = kFALSE;
+
+  Float_t limit = fACut + ntracklet * fBCut;  
+  if (spdClusters > limit)        isCvsTOk = kFALSE;
+  else                            isCvsTOk = kTRUE ;
+
+  if(deltaPhi > fDeltaPhiCut)     isDeltaPhiOk = kFALSE;
+  else                            isDeltaPhiOk = kTRUE ;
+
+  if (!isCvsTOk || !isDeltaPhiOk) SetSelected(kFALSE);
+  else                            SetSelected(kTRUE );
+
+  // Fill control histos for all trigger classes
+  TString trgClasses = esdEv->GetFiredTriggerClasses();
+  TObjArray * tokens = trgClasses.Tokenize(" ");
+  TIter iter(tokens);
+  while(TObjString * tok = (TObjString*) iter.Next()){
+    // clean up trigger name
+    TString trg = tok->GetString();
+    trg.Strip(TString::kTrailing, ' ');
+    trg.Strip(TString::kLeading, ' ');
+    
+    // cluster vs tracklets
+    TH2F * hCvsT = GetClusterVsTrackletsHisto(trg.Data());
+    TH2F * hCvsTa = GetClusterVsTrackletsHistoAccepted(trg.Data());
+    hCvsT->Fill(ntracklet,spdClusters);
+    if(isCvsTOk) hCvsTa->Fill(ntracklet,spdClusters);
+
+    // Delta phi
+    TH1F * hDeltaPhi = GetDeltaPhiHisto(trg.Data());
+    TH1F * hDeltaPhia = GetDeltaPhiHistoAccepted(trg.Data());
+    hDeltaPhi->Fill(deltaPhi);
+    if(isDeltaPhiOk) hDeltaPhia->Fill(deltaPhi);
+  }
+  if(tokens) delete tokens;
+  // return decision
+
+#ifdef PASS1RECO
+  if(itsClusters) {
+    itsClusters->Delete();
+    delete itsClusters;
+  }
+#endif 
+  return Selected();
+}
+
+
+void   AliBackgroundSelection::Init(){
+
+  fACut = 65;
+  fBCut = 4;
+
+}
+
+
+void AliBackgroundSelection::BookClusterVsTrackletsHisto(const char * trigger_name){
+
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
+  TH2F * h1 = new TH2F(GetClusterVsTrackletsHistoName(trigger_name),trigger_name, 50, -0.5, 49.5, 1000, -0.5, 999.5);
+  h1->SetXTitle("Tracklets");
+  h1->SetYTitle("SPD Clusters");
+  AliInfo(Form("Creating histos: %s, all and accepted", GetClusterVsTrackletsHistoName(trigger_name)));
+
+  TH2F * h2 = new TH2F(GetClusterVsTrackletsHistoNameAccepted(trigger_name),TString(trigger_name)+ "(accepted)", 
+		       50, -0.5, 49.5, 1000, -0.5, 999.5);
+  h2->SetXTitle("Tracklets");
+  h2->SetYTitle("SPD Clusters");
+
+  fOutputHist->Add(h1);
+  fOutputHist->Add(h2);
+
+  TH1::AddDirectory(oldStatus);
+
+}
+
+void AliBackgroundSelection::BookDeltaPhiHisto(const char * trigger_name){
+
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
+  TH1F * h1 = new TH1F(GetDeltaPhiHistoName(trigger_name),trigger_name, 100,0,0.5);
+  h1->SetXTitle("#Delta #phi");
+  AliInfo(Form("Creating histos: %s, all and accepted", GetDeltaPhiHistoName(trigger_name)));
+
+  TH1F * h2 = new TH1F(GetDeltaPhiHistoNameAccepted(trigger_name),TString(trigger_name)+ "(accepted)", 100,0,0.5);
+  h2->SetXTitle("#Delta #phi");
+
+
+  fOutputHist->Add(h1);
+  fOutputHist->Add(h2);
+
+  TH1::AddDirectory(oldStatus);
+
+}
+
+TH2F * AliBackgroundSelection::GetClusterVsTrackletsHisto(const char * trigger_name){
+  if(!fOutputHist) {AliError("List of histos not initialized");return 0;}
+  TH2F * h = (TH2F*) fOutputHist->FindObject(GetClusterVsTrackletsHistoName(trigger_name));  
+  if(!h) {
+    BookClusterVsTrackletsHisto(trigger_name);
+    h = (TH2F*) fOutputHist->FindObject(GetClusterVsTrackletsHistoName(trigger_name));  
+  }
+  return h;
+}
+TH1F * AliBackgroundSelection::GetDeltaPhiHisto(const char * trigger_name){
+  if(!fOutputHist) {AliError("List of histos not initialized");return 0;}
+  TH1F * h = (TH1F*) fOutputHist->FindObject(GetDeltaPhiHistoName(trigger_name));  
+  if(!h) {
+    BookDeltaPhiHisto(trigger_name);
+    h  = (TH1F*) fOutputHist->FindObject(GetDeltaPhiHistoName(trigger_name));  
+  }
+  return h;
+}
+
+TH2F * AliBackgroundSelection::GetClusterVsTrackletsHistoAccepted(const char * trigger_name){
+
+  if(!fOutputHist) {AliError("List of histos not initialized");return 0;}
+  TH2F * h = (TH2F*) fOutputHist->FindObject(GetClusterVsTrackletsHistoNameAccepted(trigger_name));
+  if(!h) {
+    BookClusterVsTrackletsHisto(trigger_name);
+    h = (TH2F*) fOutputHist->FindObject(GetClusterVsTrackletsHistoNameAccepted(trigger_name));  
+  }
+  return h;
+  
+}
+
+TH1F * AliBackgroundSelection::GetDeltaPhiHistoAccepted(const char * trigger_name){
+
+  if(!fOutputHist) {AliError("List of histos not initialized");return 0;}
+  TH1F * h = (TH1F*) fOutputHist->FindObject(GetDeltaPhiHistoNameAccepted(trigger_name));  
+  if(!h) {
+    BookDeltaPhiHisto(trigger_name);
+    h  = (TH1F*) fOutputHist->FindObject(GetDeltaPhiHistoNameAccepted(trigger_name));  
+  }
+  return h;
+  
+}
+
+const char * AliBackgroundSelection::GetClusterVsTrackletsHistoName(const char * trigger_name){
+    static TString str;
+    str = ("hCvsT");
+    str = str+GetName()+"_"+trigger_name;
+    return str.Data();
+}
+
+const char * AliBackgroundSelection::GetClusterVsTrackletsHistoNameAccepted(const char * trigger_name){
+    static TString str;
+    str = ("hCvsT");
+    str = str+GetName()+"_"+trigger_name + "_accepted";
+    return str.Data();
+}
+
+const char * AliBackgroundSelection::GetDeltaPhiHistoName(const char * trigger_name){
+    static TString str;
+    str = ("hDeltaPhi");
+    str = str+GetName()+"_"+trigger_name;
+    return str.Data();
+}
+
+const char * AliBackgroundSelection::GetDeltaPhiHistoNameAccepted(const char * trigger_name){
+    static TString str;
+    str = ("hDeltaPhi");
+    str = str+GetName()+"_"+trigger_name + "_accepted";
+    return str.Data();
+}
+
+Long64_t AliBackgroundSelection::Merge(TCollection* list)
+{
+  // Merge a list of AliBackgroundSelection objects with this (needed for
+  // PROOF).
+  // Returns the number of merged objects (including this).
+
+  // We have to make sure that all the list contain the same histos in
+  // the same order. We thus also have to sort the list (sorting is
+  // done by name in TList).
+
+  if (!list)
+    return 0;
+
+  if (list->IsEmpty())
+    return 1;
+
+  TIterator* iter = list->MakeIterator();
+  TObject* obj;
+
+  // collections of all histograms
+  const Int_t nHists = 1;
+  TList collections[nHists];
+
+  Int_t count = 0;
+  // 1. Sort this list
+  fOutputHist->Sort();
+
+  while ((obj = iter->Next())) {
+    
+    AliBackgroundSelection* entry = dynamic_cast<AliBackgroundSelection*> (obj);
+    if (entry == 0) 
+      continue;
+
+    TList * hlist = entry->fOutputHist;
+
+    // Check if all histos in this fOutputHist are also in the one from entry and viceversa
+    // Use getters to automatically book non defined histos
+    TObject * hist =0;
+    if (hlist->GetSize() > fOutputHist->GetSize()) {
+      AliInfo("Found missing histo in reference");
+
+      TIterator * iterlist = hlist->MakeIterator();
+      while ((hist= iterlist->Next())){ 
+	// if we missed a trigger type, we missed it for both histo categories
+	// getters automatically book non-existing histos
+	
+	// We have to work out trigger class from name:
+	TString trigger_name = hist->GetName();
+	trigger_name.ReplaceAll("_accepted","");
+	trigger_name = trigger_name(trigger_name.Last('_')+1,trigger_name.Length());
+	
+	GetDeltaPhiHisto(trigger_name.Data());
+	GetClusterVsTrackletsHisto(trigger_name.Data());
+      }
+      // in this case we have to restart from scratch: our "reference" list was missing a histo
+      iter->Reset();
+      fOutputHist->Sort();
+      count = 0;
+      continue;
+    } 
+    else if (hlist->GetSize() < fOutputHist->GetSize()) {
+      AliInfo("Found missing histo in entry");
+      TIterator * iterlist = fOutputHist->MakeIterator();
+      while ((hist = iterlist->Next())){ 
+	// if we missed a trigger type, we missed it for both histo categories
+	// getters automatically book non-existing histos
+
+	// We have to work out trigger class from name:
+	TString trigger_name = hist->GetName();
+	trigger_name.ReplaceAll("_accepted","");
+	trigger_name = trigger_name(trigger_name.Last('_')+1,trigger_name.Length());
+
+	entry->GetDeltaPhiHisto(trigger_name.Data());
+	entry->GetClusterVsTrackletsHisto(trigger_name.Data());
+      }
+    }
+
+    
+
+    // Sort
+    hlist->Sort();
+
+    // check if everything is fine    
+    if (hlist->GetSize() != fOutputHist->GetSize()) {
+      AliFatal("Mismatching size!");
+    }
+    Int_t nhist =  fOutputHist->GetSize();
+    for(Int_t ihist = 0; ihist < nhist; ihist++){
+      if(strcmp(fOutputHist->At(ihist)->GetName(),hlist->At(ihist)->GetName())){
+	AliFatal(Form("Mismatching histos: %s -> %s", fOutputHist->At(ihist)->GetName(),hlist->At(ihist)->GetName()));
+      }
+    }
+    
+    Int_t n = 0;
+    collections[n++].Add(hlist);
+
+    count++;
+  }
+
+  Int_t n = 0;
+  fOutputHist->Merge(&collections[n++]);
+  
+  delete iter;
+
+  return count+1;
+}
+
+

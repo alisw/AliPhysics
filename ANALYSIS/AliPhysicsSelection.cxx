@@ -141,6 +141,10 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 {
   // checks if the given event is a collision candidate
   
+  if (fCurrentRun != aEsd->GetRunNumber())
+    if (!Initialize(aEsd->GetRunNumber()))
+      AliFatal(Form("Could not initialize for run %d", aEsd->GetRunNumber()));
+    
   const AliESDHeader* esdHeader = aEsd->GetHeader();
   if (!esdHeader)
   {
@@ -159,10 +163,6 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
     if (esdHeader->GetEventType() != 0)
       AliFatal(Form("Invalid event type for MC: %d", esdHeader->GetEventType()));
   }
-    
-  if (fCurrentRun != aEsd->GetRunNumber())
-    if (!Initialize(aEsd->GetRunNumber()))
-      AliFatal(Form("Could not initialize for run %d", aEsd->GetRunNumber()));
     
   Bool_t accept = kFALSE;
     
