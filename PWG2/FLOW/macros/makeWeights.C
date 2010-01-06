@@ -1,16 +1,16 @@
-//==========================================================================================
-// Before using the macro makeWeights.C you should already have available the output .root 
-// files from various methods from the previous run over data (without any weights). When 
-// calling this macro you must specify the analysis type and the method from which output 
-// file you would like to make the weights for the next run (for the cumulants, GFC and QC,
-// you must also specify the order): 
+//===========================================================================================
+// Before using the macro makeWeights.C you should already have available the output *.root 
+// files from various methods stored on common output "AnalysisResults.root" from the 
+// previous run over data (without any weights). When calling this macro you must specify 
+// the analysis type and the method from which output file you would like to make the 
+// weights for the next run (for the cumulants, GFC and QC, you must also specify the order): 
 // 
 // 1. type of analysis can be: ESD, AOD, MC, ESDMC0 or ESDMC1;
 //
 // 2. method can be: MCEP, LYZ1, LYZ2, LYZEP, FQD, GFC or QC; 
 //
 // 3. cumulant order can be: 2nd, 4th, 6th or 8th.                                                   
-//==========================================================================================
+//===========================================================================================
 
 
 enum libModes {mLocal,mLocalSource};
@@ -19,7 +19,7 @@ enum libModes {mLocal,mLocalSource};
 
 
 //void makeWeights(TString type="", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocalSource)
-void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocal)
+void makeWeights(TString type="", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocal)
 {
  // load needed libraries:
   LoadWeightLibraries(mode);
@@ -27,8 +27,31 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
 
  // open the output file from the first run of the specified method:
  TString inputFileName = "output";
- TFile* file = NULL;
- file = TFile::Open(((((inputFileName.Append(method.Data())).Append("analysis")).Append(type.Data())).Append(".root")).Data(), "READ"); 
+ ((inputFileName.Append(method.Data())).Append("analysis")).Append(type.Data())));
+ 
+ TString outputFileName = "AnalysisResults.root"; // final output file name holding final results for large statistics sample
+ // access the merged, large statistics file obtained with macro mergeOutput.C:
+ TString pwd(gSystem->pwd());
+ pwd+="/";
+ pwd+=outputFileName.Data();
+ TFile *outputFile = NULL;
+ if(gSystem->AccessPathName(pwd.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have an output file:"<<endl;
+  cout<<"         "<<pwd.Data()<<endl;
+  exit(0);
+ } else 
+   {
+    outputFile = TFile::Open(pwd.Data(),"READ");
+   }  
+    
+ if(!outputFile)
+ {
+  cout<<"WARNING: outputFile is NULL !!!!"<<endl;
+  exit(0);
+ }
+ 
+ TFile* file = (TFile*)outputFile->FindObjectAny(inputFileName.Data());
  
  // using pt weights linear or quadratic in pt:
  Bool_t useLinearPt    = kTRUE;
@@ -166,7 +189,7 @@ void LoadWeightLibraries(const libModes mode) {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree");
+  //gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libXMLIO");
@@ -184,13 +207,13 @@ void LoadWeightLibraries(const libModes mode) {
     //==================================================================================  
     //load needed libraries:
     gSystem->AddIncludePath("-I$ROOTSYS/include");
-    gSystem->Load("libTree");
+    //gSystem->Load("libTree");
     
     // for AliRoot
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libPWG2flowCommon");
-    cerr<<"libPWG2flowCommon loaded ..."<<endl;
+    //cerr<<"libPWG2flowCommon loaded ..."<<endl;
     
   }
   
