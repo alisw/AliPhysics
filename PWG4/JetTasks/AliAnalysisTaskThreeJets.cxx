@@ -68,6 +68,8 @@ ClassImp(AliAnalysisTaskThreeJets)
  							 fR(0x0),
 							 fList(0x0),
 
+							 fhStopHisto(0x0),
+
 							 fGlobVar(1),
 							 fXsection(1),
 
@@ -145,6 +147,8 @@ AliAnalysisTaskThreeJets::AliAnalysisTaskThreeJets(const char * name):
 
   fR(0x0),
   fList(0x0),
+
+  fhStopHisto(0x0),
 
   fGlobVar(1),
   fXsection(1),
@@ -254,6 +258,11 @@ void AliAnalysisTaskThreeJets::UserCreateOutputObjects()
   printf("AnalysisTaskJetSpectrum::UserCreateOutputObjects() \n");
 
   fList = new TList();
+
+  //histogram, that maps were the code returns
+  fhStopHisto = new TH1I("StopHisto", "", 8, 0, 8);
+  fhStopHisto->SetXTitle("No. of the return");
+  fList->Add(fhStopHisto);
 
   fhX3X4Gen = new TH2F("X3vsX4Gen", "", 22, 0.6, 1.02, 33, 0.4, 1.02);
   fhX3X4Gen->SetXTitle("X_{3}");
@@ -478,7 +487,9 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
   //primary vertex
   AliAODVertex * pvtx = dynamic_cast<AliAODVertex*>(fAOD->GetPrimaryVertex());
   if(!pvtx){
-    if (fDebug > 1)     Printf("%s:%d AOD Vertex found",(char*)__FILE__,__LINE__);
+    //return #1
+    fhStopHisto->Fill(0.5);
+    PostData(1, fList);
     return;
   }
   
@@ -491,12 +502,15 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
   //array of reconstructed jets from the AOD input
   TClonesArray *aodRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchRec.Data()));
   if(!aodRecJets){
-    Printf("%s:%d no reconstructed Jet array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchRec.Data());
+    //return #2
+    fhStopHisto->Fill(1.5);  
+    PostData(1, fList);
     return;
   }
   
   // reconstructed jets
   nRecJets = aodRecJets->GetEntries(); 
+  Printf("--- Jets found in bRec: %d", nRecJets);
   nRecJets = TMath::Min(nRecJets, kMaxJets);
   
   for(int ir = 0;ir < nRecJets;++ir)
@@ -514,7 +528,10 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
     
     if(!aodGenJets)
       {
-	printf("NO MC jets Found\n");
+	printf("NO MC jets Found\n");  
+	//return #3
+	fhStopHisto->Fill(2.5);  
+	PostData(1, fList);
 	return;
       }
     
@@ -631,7 +648,12 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 	  }
       }
 
-    if(nGenSel == 0) return;
+    if(nGenSel == 0){  
+      //return #4
+      fhStopHisto->Fill(3.5);  
+      PostData(1, fList);
+      return;
+    }
     
     for (Int_t gj = 0; gj < nGenSel; gj++)
       {
@@ -685,7 +707,13 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 	  pTrackMCAll[nAllTracksMC] = part->Pt();
 	  nAllTracksMC++;
 	}
-      if(nAllTracksMC == 0) return;
+      if(nAllTracksMC == 0){  
+	//return #5
+	fhStopHisto->Fill(4.5);  
+	PostData(1, fList);
+	return;
+      }
+
       for(Int_t iJet = 0; iJet < nGenSel; iJet++)
 	{
 	  Int_t nJetTracks = 0;
@@ -709,13 +737,18 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 	  nInJet[iJet] = nJetTracks;
 	}
       
-      if(nAccTr == 0) return;
-      if(fDebug)Printf("*********** Number of Jets : %d ***************\n", nGenSel);  
+      if(nAccTr == 0){
+	//return #6
+	fhStopHisto->Fill(5.5);  
+	PostData(1, fList);
+	return;
+      }
+	//      if(fDebug)Printf("*********** Number of Jets : %d ***************\n", nGenSel);  
       Double_t pTav[kMaxJets];
       for(Int_t i = 0; i < nGenSel; i++)
 	{
 	  Double_t pTsum = 0;
-	  if(fDebug)Printf("*********** Number of particles in Jet %d = %d *******************\n", i+3, nInJet[i]);
+	  //	  if(fDebug)Printf("*********** Number of particles in Jet %d = %d *******************\n", i+3, nInJet[i]);
 	  for(Int_t iT = 0; iT < nInJet[i]; iT++)
 	    {
 	      Double_t pt = inJetPartV[i][iT].Pt();
@@ -882,7 +915,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
   Int_t tag1 = 0;
 
   AliAODJet recSelJets[kMaxJets];
-
+  Printf("---- Number of reco jets: %d\n",nRecJets);
   for(Int_t i = 0; i < nRecJets; i++)
     {
       if(nRecJets == 1)
@@ -914,8 +947,14 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 	}
     } 
   
-  if(nRecSel == 0) return;
-  
+  if(nRecSel == 0)
+    {
+      //return #7
+      fhStopHisto->Fill(6.5);  
+      PostData(1, fList);
+      return;
+    }
+
   //sort rec/gen jets by energy in C.M.S
   for (Int_t rj = 0; rj < nRecSel; rj++)
     {
@@ -967,7 +1006,12 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
       nAccJets++;
     }
  
-  if (nAccJets == 0) return;
+  if (nAccJets == 0){
+    //return #8
+    fhStopHisto->Fill(7.5); 
+    PostData(1, fList);
+    return;
+  }
 
   for(Int_t i = 0; i < nAODtracks; i++)
     {
