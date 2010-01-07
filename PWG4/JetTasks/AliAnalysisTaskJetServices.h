@@ -25,7 +25,6 @@ class TChain;
 class TH2F;
 class TH3F;
 class TProfile;
-class AliPhysicsSelection;
 
 
 
@@ -48,7 +47,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void SetRunRange(Float_t fLo,Float_t fUp){fRunRange[0] = fLo;fRunRange[1] = fUp;}
     virtual void SetRealData(Bool_t b){fRealData = b;}
 
-    enum { kAllTriggered = 0,kTriggeredSPDVertex,kTriggeredVertexIn,kSelectedALICE,kSelected,kConstraints};
+    enum { kAllTriggered = 0,kTriggeredSPDVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexIn,kSelected,kConstraints};
 
  private:
 
@@ -60,7 +59,6 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Float_t       fZVtxCut;            // Average number of trials
     Float_t       fRunRange[2];        // only important for real data for 
     Bool_t        fRealData;           // true for real data to allow correct trigger slection
-    AliPhysicsSelection *fPhysicsSelection;         // the physics selction class
     TProfile*     fh1Xsec;             // pythia cross section and trials
     TH1F*         fh1Trials;           // trials are added
     TH1F*         fh1PtHard;           // Pt har of the event...       
@@ -73,7 +71,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH2F*         fh2VtxXY;          // XY position of VTX were available
     TList *fHistList; // Output list
    
-    ClassDef(AliAnalysisTaskJetServices,2)
+    ClassDef(AliAnalysisTaskJetServices,3)
 };
  
 #endif

@@ -82,6 +82,7 @@ class AliAnalysisTaskThreeJets : public AliAnalysisTaskSE
   Double_t fR; // radius
   TList * fList; // output list
 
+  TH1I * fhStopHisto; //Histogram to check were the code returns
   Int_t fGlobVar; // globvar
   Double_t fXsection; // xsectio
 

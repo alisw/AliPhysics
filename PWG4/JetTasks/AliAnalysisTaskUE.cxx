@@ -47,6 +47,7 @@
 
 #include "AliGenPythiaEventHeader.h"
 #include "AliAnalysisHelperJetTasks.h"
+#include "AliInputEventHandler.h"
 #include "AliStack.h"
 #include "AliLog.h"
 
@@ -249,16 +250,15 @@ void  AliAnalysisTaskUE::CreateOutputObjects()
 void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
 {
   //Trigger selection ************************************************
-  AliAnalysisHelperJetTasks::Trigger trig;
-  trig = (const enum AliAnalysisHelperJetTasks::Trigger)fTrigger;
-  //ckb tmp  if (AliAnalysisHelperJetTasks::IsTriggerFired(fAOD,trig)){
-  if (AliAnalysisHelperJetTasks::Selected()){
-  	if (fDebug > 1) AliInfo(" Trigger Selection: event ACCEPTED ... ");
-  }else{
-  	if (fDebug > 1) AliInfo(" Trigger Selection: event REJECTED ... ");
-  	return;
-  }
-  
+   AliInputEventHandler* inputHandler = (AliInputEventHandler*) 
+         ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+    if (inputHandler->IsEventSelected()){
+      if (fDebug > 1) AliInfo(" Trigger Selection: event ACCEPTED ... ");
+    }else{
+      if (fDebug > 1) AliInfo(" Trigger Selection: event REJECTED ... ");
+      return;
+    }
+
   //Event selection (vertex) *****************************************
   AliKFVertex primVtx(*(fAOD->GetPrimaryVertex()));
   Int_t nTracksPrim=primVtx.GetNContributors();
