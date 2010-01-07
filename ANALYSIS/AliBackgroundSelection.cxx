@@ -316,6 +316,8 @@ Long64_t AliBackgroundSelection::Merge(TCollection* list)
   // the same order. We thus also have to sort the list (sorting is
   // done by name in TList).
 
+  AliInfo("Merging");
+
   if (!list)
     return 0;
 
@@ -342,12 +344,23 @@ Long64_t AliBackgroundSelection::Merge(TCollection* list)
     TList * hlist = entry->fOutputHist;
 
     // Check if all histos in this fOutputHist are also in the one from entry and viceversa
-    // Use getters to automatically book non defined histos
-    TObject * hist =0;
-    if (hlist->GetSize() > fOutputHist->GetSize()) {
-      AliInfo("Found missing histo in reference");
+    // Use getters to automatically book non defined histos    
 
-      TIterator * iterlist = hlist->MakeIterator();
+    Bool_t areListsDifferent=kTRUE;
+    Int_t iloop = 0;
+    Int_t max_loops = hlist->GetSize() + fOutputHist->GetSize(); // In the worst case all of the histos will be different...
+    while(areListsDifferent) {
+      if(iloop>max_loops) AliFatal("Infinite Loop?");
+      iloop++;
+      // sort
+      hlist->Sort();
+      fOutputHist->Sort();
+      // loop over the largest 
+      TObject * hist =0;
+      TIterator * iterlist = 0;
+      if (hlist->GetSize() >= fOutputHist->GetSize()) iterlist = hlist->MakeIterator();
+      else                                            iterlist = fOutputHist->MakeIterator();
+	
       while ((hist= iterlist->Next())){ 
 	// if we missed a trigger type, we missed it for both histo categories
 	// getters automatically book non-existing histos
@@ -357,38 +370,31 @@ Long64_t AliBackgroundSelection::Merge(TCollection* list)
 	trigger_name.ReplaceAll("_accepted","");
 	trigger_name = trigger_name(trigger_name.Last('_')+1,trigger_name.Length());
 	
-	GetDeltaPhiHisto(trigger_name.Data());
-	GetClusterVsTrackletsHisto(trigger_name.Data());
+	if (hlist->GetSize() >= fOutputHist->GetSize()) {
+	  GetDeltaPhiHisto(trigger_name.Data());		
+	  GetClusterVsTrackletsHisto(trigger_name.Data());
+	}
+	else {
+	  entry->GetDeltaPhiHisto(trigger_name.Data());
+	  entry->GetClusterVsTrackletsHisto(trigger_name.Data());
+	}		
       }
-      // in this case we have to restart from scratch: our "reference" list was missing a histo
-      iter->Reset();
+
+      // re-sort before checking
+      hlist->Sort();
       fOutputHist->Sort();
-      count = 0;
-      continue;
-    } 
-    else if (hlist->GetSize() < fOutputHist->GetSize()) {
-      AliInfo("Found missing histo in entry");
-      TIterator * iterlist = fOutputHist->MakeIterator();
-      while ((hist = iterlist->Next())){ 
-	// if we missed a trigger type, we missed it for both histo categories
-	// getters automatically book non-existing histos
 
-	// We have to work out trigger class from name:
-	TString trigger_name = hist->GetName();
-	trigger_name.ReplaceAll("_accepted","");
-	trigger_name = trigger_name(trigger_name.Last('_')+1,trigger_name.Length());
-
-	entry->GetDeltaPhiHisto(trigger_name.Data());
-	entry->GetClusterVsTrackletsHisto(trigger_name.Data());
+      // check if everything is fine    
+      if (hlist->GetSize() == fOutputHist->GetSize()) {	
+	Int_t nhist =  fOutputHist->GetSize();
+	for(Int_t ihist = 0; ihist < nhist; ihist++){
+	  if(strcmp(fOutputHist->At(ihist)->GetName(),hlist->At(ihist)->GetName())) break;
+	}
+	areListsDifferent=kFALSE;
       }
     }
 
-    
-
-    // Sort
-    hlist->Sort();
-
-    // check if everything is fine    
+    // last check: if something is not ok die loudly 
     if (hlist->GetSize() != fOutputHist->GetSize()) {
       AliFatal("Mismatching size!");
     }
