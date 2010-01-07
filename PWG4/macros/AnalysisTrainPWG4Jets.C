@@ -37,6 +37,7 @@ Bool_t      kFillAOD = kFALSE;  // switch of AOD filling for on the fly analysis
 Int_t       iAODanalysis       = 1;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 0;      // ESD to AOD filter (barrel + muon tracks)
+Int_t       iPhysicsSelection  = 1;      // ESD to AOD filter (barrel + muon tracks)
 Bool_t      kUseKinefilter     = kFALSE; // use Kinematics filter
 Bool_t      kUseMuonfilter     = kFALSE; // use Kinematics filter
 TString     kCommonOutputFileName = "PWG4_JetTasksOutput.root";
@@ -100,8 +101,8 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-25-04-1";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-18-14-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-25-04-3";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-18-14-AN-1";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // TString kPluginExecutableCommand = "root -b -q";
 TString     kPluginExecutableCommand = "source /Users/kleinb/setup_32bit_aliroot_trunk_clean_root_trunk.sh; alienroot -b -q ";
 // == grid plugin input and output variables
@@ -117,7 +118,7 @@ TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be
 TString     kGridOutputStorages      = "ALICE::NIHAM::File,ALICE::CNAF::SE,ALICE::FZK::SE,ALICE::GSI::SE,ALICE::Legnaro::SE"; // Make replicas on the storages
 // == grid process variables
 Int_t       kGridRunsPerMaster     = 100; // Number of runs per master job
-Int_t       kGridFilesPerJob       = 200; // Maximum number of files per job (gives size of AOD)
+Int_t       kGridFilesPerJob       = 100; // Maximum number of files per job (gives size of AOD)
 
 //==============================================================================
 // ### Local Steering variables
@@ -133,6 +134,7 @@ TString     kLocalDataList   = "local_deltaaod.txt"; // Change local xml dataset
 // Temporaries.
 TString anaPars = "";
 TString anaLibs = "";
+TString anaLibsExtra = "";
 TString anaSources = "";
 // Function signatures
 class AliAnalysisAlien;
@@ -151,6 +153,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (kSaveTrain)WriteConfig();
    // Check compatibility of selected modules
    CheckModuleFlags(smode);
+   //   gROOT->ProcessLine(".trace");
 
    printf("==================================================================\n");
    printf("===========    RUNNING ANALYSIS TRAIN %s IN %s MODE   ==========\n", kTrainName.Data(),smode.Data());
@@ -158,6 +161,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf("=  Configuring analysis train for:                               =\n");
    if (iAODanalysis) printf("=  AOD analysis                                                  =\n");
    else              printf("=  ESD analysis                                                  =\n");
+   if (iPhysicsSelection)   printf("=  Physics selection                                                    =\n");
    if (iESDfilter)   printf("=  ESD filter                                                    =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
    printf("==================================================================\n");
@@ -197,7 +201,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
     
    // Make the analysis manager and connect event handlers
-   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", "Production train");
+   AliAnalysisManager *mgr  = new AliAnalysisManager("PWG4Train", "pwg4 mini train");
    if (kCommonOutputFileName.Length()>0)mgr->SetCommonFileName(kCommonOutputFileName.Data());
    if (kProofSaveToAlien) mgr->SetSpecialOutputLocation(kProofOutdir);
    if (!strcmp(plugin_mode, "test")) mgr->SetNSysInfo(1);
@@ -258,6 +262,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    // For now connection to top input container and common AOD output container
    // is done in this macro, but in future these containers will be connected
    // from each task configuration macro.
+
+   if(iPhysicsSelection && !iAODanalysis){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskPhysicsSelection.C");
+     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+     if(kIsMC)physSelTask->GetPhysicsSelection()->SetAnalyzeMC();
+     physSelTask->GetPhysicsSelection()->AddBackgroundIdentification(new AliBackgroundSelection());
+   }
 
    if (iESDfilter && !iAODanalysis) {
       //  ESD filter task configuration.
@@ -389,12 +400,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (mgr->InitAnalysis()) {
      mgr->PrintStatus();
      // if (kSaveTrain || strlen(config_file)) gSystem->ChangeDirectory(kTrainName);
-     if (!strcmp(plugin_mode, "submit")&&smode=="GRID"){
+     if (!strcmp(plugin_mode,"submit")&&smode=="GRID"){
        TString alien_workdir = gGrid->GetHomeDirectory();
        if (iAODanalysis) alien_workdir += "analysisAOD";
        else              alien_workdir += "analysisESD";
        AliAnalysisAlien *gridhandler = (AliAnalysisAlien*)mgr->GetGridHandler();
-       printf("=== Registering jdl in the work directory alien://%s/%s, should be done by the manager! ===\n",
+       printf("=== AnalysisTrainPWG4Jets:: Registering jdl in the work directory alien://%s/%s, should be done by the manager! ===\n",
 	      alien_workdir.Data(),gridhandler->GetGridOutputDir());
        TFile::Cp(Form("file:%s.jdl",kTrainName.Data()), Form("alien://%s/%s/%s.jdl",alien_workdir.Data(),
 							     gridhandler->GetGridOutputDir(),kTrainName.Data()));
@@ -402,25 +413,25 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
     
      StartAnalysis(smode, chain);
      if (!strcmp(plugin_mode, "offline")&&smode=="GRID"){
-     // Offline mode path files
-     //	PatchJDL();
-     PatchAnalysisMacro();
-      }
+       // Offline mode path files
+       //	PatchJDL();
+       PatchAnalysisMacro();
+     }
 
-      if (kSaveTrain && smode=="GRID") {
-         AliAnalysisAlien *gridhandler = (AliAnalysisAlien*)mgr->GetGridHandler();
-         TString alien_workdir = gGrid->GetHomeDirectory();
-         if (iAODanalysis) alien_workdir += "analysisAOD";
+     if (kSaveTrain && smode=="GRID") {
+       AliAnalysisAlien *gridhandler = (AliAnalysisAlien*)mgr->GetGridHandler();
+       TString alien_workdir = gGrid->GetHomeDirectory();
+       if (iAODanalysis) alien_workdir += "analysisAOD";
          else              alien_workdir += "analysisESD";
-	 //     kGridOutdir = gridhandler->GetGridOutputDir();
-         printf("=== Registering ConfigTrain.C in the work directory <%s> ===\n",
+       //     kGridOutdir = gridhandler->GetGridOutputDir();
+       printf("=== Registering ConfigTrain.C in the work directory <%s> ===\n",
                 alien_workdir.Data());
-         if (AliAnalysisAlien::FileExists(Form("%s/%sConfig.C", alien_workdir.Data(), kTrainName.Data())))
-            gGrid->Rm(Form("%s/%sConfig.C", alien_workdir.Data(), kTrainName.Data()));
-         if (strcmp(plugin_mode, "test"))
-            TFile::Cp(Form("file:%sConfig.C",kTrainName.Data()), Form("alien://%s/%sConfig.C", alien_workdir.Data(), kTrainName.Data()));
-      }
-}
+       if (AliAnalysisAlien::FileExists(Form("%s/%sConfig.C", alien_workdir.Data(), kTrainName.Data())))
+	 gGrid->Rm(Form("%s/%sConfig.C", alien_workdir.Data(), kTrainName.Data()));
+       if (strcmp(plugin_mode, "test"))
+	 TFile::Cp(Form("file:%sConfig.C",kTrainName.Data()), Form("alien://%s/%sConfig.C", alien_workdir.Data(), kTrainName.Data()));
+     }
+   }
 }
 
 //______________________________________________________________________________
@@ -473,7 +484,9 @@ void CheckModuleFlags(const char *mode) {
    if (!strcmp(mode, "GRID"))  imode = 2;
 
 
-
+   if (kUseCPAR) {
+     kPluginAliRootVersion    = ""; // NO aliroot if we use CPAR
+   }
 
    if (imode==1) {
       if (!kUsePAR) {
@@ -506,6 +519,9 @@ void CheckModuleFlags(const char *mode) {
       if (iESDfilter)
          ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "ESD filter disabled in analysis on AOD's");
       iESDfilter   = 0;
+      if (iPhysicsSelection)
+         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "Physics Selection disabled in analysis on AOD's");
+      iPhysicsSelection   = 0;
       if (!iAODhandler) {
          if (iJETAN) 
             ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "JETAN disabled in analysis on AOD's without AOD handler");
@@ -540,7 +556,9 @@ void CheckModuleFlags(const char *mode) {
      if (!kUseTR) {
        //         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "iPWG2evchar disabled if not reading track references");
      }   
-      if (iJETAN) iESDfilter=1;
+     if (iJETAN){
+       iESDfilter=1;
+     }
       if (!iESDfilter){
 	kUseKinefilter = kFALSE;
 	kUseMuonfilter = kFALSE;
@@ -713,6 +731,9 @@ Bool_t LoadAnalysisLibraries(const char *mode)
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
           !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
    }   
+   if(iPhysicsSelection){
+     //   if (!LoadLibrary("PWG0base", mode, kTRUE) ||!LoadLibrary("PWG0dep", mode, kTRUE)) return kFALSE;
+   }
    // JETAN
    if (iJETAN||iDIJETAN) {
      if (!strcmp(mode, "PROOF")){
@@ -722,11 +743,21 @@ Bool_t LoadAnalysisLibraries(const char *mode)
        // gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libsiscone.so\"\)", kTRUE); 
        gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libSISConePlugin.so\"\)", kTRUE);      
      }
-     if (!LoadLibrary("libCGAL.so", mode, kTRUE)) return kFALSE;
-     if (!LoadLibrary("libfastjet.so", mode, kTRUE)) return kFALSE;
-     if (!LoadLibrary("libsiscone.so", mode, kTRUE)) return kFALSE;
-     if (!LoadLibrary("libSISConePlugin.so", mode, kTRUE)) return kFALSE;
      if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
+     if(!kUsePAR){
+       if (!LoadLibrary("CGAL", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("fastjet", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("siscone", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("SISConePlugin", mode, kTRUE)) return kFALSE;
+     }
+     else{
+       // par files plus FASTJET needs some extra work... need to change
+       // the loading sequence in the auto generated .C file
+       if (!LoadLibrary("libCGAL.so", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("libfastjet.so", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("libsiscone.so", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("libSISConePlugin.so", mode, kTRUE)) return kFALSE;
+     }
      if (!LoadLibrary("FASTJETAN", mode, kTRUE)) return kFALSE;
    }
    if(iPWG4JetTasks){
@@ -774,6 +805,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
          return kFALSE;
       }
       if (rec) anaLibs += Form("%s.so ",mod.Data()); 
+      if (rec) anaLibsExtra += Form("%s.so ",mod.Data()); 
       return kTRUE;
    } 
    // Check if the library is already loaded
@@ -1019,7 +1051,9 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetNtestFiles(2);
 //   plugin->SetPreferedSE("ALICE::NIHAM::File");
 // Set versions of used packages
-   plugin->SetAPIVersion("V1.0x");
+   plugin->SetAPIVersion("V1.1x");
+   //   plugin->SetAPIVersion("V1.0x");
+//   plugin->SetAPIVersion("V2.4");
    plugin->SetROOTVersion(kPluginRootVersion);
    plugin->SetAliROOTVersion(kPluginAliRootVersion);
 // Declare input data to be processed.
@@ -1040,9 +1074,23 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
      ifstream in1;
      in1.open(kGridLocalRunList.Data());
      int iRun;
-     while(in1>>iRun){
-       Printf("AnalysisTrainPWG4Jets Adding run number from File %s", Form(kGridRunPattern.Data(),iRun));
-       plugin->AddRunNumber(Form(kGridRunPattern.Data(),iRun));
+     char c;
+     char cLine[250];
+     while(!in1.eof()){
+       c = in1.get();
+       if ( (c >= '0') && (c <= '9') )
+	 {
+	   in1.putback (c);
+	   in1>>iRun;
+	   Printf("AnalysisTrainPWG4Jets Adding run number from File %s", Form(kGridRunPattern.Data(),iRun));
+	   plugin->AddRunNumber(Form(kGridRunPattern.Data(),iRun));
+       }
+     else
+       {
+	 in1.putback (c);
+	 in1.getline(cLine,250);
+	 Printf("AnalysisTrainPWG4Jets Skipping run number from File %s", cLine);
+       }
      }
    }
 
@@ -1070,8 +1118,11 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    // set extra libs before par file compilation
    anaLibs += kGridExtraFiles;
    anaLibs     = anaLibs.Strip();   
-   Printf("%s",anaLibs.Data());
-   if (anaLibs.Length())     plugin->SetAdditionalLibs(anaLibs.Data());
+   Printf("anaLibs %s",anaLibs.Data());
+   Printf("anaLibsExtra %s",anaLibsExtra.Data());
+
+   if (anaLibs.Length())          plugin->SetAdditionalLibs(anaLibs.Data());
+   if (anaLibsExtra.Length())     plugin->SetAdditionalRootLibs(anaLibsExtra.Data());
 
    TString ana_sources = "";
    TString ana_add = "";
@@ -1114,34 +1165,44 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       if (!(strcmp(filename, "default"))) {
 	if (!mgr->GetOutputEventHandler()) continue;
          filename = mgr->GetOutputEventHandler()->GetOutputFileName();
-         if (listaods.Length()) listaods += ",";
+         if (listaods.Length()) listaods += " ";
 	 listaods += filename;
-	 if(kIsMC){
-	   listaods += ",";
-	   listaods += "pyxsec_hists.root";
-	 }
       } else {
-	if(!listhists->Contains(filename)){
-	  if (listhists.Length()) listhists += ",";
+	if(!listhists.Contains(filename)){
+	  if (listhists.Length()) listhists += " ";
 	  listhists += filename;
 	}
       }
    }
 
    if(kUseSysInfo>0){
-     if (listhists.Length()) listhists += ",";
+     if (listhists.Length()) listhists += " ";
      listhists += "syswatch.root";
    }
 
+   if(kIsMC){
+     if (listaods.Length()) listaods += " ";
+     listaods += "pyxsec_hists.root";
+   }
+
+
    if (mgr->GetExtraFiles().Length()) {
-     if (listaods.Length()) listaods += ",";
+     if (listaods.Length()) listaods += " ";
      listaods += mgr->GetExtraFiles();
-     listaods.ReplaceAll(" ", ",");
    }
 
    // if we do not fill the aod we do not need to store it
-   if(!kFillAOD)listaods="";
+   kGridMergeExclude = listaods;
+   
+   if(!kFillAOD){
+     listaods="";
+     plugin->SetDefaultOutputs(kFALSE);
+     plugin->SetOutputFiles(listhists.Data());
+   }
 
+
+   listaods.ReplaceAll(" ", ",");
+   listhists.ReplaceAll(" ", ",");
    if (listhists.Length()) listhists = Form("hist_archive.zip:%s@%s", listhists.Data(), kGridOutputStorages.Data());;
    if (listaods.Length())  listaods  = Form("aod_archive.zip:%s@%s", listaods.Data(), kGridOutputStorages.Data());;
 
@@ -1149,7 +1210,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       ::Fatal("AnalysisTrainPWG4Jets", "No task output !");
    }
 
-   kGridMergeExclude = listaods;
+
 
    TString outputArchive = "log_archive.zip:stdout,stderr@ALICE::CERN::SE";
    if(kUseSysInfo>0)outputArchive = "log_archive.zip:stdout,stderr,syswatch.log@ALICE::CERN::SE";
@@ -1292,7 +1353,7 @@ Bool_t PatchAnalysisMacro(){
   Int_t index;
   index = st.Index("gSystem->Load(\"libPhysics\");");
   index += strlen("gSystem->Load(\"libPhysics\");");
-  if(iJETAN){
+  if(iJETAN&&kUsePAR){
     TObjArray *arr;
     TObjString *objstr;
     arr = anaLibs.Tokenize(" ");
@@ -1300,12 +1361,18 @@ Bool_t PatchAnalysisMacro(){
     TString add = "";
     add += "\n\n // added by CKB \n";
     while ((objstr=(TObjString*)next())){
+      if(objstr->GetString().Contains("PWG3"))continue;
       if(objstr->GetString().EndsWith(".so"))add += Form("gSystem->Load(\"%s\");\n",objstr->GetString().Data());
     }
     delete arr; 
     add += "// BKC \n\n";
     st.Insert(index,add.Data());
   }
+
+  if(kUseDebug){
+    st.Insert(index,"\n gROOT->ProcessLine(\".trace\"); // CKB \n");
+  }
+
   ofstream out;
   out.open(Form("%s.C", kTrainName.Data()));
   if (out.bad()) {
