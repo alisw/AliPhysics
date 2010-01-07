@@ -157,7 +157,8 @@ void AliGenMC::Init()
         fChildSelect[1]= 11;
         break;
 
-    case kOmega:	
+    case kOmega:
+    case kLambda:	
     case kAll:
     case kAllMuonic:
     case kNoDecay:
