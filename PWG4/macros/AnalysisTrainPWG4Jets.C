@@ -737,7 +737,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    // JETAN
    if (iJETAN||iDIJETAN) {
      if (!strcmp(mode, "PROOF")){
-       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libCGALso\"\)", kTRUE); 
+       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libCGAL.so\"\)", kTRUE); 
        gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libfastjet.so\"\)", kTRUE); 
        // problem when loading siscone copiled with different gcc version??
        // gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libsiscone.so\"\)", kTRUE); 
