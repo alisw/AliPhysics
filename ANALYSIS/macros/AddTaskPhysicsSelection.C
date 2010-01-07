@@ -30,7 +30,7 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection() {
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cstatsout",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
-							    "EventStat.root");
+							    "EventStat_temp.root");
 
 
 
