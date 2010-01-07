@@ -59,7 +59,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t f
    pwg4spec->SetBranchRec(bRec); 
    pwg4spec->SetBranchGen(bGen); 
    pwg4spec->SetFilterMask(filterMask); 
-   pwg4spec->SetUseGlobalSelection(kTRUE); 
+   //   pwg4spec->SetUseGlobalSelection(kTRUE); 
 
    if(type == "AOD"){
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODIn);
@@ -81,6 +81,8 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t f
        pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODOut);
      }
    }
+   pwg4spec->SelectCollisionCandidates();
+
    mgr->AddTask(pwg4spec);
      
    // Create ONLY the output containers for the data produced by the task.

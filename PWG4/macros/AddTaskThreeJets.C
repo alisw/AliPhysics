@@ -22,6 +22,7 @@ AliAnalysisTaskThreeJets * AddTaskThreeJets(char *bRec = "jets",char * bGen = "j
   threeJets->SetBranchGen(bGen); 
   //  threeJets->SetDebugLevel(10);
   threeJets->SetR(.5); 
+  threeJets->SelectCollisionCandidates();
   //  threeJets->SetUseMC(kFALSE); // explicitly switch of use of MC/search for MC Jets
 
   
