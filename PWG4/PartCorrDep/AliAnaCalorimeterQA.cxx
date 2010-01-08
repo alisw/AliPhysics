@@ -72,8 +72,8 @@ ClassImp(AliAnaCalorimeterQA)
     fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
     fhDeltaE(0), fhDeltaPt(0),fhDeltaPhi(0),fhDeltaEta(0), fhRatioE(0), fhRatioPt(0),fhRatioPhi(0),fhRatioEta(0),
     fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0), fhIM(0), fhIMCellCut(0),fhAsym(0), 
-	fhNCellsPerCluster(0), fhNClusters(0), fhNCells(0), 
-	fhAmplitude(0), fhTime(0), fhTimeId(0), fhTimeAmp(0),
+	fhNCellsPerCluster(0),fhNCellsPerClusterMIP(0), fhNClusters(0), fhNCells(0), 
+	fhAmplitude(0), fhAmpId(0), fhTime(0), fhTimeId(0), fhTimeAmp(0),
     fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
     fhEMod(0),fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
     fhGridCellsMod(0),  fhGridCellsEMod(0), fhAmplitudeMod(0), fhIMMod(0),  fhIMCellCutMod(0),
@@ -121,8 +121,10 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
   fhDeltaE(qa.fhDeltaE), fhDeltaPt(qa.fhDeltaPt), fhDeltaPhi(qa.fhDeltaPhi), fhDeltaEta(qa.fhDeltaEta),
   fhRatioE(qa.fhRatioE), fhRatioPt(qa.fhRatioPt), fhRatioPhi(qa.fhRatioPhi), fhRatioEta(qa.fhRatioEta),
   fh2E(qa.fh2E), fh2Pt(qa.fh2Pt), fh2Phi(qa.fh2Phi),fh2Eta(qa.fh2Eta), 
-  fhIM(qa.fhIM), fhIMCellCut(qa.fhIMCellCut), fhAsym(qa.fhAsym), fhNCellsPerCluster(qa.fhNCellsPerCluster), fhNClusters(qa.fhNClusters), 
-  fhNCells(qa.fhNCells), fhAmplitude(qa.fhAmplitude), fhTime(qa.fhTime), fhTimeId(qa.fhTimeId),fhTimeAmp(qa.fhTimeAmp),
+  fhIM(qa.fhIM), fhIMCellCut(qa.fhIMCellCut), fhAsym(qa.fhAsym), 
+  fhNCellsPerCluster(qa.fhNCellsPerCluster), fhNCellsPerClusterMIP(qa.fhNCellsPerClusterMIP),
+  fhNClusters(qa.fhNClusters), fhNCells(qa.fhNCells), fhAmplitude(qa.fhAmplitude), fhAmpId(fhAmpId),
+  fhTime(qa.fhTime), fhTimeId(qa.fhTimeId),fhTimeAmp(qa.fhTimeAmp),
   fhCaloCorrNClusters(qa.fhCaloCorrNClusters), fhCaloCorrEClusters(qa.fhCaloCorrEClusters),
   fhCaloCorrNCells(qa.fhCaloCorrNCells), fhCaloCorrECells(qa.fhCaloCorrECells),
   fhEMod(qa.fhEMod),fhNClustersMod(qa.fhNClustersMod), fhNCellsPerClusterMod(qa.fhNCellsPerClusterMod), fhNCellsMod(qa.fhNCellsMod),  
@@ -202,8 +204,9 @@ AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA
   fhIM   = qa.fhIM;   fhIMCellCut   = qa.fhIMCellCut;
   fhAsym = qa.fhAsym;
 	
-  fhNCellsPerCluster = qa.fhNCellsPerCluster;
-  fhNClusters        = qa.fhNClusters;
+  fhNCellsPerCluster    = qa.fhNCellsPerCluster;
+  fhNCellsPerClusterMIP = qa.fhNCellsPerClusterMIP;
+  fhNClusters           = qa.fhNClusters;
 	
   fhDeltaE   = qa.fhDeltaE;	
   fhDeltaPt  = qa.fhDeltaPt;
@@ -223,6 +226,7 @@ AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA
 	
   fhNCells    = qa.fhNCells;
   fhAmplitude = qa.fhAmplitude;
+  fhAmpId     = qa.fhAmpId;
   fhTime      = qa.fhTime;
   fhTimeId    = qa.fhTimeId;
   fhTimeAmp   = qa.fhTimeAmp;
@@ -446,6 +450,11 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhNCellsPerCluster->SetYTitle("n cells");
 	outputContainer->Add(fhNCellsPerCluster);
 	
+	fhNCellsPerClusterMIP  = new TH2F ("hNCellsPerClusterMIP","# cells per cluster vs cluster energy, smaller bin for MIP search", 400,0.,2., nbins,nmin,nmax); 
+	fhNCellsPerClusterMIP->SetXTitle("E (GeV)");
+	fhNCellsPerClusterMIP->SetYTitle("n cells");
+	outputContainer->Add(fhNCellsPerClusterMIP);
+	
 	fhNClusters  = new TH1F ("hNClusters","# clusters", nbins,nmin,nmax); 
 	fhNClusters->SetXTitle("number of clusters");
 	outputContainer->Add(fhNClusters);
@@ -455,9 +464,13 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhNCells->SetXTitle("n cells");
 	outputContainer->Add(fhNCells);
     
-	fhAmplitude  = new TH1F ("hAmplitude","Cell Energy", nptbins*2,ptmin,ptmax); 
+	fhAmplitude  = new TH1F ("hAmplitude","Cell Energy", nptbins*5,ptmin,ptmax); 
 	fhAmplitude->SetXTitle("Cell Energy (GeV)");
 	outputContainer->Add(fhAmplitude);
+	
+	fhAmpId  = new TH2F ("hAmpId","Cell Energy", nptbins*2,ptmin,ptmax,rowmax*colmax,0,rowmax*colmax); 
+	fhAmpId->SetXTitle("Cell Energy (GeV)");
+	outputContainer->Add(fhAmpId);
 	
 	//Cell Time histograms, time only available in ESDs
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
@@ -1443,6 +1456,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				//printf("%s: time %g\n",fCalorimeter.Data(), time);
 				id      = cell->GetCellNumber(iCell);
 				fhAmplitude->Fill(amp);
+				fhAmpId    ->Fill(amp,id);
 				fhTime     ->Fill(time);
 				fhTimeId   ->Fill(time,id);
 				fhTimeAmp  ->Fill(amp,time);
@@ -1478,6 +1492,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(nModule < fNModules) {	
 				amp     = cell->GetAmplitude(iCell);
 				fhAmplitude->Fill(amp);
+				fhAmpId    ->Fill(amp,id);
 				fhAmplitudeMod[nModule]->Fill(cell->GetAmplitude(iCell));
 				nCellsInModule[nModule]++;
 				fhGridCellsMod[nModule]->Fill(icol,irow);
@@ -1530,7 +1545,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_
 	fhEtaPhi->Fill(eta,phi);
 	fhEtaPhiE->Fill(eta,phi,e);
 	//Cells per cluster
-	fhNCellsPerCluster->Fill(e, nCaloCellsPerCluster);
+	fhNCellsPerCluster   ->Fill(e, nCaloCellsPerCluster);
+	fhNCellsPerClusterMIP->Fill(e, nCaloCellsPerCluster);
 	if(nModule < fNModules) fhNCellsPerClusterMod[nModule]->Fill(e, nCaloCellsPerCluster);
 
 	//Fill histograms only possible when simulation
@@ -2147,10 +2163,13 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	fhIMCellCut = (TH2F *) outputList->At(index++);
 	fhAsym      = (TH2F *) outputList->At(index++);
 	
-	fhNCellsPerCluster = (TH2F *) outputList->At(index++);
+	fhNCellsPerCluster    = (TH2F *) outputList->At(index++);
+	fhNCellsPerClusterMIP = (TH2F *) outputList->At(index++);
 	fhNClusters  = (TH1F *) outputList->At(index++); 
 	fhNCells     = (TH1F *) outputList->At(index++); 
 	fhAmplitude  = (TH1F *) outputList->At(index++); 
+	fhAmpId      = (TH2F *) outputList->At(index++); 
+
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
 		fhTime       = (TH1F *) outputList->At(index++); 
 		fhTimeId     = (TH2F *) outputList->At(index++); 

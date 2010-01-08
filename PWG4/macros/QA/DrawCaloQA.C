@@ -32,11 +32,13 @@ TH2F * fhIM; //! cluster pairs invariant mass
 TH2F * fhIMCellCut; //! cluster pairs invariant mass, n cells > 1 per cluster
 TH2F * fhAsym; //! cluster pairs invariant mass	
 TH2F * fhNCellsPerCluster; //! N cells per cluster	
+TH2F * fhNCellsPerClusterMIP; //! N cells per cluster	
 TH1F * fhNClusters; //! Number of clusters
 
 //Calo Cells
 TH1F * fhNCells; //! Number of towers/crystals with signal
 TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
+TH1F * fhAmpId; //! Amplitude measured vs towers/crystals id
 TH1F * fhTime;      //! Time measured in towers/crystals
 TH2F * fhTimeId;    //! Time vs Absolute cell Id
 TH2F * fhTimeAmp;   //! Time vs Amplitude 
@@ -216,10 +218,13 @@ void ReadHistograms(TString name, TString dataType, Bool_t isDataMC, Bool_t  fCo
 	fhIMCellCut = (TH2F *) outputList->At(index++);
 	fhAsym   = (TH2F *) outputList->At(index++);
 	
-	fhNCellsPerCluster = (TH2F *) outputList->At(index++);
+	fhNCellsPerCluster    = (TH2F *) outputList->At(index++);
+	fhNCellsPerClusterMIP = (TH2F *) outputList->At(index++);
+
 	fhNClusters  = (TH1F *) outputList->At(index++); 
 	fhNCells     = (TH1F *) outputList->At(index++); 
 	fhAmplitude  = (TH1F *) outputList->At(index++); 
+	fhAmpId      = (TH1F *) outputList->At(index++); 
 	if(dataType=="ESD") {
 		fhTime       = (TH1F *) outputList->At(index++); 
 		fhTimeId     = (TH2F *) outputList->At(index++); 

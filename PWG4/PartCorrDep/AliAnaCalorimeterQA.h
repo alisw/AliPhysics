@@ -8,7 +8,7 @@
 // Class to check results from simulations or reconstructed real data. 
 // Fill few histograms and do some checking plots
 //
-//-- Author: Gustavo Conesa (INFN-LNF)
+//-- Author: Gustavo Conesa (INFN-LNF)a
 
 // --- Root system ---
 class TH3F;
@@ -202,12 +202,14 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F * fhIM; //! cluster pairs invariant mass
   TH2F * fhIMCellCut; //! cluster pairs invariant mass, n cells > 1 per cluster
   TH2F * fhAsym; //! cluster pairs invariant mass	
-  TH2F * fhNCellsPerCluster; //! N cells per cluster	
+  TH2F * fhNCellsPerCluster;    //! N cells per cluster	
+  TH2F * fhNCellsPerClusterMIP; //! N cells per cluster, finer fixed pT bin for MIP search.	
   TH1F * fhNClusters; //! Number of clusters
 	
   //Calo Cells
   TH1F * fhNCells;    //! Number of towers/crystals with signal
   TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
+  TH2F * fhAmpId;     //! Amplitude measured in towers/crystals vs id of tower.	
   TH1F * fhTime;      //! Time measured in towers/crystals
   TH2F * fhTimeId;    //! Time vs Absolute cell Id
   TH2F * fhTimeAmp;   //! Time vs Amplitude 
