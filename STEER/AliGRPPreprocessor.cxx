@@ -513,14 +513,19 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//==================//
 	// SPD Mean Vertex  //
 	//==================//
-	UInt_t iSPDMeanVertex = ProcessSPDMeanVertex();
-	if( iSPDMeanVertex == 1 ) {
-		Log(Form("SPD Mean Vertex, successful!"));
-	} else {
-		Log(Form("SPD Mean Vertex failed!!!"));
-		error |= 128; 
+	if (runType == "PHYSICS"){
+		UInt_t iSPDMeanVertex = ProcessSPDMeanVertex();
+		if( iSPDMeanVertex == 1 ) {
+			Log(Form("SPD Mean Vertex, successful!"));
+		} else {
+			Log(Form("SPD Mean Vertex failed!!!"));
+			error |= 128; 
+		}
 	}
-	
+	else {
+		Log("SPD Mean Vertex not processed since runType != PHYSICS");
+	}
+
 	if (result && !error ) {
 		Log("GRP Preprocessor Success");
 		return 0;
