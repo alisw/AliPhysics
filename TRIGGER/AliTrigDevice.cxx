@@ -16,65 +16,61 @@
 /* $Id$ */
 // Author: Andrei Gheata, 28/07/2009
 
+
+#include "AliTrigDevice.h"
+
+#include <TObjArray.h>
+#include "AliTrigScheduler.h"
+#include "AliTrigScheduledEntry.h"
+
+ClassImp(AliTrigDevice)
 //==============================================================================
 //   AliTrigDevice - Generic device class. A device has a number of inputs and
 // outputs. The data handled by the device can be either Boolean (digital
 // devices) or arbitrary (wrapped by the class AliTrigSignal). A device must
 // provide a response function that may depend on the output id. To replay the 
 // device response function for a given output id, the device MUST register the
-// output via the RegisterOutput() method providing the delay in arbitrary time
-// units. After the execution of the response for some output, the Emit() method
-// will be invoked to propagate the computed result to all devices connected to 
-// this output. The method Connect() must be implemented by all devices and should
-// create a connector specific to the device types that are linked. 
+// output via the RegisterResponseFunction() method providing the delay in arbitrary time
+// units. After the execution of the response for some output, the result will
+// be propagated to all devices connected to this output. The method CreateDevice() 
+// must be implemented by all devices and should connect all component devices
+// and register all response functions. 
 // The ResetInputs() method is called during simulation after the execution of 
 // all response functions.
 //==============================================================================
 
-#include "AliTrigDevice.h"
-
-ClassImp(AliTrigDevice)
-
 //______________________________________________________________________________
 AliTrigDevice::AliTrigDevice()
+              :TNamed(),
+               fNinputs(0),
+               fNoutputs(0),
+               fScheduler(NULL),
+               fComponents(NULL),
+               fResponseFunctions(NULL) 
+{
+// I/O constructor.
+}
+
+//______________________________________________________________________________
+AliTrigDevice::AliTrigDevice(const char *name, Int_t ninputs, Int_t noutputs)
+              :TNamed(name, ""),
+               fNinputs(ninputs),
+               fNoutputs(noutputs),
+               fScheduler(new AliTrigScheduler(name)),
+               fComponents(NULL),
+               fResponseFunctions(NULL) 
+{
+// Constructor.
+}
+
+//______________________________________________________________________________
+AliTrigDevice::~AliTrigDevice()
 {
 // Destructor.
-   if (fComponents) delete fComponents;
+  delete fScheduler;
+  if (fComponents) {fComponents->Delete(); delete fComponents;}
+  if (fResponseFunctions) {fResponseFunctions->Delete(); delete fResponseFunctions;}
 }   
-
-//______________________________________________________________________________
-AliTrigDevice::AliTrigDevice(const AliTrigDevice &other)
-                    :TNamed(other), 
-                     fNinputs(other.fNinputs), 
-                     fNoutputs(other.fNoutputs),
-                     fComponents(0)
-{
-// Copy ctor.
-  if (other.fComponents) {
-     fComponents = new TObjArray();
-     TIter next(other.fComponents);
-     AliTrigDevice *dev;
-     while ((dev=(AliTrigDevice*)next())) fComponents->Add(dev);
-  }   
-}                        
-
-//______________________________________________________________________________
-AliTrigDevice& AliTrigDevice::operator=(const AliTrigDevice &other)
-{
-// Assignment
-  if (&other == this) return *this;
-  TNamed::operator=(other);
-  fNinputs  = other.fNinputs;
-  fNoutputs = other.fNoutputs;
-  fComponents = 0;
-  if (other.fComponents) {
-     fComponents = new TObjArray();
-     TIter next(other.fComponents);
-     AliTrigDevice *dev;
-     while ((dev=(AliTrigDevice*)next())) fComponents->Add(dev);
-  }   
-  return *this;
-}
 
 //______________________________________________________________________________
 void AliTrigDevice::AddDevice(AliTrigDevice *other)
@@ -85,7 +81,7 @@ void AliTrigDevice::AddDevice(AliTrigDevice *other)
 }
 
 //______________________________________________________________________________
-Int_t AliTrigDevice::GetNcomponents()
+Int_t AliTrigDevice::GetNcomponents() const
 {
 // Returns number of components.
   if (!fComponents) return 0;
@@ -96,19 +92,32 @@ Int_t AliTrigDevice::GetNcomponents()
 AliTrigDevice *AliTrigDevice::GetComponent(Int_t n)
 {
 // Get component at index n.
-   if (!fComponents) return NULL;
-   return fComponents->At(n);
+  if (!fComponents) return NULL;
+  return (AliTrigDevice*)fComponents->At(n);
 }
-   
+
 //______________________________________________________________________________
-Bool_t AliTrigDevice::RegisterResponseFunction(AliTrigScheduler *calendar, UInt_t output, Int_t delay) const
+AliTrigScheduledResponse *AliTrigDevice::GetResponseFunction(const char *name)
 {
-// Register the response functions to be replayed by the provided scheduler.
-// The delay argument is in arbitrary time units with respect to the startup
-// reference of the simulation.
-// CALLING SEQUENCE:
-//   The delay behaves like a BUSY gate for the device and MUST be called when
-//   configuring the whole setup of devices. The method may fail in case the
-//   determinism is not satisfied with other connected devices providing inputs.
-   return calendar->RegisterResponseFunction(this, output, delay);
+// Get a response function by name.
+  if (!fResponseFunctions) return NULL;
+  return (AliTrigScheduledResponse*)fResponseFunctions->FindObject(name);
+}  
+
+//______________________________________________________________________________
+AliTrigScheduledResponse *AliTrigDevice::RegisterResponseFunction(const char *name, Int_t output, Int_t delay)
+{
+// Creates a response function of the device. The delay argument is in arbitrary 
+// time units with respect to the startup reference. Note that the created 
+// scheduled entry must be registered to the device scheduler via: 
+//    fDevice->AddScheduledEntry() method, otherwise it will not be replayed.
+  if (!fResponseFunctions) fResponseFunctions = new TObjArray();
+  if (fResponseFunctions->FindObject(name)) {
+    Error("RegisterResponseFunction", "A response function named %s was already registered for device %s",
+          name, GetName());
+    return NULL;
+  }        
+  AliTrigScheduledResponse *response = new AliTrigScheduledResponse(name, (AliTrigDevice*)this, output, delay);
+  fResponseFunctions->Add(response);
+  return response;
 }

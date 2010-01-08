@@ -23,19 +23,9 @@
 //==============================================================================
 
 #include "AliTrigDigitalCircuit.h"
+#include "AliTrigConnector.h"
 
 ClassImp(AliTrigDigitalCircuit)
-
-//______________________________________________________________________________
-AliTrigDigitalCircuit::AliTrigDigitalCircuit(const AliTrigDigitalCircuit &other)
-                    :AliTrigDevice(other),
-                     fLastOutput(other.fLastOutput),
-                     fConnector(0),
-                     fInputs(other.fInputs)
-{
-// Copy ctor.
-  if (other.fConnector) fConnector = new AliTrigConnector(*other.fConnector);
-}                        
 
 //______________________________________________________________________________
 AliTrigDigitalCircuit::~AliTrigDigitalCircuit()
@@ -45,31 +35,18 @@ AliTrigDigitalCircuit::~AliTrigDigitalCircuit()
 }  
 
 //______________________________________________________________________________
-AliTrigDigitalCircuit& AliTrigDigitalCircuit::operator=(const AliTrigDigitalCircuit &other)
-{
-// Assignment
-  if (&other == this) return *this;
-  AliTrigDevice::operator=(other);
-  fLastOutput = other.fLastOutput;
-  if (other.fConnector) fConnector = new AliTrigConnector(*other.fConnector);
-  else fConnector = 0;
-  fInputs = other.fInputs;
-  return *this;
-}
-
-//______________________________________________________________________________
-Bool_t AliTrigDigitalCircuit::Connect(UInt_t output, AliTrigDevice *other, UInt_t at_input)
+Bool_t AliTrigDigitalCircuit::Connect(Int_t output, AliTrigDevice *other, Int_t at_input)
 {
 // Connect to an input of another device.
-  if (!fConnector) fConnector = new AliTrigConnector(this, 0);
+  if (!fConnector) fConnector = new AliTrigConnector(Form("wire_%s_%d", GetName(), output), (AliTrigDevice*)this, 0);
   fConnector->Connect(other, at_input);
 }
 
 //______________________________________________________________________________
-Bool_t AliTrigDigitalCircuit::Response(UInt_t /*output*/)
+Bool_t AliTrigDigitalCircuit::Response(Int_t /*output*/)
 {
 // Response function of the digital circuit. Calling user-defined one.
-  fLastOutput = CircuitResponse();
+  fLastOutput = Trigger();
   if (fConnector) fConnector->Transmit(fLastOutput);
   return fLastOutput;
 }   

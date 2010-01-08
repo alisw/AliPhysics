@@ -29,19 +29,20 @@ class AliTrigDigitalCircuit : public AliTrigDevice {
 public:
   AliTrigDigitalCircuit() : AliTrigDevice(), fLastOutput(kFALSE), fConnector(0), fInputs() {}
   AliTrigDigitalCircuit(const char *name, UInt_t ninputs) : AliTrigDevice(name, ninputs, 1), fLastOutput(kFALSE), fConnector(0), fInputs(ninputs) {}
-  AliTrigDigitalCircuit(const AliTrigDigitalCircuit &other);
-  virtual ~AliTrigDigitalCircuit() {}
-  AliTrigDigitalCircuit &operator=(const AliTrigDigitalCircuit &other);
+  virtual ~AliTrigDigitalCircuit();
 
-  virtual Bool_t            Connect(UInt_t output, AliTrigDevice *other, UInt_t at_input);
-  virtual Bool_t            Response(UInt_t output);
+  virtual Bool_t            Connect(Int_t output, AliTrigDevice *other, Int_t at_input);
+  virtual Bool_t            Response(Int_t output);
   // Get/Set inputs
-  Bool_t                    GetInputValue(UInt_t input) const {return fInputs.TestBitNumber(input);}
+  Bool_t                    GetInputValue(Int_t input) const {return fInputs.TestBitNumber(input);}
   virtual void              ResetInputs() {fInputs.ResetAllBits();}
-  virtual void              SetInputValue(UInt_t input, Bool_t value) {fInputs.SetBitNumber(input,value);}
-  virtual void              SetInputValue(UInt_t input, AliTrigEvent *signal) {};
+  virtual Bool_t            SetInputType(Int_t /*input*/, const char */*classname*/) {return kFALSE;}
+  virtual Bool_t            SetInputValue(Int_t input, Bool_t value) {fInputs.SetBitNumber(input,value); return kTRUE;}
+  virtual Bool_t            SetInputValue(Int_t /*input*/, AliTrigEvent */*signal*/) {return  kFALSE;}
 private:
    // Circuit response function. 
+  AliTrigDigitalCircuit(const AliTrigDigitalCircuit &other);
+  AliTrigDigitalCircuit &operator=(const AliTrigDigitalCircuit &other);
   virtual Bool_t            Trigger() = 0;
    
 protected:

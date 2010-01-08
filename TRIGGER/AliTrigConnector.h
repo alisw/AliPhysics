@@ -23,14 +23,14 @@ class AliTrigConnector : public TNamed {
 
 public:
   AliTrigConnector() : TNamed(), fFeeder(0), fOutput(0), fNclients(0), fArraySize(0), fInputs(0), fDevices(0) {}
-  AliTrigConnector(const char *name, AliTrigDevice *feeder, UInt_t output) : TNamed(name, ""), fFeeder(feeder), fOutput(output), fNclients(0), fArraySize(0), fInputs(0), fDevices(0) {}
+  AliTrigConnector(const char *name, AliTrigDevice *feeder, Int_t output) : TNamed(name, ""), fFeeder(feeder), fOutput(output), fNclients(0), fArraySize(0), fInputs(0), fDevices(0) {}
   AliTrigConnector(const AliTrigConnector &other);
   virtual ~AliTrigConnector();
 
   AliTrigConnector &operator=(const AliTrigConnector &other);
   
   // Connect a client input.
-  void                      Connect(AliTrigDevice *client, UInt_t input);
+  void                      Connect(AliTrigDevice *client, Int_t input);
 
   virtual void              Print(Option_t *option="") const;  
   
@@ -41,10 +41,10 @@ public:
   
 private:
   AliTrigDevice            *fFeeder;    // Feeder device
-  UInt_t                    fOutput;    // Output slot index for the feeder
+  Int_t                     fOutput;    // Output slot index for the feeder
   Int_t                     fNclients;  // Number of clients
   Int_t                     fArraySize; // Size of the clients array
-  UInt_t                   *fInputs;    //[fArraySize] Array of input slot indices
+  Int_t                    *fInputs;    //[fArraySize] Array of input slot indices
   TObjArray                *fDevices;   // Array of client devices
    
   ClassDef(AliTrigConnector,1)  // Class representing a connector between devices.

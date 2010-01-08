@@ -1,7 +1,9 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS:=  AliTRIPreprocessor.cxx  
+SRCS:=  AliTRIPreprocessor.cxx  AliTrigConnector.cxx AliTrigDevice.cxx \
+        AliTrigDigitalCircuit.cxx AliTrigEvent.cxx AliTrigScheduledEntry.cxx \
+        AliTrigScheduler.cxx
 CINTHDRS:= $(SRCS:.cxx=.h)
 
 HDRS:= $(SRCS:.cxx=.h)

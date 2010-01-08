@@ -45,8 +45,8 @@ AliTrigConnector::AliTrigConnector(const AliTrigConnector &other)
 {
 // Copy ctor.
   if (fArraySize && other.fInputs) {
-    fInputs = new UInt_t[fArraySize];
-    memcpy(fInputs, other.fInputs, fNclients*sizeof(UInt_t));
+    fInputs = new Int_t[fArraySize];
+    memcpy(fInputs, other.fInputs, fNclients*sizeof(Int_t));
     fDevices = new TObjArray(fArraySize);
     for (Int_t i=0; i<fNclients; i++) fDevices->Add(other.fDevices->At(i));
   }   
@@ -73,8 +73,8 @@ AliTrigConnector& AliTrigConnector::operator=(const AliTrigConnector &other)
   fInputs = 0;
   fDevices = 0;
   if (fArraySize && other.fInputs) {
-    fInputs = new UInt_t[fArraySize];
-    memcpy(fInputs, other.fInputs, fNclients*sizeof(UInt_t));
+    fInputs = new Int_t[fArraySize];
+    memcpy(fInputs, other.fInputs, fNclients*sizeof(Int_t));
     fDevices = new TObjArray(fArraySize);
     for (Int_t i=0; i<fNclients; i++) fDevices->Add(other.fDevices->At(i));
   }     
@@ -82,7 +82,7 @@ AliTrigConnector& AliTrigConnector::operator=(const AliTrigConnector &other)
 }
 
 //______________________________________________________________________________
-void AliTrigConnector::Connect(AliTrigDevice *client, UInt_t input)
+void AliTrigConnector::Connect(AliTrigDevice *client, Int_t input)
 {
 // Adds the device and its input to the list of clients.
   // Loop array of inputs to check if this input is already connected.
@@ -93,19 +93,19 @@ void AliTrigConnector::Connect(AliTrigDevice *client, UInt_t input)
       return;
     } 
   }
-  if (!client->SetInputType(fFeeder->GetOutputType(fOutput))) {
-    Fatal("Cannot connect output slot #%d (type %s) of device %s to input slot #%d of device %s. Aborting",
-            fOutput, fFeeder->GetInputType(fOutput), fFeeder->GetName(), input, client->GetName());
-  }          
+//  if (strcmp(client->GetInputType(fFeeder->GetOutputType(fOutput))) {
+//    Fatal("Cannot connect output slot #%d (type %s) of device %s to input slot #%d of device %s. Aborting",
+//            fOutput, fFeeder->GetInputType(fOutput), fFeeder->GetName(), input, client->GetName());
+//  }          
   if (!fArraySize) {
     fArraySize = 8;
-    fInputs = new UInt_t[fArraySize];
+    fInputs = new Int_t[fArraySize];
     fDevices = new TObjArray(fArraySize);
   }
   if (fNclients >= fArraySize) {
     fArraySize *= 2;
-    UInt_t *array = new UInt_t[fArraySize];
-    memcpy(array, fInputs, fNclients*sizeof(UInt_t));
+    Int_t *array = new Int_t[fArraySize];
+    memcpy(array, fInputs, fNclients*sizeof(Int_t));
     delete [] fInputs;
     fInputs = array;
   }

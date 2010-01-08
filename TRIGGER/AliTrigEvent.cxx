@@ -16,6 +16,14 @@
 /* $Id$ */
 // Author: Andrei Gheata, 28/07/2009
 
+#include "AliTrigEvent.h"
+
+#include <TClass.h>
+#include <TBits.h>
+#include <TROOT.h>
+
+ClassImp(AliTrigEvent)
+
 //==============================================================================
 //   AliTrigEvent - Base class for generic information exchanged by a trigger
 //                  device. Trigger inputs and outputs are represented and
@@ -24,17 +32,8 @@
 //                  or a group of correlated inputs.
 //==============================================================================
 
-#include "AliTrigEvent.h"
-
-#include <TClass.h>
-#include <TBits.h>
-#include <TROOT.h>
-
-
-ClassImp(AliTrigEvent)
-
 //______________________________________________________________________________
-AliTrigEvent::Activate()
+void AliTrigEvent::Activate(Bool_t flag)
 {
 // Activate/deactivate this signal.
   TObject::SetBit(kActive, flag);
@@ -47,8 +46,34 @@ Bool_t AliTrigEventWithMask::ImportData(AliTrigEvent *source)
 {
 // Import data from likewise signal.
   AliTrigEventWithMask *src = (AliTrigEventWithMask *)source;
-  fValue = src->GetValue();
+  SetValue(src->GetValue());
   return kTRUE;
+}
+
+//______________________________________________________________________________
+void AliTrigEventWithMask::SetValue(TBits *value)
+{
+// Set the mask value.
+  *fValue = *value;
+}
+
+//______________________________________________________________________________
+AliTrigEventWithMask::AliTrigEventWithMask(const AliTrigEventWithMask &other)
+                       :AliTrigEvent(other),
+                        fValue(NULL)
+{
+// Copy constructor.   
+  *fValue = *other.fValue;
+}
+
+//______________________________________________________________________________
+AliTrigEventWithMask &AliTrigEventWithMask::operator=(const AliTrigEventWithMask &other)
+{
+// Assignment operator.
+   if (&other == this) return *this;
+   AliTrigEvent::operator=(other);
+   *fValue = *other.fValue;
+   return *this;
 }
 
 ClassImp(AliTrigEventWithObject)
@@ -57,33 +82,40 @@ ClassImp(AliTrigEventWithObject)
 AliTrigEventWithObject::AliTrigEventWithObject(const char *classname)
                        :AliTrigEvent(),
                         fValue(0),
-                        fType(0)
+                        fType("")
 {
 // Normal constructor where a class name is provided for the embedded object.
 // If the event is created in this way one will only be able to connect to 
-// events embedding the same object type (via connectors). Otherwise the type
+// events embedding the same object type (via connectors). If empty string the type
 // will be set upon the first call of SetValue.
-   fType = gROOT->GetClass(classname);
-   if (!fType) Error("ctor", "No class named <%s> available.", classname);
+  SetType(classname);
 }   
 
 //______________________________________________________________________________
 AliTrigEventWithObject::AliTrigEventWithObject(const AliTrigEventWithObject &other)
                        :AliTrigEvent(other),
-                        fValue(other.fValue),
+                        fValue(NULL),
                         fType(other.fType)
 {
 // Copy constructor.   
+  TClass* pClass=TClass::GetClass(fType);
+  if (!pClass) return;
+  fValue = (TObject*)pClass->New();
+  fValue->Copy(*other.fValue);
 }
 
 //______________________________________________________________________________
-AliTrigEventWithObject::operator=(const AliTrigEventWithObject &other)
+AliTrigEventWithObject &AliTrigEventWithObject::operator=(const AliTrigEventWithObject &other)
 {
 // Assignment operator.
-   if (&other == this) return *this;
-   AliTrigEvent::operator=(other);
-   fValue = other.fValue;
-   fType = other.fType;
+  if (&other == this) return *this;
+  AliTrigEvent::operator=(other);
+  fType = other.fType;
+  TClass* pClass=TClass::GetClass(fType);
+  if (!pClass) return *this;
+  fValue = (TObject*)pClass->New();
+  fValue->Copy(*other.fValue);
+  return *this;
 }
 
 //______________________________________________________________________________
@@ -93,7 +125,7 @@ Bool_t AliTrigEventWithObject::ImportData(AliTrigEvent *source)
   AliTrigEventWithObject *src = (AliTrigEventWithObject *)source;
   Bool_t done = SetValue(src->GetValue());
   if (!done) Error("ImportData", "Cannot import object <%s> of class <%s> since event type was set to: <%s>",
-                   src->GetValue()->GetName(), src->GetValue()->ClassName(), fType->GetName());
+                   src->GetValue()->GetName(), src->GetValue()->ClassName(), fType.Data());
   return done;
 }
 
@@ -101,17 +133,17 @@ Bool_t AliTrigEventWithObject::ImportData(AliTrigEvent *source)
 Bool_t AliTrigEventWithObject::SetType(const char *classname)
 {
 // Set the type of this event. Can be done only once.
+  if (!strlen(classname)) return kFALSE;
+  if (!fType.IsNull()) {
+    Error("SetType", "Type for this trigger event already set to: %s", fType.Data());
+    return kFALSE;
+  }  
   TClass *type = gROOT->GetClass(classname);
   if (!type) {
     Error("SetType", "Unknown class %s", classname);
     return kFALSE;
   }
-  if (!fType) fType = type;
-  if (fType != type) {
-    Error("SetType", "Type %s not matching the one defined for this event <%s>",
-          classname, fType->GetName());
-    return kFALSE;
-  }
+  fType = classname;
   return kTRUE;
 }
 
@@ -124,11 +156,8 @@ Bool_t AliTrigEventWithObject::SetValue(TObject *value)
     fValue = NULL;
     return kTRUE;
   }
-  TClass *type = value->IsA();
   // Set the type if used for the first time.
-  if (!fType) fType = type;
-  // Check consistency of the value with event type.  
-  if (type != fType) return kFALSE;
+  if (!fType) fType = value->ClassName();
   fValue = value;
   return kTRUE;
 }  

@@ -18,15 +18,19 @@
 #include "TObject.h"
 #endif
 
+#ifndef ROOT_TString
+#include "TString.h"
+#endif
+
 class TClass;
 class AliTrigEvent : public TObject {
 
 public:
 enum ETrigSignalFlags {
   kActive = BIT(14)
-}
+};
   
-  AliTrigEvent() : TObject {}
+  AliTrigEvent() : TObject() {}
   virtual ~AliTrigEvent() {}
 
   void                      Activate(Bool_t flag);
@@ -34,8 +38,8 @@ enum ETrigSignalFlags {
   
   // Import data from a source signal. Has to be implemented by derived signals.
   virtual Bool_t            ImportData(AliTrigEvent *source) = 0;
-  virtual Bool_t            SetType(const char *classname) {return kTRUE;}
-  virtual TClass           *GetType() {return NULL;}
+  virtual Bool_t            SetType(const char */*classname*/) {return kTRUE;}
+  virtual const char       *GetType() const {return NULL;}
      
   ClassDef(AliTrigEvent,1)  // Generic event embedding data.
 };
@@ -50,15 +54,17 @@ class AliTrigEventWithMask : public AliTrigEvent {
 
 public:
   AliTrigEventWithMask() : AliTrigEvent(), fValue() {}
+  AliTrigEventWithMask(const AliTrigEventWithMask &other);
   virtual ~AliTrigEventWithMask() {}
   
+  AliTrigEventWithMask   &operator=(const AliTrigEventWithMask &other);
   virtual Bool_t            ImportData(AliTrigEvent *source);
 
-  const TBits              &GetValue() const {return fValue;}
-  void                      SetValue(const TBits &value) {fValue = value;}
+  TBits                    *GetValue() const {return fValue;}
+  void                      SetValue(TBits *value);
 
 private:
-  TBits                     fValue;  // Mask value
+  TBits                    *fValue;  // Mask value
      
   ClassDef(AliTrigEventWithMask,1)  // Signal embedding a TBits object.
 };
@@ -68,7 +74,6 @@ private:
 // 
 //==============================================================================
 
-class TClass;
 class AliTrigEventWithObject : public AliTrigEvent {
 
 public:
@@ -79,14 +84,14 @@ public:
   
   AliTrigEventWithObject   &operator=(const AliTrigEventWithObject &other);
   virtual Bool_t            ImportData(AliTrigEvent *source);
-  virtual TClass           *GetType() const  {return fType;}
+  virtual const char       *GetType() const {return fType;}
   virtual Bool_t            SetType(const char *classname);
   TObject                  *GetValue() const {return fValue;}
   Bool_t                    SetValue(TObject *value);
 
 private:
   TObject                  *fValue;  // Embedded object
-  TClass                   *fType;   //! Object type
+  TString                   fType;   // Object type
      
   ClassDef(AliTrigEventWithObject,1)  // Signal embedding an object.
 };
