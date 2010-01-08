@@ -1458,11 +1458,7 @@ Double_t AliExternalTrackParam::Pz() const {
   // Returns z-component of momentum
   // Result for (nearly) straight tracks is meaningless !
   //---------------------------------------------------------------------
-
-  Double_t p[3]={kVeryBig,kVeryBig,kVeryBig};
-  GetPxPyPz(p);
-
-  return p[2];
+  return Pt()*GetTgl();
 }
 
 Double_t AliExternalTrackParam::Xv() const {
