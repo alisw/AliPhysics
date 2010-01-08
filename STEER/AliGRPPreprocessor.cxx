@@ -30,6 +30,7 @@
 #include <TObjArray.h>
 #include <TGraph.h>
 #include <TString.h>
+#include <TFile.h>
 
 #include <float.h>
 
@@ -45,6 +46,7 @@
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
+#include "AliESDVertex.h"
 
 class AliDCSValue;
 class AliShuttleInterface;
@@ -192,7 +194,8 @@ ClassImp(AliGRPPreprocessor)
                    "(DCS data points ERROR)",
                    "(Trigger Configuration ERROR)",
                    "(DAQ logbook ERROR determining partition of the run)",
-                   "(CTP timing ERROR)"
+                   "(CTP timing ERROR)",
+		   "(SPD Mean Vertex ERROR)"
   };
 
 //_______________________________________________________________
@@ -507,22 +510,86 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	result = Store("GRP", "Data", grpobj, &md); 
 	delete grpobj;
 	
+	//==================//
+	// SPD Mean Vertex  //
+	//==================//
+	UInt_t iSPDMeanVertex = ProcessSPDMeanVertex();
+	if( iSPDMeanVertex == 1 ) {
+		Log(Form("SPD Mean Vertex, successful!"));
+	} else {
+		Log(Form("SPD Mean Vertex failed!!!"));
+		error |= 128; 
+	}
+	
 	if (result && !error ) {
 		Log("GRP Preprocessor Success");
 		return 0;
 	} else {
-		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s",
+		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s",
 			  kppError[(error&1)?1:0],
 			  kppError[(error&2)?2:0],
 			  kppError[(error&4)?3:0],
 			  kppError[(error&8)?4:0],
 			  kppError[(error&16)?5:0],
 			  kppError[(error&32)?6:0],
-			  kppError[(error&64)?7:0]
+			  kppError[(error&64)?7:0],
+			  kppError[(error&128)?8:0]
 			  ));
 		return error;
 	}
 }
+
+//_______________________________________________________________
+
+UInt_t AliGRPPreprocessor::ProcessSPDMeanVertex()
+{
+	//Getting the SPD Mean Vertex
+	TList* list = GetForeignFileSources("SPD", kDAQ, "VertexDiamond");
+	Bool_t storeResult = kTRUE;
+	if (list !=0x0 && list->GetEntries()!=0)
+		{
+			AliInfo("The following sources produced files with the id VertexDiamond from SPD");
+			list->Print();
+			for (Int_t jj=0;jj<list->GetEntries();jj++){
+				TObjString * str = dynamic_cast<TObjString*> (list->At(jj));
+				AliInfo(Form("found source %s", str->String().Data()));
+				TString fileNameRun = GetForeignFile("SPD", kDAQ, "VertexDiamond", str->GetName());
+				if (fileNameRun.Length()>0){
+					AliInfo(Form("Got the file %s", fileNameRun.Data()));
+					TFile daqFile(fileNameRun.Data(),"READ");
+					if (daqFile.IsOpen()) {
+						AliESDVertex* meanVtx = dynamic_cast<AliESDVertex*>(daqFile.Get("MeanVertexPos"));
+						if (meanVtx){
+							meanVtx->Print();	
+							// storing in the OCDB 
+							AliCDBMetaData md;
+							md.SetResponsible("Cvetan Cheshkov");
+							md.SetComment("SPD Mean Vertex");					
+							storeResult = Store("GRP", "MeanVertexSPD", meanVtx, &md); 
+						}
+						else{
+							AliWarning("No SPD Mean Vertex object found in file");
+						} 
+					}
+					else {
+						AliError("Can't open file");
+						storeResult = kFALSE;
+					}
+				}
+				else{
+					AliWarning("No file found for current source for SPD Mean Vertex");
+				}
+			}
+		}
+	else {
+		AliWarning("No list found for SPD Mean Vertex");
+	}
+
+	if (list) delete list;
+
+	return storeResult;
+}
+
 
 //_______________________________________________________________
 

@@ -502,12 +502,14 @@ TList* AliTestShuttle::GetFileIDs(Int_t system, const char* detector, const char
 }
 
 //______________________________________________________________________________________________
-void AliTestShuttle::Log(const char* detector, const char* message)
+void AliTestShuttle::Log(const char* detector, const char* message, UInt_t level)
 {
   // test implementation of Log
   // just prints to the screen
 
-  AliInfo(Form("%s: %s", detector, message));
+  TString fullMessage = detector;
+  fullMessage.Append(Form(": %s",message));
+  AliLog::Message(level, fullMessage, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__);
 }
 
 //______________________________________________________________________________________________

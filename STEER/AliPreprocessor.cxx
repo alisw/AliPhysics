@@ -303,13 +303,13 @@ TList* AliPreprocessor::GetFileIDs(Int_t system, const char* source)
 }
 
 //______________________________________________________________________________________________
-void AliPreprocessor::Log(const char* message)
+void AliPreprocessor::Log(const char* message, UInt_t level)
 {
   // Adds a log message to the Shuttle log of this preprocessor
   //
   // The call is delegated to AliShuttleInterface
 
-  fShuttle->Log(GetName(), message);
+  fShuttle->Log(GetName(), message, level);
 }
 
 //______________________________________________________________________________________________
@@ -457,5 +457,44 @@ UInt_t AliPreprocessor::GetEndTimeDCSQuery()
 	// The call is delegated to AliShuttleInterface
 
 	return fShuttle->GetEndTimeDCSQuery();
+}
+
+//______________________________________________________________________________________________
+const char* AliPreprocessor::GetForeignFile(const char* detector, Int_t system, const char* id, const char* source)
+{
+	// This function retrieves a file produced from the given detector (different from the 
+	// current one) from the given system (kDAQ, kDCS, kHLT) 
+	// with the given file id
+	// and from the given source in the system.
+	// The function returnes the path to the local file.
+	//
+	// The call is delegated to AliShuttleInterface
+	// The function can be called only from the GRP preprocessor
+	
+	TString detName(GetName());
+	if (detName != "GRP") 
+	{
+		Log("GetForeignFile - Only GRP can call this function.");
+		return 0;
+	}
+	return fShuttle->GetFile(system, detector, id, source);
+}
+
+//______________________________________________________________________________________________
+TList* AliPreprocessor::GetForeignFileSources(const char* detector, Int_t system, const char* id)
+{
+	// Returns the list of sources in a given system that produced the file 
+	// with the given id for the foreign detector specified
+	//
+	// The call is delegated to AliShuttleInterface
+	// The function can be called only from the GRP preprocessor
+
+	TString detName(GetName());
+	if (detName != "GRP") 
+	{
+		Log("GetForeignFileSources - Only GRP can call this function.");
+		return 0;
+	}
+	return fShuttle->GetFileSources(system, detector, id);
 }
 

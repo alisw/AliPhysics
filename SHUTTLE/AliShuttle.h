@@ -73,7 +73,7 @@ public:
 	virtual const char* GetTriggerConfiguration(); 
 	virtual const char* GetCTPTimeParams(); 
 	virtual const char* GetTriggerDetectorMask(); 
-	virtual void Log(const char* detector, const char* message);
+	virtual void Log(const char* detector, const char* message, UInt_t level=3);
 
 	void SetLogbookEntry(AliShuttleLogbookEntry* entry) {fLogbookEntry=entry;}
 	

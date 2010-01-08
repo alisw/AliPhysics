@@ -47,7 +47,7 @@ class AliShuttleInterface : public TObject
 
     virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path) = 0;
     
-    virtual void Log(const char* detector, const char* message) = 0;
+    virtual void Log(const char* detector, const char* message, UInt_t level=3) = 0;
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor) = 0;
 

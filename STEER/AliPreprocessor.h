@@ -47,6 +47,8 @@ class AliPreprocessor : public TNamed
     
     const char* GetFile(Int_t system, const char* id, const char* source);
     TList* GetFileSources(Int_t system, const char* id = 0);
+    const char* GetForeignFile(const char* detector, Int_t system, const char* id, const char* source);
+    TList* GetForeignFileSources(const char* detector, Int_t system, const char* id);
     TList* GetFileIDs(Int_t system, const char* source);
     const char* GetRunParameter(const char* param);
     AliCDBEntry* GetFromOCDB(const char* pathLevel2, const char* pathLevel3);
@@ -55,7 +57,7 @@ class AliPreprocessor : public TNamed
     const char* GetTriggerConfiguration();
     const char* GetCTPTimeParams();
     const char* GetTriggerDetectorMask();
-    void Log(const char* message);
+    void Log(const char* message, UInt_t level=3);
     UInt_t GetStartTimeDCSQuery();
     UInt_t GetEndTimeDCSQuery();
     

@@ -2938,7 +2938,7 @@ const char* AliShuttle::GetLHCPeriod() const
 }
 
 //______________________________________________________________________________________________
-void AliShuttle::Log(const char* detector, const char* message)
+void AliShuttle::Log(const char* detector, const char* message, UInt_t level)
 {
 	//
 	// Fill log string with a message
@@ -2965,7 +2965,7 @@ void AliShuttle::Log(const char* detector, const char* message)
 		toLog += Form("run %d - ", GetCurrentRun());
 	toLog += Form("%s", message);
 
-  	AliInfo(toLog.Data());
+	AliLog::Message(level, toLog, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__);
 	
 	// if we redirect the log output already to the file, leave here
 	if (fOutputRedirected && strcmp(detector, "SHUTTLE") != 0)
