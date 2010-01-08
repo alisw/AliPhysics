@@ -610,7 +610,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     container[1] = etaRec;
     container[2] = phiRec;
 
-    if(ptRec>15.&&fDebug>0){
+    if(ptRec>10.&&fDebug>0){
       // need to cast to int, otherwise the printf overwrites
       Printf("Jet found in Event %d with p_T, %E",(int)Entry(),ptRec);
       fAOD->GetHeader()->Print();
