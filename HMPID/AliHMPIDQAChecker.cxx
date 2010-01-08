@@ -42,7 +42,45 @@
 #include "AliQAManager.h"
 
 ClassImp(AliHMPIDQAChecker)
+ //_________________________________________________________________
+AliHMPIDQAChecker::AliHMPIDQAChecker() : 
+AliQACheckerBase("HMPID","HMPID Quality Assurance Data Checker"), 
+fNoReference(kTRUE), 
+fQARefRec(NULL)
+{
+    //ctor, fetches the reference data from OCDB 
+  char * detOCDBDir = Form("HMPID/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
+  AliCDBEntry * QARefRec = AliQAManager::QAManager()->Get(detOCDBDir);
+  if(QARefRec) {
+    fQARefRec = dynamic_cast<TObjArray*> (QARefRec->GetObject()) ; 
+    if (fQARefRec)
+      if (fQARefRec->GetEntries()) 
+        fNoReference = kFALSE ;            
+    if (fNoReference) 
+      AliInfo("QA reference data NOT retrieved for Reconstruction check. No HMPIDChecker!");
+  }
+}
 
+//_________________________________________________________________
+AliHMPIDQAChecker::AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) : 
+AliQACheckerBase(qac.GetName(), qac.GetTitle()), 
+fNoReference(qac.fNoReference), 
+fQARefRec(NULL)
+{
+  fNoReference = qac.fNoReference ; 
+  if (qac.fQARefRec) {
+    fQARefRec = new TObjArray(qac.fQARefRec->GetEntries()) ; 
+    for (Int_t index=0; index < qac.fQARefRec->GetEntries(); index++) 
+      fQARefRec->Add(qac.fQARefRec->At(index)) ; 
+  }
+}
+
+//_________________________________________________________________
+AliHMPIDQAChecker::~AliHMPIDQAChecker() 
+{
+  fQARefRec->Delete() ; 
+  delete fQARefRec ; 
+}
 //_________________________________________________________________
 Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/) 
 {
@@ -51,13 +89,8 @@ Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
 // At the moment:       check for empty histograms and checks for RecPoints
 
   Double_t * check = new Double_t[AliRecoParam::kNSpecies] ; 
-  
-  char * detOCDBDir = Form("HMPID/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
-  AliCDBEntry *QARefRec = AliQAManager::QAManager()->Get(detOCDBDir);
-  if(!QARefRec){
-    AliInfo("QA reference data NOT retrieved for Reconstruction check. No HMPIDChecker  ...exiting");
-    return check;
-  }
+  if(fNoReference)  
+  return check;
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     check[specie] = 1.0;
@@ -70,19 +103,16 @@ Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
     }
   
     //check sim
-    if(index == AliQAv1::kSIM) check[specie] = CheckSim(list[specie],(TObjArray *)QARefRec->GetObject());
+    if(index == AliQAv1::kSIM) check[specie] = CheckSim(list[specie], fQARefRec);
 
     // checking rec points
-    if(index == AliQAv1::kREC) check[specie] = CheckRec(list[specie],(TObjArray *)QARefRec->GetObject());
-
+    if(index == AliQAv1::kREC) check[specie] = CheckRec(list[specie], fQARefRec);
+   
     //default check response. It will be changed when reasonable checks will be considered
     else check[specie] = 0.7 ; // /-> Corresponds to kINFO see AliQACheckerBase::Run 
   } // species loop
 
-  //PH  delete QARefRec;
-
   return check;
-
 }
 //_________________________________________________________________
 Double_t AliHMPIDQAChecker::CheckEntries(TObjArray * list) const

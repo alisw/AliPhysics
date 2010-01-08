@@ -26,10 +26,10 @@ class TObjArray ;
 class AliHMPIDQAChecker: public AliQACheckerBase {
 
 public:
-  AliHMPIDQAChecker() : AliQACheckerBase("HMPID","HMPID Quality Assurance Data Checker") {;}          // ctor
-  AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  virtual ~AliHMPIDQAChecker() {;} // dtor
-
+  AliHMPIDQAChecker() ;          // ctor
+  AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) ; // cpy ctor   
+  virtual ~AliHMPIDQAChecker() ; // dtor
+  
   virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam) ;
   
   Double_t CheckEntries(TObjArray * list) const ;
@@ -37,7 +37,10 @@ public:
   Double_t CheckSim(TObjArray *listsim, TObjArray *listref) const ;
 
 private:
-  
+
+  Bool_t        fNoReference ; //! flag telling if reference data hqve been found or not  
+  TObjArray *   fQARefRec ;    //! Reference data from OCDB 
+      
   ClassDef(AliHMPIDQAChecker,1)  // description 
 
 };
