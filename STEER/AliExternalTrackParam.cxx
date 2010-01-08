@@ -1453,14 +1453,6 @@ Double_t AliExternalTrackParam::Py() const {
   return p[1];
 }
 
-Double_t AliExternalTrackParam::Pz() const {
-  //---------------------------------------------------------------------
-  // Returns z-component of momentum
-  // Result for (nearly) straight tracks is meaningless !
-  //---------------------------------------------------------------------
-  return Pt()*GetTgl();
-}
-
 Double_t AliExternalTrackParam::Xv() const {
   //---------------------------------------------------------------------
   // Returns x-component of first track point
@@ -1481,17 +1473,6 @@ Double_t AliExternalTrackParam::Yv() const {
   GetXYZ(r);
 
   return r[1];
-}
-
-Double_t AliExternalTrackParam::Zv() const {
-  //---------------------------------------------------------------------
-  // Returns z-component of first track point
-  //---------------------------------------------------------------------
-
-  Double_t r[3]={0.,0.,0.};
-  GetXYZ(r);
-
-  return r[2];
 }
 
 Double_t AliExternalTrackParam::Theta() const {

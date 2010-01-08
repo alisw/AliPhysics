@@ -96,14 +96,14 @@ class AliExternalTrackParam: public AliVTrack {
   // additional functions for AliVParticle
   Double_t Px() const;
   Double_t Py() const;
-  Double_t Pz() const;
+  Double_t Pz() const {Pt()*GetTgl();}
   Double_t Pt() const { return TMath::Abs(GetSignedPt()); }
   Double_t P() const { return GetP(); }
   Bool_t   PxPyPz(Double_t p[3]) const { return GetPxPyPz(p); }
   
   Double_t Xv() const;
   Double_t Yv() const;
-  Double_t Zv() const;
+  Double_t Zv() const {return GetZ();}
   Bool_t   XvYvZv(Double_t x[3]) const { return GetXYZ(x); }
 
   Double_t OneOverPt() const { return 1./Pt(); }
