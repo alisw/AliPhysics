@@ -265,7 +265,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskPhysicsSelection.C");
-     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kTRUE);
      if(kIsMC)physSelTask->GetPhysicsSelection()->SetAnalyzeMC();
      physSelTask->GetPhysicsSelection()->AddBackgroundIdentification(new AliBackgroundSelection());
    }
@@ -336,8 +336,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskUE *taskUE = 0;
      if(iPWG4UE&1)taskUE = AddTaskUE(); 
      if(iPWG4UE&2){
-       taskUE = AddTaskUE("jetsAOD_CDF07"); 
-       taskUE = AddTaskUE("jetsAOD_UA1LO07"); 
+       taskUE = AddTaskUE("jetsAOD_CDF07","ALICE","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_UA1LO07","ALICE","LJ","TRANSV");
+       taskUE = AddTaskUE("jetsAOD_UA1LO07","ALICE","BB","TRANSV");
+       taskUE = AddTaskUE("jetsAOD_FASTKT04","ALICE","LJ","TRANSV");
+       taskUE = AddTaskUE("jetsAOD_FASTJET04","ALICE","LJ","TRANSV");
+       taskUE = AddTaskUE("jetsAOD_SISCONE04","ALICE","LJ","TRANSV");
      }
      if (!taskUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskUE cannot run for this train conditions - EXCLUDED");
    }
@@ -731,9 +735,6 @@ Bool_t LoadAnalysisLibraries(const char *mode)
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
           !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
    }   
-   if(iPhysicsSelection){
-     //   if (!LoadLibrary("PWG0base", mode, kTRUE) ||!LoadLibrary("PWG0dep", mode, kTRUE)) return kFALSE;
-   }
    // JETAN
    if (iJETAN||iDIJETAN) {
      if (!strcmp(mode, "PROOF")){
@@ -1212,8 +1213,8 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 
 
 
-   TString outputArchive = "log_archive.zip:stdout,stderr@ALICE::CERN::SE";
-   if(kUseSysInfo>0)outputArchive = "log_archive.zip:stdout,stderr,syswatch.log@ALICE::CERN::SE";
+   TString outputArchive = "log_archive.zip:stdout,stderr@ALICE::FZK::SE,ALICE::GSI::SE";
+   if(kUseSysInfo>0)outputArchive = "log_archive.zip:stdout,stderr,syswatch.log@ALICE::FZK::SE,ALICE::GSI::SE";
    if (listaods.Length()) {
       outputArchive += " ";
       outputArchive += listaods;
