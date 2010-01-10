@@ -34,6 +34,7 @@
 #include "AliITSDetTypeRec.h"
 #include "AliITSDDLModuleMapSDD.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecPointContainer.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSMapSDD.h"
 #include "AliITSCalibrationSSD.h"
@@ -894,6 +895,8 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
    // Remove PIT in-active chips from Fast-OR fired map
   if (all || det[0]) { // SPD present
     RemoveFastOrFiredInActive();
+    // here removing bits which have no associated clusters 
+    RemoveFastOrFiredFromDead(GetFiredChipMap(treeR));  
   }
 }
 //______________________________________________________________________
@@ -987,6 +990,9 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TClonesArray** 
   // Remove PIT in-active chips from Fast-OR fired map
   if (all || det[0]) { // SPD present
     RemoveFastOrFiredInActive();
+    // here removing bits which have no associated clusters 
+    if(clusters) RemoveFastOrFiredFromDead(GetFiredChipMap(clusters));
+   
   }  
 }
 //______________________________________________________________________
@@ -1063,6 +1069,7 @@ void AliITSDetTypeRec::ReadOldSSDGain(const TObjArray *array,
 //______________________________________________________________________
 void AliITSDetTypeRec::RemoveFastOrFiredInActive() {
   // Removes the chips that were in-active in the pixel trigger (from fast-or fired map)
+
   if (fTriggerConditions==NULL) {
     AliError("Pixel trigger conditions are missing.");
     return;
@@ -1076,10 +1083,113 @@ void AliITSDetTypeRec::RemoveFastOrFiredInActive() {
   }
 }
 //______________________________________________________________________
+TBits AliITSDetTypeRec::GetFiredChipMap(TClonesArray **clusters) const {
+  
+  //
+  // TBits of the fired chips  
+  //
+ 
+  TBits isfiredchip(1200);
+  
+   AliITSsegmentationSPD *segSPD = (AliITSsegmentationSPD*)GetSegmentationModel(0);
+   if(!segSPD) {
+    AliError("no segmentation model for SPD available, the fired chip map is empty. Exiting"); 
+    return isfiredchip;
+   }
+   
+  
+  for(Int_t imod =0; imod < fgkDefaultNModulesSPD; imod++){
+ TClonesArray *array = clusters[imod];
+ if(!array) continue;
+ Int_t nCluster = array->GetEntriesFast();
+ 
+ while(nCluster--) {
+     AliITSRecPoint* cluster = (AliITSRecPoint*)array->UncheckedAt(nCluster);
+     if (cluster->GetLayer()>1)continue;
+      Float_t local[3]={-1,-1};
+      local[1]=cluster->GetDetLocalX();
+      local[0]=cluster->GetDetLocalZ();
+      
+      Int_t eq = AliITSRawStreamSPD::GetOnlineEqIdFromOffline(imod);
+      Int_t hs = AliITSRawStreamSPD::GetOnlineHSFromOffline(imod);
+      Int_t row, col;
+      segSPD->LocalToDet(0.5,local[0],row,col);
+      Int_t chip = AliITSRawStreamSPD::GetOnlineChipFromOffline(imod,col);
+      Int_t chipkey = AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(eq,hs,chip);
+      isfiredchip.SetBitNumber(chipkey,kTRUE);
+   }
+    
+ } 
+ 
+ return isfiredchip;
+  
+}
+//______________________________________________________________________
+TBits AliITSDetTypeRec::GetFiredChipMap(TTree *treeR) const{
+  //
+  // TBits of the fired chips  
+  //
+  TBits isfiredchip(1200);
+  
+  if(!treeR) {
+     AliError("no treeR. fired chip map stays empty. Exiting.");
+     return isfiredchip;
+   }
+   
+  AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
+  TClonesArray *recpoints = rpcont->FetchClusters(0,treeR);
+  if(!rpcont->GetStatusOK() || !rpcont->IsSPDActive()){
+    AliError("no clusters. fired chip map stays empty. Exiting.");
+     return isfiredchip;
+  }
+  
+   AliITSsegmentationSPD *segSPD = (AliITSsegmentationSPD*)GetSegmentationModel(0);
+      
+   for(Int_t imod =0; imod < fgkDefaultNModulesSPD; imod++){
+    recpoints = rpcont->UncheckedGetClusters(imod);
+    Int_t nCluster = recpoints->GetEntriesFast();
+    
+    // loop over clusters
+    while(nCluster--) {
+      AliITSRecPoint* cluster = (AliITSRecPoint*)recpoints->UncheckedAt(nCluster);
+      if (cluster->GetLayer()>1)continue;
+      Float_t local[3]={-1,-1};
+      local[1]=cluster->GetDetLocalX();
+      local[0]=cluster->GetDetLocalZ();
+      
+      Int_t eq = AliITSRawStreamSPD::GetOnlineEqIdFromOffline(imod);
+      Int_t hs = AliITSRawStreamSPD::GetOnlineHSFromOffline(imod);
+      Int_t row, col;
+      segSPD->LocalToDet(0.5,local[0],row,col);
+      Int_t chip = AliITSRawStreamSPD::GetOnlineChipFromOffline(imod,col);
+      Int_t chipkey = AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(eq,hs,chip);
+      isfiredchip.SetBitNumber(chipkey,kTRUE);
+    }
+  }
+ 
+  return isfiredchip;
+}
+//______________________________________________________________________
+void  AliITSDetTypeRec::RemoveFastOrFiredFromDead(TBits firedchipmap){
+  //
+  // resetting of the fast-or bit on cluster basis. 
+  // fast-or bits can be remnant from SPD ideal simulation (no dead channels)
+  //
+  
+  for(Int_t chipKey=0; chipKey<1200; chipKey++){
+    // FO masked chips have been previously removed  
+   if(!fFastOrFiredMap.TestBitNumber(chipKey)) continue; 
+   if(!firedchipmap.TestBitNumber(chipKey))  {
+    fFastOrFiredMap.SetBitNumber(chipKey,kFALSE);
+    AliDebug(2,Form("removing bit in key %i \n ",chipKey));
+  }
+ }
+   
+}
+//______________________________________________________________________
 void AliITSDetTypeRec::SetFastOrFiredMapOnline(UInt_t eq, UInt_t hs, UInt_t chip) {
   // Set fast-or fired map for this chip
   Int_t chipKey = AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(eq,hs,chip);
   return SetFastOrFiredMap(chipKey);
 }
-
 

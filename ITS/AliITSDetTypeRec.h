@@ -32,6 +32,7 @@ class AliITSDDLModuleMapSDD;
 class AliITSNoiseSSDv2;
 class AliITSTriggerConditions;
 class AliITSFOSignalsSPD;
+class AliITSRecPointContainer;
 
 class AliITSDetTypeRec : public TObject {
   public:
@@ -98,9 +99,13 @@ class AliITSDetTypeRec : public TObject {
     void   SetFastOrFiredMapOnline(UInt_t eq, UInt_t hs, UInt_t chip);
     void   SetFastOrFiredMap(UInt_t chipKey){fFastOrFiredMap.SetBitNumber(chipKey);} 
     TBits  GetFastOrFiredMap() const {return fFastOrFiredMap;}
+    TBits  GetFiredChipMap(TClonesArray **clusters) const; // (using SPD RecPoints)
+    TBits  GetFiredChipMap(TTree *treeR) const; // (using SPD RecPoints)
     void   ResetFastOrFiredMap(){fFastOrFiredMap.ResetAllBits();}
     void   RemoveFastOrFiredInActive(); // (using Trigger Conditions)
+    void   RemoveFastOrFiredFromDead(TBits firedchipmap); // (using SPD RecPoints)
    
+    
   private:
     // private methods
     AliITSDetTypeRec(const AliITSDetTypeRec& rec);
@@ -149,3 +154,4 @@ class AliITSDetTypeRec : public TObject {
 };
 
 #endif
+
