@@ -84,6 +84,8 @@ void AliJetHistos::AddHistosToList(TList *list)
 
 void AliJetHistos::FillHistos(TClonesArray *jets)
 {
+
+  if(!jets)return;
   Int_t nj = jets->GetEntries();
   fNJetsH->Fill(nj,1);
 

@@ -123,7 +123,7 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
       TClonesArray *tca = new TClonesArray("AliAODJet", 0);
       tca->SetName(fNonStdBranch.Data());
       AddAODBranch("TClonesArray",&tca,fNonStdFile.Data());
-      if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
+      if(!AODEvent() || !AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
 	AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
 	evBkg->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
 	AddAODBranch("AliAODJetEventBackground",&evBkg,fNonStdFile.Data());
@@ -216,7 +216,7 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
   //
   // Fill control histos
   TClonesArray* jarray = 0;
-  AliAODJetEventBackground*  evBkg;
+  AliAODJetEventBackground*  evBkg = 0;
 
   if(fNonStdBranch.Length()==0) {
     jarray = AODEvent()->GetJets();
@@ -224,12 +224,12 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
     evBkg->Reset();
   }
   else {
-    jarray = (TClonesArray*)(AODEvent()->FindListObject(fNonStdBranch.Data()));
+    if(AODEvent())jarray = (TClonesArray*)(AODEvent()->FindListObject(fNonStdBranch.Data()));
     if(!jarray)jarray = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data()));
-    jarray->Delete();    // this is our responsibility, clear before filling again
-    evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
+    if(jarray)jarray->Delete();    // this is our responsibility, clear before filling again
+    if(AODEvent())evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
     if(!evBkg)  evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
-    evBkg->Reset();
+    if(evBkg)evBkg->Reset();
   }
 
   if (dynamic_cast<AliAODEvent*>(InputEvent()) !=  0 && !fReadAODFromOutput) {
@@ -246,7 +246,7 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
   else fJetFinder->ProcessEvent2();    // V2
  
   // Fill control histos
-  fHistos->FillHistos(jarray);
+  if(jarray)fHistos->FillHistos(jarray);
 
   // Post the data
   PostData(1, fListOfHistos);
