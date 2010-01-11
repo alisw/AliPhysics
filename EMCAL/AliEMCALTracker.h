@@ -23,10 +23,10 @@
 #define ALIEMCALTRACKER_H
 
 #include "AliTracker.h"
-#include "TMath.h"
+#include <TMath.h>
+#include <TVector3.h>
 class TList;
 class TTree;
-class TVector3;
 class TObjArray;
 class AliESDEvent;
 class AliESDCaloCluster;
