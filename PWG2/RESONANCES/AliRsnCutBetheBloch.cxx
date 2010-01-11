@@ -17,6 +17,8 @@
 //
 #include "TMath.h"
 
+#include "AliExternalTrackParam.h"
+
 #include "AliRsnDaughter.h"
 #include "AliRsnCutBetheBloch.h"
 
@@ -56,7 +58,7 @@ AliRsnCutBetheBloch::AliRsnCutBetheBloch
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter * const track)
+Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter * const trackRef)
 {
 //
 // Computes the theoretical dE/dx according to
@@ -72,7 +74,10 @@ Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter * const track)
   AliPID pid;
   Double_t mass = pid.ParticleMass(fType);
 
-  Double_t betaGamma = track->P() / mass;
+  // get the track momentum at the inner wall of TPC
+  AliExternalTrackParam track(*trackRef->GetRefESD()->GetInnerParam());
+
+  Double_t betaGamma = track.P() / mass;
   Double_t beta = betaGamma / TMath::Sqrt(1.0 + betaGamma * betaGamma);
   Double_t aa = TMath::Power(beta, fConst[3]);
   Double_t bb = TMath::Power(1.0 / betaGamma, fConst[4]);
