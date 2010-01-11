@@ -76,9 +76,14 @@ void  AliITSOnlineSDDBase::ValidateAnodes(){
   //
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     fGoodAnode[ian]=1;
-    if(GetAnodeBaseline(ian)>fMaxBaseline || GetAnodeBaseline(ian)<fMinBaseline) fGoodAnode[ian]=0;
-    else if(GetAnodeRawNoise(ian)>fMaxRawNoise || GetAnodeRawNoise(ian)<fMinRawNoise) fGoodAnode[ian]=0;
-    else if(GetAnodeRawNoise(ian)>fNSigmaNoise*CalcMeanRawNoise()) fGoodAnode[ian]=0;
+    Float_t basel=GetAnodeBaseline(ian);
+    Float_t rawn=GetAnodeRawNoise(ian);
+    Float_t ratio=0.;
+    if(rawn>0) ratio=basel/rawn;
+    if(basel>fMaxBaseline || basel<fMinBaseline) fGoodAnode[ian]=0;
+    else if(rawn>fMaxRawNoise || rawn<fMinRawNoise) fGoodAnode[ian]=0;
+    else if(rawn>fNSigmaNoise*CalcMeanRawNoise()) fGoodAnode[ian]=0;
+    else if(ratio<3.) fGoodAnode[ian]=0;
   }
 }
 
