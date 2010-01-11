@@ -74,7 +74,8 @@ Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter * const trackRef)
   AliPID pid;
   Double_t mass = pid.ParticleMass(fType);
 
-  // get the track momentum at the inner wall of TPC
+  // get the track momentum at the inner wall of TPC: if absent cut is not passed
+  if (!trackRef->GetRefESD()->GetInnerParam()) return 1000000.0;
   AliExternalTrackParam track(*trackRef->GetRefESD()->GetInnerParam());
 
   Double_t betaGamma = track.P() / mass;
