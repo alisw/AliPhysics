@@ -86,7 +86,7 @@ Double_t kGCmaxPhi      = TMath::Pi();
 
 Bool_t kGCdoOwnXYZCalculation = kFALSE;
 
-Bool_t fWriteStandardAOD =kFALSE;
+Bool_t fWriteStandardAOD =kTRUE; // need to be true for train running? CKB
 
 /** ------------------- define which histograms to plot here --------------------------------*/
 /**   NB: to change the bin numbers, see below the histogram flags                           */
@@ -705,7 +705,7 @@ Double_t kGCPIDMinPnSigmaAbovePionLine=5;
  
 
 
-Bool_t kGCcalculateBackground = kFALSE;
+Bool_t kGCcalculateBackground = kTRUE;
 
 Bool_t scanArguments(TString arguments){
   Bool_t iResult = kTRUE;
@@ -890,11 +890,12 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
     gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C"); // load the CreateChain macro
   }
 		
-
+  if(!kGCrunOnTrain){
+    // for the train leave this to the steering macro
     AliLog::SetGlobalDebugLevel(0);
     AliLog::SetGlobalLogLevel(AliLog::kFatal);
-		
-    // ------------------------------------------------------------------------
+  }
+  // ------------------------------------------------------------------------
 		
     // for CF
 		
@@ -993,12 +994,13 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
   }
 	
   // Define Output Event Handler and ad
-  //  if(kGCrunOnTrain == kFALSE){
+  if(kGCrunOnTrain == kFALSE){
     if(fWriteStandardAOD == kTRUE){
-    AliAODHandler* aodHandler = new AliAODHandler();
-    TString fileOutAOD = "AOD_"+ kGCoutputFileName + kGCoutputFileAppendix + ".root";
-    aodHandler->SetOutputFileName(fileOutAOD);
-    mgr->SetOutputEventHandler (aodHandler);
+      AliAODHandler* aodHandler = new AliAODHandler();
+      TString fileOutAOD = "AOD_"+ kGCoutputFileName + kGCoutputFileAppendix + ".root";
+      aodHandler->SetOutputFileName(fileOutAOD);
+      mgr->SetOutputEventHandler (aodHandler);
+    }
   }
 	
   if(kGCrunOnTrain == kFALSE){
@@ -1022,15 +1024,17 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
     if(kGCrunOnTrain == kFALSE){
       cinput1 = mgr->GetCommonInputContainer(); // added by kenneth to avoid writing the standard AOD
     }
-    else{
+    else{ //CKB if and else do the same here
       //      cinput = cin_esd;
       cinput1 = mgr->GetCommonInputContainer();
     }
   }
 	
   // Common Output Tree in common âdefaultâ output file
+  // CKB kGCusePWG4PartCorr and writestandard are not mutually exclusive?
   AliAnalysisDataContainer *coutput1 = NULL;
   if(kGCusePWG4PartCorr){
+    //    coutput1 = mgr->CreateContainer("GammaConvTree",TTree::Class(),AliAnalysisManager::kOutputContainer, "default");
     coutput1 = mgr->CreateContainer("GammaConvTree",TTree::Class(),AliAnalysisManager::kOutputContainer, "default");
   }
   else{
@@ -1049,7 +1053,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
   //TString fileOut = kGCoutputFileName + kGCoutputFileAppendix + ".root";
 
   TString outputfile = AliAnalysisManager::GetCommonFileName();  
-  outputfile += ":PWG4GammaConversion";
+  outputfile += ":PWG4_GammaConversion";
 	
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histogramsAliGammaConversion", TList::Class(),AliAnalysisManager::kOutputContainer, outputfile);
   // for CF
@@ -1151,7 +1155,9 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
 	
   // Connect I/O to the task
   mgr->ConnectInput (gammaconversion, 0, cinput1);
-	
+  
+
+  // CKB Output slot 0 is NOT connected if WriteStandardAOD is false?
   if(fWriteStandardAOD){
     mgr->ConnectOutput(gammaconversion, 0, coutput1);
   }
