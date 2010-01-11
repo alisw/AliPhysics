@@ -51,7 +51,7 @@ void alieve_init(const TString& cdburi = "",
     else
     {
       Info("alieve_init", "AliEn requested - connecting.");
-      if (gSystem->Getenv("alien_API_VO") == 0)
+      if (gSystem->Getenv("GSHELL_ROOT") == 0)
       {
 	Error("alieve_init", "AliEn environment not initialized. Aborting.");
 	gSystem->Exit(1);

@@ -11,9 +11,10 @@ class AliEveMacroExecutor;
 class TEveProjectionManager;
 class TEveGeoShape;
 class TEveUtil;
+class TSystem;
+class TInterpreter;
 
 
-Bool_t gShowTrd      = kTRUE;
 Bool_t gShowMuonRPhi = kFALSE;
 Bool_t gShowMuonRhoZ = kTRUE;
 
@@ -21,17 +22,28 @@ Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
 
 void visscan_init(const TString& cdburi = "",
-		  const TString& path   = ".", Bool_t show_extra_geo = kFALSE)
+		  const TString& path   = ".",
+		  Bool_t showMuon = kTRUE,
+		  Bool_t showTrd = kFALSE)
 {
+  
+  if (showMuon)
+  {
+    if (gSystem->Getenv("ALICE_ROOT") != 0)
+    {
+      gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
+      gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
+    }
+  }
+  else
+  {
+    gShowMuonRPhi = gShowMuonRhoZ = kFALSE;
+  }
+  
   if (cdburi.IsNull() && ! AliCDBManager::Instance()->IsDefaultStorageSet())
   {
     gEnv->SetValue("Root.Stacktrace", "no");
     Fatal("visscan_init.C", "OCDB path MUST be specified as the first argument.");
-  }
-
-  if (!show_extra_geo)
-  {
-    gShowTrd = gShowMuonRPhi = gShowMuonRhoZ = kFALSE;
   }
 
   AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
@@ -59,7 +71,7 @@ void visscan_init(const TString& cdburi = "",
   TEveUtil::LoadMacro("geom_gentle.C");
   mv->InitGeomGentle(geom_gentle(), geom_gentle_rphi(), geom_gentle_rhoz());
 
-  if (gShowTrd) {
+  if (showTrd) {
     TEveUtil::LoadMacro("geom_gentle_trd.C");
     mv->InitGeomGentleTrd(geom_gentle_trd());
   }
@@ -146,6 +158,15 @@ void visscan_init(const TString& cdburi = "",
   exec->AddMacro(new AliEveMacro(AliEveMacro::kAOD, "ANA Jets", "jetplane.C", "jetplane", "", kFALSE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "DUMP VZERO",   "vzero_dump.C",   "vzero_dump",   "", kFALSE));
+  
+  if (showMuon)
+  {
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM TrackRef MUON", "muon_trackRefs.C+", "muon_trackRefs", "kTRUE", kFALSE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON", "muon_raw.C+", "muon_raw", "", kFALSE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG MUON", "muon_digits.C+", "muon_digits", "", kFALSE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C+", "muon_clusters", "", kTRUE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MUON", "esd_muon_tracks.C+", "esd_muon_tracks", "kTRUE,kFALSE", kTRUE));
+  }
 
   //==============================================================================
   // Additional GUI components
