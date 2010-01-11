@@ -510,7 +510,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
   
   // reconstructed jets
   nRecJets = aodRecJets->GetEntries(); 
-  Printf("--- Jets found in bRec: %d", nRecJets);
+  if(fDebug)Printf("--- Jets found in bRec: %d", nRecJets);
   nRecJets = TMath::Min(nRecJets, kMaxJets);
   
   for(int ir = 0;ir < nRecJets;++ir)
@@ -915,7 +915,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
   Int_t tag1 = 0;
 
   AliAODJet recSelJets[kMaxJets];
-  Printf("---- Number of reco jets: %d\n",nRecJets);
+  if(fDebug)Printf("---- Number of reco jets: %d\n",nRecJets);
   for(Int_t i = 0; i < nRecJets; i++)
     {
       if(nRecJets == 1)

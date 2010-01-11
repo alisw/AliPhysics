@@ -351,10 +351,15 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	Float_t zvtx = vtxESD->GetZ();
     	Float_t yvtx = vtxESD->GetY();
     	Float_t xvtx = vtxESD->GetX();
+	Float_t r2   = yvtx*yvtx+xvtx*xvtx;  
 	fh2ESDTriggerVtx->Fill(it,zvtx);
-	if(TMath::Abs(zvtx)<fZVtxCut&&esdTrig&&TMath::Abs(xvtx)<0.5&&TMath::Abs(yvtx)<0.5){
+	if(TMath::Abs(zvtx)<fZVtxCut&&esdTrig&&r2<1){
 	  fh2ESDTriggerCount->Fill(it,kTriggeredVertexIn);
-	  if(cand)fh2ESDTriggerCount->Fill(it,kSelectedALICEVertexIn);
+	  if(cand){
+	    fh2ESDTriggerCount->Fill(it,kSelectedALICEVertexIn);
+	    fh2ESDTriggerCount->Fill(it,kSelected);
+	    AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+	  }
 	  // here we select based on ESD info...
 	}
       }
