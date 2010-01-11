@@ -613,6 +613,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     if(ptRec>10.&&fDebug>0){
       // need to cast to int, otherwise the printf overwrites
       Printf("Jet found in Event %d with p_T, %E",(int)Entry(),ptRec);
+      Printf("%s read event, %d",fInputHandler->GetTree()->GetCurrentFile()->GetName(),fInputHandler->GetTree()->GetReadEntry());
       fAOD->GetHeader()->Print();
       Printf("TriggerClasses: %s",fAOD->GetFiredTriggerClasses().Data());
       for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
@@ -701,7 +702,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   // link it
   //
   const Int_t kNvar   = 3 ; //number of variables on the grid:pt,eta, phi
-  const Double_t kPtmin = 10.0, kPtmax = 260.; // we do not want to have empty bins at the beginning...
+  const Double_t kPtmin = 5.0, kPtmax = 105.; // we do not want to have empty bins at the beginning...
   const Double_t kEtamin = -3.0, kEtamax = 3.0;
   const Double_t kPhimin = 0., kPhimax = 2. * TMath::Pi();
 
@@ -724,7 +725,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
 
   //values for bin lower bounds
   //  for(Int_t i=0; i<=iBin[0]; i++) binEdges[0][i]=(Double_t)TMath::Power(10,TMath::Log10(kPtmin) + (TMath::Log10(kPtmax)-TMath::Log10(kPtmin))/iBin[0]*(Double_t)i);  
-  for(Int_t i=0; i<=iBin[0]; i++) binEdges[0][i]=(Double_t)kPtmin  + (kPtmax-kPtmin)/iBin[0]*(Double_t)i;
+  for(Int_t i=0; i<=iBin[0]; i++) binEdges[0][i]=(Double_t)kPtmin  + (kPtmax-kPtmin)/(Double_t)iBin[0]*(Double_t)i;
   for(Int_t i=0; i<=iBin[1]; i++) binEdges[1][i]=(Double_t)kEtamin  + (kEtamax-kEtamin)/iBin[1]*(Double_t)i;
   for(Int_t i=0; i<=iBin[2]; i++) binEdges[2][i]=(Double_t)kPhimin  + (kPhimax-kPhimin)/iBin[2]*(Double_t)i;
 
