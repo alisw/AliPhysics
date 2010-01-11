@@ -947,7 +947,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
       while ((os=(TObjString*)next()))
          fGridJDL->AddToInputDataCollection(Form("LF:%s,nodownload", os->GetString().Data()));
       if (!fOutputSingle.IsNull())
-         fGridJDL->SetOutputDirectory(Form("#alienfulldir#/%s",fOutputSingle.Data()));
+         fGridJDL->SetOutputDirectory(Form("#alienfulldir#/../%s",fOutputSingle.Data()));
       else                                    
          fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_03i#", fGridOutputDir.Data()));
    } else {
