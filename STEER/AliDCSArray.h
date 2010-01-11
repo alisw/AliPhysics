@@ -15,6 +15,7 @@
 #include <TObject.h>
 #include <TObjArray.h>
 //#include <TTimeStamp.h>
+class TObjString;
 
 class AliDCSArray : public TObject {
  public:
@@ -59,7 +60,7 @@ class AliDCSArray : public TObject {
 	UInt_t GetUInt(Int_t index) const { return fUInt[index]; }
 	Float_t GetFloat(Int_t index) const { return fFloat[index]; }
 	Double_t GetDouble(Int_t index) const { return fDouble[index]; }
-	TObjArray GetStringArray(Int_t index) const { return fStringArray[index]; }
+	TObjString* GetStringArray(Int_t index) const { return (TObjString*)fStringArray->At(index); }
 	
 	Type GetType() const { return fType; }
 	
