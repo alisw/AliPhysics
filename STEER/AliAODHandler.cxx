@@ -123,7 +123,8 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   // Initialize IO
   //
   // Create the AODevent object
-  if(!fAODEvent){
+  Bool_t createStdAOD = fIsStandard || fFillAOD;
+  if(!fAODEvent && createStdAOD){
     fAODEvent = new AliAODEvent();
     if (fIsStandard) fAODEvent->CreateStdContent();
   }
@@ -131,19 +132,21 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   // File opening according to execution mode
   TString option(opt);
   option.ToLower();
-  TDirectory *owd = gDirectory;
-  if (option.Contains("proof")) {
-    // proof
-    // Merging via files. Need to access analysis manager via interpreter.
-    gROOT->ProcessLine(Form("AliAnalysisDataContainer *c_common_out = AliAnalysisManager::GetAnalysisManager()->GetCommonOutputContainer();"));
-    gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(c_common_out, \"RECREATE\");"));
-    fFileA = gFile;
-  } else {
-    // local and grid
-    fFileA = new TFile(fFileName.Data(), "RECREATE");
-  }
-  CreateTree(1);
-  owd->cd();
+  if (createStdAOD) {
+    TDirectory *owd = gDirectory;
+    if (option.Contains("proof")) {
+      // proof
+      // Merging via files. Need to access analysis manager via interpreter.
+      gROOT->ProcessLine(Form("AliAnalysisDataContainer *c_common_out = AliAnalysisManager::GetAnalysisManager()->GetCommonOutputContainer();"));
+      gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(c_common_out, \"RECREATE\");"));
+      fFileA = gFile;
+    } else {
+      // local and grid
+      fFileA = new TFile(fFileName.Data(), "RECREATE");
+    }
+    CreateTree(1);
+    owd->cd();
+  }  
   if (fExtensions) {
      TIter next(fExtensions);
      AliAODExtension *ext;
@@ -180,6 +183,7 @@ void AliAODHandler::StoreMCParticles(){
   // has to passed to the AOD Handler by this task 
   // (doing this in the steering macro would not work on PROOF)
 
+  if (!fAODEvent) return;
   TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
   if(!mcarray)return;
   mcarray->Delete();
@@ -388,20 +392,20 @@ Bool_t AliAODHandler::FinishEvent()
     fAODEvent->MakeEntriesReferencable();
     // StoreMCParticles();
     FillTree();
-    if (fExtensions) {
-      TIter next(fExtensions);
-      AliAODExtension *ext;
-      while ((ext=(AliAODExtension*)next())) ext->FinishEvent();
-    }
-    if (fFilters) {   
-      TIter nextf(fFilters);
-      AliAODExtension *ext;
-      while ((ext=(AliAODExtension*)nextf())) {
-//        ext->SetEvent(fAODEvent);
-        ext->FinishEvent();
-      }  
-    }       
+  }  
+  if (fExtensions) {
+    TIter next(fExtensions);
+    AliAODExtension *ext;
+    while ((ext=(AliAODExtension*)next())) ext->FinishEvent();
   }
+  if (fFilters) {   
+    TIter nextf(fFilters);
+    AliAODExtension *ext;
+    while ((ext=(AliAODExtension*)nextf())) {
+//      ext->SetEvent(fAODEvent);
+      ext->FinishEvent();
+    }  
+  }       
   if (fIsStandard) fAODEvent->ResetStd();
   // Reset AOD replication flag
   fAODIsReplicated = kFALSE;
@@ -426,6 +430,7 @@ Bool_t AliAODHandler::TerminateIO()
 {
   // Terminate IO
   if (fFileA) {
+    fFileA->Write();
     fFileA->Close();
     delete fFileA;
     fFileA = 0;
@@ -465,7 +470,7 @@ void AliAODHandler::FillTree()
 void AliAODHandler::AddAODtoTreeUserInfo()
 {
   // Add aod event to tree user info
-  fTreeA->GetUserInfo()->Add(fAODEvent);
+  if (fTreeA) fTreeA->GetUserInfo()->Add(fAODEvent);
   // Now the tree owns our fAODEvent...
   fAODEvent = 0;
 }

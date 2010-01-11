@@ -511,7 +511,8 @@ void AliAnalysisManager::PackOutput(TList *target)
             if (fDebug > 1) printf("PackOutput %s: special output\n", output->GetName());
             if (isManagedByHandler) {
                // Terminate IO for files managed by the output handler
-               if (file) file->Write();
+               // file->Write() moved to AOD handler (A.G. 11.01.10)
+//               if (file) file->Write();
                if (file && fDebug > 2) {
                   printf("   handled file %s listing content:\n", file->GetName());
                   file->ls();
@@ -746,6 +747,9 @@ void AliAnalysisManager::Terminate()
       }
    }   
    //
+   if (fInputEventHandler)   fInputEventHandler  ->TerminateIO();
+   if (fOutputEventHandler)  fOutputEventHandler ->TerminateIO();
+   if (fMCtruthEventHandler) fMCtruthEventHandler->TerminateIO();
    TIter next1(fOutputs);
    while ((output=(AliAnalysisDataContainer*)next1())) {
       // Special outputs or grid files have the files already closed and written.
@@ -754,15 +758,7 @@ void AliAnalysisManager::Terminate()
         if (output->IsSpecialOutput() || output->IsRegisterDataset()) continue;
       }  
       const char *filename = output->GetFileName();
-      if (!(strcmp(filename, "default"))) {
-         if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
-         TFile *aodfile = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
-         if (aodfile) {
-            if (fDebug > 1) printf("Writing output handler file: %s\n", filename);
-            aodfile->Write();
-            continue;
-         }   
-      }      
+      if (!(strcmp(filename, "default"))) continue;
       if (!strlen(filename)) continue;
       if (!output->GetData()) continue;
       TDirectory *opwd = gDirectory;
@@ -816,10 +812,6 @@ void AliAnalysisManager::Terminate()
       }   
       if (opwd) opwd->cd();
    }   
-
-   if (fInputEventHandler)   fInputEventHandler  ->TerminateIO();
-   if (fOutputEventHandler)  fOutputEventHandler ->TerminateIO();
-   if (fMCtruthEventHandler) fMCtruthEventHandler->TerminateIO();
 
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
    if (getsysInfo) {
