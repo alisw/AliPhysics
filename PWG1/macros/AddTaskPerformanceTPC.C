@@ -247,24 +247,30 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
   //
   // Add components to the performance task
   //
-  if(bUseMCInfo) task->AddPerformanceObject( pCompRes0 );
-  if(bUseMCInfo) task->AddPerformanceObject( pCompRes3 );
-  if(bUseMCInfo) task->AddPerformanceObject( pCompRes4 );
-  if(bUseMCInfo)task->AddPerformanceObject( pCompEff0 );
-  //
-  pCompDEdx3->SetTriggerClass(triggerClass);
-  pCompDCA0->SetTriggerClass(triggerClass);
-  pCompTPC0->SetTriggerClass(triggerClass);
-  pCompMatch0->SetTriggerClass(triggerClass);
-  pCompMatch1->SetTriggerClass(triggerClass);
-  pCompMatch2->SetTriggerClass(triggerClass);
-  //
   task->AddPerformanceObject( pCompDEdx3 );
   task->AddPerformanceObject( pCompDCA0 );
   task->AddPerformanceObject( pCompTPC0 );
   task->AddPerformanceObject( pCompMatch0 );
   task->AddPerformanceObject( pCompMatch1 );
   task->AddPerformanceObject( pCompMatch2 );
+
+  //
+  if(bUseMCInfo) { 
+     task->AddPerformanceObject( pCompRes0 );
+     task->AddPerformanceObject( pCompRes3 );
+     task->AddPerformanceObject( pCompRes4 );
+     task->AddPerformanceObject( pCompEff0 );
+  }
+
+  //
+  if(!bUseMCInfo) {
+    pCompDEdx3->SetTriggerClass(triggerClass);
+    pCompDCA0->SetTriggerClass(triggerClass);
+    pCompTPC0->SetTriggerClass(triggerClass);
+    pCompMatch0->SetTriggerClass(triggerClass);
+    pCompMatch1->SetTriggerClass(triggerClass);
+    pCompMatch2->SetTriggerClass(triggerClass);
+  }
 
   //
   // Create containers for input
