@@ -51,6 +51,7 @@ public:
   void SetAnalysisMode(const AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
   void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; }
   void SetTriggerClass(const Char_t *triggerClass)              { fTriggerClass = triggerClass; }
+  void SetParticleMode(const AlidNdPtHelper::ParticleMode mode) { fParticleMode = mode; }
 
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
@@ -59,6 +60,7 @@ public:
   AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
   AliTriggerAnalysis::Trigger GetTrigger() const                { return fTrigger; }
   const Char_t* GetTriggerClass() const                         { return fTriggerClass; }
+  AlidNdPtHelper::ParticleMode GetParticleMode() const          { return fParticleMode; }
 
 private:
 
@@ -70,6 +72,7 @@ private:
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
   AliTriggerAnalysis::Trigger fTrigger;         // trigger definition MB1, MB2 ...
   const Char_t * fTriggerClass;                 // trigger class
+  AlidNdPtHelper::ParticleMode fParticleMode;   // selected particle (pion, kaon, ...)
 
   ClassDef(AlidNdPt,1);
 };

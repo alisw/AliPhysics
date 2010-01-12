@@ -31,6 +31,7 @@ AlidNdPt::AlidNdPt(): TNamed()
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
 , fTrigger(AliTriggerAnalysis::kMB1) 
 , fTriggerClass(0) 
+, fParticleMode(AlidNdPtHelper::kAllPart) 
 {
   // default constructor
 }
@@ -44,6 +45,7 @@ AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
 , fTrigger(AliTriggerAnalysis::kMB1) 
 , fTriggerClass(0) 
+, fParticleMode(AlidNdPtHelper::kAllPart) 
 {
   // constructor
 }

@@ -38,14 +38,17 @@ class AlidNdPtEventCuts;
 class AlidNdPtHelper : public TObject
 {
   public:
-    enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS, kTPCSPDvtx, kMCRec, kMCPion, kMCKaon, kMCProton, kPlus, kMinus };
+    enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS, kTPCSPDvtx, kTPCSPDvtxUpdate, kMCRec };
+    enum ParticleMode { kAllPart = 0, kMCPion, kMCKaon, kMCProton, kPlus, kMinus, kCosmics};
+
     static const AliESDVertex* GetVertex(AliESDEvent* aEsd, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts,  AnalysisMode analysisMethod, Bool_t debug = kFALSE,Bool_t bRedoTPC = kFALSE, Bool_t bUseMeanVertex = kFALSE);
 
     static const AliESDVertex* GetTPCVertexZ(AliESDEvent* aEsd, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts, Float_t fraction=0.8, Int_t ntracksMin=2);
 
     static Bool_t TestRecVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
-    static Bool_t IsPrimaryParticle(AliStack *stack, Int_t idx, AnalysisMode analysisMode);
+    static Bool_t IsPrimaryParticle(AliStack *stack, Int_t idx, ParticleMode particleMode);
+    static Bool_t IsCosmicTrack(TObjArray *allChargedTracks, AliESDtrack *track, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts);
     static void PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger);
     static Int_t ConvertPdgToPid(TParticle *particle);
 
@@ -65,6 +68,8 @@ class AlidNdPtHelper : public TObject
     static Int_t GetSPDMBTrackMult(AliESDEvent* esdEvent, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
     static Int_t GetSPDMBPrimTrackMult(AliESDEvent* esdEvent, AliStack * stack, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
     static Int_t GetMCTrueTrackMult(AliMCEvent *mcEvent, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts);
+
+    static AliESDtrack* GetTPCOnlyTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate);
 
     static void PrintMCInfo(AliStack *pStack, Int_t label);
 

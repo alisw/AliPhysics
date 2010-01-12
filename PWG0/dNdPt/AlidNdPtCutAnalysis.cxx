@@ -120,9 +120,10 @@ void AlidNdPtCutAnalysis::Init(){
   fMCEventHist->Sumw2();
 
   //Xv-mcXv:Yv-mcYv:Zv-mcZv:Mult
+  Float_t fact = 0.1;
   Int_t binsRecMCEventHist[4]={100,100,100,150};
-  Double_t minRecMCEventHist[4]={-10.0,-10.0,-10.0,0.}; 
-  Double_t maxRecMCEventHist[4]={10.0,10.0,10.0,150.}; 
+  Double_t minRecMCEventHist[4]={-10.0*fact,-10.0*fact,-10.0*fact,0.}; 
+  Double_t maxRecMCEventHist[4]={10.0*fact,10.0*fact,10.0*fact,150.}; 
   fRecMCEventHist = new THnSparseF("fRecMCEventHist","mcXv-Xv:mcYv-Yv:mcZv-Zv:Mult",4,binsRecMCEventHist,minRecMCEventHist,maxRecMCEventHist);
   fRecMCEventHist->GetAxis(0)->SetTitle("mcXv-Xv (cm)");
   fRecMCEventHist->GetAxis(1)->SetTitle("mcYv-Yv (cm)");
@@ -272,6 +273,17 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
     {
       AliESDtrack *track = (AliESDtrack*)allChargedTracks->At(i);
       if(!track) continue;
+
+      //
+      if (GetAnalysisMode()==AlidNdPtHelper::kTPCSPDvtxUpdate) 
+      {
+        //
+        // update track parameters
+	//
+           AliExternalTrackParam cParam;
+	   track->RelateToVertexTPC(esdEvent->GetPrimaryVertexSPD(),esdEvent->GetMagneticField(),kVeryBig,&cParam);
+	   track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
+      }
 
       FillHistograms(track, stack);
       multAll++;
