@@ -18,6 +18,7 @@
 #include <TMatrix.h>
 
 class TObject;
+class TArrayI;
 class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDtrack;
