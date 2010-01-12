@@ -77,8 +77,7 @@ AliPerformanceTask* AddTaskPerformanceTPCQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUs
   AliRecInfoCuts *pRecInfoCutsTPC = new AliRecInfoCuts(); 
   if(pRecInfoCutsTPC) {
     pRecInfoCutsTPC->SetMaxDCAToVertexXY(3.0);
-    pRecInfoCutsTPC->SetMaxDCAToVertexZ(30.0);
-    //pRecInfoCutsTPC->SetMaxDCAToVertexZ(3.0);
+    pRecInfoCutsTPC->SetMaxDCAToVertexZ(3.0);
     pRecInfoCutsTPC->SetRequireSigmaToVertex(kFALSE);
     pRecInfoCutsTPC->SetRequireTPCRefit(kFALSE);
     pRecInfoCutsTPC->SetAcceptKinkDaughters(kTRUE);

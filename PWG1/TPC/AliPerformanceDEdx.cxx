@@ -319,8 +319,10 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdE
   }
 
   // trigger
-  Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
-  if(!isEventTriggered) return; 
+  if(!bUseMC) {
+    Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+    if(!isEventTriggered) return; 
+  }
 
   // get TPC event vertex
   const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
