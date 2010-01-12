@@ -52,7 +52,7 @@ class AliHMPIDRecoParamV1 : public AliDetectorRecoParam
   Double_t fHmpTrackMatchingDistParas[5];                   //Prevision for momentum dependen track matching
   
 
-  ClassDef(AliHMPIDRecoParamV1, 0) 
+  ClassDef(AliHMPIDRecoParamV1, 1) 
 };
 #endif
 
