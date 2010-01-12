@@ -28,6 +28,7 @@
 #include "AliESDCaloCluster.h"
 #include "AliESDv0.h"
 #include "AliESDtrack.h"
+#include "AliLog.h"
 
 ClassImp(AliAnalysisTaskOmegaPi0PiPi)
 
@@ -120,27 +121,27 @@ void AliAnalysisTaskOmegaPi0PiPi::UserExec(Option_t* /* option */)
 {
   //Main function that does all the job.
   
-  printf("We are within AliAnalysisTaskOmegaPi0PiPi::UserExec.");
-
   AliVEvent* event = InputEvent();
   AliESDEvent* esd = (AliESDEvent*)event ;
 
   Double_t v[3] ; //vertex ;
   esd->GetVertex()->GetXYZ(v) ;
   TVector3 vtx(v);
-  printf("Vertex: (%.3f,%.3f,%.3f)\n",vtx.X(),vtx.Y(),vtx.Z());
+
+  AliDebug(2,Form("Vertex: (%.3f,%.3f,%.3f)\n",vtx.X(),vtx.Y(),vtx.Z()));
   
   TRefArray * caloClustersArr  = new TRefArray();
   esd->GetPHOSClusters(caloClustersArr);
 
   const Int_t kNumberOfTracks = esd->GetNumberOfTracks();
   const Int_t kNumberOfV0s = esd->GetNumberOfV0s();
-  printf("Tracks: %d. V0s: %d\n",kNumberOfTracks,kNumberOfV0s);
+
+  AliDebug(2,Form("Tracks: %d. V0s: %d\n",kNumberOfTracks,kNumberOfV0s));
   
   Float_t xyImp,zImp,imp1,imp2;
   
   const Int_t kNumberOfPhosClusters   = caloClustersArr->GetEntries() ;
-  printf("CaloClusters: %d\n", kNumberOfPhosClusters);
+  AliDebug(2,Form("CaloClusters: %d\n", kNumberOfPhosClusters));
   if(kNumberOfPhosClusters<2) return;
   
   TLorentzVector pc1; //4-momentum of PHOS cluster 1
@@ -167,7 +168,7 @@ void AliAnalysisTaskOmegaPi0PiPi::UserExec(Option_t* /* option */)
       c2->GetMomentum(pc2,v);
 
       pc12 = pc1+pc2;
-      printf("pc12.M(): %.3f\n",pc12.M());
+      AliDebug(2,Form("pc12.M(): %.3f\n",pc12.M()));
 
       if(pc12.M()<0.115 || pc12.M()>0.155) continue; //not a pi0 candidate!
       if(pc12.Pt()<1.) continue; //pT(pi0) > 1GeV
@@ -205,7 +206,7 @@ void AliAnalysisTaskOmegaPi0PiPi::UserExec(Option_t* /* option */)
 // 		 tr1->P(),tr2->P(),tr1->M(),tr2->M());
 	  
 	  pomega = pc12 + ptr12;
-	  printf("pomega.M(): %f\n",pomega.M());
+	  AliDebug(2,Form("pomega.M(): %f\n",pomega.M()));
 
 	  if( p1<2. && p2<2. )
 	    fhM3pi0to2->Fill(pomega.Pt(),pomega.M());
@@ -251,7 +252,8 @@ void AliAnalysisTaskOmegaPi0PiPi::UserExec(Option_t* /* option */)
 	Double_t dy = vtx.Y() - v0->Yv();
 	Double_t dxy = TMath::Sqrt(dx*dx + dy*dy);
 	fhDxy->Fill(dxy);
-	printf("V0: dxy=%.3f\n",dxy);
+
+	AliDebug(2,Form("V0: dxy=%.3f\n",dxy));
 
 	if(dxy<2.) fhM2piSel->Fill(ptr12.M());
       } 
