@@ -593,7 +593,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     Bool_t bRedoTPCVertex = evtCuts->IsRedoTPCVertex();
     Bool_t bUseConstraints = evtCuts->IsUseBeamSpotConstraint();
     vtxESD = AlidNdPtHelper::GetVertex(esdEvent,evtCuts,accCuts,esdTrackCuts,GetAnalysisMode(),kFALSE,bRedoTPCVertex,bUseConstraints); 
-    isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, GetAnalysisMode(), kFALSE); // should be moved to AcceptEvent
+    isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, GetAnalysisMode(), kFALSE); 
   }
   if( IsUseMCInfo() &&  !evtCuts->IsRecVertexRequired() ) {
     vtxESD = new AliESDVertex(vtxMC[2],10.,genHeader->NProduced());
@@ -603,14 +603,15 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
   //printf("isEventOK %d \n",isEventOK);
 
   //
-  // get multiplicity of min. bias tracks
+  // get multiplicity vertex contributors
   //
   Int_t multMBTracks = 0; 
   if(GetAnalysisMode() == AlidNdPtHelper::kTPC || GetAnalysisMode() == AlidNdPtHelper::kMCRec) {  
     multMBTracks = AlidNdPtHelper::GetTPCMBTrackMult(esdEvent,evtCuts,accCuts,esdTrackCuts);
   } 
-  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kMCRec) {
-    multMBTracks = AlidNdPtHelper::GetSPDMBTrackMult(esdEvent,0.0);
+  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCSPDvtxUpdate || GetAnalysisMode() == AlidNdPtHelper::kMCRec) {
+    //multMBTracks = AlidNdPtHelper::GetSPDMBTrackMult(esdEvent,0.0);
+    multMBTracks = vtxESD->GetNContributors();
   } 
   else {
     AliDebug(AliLog::kError, Form("Found analysis type %s", GetAnalysisMode()));
@@ -639,34 +640,75 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     {
       AliESDtrack *track = (AliESDtrack*)allChargedTracks->At(i);
       if(!track) continue;
-      if(accCuts->AcceptTrack(track)) 
-      {
-        if(esdTrackCuts->AcceptTrack(track)) 
-	{
-	  multRecTemp++;
-        }
-      }
+      if(track->Charge()==0) continue;
+
+      // only postive charged 
+      if(GetParticleMode() == AlidNdPtHelper::kPlus && track->Charge() < 0) 
+        continue;
+      
+      // only negative charged 
+      if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
+        continue;
+
+      if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) 
+        multRecTemp++;
     }  
 
+    //
     for(Int_t i=0; i<entries;++i) 
     {
       AliESDtrack *track = (AliESDtrack*)allChargedTracks->At(i);
       if(!track) continue;
+      if(track->Charge()==0) continue;
+
+      // only postive charged 
+      if(GetParticleMode() == AlidNdPtHelper::kPlus && track->Charge() < 0) 
+      continue;
+      
+      // only negative charged 
+      if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
+      continue;
         
-      if(accCuts->AcceptTrack(track)) 
+      // track-level corrections
+      if(esdTrackCuts->AcceptTrack(track)) 
       {
-        if(esdTrackCuts->AcceptTrack(track)) 
-	{
-	  // track-level corrections
-          if(GetAnalysisMode()==AlidNdPtHelper::kMCRec && IsUseMCInfo()) { 
-            FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,vtxMC[2],multRecTemp); 
-	  } else {
-            FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,vtxESD->GetZv(),multRecTemp); 
-	  }
-	  labelsRec[multRec] = TMath::Abs(track->GetLabel());
-	  multRec++;
-        }
-      }
+         if (GetAnalysisMode()==AlidNdPtHelper::kTPCSPDvtxUpdate) 
+	 {
+	   //
+	   // update track parameters
+	   //
+           AliExternalTrackParam cParam;
+	   track->RelateToVertexTPC(esdEvent->GetPrimaryVertexSPD(),esdEvent->GetMagneticField(),kVeryBig,&cParam);
+	   track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
+
+           if(accCuts->AcceptTrack(track)) { 
+             FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,vtxESD->GetZv(),multRecTemp); 
+	     labelsRec[multRec] = TMath::Abs(track->GetLabel());
+	     multRec++;
+	   }
+         }
+         else if (GetAnalysisMode()==AlidNdPtHelper::kMCRec && IsUseMCInfo()) 
+         { 
+	   //
+	   // Replace rec with MC
+	   //
+           if(accCuts->AcceptTrack(track)) { 
+	     FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,vtxMC[2],multRecTemp); 
+	     labelsRec[multRec] = TMath::Abs(track->GetLabel());
+	     multRec++;
+           }
+	 } 
+	 else  {
+	   //
+	   // all the rest tracking scenarios
+	   //
+           if(accCuts->AcceptTrack(track)) { 
+             FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,vtxESD->GetZv(),multRecTemp); 
+	     labelsRec[multRec] = TMath::Abs(track->GetLabel());
+	     multRec++;
+	   }
+         }
+       }
     }
     // event-level corrections
     if(GetAnalysisMode()==AlidNdPtHelper::kMCRec && IsUseMCInfo()) { 
@@ -729,6 +771,14 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
         Double_t charge = particle->GetPDG()->Charge()/3.;
         if (charge == 0.0)
           continue;
+
+        // only postive charged 
+        if(GetParticleMode() == AlidNdPtHelper::kPlus && charge  < 0.) 
+        continue;
+      
+        // only negative charged 
+        if(GetParticleMode() == AlidNdPtHelper::kMinus && charge > 0.) 
+        continue;
       
         // physical primary
         Bool_t prim = stack->IsPhysicalPrimary(iMc);
@@ -1102,10 +1152,10 @@ void AlidNdPtCorrection::Analyse()
   //
   // set min and max values
   //
-  Double_t minPt = accCuts->GetMinPt();
-  Double_t maxPt = accCuts->GetMaxPt();
-  Double_t minEta = accCuts->GetMinEta();
-  Double_t maxEta = accCuts->GetMaxEta()-0.00001;
+  //Double_t minPt = accCuts->GetMinPt();
+  //Double_t maxPt = accCuts->GetMaxPt();
+  //Double_t minEta = accCuts->GetMinEta();
+  //Double_t maxEta = accCuts->GetMaxEta()-0.00001;
 
   //
   // pt profile

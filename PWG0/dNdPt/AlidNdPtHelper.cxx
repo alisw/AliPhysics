@@ -26,12 +26,12 @@
 #include <TLeaf.h>
 #include <TArrayI.h>
 #include <TF1.h>
+#include <TLorentzVector.h>
 
 #include <AliHeader.h>
 #include <AliStack.h>
 #include <AliLog.h>
 
-#include <AliLog.h>
 #include <AliESD.h>
 #include <AliESDEvent.h>
 #include <AliMCEvent.h>
@@ -74,17 +74,13 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* aEsd, AlidNdPtEventCu
 
   const AliESDVertex* vertex = 0;
   AliESDVertex *initVertex = 0;
-  if (analysisMode == kSPD || analysisMode == kTPCITS || analysisMode == kTPCSPDvtx ||  
-      analysisMode == kMCRec || analysisMode == kMCPion || analysisMode == kMCKaon || 
-      analysisMode == kMCProton || analysisMode ==kPlus || analysisMode ==kMinus )
+  if (analysisMode == kSPD || analysisMode == kTPCITS || analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate)
   {
     vertex = aEsd->GetPrimaryVertexSPD();
     if (debug)
       Printf("AlidNdPtHelper::GetVertex: Returning SPD vertex");
   }
-  else if (analysisMode == kTPC || analysisMode == kMCRec || 
-           analysisMode == kMCPion || analysisMode == kMCKaon || analysisMode == kMCProton || 
-	   analysisMode == kPlus || analysisMode == kMinus)
+  else if (analysisMode == kTPC)
   {
     if(bRedoTPC) {
 
@@ -170,13 +166,11 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
   if(!vertex) return kFALSE;
 
   Float_t requiredZResolution = -1;
-  if (analysisMode == kSPD || analysisMode == kTPCITS || analysisMode == kTPCSPDvtx)
+  if (analysisMode == kSPD || analysisMode == kTPCITS || analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate)
   {
     requiredZResolution = 0.1;
   }
-  else if (analysisMode == kTPC || analysisMode == kMCRec || 
-           analysisMode == kMCPion || analysisMode == kMCKaon || 
-	   analysisMode == kMCProton || analysisMode ==kPlus || analysisMode ==kMinus)
+  else if (analysisMode == kTPC)
     requiredZResolution = 10.;
 
   // check Ncontributors
@@ -206,10 +200,10 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
 }
 
 //____________________________________________________________________
-Bool_t AlidNdPtHelper::IsPrimaryParticle(AliStack* stack, Int_t idx, AnalysisMode analysisMode)
+Bool_t AlidNdPtHelper::IsPrimaryParticle(AliStack* stack, Int_t idx, ParticleMode particleMode)
 {
 // check primary particles 
-// depending on the analysis mode
+// depending on the particle mode
 //
   if(!stack) return kFALSE;
 
@@ -225,22 +219,75 @@ Bool_t AlidNdPtHelper::IsPrimaryParticle(AliStack* stack, Int_t idx, AnalysisMod
   // physical primary
   Bool_t prim = stack->IsPhysicalPrimary(idx);
 
-  if(analysisMode==kMCPion) {
+  if(particleMode==kMCPion) {
     if(prim && pdg==kPiPlus) return kTRUE;
     else return kFALSE;
   } 
 
-  if (analysisMode==kMCKaon) {
+  if (particleMode==kMCKaon) {
     if(prim && pdg==kKPlus) return kTRUE;
     else return kFALSE;
   }
     
-  if (analysisMode==kMCProton) {
+  if (particleMode==kMCProton) {
     if(prim && pdg==kProton) return kTRUE;
     else return kFALSE;
   }
 
 return prim;
+}
+
+//____________________________________________________________________
+Bool_t AlidNdPtHelper::IsCosmicTrack(TObjArray *allChargedTracks, AliESDtrack *track1, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts)
+{
+//
+// check cosmic tracks
+//
+  if(!allChargedTracks) return kFALSE;
+  if(!track1) return kFALSE;
+  if(!accCuts) return kFALSE;
+  if(!trackCuts) return kFALSE;
+
+  Int_t entries = allChargedTracks->GetEntries();
+  for(Int_t i=0; i<entries;++i) 
+  {
+      //
+      // exclude the same tracks
+      //
+      if(i == trackIdx) continue;
+
+      AliESDtrack *track2 = (AliESDtrack*)allChargedTracks->At(i);
+      if(!track2) continue;
+      if(track2->Charge()==0) continue;
+
+      /*
+      if(track1->Pt() > 6. && track2->Pt() > 6. && (track1->Charge() + track2->Charge()) == 0 ) 
+      {
+        printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
+        printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
+
+        printf("deta %f, dphi %f, dq %d  \n", track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
+
+      }
+      */
+
+      //
+      // cosmic tracks in TPC
+      //
+      //if( TMath::Abs( track1->Theta() - track2->Theta() ) < 0.004  && 
+      //  ((TMath::Abs(track1->Phi()-track2->Phi()) - TMath::Pi() )<0.004) && 
+      if( (track1->Pt()-track2->Pt()) < 0.1 && track1->Pt() > 6.0 && 
+	     (track1->Charge()+track2->Charge()) == 0 )
+      {
+        //printf("COSMIC  candidate \n");
+        printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
+        printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
+        printf("dtheta %f, deta %f, dphi %f, dq %d  \n", track1->Theta()-track2->Theta(),  track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
+	return kTRUE;
+      }
+   }
+     
+return kFALSE; 
 }
 
 //____________________________________________________________________
@@ -259,12 +306,8 @@ void AlidNdPtHelper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Tr
     case kTPC : str += "TPC-only"; break;
     case kTPCITS : str += "Global tracking"; break;
     case kTPCSPDvtx : str += "TPC tracking + SPD event vertex"; break;
+    case kTPCSPDvtxUpdate : str += "TPC tracks updated with SPD event vertex point"; break;
     case kMCRec : str += "TPC tracking + Replace rec. with MC values"; break;
-    case kMCPion : str += "TPC tracking + only pion MC tracks"; break;
-    case kMCKaon : str += "TPC tracking + only kaon MC tracks"; break;
-    case kMCProton : str += "TPC tracking + only proton MC tracks"; break;
-    case kPlus: str += "TPC tracking + only positive charged tracks"; break;
-    case kMinus : str += "TPC tracking + only negative charge tracks"; break;
   }
   str += " and trigger ";
 
@@ -426,22 +469,26 @@ TObjArray* AlidNdPtHelper::GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMo
   AliESDtrack *track=0;
   for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
   { 
-    if(analysisMode == AlidNdPtHelper::kTPC || analysisMode == AlidNdPtHelper::kTPCSPDvtx || 
-       analysisMode == AlidNdPtHelper::kMCRec || analysisMode == kMCPion || analysisMode == kMCKaon || 
-       analysisMode == kMCProton || analysisMode ==kPlus || analysisMode ==kMinus) { 
-
-      // track must be deleted by the user 
+    if(analysisMode == AlidNdPtHelper::kTPC) { 
+      // track must be deleted by user 
       track = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent,iTrack);
-    } else {
+      if(!track) continue;
+    } 
+    else if (analysisMode == AlidNdPtHelper::kTPCSPDvtx || AlidNdPtHelper::kTPCSPDvtxUpdate)
+    {
+      // track must be deleted by the user 
+      track = AlidNdPtHelper::GetTPCOnlyTrackSPDvtx(esdEvent,iTrack,kFALSE);
+      if(!track) continue;
+    }
+    else {
       track=esdEvent->GetTrack(iTrack);
     }
     if(!track) continue;
 
     if(track->Charge()==0) { 
-      if(analysisMode == AlidNdPtHelper::kTPC || analysisMode == AlidNdPtHelper::kTPCSPDvtx ||  
-         analysisMode == AlidNdPtHelper::kMCRec || analysisMode == kMCPion || analysisMode == kMCKaon || 
-	 analysisMode == kMCProton || analysisMode ==kPlus || analysisMode ==kMinus) {
-
+      if(analysisMode == AlidNdPtHelper::kTPC || analysisMode == AlidNdPtHelper::kTPCSPDvtx || 
+         analysisMode == AlidNdPtHelper::kTPCSPDvtxUpdate) 
+      {
         delete track; continue; 
       } else {
         continue;
@@ -452,14 +499,63 @@ TObjArray* AlidNdPtHelper::GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMo
   }
 
   if(analysisMode == AlidNdPtHelper::kTPC || analysisMode == AlidNdPtHelper::kTPCSPDvtx || 
-     analysisMode == AlidNdPtHelper::kMCRec || analysisMode == kMCPion || analysisMode == kMCKaon || 
-     analysisMode == kMCProton || analysisMode ==kPlus || analysisMode ==kMinus) {
+     analysisMode == AlidNdPtHelper::kTPCSPDvtxUpdate) {
      
      allTracks->SetOwner(kTRUE);
   }
 
 return allTracks;
 }
+
+//_____________________________________________________________________________
+AliESDtrack *AlidNdPtHelper::GetTPCOnlyTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
+{
+//
+// Create ESD tracks from TPCinner parameters.
+// Propagte to DCA to SPD vertex.
+// Update using SPD vertex point (parameter)
+//
+// It is user responsibility to delete these tracks
+//
+
+  if (!esdEvent) return NULL;
+  if (!esdEvent->GetPrimaryVertexSPD() ) { return NULL; }
+  if (!esdEvent->GetPrimaryVertexSPD()->GetStatus() ) { return  NULL; }
+   
+  // 
+  AliESDtrack* track = esdEvent->GetTrack(iTrack);
+  if (!track)
+    return NULL;
+
+  // create new ESD track
+  AliESDtrack *tpcTrack = new AliESDtrack();
+ 
+  // relate TPC-only tracks (TPCinner) to SPD vertex
+  AliExternalTrackParam cParam;
+  if(bUpdate) {  
+    track->RelateToVertexTPC(esdEvent->GetPrimaryVertexSPD(),esdEvent->GetMagneticField(),kVeryBig,&cParam);
+    track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
+
+    // reject fake tracks
+    if(track->Pt() > 10000.)  {
+      ::Error("Exclude no physical tracks","pt>10000. GeV");
+      delete tpcTrack; 
+      return NULL;
+    }
+  }
+  else {
+    track->RelateToVertexTPC(esdEvent->GetPrimaryVertexSPD(), esdEvent->GetMagneticField(), kVeryBig);
+  }
+
+  // only true if we have a tpc track
+  if (!track->FillTPCOnlyTrack(*tpcTrack))
+  {
+    delete tpcTrack;
+    return NULL;
+  }
+
+return tpcTrack;
+} 
 
 //_____________________________________________________________________________
 Int_t AlidNdPtHelper::GetTPCMBTrackMult(AliESDEvent *esdEvent, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts)
