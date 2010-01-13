@@ -115,6 +115,11 @@ AliMUONPadStatusMaker::AsString(Int_t status)
 {
   /// return a human readable version of the integer status
   
+  if ( status == 0 ) 
+  {
+    return "Brave New World";
+  }
+  
   Int_t pedStatus;
   Int_t gainStatus;
   Int_t hvStatus;
@@ -709,7 +714,7 @@ AliMUONPadStatusMaker::Report(UInt_t mask)
         
         Int_t status = PadStatus(detElemId,manuId,i);          
         
-        if ( ( status & mask) || (!mask && status) )
+        if ( mask && ( status & mask) ) // note that if mask == 0, all pads are good...
         {
           ++nBadPads;
           log.Log(AsString(status));

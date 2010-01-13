@@ -242,7 +242,7 @@ AliMUONPadStatusMapMaker::ComputeStatusMap(Int_t detElemId, Int_t manuId) const
       {
         status = statusParam->ValueAsIntFast(c); //fkStatusMaker.PadStatus(detElemId,m,c);
       }
-      if ( ( fMask==0 && status !=0 ) || ( (status & fMask) != 0 ) )
+      if ( ( fMask != 0 ) && ( (status & fMask) != 0 ) )
       {
         statusMap |= (1<<i);
       }
