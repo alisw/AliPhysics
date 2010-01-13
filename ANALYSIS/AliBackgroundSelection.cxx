@@ -334,9 +334,10 @@ Long64_t AliBackgroundSelection::Merge(TCollection* list)
   Int_t count = 0;
   // 1. Sort this list
   fOutputHist->Sort();
-
+  
   while ((obj = iter->Next())) {
-    
+    Bool_t foundDiffinThisIterStep = kFALSE;
+    //    Printf("%d - %s",count, obj->GetName());
     AliBackgroundSelection* entry = dynamic_cast<AliBackgroundSelection*> (obj);
     if (entry == 0) 
       continue;
@@ -348,7 +349,7 @@ Long64_t AliBackgroundSelection::Merge(TCollection* list)
 
     Bool_t areListsDifferent=kTRUE;
     Int_t iloop = 0;
-    Int_t max_loops = hlist->GetSize() + fOutputHist->GetSize(); // In the worst case all of the histos will be different...
+    Int_t max_loops = hlist->GetSize() + fOutputHist->GetSize(); // In the worst case all of the histos will be different...    
     while(areListsDifferent) {
       if(iloop>max_loops) AliFatal("Infinite Loop?");
       iloop++;
@@ -356,28 +357,31 @@ Long64_t AliBackgroundSelection::Merge(TCollection* list)
       hlist->Sort();
       fOutputHist->Sort();
       // loop over the largest 
+
+      // loop over the largest 
       TObject * hist =0;
       TIterator * iterlist = 0;
-      if (hlist->GetSize() >= fOutputHist->GetSize()) iterlist = hlist->MakeIterator();
-      else                                            iterlist = fOutputHist->MakeIterator();
-	
+      TList * thislist  = 0; // the list over which I'm iterating (i.e. the largest)
+      TList * otherlist = 0; // the other list
+
+      if (hlist->GetSize() >= fOutputHist->GetSize()) { 
+	thislist  = hlist;
+	otherlist = fOutputHist;
+      }
+      else{
+	thislist  = fOutputHist;
+	otherlist = hlist;	
+      }
+      iterlist = thislist->MakeIterator();
+
       while ((hist= iterlist->Next())){ 
-	// if we missed a trigger type, we missed it for both histo categories
-	// getters automatically book non-existing histos
-	
-	// We have to work out trigger class from name:
-	TString trigger_name = hist->GetName();
-	trigger_name.ReplaceAll("_accepted","");
-	trigger_name = trigger_name(trigger_name.Last('_')+1,trigger_name.Length());
-	
-	if (hlist->GetSize() >= fOutputHist->GetSize()) {
-	  GetDeltaPhiHisto(trigger_name.Data());		
-	  GetClusterVsTrackletsHisto(trigger_name.Data());
+	if(!otherlist->FindObject(hist->GetName())){
+	  AliInfo(Form("Adding object %s",hist->GetName()));
+	  foundDiffinThisIterStep = kTRUE;
+	  TH1 * hclone =  (TH1*) hist->Clone();
+	  hclone->Reset();
+	  otherlist->Add(hclone);
 	}
-	else {
-	  entry->GetDeltaPhiHisto(trigger_name.Data());
-	  entry->GetClusterVsTrackletsHisto(trigger_name.Data());
-	}		
       }
 
       // re-sort before checking
@@ -385,12 +389,14 @@ Long64_t AliBackgroundSelection::Merge(TCollection* list)
       fOutputHist->Sort();
 
       // check if everything is fine    
+      areListsDifferent=kFALSE;
       if (hlist->GetSize() == fOutputHist->GetSize()) {	
 	Int_t nhist =  fOutputHist->GetSize();
 	for(Int_t ihist = 0; ihist < nhist; ihist++){
-	  if(strcmp(fOutputHist->At(ihist)->GetName(),hlist->At(ihist)->GetName())) break;
+	  if(strcmp(fOutputHist->At(ihist)->GetName(),hlist->At(ihist)->GetName())) areListsDifferent = kTRUE;
 	}
-	areListsDifferent=kFALSE;
+      } else {
+	areListsDifferent=kTRUE;
       }
     }
 
@@ -404,11 +410,25 @@ Long64_t AliBackgroundSelection::Merge(TCollection* list)
 	AliFatal(Form("Mismatching histos: %s -> %s", fOutputHist->At(ihist)->GetName(),hlist->At(ihist)->GetName()));
       }
     }
-    
-    Int_t n = 0;
-    collections[n++].Add(hlist);
 
-    count++;
+    if (foundDiffinThisIterStep){
+      iter->Reset(); // We found a difference: previous lists could
+		     // also be affected... We start from scratch
+      Int_t n = 0;
+      collections[n++].Clear();
+      count = 0;
+    }
+    else {
+//       AliInfo("hlist");
+//       hlist->Print();
+//       AliInfo("fOutputHist");
+//       fOutputHist->Print();
+      
+      Int_t n = 0;
+      collections[n++].Add(hlist);
+      
+      count++;
+    }
   }
 
   Int_t n = 0;

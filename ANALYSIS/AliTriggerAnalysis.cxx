@@ -123,6 +123,7 @@ AliTriggerAnalysis::~AliTriggerAnalysis()
 
   if (fTriggerClasses)
   {
+    fTriggerClasses->DeleteAll();
     delete fTriggerClasses;
     fTriggerClasses = 0;
   }
@@ -878,12 +879,45 @@ void AliTriggerAnalysis::PrintTriggerClasses() const
   
   Printf("Trigger Classes:");
   
+  Printf("Event count for trigger combinations:");
+  
+  TMap singleTrigger;
+  singleTrigger.SetOwner();
+  
   TIterator* iter = fTriggerClasses->MakeIterator();
   TObjString* obj = 0;
   while ((obj = dynamic_cast<TObjString*> (iter->Next())))
   {
-    TParameter<Long64_t>* param = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(obj));
+    TParameter<Long64_t>* param = static_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(obj));
     
-    Printf("%s: %ld triggers", obj->String().Data(), param->GetVal());
+    Printf(" %s: %ld triggers", obj->String().Data(), param->GetVal());
+    
+    TObjArray* tokens = obj->String().Tokenize(" ");
+    for (Int_t i=0; i<tokens->GetEntries(); i++)
+    {
+      TParameter<Long64_t>* count = dynamic_cast<TParameter<Long64_t>*> (singleTrigger.GetValue(((TObjString*) tokens->At(i))->String().Data()));
+      if (!count)
+      {
+        count = new TParameter<Long64_t>(((TObjString*) tokens->At(i))->String().Data(), 0);
+        singleTrigger.Add(new TObjString(((TObjString*) tokens->At(i))->String().Data()), count);
+      }
+      count->SetVal(count->GetVal() + param->GetVal());
+    }
+    
+    delete tokens;
   }
+  delete iter;
+  
+  Printf("Event count for single trigger:");
+  
+  iter = singleTrigger.MakeIterator();
+  while ((obj = dynamic_cast<TObjString*> (iter->Next())))
+  {
+    TParameter<Long64_t>* param = static_cast<TParameter<Long64_t>*> (singleTrigger.GetValue(obj));
+    
+    Printf("  %s: %ld triggers", obj->String().Data(), param->GetVal());
+  }
+  delete iter;
+  
+  singleTrigger.DeleteAll();
 }
