@@ -40,7 +40,6 @@
 #include "AliPMDcluster.h"
 #include "AliPMDrecpoint1.h"
 #include "AliPMDrechit.h"
-#include "AliPMDisocell.h"
 #include "AliPMDRawStream.h"
 #include "AliPMDCalibData.h"
 #include "AliPMDPedestal.h"
@@ -162,10 +161,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   Int_t    idet;
   Float_t  clusdata[6];
 
-  AliPMDisocell *pmdiso = 0x0;
-
   TObjArray *pmdcont = new TObjArray();
-  TObjArray *pmdisocell = new TObjArray();
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
@@ -254,10 +250,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
       // fEcut = fRecoParam->GetCosmicParam()->GetNoiseCut(imod);
 
       pmdclust->SetEdepCut(fEcut);
-
-
-      pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,
-			pmdisocell,pmdcont);
+      pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,pmdcont);
 
       Int_t nentries1 = pmdcont->GetEntries();
 
@@ -292,26 +285,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	}
       pmdcont->Delete();
 
-	  // Added single isolated cell for offline gain calibration
-	  nentries1 = pmdisocell->GetEntries();
-	  AliDebug(1,Form("Total number of isolated single cell clusters = %d",nentries1));
-	  
-	  for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
-	    {
-	      pmdiso = (AliPMDisocell*)pmdisocell->UncheckedAt(ient1);
-	      idet = pmdiso->GetDetector();
-	      ismn = pmdiso->GetSmn();
-	      clusdata[0] = (Float_t) pmdiso->GetRow();
-	      clusdata[1] = (Float_t) pmdiso->GetCol();
-	      clusdata[2] = pmdiso->GetADC();
-	      clusdata[3] = 1.;
-	      clusdata[4] = -99.;
-	      clusdata[5] = -99.;
-      
-	      AddRecPoint(idet,ismn,clusdata);
-	    }
-	  pmdisocell->Delete();
-      
       branch1->Fill();
       ResetRecpoint();
 
@@ -324,8 +297,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   //   delete the pointers
   delete pmdclust;
   delete pmdcont;
-  delete pmdisocell;
-    
 }
 // ------------------------------------------------------------------------- //
 
@@ -345,10 +316,9 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
   Float_t  clusdata[6];
 
   AliPMDcluster *pmdcl = 0x0;
-  AliPMDisocell *pmdiso = 0x0;
 
   TObjArray *pmdcont = new TObjArray();
-  TObjArray *pmdisocell = new TObjArray();
+
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
   // Fetch the reco param object
@@ -449,9 +419,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 
 
       pmdclust->SetEdepCut(fEcut);
-
-      pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,
-			pmdisocell,pmdcont);
+      pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,pmdcont);
       
       Int_t nentries1 = pmdcont->GetEntries();
 
@@ -472,6 +440,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	  AddRecPoint(idet,ismn,clusdata);
 
 	  Int_t ncell = (Int_t) clusdata[3];
+	  if (ncell > 19) ncell = 19;
 	  for(Int_t ihit = 0; ihit < ncell; ihit++)
 	    {
 	      Int_t celldataX = pmdcl->GetClusCellX(ihit);
@@ -486,26 +455,6 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	}
       pmdcont->Delete();
 
-      // Added single isolated cell for offline gain calibration
-      nentries1 = pmdisocell->GetEntries();
-      AliDebug(1,Form("Total number of isolated single cell clusters = %d",nentries1));
-      
-      for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
-	{
-	  pmdiso = (AliPMDisocell*)pmdisocell->UncheckedAt(ient1);
-	  idet = pmdiso->GetDetector();
-	  ismn = pmdiso->GetSmn();
-	  clusdata[0] = (Float_t) pmdiso->GetRow();
-	  clusdata[1] = (Float_t) pmdiso->GetCol();
-	  clusdata[2] = pmdiso->GetADC();
-	  clusdata[3] = 1.;
-	  clusdata[4] = -99.;
-	  clusdata[5] = -99.;
-	  
-	  AddRecPoint(idet,ismn,clusdata);
-	}
-      pmdisocell->Delete();
-      
       branch1->Fill();
       ResetRecpoint();
 
@@ -517,7 +466,6 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
   //   delete the pointers
   delete pmdclust;
   delete pmdcont;
-  delete pmdisocell;
 }
 // ------------------------------------------------------------------------- //
 
@@ -532,14 +480,11 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   AliPMDddldata *pmdddl = 0x0;
   AliPMDcluster *pmdcl  = 0x0;
-  AliPMDisocell *pmdiso = 0x0;
-
 
   Float_t  clusdata[6];
   TObjArray pmdddlcont;
 
   TObjArray *pmdcont = new TObjArray();
-  TObjArray *pmdisocell = new TObjArray();
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
@@ -798,9 +743,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
 
 	  pmdclust->SetEdepCut(fEcut);
-
-	  pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,
-			    pmdisocell,pmdcont);
+	  pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,pmdcont);
 
 	  Int_t nentries1 = pmdcont->GetEntries();
 
@@ -821,6 +764,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	      AddRecPoint(idet,ismn,clusdata);
 
 	      Int_t ncell = (Int_t) clusdata[3];
+	      if (ncell > 19) ncell = 19;
 	      for(Int_t ihit = 0; ihit < ncell; ihit++)
 		{
 		  Int_t celldataX = pmdcl->GetClusCellX(ihit);
@@ -836,27 +780,6 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	    }
 	  pmdcont->Delete();
 
-
-	  // Added single isolated cell for offline gain calibration
-	  nentries1 = pmdisocell->GetEntries();
-	  AliDebug(1,Form("Total number of isolated single cell clusters = %d",nentries1));
-	  
-	  for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
-	    {
-	      pmdiso = (AliPMDisocell*)pmdisocell->UncheckedAt(ient1);
-	      idet = pmdiso->GetDetector();
-	      ismn = pmdiso->GetSmn();
-	      clusdata[0] = (Float_t) pmdiso->GetRow();
-	      clusdata[1] = (Float_t) pmdiso->GetCol();
-	      clusdata[2] = pmdiso->GetADC();
-	      clusdata[3] = 1.;
-	      clusdata[4] = -99.;
-	      clusdata[5] = -99.;
-      
-	      AddRecPoint(idet,ismn,clusdata);
-	    }
-	  pmdisocell->Delete();
-	  
 	  branch1->Fill();
 	  ResetRecpoint();
 
@@ -878,8 +801,6 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   //   delete the pointers
   delete pmdclust;
   delete pmdcont;
-  delete pmdisocell;
-
 }
 // ------------------------------------------------------------------------- //
 
@@ -894,11 +815,8 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
   TObjArray pmdddlcont;
 
   AliPMDcluster *pmdcl  = 0x0;
-  AliPMDisocell *pmdiso  = 0x0;
-
 
   TObjArray *pmdcont = new TObjArray();
-  TObjArray *pmdisocell = new TObjArray();
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
@@ -986,7 +904,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	    }
 	}
       ResetCellADC();
-
     
       Int_t indexsmn = 0;
       Int_t ientries = pmdddlcont.GetEntries();
@@ -1143,8 +1060,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
 	  pmdclust->SetEdepCut(fEcut);
 
-	  pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,
-			    pmdisocell,pmdcont);
+	  pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,pmdcont);
 
 	  Int_t nentries1 = pmdcont->GetEntries();
 
@@ -1180,26 +1096,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	    }
 	  pmdcont->Delete();
 
-	  // Added single isolated cell for offline gain calibration
-	  nentries1 = pmdisocell->GetEntries();
-	  AliDebug(1,Form("Total number of isolated single cell clusters = %d",nentries1));
-	  
-	  for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
-	    {
-	      pmdiso = (AliPMDisocell*)pmdisocell->UncheckedAt(ient1);
-	      idet = pmdiso->GetDetector();
-	      ismn = pmdiso->GetSmn();
-	      clusdata[0] = (Float_t) pmdiso->GetRow();
-	      clusdata[1] = (Float_t) pmdiso->GetCol();
-	      clusdata[2] = pmdiso->GetADC();
-	      clusdata[3] = 1.;
-	      clusdata[4] = -99.;
-	      clusdata[5] = -99.;
-      
-	      AddRecPoint(idet,ismn,clusdata);
-	    }
-	  pmdisocell->Delete();
-	  
 	  branch1->Fill();
 	  ResetRecpoint();
 
@@ -1223,7 +1119,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
   //   delete the pointers
   delete pmdclust;
   delete pmdcont;
-  delete pmdisocell;
 }
 // ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::SetCellEdepCut(Float_t ecut)
