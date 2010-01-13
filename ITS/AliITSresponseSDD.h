@@ -53,28 +53,40 @@ class AliITSresponseSDD : public TObject {
     if(modIndex<kNSPDmods || modIndex>kNSPDmods+kNSDDmods) AliError(Form("SDD module number %d out of range",modIndex));
     fDeltaVDrift[modIndex-kNSPDmods]=dv;
   }
-
-  virtual void SetTimeOffset(Float_t to){fTimeOffset = to;}
-  virtual Float_t GetTimeOffset()const {return fTimeOffset;}
-  virtual Float_t GetTimeZero(Int_t modIndex){
-    if(modIndex<kNSPDmods || modIndex>kNSPDmods+kNSDDmods){
-      AliError(Form("SDD module number %d out of range",modIndex));
-      return 0.;
-    }
-    return fTimeZero[modIndex-kNSPDmods];
-  }
-  virtual Float_t GetDeltaVDrift(Int_t modIndex){
+  virtual Float_t GetDeltaVDrift(Int_t modIndex) const {
     if(modIndex<kNSPDmods || modIndex>kNSPDmods+kNSDDmods){
       AliError(Form("SDD module number %d out of range",modIndex));
       return 0.;
     }
     return fDeltaVDrift[modIndex-kNSPDmods];
   }
+
   static Float_t DefaultTimeOffset() {return fgkTimeOffsetDefault;}
+  virtual void SetTimeOffset(Float_t to){fTimeOffset = to;}
+  virtual Float_t GetTimeOffset()const {return fTimeOffset;}
+  virtual Float_t GetTimeZero(Int_t modIndex) const {
+    if(modIndex<kNSPDmods || modIndex>kNSPDmods+kNSDDmods){
+      AliError(Form("SDD module number %d out of range",modIndex));
+      return 0.;
+    }
+    return fTimeZero[modIndex-kNSPDmods];
+  }
 
   virtual void SetADC2keV(Float_t conv){fADC2keV=conv;}
-  virtual void SetChargevsTime(Float_t slope){fChargevsTime=slope;}
   virtual Float_t GetADC2keV()const {return fADC2keV;}
+  virtual void SetADCtokeV(Int_t modIndex, Float_t conv){
+    if(modIndex<kNSPDmods || modIndex>kNSPDmods+kNSDDmods) AliError(Form("SDD module number %d out of range",modIndex));
+    fADCtokeV[modIndex-kNSPDmods]=conv;
+  }
+  virtual Float_t GetADCtokeV(Int_t modIndex) const {
+    if(modIndex<kNSPDmods || modIndex>kNSPDmods+kNSDDmods){
+      AliError(Form("SDD module number %d out of range",modIndex));
+      return 0.;
+    }
+    return fADCtokeV[modIndex-kNSPDmods];
+  }
+
+  virtual void SetChargevsTime(Float_t slope){fChargevsTime=slope;}
   virtual Float_t GetChargevsTime()const {return fChargevsTime;}
 
   static Float_t DefaultADC2keV() {return fgkADC2keVDefault;}
@@ -101,14 +113,16 @@ class AliITSresponseSDD : public TObject {
   Float_t  fTimeZero[kNSDDmods];    // Time Zero for each module
   Float_t  fDeltaVDrift[kNSDDmods]; // Vdrift correction (um/ns) for each module
   Float_t  fADC2keV;                // Conversion factor from ADC to keV
+                                    // --> obsolete, kept for backw. comp. 
   Float_t  fChargevsTime;           // Correction for zero suppression effect
-  
+  Float_t  fADCtokeV[kNSDDmods]; // ADC to keV conversion for each module
+
  private:
 
   AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
   AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-  ClassDef(AliITSresponseSDD,18) 
+  ClassDef(AliITSresponseSDD,19) 
      
     };
 #endif

@@ -45,6 +45,7 @@ fChargevsTime(fgkChargevsTimeDefault){
   for(Int_t i=0; i<kNSDDmods;i++){
     fTimeZero[i]=fgkTimeOffsetDefault;
     fDeltaVDrift[i]=0.;
+    fADCtokeV[i]=fgkADC2keVDefault;
   }  
 }
 //_________________________________________________________________________
