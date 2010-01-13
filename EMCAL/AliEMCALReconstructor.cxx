@@ -482,7 +482,7 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
 		sprintf(path,"/ALIC_1/XEN1_1/SMOD_%d",sm+1) ; //In Geometry modules numbered 1,2,.,5
 		if(sm >= 10) sprintf(path,"/ALIC_1/XEN1_1/SM10_%d",sm-10+1) ;
 		
-		if (gGeoManager->cd(path)){
+		if (gGeoManager->CheckPath(path)){
 			m = gGeoManager->GetCurrentMatrix() ;
 			esd->SetEMCALMatrix(new TGeoHMatrix(*m),sm) ;
 		}
