@@ -214,12 +214,12 @@ AliITSRawStreamSSD::AliITSRawStreamSSD(AliRawReader* rawReader) :
   v = gGeoManager->GetVolume("ITSssdSensitivL5");
   if(!v) {
     // new geometry AliITSvPPRasymmFMD
-    AliInfo(Form("Enabling the SSD DDL mapping for the AliITSvPPRasymmFMD"));
+    AliDebugClass(1,"Enabling the SSD DDL mapping for the AliITSvPPRasymmFMD");
     SetvPPRasymmFMDDDLMapping();
   }
   else {
     // new geometry AliITSv11Hybrid
-    AliInfo(Form("Enabling the SSD DDL mapping for the AliITSv11Hybrid"));
+    AliDebugClass(1,"Enabling the SSD DDL mapping for the AliITSv11Hybrid");
     Setv11HybridDDLMapping();
   }
   //  fRawReader->Reset();
@@ -246,12 +246,12 @@ Bool_t AliITSRawStreamSSD::InitDDLModuleMap()
   v = gGeoManager->GetVolume("ITSssdSensitivL5");
   if(!v) {
     // new geometry AliITSvPPRasymmFMD
-    AliInfoClass(Form("Enabling the SSD DDL mapping for the AliITSvPPRasymmFMD"));
+    AliDebugClass(1,"Enabling the SSD DDL mapping for the AliITSvPPRasymmFMD");
     SetvPPRasymmFMDDDLMapping();
   }
   else {
     // new geometry AliITSv11Hybrid
-    AliInfoClass(Form("Enabling the SSD DDL mapping for the AliITSv11Hybrid"));
+    AliDebugClass(1,"Enabling the SSD DDL mapping for the AliITSv11Hybrid");
     Setv11HybridDDLMapping();
   }
   fgkDDLModuleMapInit = kTRUE;
