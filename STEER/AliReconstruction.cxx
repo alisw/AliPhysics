@@ -1606,6 +1606,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   // run the reconstruction over a single event
   // The event loop is steered in Run method
 
+  static Long_t oldMres=0;
+  static Long_t oldMvir=0;
+  static Float_t oldCPU=0;
+
   AliCodeTimerAuto("",0);
 
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
@@ -1621,14 +1625,13 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     return kTRUE;
   }
 
-  AliInfo(Form("processing event %d", iEvent));
 
   fRunLoader->GetEvent(iEvent);
 
   // Fill Event-info object
   GetEventInfo();
   fRecoParam.SetEventSpecie(fRunInfo,fEventInfo,fListOfCosmicTriggers);
-  AliInfo(Form("Current event specie: %s",fRecoParam.PrintEventSpecie()));
+  AliInfo(Form("================================= Processing event %d of type %-10s ==================================", iEvent,fRecoParam.PrintEventSpecie()));
 
   // Set the reco-params
   {
@@ -1963,7 +1966,12 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
  
     ProcInfo_t procInfo;
     gSystem->GetProcInfo(&procInfo);
-    AliInfo(Form("Event %d -> Current memory usage %d %d",iEvent, procInfo.fMemResident, procInfo.fMemVirtual));
+    AliInfo(Form("========================= End Event %d: memory res %d(%3d) vir %d(%3d) CPU %5.2f =====================",
+		 iEvent, procInfo.fMemResident/1024, (procInfo.fMemResident-oldMres)/1024, 
+		 procInfo.fMemVirtual/1024,(procInfo.fMemVirtual-oldMvir)/1024,procInfo.fCpuUser+procInfo.fCpuSys-oldCPU));
+    oldMres=procInfo.fMemResident;
+    oldMvir=procInfo.fMemVirtual;
+    oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;
   
     fEventInfo.Reset();
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
