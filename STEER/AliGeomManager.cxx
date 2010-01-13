@@ -477,7 +477,7 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
 {
   // Check the look-up table which associates the unique numerical identity of
   // each alignable volume to the corresponding symbolic volume name.
-  // The LUT is now hold inside the geometry and handled by TGeo.
+  // The LUT is now held inside the geometry and handled by TGeo.
   // The method is meant to be launched when loading a geometry to verify that
   // no changes in the symbolic names have been introduced, which would prevent
   // backward compatibility with alignment objects.
@@ -560,7 +560,29 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
   }
   if(phosActive) detsString+="PHOS ";
 
-  if(fgGeometry->CheckPath("ALIC_1/XEN1_1")) detsString+="EMCAL";
+  // Check over the ten EMCAL full supermodules and the two EMCAL half supermodules
+  TString emcalSM;
+  TString baseEmcalSM("ALIC_1/XEN1_1/SM");
+  Bool_t emcalActive=kFALSE;
+  Bool_t emcalSMs[12] = {kFALSE};
+  for(Int_t sm=0; sm<12; sm++)
+  {
+    emcalSM=baseEmcalSM;
+    if(sm<10){
+	emcalSM += "OD_";
+	emcalSM += (sm+1);
+    }else{
+	emcalSM += "10_";
+	emcalSM += (sm-9);
+    }
+    if(fgGeometry->CheckPath(emcalSM.Data()))
+    {
+      emcalActive=kTRUE;
+      emcalSMs[sm]=kTRUE;
+    }
+  }
+  if(emcalActive) detsString+="EMCAL ";
+  
 
   TString symname;
   const char* sname;
@@ -1082,6 +1104,7 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
     modnum=0;
 
     for (Int_t iModule=1; iModule <= 12; iModule++) {
+      if(!emcalSMs[iModule-1]) continue;
       symname = str;
       symname += iModule;
       if(iModule >10) {
