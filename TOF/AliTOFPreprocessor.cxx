@@ -39,6 +39,7 @@
 #include "AliTOFRawStream.h"
 #include "AliTOFCableLengthMap.h"
 #include "AliTOFcalibHisto.h"
+#include "AliTOFFEEDump.h"
 
 
 // TOF preprocessor class.
@@ -989,11 +990,22 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 
   TH1C hCurrentFEE("hCurrentFEE","histo with current FEE channel status", fNChannels, 0, fNChannels);
   
-  /* load current TOF FEE config from DCS FXS, parse, 
+  /* load current TOF FEE(dump) from DCS FXS, 
+   * setup TOFFEEdump object */
+
+  const char * toffeeFileName = GetFile(kDCS,"TofFeeMap",""); 
+  AliInfo(Form("toffee file name = %s", toffeeFileName));
+  if (toffeeFileName == NULL) {
+    return 15;
+  } 
+  AliTOFFEEDump feedump;
+  feedump.ReadFromFile(toffeeFileName);
+  
+  /* load current TOF FEE(light) config from DCS FXS, parse, 
    * fill current FEE histogram and set FEE status */
   
   const char * nameFile = GetFile(kDCS,"TofFeeLightMap",""); 
-  AliInfo(Form("nameFile = %s",nameFile));
+  AliInfo(Form("toffeeLight file name = %s",nameFile));
   if (nameFile == NULL) {
 	  return 15;
   } 
@@ -1066,22 +1078,35 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
   /* check whether we don't have to store reference data.
    * in this case we return without errors. */
   if (fStoreRefData) {
-	  /* store reference data */
-	  AliCDBMetaData metaDataHisto;
-	  metaDataHisto.SetBeamPeriod(0);
-	  metaDataHisto.SetResponsible("Roberto Preghenella");
-	  metaDataHisto.SetComment("This preprocessor stores the FEE Ref data of the current run.");
-	  AliInfo("Storing FEE reference data");
-	  /* store FEE reference data */
-	  if (!StoreReferenceData("Calib", "FEEData", &hCurrentFEE, &metaDataHisto)) {
-		  /* failed */
-		  Log("problems while storing FEE reference data");
-		  if (fStatus){
-			  delete fStatus;
-			  fStatus = 0;
-		  }
-		  return 18; /* error return code for problems while storing FEE reference data */
-	  }
+    /* store reference data */
+    AliCDBMetaData metaDataHisto;
+    metaDataHisto.SetBeamPeriod(0);
+    metaDataHisto.SetResponsible("Roberto Preghenella");
+    metaDataHisto.SetComment("This preprocessor stores the FEE Ref data of the current run.");
+    AliInfo("Storing FEE reference data");
+    /* store FEE reference data */
+    if (!StoreReferenceData("Calib", "FEEData", &hCurrentFEE, &metaDataHisto)) {
+      /* failed */
+      Log("problems while storing FEE reference data");
+      if (fStatus){
+	delete fStatus;
+	fStatus = 0;
+      }
+      return 18; /* error return code for problems while storing FEE reference data */
+    }
+    
+    /* store TOF FEE dump reference data */
+    AliCDBMetaData metaDatadump;
+    metaDatadump.SetBeamPeriod(0);
+    metaDatadump.SetResponsible("Roberto Preghenella");
+    metaDatadump.SetComment("This preprocessor stores the TOF FEE dump Ref data of the current run.");
+    AliInfo("Storing TOF FEE dump reference data");
+    /* store FEE reference data */
+    if (!StoreReferenceData("Calib", "FEEDump", &feedump, &metaDatadump)) {
+      /* failed */
+      Log("problems while storing TOF FEE dump reference data");
+      return 18; /* error return code for problems while storing FEE reference data */
+    }
   }
 
   /* check whether we don't need to update OCDB.
