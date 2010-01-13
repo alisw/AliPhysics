@@ -59,11 +59,7 @@ AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
     {
       fClusData[i] = clusdata[i];
     }
-  if(fClusData[3] > 19.){
-    //AliError(Form("Too many clusters %f > 19",fClusData[3]));
-    fClusData[3] = 19.;
-  }
-	     
+
   for (Int_t i = 0; i < 19; i++)
     {
       fClusCellDataX[i] = celldataX[i];
@@ -93,10 +89,6 @@ AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):
     {
       this->fClusData[i] = pmdcluster.fClusData[i];
     }
-  if(fClusData[3] > 19.){
-    //AliError(Form("Too many clusters %f > 19",fClusData[3]));
-    fClusData[3] = 19.;
-  }
   for(Int_t i=0; i<19; i++)
     {
       this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
@@ -119,10 +111,6 @@ AliPMDcluster & AliPMDcluster::operator=(const AliPMDcluster &pmdcluster)
 	{
 	  this->fClusData[i] = pmdcluster.fClusData[i];
 	}
-      if(fClusData[3] > 19.){
-	//AliError(Form("Too many clusters %f > 19",fClusData[3]));
-	fClusData[3] = 19.;
-      }
       for(Int_t i=0; i<19; i++)
 	{
 	  this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
