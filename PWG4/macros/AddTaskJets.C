@@ -2,7 +2,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask); // Common config
 AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius = -1);
 
 AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf,Float_t radius = -1,UInt_t filterMask = 0); // for the new AF
-Int_t AddTaskJetsDelta(char *nonStdFile = "",UInt_t filterMask = 0,Bool_t kUseAODMC = kTRUE);
+Int_t AddTaskJetsDelta(char *nonStdFile = "",UInt_t filterMask = 0,Bool_t kUseAODMC = kTRUE,UInt_t runFlag = 1|4|32|64|128);     
 AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask = 0);
 
 AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask ){
@@ -23,7 +23,7 @@ AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask ){
 
 
 
-Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC){
+Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC,UInt_t runFlag){
 
   // Adds a whole set of jet finders  all to be written
   // to a delta AOD
@@ -57,7 +57,7 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC){
   AliAnalysisTaskJets *jetana = 0;
   Int_t iCount = 0;
 
-
+  // Jet Fidners Selected by run flag first bit 2^0 second by 2^1 etc
   const char *cJF[9]        = {"UA1","UA1","UA1","CDF","DA","SISCONE","FASTJET","FASTKT","UA1LO"};
   const Float_t radius[9]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4,     0.4,    0.7};
   UInt_t  flag[9]           = {    6,    7,    7,    7,   7,        7,        7,       7,      7};
@@ -67,8 +67,11 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC){
   // this stay at three
   const char *cReader[3] = {"AOD","AODMC","AODMC2"};  
 
+  
+
   for(int i = 0; i< 9;i++){
-    if(!kUseAODMC)flag[i]&=1;
+    if(!(runFlag&(1<<i)))continue;
+    if(!kUseAODMC)flag[i]&=1; // switch OFF MC if we do not have it
     for(int ib = 0;ib<3;ib++){      
       if(flag[i]&(1<<ib)){
 	jetana = AddTaskJets(cReader[ib],cJF[i],radius[i],filterMask);
