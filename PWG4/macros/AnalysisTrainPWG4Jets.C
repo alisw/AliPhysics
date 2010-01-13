@@ -3,7 +3,7 @@
 // your needs, then run root.
 //    root[0] .L AnalysisTrain.C
 // Grid full mode as below (other modes: test, offline, submit, terminate)
-//    root[1] AnalysisTrainPWG4Jets("grid", "full")
+//    root[1] AnalysisTrainPWG-244Jets("grid", "full")
 // CAF mode (requires root v5-23-02 + aliroot v4-16-Rev08)
 //    root[2] AnalysisTrainPWG4Jets("proof")
 // Local mode requires AliESds.root or AliAOD.root in ./data directory
@@ -67,11 +67,13 @@ Int_t       iPWG4JetTasks      = 0;      // all jet tasks flag for lib laoding
 Int_t       iPWG4JetServices   = 0;      // jet spectrum analysis
 Int_t       iPWG4JetSpectrum   = 0;      // jet spectrum analysis
 Int_t       iPWG4UE            = 0;      // Underlying Event analysis
+Int_t       iPWG4TmpSourceSara = 0;      // Underlying Event analysis
 Int_t       iPWG4PtQAMC        = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
 Int_t       iPWG4ThreeJets     = 0;      // Sona's thrust task
 Int_t       iPWG4PartCorr      = 0;      // Gustavo's part corr analysis
+Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4) 
 Int_t       iPWG4GammaConv     = 0;      // Gamma Conversio
 Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Filter
 TString     kDeltaAODJetName   = "AliAOD.Jet.root";     
@@ -102,7 +104,7 @@ Int_t       kProofOffset = 0;
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
 TString     kPluginRootVersion       = "v5-25-04-3";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-18-14-AN-1";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginAliRootVersion    = "v4-18-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // TString kPluginExecutableCommand = "root -b -q";
 TString     kPluginExecutableCommand = "source /Users/kleinb/setup_32bit_aliroot_trunk_clean_root_trunk.sh; alienroot -b -q ";
 // == grid plugin input and output variables
@@ -174,6 +176,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use PAR files     %d\n", (UInt_t)kUsePAR);
    printf(":: use AliEn plugin  %d\n", (UInt_t)kPluginUse);
    printf(":: use PWG1 QA sym       %d\n", iPWG1QASym);
+   printf(":: use PWG4 Source Sara  %d\n",iPWG4TmpSourceSara);
    printf(":: use PWG4 Jet tasks    %d\n",iPWG4JetTasks);
    printf(":: use PWG4 Jet Services %d\n",iPWG4JetServices);     
    printf(":: use PWG4 Jet Spectrum %d\n",iPWG4JetSpectrum);
@@ -183,6 +186,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use PWG4 Pt QA TPC    %d\n",iPWG4PtQATPC);     
    printf(":: use PWG4 Three Jets   %d\n",iPWG4ThreeJets);
    printf(":: use PWG4 Part Corr    %d\n",iPWG4PartCorr);
+   printf(":: use PWG4 omega to 3 pions %d\n",iPWG4omega3pi);
+
    printf(":: use PWG4 Gamma Conv   %d\n",iPWG4GammaConv);
    printf(":: use HighPt FilterMask %d\n",kHighPtFilterMask);    
 
@@ -237,7 +242,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       aodHandler->SetFillAOD(kFillAOD);
       
       mgr->SetOutputEventHandler(aodHandler);
-
+      //
       if (iAODanalysis) {
 
 	//         aodHandler->SetCreateNonStandardAOD();
@@ -291,7 +296,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJets.C");
       AliAnalysisTaskJets *taskjets = 0;
       if(iJETAN&1)taskjets = AddTaskJets(kHighPtFilterMask); 
-      if(iJETAN&2)AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC); 
+      if(iJETAN&2)AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC,0xfffffff); 
       if (!taskjets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
    }
 
@@ -307,8 +312,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      gROOT->LoadMacro("$ALICE_ROOT/prod/acrcaf/qa_pp/AddTaskQAsym.C");
      AliAnalysisTaskQASym *taskQASym = AddTaskQAsym(-1);
      if (!taskQASym) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQASym cannot run for this train conditions - EXCLUDED");
-
    }
+
+
+
+   if(iPWG4TmpSourceSara){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskEta.C");
+     AliAnalysisTaskEta *taskEta = AddTaskEta();
+     if (!taskEta) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskEta cannot run for this train conditions - EXCLUDED");
+   }
+
 
    if(iPWG4JetServices){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetServices.C");
@@ -377,7 +390,15 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL",kUseMC,kFALSE,kIsMC);
      if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation EMCAL cannot run for this train conditions - EXCLUDED");
      if(kDeltaAODPartCorrName.Length()>0)mgr->RegisterExtraFile(kDeltaAODPartCorrName.Data()); // hmm this is written anyway.... but at least we do not register it...
-   }   
+   } 
+
+   if (iPWG4omega3pi) {
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskomega3pi.C");
+     AliAnalysisTaskOmegaPi0PiPi *taskomega3pi = AddTaskomega3pi();
+     if (!taskomega3pi) ::Warning("AnalysisTrainNew", "AliAnalysisTaskomega3pi cannot run\
+ for these train conditions - EXCLUDED");
+   }
+
 
    // PWG4 gamma conversion analysis
    if (iPWG4GammaConv) {
@@ -385,10 +406,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       TString cdir = gSystem->WorkingDirectory();
       gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT/PWG4/macros/"));
       //      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
-      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf";
+      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
       if(!kIsMC)gcArguments += " -mc-off";
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
       gSystem->ChangeDirectory(cdir);
+      taskGammaConversion->SelectCollisionCandidates();
       if (!taskGammaConversion) ::Warning("AnalysisTrainNew", "AliAnalysisTaskGammaConversion cannot run for these train conditions - EXCLUDED");
    }   
 
@@ -541,6 +563,9 @@ void CheckModuleFlags(const char *mode) {
       iPWG4PtSpectra     = 0;
       if (iPWG4PartCorr)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4partcorr disabled on AOD's");
       iPWG4PartCorr = 0;
+      if (iPWG4omega3pi)
+	::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG4omega3pi disabled on AOD's");
+      iPWG4omega3pi = 0;
       if(iPWG1QASym)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG1 QA Sym disabled in analysis on AOD's");
       if (iPWG4GammaConv)::Info("AnalysisPWG4Jets.C::CheckModuleFlags", "PWG4gammaconv disabled on AOD's");
       iPWG4GammaConv = 0;   
@@ -768,11 +793,18 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    if(iPWG1QASym){
      if (!LoadSource(Form("%s/PWG1/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
+   if(iPWG4TmpSourceSara){
+     gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
+     if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskEta.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
+   }
    if (iPWG4PartCorr) {   
       if (!LoadLibrary("EMCALUtils", mode, kTRUE) ||
           !LoadLibrary("PHOSUtils", mode, kTRUE) ||
           !LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
           !LoadLibrary("PWG4PartCorrDep", mode, kTRUE)) return kFALSE;
+   }
+   if (iPWG4omega3pi) {
+     if (!LoadLibrary("PWG4omega3pi", mode, kTRUE)) return kFALSE;
    }
    if (iPWG4GammaConv) {
       if (!LoadLibrary("PWG4GammaConv", mode, kTRUE)) return kFALSE;
