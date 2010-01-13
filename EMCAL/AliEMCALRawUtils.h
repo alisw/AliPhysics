@@ -33,7 +33,9 @@ class AliEMCALRawUtils : public TObject {
   AliEMCALRawUtils();
   AliEMCALRawUtils(AliEMCALGeometry *pGeometry);
   virtual ~AliEMCALRawUtils();
-
+	
+  enum fitAlgorithm {kStandard = 0, kFastFit= 1};
+	
   AliEMCALRawUtils(const AliEMCALRawUtils& rawUtils);  //copy ctor
   AliEMCALRawUtils& operator =(const AliEMCALRawUtils& rawUtils);
 
@@ -52,11 +54,16 @@ class AliEMCALRawUtils : public TObject {
   Double_t GetPedestalValue()  const {return fgPedestalValue;}
   Double_t GetFEENoise()       const {return fgFEENoise;}
 
+  Bool_t GetRemoveBadChannels()   const {return fRemoveBadChannels;}
+  Int_t  GetFittingAlgorithm()    const {return fFittingAlgorithm; }
+	
   void SetRawFormatHighLowGainFactor(Double_t val) {fHighLowGainFactor=val;}
   void SetRawFormatOrder(Int_t val)                {fOrder=val; }   
   void SetRawFormatTau(Double_t val)               {fTau=val; }    
   void SetNoiseThreshold(Int_t val)                {fNoiseThreshold=val; }
   void SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
+  void SetRemoveBadChannels(Bool_t val)            {fRemoveBadChannels=val; }
+  void SetFittingAlgorithm(Int_t val)              {fFittingAlgorithm=val; }
 
   // set methods for fast fit simulation
   void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
@@ -70,11 +77,12 @@ class AliEMCALRawUtils : public TObject {
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
   Int_t GetRawFormatDDLPerSuperModule() const { return fgDDLPerSuperModule ; } 
-
+  	
   virtual Option_t* GetOption() const { return fOption.Data(); }
   void SetOption(Option_t* opt) { fOption = opt; }
 
   // Signal shape functions
+	
   void FitRaw(TGraph * gSig, TF1* signalF, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Float_t & ped, Float_t & ampEstimate, Float_t & timeEstimate, Float_t & pedEstimate, const Float_t cut = 0) const ;
   static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
   Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const;  
@@ -98,12 +106,15 @@ class AliEMCALRawUtils : public TObject {
   static Int_t fgPedestalValue;         // pedestal value for Digits2Raw
   static Double_t fgFEENoise;           // electronics noise in ADC units
 
-  AliEMCALGeometry* fGeom;         //geometry
-  AliAltroMapping*  fMapping[4];   //only two for now
+  AliEMCALGeometry* fGeom;              //geometry
+  AliAltroMapping*  fMapping[4];        //only two for now
 
   TString fOption;                      //! option passed from Reconstructor
 
-  ClassDef(AliEMCALRawUtils,3)          // utilities for raw signal fitting
+  Bool_t fRemoveBadChannels;            // select if bad channels are removed before fitting
+  Int_t  fFittingAlgorithm;             // select the fitting algorithm
+
+  ClassDef(AliEMCALRawUtils,4)          // utilities for raw signal fitting
 };
 
 #endif

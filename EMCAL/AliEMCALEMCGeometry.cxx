@@ -233,7 +233,7 @@ void AliEMCALEMCGeometry::Init(void){
   if(fGeoName.Contains("WSUC")) fGeoName = "EMCAL_WSUC";
 
   //check that we have a valid geometry name
-  if(!(fGeoName.Contains("EMCAL_PDC06") || fGeoName.Contains("EMCAL_COMPLETE") || fGeoName.Contains("EMCAL_WSUC") || fGeoName.Contains("EMCAL_1stYear"))) {
+  if(!(fGeoName.Contains("EMCAL_PDC06") || fGeoName.Contains("EMCAL_COMPLETE") || fGeoName.Contains("EMCAL_WSUC") || fGeoName.Contains("EMCAL_FIRSTYEAR"))) {
     Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
   }
 
@@ -294,26 +294,15 @@ void AliEMCALEMCGeometry::Init(void){
     CheckAdditionalOptions();
   }
 
-  if(fGeoName.Contains("1stYear")){	
-	fNumberOfSuperModules = 2;	
-	 
-	if(fGeoName.Contains("LowerEta")) {
-		fNPhiSuperModule = 1;		
-	}
-	else if(fGeoName.Contains("LowerPhi_SideA")){
-	fNPhiSuperModule = 2;	
-	fArm1EtaMax=0;		
-	}
-	else if(fGeoName.Contains("LowerPhi_SideC")){
-	fNPhiSuperModule = 2;		
-	fArm1EtaMin=0;	
-	}
-		
-      CheckAdditionalOptions();	
-  }
-
+  //In 2009-2010 data taking runs only 4 SM, in the upper position.
+  if(fGeoName.Contains("FIRSTYEAR")){	
+	fNumberOfSuperModules = 4;	
+	fArm1PhiMax           = 120.0; 
+	CheckAdditionalOptions();	
+  }	
+	
   // constant for transition absid <--> indexes
-  fNCellsInModule  = fNPHIdiv*fNETAdiv;
+  fNCellsInModule = fNPHIdiv*fNETAdiv;
   fNCellsInSupMod = fNCellsInModule*fNPhi*fNZ;
   fNCells         = fNCellsInSupMod*fNumberOfSuperModules;
   if(GetKey110DEG()) fNCells -= fNCellsInSupMod;
@@ -347,16 +336,18 @@ void AliEMCALEMCGeometry::Init(void){
   if(fNumberOfSuperModules > 1) 
     fPhiBoundariesOfSM[1] = TMath::PiOver2() + TMath::ATan2(fParSM[1] , fIPDistance);
   if(fNumberOfSuperModules > 2) {
-    for(int i=1; i<=4; i++) { // from 2th ro 9th
+	Int_t maxPhiBlock =fNumberOfSuperModules/2-1;
+	if(fNumberOfSuperModules > 10) maxPhiBlock = 4;
+    for(int i=1; i<=maxPhiBlock; i++) { // from 2th ro 9th
       fPhiBoundariesOfSM[2*i]   = fPhiBoundariesOfSM[0] + 20.*TMath::DegToRad()*i;
       fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[1] + 20.*TMath::DegToRad()*i;
-      fPhiCentersOfSM[i]         = fPhiCentersOfSM[0]     + 20.*TMath::DegToRad()*i;
+      fPhiCentersOfSM[i]        = fPhiCentersOfSM[0]     + 20.*TMath::DegToRad()*i;
     }
   }
   if(fNumberOfSuperModules > 10) {
     fPhiBoundariesOfSM[11] = 190.*TMath::DegToRad();
     fPhiBoundariesOfSM[10] = fPhiBoundariesOfSM[11] - TMath::ATan2((fParSM[1]) , fIPDistance);
-    fPhiCentersOfSM[5]      = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
+    fPhiCentersOfSM[5]     = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
   }
 
   //called after setting of scintillator and lead layer parameters
@@ -374,7 +365,6 @@ void AliEMCALEMCGeometry::Init(void){
   // Jet trigger 
   // 3*6*10 + 2*6*2 = 204 -> matrix (nphi(17), neta(12))
   fNEtaSubOfTRU     = 6;  
-  
 
   fgInit = kTRUE; 
 }

@@ -57,7 +57,9 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fOrderParameter(2), 
   fTau(2.35), 
   fNoiseThreshold(3), 
-  fNPedSamples(5) //raw signal
+  fNPedSamples(5), 
+  fRemoveBadChannels(kTRUE),
+  fFittingAlgorithm(0)//raw signal
 {
   // default reco values
   
@@ -86,7 +88,7 @@ AliEMCALRecParam::AliEMCALRecParam() :
       fGamma[i][j] =  fPiZero[i][j] = fHadron[i][j] = 0.; 
       fGamma1to10[i][j] =  fHadron1to10[i][j]= 0.;
     }
-    fGammaEnergyProb[i]=0.; // not yet implemented
+    fGammaEnergyProb[i] =0.; // not yet implemented
     fHadronEnergyProb[i]=0.; 
     fPiZeroEnergyProb[i]=0.; // not yet implemented
     
@@ -244,7 +246,9 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   fOrderParameter(rp.fOrderParameter), 
   fTau(rp.fTau), 
   fNoiseThreshold(rp.fNoiseThreshold), 
-  fNPedSamples(rp.fNPedSamples) //raw signal
+  fNPedSamples(rp.fNPedSamples), 	
+  fRemoveBadChannels(rp.fRemoveBadChannels),
+  fFittingAlgorithm(rp.fFittingAlgorithm) //raw signal
 {
   //copy constructor
   
@@ -252,13 +256,13 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   Int_t i, j;
   for (i = 0; i < 6; i++) {
     for (j = 0; j < 6; j++) {
-      fGamma[i][j] = rp.fGamma[i][j];
-      fGamma1to10[i][j] = rp.fGamma1to10[i][j];
-      fHadron[i][j] = rp.fHadron[i][j];
+      fGamma[i][j]       = rp.fGamma[i][j];
+      fGamma1to10[i][j]  = rp.fGamma1to10[i][j];
+      fHadron[i][j]      = rp.fHadron[i][j];
       fHadron1to10[i][j] = rp.fHadron1to10[i][j];
-      fPiZero[i][j] = rp.fPiZero[i][j];
+      fPiZero[i][j]      = rp.fPiZero[i][j];
     }
-    fGammaEnergyProb[i] = rp.fGammaEnergyProb[i];
+    fGammaEnergyProb[i]  = rp.fGammaEnergyProb[i];
     fPiZeroEnergyProb[i] = rp.fPiZeroEnergyProb[i];
     fHadronEnergyProb[i] = rp.fHadronEnergyProb[i];
     
@@ -273,37 +277,39 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
   
   if(this != &rp) {
     fClusteringThreshold = rp.fClusteringThreshold;
-    fW0 = rp.fW0;
-    fMinECut = rp.fMinECut;
-    fUnfold = rp.fUnfold;
+    fW0        = rp.fW0;
+    fMinECut   = rp.fMinECut;
+    fUnfold    = rp.fUnfold;
     fLocMaxCut = rp.fLocMaxCut; 
-	fTimeCut = rp.fTimeCut;//clustering
-    fTrkCutX = rp.fTrkCutX;
-    fTrkCutY = rp.fTrkCutY;
-    fTrkCutZ = rp.fTrkCutZ;
-    fTrkCutR = rp.fTrkCutR;
+	fTimeCut   = rp.fTimeCut;//clustering
+    fTrkCutX   = rp.fTrkCutX;
+    fTrkCutY   = rp.fTrkCutY;
+    fTrkCutZ   = rp.fTrkCutZ;
+    fTrkCutR   = rp.fTrkCutR;
     fTrkCutAlphaMin = rp.fTrkCutAlphaMin;
     fTrkCutAlphaMax = rp.fTrkCutAlphaMax;
-    fTrkCutAngle = rp.fTrkCutAngle; 
-    fTrkCutNITS = rp.fTrkCutNITS;
-    fTrkCutNTPC = rp.fTrkCutNTPC; //track matching
+    fTrkCutAngle    = rp.fTrkCutAngle; 
+    fTrkCutNITS     = rp.fTrkCutNITS;
+    fTrkCutNTPC     = rp.fTrkCutNTPC; //track matching
     fHighLowGainFactor = rp.fHighLowGainFactor; 
-    fOrderParameter = rp.fOrderParameter;
-    fTau = rp.fTau;
-    fNoiseThreshold = rp.fNoiseThreshold;
-    fNPedSamples = rp.fNPedSamples; //raw signal
-    
+    fOrderParameter    = rp.fOrderParameter;
+    fTau               = rp.fTau;
+    fNoiseThreshold    = rp.fNoiseThreshold;
+    fNPedSamples       = rp.fNPedSamples; 
+    fRemoveBadChannels = rp.fRemoveBadChannels;
+    fFittingAlgorithm  = rp.fFittingAlgorithm;//raw signal
+	  
     //PID values
     Int_t i, j;
     for (i = 0; i < 6; i++) {
       for (j = 0; j < 6; j++) {
-	fGamma[i][j] = rp.fGamma[i][j];
-	fGamma1to10[i][j] = rp.fGamma1to10[i][j];
-	fHadron[i][j] = rp.fHadron[i][j];
+	fGamma[i][j]       = rp.fGamma[i][j];
+	fGamma1to10[i][j]  = rp.fGamma1to10[i][j];
+	fHadron[i][j]      = rp.fHadron[i][j];
 	fHadron1to10[i][j] = rp.fHadron1to10[i][j];
-	fPiZero[i][j] = rp.fPiZero[i][j];
+	fPiZero[i][j]      = rp.fPiZero[i][j];
       }
-      fGammaEnergyProb[i] = rp.fGammaEnergyProb[i];
+      fGammaEnergyProb[i]  = rp.fGammaEnergyProb[i];
       fPiZeroEnergyProb[i] = rp.fPiZeroEnergyProb[i];
       fHadronEnergyProb[i] = rp.fHadronEnergyProb[i];
     }
@@ -575,6 +581,8 @@ void AliEMCALRecParam::Print(Option_t *) const
   
   AliInfo(Form("Raw signal parameters: \n gain factor=%f, order=%d, tau=%f, noise threshold=%d, nped samples=%d \n",
 	       fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
+  AliInfo(Form("Raw signal: with bad channels? %d, \n \t with fitting algorithm %d \n",
+				 fRemoveBadChannels, fFittingAlgorithm));
   
 }
 

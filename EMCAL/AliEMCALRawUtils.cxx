@@ -48,7 +48,8 @@ class AliEMCALDigitizer;
 #include "AliEMCALDigit.h"
 #include "AliEMCAL.h"
 #include "AliCaloCalibPedestal.h"  
-  
+#include "AliCaloFastAltroFitv0.h"
+
 ClassImp(AliEMCALRawUtils)
   
 // Signal shape parameters
@@ -64,17 +65,21 @@ Double_t AliEMCALRawUtils::fgFEENoise = 3.;          // 3 ADC channels of noise 
 
 AliEMCALRawUtils::AliEMCALRawUtils()
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
-    fNPedSamples(0), fGeom(0), fOption("")
+    fNPedSamples(0), fGeom(0), fOption(""),
+    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0)
 {
 
   //These are default parameters.  
   //Can be re-set from without with setter functions
+  //Already set in the OCDB and passed via setter in the AliEMCALReconstructor
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
   fOrder = 2;                         // order of gamma fn
   fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
   fNoiseThreshold = 3; // 3 ADC counts is approx. noise level
   fNPedSamples = 4;    // less than this value => likely pedestal samples
-
+  fRemoveBadChannels = kTRUE; //Remove bad channels before fitting
+  fFittingAlgorithm  = kFastFit;//kStandard; // Use default minuit fitter
+	
   //Get Mapping RCU files from the AliEMCALRecParam                                 
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
@@ -101,7 +106,8 @@ AliEMCALRawUtils::AliEMCALRawUtils()
 //____________________________________________________________________________
 AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry)
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
-    fNPedSamples(0), fGeom(pGeometry), fOption("")
+    fNPedSamples(0), fGeom(pGeometry), fOption(""),
+    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0)
 {
   //
   // Initialize with the given geometry - constructor required by HLT
@@ -112,12 +118,15 @@ AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry)
 
   //These are default parameters. 
   //Can be re-set from without with setter functions 
+  //Already set in the OCDB and passed via setter in the AliEMCALReconstructor
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits)
   fOrder = 2;                         // order of gamma fn
   fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
   fNoiseThreshold = 3; // 3 ADC counts is approx. noise level
   fNPedSamples = 4;    // less than this value => likely pedestal samples
-
+  fRemoveBadChannels = kTRUE; //Remove bad channels before fitting
+  fFittingAlgorithm  = kStandard; // Use default minuit fitter
+	
   //Get Mapping RCU files from the AliEMCALRecParam
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
@@ -139,7 +148,9 @@ AliEMCALRawUtils::AliEMCALRawUtils(const AliEMCALRawUtils& rawU)
     fNoiseThreshold(rawU.fNoiseThreshold),
     fNPedSamples(rawU.fNPedSamples),
     fGeom(rawU.fGeom), 
-    fOption(rawU.fOption)
+    fOption(rawU.fOption),
+    fRemoveBadChannels(rawU.fRemoveBadChannels),
+    fFittingAlgorithm(rawU.fFittingAlgorithm)
 {
   //copy ctor
   fMapping[0] = rawU.fMapping[0];
@@ -161,6 +172,8 @@ AliEMCALRawUtils& AliEMCALRawUtils::operator =(const AliEMCALRawUtils &rawU)
     fNPedSamples = rawU.fNPedSamples;
     fGeom = rawU.fGeom;
     fOption = rawU.fOption;
+    fRemoveBadChannels = rawU.fRemoveBadChannels;
+    fFittingAlgorithm  = rawU.fFittingAlgorithm;
     fMapping[0] = rawU.fMapping[0];
     fMapping[1] = rawU.fMapping[1];
     fMapping[2] = rawU.fMapping[2];
@@ -341,7 +354,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       if (caloFlag != 0 && caloFlag != 1) continue; 
 	      
       //Do not fit bad channels
-      if(pedbadmap->IsBadChannel(in.GetModule(),in.GetColumn(),in.GetRow())) {
+      if(fRemoveBadChannels && pedbadmap->IsBadChannel(in.GetModule(),in.GetColumn(),in.GetRow())) {
 	//printf("Tower from SM %d, column %d, row %d is BAD!!! Skip \n", in.GetModule(),in.GetColumn(),in.GetRow());
 	continue;
       }  
@@ -386,10 +399,38 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       ampEstimate  = -1 ;
       timeEstimate = -1 ;
       pedEstimate = -1;
-      if ( (max - min) > fNoiseThreshold) {
-	FitRaw(gSig, signalF, maxTimeBin, amp, time, ped,
+
+	  if ( (max - min) > fNoiseThreshold) {
+		  switch(fFittingAlgorithm) 
+		  {
+			  case kStandard:
+			  {
+				  //printf("Standard fitter \n");
+				  FitRaw(gSig, signalF, maxTimeBin, amp, time, ped,
 	       ampEstimate, timeEstimate, pedEstimate);
-      }
+				  break;
+			  }	  
+			  case kFastFit:
+			  {
+				  //printf("FastFitter \n");
+				  Double_t eSignal = 0;
+				  Double_t dAmp = amp;
+				  Double_t dTimeEstimate = timeEstimate;
+				  Double_t eTimeEstimate = 0;
+				  Double_t eAmp = 0;
+				  Double_t chi2 = 0;
+
+ 				  AliCaloFastAltroFitv0::FastFit(gSig->GetX(), gSig->GetY(), gSig->GetN(),
+												 eSignal, fTau,
+												 dAmp, eAmp, dTimeEstimate, eTimeEstimate, chi2);
+				  amp=dAmp;
+				  timeEstimate = dTimeEstimate;
+				  //printf("FastFitter: Amp %f, time %f, eAmp %f, eTimeEstimate %f, chi2 %f\n",amp, timeEstimate,eAmp,eTimeEstimate,chi2);
+
+				  break;
+			  }  
+		  }
+	  }
            
       if ( amp>0 && amp<2000 && time>0 && time<(maxTimeBin*GetRawFormatTimeBinWidth()) ) {  //check both high and low end of amplitude result, and time
 	//2000 is somewhat arbitrary - not nice with magic numbers in the code..

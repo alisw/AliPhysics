@@ -183,6 +183,8 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   fgRawUtils->SetRawFormatTau(GetRecParam()->GetTau());
   fgRawUtils->SetNoiseThreshold(GetRecParam()->GetNoiseThreshold());
   fgRawUtils->SetNPedSamples(GetRecParam()->GetNPedSamples());
+  fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
+  fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
 
   fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData);
 

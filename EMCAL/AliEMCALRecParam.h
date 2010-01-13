@@ -90,15 +90,21 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetOrderParameter(Int_t value)       {fOrderParameter = value;}
   void SetTau(Double_t value)               {fTau = value;}
   void SetNoiseThreshold(Int_t value)       {fNoiseThreshold = value;}
-  void SetNPedSamples(Int_t value)          {fNPedSamples = value;}
+  void SetNPedSamples(Int_t value)          {fNPedSamples = value;} 
+  void SetRemoveBadChannels(Bool_t val)     {fRemoveBadChannels=val; }
+  void SetFittingAlgorithm(Int_t val)       {fFittingAlgorithm=val; }
+
   /* raw signal getters */
   Double_t GetHighLowGainFactor() const {return fHighLowGainFactor;}
   Int_t    GetOrderParameter()    const {return fOrderParameter;}
   Double_t GetTau()               const {return fTau;}
   Int_t    GetNoiseThreshold()    const {return fNoiseThreshold;}
   Int_t    GetNPedSamples()       const {return fNPedSamples;}
-  
-  virtual void Print(Option_t * option="") const ;
+  Bool_t   GetRemoveBadChannels() const {return fRemoveBadChannels;}
+  Int_t    GetFittingAlgorithm()  const {return fFittingAlgorithm; }
+	
+	
+	virtual void Print(Option_t * option="") const ;
   
   static AliEMCALRecParam* GetDefaultParameters();
   static AliEMCALRecParam* GetLowFluxParam();
@@ -140,15 +146,17 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Double_t  fTrkCutNTPC;           // Number of TPC hits for track matching
   
   //Raw signal fitting parameters (Jenn)
-  Double_t fHighLowGainFactor;     //gain factor to convert between high and low gain
-  Int_t    fOrderParameter;        //order parameter for raw signal fit
-  Double_t fTau;                   //decay constant for raw signal fit
-  Int_t    fNoiseThreshold;        //threshold to consider signal or noise
-  Int_t    fNPedSamples;           //number of time samples to use in pedestal calculation
-  
+  Double_t fHighLowGainFactor;     // gain factor to convert between high and low gain
+  Int_t    fOrderParameter;        // order parameter for raw signal fit
+  Double_t fTau;                   // decay constant for raw signal fit
+  Int_t    fNoiseThreshold;        // threshold to consider signal or noise
+  Int_t    fNPedSamples;           // number of time samples to use in pedestal calculation
+  Bool_t   fRemoveBadChannels;     // select if bad channels are removed before fitting
+  Int_t    fFittingAlgorithm;      // select the fitting algorithm
+
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,8)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,9)     // Reconstruction parameters
     
     } ;
 
