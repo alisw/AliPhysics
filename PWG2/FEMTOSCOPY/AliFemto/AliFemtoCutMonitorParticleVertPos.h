@@ -48,6 +48,11 @@ private:
   TH2D *fVertPos;    // Vertex position x vs. y monitor
   TH2D *fEtaZ;       // Vertex z position vs. eta monitor
   TH1D *fRadPos;     // Radial position close to vertex
+  TH1D *fEmPointX;   // Emission point - x
+  TH1D *fEmPointY;   // Emission point - y
+  TH1D *fEmPointZ;   // Emission point - z
+  TH1D *fEmPointT;   // Emission point - t
+  
 };
 
 #endif
