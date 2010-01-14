@@ -68,8 +68,12 @@ class AliHFEcuts : public TObject{
     TList *GetQAhistograms() const { return fHistQA; }
     
     void SetDebugMode();
+    void SetAOD() { SetBit(kAOD, kTRUE); }
+    void SetESD() { SetBit(kAOD, kFALSE); }
     void UnsetDebugMode() { SetBit(kDebugMode, kFALSE); }
     Bool_t IsInDebugMode() const { return TestBit(kDebugMode); };
+    Bool_t IsAOD() const { return TestBit(kAOD); }
+    Bool_t IsESD() const { return !TestBit(kAOD); }
     
     // Getters
     Bool_t IsRequireITSpixel() const { return TESTBIT(fRequirements, kITSPixel); };
@@ -105,7 +109,8 @@ class AliHFEcuts : public TObject{
 
   private:
     enum{
-      kDebugMode = BIT(14)
+      kDebugMode = BIT(14),
+      kAOD = BIT(15)
     };
     typedef enum{
       kPrimary = 0,

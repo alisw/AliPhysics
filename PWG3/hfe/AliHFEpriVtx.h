@@ -14,6 +14,8 @@
  **************************************************************************/
 //
 // QA class of primary vertex study for Heavy Flavor electrons
+// this has functionality to reject electrons from primary vertex
+// and check primary vertex characteristics
 //
 
 #ifndef ALIHFEPRIVTX_H

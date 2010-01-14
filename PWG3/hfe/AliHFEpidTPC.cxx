@@ -47,7 +47,8 @@
 //___________________________________________________________________
 AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   // add a list here
-    AliHFEpidBase(name)
+  AliHFEpidBase(name)
+  , fLineCrossingType(0)
   , fLineCrossingsEnabled(0)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
@@ -67,7 +68,8 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
 
 //___________________________________________________________________
 AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
-    AliHFEpidBase("")
+  AliHFEpidBase("")
+  , fLineCrossingType(0)
   , fLineCrossingsEnabled(0)
   , fNsigmaTPC(2)
   , fRejectionEnabled(0)
@@ -156,22 +158,24 @@ Int_t AliHFEpidTPC::IsSelected(AliHFEpidObject *track)
     return MakePIDaod(aodtrack, aodmctrack);
   }
 }
-
 //___________________________________________________________________
 Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
   //
   //  Doing TPC PID as explained in IsSelected for ESD tracks
   //
   if(IsQAon()) FillTPChistograms(esdTrack, mctrack);
+  Float_t nsigma = fPIDtpcESD->GetNumberOfSigmas(esdTrack, AliPID::kElectron);
   // exclude crossing points:
   // Determine the bethe values for each particle species
   Bool_t isLineCrossing = kFALSE;
+  fLineCrossingType = 0;  // default value
   for(Int_t ispecies = 0; ispecies < AliPID::kSPECIES; ispecies++){
     if(ispecies == AliPID::kElectron) continue;
     if(!(fLineCrossingsEnabled & 1 << ispecies)) continue;
-    if(fPIDtpcESD->GetNumberOfSigmas(esdTrack, (AliPID::EParticleType)ispecies) < fLineCrossingSigma[ispecies]){
-      // Point in a line crossing region, no PID possible
-      isLineCrossing = kTRUE;
+    if(TMath::Abs(fPIDtpcESD->GetNumberOfSigmas(esdTrack, (AliPID::EParticleType)ispecies)) < fLineCrossingSigma[ispecies] && TMath::Abs(nsigma) < fNsigmaTPC){
+      // Point in a line crossing region, no PID possible, but !PID still possible ;-)
+      isLineCrossing = kTRUE;      
+      fLineCrossingType = ispecies;
       break;
     }
   }
@@ -180,13 +184,11 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
   // Check particle rejection
   if(HasParticleRejection()){
     Int_t reject = Reject(esdTrack);
-    AliDebug(1, Form("PID code from Rejection: %d", reject));
     if(reject != 0) return reject;
   }
   // Check whether distance from the electron line is smaller than n-sigma
 
   // Perform Asymmetric n-sigma cut if required, else perform symmetric TPC sigma cut
-  Float_t nsigma = fPIDtpcESD->GetNumberOfSigmas(esdTrack, AliPID::kElectron);
   Float_t p = 0.;
   Int_t pdg = 0;
   if(HasAsymmetricSigmaCut() && (p = esdTrack->P()) >= fPAsigCut[0] && p <= fPAsigCut[1]){ 
@@ -195,6 +197,7 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
     if(TMath::Abs(nsigma) < fNsigmaTPC ) pdg = 11;
   }
   if(IsQAon() && pdg != 0) (dynamic_cast<TH2I *>(fQAList->At(kHistTPCselected)))->Fill(esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P(), esdTrack->GetTPCsignal());
+
   return pdg;
 }
 
@@ -213,11 +216,9 @@ Int_t AliHFEpidTPC::Reject(AliESDtrack *track){
   Double_t p = track->GetOuterParam() ? track->GetOuterParam()->P() : track->P();
   for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
     if(!TESTBIT(fRejectionEnabled, ispec)) continue;
-    AliDebug(1, Form("Particle Rejection enabled for species %d", ispec));
     // Particle rejection enabled
     if(p < fRejection[4*ispec] || p > fRejection[4*ispec+2]) continue;
     Double_t sigma = fPIDtpcESD->GetNumberOfSigmas(track, static_cast<AliPID::EParticleType>(ispec));
-    AliDebug(1, Form("Sigma %f, min %f, max %f", sigma, fRejection[4*ispec + 1], fRejection[4*ispec+3]));
     if(sigma >= fRejection[4*ispec+1] && sigma <= fRejection[4*ispec+3]) return pdc[ispec] * track->Charge();
   }
   return 0;
@@ -351,14 +352,14 @@ void AliHFEpidTPC::AddQAhistograms(TList *qaList){
   fQAList = new TList;
   fQAList->SetName("fTPCqaHistos");
 
-  fQAList->AddAt(new TH2I("fHistTPCelectron","TPC signal for Electrons", 200, 0, 20, 200, 0, 200), kHistTPCelectron); 
-  fQAList->AddAt(new TH2I("fHistTPCmuon","TPC signal for Muons", 200, 0, 20, 200, 0, 200), kHistTPCmuon);
-  fQAList->AddAt(new TH2I("fHistTPCpion","TPC signal for Pions", 200, 0, 20, 200, 0, 200), kHistTPCpion);
-  fQAList->AddAt(new TH2I("fHistTPCkaon","TPC signal for Kaons", 200, 0, 20, 200, 0, 200), kHistTPCkaon);
-  fQAList->AddAt(new TH2I("fHistTPCproton","TPC signal for Protons", 200, 0, 20, 200, 0, 200), kHistTPCproton);
-  fQAList->AddAt(new TH2I("fHistTPCothers","TPC signal for other species", 200, 0, 20, 200, 0, 200), kHistTPCothers);
-  fQAList->AddAt(new TH2I("fHistTPCall","TPC signal for all species", 200, 0, 20, 200, 0, 200), kHistTPCall);
-  fQAList->AddAt(new TH2I("fHistTPCselected","TPC signal for all selected particles", 200, 0, 20, 200, 0, 200), kHistTPCselected);
+  fQAList->AddAt(new TH2I("fHistTPCelectron","TPC signal for Electrons", 200, 0, 20, 60, 0, 600), kHistTPCelectron); 
+  fQAList->AddAt(new TH2I("fHistTPCmuon","TPC signal for Muons", 200, 0, 20, 60, 0, 600), kHistTPCmuon);
+  fQAList->AddAt(new TH2I("fHistTPCpion","TPC signal for Pions", 200, 0, 20, 60, 0, 600), kHistTPCpion);
+  fQAList->AddAt(new TH2I("fHistTPCkaon","TPC signal for Kaons", 200, 0, 20, 60, 0, 600), kHistTPCkaon);
+  fQAList->AddAt(new TH2I("fHistTPCproton","TPC signal for Protons", 200, 0, 20, 60, 0, 600), kHistTPCproton);
+  fQAList->AddAt(new TH2I("fHistTPCothers","TPC signal for other species", 200, 0, 20, 60, 0, 600), kHistTPCothers);
+  fQAList->AddAt(new TH2I("fHistTPCall","TPC signal for all species", 200, 0, 20, 60, 0, 600), kHistTPCall);
+  fQAList->AddAt(new TH2I("fHistTPCselected","TPC signal for all selected particles", 200, 0, 20, 60, 0, 600), kHistTPCselected);
 
   fQAList->AddAt(new TH2F("fHistTPCprobEl","TPC likelihood for electrons to be an electron vs. p", 200, 0.,20.,200,0.,1.), kHistTPCprobEl);
   fQAList->AddAt(new TH2F("fHistTPCprobPi","TPC likelihood for pions to be an electron vs. p",  200, 0.,20.,200, 0.,1.), kHistTPCprobPi);

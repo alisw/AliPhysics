@@ -47,6 +47,8 @@ class AliHFEpidTPC : public AliHFEpidBase{
     virtual Int_t IsSelected(AliHFEpidObject *track);
     virtual Bool_t HasQAhistos() const { return kTRUE; };
 
+    Int_t GetCrossingType() const {return fLineCrossingType; }
+
     void AddTPCdEdxLineCrossing(Int_t species, Double_t sigma);
     Bool_t HasAsymmetricSigmaCut() const { return TestBit(kAsymmetricSigmaCut);}
     Bool_t HasParticleRejection() const { return TestBit(kRejection); }
@@ -99,6 +101,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
       kRejection = BIT(21)
     };
     Double_t fLineCrossingSigma[AliPID::kSPECIES];          // with of the exclusion point
+    Int_t    fLineCrossingType;                             // 0 for no line crossing, otherwise AliPID of the particle crossing the electron dEdx band
     UChar_t fLineCrossingsEnabled;                          // Bitmap showing which line crossing is set
     Float_t fPAsigCut[2];                                   // Momentum region where to perform asymmetric sigma cut
     Float_t fNAsigmaTPC[2];                                 // Asymmetric TPC Sigma band        

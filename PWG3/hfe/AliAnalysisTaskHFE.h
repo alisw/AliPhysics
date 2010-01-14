@@ -32,9 +32,10 @@ class AliHFEpid;
 class AliHFEcuts;
 class AliHFEmcQA;
 class AliHFEsecVtx;
+class AliHFEelecbackground;
+class AliHFEcollection;
 class AliCFManager;
-class AliESDEvent;
-class AliESDtrackCuts;
+class AliVEvent;
 class AliMCEvent;
 class AliVParticle;
 class TH1I; 
@@ -42,10 +43,16 @@ class TList;
 
 class AliAnalysisTaskHFE : public AliAnalysisTask{
   public:
-  enum{
-    kPIDqa = 0,
-    kMCqa =1 
-  };
+    enum{
+      kPIDqa = 0,
+      kMCqa =1 
+    };
+    enum{
+      kPriVtx = 0,
+      kSecVtx = 1,
+      kIsElecBackGround = 2,
+      kPostProcess = 3
+    };
     AliAnalysisTaskHFE();
     AliAnalysisTaskHFE(const char * name);
     AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref);
@@ -58,31 +65,29 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     virtual void Terminate(Option_t *);
 
     Bool_t IsQAOn(Int_t qaLevel) const { return TESTBIT(fQAlevel, qaLevel); };
-    Bool_t IsSecVtxOn() const { return TestBit(kIsSecVtxOn); };
-    Bool_t IsPriVtxOn() const { return TestBit(kIsPriVtxOn); };
-    Bool_t IsRunningPostProcess() const { return TestBit(kIsRunningPostProcess); };
+    Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
+    Bool_t IsESDanalysis() const { return !TestBit(kAODanalysis); };
     Bool_t HasMCData() const { return TestBit(kHasMCdata); }
+    Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fPlugins, plug); };
     Int_t IsSignalElectron(AliVParticle *fTrack) const;
     void Load(TString filename = "HFEtask.root");
     void PostProcess();
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
+    void SwitchOnPlugin(Int_t plug);
     void SetHasMCData(Bool_t hasMC = kTRUE) { SetBit(kHasMCdata, hasMC); };
-    void SetPriVtxOn(Bool_t option = kTRUE)        { SetBit(kIsPriVtxOn, option); };
-    void SetSecVtxOn(Bool_t option = kTRUE)        { SetBit(kIsSecVtxOn, option); };
-    void SetRunPostProcess(Bool_t option = kTRUE)  { SetBit(kIsRunningPostProcess, option); };
     void SetPIDdetectors(Char_t * const detectors){ fPIDdetectors = detectors; }
     void SetPIDStrategy(UInt_t strategy) { fPIDstrategy = strategy; }
     void AddPIDdetector(Char_t *detector);
+    void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
+    void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     void PrintStatus() const;
     Float_t GetRapidity(TParticle *part) const;
  
   private:
     enum{
-      kIsSecVtxOn = BIT(19),
-      kIsPriVtxOn = BIT(20),
-      kIsRunningPostProcess = BIT(21),
-      kHasMCdata = BIT(22)
+      kHasMCdata = BIT(19),
+      kAODanalysis = BIT(20)
     };
     class LabelContainer{
       public:
@@ -104,18 +109,27 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
         Int_t *fCurrent;      // Current entry to mimic an iterator
     };
     void MakeParticleContainer();
+    void ProcessMC();
+    void ProcessESD();
+    void ProcessAOD();
+    Bool_t ProcessMCtrack(AliVParticle *track);
+    Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track, Double_t *container, Bool_t signal, Bool_t alreadyseen);
+    void DrawMCSignal2Background();
     
     ULong_t fQAlevel;                     // QA level
     TString fPIDdetectors;                // Detectors for Particle Identification
     UInt_t fPIDstrategy;                  // PID Strategy
-    AliESDEvent *fESD;                    //! The ESD Event
+    UShort_t fPlugins;                    // Enabled Plugins
+    AliVEvent *fRecEvent;                 //! The ESD Event
     AliMCEvent *fMC;                      //! The MC Event
     AliCFManager *fCFM;                   //! Correction Framework Manager
     TList *fCorrelation;                  //! response matrix for unfolding  
     THnSparseF *fPIDperformance;          //! info on contamination and yield of electron spectra
+    THnSparseF *fSignalToBackgroundMC;    //! Signal To Background Studies on pure MC information
     AliHFEpid *fPID;                      //! PID
     AliHFEcuts *fCuts;                    // Cut Collection
     AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis
+    AliHFEelecbackground *fElecBackGround;//! Background analysis
     AliHFEmcQA *fMCQA;                    //! MC QA
     TH1I *fNEvents;                       //! counter for the number of Events
     TH1I *fNElectronTracksEvent;          //! Number of Electron candidates after PID decision per Event
@@ -123,6 +137,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     TList *fOutput;                       //! Container for Task Output
     TList *fHistMCQA;                     //! Output container for MC QA histograms 
     TList *fHistSECVTX;                   //! Output container for sec. vertexing results
+    TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
+//    AliHFEcollection *fQAcoll;            //! collection class for basic QA histograms
 
     ClassDef(AliAnalysisTaskHFE, 1)       // The electron Analysis Task
 };
