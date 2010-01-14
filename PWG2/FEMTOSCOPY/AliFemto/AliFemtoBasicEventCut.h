@@ -26,9 +26,11 @@ public:
   void SetEventMult(const int& lo,const int& hi);
   void SetVertZPos(const float& lo, const float& hi);
   void SetAcceptBadVertex(bool b);
+  void SetAcceptOnlyPhysics(bool b);
   int NEventsPassed() const;
   int NEventsFailed() const;
   bool GetAcceptBadVertex();
+  bool GetAcceptOnlyPhysics();
 
   virtual AliFemtoString Report();
   virtual bool Pass(const AliFemtoEvent* event);
@@ -42,6 +44,7 @@ private:   // here are the quantities I want to cut on...
   bool fAcceptBadVertex;  // Set to true to accept events with bad vertex
   long fNEventsPassed;    // Number of events checked by this cut that passed
   long fNEventsFailed;    // Number of events checked by this cut that failed
+  bool fAcceptOnlyPhysics;// Accept only physics events
 
 #ifdef __ROOT__
   ClassDef(AliFemtoBasicEventCut, 1)

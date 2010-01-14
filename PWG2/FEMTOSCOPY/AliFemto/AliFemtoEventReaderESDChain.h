@@ -17,6 +17,7 @@
 #include "TTree.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
+#include "AliPhysicsSelection.h"
 #include <list>
 
 class AliFemtoEvent;
@@ -24,6 +25,9 @@ class AliFemtoEvent;
 class AliFemtoEventReaderESDChain : public AliFemtoEventReader 
 {
  public:
+  enum TrackType {kGlobal=0, kTPCOnly=1, kITSOnly=2, kSPDTracklet=3};
+  typedef enum TrackType ReadTrackType;
+
   AliFemtoEventReaderESDChain();
   AliFemtoEventReaderESDChain(const AliFemtoEventReaderESDChain& aReader);
   ~AliFemtoEventReaderESDChain();
@@ -35,10 +39,13 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   void SetConstrained(const bool constrained);
   void SetReadTPCInner(const bool readinner);
   void SetUseTPCOnly(const bool usetpconly);
+  void SetUsePhysicsSelection(const bool usephysics);
 
   bool GetConstrained() const;
   bool GetReadTPCInner() const;
   bool GetUseTPCOnly() const;
+  
+  void SetReadTrackType(ReadTrackType aType);
 
   void SetESDSource(AliESDEvent *aESD);
   //  void SetESDfriendSource(AliESDfriend *aFriend);
@@ -57,6 +64,9 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   unsigned int   fCurFile;       //number of current file
   AliESDEvent*   fEvent;         //ESD event
   //  AliESDfriend*  fEventFriend;
+  bool           fUsePhysicsSel; //if true the physics selection class will be used
+  AliPhysicsSelection *fSelect;  //Class to select only physics events
+  ReadTrackType  fTrackType;     // Type of track read
 
 /*   list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared */
 /*   list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow */

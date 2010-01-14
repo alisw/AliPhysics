@@ -12,7 +12,8 @@
 #include <TList.h>
 
 AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
-  fEvMult(0)
+  fEvMult(0),
+  fNormEvMult(0)
 {
   // Default constructor
   fEvMult = new TH1D("EvMult", "Event Multiplicity", 5001, -0.5, 5000.5);
@@ -20,27 +21,36 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
 
 AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName):
   AliFemtoCutMonitor(),
-  fEvMult(0)
+  fEvMult(0),
+  fNormEvMult(0)
 {
   // Normal constructor
   char name[200];
   snprintf(name, 200, "EvMult%s", aName);
   fEvMult = new TH1D(name, "Event Multiplicity", 5001, -0.5, 5000.5);
+
+  snprintf(name, 200, "NormEvMult%s", aName);
+  fNormEvMult = new TH1D(name, "Normalized Event Multiplicity", 5001, -0.5, 5000.5);
 }
 
 AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonitorEventMult &aCut):
   AliFemtoCutMonitor(),
-  fEvMult(0)
+  fEvMult(0),
+  fNormEvMult(0)
 {
   // copy constructor
   if (fEvMult) delete fEvMult;
   fEvMult = new TH1D(*aCut.fEvMult);
+
+  if (fNormEvMult) delete fNormEvMult;
+  fNormEvMult = new TH1D(*aCut.fNormEvMult);
 }
 
 AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
 {
   // Destructor
   delete fEvMult;
+  delete fNormEvMult;
 }
 
 AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFemtoCutMonitorEventMult& aCut)
@@ -51,6 +61,9 @@ AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFem
 
   if (fEvMult) delete fEvMult;
   fEvMult = new TH1D(*aCut.fEvMult);
+  
+  if (fNormEvMult) delete fNormEvMult;
+  fNormEvMult = new TH1D(*aCut.fNormEvMult);
   
   return *this;
 }
@@ -66,18 +79,21 @@ void AliFemtoCutMonitorEventMult::Fill(const AliFemtoEvent* aEvent)
 {
   // Fill in the monitor histograms with the values from the current track
   fEvMult->Fill(aEvent->NumberOfTracks());
+  fNormEvMult->Fill(aEvent->UncorrectedNumberOfPrimaries());
 }
 
 void AliFemtoCutMonitorEventMult::Write()
 {
   // Write out the relevant histograms
   fEvMult->Write();
+  fNormEvMult->Write();
 }
 
 TList *AliFemtoCutMonitorEventMult::GetOutputList()
 {
   TList *tOutputList = new TList();
   tOutputList->Add(fEvMult);
+  tOutputList->Add(fNormEvMult);
 
   return tOutputList;
 }

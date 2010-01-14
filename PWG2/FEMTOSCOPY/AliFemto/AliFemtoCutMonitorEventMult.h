@@ -21,7 +21,7 @@ class TList;
 
 class AliFemtoCutMonitorEventMult : public AliFemtoCutMonitor{
   
-public:
+ public:
   AliFemtoCutMonitorEventMult();
   AliFemtoCutMonitorEventMult(const char *aName);
   AliFemtoCutMonitorEventMult(const AliFemtoCutMonitorEventMult &aCut);
@@ -43,8 +43,9 @@ public:
 
   virtual TList *GetOutputList();
 
-private:
-  TH1D *fEvMult;    // Multiplicity distribution
+ private:
+  TH1D *fEvMult;     // Multiplicity distribution
+  TH1D *fNormEvMult; // Normalized event multiplicity distribution
 };
 
 #endif
