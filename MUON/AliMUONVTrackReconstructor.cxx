@@ -177,14 +177,16 @@ void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterS
   if (GetRecoParam()->ImproveTracks()) ImproveTracks();
   
   // Remove connected tracks
-  if (GetRecoParam()->RemoveConnectedTracksInSt12()) RemoveConnectedTracks(kFALSE);
-  else RemoveConnectedTracks(kTRUE);
+  RemoveConnectedTracks(3, 4, kFALSE);
+  RemoveConnectedTracks(2, 2, kFALSE);
+  if (GetRecoParam()->RemoveConnectedTracksInSt12()) RemoveConnectedTracks(0, 1, kFALSE);
   
   // Fill AliMUONTrack data members
   Finalize();
+  if (!GetRecoParam()->RemoveConnectedTracksInSt12()) TagConnectedTracks(0, 1, kTRUE);
   
   // Add tracks to MUON data container 
-  for (Int_t i=0; i<fNRecTracks; ++i) 
+  for (Int_t i=0; i<fNRecTracks; ++i)
   {
     AliMUONTrack * track = (AliMUONTrack*) fRecTracksPtr->At(i);
     if (track->GetGlobalChi2() < AliMUONTrack::MaxChi2()) {
@@ -535,54 +537,80 @@ void AliMUONVTrackReconstructor::RemoveDoubleTracks()
 }
 
   //__________________________________________________________________________
-void AliMUONVTrackReconstructor::RemoveConnectedTracks(Bool_t inSt345)
+void AliMUONVTrackReconstructor::RemoveConnectedTracks(Int_t stMin, Int_t stMax, Bool_t all)
 {
-  /// To remove double tracks:
-  /// Tracks are considered identical if they share 1 cluster or more.
-  /// If inSt345=kTRUE only stations 3, 4 and 5 are considered.
-  /// Among two identical tracks, one keeps the track with the larger number of clusters
-  /// or, if these numbers are equal, the track with the minimum chi2.
-  AliMUONTrack *track1, *track2, *trackToRemove;
-  Int_t clustersInCommon, nClusters1, nClusters2;
-  Bool_t removedTrack1;
+  /// Find and remove tracks sharing 1 cluster or more in station(s) [stMin, stMax].
+  /// For each couple of connected tracks, one removes the one with the smallest
+  /// number of clusters or with the highest chi2 value in case of equality.
+  /// If all=kTRUE: both tracks are removed.
+  
+  // tag the tracks to be removed
+  TagConnectedTracks(stMin, stMax, all);
+  
+  // remove them
+  Int_t nTracks = fRecTracksPtr->GetEntriesFast();
+  for (Int_t i = 0; i < nTracks; i++) {
+    if (((AliMUONTrack*) fRecTracksPtr->UncheckedAt(i))->IsConnected()) {
+      fRecTracksPtr->RemoveAt(i);
+      fNRecTracks--;
+    }
+  }
+  
+  // remove holes in the array if any
+  fRecTracksPtr->Compress();
+}
+
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::TagConnectedTracks(Int_t stMin, Int_t stMax, Bool_t all)
+{
+  /// Find and tag tracks sharing 1 cluster or more in station(s) [stMin, stMax].
+  /// For each couple of connected tracks, one tags the one with the smallest
+  /// number of clusters or with the highest chi2 value in case of equality.
+  /// If all=kTRUE: both tracks are tagged.
+  
+  AliMUONTrack *track1, *track2;
+  Int_t nClusters1, nClusters2;
+  Int_t nTracks = fRecTracksPtr->GetEntriesFast();
+  
+  // reset the tags
+  for (Int_t i = 0; i < nTracks; i++) ((AliMUONTrack*) fRecTracksPtr->UncheckedAt(i))->Connected(kFALSE);
+    
   // Loop over first track of the pair
-  track1 = (AliMUONTrack*) fRecTracksPtr->First();
-  while (track1) {
-    removedTrack1 = kFALSE;
-    nClusters1 = track1->GetNClusters();
+  for (Int_t iTrack1 = 0; iTrack1 < nTracks; iTrack1++) {
+    track1 = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iTrack1);
+    
     // Loop over second track of the pair
-    track2 = (AliMUONTrack*) fRecTracksPtr->After(track1);
-    while (track2) {
-      nClusters2 = track2->GetNClusters();
-      // number of clusters in common between two tracks
-      if (inSt345) clustersInCommon = track1->ClustersInCommonInSt345(track2);
-      else clustersInCommon = track1->ClustersInCommon(track2);
-      // check for identical tracks
-      if (clustersInCommon > 0) {
-        // decide which track to remove
-        if ((nClusters1 > nClusters2) || ((nClusters1 == nClusters2) && (track1->GetGlobalChi2() <= track2->GetGlobalChi2()))) {
-	  // remove track2 and continue the second loop with the track next to track2
-	  trackToRemove = track2;
-	  track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
-	  fRecTracksPtr->Remove(trackToRemove);
-	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
-	  fNRecTracks--;
-        } else {
-	  // else remove track1 and continue the first loop with the track next to track1
-	  trackToRemove = track1;
-	  track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
-          fRecTracksPtr->Remove(trackToRemove);
-	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
-	  fNRecTracks--;
-	  removedTrack1 = kTRUE;
-	  break;
-        }
-      } else track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
-    } // track2
-    if (removedTrack1) continue;
-    track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
-  } // track1
-  return;
+    for (Int_t iTrack2 = iTrack1+1; iTrack2 < nTracks; iTrack2++) {
+      track2 = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iTrack2);
+      
+      // check for connected tracks and tag them
+      if (track1->ClustersInCommon(track2, stMin, stMax) > 0) {
+        
+	if (all) {
+	  
+	  // tag both tracks
+	  track1->Connected();
+	  track2->Connected();
+	  
+	} else {
+	  
+	  // tag only the worst track
+	  nClusters1 = track1->GetNClusters();
+	  nClusters2 = track2->GetNClusters();
+	  if ((nClusters1 > nClusters2) || ((nClusters1 == nClusters2) && (track1->GetGlobalChi2() <= track2->GetGlobalChi2()))) {
+	    track2->Connected();
+	  } else {
+	    track1->Connected();
+	  }
+	  
+	}
+	
+      }
+      
+    }
+    
+  }
+  
 }
 
   //__________________________________________________________________________
@@ -1198,7 +1226,7 @@ void AliMUONVTrackReconstructor::ImproveTracks()
 //__________________________________________________________________________
 void AliMUONVTrackReconstructor::Finalize()
 {
-  /// Recompute track parameters and covariances at each attached cluster from those at the first one
+  /// Recompute track parameters and covariances at each attached cluster
   /// Set the label pointing to the corresponding MC track
   /// Remove the track if finalization failed
   

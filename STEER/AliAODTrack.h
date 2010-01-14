@@ -252,6 +252,9 @@ class AliAODTrack : public AliVTrack {
   Int_t    HitsMT(Int_t istation, Int_t iplane, Option_t *cathode=0);  // Check if track hits Muon chambers
   Int_t    HitsMuonChamber(Int_t MuonChamber);  // Check if track hits Muon chambers
   Bool_t   IsMuonTrack() const { return (GetMUONClusterMap()>0) ? kTRUE : kFALSE; }
+  
+  void     Connected(Bool_t flag) {flag ? SETBIT(fITSMuonClusterMap,26) : CLRBIT(fITSMuonClusterMap,26);}
+  Bool_t   IsConnected() const {return TESTBIT(fITSMuonClusterMap,26);}
 
   void     SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
   void     SetType(AODTrk_t ttype) { fType=ttype; }

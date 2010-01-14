@@ -86,8 +86,7 @@ class AliMUONTrack : public TObject
   /// set the chi2 of trigger/track matching 
   void     SetChi2MatchTrigger(Double_t chi2MatchTrigger) {fChi2MatchTrigger = chi2MatchTrigger;}
 
-  Int_t ClustersInCommon(AliMUONTrack* track) const;
-  Int_t ClustersInCommonInSt345(AliMUONTrack* track) const;
+  Int_t ClustersInCommon(AliMUONTrack* track, Int_t stMin = 0, Int_t stMax = 4) const;
 
   Int_t    GetNDF() const;
   Double_t GetNormalizedChi2() const;
@@ -139,6 +138,9 @@ class AliMUONTrack : public TObject
   
   /// return the maximum chi2 above which the track can be considered as abnormal (due to extrapolation failure, ...)
   static Double_t MaxChi2() {return fgkMaxChi2;}
+  
+  void   Connected(Bool_t flag = kTRUE) {fConnected = flag;}
+  Bool_t IsConnected() const {return fConnected;}
 
 
  private:
@@ -175,6 +177,7 @@ class AliMUONTrack : public TObject
 
   Int_t fLocalTrigger;    ///< packed local trigger information
   
+  Bool_t fConnected; ///< kTRUE if that track shares cluster(s) with another
   
   // methods
   Bool_t ComputeClusterWeights(TMatrixD& clusterWeightsNB, TMatrixD& clusterWeightsB,

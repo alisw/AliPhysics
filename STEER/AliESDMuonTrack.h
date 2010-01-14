@@ -134,6 +134,10 @@ public:
   void     AddInMuonClusterMap(Int_t chamber) {fMuonClusterMap |= BIT(chamber);}
   Bool_t   IsInMuonClusterMap(Int_t chamber) const {return (Bool_t) ((fMuonClusterMap & BIT(chamber)) != 0);}
   
+  // Identify the tracks sharing cluster(s) with another (use the last bit of fMuonClusterMap)
+  void     Connected(Bool_t flag = kTRUE) {flag ? SETBIT(fMuonClusterMap,31) : CLRBIT(fMuonClusterMap,31);}
+  Bool_t   IsConnected() const {return TESTBIT(fMuonClusterMap,31);}
+  
   // Methods to get, fill and check the array of associated clusters
   Int_t         GetNClusters() const;
   TClonesArray& GetClusters() const;

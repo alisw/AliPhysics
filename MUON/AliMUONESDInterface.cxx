@@ -684,6 +684,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
   track.SetLocalTrigger(esdTrack.LoCircuit(), esdTrack.LoStripX(), esdTrack.LoStripY(),
 			esdTrack.LoDev(), esdTrack.LoLpt(), esdTrack.LoHpt(),
 			esdTrack.GetTriggerWithoutChamber());
+  track.Connected(esdTrack.IsConnected());
   
   // track parameters at vertex
   AliMUONTrackParam paramAtVertex;
@@ -886,6 +887,9 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
     esdTrack.AddInMuonClusterMap(esdCluster.GetChamberId());
     trackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->After(trackParam));
   }
+  
+  // set connected flag
+  esdTrack.Connected(track.IsConnected());
   
   // set trigger info
   esdTrack.SetLocalTrigger(track.GetLocalTrigger());

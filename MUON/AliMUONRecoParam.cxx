@@ -194,7 +194,7 @@ void AliMUONRecoParam::SetLowFluxParam()
   fMakeMoreTrackCandidates = kFALSE;
   fComplementTracks = kTRUE;
   fImproveTracks = kTRUE;
-  fRemoveConnectedTracksInSt12 = kTRUE;
+  fRemoveConnectedTracksInSt12 = kFALSE;
   fUseSmoother = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) {
     fUseChamber[iCh] = kTRUE;

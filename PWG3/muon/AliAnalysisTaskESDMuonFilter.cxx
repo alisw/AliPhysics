@@ -176,6 +176,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
     aodTrack->SetMuonClusterMap(esdMuTrack->GetMuonClusterMap());
     aodTrack->SetMatchTrigger(esdMuTrack->GetMatchTrigger());
+    aodTrack->Connected(esdMuTrack->IsConnected());
     
     primary->AddDaughter(aodTrack);
     
