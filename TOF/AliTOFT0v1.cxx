@@ -175,8 +175,11 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
     
     time*=1.E-3; // tof given in nanoseconds	   
     if (!(mom<=fUpperMomBound && mom>=fLowerMomBound))continue;
-    
+   
+    if (!AcceptTrack(t)) continue;
+ 
 #if 0
+    /* old code with dependence from libANALYSIS */
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
     Bool_t tpcRefit = kTRUE;
     Double_t nSigma = 4;
@@ -678,8 +681,11 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
 
     time*=1.E-3; // tof given in nanoseconds	   
     if (!(mom<=fUpperMomBound && mom>=fLowerMomBound))continue;
-    
+   
+    if (!AcceptTrack(t)) continue;
+ 
 #if 0
+    /* old code with dependence from libANALYSIS */
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
     Bool_t tpcRefit = kTRUE;
     Double_t nSigma = 4;
@@ -1203,4 +1209,66 @@ Float_t AliTOFT0v1::GetMomError(Int_t index, Float_t mom, Float_t texp)
   sigma =TMath::Sqrt(sigma*sigma);
 
   return sigma;
+}
+
+//__________________________________________________________________
+Bool_t AliTOFT0v1::AcceptTrack(AliESDtrack *track)
+{
+
+  /* TPC refit */
+  if (!(track->GetStatus() & AliESDtrack::kTPCrefit)) return kFALSE;
+  /* do not accept kink daughters */
+  if (track->GetKinkIndex(0)>0) return kFALSE;
+  /* N clusters TPC */
+  if (track->GetTPCclusters(0) < 50) return kFALSE;
+  /* chi2 TPC */
+  if (track->GetTPCchi2()/Float_t(track->GetTPCclusters(0)) > 3.5) return kFALSE;
+  /* sigma to vertex */
+  if (GetSigmaToVertex(track) > 4.) return kFALSE;
+  
+  /* accept track */
+  return kTRUE;
+
+}
+
+//____________________________________________________________________
+Float_t AliTOFT0v1::GetSigmaToVertex(AliESDtrack* esdTrack)
+{
+  // Calculates the number of sigma to the vertex.
+
+  Float_t b[2];
+  Float_t bRes[2];
+  Float_t bCov[3];
+  esdTrack->GetImpactParameters(b,bCov);
+  
+  if (bCov[0]<=0 || bCov[2]<=0) {
+    bCov[0]=0; bCov[2]=0;
+  }
+  bRes[0] = TMath::Sqrt(bCov[0]);
+  bRes[1] = TMath::Sqrt(bCov[2]);
+
+  // -----------------------------------
+  // How to get to a n-sigma cut?
+  //
+  // The accumulated statistics from 0 to d is
+  //
+  // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
+  // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
+  //
+  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-d**2)/2)
+  // Can this be expressed in a different way?
+
+  if (bRes[0] == 0 || bRes[1] ==0)
+    return -1;
+
+  Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
+
+  // work around precision problem
+  // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
+  // 1e-15 corresponds to nsigma ~ 7.7
+  if (TMath::Exp(-d * d / 2) < 1e-15)
+    return 1000;
+
+  Float_t nSigma = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+  return nSigma;
 }

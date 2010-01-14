@@ -5,6 +5,7 @@
 #include "AliESDEvent.h"
 #include "AliStack.h"
 
+class AliESDtrack;
 class AliTOFcalibHisto;
 
 class AliTOFT0v1: public TObject {
@@ -34,6 +35,10 @@ public:
   Bool_t   operator == (const AliTOFT0v1 & tzero) const ;
 
  private:
+
+  Bool_t AcceptTrack(AliESDtrack *track); /* accept track */
+  Float_t GetSigmaToVertex(AliESDtrack *track); /* get sigma to vertex */
+
   AliTOFcalibHisto *fCalib;
 
   Double_t fTimeResolution;  // global time resolution used to calculate T0
