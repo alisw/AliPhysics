@@ -156,9 +156,11 @@ void AliGenMC::Init()
         fChildSelect[0]= 22;
         fChildSelect[1]= 11;
         break;
-
-    case kOmega:
     case kLambda:	
+	fChildSelect[0]= kProton;
+        fChildSelect[1]= 211;
+	break;
+    case kOmega:
     case kAll:
     case kAllMuonic:
     case kNoDecay:
