@@ -111,7 +111,7 @@ fFindVertexForDstar(source.fFindVertexForDstar)
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
   for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
-  for(Int_t i=0; i<13; i++) fDsCuts[i]=source.fDsCuts[i];
+  for(Int_t i=0; i<14; i++) fDsCuts[i]=source.fDsCuts[i];
   for(Int_t i=0; i<12; i++) fLcCuts[i]=source.fLcCuts[i];
   for(Int_t i=0; i<5; i++)  fDstarCuts[i]=source.fDstarCuts[i];
   for(Int_t i=0; i<9; i++)  fD0to4ProngsCuts[i]=source.fD0to4ProngsCuts[i];
@@ -144,7 +144,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
   for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
-  for(Int_t i=0; i<13; i++) fDsCuts[i]=source.fDsCuts[i];
+  for(Int_t i=0; i<14; i++) fDsCuts[i]=source.fDsCuts[i];
   for(Int_t i=0; i<12; i++) fLcCuts[i]=source.fLcCuts[i];
   for(Int_t i=0; i<5; i++)  fDstarCuts[i]=source.fDstarCuts[i];
   for(Int_t i=0; i<9; i++)  fD0to4ProngsCuts[i]=source.fD0to4ProngsCuts[i];
@@ -1081,8 +1081,9 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   if(f3Prong) {
     ok3Prong = kFALSE;
     Int_t ok1,ok2;
+    Int_t dum1,dum2;
     if(the3Prong->SelectDplus(fDplusCuts))   ok3Prong = kTRUE;
-    if(the3Prong->SelectDs(fDsCuts,ok1,ok2)) ok3Prong = kTRUE;
+    if(the3Prong->SelectDs(fDsCuts,ok1,ok2,dum1,dum2)) ok3Prong = kTRUE;
     if(the3Prong->SelectLc(fLcCuts,ok1,ok2)) ok3Prong = kTRUE;
   }
   //if(fDebug) printf("ok3Prong: %d\n",(Int_t)ok3Prong);
@@ -1416,7 +1417,8 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     printf("    cosThetaPoint    > %f\n",fDsCuts[9]);
     printf("    Sum d0^2 [cm^2]  > %f\n",fDsCuts[10]);
     printf("    dca cut [cm]  < %f\n",fDsCuts[11]);
-    printf("    Inv. Mass  phi/K0* [GeV]  < %f\n",fDsCuts[12]);
+    printf("    Inv. Mass  phi [GeV]  < %f\n",fDsCuts[12]);
+    printf("    Inv. Mass  K0* [GeV]  < %f\n",fDsCuts[13]);
     printf("  Lc->pKpi cuts:\n");
     printf("    |M-MLc| [GeV]    < %f\n",fLcCuts[0]);
     printf("    pTP     [GeV/c]    > %f\n",fLcCuts[1]);
@@ -1621,6 +1623,9 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
   for(Int_t i=0; i<entries; i++) {
     AliVTrack *track;
     track = (AliVTrack*)event->GetTrack(i);
+
+    // skip pure ITS SA tracks
+    //if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
 
     // TEMPORARY: check that the cov matrix is there
     Double_t covtest[21];
@@ -1837,11 +1842,12 @@ void AliAnalysisVertexingHF::SetDplusCuts(const Double_t cuts[12])
 }
 //-----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::SetDsCuts(Double_t cut0,Double_t cut1,
-				   Double_t cut2,Double_t cut3,Double_t cut4,
-				   Double_t cut5,Double_t cut6,
-				   Double_t cut7,Double_t cut8,
-				   Double_t cut9,Double_t cut10,
-				   Double_t cut11,Double_t cut12)
+				       Double_t cut2,Double_t cut3,
+				       Double_t cut4,Double_t cut5,
+				       Double_t cut6,Double_t cut7,
+				       Double_t cut8,Double_t cut9,
+				       Double_t cut10,Double_t cut11,
+				       Double_t cut12,Double_t cut13)
 {
   // Set the cuts for Ds->KKpi selection
   fDsCuts[0] = cut0;
@@ -1857,6 +1863,7 @@ void AliAnalysisVertexingHF::SetDsCuts(Double_t cut0,Double_t cut1,
   fDsCuts[10] = cut10;
   fDsCuts[11] = cut11;
   fDsCuts[12] = cut12;
+  fDsCuts[13] = cut13;
 
   return;
 }
@@ -1865,7 +1872,7 @@ void AliAnalysisVertexingHF::SetDsCuts(const Double_t cuts[13])
 {
   // Set the cuts for Ds->KKpi selection
 
-  for(Int_t i=0; i<13; i++) fDsCuts[i] = cuts[i];
+  for(Int_t i=0; i<14; i++) fDsCuts[i] = cuts[i];
 
   return;
 }

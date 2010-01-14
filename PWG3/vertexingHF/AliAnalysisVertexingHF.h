@@ -104,12 +104,13 @@ class AliAnalysisVertexingHF : public TNamed {
 		    Double_t cut11=10000000000.); 
   void SetDplusCuts(const Double_t cuts[12]); 
   void SetDsCuts(Double_t cut0=1000.,Double_t cut1=0.,
-		Double_t cut2=0.,Double_t cut3=0.,Double_t cut4=0.,
-		Double_t cut5=0.,Double_t cut6=10000000000.,
-		Double_t cut7=0.,Double_t cut8=0.,
-		Double_t cut9=-1.1,Double_t cut10=0.,
-		Double_t cut11=10000000000., Double_t cut12=1000.); 
-  void SetDsCuts(const Double_t cuts[13]); 
+		 Double_t cut2=0.,Double_t cut3=0.,Double_t cut4=0.,
+		 Double_t cut5=0.,Double_t cut6=10000000000.,
+		 Double_t cut7=0.,Double_t cut8=0.,
+		 Double_t cut9=-1.1,Double_t cut10=0.,
+		 Double_t cut11=10000000000., Double_t cut12=1000.,
+		 Double_t cut13=1000.); 
+  void SetDsCuts(const Double_t cuts[14]); 
   void SetLcCuts(Double_t cut0=1000.,Double_t cut1=0.,
 		 Double_t cut2=0.,Double_t cut3=0.,Double_t cut4=0.,
 		 Double_t cut5=0.,Double_t cut6=10000000000.,
@@ -216,7 +217,7 @@ class AliAnalysisVertexingHF : public TNamed {
                           // 9 = cosThetaPoint
                           // 10 = Sum d0^2 (cm^2)
                           // 11 = dca cut (cm)
-  Double_t fDsCuts[13]; // cuts on Ds candidates
+  Double_t fDsCuts[14]; // cuts on Ds candidates
                         // (to be passed to AliAODRecoDecayHF3Prong::SelectDs())
                         // 0 = inv. mass half width [GeV]   
                         // 1 = pTK [GeV/c]
@@ -230,7 +231,8 @@ class AliAnalysisVertexingHF : public TNamed {
                         // 9 = cosThetaPoint
                         // 10 = Sum d0^2 (cm^2)
                         // 11 = dca cut (cm)
-                        // 12 = inv. mass cut arounf phi and K0* [GeV]
+                        // 12 = inv. mass cut around phi 
+                        // 13 = inv. mass cut around phi K0* [GeV]
    Double_t fLcCuts[12]; // cuts on Lambdac candidates
                         // (to be passed to AliAODRecoDecayHF3Prong::SelectLc())
                         // 0 = inv. mass half width [GeV]   
@@ -302,7 +304,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void   SetPrimaryVertex(AliESDVertex *v1) { fV1 = v1; }
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
   //
-  ClassDef(AliAnalysisVertexingHF,12);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,13);  // Reconstruction of HF decay candidates
 };
 
 
