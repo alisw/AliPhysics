@@ -18,6 +18,8 @@
 #pragma link C++ class  AliTOFReconstructor+;
 #pragma link C++ class  AliTOFRecoParam+;
 #pragma link C++ class  AliTOFQADataMakerRec+;
+#pragma link C++ class  AliTOFT0v1+;
+#pragma link C++ class  AliTOFT0maker+;
 
 
 #endif

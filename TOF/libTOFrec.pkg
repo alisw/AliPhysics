@@ -6,6 +6,8 @@ SRCS  = AliTOFcluster.cxx  AliTOFClusterFinder.cxx  \
         AliTOFtrack.cxx  \
 	AliTOFtracker.cxx AliTOFtrackerMI.cxx AliTOFtrackerV1.cxx  \
 	AliTOFReconstructor.cxx AliTOFRecoParam.cxx  \
+	AliTOFT0maker.cxx \
+	AliTOFT0v1.cxx \
 	AliTOFQADataMakerRec.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
