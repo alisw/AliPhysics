@@ -219,6 +219,9 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       tReactionPlane = hdh->ReactionPlaneAngle();
       cout << "Got reaction plane " << tReactionPlane << endl;
     }
+
+  hbtEvent->SetReactionPlaneAngle(tReactionPlane);
+
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
   nofTracks=fEvent->GetNumberOfTracks();
@@ -403,90 +406,105 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       trackCopy->SetKinkIndexes(indexes);
 
       // Fill the hidden information with the simulated data
-      TParticle *tPart = fStack->Particle(TMath::Abs(esdtrack->GetLabel()));
+      if (TMath::Abs(esdtrack->GetLabel()) < fStack->GetNtrack()) {
+	TParticle *tPart = fStack->Particle(TMath::Abs(esdtrack->GetLabel()));
 
-      // Check the mother information
-
-      // Using the new way of storing the freeze-out information
-      // Final state particle is stored twice on the stack
-      // one copy (mother) is stored with original freeze-out information
-      //   and is not tracked
-      // the other one (daughter) is stored with primary vertex position
-      //   and is tracked
+	// Check the mother information
 	
-      // Freeze-out coordinates
-      double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
-      fpx = tPart->Vx() - fV1[0];
-      fpy = tPart->Vy() - fV1[1];
-      fpz = tPart->Vz() - fV1[2];
-      fpt = tPart->T();
-
-      AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
-      tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
-
-      fpx *= 1e13;
-      fpy *= 1e13;
-      fpz *= 1e13;
-      fpt *= 1e13;
-
-      //      cout << "Looking for mother ids " << endl;
-      if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {
-	//	cout << "Got mother id" << endl;
- 	TParticle *mother = fStack->Particle(motherids[TMath::Abs(esdtrack->GetLabel())]);
- 	// Check if this is the same particle stored twice on the stack
-  	if ((mother->GetPdgCode() == tPart->GetPdgCode() || (mother->Px() == tPart->Px()))) {
-	  // It is the same particle
-	  // Read in the original freeze-out information
-	  // and convert it from to [fm]
-
-	  // EPOS style 
-// 	  fpx = mother->Vx()*1e13*0.197327;
-// 	  fpy = mother->Vy()*1e13*0.197327;
-// 	  fpz = mother->Vz()*1e13*0.197327;
-// 	  fpt = mother->T() *1e13*0.197327*0.5;
-	  
-
-	  // Therminator style 
- 	  fpx = mother->Vx()*1e13;
- 	  fpy = mother->Vy()*1e13;
- 	  fpz = mother->Vz()*1e13;
- 	  fpt = mother->T() *1e13*3e10;
-	  
+	// Using the new way of storing the freeze-out information
+	// Final state particle is stored twice on the stack
+	// one copy (mother) is stored with original freeze-out information
+	//   and is not tracked
+	// the other one (daughter) is stored with primary vertex position
+	//   and is tracked
+	
+	// Freeze-out coordinates
+	double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
+	fpx = tPart->Vx() - fV1[0];
+	fpy = tPart->Vy() - fV1[1];
+	fpz = tPart->Vz() - fV1[2];
+	fpt = tPart->T();
+	
+	AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
+	tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
+	
+	fpx *= 1e13;
+	fpy *= 1e13;
+	fpz *= 1e13;
+	fpt *= 1e13;
+	
+	//      cout << "Looking for mother ids " << endl;
+	if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {
+	  //	cout << "Got mother id" << endl;
+	  TParticle *mother = fStack->Particle(motherids[TMath::Abs(esdtrack->GetLabel())]);
+	  // Check if this is the same particle stored twice on the stack
+	  if ((mother->GetPdgCode() == tPart->GetPdgCode() || (mother->Px() == tPart->Px()))) {
+	    // It is the same particle
+	    // Read in the original freeze-out information
+	    // and convert it from to [fm]
+	    
+	    // EPOS style 
+	    fpx = mother->Vx()*1e13*0.197327;
+	    fpy = mother->Vy()*1e13*0.197327;
+	    fpz = mother->Vz()*1e13*0.197327;
+	    fpt = mother->T() *1e13*0.197327;
+	    
+	    
+	    // Therminator style 
+// 	    fpx = mother->Vx()*1e13;
+// 	    fpy = mother->Vy()*1e13;
+// 	    fpz = mother->Vz()*1e13;
+// 	    fpt = mother->T() *1e13*3e10;
+	    
+	  }
 	}
-      }
-
-      if (fRotateToEventPlane) {
-	double tPhi = TMath::ATan2(fpy, fpx);
-	double tRad = TMath::Hypot(fpx, fpy);
 	
-	fpx = tRad*TMath::Cos(tPhi - tReactionPlane);
-	fpy = tRad*TMath::Sin(tPhi - tReactionPlane);
-      }
-
-      tInfo->SetPDGPid(tPart->GetPdgCode());
-
-      if (fRotateToEventPlane) {
-	double tPhi = TMath::ATan2(tPart->Py(), tPart->Px());
-	double tRad = TMath::Hypot(tPart->Px(), tPart->Py());
+	if (fRotateToEventPlane) {
+	  double tPhi = TMath::ATan2(fpy, fpx);
+	  double tRad = TMath::Hypot(fpx, fpy);
+	  
+	  fpx = tRad*TMath::Cos(tPhi - tReactionPlane);
+	  fpy = tRad*TMath::Sin(tPhi - tReactionPlane);
+	}
 	
-	tInfo->SetTrueMomentum(tRad*TMath::Cos(tPhi - tReactionPlane),
-			       tRad*TMath::Sin(tPhi - tReactionPlane),
-			       tPart->Pz());
+	tInfo->SetPDGPid(tPart->GetPdgCode());
+	
+	if (fRotateToEventPlane) {
+	  double tPhi = TMath::ATan2(tPart->Py(), tPart->Px());
+	  double tRad = TMath::Hypot(tPart->Px(), tPart->Py());
+	  
+	  tInfo->SetTrueMomentum(tRad*TMath::Cos(tPhi - tReactionPlane),
+				 tRad*TMath::Sin(tPhi - tReactionPlane),
+				 tPart->Pz());
+	}
+	else
+	  tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
+	Double_t mass2 = (tPart->Energy() *tPart->Energy() -
+			  tPart->Px()*tPart->Px() -
+			  tPart->Py()*tPart->Py() -
+			  tPart->Pz()*tPart->Pz());
+	if (mass2>0.0)
+	  tInfo->SetMass(TMath::Sqrt(mass2));
+	else 
+	  tInfo->SetMass(0.0);
+	
+	tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
+	trackCopy->SetHiddenInfo(tInfo);
       }
-      else
-	tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
-      Double_t mass2 = (tPart->Energy() *tPart->Energy() -
-			tPart->Px()*tPart->Px() -
-			tPart->Py()*tPart->Py() -
-			tPart->Pz()*tPart->Pz());
-      if (mass2>0.0)
-	tInfo->SetMass(TMath::Sqrt(mass2));
-      else 
+      else {
+	AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
 	tInfo->SetMass(0.0);
+	double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
+	fpx = fV1[0]*1e13;
+	fpy = fV1[1]*1e13;
+	fpz = fV1[2]*1e13;
+	fpt = 0.0;
+	tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
 
-      tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
-      trackCopy->SetHiddenInfo(tInfo);
-
+	tInfo->SetTrueMomentum(pxyz[0],pxyz[1],pxyz[2]);
+	
+	trackCopy->SetHiddenInfo(tInfo);
+      }
       //      cout << "Got freeze-out " << fpx << " " << fpy << " " << fpz << " " << fpt << " " <<  mass2 << " " << tPart->GetPdgCode() << endl; 
       
       //decision if we want this track
