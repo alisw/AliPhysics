@@ -19,7 +19,7 @@
 #include "AliGammaConversionHistograms.h"
 #include <vector>
 #include "AliCFManager.h"
-
+#include "AliGammaConversionBGHandler.h"
 
 class TClonesArray; 
 class TFormula;
@@ -577,12 +577,13 @@ class AliV0Reader : public TObject {
   /*
    * Gets a vector of good v0s.
    */
-  vector<AliKFParticle> GetCurrentEventGoodV0s() const{return fCurrentEventGoodV0s;}
+  TClonesArray* GetCurrentEventGoodV0s() const{return fCurrentEventGoodV0s;}
 	
   /*
    * Gets the vector of previous events v0s (for bacground analysis)
    */
-  vector<AliKFParticle> GetPreviousEventGoodV0s() const{return fPreviousEventGoodV0s;}
+  AliGammaConversionKFVector* GetBGGoodV0s(Int_t event);
+  //  vector<AliKFParticle> GetPreviousEventGoodV0s() const{return fPreviousEventGoodV0s;}
 
   void SetUseOwnXYZCalculation(Bool_t flag){fUseOwnXYZCalculation=flag;}
 
@@ -598,6 +599,7 @@ class AliV0Reader : public TObject {
 
   void SetOnFlyFlag(Bool_t flag){fUseOnFlyV0Finder = flag;}
 
+ Int_t GetNBGEvents(){return fBGEventHandler->GetNBGEvents();}
 
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
@@ -681,10 +683,13 @@ class AliV0Reader : public TObject {
 
   Bool_t fUpdateV0AlreadyCalled; //flag
 	
-  vector<AliKFParticle> fCurrentEventGoodV0s; //vector of good v0s
-  vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
+  TClonesArray* fCurrentEventGoodV0s; //vector of good v0s
+  //  vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
+
+  AliGammaConversionBGHandler *fBGEventHandler;
+  Bool_t fBGEventInitialized;
 	
-  ClassDef(AliV0Reader,7)
+  ClassDef(AliV0Reader,8)
 };
 #endif
 

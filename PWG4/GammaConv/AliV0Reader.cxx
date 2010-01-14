@@ -33,6 +33,7 @@
 #include "AliStack.h"
 #include "AliMCEventHandler.h"
 #include "AliTPCpidESD.h"
+#include "AliGammaConversionBGHandler.h"
 
 class iostream;
 class AliESDv0;
@@ -102,8 +103,10 @@ AliV0Reader::AliV0Reader() :
   fDoCF(kFALSE),
   fUseOnFlyV0Finder(kTRUE),
   fUpdateV0AlreadyCalled(kFALSE),
-  fCurrentEventGoodV0s(),
-  fPreviousEventGoodV0s()
+  fCurrentEventGoodV0s(NULL),
+//  fPreviousEventGoodV0s(),
+  fBGEventHandler(NULL),
+  fBGEventInitialized(kFALSE)
 {
   fTPCpid = new AliTPCpidESD;	
 }
@@ -168,7 +171,9 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fUseOnFlyV0Finder(original.fUseOnFlyV0Finder),
   fUpdateV0AlreadyCalled(original.fUpdateV0AlreadyCalled),
   fCurrentEventGoodV0s(original.fCurrentEventGoodV0s),
-  fPreviousEventGoodV0s(original.fPreviousEventGoodV0s)
+  //  fPreviousEventGoodV0s(original.fPreviousEventGoodV0s),
+  fBGEventHandler(original.fBGEventHandler),
+  fBGEventInitialized(original.fBGEventInitialized)
 {
 	
 }
@@ -188,6 +193,7 @@ AliV0Reader::~AliV0Reader()
 
 void AliV0Reader::Initialize(){
   //see header file for documentation
+
   fUpdateV0AlreadyCalled = kFALSE;	
   // Get the input handler from the manager
   fESDHandler = (AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -214,6 +220,20 @@ void AliV0Reader::Initialize(){
     if(fMCStack == NULL){
       //print warning here
     }
+    // Better parameters for MonteCarlo from A. Kalweit 2010/01/8
+    fTPCpid->SetBetheBlochParameters( 2.15898e+00/50.,
+				      1.75295e+01,
+				      3.40030e-09,
+				      1.96178e+00,
+				      3.91720e+00);
+  }
+  else{
+    // Better parameters for data from A. Kalweit 2010/01/8
+    fTPCpid->SetBetheBlochParameters(0.0283086,
+				     2.63394e+01,
+				     5.04114e-11,
+				     2.12543e+00,
+				     4.88663e+00);
   }
 	
   // for CF
@@ -225,9 +245,38 @@ void AliV0Reader::Initialize(){
       fDoCF = kFALSE;
     }	
   }
+
+
+
 	
   AliKFParticle::SetField(fESDEvent->GetMagneticField());
-	
+
+  //  fCurrentEventGoodV0s = new TClonesArray("TClonesArray", 0);
+  fCurrentEventGoodV0s = new TClonesArray("AliKFParticle", 0);
+
+  if(fBGEventInitialized == kFALSE){
+    Double_t *zBinLimitsArray = new Double_t[8];//{-7,-5,-3,-1,1,3,5,7};
+    zBinLimitsArray[0] = -7;
+    zBinLimitsArray[1] = -5;
+    zBinLimitsArray[2] = -3;
+    zBinLimitsArray[3] = -1;
+    zBinLimitsArray[4] = 1;
+    zBinLimitsArray[5] = 3;
+    zBinLimitsArray[6] = 5;
+    zBinLimitsArray[7] = 7;
+    
+    Double_t *multiplicityBinLimitsArray= new Double_t[4];//={0,10,20,500};
+    multiplicityBinLimitsArray[0] = 0;
+    multiplicityBinLimitsArray[1] = 10;
+    multiplicityBinLimitsArray[2] = 20;
+    multiplicityBinLimitsArray[3] = 500;
+    
+    
+    fBGEventHandler = new AliGammaConversionBGHandler(8,4,10);
+    
+    fBGEventHandler->Initialize(zBinLimitsArray, multiplicityBinLimitsArray);
+    fBGEventInitialized = kTRUE;
+  }
 }
 
 AliESDv0* AliV0Reader::GetV0(Int_t index){
@@ -413,8 +462,10 @@ Bool_t AliV0Reader::NextV0(){
       fHistograms->FillHistogram("ESD_GoodV0s_InvMass",GetMotherCandidateMass());
     }
 
-    fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate);
-		
+    //    fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate);
+
+    new((*fCurrentEventGoodV0s)[fCurrentEventGoodV0s->GetEntriesFast()])  AliKFParticle(*fCurrentMotherKFCandidate);
+
     iResult=kTRUE;//means we have a v0 who survived all the cuts applied
 		
     fCurrentV0IndexNumber++;
@@ -679,30 +730,10 @@ void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
 
 void AliV0Reader::UpdateEventByEventData(){
   //see header file for documentation
-	
-  if(fCurrentEventGoodV0s.size() >0 ){
-    //    fPreviousEventGoodV0s.clear();
-    //    fPreviousEventGoodV0s = fCurrentEventGoodV0s;
-    if(fPreviousEventGoodV0s.size()>19){
-      for(UInt_t nCurrent=0;nCurrent<fCurrentEventGoodV0s.size();nCurrent++){
-	fPreviousEventGoodV0s.erase(fPreviousEventGoodV0s.begin());
-	fPreviousEventGoodV0s.push_back(fCurrentEventGoodV0s.at(nCurrent));
-      }
-    }
-    else{
-      for(UInt_t nCurrent=0;nCurrent<fCurrentEventGoodV0s.size();nCurrent++){
-	if(fPreviousEventGoodV0s.size()<20){
-	  fPreviousEventGoodV0s.push_back(fCurrentEventGoodV0s.at(nCurrent));
-	}
-	else{
-	  fPreviousEventGoodV0s.erase(fPreviousEventGoodV0s.begin());
-	  fPreviousEventGoodV0s.push_back(fCurrentEventGoodV0s.at(nCurrent));
-	}
-      }
-    }
+  if(fCurrentEventGoodV0s->GetEntriesFast() >0 ){
+    fBGEventHandler->AddEvent(fCurrentEventGoodV0s,fESDEvent->GetPrimaryVertex()->GetZ(),fESDEvent->GetNumberOfTracks());
   }
-  fCurrentEventGoodV0s.clear();
-	
+  fCurrentEventGoodV0s->Delete();
   fCurrentV0IndexNumber=0;
 }
 
@@ -976,4 +1007,9 @@ Double_t AliV0Reader::GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Doubl
    (zphasePos*negtrackradius+zphaseNeg*postrackradius)/(negtrackradius+postrackradius);
 
    return convposz;
+}
+
+AliGammaConversionKFVector* AliV0Reader::GetBGGoodV0s(Int_t event){
+
+  return fBGEventHandler->GetBGGoodV0s(event,fESDEvent->GetPrimaryVertex()->GetZ(),fESDEvent->GetNumberOfTracks());
 }

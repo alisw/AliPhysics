@@ -31,6 +31,7 @@
 //#include "AliCFManager.h"  // for CF
 //#include "AliCFContainer.h"   // for CF
 #include "AliGammaConversionAODObject.h"
+#include "AliGammaConversionBGHandler.h"
 
 class AliCFContainer;
 class AliCFManager;
@@ -291,33 +292,24 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
   fKFReconstructedGammasCutTClone->Delete();
   fPreviousEventTLVNegElectronTClone->Delete();
   fPreviousEventTLVPosElectronTClone->Delete();
-  //fKFReconstructedGammasTClone->Clear();
-  //fCurrentEventPosElectronTClone->Clear();
-  //fCurrentEventNegElectronTClone->Clear();
-  //fKFReconstructedGammasCutTClone->Clear();
-  //fPreviousEventTLVNegElectronTClone->Clear();
-  //fPreviousEventTLVPosElectronTClone->Clear();
-	
+
   //clear vectors
-  //  fKFReconstructedGammas.clear();
   fElectronv1.clear();
   fElectronv2.clear();
-  //  fCurrentEventPosElectron.clear();
-  //  fCurrentEventNegElectron.clear();	
-  //  fKFReconstructedGammasCut.clear(); 
 	
   fChargedParticles->Delete();	
-  //fChargedParticles->Clear();	
+
   fChargedParticlesId.clear();	
 	
   //Clear the data in the v0Reader
-  fV0Reader->UpdateEventByEventData();
+  //  fV0Reader->UpdateEventByEventData();
 
   //Take Only events with proper trigger
+  /*
   if(fTriggerCINT1B){
     if(!fV0Reader->GetESDEvent()->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
   }
-
+  */
 	
   // Process the MC information
   if(fDoMCTruth){
@@ -330,13 +322,9 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
   // Process the v0 information
   ProcessV0s();
   
+
   //Fill Gamma AOD
   FillAODWithConversionGammas() ; 
-	
-  //calculate background if flag is set
-  if(fCalculateBackground){
-    CalculateBackground();
-  }
 	
   // Process reconstructed gammas
   if(fDoNeutralMeson == kTRUE){
@@ -355,6 +343,14 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
     ProcessGammasForGammaJetAnalysis();
   }
 	
+  //calculate background if flag is set
+  if(fCalculateBackground){
+    CalculateBackground();
+  }
+	
+  //Clear the data in the v0Reader
+  fV0Reader->UpdateEventByEventData();
+
   PostData(1, fOutputContainer);
   PostData(2, fCFManager->GetParticleContainer());  // for CF
 	
@@ -1357,67 +1353,69 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 
 void AliAnalysisTaskGammaConversion::CalculateBackground(){
   // see header file for documentation
-	
-  vector<AliKFParticle> vectorCurrentEventGoodV0s = fV0Reader->GetCurrentEventGoodV0s();
-  vector<AliKFParticle> vectorPreviousEventGoodV0s = fV0Reader->GetPreviousEventGoodV0s();
-	
-  for(UInt_t iCurrent=0;iCurrent<vectorCurrentEventGoodV0s.size();iCurrent++){
-    AliKFParticle * currentEventGoodV0 = &vectorCurrentEventGoodV0s.at(iCurrent);
-    for(UInt_t iPrevious=0;iPrevious<vectorPreviousEventGoodV0s.size();iPrevious++){
-      AliKFParticle * previousGoodV0 = &vectorPreviousEventGoodV0s.at(iPrevious);
-			
-      AliKFParticle *backgroundCandidate = new AliKFParticle(*currentEventGoodV0,*previousGoodV0);
-			
-      Double_t massBG =0.;
-      Double_t widthBG = 0.;
-      Double_t chi2BG =10000.;	
-      backgroundCandidate->GetMass(massBG,widthBG);
-      if(backgroundCandidate->GetNDF()>0){
-	chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
-	if(chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()){
-					
-	  TVector3 momentumVectorbackgroundCandidate(backgroundCandidate->GetPx(),backgroundCandidate->GetPy(),backgroundCandidate->GetPz());
-	  TVector3 spaceVectorbackgroundCandidate(backgroundCandidate->GetX(),backgroundCandidate->GetY(),backgroundCandidate->GetZ());
-					
-	  Double_t openingAngleBG = currentEventGoodV0->GetAngle(*previousGoodV0);
-					
-	  Double_t rapidity;
-	  if(backgroundCandidate->GetE() - backgroundCandidate->GetPz() == 0 || backgroundCandidate->GetE() + backgroundCandidate->GetPz() == 0) rapidity=0;
-	  else rapidity = 0.5*(TMath::Log((backgroundCandidate->GetE() +backgroundCandidate->GetPz()) / (backgroundCandidate->GetE()-backgroundCandidate->GetPz())));
-					
-					
-					
-					
-	  if(openingAngleBG < fMinOpeningAngleGhostCut ){
-	    delete backgroundCandidate;   
-	    continue;   // minimum opening angle to avoid using ghosttracks
-	  }			
-					
-	  fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
-	  fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
-	  fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
-	  fHistograms->FillHistogram("ESD_Background_Eta", momentumVectorbackgroundCandidate.Eta());
-	  fHistograms->FillHistogram("ESD_Background_Rapidity", rapidity);
-	  fHistograms->FillHistogram("ESD_Background_Phi", spaceVectorbackgroundCandidate.Phi());
-	  fHistograms->FillHistogram("ESD_Background_Mass", massBG);
-	  fHistograms->FillHistogram("ESD_Background_R", spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
-	  fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
-	  fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
-	  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
-	  fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
 
-	  if ( TMath::Abs(currentEventGoodV0->GetEta())<0.9 &&  TMath::Abs(previousGoodV0->GetEta())<0.9 ){
-	    fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
-	    fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
+
+  TClonesArray * currentEventV0s = fV0Reader->GetCurrentEventGoodV0s();
+
+  for(Int_t nEventsInBG=0;nEventsInBG <fV0Reader->GetNBGEvents();nEventsInBG++){
+    AliGammaConversionKFVector * previousEventV0s = fV0Reader->GetBGGoodV0s(nEventsInBG);
+    for(Int_t iCurrent=0;iCurrent<currentEventV0s->GetEntriesFast();iCurrent++){
+      AliKFParticle currentEventGoodV0 = *(AliKFParticle *)(currentEventV0s->At(iCurrent)); 
+      for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+	AliKFParticle previousGoodV0 = (AliKFParticle)(*(previousEventV0s->at(iPrevious)));
+
+	AliKFParticle *backgroundCandidate = new AliKFParticle(currentEventGoodV0,previousGoodV0);
+	
+	Double_t massBG =0.;
+	Double_t widthBG = 0.;
+	Double_t chi2BG =10000.;	
+	backgroundCandidate->GetMass(massBG,widthBG);
+	if(backgroundCandidate->GetNDF()>0){
+	  chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
+	  if(chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()){
+					
+	    TVector3 momentumVectorbackgroundCandidate(backgroundCandidate->GetPx(),backgroundCandidate->GetPy(),backgroundCandidate->GetPz());
+	    TVector3 spaceVectorbackgroundCandidate(backgroundCandidate->GetX(),backgroundCandidate->GetY(),backgroundCandidate->GetZ());
+					
+	    Double_t openingAngleBG = currentEventGoodV0.GetAngle(previousGoodV0);
+					
+	    Double_t rapidity;
+	    if(backgroundCandidate->GetE() - backgroundCandidate->GetPz() == 0 || backgroundCandidate->GetE() + backgroundCandidate->GetPz() == 0) rapidity=0;
+	    else rapidity = 0.5*(TMath::Log((backgroundCandidate->GetE() +backgroundCandidate->GetPz()) / (backgroundCandidate->GetE()-backgroundCandidate->GetPz())));
+					
+					
+					
+					
+	    if(openingAngleBG < fMinOpeningAngleGhostCut ){
+	      delete backgroundCandidate;   
+	      continue;   // minimum opening angle to avoid using ghosttracks
+	    }			
+					
+	    fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
+	    fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
+	    fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
+	    fHistograms->FillHistogram("ESD_Background_Eta", momentumVectorbackgroundCandidate.Eta());
+	    fHistograms->FillHistogram("ESD_Background_Rapidity", rapidity);
+	    fHistograms->FillHistogram("ESD_Background_Phi", spaceVectorbackgroundCandidate.Phi());
+	    fHistograms->FillHistogram("ESD_Background_Mass", massBG);
+	    fHistograms->FillHistogram("ESD_Background_R", spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
+	    fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
+	    fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
+	    fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
+	    fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
+
+	    if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
+	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
+	      fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
+	    }
+
 	  }
-
 	}
+	delete backgroundCandidate;      
       }
-      delete backgroundCandidate;   
     }
   }
 }
-
 
 
 void AliAnalysisTaskGammaConversion::ProcessGammasForGammaJetAnalysis(){
@@ -1668,7 +1666,7 @@ Double_t AliAnalysisTaskGammaConversion::GetMCOpeningAngle(TParticle* const daug
 
 void AliAnalysisTaskGammaConversion::CheckV0Efficiency(){
   // see header file for documentation
-	
+
   vector<Int_t> indexOfGammaParticle;
 	
   fStack = fV0Reader->GetMCStack();
@@ -1889,14 +1887,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 			
     }
     else {
-      //      vESDxNegTemp.push_back(curTrack);
-      /*			if(vESDxNegTemp == NULL){
-				cout<<"TCloes is zero"<<endl;
-				}
-				if(curTrack == NULL){
-				cout<<"curTrack is zero"<<endl;
-				}
-      */	
+
       new((*vESDxNegTemp)[vESDxNegTemp->GetEntriesFast()])  AliESDtrack(*curTrack);
 			
       if( pid == 0){
@@ -1904,9 +1895,6 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 	fHistograms->FillHistogram("ESD_ElectronPosNegPt",curElec.Pt());
 	fHistograms->FillHistogram("ESD_ElectronNegPt",curElec.Pt());
 	fHistograms->FillHistogram("ESD_ElectronPosNegEta",curElec.Eta());
-	//	fHistograms->FillHistogram("MC_ElectronPosNegPt",curParticle->Pt());
-	//	fHistograms->FillHistogram("MC_ElectronPosNegEta",curParticle->Eta());
-	//vESDeNegTemp.push_back(curTrack);
 	new((*vESDeNegTemp)[vESDeNegTemp->GetEntriesFast()])  AliESDtrack(*curTrack);
 				
       }
