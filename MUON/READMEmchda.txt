@@ -70,11 +70,13 @@ The syntax is: MUONTRKPEDda.exe "raw data file"
 
 Two input files located in the DAQ Detector database (DetDB) are needed:
 
-- muontrkpedvalues containing only one parameter "config"
+- muontrkpedvalues is built in flight in CONFIGURATION_PED.sh (ECS script) and contains two parameters "config" and "writeconfig"
   config = 1 if configuration file has to be used (OnLine case)
-  config - 0 if not (OffLine case for the time being)
+  config = 0 if not (OffLine case for the time being)
+  writeconfig=0 if configuration is unchanged
+  writeconfig=1 if configuration is changed , then new config. file is written in DetDB
 
-- config_ldc-MTRK-S3-0 : typical configuration file corresponding to MuonTracker Station 3 if (for example) DA is running on ldc-MTRK-S3-0
+- config_ldc-MTRK-S3-0 : configuration file name corresponding to MuonTracker Station 3 if (for example) DA is running on ldc-MTRK-S3-0
 
 \subsection da_ss2 Electonics gain
 
@@ -105,7 +107,7 @@ Default values are listed below
 0
 \endverbatim
 
- - config_ldc-MTRK-S3-0 : configuration file corresponding to MuonTracker station 3 if (for example) DA is running on ldc-MTRK-S3-0 
+ - config_ldc-MTRK-S3-0 : configuration file name corresponding to MuonTracker station 3 if (for example) DA is running on ldc-MTRK-S3-0 
 
 
 \section da_s3 Using the DA Offline

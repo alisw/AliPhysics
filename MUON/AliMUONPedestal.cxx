@@ -321,7 +321,7 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
 	      if(writitle==1){ 
 		out<<"//"<<endl;
 		out<<"//    * Puzzling (Buspatch,Manu) read in raw data ?"<<endl;}
-	      occupancy=pedMean-ADCMax();
+	      occupancy=TMath::Nint(pedMean-ADCMax());
 	      ped->SetValueAsDouble(0, 0, ADCMax());
 	      out<<"//      BusPatch = "<< busPatchId <<"\t ManuId =  "<< manuId << "\t occupancy = " << occupancy  <<endl;
 	    }

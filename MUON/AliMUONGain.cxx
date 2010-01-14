@@ -232,7 +232,6 @@ TString AliMUONGain::WriteGainHeader(Int_t nInit, Int_t nEntries, Int_t nbpf2, I
   if(nInit==1)
     stream<<"//  "<< nEntries <<" DAC values  fit: "<< fnbpf1 << " pts (1st order) " << nbpf2 << " pts (2nd order) DAC=0 excluded" << endl;
   stream<<"//   *  nInit = " << nInit << "  *  f1nbp = " << fnbpf1 << "  *  f2nbp = " <<  nbpf2 << endl; 
-  stream<<"//" << endl; 
 
   stream<<"//   RUN     DAC   " << endl;
   stream<<"//-----------------" << endl;
@@ -442,10 +441,12 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   Double_t xp[11], xpErr[11], yp[11], ypErr[11];
 
   Int_t uncalcountertotal=0 ;
+  Int_t unparabolicfit=0;
 
   while ( ( p = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
     {
       ped[0]  = p;
+      unparabolicfit=0;
 
       busPatchId = p->ID0();
       manuId     = p->ID1();
@@ -471,7 +472,6 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	    if (pedSigma[i] <= 0) pedSigma[i] = 1.; // should not happen.
 	    n++;
 	  }
-
 
 	  // print_peak_mean_values
 	  if(fPrintLevel>1)
@@ -501,7 +501,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	      Int_t k = j + fnInit;
 	      x[j]    = pedMean[k];
 	      if(x[j]<=0.){fitproceed=0; break;}
-	      if(x[j]== ADCMax())
+	      if(x[j]>= ADCMax())
 		{
 		  if(j < nbs-1){fitproceed=0; break;}
 		  else  nbpf2Dynamic=nbpf2-1;
@@ -541,8 +541,8 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	      a1 = par[1];
 
 	      // 2. - Translation : new origin (xLim, yLim) + parabolic fit over nbf2 points
-
-	      if(nbpf2Dynamic > 1)
+	      //checking:         if(busPatchId ==1841 && manuId==4)nbpf2Dynamic=2;
+	      if(nbpf2Dynamic > 2)
 		{
 		  for (Int_t j = 0; j < nbpf2Dynamic; j++)
 		    {
@@ -567,6 +567,13 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 
 		  prChi2P2 = TMath::Prob(chi2P2, nbpf2Dynamic-1);
 		  a2 = par[0];
+		}
+	      else 
+		{ 
+		  unparabolicfit++;
+		  (*fFilcout) << " Warning : BP = " << busPatchId << " Manu = " << manuId <<  " Channel = " << channelId <<": parabolic fit not possible (nbpf2=" <<  nbpf2Dynamic  << ") => a2=0 and linear fit OK" << std::endl;
+		  if(unparabolicfit==1) std::cout << " Warning : BP = " << busPatchId << " Manu = " << manuId <<  ": no parabolic fit for some channels (nbpf2=" <<  nbpf2Dynamic  << "), linear fit is OK (see .log for details)" << std::endl;
+		  a2=0. ; prChi2P2=0. ;
 		}
 
 	      par[0] = a0;
@@ -668,16 +675,13 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 		      delete f2Calib;
 		    }
 		}
-
-
 	      tg->Fill();
 	    }
-
-
 	  pfilew << WriteGainData(busPatchId,manuId,channelId,par[1],par[2],threshold,q);
 	}
       nmanu++;
-      if(nmanu % 500 == 0)std::cout << " Nb manu = " << nmanu << std::endl;
+      Int_t step=500;
+      if(nmanu % step == 0)std::cout << " Nb manu = " << nmanu << std::endl;
     }
 
   //      print in logfile

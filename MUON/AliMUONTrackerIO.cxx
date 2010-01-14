@@ -285,6 +285,7 @@ AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
   Int_t* runs(0x0);
   Int_t* dac(0x0);
   Int_t nDAC(0);
+  Int_t nInit(0),f1nbp(0),f2nbp(0);
   
   while ( in.getline(line,1024) )
   {
@@ -307,6 +308,13 @@ AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
           AliDebugClass(1,Form("runNumber is %d",runNumber));
         }            
       }
+      if ( sline.Contains("*  nInit =") )
+	{
+	  sscanf(line,"//   *  nInit = %d  *  f1nbp = %d  *  f2nbp = %d",&nInit,&f1nbp,&f2nbp);
+	  AliDebugClass(1,Form("nInit = %d",nInit));
+	  AliDebugClass(1,Form("f1nbp = %d",f1nbp));
+	  AliDebugClass(1,Form("f2nbp = %d",f2nbp));
+	}
       if ( sline.Contains("DAC values") )
       {
         nDAC = TString(sline(2,sline.Length()-2)).Atoi();
@@ -388,6 +396,10 @@ AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
   {
     comment += Form(";(RUN %d = DAC %d)",runs[i],dac[i]);
   }
+  comment += Form(";(nDAC = %d)",nDAC);
+  comment += Form(";(nInit = %d)",nInit);
+  comment += Form(";(f1nbp = %d)",f1nbp);
+  comment += Form(";(f2nbp = %d)",f2nbp);
   
   delete[] runs;
   delete[] dac;
