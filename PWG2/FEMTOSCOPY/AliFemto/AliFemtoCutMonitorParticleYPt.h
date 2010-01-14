@@ -52,6 +52,8 @@ private:
   TH2D *fEtaPt;  // Pseudorapidity vs. Pt monitor
   TH2D *fEtaPhiW;// Pseudorapidity vs. Phi monitor chi2 weighted
   TH2D *fEtaPtW; // Pseudorapidity vs. Pt monitor chi2 weighted
+  TH2D *fDCARPt; // Pt vs. DCA XY
+  TH2D *fDCAZPt; // Pt vs. DCA Z 
   float fMass;   // Mass hypothesis
 };
 

@@ -19,6 +19,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
   fEtaPt(0),
   fEtaPhiW(0),
   fEtaPtW(0),
+  fDCARPt(0),
+  fDCAZPt(0),
   fMass(0.13957)
 {
   // Default constructor
@@ -29,6 +31,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
   fEtaPt = new TH2D("EtaPt", "Pseudorapidity vs Pt",    100, -1.0, 1.0, 100, 0.1, 2.0);
   fEtaPhiW = new TH2D("EtaPhiW", "Pseudorapidity vs Phi chi2/N weighted", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
   fEtaPtW = new TH2D("EtaPtW", "Pseudorapidity vs Pt chi2/N weighted",    100, -1.0, 1.0, 100, 0.1, 2.0);
+  fDCARPt = new TH2D("DCARPt", "DCA in XY vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
+  fDCAZPt = new TH2D("DCAZPt", "DCA in Z vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
 }
 
 AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, float aMass):
@@ -40,6 +44,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
   fEtaPt(0),
   fEtaPhiW(0),
   fEtaPtW(0),
+  fDCARPt(0),
+  fDCAZPt(0),
   fMass(aMass)
 {
   // Normal constructor
@@ -58,6 +64,10 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
   fEtaPhiW = new TH2D(name, "Pseudorapidity vs Phi chi2/N weighted", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
   snprintf(name, 200, "EtaPtW%s", aName);
   fEtaPtW = new TH2D(name, "Pseudorapidity vs Pt chi2/N weighted",    100, -1.0, 1.0, 100, 0.1, 2.0);
+  snprintf(name, 200, "DCARPt%s", aName);
+  fDCARPt = new TH2D(name, "DCA in XY vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
+  snprintf(name, 200, "DCAZPt%s", aName);
+  fDCAZPt = new TH2D(name, "DCA in Z vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
 }
 
 AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMonitorParticleYPt &aCut):
@@ -69,6 +79,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMo
   fEtaPt(0),
   fEtaPhiW(0),
   fEtaPtW(0),
+  fDCARPt(0),
+  fDCAZPt(0),
   fMass(0.13957)
 {
   // copy constructor
@@ -80,6 +92,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMo
   fEtaPt = new TH2D(*aCut.fEtaPt);
   fEtaPhiW = new TH2D(*aCut.fEtaPhiW);
   fEtaPtW = new TH2D(*aCut.fEtaPtW);
+  fDCARPt = new TH2D(*aCut.fDCARPt);
+  fDCAZPt = new TH2D(*aCut.fDCAZPt);
   fMass = aCut.fMass; 
 }
 
@@ -93,6 +107,8 @@ AliFemtoCutMonitorParticleYPt::~AliFemtoCutMonitorParticleYPt()
   delete fEtaPt;
   delete fEtaPhiW;
   delete fEtaPtW;
+  delete fDCARPt;
+  delete fDCAZPt;
 }
 
 AliFemtoCutMonitorParticleYPt& AliFemtoCutMonitorParticleYPt::operator=(const AliFemtoCutMonitorParticleYPt& aCut)
@@ -115,6 +131,10 @@ AliFemtoCutMonitorParticleYPt& AliFemtoCutMonitorParticleYPt::operator=(const Al
   fEtaPhiW = new TH2D(*aCut.fEtaPhiW);
   if (fEtaPtW) delete fEtaPtW;
   fEtaPtW = new TH2D(*aCut.fEtaPtW);
+  if (fDCARPt) delete fDCARPt;
+  fDCARPt = new TH2D(*aCut.fDCARPt);
+  if (fDCAZPt) delete fDCAZPt;
+  fDCAZPt = new TH2D(*aCut.fDCAZPt);
   
   return *this;
 }
@@ -135,6 +155,8 @@ void AliFemtoCutMonitorParticleYPt::Fill(const AliFemtoTrack* aTrack)
   float tEta = -TMath::Log(TMath::Tan(aTrack->P().theta()/2.0));
   float tPhi = aTrack->P().phi();
   float chi2w;
+  float dcar = aTrack->ImpactD();
+  float dcaz = aTrack->ImpactZ();
   if (aTrack->TPCncls() > 0)
     chi2w = aTrack->TPCchi2()/aTrack->TPCncls();
   else
@@ -147,6 +169,8 @@ void AliFemtoCutMonitorParticleYPt::Fill(const AliFemtoTrack* aTrack)
   fEtaPt->Fill(tEta, tPt);
   fEtaPhiW->Fill(tEta, tPhi, chi2w);
   fEtaPtW->Fill(tEta, tPt, chi2w);
+  fDCARPt->Fill(dcar, tPt);
+  fDCAZPt->Fill(dcaz, tPt);
 }
 
 void AliFemtoCutMonitorParticleYPt::Write()
@@ -159,6 +183,8 @@ void AliFemtoCutMonitorParticleYPt::Write()
   fEtaPt->Write();
   fEtaPhiW->Write();
   fEtaPtW->Write();
+  fDCARPt->Write();
+  fDCAZPt->Write();
 }
 
 TList *AliFemtoCutMonitorParticleYPt::GetOutputList()
@@ -171,6 +197,8 @@ TList *AliFemtoCutMonitorParticleYPt::GetOutputList()
   tOutputList->Add(fEtaPt);
   tOutputList->Add(fEtaPhiW);
   tOutputList->Add(fEtaPtW);
+  tOutputList->Add(fDCARPt);
+  tOutputList->Add(fDCAZPt);
 
   return tOutputList;
 }
