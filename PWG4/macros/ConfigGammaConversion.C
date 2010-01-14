@@ -744,6 +744,9 @@ Bool_t scanArguments(TString arguments){
 	  cout<<"Setting output file name to: "<<kGCoutputFileName<<endl;
 	}
       }
+      else if (argument.CompareTo("-bg-off") == 0){
+	kGCcalculateBackground =kFALSE;
+      }
       else if (argument.CompareTo("-use-offline-finder") == 0){
 	kGCUseOnFlyV0Finder = kFALSE;
       }
@@ -1021,13 +1024,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
     }
   }
   else{
-    if(kGCrunOnTrain == kFALSE){
-      cinput1 = mgr->GetCommonInputContainer(); // added by kenneth to avoid writing the standard AOD
-    }
-    else{ //CKB if and else do the same here
-      //      cinput = cin_esd;
       cinput1 = mgr->GetCommonInputContainer();
-    }
   }
 	
   // Common Output Tree in common âdefaultâ output file
