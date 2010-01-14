@@ -269,7 +269,7 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   return accept;
 }
 
-Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t /* runNumber */)
+Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t runNumber)
 {
   // returns the current trigger scheme (classes that are accepted/rejected)
   
@@ -277,6 +277,17 @@ Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t /* runNumber */)
     return 0;
     
   // TODO dependent on run number
+  
+  switch (runNumber)
+  {
+    // CSMBB triggers
+    case 104044:
+    case 105054:
+    case 105057:
+      return 2;
+  }
+  
+  // default: CINT1 suite
   return 1;
 }  
     
@@ -318,6 +329,12 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
         fBGTrigClasses.Add(new TObjString("+CINT1-E-NOPF-ALL"));
         break;
         
+      case 2:
+        fCollTrigClasses.Add(new TObjString("+CSMBB-ABCE-NOPF-ALL"));
+        fBGTrigClasses.Add(new TObjString("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL"));
+        fBGTrigClasses.Add(new TObjString("+CSMBC-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL"));
+        break;
+  
       default:
         AliFatal(Form("Unsupported trigger scheme %d", triggerScheme));
     }
