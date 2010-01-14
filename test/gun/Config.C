@@ -305,6 +305,22 @@ void Config()
     gfmd3i->SetPhi(50);
     gener->AddGenerator(gfmd3i,"Pi- for FMD3i",1);
     
+    //VZERO C
+    AliGenFixed *gv0c=new AliGenFixed(1);
+    gv0c->SetPart(kPiPlus);
+    gv0c->SetMomentum(1.5);
+    gv0c->SetTheta(170);
+    gv0c->SetPhi(50);
+    gener->AddGenerator(gv0c,"Pi+ for V0C",1);
+    
+    //VZERO A
+    AliGenFixed *gv0a=new AliGenFixed(1);
+    gv0a->SetPart(kPiMinus);
+    gv0a->SetMomentum(1.5);
+    gv0a->SetTheta(1.5);
+    gv0a->SetPhi(70);
+    gener->AddGenerator(gv0a,"Pi- for V0A",1);
+    
     gener->Init();
 
 
