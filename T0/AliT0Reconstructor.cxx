@@ -129,10 +129,10 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       else
 	adc[ipmt] = 0;
       
-      time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt],  timeCFD->At(ipmt)) ;
+     // time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt],  timeCFD->At(ipmt)) ;
 	     
       Double_t sl = Double_t(timeLED->At(ipmt) - timeCFD->At(ipmt));
-      //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
+      time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl),  timeCFD->At(ipmt) ) ;
       AliDebug(10,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
 		       ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
 
@@ -243,8 +243,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    allData[i][iHit] = myrawreader.GetData(i,iHit);
 	  }
       }
-    
-      Int_t ref = allData[refPoint][0]-5000.;
+      Int_t ref=0;
+      if (refPoint>0) 
+      ref = allData[refPoint][0]-5000.;
+
       Float_t channelWidth = fParam->GetChannelWidth() ;  
       
       //       Int_t meanT0 = fParam->GetMeanT0();
@@ -285,7 +287,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   //for simulated data
 	     //for physics  data
 	   if(( chargeQT1[ipmt] - chargeQT0[ipmt])>0)  
-	     adc[ipmt] = chargeQT1[ipmt] - chargeQT0[ipmt];
+	     adc[ipmt] = chargeQT0[ipmt] - chargeQT1[ipmt];
 	   else
 	     adc[ipmt] = 0;
 	   
@@ -301,8 +303,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %i\n ",ampMip,qtMip, adc[ipmt]));
 	     
 	   frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
-	   frecpoints->SetAmp(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
-	   frecpoints->SetAmpLED(ipmt, Float_t(qtMip));
+	   frecpoints->SetAmpLED(ipmt, Float_t( qtMip)); //for cosmic &pp beam 
+	   frecpoints->SetAmp(ipmt, Float_t(ampMip));
 	     
 	 }
 	 else {
@@ -332,8 +334,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		       pmtBestA,besttimeA, pmtBestC,  besttimeC));
         if(besttimeA <9999999 && besttimeC < 9999999 ){
 	 timeDiff = ( besttimeA - besttimeC) *channelWidth;
-	 meanTime =  Float_t((besttimeA + besttimeC)/2.);  
-	 timeclock = Float_t(meanTime - ref);
+	 meanTime =  Float_t(((besttimeA-ref) + (besttimeC-ref))/2.);  
+	 timeclock = Float_t(meanTime);
 	 vertex =  meanVertex - c*(timeDiff)/2.; //+ (fdZonA - fdZonC)/2; 
        }
       }  //if phys event       
