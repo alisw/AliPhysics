@@ -22,6 +22,7 @@ AliCaloCalibPedestal.cxx \
 AliCaloCalibSignal.cxx \
 AliEMCALSurvey.cxx \
 AliEMCALRecParam.cxx \
+AliEMCALSimParam.cxx \
 AliEMCALQAChecker.cxx \
 AliEMCALSpaceFrame.cxx \
 AliEMCALSTURawStream.cxx \

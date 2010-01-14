@@ -71,6 +71,7 @@
 #include "AliEMCALHit.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALSimParam.h"
 
 ClassImp(AliEMCALSDigitizer)
            
@@ -179,12 +180,12 @@ void AliEMCALSDigitizer::InitParameters()
   //Digitize() and Calibrate() methods
   //
   // Initializes parameters
-  fA         = 0;
-  fB         = 1.e+6;  // Changed 24 Apr 2007. Dynamic range now 2 TeV
+  fA         = AliEMCALSimParam::GetInstance()->GetA(); //0;
+  fB         = AliEMCALSimParam::GetInstance()->GetB(); //1.e+6;  // Changed 24 Apr 2007. Dynamic range now 2 TeV
   fSampling  = geom->GetSampling();
 
   // threshold for deposit energy of hit
-  fECPrimThreshold  = 0.05;// GeV // 22-may-07 was 0// 24-nov-04 - was 1.e-6;
+  fECPrimThreshold  = AliEMCALSimParam::GetInstance()->GetECPrimaryThreshold();//0.05;// GeV // 22-may-07 was 0// 24-nov-04 - was 1.e-6;
   
   AliDebug(2,Form("Print: \n------------------- %s -------------\n",GetName()));
   AliDebug(2,Form("   fInit                                 %i\n", int(fInit)));
@@ -196,7 +197,6 @@ void AliEMCALSDigitizer::InitParameters()
   AliDebug(2,Form("   Threshold for EC Primary assignment  = %f\n", fECPrimThreshold));
   AliDebug(2,Form("   Sampling                             = %f\n", fSampling));
   AliDebug(2,Form("---------------------------------------------------\n"));
-
 
 }
 

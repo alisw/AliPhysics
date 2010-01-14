@@ -83,6 +83,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTick.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALSimParam.h"
 
 ClassImp(AliEMCALDigitizer)
 
@@ -98,12 +99,12 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fEventNames(0x0),
     fDigitThreshold(0),
     fMeanPhotonElectron(0),
-    fPedestal(0),
-    fSlope(0),
+//    fPedestal(0), //Not used, remove?
+//    fSlope(0),    //Not used, remove?
     fPinNoise(0),
     fTimeResolution(0),
-    fTimeThreshold(0),    
-    fTimeSignalLength(0),
+//    fTimeThreshold(0),    //Not used, remove?
+//    fTimeSignalLength(0), //Not used, remove?
     fADCchannelEC(0),
     fADCpedestalEC(0),
     fNADCEC(0),
@@ -128,12 +129,12 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fEventNames(0), 
     fDigitThreshold(0),
     fMeanPhotonElectron(0),
-    fPedestal(0),
-    fSlope(0),
+//    fPedestal(0),//Not used, remove?
+//    fSlope(0),   //Not used, remove?
     fPinNoise(0),
     fTimeResolution(0),
-    fTimeThreshold(0),
-    fTimeSignalLength(0),
+//    fTimeThreshold(0),    //Not used, remove?
+//    fTimeSignalLength(0), //Not used, remove?
     fADCchannelEC(0),
     fADCpedestalEC(0),
     fNADCEC(0),
@@ -159,12 +160,12 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fEventNames(d.fEventNames),
     fDigitThreshold(d.fDigitThreshold),
     fMeanPhotonElectron(d.fMeanPhotonElectron),
-    fPedestal(d.fPedestal),
-    fSlope(d.fSlope),
+//    fPedestal(d.fPedestal), //Not used, remove?
+//    fSlope(d.fSlope),       //Not used, remove?
     fPinNoise(d.fPinNoise),
     fTimeResolution(d.fTimeResolution),
-    fTimeThreshold(d.fTimeThreshold),
-    fTimeSignalLength(d.fTimeSignalLength),
+//    fTimeThreshold(d.fTimeThreshold),       //Not used, remove?
+//    fTimeSignalLength(d.fTimeSignalLength), //Not used, remove?
     fADCchannelEC(d.fADCchannelEC),
     fADCpedestalEC(d.fADCpedestalEC),
     fNADCEC(d.fNADCEC),
@@ -187,12 +188,12 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
     fEventNames(0),
     fDigitThreshold(0.),
     fMeanPhotonElectron(0),
-    fPedestal(0),
-    fSlope(0.),
+//    fPedestal(0), //Not used, remove?
+//    fSlope(0.),   //Not used, remove?
     fPinNoise(0),
     fTimeResolution(0.),
-    fTimeThreshold(0),
-    fTimeSignalLength(0),
+//    fTimeThreshold(0),    //Not used, remove?
+//    fTimeSignalLength(0), //Not used, remove?
     fADCchannelEC(0),
     fADCpedestalEC(0),
     fNADCEC(0),
@@ -561,26 +562,27 @@ void AliEMCALDigitizer::Exec(Option_t *option)
 }
 
 //____________________________________________________________________________ 
-Float_t AliEMCALDigitizer::FrontEdgeTime(TClonesArray * ticks) 
-{ 
-  //  Returns the shortest time among all time ticks
-
-  ticks->Sort() ; //Sort in accordance with times of ticks
-  TIter it(ticks) ;
-  AliEMCALTick * ctick = (AliEMCALTick *) it.Next() ;
-  Float_t time = ctick->CrossingTime(fTimeThreshold) ;    
-  
-  AliEMCALTick * t ;  
-  while((t=(AliEMCALTick*) it.Next())){
-    if(t->GetTime() < time)  //This tick starts before crossing
-      *ctick+=*t ;
-    else
-      return time ;
-    
-    time = ctick->CrossingTime(fTimeThreshold) ;    
-  }
-  return time ;
-}
+//Float_t AliEMCALDigitizer::FrontEdgeTime(TClonesArray * ticks) 
+//{ 
+//  //  Returns the shortest time among all time ticks
+//
+//  ticks->Sort() ; //Sort in accordance with times of ticks
+//  TIter it(ticks) ;
+//  AliEMCALTick * ctick = (AliEMCALTick *) it.Next() ;
+//  Float_t time = ctick->CrossingTime(fTimeThreshold) ;    
+//  
+//  AliEMCALTick * t ;  
+//  while((t=(AliEMCALTick*) it.Next())){
+//    if(t->GetTime() < time)  //This tick starts before crossing
+//      *ctick+=*t ;
+//    else
+//      return time ;
+//    
+//    time = ctick->CrossingTime(fTimeThreshold) ;    
+//  }
+//  return time ;
+//}
+//
 
 //____________________________________________________________________________ 
 Bool_t AliEMCALDigitizer::Init()
@@ -625,24 +627,27 @@ Bool_t AliEMCALDigitizer::Init()
 void AliEMCALDigitizer::InitParameters()
 { 
   // Parameter initialization for digitizer
-  // Tune parameters - 24-nov-04; Apr 29, 2007
-  // New parameters JLK 14-Apr-2008
-
-  fMeanPhotonElectron = 4400;  // electrons per GeV 
-  fPinNoise           = 0.012; // pin noise in GeV from analysis test beam data 
-  if (fPinNoise == 0. ) 
+ 
+  fMeanPhotonElectron = AliEMCALSimParam::GetInstance()->GetMeanPhotonElectron();//4400;  // electrons per GeV 
+  fPinNoise           = AliEMCALSimParam::GetInstance()->GetPinNoise();//0.012; // pin noise in GeV from analysis test beam data 
+  if (fPinNoise < 0.0001 ) 
     Warning("InitParameters", "No noise added\n") ; 
-  fDigitThreshold     = fPinNoise * 3; // 3 * sigma
-  fTimeResolution     = 0.6e-9 ; // 600 psc
-  fTimeSignalLength   = 1.0e-9 ;
+  fDigitThreshold     = AliEMCALSimParam::GetInstance()->GetDigitThreshold(); //fPinNoise * 3; // 3 * sigma
+  fTimeResolution     = AliEMCALSimParam::GetInstance()->GetTimeResolution(); //0.6e-9 ; // 600 psc
 
   // These defaults are normally not used. 
   // Values are read from calibration database instead
-  fADCchannelEC    = 0.0153; // Update 24 Apr 2007: 250./16/1024 - width of one ADC channel in GeV
-  fADCpedestalEC   = 0.0 ;  // GeV
-  fNADCEC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
+  fADCchannelEC       = 0.0153; // Update 24 Apr 2007: 250./16/1024 - width of one ADC channel in GeV
+  fADCpedestalEC      = 0.0 ;  // GeV
 
-  fTimeThreshold      = 0.001*10000000 ; // Means 1 MeV in terms of SDigits amplitude ??
+  fNADCEC          = AliEMCALSimParam::GetInstance()->GetNADCEC();//(Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
+
+  AliDebug(2,Form("Mean Photon Electron %d, Noise %f, E Threshold %f,Time Resolution %g,NADCEC %d",
+		fMeanPhotonElectron,fPinNoise,fDigitThreshold,fTimeResolution,fNADCEC));
+
+  // Not used anymore, remove?
+  // fTimeSignalLength   = 1.0e-9 ;
+  // fTimeThreshold      = 0.001*10000000 ; // Means 1 MeV in terms of SDigits amplitude ??
 
 }
 
