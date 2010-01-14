@@ -328,6 +328,10 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
   Double_t tROut = (tDX*tPx + tDY*tPy)/tPt;
   Double_t tRSide = (-tDX*tPy + tDY*tPx)/tPt;
 
+//   cout << "Got points 1 " << inf1->GetEmissionPoint()->x() << "  " <<  inf1->GetEmissionPoint()->y() << " "  << inf1->GetEmissionPoint()->z() << "  " << inf1->GetEmissionPoint()->t() << endl;
+
+//   cout << "Got points 2 " << inf2->GetEmissionPoint()->x() << "  " << inf2->GetEmissionPoint()->y() << " " << inf2->GetEmissionPoint()->z() << "  " << inf2->GetEmissionPoint()->t() << endl;
+
   fRStarSide = tRSide;
 
   fRStarLong = tGamma*(tRLong - tBeta* tDTime);
@@ -340,6 +344,8 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
   fRStar = ::sqrt(fRStarOut*fRStarOut + fRStarSide*fRStarSide +
 			   fRStarLong*fRStarLong);
   fKStar = ::sqrt(fKStarOut*fKStarOut + fKStarSide*fKStarSide + fKStarLong*fKStarLong);
+
+//   cout << "Got out side " << fRStarOut << " " << fRStarSide << endl;
 
   if (!SetPid(inf1->GetPDGPid(),inf2->GetPDGPid())) {
     fWeightDen=1.;
@@ -381,6 +387,7 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
     FsiSetLL();
     ltran12();
     fsiw(1,fWeif,fWei,fWein);
+
     if (fI3c==0) return fWein;
     fWeightDen=fWeif;
     return fWei;
@@ -412,21 +419,21 @@ AliFemtoString AliFemtoModelWeightGeneratorLednicky::Report() {
 
 void AliFemtoModelWeightGeneratorLednicky::FsiInit(){
   // Initialize weight generation module
-  cout << "*******************AliFemtoModelWeightGeneratorLednicky check FsiInit ************" << endl;
-  cout <<"mItest dans FsiInit() = " << fItest << endl;
-  cout <<"mIch dans FsiInit() = " << fIch << endl;
-  cout <<"mIqs dans FsiInit() = " << fIqs << endl;
-  cout <<"mIsi dans FsiInit() = " << fIsi << endl;
-  cout <<"mI3c dans FsiInit() = " << fI3c << endl;
+//   cout << "*******************AliFemtoModelWeightGeneratorLednicky check FsiInit ************" << endl;
+//   cout <<"mItest dans FsiInit() = " << fItest << endl;
+//   cout <<"mIch dans FsiInit() = " << fIch << endl;
+//   cout <<"mIqs dans FsiInit() = " << fIqs << endl;
+//   cout <<"mIsi dans FsiInit() = " << fIsi << endl;
+//   cout <<"mI3c dans FsiInit() = " << fI3c << endl;
   fsiin(fItest,fIch,fIqs,fIsi,fI3c);
 }
 
 void AliFemtoModelWeightGeneratorLednicky::FsiNucl(){
   // initialize weight generation taking into account the residual charge
-  cout << "*******************AliFemtoModelWeightGeneratorLednicky check FsiNucl ************" << endl;
-  cout <<"fNuclMass dans FsiNucl() = " << fNuclMass << endl;
-  cout <<"fNuclCharge dans FsiNucl() = " << fNuclCharge << endl;
-  cout <<"fNuclChargeSign dans FsiNucl() = " << fNuclChargeSign << endl;
+//   cout << "*******************AliFemtoModelWeightGeneratorLednicky check FsiNucl ************" << endl;
+//   cout <<"fNuclMass dans FsiNucl() = " << fNuclMass << endl;
+//   cout <<"fNuclCharge dans FsiNucl() = " << fNuclCharge << endl;
+//   cout <<"fNuclChargeSign dans FsiNucl() = " << fNuclChargeSign << endl;
   fsinucl(fNuclMass,fNuclCharge*fNuclChargeSign);
 }
 
@@ -541,9 +548,9 @@ bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid
     fNumbNonId++;
     return false;
   }
-  cout << "*******************AliFemtoModelWeightGeneratorLednicky check SetPid ************" << endl;
-  cout << "fLL=="<< fLL << endl;
-  cout << "fNuclCharge=="<< fNuclCharge << endl;
+//   cout << "*******************AliFemtoModelWeightGeneratorLednicky check SetPid ************" << endl;
+//   cout << "fLL=="<< fLL << endl;
+//   cout << "fNuclCharge=="<< fNuclCharge << endl;
 
 }    
 AliFemtoModelWeightGeneratorLednicky::~AliFemtoModelWeightGeneratorLednicky() 
