@@ -301,7 +301,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 //                    outRunLoader->GetEventNumber(),i, adc[i], Int_t((time2[i]*10.0) +0.5));
 //           multiply by 10 to have 100 ps per channel :
 		  
-		  AddDigit(i, adc[i], (time2[i]*10.0) ) ;
+		  AddDigit(i, adc[i], time2[i] ) ;
 	  }      
    }
   treeD->Fill();
