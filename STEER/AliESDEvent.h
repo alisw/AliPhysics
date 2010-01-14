@@ -101,83 +101,83 @@ public:
   const AliESDRun*    GetESDRun() const {return fESDRun;}
 
   // Delegated methods for fESDRun
-  void     SetRunNumber(Int_t n) {fESDRun->SetRunNumber(n);}
-  Int_t    GetRunNumber() const {return fESDRun->GetRunNumber();}
-  void     SetPeriodNumber(UInt_t n){fESDRun->SetPeriodNumber(n);}
-  UInt_t   GetPeriodNumber() const {return fESDRun->GetPeriodNumber();}
-  void     SetMagneticField(Double_t mf){fESDRun->SetMagneticField(mf);}
-  Double_t GetMagneticField() const {return fESDRun->GetMagneticField();}
-  void     SetDiamond(const AliESDVertex *vertex) { fESDRun->SetDiamond(vertex);}
-  Double_t  GetDiamondX() const {return fESDRun->GetDiamondX();}
-  Double_t  GetDiamondY() const {return fESDRun->GetDiamondY();}
-  Double_t  GetSigma2DiamondX() const {return  fESDRun->GetSigma2DiamondX();}
-  Double_t  GetSigma2DiamondY() const {return  fESDRun->GetSigma2DiamondY();}
-  void      GetDiamondCovXY(Float_t cov[3]) const {fESDRun->GetDiamondCovXY(cov);}   
-  void     SetTriggerClass(const char*name, Int_t index) {fESDRun->SetTriggerClass(name,index);}
-  void     SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {fESDRun->SetPHOSMatrix(matrix,i);}
-  const TGeoHMatrix* GetPHOSMatrix(Int_t i) const {return fESDRun->GetPHOSMatrix(i);}
-  void     SetEMCALMatrix(TGeoHMatrix*matrix, Int_t i) {fESDRun->SetEMCALMatrix(matrix,i);}
-  const TGeoHMatrix* GetEMCALMatrix(Int_t i) const {return fESDRun->GetEMCALMatrix(i);}
+  void     SetRunNumber(Int_t n) {if(fESDRun) fESDRun->SetRunNumber(n);}
+  Int_t    GetRunNumber() const {return fESDRun?fESDRun->GetRunNumber():-1;}
+  void     SetPeriodNumber(UInt_t n){if(fESDRun) fESDRun->SetPeriodNumber(n);}
+  UInt_t   GetPeriodNumber() const {return fESDRun?fESDRun->GetPeriodNumber():0;}
+  void     SetMagneticField(Double_t mf){if(fESDRun) fESDRun->SetMagneticField(mf);}
+  Double_t GetMagneticField() const {return fESDRun?fESDRun->GetMagneticField():0;}
+  void     SetDiamond(const AliESDVertex *vertex) { if(fESDRun) fESDRun->SetDiamond(vertex);}
+  Double_t  GetDiamondX() const {return fESDRun?fESDRun->GetDiamondX():0;}
+  Double_t  GetDiamondY() const {return fESDRun?fESDRun->GetDiamondY():0;}
+  Double_t  GetSigma2DiamondX() const {return  fESDRun?fESDRun->GetSigma2DiamondX():0;}
+  Double_t  GetSigma2DiamondY() const {return  fESDRun?fESDRun->GetSigma2DiamondY():0;}
+  void      GetDiamondCovXY(Float_t cov[3]) const {if(fESDRun) fESDRun->GetDiamondCovXY(cov);}   
+  void     SetTriggerClass(const char*name, Int_t index) {if(fESDRun) fESDRun->SetTriggerClass(name,index);}
+  void     SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {if(fESDRun) fESDRun->SetPHOSMatrix(matrix,i);}
+  const TGeoHMatrix* GetPHOSMatrix(Int_t i) const {return fESDRun?fESDRun->GetPHOSMatrix(i):0x0;}
+  void     SetEMCALMatrix(TGeoHMatrix*matrix, Int_t i) {if(fESDRun) fESDRun->SetEMCALMatrix(matrix,i);}
+  const TGeoHMatrix* GetEMCALMatrix(Int_t i) const {return fESDRun?fESDRun->GetEMCALMatrix(i):0x0;}
   //
-  void        SetCurrentL3(Float_t cur)           const  {fESDRun->SetCurrentL3(cur);}
-  void        SetCurrentDip(Float_t cur)          const  {fESDRun->SetCurrentDip(cur);}
-  void        SetBeamEnergy(Float_t be)           const  {fESDRun->SetBeamEnergy(be);}
-  void        SetBeamType(const char* bt)         const  {fESDRun->SetBeamType(bt);}
-  void        SetUniformBMap(Bool_t val=kTRUE)    const  {fESDRun->SetBit(AliESDRun::kUniformBMap,val);}
-  void        SetBInfoStored(Bool_t val=kTRUE)    const  {fESDRun->SetBit(AliESDRun::kBInfoStored,val);}
+  void        SetCurrentL3(Float_t cur)           const  {if(fESDRun) fESDRun->SetCurrentL3(cur);}
+  void        SetCurrentDip(Float_t cur)          const  {if(fESDRun) fESDRun->SetCurrentDip(cur);}
+  void        SetBeamEnergy(Float_t be)           const  {if(fESDRun) fESDRun->SetBeamEnergy(be);}
+  void        SetBeamType(const char* bt)         const  {if(fESDRun) fESDRun->SetBeamType(bt);}
+  void        SetUniformBMap(Bool_t val=kTRUE)    const  {if(fESDRun) fESDRun->SetBit(AliESDRun::kUniformBMap,val);}
+  void        SetBInfoStored(Bool_t val=kTRUE)    const  {if(fESDRun) fESDRun->SetBit(AliESDRun::kBInfoStored,val);}
   //
-  Float_t     GetCurrentL3()                      const  {return fESDRun->GetCurrentL3();}
-  Float_t     GetCurrentDip()                     const  {return fESDRun->GetCurrentDip();}
-  Float_t     GetBeamEnergy()                     const  {return fESDRun->GetBeamEnergy();}
-  const char* GetBeamType()                       const  {return fESDRun->GetBeamType();}
-  Bool_t      IsUniformBMap()                     const  {return fESDRun->TestBit(AliESDRun::kUniformBMap);}
+  Float_t     GetCurrentL3()                      const  {return fESDRun?fESDRun->GetCurrentL3():0;}
+  Float_t     GetCurrentDip()                     const  {return fESDRun?fESDRun->GetCurrentDip():0;}
+  Float_t     GetBeamEnergy()                     const  {return fESDRun?fESDRun->GetBeamEnergy():0;}
+  const char* GetBeamType()                       const  {return fESDRun?fESDRun->GetBeamType():0;}
+  Bool_t      IsUniformBMap()                     const  {return fESDRun?fESDRun->TestBit(AliESDRun::kUniformBMap):kFALSE;}
   //
-  Bool_t      InitMagneticField()                 const  {return fESDRun->InitMagneticField();} 
+  Bool_t      InitMagneticField()                 const  {return fESDRun?fESDRun->InitMagneticField():kFALSE;} 
   // HEADER
   AliESDHeader* GetHeader() const {return fHeader;}
 
   // Delegated methods for fHeader
-  void      SetTriggerMask(ULong64_t n) {fHeader->SetTriggerMask(n);}
-  void      SetOrbitNumber(UInt_t n) {fHeader->SetOrbitNumber(n);}
-  void      SetTimeStamp(UInt_t timeStamp){fHeader->SetTimeStamp(timeStamp);}
-  void      SetEventType(UInt_t eventType){fHeader->SetEventType(eventType);}
-  void      SetEventSpecie(UInt_t eventSpecie){fHeader->SetEventSpecie(eventSpecie);}
-  void      SetEventNumberInFile(Int_t n) {fHeader->SetEventNumberInFile(n);}
-  //  void     SetRunNumber(Int_t n) {fHeader->SetRunNumber(n);}
-  void      SetBunchCrossNumber(UShort_t n) {fHeader->SetBunchCrossNumber(n);}
-  void      SetTriggerCluster(UChar_t n) {fHeader->SetTriggerCluster(n);}
+  void      SetTriggerMask(ULong64_t n) {if(fHeader) fHeader->SetTriggerMask(n);}
+  void      SetOrbitNumber(UInt_t n) {if(fHeader) fHeader->SetOrbitNumber(n);}
+  void      SetTimeStamp(UInt_t timeStamp){if(fHeader) fHeader->SetTimeStamp(timeStamp);}
+  void      SetEventType(UInt_t eventType){if(fHeader) fHeader->SetEventType(eventType);}
+  void      SetEventSpecie(UInt_t eventSpecie){if(fHeader) fHeader->SetEventSpecie(eventSpecie);}
+  void      SetEventNumberInFile(Int_t n) {if(fHeader) fHeader->SetEventNumberInFile(n);}
+  //  void     SetRunNumber(Int_t n) {if(fHeader) fHeader->SetRunNumber(n);}
+  void      SetBunchCrossNumber(UShort_t n) {if(fHeader) fHeader->SetBunchCrossNumber(n);}
+  void      SetTriggerCluster(UChar_t n) {if(fHeader) fHeader->SetTriggerCluster(n);}
   
-  ULong64_t GetTriggerMask() const {return fHeader->GetTriggerMask();}
-  TString   GetFiredTriggerClasses() const {return fESDRun->GetFiredTriggerClasses(fHeader->GetTriggerMask());}
-  Bool_t    IsTriggerClassFired(const char *name) const {return fESDRun->IsTriggerClassFired(fHeader->GetTriggerMask(),name);}
+  ULong64_t GetTriggerMask() const {return fHeader?fHeader->GetTriggerMask():0;}
+  TString   GetFiredTriggerClasses() const {return (fESDRun&&fHeader)?fESDRun->GetFiredTriggerClasses(fHeader->GetTriggerMask()):"";}
+  Bool_t    IsTriggerClassFired(const char *name) const {return (fESDRun&&fHeader)?fESDRun->IsTriggerClassFired(fHeader->GetTriggerMask(),name):kFALSE;}
   Bool_t    IsEventSelected(const char *trigExpr) const;
   TObject*  GetHLTTriggerDecision() const;
   TString   GetHLTTriggerDescription() const;
   Bool_t    IsHLTTriggerFired(const char* name=NULL) const;
-  UInt_t    GetOrbitNumber() const {return fHeader->GetOrbitNumber();}
-  UInt_t    GetTimeStamp()  const { return fHeader->GetTimeStamp();}
-  UInt_t    GetEventType()  const { return fHeader->GetEventType();}
-  UInt_t    GetEventSpecie()  const { return fHeader->GetEventSpecie();}
-  Int_t     GetEventNumberInFile() const {return fHeader->GetEventNumberInFile();}
-  UShort_t  GetBunchCrossNumber() const {return fHeader->GetBunchCrossNumber();}
-  UChar_t   GetTriggerCluster() const {return fHeader->GetTriggerCluster();}
+  UInt_t    GetOrbitNumber() const {return fHeader?fHeader->GetOrbitNumber():-1;}
+  UInt_t    GetTimeStamp()  const { return fHeader?fHeader->GetTimeStamp():0;}
+  UInt_t    GetEventType()  const { return fHeader?fHeader->GetEventType():0;}
+  UInt_t    GetEventSpecie()  const { return fHeader?fHeader->GetEventSpecie():0;}
+  Int_t     GetEventNumberInFile() const {return fHeader?fHeader->GetEventNumberInFile():-1;}
+  UShort_t  GetBunchCrossNumber() const {return fHeader?fHeader->GetBunchCrossNumber():0;}
+  UChar_t   GetTriggerCluster() const {return fHeader?fHeader->GetTriggerCluster():0;}
 
   // ZDC CKB: put this in the header?
   AliESDZDC*    GetESDZDC() const {return fESDZDC;}
 
   // Delegated methods for fESDZDC
-  Double_t GetZDCN1Energy() const {return fESDZDC->GetZDCN1Energy();}
-  Double_t GetZDCP1Energy() const {return fESDZDC->GetZDCP1Energy();}
-  Double_t GetZDCN2Energy() const {return fESDZDC->GetZDCN2Energy();}
-  Double_t GetZDCP2Energy() const {return fESDZDC->GetZDCP2Energy();}
-  Double_t GetZDCEMEnergy(Int_t i=0) const {return fESDZDC->GetZDCEMEnergy(i);}
-  Int_t    GetZDCParticipants() const {return fESDZDC->GetZDCParticipants();}
+  Double_t GetZDCN1Energy() const {return fESDZDC?fESDZDC->GetZDCN1Energy():0;}
+  Double_t GetZDCP1Energy() const {return fESDZDC?fESDZDC->GetZDCP1Energy():0;}
+  Double_t GetZDCN2Energy() const {return fESDZDC?fESDZDC->GetZDCN2Energy():0;}
+  Double_t GetZDCP2Energy() const {return fESDZDC?fESDZDC->GetZDCP2Energy():0;}
+  Double_t GetZDCEMEnergy(Int_t i=0) const {return fESDZDC?fESDZDC->GetZDCEMEnergy(i):0;}
+  Int_t    GetZDCParticipants() const {return fESDZDC?fESDZDC->GetZDCParticipants():0;}
   void     SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t em1Energy, Float_t em2Energy,
                   Float_t n2Energy, Float_t p2Energy, Int_t participants, Int_t nPartA,
 	 	  Int_t nPartC, Double_t b, Double_t bA, Double_t bC, UInt_t recoflag)
-           {fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, 
+  {if(fESDZDC) fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, 
             participants, nPartA, nPartC, b, bA, bC,  recoflag);}
-  void     SetZDCScaler(UInt_t *counts) {fESDZDC->SetZDCScaler(counts);}
+  void     SetZDCScaler(UInt_t *counts) {if(fESDZDC) fESDZDC->SetZDCScaler(counts);}
 
 
   // FMD
@@ -189,16 +189,16 @@ public:
   const AliESDTZERO*    GetESDTZERO() const {return fESDTZERO;}
   // delegetated methods for fESDTZERO
 
-  Double_t GetT0zVertex() const {return fESDTZERO->GetT0zVertex();}
-  void SetT0zVertex(Float_t z) {fESDTZERO->SetT0zVertex(z);}
-  Double_t GetT0() const {return fESDTZERO->GetT0();}
-  void SetT0(Float_t timeStart) {fESDTZERO->SetT0(timeStart);}
-  Float_t GetT0clock() const {return fESDTZERO->GetT0clock();}
-  void SetT0clock(Float_t timeStart) {fESDTZERO->SetT0clock(timeStart);}
-  const Double_t * GetT0time() const {return fESDTZERO->GetT0time();}
-  void SetT0time(Float_t time[24]) {fESDTZERO->SetT0time(time);}
-  const Double_t * GetT0amplitude() const {return fESDTZERO->GetT0amplitude();}
-  void SetT0amplitude(Float_t amp[24]){fESDTZERO->SetT0amplitude(amp);}
+  Double_t GetT0zVertex() const {return fESDTZERO?fESDTZERO->GetT0zVertex():0;}
+  void SetT0zVertex(Float_t z) {if(fESDTZERO) fESDTZERO->SetT0zVertex(z);}
+  Double_t GetT0() const {return fESDTZERO?fESDTZERO->GetT0():0;}
+  void SetT0(Float_t timeStart) {if(fESDTZERO) fESDTZERO->SetT0(timeStart);}
+  Float_t GetT0clock() const {return fESDTZERO?fESDTZERO->GetT0clock():0;}
+  void SetT0clock(Float_t timeStart) {if(fESDTZERO) fESDTZERO->SetT0clock(timeStart);}
+  const Double_t * GetT0time() const {return fESDTZERO?fESDTZERO->GetT0time():0x0;}
+  void SetT0time(Float_t time[24]) {if(fESDTZERO) fESDTZERO->SetT0time(time);}
+  const Double_t * GetT0amplitude() const {return fESDTZERO?fESDTZERO->GetT0amplitude():0x0;}
+  void SetT0amplitude(Float_t amp[24]){if(fESDTZERO) fESDTZERO->SetT0amplitude(amp);}
 
   // VZERO 
   AliESDVZERO *GetVZEROData() const { return fESDVZERO; }
@@ -240,18 +240,18 @@ public:
   Bool_t RemoveTrack(Int_t i)  const;
 
   const AliESDVertex *GetPileupVertexSPD(Int_t i) const {
-    return (const AliESDVertex *)fSPDPileupVertices->UncheckedAt(i);
+    return (const AliESDVertex *)(fSPDPileupVertices?fSPDPileupVertices->UncheckedAt(i):0x0);
   }
   Char_t  AddPileupVertexSPD(const AliESDVertex *vtx);
   Bool_t  IsPileupFromSPD(Int_t ncont=2, Double_t nSigmaDeltaZ=3., Double_t nSigmaXY=2., Int_t option=0) const;
 
   const AliESDVertex *GetPileupVertexTracks(Int_t i) const {
-    return (const AliESDVertex *)fTrkPileupVertices->UncheckedAt(i);
+    return (const AliESDVertex *)(fTrkPileupVertices?fTrkPileupVertices->UncheckedAt(i):0x0);
   }
   Char_t  AddPileupVertexTracks(const AliESDVertex *vtx);
 
   AliESDtrack *GetTrack(Int_t i) const {
-    return (AliESDtrack *)fTracks->UncheckedAt(i);
+    return (AliESDtrack *)(fTracks?fTracks->UncheckedAt(i):0x0);
   }
   Int_t  AddTrack(const AliESDtrack *t);
 
@@ -278,43 +278,43 @@ public:
   }
   
   AliESDMuonTrack *GetMuonTrack(Int_t i) const {
-    return (AliESDMuonTrack *)fMuonTracks->UncheckedAt(i);
+    return (AliESDMuonTrack *)(fMuonTracks?fMuonTracks->UncheckedAt(i):0x0);
   }
 
   void AddMuonTrack(const AliESDMuonTrack *t);
 
   AliESDPmdTrack *GetPmdTrack(Int_t i) const {
-    return (AliESDPmdTrack *)fPmdTracks->UncheckedAt(i);
+    return (AliESDPmdTrack *)(fPmdTracks?fPmdTracks->UncheckedAt(i):0x0);
   }
 
   void AddPmdTrack(const AliESDPmdTrack *t);
 
 
   AliESDTrdTrack *GetTrdTrack(Int_t i) const {
-    return (AliESDTrdTrack *)fTrdTracks->UncheckedAt(i);
+    return (AliESDTrdTrack *)(fTrdTracks?fTrdTracks->UncheckedAt(i):0x0);
   }
 
   
   void AddTrdTrack(const AliESDTrdTrack *t);
 
   AliESDv0 *GetV0(Int_t i) const {
-    return (AliESDv0*)fV0s->UncheckedAt(i);
+    return (AliESDv0*)(fV0s?fV0s->UncheckedAt(i):0x0);
   }
   Int_t AddV0(const AliESDv0 *v);
 
   AliESDcascade *GetCascade(Int_t i) const {
-    return (AliESDcascade *)fCascades->UncheckedAt(i);
+    return (AliESDcascade *)(fCascades?fCascades->UncheckedAt(i):0x0);
   }
 
   void AddCascade(const AliESDcascade *c);
 
   AliESDkink *GetKink(Int_t i) const {
-    return (AliESDkink *)fKinks->UncheckedAt(i);
+    return (AliESDkink *)(fKinks?fKinks->UncheckedAt(i):0x0);
   }
   Int_t AddKink(const AliESDkink *c);
 
   AliESDCaloCluster *GetCaloCluster(Int_t i) const {
-    return (AliESDCaloCluster *)fCaloClusters->UncheckedAt(i);
+    return (AliESDCaloCluster *)(fCaloClusters?fCaloClusters->UncheckedAt(i):0x0);
   }
 
   Int_t AddCaloCluster(const AliESDCaloCluster *c);
@@ -323,17 +323,17 @@ public:
   AliESDCaloCells *GetPHOSCells() const {return fPHOSCells; }  
 
   AliRawDataErrorLog *GetErrorLog(Int_t i) const {
-    return (AliRawDataErrorLog *)fErrorLogs->UncheckedAt(i);
+    return (AliRawDataErrorLog *)(fErrorLogs?fErrorLogs->UncheckedAt(i):0x0);
   }
   void  AddRawDataErrorLog(const AliRawDataErrorLog *log) const;
 
-  Int_t GetNumberOfErrorLogs()   const {return fErrorLogs->GetEntriesFast();}
+  Int_t GetNumberOfErrorLogs()   const {return fErrorLogs?fErrorLogs->GetEntriesFast():0;}
 
     
-  void AddPHOSTriggerPosition(TArrayF array)   { fPHOSTrigger->AddTriggerPosition(array); }
-  void AddPHOSTriggerAmplitudes(TArrayF array) { fPHOSTrigger->AddTriggerAmplitudes(array);}
-  void AddEMCALTriggerPosition(TArrayF array)  { fEMCALTrigger->AddTriggerPosition(array); }
-  void AddEMCALTriggerAmplitudes(TArrayF array){ fEMCALTrigger->AddTriggerAmplitudes(array); }
+  void AddPHOSTriggerPosition(TArrayF array)   { if(fPHOSTrigger) fPHOSTrigger->AddTriggerPosition(array); }
+  void AddPHOSTriggerAmplitudes(TArrayF array) { if(fPHOSTrigger) fPHOSTrigger->AddTriggerAmplitudes(array);}
+  void AddEMCALTriggerPosition(TArrayF array)  { if(fEMCALTrigger) fEMCALTrigger->AddTriggerPosition(array); }
+  void AddEMCALTriggerAmplitudes(TArrayF array){ if(fEMCALTrigger) fEMCALTrigger->AddTriggerAmplitudes(array); }
 
   Int_t GetNumberOfPileupVerticesSPD() const {
     return (fSPDPileupVertices?fSPDPileupVertices->GetEntriesFast():0);
@@ -341,22 +341,22 @@ public:
   Int_t GetNumberOfPileupVerticesTracks() const {
     return (fTrkPileupVertices?fTrkPileupVertices->GetEntriesFast():0);
   }
-  Int_t GetNumberOfTracks()     const {return fTracks->GetEntriesFast();}
+  Int_t GetNumberOfTracks()     const {return fTracks?fTracks->GetEntriesFast():0;}
   Int_t GetNumberOfHLTConfMapTracks()     const {return 0;} 
   // fHLTConfMapTracks->GetEntriesFast();}
   Int_t GetNumberOfHLTHoughTracks()     const {return  0;  }
   //  fHLTHoughTracks->GetEntriesFast();  }
 
-  Int_t GetNumberOfMuonTracks() const {return fMuonTracks->GetEntriesFast();}
-  Int_t GetNumberOfPmdTracks() const {return fPmdTracks->GetEntriesFast();}
-  Int_t GetNumberOfTrdTracks() const {return fTrdTracks->GetEntriesFast();}
-  Int_t GetNumberOfV0s()      const {return fV0s->GetEntriesFast();}
-  Int_t GetNumberOfCascades() const {return fCascades->GetEntriesFast();}
-  Int_t GetNumberOfKinks() const {return fKinks->GetEntriesFast();}
+  Int_t GetNumberOfMuonTracks() const {return fMuonTracks?fMuonTracks->GetEntriesFast():0;}
+  Int_t GetNumberOfPmdTracks() const {return fPmdTracks?fPmdTracks->GetEntriesFast():0;}
+  Int_t GetNumberOfTrdTracks() const {return fTrdTracks?fTrdTracks->GetEntriesFast():0;}
+  Int_t GetNumberOfV0s()      const {return fV0s?fV0s->GetEntriesFast():0;}
+  Int_t GetNumberOfCascades() const {return fCascades?fCascades->GetEntriesFast():0;}
+  Int_t GetNumberOfKinks() const {return fKinks?fKinks->GetEntriesFast():0;}
   
   Int_t GetEMCALClusters(TRefArray *clusters) const;
   Int_t GetPHOSClusters(TRefArray *clusters) const;
-  Int_t GetNumberOfCaloClusters() const {return fCaloClusters->GetEntriesFast();}
+  Int_t GetNumberOfCaloClusters() const {return fCaloClusters?fCaloClusters->GetEntriesFast():0;}
 
   void SetUseOwnList(Bool_t b){fUseOwnList = b;}
   Bool_t GetUseOwnList() const {return fUseOwnList;}
@@ -374,13 +374,13 @@ public:
   Int_t GetFirstPHOSCluster() const  { return fFirstPHOSCluster ; }
   //-------------------------------------------------------
 
-  TArrayF *GetEMCALTriggerPosition() const {return  fEMCALTrigger->GetTriggerPosition();}
-  TArrayF *GetEMCALTriggerAmplitudes() const {return  fEMCALTrigger->GetTriggerAmplitudes();}
-  TArrayF *GetPHOSTriggerPosition() const {return  fPHOSTrigger->GetTriggerPosition();}
-  TArrayF *GetPHOSTriggerAmplitudes() const {return  fPHOSTrigger->GetTriggerAmplitudes();}
+  TArrayF *GetEMCALTriggerPosition() const {return  fEMCALTrigger?fEMCALTrigger->GetTriggerPosition():0x0;}
+  TArrayF *GetEMCALTriggerAmplitudes() const {return  fEMCALTrigger?fEMCALTrigger->GetTriggerAmplitudes():0x0;}
+  TArrayF *GetPHOSTriggerPosition() const {return  fPHOSTrigger?fPHOSTrigger->GetTriggerPosition():0x0;}
+  TArrayF *GetPHOSTriggerAmplitudes() const {return  fPHOSTrigger?fPHOSTrigger->GetTriggerAmplitudes():0x0;}
 
-  void ResetV0s() { fV0s->Clear(); }
-  void ResetCascades() { fCascades->Clear(); }
+  void ResetV0s() { if(fV0s) fV0s->Clear(); }
+  void ResetCascades() { if(fCascades) fCascades->Clear(); }
   void Reset();
 
   void  Print(Option_t *option="") const;
