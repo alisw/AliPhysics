@@ -393,7 +393,7 @@ void AliMUONReAlignTask::Exec(Option_t *)
 	padInfo.SetCalibrated(digit->IsCalibrated());
 	padInfo.SetPedestal(ped->ValueAsFloatFast(manuChannel,0), ped->ValueAsFloatFast(manuChannel,1));
 	padInfo.SetGain(gain->ValueAsFloatFast(manuChannel,0), gain->ValueAsFloatFast(manuChannel,1),
-			gain->ValueAsFloatFast(manuChannel,2), gain->ValueAsFloatFast(manuChannel,3));
+			gain->ValueAsIntFast(manuChannel,2), gain->ValueAsIntFast(manuChannel,3));
 	
 	fClusterInfo->AddPad(padInfo);
       }
