@@ -154,7 +154,7 @@ public:
   TObject*  GetHLTTriggerDecision() const;
   TString   GetHLTTriggerDescription() const;
   Bool_t    IsHLTTriggerFired(const char* name=NULL) const;
-  UInt_t    GetOrbitNumber() const {return fHeader?fHeader->GetOrbitNumber():-1;}
+  UInt_t    GetOrbitNumber() const {return fHeader?fHeader->GetOrbitNumber():0;}
   UInt_t    GetTimeStamp()  const { return fHeader?fHeader->GetTimeStamp():0;}
   UInt_t    GetEventType()  const { return fHeader?fHeader->GetEventType():0;}
   UInt_t    GetEventSpecie()  const { return fHeader?fHeader->GetEventSpecie():0;}
