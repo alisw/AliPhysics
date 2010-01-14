@@ -75,7 +75,6 @@ Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter * const trackRef)
   Double_t mass = pid.ParticleMass(fType);
 
   // get the track momentum at the inner wall of TPC: if absent cut is not passed
-  if (!trackRef->GetRefESD()->GetInnerParam()) return 1000000.0;
   AliExternalTrackParam track(*trackRef->GetRefESD()->GetInnerParam());
 
   Double_t betaGamma = track.P() / mass;
@@ -132,6 +131,10 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
   if (!esd) {
     AliError("ESD information unavailable");
     return kTRUE;
+  }
+  if (!track->GetRefESD()->GetInnerParam()) {
+    AliDebug(AliLog::kDebug+2, "Rejecting a track with no info at the TPC inner wall");
+    return kFALSE;
   }
 
   // the cut range is the relative fraction of the value:

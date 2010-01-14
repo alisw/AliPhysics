@@ -1,9 +1,8 @@
 //
-// Class AliRsnCutRange
+// Class AliRsnCutPrimaryVertex
 //
-// General implementation of cuts which check a value inside a range.
-// This range can be defined by two integers or two doubles.
-// A user-friendly enumeration allows to define what is checked.
+// This cut implementation checks the quality of event primary vertex.
+// It currently works only with ESD events (not AOD).
 //
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
@@ -32,7 +31,7 @@ class AliRsnCutPrimaryVertex : public AliRsnCut
   public:
 
     AliRsnCutPrimaryVertex();
-    AliRsnCutPrimaryVertex(const char *name, Int_t minContributors);
+    AliRsnCutPrimaryVertex(const char *name, Int_t minContributors, Bool_t acceptTPC = kFALSE);
     virtual ~AliRsnCutPrimaryVertex() {;};
 
     virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnDaughter *daughter);
@@ -41,6 +40,8 @@ class AliRsnCutPrimaryVertex : public AliRsnCut
     virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2);
 
   protected:
+
+    Bool_t fAcceptTPC;  // if kTRUE, the TPC primary vertexes are accepted
 
     ClassDef(AliRsnCutPrimaryVertex, 1)
 };
