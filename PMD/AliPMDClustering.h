@@ -28,7 +28,8 @@ class AliPMDClustering: public TObject
 		       TObjArray *pmdcont) = 0;
 
   virtual void SetEdepCut(Float_t decut) = 0;
+  virtual void SetClusteringParam(Int_t cluspar) = 0;
 
-  ClassDef(AliPMDClustering,8) // Does clustering for PMD
+  ClassDef(AliPMDClustering,9) // Does clustering for PMD
 };
 #endif

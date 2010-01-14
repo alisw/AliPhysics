@@ -61,7 +61,8 @@ const Double_t AliPMDClusteringV1::fgkSqroot3by2=0.8660254;  // sqrt(3.)/2.
 
 AliPMDClusteringV1::AliPMDClusteringV1():
   fPMDclucont(new TObjArray()),
-  fCutoff(0.0)
+  fCutoff(0.0),
+  fClusParam(0)
 {
   for(Int_t i = 0; i < kNDIMX; i++)
     {
@@ -76,7 +77,8 @@ AliPMDClusteringV1::AliPMDClusteringV1():
 AliPMDClusteringV1::AliPMDClusteringV1(const AliPMDClusteringV1& pmdclv1):
   AliPMDClustering(pmdclv1),
   fPMDclucont(0),
-  fCutoff(0)
+  fCutoff(0),
+  fClusParam(0)
 {
   // copy constructor
   AliError("Copy constructor not allowed ");
@@ -937,5 +939,10 @@ Double_t AliPMDClusteringV1::Distance(Double_t x1, Double_t y1,
 void AliPMDClusteringV1::SetEdepCut(Float_t decut)
 {
   fCutoff = decut;
+}
+// ------------------------------------------------------------------------ //
+void AliPMDClusteringV1::SetClusteringParam(Int_t cluspar)
+{
+  fClusParam = cluspar;
 }
 // ------------------------------------------------------------------------ //

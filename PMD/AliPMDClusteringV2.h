@@ -43,6 +43,7 @@ class AliPMDClusteringV2 : public AliPMDClustering
   Double_t Distance(Double_t x1, Double_t y1, Double_t x2, Double_t y2);
 
   void     SetEdepCut(Float_t decut);
+  void     SetClusteringParam(Int_t cluspar);
   
  protected:
   
@@ -60,9 +61,10 @@ class AliPMDClusteringV2 : public AliPMDClustering
                                        // -- cluster number
   Double_t fCoord[2][kNDIMX][kNDIMY];
 
-  Float_t fCutoff; // Energy(ADC) cutoff per cell before clustering
+  Float_t fCutoff;    // Energy(ADC) cutoff per cell before clustering
+  Float_t fClusParam; // paramater to decide clustering
   
-  ClassDef(AliPMDClusteringV2,7) // Does clustering for PMD
+  ClassDef(AliPMDClusteringV2,8) // Does clustering for PMD
 };
 #endif
     
