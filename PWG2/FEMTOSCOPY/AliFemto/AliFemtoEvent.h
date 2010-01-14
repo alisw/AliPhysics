@@ -55,6 +55,7 @@ public:
   AliFemtoKinkCollection* KinkCollection() const;
   AliFemtoTrackCollection* TrackCollection() const;
   double MagneticField() const;
+  bool IsCollisionCandidate() const;
 
   //functions for alice variables
   float ZDCN1Energy() const;      
@@ -75,7 +76,8 @@ public:
   void SetPrimVertPos(const AliFemtoThreeVector& v);
   void SetPrimVertCov(const double* v);
   void SetMagneticField(const double& x);
-  
+  void SetIsCollisionCandidate(const bool& is);
+
    //functions for alice variables
   void SetZDCN1Energy(const float& x);      
   void SetZDCP1Energy(const float& x);      
@@ -97,7 +99,8 @@ private:
   unsigned short fRunNumber;             // run number the event belong to
   unsigned short fNumberOfTracks;        // total number of TPC tracks
   double fMagneticField;                 // magnetic field in Z direction
-
+  bool fIsCollisionCandidate;            // is collision candidate
+  
   AliFemtoThreeVector fPrimVertPos;      // primary vertex position
   double fPrimVertCov[6];                // primary vertex covariances
   AliFemtoTrackCollection* fTrackCollection; // collection of tracks

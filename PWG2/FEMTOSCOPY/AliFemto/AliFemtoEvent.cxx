@@ -29,6 +29,7 @@ AliFemtoEvent::AliFemtoEvent():
   fRunNumber(0),
   fNumberOfTracks(0),
   fMagneticField(0),
+  fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
   fPrimVertCov(),
   fTrackCollection(0),
@@ -67,6 +68,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fRunNumber(0),
   fNumberOfTracks(0),
   fMagneticField(0),
+  fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
   fPrimVertCov(),
   fTrackCollection(0),
@@ -97,7 +99,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fZDCParticipants=ev.fZDCParticipants;
   fNumberOfTracks = ev.fNumberOfTracks;
   fMagneticField= ev.fMagneticField;
-  
+  fIsCollisionCandidate = ev.fIsCollisionCandidate;
+
   fTriggerMask=ev.fTriggerMask;     // Trigger Type (mask)
   fTriggerCluster=ev.fTriggerCluster;
   fReactionPlaneAngle=ev.fReactionPlaneAngle;
@@ -143,6 +146,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fRunNumber(0),
   fNumberOfTracks(0),
   fMagneticField(0),
+  fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
   fPrimVertCov(),
   fTrackCollection(0),
@@ -173,7 +177,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fZDCParticipants=ev.fZDCParticipants;
   fNumberOfTracks = ev.fNumberOfTracks;
   fMagneticField= ev.fMagneticField;
-  
+  fIsCollisionCandidate = ev.fIsCollisionCandidate;
   fTriggerMask=ev.fTriggerMask;     // Trigger Type (mask)
   fTriggerCluster=ev.fTriggerCluster;
   fReactionPlaneAngle=ev.fReactionPlaneAngle;
@@ -222,7 +226,8 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   fZDCParticipants=aEvent.fZDCParticipants;
   fNumberOfTracks = aEvent.fNumberOfTracks;
   fMagneticField= aEvent.fMagneticField;
-  
+  fIsCollisionCandidate = aEvent.fIsCollisionCandidate;
+
   fTriggerMask=aEvent.fTriggerMask;     // Trigger Type (mask)
   fTriggerCluster=aEvent.fTriggerCluster;
   fReactionPlaneAngle=aEvent.fReactionPlaneAngle;
@@ -315,6 +320,7 @@ void AliFemtoEvent::SetPrimVertCov(const double* v){
   fPrimVertCov[5] = v[5];
 }
 void AliFemtoEvent::SetMagneticField(const double& magF){fMagneticField = magF;}
+void AliFemtoEvent::SetIsCollisionCandidate(const bool& is){fIsCollisionCandidate = is;}
 
 void AliFemtoEvent::SetTriggerMask(const unsigned long int& aTriggerMask) {fTriggerMask=aTriggerMask;}
 void AliFemtoEvent::SetTriggerCluster(const unsigned char& aTriggerCluster) {fTriggerCluster=aTriggerCluster;}
@@ -336,6 +342,7 @@ const double* AliFemtoEvent::PrimVertCov() const {return fPrimVertCov;}
 double AliFemtoEvent::MagneticField() const {return fMagneticField;}
 unsigned long int AliFemtoEvent::TriggerMask() const {return fTriggerMask;}
 unsigned char AliFemtoEvent::TriggerCluster() const {return fTriggerCluster;}
+bool AliFemtoEvent::IsCollisionCandidate() const {return fIsCollisionCandidate;}
 
 
 float AliFemtoEvent::ZDCN1Energy() const {return fZDCN1Energy;}       
@@ -357,5 +364,19 @@ double AliFemtoEvent::UncorrectedNumberOfNegativePrimaries() const
 
 double AliFemtoEvent::UncorrectedNumberOfPrimaries() const
 {
-  return NumberOfTracks();
+  // Count number of normalized charged tracks 
+  Int_t tNormTrackCount = 0;
+  for (AliFemtoTrackIterator iter=fTrackCollection->begin();iter!=fTrackCollection->end();iter++){
+    if (!((*iter)->Flags()&(AliFemtoTrack::kTPCrefit))) continue;
+    if ((*iter)->TPCncls() < 50) continue;
+    if ((*iter)->TPCchi2()/(*iter)->TPCncls() > 60.0) continue;
+    if ((*iter)->ImpactD() > 6.0) continue;
+    if ((*iter)->ImpactZ() > 6.0) continue;
+    if (fabs((*iter)->P().pseudoRapidity()) > 0.9) continue;
+
+    tNormTrackCount++;
+  }
+
+  return tNormTrackCount;
+  //  return NumberOfTracks();
 }

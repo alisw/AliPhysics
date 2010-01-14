@@ -38,7 +38,10 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
-  fEvent(0x0)
+  fEvent(0x0),
+  fUsePhysicsSel(kFALSE),
+  fSelect(0x0),
+  fTrackType(kGlobal)
 {
   //constructor with 0 parameters , look at default settings 
 //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -61,7 +64,10 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
-  fEvent(0x0)
+  fEvent(0x0),
+  fUsePhysicsSel(kFALSE),
+  fSelect(0x0),
+  fTrackType(kGlobal)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -72,6 +78,10 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fCurFile = aReader.fCurFile;
   //  fEvent = new AliESD(*aReader.fEvent);
   fEvent = new AliESDEvent();
+  fUsePhysicsSel = aReader.fUsePhysicsSel;
+  if (aReader.fUsePhysicsSel)
+    fSelect = new AliPhysicsSelection();
+  fTrackType = aReader.fTrackType;
 //   fEventFriend = aReader.fEventFriend;
 //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
 //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
@@ -106,6 +116,7 @@ AliFemtoEventReaderESDChain::~AliFemtoEventReaderESDChain()
 //     delete fSharedList[tPad];
 //   }
 //   delete [] fSharedList;
+  if (fSelect) delete fSelect;
 }
 
 //__________________
@@ -123,7 +134,11 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
   fCurFile = aReader.fCurFile;
   if (fEvent) delete fEvent;
   fEvent = new AliESDEvent();
+  fTrackType = aReader.fTrackType;
 
+  fUsePhysicsSel = aReader.fUsePhysicsSel;
+  if (aReader.fUsePhysicsSel)
+    fSelect = new AliPhysicsSelection();
   //  fEventFriend = aReader.fEventFriend;
   
 //   if (fClusterPerPadrow) {
@@ -203,6 +218,12 @@ bool AliFemtoEventReaderESDChain::GetUseTPCOnly() const
   return fUseTPCOnly;
 }
 
+void AliFemtoEventReaderESDChain::SetUsePhysicsSelection(const bool usephysics)
+{
+  fUsePhysicsSel = usephysics;
+  if (!fSelect) fSelect = new AliPhysicsSelection();
+}
+
 AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 {
   // Get the event, read all the relevant information
@@ -215,8 +236,17 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   cout<<"starting to read event "<<fCurEvent<<endl;
   //  fEvent->SetESDfriend(fEventFriend);
   if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
-	
+  
   hbtEvent = new AliFemtoEvent;
+
+  if (fUsePhysicsSel) {
+    hbtEvent->SetIsCollisionCandidate(fSelect->IsCollisionCandidate(fEvent));
+    if (!(fSelect->IsCollisionCandidate(fEvent)))
+      printf("Event not a collision candidate\n");
+  }
+  else
+    hbtEvent->SetIsCollisionCandidate(kTRUE);
+
   //setting basic things
   //  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
   hbtEvent->SetRunNumber(fEvent->GetRunNumber());
@@ -290,10 +320,24 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     {
       bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
 		
-      AliFemtoTrack* trackCopy = new AliFemtoTrack();	
       const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
       //      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
 
+      // If reading ITS-only tracks, reject all with TPC
+      if (fTrackType == kITSOnly) {
+	if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit) continue;
+	if (!(esdtrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
+	if (esdtrack->GetStatus() & AliESDtrack::kTPCin) continue;
+	UChar_t iclm = esdtrack->GetITSClusterMap();
+	Int_t incls = 0;
+	for (int iter=0; iter<6; iter++) if (iclm&(1<<iter)) incls++;
+	if (incls<=3) {
+	  cout << "Rejecting track with " << incls << " clusters" << endl;
+	  continue;
+	}
+      }
+
+      AliFemtoTrack* trackCopy = new AliFemtoTrack();	
       trackCopy->SetCharge((short)esdtrack->GetSign());
 
       //in aliroot we have AliPID 
@@ -526,6 +570,10 @@ Float_t AliFemtoEventReaderESDChain::GetSigmaToVertex(double *impact, double *co
   return d;
 }
 
+void AliFemtoEventReaderESDChain::SetReadTrackType(ReadTrackType aType)
+{
+  fTrackType = aType;
+}
 
 
 
