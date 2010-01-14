@@ -13,8 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 //
-//  QA class of primary vertex study for Heavy Flavor electrons
-//
+// QA class of primary vertex study for Heavy Flavor electrons
+// this has functionality to reject electrons from primary vertex
+// and check primary vertex characteristics
+//  
 // Authors:
 //   MinJung Kweon <minjung@physi.uni-heidelberg.de>
 //

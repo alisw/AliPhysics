@@ -52,25 +52,32 @@ class AliHFEcollection : public TNamed{
   Bool_t CreateTH2F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY);
 
   Bool_t CreateTH1Fvector1(Int_t X, const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax);
-  Bool_t CreateTH2Fvector1(Int_t X, const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY);
-
   Bool_t CreateTH1Fvector2(Int_t X, Int_t Y, const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax);
-  
+  Bool_t CreateTH2Fvector1(Int_t X, const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY);
+  Bool_t CreateProfile(const char* name, const char* title, Int_t nbins, Double_t xmin, Double_t xmax);
+  Bool_t CreateTHnSparse(const char* name, const char* title, Int_t dim, Int_t* nbins, Double_t* xmin, Double_t* xmax);
+
+  Bool_t BinLogAxis(const char* name, Int_t dim);
+    
 
   Long64_t Merge(TCollection *list);
 
   // Get functions
-  TList* GetList()  const  { return fListE; }
+  TList* GetList()  const  { return fList; }
   TObject* Get(const char* name); 
-  TObject* Get(const char* name, Int_t X);
-  TObject* Get(const char* name, Int_t X, Int_t Y);
 
+  // Fill functions
+  Bool_t Fill(const char* name, Double_t v);
+  Bool_t Fill(const char* name, Int_t X, Double_t v);
+  Bool_t Fill(const char* name, Int_t X, Int_t Y, Double_t v);
+  Bool_t Fill(const char* name, Double_t v1, Double_t v2);
+  Bool_t Fill(const char* name, Int_t X, Double_t v1, Double_t v2);
  private:
   Bool_t CheckObject(const char* name);
    void Copy(TObject &ref) const;
 
  private:
-  TList*                           fListE;      //! Object container
+  TList*                           fList;      //! Object container
 
   ClassDef(AliHFEcollection, 1)
 

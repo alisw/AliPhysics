@@ -20,6 +20,7 @@ class AliAODTrack;
 class AliAODMCParticle;
 class AliESDtrack;
 class AliMCParticle;
+class AliTOFpidESD;
 
 class AliHFEpidTOF : public AliHFEpidBase{
   public:
@@ -32,7 +33,10 @@ class AliHFEpidTOF : public AliHFEpidBase{
     virtual Int_t     IsSelected(AliHFEpidObject *track);
     virtual Bool_t    HasQAhistos() const { return kTRUE; };
   
-  
+    void SetTOFnSigma(Short_t nSigma) { fNsigmaTOF = nSigma; };
+
+    Double_t Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig = 2.);  
+ 
   protected:
     void Copy(TObject &ref) const;
     void AddQAhistograms(TList *qaHist);
@@ -50,12 +54,15 @@ class AliHFEpidTOF : public AliHFEpidBase{
       kHistTOFpid2 = 6,
       kHistTOFpid3 = 7,
       kHistTOFpid4 = 8
-      
     } QAHist_t;
+  
+    AliPID        *fPID;           //! PID Object
+    TList         *fQAList;        //! QA histograms
+    AliTOFpidESD  *fPIDtofESD;     //! TOF pid object
 
-    AliPID *fPID;           //! PID Object
-    TList *fQAList;         //! QA histograms
-    ClassDef(AliHFEpidTOF, 1) // TOF PID class
+    Short_t fNsigmaTOF;            // TOF sigma band
+
+    ClassDef(AliHFEpidTOF, 1)
 };
 
 #endif

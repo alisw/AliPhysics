@@ -43,6 +43,9 @@
 #include <TString.h>
 #include <TTree.h>
 
+#include "AliAODInputHandler.h"
+#include "AliAODMCParticle.h"
+#include "AliAODTrack.h"
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
 #include "AliCFEffGrid.h"
@@ -59,9 +62,13 @@
 #include "AliStack.h"
 
 #include "AliHFEpid.h"
+#include "AliHFEcollection.h"
 #include "AliHFEcuts.h"
 #include "AliHFEmcQA.h"
+#include "AliHFEpairs.h"
+#include "AliHFEsecVtxs.h"
 #include "AliHFEsecVtx.h"
+#include "AliHFEelecbackground.h"
 #include "AliAnalysisTaskHFE.h"
 
 //____________________________________________________________
@@ -70,21 +77,26 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fQAlevel(0)
   , fPIDdetectors("")
   , fPIDstrategy(0)
-  , fESD(0x0)
-  , fMC(0x0)
-  , fCFM(0x0)
-  , fCorrelation(0x0)
-  , fPIDperformance(0x0)
-  , fPID(0x0)
-  , fCuts(0x0)
-  , fSecVtx(0x0)
-  , fMCQA(0x0)
-  , fNEvents(0x0)
-  , fNElectronTracksEvent(0x0)
-  , fQA(0x0)
-  , fOutput(0x0)
-  , fHistMCQA(0x0)
-  , fHistSECVTX(0x0)
+  , fPlugins(0)
+  , fRecEvent(NULL)
+  , fMC(NULL)
+  , fCFM(NULL)
+  , fCorrelation(NULL)
+  , fPIDperformance(NULL)
+  , fSignalToBackgroundMC(NULL)
+  , fPID(NULL)
+  , fCuts(NULL)
+  , fSecVtx(NULL)
+  , fElecBackGround(NULL)
+  , fMCQA(NULL)
+  , fNEvents(NULL)
+  , fNElectronTracksEvent(NULL)
+  , fQA(NULL)
+  , fOutput(NULL)
+  , fHistMCQA(NULL)
+  , fHistSECVTX(NULL)
+  , fHistELECBACKGROUND(NULL)
+//  , fQAcoll(0x0)
 {
   //
   // Dummy constructor
@@ -93,11 +105,10 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   DefineOutput(0, TH1I::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+//  DefineOutput(3, TList::Class());
 
   // Initialize cuts
   fPID = new AliHFEpid;
-
-  SetHasMCData();
 }
 
 //____________________________________________________________
@@ -106,34 +117,38 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fQAlevel(0)
   , fPIDdetectors("")
   , fPIDstrategy(0)
-  , fESD(0x0)
-  , fMC(0x0)
-  , fCFM(0x0)
-  , fCorrelation(0x0)
-  , fPIDperformance(0x0)
-  , fPID(0x0)
-  , fCuts(0x0)
-  , fSecVtx(0x0)
-  , fMCQA(0x0)
-  , fNEvents(0x0)
-  , fNElectronTracksEvent(0x0)
-  , fQA(0x0)
-  , fOutput(0x0)
-  , fHistMCQA(0x0)
-  , fHistSECVTX(0x0)
+  , fPlugins(0)
+  , fRecEvent(NULL)
+  , fMC(NULL)
+  , fCFM(NULL)
+  , fCorrelation(NULL)
+  , fPIDperformance(NULL)
+  , fSignalToBackgroundMC(NULL)
+  , fPID(NULL)
+  , fCuts(NULL)
+  , fSecVtx(NULL)
+  , fElecBackGround(NULL)
+  , fMCQA(NULL)
+  , fNEvents(NULL)
+  , fNElectronTracksEvent(NULL)
+  , fQA(NULL)
+  , fOutput(NULL)
+  , fHistMCQA(NULL)
+  , fHistSECVTX(NULL)
+  , fHistELECBACKGROUND(NULL)
+//  , fQAcoll(0x0)
 {
   //
   // Default constructor
-  //
+  // 
   DefineInput(0, TChain::Class());
   DefineOutput(0, TH1I::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+//  DefineOutput(3, TList::Class());
 
   // Initialize cuts
   fPID = new AliHFEpid;
-
-  SetHasMCData();
 }
 
 //____________________________________________________________
@@ -142,14 +157,17 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fQAlevel(ref.fQAlevel)
   , fPIDdetectors(ref.fPIDdetectors)
   , fPIDstrategy(ref.fPIDstrategy)
-  , fESD(ref.fESD)
+  , fPlugins(ref.fPlugins)
+  , fRecEvent(ref.fRecEvent)
   , fMC(ref.fMC)
   , fCFM(ref.fCFM)
   , fCorrelation(ref.fCorrelation)
   , fPIDperformance(ref.fPIDperformance)
+  , fSignalToBackgroundMC(ref.fSignalToBackgroundMC)
   , fPID(ref.fPID)
   , fCuts(ref.fCuts)
   , fSecVtx(ref.fSecVtx)
+  , fElecBackGround(ref.fElecBackGround)
   , fMCQA(ref.fMCQA)
   , fNEvents(ref.fNEvents)
   , fNElectronTracksEvent(ref.fNElectronTracksEvent)
@@ -157,6 +175,8 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fOutput(ref.fOutput)
   , fHistMCQA(ref.fHistMCQA)
   , fHistSECVTX(ref.fHistSECVTX)
+  , fHistELECBACKGROUND(ref.fHistELECBACKGROUND)
+//  , fQAcoll(ref.fQAcoll)
 {
   //
   // Copy Constructor
@@ -173,14 +193,17 @@ AliAnalysisTaskHFE &AliAnalysisTaskHFE::operator=(const AliAnalysisTaskHFE &ref)
   fQAlevel = ref.fQAlevel;
   fPIDdetectors = ref.fPIDdetectors;
   fPIDstrategy = ref.fPIDstrategy;
-  fESD = ref.fESD;
+  fPlugins = ref.fPlugins;
+  fRecEvent = ref.fRecEvent;
   fMC = ref.fMC;
   fCFM = ref.fCFM;
   fCorrelation = ref.fCorrelation;
   fPIDperformance = ref.fPIDperformance;
+  fSignalToBackgroundMC = ref.fSignalToBackgroundMC;
   fPID = ref.fPID;
   fCuts = ref.fCuts;
   fSecVtx = ref.fSecVtx;
+  fElecBackGround = ref.fElecBackGround;
   fMCQA = ref.fMCQA;
   fNEvents = ref.fNEvents;
   fNElectronTracksEvent = ref.fNElectronTracksEvent;
@@ -188,6 +211,9 @@ AliAnalysisTaskHFE &AliAnalysisTaskHFE::operator=(const AliAnalysisTaskHFE &ref)
   fOutput = ref.fOutput;
   fHistMCQA = ref.fHistMCQA;
   fHistSECVTX = ref.fHistSECVTX;
+  fHistELECBACKGROUND = ref.fHistELECBACKGROUND;
+  
+//  fQAcoll = ref.fQAcoll;
   return *this;
 }
 
@@ -196,7 +222,7 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
   //
   // Destructor
   //
-  if(fESD) delete fESD;
+  if(fRecEvent) delete fRecEvent;
   if(fMC) delete fMC;
   if(fPID) delete fPID;
   if(fQA){
@@ -215,7 +241,12 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
     fHistSECVTX->Clear();
     delete fHistSECVTX;
   }
+  if(fHistELECBACKGROUND){
+    fHistELECBACKGROUND->Clear();
+    delete fHistELECBACKGROUND;
+  }
   if(fSecVtx) delete fSecVtx;
+  if(fElecBackGround) delete fElecBackGround;
   if(fMCQA) delete fMCQA;
   if(fNEvents) delete fNEvents;
   if(fCorrelation){
@@ -223,6 +254,8 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
     delete fCorrelation;
   }
   if(fPIDperformance) delete fPIDperformance;
+  if(fSignalToBackgroundMC) delete fSignalToBackgroundMC;
+//  if(fQAcoll) delete fQAcoll;
 }
 
 //____________________________________________________________
@@ -239,19 +272,31 @@ void AliAnalysisTaskHFE::ConnectInputData(Option_t *){
     esdchain->SetBranchStatus("Tracks", 1);
   }
 */
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if(!esdH){      
-    AliError("No ESD input handler");
+  AliDebug(3, "Connecting input data");
+  AliVEventHandler *inputH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if(!inputH){
+    AliError("Analysis Manager does not have any input event handler");
     return;
-  } else {
-    fESD = esdH->GetEvent();
   }
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if(!mcH){       
-    AliError("No MC truth handler");
-    return;
+  if(IsAODanalysis()){
+    AliInfo("Analysis Mode: AOD Analysis");
+    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(inputH);
+    fRecEvent = aodH->GetEvent();
+    if(fRecEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()))
+      fMC = aodH->MCEvent();
   } else {
-    fMC = mcH->MCEvent();
+    AliInfo("Analysis Mode: ESD Analysis");
+    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(inputH);
+    fRecEvent = esdH->GetEvent();
+    if(HasMCData()){
+      AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+      if(!mcH){       
+        AliError("No MC truth handler");
+        return;
+      } else {
+        fMC = mcH->MCEvent();
+      }
+    }
   }
 }
 
@@ -267,6 +312,15 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
   // QA histograms are created if requested
   // Called once per worker
   //
+  AliDebug(3, "Creating Output Objects");
+  printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
+  printf("MC Data available %s\n", HasMCData() ? "Yes" : "No");
+
+  // example how to use the AliHFEcollection
+  //fQAcoll = new AliHFEcollection("fQAcoll", "QA");
+  //fQAcoll->CreateTH1F("fNevents", "Number of Events in the Analysis", 2, 0, 2);
+  //fQAcoll->CreateProfile("fNtrdclusters", "Number of TRD clusters as function of momentum; p[GeV/c]", 20, 0, 20);
+
   fNEvents = new TH1I("nEvents", "Number of Events in the Analysis", 2, 0, 2); // Number of Events neccessary for the analysis and not a QA histogram
   fNElectronTracksEvent = new TH1I("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
   // First Step: TRD alone
@@ -283,14 +337,15 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
   // Initialize correction Framework and Cuts
   fCFM = new AliCFManager;
   MakeParticleContainer();
-  // Temporary fix: Initialize particle cuts with 0x0
+  // Temporary fix: Initialize particle cuts with NULL
   for(Int_t istep = 0; istep < fCFM->GetParticleContainer()->GetNStep(); istep++)
-    fCFM->SetParticleCutsList(istep, 0x0);
+    fCFM->SetParticleCutsList(istep, NULL);
   if(!fCuts){
     AliWarning("Cuts not available. Default cuts will be used");
     fCuts = new AliHFEcuts;
     fCuts->CreateStandardCuts();
   }
+  if(IsAODanalysis()) fCuts->SetAOD();
   fCuts->Initialize(fCFM);
   if(fCuts->IsInDebugMode()) fQA->Add(fCuts->GetQAhistograms());
  
@@ -298,7 +353,8 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
   fOutput->AddAt(fCFM->GetParticleContainer(), 0);
   fOutput->AddAt(fCorrelation, 1);
   fOutput->AddAt(fPIDperformance, 2);
-  fOutput->AddAt(fNElectronTracksEvent, 3);
+  fOutput->AddAt(fSignalToBackgroundMC, 3);
+  fOutput->AddAt(fNElectronTracksEvent, 4);
 
   // Initialize PID
   if(IsQAOn(kPIDqa)){
@@ -315,7 +371,7 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
     fPID->InitializePID(fPIDdetectors.Data());     // Only restrictions to TPC allowed 
 
   // mcQA----------------------------------
-  if (IsQAOn(kMCqa)) {
+  if (HasMCData() && IsQAOn(kMCqa)) {
     AliInfo("MC QA on");
     if(!fMCQA) fMCQA = new AliHFEmcQA;
     if(!fHistMCQA) fHistMCQA = new TList();
@@ -346,27 +402,26 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
   } 
 
   // secvtx----------------------------------
-  if (IsSecVtxOn()) {
+  if (GetPlugin(kSecVtx)) {
     AliInfo("Secondary Vertex Analysis on");
     fSecVtx = new AliHFEsecVtx;
+    fSecVtx->SetHasMCData(HasMCData());
 
     if(!fHistSECVTX) fHistSECVTX = new TList();
-    fHistSECVTX->SetName("SecVtx");
-    fSecVtx->CreateHistograms("secvtx_");
-    TIter next(gDirectory->GetList());
-    TObject *obj;
-    int counter = 0;
-    TString objname;
-    while ((obj = next.Next())) {
-      objname = obj->GetName();
-      TObjArray *toks = objname.Tokenize("_");
-      if (toks->GetEntriesFast()){
-        TObjString *fpart = (TObjString *)(toks->UncheckedAt(0));
-        if ((fpart->String()).CompareTo("secvtx") == 0) fHistSECVTX->AddAt(obj, counter++);
-      }
-    }
+    fSecVtx->CreateHistograms(fHistSECVTX);
     fOutput->Add(fHistSECVTX);
-  } 
+  }
+  
+  // background----------------------------------
+  if (GetPlugin(kIsElecBackGround)) {
+    AliInfo("Electron BackGround Analysis on");
+    fElecBackGround = new AliHFEelecbackground;
+    fElecBackGround->SetHasMCData(HasMCData());
+
+    if(!fHistELECBACKGROUND) fHistELECBACKGROUND = new TList();
+    fElecBackGround->CreateHistograms(fHistELECBACKGROUND);
+    fOutput->Add(fHistELECBACKGROUND);
+  }  
 }
 
 //____________________________________________________________
@@ -374,267 +429,32 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
   //
   // Run the analysis
   // 
-  if(!fESD){
-    AliError("No ESD Event");
+  AliDebug(3, "Starting Single Event Analysis");
+  if(!fRecEvent){
+    AliError("Reconstructed Event not available");
     return;
   }
-  if(!fMC){
-    AliError("No MC Event");
-    return;
+  if(HasMCData()){
+    AliDebug(4, Form("MC Event: %p", fMC));
+    if(!fMC){
+      AliError("No MC Event, but MC Data required");
+      return;
+    }
   }
   if(!fCuts){
     AliError("HFE cuts not available");
     return;
   }
 
-  //fCFM->CheckEventCuts(AliCFManager::kEvtGenCuts, fMC);
-  Double_t container[6];
-  // container for the output THnSparse
-  Double_t dataE[5]; // [pT, eta, Phi, type, 'C' or 'B']
+  if(HasMCData()) ProcessMC();  // Run the MC loop + MC QA in case MC Data are available
 
-  // Loop over the Monte Carlo tracks to see whether we have overlooked any track
-  AliMCParticle *mctrack = 0x0;
-  Int_t nElectrons = 0;
-
-  if (IsSecVtxOn()) { 
-    fSecVtx->SetEvent(fESD);
-    fSecVtx->SetStack(fMC->Stack());
-  }
-
-  // run mc QA ------------------------------------------------
-  if (IsQAOn(kMCqa)) {
-    AliDebug(2, "Running MC QA");
-
-    fMCQA->SetStack(fMC->Stack());
-    fMCQA->Init();
-
-    Int_t nMCTracks = fMC->Stack()->GetNtrack();
-
-    // loop over all tracks for decayed electrons
-    for (Int_t igen = 0; igen < nMCTracks; igen++){
-      TParticle* mcpart = fMC->Stack()->Particle(igen);
-      fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kCharm);
-      fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kBeauty);
-      fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kCharm);
-      fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kBeauty);
-      fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 0); // no accept cut
-      fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG, 0); // no accept cut
-      if (TMath::Abs(mcpart->Eta()) < 0.9) {
-        fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 1); // accept |eta|<0.9
-        fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG, 1); // accept |eta|<0.9
-      }
-      if (TMath::Abs(GetRapidity(mcpart)) < 0.5) {
-        fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 2); // accept |y|<0.5
-        fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG, 2); // accept |y|<0.5
-      }
-    }
-    fMCQA->EndOfEventAna(AliHFEmcQA::kCharm);
-    fMCQA->EndOfEventAna(AliHFEmcQA::kBeauty);
-
-  } // end of MC QA loop
-  // -----------------------------------------------------------------
-
-  //
-  // Loop MC
-  //
-  fCFM->SetMCEventInfo(fMC);
-  for(Int_t imc = fMC->GetNumberOfTracks(); imc--;){
-    mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(imc));
-
-    container[0] = mctrack->Pt();
-    container[1] = mctrack->Eta();
-    container[2] = mctrack->Phi();
-
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) continue;
-    fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepMCGenerated);
-    if(IsSignalElectron(mctrack)) fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepMCsignal);
-    (dynamic_cast<TH1F *>(fQA->At(2)))->Fill(mctrack->Phi() - TMath::Pi());
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCInAcceptance, mctrack)) continue;
-    // find the label in the vector
-    fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepMCInAcceptance);
-    nElectrons++;
-  }
-  (dynamic_cast<TH1F *>(fQA->At(3)))->Fill(nElectrons);
-
-  // fCFM->CheckEventCuts(AliCFManager::kEvtRecCuts, fESD);
-        
-
-  //
-  // Loop ESD
-  //
-  Int_t nElectronCandidates = 0;
-  AliESDtrack *track = 0x0, *htrack = 0x0;
-  Int_t pid = 0;
-  // For double counted tracks
-  LabelContainer cont(fESD->GetNumberOfTracks());
-  Bool_t alreadyseen = kFALSE;
-
-  Bool_t signal = kTRUE;
-
-  fCFM->SetRecEventInfo(fESD);
-  for(Int_t itrack = 0; itrack < fESD->GetNumberOfTracks(); itrack++){
-    
-    track = fESD->GetTrack(itrack);
-          
-    container[0] = track->Pt();
-    container[1] = track->Eta();
-    container[2] = track->Phi();
-
-    dataE[0] = track->Pt();
-    dataE[1] = track->Eta();
-    dataE[2] = track->Phi();
-    dataE[3] = -1;
-    dataE[4] = -1;
-
-    signal = kTRUE;
-          
-    // RecKine: ITSTPC cuts  
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
-    
-    // Check if it is electrons near the vertex
-    if(!(mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
-    TParticle* mctrack4QA = fMC->Stack()->Particle(TMath::Abs(track->GetLabel()));
-
-    container[3] = mctrack->Pt();
-    container[4] = mctrack->Eta();
-    container[5] = mctrack->Phi();
-    
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE;
-    
-    if(signal) {
-      alreadyseen = cont.Find(TMath::Abs(track->GetLabel()));
-      cont.Append(TMath::Abs(track->GetLabel()));
-      
-      fCFM->GetParticleContainer()->Fill(&container[3], AliHFEcuts::kStepRecKineITSTPC);
-      fCFM->GetParticleContainer()->Fill(&container[0], (AliHFEcuts::kStepRecKineITSTPC + 2*(AliHFEcuts::kNcutESDSteps + 1)));
-      if(alreadyseen) {
-        fCFM->GetParticleContainer()->Fill(&container[3], (AliHFEcuts::kStepRecKineITSTPC + (AliHFEcuts::kNcutESDSteps + 1)));
-      }
-    }
-
-    // Check TRD criterions (outside the correction framework)
-    if(track->GetTRDncls()){
-      (dynamic_cast<TH1F *>(fQA->At(6)))->Fill(track->GetTRDchi2()/track->GetTRDncls());
-      (dynamic_cast<TH1F *>(fQA->At(1)))->Fill(track->GetAlpha());    // Check the acceptance without tight cuts
-      (dynamic_cast<TProfile *>(fQA->At(4)))->Fill(container[0], track->GetTRDpidQuality());
-      (dynamic_cast<TProfile *>(fQA->At(5)))->Fill(container[0], track->GetTRDncls());
-    }
-
-    
-    // RecPrim
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecPrim, track)) continue;
-    if(signal) {
-      fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepRecPrim + 2*(AliHFEcuts::kNcutESDSteps + 1));
-      fCFM->GetParticleContainer()->Fill(&container[3], AliHFEcuts::kStepRecPrim);
-      if(alreadyseen) {
-        fCFM->GetParticleContainer()->Fill(&container[3], AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutESDSteps + 1);
-      }
-    }
-
-
-    // HFEcuts: ITS layers cuts
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-    if(signal) {
-      fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepHFEcutsITS + 2*(AliHFEcuts::kNcutESDSteps + 1));
-      fCFM->GetParticleContainer()->Fill(&container[3], AliHFEcuts::kStepHFEcutsITS);
-      if(alreadyseen) {
-        fCFM->GetParticleContainer()->Fill(&container[3], AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutESDSteps + 1);
-      }
-    }
-
-    // HFEcuts: Nb of tracklets TRD0
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD, track)) continue;
-    if(signal) {
-      fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepHFEcutsTRD + 2*(AliHFEcuts::kNcutESDSteps + 1));
-      fCFM->GetParticleContainer()->Fill(&container[3], AliHFEcuts::kStepHFEcutsTRD);
-      if(alreadyseen) {
-        fCFM->GetParticleContainer()->Fill(&container[3], (AliHFEcuts::kStepHFEcutsTRD + (AliHFEcuts::kNcutESDSteps + 1)));
-      }
-      // dimensions 3&4&5 : pt,eta,phi (MC)
-      ((THnSparseF *)fCorrelation->At(0))->Fill(container);
-    }
-
-   if (IsQAOn(kMCqa)) {
-     // mc qa for after the reconstruction cuts  
-     AliDebug(2, "Running MC QA");
-     fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 3);  // charm
-     fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kBeauty,  AliHFEmcQA::kElectronPDG, 3); // beauty 
-    } 
-
-    // track accepted, do PID
-    AliHFEpidObject hfetrack;
-    hfetrack.fAnalysisType = AliHFEpidObject::kESDanalysis;
-    hfetrack.fRecTrack = track;
-    if(HasMCData()) hfetrack.fMCtrack = mctrack;
-    if(!fPID->IsSelected(&hfetrack)) continue;
-    nElectronCandidates++;
-
-   if (IsQAOn(kMCqa)) {
-     // mc qa for after the reconstruction and pid cuts  
-     AliDebug(2, "Running MC QA");
-     fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 4);  // charm
-     fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kBeauty,  AliHFEmcQA::kElectronPDG, 4); // beauty 
-    } 
-
-    // Fill Containers
-    if(signal) {
-      fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepHFEcutsTRD +1 + 2*(AliHFEcuts::kNcutESDSteps + 1));
-      fCFM->GetParticleContainer()->Fill(&container[3], AliHFEcuts::kStepHFEcutsTRD + 1);
-      if(alreadyseen) {
-        fCFM->GetParticleContainer()->Fill(&container[3], (AliHFEcuts::kStepHFEcutsTRD + 1 + (AliHFEcuts::kNcutESDSteps + 1)));
-      }
-      // dimensions 3&4&5 : pt,eta,phi (MC)
-      ((THnSparseF *)fCorrelation->At(1))->Fill(container);
-    }
-
-    // Track selected: distinguish between true and fake
-    AliDebug(1, Form("Candidate Selected, filling THnSparse, PID: %d\n", mctrack->Particle()->GetPdgCode()));
-    if((pid = TMath::Abs(mctrack->Particle()->GetPdgCode())) == 11){
-      Int_t type = IsSignalElectron(track);
-      AliDebug(1, Form("Type: %d\n", type));
-      if(type){
-	      dataE[4] = type; // beauty[1] or charm[2]
-	      dataE[3] = 2;  // signal electron
-      }
-      else{
-	      dataE[3] = 1; // not a signal electron
-	      dataE[4] = 0;
-      }
-      // pair analysis [mj]
-      if (IsSecVtxOn()) {
-        AliDebug(2, "Running Secondary Vertex Analysis");
-        fSecVtx->InitAnaPair();
-        for(Int_t jtrack = 0; jtrack < fESD->GetNumberOfTracks(); jtrack++){
-          htrack = fESD->GetTrack(jtrack);
-          if ( itrack == jtrack ) continue;
-          //if( fPID->IsSelected(htrack) && (itrack < jtrack)) continue;
-          if( abs(fSecVtx->GetMCPID(track)) == 11 && (itrack < jtrack)) continue;
-          fSecVtx->AnaPair(track, htrack, jtrack);
-        }
-        // based on the partner of e info, you run secandary vertexing function
-        fSecVtx->RunSECVTX(track);
-      } // end of pair analysis
-    } 
-    else {
-      // Fill THnSparse with the information for Fake Electrons
-      dataE[3] = 0;
-      dataE[4] = 0;
-    }
-    // fill the performance THnSparse, if the mc origin could be defined
-    if(dataE[3] > -1){
-      AliDebug(1, Form("Entries: [%.3f|%.3f|%.3f|%f|%f]\n", dataE[0],dataE[1],dataE[2],dataE[3],dataE[4]));
-      fPIDperformance->Fill(dataE);
-    }
-  }
-  
- 
-  fNEvents->Fill(1);
-  fNElectronTracksEvent->Fill(nElectronCandidates);
-  
+  if(IsAODanalysis()) ProcessAOD();
+  else ProcessESD();
   // Done!!!
   PostData(0, fNEvents);
   PostData(1, fOutput);
   PostData(2, fQA);
+//  PostData(3, fQAcoll->GetList());
 }
 
 //____________________________________________________________
@@ -642,7 +462,7 @@ void AliAnalysisTaskHFE::Terminate(Option_t *){
   //
   // Terminate not implemented at the moment
   //
-  if(IsRunningPostProcess()){
+  if(GetPlugin(kPostProcess)){
     fOutput = dynamic_cast<TList *>(GetOutputData(1));
     if(!fOutput){
       AliError("Results not available");
@@ -685,6 +505,423 @@ void AliAnalysisTaskHFE::Load(TString filename){
   if(fOutput) nObjects++;
   if(fQA) nObjects++;
   AliInfo(Form("Loaded %d Objects into task", nObjects));
+}
+
+//____________________________________________________________
+void AliAnalysisTaskHFE::ProcessMC(){
+  //
+  // Runs the MC Loop (filling the container for the MC Cut Steps with the observables pt, eta and phi)
+  // In case MC QA is on also MC QA loop is done
+  //
+  AliDebug(3, "Processing MC Information");
+  Int_t nElectrons = 0;
+  if(IsESDanalysis()){
+    if (HasMCData() && IsQAOn(kMCqa)) {
+      AliDebug(2, "Running MC QA");
+
+      fMCQA->SetStack(fMC->Stack());
+      fMCQA->SetGenEventHeader(fMC->GenEventHeader());
+      fMCQA->Init();
+
+      Int_t nMCTracks = fMC->Stack()->GetNtrack();
+
+      // loop over all tracks for decayed electrons
+      for (Int_t igen = 0; igen < nMCTracks; igen++){
+        TParticle* mcpart = fMC->Stack()->Particle(igen);
+        fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kCharm);
+        fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kBeauty);
+        fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kCharm);
+        fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kBeauty);
+        fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 0); // no accept cut
+        fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG, 0); // no accept cut
+        if (TMath::Abs(mcpart->Eta()) < 0.9) {
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 1); // accept |eta|<0.9
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG, 1); // accept |eta|<0.9
+          }
+        if (TMath::Abs(GetRapidity(mcpart)) < 0.5) {
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 2); // accept |y|<0.5
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG, 2); // accept |y|<0.5
+        }
+      }
+      fMCQA->EndOfEventAna(AliHFEmcQA::kCharm);
+      fMCQA->EndOfEventAna(AliHFEmcQA::kBeauty);
+
+    } // end of MC QA loop
+    // -----------------------------------------------------------------
+    fCFM->SetMCEventInfo(fMC);
+    // fCFM->CheckEventCuts(AliCFManager::kEvtRecCuts, fESD);
+  } else {
+    fCFM->SetMCEventInfo(fRecEvent);
+  }
+  // Run MC loop
+  for(Int_t imc = fMC->GetNumberOfTracks(); imc--;){
+    if(ProcessMCtrack(fMC->GetTrack(imc))) nElectrons++;
+  }
+
+  // fCFM->CheckEventCuts(AliCFManager::kEvtRecCuts, fESD);
+  (dynamic_cast<TH1F *>(fQA->At(3)))->Fill(nElectrons);
+}
+
+//____________________________________________________________
+void AliAnalysisTaskHFE::ProcessESD(){
+  //
+  // Run Analysis of reconstructed event in ESD Mode
+  // Loop over Tracks, filter according cut steps defined in AliHFEcuts
+  //
+  AliDebug(3, "Processing ESD Event");
+  AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fRecEvent);
+  if(!fESD){
+    AliError("ESD Event required for ESD Analysis")
+    return;
+  }
+  if (GetPlugin(kIsElecBackGround)) { 
+    fElecBackGround->SetEvent(fESD);
+  }
+  if (GetPlugin(kSecVtx)) {
+    fSecVtx->SetEvent(fESD);
+    fSecVtx->GetPrimaryCondition();
+  }
+
+  if(HasMCData()){
+    if (GetPlugin(kSecVtx)) { 
+      fSecVtx->SetStack(fMC->Stack());
+    }
+    if (GetPlugin(kIsElecBackGround)) { 
+      fElecBackGround->SetMCEvent(fMC);
+    }
+  }
+
+
+  Double_t container[6];
+  memset(container, 0, sizeof(Double_t) * 6);
+  // container for the output THnSparse
+  Double_t dataE[5]; // [pT, eta, Phi, type, 'C' or 'B']
+  Int_t nElectronCandidates = 0;
+  AliESDtrack *track = NULL, *htrack = NULL;
+  AliMCParticle *mctrack = NULL;
+  TParticle* mctrack4QA = NULL;
+  Int_t pid = 0;
+  // For double counted tracks
+  LabelContainer cont(fESD->GetNumberOfTracks());
+  Bool_t alreadyseen = kFALSE;
+
+  Bool_t signal = kTRUE;
+
+  fCFM->SetRecEventInfo(fESD);
+  //
+  // Loop ESD
+  //
+  for(Int_t itrack = 0; itrack < fESD->GetNumberOfTracks(); itrack++){
+    
+    track = fESD->GetTrack(itrack);
+          
+    container[0] = track->Pt();
+    container[1] = track->Eta();
+    container[2] = track->Phi();
+
+    dataE[0] = track->Pt();
+    dataE[1] = track->Eta();
+    dataE[2] = track->Phi();
+    dataE[3] = -1;
+    dataE[4] = -1;
+
+    signal = kTRUE;
+          
+    // RecKine: ITSTPC cuts  
+    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+    
+    if(HasMCData()){
+      // Check if it is electrons near the vertex
+      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
+      mctrack4QA = fMC->Stack()->Particle(TMath::Abs(track->GetLabel()));
+
+      container[3] = mctrack->Pt();
+      container[4] = mctrack->Eta();
+      container[5] = mctrack->Phi();
+    
+      if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE;
+    }
+    
+    if(signal) {
+      alreadyseen = cont.Find(TMath::Abs(track->GetLabel()));
+      cont.Append(TMath::Abs(track->GetLabel()));
+      
+      fCFM->GetParticleContainer()->Fill(&container[3], AliHFEcuts::kStepRecKineITSTPC);
+      fCFM->GetParticleContainer()->Fill(&container[0], (AliHFEcuts::kStepRecKineITSTPC + 2*(AliHFEcuts::kNcutESDSteps + 1)));
+      if(alreadyseen) {
+        fCFM->GetParticleContainer()->Fill(&container[3], (AliHFEcuts::kStepRecKineITSTPC + (AliHFEcuts::kNcutESDSteps + 1)));
+      }
+    }
+
+    // Check TRD criterions (outside the correction framework)
+    if(track->GetTRDncls()){
+      (dynamic_cast<TH1F *>(fQA->At(6)))->Fill(track->GetTRDchi2()/track->GetTRDncls());
+      (dynamic_cast<TH1F *>(fQA->At(1)))->Fill(track->GetAlpha());    // Check the acceptance without tight cuts
+      (dynamic_cast<TProfile *>(fQA->At(4)))->Fill(container[0], track->GetTRDpidQuality());
+      (dynamic_cast<TProfile *>(fQA->At(5)))->Fill(container[0], track->GetTRDncls());
+      //fQAcoll->Fill("fNtrdclusters", container[0], track->GetTRDncls());
+    }
+
+    
+    // RecPrim
+    if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track, container, signal, alreadyseen)) continue;
+
+    // HFEcuts: ITS layers cuts
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track, container, signal, alreadyseen)) continue;
+
+    // HFEcuts: Nb of tracklets TRD0
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTRD, track, container, signal, alreadyseen)) continue;
+    if(signal) {
+      // dimensions 3&4&5 : pt,eta,phi (MC)
+      ((THnSparseF *)fCorrelation->At(0))->Fill(container);
+    }
+
+    if(HasMCData() && IsQAOn(kMCqa)) {
+      // mc qa for after the reconstruction cuts  
+      AliDebug(2, "Running MC QA");
+      fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 3);  // charm
+      fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kBeauty,  AliHFEmcQA::kElectronPDG, 3); // beauty 
+    } 
+
+    // track accepted, do PID
+    AliHFEpidObject hfetrack;
+    hfetrack.fAnalysisType = AliHFEpidObject::kESDanalysis;
+    hfetrack.fRecTrack = track;
+    if(HasMCData()) hfetrack.fMCtrack = mctrack;
+    if(!fPID->IsSelected(&hfetrack)) continue;
+    nElectronCandidates++;
+
+    if (HasMCData() && IsQAOn(kMCqa)) {
+      // mc qa for after the reconstruction and pid cuts  
+      AliDebug(2, "Running MC QA");
+      fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 4);  // charm
+      fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kBeauty,  AliHFEmcQA::kElectronPDG, 4); // beauty 
+    } 
+
+    // Fill Containers
+    if(signal) {
+      fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepHFEcutsTRD +1 + 2*(AliHFEcuts::kNcutESDSteps + 1));
+      fCFM->GetParticleContainer()->Fill(&container[3], AliHFEcuts::kStepHFEcutsTRD + 1);
+      if(alreadyseen) {
+        fCFM->GetParticleContainer()->Fill(&container[3], (AliHFEcuts::kStepHFEcutsTRD + 1 + (AliHFEcuts::kNcutESDSteps + 1)));
+      }
+      // dimensions 3&4&5 : pt,eta,phi (MC)
+      ((THnSparseF *)fCorrelation->At(1))->Fill(container);
+    }
+
+    if(GetPlugin(kSecVtx)) {
+      AliDebug(2, "Running Secondary Vertex Analysis");
+      if(track->Pt()>0.5){
+        fSecVtx->InitHFEpairs();
+        fSecVtx->InitHFEsecvtxs();
+        AliESDtrack *htrack = 0x0; 
+        for(Int_t jtrack = 0; jtrack < fESD->GetNumberOfTracks(); jtrack++){
+          htrack = fESD->GetTrack(jtrack);
+          if ( itrack == jtrack ) continue; // since it is for tagging single electron, don't need additional condition 
+          if (htrack->Pt()<0.5) continue;
+          if (!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC, htrack)) continue;
+          if (!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecPrim, htrack)) continue;
+          fSecVtx->PairAnalysis(track, htrack, jtrack); // e-h pairing
+        }
+        /*for(int ip=0; ip<fSecVtx->HFEpairs()->GetEntriesFast(); ip++){
+          AliHFEpairs *pair = (AliHFEpairs*) (fSecVtx->HFEpairs()->UncheckedAt(ip));
+          if(HasMCData()){
+            if(!(pair->GetPairCode()>1. && pair->GetPairCode()<4.))  // apply various cuts
+              fSecVtx->HFEpairs()->RemoveAt(ip);
+          }
+        }*/
+        fSecVtx->HFEpairs()->Compress();
+        fSecVtx->RunSECVTX(track); // secondary vertexing with e,h1,h2,.. tracks
+        for(int ip=0; ip<fSecVtx->HFEsecvtxs()->GetEntriesFast(); ip++){
+          AliHFEsecVtxs *secvtx=0x0;
+          secvtx = (AliHFEsecVtxs*) (fSecVtx->HFEsecvtxs()->UncheckedAt(ip));
+          // here you apply cuts, then if it doesn't pass the cut, remove it from the fSecVtx->HFEsecvtxs() 
+        }
+        fSecVtx->DeleteHFEpairs();
+        fSecVtx->DeleteHFEsecvtxs();
+      }
+    }
+
+    if(HasMCData()){
+      // Track selected: distinguish between true and fake
+      AliDebug(1, Form("Candidate Selected, filling THnSparse, PID: %d\n", mctrack->Particle()->GetPdgCode()));
+      if((pid = TMath::Abs(mctrack->Particle()->GetPdgCode())) == 11){
+        Int_t type = IsSignalElectron(track);
+        AliDebug(1, Form("Type: %d\n", type));
+        if(type){
+	        dataE[4] = type; // beauty[1] or charm[2]
+	        dataE[3] = 2;  // signal electron
+        }
+        else{
+	        dataE[3] = 1; // not a signal electron
+	        dataE[4] = 0;
+        }
+      } 
+      else {
+        // Fill THnSparse with the information for Fake Electrons
+        dataE[3] = 0;
+        dataE[4] = 0;
+      }
+      // fill the performance THnSparse, if the mc origin could be defined
+      if(dataE[3] > -1){
+        AliDebug(1, Form("Entries: [%.3f|%.3f|%.3f|%f|%f]\n", dataE[0],dataE[1],dataE[2],dataE[3],dataE[4]));
+        fPIDperformance->Fill(dataE);
+      }
+    }
+    // Electron background analysis 
+    if (GetPlugin(kIsElecBackGround)) {
+      
+      AliDebug(2, "Running BackGround Analysis");
+      
+      for(Int_t jtrack = 0; jtrack < fESD->GetNumberOfTracks(); jtrack++){
+	      htrack = fESD->GetTrack(jtrack);
+      	if ( itrack == jtrack ) continue;  
+      	fElecBackGround->PairAnalysis(track, htrack); 
+      }
+    } // end of electron background analysis
+
+  }
+  fNEvents->Fill(1);
+  //fQAcoll->Fill("fNevents", 1);
+  fNElectronTracksEvent->Fill(nElectronCandidates);
+}
+
+//____________________________________________________________
+void AliAnalysisTaskHFE::ProcessAOD(){
+  //
+  // Run Analysis in AOD Mode
+  // Function is still in development
+  //
+  AliDebug(3, "Processing AOD Event");
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fRecEvent);
+  if(!fAOD){
+    AliError("AOD Event required for AOD Analysis")
+    return;
+  }
+ 
+  AliAODTrack *track = NULL;
+  AliAODMCParticle *mctrack = NULL;
+  Double_t container[6]; memset(container, 0, sizeof(Double_t) * 6);
+  Double_t dataE[5]; // [pT, eta, Phi, type, 'C' or 'B']
+  Int_t nElectronCandidates = 0;
+  Int_t pid;
+  for(Int_t itrack = 0; itrack < fAOD->GetNumberOfTracks(); itrack++){
+    track = fAOD->GetTrack(itrack);
+    if(!track) continue;
+    if(track->GetFlags() != 1<<4) continue;  // Only process AOD tracks where the HFE is set
+
+    container[0] = track->Pt();
+    container[1] = track->Eta();
+    container[2] = track->Phi();
+
+    dataE[0] = track->Pt();
+    dataE[1] = track->Eta();
+    dataE[2] = track->Phi();
+    dataE[3] = -1;
+    dataE[4] = -1;
+    
+    if(HasMCData()){
+      Int_t label = TMath::Abs(track->GetLabel());
+      if(label){
+        mctrack = dynamic_cast<AliAODMCParticle *>(fMC->GetTrack(label));
+        container[3] = mctrack->Pt();
+        container[4] = mctrack->Eta();
+        container[5] = mctrack->Phi();
+      }
+    }
+    // track accepted, do PID
+    AliHFEpidObject hfetrack;
+    hfetrack.fAnalysisType = AliHFEpidObject::kAODanalysis;
+    hfetrack.fRecTrack = track;
+    if(HasMCData()) hfetrack.fMCtrack = mctrack;
+    //if(!fPID->IsSelected(&hfetrack)) continue;    // we will do PID here as soon as possible
+    // Particle identified - Fill CF Container
+    fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepHFEcutsTRD +1 + 2*(AliHFEcuts::kNcutESDSteps + 1));
+    nElectronCandidates++;    
+    if(HasMCData()){
+      // Track selected: distinguish between true and fake
+      AliDebug(1, Form("Candidate Selected, filling THnSparse, PID: %d\n", mctrack->GetPdgCode()));
+      if((pid = TMath::Abs(mctrack->GetPdgCode())) == 11){
+        Int_t type = IsSignalElectron(track);
+        AliDebug(1, Form("Type: %d\n", type));
+        if(type){
+	        dataE[4] = type; // beauty[1] or charm[2]
+	        dataE[3] = 2;  // signal electron
+        }
+        else{
+	        dataE[3] = 1; // not a signal electron
+	        dataE[4] = 0;
+        }
+      } 
+      else {
+        // Fill THnSparse with the information for Fake Electrons
+        dataE[3] = 0;
+        dataE[4] = 0;
+      }
+      // fill the performance THnSparse, if the mc origin could be defined
+      if(dataE[3] > -1){
+        AliDebug(1, Form("Entries: [%.3f|%.3f|%.3f|%f|%f]\n", dataE[0],dataE[1],dataE[2],dataE[3],dataE[4]));
+        fPIDperformance->Fill(dataE);
+      }
+    }
+  }
+  fNEvents->Fill(1);
+  fNElectronTracksEvent->Fill(nElectronCandidates);
+}
+
+//____________________________________________________________
+Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
+  //
+  // Filter the Monte Carlo Track
+  // Additionally Fill a THnSparse for Signal To Background Studies
+  // Works for AOD and MC analysis Type
+  //
+  Double_t container[3], signalContainer[5];
+  Double_t vertex[3]; // Production vertex cut to mask gammas which are NOT supposed to have hits in the first ITS layer(s)
+  if(IsESDanalysis()){
+    AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(track);
+    container[0] = mctrack->Pt();
+    container[1] = mctrack->Eta();
+    container[2] = mctrack->Phi();
+
+    signalContainer[0] = mctrack->Pt();
+    signalContainer[1] = mctrack->Eta();
+    signalContainer[2] = mctrack->Phi();
+
+    vertex[0] = mctrack->Particle()->Vx();
+    vertex[1] = mctrack->Particle()->Vy();
+  } else {
+    AliAODMCParticle *aodmctrack = dynamic_cast<AliAODMCParticle *>(track);
+    container[0] = aodmctrack->Pt();
+    container[1] = aodmctrack->Eta();
+    container[2] = aodmctrack->Phi();
+
+    signalContainer[0] = aodmctrack->Pt();
+    signalContainer[1] = aodmctrack->Eta();
+    signalContainer[2] = aodmctrack->Phi();
+
+    aodmctrack->XvYvZv(vertex);
+  }
+
+  if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, track)) return kFALSE;
+  fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepMCGenerated);
+  if((signalContainer[3] = static_cast<Double_t >(IsSignalElectron(track))) > 1e-3) fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepMCsignal);
+  signalContainer[4] = 0;
+  // apply cut on the sqrt of the production vertex
+  Double_t radVertex = TMath::Sqrt(vertex[0]*vertex[0] + vertex[1] * vertex[1]);
+  if(radVertex < 3.5){
+    // Within first ITS layer(2) -> Background we cannot reject by ITS cut, let it pass
+    signalContainer[4] = 1;
+  } else if (radVertex < 7.5){
+    signalContainer[4] = 2;
+  }
+  fSignalToBackgroundMC->Fill(signalContainer);
+  (dynamic_cast<TH1F *>(fQA->At(2)))->Fill(container[2] - TMath::Pi());
+  //if(IsESDanalysis()){
+    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCInAcceptance, track)) return kFALSE;
+    fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepMCInAcceptance);
+  //}
+  return kTRUE;
 }
 
 //____________________________________________________________
@@ -879,6 +1116,63 @@ void AliAnalysisTaskHFE::PostProcess(){
 }
 
 //____________________________________________________________
+void AliAnalysisTaskHFE::DrawMCSignal2Background(){
+  //
+  // Draw the MC signal/background plots
+  //
+  fSignalToBackgroundMC = dynamic_cast<THnSparseF *>(fOutput->FindObject("SignalToBackgroundMC"));
+  if(!fSignalToBackgroundMC) return;
+
+  // First Select everything within the first ITS Layer
+  fSignalToBackgroundMC->GetAxis(4)->SetRange(2,2);
+  // For Signal electrons we project axis 3 to everything > 0
+  fSignalToBackgroundMC->GetAxis(3)->SetRange(2,3);
+  TH1 *hSignal = fSignalToBackgroundMC->Projection(0);
+  hSignal->SetName("hSignal");
+  hSignal->SetTitle("Signal Electrons");
+  // For Background studies project axis 3 to bin 0
+  fSignalToBackgroundMC->GetAxis(3)->SetRange(1,1);
+  TH1 *hBackground = fSignalToBackgroundMC->Projection(0); 
+  hBackground->SetName("hBackground");
+  hBackground->SetTitle("Background Electrons");
+  // For All electrons we undo the projection of axis 3
+  fSignalToBackgroundMC->GetAxis(3)->SetRange(0, fSignalToBackgroundMC->GetAxis(3)->GetNbins());
+  TH1 *hAll = fSignalToBackgroundMC->Projection(0);
+  hAll->SetName("hAll");
+  hAll->SetTitle("All Electrons");
+  // Prepare Canvas
+  TCanvas *cEff = new TCanvas("cEff", "MC Sig/Backg studies", 800, 400);
+  cEff->Divide(2);
+  // Plot Efficiency
+  TH1 *hEff = (TH1 *)hSignal->Clone();
+  hEff->Divide(hAll);
+  hEff->SetName("sigEff");
+  hEff->SetTitle("Signal/(Signal+Background)");
+  hEff->GetXaxis()->SetTitle("p_{T} / GeV/c");
+  hEff->GetYaxis()->SetTitle("Efficiency");
+  hEff->SetStats(kFALSE);
+  hEff->SetMarkerStyle(22);
+  hEff->SetMarkerColor(kBlue);
+  cEff->cd(1);
+  hEff->Draw("p");
+  // Plot Signal/Background
+  TH1 *hSB = (TH1 *)hSignal->Clone();
+  hSB->Divide(hBackground);
+  hSB->SetName("sigEff");
+  hSB->SetTitle("Signal/Background");
+  hSB->GetXaxis()->SetTitle("p_{T} / GeV/c");
+  hSB->GetYaxis()->SetTitle("Signal/Background");
+  hSB->SetStats(kFALSE);
+  hSB->SetMarkerStyle(22);
+  hSB->SetMarkerColor(kBlue);
+  cEff->cd(2);
+  hSB->Draw("p");
+
+  // Undo projections
+  fSignalToBackgroundMC->GetAxis(4)->SetRange(0, fSignalToBackgroundMC->GetAxis(4)->GetNbins());
+}
+
+//____________________________________________________________
 void AliAnalysisTaskHFE::MakeParticleContainer(){
   //
   // Create the particle container for the correction framework manager and 
@@ -953,9 +1247,12 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
   for(Int_t i=0; i<=nBin[3]; i++) binEdges2[3][i] = i;
   for(Int_t i=0; i<=nBin[4]; i++) binEdges2[4][i] = i;
 
-  fPIDperformance = new THnSparseF("PIDperformance", "PID performance; pT [GeV/c]; theta [rad]; phi [rad] type (0 - not el, 1 - other el, 2 - HF el; flavor (0 - no, 1 - charm, 2 - bottom)", nDim, nBin);
-  for(Int_t idim = 0; idim < nDim; idim++)
+  fPIDperformance = new THnSparseF("PIDperformance", "PID performance; pT [GeV/c]; theta [rad]; phi [rad]; type (0 - not el, 1 - other el, 2 - HF el; flavor (0 - no, 1 - charm, 2 - bottom)", nDim, nBin);
+  fSignalToBackgroundMC = new THnSparseF("SignalToBackgroundMC", "PID performance; pT [GeV/c]; theta [rad]; phi [rad]; flavor (0 - no, 1 - charm, 2 - bottom); ITS Cluster (0 - no, 1 - first (and maybe second), 2 - second)", nDim, nBin);
+  for(Int_t idim = 0; idim < nDim; idim++){
     fPIDperformance->SetBinEdges(idim, binEdges2[idim]);
+    fSignalToBackgroundMC->SetBinEdges(idim, binEdges2[idim]); 
+  }
 }
 
 //____________________________________________________________
@@ -975,8 +1272,8 @@ void AliAnalysisTaskHFE::PrintStatus() const {
   // Print Analysis status
   //
   printf("\n\tAnalysis Settings\n\t========================================\n\n");
-  printf("\tSecondary Vertex finding: %s\n", IsSecVtxOn() ? "YES" : "NO");
-  printf("\tPrimary Vertex resolution: %s\n", IsPriVtxOn() ? "YES" : "NO");
+  printf("\tSecondary Vertex finding: %s\n", GetPlugin(kSecVtx) ? "YES" : "NO");
+  printf("\tPrimary Vertex resolution: %s\n", GetPlugin(kPriVtx) ? "YES" : "NO");
   printf("\n");
   printf("\tParticle Identification Detectors:\n");
   TObjArray *detectors = fPIDdetectors.Tokenize(":");
@@ -1047,35 +1344,56 @@ Int_t AliAnalysisTaskHFE::IsSignalElectron(AliVParticle *fTrack) const{
     kCharm = 1,
     kBeauty = 2
   };
-  AliMCParticle *mctrack = NULL;
   TString objname = fTrack->IsA()->GetName();
-  if(!objname.CompareTo("AliESDtrack")){
-    AliDebug(2, "Checking signal for ESD track");
-    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(fTrack);
-    mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(esdtrack->GetLabel())));
+  Int_t pid = 0;
+  if(IsESDanalysis()){
+    // ESD Analysis
+    AliMCParticle *mctrack = NULL;
+    if(!objname.CompareTo("AliESDtrack")){
+      AliDebug(2, "Checking signal for ESD track");
+      AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(fTrack);
+      mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(esdtrack->GetLabel())));
+    }
+    else if(!objname.CompareTo("AliMCParticle")){
+      AliDebug(2, "Checking signal for MC track");
+      mctrack = dynamic_cast<AliMCParticle *>(fTrack);
+    }
+    else{
+      AliError("Input object not supported");
+      return kNoSignal;
+    }
+    if(!mctrack) return kNoSignal;
+    TParticle *ecand = mctrack->Particle(); 
+    if(TMath::Abs(ecand->GetPdgCode()) != 11) return kNoSignal; // electron candidate not true electron
+    Int_t motherLabel = TMath::Abs(ecand->GetFirstMother());
+    AliDebug(3, Form("mother label: %d\n", motherLabel));
+    if(!motherLabel) return kNoSignal; // mother track unknown
+    AliMCParticle *motherTrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(motherLabel));
+    if(!motherTrack) return kNoSignal;
+    TParticle *mparticle = motherTrack->Particle();
+    pid = TMath::Abs(mparticle->GetPdgCode());
+  } else {
+    // AOD Analysis - Different Data handling
+    AliAODMCParticle *aodmc = NULL;
+    if(!objname.CompareTo("AliAODTrack")){
+      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(fTrack);
+      Int_t aodlabel = TMath::Abs(aodtrack->GetLabel());
+      if(aodlabel >= fMC->GetNumberOfTracks()) return kNoSignal;
+      aodmc = dynamic_cast<AliAODMCParticle *>(fMC->GetTrack(aodlabel));
+    } else if(!objname.CompareTo("AliAODMCParticle")){
+      aodmc = dynamic_cast<AliAODMCParticle *>(fTrack);
+    } else{
+      AliError("Input object not supported");
+      return kNoSignal;
+    }
+    if(!aodmc) return kNoSignal;
+    Int_t motherLabel = TMath::Abs(aodmc->GetMother());
+    AliDebug(3, Form("mother label: %d\n", motherLabel));
+    if(!motherLabel || motherLabel >= fMC->GetNumberOfTracks()) return kNoSignal;
+    AliAODMCParticle *aodmother = dynamic_cast<AliAODMCParticle *>(fMC->GetTrack(motherLabel));
+    pid = aodmother->GetPdgCode();
   }
-  else if(!objname.CompareTo("AliAODtrack")){
-    AliError("AOD Analysis not implemented yet");
-    return kNoSignal;
-  }
-  else if(!objname.CompareTo("AliMCParticle")){
-    AliDebug(2, "Checking signal for MC track");
-    mctrack = dynamic_cast<AliMCParticle *>(fTrack);
-  }
-  else{
-    AliError("Input object not supported");
-    return kNoSignal;
-  }
-  if(!mctrack) return kNoSignal;
-  TParticle *ecand = mctrack->Particle(); 
-  if(TMath::Abs(ecand->GetPdgCode()) != 11) return kNoSignal; // electron candidate not true electron
-  Int_t motherLabel = TMath::Abs(ecand->GetFirstMother());
-  AliDebug(3, Form("mother label: %d\n", motherLabel));
-  if(!motherLabel) return kNoSignal; // mother track unknown
-  AliMCParticle *motherTrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(motherLabel));
-  if(!motherTrack) return kNoSignal;
-  TParticle *mparticle = motherTrack->Particle();
-  Int_t pid = TMath::Abs(mparticle->GetPdgCode());
+  // From here the two analysis modes go together
   AliDebug(3, Form("PDG code: %d\n", pid));
 
   // identify signal according to Pdg Code 
@@ -1098,3 +1416,37 @@ Float_t AliAnalysisTaskHFE::GetRapidity(TParticle *part) const
   return rapidity;
 }
 
+//__________________________________________
+void AliAnalysisTaskHFE::SwitchOnPlugin(Int_t plug){
+  //
+  // Switch on Plugin
+  // Available:
+  //  - Primary vertex studies
+  //  - Secondary vertex Studies
+  //  - Post Processing
+  //
+  switch(plug){
+    case kPriVtx: SETBIT(fPlugins, plug); break;
+    case kSecVtx: SETBIT(fPlugins, plug); break;
+    case kIsElecBackGround: SETBIT(fPlugins, plug); break;
+    case kPostProcess: SETBIT(fPlugins, plug); break;
+    default: AliError("Unknown Plugin");
+  };
+}
+
+//__________________________________________
+Bool_t AliAnalysisTaskHFE::ProcessCutStep(Int_t cutStep, AliVParticle *track, Double_t *container, Bool_t signal, Bool_t alreadyseen){
+  //
+  // Check single track cuts for a given cut step
+  // Fill the particle container
+  //
+  if(!fCFM->CheckParticleCuts(cutStep, track)) return kFALSE;
+  if(signal) {
+    fCFM->GetParticleContainer()->Fill(container, cutStep + 2*(AliHFEcuts::kNcutESDSteps + 1));
+    fCFM->GetParticleContainer()->Fill(&container[3], cutStep);
+    if(alreadyseen) {
+      fCFM->GetParticleContainer()->Fill(&container[3], cutStep + AliHFEcuts::kNcutESDSteps + 1);
+    }
+  }
+  return kTRUE;
+}

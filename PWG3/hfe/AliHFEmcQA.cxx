@@ -34,6 +34,7 @@
 
 #include <AliLog.h>
 #include <AliStack.h>
+#include <AliGenEventHeader.h>
 #include <AliAODMCParticle.h>
 
 #include "AliHFEmcQA.h"
@@ -48,6 +49,7 @@ ClassImp(AliHFEmcQA)
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA() : 
         fStack(0x0) 
+        ,fMCHeader(0x0)
         ,fMCArray(0x0)
         ,fNparents(0) 
 {
@@ -59,6 +61,7 @@ AliHFEmcQA::AliHFEmcQA() :
 AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
         TObject(p)
         ,fStack(0x0) 
+        ,fMCHeader(0x0)
         ,fMCArray(0x0)
         ,fNparents(p.fNparents) 
 {
@@ -470,9 +473,16 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
     Int_t maPdgcode = partMother->GetPdgCode();
     Int_t maPdgcodeCopy = maPdgcode;
 
+    // get mc primary vertex
+    TArrayF mcPrimVtx;
+    if(fMCHeader) fMCHeader->PrimaryVertex(mcPrimVtx);
+
     // get electron production vertex   
     TLorentzVector ePoint;
     mcpart->ProductionVertex(ePoint);
+
+    // calculated production vertex to primary vertex (in xy plane)
+    Float_t decayLxy = TMath::Sqrt((mcPrimVtx[0]-ePoint[0])*(mcPrimVtx[0]-ePoint[0])+(mcPrimVtx[1]-ePoint[1])*(mcPrimVtx[1]-ePoint[1]));
 
     // if the mother is charmed hadron  
     Bool_t isMotherDirectCharm = kFALSE;
@@ -521,11 +531,8 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
                   // ratio between pT of electron and pT of mother B hadron 
                   if(grandMa->Pt()) fHistComm[iq][icut].fDePtRatio->Fill(grandMa->Pt(),mcpart->Pt()/grandMa->Pt());
 
-                  // distance between electron production point and mother hadron production point
-                  TLorentzVector debPoint;
-                  grandMa->ProductionVertex(debPoint);
-                  TLorentzVector dedistance = ePoint - debPoint;
-                  fHistComm[iq][icut].fDeDistance->Fill(grandMa->Pt(),dedistance.P());
+                  // distance between electron production point and primary vertex
+                  fHistComm[iq][icut].fDeDistance->Fill(grandMa->Pt(),decayLxy);
                   return;
                 }
              } 
@@ -552,11 +559,8 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
               // ratio between pT of electron and pT of mother B hadron 
               if(partMotherCopy->Pt()) fHistComm[iq][icut].fePtRatio->Fill(partMotherCopy->Pt(),mcpart->Pt()/partMotherCopy->Pt());
 
-              // distance between electron production point and mother hadron production point
-              TLorentzVector ebPoint;
-              partMotherCopy->ProductionVertex(ebPoint);
-              TLorentzVector edistance = ePoint - ebPoint;
-              fHistComm[iq][icut].feDistance->Fill(partMotherCopy->Pt(),edistance.P());
+              // distance between electron production point and primary vertex
+              fHistComm[iq][icut].feDistance->Fill(partMotherCopy->Pt(),decayLxy);
             }
          }
     } // end of if
@@ -777,11 +781,11 @@ Float_t AliHFEmcQA::GetRapidity(AliAODMCParticle *part) const
 }
 
 //__________________________________________
-Int_t AliHFEmcQA::GetElectronSource(AliAODMCParticle *mcpart)
+Int_t AliHFEmcQA::GetSource(AliAODMCParticle * const mcpart)
 {        
-  // decay electron's origin 
+  // decay particle's origin 
 
-  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
+  //if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
        
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;
@@ -854,11 +858,11 @@ Int_t AliHFEmcQA::GetElectronSource(AliAODMCParticle *mcpart)
 }
 
 //__________________________________________
-Int_t AliHFEmcQA::GetElectronSource(TParticle* mcpart)
+Int_t AliHFEmcQA::GetSource(TParticle * const mcpart)
 {
-  // decay electron's origin 
+  // decay particle's origin 
 
-  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
+  //if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
 
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;

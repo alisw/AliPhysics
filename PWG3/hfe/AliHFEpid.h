@@ -62,11 +62,13 @@ class AliHFEpid : public TObject{
     void InitStrategy3();
     void InitStrategy4();
     void InitStrategy5();
+    void InitStrategy6();
     Bool_t IdentifyStrategy1(AliHFEpidObject *track);
     Bool_t IdentifyStrategy2(AliHFEpidObject *track);
     Bool_t IdentifyStrategy3(AliHFEpidObject *track);
     Bool_t IdentifyStrategy4(AliHFEpidObject *track);
     Bool_t IdentifyStrategy5(AliHFEpidObject *track);
+    Bool_t IdentifyStrategy6(AliHFEpidObject *track);
   private:
     enum{
       kIsQAOn = BIT(14),

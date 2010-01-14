@@ -25,12 +25,21 @@
 //#include <TObject.h>
 #endif
 
+#ifndef ROOT_THnSparse
+#include <THnSparse.h>
+#endif
+
 class TH1F;
 class TH2F;
 class TString;
 class AliESDEvent;
+class AliAODEvent;
+class AliVTrack;
 class AliESDtrack;
+class AliAODTrack;
 class AliStack;
+class AliHFEpairs;
+class AliHFEsecVtxs;
 
 //________________________________________________________________
 class AliHFEsecVtx : public TObject {
@@ -41,197 +50,96 @@ class AliHFEsecVtx : public TObject {
                 AliHFEsecVtx &operator=(const AliHFEsecVtx &); // assignment operator
                 virtual ~AliHFEsecVtx();
 
-                void CreateHistograms(TString hnopt="");
+                void CreateHistograms(TList *qaList);
 
-                void SetEvent(AliESDEvent* const ESD){fESD1=ESD;}; // set ESD pointer
-                void SetStack(AliStack* const stack){fStack=stack;} // set stack pointer
-                void InitAnaPair(); // initialize default parameters 
-                void AnaPair(AliESDtrack* ESDtrack1, AliESDtrack* ESDtrack2, Int_t index2); // do e-h analysis
-                void RunSECVTX(AliESDtrack *track); // run secondary vertexing algorithm
+                Bool_t HasMCData() const { return TestBit(kHasMCData); };
+                Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
+                Bool_t IsESDanalysis() const { return !TestBit(kAODanalysis); };
+
+		            void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData,hasMCdata); };
+                void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
+                void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
+                void SetEvent(AliESDEvent* const ESD){fESD1=ESD;};    // set ESD pointer
+                void SetEventAOD(AliAODEvent* const AOD){fAOD1=AOD;}; // set ESD pointer
+                void SetStack(AliStack* const stack){fStack=stack;};  // set stack pointer
+                void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
+                void SetUseMCPID(Bool_t usemcpid){fUseMCPID=usemcpid;};
+
 
                 Int_t GetMCPID(AliESDtrack *track); // return MC pid
-                Int_t PairOrigin(AliESDtrack* track1, AliESDtrack* track2); // return pair origin as a pdg code
-                Int_t PairCode(AliESDtrack* track1,AliESDtrack* track2); // return corresponding pair code to pdg code
+		            Int_t GetMCPDG(AliVTrack *track);   // return MC pid
+                Int_t GetPairOriginESD(AliESDtrack* track1, AliESDtrack* track2); // return pair origin as a pdg code
+                Int_t GetPairOriginAOD(AliAODTrack* track1, AliAODTrack* track2); // return pair origin as a pdg code
+                Int_t GetPairCode(const AliVTrack* const track1, const AliVTrack* const track2); // return corresponding pair code to pdg code
                 Int_t GetElectronSource(Int_t mclabel); // return origin of the electron
+                Int_t GetPDG(AliVTrack *track);     // return pdg 
+		            void GetESDPID(AliESDtrack *track, Int_t &recpid, Double_t &recprob); //return esd pid likelihood
+                void GetPrimaryCondition();
+
+                TClonesArray *HFEpairs();
+                TClonesArray *HFEsecvtxs();
+
+                void AddHFEpairToArray(const AliHFEpairs* const pair);
+                void AddHFEsecvtxToArray(const AliHFEsecVtxs* const secvtx);
+
+                void InitHFEpairs();
+                void InitHFEsecvtxs();
+
+                void DeleteHFEpairs();
+                void DeleteHFEsecvtxs();
 
                 Bool_t SingleTrackCut(AliESDtrack* track1) const; // single track cut
+                void PairAnalysis(AliVTrack* ESDtrack1, AliVTrack* ESDtrack2, Int_t index2); // do e-h analysis
+                void RunSECVTX(AliVTrack *track); // run secondary vertexing algorithm
+
+                void MakeContainer(); // make containers
 
         protected:
-
                 void Init();
-                void FindSECVTXCandid4Tracks(AliESDtrack* track1); // find secondary vertex for 4 tracks
-                void FindSECVTXCandid3Tracks(AliESDtrack* track1); // find secondary vertex for 3 tracks        
-                void FindSECVTXCandid2Tracks(AliESDtrack* track1); // find secondary vertex for 2 tracks
-                void CalcSECVTXProperty(AliESDtrack* track1, AliESDtrack* track2, AliESDtrack* track3); // calculated distinctive variables
-                void ApplyPairTagCut(); // apply strict tagging condition for 1 pair secondary vertex
-                void ApplyVtxTagCut(Double_t chi2, Int_t id1, Int_t id2); // apply tagging condition for 3 track secondary vertex
-                void ResetTagVar(); // reset tagging variables
-
-                Bool_t ApplyPairTagCut(Int_t id); // apply strict tagging condition for 1 pair secondary vertex
-                Bool_t ApplyTagCut(Double_t chi2); // apply tagging condition
-
-
-                Double_t GetSecVtxChi2(AliESDtrack* track1, AliESDtrack* track2, AliESDtrack* track3, AliESDtrack* track4); // get secondary vertex chi2 for 4 tracks
-                Double_t GetSecVtxChi2(AliESDtrack* track1, AliESDtrack* track2, AliESDtrack* track3); // get secondary vertex chi2 for 3 tracks
-                Double_t GetSecVtxChi2(AliESDtrack* track1, AliESDtrack* track2); // get secondary vertex chi2 for 2 tracks
+                void FindSECVTXCandid(AliVTrack *track);
+                void CalcSECVTXProperty(AliVTrack* track1, AliVTrack* track2, AliVTrack* track3); // calculated distinctive variables
 
 
         private:
+                enum{
+                  kHasMCData = BIT(15),     // bitset for mc data usage
+                  kAODanalysis = BIT(16)    // bitset for aod analysis
+                };
+                enum {kAll, kDirectCharm, kDirectBeauty, kBeautyCharm, kGamma, kPi0, kElse, kBeautyGamma, kBeautyPi0, kBeautyElse}; // electron origin 
+                enum {kCharm=4, kBeauty=5}; // quark flavor
 
                 AliESDEvent* fESD1; // ESD pointer             
-                AliStack* fStack; // stack pointer              
+                AliAODEvent* fAOD1; // AOD pointer             
+                AliStack* fStack;   // stack pointer              
 
-                Int_t fParentSelect[2][7]; // heavy hadron species
-                Int_t fNparents; // number of heavy hadrons to be considered
+                Bool_t fUseMCPID;   // if use MC pid 
 
                 TString fkSourceLabel[10]; // electron source label
 
-                enum {kAll, kDirectCharm, kDirectBeauty, kBeautyCharm, kGamma, kPi0, kElse, kBeautyGamma, kBeautyPi0, kBeautyElse};
-                enum {kCharm=4, kBeauty=5};
+                Int_t fNparents;           // number of heavy hadrons to be considered
+                Int_t fParentSelect[2][7]; // heavy hadron species
 
-                struct AliHistspair{
-                        TH2F *fInvMass; // histogram to store pair invariant mass
-                        TH2F *fInvMassCut1; // histogram to store pair invariant mass after cut1
-                        TH2F *fInvMassCut2; // histogram to store pair invariant mass after cut2
-                        TH1F *fKFChi2; // histogram to store pair vertex chi2
-			TH1F *fOpenAngle; // histogram to store pair opening angle
-                        TH1F *fCosOpenAngle; // histogram to store cosine of the pair opening angle
-                        TH2F *fSignedLxy; // histogram to store signed Lxy
-                        TH1F *fKFIP; // histogram to store pair impact parameter
-                        TH1F *fIPMax; // histogram to store larger impact parameter among pair tracks
+                Int_t fNoOfHFEpairs;       // number of e-h pairs  
+                Int_t fNoOfHFEsecvtxs;     // number of secondary vertexes
 
-			AliHistspair()
-			: fInvMass()
-			, fInvMassCut1()
-			, fInvMassCut2()
-			, fKFChi2()
-			, fOpenAngle()
-			, fCosOpenAngle()
-			, fSignedLxy()
-			, fKFIP()
-			, fIPMax()
-			{
-			  // define constructor
-			}
-			AliHistspair(const AliHistspair & p)
-			: fInvMass(p.fInvMass)
-			, fInvMassCut1(p.fInvMassCut1)
-			, fInvMassCut2(p.fInvMassCut2)
-			, fKFChi2(p.fKFChi2)
-			, fOpenAngle(p.fOpenAngle)
-			, fCosOpenAngle(p.fCosOpenAngle)
-			, fSignedLxy(p.fSignedLxy)
-			, fKFIP(p.fKFIP)
-			, fIPMax(p.fIPMax)
-			{
-			  // copy constructor
-			}
-			AliHistspair &operator=(const AliHistspair &)
-			{
-			  // assignment operator, not yet implemented
-			  return *this;
-			}
-                };
+                TClonesArray *fHFEpairs;   //! Array of pair 
+                TClonesArray *fHFEsecvtxs; //! Array of secondary vertexes 
+                TClonesArray *fMCArray;    //! mc array pointer
 
-                struct AliHiststag{
-                        TH1F *fPtBeautyElec; // histogram for electrons of single track cut passed 
-                        TH1F *fPtTaggedElec; // histogram for total b tagged electrons
-                        TH1F *fPtRightTaggedElec; // histogram for right b tagged electrons
-                        TH1F *fPtWrongTaggedElec; // histogram for wrong b tagged electrons
-                        TH1F *fInvmassBeautyElecSecVtx;  // histogram for right-tagged b invariant mass
-                        TH1F *fInvmassNotBeautyElecSecVtx; // histogram for mis-tagged b invariant mass
-                        TH1F *fSignedLxyBeautyElecSecVtx; // histogram for right-tagged b signed Lxy
-                        TH1F *fSignedLxyNotBeautyElecSecVtx; // histogram for mis-tagged b signed Lxy
-                        TH1F *fDistTwoVtxBeautyElecSecVtx; // histogram for right-tagged b two vertex distance
-                        TH1F *fDistTwoVtxNotBeautyElecSecVtx; // histogram for mis-tagged b two vertex distance
-                        TH1F *fCosPhiBeautyElecSecVtx; // histogram for right-tagged b cos of opening angle
-                        TH1F *fCosPhiNotBeautyElecSecVtx; // histogram for mis-tagged b cos of opening angle
-                        TH1F *fChi2BeautyElecSecVtx; // histogram for right-tagged b chi2 of secondary vertex 
-                        TH1F *fChi2NotBeautyElecSecVtx; // histogram for mis-tagged b chi2 of secondary vertex
-                        TH1F *fInvmassBeautyElec2trkVtx; // histogram for right-tagged b invariant mass of two track vertex
-                        TH1F *fInvmassNotBeautyElec2trkVtx; // histogram for mis-tagged b invariant mass of two track vertex
-                        TH1F *fSignedLxyBeautyElec2trkVtx; // histogram for right-tagged b signed Lxy of two track vertex
-                        TH1F *fSignedLxyNotBeautyElec2trkVtx; // histogram for mis-tagged b signed Lxy of two track vertex
-                        TH1F *fChi2BeautyElec2trkVtx; // histogram for right-tagged b chi2 of two track vertex
-                        TH1F *fChi2NotBeautyElec2trkVtx; // histogram for mis-tagged b chi2 of two track vertex
+		            Double_t fPVx;          // primary vertex copy x 
+		            Double_t fPVy;          // primary vertex copy y
+                Double_t fCosPhi;       // cos of opening angle of two pair vertex
+                Double_t fSignedLxy;    // signed Lxy of secondary vertex
+                Double_t fKFchi2;       // chi2 of secondary vertex
+                Double_t fInvmass;      // invariant mass of secondary vertex
+                Double_t fInvmassSigma; // invariant mass sigma of secondary vertex
+                Double_t fKFip;         // impact parameter of secondary vertex track
 
-			AliHiststag()
-			: fPtBeautyElec()
-			, fPtTaggedElec()
-			, fPtRightTaggedElec()
-			, fPtWrongTaggedElec()
-			, fInvmassBeautyElecSecVtx()
-			, fInvmassNotBeautyElecSecVtx()
-			, fSignedLxyBeautyElecSecVtx()
-			, fSignedLxyNotBeautyElecSecVtx()
-			, fDistTwoVtxBeautyElecSecVtx()
-			, fDistTwoVtxNotBeautyElecSecVtx()
-			, fCosPhiBeautyElecSecVtx()
-			, fCosPhiNotBeautyElecSecVtx()
-			, fChi2BeautyElecSecVtx()
-			, fChi2NotBeautyElecSecVtx()
-			, fInvmassBeautyElec2trkVtx()
-			, fInvmassNotBeautyElec2trkVtx()
-			, fSignedLxyBeautyElec2trkVtx()
-			, fSignedLxyNotBeautyElec2trkVtx()
-			, fChi2BeautyElec2trkVtx()
-			, fChi2NotBeautyElec2trkVtx()
-			{
-			  // define constructor
-			}
-			AliHiststag(const AliHiststag & p)
-			: fPtBeautyElec(p.fPtBeautyElec)
-			, fPtTaggedElec(p.fPtTaggedElec)
-			, fPtRightTaggedElec(p.fPtRightTaggedElec)
-			, fPtWrongTaggedElec(p.fPtWrongTaggedElec)
-			, fInvmassBeautyElecSecVtx(p.fInvmassBeautyElecSecVtx)
-			, fInvmassNotBeautyElecSecVtx(p.fInvmassNotBeautyElecSecVtx)
-			, fSignedLxyBeautyElecSecVtx(p.fSignedLxyBeautyElecSecVtx)
-			, fSignedLxyNotBeautyElecSecVtx(p.fSignedLxyNotBeautyElecSecVtx)
-			, fDistTwoVtxBeautyElecSecVtx(p.fDistTwoVtxBeautyElecSecVtx)
-			, fDistTwoVtxNotBeautyElecSecVtx(p.fDistTwoVtxNotBeautyElecSecVtx)
-			, fCosPhiBeautyElecSecVtx(p.fCosPhiBeautyElecSecVtx)
-			, fCosPhiNotBeautyElecSecVtx(p.fCosPhiNotBeautyElecSecVtx)
-			, fChi2BeautyElecSecVtx(p.fChi2BeautyElecSecVtx)
-			, fChi2NotBeautyElecSecVtx(p.fChi2NotBeautyElecSecVtx)
-			, fInvmassBeautyElec2trkVtx(p.fInvmassBeautyElec2trkVtx)
-			, fInvmassNotBeautyElec2trkVtx(p.fInvmassNotBeautyElec2trkVtx)
-			, fSignedLxyBeautyElec2trkVtx(p.fSignedLxyBeautyElec2trkVtx)
-			, fSignedLxyNotBeautyElec2trkVtx(p.fSignedLxyNotBeautyElec2trkVtx)
-			, fChi2BeautyElec2trkVtx(p.fChi2BeautyElec2trkVtx)
-			, fChi2NotBeautyElec2trkVtx(p.fChi2NotBeautyElec2trkVtx)
-			{
-			  // copy constructor
-			}
-			AliHiststag &operator=(const AliHiststag &)
-			{
-			  // assignment operator, not yet implemented
-			  return *this;
-			}
-                };
+                THnSparseF *fPairQA;    // qa histos for pair analysis 
+                THnSparseF *fSecvtxQA;  // qa histos for secvtx
+                TList *fSecVtxList;     // list for secondary vertexing outputs
 
-                AliHistspair fHistPair[10]; // struct of above given histogram for different electron sources
-                AliHiststag fHistTagged; // struct of above given histogram
-
-                Int_t fPairTagged; // number of tagged e-h pairs
-                Int_t fpairedTrackID[20]; // paird hadron track track 
-                Double_t fpairedChi2[20]; // pair chi2
-                Double_t fpairedInvMass[20]; // pair invariant mass
-                Double_t fpairedSignedLxy[20]; // pair signed Lxy
-
-                Int_t fid[4][3]; // index to store sorting result
-                Int_t fia[4][3][2]; // index to store sorting result
-
-                Double_t fdistTwoSecVtx; // distance between two pair vertex
-                Double_t fcosPhi; // cos of opening angle of two pair vertex
-                Double_t fsignedLxy; // signed Lxy of secondary vertex
-                Double_t finvmass; // invariant mass of secondary vertex
-                Double_t finvmassSigma; // invariant mass sigma of secondary vertex
-
-                Bool_t fBTagged; // if b tagged, set true
-                Bool_t fBElec; // if set true for b electron, set true
-
-        ClassDef(AliHFEsecVtx,0);
+      ClassDef(AliHFEsecVtx,0);
 };
 
 #endif

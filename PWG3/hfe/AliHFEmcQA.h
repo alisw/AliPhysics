@@ -35,6 +35,7 @@ class TH2F;
 class TParticle;
 class TString;
 class AliStack;
+class AliGenEventHeader;
 class AliAODMCParticle;
 
 //________________________________________________________________
@@ -58,6 +59,7 @@ class AliHFEmcQA: public TObject {
                 void PostAnalyze() const;
                 void CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt=""); // create histograms for mc qa analysis
                 void SetStack(AliStack* const stack){fStack=stack;} // set stack pointer
+                void SetGenEventHeader(AliGenEventHeader* const mcHeader){fMCHeader=mcHeader;} // set stack pointer
                 void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
                 void Init();
 
@@ -66,8 +68,8 @@ class AliHFEmcQA: public TObject {
                 void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed, Int_t icut); // get decay electron kinematics distribution
 		void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut); // get decay electron kinematics for AOD 
                 void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
-		Int_t GetElectronSource(TParticle* mcpart); // return electron source id 
-		Int_t GetElectronSource(AliAODMCParticle *mcpart); // return electron source id for AOD
+		Int_t GetSource(TParticle * const mcpart); // return electron source id 
+		Int_t GetSource(AliAODMCParticle * const mcpart); // return electron source id for AOD
 
         protected:
                 void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
@@ -79,7 +81,8 @@ class AliHFEmcQA: public TObject {
 		Float_t GetRapidity(AliAODMCParticle *part) const; // return rapidity
 
                 AliStack* fStack; // stack pointer           
-		TClonesArray *fMCArray; // mc array pointer
+                AliGenEventHeader* fMCHeader; // mcheader pointer
+                TClonesArray *fMCArray; // mc array pointer
 
                 static const Int_t fgkGluon; // gluon pdg code
                 static const Int_t fgkMaxGener; // ancester level wanted to be checked 

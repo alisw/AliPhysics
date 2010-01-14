@@ -32,6 +32,7 @@
 #include "AliLog.h"
 #include "AliMCParticle.h"
 #include "AliPID.h"
+#include "AliTOFpidESD.h"
 
 #include "AliHFEpidTOF.h"
 #include "AliHFEpidBase.h"
@@ -44,16 +45,23 @@ AliHFEpidTOF::AliHFEpidTOF(const Char_t *name):
   AliHFEpidBase(name)
   , fPID(0x0)
   , fQAList(0x0)
+  , fPIDtofESD(0x0)
+  , fNsigmaTOF(3)
 {
   //
   // Constructor
   //
+
+  fPIDtofESD = new AliTOFpidESD();
+
 }
 //___________________________________________________________________
 AliHFEpidTOF::AliHFEpidTOF(const AliHFEpidTOF &c):
   AliHFEpidBase("")
   , fPID(0x0)
   , fQAList(0x0)
+  , fPIDtofESD(0x0)
+  , fNsigmaTOF(3)
 {  
   // 
   // Copy operator
@@ -79,6 +87,7 @@ AliHFEpidTOF::~AliHFEpidTOF(){
   // Destructor
   //
   if(fPID) delete fPID;
+  if(fPIDtofESD) delete fPIDtofESD;
   if(fQAList){
     fQAList->Delete();
     delete fQAList;
@@ -93,6 +102,7 @@ void AliHFEpidTOF::Copy(TObject &ref) const {
 
   target.fPID = fPID;          
   target.fQAList = fQAList;
+  target.fPIDtofESD = new AliTOFpidESD(*fPIDtofESD);
 
   AliHFEpidBase::Copy(ref);
 }
@@ -114,8 +124,9 @@ Int_t AliHFEpidTOF::IsSelected(AliHFEpidObject *vtrack)
   // the ESD PID will be checked and if necessary improved 
   // in the mean time. Best of luck
   //
-  // returns 10 (== kUnknown)if PID can not be assigned
+  // returns 10 (== kUnknown)if PID can not be assigned for whatever reason
   //
+
   if(vtrack->fAnalysisType == AliHFEpidObject::kESDanalysis){
     AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(vtrack->fRecTrack);
     if(!esdTrack) return 0;
@@ -137,25 +148,29 @@ Int_t AliHFEpidTOF::MakePIDesd(AliESDtrack *track, AliMCParticle * /*mcTrack*/){
   Long_t status = 0;
   status = track->GetStatus(); 
 
-  if(!(status & AliESDtrack::kTOFout)) return AliPID::kUnknown;
+  if(!(status & AliESDtrack::kTOFout)) return 0;
   
-  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(0.);
+  if(IsQAon())(dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(0.);
 
   Double_t tItrackL = track->GetIntegratedLength();
   Double_t tTOFsignal = track->GetTOFsignal();
   
-  if(tItrackL > 0)
-    (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(1.);
+  if(IsQAon()){
+    if(tItrackL > 0)
+      (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(1.);
 
-  if(tTOFsignal > 0)
-    (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(2.);
+    if(tTOFsignal > 0)
+      (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(2.);
+  }
   
 
-  if(tItrackL <=0 || tTOFsignal <=0) return AliPID::kUnknown;
+  if(tItrackL <=0 || tTOFsignal <=0) return 0;
 
-  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(3.);
-  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFsignal)))->Fill(tTOFsignal/1000.);
-  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFlength)))->Fill(tItrackL);
+  if(IsQAon()){
+    (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(3.);
+    (dynamic_cast<TH1F *>(fQAList->At(kHistTOFsignal)))->Fill(tTOFsignal/1000.);
+    (dynamic_cast<TH1F *>(fQAList->At(kHistTOFlength)))->Fill(tItrackL);
+  }
   // get the TOF pid probabilities
   Double_t tESDpid[5] = {0., 0., 0., 0., 0.};
   Float_t tTOFpidSum = 0.;
@@ -170,20 +185,68 @@ Int_t AliHFEpidTOF::MakePIDesd(AliESDtrack *track, AliMCParticle * /*mcTrack*/){
       tMAXindex = i;
     }
   }
+
+  Int_t pdg = 0;
+
+  switch(tMAXindex){
+    case 0:    pdg = 11; break;
+    case 1:    pdg = 13; break;
+    case 2:    pdg = 211; break;
+    case 3:    pdg = 321; break;
+    case 4:    pdg = 2212; break;
+    default:   pdg = 0;
+  };
+
   
   Double_t p = track->GetOuterParam()->P();
   Double_t beta = (tItrackL/100.)/(TMath::C()*(tTOFsignal/1e12));
   
-  if(TMath::Abs(tTOFpidSum - 1) > 0.01) return AliPID::kUnknown;
-  else{
-    // should be the same as AliPID flags
-    
+  // sanity check, should not be necessary
+  if(TMath::Abs(tTOFpidSum - 1) > 0.01) return 0;
+
+  Double_t nSigmas = fPIDtofESD->GetNumberOfSigmas(track, (AliPID::EParticleType)tMAXindex);
+  if(TMath::Abs(nSigmas) > fNsigmaTOF) return 0;
+
+  
+  // should be the same as AliPID flags
+  
+  if(IsQAon()){
     (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid0+tMAXindex)))->Fill(beta, p);
     (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpidBetavP)))->Fill(beta, p);
-    return tMAXindex;
   }
+  //return tMAXindex;
+  return pdg;
+  
 }
-
+//___________________________________________________________________
+Double_t AliHFEpidTOF::Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig){
+  
+  //gives probability for track to come from a certain particle species;
+  //no priors considered -> probabilities for equal abundances of all species!
+  //optional restriction to r-sigma bands of different particle species; default: rsig = 2. (see below)
+  
+  //IMPORTANT: Tracks which are judged to be outliers get negative likelihoods -> unusable for combination with further detectors!
+  
+  if(!track) return -1.;
+  Bool_t outlier = kTRUE;
+  // Check whether distance from the respective particle line is smaller than r sigma
+  for(Int_t hypo = 0; hypo < AliPID::kSPECIES; hypo++){
+    if(TMath::Abs(fPIDtofESD->GetNumberOfSigmas(track, (AliPID::EParticleType)hypo)) > rsig)
+      outlier = kTRUE;
+    else {
+      outlier = kFALSE;
+      break;
+    }
+  }
+  if(outlier)
+    return -2.;
+  
+  Double_t tofProb[5];
+  
+  track->GetTOFpid(tofProb);
+  
+  return tofProb[species];
+}
 //___________________________________________________________________
 Int_t AliHFEpidTOF::MakePIDaod(AliAODTrack * /*aodTrack*/, AliAODMCParticle * /*mcTrack*/){
   AliError("AOD PID not yet implemented");

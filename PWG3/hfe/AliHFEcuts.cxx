@@ -127,11 +127,21 @@ void AliHFEcuts::Initialize(AliCFManager *cfm){
   SetHFElectronITSCuts();
   SetHFElectronTRDCuts();
 
+  // Publish to the cuts which analysis type they are (ESD Analysis by default)
+  if(IsAOD()){
+    AliInfo("Setting AOD Analysis");
+    TObjArray *genCuts = dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts"));
+    if(genCuts){
+      AliCFParticleGenCuts *myGenCut = dynamic_cast<AliCFParticleGenCuts *>(genCuts->FindObject("fCutsGenMC"));
+      if(myGenCut) myGenCut->SetAODMC(kTRUE);
+    }
+  }
+
   // Connect the event cuts
-  SetEventCutList(kEventStepGenerated);
+  /*SetEventCutList(kEventStepGenerated);
   SetEventCutList(kEventStepReconstructed);
   cfm->SetEventCutsList(kEventStepGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvGenCuts")));
-  cfm->SetEventCutsList(kEventStepReconstructed, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvRecCuts")));
+  cfm->SetEventCutsList(kEventStepReconstructed, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvRecCuts")));*/
   
   // Connect the particle cuts
   cfm->SetParticleCutsList(kStepMCGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts")));
