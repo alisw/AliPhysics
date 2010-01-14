@@ -45,6 +45,7 @@
 #include "AliPMDPedestal.h"
 #include "AliPMDddldata.h"
 #include "AliPMDHotData.h"
+#include "AliPMDNoiseCut.h"
 #include "AliPMDRecoParam.h"
 #include "AliPMDReconstructor.h"
 
@@ -62,6 +63,7 @@ AliPMDClusterFinder::AliPMDClusterFinder():
   fCalibGain(GetCalibGain()),
   fCalibPed(GetCalibPed()),
   fCalibHot(GetCalibHot()),
+  fNoiseCut(GetNoiseCut()),
   fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
@@ -70,8 +72,7 @@ AliPMDClusterFinder::AliPMDClusterFinder():
   fRechits(new TClonesArray("AliPMDrechit", 1000)),
   fNpoint(0),
   fNhit(0),
-  fDetNo(0),
-  fEcut(0.)
+  fDetNo(0)
 {
 //
 // Constructor
@@ -84,6 +85,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fCalibGain(GetCalibGain()),
   fCalibPed(GetCalibPed()),
   fCalibHot(GetCalibHot()),
+  fNoiseCut(GetNoiseCut()),
   fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
@@ -92,8 +94,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fRechits(new TClonesArray("AliPMDrechit", 1000)),
   fNpoint(0),
   fNhit(0),
-  fDetNo(0),
-  fEcut(0.)
+  fDetNo(0)
 {
 //
 // Constructor
@@ -107,6 +108,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(const AliPMDClusterFinder & finder):
   fCalibGain(GetCalibGain()),
   fCalibPed(GetCalibPed()),
   fCalibHot(GetCalibHot()),
+  fNoiseCut(GetNoiseCut()),
   fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
@@ -115,8 +117,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(const AliPMDClusterFinder & finder):
   fRechits(NULL),
   fNpoint(0),
   fNhit(0),
-  fDetNo(0),
-  fEcut(0.)
+  fDetNo(0)
 {
   // copy constructor
   AliError("Copy constructor not allowed");
@@ -145,158 +146,6 @@ AliPMDClusterFinder::~AliPMDClusterFinder()
       fRechits->Clear();
     }
 
-}
-// ------------------------------------------------------------------------- //
-
-void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
-{
-  // Converts digits to recpoints after running clustering
-  // algorithm on CPV plane and PREshower plane
-  //
-
-  Int_t    det = 0,smn = 0;
-  Int_t    xpos,ypos;
-  Float_t  adc;
-  Int_t    ismn;
-  Int_t    idet;
-  Float_t  clusdata[6];
-
-  TObjArray *pmdcont = new TObjArray();
-
-  AliPMDClustering *pmdclust = new AliPMDClusteringV1();
-
-  // fetch the recoparam object from database
-  fRecoParam = AliPMDReconstructor::GetRecoParam();
-
-  if(fRecoParam == 0x0)
-    {
-       AliFatal("No Reco Param found for PMD!!!");
-    }
-
-
-  fRunLoader->GetEvent(ievt);
-
-
-  fTreeD = fPMDLoader->TreeD();
-  if (fTreeD == 0x0)
-    {
-      AliFatal("AliPMDClusterFinder: Can not get TreeD");
-
-    }
-  AliPMDdigit  *pmddigit;
-  TBranch *branch = fTreeD->GetBranch("PMDDigit");
-  branch->SetAddress(&fDigits);
-
-  ResetRecpoint();
-
-  fTreeR = fPMDLoader->TreeR();
-  if (fTreeR == 0x0)
-    {
-      fPMDLoader->MakeTree("R");
-      fTreeR = fPMDLoader->TreeR();
-    }
-
-  Int_t bufsize = 16000;
-  TBranch * branch1 = fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
-  TBranch * branch2 = fTreeR->Branch("PMDRechit", &fRechits, bufsize); 
-
-  Int_t nmodules = (Int_t) fTreeD->GetEntries();
-
-  for (Int_t imodule = 0; imodule < nmodules; imodule++)
-    {
-      ResetCellADC();
-      fTreeD->GetEntry(imodule); 
-      Int_t nentries = fDigits->GetLast();
-      for (Int_t ient = 0; ient < nentries+1; ient++)
-	{
-	  pmddigit = (AliPMDdigit*)fDigits->UncheckedAt(ient);
-	  
-	  det    = pmddigit->GetDetector();
-	  smn    = pmddigit->GetSMNumber();
-	  xpos   = pmddigit->GetRow();
-	  ypos   = pmddigit->GetColumn();
-	  adc    = pmddigit->GetADC();
-	  if(xpos < 0 || xpos > 48 || ypos < 0 || ypos > 96)
-	    {
-	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
-			      xpos, ypos));
-	      continue; 
-	    }
-
-	  // Hot cell - set the cell adc = 0
-	  Float_t hotflag = fCalibHot->GetHotChannel(det,smn,xpos,ypos);
-	  if (hotflag == 1) adc = 0;
-	  // CALIBRATION
-	  Float_t gain = fCalibGain->GetGainFact(det,smn,xpos,ypos);
-	  // printf("adc = %d gain = %f\n",adc,gain);
-	  
-	  adc = adc*gain;
-
-	  //Int_t trno   = pmddigit->GetTrackNumber();
-	  fCellTrack[xpos][ypos] = pmddigit->GetTrackNumber();
-	  fCellPid[xpos][ypos]   = pmddigit->GetTrackPid();
-	  fCellADC[xpos][ypos]   = (Double_t) adc;
-	}
-
-      idet = det;
-      ismn = smn;
-
-      // Set the minimum noise cut per module before clustering
-
-      Int_t imod = idet*24 + ismn;
-      fEcut = fRecoParam->GetNoiseCut(imod);   // default
-      // fEcut = fRecoParam->GetPbPbParam()->GetNoiseCut(imod);
-      // fEcut = fRecoParam->GetPPParam()->GetNoiseCut(imod);
-      // fEcut = fRecoParam->GetCosmicParam()->GetNoiseCut(imod);
-
-      pmdclust->SetEdepCut(fEcut);
-      pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,pmdcont);
-
-      Int_t nentries1 = pmdcont->GetEntries();
-
-      AliDebug(1,Form("Total number of clusters/module = %d",nentries1));
-
-      for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
-	{
-	  AliPMDcluster *pmdcl = (AliPMDcluster*)pmdcont->UncheckedAt(ient1);
-	  idet        = pmdcl->GetDetector();
-	  ismn        = pmdcl->GetSMN();
-	  clusdata[0] = pmdcl->GetClusX();
-	  clusdata[1] = pmdcl->GetClusY();
-	  clusdata[2] = pmdcl->GetClusADC();
-	  clusdata[3] = pmdcl->GetClusCells();
-	  clusdata[4] = pmdcl->GetClusSigmaX();
-	  clusdata[5] = pmdcl->GetClusSigmaY();
-
-	  AddRecPoint(idet,ismn,clusdata);
-
-	  Int_t ncell = (Int_t) clusdata[3];
-	  for(Int_t ihit = 0; ihit < ncell; ihit++)
-	    {
-	      Int_t celldataX = pmdcl->GetClusCellX(ihit);
-	      Int_t celldataY = pmdcl->GetClusCellY(ihit);
-	      Int_t celldataTr = pmdcl->GetClusCellTrack(ihit);
-	      Int_t celldataPid   = pmdcl->GetClusCellPid(ihit);
-	      Float_t celldataAdc = pmdcl->GetClusCellAdc(ihit);
-	      AddRecHit(celldataX, celldataY, celldataTr, celldataPid, celldataAdc);
-	    }
-	  branch2->Fill();
-	  ResetRechit();
-	}
-      pmdcont->Delete();
-
-      branch1->Fill();
-      ResetRecpoint();
-
-    } // modules
-
-  ResetCellADC();
-  fPMDLoader = fRunLoader->GetLoader("PMDLoader");  
-  fPMDLoader->WriteRecPoints("OVERWRITE");
-
-  //   delete the pointers
-  delete pmdclust;
-  delete pmdcont;
 }
 // ------------------------------------------------------------------------- //
 
@@ -411,14 +260,16 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 
       // Set the minimum noise cut per module before clustering
 
-      Int_t imod = idet*24 + ismn;
-      fEcut = fRecoParam->GetNoiseCut(imod);       // default
-      // fEcut = fRecoParam->GetPbPbParam()->GetNoiseCut(imod);
-      // fEcut = fRecoParam->GetPPParam()->GetNoiseCut(imod);
-      // fEcut = fRecoParam->GetCosmicParam()->GetNoiseCut(imod);
+      // Int_t imod = idet*24 + ismn;
 
 
-      pmdclust->SetEdepCut(fEcut);
+      // Int_t cluspar = fRecoParam->GetPbPbParam()->GetClusteringParam();
+      //Int_t cluspar = fRecoParam->GetPPParam()->GetClusteringParam();
+      // Int_t cluspar = fRecoParam->GetCosmicParam()->GetClusteringParam();
+
+
+      Float_t encut = 0.;
+      pmdclust->SetEdepCut(encut);
       pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,pmdcont);
       
       Int_t nentries1 = pmdcont->GetEntries();
@@ -736,13 +587,13 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
 	  Int_t imod = idet*24 + ismn;
 
-	  fEcut = fRecoParam->GetNoiseCut(imod);       // default
-	  // fEcut = fRecoParam->GetPbPbParam()->GetNoiseCut(imod);
-	  // fEcut = fRecoParam->GetPPParam()->GetNoiseCut(imod);
-	  // fEcut = fRecoParam->GetCosmicParam()->GetNoiseCut(imod);
+	  // Int_t cluspar = fRecoParam->GetPbPbParam()->GetClusteringParam();
+	  // Int_t cluspar = fRecoParam->GetPPParam()->GetClusteringParam();
+	  // Int_t cluspar = fRecoParam->GetCosmicParam()->GetClusteringParam();
+	  
+	  Float_t encut = fNoiseCut->GetNoiseCut(imod);
 
-
-	  pmdclust->SetEdepCut(fEcut);
+	  pmdclust->SetEdepCut(encut);
 	  pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,pmdcont);
 
 	  Int_t nentries1 = pmdcont->GetEntries();
@@ -801,329 +652,6 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   //   delete the pointers
   delete pmdclust;
   delete pmdcont;
-}
-// ------------------------------------------------------------------------- //
-
-void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
-{
-  // Converts RAW data to recpoints after running clustering
-  // algorithm on CPV and PREshower plane
-  //
-
-  Float_t  clusdata[6];
-
-  TObjArray pmdddlcont;
-
-  AliPMDcluster *pmdcl  = 0x0;
-
-  TObjArray *pmdcont = new TObjArray();
-
-  AliPMDClustering *pmdclust = new AliPMDClusteringV1();
-
-  // open the ddl file info to know the module
-  TString ddlinfofileName(gSystem->Getenv("ALICE_ROOT"));
-  ddlinfofileName += "/PMD/PMD_ddl_info.dat";
-  
-  ifstream infileddl;
-  infileddl.open(ddlinfofileName.Data(), ios::in); // ascii file
-  if(!infileddl) AliError("Could not read the ddl info file");
-
-  Int_t ddlno;
-  Int_t modno;
-  Int_t modulePerDDL;
-  Int_t moduleddl[6];
-
-  for(Int_t jddl = 0; jddl < 6; jddl++)
-    {
-      if (infileddl.eof()) break;
-      infileddl >> ddlno >> modulePerDDL;
-      moduleddl[jddl] = modulePerDDL;
-
-      if (modulePerDDL == 0) continue;
-      for (Int_t im = 0; im < modulePerDDL; im++)
-	{
-	  infileddl >> modno;
-	}
-    }
-
-  infileddl.close();
-
-  // Set the minimum noise cut per module before clustering
-
-  fRecoParam = AliPMDReconstructor::GetRecoParam();
-
-  if(fRecoParam == 0x0)
-    {
-       AliFatal("No Reco Param found for PMD!!!");
-    }
-
-
-  fRunLoader->GetEvent(ievt);
-
-  ResetRecpoint();
-
-  fTreeR = fPMDLoader->TreeR();
-  if (fTreeR == 0x0)
-    {
-      fPMDLoader->MakeTree("R");
-      fTreeR = fPMDLoader->TreeR();
-    }
-  Int_t bufsize = 16000;
-  TBranch *branch1 = fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
-  TBranch *branch2 = fTreeR->Branch("PMDRechit", &fRechits, bufsize); 
-
-  const Int_t kRow = 48;
-  const Int_t kCol = 96;
-
-  Int_t idet = 0;
-  Int_t iSMN = 0;
-
-  AliPMDRawStream pmdinput(rawReader);
-  Int_t indexDDL = -1;
-
-  while ((indexDDL = pmdinput.DdlData(&pmdddlcont)) >=0)
-    {
-      
-      iSMN = moduleddl[indexDDL];
-
-      Int_t ***precpvADC;
-      precpvADC = new int **[iSMN];
-      for (Int_t i=0; i<iSMN; i++) precpvADC[i] = new int *[kRow];
-      for (Int_t i=0; i<iSMN;i++)
-	{
-	  for (Int_t j=0; j<kRow; j++) precpvADC[i][j] = new int [kCol];
-	}
-      for (Int_t i = 0; i < iSMN; i++)
-	{
-	  for (Int_t j = 0; j < kRow; j++)
-	    {
-	      for (Int_t k = 0; k < kCol; k++)
-		{
-		  precpvADC[i][j][k] = 0;
-		}
-	    }
-	}
-      ResetCellADC();
-    
-      Int_t indexsmn = 0;
-      Int_t ientries = pmdddlcont.GetEntries();
-      for (Int_t ient = 0; ient < ientries; ient++)
-	{
-	  AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
-	  
-	  Int_t det = pmdddl->GetDetector();
-	  Int_t smn = pmdddl->GetSMN();
-	  //Int_t mcm = pmdddl->GetMCM();
-	  //Int_t chno = pmdddl->GetChannel();
-	  Int_t row = pmdddl->GetRow();
-	  Int_t col = pmdddl->GetColumn();
-	  Int_t sig = pmdddl->GetSignal();
-	  if(row < 0 || row > 48 || col < 0 || col > 96)
-	    {
-	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
-			      row, col));
-	      continue; 
-	    }
-	  // Pedestal Subtraction
-	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
-	  Int_t   pedrms1    = (Int_t) pedmeanrms%100;
-	  Float_t pedrms     = (Float_t)pedrms1/10.;
-	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
-	  //printf("%f %f\n",pedmean, pedrms);
-	  Float_t sig1 = (Float_t) sig - (pedmean + 3.0*pedrms);
-
-	  // Hot cell - set the cell adc = 0
-	  Float_t hotflag = fCalibHot->GetHotChannel(det,smn,row,col);
-	  if (hotflag == 1) sig1 = 0;
-
-	  // CALIBRATION
-	  Float_t gain = fCalibGain->GetGainFact(det,smn,row,col);
-
-	  //printf("sig = %d gain = %f\n",sig,gain);
-	  sig = (Int_t) (sig1*gain);
-
-	  if (indexDDL == 0)
-	    {
-	      if (det != 0)
-		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
-			      indexDDL, det));
-	      if (iSMN == 6)
-		{
-		  indexsmn = smn;
-		}
-	      else if (iSMN == 12)
-		{
-		  if (smn < 6)
-		    indexsmn = smn;
-		  else if (smn >= 18 && smn < 24)
-		    indexsmn = smn-12;
-		}
-	    }
-	  else if (indexDDL >= 1 && indexDDL < 4)
-	    {
-	      if (det != 0)
-		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
-			      indexDDL, det));
-	      indexsmn = smn - indexDDL * 6;
-	    }
-	  else if (indexDDL == 4)
-	    {
-	      if (det != 1)
-		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
-			      indexDDL, det));
-	      if (smn < 6)
-		{
-		  indexsmn = smn;
-		}
-	      else if (smn >= 18 && smn < 24)
-		{
-		  indexsmn = smn - 12;
-		}
-	    }
-	  else if (indexDDL == 5)
-	    {
-	      if (det != 1)
-		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
-			      indexDDL, det));
-	      if (smn >= 6 && smn < 18)
-		{
-		  indexsmn = smn - 6;
-		}
-	    }	      
-	  
-	  precpvADC[indexsmn][row][col] = sig;
-
-	}
-      
-      pmdddlcont.Delete();
-
-      Int_t ismn = 0;
-      for (indexsmn = 0; indexsmn < iSMN; indexsmn++)
-	{
-	  ResetCellADC();
-	  for (Int_t irow = 0; irow < kRow; irow++)
-	    {
-	      for (Int_t icol = 0; icol < kCol; icol++)
-		{
-		  fCellTrack[irow][icol] = -1;
-		  fCellPid[irow][icol]   = -1;
-		  fCellADC[irow][icol] = 
-		    (Double_t) precpvADC[indexsmn][irow][icol];
-		} // row
-	    }     // col
-
-
-	  if (indexDDL == 0)
-	    {
-	      if (iSMN == 6)
-		{
-		  ismn = indexsmn;
-		}
-	      else if (iSMN == 12)
-		{
-		  
-		  if (indexsmn < 6)
-		    ismn = indexsmn;
-		  else if (indexsmn >= 6 && indexsmn < 12)
-		    ismn = indexsmn + 12;
-		}
-	      idet = 0;
-	    }
-	  else if (indexDDL >= 1 && indexDDL < 4)
-	    {
-	      ismn = indexsmn + indexDDL * 6;
-	      idet = 0;
-	    }
-	  else if (indexDDL == 4)
-	    {
-	      if (indexsmn < 6)
-		{
-		  ismn = indexsmn;
-		}
-	      else if (indexsmn >= 6 && indexsmn < 12)
-		{
-		  ismn = indexsmn + 12;
-		}
-	      idet = 1;
-	    }
-	  else if (indexDDL == 5)
-	    {
-	      ismn = indexsmn + 6;
-	      idet = 1;
-	    }
-
-	  Int_t imod = idet*24 + ismn;
-	  fEcut = fRecoParam->GetNoiseCut(imod);       // default
-	  // fEcut = fRecoParam->GetPbPbParam()->GetNoiseCut(imod);
-	  // fEcut = fRecoParam->GetPPParam()->GetNoiseCut(imod);
-	  // fEcut = fRecoParam->GetCosmicParam()->GetNoiseCut(imod);
-
-	  pmdclust->SetEdepCut(fEcut);
-
-	  pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,pmdcont);
-
-	  Int_t nentries1 = pmdcont->GetEntries();
-
-	  AliDebug(1,Form("Total number of clusters/module = %d",nentries1));
-
-	  for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
-	    {
-	      pmdcl       = (AliPMDcluster*)pmdcont->UncheckedAt(ient1);
-	      idet        = pmdcl->GetDetector();
-	      ismn        = pmdcl->GetSMN();
-	      clusdata[0] = pmdcl->GetClusX();
-	      clusdata[1] = pmdcl->GetClusY();
-	      clusdata[2] = pmdcl->GetClusADC();
-	      clusdata[3] = pmdcl->GetClusCells();
-	      clusdata[4] = pmdcl->GetClusSigmaX();
-	      clusdata[5] = pmdcl->GetClusSigmaY();
-
-	      AddRecPoint(idet,ismn,clusdata);
-
-	      Int_t ncell = (Int_t) clusdata[3];
-	      for(Int_t ihit = 0; ihit < ncell; ihit++)
-		{
-		  Int_t celldataX = pmdcl->GetClusCellX(ihit);
-		  Int_t celldataY = pmdcl->GetClusCellY(ihit);
-		  Int_t celldataTr = pmdcl->GetClusCellTrack(ihit);
-		  Int_t celldataPid = pmdcl->GetClusCellPid(ihit);
-		  Float_t celldataAdc = pmdcl->GetClusCellAdc(ihit);
-		  AddRecHit(celldataX, celldataY, celldataTr, celldataPid, celldataAdc);
-		}
-	      branch2->Fill();
-	      ResetRechit();
-
-	    }
-	  pmdcont->Delete();
-
-	  branch1->Fill();
-	  ResetRecpoint();
-
-
-	} // smn
-
-      for (Int_t i=0; i<iSMN; i++)
-	{
-	  for (Int_t j=0; j<kRow; j++) delete [] precpvADC[i][j];
-	}
-      for (Int_t i=0; i<iSMN; i++) delete [] precpvADC[i];
-      delete precpvADC;
-    } // DDL Loop
-
-
-  ResetCellADC();
-  
-  fPMDLoader = fRunLoader->GetLoader("PMDLoader");  
-  fPMDLoader->WriteRecPoints("OVERWRITE");
-
-  //   delete the pointers
-  delete pmdclust;
-  delete pmdcont;
-}
-// ------------------------------------------------------------------------- //
-void AliPMDClusterFinder::SetCellEdepCut(Float_t ecut)
-{
-  fEcut = ecut;
 }
 // ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::AddRecPoint(Int_t idet,Int_t ismn,Float_t *clusdata)
@@ -1256,5 +784,21 @@ AliPMDHotData* AliPMDClusterFinder::GetCalibHot() const
   if (!hot)  AliFatal("No hot data from  database !");
   
   return hot;
+}
+//--------------------------------------------------------------------//
+AliPMDNoiseCut* AliPMDClusterFinder::GetNoiseCut() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/NoiseCut");
+  
+  if(!entry) AliFatal("Noisecut object retrieval failed!");
+  
+  AliPMDNoiseCut *ncut = 0;
+  if (entry) ncut = (AliPMDNoiseCut*) entry->GetObject();
+  
+  if (!ncut)  AliFatal("No noise cut data from  database !");
+  
+  return ncut;
 }
   

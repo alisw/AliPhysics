@@ -21,6 +21,7 @@ class AliRawReader;
 class AliPMDCalibData;
 class AliPMDPedestal;
 class AliPMDHotData;
+class AliPMDNoiseCut;
 class AliPMDRecoParam;
 
 class AliPMDClusterFinder : public TObject
@@ -34,11 +35,9 @@ class AliPMDClusterFinder : public TObject
   AliPMDClusterFinder &operator=(const AliPMDClusterFinder &finder); // assignment op
   virtual ~AliPMDClusterFinder();
 
-  void Digits2RecPoints(Int_t ievt);
   void Digits2RecPoints(TTree *digitsTree, TTree *clustersTree);
   void Digits2RecPoints(AliRawReader *rawReader, TTree *clustersTree);
-  void Digits2RecPoints(Int_t ievt, AliRawReader *rawReader);
-  void SetCellEdepCut(Float_t ecut);
+
   void AddRecPoint(Int_t idet, Int_t ismn, Float_t * clusdata);
   void AddRecHit(Int_t celldataX, Int_t celldataY, Int_t celldataTr,
 		 Int_t celldataPid, Float_t celldataAdc);
@@ -53,6 +52,7 @@ class AliPMDClusterFinder : public TObject
   AliPMDCalibData *GetCalibGain() const;
   AliPMDPedestal  *GetCalibPed() const;
   AliPMDHotData   *GetCalibHot() const;
+  AliPMDNoiseCut  *GetNoiseCut() const;
 
  protected:
   AliRunLoader *fRunLoader; // Pointer to Run Loader
@@ -61,6 +61,7 @@ class AliPMDClusterFinder : public TObject
   AliPMDCalibData *fCalibGain;  //! Gain calibration data
   AliPMDPedestal  *fCalibPed;   //! Pedestal calibration data
   AliPMDHotData   *fCalibHot;   //! Hot data
+  AliPMDNoiseCut  *fNoiseCut;   //! Noise cut
 
   const AliPMDRecoParam *fRecoParam; // reconstruction parameter
 
@@ -74,7 +75,7 @@ class AliPMDClusterFinder : public TObject
   Int_t   fNpoint;          // 
   Int_t   fNhit;            // 
   Int_t   fDetNo;           // Detector Number (0:PRE, 1:CPV)
-  Float_t fEcut;            // Energy/ADC cut per cell
+
 
   static const Int_t fgkRow = 48; // Total number of rows in one unitmodule
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
@@ -82,7 +83,7 @@ class AliPMDClusterFinder : public TObject
   Int_t    fCellTrack[fgkRow][fgkCol]; // Array containing individual cell tr
   Int_t    fCellPid[fgkRow][fgkCol]; // Array containing individual cell pid
 
-  ClassDef(AliPMDClusterFinder,16) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,17) // To run PMD clustering
 };
 #endif
 
