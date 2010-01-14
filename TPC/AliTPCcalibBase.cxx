@@ -249,7 +249,7 @@ void AliTPCcalibBase::RegisterDebugOutput(const char *path){
 
 
 
-TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow, Float_t fracUp, Bool_t useMedian, TTreeSRedirector *cstream){
+TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow, Float_t fracUp, Bool_t useMedian, TTreeSRedirector *cstream, Int_t ival){
   //
   // Fitting slices of the projection(axisDim1,axisDim2) of a sparse histogram
   // 
@@ -315,9 +315,9 @@ TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t ax
       Double_t chi2 = funcGaus.GetChisquare();
       //  
       xvec[counter] = xcenter;
-      yvec[counter] = funcGaus.GetParameter(1);
+      yvec[counter] = funcGaus.GetParameter(ival);
       xerr[counter] = xrms;
-      yerr[counter] = funcGaus.GetParError(1); 
+      yerr[counter] = funcGaus.GetParError(ival); 
       if (useMedian) yvec[counter] = xMedian;
       if (cstream){
 	(*cstream)<<"fitDebug"<<
