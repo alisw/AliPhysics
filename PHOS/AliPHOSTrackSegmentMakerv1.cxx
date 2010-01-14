@@ -272,69 +272,65 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
     //Calculate actual distance to PHOS module
     TVector3 globaPos ;
     fGeom->Local2Global(iPHOSMod, 0.,0., globaPos) ;
-    const Double_t rPHOS = globaPos.Pt() ; //Distance to PHOS module
+    const Double_t rPHOS = globaPos.Pt() ; //Distance to center of  PHOS module
     const Double_t kYmax = 72.+10. ; //Size of the module (with some reserve) in phi direction
     const Double_t kZmax = 64.+10. ; //Size of the module (with some reserve) in z direction
-    const Double_t kAlpha= 20./180.*TMath::Pi() ; //TPC sector angular size
+    const Double_t kAlpha0=230./180.*TMath::Pi() ; //First PHOS module angular direction
+    const Double_t kAlpha= 20./180.*TMath::Pi() ; //PHOS module angular size
     Double_t minDistance = 1.e6;
 
-    TMatrixF gmat;
-    TVector3 gposRecPoint; // global (in ALICE frame) position of rec. point
-    emcClu->GetGlobalPosition(gposRecPoint,gmat);
-    Double_t gposTrack[3] ; 
+    TVector3 vecEmc ;   // Local position of EMC recpoint
+    emcClu->GetLocalPosition(vecEmc) ;
 
+    Double_t gposTrack[3] ; 
     Double_t bz = AliTracker::GetBz() ; //B-Field for approximate matching
     Double_t b[3]; 
     for (Int_t i=0; i<nt; i++) {
       AliESDtrack *esdTrack=fESD->GetTrack(i);
 
-//     // Skip the tracks having "wrong" status (has to be checked/tuned)
-//     ULong_t status = esdTrack->GetStatus();
+      // Skip the tracks having "wrong" status (has to be checked/tuned)
+      ULong_t status = esdTrack->GetStatus();
+      if ((status & AliESDtrack::kTPCout)   == 0) continue;
 //     if ((status & AliESDtrack::kTRDout)   == 0) continue;
 //     if ((status & AliESDtrack::kTRDrefit) == 1) continue;
 
-      AliExternalTrackParam t(*esdTrack);
-      Int_t isec=Int_t(t.GetAlpha()/kAlpha);
-      Int_t imod=-isec-2; // PHOS module
+      //Continue extrapolation from TPC outer surface
+      const AliExternalTrackParam *outerParam=esdTrack->GetOuterParam();
+      if (!outerParam) continue;
+      AliExternalTrackParam t(*outerParam);
 
+      t.GetBxByBz(b) ;
+      //Direction to the current PHOS module
+      Double_t phiMod=kAlpha0+kAlpha*iPHOSMod ;
+      if(!t.Rotate(phiMod))
+        continue ;
+ 
       Double_t y;                       // Some tracks do not reach the PHOS
       if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
 
-      Double_t z; t.GetZAt(rPHOS,bz,z);
-      if (TMath::Abs(z) > kZmax) continue; // Some tracks miss the PHOS in Z
-
-      Bool_t ok=kTRUE;
-      while (TMath::Abs(y) > kYmax) {   // Find the matching module
-        Double_t alp=t.GetAlpha();
-        if (y > kYmax) {
-          if (!t.Rotate(alp+kAlpha)) {ok=kFALSE; break;}
-          imod--;
-        } else if (y < -kYmax) {
-          if (!t.Rotate(alp-kAlpha)) {ok=kFALSE; break;}
-          imod++;
-        }
-        if (!t.GetYAt(rPHOS,bz,y)) {ok=kFALSE; break;}
-      }
-      if (!ok) continue; // Track rotation failed
-
-
-      if(imod!= iPHOSMod-1) 
-	continue; //not even approximate coincidence
-
+      Double_t z; 
+      if(!t.GetZAt(rPHOS,bz,z))
+        continue ;
+      if (TMath::Abs(z) > kZmax) 
+        continue; // Some tracks miss the PHOS in Z
+      if(TMath::Abs(y) < kYmax){
+        t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
       //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
-      t.GetBxByBz(b) ;
-      t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
-      t.GetXYZ(gposTrack) ;
-      
-      Double_t ddx = gposTrack[0] - gposRecPoint.X(), ddy = gposTrack[1] - gposRecPoint.Y(), ddz = gposTrack[2] - gposRecPoint.Z();
-      Double_t d2 = ddx*ddx + ddy*ddy + ddz*ddz;
-      if(d2 < minDistance) {
-	dx = TMath::Sign(TMath::Sqrt(ddx*ddx + ddy*ddy),ddx) ;
-	dz = ddz ;
-	trackindex=i;
-	minDistance=d2 ;
+        t.GetXYZ(gposTrack) ;
+        TVector3 globalPositionTr(gposTrack) ;
+        TVector3 localPositionTr ;
+        fGeom->Global2Local(localPositionTr,globalPositionTr,iPHOSMod) ;
+        Double_t ddx = vecEmc.X()-localPositionTr.X();
+        Double_t ddz = vecEmc.Z()-localPositionTr.Z();
+        Double_t d2 = ddx*ddx + ddz*ddz;
+        if(d2 < minDistance) {
+	  dx = ddx ;
+	  dz = ddz ;
+	  trackindex=i;
+	  minDistance=d2 ;
+        }
       }
-    }
+    } //Scanned all tracks
     return ;
   }
 
