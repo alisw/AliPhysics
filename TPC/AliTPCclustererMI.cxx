@@ -812,7 +812,7 @@ void AliTPCclustererMI::ProcessSectorData(Float_t** allBins, Int_t** allSigBins,
     }
   }
   
-  if (AliTPCReconstructor::StreamLevel()>3) {
+  if (AliTPCReconstructor::StreamLevel()>5) {
     for (Int_t iRow = 0; iRow < nRows; iRow++) {
       Int_t maxPad = fParam->GetNPads(fSector,iRow);
       
@@ -833,7 +833,7 @@ void AliTPCclustererMI::ProcessSectorData(Float_t** allBins, Int_t** allSigBins,
             Int_t last= 0;
         //        if (rowsigBins>0) allSigBins[iRow][allNSigBins[iRow]-1];
             
-            if (AliTPCReconstructor::StreamLevel()>0) {
+            if (AliTPCReconstructor::StreamLevel()>5) {
               (*fDebugStreamer)<<"Digits"<<
                 "sec="<<fSector<<
                 "row="<<iRow<<

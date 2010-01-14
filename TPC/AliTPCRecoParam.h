@@ -22,6 +22,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t GetCtgRange() const     { return fCtgRange;}
   Double_t GetMaxSnpTracker() const{ return fMaxSnpTracker;}
   Double_t GetMaxSnpTrack() const  { return fMaxSnpTrack;}
+  Double_t GetCutSharedClusters(Int_t index)const { return fCutSharedClusters[index];}
+  void  SetCutSharedClusters(Int_t index, Float_t value){ fCutSharedClusters[index]=value;}
+  Int_t GetClusterMaxRange(Int_t index)const { return fClusterMaxRange[index];}
+  void     SetClusterMaxRange(Int_t index, Int_t value){ fClusterMaxRange[index]=value;}
   //
   Bool_t   DumpSignal()     const  { return fDumpSignal;}
   void     SetTimeInterval(Int_t first, Int_t last) { fFirstBin=first, fLastBin =last;}
@@ -53,6 +57,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
   Float_t  GetMaxC()    const      { return fMaxC;}
   Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
+  //
+  //
+
   //
   // Correction setup
   //
@@ -98,6 +105,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fCtgRange;        // +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
   Double_t fMaxSnpTracker;   // max sin of local angle  - for TPC tracker
   Double_t fMaxSnpTrack;     // max sin of local angle  - for track 
+  //
+  //
+  Double_t fCutSharedClusters[2]; // cut value - maximal amount  of shared clusters  
+  Int_t fClusterMaxRange[2];   // neighborhood  - to define local maxima for cluster  
   //
   //   clusterer parameters
   //

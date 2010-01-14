@@ -58,7 +58,7 @@ public:
   void FindKinks(TObjArray * array, AliESDEvent * esd);
   //
   void FindCurling(const TObjArray * array, AliESDEvent * esd, Int_t iter);     
-  void FindSplitted(TObjArray * array, AliESDEvent * esd, Int_t iter);       
+  void FindSplitted(TObjArray * array);       
   void FindMultiMC(const TObjArray * array, AliESDEvent * esd, Int_t iter);     
   //
   void FindV0s(const TObjArray * array, AliESDEvent * esd);

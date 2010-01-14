@@ -15,6 +15,7 @@
 //-------------------------------------------------------
 #include <Rtypes.h>
 #include <TObject.h>
+#include <AliTPCRecoParam.h>
 #define kMAXCLUSTER 2500
 
 class TFile;
@@ -109,6 +110,17 @@ inline Bool_t AliTPCclustererMI::IsMaximum(Float_t q,Int_t max,const Float_t *bi
   if (bins[+max-1] >= q) return kFALSE; 
   if (bins[+max+1] > q) return kFALSE; 
   if (bins[-max+1] >= q) return kFALSE;
+  //
+  //
+  if (fRecoParam->GetClusterMaxRange(1)>0){  //local maxima in z on more than 1 time bin 
+    if (bins[-2] > q) return kFALSE;
+    if (bins[ 2] > q) return kFALSE;
+  }
+  if (fRecoParam->GetClusterMaxRange(0)>0){  //local maxima in y on more than pad 
+    if (bins[-2*max] > q) return kFALSE;
+    if (bins[ 2*max] > q) return kFALSE;
+  }
+
   return kTRUE; 
 }
 

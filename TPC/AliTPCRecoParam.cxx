@@ -102,6 +102,10 @@ AliTPCRecoParam::AliTPCRecoParam():
   SetName("TPC");
   SetTitle("TPC");
   for (Int_t i=0;i<5;i++) fSystematicErrors[i]=0;
+  fCutSharedClusters[0]=0.5; // maximal allowed fraction of shared clusters - shorter track
+  fCutSharedClusters[1]=0.25; // maximal allowed fraction of shared clusters - longer  track
+  fClusterMaxRange[0]=0;     // y - pad      range
+  fClusterMaxRange[1]=1;     // z - time bin range
 }
 
 //_____________________________________________________________________________
