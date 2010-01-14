@@ -1242,17 +1242,30 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
  AliInfo("no ESD track found. .....exiting");
  return;
  }
+ // TPC momentum
+ const AliExternalTrackParam *in=track->GetInnerParam();
+ if (in) {
+   aodpid->SetTPCmomentum(in->GetP());
+ }else{
+   aodpid->SetTPCmomentum(-1.);
+ }
+
 
  aodpid->SetITSsignal(track->GetITSsignal());
  aodpid->SetTPCsignal(track->GetTPCsignal());
- //n TRD planes = 6
 
+ //n TRD planes = 6
  Int_t nslices = track->GetNumberOfTRDslices()*6;
  Double_t *trdslices = new Double_t[nslices];
  for(Int_t iSl =0; iSl < track->GetNumberOfTRDslices(); iSl++) {
-     for(Int_t iPl =0; iPl<6; iPl++) trdslices[iPl*track->GetNumberOfTRDslices()+iSl] = track->GetTRDslice(iPl,iSl);
-    }
-
+   for(Int_t iPl =0; iPl<6; iPl++) trdslices[iPl*track->GetNumberOfTRDslices()+iSl] = track->GetTRDslice(iPl,iSl);
+ }
+ 
+//TRD momentum
+ for(Int_t iPl=0;iPl<6;iPl++){
+   Double_t trdmom=track->GetTRDmomentum(iPl);
+   aodpid->SetTRDmomentum(iPl,trdmom);
+ }
 
  aodpid->SetTRDsignal(track->GetNumberOfTRDslices()*6,trdslices);
  Double_t times[AliAODPid::kSPECIES]; track->GetIntegratedTimes(times);
