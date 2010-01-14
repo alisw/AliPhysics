@@ -289,12 +289,12 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
       GetESDsData(kClr0)->Fill(Float_t(n)/6.); //6 is the number of ITS layers
     }
 
-    for (Int_t i=0; i<6; i++) {
+    for (Int_t j=0; j<6; ++j) {
       Int_t idet, sts;
       Float_t xloc,zloc;
-      if (!track->GetITSModuleIndexInfo(i,idet,sts,xloc,zloc)) continue;
-      if (i>=2) idet+=240;
-      if (i>=4) idet+=260;
+      if (!track->GetITSModuleIndexInfo(j,idet,sts,xloc,zloc)) continue;
+      if (j>=2) idet+=240;
+      if (j>=4) idet+=260;
       if ((sts==1)||(sts==2)||(sts==4)) GetESDsData(kClr3)->Fill(idet);  
     }
 
