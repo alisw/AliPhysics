@@ -1,4 +1,4 @@
-AliAnalysisTaskSEDs *AddTaskDs()
+AliAnalysisTaskSEDs *AddTaskDs(Bool_t readMC=kTRUE)
 {
   //                                                                           
   // Test macro for the AliAnalysisTaskSE for Ds candidates 
@@ -13,7 +13,7 @@ AliAnalysisTaskSEDs *AddTaskDs()
 
   // Aanalysis task                                                                                                                     
   AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis");
-  dsTask->SetReadMC(kTRUE);
+  dsTask->SetReadMC(readMC);
   dsTask->SetDebugLevel(0);
   mgr->AddTask(dsTask);
 
