@@ -349,13 +349,15 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskUE *taskUE = 0;
      if(iPWG4UE&1)taskUE = AddTaskUE(); 
      if(iPWG4UE&2){
-       taskUE = AddTaskUE("jetsAOD_CDF07","ALICE","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_UA1LO07","ALICE","LJ","TRANSV");
-       taskUE = AddTaskUE("jetsAOD_UA1LO07","ALICE","BB","TRANSV");
-       taskUE = AddTaskUE("jetsAOD_FASTKT04","ALICE","LJ","TRANSV");
-       taskUE = AddTaskUE("jetsAOD_FASTJET04","ALICE","LJ","TRANSV");
-       taskUE = AddTaskUE("jetsAOD_SISCONE04","ALICE","LJ","TRANSV");
+       taskUE = AddTaskUE("jetsAOD_CDF07","CDF","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_UA1LO07","CDF","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_UA1LO07","CDF","BB","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_FASTJET04","CDF","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_SISCONE04","CDF","LJ","TRANSV"); 
+
      }
+
      if (!taskUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskUE cannot run for this train conditions - EXCLUDED");
    }
 
@@ -794,7 +796,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
      if (!LoadSource(Form("%s/PWG1/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
    if(iPWG4TmpSourceSara){
-     gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
+     //  gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
      if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskEta.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
    if (iPWG4PartCorr) {   
