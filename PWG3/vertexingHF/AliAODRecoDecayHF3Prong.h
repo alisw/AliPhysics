@@ -57,7 +57,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t CtDs(AliAODVertex *vtx1) const {return AliAODRecoDecay::Ct(431,vtx1);}
   Double_t InvMassDsKKpi() const {UInt_t pdg[3]={321,321,211};return InvMass(3,pdg);}
   Double_t InvMassDspiKK() const {UInt_t pdg[3]={211,321,321};return InvMass(3,pdg);}
-  Bool_t   SelectDs(const Double_t* cuts,Int_t &okDsKKpi,Int_t &okDspiKK) 
+  Bool_t   SelectDs(const Double_t* cuts,Int_t &okDsKKpi,Int_t &okDspiKK, Int_t &okMassPhi, Int_t &okMassK0star) 
     const; // same variables as D+, for now
 
   // Lambdac+->pKpi

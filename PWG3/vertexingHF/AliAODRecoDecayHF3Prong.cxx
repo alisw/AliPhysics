@@ -144,7 +144,7 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDplus(const Double_t *cuts)
   return kTRUE;
 }
 //--------------------------------------------------------------------------
-Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,Int_t &okDspiKK)
+Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,Int_t &okDspiKK, Int_t &okMassPhi, Int_t &okMassK0star)
   const {
 //
 // This function compares the Ds with a set of cuts 
@@ -162,12 +162,14 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,In
 // cuts[9] = cosThetaPoint
 // cuts[10] = Sum d0^2 (cm^2)
 // cuts[11] = dca cut (cm)
-// cuts[12] = max. inv. mass difference(Mphi-MKK and MK0*-MKpi) [GeV] 
+// cuts[12] = max. inv. mass difference(Mphi-MKK) [GeV] 
+// cuts[13] = max. inv. mass difference(MK0*-MKpi) [GeV] 
 //
 // If candidate Ds does not pass the cuts return kFALSE
 //
   Double_t mDsKKpi,mDspiKK;
   okDsKKpi=1; okDspiKK=1;
+  okMassPhi=0; okMassK0star=0;
 
   Double_t mDsPDG = TDatabasePDG::Instance()->GetParticle(431)->Mass();
 
@@ -184,17 +186,26 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,In
   if(TMath::Abs(PtProng(2)) < cuts[2] || TMath::Abs(Getd0Prong(2))<cuts[4])return kFALSE;//Pion
 
   // cuts on resonant decays (via Phi or K0*)
-  Bool_t okMassPhi=1;
-  Double_t mass01phi=InvMass2Prongs(0,1,321,321);
-  Double_t mass12phi=InvMass2Prongs(1,2,321,321);
   Double_t mPhiPDG = TDatabasePDG::Instance()->GetParticle(333)->Mass();
-  if(TMath::Abs(mass01phi-mPhiPDG)>cuts[12] && TMath::Abs(mass12phi-mPhiPDG)>cuts[12]) okMassPhi = 0;
-  Bool_t okMassK0star=1;
-  Double_t mass01K0s=InvMass2Prongs(0,1,211,321);
-  Double_t mass12K0s=InvMass2Prongs(1,2,321,211);
-  Double_t mK0sPDG = TDatabasePDG::Instance()->GetParticle(313)->Mass();
-  if(TMath::Abs(mass01K0s-mK0sPDG)>cuts[12] && TMath::Abs(mass12K0s-mK0sPDG)>cuts[12]) okMassK0star = 0;
-  if(!okMassPhi && !okMassK0star) return kFALSE;
+  Double_t mK0starPDG = TDatabasePDG::Instance()->GetParticle(313)->Mass();
+  if(okDsKKpi){
+    Double_t mass01phi=InvMass2Prongs(0,1,321,321);
+    Double_t mass12K0s=InvMass2Prongs(1,2,321,211);
+    if(TMath::Abs(mass01phi-mPhiPDG)<cuts[12]) okMassPhi=1;
+    if(TMath::Abs(mass12K0s-mK0starPDG)<cuts[13]) okMassK0star = 1;
+    if(!okMassPhi && !okMassK0star) okDsKKpi=kFALSE;
+  }
+  if(okDspiKK){
+    Double_t mass01K0s=InvMass2Prongs(0,1,211,321);
+    Double_t mass12phi=InvMass2Prongs(1,2,321,321);
+    if(TMath::Abs(mass01K0s-mK0starPDG)<cuts[13]) okMassK0star = 1;
+    if(TMath::Abs(mass12phi-mPhiPDG)<cuts[12]) okMassPhi=1;
+    if(!okMassPhi && !okMassK0star) okDspiKK=kFALSE;
+  }
+  if(!okDsKKpi && !okDspiKK) return kFALSE;
+
+
+
   
   //DCA
   for(Int_t i=0;i<3;i++) if(GetDCA(i)>cuts[11])return kFALSE;
