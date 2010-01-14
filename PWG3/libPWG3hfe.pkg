@@ -2,8 +2,11 @@
 
 SRCS= hfe/AliHFEcollection.cxx \
       hfe/AliHFEmcQA.cxx \
+      hfe/AliHFEpairs.cxx \
+      hfe/AliHFEsecVtxs.cxx \
       hfe/AliHFEsecVtx.cxx \
       hfe/AliHFEpriVtx.cxx \
+      hfe/AliHFEelecbackground.cxx \
       hfe/AliHFEpid.cxx \
       hfe/AliHFEpidBase.cxx \
       hfe/AliHFEpidITS.cxx \

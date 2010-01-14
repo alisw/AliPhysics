@@ -8,8 +8,11 @@
 
 #pragma link C++ class  AliHFEcollection+;
 #pragma link C++ class  AliHFEmcQA+;
+#pragma link C++ class  AliHFEpairs+;
+#pragma link C++ class  AliHFEsecVtxs+;
 #pragma link C++ class  AliHFEsecVtx+;
 #pragma link C++ class  AliHFEpriVtx+;
+#pragma link C++ class  AliHFEelecbackground+;
 
 #pragma link C++ class  AliHFEpid+;
 #pragma link C++ class  AliHFEpidBase+;
