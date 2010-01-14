@@ -2,7 +2,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask); // Common config
 AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius = -1);
 
 AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf,Float_t radius = -1,UInt_t filterMask = 0); // for the new AF
-Int_t AddTaskJetsDelta(char *nonStdFile = "",UInt_t filterMask = 0,Bool_t kUseAODMC = kTRUE,UInt_t runFlag = 1|4|32|64|128);     
+Int_t AddTaskJetsDelta(char *nonStdFile = "",UInt_t filterMask = 0,Bool_t kUseAODMC = kTRUE,UInt_t runFlag = 1|4|32|128|256);     
 AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask = 0);
 
 AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask ){
