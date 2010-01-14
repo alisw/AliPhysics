@@ -190,6 +190,10 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
   
+  taskName="AddTaskDs.C"; taskName.Prepend(loadMacroPath.Data());
+  gROOT->LoadMacro(taskName.Data());
+  AliAnalysisTaskSEDs *dsTask = AddTaskDs();
+
   //taskName="AddTaskSelectHF.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
