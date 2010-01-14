@@ -67,7 +67,7 @@ void ConfigTaskUE(AliAnalysisTaskUE * ueana){
   // common config,
   ueana->SelectTrigger(AliAnalysisHelperJetTasks::kMB1);
   ueana->SetDebugLevel(0); 
-  ueana->SetPtRangeInHist(25, 0., 50.);
+  ueana->SetPtRangeInHist(15, 0., 15.);
   ueana->SetPtSumOrdering(2);
 }
 
@@ -83,8 +83,8 @@ SetTrackCuts(AliAnalysisTaskUE * ueana, Char_t *ct){
        break;
   
        case "CDF":
-       ueana->SetTrackPtCut(0.4);
-       ueana->SetTrackEtaCut(1.2); // meaningful only for pure MC
+       ueana->SetTrackPtCut(0.5);
+       ueana->SetTrackEtaCut(0.9); // meaningful only for pure MC
         break;
 
        default:
