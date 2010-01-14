@@ -104,8 +104,7 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
   //
 
   // initialize RecoParam for current event
-
-  AliInfo("Initializing params for TOF... ");
+  AliDebug(1,"Initializing params for TOF");
 
   fRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
 
@@ -153,9 +152,7 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
   MatchTracksMI(kFALSE);  // assign track to clusters
   MatchTracksMI(kTRUE);   // assign clusters to esd
   
-  Info("PropagateBack","Number of matched tracks: %d",fnmatch);
-  Info("PropagateBack","Number of good matched tracks: %d",fngoodmatch);
-  Info("PropagateBack","Number of bad  matched tracks: %d",fnbadmatch);
+  AliInfo(Form("Number of matched tracks = %d (good = %d, bad = %d)",fnmatch,fngoodmatch,fnbadmatch));
 
   //Update the matched ESD tracks
 

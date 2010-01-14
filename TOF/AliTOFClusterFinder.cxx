@@ -318,10 +318,10 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     GetClusterPars(dig, posClus,covClus);
     AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],d->GetTracks(),dig,parTOF,status,ii);
     InsertCluster(tofCluster);
-    
+
   }
 
-  AliInfo(Form("Number of found clusters: %d for event: %d", fNumberOfTofClusters, iEvent));
+  AliDebug(1,Form("Number of found clusters: %d for event: %d", fNumberOfTofClusters, iEvent));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -332,8 +332,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");  
   fTOFLoader->WriteRecPoints("OVERWRITE");
 
-  AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
+  AliDebug(1,Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
+		  stopwatch.RealTime(),stopwatch.CpuTime()));
   if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
 
 }
@@ -419,7 +419,7 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
 
   }
 
-  AliInfo(Form("Number of found clusters: %d", fNumberOfTofClusters));
+  AliDebug(1,Form("Number of found clusters: %d", fNumberOfTofClusters));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -427,8 +427,8 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
   clusterTree->Fill();
   ResetRecpoint();
 
-  AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
+  AliDebug(1,Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
+		  stopwatch.RealTime(),stopwatch.CpuTime()));
   if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
 
 }
@@ -467,14 +467,15 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
+  if (fDecoderVersion)
+    AliInfo("Using New Decoder");
+
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (fDecoderVersion) {
-      AliInfo("Using New Decoder \n"); 
+    if (fDecoderVersion)
       fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
-    }
     else fTOFRawStream.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
@@ -557,7 +558,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   if (fVerbose==2) ftxt.close();
 
-  AliInfo(Form("Number of found clusters: %d", fNumberOfTofClusters));
+  AliDebug(1,Form("Number of found clusters: %d", fNumberOfTofClusters));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -613,14 +614,15 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
+  if (fDecoderVersion)
+    AliInfo("Using New Decoder");
+
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (fDecoderVersion) {
-      AliInfo("Using New Decoder \n"); 
+    if (fDecoderVersion)
       fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
-    }
     else fTOFRawStream.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
@@ -703,7 +705,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
   if (fVerbose==2) ftxt.close();
 
-  AliInfo(Form("Number of found clusters: %d for event: %d", fNumberOfTofClusters, iEvent));
+  AliDebug(1,Form("Number of found clusters: %d for event: %d", fNumberOfTofClusters, iEvent));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -764,14 +766,15 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
+  if (fDecoderVersion)
+    AliInfo("Using New Decoder");
+
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (fDecoderVersion) {
-      AliInfo("Using New Decoder \n"); 
+    if (fDecoderVersion)
       fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
-    }
     else fTOFRawStream.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
@@ -853,14 +856,15 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
+  if (fDecoderVersion)
+    AliInfo("Using New Decoder");
+
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (fDecoderVersion) {
-      AliInfo("Using New Decoder \n"); 
+    if (fDecoderVersion)
       fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
-    }
     else fTOFRawStream.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
@@ -1016,22 +1020,22 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   Double_t tToT;
   Double_t timeCorr;
   Int_t   tdcCorr;
-  AliInfo(" Calibrating TOF Clusters: ")
-  
+  AliDebug(1," Calibrating TOF Clusters");
+
   AliTOFChannelOnlineArray *calDelay = fTOFcalib->GetTOFOnlineDelay();  
   AliTOFChannelOnlineStatusArray *calStatus = fTOFcalib->GetTOFOnlineStatus();  
   TObjArray *calTOFArrayOffline = fTOFcalib->GetTOFCalArrayOffline();
+
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
-  AliInfo(Form(" validity = %s",validity.Data()));
   Int_t calibration = -1;
   if (validity.CompareTo("valid")==0) {
-    AliInfo(" Using offline calibration parameters");
+    AliInfo(Form(" validity = %s - Using offline calibration parameters",validity.Data()));
     calibration = 1;
-  }
-  else {
-    AliInfo(" Using online calibration parameters");
+  } else {
+    AliInfo(Form(" validity = %s - Using online calibration parameters",validity.Data()));
     calibration = 0 ;
   }
+
   for (ii=0; ii<fNumberOfTofClusters; ii++) {
     digitIndex = fTofClusters[ii]->GetIndex();
     for(jj=0; jj<5; jj++) detectorIndex[jj] = fTofClusters[ii]->GetDetInd(jj);

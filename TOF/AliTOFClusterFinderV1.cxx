@@ -224,15 +224,12 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
 
   Bool_t status = kTRUE;
 
-  AliInfo(" Calibrating TOF Digits: ");
+  AliDebug(1," Calibrating TOF Digits");
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
-  AliInfo(Form(" validity = %s", validity.Data()));
   if (validity.CompareTo("valid")==0) {
-    AliInfo(" ...using offline calibration parameters");
-  }
-  else {
-    AliInfo(" ...using online calibration parameters");
-  }
+    AliInfo(Form(" validity = %s - Using offline calibration parameters", validity.Data()));
+  } else
+    AliInfo(Form(" validity = %s - Using online calibration parameters", validity.Data()));
 
   Int_t ii = 0;
   for (ii=0; ii<digits->GetEntriesFast(); ii++) {
@@ -291,8 +288,8 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
 
   ResetDigits();
 
-  AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
+  AliDebug(1,Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
+		  stopwatch.RealTime(),stopwatch.CpuTime()));
 
   if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
 
@@ -332,8 +329,8 @@ void AliTOFClusterFinderV1::Digits2RecPoints(AliRawReader *rawReader, TTree *clu
 
   ResetDigits();
 
-  AliInfo(Form("Execution time to read TOF raw data and to write TOF clusters : R:%.4fs C:%.4fs",
-		   stopwatch.RealTime(),stopwatch.CpuTime()));
+  AliDebug(1,Form("Execution time to read TOF raw data and to write TOF clusters : R:%.4fs C:%.4fs",
+		  stopwatch.RealTime(),stopwatch.CpuTime()));
 
 }
 
@@ -377,25 +374,22 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
 
   Bool_t status = kTRUE;
 
-  AliInfo(" Calibrating TOF Digits: ");
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
-  AliInfo(Form(" validity = %s", validity.Data()));
   if (validity.CompareTo("valid")==0) {
-    AliInfo(" ...using offline calibration parameters");
-  }
-  else {
-    AliInfo(" ...using online calibration parameters");
-  }
+    AliInfo(Form(" validity = %s - Using offline calibration parameters", validity.Data()));
+  } else
+    AliInfo(Form(" validity = %s - Using online calibration parameters", validity.Data()));
+
+  if (fDecoderVersion)
+    AliInfo("Using New Decoder");
 
   Int_t indexDDL = 0;
   Int_t iRawData = 0;
   for (indexDDL=0; indexDDL<kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (fDecoderVersion) {
-      AliInfo("Using New Decoder \n"); 
+    if (fDecoderVersion)
       fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
-    }
     else fTOFRawStream.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();

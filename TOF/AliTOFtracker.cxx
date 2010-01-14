@@ -139,8 +139,7 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
   //
 
   // initialize RecoParam for current event
-
-  AliInfo("Initializing params for TOF... ");
+  AliDebug(1,"Initializing params for TOF");
 
   fRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
 
