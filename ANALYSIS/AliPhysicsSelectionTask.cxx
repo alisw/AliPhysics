@@ -85,18 +85,9 @@ void AliPhysicsSelectionTask::UserExec(Option_t*)
 {
   // process the event
 
-  // post the data already here
+  // AliPhysicsSelection::IsCollisionCandidate is called from the event handler
+  // post the data here anyway!
   PostData(1, fOutput);
-
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*> (InputEvent());
-
-  if (!esd)
-  {
-    AliError("ESD branch not available");
-    return;
-  }
-  
-  fPhysicsSelection->IsCollisionCandidate(esd);
 }
 
 void AliPhysicsSelectionTask::Terminate(Option_t *)
