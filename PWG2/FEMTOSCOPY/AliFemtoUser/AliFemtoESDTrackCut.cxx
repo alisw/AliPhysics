@@ -164,10 +164,10 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       return false;
     }
 	
-  if (fMaxImpactXY < track->ImpactD())
+  if (fMaxImpactXY < TMath::Abs(track->ImpactD()))
     return false;
 
-  if (fMaxImpactZ < track->ImpactZ())
+  if (fMaxImpactZ < TMath::Abs(track->ImpactZ()))
     return false;
   
   if (fMaxSigmaToVertex < track->SigmaToVertex()) {
