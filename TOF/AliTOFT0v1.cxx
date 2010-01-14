@@ -176,6 +176,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
     time*=1.E-3; // tof given in nanoseconds	   
     if (!(mom<=fUpperMomBound && mom>=fLowerMomBound))continue;
     
+#if 0
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
     Bool_t tpcRefit = kTRUE;
     Double_t nSigma = 4;
@@ -195,6 +196,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
     Bool_t accepted;
     accepted=esdTrackCuts->AcceptTrack(t);
     if(!accepted) continue;  
+#endif
 
     if(t->GetP() < fLowerMomBound || t->GetIntegratedLength() < 350 || t->GetTOFsignalToT() < 0.000000001)continue; //skip decays
     if(time <= mintime) mintime=time;
@@ -677,6 +679,7 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
     time*=1.E-3; // tof given in nanoseconds	   
     if (!(mom<=fUpperMomBound && mom>=fLowerMomBound))continue;
     
+#if 0
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
     Bool_t tpcRefit = kTRUE;
     Double_t nSigma = 4;
@@ -696,6 +699,7 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
     Bool_t accepted;
     accepted=esdTrackCuts->AcceptTrack(t);
     if(!accepted) continue;  
+#endif
 
     if(t->GetP() < fLowerMomBound || t->GetIntegratedLength() < 350 || t->GetTOFsignalToT() < 0.000000001)continue; //skip decays
     if(time <= mintime) mintime=time;
