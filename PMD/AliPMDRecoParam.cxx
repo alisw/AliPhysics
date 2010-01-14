@@ -40,11 +40,11 @@ AliPMDRecoParam::AliPMDRecoParam():
 }
 //_____________________________________________________________________________
 AliPMDRecoParam::AliPMDRecoParam(const AliPMDRecoParam &source):
-  AliDetectorRecoParam(source)
+  AliDetectorRecoParam(source),
+  fPmdClusteringParam(source.fPmdClusteringParam)
 { 
   //copy Ctor
 
-  fPmdClusteringParam = source.fPmdClusteringParam;
 }
 //_____________________________________________________________________________
 AliPMDRecoParam& AliPMDRecoParam::operator=(const AliPMDRecoParam &source)
