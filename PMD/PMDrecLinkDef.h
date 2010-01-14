@@ -29,4 +29,5 @@
 #pragma link C++ class  AliPMDisocell+;
 #pragma link C++ class  AliPMDrecdata+;
 #pragma link C++ class  AliPMDRecoParam+;
+#pragma link C++ class  AliPMDNoiseCut+;
 #endif
