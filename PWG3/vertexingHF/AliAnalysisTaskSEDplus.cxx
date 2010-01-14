@@ -24,6 +24,7 @@
 
 #include <TClonesArray.h>
 #include <TNtuple.h>
+#include <TCanvas.h>
 #include <TList.h>
 #include <TString.h>
 #include <TH1F.h>
@@ -227,26 +228,26 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
 	//iPtBin=0;
 	cutsDplus[7]=0.08;
  	cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.970;
+ 	cutsDplus[9]=0.979;
 	cutsDplus[10]=0.0055;
       }
       else if(ptCand>2. && ptCand<3){ 
 	//iPtBin=1;
 	cutsDplus[7]=0.08;
  	cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.987;
+ 	cutsDplus[9]=0.991;
 	cutsDplus[10]=0.005;
       }else if(ptCand>3. && ptCand<5){ 
 	//iPtBin=2;
 	cutsDplus[7]=0.1;
  	cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.990;
+ 	cutsDplus[9]=0.995;
 	cutsDplus[10]=0.0035;
       }else{
 	//iPtBin=3;
 	cutsDplus[7]=0.1;
  	cutsDplus[8]=0.5;
-  	cutsDplus[9]=0.995;
+  	cutsDplus[9]=0.997;
 	cutsDplus[10]=0.001;
       }
       
@@ -513,26 +514,26 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	//iPtBin=0;
 	cutsDplus[7]=0.08;
  	cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.970;
+ 	cutsDplus[9]=0.979;
 	cutsDplus[10]=0.0055;
       }
       else if(ptCand>2. && ptCand<3){ 
 	//iPtBin=1;
 	cutsDplus[7]=0.08;
  	cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.987;
+ 	cutsDplus[9]=0.991;
 	cutsDplus[10]=0.005;
       }else if(ptCand>3. && ptCand<5){ 
 	//iPtBin=2;
 	cutsDplus[7]=0.1;
  	cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.990;
+ 	cutsDplus[9]=0.995;
 	cutsDplus[10]=0.0035;
       }else{
 	//iPtBin=3;
 	cutsDplus[7]=0.1;
  	cutsDplus[8]=0.5;
-  	cutsDplus[9]=0.995;
+  	cutsDplus[9]=0.997;
 	cutsDplus[10]=0.001;
       }
       
@@ -731,6 +732,12 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(2));
   }
 
-
-  return;
+  TCanvas *c1=new TCanvas("c1","D+ invariant mass distribution",500,500);
+  c1->cd();
+  TH1F *hMassPt=(TH1F*)fOutput->FindObject("hMassPt3TC");
+  hMassPt->SetLineColor(kBlue);
+  hMassPt->SetXTitle("M[GeV/c^{2}]"); 
+  hMassPt->Draw();
+ 
+ return;
 }
