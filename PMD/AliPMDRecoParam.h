@@ -22,18 +22,17 @@ class AliPMDRecoParam : public AliDetectorRecoParam
 
   virtual void PrintParameters() const;
 
-
-  Float_t GetNoiseCut(Int_t imod) const { return fNoiseCut[imod];}
-  void    SetNoiseCut(Int_t imod, Float_t cut) {fNoiseCut[imod] = cut;}
+  Int_t GetClusteringParam() const { return fPmdClusteringParam;}
+  void  SetNoiseCut(Int_t cluspar) {fPmdClusteringParam = cluspar;}
 
   static   AliPMDRecoParam *GetPbPbParam();   // reco param for PbPb.
   static   AliPMDRecoParam *GetPPParam();     // reco param for PP
   static   AliPMDRecoParam *GetCosmicParam(); // reco param for cosmic muons
  private:
 
-  Float_t fNoiseCut[48]; //Noise cut
+  Int_t fPmdClusteringParam;  // Clustering switch to decide crude or refined
 
-  ClassDef(AliPMDRecoParam, 0)
+  ClassDef(AliPMDRecoParam, 1)
 };
 
 #endif

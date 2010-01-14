@@ -30,17 +30,12 @@ ClassImp(AliPMDRecoParam)
 
 //_____________________________________________________________________________
 AliPMDRecoParam::AliPMDRecoParam():
-  AliDetectorRecoParam()
+  AliDetectorRecoParam(),
+  fPmdClusteringParam(0)
 {
   //
   // constructor
   //
-
-  for (Int_t i = 0; i < 48; i++)
-    {
-      fNoiseCut[i] = 0.;
-    }
-
   SetNameTitle("PMD","PMD");
 }
 //_____________________________________________________________________________
@@ -49,11 +44,7 @@ AliPMDRecoParam::AliPMDRecoParam(const AliPMDRecoParam &source):
 { 
   //copy Ctor
 
-  for (Int_t i = 0; i < 48; i++)
-    {
-      fNoiseCut[i] = source.fNoiseCut[i];
-    }
-
+  fPmdClusteringParam = source.fPmdClusteringParam;
 }
 //_____________________________________________________________________________
 AliPMDRecoParam& AliPMDRecoParam::operator=(const AliPMDRecoParam &source)
@@ -64,10 +55,7 @@ AliPMDRecoParam& AliPMDRecoParam::operator=(const AliPMDRecoParam &source)
 
   if (this != &source)
     {
-      for (Int_t i = 0; i < 48; i++)
-	{
-	  fNoiseCut[i] = source.fNoiseCut[i];
-	}
+      fPmdClusteringParam = source.fPmdClusteringParam;
     }
 
   return *this;
@@ -86,11 +74,8 @@ AliPMDRecoParam *AliPMDRecoParam::GetPbPbParam(){
   // set default reconstruction parameters for PbPb.
   //
   AliPMDRecoParam *param = new AliPMDRecoParam();
-    
-  for (Int_t i = 0; i < 48; i++)
-    {
-      param->fNoiseCut[i] = 10.;    // dummy cuts
-    }
+
+  param->fPmdClusteringParam = 2;
 
   return param;
 }
@@ -101,10 +86,8 @@ AliPMDRecoParam *AliPMDRecoParam::GetPPParam(){
   // set default reconstruction parameters for PP.
   //
   AliPMDRecoParam *param = new AliPMDRecoParam();
-  for (Int_t i = 0; i < 48; i++)
-    {
-      param->fNoiseCut[i] = 10.;    // dummy cuts
-    }
+
+  param->fPmdClusteringParam = 1;
 
   return param;
 }
@@ -115,11 +98,9 @@ AliPMDRecoParam *AliPMDRecoParam::GetCosmicParam(){
   // set default reconstruction parameters for cosmic muon run
   //
   AliPMDRecoParam *param = new AliPMDRecoParam();
-  for (Int_t i = 0; i < 48; i++)
-    {
-      param->fNoiseCut[i] = 15.;    // dummy cuts
-    }
-  
+
+  param->fPmdClusteringParam = 1;
+
   return param;
 }
 
@@ -129,9 +110,8 @@ void AliPMDRecoParam::PrintParameters() const
   //
   // Printing of the used PMD reconstruction parameters
   //
-  for (Int_t i = 0; i < 48; i++)
-    {
-      AliInfo(Form(" Noise cut in every detector : %f", fNoiseCut[i]));
-    }
+
+  AliInfo(" Crude Clustering = 1 and Refined Clustering = 2");
+  AliInfo(Form(" Clustering parameter : %d", fPmdClusteringParam));
 
 }
