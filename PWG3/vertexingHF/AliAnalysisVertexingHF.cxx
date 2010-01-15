@@ -1625,7 +1625,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
     track = (AliVTrack*)event->GetTrack(i);
 
     // skip pure ITS SA tracks
-    //if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
+    if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
 
     // TEMPORARY: check that the cov matrix is there
     Double_t covtest[21];
