@@ -1582,6 +1582,8 @@ Bool_t AliAnalysisManager::ValidateOutputFiles() const
       if (filename == "default") {
          if (!fOutputEventHandler) continue;
          filename = fOutputEventHandler->GetOutputFileName();
+         // Main AOD may not be there
+         if (gSystem->AccessPathName(filename)) continue;
       }
       // Check if the file is closed
       if (openedFiles.Contains(filename)) continue;;
