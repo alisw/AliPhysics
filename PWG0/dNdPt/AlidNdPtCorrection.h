@@ -262,6 +262,9 @@ private:
   THnSparseF *fContMultTrackMatrix; //-> mcVz:mcPt:mcEta (fRecMultTrackMatrix / fRecTrackMatrix)
   
   TString fCorrMatrixFileName; // file with efficiency correction matrices
+
+  //  deta, dphi, pt1 for cosmics
+  THnSparseF *fCosmicsHisto; //-> deta:dphi:pt
   
   AlidNdPtCorrection(const AlidNdPtCorrection&); // not implemented
   AlidNdPtCorrection& operator=(const AlidNdPtCorrection&); // not implemented

@@ -12,6 +12,7 @@ class AliMCEvent;
 class AliESDtrackCuts; 
 class AlidNdPtEventCuts;
 class AlidNdPtAcceptanceCuts;
+class AliPhysicsSelection;
 
 #include "TNamed.h"
 #include "TFolder.h"
@@ -52,6 +53,7 @@ public:
   void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; }
   void SetTriggerClass(const Char_t *triggerClass)              { fTriggerClass = triggerClass; }
   void SetParticleMode(const AlidNdPtHelper::ParticleMode mode) { fParticleMode = mode; }
+  void SetPhysicsTriggerSelection(AliPhysicsSelection* const selection)  { fPhysicsSelection = selection; }
 
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
@@ -61,6 +63,7 @@ public:
   AliTriggerAnalysis::Trigger GetTrigger() const                { return fTrigger; }
   const Char_t* GetTriggerClass() const                         { return fTriggerClass; }
   AlidNdPtHelper::ParticleMode GetParticleMode() const          { return fParticleMode; }
+  AliPhysicsSelection* GetPhysicsTriggerSelection() const       { return fPhysicsSelection; }
 
 private:
 
@@ -73,6 +76,8 @@ private:
   AliTriggerAnalysis::Trigger fTrigger;         // trigger definition MB1, MB2 ...
   const Char_t * fTriggerClass;                 // trigger class
   AlidNdPtHelper::ParticleMode fParticleMode;   // selected particle (pion, kaon, ...)
+
+  AliPhysicsSelection* fPhysicsSelection; // physics trigger selection class
 
   ClassDef(AlidNdPt,1);
 };
