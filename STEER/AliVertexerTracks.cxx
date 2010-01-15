@@ -176,6 +176,9 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(AliVEvent *vEvent)
     }
     if(skipThis) continue;
 
+    // skip pure ITS SA tracks
+    if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
+
     // kITSrefit
     if(fMode==0 && fITSrefit && !(track->GetStatus()&AliESDtrack::kITSrefit)) continue;
 
