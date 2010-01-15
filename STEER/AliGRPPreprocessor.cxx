@@ -47,6 +47,9 @@
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
 #include "AliESDVertex.h"
+#include "AliLHCReader.h"
+#include "AliLHCData.h"
+#include "AliDCSArray.h"
 
 class AliDCSValue;
 class AliShuttleInterface;
@@ -70,14 +73,12 @@ ClassImp(AliGRPPreprocessor)
 
   const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook for PHYSICS runs, when beamType from DAQ logbook == NULL
   const Int_t AliGRPPreprocessor::fgknDAQLbParReduced = 7; // num parameters in the logbook for the other cases
-  const Int_t AliGRPPreprocessor::fgknDCSDP = 51;   // number of dcs dps
+  const Int_t AliGRPPreprocessor::fgknDCSDP = 48;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
+  const Int_t AliGRPPreprocessor::fgknLHCDP = 5;   // number of dcs dps from LHC data
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
-                   "LHCState",              // missing in DCS
                    "L3Polarity",
                    "DipolePolarity",
-                   "LHCLuminosity",         // missing in DCS
-                   "BeamIntensity",         // missing in DCS
                    "L3Current",
                    "DipoleCurrent",
 		   "L3_BSF17_H1",
@@ -169,23 +170,17 @@ ClassImp(AliGRPPreprocessor)
 		   "Dipole_Outside_Temperature"
                  };
                  
-  const Short_t kSensors = 48; // start index position of sensor in DCS DPs
+  const Short_t kSensors = 45; // start index position of sensor in DCS DPs
   const Short_t kNumSensors = 3; // Number of sensors in DCS DPs (CavernAtmosPressure, SurfaceAtmosPressure, CavernAtmosPressure2)
 
 
-  const char* AliGRPPreprocessor::fgkLHCState[20] = {
-                   "P", "PREPARE",
-                   "J", "PREINJECTION",
-                   "I", "INJECTION",
-                   "F", "FILLING",
-                   "A", "ADJUST",
-                   "U", "UNSTABLE BEAMS",
-                   "S", "STABLE BEAMS",
-                   "D", "BEAM DUMP",
-                   "R", "RECOVER",
-                   "C", "PRECYCLE"
-                 };
-
+  const char* AliGRPPreprocessor::fgkLHCDataPoints[AliGRPPreprocessor::fgknLHCDP] = {
+	  "dip/acc/LHC/Beam/Energy.Energy",
+	  "dip/acc/LHC/RunControl/MachineMode.value",
+	  "dip/acc/LHC/RunControl/BeamMode.value",
+	  "dip/acc/LHC/RunControl/BeamType/Beam1.payload",
+	  "dip/acc/LHC/RunControl/BeamType/Beam2.payload"
+  };
   const char* kppError[] = {
                    "",
                    "(DAQ logbook ERROR)",
@@ -195,7 +190,9 @@ ClassImp(AliGRPPreprocessor)
                    "(Trigger Configuration ERROR)",
                    "(DAQ logbook ERROR determining partition of the run)",
                    "(CTP timing ERROR)",
-		   "(SPD Mean Vertex ERROR)"
+		   "(SPD Mean Vertex ERROR)",
+		   "(DCS FXS Error for LHC Data)",
+		   "(LHC Data Error)"
   };
 
 //_______________________________________________________________
@@ -296,6 +293,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 
 	AliGRPObject *grpobj = new AliGRPObject();  // object to store data
 	grpobj->SetBeamEnergyIsSqrtSHalfGeV(); // new format
+
 	//=================//
 	// DAQ logbook     //
 	//=================//
@@ -342,16 +340,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//=================//
 	Log(Form("Starting DCS Query at %d and finishing at %d",GetStartTimeDCSQuery(),GetEndTimeDCSQuery()));
 	Int_t entries = ProcessDcsDPs( valueMap, grpobj );
-	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-4));
+	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-1));
 	if (fdaqStartEndTimeOk){
-		if( entries < fgknDCSDP-4 ) { // FIXME (!= ) LHState, LHCLuminosity, BeamIntensity, L3_BSF4_H3 are not working yet...  
+		if( entries < fgknDCSDP-1 ) { // FIXME (!= ) L3_BSF4_H3 are not working yet...  
 			Log(Form("Problem with the DCS data points!!! Only %d/%d entries found",entries,fgknDCSDP-4));
 			Log(Form("The DPs giving problems were:"));
 			for (Int_t iDP = 0; iDP < fgknDCSDP; iDP++){
 				TObjString *dpString = (TObjString*)ffailedDPs->At(iDP);
 				if (dpString){
 					TString name = dpString->String();
-					if (name != "LHCState" && name != "LHCLuminosity" && name != "BeamIntensity" && name != "L3_BSF4_H3"){
+					if (name != "L3_BSF4_H3"){
 						Log(Form("******** %s ******** not present, but foreseen --> causing an ERROR",name.Data()));
 					}
 					else {
@@ -500,15 +498,24 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log(Form("Incorrect field in DAQ logbook for partition = %s and detector = %s, going into error without trigger timing parameters...",partition.Data(),detector.Data()));
 		error |= 32;
 	}
-	// storing AliGRPObject in OCDB
 
-	AliCDBMetaData md;
-	md.SetResponsible("Chiara Zampolli");
-	md.SetComment("Output parameters from the GRP preprocessor.");
-	
-	Bool_t result = kTRUE;
-	result = Store("GRP", "Data", grpobj, &md); 
-	delete grpobj;
+
+	//=================//
+	// LHC Data        //
+	//=================//
+
+	UInt_t iLHCData = ProcessLHCData(grpobj);
+	if( iLHCData == 0 ) {
+		Log(Form("LHC Data from DCS FXS, successful!"));
+	} else  if (iLHCData == 1) {
+		Log(Form("LHC Data, problems with DCS FXS!"));
+		error |= 256;
+	} else if (iLHCData ==3){
+		Log(Form("Problems in storing LHC Data - but not going into Error"));
+	} else{
+		Log(Form("LHC Data problems"));
+		error |= 512;
+	}
 	
 	//==================//
 	// SPD Mean Vertex  //
@@ -526,11 +533,21 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log("SPD Mean Vertex not processed since runType != PHYSICS");
 	}
 
+	// storing AliGRPObject in OCDB
+
+	AliCDBMetaData md;
+	md.SetResponsible("Chiara Zampolli");
+	md.SetComment("Output parameters from the GRP preprocessor.");
+	
+	Bool_t result = kTRUE;
+	result = Store("GRP", "Data", grpobj, &md); 
+	delete grpobj;
+
 	if (result && !error ) {
 		Log("GRP Preprocessor Success");
 		return 0;
 	} else {
-		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s",
+		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s%s%s",
 			  kppError[(error&1)?1:0],
 			  kppError[(error&2)?2:0],
 			  kppError[(error&4)?3:0],
@@ -538,17 +555,122 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 			  kppError[(error&16)?5:0],
 			  kppError[(error&32)?6:0],
 			  kppError[(error&64)?7:0],
-			  kppError[(error&128)?8:0]
+			  kppError[(error&128)?8:0],
+			  kppError[(error&256)?9:0],
+			  kppError[(error&512)?10:0]
 			  ));
 		return error;
 	}
+
+
+}
+
+//_______________________________________________________________
+
+UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
+{
+	//
+	//Getting the LHC Data from DCS FXS
+	//
+
+	TString timeStartString = (TString)GetRunParameter("DAQ_time_start");
+	TString timeEndString = (TString)GetRunParameter("DAQ_time_end");
+	if (timeStartString.IsNull() || timeStartString.IsNull()){
+		if (timeStartString.IsNull()){ 
+			AliError("DAQ_time_start not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		else if (timeStartString.IsNull()){
+			AliError("DAQ_time_end not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		return 2;
+	}  
+
+	Double_t timeStart = timeStartString.Atof();
+	Double_t timeEnd = timeEndString.Atof();
+
+	//	timeStart = 1260646960;
+	//timeEnd = 1260652740;
+
+	TString fileName = GetFile(kDCS, "LHCData","");
+	if (fileName.Length()>0){
+		AliInfo("Got The LHC Data file");
+		AliLHCReader* lhcReader = new AliLHCReader();
+		TMap* lhcMap = (TMap*)lhcReader->ReadLHCDP(fileName.Data());
+		if (lhcMap) {
+			Log(Form("LHCData map entries = %d",lhcMap->GetEntries()));
+			
+			// Processing data to be put in AliGRPObject
+			TObjArray* energyArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[0]);
+			Float_t energy = ProcessEnergy(energyArray,timeStart,timeEnd);
+			if (energy != -1) {
+				grpobj->SetBeamEnergy(energy);
+				grpobj->SetBeamEnergyIsSqrtSHalfGeV(kTRUE);
+			}
+			
+			TObjArray* machineModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[1]);
+			TObjArray* beamModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[2]);
+			if (beamModeArray->GetEntries()!=1){
+				AliWarning("The beam mode changed! Setting it to UNKNOWN and storing array of strings");
+				grpobj->SetLHCState("UNKNOWN");
+				grpobj->SetLHCStateArray(beamModeArray);
+			}
+			else{
+				AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
+				TObjString* beamModeString = beamMode->GetStringArray(0);
+				AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
+				grpobj->SetLHCState(beamModeString->String());
+			}
+			
+			if (machineModeArray->GetEntries()!=1){
+				AliWarning("The machine mode changed! Setting it to UNKNOWN and storing array of strings");
+				grpobj->SetMachineMode("UNKNOWN");
+				grpobj->SetMachineModeArray(machineModeArray);
+			}
+			else{
+				AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
+				TObjString* machineModeString = machineMode->GetStringArray(0);
+				AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
+				grpobj->SetMachineMode(machineModeString->String());
+			}
+			TObjArray* beam1Array = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[3]);
+			TObjArray* beam2Array = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[4]);
+			
+			// Processing data to go to AliLHCData object
+			AliLHCData* dt = new AliLHCData(lhcMap,timeStart,timeEnd);
+							
+			// storing AliLHCData in OCDB
+			
+			AliCDBMetaData md;
+			md.SetResponsible("Ruben Shahoyan");
+			md.SetComment("LHC data from the GRP preprocessor.");
+	
+			Bool_t result = kTRUE;
+			result = Store("GRP", "LHCData", dt, &md); 
+			delete dt;
+			if (result) return 0;
+			else return 3;
+		}
+		else {
+			AliError("Cannot read correctly LHCData file");
+			return 2;
+		}
+	}
+  
+	else {
+		AliError("No LHCData file found in DCS FXS");
+		return 1;
+	}
+
 }
 
 //_______________________________________________________________
 
 UInt_t AliGRPPreprocessor::ProcessSPDMeanVertex()
 {
+	//
 	//Getting the SPD Mean Vertex
+	//
+
 	TList* list = GetForeignFileSources("SPD", kDAQ, "VertexDiamond");
 	Bool_t storeResult = kTRUE;
 	if (list !=0x0 && list->GetEntries()!=0)
@@ -862,19 +984,17 @@ Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, AliGRPObject* grpObj)
 	//
 
 	Int_t entries = 0;  // counting the entries that are in the DCS DB, not taking care whether they have values or not
-	Int_t nLHCEntries = 0;
 	Int_t nL3Entries = 0;
 	Int_t nDipoleEntries = 0;
 	Int_t nEnvEntries = 0;
 	Int_t nHallProbesEntries = 0;
-	nLHCEntries = ProcessLHCDPs(valueMap, grpObj);
 	nL3Entries = ProcessL3DPs(valueMap, grpObj);
 	nDipoleEntries = ProcessDipoleDPs(valueMap, grpObj);
 	nEnvEntries = ProcessEnvDPs(valueMap, grpObj);
 	nHallProbesEntries = ProcessHPDPs(valueMap, grpObj);
 	grpObj->SetPolarityConventionLHC();  // after the dipole cables swap we comply with LHC convention
-	Log(Form("nLHCEntries = %d, L3Entries = %d, nDipoleEntries =%d, nEnvEntries = %d, nHallProbesEntries = %d", nLHCEntries, nL3Entries, nDipoleEntries, nEnvEntries, nHallProbesEntries));
-	entries = nLHCEntries + nL3Entries + nDipoleEntries + nEnvEntries + nHallProbesEntries;
+	Log(Form("L3Entries = %d, nDipoleEntries =%d, nEnvEntries = %d, nHallProbesEntries = %d", nL3Entries, nDipoleEntries, nEnvEntries, nHallProbesEntries));
+	entries = nL3Entries + nDipoleEntries + nEnvEntries + nHallProbesEntries;
 	return entries;
 
 }
@@ -1219,133 +1339,6 @@ Int_t AliGRPPreprocessor::ProcessHPDPs(const TMap* valueMap, AliGRPObject* grpOb
 	return nHPEntries;
 }
 
-//_______________________________________________________________
-
-Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpObj)
-{
-
-	//
-	// processing of LHC related DCS DPs, i.e.:
-	// LHCState
-	// LHCLuminosity
-	// BeamIntensity
-	//
-
-	Int_t nLHCEntries = 0;
-	TObjArray *array = 0x0;
-	Int_t indexDP = -1;
-
-	AliInfo(Form("==========LHCState==========="));
-	indexDP = kLHCState;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
-	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
-	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			TString stringDCS = ProcessChar(array);
-			if (stringDCS.Length()!=0) {
-				Bool_t found = kFALSE;
-				for( Int_t i=0; i<20; i+=2 ) {
-					if( stringDCS.CompareTo(fgkLHCState[i]) == 0 ) {
-						stringDCS = fgkLHCState[i+1];
-						found = kTRUE;
-						break;
-					}
-				}
-				if (found){
-					Log(Form("<%s> for run %d: %s",fgkDCSDataPoints[indexDP],fRun, stringDCS.Data()));
-					grpObj->SetLHCState(stringDCS);
-				}
-				else{
-					Log(Form("%s values found not valid!",fgkDCSDataPoints[indexDP]));
-					grpObj->SetLHCState(AliGRPObject::GetInvalidString());
-				} 
-			}
-			else {
-				Log(Form("%s not valid (null length), string set as invalid!",fgkDCSDataPoints[indexDP]));
-				grpObj->SetLHCState(AliGRPObject::GetInvalidString());
-			}	  
-		}
-		ffailedDPs->RemoveAt(indexDP);
-		nLHCEntries++;
-	}
-	
-	if (array) array = 0x0;
-
-	AliInfo(Form("==========LHCLuminosity==========="));
-	Bool_t outOfRange = kFALSE; // flag to monitor if any value collected by DCS is out of range
-	indexDP = kLHCLuminosity;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
-	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
-	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s and its Spline Fit to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			Float_t *floatDCS = ProcessFloatAll(array);
-			if (floatDCS != NULL){
-				grpObj->SetLHCLuminosity(floatDCS);
-				AliSplineFit* splfit = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
-				grpObj->SetLHCLuminositySplineFit(splfit);
-			//		delete splfit;
-			}
-			else {
-				outOfRange = kTRUE;
-			}
-			if (floatDCS){
-				delete[] floatDCS;
-				floatDCS = 0x0;
-			}
-		}
-		if (!outOfRange) {
-			ffailedDPs->RemoveAt(indexDP);
-			nLHCEntries++;
-		}
-	}
-
-	if (array) array = 0x0;
-
-	AliInfo(Form("==========BeamIntensity==========="));
-	if (outOfRange) outOfRange = kFALSE;  // resetting outOfRange if needed
-	indexDP = kBeamIntensity;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
-	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
-	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s and its Spline Fit to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			Float_t *floatDCS = ProcessFloatAll(array);
-			if (floatDCS != NULL){
-				grpObj->SetBeamIntensity(floatDCS);
-				AliSplineFit* splfit1 = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
-				grpObj->SetBeamIntensitySplineFit(splfit1);
-				//delete splfit;
-			}
-			else{
-				outOfRange = kTRUE;
-			}
-			if (floatDCS){
-				delete[] floatDCS;
-				floatDCS = 0x0;
-			}
-		}
-		if (!outOfRange) {
-			nLHCEntries++;
-			ffailedDPs->RemoveAt(indexDP);
-		}
-	}
-
-	return nLHCEntries;
-}
 //_________________________________________________________________________
 
 AliSplineFit* AliGRPPreprocessor::GetSplineFit(const TObjArray *array, const TString& stringID){
@@ -2304,4 +2297,262 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	server = 0;
 	
 	return lastRun;
+}
+//-----------------------------------------------------------------
+Double_t AliGRPPreprocessor::CalculateMean(TObjArray* array){
+
+	//
+	// Calculating mean over TObjArray from LHC Data
+	//
+
+	TString timeStartString = (TString)GetRunParameter("DAQ_time_start");
+	TString timeEndString = (TString)GetRunParameter("DAQ_time_end");
+	if (timeStartString.IsNull() || timeStartString.IsNull()){
+		if (timeStartString.IsNull()){ 
+			AliError("DAQ_time_start not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		else if (timeStartString.IsNull()){
+			AliError("DAQ_time_end not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		return 0;
+	}  
+
+	Int_t timeStart = (Int_t)(timeStartString.Atoi());
+	Int_t timeEnd = (Int_t)(timeEndString.Atoi());
+	timeStart = 1260646960;
+	timeEnd = 1260652740;
+	Double_t* parameters = new Double_t[5];
+	parameters[0] = -1.;
+	parameters[1] = -1.;
+	parameters[2] = -1.;
+	parameters[3] = -1.;
+	parameters[4] = -1.;
+	Int_t iCounts = 0;
+	Int_t iCountsRun = 0;
+	Int_t nCounts = array->GetEntries();
+	printf("ncounts = %d\n",nCounts);
+	Double_t valueBeforeSOR = 0;
+	Double_t valueAfterEOR = 0;
+	Double_t timestampBeforeSOR = -1.;
+	Double_t timestampAfterEOR = -1.;
+	Int_t ientrySOR = -1;
+	Int_t ientryEOR = -1;
+	Double_t* arrayValues = 0x0; 
+	Double_t* arrayWeights = 0x0; 
+	Bool_t truncMeanFlag = kTRUE;  // flag to indicate whether Truncated Mean should be calculated or not
+	Bool_t sdFlag = kTRUE;  // flag to indicate whether SD (wrt Mean/Median) should be calculated or not
+
+	for(Int_t i = 0; i < nCounts; i++) {
+		AliDCSArray *dcs = (AliDCSArray*)array->At(i);
+		if((dcs->GetTimeStamp() >= timeStart) &&(dcs->GetTimeStamp() <= timeEnd)) {
+			AliDebug(2,Form("%d-th entry = %f at timestamp %f\n",i,(Double_t)(dcs->GetInt(0)),dcs->GetTimeStamp()));
+			iCounts += 1;
+			// look for the last value before SOR and the first value before EOR
+			if ((dcs->GetTimeStamp() >= timeStart) && (dcs->GetTimeStamp() < timeStart)) {
+				timestampBeforeSOR = dcs->GetTimeStamp();
+				AliDebug(2,Form("timestamp of last value before SOR = %f, with DAQ_time_start = %d\n",timestampBeforeSOR,timeStart));
+				valueBeforeSOR = (Double_t)(dcs->GetInt(0));
+			}
+			else if ((dcs->GetTimeStamp() <= timeEnd) && (dcs->GetTimeStamp() > timeEnd) && timestampAfterEOR == -1){
+				timestampAfterEOR = dcs->GetTimeStamp();
+				valueAfterEOR = (Double_t)(dcs->GetInt(0));
+				AliDebug(2,Form("timestamp of first value after EOR = %f, with DAQ_time_end = %d\n",timestampAfterEOR,timeEnd));
+			}
+			// check if there are DPs between DAQ_time_start and DAQ_time_end
+			if((dcs->GetTimeStamp() >= timeStart) &&(dcs->GetTimeStamp() <= timeEnd)) {
+				if (ientrySOR == -1) ientrySOR = i;  // first entry after SOR
+				if (ientryEOR < i) ientryEOR = i;  // last entry before EOR
+				AliDebug(2,Form("entry between SOR and EOR\n"));
+				iCountsRun += 1;
+			}
+		}
+		else {
+			printf("DCS values for the parameter outside the queried interval: timestamp = %f\n",dcs->GetTimeStamp());
+		}
+	}
+
+	if (timestampBeforeSOR == -1.){
+		printf("No value found before SOR\n");
+	}
+	if (timestampAfterEOR == -1.){
+		printf("No value found after EOR\n");
+	}
+
+	printf("Number of valid entries (within DCS query interval) = %i, from a total amount of %i entries\n",iCounts,nCounts);
+	printf("Last value before DAQ_time_start (SOR) = %f at timestamp = %f\n",valueBeforeSOR,timestampBeforeSOR);
+	printf("First value after DAQ_time_end (EOR)   = %f at timestamp = %f\n",valueAfterEOR,timestampAfterEOR);
+	printf("Found %d entries between DAQ_time_start (SOR) and DAQ_time_end (EOR)\n",iCountsRun);
+	printf("Index of first entry after DAQ_time_start (SOR) = %d\n ",ientrySOR);
+	printf("Index of first entry before DAQ_time_end (EOR) = %d\n ",ientryEOR);
+
+	Int_t nentriesUsed = 0;
+	if (iCountsRun > 1){
+		printf("Using entries between DAQ_time_start (SOR) and DAQ_time_end (EOR)\n");
+		printf("Calculating (weighted) Mean and Median\n" );
+		arrayValues = new Double_t[iCountsRun]; 
+		arrayWeights = new Double_t[iCountsRun]; 
+		nentriesUsed = iCountsRun;
+		for (Int_t i = ientrySOR; i <= ientryEOR; i++){
+			AliDCSArray *dcs = (AliDCSArray *)array->At(i);
+			Double_t timestamp2 = 0;
+			if (i < ientryEOR){
+				AliDCSArray *dcs1 = (AliDCSArray *)array->At(i+1);
+				timestamp2 = dcs1->GetTimeStamp();
+			}
+			else {
+				timestamp2 = (Double_t)timeEnd+1;
+			}
+			arrayWeights[i-ientrySOR] = (Double_t)((Double_t)timestamp2 - dcs->GetTimeStamp());
+			arrayValues[i-ientrySOR] = (Double_t)(dcs->GetInt(0));
+			printf("Entry %d: value = %f, weight = %f\n",i-ientrySOR,arrayValues[i-ientrySOR],arrayWeights[i-ientrySOR]);
+		}
+		parameters[0] = TMath::Mean(iCountsRun,arrayValues,arrayWeights);
+		parameters[2] = TMath::Median(iCountsRun,arrayValues,arrayWeights);
+	}
+	else if (iCountsRun == 1){
+		AliDCSArray* dcs = (AliDCSArray *)array->At(ientrySOR);
+		nentriesUsed = 2;
+		if (timestampBeforeSOR != -1 && timestampBeforeSOR != (Int_t)dcs->GetTimeStamp()){
+			printf("Using single entry between DAQ_time_start (SOR) and DAQ_time_end (EOR) and last entry before SOR. Truncated mean won't be calculated.\n");
+			arrayValues = new Double_t[2];
+			arrayWeights = new Double_t[2];
+			arrayValues[0] = valueBeforeSOR;
+			arrayWeights[0] = (Double_t)(dcs->GetTimeStamp()-(Double_t)timestampBeforeSOR);
+			arrayValues[1] = (Double_t)(dcs->GetInt(0));
+			arrayWeights[1] = (Double_t)((Double_t)timeEnd+1-dcs->GetTimeStamp());
+			printf("value0 = %f, with weight = %f\n",arrayValues[0],arrayWeights[0]); 
+			printf("value1 = %f, with weight = %f\n",arrayValues[1],arrayWeights[1]); 
+			parameters[0] = TMath::Mean(2,arrayValues,arrayWeights);
+			parameters[2] = TMath::Median(2,arrayValues,arrayWeights);
+			truncMeanFlag = kFALSE;
+		}
+		else{
+			printf("Cannot calculate mean, truncated mean, median, SD wrt mean, SD wrt median for current DP - only one value collected during the run, but no value before with which to calculate the statistical quantities\n");
+			parameters[0] = -1;
+			parameters[1] = -1;
+			parameters[2] = -1;
+			parameters[3] = -1;
+			parameters[4] = -1;
+			return parameters[0];
+		}
+	}
+	else { // iCountsRun == 0, using only the point immediately before SOR
+		if (timestampBeforeSOR == -1.){
+			printf("Cannot set mean, truncated mean, median, SD wrt mean, SD wrt median for current DP - no points during the run collected, and point before SOR missing\n");
+			parameters[0] = -1;
+			parameters[1] = -1;
+			parameters[2] = -1;
+			parameters[3] = -1;
+			parameters[4] = -1;
+			return parameters[0];
+		}
+		else {
+			printf("Using only last entry before SOR. Truncated mean and Standard deviations (wrt mean/median) won't be calculated.\n");
+			printf("value = %f\n",valueBeforeSOR); 
+			parameters[0] = valueBeforeSOR;
+			parameters[2] = valueBeforeSOR;
+			truncMeanFlag = kFALSE;
+			sdFlag = kFALSE;
+		}
+	}
+
+	Double_t temp = 0;
+	Double_t temp1 = 0;
+	Double_t sumweights = 0; 
+	Int_t entriesTruncMean = 0;
+	Double_t* arrayValuesTruncMean = new Double_t[nentriesUsed]; 
+	Double_t* arrayWeightsTruncMean = new Double_t[nentriesUsed]; 
+
+	// calculating SD wrt Mean and Median
+	printf("Calculating SD wrt Mean and SD wrt Median\n");
+	if (sdFlag){
+		for (Int_t i =0; i< nentriesUsed; i++){
+			//printf("Entry %d: value = %f, weight = %f\n",i,arrayValues[i],arrayWeights[i]);
+			temp += (arrayValues[i]-parameters[2])*(arrayValues[i]-parameters[2]);
+			temp1 += arrayWeights[i]*(arrayValues[i]-parameters[0])*(arrayValues[i]-parameters[0]);
+			sumweights += arrayWeights[i];
+		}
+		// setting SD wrt Mean 
+		if (sumweights != 0 ){
+			parameters[3] = TMath::Sqrt(temp1/sumweights);
+		}
+		else {
+			printf("Sum of weights to calculate Standard Deviation (wrt mean) <= 0, setting the SD to invalid\n");
+			parameters[3] = -1;
+		}
+		// setting SD wrt Median
+		if (nentriesUsed != 0){
+			parameters[4] = TMath::Sqrt(temp/nentriesUsed);
+		}
+		else{
+			printf("Number of entries used to calculate Standard Deviation (wrt median) <= 0, setting the SD to invalid\n");
+			parameters[4] = -1;
+		}
+	}
+	else {
+		parameters[3] = -1;
+		parameters[4] = -1;
+	}		
+
+	// calculating truncated mean (this comes afterwards since you need the SD wrt Mean)
+	if (truncMeanFlag){
+		printf("Calculating Truncated Mean\n");
+		for (Int_t i =0; i< nentriesUsed; i++){
+			//printf("Entry %d: value = %f, weight = %f\n",i,arrayValues[i],arrayWeights[i]);
+			if ((arrayValues[i]<=parameters[0]+3*parameters[3]) && (arrayValues[i]>=parameters[0]-3*parameters[3])){
+				arrayValuesTruncMean[entriesTruncMean]=arrayValues[i];
+				arrayWeightsTruncMean[entriesTruncMean]=arrayWeights[i];
+				printf("For Truncated Mean: Entry %d: value = %f, weight = %f\n",entriesTruncMean,arrayValuesTruncMean[entriesTruncMean],arrayWeightsTruncMean[entriesTruncMean]);
+				entriesTruncMean++;			
+			}
+			else{
+				printf("Discarding entry\n");
+			}
+		}
+		// setting truncated mean 
+		if (entriesTruncMean >1){
+			printf("%d entries used for truncated mean\n",entriesTruncMean);
+			parameters[1] = TMath::Mean(entriesTruncMean,arrayValuesTruncMean,arrayWeightsTruncMean);
+		}
+		else{	
+			printf("Too few entries (%d) to calculate truncated mean\n",entriesTruncMean);
+			parameters[1] = -1;
+		}
+	}
+	else{
+			parameters[1] = -1;
+	}
+	
+	printf("(weighted) mean = %f \n",parameters[0]);
+	printf("(weighted) truncated mean = %f \n",parameters[1]);
+	printf("median = %f \n",parameters[2]);
+	printf("(weighted) standard deviation with (weighted) mean = %f \n",parameters[3]);
+	printf("standard deviation with median = %f \n",parameters[4]);
+	
+	return (parameters[0]);
+}
+//------------------------------------------------------------------------------------------------------
+Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* array, Double_t timeStart, Double_t timeEnd){
+
+	//
+	// Method to processo LHC Energy information
+	// Only the first value is returned, provided that it is withing DAQ_time_start and DAQ_time_end
+	//
+
+	Int_t nCounts = array->GetEntries();
+	Float_t energy = -1;
+	AliDebug(2,Form("Energy measurements = %d\n",nCounts));
+	for(Int_t i = 0; i < nCounts; i++) {
+		AliDCSArray *dcs = (AliDCSArray*)array->At(i);
+		if((dcs->GetTimeStamp() >= timeStart) &&(dcs->GetTimeStamp() <= timeEnd)) {
+			energy = (Float_t)(TMath::Nint(((Double_t)(dcs->GetInt(0)))*120/1000)); // sqrt(s)/2 energy in GeV
+			AliInfo(Form("Energy value found = %d, converting --> sqrt(s)/2 = %f (GeV)", dcs->GetInt(0),energy));
+			break;
+		}
+		else {
+			AliError("No energy values found between DAQ_time_start and DAQ_time_end - energy will remain invalid!");
+		}
+	}
+
+	return energy;
 }

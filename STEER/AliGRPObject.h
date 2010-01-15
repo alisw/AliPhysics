@@ -59,6 +59,9 @@ class AliGRPObject : public TObject {
 	TString   GetLHCPeriod() const {return fLHCPeriod;}
 	TString   GetRunType() const {return fRunType;}
 	TString   GetLHCState() const {return fLHCState;}
+	TString   GetMachineMode() const {return fMachineMode;}
+	TObjArray*   GetLHCStateArray() const {return fLHCStateArray;}
+	TObjArray*   GetMachineModeArray() const {return fMachineModeArray;}
 	Float_t*  GetLHCLuminosity() const {return fLHCLuminosity;}
 	Float_t   GetLHCLuminosity(Stats stat) const {return fLHCLuminosity[stat];}
 	AliSplineFit*  GetLHCLuminositySplineFit() const {return fLHCLuminositySplineFit;}
@@ -97,6 +100,9 @@ class AliGRPObject : public TObject {
 	void SetLHCPeriod(TString lhcPeriod)  {fLHCPeriod = lhcPeriod;}
 	void SetRunType(TString runType)  {fRunType = runType;}
 	void SetLHCState(TString lhcState)  {fLHCState = lhcState;}
+	void SetMachineMode(TString machineMode)  {fMachineMode = machineMode;}
+	void SetLHCStateArray(TObjArray* lhcStateArray)  {fLHCStateArray = lhcStateArray;}
+	void SetMachineModeArray(TObjArray* machineModeArray)  {fMachineModeArray = machineModeArray;}
 	void SetLHCLuminosity(const Float_t* lhcLuminosity)  {
   		for (Int_t i = 0;i<fPoints;i++) fLHCLuminosity[i] = lhcLuminosity[i];
 	}
@@ -192,7 +198,12 @@ class AliGRPObject : public TObject {
 	Float_t* fHallProbes;       //[fDimension] 
 	                            // array containg the values for the Hall Probes
 
-	ClassDef(AliGRPObject,3)
+	TString  fMachineMode;      // Machine Mode from LHC
+
+	TObjArray* fLHCStateArray;     // Array of values for the LHC State
+	TObjArray* fMachineModeArray;  // Array of values for the LHC State
+
+	ClassDef(AliGRPObject,4)
 
 };
 

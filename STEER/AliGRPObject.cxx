@@ -106,7 +106,10 @@ AliGRPObject::AliGRPObject():
 	fCavernAtmosPressure(0x0),
 	fCavernAtmosPressure2(0x0),
 	fSurfaceAtmosPressure(0x0),
-	fHallProbes(0x0)
+	fHallProbes(0x0),
+	fMachineMode(fgkInvalidString),
+	fLHCStateArray(0x0),
+	fMachineModeArray(0x0)
 {
 
 	//
@@ -157,7 +160,11 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	fCavernAtmosPressure(obj.fCavernAtmosPressure),
 	fCavernAtmosPressure2(obj.fCavernAtmosPressure2),
 	fSurfaceAtmosPressure(obj.fSurfaceAtmosPressure),
-	fHallProbes(0x0)
+	fHallProbes(0x0),
+	fMachineMode(obj.fMachineMode),
+	fLHCStateArray(obj.fLHCStateArray),
+	fMachineModeArray(obj.fMachineModeArray)
+
 
 {
 
@@ -232,6 +239,10 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 		this->fCavernTemperature[i] = obj.GetCavernTemperature((Stats)i);
 	}
 
+	this->fMachineMode = obj.fMachineMode;
+	this->fLHCStateArray = obj.fLHCStateArray;
+	this->fMachineModeArray = obj.fMachineModeArray;
+
 	return *this;
 }
 
@@ -270,6 +281,14 @@ AliGRPObject::~AliGRPObject() {
 	if (fSurfaceAtmosPressure){
 		delete fSurfaceAtmosPressure;
 		fSurfaceAtmosPressure = 0x0;
+	}
+	if (fLHCStateArray){
+		delete fLHCStateArray;
+		fLHCStateArray = 0x0;
+	}
+	if (fMachineModeArray){
+		delete fMachineModeArray;
+		fMachineModeArray = 0x0;
 	}
 }
 

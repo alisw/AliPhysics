@@ -293,7 +293,6 @@ AliDCSArray::~AliDCSArray()
 		fFloat = 0x0;
 	}
 	if (fStringArray!=0x0){
-		AliInfo("Deleting...");
 		delete fStringArray;
 		fStringArray = 0x0;
 	}

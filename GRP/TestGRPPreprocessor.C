@@ -57,13 +57,15 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SPD", "VertexDiamond", "gdc-GLOBAL-01", "$ALICE_ROOT/GRP/ShuttleInput/run000104892_SPD_mon-DA-SPD-0_VertexDiamond");
-	  /*
+	  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "LHCData", "", "$ALICE_ROOT/GRP/ShuttleInput/testRun_GRP_run_number_testRun_data.txt");
+          /*
 	  // for example:
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SPD", "VertexDiamond", "gdc-GLOBAL-01", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000104892_SPD_mon-DA-SPD-0_VertexDiamond");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SPD", "VertexDiamond", "gdc-GLOBAL-01", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000104892_SPD_mon-DA-SPD-0_VertexDiamond");
+	  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "LHCData", "", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/testRun_GRP_run_number_testRun_data.txt");
 	  */
   }
 
@@ -164,13 +166,10 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
   // <valueList> is a TObjArray of AliDCSValue
   // An AliDCSValue consists of timestamp and a value in form of a AliSimpleValue
   
-  const Int_t fgknDCSDP = 51;
+  const Int_t fgknDCSDP = 48;
   const char* fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
-                   "LHCState",              // missing in DCS
                    "L3Polarity",
                    "DipolePolarity",
-                   "LHCLuminosity",         // missing in DCS
-                   "BeamIntensity",         // missing in DCS
                    "L3Current",
                    "DipoleCurrent",
 		   "L3_BSF17_H1",
@@ -226,15 +225,6 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
   aliasMap = new TMap;
   aliasMap->SetOwner(1);
   
-  /*
-  // LHCState
-  valueSet = new TObjArray;
-  valueSet->SetOwner(1);
-  dcsVal = new AliDCSValue( 'F', 2 );
-  valueSet->Add(dcsVal);
-  aliasMap->Add( new TObjString(fgkDCSDataPoints[0]), valueSet );
-  */
-
   // L3Polarity
   valueSet = new TObjArray;
   valueSet->SetOwner(1);
@@ -263,18 +253,6 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
   dcsVal = new AliDCSValue( kTRUE, 1990 );
   aliasMap->Add( new TObjString(fgkDCSDataPoints[2]), valueSet );
 
-  // LHCLuminosity - keeping outside look to check procedure to calculate statistics values
-  valueSet = new TObjArray;
-  valueSet->SetOwner(1);
-  dcsVal = new AliDCSValue( (Float_t)2, 1010 );
-  valueSet->Add(dcsVal);
-  dcsVal = new AliDCSValue( (Float_t)4, 1100 );
-  valueSet->Add(dcsVal);
-  dcsVal = new AliDCSValue( (Float_t)6, 1200 );
-  valueSet->Add(dcsVal);
-  dcsVal = new AliDCSValue( (Float_t)8, 1985 );
-  valueSet->Add(dcsVal);
-  aliasMap->Add( new TObjString(fgkDCSDataPoints[3]), valueSet );
 
   TRandom random;
 
@@ -286,8 +264,8 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
 	  maxDPindex = 3;  // simulating only a few DP in case errorLevel=5
   }
 
-  for( int nAlias=4; nAlias<maxDPindex; nAlias++)  {
-	  if (nAlias>=7 && nAlias < 47) continue; 
+  for( int nAlias=2; nAlias<maxDPindex; nAlias++)  {
+	  if (nAlias>=4 && nAlias < 44) continue; 
     valueSet = new TObjArray;
     valueSet->SetOwner(1);
 
