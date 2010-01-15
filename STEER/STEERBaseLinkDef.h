@@ -74,6 +74,18 @@
 #pragma link C++ class AliTriggerScalers+;
 #pragma link C++ class AliTriggerScalersRecord+;
 
+
+#pragma link C++ class AliLHCDipValT<Double_t>+;
+#pragma link C++ class AliLHCDipValT<Int_t>+;
+#pragma link C++ class AliLHCDipValT<Float_t>+;
+#pragma link C++ class AliLHCDipValT<Char_t>+;
+#pragma link C++ class AliLHCData+;
+
+#pragma link C++ typedef AliLHCDipValD;
+#pragma link C++ typedef AliLHCDipValI;
+#pragma link C++ typedef AliLHCDipValF;
+#pragma link C++ typedef AliLHCDipValC;
+
 #pragma link C++ class  AliExternalTrackParam+;
 #pragma link C++ class AliQA+;
 
