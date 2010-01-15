@@ -29,7 +29,6 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTCaloClusterizer.h"
-//#include "AliHLTCaloBase.h"
 #include "AliHLTLogging.h"
 #include "TMath.h"
 #include "AliHLTCaloRecPointContainerStruct.h"
@@ -37,22 +36,21 @@
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloDigitContainerDataStruct.h"
 #include "TClonesArray.h"
-#include "AliHLTCaloConstants.h"
-
-
+#include "AliHLTCaloConstantsHandler.h"
 //#ifndef HAVENOT__PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
 //#include "AliPHOSRecoParam.h"
 //#else
 //#include "AliPHOSRecoParamEmc.h"
 //ff#endif
 #include <iostream>
-
-
 using namespace std;
+
+
 
 ClassImp(AliHLTCaloClusterizer);
 
 AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
+  AliHLTCaloConstantsHandler(det),
   fRecPointDataPtr(0),
   fDigitDataPtr(0),
   fEmcClusteringThreshold(0),
@@ -60,8 +58,7 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
   fEmcTimeGate(0),
   fDigitsInCluster(0),
   fDigitContainerPtr(0),
-  fMaxDigitIndexDiff(0),
-  fCaloConstants(NULL)
+  fMaxDigitIndexDiff(0)
 {
   //See header file for documentation
   fEmcClusteringThreshold = 0.2;
@@ -70,10 +67,12 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
   
   fMaxDigitIndexDiff = 2*fCaloConstants->GetNZROWSMOD();
 
-  fCaloConstants = new AliHLTCaloConstants(det);
 }//end
 
+
+//BALLE how do you set the right detector?
 AliHLTCaloClusterizer::AliHLTCaloClusterizer(const AliHLTCaloClusterizer &) :
+  AliHLTCaloConstantsHandler("BALLE"),
   fRecPointDataPtr(0),
   fDigitDataPtr(0),
   fEmcClusteringThreshold(0),
@@ -81,8 +80,7 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(const AliHLTCaloClusterizer &) :
   fEmcTimeGate(0),
   fDigitsInCluster(0),
   fDigitContainerPtr(0),
-  fMaxDigitIndexDiff(0),
-  fCaloConstants(NULL)
+  fMaxDigitIndexDiff(0)
 {
   // dummy copy constructor
 }//end

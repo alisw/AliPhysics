@@ -19,7 +19,7 @@
 #include "AliHLTEMCALMapper.h"
 
 
-AliHLTEMCALSharedMemoryInterface::AliHLTEMCALSharedMemoryInterface() : AliHLTCaloSharedMemoryInterfacev2()
+AliHLTEMCALSharedMemoryInterface::AliHLTEMCALSharedMemoryInterface() : AliHLTCaloSharedMemoryInterfacev2("EMCAL")
 {
   for(int i=0; i < 32; i++ )
     {

@@ -17,8 +17,8 @@
 #ifndef ALIHLTCALOCONSTANTSHANDLER_H
 #define ALIHLTCALOCONSTANTSHANDLER_H
 
-class AliHLTCaloConstants;
-class TString;
+#include "AliHLTCaloConstants.h"
+#include "TString.h"
 
 class AliHLTCaloConstantsHandler
 {
@@ -26,21 +26,23 @@ public:
   AliHLTCaloConstantsHandler(TString det);
   virtual ~AliHLTCaloConstantsHandler();
 
+
 protected:
   AliHLTCaloConstants* fCaloConstants;
   
 private:
+  
+
   /** Keep the standard constructor private, since we must alway initialize by specific calorimeter**/
   AliHLTCaloConstantsHandler();
-
+  
   /** Keep the copy constructor private since it should not be used */
   AliHLTCaloConstantsHandler(const AliHLTCaloConstantsHandler & );
-
+  
   /** Keep the assignement operator private since it should not be used */
-    AliHLTCaloConstantsHandler & operator = (const AliHLTCaloConstantsHandler &);
-
-
-  void Initialize(TString det);
+  AliHLTCaloConstantsHandler & operator = (const AliHLTCaloConstantsHandler &);
+  
+  ClassDef(AliHLTCaloConstantsHandler, 1);
 
 };
 

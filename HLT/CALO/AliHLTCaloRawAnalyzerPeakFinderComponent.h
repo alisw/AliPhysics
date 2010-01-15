@@ -41,6 +41,8 @@ class AliHLTCaloRawAnalyzerPeakFinderComponent: public AliHLTCaloRawAnalyzerComp
 
 private:
     AliHLTCaloRawAnalyzerPeakFinderComponent();
+
+  ClassDef(AliHLTCaloRawAnalyzerPeakFinderComponent, 1);
 };
 
 

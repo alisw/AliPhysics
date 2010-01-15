@@ -25,8 +25,12 @@
 #include "AliCaloRawStreamV3.h"
 #include "AliRawReaderMemory.h"
 
+#include "AliHLTPHOSConstant.h"
 
 #include "AliHLTPHOSUtilities.h"
+
+
+using namespace PhosHLTConst;
 
 AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3():
   AliHLTPHOSRcuProcessor(), 

@@ -20,7 +20,7 @@
 #include "AliHLTPHOSSharedMemoryInterfacev2.h"
 #include "AliHLTPHOSRcuDAComponent.h"
 #include "AliHLTPHOSDefinitions.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TObjArray.h"
 #include "AliHLTPHOSUtilities.h"
@@ -44,12 +44,13 @@ using namespace PhosHLTConst;
 
 AliHLTPHOSRcuDAComponent gAliHLTPHOSRcuDAComponent;
 
-AliHLTPHOSRcuDAComponent::AliHLTPHOSRcuDAComponent() : //AliHLTPHOSRcuProperties(),
-						       AliHLTCalibrationProcessor(),
-						       fPhosEventCount(0),
-						       fPHOSDAPtr(0),
-						       fShmPtr(0) 
-						       //    fTest(-2)
+AliHLTPHOSRcuDAComponent::AliHLTPHOSRcuDAComponent() : 
+  //AliHLTPHOSRcuProperties(),
+  AliHLTCalibrationProcessor(),
+  fPhosEventCount(0),
+  fPHOSDAPtr(0),
+  fShmPtr(0) 
+  //    fTest(-2)
 {
   fShmPtr = new AliHLTPHOSSharedMemoryInterfacev2();
 }

@@ -21,6 +21,8 @@
 
 //#include "AliHLTCaloRcuFFTDataStruct.h"
 
+ClassImp(AliHLTCaloFourier);
+
 AliHLTCaloFourier::AliHLTCaloFourier() :  fFFT_own(0),
 					  fFFTInputArray(0),
 					  fFFTOutputArray(0),

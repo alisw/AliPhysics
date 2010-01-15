@@ -4,7 +4,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//* Primary Authors: Svein Lindal <slindal@fys.uio.no>
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -29,13 +29,15 @@
 #include "AliHLTCaloConstants.h"
 #include "AliHLTMisc.h"
 
+ClassImp(AliHLTCaloConstantsHandler);
+
 AliHLTCaloConstantsHandler::AliHLTCaloConstantsHandler(TString det):
- fCaloConstants(NULL)
+  fCaloConstants(NULL)
 {
   if (det.CompareTo("PHOS") == 0) {
-    fCaloConstants = AliHLTMisc::LoadInstance( (AliHLTCaloConstants*) NULL, "AliHLTPHOSConstants", "PHOS");
+    fCaloConstants = AliHLTMisc::LoadInstance( (AliHLTCaloConstants*) NULL, "AliHLTPHOSConstants", "libAliHLTPHOS.so");
   } else {
-    fCaloConstants = AliHLTMisc::LoadInstance( (AliHLTCaloConstants*) NULL, "AliHLTEMCALConstants", "EMCAL");
+    fCaloConstants = AliHLTMisc::LoadInstance( (AliHLTCaloConstants*) NULL, "AliHLTEMCALConstants", "libAliHLTEMCAL.so");
   }
 }
 

@@ -33,7 +33,7 @@
 
 #include "Rtypes.h"
 #include "TClonesArray.h"
-#include "AliHLTPHOSConstants.h" 
+#include "AliHLTPHOSConstant.h" 
 
 using namespace  PhosHLTConst;
 

@@ -26,7 +26,7 @@
 
 #include "AliPHOSEMCAGeometry.h"
 #include "AliHLTPHOSMapper.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 #include "AliHLTLogging.h"
 #include "Rtypes.h"
 #include "unistd.h"

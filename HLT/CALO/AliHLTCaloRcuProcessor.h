@@ -22,6 +22,7 @@ private:
   AliHLTCaloRcuProcessor (const AliHLTCaloRcuProcessor & );
   AliHLTCaloRcuProcessor   & operator = (const  AliHLTCaloRcuProcessor  &);
     
+  ClassDef(AliHLTCaloRcuProcessor, 1);
 };
 
 #endif

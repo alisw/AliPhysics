@@ -95,7 +95,7 @@ private:
   /** The max difference between 2 samples */
   Int_t fMaxDifference;           //COMMENT
  
-  // ClassDef(AliHLTCaloySanityInspector, 1);
+  ClassDef(AliHLTCaloSanityInspector, 1);
 };
 
 #endif

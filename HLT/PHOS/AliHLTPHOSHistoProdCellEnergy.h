@@ -32,7 +32,7 @@
 //#include "AliHLTPHOSBase.h"
 
 #include "Rtypes.h"
-#include "AliHLTPHOSConstants.h" 
+#include "AliHLTPHOSConstant.h" 
 
 class TObjArray;
 class TH1F;

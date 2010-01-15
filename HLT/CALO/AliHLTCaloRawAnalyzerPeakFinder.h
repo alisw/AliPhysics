@@ -79,8 +79,8 @@ class AliHLTCaloRawAnalyzerPeakFinder : public AliHLTCaloRawAnalyzer
  // AliHLTCaloUtilities *fUtilitiesPtr;
 
 
-  //  ClassDef(AliHLTCaloRawAnalyzerPeakFinder, 2) 
-  
-    };
+  ClassDef(AliHLTCaloRawAnalyzerPeakFinder, 2) 
+
+};
 
 #endif

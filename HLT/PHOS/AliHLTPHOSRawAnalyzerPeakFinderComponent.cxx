@@ -19,7 +19,9 @@
 #include "AliHLTPHOSRawAnalyzerPeakFinder.h"
 //#include <cstdlib>
 //#include "AliHLTPHOSCommonDefs.h"
+#include "AliHLTPHOSConstant.h"
 
+using namespace PhosHLTConst;
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;
 

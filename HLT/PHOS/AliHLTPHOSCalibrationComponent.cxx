@@ -2,7 +2,7 @@
 
 
 #include "AliHLTPHOSCalibrationComponent.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSEmcCalibData.h"
 

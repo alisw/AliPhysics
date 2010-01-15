@@ -21,6 +21,7 @@
 
 using namespace std;
 
+ClassImp(AliHLTCaloRawAnalyzerCrude);
 
 AliHLTCaloRawAnalyzerCrude::AliHLTCaloRawAnalyzerCrude():AliHLTCaloRawAnalyzer() 
 {

@@ -31,10 +31,8 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTCaloDigitMaker.h"
-
-#include "AliHLTCaloConstants.h"
+#include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloMapper.h"
-
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTCaloChannelDataHeaderStruct.h"
 #include "AliHLTCaloDigitDataStruct.h"
@@ -48,6 +46,7 @@ ClassImp(AliHLTCaloDigitMaker);
 //using namespace CaloHLTConst;
 
 AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
+  AliHLTCaloConstantsHandler(det),
   fShmPtr(0),
   fDigitStructPtr(0),
   fDigitCount(0),
@@ -56,20 +55,19 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
   fHighGainFactors(0),
   fLowGainFactors(0),
   fBadChannelMask(0),
-  fChannelBook(0),
-  fCaloConstants(NULL)
+  fChannelBook(0)
 {
   // See header file for documentation
 
-  fShmPtr = new AliHLTCaloSharedMemoryInterfacev2();
+  fShmPtr = new AliHLTCaloSharedMemoryInterfacev2(det);
 
   fHighGainFactors = new Float_t*[fCaloConstants->GetNXCOLUMNSMOD()];
   fLowGainFactors = new Float_t*[fCaloConstants->GetNXCOLUMNSMOD()];
-
+  
   fBadChannelMask = new Float_t**[fCaloConstants->GetNXCOLUMNSMOD()];
-
+  
   fChannelBook= new AliHLTCaloDigitDataStruct**[fCaloConstants->GetNXCOLUMNSMOD()];
-
+  
   for(int x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
     {
       fHighGainFactors[x] = new Float_t[fCaloConstants->GetNZROWSMOD()];
@@ -96,11 +94,11 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
   
   //Must be set in child instance
   //fMapperPtr = new AliHLTCaloMapper(det);
-  fCaloConstants = new AliHLTCaloConstants(det);
 
 }
 
 AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &) :
+  AliHLTCaloConstantsHandler(""),
   fShmPtr(0),
   fDigitStructPtr(0),
   fDigitCount(0),
@@ -109,11 +107,9 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &) :
   fHighGainFactors(0),
   fLowGainFactors(0),
   fBadChannelMask(0),
-  fChannelBook(0),
-  fCaloConstants(NULL)
+  fChannelBook(0)
 {
   // Dummy copy constructor
-
 }
 
 AliHLTCaloDigitMaker::~AliHLTCaloDigitMaker() 

@@ -10,7 +10,7 @@
 //#include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTDataTypes.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 
 using namespace PhosHLTConst;
 

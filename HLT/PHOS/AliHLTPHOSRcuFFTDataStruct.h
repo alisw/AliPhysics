@@ -6,7 +6,7 @@
 
 
 #include "Rtypes.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 
 using namespace PhosHLTConst;
 

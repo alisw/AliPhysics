@@ -20,7 +20,7 @@
 #include "AliHLTCaloRawAnalyzerCrudeComponent.h"
 #include "AliHLTCaloRawAnalyzerCrude.h"
 
-//AliHLTCaloRawAnalyzerCrudeComponent gAliHLTCaloRawAnalyzerCrudeComponent;
+ClassImp(AliHLTCaloRawAnalyzerCrudeComponent);
 
 //___________________________________________________________________________
 AliHLTCaloRawAnalyzerCrudeComponent::AliHLTCaloRawAnalyzerCrudeComponent(TString det) :

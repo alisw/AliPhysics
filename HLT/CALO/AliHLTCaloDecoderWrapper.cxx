@@ -27,6 +27,8 @@
 #include "AliHLTDataTypes.h"
 
 
+ClassImp(AliHLTCaloDecoderWrapper);
+
 AliHLTCaloDecoderWrapper::AliHLTCaloDecoderWrapper() : fAltroRawStream(0),
 						       //      fCaloRawStream(0),
 						       fReaderMemory(0)

@@ -35,7 +35,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 //#include "AliHLTCaloBase.h"
-#include "AliHLTCaloConstants.h"
+#include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTDataTypes.h"
@@ -59,7 +59,7 @@ class TString;
 
 
 
-class AliHLTCaloDigitMaker
+class AliHLTCaloDigitMaker : AliHLTCaloConstantsHandler
 {
 
 public:
@@ -183,8 +183,6 @@ private:
   /** Channel book keeping variable */
   AliHLTCaloDigitDataStruct ***fChannelBook;                     //! transient
 
-  /** Constants class */
-  AliHLTCaloConstants* fCaloConstants;
 
   AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &);
   //  AliHLTCaloDigitMaker & operator = (const AliHLTCaloDigitMaker &);

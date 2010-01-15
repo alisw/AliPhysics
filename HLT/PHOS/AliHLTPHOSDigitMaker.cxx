@@ -33,7 +33,7 @@
 #include "AliHLTPHOSDigitMaker.h"
 #include "AliHLTLogging.h"
 
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 #include "AliHLTPHOSMapper.h"
 
 #include "AliHLTPHOSChannelDataStruct.h"

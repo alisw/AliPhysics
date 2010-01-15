@@ -25,7 +25,7 @@
 #include "Rtypes.h"
 #include "TVirtualFFT.h"
 #include "TMath.h"
-#include "AliHLTCaloConstants.h"
+#include "AliHLTCaloConstant.h"
 #include <iostream>
 
 #include "AliHLTCaloRcuFFTDataStruct.h"
@@ -111,6 +111,9 @@ private:
   AliHLTCaloFourier(const AliHLTCaloFourier&);
   AliHLTCaloFourier & operator=(const AliHLTCaloFourier&){return *this;};
 
+
+
+  ClassDef(AliHLTCaloFourier, 1);
 };
 
 #endif

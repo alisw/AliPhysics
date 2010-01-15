@@ -21,11 +21,12 @@ AliHLTCaloDefinitions.h \
 AliHLTCaloSanityInspector.h \
 AliHLTCaloSharedMemoryInterfacev2.h \
 AliHLTCaloFourier.h \
-AliHLTCaloConstants.h \
+AliHLTCaloConstantsHandler.h \
 AliHLTCaloClusterizer.h \
 AliHLTCaloDigitMaker.h \
 AliHLTCaloClusterAnalyser.h \
 AliHLTCaloRcuProcessor.h \
+AliHLTCaloConstants.h \
 AliHLTCaloProcessor.h 
 
 ## all source files of this module

@@ -28,6 +28,8 @@ class AliHLTCaloRawAnalyzerCrudeComponent: public AliHLTCaloRawAnalyzerComponent
 
 private:
   AliHLTCaloRawAnalyzerCrudeComponent();
+
+  ClassDef(AliHLTCaloRawAnalyzerCrudeComponent, 1);
 };
 
 #endif

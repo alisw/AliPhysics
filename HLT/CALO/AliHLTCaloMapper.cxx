@@ -30,22 +30,21 @@
 #include "unistd.h"
 #include <iostream>
 #include "AliHLTCaloCoordinate.h"
+#include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloConstants.h"
 
-//ClassImp(AliHLTCaloMapper)
+ClassImp(AliHLTCaloMapper);
 
 AliHLTCaloMapper::AliHLTCaloMapper( const unsigned long  specification , TString det) :  
   AliHLTLogging(), 
+  AliHLTCaloConstantsHandler(det),
   fHw2geomapPtr(0),
   fCellSize(0),
   fSpecification(specification),
   fIsInitializedMapping(false),
-  fSpecificationMapPtr(0),
-  fCaloConstants(NULL)
+  fSpecificationMapPtr(0)
 {  
   //see header file for class documentation
-  
-  fCaloConstants = new AliHLTCaloConstants(det);
 }
 
 

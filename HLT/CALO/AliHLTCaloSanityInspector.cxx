@@ -31,7 +31,7 @@
 #include "AliHLTCaloSanityInspector.h"
 #include "Rtypes.h"
 
-//ClassImp(AliHLTCaloSanityInspector);
+ClassImp(AliHLTCaloSanityInspector);
 
 
 AliHLTCaloSanityInspector::AliHLTCaloSanityInspector() : 

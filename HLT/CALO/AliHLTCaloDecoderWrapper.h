@@ -52,6 +52,8 @@ class  AliHLTCaloDecoderWrapper
   AliAltroRawStreamV3 *fAltroRawStream;
   //  AliCaloRawStreamV3  *fCaloRawStream;
   AliRawReaderMemory  *fReaderMemory;
+
+  ClassDef(AliHLTCaloDecoderWrapper, 1);
 };
 
 #endif

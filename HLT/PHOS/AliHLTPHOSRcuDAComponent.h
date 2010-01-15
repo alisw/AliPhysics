@@ -36,7 +36,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTCalibrationProcessor.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 //#include "AliHLTPHOSRcuProperties.h"
 
 using namespace PhosHLTConst;
@@ -47,9 +47,9 @@ class TObjArray;
 
 //class AliHLTPHOSRcuDAComponent: public AliHLTCalibrationProcessor,  public AliHLTPHOSRcuProcessor
 //class AliHLTPHOSRcuDAComponent:  public AliHLTPHOSRcuProperties, public AliHLTCalibrationProcessor
+
+
 class AliHLTPHOSRcuDAComponent:  public AliHLTCalibrationProcessor
-
-
 {
 public:
   /** constructor */

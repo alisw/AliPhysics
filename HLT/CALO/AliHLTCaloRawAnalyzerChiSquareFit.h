@@ -47,7 +47,7 @@ class AliHLTCaloRawAnalyzerChiSquareFit : public AliHLTCaloRawAnalyzer
 
  private:
 
-  //  ClassDef(AliHLTCaloRawAnalyzerChiSquareFit, 2) 
+  ClassDef(AliHLTCaloRawAnalyzerChiSquareFit, 2) 
   
 };
 

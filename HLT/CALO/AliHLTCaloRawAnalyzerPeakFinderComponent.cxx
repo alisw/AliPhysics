@@ -17,12 +17,8 @@
 
 #include "AliHLTCaloRawAnalyzerPeakFinderComponent.h"
 #include "AliHLTCaloRawAnalyzerPeakFinder.h"
-//#include <cstdlib>
-//#include "AliHLTCaloCommonDefs.h"
 
-
-
-//AliHLTCaloRawAnalyzerPeakFinderComponent gAliHLTCaloRawAnalyzerPeakFinderComponent;
+ClassImp(AliHLTCaloRawAnalyzerPeakFinderComponent);
 
 //___________________________________________________________________________________________________________
 AliHLTCaloRawAnalyzerPeakFinderComponent::AliHLTCaloRawAnalyzerPeakFinderComponent(TString det) : 

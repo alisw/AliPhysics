@@ -4,8 +4,6 @@
 #ifndef ALIHLTCALOCHANNELDATASTRUCT_H
 #define ALIHLTCALOCHANNELDATASTRUCT_H
 
-
-
 /**************************************************************************
  * Copyright(c) 2007, ALICE Experiment at CERN, All rights reserved.      *
  *                                                                        *
@@ -20,13 +18,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//#include "AliHLTPHOSCommonDefs.h"
-
 
 #include "Rtypes.h"
-
-//#include "AliHLTPHOSConstants.h"
-//using namespace PhosHLTConst;
 
 struct AliHLTCaloChannelDataStruct
 {

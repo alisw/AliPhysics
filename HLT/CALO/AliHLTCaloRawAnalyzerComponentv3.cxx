@@ -24,10 +24,14 @@
 #include "AliRawReaderMemory.h"
 #include "AliAltroRawStreamV3.h"
 #include "AliCaloRawStreamV3.h"
+#include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloConstants.h"
 #include "AliHLTCaloRcuProcessor.h"
 
+ClassImp(AliHLTCaloRawAnalyzerComponentv3);
+
 AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
+  AliHLTCaloConstantsHandler(det),
   AliHLTCaloRcuProcessor(),
   fCaloEventCount(0),
   fAnalyzerPtr(0),
@@ -41,19 +45,16 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
   fBunchSizeCut(0),
   fMinPeakPosition(0),
   fMaxPeakPosition(100),
-  fCaloConstants(NULL),
   fRawDataWriter(0) 
 {
   //comment
 
   //  fMapperPtr = new AliHLTCaloMapper();
-  
-  fCaloConstants = new AliHLTCaloConstants(det);
-  
+
   fRawReaderMemoryPtr = new AliRawReaderMemory();
-  
+
   fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawReaderMemoryPtr);
-  
+
   fSanityInspectorPtr = new AliHLTCaloSanityInspector();
   
   if( fkDoPushRawData == true  )

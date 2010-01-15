@@ -17,7 +17,7 @@
  **************************************************************************/
 #include "AliHLTEMCALMapper.h"
 
-#include "AliHLTEMCALConstants.h"
+#include "AliHLTEMCALConstant.h"
 #include "assert.h"
 
 using namespace EmcalHLTConst;

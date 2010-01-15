@@ -36,7 +36,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "Rtypes.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 
 using namespace PhosHLTConst;
 

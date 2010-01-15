@@ -29,16 +29,17 @@
 using std::cout;
 using std::endl;
 
-//ClassImp(AliHLTCaloRawAnalyzerPeakFinder) 
+ClassImp(AliHLTCaloRawAnalyzerPeakFinder) 
 
 
 
 /**
- * The AliHLTCaloPeakfinder class is the class for extracting the basic signal parameters
+ * The AliHLTCaloRawAnalyzerPeakfinder class is the class for extracting the basic signal parameters
  * "timing" and "energy" from the Calorimeter's raw data. Physical data will for a given readout channel be
  * a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in
  * calculation is of type double.
  **/
+
 AliHLTCaloRawAnalyzerPeakFinder::AliHLTCaloRawAnalyzerPeakFinder():AliHLTCaloRawAnalyzer(), 
                                                                    fTVectorPtr(0), 
 								   fAVectorPtr(0), 

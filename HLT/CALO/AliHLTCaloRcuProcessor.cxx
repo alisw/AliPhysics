@@ -19,6 +19,9 @@
  **************************************************************************/
 #include "AliHLTCaloRcuProcessor.h"
 
+
+ClassImp(AliHLTCaloRcuProcessor);
+
 AliHLTCaloRcuProcessor::AliHLTCaloRcuProcessor():AliHLTCaloProcessor()
 					
 {

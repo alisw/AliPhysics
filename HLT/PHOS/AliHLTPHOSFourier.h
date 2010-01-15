@@ -25,7 +25,7 @@
 #include "Rtypes.h"
 #include "TVirtualFFT.h"
 #include "TMath.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 #include <iostream>
 
 #include "AliHLTPHOSRcuFFTDataStruct.h"

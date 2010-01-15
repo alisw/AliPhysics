@@ -21,7 +21,7 @@
 
 
 //#include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTCaloConstants.h"
+#include "AliHLTCaloConstant.h"
 // using namespace PhosHLTConst;
 using namespace CaloHLTConst;
 

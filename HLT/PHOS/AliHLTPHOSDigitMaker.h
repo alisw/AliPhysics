@@ -35,7 +35,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 //#include "AliHLTPHOSBase.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 #include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTPHOSChannelDataStruct.h"
 #include "AliHLTDataTypes.h"

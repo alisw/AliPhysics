@@ -28,7 +28,7 @@
 #include "AliRunLoader.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 #include "AliHLTPHOSMapper.h"
 
 /** global instance for agent registration */

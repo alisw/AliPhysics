@@ -97,15 +97,13 @@ class AliAltroRawStreamV3;
 
 #include "AliHLTProcessor.h"
 #include "AliHLTCaloDefinitions.h"
-#include "AliHLTCaloConstants.h"
+#include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloRcuProcessor.h"
 
-class AliHLTCaloConstants;
 class AliHLTCaloMapper;
 
 
-//class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloRcuProcessor
-class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloRcuProcessor 
+class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, public AliHLTCaloRcuProcessor 
 {
  public:
 
@@ -165,7 +163,8 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloRcuProcessor
   /** Pointer to an analyzer object used for raw data anlysis */ 
   AliHLTCaloRawAnalyzer *fAnalyzerPtr;   //COMMENT
 
-  AliHLTCaloMapper *fMapperPtr;     
+  //** Pointer to a mapper opbject */
+  AliHLTCaloMapper *fMapperPtr;          //COMMENT
 
  private:
 
@@ -212,11 +211,6 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloRcuProcessor
   
   // AliHLTCaloMapper *fMapperPtr;
 
-  /** Constants class instance */
-  AliHLTCaloConstants *fCaloConstants;
-      
-
-
   class RawDataWriter 
   {
   public:
@@ -250,6 +244,8 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloRcuProcessor
   };
 
   RawDataWriter *fRawDataWriter; 
+
+  ClassDef(AliHLTCaloRawAnalyzerComponentv3, 1)
 
 };
 

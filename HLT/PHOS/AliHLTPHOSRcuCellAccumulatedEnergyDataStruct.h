@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id$
+// $Id: AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h 31490 2009-03-15 16:27:11Z odjuvsla $
 
 #ifndef ALIHLTPHOSRCUCELLACCUMULATEDENERGYDATASTRUCT_H
 #define ALIHLTPHOSRCUCELLACCUMULATEDENERGYDATASTRUCT_H
@@ -21,7 +21,7 @@
 
 
 //#include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 using namespace PhosHLTConst;
 
 

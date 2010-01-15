@@ -24,7 +24,7 @@
 #include "AliHLTPHOSChannelDataStruct.h"
 #include "AliHLTLogging.h"
 #include "AliHLTPHOSMapper.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 
 
 AliHLTPHOSSharedMemoryInterfacev2::AliHLTPHOSSharedMemoryInterfacev2(): 

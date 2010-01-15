@@ -8,8 +8,8 @@ CLASS_HDRS:= \
 	AliHLTEMCALRawAnalyzerComponent.h \
 	AliHLTEMCALMapper.h \
 	AliHLTEMCALRawAnalyzerCrudeComponent.h \
-	AliHLTEMCALSharedMemoryInterface.h
-
+	AliHLTEMCALSharedMemoryInterface.h  \
+	AliHLTEMCALConstants.h
 # library sources
 MODULE_SRCS= \
 	$(CLASS_HDRS:.h=.cxx)
@@ -19,7 +19,9 @@ MODULE_SRCS= \
 # the CLASS_HDRS variable. So we just use the content of this. You
 # can simply add more header files which don't contain classes with
 # ROOT dictionary support
-MODULE_HDRS:= 	$(CLASS_HDRS)
+MODULE_HDRS:= 	$(CLASS_HDRS) \
+	AliHLTEMCALConstant.h
+
 
 # The LinkDef file required by the ROOT dictionary generation can be
 # generated automatically. For the all header files specified in

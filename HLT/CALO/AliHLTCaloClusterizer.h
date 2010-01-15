@@ -43,7 +43,7 @@
 #include "AliHLTCaloDigitContainerDataStruct.h"
 #include "AliHLTCaloDigitDataStruct.h"
 #include "TString.h"
-#include "AliHLTCaloConstants.h"
+#include "AliHLTCaloConstantsHandler.h"
 
 //#include "AliPHOSGeometry.h"
 
@@ -60,11 +60,9 @@ class TClonesArray;
  *
  * @ingroup alihlt_calo
  */
-//class AliHLTCaloClusterizer : public AliHLTCaloBase
 
 
-
-class AliHLTCaloClusterizer
+class AliHLTCaloClusterizer : public AliHLTCaloConstantsHandler
 {
   
 public:
@@ -163,9 +161,6 @@ protected:
   /** Maximum difference in index to be a neighbour */
   Int_t fMaxDigitIndexDiff;                                    //COMMENT
 
-  /** Instance of calorimeter constants            */
-  AliHLTCaloConstants* fCaloConstants;
-
 private:
 
   AliHLTCaloClusterizer();
@@ -175,7 +170,6 @@ private:
 //   {
 //     return *this;
 //   }
-
 
   ClassDef(AliHLTCaloClusterizer, 0);
 

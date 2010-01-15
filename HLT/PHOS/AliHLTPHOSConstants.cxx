@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTCaloConstants.cxx $
+// $Id: AliHLTPHOSConstants.cxx $
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -16,22 +16,66 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/// @file   AliHLTCaloConstants.cxx
+/// @file   AliHLTPHOSConstants.cxx
 /// @author Svein Lindal
 /// @date   2009-11-12
-/// @brief  Class containing constants for EMCAL and PHOS
+/// @brief  Class containing constants for PHOS
 ///         loaded libraries
 
+#include "AliHLTPHOSConstants.h"
 #include "AliHLTCaloConstants.h"
 
-ClassImp(AliHLTCaloConstants);
+ClassImp(AliHLTPHOSConstants);
 
-AliHLTCaloConstants::AliHLTCaloConstants()
+AliHLTPHOSConstants::AliHLTPHOSConstants() :
+  AliHLTCaloConstants(),
+  fkMAXHOSTS(20),
+  fkDEFAULTEVENTPORT(42001),
+  fkMAXBINVALUE(1023),
+  fkHIGHGAIN(0),
+  fkLOWGAIN(1),
+  fkALTROMAXSAMPLES(1008),
+  fkALTROMAXPRESAMPLES(15),
+  fkNZROWSRCU(56),
+  fkNXCOLUMNSRCU(16),
+  fkNZROWSMOD(56),
+  fkNXCOLUMNSMOD(64),
+  fkNGAINS(2),
+  fkNDATATYPES(10),
+  fkPFMAXPATHLENGTH(256),
+  fkPFDEFAULTNSAMPLES(70),
+  fkPFDEFAULTSTARTINDEX(0),
+  fkDEFAULTTAU(2.),
+  fkDEFAULTFS(10),
+  fkMODULE0(0),
+  fkMODULE1(1),
+  fkMODULE2(2),
+  fkMODULE3(3),
+  fkMODULE4(4),
+  fkCSPSPERFEE(32),
+  fkRCU0(0),
+  fkRCU1(1),
+  fkRCU2(2),
+  fkRCU3(3),
+  fkZ0(0),
+  fkZ1(1),
+  fkX0(0),
+  fkX1(1),
+  fkNMODULES(5),
+  fkNRCUS(4),
+  fkNRCUSPERMODULE(4),
+  fkNRCUSPERTOTAL(fkNMODULES*fkNRCUSPERMODULE),
+  fkNFEECS(14),
+  fkNALTROS(4),
+  fkNALTROCHANNELS(16),
+  fkNBRANCHES(2),
+  fkCELLSTEP(-99999.9),
+  fkNRCUSPERSECTOR(-9999)
 {
   //Default constructor
 }
 
-AliHLTCaloConstants::~AliHLTCaloConstants()
+AliHLTPHOSConstants::~AliHLTPHOSConstants()
 {
   //Default destructor
 }

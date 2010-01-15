@@ -26,16 +26,19 @@
 #include "AliHLTCaloMapper.h"
 #include "AliHLTCaloConstants.h"
 
+ClassImp(AliHLTCaloSharedMemoryInterfacev2);
 
-AliHLTCaloSharedMemoryInterfacev2::AliHLTCaloSharedMemoryInterfacev2(): fCurrentChannel(0),
-									fChannelDataPtr(0),
-									fIsSetMemory(false),
-									fHasRawData(false),
-									fMaxCnt(0),
-									fCurrentCnt(0), 
-									fRawDataPtr(0),
-									fRawData()
-									//	fSpecification(0)
+AliHLTCaloSharedMemoryInterfacev2::AliHLTCaloSharedMemoryInterfacev2(TString det): 
+  AliHLTCaloConstantsHandler(det),
+  fCurrentChannel(0),
+  fChannelDataPtr(0),
+  fIsSetMemory(false),
+  fHasRawData(false),
+  fMaxCnt(0),
+  fCurrentCnt(0), 
+  fRawDataPtr(0),
+  fRawData()
+  //	fSpecification(0)
 {
   //  GetSpecFromDDLIndex
   //  AliHLTCaloMapper  *fMapperPtr[32];
@@ -267,7 +270,7 @@ AliHLTCaloSharedMemoryInterfacev2::Reset()
 void 
 AliHLTCaloSharedMemoryInterfacev2::Reset(AliHLTCaloChannelRawDataStruct &str)
 {
-  for(int i=0; i< ALTROMAXSAMPLES; i++ )
+  for(int i=0; i< fCaloConstants->GetALTROMAXSAMPLES(); i++ )
     {
       str.fDataPtr[i] = 0;
     }

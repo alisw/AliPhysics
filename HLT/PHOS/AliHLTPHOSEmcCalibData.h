@@ -14,7 +14,7 @@
 
 
 #include "TNamed.h"
-#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstant.h"
 
 
 using namespace PhosHLTConst;
