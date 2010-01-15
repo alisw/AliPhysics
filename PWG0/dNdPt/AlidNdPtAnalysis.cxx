@@ -31,6 +31,7 @@
 
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
+#include "AliPhysicsSelection.h"
 
 #include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
@@ -859,15 +860,25 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     return;
   }
 
+  // get physics trigger selection 
+  AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
+  if(!trigSel) {
+    AliDebug(AliLog::kError, "cannot get trigSel");
+    return;
+  }
+
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   if(evtCuts->IsTriggerRequired())  {
     if(IsUseMCInfo()) { 
-      static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-      isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+      //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+      //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+      trigSel->SetAnalyzeMC();
+      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
     else {
-      isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+      //isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
   }
 
@@ -948,7 +959,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   else if(GetAnalysisMode() == AlidNdPtHelper::kTPCSPDvtx || GetAnalysisMode()==AlidNdPtHelper::kTPCSPDvtxUpdate) 
   {
      //multMBTracks = AlidNdPtHelper::GetSPDMBTrackMult(esdEvent,0.0);
-     if(vtxESD)
+     if(vtxESD->GetStatus())
        multMBTracks = vtxESD->GetNContributors();
   } 
   else {
@@ -980,10 +991,12 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       if(!track) continue;
       if(track->Charge()==0) continue;
 
+      /*
       // cosmics analysis
       if( GetParticleMode()==AlidNdPtHelper::kCosmics  && 
           AlidNdPtHelper::IsCosmicTrack(allChargedTracks, track, i, accCuts, esdTrackCuts)==kFALSE ) 
         continue;
+      */
 
       // only postive charged 
       if(GetParticleMode() == AlidNdPtHelper::kPlus && track->Charge() < 0) 

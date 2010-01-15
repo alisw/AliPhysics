@@ -7,6 +7,7 @@ void LoadMyLibs() {
   CheckLoadLibrary("libTree");
   CheckLoadLibrary("libGui");
   CheckLoadLibrary("libMinuit");
+  CheckLoadLibrary("libSTAT");
   
   // Load AliRoot libraries
   

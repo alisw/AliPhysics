@@ -48,7 +48,8 @@ class AlidNdPtHelper : public TObject
     static Bool_t TestRecVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
     static Bool_t IsPrimaryParticle(AliStack *stack, Int_t idx, ParticleMode particleMode);
-    static Bool_t IsCosmicTrack(TObjArray *allChargedTracks, AliESDtrack *track, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts);
+    //static Bool_t IsCosmicTrack(TObjArray *allChargedTracks, AliESDtrack *track, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts);
+    static Bool_t IsCosmicTrack(AliESDtrack *track, AliESDtrack *track, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts);
     static void PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger);
     static Int_t ConvertPdgToPid(TParticle *particle);
 

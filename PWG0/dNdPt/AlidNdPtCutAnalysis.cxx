@@ -30,6 +30,7 @@
 
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
+#include "AliPhysicsSelection.h"
 
 #include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
@@ -135,12 +136,12 @@ void AlidNdPtCutAnalysis::Init(){
   // THnSparse track histograms
   //
 
-  //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim
-  Int_t binsRecMCTrackHist[10]={160,80,80,80,80,30,90,ptNbins, 2,2};
-  Double_t minRecMCTrackHist[10]={0., 0., 0., -10.,-10.,-1.5, 0., ptMin, 0., 0.};
-  Double_t maxRecMCTrackHist[10]={160.,10.,1.2, 10.,10.,1.5, 2.*TMath::Pi(), ptMax, 2.,2.};
+  //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim:polarity
+  Int_t binsRecMCTrackHist[11]={160,80,80,80,80,30,90,ptNbins, 2, 2, 2};
+  Double_t minRecMCTrackHist[11]={0., 0., 0., -10.,-10.,-1.5, 0., ptMin, 0., 0., 0.};
+  Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 10.,10.,1.5, 2.*TMath::Pi(), ptMax, 2.,2., 2.};
 
-  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim",10,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
+  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim:polarity",10,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
   fRecMCTrackHist->SetBinEdges(7,binsPt);
 
   fRecMCTrackHist->GetAxis(0)->SetTitle("nClust");
@@ -153,6 +154,7 @@ void AlidNdPtCutAnalysis::Init(){
   fRecMCTrackHist->GetAxis(7)->SetTitle("p_{T} (GeV/c)");
   fRecMCTrackHist->GetAxis(8)->SetTitle("isKink");
   fRecMCTrackHist->GetAxis(9)->SetTitle("isPrim");
+  fRecMCTrackHist->GetAxis(10)->SetTitle("polarity");
   fRecMCTrackHist->Sumw2();
 
   // init output folder
@@ -181,15 +183,25 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
     return;
   }
 
+  // get physics trigger selection 
+  AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
+  if(!trigSel) {
+    AliDebug(AliLog::kError, "cannot get trigSel");
+    return;
+  }
+
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   if(evtCuts->IsTriggerRequired())  {
     if(IsUseMCInfo()) { 
-      static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-      isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+      //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+      //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+      trigSel->SetAnalyzeMC();
+      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
     else {
-      isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+      //isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
   }
 
@@ -346,7 +358,10 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   }
 
   // fill histo
-  Double_t vRecMCTrackHist[10] = {nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,isKink,isPrim}; 
+  Int_t polarity = -2;
+  if (esdTrack->Charge() < 0.) polarity = 0; 
+  else polarity = 1; 
+  Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,isKink,isPrim, polarity }; 
   fRecMCTrackHist->Fill(vRecMCTrackHist);
 }
 

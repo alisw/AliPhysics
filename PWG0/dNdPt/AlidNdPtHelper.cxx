@@ -238,6 +238,7 @@ return prim;
 }
 
 //____________________________________________________________________
+/*
 Bool_t AlidNdPtHelper::IsCosmicTrack(TObjArray *allChargedTracks, AliESDtrack *track1, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts)
 {
 //
@@ -260,9 +261,48 @@ Bool_t AlidNdPtHelper::IsCosmicTrack(TObjArray *allChargedTracks, AliESDtrack *t
       if(!track2) continue;
       if(track2->Charge()==0) continue;
 
-      /*
       if(track1->Pt() > 6. && track2->Pt() > 6. && (track1->Charge() + track2->Charge()) == 0 ) 
       {
+        printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
+        printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
+
+        printf("deta %f, dphi %f, dq %d  \n", track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
+
+      }
+
+      //
+      // cosmic tracks in TPC
+      //
+      //if( TMath::Abs( track1->Theta() - track2->Theta() ) < 0.004  && 
+      //  ((TMath::Abs(track1->Phi()-track2->Phi()) - TMath::Pi() )<0.004) && 
+      if( (track1->Pt()-track2->Pt()) < 0.1 && track1->Pt() > 4.0 && (track1->Charge()+track2->Charge()) == 0 )
+      {
+        //printf("COSMIC  candidate \n");
+        printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
+        printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
+        printf("dtheta %f, deta %f, dphi %f, dq %d  \n", track1->Theta()-track2->Theta(),  track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
+	return kTRUE;
+      }
+   }
+     
+return kFALSE; 
+}
+*/
+
+//____________________________________________________________________
+Bool_t AlidNdPtHelper::IsCosmicTrack(AliESDtrack *track1, AliESDtrack *track2, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts)
+{
+//
+// check cosmic tracks
+//
+  if(!track1) return kFALSE;
+  if(!track2) return kFALSE;
+  if(!accCuts) return kFALSE;
+  if(!trackCuts) return kFALSE;
+
+  /*
+  if(track1->Pt() > 6. && track2->Pt() > 6. && (track1->Charge() + track2->Charge()) == 0 ) 
+  {
         printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
         printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
 
@@ -276,16 +316,18 @@ Bool_t AlidNdPtHelper::IsCosmicTrack(TObjArray *allChargedTracks, AliESDtrack *t
       //
       //if( TMath::Abs( track1->Theta() - track2->Theta() ) < 0.004  && 
       //  ((TMath::Abs(track1->Phi()-track2->Phi()) - TMath::Pi() )<0.004) && 
-      if( (track1->Pt()-track2->Pt()) < 0.1 && track1->Pt() > 6.0 && 
+
+      if( (track1->Pt()-track2->Pt()) < 0.2 && track1->Pt() > 3.0 && 
 	     (track1->Charge()+track2->Charge()) == 0 )
       {
         //printf("COSMIC  candidate \n");
+	/*
         printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
         printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
         printf("dtheta %f, deta %f, dphi %f, dq %d  \n", track1->Theta()-track2->Theta(),  track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
+	*/
 	return kTRUE;
       }
-   }
      
 return kFALSE; 
 }

@@ -513,7 +513,8 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
   if (cutMode == 23) 
   {
     // beta cuts (still under investigation)
-    minNClustersTPC = 50;
+    //minNClustersTPC = 50;
+    minNClustersTPC = 90;
     maxChi2PerClusterTPC = 4.0;
     maxDCAtoVertexXY = 2.4; // cm
     maxDCAtoVertexZ  = 3.2; // cm
@@ -1009,6 +1010,35 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
     TString tag = "TPC-only tracking";
   }
+
+  // TPC-only + pt cut + eta cut 
+  if (cutMode == 45) 
+  {
+    // beta cuts (still under investigation)
+    //minNClustersTPC = 50;
+    //maxChi2PerClusterTPC = 4.0;
+    maxDCAtoVertexXY = 2.4; // cm
+    maxDCAtoVertexZ  = 3.2; // cm
+    //minPt=0.15;
+    //maxPt=1.e10;
+
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetRequireTPCRefit(kFALSE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    //esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
+    //esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
+    esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
+    esdTrackCuts->SetDCAToVertex2D(kTRUE);
+    //esdTrackCuts->SetPtRange(minPt,maxPt);
+    //esdTrackCuts->SetEtaRange(minEta,maxEta);
+
+    TString tag = "TPC-only tracking";
+  }
+
+
+
+
 
 
   // cuts for data without field

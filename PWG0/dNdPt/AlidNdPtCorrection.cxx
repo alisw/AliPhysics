@@ -30,6 +30,7 @@
 
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
+#include "AliPhysicsSelection.h"
 
 #include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
@@ -69,7 +70,8 @@ ClassImp(AlidNdPtCorrection)
   fCorrTrackMatrix(0),
   fContTrackMatrix(0),
   fContMultTrackMatrix(0),
-  fCorrMatrixFileName("")
+  fCorrMatrixFileName(""),
+  fCosmicsHisto(0)
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -117,7 +119,8 @@ AlidNdPtCorrection::AlidNdPtCorrection(Char_t* name, Char_t* title, TString corr
   fCorrTrackMatrix(0),
   fContTrackMatrix(0),
   fContMultTrackMatrix(0),
-  fCorrMatrixFileName(corrMatrixFileName)
+  fCorrMatrixFileName(corrMatrixFileName),
+  fCosmicsHisto(0)
 {
   // constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -156,6 +159,7 @@ AlidNdPtCorrection::~AlidNdPtCorrection() {
   if(fMCNSDEventAllPrimTrackMultHist1) delete fMCNSDEventAllPrimTrackMultHist1; fMCNSDEventAllPrimTrackMultHist1=0;
   if(fMCTriggerPrimTrackMultHist1) delete fMCTriggerPrimTrackMultHist1; fMCTriggerPrimTrackMultHist1=0;
   if(fMCEventPrimTrackMultHist1) delete fMCEventPrimTrackMultHist1; fMCEventPrimTrackMultHist1=0;
+  if(fCosmicsHisto) delete fCosmicsHisto; fCosmicsHisto=0;
 
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
     if(fRecTrackHist1[i]) delete fRecTrackHist1[i]; fRecTrackHist1[i]=0;
@@ -389,6 +393,22 @@ void AlidNdPtCorrection::Init(){
     fCorrRecEventHist2[i]->GetAxis(1)->SetTitle("multiplicity");
     fCorrRecEventHist2[i]->Sumw2();
   }
+  
+  //
+  // cosmics histo
+  //
+  Int_t binsCosmicsHisto[3]=  {151, 300, ptNbins};
+  Double_t minCosmicsHisto[3]={-1.5, -2.*TMath::Pi(), 0.0}; 
+  Double_t maxCosmicsHisto[3]={ 1.5, 2.*TMath::Pi(), 16.0}; 
+  sprintf(name,"fCosmicsHisto");
+  sprintf(title,"deta:dphi:pt");
+  
+  fCosmicsHisto = new THnSparseF(name,title,3,binsCosmicsHisto,minCosmicsHisto,maxCosmicsHisto);
+  fCosmicsHisto->SetBinEdges(2,binsPt);
+  fCosmicsHisto->GetAxis(0)->SetTitle("#Delta#eta");
+  fCosmicsHisto->GetAxis(1)->SetTitle("#Delta#phi (rad)");
+  fCosmicsHisto->GetAxis(2)->SetTitle("pt (GV/c)");
+  fCosmicsHisto->Sumw2();
 
   // init output folder
   fCorrectionFolder = CreateFolder("folderdNdPt","Correction dNdPt Folder");
@@ -522,15 +542,25 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     return;
   }
 
+  // get physics trigger selection 
+  AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
+  if(!trigSel) {
+    AliDebug(AliLog::kError, "cannot get trigSel");
+    return;
+  }
+
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   if(evtCuts->IsTriggerRequired())  {
     if(IsUseMCInfo()) { 
-      static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-      isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+      //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+      //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
+      trigSel->SetAnalyzeMC();
+      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
     else {
-      isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+      //isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
   }
 
@@ -628,7 +658,6 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
   if(isEventOK && isEventTriggered)
   {
     // get all charged tracks
-    //allChargedTracks = AlidNdPtHelper::GetAllChargedTracks(esdEvent,vtxESD,GetAnalysisMode());
     allChargedTracks = AlidNdPtHelper::GetAllChargedTracks(esdEvent,GetAnalysisMode());
     if(!allChargedTracks) return;
 
@@ -649,6 +678,31 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       // only negative charged 
       if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
         continue;
+
+      // cosmics analysis
+      Bool_t isCosmic = kFALSE;
+      if( GetParticleMode()==AlidNdPtHelper::kCosmics )
+      {
+          for(Int_t j=0; j<entries;++j) 
+          {
+            AliESDtrack *track1 = (AliESDtrack*)allChargedTracks->At(j);
+            if(!track1) continue;
+            if(track1->Charge()==0) continue;
+
+            if( esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track) && 
+	        esdTrackCuts->AcceptTrack(track1) && accCuts->AcceptTrack(track1) ) 
+            { 
+              isCosmic = AlidNdPtHelper::IsCosmicTrack(track, track1, i, accCuts, esdTrackCuts);
+	    }
+            if(isCosmic) 
+	    {
+	      Double_t vCosmicsHisto[3] = {track->Eta()+track1->Eta(), track->Phi()-track1->Phi(), track1->Pt()};
+	      fCosmicsHisto->Fill(vCosmicsHisto);
+	    }
+	  }
+         
+        if(!isCosmic) continue;
+      }
 
       if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) 
         multRecTemp++;
@@ -1084,6 +1138,7 @@ Long64_t AlidNdPtCorrection::Merge(TCollection* list)
     fMCNSDEventAllPrimTrackMultHist1->Add(entry->fMCNSDEventAllPrimTrackMultHist1);
     fMCTriggerPrimTrackMultHist1->Add(entry->fMCTriggerPrimTrackMultHist1);
     fMCEventPrimTrackMultHist1->Add(entry->fMCEventPrimTrackMultHist1);
+    fCosmicsHisto->Add(entry->fCosmicsHisto);
 
     for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) {
       fRecTrackHist1[i]->Add(entry->fRecTrackHist1[i]);
@@ -1156,6 +1211,14 @@ void AlidNdPtCorrection::Analyse()
   //Double_t maxPt = accCuts->GetMaxPt();
   //Double_t minEta = accCuts->GetMinEta();
   //Double_t maxEta = accCuts->GetMaxEta()-0.00001;
+ 
+
+  //
+  // cosmics background histo
+  //
+  h2D = fCosmicsHisto->Projection(0,1);
+  h2D->SetName("deta_vs_dphi_cosmics");
+  aFolderObj->Add(h2D);
 
   //
   // pt profile
@@ -1164,6 +1227,7 @@ void AlidNdPtCorrection::Analyse()
   for(Int_t i=0; i<8; i++) {
     h2D = fPtvsPt[i]->Projection(1,0);
     sprintf(name,"PtvsMeanPt_%d",i);
+    h2D->SetName(name);
     aFolderObj->Add(h2D);
   }
 
