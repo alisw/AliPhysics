@@ -401,35 +401,37 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       pedEstimate = -1;
 
 	  if ( (max - min) > fNoiseThreshold) {
-		  switch(fFittingAlgorithm) 
-		  {
-			  case kStandard:
-			  {
-				  //printf("Standard fitter \n");
-				  FitRaw(gSig, signalF, maxTimeBin, amp, time, ped,
-	       ampEstimate, timeEstimate, pedEstimate);
-				  break;
-			  }	  
-			  case kFastFit:
-			  {
-				  //printf("FastFitter \n");
-				  Double_t eSignal = 0;
-				  Double_t dAmp = amp;
-				  Double_t dTimeEstimate = timeEstimate;
-				  Double_t eTimeEstimate = 0;
-				  Double_t eAmp = 0;
-				  Double_t chi2 = 0;
-
- 				  AliCaloFastAltroFitv0::FastFit(gSig->GetX(), gSig->GetY(), gSig->GetN(),
-												 eSignal, fTau,
-												 dAmp, eAmp, dTimeEstimate, eTimeEstimate, chi2);
-				  amp=dAmp;
-				  timeEstimate = dTimeEstimate;
-				  //printf("FastFitter: Amp %f, time %f, eAmp %f, eTimeEstimate %f, chi2 %f\n",amp, timeEstimate,eAmp,eTimeEstimate,chi2);
-
-				  break;
-			  }  
-		  }
+		  FitRaw(gSig, signalF, maxTimeBin, amp, time, ped,
+							ampEstimate, timeEstimate, pedEstimate);
+//		  switch(fFittingAlgorithm) 
+//		  {
+//			  case kStandard:
+//			  {
+//				  //printf("Standard fitter \n");
+//				  FitRaw(gSig, signalF, maxTimeBin, amp, time, ped,
+//	       ampEstimate, timeEstimate, pedEstimate);
+//				  break;
+//			  }	  
+//			  case kFastFit:
+//			  {
+//				  //printf("FastFitter \n");
+//				  Double_t eSignal = 0;
+//				  Double_t dAmp = amp;
+//				  Double_t dTimeEstimate = timeEstimate;
+//				  Double_t eTimeEstimate = 0;
+//				  Double_t eAmp = 0;
+//				  Double_t chi2 = 0;
+//
+// 				  AliCaloFastAltroFitv0::FastFit(gSig->GetX(), gSig->GetY(), gSig->GetN(),
+//												 eSignal, fTau,
+//												 dAmp, eAmp, dTimeEstimate, eTimeEstimate, chi2);
+//				  amp=dAmp;
+//				  timeEstimate = dTimeEstimate;
+//				  //printf("FastFitter: Amp %f, time %f, eAmp %f, eTimeEstimate %f, chi2 %f\n",amp, timeEstimate,eAmp,eTimeEstimate,chi2);
+//
+//				  break;
+//			  }  
+//		  }
 	  }
            
       if ( amp>0 && amp<2000 && time>0 && time<(maxTimeBin*GetRawFormatTimeBinWidth()) ) {  //check both high and low end of amplitude result, and time
@@ -664,85 +666,117 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, const Int_t lastTimeB
     }
 
     timeEstimate = timeMax * GetRawFormatTimeBinWidth();
+	  
+	//--------------------------------------------------
+	//Do the fit, different fitting algorithms available
+	//--------------------------------------------------
 
-    // determine what the valid fit range is
-    Double_t minFit = 9999;
-    Double_t maxFit = 0;
-    for (Int_t i=0; i < gSig->GetN(); i++) {
-      gSig->GetPoint(i, ttime, signal); 
-      if (minFit > ttime) minFit=ttime;
-      if (maxFit < ttime) maxFit=ttime;
-      //debug: printf("no tail: i %d, time %f, signal %f\n",i, ttime, signal); 
-    } 
-    signalF->SetRange(minFit, maxFit);
-
-    signalF->FixParameter(4, pedEstimate) ; 
-    signalF->SetParameter(1, timeMax);
-    signalF->SetParameter(0, ampEstimate);
-    
-    gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
-
-    // assign fit results
-    amp = signalF->GetParameter(0); 
-    time = signalF->GetParameter(1) * GetRawFormatTimeBinWidth(); // skip subtraction of fgTimeTrigger?
-    ped = signalF->GetParameter(4); 
-
-    //BEG YS alternative methods to calculate the amplitude
-    Double_t * ymx = gSig->GetX() ; 
-    Double_t * ymy = gSig->GetY() ; 
-    const Int_t kN = 3 ; 
-    Double_t ymMaxX[kN] = {0., 0., 0.} ; 
-    Double_t ymMaxY[kN] = {0., 0., 0.} ; 
-    Double_t ymax = 0. ; 
-      // find the maximum amplitude
-    Int_t ymiMax = 0 ;  
-    for (Int_t ymi = 0; ymi < gSig->GetN(); ymi++) {
-      if (ymy[ymi] > ymMaxY[0] ) {
-        ymMaxY[0] = ymy[ymi] ; //<========== This is the maximum amplitude
-        ymMaxX[0] = ymx[ymi] ;
-        ymiMax = ymi ; 
-      }
-    }
-      // find the maximum by fitting a parabola through the max and the two adjacent samples
-    if ( ymiMax < gSig->GetN()-1 && ymiMax > 0) {
-      ymMaxY[1] = ymy[ymiMax+1] ;
-      ymMaxY[2] = ymy[ymiMax-1] ; 
-      ymMaxX[1] = ymx[ymiMax+1] ;
-      ymMaxX[2] = ymx[ymiMax-1] ; 
-      if (ymMaxY[0]*ymMaxY[1]*ymMaxY[2] > 0) {
-          //fit a parabola through the 3 points y= a+bx+x*x*x
-        Double_t sy = 0 ; 
-        Double_t sx = 0 ; 
-        Double_t sx2 = 0 ; 
-        Double_t sx3 = 0 ; 
-        Double_t sx4 = 0 ; 
-        Double_t sxy = 0 ; 
-        Double_t sx2y = 0 ; 
-      	for (Int_t i = 0; i < kN ; i++) {
-          sy += ymMaxY[i] ; 
-          sx += ymMaxX[i] ; 		
-          sx2 += ymMaxX[i]*ymMaxX[i] ; 
-          sx3 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
-          sx4 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
-          sxy += ymMaxX[i]*ymMaxY[i] ; 
-          sx2y += ymMaxX[i]*ymMaxX[i]*ymMaxY[i] ; 
-        }
-        Double_t cN = (sx2y*kN-sy*sx2)*(sx3*sx-sx2*sx2)-(sx2y*sx-sxy*sx2)*(sx3*kN-sx*sx2); 
-        Double_t cD = (sx4*kN-sx2*sx2)*(sx3*sx-sx2*sx2)-(sx4*sx-sx3*sx2)*(sx3*kN-sx*sx2) ;
-        Double_t c  = cN / cD ; 
-        Double_t b  = ((sx2y*kN-sy*sx2)-c*(sx4*kN-sx2*sx2))/(sx3*kN-sx*sx2) ;
-        Double_t a  = (sy-b*sx-c*sx2)/kN  ;
-        Double_t xmax = -b/(2*c) ; 
-        ymax = a + b*xmax + c*xmax*xmax ;//<========== This is the maximum amplitude
-      }
-    }
-
-    Double_t diff = TMath::Abs(1-ymMaxY[0]/amp) ; 
-    if (diff > 0.1) 
-      amp = ymMaxY[0] ; 
-
-      //END YS
-
+	switch(fFittingAlgorithm) {
+		case kStandard:
+			{
+				//printf("Standard fitter \n");
+	  
+				// determine what the valid fit range is
+				Double_t minFit = 9999;
+				Double_t maxFit = 0;
+				for (Int_t i=0; i < gSig->GetN(); i++) {
+					gSig->GetPoint(i, ttime, signal); 
+					if (minFit > ttime) minFit=ttime;
+					if (maxFit < ttime) maxFit=ttime;
+					//debug: printf("no tail: i %d, time %f, signal %f\n",i, ttime, signal); 
+				} 
+				signalF->SetRange(minFit, maxFit);
+				
+				signalF->FixParameter(4, pedEstimate) ; 
+				signalF->SetParameter(1, timeMax);
+				signalF->SetParameter(0, ampEstimate);
+				
+				gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
+				
+				// assign fit results
+				amp = signalF->GetParameter(0); 
+				time = signalF->GetParameter(1) * GetRawFormatTimeBinWidth(); // skip subtraction of fgTimeTrigger?
+				ped = signalF->GetParameter(4); 
+				//printf("Std   : Amp %f, time %g\n",amp, time);
+				
+				//BEG YS alternative methods to calculate the amplitude
+				Double_t * ymx = gSig->GetX() ; 
+				Double_t * ymy = gSig->GetY() ; 
+				const Int_t kN = 3 ; 
+				Double_t ymMaxX[kN] = {0., 0., 0.} ; 
+				Double_t ymMaxY[kN] = {0., 0., 0.} ; 
+				Double_t ymax = 0. ; 
+				// find the maximum amplitude
+				Int_t ymiMax = 0 ;  
+				for (Int_t ymi = 0; ymi < gSig->GetN(); ymi++) {
+					if (ymy[ymi] > ymMaxY[0] ) {
+						ymMaxY[0] = ymy[ymi] ; //<========== This is the maximum amplitude
+						ymMaxX[0] = ymx[ymi] ;
+						ymiMax = ymi ; 
+					}
+				}
+				// find the maximum by fitting a parabola through the max and the two adjacent samples
+				if ( ymiMax < gSig->GetN()-1 && ymiMax > 0) {
+					ymMaxY[1] = ymy[ymiMax+1] ;
+					ymMaxY[2] = ymy[ymiMax-1] ; 
+					ymMaxX[1] = ymx[ymiMax+1] ;
+					ymMaxX[2] = ymx[ymiMax-1] ; 
+					if (ymMaxY[0]*ymMaxY[1]*ymMaxY[2] > 0) {
+						//fit a parabola through the 3 points y= a+bx+x*x*x
+						Double_t sy = 0 ; 
+						Double_t sx = 0 ; 
+						Double_t sx2 = 0 ; 
+						Double_t sx3 = 0 ; 
+						Double_t sx4 = 0 ; 
+						Double_t sxy = 0 ; 
+						Double_t sx2y = 0 ; 
+						for (Int_t i = 0; i < kN ; i++) {
+							sy += ymMaxY[i] ; 
+							sx += ymMaxX[i] ; 		
+							sx2 += ymMaxX[i]*ymMaxX[i] ; 
+							sx3 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
+							sx4 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
+							sxy += ymMaxX[i]*ymMaxY[i] ; 
+							sx2y += ymMaxX[i]*ymMaxX[i]*ymMaxY[i] ; 
+						}
+						Double_t cN = (sx2y*kN-sy*sx2)*(sx3*sx-sx2*sx2)-(sx2y*sx-sxy*sx2)*(sx3*kN-sx*sx2); 
+						Double_t cD = (sx4*kN-sx2*sx2)*(sx3*sx-sx2*sx2)-(sx4*sx-sx3*sx2)*(sx3*kN-sx*sx2) ;
+						Double_t c  = cN / cD ; 
+						Double_t b  = ((sx2y*kN-sy*sx2)-c*(sx4*kN-sx2*sx2))/(sx3*kN-sx*sx2) ;
+						Double_t a  = (sy-b*sx-c*sx2)/kN  ;
+						Double_t xmax = -b/(2*c) ; 
+						ymax = a + b*xmax + c*xmax*xmax ;//<========== This is the maximum amplitude
+					}
+				}
+				
+				Double_t diff = TMath::Abs(1-ymMaxY[0]/amp) ; 
+				if (diff > 0.1) 
+					amp = ymMaxY[0] ; 
+				//printf("Yves   : Amp %f, time %g\n",amp, time);
+				//END YS
+				break;
+			}//kStandard Fitter
+			//----------------------------
+			case kFastFit:
+			{
+				//printf("FastFitter \n");
+				Double_t eSignal = 0;
+				Double_t dAmp = amp; 
+				Double_t eAmp = 0;
+				Double_t dTime = time;
+				Double_t eTime = 0;
+				Double_t chi2 = 0;
+			
+				AliCaloFastAltroFitv0::FastFit(gSig->GetX(), gSig->GetY(), gSig->GetN(),
+										   eSignal, fTau,
+										   dAmp, eAmp, dTime, eTime, chi2);
+				amp  = dAmp;
+				time = dTime * GetRawFormatTimeBinWidth();
+				//printf("FastFitter: Amp %f, time %g, eAmp %f, eTimeEstimate %g, chi2 %f\n",amp, time,eAmp,eTime,chi2);
+			break;
+		} //kFastFit 
+		//----------------------------	
+	}//switch fitting algorithms
   } // ampEstimate > fNoiseThreshold
   return;
 }
