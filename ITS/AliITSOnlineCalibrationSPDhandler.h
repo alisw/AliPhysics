@@ -65,6 +65,7 @@ class AliITSOnlineCalibrationSPDhandler {
   void    WriteDeadToFile(UInt_t eq, Bool_t inactive=kFALSE);
   void    WriteNoisyToFile(UInt_t eq);
 
+  Bool_t  ReadPITConditionsFromDB(Int_t runNr, const Char_t *storage="default");
 #ifndef SPD_DA_OFF
   Bool_t  ReadDeadModuleFromDB(UInt_t module, Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
   Bool_t  ReadNoisyModuleFromDB(UInt_t module, Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
@@ -224,8 +225,6 @@ class AliITSOnlineCalibrationSPDhandler {
   AliITSOnlineCalibrationSPDhandler* GetNoisyDiff(AliITSOnlineCalibrationSPDhandler* other) const;
   AliITSTriggerConditions * GetTriggerConditions() const {return fTriggerConditions;}
 
-  AliITSTriggerConditions *fTriggerConditions; // PIT conditions (mask, parameters name, parameters values)
-
  private:
   TString fFileLocation;              // location (dir) of files to read and write from
   AliITSIntMap* fDeadPixelMap[1200];  // lists of dead pixels for each chip
@@ -238,6 +237,8 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t fDeadEq[20];                 // dead bit for each equipment
   Bool_t fDeadHS[20][6];              // dead bit for each half-stave
   Bool_t fDeadChip[20][6][10];        // dead bit for each chip
+  AliITSTriggerConditions *fTriggerConditions; // PIT conditions (mask, parameters name, parameters values)
+
 
   Int_t    GetKey(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const 
     {return eq*6*10*32*256 + hs*10*32*256 + chip*32*256 + col*256 + row;}

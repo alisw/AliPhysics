@@ -32,7 +32,8 @@
 
 //____________________________________________________________________________________________
 AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler():
-  fFileLocation(".")
+  fFileLocation("."),
+  fTriggerConditions(0)
 {
   // constructor
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
@@ -43,11 +44,11 @@ AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler():
   }
   ActivateALL();
   UnSetDeadALL();
-  fTriggerConditions = 0x0;
 }
 //____________________________________________________________________________________________
 AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler(const AliITSOnlineCalibrationSPDhandler& handle): 
-  fFileLocation(".")
+  fFileLocation("."),
+  fTriggerConditions(handle.fTriggerConditions)
 {
   // copy constructor
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
@@ -390,6 +391,27 @@ void AliITSOnlineCalibrationSPDhandler::ReadPITConditionsFromText(const char *fi
   if(fTriggerConditions) fTriggerConditions->ResetAll();
   else fTriggerConditions = new AliITSTriggerConditions();
   fTriggerConditions->ReadFromTextFile(fileName);
+}
+//____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadPITConditionsFromDB(Int_t runNr, const Char_t *storage){
+// read PIT conditions from the OCDB
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  TString storageSTR = Form("%s",storage);
+  if (storageSTR.CompareTo("default")==0) {
+    if(!man->IsDefaultStorageSet()) {
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    }
+  }
+  else {
+    storageSTR = Form("local://%s",storage);
+    man->SetDefaultStorage(storageSTR.Data());
+  }
+  AliCDBEntry *cdbEntry = man->Get("TRIGGER/SPD/PITConditions", runNr);
+ if(cdbEntry) {
+  fTriggerConditions = (AliITSTriggerConditions*)cdbEntry->GetObject();
+  return kTRUE;
+  } else return kFALSE;
 }
 //____________________________________________________________________________________________
 void AliITSOnlineCalibrationSPDhandler::WriteToFilesAlways() {
@@ -2964,15 +2986,15 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WritePITConditionsToDB(Int_t runNrStar
 
 //____________________________________________________________________________________________
 Bool_t AliITSOnlineCalibrationSPDhandler::SetInactiveChipInPITmask(UInt_t eq, UInt_t hs, UInt_t chip){
-
-fTriggerConditions->SetInActiveChip(eq,hs,chip);
-
+  //
+  fTriggerConditions->SetInActiveChip(eq,hs,chip);
+  return kTRUE;
 }
 //____________________________________________________________________________________________
 Bool_t AliITSOnlineCalibrationSPDhandler::UnSetInactiveChipInPITmask(UInt_t eq, UInt_t hs, UInt_t chip){
-
-fTriggerConditions->SetInActiveChip(eq,hs,chip);
-
+  //
+  fTriggerConditions->SetInActiveChip(eq,hs,chip);
+  return kTRUE;
 }
 
 
