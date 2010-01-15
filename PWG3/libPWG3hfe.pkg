@@ -16,6 +16,7 @@ SRCS= hfe/AliHFEcollection.cxx \
       hfe/AliHFEpidMC.cxx \
       hfe/AliHFEextraCuts.cxx \
       hfe/AliHFEcuts.cxx \
+      hfe/AliHFEpostAnalysis.cxx \
       hfe/AliAnalysisTaskHFE.cxx
 HDRS= $(SRCS:.cxx=.h)
 
