@@ -29,7 +29,8 @@ AliAnalysisTask *AddTaskHFE(){
   task->SetPIDStrategy(4);  
   task->SetHFECuts(hfecuts);
   task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
-  task->SetSecVtxOn();
+  task->SwitchOnPlugin(AliAnalysisTaskHFE::kSecVtx);
+  //task->SwitchOnPlugin(AliAnalysisTaskHFE::kIsElecBackGround);
   mgr->AddTask(task);
 
   //----------------------
@@ -41,11 +42,11 @@ AliAnalysisTask *AddTaskHFE(){
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWG3_hfe";
   
-  task->ConnectOutput(0, mgr->CreateContainer("nEvents", TH1I::Class(),
+  task->ConnectOutput(1, mgr->CreateContainer("nEvents", TH1I::Class(),
 					      AliAnalysisManager::kOutputContainer, containerName.Data()));
-  task->ConnectOutput(1, mgr->CreateContainer("Results", TList::Class(),
+  task->ConnectOutput(2, mgr->CreateContainer("Results", TList::Class(),
 					      AliAnalysisManager::kOutputContainer, containerName.Data()));
-  task->ConnectOutput(2, mgr->CreateContainer("QA", TList::Class(),
+  task->ConnectOutput(3, mgr->CreateContainer("QA", TList::Class(),
 					      AliAnalysisManager::kOutputContainer, containerName.Data()));
   mgr->ConnectInput  (task,  0, cinput );
   

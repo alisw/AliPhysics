@@ -1,7 +1,9 @@
 void SetupPar(char* pararchivename);
+void SwitchBranches(TChain *c);
 TChain * CreateXMLChain(char* xmlfile);
+TChain * CreateAODChain(const char * name = 0x0);
 
-void runElectronTask(const char *treelist = 0x0){
+void runElectronTask(const char *treelist = 0x0, Bool_t hasMC = kTRUE){
   if(!treelist){
     printf("Error: No ESD list specified\n");
     return;
@@ -10,7 +12,6 @@ void runElectronTask(const char *treelist = 0x0){
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libCORRFW");
-    gSystem->Load("libPWG3hfe");
   }
   else{
     SetupPar("STEERBase");
@@ -19,47 +20,57 @@ void runElectronTask(const char *treelist = 0x0){
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
     SetupPar("CORRFW");
-    SetupPar("PWG3hfe");
+    SetupPar("Util");
   }
+  //SetupPar("HFE");
+  gSystem->Load("libHFE.so");
+//  gROOT->LoadMacro("AliAnalysisTaskHFE.cxx++");
  // AliLog::SetGlobalLogLevel(AliLog::kError);
   
   // Make the ESD chain
   TString treename = treelist;
-  TChain *esdchain = 0x0;
-  if(treename.EndsWith(".xml"))
+  TChain *inputChain = 0x0;
+  Bool_t isAOD = kFALSE;
+  if(treename.EndsWith(".xml")){
     esdchain = CreateXMLChain(treelist);
-  else{
-    gROOT->LoadMacro("CreateESDChain.C");
-    esdchain = CreateESDChain(treelist, -1);
+    SwitchBranches(inputChain);
+  }else{
+    inputChain = CreateAODChain(treelist);
+    if(inputChain) isAOD = kTRUE;
+    else{
+      gROOT->LoadMacro("CreateESDChain.C");
+      inputChain = CreateESDChain(treelist, -1);
+      SwitchBranches(inputChain);
+    }
   }
-  //esdchain->SetBranchStatus("*", 0);
-  esdchain->SetBranchStatus("Calo*", 0);
-  esdchain->SetBranchStatus("*FMD*", 1);
-  esdchain->SetBranchStatus("Tracks", 1);
-  
+ 
   // Start the Analysis Manager and Create Handlers
-  AliAnalysisManager *electronAnalysis = new AliAnalysisManager("Single Electron Analysis");
-  electronAnalysis->SetInputEventHandler(new AliESDInputHandler);
-  electronAnalysis->SetMCtruthEventHandler(new AliMCEventHandler);
+  AliAnalysisManager *hfeAnalysis = new AliAnalysisManager("Single Electron Analysis");
+  if(!isAOD) hfeAnalysis->SetInputEventHandler(new AliESDInputHandler);
+  else hfeAnalysis->SetInputEventHandler(new AliAODInputHandler);
+  if(hasMC && !isAOD) hfeAnalysis->SetMCtruthEventHandler(new AliMCEventHandler);
   AliHFEcuts *hfecuts = new AliHFEcuts;
   hfecuts->CreateStandardCuts();
-  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE("Heavy Flavour Analysis");
+  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE;
+  if(hasMC) task->SetHasMCData();
+  if(isAOD) task->SetAODAnalysis();
   task->SetHFECuts(hfecuts);
   task->SetPIDStrategy(4);
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
   task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
-  task->SetSecVtxOn();
-  electronAnalysis->AddTask(task);
-  task->ConnectInput(0, electronAnalysis->GetCommonInputContainer());
-  task->ConnectOutput(0, electronAnalysis->CreateContainer("nEvents", TH1I::Class(), AliAnalysisManager::kOutputContainer, "PWG3hfe.root"));
-  task->ConnectOutput(1, electronAnalysis->CreateContainer("Results", TList::Class(), AliAnalysisManager::kOutputContainer, "PWG3hfe.root"));
-  task->ConnectOutput(2, electronAnalysis->CreateContainer("QA", TList::Class(), AliAnalysisManager::kOutputContainer, "PWG3hfe.root"));
-  
+  task->SwitchOnPlugin(AliAnalysisTaskHFE::kSecVtx);
+  //task->SwitchOnPlugin(AliAnalysisTaskHFE::kIsElecBackGround);
+  hfeAnalysis->AddTask(task);
+  task->ConnectInput(0, hfeAnalysis->GetCommonInputContainer());
+  task->ConnectOutput(1, hfeAnalysis->CreateContainer("nEvents", TH1I::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
+  task->ConnectOutput(2, hfeAnalysis->CreateContainer("Results", TList::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
+  task->ConnectOutput(3, hfeAnalysis->CreateContainer("QA", TList::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
+  //task->ConnectOutput(3, hfeAnalysis->CreateContainer("QA-new", TList::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));  
   // Run the Analysis
-  if(electronAnalysis->InitAnalysis()){  
+  if(hfeAnalysis->InitAnalysis()){  
     TStopwatch timer;
     timer.Start();
-    electronAnalysis->StartAnalysis("local", esdchain);
+    hfeAnalysis->StartAnalysis("local", inputChain);
     timer.Stop();
     timer.Print();
   }
@@ -128,6 +139,28 @@ TChain * CreateXMLChain(char* xmlfile)
 }
 
 //______________________________________________________________________________
+TChain *CreateAODChain(const char * name){
+  if(!name) return NULL;
+  ifstream filelist(name);
+  string filename;
+  TChain *c = new TChain("aodTree");
+  Bool_t isAODlist = kTRUE;
+  while(getline(filelist,filename)){
+    if(!strstr(filename.c_str(), "AliAOD")){
+      isAODlist = kFALSE;
+      break;
+    }
+    c->Add(filename.c_str());
+  }
+  if(!isAODlist){
+    printf("No AOD anlysis");
+    delete c;
+    return NULL;
+  }
+  return c;
+}
+
+//______________________________________________________________________________
 void SetupPar(char* pararchivename)
 {
   if (pararchivename) {
@@ -159,4 +192,11 @@ void SetupPar(char* pararchivename)
     gSystem->ChangeDirectory(ocwd.Data());
     printf("Current dir: %s\n", ocwd.Data());
   }
+}
+
+void SwitchBranches(TChain *c){
+  //esdchain->SetBranchStatus("*", 0);
+  c->SetBranchStatus("Calo*", 0);
+  c->SetBranchStatus("*FMD*", 1);
+  c->SetBranchStatus("Tracks", 1);
 }

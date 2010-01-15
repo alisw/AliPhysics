@@ -48,11 +48,9 @@
 #include "AliAODTrack.h"
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
-#include "AliCFEffGrid.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliMCEvent.h"
@@ -66,6 +64,7 @@
 #include "AliHFEcuts.h"
 #include "AliHFEmcQA.h"
 #include "AliHFEpairs.h"
+#include "AliHFEpostAnalysis.h"
 #include "AliHFEsecVtxs.h"
 #include "AliHFEsecVtx.h"
 #include "AliHFEelecbackground.h"
@@ -73,13 +72,11 @@
 
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE():
-  AliAnalysisTask("PID efficiency Analysis", "")
+  AliAnalysisTaskSE("PID efficiency Analysis")
   , fQAlevel(0)
   , fPIDdetectors("")
   , fPIDstrategy(0)
   , fPlugins(0)
-  , fRecEvent(NULL)
-  , fMC(NULL)
   , fCFM(NULL)
   , fCorrelation(NULL)
   , fPIDperformance(NULL)
@@ -101,11 +98,10 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   //
   // Dummy constructor
   //
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TH1I::Class());
-  DefineOutput(1, TList::Class());
+  DefineOutput(1, TH1I::Class());
   DefineOutput(2, TList::Class());
-//  DefineOutput(3, TList::Class());
+  DefineOutput(3, TList::Class());
+//  DefineOutput(4, TList::Class());
 
   // Initialize cuts
   fPID = new AliHFEpid;
@@ -113,13 +109,11 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
 
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
-  AliAnalysisTask(name, "")
+  AliAnalysisTaskSE(name)
   , fQAlevel(0)
   , fPIDdetectors("")
   , fPIDstrategy(0)
   , fPlugins(0)
-  , fRecEvent(NULL)
-  , fMC(NULL)
   , fCFM(NULL)
   , fCorrelation(NULL)
   , fPIDperformance(NULL)
@@ -141,11 +135,10 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   //
   // Default constructor
   // 
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TH1I::Class());
-  DefineOutput(1, TList::Class());
+  DefineOutput(1, TH1I::Class());
   DefineOutput(2, TList::Class());
-//  DefineOutput(3, TList::Class());
+  DefineOutput(3, TList::Class());
+//  DefineOutput(4, TList::Class());
 
   // Initialize cuts
   fPID = new AliHFEpid;
@@ -153,13 +146,11 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
 
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
-  AliAnalysisTask(ref)
+  AliAnalysisTaskSE(ref)
   , fQAlevel(ref.fQAlevel)
   , fPIDdetectors(ref.fPIDdetectors)
   , fPIDstrategy(ref.fPIDstrategy)
   , fPlugins(ref.fPlugins)
-  , fRecEvent(ref.fRecEvent)
-  , fMC(ref.fMC)
   , fCFM(ref.fCFM)
   , fCorrelation(ref.fCorrelation)
   , fPIDperformance(ref.fPIDperformance)
@@ -194,8 +185,6 @@ AliAnalysisTaskHFE &AliAnalysisTaskHFE::operator=(const AliAnalysisTaskHFE &ref)
   fPIDdetectors = ref.fPIDdetectors;
   fPIDstrategy = ref.fPIDstrategy;
   fPlugins = ref.fPlugins;
-  fRecEvent = ref.fRecEvent;
-  fMC = ref.fMC;
   fCFM = ref.fCFM;
   fCorrelation = ref.fCorrelation;
   fPIDperformance = ref.fPIDperformance;
@@ -222,8 +211,6 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
   //
   // Destructor
   //
-  if(fRecEvent) delete fRecEvent;
-  if(fMC) delete fMC;
   if(fPID) delete fPID;
   if(fQA){
     fQA->Clear();
@@ -259,49 +246,7 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
 }
 
 //____________________________________________________________
-void AliAnalysisTaskHFE::ConnectInputData(Option_t *){
-  //
-  // Connecting the input
-  // Called once per worker
-  //
-/*  TTree *esdchain = dynamic_cast<TChain *>(GetInputData(0));
-  if(!esdchain){
-    AliError("ESD chain empty");
-    return;
-  } else {
-    esdchain->SetBranchStatus("Tracks", 1);
-  }
-*/
-  AliDebug(3, "Connecting input data");
-  AliVEventHandler *inputH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if(!inputH){
-    AliError("Analysis Manager does not have any input event handler");
-    return;
-  }
-  if(IsAODanalysis()){
-    AliInfo("Analysis Mode: AOD Analysis");
-    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(inputH);
-    fRecEvent = aodH->GetEvent();
-    if(fRecEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()))
-      fMC = aodH->MCEvent();
-  } else {
-    AliInfo("Analysis Mode: ESD Analysis");
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(inputH);
-    fRecEvent = esdH->GetEvent();
-    if(HasMCData()){
-      AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-      if(!mcH){       
-        AliError("No MC truth handler");
-        return;
-      } else {
-        fMC = mcH->MCEvent();
-      }
-    }
-  }
-}
-
-//____________________________________________________________
-void AliAnalysisTaskHFE::CreateOutputObjects(){
+void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   //
   // Creating output container and output objects
   // Here we also Initialize the correction framework container and 
@@ -425,18 +370,18 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
 }
 
 //____________________________________________________________
-void AliAnalysisTaskHFE::Exec(Option_t *){
+void AliAnalysisTaskHFE::UserExec(Option_t *){
   //
   // Run the analysis
   // 
   AliDebug(3, "Starting Single Event Analysis");
-  if(!fRecEvent){
+  if(!fInputEvent){
     AliError("Reconstructed Event not available");
     return;
   }
   if(HasMCData()){
-    AliDebug(4, Form("MC Event: %p", fMC));
-    if(!fMC){
+    AliDebug(4, Form("MC Event: %p", fMCEvent));
+    if(!fMCEvent){
       AliError("No MC Event, but MC Data required");
       return;
     }
@@ -451,10 +396,10 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
   if(IsAODanalysis()) ProcessAOD();
   else ProcessESD();
   // Done!!!
-  PostData(0, fNEvents);
-  PostData(1, fOutput);
-  PostData(2, fQA);
-//  PostData(3, fQAcoll->GetList());
+  PostData(1, fNEvents);
+  PostData(2, fOutput);
+  PostData(3, fQA);
+//  PostData(4, fQAcoll->GetList());
 }
 
 //____________________________________________________________
@@ -468,43 +413,12 @@ void AliAnalysisTaskHFE::Terminate(Option_t *){
       AliError("Results not available");
       return;
     }
-    PostProcess();
+    AliHFEpostAnalysis postanalysis;
+    postanalysis.SetResults(fOutput);
+    if(HasMCData())postanalysis.DrawMCSignal2Background();
+    postanalysis.DrawEfficiency();
+    postanalysis.DrawPIDperformance();
   }
-}
-
-//____________________________________________________________
-void AliAnalysisTaskHFE::Load(TString filename){
-  //
-  // Load Results into the task
-  //
-  fQA = NULL; fOutput = NULL; fNEvents = NULL;
-  TFile *input = TFile::Open(filename.Data());
-  if(!input || input->IsZombie()){
-    AliError("Cannot read file");
-    return;
-  }
-  TH1 *htmp = dynamic_cast<TH1I *>(input->Get("nEvents"));
-  if(htmp)
-    fNEvents = dynamic_cast<TH1I *>(htmp->Clone());
-  else
-    AliError("Event Counter histogram not found"); 
-  TList *ltmp = dynamic_cast<TList *>(input->Get("Results"));
-  if(ltmp)
-    fOutput = dynamic_cast<TList *>(ltmp->Clone());
-  else
-    AliError("Output Histograms not found");
-  ltmp = dynamic_cast<TList *>(input->Get("QA"));
-  if(ltmp)
-    fQA = dynamic_cast<TList *>(ltmp->Clone());
-  else
-    AliError("QA histograms not found");
-  input->Close();
-  delete input;
-  Int_t nObjects = 0;
-  if(fNEvents) nObjects++;  
-  if(fOutput) nObjects++;
-  if(fQA) nObjects++;
-  AliInfo(Form("Loaded %d Objects into task", nObjects));
 }
 
 //____________________________________________________________
@@ -519,15 +433,15 @@ void AliAnalysisTaskHFE::ProcessMC(){
     if (HasMCData() && IsQAOn(kMCqa)) {
       AliDebug(2, "Running MC QA");
 
-      fMCQA->SetStack(fMC->Stack());
-      fMCQA->SetGenEventHeader(fMC->GenEventHeader());
+      fMCQA->SetStack(fMCEvent->Stack());
+      fMCQA->SetGenEventHeader(fMCEvent->GenEventHeader());
       fMCQA->Init();
 
-      Int_t nMCTracks = fMC->Stack()->GetNtrack();
+      Int_t nMCTracks = fMCEvent->Stack()->GetNtrack();
 
       // loop over all tracks for decayed electrons
       for (Int_t igen = 0; igen < nMCTracks; igen++){
-        TParticle* mcpart = fMC->Stack()->Particle(igen);
+        TParticle* mcpart = fMCEvent->Stack()->Particle(igen);
         fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kCharm);
         fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kBeauty);
         fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kCharm);
@@ -548,14 +462,14 @@ void AliAnalysisTaskHFE::ProcessMC(){
 
     } // end of MC QA loop
     // -----------------------------------------------------------------
-    fCFM->SetMCEventInfo(fMC);
+    fCFM->SetMCEventInfo(fMCEvent);
     // fCFM->CheckEventCuts(AliCFManager::kEvtRecCuts, fESD);
   } else {
-    fCFM->SetMCEventInfo(fRecEvent);
+    fCFM->SetMCEventInfo(fInputEvent);
   }
   // Run MC loop
-  for(Int_t imc = fMC->GetNumberOfTracks(); imc--;){
-    if(ProcessMCtrack(fMC->GetTrack(imc))) nElectrons++;
+  for(Int_t imc = fMCEvent->GetNumberOfTracks(); imc--;){
+    if(ProcessMCtrack(fMCEvent->GetTrack(imc))) nElectrons++;
   }
 
   // fCFM->CheckEventCuts(AliCFManager::kEvtRecCuts, fESD);
@@ -569,7 +483,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   // Loop over Tracks, filter according cut steps defined in AliHFEcuts
   //
   AliDebug(3, "Processing ESD Event");
-  AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fRecEvent);
+  AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
   if(!fESD){
     AliError("ESD Event required for ESD Analysis")
     return;
@@ -584,10 +498,10 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
   if(HasMCData()){
     if (GetPlugin(kSecVtx)) { 
-      fSecVtx->SetStack(fMC->Stack());
+      fSecVtx->SetStack(fMCEvent->Stack());
     }
     if (GetPlugin(kIsElecBackGround)) { 
-      fElecBackGround->SetMCEvent(fMC);
+      fElecBackGround->SetMCEvent(fMCEvent);
     }
   }
 
@@ -608,6 +522,14 @@ void AliAnalysisTaskHFE::ProcessESD(){
   Bool_t signal = kTRUE;
 
   fCFM->SetRecEventInfo(fESD);
+  // Electron background analysis 
+  if (GetPlugin(kIsElecBackGround)) {
+    
+    AliDebug(2, "Running BackGround Analysis");
+    
+    fElecBackGround->Reset();
+    
+  } // end of electron background analysis
   //
   // Loop ESD
   //
@@ -632,8 +554,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
     
     if(HasMCData()){
       // Check if it is electrons near the vertex
-      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
-      mctrack4QA = fMC->Stack()->Particle(TMath::Abs(track->GetLabel()));
+      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
+      mctrack4QA = fMCEvent->Stack()->Particle(TMath::Abs(track->GetLabel()));
 
       container[3] = mctrack->Pt();
       container[4] = mctrack->Eta();
@@ -793,7 +715,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   // Function is still in development
   //
   AliDebug(3, "Processing AOD Event");
-  AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fRecEvent);
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
   if(!fAOD){
     AliError("AOD Event required for AOD Analysis")
     return;
@@ -823,7 +745,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(HasMCData()){
       Int_t label = TMath::Abs(track->GetLabel());
       if(label){
-        mctrack = dynamic_cast<AliAODMCParticle *>(fMC->GetTrack(label));
+        mctrack = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(label));
         container[3] = mctrack->Pt();
         container[4] = mctrack->Eta();
         container[5] = mctrack->Phi();
@@ -925,254 +847,6 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
 }
 
 //____________________________________________________________
-void AliAnalysisTaskHFE::PostProcess(){
-  //
-  // Plotting Ratio histograms
-  // + All electrons / all candidates (Purity for Electrons)
-  // + All signal electrons / all electrons (Purity for signals)
-  // For this the following pt-histograms have to be projected from the THnSparse
-  // + All Electron candidates
-  // + All Real electrons
-  // + All Signal Electrons
-  // + All misidentified electrons
-  // Additionally we draw Efficiency histograms:
-  // + Reconstructible Electrons
-  // + Signal Electrons
-  // + Selected Electrons
-  // + Selected Electrons in Acceptance
-  //
-
-  fPIDperformance = dynamic_cast<THnSparseF *>(fOutput->FindObject("PIDperformance"));
-  if(!fPIDperformance){
-    AliError("PID Performance histogram not found in the output container");
-    return;
-  }
-  // Make projection
-  // always project to pt dimension
-  // get the histograms under our control
-  TH1 *allCandidates = NULL, *allElectrons = NULL, *allSignals = NULL, *allFakes = NULL;
-  allCandidates = fPIDperformance->Projection(0);
-  allCandidates->SetName("hAllCandidates");
-  allCandidates->SetTitle("All Candidates");
-  allCandidates->Sumw2();
-  Int_t firstDim3 = fPIDperformance->GetAxis(3)->GetFirst(), lastDim3 = fPIDperformance->GetAxis(3)->GetLast();
-  fPIDperformance->GetAxis(3)->SetRange(firstDim3 + 1, lastDim3);
-  allElectrons = fPIDperformance->Projection(0);
-  allElectrons->Sumw2();
-  allElectrons->SetName("hAllElectrons");
-  allElectrons->SetTitle("All Electrons");
-  Int_t firstDim4 = fPIDperformance->GetAxis(4)->GetFirst(), lastDim4 = fPIDperformance->GetAxis(4)->GetLast();
-  fPIDperformance->GetAxis(4)->SetRange(firstDim4 + 1, lastDim4);
-  allSignals = fPIDperformance->Projection(0);
-  allSignals->Sumw2();
-  allSignals->SetName("hAllSignals");
-  allSignals->SetTitle("All Signal Electrons");
-  fPIDperformance->GetAxis(4)->SetRange(firstDim4, lastDim4);       // Reset 4th axis
-  fPIDperformance->GetAxis(3)->SetRange(firstDim3, firstDim3);  // Select fakes
-  allFakes = fPIDperformance->Projection(0);
-  allFakes->Sumw2();
-  allFakes->SetName("hAllFakes");
-  allFakes->SetTitle("All Fakes");
-  fPIDperformance->GetAxis(3)->SetRange(firstDim3, lastDim3);       // Reset also 3rd axis
-
-  // Make Ratios
-  TH1D *electronPurity = dynamic_cast<TH1D *>(allElectrons->Clone());
-  electronPurity->Divide(allCandidates);
-  electronPurity->SetName("electronPurity");
-  electronPurity->SetTitle("Electron Purity");
-  electronPurity->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  electronPurity->GetYaxis()->SetTitle("Purity / %");
-  TH1D *signalPurity = dynamic_cast<TH1D *>(allSignals->Clone());
-  signalPurity->Divide(allElectrons);
-  signalPurity->SetName("signalPurity");
-  signalPurity->SetTitle("Purity of Electrons coming from Heavy flavours");
-  signalPurity->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  signalPurity->GetYaxis()->SetTitle("Purity / %");
-  TH1D *fakeContamination = dynamic_cast<TH1D *>(allFakes->Clone());
-  fakeContamination->Divide(allCandidates);
-  fakeContamination->SetName("fakeContamination");
-  fakeContamination->SetTitle("Contamination of misidentified hadrons");
-  fakeContamination->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  fakeContamination->GetYaxis()->SetTitle("Purity / %");
-
-  // Graphics settings
-  const Int_t nHistos = 7;
-  TH1 *hptr[7] = {allCandidates, allElectrons, allSignals, allFakes, electronPurity, signalPurity, fakeContamination}, *histo;
-  for(Int_t ihist = 0; ihist < nHistos; ihist++){
-    (histo = hptr[ihist])->SetStats(kFALSE);
-    histo->SetLineColor(kBlack);
-    histo->SetMarkerColor(kBlue);
-    histo->SetMarkerStyle(22);
-  }
-
-  // Make percent output
-  electronPurity->Scale(100);
-  signalPurity->Scale(100);
-  fakeContamination->Scale(100);
-  
-  // Draw output
-  TCanvas *cSpectra = new TCanvas("cSpectra","pt Spectra", 800, 600);
-  cSpectra->Divide(2,2);
-  TCanvas *cRatios = new TCanvas("cRatios", "Ratio Plots", 800, 600);
-  cRatios->Divide(2,2);
-  cSpectra->cd(1);
-  gPad->SetLogy();
-  allCandidates->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  allCandidates->GetYaxis()->SetTitle("dN/dp_{T} 1/GeV/c");
-  allCandidates->Draw("e");
-  cSpectra->cd(2);
-  gPad->SetLogy();
-  allElectrons->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  allElectrons->GetYaxis()->SetTitle("dN/dp_{T} 1/GeV/c");
-  allElectrons->Draw("e");
-  cSpectra->cd(3);
-  gPad->SetLogy();
-  allSignals->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  allSignals->GetYaxis()->SetTitle("dN/dp_{T} 1/GeV/c");
-  allSignals->Draw("e");
-  cSpectra->cd(4);
-  gPad->SetLogy();
-  allFakes->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  allFakes->GetYaxis()->SetTitle("dN/dp_{T} 1/GeV/c");
-  allFakes->Draw("e");
-  cRatios->cd(1);
-  electronPurity->Draw("e");
-  cRatios->cd(2);
-  signalPurity->Draw("e");
-  cRatios->cd(3);
-  fakeContamination->Draw("e");
-
-  // Now draw the Efficiency
-  // We show: 
-  // + InAcceptance / Generated
-  // + Signal / Generated
-  // + Selected / Generated
-  // + Selected / InAcceptance (Reconstructible)
-  TCanvas *cEff = new TCanvas("cEff", "Efficiency", 800, 600);
-  cEff->Divide(2,2);
-  AliCFContainer *effc = dynamic_cast<AliCFContainer *>(fOutput->At(0));
-  if(!effc){
-    AliError("Efficiency Container not found in Output Container");
-    return;
-  }
-  AliCFEffGrid *effCalc = new AliCFEffGrid("effCalc", "Efficiency Calculation Grid", *effc);
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepMCInAcceptance, AliHFEcuts::kStepMCGenerated);
-  TH1 *effReconstructibleP = effCalc->Project(0);
-  effReconstructibleP->SetName("effReconstructibleP");
-  effReconstructibleP->SetTitle("Efficiency of reconstructible tracks");
-  effReconstructibleP->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  effReconstructibleP->GetYaxis()->SetTitle("Efficiency");
-  effReconstructibleP->GetYaxis()->SetRangeUser(0.,1.);
-  effReconstructibleP->SetMarkerStyle(22);
-  effReconstructibleP->SetMarkerColor(kBlue);
-  effReconstructibleP->SetLineColor(kBlack);
-  effReconstructibleP->SetStats(kFALSE);
-  cEff->cd(1);
-  effReconstructibleP->Draw("e");
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepMCsignal, AliHFEcuts::kStepMCGenerated);
-  TH1 *effSignal = effCalc->Project(0);
-  effSignal->SetName("effSignal");
-  effSignal->SetTitle("Efficiency of Signal Electrons");
-  effSignal->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  effSignal->GetYaxis()->SetTitle("Efficiency");
-  effSignal->GetYaxis()->SetRangeUser(0., 1.);
-  effSignal->SetMarkerStyle(22);
-  effSignal->SetMarkerColor(kBlue);
-  effSignal->SetLineColor(kBlack);
-  effSignal->SetStats(kFALSE);
-  cEff->cd(2);
-  effSignal->Draw("e");
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepHFEcutsTRD + 1, AliHFEcuts::kStepMCGenerated);
-  TH1 *effPIDP = effCalc->Project(0);
-  effPIDP->SetName("effPIDP");
-  effPIDP->SetTitle("Efficiency of selected tracks");
-  effPIDP->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  effPIDP->GetYaxis()->SetTitle("Efficiency");
-  effPIDP->GetYaxis()->SetRangeUser(0.,1.);
-  effPIDP->SetMarkerStyle(22);
-  effPIDP->SetMarkerColor(kBlue);
-  effPIDP->SetLineColor(kBlack);
-  effPIDP->SetStats(kFALSE);
-  cEff->cd(3);
-  effPIDP->Draw("e");
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepHFEcutsTRD + 1, AliHFEcuts::kStepMCInAcceptance);
-  TH1 *effPIDAcc = effCalc->Project(0);
-  effPIDAcc->SetName("effPIDAcc");
-  effPIDAcc->SetTitle("Efficiency of selected tracks in acceptance");
-  effPIDAcc->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  effPIDAcc->GetYaxis()->SetTitle("Efficiency");
-  effPIDAcc->GetYaxis()->SetRangeUser(0.,1.);
-  effPIDAcc->SetMarkerStyle(22);
-  effPIDAcc->SetMarkerColor(kBlue);
-  effPIDAcc->SetLineColor(kBlack);
-  effPIDAcc->SetStats(kFALSE);
-  cEff->cd(4);
-  effPIDAcc->Draw("e");
-  delete effCalc;
-
-  // cleanup
-  //delete allCandidates; delete allElectrons; delete allSignals; delete allFakes;
-  //delete electronPurity; delete signalPurity; delete fakeContamination;
-}
-
-//____________________________________________________________
-void AliAnalysisTaskHFE::DrawMCSignal2Background(){
-  //
-  // Draw the MC signal/background plots
-  //
-  fSignalToBackgroundMC = dynamic_cast<THnSparseF *>(fOutput->FindObject("SignalToBackgroundMC"));
-  if(!fSignalToBackgroundMC) return;
-
-  // First Select everything within the first ITS Layer
-  fSignalToBackgroundMC->GetAxis(4)->SetRange(2,2);
-  // For Signal electrons we project axis 3 to everything > 0
-  fSignalToBackgroundMC->GetAxis(3)->SetRange(2,3);
-  TH1 *hSignal = fSignalToBackgroundMC->Projection(0);
-  hSignal->SetName("hSignal");
-  hSignal->SetTitle("Signal Electrons");
-  // For Background studies project axis 3 to bin 0
-  fSignalToBackgroundMC->GetAxis(3)->SetRange(1,1);
-  TH1 *hBackground = fSignalToBackgroundMC->Projection(0); 
-  hBackground->SetName("hBackground");
-  hBackground->SetTitle("Background Electrons");
-  // For All electrons we undo the projection of axis 3
-  fSignalToBackgroundMC->GetAxis(3)->SetRange(0, fSignalToBackgroundMC->GetAxis(3)->GetNbins());
-  TH1 *hAll = fSignalToBackgroundMC->Projection(0);
-  hAll->SetName("hAll");
-  hAll->SetTitle("All Electrons");
-  // Prepare Canvas
-  TCanvas *cEff = new TCanvas("cEff", "MC Sig/Backg studies", 800, 400);
-  cEff->Divide(2);
-  // Plot Efficiency
-  TH1 *hEff = (TH1 *)hSignal->Clone();
-  hEff->Divide(hAll);
-  hEff->SetName("sigEff");
-  hEff->SetTitle("Signal/(Signal+Background)");
-  hEff->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  hEff->GetYaxis()->SetTitle("Efficiency");
-  hEff->SetStats(kFALSE);
-  hEff->SetMarkerStyle(22);
-  hEff->SetMarkerColor(kBlue);
-  cEff->cd(1);
-  hEff->Draw("p");
-  // Plot Signal/Background
-  TH1 *hSB = (TH1 *)hSignal->Clone();
-  hSB->Divide(hBackground);
-  hSB->SetName("sigEff");
-  hSB->SetTitle("Signal/Background");
-  hSB->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  hSB->GetYaxis()->SetTitle("Signal/Background");
-  hSB->SetStats(kFALSE);
-  hSB->SetMarkerStyle(22);
-  hSB->SetMarkerColor(kBlue);
-  cEff->cd(2);
-  hSB->Draw("p");
-
-  // Undo projections
-  fSignalToBackgroundMC->GetAxis(4)->SetRange(0, fSignalToBackgroundMC->GetAxis(4)->GetNbins());
-}
-
-//____________________________________________________________
 void AliAnalysisTaskHFE::MakeParticleContainer(){
   //
   // Create the particle container for the correction framework manager and 
@@ -1248,7 +922,9 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
   for(Int_t i=0; i<=nBin[4]; i++) binEdges2[4][i] = i;
 
   fPIDperformance = new THnSparseF("PIDperformance", "PID performance; pT [GeV/c]; theta [rad]; phi [rad]; type (0 - not el, 1 - other el, 2 - HF el; flavor (0 - no, 1 - charm, 2 - bottom)", nDim, nBin);
+  fPIDperformance->Sumw2();
   fSignalToBackgroundMC = new THnSparseF("SignalToBackgroundMC", "PID performance; pT [GeV/c]; theta [rad]; phi [rad]; flavor (0 - no, 1 - charm, 2 - bottom); ITS Cluster (0 - no, 1 - first (and maybe second), 2 - second)", nDim, nBin);
+  fSignalToBackgroundMC->Sumw2();
   for(Int_t idim = 0; idim < nDim; idim++){
     fPIDperformance->SetBinEdges(idim, binEdges2[idim]);
     fSignalToBackgroundMC->SetBinEdges(idim, binEdges2[idim]); 
@@ -1352,7 +1028,7 @@ Int_t AliAnalysisTaskHFE::IsSignalElectron(AliVParticle *fTrack) const{
     if(!objname.CompareTo("AliESDtrack")){
       AliDebug(2, "Checking signal for ESD track");
       AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(fTrack);
-      mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(esdtrack->GetLabel())));
+      mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(esdtrack->GetLabel())));
     }
     else if(!objname.CompareTo("AliMCParticle")){
       AliDebug(2, "Checking signal for MC track");
@@ -1368,7 +1044,7 @@ Int_t AliAnalysisTaskHFE::IsSignalElectron(AliVParticle *fTrack) const{
     Int_t motherLabel = TMath::Abs(ecand->GetFirstMother());
     AliDebug(3, Form("mother label: %d\n", motherLabel));
     if(!motherLabel) return kNoSignal; // mother track unknown
-    AliMCParticle *motherTrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(motherLabel));
+    AliMCParticle *motherTrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(motherLabel));
     if(!motherTrack) return kNoSignal;
     TParticle *mparticle = motherTrack->Particle();
     pid = TMath::Abs(mparticle->GetPdgCode());
@@ -1378,8 +1054,8 @@ Int_t AliAnalysisTaskHFE::IsSignalElectron(AliVParticle *fTrack) const{
     if(!objname.CompareTo("AliAODTrack")){
       AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(fTrack);
       Int_t aodlabel = TMath::Abs(aodtrack->GetLabel());
-      if(aodlabel >= fMC->GetNumberOfTracks()) return kNoSignal;
-      aodmc = dynamic_cast<AliAODMCParticle *>(fMC->GetTrack(aodlabel));
+      if(aodlabel >= fMCEvent->GetNumberOfTracks()) return kNoSignal;
+      aodmc = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(aodlabel));
     } else if(!objname.CompareTo("AliAODMCParticle")){
       aodmc = dynamic_cast<AliAODMCParticle *>(fTrack);
     } else{
@@ -1389,8 +1065,8 @@ Int_t AliAnalysisTaskHFE::IsSignalElectron(AliVParticle *fTrack) const{
     if(!aodmc) return kNoSignal;
     Int_t motherLabel = TMath::Abs(aodmc->GetMother());
     AliDebug(3, Form("mother label: %d\n", motherLabel));
-    if(!motherLabel || motherLabel >= fMC->GetNumberOfTracks()) return kNoSignal;
-    AliAODMCParticle *aodmother = dynamic_cast<AliAODMCParticle *>(fMC->GetTrack(motherLabel));
+    if(!motherLabel || motherLabel >= fMCEvent->GetNumberOfTracks()) return kNoSignal;
+    AliAODMCParticle *aodmother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(motherLabel));
     pid = aodmother->GetPdgCode();
   }
   // From here the two analysis modes go together

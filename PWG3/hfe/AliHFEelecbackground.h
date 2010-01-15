@@ -43,6 +43,7 @@ class AliHFEelecbackground : public TObject {
 		virtual Bool_t Load(const Char_t *filename);
 
                 void CreateHistograms(TList* const qaList);
+		void Reset();
 
                 Bool_t HasMCData() const { return TestBit(kHasMCData); };
                 Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
@@ -54,7 +55,6 @@ class AliHFEelecbackground : public TObject {
                 void SetEvent(AliESDEvent* const ESD); 
                 void SetEventAOD(AliAODEvent* const AOD){fAOD1=AOD;}; 
                 void SetMCEvent(AliMCEvent* const mcEvent){fMCEvent=mcEvent;};  
-                void SetUseMCPID(Bool_t usemcpid){fUseMCPID=usemcpid;};
 
 		TList *GetList()  const           { return fList; };
 		TList *GetListPostProcess() const { return fListPostProcess; };
@@ -64,6 +64,7 @@ class AliHFEelecbackground : public TObject {
 		void FillOutput(Double_t *results, Double_t *resultsr, Int_t sign); 
                 void PostProcess();
 		void Plot() const;
+
 
  private:
 
@@ -78,9 +79,11 @@ class AliHFEelecbackground : public TObject {
 		    kElectronFromPi0 = 1,
 		    kElectronFromC = 2,
 		    kElectronFromB = 3,
-		    kElectronFromEta = 4
+		    kElectronFromEta = 4,
+		    kSplittedTrackss =5,
+		    kSplittedTrackos =6
 		    };
-		enum {kNOutput=4, kNSignComb=5, kNMCInfo=5}; 
+		enum {kNOutput=4, kNSignComb=5, kNMCInfo=7}; 
 		
 		void CalculateMotherVariable(AliESDtrack* const track, AliESDtrack* const trackpart, Double_t *results);
 		void CalculateMotherVariableR(AliESDtrack* const track, AliESDtrack* const trackpart, Double_t *results);
@@ -99,13 +102,9 @@ class AliHFEelecbackground : public TObject {
 		Double_t fBz;                    // Magnetic field 
 		const AliESDVertex *fkVertex;     // Primary vertex
 		static const Double_t    fgkMe;  //  Mass of the electron
-
-
-                Bool_t fUseMCPID;                // if use MC pid 
 		
 		Double_t fPtESD;                 // pt of tagged electron
 		Int_t fIndexTrack;               // index track
-		Int_t fIndexTrackPart;           // index track part 
 		Int_t fPdg;                      // pdg code track 
 		Int_t fLabMother;                // label first mother track 
 		Int_t fIsFrom;                   // is track from
@@ -115,13 +114,15 @@ class AliHFEelecbackground : public TObject {
 		Int_t fMotherB;                  // B, mother of track
 		Int_t fMotherEta;                // eta, mother of track
 		Bool_t fIsPartner;               // Are partners
+		Bool_t fIsSplittedTrack;         // Are splitted track
    
 		
                 TList *fList;                    // list for outputs
 		TList *fListPostProcess;         // list for postprocess
 
-
-      ClassDef(AliHFEelecbackground,0);
+		static Bool_t  fgUseMCPID;    // flag to use MC PID for tagged electron
+    
+    ClassDef(AliHFEelecbackground,0);
 };
 
 #endif

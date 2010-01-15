@@ -20,8 +20,8 @@
 #ifndef ALIANALYSISTASKHFE_H
 #define ALIANALYSISTASKHFE_H
 
-#ifndef ALIANALYSISTASK_H
-#include "AliAnalysisTask.h"
+#ifndef ALIANALYSISTASKSE_H
+#include "AliAnalysisTaskSE.h"
 #endif
 
 #ifndef ROOT_THnSparse
@@ -41,7 +41,7 @@ class AliVParticle;
 class TH1I; 
 class TList;
 
-class AliAnalysisTaskHFE : public AliAnalysisTask{
+class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
   public:
     enum{
       kPIDqa = 0,
@@ -59,9 +59,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     AliAnalysisTaskHFE& operator=(const AliAnalysisTaskHFE &ref);
     virtual ~AliAnalysisTaskHFE();
 
-    virtual void ConnectInputData(Option_t *);
-    virtual void CreateOutputObjects();
-    virtual void Exec(Option_t *);
+    virtual void UserCreateOutputObjects();
+    virtual void UserExec(Option_t *);
     virtual void Terminate(Option_t *);
 
     Bool_t IsQAOn(Int_t qaLevel) const { return TESTBIT(fQAlevel, qaLevel); };
@@ -70,8 +69,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     Bool_t HasMCData() const { return TestBit(kHasMCdata); }
     Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fPlugins, plug); };
     Int_t IsSignalElectron(AliVParticle *fTrack) const;
-    void Load(TString filename = "HFEtask.root");
-    void PostProcess();
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
     void SwitchOnPlugin(Int_t plug);
@@ -114,14 +111,11 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     void ProcessAOD();
     Bool_t ProcessMCtrack(AliVParticle *track);
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track, Double_t *container, Bool_t signal, Bool_t alreadyseen);
-    void DrawMCSignal2Background();
     
     ULong_t fQAlevel;                     // QA level
     TString fPIDdetectors;                // Detectors for Particle Identification
     UInt_t fPIDstrategy;                  // PID Strategy
     UShort_t fPlugins;                    // Enabled Plugins
-    AliVEvent *fRecEvent;                 //! The ESD Event
-    AliMCEvent *fMC;                      //! The MC Event
     AliCFManager *fCFM;                   //! Correction Framework Manager
     TList *fCorrelation;                  //! response matrix for unfolding  
     THnSparseF *fPIDperformance;          //! info on contamination and yield of electron spectra
