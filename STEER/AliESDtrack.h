@@ -52,7 +52,8 @@ public:
     kTRDStop=0x20000000,
     kESDpid=0x40000000,
     kTIME=0x80000000,
-    kGlobalMerge=0x08000000
+    kGlobalMerge=0x08000000,
+    kITSpureSA=0x10000000
   }; 
   enum {
     kTRDnPlanes = 6,
@@ -315,6 +316,7 @@ public:
      x=fHMPIDmipX; y=fHMPIDmipY; q=fHMPIDqn%1000000; nph=fHMPIDqn/1000000;
   }
   Bool_t  IsHMPID() const {return fFlags&kHMPIDpid;}
+  Bool_t  IsPureITSStandalone() const {return fFlags&kITSpureSA;}
 
 
   Int_t GetEMCALcluster() {return fEMCALindex;}
