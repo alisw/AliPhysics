@@ -14,6 +14,8 @@
 
 #include "AliTriggerDetector.h"
 
+class AliTOFrawData;
+
 class AliTOFTrigger : public AliTriggerDetector
 {
  public:
@@ -33,6 +35,17 @@ class AliTOFTrigger : public AliTriggerDetector
   Float_t Getdeltamaxro() const {return fdeltamaxro;}
   Int_t  GetstripWindow() const {return fstripWindow;}
 
+  void GetMap(Bool_t **map);
+  //void PrintMap(); // to be checked because of warning problems
+  void GetTRDmap(Bool_t **map);
+  Bool_t GetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,Int_t iTDC, Int_t iCH);
+  Bool_t GetBit(Int_t *detind);
+  void SetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,Int_t iTDC, Int_t iCH);
+  void SetBit(Int_t *detind);
+  void ResetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,Int_t iTDC, Int_t iCH);
+  void ResetBit(Int_t *detind);
+
+
   void   SetHighMultTh(Int_t HighMultTh){fHighMultTh = HighMultTh;}
   void   SetppMBTh(Int_t ppMBTh){fppMBTh = ppMBTh;}
   void   SetMultiMuonTh(Int_t MultiMuonTh){fMultiMuonTh = MultiMuonTh;}
@@ -43,21 +56,25 @@ class AliTOFTrigger : public AliTriggerDetector
   void   Setdeltamaxro(Float_t deltamaxro){fdeltamaxro = deltamaxro;}
   void   SetstripWindow(Int_t stripWindow){fstripWindow = stripWindow;}
 
+  void   CreateCTTMMatrix();
   void   CreateLTMMatrix();
-
+  void   CreateLTMMatrixFromDigits();
+  void   CreateLTMMatrixFromRaw(AliRawReader *fRawReader);
  private:
 
   enum{
     kNLTM = 72,          //Number of LTM
     kNLTMchannels = 48,  //Number of channels in a LTM
     kNCTTM = 36,         //Number of CTTM per TOF side
-    kNCTTMchannels = 24  //Number of channels in a CTTM
+    kNCTTMchannels = 24,  //Number of channels in a CTTM
+    kNLTMtoTRDchannels = 8  //Number of channels in a CTTM
   };
 
+  void    GetCTTMIndex(Int_t *detind, Int_t *indexCTTM);
   void    GetLTMIndex(Int_t *detind, Int_t *LTMIndex);
   Bool_t  fLTMmatrix[kNLTM][kNLTMchannels];         //LTM matrix  
-  Bool_t  fCTTMmatrixFront[kNCTTM][kNCTTMchannels]; //CTTM matrix for LTM 0-35
-  Bool_t  fCTTMmatrixBack[kNCTTM][kNCTTMchannels];  //CTTM matrix for LTM 36-71
+  Bool_t  fCTTMmatrixFront[kNCTTM][kNCTTMchannels];//CTTM matrix for TOP FPGA 
+  Bool_t  fCTTMmatrixBack[kNCTTM][kNCTTMchannels]; //CTTM matrix for BOTTOM FPGA
   Int_t   fHighMultTh;             //threshold for High Multiplicity trigger
   Int_t   fppMBTh;                 //threshold for pp Minimum Bias trigger
   Int_t   fMultiMuonTh;            //threshold for Multi Muon trigger 

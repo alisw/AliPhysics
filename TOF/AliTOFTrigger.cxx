@@ -16,13 +16,18 @@
 /* $Id$ */
 
 /////////////////////////////////////////////////////////////////////
-// 
+//
 //       Class performing TOF Trigger
 //       Cosmic_Multi_muon: Cosmic Multi-Muonic Event Trigger (L0)
 //       ppMB: p-p Minimum Bias Event Trigger (L0)
 //       UltraPer_Coll: Ultra-Peripheral Collision Event Trigger (L0)
 //       High_Mult: High Multiplicity Event Trigger (L0)
 //       Jet: Events with Jet Topology Trigger (L1)
+//
+//       A.Silenzi: added CTTM map,
+//                        method to fill LTM matrix from raw data,
+//                        method to retrieve the TOF pre-trigger for TRD detector
+//                        
 //
 /////////////////////////////////////////////////////////////////////
 
@@ -33,8 +38,12 @@
 #include "AliRunLoader.h"
 #include "AliRun.h"
 #include "AliTriggerInput.h"
+#include "AliRawReader.h"
 
+#include "AliTOFRawStream.h"
+#include "AliTOFrawData.h"
 #include "AliTOFdigit.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFTrigger.h"
 
 extern AliRun* gAlice;
@@ -43,8 +52,8 @@ extern AliRun* gAlice;
 ClassImp(AliTOFTrigger)
 
 //----------------------------------------------------------------------
-  AliTOFTrigger::AliTOFTrigger() : 
-    AliTriggerDetector(), 
+  AliTOFTrigger::AliTOFTrigger() :
+    AliTriggerDetector(),
     fHighMultTh(1000),
     fppMBTh(4),
     fMultiMuonTh(2),
@@ -70,9 +79,11 @@ ClassImp(AliTOFTrigger)
   SetName("TOF");
   CreateInputs();
 }
+
 //----------------------------------------------------------------------
-AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow) : 
-  AliTriggerDetector(),   
+
+AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow) :
+  AliTriggerDetector(),
   fHighMultTh(HighMultTh),
   fppMBTh(ppMBTh),
   fMultiMuonTh(MultiMuonTh),
@@ -100,7 +111,7 @@ AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, 
   CreateInputs();
 }
 
-//____________________________________________________________________________ 
+//____________________________________________________________________________
 
 AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):
   AliTriggerDetector(tr),
@@ -121,34 +132,35 @@ AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):
     }
     if (i<kNCTTM){
       for (Int_t j=0;j<kNCTTMchannels;j++){
-      fCTTMmatrixFront[i][j]=tr.fCTTMmatrixFront[i][j];
-      fCTTMmatrixBack[i][j]=tr.fCTTMmatrixBack[i][j];
+	fCTTMmatrixFront[i][j]=tr.fCTTMmatrixFront[i][j];
+	fCTTMmatrixBack[i][j]=tr.fCTTMmatrixBack[i][j];
       }
     }
   }
   SetName(tr.GetName());
   CreateInputs();
-    //fInputs=&(tr.GetInputs());
+  //fInputs=&(tr.GetInputs());
 }
 
 //----------------------------------------------------------------------
 
 void AliTOFTrigger::CreateInputs()
 {
-  // creating inputs 
+  // creating inputs
   // Do not create inputs again!!
-   if( fInputs.GetEntriesFast() > 0 ) return;
-   
-   fInputs.AddLast(new AliTriggerInput("TOF_Cosmic_MultiMuon_L0","TOF",0));
-   fInputs.AddLast(new AliTriggerInput("0OIN","TOF",0)); // was "TOF_pp_MB_L0"
-   fInputs.AddLast(new AliTriggerInput("0OX1","TOF",0)); // was "TOF_UltraPer_Coll_L0"
+  if( fInputs.GetEntriesFast() > 0 ) return;
 
-   fInputs.AddLast(new AliTriggerInput("0OHM","TOF",0)); // was "TOF_High_Mult_L0"
-   fInputs.AddLast(new AliTriggerInput("TOF_Jet_L1","TOF",0));
+  fInputs.AddLast(new AliTriggerInput("TOF_Cosmic_MultiMuon_L0","TOF",0));
+  fInputs.AddLast(new AliTriggerInput("0OIN","TOF",0)); // was "TOF_pp_MB_L0"
+  fInputs.AddLast(new AliTriggerInput("0OX1","TOF",0)); // was "TOF_UltraPer_Coll_L0"
+
+  fInputs.AddLast(new AliTriggerInput("0OHM","TOF",0)); // was "TOF_High_Mult_L0"
+  fInputs.AddLast(new AliTriggerInput("TOF_Jet_L1","TOF",0));
+
 }
 
 //----------------------------------------------------------------------
-void AliTOFTrigger::Trigger(){
+void AliTOFTrigger::Trigger() {
   //triggering method
 
   CreateLTMMatrix();
@@ -163,23 +175,16 @@ void AliTOFTrigger::Trigger(){
   Int_t maxdeltapsi = (Int_t)fdeltamaxpsi/10;
   Int_t mindeltaro = (Int_t)fdeltaminro/10;
   Int_t maxdeltaro = (Int_t)fdeltamaxro/10;
+
   for (Int_t i=0;i<kNCTTM;i++){
     for (Int_t j=0;j<kNCTTMchannels;j++){
-      fCTTMmatrixFront[i][j]=kFALSE;
-      fCTTMmatrixBack[i][j]=kFALSE;
-    }
-  }
-  for (Int_t i=0;i<kNCTTM;i++){
-    for (Int_t j=0;j<kNCTTMchannels;j++){
-      fCTTMmatrixFront[i][j] = (fLTMmatrix[i][j*2] || fLTMmatrix[i][j*2+1]);
-      if (fCTTMmatrixFront[i][j]) nchonFront++; 
+      if (fCTTMmatrixFront[i][j]) nchonFront++;
     }
   }
 
   for (Int_t i=kNCTTM;i<(kNCTTM*2);i++){
     for (Int_t j=0;j<kNCTTMchannels;j++){
-      fCTTMmatrixBack[i-kNCTTM][j] = (fLTMmatrix[i][j*2] || fLTMmatrix[i][j*2+1]);
-      if (fCTTMmatrixBack[i-kNCTTM][j]) nchonBack++; 
+      if (fCTTMmatrixBack[i-kNCTTM][j]) nchonBack++;
     }
   }
 
@@ -195,7 +200,7 @@ void AliTOFTrigger::Trigger(){
     SetInput("0OHM");
   }
 
-  
+
   //MultiMuon Trigger
   nchonFront = 0;
   nchonBack = 0;
@@ -214,12 +219,12 @@ void AliTOFTrigger::Trigger(){
 	boolCTTMor = kFALSE;
 	for (Int_t k = minj;k<=maxj;k++){
 	  boolCTTMor |= fCTTMmatrixFront[iopp][k];
-	} 
+	}
 	if (boolCTTMor) {
 	  nchonFront++;
 	}
       }
-    
+
       if (fCTTMmatrixBack[i][j]){
 	Int_t minj = j-fstripWindow;
 	Int_t maxj = j+fstripWindow;
@@ -258,7 +263,7 @@ void AliTOFTrigger::Trigger(){
 	for (Int_t i2=i2min;i2<=i2max;i2++){
 	  for (Int_t j2 = j2min;j2<=j2max;j2++){
 	    boolCTTMor |= fCTTMmatrixFront[i2][j2];
-	  } 
+	  }
 	  if (boolCTTMor) {
 	    nchonFront++;
 	  }
@@ -332,7 +337,7 @@ void AliTOFTrigger::Trigger(){
 	    }
 	  }
 	}
-	  
+
 	else if (fCTTMmatrixBack[i][j]){
 	  for (Int_t i2=minipsi;i2<=maxipsi;i2++){
 	    for (Int_t j2 = j2min;j2<=j2max;j2++){
@@ -366,10 +371,23 @@ void AliTOFTrigger::Trigger(){
       }
     }
   }
+
 }
+
 //-----------------------------------------------------------------------------
-void AliTOFTrigger::CreateLTMMatrix(){
+void AliTOFTrigger::CreateLTMMatrix() {
   //creating LTMMatrix
+  //initialization
+  CreateLTMMatrixFromDigits();
+}
+
+//-------------------------------------------------------------------------
+
+void AliTOFTrigger::CreateLTMMatrixFromDigits() {
+  //
+  // Create LTM matrix by TOF digits
+  //
+
   //initialization
   for (Int_t i=0;i<kNLTM;i++){
     for (Int_t j=0;j<kNLTMchannels;j++){
@@ -378,21 +396,21 @@ void AliTOFTrigger::CreateLTMMatrix(){
   }
   AliRunLoader *rl;
   rl = AliRunLoader::Instance();
-  
+
   Int_t ncurrevent = rl->GetEventNumber();
   rl->GetEvent(ncurrevent);
-  
+
   AliLoader * tofLoader = rl->GetLoader("TOFLoader");
-  
+
   tofLoader->LoadDigits("read");
   TTree *treeD = tofLoader->TreeD();
   if (treeD == 0x0)
     {
       AliFatal("AliTOFTrigger: Can not get TreeD");
     }
-  
+
   TBranch *branch = treeD->GetBranch("TOF");
-  if (!branch) { 
+  if (!branch) {
     AliError("can't get the branch with the TOF digits !");
     return;
   }
@@ -405,7 +423,7 @@ void AliTOFTrigger::CreateLTMMatrix(){
   //                                   2 -> strip
   //                                   3 -> padz
   //                                   4 -> padx
-  
+
   for (Int_t i=0;i<ndigits;i++){
     AliTOFdigit * digit = (AliTOFdigit*)tofDigits->UncheckedAt(i);
     detind[0] = digit->GetSector();
@@ -413,7 +431,7 @@ void AliTOFTrigger::CreateLTMMatrix(){
     detind[2] = digit->GetStrip();
     detind[3] = digit->GetPadz();
     detind[4] = digit->GetPadx();
-    
+
     Int_t indexLTM[2] = {-1,-1};
     GetLTMIndex(detind,indexLTM);
 
@@ -421,11 +439,108 @@ void AliTOFTrigger::CreateLTMMatrix(){
   }
 
   tofLoader->UnloadDigits();
-//   rl->UnloadgAlice();
+  //   rl->UnloadgAlice();
+  CreateCTTMMatrix();
+
 }
+
 //-----------------------------------------------------------------------------
-void AliTOFTrigger::GetLTMIndex(Int_t *detind, Int_t *indexLTM){
-  //getting LTMmatrix indexes for current digit
+
+void AliTOFTrigger::CreateLTMMatrixFromRaw(AliRawReader *fRawReader) {
+  //
+  // Create LTM matrix by TOF raw data
+  //
+
+  //initialization
+  for (Int_t i=0;i<kNLTM;i++){
+    for (Int_t j=0;j<kNLTMchannels;j++){
+      fLTMmatrix[i][j]=kFALSE;
+    }
+  }
+
+  if(fRawReader){
+    AliTOFRawStream * tofRawStream = new AliTOFRawStream();
+
+    Int_t inholes = 0;
+
+    //if(!GetLoader()->TreeS()) {MakeTree("S");  MakeBranch("S");}
+    
+    Clear();
+    tofRawStream->SetRawReader(fRawReader);
+    
+    //ofstream ftxt;
+    //if (fVerbose==2) ftxt.open("TOFsdigitsRead.txt",ios::app);
+    
+    TClonesArray staticRawData("AliTOFrawData",10000);
+    staticRawData.Clear();
+    TClonesArray * clonesRawData = &staticRawData;
+    
+    Int_t dummy = -1;
+    Int_t detectorIndex[5] = {-1, -1, -1, -1, -1};
+    Int_t digit[2];
+    //Int_t track = -1;
+    //Int_t last = -1;
+    
+    Int_t indexDDL = 0;
+    Int_t iRawData = 0;
+    AliTOFrawData *tofRawDatum = 0;
+    for (indexDDL=0; indexDDL<AliDAQ::NumberOfDdls("TOF"); indexDDL++) {
+      
+      fRawReader->Reset();
+      tofRawStream->LoadRawData(indexDDL);
+      
+      clonesRawData = tofRawStream->GetRawData();
+      if (clonesRawData->GetEntriesFast()!=0) AliInfo(Form(" TOF raw data number = %3d", clonesRawData->GetEntriesFast()));
+      for (iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
+	
+        tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
+	
+        //if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
+        if (tofRawDatum->GetTOF()==-1) continue;
+	
+        SetBit(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+               tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel());
+
+        dummy = detectorIndex[3];
+        detectorIndex[3] = detectorIndex[4];//padz
+        detectorIndex[4] = dummy;//padx
+
+        digit[0] = tofRawDatum->GetTOF();
+        digit[1] = tofRawDatum->GetTOT();
+
+        dummy = detectorIndex[3];
+        detectorIndex[3] = detectorIndex[4];//padx
+        detectorIndex[4] = dummy;//padz
+
+        // Do not reconstruct anything in the holes
+        if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes
+          if (detectorIndex[1]==2) { // plate with holes
+            inholes++;
+            continue;
+          }
+        }
+
+        tofRawDatum = 0;
+      } // while loop
+
+      clonesRawData->Clear();
+
+    } // DDL Loop
+
+    //if (fVerbose==2) ftxt.close();
+
+    if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
+
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+void AliTOFTrigger::GetLTMIndex(Int_t *detind, Int_t *indexLTM) {
+  //
+  // getting LTMmatrix indexes for current digit
+  //
+
   if (detind[1]==0 || detind[1]==1 || (detind[1]==2 && detind[2]<=7)) {
     if (detind[4]<24){
       indexLTM[0] = detind[0]*2;
@@ -443,7 +558,7 @@ void AliTOFTrigger::GetLTMIndex(Int_t *detind, Int_t *indexLTM){
     }
   }
 
-  if (indexLTM[0]<36){ 
+  if (indexLTM[0]<36) {
     if (detind[1] ==0){
       indexLTM[1] = detind[2];
     }
@@ -471,5 +586,270 @@ void AliTOFTrigger::GetLTMIndex(Int_t *detind, Int_t *indexLTM){
       AliError("Smth Wrong!!!");
     }
   }
+
 }
-  
+//-------------------------------------------------------------------------
+/*
+// to be checked because of warning problems
+void AliTOFTrigger::PrintMap()
+{
+  //
+  //
+  //
+
+  for(Int_t i = 0; i<kNLTM;i++) {
+    if(i<36) {
+      printf("| %d | %d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |\n",
+	     (fCTTMmatrixFront[i][0])?1:0,(fCTTMmatrixFront[i][1])?1:0,(fCTTMmatrixFront[i][2])?1:0, \
+	     (fCTTMmatrixFront[i][3])?1:0,(fCTTMmatrixFront[i][4])?1:0,(fCTTMmatrixFront[i][5])?1:0, \
+	     (fCTTMmatrixFront[i][6])?1:0,(fCTTMmatrixFront[i][7])?1:0,(fCTTMmatrixFront[i][8])?1:0, \
+	     (fCTTMmatrixFront[i][9])?1:0,(fCTTMmatrixFront[i][10])?1:0,(fCTTMmatrixFront[i][11])?1:0, \
+	     (fCTTMmatrixFront[i][12])?1:0,(fCTTMmatrixFront[i][13])?1:0,(fCTTMmatrixFront[i][14])?1:0,	\
+	     (fCTTMmatrixFront[i][15])?1:0,(fCTTMmatrixFront[i][16])?1:0,(fCTTMmatrixFront[i][17])?1:0,	\
+	     (fCTTMmatrixFront[i][18])?1:0,(fCTTMmatrixFront[i][19])?1:0,(fCTTMmatrixFront[i][20])?1:0,	\
+	     (fCTTMmatrixFront[i][21])?1:0,(fCTTMmatrixFront[i][22])?1:0,(fCTTMmatrixFront[i][23])?1:0);
+    } else {
+      printf("| %d | %d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |%d |\n",
+	     (fCTTMmatrixBack[i][0])?1:0,(fCTTMmatrixBack[i][1])?1:0,(fCTTMmatrixBack[i][2])?1:0, \
+	     (fCTTMmatrixBack[i][3])?1:0,(fCTTMmatrixBack[i][4])?1:0,(fCTTMmatrixBack[i][5])?1:0, \
+	     (fCTTMmatrixBack[i][6])?1:0,(fCTTMmatrixBack[i][7])?1:0,(fCTTMmatrixBack[i][8])?1:0, \
+	     (fCTTMmatrixBack[i][9])?1:0,(fCTTMmatrixBack[i][10])?1:0,(fCTTMmatrixBack[i][11])?1:0, \
+	     (fCTTMmatrixBack[i][12])?1:0,(fCTTMmatrixBack[i][13])?1:0,(fCTTMmatrixBack[i][14])?1:0, \
+	     (fCTTMmatrixBack[i][15])?1:0,(fCTTMmatrixBack[i][16])?1:0,(fCTTMmatrixBack[i][17])?1:0, \
+	     (fCTTMmatrixBack[i][18])?1:0,(fCTTMmatrixBack[i][19])?1:0,(fCTTMmatrixBack[i][20])?1:0, \
+	     (fCTTMmatrixBack[i][21])?1:0,(fCTTMmatrixBack[i][22])?1:0,(fCTTMmatrixBack[i][23])?1:0);
+    }
+  }
+
+}
+*/
+//-------------------------------------------------------------------------
+
+void AliTOFTrigger::GetMap(Bool_t **map)
+{
+  //
+  //
+  //
+
+  for(Int_t i = 0; i<kNLTM;i++)
+    for(Int_t j = 0; j<kNCTTMchannels;j++)
+      map[i][j]=(i<36)?fCTTMmatrixFront[i][j]:fCTTMmatrixBack[i][j];
+
+}
+
+//-------------------------------------------------------------------------
+void AliTOFTrigger::GetTRDmap(Bool_t **map)
+{
+  //
+  // Retriev the bit map sent to the TRD detector
+  //
+
+  for(int i = 0; i<kNLTM;i++)
+    for(int j = 0; j<kNLTMtoTRDchannels;j++)
+      map[i][j]=kFALSE;
+
+  for(int i = 0; i<kNLTM/2;i++)
+    for(int j = 0; j<AliTOFTrigger::kNCTTMchannels;j++){
+      UInt_t TRDbit=j/3;
+      if(fCTTMmatrixFront[i][j]) map[i][TRDbit]=kTRUE;
+    }
+  for(int i = kNLTM/2; i<kNLTM;i++)
+    for(int j = 0; j<AliTOFTrigger::kNCTTMchannels;j++){
+      UInt_t TRDbit=j/3;
+      if(fCTTMmatrixBack[i][j]) map[i][TRDbit]=kTRUE;
+    }
+}
+
+//-------------------------------------------------------------------------
+void AliTOFTrigger::SetBit(Int_t *detind)
+{
+  //
+  //
+  //
+
+  Int_t index[2];
+  GetCTTMIndex(detind,index);
+  if(index[0]<36)
+    fCTTMmatrixFront[index[0]][index[1]]=kTRUE;
+  else
+    fCTTMmatrixBack[index[0]][index[1]]=kTRUE;
+
+}
+
+//-------------------------------------------------------------------------
+void AliTOFTrigger::SetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
+                           Int_t iTDC, Int_t iCH)
+{
+  //
+  //
+  //
+
+  if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1){ // DDL number to LTM number mapping
+    Int_t iLTMindex=-1;
+    Int_t iChannelIndex=-1;
+    switch(nDDL%AliTOFGeometry::NDDL()){
+    case 1:
+      iLTMindex=1;
+      break;
+    case 3:
+      iLTMindex=36;
+      break;
+    default:
+      AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
+      break;
+    }
+    iLTMindex+=2*(Int_t)(nDDL/AliTOFGeometry::NDDL());
+    if(iChain==0 && nDDL<36)
+      iLTMindex--;
+    if(iChain==0 && nDDL>=36)
+      iLTMindex++;
+    iChannelIndex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
+    Int_t index[2]={iLTMindex,iChannelIndex};
+    if (index[0]<36)
+      fCTTMmatrixFront[index[0]][index[1]]=kTRUE;
+    else
+      fCTTMmatrixBack[index[0]][index[1]]=kTRUE;
+  }
+  else
+    AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
+
+}
+//-------------------------------------------------------------------------
+
+void AliTOFTrigger::ResetBit(Int_t *detind)
+{
+  //
+  //
+  //
+
+  Int_t index[2];
+  GetCTTMIndex(detind,index);
+  if(index[0]<36)
+    fCTTMmatrixFront[index[0]][index[1]]=kFALSE;
+  else
+    fCTTMmatrixBack[index[0]][index[1]]=kFALSE;
+
+}
+
+//-------------------------------------------------------------------------
+void AliTOFTrigger::ResetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
+			     Int_t iTDC, Int_t iCH)
+{
+  //
+  //
+  //
+
+  if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1){ // DDL number to LTM number mapping
+    Int_t iLTMindex=-1;
+    Int_t iChannelIndex=-1;
+    switch(nDDL%AliTOFGeometry::NDDL()){
+    case 1:
+      iLTMindex=1;
+      break;
+    case 3:
+      iLTMindex=36;
+      break;
+    default:
+      AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
+      break;
+    }
+    iLTMindex+=2*(Int_t)(nDDL/AliTOFGeometry::NDDL());
+    if(iChain==0 && nDDL<36)
+      iLTMindex--;
+    if(iChain==0 && nDDL>=36)
+      iLTMindex++;
+    iChannelIndex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
+    Int_t index[2]={iLTMindex,iChannelIndex};
+    if (index[0]<36)
+      fCTTMmatrixFront[index[0]][index[1]]=kFALSE;
+    else
+      fCTTMmatrixBack[index[0]][index[1]]=kFALSE;
+  }
+  else
+    AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
+
+}
+//-------------------------------------------------------------------------
+
+Bool_t AliTOFTrigger::GetBit(Int_t *detind)
+{
+  //
+  //
+  //
+
+  Int_t index[2];
+  GetCTTMIndex(detind,index);
+  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]][index[1]];
+
+}
+
+//-------------------------------------------------------------------------
+Bool_t AliTOFTrigger::GetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
+                             Int_t iTDC, Int_t iCH)
+{
+  //
+  //
+  //
+
+  if ( !(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ) {
+    AliWarning("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14) ");
+    return kFALSE;
+  }
+  //if (nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) { // DDL number to LTM number mapping
+
+  UInt_t iLTMindex=0;
+  UInt_t iChannelindex=0;
+  switch(nDDL%AliTOFGeometry::NDDL()) {
+  case 1:
+    iLTMindex=1;
+    break;
+  case 3:
+    iLTMindex=36;
+    break;
+  default:
+    AliError("something wrong");
+    break;
+  }
+  iLTMindex+=2*(Int_t)(nDDL/AliTOFGeometry::NDDL());
+
+  if (iChain==1) return kFALSE; // AdC
+
+  if (nDDL<36)
+    iLTMindex--;
+  if (nDDL>=36)
+    iLTMindex++;
+  iChannelindex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
+  Int_t index[2]={iLTMindex,iChannelindex};
+  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]][index[1]];
+
+}
+
+//-------------------------------------------------------------------------
+
+void AliTOFTrigger::CreateCTTMMatrix() {
+  //
+  // Create CTTM bit map
+  //
+
+  for(Int_t i = 0; i<kNLTM;i++){
+    if(i<kNCTTM){
+      for(Int_t j = 0; j<kNCTTMchannels;j++)
+        fCTTMmatrixFront[i][j]=fLTMmatrix[i][2*j]||fLTMmatrix[i][2*j+1];
+    }
+    else{
+      for(Int_t j = 0; j<kNCTTMchannels;j++)
+        fCTTMmatrixBack[i-kNCTTM][j]=fLTMmatrix[i][2*j]||fLTMmatrix[i][2*j+1];;
+    }
+  }
+}     
+//-----------------------------------------------------------------------------
+
+void AliTOFTrigger::GetCTTMIndex(Int_t *detind, Int_t *indexCTTM) {
+  //
+  //
+  //
+
+  GetLTMIndex(detind,indexCTTM);
+  indexCTTM[1]/=2;
+
+}
