@@ -74,6 +74,7 @@ AliSymMatrix.cxx AliSymBDMatrix.cxx AliRectMatrix.cxx AliMinResSolve.cxx \
 AliParamSolver.cxx \
 AliGRPManager.cxx \
 AliDCSArray.cxx AliLHCReader.cxx \
+AliLHCDipValT.cxx AliLHCData.cxx \
 AliCTPTimeParams.cxx AliCTPInputTimeParams.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 

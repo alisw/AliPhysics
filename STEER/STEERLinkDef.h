@@ -166,4 +166,16 @@
 #pragma link C++ class AliCTPTimeParams+;
 #pragma link C++ class AliCTPInputTimeParams+;
 
+#pragma link C++ class AliLHCDipValT<Double_t>+;
+#pragma link C++ class AliLHCDipValT<Int_t>+;
+#pragma link C++ class AliLHCDipValT<Float_t>+;
+#pragma link C++ class AliLHCDipValT<Char_t>+;
+#pragma link C++ class AliLHCData+;
+
+#pragma link C++ typedef AliLHCDipValD;
+#pragma link C++ typedef AliLHCDipValI;
+#pragma link C++ typedef AliLHCDipValF;
+#pragma link C++ typedef AliLHCDipValC;
+
+
 #endif
