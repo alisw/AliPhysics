@@ -23,9 +23,6 @@
 ///         loaded libraries
 
 #include "AliHLTMisc.h"
-#include "AliHLTLogging.h"
-#include "TClass.h"
-#include "TSystem.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMisc);
@@ -41,38 +38,6 @@ AliHLTMisc::~AliHLTMisc()
 }
 
 AliHLTMisc* AliHLTMisc::fgInstance=NULL;
-
-template<class T>
-T* AliHLTMisc::LoadInstance(const T* /*t*/, const char* classname, const char* library)
-{
-  // see header file for function documentation
-  int iLibResult=0;
-  T* pInstance=NULL;
-  AliHLTLogging log;
-  TClass* pCl=NULL;
-  ROOT::NewFunc_t pNewFunc=NULL;
-  do {
-    pCl=TClass::GetClass(classname);
-  } while (!pCl && (iLibResult=gSystem->Load(library))==0);
-  if (iLibResult>=0) {
-    if (pCl && (pNewFunc=pCl->GetNew())!=NULL) {
-      void* p=(*pNewFunc)(NULL);
-      if (p) {
-	pInstance=reinterpret_cast<T*>(p);
-	if (!pInstance) {
-	  log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "type cast (%s) to instance failed", classname);
-	}
-      } else {
-	log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "can not create instance of type %s from class descriptor", classname);
-      }
-    } else {
-      log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "can not find class descriptor %s", classname);
-    }
-  } else {
-    log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "can not load %s library in order to find class descriptor %s", library, classname);
-  }
-  return pInstance;
-}
 
 AliHLTMisc& AliHLTMisc::Instance()
 {
