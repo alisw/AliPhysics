@@ -40,10 +40,10 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliITStrackerSA& operator=(const AliITStrackerSA& source);
   virtual ~AliITStrackerSA();  
   virtual Int_t Clusters2Tracks(AliESDEvent *event);
-  Int_t FindTracks(AliESDEvent* event);
+  Int_t FindTracks(AliESDEvent* event, Bool_t useAllClusters=kFALSE);
 
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,Bool_t onePoint=kFALSE);
-  void StoreTrack(AliITStrackV2 *t,AliESDEvent *event) const; 
+  void StoreTrack(AliITStrackV2 *t,AliESDEvent *event, Bool_t pureSA) const; 
   Int_t FindTrackLowChiSquare() const;
   Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}

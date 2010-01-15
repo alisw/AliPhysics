@@ -277,7 +277,13 @@ Int_t AliITStrackerSA::Clusters2Tracks(AliESDEvent *event){
   else {
     AliDebug(1,"Stand Alone flag set: doing tracking in ITS alone\n");
   }
-  if(!rc) rc=FindTracks(event);
+  if(!rc){ 
+    rc=FindTracks(event,kFALSE);
+    if(AliITSReconstructor::GetRecoParam()->GetSAUseAllClusters()==kTRUE) {
+      rc=FindTracks(event,kTRUE);
+    }
+  }
+
   return rc;
 }
 
@@ -334,7 +340,7 @@ void AliITStrackerSA::ResetForFinding(){
  
 
 //______________________________________________________________________
-Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
+Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
 
 // Track finder using the ESD object
 
@@ -347,7 +353,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
   }
   //Reads event and mark clusters of traks already found, with flag kITSin
   Int_t nentr=event->GetNumberOfTracks();
-  if(AliITSReconstructor::GetRecoParam()->GetSAUseAllClusters()==kFALSE) {
+  if(!useAllClusters) {
     while (nentr--) {
       AliESDtrack *track=event->GetTrack(nentr);
       if ((track->GetStatus()&AliESDtrack::kITSin) == AliESDtrack::kITSin){
@@ -486,7 +492,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	      }
 	      AliDebug(2,Form("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 	      
-	      StoreTrack(tr2,event);
+	      StoreTrack(tr2,event,useAllClusters);
 	      ntrack++;
 	      
 	    }   
@@ -551,7 +557,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	      }
 	      AliDebug(2,Form("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 	      
-	      StoreTrack(tr2,event);
+	      StoreTrack(tr2,event,useAllClusters);
 	      ntrack++;
 	      
 	    }   
@@ -616,7 +622,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	    }
 	    AliDebug(2,Form("----NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 	    
-	    StoreTrack(tr2,event);
+	    StoreTrack(tr2,event,useAllClusters);
 	    ntrack++;
 	    
 	  }   
@@ -628,7 +634,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
     } //end loop on innLay
   } // end search 1-point tracks
   
-  AliInfo(Form("Number of found tracks: %d",event->GetNumberOfTracks()));
+  if(!useAllClusters) AliInfo(Form("Number of found tracks: %d",event->GetNumberOfTracks()));
   ResetForFinding();
   return 0;
 
@@ -920,13 +926,14 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 }
 
 //_______________________________________________________
-void AliITStrackerSA::StoreTrack(AliITStrackV2 *t,AliESDEvent *event) const 
+void AliITStrackerSA::StoreTrack(AliITStrackV2 *t,AliESDEvent *event, Bool_t pureSA) const 
 {
   //
   // Add new track to the ESD
   //
   AliESDtrack outtrack;
   outtrack.UpdateTrackParams(t,AliESDtrack::kITSin);
+  if(pureSA) outtrack.SetStatus(AliESDtrack::kITSpureSA);
   for(Int_t i=0;i<12;i++) {
     outtrack.SetITSModuleIndex(i,t->GetModuleIndex(i));
   }

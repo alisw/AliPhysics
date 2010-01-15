@@ -290,7 +290,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetSAOnePointTracks() { fSAOnePointTracks=kTRUE; return; }
   Bool_t GetSAOnePointTracks() const { return fSAOnePointTracks; }
 
-  void   SetSAUseAllClusters() { fSAUseAllClusters=kTRUE; return; }
+  void   SetSAUseAllClusters(Bool_t opt=kTRUE) { fSAUseAllClusters=opt; return; }
   Bool_t GetSAUseAllClusters() const { return fSAUseAllClusters; }
 
   void   SetFindV0s(Bool_t find=kTRUE) { fFindV0s=find; return; }
