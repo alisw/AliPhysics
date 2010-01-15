@@ -189,7 +189,7 @@ void AliAnalysisTaskSE::CreateOutputObjects()
     if (handler) {
 	fOutputAOD   = handler->GetAOD();
 	fTreeA = handler->GetTree();
-	if (!(handler->IsStandard())) {
+	if (fOutputAOD && !(handler->IsStandard())) {
 	    if ((handler->NeedsHeaderReplication()) && !(fgAODHeader)) 
 		{
 		 if (fDebug > 1) AliInfo("Replicating header");
