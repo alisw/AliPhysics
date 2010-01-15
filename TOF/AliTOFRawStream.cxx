@@ -15,6 +15,11 @@
 
 /*
 $Log$
+
+Added lookup tables for
+         TRM number 3 in the left crates (TOF OR signals)
+         and detector elements (A.Silenzi)
+
 Revision 1.19.1  2008/09/19  preghenella
   Decode method updated:
   it reads the CDH from the rawReader and sends it to the decoder;
@@ -143,6 +148,73 @@ const Int_t AliTOFRawStream::fgkddlBCshift[72] =
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 0
+};
+
+const Int_t AliTOFRawStream::fgkStrip0MapCrate0[]=
+  {3,5,1,9,11,7,15,17,13,2,-1,0,7,9,5,13,15,11,0,-1,17,-1,5,3};
+const Int_t AliTOFRawStream::fgkStrip1MapCrate0[]=
+  {4,0,2,10,6,8,16,12,14,3,18,1,8,4,6,14,10,12,1,16,18,2,6,4};
+const Int_t AliTOFRawStream::fgkStrip0MapCrate1[]=
+  {0,2,4,6,8,10,12,14,16,-1,0,2,4,6,8,10,12,14,-1,17,0,2,4,6};
+const Int_t AliTOFRawStream::fgkStrip1MapCrate1[]=
+  {1,3,5,7,9,11,13,15,17,18,1,3,5,7,9,11,13,15,16,18,1,3,5,7};
+const Int_t AliTOFRawStream::fgkStrip0MapCrate2[]=
+  {15,13,17,9,7,11,3,1,5,16,-1,18,11,9,13,5,3,7,14,-1,1,-1,9,11};
+const Int_t AliTOFRawStream::fgkStrip1MapCrate2[]=
+  {14,18,16,8,12,10,2,6,4,15,0,17,10,14,12,4,8,6,13,2,0,12,8,10};
+const Int_t AliTOFRawStream::fgkStrip0MapCrate3[]=
+  {18,16,14,12,10,8,6,4,2,-1,18,16,14,12,10,8,6,4,-1,1,14,12,10,8};
+const Int_t AliTOFRawStream::fgkStrip1MapCrate3[]=
+  {17,15,13,11,9,7,5,3,1,0,17,15,13,11,9,7,5,3,2,0,13,11,9,7};
+
+
+const Int_t AliTOFRawStream::fgkModule0MapCrate0[]=
+  {0,0,0,0,0,0,0,0,0,1,-1,1,1,1,1,1,1,1,2,-1,1,-1,2,2};
+const Int_t AliTOFRawStream::fgkModule1MapCrate0[]=
+  {0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,2,1,1,2,2,2};
+const Int_t AliTOFRawStream::fgkModule0MapCrate1[]=
+  {0,0,0,0,0,0,0,0,0,-1,1,1,1,1,1,1,1,1,-1,1,2,2,2,2,2};
+const Int_t AliTOFRawStream::fgkModule1MapCrate1[]=
+  {0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2};
+const Int_t AliTOFRawStream::fgkModule0MapCrate2[]=
+  {4,4,4,4,4,4,4,4,4,3,-1,3,3,3,3,3,3,3,2,-1,3,-1,2,2};
+const Int_t AliTOFRawStream::fgkModule1MapCrate2[]=
+  {4,4,4,4,4,4,4,4,4,3,4,3,3,3,3,3,3,3,2,3,3,2,2,2};
+const Int_t AliTOFRawStream::fgkModule0MapCrate3[]=
+  {4,4,4,4,4,4,4,4,4,-1,3,3,3,3,3,3,3,3,-1,3,2,2,2,2,2};
+const Int_t AliTOFRawStream::fgkModule1MapCrate3[]=
+  {4,4,4,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,2,2,2,2,2};
+
+const Int_t AliTOFRawStream::fgkChannelMap0[5][19]=
+  {{1,2,2,0,0,1,4,5,5,3,3,4,7,8,8,6,6,7,10},
+   {11,11,9,9,13,14,14,12,12,13,16,17,17,15,15,16,19,20,20},
+   {18,18,21,23,23,22,22,23,23,22,22,21,21,20,20,-1,-1,-1,-1},
+   {19,19,18,17,17,16,16,15,15,14,14,13,13,12,12,11,11,10,10},
+   {9,8,8,7,7,6,6,5,5,4,4,3,3,2,2,1,1,0,0}
+  };
+
+const Int_t AliTOFRawStream::fgkChainMap0[5][19]=
+{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,-1,-1,-1,-1},
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+};
+
+const Int_t AliTOFRawStream::fgkChannelMap24[5][19]=
+{{0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9},
+{10,10,11,11,12,12,13,13,14,14,15,15,16,16,17,17,18,19,19},
+{20,20,21,21,22,22,23,23,22,22,23,23,21,18,18,-1,-1,-1,-1},
+{20,20,19,16,15,15,17,17,16,13,12,12,14,14,13,9,9,11,11},
+{10,7,6,6,8,8,7,4,3,3,5,5,4,1,0,0,2,2,1}
+};
+
+const Int_t AliTOFRawStream::fgkChainMap24[5][19]=
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,-1,-1,-1,-1},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
 };
 
 Bool_t AliTOFRawStream::fgApplyBCCorrections = kTRUE;
@@ -2234,4 +2306,106 @@ void AliTOFRawStream::Raw2SDigits(AliRawReader* rawReader, TClonesArray* sdigits
   AliDebug(1, Form("Execution time to read TOF raw data and fill TOF sdigit tree : R:%.2fs C:%.2fs",
 		   stopwatch.RealTime(),stopwatch.CpuTime()));
 
+}
+
+void AliTOFRawStream::VolumeID2LTM(Int_t * detind,Int_t *iDDL,Int_t *iTRM,
+				   Int_t *iChain, Int_t *iTDC, Int_t *iChannel){
+  //
+  // To convert the TOF trigger macropad ID (i.e. detind)
+  // into TOF OR signals equipment ID (i.e. iDDL, iTRM, iChain, iTDC, iChannel)
+  //
+
+  const Int_t kFirstLTM_TDC = 12;
+
+  *iDDL=-1, *iTRM = 3 , *iChain=-1, *iTDC=-1, *iChannel=-1;
+  if (detind[1]==0 || detind[1]==1 || (detind[1]==2 && detind[2]<=7)) {
+    if (detind[4]<24){
+      *iDDL = detind[0]*4;
+    }
+    else {
+      *iDDL = detind[0]*4;
+    }
+  }
+  else {
+    if (detind[4]<24){
+      *iDDL = detind[0]*4+2;
+    }
+    else {
+      *iDDL = detind[0]*4+2;
+    }
+  }
+      
+  *iChain=fgkChainMap24[detind[1]][detind[2]];
+  *iTDC=(Int_t)(fgkChannelMap24[detind[1]][detind[2]]/8)+kFirstLTM_TDC;
+  *iChannel=fgkChannelMap24[detind[1]][detind[2]]%8;
+  
+}
+
+void AliTOFRawStream::LTM2VolumeID(Int_t iDDL, Int_t iTRM,
+				   Int_t iChain, Int_t iTDC,
+				   Int_t iChannel,
+				   Int_t * detind0, Int_t * detind1) {
+  //
+  // To convert the TOF OR signals equipment ID (i.e. iDDL, iTRM, iChain, iTDC, iChannel)
+  // into TOF trigger macropad IDs (i.e. detind0 and detind1).
+  // In general, a couple of neighbouring TOF semi-strip represents a TOF trigger macropad.
+  //
+
+  Int_t iSector0=-1, iModule0=-1, iStrip0=-1, iPadX0=-1; // Le variabili del Volume ID
+  Int_t iSector1=-1, iModule1=-1, iStrip1=-1, iPadX1=-1; // Le variabili del Volume ID
+
+  const Int_t kFirstLTM_TDC = 12;
+
+  if( iDDL%2==1 && iTRM==3 && iTDC-kFirstLTM_TDC>=0 && iTDC-kFirstLTM_TDC<3 ) {
+    iSector0 = (Int_t)(iDDL/4);
+    iSector1 = (Int_t)(iDDL/4);
+    Int_t iChan= iChannel+(iTDC-kFirstLTM_TDC)*8;
+    if(iDDL%4 == 0 || iDDL%4 == 1 ){
+      if(iChain==0){      //CRATE 0
+        iPadX0=0;
+        iPadX1=0;
+        iStrip0=fgkStrip0MapCrate0[iChan];
+        iStrip1=fgkStrip1MapCrate0[iChan];
+        iModule0=fgkModule0MapCrate0[iChan];
+        iModule1=fgkModule1MapCrate0[iChan];
+      }
+      if(iChain==1){// CRATE 1
+        iPadX0=24;
+        iPadX1=24;
+        iStrip0=fgkStrip0MapCrate1[iChan];
+        iStrip1=fgkStrip1MapCrate1[iChan];
+        iModule0=fgkModule0MapCrate1[iChan];
+        iModule1=fgkModule1MapCrate1[iChan];
+      }
+
+    }
+    if(iDDL%4 == 2 || iDDL%4 == 3 ){
+      if(iChain==1){// CRATE 3
+        iPadX0=0;
+        iPadX1=0;
+        iStrip0=fgkStrip0MapCrate3[iChan];
+        iStrip1=fgkStrip1MapCrate3[iChan];
+        iModule0=fgkModule0MapCrate3[iChan];
+        iModule1=fgkModule1MapCrate3[iChan];
+      }
+      if(iChain==0){// CRATE 2
+        iPadX0=24;
+        iPadX1=24;
+        iStrip0=fgkStrip0MapCrate2[iChan];
+        iStrip1=fgkStrip1MapCrate2[iChan];
+        iModule0=fgkModule0MapCrate2[iChan];
+        iModule1=fgkModule1MapCrate2[iChan];
+      }
+    }
+  }
+  detind1[0]=iSector1;
+  detind1[1]=iModule1;
+  detind1[2]=iStrip1;
+  detind1[3]=iPadX1;
+  detind1[4]=0;
+  detind0[0]=iSector0;
+  detind0[1]=iModule0;
+  detind0[2]=iStrip0;
+  detind0[3]=iPadX0;
+  detind0[4]=0;
 }

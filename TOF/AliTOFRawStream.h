@@ -554,6 +554,36 @@ class AliTOFRawStream: public TObject {
   static const Int_t fgkddlBCshift[72]; // DDL BC shifts
   static Bool_t fgApplyBCCorrections; // switch to choose if apply or not the BC shift corrections
 
+  static const Int_t fgkStrip0MapCrate0[];
+  static const Int_t fgkStrip1MapCrate0[];
+  static const Int_t fgkStrip0MapCrate1[];
+  static const Int_t fgkStrip1MapCrate1[];
+  static const Int_t fgkStrip0MapCrate2[];
+  static const Int_t fgkStrip1MapCrate2[];
+  static const Int_t fgkStrip0MapCrate3[];
+  static const Int_t fgkStrip1MapCrate3[];
+
+  static const Int_t fgkModule0MapCrate0[];
+  static const Int_t fgkModule1MapCrate0[];
+  static const Int_t fgkModule0MapCrate1[];
+  static const Int_t fgkModule1MapCrate1[];
+  static const Int_t fgkModule0MapCrate2[];
+  static const Int_t fgkModule1MapCrate2[];
+  static const Int_t fgkModule0MapCrate3[];
+  static const Int_t fgkModule1MapCrate3[];
+
+  static const Int_t fgkChannelMap0[5][19];
+  static const Int_t fgkChainMap0[5][19];
+  static const Int_t fgkChannelMap24[5][19];
+  static const Int_t fgkChainMap24[5][19];
+
+  void VolumeID2LTM(Int_t * detind,Int_t *iDDL,Int_t *iTRM, Int_t *iChain,
+		    Int_t *iTDC, Int_t *iChannel);
+  void LTM2VolumeID(Int_t iDDL = -1, Int_t iTRM = -1, Int_t iChain = -1,
+		    Int_t iTDC = -1, Int_t iChannel = -1,
+		    Int_t * detind0 = 0, Int_t * detind1 = 0);
+
+
   ClassDef(AliTOFRawStream, 3)  // class for reading TOF raw digits
 };
 
