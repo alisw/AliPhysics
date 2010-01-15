@@ -21,11 +21,9 @@
 
 class AliTRDCalPID : public TNamed
 {
-
- public:
-
+public:
   enum {
-    kNMom   = 11,
+    kNMom      = 11,
     kNSlicesLQ = 2,
     kNSlicesNN = 8
   };
@@ -49,10 +47,10 @@ class AliTRDCalPID : public TNamed
   static  const Char_t  *GetPartName(Int_t i)               { return fPartName[i];   }
   static  const Char_t  *GetPartSymb(Int_t i)               { return fPartSymb[i];   }
 
-          void     SetPartName(Int_t i, const Char_t *name) { fPartName[i] = name;   }
-          void     SetPartSymb(Int_t i, const Char_t *symb) { fPartSymb[i] = symb;   }
+  void     SetPartName(Int_t i, const Char_t *name) { fPartName[i] = name;   }
+  void     SetPartSymb(Int_t i, const Char_t *symb) { fPartSymb[i] = symb;   }
 
- protected:
+protected:
   virtual void     Init() = 0;
 
   static const Char_t   *fPartName[AliPID::kSPECIES];     //! Names of particle species

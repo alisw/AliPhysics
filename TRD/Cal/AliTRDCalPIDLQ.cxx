@@ -34,6 +34,7 @@
 #include "AliPID.h"
 
 #include "TKDPDF.h"
+
 #include "AliTRDCalPIDLQ.h"
 #include "AliTRDcalibDB.h"
 
@@ -65,7 +66,6 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ(const Text_t *name, const Text_t *title)
 
 }
 
-
 //_________________________________________________________________________
 Bool_t AliTRDCalPIDLQ::LoadReferences(Char_t *refFile)
 {
@@ -82,7 +82,7 @@ Bool_t AliTRDCalPIDLQ::LoadReferences(Char_t *refFile)
     return kFALSE;
   }
   TObjArray *pdf(NULL);
-  if (!( pdf = dynamic_cast<TObjArray*>(gFile->Get("PDF_2DLQ")))) {
+  if (!( pdf = dynamic_cast<TObjArray*>(gFile->Get("PDF_LQ")))) {
     AliError("PID data not available");
     return kFALSE;
   }
@@ -92,34 +92,44 @@ Bool_t AliTRDCalPIDLQ::LoadReferences(Char_t *refFile)
 }
 
 //_________________________________________________________________________
-TObject* AliTRDCalPIDLQ::GetModel(Int_t ip, Int_t iType, Int_t iplane) const          // iType not needed
+TObject* AliTRDCalPIDLQ::GetModel(Int_t ip, Int_t is, Int_t slices) const
 {
   //
   // Returns one selected dEdx histogram
   //
 
-  if (iType < 0 || iType >= AliPID::kSPECIES) return NULL;
+  if (is < 0 || is >= AliPID::kSPECIES) return NULL;
   if(ip<0 || ip>= kNMom ) return NULL;
 
-  AliDebug(2, Form("Retrive dEdx distribution for %s @ p=%5.2f [GeV/c].", AliPID::ParticleShortName(iType), fgTrackMomentum[ip]));
-  return fModel->At(GetModelID(ip, iType, iplane));
+  AliDebug(2, Form("Retrive dEdx distribution for %s @ p=%5.2f [GeV/c].", AliPID::ParticleShortName(is), fgTrackMomentum[ip]));
+  return fModel->At(GetModelID(ip, is, slices));
+}
+
+//_________________________________________________________________________
+Int_t AliTRDCalPIDLQ::GetNrefs()
+{
+// Returns the number of PDF distribution 
+  return AliTRDCalPID::kNMom*AliPID::kSPECIES*2;
 }
 
 //_________________________________________________________________________
 Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom
                                       , const Float_t * const dedx
-                                      , Float_t length, Int_t iplane) const
+                                      , Float_t length
+                                      , Int_t slices) const
 {
-  //
-  // Core function of AliTRDCalPID class for calculating the
-  // likelihood for species "spec" (see AliTRDtrack::kNspecie) of a
-  // given momentum "mom" and a given dE/dx (slice "dedx") yield per
-  // layer
-  //
+//
+// Core function of AliTRDCalPID class for calculating the
+// likelihood for species "spec" (see AliTRDtrack::kNspecie) of a
+// given momentum "mom" and a given dE/dx (slice "dedx") yield per
+// layer
+//
 
   if (spec < 0 || spec >= AliPID::kSPECIES) return 0.;
-  Double_t x[AliTRDCalPID::kNSlicesLQ];
-  if(!CookdEdx(dedx, x)) return 0.;
+
+  Bool_t k2D(slices==2);
+  Double_t x[]={0., 0.};
+  if(!CookdEdx(dedx, x, k2D)) return 0.;
     
   // find the interval in momentum and track segment length which applies for this data
 /*  Int_t ilength = 1;
@@ -132,10 +142,9 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom
   Double_t p[2], e[2], r;
   TKDPDF *pdf(NULL);
 
-  AliDebug(2, Form("Looking for %s@p=%6.4f[GeV/c] dEdx={%7.2f %7.2f}[a.u.] l=%4.2f[cm].", AliPID::ParticleShortName(spec), mom, dedx[0], dedx[1], length));
-  if(!(pdf = dynamic_cast<TKDPDF*>(fModel->At(GetModelID(imom-1, spec, iplane))))) {
-    AliError(Form("Ref data @ idx[%d] not found in DB.", GetModelID(imom-1, spec, iplane)));
-    fModel->ls();
+  AliDebug(2, Form("Looking %cD for %s@p=%6.4f[GeV/c] log(dEdx)={%7.2f %7.2f}[a.u.] l=%4.2f[cm].", k2D?'2':'1', AliPID::ParticleShortName(spec), mom, x[0], x[1], length));
+  if(!(pdf = dynamic_cast<TKDPDF*>(fModel->At(GetModelID(imom-1, spec, slices))))) {
+    AliError(Form("%cD Ref data @ idx[%d] not found in DB.", k2D?'2':'1', GetModelID(imom-1, spec, slices)));
     return 0.;
   }
   if(!pdf->GetSize()) pdf->Bootstrap();
@@ -143,9 +152,8 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom
   p[0]=TMath::Abs(r); // conversion from interpolation to PDF
   AliDebug(2, Form("LQ=%6.3f+-%5.2f%% @ %4.1f[GeV/c]", p[0], 1.E2*e[0]/p[0], fgTrackMomentum[imom-1]));
 
-  if(!(pdf = dynamic_cast<TKDPDF*>(fModel->At(GetModelID(imom, spec, iplane))))){
-    AliError(Form("Ref data @ idx[%d] not found in DB.", GetModelID(imom, spec, iplane)));
-    fModel->ls();
+  if(!(pdf = dynamic_cast<TKDPDF*>(fModel->At(GetModelID(imom, spec, slices))))){
+    AliError(Form("%cD Ref data @ idx[%d] not found in DB.", k2D?'2':'1', GetModelID(imom, spec, slices)));
     return p[0];
   }
   if(!pdf->GetSize()) pdf->Bootstrap();
@@ -168,6 +176,6 @@ void AliTRDCalPIDLQ::Init()
 //
 // PID LQ list initialization
 //
-  fModel = new TObjArray(AliPID::kSPECIES  * kNMom);
-  fModel -> SetOwner();
+  fModel = new TObjArray(AliPID::kSPECIES  * kNMom * 2);
+  fModel->SetOwner();
 }

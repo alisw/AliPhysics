@@ -585,8 +585,9 @@ Bool_t AliTRDseedV1::CookPID()
   AliDebug(4, Form("p=%6.4f[GeV/c] dEdx{%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f} l=%4.2f[cm]", GetMomentum(), fdEdx[0], fdEdx[1], fdEdx[2], fdEdx[3], fdEdx[4], fdEdx[5], fdEdx[6], fdEdx[7], length));
 
   // Sets the a priori probabilities
+  Bool_t kPIDNN(fkReconstructor->GetPIDMethod()==AliTRDpidUtil::kNN);
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++)
-    fProb[ispec] = pd->GetProbability(ispec, GetMomentum(), &fdEdx[0], length, GetPlane());
+    fProb[ispec] = pd->GetProbability(ispec, GetMomentum(), &fdEdx[0], length, kPIDNN?GetPlane():fkReconstructor->GetRecoParam()->GetPIDLQslices());
   
   return kTRUE;
 }

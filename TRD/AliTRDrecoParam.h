@@ -30,16 +30,17 @@ public:
     kTRDreconstructionTasks = 3
   };
   enum ETRDflags {
-    kDriftGas,
-    kVertexConstraint,
-    kTailCancelation,
-    kImproveTracklet, 
-    kLUT, 
-    kGAUS,
-    kClusterSharing,
-    kSteerPID,
-    kEightSlices,
-    kCheckTimeConsistency
+    kDriftGas
+    ,kVertexConstraint
+    ,kTailCancelation
+    ,kImproveTracklet
+    ,kLUT
+    ,kGAUS
+    ,kClusterSharing
+    ,kSteerPID
+    ,kEightSlices
+    ,kCheckTimeConsistency
+    ,kLQ2D
   };
   AliTRDrecoParam();
   AliTRDrecoParam(const AliTRDrecoParam &rec);
@@ -55,6 +56,7 @@ public:
   Double_t GetNMeanClusters() const         { return fkNMeanClusters; }
   Double_t GetNSigmaClusters() const        { return fkNSigmaClusters; }
   Double_t GetFindableClusters() const      { return fkFindable; }
+  inline Int_t    GetPIDLQslices() const;
   Double_t GetMaxTheta() const              { return fkMaxTheta; }
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
   Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
@@ -103,6 +105,7 @@ public:
   void     SetLUT(Bool_t b=kTRUE)                             {if(b) SETBIT(fFlags, kLUT); else CLRBIT(fFlags, kLUT);}
   void     SetGAUS(Bool_t b=kTRUE)                            {if(b) SETBIT(fFlags, kGAUS); else CLRBIT(fFlags, kGAUS);}
   void     SetPIDNeuralNetwork(Bool_t b=kTRUE)                {if(b) SETBIT(fFlags, kSteerPID); else CLRBIT(fFlags, kSteerPID);}
+  void     SetPIDLQslices(Int_t s);
   void     SetTailCancelation(Bool_t b=kTRUE)                 {if(b) SETBIT(fFlags, kTailCancelation); else CLRBIT(fFlags, kTailCancelation);}
   void     SetXenon(Bool_t b = kTRUE)                         {if(b) CLRBIT(fFlags, kDriftGas); else SETBIT(fFlags, kDriftGas);}
   void     SetVertexConstrained()                             {SETBIT(fFlags, kVertexConstraint);}
@@ -236,4 +239,12 @@ inline void AliTRDrecoParam::SetTCParams(Double_t *par)
   if(!par) return;
   memcpy(fTCParams, par, 8*sizeof(Double_t));
 }
+
+//___________________________________________________
+inline Int_t AliTRDrecoParam::GetPIDLQslices() const
+{
+  if(IsPIDNeuralNetwork()) return -1;
+  return TESTBIT(fFlags, kLQ2D) ? 2 : 1;
+}
+
 #endif
