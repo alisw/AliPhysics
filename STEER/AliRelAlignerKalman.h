@@ -18,10 +18,10 @@
 #include <TMatrix.h>
 
 class TObject;
-class TArrayI;
 class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDtrack;
+class TArrayI;
 
 class AliRelAlignerKalman : public TObject {
 
@@ -70,6 +70,7 @@ public:
     void GetSeed( TVectorD& seed, TMatrixDSym& seedCov ) const { seed = *fPX; seedCov = *fPXcov; }
     void SetSeed( const TVectorD& seed, const TMatrixDSym& seedCov ) {*fPX = seed; *fPXcov = seedCov; }
     Bool_t Merge( const AliRelAlignerKalman* al );
+    Long64_t Merge( TCollection* list );
 
     //Expert methods:
     Bool_t AddESDevent( const AliESDEvent* pEvent );
@@ -121,6 +122,8 @@ public:
     Int_t GetNTracks() const {return fNTracks;}
     Int_t GetNUpdates() const {return fNUpdates;}
     Int_t GetNOutliers() const {return fNOutliers;}
+    Int_t GetNMerges() const {return fNMerges;}
+    Int_t GetNMergesFailed() const {return fNMergesFailed;}
     void SetPoint2Track( Bool_t o );
     
 protected:
@@ -136,11 +139,9 @@ private:
     static const Int_t fgkNSystemParams=9;                //how many fit parameters
     
     //Track parameters
-    Double_t fAlpha;       //!rotation angle between the local and global coordinate system like in AliExternalTrackParam
-    Double_t fLocalX;      //!local x coordinate of reference plane = r(global)
     AliExternalTrackParam* fPTrackParamArr1;   //!local track parameters
     AliExternalTrackParam* fPTrackParamArr2;   //!local track parameters
-    Double_t fMagField; //!magnetic field
+    Double_t fMagField; //magnetic field
 
     //Kalman filter related stuff
     Int_t fNMeasurementParams;           //how many measurables
@@ -156,16 +157,16 @@ private:
 
     //Control
     Bool_t fYZOnly;   //whether to consider only yz without directions.
-    Bool_t fNumericalParanoia; //!whether to perform additional checks for numerical stability
-    Bool_t fRejectOutliers; //!whether to do outlier rejection in the Kalman filter
-    Bool_t fRequireMatchInTPC;  //!when looking for a cosmic in event, require that TPC has 2 matching segments
-    Bool_t fCuts;    //!track cuts?
-    Int_t fMinPointsVol1;   //!mininum number of points in volume 1
-    Int_t fMinPointsVol2;   //!mininum number of points in volume 2
-    Double_t fMinMom;       //!min momentum of track for track cuts
-    Double_t fMaxMom;       //!max momentum of track for track cuts
-    Double_t fMaxMatchingAngle; //!cuts
-    Double_t fMaxMatchingDistance; //!cuts
+    Bool_t fNumericalParanoia; //whether to perform additional checks for numerical stability
+    Bool_t fRejectOutliers; //whether to do outlier rejection in the Kalman filter
+    Bool_t fRequireMatchInTPC;  //when looking for a cosmic in event, require that TPC has 2 matching segments
+    Bool_t fCuts;    //track cuts?
+    Int_t fMinPointsVol1;   //mininum number of points in volume 1
+    Int_t fMinPointsVol2;   //mininum number of points in volume 2
+    Double_t fMinMom;       //min momentum of track for track cuts
+    Double_t fMaxMom;       //max momentum of track for track cuts
+    Double_t fMaxMatchingAngle; //cuts
+    Double_t fMaxMatchingDistance; //cuts
     Bool_t fCorrectionMode; //calculate corrective transform for TPC (or monitor actual TPC misal params)
     
     //Counters
@@ -178,13 +179,15 @@ private:
     Int_t fTrackInBuffer; //!number of tracks in buffer
     UInt_t fTimeStamp;    //time stamp
     Int_t fRunNumber;    //run number
+    Int_t fNMerges;      //how many succesful merges
+    Int_t fNMergesFailed; //how many merges failed
 
     //TPC stuff
     Double_t fTPCvd; //TPC drift velocity
     Double_t fTPCZLengthA; //TPC length side A
     Double_t fTPCZLengthC; //TPC length side C
     
-    ClassDef(AliRelAlignerKalman,2)     //AliRelAlignerKalman class
+    ClassDef(AliRelAlignerKalman,3)     //AliRelAlignerKalman class
 };
 
 #endif

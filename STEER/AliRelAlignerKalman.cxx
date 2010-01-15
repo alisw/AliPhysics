@@ -86,8 +86,6 @@ ClassImp(AliRelAlignerKalman)
 //______________________________________________________________________________
 AliRelAlignerKalman::AliRelAlignerKalman():
     TObject(),
-    fAlpha(0.),
-    fLocalX(80.),
     fPTrackParamArr1(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
     fPTrackParamArr2(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
     fMagField(0.),
@@ -100,7 +98,6 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fPMeasurementCov(new TMatrixDSym( fNMeasurementParams )),
     fPMeasurementPrediction(new TVectorD( fNMeasurementParams )),
     fOutRejSigmas(1.),
-    //fDelta(new Double_t[fgkNSystemParams]),
     fYZOnly(kFALSE),
     fNumericalParanoia(kTRUE),
     fRejectOutliers(kTRUE),
@@ -122,6 +119,8 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fTrackInBuffer(0),
     fTimeStamp(0),
     fRunNumber(0),
+    fNMerges(0),
+    fNMergesFailed(0),
     fTPCvd(2.64),
     fTPCZLengthA(2.4972500e02),
     fTPCZLengthC(2.4969799e02)
@@ -135,21 +134,18 @@ AliRelAlignerKalman::AliRelAlignerKalman():
 //______________________________________________________________________________
 AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     TObject(static_cast<TObject>(a)),
-    fAlpha(a.fAlpha),
-    fLocalX(a.fLocalX),
     fPTrackParamArr1(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
     fPTrackParamArr2(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
     fMagField(a.fMagField),
     fNMeasurementParams(a.fNMeasurementParams),
     fPX(new TVectorD( *a.fPX )),
     fPXcov(new TMatrixDSym( *a.fPXcov )),
-    fPH(new TMatrixD( *a.fPH )),
+    fPH(new TMatrixD( fNMeasurementParams, fgkNSystemParams )),
     fQ(a.fQ),
-    fPMeasurement(new TVectorD( *a.fPMeasurement )),
-    fPMeasurementCov(new TMatrixDSym( *a.fPMeasurementCov )),
-    fPMeasurementPrediction(new TVectorD( *a.fPMeasurement )),
+    fPMeasurement(new TVectorD( fNMeasurementParams )),
+    fPMeasurementCov(new TMatrixDSym( fNMeasurementParams )),
+    fPMeasurementPrediction(new TVectorD( fNMeasurementParams )),
     fOutRejSigmas(a.fOutRejSigmas),
-    //fDelta(new Double_t[fgkNSystemParams]),
     fYZOnly(a.fYZOnly),
     fNumericalParanoia(a.fNumericalParanoia),
     fRejectOutliers(a.fRejectOutliers),
@@ -168,25 +164,14 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fNMatchedCosmics(a.fNMatchedCosmics),
     fNMatchedTPCtracklets(a.fNMatchedTPCtracklets),
     fNProcessedEvents(a.fNProcessedEvents),
-    fTrackInBuffer(a.fTrackInBuffer),
+    fTrackInBuffer(0),
     fTimeStamp(a.fTimeStamp),
     fRunNumber(a.fRunNumber),
+    fNMerges(a.fNMerges),
+    fNMergesFailed(a.fNMergesFailed),
     fTPCvd(a.fTPCvd),
     fTPCZLengthA(a.fTPCZLengthA),
     fTPCZLengthC(a.fTPCZLengthC)
-    //fApplyCovarianceCorrection(a.fApplyCovarianceCorrection),
-    //fCalibrationMode(a.fCalibrationMode),
-    //fFillHistograms(a.fFillHistograms),
-    //fNHistogramBins(a.fNHistogramBins),
-    //fPMes0Hist(new TH1D(*a.fPMes0Hist)),
-    //fPMes1Hist(new TH1D(*a.fPMes1Hist)),
-    //fPMes2Hist(new TH1D(*a.fPMes2Hist)),
-    //fPMes3Hist(new TH1D(*a.fPMes3Hist)),
-    //fPMesErr0Hist(new TH1D(*a.fPMesErr0Hist)),
-    //fPMesErr1Hist(new TH1D(*a.fPMesErr1Hist)),
-    //fPMesErr2Hist(new TH1D(*a.fPMesErr2Hist)),
-    //fPMesErr3Hist(new TH1D(*a.fPMesErr3Hist)),
-    //fPMeasurementCovCorr(new TMatrixDSym(*a.fPMeasurementCovCorr)),
 {
   //copy constructor
   memcpy(fDelta,a.fDelta,fgkNSystemParams*sizeof(Double_t));
@@ -196,17 +181,11 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
 AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a)
 {
   //assignment operator
-  //fAlpha=a.fAlpha;
-  //fLocalX=a.fLocalX;
-  //memcpy(fPTrackParamArr1,a.fPTrackParamArr1,fgkNTracksPerMeasurement*sizeof(AliExternalTrackParam));
-  //memcpy(fPTrackParamArr2,a.fPTrackParamArr2,fgkNTracksPerMeasurement*sizeof(AliExternalTrackParam));
   fMagField=a.fMagField,
+  fNMeasurementParams=a.fNMeasurementParams;
   *fPX = *a.fPX;
   *fPXcov = *a.fPXcov;
-  //*fPH = *a.fPH;
   fQ=a.fQ;
-  //*fPMeasurement=*a.fPMeasurement;
-  //*fPMeasurementCov=*a.fPMeasurementCov;
   fOutRejSigmas=a.fOutRejSigmas;
   memcpy(fDelta,a.fDelta,fgkNSystemParams*sizeof(Double_t));
   fYZOnly=a.fYZOnly;
@@ -227,22 +206,10 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
   fNMatchedCosmics=a.fNMatchedCosmics;
   fNMatchedTPCtracklets=a.fNMatchedTPCtracklets;
   fNProcessedEvents=a.fNProcessedEvents;
-  fTrackInBuffer=a.fTrackInBuffer;
+  fTrackInBuffer=0; //because the array is reset, not copied
   fTimeStamp=a.fTimeStamp;
   fRunNumber=a.fRunNumber;
-  //fApplyCovarianceCorrection=a.fApplyCovarianceCorrection;
-  //fCalibrationMode=a.fCalibrationMode;
-  //fFillHistograms=a.fFillHistograms;
-  //fNHistogramBins=a.fNHistogramBins;
-  //*fPMes0Hist=*(a.fPMes0Hist);
-  //*fPMes1Hist=*(a.fPMes1Hist);
-  //*fPMes2Hist=*(a.fPMes2Hist);
-  //*fPMes3Hist=*(a.fPMes3Hist);
-  //*fPMesErr0Hist=*(a.fPMesErr0Hist);
-  //*fPMesErr1Hist=*(a.fPMesErr1Hist);
-  //*fPMesErr2Hist=*(a.fPMesErr2Hist);
-  //*fPMesErr3Hist=*(a.fPMesErr3Hist);
-  //*fPMeasurementCovCorr=*(a.fPMeasurementCovCorr);
+  fNMerges=a.fNMerges;
   fTPCvd=a.fTPCvd;
   fTPCZLengthA=a.fTPCZLengthA;
   fTPCZLengthC=a.fTPCZLengthC;
@@ -260,16 +227,6 @@ AliRelAlignerKalman::~AliRelAlignerKalman()
   if (fPH) delete fPH;
   if (fPMeasurement) delete fPMeasurement;
   if (fPMeasurementCov) delete fPMeasurementCov;
-  //if (fDelta) delete [] fDelta;
-  //if (fPMes0Hist) delete fPMes0Hist;
-  //if (fPMes1Hist) delete fPMes1Hist;
-  //if (fPMes2Hist) delete fPMes2Hist;
-  //if (fPMes3Hist) delete fPMes3Hist;
-  //if (fPMesErr0Hist) delete fPMesErr0Hist;
-  //if (fPMesErr1Hist) delete fPMesErr1Hist;
-  //if (fPMesErr2Hist) delete fPMesErr2Hist;
-  //if (fPMesErr3Hist) delete fPMesErr3Hist;
-  //if (fPMeasurementCovCorr) delete fPMeasurementCovCorr;
 }
 
 //______________________________________________________________________________
@@ -402,8 +359,7 @@ void AliRelAlignerKalman::Print(Option_t*) const
   Double_t rad2deg = 180./TMath::Pi();
   printf("\nAliRelAlignerKalman\n");
   if (fCorrectionMode) printf("(Correction mode)\n");
-  printf("  %i pairs, %i updates, %i outliers,\n", fNTracks, fNUpdates, fNOutliers );
-  printf("  %i TPC matches, %i ITS-TPC matches in %i events\n", fNMatchedTPCtracklets, fNMatchedCosmics, fNProcessedEvents );
+  printf("  %i inputs, %i updates, %i outliers, %i merges, %i failed merges\n", fNTracks, fNUpdates, fNOutliers, fNMerges, fNMergesFailed );
   printf("  psi(x):           % .3f ± (%.2f) mrad  |  % .3f ± (%.2f) deg\n",1e3*(*fPX)(0), 1e3*TMath::Sqrt((*fPXcov)(0,0)),(*fPX)(0)*rad2deg,TMath::Sqrt((*fPXcov)(0,0))*rad2deg);
   printf("  theta(y):         % .3f ± (%.2f) mrad  |  % .3f ± (%.2f) deg\n",1e3*(*fPX)(1), 1e3*TMath::Sqrt((*fPXcov)(1,1)),(*fPX)(1)*rad2deg,TMath::Sqrt((*fPXcov)(1,1))*rad2deg);
   printf("  phi(z):           % .3f ± (%.2f) mrad  |  % .3f ± (%.2f) deg\n",1e3*(*fPX)(2), 1e3*TMath::Sqrt((*fPXcov)(2,2)),(*fPX)(2)*rad2deg,TMath::Sqrt((*fPXcov)(2,2))*rad2deg);
@@ -413,7 +369,7 @@ void AliRelAlignerKalman::Print(Option_t*) const
   if (fgkNSystemParams>6) printf("  vd corr           % .5g ± (%.2g)    [ vd should be %.4g (was %.4g in reco) ]\n", (*fPX)(6), TMath::Sqrt((*fPXcov)(6,6)), (*fPX)(6)*fTPCvd, fTPCvd);
   if (fgkNSystemParams>7) printf("  t0                % .5g ± (%.2g) us  |  %.4g ± (%.2g) cm     [ t0_real = t0_rec+t0 ]\n",(*fPX)(7), TMath::Sqrt((*fPXcov)(7,7)), fTPCvd*(*fPX)(7), fTPCvd*TMath::Sqrt((*fPXcov)(7,7)));
   if (fgkNSystemParams>8) printf("  vd/dy             % .5f ± (%.2f) (cm/us)/m\n", (*fPX)(8), TMath::Sqrt((*fPXcov)(8,8)));
-  printf("  run: %i, timestamp: %i\n", fRunNumber, fTimeStamp);
+  printf("  run: %i, timestamp: %i, magfield: %.3f\n", fRunNumber, fTimeStamp, fMagField);
   printf("\n");
   return;
 }
@@ -1342,8 +1298,6 @@ Bool_t AliRelAlignerKalman::Merge( const AliRelAlignerKalman* al )
   
   if (!al) return kFALSE;
   if (al==this) return kTRUE;
-  if (al->fgkNSystemParams != fgkNSystemParams) return kFALSE;
-  if (fRunNumber != al->fRunNumber) return kFALSE;
   if (al->fNUpdates == 0) return kTRUE; //no point in merging with an empty one
   
   //store the pointers to current stuff
@@ -1374,16 +1328,37 @@ Bool_t AliRelAlignerKalman::Merge( const AliRelAlignerKalman* al )
   fPH = ph;
 
   //merge stats
-  if (!success) return kFALSE; //no point in merging stats if merge not succesful
+  if (!success)    
+  {
+    fNMergesFailed++;
+    return kFALSE; //no point in merging stats if merge not succesful
+  }
   fNProcessedEvents += al->fNProcessedEvents;
   fNUpdates += al->fNUpdates;
   fNOutliers += al->fNOutliers;
   fNTracks += al->fNTracks;
   fNMatchedTPCtracklets += al->fNMatchedTPCtracklets;
   fNMatchedCosmics += al->fNMatchedCosmics;
-  if (fTimeStamp < al->fTimeStamp) fTimeStamp = al->fTimeStamp; //take the older one
+  fNMerges += al->fNMerges;
+  if (fTimeStamp < al->fTimeStamp) fTimeStamp = al->fTimeStamp; //take the newer one
 
   return success;
+}
+
+//______________________________________________________________________________
+Long64_t AliRelAlignerKalman::Merge( TCollection* list )
+{
+  //merge all aligners in the collection
+  Long64_t numberOfMerges=0;
+  AliRelAlignerKalman* alignerFromList;
+  if (!list) return 0;
+  TIter next(list);
+  while ( (alignerFromList = dynamic_cast<AliRelAlignerKalman*>(next())) )
+  {
+    if (alignerFromList == this) continue;
+    if (Merge(alignerFromList)) numberOfMerges++;
+  }
+  return numberOfMerges;
 }
 
 //______________________________________________________________________________
@@ -1396,131 +1371,4 @@ Int_t AliRelAlignerKalman::Compare(const TObject *obj) const
   else if (fTimeStamp > aobj->fTimeStamp) return 1;
   else return 0;
 }
-
-//______________________________________________________________________________
-//Int_t AliRelAlignerKalman::Compare(const AliRelAlignerKalman *al) const
-//{
-//  if (this == al) return 0;
-//  if (fTimeStamp > al->fTimeStamp) return -1;
-//  else if (fTimeStamp < al->fTimeStamp) return 1;
-//  else return 0;
-//}
-
-//______________________________________________________________________________
-//void AliRelAlignerKalman::PrintCovarianceCorrection()
-//{
-//  //Print the measurement covariance correction matrix
-//  printf("Covariance correction matrix:\n");
-//  for ( Int_t i=0; i<fNMeasurementParams; i++ )
-//  {
-//    for ( Int_t j=0; j<i+1; j++ )
-//    {
-//      printf("% -2.2f  ", (*fPMeasurementCovCorr)(i,j) );
-//    }//for i
-//    printf("\n");
-//  }//for j
-//  printf("\n");
-//  return;
-//}
-
-//_______________________________________________________________________________
-//Bool_t AliRelAlignerKalman::UpdateCalibration()
-//{
-//  //Update the calibration with new data (in calibration mode)
-//
-//  fPMes0Hist->Fill( (*fPMeasurement)(0) );
-//  fPMes1Hist->Fill( (*fPMeasurement)(1) );
-//  fPMes2Hist->Fill( (*fPMeasurement)(2) );
-//  fPMes3Hist->Fill( (*fPMeasurement)(3) );
-//  fPMesErr0Hist->Fill( TMath::Sqrt((*fPMeasurementCov)(0,0)) );
-//  fPMesErr1Hist->Fill( TMath::Sqrt((*fPMeasurementCov)(1,1)) );
-//  fPMesErr2Hist->Fill( TMath::Sqrt((*fPMeasurementCov)(2,2)) );
-//  fPMesErr3Hist->Fill( TMath::Sqrt((*fPMeasurementCov)(3,3)) );
-//  return kTRUE;
-//}
-
-//______________________________________________________________________________
-//Bool_t AliRelAlignerKalman::SetCalibrationMode( const Bool_t cp )
-//{
-//  //sets the calibration mode
-//  if (cp)
-//  {
-//    fCalibrationMode=kTRUE;
-//    return kTRUE;
-//  }//if (cp)
-//  else
-//  {
-//    if (fCalibrationMode) // do it only after the calibration pass
-//    {
-//      CalculateCovarianceCorrection();
-//      SetApplyCovarianceCorrection();
-//      fCalibrationMode=kFALSE;
-//      return kTRUE;
-//    }//if (fCalibrationMode)
-//  }//else (cp)
-//  return kFALSE;
-//}
-
-//______________________________________________________________________________
-//Bool_t AliRelAlignerKalman::CalculateCovarianceCorrection()
-//{
-//  //Calculates the correction to the measurement covariance
-//  //using the calibration histograms
-//
-//  fPMeasurementCovCorr->Zero(); //reset the correction
-//
-//  Double_t s,m,c;  //sigma,meansigma,correction
-//
-//  //TF1* fitformula;
-//  //fPMes0Hist->Fit("gaus");
-//  //fitformula = fPMes0Hist->GetFunction("gaus");
-//  //s = fitformula->GetParameter(2);   //spread of the measurement
-//  //fPMesErr0Hist->Fit("gaus");
-//  //fitformula = fPMesErr0Hist->GetFunction("gaus"); //average error from cov matrices
-//  //m = fitformula->GetParameter(1);
-//  s = fPMes0Hist->GetRMS();
-//  m = fPMesErr0Hist->GetMean();
-//  c = s-m; //the difference between the average error and real spread of the data
-//  if (c>0) //only correct is spread bigger than average error
-//    (*fPMeasurementCovCorr)(0,0) = c*c;
-//
-//  //fPMes1Hist->Fit("gaus");
-//  //fitformula = fPMes1Hist->GetFunction("gaus");
-//  //s = fitformula->GetParameter(2);
-//  //fPMesErr1Hist->Fit("gaus");
-//  //fitformula = fPMesErr1Hist->GetFunction("gaus");
-//  //m = fitformula->GetParameter(1);
-//  s = fPMes1Hist->GetRMS();
-//  m = fPMesErr1Hist->GetMean();
-//  c = s-m;
-//  if (c>0) //only correct is spread bigger than average error
-//    (*fPMeasurementCovCorr)(1,1) = c*c;
-//
-//  //fPMes2Hist->Fit("gaus");
-//  //fitformula = fPMes2Hist->GetFunction("gaus");
-//  //s = fitformula->GetParameter(2);
-//  //fPMesErr2Hist->Fit("gaus");
-//  //fitformula = fPMesErr2Hist->GetFunction("gaus");
-//  //m = fitformula->GetParameter(1);
-//  s = fPMes2Hist->GetRMS();
-//  m = fPMesErr2Hist->GetMean();
-//  c = s-m;
-//  if (c>0) //only correct is spread bigger than average error
-//    (*fPMeasurementCovCorr)(2,2) = c*c;
-//
-//  //fPMes3Hist->Fit("gaus");
-//  //fitformula = fPMes3Hist->GetFunction("gaus");
-//  //s = fitformula->GetParameter(2);
-//  //fPMesErr3Hist->Fit("gaus");
-//  //fitformula = fPMesErr3Hist->GetFunction("gaus");
-//  //m = fitformula->GetParameter(1);
-//  s = fPMes3Hist->GetRMS();
-//  m = fPMesErr3Hist->GetMean();
-//  c = s-m;
-//  if (c>0) //only correct is spread bigger than average error
-//    (*fPMeasurementCovCorr)(3,3) = c*c;
-//
-//  return kTRUE;
-//}
-
 
