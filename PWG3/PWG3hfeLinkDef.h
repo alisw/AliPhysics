@@ -24,5 +24,6 @@
 
 #pragma link C++ class  AliHFEcuts+;
 #pragma link C++ class  AliHFEextraCuts+;
+#pragma link C++ class  AliHFEpostAnalysis+;
 #pragma link C++ class  AliAnalysisTaskHFE+;
 #endif
