@@ -163,7 +163,7 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
     if (esdHeader->GetEventType() != 0)
       AliFatal(Form("Invalid event type for MC: %d", esdHeader->GetEventType()));
   }
-    
+  
   Bool_t accept = kFALSE;
     
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
@@ -306,15 +306,8 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   
   AliInfo(Form("Initializing for run %d", runNumber));
   
-  Bool_t firstTime = kFALSE;
+  // initialize first time?
   if (fCurrentRun == -1)
-  {
-    // initialize first time
-    fCurrentRun = runNumber;
-    firstTime = kTRUE;
-  }
-  
-  if (firstTime)
   {
     switch (triggerScheme)
     {
@@ -411,6 +404,8 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
     }
   }
     
+  fCurrentRun = runNumber;
+  
   TH1::AddDirectory(oldStatus);
   
   return kTRUE;
