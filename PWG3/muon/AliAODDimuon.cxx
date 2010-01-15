@@ -444,8 +444,8 @@ Double_t AliAODDimuon::CostHe(){
 Int_t AliAODDimuon::AnyPt(){
   // Test if the two muons match two trigger tracks
   if(this->CheckPointers())return 0;
-  return (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerAnyPt())&&
-         (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerAnyPt());
+  return (((AliAODTrack*)fMu[0].GetObject())->MatchTrigger())&&
+         (((AliAODTrack*)fMu[0].GetObject())->MatchTrigger());
 }
 
 //______________________________________________________________________________
