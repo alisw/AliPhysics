@@ -450,9 +450,10 @@ void AliAODTrack::Print(Option_t* /* option */) const
   printf("    charge = %d\n", Charge());
 }
 
-void AliAODTrack::SetMatchTrigger(Int_t matchTrig){
-//
-// Set the MUON trigger information
+//______________________________________________________________________________
+void AliAODTrack::SetMatchTrigger(Int_t matchTrig)
+{
+  // Set the MUON trigger information
   switch(matchTrig){
     case 0: // 0 track does not match trigger
       fITSMuonClusterMap=fITSMuonClusterMap&0x3fffffff;
@@ -472,91 +473,38 @@ void AliAODTrack::SetMatchTrigger(Int_t matchTrig){
   }
 }
 
-Int_t AliAODTrack::HitsMT(Int_t istation, Int_t iplane, Option_t *cathode){
-//
-// Retrieve hit information for MUON identified by  (station, plane, cathode)
-  if(cathode){
-    if(cathode[0]=='x'||cathode[0]=='X'){
-      if(istation==1){
-        if(iplane==1)
-	  return (fITSMuonClusterMap&0x8000)?1:0;
-	else if(iplane==2)
-	  return (fITSMuonClusterMap&0x4000)?1:0;
-	else
-	  return 0;
-      }else if(istation==2){
-        if(iplane==1)
-	  return (fITSMuonClusterMap&0x2000)?1:0;
-	else if(iplane==2)
-	  return (fITSMuonClusterMap&0x1000)?1:0;
-	else
-	  return 0;
-      }else{
-        return 0;
-      }
-    }else if(cathode[0]=='y'||cathode[0]=='Y'){
-      if(istation==1){
-        if(iplane==1)
-	  return (fITSMuonClusterMap&0x0800)?1:0;
-	else if(iplane==2)
-	  return (fITSMuonClusterMap&0x0400)?1:0;
-	else
-	  return 0;
-      }else if(istation==2){
-        if(iplane==1)
-	  return (fITSMuonClusterMap&0x0200)?1:0;
-	else if(iplane==2)
-	  return (fITSMuonClusterMap&0x0100)?1:0;
-	else
-	  return 0;
-      }else{
-        return 0;
-      }
-    }else{
-      return 0;
-    }
-  }else{
-    if(istation==1){
-      if(iplane==1)
-	return (HitsMT(1,1,"X")||HitsMT(1,1,"Y"))?1:0;
-      else if(iplane==2)
-	return (HitsMT(1,2,"X")||HitsMT(1,2,"Y"))?1:0;
-      else
-	return 0;
-    }else if(istation==2){
-      if(iplane==1)
-	return (HitsMT(2,1,"X")||HitsMT(2,1,"Y"))?1:0;
-      else if(iplane==2)
-	return (HitsMT(2,2,"X")||HitsMT(2,2,"Y"))?1:0;
-      else
-	return 0;
-    }else{
-      return 0;
-    }
+//______________________________________________________________________________
+Bool_t AliAODTrack::HitsMuonChamber(Int_t MuonChamber, Int_t cathode) const
+{
+  // return kTRUE if the track fires the given tracking or trigger chamber.
+  // If the chamber is a trigger one:
+  // - if cathode = 0 or 1, the track matches the corresponding cathode
+  // - if cathode = -1, the track matches both cathodes
+  
+  if (MuonChamber < 0) return kFALSE;
+  
+  if (MuonChamber < 10) return TESTBIT(GetMUONClusterMap(), MuonChamber);
+  
+  if (MuonChamber < 14) {
+    
+    if (cathode < 0) return TESTBIT(GetHitsPatternInTrigCh(), 13-MuonChamber) &&
+                            TESTBIT(GetHitsPatternInTrigCh(), 13-MuonChamber+4);
+    
+    if (cathode < 2) return TESTBIT(GetHitsPatternInTrigCh(), 13-MuonChamber+(1-cathode)*4);
+    
   }
+  
+  return kFALSE;
 }
 
-Int_t AliAODTrack::HitsMuonChamber(Int_t MuonChamber){
-  //
-  // Retrieve hit information for MUON Tracker/Trigger Chamber
-  // WARNING: chamber number start from 1 instead of 0
+//______________________________________________________________________________
+Bool_t AliAODTrack::MatchTriggerDigits() const
+{
+  // return kTRUE if the track matches a digit on both planes of at least 2 trigger chambers
   
-  if (MuonChamber > 0 && MuonChamber < 11) {
-    return ((GetMUONClusterMap() & BIT(MuonChamber-1)) != 0) ? 1 : 0;
-  } else {
-    switch(MuonChamber){
-      case 11:
-	return HitsMT(1,1);
-      case 12:
-	return HitsMT(1,2);
-      case 13:
-	return HitsMT(2,1);
-      case 14:
-	return HitsMT(2,2);
-      default:
-	printf("Unknown MUON chamber: %d\n",MuonChamber);
-	return 0;
-    }
-  }
+  Int_t nMatchedChambers = 0;
+  for (Int_t ich=10; ich<14; ich++) if (HitsMuonChamber(ich)) nMatchedChambers++;
+  
+  return (nMatchedChambers >= 2);
 }
 

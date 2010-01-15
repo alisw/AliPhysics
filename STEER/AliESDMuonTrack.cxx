@@ -527,6 +527,19 @@ Int_t AliESDMuonTrack::GetMatchTrigger() const
 }
 
 //_____________________________________________________________________________
+Bool_t AliESDMuonTrack::MatchTriggerDigits() const
+{
+  // return kTRUE if the track matches a digit on both planes of at least 2 trigger chambers
+  
+  Int_t nMatchedChambers = 0;
+  for (Int_t ich=0; ich<4; ich++)
+    if (IsChamberHit(fHitsPatternInTrigCh, 0, ich) &&
+	IsChamberHit(fHitsPatternInTrigCh, 1, ich)) nMatchedChambers++;
+  
+  return (nMatchedChambers >= 2);
+}
+
+//_____________________________________________________________________________
 Int_t AliESDMuonTrack::GetNClusters() const
 {
   /// return the number of clusters associated to the track

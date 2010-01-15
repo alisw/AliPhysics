@@ -96,6 +96,7 @@ public:
   
   // Get and Set methods for trigger matching
   Int_t    GetMatchTrigger() const;
+  Bool_t   MatchTriggerDigits() const;
   Double_t GetChi2MatchTrigger() const {return fChi2MatchTrigger;}
   void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger;}
   UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}

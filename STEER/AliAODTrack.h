@@ -243,14 +243,13 @@ class AliAODTrack : public AliVTrack {
 					//  2 Muon track match Low pt cut
 					//  3 Muon track match High pt cut
   void     SetMatchTrigger(Int_t MatchTrigger);
-  Int_t    MatchTrigger() const { return (GetMatchTrigger()>0)?1:0; }	//  Muon track matches trigger track
-  Int_t    MatchTriggerAnyPt()   const  { return (GetMatchTrigger()>0)?1:0; }	//  Muon track matches trigger track
-  Int_t    MatchTriggerLowPt()   const  { return (GetMatchTrigger()>1)?1:0; }	//  Muon track matches trigger track and passes Low pt cut
-  Int_t    MatchTriggerHighPt()  const  { return (GetMatchTrigger()>2)?1:0; }	//  Muon track matches trigger track and passes High pt cut
+  Bool_t   MatchTrigger() const { return (GetMatchTrigger()>0); }	  //  Muon track matches trigger track
+  Bool_t   MatchTriggerLowPt()   const  { return (GetMatchTrigger()>1); } //  Muon track matches trigger track and passes Low pt cut
+  Bool_t   MatchTriggerHighPt()  const  { return (GetMatchTrigger()>2); } //  Muon track matches trigger track and passes High pt cut
+  Bool_t   MatchTriggerDigits()  const;                                   //  Muon track matches trigger digits
   Double_t GetChi2MatchTrigger() const  { return fChi2MatchTrigger;}
   void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger; }
-  Int_t    HitsMT(Int_t istation, Int_t iplane, Option_t *cathode=0);  // Check if track hits Muon chambers
-  Int_t    HitsMuonChamber(Int_t MuonChamber);  // Check if track hits Muon chambers
+  Bool_t   HitsMuonChamber(Int_t MuonChamber, Int_t cathode = -1) const;  // Check if track hits Muon chambers
   Bool_t   IsMuonTrack() const { return (GetMUONClusterMap()>0) ? kTRUE : kFALSE; }
   
   void     Connected(Bool_t flag) {flag ? SETBIT(fITSMuonClusterMap,26) : CLRBIT(fITSMuonClusterMap,26);}
