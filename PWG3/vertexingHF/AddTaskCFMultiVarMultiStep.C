@@ -217,6 +217,30 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	container -> SetBinLimits(iphi,binLim11);
 	container -> SetBinLimits(iz,binLim12);
 	
+	container -> SetStepTitle(0, "MC");
+        container -> SetStepTitle(1, "MCAcc");
+        container -> SetStepTitle(2, "RecoVertex");
+        container -> SetStepTitle(3, "RecoRefit");
+        container -> SetStepTitle(4, "Reco");
+        container -> SetStepTitle(5, "RecoAcc");
+	container -> SetStepTitle(6, "RecoITSCluster");
+	container -> SetStepTitle(7, "RecoCuts");
+
+        container -> SetVarTitle(ipt,"pt");
+	container -> SetVarTitle(iy,"y");
+        container -> SetVarTitle(icosThetaStar, "cosThetaStar");
+        container -> SetVarTitle(ipTpi, "ptpi");
+	container -> SetVarTitle(ipTk, "ptK");
+        container -> SetVarTitle(icT, "ct");
+        container -> SetVarTitle(idca, "dca");
+        container -> SetVarTitle(id0pi, "d0pi");
+        container -> SetVarTitle(id0K, "d0K");
+	container -> SetVarTitle(id0xd0, "d0xd0");
+	container -> SetVarTitle(ipointing, "piointing");
+	container -> SetVarTitle(iphi, "phi");
+	container -> SetVarTitle(iz, "z");
+
+
 	//CREATE THE  CUTS -----------------------------------------------
 	
 	// Gen-Level kinematic cuts
