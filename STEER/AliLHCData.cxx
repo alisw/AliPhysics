@@ -364,8 +364,8 @@ TObjArray* AliLHCData::GetDCSEntry(const TMap* dcsMap,const char* key,int &entry
 void AliLHCData::Print(const Option_t* opt) const
 {
   // print everything
-  printf("LHC DIP Data | Fill Number#%d (Averaging time: %d sec.)",GetFillNumber(),fPeriod);
-  printf("Validity period: %s : %s",
+  printf("LHC DIP Data | Fill Number#%d (Averaging time: %d sec.)\n",GetFillNumber(),fPeriod);
+  printf("Validity period: %s : %s\n\n",
 	 fTMin<1.23e9 ? "N/A": AliLHCDipValD::TimeAsString(fTMin),
 	 fTMax>7.00e9 ? "N/A": AliLHCDipValD::TimeAsString(fTMax) );
   //
