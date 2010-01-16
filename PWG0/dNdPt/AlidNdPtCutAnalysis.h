@@ -2,23 +2,20 @@
 #define ALIDEDPTCUTANALYSIS_H
 
 //------------------------------------------------------------------------------
-// AlidNdPtCutAnalysis class. 
-//
-// a. functionality:
-// - fills generic cut histograms
-// - generates cuts (selection criteria)
-//
-// b. data members:
-// - generic cut histograms
-// - control histograms
+// AlidNdPtCutAnalysis class to determine 
+// cuts to be used for dNdPt analysis. 
 //
 // Author: J.Otwinowski 04/11/2008 
 //------------------------------------------------------------------------------
 
+class iostream;
+class TFile;
+class TCint;
 class TProfile;
 class TFolder;
 class TObjArray;
 class TString;
+class THnSparse;
 
 class AliESDtrackCuts;
 class AliVertexerTracks;
@@ -26,7 +23,6 @@ class AliESD;
 class AliESDfriend;
 class AliESDfriendTrack;
 
-#include "THnSparse.h"
 #include "AlidNdPt.h"
 
 class AlidNdPtCutAnalysis : public AlidNdPt {
@@ -42,31 +38,31 @@ public :
   virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* list);
+  virtual Long64_t Merge(TCollection* const list);
 
   // Analyse output histograms 
   virtual void Analyse();
 
   // Export objects to folder
-  virtual TFolder *ExportToFolder(TObjArray * array=0);
+  virtual TFolder *ExportToFolder(TObjArray * const array=0);
 
   // Get analysis folder
-  TFolder* GetAnalysisFolder() {return fAnalysisFolder;}
+  TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
 
   // Fill histograms
-  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack);
+  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack) const;
 
   // Getters
-  THnSparseF *GetEventCount()   {return fEventCount;}
-  THnSparseF *GetRecEventHist()   {return fRecEventHist;}
-  THnSparseF *GetMCEventHist()    {return fMCEventHist;}
-  THnSparseF *GetRecMCEventHist() {return fRecMCEventHist;}
+  THnSparseF *GetEventCount()   const {return fEventCount;}
+  THnSparseF *GetRecEventHist() const   {return fRecEventHist;}
+  THnSparseF *GetMCEventHist()  const   {return fMCEventHist;}
+  THnSparseF *GetRecMCEventHist() const {return fRecMCEventHist;}
 
   //
-  THnSparseF *GetRecMCTrackHist() {return fRecMCTrackHist;}
+  THnSparseF *GetRecMCTrackHist() const {return fRecMCTrackHist;}
   
 private:
 

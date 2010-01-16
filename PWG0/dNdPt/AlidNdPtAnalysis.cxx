@@ -12,11 +12,21 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+//------------------------------------------------------------------------------
+// AlidNdPtAnalysis class. 
+// 
+// a. functionality:
+// - fills analysis control histograms
+// - fills generic correction matrices 
+// - generates correction matrices 
+//
+// b. data members:
+// - generic correction matrices
+// - control histograms
+//
+// Author: J.Otwinowski 04/11/2008 
+//------------------------------------------------------------------------------
 
-#include <iostream>
-
-#include "TFile.h"
-#include "TCint.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TCanvas.h"
@@ -212,7 +222,9 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   // rec. track control histograms
   fRecTrackHist2(0)
 {
+  //
   // constructor
+  //
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
     fMCTrackHist1[i]=0;     
     fMCPrimTrackHist1[i]=0;     
@@ -226,6 +238,8 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
 
 //_____________________________________________________________________________
 AlidNdPtAnalysis::~AlidNdPtAnalysis() {
+  //
+  // destructor
   //
   if(fEventMultCorrelationMatrix) delete fEventMultCorrelationMatrix; fEventMultCorrelationMatrix=0;
   //
@@ -679,10 +693,7 @@ void AlidNdPtAnalysis::Init(){
   fRecEventHist2->Sumw2();
 
   //
-  Double_t kFact = 1.0;
-  if(GetAnalysisMode() == AlidNdPtHelper::kTPCSPDvtx || 
-     GetAnalysisMode() == AlidNdPtHelper::kTPCSPDvtxUpdate) kFact = 0.03; 
-
+  Double_t kFact = 0.1;
   Int_t binsRecMCEventHist1[3]={100,100,100};
   Double_t minRecMCEventHist1[3]={-10.0*kFact,-10.0*kFact,-10.0*kFact}; 
   Double_t maxRecMCEventHist1[3]={10.0*kFact,10.0*kFact,10.0*kFact}; 
@@ -1109,7 +1120,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
        // only charged particles
        Double_t charge = particle->GetPDG()->Charge()/3.;
-       if (charge == 0.0)
+       if ( TMath::Abs(charge) < 0.001 )
         continue;
 
        // only postive charged 
@@ -1240,13 +1251,13 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	     FillHistograms(stack,iMc,AlidNdPtHelper::kAccTracks); 
 
            // check multiple found tracks
-	   Int_t mult_count = 0;
+	   Int_t multCount = 0;
            for(Int_t iRec=0; iRec<multRec; ++iRec)
            {
              if(iMc == labelsRec[iRec]) 
 	     {
-	       mult_count++;
-	       if(mult_count>1)
+	       multCount++;
+	       if(multCount>1)
 	       {  
                  fRecMultTrackMatrix->Fill(vTrackMatrix);
 
@@ -1337,7 +1348,7 @@ void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *con
   if(!esdTrack) return;
 
   Float_t q = esdTrack->Charge();
-  if(q==0) return;
+  if(TMath::Abs(q) < 0.001) return;
 
   Float_t pt = esdTrack->Pt();
   //Float_t qpt = esdTrack->Pt() * q;
@@ -1377,17 +1388,17 @@ void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *con
   //Bool_t prim = stack->IsPhysicalPrimary(label);
   //Int_t pid = AlidNdPtHelper::ConvertPdgToPid(particle);
 
-  Int_t mother_pdg = -1;
+  Int_t motherPdg = -1;
   TParticle* mother = 0;
 
   //TParticle* prim_mother = AlidNdPtHelper::FindPrimaryMother(stack,label);
   Int_t motherLabel = particle->GetMother(0); 
   if(motherLabel>0) mother = stack->Particle(motherLabel);
-  if(mother) mother_pdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
+  if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
   //Int_t mech = particle->GetUniqueID(); // production mechanism
 
   Double_t gq = particle->GetPDG()->Charge()/3.0; // Charge units |e|/3 
-  if(gq==0) return;
+  if(TMath::Abs(gq)<0.001) return;
   Float_t gpt = particle->Pt();
   Float_t geta = particle->Eta();
   //Float_t qgpt = particle->Pt() * gq;
@@ -1418,17 +1429,17 @@ void AlidNdPtAnalysis::FillHistograms(AliStack *const stack, Int_t label, AlidNd
   TParticle* particle = stack->Particle(label);
   if(!particle) return;
 
-  Int_t mother_pdg = -1;
+  Int_t motherPdg = -1;
   TParticle* mother = 0;
 
   //TParticle* prim_mother = AlidNdPtHelper::FindPrimaryMother(stack,label);
   Int_t motherLabel = particle->GetMother(0); 
   if(motherLabel>0) mother = stack->Particle(motherLabel);
-  if(mother) mother_pdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
+  if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
   Int_t mech = particle->GetUniqueID(); // production mechanism
 
   Double_t gq = particle->GetPDG()->Charge()/3.0; // Charge units |e|/3 
-  if(gq == 0) return;
+  if(TMath::Abs(gq) < 0.001) return;
   Float_t gpt = particle->Pt();
   //Float_t qgpt = particle->Pt() * gq;
   Float_t geta = particle->Eta();
@@ -1441,7 +1452,7 @@ void AlidNdPtAnalysis::FillHistograms(AliStack *const stack, Int_t label, AlidNd
   Int_t pid = AlidNdPtHelper::ConvertPdgToPid(particle);
 
   //if(prim&&pid==5) printf("pdgcode %d, production mech %d \n",particle->GetPdgCode(),mech);
-  //if(!prim) printf("mother_pdg %d, particle %d, production mech %d\n",mother_pdg, particle->GetPdgCode(),mech);
+  //if(!prim) printf("motherPdg %d, particle %d, production mech %d\n",motherPdg, particle->GetPdgCode(),mech);
   
   //
   // fill histogram
@@ -1449,7 +1460,7 @@ void AlidNdPtAnalysis::FillHistograms(AliStack *const stack, Int_t label, AlidNd
   Double_t vMCTrackHist1[3] = {gpt,geta,gphi};
   fMCTrackHist1[trackObj]->Fill(vMCTrackHist1);
 
-  Double_t vMCPrimTrackHist1[5] = {gpt,geta,pid,mech,mother_pdg};
+  Double_t vMCPrimTrackHist1[5] = {gpt,geta,pid,mech,motherPdg};
   if(prim) fMCPrimTrackHist1[trackObj]->Fill(vMCPrimTrackHist1);
   else     { 
          fMCSecTrackHist1[trackObj]->Fill(vMCPrimTrackHist1);
@@ -1457,7 +1468,7 @@ void AlidNdPtAnalysis::FillHistograms(AliStack *const stack, Int_t label, AlidNd
 }
 
 //_____________________________________________________________________________
-Long64_t AlidNdPtAnalysis::Merge(TCollection* list) 
+Long64_t AlidNdPtAnalysis::Merge(TCollection* const list) 
 {
   // Merge list of objects (needed by PROOF)
 
@@ -2093,25 +2104,25 @@ void AlidNdPtAnalysis::Analyse()
   // - secondaries (mother)
   //
 
-  TH1D *mc_pt_acc_all = fMCTrackHist1[1]->Projection(0);
-  mc_pt_acc_all->SetName("mc_pt_acc_all");
-  aFolderObj->Add(mc_pt_acc_all);
+  TH1D *mcPtAccall = fMCTrackHist1[1]->Projection(0);
+  mcPtAccall->SetName("mc_pt_acc_all");
+  aFolderObj->Add(mcPtAccall);
 
-  TH1D *mc_pt_acc_prim = fMCPrimTrackHist1[1]->Projection(0);
-  mc_pt_acc_prim->SetName("mc_pt_acc_prim");
-  aFolderObj->Add(mc_pt_acc_prim);
+  TH1D *mcPtAccprim = fMCPrimTrackHist1[1]->Projection(0);
+  mcPtAccprim->SetName("mc_pt_acc_prim");
+  aFolderObj->Add(mcPtAccprim);
 
-  TH1D *mc_pt_rec_all = fMCTrackHist1[2]->Projection(0);
-  mc_pt_rec_all->SetName("mc_pt_rec_all");
-  aFolderObj->Add(mc_pt_rec_all);
+  TH1D *mcPtRecall = fMCTrackHist1[2]->Projection(0);
+  mcPtRecall->SetName("mc_pt_rec_all");
+  aFolderObj->Add(mcPtRecall);
 
-  TH1D *mc_pt_rec_prim = fMCPrimTrackHist1[2]->Projection(0);
-  mc_pt_rec_prim->SetName("mc_pt_rec_prim");
-  aFolderObj->Add(mc_pt_rec_prim);
+  TH1D *mcPtRecprim = fMCPrimTrackHist1[2]->Projection(0);
+  mcPtRecprim->SetName("mc_pt_rec_prim");
+  aFolderObj->Add(mcPtRecprim);
 
-  TH1D *mc_pt_rec_sec = fMCSecTrackHist1[2]->Projection(0);
-  mc_pt_rec_sec->SetName("mc_pt_rec_sec");
-  aFolderObj->Add(mc_pt_rec_sec);
+  TH1D *mcPtRecsec = fMCSecTrackHist1[2]->Projection(0);
+  mcPtRecsec->SetName("mc_pt_rec_sec");
+  aFolderObj->Add(mcPtRecsec);
 
   for(Int_t i = 0; i<6; i++) 
   { 

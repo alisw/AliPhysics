@@ -12,11 +12,23 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-#include <iostream>
+//------------------------------------------------------------------------------
+// AlidNdPtCorrection class:
+//
+// a. functionality:
+// - applies corrections on dNdPt spectra
+// - fills corrected dNdPt histograms
+// - fills correction control histograms 
+//
+// b. data members:
+// - dNdPt spectra before and after correction procedure
+// - control histograms
+// - correction matrices (must be loaded)
+// 
+// Author: J.Otwinowski 04/11/2008 
+//------------------------------------------------------------------------------
 
 #include "TFile.h"
-#include "TCint.h"
 #include "TH1.h"
 #include "TH2.h"
 
@@ -823,7 +835,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 
         // only charged particles
         Double_t charge = particle->GetPDG()->Charge()/3.;
-        if (charge == 0.0)
+        if (TMath::Abs(charge) < 0.001)
           continue;
 
         // only postive charged 
@@ -865,7 +877,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 }
 
 //_____________________________________________________________________________
-void AlidNdPtCorrection::FillHistograms(AlidNdPtHelper::EventObject eventObj, Double_t zv, Int_t multMBTracks)
+void AlidNdPtCorrection::FillHistograms(AlidNdPtHelper::EventObject eventObj, Double_t zv, Int_t multMBTracks) const
 {
   //
   // Fill corrected histograms
@@ -893,22 +905,22 @@ void AlidNdPtCorrection::FillHistograms(AlidNdPtHelper::EventObject eventObj, Do
   if(eventObj==AlidNdPtHelper::kTriggeredEvents && multMBTracks==0) // empty triggered events
   {
     Int_t bin = fZvEmptyEventsNorm->FindBin(zv);
-    Double_t Fz = fZvEmptyEventsNorm->GetBinContent(bin);
+    Double_t factZ = fZvEmptyEventsNorm->GetBinContent(bin);
     Double_t corrToInelF0 = GetCorrFactZvMult(fCorrTriggerMBtoInelEventMatrix,zv,multMBTracks);
     Double_t corrToNDF0 = GetCorrFactZvMult(fCorrTriggerMBtoNDEventMatrix,zv,multMBTracks);
     Double_t corrToNSDF0 = GetCorrFactZvMult(fCorrTriggerMBtoNSDEventMatrix,zv,multMBTracks);
-    //printf("Fz %f, corrToInelF0 %f, corrToNDF0 %f, corrToNSDF0 %f \n",Fz,corrToInelF0,corrToNDF0,corrToNSDF0);
+    //printf("factZ %f, corrToInelF0 %f, corrToNDF0 %f, corrToNSDF0 %f \n",factZ,corrToInelF0,corrToNDF0,corrToNSDF0);
 
     fCorrRecEventHist2[0]->Fill(vEventMatrix);
-    fCorrRecEventHist2[1]->Fill(vEventMatrix,Fz);
-    fCorrRecEventHist2[2]->Fill(vEventMatrix,Fz*corrToInelF0);
-    fCorrRecEventHist2[3]->Fill(vEventMatrix,Fz*corrToNDF0);
-    fCorrRecEventHist2[4]->Fill(vEventMatrix,Fz*corrToNSDF0);
+    fCorrRecEventHist2[1]->Fill(vEventMatrix,factZ);
+    fCorrRecEventHist2[2]->Fill(vEventMatrix,factZ*corrToInelF0);
+    fCorrRecEventHist2[3]->Fill(vEventMatrix,factZ*corrToNDF0);
+    fCorrRecEventHist2[4]->Fill(vEventMatrix,factZ*corrToNSDF0);
   }
 }
 
 //_____________________________________________________________________________
-void AlidNdPtCorrection::FillHistograms(AliESDtrack *esdTrack, AliStack *stack, AlidNdPtHelper::TrackObject trackObj, Double_t zv, Int_t mult)
+void AlidNdPtCorrection::FillHistograms(AliESDtrack * const esdTrack, AliStack * const stack, AlidNdPtHelper::TrackObject trackObj, Double_t zv, Int_t mult) const
 {
   //
   // Fill ESD track and MC histograms 
@@ -928,7 +940,7 @@ void AlidNdPtCorrection::FillHistograms(AliESDtrack *esdTrack, AliStack *stack, 
     if(!particle) return;
    
     Double_t gq = particle->GetPDG()->Charge()/3.0; // Charge units |e|/3
-    if(gq==0) return;
+    if(TMath::Abs(gq)<0.001) return;
     Float_t gpt = particle->Pt();
     Float_t geta = particle->Eta();
     Float_t gphi = particle->Phi();
@@ -985,7 +997,7 @@ void AlidNdPtCorrection::FillHistograms(AliESDtrack *esdTrack, AliStack *stack, 
 }
 
 //_____________________________________________________________________________
-void AlidNdPtCorrection::FillHistograms(AliStack *stack, Int_t /*label*/, AlidNdPtHelper::TrackObject /*trackObj*/, Int_t /*mult*/)
+void AlidNdPtCorrection::FillHistograms(AliStack * const stack, Int_t /*label*/, AlidNdPtHelper::TrackObject /*trackObj*/, Int_t /*mult*/) const
 {
   // Fill MC histograms
   if(!stack) return;
@@ -1027,7 +1039,7 @@ void AlidNdPtCorrection::FillHistograms(AliStack *stack, Int_t /*label*/, AlidNd
 }
 
 //_____________________________________________________________________________
-Double_t AlidNdPtCorrection::GetCorrFactZvPtEta(THnSparse *hist, Double_t zv, Double_t pt, Double_t eta) const {
+Double_t AlidNdPtCorrection::GetCorrFactZvPtEta(THnSparse * const hist, Double_t zv, Double_t pt, Double_t eta) const {
 // return correction factor F(zv,pt,eta)
 
  if(!hist) return 1.;
@@ -1048,7 +1060,7 @@ return fact;
 }
 
 //_____________________________________________________________________________
-Double_t AlidNdPtCorrection::GetContFactZvPtEta(THnSparse *hist, Double_t zv, Double_t pt, Double_t eta) const {
+Double_t AlidNdPtCorrection::GetContFactZvPtEta(THnSparse * const hist, Double_t zv, Double_t pt, Double_t eta) const {
 // return contamination correction factor F(zv,pt,eta)
 
  if(!hist) return 1.0;
@@ -1070,7 +1082,7 @@ return fact;
 }
 
 //_____________________________________________________________________________
-Double_t AlidNdPtCorrection::GetCorrFactZvMult(THnSparse *hist, Double_t zv, Int_t mult) const {
+Double_t AlidNdPtCorrection::GetCorrFactZvMult(THnSparse * const hist, Double_t zv, Int_t mult) const {
 // return correction factor F(zv,mult)
 
  if(!hist) return 1.;
@@ -1088,7 +1100,7 @@ return fact;
 }
 
 //_____________________________________________________________________________
-Double_t AlidNdPtCorrection::GetContFactZvMult(THnSparse *hist, Double_t zv, Int_t mult) const {
+Double_t AlidNdPtCorrection::GetContFactZvMult(THnSparse * const hist, Double_t zv, Int_t mult) const {
 // return contamination correction factor F(zv,mult)
 
  if(!hist) return 1.;
@@ -1104,7 +1116,7 @@ return fact;
 }
 
 //_____________________________________________________________________________
-Long64_t AlidNdPtCorrection::Merge(TCollection* list) 
+Long64_t AlidNdPtCorrection::Merge(TCollection* const list) 
 {
   // Merge list of objects (needed by PROOF)
 
@@ -1160,10 +1172,14 @@ Long64_t AlidNdPtCorrection::Merge(TCollection* list)
 return count;
 }
  
-Int_t AlidNdPtCorrection::GetTrueMult(THnSparse *hist, Int_t mult)
+//____________________________________________________________________________
+Int_t AlidNdPtCorrection::GetTrueMult(THnSparse * const hist, Int_t mult) const
 {
+//
+// get multiplicity of primary particles
+//
  if(!hist) return 0;
- Int_t true_mult = 0;
+ Int_t trueMult = 0;
 
  // 0 bins exluded
  TAxis *ax = hist->GetAxis(0);
@@ -1176,9 +1192,9 @@ Int_t AlidNdPtCorrection::GetTrueMult(THnSparse *hist, Int_t mult)
 
  // get true multiplicity
  TH1D *h1 = (TH1D *)hist->Projection(1);
- true_mult = (Int_t)h1->GetMean();
+ trueMult = (Int_t)h1->GetMean();
 
- return true_mult;
+ return trueMult;
 }
 
 //_____________________________________________________________________________
@@ -1209,9 +1225,10 @@ void AlidNdPtCorrection::Analyse()
   //
   //Double_t minPt = accCuts->GetMinPt();
   //Double_t maxPt = accCuts->GetMaxPt();
-  //Double_t minEta = accCuts->GetMinEta();
-  //Double_t maxEta = accCuts->GetMaxEta()-0.00001;
+  Double_t minEta = accCuts->GetMinEta();
+  Double_t maxEta = accCuts->GetMaxEta()-0.00001;
  
+  printf("minEta %f, maxEta %f \n",minEta, maxEta);
 
   //
   // cosmics background histo
@@ -1446,6 +1463,36 @@ void AlidNdPtCorrection::Analyse()
   hsc->Scale(1./(fCorrRecEventHist1[2]->Projection(1)->Integral() + fCorrRecEventHist2[2]->Projection(1)->Integral()));
   aFolderObj->Add(hsc);
 
+   // positive eta
+  fCorrRecTrackMultHist1[5]->GetAxis(1)->SetRangeUser(0., maxEta);
+
+  h = fCorrRecTrackMultHist1[5]->Projection(0);
+  h->SetName("pt_rec_trig_event_track_mult_eff_cont_corrected_posEta");
+  hs = AlidNdPtHelper::ScaleByBinWidth(h);
+  hs->SetName("pt_rec_trig_event_track_mult_eff_cont_corrected_s_posEta");
+  aFolderObj->Add(hs);
+
+  hsc = (TH1D*)hs->Clone();
+  hsc->SetName("pt_rec_trig_event_track_mult_eff_cont_corrected_s_norm_posEta");
+  hsc->Scale(1./(fCorrRecEventHist1[2]->Projection(1)->Integral()+fCorrRecEventHist2[2]->Projection(1)->Integral()));
+  aFolderObj->Add(hsc);
+
+  // negative eta
+  fCorrRecTrackMultHist1[5]->GetAxis(1)->SetRangeUser(minEta, -0.00001);
+
+  h = fCorrRecTrackMultHist1[5]->Projection(0);
+  h->SetName("pt_rec_trig_event_track_mult_eff_cont_corrected_negEta");
+  hs = AlidNdPtHelper::ScaleByBinWidth(h);
+  hs->SetName("pt_rec_trig_event_track_mult_eff_cont_corrected_s_negEta");
+  aFolderObj->Add(hs);
+
+  hsc = (TH1D*)hs->Clone();
+  hsc->SetName("pt_rec_trig_event_track_mult_eff_cont_corrected_s_norm_negEta");
+  hsc->Scale(1./(fCorrRecEventHist1[2]->Projection(1)->Integral()+fCorrRecEventHist2[2]->Projection(1)->Integral()));
+  aFolderObj->Add(hsc);
+
+  fCorrRecTrackMultHist1[5]->GetAxis(1)->SetRange(1, fCorrRecTrackMultHist1[5]->GetAxis(1)->GetNbins());
+
   //
   h = fCorrRecTrackMultHist1[6]->Projection(0);
   h->SetName("pt_rec_ND_trig_event_track_mult_eff_cont_corrected");
@@ -1469,6 +1516,40 @@ void AlidNdPtCorrection::Analyse()
   hsc->SetName("pt_rec_NSD_trig_event_track_mult_eff_cont_corrected_s_norm");
   hsc->Scale(1./(fCorrRecEventHist1[4]->Projection(1)->Integral()+fCorrRecEventHist2[4]->Projection(1)->Integral()));
   aFolderObj->Add(hsc);
+
+  //
+  // positive eta
+  //
+  fCorrRecTrackMultHist1[7]->GetAxis(1)->SetRangeUser(0., maxEta);
+
+  h = fCorrRecTrackMultHist1[7]->Projection(0);
+  h->SetName("pt_rec_NSD_trig_event_track_mult_eff_cont_corrected_posEta");
+  hs = AlidNdPtHelper::ScaleByBinWidth(h);
+  hs->SetName("pt_rec_NSD_trig_event_track_mult_eff_cont_corrected_s_posEta");
+  aFolderObj->Add(hs);
+
+  hsc = (TH1D*)hs->Clone();
+  hsc->SetName("pt_rec_NSD_trig_event_track_mult_eff_cont_corrected_s_norm_posEta");
+  hsc->Scale(1./(fCorrRecEventHist1[4]->Projection(1)->Integral()+fCorrRecEventHist2[4]->Projection(1)->Integral()));
+  aFolderObj->Add(hsc);
+
+  //
+  // negative eta
+  //
+  fCorrRecTrackMultHist1[7]->GetAxis(1)->SetRangeUser(minEta, -0.00001);
+
+  h = fCorrRecTrackMultHist1[7]->Projection(0);
+  h->SetName("pt_rec_NSD_trig_event_track_mult_eff_cont_corrected_negEta");
+  hs = AlidNdPtHelper::ScaleByBinWidth(h);
+  hs->SetName("pt_rec_NSD_trig_event_track_mult_eff_cont_corrected_s_negEta");
+  aFolderObj->Add(hs);
+
+  hsc = (TH1D*)hs->Clone();
+  hsc->SetName("pt_rec_NSD_trig_event_track_mult_eff_cont_corrected_s_norm_negEta");
+  hsc->Scale(1./(fCorrRecEventHist1[4]->Projection(1)->Integral()+fCorrRecEventHist2[4]->Projection(1)->Integral()));
+  aFolderObj->Add(hsc);
+
+  fCorrRecTrackMultHist1[7]->GetAxis(1)->SetRange(1, fCorrRecTrackMultHist1[7]->GetAxis(1)->GetNbins());
 
   // eta axis
   h = fCorrRecTrackMultHist1[0]->Projection(1);
