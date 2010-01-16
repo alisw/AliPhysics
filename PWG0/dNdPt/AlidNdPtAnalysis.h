@@ -1,35 +1,29 @@
-#ifndef ALIDEDPTANALYSIS_H
-#define ALIDEDPTANALYSIS_H
+#ifndef ALIDNDPTANALYSIS_H
+#define ALIDNDPTANALYSIS_H
 
 //------------------------------------------------------------------------------
-// AlidNdPtAnalysis class. 
+// AlidNdPtAnalysis class used for dNdPt analysis. 
 // 
-// a. functionality:
-// - fills analysis control histograms
-// - fills generic correction matrices 
-// - generates correction matrices 
-//
-// b. data members:
-// - generic correction matrices
-// - control histograms
-//
 // Author: J.Otwinowski 04/11/2008 
 //------------------------------------------------------------------------------
 
+class iostream;
+
+class TFile;
+class TCint;
 class TProfile;
 class TFolder;
 class TObjArray;
 class TString;
+class THnSparse;
 
 class AliESDtrackCuts;
 class AliVertexerTracks;
 class AliESD;
 class AliESDfriend;
 class AliESDfriendTrack;
-
 class AlidNdPtHelper;
 
-#include "THnSparse.h"
 #include "AlidNdPt.h"
 
 class AlidNdPtAnalysis : public AlidNdPt {
@@ -45,7 +39,7 @@ public :
   virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* list);
+  virtual Long64_t Merge(TCollection* const list);
 
   // Analyse output histograms 
   virtual void Analyse();
@@ -54,11 +48,11 @@ public :
   virtual TFolder *ExportToFolder(TObjArray * array=0);
 
   // Get analysis folder
-  TFolder* GetAnalysisFolder() {return fAnalysisFolder;}
+  TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Fill control histograms
-  void SetHistogramsOn(Bool_t histOn=kTRUE) {fHistogramsOn = histOn;}
-  Bool_t IsHistogramsOn() {return fHistogramsOn;}
+  void SetHistogramsOn(const Bool_t histOn=kTRUE) {fHistogramsOn = histOn;}
+  Bool_t IsHistogramsOn() const {return fHistogramsOn;}
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
@@ -69,85 +63,83 @@ public :
   void FillHistograms(TObjArray *const allChargedTracks,Int_t *const labelsAll,Int_t multAll,Int_t *const labelsAcc,Int_t multAcc,Int_t *const labelsRec,Int_t multRec);
 
   // Getters
-  THnSparseF *GetEventMultCorrelationMatrix() {return fEventMultCorrelationMatrix;}
-  THnSparseF *GetTrackPtCorrelationMatrix()   {return fTrackPtCorrelationMatrix;}
+  THnSparseF *GetEventMultCorrelationMatrix() const {return fEventMultCorrelationMatrix;}
+  THnSparseF *GetTrackPtCorrelationMatrix()   const {return fTrackPtCorrelationMatrix;}
 
   //
-  THnSparseF *GetGenEventMatrix() {return fGenEventMatrix;}
-  THnSparseF *GetGenSDEventMatrix() {return fGenSDEventMatrix;}
-  THnSparseF *GetGenDDEventMatrix() {return fGenDDEventMatrix;}
-  THnSparseF *GetGenNDEventMatrix() {return fGenNDEventMatrix;}
-  THnSparseF *GetGenNSDEventMatrix() {return fGenNSDEventMatrix;}
+  THnSparseF *GetGenEventMatrix() const {return fGenEventMatrix;}
+  THnSparseF *GetGenSDEventMatrix() const {return fGenSDEventMatrix;}
+  THnSparseF *GetGenDDEventMatrix() const {return fGenDDEventMatrix;}
+  THnSparseF *GetGenNDEventMatrix() const {return fGenNDEventMatrix;}
+  THnSparseF *GetGenNSDEventMatrix() const {return fGenNSDEventMatrix;}
 
-  THnSparseF *GetTriggerEventMatrix() {return fTriggerEventMatrix;}
-  THnSparseF *GetTriggerSDEventMatrix() {return fTriggerSDEventMatrix;}
-  THnSparseF *GetTriggerDDEventMatrix() {return fTriggerDDEventMatrix;}
-  THnSparseF *GetTriggerNDEventMatrix() {return fTriggerNDEventMatrix;}
-  THnSparseF *GetTriggerNSDEventMatrix() {return fTriggerNSDEventMatrix;}
+  THnSparseF *GetTriggerEventMatrix() const {return fTriggerEventMatrix;}
+  THnSparseF *GetTriggerSDEventMatrix() const {return fTriggerSDEventMatrix;}
+  THnSparseF *GetTriggerDDEventMatrix() const {return fTriggerDDEventMatrix;}
+  THnSparseF *GetTriggerNDEventMatrix() const {return fTriggerNDEventMatrix;}
+  THnSparseF *GetTriggerNSDEventMatrix() const {return fTriggerNSDEventMatrix;}
 
-  THnSparseF *GetRecEventMatrix() {return fRecEventMatrix;}
-  THnSparseF *GetRecSDEventMatrix() {return fRecSDEventMatrix;}
-  THnSparseF *GetRecDDEventMatrix() {return fRecDDEventMatrix;}
-  THnSparseF *GetRecNDEventMatrix() {return fRecNDEventMatrix;}
-  THnSparseF *GetRecNSDEventMatrix() {return fRecNSDEventMatrix;}
+  THnSparseF *GetRecEventMatrix() const {return fRecEventMatrix;}
+  THnSparseF *GetRecSDEventMatrix() const {return fRecSDEventMatrix;}
+  THnSparseF *GetRecDDEventMatrix() const {return fRecDDEventMatrix;}
+  THnSparseF *GetRecNDEventMatrix() const {return fRecNDEventMatrix;}
+  THnSparseF *GetRecNSDEventMatrix() const {return fRecNSDEventMatrix;}
 
   // 
-  THnSparseF *GetGenTrackEventMatrix() {return fGenTrackEventMatrix;}
-  THnSparseF *GetGenTrackSDEventMatrix() {return fGenTrackSDEventMatrix;}
-  THnSparseF *GetGenTrackDDEventMatrix() {return fGenTrackDDEventMatrix;}
-  THnSparseF *GetGenTrackNDEventMatrix() {return fGenTrackNDEventMatrix;}
-  THnSparseF *GetGenTrackNSDEventMatrix() {return fGenTrackNSDEventMatrix;}
+  THnSparseF *GetGenTrackEventMatrix() const {return fGenTrackEventMatrix;}
+  THnSparseF *GetGenTrackSDEventMatrix() const {return fGenTrackSDEventMatrix;}
+  THnSparseF *GetGenTrackDDEventMatrix() const {return fGenTrackDDEventMatrix;}
+  THnSparseF *GetGenTrackNDEventMatrix() const {return fGenTrackNDEventMatrix;}
+  THnSparseF *GetGenTrackNSDEventMatrix() const {return fGenTrackNSDEventMatrix;}
 
-  THnSparseF *GetTriggerTrackEventMatrix() {return fTriggerTrackEventMatrix;}
-  THnSparseF *GetTriggerTrackSDEventMatrix() {return fTriggerTrackSDEventMatrix;}
-  THnSparseF *GetTriggerTrackDDEventMatrix() {return fTriggerTrackDDEventMatrix;}
-  THnSparseF *GetTriggerTrackNDEventMatrix() {return fTriggerTrackNDEventMatrix;}
-  THnSparseF *GetTriggerTrackNSDEventMatrix() {return fTriggerTrackNSDEventMatrix;}
+  THnSparseF *GetTriggerTrackEventMatrix() const {return fTriggerTrackEventMatrix;}
+  THnSparseF *GetTriggerTrackSDEventMatrix() const {return fTriggerTrackSDEventMatrix;}
+  THnSparseF *GetTriggerTrackDDEventMatrix() const {return fTriggerTrackDDEventMatrix;}
+  THnSparseF *GetTriggerTrackNDEventMatrix() const {return fTriggerTrackNDEventMatrix;}
+  THnSparseF *GetTriggerTrackNSDEventMatrix() const {return fTriggerTrackNSDEventMatrix;}
 
-  THnSparseF *GetRecTrackEventMatrix() {return fRecTrackEventMatrix;}
-  THnSparseF *GetRecTrackSDEventMatrix() {return fRecTrackSDEventMatrix;}
-  THnSparseF *GetRecTrackDDEventMatrix() {return fRecTrackDDEventMatrix;}
-  THnSparseF *GetRecTrackNDEventMatrix() {return fRecTrackNDEventMatrix;}
-  THnSparseF *GetRecTrackNSDEventMatrix() {return fRecTrackNSDEventMatrix;}
+  THnSparseF *GetRecTrackEventMatrix() const {return fRecTrackEventMatrix;}
+  THnSparseF *GetRecTrackSDEventMatrix() const {return fRecTrackSDEventMatrix;}
+  THnSparseF *GetRecTrackDDEventMatrix() const {return fRecTrackDDEventMatrix;}
+  THnSparseF *GetRecTrackNDEventMatrix() const {return fRecTrackNDEventMatrix;}
+  THnSparseF *GetRecTrackNSDEventMatrix() const {return fRecTrackNSDEventMatrix;}
 
   //
-  THnSparseF *GetGenTrackMatrix() {return fGenTrackMatrix;}
-  THnSparseF *GetGenPrimTrackMatrix() {return fGenPrimTrackMatrix;}
-  THnSparseF *GetRecPrimTrackMatrix() {return fRecPrimTrackMatrix;}
+  THnSparseF *GetGenTrackMatrix() const {return fGenTrackMatrix;}
+  THnSparseF *GetGenPrimTrackMatrix() const {return fGenPrimTrackMatrix;}
+  THnSparseF *GetRecPrimTrackMatrix() const {return fRecPrimTrackMatrix;}
 
-  THnSparseF *GetRecTrackMatrix() {return fRecTrackMatrix;}
-  THnSparseF *GetRecSecTrackMatrix() {return fRecSecTrackMatrix;}
-  THnSparseF *GetRecMultTrackMatrix() {return fRecMultTrackMatrix;}
+  THnSparseF *GetRecTrackMatrix() const {return fRecTrackMatrix;}
+  THnSparseF *GetRecSecTrackMatrix() const {return fRecSecTrackMatrix;}
+  THnSparseF *GetRecMultTrackMatrix() const {return fRecMultTrackMatrix;}
 
   //
   // control histograms
   //
-  THnSparseF *GetMCEventHist1() {return fMCEventHist1;}
-  THnSparseF *GetRecEventHist1() {return fRecEventHist1;}
-  THnSparseF *GetRecEventHist2() {return fRecEventHist2;}
-  THnSparseF *GetRecMCEventHist1() {return fRecMCEventHist1;}
-  THnSparseF *GetRecMCEventHist2() {return fRecMCEventHist2;}
-  THnSparseF *GetRecMCEventHist3() {return fRecMCEventHist3;}
+  THnSparseF *GetMCEventHist1() const {return fMCEventHist1;}
+  THnSparseF *GetRecEventHist1() const {return fRecEventHist1;}
+  THnSparseF *GetRecEventHist2() const {return fRecEventHist2;}
+  THnSparseF *GetRecMCEventHist1() const {return fRecMCEventHist1;}
+  THnSparseF *GetRecMCEventHist2() const {return fRecMCEventHist2;}
+  THnSparseF *GetRecMCEventHist3() const {return fRecMCEventHist3;}
 
-  THnSparseF *GetMCTrackHist1(Int_t i) {return fMCTrackHist1[i];}
-  THnSparseF *GetMCPrimTrackHist1(Int_t i) {return fMCPrimTrackHist1[i];}
-  THnSparseF *GetMCSecTrackHist1(Int_t i) {return fMCSecTrackHist1[i];}
+  THnSparseF *GetMCTrackHist1(Int_t i) const {return fMCTrackHist1[i];}
+  THnSparseF *GetMCPrimTrackHist1(Int_t i) const {return fMCPrimTrackHist1[i];}
+  THnSparseF *GetMCSecTrackHist1(Int_t i) const {return fMCSecTrackHist1[i];}
 
-  THnSparseF *GetRecTrackHist1(Int_t i) {return fRecTrackHist1[i];}
-  THnSparseF *GetRecTrackMultHist1(Int_t i) {return fRecTrackMultHist1[i];}
+  THnSparseF *GetRecTrackHist1(Int_t i) const {return fRecTrackHist1[i];}
+  THnSparseF *GetRecTrackMultHist1(Int_t i) const {return fRecTrackMultHist1[i];}
 
-  THnSparseF *GetRecMCTrackHist1() {return fRecMCTrackHist1;}
-  THnSparseF *GetMCMultRecTrackHist1() {return fMCMultRecTrackHist1;}
+  THnSparseF *GetRecMCTrackHist1() const {return fRecMCTrackHist1;}
+  THnSparseF *GetMCMultRecTrackHist1() const {return fMCMultRecTrackHist1;}
 
-  THnSparseF *GetRecTrackHist2() {return fRecTrackHist2;}
+  THnSparseF *GetRecTrackHist2() const {return fRecTrackHist2;}
 
 private:
 
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
-
-  // switch on/off filling of control histograms
-  Bool_t fHistogramsOn; 
+  Bool_t fHistogramsOn; // switch on/off filling of control histograms 
 
   // 
   // correlation matrices (histograms)

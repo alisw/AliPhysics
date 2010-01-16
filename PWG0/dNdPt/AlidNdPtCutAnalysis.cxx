@@ -12,11 +12,19 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-#include <iostream>
-
-#include "TFile.h"
-#include "TCint.h"
+//------------------------------------------------------------------------------
+// AlidNdPtCutAnalysis class. 
+//
+// a. functionality:
+// - fills generic cut histograms
+// - generates cuts (selection criteria)
+//
+// b. data members:
+// - generic cut histograms
+// - control histograms
+//
+// Author: J.Otwinowski 04/11/2008 
+//------------------------------------------------------------------------------
 #include "TH1.h"
 #include "TH2.h"
 
@@ -99,9 +107,11 @@ void AlidNdPtCutAnalysis::Init(){
   fEventCount->Sumw2();
 
   //Xv:Yv:Zv:ResZv:Mult
+  Double_t kFact = 0.1;
+
   Int_t binsRecEventHist[5]={80,80,100,80,150};
-  Double_t minRecEventHist[5]={-3.,-3.,-35.,0.,0.}; 
-  Double_t maxRecEventHist[5]={3.,3.,35.,10.,150.}; 
+  Double_t minRecEventHist[5]={-3.*kFact,-3.*kFact,-35.,0.,0.}; 
+  Double_t maxRecEventHist[5]={3.*kFact,3.*kFact,35.,10.,150.}; 
   fRecEventHist = new THnSparseF("fRecEventHist","Xv:Yv:Zv:ResZv:Mult",5,binsRecEventHist,minRecEventHist,maxRecEventHist);
   fRecEventHist->GetAxis(0)->SetTitle("Xv (cm)");
   fRecEventHist->GetAxis(1)->SetTitle("Yv (cm)");
@@ -121,10 +131,9 @@ void AlidNdPtCutAnalysis::Init(){
   fMCEventHist->Sumw2();
 
   //Xv-mcXv:Yv-mcYv:Zv-mcZv:Mult
-  Float_t fact = 0.1;
   Int_t binsRecMCEventHist[4]={100,100,100,150};
-  Double_t minRecMCEventHist[4]={-10.0*fact,-10.0*fact,-10.0*fact,0.}; 
-  Double_t maxRecMCEventHist[4]={10.0*fact,10.0*fact,10.0*fact,150.}; 
+  Double_t minRecMCEventHist[4]={-10.0*kFact,-10.0*kFact,-10.0*kFact,0.}; 
+  Double_t maxRecMCEventHist[4]={10.0*kFact,10.0*kFact,10.0*kFact,150.}; 
   fRecMCEventHist = new THnSparseF("fRecMCEventHist","mcXv-Xv:mcYv-Yv:mcZv-Zv:Mult",4,binsRecMCEventHist,minRecMCEventHist,maxRecMCEventHist);
   fRecMCEventHist->GetAxis(0)->SetTitle("mcXv-Xv (cm)");
   fRecMCEventHist->GetAxis(1)->SetTitle("mcYv-Yv (cm)");
@@ -141,7 +150,7 @@ void AlidNdPtCutAnalysis::Init(){
   Double_t minRecMCTrackHist[11]={0., 0., 0., -10.,-10.,-1.5, 0., ptMin, 0., 0., 0.};
   Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 10.,10.,1.5, 2.*TMath::Pi(), ptMax, 2.,2., 2.};
 
-  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim:polarity",10,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
+  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim:polarity",11,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
   fRecMCTrackHist->SetBinEdges(7,binsPt);
 
   fRecMCTrackHist->GetAxis(0)->SetTitle("nClust");
@@ -315,7 +324,7 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
 }
 
 //_____________________________________________________________________________
-void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack)
+void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack) const
 {
   //
   // Fill ESD track and MC histograms 
@@ -366,7 +375,7 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
 }
 
 //_____________________________________________________________________________
-Long64_t AlidNdPtCutAnalysis::Merge(TCollection* list) 
+Long64_t AlidNdPtCutAnalysis::Merge(TCollection* const list) 
 {
   // Merge list of objects (needed by PROOF)
 

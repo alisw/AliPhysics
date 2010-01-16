@@ -290,7 +290,7 @@ return kFALSE;
 */
 
 //____________________________________________________________________
-Bool_t AlidNdPtHelper::IsCosmicTrack(AliESDtrack *track1, AliESDtrack *track2, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts)
+Bool_t AlidNdPtHelper::IsCosmicTrack(AliESDtrack *track1, AliESDtrack *track2, Int_t /*trackIdx*/, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts)
 {
 //
 // check cosmic tracks

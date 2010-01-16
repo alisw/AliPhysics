@@ -1,26 +1,20 @@
-#ifndef ALIDEDPTCORRECTION_H
-#define ALIDEDPTCORRECTION_H
+#ifndef ALIDNDPTCORRECTION_H
+#define ALIDNDPTCORRECTION_H
 
 //------------------------------------------------------------------------------
-// AlidNdPtCorrection class:
+// AlidNdPtCorrection class to correct and
+// normalised dNdPt spectra. 
 //
-// a. functionality:
-// - applies corrections on dNdPt spectra
-// - fills corrected dNdPt histograms
-// - fills correction control histograms 
-//
-// b. data members:
-// - dNdPt spectra before and after correction procedure
-// - control histograms
-// - correction matrices (must be loaded)
-// 
 // Author: J.Otwinowski 04/11/2008 
 //------------------------------------------------------------------------------
 
-
+class iostream;
+class TFile;
+class TCint;
 class TFolder;
 class TObjArray;
 class TString;
+class THnSparse;
 
 class AliESDtrackCuts;
 class AliVertexerTracks;
@@ -34,7 +28,6 @@ class AlidNdPtCorrection;
 class AlidNdPt;
 class AlidNdPtHelper;
 
-#include "THnSparse.h"
 #include "AlidNdPt.h"
 
 class AlidNdPtCorrection : public AlidNdPt {
@@ -50,7 +43,7 @@ public :
   virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* list);
+  virtual Long64_t Merge(TCollection* const list);
 
   // Analyse output histograms 
   virtual void Analyse();
@@ -59,15 +52,15 @@ public :
   virtual TFolder *ExportToFolder(TObjArray * array=0);
 
   // Get analysis folder
-  TFolder* GetCorrectionFolder() {return fCorrectionFolder;}
+  TFolder* GetCorrectionFolder() const {return fCorrectionFolder;}
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderdNdPtCorrection",TString title = "Analysed dNdPt histograms");
 
   // Fill histograms
-  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj, Double_t zv, Int_t multRec);
-  void FillHistograms(AliStack *const stack, Int_t label, AlidNdPtHelper::TrackObject trackObj, Int_t multRec);
-  void FillHistograms(AlidNdPtHelper::EventObject eventObj, Double_t zv, Int_t multMBRec);
+  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj, Double_t zv, Int_t multRec) const;
+  void FillHistograms(AliStack *const stack, Int_t label, AlidNdPtHelper::TrackObject trackObj, Int_t multRec) const;
+  void FillHistograms(AlidNdPtHelper::EventObject eventObj, Double_t zv, Int_t multMBRec) const;
 
   // Get correction factors
   Double_t GetCorrFactZvPtEta(THnSparse *const hist=0, Double_t zv =0, Double_t pt=0, Double_t eta=0) const;
@@ -76,73 +69,73 @@ public :
   Double_t GetContFactZvMult(THnSparse *const hist=0, Double_t zv =0, Int_t mult=0) const;
 
   // Getters
-  THnSparseF *GetMCAllEventMultHist1() {return fMCAllEventMultHist1;}; 
-  THnSparseF *GetMCAllNDEventMultHist1() {return fMCAllNDEventMultHist1;}; 
-  THnSparseF *GetMCAllNSDEventMultHist1() {return fMCAllNSDEventMultHist1;}; 
-  THnSparseF *GetMCTriggerMultHist1() {return fMCTriggerMultHist1;}; 
-  THnSparseF *GetMCEventMultHist1() {return fMCEventMultHist1;}; 
+  THnSparseF *GetMCAllEventMultHist1() const {return fMCAllEventMultHist1;}; 
+  THnSparseF *GetMCAllNDEventMultHist1() const {return fMCAllNDEventMultHist1;}; 
+  THnSparseF *GetMCAllNSDEventMultHist1() const {return fMCAllNSDEventMultHist1;}; 
+  THnSparseF *GetMCTriggerMultHist1() const {return fMCTriggerMultHist1;}; 
+  THnSparseF *GetMCEventMultHist1() const {return fMCEventMultHist1;}; 
 
-  THnSparseF *GetMCAllPrimTrackMultHist1() {return fMCAllPrimTrackMultHist1;}; 
-  THnSparseF *GetMCNDEventAllPrimTrackMultHist1() {return fMCNDEventAllPrimTrackMultHist1;}; 
-  THnSparseF *GetMCNSDEventAllPrimTrackMultHist1() {return fMCNSDEventAllPrimTrackMultHist1;}; 
-  THnSparseF *GetMCTriggerPrimTrackMultHist1() {return fMCTriggerPrimTrackMultHist1;}; 
-  THnSparseF *GetMCEventPrimTrackMultHist1() {return fMCEventPrimTrackMultHist1;}; 
+  THnSparseF *GetMCAllPrimTrackMultHist1() const {return fMCAllPrimTrackMultHist1;}; 
+  THnSparseF *GetMCNDEventAllPrimTrackMultHist1() const {return fMCNDEventAllPrimTrackMultHist1;}; 
+  THnSparseF *GetMCNSDEventAllPrimTrackMultHist1() const {return fMCNSDEventAllPrimTrackMultHist1;}; 
+  THnSparseF *GetMCTriggerPrimTrackMultHist1() const {return fMCTriggerPrimTrackMultHist1;}; 
+  THnSparseF *GetMCEventPrimTrackMultHist1() const {return fMCEventPrimTrackMultHist1;}; 
 
-  THnSparseF *GetCorrRecTrackMultHist1(Int_t i) {return fCorrRecTrackMultHist1[i];}
-  THnSparseF *GetCorrRecEventHist1(Int_t i) {return fCorrRecEventHist1[i];}
-  THnSparseF *GetCorrRecEventHist2(Int_t i) {return fCorrRecEventHist2[i];}
+  THnSparseF *GetCorrRecTrackMultHist1(Int_t i) const {return fCorrRecTrackMultHist1[i];}
+  THnSparseF *GetCorrRecEventHist1(Int_t i) const {return fCorrRecEventHist1[i];}
+  THnSparseF *GetCorrRecEventHist2(Int_t i) const {return fCorrRecEventHist2[i];}
 
-  THnSparseF *GetPtvsPt(Int_t i) {return fPtvsPt[i];}
+  THnSparseF *GetPtvsPt(Int_t i) const {return fPtvsPt[i];}
 
   // correlation matrix
   void SetEventMultCorrelationMatrix(THnSparseF *const matrix=0) {fEventMultCorrelationMatrix = matrix;}
-  THnSparseF *GetEventMultCorrelationMatrix() {return fEventMultCorrelationMatrix;}
+  THnSparseF *GetEventMultCorrelationMatrix() const {return fEventMultCorrelationMatrix;}
 
   //
   void SetZvNorm(TH1D *const matrix=0) {fZvNorm = matrix;}
-  TH1D *GetZvNorm() {return fZvNorm;}
+  TH1D *GetZvNorm() const {return fZvNorm;}
 
   void SetZvEmptyEventsNorm(TH1D *const matrix=0) {fZvEmptyEventsNorm = matrix;}
-  TH1D *GetZvEmptyEventsNorm() {return fZvEmptyEventsNorm;}
+  TH1D *GetZvEmptyEventsNorm() const {return fZvEmptyEventsNorm;}
 
   // 
   void SetCorrEventMatrix(THnSparseF *const matrix=0) {fCorrEventMatrix = matrix;}
-  THnSparseF *GetCorrEventMatrix() {return fCorrEventMatrix;}
+  THnSparseF *GetCorrEventMatrix() const {return fCorrEventMatrix;}
 
   void SetCorrTriggerMBtoInelEventMatrix(THnSparseF *const matrix=0) {fCorrTriggerMBtoInelEventMatrix = matrix;}
-  THnSparseF *GetCorrTriggerMBtoInelEventMatrix() {return fCorrTriggerMBtoInelEventMatrix;}
+  THnSparseF *GetCorrTriggerMBtoInelEventMatrix() const {return fCorrTriggerMBtoInelEventMatrix;}
 
   void SetCorrTriggerMBtoNDEventMatrix(THnSparseF *const matrix=0) {fCorrTriggerMBtoNDEventMatrix = matrix;}
-  THnSparseF *GetCorrTriggerMBtoNDEventMatrix() {return fCorrTriggerMBtoNDEventMatrix;}
+  THnSparseF *GetCorrTriggerMBtoNDEventMatrix() const {return fCorrTriggerMBtoNDEventMatrix;}
 
   void SetCorrTriggerMBtoNSDEventMatrix(THnSparseF *const matrix=0) {fCorrTriggerMBtoNSDEventMatrix = matrix;}
-  THnSparseF *GetCorrTriggerMBtoNSDEventMatrix() {return fCorrTriggerMBtoNSDEventMatrix;}
+  THnSparseF *GetCorrTriggerMBtoNSDEventMatrix() const {return fCorrTriggerMBtoNSDEventMatrix;}
 
   // 
   void SetCorrTrackEventMatrix(THnSparseF *const matrix=0) {fCorrTrackEventMatrix = matrix;}
-  THnSparseF *GetCorrTrackEventMatrix() {return fCorrTrackEventMatrix;}
+  THnSparseF *GetCorrTrackEventMatrix() const {return fCorrTrackEventMatrix;}
 
   void SetCorrTriggerMBtoInelTrackEventMatrix(THnSparseF *const matrix=0) {fCorrTriggerMBtoInelTrackEventMatrix = matrix;}
-  THnSparseF *GetCorrTriggerMBtoInelTrackEventMatrix() {return fCorrTriggerMBtoInelTrackEventMatrix;}
+  THnSparseF *GetCorrTriggerMBtoInelTrackEventMatrix() const {return fCorrTriggerMBtoInelTrackEventMatrix;}
 
   void SetCorrTriggerMBtoNDTrackEventMatrix(THnSparseF *const matrix=0) {fCorrTriggerMBtoNDTrackEventMatrix = matrix;}
-  THnSparseF *GetCorrTriggerMBtoNDTrackEventMatrix() {return fCorrTriggerMBtoNDTrackEventMatrix;}
+  THnSparseF *GetCorrTriggerMBtoNDTrackEventMatrix() const {return fCorrTriggerMBtoNDTrackEventMatrix;}
 
   void SetCorrTriggerMBtoNSDTrackEventMatrix(THnSparseF *const matrix=0) {fCorrTriggerMBtoNSDTrackEventMatrix = matrix;}
-  THnSparseF *GetCorrTriggerMBtoNSDTrackEventMatrix() {return fCorrTriggerMBtoNSDTrackEventMatrix;}
+  THnSparseF *GetCorrTriggerMBtoNSDTrackEventMatrix() const {return fCorrTriggerMBtoNSDTrackEventMatrix;}
 
   void SetCorrTrackMatrix(THnSparseF *const matrix=0) {fCorrTrackMatrix = matrix;}
-  THnSparseF *GetCorrTrackMatrix() {return fCorrTrackMatrix;}
+  THnSparseF *GetCorrTrackMatrix() const {return fCorrTrackMatrix;}
 
   void SetContTrackMatrix(THnSparseF *const matrix=0) {fContTrackMatrix = matrix;}
-  THnSparseF *GetContTrackMatrix() {return fContTrackMatrix;}
+  THnSparseF *GetContTrackMatrix() const {return fContTrackMatrix;}
 
   void SetContMultTrackMatrix(THnSparseF *const matrix=0) {fContMultTrackMatrix = matrix;}
-  THnSparseF *GetContMultTrackMatrix() {return fContMultTrackMatrix;}
+  THnSparseF *GetContMultTrackMatrix() const {return fContMultTrackMatrix;}
 
   void SetCorrMatrixFileName(TString name="")    { fCorrMatrixFileName = name; }
 
-  Int_t GetTrueMult(THnSparse *const hist=0, Int_t mult=0);
+  Int_t GetTrueMult(THnSparse *const hist=0, Int_t mult=0) const;
 
 private:
 
