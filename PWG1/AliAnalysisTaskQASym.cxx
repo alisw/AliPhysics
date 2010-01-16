@@ -1,3 +1,30 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+//------------------------------
+// Analysis task for quality-assurance of central tarcking
+// mainly based on fundamental symmetries 
+//
+// contact eva.sicking@cern.ch
+// authors 
+// Authors: Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing,
+//          Andreas Morsch, Eva Sicking
+
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -28,11 +55,6 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
-
-// Analysis Task for basic QA on the ESD
-
-// Authors: Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing,
-//          Andreas Morsch, Eva Sicking
 
 ClassImp(AliAnalysisTaskQASym)
 
@@ -99,15 +121,11 @@ AliAnalysisTaskQASym::AliAnalysisTaskQASym(const char *name)
     ,fVx(0)
     ,fVy(0)
     ,fVz(0)
-    ,test(0)
-
-
     ,fCuts(0)
-
-   
   
 {
     // Constructor
+    //
   for(Int_t i = 0;i<18;++i){
     fRecPtTpcSector[i] = 0;
     fRecEtaTpcSector[i] = 0;
@@ -150,8 +168,6 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   Double_t pt = 20.;
 
   fHists = new TList();
-  //  test   = new TNtuple("test","test",  
-  //			  "pt:phi:theta:x:y:z:charge");
   fHistRECpt   = new TH1F("fHistRECpt", 
 			  " p_{T}",
 			  100, 0., pt);
@@ -670,9 +686,9 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   Printf("There are %d tracks in this event", event->GetNumberOfTracks());
 
   
-  Int_t   LeadingTrack  =   0;
-  Float_t LeadingEnergy = -20.;
-  Float_t LeadingPhi    =   0;//TMath::Pi();
+  Int_t   leadingTrack  =   0;
+  Float_t leadingEnergy = -20.;
+  Float_t leadingPhi    =   0;//TMath::Pi();
 
 
   if(event->GetNumberOfTracks()!=0) fNumber->Fill(event->GetNumberOfTracks());
@@ -705,10 +721,10 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     
 //    if (tpcPSO) fRecPt12->Fill(tpcPSO->Pt(), esdtrack->Pt());
 
-    if(tpcP->E()>LeadingEnergy){
-      LeadingTrack=iTrack;
-      LeadingEnergy=tpcP->E();
-      LeadingPhi=tpcP->Phi();
+    if(tpcP->E()>leadingEnergy){
+      leadingTrack=iTrack;
+      leadingEnergy=tpcP->E();
+      leadingPhi=tpcP->Phi();
     }
    
 
@@ -729,14 +745,9 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     sigmapt= sqrt(sigmapt);
     sigmapt= sigmapt *(tpcP->Pt()*tpcP->Pt()); 
 
-    if(sigmapt == 0.)continue;
+    if(sigmapt < 1.e-12) continue;
     fsigmaPt->Fill(TMath::Log10(sigmapt));
    
-
-   
-  
-
-    
 
     // hits in ITS layer
     Int_t cas=-1;
@@ -774,16 +785,13 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
    
     //------------------- 
 
-    sdca_tr = (tpcP->Py()*tpcP->Xv()
+    Double_t sdcatr = (tpcP->Py()*tpcP->Xv()
 	       - tpcP->Px()*tpcP->Yv())/tpcP->Pt();
   
 
 
     fqPtRec[cas]->Fill(tpcP->Charge()/tpcP->Pt());
     
-    
-    //    test->Fill(tpcP->Pt(),tpcP->Phi(), tpcP->Theta(), 
-    //	       tpcP->Xv(),tpcP->Yv(), tpcP->Zv(), tpcP->Charge());
     fHistRECpt->Fill(tpcP->Pt());
     fEta->Fill(tpcP->Eta());
     fThetaRec->Fill(tpcP->Theta());
@@ -795,13 +803,13 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
     fEtaPt->Fill(tpcP->Eta()/tpcP->Pt());
     fQPt->Fill(tpcP->Charge()/tpcP->Pt());
-    fDca->Fill(sdca_tr);
+    fDca->Fill(sdcatr);
 
 
 
-
+    Float_t xy, z;
     esdtrack->GetImpactParameters(xy,z);
-    fDiffDcaD->Fill(sdca_tr+xy);
+    fDiffDcaD->Fill(sdcatr+xy);
    
     
     //for positive particles
@@ -815,7 +823,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
      
       fRecPhiPosLadder[cas]->Fill(TMath::RadToDeg()*tpcP->Phi());
       fRecPhiPosVz->Fill(TMath::RadToDeg()*tpcP->Phi(),tpcP->Zv());
-      fSignedDcaPosVz->Fill(sdca_tr,tpcP->Zv());
+      fSignedDcaPosVz->Fill(sdcatr,tpcP->Zv());
 
       fRecEtaPos->Fill(tpcP->Eta());
       fRecEtaPosLadder[cas]->Fill(tpcP->Eta());
@@ -823,12 +831,12 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecEtaPosVz->Fill(tpcP->Eta(),tpcP->Zv());
       fRecEtaPtPosVz->Fill(tpcP->Eta()/tpcP->Pt(),tpcP->Zv());
      
-      fRecDcaPos->Fill(sdca_tr);
+      fRecDcaPos->Fill(sdcatr);
       fRecDPos->Fill(xy);
-      fSignDcaPos[cas]->Fill(sdca_tr);
+      fSignDcaPos[cas]->Fill(sdcatr);
     
      
-      fDcaSigmaPos[cas]->Fill(sdca_tr, TMath::Log10(sigmapt));
+      fDcaSigmaPos[cas]->Fill(sdcatr, TMath::Log10(sigmapt));
     
       fPtSigmaPos[cas]->Fill(TMath::Log10(sigmapt));
     }
@@ -841,7 +849,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecPhiNeg->Fill(TMath::RadToDeg()*tpcP->Phi());
       fRecPhiNegLadder[cas]->Fill(TMath::RadToDeg()*tpcP->Phi());
       fRecPhiNegVz->Fill(TMath::RadToDeg()*tpcP->Phi(),tpcP->Zv());
-      fSignedDcaNegVz->Fill(sdca_tr,tpcP->Zv());
+      fSignedDcaNegVz->Fill(sdcatr,tpcP->Zv());
       fRecEtaPtNegVz->Fill(tpcP->Eta()/tpcP->Pt(),tpcP->Zv());
 
       fRecEtaNeg->Fill(tpcP->Eta());
@@ -849,14 +857,14 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecEtaPtNeg->Fill(tpcP->Eta()/tpcP->Pt());
       fRecEtaNegVz->Fill(tpcP->Eta(),tpcP->Zv());
      
-      fRecDcaNeg->Fill(sdca_tr);
-      fRecDcaNegInv->Fill(-sdca_tr);
+      fRecDcaNeg->Fill(sdcatr);
+      fRecDcaNegInv->Fill(-sdcatr);
       fRecDNeg->Fill(xy);
-      fSignDcaNeg[cas]->Fill(sdca_tr);
-      fSignDcaNegInv[cas]->Fill(-sdca_tr);
+      fSignDcaNeg[cas]->Fill(sdcatr);
+      fSignDcaNegInv[cas]->Fill(-sdcatr);
      
      
-      fDcaSigmaNeg[cas]->Fill(sdca_tr,TMath::Log10(sigmapt));
+      fDcaSigmaNeg[cas]->Fill(sdcatr,TMath::Log10(sigmapt));
    
       fPtSigmaNeg[cas]->Fill(TMath::Log10(sigmapt));
     }
@@ -869,7 +877,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecPtPosEta->Fill(tpcP->Pt());
       fRecPhiPosEta->Fill(TMath::RadToDeg()*tpcP->Phi());
       fRecQPtPosEtaVz->Fill(tpcP->Charge()/tpcP->Pt(),tpcP->Zv());
-      fRecDcaPosEta->Fill(sdca_tr);
+      fRecDcaPosEta->Fill(sdcatr);
       fRecDPosEta->Fill(xy);
     }
     //all particles with negative eta (and eta==0)
@@ -878,7 +886,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecPtNegEta->Fill(tpcP->Pt());
       fRecPhiNegEta->Fill(TMath::RadToDeg()*tpcP->Phi());
       fRecQPtNegEtaVz->Fill(tpcP->Charge()/tpcP->Pt(),tpcP->Zv());
-      fRecDcaNegEta->Fill(sdca_tr);
+      fRecDcaNegEta->Fill(sdcatr);
       fRecDNegEta->Fill(xy);
 
     }
@@ -892,7 +900,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     fRecEtaTpcSector[Int_t(tpcP->Phi()*
 			  TMath::RadToDeg()/20)]->Fill(tpcP->Eta());
     fSignedDcaTpcSector[Int_t(tpcP->Phi()*
-			  TMath::RadToDeg()/20)]->Fill(sdca_tr); 
+			  TMath::RadToDeg()/20)]->Fill(sdcatr); 
     fRecQPtTpcSector[Int_t(tpcP->Phi()*
 			  TMath::RadToDeg()/20)]->Fill(tpcP->Charge()/tpcP->Pt());
     fRecEtaPtTpcSector[Int_t(tpcP->Phi()*
@@ -906,7 +914,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   // another track loop
     for (Int_t iTrack2 = 0; iTrack2 < event->GetNumberOfTracks(); iTrack2++) {
       
-      if(LeadingTrack==iTrack2) continue;
+      if(leadingTrack==iTrack2) continue;
 
       AliVParticle *track2 = event->GetTrack(iTrack2);
       AliESDtrack* esdtrack2 =  dynamic_cast<AliESDtrack*>(track2);
@@ -919,8 +927,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       esdtrack2->PropagateToDCA(event->GetPrimaryVertex(),
 			       event->GetMagneticField(), 10000.);
  
-      fDeltaPhiLeading->Fill((LeadingPhi-esdtrack2->Phi())*TMath::RadToDeg(),
-			     LeadingPhi*TMath::RadToDeg() );
+      fDeltaPhiLeading->Fill((leadingPhi-esdtrack2->Phi())*TMath::RadToDeg(),
+			     leadingPhi*TMath::RadToDeg() );
 
      
 
@@ -942,7 +950,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskQASym::Terminate(Option_t *) 
 {
-
+  // Terminate
 
 }  
 
