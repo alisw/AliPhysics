@@ -42,7 +42,7 @@ Function (AddLibrary LIB SRCS DHDRS)
 
 # Adds an AliRoot library as a target
 
-  Message(STATUS Debug ${LIB})
+  # Message(STATUS Debug ${LIB})
   Set(_path)
   List(LENGTH SRCS _len)
   If(_len GREATER 0)
@@ -62,10 +62,10 @@ Function (AddLibrary LIB SRCS DHDRS)
     Endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_path}/${LIB}LinkDef.h)
   Endif(_path)
 
-  Message(STATUS Debug - ${CMAKE_CURRENT_SOURCE_DIR} - ${LIB} - ${LDEF})
+  # Message(STATUS Debug - ${CMAKE_CURRENT_SOURCE_DIR} - ${LIB} - ${LDEF})
 
   Set(DICT)
-  Message(STATUS Debug ${LDEF})
+  # Message(STATUS Debug ${LDEF})
   If(LDEF)
 # even with no cxx files, one may want to build an empty lib as a placeholder
 # in AliRoot this is signalled by the existence of an (empty) ${LIB}LinkDef.h
@@ -189,7 +189,7 @@ Function (AddExecutable BIN SRCS LIBS)
 # Adds an AliRoot executable as a target
 
   String(REGEX REPLACE "(.*)exe" "\\1" executable_name "${BIN}")
-  MESSAGE("EXECUTABLE: ${executable_name}")
+  # MESSAGE("EXECUTABLE: ${executable_name}")
 
   Add_Executable(${BIN} ${SRCS})
   Target_Link_Libraries(${BIN} ${ROOT_LIBRARIES} ${LIBS})
