@@ -24,6 +24,7 @@ class AliITStrackMI;
 class AliTRDtrackV1;
 class AliTPCParam;
 class AliTPCseed;
+class AliMCInfo;
 
 /////////////////////////////////////////////////////////////////////////
 class AliESDRecInfo: public TObject {
