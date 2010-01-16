@@ -416,16 +416,16 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		}
 
 	      AliDebug(2,Form("Zposition = %f Edeposition = %f",zPos,edep));
-	      //Float_t zposition = TMath::Abs(zPos);
-	      if (zPos < fZPos)
+
+	      if (vol7 < 24)
+		{
+		  // PRE
+		  fDetNo = 0;
+		}
+	      else
 		{
 		  // CPV
 		  fDetNo = 1;
-		}
-	      else if (zPos > fZPos)
-		{
-		  // PMD
-		  fDetNo = 0;
 		}
 
 	      Int_t smn = smnumber;
@@ -661,17 +661,27 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
 	      AliDebug(2,Form("ZPosition = %f Edeposition = %d",zPos,edep));
 
-	      if (zPos < fZPos)
+	      if (vol7 < 24)
 		{
-		  // CPV
-		  fDetNo = 1;
-		}
-	      else if (zPos > fZPos)
-		{
-		  // PMD
+		  // PRE
 		  fDetNo = 0;
 		}
-
+	      else
+		{
+		  fDetNo = 1;
+		}
+	      /*
+		if (zPos < fZPos)
+		{
+		// CPV
+		fDetNo = 1;
+		}
+		else if (zPos > fZPos)
+		{
+		// PMD
+		fDetNo = 0;
+		}
+	      */
 	      Int_t smn = smnumber;
 	      Int_t ixx = xpad     - 1;
 	      Int_t iyy = ypad     - 1;
