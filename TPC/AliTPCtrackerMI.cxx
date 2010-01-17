@@ -364,6 +364,7 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
 
 
 
+
 //_____________________________________________________________________________
 AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCParam *par): 
 AliTracker(), 
@@ -629,7 +630,6 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
     erry2+=0.5;  // edge cluster
   }
   erry2*=erry2;
-  erry2+=0.015*0.015;
   seed->SetErrorY2(erry2);
   //
   return erry2;
@@ -781,8 +781,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   if (ctype<0) {
     errz2+=0.5;  // edge cluster
   }
-  errz2*=errz2; 
-  errz2+=0.015*0.015;
+  errz2*=errz2;
   seed->SetErrorZ2(errz2);
   //
   return errz2;
@@ -1365,11 +1364,9 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
     Float_t gx[3];
     cluster->GetGlobalXYZ(gx);
     Int_t event = (fEvent==NULL)? 0: fEvent->GetEventNumberInFile();
-    Double_t xt=GetXrow(cluster->GetRow());
     TTreeSRedirector &cstream = *fDebugStreamer;
     cstream<<"Transform"<<
       "event="<<event<<
-      "xt="<<xt<<
       "x0="<<x[0]<<
       "x1="<<x[1]<<
       "x2="<<x[2]<<
@@ -1396,23 +1393,6 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   else{
     // chack Loading of Geo matrices from GeoManager - TEMPORARY FIX
   }
-  if (AliTPCReconstructor::StreamLevel()>1) {
-    Int_t event = (fEvent==NULL)? 0: fEvent->GetEventNumberInFile();
-    Double_t xt=GetXrow(cluster->GetRow());
-    TTreeSRedirector &cstream = *fDebugStreamer;
-    cstream<<"Transform2"<<
-      "event="<<event<<
-      "xt="<<xt<<
-      "x0="<<pos[0]<<
-      "x1="<<pos[1]<<
-      "x2="<<pos[2]<<
-      "ax0="<<posC[0]<<
-      "ax1="<<posC[1]<<
-      "ax2="<<posC[2]<<
-      "Cl.="<<cluster<<
-      "\n"; 
-  }
-  
   cluster->SetX(posC[0]);
   cluster->SetY(posC[1]);
   cluster->SetZ(posC[2]);
@@ -2099,8 +2079,7 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
   Int_t lastpoint = 160;
   //
   //  if (firstpoint>=lastpoint-5) return;;
-  Int_t firstShared=lastpoint, lastShared=firstpoint;
-  Int_t firstRow=lastpoint, lastRow=firstpoint;
+
   for (Int_t i=firstpoint;i<lastpoint;i++){
     //    if ( (s1->GetClusterIndex2(i)&0xFFFF8FFF)==(s2->GetClusterIndex2(i)&0xFFFF8FFF) && s1->GetClusterIndex2(i)>0) {
     if ( (s1->GetClusterIndex2(i))==(s2->GetClusterIndex2(i)) && s1->GetClusterIndex2(i)>0) {
@@ -2116,15 +2095,9 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
     //
     for (Int_t i=firstpoint;i<lastpoint;i++){
       //      if ( (s1->GetClusterIndex2(i)&0xFFFF8FFF)==(s2->GetClusterIndex2(i)&0xFFFF8FFF) && s1->GetClusterIndex2(i)>0) {
-      if  (s1->GetClusterIndex2(i)>0 && s2->GetClusterIndex2(i)>0) {
-	if (i<firstRow) firstRow=i;
-	if (i>lastRow)  lastRow=i;
-      }
       if ( (s1->GetClusterIndex2(i))==(s2->GetClusterIndex2(i)) && s1->GetClusterIndex2(i)>0) {
 	AliTPCTrackerPoint *p1  = s1->GetTrackPoint(i);
 	AliTPCTrackerPoint *p2  = s2->GetTrackPoint(i);; 
-	if (i<firstShared) firstShared=i;
-	if (i>lastShared)  lastShared=i;
 	if (s1->IsActive()&&s2->IsActive()){
 	  p1->SetShared(kTRUE);
 	  p2->SetShared(kTRUE);
@@ -2134,17 +2107,6 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
   }
   //  
   if (sumshared>cutN0){
-    Float_t dedx1S=s1->CookdEdx(0.05,0.7, firstShared, lastShared); 
-    Float_t dedx2S=s2->CookdEdx(0.05,0.7, firstShared, lastShared); 
-    Float_t dedx1A=s1->CookdEdx(0.05,0.7, 0, 160); 
-    Float_t dedx2A=s2->CookdEdx(0.05,0.7, 0, 160); 
-    Int_t rowM= (firstShared+lastShared)/2;
-    Double_t xmid = GetXrow(rowM);
-    AliExternalTrackParam p1(*s1);
-    AliExternalTrackParam p2(*s2);
-    p2.Rotate(p1.GetAlpha());
-    p1.PropagateTo(xmid,GetBz());
-    p2.PropagateTo(xmid,GetBz());
     for (Int_t i=0;i<4;i++){
       if (s1->GetOverlapLabel(3*i)==0){
 	s1->SetOverlapLabel(3*i,  s2->GetLabel());
@@ -2161,26 +2123,6 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
 	break;
       }	
     }    
-    if (fDebugStreamer){
-      TTreeSRedirector &cstream = *fDebugStreamer;      
-      //
-      cstream<<"Shared"<<
-	"iter="<<fIteration<<
-	"shared="<<sumshared<<
-	"firstS="<<firstShared<<
-	"lastS="<<lastShared<<
-	"firstR="<<firstRow<<
-	"lastR="<<lastRow<<
-	"dedx1S="<<dedx1S<<
-	"dedx2S="<<dedx2S<<
-	"dedx1A="<<dedx1A<<
-	"dedx2A="<<dedx2A<<
-	"p0.="<<&p1<<
-	"p1.="<<&p2<<
-	"Tr0.="<<s1<<
-	"Tr1.="<<s2<<
-	"\n";
-    }
   }
 }
 
@@ -2214,7 +2156,7 @@ void  AliTPCtrackerMI::SignShared(TObjArray * arr)
     if (pt->GetRemoval()>10) continue;
     for (Int_t j=i+1; j<nseed; j++){
       AliTPCseed *pt2=(AliTPCseed*)arr->UncheckedAt(j);
-      if ((TMath::Abs(pt->GetRelativeSector()-pt2->GetRelativeSector())%18)>1) continue;
+      if (TMath::Abs(pt->GetRelativeSector()-pt2->GetRelativeSector())>1) continue;
       //      if (pt2){
       if (pt2->GetRemoval()<=10) {
 	//if ( TMath::Abs(pt->GetRelativeSector()-pt2->GetRelativeSector())>0) break;
@@ -2637,14 +2579,14 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   //PrepareForProlongation(fSeeds,1);
   PropagateForward2(fSeeds);
   RemoveUsed2(fSeeds,0.4,0.4,20);
-  FindSplitted(fSeeds); // find multi found tracks
-  //
+
   TObjArray arraySeed(fSeeds->GetEntries());
   for (Int_t i=0;i<fSeeds->GetEntries();i++) {
     arraySeed.AddAt(fSeeds->At(i),i);    
   }
   SignShared(&arraySeed);
   //  FindCurling(fSeeds, event,2); // find multi found tracks
+  FindSplitted(fSeeds, event,2); // find multi found tracks
   if (AliTPCReconstructor::StreamLevel()>2)  FindMultiMC(fSeeds, fEvent,2); // find multi found tracks
 
   Int_t ntracks=0;
@@ -2731,9 +2673,9 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
   PropagateBack(fSeeds); 
   RemoveUsed2(fSeeds,0.4,0.4,20);
   //FindCurling(fSeeds, fEvent,1);  
-  FindSplitted(fSeeds); // find multi found tracks
+  FindSplitted(fSeeds, event,1); // find multi found tracks
   if (AliTPCReconstructor::StreamLevel()>2)  FindMultiMC(fSeeds, fEvent,1); // find multi found tracks
-  SignShared(fSeeds);
+
   //
   Int_t nseed = fSeeds->GetEntriesFast();
   Int_t ntracks=0;
@@ -2827,7 +2769,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESDEvent *event, Int_t direction)
     AliESDtrack *esd=event->GetTrack(i);
     ULong_t status=esd->GetStatus();
     if (!(status&AliESDtrack::kTPCin)) continue;
-    AliTPCtrack t(*esd,fDebugStreamer);
+    AliTPCtrack t(*esd);
     t.SetNumberOfClusters(0);
     //    AliTPCseed *seed = new AliTPCseed(t,t.GetAlpha());
     AliTPCseed *seed = new AliTPCseed(t/*,t.GetAlpha()*/);
@@ -4174,7 +4116,6 @@ void  AliTPCtrackerMI::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/
   //
   //    General cuts    - for splitted tracks and for curling tracks
   //
-  return;
   const Float_t kMaxdPhi      = 0.2;  // maximal distance in phi
   //
   //    Curling tracks cuts
@@ -4323,7 +4264,8 @@ void  AliTPCtrackerMI::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/
 }
 
 
-void  AliTPCtrackerMI::FindSplitted(TObjArray * array){
+
+void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t /*iter*/){
   //
   // Find Splitted tracks and remove the one with worst quality  
   // Corresponding debug streamer to tune selections - "Splitted2"
@@ -4365,6 +4307,8 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array){
     Float_t * points = pt->GetPoints();
     if (points[3]<0.8) quality[i] =-1;
     quality[i] = (points[2]-points[0])+pt->GetNumberOfClusters();
+    //prefer high momenta tracks if overlaps
+    quality[i] *= TMath::Sqrt(TMath::Abs(pt->Pt())+0.5);
     params[i]=(*pt);
     AliTracker::PropagateTrackToBxByBz(&(params[i]),xref,pt->GetMass(),5.,kTRUE);
     AliTracker::PropagateTrackToBxByBz(&(params[i]),xref,pt->GetMass(),1.,kTRUE);
@@ -6138,7 +6082,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
   //FindCurling(fSeeds, fEvent,0);  
   if (AliTPCReconstructor::StreamLevel()>2)  FindMultiMC(fSeeds, fEvent,-1); // find multi found tracks
   RemoveUsed2(fSeeds,0.5,0.4,20);
-  FindSplitted(fSeeds); // find multi found tracks
+  FindSplitted(fSeeds, fEvent,0); // find multi found tracks
   if (AliTPCReconstructor::StreamLevel()>2)  FindMultiMC(fSeeds, fEvent,0); // find multi found tracks
 
  //  //
