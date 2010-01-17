@@ -58,7 +58,7 @@ AliAnalysisCentralCutEvtMC::~AliAnalysisCentralCutEvtMC(){
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisCentralCutEvtMC::IsSelected(TObject *obj){
+Bool_t AliAnalysisCentralCutEvtMC::IsSelected(TObject *obj, TObject * /* obj2 */){
 // Checks whether the event passes the cuts
 
     if (!obj){

@@ -32,7 +32,7 @@
 
 #include "AliStack.h"
 #include "AliMCEventHandler.h"
-#include "AliTPCpidESD.h"
+#include "AliESDpid.h"
 #include "AliGammaConversionBGHandler.h"
 
 class iostream;
@@ -54,7 +54,7 @@ AliV0Reader::AliV0Reader() :
   fESDHandler(NULL),
   fESDEvent(NULL),
   fCFManager(NULL),
-  fTPCpid(NULL),
+  fESDpid(NULL),
   fHistograms(NULL),
   fCurrentV0IndexNumber(0),
   fCurrentV0(NULL),
@@ -108,7 +108,7 @@ AliV0Reader::AliV0Reader() :
   fBGEventHandler(NULL),
   fBGEventInitialized(kFALSE)
 {
-  fTPCpid = new AliTPCpidESD;	
+  fESDpid = new AliESDpid;	
 }
 
 
@@ -121,7 +121,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fESDHandler(original.fESDHandler),
   fESDEvent(original.fESDEvent),
   fCFManager(original.fCFManager),
-  fTPCpid(original.fTPCpid),
+  fESDpid(original.fESDpid),
   fHistograms(original.fHistograms),
   fCurrentV0IndexNumber(original.fCurrentV0IndexNumber),
   fCurrentV0(original.fCurrentV0),
@@ -186,8 +186,8 @@ AliV0Reader & AliV0Reader::operator = (const AliV0Reader & /*source*/)
 }
 AliV0Reader::~AliV0Reader()
 {
-  if(fTPCpid){
-    delete fTPCpid;
+  if(fESDpid){
+    delete fESDpid;
   }
 }
 
@@ -221,7 +221,7 @@ void AliV0Reader::Initialize(){
       //print warning here
     }
     // Better parameters for MonteCarlo from A. Kalweit 2010/01/8
-    fTPCpid->SetBetheBlochParameters( 2.15898e+00/50.,
+    fESDpid->GetTPCResponse().SetBetheBlochParameters( 2.15898e+00/50.,
 				      1.75295e+01,
 				      3.40030e-09,
 				      1.96178e+00,
@@ -229,7 +229,7 @@ void AliV0Reader::Initialize(){
   }
   else{
     // Better parameters for data from A. Kalweit 2010/01/8
-    fTPCpid->SetBetheBlochParameters(0.0283086,
+    fESDpid->GetTPCResponse().SetBetheBlochParameters(0.0283086,
 				     2.63394e+01,
 				     5.04114e-11,
 				     2.12543e+00,
@@ -519,19 +519,19 @@ Bool_t AliV0Reader::UpdateV0Information(){
 
   if(fDodEdxSigmaCut == kTRUE){
 
-    if( fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
-	fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ||
-	fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
-	fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ){
+    if( fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+	fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ||
+	fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+	fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ){
       iResult=kFALSE;
       if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
 	fHistograms->FillHistogram("ESD_CutdEdxSigmaElectronLine_InvMass",GetMotherCandidateMass());
       }
     }
     if( fCurrentPositiveESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
-      if(fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-	 fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
-	 fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+      if(fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	 fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	 fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	iResult=kFALSE;
 	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
 	  fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
@@ -540,9 +540,9 @@ Bool_t AliV0Reader::UpdateV0Information(){
     }
 
     if( fCurrentNegativeESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
-      if(fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-	 fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
-	 fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+      if(fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	 fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	 fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	iResult=kFALSE;
 	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
 	  fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());

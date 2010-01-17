@@ -594,7 +594,7 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   return;
 }
 //__________________________________________________________________________________
-Bool_t AliCFTrackIsPrimaryCuts::IsSelected(TObject* obj) {
+Bool_t AliCFTrackIsPrimaryCuts::IsSelected(TObject* obj, TObject *obj2) {
   //
   // loops over decisions of single cuts and returns if the track is accepted
   //

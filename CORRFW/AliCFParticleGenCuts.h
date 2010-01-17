@@ -53,8 +53,8 @@ class AliCFParticleGenCuts : public AliCFCutBase
   AliCFParticleGenCuts           (const AliCFParticleGenCuts& c) ;
   AliCFParticleGenCuts& operator=(const AliCFParticleGenCuts& c) ;
   virtual ~AliCFParticleGenCuts() { };
-  virtual Bool_t IsSelected(TObject* obj) ;
-  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  virtual Bool_t IsSelected(TObject* obj, TObject *obj2 = 0) ;
+  //Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   virtual void   SetMCEventInfo(const TObject* mcEvent) ;
   void    SetAODMC(Bool_t flag) {fIsAODMC=flag;}
 

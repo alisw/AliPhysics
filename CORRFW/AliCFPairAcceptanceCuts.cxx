@@ -85,7 +85,7 @@ AliCFPairAcceptanceCuts& AliCFPairAcceptanceCuts::operator=(const AliCFPairAccep
 }
 
 //__________________________________________________________
-Bool_t AliCFPairAcceptanceCuts::IsSelected(TObject* obj) {
+Bool_t AliCFPairAcceptanceCuts::IsSelected(TObject* obj, TObject* /* obj2 */) {
   //
   // checks the number of track references associated to 'obj'
   // 'obj' must be an AliMCParticle

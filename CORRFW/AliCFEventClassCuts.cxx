@@ -172,7 +172,7 @@ void AliCFEventClassCuts::Initialise()
 }
 
 //____________________________________________________________________
-Bool_t AliCFEventClassCuts::IsSelected(TObject* obj) {
+Bool_t AliCFEventClassCuts::IsSelected(TObject* obj, TObject * /* obj2 */) {
   //
   //Check if the requested cuts are passed
   //

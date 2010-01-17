@@ -36,8 +36,8 @@ class AliCFEventClassCuts: public AliCFCutBase
   AliCFEventClassCuts(const AliCFEventClassCuts& c) ;
   AliCFEventClassCuts& operator=(const AliCFEventClassCuts& c) ;
   ~AliCFEventClassCuts();
-  Bool_t IsSelected(TObject* obj);
-  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  Bool_t IsSelected(TObject* obj, TObject *obj2 = 0);
+  //Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   //Association to The Trigger bits in the mask. 
   //They correspond to the PP running descriptor as in 

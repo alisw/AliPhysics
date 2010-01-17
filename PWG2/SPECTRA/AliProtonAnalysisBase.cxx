@@ -29,7 +29,7 @@
 #include <AliESDEvent.h>
 #include <AliPID.h>
 #include <AliVertexerTracks.h>
-#include <AliTPCpidESD.h>
+#include <AliESDpid.h>
 class AliLog;
 class AliESDVertex;
 
@@ -864,10 +864,10 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
       fAlephParameters[4] = 1.9479;
     }
 
-    AliTPCpidESD *fPidObject = new AliTPCpidESD(); 
-    fPidObject->SetBetheBlochParameters(fAlephParameters[0]/50.,fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+    AliESDpid *fESDpid = new AliESDpid(); 
+    fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0]/50.,fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
     
-    Double_t nsigma = TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kProton));
+    Double_t nsigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kProton));
     if(nsigma <= fNSigma) 
       return kTRUE;
   }//kSigma1 PID method

@@ -58,7 +58,7 @@ class AliAODv0;
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 //#include "AliCascadeVertexer.h"
-#include "AliTPCpidESD.h"
+#include "AliESDpid.h"
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
 
@@ -73,8 +73,8 @@ ClassImp(AliAnalysisTaskCheckCascade)
 
 //________________________________________________________________________
 AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade() 
-  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fRealData(0), fTpcPidManager(0),
-
+  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fESDpid(0),
+  fRealData(0),
     	// - Cascade part initialisation
     fListHistCascade(0),
     fHistTrackMultiplicity(0), fHistCascadeMultiplicity(0),
@@ -145,8 +145,8 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade()
 
 //________________________________________________________________________
 AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade(const char *name) 
-  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fRealData(0), fTpcPidManager(0),
-     
+  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fESDpid(0),
+  fRealData(0),
     	// - Cascade part initialisation
     fListHistCascade(0),
     fHistTrackMultiplicity(0), fHistCascadeMultiplicity(0),
@@ -615,7 +615,7 @@ if(! f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus) {
 }
 
 
-if(! fTpcPidManager){
+if(! fESDpid){
 		
   Double_t lAlephParameters[5] = {0.};
   	// Reasonable parameters extracted for p-p simulation (LHC09a4) - A.Kalweit
@@ -625,8 +625,8 @@ if(! fTpcPidManager){
 	lAlephParameters[3] = 2.30445734159456084e+00;//1.8631;
 	lAlephParameters[4] = 2.25624744086878559e+00;//1.9479;
 
-  fTpcPidManager = new AliTPCpidESD();
-  fTpcPidManager->SetBetheBlochParameters(lAlephParameters[0]/50.,
+  fESDpid = new AliESDpid();
+  fESDpid->GetTPCResponse().SetBetheBlochParameters(lAlephParameters[0]/50.,
 					  lAlephParameters[1],
 					  lAlephParameters[2],
 					  lAlephParameters[3],
@@ -1502,16 +1502,16 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	
 	// B - TPC PID : 3-sigma bands on Bethe-Bloch curve
 	// Bachelor
-	if (TMath::Abs(fTpcPidManager->GetNumberOfSigmas(bachTrackXi,AliPID::kKaon)) < 3) lIsBachelorKaonForTPC = kTRUE;
-	if (TMath::Abs(fTpcPidManager->GetNumberOfSigmas(bachTrackXi,AliPID::kPion)) < 3) lIsBachelorPionForTPC = kTRUE;
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC(bachTrackXi,AliPID::kKaon)) < 3) lIsBachelorKaonForTPC = kTRUE;
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC(bachTrackXi,AliPID::kPion)) < 3) lIsBachelorPionForTPC = kTRUE;
 	
 	// Negative V0 daughter
-	if (TMath::Abs(fTpcPidManager->GetNumberOfSigmas(nTrackXi,AliPID::kPion   )) < 3) lIsNegPionForTPC   = kTRUE;
-	if (TMath::Abs(fTpcPidManager->GetNumberOfSigmas(nTrackXi,AliPID::kProton )) < 3) lIsNegProtonForTPC = kTRUE;
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC(nTrackXi,AliPID::kPion   )) < 3) lIsNegPionForTPC   = kTRUE;
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC(nTrackXi,AliPID::kProton )) < 3) lIsNegProtonForTPC = kTRUE;
 	
 	// Positive V0 daughter
-	if (TMath::Abs(fTpcPidManager->GetNumberOfSigmas(pTrackXi,AliPID::kPion   )) < 3) lIsPosPionForTPC   = kTRUE;
-	if (TMath::Abs(fTpcPidManager->GetNumberOfSigmas(pTrackXi,AliPID::kProton )) < 3) lIsPosProtonForTPC = kTRUE;
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC(pTrackXi,AliPID::kPion   )) < 3) lIsPosPionForTPC   = kTRUE;
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC(pTrackXi,AliPID::kProton )) < 3) lIsPosProtonForTPC = kTRUE;
 	
 	
 		

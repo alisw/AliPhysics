@@ -122,7 +122,7 @@ AliCFEventGenCuts& AliCFEventGenCuts::operator=(const AliCFEventGenCuts& c)
   return *this ;
 }
 //____________________________________________________________________
-Bool_t AliCFEventGenCuts::IsSelected(TObject* obj) {
+Bool_t AliCFEventGenCuts::IsSelected(TObject* obj, TObject * /* obj2 */) {
   //
   //Check if the requested cuts are passed
   //

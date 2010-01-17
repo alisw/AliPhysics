@@ -69,8 +69,8 @@ class AliCFTrackCutPid : public AliCFCutBase
   
  
   //main 
-  virtual Bool_t IsSelected(TObject *track); 
-  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}  
+  virtual Bool_t IsSelected(TObject *track, TObject *event = 0); 
+  //Bool_t IsSelected(TList* /*list*/) {return kTRUE;}  
   //histos are added to a list
   void AddQAHistograms(TList *qalist);
   

@@ -20,7 +20,7 @@ class AliAODTrack;
 class AliAODMCParticle;
 class AliESDtrack;
 class AliMCParticle;
-class AliTOFpidESD;
+class AliESDpid;
 
 class AliHFEpidTOF : public AliHFEpidBase{
   public:
@@ -58,7 +58,7 @@ class AliHFEpidTOF : public AliHFEpidBase{
   
     AliPID        *fPID;           //! PID Object
     TList         *fQAList;        //! QA histograms
-    AliTOFpidESD  *fPIDtofESD;     //! TOF pid object
+    AliESDpid     *fESDpid;        //! ESD pid object
 
     Short_t fNsigmaTOF;            // TOF sigma band
 

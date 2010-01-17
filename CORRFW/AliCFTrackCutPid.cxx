@@ -532,7 +532,7 @@ Int_t AliCFTrackCutPid::IdentifyQA(const Double_t pid[AliPID::kSPECIES], Int_t i
   return iPart;
 }
 //___________________________________________
-Bool_t AliCFTrackCutPid::IsSelected(TObject *track){
+Bool_t AliCFTrackCutPid::IsSelected(TObject *track, TObject * /* event */){
   //
   //  method for the pid-cut selction
   //

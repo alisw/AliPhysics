@@ -32,7 +32,7 @@
 #include "AliLog.h"
 #include "AliMCParticle.h"
 #include "AliPID.h"
-#include "AliTOFpidESD.h"
+#include "AliESDpid.h"
 
 #include "AliHFEpidTOF.h"
 #include "AliHFEpidBase.h"
@@ -45,14 +45,14 @@ AliHFEpidTOF::AliHFEpidTOF(const Char_t *name):
   AliHFEpidBase(name)
   , fPID(0x0)
   , fQAList(0x0)
-  , fPIDtofESD(0x0)
+  , fESDpid(0x0)
   , fNsigmaTOF(3)
 {
   //
   // Constructor
   //
 
-  fPIDtofESD = new AliTOFpidESD();
+  fESDpid = new AliESDpid();
 
 }
 //___________________________________________________________________
@@ -60,7 +60,7 @@ AliHFEpidTOF::AliHFEpidTOF(const AliHFEpidTOF &c):
   AliHFEpidBase("")
   , fPID(0x0)
   , fQAList(0x0)
-  , fPIDtofESD(0x0)
+  , fESDpid(0x0)
   , fNsigmaTOF(3)
 {  
   // 
@@ -87,7 +87,7 @@ AliHFEpidTOF::~AliHFEpidTOF(){
   // Destructor
   //
   if(fPID) delete fPID;
-  if(fPIDtofESD) delete fPIDtofESD;
+  if(fESDpid) delete fESDpid;
   if(fQAList){
     fQAList->Delete();
     delete fQAList;
@@ -102,7 +102,7 @@ void AliHFEpidTOF::Copy(TObject &ref) const {
 
   target.fPID = fPID;          
   target.fQAList = fQAList;
-  target.fPIDtofESD = new AliTOFpidESD(*fPIDtofESD);
+  target.fESDpid = new AliESDpid(*fESDpid);
 
   AliHFEpidBase::Copy(ref);
 }
@@ -147,6 +147,8 @@ Int_t AliHFEpidTOF::MakePIDesd(AliESDtrack *track, AliMCParticle * /*mcTrack*/){
   //
   Long_t status = 0;
   status = track->GetStatus(); 
+ 
+  Float_t timeZeroTOF = 0;  // Need to get TimeZero first!
 
   if(!(status & AliESDtrack::kTOFout)) return 0;
   
@@ -204,7 +206,7 @@ Int_t AliHFEpidTOF::MakePIDesd(AliESDtrack *track, AliMCParticle * /*mcTrack*/){
   // sanity check, should not be necessary
   if(TMath::Abs(tTOFpidSum - 1) > 0.01) return 0;
 
-  Double_t nSigmas = fPIDtofESD->GetNumberOfSigmas(track, (AliPID::EParticleType)tMAXindex);
+  Double_t nSigmas = fESDpid->NumberOfSigmasTOF(track, (AliPID::EParticleType)tMAXindex,timeZeroTOF);
   if(TMath::Abs(nSigmas) > fNsigmaTOF) return 0;
 
   
@@ -227,11 +229,12 @@ Double_t AliHFEpidTOF::Likelihood(const AliESDtrack *track, Int_t species, Float
   
   //IMPORTANT: Tracks which are judged to be outliers get negative likelihoods -> unusable for combination with further detectors!
   
+  Float_t timeZeroTOF = 0; // Need to get timeZero first !
   if(!track) return -1.;
   Bool_t outlier = kTRUE;
   // Check whether distance from the respective particle line is smaller than r sigma
   for(Int_t hypo = 0; hypo < AliPID::kSPECIES; hypo++){
-    if(TMath::Abs(fPIDtofESD->GetNumberOfSigmas(track, (AliPID::EParticleType)hypo)) > rsig)
+    if(TMath::Abs(fESDpid->NumberOfSigmasTOF(track, (AliPID::EParticleType)hypo, timeZeroTOF)) > rsig)
       outlier = kTRUE;
     else {
       outlier = kFALSE;
