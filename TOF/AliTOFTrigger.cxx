@@ -536,7 +536,7 @@ void AliTOFTrigger::CreateLTMMatrixFromRaw(AliRawReader *fRawReader) {
 }
 
 //-----------------------------------------------------------------------------
-void AliTOFTrigger::GetLTMIndex(Int_t *detind, Int_t *indexLTM) {
+void AliTOFTrigger::GetLTMIndex(const Int_t * const detind, Int_t *indexLTM) {
   //
   // getting LTMmatrix indexes for current digit
   //
@@ -625,10 +625,10 @@ void AliTOFTrigger::PrintMap()
 */
 //-------------------------------------------------------------------------
 
-void AliTOFTrigger::GetMap(Bool_t **map)
+void AliTOFTrigger::GetMap(Bool_t **map) const
 {
   //
-  //
+  // Returns CTTM map
   //
 
   for(Int_t i = 0; i<kNLTM;i++)
@@ -638,7 +638,7 @@ void AliTOFTrigger::GetMap(Bool_t **map)
 }
 
 //-------------------------------------------------------------------------
-void AliTOFTrigger::GetTRDmap(Bool_t **map)
+void AliTOFTrigger::GetTRDmap(Bool_t **map) const
 {
   //
   // Retriev the bit map sent to the TRD detector
@@ -650,13 +650,13 @@ void AliTOFTrigger::GetTRDmap(Bool_t **map)
 
   for(int i = 0; i<kNLTM/2;i++)
     for(int j = 0; j<AliTOFTrigger::kNCTTMchannels;j++){
-      UInt_t TRDbit=j/3;
-      if(fCTTMmatrixFront[i][j]) map[i][TRDbit]=kTRUE;
+      UInt_t uTRDbit=j/3;
+      if(fCTTMmatrixFront[i][j]) map[i][uTRDbit]=kTRUE;
     }
   for(int i = kNLTM/2; i<kNLTM;i++)
     for(int j = 0; j<AliTOFTrigger::kNCTTMchannels;j++){
-      UInt_t TRDbit=j/3;
-      if(fCTTMmatrixBack[i][j]) map[i][TRDbit]=kTRUE;
+      UInt_t uTRDbit=j/3;
+      if(fCTTMmatrixBack[i][j]) map[i][uTRDbit]=kTRUE;
     }
 }
 
@@ -664,7 +664,7 @@ void AliTOFTrigger::GetTRDmap(Bool_t **map)
 void AliTOFTrigger::SetBit(Int_t *detind)
 {
   //
-  //
+  // Sets CTTM map element corresponding to detector element 'detind'
   //
 
   Int_t index[2];
@@ -681,7 +681,8 @@ void AliTOFTrigger::SetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
                            Int_t iTDC, Int_t iCH)
 {
   //
-  //
+  // Sets CTTM map element corresponding to equipment ID
+  // labelled by number nDDL, nTRM, iChain, iTDC, iCH
   //
 
   if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1){ // DDL number to LTM number mapping
@@ -719,7 +720,7 @@ void AliTOFTrigger::SetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
 void AliTOFTrigger::ResetBit(Int_t *detind)
 {
   //
-  //
+  // Sets CTTM map element corresponding to detector element 'detind'
   //
 
   Int_t index[2];
@@ -736,7 +737,8 @@ void AliTOFTrigger::ResetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
 			     Int_t iTDC, Int_t iCH)
 {
   //
-  //
+  // Sets CTTM map element corresponding to equipment ID
+  // labelled by number nDDL, nTRM, iChain, iTDC, iCH
   //
 
   if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1){ // DDL number to LTM number mapping
@@ -774,7 +776,7 @@ void AliTOFTrigger::ResetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
 Bool_t AliTOFTrigger::GetBit(Int_t *detind)
 {
   //
-  //
+  // Returns CTTM map element corresponding to detector element 'detind'
   //
 
   Int_t index[2];
@@ -788,7 +790,8 @@ Bool_t AliTOFTrigger::GetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
                              Int_t iTDC, Int_t iCH)
 {
   //
-  //
+  // Returns CTTM map element corresponding to equipment ID
+  // labelled by number nDDL, nTRM, iChain, iTDC, iCH
   //
 
   if ( !(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ) {
@@ -846,7 +849,7 @@ void AliTOFTrigger::CreateCTTMMatrix() {
 
 void AliTOFTrigger::GetCTTMIndex(Int_t *detind, Int_t *indexCTTM) {
   //
-  //
+  // Returns CTTM index corresponding to the detector element detind
   //
 
   GetLTMIndex(detind,indexCTTM);

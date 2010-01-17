@@ -35,9 +35,9 @@ class AliTOFTrigger : public AliTriggerDetector
   Float_t Getdeltamaxro() const {return fdeltamaxro;}
   Int_t  GetstripWindow() const {return fstripWindow;}
 
-  void GetMap(Bool_t **map);
+  void GetMap(Bool_t **map) const;
   //void PrintMap(); // to be checked because of warning problems
-  void GetTRDmap(Bool_t **map);
+  void GetTRDmap(Bool_t **map) const;
   Bool_t GetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,Int_t iTDC, Int_t iCH);
   Bool_t GetBit(Int_t *detind);
   void SetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,Int_t iTDC, Int_t iCH);
@@ -71,7 +71,7 @@ class AliTOFTrigger : public AliTriggerDetector
   };
 
   void    GetCTTMIndex(Int_t *detind, Int_t *indexCTTM);
-  void    GetLTMIndex(Int_t *detind, Int_t *LTMIndex);
+  void    GetLTMIndex(const Int_t * const detind, Int_t *LTMIndex);
   Bool_t  fLTMmatrix[kNLTM][kNLTMchannels];         //LTM matrix  
   Bool_t  fCTTMmatrixFront[kNCTTM][kNCTTMchannels];//CTTM matrix for TOP FPGA 
   Bool_t  fCTTMmatrixBack[kNCTTM][kNCTTMchannels]; //CTTM matrix for BOTTOM FPGA
