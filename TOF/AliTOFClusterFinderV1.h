@@ -63,43 +63,21 @@ class AliTOFClusterFinderV1 : public TObject
 
   void  SetMaxDeltaTime(Int_t a)   {fMaxDeltaTime = a;}; // to set deltaTime [bin number]
   void  SetMaxDeltaTime(Float_t a) {fMaxDeltaTime = (Int_t)(a/AliTOFGeometry::TdcBinWidth());}; // to set deltaTime [ps]
-  Int_t GetMaxDeltaTime()          {return fMaxDeltaTime;};
+  Int_t GetMaxDeltaTime()     const {return fMaxDeltaTime;};
 
  public:
   class AliTOFselectedDigit { 
-    friend class AliTOFClusterFinderV1; 
+    friend class AliTOFClusterFinderV1; // to define AliTOFClusterFinderV1 friend object
    public:
-   AliTOFselectedDigit() 
-     :
-     fTDC(0.),
-     fADC(0.),
-     fTOT(0.),
-     fWeight(0.),
-     fIndex(-1) {
-     fDetectorIndex[0]=-1;
-     fDetectorIndex[1]=-1;
-     fDetectorIndex[2]=-1;
-     fDetectorIndex[3]=-1;
-     fDetectorIndex[4]=-1;
-     fTrackLabel[0]=-1;
-     fTrackLabel[1]=-1;
-     fTrackLabel[2]=-1;
+   AliTOFselectedDigit() :
+     fTDC(0.),fADC(0.),fTOT(0.),fWeight(0.),fIndex(-1) {
+       for (Int_t ii=0; ii<5; ii++) fDetectorIndex[ii]=-1;
+       for (Int_t ii=0; ii<3; ii++) fTrackLabel[ii]=-1;
    };
-   AliTOFselectedDigit(Int_t *ind, Double_t h1, Double_t h2, Double_t h3, Double_t h4, Int_t idx, Int_t *l)
-     :
-     fTDC(h1),
-     fADC(h2),
-     fTOT(h3),
-     fWeight(h4),
-     fIndex(idx) {
-     fDetectorIndex[0]=ind[0];
-     fDetectorIndex[1]=ind[1];
-     fDetectorIndex[2]=ind[2];
-     fDetectorIndex[3]=ind[3];
-     fDetectorIndex[4]=ind[4];
-     fTrackLabel[0]=l[0];
-     fTrackLabel[1]=l[1];
-     fTrackLabel[2]=l[2];
+   AliTOFselectedDigit(Int_t * const ind, Double_t h1, Double_t h2, Double_t h3, Double_t h4, Int_t idx, Int_t * const l):
+     fTDC(h1),fADC(h2),fTOT(h3),fWeight(h4),fIndex(idx) {
+     for (Int_t ii=0; ii<5; ii++) fDetectorIndex[ii]=ind[ii];
+     for (Int_t ii=0; ii<5; ii++) fTrackLabel[ii]=l[ii];
    };
 
 

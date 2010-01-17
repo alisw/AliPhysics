@@ -495,9 +495,9 @@ void AliTOFClusterFinderV1::FillRecPoint()
   // i.e. fRecPoints
   //
 
-  Int_t dummy4_1 = -1;
-  Int_t dummy3_1 = -1;
-  Int_t dummy2_1 = -1;
+  Int_t dummy4 = -1;
+  Int_t dummy3 = -1;
+  Int_t dummy2 = -1;
   Int_t dummy    = -1;
 
   for(Int_t iPlate=AliTOFGeometry::NPlates()-1; iPlate>=0; iPlate--) {
@@ -513,30 +513,30 @@ void AliTOFClusterFinderV1::FillRecPoint()
 	FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 
-	dummy4_1 = fNumberOfTofClusters;
+	dummy4 = fNumberOfTofClusters;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
-	if (fNumberOfTofClusters!=dummy4_1)
-	  AliDebug(2, Form(" (4): n1= %5d, n2 = %5", dummy4_1, fNumberOfTofClusters));
+	if (fNumberOfTofClusters!=dummy4)
+	  AliDebug(2, Form(" (4): n1= %5d, n2 = %5", dummy4, fNumberOfTofClusters));
 
 
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 3); // 3 pads clusters
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 
-	dummy3_1 = fNumberOfTofClusters;
+	dummy3 = fNumberOfTofClusters;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 3); // 3 pads clusters
-	if (fNumberOfTofClusters!=dummy3_1)
-	  AliDebug(2, Form(" (3): n1= %5d, n2 = %5", dummy3_1, fNumberOfTofClusters));
+	if (fNumberOfTofClusters!=dummy3)
+	  AliDebug(2, Form(" (3): n1= %5d, n2 = %5", dummy3, fNumberOfTofClusters));
 
 
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 2); // 2 pads clusters
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 
-	dummy2_1 = fNumberOfTofClusters;
+	dummy2 = fNumberOfTofClusters;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 2); // 2 pads clusters
-	if (fNumberOfTofClusters!=dummy2_1)
-	  AliDebug(2, Form(" (2): n1= %5d, n2 =%5", dummy2_1, fNumberOfTofClusters));
+	if (fNumberOfTofClusters!=dummy2)
+	  AliDebug(2, Form(" (2): n1= %5d, n2 =%5", dummy2, fNumberOfTofClusters));
 
 
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
@@ -3623,7 +3623,8 @@ void AliTOFClusterFinderV1::AverageCalculations(Int_t number, Float_t *interesti
 						Int_t *parTOF, Double_t *posClus, Bool_t &check)
 {
   //
-  //
+  // Calculates the mean values for cluster position (x,y,z),
+  //  TOF charge and time
   //
 
   Double_t tofAverage = 0.;
