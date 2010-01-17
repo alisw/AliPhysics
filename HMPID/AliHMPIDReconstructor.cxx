@@ -20,8 +20,8 @@
 #include "AliHMPIDReconstructor.h" //class header
 #include "AliHMPID.h"              //Reconstruct() 
 #include "AliHMPIDCluster.h"       //Dig2Clu()
-#include "AliHMPIDPid.h"           //FillEsd() 
-#include "AliHMPIDParam.h"         //FillEsd() 
+//#include "AliHMPIDPid.h"           //FillEsd() 
+//#include "AliHMPIDParam.h"         //FillEsd() 
 #include <AliCDBEntry.h>           //ctor
 #include <AliCDBManager.h>         //ctor
 #include <AliESDEvent.h>           //FillEsd()
@@ -190,6 +190,7 @@ void AliHMPIDReconstructor::FillESD(TTree */*digitsTree*/, TTree */*clustersTree
 // Fill ESD with all the infos from HMPID
 // Probability vector from AliHMPIDPid
 //...
+  /*
   AliHMPIDPid pID;
   Double_t prob[AliPID::kSPECIES];
   
@@ -198,5 +199,5 @@ void AliHMPIDReconstructor::FillESD(TTree */*digitsTree*/, TTree */*clustersTree
     pID.FindPid(pTrk,AliPID::kSPECIES,prob);
     pTrk->SetHMPIDpid(prob);
   }//ESD tracks loop
-  
+  */
 }//FillESD()

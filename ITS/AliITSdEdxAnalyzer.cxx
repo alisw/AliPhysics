@@ -28,7 +28,8 @@
 #include <TDatabasePDG.h>
 #include "AliITSdEdxAnalyzer.h"
 #include "AliExternalTrackParam.h"
-#include "AliITSpidESD.h"
+//#include "AliITSpidESD.h"
+#include "AliITSPIDResponse.h"
 #include "AliPID.h"
 
 ClassImp(AliITSdEdxAnalyzer)
@@ -221,13 +222,14 @@ Int_t AliITSdEdxAnalyzer::GetPaticleIdFromTPC(const AliESDtrack* track) const {
 //______________________________________________________________________
 Double_t AliITSdEdxAnalyzer::BetheBloch(const Float_t p, const Float_t m) const {
   //
+  static AliITSPIDResponse pidResponse;
   Double_t dedxbb=0.;
   if(fBBmodel==0){
     Double_t betagamma=p/m;
     Double_t conv=fDensity*1E6*fThickness/116.24*fMIP;
     dedxbb=conv*AliExternalTrackParam::BetheBlochSolid(betagamma);
   }else if(fBBmodel==1){
-    dedxbb=fMIP*AliITSpidESD::Bethe(p,m);
+    dedxbb=pidResponse.Bethe(p,m);
   }
   return dedxbb;
 }

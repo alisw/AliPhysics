@@ -42,14 +42,12 @@ ClassImp(AliITSLoader)
 
 /**********************************************************************/
   AliITSLoader::AliITSLoader():AliLoader(),
-fITSpid(0),
 fGeom(0){
   // Default constructor
 }
 /*********************************************************************/
 AliITSLoader::AliITSLoader(const Char_t *name,const Char_t *topfoldername):
 AliLoader(name,topfoldername),
-fITSpid(0),
 fGeom(0){
   //Constructor   
     AliDataLoader* rawClustersDataLoader = new AliDataLoader(
@@ -89,7 +87,6 @@ fGeom(0){
 /**********************************************************************/
 AliITSLoader::AliITSLoader(const Char_t *name,TFolder *topfolder): 
   AliLoader(name,topfolder),
-fITSpid(0),
 fGeom(0){
   //ctor  
     AliDataLoader*  rawClustersDataLoader = new AliDataLoader(

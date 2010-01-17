@@ -28,7 +28,7 @@
 
 
 #include "AliPID.h"
-#include "AliTPCpidESD.h"
+#include "AliTPCPIDResponse.h"
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
 #include "AliESDtrack.h"
@@ -283,14 +283,10 @@ void AliAnalysisTaskSEDStar::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSEDStar::SelectTPCPID(AliAODTrack *trk, Int_t pid, Double_t nsig){//pid(0-4): {e,mu,pi,K,p}
   Bool_t flag=kTRUE;
-  const Double_t mip=50.0, Res=0.07;
   if ((trk->GetStatus()&AliESDtrack::kTPCpid )==0) return flag;
   AliAODPid *detpid = trk->GetDetPid();
-  Double_t dedx = detpid->GetTPCsignal()/mip;
-  Double_t mass = AliPID::ParticleMass(pid);
-  AliTPCpidESD tpcpid;
-  Double_t mean = tpcpid.Bethe(trk->P()/mass);
-  Double_t nsigma = (dedx-mean)/(Res*mean);
+  static AliTPCPIDResponse TPCpid;
+  Double_t nsigma = TPCpid.GetNumberOfSigmas(trk->P(),detpid->GetTPCsignal(),trk->GetTPCClusterMap().CountBits(),(AliPID::EParticleType)pid);
   if (TMath::Abs(nsigma)>nsig) flag=kFALSE;
   return flag;
 }

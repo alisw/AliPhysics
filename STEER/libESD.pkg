@@ -28,8 +28,6 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfri
        AliESDACORDE.cxx \
        AliTriggerIR.cxx \
        AliESDVZEROfriend.cxx \
-       AliTPCpidESD.cxx \
-       AliTOFpidESD.cxx \
        AliTriggerScalersESD.cxx \
        AliTriggerScalersRecordESD.cxx
 

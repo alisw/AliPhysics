@@ -29,17 +29,11 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSVertexer3DTapan.cxx \
 		AliITSMeanVertexer.cxx \
 		AliITSZPoint.cxx \
-		AliITSPid.cxx \
 		AliITSreconstruction.cxx \
 		AliITSclusterTable.cxx \
 		AliITStrackSA.cxx \
 		AliITStrackerSA.cxx \
-		AliITSpidESD.cxx \
-		AliITSpidESD1.cxx \
-		AliITSpidESD2.cxx \
 		AliITSdEdxAnalyzer.cxx \
-                AliITSPident.cxx \
-                AliITSPidParams.cxx \
 		AliITSReconstructor.cxx \
 		AliITSRecoParam.cxx \
 		AliITSBeamTestDig.cxx \

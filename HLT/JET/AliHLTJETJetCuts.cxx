@@ -69,7 +69,7 @@ AliHLTJETJetCuts::~AliHLTJETJetCuts() {
  */
 
 // #################################################################################
-Bool_t AliHLTJETJetCuts::IsSelected( TObject *obj ) {
+Bool_t AliHLTJETJetCuts::IsSelected( TObject *obj, TObject *obj2 ) {
   // see header file for class documentation
 
   Bool_t bResult = kTRUE;

@@ -33,7 +33,7 @@ class AliAODTrack;
 class AliAODMCParticle;
 class AliESDtrack;
 class AliMCParticle;
-class AliTPCpidESD;
+class AliESDpid;
 class AliVParticle;
 
 class AliHFEpidTPC : public AliHFEpidBase{
@@ -109,10 +109,10 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Float_t fRejection[4*AliPID::kSPECIES];                 // All informations for Particle Rejection, order pmin, sigmin, pmax, sigmax
     UChar_t fRejectionEnabled;                              // Bitmap for enabled particle rejection
     AliPID *fPID;                                           //! PID Object
-    AliTPCpidESD *fPIDtpcESD;                               //! TPC PID object
+    AliESDpid *fESDpid;                               //! TPC PID object
     TList *fQAList;                                         //! QA histograms
 
-  ClassDef(AliHFEpidTPC, 1)   // TPC Electron ID class
+  ClassDef(AliHFEpidTPC, 2)   // TPC Electron ID class
 };
 
 inline void AliHFEpidTPC::SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, Float_t sigmaMin, Float_t sigmaMax) { 

@@ -16,7 +16,6 @@
 class AliITSgeom;
 class AliTracker;
 class AliITStrackerMI;
-class AliITSpidESD;
 class AliITSDetTypeRec;
 
 class AliITSReconstructor: public AliReconstructor {
@@ -45,7 +44,6 @@ private:
   AliITSReconstructor& operator=(const AliITSReconstructor &); //Not implemented
 
   //data
-  AliITSpidESD           *fItsPID;      // Pid for ITS
   AliITSDetTypeRec       *fDetTypeRec;  // reconstructor
 
   ClassDef(AliITSReconstructor, 6)   // class for the ITS reconstruction

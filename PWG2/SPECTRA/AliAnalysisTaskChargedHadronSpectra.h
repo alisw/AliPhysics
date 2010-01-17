@@ -18,7 +18,7 @@ class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
 class AliHeader;
-class AliTPCpidESD;
+class AliESDpid;
 
 
 #include "AliAnalysisTaskSE.h"
@@ -51,8 +51,8 @@ class AliAnalysisTaskChargedHadronSpectra : public AliAnalysisTaskSE {
   AliESDEvent *fESD;                  //! ESD object
   TList       *fListHist;             //! list for histograms
   //
-  AliESDtrackCuts * fESDtrackCuts;    // basic cut variables
-  AliTPCpidESD    * fPidObject;       // basic TPC object for n-sigma cuts
+  AliESDtrackCuts  * fESDtrackCuts;   // basic cut variables
+  AliESDpid *     fESDpid;            // basic TPC object for n-sigma cuts
   Bool_t        fMCtrue;              // flag if real data or MC is processed
   Double_t      fAlephParameters[5];  // Aleph Parameters for Bethe-Bloch
   //
@@ -101,7 +101,7 @@ class AliAnalysisTaskChargedHadronSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskChargedHadronSpectra(const AliAnalysisTaskChargedHadronSpectra&); 
   AliAnalysisTaskChargedHadronSpectra& operator=(const AliAnalysisTaskChargedHadronSpectra&); 
 
-  ClassDef(AliAnalysisTaskChargedHadronSpectra, 1); 
+  ClassDef(AliAnalysisTaskChargedHadronSpectra, 2); 
 };
 
 #endif

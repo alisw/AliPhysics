@@ -17,7 +17,6 @@
 // --         : Chiara.Zampolli@bo.infn.it                              //
 // --         : Silvia.Arcelli@bo.infn.it                               //
 //                                                                      //
-//----------------------------------------------------------------------//
 
 #include "AliTracker.h"
 
@@ -27,11 +26,11 @@ class TH1F;
 class TH2F;
 
 class AliESDEvent;
+class AliESDpid;
 
 class AliTOFcluster;
 class AliTOFRecoParam;
 class AliTOFGeometry;
-class AliTOFpidESD;
 
 class AliTOFtracker : public AliTracker {
 
@@ -42,6 +41,7 @@ public:
  AliTOFtracker(); 
 
  virtual ~AliTOFtracker();
+ virtual void GetPidSettings(AliESDpid *esdPID);
  virtual Int_t Clusters2Tracks(AliESDEvent* /*event*/) {return -1;};
  virtual Int_t PropagateBack(AliESDEvent* event);
  virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
@@ -63,13 +63,10 @@ private:
  Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
  void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
  void  CollectESD(); // Select starting Set for Matching 
- Float_t GetTimeZerofromTOF(AliESDEvent* /*event*/) const; // T0 from TOF
- Float_t GetTimeZerofromT0(AliESDEvent* event) const; // T0 from T0
  Float_t CorrectTimeWalk(Float_t dist,Float_t tof); // Time Walk correction
 
  const AliTOFRecoParam* fRecoParam;     // Pointer to TOF Recon. Pars
  AliTOFGeometry*  fGeom;                // Pointer to TOF geometry
- AliTOFpidESD*    fPid;                 // Pointer to TOF PID
  AliTOFcluster *fClusters[kMaxCluster]; // pointers to the TOF clusters
 
  Int_t fN;              // Number of Clusters
@@ -104,7 +101,7 @@ private:
  Float_t fExpTimeKa; // exp time, Kaons
  Float_t fExpTimePr; // exp time, Protons
 
- ClassDef(AliTOFtracker, 3) // TOF tracker 
+ ClassDef(AliTOFtracker, 4) // TOF tracker 
 };
 
 #endif

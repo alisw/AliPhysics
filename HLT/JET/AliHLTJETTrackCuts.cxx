@@ -75,7 +75,7 @@ AliHLTJETTrackCuts::~AliHLTJETTrackCuts() {
  */
 
 // #################################################################################
-Bool_t AliHLTJETTrackCuts::IsSelected( TObject *obj ) {
+Bool_t AliHLTJETTrackCuts::IsSelected( TObject *obj, TObject *obj2 ) {
   // see header file for class documentation
 
   Bool_t bResult = kTRUE;

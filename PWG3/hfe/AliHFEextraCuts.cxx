@@ -115,7 +115,7 @@ AliHFEextraCuts::~AliHFEextraCuts(){
 }
 
 //______________________________________________________
-Bool_t AliHFEextraCuts::IsSelected(TObject *o){
+Bool_t AliHFEextraCuts::IsSelected(TObject *o, TObject * /* o2 */){
   //
   // Steering function for the track selection
   //

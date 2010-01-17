@@ -29,6 +29,7 @@
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliESDpid.h"
 
 #include "AliTOFRecoParam.h"
 #include "AliTOFReconstructor.h"
@@ -36,7 +37,6 @@
 #include "AliTOFGeometry.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtrack.h"
-#include "AliTOFpidESD.h"
 
 class TGeoManager;
 
@@ -48,7 +48,6 @@ ClassImp(AliTOFtrackerMI)
 AliTOFtrackerMI::AliTOFtrackerMI():
   fRecoParam(0x0),
   fGeom(0x0),
-  fPid(0x0),
   fN(0),
   fNseeds(0),
   fNseedsTOF(0),
@@ -84,7 +83,6 @@ AliTOFtrackerMI::~AliTOFtrackerMI(){
   }
   delete fRecoParam;
   delete fGeom;
-  delete fPid;
   if (fTracks){
     fTracks->Delete();
     delete fTracks;
@@ -95,6 +93,16 @@ AliTOFtrackerMI::~AliTOFtrackerMI(){
     delete fSeeds;
     fSeeds=0x0;
   }
+}
+//_____________________________________________________________________________
+void AliTOFtrackerMI::GetPidSettings(AliESDpid *esdPID) {
+  // 
+  // Sets TOF resolution from RecoParams
+  //
+  if (fRecoParam)
+    esdPID->GetTOFResponse().SetTimeResolution(fRecoParam->GetTimeResolution());
+  else
+    AliWarning("fRecoParam not yet set; cannot set PID settings");
 }
 
 //_____________________________________________________________________________
@@ -114,11 +122,6 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
   //fRecoParam->Dump();
   //if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
   //fRecoParam->PrintParameters();
-
-  Double_t parPID[2];   
-  parPID[0]=fRecoParam->GetTimeResolution();
-  parPID[1]=fRecoParam->GetTimeNSigma();
-  fPid=new AliTOFpidESD(parPID);
 
   //Initialise some counters
 
@@ -203,7 +206,6 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
 
 
   //Make TOF PID
-  fPid->MakePID(event);
 
   fSeeds->Clear();
   fTracks->Clear();

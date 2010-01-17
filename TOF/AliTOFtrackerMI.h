@@ -20,12 +20,12 @@ class TTreeSRedirector;
 class TClonesArray;
 
 class AliESDEvent;
+class AliESDpid;
 
 class AliTOFcluster;
 class AliTOFRecoParam;
 class AliTOFGeometry;
 class AliTOFtrack;
-class AliTOFpidESD;
 
 class AliTOFtrackerMI : public AliTracker {
 
@@ -37,6 +37,7 @@ public:
 
  //  virtual ~AliTOFtrackerMI() {delete fTOFpid;}
  virtual ~AliTOFtrackerMI();
+ virtual void GetPidSettings(AliESDpid *esdPID);
  virtual Int_t Clusters2Tracks(AliESDEvent* /*event*/) {return -1;};
  virtual Int_t PropagateBack(AliESDEvent* event);
  virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
@@ -63,7 +64,6 @@ private:
 
  const AliTOFRecoParam* fRecoParam;     // Pointer to TOF Recon. Pars
  AliTOFGeometry*  fGeom;                // Pointer to TOF geometry
- AliTOFpidESD*    fPid;                 // Pointer to TOF PID
  AliTOFcluster *fClusters[kMaxCluster]; // pointers to the TOF clusters
 
  Int_t fN;              // Number of Clusters
@@ -83,7 +83,7 @@ private:
  TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
  TClonesArray* fSeeds;  //! pointer to the TClonesArray with ESD tracks
  TTreeSRedirector *fDebugStreamer;     //!debug streamer
- ClassDef(AliTOFtrackerMI, 1) // TOF trackerMI 
+ ClassDef(AliTOFtrackerMI, 2) // TOF trackerMI 
 };
 
 #endif

@@ -6,7 +6,6 @@
 #include "AliTOFcalibHisto.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
-#include "AliTOFpidESD.h"
 
 ClassImp(AliTOFT0maker)
            
@@ -103,17 +102,9 @@ void AliTOFT0maker::TakeTimeRawCorrection(AliESDEvent *esd){
 }
 //____________________________________________________________________________ 
 void AliTOFT0maker::RemakeTOFpid(AliESDEvent *esd,Float_t timezero){
-  Double_t param[3];  
-  
-  param[0]=TMath::Sqrt(fT0sigma*fT0sigma + fTimeResolution*fTimeResolution);
-  param[1]=5;
-  param[2]=0.9; 
-  
-  AliTOFpidESD* pidTOF=new AliTOFpidESD(param); 
-  pidTOF->MakePID(esd,timezero); 
-  
-  AliESDpid* pidESD = new AliESDpid();
-  pidESD->MakePID(esd);
+  AliESDpid pidESD;
+  pidESD.GetTOFResponse().SetTimeResolution(TMath::Sqrt(fT0sigma*fT0sigma + fTimeResolution*fTimeResolution));
+  pidESD.MakePID(esd,kFALSE,timezero);
   
 }
 //____________________________________________________________________________ 

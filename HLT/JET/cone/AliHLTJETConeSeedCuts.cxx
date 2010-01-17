@@ -73,7 +73,7 @@ AliHLTJETConeSeedCuts::~AliHLTJETConeSeedCuts() {
  */
 
 // #################################################################################
-Bool_t AliHLTJETConeSeedCuts::IsSelected( TObject *obj ) {
+Bool_t AliHLTJETConeSeedCuts::IsSelected( TObject *obj, TObject *obj2 ) {
   // see header file for class documentation
 
   Bool_t bResult = kTRUE;

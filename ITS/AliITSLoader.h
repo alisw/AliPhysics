@@ -110,9 +110,6 @@ class AliITSLoader: public AliLoader{
     // readout from file can be forced if force=kTRUE
     AliITSgeom* GetITSgeom(Bool_t force=kFALSE); 
     void SetITSgeom(AliITSgeom* g);
-    // PID
-    AliITSpidESD* GetITSpid() const {return fITSpid;}
-    void  AdoptITSpid(AliITSpidESD* pid) {fITSpid=pid;}
   protected:
 
     AliITSLoader(const AliITSLoader &ob); // copy constructor
@@ -141,11 +138,10 @@ class AliITSLoader: public AliLoader{
     static const TString fgkDefaultVerticesContainerName;     //default for primary vertices container name
     static const TString fgkDefaultV0ContainerName;           //default for V0 container name
     static const TString fgkDefaultCascadeContainerName;      //default fo cascade container name
-    AliITSpidESD* fITSpid; //! pointer for ITS pid
     AliITSgeom *fGeom;     //! pointer to the ITS geometry class
 
 
-    ClassDef(AliITSLoader,5) // Loader for additional ITS specific trees.
+    ClassDef(AliITSLoader,6) // Loader for additional ITS specific trees.
 };
  
 #endif

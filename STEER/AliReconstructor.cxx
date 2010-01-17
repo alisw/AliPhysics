@@ -133,3 +133,13 @@ const AliDetectorRecoParam* AliReconstructor::GetRecoParam(Int_t iDet)
     return NULL;
   }
 }
+
+//_____________________________________________________________________________
+void AliReconstructor::GetPidSettings(AliESDpid *esdPID) {
+  //
+  // Function to set Pid settings in esdPID
+  // based on detector-specific AliRecoParams
+  // to be implemented by detectors separately (e.g TOF)
+  // 
+  return;
+}

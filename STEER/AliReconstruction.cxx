@@ -1606,11 +1606,14 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   // run the reconstruction over a single event
   // The event loop is steered in Run method
 
+
   static Long_t oldMres=0;
   static Long_t oldMvir=0;
   static Float_t oldCPU=0;
 
   AliCodeTimerAuto("",0);
+
+  AliESDpid PID;
 
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
     fRunLoader->SetEventNumber(iEvent);
@@ -1642,7 +1645,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
         const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
         reconstructor->SetRecoParam(par);
-        reconstructor->SetEventInfo(&fEventInfo);
+	reconstructor->GetPidSettings(&PID);
+	reconstructor->SetEventInfo(&fEventInfo);
         if (fRunQA) {
           AliQAManager::QAManager()->SetRecoParam(iDet, par) ; 
           AliQAManager::QAManager()->SetEventSpecie(AliRecoParam::Convert(par->GetEventSpecie())) ;
@@ -1745,7 +1749,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // barrel tracking
     if (!fRunTracking.IsNull()) {
-      if (!RunTracking(fesd)) {
+      if (!RunTracking(fesd,PID)) {
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
@@ -1775,7 +1779,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
  
     // combined PID
-    AliESDpid::MakePID(fesd);
+    PID.MakePID(fesd);
 
     if (fFillTriggerESD) {
       if (!FillTriggerESD(fesd)) {
@@ -2419,7 +2423,7 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
 
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
+Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
 {
 // run the barrel tracking
   static Int_t eventNr=0;
@@ -2469,7 +2473,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     // preliminary PID in TPC needed by the ITS tracker
     if (iDet == 1) {
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
-      AliESDpid::MakePID(esd);
+      PID.MakePID(esd,kTRUE);
     } 
     AliSysInfo::AddStamp(Form("Tracking0%s_%d",fgkDetectorName[iDet],eventNr), iDet,3,eventNr);
   }
@@ -2520,8 +2524,9 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     }
     // updated PID in TPC needed by the ITS tracker -MI
     if (iDet == 1) {
-      GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
-      AliESDpid::MakePID(esd);
+      //GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
+      //AliESDpid::MakePID(esd);
+      PID.MakePID(esd,kTRUE);
     }
     AliSysInfo::AddStamp(Form("Tracking1%s_%d",fgkDetectorName[iDet],eventNr), iDet,3, eventNr);
   }

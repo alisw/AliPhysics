@@ -39,7 +39,7 @@ class TChain;
 class TChain;
 class AliCFManager;   // for CF
 class AliCFContainer;  // for CF
-class AliTPCpidESD; // for dEdx cut based on nSigma to particle lines 
+class AliESDpid; // for dEdx cut based on nSigma to particle lines 
 
 
 class AliV0Reader : public TObject {
@@ -616,7 +616,7 @@ class AliV0Reader : public TObject {
   //  AliCFContainer *container;
 	
   // for dEdx cut based on nSigma to a particle line
-  AliTPCpidESD * fTPCpid; 
+  AliESDpid * fESDpid; 
 	
   AliGammaConversionHistograms *fHistograms; //! pointer to histogram handling class
 	

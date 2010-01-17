@@ -15,8 +15,8 @@ class TH1I;
 class TH2I;
 class TList;
 class AliESDtrack;
-class AliTPCpidESD;
-class AliTOFpidESD;
+class AliESDEvent;
+class AliESDpid;
 
 class AliESDpidCuts : public AliAnalysisCuts{
   enum{
@@ -35,9 +35,9 @@ class AliESDpidCuts : public AliAnalysisCuts{
     void DefineHistograms(Color_t color = kRed);
     void DrawHistograms();
     void SaveHistograms(const Char_t *location = NULL);
-    virtual Bool_t IsSelected(TObject *o);
-    virtual Bool_t IsSelected(TList *) { return kTRUE; }
-    virtual Bool_t AcceptTrack(const AliESDtrack *track);
+    virtual Bool_t IsSelected(TObject *track, TObject *event);
+    //virtual Bool_t IsSelected(TList *) { return kTRUE; }
+    virtual Bool_t AcceptTrack(const AliESDtrack *track, const AliESDEvent *event);
     
     void SetTPCclusterRatioCut(Float_t clr) { fCutTPCclusterRatio = clr; }
     inline void SetTPCnSigmaCut(AliPID::EParticleType itype, Float_t nSigma);
@@ -48,8 +48,7 @@ class AliESDpidCuts : public AliAnalysisCuts{
   
   protected:
     static const Int_t kNcuts;                      // Number of Cuts
-    AliTPCpidESD *fTPCpid;                          //! TPC PID (n-sigma cut)
-    AliTOFpidESD *fTOFpid;                          //! TOF PID (n-sigma-cut)
+    AliESDpid *fESDpid;                             //! PID helper (n-sigma-cut)
     Char_t  fTPCsigmaCutRequired;                   // Sigma cut Requirement for TPC and Particle Species
     Char_t  fTOFsigmaCutRequired;                   // Sigma cut Requirement for TOF and Particle Species
     Float_t fCutTPCnSigma[AliPID::kSPECIES * 2];    // Species dependent cut on the distance to the TPC dE/dx line
@@ -66,7 +65,7 @@ class AliESDpidCuts : public AliAnalysisCuts{
     TH1F *fHnSigmaTOF[AliPID::kSPECIES][2];      // TOF n-sigma cut
     //------------------------------------------
     
-    ClassDef(AliESDpidCuts, 1)
+    ClassDef(AliESDpidCuts, 2)
 };
 
 //_____________________________________________________________________

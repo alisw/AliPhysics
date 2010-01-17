@@ -34,8 +34,8 @@ public:
     AliAnalysisCentralCutESD(const char *name="AliAnalysisCentralCutESD", const char *title="ESD_cuts");
     virtual ~AliAnalysisCentralCutESD();
 
-    Bool_t  IsSelected(TObject* obj);
-    Bool_t  IsSelected(TList* /*list*/) {return kTRUE;}
+    Bool_t  IsSelected(TObject* obj, TObject *obj2 = 0);
+    //Bool_t  IsSelected(TList* /*list*/) {return kTRUE;}
 
     void SetPartType(PDG_t type) {fReqPID = kTRUE; fPartType = type;}
     void SetPIDtype(TString type) {fPIDtype = type;}

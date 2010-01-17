@@ -22,6 +22,7 @@ class AliESDEvent;
 class AliDetectorRecoParam;
 class AliRunInfo;
 class AliEventInfo;
+class AliESDpid;
 
 #include "AliReconstruction.h"
 
@@ -62,6 +63,7 @@ public:
 
   void                               SetRecoParam(const AliDetectorRecoParam *par);
   static const AliDetectorRecoParam* GetRecoParam(Int_t iDet);
+  virtual void                 GetPidSettings(AliESDpid *esdPID);
 
 private:
 

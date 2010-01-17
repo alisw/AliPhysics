@@ -77,9 +77,6 @@
 
 #pragma link C++ class  AliESDVZEROfriend+;
 
-#pragma link C++ class  AliTPCpidESD+;
-#pragma link C++ class  AliTOFpidESD+;
-
 #pragma link C++ class  AliTriggerScalersESD+;
 #pragma link C++ class  AliTriggerScalersRecordESD+;
 

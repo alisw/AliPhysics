@@ -56,7 +56,7 @@ public:
       @param obj AliHLTJETConeJetCandidate or AliAODJet
       @return kTRUE if selected, kFALSE otherwise
   */
-  Bool_t IsSelected( TObject* obj );
+  Bool_t IsSelected( TObject* obj, TObject *obj2= 0 );
 
   /** Select jet
       @param jet AliHLTJETConeJetCandidate jet

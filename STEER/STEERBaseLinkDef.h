@@ -76,4 +76,9 @@
 #pragma link C++ class  AliExternalTrackParam+;
 #pragma link C++ class AliQA+;
 
+#pragma link C++ class AliITSPidParams+;
+#pragma link C++ class AliITSPIDResponse+;
+#pragma link C++ class AliTPCPIDResponse+;
+#pragma link C++ class AliTOFPIDResponse+;
+
 #endif

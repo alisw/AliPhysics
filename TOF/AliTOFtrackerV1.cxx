@@ -38,6 +38,7 @@
 
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
+#include "AliESDpid.h"
 #include "AliLog.h"
 #include "AliTrackPointArray.h"
 #include "AliGeomManager.h"
@@ -49,7 +50,6 @@
 #include "AliTOFGeometry.h"
 #include "AliTOFtrackerV1.h"
 #include "AliTOFtrack.h"
-#include "AliTOFpidESD.h"
 
 extern TROOT *gROOT;
 
@@ -58,7 +58,6 @@ ClassImp(AliTOFtrackerV1)
 //_____________________________________________________________________________
 AliTOFtrackerV1::AliTOFtrackerV1():
   fRecoParam(0x0),
-  fPid(0x0),
   fN(0),
   fNseeds(0),
   fNseedsTOF(0),
@@ -96,7 +95,6 @@ AliTOFtrackerV1::~AliTOFtrackerV1() {
   if(!(AliCDBManager::Instance()->GetCacheFlag())){
     delete fRecoParam;
   }
-  delete fPid; 
   delete fHDigClusMap;
   delete fHDigNClus;
   delete fHDigClusTime;
@@ -120,6 +118,16 @@ AliTOFtrackerV1::~AliTOFtrackerV1() {
   }
 }
 //_____________________________________________________________________________
+void AliTOFtrackerV1::GetPidSettings(AliESDpid *esdPID) {
+  // 
+  // Sets TOF resolution from RecoParams
+  //
+  if (fRecoParam)
+    esdPID->GetTOFResponse().SetTimeResolution(fRecoParam->GetTimeResolution());
+  else
+    AliWarning("fRecoParam not yet set; cannot set PID settings");
+}
+//_____________________________________________________________________________
 Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
   //
   // Gets seeds from ESD event and Match with TOF Clusters
@@ -137,10 +145,10 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
   //if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
   //fRecoParam->PrintParameters();
 
-  Double_t parPID[2];   
-  parPID[0]=fRecoParam->GetTimeResolution();
-  parPID[1]=fRecoParam->GetTimeNSigma();
-  fPid=new AliTOFpidESD(parPID);
+  //Handle Time Zero information
+
+  Double_t timeZero=0.;
+  Double_t timeZeroMax=99999.;
 
   //Initialise some counters
 
@@ -286,30 +294,6 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
       }
     }
   }
-
-  //Handle Time Zero information
-
-  Double_t timeZero=0.;
-  Double_t timeZeroMax=99999.;
-  Bool_t usetimeZero     = fRecoParam->UseTimeZero();
-  Bool_t timeZeroFromT0  = fRecoParam->GetTimeZerofromT0();
-  Bool_t timeZeroFromTOF = fRecoParam->GetTimeZerofromTOF();
-
-  AliDebug(2,Form("Use Time Zero?: %d",usetimeZero));
-  AliDebug(2,Form("Time Zero from T0? : %d",timeZeroFromT0));
-  AliDebug(2,Form("Time Zero From TOF? : %d",timeZeroFromTOF));
-
-  if(usetimeZero){
-    if(timeZeroFromT0){
-      timeZero=GetTimeZerofromT0(event); 
-    }
-    if(timeZeroFromTOF && (timeZero>timeZeroMax || !timeZeroFromT0)){
-      timeZero=GetTimeZerofromTOF(event); 
-    }
-  }
-  AliDebug(2,Form("time Zero used in PID: %f",timeZero));
-  //Make TOF PID
-  fPid->MakePID(event,timeZero);
 
   fSeeds->Clear();
   fTracks->Clear();

@@ -37,7 +37,7 @@
 #include "AliLog.h"
 #include "AliMCParticle.h"
 #include "AliPID.h"
-#include "AliTPCpidESD.h"
+#include "AliESDpid.h"
 //#include "AliVParticle.h"
 
 #include "AliHFEpidTPC.h"
@@ -53,7 +53,7 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
   , fPID(NULL)
-  , fPIDtpcESD(NULL)
+  , fESDpid(NULL)
   , fQAList(NULL)
 {
   //
@@ -63,7 +63,7 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   memset(fPAsigCut, 0, sizeof(Float_t) * 2);
   memset(fNAsigmaTPC, 0, sizeof(Float_t) * 2);
   fPID = new AliPID;
-  fPIDtpcESD = new AliTPCpidESD;
+  fESDpid = new AliESDpid;
 }
 
 //___________________________________________________________________
@@ -74,7 +74,7 @@ AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   , fNsigmaTPC(2)
   , fRejectionEnabled(0)
   , fPID(NULL)
-  , fPIDtpcESD(NULL)
+  , fESDpid(NULL)
   , fQAList(NULL)
 {
   //
@@ -106,7 +106,7 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   target.fNsigmaTPC = fNsigmaTPC;
   target.fRejectionEnabled = fRejectionEnabled;
   target.fPID = new AliPID(*fPID);
-  target.fPIDtpcESD = new AliTPCpidESD(*fPIDtpcESD);
+  target.fESDpid = new AliESDpid(*fESDpid);
   target.fQAList = dynamic_cast<TList *>(fQAList->Clone());
   memcpy(target.fLineCrossingSigma, fLineCrossingSigma, sizeof(Double_t) * AliPID::kSPECIES);
   memcpy(target.fPAsigCut, fPAsigCut, sizeof(Float_t) * 2);
@@ -121,7 +121,7 @@ AliHFEpidTPC::~AliHFEpidTPC(){
   // Destructor
   //
   if(fPID) delete fPID;
-  if(fPIDtpcESD) delete fPIDtpcESD;
+  if(fESDpid) delete fESDpid;
   if(fQAList){
     fQAList->Delete();
     delete fQAList;
@@ -164,7 +164,7 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
   //  Doing TPC PID as explained in IsSelected for ESD tracks
   //
   if(IsQAon()) FillTPChistograms(esdTrack, mctrack);
-  Float_t nsigma = fPIDtpcESD->GetNumberOfSigmas(esdTrack, AliPID::kElectron);
+  Float_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack, AliPID::kElectron);
   // exclude crossing points:
   // Determine the bethe values for each particle species
   Bool_t isLineCrossing = kFALSE;
@@ -172,9 +172,9 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
   for(Int_t ispecies = 0; ispecies < AliPID::kSPECIES; ispecies++){
     if(ispecies == AliPID::kElectron) continue;
     if(!(fLineCrossingsEnabled & 1 << ispecies)) continue;
-    if(TMath::Abs(fPIDtpcESD->GetNumberOfSigmas(esdTrack, (AliPID::EParticleType)ispecies)) < fLineCrossingSigma[ispecies] && TMath::Abs(nsigma) < fNsigmaTPC){
+    if(TMath::Abs(fESDpid->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType)ispecies)) < fLineCrossingSigma[ispecies] && TMath::Abs(nsigma) < fNsigmaTPC){
       // Point in a line crossing region, no PID possible, but !PID still possible ;-)
-      isLineCrossing = kTRUE;      
+      isLineCrossing = kTRUE;
       fLineCrossingType = ispecies;
       break;
     }
@@ -218,7 +218,7 @@ Int_t AliHFEpidTPC::Reject(AliESDtrack *track){
     if(!TESTBIT(fRejectionEnabled, ispec)) continue;
     // Particle rejection enabled
     if(p < fRejection[4*ispec] || p > fRejection[4*ispec+2]) continue;
-    Double_t sigma = fPIDtpcESD->GetNumberOfSigmas(track, static_cast<AliPID::EParticleType>(ispec));
+    Double_t sigma = fESDpid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(ispec));
     if(sigma >= fRejection[4*ispec+1] && sigma <= fRejection[4*ispec+3]) return pdc[ispec] * track->Charge();
   }
   return 0;
@@ -251,7 +251,7 @@ Double_t AliHFEpidTPC::Likelihood(const AliESDtrack *track, Int_t species, Float
   Bool_t outlier = kTRUE;
   // Check whether distance from the respective particle line is smaller than r sigma
   for(Int_t hypo = 0; hypo < AliPID::kSPECIES; hypo++){
-    if(TMath::Abs(fPIDtpcESD->GetNumberOfSigmas(track, (AliPID::EParticleType)hypo)) > rsig)
+    if(TMath::Abs(fESDpid->NumberOfSigmasTPC(track, (AliPID::EParticleType)hypo)) > rsig)
       outlier = kTRUE;
     else {
 	    outlier = kFALSE;

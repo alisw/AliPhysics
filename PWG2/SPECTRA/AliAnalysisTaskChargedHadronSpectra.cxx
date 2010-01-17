@@ -48,7 +48,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
-#include "AliTPCpidESD.h"
+#include "AliESDpid.h"
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -63,7 +63,7 @@ ClassImp(AliAnalysisTaskChargedHadronSpectra)
 
 //________________________________________________________________________
 AliAnalysisTaskChargedHadronSpectra::AliAnalysisTaskChargedHadronSpectra() 
-  : AliAnalysisTaskSE("TaskChargedHadron"), fESD(0), fListHist(0), fESDtrackCuts(0),fPidObject(0),
+  : AliAnalysisTaskSE("TaskChargedHadron"), fESD(0), fListHist(0), fESDtrackCuts(0),fESDpid(0),
     fMCtrue(0),
     fAlephParameters(),
     fHistPtMCKaon(0),
@@ -101,7 +101,7 @@ AliAnalysisTaskChargedHadronSpectra::AliAnalysisTaskChargedHadronSpectra()
 
 //________________________________________________________________________
 AliAnalysisTaskChargedHadronSpectra::AliAnalysisTaskChargedHadronSpectra(const char *name) 
-  : AliAnalysisTaskSE(name), fESD(0), fListHist(0), fESDtrackCuts(0),fPidObject(0),
+  : AliAnalysisTaskSE(name), fESD(0), fListHist(0), fESDtrackCuts(0),fESDpid(0),
     fMCtrue(0),
     fAlephParameters(),
     fHistPtMCKaon(0),
@@ -144,8 +144,8 @@ AliAnalysisTaskChargedHadronSpectra::AliAnalysisTaskChargedHadronSpectra(const c
   fAlephParameters[3] = 2.30445734159456084e+00;//1.8631;
   fAlephParameters[4] = 2.25624744086878559e+00;//1.9479;
 
-  fPidObject = new AliTPCpidESD();
-  fPidObject->SetBetheBlochParameters(fAlephParameters[0]/50.,fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+  fESDpid = new AliESDpid();
+  fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0]/50.,fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
   
   // Constructor
   Printf("*** CONSTRUCTOR CALLED ****");
@@ -509,8 +509,12 @@ void AliAnalysisTaskChargedHadronSpectra::UserExec(Option_t *)
    }
    //
    /* 2sigma PID with 2sigma eff correction! */
+   Double_t tpcMom = track->GetP();
+   const AliExternalTrackParam *in = track->GetTPCInnerParam();
+   if (in)
+      tpcMom = in->GetP();
    // PION
-   if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kPion)) < 2) {
+   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kPion)) < 2) {
      fHistPtEtaPion->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
      //
      if (trackCounter < 300 && fMCtrue) {
@@ -528,7 +532,7 @@ void AliAnalysisTaskChargedHadronSpectra::UserExec(Option_t *)
        }
    }
    // KAON
-   if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kKaon)) < 2) {
+   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon)) < 2) {
      fHistPtEtaKaon->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
      //
      if (trackCounter < 300 && fMCtrue) {
@@ -545,9 +549,9 @@ void AliAnalysisTaskChargedHadronSpectra::UserExec(Option_t *)
      }
    }
    // KAON NO KINK
-   if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kKaon)) < 2 && track->GetKinkIndex(0)==0) fHistPtEtaKaonNoKink->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
+   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon)) < 2 && track->GetKinkIndex(0)==0) fHistPtEtaKaonNoKink->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
    // PROTON
-   if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kProton)) < 2) {
+   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kProton)) < 2) {
      fHistPtEtaProton->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
      //
      track->GetImpactParameters(dca,cov);
@@ -576,7 +580,7 @@ void AliAnalysisTaskChargedHadronSpectra::UserExec(Option_t *)
      }
    }
    // ELECTRON
-   if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kElectron))) fHistPtEtaElectron->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
+   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kElectron))) fHistPtEtaElectron->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
    
    delete track;
    

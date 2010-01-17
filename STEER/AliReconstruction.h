@@ -32,6 +32,7 @@ class AliVertexer;
 class AliESDVertex;
 class AliESDEvent;
 class AliESDfriend;
+class AliESDpid;
 class AliVertexerTracks;
 class TFile;
 class TTree;
@@ -178,7 +179,7 @@ private:
   Bool_t         RunHLTTracking(AliESDEvent*& esd);
   Bool_t         RunMuonTracking(AliESDEvent*& esd);
   Bool_t         RunSPDTrackleting(AliESDEvent*& esd);
-  Bool_t         RunTracking(AliESDEvent*& esd);
+  Bool_t         RunTracking(AliESDEvent*& esd, AliESDpid &PID);
   Bool_t         CleanESD(AliESDEvent *esd);
   Bool_t         FillESD(AliESDEvent*& esd, const TString& detectors);
   Bool_t         FillTriggerESD(AliESDEvent*& esd);

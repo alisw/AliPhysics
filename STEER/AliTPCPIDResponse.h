@@ -1,5 +1,5 @@
-#ifndef ALITPCpIDESD_H
-#define ALITPCpIDESD_H
+#ifndef ALITPCPIDRESPONSE_H
+#define ALITPCPIDRESPONSE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -15,44 +15,40 @@
 
 #include "AliPID.h"
 
-class AliESDEvent;
-class AliESDtrack;
-
-class AliTPCpidESD {
+class AliTPCPIDResponse {
 public:
-  AliTPCpidESD();
-  AliTPCpidESD(Double_t *param);
-  virtual ~AliTPCpidESD() {}
+  AliTPCPIDResponse();
+  AliTPCPIDResponse(Double_t *param);
+  virtual ~AliTPCPIDResponse() {}
+  void SetSigma(Float_t res0, Float_t resN2);
   void SetBetheBlochParameters(Double_t kp1,
                                Double_t kp2,
                                Double_t kp3,
                                Double_t kp4,
                                Double_t kp5
                                );
-  Int_t MakePID(AliESDEvent *event);
+  void SetMip(Float_t mip) { fMIP = mip; } // Set overall normalisation; mean dE/dx for MIP
   Double_t Bethe(Double_t bg) const;
 
-  Bool_t ExpectedSignals(const AliESDtrack *t, 
-                          Double_t s[], 
-                          Int_t n=AliPID::kSPECIES) const;
-  Bool_t ExpectedSigmas(const AliESDtrack *t, 
-                         Double_t s[],
-                         Int_t n=AliPID::kSPECIES) const;
-  Bool_t NumberOfSigmas(const AliESDtrack *t, 
-                         Double_t s[],
-                         Int_t n=AliPID::kSPECIES) const;
 
-  Double_t GetExpectedSignal(const AliESDtrack *t,
+  Double_t GetExpectedSignal(const Float_t mom,
                      AliPID::EParticleType n=AliPID::kKaon) const;
-  Double_t GetExpectedSigma(const AliESDtrack *t,
+  Double_t GetExpectedSigma(const Float_t mom, const Int_t nPoints,
                      AliPID::EParticleType n=AliPID::kKaon) const;
-  Double_t GetNumberOfSigmas(const AliESDtrack *t,
-                     AliPID::EParticleType n=AliPID::kKaon) const;
+  Float_t  GetNumberOfSigmas(const Float_t mom, const Float_t dEdx, 
+			     const Int_t nPoints,
+                     AliPID::EParticleType n=AliPID::kKaon) const {
 
+    Double_t bethe=GetExpectedSignal(mom,n);
+    Double_t sigma=GetExpectedSigma(mom,nPoints,n);
+    return (dEdx-bethe)/sigma;
+  }
+
+  Double_t GetMIP() const { return fMIP;} 
 private:
-  Double_t fMIP;          // dEdx for MIP
-  Double_t fRes;          // relative dEdx resolution
-  Double_t fRange;        // one particle type PID range (in sigmas)
+  Float_t fMIP;          // dEdx for MIP
+  Float_t fRes0;         // relative dEdx resolution  rel sigma = fRes0*sqrt(1+fResN2/npoint)
+  Float_t fResN2;        // relative Npoint dependence rel  sigma = fRes0*sqrt(1+fResN2/npoint)
 
   Double_t fKp1;   // Parameters
   Double_t fKp2;   //    of
@@ -60,7 +56,7 @@ private:
   Double_t fKp4;   // Bethe-Bloch
   Double_t fKp5;   // formula
 
-  ClassDef(AliTPCpidESD,2)   // TPC PID class
+  ClassDef(AliTPCPIDResponse,2)   // TPC PID class
 };
 
 #endif

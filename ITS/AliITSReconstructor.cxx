@@ -38,9 +38,6 @@
 #include "AliITSVertexerZ.h"
 #include "AliITSVertexerCosmics.h"
 #include "AliESDEvent.h"
-#include "AliITSpidESD.h"
-#include "AliITSpidESD1.h"
-#include "AliITSpidESD2.h"
 #include "AliITSInitGeometry.h"
 #include "AliITSTrackleterSPDEff.h"
 
@@ -49,7 +46,6 @@ ClassImp(AliITSReconstructor)
 
 //___________________________________________________________________________
 AliITSReconstructor::AliITSReconstructor() : AliReconstructor(),
-fItsPID(0),
 fDetTypeRec(0)
 {
   // Default constructor
@@ -57,7 +53,6 @@ fDetTypeRec(0)
  //___________________________________________________________________________
 AliITSReconstructor::~AliITSReconstructor(){
 // destructor
-  delete fItsPID;
   if(fDetTypeRec) delete fDetTypeRec;
 } 
 
@@ -160,6 +155,7 @@ AliTracker* AliITSReconstructor::CreateTracker() const
   Int_t pidOpt = GetRecoParam()->GetPID();
 
   AliITSReconstructor* nc = const_cast<AliITSReconstructor*>(this);
+  /*
   if(pidOpt==1){
     Info("FillESD","ITS LandauFitPID option has been selected\n");
     nc->fItsPID = new AliITSpidESD2();
@@ -169,7 +165,7 @@ AliTracker* AliITSReconstructor::CreateTracker() const
     Double_t parITS[] = {79.,0.13, 5.}; //IB: this is  "pp tuning"
     nc->fItsPID = new AliITSpidESD1(parITS);
   }
- 
+  */ 
   return tracker;
   
 }
@@ -236,6 +232,8 @@ void AliITSReconstructor::FillESD(TTree * /*digitsTree*/, TTree * /*clustersTree
 				  AliESDEvent* esd) const
 {
 // make PID, find V0s and cascade
+/* Now done in AliESDpid
   if(fItsPID!=0) fItsPID->MakePID(esd);
   else AliError("!! cannot do the PID !!");
+*/
 }

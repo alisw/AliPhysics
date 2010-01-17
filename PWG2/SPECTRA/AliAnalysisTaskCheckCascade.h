@@ -23,7 +23,7 @@ class TH3F;
 class TVector3;
 class THnSparse;
  
-class AliTPCpidESD;
+class AliESDpid;
 class AliCFContainer;
 
 
@@ -53,11 +53,10 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
  private:
   	TString 	fAnalysisType;			// "ESD" or "AOD" analysis type	
 	Short_t 	fCollidingSystems;		// 0 = pp collisions or 1 = AA collisions
+	AliESDpid*      fESDpid;		        //! Tool data member to manage the TPC Bethe-Bloch info
 	Short_t 	fRealData;			// 0 = MC data or 1 = real data (needed for trigger issues)
-	AliTPCpidESD*	fTpcPidManager;			//! Tool data member to manage the TPC Bethe-Bloch info
 	
-	
-		TList	*fListHistCascade;		//! List of Cascade histograms
+	TList	*fListHistCascade;		//! List of Cascade histograms
 	
 	// - General histos (filled for any event)
 	TH1F	*fHistTrackMultiplicity;		//! Track multiplicity distribution
