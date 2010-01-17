@@ -1008,7 +1008,7 @@ void AliTOFRawStream::SetPadX()
 Int_t AliTOFRawStream::GetField(UInt_t word, Int_t fieldMask, Int_t fieldPosition) const
 {
   // 
-  // 
+  // Returns 'word' masked by 'fieldMask' and shifted by 'fieldPosition'
   // 
 
   return ((word & fieldMask) >> fieldPosition);
@@ -1230,7 +1230,7 @@ Int_t AliTOFRawStream::Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC,
 
   if (((iDDL==1 || iDDL==2) && iPadAlongTheStrip< AliTOFGeometry::NpadX()) ||
       ((iDDL==0 || iDDL==3) && iPadAlongTheStrip>=AliTOFGeometry::NpadX())) {
-    std::cerr << "Warning -> AliTOFRawStream::Equip2VolNpad: Problems with the padX number!" << endl;
+    std::cerr << "Warning -> AliTOFRawStream::Equip2VolNpad: Problems with the padX number!\n";
     //AliWarning("Problems with the padX number!");
   }
   return iPadAlongTheStrip;
@@ -1310,8 +1310,8 @@ void AliTOFRawStream::EquipmentId2VolumeId(AliTOFHitData *hitData, Int_t *volume
 }
 //----------------------------------------------------------------------------
 void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
-					Int_t nTDC, Int_t iCH,
-					Int_t *volume)
+					   Int_t nTDC, Int_t iCH,
+					   Int_t *volume)
 {
   //
   // To convert:
@@ -2043,7 +2043,7 @@ Int_t AliTOFRawStream::Geant2Channel(Int_t vol[])
 }
 
 //____________________________________________________________________________
-void AliTOFRawStream::Raw2Digits(AliRawReader* rawReader, TClonesArray* digitsArray)
+void AliTOFRawStream::Raw2Digits(AliRawReader* rawReader, TClonesArray * const digitsArray)
 {
   //
   // Converts raw data to digits for TOF
@@ -2180,7 +2180,7 @@ void AliTOFRawStream::Raw2Digits(AliRawReader* rawReader, TClonesArray* digitsAr
 }
 
 //____________________________________________________________________________
-void AliTOFRawStream::Raw2SDigits(AliRawReader* rawReader, TClonesArray* sdigitsArray)
+void AliTOFRawStream::Raw2SDigits(AliRawReader* rawReader, TClonesArray * const sdigitsArray)
 {
   //
   // Converts raw data to sdigits for TOF
@@ -2308,58 +2308,60 @@ void AliTOFRawStream::Raw2SDigits(AliRawReader* rawReader, TClonesArray* sdigits
 
 }
 
-void AliTOFRawStream::VolumeID2LTM(Int_t * detind,Int_t *iDDL,Int_t *iTRM,
-				   Int_t *iChain, Int_t *iTDC, Int_t *iChannel){
+void AliTOFRawStream::VolumeID2LTM(Int_t detind[],
+				   Int_t iDDL,
+				   Int_t iTRM,
+				   Int_t iChain,
+				   Int_t iTDC,
+				   Int_t iChannel) const {
   //
   // To convert the TOF trigger macropad ID (i.e. detind)
   // into TOF OR signals equipment ID (i.e. iDDL, iTRM, iChain, iTDC, iChannel)
   //
 
-  const Int_t kFirstLTM_TDC = 12;
+  const Int_t kFirstTDCnumber = 12;
 
-  *iDDL=-1, *iTRM = 3 , *iChain=-1, *iTDC=-1, *iChannel=-1;
+  iDDL=-1, iTRM = 3 , iChain=-1, iTDC=-1, iChannel=-1;
   if (detind[1]==0 || detind[1]==1 || (detind[1]==2 && detind[2]<=7)) {
-    if (detind[4]<24){
-      *iDDL = detind[0]*4;
-    }
-    else {
-      *iDDL = detind[0]*4;
-    }
+    if (detind[4]<24)
+      iDDL = detind[0]*4;
+    else
+      iDDL = detind[0]*4;
   }
   else {
-    if (detind[4]<24){
-      *iDDL = detind[0]*4+2;
-    }
-    else {
-      *iDDL = detind[0]*4+2;
-    }
+    if (detind[4]<24)
+      iDDL = detind[0]*4+2;
+    else
+      iDDL = detind[0]*4+2;
   }
-      
-  *iChain=fgkChainMap24[detind[1]][detind[2]];
-  *iTDC=(Int_t)(fgkChannelMap24[detind[1]][detind[2]]/8)+kFirstLTM_TDC;
-  *iChannel=fgkChannelMap24[detind[1]][detind[2]]%8;
+
+  iChain=fgkChainMap24[detind[1]][detind[2]];
+  iTDC=(Int_t)(fgkChannelMap24[detind[1]][detind[2]]/8)+kFirstTDCnumber;
+  iChannel=fgkChannelMap24[detind[1]][detind[2]]%8;
   
 }
 
-void AliTOFRawStream::LTM2VolumeID(Int_t iDDL, Int_t iTRM,
-				   Int_t iChain, Int_t iTDC,
+void AliTOFRawStream::LTM2VolumeID(Int_t iDDL,
+				   Int_t iTRM,
+				   Int_t iChain,
+				   Int_t iTDC,
 				   Int_t iChannel,
-				   Int_t * detind0, Int_t * detind1) {
+				   Int_t detind0[], Int_t detind1[]) const {
   //
   // To convert the TOF OR signals equipment ID (i.e. iDDL, iTRM, iChain, iTDC, iChannel)
   // into TOF trigger macropad IDs (i.e. detind0 and detind1).
   // In general, a couple of neighbouring TOF semi-strip represents a TOF trigger macropad.
   //
 
+  const Int_t kFirstTDCnumber = 12;
+
   Int_t iSector0=-1, iModule0=-1, iStrip0=-1, iPadX0=-1; // Le variabili del Volume ID
   Int_t iSector1=-1, iModule1=-1, iStrip1=-1, iPadX1=-1; // Le variabili del Volume ID
 
-  const Int_t kFirstLTM_TDC = 12;
-
-  if( iDDL%2==1 && iTRM==3 && iTDC-kFirstLTM_TDC>=0 && iTDC-kFirstLTM_TDC<3 ) {
+  if( iDDL%2==1 && iTRM==3 && iTDC-kFirstTDCnumber>=0 && iTDC-kFirstTDCnumber<3 ) {
     iSector0 = (Int_t)(iDDL/4);
     iSector1 = (Int_t)(iDDL/4);
-    Int_t iChan= iChannel+(iTDC-kFirstLTM_TDC)*8;
+    Int_t iChan= iChannel+(iTDC-kFirstTDCnumber)*8;
     if(iDDL%4 == 0 || iDDL%4 == 1 ){
       if(iChain==0){      //CRATE 0
         iPadX0=0;

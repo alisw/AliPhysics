@@ -432,17 +432,17 @@ class AliTOFRawStream: public TObject {
   void SetPadZ();
   void SetPadX();
 
-  Bool_t GetBCCorrections() {return fgApplyBCCorrections;}; // getter for the BC application switch
-  Int_t GetDDLBCshift(Int_t ddl) {return fgkddlBCshift[ddl];}; // getter for the DDL BC shift
-  Int_t GetLocalEventCounterDRM() {return fLocalEventCounterDRM;}; // getter for the DRM event counter
-  Int_t GetLocalEventCounterLTM() {return fLocalEventCounterLTM;}; // getter for the LTM event counter
-  Int_t GetLocalEventCounterTRM(Int_t trm) {return fLocalEventCounterTRM[trm];}; // getter for the TRM event counter
-  Int_t GetLocalEventCounterChain(Int_t trm, Int_t chain) {return fLocalEventCounterChain[trm][chain];}; // getter for the chain event counter
-  Int_t GetChainBunchID(Int_t trm, Int_t chain) {return fChainBunchID[trm][chain];}; // getter for the chain BC ID
+  Bool_t GetBCCorrections() const {return fgApplyBCCorrections;}; // getter for the BC application switch
+  Int_t GetDDLBCshift(Int_t ddl) const {return fgkddlBCshift[ddl];}; // getter for the DDL BC shift
+  Int_t GetLocalEventCounterDRM() const {return fLocalEventCounterDRM;}; // getter for the DRM event counter
+  Int_t GetLocalEventCounterLTM() const {return fLocalEventCounterLTM;}; // getter for the LTM event counter
+  Int_t GetLocalEventCounterTRM(Int_t trm) const {return fLocalEventCounterTRM[trm];}; // getter for the TRM event counter
+  Int_t GetLocalEventCounterChain(Int_t trm, Int_t chain) const {return fLocalEventCounterChain[trm][chain];}; // getter for the chain event counter
+  Int_t GetChainBunchID(Int_t trm, Int_t chain) const {return fChainBunchID[trm][chain];}; // getter for the chain BC ID
 
 
-  void Raw2Digits(AliRawReader* rawReader, TClonesArray* digitsArray);
-  void Raw2SDigits(AliRawReader* rawReader, TClonesArray* sdigitsArray);
+  void Raw2Digits(AliRawReader* rawReader, TClonesArray * const digitsArray);
+  void Raw2SDigits(AliRawReader* rawReader, TClonesArray * const sdigitsArray);
 
   static void  EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 				    Int_t iTDC, Int_t iCH, Int_t *volume);
@@ -464,13 +464,13 @@ class AliTOFRawStream: public TObject {
 
   Bool_t DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose);
   Bool_t Decode(Int_t verbose);
-  AliTOFDecoder *GetDecoder() {return fDecoder;};
+  AliTOFDecoder *GetDecoder() const {return fDecoder;};
   void SetV2718Patch(Bool_t V2718Patch = kTRUE) {fDecoder->SetV2718Patch(V2718Patch);};
 
-  void SetRawReader(AliRawReader *rawReader) {fRawReader=rawReader;};
+  void SetRawReader(AliRawReader * const rawReader) {fRawReader=rawReader;};
 
-  AliTOFHitDataBuffer *GetDataBuffer(Int_t DDL) {return &fDataBuffer[DDL];};
-  AliTOFHitDataBuffer *GetPackedDataBuffer(Int_t DDL) {return &fPackedDataBuffer[DDL];};
+  const AliTOFHitDataBuffer * GetDataBuffer(Int_t DDL) const {return &fDataBuffer[DDL];};
+  const AliTOFHitDataBuffer * GetPackedDataBuffer(Int_t DDL) const {return &fPackedDataBuffer[DDL];};
 
   void ResetDataBuffer(Int_t DDL) {fDataBuffer[DDL].Reset();};
   void ResetPackedDataBuffer(Int_t DDL) {fPackedDataBuffer[DDL].Reset();};
@@ -481,6 +481,19 @@ class AliTOFRawStream: public TObject {
   static void ApplyBCCorrections(Bool_t Value = kTRUE) {fgApplyBCCorrections = Value;};
   
   Int_t GetEventID() const {return fEventID;}; // getter for the eventID1 (bunch crossing) in the common data header
+
+  void LTM2VolumeID(Int_t iDDL,
+		    Int_t iTRM,
+		    Int_t iChain,
+		    Int_t iTDC,
+		    Int_t iChannel,
+		    Int_t detind0[], Int_t detind1[]) const;
+  void VolumeID2LTM(Int_t detind[],
+		    Int_t iDDL = -1,
+		    Int_t iTRM = -1,
+		    Int_t iChain = -1,
+		    Int_t iTDC = -1,
+		    Int_t iChannel = -1) const;
 
   enum ETOFRawStreamError {
     kPadXError = 0,
@@ -554,34 +567,28 @@ class AliTOFRawStream: public TObject {
   static const Int_t fgkddlBCshift[72]; // DDL BC shifts
   static Bool_t fgApplyBCCorrections; // switch to choose if apply or not the BC shift corrections
 
-  static const Int_t fgkStrip0MapCrate0[];
-  static const Int_t fgkStrip1MapCrate0[];
-  static const Int_t fgkStrip0MapCrate1[];
-  static const Int_t fgkStrip1MapCrate1[];
-  static const Int_t fgkStrip0MapCrate2[];
-  static const Int_t fgkStrip1MapCrate2[];
-  static const Int_t fgkStrip0MapCrate3[];
-  static const Int_t fgkStrip1MapCrate3[];
+  static const Int_t fgkStrip0MapCrate0[];   // 1st strip number in crate 0
+  static const Int_t fgkStrip1MapCrate0[];   // 2nd strip number in crate 0
+  static const Int_t fgkStrip0MapCrate1[];   // 1st strip number in crate 1
+  static const Int_t fgkStrip1MapCrate1[];   // 2nd strip number in crate 1
+  static const Int_t fgkStrip0MapCrate2[];   // 1st strip number in crate 2
+  static const Int_t fgkStrip1MapCrate2[];   // 2nd strip number in crate 2
+  static const Int_t fgkStrip0MapCrate3[];   // 1st strip number in crate 3
+  static const Int_t fgkStrip1MapCrate3[];   // 2nd strip number in crate 3
 
-  static const Int_t fgkModule0MapCrate0[];
-  static const Int_t fgkModule1MapCrate0[];
-  static const Int_t fgkModule0MapCrate1[];
-  static const Int_t fgkModule1MapCrate1[];
-  static const Int_t fgkModule0MapCrate2[];
-  static const Int_t fgkModule1MapCrate2[];
-  static const Int_t fgkModule0MapCrate3[];
-  static const Int_t fgkModule1MapCrate3[];
+  static const Int_t fgkModule0MapCrate0[];  // 1st module number in crate 0
+  static const Int_t fgkModule1MapCrate0[];  // 2nd module number in crate 0
+  static const Int_t fgkModule0MapCrate1[];  // 1st module number in crate 1
+  static const Int_t fgkModule1MapCrate1[];  // 2nd module number in crate 1
+  static const Int_t fgkModule0MapCrate2[];  // 1st module number in crate 2
+  static const Int_t fgkModule1MapCrate2[];  // 2nd module number in crate 2
+  static const Int_t fgkModule0MapCrate3[];  // 1st module number in crate 3
+  static const Int_t fgkModule1MapCrate3[];  // 2nd module number in crate 3
 
-  static const Int_t fgkChannelMap0[5][19];
-  static const Int_t fgkChainMap0[5][19];
-  static const Int_t fgkChannelMap24[5][19];
-  static const Int_t fgkChainMap24[5][19];
-
-  void VolumeID2LTM(Int_t * detind,Int_t *iDDL,Int_t *iTRM, Int_t *iChain,
-		    Int_t *iTDC, Int_t *iChannel);
-  void LTM2VolumeID(Int_t iDDL = -1, Int_t iTRM = -1, Int_t iChain = -1,
-		    Int_t iTDC = -1, Int_t iChannel = -1,
-		    Int_t * detind0 = 0, Int_t * detind1 = 0);
+  static const Int_t fgkChannelMap0[5][19];  // mapping padX<24 <-> TDC channels
+  static const Int_t fgkChannelMap24[5][19]; // mapping padX>=24 <-> TDC channels
+  static const Int_t fgkChainMap0[5][19];    // mapping padX<24 <-> TRM chain
+  static const Int_t fgkChainMap24[5][19];   // mapping padX>=24 <-> TRM chain
 
 
   ClassDef(AliTOFRawStream, 3)  // class for reading TOF raw digits
