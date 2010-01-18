@@ -66,7 +66,7 @@ public:
   //virtual void   DrawDetectorModulesinFrame()=0;
   //virtual void   DrawDetectorStripsinFrame()=0;
           void    CreateTOFFolders();
-  Bool_t    CheckOverlap(Int_t* vol, Int_t* digit, Int_t Track);
+  Bool_t    CheckOverlap(const Int_t * const vol, Int_t* digit, Int_t Track);
   //virtual void    Hits2Digits();   
   virtual void    Hits2SDigits();
   virtual void    Hits2SDigits(Int_t evNumber1, Int_t evNumber2);
@@ -83,7 +83,7 @@ public:
   TClonesArray *ReconParticles() const {return fReconParticles;}
   void RecreateSDigitsArray();
   void CreateSDigitsArray();
-  virtual void   SetTOFSectors(Int_t *sectors);
+  virtual void   SetTOFSectors(Int_t * const sectors);
   virtual void   GetTOFSectors(Int_t *sectors) const;
   virtual void   SetTOFHoles(Bool_t holes) { fTOFHoles = holes; };
   virtual Bool_t GetTOFHoles() const { return fTOFHoles; };

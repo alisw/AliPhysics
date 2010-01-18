@@ -176,7 +176,7 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
 }
 
 //____________________________________________________________________________
-void AliTOF::SetTOFSectors(Int_t *sectors)
+void AliTOF::SetTOFSectors(Int_t * const sectors)
 {
   // Setter for partial/full TOF configuration
 
@@ -619,7 +619,8 @@ AliDigitizer* AliTOF::CreateDigitizer(AliRunDigitizer* manager) const
 }
 
 //___________________________________________________________________________
-Bool_t AliTOF::CheckOverlap(Int_t* vol, Int_t* digit,Int_t Track)
+Bool_t AliTOF::CheckOverlap(const Int_t * const vol,
+			    Int_t* digit,Int_t Track)
 {
 //
 // Checks if 2 or more hits belong to the same pad.
