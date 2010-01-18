@@ -46,7 +46,7 @@ public:
  virtual AliCluster *GetCluster(Int_t index) const
    {if (index==-1 || index >= fN) return NULL;
    return (AliCluster *) fClusters[index];};
- void    GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov, AliTOFtrack * track, Float_t & py, Float_t &pz);
+ void    GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov, AliTOFtrack * track, Float_t & py, Float_t &pz) const;
  void FillClusterArray(TObjArray* arr) const;
 
 private:
@@ -56,13 +56,13 @@ private:
 
  Int_t InsertCluster(AliTOFcluster *c); // Fills TofClusters Array
  Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
- void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
+ void  MatchTracks(Bool_t mLastStep) const; // Matching Algorithm 
  void  MatchTracksMI(Bool_t mLastStep); // Matching Algorithm 
  void  CollectESD(); // Select starting Set for Matching 
  //void  Init();
  Float_t GetLinearDistances(AliTOFtrack * track, AliTOFcluster *cluster, Float_t distances[5]);
 
- const AliTOFRecoParam* fRecoParam;     // Pointer to TOF Recon. Pars
+ const AliTOFRecoParam* fkRecoParam;    // Pointer to TOF Recon. Pars
  AliTOFGeometry*  fGeom;                // Pointer to TOF geometry
  AliTOFcluster *fClusters[kMaxCluster]; // pointers to the TOF clusters
 

@@ -46,7 +46,7 @@ ClassImp(AliTOFtrackerMI)
 
 //_____________________________________________________________________________
 AliTOFtrackerMI::AliTOFtrackerMI():
-  fRecoParam(0x0),
+  fkRecoParam(0x0),
   fGeom(0x0),
   fN(0),
   fNseeds(0),
@@ -75,13 +75,13 @@ AliTOFtrackerMI::AliTOFtrackerMI():
 //_____________________________________________________________________________
 AliTOFtrackerMI::~AliTOFtrackerMI(){
   //
-  //
+  // Destructor
   //
   if (fDebugStreamer) {    
     //fDebugStreamer->Close();
     delete fDebugStreamer;
   }
-  delete fRecoParam;
+  delete fkRecoParam;
   delete fGeom;
   if (fTracks){
     fTracks->Delete();
@@ -99,14 +99,14 @@ void AliTOFtrackerMI::GetPidSettings(AliESDpid *esdPID) {
   // 
   // Sets TOF resolution from RecoParams
   //
-  if (fRecoParam)
-    esdPID->GetTOFResponse().SetTimeResolution(fRecoParam->GetTimeResolution());
+  if (fkRecoParam)
+    esdPID->GetTOFResponse().SetTimeResolution(fkRecoParam->GetTimeResolution());
   else
-    AliWarning("fRecoParam not yet set; cannot set PID settings");
+    AliWarning("fkRecoParam not yet set; cannot set PID settings");
 }
 
 //_____________________________________________________________________________
-Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
+Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent * const event) {
   //
   // Gets seeds from ESD event and Match with TOF Clusters
   //
@@ -114,14 +114,21 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
   // initialize RecoParam for current event
   AliDebug(1,"Initializing params for TOF");
 
-  fRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
+  fkRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
 
-  if (fRecoParam == 0x0) { 
+  if (fkRecoParam == 0x0) { 
     AliFatal("No Reco Param found for TOF!!!");
   }
-  //fRecoParam->Dump();
-  //if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
-  //fRecoParam->PrintParameters();
+  //fkRecoParam->Dump();
+  //if(fkRecoParam->GetApplyPbPbCuts())fkRecoParam=fkRecoParam->GetPbPbparam();
+  //fkRecoParam->PrintParameters();
+
+  /*
+  Double_t parPID[2];   
+  parPID[0]=fkRecoParam->GetTimeResolution();
+  parPID[1]=fkRecoParam->GetTimeNSigma();
+  fPid=new AliTOFpidESD(parPID);
+  */
 
   //Initialise some counters
 
@@ -261,16 +268,8 @@ void AliTOFtrackerMI::CollectESD() {
 
 }
 
-
-
-
-
-
-
-//
-//
 //_________________________________________________________________________
-void AliTOFtrackerMI::MatchTracks( Bool_t /*mLastStep*/){
+void AliTOFtrackerMI::MatchTracks( Bool_t /*mLastStep*/) const {
   return;
 }
 //
@@ -786,7 +785,7 @@ Float_t AliTOFtrackerMI::GetLinearDistances(AliTOFtrack * track, AliTOFcluster *
 }
 
 //_________________________________________________________________________
-void    AliTOFtrackerMI::GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov, AliTOFtrack * /*track*/, Float_t & py, Float_t &pz)
+void AliTOFtrackerMI::GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov, AliTOFtrack * /*track*/, Float_t & py, Float_t &pz) const
 {
   //
   //  get likelihood - track covariance taken
