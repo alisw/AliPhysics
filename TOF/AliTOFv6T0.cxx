@@ -2503,7 +2503,8 @@ void AliTOFv6T0::StepManager()
   }
 }
 //-------------------------------------------------------------------
-void AliTOFv6T0::MaterialMixer(Float_t* p,Float_t* a,Float_t* m,Int_t n) const
+void AliTOFv6T0::MaterialMixer(Float_t * p, const Float_t * const a,
+			       const Float_t * const m, Int_t n) const
 {
   // a[] atomic weights vector      (in)
   //     (atoms present in more compound appear separately)

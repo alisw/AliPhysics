@@ -1,5 +1,5 @@
-#ifndef ALITOFv6T0_H
-#define ALITOFv6T0_H
+#ifndef ALITOFV6T0_H
+#define ALITOFV6T0_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -36,7 +36,8 @@ public:
  
  protected:
 
-  void MaterialMixer(Float_t* p,Float_t* a,Float_t* m,Int_t n) const;
+  void MaterialMixer(Float_t * p, const Float_t * const a,
+		     const Float_t * const m, Int_t n) const;
 
 private:
 
@@ -146,7 +147,7 @@ private:
   static const Float_t fgkBarS1[3]; // (cm)
   static const Float_t fgkBarS2[3]; // (cm)
 
-  ClassDef(AliTOFv6T0,0)  //Time Of Flight version 6
+  ClassDef(AliTOFv6T0,1)  //Time Of Flight version 6
 };
  
-#endif /* ALITOFv6T0_H */
+#endif /* ALITOFV6T0_H */
