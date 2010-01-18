@@ -59,7 +59,7 @@ ClassImp(AliTOFtracker)
 
 //_____________________________________________________________________________
 AliTOFtracker::AliTOFtracker():
-  fRecoParam(0x0),
+  fkRecoParam(0x0),
   fGeom(0x0),
   fN(0),
   fNseeds(0),
@@ -105,7 +105,7 @@ AliTOFtracker::~AliTOFtracker() {
   SaveCheckHists();
 
   if(!(AliCDBManager::Instance()->GetCacheFlag())){
-    delete fRecoParam;
+    delete fkRecoParam;
   }
   delete fGeom; 
   delete fHDigClusMap;
@@ -136,13 +136,13 @@ void AliTOFtracker::GetPidSettings(AliESDpid *esdPID) {
   // 
   // Sets TOF resolution from RecoParams
   //
-  if (fRecoParam)
-    esdPID->GetTOFResponse().SetTimeResolution(fRecoParam->GetTimeResolution());
+  if (fkRecoParam)
+    esdPID->GetTOFResponse().SetTimeResolution(fkRecoParam->GetTimeResolution());
   else
-    AliWarning("fRecoParam not yet set; cannot set PID settings");
+    AliWarning("fkRecoParam not yet set; cannot set PID settings");
 } 
 //_____________________________________________________________________________
-Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
+Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
   //
   // Gets seeds from ESD event and Match with TOF Clusters
   //
@@ -150,14 +150,21 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
   // initialize RecoParam for current event
   AliDebug(1,"Initializing params for TOF");
 
-  fRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
+  fkRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
 
-  if (fRecoParam == 0x0) { 
+  if (fkRecoParam == 0x0) { 
     AliFatal("No Reco Param found for TOF!!!");
   }
-  //fRecoParam->Dump();
-  //if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
-  //fRecoParam->PrintParameters();
+  //fkRecoParam->Dump();
+  //if(fkRecoParam->GetApplyPbPbCuts())fkRecoParam=fkRecoParam->GetPbPbparam();
+  //fkRecoParam->PrintParameters();
+
+  /*
+  Double_t parPID[2];   
+  parPID[0]=fkRecoParam->GetTimeResolution();
+  parPID[1]=fkRecoParam->GetTimeNSigma();
+  fPid=new AliTOFpidESD(parPID);
+  */
 
   //Initialise some counters
 
@@ -306,6 +313,28 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
     }
   }
 
+  //Handle Time Zero information
+  /*
+  Double_t timeZero=0.;
+  Double_t timeZeroMax=99999.;
+  Bool_t usetimeZero     = fkRecoParam->UseTimeZero();
+  Bool_t timeZeroFromT0  = fkRecoParam->GetTimeZerofromT0();
+  Bool_t timeZeroFromTOF = fkRecoParam->GetTimeZerofromTOF();
+
+  AliDebug(2,Form("Use Time Zero?: %d",usetimeZero));
+  AliDebug(2,Form("Time Zero from T0? : %d",timeZeroFromT0));
+  AliDebug(2,Form("Time Zero From TOF? : %d",timeZeroFromTOF));
+
+  if(usetimeZero){
+    if(timeZeroFromT0){
+      timeZero=GetTimeZerofromT0(event); 
+    }
+    if(timeZeroFromTOF && (timeZero>timeZeroMax || !timeZeroFromT0)){
+      timeZero=GetTimeZerofromTOF(event); 
+    }
+  }
+  AliDebug(2,Form("time Zero used in PID: %f",timeZero));
+  */
   //Make TOF PID
   // Now done in AliESDpid
   // fPid->MakePID(event,timeZero);
@@ -389,14 +418,14 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   Float_t dY=AliTOFGeometry::XPad(); 
   Float_t dZ=AliTOFGeometry::ZPad(); 
 
-  Float_t sensRadius = fRecoParam->GetSensRadius();
-  Float_t stepSize   = fRecoParam->GetStepSize();
-  Float_t scaleFact   = fRecoParam->GetWindowScaleFact();
-  Float_t dyMax=fRecoParam->GetWindowSizeMaxY(); 
-  Float_t dzMax=fRecoParam->GetWindowSizeMaxZ();
-  Float_t dCut=fRecoParam->GetDistanceCut();
-  Double_t maxChi2=fRecoParam->GetMaxChi2TRD();
-  Bool_t timeWalkCorr    = fRecoParam->GetTimeWalkCorr();
+  Float_t sensRadius = fkRecoParam->GetSensRadius();
+  Float_t stepSize   = fkRecoParam->GetStepSize();
+  Float_t scaleFact   = fkRecoParam->GetWindowScaleFact();
+  Float_t dyMax=fkRecoParam->GetWindowSizeMaxY(); 
+  Float_t dzMax=fkRecoParam->GetWindowSizeMaxZ();
+  Float_t dCut=fkRecoParam->GetDistanceCut();
+  Double_t maxChi2=fkRecoParam->GetMaxChi2TRD();
+  Bool_t timeWalkCorr    = fkRecoParam->GetTimeWalkCorr();
   if(!mLastStep){
     AliDebug(1,"++++++++++++++TOF Reconstruction Parameters:++++++++++++ \n");
     AliDebug(1,Form("TOF sens radius: %f",sensRadius));
@@ -1062,7 +1091,7 @@ void AliTOFtracker::SaveCheckHists() {
   dir->cd();
   }
 //_________________________________________________________________________
-Float_t AliTOFtracker::CorrectTimeWalk( Float_t dist, Float_t tof) {
+Float_t AliTOFtracker::CorrectTimeWalk( Float_t dist, Float_t tof) const {
 
   //dummy, for the moment
   Float_t tofcorr=0.;
