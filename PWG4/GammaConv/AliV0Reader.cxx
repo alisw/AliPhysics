@@ -105,6 +105,7 @@ AliV0Reader::AliV0Reader() :
   fUpdateV0AlreadyCalled(kFALSE),
   fCurrentEventGoodV0s(NULL),
 //  fPreviousEventGoodV0s(),
+  fCalculateBackground(kFALSE),
   fBGEventHandler(NULL),
   fBGEventInitialized(kFALSE)
 {
@@ -172,6 +173,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fUpdateV0AlreadyCalled(original.fUpdateV0AlreadyCalled),
   fCurrentEventGoodV0s(original.fCurrentEventGoodV0s),
   //  fPreviousEventGoodV0s(original.fPreviousEventGoodV0s),
+  fCalculateBackground(original.fCalculateBackground),
   fBGEventHandler(original.fBGEventHandler),
   fBGEventInitialized(original.fBGEventInitialized)
 {
@@ -254,28 +256,30 @@ void AliV0Reader::Initialize(){
   //  fCurrentEventGoodV0s = new TClonesArray("TClonesArray", 0);
   fCurrentEventGoodV0s = new TClonesArray("AliKFParticle", 0);
 
-  if(fBGEventInitialized == kFALSE){
-    Double_t *zBinLimitsArray = new Double_t[8];//{-7,-5,-3,-1,1,3,5,7};
-    zBinLimitsArray[0] = -7;
-    zBinLimitsArray[1] = -5;
-    zBinLimitsArray[2] = -3;
-    zBinLimitsArray[3] = -1;
-    zBinLimitsArray[4] = 1;
-    zBinLimitsArray[5] = 3;
-    zBinLimitsArray[6] = 5;
-    zBinLimitsArray[7] = 7;
-    
-    Double_t *multiplicityBinLimitsArray= new Double_t[4];//={0,10,20,500};
-    multiplicityBinLimitsArray[0] = 0;
-    multiplicityBinLimitsArray[1] = 10;
-    multiplicityBinLimitsArray[2] = 20;
-    multiplicityBinLimitsArray[3] = 500;
-    
-    
-    fBGEventHandler = new AliGammaConversionBGHandler(8,4,10);
-    
-    fBGEventHandler->Initialize(zBinLimitsArray, multiplicityBinLimitsArray);
-    fBGEventInitialized = kTRUE;
+  if(fCalculateBackground == kTRUE){
+    if(fBGEventInitialized == kFALSE){
+      Double_t *zBinLimitsArray = new Double_t[8];//{-7,-5,-3,-1,1,3,5,7};
+      zBinLimitsArray[0] = -7;
+      zBinLimitsArray[1] = -5;
+      zBinLimitsArray[2] = -3;
+      zBinLimitsArray[3] = -1;
+      zBinLimitsArray[4] = 1;
+      zBinLimitsArray[5] = 3;
+      zBinLimitsArray[6] = 5;
+      zBinLimitsArray[7] = 7;
+      
+      Double_t *multiplicityBinLimitsArray= new Double_t[4];//={0,10,20,500};
+      multiplicityBinLimitsArray[0] = 0;
+      multiplicityBinLimitsArray[1] = 10;
+      multiplicityBinLimitsArray[2] = 20;
+      multiplicityBinLimitsArray[3] = 500;
+      
+      
+      fBGEventHandler = new AliGammaConversionBGHandler(8,4,10);
+      
+      fBGEventHandler->Initialize(zBinLimitsArray, multiplicityBinLimitsArray);
+      fBGEventInitialized = kTRUE;
+    }
   }
 }
 
@@ -731,7 +735,9 @@ void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
 void AliV0Reader::UpdateEventByEventData(){
   //see header file for documentation
   if(fCurrentEventGoodV0s->GetEntriesFast() >0 ){
-    fBGEventHandler->AddEvent(fCurrentEventGoodV0s,fESDEvent->GetPrimaryVertex()->GetZ(),fESDEvent->GetNumberOfTracks());
+    if(fCalculateBackground){
+      fBGEventHandler->AddEvent(fCurrentEventGoodV0s,fESDEvent->GetPrimaryVertex()->GetZ(),fESDEvent->GetNumberOfTracks());
+    }
   }
   fCurrentEventGoodV0s->Delete();
   fCurrentV0IndexNumber=0;
@@ -1003,8 +1009,7 @@ Double_t AliV0Reader::GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Doubl
    Double_t zphaseNeg = ntrack->GetZ() +  deltaUNeg * ntrack->GetTgl();
    Double_t zphasePos = ptrack->GetZ() +  deltaUPos * ptrack->GetTgl();
 
-   Double_t convposz =
-   (zphasePos*negtrackradius+zphaseNeg*postrackradius)/(negtrackradius+postrackradius);
+   Double_t convposz = (zphasePos*negtrackradius+zphaseNeg*postrackradius)/(negtrackradius+postrackradius);
 
    return convposz;
 }

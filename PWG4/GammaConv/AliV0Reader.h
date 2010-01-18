@@ -598,8 +598,10 @@ class AliV0Reader : public TObject {
   Bool_t CheckV0FinderStatus(Int_t index);
 
   void SetOnFlyFlag(Bool_t flag){fUseOnFlyV0Finder = flag;}
+  
+  Int_t GetNBGEvents(){return fBGEventHandler->GetNBGEvents();}
 
- Int_t GetNBGEvents(){return fBGEventHandler->GetNBGEvents();}
+  void SetCalculateBackground(Bool_t flag){fCalculateBackground=flag;}
 
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
@@ -686,6 +688,7 @@ class AliV0Reader : public TObject {
   TClonesArray* fCurrentEventGoodV0s; //vector of good v0s
   //  vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
 
+  Bool_t fCalculateBackground;
   AliGammaConversionBGHandler *fBGEventHandler;
   Bool_t fBGEventInitialized;
 	
