@@ -42,7 +42,7 @@ class AliTOFDigitizer : public AliDigitizer {
   void DecalibrateTOFSignal();
   
  private:
-  void CollectSDigit(AliTOFSDigit * sdigit) ;
+  void CollectSDigit(const AliTOFSDigit * const sdigit) ;
   Int_t PutNoise(Int_t /*charge*/)const {return 0;}; // not yet
 						     // implemented
 						     // due to the low

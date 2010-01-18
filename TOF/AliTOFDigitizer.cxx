@@ -387,7 +387,7 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
 
 
 //_____________________________________________________________________________
-void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
+void AliTOFDigitizer::CollectSDigit(const AliTOFSDigit * const sdigit)
 {
   //
   // Add a TOF sdigit in container
@@ -402,7 +402,7 @@ void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
 //_____________________________________________________________________________
 void AliTOFDigitizer::InitDecalibration() const {
   //
-  //
+  // Initialize TOF digits decalibration
   //
 
   fCalib->CreateCalArrays();
