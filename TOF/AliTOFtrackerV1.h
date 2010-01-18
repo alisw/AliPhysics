@@ -63,10 +63,10 @@ private:
  void  MatchTracks(); // Matching Algorithm 
  void  CollectESD(); // Select starting Set for Matching 
  Float_t  GetTimeZerofromTOF(AliESDEvent* /*event*/) const; // T0 from TOF
- Float_t  GetTimeZerofromT0(AliESDEvent* event) const; // T0 from T0
- Float_t  CorrectTimeWalk(Float_t dist,Float_t tof); // Time Walk correction
+ Float_t  GetTimeZerofromT0(const AliESDEvent * const event) const; // T0 from T0
+ Float_t  CorrectTimeWalk(Float_t dist,Float_t tof) const; // Time Walk correction
 
- const AliTOFRecoParam* fRecoParam;     // Pointer to TOF Recon. Pars
+ const AliTOFRecoParam* fkRecoParam;    // Pointer to TOF Recon. Pars
  AliTOFcluster *fClusters[kMaxCluster]; // pointers to the TOF clusters
 
  Int_t fN;              // Number of Clusters
