@@ -102,12 +102,14 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
   if(fDebug > 1) printf("AnalysisTaskSEVertexingHF::UserCreateOutPutData() \n");
   // Support both the case when the AOD + deltaAOD are produced in an ESD
   // analysis or if the deltaAOD is produced on an analysis on AOD's. (A.G. 27/04/09)
-  if (!AODEvent()) {
-     Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
-     return;
+  if(!AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()) {
+    Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
+    return;
   }   
   TString filename = "AliAOD.VertexingHF.root";
-  if (!IsStandardAOD()) filename = "";
+  // When running on standard AOD to produce deltas, IsStandardAOD is never set,
+  // If AODEvent is NULL, new branches have to be added to the new file(s) (A.G. 15/01/10)
+  if(!IsStandardAOD() && AODEvent()) filename = "";
   if(!fVHF) {
     printf("AnalysisTaskSEVertexingHF::UserCreateOutPutData() \n ERROR! no fvHF!\n");
     return;
