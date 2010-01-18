@@ -18,7 +18,7 @@ class AliTRDCalChamberStatus : public TNamed {
  public:
 
   enum { kNdet = 540, kNstacks = 90, kNcham = 5, kNsect = 18 };
-  enum { kInstalled = 1, kMasked = 2 };
+  enum { kInstalled = 1, kMasked = 2, kHalfChamberSideAMasked = 3, kHalfChamberSideBMasked = 4};
   
   AliTRDCalChamberStatus();
   AliTRDCalChamberStatus(const Text_t* name, const Text_t* title);
@@ -28,6 +28,8 @@ class AliTRDCalChamberStatus : public TNamed {
 
   Bool_t IsInstalled(Int_t sm) const         { return (GetStatus(sm) & kInstalled) ? kTRUE : kFALSE; }
   Bool_t IsMasked(Int_t sm) const            { return (GetStatus(sm) & kMasked)    ? kTRUE : kFALSE; }
+  Bool_t IsHalfChamberSideAMasked(Int_t sm) const     { return (GetStatus(sm) & kHalfChamberSideAMasked)    ? kTRUE : kFALSE; }
+  Bool_t IsHalfChamberSideBMasked(Int_t sm) const     { return (GetStatus(sm) & kHalfChamberSideBMasked)    ? kTRUE : kFALSE; }
 
  protected:
 
