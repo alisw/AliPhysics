@@ -254,7 +254,7 @@ void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
 	
 }
 
-void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
+void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
   ConnectInputData("");

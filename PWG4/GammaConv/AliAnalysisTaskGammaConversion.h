@@ -43,7 +43,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
-  virtual void Exec(Option_t *option);
+  virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   virtual void ConnectInputData(Option_t *);
 		
