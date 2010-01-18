@@ -1772,7 +1772,7 @@ void AlidNdPtCorrection::Analyse()
 }
 
 //_____________________________________________________________________________
-TFolder* AlidNdPtCorrection::ExportToFolder(TObjArray * array) 
+TFolder* AlidNdPtCorrection::ExportToFolder(TObjArray * const array) 
 {
   // recreate folder avery time and export objects to new one
   //

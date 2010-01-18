@@ -30,6 +30,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TCanvas.h"
+#include "THnSparse.h"
 
 #include "AliHeader.h"  
 #include "AliGenEventHeader.h"  
@@ -2318,7 +2319,7 @@ void AlidNdPtAnalysis::Analyse()
 }
 
 //_____________________________________________________________________________
-TFolder* AlidNdPtAnalysis::ExportToFolder(TObjArray * array) 
+TFolder* AlidNdPtAnalysis::ExportToFolder(TObjArray * const array) 
 {
   // recreate folder avery time and export objects to new one
   //

@@ -1,5 +1,5 @@
-#ifndef ALIDEDPTCUTANALYSIS_H
-#define ALIDEDPTCUTANALYSIS_H
+#ifndef ALIDNDPTCUTANALYSIS_H
+#define ALIDNDPTCUTANALYSIS_H
 
 //------------------------------------------------------------------------------
 // AlidNdPtCutAnalysis class to determine 

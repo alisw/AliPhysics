@@ -32,13 +32,13 @@ public:
   virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0) = 0;
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* list=0) = 0;
+  virtual Long64_t Merge(TCollection* const list=0) = 0;
 
   // Analyse output histograms 
   virtual void Analyse() = 0;
 
   // Export analysed output objects to folder
-  virtual TFolder *ExportToFolder(TObjArray * array=0) = 0;
+  virtual TFolder *ExportToFolder(TObjArray * const array=0) = 0;
 
   //
   AlidNdPt(const AlidNdPt&); // not implemented

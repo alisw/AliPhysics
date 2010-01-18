@@ -649,7 +649,7 @@ void AlidNdPtCutAnalysis::Analyse()
 }
 
 //_____________________________________________________________________________
-TFolder* AlidNdPtCutAnalysis::ExportToFolder(TObjArray * array) 
+TFolder* AlidNdPtCutAnalysis::ExportToFolder(TObjArray * const array) 
 {
   // recreate folder avery time and export objects to new one
   //
