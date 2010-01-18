@@ -314,7 +314,7 @@ void AliTOFSDigitizer::InitParameters()
 }
 
 //__________________________________________________________________
-Double_t TimeWithTail(Double_t* x, Double_t* par)
+Double_t TimeWithTail(const Double_t * const x, const Double_t * const par)
 {
   // sigma - par[0], alpha - par[1], part - par[2]
   //  at x<part*sigma - gauss

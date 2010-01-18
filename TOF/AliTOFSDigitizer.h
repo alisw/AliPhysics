@@ -1,5 +1,5 @@
-#ifndef ALITOFSDigitizer_H
-#define ALITOFSDigitizer_H
+#ifndef ALITOFSDIGITIZER_H
+#define ALITOFSDIGITIZER_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -36,7 +36,7 @@ public:
   //static Float_t WidthTdcBin() {return fgkTdcBin;};
 
   virtual void  Exec(Option_t *verboseOption); 
-  void SetSDigitsFile(char * /*file*/ ) {;}
+  void SetSDigitsFile(char * /*file*/ ) const {;}
   
   void InitParameters();
   virtual void PrintParameters() const ;
@@ -176,4 +176,4 @@ private:
 
 };
 
-#endif // AliTOFSDigitizer_H
+#endif // AliTOFSDIGITIZER_H
