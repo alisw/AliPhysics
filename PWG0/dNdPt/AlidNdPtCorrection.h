@@ -49,7 +49,7 @@ public :
   virtual void Analyse();
 
   // Export objects to folder
-  virtual TFolder *ExportToFolder(TObjArray * array=0);
+  virtual TFolder *ExportToFolder(TObjArray * const array=0);
 
   // Get analysis folder
   TFolder* GetCorrectionFolder() const {return fCorrectionFolder;}
