@@ -1105,7 +1105,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
   v0Reader->SetPIDnSigmaAbovePionLine(kGCPIDnSigmaAbovePionLine);
   v0Reader->SetPIDMinPnSigmaAbovePionLine(kGCPIDMinPnSigmaAbovePionLine);
   v0Reader->SetOnFlyFlag(kGCUseOnFlyV0Finder);
-	
+  v0Reader->SetCalculateBackground(kGCcalculateBackground);
   // Create the GammaConversionTask
   AliAnalysisTaskGammaConversion *gammaconversion = new AliAnalysisTaskGammaConversion("GammaConversionTask");
   gammaconversion->SetDebugLevel(0);
