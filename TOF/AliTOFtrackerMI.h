@@ -39,7 +39,7 @@ public:
  virtual ~AliTOFtrackerMI();
  virtual void GetPidSettings(AliESDpid *esdPID);
  virtual Int_t Clusters2Tracks(AliESDEvent* /*event*/) {return -1;};
- virtual Int_t PropagateBack(AliESDEvent* event);
+ virtual Int_t PropagateBack(AliESDEvent * const event);
  virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
  virtual Int_t LoadClusters(TTree *dTree); // Loading Clusters from Digits
  virtual void  UnloadClusters();// UnLoad Clusters
