@@ -1,5 +1,5 @@
-#ifndef AliTPCcalibDButil_H
-#define AliTPCcalibDButil_H
+#ifndef AliTPCCALIBDBUTIL_H
+#define AliTPCCALIBDBUTIL_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */

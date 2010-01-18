@@ -731,7 +731,7 @@ void AliTPCcalibDButil::ProcessPulserVariations(TVectorF &pulserQdeviations, Flo
     AliTPCCalROC *mROC=fALTROMasked->GetCalROC(isec);
     AliTPCCalROC *mRefROC=fRefALTROMasked->GetCalROC(isec);
     AliTPCCalROC *oROC=fPulserOutlier->GetCalROC(isec);
-    Float_t pt_mean=ptROC->GetMean(oROC);
+    Float_t ptmean=ptROC->GetMean(oROC);
     UInt_t nrows=mROC->GetNrows();
     for (UInt_t irow=0;irow<nrows;++irow){
       UInt_t npads=mROC->GetNPads(irow);
@@ -755,7 +755,7 @@ void AliTPCcalibDButil::ProcessPulserVariations(TVectorF &pulserQdeviations, Flo
         if (pqRef>11&&pq<11) ++npadsOffAdd;
         varQMean+=pq-pqRef;
         //comparisons t
-        if (TMath::Abs(pt-pt_mean)>1) ++npadsOutOneTB;
+        if (TMath::Abs(pt-ptmean)>1) ++npadsOutOneTB;
         ++nActive;
       }//end ipad
     }//ind irow
