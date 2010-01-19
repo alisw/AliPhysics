@@ -19,7 +19,7 @@
 class AliTOFdigit : public AliDigit {
   
   //overloading of the streamer << operator
-  friend ostream& operator << ( ostream& , const AliTOFdigit&) ;
+  friend ostream& operator << (ostream &, const AliTOFdigit&) ;
 
  public:
  AliTOFdigit();

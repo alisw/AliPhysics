@@ -21,8 +21,8 @@ class AliTOFhit : public AliHit {
   
 public:
   AliTOFhit();
-  AliTOFhit(Int_t shunt, Int_t track, Int_t* vol, 
-            Float_t *hits);
+  AliTOFhit(Int_t shunt, Int_t track, Int_t * const vol, 
+            Float_t * const hits);
   AliTOFhit(const AliTOFhit & hit) ;
   virtual ~AliTOFhit() {}
        // getters for AliTOFhit object

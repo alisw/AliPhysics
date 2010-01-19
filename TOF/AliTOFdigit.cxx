@@ -220,7 +220,7 @@ if  (fSector==digit.fSector &&
 }
 
 //______________________________________________________________________________
-ostream& operator << (ostream& out, const AliTOFdigit &digit)
+ostream& operator << (ostream & out, const AliTOFdigit &digit)
 {
   //
   // Output streamer: output of the digit data

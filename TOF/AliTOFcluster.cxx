@@ -63,7 +63,9 @@ AliTOFcluster::AliTOFcluster(UShort_t volId,
    Float_t x,   Float_t y,   Float_t z,
    Float_t sx2, Float_t sxy, Float_t sxz,
                 Float_t sy2, Float_t syz,
-                             Float_t sz2, Int_t *lab, Int_t *ind, Int_t *par, Bool_t status, Int_t idx):
+                             Float_t sz2,
+			     Int_t *lab, Int_t * const ind,
+			     Int_t *par, Bool_t status, Int_t idx):
   AliCluster3D(volId,x,y,z,sx2,sxy,sxz,sy2,syz,sz2,lab),
   fIdx(idx),
   fQuality(-100), 

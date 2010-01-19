@@ -125,7 +125,7 @@ void AliTOFRawMap::Clear(const char *)
 }
 
 ////////////////////////////////////////////////////////////////////////
-Int_t AliTOFRawMap::CheckedIndex(Int_t *slot) const
+Int_t AliTOFRawMap::CheckedIndex(const Int_t * const slot) const
 {
 //
 // Return checked indices for vol

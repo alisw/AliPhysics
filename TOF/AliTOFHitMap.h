@@ -46,7 +46,7 @@ class AliTOFHitMap : public TObject
     
  private:
     // Check index
-    Int_t CheckedIndex(Int_t *vol) const;
+    Int_t CheckedIndex(Int_t * const vol) const;
  private:
     Int_t fNSector;                       // Number of sectors
     Int_t fNplate;                        // Number of plates

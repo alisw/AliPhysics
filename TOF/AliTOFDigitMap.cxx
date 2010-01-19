@@ -130,7 +130,7 @@ void AliTOFDigitMap::Clear(const Option_t*)
 }
 
 ////////////////////////////////////////////////////////////////////////
-Int_t AliTOFDigitMap::CheckedIndex(Int_t *vol) const
+Int_t AliTOFDigitMap::CheckedIndex(Int_t * const vol) const
 {
   //
   // Return checked index for vol

@@ -1146,7 +1146,7 @@ void AliTOFClusterFinder::UnLoadClusters()
 
 }
 //-------------------------------------------------------------------------
-UShort_t AliTOFClusterFinder::GetClusterVolIndex(Int_t *ind) const {
+UShort_t AliTOFClusterFinder::GetClusterVolIndex(const Int_t * const ind) const {
 
   //First of all get the volume ID to retrieve the l2t transformation...
   //

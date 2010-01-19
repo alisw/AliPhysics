@@ -54,7 +54,7 @@ AliTOFSDigit::AliTOFSDigit():
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFSDigit::AliTOFSDigit(Int_t tracknum, Int_t *vol,Int_t *digit):
+AliTOFSDigit::AliTOFSDigit(Int_t tracknum, Int_t * const vol,Int_t * const digit):
   TObject(),
   fSector(-1),
   fPlate(-1),
@@ -234,7 +234,7 @@ void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliTOFSDigit::Update(AliTOFSDigit* sdig)
+void AliTOFSDigit::Update(AliTOFSDigit * const sdig)
 {
 
   //

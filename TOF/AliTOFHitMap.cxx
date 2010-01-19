@@ -124,7 +124,7 @@ void AliTOFHitMap::Clear(const char *)
 }
 
 ////////////////////////////////////////////////////////////////////////
-Int_t AliTOFHitMap::CheckedIndex(Int_t *vol) const
+Int_t AliTOFHitMap::CheckedIndex(Int_t * const vol) const
 {
 //
 // Return checked indices for vol

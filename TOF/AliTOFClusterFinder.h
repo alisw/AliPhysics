@@ -50,7 +50,7 @@ class AliTOFClusterFinder : public TObject
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;} // To set the verbose level
   void SetDecoderVersion(Int_t version){fDecoderVersion=version;} // To set the decoder version
   Bool_t GetDecoderVersion() const {return fDecoderVersion;} // To get the decoder version
-  UShort_t  GetClusterVolIndex(Int_t *ind) const; //Volume Id getter
+  UShort_t  GetClusterVolIndex(const Int_t * const ind) const; //Volume Id getter
   void GetClusterPars(Int_t *ind, Double_t *pos, Double_t *cov) const; //cluster par getter
 
  protected:

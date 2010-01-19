@@ -23,7 +23,7 @@ class AliTOFSDigit : public TObject {
 
  public:
   AliTOFSDigit();
-  AliTOFSDigit(Int_t tracknum, Int_t* vol, Int_t* digit);
+  AliTOFSDigit(Int_t tracknum, Int_t * const vol, Int_t * const digit);
 // new ctor for sdigits
   AliTOFSDigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx, Int_t padz, Int_t tdc, Int_t adc);
 // copy ctor
@@ -34,7 +34,7 @@ class AliTOFSDigit : public TObject {
   Int_t           GetTotPad() const;
 
   void Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track);
-  void Update(AliTOFSDigit* sdig);
+  void Update(AliTOFSDigit * const sdig);
 
 // getters for AliTOFSDigit object 
   Int_t   GetNDigits() const    {return fNDigits;}

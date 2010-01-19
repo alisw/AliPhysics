@@ -45,7 +45,7 @@ class AliTOFRawMap : public TObject
     
  private:
     // Check index
-    Int_t CheckedIndex(Int_t *slot) const;
+    Int_t CheckedIndex(const Int_t * const slot) const;
  private:
     Int_t fNtrm;            // Number of TRM
     Int_t fNtrmChain;       // Number of TRM chains per TRM
