@@ -1,3 +1,26 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+/* $Id:  $ */
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//  This class contains the basic functions for the time zero              //
+//  evaluation with TOF detecyor informations.                             //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
 #include <Riostream.h>
 #include <stdlib.h>
 
@@ -10,12 +33,42 @@
 ClassImp(AliTOFT0maker)
            
 //____________________________________________________________________________ 
-  AliTOFT0maker::AliTOFT0maker(): fESDswitch(0), fTimeResolution(115),  fT0sigma(1000)
+  AliTOFT0maker::AliTOFT0maker():
+fCalib(new AliTOFcalibHisto()),
+  fESDswitch(0),
+  fTimeResolution(115),
+  fT0sigma(1000)
 {
-  fCalib = new AliTOFcalibHisto();
+  //fCalib = new AliTOFcalibHisto();
   fCalib->LoadCalibPar();
 
   if(AliPID::ParticleMass(0) == 0) new AliPID();
+}
+//____________________________________________________________________________ 
+AliTOFT0maker::AliTOFT0maker(const AliTOFT0maker & t) :
+TObject(),
+  fCalib(t.fCalib),
+  fESDswitch(t.fESDswitch),
+  fTimeResolution(t.fTimeResolution),
+  fT0sigma(t.fT0sigma)
+{
+}
+
+//____________________________________________________________________________ 
+AliTOFT0maker& AliTOFT0maker::operator=(const AliTOFT0maker &t)
+{
+ //
+  // assign. operator
+  //
+
+  if (this == &t)
+    return *this;
+  fCalib = t.fCalib;
+  fESDswitch = t.fESDswitch;
+  fTimeResolution = t.fTimeResolution;
+  fT0sigma = t.fT0sigma;
+
+  return *this;
 }
 //____________________________________________________________________________ 
 AliTOFT0maker::~AliTOFT0maker()
@@ -25,27 +78,36 @@ AliTOFT0maker::~AliTOFT0maker()
 }
 //____________________________________________________________________________ 
 Double_t* AliTOFT0maker::RemakePID(AliESDEvent *esd,Double_t t0time,Double_t t0sigma){
-  Double_t* calcolot0;
+  //
+  // Remake TOF PID probabilities
+  //
+
+  Double_t calcolot0[3];
+  Double_t *t0tof;
 
   AliTOFT0v1* t0maker=new AliTOFT0v1(esd);
   t0maker->SetCalib(fCalib);
   t0maker->SetTimeResolution(fTimeResolution*1e-12);
 
   if(! fESDswitch){
-    calcolot0=t0maker->DefineT0RawCorrection("all");
+    t0tof=t0maker->DefineT0RawCorrection("all");
     TakeTimeRawCorrection(esd);
   }
-  else calcolot0=t0maker->DefineT0("all");
+  else t0tof=t0maker->DefineT0("all");
 
-  calcolot0[0]*=-1000;
-  calcolot0[1]*=1000;
-
-  Float_t T0Current;
+  Float_t lT0Current=0.;
   fT0sigma=1000;
 
-  if(calcolot0[1] < 300){
+  Int_t nrun = esd->GetRunNumber();
+  Double_t t0fill = GetT0Fill(nrun);
+
+  calcolot0[0]=-1000*t0tof[0];
+  calcolot0[1]=1000*t0tof[1];
+  calcolot0[2] = t0fill;
+
+  if(calcolot0[1] < 150 && TMath::Abs(calcolot0[0] - t0fill) < 500){
     fT0sigma=calcolot0[1];
-    T0Current=calcolot0[0];
+    lT0Current=calcolot0[0];
   }
 
   if(t0sigma < 1000){
@@ -55,29 +117,33 @@ Double_t* AliTOFT0maker::RemakePID(AliESDEvent *esd,Double_t t0time,Double_t t0s
 
       Double_t wtot = w1+w2;
 
-      T0Current = (w1*t0time + w2*calcolot0[0]) / wtot;
+      lT0Current = (w1*t0time + w2*calcolot0[0]) / wtot;
       fT0sigma = TMath::Sqrt(1./wtot);
     }
     else{
-      T0Current=t0time;
+      lT0Current=t0time;
       fT0sigma=t0sigma;
     }
   }
 
-  Int_t nrun = esd->GetRunNumber();
-  Double_t t0fill = GetT0Fill(nrun);
-
   if(fT0sigma >= 1000){
-    T0Current = t0fill;
+    lT0Current = t0fill;
     fT0sigma = 135;
+
+    calcolot0[0] = t0fill;
+    calcolot0[1] = 150;
   }
 
-  RemakeTOFpid(esd,T0Current);
+  RemakeTOFpid(esd,lT0Current);
 
   return calcolot0;
 }
 //____________________________________________________________________________ 
-void AliTOFT0maker::TakeTimeRawCorrection(AliESDEvent *esd){
+void AliTOFT0maker::TakeTimeRawCorrection(AliESDEvent * const esd){
+  //
+  // Take raw corrections for time measurements
+  //
+
   Int_t ntracks = esd->GetNumberOfTracks();
 
   while (ntracks--) {
@@ -102,13 +168,21 @@ void AliTOFT0maker::TakeTimeRawCorrection(AliESDEvent *esd){
 }
 //____________________________________________________________________________ 
 void AliTOFT0maker::RemakeTOFpid(AliESDEvent *esd,Float_t timezero){
+  //
+  // Recalculate TOF PID probabilities
+  //
+
   AliESDpid pidESD;
   pidESD.GetTOFResponse().SetTimeResolution(TMath::Sqrt(fT0sigma*fT0sigma + fTimeResolution*fTimeResolution));
   pidESD.MakePID(esd,kFALSE,timezero);
   
 }
 //____________________________________________________________________________ 
-Double_t AliTOFT0maker::GetT0Fill(Int_t nrun){
+Double_t AliTOFT0maker::GetT0Fill(Int_t nrun) const {
+  //
+  // Return T0 of filling
+  //
+
   Double_t t0;
   if(nrun==104065) t0= 1771614;
   else if(nrun==104068) t0= 1771603;
