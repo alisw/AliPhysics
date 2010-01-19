@@ -247,9 +247,6 @@ void AliV0Reader::Initialize(){
       fDoCF = kFALSE;
     }	
   }
-
-
-
 	
   AliKFParticle::SetField(fESDEvent->GetMagneticField());
 
@@ -334,7 +331,7 @@ Bool_t AliV0Reader::NextV0(){
     
    
     //checks if on the fly mode is set
-    if ( !fCurrentV0->GetOnFlyStatus() ){
+    if ( !CheckV0FinderStatus(fCurrentV0IndexNumber) ){
       if(fHistograms != NULL){
 	fHistograms->FillHistogram("ESD_CutGetOnFly_InvMass",GetMotherCandidateMass());
       }
