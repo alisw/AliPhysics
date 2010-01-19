@@ -68,7 +68,7 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   fOutputV1Tracks(kTRUE),
   fHighLevelOutput(kFALSE),
   fEmulateHLTTracks(kFALSE),
-  fImproveTracklets(kTRUE)
+  fImproveTracklets(kFALSE)
 {
   // Default constructor
 
