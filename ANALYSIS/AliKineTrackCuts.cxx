@@ -65,7 +65,7 @@ AliKineTrackCuts::AliKineTrackCuts(const Char_t* name, const Char_t* title) :
 
 
 //____________________________________________________________________
-Bool_t  AliKineTrackCuts::IsSelected(TObject* obj)
+Bool_t  AliKineTrackCuts::IsSelected(TObject* obj, TObject * /*event*/ )
 {
 
   TParticle * part = (TParticle *)obj;

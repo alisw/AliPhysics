@@ -32,7 +32,6 @@ public:
 private:
 
   // Data members for truncated mean method
-  static Float_t fgMIP;     // dE/dx for MIP (relative units)
   Float_t fRes;             // relative dEdx resolution
   Double_t fKp1;             // ALEPH BB param 1
   Double_t fKp2;             // ALEPH BB param 2

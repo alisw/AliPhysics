@@ -24,7 +24,7 @@ public:
   AliESDv0Cuts(const Char_t* name = "AliESDv0Cuts", const Char_t* title = "");
   virtual ~AliESDv0Cuts();
 
-  Bool_t IsSelected(TObject* /*obj*/) {return kTRUE;}
+  Bool_t IsSelected(TObject* /*obj*/, TObject* /* event */ = 0) {return kTRUE;}
   Bool_t IsSelected(TList* listObj);
   Bool_t IsSelected(TObject* obj1, TObject* obj2, TObject* obj3, TObject* obj4)
   {return AcceptV0((AliESDv0*) obj1, (AliESDtrack*) obj2, (AliESDtrack*) obj3, (const AliESDVertex*) obj4);}

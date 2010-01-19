@@ -26,7 +26,6 @@
 #include "AliITSPidParams.h"
 #include "AliExternalTrackParam.h"
 
-Float_t AliITSPIDResponse::fgMIP = 82;
 ClassImp(AliITSPIDResponse)
 
 AliITSPIDResponse::AliITSPIDResponse(): 
@@ -41,7 +40,7 @@ AliITSPIDResponse::AliITSPIDResponse():
 
 //_________________________________________________________________________
 AliITSPIDResponse::AliITSPIDResponse(Double_t *param): 
-  fRes(param[1]),
+  fRes(param[0]),
   fKp1(15.77),
   fKp2(4.95),
   fKp3(0.312),
@@ -51,7 +50,6 @@ AliITSPIDResponse::AliITSPIDResponse(Double_t *param):
   //
   //  The main constructor
   //
-  fgMIP = param[0];
 }
 
 
@@ -62,7 +60,7 @@ Double_t AliITSPIDResponse::Bethe(Double_t p,Double_t mass) const {
   //
   Double_t bb=
     AliExternalTrackParam::BetheBlochAleph(p/mass,fKp1,fKp2,fKp3,fKp4,fKp5);
-  return bb*fgMIP;
+  return bb;
 }
 
 Double_t AliITSPIDResponse::GetResolution(Double_t bethe) const {

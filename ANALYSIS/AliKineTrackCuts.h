@@ -16,7 +16,7 @@ public:
                       AliKineTrackCuts(const Char_t* name = "AliKineTrackCuts", const Char_t* title = "");
   virtual            ~AliKineTrackCuts(){;}
   
-              Bool_t  IsSelected(TObject* obj);
+              Bool_t  IsSelected(TObject* obj, TObject * /*event */ = 0);
 	      Bool_t  IsSelected(TList* /*list*/) {return kTRUE;}
             
               void    SetFinalParticles( Bool_t val=kTRUE )          { fOnlyFinalParticles = val; }

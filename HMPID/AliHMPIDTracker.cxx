@@ -282,13 +282,11 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 
     if(pTrk->GetHMPIDsignal()<0) continue;
         
-    /* Probabilies are set in AliReconstruction/AliPIDesd
     AliHMPIDPid pID;
     Double_t prob[5];
     pID.FindPid(pTrk,5,prob);
     pTrk->SetHMPIDpid(prob);
 //      Printf(" Prob e- %6.2f mu %6.2f pi %6.2f k %6.2f p %6.2f",prob[0]*100,prob[1]*100,prob[2]*100,prob[3]*100,prob[4]*100);
-    */
     delete hmpTrk;hmpTrk=0x0;
   }//iTrk
 
@@ -388,14 +386,12 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArr
       }
     }
     //
-    /*
     if(!reconHTA.CkovHiddenTrk(pTrk,(TClonesArray *)pClus->At(ipCh),indMip,nmean)) {                 //search for track parameters and Cerenkov angle of this track
       AliHMPIDPid pID;
       Double_t prob[5];
       pID.FindPid(pTrk,5,prob);
       pTrk->SetHMPIDpid(prob);
     }
-    */
 //      Printf(" Prob e- %6.2f mu %6.2f pi %6.2f k %6.2f p %6.2f",prob[0]*100,prob[1]*100,prob[2]*100,prob[3]*100,prob[4]*100);
   }//iTrk
 
