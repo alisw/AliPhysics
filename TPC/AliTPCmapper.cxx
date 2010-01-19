@@ -149,7 +149,7 @@ void AliTPCmapper::Init(const char *dirname)
   fNrcu     = 6;
   fNbranch  = 2;
   fNaltro   = 8;
-  fNchannel = 15;
+  fNchannel = 16;
 
   // Load and read mapping files. AliTPCAltroMapping contains the mapping for
   // each patch (rcu).
@@ -170,7 +170,7 @@ void AliTPCmapper::Init(const char *dirname)
     fMapping[i] = new AliTPCAltroMapping(path2.Data());
   }
 
-  // Create instance of AliTPCROC object
+  // Get instance of AliTPCROC object
   AliTPCROC *fROC = AliTPCROC::Instance();
   fNpadrowIROC = fROC->GetNRows(0);
   fNpadrowOROC = fROC->GetNRows(36);
@@ -232,7 +232,7 @@ Int_t AliTPCmapper::GetPatch(Int_t roc, Int_t padrow, Int_t pad) const
   }
 
   if ( roc < 36 ) {
-    // IROC (0 ... 35)
+    // IROC (ROCs 0 ... 35)
     Int_t padsInRow = GetNpads(padrow);
     if ( (padsInRow < 0) || (pad >= padsInRow) ) {
       AliWarning(Form("Pad index outside range (padrow %d, pad %d, roc %d) !", padrow, pad, roc));
@@ -248,7 +248,7 @@ Int_t AliTPCmapper::GetPatch(Int_t roc, Int_t padrow, Int_t pad) const
       return -1;
     }
   } else if ( roc < 72 ) {
-    // OROC (36 ... 71)
+    // OROC (ROCs 36 ... 71)
     Int_t padsInRow = GetNpads(fNpadrowIROC+padrow);
     if ( (padsInRow < 0) || (pad >= padsInRow) ) {
       AliWarning(Form("Pad index outside range (padrow %d, pad %d, roc %d) !", padrow, pad, roc));
@@ -898,13 +898,20 @@ Int_t AliTPCmapper::GetSectorFromEquipmentID(Int_t equipmentID) const
 {
   // Get sector index (0 ... 17) from equipment ID
   Int_t retval = 0;
-
-  if ( (equipmentID < fTpcDdlOffset) || (equipmentID > 983) ) {
+  if ( (equipmentID < fTpcDdlOffset) || (equipmentID >= fTpcDdlOffset+216) ) {
     AliWarning(Form("Equipment ID (%d) outside range !", equipmentID));
     return -1;
   }
-  if ( (equipmentID - 840) < 0 ) retval = (equipmentID-768)/2;
-  else                           retval = (equipmentID-840)/4;
+  Int_t side   = GetSideFromEquipmentID(equipmentID);
+  if ( side < 0 ) return -1;
+
+  if ( (equipmentID - 840) < 0 ) { // IROC
+    if ( side == 0 ) retval = (equipmentID-fTpcDdlOffset)/2;
+    else             retval = (equipmentID-fTpcDdlOffset-18*2)/2;
+  } else {                         // OROC
+    if ( side == 0 ) retval = (equipmentID-840)/4;
+    else             retval = (equipmentID-840-18*4)/4;
+  }
   return retval;
 }
 
@@ -992,8 +999,8 @@ Int_t AliTPCmapper::GetRocFromPatch(Int_t side, Int_t sector, Int_t patch) const
     if ( patch < 2 ) return sector;         // IROC
     else             return 36+sector;      // OROC
   } else {           // C side
-    if ( patch < 2 ) return 18+(17-sector); // IROC
-    else             return 54+(17-sector); // OROC
+    if ( patch < 2 ) return 18+sector;      // IROC
+    else             return 54+sector;      // OROC
   }
 }
 
