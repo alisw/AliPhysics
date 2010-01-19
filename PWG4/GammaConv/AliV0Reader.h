@@ -54,19 +54,19 @@ class AliV0Reader : public TObject {
     kStepLikeSign = 2,
     kStepTPCRefit = 3,
     kStepKinks = 4,
-    kStepGetOnFly = 5,
-    kStepNContributors = 6,
-    kStepTPCPID = 7,
-    kStepR = 8,
-    kStepLine = 9,
-    kStepZ = 10,
-    kStepNDF = 11,
-    kStepChi2 = 12,
-    kStepEta = 13,
-    kStepPt = 14
+    kStepdEdx = 5,
+    kStepGetOnFly = 6,
+    kStepNContributors = 7,
+    kStepTPCPID = 8,
+    kStepR = 9,
+    kStepLine = 10,
+    kStepZ = 11,
+    kStepNDF = 12,
+    kStepChi2 = 13,
+    kStepEta = 14,
+    kStepPt = 15,
+    kStepTrueGamma = 16
   };
-	
-	
 	
   AliV0Reader();                                        //constructor
   AliV0Reader(const AliV0Reader & g);                   //copy constructor
@@ -692,7 +692,7 @@ class AliV0Reader : public TObject {
   AliGammaConversionBGHandler *fBGEventHandler;
   Bool_t fBGEventInitialized;
 	
-  ClassDef(AliV0Reader,8)
+  ClassDef(AliV0Reader,9)
 };
 #endif
 

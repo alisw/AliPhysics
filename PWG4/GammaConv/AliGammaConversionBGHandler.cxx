@@ -148,7 +148,7 @@ void AliGammaConversionBGHandler::AddEvent(TClonesArray * eventGammas, Double_t 
   Int_t z = GetZBinIndex(zvalue);
   Int_t m = GetMultiplicityBinIndex(multiplicity);
 
-  if(fBGEventCounter[z][m] >= fNEvents -1){
+  if(fBGEventCounter[z][m] >= fNEvents){
     fBGEventCounter[z][m]=0;
   }
   Int_t eventCounter=fBGEventCounter[z][m];
@@ -165,6 +165,7 @@ void AliGammaConversionBGHandler::AddEvent(TClonesArray * eventGammas, Double_t 
   //set the z and multiplicity numbers
   fBGEvents[z][m][eventCounter].fZVertexPosition = zvalue;
   fBGEvents[z][m][eventCounter].fChargedTrackMultiplicity = multiplicity;
+  fBGEventCounter[z][m]++;
 }
 
 AliGammaConversionKFVector* AliGammaConversionBGHandler::GetBGGoodV0s(Int_t event, Double_t zvalue, Int_t multiplicity){
@@ -173,4 +174,18 @@ AliGammaConversionKFVector* AliGammaConversionBGHandler::GetBGGoodV0s(Int_t even
   Int_t m = GetMultiplicityBinIndex(multiplicity);
 
   return &(fBGEvents[z][m][event].fReconstructedGammas);
+}
+
+void AliGammaConversionBGHandler::PrintBGArray(){
+  for(Int_t z=0;z<fNBinsZ;z++){
+    cout<<"Getting the data for z bin: "<<z<<endl;
+    for(Int_t multiplicity=0;multiplicity<fNBinsMultiplicity;multiplicity++){
+      cout<<"Getting the data for multiplicity bin: "<<multiplicity<<endl;
+      for(Int_t event=0;event<fNEvents;event++){
+	if(fBGEvents[z][multiplicity][event].fReconstructedGammas.size()>0){
+	  cout<<"Event: "<<event<<" has: "<<fBGEvents[z][multiplicity][event].fReconstructedGammas.size()<<endl;
+	}
+      }
+    }
+  }
 }

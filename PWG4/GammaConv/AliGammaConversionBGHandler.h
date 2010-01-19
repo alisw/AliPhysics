@@ -67,6 +67,8 @@ struct AliGammaConversionBGEvent
 
   AliGammaConversionKFVector* GetBGGoodV0s(Int_t event, Double_t zvalue, Int_t multiplicity);
 
+  void PrintBGArray();
+
  private:
 
   Int_t fNEvents;

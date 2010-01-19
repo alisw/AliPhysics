@@ -472,7 +472,7 @@ Double_t kGClastYBinAsymmetry = 1.;
 
 
 //Pt-plots
-Int_t kGCnXBinsPt = 200;
+Int_t kGCnXBinsPt = 500;
 Double_t kGCfirstXBinPt = 0.;
 Double_t kGClastXBinPt = 50.;
 
@@ -581,7 +581,7 @@ Double_t kGClastXBinGammaNDF = 10.;
 Int_t kGCnXBinsSpectra = 500;
 Double_t kGCfirstXBinSpectra = 0.;
 Double_t kGClastXBinSpectra = 1.;
-Int_t kGCnYBinsSpectra = 100;
+Int_t kGCnYBinsSpectra = 500;
 Double_t kGCfirstYBinSpectra = 0.;
 Double_t kGClastYBinSpectra = 50.;
 
@@ -917,7 +917,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
     UInt_t imass = 2;	
 		
     //how many selection steps 
-    UInt_t nstep = 15;
+    UInt_t nstep = 17;
     const Int_t nvar = 3;
     const Int_t nbin0 = kGCnXBinsPt; 
     const Int_t nbin1 = kGCnXBinsEta;
