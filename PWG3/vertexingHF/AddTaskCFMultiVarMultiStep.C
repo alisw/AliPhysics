@@ -1,12 +1,12 @@
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ymin  = -2.1 ;
 const Double_t ymax  =  2.1 ;
-const Double_t ptmin_0_4 =  0.0 ;
-const Double_t ptmax_0_4 =  4.0 ;
-const Double_t ptmin_4_8 =  4.0 ;
-const Double_t ptmax_4_8 =  8.0 ;
-const Double_t ptmin_8_10 =  8.0 ;
-const Double_t ptmax_8_10 =  10.0 ;
+// const Double_t ptmin_0_4 =  0.0 ;
+// const Double_t ptmax_0_4 =  4.0 ;
+// const Double_t ptmin_4_8 =  4.0 ;
+// const Double_t ptmax_4_8 =  8.0 ;
+// const Double_t ptmin_8_10 =  8.0 ;
+// const Double_t ptmax_8_10 =  10.0 ;
 const Double_t cosmin = -1.05;
 const Double_t cosmax =  1.05;
 const Double_t cTmin = 0;  // micron
@@ -35,8 +35,33 @@ const Int_t    minITSClusters = 5;
 
 //----------------------------------------------------
 
-AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
+AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeepD0fromB=kFALSE)
 {
+
+  Double_t ptmin_0_4;
+  Double_t ptmax_0_4;
+  Double_t ptmin_4_8;
+  Double_t ptmax_4_8;
+  Double_t ptmin_8_10;
+  Double_t ptmax_8_10;
+
+  if(!isKeepD0fromB){
+    ptmin_0_4 =  0.0 ;
+    ptmax_0_4 =  4.0 ;
+    ptmin_4_8 =  4.0 ;
+    ptmax_4_8 =  8.0 ;
+    ptmin_8_10 =  8.0 ;
+    ptmax_8_10 =  10.0 ;
+  } else{
+    ptmin_0_4 =  0.0 ;
+    ptmax_0_4 =  3.0 ;
+    ptmin_4_8 =  3.0 ;
+    ptmax_4_8 =  5.0 ;
+    ptmin_8_10 =  5.0 ;
+    ptmax_8_10 =  10.0 ;
+  }
+
+
 
 	//CONTAINER DEFINITION
 	Info("AliCFHeavyFlavourTaskMultiVarMultiStep","SETUP CONTAINER");
@@ -60,9 +85,23 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	//Setting up the container grid... 
 	UInt_t nstep = 8; //number of selection steps: MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included) 
 	const Int_t nvar   = 13 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
-	const Int_t nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
-	const Int_t nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
-	const Int_t nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
+// 	const Int_t nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
+// 	const Int_t nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
+// 	const Int_t nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
+
+	Int_t nbin0_0_4;
+	Int_t nbin0_4_8;
+	Int_t nbin0_8_10;
+	if (!isKeepD0fromB){
+	  nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
+	  nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
+	  nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
+	}else{
+	  nbin0_0_4  = 3 ; //bins in pt from 0 to 3 GeV
+	  nbin0_4_8  = 1 ; //bins in pt from 3 to 5 GeV
+	  nbin0_8_10  = 1 ; //bins in pt from 5 to 10 GeV
+	}
+
 	const Int_t nbin1  = 42 ; //bins in y
 	const Int_t nbin2  = 42 ; //bins in cosThetaStar 
 	const Int_t nbin3_0_4  = 8 ; //bins in ptPi from 0 to 4 GeV
@@ -308,6 +347,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	task->SetFillFromGenerated(kFALSE);
 	task->SetMinITSClusters(minITSClusters);
 	task->SetCFManager(man); //here is set the CF manager
+	task->SetKeepD0fromB(isKeepD0fromB);
 	
         //-----------------------------------------------------------//
         //   create correlation matrix for unfolding - only eta-pt   //
@@ -354,15 +394,28 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	// ----- output data -----
 	
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	outputfile += ":PWG3_D2H_CFtaskD0toKpi";
+	TString output1name="", output2name="", output3name="";
+	if(!isKeepD0fromB) {
+	  outputfile += ":PWG3_D2H_CFtaskD0toKpi";
+	  output1name="CFHFchist0";
+	  output2name="CFHFccontainer0";
+	  output3name="CFHFcorr0";
+	}
+	else  {
+	  outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepD0fromB";
+	  output1name="CFHFchist0allD0";
+	  output2name="CFHFccontainer0allD0";
+	  output3name="CFHFcorr0allD0";
+
+	}
 
 	//now comes user's output objects :
 	// output TH1I for event counting
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("CFHFchist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(output1name, TH1I::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 	// output Correction Framework Container (for acceptance & efficiency calculations)
-	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("CFHFccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(output2name, AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 	// Unfolding - correlation matrix
-        AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("CFHFcorr0", THnSparseD::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+        AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(output3name, THnSparseD::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
 	mgr->AddTask(task);
 	

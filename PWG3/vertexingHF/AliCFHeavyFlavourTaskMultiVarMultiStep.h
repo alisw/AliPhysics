@@ -79,6 +79,8 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Int_t    GetMinITSClusters() const {return fMinITSClusters;}
   Int_t    CheckOrigin(AliAODMCParticle* mcPart, TClonesArray* mcArray) const;
 
+  void SetKeepD0fromB(Bool_t keepD0fromB){fKeepD0fromB=keepD0fromB;}
+
  protected:
   Int_t           fPDG;         //  PDG code of searched V0's
   AliCFManager   *fCFManager;   //  pointer to the CF manager
@@ -97,6 +99,8 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
                                 //  with generated values also for reconstructed particles
   Int_t fMinITSClusters;        //  min n. of ITS clusters for RecoDecay
   Bool_t fAcceptanceUnf;        //  flag for unfolding before or after cuts.
+
+  Bool_t fKeepD0fromB;          // flag to consider also D0 coming from B
   
   ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,3); // class for HF corrections as a function of many variables
 };
