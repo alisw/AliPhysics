@@ -70,7 +70,7 @@ AliCFPairQualityCuts& AliCFPairQualityCuts::operator=(const AliCFPairQualityCuts
 }
 
 //__________________________________________________________________________________
-Bool_t AliCFPairQualityCuts::IsSelected(TObject* obj) {
+Bool_t AliCFPairQualityCuts::IsSelected(TObject* obj, TObject* /* obj2 */) {
   //
   // loops over decisions of single cuts and returns if the track is accepted
   //

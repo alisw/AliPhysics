@@ -68,8 +68,8 @@ public:
   void Init();
 
   // check MC tracks
-  Bool_t IsSelected(TObject *) {return kTRUE;}
-  Bool_t IsSelected(TList *) {return kTRUE;}
+  Bool_t IsSelected(TObject *, TObject * /*event */ = 0) {return kTRUE;}
+  //Bool_t IsSelected(TList *) {return kTRUE;}
 
   // accept event
   Bool_t AcceptEvent(AliESDEvent *event=0, AliMCEvent *mcEvent=0, const AliESDVertex *vtx=0);

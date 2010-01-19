@@ -42,8 +42,8 @@ public:
   void Init();
 
   // check MC tracks
-  virtual Bool_t IsSelected(TObject *) {return kTRUE;}
-  virtual Bool_t IsSelected(TList *) {return kTRUE;}
+  virtual Bool_t IsSelected(TObject *, TObject * /* event */ = 0) {return kTRUE;}
+  //virtual Bool_t IsSelected(TList *) {return kTRUE;}
 
   //
   Bool_t AcceptTrack(AliESDtrack *track);

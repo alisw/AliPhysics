@@ -69,7 +69,7 @@ AliCFPairPidCut& AliCFPairPidCut::operator=(const AliCFPairPidCut& c)
 }
 
 //__________________________________________________________________________________
-Bool_t AliCFPairPidCut::IsSelected(TObject* obj) {
+Bool_t AliCFPairPidCut::IsSelected(TObject* obj, TObject* /* obj2 */) {
   //
   // loops over decisions of single cuts and returns if the track is accepted
   //
