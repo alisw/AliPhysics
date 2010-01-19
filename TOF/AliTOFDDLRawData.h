@@ -1,5 +1,5 @@
-#ifndef AliTOFDDLRAWDATA_H
-#define AliTOFDDLRAWDATA_H
+#ifndef ALITOFDDLRAWDATA_H
+#define ALITOFDDLRAWDATA_H
 
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -85,4 +85,4 @@ class AliTOFDDLRawData:public TObject {
 
 };
     
-#endif
+#endif // ALITOFDDLRAWDATA_H

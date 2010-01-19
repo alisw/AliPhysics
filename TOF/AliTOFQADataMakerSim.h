@@ -1,5 +1,5 @@
-#ifndef AliTOFQADataMakerSim_H
-#define AliTOFQADataMakerSim_H
+#ifndef ALITOFQADATAMAKERSIM_H
+#define ALITOFQADATAMAKERSIM_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -39,4 +39,4 @@ private:
 
 };
 
-#endif // AliTOFQADataMakerSim_H
+#endif // ALITOFQADATAMAKERSIM_H
