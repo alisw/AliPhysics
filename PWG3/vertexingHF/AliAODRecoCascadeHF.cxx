@@ -120,6 +120,7 @@ Double_t AliAODRecoCascadeHF::InvMassDstarKpipi() const
 }
 //----------------------------------------------------------------------------
 Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
+                                     Int_t *pdgDg,Int_t *pdgDg2prong,
 				     TClonesArray *mcArray) const
 {
   //
@@ -128,11 +129,6 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
   // If yes, return label (>=0) of the AliAODMCParticle
   // 
 
-  if(pdgabs!=413) {
-    printf("Only D*+ implemented\n"); 
-    return -1;
-  }
-
   Int_t ndg=GetNDaughters();
   if(!ndg) {
     AliError("No daughters available");
@@ -140,7 +136,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
   }
   
   AliAODRecoDecayHF2Prong *the2Prong = Get2Prong();
-  Int_t lab2Prong = the2Prong->MatchToMC(pdgabs2prong,mcArray);
+  Int_t lab2Prong = the2Prong->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong);
 
   if(lab2Prong<0) return -1;
 
@@ -159,7 +155,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     dgLabels[i] = lab;
   }
 
-  return AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels,ndg);
+  return AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels,2,2,pdgDg);
 }
 //-----------------------------------------------------------------------------
 Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,
