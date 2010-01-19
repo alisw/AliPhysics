@@ -275,7 +275,7 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
     const Double_t rPHOS = globaPos.Pt() ; //Distance to center of  PHOS module
     const Double_t kYmax = 72.+10. ; //Size of the module (with some reserve) in phi direction
     const Double_t kZmax = 64.+10. ; //Size of the module (with some reserve) in z direction
-    const Double_t kAlpha0=210./180.*TMath::Pi() ; //First PHOS module angular direction
+    const Double_t kAlpha0=330./180.*TMath::Pi() ; //First PHOS module angular direction
     const Double_t kAlpha= 20./180.*TMath::Pi() ; //PHOS module angular size
     Double_t minDistance = 1.e6;
 
@@ -301,7 +301,7 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
 
       t.GetBxByBz(b) ;
       //Direction to the current PHOS module
-      Double_t phiMod=kAlpha0+kAlpha*iPHOSMod ;
+      Double_t phiMod=kAlpha0-kAlpha*iPHOSMod ;
       if(!t.Rotate(phiMod))
         continue ;
  
