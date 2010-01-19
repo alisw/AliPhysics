@@ -303,7 +303,7 @@ Bool_t AliV0Reader::CheckV0FinderStatus(Int_t index){
     }
   }
   if(!fUseOnFlyV0Finder){
-    if(!GetV0(index)->GetOnFlyStatus()){
+    if(GetV0(index)->GetOnFlyStatus()){
       return kFALSE;
     }
   }
