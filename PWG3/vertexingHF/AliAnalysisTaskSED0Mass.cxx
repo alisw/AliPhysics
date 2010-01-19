@@ -169,6 +169,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   TString nameMass=" ",nameSgn27=" ",nameSgn=" ", nameBkg=" ", nameRfl=" ",nameMassNocutsS =" ",nameMassNocutsB =" ", namedistr=" ";
 
   for(Int_t i=0;i<nhist;i++){
+
     nameMass="histMass_";
     nameMass+=i+1;
     nameSgn27="histSgn27_";
@@ -184,6 +185,118 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     nameMassNocutsB="hMassB_";
     nameMassNocutsB+=i+1;
 
+    //histograms of cut variable distributions
+
+    //  pT
+    namedistr="hptpiS_";
+    namedistr+=i+1;
+    TH1F *hptpiS = new TH1F(namedistr.Data(), "P_{T} distribution (pions);p_{T} [GeV/c]",200,0.,8.);
+
+    namedistr="hptKS_";
+    namedistr+=i+1;
+    TH1F *hptKS = new TH1F(namedistr.Data(), "P_{T} distribution (kaons);p_{T} [GeV/c]",200,0.,8.);
+
+    namedistr="hptB_";
+    namedistr+=i+1;
+    TH1F *hptB = new TH1F(namedistr.Data(), "P_{T} distribution;p_{T} [GeV/c]",200,0.,8.);
+
+    //  pT no mass cut
+    namedistr="hptpiSnoMcut_";
+    namedistr+=i+1;
+    TH1F *hptpiSnoMcut = new TH1F(namedistr.Data(), "P_{T} distribution (pions);p_{T} [GeV/c]",200,0.,8.);
+
+    namedistr="hptKSnoMcut_";
+    namedistr+=i+1;
+    TH1F *hptKSnoMcut = new TH1F(namedistr.Data(), "P_{T} distribution (kaons);p_{T} [GeV/c]",200,0.,8.);
+
+    namedistr="hptB1prongnoMcut_";
+    namedistr+=i+1;
+    TH1F *hptB1pnoMcut = new TH1F(namedistr.Data(), "P_{T} distribution;p_{T} [GeV/c]",200,0.,8.);
+
+    namedistr="hptB2prongsnoMcut_";
+    namedistr+=i+1;
+    TH1F *hptB2pnoMcut = new TH1F(namedistr.Data(), "P_{T} distribution;p_{T} [GeV/c]",200,0.,8.);
+
+    
+    //  dca
+    namedistr="hdcaS_";
+    namedistr+=i+1;
+    TH1F *hdcaS = new TH1F(namedistr.Data(), "DCA distribution;dca [cm]",200,0.,0.1);
+    namedistr="hdcaB_";
+    namedistr+=i+1;
+    TH1F *hdcaB = new TH1F(namedistr.Data(), "DCA distribution;dca [cm]",200,0.,0.1);
+
+    //  costhetastar
+    namedistr="hcosthetastarS_";
+    namedistr+=i+1;
+    TH1F *hcosthetastarS = new TH1F(namedistr.Data(), "cos#theta* distribution;cos#theta*",200,-1.,1.);
+    namedistr="hcosthetastarB_";
+    namedistr+=i+1;
+    TH1F *hcosthetastarB = new TH1F(namedistr.Data(), "cos#theta* distribution;cos#theta*",200,-1.,1.);
+
+    // impact parameter
+    namedistr="hd0piS_";
+    namedistr+=i+1;
+    TH1F *hd0piS = new TH1F(namedistr.Data(), "Impact parameter distribution (pions);d0(#pi) [cm]",200,-0.1,0.1);
+
+    namedistr="hd0KS_";
+    namedistr+=i+1;
+    TH1F *hd0KS = new TH1F(namedistr.Data(), "Impact parameter distribution (kaons);d0(K) [cm]",200,-0.1,0.1);
+    namedistr="hd0B_";
+    namedistr+=i+1;
+    TH1F *hd0B = new TH1F(namedistr.Data(), "Impact parameter distribution;d0 [cm]",200,-0.1,0.1);
+
+    namedistr="hd0d0S_";
+    namedistr+=i+1;
+    TH1F *hd0d0S = new TH1F(namedistr.Data(), "d_{0}#timesd_{0} distribution;d_{0}#timesd_{0} [cm^{2}]",200,-0.001,0.001);
+    namedistr="hd0d0B_";
+    namedistr+=i+1;
+    TH1F *hd0d0B = new TH1F(namedistr.Data(), "d_{0}#timesd_{0} distribution;d_{0}#timesd_{0} [cm^{2}]",200,-0.001,0.001);
+
+    //  costhetapoint
+    namedistr="hcosthetapointS_";
+    namedistr+=i+1;
+    TH1F *hcosthetapointS = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
+    namedistr="hcosthetapointB_";
+    namedistr+=i+1;
+    TH1F *hcosthetapointB = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
+
+    namedistr="hcosthpointd0d0S_";
+    namedistr+=i+1;
+    TH2F *hcosthpointd0d0S= new TH2F(namedistr.Data(),"Correlation cos#theta_{Point}-d_{0}#timesd_{0};cos#theta_{Point};d_{0}#timesd_{0} [cm^{2}]",200,0,1.,200,-0.001,0.001);
+    namedistr="hcosthpointd0d0B_";
+    namedistr+=i+1;
+    TH2F *hcosthpointd0d0B= new TH2F(namedistr.Data(),"Correlation cos#theta_{Point}-d_{0}#timesd_{0};cos#theta_{Point};d_{0}#timesd_{0} [cm^{2}]",200,0,1.,200,-0.001,0.001);
+
+    fDistr->Add(hptpiS);
+    fDistr->Add(hptKS);
+    fDistr->Add(hptB);
+
+    fDistr->Add(hptpiSnoMcut);
+    fDistr->Add(hptKSnoMcut);
+    fDistr->Add(hptB1pnoMcut);
+    fDistr->Add(hptB2pnoMcut);
+
+    fDistr->Add(hdcaS);
+    fDistr->Add(hdcaB);
+
+    fDistr->Add(hd0piS);
+    fDistr->Add(hd0KS);
+    fDistr->Add(hd0B);
+
+    fDistr->Add(hd0d0S);
+    fDistr->Add(hd0d0B);
+
+    fDistr->Add(hcosthetastarS);
+    fDistr->Add(hcosthetastarB);
+
+    fDistr->Add(hcosthetapointS);
+    fDistr->Add(hcosthetapointB);
+
+    fDistr->Add(hcosthpointd0d0S);
+    fDistr->Add(hcosthpointd0d0B);
+
+
     //histograms of invariant mass distributions
 
     TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.765,1.965);
@@ -198,7 +311,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     tmpS27l->Sumw2();
  
     //distribution w/o cuts
-    TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.765,1.965);
+    TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",300,0,3.73);
     TH1F *tmpMB=(TH1F*)tmpMt->Clone();
     tmpMB->SetName(nameMassNocutsB.Data());
     tmpMS->Sumw2();
@@ -239,76 +352,6 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   }
 
-  //histograms of cut variable distributions
-  //  pT
-  namedistr="hptpiS";
-  TH1F *hptpiS = new TH1F(namedistr.Data(), "P_{T} distribution (pions);p_{T} [GeV/c]",200,0.,8.);
-
-  namedistr="hptKS";
-  TH1F *hptKS = new TH1F(namedistr.Data(), "P_{T} distribution (kaons);p_{T} [GeV/c]",200,0.,8.);
-
-  namedistr="hptB";
-  TH1F *hptB = new TH1F(namedistr.Data(), "P_{T} distribution;p_{T} [GeV/c]",200,0.,8.);
-
-  //  dca
-  namedistr="hdcaS";
-  TH1F *hdcaS = new TH1F(namedistr.Data(), "DCA distribution;dca [cm]",200,0.,0.1);
-  namedistr="hdcaB";
-  TH1F *hdcaB = new TH1F(namedistr.Data(), "DCA distribution;dca [cm]",200,0.,0.1);
-
-  //  costhetastar
-  namedistr="hcosthetastarS";
-  TH1F *hcosthetastarS = new TH1F(namedistr.Data(), "cos#theta* distribution;cos#theta*",200,-1.,1.);
-  namedistr="hcosthetastarB";
-  TH1F *hcosthetastarB = new TH1F(namedistr.Data(), "cos#theta* distribution;cos#theta*",200,-1.,1.);
-
-  // impact parameter
-  namedistr="hd0piS";
-  TH1F *hd0piS = new TH1F(namedistr.Data(), "Impact parameter distribution (pions);d0(#pi) [cm]",200,-0.1,0.1);
-
-  namedistr="hd0KS";
-  TH1F *hd0KS = new TH1F(namedistr.Data(), "Impact parameter distribution (kaons);d0(K) [cm]",200,-0.1,0.1);
-  namedistr="hd0B";
-  TH1F *hd0B = new TH1F(namedistr.Data(), "Impact parameter distribution;d0 [cm]",200,-0.1,0.1);
-
-  namedistr="hd0d0S";
-  TH1F *hd0d0S = new TH1F(namedistr.Data(), "d_{0}#timesd_{0} distribution;d_{0}#timesd_{0} [cm^{2}]",200,-0.001,0.001);
-  namedistr="hd0d0B";
-  TH1F *hd0d0B = new TH1F(namedistr.Data(), "d_{0}#timesd_{0} distribution;d_{0}#timesd_{0} [cm^{2}]",200,-0.001,0.001);
-
-  //  costhetapoint
-  namedistr="hcosthetapointS";
-  TH1F *hcosthetapointS = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
-  namedistr="hcosthetapointB";
-  TH1F *hcosthetapointB = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
-
-  namedistr="hcosthpointd0d0S";
-  TH2F *hcosthpointd0d0S= new TH2F(namedistr.Data(),"Correlation cos#theta_{Point}-d_{0}#timesd_{0};cos#theta_{Point};d_{0}#timesd_{0} [cm^{2}]",200,0,1.,200,-0.001,0.001);
-  namedistr="hcosthpointd0d0B";
-  TH2F *hcosthpointd0d0B= new TH2F(namedistr.Data(),"Correlation cos#theta_{Point}-d_{0}#timesd_{0};cos#theta_{Point};d_{0}#timesd_{0} [cm^{2}]",200,0,1.,200,-0.001,0.001);
-
-  fDistr->Add(hptpiS);
-  fDistr->Add(hptKS);
-  fDistr->Add(hptB);
-
-  fDistr->Add(hdcaS);
-  fDistr->Add(hdcaB);
-
-  fDistr->Add(hd0piS);
-  fDistr->Add(hd0KS);
-  fDistr->Add(hd0B);
-
-  fDistr->Add(hd0d0S);
-  fDistr->Add(hd0d0B);
-
-  fDistr->Add(hcosthetastarS);
-  fDistr->Add(hcosthetastarB);
-
-  fDistr->Add(hcosthetapointS);
-  fDistr->Add(hcosthetapointB);
-
-  fDistr->Add(hcosthpointd0d0S);
-  fDistr->Add(hcosthpointd0d0B);
 
   fNentries=new TH1F("nentriesD0", "nentriesD0->Integral(1,2) = number of AODs *** nentriesD0->Integral(3,4) = number of candidates selected with cuts *** nentriesD0->Integral(5,6) = number of D0 selected with cuts", 6,1.,4.);
 
@@ -423,33 +466,131 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     Int_t pdgDgD0toKpi[2]={321,211};
     Int_t lab=-9999;
     if(fReadMC) lab=d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
-    Double_t pt = d->Pt();
+    Double_t pt = d->Pt(); //mother pt
  
-    if(lab>=0 && fReadMC){ //signal	
-      if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421){//D0
-	if(TMath::Abs(minvD0-mPDG)<0.03 || TMath::Abs(minvD0bar-mPDG)<0.03){
-	  ((TH1F*)fDistr->FindObject("hcosthetastarS"))->Fill(d->CosThetaStarD0());
+    if(lab>=0 && fReadMC){ //signal
+
+      //check pdg of the prongs
+      AliAODTrack *prong0=(AliAODTrack*)d->GetDaughter(0);
+      AliAODTrack *prong1=(AliAODTrack*)d->GetDaughter(1);
+      Int_t labprong[2];
+      labprong[0]=prong0->GetLabel();
+      labprong[1]=prong1->GetLabel();
+      AliAODMCParticle *mcprong=0;
+      Int_t PDGprong[2]={0,0};
+      for (Int_t iprong=0;iprong<2;iprong++){
+	if(labprong[iprong]>=0)  mcprong= (AliAODMCParticle*)mcArray->At(labprong[iprong]);
+	PDGprong[iprong]=mcprong->GetPdgCode();
+      }
+
+      //no mass cut ditributions: ptbis
+	
+      if(pt>0. && pt<=1.) {
+	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_1"))->Fill(d->PtProng(0));
+	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_1"))->Fill(d->PtProng(1));
+	}else {
+	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_1"))->Fill(d->PtProng(0));
+	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_1"))->Fill(d->PtProng(1));
+	  }
 	}
-	  
-	//no mass cut on mass distribution
-	if(pt>0. && pt<=1.) ((TH1F*)fDistr->FindObject("hMassS_1"))->Fill(minvD0);
-	if(pt>1. && pt<=2.) ((TH1F*)fDistr->FindObject("hMassS_2"))->Fill(minvD0);
-	if(pt>2. && pt<=3.) ((TH1F*)fDistr->FindObject("hMassS_3"))->Fill(minvD0);
-	if(pt>3. && pt<=5.) ((TH1F*)fDistr->FindObject("hMassS_4"))->Fill(minvD0);
-	if(pt>5.)           ((TH1F*)fDistr->FindObject("hMassS_5"))->Fill(minvD0);
+      }
+      if(pt>1. && pt<=2.) {
+	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_2"))->Fill(d->PtProng(0));
+	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_2"))->Fill(d->PtProng(1));
+	}else {
+	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_2"))->Fill(d->PtProng(0));
+	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_2"))->Fill(d->PtProng(1));
+	  }
+	}
+      }
+      if(pt>2. && pt<=3.) {
+	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_3"))->Fill(d->PtProng(0));
+	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_3"))->Fill(d->PtProng(1));
+	}else {
+	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_3"))->Fill(d->PtProng(0));
+	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_3"))->Fill(d->PtProng(1));
+	  }
+	}
+      }
+      if(pt>3. && pt<=5.) {
+
+	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_4"))->Fill(d->PtProng(0));
+	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_4"))->Fill(d->PtProng(1));
+	}else {
+	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_4"))->Fill(d->PtProng(0));
+	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_4"))->Fill(d->PtProng(1));
+	  }
+	}
+      }
+      if(pt>5.)           {
+
+	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_5"))->Fill(d->PtProng(0));
+	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_5"))->Fill(d->PtProng(1));
+	}else {
+	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_5"))->Fill(d->PtProng(0));
+	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_5"))->Fill(d->PtProng(1));
+	  }
+	}
+      }
+
+      if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421){//D0
+		  	 
+	//no mass cut ditributions: mass, costhetastar
+	
+	if(pt>0. && pt<=1.) {
+	  ((TH1F*)fDistr->FindObject("hMassS_1"))->Fill(minvD0);
+	}
+	if(pt>1. && pt<=2.) {
+	  ((TH1F*)fDistr->FindObject("hMassS_2"))->Fill(minvD0);
+
+	}
+	if(pt>2. && pt<=3.) {
+	  ((TH1F*)fDistr->FindObject("hMassS_3"))->Fill(minvD0);
+
+	}
+	if(pt>3. && pt<=5.) {
+	  ((TH1F*)fDistr->FindObject("hMassS_4"))->Fill(minvD0);
+
+	}
+	if(pt>5.)           {
+	  ((TH1F*)fDistr->FindObject("hMassS_5"))->Fill(minvD0);
+
+	}
 
       }
       else { //D0bar
-	if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421){
-	  ((TH1F*)fDistr->FindObject("hcosthetastarS"))->Fill(d->CosThetaStarD0bar());
-	}
 
-	//no mass cut on mass distribution
-	if(pt>0. && pt<=1.) ((TH1F*)fDistr->FindObject("hMassS_1"))->Fill(minvD0bar);
-	if(pt>1. && pt<=2.) ((TH1F*)fDistr->FindObject("hMassS_2"))->Fill(minvD0bar);
-	if(pt>2. && pt<=3.) ((TH1F*)fDistr->FindObject("hMassS_3"))->Fill(minvD0bar);
-	if(pt>3. && pt<=5.) ((TH1F*)fDistr->FindObject("hMassS_4"))->Fill(minvD0bar);
-	if(pt>5.)           ((TH1F*)fDistr->FindObject("hMassS_5"))->Fill(minvD0bar);
+	//no mass cut ditributions: mass
+
+	if(pt>0. && pt<=1.) {
+	  ((TH1F*)fDistr->FindObject("hMassS_1"))->Fill(minvD0bar);
+
+	}
+	if(pt>1. && pt<=2.) {
+	  ((TH1F*)fDistr->FindObject("hMassS_2"))->Fill(minvD0bar);
+
+	}
+	if(pt>2. && pt<=3.) {
+	  ((TH1F*)fDistr->FindObject("hMassS_3"))->Fill(minvD0bar);
+
+	}
+	if(pt>3. && pt<=5.) {
+	  ((TH1F*)fDistr->FindObject("hMassS_4"))->Fill(minvD0bar);
+
+	}
+	if(pt>5.)           {
+	  ((TH1F*)fDistr->FindObject("hMassS_5"))->Fill(minvD0bar);
+	}
 
       }
 
@@ -467,51 +608,181 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	  Int_t pdgprong=mcprong->GetPdgCode();
 	  if(TMath::Abs(pdgprong)==211) {
 	    //cout<<"pi"<<endl;
-	    ((TH1F*)fDistr->FindObject("hptpiS"))->Fill(d->PtProng(iprong));
-	    ((TH1F*)fDistr->FindObject("hd0piS"))->Fill(d->Getd0Prong(iprong));
-	  }
+	    if(pt>0. && pt<=1.){
+	      ((TH1F*)fDistr->FindObject("hptpiS_1"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0piS_1"))->Fill(d->Getd0Prong(iprong));
+	    }
+	    if(pt>1. && pt<=2.){
+	      ((TH1F*)fDistr->FindObject("hptpiS_2"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0piS_2"))->Fill(d->Getd0Prong(iprong));
+	    }
 
-	  if(TMath::Abs(pdgprong)==321) {
-	    //cout<<"kappa"<<endl;
-	    ((TH1F*)fDistr->FindObject("hptKS"))->Fill(d->PtProng(iprong));
-	    ((TH1F*)fDistr->FindObject("hd0KS"))->Fill(d->Getd0Prong(iprong));
-	  }
-	  ((TH1F*)fDistr->FindObject("hdcaS"))->Fill(d->GetDCA());
+	    if(pt>2. && pt<=3.){
+	      ((TH1F*)fDistr->FindObject("hptpiS_3"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0piS_3"))->Fill(d->Getd0Prong(iprong));
+
+	    }
+	    if(pt>3. && pt<=5.){
+	      ((TH1F*)fDistr->FindObject("hptpiS_4"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0piS_4"))->Fill(d->Getd0Prong(iprong));
+
+	    }
+	    if(pt>5.)          {
+	      ((TH1F*)fDistr->FindObject("hptpiS_5"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0piS_5"))->Fill(d->Getd0Prong(iprong));
+
+	    }
+
 
 	}
 
+	if(TMath::Abs(pdgprong)==321) {
+	    //cout<<"kappa"<<endl;
+	    if(pt>0. && pt<=1.){
+	      ((TH1F*)fDistr->FindObject("hptKS_1"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0KS_1"))->Fill(d->Getd0Prong(iprong));
+	    }
+	    if(pt>1. && pt<=2.){
+	      ((TH1F*)fDistr->FindObject("hptKS_2"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0KS_2"))->Fill(d->Getd0Prong(iprong));
+	    }
+	    if(pt>2. && pt<=3.){
+	      ((TH1F*)fDistr->FindObject("hptKS_3"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0KS_3"))->Fill(d->Getd0Prong(iprong));
+	    }
+	    if(pt>3. && pt<=5.){
+	      ((TH1F*)fDistr->FindObject("hptKS_4"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0KS_4"))->Fill(d->Getd0Prong(iprong));
 
-	((TH1F*)fDistr->FindObject("hd0d0S"))->Fill(d->Prodd0d0());
+	    }
+	    if(pt>5.)          {
+	      ((TH1F*)fDistr->FindObject("hptKS_5"))->Fill(d->PtProng(iprong));
+	      ((TH1F*)fDistr->FindObject("hd0KS_5"))->Fill(d->Getd0Prong(iprong));
 
-	((TH1F*)fDistr->FindObject("hcosthetapointS"))->Fill(d->CosPointingAngle());
-	((TH1F*)fDistr->FindObject("hcosthpointd0d0S"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	    }
 
-	//cout<<"ok point"<<endl;
+	  }
+
+	  if(pt>0. && pt<=1.){
+	    ((TH1F*)fDistr->FindObject("hdcaS_1"))->Fill(d->GetDCA());
+
+	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
+	      ((TH1F*)fDistr->FindObject("hcosthetastarS_1"))->Fill(d->CosThetaStarD0());
+	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_1"))->Fill(d->CosThetaStarD0bar());
+
+	  }
+	  if(pt>1. && pt<=2.){
+	    ((TH1F*)fDistr->FindObject("hdcaS_2"))->Fill(d->GetDCA());
+
+	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
+	      ((TH1F*)fDistr->FindObject("hcosthetastarS_2"))->Fill(d->CosThetaStarD0());
+	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_2"))->Fill(d->CosThetaStarD0bar());
+
+	  }
+	  if(pt>2. && pt<=3.){
+	    ((TH1F*)fDistr->FindObject("hdcaS_3"))->Fill(d->GetDCA());
+
+	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
+	      ((TH1F*)fDistr->FindObject("hcosthetastarS_3"))->Fill(d->CosThetaStarD0());
+	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_3"))->Fill(d->CosThetaStarD0bar());
+
+	  }
+	  if(pt>3. && pt<=5.){
+	    ((TH1F*)fDistr->FindObject("hdcaS_4"))->Fill(d->GetDCA());
+
+	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
+	      ((TH1F*)fDistr->FindObject("hcosthetastarS_4"))->Fill(d->CosThetaStarD0());
+	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_4"))->Fill(d->CosThetaStarD0bar());
+
+	  }
+	  if(pt>5.)          {
+	    ((TH1F*)fDistr->FindObject("hdcaS_5"))->Fill(d->GetDCA());
+
+	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
+	      ((TH1F*)fDistr->FindObject("hcosthetastarS_5"))->Fill(d->CosThetaStarD0());
+	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_5"))->Fill(d->CosThetaStarD0bar());
+
+	  }
+	  
+      }
+
+	if(pt>0. && pt<=1.){
+	  ((TH1F*)fDistr->FindObject("hd0d0S_1"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointS_1"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_1"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}
+	if(pt>1. && pt<=2.){
+	  ((TH1F*)fDistr->FindObject("hd0d0S_2"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointS_2"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_2"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}
+	if(pt>2. && pt<=3.){
+	  ((TH1F*)fDistr->FindObject("hd0d0S_3"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointS_3"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_3"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}
+	if(pt>3. && pt<=5.){
+	  ((TH1F*)fDistr->FindObject("hd0d0S_4"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointS_4"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_4"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}
+	if(pt>5.)          {
+	  ((TH1F*)fDistr->FindObject("hd0d0S_5"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointS_5"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_5"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}
 
       } //invmass cut
 
     } else{ //Background or LS
       //cout<<"is background"<<endl;
       Double_t pt = d->Pt();
+
+      //no mass cut distributions: mass, ptbis
       if(pt>0. && pt<=1.) {
 	((TH1F*)fDistr->FindObject("hMassB_1"))->Fill(minvD0);
 	((TH1F*)fDistr->FindObject("hMassB_1"))->Fill(minvD0bar);
+
+	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_1"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_1"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_1"))->Fill(d->PtProng(1));
+
       }
       if(pt>1. && pt<=2.) {
 	((TH1F*)fDistr->FindObject("hMassB_2"))->Fill(minvD0);
 	((TH1F*)fDistr->FindObject("hMassB_2"))->Fill(minvD0bar);
+
+	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_2"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_2"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_2"))->Fill(d->PtProng(1));
+
       }
       if(pt>2. && pt<=3.) {
 	((TH1F*)fDistr->FindObject("hMassB_3"))->Fill(minvD0);
 	((TH1F*)fDistr->FindObject("hMassB_3"))->Fill(minvD0bar);
+
+	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_3"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_3"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_3"))->Fill(d->PtProng(1));
+
       }
       if(pt>3. && pt<=5.) {
 	((TH1F*)fDistr->FindObject("hMassB_4"))->Fill(minvD0);
 	((TH1F*)fDistr->FindObject("hMassB_4"))->Fill(minvD0bar);
+
+	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_4"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_4"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_4"))->Fill(d->PtProng(1));
+ 
       }
       if(pt>5.)           { 
 	((TH1F*)fDistr->FindObject("hMassB_5"))->Fill(minvD0);
 	((TH1F*)fDistr->FindObject("hMassB_5"))->Fill(minvD0bar);
+
+	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_5"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_5"))->Fill(d->PtProng(0));
+	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_5"))->Fill(d->PtProng(1));
+ 
       }
 
       //apply cut on invariant mass on the pair
@@ -523,18 +794,57 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	else{
 	  if(prong->Charge()==1) {fTotPosPairs[4]++;} else {fTotNegPairs[4]++;}
 	}
-	((TH1F*)fDistr->FindObject("hptB"))->Fill(d->PtProng(0));
-	//cout<<"ptok"<<endl;
-	((TH1F*)fDistr->FindObject("hd0B"))->Fill(d->Getd0Prong(0));
-	//cout<<"d0ok"<<endl;
-	((TH1F*)fDistr->FindObject("hdcaB"))->Fill(d->GetDCA());
-	//cout<<"dcaok"<<endl;
-	((TH1F*)fDistr->FindObject("hcosthetastarB"))->Fill(d->CosThetaStarD0());
-	((TH1F*)fDistr->FindObject("hcosthetastarB"))->Fill(d->CosThetaStarD0bar());	
-	((TH1F*)fDistr->FindObject("hd0d0B"))->Fill(d->Prodd0d0());
-	//cout<<"d0d0ok"<<endl;
-	((TH1F*)fDistr->FindObject("hcosthetapointB"))->Fill(d->CosPointingAngle());
-	((TH1F*)fDistr->FindObject("hcosthpointd0d0B"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	if(pt>0. && pt<=1.){
+	  //normalise pt distr to half afterwards
+	  ((TH1F*)fDistr->FindObject("hptB_1"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_1"))->Fill(d->PtProng(1));
+	  ((TH1F*)fDistr->FindObject("hd0B_1"))->Fill(d->Getd0Prong(0));
+	  ((TH1F*)fDistr->FindObject("hdcaB_1"))->Fill(d->GetDCA());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_1"))->Fill(d->CosThetaStarD0());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_1"))->Fill(d->CosThetaStarD0bar());	
+	  ((TH1F*)fDistr->FindObject("hd0d0B_1"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointB_1"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_1"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}
+	if(pt>1. && pt<=2.){
+	  ((TH1F*)fDistr->FindObject("hptB_2"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_2"))->Fill(d->PtProng(1));
+	  ((TH1F*)fDistr->FindObject("hd0B_2"))->Fill(d->Getd0Prong(0));
+	  ((TH1F*)fDistr->FindObject("hdcaB_2"))->Fill(d->GetDCA());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_2"))->Fill(d->CosThetaStarD0());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_2"))->Fill(d->CosThetaStarD0bar());	
+	  ((TH1F*)fDistr->FindObject("hd0d0B_2"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointB_2"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_2"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}
+	if(pt>2. && pt<=3.){
+	  ((TH1F*)fDistr->FindObject("hptB_3"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_3"))->Fill(d->PtProng(1));
+	  ((TH1F*)fDistr->FindObject("hd0B_3"))->Fill(d->Getd0Prong(0));
+	  ((TH1F*)fDistr->FindObject("hdcaB_3"))->Fill(d->GetDCA());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_3"))->Fill(d->CosThetaStarD0());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_3"))->Fill(d->CosThetaStarD0bar());	
+	  ((TH1F*)fDistr->FindObject("hd0d0B_3"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointB_3"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_3"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}
+	if(pt>3. && pt<=5.){
+	  ((TH1F*)fDistr->FindObject("hptB_4"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_4"))->Fill(d->PtProng(1));
+	  ((TH1F*)fDistr->FindObject("hd0B_4"))->Fill(d->Getd0Prong(0));
+	  ((TH1F*)fDistr->FindObject("hdcaB_4"))->Fill(d->GetDCA());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_4"))->Fill(d->CosThetaStarD0());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_4"))->Fill(d->CosThetaStarD0bar());	
+	  ((TH1F*)fDistr->FindObject("hd0d0B_4"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointB_4"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_4"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}
+	if(pt>5.)         {
+	  ((TH1F*)fDistr->FindObject("hptB_5"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_5"))->Fill(d->PtProng(1));
+	  ((TH1F*)fDistr->FindObject("hd0B_5"))->Fill(d->Getd0Prong(0));
+	  ((TH1F*)fDistr->FindObject("hdcaB_5"))->Fill(d->GetDCA());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_5"))->Fill(d->CosThetaStarD0());
+	  ((TH1F*)fDistr->FindObject("hcosthetastarB_5"))->Fill(d->CosThetaStarD0bar());	
+	  ((TH1F*)fDistr->FindObject("hd0d0B_5"))->Fill(d->Prodd0d0());
+	  ((TH1F*)fDistr->FindObject("hcosthetapointB_5"))->Fill(d->CosPointingAngle());
+	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_5"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	}       
 
 
       }// end if inv mass cut
