@@ -17,8 +17,8 @@
 // Class for HF corrections as a function of many variables
 // 6 Steps introduced: MC, MC Acc, Reco, Reco Acc, Reco Acc + ITS Cl, 
 // Reco Acc + ITS Cl + PPR cuts
-// 12 variables used: pt, y, cosThetaStar, ptPi, ptK, ct,
-// dca, d0Pi, d0K, d0Pixd0K, cosPointingAngle, phi
+// 13 variables used: pt, y, cosThetaStar, ptPi, ptK, ct,
+// dca, d0Pi, d0K, d0Pixd0K, cosPointingAngle, phi, z
 //
 //-----------------------------------------------------------------------
 // Author : C. Zampolli, CERN
@@ -72,7 +72,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep()
 	fEvents(0),
 	fFillFromGenerated(kFALSE),
 	fMinITSClusters(5),
-        fAcceptanceUnf(kTRUE)
+        fAcceptanceUnf(kTRUE),
+	fKeepD0fromB(kFALSE)
 {
 	//
 	//Default ctor
@@ -96,7 +97,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
 	fEvents(0),
 	fFillFromGenerated(kFALSE),
 	fMinITSClusters(5),
-        fAcceptanceUnf(kTRUE)
+        fAcceptanceUnf(kTRUE),
+	fKeepD0fromB(kFALSE)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -144,7 +146,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
 	fEvents(c.fEvents),
 	fFillFromGenerated(c.fFillFromGenerated),
 	fMinITSClusters(c.fMinITSClusters),
-        fAcceptanceUnf(c.fAcceptanceUnf)
+        fAcceptanceUnf(c.fAcceptanceUnf),
+	fKeepD0fromB(c.fKeepD0fromB)
 {
 	//
 	// Copy Constructor
@@ -211,8 +214,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	fCFManager->SetMCEventInfo(aodEvent);
 	
 	// MC-event selection
-	Double_t containerInput[12] ;
-	Double_t containerInputMC[12] ;
+	Double_t containerInput[13] ;
+	Double_t containerInputMC[13] ;
         
 	//loop on the MC event
 	
@@ -262,7 +265,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 		Int_t abspdgGranma = TMath::Abs(pdgGranma);
 		if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
 			AliDebug(2,Form("Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
-			continue;  // skipping particles that don't come from c quark
+			if (!fKeepD0fromB) continue;  // skipping particles that don't come from c quark
 		}
 		
 		//		if (TMath::Abs(pdgGranma)!=4) {
@@ -431,7 +434,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			Int_t abspdgGranma = TMath::Abs(pdgGranma);
 			if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
 				AliDebug(2,Form("At Reco level, from MC info: Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
-				continue;  // skipping particles that don't come from c quark
+				if (!fKeepD0fromB) continue;  // skipping particles that don't come from c quark
 			}
 
 			// fill the container...
