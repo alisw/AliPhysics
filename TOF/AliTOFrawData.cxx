@@ -179,7 +179,7 @@ void AliTOFrawData::Update(Int_t tof, Int_t tot, Int_t leading, Int_t trailing, 
 Int_t AliTOFrawData::GetTOT() const
 {
   //
-  //
+  // Return the TOT measurement
   //
 
   Int_t dummyToT = 0;

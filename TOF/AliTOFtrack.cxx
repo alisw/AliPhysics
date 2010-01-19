@@ -88,9 +88,11 @@ AliTOFtrack& AliTOFtrack::operator=(const AliTOFtrack &/*source*/)
 
 //_____________________________________________________________________________
 Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
-{
+ {
+  //
   // Propagates a track of particle with mass=pm to a reference plane 
   // defined by x=xk through media of density=rho and radiationLength=x0
+  //
 
   if (xk == GetX()) return kTRUE;
   
@@ -168,8 +170,9 @@ Bool_t AliTOFtrack::PropagateToInnerTOF()
 //_________________________________________________________________________
 Double_t AliTOFtrack::GetPredictedChi2(const AliCluster3D *c) const {
   //
+  // Estimate the chi2 of the space point "c" with its cov. matrix elements
   //
-  //
+
   Double_t p[3]={c->GetX(), c->GetY(), c->GetZ()};
   Double_t covyz[3]={c->GetSigmaY2(), c->GetSigmaYZ(), c->GetSigmaZ2()};
   Double_t covxyz[3]={c->GetSigmaX2(), c->GetSigmaXY(), c->GetSigmaXZ()};
@@ -178,7 +181,7 @@ Double_t AliTOFtrack::GetPredictedChi2(const AliCluster3D *c) const {
 //_________________________________________________________________________
 Bool_t AliTOFtrack::PropagateTo(const AliCluster3D *c) {
   //
-  //
+  // Propagates a track to the plane containing cluster 'c'
   //
   Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
   Double_t p[3]={c->GetX(), c->GetY(), c->GetZ()};
