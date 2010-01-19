@@ -252,16 +252,9 @@ void AliEveTRDClusters::PointSelected(Int_t n)
   // Handle an individual point selection from GL.
 
   AliTRDcluster *c = dynamic_cast<AliTRDcluster*>(GetPointId(n));
-  printf("\nDetector             : %d\n", c->GetDetector());
-  printf("Charge               : %f\n", c->GetQ());
-  printf("Sum S                : %4.0f\n", c->GetSumS());
-  printf("Time bin             : %d\n", c->GetLocalTimeBin());
-  printf("Signals              : ");
-  Short_t *cSignals = c->GetSignals();
-  for(Int_t ipad=0; ipad<7; ipad++) printf("%d ", cSignals[ipad]); printf("\n");
-  printf("Central pad          : %d\n", c->GetPadCol());
-  printf("MC track labels      : ");
-  for(Int_t itrk=0; itrk<3; itrk++) printf("%d ", c->GetLabel(itrk)); printf("\n");
+  if(!c) return;
+  c->Print();
+  Emit("PointSelected(Int_t)", n);
   // Bool_t	AliCluster::GetGlobalCov(Float_t* cov) const
   // Bool_t	AliCluster::GetGlobalXYZ(Float_t* xyz) const
   // Float_t	AliCluster::GetSigmaY2() const
@@ -497,7 +490,11 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
   if(fPoints && fTrackState == s) return;
 
   const Int_t nc = AliTRDtrackV1::kMAXCLUSTERSPERTRACK;
-  AliTRDtrackV1 *trk = (AliTRDtrackV1*)GetUserData();
+  AliTRDtrackV1 *trk(NULL);
+  if(!(trk=static_cast<AliTRDtrackV1*>(GetUserData()))) {
+    AliError("Failed casting data to TRD track.");
+    return;
+  }
 
   Bool_t BUILD = kFALSE;
   if(!fPoints){ 
@@ -572,7 +569,7 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
         //printf("PID color kNNPID\n");
         //trk->GetReconstructor()->SetOption("nn");
       }
-      trk->CookPID();
+      //trk->CookPID();
   
       Int_t species = 0; Float_t pid = 0.;
       for(Int_t is=0; is<AliPID::kSPECIES; is++) 

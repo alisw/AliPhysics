@@ -1,24 +1,47 @@
-// Author: Benjamin Hess   06/11/2009
+// Author: Benjamin Hess   15/01/2010
 
 /*************************************************************************
- * Copyright (C) 2009, Alexandru Bercuci, Benjamin Hess.                 *
+ * Copyright (C) 2009-2010, Alexandru Bercuci, Benjamin Hess.            *
  * All rights reserved.                                                  *
  *************************************************************************/
 
-//TODO: Documentation
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// AliEveListAnalyserEditor                                     //
+// AliEveListAnalyserEditor                                             //
 //                                                                      //
-// The AliEveListAnalyserEditor provides the graphical          //
-// functionality for the AliEveTRDAnalyseObject. It creates the tabs    //
+// The AliEveListAnalyserEditor provides the graphical func-            //
+// tionality for the AliEveListAnalyser. It creates the tabs            //
 // and canvases, when they are needed and, as well, frees allocated     //
 // memory on destruction (or if new events are loaded and thus some     //
-// tabs are closed). The function DrawHistos() accesses the temporary   //
-// file created by the AliEveListAnalyser and draws the desired //
-// data (the file will be created within the call of ApplyMacros()).    //
-// Have a look at this function to learn more about the structure of    //
-// the file and how to access the data.                                 //
+// tabs are closed).                                                    //
+// The function DrawHistos() accesses the temporary file created by the //
+// AliEveListAnalyser and draws the desired data (the file will         //
+// be created within the call of ApplyMacros()). Have a look at this    //
+// function to learn more about the structure of the file and how to    //
+// access the data.                                                     //
+// You can add objects to the list (of analysis objects) "by clicking"! //
+// To do this, click the "start" button in the "list" tab. Pressing it, //
+// connects the class to signals of objects in the viewer.              //
+// You have to kinds of selection:                                      //
+//                                                                      //
+// Secondary selection:                                                 //
+// You can hold "CTRL"+"ALT" (depending on your system, "ALT" alone can //
+// also be fine) and click an single object (e.g. a single cluster of a //
+// TEvePointSet) in the viewer to add it to the list. If the object is  //
+// already in the list, it will be removed from it!                     //
+//                                                                      //
+// Primary selection:                                                   //
+// Just click the object you want to add in the viewer (or as well in   //
+// the browser (left panel)). If the object is already in the list, it  //
+// will be removed from it!                                             //
+//                                                                      //
+// For both cases: Note:                                                //
+// If you have added all the desired objects, please press the "stop"   //
+// button in the "list" tab to disconnect the class from the signals.   //
+// If you want to remove an object, you HAVE to use the same procedure  //
+// that you have used for adding it. e.g. you cannot(!) remove an       //
+// object added by the secondary selection method by using the primary  //
+// selection method!                                                    //
 //////////////////////////////////////////////////////////////////////////
 
 #include <EveDet/AliEveListAnalyser.h>
@@ -34,28 +57,28 @@
 #include <TG3DLine.h>
 #include <TGButton.h>
 #include <TGButtonGroup.h>
+#include <TGComboBox.h>
 #include <TGFileDialog.h>
 #include <TGLabel.h>
 #include <TGListBox.h>
 #include <TGMsgBox.h>
 #include <TGTab.h>
+#include <TGTextEdit.h>
+#include <TGTextEntry.h>
+#include <TGTextView.h>
+#include <TH1.h>
 #include <TMap.h>
 #include <TObjString.h>
 #include <TROOT.h>
 #include <TString.h>
 #include <TSystem.h>
-#include <TGTextEntry.h>
-#include <TGTextEdit.h>
-#include <TGComboBox.h>
-#include <TGTextView.h>
-#include <TH1.h>
 #include <TTreeStream.h>
 
 
 ClassImp(AliEveListAnalyserEditor)
 
 ///////////////////////////////////////////////////////////
-/////////////   AliEveListAnalyserEditor //////////
+/////////////   AliEveListAnalyserEditor //////////////////
 ///////////////////////////////////////////////////////////
 AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t width, Int_t height,
 				                   UInt_t options, Pixel_t back) :
@@ -70,10 +93,12 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
   fHistoSubFrame(0),
   fMainFrame(0),
   fObjectFrame(0),  
+  //fbAddPrimObjects(0),
   fbApplyMacros(0),
   fbBrowse(0),
   fbDrawHisto(0),
   fbNew(0),
+  //fbRemovePrimObjects(0),
   fbRemoveMacros(0),
   fbReset(0),
   fbStart(0),
@@ -92,14 +117,35 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
   // Functionality for adding objects
   fObjectFrame = CreateEditorTabSubFrame("List");
 
+/*
+  TGLabel* label = new TGLabel(fObjectFrame,"Add objects via primary selection:");
+  fObjectFrame->AddFrame(label);
+
+  fbAddPrimObjects = new TGTextButton(fObjectFrame, "Add selected object(s)");
+  fObjectFrame->AddFrame(fbAddPrimObjects, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 3, 1));
+  fbAddPrimObjects->SetToolTipText("TODO! - Use primary selection to add \"complete\" objects like tracks, tracklets etc.\nHold the CTRL-key for multiple selection.");
+  fbAddPrimObjects->Connect("Clicked()", "AliEveListAnalyserEditor", this, "DoAddPrimSelectedObjects()");
+
+  fbRemovePrimObjects = new TGTextButton(fObjectFrame, "Remove selected object(s)");
+  fObjectFrame->AddFrame(fbRemovePrimObjects, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 3, 1));
+  fbRemovePrimObjects->SetToolTipText("TODO! - Hold the CTRL-key for multiple selection");
+  fbRemovePrimObjects->Connect("Clicked()", "AliEveListAnalyserEditor", this, "DoRemovePrimSelectedObjects()");
+
+  TGHorizontal3DLine* line = new TGHorizontal3DLine(this, 194, 8);
+  fObjectFrame->AddFrame(line, new TGLayoutHints(kLHintsLeft  | kLHintsExpandX, 2, 2, 8, 8));
+*/
+
+  TGLabel* label = new TGLabel(fObjectFrame,"Add objects by clicking:");
+  fObjectFrame->AddFrame(label);
+
   fbStart = new TGTextButton(fObjectFrame, "Start");
   fObjectFrame->AddFrame(fbStart, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 3, 1));
-  fbStart->SetToolTipText("Start \"adding objects by clicking\":\nSimply hold ALT+CTRL and left-click an item in the viewer with your mouse\nto add this item to the list analyser.\nIf you click (in this way!) an item that is already in the list, it will be removed from it.\nNote: The key combination depends on your operating system!");
+  fbStart->SetToolTipText("Start \"adding objects by clicking\":\n\nPrimary selection: Simply left-click an object in the viewer with your mouse to add it to the list analyser.\nIf you click an object that is already in the list, it will be removed from it.\n\nSecondary selection: Simply hold ALT+CTRL and left-click a single object of a TEvePointSet (e.g. single clusters or a single digit from TEveQuadSet)\nin the viewer with your mouse to add it to the list analyser.\nIf you click (in this way!) an object that is already in the list, it will be removed from it.\nNote: The key combination depends on your operating system and might be different!\n\nAlso note: Remove objects with the same type of selection you added them,\ne.g. you cannot(!) remove a single cluster added via secondary selection\nby using primary selection with this object!");
   fbStart->Connect("Clicked()", "AliEveListAnalyserEditor", this, "DoStartAddingObjects()");
 
   fbReset = new TGTextButton(fObjectFrame, "Reset");
   fObjectFrame->AddFrame(fbReset, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 1, 1));
-  fbReset->SetToolTipText("Remove all objects from the list");
+  fbReset->SetToolTipText("Remove all(!) objects from the list");
   fbReset->Connect("Clicked()", "AliEveListAnalyserEditor", this, "DoResetObjectList()");
 
   fbStop = new TGTextButton(fObjectFrame, "Stop");
@@ -379,9 +425,29 @@ void AliEveListAnalyserEditor::CloseTabs()
   }
 }
 
+/*
+//______________________________________________________
+void AliEveListAnalyserEditor::DoAddPrimSelectedObjects()
+{
+  // Adds the selected object(s) to the list ("primary selection").
+
+  fM->AddPrimSelectedObjects();
+}
+
+//______________________________________________________
+void AliEveListAnalyserEditor::DoRemovePrimSelectedObjects()
+{
+  // Removes the selected object(s) from the list ("primary selection").
+
+  fM->RemovePrimSelectedObjects();
+}
+*/
+
 //______________________________________________________
 void AliEveListAnalyserEditor::DoResetObjectList()
 {
+  // Removes all objects from the list.
+
   fM->ResetObjectList();
   Update();
 }
@@ -389,6 +455,8 @@ void AliEveListAnalyserEditor::DoResetObjectList()
 //______________________________________________________
 void AliEveListAnalyserEditor::DoStartAddingObjects()
 {
+  // Starts adding objects for the analysis.
+
   if (fM->StartAddingObjects())
   {
     fbStart->SetState(kButtonDisabled);
@@ -397,12 +465,20 @@ void AliEveListAnalyserEditor::DoStartAddingObjects()
   else
   {
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", "Failed to connect socket!", kMBIconExclamation, kMBOk);
+
+    if (fM->GetConnected())
+    {
+      fbStop->SetState(kButtonDisabled);
+      fbStart->SetState(kButtonUp);
+    }
   }
 }
 
 //______________________________________________________
 void AliEveListAnalyserEditor::DoStopAddingObjects()
 {
+  // Stops adding objects for the analysis.
+
   if (fM->StopAddingObjects())
   {
     fbStop->SetState(kButtonDisabled);
@@ -411,6 +487,12 @@ void AliEveListAnalyserEditor::DoStopAddingObjects()
   else
   {
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", "Failed to disconnect socket!", kMBIconExclamation, kMBOk);
+    
+    if (fM->GetConnected())
+    {
+      fbStop->SetState(kButtonUp);
+      fbStart->SetState(kButtonDisabled);
+    }
   }
 }
 
@@ -760,7 +842,7 @@ void AliEveListAnalyserEditor::InheritMacroList()
   {
     macro = (TGeneralMacroData*)fInheritedMacroList->GetValue(key);
     if (macro != 0)  fM->fMacroList->Add(new TObjString(key->GetName()), 
-                                         new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
+                                         new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType(), macro->GetObjectType()));
     else
     {
       Error("AliEveListAnalyserEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key));
@@ -830,7 +912,7 @@ void AliEveListAnalyserEditor::SaveMacroList(TMap* list)
   {
     macro = (TGeneralMacroData*)fM->fMacroList->GetValue(key);
     if (macro != 0) fInheritedMacroList->Add(new TObjString(key->GetName()), 
-                                             new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
+                                             new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType(), macro->GetObjectType()));
     else
     {
       Error("AliEveListAnalyserEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
@@ -923,7 +1005,7 @@ void AliEveListAnalyserEditor::UpdateDataFromMacroListSelection()
 //______________________________________________________
 void AliEveListAnalyserEditor::UpdateHistoCanvasTab()
 {
-   // Updates the histogram and the corresponding tab (including titles).
+  // Updates the histogram and the corresponding tab (including titles).
 
   // Update name of the tab (tab has been set to current tab!)
   fHistoCanvasName->SetString(fM->GetName());  
@@ -1049,6 +1131,8 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   ,fTextName(0x0)  
   ,fTextObjectType(0x0)
 {
+  // Creates the macro wizard.
+
   const Int_t width = 300;
 
   // horizontal frame
@@ -1227,6 +1311,8 @@ const Char_t *fGeneralMacroTemplate[7] = {
 //______________________________________________________
 void AliEveGeneralMacroWizard::Create(Int_t type)
 {
+  // Creates the macro with the selected type (combo box).
+
   const Char_t* name = fTextName->GetText();
   if(strcmp(name,"") == 0)
   {
@@ -1376,7 +1462,16 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
 
   fprintf(fp, "{\n%s\n", fGeneralMacroTemplate[type]);
 
-  fprintf(fp, "// add your own code here\n\n\n}\n");
+  // Add some further information for analyse macros
+  if (type == AliEveListAnalyser::kSingleObjectAnalyse || type == AliEveListAnalyser::kCorrelObjectAnalyse)
+  {
+    fprintf(fp, "// add your own code here\n// Please allocate memory for your results, e.g. by doing:\n// n = YourNumberOfResults;\n// r = new Double_t[YourNumberOfResults];\n\n}\n");
+  }
+  else
+  {
+    fprintf(fp, "// add your own code here\n\n\n}\n");
+  }
+  
   fclose(fp);
 
   Emit("Create(Int_t)", type);
@@ -1387,11 +1482,15 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
 //______________________________________________________
 void AliEveGeneralMacroWizard::Create(Char_t *name)
 {
+  // Emits the creation signal.
+
   Emit("Create(Char_t*)", Form("%s.C", name));
 }
 
 //______________________________________________________
 void AliEveGeneralMacroWizard::HandleCreate()
 {
+  // Handles the signal, when the creation button is pressed.
+
   Create(fCombo->GetSelected());
 }

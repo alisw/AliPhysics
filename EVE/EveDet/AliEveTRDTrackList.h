@@ -18,9 +18,9 @@
 // the list in the same way as for the TEveElementList). In general,    //
 // please use AddMacro(...) for this purpose.                           //
 // Macros that are no longer needed can be removed from the list via    //
-// RemoveSelectedMacros(...).This function takes an iterator of the     //
+// RemoveSelectedMacros(...). This function takes an iterator of the    //
 // list of macros that are to be removed.                               //
-// be removed. An entry looks like:                                     //
+// An entry looks like:                                                 //
 // The data for each macro consists of path, name, type and the command //
 // that will be used to apply the macro. This stuff is stored in a map  //
 // which takes the macro name for the key and the above mentioned data  //

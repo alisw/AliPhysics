@@ -1,32 +1,32 @@
-// Author: Benjamin Hess   06/11/2009
+// Author: Benjamin Hess   15/01/2010
 
 /*************************************************************************
- * Copyright (C) 2009, Alexandru Bercuci, Benjamin Hess.                 *
+ * Copyright (C) 2009-2010, Alexandru Bercuci, Benjamin Hess.            *
  * All rights reserved.                                                  *
  *************************************************************************/
 
-#ifndef AliEveListAnalyser_H
-#define AliEveListAnalyser_H
-
-// TODO: DOCUMENTATION
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// AliEveTRDTAnalyseObjectList                                          //
+// AliEveListAnalyser                                                   //
 //                                                                      //
-// An AliEveListAnalyser is, in principal, a TEveElementList    //
-// with some sophisticated features. You can add macros to this list,   //
-// which then can be applied to the list of tracks (these tracks can    //
-// be added to the list in the same way as for the TEveElementList).    //
+// An AliEveListAnalyser is, in principal, a TEveElementList with some  //
+// sophisticated features. You can add macros to this list, which then  //
+// can be applied to the list of analysis objects (these objects can be //
+// added to the list in the same way as for the TEveElementList, but    //
+// also "by clicking" (cf. AliEveListAnaLyserEditor)).                  //
 // In general, please use AddMacro(...) for this purpose.               //
 // Macros that are no longer needed can be removed from the list via    //
-// RemoveSelectedMacros(...).This function takes an iterator of the     //
+// RemoveSelectedMacros(...). This function takes an iterator of the    //
 // list of macros that are to be removed.                               //
-// be removed. An entry looks like:                                     //
+// An entry looks like:                                                 //
 // The data for each macro consists of path, name, type and the command //
 // that will be used to apply the macro. This stuff is stored in a map  //
 // which takes the macro name for the key and the above mentioned data  //
 // in a TGeneralMacroData-object for the value.                         //
 // You can get the macro type via GetMacroType(...).                    //
+// To find the type of objects the macro will deal with (corresponds to //
+// "YourObjectType" in the examples below) please use                   //
+// GetMacroObjectType(...).                                             //
 // With ApplySTSelectionMacros(...) or ApplyProcessMacros(...)          //
 // respectively you can apply the macros to the track list via          //
 // iterators (same style like for RemoveSelectedMacros(...)(cf. above)).//
@@ -41,15 +41,15 @@
 //                                                                      //
 // Currently, the following macro types are supported:                  //
 // Selection macros:                                                    //
-// Bool_t YourMacro(const YourObjectType*);                              //
-// Bool_t YourMacro(const YourObjectType*, const YourObjectType*);        //
+// Bool_t YourMacro(const YourObjectType*);                             //
+// Bool_t YourMacro(const YourObjectType*, const YourObjectType*);      //
 //                                                                      //
 // Process macros:                                                      //
-// void YourMacro(const YourObjectType*, Double_t*&, Int_t&);            //
-// void YourMacro(const YourObjectType*, const YourObjectType*,           //
+// void YourMacro(const YourObjectType*, Double_t*&, Int_t&);           //
+// void YourMacro(const YourObjectType*, const YourObjectType*,         //
 //                Double_t*&, Int_t&);                                  //
-// TH1* YourMacro(const YourObjectType*);                                //
-// TH1* YourMacro(const YourObjectType*, const YourObjectType*);          //
+// TH1* YourMacro(const YourObjectType*);                               //
+// TH1* YourMacro(const YourObjectType*, const YourObjectType*);        //
 //                                                                      //
 // The macros which take 2 tracks are applied to all track pairs        //
 // (whereby BOTH tracks of the pair have to be selected by the single   //
@@ -59,9 +59,11 @@
 // process macros that process only a single track!                     //
 //////////////////////////////////////////////////////////////////////////
 
+#ifndef AliEveListAnalyser_H
+#define AliEveListAnalyser_H
 
-#include <TEveElement.h>
 #include <TClass.h>
+#include <TEveElement.h>
 #include <EveDet/AliEveTRDData.h>
 
 #define SIGNATURE_ERROR           -1
@@ -81,19 +83,17 @@
 class AliEveListAnalyserEditor;
 class AliTRDReconstructor;
 class TClass;
+class TEveManager;
+class TEveSelection;
 class TFile;
 class TFunction;
 class TH1;
-class TObjString;
 class TList;
 class TMap;
+class TObjString;
 class TPair;
 class TString;
 class TTreeSRedirector;
-
-// TODO - NEW
-class TGLViewer;
-class TEveManager;
 
 class AliEveListAnalyser: public TEveElementList
 {
@@ -131,12 +131,16 @@ public:
 
   Int_t AddMacro(const Char_t* path, const Char_t* name, Bool_t forceReload = kFALSE);                      
   Bool_t AddMacroFast(const Char_t* path, const Char_t* name, AliEveListAnalyserMacroType type, TClass* objectType);     
-  void AddObjectToList(Int_t pointId);   
-  virtual void AddStandardContent();                           
+  Int_t AddPrimSelectedObject(TEveElement* el);
+  //void AddPrimSelectedObjects();
+  void AddSecSelectedSingleObjectToList(Int_t pointId);  
+  virtual void AddStandardContent();                             
   Bool_t ApplyProcessMacros(const TList* selIterator, const TList* procIterator);               
   void ApplySTSelectionMacros(const TList* iterator);
   Bool_t GetConnected()             // Returns whether "adding objects by clicking" is enabled or not.
     { return fConnected;  };
+  TClass* GetMacroObjectType(const Char_t* name) const;
+
   // Returns the type of the macro of the corresponding entry (i.e. "macro.C (Path: path)"). 
   // If you have only the name and the path, you can simply use MakeMacroEntry.
   // If "UseList" is kTRUE, the type will be looked up in the internal list (very fast). But if this list
@@ -147,7 +151,7 @@ public:
   // Note: AddMacro(Fast) will update the internal list and RemoveProcess(/Selection)Macros respectively.
   AliEveListAnalyserMacroType GetMacroType(const Char_t* name, const Char_t* objectType = "TObject", Bool_t UseList = kTRUE) const; 
   
-  TClass* GetMacroObjectType(const Char_t* name) const;
+  //void RemovePrimSelectedObjects();
   void RemoveSelectedMacros(const TList* iterator);
   void ResetObjectList();
   Bool_t StartAddingObjects();
@@ -260,7 +264,7 @@ public:
     { return fPath;  }
   AliEveListAnalyser::AliEveListAnalyserMacroType GetType() const   // Returns the type of the macro
     { return fType;  }
-  Bool_t IsProcessMacro() const             // Returns whether the macro is a process type macro or not
+  Bool_t IsProcessMacro() const               // Returns whether the macro is a process type macro or not
   {
     switch (fType)
     {
@@ -304,7 +308,7 @@ public:
     memset(fName, '\0', sizeof(Char_t) * MAX_MACRO_NAME_LENGTH);
     sprintf(fName, "%s", newName);
   }
-  void SetObjectType(TClass* newObjectType)     // Sets the object type of the macro parameter
+  void SetObjectType(TClass* newObjectType)   // Sets the object type of the macro parameter
   { 
     fObjectType = newObjectType;
   }

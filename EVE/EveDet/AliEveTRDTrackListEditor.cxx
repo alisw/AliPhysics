@@ -986,7 +986,7 @@ void AliEveTRDTrackListEditor::UpdateDataFromMacroListSelection()
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateHistoCanvasTab()
 {
-   // Updates the histogram and the corresponding tab (including titles).
+  // Updates the histogram and the corresponding tab (including titles).
 
   // Update name of the tab (tab has been set to current tab!)
   fHistoCanvasName->SetString(fM->GetName());  
@@ -1092,8 +1092,14 @@ void AliEveTRDTrackListEditor::UpdateMacroListSelection(Int_t ind)
 }
 
 
+//______________________________________________________
+//______________________________________________________
+//______________________________________________________
+
+
 /////////////////////////////////////////////////
 ClassImp(AliEveTRDMacroWizard)
+/////////////////////////////////////////////////
 
 //______________________________________________________
 AliEveTRDMacroWizard::AliEveTRDMacroWizard(const TGWindow* p)
@@ -1104,6 +1110,8 @@ AliEveTRDMacroWizard::AliEveTRDMacroWizard(const TGWindow* p)
   ,fbCreate(0x0)
   ,fbCancel(0x0)
 {
+  // Creates the macro wizard.
+
   const Int_t width = 300;
 
   // horizontal frame
@@ -1253,6 +1261,8 @@ const Char_t *fMacroTemplate[7] = {
 //______________________________________________________
 void AliEveTRDMacroWizard::Create(Int_t type)
 {
+  // Creates the macro with the selected type (combo box).
+
   const Char_t *name = fText->GetText();
   if(strcmp(name,"")==0){
     AliInfo("Please specify a name for your macro.");
@@ -1328,11 +1338,15 @@ void AliEveTRDMacroWizard::Create(Int_t type)
 //______________________________________________________
 void AliEveTRDMacroWizard::Create(Char_t *name)
 {
+  // Emits the creation signal.
+
   Emit("Create(Char_t*)", Form("%s.C", name));
 }
 
 //______________________________________________________
 void AliEveTRDMacroWizard::HandleCreate()
 {
+  // Handles the signal, when the creation button is pressed.
+
   Create(fCombo->GetSelected());
 }

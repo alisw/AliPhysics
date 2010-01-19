@@ -1,29 +1,32 @@
-// Author: Benjamin Hess   06/11/2009
+// Author: Benjamin Hess   15/01/2010
 
 /*************************************************************************
- * Copyright (C) 2009, Alexandru Bercuci, Benjamin Hess.                 *
+ * Copyright (C) 2009-2010, Alexandru Bercuci, Benjamin Hess.            *
  * All rights reserved.                                                  *
  *************************************************************************/
 
-// TODO: Documentation
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// AliEveListAnalyser                                           //
+// AliEveListAnalyser                                                   //
 //                                                                      //
-// An AliEveListAnalyser is, in principal, a TEveElementList    //
-// with some sophisticated features. You can add macros to this list,   //
-// which then can be applied to the list of tracks (these tracks can be //
-// added to the list in the same way as for the TEveElementList).       //
+// An AliEveListAnalyser is, in principal, a TEveElementList with some  //
+// sophisticated features. You can add macros to this list, which then  //
+// can be applied to the list of analysis objects (these objects can be //
+// added to the list in the same way as for the TEveElementList, but    //
+// also "by clicking" (cf. AliEveListAnaLyserEditor)).                  //
 // In general, please use AddMacro(...) for this purpose.               //
 // Macros that are no longer needed can be removed from the list via    //
-// RemoveSelectedMacros(...).This function takes an iterator of the     //
+// RemoveSelectedMacros(...). This function takes an iterator of the    //
 // list of macros that are to be removed.                               //
-// be removed. An entry looks like:                                     //
+// An entry looks like:                                                 //
 // The data for each macro consists of path, name, type and the command //
 // that will be used to apply the macro. This stuff is stored in a map  //
 // which takes the macro name for the key and the above mentioned data  //
 // in a TGeneralMacroData-object for the value.                         //
 // You can get the macro type via GetMacroType(...).                    //
+// To find the type of objects the macro will deal with (corresponds to //
+// "YourObjectType" in the examples below) please use                   //
+// GetMacroObjectType(...).                                             //
 // With ApplySTSelectionMacros(...) or ApplyProcessMacros(...)          //
 // respectively you can apply the macros to the track list via          //
 // iterators (same style like for RemoveSelectedMacros(...)(cf. above)).//
@@ -38,15 +41,15 @@
 //                                                                      //
 // Currently, the following macro types are supported:                  //
 // Selection macros:                                                    //
-// Bool_t YourMacro(const YourObjectType*);                              //
-// Bool_t YourMacro(const YourObjectType*, const YourObjectType*);        //
+// Bool_t YourMacro(const YourObjectType*);                             //
+// Bool_t YourMacro(const YourObjectType*, const YourObjectType*);      //
 //                                                                      //
 // Process macros:                                                      //
-// void YourMacro(const YourObjectType*, Double_t*&, Int_t&);            //
-// void YourMacro(const YourObjectType*, const YourObjectType*,           //
+// void YourMacro(const YourObjectType*, Double_t*&, Int_t&);           //
+// void YourMacro(const YourObjectType*, const YourObjectType*,         //
 //                Double_t*&, Int_t&);                                  //
-// TH1* YourMacro(const YourObjectType*);                                //
-// TH1* YourMacro(const YourObjectType*, const YourObjectType*);          //
+// TH1* YourMacro(const YourObjectType*);                               //
+// TH1* YourMacro(const YourObjectType*, const YourObjectType*);        //
 //                                                                      //
 // The macros which take 2 tracks are applied to all track pairs        //
 // (whereby BOTH tracks of the pair have to be selected by the single   //
@@ -60,24 +63,21 @@
 // Uncomment to display debugging infos
 //#define AliEveListAnalyser_DEBUG
 
+#include <TEveManager.h>
+#include <TEveSelection.h>
 #include <TFile.h>
 #include <TFunction.h>
-#include <TMethodArg.h>
 #include <TH1.h>
 #include <TList.h>
 #include <TMap.h>
+#include <TMethodArg.h>
+#include <TMethodCall.h>
 #include <TObjString.h>
+#include <TQObject.h>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TTree.h>
 #include <TTreeStream.h>
-#include <TMethodCall.h>
-
-//TODO - NEW -> Ordering! resp. remove the non-needed files 
-#include <TQObject.h>
-#include <TEveManager.h>
-#include <TGLSelectRecord.h>
-#include <TGLViewer.h>
 
 #include <AliTRDReconstructor.h>
 
@@ -87,7 +87,7 @@
 ClassImp(AliEveListAnalyser)
 
 ///////////////////////////////////////////////////////////
-/////////////   AliEveListAnalyser ////////////////
+/////////////   AliEveListAnalyser ////////////////////////
 ///////////////////////////////////////////////////////////
 AliEveListAnalyser::AliEveListAnalyser(const Text_t* n, const Text_t* t, Bool_t doColor):
   TEveElementList(n, t, doColor),
@@ -274,69 +274,163 @@ Bool_t AliEveListAnalyser::AddMacroFast(const Char_t* path, const Char_t* name, 
   return success;
 }
 
-//TODO - NEW - To be implemented, tested, documented
+
 //______________________________________________________
-void AliEveListAnalyser::AddObjectToList(Int_t pointId)
+Int_t AliEveListAnalyser::AddPrimSelectedObject(TEveElement* el)
 {
-  TEvePointSet* ps = dynamic_cast<TEvePointSet*>((TQObject*) gTQSender);
+  // Adds the TEveElement el to the list. If it is already in the list, it is removed.
+  // This function is designed to be used together with a signal:
+  // It adds the (primarily) selected objects in the viewer to the list (objects that are already in the list are removed!).
+  // Returns "ERROR" (cf. defines) on error, "WARNING" if the element does not contain any user data and else "SUCCESS" (i.e.
+  // the element has been added successfully or the element is the list itself and therefore ignored, or the element is ignored 
+  // because it has been added via secondary selection).
+ 
+  if (!el)
+  {
+    Error("AliEveListAnalyser::AddPrimSelectedObject", "Zero pointer!\n");
+
+    return ERROR;
+  }
+
+  // If the clicked element is the list itself, just do nothing.
+  if (el == this)  return SUCCESS;
   
+  if (!this->HasChild(el))
+  {
+
+    // Ignore objects that do not have any user data, since these cannot be used in the analysis!
+    if (el->GetUserData() == 0x0)
+    {
+      Warning("AddPrimSelectedObject", "Selected object does not contain any \"user data\" and therefore is ignored!");
+
+      return WARNING;
+    }
+
+    // Element clicked that is not in the list (and is not the list itself!) -> Add this element to list
+    this->AddElement(el);
+  }
+  else
+  {
+    // Element clicked that is already in the list. Remove it. But: Only take care of objects that have been added
+    // via primary selection (name does not start with "[sec")
+    if (TString(el->GetElementName()).BeginsWith("[sec:"))  return SUCCESS;
+    this->RemoveElement(el);
+  } 
+
+  this->SetTitle(Form("Objects %d", this->NumChildren()));
+  gEve->Redraw3D();
+
+  return SUCCESS;
+}
+
+
+/*
+//______________________________________________________
+void AliEveListAnalyser::AddPrimSelectedObjects()
+{
+  // Adds the (primarily) selected objects in the viewer to the list (objects that are already in the list are ignored).
+  // Hold the CTRL-key for multiple selection.
+
+  TEveSelection* eveSel = gEve->GetSelection();
+  if (!eveSel)
+  {
+    Error("AliEveListAnalyser::AddPrimSelectedObjects", "Failed to get the selection!\n");
+    return;
+  }
+  
+  TEveElement* elem = 0x0;
+  Bool_t changedSomething = kFALSE;
+
+  for (TEveElement::List_i iter = eveSel->BeginChildren(); iter != eveSel->EndChildren(); ++iter)
+  {
+    if(!(elem = dynamic_cast<TEveElement*>(*iter))) continue;
+
+    if (!this->HasChild(elem) && elem != this)
+    {
+      // Element clicked that is not in the list (and is not the list itself!) -> Add this element to list
+      this->AddElement(elem);
+      this->SetTitle(Form("Objects %d", this->NumChildren()));
+      changedSomething = kTRUE;
+    }
+  }
+
+  if (changedSomething) gEve->Redraw3D();
+}
+*/
+
+//______________________________________________________
+void AliEveListAnalyser::AddSecSelectedSingleObjectToList(Int_t pointId)
+{
+  // This function adds the selected object (secondary selection in the viewer) to the list
+  // of analysis objects. If the object is already in the list, it will be removed from it.
+  // This function is used to add single objects of a TEvePointset, e.g. single clusters.
+
+  TEvePointSet* ps = dynamic_cast<TEvePointSet*>((TQObject*) gTQSender);
   if (!ps)
   {
-    Error("AliEveListAnalyser::AddObjectToList", "Zero pointer!\n");
+    Error("AliEveListAnalyser::AddSecSelectedSingleObjectToList", "Zero pointer!\n");
     return;
   }
 
   // Check, if object is already there. If so, remove it!
   
-  // 1st possibility: Object of the list clicked
+  // 1st possibility: Object of the list clicked. But: Only take care of objects that have been added
+  // via secondary selection (name starts with "[sec"). Note: HasChild will also return kTRUE, if e.g.
+  // the whole TEvePointSet of clusters is in the last (but maybe another point of it has been clicked!)
+
   if (this->HasChild(ps))
   {
-    this->RemoveElement(ps);
-    return;
+    if (TString(ps->GetName()).BeginsWith("[sec:"))
+    {
+      // I don't know why, but you get a crash, if you try this->RemoveElement(ps) (in some cases).
+      // So, use this way instead.
+      //this->RemoveElement((TEveElement*)ps);
+      TEveElement* listObj = this->FindChild(ps->GetName());
+      if (listObj)
+      {
+        this->RemoveElement(listObj);
+        this->SetTitle(Form("Objects %d", this->NumChildren()));
+        gEve->Redraw3D();
+      }
+
+      return;
+    }
   }
-    
+  
   TObject* obj = ps->GetPointId(pointId);
   if (obj)
   {
     // 2nd possibility: Same object clicked again
     TEveElement* listObj = 0x0;
-    listObj = this->FindChild(Form("[viewer:%d] %s%d", obj->GetUniqueID(), obj->GetName(), pointId));
+    listObj = this->FindChild(Form("[sec:%d] %s%d", obj->GetUniqueID(), obj->GetName(), pointId));
     if (listObj)
     {
       this->RemoveElement(listObj);  
+      this->SetTitle(Form("Objects %d", this->NumChildren()));
+
+      gEve->Redraw3D();
       return;
     }
 
     // Object clicked that is not in the list -> Add this object to list
-    TEvePointSet* newPS = new TEvePointSet(Form("[viewer:%d] %s%d", obj->GetUniqueID(), obj->GetName(), pointId));
+    TEvePointSet* newPS = new TEvePointSet(Form("[sec:%d] %s%d", obj->GetUniqueID(), obj->GetName(), pointId));
     Double_t x = 0, y = 0, z = 0;
     ps->GetPoint(pointId, x, y, z);
     newPS->SetPoint(0, x, y, z);
     newPS->SetUserData(obj);
+    // Choose yellow for the added points and inherit style and size for the marker
     newPS->SetMarkerColor(5);
-    newPS->SetMarkerStyle(2);
-    newPS->SetMarkerSize(2.0);
+    newPS->SetMarkerStyle(ps->GetMarkerStyle());
+    newPS->SetMarkerSize(ps->GetMarkerSize());
 
-    AddElement(newPS);
+    this->AddElement(newPS);
+    this->SetTitle(Form("Objects %d", this->NumChildren()));
     gEve->Redraw3D();
   }
   else
   {
-    Error("AliEveListAnalyser::AddObjectToList", "Selected object is NULL and therefore ignored!");
+    Error("AliEveListAnalyser::AddSecSelectedSingleObjectToList", "Selected object is NULL and therefore ignored!");
   }
-
-/*
-  TGLSelectRecord rec = gEve->GetDefaultGLViewer()->GetSelRec();
-
-  printf("Objects (%d):\n", rec.GetN());
-  for (int i = 0; i < rec.GetN(); i++)
-  {
-    //printf("%s\n", ((TObject*)rec.GetItem(i))->IsA()->GetName());
-  }
-*/
-  
-  //printf("Type: %s\npointID: %s\n\n", ps->IsA()->GetName(), pointId);
-  //printf("Type objectsender: %s\nType sender: %s\n", ((TQObject*)gTQSender)->IsA()->GetName(), ((TQObjSender*)gTQSender)->IsA()->GetName());
 }
 
 //______________________________________________________
@@ -522,9 +616,9 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
   for (Int_t i = 0; i < numHistoMacros; i++)  histos[i] = 0x0;
 
 
-  //////////////////////////////////
-  // WALK THROUGH THE LIST OF OBJECTS
-  //////////////////////////////////     
+  //////////////////////////////////////
+  // WALK THROUGH THE LIST OF OBJECTS //
+  //////////////////////////////////////     
   for (TEveElement::List_i iter = this->BeginChildren(); iter != this->EndChildren(); ++iter){
     if(!(object1 = dynamic_cast<TEveElement*>(*iter))) continue;
 
@@ -808,6 +902,35 @@ void AliEveListAnalyser::ApplySTSelectionMacros(const TList* iterator)
 }
 
 //______________________________________________________
+TClass* AliEveListAnalyser::GetMacroObjectType(const Char_t* name) const
+{
+  // Returns the type of object the macro with name "name" is dealing with; 
+  // e.g. if you have the signature:
+  // void MyMacro(const AliTRDtrackV1* track, Double_t* &results, Int_t& nResults)
+  // the call 'GetMacroObjectType("MyMacro")' yields the AliTRDtrackV1-class.
+  // If the macro is not found (or there is an error), 0x0 is returned.
+
+  TFunction* f = gROOT->GetGlobalFunction(name, 0 , kTRUE);
+  TMethodArg* m = 0;
+  TList* list = 0;
+
+  if (f)
+  {
+    list = f->GetListOfMethodArgs();
+    
+    if (!list->IsEmpty())
+    {
+      m = (TMethodArg*)list->At(0);
+
+      if (m)  return TClass::GetClass(m->GetTypeName());
+    }
+  }  
+
+  // Error
+  return 0x0;
+}
+
+//______________________________________________________
 AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType(const Char_t* name, const Char_t* objectType, Bool_t UseList) const
 {
   // Returns the type of the corresponding macro, that accepts pointers of the class "objectType" as a parametre. 
@@ -1002,29 +1125,41 @@ AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType
   return type;
 }
 
-// TODO: DOCUMENTATION
+
+/*
 //______________________________________________________
-TClass* AliEveListAnalyser::GetMacroObjectType(const Char_t* name) const
+void AliEveListAnalyser::RemovePrimSelectedObjects()
 {
-  TFunction* f = gROOT->GetGlobalFunction(name, 0 , kTRUE);
-  TMethodArg* m = 0;
-  TList* list = 0;
+  // Removes the (primarily) selected objects in the viewer from the list (objects that are already in the list are ignored).
+  // Hold the CTRL-key for multiple selection.
 
-  if (f)
+  TEveSelection* eveSel = gEve->GetSelection();
+
+  if (!eveSel)
   {
-    list = f->GetListOfMethodArgs();
-    
-    if (!list->IsEmpty())
+    Error("AliEveListAnalyser::RemovePrimSelectedObjects", "Failed to get the selection!\n");
+    return;
+  }
+  
+  TEveElement* elem = 0x0;
+  Bool_t changedSomething = kFALSE;
+
+  for (TEveElement::List_i iter = eveSel->BeginChildren(); iter != eveSel->EndChildren(); ++iter)
+  {
+    if(!(elem = dynamic_cast<TEveElement*>(*iter))) continue;
+
+    // Check, if element is already there. If so, remove it!
+    if (this->HasChild(elem) && elem != this)
     {
-      m = (TMethodArg*)list->At(0);
-
-      if (m)  return TClass::GetClass(m->GetTypeName());
+      this->RemoveElement(elem);
+      this->SetTitle(Form("Objects %d", this->NumChildren()));
+      changedSomething = kTRUE;
     }
-  }  
+  }
 
-  // Error
-  return 0x0;
+  if (changedSomething) gEve->Redraw3D();
 }
+*/
 
 //______________________________________________________
 void AliEveListAnalyser::RemoveSelectedMacros(const TList* iterator) 
@@ -1073,23 +1208,28 @@ void AliEveListAnalyser::RemoveSelectedMacros(const TList* iterator)
 //______________________________________________________
 void AliEveListAnalyser::ResetObjectList()
 {
-  // Remove all objects from the list.
+  // Removes all objects from the list.
 
   RemoveElements();
+  this->SetTitle(Form("Objects %d", this->NumChildren()));
 }
 
 //______________________________________________________
 Bool_t AliEveListAnalyser::StartAddingObjects()
 { 
-  // Start adding objects for the analysis. Returns kTRUE on success.
+  // Starts adding objects for the analysis. Returns kTRUE on success.
 
   if (fConnected == kFALSE)
   {
-    fConnected = TQObject::Connect("TEvePointSet", "PointSelected(Int_t)", "AliEveListAnalyser", this, "AddObjectToList(Int_t)");
-    //fConnected = TQObject::Connect("TEvePointSet", "Message(char*)", "AliEveListAnalyser", this, "AddObjectToList(char*)");
+    fConnected = TQObject::Connect("TEvePointSet", "PointSelected(Int_t)", "AliEveListAnalyser", this, "AddSecSelectedSingleObjectToList(Int_t)");
+    if (fConnected)  fConnected = TQObject::Connect(gEve->GetSelection(), "SelectionAdded(TEveElement*)", "AliEveListAnalyser", this, "AddPrimSelectedObject(TEveElement*)");
+
     if (fConnected) return kTRUE;
     
     Error("AliEveListAnalyser::StartAddingObjects", "Connection failed!");
+    
+    // Connection of 2nd signal failed, but first connection succeeded -> Disconnect 1st signal.
+    TQObject::Disconnect("TEvePointSet", "PointSelected(Int_t)", this, "AddObjectToList(Int_t)");
   }
 
   return kFALSE;
@@ -1098,19 +1238,20 @@ Bool_t AliEveListAnalyser::StartAddingObjects()
 //______________________________________________________
 Bool_t AliEveListAnalyser::StopAddingObjects()
 {
-  // Stop adding objects for the analysis. Returns kTRUE on success.
+  // Stops adding objects for the analysis. Returns kTRUE on success.
 
   if (fConnected)
   {
-    //if (TQObject::Disconnect("TEvePointSet", "AddObjectToList(Char_t*)"))  fConnected = kFALSE;
-    if (TQObject::Disconnect("TEvePointSet", "PointSelected(Int_t)", this, "AddObjectToList(Int_t)"))
-    { 
-      fConnected = kFALSE;
-      return kTRUE;
-    }
+    Bool_t dis1 = kFALSE, dis2 = kFALSE;
+    dis1 = TQObject::Disconnect("TEvePointSet", "PointSelected(Int_t)", this, "AddSecSelectedSingleObjectToList(Int_t)");
+    dis2 = TQObject::Disconnect(gEve->GetSelection(), "SelectionAdded(TEveElement*)", this, "AddPrimSelectedObject(TEveElement*)");
+
+    if (dis1 || dis2) fConnected = kFALSE;
+    if (dis1 && dis2) return kTRUE;
     else
     {
       Error("AliEveListAnalyser::StopAddingObjects", "Disconnection failed!");
+
       return kFALSE;
     }
   }
