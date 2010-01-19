@@ -66,6 +66,11 @@ AliCorrQADataMakerRec::AliCorrQADataMakerRec(const AliCorrQADataMakerRec& qadm) 
   SetTitle((const char*)qadm.GetTitle()); 
   if ( fMaxRawVar > 0 ) 
     fVarvalue = new Double_t[fMaxRawVar] ;
+
+  fCorrNt = new TNtupleD *[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    fCorrNt[specie] = qadm.fCorrNt[specie] ; 
+
 }
 
 //__________________________________________________________________
@@ -123,8 +128,15 @@ void AliCorrQADataMakerRec::InitRecPoints()
 void AliCorrQADataMakerRec::InitRaws()
 {
   // createa ntuple taking all the parameters declared by detectors
-  if (fCorrNt[AliRecoParam::AConvert(fEventSpecie)]) 
+  if (fCorrNt && fCorrNt[AliRecoParam::AConvert(fEventSpecie)]) 
     return ; 
+
+  if (!fCorrNt) {
+    fCorrNt = new TNtupleD *[AliRecoParam::kNSpecies] ; ;
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+      fCorrNt[specie] = NULL ;
+  } 
+
   if ( fRawsQAList ) 
   {
     delete[] fRawsQAList ; // not needed for the time being 
@@ -170,7 +182,7 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
 {
   //Fill prepared histograms with Raw digit properties
   
-  if ( ! fCorrNt[AliRecoParam::AConvert(fEventSpecie)])
+  if ( !fCorrNt || ! fCorrNt[AliRecoParam::AConvert(fEventSpecie)])
       InitRaws() ; 
   
   if ( fMaxRawVar > 0 ) {
@@ -180,11 +192,17 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
       if ( ! qadm ) 
         continue ;
       TList * list = qadm->GetParameterList() ; 
-      TIter next(list) ; 
-      TParameter<double> * p ; 
-      while ( (p = static_cast<TParameter<double>*>(next()) ) ) {
-        fVarvalue[index] = p->GetVal() ; 
-        index++ ; 
+      if (list) {
+	TIter next(list) ; 
+	TParameter<double> * p ; 
+	while ( (p = static_cast<TParameter<double>*>(next()) ) ) {
+	  if (index >= fMaxRawVar) {
+	    AliError(Form("Variables list size exceeded (%d) !",index));
+	    break;
+	  }
+	  fVarvalue[index] = p->GetVal() ; 
+	  index++ ; 
+	}
       }
     }
     static_cast<TNtupleD*>(fCorrNt[AliRecoParam::AConvert(fEventSpecie)])->Fill(fVarvalue);
