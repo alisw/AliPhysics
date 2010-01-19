@@ -965,11 +965,11 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
       if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
 	continue;
       }
-      if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
+      if(negativeMC->GetPdgCode() == positiveMC->GetPdgCode()){
 	continue;
       }
 
-      if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){
+      if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){ // id 5 is conversion
 	continue;
       }
 			
@@ -1155,6 +1155,14 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
       }
 			
       if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22){
+
+	if(fDoCF){
+	  Double_t containerInput[3];
+	  containerInput[0] = fV0Reader->GetMotherCandidatePt();
+	  containerInput[1] = fV0Reader->GetMotherCandidateEta();
+	  containerInput[2] = fV0Reader->GetMotherCandidateMass();
+	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepTrueGamma); // for CF 
+	}
 
 	fHistograms->FillHistogram("ESD_TrueConvGamma_Pt", fV0Reader->GetMotherCandidatePt());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_Energy", fV0Reader->GetMotherCandidateEnergy());

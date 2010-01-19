@@ -741,6 +741,7 @@ void AliV0Reader::UpdateEventByEventData(){
   }
   fCurrentEventGoodV0s->Delete();
   fCurrentV0IndexNumber=0;
+  //  fBGEventHandler->PrintBGArray(); // for debugging
 }
 
 
