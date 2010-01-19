@@ -210,6 +210,8 @@ void AliAnalysisTaskSEDStar::UserExec(Option_t */*option*/)
       return;
     }
   }
+
+  Int_t pdgDg[2]={421,211},pdgD0Dg[2]={321,211};
   
   // loop over D*->D0 pi candidates
   Int_t nInDstar = inputArray->GetEntriesFast();
@@ -250,7 +252,7 @@ void AliAnalysisTaskSEDStar::UserExec(Option_t */*option*/)
       }
 
       if(fReadMC) {
-      Int_t labDstar = d->MatchToMC(413,421,mcArray); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+      Int_t labDstar = d->MatchToMC(413,421,pdgDg,pdgD0Dg,mcArray); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
       if(labDstar>=0) {
         //AliAODMCParticle *partDstar = (AliAODMCParticle*)mcArray->At(labDstar);
         //AliAODMCParticle *partPis = (AliAODMCParticle*)mcArray->At(partDstar->GetDaughter(1));
