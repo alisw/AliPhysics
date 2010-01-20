@@ -512,6 +512,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		error |= 256;
 	} else if (iLHCData ==3){
 		Log(Form("Problems in storing LHC Data - but not going into Error"));
+	} else if (iLHCData ==4){
+		Log(Form("Problems with LHC Data to be put in /GRP/GRP/LHCData - but not going into Error"));
 	} else{
 		Log(Form("LHC Data problems"));
 		error |= 512;
@@ -600,6 +602,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 			Log(Form("LHCData map entries = %d",lhcMap->GetEntries()));
 			
 			// Processing data to be put in AliGRPObject
+			// Energy
 			TObjArray* energyArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[0]);
 			Float_t energy = ProcessEnergy(energyArray,timeStart,timeEnd);
 			if (energy != -1) {
@@ -607,48 +610,67 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 				grpobj->SetBeamEnergyIsSqrtSHalfGeV(kTRUE);
 			}
 			
-			TObjArray* machineModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[1]);
+			// BeamMode
 			TObjArray* beamModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[2]);
+			AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
+			TObjString* beamModeString = beamMode->GetStringArray(0);
+			Double_t timeBeamMode = 0;
 			if (beamModeArray->GetEntries()!=1){
-				AliWarning("The beam mode changed! Setting it to UNKNOWN and storing array of strings");
-				grpobj->SetLHCState("UNKNOWN");
-				grpobj->SetLHCStateArray(beamModeArray);
+				timeBeamMode = beamMode->GetTimeStamp();
+				AliWarning(Form("The beam mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeBeamMode));
 			}
-			else{
-				AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
-				TObjString* beamModeString = beamMode->GetStringArray(0);
-				AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
-				grpobj->SetLHCState(beamModeString->String());
+			AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
+			grpobj->SetLHCState(beamModeString->String());
+			
+			// MachineMode
+			TObjArray* machineModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[1]);
+			AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
+			TObjString* machineModeString = machineMode->GetStringArray(0);
+			Double_t timeMachineMode = 0;
+			if (machineModeArray->GetEntries()!=1){
+				timeMachineMode = machineMode->GetTimeStamp();
+				AliWarning(Form("The machine mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeMachineMode));
+			}
+			AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
+			grpobj->SetMachineMode(machineModeString->String());
+			
+			if (timeBeamMode!=0 || timeMachineMode!=0){
+				Double_t minTimeLHCValidity;
+ 				if (timeBeamMode == 0){
+					minTimeLHCValidity = timeMachineMode;
+				}
+				else if (timeMachineMode == 0){
+					minTimeLHCValidity = timeBeamMode;
+				}
+				else {
+					minTimeLHCValidity= TMath::Min(timeBeamMode,timeMachineMode);
+				}
+				AliWarning(Form("Setting MaxTimeLHCValidity to %f",minTimeLHCValidity));
+				grpobj->SetMaxTimeLHCValidity(minTimeLHCValidity);
 			}
 			
-			if (machineModeArray->GetEntries()!=1){
-				AliWarning("The machine mode changed! Setting it to UNKNOWN and storing array of strings");
-				grpobj->SetMachineMode("UNKNOWN");
-				grpobj->SetMachineModeArray(machineModeArray);
-			}
-			else{
-				AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
-				TObjString* machineModeString = machineMode->GetStringArray(0);
-				AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
-				grpobj->SetMachineMode(machineModeString->String());
-			}
+			// BeamType1 and BeamType2 
 			TObjArray* beam1Array = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[3]);
+			AliInfo(Form("%d entries for Beam1",beam1Array->GetEntries()));
 			TObjArray* beam2Array = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[4]);
+			AliInfo(Form("%d entries for Beam2",beam2Array->GetEntries()));
 			
 			// Processing data to go to AliLHCData object
 			AliLHCData* dt = new AliLHCData(lhcMap,timeStart,timeEnd);
 							
 			// storing AliLHCData in OCDB
-			
-			AliCDBMetaData md;
-			md.SetResponsible("Ruben Shahoyan");
-			md.SetComment("LHC data from the GRP preprocessor.");
-	
-			Bool_t result = kTRUE;
-			result = Store("GRP", "LHCData", dt, &md); 
-			delete dt;
-			if (result) return 0;
-			else return 3;
+			if (dt){			
+				AliCDBMetaData md;
+				md.SetResponsible("Ruben Shahoyan");
+				md.SetComment("LHC data from the GRP preprocessor.");
+				
+				Bool_t result = kTRUE;
+				result = Store("GRP", "LHCData", dt, &md); 
+				delete dt;
+				if (result) return 0;
+				else return 3;
+			}
+			else return 4;
 		}
 		else {
 			AliError("Cannot read correctly LHCData file");

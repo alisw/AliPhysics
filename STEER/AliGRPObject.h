@@ -87,6 +87,8 @@ class AliGRPObject : public TObject {
 	Int_t    GetPoints() const {return fPoints;}
 	Int_t    GetDimension() const {return fDimension;}
 
+	Double_t GetMaxTimeLHCValidity() const {return fMaxTimeLHCValidity;}
+
 	// setters
  	void SetBeamEnergyIsSqrtSHalfGeV(Bool_t v=kTRUE) {SetBit(kConvSqrtSHalfGeV,v);}
  	void SetPolarityConventionLHC(Bool_t v=kTRUE) {return SetBit(kPolConvLHC,v);}
@@ -138,6 +140,7 @@ class AliGRPObject : public TObject {
 	void SetHallProbes(DP_HallProbes hp, const Float_t* hall_probe);  
 	void SetPoints(Int_t points) {fPoints = points;}
 	void SetDimension(Int_t dimension) {fDimension = dimension;}
+	void SetMaxTimeLHCValidity(Double_t maxTimeLHCValidity) {fMaxTimeLHCValidity = maxTimeLHCValidity;}
 
 	// getters for "invalid" flags
 
@@ -203,7 +206,9 @@ class AliGRPObject : public TObject {
 	TObjArray* fLHCStateArray;     // Array of values for the LHC State
 	TObjArray* fMachineModeArray;  // Array of values for the LHC State
 
-	ClassDef(AliGRPObject,4)
+	Double_t fMaxTimeLHCValidity;    // time until which the LHC Data Machine Mode and Beam Mode didn't change 
+
+	ClassDef(AliGRPObject,5)
 
 };
 

@@ -109,7 +109,8 @@ AliGRPObject::AliGRPObject():
 	fHallProbes(0x0),
 	fMachineMode(fgkInvalidString),
 	fLHCStateArray(0x0),
-	fMachineModeArray(0x0)
+	fMachineModeArray(0x0),
+	fMaxTimeLHCValidity(0)
 {
 
 	//
@@ -163,8 +164,8 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	fHallProbes(0x0),
 	fMachineMode(obj.fMachineMode),
 	fLHCStateArray(obj.fLHCStateArray),
-	fMachineModeArray(obj.fMachineModeArray)
-
+	fMachineModeArray(obj.fMachineModeArray),
+	fMaxTimeLHCValidity(obj.fMaxTimeLHCValidity)
 
 {
 
@@ -242,7 +243,7 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	this->fMachineMode = obj.fMachineMode;
 	this->fLHCStateArray = obj.fLHCStateArray;
 	this->fMachineModeArray = obj.fMachineModeArray;
-
+	this->fMaxTimeLHCValidity = obj.fMaxTimeLHCValidity;
 	return *this;
 }
 
