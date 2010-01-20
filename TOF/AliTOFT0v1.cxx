@@ -13,28 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTOFT0v1.cxx,v 1.8 2003/10/23 16:32:20 hristov Exp $ */
+/* $Id: AliTOFT0v1.cxx,v 1.8 2010/01/19 16:32:20 noferini Exp $ */
 
 //_________________________________________________________________________
 // This is a TTask that made the calculation of the Time zero using TOF.
 // Description: The algorithm used to calculate the time zero of interaction
 // using TOF detector is the following.
-// We select in the MonteCarlo some primary particles - or tracks in the following - 
+// We select in the ESD some "primary" particles - or tracks in the following - 
 // that strike the TOF detector (the larger part are pions, kaons or protons). 
 // We choose a set of 10 selected tracks, for each track You have the length
-// of the track when the TOF is reached (a standard TOF hit does not contain this
-// additional information, this is the reason why we implemented a new time zero 
-// dedicated TOF hit class AliTOFhitT0; in order to store this type of hit You 
-// have to use the AliTOFv4T0 as TOF class in Your Config.C. In AliTOFv4T0 the 
-// StepManager was modified in order to fill the TOF hit branch with this type 
-// of hits; in fact the AliTOF::AddT0Hit is called rather that the usual AliTOF::AddHit), 
-// the momentum at generation (from TreeK) and the time of flight
+// of the track when the TOF is reached, 
+// the momentum and the time of flight
 // given by the TOF detector.
-// (Observe that the ctor of the AliTOF class, when the AliTOFv4T0 class is used, is called
-// with the "tzero" option: it is in order create the fHits TClonesArray filled with
-// AliTOFhitT0 objects, rather than with normal AliTOFhit)
-// Then Momentum and time of flight for each track are smeared according to 
-// known experimental resolution (all sources of error have been token into account).
 // Let consider now only one set of 10 tracks (the algorithm is the same for all sets).
 // Assuming the (mass) hypothesis that each track can be AUT a pion, AUT a kaon, AUT a proton,
 // we consider all the 3 at 10 possible cases. 
@@ -62,7 +52,7 @@
 //                   assignment
 // Different Selections for pp and Pb-Pb: Momentum Range, Max Time, # pions 
 //-- Author: F. Pierella
-//-- Mod By SA.
+//-- Mod By Silvia Arcelli, Francesco Noferini, Barbara Guerzoni
 //////////////////////////////////////////////////////////////////////////////
 
 #include "Riostream.h"
@@ -181,10 +171,10 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
  Float_t timeresolutioninns=fTimeResolution*(1.e+9) * TMath::Sqrt(2.); // convert in [ns]
   
   const Int_t nmaxtracksinset=10;
-  if(strstr(option,"all")){
-    cout << "Selecting primary tracks with momentum between " << fLowerMomBound << " GeV/c and " << fUpperMomBound << " GeV/c" << endl;
-    cout << "Memorandum: 0 means PION | 1 means KAON | 2 means PROTON" << endl;
-  }
+//   if(strstr(option,"all")){
+//     cout << "Selecting primary tracks with momentum between " << fLowerMomBound << " GeV/c and " << fUpperMomBound << " GeV/c" << endl;
+//     cout << "Memorandum: 0 means PION | 1 means KAON | 2 means PROTON" << endl;
+//   }
   
   
   Int_t nsets=0;
@@ -233,9 +223,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
   }
   
   
-  cout << " N. of ESD tracks                    : " << ntrk << endl;
-  cout << " N. of preselected tracks            : " << ngoodtrk << endl;
-  cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
+//   cout << " N. of ESD tracks                    : " << ntrk << endl;
+//   cout << " N. of preselected tracks            : " << ngoodtrk << endl;
+//   cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
   
   AliESDtrack **gtracks=new AliESDtrack*[ngoodtrk];
   
@@ -255,7 +245,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
   if(nmaxtracksinsetCurrent*nseteq < ngoodtrkt0) nmaxtracksinsetCurrent++;
 
   if(ngoodtrkt0<2){
-    cout << "less than 2 tracks, skip event " << endl;
+//     cout << "less than 2 tracks, skip event " << endl;
     t0def=-999;
     deltat0def=0.600;
     fT0SigmaT0def[0]=t0def;
@@ -270,9 +260,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
     Int_t nset=1;
 
     if(ngoodtrkt0>nmaxtracksinsetCurrent) {nset= (Int_t)(ngoodtrkt0/ntracksinset)+1;} 
-    
-    cout << " number of sets = " << nset << endl;
-    
+        
     // Loop over selected sets
     
     if(nset>=1){
@@ -361,7 +349,6 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  
 	} //end  for (Int_t j=0; j<ntracksinsetmy; j++) {
 	
-	cout << "starting t0 calculation for current set" << endl;
 	for (Int_t itz=0; itz<ntracksinsetmy;itz++) {
 	  beta[itz]=momentum[itz]/sqrt(massarray[0]*massarray[0]
 				       +momentum[itz]*momentum[itz]);
@@ -454,7 +441,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	
 	Double_t chi2singlecut = chi2cut[ntracksinsetmy-1]/ntracksinsetmy + TMath::Abs(chisquarebest-chi2cut[ntracksinsetmy-1])/ntracksinsetmy;
 	
-	printf("tracks removed with a chi2 > %f (chi2total = %f w.r.t. the limit of %f)\n",chi2singlecut,chisquarebest,chi2cut[ntracksinsetmy-1]);
+// 	printf("tracks removed with a chi2 > %f (chi2total = %f w.r.t. the limit of %f)\n",chi2singlecut,chisquarebest,chi2cut[ntracksinsetmy-1]);
 	
 	Bool_t kRedoT0 = kFALSE;
         ntracksinsetmyCut = ntracksinsetmy;
@@ -468,11 +455,11 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  }
 	} // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	
-	printf("ntrackinsetmy = %i - %i\n",ntracksinsetmy,ntracksinsetmyCut);
+	//	printf("ntrackinsetmy = %i - %i\n",ntracksinsetmy,ntracksinsetmyCut);
 	
 	// Loop on mass hypotheses Redo
 	if(kRedoT0 && ntracksinsetmyCut > 1){
-	  printf("Redo T0\n");
+	  //	  printf("Redo T0\n");
 	  for (Int_t k=0; k < ncombinatorial;k++) {
 	    for (Int_t j=0; j<ntracksinsetmy; j++) {
 	      imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j))) / Int_t(TMath::Power(3,ntracksinsetmy-j-1));
@@ -537,22 +524,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	    
 	  }
 	}
-	
-	if(chisquarebest >= 999){
-	  printf("How is it possible (chi2 = %f)? T0best = %f\n",chisquarebest,t0best);
-	  
-	  for(Int_t icsq=0; icsq<ntracksinsetmy;icsq++){
-	    cout << "Track # " << icsq  << " T0 offsets = " 
-		 << besttimezero[icsq]-t0best << 
-	      " track error = "  << bestsqTrackError[icsq]
-		 << " Chisquare = " << bestchisquare[icsq] 
-		 << " Momentum  = " << bestmomentum[icsq] 
-		 << " TOF   = "     << besttimeofflight[icsq] 
-		 << " TOF tracking  = " << besttexp[icsq]
-		 << " is used = " << usetrack[icsq] << endl;
-	  }
-	}
-	
+		
 	// filling histos
 	Float_t confLevel=999;
 	
@@ -561,27 +533,27 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	if(chisquarebest<999.){
 	  Double_t dblechisquare=(Double_t)chisquarebest;
 	  confLevel=(Float_t)TMath::Prob(dblechisquare,ntracksinsetmyCut-1); 
-	  cout << " Set Number " << nsets << endl;	
-	  cout << "Best Assignment, selection " << assparticle[0] << 
-	    assparticle[1] << assparticle[2] << 
-	    assparticle[3] << assparticle[4] << 
-	    assparticle[5] << endl;
-	  cout << " Chisquare of the set "<< chisquarebest <<endl;
-	  cout << " C.L. of the set "<< confLevel <<endl;
-	  cout << " T0 for this set (in ns)  " << t0best << endl;
+// 	  cout << " Set Number " << nsets << endl;	
+// 	  cout << "Best Assignment, selection " << assparticle[0] << 
+// 	    assparticle[1] << assparticle[2] << 
+// 	    assparticle[3] << assparticle[4] << 
+// 	    assparticle[5] << endl;
+// 	  cout << " Chisquare of the set "<< chisquarebest <<endl;
+// 	  cout << " C.L. of the set "<< confLevel <<endl;
+// 	  cout << " T0 for this set (in ns)  " << t0best << endl;
 
 	  for(Int_t icsq=0; icsq<ntracksinsetmy;icsq++){
 
 	    if(! usetrack[icsq]) continue;
 	    
-	    cout << "Track # " << icsq  << " T0 offsets = " 
-		 << besttimezero[icsq]-t0best << 
-	      " track error = "  << bestsqTrackError[icsq]
-		 << " Chisquare = " << bestchisquare[icsq] 
-		 << " Momentum  = " << bestmomentum[icsq] 
-		 << " TOF   = "     << besttimeofflight[icsq] 
-		 << " TOF tracking  = " << besttexp[icsq]
-		 << " is used = " << usetrack[icsq] << endl;
+// 	    cout << "Track # " << icsq  << " T0 offsets = " 
+// 		 << besttimezero[icsq]-t0best << 
+// 	      " track error = "  << bestsqTrackError[icsq]
+// 		 << " Chisquare = " << bestchisquare[icsq] 
+// 		 << " Momentum  = " << bestmomentum[icsq] 
+// 		 << " TOF   = "     << besttimeofflight[icsq] 
+// 		 << " TOF tracking  = " << besttexp[icsq]
+// 		 << " is used = " << usetrack[icsq] << endl;
 	  }
 	  
 	  // Pick up only those with C.L. >1%
@@ -597,7 +569,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	    ngoodtrktrulyused+=ntracksinsetmyCut;	    
 	  }
 	  else{
-	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
+	    //	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
 	  }
 	}	
 	delete[] tracksT0;
@@ -618,7 +590,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  
 	}// end of if(sumWt0bestallSel>0){
 	
-	cout << "T0 all " << t0bestallSel << " +/- " << eT0bestallSel << "Number of tracks used: "<<ngoodtrktrulyused<<endl;
+// 	cout << "T0 all " << t0bestallSel << " +/- " << eT0bestallSel << "Number of tracks used: "<<ngoodtrktrulyused<<endl;
       }
       
       t0def=t0bestallSel;
@@ -629,15 +601,14 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
       
       fT0SigmaT0def[0]=t0def;
       fT0SigmaT0def[1]=TMath::Sqrt(deltat0def*deltat0def*(ngoodtrktrulyused/(ngoodtrktrulyused-1)));
-      fT0SigmaT0def[2]=ngoodtrkt0;//ngoodtrktrulyused;
+      fT0SigmaT0def[2]=ngoodtrkt0;
       fT0SigmaT0def[3]=ngoodtrktrulyused;
     }
   }
   
-  if(strstr(option,"tim") || strstr(option,"all")){
-    cout << "AliTOFT0v1:" << endl ;
-  }
-  printf("T0 from TOF = %f ns\n",fT0SigmaT0def[0]);
+  //   if(strstr(option,"tim") || strstr(option,"all")){
+  //     cout << "AliTOFT0v1:" << endl ;
+  //}
   
   return fT0SigmaT0def;
   }
@@ -649,10 +620,10 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
   Float_t timeresolutioninns=fTimeResolution*(1.e+9); // convert in [ns]
   
   const Int_t nmaxtracksinset=10;
-  if(strstr(option,"all")){
-    cout << "Selecting primary tracks with momentum between " << fLowerMomBound << " GeV/c and " << fUpperMomBound << " GeV/c" << endl;
-    cout << "Memorandum: 0 means PION | 1 means KAON | 2 means PROTON" << endl;
-  }
+//   if(strstr(option,"all")){
+//     cout << "Selecting primary tracks with momentum between " << fLowerMomBound << " GeV/c and " << fUpperMomBound << " GeV/c" << endl;
+//     cout << "Memorandum: 0 means PION | 1 means KAON | 2 means PROTON" << endl;
+//   }
   
   Float_t stripmean = 0;
   
@@ -714,9 +685,9 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
   }
   if(ngoodtrk) stripmean /= ngoodtrk;
   
-  cout << " N. of ESD tracks                    : " << ntrk << endl;
-  cout << " N. of preselected tracks            : " << ngoodtrk << endl;
-  cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
+//   cout << " N. of ESD tracks                    : " << ntrk << endl;
+//   cout << " N. of preselected tracks            : " << ngoodtrk << endl;
+//   cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
   
   AliESDtrack **gtracks=new AliESDtrack*[ngoodtrk];
   
@@ -754,7 +725,7 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
   }
 
   if(ngoodtrkt0<2){
-    cout << "less than 2 tracks, skip event " << endl;
+//     cout << "less than 2 tracks, skip event " << endl;
     t0def=-999;
     deltat0def=0.600;
     fT0SigmaT0def[0]=t0def;
@@ -768,8 +739,6 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
     Int_t ntracksinset = min(ngoodtrkt0,nmaxtracksinsetCurrent);
     Int_t nset=1;
     if(ngoodtrkt0>nmaxtracksinset) {nset= (Int_t)(ngoodtrkt0/ntracksinset)+1;} 
-    
-    cout << " number of sets = " << nset << endl;
     
     // Loop over selected sets
     
@@ -868,7 +837,6 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
 	  
 	} //end  for (Int_t j=0; j<ntracksinsetmy; j++) {
 	
-	cout << "starting t0 calculation for current set" << endl;
 	for (Int_t itz=0; itz<ntracksinsetmy;itz++) {
 	  beta[itz]=momentum[itz]/sqrt(massarray[0]*massarray[0]
 				       +momentum[itz]*momentum[itz]);
@@ -971,7 +939,7 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
 	
 	Double_t chi2singlecut = chi2cut[ntracksinsetmy-1]/ntracksinsetmy + TMath::Abs(chisquarebest-chi2cut[ntracksinsetmy-1])/ntracksinsetmy;
 	
-	printf("tracks removed with a chi2 > %f (chi2total = %f w.r.t. the limit of %f)\n",chi2singlecut,chisquarebest,chi2cut[ntracksinsetmy-1]);
+// 	printf("tracks removed with a chi2 > %f (chi2total = %f w.r.t. the limit of %f)\n",chi2singlecut,chisquarebest,chi2cut[ntracksinsetmy-1]);
 	
 	Bool_t kRedoT0 = kFALSE;
 	ntracksinsetmyCut = ntracksinsetmy;
@@ -985,11 +953,11 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
 	  }
 	} // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	
-	printf("ntrackinsetmy = %i - %i\n",ntracksinsetmy,ntracksinsetmyCut);
+	//	printf("ntrackinsetmy = %i - %i\n",ntracksinsetmy,ntracksinsetmyCut);
 	
 	// Loop on mass hypotheses Redo
 	if(kRedoT0 && ntracksinsetmyCut > 1){
-	  printf("Redo T0\n");
+	  //	  printf("Redo T0\n");
 	  for (Int_t k=0; k < ncombinatorial;k++) {
 	    for (Int_t j=0; j<ntracksinsetmy; j++) {
 	      imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j))) / Int_t(TMath::Power(3,ntracksinsetmy-j-1));
@@ -1065,16 +1033,16 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
 	if(chisquarebest >= 999){
 	  printf("How is it possible (chi2 = %f)? T0best = %f\n",chisquarebest,t0best);
 	  
-	  for(Int_t icsq=0; icsq<ntracksinsetmy;icsq++){
-	    cout << "Track # " << icsq  << " T0 offsets = " 
-		 << besttimezero[icsq]-t0best << 
-	      " track error = "  << bestsqTrackError[icsq]
-		 << " Chisquare = " << bestchisquare[icsq] 
-		 << " Momentum  = " << bestmomentum[icsq] 
-		 << " TOF   = "     << besttimeofflight[icsq] 
-		 << " TOF tracking  = " << besttexp[icsq]
-		 << " is used = " << usetrack[icsq] << endl;
-	  }
+// 	  for(Int_t icsq=0; icsq<ntracksinsetmy;icsq++){
+// 	    cout << "Track # " << icsq  << " T0 offsets = " 
+// 		 << besttimezero[icsq]-t0best << 
+// 	      " track error = "  << bestsqTrackError[icsq]
+// 		 << " Chisquare = " << bestchisquare[icsq] 
+// 		 << " Momentum  = " << bestmomentum[icsq] 
+// 		 << " TOF   = "     << besttimeofflight[icsq] 
+// 		 << " TOF tracking  = " << besttexp[icsq]
+// 		 << " is used = " << usetrack[icsq] << endl;
+// 	  }
 	}
 	
 	// filling histos
@@ -1085,26 +1053,27 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
 	if(chisquarebest<999.){
 	  Double_t dblechisquare=(Double_t)chisquarebest;
 	  confLevel=(Float_t)TMath::Prob(dblechisquare,ntracksinsetmyCut-1); 
-	  cout << " Set Number " << nsets << endl;	
-	  cout << "Best Assignment, selection " << assparticle[0] << 
-	    assparticle[1] << assparticle[2] << 
-	    assparticle[3] << assparticle[4] << 
-	    assparticle[5] << endl;
-	  cout << " Chisquare of the set "<< chisquarebest <<endl;
-	  cout << " C.L. of the set "<< confLevel <<endl;
-	  cout << " T0 for this set (in ns)  " << t0best << endl;
+// 	  cout << " Set Number " << nsets << endl;	
+// 	  cout << "Best Assignment, selection " << assparticle[0] << 
+// 	    assparticle[1] << assparticle[2] << 
+// 	    assparticle[3] << assparticle[4] << 
+// 	    assparticle[5] << endl;
+// 	  cout << " Chisquare of the set "<< chisquarebest <<endl;
+// 	  cout << " C.L. of the set "<< confLevel <<endl;
+// 	  cout << " T0 for this set (in ns)  " << t0best << endl;
+
 	  for(Int_t icsq=0; icsq<ntracksinsetmy;icsq++){
 	   
 	    if(! usetrack[icsq]) continue;
 	    
-	    cout << "Track # " << icsq  << " T0 offsets = " 
-		 << besttimezero[icsq]-t0best << 
-	      " track error = "  << bestsqTrackError[icsq]
-		 << " Chisquare = " << bestchisquare[icsq] 
-		 << " Momentum  = " << bestmomentum[icsq] 
-		 << " TOF   = "     << besttimeofflight[icsq] 
-		 << " TOF tracking  = " << besttexp[icsq]
-		 << " is used = " << usetrack[icsq] << endl;
+// 	    cout << "Track # " << icsq  << " T0 offsets = " 
+// 		 << besttimezero[icsq]-t0best << 
+// 	      " track error = "  << bestsqTrackError[icsq]
+// 		 << " Chisquare = " << bestchisquare[icsq] 
+// 		 << " Momentum  = " << bestmomentum[icsq] 
+// 		 << " TOF   = "     << besttimeofflight[icsq] 
+// 		 << " TOF tracking  = " << besttexp[icsq]
+// 		 << " is used = " << usetrack[icsq] << endl;
 	  }
 	  
 	  // Pick up only those with C.L. >1%
@@ -1121,7 +1090,7 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
 	    ngoodtrktrulyused+=ntracksinsetmyCut;	    
 	  }
 	  else{
-	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
+	    //	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
 	  }
 	}	
 	delete[] tracksT0;
@@ -1141,7 +1110,6 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
 	  eT0bestallSel = sqrt(1./sumWt0bestallSel);
 	}// end of if(sumWt0bestallSel>0){
 	
-	cout << "T0 all " << t0bestallSel << " +/- " << eT0bestallSel << "Number of tracks used: "<<ngoodtrktrulyused<<endl;
       }
       
       t0def=t0bestallSel;
@@ -1152,12 +1120,10 @@ Double_t * AliTOFT0v1::DefineT0RawCorrection(Option_t *option)
       
       fT0SigmaT0def[0]=t0def;
       fT0SigmaT0def[1]=TMath::Sqrt(deltat0def*deltat0def*(ngoodtrktrulyused/(ngoodtrktrulyused-1)));
-      fT0SigmaT0def[2]=ngoodtrkt0;//ngoodtrktrulyused;
+      fT0SigmaT0def[2]=ngoodtrkt0;
       fT0SigmaT0def[3]=ngoodtrktrulyused;
     }
   }
-  
-  printf("T0 from TOF = %f ns\n",fT0SigmaT0def[0]);
   
   return fT0SigmaT0def;
   }

@@ -523,7 +523,7 @@ void AliTOFT0::Exec(Option_t *option)
 void AliTOFT0::SetTZeroFile(char * file )
 {
   //
-  //
+  // Set T0 file name
   //
   printf("Destination file : %s \n", file) ;
   fT0File=file;
@@ -534,7 +534,7 @@ void AliTOFT0::SetTZeroFile(char * file )
 void AliTOFT0::Print(Option_t* /*option*/)const
 {
   //
-  //
+  // Print class content
   //
   printf("------------------- %s -------------\n", GetName()) ;
   if(!fT0File.IsNull())

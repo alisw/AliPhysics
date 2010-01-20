@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id:  $ */
+/* $Id: AliTOFT0maker.h,v 1.8 2010/01/19 16:32:20 noferini Exp $ */
 
 ///////////////////////////////////////////////
 //					     //
@@ -31,7 +31,7 @@ public:
  
   void SetESDdata(Bool_t val=kTRUE){fESDswitch=val;};
 
-  // return (...[0]=event time -- ...[1]=sigma event time in ps -- mean event time for each fill) if you can subtruct the event time; return NULL if there is no event time
+  // return (fCalculated[0]=event time -- fCalculated[1]=sigma event time in ps -- fCalculated[2]=mean event time for each fill) if you can subtruct the event time; return NULL if there is no event time
   Double_t *RemakePID(AliESDEvent *esd,Double_t t0time=0.,Double_t t0sigma=1000.); // t0time and t0sigma in ps
 
   void      SetTimeResolution(Double_t timeresolution){fTimeResolution=timeresolution;};// TOF timeresolution in [s] e.g. for 120 ps -> 1.2e-10
@@ -46,6 +46,7 @@ public:
 
   Bool_t fESDswitch; // if you want take the ESD time instead of the raw + time slewing correction
 
+  Double_t fCalculated[3]; // contains the parameters with the event time
   Double_t fTimeResolution;  // global time resolution used to calculate T0
 
   Float_t fT0sigma; // T0 resolution
