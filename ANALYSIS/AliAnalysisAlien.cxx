@@ -922,6 +922,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
          TIter next(fPackages);
          TObject *obj;
          while ((obj=next())) {
+            if (FileExists(obj->GetName())) gGrid->Rm(obj->GetName());
             Info("CreateJDL", "\n#####   Copying dependency: <%s> to your alien workspace", obj->GetName());
             TFile::Cp(Form("file:%s",obj->GetName()), Form("alien://%s/%s", workdir.Data(), obj->GetName()));
          }   
@@ -2159,6 +2160,7 @@ void AliAnalysisAlien::WriteProductionFile(const char *filename) const
       out << Form("%s", fInputFiles->At(i)->GetName()) << " " << Form("%03d", i) << endl;
    }
    Info("WriteProductionFile", "\n#####   Copying production file <%s> to your work directory", filename);
+   if (FileExists(filename)) gGrid->Rm(filename);
    TFile::Cp(Form("file:%s",filename), Form("alien://%s/%s", workdir.Data(),filename));   
 }
 
