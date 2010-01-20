@@ -26,10 +26,10 @@ void runProtonsCorrectionAnalysis(const char* analysisType  = "Hybrid",
   TStopwatch timer;
   timer.Start();
   
-  //runLocal("ESD","TPC","Bayesian","/home/pchrist/ALICE/Baryons/Analysis/Protons/Local/data",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
+  runLocal("ESD","TPC","Bayesian","/home/pchrist/ALICE/Baryons/Analysis/Protons/Local/data",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
   //runInteractive("ESD","TPC","Bayesian","/home/marek/Analysis/global_xml/tagtest81627.xml",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
   //runBatch("ESD","TPC","Bayesian","wn.xml",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);  
-  runProof("ESD","TPC","Bayesian",100000,"/COMMON/COMMON/LHC09d9_0.9TeV_0.5T#esdTree",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
+  //runProof("ESD","TPC","Bayesian",100000,"/COMMON/COMMON/LHC09d9_0.9TeV_0.5T#esdTree",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
   
   timer.Stop();
   timer.Print();

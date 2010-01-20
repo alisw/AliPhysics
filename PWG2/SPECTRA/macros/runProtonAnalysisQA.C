@@ -23,7 +23,7 @@ void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
   timer.Start();
   
   //runLocal("ESD",esdAnalysisType,pidMode,"/home/pchrist/ALICE/Baryons/QA/Local");
-  runProof("ESD",esdAnalysisType,pidMode,300000,"/COMMON/COMMON/LHC09a4_run8159X#esdTree");
+  runProof("ESD",esdAnalysisType,pidMode,100000,"/COMMON/COMMON/LHC09d10_run104799-801#esdTree");
   //runInteractive("ESD",esdAnalysisType,pidMode,"wn.xml");
   //runBatch("ESD",esdAnalysisType,pidMode,"wn.xml");
 
@@ -139,6 +139,10 @@ void runLocal(const char* mode = "ESD",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename5.Data());
+  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer("cutEfficiencyList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename4.Data());
   
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -150,6 +154,8 @@ void runLocal(const char* mode = "ESD",
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   mgr->ConnectOutput(taskProtonsQA,7,coutput8);
+  mgr->ConnectOutput(taskProtonsQA,8,coutput9);
+
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -266,6 +272,10 @@ void runInteractive(const char* mode = "ESD",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename5.Data());
+  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer("cutEfficiencyList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename4.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -277,6 +287,8 @@ void runInteractive(const char* mode = "ESD",
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   mgr->ConnectOutput(taskProtonsQA,7,coutput8);
+  mgr->ConnectOutput(taskProtonsQA,8,coutput9);
+
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -385,6 +397,10 @@ void runBatch(const char* mode = "ESD",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename5.Data());
+  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer("cutEfficiencyList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename4.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -396,6 +412,8 @@ void runBatch(const char* mode = "ESD",
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   mgr->ConnectOutput(taskProtonsQA,7,coutput8);
+  mgr->ConnectOutput(taskProtonsQA,8,coutput9);
+
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -501,6 +519,10 @@ void runProof(const char* mode = "ESD",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename5.Data());
+  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer("cutEfficiencyList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename4.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -512,6 +534,8 @@ void runProof(const char* mode = "ESD",
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   mgr->ConnectOutput(taskProtonsQA,7,coutput8);
+  mgr->ConnectOutput(taskProtonsQA,8,coutput9);
+
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 

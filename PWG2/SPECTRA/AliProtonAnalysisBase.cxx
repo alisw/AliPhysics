@@ -73,14 +73,14 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fNSigma(0),
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fDebugMode(kFALSE) {
+  fDebugMode(kFALSE), fListVertexQA(new TList()) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
   for(Int_t i = 0; i < 24; i++) {
     fdEdxMean[i] = 0.0;
     fdEdxSigma[i] = 0.0;
   }
-  fListVertexQA = new TList();
+  //fListVertexQA = new TList();
   fListVertexQA->SetName("fListVertexQA");
   TH1F *gHistVx = new TH1F("gHistVx",
 			   "Vx distribution;V_{x} [cm];Entries",
@@ -143,15 +143,16 @@ Double_t AliProtonAnalysisBase::GetParticleFraction(Int_t i, Double_t p) {
 //____________________________________________________________________//
 Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
   // Checks if the track is outside the analyzed y-Pt phase space
-  Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
+  Double_t gP = 0.0, gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
   Double_t eta = 0.0;
 
   if((fProtonAnalysisMode == kTPC) || (fProtonAnalysisMode == kHybrid)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
-      gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0; eta = -10.0;
+      gP = 0.0; gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0; eta = -10.0;
     }
     else {
+      gP = tpcTrack->P();
       gPt = tpcTrack->Pt();
       gPx = tpcTrack->Px();
       gPy = tpcTrack->Py();
@@ -160,6 +161,7 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
     }
   }//standalone TPC or Hybrid TPC approaches
   else {
+    gP = track->P();
     gPt = track->Pt();
     gPx = track->Px();
     gPy = track->Py();
@@ -167,7 +169,7 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
     eta = track->Eta();
   }
   
-  if((gPt < fMinY) || (gPt > fMaxY)) {
+  if((gP < fMinY) || (gP > fMaxY)) {
       if(fDebugMode)
 	Printf("IsInPhaseSpace: Track rejected because it has a Pt value of %lf (accepted interval: %lf - %lf)",gPt,fMinY,fMaxY);
       return kFALSE;

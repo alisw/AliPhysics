@@ -63,7 +63,7 @@ AliProtonQAAnalysis::AliProtonQAAnalysis() :
   fAcceptedDCAList(0), fRejectedDCAList(0),
   fRunEfficiencyAnalysis(kFALSE),
   fUseCutsInEfficiency(kFALSE),
-  fEfficiencyList(0) {
+  fEfficiencyList(0), fCutEfficiencyList(0) {
   //Default constructor
 }
 
@@ -96,6 +96,7 @@ AliProtonQAAnalysis::~AliProtonQAAnalysis() {
   if(fRejectedDCAList) delete fRejectedDCAList;
  
   if(fEfficiencyList) delete fEfficiencyList;
+  if(fCutEfficiencyList) delete fCutEfficiencyList;
 }
 
 //____________________________________________________________________//
@@ -1025,7 +1026,8 @@ void AliProtonQAAnalysis::SetQAYPtBins(Int_t nbinsY, Double_t *gY,
 
 //____________________________________________________________________//
 void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
-  //Initialization of the efficiency list - reconstruction & PID efficiency
+  //Initialization of the efficiency list - reconstruction & PID & cut 
+  //efficiency
   //Adding each monitored object in the list
   fEfficiencyList = new TList();
 
@@ -1340,6 +1342,86 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   gHistESDContamYPtProtons->SetStats(kTRUE);
   gHistESDContamYPtProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDContamYPtProtons);
+
+  //==============//
+  //Cut efficiency//
+  //==============//
+  fCutEfficiencyList = new TList();
+  //Reconstructed primary tracks that were identified as protons
+  TH2D *gHistESDYPtProtonsTotal = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistESDYPtProtonsTotal = new TH2D("gHistESDYPtProtonsTotal",
+				       ";;P_{T} [GeV/c]",
+				       fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtProtonsTotal = new TH2D("gHistESDYPtProtonsTotal",
+				       ";;P_{T} [GeV/c]",
+				       fNBinsY,fMinY,fMaxY,
+				       fNBinsPt,fMinPt,fMaxPt);
+  if(fProtonAnalysisBase->GetEtaMode()) 
+    gHistESDYPtProtonsTotal->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtProtonsTotal->GetXaxis()->SetTitle("y");
+  gHistESDYPtProtonsTotal->SetStats(kTRUE);
+  gHistESDYPtProtonsTotal->GetXaxis()->SetTitleColor(1);
+  fCutEfficiencyList->Add(gHistESDYPtProtonsTotal);
+
+  //Reconstructed primary tracks that were identified as antiprotons
+  TH2D *gHistESDYPtAntiProtonsTotal = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistESDYPtAntiProtonsTotal = new TH2D("gHistESDYPtAntiProtonsTotal",
+					   ";;P_{T} [GeV/c]",
+					   fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtAntiProtonsTotal = new TH2D("gHistESDYPtAntiProtonsTotal",
+					   ";;P_{T} [GeV/c]",
+					   fNBinsY,fMinY,fMaxY,
+					   fNBinsPt,fMinPt,fMaxPt);
+  if(fProtonAnalysisBase->GetEtaMode()) 
+    gHistESDYPtAntiProtonsTotal->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtAntiProtonsTotal->GetXaxis()->SetTitle("y");
+  gHistESDYPtAntiProtonsTotal->SetStats(kTRUE);
+  gHistESDYPtAntiProtonsTotal->GetXaxis()->SetTitleColor(1);
+  fCutEfficiencyList->Add(gHistESDYPtAntiProtonsTotal);
+  
+  //Reconstructed, survived primary tracks that were identified as protons
+  TH2D *gHistESDYPtProtonsSurvived = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistESDYPtProtonsSurvived = new TH2D("gHistESDYPtProtonsSurvived",
+					  ";;P_{T} [GeV/c]",
+					  fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtProtonsSurvived = new TH2D("gHistESDYPtProtonsSurvived",
+					  ";;P_{T} [GeV/c]",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt);
+  if(fProtonAnalysisBase->GetEtaMode()) 
+    gHistESDYPtProtonsSurvived->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtProtonsSurvived->GetXaxis()->SetTitle("y");
+  gHistESDYPtProtonsSurvived->SetStats(kTRUE);
+  gHistESDYPtProtonsSurvived->GetXaxis()->SetTitleColor(1);
+  fCutEfficiencyList->Add(gHistESDYPtProtonsSurvived);
+  
+  //Reconstructed, survived primary tracks that were identified as antiprotons
+  TH2D *gHistESDYPtAntiProtonsSurvived = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistESDYPtAntiProtonsSurvived = new TH2D("gHistESDYPtAntiProtonsSurvived",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtAntiProtonsSurvived = new TH2D("gHistESDYPtAntiProtonsSurvived",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt);
+  if(fProtonAnalysisBase->GetEtaMode()) 
+    gHistESDYPtAntiProtonsSurvived->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtAntiProtonsSurvived->GetXaxis()->SetTitle("y");
+  gHistESDYPtAntiProtonsSurvived->SetStats(kTRUE);
+  gHistESDYPtAntiProtonsSurvived->GetXaxis()->SetTitleColor(1);
+  fCutEfficiencyList->Add(gHistESDYPtAntiProtonsSurvived);
 }
 
 //____________________________________________________________________//
@@ -3060,7 +3142,7 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
     }
 
     //findable tracks
-    if (labelTPC) {
+    //if (labelTPC) {
       TParticle* particle = mcTrack->Particle();
       if(!particle) continue;
       Int_t pdgcode = particle->GetPdgCode();
@@ -3145,7 +3227,7 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	  }//hadronic interactions
 	}//antiprotons
       }//secondaries
-    }//findable tracks
+      //}//findable tracks
   }//MC track loop
 
   //ESD track loop
@@ -3389,6 +3471,7 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 void AliProtonQAAnalysis::RunPIDEfficiencyAnalysis(AliStack *const stack, 
 						   AliESDEvent *esd,
 						   const AliESDVertex *vertex) {
+  //Runs the PID efficiency analysis
   Int_t nGoodTracks = esd->GetNumberOfTracks();
   TArrayI labelArray(nGoodTracks);
   Int_t labelCounter = 0;
@@ -3445,6 +3528,75 @@ void AliProtonQAAnalysis::RunPIDEfficiencyAnalysis(AliStack *const stack,
 	  ((TH3D *)(fEfficiencyList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt(),nTPCpoints);
       }//contamination
     }//identified as proton
+  }//ESD track loop
+  labelArray.Reset();
+}
+
+//____________________________________________________________________//
+void AliProtonQAAnalysis::RunCutEfficiencyAnalysis(AliStack *const stack, 
+						   AliESDEvent *esd,
+						   const AliESDVertex *vertex) {
+  //Runs the cut efficiency analysis
+  Int_t nGoodTracks = esd->GetNumberOfTracks();
+  TArrayI labelArray(nGoodTracks);
+  Int_t labelCounter = 0;
+  Int_t nPrimaries = stack->GetNprimary();
+  for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
+    AliESDtrack* track = esd->GetTrack(iTracks);
+    if(!track) continue;
+    
+    //TPC only
+    if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)||(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
+      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+      if(!tpcTrack) continue;
+    }
+	
+    Int_t label = TMath::Abs(track->GetLabel());
+    if(IsLabelUsed(labelArray,label)) continue;
+    labelArray.AddAt(label,labelCounter);
+    labelCounter += 1;
+
+    TParticle *particle = stack->Particle(label);
+    if(!particle) continue;
+		
+    //select primaries
+    if(label > nPrimaries) continue;
+    //select identified protons
+    if(!fProtonAnalysisBase->IsProton(track)) continue;
+ 
+    if(track->Charge() > 0) {
+      if(fProtonAnalysisBase->GetEtaMode())
+	((TH2F *)(fCutEfficiencyList->At(0)))->Fill(particle->Eta(),
+						    particle->Pt());
+      else
+	((TH2F *)(fCutEfficiencyList->At(0)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+    }
+
+    if(track->Charge() < 0) {
+      if(fProtonAnalysisBase->GetEtaMode())
+	((TH2F *)(fCutEfficiencyList->At(1)))->Fill(particle->Eta(),
+						    particle->Pt());
+      else
+	((TH2F *)(fCutEfficiencyList->At(1)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+    }
+
+    //survived tracks
+    if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
+    if(track->Charge() > 0) {
+      if(fProtonAnalysisBase->GetEtaMode())
+	((TH2F *)(fCutEfficiencyList->At(2)))->Fill(particle->Eta(),
+						    particle->Pt());
+      else
+	((TH2F *)(fCutEfficiencyList->At(2)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+    }
+
+    if(track->Charge() < 0) {
+      if(fProtonAnalysisBase->GetEtaMode())
+	((TH2F *)(fCutEfficiencyList->At(3)))->Fill(particle->Eta(),
+						    particle->Pt());
+      else
+	((TH2F *)(fCutEfficiencyList->At(3)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+    }
   }//ESD track loop
   labelArray.Reset();
 }
