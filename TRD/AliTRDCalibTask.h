@@ -55,6 +55,8 @@ class AliTRDCalibTask : public AliAnalysisTask {
   
   void SetESDtrackCuts(AliESDtrackCuts * const esdtrackCuts)                  {fEsdTrackCuts = esdtrackCuts;};
   void SetRequirePrimaryVertex(Bool_t requirePrimaryVertex)            {fRequirePrimaryVertex = requirePrimaryVertex;};
+  void SetUseTPCVertex()                                               {fVtxTPC=kTRUE ; fVtxSPD=kFALSE;} 
+  void SetUseSPDVertex()                                               {fVtxTPC=kFALSE; fVtxSPD=kTRUE ;} 
   void SetMinNbOfContributors(Int_t minNbOfContributors)               {fMinNbContributors = minNbOfContributors;};  
   
   void SetLow(Int_t low)                                               {fLow=low;};
@@ -120,6 +122,8 @@ class AliTRDCalibTask : public AliAnalysisTask {
   
   AliESDtrackCuts *fEsdTrackCuts;                // Quality cut on the AliESDtrack
   Bool_t      fRequirePrimaryVertex;             // Primary Vertex
+  Bool_t      fVtxTPC;                           // Flag for use of TPC vertex
+  Bool_t      fVtxSPD;                           // Flag for use of SPD vertex
   Int_t       fMinNbContributors;                // Min number of contributors
   
   Int_t       fLow;                              // lower limit of nb of TRD clusters per tracklet
@@ -145,3 +149,4 @@ class AliTRDCalibTask : public AliAnalysisTask {
 };
 
 #endif
+

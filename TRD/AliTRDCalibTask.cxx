@@ -109,6 +109,8 @@ ClassImp(AliTRDCalibTask)
       fRejected(kTRUE),
       fEsdTrackCuts(0),
       fRequirePrimaryVertex(kFALSE),
+      fVtxTPC(kFALSE),
+      fVtxSPD(kFALSE),
       fMinNbContributors(0),
       fLow(0),
       fHigh(30),
@@ -190,17 +192,17 @@ void AliTRDCalibTask::ConnectInputData(Option_t *)
   
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0)); //pointer wird "umgecastet" auf anderen Variablentyp
   if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
+    //Printf("ERROR: Could not read chain from input slot 0");
   } else {
     
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     
     if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
+      //Printf("ERROR: Could not get ESDInputHandler");
     } else {
       fESD = esdH->GetEvent();
       esdH->SetActiveBranches("ESDfriend*");
-      Printf("*** CONNECTED NEW EVENT ****");
+      //Printf("*** CONNECTED NEW EVENT ****");
     }
     
   }
@@ -379,26 +381,29 @@ void AliTRDCalibTask::CreateOutputObjects()
    AliLog::SetGlobalLogLevel(AliLog::kError);
 
    if (!fESD) {
-     Printf("ERROR: fESD not available");
+     //Printf("ERROR: fESD not available");
      return;
    }
 
+   //printf("Counter %d\n",fCounter);
+
    fCounter++;
    if((fMaxEvent != 0) && (fMaxEvent < fCounter)) return;
+
+   //printf("Counter %d\n",fCounter);
 
    ///////////////////////////////
    // Require a primary vertex
    //////////////////////////////
    if(fRequirePrimaryVertex) {
-     //printf("test\n");
      const AliESDVertex* vtxESD = 0x0;
-     vtxESD = fESD->GetPrimaryVertexTPC() ;
+     if      (fVtxTPC) vtxESD = fESD->GetPrimaryVertexTPC() ;
+     else if (fVtxSPD) vtxESD = fESD->GetPrimaryVertexSPD() ;
+     else              vtxESD = fESD->GetPrimaryVertexTracks() ;
      if(!vtxESD){
-       //printf("No primary at all vertex\n");
        return;
      }
      Int_t nCtrb = vtxESD->GetNContributors();
-     //printf("Number of contributors %d\n",nCtrb);
      if(nCtrb < fMinNbContributors) return;
    }
 
@@ -469,6 +474,7 @@ void AliTRDCalibTask::CreateOutputObjects()
    ////////////////////////////////////
    // Check the number of TPC tracks
    ///////////////////////////////////
+   //printf("Nb of tracks %f\n",nbTracks);
    for(Int_t itrk = 0; itrk < nbTracks; itrk++){
      // Get ESD track
      fkEsdTrack = fESD->GetTrack(itrk);
@@ -511,11 +517,12 @@ void AliTRDCalibTask::CreateOutputObjects()
      PostData(0, fListHist);
      return;
    }
-  
+   //printf("Pass\n");  
+
    /////////////////////////////////////
    // Loop on AliESDtrack
    ////////////////////////////////////
-      
+   //printf("Nb of tracks %f\n",nbTracks);      
    for(int itrk=0; itrk < nbTracks; itrk++){
 
      // Get ESD track
@@ -544,6 +551,7 @@ void AliTRDCalibTask::CreateOutputObjects()
      Int_t icalib=0;
      while((fCalibObject = (TObject *)(fFriendTrack->GetCalibObject(icalib++)))){
        if(strcmp(fCalibObject->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
+       //printf("Find the calibration object\n");
 
        if((status&(AliESDtrack::kTRDout)) && (!(status&(AliESDtrack::kTRDin)))) {
 	 standalonetrack = kTRUE;
@@ -563,7 +571,10 @@ void AliTRDCalibTask::CreateOutputObjects()
        }
        
        fTrdTrack = (AliTRDtrackV1 *)fCalibObject;
-       if(good) fTRDCalibraFillHisto->UpdateHistogramsV1(fTrdTrack);
+       if(good) {
+	 fTRDCalibraFillHisto->UpdateHistogramsV1(fTrdTrack);
+	 //printf("Fill fTRDCalibraFillHisto\n");
+       }
        
        //////////////////////////////////
        // Debug 
@@ -571,6 +582,7 @@ void AliTRDCalibTask::CreateOutputObjects()
 
        if(fDebug > 0) {
 	 
+	 //printf("Enter debug\n");
 	 
 	 Int_t nbtracklets = 0;
 	 
@@ -890,3 +902,4 @@ void AliTRDCalibTask::Plot()
   }
  
 }
+
