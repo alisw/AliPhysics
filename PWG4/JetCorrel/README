@@ -1,0 +1,130 @@
+The libJetCorrel library implements generic two-particle correlations between 
+a "trigger" and an "associated" particle, where these to can be any physical 
+particle ((un)identified hadron, photon, pi0, (di)electron, jet, etc.). It can 
+run several correlations at the same time with the advantage of keeping the 
+minimum number of mixing pools in memory (for eg., if one runs di-hadron and 
+pi0-hadron correlations, only one associated pool of hadrons is stored).
+
+The running/JetCorrelSelector.C macro that accompanies the main running macro 
+instantiates and returns the AliJetCorrelSelector class (see below) that sets 
+all the input parameters needed for running. The parameter names should be 
+obvious. Comments:
+(a) the binning (vertex, centrality/multiplicity, trigger&associated pT) is
+loaded thru simple dynamic arrays (originally STL vectors, but forbidden in
+AliRoot), hence not only they values, but their number can be changed;
+(b) the CorrelTypes dynamic array has the same property and allows the running
+of many types of "trigger"-"associated" correlations simultaneously (thus
+reducing the CPU&memory since most correlations typically share the same assoc
+types - hadrons). Finally, adding a new type of correlation to JetCorrel implies
+only two new methods: one in AliJetCorrelSelector that reads and applies the
+cuts specific to any new type of particle and another one in AliJetCorrelReader
+that fills the internal lists of that particle type. JetCorrel then takes care
+automatically of all the rest (mixing, histogramming, etc.) because for it
+the new list becomes just a trigger and/or associated list... 
+
+Analysis Task Classes:
+(1) AliAnalysisTaskJetCorrel class
+Main class which inherits from AliAnalysisTaskSE and runs the show by delegating
+sub-tasks to the following classes: 
+(2) AliJetCorrelSelector class
+Is the class that reads user-defined selections and propagates them thru the 
+rest of the code. The macro JetCorrelSelector.C instantiates it and sets:
+the correlations to be run, the centrality/vertex/momentum binnings and various
+selections and cuts to be applied.
+(3) AliJetCorrelMaker class
+Reads the list of correlations to be run from the Selector and builds the
+interface needed to manipulate them.         
+(4) AliJetCorrelReader class
+Reads the list of selections and cuts from the Selector and builds the two 
+trigger and associated CorrelList_t lists for one event and one correlation.
+For example, if in the current run we ask for hadron-hadron, Z0-hadron and
+gamma-hadron, then 3 trigger lists but only 1 associated list are built each
+event. 
+(5) AliJetCorrelWriter class
+Reads the list of binnings from the Selector and books the arrays of output 
+correlation histograms; it also has methods for filling them.
+(6) AliJetCorrelMixer class
+Manages the event mixing pools. The mixing method is rolling buffer (hence is
+kept in memory) and the mixing pools are 4-dimensional static arrays of 
+2-dimensional dynamic lists; the 4 static dimensions correspond to pool type
+(triggs/assocs), pool type bin, vertex bin, centrality bin and they are all 
+fixed at task initialization time (via the Selector). Then, each of these pools 
+is a TList of events, each event being a CorrelList_t of particles (CorrelParticle_t 
+or upper class). Taking into account that sizeof(CorrelParticle_t)=20b and 
+sizeof(CorrelListNode_t)=8b (two pointers are used by CorrelList_t to store a 
+particle) one gets the pool sizes: 
+- for p-p analyses: 
+2(type)x2(centrality)x10(vertex)x20(events)x30(particles)x28b<0.7Mb
+- for Pb-Pb analyses:
+2(type)x7(centrality)x10(vertex)x20(events)x3000(particles)x28b<250Mb
+Caveats: these values are for one associated pool (which dominates) and consider
+rather high stored particle multiplicities per event (3000 associates per event).
+For eg., in jet induced correlation studies, we are interested only in pT>1GeV/c.
+
+Particle Container Classes:
+(1) CorrelParticle_t class.
+Base particle for correlations: implements only the essential kinematics needed 
+for correlations. Since this is the object to go into the mixing pools (and into 
+the memory) DON'T CLUTTER IT!!! As it stands now, its size is 20b (4xFloat_t+
+1xUInt_t) on 32b machines. Also, it MUST NOT inherit from TObject since this will 
+impose an overhead of 12b (>30%) by inheritance, a burden that cannot be carried 
+in Pb-Pb analysis. BTW, this is the main reason to have CorrelList_t instead of
+another TList for particles.
+(2) CorrelList_t class.
+A custom-designed single-linked list class written because the main two options
+(STL and ROOT) couldn't be used - STL because is not allowed in AliRoot and ROOT
+because its lists (TList/TClonesArray) store only objects of classes inheriting
+from TObject (thus inheriting a significant overhead for small particle objects
+like CorrelParticle_t). Note that CorrelList_t itself does inherit from TObject
+in order to be storeable in a TList (our mixing pools are TLists of CorrelLists)
+but this is OK since we have one CorrelList_t per event, not per particle. There
+are two helper classes: CorrelListNode_t for the data node and CorrelListIter_t
+provides utilities for list iteration. See CorrelList.h for interface description.
+(3) CorrelTrack_t class.
+Inherits from CorrelParticle_t and allows storage of global track parameters 
+(TPC entrance coordinates) to be used in pair cuts (to eliminate detector 
+resolution effects). Whether this cut (and hence this class altogether) will be
+used remains to be seen since it is possible that such effects can be eliminated 
+thru single-track cuts (like high number of TPC clusters) - highly desireable 
+because CorrelTrack_t would additionally store 12b for something like TPC entrance 
+point (x,y,z).Note: any cut applied to the same event pairs must be applied to 
+mixed event pairs (hence pair cut parameters must be stored in the mixing pools).
+On the other hand the high number of TPC clusters cut reduces the efficiency...
+(4) CorrelRecoParent_t class.
+Inherits from CorrelParticle_t and reconstructs (using TLorentzVector) parent
+particles from two children; intended for diphotons (pi0), dielectrons (Z0), etc.
+In the case of dielectrons (Z0), a reconstruction via the AliKFParticle class is
+provided since this also allows for a vertex cut on the reconstructed mother (see
+the CorrelKFTrack_t class). To switch between a TLorentzVector based reconstruction
+and a AliKFParticle based reconstruction, set kUseAliKF in CorrelDefs.h.
+(5) CorrelKFTrack_t class.
+Inherits from CorrelParticle_t and allows storage of ESD track parameters needed
+as input by the AliKFParticle to reconstruct the parent particle.
+
+CorrelList_t class implements a single-linked list with pointer to head node 
+(last inserted). It is labelled by 3 identifiers: the event number EvtID, the 
+pool type (triggs/assocs) PoolID, and the particle type PartID. Interface:
+ - CorrelList_t() creates empty list; ~CorrelList_t() destroys the list;
+ - Clear() deletes all data nodes but leaves list defined (and empty);
+ - Push() adds a new data node at head;
+ - Head() returns iterator to head node;
+ - assignment operator = performs a deep list copy;
+ - Size() returns the current size of the list;
+ - Filled() and SetFilled() gets/sets a boolean with the current fill status;
+ - EvtID(), PartID(), and PoolID() return the list identifiers;
+ - Label() sets the above list identifiers.
+CorrelList_t must inherit from TObject to be storable in a TList - the mixing 
+pool becomes a TList of CorrelList. Access to the list data is made thru the 
+iterator class.
+CorrelListIter_t class implements an iterator for CorrelList_t. Interface:
+ - hasEnded() returns true if current node terminates list;
+ - Move() moves iterator to next node in list;
+ - Node() returns the current node pointed to by the iterator;
+ - Data() returns the data contained in the current node;
+
+
+TO DO LIST AS OF 24 MARCH 2009:
+(1) finish the macros for output merging, acceptance study and correlation
+    building in the analysis directory;
+(2) add a dynamic array CorrelArray_t implementation for the particle lists.
+(3) implement the official AliRoot logging (AliDebug/AliError/etc)
