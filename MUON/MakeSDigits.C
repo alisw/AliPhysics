@@ -29,6 +29,7 @@
 ///                           In case the raw data are ddl files, specify the path which has "raw0", "raw1".... events
 ///                           3. OCDB path
 ///                           4. run number
+///                           5. switch to merge(true) or not merge(false) trigger digits 
 ///        and the output is : "MUON.SDigits.root" file with the same tree and event structure as produced in simulation directory
 /// </pre>
 /// Note:  
@@ -52,7 +53,7 @@
 
 
 int MakeSDigits(const char* galiceFile="galice.root", const char* rawRootFile="./raw.root", 
-		const char* ocdb = "local://$ALICE_ROOT/OCDB", int run=0)
+		const char* ocdb = "local://$ALICE_ROOT/OCDB", int run=0, bool isMergeTrigger=true)
 {
   //TGrid connect for alien ocdb
   TGrid::Connect("alien://");
@@ -83,16 +84,27 @@ int MakeSDigits(const char* galiceFile="galice.root", const char* rawRootFile=".
     
     AliMUONVDigitStore* sDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV2S");
     sDigitStore->Connect(*treeS,true);
-
     AliMUONDigitMaker *digitMaker = new AliMUONDigitMaker(false);
-    digitMaker->Raw2Digits(rawReader,sDigitStore,0x0);
+    
+    if(isMergeTrigger){
+      AliMUONVTriggerStore* triggerStore = new AliMUONTriggerStoreV1;
+      triggerStore->Connect(*treeS,true);
+      digitMaker->SetMakeTriggerDigits(true);
+      digitMaker->Raw2Digits(rawReader,sDigitStore,triggerStore);
+    }else{
+      digitMaker->Raw2Digits(rawReader,sDigitStore,0x0);
+    }
     
     TIter next(sDigitStore->CreateIterator());
     AliMUONVDigit *mdigit;
     
     while ( (mdigit = reinterpret_cast<AliMUONVDigit *>(next())) ) {
-      mdigit->SetCharge(Float_t(mdigit->ADC()));
-      mdigit->SetADC(0);
+      if(mdigit->DetElemId()<1100){
+	mdigit->SetCharge(Float_t(mdigit->ADC()));
+	mdigit->SetADC(0);
+      }else{
+	mdigit->SetCharge(1.0);
+      }
       //mdigit->Print();
     }
     treeS->Fill();
@@ -101,6 +113,8 @@ int MakeSDigits(const char* galiceFile="galice.root", const char* rawRootFile=".
     
     muonLoader->UnloadSDigits();
     
+    if(isMergeTrigger)
+      triggerStore->Delete();
     sDigitStore->Delete();
     digitMaker->Delete();
     
