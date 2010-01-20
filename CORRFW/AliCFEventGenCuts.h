@@ -37,8 +37,8 @@ class AliCFEventGenCuts: public AliCFCutBase
   AliCFEventGenCuts(const AliCFEventGenCuts& c) ;
   AliCFEventGenCuts& operator=(const AliCFEventGenCuts& c) ;
   ~AliCFEventGenCuts();
-  Bool_t IsSelected(TObject* obj, TObject *obj2 = 0);
-  //Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  Bool_t IsSelected(TObject* obj);
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   //number of embedded cuts
   enum{kNCuts=5};

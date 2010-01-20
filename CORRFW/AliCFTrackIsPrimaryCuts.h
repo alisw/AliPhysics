@@ -70,8 +70,8 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   ~AliCFTrackIsPrimaryCuts();
   void Copy(TObject &c) const;
 
-  Bool_t IsSelected(TObject* obj, TObject *obj2 = 0);
-  //Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  Bool_t IsSelected(TObject* obj);
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   // cut value setter
   void UseSPDvertex(Bool_t b=kFALSE);

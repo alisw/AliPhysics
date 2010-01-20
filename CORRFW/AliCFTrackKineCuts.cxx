@@ -411,7 +411,7 @@ void AliCFTrackKineCuts::SelectionBitMap(TObject* obj) {
   return;
 }
 //__________________________________________________________________________________
-Bool_t AliCFTrackKineCuts::IsSelected(TObject* obj, TObject * /* obj2 */) {
+Bool_t AliCFTrackKineCuts::IsSelected(TObject* obj) {
   //
   // loops over decisions of single cuts and returns if the track is accepted
   //

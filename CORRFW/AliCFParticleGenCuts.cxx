@@ -230,7 +230,7 @@ AliCFParticleGenCuts& AliCFParticleGenCuts::operator=(const AliCFParticleGenCuts
 }
 
 //______________________________
-Bool_t AliCFParticleGenCuts::IsSelected(TObject* obj, TObject * /* obj2 */ ) {
+Bool_t AliCFParticleGenCuts::IsSelected(TObject* obj) {
   //
   // check if selections on 'obj' are passed
   // 'obj' must be an AliMCParticle

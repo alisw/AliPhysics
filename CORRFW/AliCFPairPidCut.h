@@ -43,8 +43,8 @@ class AliCFPairPidCut : public AliCFCutBase
   virtual AliCFTrackCutPid* GetNegCut() const {return fCutNeg;}
   virtual AliCFTrackCutPid* GetPosCut() const {return fCutPos;}
 
-  Bool_t IsSelected(TObject *obj, TObject * /* obj2 */); //boolean for detectors
-  // Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  Bool_t IsSelected(TObject *obj); //boolean for detectors
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
  private:
   AliCFTrackCutPid* fCutNeg; // PID cut on negative daughter
   AliCFTrackCutPid* fCutPos; // PID cut on positive daughter

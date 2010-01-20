@@ -71,7 +71,7 @@ AliCFPairIsPrimaryCuts& AliCFPairIsPrimaryCuts::operator=(const AliCFPairIsPrima
 }
 
 //__________________________________________________________________________________
-Bool_t AliCFPairIsPrimaryCuts::IsSelected(TObject* obj, TObject * /* obj2 */ ) {
+Bool_t AliCFPairIsPrimaryCuts::IsSelected(TObject* obj) {
   //
   // loops over decisions of single cuts and returns if the track is accepted
   //

@@ -63,8 +63,8 @@ class AliCFTrackKineCuts : public AliCFCutBase
   ~AliCFTrackKineCuts();
   void Copy(TObject &c) const;
 
-  Bool_t IsSelected(TObject* obj, TObject *obj2 = 0);
-  //Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  Bool_t IsSelected(TObject* obj);
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   // cut value setter
   void SetMomentumRange(Double_t momentumMin=0., Double_t momentumMax=1e99) {fMomentumMin=momentumMin; fMomentumMax=momentumMax;}

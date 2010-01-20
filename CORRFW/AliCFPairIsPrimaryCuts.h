@@ -36,8 +36,8 @@ class AliCFPairIsPrimaryCuts : public AliCFCutBase
   AliCFPairIsPrimaryCuts& operator=(const AliCFPairIsPrimaryCuts& c) ;
   virtual ~AliCFPairIsPrimaryCuts() {delete fCutNeg; delete fCutPos; }
 
-  Bool_t IsSelected(TObject* obj, TObject * /* obj2 */ = 0) ;
-  //Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  Bool_t IsSelected(TObject* obj) ;
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   virtual AliCFTrackIsPrimaryCuts* GetNegCut() const {return fCutNeg;}
   virtual AliCFTrackIsPrimaryCuts* GetPosCut() const {return fCutPos;}
 

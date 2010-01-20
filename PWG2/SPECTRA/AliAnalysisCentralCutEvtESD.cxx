@@ -78,7 +78,7 @@ AliAnalysisCentralCutEvtESD::~AliAnalysisCentralCutEvtESD() {
 
 
 
-Bool_t AliAnalysisCentralCutEvtESD::IsSelected(TObject *obj, TObject * /* obj2 */){
+Bool_t AliAnalysisCentralCutEvtESD::IsSelected(TObject *obj){
 // check whether the event passes the cuts
     AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(obj);
     if(!esdEvent){

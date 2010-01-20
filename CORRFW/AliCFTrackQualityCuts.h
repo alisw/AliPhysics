@@ -65,8 +65,8 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   ~AliCFTrackQualityCuts();
   void Copy(TObject &c) const;
 
-  Bool_t IsSelected(TObject* obj, TObject *obj2 = 0);
-  //Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  Bool_t IsSelected(TObject* obj);
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   // cut value setter
   void SetMinNClusterTPC(Int_t cluster=-1)		{fMinNClusterTPC = cluster;}

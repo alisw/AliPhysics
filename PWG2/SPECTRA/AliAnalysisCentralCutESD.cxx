@@ -87,7 +87,7 @@ AliAnalysisCentralCutESD::~AliAnalysisCentralCutESD() {
 }
 
 
-Bool_t AliAnalysisCentralCutESD::IsSelected(TObject *obj, TObject * /* obj2 */ ){
+Bool_t AliAnalysisCentralCutESD::IsSelected(TObject *obj){
 // Checks if a particle passes the cuts
 
     AliESDtrack *track = dynamic_cast<AliESDtrack *>(obj);

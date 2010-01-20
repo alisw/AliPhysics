@@ -38,8 +38,8 @@ class AliCFPairQualityCuts : public AliCFCutBase
   AliCFPairQualityCuts& operator=(const AliCFPairQualityCuts& c) ;
   virtual ~AliCFPairQualityCuts() {delete fCutNeg; delete fCutPos; }
 
-  Bool_t IsSelected(TObject* obj, TObject* /* obj2 */ = 0) ; 
-  //Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  Bool_t IsSelected(TObject* obj) ; 
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   virtual AliCFTrackQualityCuts* GetNegCut() const {return fCutNeg;}
   virtual AliCFTrackQualityCuts* GetPosCut() const {return fCutPos;}

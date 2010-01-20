@@ -95,7 +95,7 @@ AliCFV0TopoCuts& AliCFV0TopoCuts::operator=(const AliCFV0TopoCuts& c)
 }
 
 //______________________________________________________________
-Bool_t AliCFV0TopoCuts::IsSelected(TObject *obj, TObject * /* event */) {
+Bool_t AliCFV0TopoCuts::IsSelected(TObject *obj) {
   //
   // computes V0 topological variables to cut on and return true 
   // in case the V0 is accepted

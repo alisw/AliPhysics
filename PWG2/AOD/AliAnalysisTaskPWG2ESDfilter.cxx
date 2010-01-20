@@ -737,7 +737,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	//
 	// Track selection
 	if (fTrackFilter) {
-	    selectInfo = fTrackFilter->IsSelected(esdTrack, fESD);
+	    selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    if (!selectInfo) continue;
 	}
 	

@@ -43,8 +43,8 @@ class AliHFEextraCuts : public AliCFCutBase{
     AliHFEextraCuts &operator=(const AliHFEextraCuts &c);
     virtual ~AliHFEextraCuts();
     
-    virtual Bool_t IsSelected(TObject *o, TObject *o2 = 0);
-    //virtual Bool_t IsSelected(TList *) { return kTRUE; };
+    virtual Bool_t IsSelected(TObject *o);
+    virtual Bool_t IsSelected(TList *) { return kTRUE; };
 
     inline void SetClusterRatioTPC(Double_t ratio);
     inline void SetRequireITSpixel(ITSPixel_t pixel);
