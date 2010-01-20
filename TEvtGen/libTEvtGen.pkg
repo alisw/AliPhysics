@@ -1,0 +1,16 @@
+#-*- Mode: Makefile -*-
+
+SRCS = AliDecayerEvtGen.cxx AliGenEvtGen.cxx    
+
+HDRS:= $(SRCS:.cxx=.h)  
+
+DHDR:= TEvtGenLinkDef.h
+
+EINCLUDE:=TEvtGen EVGEN
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  -lSTEERBase -lSTEER -lFASTSIM\
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice -lEVGEN -llhapdf\
+                         -L$(shell root-config --libdir) -lEG -lVMC\
+                         -L$(ALICE_ROOT)/TEvtGen/EvtGen -lEvtGen -lEvtGenBase -lEvtGenModels                       
+endif
