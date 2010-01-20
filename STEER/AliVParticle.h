@@ -83,7 +83,7 @@ public:
 
   
 
-  ClassDef(AliVParticle, 2)  // base class for particles
+  ClassDef(AliVParticle, 3)  // base class for particles
 };
 
 #endif

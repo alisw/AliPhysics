@@ -98,7 +98,7 @@ class AliAODJet : public AliVParticle {
     TLorentzVector* fMomentum;               // Jet 4-momentum vector
     TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,5);
+    ClassDef(AliAODJet,6);
 
 };
 
