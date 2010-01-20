@@ -37,15 +37,15 @@ class AliTOFAlignment :public TTask{
   virtual void ReadParFromCDB(const Char_t *sel, Int_t nrun);
   virtual void WriteSimParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
   virtual void ReadSimParFromCDB(const Char_t *sel, Int_t nrun);
-  virtual void Smear(Float_t *tr=0, Float_t *rot=0); // create a set of AlignObj for TOF
-  virtual void Align(Float_t *tr=0, Float_t *rot=0); // create a set of AlignObj for TOF
+  virtual void Smear(Float_t * const tr=0, Float_t * const rot=0); // create a set of AlignObj for TOF
+  virtual void Align(Float_t * const tr=0, Float_t * const rot=0); // create a set of AlignObj for TOF
   TObjArray * GetTOFAlignArray() const {return fTOFAlignObjArray;}
 
   //methods for survey
   virtual void WriteOnCDBforDC();
   virtual void ReadFromCDBforDC();
   virtual void BuildGeomForSurvey();      //Build ideal geometry (FTOA in BTOF)
-  virtual void InsertMisAlignment( Float_t *mis); //To test align. from Survey
+  virtual void InsertMisAlignment(Float_t * const mis); //To test align. from Survey
   virtual void MakeDefData(const Int_t nf,TString namefiles[]); //Combines survey data from different files
   virtual void WriteCombData(const Char_t *nomefile, Int_t option); //Write combined data on a file 
   virtual void ReadSurveyDataAndAlign(); //Read survey data and call the right Alignement procedure  

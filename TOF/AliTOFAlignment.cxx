@@ -170,7 +170,7 @@ AliTOFAlignment::~AliTOFAlignment() {
 }
 
 //_____________________________________________________________________________
-void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot)
+void AliTOFAlignment::Smear(Float_t * const tr, Float_t * const rot)
 {
   //Introduce Random Offset/Tilts
   fTOFAlignObjArray = new TObjArray(kMaxAlignObj);
@@ -205,7 +205,7 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot)
 }
 
 //_____________________________________________________________________________
-void AliTOFAlignment::Align( Float_t *tr, Float_t *rot)
+void AliTOFAlignment::Align(Float_t * const tr, Float_t * const rot)
 {
   //Introduce Offset/Tilts
 
@@ -403,7 +403,7 @@ void AliTOFAlignment::BuildGeomForSurvey()
 }
 
 //_____________________________________________________________________________
-void AliTOFAlignment::InsertMisAlignment(Float_t *mis)
+void AliTOFAlignment::InsertMisAlignment(Float_t * const mis)
 {
   // Now Apply the Displacements and store the misaligned FM positions...
   //
