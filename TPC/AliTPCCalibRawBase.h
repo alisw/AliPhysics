@@ -49,6 +49,8 @@ public:
   virtual Int_t Update(const Int_t /*isector*/, const Int_t /*iRow*/, const Int_t /*iPad*/,
                        const Int_t /*iTimeBin*/, const Float_t /*signal*/) { return 0; }
   virtual void UpdateDDL() {return;}
+  virtual void ProcessBunch(const Int_t /*sector*/, const Int_t /*row*/, const Int_t /*pad*/,
+                            const Int_t /*length*/, const UInt_t /*startTimeBin*/, const UShort_t* /*signal*/) {return; }
   virtual void Analyse(){ return; }
   
     //Setters

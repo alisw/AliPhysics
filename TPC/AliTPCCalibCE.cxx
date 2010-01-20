@@ -1635,12 +1635,13 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
   TObjArray *aType = 0x0;
   Int_t npoints=0;
 
-    // sanity checks
-  if ( (sector<-2) || (sector>71) )      return 0x0;
-  if ( (xVariable<0) || (xVariable>2) ) return 0x0;
-  if ( (fitType<0) || (fitType>3) )     return 0x0;
-  if ( sector>=0&&!GetTMeanEvents(sector) )        return 0x0; //no mean time information available
-  if ( sector<0 && fitType!=2) return 0x0;
+  // sanity checks
+  if ( (sector<-2)   || (sector>71)   ) return 0x0;  //sector outside valid range
+  if ( (xVariable<0) || (xVariable>2) ) return 0x0;  //invalid x-variable
+  if ( (fitType<0)   || (fitType>3)   ) return 0x0;  //invalid fit type
+  if ( sector>=0 && fitType==2 && !GetTMeanEvents(sector) ) return 0x0; //no mean time information available
+  if ( sector>=0 && fitType==3 && !GetQMeanEvents(sector) ) return 0x0; //no mean charge information available
+  if ( sector<0 && fitType!=2) return 0x0;  //for side wise information only mean time is available
 
   if (sector>=0){
     if ( fitType==0 ){
