@@ -35,6 +35,8 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODRecoDecayHF3Prong.h"
+#include "AliAODRecoDecayHF4Prong.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
