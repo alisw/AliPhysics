@@ -157,7 +157,7 @@ AliTOFFEEDump::DumpData() {
   printf("*** TOF FEE dump data ***\n");
   printf("data size = %d bytes\n", fSize);
   printf("*************************\n");
-  UInt_t nwords = fSize / 4;
+  Int_t nwords = fSize / 4;
   UInt_t *data = (UInt_t *)fData;
   for (Int_t iword = 0; iword < nwords; iword++) {
     if (iword != 0 && iword % 4 == 0) printf("\n");
