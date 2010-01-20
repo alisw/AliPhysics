@@ -841,8 +841,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   return;
 }
 //----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::AddDaughterRefs(AliAODVertex *v,AliVEvent *event,
-					     TObjArray *trkArray) const
+void AliAnalysisVertexingHF::AddDaughterRefs(AliAODVertex *v,
+					     const AliVEvent *event,
+					     const TObjArray *trkArray) const
 {
   // Add the AOD tracks as daughters of the vertex (TRef)
 
@@ -1010,7 +1011,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
 AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
                              TObjArray *threeTrackArray,AliVEvent *event,
 			     AliAODVertex *secVert,Double_t dispersion,
-			     AliAODVertex *vertexp1n1,AliAODVertex *vertexp2n1,
+			     const AliAODVertex *vertexp1n1,const AliAODVertex *vertexp2n1,
 			     Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
 			     Bool_t &ok3Prong) const
 {
@@ -1114,8 +1115,8 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
                              TObjArray *fourTrackArray,AliVEvent *event,
                              AliAODVertex *secVert,
-                             AliAODVertex *vertexp1n1,
-                             AliAODVertex *vertexp1n1p2,
+                             const AliAODVertex *vertexp1n1,
+                             const AliAODVertex *vertexp1n1p2,
                              Double_t dcap1n1,Double_t dcap1n2,
 			     Double_t dcap2n1,Double_t dcap2n2,
                              Bool_t &ok4Prong) const
@@ -1151,7 +1152,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
 
   // invariant mass cut for rho or D0 (try to improve coding here..)
   Bool_t okMassCut=kFALSE;
-  if(!okMassCut && fD0to4ProngsCuts[8]==0.){      //no PID, to be implemented with PID
+  if(!okMassCut && TMath::Abs(fD0to4ProngsCuts[8])<1.e-13){      //no PID, to be implemented with PID
     if(SelectInvMass(4,4,px,py,pz)) okMassCut=kTRUE;
   }
   if(!okMassCut) {
@@ -1223,7 +1224,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   return the4Prong;
 }
 //-----------------------------------------------------------------------------
-AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(TObjArray *trkArray,
+AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(const TObjArray *trkArray,
 						    AliVEvent *event) const
 {
   // Returns primary vertex to be used for this candidate
@@ -1584,7 +1585,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
   return retval;
 }
 //-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
+void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
 				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
 			           UChar_t *seleFlags,Int_t *evtNumber)
 {
