@@ -123,13 +123,6 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent * const event) {
   //if(fkRecoParam->GetApplyPbPbCuts())fkRecoParam=fkRecoParam->GetPbPbparam();
   //fkRecoParam->PrintParameters();
 
-  /*
-  Double_t parPID[2];   
-  parPID[0]=fkRecoParam->GetTimeResolution();
-  parPID[1]=fkRecoParam->GetTimeNSigma();
-  fPid=new AliTOFpidESD(parPID);
-  */
-
   //Initialise some counters
 
   fNseeds=0;

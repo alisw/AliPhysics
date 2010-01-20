@@ -159,13 +159,6 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
   //if(fkRecoParam->GetApplyPbPbCuts())fkRecoParam=fkRecoParam->GetPbPbparam();
   //fkRecoParam->PrintParameters();
 
-  /*
-  Double_t parPID[2];   
-  parPID[0]=fkRecoParam->GetTimeResolution();
-  parPID[1]=fkRecoParam->GetTimeNSigma();
-  fPid=new AliTOFpidESD(parPID);
-  */
-
   //Initialise some counters
 
   fNseeds=0;
@@ -313,28 +306,6 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
     }
   }
 
-  //Handle Time Zero information
-  /*
-  Double_t timeZero=0.;
-  Double_t timeZeroMax=99999.;
-  Bool_t usetimeZero     = fkRecoParam->UseTimeZero();
-  Bool_t timeZeroFromT0  = fkRecoParam->GetTimeZerofromT0();
-  Bool_t timeZeroFromTOF = fkRecoParam->GetTimeZerofromTOF();
-
-  AliDebug(2,Form("Use Time Zero?: %d",usetimeZero));
-  AliDebug(2,Form("Time Zero from T0? : %d",timeZeroFromT0));
-  AliDebug(2,Form("Time Zero From TOF? : %d",timeZeroFromTOF));
-
-  if(usetimeZero){
-    if(timeZeroFromT0){
-      timeZero=GetTimeZerofromT0(event); 
-    }
-    if(timeZeroFromTOF && (timeZero>timeZeroMax || !timeZeroFromT0)){
-      timeZero=GetTimeZerofromTOF(event); 
-    }
-  }
-  AliDebug(2,Form("time Zero used in PID: %f",timeZero));
-  */
   //Make TOF PID
   // Now done in AliESDpid
   // fPid->MakePID(event,timeZero);
