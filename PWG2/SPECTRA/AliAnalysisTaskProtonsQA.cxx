@@ -29,7 +29,7 @@ ClassImp(AliAnalysisTaskProtonsQA)
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
   : AliAnalysisTask(), fESD(0), fMC(0),
     fList0(0), fList1(0), fList2(0), fList3(0), 
-    fList4(0), fList5(0), fList6(0), fList7(0),
+    fList4(0), fList5(0), fList6(0), fList7(0), fList8(0),
     fProtonQAAnalysis(0) {
   //Dummy constructor
 }
@@ -38,7 +38,7 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name) 
   : AliAnalysisTask(name, ""), fESD(0), fMC(0),
     fList0(0), fList1(0), fList2(0), fList3(0), 
-    fList4(0), fList5(0), fList6(0), fList7(0),
+    fList4(0), fList5(0), fList6(0), fList7(0), fList8(0),
     fProtonQAAnalysis(0) {
   // Constructor
   
@@ -54,6 +54,7 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name)
   DefineOutput(5, TList::Class());
   DefineOutput(6, TList::Class());
   DefineOutput(7, TList::Class());
+  DefineOutput(8, TList::Class());
 }
 
 //________________________________________________________________________
@@ -108,6 +109,9 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
 
   fList7 = new TList();
   fList7 = fProtonQAAnalysis->GetVertexQAList();
+
+  fList8 = new TList();
+  fList8 = fProtonQAAnalysis->GetCutEfficiencyList();
 }
 
 //________________________________________________________________________
@@ -145,7 +149,8 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
       fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
       fProtonQAAnalysis->RunMCAnalysis(stack);
       fProtonQAAnalysis->RunPIDEfficiencyAnalysis(stack, fESD, vertex);
-      fProtonQAAnalysis->RunReconstructionEfficiencyAnalysis(fMC, fESD, vertex);
+      fProtonQAAnalysis->RunReconstructionEfficiencyAnalysis(fMC,fESD,vertex);
+      fProtonQAAnalysis->RunCutEfficiencyAnalysis(stack, fESD, vertex);
     }//accepted vertex
   }//triggered event
   
@@ -158,6 +163,7 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
   PostData(5, fList5);
   PostData(6, fList6);
   PostData(7, fList7);
+  PostData(8, fList8);
 }      
 
 //________________________________________________________________________
@@ -203,6 +209,11 @@ void AliAnalysisTaskProtonsQA::Terminate(Option_t *) {
   fList7 = dynamic_cast<TList*> (GetOutputData(7));
   if (!fList7) {
     Printf("ERROR: fList7 not available");
+    return;
+  }
+  fList8 = dynamic_cast<TList*> (GetOutputData(8));
+  if (!fList8) {
+    Printf("ERROR: fList8 not available");
     return;
   }
 }

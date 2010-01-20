@@ -56,13 +56,16 @@ class AliProtonQAAnalysis : public TObject {
   void SetRunQAAnalysis();
   TList *GetGlobalQAList() const {return fGlobalQAList;}
 
-  //Efficiency plots (reconstruction & PID)
+  //Efficiency plots (reconstruction & PID & Cuts)
   void RunReconstructionEfficiencyAnalysis(AliMCEvent *mcEvent, 
 					   AliESDEvent *esd,
 					   const AliESDVertex *vertex);
   void RunPIDEfficiencyAnalysis(AliStack *stack, 
 				AliESDEvent *esd,
 			     const AliESDVertex *vertex);
+  void RunCutEfficiencyAnalysis(AliStack *stack,
+				AliESDEvent *esd,
+				const AliESDVertex *vertex);
   void RunEfficiencyAnalysis(AliStack *stack, 
 			     AliESDEvent *esd,
 			     const AliESDVertex *vertex);
@@ -71,6 +74,7 @@ class AliProtonQAAnalysis : public TObject {
     fUseCutsInEfficiency = gUseCuts;
   }
   TList *GetEfficiencyQAList() const {return fEfficiencyList;}
+  TList *GetCutEfficiencyList() const {return fCutEfficiencyList;}
 
   //MC analysis
   void RunMCAnalysis(AliStack* stack);
@@ -151,6 +155,7 @@ class AliProtonQAAnalysis : public TObject {
   Bool_t fUseCutsInEfficiency;//use the cuts in the reco and pid efficiency
 
   TList *fEfficiencyList;// list of the efficiency histograms
+  TList *fCutEfficiencyList;// list of the cut efficiency
 
   ClassDef(AliProtonQAAnalysis,1);
 };

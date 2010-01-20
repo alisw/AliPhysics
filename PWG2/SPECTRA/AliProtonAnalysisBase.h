@@ -20,6 +20,7 @@ class TCanvas;
 class TList;
 
 #include "AliPhysicsSelection.h"
+#include "AliBackgroundSelection.h"
 #include "AliPID.h"
 class AliESDEvent;
 class AliESDtrack;
@@ -73,10 +74,13 @@ class AliProtonAnalysisBase : public TObject {
 
   Bool_t IsEventTriggered(const AliESDEvent *esd,
 			  TriggerMode trigger = kMB2);
-  void OfflineTriggerInit(UInt_t runNumber) {
+  //void OfflineTriggerInit(UInt_t runNumber) {
+  void OfflineTriggerInit() {
     kUseOfflineTrigger = kTRUE;
     fPhysicsSelection = new AliPhysicsSelection();
-    fPhysicsSelection->Initialize(runNumber);
+    //fPhysicsSelection->AddBackgroundIdentification(new AliBackgroundSelection());
+    fPhysicsSelection->SetAnalyzeMC(fAnalysisMC);
+    //fPhysicsSelection->Initialize(runNumber);
   }
   Bool_t IsOfflineTriggerUsed() {return kUseOfflineTrigger;}
   AliPhysicsSelection *GetPhysicsSelectionObject() {return fPhysicsSelection;}

@@ -155,16 +155,6 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
 	  }//reconstructed vertex
 	}//offline trigger
       }//usage of the offline trigger
-      else {
-	//Reconstructed vertex
-	const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
-	fHistEventStats->Fill(4);
-	if(vertex) {
-	  AliDebug(1,Form("Proton ESD analysis task: There are %d tracks in this event",fESD->GetNumberOfTracks()));
-	  fProtonAnalysis->Analyze(fESD,vertex);
-	  fHistEventStats->Fill(5);
-	}//reconstructed vertex
-      }//else
     }//triggered event - online
   }//ESD analysis              
   

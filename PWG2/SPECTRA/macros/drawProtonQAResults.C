@@ -34,6 +34,8 @@ void drawProtonQAResults(const char *analysisType = "TPC",
   TFile *fEfficiency = TFile::Open(filename3.Data());
   TList *listEfficiency = (TList *)fEfficiency->Get("efficiencyList");
   drawEfficiency(listEfficiency,analysisType);
+  TList *listCutEfficiency = (TList *)fEfficiency->Get("cutEfficiencyList");
+  DrawCutEfficiency(listCutEfficiency,analysisType);
   fEfficiency->Close();
 
   TFile *fVertex = TFile::Open("Vertex.QA.root");
@@ -459,7 +461,6 @@ void drawCutStatistics(TList *list,
   
   //Efficiency - Contamination plots
   DrawContamination(fQA2DList,analysisType);
-  DrawCutEfficiency(fQA2DList,analysisType);
   DrawComposition(gHistYPtPDGProtonsPass,gHistYPtPDGAntiProtonsPass);
 }
 
@@ -890,33 +891,33 @@ void DrawCutEfficiency(TList *inputList,
   t1->SetTextSize(0.04);
 
   TH2F *hPrimaryESDProtons = (TH2F *)inputList->At(0);
-  TH2F *hPrimaryESDAntiProtons = (TH2F *)inputList->At(4);
-  TH2F *hPrimaryMCProtons = (TH2F *)inputList->At(8);
-  TH2F *hPrimaryMCAntiProtons = (TH2F *)inputList->At(9);
+  TH2F *hPrimaryESDAntiProtons = (TH2F *)inputList->At(1);
+  TH2F *hPrimaryESDProtonsSurvived = (TH2F *)inputList->At(2);
+  TH2F *hPrimaryESDAntiProtonsSurvived = (TH2F *)inputList->At(3);
 
   //rapidity dependence
   //Protons
   TH1D *gYPrimaryESDProtons = (TH1D *)hPrimaryESDProtons->ProjectionX("gYPrimaryESDProtons",0,hPrimaryESDProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYPrimaryMCProtons = (TH1D *)hPrimaryMCProtons->ProjectionX("gYPrimaryMCProtons",0,hPrimaryMCProtons->GetXaxis()->GetNbins(),"e");
-  gYPrimaryESDProtons->Divide(gYPrimaryMCProtons);
-  SetError(gYPrimaryESDProtons,gYPrimaryMCProtons);
-  gYPrimaryESDProtons->Scale(100.);
-  gYPrimaryESDProtons->SetMarkerStyle(kFullCircle);
+  TH1D *gYPrimaryESDProtonsSurvived = (TH1D *)hPrimaryESDProtonsSurvived->ProjectionX("gYPrimaryESDProtonsSurvived",0,hPrimaryESDProtonsSurvived->GetXaxis()->GetNbins(),"e");
+  gYPrimaryESDProtonsSurvived->Divide(gYPrimaryESDProtons);
+  SetError(gYPrimaryESDProtonsSurvived,gYPrimaryESDProtons);
+  gYPrimaryESDProtonsSurvived->Scale(100.);
+  gYPrimaryESDProtonsSurvived->SetMarkerStyle(kFullCircle);
 
   //Antiprotons
   TH1D *gYPrimaryESDAntiProtons = (TH1D *)hPrimaryESDAntiProtons->ProjectionX("gYPrimaryESDAntiProtons",0,hPrimaryESDAntiProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYPrimaryMCAntiProtons = (TH1D *)hPrimaryMCAntiProtons->ProjectionX("gYPrimaryMCAntiProtons",0,hPrimaryMCAntiProtons->GetXaxis()->GetNbins(),"e");
-  gYPrimaryESDAntiProtons->Divide(gYPrimaryMCAntiProtons);
-  SetError(gYPrimaryESDAntiProtons,gYPrimaryMCAntiProtons);
-  gYPrimaryESDAntiProtons->Scale(100.);
-  gYPrimaryESDAntiProtons->SetMarkerStyle(kFullCircle);
+  TH1D *gYPrimaryESDAntiProtonsSurvived = (TH1D *)hPrimaryESDAntiProtonsSurvived->ProjectionX("gYPrimaryESDAntiProtonsSurvived",0,hPrimaryESDAntiProtonsSurvived->GetXaxis()->GetNbins(),"e");
+  gYPrimaryESDAntiProtonsSurvived->Divide(gYPrimaryESDAntiProtons);
+  SetError(gYPrimaryESDAntiProtonsSurvived,gYPrimaryESDAntiProtons);
+  gYPrimaryESDAntiProtonsSurvived->Scale(100.);
+  gYPrimaryESDAntiProtonsSurvived->SetMarkerStyle(kFullCircle);
   
   TH2F *hEmptyY = new TH2F("hEmptyEfficiencyY","",
 			   100,-1.2,1.2,100,-10.0,130); 
   hEmptyY->SetStats(kFALSE); 
   hEmptyY->GetYaxis()->SetTitle("#epsilon [%]");
   hEmptyY->GetYaxis()->SetTitleOffset(1.3);
-  hEmptyY->GetXaxis()->SetTitle(hPrimaryESDProtons->GetXaxis()->GetTitle());
+  hEmptyY->GetXaxis()->SetTitle(hPrimaryESDProtonsSurvived->GetXaxis()->GetTitle());
 
   TCanvas *c10 = new TCanvas("c10","(Anti)Proton cut efficiency vs y",
 			    250,250,700,400);
@@ -926,35 +927,35 @@ void DrawCutEfficiency(TList *inputList,
   c10->cd(1)->SetLeftMargin(0.15); 
   c10->cd(1)->SetGridx(); c10->cd(1)->SetGridy();
   hEmptyY->SetTitle("Protons");
-  hEmptyY->GetXaxis()->SetRangeUser(gYPrimaryESDAntiProtons->GetXaxis()->GetXmin()-0.2,gYPrimaryESDAntiProtons->GetXaxis()->GetXmax()+0.2);
+  hEmptyY->GetXaxis()->SetRangeUser(gYPrimaryESDAntiProtonsSurvived->GetXaxis()->GetXmin()-0.2,gYPrimaryESDAntiProtonsSurvived->GetXaxis()->GetXmax()+0.2);
   hEmptyY->DrawCopy();
-  gYPrimaryESDProtons->DrawCopy("ESAME");
+  gYPrimaryESDProtonsSurvived->DrawCopy("ESAME");
 
   c10->cd(2)->SetBottomMargin(0.15); 
   c10->cd(2)->SetLeftMargin(0.15); 
   c10->cd(2)->SetGridx(); c10->cd(2)->SetGridy();
   hEmptyY->SetTitle("Antiprotons");
   hEmptyY->DrawCopy();
-  gYPrimaryESDAntiProtons->DrawCopy("ESAME");
+  gYPrimaryESDAntiProtonsSurvived->DrawCopy("ESAME");
 
   c10->SaveAs("CutEfficiency-Protons-Rapidity.gif");
 
   //pT dependence
   //Protons
   TH1D *gPtPrimaryESDProtons = (TH1D *)hPrimaryESDProtons->ProjectionY("gPtPrimaryESDProtons",0,hPrimaryESDProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtPrimaryMCProtons = (TH1D *)hPrimaryMCProtons->ProjectionY("gPtPrimaryMCProtons",0,hPrimaryMCProtons->GetYaxis()->GetNbins(),"e");
-  gPtPrimaryESDProtons->Divide(gPtPrimaryMCProtons);
-  SetError(gPtPrimaryESDProtons,gPtPrimaryMCProtons);
-  gPtPrimaryESDProtons->Scale(100.);
-  gPtPrimaryESDProtons->SetMarkerStyle(kFullCircle);
+  TH1D *gPtPrimaryESDProtonsSurvived = (TH1D *)hPrimaryESDProtonsSurvived->ProjectionY("gPtPrimaryESDProtonsSurvived",0,hPrimaryESDProtonsSurvived->GetYaxis()->GetNbins(),"e");
+  gPtPrimaryESDProtonsSurvived->Divide(gPtPrimaryESDProtons);
+  SetError(gPtPrimaryESDProtonsSurvived,gPtPrimaryESDProtons);
+  gPtPrimaryESDProtonsSurvived->Scale(100.);
+  gPtPrimaryESDProtonsSurvived->SetMarkerStyle(kFullCircle);
 
   //Antiprotons
   TH1D *gPtPrimaryESDAntiProtons = (TH1D *)hPrimaryESDAntiProtons->ProjectionY("gPtPrimaryESDAntiProtons",0,hPrimaryESDAntiProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtPrimaryMCAntiProtons = (TH1D *)hPrimaryMCAntiProtons->ProjectionY("gPtPrimaryMCAntiProtons",0,hPrimaryMCAntiProtons->GetYaxis()->GetNbins(),"e");
-  gPtPrimaryESDAntiProtons->Divide(gPtPrimaryMCAntiProtons);
-  SetError(gPtPrimaryESDAntiProtons,gPtPrimaryMCAntiProtons);
-  gPtPrimaryESDAntiProtons->Scale(100.);
-  gPtPrimaryESDAntiProtons->SetMarkerStyle(kFullCircle);
+  TH1D *gPtPrimaryESDAntiProtonsSurvived = (TH1D *)hPrimaryESDAntiProtonsSurvived->ProjectionY("gPtPrimaryESDAntiProtonsSurvived",0,hPrimaryESDAntiProtonsSurvived->GetYaxis()->GetNbins(),"e");
+  gPtPrimaryESDAntiProtonsSurvived->Divide(gPtPrimaryESDAntiProtons);
+  SetError(gPtPrimaryESDAntiProtonsSurvived,gPtPrimaryESDAntiProtons);
+  gPtPrimaryESDAntiProtonsSurvived->Scale(100.);
+  gPtPrimaryESDAntiProtonsSurvived->SetMarkerStyle(kFullCircle);
 
   TH2F *hEmptyPt = new TH2F("hEmptyEfficiencyPt","",
 			   100,0.0,4.0,100,-10.0,130); 
@@ -964,33 +965,33 @@ void DrawCutEfficiency(TList *inputList,
   hEmptyPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
 
   TCanvas *c11 = new TCanvas("c11","(Anti)Proton cut efficiency vs pT",
-			    300,300,700,400);
+			     300,300,700,400);
   c11->SetHighLightColor(10); c11->Divide(2,1);
 
   c11->cd(1)->SetBottomMargin(0.15); 
   c11->cd(1)->SetLeftMargin(0.15); 
   c11->cd(1)->SetGridx(); c11->cd(1)->SetGridy();
   hEmptyPt->SetTitle("Protons");
-  hEmptyPt->GetXaxis()->SetRangeUser(gPtPrimaryESDAntiProtons->GetXaxis()->GetXmin()-0.2,gPtPrimaryESDAntiProtons->GetXaxis()->GetXmax()+0.2);
+  hEmptyPt->GetXaxis()->SetRangeUser(gPtPrimaryESDAntiProtonsSurvived->GetXaxis()->GetXmin()-0.2,gPtPrimaryESDAntiProtonsSurvived->GetXaxis()->GetXmax()+0.2);
   hEmptyPt->DrawCopy();
-  gPtPrimaryESDProtons->DrawCopy("ESAME");
+  gPtPrimaryESDProtonsSurvived->DrawCopy("ESAME");
 
   c11->cd(2)->SetBottomMargin(0.15); 
   c11->cd(2)->SetLeftMargin(0.15); 
   c11->cd(2)->SetGridx(); c11->cd(2)->SetGridy();
   hEmptyPt->SetTitle("Antirotons");
   hEmptyPt->DrawCopy();
-  gPtPrimaryESDAntiProtons->DrawCopy("ESAME");
+  gPtPrimaryESDAntiProtonsSurvived->DrawCopy("ESAME");
 
   c11->SaveAs("CutEfficiency-Protons-Pt.gif");
 
   TString outputFileName = "CutEfficiency.";
   outputFileName += analysisType; outputFileName += ".root";
   TFile *fout = TFile::Open(outputFileName.Data(),"recreate");
-  gYPrimaryESDProtons->Write();
-  gYPrimaryESDAntiProtons->Write();
-  gPtPrimaryESDProtons->Write();
-  gPtPrimaryESDAntiProtons->Write();
+  gYPrimaryESDProtonsSurvived->Write();
+  gYPrimaryESDAntiProtonsSurvived->Write();
+  gPtPrimaryESDProtonsSurvived->Write();
+  gPtPrimaryESDAntiProtonsSurvived->Write();
   fout->Close();
 }
 
