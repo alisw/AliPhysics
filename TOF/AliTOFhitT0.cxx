@@ -101,8 +101,8 @@ AliTOFhitT0::AliTOFhitT0(const AliTOFhitT0 & hit):
 }
  
 //______________________________________________________________________________
-AliTOFhitT0::AliTOFhitT0(Int_t shunt, Int_t track, Int_t *vol,
-                     Float_t *hits):
+AliTOFhitT0::AliTOFhitT0(Int_t shunt, Int_t track, Int_t * const vol,
+                     Float_t * const hits):
   AliHit(shunt, track),
   fSector(-1),
   fPlate(-1),
