@@ -10,7 +10,7 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-#include <TLorentzVector.h>c
+#include <TLorentzVector.h>
 #include "AliVParticle.h"
 #include <TArrayI.h>
 #include "AliAODVertex.h"
