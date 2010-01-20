@@ -35,6 +35,7 @@
 
 class TParticle;
 class AliESDVertex;
+class AliESDEvent;
 class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
@@ -349,7 +350,9 @@ public:
   void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
     p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
   }
-  virtual void Print(Option_t * opt) const ; 
+  virtual void Print(Option_t * opt) const ;
+  AliESDEvent* GetESDEvent() const {return fESDEvent;}
+  void         SetESDEvent(AliESDEvent* evt) {fESDEvent = evt;}  
   //
   // visualization (M. Ivanov)
   //
@@ -459,11 +462,12 @@ protected:
 
   Char_t  fTRDTimBin[kTRDnPlanes];   // Time bin of Max cluster from all six planes
   Char_t  fVertexID; // ID of the primary vertex this track belongs to
-
+  AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
+  
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,53)  //ESDtrack 
+  ClassDef(AliESDtrack,54)  //ESDtrack 
 };
 
 

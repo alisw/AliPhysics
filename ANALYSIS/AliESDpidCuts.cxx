@@ -103,21 +103,21 @@ AliESDpidCuts::~AliESDpidCuts(){
 }
 
 //_____________________________________________________________________
-Bool_t AliESDpidCuts::IsSelected(TList *lst){
+Bool_t AliESDpidCuts::IsSelected(TObject *obj){
   //
   // Select Track
   // 
-  AliESDtrack * trk = dynamic_cast<AliESDtrack*>(lst->At(0));
+  AliESDtrack * trk = dynamic_cast<AliESDtrack*>(obj);
   if(!trk){
     AliError("Provided object is not AliESDtrack!");
     return kFALSE;
   }
-  AliESDEvent * evt = dynamic_cast<AliESDEvent*>(lst->At(1));
+  AliESDEvent* evt = trk->GetESDEvent();
   if(!evt){
     AliError("No AliESDEvent!");
     return kFALSE;
   }
-  return AcceptTrack(trk,evt);
+  return AcceptTrack(trk, evt);
 }
 
 //_____________________________________________________________________

@@ -119,6 +119,7 @@
 
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
+#include "AliESDEvent.h"
 #include "AliKalmanTrack.h"
 #include "AliVTrack.h"
 #include "AliLog.h"
@@ -217,7 +218,8 @@ AliESDtrack::AliESDtrack() :
   fTRDntracklets(0),
   fTRDnSlices(0),
   fTRDslices(0x0),
-  fVertexID(-2) // -2 means an orphan track 
+  fVertexID(-2),// -2 means an orphan track 
+  fESDEvent(0)
 {
   //
   // The default ESD constructor 
@@ -308,7 +310,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDntracklets(track.fTRDntracklets),
   fTRDnSlices(track.fTRDnSlices),
   fTRDslices(0x0),
-  fVertexID(track.fVertexID)
+  fVertexID(track.fVertexID),
+  fESDEvent(track.fESDEvent)
 {
   //
   //copy constructor
@@ -412,7 +415,8 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDntracklets(0),
   fTRDnSlices(0),
   fTRDslices(0x0),
-  fVertexID(-2)  // -2 means an orphan track
+  fVertexID(-2),  // -2 means an orphan track
+  fESDEvent(0)  
 {
   //
   // ESD track from AliVTrack.
@@ -534,7 +538,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTRDntracklets(0),
   fTRDnSlices(0),
   fTRDslices(0x0),
-  fVertexID(-2)  // -2 means an orphan track
+  fVertexID(-2),  // -2 means an orphan track
+  fESDEvent(0)
 {
   //
   // ESD track from TParticle
@@ -1698,7 +1703,7 @@ Double_t AliESDtrack::GetTRDmomentum(Int_t plane, Double_t *sp) const
 // in TRD layer "plane".
 
   if (!fTRDnSlices) {
-    //    AliError("No TRD info allocated for this track !");
+    AliError("No TRD info allocated for this track !");
     return -1.;
   }
   if ((plane<0) || (plane>=kTRDnPlanes)) {

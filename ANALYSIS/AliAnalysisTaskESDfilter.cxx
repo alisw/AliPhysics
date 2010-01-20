@@ -139,6 +139,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     // loop over events and fill them
     // Multiplicity information needed by the header (to be revised!)
     Int_t nTracks    = esd->GetNumberOfTracks();
+    for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) esd->GetTrack(iTrack)->SetESDEvent(esd);
+
     //    if (fDebug > 0) printf("-------------------Bo: Number of ESD tracks %d \n",nTracks);
 
     Int_t nPosTracks = 0;
@@ -744,7 +746,6 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  selectInfo);
 	    aodTrack->SetTPCClusterMap(esdV0Pos->GetTPCClusterMap());
 	    aodTrack->SetTPCSharedMap (esdV0Pos->GetTPCSharedMap());
-
 	    aodTrackRefs->AddAt(aodTrack,posFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: pos track from original pt %.3f \n",aodTrack->Pt());
 	    if (esdV0Pos->GetSign() > 0) nPosTracks++;
