@@ -58,13 +58,32 @@ public:
   // PID
   virtual const Double_t *PID() const = 0; // return PID object (to be defined, still)
 
+
+  
+  /** Compare this class with an other instance of this class
+   *  used in a TCollection::Sort()/TClonesArray::Sort()
+   *  @param   obj  ptr to other instance
+   *  @return  Returns 0 when equal, 1 when this is smaller
+   *  and -1 when bigger -- sorts descending
+   */
+  Int_t Compare( const TObject* obj) const;
+  
+    
+  /** Defines this class as being sortable in a TCollection
+   *  @return     always kTRUE;
+   */
+  Bool_t IsSortable() const  { return kTRUE; }
+
+
   // coordinate system conversions
   Bool_t   Local2GlobalMomentum(Double_t p[3], Double_t alpha) const;
   Bool_t   Local2GlobalPosition(Double_t r[3], Double_t alpha) const;
   Bool_t   Global2LocalMomentum(Double_t p[3], Short_t charge, Double_t &alpha) const;
   Bool_t   Global2LocalPosition(Double_t r[3], Double_t alpha) const;
 
-  ClassDef(AliVParticle, 1)  // base class for particles
+  
+
+  ClassDef(AliVParticle, 2)  // base class for particles
 };
 
 #endif

@@ -113,3 +113,19 @@ Bool_t AliVParticle::Global2LocalPosition(Double_t r[3], Double_t alpha) const {
   return Local2GlobalPosition(r, -alpha);
 }
 
+
+Int_t AliVParticle::Compare( const TObject* obj) const {
+
+  // 
+  // see header file for class documentation
+  //
+
+  if (this == obj)
+    return 0;
+  // check type
+  if ( Pt() < ((AliVParticle*)(obj))->Pt())
+    return 1;
+  else
+    return -1;
+}
+

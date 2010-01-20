@@ -10,7 +10,7 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-#include <TLorentzVector.h>
+#include <TLorentzVector.h>c
 #include "AliVParticle.h"
 #include <TArrayI.h>
 #include "AliAODVertex.h"
@@ -82,23 +82,6 @@ class AliAODJet : public AliVParticle {
     virtual const Double_t* PID() const { return NULL;}
     virtual Int_t   GetLabel()    const { return -1;}
 //
-
-
-
-
-    /** Compare this class with an other instance of this class
-     *  used in a TClonesArray::Sort()
-     *  @param   obj  ptr to other instance
-     *  @return  Returns 0 when equal, 1 when this is smaller
-     *  and -1 when bigger -- sorts descending
-     */
-    Int_t Compare( const TObject* obj) const;
-    
-    
-    /** Defines this class as being sortable in a TClonesArray
-     *  @return     always kTRUE;
-     */
-    Bool_t IsSortable() const  { return kTRUE; }
 
     // first only one bit for EMCAL and TRD, leave space for more
     // trigger types and/or other detectors
