@@ -28,9 +28,9 @@ class AliESDMuonTrackCuts : public AliAnalysisCuts
 public:
   AliESDMuonTrackCuts(const Char_t* name = "AliESDMuonTrackCuts", const Char_t* title = "");
   virtual ~AliESDMuonTrackCuts();
-  Bool_t IsSelected(TObject* obj, TObject* /* obj2 */ = 0)
+  Bool_t IsSelected(TObject* obj)
        {return AcceptTrack((AliESDMuonTrack*)obj);}
-  // Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   Bool_t AcceptTrack(AliESDMuonTrack* esdMuTrack);
   TObjArray* GetAcceptedTracks(AliESD* esd);
   Int_t CountAcceptedTracks(AliESD* esd);

@@ -54,7 +54,7 @@ AliBackgroundSelection::~AliBackgroundSelection() {
 
 }
 
-Bool_t AliBackgroundSelection::IsSelected(TObject* obj, TObject* /* event */){
+Bool_t AliBackgroundSelection::IsSelected(TObject* obj){
 
   // reset fSelected
   SetSelected(kFALSE);

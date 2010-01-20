@@ -64,7 +64,7 @@ AliAnalysisFilter& AliAnalysisFilter::operator=(const AliAnalysisFilter& other)
     return *this;
    }
    
-UInt_t AliAnalysisFilter::IsSelected(TObject* track, TObject* event)
+UInt_t AliAnalysisFilter::IsSelected(TObject* obj)
 {
     //
     // Loop over all set of cuts
@@ -77,7 +77,7 @@ UInt_t AliAnalysisFilter::IsSelected(TObject* track, TObject* event)
     Int_t iCutB = 1;
 	
     while((cuts = (AliAnalysisCuts*)next())) {
-	Bool_t acc = cuts->IsSelected(track, event);
+	Bool_t acc = cuts->IsSelected(obj);
 	if ((filterMask = cuts->GetFilterMask()) > 0) {
 	    acc = (acc && (filterMask == result));
 	}
@@ -89,7 +89,6 @@ UInt_t AliAnalysisFilter::IsSelected(TObject* track, TObject* event)
     return result;
 }
 
-/*
 UInt_t AliAnalysisFilter::IsSelected(TList* list)
 {
     //
@@ -114,7 +113,7 @@ UInt_t AliAnalysisFilter::IsSelected(TList* list)
 
     return result;
 }
-*/
+
 void AliAnalysisFilter::Init()
 {
     //

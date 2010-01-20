@@ -8,6 +8,7 @@
 #include <TMath.h>
 #include <TIterator.h>
 #include <TString.h>
+#include <TList.h>
 
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
@@ -102,17 +103,21 @@ AliESDpidCuts::~AliESDpidCuts(){
 }
 
 //_____________________________________________________________________
-Bool_t AliESDpidCuts::IsSelected(TObject *track, TObject *event){
+Bool_t AliESDpidCuts::IsSelected(TList *lst){
   //
   // Select Track
   // 
-  if(TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
-    Char_t errormessage[256];
-    sprintf(errormessage, "Provided object not an AliESDtrack: Type %s", track->IsA()->GetName());
-    AliError(errormessage);
+  AliESDtrack * trk = dynamic_cast<AliESDtrack*>(lst->At(0));
+  if(!trk){
+    AliError("Provided object is not AliESDtrack!");
     return kFALSE;
   }
-  return AcceptTrack(const_cast<const AliESDtrack *>(dynamic_cast<AliESDtrack *>(track)),dynamic_cast<AliESDEvent *>(event));
+  AliESDEvent * evt = dynamic_cast<AliESDEvent*>(lst->At(1));
+  if(!evt){
+    AliError("No AliESDEvent!");
+    return kFALSE;
+  }
+  return AcceptTrack(trk,evt);
 }
 
 //_____________________________________________________________________

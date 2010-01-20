@@ -35,8 +35,8 @@ class AliESDpidCuts : public AliAnalysisCuts{
     void DefineHistograms(Color_t color = kRed);
     void DrawHistograms();
     void SaveHistograms(const Char_t *location = NULL);
-    virtual Bool_t IsSelected(TObject *track, TObject *event);
-    //virtual Bool_t IsSelected(TList *) { return kTRUE; }
+    virtual Bool_t IsSelected(TObject *){ return kTRUE; }
+    virtual Bool_t IsSelected(TList * lst);
     virtual Bool_t AcceptTrack(const AliESDtrack *track, const AliESDEvent *event);
     
     void SetTPCclusterRatioCut(Float_t clr) { fCutTPCclusterRatio = clr; }

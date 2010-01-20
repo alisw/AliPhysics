@@ -22,8 +22,8 @@ class AliAnalysisCuts : public AliVCuts
     AliAnalysisCuts(const char* name, const char* title);
     AliAnalysisCuts(const AliAnalysisCuts& obj);  
     virtual ~AliAnalysisCuts() {;}
-    virtual Bool_t IsSelected(TObject* track, TObject *event=0)  = 0;
-    //virtual Bool_t IsSelected(TList*  list)  = 0;
+    virtual Bool_t IsSelected(TObject* /* obj  */ )  {return kFALSE;}
+    virtual Bool_t IsSelected(TList*   /* list */ ) = 0;
     virtual void   Init() {;}
     virtual void   SetFilterMask(UInt_t mask) {fFilterMask = mask;}
     virtual UInt_t GetFilterMask()   const    {return fFilterMask;}

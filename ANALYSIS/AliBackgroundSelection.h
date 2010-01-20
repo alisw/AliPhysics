@@ -23,8 +23,8 @@ public:
   AliBackgroundSelection(const char* name, const char* title);
   AliBackgroundSelection(const AliBackgroundSelection& obj);  
   virtual ~AliBackgroundSelection();
-  virtual Bool_t IsSelected(TObject* obj, TObject * /*event*/ = 0);
-  //virtual Bool_t IsSelected(TList*  ) {AliFatal("Not implemented");return 0;}
+  virtual Bool_t IsSelected(TObject* obj);
+  virtual Bool_t IsSelected(TList*  ) {AliFatal("Not implemented");return 0;}
   virtual void   Init();
   virtual TList * GetOutput() {return fOutputHist;}
 

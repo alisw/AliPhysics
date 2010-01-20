@@ -30,8 +30,8 @@ public:
     AliAnalysisCentralCutEvtESD(const char *name="AliAnalysisCentralCutEvtESD", const char *title="ESD_Event_cuts");
     virtual ~AliAnalysisCentralCutEvtESD();
 
-    Bool_t  IsSelected(TObject* obj, TObject* obj2);
-    // Bool_t  IsSelected(TList* /*list*/) {return kTRUE;}
+    Bool_t  IsSelected(TObject* obj);
+    Bool_t  IsSelected(TList* /*list*/) {return kTRUE;}
 
     void SetMultiplicityRange(Int_t r1 = 0, Int_t r2 = 1000000) {fReqMult = kTRUE; fMultMin = r1; fMultMax = r2;}
     void SetDirectivityRange(Double_t r1 = 0.0, Double_t r2 = 1e10) {fReqDir = kTRUE; fDirMin = r1; fDirMax = r2;}

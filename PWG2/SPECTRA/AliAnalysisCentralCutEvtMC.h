@@ -30,8 +30,8 @@ class AliAnalysisCentralCutEvtMC: public AliAnalysisCuts {
 	AliAnalysisCentralCutEvtMC(const char *name="AliAnalysisCentralCutEvtMC", const char *title="MC_cuts");
     virtual ~AliAnalysisCentralCutEvtMC();
 
-    Bool_t  IsSelected(TObject* obj, TObject *obj2 = 0);
-    //Bool_t  IsSelected(TList* /*list*/) {return kTRUE;}
+    Bool_t  IsSelected(TObject* obj);
+    Bool_t  IsSelected(TList* /*list*/) {return kTRUE;}
 
     void SetMultiplicityRange(Int_t r1=0, Int_t r2=1000000){fReqMult = kTRUE; fMultMin=r1;  fMultMax=r2;}
     void SetDirectivityRange(Float_t r1=-1e10, Float_t r2=1e10) {fReqDir = kTRUE; fDirMin=r1; fDirMax=r2;}

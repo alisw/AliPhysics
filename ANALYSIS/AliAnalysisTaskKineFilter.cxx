@@ -172,7 +172,7 @@ void AliAnalysisTaskKineFilter::UserExec(Option_t */*option*/)
     // Track selection
     UInt_t selectInfo = 0;
     if (fTrackFilter) {
-       selectInfo = fTrackFilter->IsSelected(part,0);
+       selectInfo = fTrackFilter->IsSelected(part);
        if (!selectInfo) continue;
     }
     
@@ -257,7 +257,7 @@ Int_t AliAnalysisTaskKineFilter::LoopOverSecondaries(TParticle *mother, Int_t &j
       //
       // Track selection
       if (fTrackFilter) {
-        selectInfo = fTrackFilter->IsSelected(part,0);
+        selectInfo = fTrackFilter->IsSelected(part);
         if (!selectInfo) continue;
       }
         

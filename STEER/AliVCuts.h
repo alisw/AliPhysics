@@ -11,7 +11,6 @@
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
-class AliESDEvent;
 
 class AliVCuts : public TNamed {
 
@@ -21,7 +20,7 @@ class AliVCuts : public TNamed {
   virtual ~AliVCuts() { };
   AliVCuts(const AliVCuts& evt); 
   AliVCuts& operator=(const AliVCuts& evt);
-  virtual Bool_t IsSelected(TObject* /* obj  */, TObject * /*evt*/ = 0)  = 0;
+  virtual Bool_t IsSelected(TObject* /* obj  */)  = 0;
   ClassDef(AliVCuts,1);
 };
 

@@ -384,7 +384,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
 	    usedTrack[idxBachFromCascade] = kTRUE;
 	    UInt_t selectInfo = 0;
-	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdCascadeBach,esd);
+	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdCascadeBach);
 	    if(mcH)mcH->SelectParticle(esdCascadeBach->GetLabel());
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdCascadeBach->GetID(),
 							  esdCascadeBach->GetLabel(), 
@@ -465,7 +465,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 		usedTrack[idxPosFromV0Dghter] = kTRUE;
 	
 		UInt_t selectInfo = 0;
-		if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdCascadePos,esd);
+		if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdCascadePos);
 		if(mcH) mcH->SelectParticle(esdCascadePos->GetLabel());
 		aodTrack = new(tracks[jTracks++]) AliAODTrack(  esdCascadePos->GetID(),
 								esdCascadePos->GetLabel(), 
@@ -509,7 +509,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 		usedTrack[idxNegFromV0Dghter] = kTRUE;
 	
 		UInt_t selectInfo = 0;
-		if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdCascadeNeg,esd);
+		if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdCascadeNeg);
 		if(mcH)mcH->SelectParticle(esdCascadeNeg->GetLabel());
 		aodTrack = new(tracks[jTracks++]) AliAODTrack(  esdCascadeNeg->GetID(),
 								esdCascadeNeg->GetLabel(),
@@ -680,7 +680,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	v0objects.AddAt(esdVtx,                  3);
 	UInt_t selectV0 = 0;
 	if (fV0Filter) {
-	  selectV0 = fV0Filter->IsSelected(&v0objects,esd);
+	  selectV0 = fV0Filter->IsSelected(&v0objects);
 	  // this is a little awkward but otherwise the 
 	  // list wants to access the pointer (delete it) 
 	  // again when going out of scope
@@ -725,7 +725,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	if (!usedTrack[posFromV0]) {
 	    usedTrack[posFromV0] = kTRUE;
 	    UInt_t selectInfo = 0;
-	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdV0Pos,esd);
+	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdV0Pos);
 	    if(mcH)mcH->SelectParticle(esdV0Pos->GetLabel());
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdV0Pos->GetID(),
 							  esdV0Pos->GetLabel(), 
@@ -768,7 +768,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	if (!usedTrack[negFromV0]) {
 	    usedTrack[negFromV0] = kTRUE;
 	    UInt_t selectInfo = 0;
-	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdV0Neg,esd);
+	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdV0Neg);
 	    if(mcH)mcH->SelectParticle(esdV0Neg->GetLabel());
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdV0Neg->GetID(),
 							  esdV0Neg->GetLabel(),
@@ -888,7 +888,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 		    
 		    UInt_t selectInfo = 0;
 		    if (fTrackFilter) {
-			selectInfo = fTrackFilter->IsSelected(esd->GetTrack(imother),esd);
+			selectInfo = fTrackFilter->IsSelected(esd->GetTrack(imother));
 			if (!selectInfo) continue;
 		    }
 		    
@@ -958,7 +958,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			esdTrackD->GetCovarianceXYZPxPyPz(covTr);
 			esdTrackD->GetESDpid(pid);
 			selectInfo = 0;
-			if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrackD,esd);
+			if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrackD);
 			if(mcH)mcH->SelectParticle(esdTrackD->GetLabel());
 			daughter = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackD->GetID(),
@@ -1011,7 +1011,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	//
 	// Track selection
 	if (fTrackFilter) {
-	    selectInfo = fTrackFilter->IsSelected(esdTrack,esd);
+	    selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    if (!selectInfo && !vtx->UsesTrack(esdTrack->GetID())) continue;
 	}
 	

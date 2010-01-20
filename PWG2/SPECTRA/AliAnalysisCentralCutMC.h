@@ -31,8 +31,8 @@ class AliAnalysisCentralCutMC: public AliAnalysisCuts{
   AliAnalysisCentralCutMC(const char *name="AliAnalysisCentralCutMC", const char *title="MC_cuts");
   virtual ~AliAnalysisCentralCutMC();
 
-Bool_t  IsSelected(TObject* obj, TObject *obj2 = 0);
-//Bool_t  IsSelected(TList* const /*list*/) {return kTRUE;}
+Bool_t  IsSelected(TObject* const obj);
+Bool_t  IsSelected(TList* const /*list*/) {return kTRUE;}
 
   void SetOnlyPrimaries(Bool_t val = kFALSE) {fOnlyPrim = val;}
 

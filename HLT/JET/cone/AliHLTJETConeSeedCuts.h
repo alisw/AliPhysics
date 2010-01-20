@@ -63,7 +63,7 @@ public:
       @param obj esd track or particle
       @return kTRUE if selected, kFALSE otherwise
   */
-  Bool_t IsSelected( TObject* obj, TObject *obj2 = 0 );
+  Bool_t IsSelected( TObject* obj );
 
   /** Select track
       @param particle particle

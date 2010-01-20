@@ -63,7 +63,7 @@ AliAnalysisCentralCutMC::~AliAnalysisCentralCutMC(){
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisCentralCutMC::IsSelected(TObject* const obj, TObject * /* obj2 */){
+Bool_t AliAnalysisCentralCutMC::IsSelected(TObject* const obj){
 // Check if the particle passes the cuts
 
     AliMCParticle *part = dynamic_cast<AliMCParticle *>(obj);

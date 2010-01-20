@@ -30,8 +30,8 @@ class AliPhysicsSelection : public AliAnalysisCuts
     virtual ~AliPhysicsSelection();
     
     // AliAnalysisCuts interface
-    virtual Bool_t IsSelected(TObject* obj, TObject* /*event*/ = 0) { return IsCollisionCandidate((const AliESDEvent*) obj); }
-    //virtual Bool_t IsSelected(TList*) { return kFALSE; }
+    virtual Bool_t IsSelected(TObject* obj) { return IsCollisionCandidate((const AliESDEvent*) obj); }
+    virtual Bool_t IsSelected(TList*) { return kFALSE; }
     
     Bool_t IsCollisionCandidate(const AliESDEvent* aEsd);
     Bool_t Initialize(UInt_t runNumber);
