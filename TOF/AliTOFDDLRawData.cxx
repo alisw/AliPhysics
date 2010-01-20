@@ -837,7 +837,7 @@ void AliTOFDDLRawData::MakeTRMfiller(UInt_t *buf, UInt_t nWordsPerTRM)
 }
   
 //----------------------------------------------------------------------------
-UInt_t AliTOFDDLRawData::MakeFiller()
+UInt_t AliTOFDDLRawData::MakeFiller() const
 {
   //
   // Filler word definition: to make even the number of words per TRM/LTM

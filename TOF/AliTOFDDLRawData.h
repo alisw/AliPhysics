@@ -57,7 +57,7 @@ class AliTOFDDLRawData:public TObject {
   void  MakeTRMchainTrailer(Int_t iChain, UInt_t *buf);
   void  MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_t *buf, UInt_t &nWordsPerTRM);
 
-  UInt_t MakeFiller();
+  UInt_t MakeFiller() const;
 
   Bool_t HeadOrTail() const;
 
