@@ -69,6 +69,10 @@ ifneq ($(JETAN_INCLUDE),)
   ALICEINC += -I../$(JETAN_INCLUDE)
 endif
 
+ifneq ($(PWG4JetCorrel_INCLUDE),)
+  ALICEINC += -I../$(PWG4JetCorrel_INCLUDE)
+endif
+
 
 # only if no par file was loaded before
 #ifeq ($(ALICEINC),-I.)
