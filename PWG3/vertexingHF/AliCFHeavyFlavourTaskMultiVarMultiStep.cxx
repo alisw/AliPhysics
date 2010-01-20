@@ -484,7 +484,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				containerInput[9] = d0xd0*1.E8;  // in micron^2
 				containerInput[10] = cosPointingAngle;  // in micron
 				containerInput[11] = phi;  
-				containerInputMC[12] = zPrimVertex;    // z of reconstructed of primary vertex
+				containerInput[12] = zPrimVertex;    // z of reconstructed of primary vertex
 			}
 			else {
 				// ... or with generated values				
@@ -502,7 +502,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					containerInput[9] = 100000.; // dummy value, meaningless in MC, in micron^2
 					containerInput[10] = 1.01;    // dummy value, meaningless in MC
 					containerInput[11] = vectorMC[6];   
-					containerInputMC[12] = zMCVertex;    // z of reconstructed of primary vertex
+					containerInput[12] = zMCVertex;    // z of reconstructed of primary vertex
 				}
 				else {
 					AliDebug(3,"Problems in filling the container");
