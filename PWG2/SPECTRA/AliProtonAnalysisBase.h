@@ -72,18 +72,18 @@ class AliProtonAnalysisBase : public TObject {
   Double_t GetMaxX() const {return fMaxX;}
   Double_t GetMaxY() const {return fMaxY;}
 
+  //Trigger
   Bool_t IsEventTriggered(const AliESDEvent *esd,
 			  TriggerMode trigger = kMB2);
-  //void OfflineTriggerInit(UInt_t runNumber) {
   void OfflineTriggerInit() {
     kUseOfflineTrigger = kTRUE;
     fPhysicsSelection = new AliPhysicsSelection();
-    //fPhysicsSelection->AddBackgroundIdentification(new AliBackgroundSelection());
+    fPhysicsSelection->AddBackgroundIdentification(new AliBackgroundSelection());
     fPhysicsSelection->SetAnalyzeMC(fAnalysisMC);
-    //fPhysicsSelection->Initialize(runNumber);
   }
   Bool_t IsOfflineTriggerUsed() {return kUseOfflineTrigger;}
   AliPhysicsSelection *GetPhysicsSelectionObject() {return fPhysicsSelection;}
+
   Bool_t IsAccepted(AliESDEvent *esd,
 		    const AliESDVertex *vertex, 
 		    AliESDtrack *track);
