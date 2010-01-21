@@ -67,8 +67,10 @@ AliITSOnlineSDDInjectors::~AliITSOnlineSDDInjectors(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::SetDefaults(){
-  for(Int_t i=0;i<kInjLines;i++) 
+  for(Int_t i=0;i<kInjLines;i++) {
     SetInjLineRange(i,fgkDefaultTbMin[i],fgkDefaultTbMax[i]);
+    SetUseLine(i,kTRUE);
+  }
   SetThresholds(fgkDefaultLThreshold,fgkDefaultHThreshold);
   SetPolOrder(fgkDefaultPolOrder);
   SetMinDriftSpeed(fgkDefaultMinSpeed);
@@ -337,6 +339,7 @@ void AliITSOnlineSDDInjectors::CalcDriftSpeed(Int_t jpad){
     ey[i]=fRMSCentroid[jpad][i];
   }
   for(Int_t i=0;i<kInjLines;i++){
+    if(!fUseLine[i]) continue;
     if(fGoodInj[jpad][i] && ey[i]!=0){
       sumY+=y[i]/ey[i]/ey[i];
       sumX+=fPosition[i]/ey[i]/ey[i];

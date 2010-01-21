@@ -7,6 +7,7 @@
 #include <TLatex.h>
 #include <TFile.h>
 #include <TMath.h>
+#include <TNtuple.h>
 #include <TGrid.h>
 #include <TF1.h>
 #include <TLine.h>
@@ -31,7 +32,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
 			       Int_t adcfreq=20, 
 			       Int_t nDDL=0, 
 			       Int_t firstEv=18, 
-			       Int_t lastEv=20,
+			       Int_t lastEv=30,
 			       Int_t jpad=20, 
 			       Int_t statuscut=7){
 
@@ -44,10 +45,15 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
   AliITSDDLModuleMapSDD* dmap=new AliITSDDLModuleMapSDD();
   dmap->SetJun09Map();
 
+  TNtuple* ntsp=new TNtuple("ntsp","","mod:sid:an:stat:vall:v23:v13:v12:c1:c2:c3");
+  Float_t xnt[11];
   TH2F** histo = new TH2F*[kTotDDL*kModPerDDL*kSides];
   Int_t nWrittenEv[kTotDDL*kModPerDDL*kSides];
   TGraphErrors** gvel = new TGraphErrors*[kTotDDL*kModPerDDL*kSides];
   AliITSOnlineSDDInjectors **anal=new AliITSOnlineSDDInjectors*[kTotDDL*kModPerDDL*kSides];
+  AliITSOnlineSDDInjectors **anal23=new AliITSOnlineSDDInjectors*[kTotDDL*kModPerDDL*kSides];
+  AliITSOnlineSDDInjectors **anal13=new AliITSOnlineSDDInjectors*[kTotDDL*kModPerDDL*kSides];
+  AliITSOnlineSDDInjectors **anal12=new AliITSOnlineSDDInjectors*[kTotDDL*kModPerDDL*kSides];
   TH1F** hvdriftl=new TH1F*[260];  
   TH1F** hvdriftr=new TH1F*[260];  
   Char_t hisnam[20];
@@ -62,10 +68,27 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
+
 	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
 	anal[index]=new AliITSOnlineSDDInjectors(iddl,imod,isid);
 	if(adcfreq==40) anal[index]->Set40MHzConfig();
 	else anal[index]->Set20MHzConfig();
+
+	anal23[index]=new AliITSOnlineSDDInjectors(iddl,imod,isid);
+	if(adcfreq==40) anal23[index]->Set40MHzConfig();
+	else anal23[index]->Set20MHzConfig();
+	anal23[index]->SetUseLine(0,kFALSE);
+
+	anal13[index]=new AliITSOnlineSDDInjectors(iddl,imod,isid);
+	if(adcfreq==40) anal13[index]->Set40MHzConfig();
+	else anal13[index]->Set20MHzConfig();
+	anal13[index]->SetUseLine(1,kFALSE);
+
+	anal12[index]=new AliITSOnlineSDDInjectors(iddl,imod,isid);
+	if(adcfreq==40) anal12[index]->Set40MHzConfig();
+	else anal12[index]->Set20MHzConfig();
+	anal12[index]->SetUseLine(2,kFALSE);
+
 	nWrittenEv[index]=0;
       }
     }
@@ -142,9 +165,12 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
 	for(Int_t isid=0;isid<kSides;isid++){
 	  Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	  anal[index]->AnalyzeEvent(histo[index]); 
+	  anal23[index]->AnalyzeEvent(histo[index]); 
+	  anal13[index]->AnalyzeEvent(histo[index]); 
+	  anal12[index]->AnalyzeEvent(histo[index]); 
 	  nWrittenEv[index]++;
 	  Int_t iMod=dmap->GetModuleNumber(iddl,imod);
-	  if(iMod!=-1){
+	  if(iMod!=-1){	    
 	    for(Int_t ipad=0;ipad<33;ipad++){
 	      Int_t st=anal[index]->GetInjPadStatus(ipad);
 	      hanst->Fill(st);
@@ -152,6 +178,18 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
 		if(isid==0) hpad7l->Fill(ipad);
 		if(isid==1) hpad7r->Fill(ipad);
 	      }
+	      xnt[0]=(Float_t)iMod;
+	      xnt[1]=(Float_t)isid;
+	      xnt[2]=(Float_t)ipad;
+	      xnt[3]=(Float_t)st;
+	      xnt[4]=anal[index]->GetDriftSpeed(ipad);
+	      xnt[5]=anal23[index]->GetDriftSpeed(ipad);
+	      xnt[6]=anal13[index]->GetDriftSpeed(ipad);
+	      xnt[7]=anal12[index]->GetDriftSpeed(ipad);
+	      xnt[8]=anal[index]->GetCentroid(ipad,0);
+	      xnt[9]=anal[index]->GetCentroid(ipad,1);
+	      xnt[10]=anal[index]->GetCentroid(ipad,2);
+	      ntsp->Fill(xnt);
 	    }
 	    if(anal[index]->GetInjPadStatus(jpad)>=statuscut){
 	      Float_t vel=anal[index]->GetDriftSpeed(jpad);
@@ -206,7 +244,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
   hpad7l->Scale(nfac);
   hpad7r->Scale(nfac);
 
-  TFile *outfil1=new TFile("DriftSpeedVsAnode.root","recreate");
+  TFile *outfil1=new TFile("DriftSpeedVsAnode.root","recreate");  
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
       for(Int_t isid=0;isid<kSides;isid++){
@@ -223,6 +261,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
   Int_t ipt0=0, ipt1=0;
   Float_t Edrift=(1800-45)/291/0.012;  
   TFile *outfil=new TFile("DriftSpeedHistos.root","recreate");
+  ntsp->Write();
   for(Int_t iMod=0; iMod<260; iMod++){
     outfil->cd();
     hvdriftl[iMod]->Write();    
