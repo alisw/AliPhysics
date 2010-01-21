@@ -61,7 +61,7 @@ class AliITSTPArrayFit : public TObject
   //
   void          AttachPoints(const AliTrackPointArray* points, Int_t pfirst=-1,Int_t plast=-1);
   Bool_t        SetFirstLast(Int_t pfirst=-1,Int_t plast=-1);
-  AliTrackPointArray* GetPoints()                           const {return (AliTrackPointArray*)fPoints;}
+  AliTrackPointArray* GetPoints()                           const {return (AliTrackPointArray*)fkPoints;}
   //
   void          SetBz(Double_t bz)                                {fBz = bz;}
   Double_t      GetBz()                                     const {return fBz;}
@@ -158,7 +158,6 @@ class AliITSTPArrayFit : public TObject
   //
  protected:
   void          InitAux();
-  Double_t      GetMachinePrec();
   Int_t         ChoseParAxis()                                              const;
   Double_t      GetParPCALine(const Double_t *xyz, const Double_t *covI=0)  const;
   Double_t      GetParPCAHelix(const Double_t *xyz, const Double_t *covI=0) const;
@@ -171,10 +170,10 @@ class AliITSTPArrayFit : public TObject
   Double_t      GetDRofELoss(Double_t t,Double_t cdip,Double_t rhoL,
 			     const Double_t *normS, Double_t &p,Double_t &e) const;
   static Bool_t IsZero(Double_t v,Double_t threshold = 1e-16)     {return TMath::Abs(v)<threshold; }
-
+  static Double_t      GetMachinePrec();
   //
  protected:
-  const AliTrackPointArray *fPoints;               // current points
+  const AliTrackPointArray *fkPoints;               // current points
   AliParamSolver* fParSol;                         // solver for parametric linearized systems
   //
   Double_t  fBz;                                   // magnetic field
@@ -238,9 +237,9 @@ inline Double_t AliITSTPArrayFit::GetParPCA(const double *xyz, const double *cov
 inline Double_t* AliITSTPArrayFit::GetPoint(Int_t ip) const
 {
   static double xyz[3];
-  xyz[kX] = fPoints->GetX()[ip];
-  xyz[kY] = fPoints->GetY()[ip];
-  xyz[kZ] = fPoints->GetZ()[ip];
+  xyz[kX] = fkPoints->GetX()[ip];
+  xyz[kY] = fkPoints->GetY()[ip];
+  xyz[kZ] = fkPoints->GetZ()[ip];
   return &xyz[0];
 }
 
@@ -253,3 +252,4 @@ inline Double_t AliITSTPArrayFit::Fit(Int_t extQ,Double_t extPT,Double_t extPTer
 
 
 #endif
+

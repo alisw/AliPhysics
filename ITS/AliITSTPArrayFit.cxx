@@ -44,7 +44,6 @@
 #include "AliITSgeomTGeo.h"
 #include "AliTracker.h"
 #include <TRandom.h>
-#include <TGeoMatrix.h>
 
 ClassImp(AliITSTPArrayFit)
 
@@ -86,7 +85,7 @@ Double_t AliITSTPArrayFit::fgRhoLITS[AliITSTPArrayFit::kMaxLrITS] = {
 
 //____________________________________________________
 AliITSTPArrayFit::AliITSTPArrayFit() :
-  fPoints(0),fParSol(0),fBz(0),fCharge(0),fPntFirst(-1),
+  fkPoints(0),fParSol(0),fBz(0),fCharge(0),fPntFirst(-1),
   fPntLast(-1),fNPBooked(0),fParAxis(-1),fCovI(0),fChi2NDF(0),
   fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fSwitch2Line(kFALSE),fMaxRforHelix(1.e6),
   fkAxID(0),fkAxCID(0),fCurT(0),
@@ -100,7 +99,7 @@ AliITSTPArrayFit::AliITSTPArrayFit() :
 
 //____________________________________________________
 AliITSTPArrayFit::AliITSTPArrayFit(Int_t np) :
-  fPoints(0),fParSol(0),fBz(0),fCharge(0),fPntFirst(-1),
+  fkPoints(0),fParSol(0),fBz(0),fCharge(0),fPntFirst(-1),
   fPntLast(-1),fNPBooked(np),fParAxis(-1),fCovI(0),fChi2NDF(0),
   fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fSwitch2Line(kFALSE),fMaxRforHelix(2.e3),
   fkAxID(0),fkAxCID(0),fCurT(0),fFirstPosT(0),fNElsPnt(0),fElsId(0),fElsDR(0)
@@ -116,7 +115,7 @@ AliITSTPArrayFit::AliITSTPArrayFit(Int_t np) :
 
 //____________________________________________________
 AliITSTPArrayFit::AliITSTPArrayFit(const AliITSTPArrayFit &src) : 
-  TObject(src),fPoints(src.fPoints),fParSol(0),fBz(src.fBz),
+  TObject(src),fkPoints(src.fkPoints),fParSol(0),fBz(src.fBz),
   fCharge(src.fCharge),fPntFirst(src.fPntFirst),fPntLast(src.fPntLast),fNPBooked(src.fNPBooked),
   fParAxis(src.fParAxis),fCovI(0),fChi2NDF(0),fMaxIter(20),fIter(0),fEps(0),fMass(src.fMass),
   fSwitch2Line(src.fSwitch2Line),fMaxRforHelix(src.fMaxRforHelix),fkAxID(0),fkAxCID(0),fCurT(0),
@@ -139,7 +138,7 @@ AliITSTPArrayFit &AliITSTPArrayFit::operator =(const AliITSTPArrayFit& src)
   // assignment operator
   if (this==&src) return *this;
   ((TObject*)this)->operator=(src);
-  fPoints   = src.fPoints;
+  fkPoints   = src.fkPoints;
   if (!fParSol) fParSol = new AliParamSolver(*src.fParSol);
   else *fParSol = *src.fParSol; 
   fBz       = src.fBz; 
@@ -181,7 +180,7 @@ void AliITSTPArrayFit::Reset()
 {
   // reset to process new track
   if (fParSol) fParSol->Clear();
-  fPoints=0; 
+  fkPoints=0; 
   fNElsPnt = 0;
   fFirstPosT = 0;
   //  fBz = 0;
@@ -198,7 +197,7 @@ void AliITSTPArrayFit::AttachPoints(const AliTrackPointArray* points, Int_t pfir
 {
   // create from piece of AliTrackPointArray
   Reset();
-  fPoints = points;
+  fkPoints = points;
   int np = points->GetNPoints();
   if (fNPBooked<np) {
     fNPBooked = np;
@@ -218,7 +217,7 @@ void AliITSTPArrayFit::AttachPoints(const AliTrackPointArray* points, Int_t pfir
 Bool_t AliITSTPArrayFit::SetFirstLast(Int_t pfirst,Int_t plast) 
 {
   // set first and last point to fit
-  const AliTrackPointArray* pnts = fPoints;
+  const AliTrackPointArray* pnts = fkPoints;
   if (!pnts) {AliError("TrackPointArray is not attached yet"); return kFALSE;}
   AttachPoints(pnts,pfirst,plast);
   return kTRUE;
@@ -231,7 +230,7 @@ Bool_t AliITSTPArrayFit::InvertPointsCovMat()
   // invert the cov.matrices of the points
   for (int i=fPntFirst;i<=fPntLast;i++) {
     //
-    float *cov = (float*)fPoints->GetCov() + i*6; // pointer on cov.matrix
+    float *cov = (float*)fkPoints->GetCov() + i*6; // pointer on cov.matrix
     //
     Double_t t0 = cov[kYY]*cov[kZZ] - cov[kYZ]*cov[kYZ];
     Double_t t1 = cov[kXY]*cov[kZZ] - cov[kXZ]*cov[kYZ];
@@ -338,7 +337,7 @@ Bool_t AliITSTPArrayFit::FitLineCrude()
   if (fParAxis<0) SetParAxis(ChoseParAxis());
   Double_t sZ=0,sZZ=0,sY=0,sYZ=0,sX=0,sXZ=0,det=0;
   //
-  const float *coord[3] = {fPoints->GetX(),fPoints->GetY(),fPoints->GetZ()};
+  const float *coord[3] = {fkPoints->GetX(),fkPoints->GetY(),fkPoints->GetZ()};
   const Float_t *varZ = coord[ fParAxis  ];
   const Float_t *varX = coord[ fkAxID[kX] ];
   const Float_t *varY = coord[ fkAxID[kY] ];
@@ -390,7 +389,7 @@ Int_t AliITSTPArrayFit::ChoseParAxis() const
   // select the variable with largest base as a parameter
   Double_t cmn[3]={1.e9,1.e9,1.e9},cmx[3]={-1.e9,-1.e9,-1.e9};
   //
-  const float *coord[3] = {fPoints->GetX(),fPoints->GetY(),fPoints->GetZ()};
+  const float *coord[3] = {fkPoints->GetX(),fkPoints->GetY(),fkPoints->GetZ()};
   for (int i=fPntFirst;i<=fPntLast;i++) {
     for (int j=3;j--;) {
       Double_t val = coord[j][i];
@@ -840,9 +839,9 @@ void AliITSTPArrayFit::GetResiduals(Double_t *res,Int_t ipnt) const
     return;
   }
   GetPosition(res,fCurT[ipnt]);
-  res[kX] -= fPoints->GetX()[ipnt];
-  res[kY] -= fPoints->GetY()[ipnt];
-  res[kZ] -= fPoints->GetZ()[ipnt];
+  res[kX] -= fkPoints->GetX()[ipnt];
+  res[kY] -= fkPoints->GetY()[ipnt];
+  res[kZ] -= fkPoints->GetZ()[ipnt];
 }
 
 //________________________________________________________________________________________________________
@@ -951,7 +950,7 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
   int np = fPntLast - fPntFirst + 1;
   if (np<3) { AliError("At least 3 points are needed for helix fit"); return kFALSE; }
   //
-  const float *x=fPoints->GetX(),*y=fPoints->GetY(),*z=fPoints->GetZ(),*cov=fPoints->GetCov();
+  const float *x=fkPoints->GetX(),*y=fkPoints->GetY(),*z=fkPoints->GetZ(),*cov=fkPoints->GetCov();
   //
   // linear circle fit --------------------------------------------------- >>>
   Double_t sxx=0,sxy=0,syy=0,sx=0,sy=0,rhs0=0,rhs1=0,rhs2=0,minR=1E9;
@@ -976,8 +975,8 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
     if (xxyy<minR) { minR   = xxyy; minRId = i; }
     //
     if (eloss) { // find layer id
-      int lrid,volid = fPoints->GetVolumeID()[i];
-      if (volid>0) lrid = fgkActiveLrITS[AliGeomManager::VolUIDToLayer(fPoints->GetVolumeID()[i])-1];
+      int lrid,volid = fkPoints->GetVolumeID()[i];
+      if (volid>0) lrid = fgkActiveLrITS[AliGeomManager::VolUIDToLayer(fkPoints->GetVolumeID()[i])-1];
       else { // missing layer info, find from radius
 	double r = TMath::Sqrt(xxyy);
 	for (lrid=kMaxLrITS;lrid--;) if ( IsZero(r-fgkRLayITS[ lrid ],1.) ) break;
@@ -1155,7 +1154,7 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
 	normS[1] = -TMath::Sin(php);
 	normS[2] = 0;
       }
-      else GetNormal(normS,fPoints->GetCov()+tID*6);   // vector normal to hit module
+      else GetNormal(normS,fkPoints->GetCov()+tID*6);   // vector normal to hit module
       fElsDR[tID] = GetDRofELoss(t,cdip,fElsDR[tID],normS,ptot,etot);
     }
     //
@@ -1173,7 +1172,7 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
 	normS[1] = -TMath::Sin(php);
 	normS[2] = 0;	
       }
-      else GetNormal(normS,fPoints->GetCov()+tID*6);   // vector normal to hit module
+      else GetNormal(normS,fkPoints->GetCov()+tID*6);   // vector normal to hit module
       //
       fElsDR[tID] = GetDRofELoss(t,cdip,fElsDR[tID],normS,ptot,etot);
     }
@@ -1290,7 +1289,7 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
     AliDebug(2,Form("Max number of %d iteration reached, Current chi2:%.3e, chi2 change %+.3e",iter,
 		    fChi2NDF,chiprev-fChi2NDF));
     for (int ip=fPntFirst;ip<=fPntLast;ip++)
-      AliDebug(2,Form("P%2d| %+.3e %+.3e %+.3e\n",ip,fPoints->GetX()[ip],fPoints->GetY()[ip],fPoints->GetZ()[ip]));
+      AliDebug(2,Form("P%2d| %+.3e %+.3e %+.3e\n",ip,fkPoints->GetX()[ip],fkPoints->GetY()[ip],fkPoints->GetZ()[ip]));
 
   }
   fIter = iter;
@@ -1314,7 +1313,7 @@ Double_t AliITSTPArrayFit::FitLine()
   //
   if (fParAxis<0) SetParAxis(ChoseParAxis());
   //
-  const float *xyzp[3]={fPoints->GetX(),fPoints->GetY(),fPoints->GetZ()};
+  const float *xyzp[3]={fkPoints->GetX(),fkPoints->GetY(),fkPoints->GetZ()};
   if (!IsCovInv()) InvertPointsCovMat();
   if (!FitLineCrude()) return -1; // get initial estimate, ignoring the errors
   //
@@ -1380,7 +1379,7 @@ Double_t AliITSTPArrayFit::FitLine()
     AliDebug(2,Form("Max number of %d iteration reached, Current chi2:%.3e, chi2 change %+.3e",iter,
 		    fChi2NDF,chiprev-fChi2NDF));
     for (int ip=fPntFirst;ip<=fPntLast;ip++)
-      AliDebug(2,Form("P%2d| %+.3e %+.3e %+.3e\n",ip,fPoints->GetX()[ip],fPoints->GetY()[ip],fPoints->GetZ()[ip]));
+      AliDebug(2,Form("P%2d| %+.3e %+.3e %+.3e\n",ip,fkPoints->GetX()[ip],fkPoints->GetY()[ip],fkPoints->GetZ()[ip]));
   }
   fIter = iter;
   SetFitDone();
@@ -1470,8 +1469,10 @@ Double_t AliITSTPArrayFit::GetLineSlope(Int_t axis) const
 //_____________________________________________________________
 void AliITSTPArrayFit::Print(Option_t *) const
 {
+  // print results of the fit
+  //
   const char kCxyz[] = "XYZ";
-  if (!fPoints) return;
+  if (!fkPoints) return;
   //
   printf("Track of %3d points in Bz=%+.1f |Fit ",fPntLast-fPntFirst+1,fBz);
   if ( IsFitDone() ) {
@@ -1625,3 +1626,5 @@ Double_t AliITSTPArrayFit::CalcParPCA(Int_t ipnt) const
   if (IsFieldON()) return GetParPCAHelix(xyz,covI);
   else             return GetParPCALine(xyz,covI);
 }
+
+
