@@ -11,14 +11,13 @@
 // SETTING THE CUTS
 
 // event selection
-const Int_t multminESD = 10;  //used for CORRFW cuts 
-const Int_t multmaxESD = 1000; //used for CORRFW cuts 
-//const Int_t multmaxESD = 1000000; //used for CORRFW cuts 
+const Int_t multminESD = 3;  //used for CORRFW cuts 
+//const Int_t multmaxESD = 1000; //used for CORRFW cuts 
+const Int_t multmaxESD = 1000000; //used for CORRFW cuts 
 
-const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
-const Int_t multmax = 40;     //used for AliFlowEventSimple (to set the centrality)
-//const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
-//const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
+const Int_t multmin = 3;     //used for AliFlowEventSimple (to set the centrality)
+//const Int_t multmax = 100;     //used for AliFlowEventSimple (to set the centrality)
+const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
 
 
 // For RP selection
@@ -26,12 +25,12 @@ const Double_t ptmin1 = 0.0;
 const Double_t ptmax1 = 10.0;
 const Double_t ymin1  = -1.;
 const Double_t ymax1  = 1.;
-const Int_t mintrackrefsTPC1 = 2;
+const Int_t mintrackrefsTPC1 = 2; //2;
 const Int_t mintrackrefsITS1 = 3;
 const Int_t charge1 = 1;
 Bool_t UsePIDforRP = kFALSE;
 const Int_t PDG1 = 211;
-const Int_t minclustersTPC1 = 50;
+const Int_t minclustersTPC1 = 70;//50;
 const Int_t maxnsigmatovertex1 = 3;
 
 // For for POI selection
@@ -39,12 +38,12 @@ const Double_t ptmin2 = 0.0;
 const Double_t ptmax2 = 10.0;
 const Double_t ymin2  = -1.;
 const Double_t ymax2  = 1.;
-const Int_t mintrackrefsTPC2 = 2;
+const Int_t mintrackrefsTPC2 = 2; //2;
 const Int_t mintrackrefsITS2 = 3;
 const Int_t charge2 = 1;
 Bool_t UsePIDforPOI = kFALSE;
 const Int_t PDG2 = 321;
-const Int_t minclustersTPC2 = 50;
+const Int_t minclustersTPC2 = 70; //50;
 const Int_t maxnsigmatovertex2 = 3;
 
 // For manipulating the event (for testing purposes)
@@ -107,48 +106,84 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     } 
   }
     
-  if (LYZ2SUM){  
-    // read the output file from LYZ1SUM 
-    TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis" ;
-    inputFileNameLYZ2SUM += type;
-    inputFileNameLYZ2SUM += ".root";
-    cout<<"The input file is "<<inputFileNameLYZ2SUM.Data()<<endl;
-    TFile* fInputFileLYZ2SUM = new TFile(inputFileNameLYZ2SUM.Data(),"READ");
-    if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
-      cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ; 
-      break;
+  if (LYZ2SUM || LYZ2PROD) {
+    //read the outputfile of the first run
+    TString outputFileName = "AnalysisResults1.root"; 
+    TString pwd(gSystem->pwd());
+    pwd+="/";
+    pwd+=outputFileName.Data();
+    TFile *outputFile = NULL;
+    if(gSystem->AccessPathName(pwd.Data(),kFileExists))
+      {
+	cout<<"WARNING: You do not have an output file:"<<endl;
+	cout<<"         "<<pwd.Data()<<endl;
+	exit(0);
+      } else 
+	{
+	  outputFile = TFile::Open(pwd.Data(),"READ");
+	}
+ 
+    if (LYZ2SUM){  
+      // read the output file from LYZ1SUM 
+      TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis" ;
+      inputFileNameLYZ2SUM += type;
+      //inputFileNameLYZ2SUM += ".root";
+      cout<<"The input file is "<<inputFileNameLYZ2SUM.Data()<<endl;
+      TFile* fInputFileLYZ2SUM = (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2SUM.Data());
+      
+      if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
+	cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ; 
+	break;
+      }
+      else {
+	TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("cobjLYZ1SUM");
+	if (!fInputListLYZ2SUM) {cout<<"list is NULL pointer!"<<endl;}
+      }
+      cout<<"LYZ2SUM input file/list read..."<<endl;
     }
-    else {
-      TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("cobjLYZ1SUM");
-      if (!fInputListLYZ2SUM) {cout<<"list is NULL pointer!"<<endl;}
+
+    if (LYZ2PROD){  
+      // read the output file from LYZ1PROD 
+      TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis" ;
+      inputFileNameLYZ2PROD += type;
+      //inputFileNameLYZ2PROD += ".root";
+      cout<<"The input file is "<<inputFileNameLYZ2PROD.Data()<<endl;
+      TFile* fInputFileLYZ2PROD =  (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2PROD.Data());
+      if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
+	cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ; 
+	break;
+      }
+      else {
+	TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("cobjLYZ1PROD");
+	if (!fInputListLYZ2PROD) {cout<<"list is NULL pointer!"<<endl;}
+      }
+      cout<<"LYZ2PROD input file/list read..."<<endl;
     }
-    cout<<"LYZ2SUM input file/list read..."<<endl;
-  }
-if (LYZ2PROD){  
-    // read the output file from LYZ1PROD 
-    TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis" ;
-    inputFileNameLYZ2PROD += type;
-    inputFileNameLYZ2PROD += ".root";
-    cout<<"The input file is "<<inputFileNameLYZ2PROD.Data()<<endl;
-    TFile* fInputFileLYZ2PROD = new TFile(inputFileNameLYZ2PROD.Data(),"READ");
-    if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
-      cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ; 
-      break;
-    }
-    else {
-      TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("cobjLYZ1PROD");
-      if (!fInputListLYZ2PROD) {cout<<"list is NULL pointer!"<<endl;}
-    }
-    cout<<"LYZ2PROD input file/list read..."<<endl;
   }
   
+
   if (LYZEP) {
     // read the output file from LYZ2SUM
+    TString outputFileName = "AnalysisResults2.root"; 
+    TString pwd(gSystem->pwd());
+    pwd+="/";
+    pwd+=outputFileName.Data();
+    TFile *outputFile = NULL;
+    if(gSystem->AccessPathName(pwd.Data(),kFileExists))
+      {
+	cout<<"WARNING: You do not have an output file:"<<endl;
+	cout<<"         "<<pwd.Data()<<endl;
+	exit(0);
+      } else 
+	{
+	  outputFile = TFile::Open(pwd.Data(),"READ");
+	}
+
     TString inputFileNameLYZEP = "outputLYZ2SUManalysis" ;
     inputFileNameLYZEP += type;
-    inputFileNameLYZEP += ".root";
+    //inputFileNameLYZEP += ".root";
     cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
-    TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
+    TFile* fInputFileLYZEP = (TFile*)outputFile->FindObjectAny(inputFileNameLYZEP.Data());
     if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
       cerr << " ERROR: To run LYZEP you need the output file from LYZ2SUM. This file is not there! Please run LYZ2SUM first." << endl ; 
       break;
@@ -159,7 +194,7 @@ if (LYZ2PROD){
     }
     cout<<"LYZEP input file/list read..."<<endl;
   }
-
+  
 
 
   // Create the task, add it to the manager.
