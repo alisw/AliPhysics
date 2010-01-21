@@ -416,7 +416,7 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
 
     AliHLTOUTDigitReader* pHLTOUT=new AliHLTOUTDigitReader(esd->GetEventNumberInFile(), fpEsdManager);
     if (pHLTOUT) {
-      ProcessHLTOUT(pHLTOUT, esd);
+      ProcessHLTOUT(pHLTOUT, esd, (pSystem->GetGlobalLoggingLevel()&kHLTLogDebug)!=0);
       delete pHLTOUT;
     } else {
       AliError("error creating HLTOUT handler");
@@ -474,6 +474,10 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd, bo
     if ((pFunc)(pSystem, pHLTOUT, esd)<0) {
       AliError("error processing HLTOUT");
     }
+  }
+  if (bVerbose) {
+    AliInfo("HLT ESD content:");
+    esd->Print();
   }
   pHLTOUT->Reset();
 }
