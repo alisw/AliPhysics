@@ -4290,7 +4290,8 @@ void AliITStrackerMI::SetForceSkippingOfLayer() {
     if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(l)) fForceSkippingOfLayer[l] = 1;
     // check run info
 
-    if(eventInfo) {
+    if(eventInfo && 
+       AliITSReconstructor::GetRecoParam()->GetSkipSubdetsNotInTriggerCluster()) {
       AliDebug(2,Form("GetEventInfo->GetTriggerCluster: %s",eventInfo->GetTriggerCluster()));
       if(l==0 || l==1)  {
 	if(!strstr(eventInfo->GetTriggerCluster(),"ITSSPD")) fForceSkippingOfLayer[l] = 1;

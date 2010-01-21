@@ -183,7 +183,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t GetSigmaZDeadZoneHit2() const { return fSigmaZDeadZoneHit2; }
   Double_t GetXPassDeadZoneHits() const { return fXPassDeadZoneHits; }
 
-
+  Bool_t   GetSkipSubdetsNotInTriggerCluster() const { return fSkipSubdetsNotInTriggerCluster; }
+  void     SetSkipSubdetsNotInTriggerCluster(Bool_t flag=kTRUE) { fSkipSubdetsNotInTriggerCluster=flag; }
 
   void   SetUseTGeoInTracker(Int_t use=1) { fUseTGeoInTracker=use; return; }
   Int_t  GetUseTGeoInTracker() const { return fUseTGeoInTracker; }
@@ -495,6 +496,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t fSigmaZDeadZoneHit2; // z error virtual cls
   Double_t fXPassDeadZoneHits;  // x distance between clusters
 
+  Bool_t fSkipSubdetsNotInTriggerCluster; // skip the subdetectors that are not in the trigger cluster
 
   Int_t fUseTGeoInTracker; // use TGeo to get material budget in tracker MI
   Double_t fStepSizeTGeo; // step size (cm)
@@ -605,7 +607,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,26) // ITS reco parameters
+  ClassDef(AliITSRecoParam,27) // ITS reco parameters
 };
 
 #endif
