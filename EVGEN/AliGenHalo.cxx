@@ -278,7 +278,7 @@ void AliGenHalo::Generate()
       origin[1] = fYS;
       origin[2] = 1950.;
 
-      PushTrack(fTrackIt , -1, fPdg , p, origin, polar, fTS, kPNoProcess, nt, fWS);
+      PushTrack(fTrackIt , -1, fPdg , p, origin, polar, fTS - 1950./2.9979e10, kPNoProcess, nt, fWS);
 
       Int_t nc = ReadNextParticle();
       
