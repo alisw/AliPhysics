@@ -39,7 +39,6 @@ AliAnalysisTaskKMeans *AddTaskKMeans()
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
    mgr->ConnectInput  (taskKMeans, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput (taskKMeans, 0, mgr->GetCommonOutputContainer());
    mgr->ConnectOutput (taskKMeans, 1, cout_kmeans);
 
    return taskKMeans;
