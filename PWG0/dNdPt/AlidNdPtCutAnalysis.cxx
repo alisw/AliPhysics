@@ -107,7 +107,7 @@ void AlidNdPtCutAnalysis::Init(){
   fEventCount->Sumw2();
 
   //Xv:Yv:Zv:ResZv:Mult
-  Double_t kFact = 0.1;
+  Double_t kFact = 1.0;
 
   Int_t binsRecEventHist[5]={80,80,100,80,150};
   Double_t minRecEventHist[5]={-3.*kFact,-3.*kFact,-35.,0.,0.}; 
@@ -132,8 +132,8 @@ void AlidNdPtCutAnalysis::Init(){
 
   //Xv-mcXv:Yv-mcYv:Zv-mcZv:Mult
   Int_t binsRecMCEventHist[4]={100,100,100,150};
-  Double_t minRecMCEventHist[4]={-10.0*kFact,-10.0*kFact,-10.0*kFact,0.}; 
-  Double_t maxRecMCEventHist[4]={10.0*kFact,10.0*kFact,10.0*kFact,150.}; 
+  Double_t minRecMCEventHist[4]={-1.0*kFact,-1.0*kFact,-1.0*kFact,0.}; 
+  Double_t maxRecMCEventHist[4]={1.0*kFact,1.0*kFact,1.0*kFact,150.}; 
   fRecMCEventHist = new THnSparseF("fRecMCEventHist","mcXv-Xv:mcYv-Yv:mcZv-Zv:Mult",4,binsRecMCEventHist,minRecMCEventHist,maxRecMCEventHist);
   fRecMCEventHist->GetAxis(0)->SetTitle("mcXv-Xv (cm)");
   fRecMCEventHist->GetAxis(1)->SetTitle("mcYv-Yv (cm)");

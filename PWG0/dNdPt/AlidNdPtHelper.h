@@ -49,7 +49,7 @@ class AlidNdPtHelper : public TObject
 
     static Bool_t IsPrimaryParticle(AliStack *stack, Int_t idx, ParticleMode particleMode);
     //static Bool_t IsCosmicTrack(TObjArray *allChargedTracks, AliESDtrack *track, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts);
-    static Bool_t IsCosmicTrack(AliESDtrack *track1, AliESDtrack *track2, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts);
+    static Bool_t IsCosmicTrack(AliESDtrack *track1, AliESDtrack *track2);
     static void PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger);
     static Int_t ConvertPdgToPid(TParticle *particle);
 

@@ -666,6 +666,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
   TObjArray *allChargedTracks=0;
   Int_t multRec=0, multRecTemp=0;
   Int_t *labelsRec=0;
+  Bool_t isCosmic = kFALSE;
 
   if(isEventOK && isEventTriggered)
   {
@@ -692,7 +693,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
         continue;
 
       // cosmics analysis
-      Bool_t isCosmic = kFALSE;
+      isCosmic = kFALSE;
       if( GetParticleMode()==AlidNdPtHelper::kCosmics )
       {
           for(Int_t j=0; j<entries;++j) 
@@ -704,11 +705,11 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
             if( esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track) && 
 	        esdTrackCuts->AcceptTrack(track1) && accCuts->AcceptTrack(track1) ) 
             { 
-              isCosmic = AlidNdPtHelper::IsCosmicTrack(track, track1, i, accCuts, esdTrackCuts);
+              isCosmic = AlidNdPtHelper::IsCosmicTrack(track, track1);
 	    }
             if(isCosmic) 
 	    {
-	      Double_t vCosmicsHisto[3] = {track->Eta()+track1->Eta(), track->Phi()-track1->Phi(), track1->Pt()};
+	      Double_t vCosmicsHisto[3] = { track->Eta()+track1->Eta(), track->Phi()-track1->Phi(), track1->Pt() };
 	      fCosmicsHisto->Fill(vCosmicsHisto);
 	    }
 	  }
@@ -738,6 +739,25 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       // track-level corrections
       if(esdTrackCuts->AcceptTrack(track)) 
       {
+        // cosmics analysis
+        isCosmic = kFALSE;
+        if( GetParticleMode()==AlidNdPtHelper::kCosmics )
+        {
+          for(Int_t j=0; j<entries;++j) 
+          {
+            AliESDtrack *track1 = (AliESDtrack*)allChargedTracks->At(j);
+            if(!track1) continue;
+            if(track1->Charge()==0) continue;
+
+            if( esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track) && 
+	        esdTrackCuts->AcceptTrack(track1) && accCuts->AcceptTrack(track1) ) 
+            { 
+              isCosmic = AlidNdPtHelper::IsCosmicTrack(track, track1);
+	    }
+	  }
+          if(!isCosmic) continue;
+        }
+
          if (GetAnalysisMode()==AlidNdPtHelper::kTPCSPDvtxUpdate) 
 	 {
 	   //
