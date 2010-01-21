@@ -231,6 +231,7 @@ void AliGenHijing::Generate()
   fTrials = 0;
   
   for (j = 0;j < 3; j++) origin0[j] = fOrigin[j];
+
   if(fVertexSmear == kPerEvent) {
       Vertex();
       for (j=0; j < 3; j++) origin0[j] = fVertex[j];
@@ -238,6 +239,7 @@ void AliGenHijing::Generate()
 
 
   Float_t sign = (fRandomPz && (Rndm() < 0.5))? -1. : 1.;
+
   while(1)
   {
 //    Generate one event
@@ -367,10 +369,12 @@ void AliGenHijing::Generate()
 	      origin[0] = origin0[0]+iparticle->Vx()/10;
 	      origin[1] = origin0[1]+iparticle->Vy()/10;
 	      origin[2] = origin0[2]+iparticle->Vz()/10;
-//	      tof = kconv * iparticle->T() + sign * origin0[2] / 3.e10;
-	      tof = kconv * iparticle->T();
-	      if (fPileUpTimeWindow > 0.) tof += tInt;
-	      
+	      if (TestBit(kVertexRange)) {
+		  tof = kconv * iparticle->T() + sign * origin0[2] / 2.99792458e10;
+	      } else {
+		  tof = kconv * iparticle->T();
+		  if (fPileUpTimeWindow > 0.) tof += tInt;
+	      }
 	      imo = -1;
 	      TParticle* mother = 0;
 	      if (hasMother) {
@@ -556,6 +560,7 @@ void AliGenHijing::MakeHeader()
     ((AliGenHijingEventHeader*) header)->SetSpectators(fProjectileSpecn, fProjectileSpecp,
     						       fTargetSpecn,fTargetSpecp);
     ((AliGenHijingEventHeader*) header)->SetReactionPlaneAngle(fHijing->GetHINT1(20));
+//    printf("Impact Parameter %13.3f \n", fHijing->GetHINT1(19));
     
 
 
