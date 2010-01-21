@@ -67,7 +67,9 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fTriggerAnalysis(),
   fBackgroundIdentification(0),
   fHistStatistics(0),
-  fHistBunchCrossing(0)
+  fHistBunchCrossing(0),
+  fSkipTriggerClassSelection(0),
+  fUsingCustomClasses(0)
 {
   // constructor
   
@@ -251,7 +253,7 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
             
             fHistStatistics->Fill(15, i);
             fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i);
-            if (i < fCollTrigClasses.GetEntries())
+            if (i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection)
               accept = kTRUE;
           }
         }
@@ -301,7 +303,7 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   
   Int_t triggerScheme = GetTriggerScheme(runNumber);
   
-  if (fCurrentRun != -1 && triggerScheme != GetTriggerScheme(fCurrentRun))
+  if (!fUsingCustomClasses && fCurrentRun != -1 && triggerScheme != GetTriggerScheme(fCurrentRun))
     AliFatal("Processing several runs with different trigger schemes is not supported");
   
   AliInfo(Form("Initializing for run %d", runNumber));
@@ -309,12 +311,15 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   // initialize first time?
   if (fCurrentRun == -1)
   {
-    switch (triggerScheme)
-    {
+    if (fUsingCustomClasses) {
+      AliInfo("Using user-provided trigger classes");
+    } else {
+      switch (triggerScheme)
+      {
       case 0:
         fCollTrigClasses.Add(new TObjString(""));
         break;
-      
+        
       case 1:
         fCollTrigClasses.Add(new TObjString("+CINT1B-ABCE-NOPF-ALL"));
         fBGTrigClasses.Add(new TObjString("+CINT1A-ABCE-NOPF-ALL"));
@@ -327,11 +332,12 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
         fBGTrigClasses.Add(new TObjString("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL"));
         fBGTrigClasses.Add(new TObjString("+CSMBC-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL"));
         break;
-  
+        
       default:
         AliFatal(Form("Unsupported trigger scheme %d", triggerScheme));
+      }
     }
-  
+    
     Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
     
     for (Int_t i=0; i<count; i++)
@@ -473,6 +479,11 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
         Printf("WARNING: Bunch crossing %d has more than one trigger class active. Check BPTX functioning for this run!", (Int_t) fHistBunchCrossing->GetXaxis()->GetBinCenter(j));
     }
   }
+
+  if (fUsingCustomClasses)        
+    Printf("WARNING: Using custom trigger classes!");
+  if (fSkipTriggerClassSelection) 
+    Printf("WARNING: Skipping trigger class selection!");
 }
 
 Long64_t AliPhysicsSelection::Merge(TCollection* list)

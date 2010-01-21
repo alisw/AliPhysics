@@ -17,6 +17,7 @@
 
 #include <AliAnalysisCuts.h>
 #include <TList.h>
+#include "TObjString.h"
 
 class AliESDEvent;
 class TH2F;
@@ -36,15 +37,20 @@ class AliPhysicsSelection : public AliAnalysisCuts
     Bool_t IsCollisionCandidate(const AliESDEvent* aEsd);
     Bool_t Initialize(UInt_t runNumber);
     void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
-    
+    void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { fSkipTriggerClassSelection = flag; }
+
+   
     void AddBackgroundIdentification(AliAnalysisCuts* background) { fBackgroundIdentification = background; }
     
     virtual void Print(Option_t* option = "") const;
     virtual Long64_t Merge(TCollection* list);
     void SaveHistograms(const char* folder = 0) const;
     
-    TList* GetCollisionTriggerClasses() { return &fCollTrigClasses; }
-    TList* GetBGTriggerClasses() { return &fBGTrigClasses; }
+    const TList* GetCollisionTriggerClasses() const { return &fCollTrigClasses; }
+    const TList* GetBGTriggerClasses()        const { return &fBGTrigClasses; }
+    void AddCollisionTriggerClass(const char* className){ fCollTrigClasses.Add(new TObjString(className)); fUsingCustomClasses = kTRUE; }
+    void AddBGTriggerClass(const char* className)       { fBGTrigClasses.Add(new TObjString(className));  fUsingCustomClasses = kTRUE; }
+  
     AliTriggerAnalysis* GetTriggerAnalysis() { return (fTriggerAnalysis.GetEntries() > 0) ? (AliTriggerAnalysis*) fTriggerAnalysis.At(0) : 0; }    
     
     const TH2F* GetStatisticsHistogram() const { return fHistStatistics; }
@@ -66,6 +72,9 @@ class AliPhysicsSelection : public AliAnalysisCuts
     TH2F* fHistStatistics;      // how many events are cut away why
     TH2F* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers
     
+    Bool_t fSkipTriggerClassSelection;  // flag that determines if the trigger classs selection is skipped
+    Bool_t fUsingCustomClasses;         // flag that is set if costum trigger classes are defined
+
     ClassDef(AliPhysicsSelection, 2)
     
   private:
