@@ -5,6 +5,9 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 
 // RUN SETTINGS
 
+//Boolean to run on ESD from real data or ESD from MC data
+Bool_t DATA = kFALSE;
+
 // Flow analysis method can be:(set to kTRUE or kFALSE)
 Bool_t SP       = kTRUE;
 Bool_t LYZ1SUM  = kTRUE;
@@ -29,15 +32,14 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 100, 
-		 //const Char_t* dataDir="/data/alice2/kolk/PP/LHC09a4/81119", Int_t offset = 0)
-		 //const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0)
-		 //const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
-void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000000, 
+void runFlowTask(Int_t mode=mLocal, Int_t nRuns = -1, 
+		 //const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
+                 const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
+//void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000000, 
 		 //const Char_t* dataDir="/COMMON/COMMON/LHC09a14_0.9TeV_0.5T", Int_t offset = 0)
 		 //const Char_t* dataDir="/COMMON/COMMON/LHC08c11_10TeV_0.5T", Int_t offset = 0)
 		 //const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
-                 const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
+                 //const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
 
 
 {
@@ -82,10 +84,15 @@ void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000000,
   
   
   //____________________________________________//
-  // Load the tasks
+  // Load the analysis task
   gROOT->LoadMacro("AddTaskFlow.C");
   AliAnalysisTaskFlowEvent* taskFE = AddTaskFlow(type,METHODS,QA,WEIGHTS);
-    
+
+  //task to check the offline trigger
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
+  if (!DATA) {physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
+
   //____________________________________________//
   // Run the analysis
   if (!mgr->InitAnalysis()) return;

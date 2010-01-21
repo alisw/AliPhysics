@@ -368,10 +368,14 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     if (!fCFManager2) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
 
     if (!fESD) { Printf("ERROR: fESD not available"); return;}
-    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
-    
-    // analysis 
-    fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
+    //check the offline trigger (check if the event has the correct trigger)
+    if (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected())
+      {
+	Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+	
+	// analysis 
+	fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
+      }
   }
   // Fill the FlowEventSimple for ESD input combined with MC info  
   else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
