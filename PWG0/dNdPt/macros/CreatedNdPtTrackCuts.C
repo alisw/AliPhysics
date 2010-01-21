@@ -514,7 +514,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
   {
     // beta cuts (still under investigation)
     //minNClustersTPC = 50;
-    minNClustersTPC = 90;
+    minNClustersTPC = 70;
     maxChi2PerClusterTPC = 4.0;
     maxDCAtoVertexXY = 2.4; // cm
     maxDCAtoVertexZ  = 3.2; // cm
