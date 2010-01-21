@@ -309,11 +309,12 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   if(hc->GetBinContent(hc->GetMaximumBin())<3)hc->Rebin(4);
   Int_t binmin,binmax;
   Int_t nPeaks=GetPeakRegion(hc,binmin,binmax);   
-  if(nPeaks==2)AliWarning("2 peaks found");
+  if(nPeaks==2)AliDebug(2,"2 peaks found");
   Float_t zm =0.;
   Float_t ezm =0.;
   Float_t lim1 = hc->GetBinLowEdge(binmin);
   Float_t lim2 = hc->GetBinLowEdge(binmax)+hc->GetBinWidth(binmax);
+  Float_t widthSR=lim2-lim1;
 
   if(nPeaks ==1 && (lim2-lim1)<fWindowWidth){
     Float_t c=(lim1+lim2)/2.;
@@ -347,6 +348,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
     }
     niter++;
   } while(niter<10 && TMath::Abs((zm-lim1)-(lim2-zm))>fTolerance);
+  if(nPeaks==2) ezm=widthSR;
   fCurrentVertex = new AliESDVertex(zm,ezm,ncontr);
   fCurrentVertex->SetTitle("vertexer: Z");
   fCurrentVertex->SetDispersion(fDiffPhiMax);
