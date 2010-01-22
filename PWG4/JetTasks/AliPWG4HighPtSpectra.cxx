@@ -24,25 +24,37 @@
 //-----------------------------------------------------------------------
 
 
-#ifndef ALIPWG4HighPtSpectra_CXX
-#define ALIPWG4HighPtSpectra_CXX
+#ifndef ALIPWG4HIGHPTSPECTRA_CXX
+#define ALIPWG4HIGHPTSPECTRA_CXX
 
 #include "AliPWG4HighPtSpectra.h"
+
+#include "TVector3.h"
+#include <iostream>
+#include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
+#include "TList.h"
+#include "TChain.h"
+#include "TH3F.h"
+
+#include "AliAnalysisManager.h"
+#include "AliESDInputHandler.h"
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
+#include "AliExternalTrackParam.h"
+#include "AliLog.h"
 
 #include "AliStack.h"
 #include "TParticle.h"
 #include "TH1I.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
-#include "AliAnalysisManager.h"
 #include "AliCFContainer.h"
-#include "TChain.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
-#include "AliExternalTrackParam.h"
-#include "AliESDInputHandler.h"
-#include "AliAnalysisHelperJetTasks.h"
 
+//#include "$ALICE_ROOT/PWG4/JetTasks/AliAnalysisHelperJetTasks.h"
+
+//#include <iostream>
 using namespace std; //required for resolving the 'cout' symbol
 
 ClassImp(AliPWG4HighPtSpectra)
@@ -50,14 +62,14 @@ ClassImp(AliPWG4HighPtSpectra)
 //__________________________________________________________________________
 AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpectra", ""), 
   fReadAODData(0),
-  fCFManager(0x0),
+  fCFManagerPos(0x0),
+  fCFManagerNeg(0x0),
   fESD(0),
   fTrackCuts(0),
   fTrigger(0),
   fHistList(0),
   fNEventAll(0),
   fNEventSel(0)
-  //  fHistEventsProcessed(0x0)
 {
   //
   //Default ctor
@@ -67,78 +79,81 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
 AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   AliAnalysisTask(name,""),
   fReadAODData(0),
-  fCFManager(0x0),
+  fCFManagerPos(0x0),
+  fCFManagerNeg(0x0),
   fESD(0),
-  fTrackCuts(),//new AliESDtrackCuts),
+  fTrackCuts(),
   fTrigger(0),
   fHistList(0),
   fNEventAll(0),
   fNEventSel(0)
-  //  fHistEventsProcessed(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
   //
-  AliDebug(2,Form("AliPWG4HighPtQAMC","Calling Constructor"));
+  AliDebug(2,Form("AliPWG4HighPtSpectra","Calling Constructor"));
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
   DefineOutput(0,TList::Class());
   DefineOutput(1,AliCFContainer::Class());
+  DefineOutput(2,AliCFContainer::Class());
 }
 
-//___________________________________________________________________________
-AliPWG4HighPtSpectra& AliPWG4HighPtSpectra::operator=(const AliPWG4HighPtSpectra& c) 
-{
-  //
-  // Assignment operator
-  //
-  if (this!=&c) {
-    AliAnalysisTask::operator=(c) ;
-    fReadAODData = c.fReadAODData ;
-    fCFManager  = c.fCFManager;
-    fHistList = c.fHistList;
-    fNEventAll = c.fNEventAll;
-    fNEventSel = c.fNEventSel;
-    //    fHistEventsProcessed = c.fHistEventsProcessed;
-  }
-  return *this;
-}
+// //___________________________________________________________________________
+// AliPWG4HighPtSpectra& AliPWG4HighPtSpectra::operator=(const AliPWG4HighPtSpectra& c) 
+// {
+//   //
+//   // Assignment operator
+//   //
+//   if (this!=&c) {
+//     AliAnalysisTask::operator=(c) ;
+//     fReadAODData = c.fReadAODData ;
+//     fCFManagerPos  = c.fCFManagerPos;
+//     fCFManagerNeg  = c.fCFManagerNeg;
+//     fHistList = c.fHistList;
+//     fNEventAll = c.fNEventAll;
+//     fNEventSel = c.fNEventSel;
+//   }
+//   return *this;
+// }
 
-//___________________________________________________________________________
-AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra& c) :
-  AliAnalysisTask(c),
-  fReadAODData(c.fReadAODData),
-  fCFManager(c.fCFManager),
-  fESD(c.fESD),
-  fTrackCuts(c.fTrackCuts),
-  fTrigger(c.fTrigger),
-  fHistList(c.fHistList),
-  fNEventAll(c.fNEventAll),
-  fNEventSel(c.fNEventSel)
-  //  fHistEventsProcessed(c.fHistEventsProcessed)
-{
-  //
-  // Copy Constructor
-  //
-}
+// //___________________________________________________________________________
+// AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra& c) :
+//   AliAnalysisTask(c),
+//   fReadAODData(c.fReadAODData),
+//   fCFManagerPos(c.fCFManagerPos),
+//   fCFManagerNeg(c.fCFManagerNeg),
+//   fESD(c.fESD),
+//   fTrackCuts(c.fTrackCuts),
+//   fTrigger(c.fTrigger),
+//   fHistList(c.fHistList),
+//   fNEventAll(c.fNEventAll),
+//   fNEventSel(c.fNEventSel)
+// {
+//   //
+//   // Copy Constructor
+//   //
+// }
 
-//___________________________________________________________________________
-AliPWG4HighPtSpectra::~AliPWG4HighPtSpectra() {
-  //
-  //destructor
-  //
-  Info("~AliPWG4HighPtSpectra","Calling Destructor");
-  if (fCFManager)           delete fCFManager ;
-  if (fNEventAll) delete fNEventAll ;
-  if (fNEventSel) delete fNEventSel ;
-}
+// //___________________________________________________________________________
+// AliPWG4HighPtSpectra::~AliPWG4HighPtSpectra() {
+//   //
+//   //destructor
+//   //
+//   Info("~AliPWG4HighPtSpectra","Calling Destructor");
+//   if (fCFManagerPos)           delete fCFManagerPos ;
+//   if (fCFManagerNeg)           delete fCFManagerNeg ;
+//   if (fNEventAll)              delete fNEventAll ;
+//   if (fNEventSel)              delete fNEventSel ;
+// }
 //________________________________________________________________________
 void AliPWG4HighPtSpectra::ConnectInputData(Option_t *) 
 {
   // Connect ESD here
   // Called once
   AliDebug(2,Form(">> AliPWG4HighPtSpectra::ConnectInputData \n"));
-  //  printf(">> AliPWG4HighPtSpectra::ConnectInputData \n");
+  //  cout << "cout >> AliPWG4HighPtSpectra::ConnectInputData" << endl;
+  printf(">> AliPWG4HighPtSpectra::ConnectInputData \n");
 
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
@@ -149,13 +164,14 @@ void AliPWG4HighPtSpectra::ConnectInputData(Option_t *)
     
     if (!esdH) {
       AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
-    } else
+    } else {
       fESD = esdH->GetEvent();
+    }
   }
- 
+  
 }
 //_________________________________________________
-void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
+void AliPWG4HighPtSpectra::Exec(Option_t *)
 {
   //
   // Main loop function
@@ -167,33 +183,38 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
 
   if (!fESD) {
     AliDebug(2,Form("ERROR: fESD not available"));
+    PostData(0,fHistList);
+    PostData(1,fCFManagerPos->GetParticleContainer());
+    PostData(2,fCFManagerNeg->GetParticleContainer());
     return;
   }
 
-  //Trigger selection
-  AliAnalysisHelperJetTasks::Trigger trig;
-  trig = (AliAnalysisHelperJetTasks::Trigger)fTrigger;
-  if (AliAnalysisHelperJetTasks::IsTriggerFired(fESD,trig)){
-    AliDebug(2,Form(" Trigger Selection: event ACCEPTED ... "));
-  }else{
+  Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if(!isSelected) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
     PostData(0,fHistList);
-    PostData(1,fCFManager->GetParticleContainer());
+    PostData(1,fCFManagerPos->GetParticleContainer());
+    PostData(2,fCFManagerNeg->GetParticleContainer());
     return;
-  } 
-  //  if(!fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL") || !fESD->IsTriggerClassFired("CSMBB-ABCE-NOPF-ALL")) return;
+  }
 
   // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
   // This handler can return the current MC event
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  
+  AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  //  AliMCEventHandler* eventHandler = (AliMCEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  
   AliStack* stack = 0x0;
   AliMCEvent* mcEvent = 0x0;
-
+  
   if(eventHandler) {
     mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       AliDebug(2,Form("ERROR: Could not retrieve MC event"));
-      return;
+      PostData(0,fHistList);
+      PostData(1,fCFManagerPos->GetParticleContainer());
+    PostData(2,fCFManagerNeg->GetParticleContainer());
+    return;
     }
     
     AliDebug(2,Form("MC particles: %d", mcEvent->GetNumberOfTracks()));
@@ -204,30 +225,49 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
   }
   
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
+  AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
   // Need vertex cut
-  if (vtx->GetNContributors() < 2){
+  if (vtx->GetNContributors() < 2) {
     PostData(0,fHistList);
-    PostData(1,fCFManager->GetParticleContainer());
+    PostData(1,fCFManagerPos->GetParticleContainer());
+    PostData(2,fCFManagerNeg->GetParticleContainer());
     return;
   }
+  
   double primVtx[3];
   vtx->GetXYZ(primVtx);
-  if(TMath::Abs(primVtx[0]>1. )|| TMath::Abs(primVtx[1]>1.) || TMath::Abs(primVtx[2]>10.)){
+  if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
     PostData(0,fHistList);
-    PostData(1,fCFManager->GetParticleContainer());
+    PostData(1,fCFManagerPos->GetParticleContainer());
+    PostData(2,fCFManagerNeg->GetParticleContainer());
     return;
   }
-  AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
-
+  
+  if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2){ 
+    // Post output data
+    PostData(0,fHistList);
+    PostData(1,fCFManagerPos->GetParticleContainer());
+    PostData(2,fCFManagerNeg->GetParticleContainer());
+    return;
+  }
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d", nTracks));
 
+  if(!fTrackCuts) { 
+    // Post output data
+    PostData(0,fHistList);
+    PostData(1,fCFManagerPos->GetParticleContainer());
+    PostData(2,fCFManagerNeg->GetParticleContainer());
+    return;
+  }
+
   // Selected events for analysis
   fNEventSel->Fill(0.);
-
-  Double_t containerInputRec[1] ;
-  Double_t containerInputTPConly[1] ;
-  Double_t containerInputMC[1] ;
+  
+  
+  Double_t containerInputRec[5] ;
+  Double_t containerInputTPConly[5];
+  Double_t containerInputMC[5];
   //Now go to rec level
   for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
     {   
@@ -237,30 +277,72 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
       AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)track->GetTPCInnerParam();
       if(!track || !trackTPC) continue;
 
-    
+      Float_t dca2D, dcaZ;
+      track->GetImpactParameters(dca2D,dcaZ);
+      Float_t dca2DTPC, dcaZTPC;
+      track->GetImpactParametersTPC(dca2DTPC,dcaZTPC); 
+      Float_t chi2PerClusterTPC = -1.;
+      Float_t nClustersTPC = track->GetTPCNcls();//track->GetTPCclusters(0);
+      if(nClustersTPC!=0.) chi2PerClusterTPC = track->GetTPCchi2()/nClustersTPC;
+
       //fill the container
       containerInputRec[0] = track->Pt();
+      containerInputRec[1] = track->Phi();
+      containerInputRec[2] = track->Eta();
+      containerInputRec[3] = dca2D;
+      containerInputRec[4] = chi2PerClusterTPC;
+
       containerInputTPConly[0] = trackTPC->Pt();
+      containerInputTPConly[1] = trackTPC->Phi();
+      containerInputTPConly[2] = trackTPC->Eta();
+      containerInputTPConly[3] = dca2DTPC/10.; //Divide by 10 in order to store in same containter. Should be corrected back when looking at output.
+      containerInputTPConly[4] = chi2PerClusterTPC;//TPC;
 
       if (fTrackCuts->AcceptTrack(track)) {
-	fCFManager->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
-	fCFManager->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
+	if(track->GetSign()>0.) {
+	  fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
+	  fCFManagerPos->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
+	}
+	if(track->GetSign()<0.) {
+	  fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
+	  fCFManagerNeg->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
+	}
 	
+  	
 	//Only fill the secondary particle container if MC information is available
 	if(eventHandler) {
 	  Int_t label = TMath::Abs(track->GetLabel());
 	  TParticle *particle = stack->Particle(label) ;
 	  if(!particle) continue;
 	  containerInputMC[0] = particle->Pt();      
-	  fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
+	  containerInputMC[1] = particle->Phi();      
+	  containerInputMC[2] = particle->Eta();  
+	  containerInputMC[3] = 0.0;      
+	  containerInputMC[4] = 0.0;  
+
+	  if(particle->GetPDG()->Charge()>0.) {
+	    fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
+	  }
+	  if(particle->GetPDG()->Charge()<0.) {
+	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
+	  }
+
 	  if (!stack->IsPhysicalPrimary(label) ) {
-	    fCFManager->GetParticleContainer()->Fill(containerInputRec,kStepSecondaries);
+	    if(particle->GetPDG()->Charge()>0.) {
+	      fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepSecondaries);
+	    }
+	    if(particle->GetPDG()->Charge()<0.) {
+	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepSecondaries);
+	    }
 	  }
 	}
+	
       }
       
     }
+  
 
+  
   if(eventHandler) {
     for(int iPart = 1; iPart<(mcEvent->GetNumberOfTracks()); iPart++)//stack->GetNprimary();
       {
@@ -269,21 +351,29 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)//UserExec(Option_t *)
 	
 	//fill the container
 	containerInputMC[0] = mcPart->Pt();
-	
-	if (!fCFManager->CheckParticleCuts(3,mcPart)) continue ;
-	
+	containerInputMC[1] = mcPart->Phi();      
+	containerInputMC[2] = mcPart->Eta();  
+	containerInputMC[3] = 0.0;
+	containerInputMC[4] = 0.0;
+
 	int counter;
-	
-	Float_t trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
-	
-	if(trackLengthTPC>80.) fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
-	
+
+	if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(3,mcPart)) {
+	  Float_t trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
+	  if(trackLengthTPC>80.) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
+	}
+	if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(3,mcPart)) {
+	  Float_t trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
+	  if(trackLengthTPC>80.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
+	}
       }
   }
-
-   PostData(0,fHistList);
-   PostData(1,fCFManager->GetParticleContainer());
-
+  
+   
+  PostData(0,fHistList);
+  PostData(1,fCFManagerPos->GetParticleContainer());
+  PostData(2,fCFManagerNeg->GetParticleContainer());
+  
 }
 
 
@@ -293,8 +383,6 @@ void AliPWG4HighPtSpectra::Terminate(Option_t*)
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
-
-
 }
 
 //___________________________________________________________________________
@@ -304,6 +392,9 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   //
   AliDebug(2,Form("CreateOutputObjects","CreateOutputObjects of task %s", GetName()));
 
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE); 
+
   //slot #1
   OpenFile(0);
   fHistList = new TList();
@@ -311,6 +402,8 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   fHistList->Add(fNEventAll);
   fNEventSel = new TH1F("fNEventSel","NEvent Selected for analysis",1,-0.5,0.5);
   fHistList->Add(fNEventSel);
+
+  TH1::AddDirectory(oldStatus);   
 
 }
 

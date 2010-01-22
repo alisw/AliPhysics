@@ -22,8 +22,8 @@
 // Author : Marta Verweij - UU
 //-----------------------------------------------------------------------
 
-#ifndef ALIPWG4HighPtQATPCONLY_CXX
-#define ALIPWG4HighPtQATPCONLY_CXX
+#ifndef ALIPWG4HIGHPTQATPCONLY_CXX
+#define ALIPWG4HIGHPTQATPCONLY_CXX
 
 #include "AliPWG4HighPtQATPConly.h"
 
@@ -42,7 +42,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliExternalTrackParam.h"
 #include "AliLog.h"
-#include "AliAnalysisHelperJetTasks.h"
+//#include "AliAnalysisHelperJetTasks.h"
 
 using namespace std; //required for resolving the 'cout' symbol
 
@@ -201,13 +201,13 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtAllminPtTPCvsPtAllNPointTPC->SetZTitle("N_{point,TPC}");
   fHistList->Add(fPtAllminPtTPCvsPtAllNPointTPC);
 
-  fPtAllminPtTPCvsPtAllDCAR = new TH3F("fPtAllminPtTPCvsPtAllDCAR","PtAllminPtTPCvsPtAllDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,20,-1.,1.);
+  fPtAllminPtTPCvsPtAllDCAR = new TH3F("fPtAllminPtTPCvsPtAllDCAR","PtAllminPtTPCvsPtAllDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-0.2,0.2);
   fPtAllminPtTPCvsPtAllDCAR->SetXTitle("p_{t}^{All}");
   fPtAllminPtTPCvsPtAllDCAR->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{TPC})/(1/p_{t}^{All})");
   fPtAllminPtTPCvsPtAllDCAR->SetZTitle("DCA_{R}");
   fHistList->Add(fPtAllminPtTPCvsPtAllDCAR);
 
-  fPtAllminPtTPCvsPtAllDCAZ = new TH3F("fPtAllminPtTPCvsPtAllDCAZ","PtAllminPtTPCvsPtAllDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,-2.,2.);
+  fPtAllminPtTPCvsPtAllDCAZ = new TH3F("fPtAllminPtTPCvsPtAllDCAZ","PtAllminPtTPCvsPtAllDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-2.,2.);
   fPtAllminPtTPCvsPtAllDCAZ->SetXTitle("p_{t}^{All}");
   fPtAllminPtTPCvsPtAllDCAZ->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{TPC})/(1/p_{t}^{All})");
   fPtAllminPtTPCvsPtAllDCAZ->SetZTitle("DCA_{Z}");
@@ -258,13 +258,13 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtITSminPtTPCvsPtITSNPointTPC->SetZTitle("N_{point,TPC}");
   fHistListITS->Add(fPtITSminPtTPCvsPtITSNPointTPC);
     
-  fPtITSminPtTPCvsPtITSDCAR = new TH3F("fPtITSminPtTPCvsPtITSDCAR","PtITSminPtTPCvsPtITSDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,20,-1.,1.);
+  fPtITSminPtTPCvsPtITSDCAR = new TH3F("fPtITSminPtTPCvsPtITSDCAR","PtITSminPtTPCvsPtITSDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-0.2,0.2);
   fPtITSminPtTPCvsPtITSDCAR->SetXTitle("p_{t}^{ITSrefit}");
   fPtITSminPtTPCvsPtITSDCAR->SetYTitle("(1/p_{t}^{ITSrefit}-1/p_{t}^{TPC})/(1/p_{t}^{ITSrefit})");
   fPtITSminPtTPCvsPtITSDCAR->SetZTitle("DCA_{R}");
   fHistListITS->Add(fPtITSminPtTPCvsPtITSDCAR);
   
-  fPtITSminPtTPCvsPtITSDCAZ = new TH3F("fPtITSminPtTPCvsPtITSDCAZ","PtITSminPtTPCvsPtITSDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,-2.,2.);
+  fPtITSminPtTPCvsPtITSDCAZ = new TH3F("fPtITSminPtTPCvsPtITSDCAZ","PtITSminPtTPCvsPtITSDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-2.,2.);
   fPtITSminPtTPCvsPtITSDCAZ->SetXTitle("p_{t}^{ITSrefit}");
   fPtITSminPtTPCvsPtITSDCAZ->SetYTitle("(1/p_{t}^{ITSrefit}-1/p_{t}^{TPC})/(1/p_{t}^{ITSrefit})");
   fPtITSminPtTPCvsPtITSDCAZ->SetZTitle("DCA_{Z}");
@@ -321,35 +321,38 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
 
   if (!fESD) {
     AliDebug(2,Form("ERROR: fESD not available"));
+    // Post output data
+     PostData(0, fHistList);
+     PostData(1, fHistListTPC);
+     PostData(2, fHistListITS);
     return;
   }
 
-  //Trigger selection
-  AliAnalysisHelperJetTasks::Trigger trig;
-  trig = (AliAnalysisHelperJetTasks::Trigger)fTrigger;
-  if (AliAnalysisHelperJetTasks::IsTriggerFired(fESD,trig)){
-    AliDebug(2,Form(" Trigger Selection: event ACCEPTED ... "));
-  }else{
+  Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if(!isSelected) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
+    // Post output data
+     PostData(0, fHistList);
+     PostData(1, fHistListTPC);
+     PostData(2, fHistListITS);
+    return;
+  }
+
+  const AliESDVertex *vtx = fESD->GetPrimaryVertexTracks();
+  // Need vertex cut
+  if (vtx->GetNContributors() < 2) {
     // Post output data
     PostData(0, fHistList);
     PostData(1, fHistListTPC);
     PostData(2, fHistListITS);
     return;
-  } 
-
-//  if(!fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL") || !fESD->IsTriggerClassFired("CSMBB-ABCE-NOPF-ALL")) return;
-  
-  const AliESDVertex *vtx = fESD->GetPrimaryVertexTracks();
-  // Need vertex cut
-  if (vtx->GetNContributors() < 2)
-    return;
+  }
 
   AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
   double primVtx[3];
   vtx->GetXYZ(primVtx);
   //  printf("primVtx: %g  %g  %g \n",primVtx[0],primVtx[1],primVtx[2]);
-  if(TMath::Abs(primVtx[0]>1.) || TMath::Abs(primVtx[1]>1.) || TMath::Abs(primVtx[2])>10.){
+  if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
     // Post output data
     PostData(0, fHistList);
     PostData(1, fHistListTPC);
@@ -375,10 +378,7 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
     
     AliESDtrack *track = fESD->GetTrack(iTrack);
     AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)track->GetTPCInnerParam();
-    //    AliESDtrack *trackTPConly = fTrackCuts->GetTPCOnlyTrack(fESD,iTrack); 
-    if(!track) continue;
-    if(!trackTPC) continue;
-//     if(!trackTPConly) continue;
+    if(!track || !trackTPC) continue;
     Float_t pt = track->Pt();
     Float_t ptTPC = trackTPC->Pt();
     Float_t phi = track->Phi();
@@ -404,7 +404,6 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
     if (fTrackCuts->AcceptTrack(track)) {
 
       fPtSel->Fill(pt);
-      
       fPtSelTPC->Fill(ptTPC);
       fPtAllminPtTPCvsPtAll->Fill(pt,(1./pt-1./ptTPC)/(1./pt) );
       fPtAllminPtTPCvsPtAllNPointTPC->Fill(pt,(1./pt-1./ptTPC)/(1./pt),track->GetTPCNcls());
@@ -434,7 +433,7 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       fPtITSminPtTPCvsPtITSRel1PtUncertainty->Fill(pt,(1./pt-1./ptTPC)/(1./pt),relUncertainty1Pt);
     }//fTrackCutsITS loop
       
-  }//ESD track loop
+}//ESD track loop
    
   // Post output data
   PostData(0, fHistList);
