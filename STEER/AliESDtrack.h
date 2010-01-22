@@ -203,8 +203,12 @@ public:
      for (Int_t i=0;i<4;i++) fTPCPoints[i]=points[i];
   }
   void    SetTPCPointsF(UChar_t  findable){fTPCnclsF = findable;}
+  void    SetTPCPointsFIter1(UChar_t  findable){fTPCnclsFIter1 = findable;}
   UShort_t   GetTPCNcls() const { return fTPCncls;}
   UShort_t   GetTPCNclsF() const { return fTPCnclsF;}
+  UShort_t   GetTPCNclsIter1() const { return fTPCnclsIter1;}
+  UShort_t   GetTPCNclsFIter1() const { return fTPCnclsFIter1;}
+  UShort_t   GetTPCnclsS(Int_t i0=0,Int_t i1=159) const;
   Double_t GetTPCPoints(Int_t i) const {return fTPCPoints[i];}
   void    SetKinkIndexes(Int_t points[3]) {
      for (Int_t i=0;i<3;i++) fKinkIndexes[i] = points[i];
@@ -219,6 +223,7 @@ public:
   Double_t GetTPCsignalSigma() const {return fTPCsignalS;}
   UShort_t GetTPCsignalN() const {return fTPCsignalN;}
   Double_t GetTPCchi2() const {return fTPCchi2;}
+  Double_t GetTPCchi2Iter1() const {return fTPCchi2Iter1;}
   UShort_t   GetTPCclusters(Int_t *idx) const;
   Double_t GetTPCdensity(Int_t row0, Int_t row1) const;
   Int_t   GetTPCLabel() const {return fTPCLabel;}
@@ -417,6 +422,7 @@ protected:
 
   Double32_t   fITSchi2;        // [0.,0.,8] chi2 in the ITS
   Double32_t   fTPCchi2;        // [0.,0.,8] chi2 in the TPC
+  Double32_t   fTPCchi2Iter1;  // [0.,0.,8] chi2 in the TPC
   Double32_t   fTRDchi2;        // [0.,0.,8] chi2 in the TRD
   Double32_t   fTOFchi2;        // [0.,0.,8] chi2 in the TOF
   Double32_t fHMPIDchi2;        // [0.,0.,8] chi2 in the HMPID
@@ -450,6 +456,8 @@ protected:
   UShort_t fTPCncls;       // number of clusters assigned in the TPC
   UShort_t fTPCnclsF;      // number of findable clusters in the TPC
   UShort_t fTPCsignalN;    // number of points used for dEdx
+  UShort_t fTPCnclsIter1;  // number of clusters assigned in the TPC - iteration 1
+  UShort_t fTPCnclsFIter1; // number of findable clusters in the TPC - iteration 1
 
   Char_t  fITSncls;        // number of clusters assigned in the ITS
   UChar_t fITSClusterMap;  // map of clusters, one bit per a layer

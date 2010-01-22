@@ -189,6 +189,7 @@ AliESDtrack::AliESDtrack() :
   fCchi2(0),
   fITSchi2(0),
   fTPCchi2(0),
+  fTPCchi2Iter1(0),
   fTRDchi2(0),
   fTOFchi2(0),
   fHMPIDchi2(0),
@@ -211,6 +212,8 @@ AliESDtrack::AliESDtrack() :
   fTPCncls(0),
   fTPCnclsF(0),
   fTPCsignalN(0),
+  fTPCnclsIter1(0),
+  fTPCnclsFIter1(0),
   fITSncls(0),
   fITSClusterMap(0),
   fTRDncls(0),
@@ -281,6 +284,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fCchi2(track.fCchi2),
   fITSchi2(track.fITSchi2),
   fTPCchi2(track.fTPCchi2),
+  fTPCchi2Iter1(track.fTPCchi2Iter1),
   fTRDchi2(track.fTRDchi2),
   fTOFchi2(track.fTOFchi2),
   fHMPIDchi2(track.fHMPIDchi2),
@@ -303,6 +307,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTPCncls(track.fTPCncls),
   fTPCnclsF(track.fTPCnclsF),
   fTPCsignalN(track.fTPCsignalN),
+  fTPCnclsIter1(track.fTPCnclsIter1),
+  fTPCnclsFIter1(track.fTPCnclsIter1),
   fITSncls(track.fITSncls),
   fITSClusterMap(track.fITSClusterMap),
   fTRDncls(track.fTRDncls),
@@ -386,6 +392,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fCchi2(0),
   fITSchi2(0),
   fTPCchi2(0),
+  fTPCchi2Iter1(0),
   fTRDchi2(0),
   fTOFchi2(0),
   fHMPIDchi2(0),
@@ -408,6 +415,8 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTPCncls(0),
   fTPCnclsF(0),
   fTPCsignalN(0),
+  fTPCnclsIter1(0),
+  fTPCnclsFIter1(0),
   fITSncls(0),
   fITSClusterMap(0),
   fTRDncls(0),
@@ -509,6 +518,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fCchi2(0),
   fITSchi2(0),
   fTPCchi2(0),
+  fTPCchi2Iter1(0),  
   fTRDchi2(0),
   fTOFchi2(0),
   fHMPIDchi2(0),
@@ -531,6 +541,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTPCncls(0),
   fTPCnclsF(0),
   fTPCsignalN(0),
+  fTPCnclsIter1(0),
+  fTPCnclsFIter1(0),
   fITSncls(0),
   fITSClusterMap(0),
   fTRDncls(0),
@@ -808,6 +820,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
 
   fITSchi2   = source.fITSchi2;             
   fTPCchi2   = source.fTPCchi2;            
+  fTPCchi2Iter1   = source.fTPCchi2Iter1;            
   fTRDchi2   = source.fTRDchi2;      
   fTOFchi2   = source.fTOFchi2;      
   fHMPIDchi2 = source.fHMPIDchi2;      
@@ -856,6 +869,8 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fTPCncls    = source.fTPCncls;      
   fTPCnclsF   = source.fTPCnclsF;     
   fTPCsignalN = source.fTPCsignalN;   
+  fTPCnclsIter1    = source.fTPCnclsIter1;      
+  fTPCnclsFIter1   = source.fTPCnclsFIter1;     
 
   fITSncls = source.fITSncls;       
   fITSClusterMap = source.fITSClusterMap; 
@@ -945,6 +960,7 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fTPCLabel = fTPCLabel;
 
   track.fTPCchi2 = fTPCchi2; 
+  track.fTPCchi2Iter1 = fTPCchi2Iter1; 
   track.fTPCsignal = fTPCsignal;
   track.fTPCsignalS = fTPCsignalS;
   for(int i = 0;i<4;++i)track.fTPCPoints[i] = fTPCPoints[i];
@@ -952,6 +968,8 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fTPCncls    = fTPCncls;     
   track.fTPCnclsF   = fTPCnclsF;     
   track.fTPCsignalN =  fTPCsignalN;
+  track.fTPCnclsIter1    = fTPCnclsIter1;     
+  track.fTPCnclsFIter1   = fTPCnclsFIter1;     
 
   // PID 
   for(int i=0;i<AliPID::kSPECIES;++i){
@@ -1012,8 +1030,11 @@ void AliESDtrack::MakeMiniESDtrack(){
 
   // Reset TPC related track information
   fTPCchi2 = 0;       
+  fTPCchi2Iter1 = 0;       
   fTPCncls = 0;       
   fTPCnclsF = 0;       
+  fTPCnclsIter1 = 0;       
+  fTPCnclsFIter1 = 0;       
   fTPCClusterMap = 0;  
   fTPCSharedMap = 0;  
   fTPCsignal= 0;      
@@ -1175,7 +1196,11 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     
   case kTPCin: case kTPCrefit:
     fTPCLabel = t->GetLabel();
-    if (flags==kTPCin)  fTPCInner=new AliExternalTrackParam(*t);
+    if (flags==kTPCin)  {
+      fTPCInner=new AliExternalTrackParam(*t); 
+      fTPCnclsIter1=t->GetNumberOfClusters();    
+      fTPCchi2Iter1=t->GetChi2();
+    }
     if (!fIp) fIp=new AliExternalTrackParam(*t);
     else 
       fIp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
@@ -2189,4 +2214,12 @@ void AliESDtrack::GetITSdEdxSamples(Double_t *s) const {
   // These samples are corrected for the track segment length.
   //
   for (Int_t i=0; i<4; i++) s[i]=fITSdEdxSamples[i];
+}
+
+
+UShort_t   AliESDtrack::GetTPCnclsS(Int_t i0,Int_t i1) const{
+  //
+  // get number of shared clusters
+  //
+  return  fTPCSharedMap.CountBits(i0)-fTPCSharedMap.CountBits(i1);
 }
