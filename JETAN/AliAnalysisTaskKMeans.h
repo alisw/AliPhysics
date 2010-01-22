@@ -57,6 +57,7 @@ class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
   TH2F*            fH2DPhiEta;     // eta-phi wr to cluster
   TH2F*            fH2DPhiEtaR;    // eta-phi wr to cluster for rndm events 
   TH2F*            fH2DPhiEtaL;    // eta-phi of leading particle
+  TH2F*            fH2DPhiEtaLR;   // eta-phi of leading particle
   TH2F*            fH2DPhiEtaC;    // eta-phi of Clusters
   TH2F*            fH2DPhiEtaCR;   // eta-phi of Clusters
   
