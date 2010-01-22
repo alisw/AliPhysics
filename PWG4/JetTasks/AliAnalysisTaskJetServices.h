@@ -46,7 +46,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
     virtual void SetRunRange(Float_t fLo,Float_t fUp){fRunRange[0] = fLo;fRunRange[1] = fUp;}
     virtual void SetRealData(Bool_t b){fRealData = b;}
-
+    virtual void SetUsePhysicsSelection(Bool_t b){fUsePhysicsSelection = b;}
     enum { kAllTriggered = 0,kTriggeredSPDVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexIn,kSelected,kConstraints};
 
  private:
@@ -55,10 +55,11 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     AliAnalysisTaskJetServices& operator=(const AliAnalysisTaskJetServices&);
 
     Bool_t        fUseAODInput;        // take jet from input AOD not from ouptu AOD
+    Bool_t        fUsePhysicsSelection;// decide wether we take into account physicsselction task
+    Bool_t        fRealData;           // true for real data to allow correct trigger slection
     Float_t       fAvgTrials;          // Average number of trials
     Float_t       fZVtxCut;            // Average number of trials
     Float_t       fRunRange[2];        // only important for real data for 
-    Bool_t        fRealData;           // true for real data to allow correct trigger slection
     TProfile*     fh1Xsec;             // pythia cross section and trials
     TH1F*         fh1Trials;           // trials are added
     TH1F*         fh1PtHard;           // Pt har of the event...       
