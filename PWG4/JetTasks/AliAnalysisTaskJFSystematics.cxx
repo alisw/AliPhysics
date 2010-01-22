@@ -225,7 +225,7 @@ void AliAnalysisTaskJFSystematics::UserCreateOutputObjects()
       binLimitsPt[iPt] = 0.0;
     }
     else {// 1.0
-      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.5;
+      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 1.0;
     }
   }
   
@@ -310,19 +310,21 @@ void AliAnalysisTaskJFSystematics::UserCreateOutputObjects()
   fHistList->Add(fh1NRecJets);
   fHistList->Add(fh1PtRecIn);
   fHistList->Add(fh1PtRecOut);
-  fHistList->Add(fh1PtGenIn);
-  fHistList->Add(fh1PtGenOut);
-  fHistList->Add(fh2PtFGen);
-  fHistList->Add(fh2PhiFGen);
-  fHistList->Add(fh2EtaFGen);
-  fHistList->Add(fh2PtGenDeltaEta);
-  fHistList->Add(fh2PtGenDeltaPhi);
-  fHistList->Add(fh3RecOutEtaPhiPt);
-  fHistList->Add(fh3GenOutEtaPhiPt);      
-  fHistList->Add(fh3RecInEtaPhiPt);
-  fHistList->Add(fh3GenInEtaPhiPt);
-  fHistList->Add(fhnCorrelation);
 
+  if(fBranchGen.Length()>0){
+    fHistList->Add(fh1PtGenIn);
+    fHistList->Add(fh1PtGenOut);
+    fHistList->Add(fh2PtFGen);
+    fHistList->Add(fh2PhiFGen);
+    fHistList->Add(fh2EtaFGen);
+    fHistList->Add(fh2PtGenDeltaEta);
+    fHistList->Add(fh2PtGenDeltaPhi);
+    fHistList->Add(fh3RecOutEtaPhiPt);
+    fHistList->Add(fh3GenOutEtaPhiPt);      
+    fHistList->Add(fh3RecInEtaPhiPt);
+    fHistList->Add(fh3GenInEtaPhiPt);
+    fHistList->Add(fhnCorrelation);
+  }
 
   if(fAnalysisType==kSysJetOrder){
     // 
@@ -331,12 +333,15 @@ void AliAnalysisTaskJFSystematics::UserCreateOutputObjects()
       fHistList->Add(hTmp);
       hTmp = (TH1F*)fh1PtRecOut->Clone(Form("%s_%s%d",fh1PtRecOut->GetName(),fgkSysName[kSysJetOrder],i));
       fHistList->Add(hTmp);
-      hTmp = (TH1F*)fh1PtGenIn->Clone(Form("%s_%s%d",fh1PtGenIn->GetName(),fgkSysName[kSysJetOrder],i));
-      fHistList->Add(hTmp);
-      hTmp = (TH1F*)fh1PtGenOut->Clone(Form("%s_%s%d",fh1PtGenOut->GetName(),fgkSysName[kSysJetOrder],i));
-      fHistList->Add(hTmp);
-      THnSparseF *hnTmp = (THnSparseF*)fhnCorrelation->Clone(Form("%s_%s%d",fhnCorrelation->GetName(),fgkSysName[kSysJetOrder],i));
-      fHistList->Add(hnTmp);
+
+      if(fBranchGen.Length()>0){
+	hTmp = (TH1F*)fh1PtGenIn->Clone(Form("%s_%s%d",fh1PtGenIn->GetName(),fgkSysName[kSysJetOrder],i));
+	fHistList->Add(hTmp);
+	hTmp = (TH1F*)fh1PtGenOut->Clone(Form("%s_%s%d",fh1PtGenOut->GetName(),fgkSysName[kSysJetOrder],i));
+	fHistList->Add(hTmp);
+	THnSparseF *hnTmp = (THnSparseF*)fhnCorrelation->Clone(Form("%s_%s%d",fhnCorrelation->GetName(),fgkSysName[kSysJetOrder],i));
+	fHistList->Add(hnTmp);
+      }
     }
   }
 
@@ -500,8 +505,7 @@ void AliAnalysisTaskJFSystematics::UserExec(Option_t */*option*/)
   // Fetch the reconstructed jets...
   //
 
-  nRecJets = aodRecJets->GetEntries();
-  fh1NRecJets->Fill(nRecJets);
+
   nRecJets = TMath::Min(nRecJets,kMaxJets);
 
   for(int ir = 0;ir < nRecJets;++ir){

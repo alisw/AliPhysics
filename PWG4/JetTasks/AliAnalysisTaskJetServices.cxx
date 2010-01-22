@@ -67,9 +67,10 @@ ClassImp(AliAnalysisTaskJetServices)
 
 AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fUseAODInput(kFALSE),
+  fUsePhysicsSelection(kFALSE),
+  fRealData(kFALSE),
   fAvgTrials(1),
   fZVtxCut(8.),
-  fRealData(kFALSE),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -88,9 +89,10 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
 AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   AliAnalysisTaskSE(name),
   fUseAODInput(kFALSE),
+  fUsePhysicsSelection(kFALSE),
+  fRealData(kFALSE),
   fAvgTrials(1),
   fZVtxCut(8.),
-  fRealData(kFALSE),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -343,9 +345,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       Bool_t cand = fInputHandler->IsEventSelected();
       if(cand){
 	fh2ESDTriggerCount->Fill(it,kSelectedALICE); 
-	fh2ESDTriggerCount->Fill(it,kSelected);
-	AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
       }
+      if(!fUsePhysicsSelection)cand =  AliAnalysisHelperJetTasks::IsTriggerFired(esd,AliAnalysisHelperJetTasks::kMB1);
+
       if(vtxESD->GetNContributors()>0){
 	if(esdTrig)fh2ESDTriggerCount->Fill(it,kTriggeredSPDVertex);
 	Float_t zvtx = vtxESD->GetZ();

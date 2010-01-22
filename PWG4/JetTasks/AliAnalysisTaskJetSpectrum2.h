@@ -123,6 +123,16 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtRecIn[kMaxJets];  // Jet pt for all this info is also in the THNsparse      
     TH1F*         fh1PtGenIn[kMaxJets];  // Jet pt with corellated generated jet    
 
+    TH1F*         fh1PtJetsRecIn;  // Jet pt for all jets
+    TH1F*         fh1PtTracksRecIn;  // track pt for all tracks
+    TH1F*         fh1PtTracksGenIn;  // track pt for all tracks
+
+
+    TH2F*         fh2NRecJetsPt;            // Number of found jets above threshold
+    TH2F*         fh2NRecTracksPt;          // Number of found tracks above threshold
+    TH2F*         fh2JetsLeadingPhiEta;     // jet corrlation with leading jet
+    TH2F*         fh2TracksLeadingPhiEta;   // jet corrlation with leading jet
+
     TH2F*         fh2PhiPt[kMaxJets];    // delta phi correlation of tracks with the jet      
     TH2F*         fh2PhiEta[kMaxJets];   // eta   phi correlation of tracks with the jet      
 

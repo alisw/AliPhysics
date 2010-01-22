@@ -90,6 +90,13 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh1PtTrackRec(0x0),   
   fh1SumPtTrackRec(0x0),  
   fh1SumPtTrackAreaRec(0x0),  
+  fh1PtJetsRecIn(0x0),
+  fh1PtTracksRecIn(0x0),
+  fh1PtTracksGenIn(0x0),
+  fh2NRecJetsPt(0x0),
+  fh2NRecTracksPt(0x0),
+  fh2JetsLeadingPhiEta(0x0),
+  fh2TracksLeadingPhiEta(0x0),
   fHistList(0x0)  
 {
   for(int i = 0;i < kMaxStep*2;++i){
@@ -131,6 +138,13 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh1PtTrackRec(0x0),   
   fh1SumPtTrackRec(0x0),  
   fh1SumPtTrackAreaRec(0x0),  
+  fh1PtJetsRecIn(0x0),
+  fh1PtTracksRecIn(0x0),
+  fh1PtTracksGenIn(0x0),
+  fh2NRecJetsPt(0x0),
+  fh2NRecTracksPt(0x0),
+  fh2JetsLeadingPhiEta(0x0),
+  fh2TracksLeadingPhiEta(0x0),
   fHistList(0x0)
 {
 
@@ -217,7 +231,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   Double_t binLimitsPhi[nBinPhi+1];
   for(Int_t iPhi = 0;iPhi<=nBinPhi;iPhi++){
     if(iPhi==0){
-      binLimitsPhi[iPhi] = -0.5*TMath::Pi();
+      binLimitsPhi[iPhi] = -1.*TMath::Pi();
     }
     else{
       binLimitsPhi[iPhi] = binLimitsPhi[iPhi-1] + 1/(Float_t)nBinPhi * TMath::Pi()*2;
@@ -256,8 +270,20 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1PtTrackRec = new TH1F("fh1PtTrackRec","Rec track P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1SumPtTrackRec = new TH1F("fh1SumPtTrackRec","Sum Rec track P_T #eta <0.9;p_{T,sum} (GeV/c)",nBinPt,binLimitsPt);
   fh1SumPtTrackAreaRec = new TH1F("fh1SumPtTrackAreaRec","Sum Rec track P_T #eta <0.9 / 1.8 * 2 * 0.4*0.4;p_{T,sum} (GeV/c)",nBinPt,binLimitsPt);
+  
+  fh1PtJetsRecIn  = new TH1F("fh1PtJetsRecIn","Rec jets P_T;p_{T} (GeV/c)",nBinPt,binLimitsPt);
+  fh1PtTracksRecIn  = new TH1F("fh1PtTracksRecIn","Rec tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
+  fh1PtTracksGenIn  = new TH1F("fh1PtTracksRecIn","gen tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
 
+  fh2NRecJetsPt = new TH2F("fh2NRecJetsPt","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
+  fh2NRecTracksPt = new TH2F("fh2NRecTracksPt","Number of tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",nBinPt,binLimitsPt,50,-0.5,49.5);
   // 
+
+  fh2JetsLeadingPhiEta = new TH2F("fh2JetsLeadingPhiEta","delta eta vs delta phi to leading;#Delta#phi;#Delta#eta",
+				nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
+  fh2TracksLeadingPhiEta = new TH2F("fh2TracksLeadingPhiEta","delta eta vs delta phi to leading;#Delta#phi;#Delta#eta",
+				nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
+
   for(int ij = 0;ij < kMaxJets;++ij){
     fh1PtRecIn[ij] = new TH1F(Form("fh1PtRecIn_j%d",ij),"rec p_T input ;p_{T,rec}",nBinPt,binLimitsPt);
     fh1PtGenIn[ij] = new TH1F(Form("fh1PtGenIn_j%d",ij),"found p_T input ;p_{T,gen}",nBinPt,binLimitsPt);
@@ -265,7 +291,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fh2PhiPt[ij] =  new TH2F(Form("fh2PhiPtRec_j%d",ij),"Jet pt vs delta phi;#Delta#phi;p_{T,jet}",
 			     nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
-    fh2PhiEta[ij] =  new TH2F(Form("fh2PhiEtaRec_j%d",ij),"delta eta vs delta phi for jets;#Delta#phi;p_{T,jet}",
+    fh2PhiEta[ij] =  new TH2F(Form("fh2PhiEtaRec_j%d",ij),"delta eta vs delta phi for jets;#Delta#phi;#Delta#eta",
 			      nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
 
 
@@ -288,21 +314,32 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh1PtHard);
     fHistList->Add(fh1PtHardNoW);
     fHistList->Add(fh1PtHardTrials);
-    fHistList->Add(fh1NGenJets);
+    if(fBranchGen.Length()>0){
+      fHistList->Add(fh1NGenJets);
+      fHistList->Add(fh1PtTracksGenIn);
+    }
+    fHistList->Add(fh1PtJetsRecIn);
+    fHistList->Add(fh1PtTracksRecIn);
     fHistList->Add(fh1NRecJets);
     fHistList->Add(fh1PtTrackRec);
     fHistList->Add(fh1SumPtTrackRec);
     fHistList->Add(fh1SumPtTrackAreaRec);
+    fHistList->Add(fh2NRecJetsPt);
+    fHistList->Add(fh2NRecTracksPt);
+    fHistList->Add(fh2JetsLeadingPhiEta );
+    fHistList->Add(fh2TracksLeadingPhiEta);
     for(int i = 0;i<kMaxStep*2;++i)fHistList->Add(fhnJetContainer[i]);
     for(int ij = 0;ij<kMaxJets;++ij){
       fHistList->Add( fh1PtRecIn[ij]);
-      fHistList->Add( fh1PtGenIn[ij]);
+      if(fBranchGen.Length()>0){
+	fHistList->Add( fh1PtGenIn[ij]);
+	fHistList->Add( fh2FragGen[ij]);
+	fHistList->Add( fh2FragLnGen[ij]);
+      }
       fHistList->Add( fh2PhiPt[ij]);
       fHistList->Add( fh2PhiEta[ij]);
       fHistList->Add( fh2FragRec[ij]);
       fHistList->Add( fh2FragLnRec[ij]);
-      fHistList->Add( fh2FragGen[ij]);
-      fHistList->Add( fh2FragLnGen[ij]);
     }
     fHistList->Add(fhnCorrelation);
   }
@@ -465,6 +502,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   GetListOfTracks(&recParticles,fTrackTypeRec);
   GetListOfTracks(&genParticles,fTrackTypeGen);
 
+
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
   fh1PtHard->Fill(ptHard,eventW);
   fh1PtHardNoW->Fill(ptHard,1);
@@ -489,8 +527,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       nGenJets = iCount;
     }
     else{
-      Printf("%s:%d Generated jet branch %s not found",(char*)__FILE__,__LINE__,fBranchGen.Data());
-      fAOD->Print();
+      if(fDebug>0)Printf("%s:%d Generated jet branch %s not found",(char*)__FILE__,__LINE__,fBranchGen.Data());
+      if(fDebug>1)fAOD->Print();
     }
   }
 
@@ -502,9 +540,118 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
   nRecJets = aodRecJets->GetEntries();
 
+  nRecJets = aodRecJets->GetEntries();
+  fh1NRecJets->Fill(nRecJets);
+
+  // Do something with the all rec jets
+  Int_t nRecOver = nRecJets;
+
+  // check that the jets are sorted
+  Float_t ptOld = 999999;
+  for(int ir = 0;ir < nRecJets;ir++){
+    AliAODJet *tmp = (AliAODJet*)(aodRecJets->At(ir));
+    Float_t tmpPt = tmp->Pt();
+    if(tmpPt>ptOld){
+      Printf("%s:%d Jets Not Sorted!! %d:%.3E %d%.3E",(char*)__FILE__,__LINE__,ir,tmpPt,ir-1,ptOld);
+    }
+    ptOld = tmpPt;
+  }
+
+
+  if(nRecOver>0){
+    TIterator *recIter = aodRecJets->MakeIterator();
+    AliAODJet *tmpRec = (AliAODJet*)(recIter->Next());  
+    Float_t pt = tmpRec->Pt();
+    if(tmpRec){
+      for(int i = 1;i <= fh2NRecJetsPt->GetNbinsX();i++){
+	Float_t ptCut = fh2NRecJetsPt->GetXaxis()->GetBinCenter(i);
+	while(pt<ptCut&&tmpRec){
+	  nRecOver--;
+	  tmpRec = (AliAODJet*)(recIter->Next()); 
+	  if(tmpRec){
+	    pt = tmpRec->Pt();
+	  }
+	}
+	if(nRecOver<=0)break;
+	fh2NRecJetsPt->Fill(ptCut,nRecOver);
+      }
+    }
+    recIter->Reset();
+    AliAODJet *leading = (AliAODJet*)aodRecJets->At(0);
+    Float_t phi = leading->Phi();
+    if(phi<0)phi+=TMath::Pi()*2.;    
+    Float_t eta = leading->Eta();
+    while((tmpRec = (AliAODJet*)(recIter->Next()))){
+      Float_t tmpPt = tmpRec->Pt();
+      fh1PtJetsRecIn->Fill(tmpPt);
+      if(tmpRec==leading)continue;
+      // correlation
+      Float_t tmpPhi =  tmpRec->Phi();
+
+      if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
+      Float_t dPhi = phi - tmpRec->Phi();
+      if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
+      if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
+      Float_t dEta = eta - tmpRec->Eta();
+      fh2JetsLeadingPhiEta->Fill(dPhi,dEta);
+    }  
+    delete recIter;
+  }
+
+  Int_t nTrackOver = recParticles.GetSize();
+  // do the same for tracks and jets
+  if(nTrackOver>0){
+    TIterator *recIter = recParticles.MakeIterator();
+    AliVParticle *tmpRec = (AliVParticle*)(recIter->Next());  
+    Float_t pt = tmpRec->Pt();
+    //    Printf("Leading track p_t %3.3E",pt);
+    for(int i = 1;i <= fh2NRecTracksPt->GetNbinsX();i++){
+      Float_t ptCut = fh2NRecTracksPt->GetXaxis()->GetBinCenter(i);
+      while(pt<ptCut&&tmpRec){
+	nTrackOver--;
+	tmpRec = (AliVParticle*)(recIter->Next()); 
+	if(tmpRec){
+	  pt = tmpRec->Pt();
+	}
+      }
+      if(nTrackOver<=0)break;
+      fh2NRecTracksPt->Fill(ptCut,nTrackOver);
+    }
+    
+    recIter->Reset();
+    AliVParticle *leading = (AliVParticle*)recParticles.At(0);
+    Float_t phi = leading->Phi();
+    if(phi<0)phi+=TMath::Pi()*2.;    
+    Float_t eta = leading->Eta();
+    while((tmpRec = (AliVParticle*)(recIter->Next()))){
+      Float_t tmpPt = tmpRec->Pt();
+      fh1PtTracksRecIn->Fill(tmpPt);
+      if(tmpRec==leading)continue;
+      // correlation
+      Float_t tmpPhi =  tmpRec->Phi();
+
+      if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
+      Float_t dPhi = phi - tmpRec->Phi();
+      if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
+      if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
+      Float_t dEta = eta - tmpRec->Eta();
+      fh2TracksLeadingPhiEta->Fill(dPhi,dEta);
+    }  
+    delete recIter;
+  }
   
-
-
+  if(genParticles.GetSize()){
+    TIterator *genIter = genParticles.MakeIterator();
+    AliVParticle *tmpGen = 0;
+    while((tmpGen = (AliVParticle*)(genIter->Next()))){
+      if(TMath::Abs(tmpGen->Eta())<0.9){
+	Float_t tmpPt = tmpGen->Pt();
+	fh1PtTracksGenIn->Fill(tmpPt);
+      }  
+    }
+    delete genIter;
+  }
+  
   fh1NRecJets->Fill(nRecJets);
   nRecJets = TMath::Min(nRecJets,kMaxJets);
 
@@ -520,10 +667,10 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   Int_t iGenIndex[kMaxJets];    // Index of the generated jet for i-th rec -1 if none
   Int_t iRecIndex[kMaxJets];    // Index of the rec jet for i-th gen -1 if none
   
-  for(int i = 0;i<kMaxJets;++i){
+
+  for(int i = 0;i<kMaxJets;++i){    
     iGenIndex[i] = iRecIndex[i] = -1;
   }
-
 
   AliAnalysisHelperJetTasks::GetClosestJets(genJets,nGenJets,recJets,nRecJets,
 					    iGenIndex,iRecIndex,fDebug);
@@ -644,7 +791,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	  if(phi<0)phi+=TMath::Pi()*2.;    
 	  Float_t dPhi = phi - phiRec;
 	  Float_t dEta = eta - etaRec;
-	  if(dPhi<(-1.*TMath::Pi()/2))phiRec+=TMath::Pi()*2.;    
+	  if(dPhi<(-1.*TMath::Pi()))phiRec+=TMath::Pi()*2.;    
 	  fh2PhiPt[ir]->Fill(dPhi,ptRec,eventW);
 	  fh2PhiEta[ir]->Fill(dPhi,dEta,eventW);
 	}
@@ -781,6 +928,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
       AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+      if(TMath::Abs(tr->Eta())>0.9)continue;
       list->Add(tr);
       iCount++;
     }
@@ -823,6 +971,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
       }
     }
   }// AODMCparticle
+  list->Sort();
   return iCount;
 
 }
