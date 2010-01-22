@@ -2,13 +2,13 @@
 
 AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
 {
-  // Creates a proton analysis task and adds it to the analysis manager.
+  // Creates HighPtQATPConly analysis task and adds it to the analysis manager.
   
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskPWG4HighPtSpectra", "No analysis manager to connect to.");
+    Error("AddTaskPWG4HighPtQATPConly", "No analysis manager to connect to.");
     return NULL;
   }  
 
@@ -16,7 +16,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   //    manager. The availability of MC handler can also be checked here.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskPWG4HighPtTPConly", "This task requires an input event handler");
+    ::Error("AddTaskPWG4HighPtQATPConly", "This task requires an input event handler");
     return NULL;
   }  
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -34,7 +34,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   trackCuts->SetEtaRange(-0.9,0.9);//-0.5,0.5);//
   trackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);//
   trackCuts->SetPtRange(0.15, 1e10);//
-  trackCuts->SetMinNClustersTPC(50);//
+  trackCuts->SetMinNClustersTPC(70);//
   trackCuts->SetMaxChi2PerClusterTPC(3.5);//
   //trackCuts->SetRequireITSRefit(kTRUE);
   trackCuts->SetMaxDCAToVertexXY(2.4);
@@ -47,7 +47,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   trackCutsITS->SetEtaRange(-0.9,0.9);//-0.5,0.5);//
   trackCutsITS->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);//
   trackCutsITS->SetPtRange(0.15, 1e10);//
-  trackCutsITS->SetMinNClustersTPC(50);//
+  trackCutsITS->SetMinNClustersTPC(70);//
   trackCutsITS->SetMaxChi2PerClusterTPC(3.5);//
   trackCutsITS->SetRequireITSRefit(kTRUE);
   trackCutsITS->SetMaxDCAToVertexXY(2.4);
@@ -58,8 +58,8 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   AliPWG4HighPtQATPConly *taskPWG4QA = new AliPWG4HighPtQATPConly("AliPWG4HighPtQATPConly");
   taskPWG4QA->SetCuts(trackCuts);
   taskPWG4QA->SetCutsITS(trackCutsITS);
-  taskPWG4QA->SelectTrigger(AliAnalysisHelperJetTasks::kMB1); 
   
+ 
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
@@ -73,7 +73,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   AliAnalysisDataContainer *cout_hist1 = mgr->CreateContainer("qa_histsTPC", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *cout_hist2 = mgr->CreateContainer("qa_histsITS", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
 
-
+ 
   mgr->AddTask(taskPWG4QA);
 
   mgr->ConnectInput(taskPWG4QA,0,mgr->GetCommonInputContainer());

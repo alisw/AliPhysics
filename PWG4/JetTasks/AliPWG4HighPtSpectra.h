@@ -27,7 +27,7 @@ class TH1I;
 class TH1F;
 class TH1D;
 class TFile ;
-class AliCFManager;
+//class AliCFManager;
 class AliESDtrackCuts;
 class AliESDEvent;
 
@@ -35,18 +35,18 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
  public:
 
   enum {
-    kStepReconstructed    = 0,
+    kStepReconstructed        = 0,
     kStepReconstructedTPCOnly = 1,
-    kStepSecondaries      = 2,
-    kStepMCtrackable      = 3,
-    kStepReconstructedMC    = 4
+    kStepSecondaries          = 2,
+    kStepMCtrackable          = 3,
+    kStepReconstructedMC      = 4
   };
 
   AliPWG4HighPtSpectra();
   AliPWG4HighPtSpectra(const Char_t* name);
-  AliPWG4HighPtSpectra& operator= (const AliPWG4HighPtSpectra& c);
-  AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra& c);
-  virtual ~AliPWG4HighPtSpectra();
+  // AliPWG4HighPtSpectra& operator= (const AliPWG4HighPtSpectra& c);
+  //  AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra& c);
+  ~AliPWG4HighPtSpectra() {;};
 
   // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
   virtual void   ConnectInputData(Option_t *);
@@ -55,9 +55,11 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   virtual void   Terminate(Option_t *);
 
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
-  void     SetCFManager(const AliCFManager* io) {fCFManager = io;}   // global correction manager
-  const AliCFManager * GetCFManager() const {return fCFManager;}           // get corr manager
-
+  void     SetCFManagerPos(const AliCFManager* io1) {fCFManagerPos = io1;}   // global correction manager 
+  const AliCFManager * GetCFManagerPos() const {return fCFManagerPos;}           // get corr manager 
+  void     SetCFManagerNeg(const AliCFManager* io2) {fCFManagerNeg = io2;}   // global correction manager 
+  const AliCFManager * GetCFManagerNeg() const {return fCFManagerNeg;}            // get corr manager
+  
   //AliESDtrackCuts setters
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   //Select the trigger
@@ -68,20 +70,23 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   void   SetReadAODData(Bool_t flag=kTRUE) {fReadAODData=flag;}
   
  protected:
-  Bool_t              fReadAODData ;    // flag for AOD/ESD input files
-  const AliCFManager  *fCFManager    ;  // pointer to the CF manager
-
+  Bool_t              fReadAODData ;       // flag for AOD/ESD input files
+  const AliCFManager  *fCFManagerPos    ;  // pointer to the CF manager for positive charged particles
+  const AliCFManager  *fCFManagerNeg    ;  // pointer to the CF manager for negative charged particles
+ 
   AliESDEvent *fESD;              //! ESD object
   //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPtQAMC.C. They correspond with different steps in container.
   AliESDtrackCuts *fTrackCuts;    // trackCuts applied
   Int_t fTrigger;                 //Trigger flag as defined in AliAnalysisHelperJetTasks.h 
 
  private:
+ AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra&);
+ AliPWG4HighPtSpectra& operator=(const AliPWG4HighPtSpectra&);
+
 
   // Histograms
   //Number of events
-  TList *fHistList;            // List of output histograms
-  //  TH1I  *fHistEventsProcessed; // simple histo for monitoring the number of events processed
+  TList *fHistList;            //! List of output histograms
   TH1F *fNEventAll;            //! Event counter
   TH1F *fNEventSel;            //! Event counter: Selected events for analysis
 
