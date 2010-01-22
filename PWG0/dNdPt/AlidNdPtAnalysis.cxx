@@ -1012,6 +1012,10 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
         continue;
 
+      // esd track selection 
+      if(!esdTrackCuts->AcceptTrack(track))
+       continue;
+
       FillHistograms(track,stack,AlidNdPtHelper::kAllTracks); 
       labelsAll[multAll] = TMath::Abs(track->GetLabel());
       multAll++;
@@ -1025,7 +1029,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          if( GetParticleMode()==AlidNdPtHelper::kCosmics )
          {
            Int_t mult = 0;
-           if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track) ) 
+           if(accCuts->AcceptTrack(track) ) 
 	   { 
              for(Int_t j=0; j<entries;++j) 
              {
@@ -1072,9 +1076,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
      Double_t vRecEventHist1[3] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv()};
      fRecEventHist1->Fill(vRecEventHist1);
-
-     if(isCosmic) 
-       printf("evt. number %d , rec. mult %d \n", esdEvent->GetEventNumberInFile(), multRec);
 
      Double_t vRecEventHist2[3] = {vtxESD->GetZv(),multMBTracks,multRec};
      fRecEventHist2->Fill(vRecEventHist2);
