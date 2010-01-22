@@ -29,7 +29,8 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "TTreeStream.h"
-
+#include  "AliTPCRecoParam.h"
+#include  "AliTPCReconstructor.h"
 ClassImp(AliTPCtrack)
 
 //_________________________________________________________________________
@@ -149,18 +150,19 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   //
   // choose parameters to start
   //
+  const AliTPCRecoParam * recoParam = AliTPCReconstructor::GetRecoParam();
   Int_t reject=0;
   AliExternalTrackParam param(t);
   const AliExternalTrackParam  *tpcout=(t.GetFriendTrack())? ((AliESDfriendTrack*)(t.GetFriendTrack()))->GetTPCOut():0;
   const AliExternalTrackParam  *tpcin = t.GetInnerParam();
   const AliExternalTrackParam  *tpc=(tpcout)?tpcout:tpcin;
   if (!tpc) tpc=&param;
-  Bool_t isOK=kTRUE;
+  Bool_t isOK=recoParam->GetUseOuterDetectors();
   if (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0]) isOK=kFALSE;
   if (param.GetCovariance()[2]>kmaxC[1]*kmaxC[1]) isOK=kFALSE;
   if (param.GetCovariance()[5]>kmaxC[2]*kmaxC[2]) isOK=kFALSE;
   if (param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) isOK=kFALSE;
-  if (!isOK){
+  if (!isOK ){
     param=*tpc;
     isOK=kTRUE;
     reject=1;

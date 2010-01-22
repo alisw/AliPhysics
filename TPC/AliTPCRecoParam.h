@@ -22,6 +22,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t GetCtgRange() const     { return fCtgRange;}
   Double_t GetMaxSnpTracker() const{ return fMaxSnpTracker;}
   Double_t GetMaxSnpTrack() const  { return fMaxSnpTrack;}
+  Bool_t   GetUseOuterDetectors() const { return fUseOuterDetectors;}
+  void     SetUseOuterDetectors(Bool_t flag)  { fUseOuterDetectors=flag;}
   Double_t GetCutSharedClusters(Int_t index)const { return fCutSharedClusters[index];}
   void  SetCutSharedClusters(Int_t index, Float_t value){ fCutSharedClusters[index]=value;}
   Int_t GetClusterMaxRange(Int_t index)const { return fClusterMaxRange[index];}
@@ -55,6 +57,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t    GetLastSeedRowSec()       const  { return fLastSeedRowSec;} 
   void     SetDoKinks(Bool_t on)   { fBKinkFinder=on; }
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
+  Double_t GetKinkAngleCutChi2(Int_t index) const {return fKinkAngleCutChi2[index];}
+  void     SetKinkAngleCutChi2(Int_t index,Double_t value) {fKinkAngleCutChi2[index]=value;}
   Float_t  GetMaxC()    const      { return fMaxC;}
   Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
   //
@@ -105,6 +109,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fCtgRange;        // +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
   Double_t fMaxSnpTracker;   // max sin of local angle  - for TPC tracker
   Double_t fMaxSnpTrack;     // max sin of local angle  - for track 
+  Bool_t   fUseOuterDetectors; // switch - to use the outer detectors
   //
   //
   Double_t fCutSharedClusters[2]; // cut value - maximal amount  of shared clusters  
@@ -129,7 +134,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   Float_t  fMaxC;            // maximal curvature for tracking
   Bool_t   fBSpecialSeeding; // special seeding with big inclination angles allowed (for Cosmic and laser)
-  Bool_t   fBKinkFinder;     // do kink finder reconstruction
+  Bool_t   fBKinkFinder;       // do kink finder reconstruction
+  Double_t fKinkAngleCutChi2[2];   // angular cut for kinks
   Int_t    fLastSeedRowSec;     // Most Inner Row to make seeding for secondaries
   //
   // Correction switches
@@ -152,10 +158,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseTOFCorrection;  // switch - kTRUE use TOF correction kFALSE - do not use
   //
-  //  misscalibration
+  //  misscalibration 
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix    
-  ClassDef(AliTPCRecoParam, 7)
+  ClassDef(AliTPCRecoParam, 9)
 };
 
 
