@@ -71,12 +71,16 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans()
     ,fH1PtC(0)
     ,fH1PtC1(0)
     ,fH1PtC2(0)
+    ,fH1SPt(0)
+    ,fH1SPtC(0)
     ,fH1DPhi(0)
     ,fH1DR(0)
     ,fH1DRR(0)
     ,fH2DPhiEta(0)
     ,fH2DPhiEtaR(0)
     ,fH2DPhiEtaL(0)
+    ,fH2DPhiEtaC(0)
+    ,fH2DPhiEtaCR(0)
     ,fCuts(0)
 {
   //
@@ -96,12 +100,16 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const char *name)
       ,fH1PtC(0)
       ,fH1PtC1(0)
       ,fH1PtC2(0)
+      ,fH1SPt(0)
+      ,fH1SPtC(0)
       ,fH1DPhi(0)
       ,fH1DR(0)
       ,fH1DRR(0)
       ,fH2DPhiEta(0)
       ,fH2DPhiEtaR(0)
       ,fH2DPhiEtaL(0)
+      ,fH2DPhiEtaC(0)
+      ,fH2DPhiEtaCR(0)
       ,fCuts(0)
 {
   //
@@ -127,12 +135,17 @@ void AliAnalysisTaskKMeans::UserCreateOutputObjects()
     fH1PtC1  = new TH1F("fH1PtC1",   "pt distribution",50, 0., 10.);
     fH1PtC2  = new TH1F("fH1PtC2",   "pt distribution",50, 0., 10.);
 
-    fH1DR       = new TH1F("fH1DR",     "dR distribution", 50, 0., 5.);
-    fH1DPhi     = new TH1F("fH1DPhi",   "dPhi distribution", 31, 0., TMath::Pi());
-    fH2DPhiEta  = new TH2F("fH2DPhiEta","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
-    fH2DPhiEtaR = new TH2F("fH2DPhiEtaR","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
-    fH2DPhiEtaL = new TH2F("fH2DPhiEtaL","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
-    fH1DRR      = new TH1F("fH1DRR",    "dR distribution", 50, 0., 5.);
+    fH1SPt    = new TH1F("fH1SPt",     "sum pt distribution",50, 0., 10.);
+    fH1SPtC   = new TH1F("fH1SPtC",    "sum pt distribution",50, 0., 10.);
+
+    fH1DR        = new TH1F("fH1DR",     "dR distribution", 50, 0., 5.);
+    fH1DPhi      = new TH1F("fH1DPhi",   "dPhi distribution", 31, 0., TMath::Pi());
+    fH2DPhiEta   = new TH2F("fH2DPhiEta","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
+    fH2DPhiEtaR  = new TH2F("fH2DPhiEtaR","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
+    fH2DPhiEtaL  = new TH2F("fH2DPhiEtaL","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
+    fH2DPhiEtaC  = new TH2F("fH2DPhiEtaC","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
+    fH2DPhiEtaCR = new TH2F("fH2DPhiEtaCR","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
+    fH1DRR       = new TH1F("fH1DRR",    "dR distribution", 50, 0., 5.);
     
     fHists->SetOwner();
 
@@ -145,10 +158,14 @@ void AliAnalysisTaskKMeans::UserCreateOutputObjects()
     fHists->Add(fH1PtC1);
     fHists->Add(fH1PtC2);
     fHists->Add(fH1DR);
+    fHists->Add(fH1SPtC);
+    fHists->Add(fH1SPt);
     fHists->Add(fH1DPhi);
     fHists->Add(fH2DPhiEta);
     fHists->Add(fH2DPhiEtaR);
     fHists->Add(fH2DPhiEtaL);
+    fHists->Add(fH2DPhiEtaC);
+    fHists->Add(fH2DPhiEtaCR);
     fHists->Add(fH1DRR);
     
     //
@@ -226,7 +243,14 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
   //
   // Cluster Multiplicity
   Int_t mult[2] = {0, 0};
-  
+  //
+  Double_t dphic = DeltaPhi(mPhi[0], mPhi[1]);
+  Double_t detac = TMath::Abs(mEta[0] - mEta[1]);
+  fH2DPhiEtaC->Fill(dphic, detac);  
+
+  //
+  Double_t sumPt  = 0;
+  Double_t sumPtC = 0;
   for (Int_t i = 0; i < 1; i++) {
       fH1CEta->Fill(mEta[ind[i]]);
       fH1CPhi->Fill(mPhi[ind[i]]);      
@@ -249,18 +273,24 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
 	  }
 	  if (r < 0.4) 
 	  {
-	      mult[i]++;
-	      fH1PtC->Fill(pt[j]);
+	    sumPtC += pt[j];
+	    mult[i]++;
+	    fH1PtC->Fill(pt[j]);
 	  } 
 	  if (r > 0.7) {
 	      fH1Pt->Fill(pt[j]);
+	  }
+
+	  if (r > 0.7 && r < 1.) {
+	    sumPt += pt[j];
 	  }
       }
   }
 
   fH2N1N2->Fill(Float_t(mult[0]), Float_t(mult[1]));
-
-
+  fH1SPt ->Fill(sumPt);
+  fH1SPtC->Fill(sumPtC);
+  
 
   // Randomized phi
   //
@@ -284,6 +314,9 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
 	  fH2DPhiEtaR->Fill(dphi, TMath::Abs(deta));
       }
   }
+  dphic = DeltaPhi(mPhi[0], mPhi[1]);
+  detac = TMath::Abs(mEta[0] - mEta[1]);
+  fH2DPhiEtaCR->Fill(dphic, detac);  
 
   
   //

@@ -49,12 +49,16 @@ class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
   TH1F*            fH1PtC;         // pt outside clusters
   TH1F*            fH1PtC1;        // pt dr > 0.4
   TH1F*            fH1PtC2;        // pt dr > 0.2 
+  TH1F*            fH1SPt;         // sum pt
+  TH1F*            fH1SPtC;        // sum pt
   TH1F*            fH1DPhi;        // Dphi wr to cluster
   TH1F*            fH1DR;          // DR   wr to cluster
   TH1F*            fH1DRR;         // DR   wr to cluster from rndm events   
   TH2F*            fH2DPhiEta;     // eta-phi wr to cluster
   TH2F*            fH2DPhiEtaR;    // eta-phi wr to cluster for rndm events 
   TH2F*            fH2DPhiEtaL;    // eta-phi of leading particle
+  TH2F*            fH2DPhiEtaC;    // eta-phi of Clusters
+  TH2F*            fH2DPhiEtaCR;   // eta-phi of Clusters
   
   AliESDtrackCuts* fCuts;             // List of cuts
   ClassDef(AliAnalysisTaskKMeans, 1); // A k-means clustering analysis
