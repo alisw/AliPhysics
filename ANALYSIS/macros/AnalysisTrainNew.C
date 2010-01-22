@@ -114,8 +114,8 @@ Int_t        iPWG2checkv0      = 1;         // Check V0 task
 Int_t        iPWG2strange      = 1;         // Strangeness task
 Int_t        iPWG2central      = 1;         // Anisothropy in central collisions
 Int_t       iPWG2flow          = 1;      // Flow analysis tasks (PWG2)
-Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
-Int_t        iPWG2rsneff       = 0;      // Resonances efficiency
+Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
+Int_t        iPWG2rsneff       = 1;      // Resonances efficiency
 Int_t       iPWG2kink          = 1;      // Kink analysis tasks (PWG2)
 Int_t        iPWG2kinkESDMC    = 1;         // Kink ESD-MC comparison (PWG2)
 Int_t        iPWG2kinkLSKstar  = 1;      // Kink like-sign K* (PWG2)
@@ -585,10 +585,11 @@ void AddAnalysisTasks()
    }
    // PWG4 hadron correlations
    if (iPWG4partcorr) {
+      Bool_t isSimulation = (runOnData)?kFALSE:kTRUE;
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
-      AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS", useMC);
+      AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS", useMC, kFALSE, isSimulation);
       if (!taskpartcorrPHOS) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation PHOS cannot run for this train conditions - EXCLUDED");
-      AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL", useMC);
+      AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL", useMC, kFALSE, isSimulation);
       if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation EMCAL cannot run for this train conditions - EXCLUDED");
       mgr->RegisterExtraFile("deltaAODPartCorr.root");
    }   
