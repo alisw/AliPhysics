@@ -40,27 +40,30 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 
-//AliRoot
 #include "AliRawReaderDate.h"
 
 #include "AliMpConstants.h"
 #include "AliMUONRawStreamTrigger.h"
 #include "AliMUONRawStreamTriggerHP.h"
 #include "AliMUONDarcHeader.h"
+#include "AliMUONRegHeader.h"
 #include "AliMUONDDLTrigger.h"
 #include "AliMUONVStore.h"
 #include "AliMUON1DArray.h"
 #include "AliMUONTriggerIO.h"
 #include "AliMUONRegionalTriggerConfig.h"
 #include "AliMUONGlobalCrateConfig.h"
-#include "AliMUONTriggerCrateConfig.h"
+#include "AliMUONVCalibParam.h"
+#include "AliMUONCalibParamND.h"
+#include "AliMUONCalibParamNI.h"
+#include "AliMUONLocalStruct.h"
 
-//ROOT
 #include "TString.h"
 #include "TSystem.h"
 #include "TStopwatch.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
+#include "TArrayS.h"
 
 /// class for DA run parameters and DA working space
 class AliDAConfig : TObject {
@@ -75,6 +78,7 @@ public:
     fSodFlag(0),
     fDAName(""),
     fDAFlag(0),
+    fDAMode(1),
     fGlobalFileName(""),
     fRegionalFileName(""),
     fLocalMaskFileName(""),
@@ -93,19 +97,24 @@ public:
     fEventsD(0),
     fPrintLevel(0),
     fLocalMasks(0x0),
+    fLocalMasksDA(0x0),
     fRegionalMasks(0x0),
     fGlobalMasks(0x0),
     fTriggerIO(new AliMUONTriggerIO),
-    fAlgoNoisyInput(false),
-    fAlgoDeadcInput(false),
+    fAlgoNoisyInput(kFALSE),
+    fAlgoDeadcInput(kFALSE),
     fThrN(0.1),
     fThrD(0.9),
+    fThrLocN(0.1),
+    fThrLocD(0.9),
     fMinEvents(10),
     fSkipEvents(0),
     fMaxEvents(65535),
-    fWithWarnings(false),
-    fUseFastDecoder(false),
-    fNLocalBoard(AliMpConstants::TotalNofLocalBoards()+1)
+    fWithWarnings(kFALSE),
+    fUseFastDecoder(kFALSE),
+    fNLocalBoard(AliMpConstants::TotalNofLocalBoards()+1),
+    fPatternStoreN(0x0),
+    fPatternStoreD(0x0)
   {
     /// default constructor
     for (Int_t ii = 0; ii < kGlobalInputs; ii++) {
@@ -115,16 +124,35 @@ public:
       }
     }
     fLocalMasks    = new AliMUON1DArray(fNLocalBoard);
+    fLocalMasksDA  = new AliMUON1DArray(fNLocalBoard);
     fRegionalMasks = new AliMUONRegionalTriggerConfig();
     fGlobalMasks   = new AliMUONGlobalCrateConfig();
+    fPatternStoreN = new AliMUON1DArray(fNLocalBoard);
+    fPatternStoreD = new AliMUON1DArray(fNLocalBoard);
+
+    // Generate local trigger masks store. All masks are set to FFFF
+    for (Int_t i = 1; i <= AliMpConstants::TotalNofLocalBoards(); i++) {
+      AliMUONVCalibParam* localBoard = new AliMUONCalibParamNI(1,8,i,0,0);
+      for (Int_t x = 0; x < 2; x++) {
+	for (Int_t y = 0; y < 4; y++) {
+	  Int_t index = x*4+y;
+	  localBoard->SetValueAsInt(index,0,0xFFFF);
+	}
+      }
+      fLocalMasksDA->Add(localBoard);
+    }
+    
   }
 
   virtual ~AliDAConfig()
   {
     /// destructor
     delete fLocalMasks;
+    delete fLocalMasksDA;
     delete fRegionalMasks;
     delete fGlobalMasks; 
+    delete fPatternStoreN;
+    delete fPatternStoreD;
     delete fTriggerIO;
   }
   void PrintConfig()
@@ -156,6 +184,8 @@ public:
   const Char_t* GetDAName() { return fDAName.Data(); }
      /// flag value of the Detector Algorithm field in MtgCurrent.dat
   Int_t GetDAFlag() const { return fDAFlag; }
+     /// DA active mode (GLOBAL or GLOBAL+LOCAL)
+  Int_t GetDAMode() const { return fDAMode; }
 
      /// global crate configuration file name
   const Char_t* GetGlobalFileName()    { return fGlobalFileName.Data(); }
@@ -190,6 +220,8 @@ public:
 
      /// store for the masks for the local cards (own)
   AliMUONVStore*                GetLocalMasks()    const { return fLocalMasks; }
+     /// store for the DA-calculated masks for the local cards (own)
+  AliMUONVStore*                GetLocalMasksDA()  const { return fLocalMasksDA; }
      /// configuration object for the regional crate (own)
   AliMUONRegionalTriggerConfig* GetRegionalMasks() const { return fRegionalMasks; }
      /// configuration object for the global crate (own)
@@ -197,6 +229,11 @@ public:
 
      /// read/write configurations, masks and LUT to/from online files (own)
   AliMUONTriggerIO* GetTriggerIO() const { return fTriggerIO; }
+
+     /// store for local strips patterns (noisy strips)
+  AliMUONVStore* GetPatternStoreN() const { return fPatternStoreN; }
+     /// store for local strips patterns (dead strips)
+  AliMUONVStore* GetPatternStoreD() const { return fPatternStoreD; }
 
      /// number of accumulated PHYSICS events for noisy channels analysis
   Int_t GetEventsN() const { return fEventsN; }
@@ -211,10 +248,14 @@ public:
      /// select CALIBRATION events for dead channels analysis
   Bool_t GetAlgoDeadcInput() const { return fAlgoDeadcInput; }
 
-     /// threshold for noisy inputs (fraction of events)
+     /// threshold for noisy global inputs (fraction of events)
   Float_t GetThrN() const { return fThrN; }
-     /// threshold for dead inputs (fraction of events)
+     /// threshold for dead global inputs (fraction of events)
   Float_t GetThrD() const { return fThrD; }
+     /// threshold for noisy local strips (fraction of events)
+  Float_t GetThrLocN() const { return fThrLocN; }
+     /// threshold for dead local strips (fraction of events)
+  Float_t GetThrLocD() const { return fThrLocD; }
 
      /// minumum nr of events for rate calculation
   Int_t GetMinEvents()  const { return fMinEvents; }
@@ -247,6 +288,8 @@ public:
   void SetDAName(Char_t *name) { fDAName = TString(name); }
      /// set the flag value of the Detector Algorithm field in MtgCurrent.dat
   void SetDAFlag(Int_t flag)   { fDAFlag = flag; }
+     /// set DA active mode, 1 = GLOBAL (default), 2 = GLOBAL and LOCAL
+  void SetDAMode(Int_t mode)   { fDAMode = mode; }
 
      /// set the global crate configuration file name
   void SetGlobalFileName(const Char_t *name)    { fGlobalFileName = TString(name); }
@@ -297,10 +340,14 @@ public:
      /// select CALIBRATION events for dead channels analysis
   void SetAlgoDeadcInput(Bool_t val) { fAlgoDeadcInput = val; }
 
-     /// set the threshold for noisy inputs (fraction of events)
+     /// set the threshold for noisy global inputs (fraction of events)
   void SetThrN(Float_t val) { fThrN = val; }
-     /// set the threshold for dead inputs (fraction of events)
+     /// set the threshold for dead global inputs (fraction of events)
   void SetThrD(Float_t val) { fThrD = val; }
+     /// set the threshold for noisy local strips (fraction of events)
+  void SetThrLocN(Float_t val) { fThrLocN = val; }
+     /// set the threshold for dead local strips (fraction of events)
+  void SetThrLocD(Float_t val) { fThrLocD = val; }
 
      /// set the minumum nr of events for rate calculation
   void SetMinEvents(Int_t val)  { fMinEvents = val; }
@@ -310,12 +357,14 @@ public:
   void SetSkipEvents(Int_t val) { fSkipEvents = val; }
 
      /// set/unset to show warnings from the raw data decoder
-  void SetWithWarnings() { fWithWarnings = true; }
+  void SetWithWarnings() { fWithWarnings = kTRUE; }
      /// set/unset the use of the high-performance (HP) decoder
-  void SetUseFastDecoder() { fUseFastDecoder = true; }
+  void SetUseFastDecoder() { fUseFastDecoder = kTRUE; }
 
     /// increment version of the global crate configuration file
   void IncGlobalFileVersion() { fGlobalFileVersion++; }
+    /// increment version of the local mask configuration file
+  void IncLocalMaskFileVersion() { fLocalMaskFileVersion++; }
     /// count skipped events
   void DecSkipEvents() { fSkipEvents--; }
 
@@ -335,12 +384,13 @@ private:
 
   TString fDAName;  //!< name of the Detector Algorithm field in MtgCurrent.dat 
   Int_t   fDAFlag;  //!< flag value of the Detector Algorithm field in MtgCurrent.dat (enabled/disabled)
+  Int_t   fDAMode;  //!< DA active mode, GLOBAL or GLOBAL+LOCAL
 
-  TString fGlobalFileName;    //!< global crate configuration, file name
-  TString fRegionalFileName;  //!< regional crate configuration, file name
-  TString fLocalMaskFileName; //!< masks for the local cards, file name
-  TString fLocalLutFileName;  //!< transverse momentum Look-Up-Table, file name
-  TString fSignatureFileName; //!< signature file name
+  TString fGlobalFileName;      //!< global crate configuration, file name
+  TString fRegionalFileName;    //!< regional crate configuration, file name
+  TString fLocalMaskFileName;   //!< masks for the local cards, file name
+  TString fLocalLutFileName;    //!< transverse momentum Look-Up-Table, file name
+  TString fSignatureFileName;   //!< signature file name
 
   Int_t   fGlobalFileVersion;    //!< version of the global crate configuration in the detector DB
   Int_t   fRegionalFileVersion;  //!< version of the regional crate configuration in the detector DB
@@ -359,6 +409,7 @@ private:
   Int_t   fPrintLevel;  //!< print verbosity of the DA
 
   AliMUONVStore*                fLocalMasks;    //!< store for the masks for the local cards
+  AliMUONVStore*                fLocalMasksDA;  //!< store for the DA-calculated masks for the local cards
   AliMUONRegionalTriggerConfig* fRegionalMasks; //!< configuration object for the regional crate
   AliMUONGlobalCrateConfig*     fGlobalMasks;   //!< configuration object for the global crate
 
@@ -367,8 +418,10 @@ private:
   Bool_t fAlgoNoisyInput; //!< select PHYSICS events for noisy channels analysis
   Bool_t fAlgoDeadcInput; //!< select CALIBRATION events for dead channels analysis
 
-  Float_t fThrN;           //!< threshold for noisy inputs (fraction of events)
-  Float_t fThrD;           //!< threshold for dead inputs (fraction of events)
+  Float_t fThrN;           //!< threshold for noisy global inputs (fraction of events)
+  Float_t fThrD;           //!< threshold for dead global inputs (fraction of events)
+  Float_t fThrLocN;        //!< threshold for noisy local strips (fraction of events)
+  Float_t fThrLocD;        //!< threshold for dead local strips (fraction of events)
   Int_t   fMinEvents;      //!< minumum nr of events for rate calculation
   Int_t   fSkipEvents;     //!< number of events to skip from start
   Int_t   fMaxEvents;      //!< maximum number of events to analyze
@@ -380,6 +433,9 @@ private:
   enum { kGlobalInputs = 4,         //!< number of global input words
 	 kGlobalInputLength = 32    //!< length in bits of a global input word
   };
+
+  AliMUONVStore *fPatternStoreN; //! store for local strips patterns
+  AliMUONVStore *fPatternStoreD; //! store for local strips patterns
 
   Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (PHYSICS events)
   Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (CALIBRATION events)
@@ -398,7 +454,7 @@ Bool_t ReadDAConfig(AliDAConfig& cfg)
     std::ifstream in(gSystem->ExpandPathName(file.Data()));
     if (!in.good()) {
       printf("Cannot open DA configuration file %s ; use default values.\n",file.Data());
-      return true;
+      return kTRUE;
     }
 
     TString tmp;
@@ -452,7 +508,25 @@ Bool_t ReadDAConfig(AliDAConfig& cfg)
     tmp = tmp(0,pos);
     if (tmp.Atoi() != 0) cfg.SetUseFastDecoder();
     
-    return true;
+    in.getline(line,80);  
+    tmp = line;
+    pos = tmp.First(" ");
+    tmp = tmp(0,pos);
+    cfg.SetThrLocN(tmp.Atof());
+
+    in.getline(line,80);  
+    tmp = line;
+    pos = tmp.First(" ");
+    tmp = tmp(0,pos);
+    cfg.SetThrLocD(tmp.Atof());
+
+    in.getline(line,80);  
+    tmp = line;
+    pos = tmp.First(" ");
+    tmp = tmp(0,pos);
+    cfg.SetDAMode(tmp.Atoi());
+
+    return kTRUE;
 
 }
 
@@ -478,7 +552,7 @@ void WriteLastCurrentFile(AliDAConfig& cfg, TString currentFile)
 }
 
 //___________________________________________________________________________________________
-Bool_t ReadCurrentFile(AliDAConfig& cfg, TString currentFile, Bool_t lastCurrentFlag = false)
+Bool_t ReadCurrentFile(AliDAConfig& cfg, TString currentFile, Bool_t lastCurrentFlag = kFALSE)
 {
     /// read last current file name and version
 
@@ -491,7 +565,7 @@ Bool_t ReadCurrentFile(AliDAConfig& cfg, TString currentFile, Bool_t lastCurrent
     std::ifstream in(gSystem->ExpandPathName(file.Data()));
     if (!in.good()) {
       printf("Cannot open last current file %s\n",currentFile.Data());
-      return false;
+      return kFALSE;
     }
     
     // read SOD 
@@ -585,7 +659,7 @@ Bool_t ReadCurrentFile(AliDAConfig& cfg, TString currentFile, Bool_t lastCurrent
     if (cfg.GetPrintLevel()) printf("Lut File Name: %s version: %d\n", 
 				    cfg.GetSignatureFileName(), cfg.GetSignatureFileVersion());
 
-    return true;
+    return kTRUE;
 }
 
 //_____________
@@ -593,9 +667,9 @@ void ReadFileNames(AliDAConfig& cfg)
 {
   /// if last current file does not exist than read current file
 
-  if (!ReadCurrentFile(cfg,cfg.GetLastCurrentFileName(), true)) 
+  if (!ReadCurrentFile(cfg,cfg.GetLastCurrentFileName(), kTRUE)) 
     {
-      ReadCurrentFile(cfg,cfg.GetCurrentFileName(), true);
+      ReadCurrentFile(cfg,cfg.GetCurrentFileName(), kTRUE);
     } 
   
   // any case read current file
@@ -622,8 +696,8 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     // update files
     Int_t status = 0;
 
-    Bool_t modified = false;
-    Bool_t globalExported = false;
+    Bool_t modified = kFALSE;
+    Bool_t globalExported = kFALSE;
 
     ofstream out;
     TString fileExp("ExportedFiles.dat");
@@ -632,23 +706,23 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     out.open(fileExp.Data());
     if (!out.good()) {
 	printf("Failed to create file: %s\n",file.Data());
-	return false;
+	return kFALSE;
     }      
 
     // check if MtgLastCurrent.dat exists
     // if not, do initial export of all files
-    Bool_t initFES = false;
+    Bool_t initFES = kFALSE;
     if (gSystem->AccessPathName("MtgLastCurrent.dat"))
-      initFES = true;
+      initFES = kTRUE;
     if (initFES) printf("Copy all configuration files to the FES.\n");
 
     file = cfg.GetLocalMaskFileName();  
     if ((cfg.GetLocalMaskFileLastVersion() != cfg.GetLocalMaskFileVersion()) || initFES) {
-      modified = true;
+      modified = kTRUE;
       status = daqDA_FES_storeFile(file.Data(), "LOCAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetLocalMaskFileName());
-	return false;
+	return kFALSE;
       }
       if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetLocalMaskFileName());
       out << cfg.GetLocalMaskFileName() << endl;
@@ -656,11 +730,11 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 
     file = cfg.GetLocalLutFileName();
     if ((cfg.GetLocalLutFileLastVersion() != cfg.GetLocalLutFileVersion()) || initFES) {
-      modified = true;
+      modified = kTRUE;
       status = daqDA_FES_storeFile(file.Data(), "LUT");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetLocalLutFileName());
-	return false;
+	return kFALSE;
       }
       if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetLocalLutFileName());
       out << cfg.GetLocalLutFileName() << endl;
@@ -669,12 +743,12 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 
     file = cfg.GetGlobalFileName();
     if ((cfg.GetGlobalFileLastVersion() != cfg.GetGlobalFileVersion()) || modified || initFES) {
-      modified = true;
-      globalExported = true;
+      modified = kTRUE;
+      globalExported = kTRUE;
       status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
-	return false;
+	return kFALSE;
       }
       if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
       out << cfg.GetGlobalFileName() << endl;
@@ -685,7 +759,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
       status = daqDA_FES_storeFile(file.Data(), "REGIONAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetRegionalFileName());
-	return false;
+	return kFALSE;
       }
       if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetRegionalFileName());
       out << cfg.GetRegionalFileName() << endl;
@@ -696,7 +770,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 	status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
 	if (status) {
 	  printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
-	  return false;
+	  return kFALSE;
 	}
 	if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
 	out << cfg.GetGlobalFileName() << endl;
@@ -710,14 +784,14 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     status = daqDA_FES_storeFile(fileExp.Data(), "EXPORTED");
     if (status) {
       printf("Failed to export file: %s\n", fileExp.Data());
-      return false;
+      return kFALSE;
     }
     if(cfg.GetPrintLevel()) printf("Export file: %s\n",fileExp.Data());
 
     // write last current file
     WriteLastCurrentFile(cfg,cfg.GetLastCurrentFileName());
 
-    return true;
+    return kTRUE;
 }
 
 //__________________
@@ -739,7 +813,7 @@ Bool_t ImportFiles(AliDAConfig& cfg)
     status = daqDA_DB_getFile(cfg.GetDAConfigFileName(), cfg.GetDAConfigFileName());
     if (status) {
       printf("Failed to get DA config file from DB: %s\n",cfg.GetDAConfigFileName());
-      return false;
+      return kFALSE;
     }
  
     ReadDAConfig(cfg);
@@ -747,7 +821,7 @@ Bool_t ImportFiles(AliDAConfig& cfg)
     status = daqDA_DB_getFile(cfg.GetCurrentFileName(), cfg.GetCurrentFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",cfg.GetCurrentFileName());
-      return false;
+      return kFALSE;
     }
     
     ReadFileNames(cfg);
@@ -755,28 +829,28 @@ Bool_t ImportFiles(AliDAConfig& cfg)
     status = daqDA_DB_getFile(cfg.GetGlobalFileName(), cfg.GetGlobalFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n", cfg.GetGlobalFileName());
-      return false;
+      return kFALSE;
     }
 
     status = daqDA_DB_getFile(cfg.GetRegionalFileName(), cfg.GetRegionalFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",cfg.GetRegionalFileName());
-      return false;
+      return kFALSE;
     }
 
     status = daqDA_DB_getFile(cfg.GetLocalMaskFileName(), cfg.GetLocalMaskFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",cfg.GetLocalMaskFileName());
-      return false;
+      return kFALSE;
     }
 
     status = daqDA_DB_getFile(cfg.GetLocalLutFileName(), cfg.GetLocalLutFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",cfg.GetLocalLutFileName());
-      return false;
+      return kFALSE;
     }
  
-    return true;
+    return kTRUE;
 }
 
 //_____________
@@ -830,26 +904,26 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
 
   Float_t rateN = 0.0, rateD = 0.0;
   UInt_t gmask[4], omask;
-  Bool_t noise, deadc, withEvN, withEvD, updated = false;
+  Bool_t noise, deadc, withEvN, withEvD, updated = kFALSE;
 
   for (Int_t ii = 0; ii < cfg.GetGlobalInputs(); ii++) {
     gmask[ii] = 0;
 
     for (Int_t ib = 0; ib < cfg.GetGlobalInputLength(); ib++) {
       // lsb -> msb
-      noise = false;
-      deadc = false;
-      withEvN = false;
-      withEvD = false;
+      noise = kFALSE;
+      deadc = kFALSE;
+      withEvN = kFALSE;
+      withEvD = kFALSE;
       if (cfg.GetEventsN() > cfg.GetMinEvents()) {
 	rateN = (Float_t)cfg.GetAccGlobalInputN(ii,ib)/(Float_t)cfg.GetEventsN();
 	noise = (rateN > cfg.GetThrN());	
-	withEvN = true;
+	withEvN = kTRUE;
       }
       if (cfg.GetEventsD() > cfg.GetMinEvents()) {
 	rateD = (Float_t)cfg.GetAccGlobalInputD(ii,ib)/(Float_t)cfg.GetEventsD();
 	deadc = (rateD < cfg.GetThrD());
-	withEvD = true;
+	withEvD = kTRUE;
       }
       if (!withEvN && !withEvD) {
 	// - copy the bit from the old mask
@@ -911,7 +985,7 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
     printf("Global mask [%1d] %08x \n",ii,gmask[ii]);
     omask = cfg.GetGlobalMasks()->GetGlobalMask(ii);
     if (gmask[ii] != omask) {
-      updated = true;
+      updated = kTRUE;
       cfg.GetGlobalMasks()->SetGlobalMask(ii,gmask[ii]);
     }
   }
@@ -943,6 +1017,202 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
 
   }
   
+}
+
+//______________________________________________________________
+void UpdateLocalMask(AliDAConfig& cfg, Int_t localBoardId, Int_t connector, Int_t strip) 
+{
+
+  /// update local strip mask
+
+  AliMUONVCalibParam* localMask = 
+    static_cast<AliMUONVCalibParam*>(cfg.GetLocalMasksDA()->FindObject(localBoardId));
+  
+  UShort_t mask = static_cast<UShort_t>(localMask->ValueAsInt(connector,0)); 
+  
+  mask &= ~(0x1 << strip); // set strip mask to zero
+  
+  localMask->SetValueAsInt(connector, 0, mask);  
+
+}
+
+//______________________________________________________________
+void MakePattern(AliDAConfig& cfg, Int_t localBoardId, const TArrayS& xPattern, const TArrayS& yPattern) 
+{
+  /// calculate the hit map for each strip in x and y direction
+  
+  AliMUONVCalibParam* pat = 0x0;
+
+  if (cfg.GetAlgoNoisyInput())
+    pat = static_cast<AliMUONVCalibParam*>(cfg.GetPatternStoreN()->FindObject(localBoardId));
+  if (cfg.GetAlgoDeadcInput())
+    pat = static_cast<AliMUONVCalibParam*>(cfg.GetPatternStoreD()->FindObject(localBoardId));
+
+  if (!pat) {
+    pat = new AliMUONCalibParamND(2, 64, localBoardId, 0, 0.);
+    if (cfg.GetAlgoNoisyInput())
+      cfg.GetPatternStoreN()->Add(pat);	
+    if (cfg.GetAlgoDeadcInput())
+      cfg.GetPatternStoreD()->Add(pat);	
+  }
+
+  for (Int_t i = 0; i < 4; ++i) {
+    for (Int_t j = 0; j < 16; ++j) {
+	
+      Int_t xMask = xPattern[i];
+      Int_t yMask = yPattern[i];
+      
+      Int_t index = 16*i + j;
+      Double_t patOcc = 0.;
+      
+      if ( (xMask >> j ) & 0x1 ) {
+	patOcc  = pat->ValueAsDouble(index, 0) + 1.;
+	pat->SetValueAsDouble(index, 0, patOcc);
+      }
+      if ( (yMask >> j ) & 0x1 ) {
+	patOcc  = pat->ValueAsDouble(index, 1) + 1.;
+	pat->SetValueAsDouble(index, 1, patOcc);
+      }
+    }
+  }
+
+}
+
+//______________________________________________________________
+void MakePatternStore(AliDAConfig& cfg) 
+{
+  /// analyse patterns for local strips (calculate occupancy)
+  
+#ifdef OFFLINE
+  gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+#endif
+
+  AliMUONVCalibParam* pat;
+  Int_t localBoardId = 0;
+  Int_t nEventsN = 0, nEventsD = 0;  
+  UShort_t strip = 0;
+  Int_t connector = 0;
+  Bool_t updated = kFALSE;
+  
+  if (cfg.GetEventsN() > cfg.GetMinEvents()) {
+    nEventsN = cfg.GetEventsN();
+  }
+  if (cfg.GetEventsD() > cfg.GetMinEvents()) {
+    nEventsD = cfg.GetEventsD();
+  }
+
+  // noisy strips
+  if (nEventsN > 0) {
+
+    TIter next(cfg.GetPatternStoreN()->CreateIterator());
+
+    while ( ( pat = dynamic_cast<AliMUONVCalibParam*>(next() ) ) ) {
+      
+      localBoardId  = pat->ID0();
+      
+      for (Int_t index = 0; index < pat->Size(); index++) {
+	
+	Double_t patXOcc  = pat->ValueAsDouble(index, 0)/(Double_t)nEventsN;
+	Double_t patYOcc  = pat->ValueAsDouble(index, 1)/(Double_t)nEventsN;
+	
+	pat->SetValueAsDouble(index, 0, patXOcc);
+	pat->SetValueAsDouble(index, 1, patYOcc);
+	
+	// check for x strip
+	if (patXOcc > cfg.GetThrLocN()) {
+	  strip  = index % 16;
+	  connector = index/16;
+	  UpdateLocalMask(cfg, localBoardId, connector, strip);
+	}
+	// check for y strip
+	if (patYOcc > cfg.GetThrLocN()) {
+	  strip  = index % 16;
+	  connector = index/16 + 4;
+	  UpdateLocalMask(cfg, localBoardId, connector, strip);
+	}
+	
+      }
+    }
+    
+  }
+  
+  // dead strips
+  if (nEventsD > 0) {
+
+    TIter next(cfg.GetPatternStoreD()->CreateIterator());
+
+    while ( ( pat = dynamic_cast<AliMUONVCalibParam*>(next() ) ) ) {
+      
+      localBoardId  = pat->ID0();
+      
+      for (Int_t index = 0; index < pat->Size(); index++) {
+	
+	Double_t patXOcc  = pat->ValueAsDouble(index, 0)/(Double_t)nEventsD;
+	Double_t patYOcc  = pat->ValueAsDouble(index, 1)/(Double_t)nEventsD;
+	
+	pat->SetValueAsDouble(index, 0, patXOcc);
+	pat->SetValueAsDouble(index, 1, patYOcc);
+	
+	// check for x strip
+	if (patXOcc < cfg.GetThrLocD()) {
+	  strip  = index % 16;
+	  connector = index/16;
+	  UpdateLocalMask(cfg, localBoardId, connector, strip);
+	}
+	// check for y strip
+	if (patYOcc < cfg.GetThrLocD()) {
+	  strip  = index % 16;
+	  connector = index/16 + 4;
+	  UpdateLocalMask(cfg, localBoardId, connector, strip);
+	}
+	
+      }
+    }
+    
+  }
+  
+  // check if the mask has changed from previous version
+  UShort_t maskDA, mask;
+  for (localBoardId = 1; localBoardId <= AliMpConstants::TotalNofLocalBoards(); localBoardId++) {
+    AliMUONVCalibParam* localMaskDA = static_cast<AliMUONVCalibParam*>(cfg.GetLocalMasksDA()->FindObject(localBoardId));
+    AliMUONVCalibParam* localMask = static_cast<AliMUONVCalibParam*>(cfg.GetLocalMasks()->FindObject(localBoardId));
+    for (connector = 0; connector < 8; connector++) {
+      maskDA = static_cast<UShort_t>(localMaskDA->ValueAsInt(connector,0)); 
+      mask = static_cast<UShort_t>(localMask->ValueAsInt(connector,0)); 
+      if (maskDA != mask) {
+	updated = kTRUE;
+	break;
+      }
+    }
+  }
+
+  Int_t status = 0;
+  if (updated) {
+
+    // update version
+    cfg.IncLocalMaskFileVersion();
+    
+    // don't change the file version ("-x.dat")
+    
+    cfg.GetTriggerIO()->WriteLocalMasks(cfg.GetLocalMaskFileName(),*cfg.GetLocalMasksDA(),cfg.GetRegionalMasks());
+
+    // write last current file
+    WriteLastCurrentFile(cfg,cfg.GetCurrentFileName());
+
+    status = daqDA_DB_storeFile(cfg.GetLocalMaskFileName(), cfg.GetLocalMaskFileName());
+    if (status) {
+      printf("Failed to export file to DB: %s\n",cfg.GetLocalMaskFileName());
+      return;
+    }
+    
+    status = daqDA_DB_storeFile(cfg.GetCurrentFileName(), cfg.GetCurrentFileName());
+    if (status) {
+      printf("Failed to export file to DB: %s\n",cfg.GetCurrentFileName());
+      return;
+    }
+
+  }
+
 }
 
 //*************************************************************//
@@ -980,10 +1250,17 @@ int main(Int_t argc, Char_t **argv)
 
     // containers
     // old decoder
-    AliMUONDDLTrigger*       ddlTrigger  = 0x0;
-    AliMUONDarcHeader*       darcHeader  = 0x0;
+    AliMUONDDLTrigger*       ddlTrigger     = 0x0;
+    AliMUONDarcHeader*       darcHeader     = 0x0;
+    AliMUONRegHeader*        regHeader   = 0x0;
+    AliMUONLocalStruct*      localStruct = 0x0;
     // new (fast) decoder
-    const AliMUONRawStreamTriggerHP::AliHeader* darcHeaderHP = 0x0;
+    const AliMUONRawStreamTriggerHP::AliHeader*      darcHeaderHP  = 0x0;
+    const AliMUONRawStreamTriggerHP::AliLocalStruct* localStructHP = 0x0;
+
+    TArrayS xPattern(4);
+    TArrayS yPattern(4);
+    Int_t localBoardId = 0;
 
     TStopwatch timers;
 
@@ -1066,7 +1343,7 @@ int main(Int_t argc, Char_t **argv)
     cout << "MUONTRGda : Reading data from file " << inputFile <<endl;
 
     UInt_t *globalInput = new UInt_t[4];
-    Bool_t doUpdate = false;
+    Bool_t doUpdate = kFALSE;
     Int_t runNumber = 0;
     Int_t nEvents = 0;
 
@@ -1106,15 +1383,15 @@ int main(Int_t argc, Char_t **argv)
       // CALIBRATION_EVENT 
       // SYSTEM_SOFTWARE_TRIGGER_EVENT
       // DETECTOR_SOFTWARE_TRIGGER_EVENT
-      cfg.SetAlgoNoisyInput(false);
-      cfg.SetAlgoDeadcInput(false);
+      cfg.SetAlgoNoisyInput(kFALSE);
+      cfg.SetAlgoDeadcInput(kFALSE);
       if (eventType == PHYSICS_EVENT) {
-	cfg.SetAlgoNoisyInput(true);
-	doUpdate = true;
+	cfg.SetAlgoNoisyInput(kTRUE);
+	doUpdate = kTRUE;
 	cfg.IncNoiseEvent();
       } else if (modeFET3 && eventType == CALIBRATION_EVENT) {
-	cfg.SetAlgoDeadcInput(true);
-	doUpdate = true;
+	cfg.SetAlgoDeadcInput(kTRUE);
+	doUpdate = kTRUE;
 	cfg.IncDeadcEvent();
       } else {
 	continue;
@@ -1140,21 +1417,53 @@ int main(Int_t argc, Char_t **argv)
 
 	if (cfg.GetPrintLevel() == 2) printf("iDDL %d\n", rawStream->GetDDL());
 
-	if (rawStream->GetDDL() == 0) {
-	  if (cfg.UseFastDecoder()) {
-	    darcHeaderHP = static_cast<AliMUONRawStreamTriggerHP*>(rawStream)->GetHeaders();
-	    if (cfg.GetPrintLevel() == 2) printf("Global output (fast decoder) %x\n", (Int_t)darcHeaderHP->GetGlobalOutput());
-	    for (Int_t ig = 0; ig < cfg.GetGlobalInputs(); ig++) 
-	      globalInput[ig] = darcHeaderHP->GetGlobalInput(ig);
-	  } else {
-	    ddlTrigger = rawStream->GetDDLTrigger();
-	    darcHeader = ddlTrigger->GetDarcHeader();
-	    if (cfg.GetPrintLevel() == 2) printf("Global output %x\n", (Int_t)darcHeader->GetGlobalOutput());
-	    globalInput = darcHeader->GetGlobalInput();
+	if (cfg.UseFastDecoder()) {
+	  darcHeaderHP = static_cast<AliMUONRawStreamTriggerHP*>(rawStream)->GetHeaders();
+	  if (cfg.GetPrintLevel() == 2) printf("Global output (fast decoder) %x\n", (Int_t)darcHeaderHP->GetGlobalOutput());
+	  for (Int_t ig = 0; ig < cfg.GetGlobalInputs(); ig++) {
+	    globalInput[ig] = darcHeaderHP->GetGlobalInput(ig);
 	  }
+	  // loop over regional structure
+	  Int_t nReg = (Int_t)static_cast<AliMUONRawStreamTriggerHP*>(rawStream)->GetRegionalHeaderCount();
+	  for(Int_t iReg = 0; iReg < nReg; iReg++) {
+	    // loop over local structures
+	    Int_t nLoc = (Int_t)static_cast<AliMUONRawStreamTriggerHP*>(rawStream)->GetLocalStructCount(iReg);
+	    for(Int_t iLoc = 0; iLoc < nLoc; iLoc++) {
+	      localStructHP = static_cast<AliMUONRawStreamTriggerHP*>(rawStream)->GetLocalStruct(iReg, iLoc);
+	      localBoardId = cfg.GetTriggerIO()->LocalBoardId(rawStream->GetDDL(),iReg,localStructHP->GetId());
+	      if (localBoardId > 0) {
+		localStructHP->GetXPattern(xPattern);
+		localStructHP->GetYPattern(yPattern);
+		MakePattern(cfg,localBoardId,xPattern,yPattern);
+	      }
+ 	    }
+	  }
+	} else {
+	  ddlTrigger = rawStream->GetDDLTrigger();
+	  darcHeader = ddlTrigger->GetDarcHeader();
+	  if (cfg.GetPrintLevel() == 2) printf("Global output %x\n", (Int_t)darcHeader->GetGlobalOutput());
+	  globalInput = darcHeader->GetGlobalInput();
+	  // loop over regional structure
+	  Int_t nReg = darcHeader->GetRegHeaderEntries();
+	  for(Int_t iReg = 0; iReg < nReg; iReg++) {
+	    regHeader = darcHeader->GetRegHeaderEntry(iReg);
+	    // loop over local structures
+	    Int_t nLoc = regHeader->GetLocalEntries();
+	    for(Int_t iLoc = 0; iLoc < nLoc; iLoc++) {  
+	      localStruct = regHeader->GetLocalEntry(iLoc);
+	      localBoardId = cfg.GetTriggerIO()->LocalBoardId(rawStream->GetDDL(),iReg,localStruct->GetId());
+	      if (localBoardId > 0) {
+		localStruct->GetXPattern(xPattern);
+		localStruct->GetYPattern(yPattern);
+		MakePattern(cfg,localBoardId,xPattern,yPattern);
+	      }
+	    }
+	  }
+	}
+	if (rawStream->GetDDL() == 0) {
 	  StoreGlobalInput(cfg,globalInput);
 	}
-
+	
       } // NextDDL
 
       delete rawReader;
@@ -1163,8 +1472,10 @@ int main(Int_t argc, Char_t **argv)
     } // while (1)
 
     // update configuration files ifrequested event types were found
-    if (doUpdate) 
-      UpdateGlobalMasks(cfg);
+    if (doUpdate) {
+      if (cfg.GetDAMode() > 0) UpdateGlobalMasks(cfg);
+      if (cfg.GetDAMode() > 1) MakePatternStore(cfg);
+    }
 
     timers.Stop();
 
@@ -1177,11 +1488,14 @@ int main(Int_t argc, Char_t **argv)
     cout << "MUONTRGda: Minumum nr of events for rate calculation: " << cfg.GetMinEvents() << endl;
     cout << "MUONTRGda: Maximum nr of analyzed events: " << cfg.GetMaxEvents() << endl;
     cout << "MUONTRGda: Skip events from start: " << cfg.GetSkipEvents() << endl;
-    cout << "MUONTRGda: Threshold for noisy inputs: " << 100*cfg.GetThrN() << "%" << endl;
-    cout << "MUONTRGda: Threshold for dead inputs: " << 100*cfg.GetThrD() << "%" << endl;
+    cout << "MUONTRGda: Threshold for global noisy inputs: " << 100*cfg.GetThrN() << "%" << endl;
+    cout << "MUONTRGda: Threshold for global dead inputs: " << 100*cfg.GetThrD() << "%" << endl;
+    cout << "MUONTRGda: Threshold for local noisy inputs: " << 100*cfg.GetThrLocN() << "%" << endl;
+    cout << "MUONTRGda: Threshold for local dead inputs: " << 100*cfg.GetThrLocD() << "%" << endl;
     cout << "MUONTRGda: Print level: " << cfg.GetPrintLevel() << endl;
     cout << "MUONTRGda: Show decoder warnings: " << cfg.WithWarnings() << endl;
     cout << "MUONTRGda: Use the fast decoder: " << cfg.UseFastDecoder() << endl;
+    cout << "MUONTRGda: DA mode (1=GLOBAL, 2=GLOBAL+LOCAL): " << cfg.GetDAMode() << endl;
 
     printf("MUONTRGda: Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
