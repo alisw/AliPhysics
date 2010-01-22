@@ -34,7 +34,7 @@ class AliEMCALRawUtils : public TObject {
   AliEMCALRawUtils(AliEMCALGeometry *pGeometry);
   virtual ~AliEMCALRawUtils();
 	
-  enum fitAlgorithm {kStandard = 0, kFastFit= 1};
+  enum fitAlgorithm {kStandard = 0, kFastFit= 1, kNeuralNet = 2};
 	
   AliEMCALRawUtils(const AliEMCALRawUtils& rawUtils);  //copy ctor
   AliEMCALRawUtils& operator =(const AliEMCALRawUtils& rawUtils);

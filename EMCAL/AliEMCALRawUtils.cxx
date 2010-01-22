@@ -49,6 +49,7 @@ class AliEMCALDigitizer;
 #include "AliEMCAL.h"
 #include "AliCaloCalibPedestal.h"  
 #include "AliCaloFastAltroFitv0.h"
+#include "AliCaloNeuralFit.h"
 
 ClassImp(AliEMCALRawUtils)
   
@@ -78,7 +79,7 @@ AliEMCALRawUtils::AliEMCALRawUtils()
   fNoiseThreshold = 3; // 3 ADC counts is approx. noise level
   fNPedSamples = 4;    // less than this value => likely pedestal samples
   fRemoveBadChannels = kTRUE; //Remove bad channels before fitting
-  fFittingAlgorithm  = kFastFit;//kStandard; // Use default minuit fitter
+  fFittingAlgorithm  = kFastFit;//kStandard; //kNeuralNet// Use default minuit fitter
 	
   //Get Mapping RCU files from the AliEMCALRecParam                                 
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
@@ -553,7 +554,7 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, const Int_t lastTimeB
     }
   }
 
-  // 1st step: we try to estimate the pedestal value
+  // 1st step: we try to estimate the pedestal value  
   Int_t nPed = 0;
   for (Int_t index = 0; index < gSig->GetN(); index++) {
     gSig->GetPoint(index, ttime, signal) ; 
@@ -760,7 +761,7 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, const Int_t lastTimeB
 			case kFastFit:
 			{
 				//printf("FastFitter \n");
-				Double_t eSignal = 0;
+			        Double_t eSignal = 1; // nominal 1 ADC error
 				Double_t dAmp = amp; 
 				Double_t eAmp = 0;
 				Double_t dTime = time;
@@ -773,9 +774,59 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, const Int_t lastTimeB
 				amp  = dAmp;
 				time = dTime * GetRawFormatTimeBinWidth();
 				//printf("FastFitter: Amp %f, time %g, eAmp %f, eTimeEstimate %g, chi2 %f\n",amp, time,eAmp,eTime,chi2);
-			break;
-		} //kFastFit 
-		//----------------------------	
+				break;
+			} //kFastFit 
+			//----------------------------	
+
+			case kNeuralNet:
+			{
+				// Extracts the amplitude and the time information using a Neural Network approach
+				// Author P. La Rocca
+				//printf("NeuralNet \n");
+				Double_t input[5] = {0.};
+				Double_t maxgraph = 0.;
+				Int_t maxindex = -10;
+				for (Int_t i=0; i < gSig->GetN(); i++) {
+					gSig->GetPoint(i, ttime, signal); 
+					if(signal > maxgraph) {
+						maxgraph = signal;
+						maxindex = i;
+					}
+				}
+				if((maxindex-2) > -1 && (maxindex-2)< gSig->GetN()) {
+					gSig->GetPoint(maxindex-2, ttime, input[0]);
+					input[0] -= pedEstimate;
+					input[0] /= (globMaxSig - pedEstimate);
+				}
+				if((maxindex-1) > -1 && (maxindex-1)< gSig->GetN()) {
+					gSig->GetPoint(maxindex-1, ttime, input[1]);
+					input[1] -= pedEstimate;
+					input[1] /= (globMaxSig - pedEstimate);
+				}
+				if((maxindex) > -1 && (maxindex)< gSig->GetN()) {
+					gSig->GetPoint(maxindex,   ttime, input[2]);
+					input[2] -= pedEstimate;
+					input[2] /= (globMaxSig - pedEstimate);
+				}
+				if((maxindex+1) > -1 && (maxindex+1)< gSig->GetN()) {
+					gSig->GetPoint(maxindex+1, ttime, input[3]);
+					input[3] -= pedEstimate;
+					input[3] /= (globMaxSig - pedEstimate);
+				}
+				if((maxindex+2) > -1 && (maxindex+2)< gSig->GetN()) {
+					gSig->GetPoint(maxindex+2, ttime, input[4]);
+					input[4] -= pedEstimate;
+					input[4] /= (globMaxSig - pedEstimate);
+				}
+
+        AliCaloNeuralFit exportNN;
+				amp = exportNN.Value(0,input[0],input[1],input[2],input[3],input[4])*(globMaxSig - pedEstimate);
+				time = (exportNN.Value(1,input[0],input[1],input[2],input[3],input[4])+globMaxId) * fgTimeBins;
+
+
+				break;
+			} //kNeuralNet
+			//----------------------------
 	}//switch fitting algorithms
   } // ampEstimate > fNoiseThreshold
   return;
