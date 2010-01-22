@@ -58,7 +58,8 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
 
   
-  TH1F *fNEvent;                               //! Event counter
+  TH1F *fNEventAll;                            //! Event counter
+  TH1F *fNEventSel;                            //! Event counter
   TH1F *fPtAll;                                //! Pt spectrum all charged particles
   TH1F *fPtSel;                                //! Pt spectrum all selected charged particles by fTrackCuts
   TH2F *fPtAllminPtMCvsPtAll;                  //! Momentum resolution (global vs MC)

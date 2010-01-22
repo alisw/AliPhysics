@@ -1,8 +1,8 @@
 //DEFINITION OF A FEW CONSTANTS
 
-AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC()//<some_parameters>)
+AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC()
 {
-  // Creates a proton analysis task and adds it to the analysis manager.
+  // Creates HighPtQAMC analysis task and adds it to the analysis manager.
   
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -34,7 +34,7 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC()//<some_parameters>)
   trackCuts->SetEtaRange(-0.9,0.9);//-0.5,0.5);//
   trackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);//
   trackCuts->SetPtRange(0.15, 1e10);//
-  trackCuts->SetMinNClustersTPC(50);//
+  trackCuts->SetMinNClustersTPC(70);//
   trackCuts->SetMaxChi2PerClusterTPC(3.5);//
   //trackCuts->SetRequireITSRefit(kTRUE);
   trackCuts->SetMaxDCAToVertexXY(2.4);
@@ -47,7 +47,7 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC()//<some_parameters>)
   trackCutsITS->SetEtaRange(-0.9,0.9);//-0.5,0.5);//
   trackCutsITS->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);//
   trackCutsITS->SetPtRange(0.15, 1e10);//
-  trackCutsITS->SetMinNClustersTPC(50);//
+  trackCutsITS->SetMinNClustersTPC(70);//
   trackCutsITS->SetMaxChi2PerClusterTPC(3.5);//
   trackCutsITS->SetRequireITSRefit(kTRUE);
   trackCutsITS->SetMaxDCAToVertexXY(2.4);
