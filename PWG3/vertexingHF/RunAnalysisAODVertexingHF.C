@@ -164,7 +164,7 @@ void RunAnalysisAODVertexingHF()
 
   // Input
   AliAODInputHandler *inputHandler = new AliAODInputHandler();
-  if(analysisMode=="proof") {
+  if(analysisMode=="proof" ) {
     inputHandler->AddFriend("AliAOD.VertexingHF.root");
     if(saveProofToAlien) mgr->SetSpecialOutputLocation(proofOutdir);
   }
@@ -271,7 +271,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(pluginmode.Data());
    plugin->SetUser("dainesea");
-   plugin->SetNtestFiles(2);
+   plugin->SetNtestFiles(1);
    // Set versions of used packages
    plugin->SetAPIVersion("V2.4");
    plugin->SetROOTVersion("v5-24-00");
@@ -281,10 +281,11 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Define production directory LFN
    //plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/");
    //plugin->SetGridDataDir("/alice/cern.ch/user/m/mgheata/analysisESD/output_train_default_28May2009_09h33/");
-   plugin->SetGridDataDir("/alice/sim/PDC_09/LHC09a5/AOD1/");
+   plugin->SetGridDataDir("/alice/sim/PDC_08b/LHC09a2/AOD1/");
    // Set data search pattern
    plugin->SetDataPattern("AliAOD.root");
-   plugin->SetFriendChainName("AliAOD.VertexingHF.root");
+   plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
+   //plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
    // ...then add run numbers to be considered
    //plugin->AddRunNumber(529007);
    //  or
@@ -304,7 +305,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->SetAnalysisSource("AliDStarJets.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so MakeAODInputChain.C"/* AliDStarJets.cxx AliDStarJets.h"*/);
+   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so");
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");
@@ -316,8 +317,6 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
      plugin->EnablePackage("PWG3base.par");
      plugin->EnablePackage("PWG3vertexingHF.par");
      plugin->EnablePackage("PWG3muon.par");
-     plugin->EnablePackage("PWG4PartCorrBase.par");
-     plugin->EnablePackage("PWG4PartCorrDep.par");
    }
    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/vertexingHF -g");
    // Declare the output file names separated by blancs.
