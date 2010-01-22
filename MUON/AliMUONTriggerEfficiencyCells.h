@@ -21,7 +21,7 @@ class AliMUONTriggerEfficiencyCells : public TObject
 {
 public:
   AliMUONTriggerEfficiencyCells();
-  AliMUONTriggerEfficiencyCells(const Char_t* filename);
+  AliMUONTriggerEfficiencyCells(const Char_t* filename, const Char_t* listname="triggerChamberEff");
   AliMUONTriggerEfficiencyCells(TList *countHistoList, TList *noCountHistoList);
 
   AliMUONTriggerEfficiencyCells(const AliMUONTriggerEfficiencyCells& other); // copy constructor
@@ -47,7 +47,7 @@ public:
                            // syntomatic of possible read-out problems in boards
 protected:
     void Reset(Bool_t resetAll = kTRUE);
-    void ReadFile(const Char_t* filename="$ALICE_ROOT/MUON/data/efficiencyCells.dat");
+    void ReadFile(const Char_t* filename="$ALICE_ROOT/MUON/data/efficiencyCells.dat", const Char_t* listname="");
     void CalculateEfficiency(Int_t trigger44, Int_t trigger34,
 			     Float_t &efficiency, Float_t &error,
 			     Bool_t failuresAsInput);
@@ -57,7 +57,7 @@ private:
     void CheckConstants() const;
     Int_t FindChamberIndex(Int_t detElemId) const;
     void ReadFileBoards(ifstream &file);
-    void ReadHistoBoards(const Char_t* filename="MUON.TriggerEfficiencyMap.root");
+    void ReadHistoBoards(const Char_t* filename="MUON.TriggerEfficiencyMap.root", const Char_t* listname="triggerChamberEff");
     void InitHistos();
     void FillHistosFromList(Bool_t useMeanValues = kFALSE);
     Bool_t GetListsForCheck();
