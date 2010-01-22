@@ -72,6 +72,7 @@ Int_t       iPWG4PtQAMC        = 0;      // Marta's QA tasks
 Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
 Int_t       iPWG4ThreeJets     = 0;      // Sona's thrust task
+Int_t       iPWG4KMeans        = 0;      // Andreas' KMeans task 
 Int_t       iPWG4PartCorr      = 0;      // Gustavo's part corr analysis
 Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4) 
 Int_t       iPWG4GammaConv     = 0;      // Gamma Conversio
@@ -185,6 +186,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use PWG4 Pt Spectra   %d\n",iPWG4PtSpectra);
    printf(":: use PWG4 Pt QA TPC    %d\n",iPWG4PtQATPC);     
    printf(":: use PWG4 Three Jets   %d\n",iPWG4ThreeJets);
+   printf(":: use PWG4 KMeans       %d\n",iPWG4KMeans);
    printf(":: use PWG4 Part Corr    %d\n",iPWG4PartCorr);
    printf(":: use PWG4 omega to 3 pions %d\n",iPWG4omega3pi);
 
@@ -296,7 +298,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJets.C");
       AliAnalysisTaskJets *taskjets = 0;
       if(iJETAN&1)taskjets = AddTaskJets(kHighPtFilterMask); 
-      if(iJETAN&2)AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC,0xfffffff); 
+      if(iJETAN&2){
+	UInt_t selection = 0;
+	if(!kFillAOD) selection = 0xffffff;
+	else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<6|1<<7|1<<8|1<<9;
+	AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC,selection); 
+      }
       if (!taskjets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
    }
 
@@ -331,15 +338,26 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(kGridRunRange[0]>0)taskjetServ->SetRunRange(kGridRunRange[0],kGridRunRange[1]);
      else taskjetServ->SetRunRange(104000,105000);
      if(!kIsMC) taskjetServ->SetRealData(kTRUE);
+     if(!iPhysicsSelection)taskjetServ->SetUsePhysicsSelection(kFALSE);
    }
 
 
    if(iPWG4JetSpectrum){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetSpectrum2.C");
      AliAnalysisTaskJetSpectrum2 *taskjetSpectrum = 0;
-     if(iPWG4JetSpectrum&1)taskjetSpectrum = AddTaskJetSpectrum2("jets","",kHighPtFilterMask);      
+     if(iPWG4JetSpectrum&1){
+       taskjetSpectrum = AddTaskJetSpectrum2("jets","",kHighPtFilterMask,iPhysicsSelection);      
+       taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
+       taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
+     }
      if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
-     if(iPWG4JetSpectrum&2)AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC);
+     if(iPWG4JetSpectrum&2)AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection);
+     if(iJETAN&3&&!kFillAOD){
+       AddTaskJetSpectrum2("jetsAOD_FASTKT01","",kHighPtFilterMask,iPhysicsSelection);
+       AddTaskJetSpectrum2("jetsAOD_FASTKT02","",kHighPtFilterMask,iPhysicsSelection);
+       AddTaskJetSpectrum2("jetsAOD_FASTKT06","",kHighPtFilterMask,iPhysicsSelection);
+       AddTaskJetSpectrum2("jetsAOD_FASTKT08","",kHighPtFilterMask,iPhysicsSelection);
+     }
      if(kUseMC)taskjetSpectrum->SetAnalysisType( AliAnalysisTaskJetSpectrum2::kAnaMCESD);
      taskjetSpectrum->SetDebugLevel(1);
    }
@@ -385,6 +403,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskPtSpectra) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskPtSpectra cannot run for this train conditions - EXCLUDED");
    }
 
+   if(iPWG4KMeans){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskKMeans.C");
+     AliAnalysisTaskKMeans *taskKMeans = AddTaskKMeans();
+     if (!taskKMeans) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskKMenans cannot run for this train conditions - EXCLUDED");
+   }
+
    if(iPWG4PartCorr){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
      AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS",kUseMC,kFALSE,kIsMC);
@@ -408,7 +432,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       TString cdir = gSystem->WorkingDirectory();
       gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT/PWG4/macros/"));
       //      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
-      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
+      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz -bg-off";
       if(!kIsMC)gcArguments += " -mc-off";
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
       gSystem->ChangeDirectory(cdir);
@@ -563,6 +587,8 @@ void CheckModuleFlags(const char *mode) {
       iPWG4PtQATPC        = 0;
       if( iPWG4PtSpectra)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 PtQAMC disabled in analysis on AOD's");
       iPWG4PtSpectra     = 0;
+      if(iPWG4KMeans)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4KMeans disabled on AOD's");
+      iPWG4KMeans       = 0;
       if (iPWG4PartCorr)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4partcorr disabled on AOD's");
       iPWG4PartCorr = 0;
       if (iPWG4omega3pi)
@@ -763,7 +789,9 @@ Bool_t LoadAnalysisLibraries(const char *mode)
           !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
    }   
    // JETAN
-   if (iJETAN||iDIJETAN) {
+   if (iJETAN||iDIJETAN||iPWG4KMeans) {
+     // this part needs some rework in case we do not need the fastjed finders for processing
+     if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
      if (!strcmp(mode, "PROOF")){
        gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libCGAL.so\"\)", kTRUE); 
        gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libfastjet.so\"\)", kTRUE); 
@@ -771,8 +799,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
        // gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libsiscone.so\"\)", kTRUE); 
        gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libSISConePlugin.so\"\)", kTRUE);      
      }
-     if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
-     if(!kUsePAR){
+     if(!kUsePAR){ 
        if (!LoadLibrary("CGAL", mode, kTRUE)) return kFALSE;
        if (!LoadLibrary("fastjet", mode, kTRUE)) return kFALSE;
        if (!LoadLibrary("siscone", mode, kTRUE)) return kFALSE;
@@ -916,13 +943,13 @@ Bool_t LoadSource(const char *source, const char *mode, Bool_t rec=kFALSE)
      Printf("LoadSources:: Loading...  path %s",basename.Data());
      switch (imode) {
      case 0:
-       result = gROOT->LoadMacro(Form("%s.cxx+g",basename.Data()));
+       result = gROOT->LoadMacro(Form("%s.cxx++g",basename.Data()));
        break;
      case 1:
-       result = gProof->LoadMacro(Form("%s.cxx+g",basename.Data()));
+       result = gProof->LoadMacro(Form("%s.cxx++g",basename.Data()));
        break;
      case 2:
-       result = gROOT->LoadMacro(Form("%s.cxx+g",basename.Data()));
+       result = gROOT->LoadMacro(Form("%s.cxx++g",basename.Data()));
        if (rec){
 	 // what we want to compile
 	 anaSources += Form("%s.cxx ",basename.Data()); 

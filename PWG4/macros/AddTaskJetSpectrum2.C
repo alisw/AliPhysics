@@ -1,31 +1,31 @@
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec = "jets",char* bGen = "jetsAODMC_UA104",UInt_t filterMask = 16);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec = "jets",char* bGen = "jetsAODMC_UA104",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1);
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE){
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1){
   AliAnalysisTaskJetSpectrum2 *js = 0;
   if(kUseAODMC){
-  js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104",filterMask);
-    js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104",filterMask);
+    js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104",filterMask,iPhysicsSelection);
+    js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104",filterMask,iPhysicsSelection);
 
-    js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",filterMask);
-    js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",filterMask);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",filterMask,iPhysicsSelection);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",filterMask,iPhysicsSelection);
 
-    js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",filterMask);
-    js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04",filterMask);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",filterMask,iPhysicsSelection);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04",filterMask,iPhysicsSelection);
 
-    js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107",filterMask);
+    js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107",filterMask,iPhysicsSelection);
   }
-  js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",filterMask);
-  js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",filterMask);
-  js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",filterMask);
-  js = AddTaskJetSpectrum2("jetsAOD_UA107","",filterMask);
+  js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",filterMask,iPhysicsSelection);
+  js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",filterMask,iPhysicsSelection);
+  js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",filterMask,iPhysicsSelection);
+  js = AddTaskJetSpectrum2("jetsAOD_UA107","",filterMask,iPhysicsSelection);
   js->SetRecEtaWindow(0.2);
 
   return js;
 }
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t filterMask)
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t filterMask,Int_t iPhysicsSelection)
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
 
@@ -81,7 +81,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t f
        pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODOut);
      }
    }
-   pwg4spec->SelectCollisionCandidates();
+   if(iPhysicsSelection)pwg4spec->SelectCollisionCandidates();
 
    mgr->AddTask(pwg4spec);
      
