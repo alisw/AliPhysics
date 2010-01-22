@@ -9,7 +9,12 @@ AliEMCALTracker.cxx \
 AliEMCALPID.cxx \
 AliEMCALQADataMakerRec.cxx \
 AliEMCALAodCluster.cxx \
-AliCaloNeuralFit.cxx
+AliCaloNeuralFit.cxx \
+AliEMCALRawAnalyzer.cxx \
+AliEMCALRawAnalyzerLMS.cxx \
+AliEMCALRawAnalyzerPeakFinder.cxx \
+AliEMCALBunchInfo.cxx \
+AliEMCALFitResults.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 
