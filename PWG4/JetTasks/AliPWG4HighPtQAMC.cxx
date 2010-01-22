@@ -50,7 +50,8 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(): AliAnalysisTask("AliPWG4HighPtQAMC", "")
   fESD(0), 
   fTrackCuts(0), 
   fTrackCutsITS(0),
-  fNEvent(0), 
+  fNEventAll(0),
+  fNEventSel(0),
   fPtAll(0),  
   fPtSel(0),  
   fPtAllminPtMCvsPtAll(0),
@@ -86,7 +87,8 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fESD(0),
   fTrackCuts(),
   fTrackCutsITS(),
-  fNEvent(0),
+  fNEventAll(0),
+  fNEventSel(0),
   fPtAll(0),
   fPtSel(0),
   fPtAllminPtMCvsPtAll(0),
@@ -168,10 +170,12 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   Int_t fgkNPtBins=98;
   Float_t fgkPtMin=2.;
   Float_t fgkPtMax=100.;
-  Int_t fgkResPtBins=40;
+  Int_t fgkResPtBins=80;
 
-  fNEvent = new TH1F("fNEvent","NEvent",1,-0.5,0.5);
-  fHistList->Add(fNEvent);
+  fNEventAll = new TH1F("fNEventAll","NEventAll",1,-0.5,0.5);
+  fHistList->Add(fNEventAll);
+  fNEventSel = new TH1F("fNEventSel","NEvent Selected for analysis",1,-0.5,0.5);
+  fHistList->Add(fNEventSel);
   fPtAll = new TH1F("fPtAll","PtAll",fgkNPtBins, fgkPtMin, fgkPtMax);
   fHistList->Add(fPtAll);
   fPtSel = new TH1F("fPtSel","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
@@ -188,13 +192,13 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fPtAllminPtMCvsPtAllNPointTPC->SetZTitle("N_{point,TPC}");
   fHistList->Add(fPtAllminPtMCvsPtAllNPointTPC);
 
-  fPtAllminPtMCvsPtAllDCAR = new TH3F("fPtAllminPtMCvsPtAllDCAR","PtAllminPtMCvsPtAllDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,20,-1.,1.);
+  fPtAllminPtMCvsPtAllDCAR = new TH3F("fPtAllminPtMCvsPtAllDCAR","PtAllminPtMCvsPtAllDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-0.2,0.2);
   fPtAllminPtMCvsPtAllDCAR->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllDCAR->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllDCAR->SetZTitle("DCA_{R}");
   fHistList->Add(fPtAllminPtMCvsPtAllDCAR);
 
-  fPtAllminPtMCvsPtAllDCAZ = new TH3F("fPtAllminPtMCvsPtAllDCAZ","PtAllminPtMCvsPtAllDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,-2.,2.);
+  fPtAllminPtMCvsPtAllDCAZ = new TH3F("fPtAllminPtMCvsPtAllDCAZ","PtAllminPtMCvsPtAllDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-2.,2.);
   fPtAllminPtMCvsPtAllDCAZ->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllDCAZ->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllDCAZ->SetZTitle("DCA_{Z}");
@@ -245,13 +249,13 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fPtITSminPtMCvsPtITSNPointTPC->SetZTitle("N_{point,TPC}");
   fHistListITS->Add(fPtITSminPtMCvsPtITSNPointTPC);
     
-  fPtITSminPtMCvsPtITSDCAR = new TH3F("fPtITSminPtMCvsPtITSDCAR","PtITSminPtMCvsPtITSDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,20,-1.,1.);
+  fPtITSminPtMCvsPtITSDCAR = new TH3F("fPtITSminPtMCvsPtITSDCAR","PtITSminPtMCvsPtITSDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-0.2,0.2);
   fPtITSminPtMCvsPtITSDCAR->SetXTitle("p_{t}^{MC}");
   fPtITSminPtMCvsPtITSDCAR->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtITSminPtMCvsPtITSDCAR->SetZTitle("DCA_{R}");
   fHistListITS->Add(fPtITSminPtMCvsPtITSDCAR);
   
-  fPtITSminPtMCvsPtITSDCAZ = new TH3F("fPtITSminPtMCvsPtITSDCAZ","PtITSminPtMCvsPtITSDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,-2.,2.);
+  fPtITSminPtMCvsPtITSDCAZ = new TH3F("fPtITSminPtMCvsPtITSDCAZ","PtITSminPtMCvsPtITSDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-2.,2.);
   fPtITSminPtMCvsPtITSDCAZ->SetXTitle("p_{t}^{MC}");
   fPtITSminPtMCvsPtITSDCAZ->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtITSminPtMCvsPtITSDCAZ->SetZTitle("DCA_{Z}");
@@ -303,20 +307,38 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   // Called for each event
   AliDebug(2,Form(">> AliPWG4HighPtQATPConly::Exec \n"));  
   
+  // All events without selection
+  fNEventAll->Fill(0.);
+
   if (!fESD) {
     AliDebug(2,Form("ERROR: fESD not available"));
+    PostData(0, fHistList);
+    PostData(1, fHistListITS);
     return;
   }
 
+  Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if(!isSelected) { //Select collison candidates
+    AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
+    // Post output data
+    PostData(0, fHistList);
+    PostData(1, fHistListITS);
+    return;
+  }
+  
  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) {
     AliDebug(2,Form("ERROR: Could not retrieve MC event handler"));
+    PostData(0, fHistList);
+    PostData(1, fHistListITS);
     return;
   }
 
   AliMCEvent* mcEvent = eventHandler->MCEvent();
   if (!mcEvent) {
     AliDebug(2,Form("ERROR: Could not retrieve MC event"));
+    PostData(0, fHistList);
+    PostData(1, fHistListITS);
     return;
   }
 
@@ -324,6 +346,8 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
   if (!fESD) {
     AliDebug(2,Form("ERROR: fESD not available"));
+    PostData(0, fHistList);
+    PostData(1, fHistListITS);
     return;
   }
 
@@ -332,17 +356,33 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
 
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
-
   // Need vertex cut
-  if (vtx->GetNContributors() < 2)
+  if (vtx->GetNContributors() < 2) {
+    PostData(0, fHistList);
+    PostData(1, fHistListITS);
     return;
+  }
+ double primVtx[3];
+  vtx->GetXYZ(primVtx);
+  //  printf("primVtx: %g  %g  %g \n",primVtx[0],primVtx[1],primVtx[2]);
+  if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
+    // Post output data
+    PostData(0, fHistList);
+    PostData(1, fHistListITS);
+    return;
+  }
   
   AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
 
   // Need to keep track of evts without vertex
-  fNEvent->Fill(0.);
+  fNEventSel->Fill(0.);
 
-  if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2) return;
+  if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2)  {
+    PostData(0, fHistList);
+    PostData(1, fHistListITS);
+    return;
+  }
+
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d", nTracks));
 
