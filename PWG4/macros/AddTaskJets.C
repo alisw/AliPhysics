@@ -58,9 +58,9 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC,UInt_
   Int_t iCount = 0;
 
   // Jet Fidners Selected by run flag first bit 2^0 second by 2^1 etc
-  const char *cJF[9]        = {"UA1","UA1","UA1","CDF","DA","SISCONE","FASTJET","FASTKT","UA1LO"};
-  const Float_t radius[9]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4,     0.4,    0.7};
-  UInt_t  flag[9]           = {    6,    7,    7,    7,   7,        7,        7,       7,      7};
+  const char *cJF[13]        = {"UA1","UA1","UA1","CDF","DA","SISCONE","FASTJET","FASTKT","UA1LO","FASTKT","FASTKT","FASTKT","FASTKT"};
+  const Float_t radius[13]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4,     0.4,    0.7,    0.1 ,    0.2 ,    0.6 ,    0.8 };
+  UInt_t  flag[13]           = {    6,    7,    7,    7,   7,        7,        7,       7,      7,      7 ,      7 ,      7 ,      7 };
   // flag[5] = 0; // set siscone to 0 for proof mode...
   // flag first bit AOD, second bit AODMC2 third bit AODMC2
   // i.e. 7 all, 6 only MC2 and MC
@@ -69,7 +69,7 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC,UInt_
 
   
 
-  for(int i = 0; i< 9;i++){
+  for(int i = 0; i< 13;i++){
     if(!(runFlag&(1<<i)))continue;
     if(!kUseAODMC)flag[i]&=1; // switch OFF MC if we do not have it
     for(int ib = 0;ib<3;ib++){      
