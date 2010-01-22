@@ -62,6 +62,7 @@ Bool_t      kSaveTrain          = kFALSE;  // save train configuration as:
 //==============================================================================
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4) // 1 write standard 2 write non-standard jets, 3 wrtie both
 Int_t       iDIJETAN           = 1;
+Int_t       iJETANLib          = 1;
 Int_t       iPWG1QASym         = 0;      // Eva's QA task compiled on the fly...
 Int_t       iPWG4JetTasks      = 0;      // all jet tasks flag for lib laoding
 Int_t       iPWG4JetServices   = 0;      // jet spectrum analysis
@@ -77,7 +78,7 @@ Int_t       iPWG4PartCorr      = 0;      // Gustavo's part corr analysis
 Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4) 
 Int_t       iPWG4GammaConv     = 0;      // Gamma Conversio
 Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Filter
-TString     kDeltaAODJetName   = "AliAOD.Jet.root";     
+TString     kDeltaAODJetName   = "AliAOD.Jets.root";     
 TString     kDeltaAODPartCorrName   = "deltaAODPartCorr.root";     
 
 
@@ -224,6 +225,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    // AOD input handler
       AliAODInputHandler *aodH = new AliAODInputHandler();
       mgr->SetInputEventHandler(aodH);
+      if (iPWG4JetTasks) aodH->AddFriend(Form("deltas/%s",kDeltaAODJetName.Data()));
+      if (iPWG4PartCorr) aodH->AddFriend(Form("deltas/%s"kDeltaAODJetName.Data()));
    } else {   
    // ESD input handler
       AliESDInputHandler *esdHandler = new AliESDInputHandler();
@@ -347,19 +350,26 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskJetSpectrum2 *taskjetSpectrum = 0;
      if(iPWG4JetSpectrum&1){
        taskjetSpectrum = AddTaskJetSpectrum2("jets","",kHighPtFilterMask,iPhysicsSelection);      
-       taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
-       taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
+       if(!iAODanalysis){
+	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
+	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
+       }
      }
      if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
-     if(iPWG4JetSpectrum&2)AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection);
-     if(iJETAN&3&&!kFillAOD){
+     if(iPWG4JetSpectrum&2){
+       UInt_t selection = 0;
+       if(!iAODanalysis) selection = 0xffffff;
+       else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
+       AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,selection);
+     }
+     if(iJETAN&3&&!kFillAOD&!iAODanalysis){
        AddTaskJetSpectrum2("jetsAOD_FASTKT01","",kHighPtFilterMask,iPhysicsSelection);
        AddTaskJetSpectrum2("jetsAOD_FASTKT02","",kHighPtFilterMask,iPhysicsSelection);
        AddTaskJetSpectrum2("jetsAOD_FASTKT06","",kHighPtFilterMask,iPhysicsSelection);
        AddTaskJetSpectrum2("jetsAOD_FASTKT08","",kHighPtFilterMask,iPhysicsSelection);
      }
      if(kUseMC)taskjetSpectrum->SetAnalysisType( AliAnalysisTaskJetSpectrum2::kAnaMCESD);
-     taskjetSpectrum->SetDebugLevel(1);
+     taskjetSpectrum->SetDebugLevel(0);
    }
 
    if(iPWG4UE){
@@ -597,7 +607,6 @@ void CheckModuleFlags(const char *mode) {
       if(iPWG1QASym)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG1 QA Sym disabled in analysis on AOD's");
       if (iPWG4GammaConv)::Info("AnalysisPWG4Jets.C::CheckModuleFlags", "PWG4gammaconv disabled on AOD's");
       iPWG4GammaConv = 0;   
-
       iPWG1QASym     = 0;
    } else {   
    // ESD analysis
@@ -625,7 +634,7 @@ void CheckModuleFlags(const char *mode) {
       }
    }
    iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4ThreeJets;
-
+   iJETANLib = iPWG4JetTasks||iJETAN||iDIJETAN;
    if (iESDfilter) {iAODhandler=1;}
    if (kUseKinefilter && !kUseMC) kUseKinefilter = kFALSE;
    if (kUseAODTags && !iAODhandler) kUseAODTags = kFALSE;
@@ -789,7 +798,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
           !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
    }   
    // JETAN
-   if (iJETAN||iDIJETAN||iPWG4KMeans) {
+   if (iJETANLib) {
      // this part needs some rework in case we do not need the fastjed finders for processing
      if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
      if (!strcmp(mode, "PROOF")){
