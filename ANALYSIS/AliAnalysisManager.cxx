@@ -1294,7 +1294,7 @@ TFile *AliAnalysisManager::OpenFile(AliAnalysisDataContainer *cont, const char *
       TString opt(option);
       opt.ToUpper();
       if ((opt=="UPDATE") && (opt!=f->GetOption())) 
-        ::Fatal("AliAnalysisManager::OpenFile", "File %s already opened, but not in UPDATE mode!", cont->GetFileName());
+        ::Info("AliAnalysisManager::OpenFile", "File %s already opened in %s mode!", cont->GetFileName(), f->GetOption());
     } else {
       f = TFile::Open(filename, option);
     }    
@@ -1338,7 +1338,7 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
       TString opt(option);
       opt.ToUpper();
       if ((opt=="UPDATE") && (opt!=f->GetOption()))
-        Fatal("OpenProofFile", "File %s already opened, but not in UPDATE mode!", cont->GetFileName());
+        ::Info("OpenProofFile", "File %s already opened in %s mode!", cont->GetFileName(), f->GetOption());
     } else {
       f = new TFile(filename, option);
     }
