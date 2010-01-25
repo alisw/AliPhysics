@@ -1,5 +1,3 @@
-#ifndef ALIEMCALRAWANALYZERLMS_H
-#define ALIEMCALRAWANALYZERLMS_H
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -19,35 +17,51 @@
  **************************************************************************/
 
 
-// Extraction of amplitude and peak position
-// FRom EMCAL raw data using
-// Chi square fit
-
-#include "AliEMCALRawAnalyzer.h"
+#include "AliCaloFitResults.h"
 
 
-class  TF1;
-class  TGraph;
-
-class  AliEMCALRawAnalyzerLMS : public AliEMCALRawAnalyzer
+// Container class to hold results from fitting 
+// as well as other methods for
+// raw data signals extraction. The class memebers
+// fChi2Sig, fNdfSig is only relevant if a fitting procedure is
+// Applied. fStatus holds information on wether or not 
+// The signal was fitted sucessfully. fStatus might have a different meaning If other 
+// procedures than  A different meaning Fitting is applied 
+AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Float_t ped, 
+				       const Short_t fitstatus, const Float_t  amp,  
+				       const Float_t t0,  const Float_t chi,  
+				       const Int_t ndf, Int_t minSig ) : fMaxSig(maxSig),
+									       fPed(ped), 
+									       fStatus(fitstatus),
+									       fAmpSig(amp),
+									       fT0(t0),
+									       fChi2Sig(chi),
+									       fNdfSig(ndf),
+									       fMinSig(minSig) 
 {
- public:
-  AliEMCALRawAnalyzerLMS();
-  virtual ~AliEMCALRawAnalyzerLMS();
-  virtual AliEMCALFitResults  Evaluate( const vector<AliEMCALBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-  void PrintFitResult(const TF1 *f) const;
-  
- private:
-  AliEMCALRawAnalyzerLMS(const AliEMCALRawAnalyzerLMS & );
-  AliEMCALRawAnalyzerLMS  & operator = (const AliEMCALRawAnalyzerLMS  &);
  
-  double fXaxis[MAXSAMPLES]; //Axis if time bins, ( used by TGraph )
-  const double fkEulerSquared; //e^2 = 7.389056098930650227
-  TGraph *fSig;  // Signale holding the data to be fitted.
-  TF1 *fTf1;     // Analytical formula of the Semi Gaussian to be fitted
+ 
+}
 
+
+
+
+AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Int_t minSig) : fMaxSig(maxSig),
+										       fPed(-98),
+										       fStatus( -1 ),
+										       fAmpSig( -1 ), 
+										       fT0(-99),  
+										       fChi2Sig( -1 ),
+										       fNdfSig( -1),
+										       fMinSig (minSig)
+{
   
+}
 
-};
 
-#endif
+
+AliCaloFitResults::~AliCaloFitResults()
+{
+
+}
+

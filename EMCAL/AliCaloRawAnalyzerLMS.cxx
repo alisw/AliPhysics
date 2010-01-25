@@ -18,15 +18,15 @@
 
 
 // Extraction of amplitude and peak position
-// FRom EMCAL raw data using
+// FRom CALO raw data using
 // least square fit for the
 // Moment assuming identical and 
 // independent errors (equivalent with chi square)
 // 
 
-#include "AliEMCALRawAnalyzerLMS.h"
-#include "AliEMCALBunchInfo.h"
-#include "AliEMCALFitResults.h"
+#include "AliCaloRawAnalyzerLMS.h"
+#include "AliCaloBunchInfo.h"
+#include "AliCaloFitResults.h"
 #include "AliLog.h"
 #include "TMath.h"
 #include <iostream>
@@ -39,10 +39,10 @@ using namespace std;
 #define BAD 4  //CRAP PTH
 
 
-AliEMCALRawAnalyzerLMS::AliEMCALRawAnalyzerLMS() : AliEMCALRawAnalyzer(),
-						   fkEulerSquared(7.389056098930650227),
-						   fSig(0),
-						   fTf1(0)
+AliCaloRawAnalyzerLMS::AliCaloRawAnalyzerLMS() : AliCaloRawAnalyzer(),
+						 fkEulerSquared(7.389056098930650227),
+						 fSig(0),
+						 fTf1(0)
 {
   //comment
   for(int i=0; i < MAXSAMPLES; i++)
@@ -56,15 +56,15 @@ AliEMCALRawAnalyzerLMS::AliEMCALRawAnalyzerLMS() : AliEMCALRawAnalyzer(),
 }
 
 
-AliEMCALRawAnalyzerLMS::~AliEMCALRawAnalyzerLMS()
+AliCaloRawAnalyzerLMS::~AliCaloRawAnalyzerLMS()
 {
   delete fTf1;
 }
 
 
 
-AliEMCALFitResults
-AliEMCALRawAnalyzerLMS::Evaluate( const vector<AliEMCALBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
+AliCaloFitResults
+AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
 {
   // Extracting signal parameters using fitting
   short maxampindex; //index of maximum amplitude
@@ -88,27 +88,24 @@ AliEMCALRawAnalyzerLMS::Evaluate( const vector<AliEMCALBunchInfo>  &bunchvector,
 	      
 	      TGraph *graph =  new TGraph(  last - first, fXaxis,  &fReversed[first] );
 	      fTf1->SetParameter(0, maxf*fkEulerSquared );
-	      fTf1->SetParameter(1, 0.235);
+	      fTf1->SetParameter(1, 0.2);
 	      //	      fTf1->SetParameter(2,  2);
 	      //	      fTf1->SetParameter(2,  3); 
 	    
-	      //     return   AliEMCALFitResults( -1 , -1 , -1, -1, -1, -1 , -1); 
+	      //     return   AliCaloFitResults( -1 , -1 , -1, -1, -1, -1 , -1); 
 
 	      Short_t tmpStatus =  graph->Fit(fTf1, "Q0RW");
 	     
-	      //       return   AliEMCALFitResults( -1 , -1 , -1, -1, -1, -1 , -1); 
+	      //       return   AliCaloFitResults( -1 , -1 , -1, -1, -1, -1 , -1); 
  
 	      if( fVerbose == true )
 		{
-		  AliEMCALRawAnalyzer::PrintBunch( bunchvector.at(index) ); 
+		  AliCaloRawAnalyzer::PrintBunch( bunchvector.at(index) ); 
 		  PrintFitResult( fTf1 ) ;
 		}  
 	      
 	        delete graph;
-		
-		
-
-		return AliEMCALFitResults( maxamp, ped ,    tmpStatus,  
+		return AliCaloFitResults( maxamp, ped ,    tmpStatus,  
 					 fTf1->GetParameter(0)/fkEulerSquared, 
 					 fTf1->GetParameter(1) + maxampindex,  
 					 fTf1->GetChisquare(), 
@@ -120,26 +117,26 @@ AliEMCALRawAnalyzerLMS::Evaluate( const vector<AliEMCALBunchInfo>  &bunchvector,
 	    }
 	  else
 	    {
-	      return AliEMCALFitResults( maxamp, ped, -1, maxf, -1, -1, -1 );
+	      return AliCaloFitResults( maxamp, ped, -1, maxf, -1, -1, -1 );
 	    }
 	}
       else
 	{
-	  return AliEMCALFitResults( maxamp , ped, -1, maxf, -1, -1, -1 );
+	  return AliCaloFitResults( maxamp , ped, -1, maxf, -1, -1, -1 );
 	}       
     }
   else
     {
-      return AliEMCALFitResults( -99, -99 );
+      return AliCaloFitResults( -99, -99 );
     }
 
-  return AliEMCALFitResults( -99, -99 );
+  return AliCaloFitResults( -99, -99 );
   
 }
 
 
 void 
-AliEMCALRawAnalyzerLMS::PrintFitResult(const TF1 *f) const
+AliCaloRawAnalyzerLMS::PrintFitResult(const TF1 *f) const
 {
   //comment
   cout << endl;

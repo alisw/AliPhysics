@@ -25,9 +25,9 @@
 // Is done with a simple vector multiplication, allowing for
 // Extreemely fast computations. 
 
-#include "AliEMCALRawAnalyzerPeakFinder.h"
-#include "AliEMCALBunchInfo.h"
-#include "AliEMCALFitResults.h"
+#include "AliCaloRawAnalyzerPeakFinder.h"
+#include "AliCaloBunchInfo.h"
+#include "AliCaloFitResults.h"
 #include <iostream>
 #include "unistd.h"
 #include "TMath.h"
@@ -35,7 +35,7 @@
 
 using namespace std;
 
-AliEMCALRawAnalyzerPeakFinder::AliEMCALRawAnalyzerPeakFinder() :AliEMCALRawAnalyzer(), 
+AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer(), 
 								fTof(0), 
 								fAmp(0)
 {
@@ -61,7 +61,7 @@ AliEMCALRawAnalyzerPeakFinder::AliEMCALRawAnalyzerPeakFinder() :AliEMCALRawAnaly
 }
 
 
-AliEMCALRawAnalyzerPeakFinder::~AliEMCALRawAnalyzerPeakFinder()
+AliCaloRawAnalyzerPeakFinder::~AliCaloRawAnalyzerPeakFinder()
 {
   //comment
   for(int i=0; i < MAXSTART; i++)
@@ -75,8 +75,8 @@ AliEMCALRawAnalyzerPeakFinder::~AliEMCALRawAnalyzerPeakFinder()
 }
 
 
-AliEMCALFitResults 
-AliEMCALRawAnalyzerPeakFinder::Evaluate( const vector<AliEMCALBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
+AliCaloFitResults 
+AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
 {
   // Extracting the amplitude using the Peak-Finder algorithm
   // The amplitude is a weighted sum of the samples using 
@@ -95,7 +95,7 @@ AliEMCALRawAnalyzerPeakFinder::Evaluate( const vector<AliEMCALBunchInfo> &bunchv
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > 900  )	 // (maxamp - ped) > 900 = Close to saturation (use low gain then)
 	{
 	  //	  cout << __FILE__ << __LINE__ <<":, maxamp = " << maxamp << ", ped = "<< ped  << ",. maxf = "<< maxf << ", maxampindex = "<< maxampindex  << endl;
-	  return  AliEMCALFitResults( maxamp, ped,  -1, maxf,   maxampindex, -1, -1 );
+	  return  AliCaloFitResults( maxamp, ped,  -1, maxf,   maxampindex, -1, -1 );
  	}
       
       int first;
@@ -119,23 +119,23 @@ AliEMCALRawAnalyzerPeakFinder::Evaluate( const vector<AliEMCALBunchInfo> &bunchv
 		  fAmp += fPFAmpVectors[0][pfindex][i]*tmp; 
 		}
 	      
-	      return AliEMCALFitResults( maxamp, ped , -1, fAmp, -1, -1, -1 ); 
+	      return AliCaloFitResults( maxamp, ped , -1, fAmp, -1, -1, -1 ); 
 	    }
 	  else
 	    {
-	      return AliEMCALFitResults( maxamp, ped , -1, maxf, -1, -1, -1 ); 
+	      return AliCaloFitResults( maxamp, ped , -1, maxf, -1, -1, -1 ); 
 	    }
 	}
     }
  
   //  cout << __FILE__ << __LINE__ <<  "WARNING, returning amp = -1 "  <<  endl;
 
-  return  AliEMCALFitResults(-1, -1);
+  return  AliCaloFitResults(-1, -1);
 }
 
 
 void 
-AliEMCALRawAnalyzerPeakFinder::LoadVectors()
+AliCaloRawAnalyzerPeakFinder::LoadVectors()
 {
   //Read in the Peak finder vecors from file
   for(int i = 0;  i < MAXSTART ; i++)

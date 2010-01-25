@@ -1,6 +1,6 @@
 // -*- mode: c++ -*-
-#ifndef ALIEMCALFITRESULTS_H
-#define ALIEMCALFITRESULTS_H
+#ifndef ALICALOFITRESULTS_H
+#define ALICALOFITRESULTS_H
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -25,42 +25,42 @@
 // Container class to hold results from fitting 
 // as well as other methods for
 // raw data signals extraction
-class  AliEMCALFitResults
+class  AliCaloFitResults
 {
  public:
-  explicit AliEMCALFitResults( const UShort_t maxSig, 
- 			       const Float_t ped, 
-			       const Short_t fitStatus, 
-			       const Float_t  amp, 
-			       const Float_t t0,
-			       const Float_t chi, 
-			       const UShort_t ndf, 
-			       const UShort_t minSig = -99); 
+  explicit AliCaloFitResults( const Int_t maxSig, 
+			      const Float_t ped, 
+			      const Short_t fitStatus, 
+			      const Float_t  amp, 
+			      const Float_t t0,
+			      const Float_t chi, 
+			      const Int_t ndf, 
+			      const Int_t minSig = -99); 
 
-  explicit AliEMCALFitResults( const UShort_t maxSig, const UShort_t minSig );
-  //AliEMCALFitResults( const UShort_t maxSig, const UShort_t minSig );
+  explicit AliCaloFitResults( const Int_t maxSig, const Int_t minSig );
+  //AliCaloFitResults( const Int_t maxSig, const Int_t minSig );
 
 
-  virtual  ~AliEMCALFitResults();
-  UShort_t  GetMaxSig() const  { return fMaxSig;};
+  virtual  ~AliCaloFitResults();
+  Int_t  GetMaxSig() const  { return fMaxSig;};
   Float_t   GetPed() const { return fPed;};
-  UShort_t  GetMinSig() const { return fMinSig;};
-  UShort_t  GetStatus() const  { return fStatus;};
+  Int_t  GetMinSig() const { return fMinSig;};
+  Int_t  GetStatus() const  { return fStatus;};
   Float_t   GetAmp() const {  return fAmpSig; };
   Float_t   GetTof() const {  return fT0; }; 
   Float_t   GetChisSquare() const { return fChi2Sig;};
-  UShort_t  GetNdf() const { return fNdfSig; };
+  Int_t  GetNdf() const { return fNdfSig; };
   
  private:
-  AliEMCALFitResults();
-  UShort_t   fMaxSig;   //Maximum sample value ( 0 - 1023 )
+  AliCaloFitResults();
+  Int_t   fMaxSig;   //Maximum sample value ( 0 - 1023 )
   Float_t    fPed;      //Pedestal 
-  UShort_t   fStatus;   //Sucess or failure of fitting pocedure
+  Int_t   fStatus;   //Sucess or failure of fitting pocedure
   Float_t    fAmpSig;   //Amplitude in entities of ADC counts
   Float_t    fT0;       //Start time of signal in entities of sample intervals 
   Float_t    fChi2Sig;  //Chi Square of fit 
-  UShort_t   fNdfSig;   //Number of degrees of freedom of fit
-  UShort_t   fMinSig;   //Pedestal 
+  Int_t   fNdfSig;   //Number of degrees of freedom of fit
+  Int_t   fMinSig;   //Pedestal 
 };
 
 #endif

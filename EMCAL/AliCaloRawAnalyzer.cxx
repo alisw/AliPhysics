@@ -19,20 +19,21 @@
 
 // Base class for extraction 
 // of signal amplitude and peak position
-// From EMCAL Calorimeter RAW data (from the RCU)
+// From CALO Calorimeter RAW data (from the RCU)
 // Contains some utilities for preparing / selecting
 // Signals suitable for signal extraction
 // By derived classes
 
 #include "AliLog.h"
-#include "AliEMCALRawAnalyzer.h"
-#include "AliEMCALBunchInfo.h"
-#include "AliEMCALFitResults.h"
+#include "AliCaloRawAnalyzer.h"
+#include "AliCaloBunchInfo.h"
+#include "AliCaloFitResults.h"
+#include "TMath.h"
 #include <iostream>
 using namespace std;
 
 
-AliEMCALRawAnalyzer::AliEMCALRawAnalyzer() :  TObject(),
+AliCaloRawAnalyzer::AliCaloRawAnalyzer() :  TObject(),
 					      fMinTimeIndex(-1),
 					      fMaxTimeIndex(-1),
 					      fFitArrayCut(5),
@@ -48,14 +49,14 @@ AliEMCALRawAnalyzer::AliEMCALRawAnalyzer() :  TObject(),
     }
 }
 
-AliEMCALRawAnalyzer::~AliEMCALRawAnalyzer()
+AliCaloRawAnalyzer::~AliCaloRawAnalyzer()
 {
 
 }
 
 
 void 
-AliEMCALRawAnalyzer::SetTimeConstraint(const int min, const int max ) 
+AliCaloRawAnalyzer::SetTimeConstraint(const int min, const int max ) 
 {
   //Require that the bin if the maximum ADC value is between min and max (timebin)
   if(  ( min > max ) || min > MAXSAMPLES  || max > MAXSAMPLES  )
@@ -71,7 +72,7 @@ AliEMCALRawAnalyzer::SetTimeConstraint(const int min, const int max )
 
 
 UShort_t 
-AliEMCALRawAnalyzer::Max(const UShort_t *data, const int length ) const
+AliCaloRawAnalyzer::Max(const UShort_t *data, const int length ) const
 {
   //------------
   UShort_t tmpmax  = data[0];
@@ -88,7 +89,7 @@ AliEMCALRawAnalyzer::Max(const UShort_t *data, const int length ) const
 
 
 void 
-AliEMCALRawAnalyzer::SelectSubarray( const Double_t *fData, const int length, const short maxindex, int *const first,  int *const last ) const
+AliCaloRawAnalyzer::SelectSubarray( const Double_t *fData, const int length, const short maxindex, int *const first,  int *const last ) const
 {
   //Selection of subset of data from one bunch that will be used for fitting or
   //Peak finding.  Go to the left and right of index of the maximum time bin
@@ -113,24 +114,15 @@ AliEMCALRawAnalyzer::SelectSubarray( const Double_t *fData, const int length, co
 
 
 Float_t 
-AliEMCALRawAnalyzer::ReverseAndSubtractPed( const AliEMCALBunchInfo *bunch, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/, double *outarray ) const
+AliCaloRawAnalyzer::ReverseAndSubtractPed( const AliCaloBunchInfo *bunch, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/, double *outarray ) const
 {
   //Time sample comes in reversed order, revers them back
   //Subtract the baseline based on content of altrocfg1 and altrocfg2.
   Int_t length =  bunch->GetLength(); 
   const UShort_t *sig = bunch->GetData();
 
-  double ped = 0;
-  double tmp = 0;
+  double ped = EvaluatePedestal( sig , length);
 
-  if( fIsZerosupressed == false ) 
-    {
-      for(int i=0; i < 5; i++ )
-	{
-	  tmp += sig[i];
-	}
-    }
-  ped = tmp / 5;
   for( int i=0; i < length; i++ )
     {
       outarray[i] = sig[length -i -1] - ped;
@@ -140,8 +132,26 @@ AliEMCALRawAnalyzer::ReverseAndSubtractPed( const AliEMCALBunchInfo *bunch, cons
 }
 
 
+
+Float_t 
+AliCaloRawAnalyzer::EvaluatePedestal(const UShort_t * const data, const int /*length*/ ) const
+{
+  //  double ped = 0;
+  double tmp = 0;
+
+  if( fIsZerosupressed == false ) 
+    {
+      for(int i=0; i < 5; i++ )
+	{
+	  tmp += data[i];
+	}
+    }
+  return  tmp/5;
+}
+
+
 short  
-AliEMCALRawAnalyzer::Max( const AliEMCALBunchInfo *const bunch , int *const maxindex ) const
+AliCaloRawAnalyzer::Max( const AliCaloBunchInfo *const bunch , int *const maxindex ) const
 {
   //comment
   short tmpmax = -1;
@@ -167,7 +177,7 @@ AliEMCALRawAnalyzer::Max( const AliEMCALBunchInfo *const bunch , int *const maxi
 
 
 int 
-AliEMCALRawAnalyzer::SelectBunch( const vector<AliEMCALBunchInfo> &bunchvector,short *const maxampbin, short *const maxamplitude ) const
+AliCaloRawAnalyzer::SelectBunch( const vector<AliCaloBunchInfo> &bunchvector,short *const maxampbin, short *const maxamplitude ) const
 {
   //We select the bunch with the highest amplitude unless any time constraints is set
   short max = -1;
@@ -195,7 +205,7 @@ AliEMCALRawAnalyzer::SelectBunch( const vector<AliEMCALBunchInfo> &bunchvector,s
 
 
 bool 
-AliEMCALRawAnalyzer::IsInTimeRange( const int maxindex  ) const
+AliCaloRawAnalyzer::IsInTimeRange( const int maxindex  ) const
 {
   // Ckeck if the index of the max ADC vaue is consistent with trigger.
   if( ( fMinTimeIndex  < 0 && fMaxTimeIndex  < 0) ||fMaxTimeIndex  < 0 )
@@ -207,7 +217,7 @@ AliEMCALRawAnalyzer::IsInTimeRange( const int maxindex  ) const
 
 
 void 
-AliEMCALRawAnalyzer::PrintBunches( const vector<AliEMCALBunchInfo> &bvctr ) const
+AliCaloRawAnalyzer::PrintBunches( const vector<AliCaloBunchInfo> &bvctr ) const
 {
   //comment
   cout << __FILE__ << __LINE__<< "*************** Printing Bunches *******************" << endl;
@@ -223,7 +233,7 @@ AliEMCALRawAnalyzer::PrintBunches( const vector<AliEMCALBunchInfo> &bvctr ) cons
 
 
 void 
-AliEMCALRawAnalyzer::PrintBunch( const AliEMCALBunchInfo &bunch ) const
+AliCaloRawAnalyzer::PrintBunch( const AliCaloBunchInfo &bunch ) const
 {
   //comment
   cout << __FILE__ << ":" << __LINE__ << endl;
@@ -237,4 +247,43 @@ AliEMCALRawAnalyzer::PrintBunch( const AliEMCALBunchInfo &bunch ) const
   cout << endl; 
 }
 
+
+AliCaloFitResults
+AliCaloRawAnalyzer::Evaluate( const vector<AliCaloBunchInfo>  &/*bunchvector*/, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
+{ // method to do the selection of what should possibly be fitted
+  // not implemented for base class
+  return AliCaloFitResults( 0, 0, 0, 0, 0, 0, 0 );
+}
+
+
+int
+AliCaloRawAnalyzer::PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2, Int_t & index, Float_t & maxf, short & maxamp, short & maxampindex, Float_t & ped, int & first, int & last)
+{ // method to do the selection of what should possibly be fitted
+  int nsamples  = 0;
+  index = SelectBunch( bunchvector,  &maxampindex,  &maxamp ); // select the bunch with the highest amplitude unless any time constraints is set
+
+  
+  if( index >= 0 && maxamp > fAmpCut) // something valid was found, and non-zero amplitude
+    {
+      // use more convenient numbering and possibly subtract pedestal
+      ped  = ReverseAndSubtractPed( &(bunchvector.at(index)),  altrocfg1, altrocfg2, fReversed  );
+      maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
+      
+      if ( maxf > fAmpCut ) // possibly significant signal
+	{
+	  // select array around max to possibly be used in fit
+	  maxampindex -= bunchvector.at(index).GetStartBin(); // PTH - why isn't this index also reversed for call below?
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxampindex , &first, &last);
+
+	  // sanity check: maximum should not be in first or last bin
+	  // if we should do a fit
+	  if (first!=maxampindex && last!=maxampindex) {
+	    // calculate how many samples we have 
+	    nsamples =  last - first + 1;	  
+	  }
+	}
+    }
+
+  return nsamples;
+}
 

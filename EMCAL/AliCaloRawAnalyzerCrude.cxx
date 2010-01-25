@@ -1,6 +1,3 @@
-#ifndef ALIEMCALRAWANALYZERPEAKFINDER_H
-#define ALIEMCALRAWANALYZERPEAKFINDER_H
-
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -18,38 +15,54 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-// The Peak-Finder algorithm
-// The amplitude is extracted  as a
-// weighted sum of the samples using the 
-// best possible weights.
+#include "AliCaloRawAnalyzerCrude.h"
+#include "AliCaloFitResults.h"
+#include "AliCaloBunchInfo.h"
 
 
-#include "AliEMCALRawAnalyzer.h"
-
-#define MAXSTART 3
-#define SAMPLERANGE 15
-#define SHIF 0.5
-
-class AliEMCALBunchInfo;
-
-class  AliEMCALRawAnalyzerPeakFinder : public AliEMCALRawAnalyzer
+AliCaloRawAnalyzerCrude::AliCaloRawAnalyzerCrude()
 {
- public:
-  AliEMCALRawAnalyzerPeakFinder();
-  virtual ~AliEMCALRawAnalyzerPeakFinder();
-  virtual AliEMCALFitResults Evaluate( const vector<AliEMCALBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
 
- private:
-  AliEMCALRawAnalyzerPeakFinder( const AliEMCALRawAnalyzerPeakFinder   & );
-  AliEMCALRawAnalyzerPeakFinder   & operator = ( const  AliEMCALRawAnalyzerPeakFinder  & );
+}
 
-  void LoadVectors();
-  double *fPFAmpVectors[MAXSTART][SAMPLERANGE]; // Vectors for Amplitude extraction 
-  double *fPFTofVectors[MAXSTART][SAMPLERANGE]; // Vectors for TOF extraction
-  double fTof; 
-  double fAmp;
 
-};
+AliCaloRawAnalyzerCrude::~AliCaloRawAnalyzerCrude()
+{
 
-#endif
+}
+
+
+AliCaloFitResults
+AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
+{
+  if( bunchvector.size()  <=  0 )
+    {
+      return AliCaloFitResults(-1, -1, -1, -1 , -1, -1, -1 );
+    }
+
+  Int_t amp = 0;
+  Float_t tof = -99;
+  const UShort_t *sig;
+  
+  double ped = EvaluatePedestal( bunchvector.at(0).GetData(), bunchvector.at(0).GetLength() ) ;
+
+  for( unsigned int i= 0; i < bunchvector.size(); ++i)
+    {
+      sig = bunchvector.at(i).GetData();
+      int length = bunchvector.at(i).GetLength(); 
+      
+      for(int j = 0; j < length; j ++)
+	if( sig[j] > amp  )
+	  {
+	    amp   = sig[j];
+	    tof   = i;		     
+	  }
+    }
+
+  //:EvaluatePedestal(const UShort_t * const data, const int length )
+  //  double ped = EvaluatePedestal(sig, length) ;
+  return  AliCaloFitResults(amp, ped, -1, amp - ped, tof, -1, -1 );
+  
+} //end Crude
+
+

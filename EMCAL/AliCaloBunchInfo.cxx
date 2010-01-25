@@ -1,6 +1,3 @@
-#ifndef ALIEMCALBUNCHINFO_H
-#define ALIEMCALBUNCHINFO_H
-
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -19,36 +16,52 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "Rtypes.h"
 
-// Container class to hold 
-// information  about ALTRO
-// Bunces from the altro stream.
-// Each bunch has a start marker, ( fStartTimebin ) 
-// the number of ADC samples in the bunch fLength, and a pointer
-// to the last (fStartTimebin + fLength ) time bin of the bunch.
-// 
-class  AliEMCALBunchInfo
+#include "AliCaloBunchInfo.h"
+
+// Container class to hold information 
+// about  of bunches.
+// Used by the
+// AliCaloRawAnalyzer
+// classes
+AliCaloBunchInfo::AliCaloBunchInfo( UInt_t start, Int_t length, const UShort_t * data ) :  fStartTimebin(start),
+											     fLength(length),
+											     fkData(data)
 {
- public:
-  AliEMCALBunchInfo( UInt_t starttimebin, Int_t length,  const UShort_t * data );
-  virtual ~AliEMCALBunchInfo();
 
-  AliEMCALBunchInfo( const AliEMCALBunchInfo  & rhs);
-  AliEMCALBunchInfo   & operator = ( const  AliEMCALBunchInfo & rhs);
+
+}
+
+
+
+AliCaloBunchInfo::~AliCaloBunchInfo()
+{
 
   
-  UInt_t GetStartBin( ) const { return fStartTimebin;};
-  Int_t GetLength() const { return fLength; };
-  const UShort_t *GetData() const { return fkData; };
+}
+
+
+
+AliCaloBunchInfo::AliCaloBunchInfo( const AliCaloBunchInfo  & rhs) :fStartTimebin( rhs.fStartTimebin ),
+								       fLength(  rhs.fLength ),
+								       fkData( rhs.fkData )
+{
   
- private:
-  AliEMCALBunchInfo();
-  UInt_t fStartTimebin;   //Starttimebin as given by the ALTRO stream
-  Int_t fLength;          //Length of the bunch
-  const UShort_t *fkData; //Pointer to the last data enetry of the bunch (data is reversed with respect to fStartTimebin)
-};
+  
+}
 
 
 
-#endif
+
+AliCaloBunchInfo&  AliCaloBunchInfo::operator = ( const  AliCaloBunchInfo & rhs)
+{
+  //This is just to get of compliation warning. Its not really needed
+  if(this != & rhs) 
+    {
+      fStartTimebin  = rhs.fStartTimebin;
+      fLength = rhs.fLength;
+      fkData = rhs.fkData;	
+    }
+  return *this;
+}
+

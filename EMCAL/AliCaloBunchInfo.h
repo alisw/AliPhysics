@@ -1,3 +1,6 @@
+#ifndef ALICALOBUNCHINFO_H
+#define ALICALOBUNCHINFO_H
+
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -16,52 +19,36 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "Rtypes.h"
 
-#include "AliEMCALFitResults.h"
-
-
-// Container class to hold results from fitting 
-// as well as other methods for
-// raw data signals extraction. The class memebers
-// fChi2Sig, fNdfSig is only relevant if a fitting procedure is
-// Applied. fStatus holds information on wether or not 
-// The signal was fitted sucessfully. fStatus might have a different meaning If other 
-// procedures than  A different meaning Fitting is applied 
-AliEMCALFitResults::AliEMCALFitResults(const UShort_t maxSig, const Float_t ped, 
-				       const Short_t fitstatus, const Float_t  amp,  
-				       const Float_t t0,  const Float_t chi,  
-				       const UShort_t ndf, UShort_t minSig ) : fMaxSig(maxSig),
-									       fPed(ped), 
-									       fStatus(fitstatus),
-									       fAmpSig(amp),
-									       fT0(t0),
-									       fChi2Sig(chi),
-									       fNdfSig(ndf),
-									       fMinSig(minSig) 
+// Container class to hold 
+// information  about ALTRO
+// Bunces from the altro stream.
+// Each bunch has a start marker, ( fStartTimebin ) 
+// the number of ADC samples in the bunch fLength, and a pointer
+// to the last (fStartTimebin + fLength ) time bin of the bunch.
+// 
+class  AliCaloBunchInfo
 {
- 
- 
-}
+ public:
+  AliCaloBunchInfo( UInt_t starttimebin, Int_t length,  const UShort_t * data );
+  virtual ~AliCaloBunchInfo();
 
+  AliCaloBunchInfo( const AliCaloBunchInfo  & rhs);
+  AliCaloBunchInfo   & operator = ( const  AliCaloBunchInfo & rhs);
 
-
-
-AliEMCALFitResults::AliEMCALFitResults(const UShort_t maxSig, const UShort_t minSig) : fMaxSig(maxSig),
-										       fPed(-98),
-										       fStatus( -1 ),
-										       fAmpSig( -1 ), 
-										       fT0(-99),  
-										       fChi2Sig( -1 ),
-										       fNdfSig( -1),
-										       fMinSig (minSig)
-{
   
-}
+  UInt_t GetStartBin( ) const { return fStartTimebin;};
+  Int_t GetLength() const { return fLength; };
+  const UShort_t *GetData() const { return fkData; };
+  
+ private:
+  AliCaloBunchInfo();
+  UInt_t fStartTimebin;   //Starttimebin as given by the ALTRO stream
+  Int_t fLength;          //Length of the bunch
+  const UShort_t *fkData; //Pointer to the last data enetry of the bunch (data is reversed with respect to fStartTimebin)
+};
 
 
 
-AliEMCALFitResults::~AliEMCALFitResults()
-{
-
-}
-
+#endif

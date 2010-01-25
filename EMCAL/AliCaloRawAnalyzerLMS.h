@@ -1,3 +1,5 @@
+#ifndef ALICALORAWANALYZERLMS_H
+#define ALICALORAWANALYZERLMS_H
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -17,51 +19,33 @@
  **************************************************************************/
 
 
-#include "AliEMCALBunchInfo.h"
+// Extraction of amplitude and peak position
+// FRom CALO raw data using
+// Chi square fit
 
-// Container class to hold information 
-// about  of bunches.
-// Used by the
-// AliEMCALRawAnalyzer
-// classes
-AliEMCALBunchInfo::AliEMCALBunchInfo( UInt_t start, Int_t length, const UShort_t * data ) :  fStartTimebin(start),
-											     fLength(length),
-											     fkData(data)
+#include "AliCaloRawAnalyzer.h"
+
+
+class  TF1;
+class  TGraph;
+
+class  AliCaloRawAnalyzerLMS : public AliCaloRawAnalyzer
 {
-
-
-}
-
-
-
-AliEMCALBunchInfo::~AliEMCALBunchInfo()
-{
-
+ public:
+  AliCaloRawAnalyzerLMS();
+  virtual ~AliCaloRawAnalyzerLMS();
+  virtual AliCaloFitResults  Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
+  void PrintFitResult(const TF1 *f) const;
   
-}
+ private:
+  AliCaloRawAnalyzerLMS(const AliCaloRawAnalyzerLMS & );
+  AliCaloRawAnalyzerLMS  & operator = (const AliCaloRawAnalyzerLMS  &);
+ 
+  double fXaxis[MAXSAMPLES]; //Axis if time bins, ( used by TGraph )
+  const double fkEulerSquared; //e^2 = 7.389056098930650227
+  TGraph *fSig;  // Signale holding the data to be fitted.
+  TF1 *fTf1;     // Analytical formula of the Semi Gaussian to be fitted
 
+};
 
-
-AliEMCALBunchInfo::AliEMCALBunchInfo( const AliEMCALBunchInfo  & rhs) :fStartTimebin( rhs.fStartTimebin ),
-								       fLength(  rhs.fLength ),
-								       fkData( rhs.fkData )
-{
-  
-  
-}
-
-
-
-
-AliEMCALBunchInfo&  AliEMCALBunchInfo::operator = ( const  AliEMCALBunchInfo & rhs)
-{
-  //This is just to get of compliation warning. Its not really needed
-  if(this != & rhs) 
-    {
-      fStartTimebin  = rhs.fStartTimebin;
-      fLength = rhs.fLength;
-      fkData = rhs.fkData;	
-    }
-  return *this;
-}
-
+#endif
