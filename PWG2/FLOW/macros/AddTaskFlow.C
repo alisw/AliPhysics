@@ -10,45 +10,133 @@
 
 // SETTING THE CUTS
 
-// event selection
-const Int_t multminESD = 3;  //used for CORRFW cuts 
-//const Int_t multmaxESD = 1000; //used for CORRFW cuts 
+//----------Event selection----------
+Bool_t UseMultCutforESD = kTRUE;
+//Bool_t UseMultCutforESD = kFALSE;
+const Int_t multminESD = 1;  //used for CORRFW cuts 
 const Int_t multmaxESD = 1000000; //used for CORRFW cuts 
 
-const Int_t multmin = 3;     //used for AliFlowEventSimple (to set the centrality)
-//const Int_t multmax = 100;     //used for AliFlowEventSimple (to set the centrality)
-const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
+//Bool_t UseMultCut = kTRUE;
+Bool_t UseMultCut = kFALSE;
+const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
+const Int_t multmax = 40;     //used for AliFlowEventSimple (to set the centrality)
+//const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
+//const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
 
 
-// For RP selection
-const Double_t ptmin1 = 0.0;
-const Double_t ptmax1 = 10.0;
-const Double_t ymin1  = -1.;
-const Double_t ymax1  = 1.;
-const Int_t mintrackrefsTPC1 = 2; //2;
-const Int_t mintrackrefsITS1 = 3;
-const Int_t charge1 = 1;
+//----------For RP selection----------
+//KINEMATICS (on generated and reconstructed tracks)
+Bool_t UseKineforRP =  kTRUE;
+const Double_t ptminRP = 0.0;
+const Double_t ptmaxRP = 10.0;
+const Double_t etaminRP  = -0.9;
+const Double_t etamaxRP  = 0.9;
+const Int_t    chargeRP = 1;  //not used
+
+//PID (on generated and reconstructed tracks)
 Bool_t UsePIDforRP = kFALSE;
-const Int_t PDG1 = 211;
-const Int_t minclustersTPC1 = 70;//50;
-const Int_t maxnsigmatovertex1 = 3;
+const Int_t PdgRP = 211;
 
-// For for POI selection
-const Double_t ptmin2 = 0.0;
-const Double_t ptmax2 = 10.0;
-const Double_t ymin2  = -1.;
-const Double_t ymax2  = 1.;
-const Int_t mintrackrefsTPC2 = 2; //2;
-const Int_t mintrackrefsITS2 = 3;
-const Int_t charge2 = 1;
+//TRACK QUALITY (on reconstructed tracks only)
+//see /CORRFW/AliCFTrackQualityCuts class
+Bool_t UseTrackQualityforRP =  kTRUE;
+const Int_t    minClustersTpcRP = 80;           //default = -1; 
+const Double_t maxChi2PerClusterTpcRP = 3.5;    //default = 1.e+09;
+const UShort_t minDedxClusterTpcRP = 0;
+const Int_t    minClustersItsRP = 2;            //panos
+const Double_t maxChi2PerClusterItsRP = 1.e+09; 
+const Int_t    minClustersTrdRP = -1;
+const Int_t    minTrackletTrdRP = -1;
+const Int_t    minTrackletTrdPidRP = -1;
+const Double_t maxChi2PerClusterTrdRP = 1.e+09;
+const ULong_t  statusRP = AliESDtrack::kTPCrefit;   //AliESDtrack::kTPCrefit &  AliESDtrack::kITSrefit 
+
+//PRIMARY (on reconstructed tracks only)
+//see /CORRFW/AliCFTrackIsPrimaryCuts class
+Bool_t UsePrimariesforRP = kTRUE;
+const Bool_t   spdVertexRP = kFALSE;
+const Bool_t   tpcVertexRP = kFALSE;
+const Float_t  minDcaToVertexXyRP = 0.;
+const Float_t  minDcaToVertexZRP = 0.;
+const Float_t  maxDcaToVertexXyRP = 2.4;         //default = 1.e+10;  //2.4;
+const Float_t  maxDcaToVertexZRP = 3.2;          //default = 1.e+10;  //3.2;
+const Bool_t   dcaToVertex2dRP = kFALSE;         //default = kFALSE;
+const Bool_t   absDcaToVertexRP = kTRUE;         //default = kTRUE;
+const Double_t minNSigmaToVertexRP = 0.;
+const Double_t maxNSigmaToVertexRP = 1.e+10; //3.; //1.e+10
+const Double_t maxSigmaDcaXySP = 1.e+10;
+const Double_t maxSigmaDcaZSP = 1.e+10;
+const Bool_t   requireSigmaToVertexSP = kFALSE;
+const Bool_t   acceptKinkDaughtersSP = kFALSE;  //default = kTRUE;
+
+//ACCEPTANCE (on generated tracks only : AliMCParticle)
+//see /CORRFW/AliCFAcceptanceCuts class
+Bool_t UseAcceptanceforRP =  kFALSE; 
+const Int_t  minTrackrefsItsRP = 0;//3;
+const Int_t  minTrackrefsTpcRP = 0;//2;
+const Int_t  minTrackrefsTrdRP = 0; 
+const Int_t  minTrackrefsTofRP = 0; 
+const Int_t  minTrackrefsMuonRP = 0; 
+//default for all is 0
+
+//----------For POI selection----------
+//KINEMATICS (on generated and reconstructed tracks)
+Bool_t UseKineforPOI = kTRUE;
+const Double_t ptminPOI = 0.0;
+const Double_t ptmaxPOI = 10.0;
+const Double_t etaminPOI  = -0.9;
+const Double_t etamaxPOI  = 0.9;
+const Int_t    chargePOI = 1;  //not used
+
+//PID (on generated and reconstructed tracks)
 Bool_t UsePIDforPOI = kFALSE;
-const Int_t PDG2 = 321;
-const Int_t minclustersTPC2 = 70; //50;
-const Int_t maxnsigmatovertex2 = 3;
+const Int_t PdgPOI = 321;
 
-// For manipulating the event (for testing purposes)
+//TRACK QUALITY (on reconstructed tracks only)
+//see /CORRFW/AliCFTrackQualityCuts class
+Bool_t UseTrackQualityforPOI = kTRUE;
+const Int_t    minClustersTpcPOI = 80;
+const Double_t maxChi2PerClusterTpcPOI = 3.5;    
+const UShort_t minDedxClusterTpcPOI = 0;
+const Int_t    minClustersItsPOI = 2;
+const Double_t maxChi2PerClusterItsPOI = 1.e+09;
+const Int_t    minClustersTrdPOI = -1;
+const Int_t    minTrackletTrdPOI = -1;
+const Int_t    minTrackletTrdPidPOI = -1;
+const Double_t maxChi2PerClusterTrdPOI = 1.e+09;
+const ULong_t  statusPOI = AliESDtrack::kTPCrefit;   
+
+//PRIMARY (on reconstructed tracks only)
+//see /CORRFW/AliCFTrackIsPrimaryCuts class
+Bool_t UsePrimariesforPOI = kTRUE;
+const Bool_t   spdVertexPOI = kFALSE;
+const Bool_t   tpcVertexPOI = kFALSE;
+const Float_t  minDcaToVertexXyPOI = 0.;
+const Float_t  minDcaToVertexZPOI = 0.;
+const Float_t  maxDcaToVertexXyPOI = 2.4;
+const Float_t  maxDcaToVertexZPOI = 3.2;
+const Bool_t   dcaToVertex2dPOI =  kFALSE;
+const Bool_t   absDcaToVertexPOI = kTRUE;
+const Double_t minNSigmaToVertexPOI = 0.;
+const Double_t maxNSigmaToVertexPOI = 1.e+10;  
+const Double_t maxSigmaDcaXyPOI = 1.e+10;
+const Double_t maxSigmaDcaZPOI = 1.e+10;
+const Bool_t   requireSigmaToVertexPOI = kFALSE;
+const Bool_t   acceptKinkDaughtersPOI = kFALSE;
+
+//ACCEPTANCE (on generated tracks only : AliMCParticle)
+//see /CORRFW/AliCFAcceptanceCuts class
+Bool_t UseAcceptanceforPOI = kFALSE;
+const Int_t minTrackrefsItsPOI = 3;
+const Int_t minTrackrefsTpcPOI = 2;
+const Int_t minTrackrefsTrdPOI = 0; 
+const Int_t minTrackrefsTofPOI = 0; 
+const Int_t minTrackrefsMuonPOI = 0; 
+
+
+//----------For Adding Flow to the Event----------
 const Bool_t AddToEvent = kFALSE;
-Double_t ellipticflow = 0.05;
+Double_t ellipticFlow = 0.05;
 
 
 AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, Bool_t* WEIGHTS)
@@ -106,84 +194,48 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     } 
   }
     
-  if (LYZ2SUM || LYZ2PROD) {
-    //read the outputfile of the first run
-    TString outputFileName = "AnalysisResults1.root"; 
-    TString pwd(gSystem->pwd());
-    pwd+="/";
-    pwd+=outputFileName.Data();
-    TFile *outputFile = NULL;
-    if(gSystem->AccessPathName(pwd.Data(),kFileExists))
-      {
-	cout<<"WARNING: You do not have an output file:"<<endl;
-	cout<<"         "<<pwd.Data()<<endl;
-	exit(0);
-      } else 
-	{
-	  outputFile = TFile::Open(pwd.Data(),"READ");
-	}
- 
-    if (LYZ2SUM){  
-      // read the output file from LYZ1SUM 
-      TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis" ;
-      inputFileNameLYZ2SUM += type;
-      //inputFileNameLYZ2SUM += ".root";
-      cout<<"The input file is "<<inputFileNameLYZ2SUM.Data()<<endl;
-      TFile* fInputFileLYZ2SUM = (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2SUM.Data());
-      
-      if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
-	cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ; 
-	break;
-      }
-      else {
-	TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("cobjLYZ1SUM");
-	if (!fInputListLYZ2SUM) {cout<<"list is NULL pointer!"<<endl;}
-      }
-      cout<<"LYZ2SUM input file/list read..."<<endl;
+  if (LYZ2SUM){  
+    // read the output file from LYZ1SUM 
+    TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis" ;
+    inputFileNameLYZ2SUM += type;
+    inputFileNameLYZ2SUM += ".root";
+    cout<<"The input file is "<<inputFileNameLYZ2SUM.Data()<<endl;
+    TFile* fInputFileLYZ2SUM = new TFile(inputFileNameLYZ2SUM.Data(),"READ");
+    if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
+      cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ; 
+      break;
     }
-
-    if (LYZ2PROD){  
-      // read the output file from LYZ1PROD 
-      TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis" ;
-      inputFileNameLYZ2PROD += type;
-      //inputFileNameLYZ2PROD += ".root";
-      cout<<"The input file is "<<inputFileNameLYZ2PROD.Data()<<endl;
-      TFile* fInputFileLYZ2PROD =  (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2PROD.Data());
-      if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
-	cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ; 
-	break;
-      }
-      else {
-	TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("cobjLYZ1PROD");
-	if (!fInputListLYZ2PROD) {cout<<"list is NULL pointer!"<<endl;}
-      }
-      cout<<"LYZ2PROD input file/list read..."<<endl;
+    else {
+      TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("cobjLYZ1SUM");
+      if (!fInputListLYZ2SUM) {cout<<"list is NULL pointer!"<<endl;}
     }
+    cout<<"LYZ2SUM input file/list read..."<<endl;
+  }
+if (LYZ2PROD){  
+    // read the output file from LYZ1PROD 
+    TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis" ;
+    inputFileNameLYZ2PROD += type;
+    inputFileNameLYZ2PROD += ".root";
+    cout<<"The input file is "<<inputFileNameLYZ2PROD.Data()<<endl;
+    TFile* fInputFileLYZ2PROD = new TFile(inputFileNameLYZ2PROD.Data(),"READ");
+    if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
+      cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ; 
+      break;
+    }
+    else {
+      TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("cobjLYZ1PROD");
+      if (!fInputListLYZ2PROD) {cout<<"list is NULL pointer!"<<endl;}
+    }
+    cout<<"LYZ2PROD input file/list read..."<<endl;
   }
   
-
   if (LYZEP) {
     // read the output file from LYZ2SUM
-    TString outputFileName = "AnalysisResults2.root"; 
-    TString pwd(gSystem->pwd());
-    pwd+="/";
-    pwd+=outputFileName.Data();
-    TFile *outputFile = NULL;
-    if(gSystem->AccessPathName(pwd.Data(),kFileExists))
-      {
-	cout<<"WARNING: You do not have an output file:"<<endl;
-	cout<<"         "<<pwd.Data()<<endl;
-	exit(0);
-      } else 
-	{
-	  outputFile = TFile::Open(pwd.Data(),"READ");
-	}
-
     TString inputFileNameLYZEP = "outputLYZ2SUManalysis" ;
     inputFileNameLYZEP += type;
-    //inputFileNameLYZEP += ".root";
+    inputFileNameLYZEP += ".root";
     cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
-    TFile* fInputFileLYZEP = (TFile*)outputFile->FindObjectAny(inputFileNameLYZEP.Data());
+    TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
     if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
       cerr << " ERROR: To run LYZEP you need the output file from LYZ2SUM. This file is not there! Please run LYZ2SUM first." << endl ; 
       break;
@@ -194,7 +246,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     }
     cout<<"LYZEP input file/list read..."<<endl;
   }
-  
+
 
 
   // Create the task, add it to the manager.
@@ -203,18 +255,20 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   if (QA) { 
     if(AddToEvent) { 
       taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kTRUE,1);
-      taskFE->SetEllipticFlowValue(ellipticflow); }    //TEST
+      taskFE->SetEllipticFlowValue(ellipticFlow); }    //TEST
     else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kTRUE); }
     taskFE->SetAnalysisType(type);
-    taskFE->SetMinMult(multmin);
-    taskFE->SetMaxMult(multmax);
+    if (UseMultCut) {
+      taskFE->SetMinMult(multmin);
+      taskFE->SetMaxMult(multmax);}
     mgr->AddTask(taskFE);
   }
   else { 
     taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kFALSE); 
     taskFE->SetAnalysisType(type);
-    taskFE->SetMinMult(multmin);
-    taskFE->SetMaxMult(multmax);
+    if (UseMultCut) {
+      taskFE->SetMinMult(multmin);
+      taskFE->SetMaxMult(multmax); }
     mgr->AddTask(taskFE);
   }
  
@@ -226,7 +280,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     TList* qaPOI = new TList();
   }
 
-  //############# event cuts on multiplicity
+  //----------Event cuts----------
   AliCFEventGenCuts* mcEventCuts = new AliCFEventGenCuts("mcEventCuts","MC-level event cuts");
   mcEventCuts->SetNTracksCut(multminESD,multmaxESD); 
   if (QA) { 
@@ -237,94 +291,33 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   if (QA) { 
     recEventCuts->SetQAOn(qaRP);
   }
-
-  //############# cuts on MC
-  AliCFTrackKineCuts* mcKineCuts1 = new AliCFTrackKineCuts("mcKineCuts1","MC-level kinematic cuts");
-  mcKineCuts1->SetPtRange(ptmin1,ptmax1);
-  mcKineCuts1->SetRapidityRange(ymin1,ymax1);
-  //mcKineCuts1->SetChargeMC(charge1);
-  if (QA) { 
-    mcKineCuts1->SetQAOn(qaRP);
-  }
-
-  AliCFTrackKineCuts* mcKineCuts2 = new AliCFTrackKineCuts("mcKineCuts2","MC-level kinematic cuts");
-  mcKineCuts2->SetPtRange(ptmin2,ptmax2);
-  mcKineCuts2->SetRapidityRange(ymin2,ymax2);
-  //mcKineCuts2->SetChargeMC(charge2);
-  if (QA) { 
-    mcKineCuts2->SetQAOn(qaPOI);
-  }
   
-  AliCFParticleGenCuts* mcGenCuts1 = new AliCFParticleGenCuts("mcGenCuts1","MC particle generation cuts for RP");
-  mcGenCuts1->SetRequireIsPrimary();
-  if (UsePIDforRP) {mcGenCuts1->SetRequirePdgCode(PDG1);}
+  //----------Cuts for RP----------
+  //KINEMATICS (MC and reconstructed)
+  AliCFTrackKineCuts* mcKineCutsRP = new AliCFTrackKineCuts("mcKineCutsRP","MC-level kinematic cuts");
+  mcKineCutsRP->SetPtRange(ptminRP,ptmaxRP);
+  mcKineCutsRP->SetEtaRange(etaminRP,etamaxRP);
+  //mcKineCutsRP->SetChargeMC(chargeRP);
   if (QA) { 
-    mcGenCuts1->SetQAOn(qaRP);
-  }
-  
-  AliCFParticleGenCuts* mcGenCuts2 = new AliCFParticleGenCuts("mcGenCuts2","MC particle generation cuts for POI");
-  mcGenCuts2->SetRequireIsPrimary();
-  if (UsePIDforPOI) {mcGenCuts2->SetRequirePdgCode(PDG2);}
-  if (QA) { 
-    mcGenCuts2->SetQAOn(qaPOI);
+    mcKineCutsRP->SetQAOn(qaRP);
   }
 
-  //############# Acceptance Cuts  
-  AliCFAcceptanceCuts *mcAccCuts1 = new AliCFAcceptanceCuts("mcAccCuts1","MC acceptance cuts");
-  mcAccCuts1->SetMinNHitITS(mintrackrefsITS1);
-  mcAccCuts1->SetMinNHitTPC(mintrackrefsTPC1);
+  AliCFTrackKineCuts *recKineCutsRP = new AliCFTrackKineCuts("recKineCutsRP","rec-level kine cuts");
+  recKineCutsRP->SetPtRange(ptminRP,ptmaxRP);
+  recKineCutsRP->SetEtaRange(etaminRP,etamaxRP);
+  //recKineCutsRP->SetChargeRec(chargeRP);
   if (QA) { 
-    mcAccCuts1->SetQAOn(qaRP);
+    recKineCutsRP->SetQAOn(qaRP);
   }
-  
-  AliCFAcceptanceCuts *mcAccCuts2 = new AliCFAcceptanceCuts("mcAccCuts2","MC acceptance cuts");
-  mcAccCuts2->SetMinNHitITS(mintrackrefsITS2);
-  mcAccCuts2->SetMinNHitTPC(mintrackrefsTPC2);
+
+  //PID (MC and reconstructed)
+  AliCFParticleGenCuts* mcGenCutsRP = new AliCFParticleGenCuts("mcGenCutsRP","MC particle generation cuts for RP");
+  mcGenCutsRP->SetRequireIsPrimary();
+  if (UsePIDforRP) {mcGenCutsRP->SetRequirePdgCode(PdgRP);}
   if (QA) { 
-    mcAccCuts2->SetQAOn(qaPOI);
+    mcGenCutsRP->SetQAOn(qaRP);
   }
-  //############# Rec-Level kinematic cuts
-  AliCFTrackKineCuts *recKineCuts1 = new AliCFTrackKineCuts("recKineCuts1","rec-level kine cuts");
-  recKineCuts1->SetPtRange(ptmin1,ptmax1);
-  recKineCuts1->SetRapidityRange(ymin1,ymax1);
-  //recKineCuts1->SetChargeRec(charge1);
-  if (QA) { 
-    recKineCuts1->SetQAOn(qaRP);
-  }
-  
-  AliCFTrackKineCuts *recKineCuts2 = new AliCFTrackKineCuts("recKineCuts2","rec-level kine cuts");
-  recKineCuts2->SetPtRange(ptmin2,ptmax2);
-  recKineCuts2->SetRapidityRange(ymin2,ymax2);
-  //recKineCuts2->SetChargeRec(charge2);
-  if (QA) { 
-    recKineCuts2->SetQAOn(qaPOI);
-  }
-  
-  AliCFTrackQualityCuts *recQualityCuts1 = new AliCFTrackQualityCuts("recQualityCuts1","rec-level quality cuts");
-  recQualityCuts1->SetMinNClusterTPC(minclustersTPC1);
-  recQualityCuts1->SetStatus(AliESDtrack::kITSrefit);
-  if (QA) { 
-    recQualityCuts1->SetQAOn(qaRP);
-  }
-  AliCFTrackQualityCuts *recQualityCuts2 = new AliCFTrackQualityCuts("recQualityCuts2","rec-level quality cuts");
-  recQualityCuts2->SetMinNClusterTPC(minclustersTPC2);
-  recQualityCuts2->SetStatus(AliESDtrack::kITSrefit);
-  if (QA) { 
-    recQualityCuts2->SetQAOn(qaPOI);
-  }
-  
-  AliCFTrackIsPrimaryCuts *recIsPrimaryCuts1 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts1","rec-level isPrimary cuts");
-  recIsPrimaryCuts1->SetMaxNSigmaToVertex(maxnsigmatovertex1);
-  if (QA) { 
-    recIsPrimaryCuts1->SetQAOn(qaRP);
-  }
-  
-  AliCFTrackIsPrimaryCuts *recIsPrimaryCuts2 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts2","rec-level isPrimary cuts");
-  recIsPrimaryCuts2->SetMaxNSigmaToVertex(maxnsigmatovertex2);
-  if (QA) { 
-    recIsPrimaryCuts2->SetQAOn(qaPOI);
-  }
-  
+
   int n_species = AliPID::kSPECIES ;
   Double_t* prior = new Double_t[n_species];
   
@@ -334,112 +327,250 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   prior[3] = 0.0928785 ;
   prior[4] = 0.0625243 ;
   
-  AliCFTrackCutPid* cutPID1 = NULL;
+  AliCFTrackCutPid* cutPidRP = NULL;
   if(UsePIDforRP) {
-    AliCFTrackCutPid* cutPID1 = new AliCFTrackCutPid("cutPID1","ESD_PID for RP") ;
-    cutPID1->SetPriors(prior);
-    cutPID1->SetProbabilityCut(0.0);
-    cutPID1->SetDetectors("TPC TOF");
+    cutPidRP = new AliCFTrackCutPid("cutPidRP","ESD_PID for RP") ;
+    cutPidRP->SetPriors(prior);
+    cutPidRP->SetProbabilityCut(0.0);
+    cutPidRP->SetDetectors("TPC TOF");
     switch(TMath::Abs(PDG1)) {
-    case 11   : cutPID1->SetParticleType(AliPID::kElectron, kTRUE); break;
-    case 13   : cutPID1->SetParticleType(AliPID::kMuon    , kTRUE); break;
-    case 211  : cutPID1->SetParticleType(AliPID::kPion    , kTRUE); break;
-    case 321  : cutPID1->SetParticleType(AliPID::kKaon    , kTRUE); break;
-    case 2212 : cutPID1->SetParticleType(AliPID::kProton  , kTRUE); break;
+    case 11   : cutPidRP->SetParticleType(AliPID::kElectron, kTRUE); break;
+    case 13   : cutPidRP->SetParticleType(AliPID::kMuon    , kTRUE); break;
+    case 211  : cutPidRP->SetParticleType(AliPID::kPion    , kTRUE); break;
+    case 321  : cutPidRP->SetParticleType(AliPID::kKaon    , kTRUE); break;
+    case 2212 : cutPidRP->SetParticleType(AliPID::kProton  , kTRUE); break;
     default   : printf("UNDEFINED PID\n"); break;
     }
     if (QA) { 
-      cutPID1->SetQAOn(qaRP); 
+      cutPidRP->SetQAOn(qaRP); 
     }
   }
   
-  AliCFTrackCutPid* cutPID2 = NULL;
+  //TRACK QUALITY
+  AliCFTrackQualityCuts *recQualityCutsRP = new AliCFTrackQualityCuts("recQualityCutsRP","rec-level quality cuts");
+  recQualityCutsRP->SetMinNClusterTPC(minClustersTpcRP);
+  //recQualityCutsRP->SetMinFoundClusterTPC(minFoundClustersTpcRP); //only for internal TPC QA
+  recQualityCutsRP->SetMaxChi2PerClusterTPC(maxChi2PerClusterTpcRP);
+  recQualityCutsRP->SetMinNdEdxClusterTPC(minDedxClusterTpcRP);     //to reject secondaries
+
+  recQualityCutsRP->SetMinNClusterITS(minClustersItsRP);
+  recQualityCutsRP->SetMaxChi2PerClusterITS(maxChi2PerClusterItsRP);
+
+  recQualityCutsRP->SetMinNClusterTRD(minClustersTrdRP);
+  recQualityCutsRP->SetMinNTrackletTRD(minTrackletTrdRP);
+  recQualityCutsRP->SetMinNTrackletTRDpid(minTrackletTrdPidRP);
+  recQualityCutsRP->SetMaxChi2PerTrackletTRD(maxChi2PerClusterTrdRP);
+  recQualityCutsRP->SetStatus(statusRP);  
+  if (QA) { 
+    recQualityCutsRP->SetQAOn(qaRP);
+  }
+
+  /* 
+  //How to set this?
+  void SetMaxCovDiagonalElements(Float_t c1=1.e+09, Float_t c2=1.e+09, Float_t c3=1.e+09, Float_t c4=1.e+09, Float_t c5=1.e+09)
+    {fCovariance11Max=c1;fCovariance22Max=c2;fCovariance33Max=c3;fCovariance44Max=c4;fCovariance55Max=c5;}
+  */
+
+  //PRIMARIES
+  AliCFTrackIsPrimaryCuts *recIsPrimaryCutsRP = new AliCFTrackIsPrimaryCuts("recIsPrimaryCutsRP","rec-level isPrimary cuts");
+  recIsPrimaryCutsRP->UseSPDvertex(spdVertexRP);
+  recIsPrimaryCutsRP->UseTPCvertex(tpcVertexRP);
+  recIsPrimaryCutsRP->SetMinDCAToVertexXY(minDcaToVertexXyRP); 
+  recIsPrimaryCutsRP->SetMinDCAToVertexZ(minDcaToVertexZRP);
+  recIsPrimaryCutsRP->SetMaxDCAToVertexXY(maxDcaToVertexXyRP);
+  recIsPrimaryCutsRP->SetMaxDCAToVertexZ(maxDcaToVertexZRP); 
+  recIsPrimaryCutsRP->SetDCAToVertex2D(dcaToVertex2dRP);
+  recIsPrimaryCutsRP->SetAbsDCAToVertex(absDcaToVertexRP);
+  recIsPrimaryCutsRP->SetMinNSigmaToVertex(minNSigmaToVertexRP); 
+  recIsPrimaryCutsRP->SetMaxNSigmaToVertex(maxNSigmaToVertexRP); 
+  recIsPrimaryCutsRP->SetMaxSigmaDCAxy(maxSigmaDcaXySP);
+  recIsPrimaryCutsRP->SetMaxSigmaDCAz(maxSigmaDcaZSP);
+  recIsPrimaryCutsRP->SetRequireSigmaToVertex(requireSigmaToVertexSP);
+  recIsPrimaryCutsRP->SetAcceptKinkDaughters(acceptKinkDaughtersSP);
+  if (QA) { 
+    recIsPrimaryCutsRP->SetQAOn(qaRP);
+  }
+  
+  //ACCEPTANCE
+  AliCFAcceptanceCuts *mcAccCutsRP = new AliCFAcceptanceCuts("mcAccCutsRP","MC acceptance cuts");
+  mcAccCutsRP->SetMinNHitITS(minTrackrefsItsRP);
+  mcAccCutsRP->SetMinNHitTPC(minTrackrefsTpcRP);
+  mcAccCutsRP->SetMinNHitTRD(minTrackrefsTrdRP); 
+  mcAccCutsRP->SetMinNHitTOF(minTrackrefsTofRP);
+  mcAccCutsRP->SetMinNHitMUON(minTrackrefsMuonRP);
+  if (QA) { 
+    mcAccCutsRP->SetQAOn(qaRP);
+  }
+
+  
+  //----------Cuts for POI----------
+  //KINEMATICS (MC and reconstructed)
+  AliCFTrackKineCuts* mcKineCutsPOI = new AliCFTrackKineCuts("mcKineCutsPOI","MC-level kinematic cuts");
+  mcKineCutsPOI->SetPtRange(ptminPOI,ptmaxPOI);
+  mcKineCutsPOI->SetEtaRange(etaminPOI,etamaxPOI);
+  //mcKineCutsPOI->SetChargeMC(chargePOI);
+  if (QA) { 
+    mcKineCutsPOI->SetQAOn(qaPOI);
+  }
+  
+  AliCFTrackKineCuts *recKineCutsPOI = new AliCFTrackKineCuts("recKineCutsPOI","rec-level kine cuts");
+  recKineCutsPOI->SetPtRange(ptminPOI,ptmaxPOI);
+  recKineCutsPOI->SetEtaRange(etaminPOI,etamaxPOI);
+  //recKineCutsPOI->SetChargeRec(chargePOI);
+  if (QA) { 
+    recKineCutsPOI->SetQAOn(qaPOI);
+  }
+  
+  //PID (MC and reconstructed)
+  AliCFParticleGenCuts* mcGenCutsPOI = new AliCFParticleGenCuts("mcGenCutsPOI","MC particle generation cuts for POI");
+  mcGenCutsPOI->SetRequireIsPrimary();
+  if (UsePIDforPOI) {mcGenCutsPOI->SetRequirePdgCode(PdgPOI);}
+  if (QA) { 
+    mcGenCutsPOI->SetQAOn(qaPOI);
+  }
+
+  AliCFTrackCutPid* cutPidPOI = NULL;
   if (UsePIDforPOI) {
-    AliCFTrackCutPid* cutPID2 = new AliCFTrackCutPid("cutPID2","ESD_PID for POI") ;
-    cutPID2->SetPriors(prior);
-    cutPID2->SetProbabilityCut(0.0);
-    cutPID2->SetDetectors("TPC TOF");
+    cutPidPOI = new AliCFTrackCutPid("cutPidPOI","ESD_PID for POI") ;
+    cutPidPOI->SetPriors(prior);
+    cutPidPOI->SetProbabilityCut(0.0);
+    cutPidPOI->SetDetectors("TPC TOF");
     switch(TMath::Abs(PDG2)) {
-    case 11   : cutPID2->SetParticleType(AliPID::kElectron, kTRUE); break;
-    case 13   : cutPID2->SetParticleType(AliPID::kMuon    , kTRUE); break;
-    case 211  : cutPID2->SetParticleType(AliPID::kPion    , kTRUE); break;
-    case 321  : cutPID2->SetParticleType(AliPID::kKaon    , kTRUE); break;
-    case 2212 : cutPID2->SetParticleType(AliPID::kProton  , kTRUE); break;
+    case 11   : cutPidPOI->SetParticleType(AliPID::kElectron, kTRUE); break;
+    case 13   : cutPidPOI->SetParticleType(AliPID::kMuon    , kTRUE); break;
+    case 211  : cutPidPOI->SetParticleType(AliPID::kPion    , kTRUE); break;
+    case 321  : cutPidPOI->SetParticleType(AliPID::kKaon    , kTRUE); break;
+    case 2212 : cutPidPOI->SetParticleType(AliPID::kProton  , kTRUE); break;
     default   : printf("UNDEFINED PID\n"); break;
     }
     if (QA) { 
-      cutPID2->SetQAOn(qaPOI);
+      cutPidPOI->SetQAOn(qaPOI);
     }
   }
+
+  //TRACK QUALITY
+  AliCFTrackQualityCuts *recQualityCutsPOI = new AliCFTrackQualityCuts("recQualityCutsPOI","rec-level quality cuts");
+  recQualityCutsPOI->SetMinNClusterTPC(minClustersTpcPOI);
+  //recQualityCutsPOI->SetMinFoundClusterTPC(minFoundClustersTpcPOI); //only for internal TPC QA
+  recQualityCutsPOI->SetMaxChi2PerClusterTPC(maxChi2PerClusterTpcPOI);
+  recQualityCutsPOI->SetMinNdEdxClusterTPC(minDedxClusterTpcPOI);     //to reject secondaries
+
+  recQualityCutsPOI->SetMinNClusterITS(minClustersItsPOI);
+  recQualityCutsPOI->SetMaxChi2PerClusterITS(maxChi2PerClusterItsPOI);
+
+  recQualityCutsPOI->SetMinNClusterTRD(minClustersTrdPOI);
+  recQualityCutsPOI->SetMinNTrackletTRD(minTrackletTrdPOI);
+  recQualityCutsPOI->SetMinNTrackletTRDpid(minTrackletTrdPidPOI);
+  recQualityCutsPOI->SetMaxChi2PerTrackletTRD(maxChi2PerClusterTrdPOI);
+  recQualityCutsPOI->SetStatus(statusPOI); 
+  if (QA) { 
+    recQualityCutsPOI->SetQAOn(qaPOI);
+  }
+
+  //PRIMARIES
+  AliCFTrackIsPrimaryCuts *recIsPrimaryCutsPOI = new AliCFTrackIsPrimaryCuts("recIsPrimaryCutsPOI","rec-level isPrimary cuts");
+  recIsPrimaryCutsPOI->UseSPDvertex(spdVertexPOI);
+  recIsPrimaryCutsPOI->UseTPCvertex(tpcVertexPOI);
+  recIsPrimaryCutsPOI->SetMinDCAToVertexXY(minDcaToVertexXyPOI); 
+  recIsPrimaryCutsPOI->SetMinDCAToVertexZ(minDcaToVertexZPOI);
+  recIsPrimaryCutsPOI->SetMaxDCAToVertexXY(maxDcaToVertexXyPOI);
+  recIsPrimaryCutsPOI->SetMaxDCAToVertexZ(maxDcaToVertexZPOI); 
+  recIsPrimaryCutsPOI->SetDCAToVertex2D(dcaToVertex2dPOI);
+  recIsPrimaryCutsPOI->SetAbsDCAToVertex(absDcaToVertexPOI);
+  recIsPrimaryCutsPOI->SetMinNSigmaToVertex(minNSigmaToVertexPOI); 
+  recIsPrimaryCutsPOI->SetMaxNSigmaToVertex(maxNSigmaToVertexPOI); 
+  recIsPrimaryCutsPOI->SetMaxSigmaDCAxy(maxSigmaDcaXyPOI);
+  recIsPrimaryCutsPOI->SetMaxSigmaDCAz(maxSigmaDcaZPOI);
+  recIsPrimaryCutsPOI->SetRequireSigmaToVertex(requireSigmaToVertexPOI);
+  recIsPrimaryCutsPOI->SetAcceptKinkDaughters(acceptKinkDaughtersPOI);
+  if (QA) { 
+    recIsPrimaryCutsPOI->SetQAOn(qaPOI);
+  }
+
+  //ACCEPTANCE
+  AliCFAcceptanceCuts *mcAccCutsPOI = new AliCFAcceptanceCuts("mcAccCutsPOI","MC acceptance cuts");
+  mcAccCutsPOI->SetMinNHitITS(minTrackrefsItsPOI);
+  mcAccCutsPOI->SetMinNHitTPC(minTrackrefsTpcPOI);
+  mcAccCutsPOI->SetMinNHitTRD(minTrackrefsTrdPOI); 
+  mcAccCutsPOI->SetMinNHitTOF(minTrackrefsTofPOI);
+  mcAccCutsPOI->SetMinNHitMUON(minTrackrefsMuonPOI);
+  if (QA) { 
+    mcAccCutsPOI->SetQAOn(qaPOI);
+  }
+
+     
   
+  //----------Create Cut Lists----------
   printf("CREATE EVENT CUTS\n");
-  TObjArray* mcEventList = new TObjArray(0);
-  mcEventList->AddLast(mcEventCuts);
+  TObjArray* mcEventList = new TObjArray(0);  
+  if (UseMultCutforESD) mcEventList->AddLast(mcEventCuts);//cut on mult
     
   TObjArray* recEventList = new TObjArray(0);
-  recEventList->AddLast(recEventCuts);
+  if (UseMultCutforESD) recEventList->AddLast(recEventCuts);//cut on mult
 
   printf("CREATE MC KINE CUTS\n");
-  TObjArray* mcList1 = new TObjArray(0);
-  mcList1->AddLast(mcKineCuts1);
-  mcList1->AddLast(mcGenCuts1);
+  TObjArray* mcListRP = new TObjArray(0);
+  if (UseKineforRP) mcListRP->AddLast(mcKineCutsRP); //cut on pt/eta/phi
+  mcListRP->AddLast(mcGenCutsRP); //cut on primary and if (UsePIDforRP) MC PID
   
-  TObjArray* mcList2 = new TObjArray(0);
-  mcList2->AddLast(mcKineCuts2);
-  mcList2->AddLast(mcGenCuts2);
+  TObjArray* mcListPOI = new TObjArray(0);
+  if (UseKineforPOI) mcListPOI->AddLast(mcKineCutsPOI); //cut on pt/eta/phi
+  mcListPOI->AddLast(mcGenCutsPOI); //cut on primary and if (UsePIDforPOI) MC PID
   
-  printf("CREATE ACCEPTANCE CUTS\n");
-  TObjArray* accList1 = new TObjArray(0) ;
-  accList1->AddLast(mcAccCuts1);
+  printf("CREATE MC ACCEPTANCE CUTS\n");
+  TObjArray* accListRP = new TObjArray(0) ;
+  if (UseAcceptanceforRP) accListRP->AddLast(mcAccCutsRP); //cut on number of track references
   
-  TObjArray* accList2 = new TObjArray(0) ;
-  accList2->AddLast(mcAccCuts2);
+  TObjArray* accListPOI = new TObjArray(0) ;
+  if (UseAcceptanceforPOI) accListPOI->AddLast(mcAccCutsPOI); //cut on number of track references
   
-  printf("CREATE RECONSTRUCTION CUTS\n");
-  TObjArray* recList1 = new TObjArray(0) ;
-  recList1->AddLast(recKineCuts1);
-  recList1->AddLast(recQualityCuts1);
-  recList1->AddLast(recIsPrimaryCuts1);
+  printf("CREATE ESD RECONSTRUCTION CUTS\n");
+  TObjArray* recListRP = new TObjArray(0) ;
+  if (UseKineforRP)         recListRP->AddLast(recKineCutsRP); //cut on pt/eta/phi
+  if (UseTrackQualityforRP) recListRP->AddLast(recQualityCutsRP);
+  if (UsePrimariesforRP)    recListRP->AddLast(recIsPrimaryCutsRP); //cut if it is a primary
   
-  TObjArray* recList2 = new TObjArray(0) ;
-  recList2->AddLast(recKineCuts2);
-  recList2->AddLast(recQualityCuts2);
-  recList2->AddLast(recIsPrimaryCuts2);
+  TObjArray* recListPOI = new TObjArray(0) ;
+  if (UseKineforPOI)         recListPOI->AddLast(recKineCutsPOI); //cut on pt/eta/phi
+  if (UseTrackQualityforPOI) recListPOI->AddLast(recQualityCutsPOI);
+  if (UsePrimariesforPOI)    recListPOI->AddLast(recIsPrimaryCutsPOI); //cut if it is a primary
   
-  printf("CREATE PID CUTS\n");
-  TObjArray* fPIDCutList1 = new TObjArray(0) ;
-  if(UsePIDforRP) {fPIDCutList1->AddLast(cutPID1);}
+  printf("CREATE ESD PID CUTS\n");
+  TObjArray* fPIDCutListRP = new TObjArray(0) ;
+  if(UsePIDforRP) {fPIDCutListRP->AddLast(cutPidRP);} //cut on ESD PID
   
-  TObjArray* fPIDCutList2 = new TObjArray(0) ;
-  if (UsePIDforPOI)  {fPIDCutList2->AddLast(cutPID2);}
+  TObjArray* fPIDCutListPOI = new TObjArray(0) ;
+  if (UsePIDforPOI)  {fPIDCutListPOI->AddLast(cutPidPOI);} //cut on ESD PID
   
+
+  //----------Add Cut Lists to the CF Manager----------
   printf("CREATE INTERFACE AND CUTS\n");
-  AliCFManager* cfmgr1 = new AliCFManager();
-  cfmgr1->SetNStepEvent(3);
-  cfmgr1->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList); 
-  cfmgr1->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList); 
-  cfmgr1->SetNStepParticle(4); 
-  cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);
-  cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);
-  cfmgr1->SetParticleCutsList(AliCFManager::kPartRecCuts,recList1);
-  cfmgr1->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList1);
+  AliCFManager* cfmgrRP = new AliCFManager();
+  cfmgrRP->SetNStepEvent(3);
+  cfmgrRP->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList); 
+  cfmgrRP->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList); 
+  cfmgrRP->SetNStepParticle(4); 
+  cfmgrRP->SetParticleCutsList(AliCFManager::kPartGenCuts,mcListRP);
+  cfmgrRP->SetParticleCutsList(AliCFManager::kPartAccCuts,accListRP);
+  cfmgrRP->SetParticleCutsList(AliCFManager::kPartRecCuts,recListRP);
+  cfmgrRP->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutListRP);
   
-  AliCFManager* cfmgr2 = new AliCFManager();
-  cfmgr1->SetNStepEvent(3);
-  cfmgr1->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList); 
-  cfmgr1->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList); 
-  cfmgr2->SetNStepParticle(4); 
-  cfmgr2->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList2);
-  cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList2);
-  cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
-  cfmgr2->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList2);
+  AliCFManager* cfmgrPOI = new AliCFManager();
+  cfmgrPOI->SetNStepEvent(3);
+  cfmgrPOI->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList); 
+  cfmgrPOI->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList); 
+  cfmgrPOI->SetNStepParticle(4); 
+  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartGenCuts,mcListPOI);
+  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartAccCuts,accListPOI);
+  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartRecCuts,recListPOI);
+  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutListPOI);
   
   if (QA) {
     taskFE->SetQAList1(qaRP);
     taskFE->SetQAList2(qaPOI);
   }
-  taskFE->SetCFManager1(cfmgr1);
-  taskFE->SetCFManager2(cfmgr2);
+  taskFE->SetCFManager1(cfmgrRP);
+  taskFE->SetCFManager2(cfmgrPOI);
 
 
 
