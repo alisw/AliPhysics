@@ -61,7 +61,8 @@
 ClassImp(AliAnalysisTaskKMeans)
 
 AliAnalysisTaskKMeans::AliAnalysisTaskKMeans() 
-    : AliAnalysisTaskSE() 
+    : AliAnalysisTaskSE()
+    ,fK(0)
     ,fHists(0)
     ,fH1CEta(0)
     ,fH1CPhi(0)
@@ -82,6 +83,8 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans()
     ,fH2DPhiEtaLR(0)
     ,fH2DPhiEtaC(0)
     ,fH2DPhiEtaCR(0)
+    ,fH1Resp(0)
+    ,fH1RespR(0)
     ,fCuts(0)
 {
   //
@@ -92,6 +95,7 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans()
 //________________________________________________________________________
 AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const char *name) 
     : AliAnalysisTaskSE(name) 
+      ,fK(0)
       ,fHists(0)
       ,fH1CEta(0)
       ,fH1CPhi(0)
@@ -112,6 +116,8 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const char *name)
       ,fH2DPhiEtaLR(0)
       ,fH2DPhiEtaC(0)
       ,fH2DPhiEtaCR(0)
+      ,fH1Resp(0)
+      ,fH1RespR(0)
       ,fCuts(0)
 {
   //
@@ -149,7 +155,8 @@ void AliAnalysisTaskKMeans::UserCreateOutputObjects()
     fH2DPhiEtaC   = new TH2F("fH2DPhiEtaC","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
     fH2DPhiEtaCR  = new TH2F("fH2DPhiEtaCR","eta phi distribution", 31, 0., TMath::Pi(), 20, 0., 2.);
     fH1DRR        = new TH1F("fH1DRR",    "dR distribution", 50, 0., 5.);
-    
+    fH1Resp       = new TH1F("fH1Resp",   "Responsibility", 50, 0., 1.);
+    fH1RespR      = new TH1F("fH1RespR",  "Responsibility", 50, 0., 1.);
     fHists->SetOwner();
 
     fHists->Add(fH1CEta);
@@ -171,9 +178,10 @@ void AliAnalysisTaskKMeans::UserCreateOutputObjects()
     fHists->Add(fH2DPhiEtaC);
     fHists->Add(fH2DPhiEtaCR);
     fHists->Add(fH1DRR);
-    
+    fHists->Add(fH1RespR);
+    fHists->Add(fH1Resp);    
     //
-    AliKMeansClustering::SetBeta(20.);
+    AliKMeansClustering::SetBeta(4.);
     
 }
 
@@ -238,10 +246,11 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
       return;
   }
   //
-  AliKMeansClustering::SoftKMeans(2, ic, phi, eta, mPhi, mEta, rk);
+  AliKMeansClustering::SoftKMeans(fK, ic, phi, eta, mPhi, mEta, rk);
   //
   // Sort
-  TMath::Sort(2, rk, ind);
+  TMath::Sort(fK, rk, ind);
+  fH1Resp->Fill(rk[ind[0]]/(rk[0]+rk[1]));
   //
   // Analyse
   //
@@ -298,10 +307,11 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
 
   // Randomized phi
   //
-  AliKMeansClustering::SoftKMeans(2, ic, phiR, etaR, mPhi, mEta, rk);
+  AliKMeansClustering::SoftKMeans(fK, ic, phiR, etaR, mPhi, mEta, rk);
   //
   // Sort
-  TMath::Sort(2, rk, ind);
+  TMath::Sort(fK, rk, ind);
+  fH1RespR->Fill(rk[ind[0]]/(rk[0]+rk[1]));
   //
   // Analyse
   //
