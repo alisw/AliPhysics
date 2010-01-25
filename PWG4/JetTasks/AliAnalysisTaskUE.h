@@ -61,6 +61,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   SetConePosition(Int_t val)     { fConePosition= val; }
     void   SetUseSingleCharge()  { fUseSingleCharge = kTRUE; } 
     void   SetUseNegativeChargeType()        { fUsePositiveCharge = kFALSE; }
+    void   SetDoNotNormalizeQuantities()  { fIsNorm2Area = kFALSE; }
     // Jet cuts
     void   SetPtMinChPartJet( Double_t val )  { fChJetPtMin = val; }
     void   SetJet1EtaCut( Double_t val )      { fJet1EtaCut = val; }
@@ -100,6 +101,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     Int_t   fBinsPtInHist;     //  # bins for Pt histos range
     Double_t   fMinJetPtInHist;   //  min Jet Pt value for histo range
     Double_t   fMaxJetPtInHist;   //  max Jet Pt value for histo range
+    Bool_t     fIsNorm2Area;      // Apply Area Normalization to collected observables
     
     // For MC
     Bool_t fUseMCParticleBranch;  // Run Over mcparticles branch in AOD
@@ -197,6 +199,19 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     TH1F*  fhRegionAvePartPtMinVsEt; //!
     TH1F*  fhRegionMaxPartPtMaxVsEt; //!
     
+    TH1F*  fhRegForwardSumPtVsEt;    //!
+    TH1F*  fhRegForwardMultVsEt;     //!
+    TH1F*  fhRegBackwardSumPtVsEt;   //!
+    TH1F*  fhRegBackwardMultVsEt;    //!
+    TH2F*  fhRegForwardMult;         //!
+    TH2F*  fhRegForwardSumPtvsMult;  //!
+    TH2F*  fhRegBackwardMult;        //!
+    TH2F*  fhRegBackwardSumPtvsMult; //!
+    TH2F*  fhRegForwardPartPtDistVsEt; //!
+    TH2F*  fhRegBackwardPartPtDistVsEt; //!
+    TH2F*  fhRegTransMult;         //!
+    TH2F*  fhRegTransSumPtVsMult;    //!
+
     //        TH2F*  fhValidRegion; //! test to be canceled
     
     TProfile* fh1Xsec;               //!
