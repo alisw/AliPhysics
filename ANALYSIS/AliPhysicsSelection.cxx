@@ -38,6 +38,22 @@
 // To print statistics after processing use:
 //   fPhysicsSelection->Print();
 //
+// Usually the class selects the trigger scheme by itself depending on the run number.
+// Nevertheless, you can do that manually by calling AddCollisionTriggerClass() and AddBGTriggerClass()
+// Example:
+// To define the class CINT1B-ABCE-NOPF-ALL as collision trigger (those will be accepted as  
+// collision candidates when they pass the selection):
+//   AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL #769 #3119");
+// To select on bunch crossing IDs in addition, use:
+//   AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL #769 #3119");
+// To define the class CINT1A-ABCE-NOPF-ALL as a background trigger (those will only be counted
+// for the control histograms):
+//   AddBGTriggerClass("+CINT1A-ABCE-NOPF-ALL");
+// You can also specify more than one trigger class in a string or you can require that some are *not*
+// present. The following line would require CSMBA-ABCE-NOPF-ALL, but CSMBB-ABCE-NOPF-ALL is not allowed
+// to be present:
+//   AddBGTriggerClass("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL");
+//
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN
 //-------------------------------------------------------------------------
 
@@ -107,6 +123,9 @@ Bool_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
   // format of trigger: +TRIGGER1 -TRIGGER2
   //   requires TRIGGER1 and rejects TRIGGER2
   
+  Bool_t foundBCRequirement = kFALSE;
+  Bool_t foundCorrectBC = kFALSE;
+  
   TString str(trigger);
   TObjArray* tokens = str.Tokenize(" ");
   
@@ -114,28 +133,49 @@ Bool_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
   {
     TString str2(((TObjString*) tokens->At(i))->String());
     
-    if (str2[0] != '+' && str2[0] != '-')
-      AliFatal(Form("Invalid trigger syntax: %s", trigger));
+    if (str2[0] == '+' || str2[0] == '-')
+    {
+      Bool_t flag = (str2[0] == '+');
       
-    Bool_t flag = (str2[0] == '+');
-    
-    str2.Remove(0, 1);
-    
-    if (flag && !aEsd->IsTriggerClassFired(str2))
-    {
-      AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is not present", str2.Data()));
-      delete tokens;
-      return kFALSE;
+      str2.Remove(0, 1);
+      
+      if (flag && !aEsd->IsTriggerClassFired(str2))
+      {
+        AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is not present", str2.Data()));
+        delete tokens;
+        return kFALSE;
+      }
+      if (!flag && aEsd->IsTriggerClassFired(str2))
+      {
+        AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is present", str2.Data()));
+        delete tokens;
+        return kFALSE;
+      }
     }
-    if (!flag && aEsd->IsTriggerClassFired(str2))
+    else if (str2[0] == '#')
     {
-      AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is present", str2.Data()));
-      delete tokens;
-      return kFALSE;
+      foundBCRequirement = kTRUE;
+    
+      str2.Remove(0, 1);
+      
+      Int_t bcNumber = str2.Atoi();
+      AliDebug(AliLog::kDebug, Form("Checking for bunch crossing number %d", bcNumber));
+      
+      if (aEsd->GetBunchCrossNumber() == bcNumber)
+      {
+        foundCorrectBC = kTRUE;
+        AliDebug(AliLog::kDebug, Form("Found correct bunch crossing %d", bcNumber));
+      }
     }
+    else
+      AliFatal(Form("Invalid trigger syntax: %s", trigger));
   }
   
   delete tokens;
+  
+  if (foundBCRequirement && !foundCorrectBC)
+    return kFALSE;
+  
   return kTRUE;
 }
     

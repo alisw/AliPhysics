@@ -110,7 +110,7 @@ void AliPhysicsSelectionTask::Terminate(Option_t *)
   if (fPhysicsSelection)
   {
     fPhysicsSelection->Print();
-    fPhysicsSelection->SaveHistograms("physics_selection");
+    fPhysicsSelection->SaveHistograms();
   }
     
   fout->Write();

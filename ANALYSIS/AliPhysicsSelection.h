@@ -36,9 +36,9 @@ class AliPhysicsSelection : public AliAnalysisCuts
     
     Bool_t IsCollisionCandidate(const AliESDEvent* aEsd);
     Bool_t Initialize(UInt_t runNumber);
+    
     void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
     void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { fSkipTriggerClassSelection = flag; }
-
    
     void AddBackgroundIdentification(AliAnalysisCuts* background) { fBackgroundIdentification = background; }
     
