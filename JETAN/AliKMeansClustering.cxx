@@ -125,5 +125,5 @@ Double_t AliKMeansClustering::d(Double_t mx, Double_t my, Double_t x, Double_t y
     Double_t dx = TMath::Abs(mx-x);
     if (dx > TMath::Pi()) dx = 2. * TMath::Pi() - dx;
     
-    return (dx * dx + (my - y) * (my - y));
+    return (0.5*(dx * dx + (my - y) * (my - y)));
 }
