@@ -20,7 +20,9 @@ class AliKMeansClustering : public TObject
   AliKMeansClustering()          {}
   virtual ~AliKMeansClustering() {}
   
-  static void SoftKMeans(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* rk );
+  static void SoftKMeans (Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* rk );
+  static void SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* sigma2, 
+			  Double_t* rk );
   static void SetBeta(Double_t beta) {fBeta = beta;}
   static Double_t d(Double_t mx, Double_t my, Double_t x, Double_t y);
 protected:

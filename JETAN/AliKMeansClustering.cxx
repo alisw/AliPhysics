@@ -116,6 +116,131 @@ void AliKMeansClustering::SoftKMeans(Int_t k, Int_t n, Double_t* x, Double_t* y,
     delete[] r;
 }
 
+void AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* sigma2, Double_t* rk )
+{
+    //
+    // The soft K-means algorithm
+    //
+    Int_t i,j;
+    //
+    // (1) Initialisation of the k means
+    // 
+    // (there is an optimized version for initialisation called kmeans++)
+    for (i = 0; i < k; i++) {
+	mx[i] = 2. * TMath::Pi() * gRandom->Rndm();
+	my[i] = -1. + 2. * gRandom->Rndm();
+    }
+
+    //
+    // (2a) The responsibilities
+    Double_t** r = new Double_t*[n]; // responsibilities
+    for (j = 0; j < n; j++) {r[j] = new Double_t[k];}
+    //
+    // (2b) Normalisation
+    Double_t* nr = new Double_t[n];
+    //
+    // (2c) Weights 
+    Double_t* pi = new Double_t[k];
+    //
+    // (2d) Initialise the responsibilties and weights
+    for (j = 0; j < n; j++) {
+      nr[j] = 0.;
+      for (i = 0; i < k; i++) {
+	r[j][i] = TMath::Exp(- fBeta * d(mx[i], my[i], x[j], y[j]));
+	nr[j] += r[j][i];
+      } // mean i
+    } // data point j
+    
+    for (i = 0; i < k; i++) {
+      rk[i]    = 0.;
+      sigma2[i] = 1./fBeta;
+ 
+      for (j = 0; j < n; j++) {
+	r[j][i] /=  nr[j];
+	rk[i] += r[j][i];
+      } // mean i
+      pi[i] = rk[i] / Double_t(n);
+    } // data point j
+
+
+    // (3) Iterations
+    Int_t nit = 0;
+    
+    while(1) {
+	nit++;
+      //
+      // Assignment step
+      //
+      for (j = 0; j < n; j++) {
+	nr[j] = 0.;
+	for (i = 0; i < k; i++) {
+	  r[j][i] = pi[i] * TMath::Exp(- fBeta * d(mx[i], my[i], x[j], y[j])) 
+	    / (TMath::Sqrt(2. * sigma2[i]) * TMath::Pi());
+	  nr[j] += r[j][i];
+	} // mean i
+      } // data point j
+	
+      for (i = 0; i < k; i++) {
+	for (j = 0; j < n; j++) {
+	  r[j][i] /=  nr[j];
+	} // mean i
+      } // data point j
+      
+	//
+	// Update step
+      Double_t di = 0;
+      
+      for (i = 0; i < k; i++) {
+	  Double_t oldx = mx[i];
+	  Double_t oldy = my[i];
+	  
+	  mx[i] = x[0];
+	  my[i] = y[0];
+	  rk[i] = r[0][i];
+
+	for (j = 1; j < n; j++) {
+	    Double_t xx =  x[j];
+//
+// Here we have to take into acount the cylinder topology where phi is defined mod 2xpi
+// If two coordinates are separated by more than pi in phi one has to be shifted by +/- 2 pi
+
+	    Double_t dx = mx[i] - x[j];
+	    if (dx >  TMath::Pi()) xx += 2. * TMath::Pi();
+	    if (dx < -TMath::Pi()) xx -= 2. * TMath::Pi();
+	    mx[i] = mx[i] * rk[i] + r[j][i] * xx;
+	    my[i] = my[i] * rk[i] + r[j][i] * y[j];
+	    rk[i] += r[j][i];
+	    mx[i] /= rk[i];
+	    my[i] /= rk[i];	    
+	    if (mx[i] > 2. * TMath::Pi()) mx[i] -= 2. * TMath::Pi();
+	    if (mx[i] < 0.              ) mx[i] += 2. * TMath::Pi();
+	} // Data
+	di += d(mx[i], my[i], oldx, oldy);
+      } // means 
+      //
+      // Sigma
+      for (i = 0; i < k; i++) {
+	sigma2[i] = 0.;
+	for (j = 1; j < n; j++) {
+	  sigma2[i] += 2. * r[j][i] * d(mx[i], my[i], x[j], y[j]);
+	} // Data
+	sigma2[i] /= rk[i];
+      } // Clusters    
+      //
+      // Fractions
+      for (i = 0; i < k; i++) pi[i] = rk[i] / Double_t(n);
+      //
+// ending condition
+      if (di < 1.e-8 || nit > 1000) break;
+    } // while
+
+// Clean-up    
+    delete[] nr;
+    delete[] pi;
+    for (j = 0; j < n; j++) delete[] r[j];
+    delete[] r;
+}
+
 Double_t AliKMeansClustering::d(Double_t mx, Double_t my, Double_t x, Double_t y)
 {
     //
