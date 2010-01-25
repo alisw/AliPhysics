@@ -1,4 +1,3 @@
-
 AliAnaPartCorrMaker*  ConfigAnalysis()
 {
 	//
@@ -8,13 +7,13 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	printf("ConfigAnalysis() \n");
 	printf("======================== \n");
 	
-	//Detector Fiducial Cuts
+	//Detector Fidutial Cuts
 	AliFiducialCut * fidCut = new AliFiducialCut();
-	fidCut->DoCTSFiducialCut(kFALSE) ;
+	fidCut->DoCTSFiducialCut(kTRUE) ;
 	fidCut->DoEMCALFiducialCut(kTRUE) ;
 	fidCut->DoPHOSFiducialCut(kTRUE) ;
 	
-	//fidCut->SetSimpleCTSFiducialCut(0.9,0.,360.);
+	fidCut->SetSimpleCTSFiducialCut(0.9,0.,360.);
 	fidCut->SetSimpleEMCALFiducialCut(0.7,80.,190.);
 	fidCut->SetSimplePHOSFiducialCut(0.12,220.,320.);
 	
@@ -29,18 +28,14 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	//Switch on or off the detectors information that you want
 	reader->SwitchOnPHOS();
 	reader->SwitchOnEMCAL();
-	reader->SwitchOffCTS();
+	reader->SwitchOnCTS();
 	
 	//Min particle pT
-	reader->SetEMCALPtMin(0.2); 
-	reader->SetPHOSPtMin(0.2);
-	//reader->SetCTSPtMin(0.2);
+	reader->SetEMCALPtMin(0.5); 
+	reader->SetPHOSPtMin(0.5);
+	reader->SetCTSPtMin(0.5);
 	
 	reader->SetFiducialCut(fidCut);
-		
-	//Remove the temporal AODs we create.	
-	reader->SwitchOnCleanStdAOD();	
-	
 	reader->Print("");
 	
 	
@@ -59,7 +54,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 
 	AliAnaPhoton *anaphoton = new AliAnaPhoton();
         anaphoton->SetDebug(-1); //10 for lots of messages
-        anaphoton->SetMinPt(0.2);
+        anaphoton->SetMinPt(0.1);
         anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
         anaphoton->SetCaloPID(pid);
 //        anaphoton->SetFiducialCut(fidCut); //More acceptance selections if needed at this level
@@ -82,43 +77,40 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	// >>> Second Analysis <<<
 	
 	AliNeutralMesonSelection *nms = new AliNeutralMesonSelection();
-	nms->SetInvMassCutRange(0.1, 0.17)	;
+	nms->SetInvMassCutRange(0.11, 0.16)	;
 	nms->KeepNeutralMesonSelectionHistos(kTRUE);
 	//Set Histrograms bins and ranges
-	nms->SetHistoERangeAndNBins(0, 50, 100) ;
-	nms->SetHistoPtRangeAndNBins(0, 50, 100) ;
-	nms->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
-	nms->SetHistoIMRangeAndNBins(0, 0.4, 100) ;  
 
-	AliAnaPi0EbE *anapi0 = new AliAnaPi0EbE();
-	anapi0->SetDebug(-1);//10 for lots of messages
-	anapi0->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
-	anapi0->SetInputAODName("PhotonsPHOS");
-	anapi0->SetOutputAODName("Pi0sPHOS");
-	anapi0->SetOutputAODClassName("AliAODPWG4Particle");
-	anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
-	anapi0->SetNeutralMesonSelection(nms);
-	anapi0->AddToHistogramsName("AnaPi0EbEPHOS_");
+	AliAnaPi0EbE *anapi0EbE = new AliAnaPi0EbE();
+	anapi0EbE->SetDebug(-1);//10 for lots of messages
+	anapi0EbE->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
+	anapi0EbE->SetInputAODName("PhotonsPHOS");
+	anapi0EbE->SetOutputAODName("Pi0sPHOS");
+	anapi0EbE->SetOutputAODClassName("AliAODPWG4Particle");
+	anapi0EbE->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+	anapi0EbE->SetNeutralMesonSelection(nms);
+	anapi0EbE->AddToHistogramsName("AnaPi0EbEPHOS_");
 	//Set Histrograms bins and ranges
-	anapi0->SetHistoPtRangeAndNBins(0, 50, 100) ;
-	anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-	anapi0->SetHistoEtaRangeAndNBins(-0.2, 0.2, 100) ;
-	anapi0->Print("");
+
+	anapi0EbE->Print("");
 	
         AliAnaOmegaToPi0Gamma *anaomega = new AliAnaOmegaToPi0Gamma();
         anaomega->SetDebug(-1);//10 for lots of messages
         anaomega->SetInputAODName("Pi0sPHOS");
         anaomega->SetInputAODPhotonName("PhotonsPHOS");
-	anaomega->SetNPID(3);
+	anaomega->SetNPID(2);
+        anaomega->SetNVtxZ(2);
+        anaomega->SetNBadChDist(1);
         anaomega->SetNEventsMixed(4);
-        anaomega->SetNPtBinsMinMax(200,0,20.);
-        anaomega->SetNMassBinsMinMas(200,0,1.);
-        anaomega->SetPi0MassPeakWidthCut(0.015);
+        anaomega->SetPi0MassPeakWidthCut(0.008); //
+        anaomega->SetHistoPtRangeAndNBins(0, 10, 200) ;
+        anaomega->SetHistoMassRangeAndNBins(0, 1, 200) ;
+        anaomega->SetPi0OverOmegaPtCut(0.8);
+        anaomega->SetGammaOverOmegaPtCut(0.2);
         anaomega->SwitchOnFiducialCut();
-        anaomega->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-        anaomega->AddToHistogramsName("AnaNeuPHOS_");
+        anaomega->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+        anaomega->AddToHistogramsName("AnaOmegaToPi0GammaPHOS_");
         anaomega->Print("");
-
 
 //for EMCAL
         AliCaloPID * pid1 = new AliCaloPID();
@@ -131,7 +123,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 
         AliAnaPhoton *anaphoton1 = new AliAnaPhoton();
         anaphoton1->SetDebug(-1); //10 for lots of messages
-        anaphoton1->SetMinPt(0.2);
+        anaphoton1->SetMinPt(0.1);
         anaphoton1->SetMinDistanceToBadChannel(2, 4, 5);
         anaphoton1->SetCaloPID(pid);
         anaphoton1->SetCalorimeter("EMCAL");
@@ -149,45 +141,40 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
         anaphoton1->Print("");
 
 	AliNeutralMesonSelection *nms1 = new AliNeutralMesonSelection();
-        nms1->SetInvMassCutRange(0.1, 0.17)     ;
+        nms1->SetInvMassCutRange(0.11, 0.16)     ;
         nms1->KeepNeutralMesonSelectionHistos(kTRUE);
         //Set Histrograms bins and ranges
-        nms1->SetHistoERangeAndNBins(0, 50, 100) ;
-        nms1->SetHistoPtRangeAndNBins(0, 50, 100) ;
-        nms1->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
-        nms1->SetHistoIMRangeAndNBins(0, 0.4, 100) ;
 
-
-        AliAnaPi0EbE *anapi01 = new AliAnaPi0EbE();
-        anapi01->SetDebug(-1);//10 for lots of messages
-        anapi01->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
-        anapi01->SetInputAODName("PhotonsEMCAL");
-        anapi01->SetOutputAODName("Pi0sEMCAL");
-        anapi01->SetOutputAODClassName("AliAODPWG4Particle");
-        anapi01->SwitchOffDataMC() ;//Access MC stack and fill more histograms
-        anapi01->SetNeutralMesonSelection(nms1);
-        anapi01->AddToHistogramsName("AnaPi0EbEEMCAL_");
+        AliAnaPi0EbE *anapi0EbEEbE1 = new AliAnaPi0EbE();
+        anapi0EbEEbE1->SetDebug(-1);//10 for lots of messages
+        anapi0EbEEbE1->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
+        anapi0EbEEbE1->SetInputAODName("PhotonsEMCAL");
+        anapi0EbEEbE1->SetOutputAODName("Pi0sEMCAL");
+        anapi0EbEEbE1->SetOutputAODClassName("AliAODPWG4Particle");
+        anapi0EbEEbE1->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+        anapi0EbEEbE1->SetNeutralMesonSelection(nms1);
+        anapi0EbEEbE1->AddToHistogramsName("AnaPi0EbEEMCAL_");
         //Set Histrograms bins and ranges
-        anapi01->SetHistoPtRangeAndNBins(0, 50, 100) ;
-        anapi01->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-        anapi01->SetHistoEtaRangeAndNBins(-0.8, 0.8, 100) ;
-        anapi01->Print("");
+        anapi0EbEEbE1->Print("");
+
 
         AliAnaOmegaToPi0Gamma *anaomega1 = new AliAnaOmegaToPi0Gamma();
         anaomega1->SetDebug(-1);//10 for lots of messages
         anaomega1->SetInputAODName("Pi0sEMCAL");
         anaomega1->SetInputAODPhotonName("PhotonsEMCAL");
-        anaomega1->SetNPID(3);
+        anaomega1->SetNPID(2);
+        anaomega1->SetNVtxZ(2);
+        anaomega1->SetNBadChDist(1);
         anaomega1->SetNEventsMixed(4);
-        //anaomega1->SetNAsyBinsMinMax(200,0,1.);
-        anaomega1->SetNPtBinsMinMax(200,0,20.);
-        anaomega1->SetNMassBinsMinMas(200,0,1.);
         anaomega1->SetPi0MassPeakWidthCut(0.015);
+        anaomega1->SetHistoPtRangeAndNBins(0, 10, 200) ;
+        anaomega1->SetHistoMassRangeAndNBins(0, 1, 200) ;
+        anaomega1->SetPi0OverOmegaPtCut(0.8);
+        anaomega1->SetGammaOverOmegaPtCut(0.2);
         anaomega1->SwitchOnFiducialCut();
-        anaomega1->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-        anaomega1->AddToHistogramsName("AnaNeuEMCAL_");
+        anaomega1->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+        anaomega1->AddToHistogramsName("AnaOmegaToPi0GammaEMCAL_");
         anaomega1->Print("");
-
 
 	//---------------------------------------------------------------------
 	// Set  analysis algorithm and reader
@@ -196,12 +183,12 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	maker->SetReader(reader);//pointer to reader
 	maker->SetAnaDebug(0);
 	maker->AddAnalysis(anaphoton,0);
-	maker->AddAnalysis(anapi0,1);
+	maker->AddAnalysis(anapi0EbE,1);
        	maker->AddAnalysis(anaomega,2);
 
         maker->AddAnalysis(anaphoton1,3);
-        maker->AddAnalysis(anapi01,4);
-       maker->AddAnalysis(anaomega1,5);
+        maker->AddAnalysis(anapi0EbEEbE1,4);
+        maker->AddAnalysis(anaomega1,5);
 
 	maker->SwitchOnHistogramsMaker()  ;
 	maker->SwitchOnAODsMaker()  ;

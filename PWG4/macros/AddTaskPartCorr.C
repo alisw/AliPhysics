@@ -73,16 +73,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliFiducialCut * fidCut1stYear = new AliFiducialCut();
   fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
   if(kSimulation){
-		fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
-		fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
-		fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
-		fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
+    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
   } 
   else{
-		fidCut1stYear->DoEMCALFiducialCut(kFALSE) ;
-		fidCut1stYear->DoPHOSFiducialCut(kFALSE) ;
+    fidCut1stYear->DoEMCALFiducialCut(kFALSE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kFALSE) ;
   }	
-	
+  
 //  AliFiducialCut * fidCut = new AliFiducialCut();
 //  fidCut->DoCTSFiducialCut(kFALSE) ;
 //  fidCut->DoEMCALFiducialCut(kTRUE) ;
@@ -95,8 +95,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else  qa->SwitchOffDataMC() ;
   qa->AddToHistogramsName("AnaCaloQA_");
   if(kSimulation){
-	  qa->SetFiducialCut(fidCut1stYear);
-	  qa->SwitchOnFiducialCut();
+    qa->SetFiducialCut(fidCut1stYear);
+    qa->SwitchOnFiducialCut();
   }
   if(qa=="PHOS") qa->SetNumberOfModules(3); //PHOS first year
   else  qa->SetNumberOfModules(4); //EMCAL first year
@@ -104,12 +104,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   qa->SetHistoPtRangeAndNBins(0, 50, 500) ;
   qa->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   if(calorimeter == "PHOS"){
-	  qa->SetHistoEtaRangeAndNBins(-0.13, 0.13, 100) ;
-	  qa->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 330*TMath::DegToRad() , 200) ;
+    qa->SetHistoEtaRangeAndNBins(-0.13, 0.13, 100) ;
+    qa->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 330*TMath::DegToRad() , 200) ;
   }
   else if(calorimeter == "EMCAL"){
-	  qa->SetHistoEtaRangeAndNBins(-0.8, 0.8, 200) ;
-	  qa->SetHistoPhiRangeAndNBins(70*TMath::DegToRad(), 130*TMath::DegToRad(), 200) ;
+    qa->SetHistoEtaRangeAndNBins(-0.8, 0.8, 200) ;
+    qa->SetHistoPhiRangeAndNBins(70*TMath::DegToRad(), 130*TMath::DegToRad(), 200) ;
   }
   qa->SetHistoMassRangeAndNBins(0., 0.6, 300) ;
   qa->SetHistoAsymmetryRangeAndNBins(0., 1. , 25) ;
@@ -127,8 +127,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // --------------------
   // --- Pi0 Analysis ---
   // --------------------
-	
-	
 
   AliAnaPhoton *anaphoton1 = new AliAnaPhoton();
   anaphoton1->SetDebug(-1); //10 for lots of messages
@@ -184,7 +182,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   AliAnaPhoton *anaphoton2 = new AliAnaPhoton();
   anaphoton2->SetDebug(-1); //10 for lots of messages
-  anaphoton2->SetMinPt(2);
+  anaphoton2->SetMinPt(0.);
   anaphoton2->SetCaloPID(pid);
   anaphoton2->SetCalorimeter(calorimeter);
   if(kUseKinematics) anaphoton2->SwitchOnDataMC() ;//Access MC stack and fill more histograms
@@ -213,7 +211,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   AliAnaParticleIsolation *anaisol = new AliAnaParticleIsolation();
   anaisol->SetDebug(-1);
-  anaisol->SetMinPt(2);
+  anaisol->SetMinPt(0);
   anaisol->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   anaisol->SetCalorimeter(calorimeter);
   if(kUseKinematics) anaisol->SwitchOnDataMC() ;//Access MC stack and fill more histograms
@@ -319,7 +317,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
   anapi0ebe->SetDebug(-1);//10 for lots of messages
   anapi0ebe->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
-  anapi0ebe->SetMinPt(2);
+  anapi0ebe->SetMinPt(0);
   anapi0ebe->SetCalorimeter(calorimeter);
   anapi0ebe->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
@@ -335,7 +333,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   AliAnaParticleIsolation *anaisolpi0 = new AliAnaParticleIsolation();
   anaisolpi0->SetDebug(-1);
-  anaisolpi0->SetMinPt(2);
+  anaisolpi0->SetMinPt(0);
   anaisolpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
   anaisolpi0->AddToHistogramsName("AnaIsolPi0_");
   anaisolpi0->SetCalorimeter(calorimeter);
@@ -411,7 +409,29 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anacorrhadronisopi0->Print("");
-  
+ 
+  //analysis the omega->pi0+gamma
+  AliAnaOmegaToPi0Gamma *anaomegaToPi0Gamma = new AliAnaOmegaToPi0Gamma();
+  anaomegaToPi0Gamma->SetDebug(-1);//10 for lots of messages
+  anaomegaToPi0Gamma->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
+  anaomegaToPi0Gamma->SetInputAODPhotonName(Form("Photons%s",calorimeter.Data()));
+  anaomegaToPi0Gamma->SetNPID(2);
+  anaomegaToPi0Gamma->SetNVtxZ(2);
+  anaomegaToPi0Gamma->SetNBadChDist(3);
+  anaomegaToPi0Gamma->SetNEventsMixed(4);
+  if(calorimeter.Data()=="PHOS")
+           anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.008); // PHOS
+  else if(calorimeter.Data()=="EMCAL")
+           anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.012); // EMCAL 
+  anaomegaToPi0Gamma->SetHistoPtRangeAndNBins(0, 20, 200) ;
+  anaomegaToPi0Gamma->SetHistoMassRangeAndNBins(0, 1, 200) ;
+  anaomegaToPi0Gamma->SetPi0OverOmegaPtCut(0.8);
+  anaomegaToPi0Gamma->SetGammaOverOmegaPtCut(0.2);
+  if(kUseKinematics) anaomegaToPi0Gamma->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else anaomegaToPi0Gamma->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+  anaomegaToPi0Gamma->AddToHistogramsName(Form("AnaOmegaToPi0Gamma%s_",calorimeter.Data()));
+  anaomegaToPi0Gamma->Print("");
+ 
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
@@ -427,7 +447,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anaisolpi0,9);
   maker->AddAnalysis(anacorrhadronpi0,10);
   maker->AddAnalysis(anacorrhadronisopi0,11);
-  
+  maker->AddAnalysis(anaomegaToPi0Gamma,12);  
+ 
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
