@@ -50,7 +50,8 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoAODTrackCut.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCutMonitor.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCorrFctn.cxx \
-      FEMTOSCOPY/AliFemto/AliAnalysisTaskFemto.cxx
+      FEMTOSCOPY/AliFemto/AliAnalysisTaskFemto.cxx \
+      FEMTOSCOPY/AliFemto/AliTwoTrackRes.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 HDRS += FEMTOSCOPY/AliFemto/AliFmThreeVector.h \
