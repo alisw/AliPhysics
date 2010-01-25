@@ -91,7 +91,8 @@ fAODjets(0x0),
 fListOfHistos(0x0),  
 fBinsPtInHist(30),     
 fMinJetPtInHist(0.),
-fMaxJetPtInHist(300.),  
+fMaxJetPtInHist(300.), 
+fIsNorm2Area(kTRUE),
 fUseMCParticleBranch(kFALSE),
 fConstrainDistance(kTRUE),
 fMinDistance(0.2),
@@ -138,6 +139,18 @@ fhRegionDiffSumPtVsEt(0x0),
 fhRegionAvePartPtMaxVsEt(0x0),
 fhRegionAvePartPtMinVsEt(0x0),
 fhRegionMaxPartPtMaxVsEt(0x0),
+fhRegForwardSumPtVsEt(0x0),
+fhRegForwardMultVsEt(0x0),
+fhRegBackwardSumPtVsEt(0x0),
+fhRegBackwardMultVsEt(0x0),
+fhRegForwardMult(0x0),
+fhRegForwardSumPtvsMult(0x0),
+fhRegBackwardMult(0x0),
+fhRegBackwardSumPtvsMult(0x0),
+fhRegForwardPartPtDistVsEt(0x0),
+fhRegBackwardPartPtDistVsEt(0x0),
+fhRegTransMult(0x0),
+fhRegTransSumPtVsMult(0x0),
 fh1Xsec(0x0),
 fh1Trials(0x0),
 fSettingsTree(0x0)//,   fhValidRegion(0x0)
@@ -462,20 +475,31 @@ fhNJets->Fill(nJets);
   }
   
   //fhEleadingPt->Fill( maxPtJet1 );
-  //Area for Normalization Purpose at Display histos
-  SetRegionArea(jetVect);
-  
+
   // ----------------------------------------------
   // Find max and min regions
   Double_t sumPtRegionPosit = 0.;
   Double_t sumPtRegionNegat = 0.;
+  Double_t sumPtRegionForward = 0;
+  Double_t sumPtRegionBackward = 0;
   Double_t maxPartPtRegion  = 0.;
   Int_t    nTrackRegionPosit = 0;
   Int_t    nTrackRegionNegat = 0;
+  Int_t    nTrackRegionForward = 0;
+  Int_t    nTrackRegionBackward = 0;
   static Double_t const  kPI     = TMath::Pi();
   static Double_t const  kTWOPI  = 2.*kPI;
   static Double_t const  k270rad = 270.*kPI/180.;
-
+  static Double_t const  k120rad = 120.*kPI/180.;
+  
+  //Area for Normalization Purpose at Display histos
+  // Forward and backward
+  Double_t normArea = 1.;
+  // Transverse
+  if (fIsNorm2Area) {
+    SetRegionArea(jetVect);
+    normArea =  2.*fTrackEtaCut*k120rad ;
+  } else fAreaReg = 1.;
   
   if (!fUseMCParticleBranch){
     fhEleadingPt->Fill( maxPtJet1 );
@@ -511,17 +535,27 @@ fhNJets->Fill(nJets);
       
       Int_t region = IsTrackInsideRegion( jetVect, &partVect );  
       
-      if (region > 0) {
+      if (region == 1) {
         if( maxPartPtRegion < part->Pt() ) maxPartPtRegion = part->Pt();
         sumPtRegionPosit += part->Pt();
         nTrackRegionPosit++;
         fhTransRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
       }
-      if (region < 0) {
+      if (region == -1) {
         if( maxPartPtRegion < part->Pt() ) maxPartPtRegion = part->Pt();
         sumPtRegionNegat += part->Pt();
         nTrackRegionNegat++;
         fhTransRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
+      }
+      if (region == 2){ //forward
+        sumPtRegionForward += part->Pt();
+        nTrackRegionForward++;
+        fhRegForwardPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
+      }
+      if (region == -2){ //backward
+        sumPtRegionBackward += part->Pt();
+        nTrackRegionBackward++;
+        fhRegBackwardPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
       }
     }//end loop AOD tracks
   }
@@ -646,18 +680,29 @@ fhNJets->Fill(nJets);
         
         Int_t region = IsTrackInsideRegion( jetVectnew, &partVect );  
         
-        if (region > 0) {
+        if (region == 1) {
           if( maxPartPtRegion < mctrk->Pt() ) maxPartPtRegion = mctrk->Pt();
           sumPtRegionPosit += mctrk->Pt();
           nTrackRegionPosit++;
           fhTransRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
         }
-        if (region < 0) {
+        if (region == -1) {
           if( maxPartPtRegion < mctrk->Pt() ) maxPartPtRegion = mctrk->Pt();
           sumPtRegionNegat += mctrk->Pt();
           nTrackRegionNegat++;
           fhTransRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
         }
+        if (region == 2){ //forward
+          sumPtRegionForward += mctrk->Pt();
+          nTrackRegionForward++;
+          fhRegForwardPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        }
+        if (region == -2){ //backward
+          sumPtRegionBackward += mctrk->Pt();
+          nTrackRegionBackward++;
+          fhRegBackwardPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        }
+        
       }  // end loop stack Particles
       
     }else{//Try mc Particle
@@ -698,17 +743,27 @@ fhNJets->Fill(nJets);
         
         Int_t region = IsTrackInsideRegion( jetVectnew, &partVect );  
         
-        if (region > 0) {
+        if (region == 1) { //right
           if( maxPartPtRegion < mctrk->Pt() ) maxPartPtRegion = mctrk->Pt();
           sumPtRegionPosit += mctrk->Pt();
           nTrackRegionPosit++;
           fhTransRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
         }
-        if (region < 0) {
+        if (region == -1) { //left
           if( maxPartPtRegion < mctrk->Pt() ) maxPartPtRegion = mctrk->Pt();
           sumPtRegionNegat += mctrk->Pt();
           nTrackRegionNegat++;
           fhTransRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        }
+        if (region == 2){ //forward
+          sumPtRegionForward += mctrk->Pt();
+          nTrackRegionForward++;
+          fhRegForwardPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        }
+        if (region == -2){ //backward
+          sumPtRegionBackward += mctrk->Pt();
+          nTrackRegionBackward++;
+          fhRegBackwardPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
         }
         
       }//end loop AliAODMCParticle tracks
@@ -751,6 +806,21 @@ fhNJets->Fill(nJets);
   // Compute pedestal like magnitudes
   fhRegionDiffSumPtVsEt->Fill(maxPtJet1, TMath::Abs(sumPtRegionPosit-sumPtRegionNegat)/(2.0*fAreaReg));
   fhRegionAveSumPtVsEt->Fill(maxPtJet1, (sumPtRegionPosit+sumPtRegionNegat)/(2.0*fAreaReg));
+  // Transverse as a whole
+  fhRegTransMult->Fill( maxPtJet1, nTrackRegionPosit + nTrackRegionNegat );
+  fhRegTransSumPtVsMult->Fill(maxPtJet1, nTrackRegionPosit + nTrackRegionNegat , sumPtRegionNegat + sumPtRegionPosit );
+  
+  // Fill Histograms for Forward and away side w.r.t. leading jet direction
+  // Pt dependence
+  fhRegForwardSumPtVsEt->Fill( maxPtJet1, sumPtRegionForward/normArea );
+  fhRegForwardMultVsEt->Fill( maxPtJet1, nTrackRegionForward/normArea );
+  fhRegBackwardSumPtVsEt->Fill( maxPtJet1, sumPtRegionBackward/normArea );
+  fhRegBackwardMultVsEt->Fill( maxPtJet1, nTrackRegionBackward/normArea );
+  // Multiplicity dependence
+  fhRegForwardMult->Fill(maxPtJet1, nTrackRegionForward );
+  fhRegForwardSumPtvsMult->Fill(maxPtJet1, nTrackRegionForward,sumPtRegionForward);
+  fhRegBackwardMult->Fill(maxPtJet1, nTrackRegionBackward );
+  fhRegBackwardSumPtvsMult->Fill(maxPtJet1, nTrackRegionBackward,sumPtRegionBackward);
   
 }
 
@@ -809,8 +879,10 @@ Int_t AliAnalysisTaskUE::IsTrackInsideRegion(TVector3 *jetVect, TVector3 *partVe
   if( fRegionType == 1 ) {
     if( TMath::Abs(partVect->Eta()) > fTrackEtaCut ) return 0;
     // transverse regions
-    if (jetVect[0].DeltaPhi(*partVect) < -k60rad && jetVect[0].DeltaPhi(*partVect) > -k120rad ) region = -1;
-    if (jetVect[0].DeltaPhi(*partVect) > k60rad && jetVect[0].DeltaPhi(*partVect) < k120rad ) region = 1;
+    if (jetVect[0].DeltaPhi(*partVect) < -k60rad && jetVect[0].DeltaPhi(*partVect) > -k120rad ) region = -1; //left
+    if (jetVect[0].DeltaPhi(*partVect) > k60rad && jetVect[0].DeltaPhi(*partVect) < k120rad ) region = 1;    //right
+    if (TMath::Abs(jetVect[0].DeltaPhi(*partVect)) < k60rad ) region = 2;    //forward
+    if (TMath::Abs(jetVect[0].DeltaPhi(*partVect)) > k120rad ) region = -2; //backward
     
   } else if( fRegionType == 2 ) {
     // Cone regions
@@ -847,7 +919,7 @@ Int_t AliAnalysisTaskUE::IsTrackInsideRegion(TVector3 *jetVect, TVector3 *partVe
     AliError("Unknow region type");
   
   // For debug (to be removed)
-  //if( region != 0 )  fhValidRegion->Fill( partVect->Eta()-jetVect[0].Eta(), jetVect[0].DeltaPhi(*partVect) );
+  if( fDebug > 5 && region != 0 ) AliInfo(Form("Delta Phi = %3.2f region = %d \n", jetVect[0].DeltaPhi(*partVect), region)); //fhValidRegion->Fill( partVect->Eta()-jetVect[0].Eta(), jetVect[0].DeltaPhi(*partVect) );
   
   return region;
 }
@@ -1145,15 +1217,88 @@ void  AliAnalysisTaskUE::CreateHistos()
   fhRegionMaxPartPtMaxVsEt->Sumw2();
   fListOfHistos->Add( fhRegionMaxPartPtMaxVsEt );    // At(20)
   
+  fhRegForwardSumPtVsEt = new TH1F("hRegForwardSumPtVsEt", "Forward #sum{p_{T}} vs Leading Jet P_{T}",  fBinsPtInHist, fMinJetPtInHist,   fMaxJetPtInHist);
+  fhRegForwardSumPtVsEt->SetXTitle("P_{T} (GeV/c)");
+  fhRegForwardSumPtVsEt->Sumw2();
+  fListOfHistos->Add( fhRegForwardSumPtVsEt );    // At(21)
+  
+  fhRegForwardMultVsEt = new TH1F("hRegForwardMultVsEt", "Forward #sum{N_{ch}} vs Leading Jet P_{T}",  fBinsPtInHist, fMinJetPtInHist,   fMaxJetPtInHist);
+  fhRegForwardMultVsEt->SetXTitle("P_{T} (GeV/c)");
+  fhRegForwardMultVsEt->Sumw2();
+  fListOfHistos->Add( fhRegForwardMultVsEt );    // At(22)
+  
+  fhRegBackwardSumPtVsEt = new TH1F("hRegBackwardSumPtVsEt", "Backward #sum{p_{T}} vs Leading Jet P_{T}",  fBinsPtInHist, fMinJetPtInHist,   fMaxJetPtInHist);
+  fhRegBackwardSumPtVsEt->SetXTitle("P_{T} (GeV/c)");
+  fhRegBackwardSumPtVsEt->Sumw2();
+  fListOfHistos->Add( fhRegBackwardSumPtVsEt );    // At(23)
+  
+  fhRegBackwardMultVsEt = new TH1F("hRegBackwardMultVsEt", "Backward #sum{N_{ch}} vs Leading Jet P_{T}",  fBinsPtInHist, fMinJetPtInHist,   fMaxJetPtInHist);
+  fhRegBackwardMultVsEt->SetXTitle("P_{T} (GeV/c)");
+  fhRegBackwardMultVsEt->Sumw2();
+  fListOfHistos->Add( fhRegBackwardMultVsEt );    // At(24)
+  
+  fhRegForwardMult = new TH2F("hRegForwardMult",      "N_{ch}^{forward}",  
+                              fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, 21, -0.5,   20.5);
+  fhRegForwardMult->SetXTitle("N_{ch tracks}");
+  fhRegForwardMult->Sumw2();
+  fListOfHistos->Add( fhRegForwardMult );           // At(25)
+  
+  fhRegForwardSumPtvsMult = new TH2F("hRegForwardSumPtvsMult", "Forward #Sigma p_{T} vs. Multiplicity ",  
+                                     fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, 21, -0.5,   20.5);
+  fhRegForwardSumPtvsMult->SetYTitle("#Sigma p_{T} (GeV/c)");  
+  fhRegForwardSumPtvsMult->SetXTitle("N_{charge}");
+  fhRegForwardSumPtvsMult->Sumw2();
+  fListOfHistos->Add( fhRegForwardSumPtvsMult );     // At(26);
+  
+  fhRegBackwardMult = new TH2F("hRegBackwardMult",      "N_{ch}^{backward}",  
+                               fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, 21, -0.5,   20.5);
+  fhRegBackwardMult->SetXTitle("N_{ch tracks}");
+  fhRegBackwardMult->Sumw2();
+  fListOfHistos->Add( fhRegBackwardMult );           // At(27)
+  
+  fhRegBackwardSumPtvsMult = new TH2F("hRegBackwardSumPtvsMult", "Backward #Sigma p_{T} vs. Multiplicity ",  
+                                      fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, 21, -0.5,   20.5);
+  fhRegBackwardSumPtvsMult->SetYTitle("#Sigma p_{T} (GeV/c)");  
+  fhRegBackwardSumPtvsMult->SetXTitle("N_{charge}");
+  fhRegBackwardSumPtvsMult->Sumw2();
+  fListOfHistos->Add( fhRegBackwardSumPtvsMult );     // At(28);
+  
+  fhRegForwardPartPtDistVsEt = new TH2F("hRegForwardPartPtDistVsEt", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading Jet P_{T}", fTrackEtaCut),
+                                       100,0.,50., fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist);
+  fhRegForwardPartPtDistVsEt->SetYTitle("Leading Jet P_{T}");
+  fhRegForwardPartPtDistVsEt->SetXTitle("p_{T}");
+  fhRegForwardPartPtDistVsEt->Sumw2();
+  fListOfHistos->Add( fhRegForwardPartPtDistVsEt );  // At(29) 
+  
+  fhRegBackwardPartPtDistVsEt = new TH2F("hRegBackwardPartPtDistVsEt", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading Jet P_{T}", fTrackEtaCut),
+                                         100,0.,50., fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist);
+  fhRegBackwardPartPtDistVsEt->SetYTitle("Leading Jet P_{T}");
+  fhRegBackwardPartPtDistVsEt->SetXTitle("p_{T}");
+  fhRegBackwardPartPtDistVsEt->Sumw2();
+  fListOfHistos->Add( fhRegBackwardPartPtDistVsEt );  // At(30) 
+  
+  fhRegTransMult  = new TH2F("hRegTransMult",      "N_{ch}^{transv}",  
+                             fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, 21, -0.5,   20.5);
+  fhRegTransMult->SetXTitle("N_{ch tracks}");
+  fhRegTransMult->Sumw2();
+  fListOfHistos->Add( fhRegTransMult );           // At(31)
+  
+  fhRegTransSumPtVsMult = new TH2F("hRegTransSumPtVsMult", "Transverse #Sigma p_{T} vs. Multiplicity ",  
+                                   fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, 21, -0.5,   20.5);
+  fhRegTransSumPtVsMult->SetYTitle("#Sigma p_{T} (GeV/c)");  
+  fhRegTransSumPtVsMult->SetXTitle("N_{charge}");
+  fhRegTransSumPtVsMult->Sumw2();
+  fListOfHistos->Add( fhRegTransSumPtVsMult );     // At(32);
+  
   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1); 
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
   fh1Xsec->Sumw2();
-  fListOfHistos->Add( fh1Xsec );            //At(21)
+  fListOfHistos->Add( fh1Xsec );            //At(33)
   
   fh1Trials = new TH1F("fh1Trials","trials from pyxsec.root",1,0,1);
   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
   fh1Trials->Sumw2();
-  fListOfHistos->Add( fh1Trials ); //At(22)
+  fListOfHistos->Add( fh1Trials ); //At(34)
   
   fSettingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
   fSettingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
@@ -1175,7 +1320,7 @@ void  AliAnalysisTaskUE::CreateHistos()
   fSettingsTree->Fill();
 
   
-  fListOfHistos->Add( fSettingsTree );    // At(23)
+  fListOfHistos->Add( fSettingsTree );    // At(35)
   
   /*   
    // For debug region selection
@@ -1219,6 +1364,8 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     fhRegionMultMaxVsEt  = (TH1F*)fListOfHistos->At(14);
     fhRegionMultMinVsEt  = (TH1F*)fListOfHistos->At(15);
     fhRegionAveSumPtVsEt = (TH1F*)fListOfHistos->At(16);
+    fhRegForwardSumPtVsEt = (TH1F*)fListOfHistos->At(21);
+    fhRegBackwardSumPtVsEt = (TH1F*)fListOfHistos->At(23);
     
     //fhValidRegion  = (TH2F*)fListOfHistos->At(21);
     
@@ -1246,13 +1393,24 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     
     c1->cd(3);
     TH1F *h4r = new TH1F("hRegionEtvsDiffPt" , "", fBinsPtInHist,  fMinJetPtInHist, fMaxJetPtInHist);
+    TH1F *h41r = new TH1F("hRegForwvsDiffPt" , "", fBinsPtInHist,  fMinJetPtInHist, fMaxJetPtInHist);
+    TH1F *h42r = new TH1F("hRegBackvsDiffPt" , "", fBinsPtInHist,  fMinJetPtInHist, fMaxJetPtInHist);
+    h41r->Divide(fhRegForwardSumPtVsEt,fhEleadingPt,1,1);
+    h42r->Divide(fhRegBackwardSumPtVsEt,fhEleadingPt,1,1);
     h4r->Divide(fhRegionAveSumPtVsEt,fhEleadingPt,1,1);
-    h4r->Scale(2.); // make average
+    //h4r->Scale(2.); // make average
     //h4r->Scale( areafactor );
     h4r->SetYTitle("#DeltaP_{T}^{90}");
     h4r->SetXTitle("P_{T} of Leading Jet (GeV/c)");
     h4r->SetMarkerStyle(20);
     h4r->DrawCopy("p");
+    h41r->SetXTitle("P_{T} of Leading Jet (GeV/c)");
+    h41r->SetMarkerStyle(22);
+    h41r->DrawCopy("p same");
+    h42r->SetXTitle("P_{T} of Leading Jet (GeV/c)");
+    h42r->SetMarkerStyle(23);
+    h42r->SetMarkerColor(kRed);
+    h42r->DrawCopy("p same");
     
     c1->cd(4);
     TH1F *h5r = new TH1F("hRegionMultMaxVsEtleading",   "",  fBinsPtInHist, fMinJetPtInHist,   fMaxJetPtInHist);
@@ -1314,6 +1472,7 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     fhMinRegSumPt     = (TH1F*)fListOfHistos->At(5);   
     //fhMinRegMaxPtPart     = (TH1F*)fListOfHistos->At(6);
     fhMinRegSumPtvsMult   = (TH1F*)fListOfHistos->At(7);
+    
     
     // Canvas
     TCanvas* c3 = new TCanvas("c3"," pT dist",160,160,1200,800);
