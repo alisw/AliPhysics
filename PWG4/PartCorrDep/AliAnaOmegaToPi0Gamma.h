@@ -38,12 +38,13 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   void SetInputAODPhotonName(TString name) {fInputAODGammaName=name;}
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
 
-  void SetNPtBinsMinMax(Int_t bins, Double_t min, Double_t max) {fNbinsPt=bins; fPtBegin=min; fPtEnd=max; } //set pt bins, min and max   
-  void SetNMassBinsMinMas(Int_t bins, Double_t min, Double_t max) {fNbinsM=bins; fMinM=min; fMaxM=max; } //set mass pt bins, min and max   
-  void SetNEventsMixed(Int_t nevents) { fNmaxMixEv=nevents;} //events to be mixed 
+  void SetNEventsMixed(Int_t nevents) { fNmaxMixEv=nevents;} //events to be mixed
   void SetNPID(Int_t pid) {fNpid=pid;} 
+  void SetNVtxZ(Int_t vtx){fNVtxZBin=vtx;}
+  void SetNBadChDist(Int_t dist){fNBadChDistBin=dist;}
   void SetPi0MassPeakWidthCut(Double_t win){fPi0MassWindow=win;} 
-
+  void SetPi0OverOmegaPtCut(Double_t cut){fPi0OverOmegaPtCut=cut;}
+  void SetGammaOverOmegaPtCut(Double_t cut){fGammaOverOmegaPtCut=cut;}
   void ReadHistograms(TList * outputList);
 
   private:
@@ -68,13 +69,8 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   Int_t fNmaxMixEv;              //buffer size events to be mixed
   Double_t fPi0Mass;             //nominal pi0 mass
   Double_t fPi0MassWindow;       //pi0 mass windows
-
-  Int_t fNbinsPt;                //Pt bin number, min and max
-  Double_t fPtBegin;             //pt minmum
-  Double_t fPtEnd;               //pt maxium
-  Int_t fNbinsM;                 //mass bin number, min and max  
-  Double_t fMinM;                //mass minmum
-  Double_t fMaxM;                //mass maxium
+  Double_t fPi0OverOmegaPtCut;   //pi0 Pt over omega pt cut
+  Double_t fGammaOverOmegaPtCut; //gamma pt over omega pt cut
 
   TH2F * fhEtalon;               //an etalon of 3D histograms
 
@@ -94,7 +90,7 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   TH2F **fMixCOmega2;            //mixC omega IVM(asy, pt, m)
 
   TH1F *fhOmegaPriPt;            //MC primary omega pt in 2pi and |y|<0.5
-  ClassDef(AliAnaOmegaToPi0Gamma,1)
+  ClassDef(AliAnaOmegaToPi0Gamma,2)
 } ;
 
 #endif 
