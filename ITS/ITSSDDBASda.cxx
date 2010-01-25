@@ -1,6 +1,6 @@
 /*
 - Contact: - prino@to.infn.it
-- Link: - http://www.to.infn.it/~prino/alice/RawData/run11161.date
+- Link: - alien:///alice/data/2009/LHC09c_SDD/000079094/raw/09000079094024.10.root
 - Run Type: - PEDESTAL_RUN
 - DA Type: - LDC
 - Number of events needed: > 10
