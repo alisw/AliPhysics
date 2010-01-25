@@ -174,8 +174,8 @@ void AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y
       for (j = 0; j < n; j++) {
 	nr[j] = 0.;
 	for (i = 0; i < k; i++) {
-	  r[j][i] = pi[i] * TMath::Exp(- fBeta * d(mx[i], my[i], x[j], y[j])) 
-	    / (TMath::Sqrt(2. * sigma2[i]) * TMath::Pi());
+	  r[j][i] = pi[i] * TMath::Exp(- d(mx[i], my[i], x[j], y[j]) / sigma2[i] ) 
+	    / (2. * sigma2[i] * TMath::Pi() * TMath::Pi());
 	  nr[j] += r[j][i];
 	} // mean i
       } // data point j
@@ -222,7 +222,7 @@ void AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y
       for (i = 0; i < k; i++) {
 	sigma2[i] = 0.;
 	for (j = 1; j < n; j++) {
-	  sigma2[i] += 2. * r[j][i] * d(mx[i], my[i], x[j], y[j]);
+	  sigma2[i] += r[j][i] * d(mx[i], my[i], x[j], y[j]);
 	} // Data
 	sigma2[i] /= rk[i];
       } // Clusters    
