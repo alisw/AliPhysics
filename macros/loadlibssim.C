@@ -11,9 +11,6 @@ void loadlibssim ()
   gSystem->Load("libMinuit");
   gSystem->Load("libProof");
 
-  // Uncomment the following line for macosx
-  // Waiting for a better solution
-  //  gSystem->Load("libg2c_sh");
   gSystem->Load("libmicrocern");
   gSystem->Load("liblhapdf");
   gSystem->Load("libpythia6");
@@ -73,19 +70,20 @@ void loadlibssim ()
   gSystem->Load("libVZERObase");
   gSystem->Load("libVZEROrec");
   gSystem->Load("libVZEROsim");
+  gSystem->Load("libEMCALUtils");
   gSystem->Load("libEMCALbase");
   gSystem->Load("libEMCALsim");
 
-  // The following lines have to be commented on Darwin
-  // for the moment due to cross dependencies
   gSystem->Load("libTPCbase");
   gSystem->Load("libTPCsim");
   gSystem->Load("libTPCrec");
   gSystem->Load("libITSbase");
   gSystem->Load("libITSsim");
   gSystem->Load("libITSrec"); // Needed by libAliHLTITS
+  gSystem->Load("libSTAT");
   gSystem->Load("libTRDbase");
   gSystem->Load("libTRDsim");
+  gSystem->Load("libTRDrec"); // Needed by libAliHLTTRD
   gSystem->Load("libTOFbase");
   gSystem->Load("libTOFrec");
   gSystem->Load("libTOFsim");
