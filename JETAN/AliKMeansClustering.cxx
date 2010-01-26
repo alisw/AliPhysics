@@ -161,8 +161,6 @@ void AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y
       } // mean i
       pi[i] = rk[i] / Double_t(n);
     } // data point j
-
-
     // (3) Iterations
     Int_t nit = 0;
     
@@ -212,10 +210,12 @@ void AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y
 	    rk[i] += r[j][i];
 	    mx[i] /= rk[i];
 	    my[i] /= rk[i];	    
+	    
 	    if (mx[i] > 2. * TMath::Pi()) mx[i] -= 2. * TMath::Pi();
 	    if (mx[i] < 0.              ) mx[i] += 2. * TMath::Pi();
 	} // Data
 	di += d(mx[i], my[i], oldx, oldy);
+
       } // means 
       //
       // Sigma
@@ -225,6 +225,7 @@ void AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y
 	  sigma2[i] += r[j][i] * d(mx[i], my[i], x[j], y[j]);
 	} // Data
 	sigma2[i] /= rk[i];
+	if (sigma2[i] < 0.025) sigma2[i] = 0.025;
       } // Clusters    
       //
       // Fractions
