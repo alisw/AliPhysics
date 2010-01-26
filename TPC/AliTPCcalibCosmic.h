@@ -43,20 +43,20 @@ public:
 
 
   //
-  TH1F   *          GetHistNTracks(){return fHistNTracks;};
-  TH1F   *          GetHistClusters(){return fClusters;};
-  TH2F   *          GetHistAcorde(){return fModules;};
-  TH1F   *          GetHistPt(){return fHistPt;};
-  TH2F   *          GetHistDeDx(){return fDeDx;};
-  TH1F   *          GetHistMIP(){return fDeDxMIP;};
+  TH1F   *          GetHistNTracks() const {return fHistNTracks;};
+  TH1F   *          GetHistClusters() const {return fClusters;};
+  TH2F   *          GetHistAcorde()const {return fModules;};
+  TH1F   *          GetHistPt() const {return fHistPt;};
+  TH2F   *          GetHistDeDx() const {return fDeDx;};
+  TH1F   *          GetHistMIP() const {return fDeDxMIP;};
   //
-  Double_t          GetMIPvalue(){return fMIPvalue;};
+  Double_t          GetMIPvalue()const {return fMIPvalue;};
   //
   static void       BinLogX(TH1 * h);   // method for correct histogram binning
   static void       BinLogX(THnSparse * h, Int_t axisDim);   // method for correct histogram binning
 
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
-  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
+  void     Process(AliESDtrack *track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *track)  {return AliTPCcalibBase::Process(track);}
   
   //
   // Performance histograms

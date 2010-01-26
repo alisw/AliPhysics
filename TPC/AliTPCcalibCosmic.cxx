@@ -332,9 +332,9 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
     Printf("ERROR: ESD not available");
     return;
   }  
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!ESDfriend) {
-   Printf("ERROR: ESDfriend not available");
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!esdFriend) {
+   Printf("ERROR: esdFriend not available");
    return;
   }
    
@@ -528,7 +528,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   // Track1 is choosen in lower TPC part
   //
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   Int_t ntracks=event->GetNumberOfTracks(); 
   TObjArray  tpcSeeds(ntracks);
   if (ntracks==0) return;
@@ -549,7 +549,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
    if (ntracks>4 && TMath::Abs(trackIn->GetTgl())<0.0015) continue;  // filter laser 
 
 
-   AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+   AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
    TObject *calibObject;
    AliTPCseed *seed = 0;
    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
@@ -761,7 +761,7 @@ void  AliTPCcalibCosmic::FillAcordeHist(AliESDtrack *upperTrack) {
   // Pt cut to select straight tracks which can be easily propagated to ACORDE which is outside the magnetic field
   if (upperTrack->Pt() < 10 || upperTrack->GetTPCNcls() < 80) return;
     
-  const Double_t AcordePlane = 850.; // distance of the central Acorde detectors to the beam line at y =0
+  const Double_t acordePlane = 850.; // distance of the central Acorde detectors to the beam line at y =0
   const Double_t roof = 210.5;       // distance from x =0 to end of magnet roof
 
   Double_t r[3];
@@ -769,16 +769,16 @@ void  AliTPCcalibCosmic::FillAcordeHist(AliESDtrack *upperTrack) {
   Double_t d[3];
   upperTrack->GetDirection(d);
   Double_t x,z;
-  z = r[2] + (d[2]/d[1])*(AcordePlane - r[1]);
-  x = r[0] + (d[0]/d[1])*(AcordePlane - r[1]);
+  z = r[2] + (d[2]/d[1])*(acordePlane - r[1]);
+  x = r[0] + (d[0]/d[1])*(acordePlane - r[1]);
   
   if (x > roof) {
-    x = r[0] + (d[0]/(d[0]+d[1]))*(AcordePlane+roof-r[0]-r[1]);
-    z = r[2] + (d[2]/(d[0]+d[1]))*(AcordePlane+roof-r[0]-r[1]);
+    x = r[0] + (d[0]/(d[0]+d[1]))*(acordePlane+roof-r[0]-r[1]);
+    z = r[2] + (d[2]/(d[0]+d[1]))*(acordePlane+roof-r[0]-r[1]);
   }
   if (x < -roof) {
-    x = r[0] + (d[0]/(d[1]-d[0]))*(AcordePlane+roof+r[0]-r[1]);	      
-    z = r[2] + (d[2]/(d[1]-d[0]))*(AcordePlane+roof+r[0]-r[1]);
+    x = r[0] + (d[0]/(d[1]-d[0]))*(acordePlane+roof+r[0]-r[1]);	      
+    z = r[2] + (d[2]/(d[1]-d[0]))*(acordePlane+roof+r[0]-r[1]);
   } 
 
   fModules->Fill(z, x);
