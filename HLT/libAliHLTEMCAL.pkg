@@ -8,6 +8,8 @@ CLASS_HDRS:= \
 	AliHLTEMCALRawAnalyzerComponent.h \
 	AliHLTEMCALMapper.h \
 	AliHLTEMCALRawAnalyzerCrudeComponent.h \
+	AliHLTEMCALRawAnalyzerLMSComponent.h \
+	AliHLTEMCALRawAnalyzerPeakFinderComponent.h \
 	AliHLTEMCALSharedMemoryInterface.h  \
 	AliHLTEMCALConstants.h
 # library sources
@@ -35,10 +37,11 @@ MODULE_DHDR:=
 
 EINCLUDE := HLT/BASE HLT/BASE/util HLT/EMCAL HLT/TPC HLT/TRD HLT/CALO EMCAL TPC TRD STEER RAW
 
+
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lAliHLTCalo -lESD -lCDB  \
 	       -lEMCALrec -lEMCALsim -lEMCALbase -lEMCALUtils \
                -lTPCrec -lTPCbase -lTRDrec -lTRDbase \
-               -lSTEER -lSTEERBase -lRAWDatarec
+               -lSTEER -lSTEERBase -lRAWDatarec 
 
 ###############################################################################
 #

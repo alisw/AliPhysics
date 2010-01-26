@@ -44,7 +44,7 @@ ClassImp(AliHLTCaloRawAnalyzerComponentv3);
 AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
   AliHLTCaloConstantsHandler(det),
   AliHLTCaloRcuProcessor(),
-  fCaloEventCount(0),
+  //  fCaloEventCount(0),
   fAnalyzerPtr(0),
   fMapperPtr(0),     
   fkDoPushRawData(false),

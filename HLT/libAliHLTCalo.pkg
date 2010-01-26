@@ -21,14 +21,7 @@ CLASS_HDRS:= 	AliHLTCaloRawAnalyzerComponentv3.h \
 		AliHLTCaloClusterAnalyser.h \
 		AliHLTCaloRcuProcessor.h \
 		AliHLTCaloConstants.h \
-		AliHLTCaloProcessor.h \
-		AliCaloBunchInfo.h \
-		AliCaloFitResults.h \
-		AliCaloRawAnalyzer.h \
-		AliCaloRawAnalyzerCrude.h \
-		AliCaloRawAnalyzerPeakFinder.h \
-		AliCaloRawAnalyzerLMS.h
-
+		AliHLTCaloProcessor.h
 
 ## all source files of this module
 ## all source files corresponding to the class headers

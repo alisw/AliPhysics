@@ -163,7 +163,7 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
    */
   virtual Int_t DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize); 
 
-  unsigned long fCaloEventCount;
+  // unsigned long fCaloEventCount;
 
   /** Pointer to an analyzer object used for raw data anlysis */ 
   AliCaloRawAnalyzer *fAnalyzerPtr;   //COMMENT
