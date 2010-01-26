@@ -1251,7 +1251,7 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(const TObjArray *trkArray,
 	Float_t diamondcovxy[3];
 	event->GetDiamondCovXY(diamondcovxy);
 	Double_t pos[3]={event->GetDiamondX(),event->GetDiamondY(),0.};
-	Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.};
+	Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
 	AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
 	vertexer->SetVtxStart(diamond);
 	delete diamond; diamond=NULL;
