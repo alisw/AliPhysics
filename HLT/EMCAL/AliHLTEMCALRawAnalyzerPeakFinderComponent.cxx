@@ -15,21 +15,25 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+// Evaluation of amplitude and peak
+// position using  statisticall optimal
+// weight of the samples
+// ---------------
+// ---------------
+
+
 #include "AliHLTEMCALRawAnalyzerPeakFinderComponent.h"
-//#include "AliHLTCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloRawAnalyzerPeakFinder.h"
 
 
 AliHLTEMCALRawAnalyzerPeakFinderComponent  gAliHLTEMCALRawAnalyzerPeakFinderComponent;
 
 
-//AliHLTEMCALRawAnalyzerPeakFinderComponent::AliHLTEMCALRawAnalyzerPeakFinderComponent : AliHLTEMCALRawAnalyzerComponent()
 AliHLTEMCALRawAnalyzerPeakFinderComponent::AliHLTEMCALRawAnalyzerPeakFinderComponent (): AliHLTEMCALRawAnalyzerComponent()
 {
-  //  fAnalyzerPtr = new   AliHLTCaloRawAnalyzerPeakFinder();
   fAnalyzerPtr = new    AliCaloRawAnalyzerPeakFinder();
 }
-
 
 
 AliHLTEMCALRawAnalyzerPeakFinderComponent::~AliHLTEMCALRawAnalyzerPeakFinderComponent()

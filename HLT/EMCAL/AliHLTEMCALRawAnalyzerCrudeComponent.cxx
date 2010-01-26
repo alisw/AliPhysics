@@ -15,6 +15,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+
+// Evaluation of amplitude using  just the
+// max  ADC walu - pedestal, and pek position
+// using the time index of the max
+// amplitude
+// ------------
+// ------------
+
+
 #include "AliHLTEMCALRawAnalyzerCrudeComponent.h"
 //#include "AliHLTCaloRawAnalyzerCrude.h"
 #include "AliCaloRawAnalyzerCrude.h"

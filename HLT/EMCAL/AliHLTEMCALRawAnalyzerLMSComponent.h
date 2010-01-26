@@ -1,5 +1,5 @@
-#ifndef ALIHLTCALORAWANALYZERLMSCOMPONENT_H
-#define ALIHLTCALORAWANALYZERLMSCOMPONENT_H
+#ifndef ALIHLTEMCALRAWANALYZERLMSCOMPONENT_H
+#define ALIHLTEMCALRAWANALYZERLMSCOMPONENT_H
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -18,6 +18,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+//Evaluation of Amplitude and Peak position using Least Mean Square (LMS) fit
+//-----------
+//-----------
+//-----------
+//-----------
 
 #include "AliHLTEMCALRawAnalyzerComponent.h"
 

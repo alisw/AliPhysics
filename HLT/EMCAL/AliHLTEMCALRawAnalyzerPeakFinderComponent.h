@@ -19,10 +19,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// Evaluation of amplitude and peak
+// position using  statisticall optimal
+// weight of the samples
+
 #include  "AliHLTEMCALRawAnalyzerComponent.h"
 
 
-//class  AliHLTEMCALRawAnalyzerPeakFinderComponent : public AliHLTEMCALRawAnalyzerComponent
 class  AliHLTEMCALRawAnalyzerPeakFinderComponent : public AliHLTEMCALRawAnalyzerComponent 
 {
  public:
@@ -30,12 +33,9 @@ class  AliHLTEMCALRawAnalyzerPeakFinderComponent : public AliHLTEMCALRawAnalyzer
   virtual ~AliHLTEMCALRawAnalyzerPeakFinderComponent();
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn(); 
-  //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
  private:
   AliHLTEMCALRawAnalyzerPeakFinderComponent( const AliHLTEMCALRawAnalyzerPeakFinderComponent  & );
   AliHLTEMCALRawAnalyzerPeakFinderComponent & operator = (const AliHLTEMCALRawAnalyzerPeakFinderComponent  &);
-  // bool TestBoolConst() { return false; };
-  bool TestBool()  {return  false; };
 };
 
 #endif

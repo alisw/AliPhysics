@@ -19,6 +19,13 @@
 #include "AliHLTEMCALRawAnalyzerLMSComponent.h"
 #include "AliCaloRawAnalyzerLMS.h"
 
+//Evaluation of Amplitude and Peak position using Least Mean Square (LMS) fit
+//-----------
+//-----------
+//-----------
+//-----------
+
+
 AliHLTEMCALRawAnalyzerLMSComponent  gAliHLTEMCALRawAnalyzerLMSComponent;
 
 AliHLTEMCALRawAnalyzerLMSComponent::AliHLTEMCALRawAnalyzerLMSComponent() : AliHLTEMCALRawAnalyzerComponent()

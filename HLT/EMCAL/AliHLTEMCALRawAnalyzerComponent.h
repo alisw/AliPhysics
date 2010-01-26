@@ -19,6 +19,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// Base class fro anlyzing EMCAL raww data
+// Further documentation found in base class
+// --------------
+// --------------
+
+
 #include "AliHLTCaloRawAnalyzerComponentv3.h"
  
 //class AliHLTCaloMapper;
