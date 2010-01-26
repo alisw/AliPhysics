@@ -63,7 +63,7 @@ class AliEMCALRawUtils : public TObject {
   void SetNoiseThreshold(Int_t val)                {fNoiseThreshold=val; }
   void SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
   void SetRemoveBadChannels(Bool_t val)            {fRemoveBadChannels=val; }
-  // not enough to set this variable to switch between algorithms, so comment it out for now..  void SetFittingAlgorithm(Int_t val)              {fFittingAlgorithm=val; }
+  void SetFittingAlgorithm(Int_t val)              {fFittingAlgorithm=val; } // not enough to set this variable to switch between algorithms, so should be modified 
 
   // set methods for fast fit simulation
   void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
