@@ -305,6 +305,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
     ec->SetEmcCpvDistance(ts->GetCpvDistance("r")); //Only radius, what about separate x,z????
+    ec->SetTrackDistance(ts->GetCpvDistance("x"),ts->GetCpvDistance("z")); 
     ec->SetClusterChi2(-1);                     //not yet implemented
     ec->SetTOF(emcRP->GetTime());               //Time of flight - already calibrated in EMCRecPoint
 
@@ -325,7 +326,21 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     arrayTrackMatched[0]= ts->GetTrackIndex();
     ec->AddTracksMatched(arrayTrackMatched);
     
-    esd->AddCaloCluster(ec);
+    Int_t index = esd->AddCaloCluster(ec);
+
+    //Set pointer to this cluster in ESD track
+    Int_t nt=esd->GetNumberOfTracks();
+    for (Int_t itr=0; itr<nt; itr++) {
+      AliESDtrack *esdTrack=esd->GetTrack(itr);
+      if(!esdTrack->IsPHOS())
+        continue ;
+      if(esdTrack->GetPHOScluster()==-recpart){ //we store negative cluster number
+        esdTrack->SetPHOScluster(index) ;
+//no garatie that only one track matched this cluster
+//      break ;
+      }
+    }
+ 
     delete ec;   
     delete [] fracList;
     delete [] absIdList;
