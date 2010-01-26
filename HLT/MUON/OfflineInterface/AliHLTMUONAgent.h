@@ -91,6 +91,11 @@ public:
 	 * @param pInstance      pointer to handler
 	 */
 	virtual int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
+
+	/**
+	 * \returns true if a MUON module was added to gAlice.
+	 */
+	static bool IsMuonModuleLoaded();
 	
 private:
 	// The following instance is used for automatic agent and component registration.
@@ -98,6 +103,8 @@ private:
 	
 	static AliHLTOUTHandlerChain  fgkESDMakerChain;  ///< Chain handler for converting dHLT raw data to ESD format.
 	static AliHLTOUTHandlerChain  fgkRootifyDumpChain;  ///< Chain handler for converting dHLT raw data to ROOT objects and dumping to file.
+
+	static Int_t fgMuonModuleLoaded; ///< Cached flag for indicating if the MUON module was loaded for a simulation.
 
 	ClassDef(AliHLTMUONAgent, 0); // Dimuon HLT module agent which handles processing configurations.
 };

@@ -42,7 +42,10 @@
 #include "AliHLTOUTHandlerChain.h"
 #include "AliRawReader.h"
 #include "AliRunLoader.h"
+#include "AliRun.h"
+#include "AliMUON.h"
 #include "TSystem.h"
+#include "TObjArray.h"
 #include "TString.h"
 
 // The single global instance of the dimuon HLT agent.
@@ -50,9 +53,41 @@ AliHLTMUONAgent AliHLTMUONAgent::fgkInstance;
 
 AliHLTOUTHandlerChain AliHLTMUONAgent::fgkESDMakerChain("libAliHLTMUON.so chains=dHLT-make-esd");
 AliHLTOUTHandlerChain AliHLTMUONAgent::fgkRootifyDumpChain("libAliHLTMUON.so chains=dHLT-rootify-and-dump");
+Int_t AliHLTMUONAgent::fgMuonModuleLoaded = 0;
 
 
 ClassImp(AliHLTMUONAgent);
+
+
+bool AliHLTMUONAgent::IsMuonModuleLoaded()
+{
+	// Checks to see if the MUON module is loaded or not.
+
+	// If the check was already done then use the cached value.
+	if (fgMuonModuleLoaded > 0) return true;
+	if (fgMuonModuleLoaded < 0) return false;
+	
+	bool haveMuonModule = false;
+	if (gAlice != NULL)
+	{
+		// Search for a module in gAlice deriving from AliMUON.
+		TIter next(gAlice->Modules());
+		TObject* mod = NULL;
+		while ((mod = next()) != NULL)
+		{
+			if (mod->IsA() == AliMUON::Class())
+			{
+				fgMuonModuleLoaded = 1;
+				return true;
+			}
+		}
+	}
+	else
+	{
+		fgMuonModuleLoaded = -1;
+		return false;
+	}
+}
 
 
 AliHLTMUONAgent::AliHLTMUONAgent() : AliHLTModuleAgent("MUON")
@@ -110,7 +145,10 @@ const char* AliHLTMUONAgent::GetReconstructionChains(AliRawReader* rawReader,
 	
 	if (runloader != NULL)
 	{
-		if (runloader->GetLoader("MUONLoader") != NULL)
+		// IsMuonModuleLoaded() is used to check if the muon module was loaded
+		// If there is no AliMUON module in the simulation then do not run the
+		// MUON HLT chain.
+		if (IsMuonModuleLoaded() and runloader->GetLoader("MUONLoader") != NULL)
 			return "dHLT-sim";
 	}
 	
@@ -316,7 +354,7 @@ int AliHLTMUONAgent::CreateConfigurations(
 		handler->CreateConfiguration("dHLT-sim-fromRaw-fullTracker", "BlockFilter", outputSrcsFull, "");
 	}
 	
-	if (runloader != NULL)
+	if (IsMuonModuleLoaded() and runloader != NULL)
 	{
 		// Implement the dHLT-sim dHLT simulation chain reading from
 		// simulated digits.
