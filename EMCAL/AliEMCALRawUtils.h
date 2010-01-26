@@ -23,24 +23,24 @@
 class AliCaloRawStreamV3;
 class AliAltroMapping;
 class TGraph;
-class TF1;
 class AliRawReader;
 class AliEMCALGeometry;
 class AliCaloCalibPedestal;
+class AliCaloRawAnalyzer;
 
 class AliEMCALRawUtils : public TObject {
  public:
-  AliEMCALRawUtils();
-  AliEMCALRawUtils(AliEMCALGeometry *pGeometry);
-  virtual ~AliEMCALRawUtils();
+  enum fitAlgorithm {kStandard = 0, kFastFit= 1, kNeuralNet = 2, kLogFit = 3, kLMS = 4, kPeakFinder = 5, kCrude = 6};
 	
-  enum fitAlgorithm {kStandard = 0, kFastFit= 1, kNeuralNet = 2};
+ AliEMCALRawUtils(fitAlgorithm fitAlgo = kStandard);
+  AliEMCALRawUtils(AliEMCALGeometry *pGeometry, fitAlgorithm fitAlgo = kStandard);
+  virtual ~AliEMCALRawUtils();
 	
   AliEMCALRawUtils(const AliEMCALRawUtils& rawUtils);  //copy ctor
   AliEMCALRawUtils& operator =(const AliEMCALRawUtils& rawUtils);
 
   void Digits2Raw();
-  void Raw2Digits(AliRawReader *reader,TClonesArray *digitsArr, AliCaloCalibPedestal* pedbadmap);
+  void Raw2Digits(AliRawReader *reader, TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap);
 
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Int_t amp, Float_t time);
 
@@ -63,7 +63,7 @@ class AliEMCALRawUtils : public TObject {
   void SetNoiseThreshold(Int_t val)                {fNoiseThreshold=val; }
   void SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
   void SetRemoveBadChannels(Bool_t val)            {fRemoveBadChannels=val; }
-  void SetFittingAlgorithm(Int_t val)              {fFittingAlgorithm=val; }
+  // not enough to set this variable to switch between algorithms, so comment it out for now..  void SetFittingAlgorithm(Int_t val)              {fFittingAlgorithm=val; }
 
   // set methods for fast fit simulation
   void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
@@ -77,13 +77,15 @@ class AliEMCALRawUtils : public TObject {
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
   Int_t GetRawFormatDDLPerSuperModule() const { return fgDDLPerSuperModule ; } 
-  	
+  AliCaloRawAnalyzer *GetRawAnalyzer() const { return fRawAnalyzer;}
+
   virtual Option_t* GetOption() const { return fOption.Data(); }
-  void SetOption(Option_t* opt) { fOption = opt; }
+  void SetOption(const Option_t* opt) { fOption = opt; }
 
   // Signal shape functions
 	
-  void FitRaw(TGraph * gSig, TF1* signalF, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Float_t & ped, Float_t & ampEstimate, Float_t & timeEstimate, Float_t & pedEstimate, const Float_t cut = 0) const ;
+  void FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time) const ;
+  void FitParabola(const TGraph *gSig, Float_t & amp) const ; 
   static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
   Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const;  
 
@@ -113,8 +115,9 @@ class AliEMCALRawUtils : public TObject {
 
   Bool_t fRemoveBadChannels;            // select if bad channels are removed before fitting
   Int_t  fFittingAlgorithm;             // select the fitting algorithm
+  AliCaloRawAnalyzer *fRawAnalyzer;     // e.g. for sample selection for fits
 
-  ClassDef(AliEMCALRawUtils,4)          // utilities for raw signal fitting
+  ClassDef(AliEMCALRawUtils,5)          // utilities for raw signal fitting
 };
 
 #endif
