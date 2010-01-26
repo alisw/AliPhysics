@@ -1495,7 +1495,6 @@ void AliReconstruction::SlaveBegin(TTree*)
   ftree = new TTree("esdTree", "Tree with ESD objects");
   fesd = new AliESDEvent();
   fesd->CreateStdContent();
-  if (fesd->GetESDRun()) ((AliESDRun*)fesd->GetESDRun())->SetBeamEnergyIsSqrtSHalfGeV();
   // add a so far non-std object to the ESD, this will
   // become part of the std content
   fesd->AddObject(new AliESDHLTDecision);
@@ -1521,7 +1520,6 @@ void AliReconstruction::SlaveBegin(TTree*)
   fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
   fhltesd = new AliESDEvent();
   fhltesd->CreateStdContent();
-  if (fhltesd->GetESDRun()) ((AliESDRun*)fhltesd->GetESDRun())->SetBeamEnergyIsSqrtSHalfGeV();
   // read the ESD template from CDB
   // HLT is allowed to put non-std content to its ESD, the non-std
   // objects need to be created before invocation of WriteToTree in
@@ -1698,6 +1696,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // Set magnetic field from the tracker
     fesd->SetMagneticField(AliTracker::GetBz());
     fhltesd->SetMagneticField(AliTracker::GetBz());
+    //
+    ((AliESDRun*)fesd->GetESDRun())->SetBeamEnergyIsSqrtSHalfGeV();
+    ((AliESDRun*)fhltesd->GetESDRun())->SetBeamEnergyIsSqrtSHalfGeV();
     //
     AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
     if (fld) { // set info needed for field initialization
