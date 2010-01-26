@@ -176,7 +176,7 @@ AliESDtrack::AliESDtrack() :
   fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
-  fEMCALindex(kEMCALNoMatch),
+  fCaloIndex(kEMCALNoMatch),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
@@ -205,6 +205,8 @@ AliESDtrack::AliESDtrack() :
   fTOFsignalRaw(0),
   fTOFsignalDz(0),
   fTOFsignalDx(0),
+  fCaloDx(0),
+  fCaloDz(0),
   fHMPIDtrkX(0),
   fHMPIDtrkY(0),
   fHMPIDmipX(0),
@@ -271,7 +273,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTOFindex(track.fTOFindex),
   fHMPIDqn(track.fHMPIDqn),
   fHMPIDcluIdx(track.fHMPIDcluIdx),
-  fEMCALindex(track.fEMCALindex),
+  fCaloIndex(track.fCaloIndex),
   fHMPIDtrkTheta(track.fHMPIDtrkTheta),
   fHMPIDtrkPhi(track.fHMPIDtrkPhi),
   fHMPIDsignal(track.fHMPIDsignal),
@@ -300,6 +302,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTOFsignalRaw(track.fTOFsignalRaw),
   fTOFsignalDz(track.fTOFsignalDz),
   fTOFsignalDx(track.fTOFsignalDx),
+  fCaloDx(track.fCaloDx),
+  fCaloDz(track.fCaloDz),
   fHMPIDtrkX(track.fHMPIDtrkX),
   fHMPIDtrkY(track.fHMPIDtrkY),
   fHMPIDmipX(track.fHMPIDmipX),
@@ -379,7 +383,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
-  fEMCALindex(kEMCALNoMatch),
+  fCaloIndex(kEMCALNoMatch),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
@@ -408,6 +412,8 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTOFsignalRaw(0),
   fTOFsignalDz(0),
   fTOFsignalDx(0),
+  fCaloDx(0),
+  fCaloDz(0),
   fHMPIDtrkX(0),
   fHMPIDtrkY(0),
   fHMPIDmipX(0),
@@ -505,7 +511,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
-  fEMCALindex(kEMCALNoMatch),
+  fCaloIndex(kEMCALNoMatch),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
@@ -534,6 +540,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTOFsignalRaw(0),
   fTOFsignalDz(0),
   fTOFsignalDx(0),
+  fCaloDx(0),
+  fCaloDz(0),
   fHMPIDtrkX(0),
   fHMPIDtrkY(0),
   fHMPIDmipX(0),
@@ -781,7 +789,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fTOFindex      = source.fTOFindex;
   fHMPIDqn       = source.fHMPIDqn;
   fHMPIDcluIdx   = source.fHMPIDcluIdx; 
-  fEMCALindex    = source.fEMCALindex;
+  fCaloIndex    = source.fCaloIndex;
 
   for(int i = 0; i< 3;++i){
     fKinkIndexes[i] = source.fKinkIndexes[i]; 
@@ -1089,7 +1097,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fHMPIDtrkY = 0;      
   fHMPIDmipX = 0;
   fHMPIDmipY = 0;
-  fEMCALindex = kEMCALNoMatch;
+  fCaloIndex = kEMCALNoMatch;
 
   // reset global track chi2
   fGlobalChi2 = 0;

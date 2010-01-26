@@ -49,7 +49,8 @@ public:
     kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
     kHMPIDout=0x10000,kHMPIDpid=0x20000,
     kEMCALmatch=0x40000,
-    kTRDbackup=0x80000,
+    kPHOSmatch=0x200000,
+    kTRDbackup =0x80000,
     kTRDStop=0x20000000,
     kESDpid=0x40000000,
     kTIME=0x80000000,
@@ -325,9 +326,17 @@ public:
   Bool_t  IsPureITSStandalone() const {return fFlags&kITSpureSA;}
 
 
-  Int_t GetEMCALcluster() {return fEMCALindex;}
-  void SetEMCALcluster(Int_t index) {fEMCALindex=index;}
+  Int_t GetEMCALcluster() {return fCaloIndex;}
+  void SetEMCALcluster(Int_t index) {fCaloIndex=index;}
   Bool_t IsEMCAL() const {return fFlags&kEMCALmatch;}
+
+  Int_t GetPHOScluster() {return fCaloIndex;}
+  void SetPHOScluster(Int_t index) {fCaloIndex=index;}
+  Bool_t IsPHOS() const {return fFlags&kPHOSmatch;}
+  Double_t GetPHOSdx()const{return fCaloDx ;}
+  Double_t GetPHOSdz()const{return fCaloDz ;}
+  void SetPHOSdxdz(Double_t dx, Double_t dz){fCaloDx=dx,fCaloDz=dz;}
+
 
   void SetTrackPointArray(AliTrackPointArray *points) {
     fFriendTrack->SetTrackPointArray(points);
@@ -389,7 +398,7 @@ protected:
   Int_t     fTOFindex;       // index of the assigned TOF cluster
   Int_t     fHMPIDqn;         // 1000000*number of photon clusters + QDC
   Int_t     fHMPIDcluIdx;     // 1000000*chamber id + cluster idx of the assigned MIP cluster
-  Int_t     fEMCALindex;     // index of associated EMCAL cluster (AliESDCaloCluster)
+  Int_t     fCaloIndex;       // index of associated EMCAL/PHOS cluster (AliESDCaloCluster)
 
 
   Int_t     fKinkIndexes[3]; // array of indexes of posible kink candidates 
@@ -447,6 +456,9 @@ protected:
   Double32_t fTOFsignalDx;    // local x  of track's impact on the TOF pad 
   Double32_t fTOFInfo[10];    //! TOF informations
 
+  Double32_t fCaloDx ;        // [0.,0.,8] distance to calorimeter cluster in calo plain (phi direction)
+  Double32_t fCaloDz ;        // [0.,0.,8] distance to calorimeter cluster in calo plain (z direction)
+
   Double32_t fHMPIDtrkX;       // x of the track impact, LORS 
   Double32_t fHMPIDtrkY;       // y of the track impact, LORS 
   Double32_t fHMPIDmipX;       // x of the MIP in LORS
@@ -475,7 +487,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,55)  //ESDtrack 
+  ClassDef(AliESDtrack,56)  //ESDtrack 
 };
 
 

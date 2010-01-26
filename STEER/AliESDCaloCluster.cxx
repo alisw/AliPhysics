@@ -46,6 +46,7 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fM20(0),
   fM02(0),
   fEmcCpvDistance(1024),
+  fTrackDx(1024),fTrackDz(1024),
   fDistToBadChannel(1024),
   fID(0),
   fNExMax(0),
@@ -75,6 +76,8 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fM20(clus.fM20),
   fM02(clus.fM02),
   fEmcCpvDistance(clus.fEmcCpvDistance),
+  fTrackDx(clus.fTrackDx),
+  fTrackDz(clus.fTrackDz),
   fDistToBadChannel(clus.fDistToBadChannel),
   fID(clus.fID),
   fNExMax(clus.fNExMax),
@@ -125,6 +128,8 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   fM20 = source.fM20;
   fM02 = source.fM02;
   fEmcCpvDistance = source.fEmcCpvDistance;
+  fTrackDx= source.fTrackDx ;
+  fTrackDz= source.fTrackDz ;
   fDistToBadChannel = source.fDistToBadChannel ;
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = source.fPID[i];
   fID = source.fID;

@@ -80,6 +80,9 @@ public:
 
   void SetEmcCpvDistance(Float_t dEmcCpv) { fEmcCpvDistance = dEmcCpv; }
   Double_t GetEmcCpvDistance() const       { return fEmcCpvDistance; }
+  void SetTrackDistance(Double_t dx, Double_t dz){fTrackDx=dx; fTrackDz=dz;}
+  Double_t GetTrackDx(void)const {return fTrackDx;}
+  Double_t GetTrackDz(void)const {return fTrackDz;}
 
   void SetDistanceToBadChannel(Float_t dist) {fDistToBadChannel=dist;}
   Double_t GetDistanceToBadChannel() const {return fDistToBadChannel;}
@@ -167,6 +170,9 @@ protected:
   Double32_t   fM02;              // 2-nd moment along the second eigen axis
 
   Double32_t   fEmcCpvDistance;   // the distance from PHOS EMC rec.point to the closest CPV rec.point
+  Double32_t   fTrackDx ;         // Distance to closest track in phi
+  Double32_t   fTrackDz ;         // Distance to closest track in z
+
   Double32_t   fDistToBadChannel; // Distance to nearest bad channel
   Double32_t   fPID[AliPID::kSPECIESN]; //[0,1,8]"detector response  probabilities" (for the PID)
   Int_t       fID;               // Unique Id of the cluster
@@ -174,7 +180,7 @@ protected:
   Char_t  fClusterType;      // Flag for different cluster type/versions
   Double32_t fTOF; //[0,0,12] time-of-flight
 
-  ClassDef(AliESDCaloCluster,8)  //ESDCaloCluster 
+  ClassDef(AliESDCaloCluster,9)  //ESDCaloCluster 
 };
 
 #endif 
