@@ -475,7 +475,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,54)  //ESDtrack 
+  ClassDef(AliESDtrack,55)  //ESDtrack 
 };
 
 
