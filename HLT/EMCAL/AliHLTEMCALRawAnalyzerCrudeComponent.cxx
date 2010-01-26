@@ -16,13 +16,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include "AliHLTEMCALRawAnalyzerCrudeComponent.h"
-#include "AliHLTCaloRawAnalyzerCrude.h"
+//#include "AliHLTCaloRawAnalyzerCrude.h"
+#include "AliCaloRawAnalyzerCrude.h"
+
 
 AliHLTEMCALRawAnalyzerCrudeComponent  gAliHLTEMCALRawAnalyzerCrudeComponent;
 
-AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent()
+
+//AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent : AliHLTEMCALRawAnalyzerComponent() 
+AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent() : AliHLTEMCALRawAnalyzerComponent()
 {
-  fAnalyzerPtr = new   AliHLTCaloRawAnalyzerCrude();
+  //  fAnalyzerPtr = new   AliHLTCaloRawAnalyzerCrude();
+  fAnalyzerPtr = new   AliCaloRawAnalyzerCrude();
 }
 
 
@@ -35,7 +40,7 @@ AliHLTEMCALRawAnalyzerCrudeComponent::~AliHLTEMCALRawAnalyzerCrudeComponent()
 const char* 
 AliHLTEMCALRawAnalyzerCrudeComponent::GetComponentID()
 {
-  return "CaloRawCrude";
+  return "EmcalRawCrude";
 }
 
 

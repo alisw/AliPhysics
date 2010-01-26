@@ -1,6 +1,3 @@
-#ifndef ALIHLTEMCALRAWANALYZERCRUDECOMPONENT_H
-#define ALIHLTEMCALRAWANALYZERCRUDECOMPONENT_H
-
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -18,28 +15,39 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include "AliHLTEMCALRawAnalyzerPeakFinderComponent.h"
+//#include "AliHLTCaloRawAnalyzerPeakFinder.h"
+#include "AliCaloRawAnalyzerPeakFinder.h"
 
-#include  "AliHLTEMCALRawAnalyzerComponent.h"
 
-//AliHLTCALORawAnalyzerCrudeComponent
+AliHLTEMCALRawAnalyzerPeakFinderComponent  gAliHLTEMCALRawAnalyzerPeakFinderComponent;
 
-class  AliHLTEMCALRawAnalyzerCrudeComponent : public AliHLTEMCALRawAnalyzerComponent
-//class  AliHLTEMCALRawAnalyzerCrudeComponent : public AliHLTCALORawAnalyzerComponent
+
+//AliHLTEMCALRawAnalyzerPeakFinderComponent::AliHLTEMCALRawAnalyzerPeakFinderComponent : AliHLTEMCALRawAnalyzerComponent()
+AliHLTEMCALRawAnalyzerPeakFinderComponent::AliHLTEMCALRawAnalyzerPeakFinderComponent (): AliHLTEMCALRawAnalyzerComponent()
 {
- public:
-  AliHLTEMCALRawAnalyzerCrudeComponent();
-  virtual ~AliHLTEMCALRawAnalyzerCrudeComponent();
-  virtual const char* GetComponentID();
-  virtual AliHLTComponent* Spawn(); 
-  //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
- private:
-  AliHLTEMCALRawAnalyzerCrudeComponent( const AliHLTEMCALRawAnalyzerCrudeComponent  & );
-  AliHLTEMCALRawAnalyzerCrudeComponent & operator = (const AliHLTEMCALRawAnalyzerCrudeComponent  &);
-  // bool TestBoolConst() { return false; };
-  bool TestBool()  {return  false; };
+  //  fAnalyzerPtr = new   AliHLTCaloRawAnalyzerPeakFinder();
+  fAnalyzerPtr = new    AliCaloRawAnalyzerPeakFinder();
+}
 
-    
 
-};
 
-#endif
+AliHLTEMCALRawAnalyzerPeakFinderComponent::~AliHLTEMCALRawAnalyzerPeakFinderComponent()
+{
+
+}
+
+
+const char* 
+AliHLTEMCALRawAnalyzerPeakFinderComponent::GetComponentID()
+{
+  return "EmcalRawPeakFinder";
+}
+
+
+AliHLTComponent* 
+AliHLTEMCALRawAnalyzerPeakFinderComponent::Spawn()
+{
+  return new AliHLTEMCALRawAnalyzerPeakFinderComponent();
+}
+ 

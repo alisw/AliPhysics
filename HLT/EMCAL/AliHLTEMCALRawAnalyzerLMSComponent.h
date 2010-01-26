@@ -1,5 +1,5 @@
-#ifndef ALIHLTEMCALRAWANALYZERCRUDECOMPONENT_H
-#define ALIHLTEMCALRAWANALYZERCRUDECOMPONENT_H
+#ifndef ALIHLTCALORAWANALYZERLMSCOMPONENT_H
+#define ALIHLTCALORAWANALYZERLMSCOMPONENT_H
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -19,26 +19,25 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include  "AliHLTEMCALRawAnalyzerComponent.h"
+#include "AliHLTEMCALRawAnalyzerComponent.h"
 
-//AliHLTCALORawAnalyzerCrudeComponent
+class  AliCaloRawAnalyzerLMS;
 
-class  AliHLTEMCALRawAnalyzerCrudeComponent : public AliHLTEMCALRawAnalyzerComponent
-//class  AliHLTEMCALRawAnalyzerCrudeComponent : public AliHLTCALORawAnalyzerComponent
+//      AliHLTEMCALRawAnalyzerLMSComponent.h:
+class  AliHLTEMCALRawAnalyzerLMSComponent : public AliHLTEMCALRawAnalyzerComponent
 {
- public:
-  AliHLTEMCALRawAnalyzerCrudeComponent();
-  virtual ~AliHLTEMCALRawAnalyzerCrudeComponent();
-  virtual const char* GetComponentID();
-  virtual AliHLTComponent* Spawn(); 
-  //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
- private:
-  AliHLTEMCALRawAnalyzerCrudeComponent( const AliHLTEMCALRawAnalyzerCrudeComponent  & );
-  AliHLTEMCALRawAnalyzerCrudeComponent & operator = (const AliHLTEMCALRawAnalyzerCrudeComponent  &);
-  // bool TestBoolConst() { return false; };
-  bool TestBool()  {return  false; };
 
-    
+ public:
+  AliHLTEMCALRawAnalyzerLMSComponent();
+  virtual ~AliHLTEMCALRawAnalyzerLMSComponent();
+  virtual const char* GetComponentID() ;
+  virtual AliHLTComponent* Spawn();
+  virtual int Deinit();
+
+ private:
+  AliHLTEMCALRawAnalyzerLMSComponent              (   const AliHLTEMCALRawAnalyzerLMSComponent &,  TString det ); 
+  AliHLTEMCALRawAnalyzerLMSComponent & operator = (   const AliHLTEMCALRawAnalyzerLMSComponent );
+  //  AliEMCALRawAnalyzerLMS *fRawAnalyzer;
 
 };
 

@@ -1,5 +1,5 @@
-#ifndef ALIHLTEMCALRAWANALYZERCRUDECOMPONENT_H
-#define ALIHLTEMCALRAWANALYZERCRUDECOMPONENT_H
+#ifndef ALIHLTEMCALRAWANALYZERPEAKFINDERCOMPONENT_H
+#define ALIHLTEMCALRAWANALYZERPEAKFINDERCOMPONENT_H
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -21,25 +21,21 @@
 
 #include  "AliHLTEMCALRawAnalyzerComponent.h"
 
-//AliHLTCALORawAnalyzerCrudeComponent
 
-class  AliHLTEMCALRawAnalyzerCrudeComponent : public AliHLTEMCALRawAnalyzerComponent
-//class  AliHLTEMCALRawAnalyzerCrudeComponent : public AliHLTCALORawAnalyzerComponent
+//class  AliHLTEMCALRawAnalyzerPeakFinderComponent : public AliHLTEMCALRawAnalyzerComponent
+class  AliHLTEMCALRawAnalyzerPeakFinderComponent : public AliHLTEMCALRawAnalyzerComponent 
 {
  public:
-  AliHLTEMCALRawAnalyzerCrudeComponent();
-  virtual ~AliHLTEMCALRawAnalyzerCrudeComponent();
+  AliHLTEMCALRawAnalyzerPeakFinderComponent();
+  virtual ~AliHLTEMCALRawAnalyzerPeakFinderComponent();
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn(); 
   //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
  private:
-  AliHLTEMCALRawAnalyzerCrudeComponent( const AliHLTEMCALRawAnalyzerCrudeComponent  & );
-  AliHLTEMCALRawAnalyzerCrudeComponent & operator = (const AliHLTEMCALRawAnalyzerCrudeComponent  &);
+  AliHLTEMCALRawAnalyzerPeakFinderComponent( const AliHLTEMCALRawAnalyzerPeakFinderComponent  & );
+  AliHLTEMCALRawAnalyzerPeakFinderComponent & operator = (const AliHLTEMCALRawAnalyzerPeakFinderComponent  &);
   // bool TestBoolConst() { return false; };
   bool TestBool()  {return  false; };
-
-    
-
 };
 
 #endif
