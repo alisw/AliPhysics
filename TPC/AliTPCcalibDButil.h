@@ -1,5 +1,5 @@
-#ifndef AliTPCCALIBDBUTIL_H
-#define AliTPCCALIBDBUTIL_H
+#ifndef ALITPCCALIBDBUTIL_H
+#define ALITPCCALIBDBUTIL_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -32,6 +32,8 @@ class AliTPCdataQA;
 class TGraphErrors;
 class TTreeSRedirector;
 class AliTPCCalROC;
+
+
 class AliTPCcalibDButil : public TObject
 {
 public:
@@ -41,7 +43,7 @@ public:
   void UpdateFromCalibDB();
   //data processing functions
   void ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC,
-                     Int_t &noutliersCE, Double_t & chi2A, Double_t &chi2C, AliTPCCalPad *outCE=0);
+                     Int_t &noutliersCE, Double_t & chi2A, Double_t &chi2C, AliTPCCalPad * const outCE=0);
   void ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMean, TVectorD &vecTRMS, TVectorD &vecTMedian,
                        TVectorD &vecQEntries, TVectorD &vecQMean, TVectorD &vecQRMS, TVectorD &vecQMedian,
                        Float_t &driftTimeA, Float_t &driftTimeC );
@@ -59,7 +61,7 @@ public:
   
   //getter preprocess information
   Int_t GetNPulserOutliers() const {return fNpulserOutliers;}
-  Float_t GetMeanAltro(const AliTPCCalROC *roc, const Int_t row, const Int_t pad, AliTPCCalROC *rocOut=0x0);
+  Float_t GetMeanAltro(const AliTPCCalROC *roc, const Int_t row, const Int_t pad, AliTPCCalROC * const rocOut=0x0);
   AliTPCCalPad *GetPulserOutlierMap() const {return fPulserOutlier;}
 
   //getters ref data
@@ -87,7 +89,7 @@ public:
   
   
   //setters for pad by pad information
-  void SetPulserData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
+  void SetPulserData(AliTPCCalPad * const tmean, AliTPCCalPad * const trms=0x0, AliTPCCalPad * const qmean=0x0)
                 {fPulserTmean=tmean; fPulserTrms=trms; fPulserQmean=qmean;}
   void SetCEData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
                 {fCETmean=tmean; fCETrms=trms; fCEQmean=qmean;}
@@ -115,8 +117,8 @@ public:
   //
   // create outlyer maps
   //
-  AliTPCCalPad *CreateCEOutlyerMap(Int_t &noutliersCE, AliTPCCalPad *ceOut=0, Float_t minSignal=10, Float_t cutTrmsMin=0.9, Float_t cutTrmsMax=1.2, Float_t cutMaxDistT=0.7);
-  AliTPCCalPad *CreatePulserOutlyerMap(Int_t &noutliersPulser, AliTPCCalPad *pulserOut=0, Float_t cutTime=3, Float_t cutnRMSQ=5, Float_t cutnRMSrms=5);
+  AliTPCCalPad *CreateCEOutlyerMap(Int_t &noutliersCE, AliTPCCalPad * const ceOut=0, Float_t minSignal=10, Float_t cutTrmsMin=0.9, Float_t cutTrmsMax=1.2, Float_t cutMaxDistT=0.7);
+  AliTPCCalPad *CreatePulserOutlyerMap(Int_t &noutliersPulser, AliTPCCalPad * const pulserOut=0, Float_t cutTime=3, Float_t cutnRMSQ=5, Float_t cutnRMSrms=5);
   //
   AliTPCCalPad *CreatePadTime0CE(TVectorD &fitResultsA, TVectorD&fitResultsC, Int_t &nOut, Double_t &chi2A, Double_t &chi2C, const char *dumpfile=0);
   //
@@ -132,14 +134,14 @@ public:
   // graph tools
   //
   static Double_t GetLaserTime0(Int_t run, Int_t timeStamp, Int_t deltaT, Int_t side);
-  static TGraph* FilterGraphMedian(TGraph * graph, Float_t sigmaCut, Double_t &medianY);
+  static TGraph* FilterGraphMedian(TGraph * const graph, Float_t sigmaCut, Double_t &medianY);
   static TGraph* FilterGraphMedianAbs(TGraph * graph, Float_t cut, Double_t &medianY);
   static TGraphErrors* FilterGraphMedianErr(TGraphErrors * graph, Float_t sigmaCut,Double_t &medianY);
   //
   static void Sort(TGraph *graph);
   static void SmoothGraph(TGraph *graph, Double_t delta);
   static Int_t     GetNearest(TGraph *graph, Double_t xref, Double_t &dx, Double_t &y);
-  static Double_t EvalGraphConst(TGraph *graph, Double_t xref);
+  static Double_t EvalGraphConst(TGraph * const graph, Double_t xref);
   //
   // Filter sensors
   //
@@ -147,14 +149,14 @@ public:
   //
   // Filter AliRelAlignmentKalman - Alignment/Drift velocity
   //
-  static TMatrixD* MakeStatRelKalman(TObjArray *array, Float_t minFraction, Int_t minStat, Float_t maxvd);
-  static TObjArray *SmoothRelKalman(TObjArray *array,TMatrixD & stat, Bool_t direction, Float_t sigmaCut);
-  static TObjArray *SmoothRelKalman(TObjArray *arrayP, TObjArray *arrayM);
-  static void FilterCE(Double_t deltaT=100, Double_t cutAbs=10, Double_t cutSigma=4., TTreeSRedirector *pcstream=0);
-  static void FilterTracks(Int_t run, Double_t cutSigma=20., TTreeSRedirector *pcstream=0);
+  static TMatrixD* MakeStatRelKalman(TObjArray * const array, Float_t minFraction, Int_t minStat, Float_t maxvd);
+  static TObjArray *SmoothRelKalman(TObjArray * const array,const TMatrixD & stat, Bool_t direction, Float_t sigmaCut);
+  static TObjArray *SmoothRelKalman(TObjArray * const arrayP, TObjArray * const arrayM);
+  static void FilterCE(Double_t deltaT=100, Double_t cutAbs=10, Double_t cutSigma=4., TTreeSRedirector * const pcstream=0);
+  static void FilterTracks(Int_t run, Double_t cutSigma=20., TTreeSRedirector * const pcstream=0);
   static Float_t FilterTemperature(AliTPCSensorTempArray *tempArray, Double_t ymin=15, Double_t ymax=22, Double_t sigmaCut=5); 
 
-  static   void FilterGoofie(AliDCSSensorArray * goofieArray, Double_t deltaT=2, Double_t cutSigma=4.,  Double_t minVdn=8.5, Double_t maxVdn=9.05, TTreeSRedirector *pcstream=0);
+  static   void FilterGoofie(AliDCSSensorArray * goofieArray, Double_t deltaT=2, Double_t cutSigma=4.,  Double_t minVdn=8.5, Double_t maxVdn=9.05, TTreeSRedirector * const pcstream=0);
   static Double_t  GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
   static Double_t  GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
   static Double_t  GetVDriftTPCLaserTracks(Double_t &dist,Int_t run, Int_t timeStamp, Double_t deltaT=43200, Int_t side=2);
@@ -222,11 +224,10 @@ private:
   //
   // filters  
   
-public:
   TArrayI fRuns;                         // run list with OCDB info
   TArrayI fRunsStart;                    // start time for given run
   TArrayI fRunsStop;                     // stop time for given run
-private:
+  
   AliTPCcalibDButil (const AliTPCcalibDButil& );
   AliTPCcalibDButil& operator= (const AliTPCcalibDButil& );
 
