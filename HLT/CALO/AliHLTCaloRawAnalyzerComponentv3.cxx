@@ -14,7 +14,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliHLTCaloRawAnalyzer.h"
+//#include "AliHLTCaloRawAnalyzer.h"
+#include "AliCaloRawAnalyzer.h"
+#include "AliCaloBunchInfo.h"
+#include "AliCaloFitResults.h"
+
 #include "AliHLTCaloRawAnalyzerComponentv3.h"
 #include "AliHLTCaloChannelDataHeaderStruct.h"
 #include "AliHLTCaloChannelDataStruct.h"
@@ -27,6 +31,13 @@
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloConstants.h"
 #include "AliHLTCaloRcuProcessor.h"
+
+
+//#include "AliCALOBunchInfo.h"
+//AliCALORawAnalyzer
+
+#include <vector>
+using namespace std;
 
 ClassImp(AliHLTCaloRawAnalyzerComponentv3);
 
@@ -115,12 +126,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
       return -4;
     }
   */
-
   return iResult;
 }
-
-
-
 
 
 int 
@@ -156,16 +163,18 @@ AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 }
 
 
+/*
 const char* 
 AliHLTCaloRawAnalyzerComponentv3::GetComponentID()
 {
   //comment
   return "CaloRawAnalyzerv3";
 }
+*/
 
 
 
- 
+ /* 
 void
 AliHLTCaloRawAnalyzerComponentv3::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
@@ -173,16 +182,20 @@ AliHLTCaloRawAnalyzerComponentv3::GetInputDataTypes( vector<AliHLTComponentDataT
   list.clear();
   list.push_back( AliHLTCaloDefinitions::fgkDDLPackedRawDataType | kAliHLTDataOriginPHOS);
 }
- 
+ */ 
 
+
+  /*
 AliHLTComponentDataType
 AliHLTCaloRawAnalyzerComponentv3::GetOutputDataType()
 {
   //comment
   return AliHLTCaloDefinitions::fgkChannelDataType;
 }
+  */
 
 
+   /*
 void
 AliHLTCaloRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 {
@@ -190,7 +203,7 @@ AliHLTCaloRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, do
   constBase = sizeof(AliHLTCaloChannelDataHeaderStruct);
   inputMultiplier = 0.5;
 }
-
+   */
 
 
 
@@ -259,9 +272,11 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	      }
 
 	    //	    return 1;
-
+	    vector <AliCaloBunchInfo> bvctr;
 	    while( fAltroRawStreamPtr->NextBunch() == true )
 	      {
+		bvctr.push_back( AliCaloBunchInfo( fAltroRawStreamPtr->GetStartTimeBin(), fAltroRawStreamPtr->GetBunchLength(), fAltroRawStreamPtr->GetSignals() ) );	
+
 		nSamples = fAltroRawStreamPtr->GetBunchLength();
 		if( fkDoPushRawData == true)
 		  {
@@ -279,20 +294,16 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		return -1;
 	      }
 
-	    fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
-
-	    fAnalyzerPtr->Evaluate(0, nSamples);  
-	    //    fAnalyzerPtr->Evaluate(0,  25);  
+	    //    fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
+	    AliCaloFitResults res = fAnalyzerPtr->Evaluate( bvctr,  fAltroRawStreamPtr->GetAltroCFG1(), fAltroRawStreamPtr->GetAltroCFG2() );  
 	    
-
-	    //	    return 1;
-  
+	    
 	    //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
 	    {
 	      channelDataPtr->fChannelID =  chId;
-	      channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
+	      channelDataPtr->fEnergy = static_cast<Float_t>( res.GetAmp()  ) - fOffset;
 
-	      channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
+	      channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() );
 	      channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
 	      channelCount++;
 	      channelDataPtr++; // Updating position of the free output.

@@ -37,7 +37,7 @@
 //#include "AliHLTCaloRcuProcessor.h"
 
 
-class AliHLTCaloRawAnalyzer;
+class AliCaloRawAnalyzer;
 class AliHLTCaloRcuCellEnergyDataStruct;
 class AliHLTCaloMapper;
 class AliHLTCaloSanityInspector;
@@ -45,6 +45,7 @@ class AliHLTCaloDigitMaker;
 class AliHLTCaloDigitContainerDataStruct;
 class AliRawReaderMemory;
 class AliAltroRawStreamV3;
+
 
 /**
  * @class AliHLTCaloRawAnalyzerComponentv3
@@ -125,13 +126,17 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
   virtual const char* GetComponentID() = 0;
 
   /** interface function, see @ref AliHLTComponent for description */
-  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
+  //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
+  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list) = 0; 
+
 
   /** interface function, see @ref AliHLTComponent for description */
-  virtual AliHLTComponentDataType GetOutputDataType();
+  //  virtual AliHLTComponentDataType GetOutputDataType();
+  virtual AliHLTComponentDataType GetOutputDataType() = 0;
 
   /** interface function, see @ref AliHLTComponent for description */
-  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
+  //  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
+  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) = 0 ;
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual AliHLTComponent* Spawn() = 0; 
@@ -161,7 +166,7 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
   unsigned long fCaloEventCount;
 
   /** Pointer to an analyzer object used for raw data anlysis */ 
-  AliHLTCaloRawAnalyzer *fAnalyzerPtr;   //COMMENT
+  AliCaloRawAnalyzer *fAnalyzerPtr;   //COMMENT
 
   //** Pointer to a mapper opbject */
   AliHLTCaloMapper *fMapperPtr;          //COMMENT
