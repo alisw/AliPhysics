@@ -280,12 +280,20 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 //
 // Exec analysis of one event
     if (fDebug > 1) AliInfo("AliAnalysisTaskSE::Exec() \n");
-
+//
+    AliAODHandler* handler = (AliAODHandler*) 
+	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
+//
+// Was event selected ?
     Bool_t isSelected = kTRUE;
     if( fInputHandler ) {
       isSelected = fInputHandler->IsEventSelected();
       fEntry = fInputHandler->GetReadEntry();
     }
+    
+    if (handler) handler->SetFillAOD(isSelected);
+  
 
 // Notify the change of run number
     if (InputEvent()->GetRunNumber() != fCurrentRunNumber) {
@@ -298,9 +306,8 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     if ( !((Entry()-1)%100) && fDebug > 0) 
          AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
 
-    AliAODHandler* handler = (AliAODHandler*) 
-	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-    AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
+    
+    
 
     if (handler && aodH) {
 	fMCEvent = aodH->MCEvent();
