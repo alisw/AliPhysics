@@ -136,6 +136,7 @@ protected:
   using AliHLTProcessor::DoEvent;
   AliTPCTransform *fOfflineTransform;
   Bool_t fDataId;
+  Int_t fChargeThreshold;  //!transient 
 
 private:
    
@@ -147,11 +148,10 @@ private:
   /** assignment operator prohibited */
   AliHLTTPCHWClusterTransformComponent& operator=(const AliHLTTPCHWClusterTransformComponent&);
 
-  AliTPCRecoParam fOfflineTPCRecoParam;  //! transient
-
-  static const char* fgkOCDBEntryHWTransform;  //!transient
-          
-  ClassDef(AliHLTTPCHWClusterTransformComponent, 3)
+  AliTPCRecoParam fOfflineTPCRecoParam;       //! transient
+  static const char* fgkOCDBEntryHWTransform; //!transient
+  
+  ClassDef(AliHLTTPCHWClusterTransformComponent, 4)
 };
 
 #endif

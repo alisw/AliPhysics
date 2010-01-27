@@ -52,6 +52,7 @@ AliHLTTPCHWClusterTransformComponent::AliHLTTPCHWClusterTransformComponent()
 :
 fOfflineTransform(NULL),
 fDataId(kFALSE),
+fChargeThreshold(10),
 fOfflineTPCRecoParam()
 {
   // see header file for class documentation
@@ -253,7 +254,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     	   cluster.fSigmaZ2 = *((Float_t*)&buffer[nWords+4]);
 	   
 	   
-	   if(cluster.fCharge<10) continue;
+	   if(cluster.fCharge<fChargeThreshold) continue;
 	   
 	   // correct expressions for the error calculation
 	   // Kenneth: 12.11.2009 I'm not sure if this is a correct calculation. Leave it out for now since it is anyway not used later since it caused segfaults.
@@ -355,6 +356,14 @@ int AliHLTTPCHWClusterTransformComponent::ScanConfigurationArgument(int argc, co
     fDataId = kTRUE;
     return 1;
   }
+  
+  if (argument.CompareTo("-charge-threshold")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fChargeThreshold=argument.Atof();
+    HLTInfo("The charge threshold has been set to %d.", fChargeThreshold);
+    return 2;
+  }    
 
   // unknown argument
   return -EINVAL;
