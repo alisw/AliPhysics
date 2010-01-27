@@ -97,17 +97,18 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
    for (i=0; i<nV0; i++) { //loop on V0s
 
       AliESDv0 *v=(AliESDv0*)vtcs.UncheckedAt(i);
-      v->ChangeMassHypothesis(kLambda0); // the v0 must be Lambda 
-      if (TMath::Abs(v->GetEffMass()-massLambda)>fMassWin) continue; 
+      AliESDv0 v0(*v);
+      v0.ChangeMassHypothesis(kLambda0); // the v0 must be Lambda 
+      if (TMath::Abs(v0.GetEffMass()-massLambda)>fMassWin) continue; 
 
       for (Int_t j=0; j<ntr; j++) {//loop on tracks
 	 Int_t bidx=trk[j];
  	 //Bo:   if (bidx==v->GetNindex()) continue; //bachelor and v0's negative tracks must be different
-         if (bidx==v->GetIndex(0)) continue; //Bo:  consistency 0 for neg
+         if (bidx==v0.GetIndex(0)) continue; //Bo:  consistency 0 for neg
 	 AliESDtrack *btrk=event->GetTrack(bidx);
          if (btrk->GetSign()>0) continue;  // bachelor's charge 
           
-    	 AliESDv0 v0(*v), *pv0=&v0;
+    	 AliESDv0 *pv0=&v0;
          AliExternalTrackParam bt(*btrk), *pbt=&bt;
 
          Double_t dca=PropagateToDCA(pv0,pbt,b);
@@ -140,17 +141,18 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
 
    for (i=0; i<nV0; i++) { //loop on V0s
       AliESDv0 *v=(AliESDv0*)vtcs.UncheckedAt(i);
-      v->ChangeMassHypothesis(kLambda0Bar); //the v0 must be anti-Lambda 
-      if (TMath::Abs(v->GetEffMass()-massLambda)>fMassWin) continue; 
+      AliESDv0 v0(*v);
+      v0.ChangeMassHypothesis(kLambda0Bar); //the v0 must be anti-Lambda 
+      if (TMath::Abs(v0.GetEffMass()-massLambda)>fMassWin) continue; 
 
       for (Int_t j=0; j<ntr; j++) {//loop on tracks
 	 Int_t bidx=trk[j];
  	 //Bo:   if (bidx==v->GetPindex()) continue; //bachelor and v0's positive tracks must be different
-         if (bidx==v->GetIndex(1)) continue; //Bo:  consistency 1 for pos
+         if (bidx==v0.GetIndex(1)) continue; //Bo:  consistency 1 for pos
 	 AliESDtrack *btrk=event->GetTrack(bidx);
          if (btrk->GetSign()<0) continue;  // bachelor's charge 
           
-	 AliESDv0 v0(*v), *pv0=&v0;
+	 AliESDv0 *pv0=&v0;
          AliESDtrack bt(*btrk), *pbt=&bt;
 
          Double_t dca=PropagateToDCA(pv0,pbt,b);
