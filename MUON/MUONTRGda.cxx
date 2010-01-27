@@ -1171,20 +1171,32 @@ void MakePatternStore(AliDAConfig& cfg)
     
   }
   
-  // check if the mask has changed from previous version
+  // make and AND with the previous version of the mask and
+  // check if the mask has changed
   UShort_t maskDA, mask;
+  Int_t nMaskBits = AliMpConstants::TotalNofLocalBoards()*8*16;
+  Int_t nMaskBitsChanged = 0;
   for (localBoardId = 1; localBoardId <= AliMpConstants::TotalNofLocalBoards(); localBoardId++) {
     AliMUONVCalibParam* localMaskDA = static_cast<AliMUONVCalibParam*>(cfg.GetLocalMasksDA()->FindObject(localBoardId));
     AliMUONVCalibParam* localMask = static_cast<AliMUONVCalibParam*>(cfg.GetLocalMasks()->FindObject(localBoardId));
     for (connector = 0; connector < 8; connector++) {
       maskDA = static_cast<UShort_t>(localMaskDA->ValueAsInt(connector,0)); 
-      mask = static_cast<UShort_t>(localMask->ValueAsInt(connector,0)); 
+      mask = static_cast<UShort_t>(localMask->ValueAsInt(connector,0));
+      maskDA &= mask; 
+      localMaskDA->SetValueAsInt(connector, 0, maskDA);  
       if (maskDA != mask) {
 	updated = kTRUE;
-	break;
+	// calculated percentage of mask bits changed
+	for (Int_t iBit = 0; iBit < 16; iBit++) {
+	  if (((maskDA >> iBit) & 0x1) != ((mask >> iBit) &0x1)) {
+	    nMaskBitsChanged++;
+	  }
+	}
       }
     }
   }
+
+  printf("LOCAL mask bits changed = %5d (%9.5f %%) \n",nMaskBitsChanged,(Float_t)nMaskBitsChanged/(Float_t)nMaskBits);
 
   Int_t status = 0;
   if (updated) {
