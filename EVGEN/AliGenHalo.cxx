@@ -125,6 +125,11 @@ void AliGenHalo::Init()
     } else {
 	printf("\n Opening of file %s failed,  %p ! \n ",  fFileName.Data(), (void*)fFile);
     }
+
+    if (fNskip > 0) {
+      // Skip the first fNskip events
+      SkipEvents();
+    }
 //
 //
 //
@@ -252,24 +257,22 @@ void AliGenHalo::Generate()
   static Bool_t first = kTRUE;
   static Int_t  oldID = -1;
 //
-  if (first) {
-      ReadNextParticle();
-      first = kFALSE;
-      oldID = fLossID;
-  }
-  
-  
+
+  if (first && (fNskip == 0)) ReadNextParticle();
+  first = kFALSE;
+  oldID = fLossID;
   
   while(1) {
       // Push particle to stack
       mass = TDatabasePDG::Instance()->GetParticle(fPdg)->Mass();
-      p0  = TMath::Sqrt(fEkin * fEkin + 2.* mass * fEkin);
+      p0  = TMath::Sqrt(fEkin * fEkin + 2. * mass * fEkin);
       txy = TMath::Sqrt(fDX * fDX + fDY * fDY);
       if (txy == 1.) {
 	  tz = 0;
       } else {
 	  tz = - TMath::Sqrt(1. - txy);
       }
+ 
       p[0] =  p0 * fDX;
       p[1] =  p0 * fDY;
       p[2] =  p0 * tz;
@@ -279,7 +282,7 @@ void AliGenHalo::Generate()
       origin[2] = 1950.;
 
       PushTrack(fTrackIt , -1, fPdg , p, origin, polar, fTS - 1950./2.9979e10, kPNoProcess, nt, fWS);
-
+      
       Int_t nc = ReadNextParticle();
       
       if (fLossID != oldID || nc == 0) {
@@ -360,4 +363,21 @@ Int_t AliGenHalo::ReadNextParticle()
     fZS    /= 10.;   
     fTS    *= 1.e-9;
     return (ncols);
+}
+
+void AliGenHalo::SkipEvents()
+{
+  //
+  // Skip the first fNskip events
+  Int_t skip = fNskip;
+  Int_t oldID = -1;
+
+  while (skip >= 0)
+    {
+      ReadNextParticle();
+      if (oldID != fLossID) {
+	oldID = fLossID;
+	skip--;
+      }
+    } 
 }

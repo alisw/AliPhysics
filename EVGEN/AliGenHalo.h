@@ -32,6 +32,7 @@ public:
     virtual void SetTimePerEvent(Float_t t = 1.e-4) {fTimePerEvent = t;}
     virtual void Draw(Option_t * opt="");
  private:
+    virtual void  SkipEvents();
     virtual Int_t ReadNextParticle();
  protected:
     FILE*    fFile;                       // ! Pointer to file
