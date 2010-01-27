@@ -85,6 +85,10 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
   short maxampindex; //index of maximum amplitude
   short maxamp; //Maximum amplitude
   fAmp = 0;
+  fAmpA[0] = 0;
+  fAmpA[1] = 0;
+  fAmpA[2] = 0;
+
   int index = SelectBunch( bunchvector,  &maxampindex,  &maxamp );
  
   if( index >= 0)
@@ -112,18 +116,56 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      int pfindex = n - fNsampleCut; 
 	      pfindex = pfindex > SAMPLERANGE ? SAMPLERANGE : pfindex;
 
+	      int dt =  maxampindex - startbin -2; 
 	      for(int i=0; i < SAMPLERANGE; i++ )
 		{
-		  int dt =  maxampindex - startbin -2;
-		  double tmp =  fReversed[ dt  +i];  
-		  fAmp += fPFAmpVectors[0][pfindex][i]*tmp; 
+		  //	  int dt =  maxampindex - startbin -2;
+		  
+		  //		  double tmp[3];
+ 
+		  //	  tmp[0]  =  fReversed[ dt  +i -1]; 
+		  //		  tmp[1]  =  fReversed[ dt  +i];  
+		  //		  tmp[2]  =  fReversed[ dt  +i +1]; 
+		  
+		  for(int j = 0; j < 3; j++)
+		    {
+		      //    fAmpA[j] += fPFAmpVectors[0][pfindex][i]*tmp[j]; 
+		      fAmpA[j] += fPFAmpVectors[0][pfindex][i]*fReversed[ dt  +i +j -1];
+
+		    }
 		}
 	      
-	      return AliCaloFitResults( maxamp, ped , -1, fAmp, -1, -1, -1 ); 
+	      double diff = 9999;
+
+	      int tmpindex = 0;
+
+	      for(int k=0; k < 3; k ++)
+		{
+		  //		  cout << __FILE__ << __LINE__ << "amp[="<< k <<"] = " << fAmpA[k] << endl;
+		  if(  TMath::Abs(fAmpA[k] - ( maxamp - ped) )  < diff)
+		    {
+		      diff = TMath::Abs(fAmpA[k] - ( maxamp - ped));
+		      tmpindex = k; 
+		    }
+		}
+	      
+	      double tof = 0;
+
+	      for(int k=0; k < SAMPLERANGE; k++   )
+		{
+		  tof +=  fPFTofVectors[0][pfindex][k]*fReversed[ dt  +k + tmpindex -1 ];   
+		}
+	      
+	      tof = tof /  fAmpA[tmpindex];
+
+	      //   return AliCaloFitResults( maxamp, ped , -1, fAmp, -1, -1, -1 );  
+	      return AliCaloFitResults( maxamp, ped , -1, fAmpA[tmpindex], tof, -2, -3 ); 
+		  
 	    }
+
 	  else
 	    {
-	      return AliCaloFitResults( maxamp, ped , -1, maxf, -1, -1, -1 ); 
+	      return AliCaloFitResults( maxamp, ped , -5, maxf, -6, -7, -8 ); 
 	    }
 	}
     }
@@ -162,7 +204,8 @@ AliCaloRawAnalyzerPeakFinder::LoadVectors()
 	      
 	      for(int m = 0; m < n ; m++ )
 		{
-		  fscanf(fp, "%lf\t", &fPFTofVectors[i][j][m] );
+		  fPFTofVectors[i][j][m] = 1;
+	 //	  fscanf(fp, "%lf\t", &fPFTofVectors[i][j][m] );
 		}
 	      
 	      fclose (fp);

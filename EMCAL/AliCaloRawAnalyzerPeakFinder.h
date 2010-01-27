@@ -49,6 +49,9 @@ class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
   double *fPFTofVectors[MAXSTART][SAMPLERANGE]; // Vectors for TOF extraction
   double fTof; 
   double fAmp;
+  double fAmpA[3];
+  // double fAmp2;
+  // double fAmp3;
 
 };
 
