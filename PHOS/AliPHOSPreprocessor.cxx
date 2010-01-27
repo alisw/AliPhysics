@@ -159,18 +159,20 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
     for(Int_t mod=0; mod<nMod; mod++) {
       for(Int_t col=0; col<nCol; col++) {
 	for(Int_t row=0; row<nRow; row++) {
-
+	  
+	  if(clb) {
+	    Float_t  hg2lg = clb->GetHighLowRatioEmc(mod+1,col+1,row+1);
+	    Double_t coeff = clb->GetADCchannelEmc(mod+1,col+1,row+1);
+	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,coeff);
+	    calibData.SetHighLowRatioEmc(mod+1,col+1,row+1,hg2lg);
+	  }	
+  
 	  //High Gain to Low Gain ratio
 	  Float_t ratio = HG2LG(mod,row,col,&f);
 	  if(ratio != 16.) {
 	    calibData.SetHighLowRatioEmc(5-mod,col+1,row+1,ratio);
 	    AliInfo(Form("mod %d iX %d iZ %d  ratio %.3f\n",mod,row,col,ratio));
 	  }
-	  
-	  if(clb) {
-	    Double_t coeff = clb->GetADCchannelEmc(mod+1,col+1,row+1);
-	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,coeff);
-	  }	  
 	}
       }
     }
