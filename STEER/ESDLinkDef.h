@@ -24,6 +24,13 @@
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="UChar_t fTRDpidQuality"  version="[-49]" target="fTRDntracklets" targetType="UChar_t" code="{fTRDntracklets = onfile.fTRDpidQuality;}"
 // see http://root.cern.ch/svn/root/trunk/io/doc/DataModelEvolution.txt
 #pragma link C++ class  AliESDtrack+;
+#pragma read sourceClass="AliESDfriendTrack" targetClass="AliESDfriendTrack" source="Int_t fITSindex" version="[-3]" \
+        target="fnMaxITScluster, fITSindex" targetType="Int_t, Int_t*" code="{fnMaxITScluster = 12; fITSindex= new Int_t[fnMaxITScluster]; memcpy(fITSindex, &(onfile.fITSindex), fnMaxITScluster*sizeof(Int_t));}"
+#pragma read sourceClass="AliESDfriendTrack" targetClass="AliESDfriendTrack" source="Int_t fTPCindex" version="[-3]" \
+        target="fnMaxTPCcluster, fTPCindex" targetType="Int_t, Int_t*" code="{fnMaxTPCcluster = 160; fTPCindex= new Int_t[fnMaxTPCcluster]; memcpy(fTPCindex, &(onfile.fTPCindex), fnMaxTPCcluster*sizeof(Int_t));}"
+#pragma read sourceClass="AliESDfriendTrack" targetClass="AliESDfriendTrack" source="Int_t fTRDindex" version="[-3]" \
+        target="fnMaxTRDcluster, fTRDindex" targetType="Int_t, Int_t*" code="{fnMaxTRDcluster = 180; fTRDindex= new Int_t[fnMaxTRDcluster]; memcpy(fTRDindex, &(onfile.fTRDindex), fnMaxTRDcluster*sizeof(Int_t));}"
+
 #pragma link C++ class  AliESDfriendTrack+;
 #pragma link C++ class  AliESDMuonTrack+;
 #pragma link C++ class  AliESDPmdTrack+;
@@ -79,6 +86,7 @@
 
 #pragma link C++ class  AliTriggerScalersESD+;
 #pragma link C++ class  AliTriggerScalersRecordESD+;
+#pragma link C++ class  AliESDHandler+;
 
 #pragma link C++ function operator*(const AliFMDMap&,const AliFMDMap&);
 #pragma link C++ function operator/(const AliFMDMap&,const AliFMDMap&);

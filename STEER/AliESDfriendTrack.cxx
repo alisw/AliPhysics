@@ -28,6 +28,12 @@ ClassImp(AliESDfriendTrack)
 AliESDfriendTrack::AliESDfriendTrack(): 
 TObject(), 
 f1P(0), 
+fnMaxITScluster(0),
+fnMaxTPCcluster(0),
+fnMaxTRDcluster(0),
+fITSindex(0x0),
+fTPCindex(0x0),
+fTRDindex(0x0),
 fPoints(0),
 fCalibContainer(0),
 fITStrack(0),
@@ -39,15 +45,24 @@ fTRDIn(0)
   //
   // Default constructor
   //
-  Int_t i;
-  for (i=0; i<kMaxITScluster; i++) fITSindex[i]=-2;
-  for (i=0; i<kMaxTPCcluster; i++) fTPCindex[i]=-2;
-  for (i=0; i<kMaxTRDcluster; i++) fTRDindex[i]=-2;
+	//  Int_t i;
+  //  fITSindex = new Int_t[fnMaxITScluster];
+  //fTPCindex = new Int_t[fnMaxTPCcluster];
+  //fTRDindex = new Int_t[fnMaxTRDcluster];
+  //for (i=0; i<kMaxITScluster; i++) fITSindex[i]=-2;
+  //for (i=0; i<kMaxTPCcluster; i++) fTPCindex[i]=-2;
+  //for (i=0; i<kMaxTRDcluster; i++) fTRDindex[i]=-2;
 }
 
 AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t): 
 TObject(t),
 f1P(t.f1P),
+fnMaxITScluster(t.fnMaxITScluster),
+fnMaxTPCcluster(t.fnMaxTPCcluster),
+fnMaxTRDcluster(t.fnMaxTRDcluster),
+fITSindex(0x0),
+fTPCindex(0x0),
+fTRDindex(0x0),
 fPoints(0),
 fCalibContainer(0),
 fITStrack(0),
@@ -59,10 +74,24 @@ fTRDIn(0)
   //
   // Copy constructor
   //
+  AliDebug(2,"Calling copy constructor");
+
   Int_t i;
-  for (i=0; i<kMaxITScluster; i++) fITSindex[i]=t.fITSindex[i];
-  for (i=0; i<kMaxTPCcluster; i++) fTPCindex[i]=t.fTPCindex[i];
-  for (i=0; i<kMaxTRDcluster; i++) fTRDindex[i]=t.fTRDindex[i];
+  if (fnMaxITScluster != 0){
+	  fITSindex = new Int_t[fnMaxITScluster];
+	  for (i=0; i<fnMaxITScluster; i++) fITSindex[i]=t.fITSindex[i];
+  }
+  if (fnMaxTPCcluster != 0){
+	  fTPCindex = new Int_t[fnMaxTPCcluster];
+	  for (i=0; i<fnMaxTPCcluster; i++) fTPCindex[i]=t.fTPCindex[i];
+  }
+  if (fnMaxTRDcluster != 0){
+	  fTRDindex = new Int_t[fnMaxTRDcluster];
+	  for (i=0; i<fnMaxTRDcluster; i++) fTRDindex[i]=t.fTRDindex[i]; 
+  }
+  AliDebug(2,Form("fnMaxITScluster = %d",fnMaxITScluster));
+  AliDebug(2,Form("fnMaxTPCcluster = %d",fnMaxTPCcluster));
+  AliDebug(2,Form("fnMaxTRDcluster = %d",fnMaxTRDcluster));
   if (t.fPoints) fPoints=new AliTrackPointArray(*t.fPoints);
   if (t.fCalibContainer) {
      fCalibContainer = new TObjArray(5);
@@ -76,6 +105,7 @@ fTRDIn(0)
   if (t.fTPCOut) fTPCOut = new AliExternalTrackParam(*(t.fTPCOut));
   if (t.fITSOut) fITSOut = new AliExternalTrackParam(*(t.fITSOut));
   if (t.fTRDIn)  fTRDIn = new AliExternalTrackParam(*(t.fTRDIn));
+
 }
 
 AliESDfriendTrack::~AliESDfriendTrack() {
@@ -90,6 +120,9 @@ AliESDfriendTrack::~AliESDfriendTrack() {
    delete fTPCOut;
    delete fITSOut;
    delete fTRDIn;
+   delete fITSindex;
+   delete fTPCindex;
+   delete fTRDindex;
 }
 
 
@@ -133,4 +166,55 @@ void AliESDfriendTrack::SetTRDIn(const AliExternalTrackParam  &param)  {
   delete fTRDIn;
   fTRDIn=new AliExternalTrackParam(param);
 } 
+
+void AliESDfriendTrack::SetITSIndices(Int_t* indices, Int_t n){
+
+	//
+	// setting fITSindex
+	// instantiating the pointer if still NULL
+	//
+
+	fnMaxITScluster = n;
+	AliDebug(2,Form("fnMaxITScluster = %d",fnMaxITScluster));
+	if (fITSindex == 0x0){
+		fITSindex = new Int_t[fnMaxITScluster];
+	}
+	for (Int_t i = 0; i < fnMaxITScluster; i++){
+		fITSindex[i] = indices[i];
+	}
+}
+
+void AliESDfriendTrack::SetTPCIndices(Int_t* indices, Int_t n){
+
+	//
+	// setting fTPCindex
+	// instantiating the pointer if still NULL
+	//
+
+	fnMaxTPCcluster = n;
+	AliDebug(2,Form("fnMaxTPCcluster = %d",fnMaxTPCcluster));
+	if (fTPCindex == 0x0){
+		fTPCindex = new Int_t[fnMaxTPCcluster];
+	}
+	for (Int_t i = 0; i < fnMaxTPCcluster; i++){
+		fTPCindex[i] = indices[i];
+	}
+}
+
+void AliESDfriendTrack::SetTRDIndices(Int_t* indices, Int_t n){
+
+	//
+	// setting fTRDindex
+	// instantiating the pointer if still NULL
+	//
+
+	fnMaxTRDcluster = n;
+	AliDebug(2,Form("fnMaxTRDcluster = %d",fnMaxTRDcluster));
+	if (fTRDindex == 0x0){
+		fTRDindex = new Int_t[fnMaxTRDcluster];
+	}
+	for (Int_t i = 0; i < fnMaxTRDcluster; i++){
+		fTRDindex[i] = indices[i];
+	}
+}
 

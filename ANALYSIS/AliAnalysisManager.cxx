@@ -773,7 +773,9 @@ void AliAnalysisManager::Terminate()
       TFile *file = output->GetFile();
       if (!file) file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
       if (!file) {
-         if (handlerFile == filename && !gSystem->AccessPathName(filename)) open_option = "UPDATE";
+	      printf("Terminate : handlerFile = %s, filename = %s\n",handlerFile.Data(),filename);
+	      //if (handlerFile == filename && !gSystem->AccessPathName(filename)) open_option = "UPDATE";
+         if (!gSystem->AccessPathName(filename)) open_option = "UPDATE";
          file = new TFile(filename, open_option);
       }
       if (file->IsZombie()) {

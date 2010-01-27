@@ -30,6 +30,7 @@ AliESDfriend::AliESDfriend(): TObject(), fTracks("AliESDfriendTrack",15000),
  //
  // Default constructor
  //
+	//fTracks.BypassStreamer(kFALSE);
 }
 
 AliESDfriend::AliESDfriend(const AliESDfriend &f) :

@@ -25,12 +25,21 @@ public:
   AliESDfriendTrack *GetTrack(Int_t i) const {
      return (AliESDfriendTrack *)fTracks.UncheckedAt(i);
   }
+  Int_t GetEntriesInTracks() const {return fTracks.GetEntries();}
   void AddTrack(const AliESDfriendTrack *t) {
      new(fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*t);
   }
 
+  void AddTrackAt(const AliESDfriendTrack *t, Int_t i) {
+     new(fTracks[i]) AliESDfriendTrack(*t);
+  }
+
   void SetVZEROfriend(AliESDVZEROfriend * obj);
   AliESDVZEROfriend *GetVZEROfriend(){ return fESDVZEROfriend; }
+
+  void Ls(){
+	  return fTracks.ls();
+  }
 
 protected:
   TClonesArray fTracks;    // ESD friend tracks

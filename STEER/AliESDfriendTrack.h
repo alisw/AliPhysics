@@ -51,11 +51,23 @@ public:
   const AliExternalTrackParam * GetITSOut() { return fITSOut;} 
   const AliExternalTrackParam * GetTRDIn() { return fTRDIn;} 
 
+  void SetITSIndices(Int_t* indices, Int_t n);
+  void SetTPCIndices(Int_t* indices, Int_t n);
+  void SetTRDIndices(Int_t* indices, Int_t n);
+
+  Int_t GetMaxITScluster() {return fnMaxITScluster;}
+  Int_t GetMaxTPCcluster() {return fnMaxTPCcluster;}
+  Int_t GetMaxTRDcluster() {return fnMaxTRDcluster;}
+
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
-  Int_t fITSindex[kMaxITScluster]; // indices of the ITS clusters 
-  Int_t fTPCindex[kMaxTPCcluster]; // indices of the TPC clusters
-  Int_t fTRDindex[kMaxTRDcluster]; // indices of the TRD clusters
+  Int_t fnMaxITScluster; // Max number of ITS clusters
+  Int_t fnMaxTPCcluster; // Max number of TPC clusters
+  Int_t fnMaxTRDcluster; // Max number of TRD clusters
+  Int_t* fITSindex; //[fnMaxITScluster] indices of the ITS clusters 
+  Int_t* fTPCindex; //[fnMaxTPCcluster] indices of the TPC clusters
+  Int_t* fTRDindex; //[fnMaxTRDcluster] indices of the TRD clusters
+
   AliTrackPointArray *fPoints;//Array of track space points in the global frame
   TObjArray      *fCalibContainer; //Array of objects for calibration    
   AliKalmanTrack *fITStrack; //! pointer to the ITS track (debug purposes) 
@@ -69,7 +81,7 @@ protected:
 private:
   AliESDfriendTrack &operator=(const AliESDfriendTrack & /* t */) {return *this;}
 
-  ClassDef(AliESDfriendTrack,3) //ESD friend track
+  ClassDef(AliESDfriendTrack,4) //ESD friend track
 };
 
 #endif
