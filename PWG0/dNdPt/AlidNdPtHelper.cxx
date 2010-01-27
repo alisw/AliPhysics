@@ -12,37 +12,32 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+//
+// static dNdPt helper functions
+//
+// basic functionality to select events and tracks 
+// for dNdPt analysis
+//
+// Origin: Jan Fiete Grosse-Oetringhaus
+// Modified and Extended: Jacek Otwinowski 19/11/2009
+//
+// 
 
 #include <TROOT.h>
-#include <TParticle.h>
-#include <TParticlePDG.h>
+#include <TCanvas.h>
+#include <TF1.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
-#include <TCanvas.h>
-#include <TList.h>
-#include <TTree.h>
-#include <TBranch.h>
-#include <TLeaf.h>
-#include <TArrayI.h>
-#include <TF1.h>
-#include <TLorentzVector.h>
 
 #include <AliHeader.h>
 #include <AliStack.h>
 #include <AliLog.h>
-
 #include <AliESD.h>
 #include <AliESDEvent.h>
 #include <AliMCEvent.h>
 #include <AliESDVertex.h>
 #include <AliVertexerTracks.h>
-
-#include <AliGenEventHeader.h>
-#include <AliGenPythiaEventHeader.h>
-#include <AliGenCocktailEventHeader.h>
-#include <AliGenDPMjetEventHeader.h>
-
 #include <AliMathBase.h>
 #include <AliESDtrackCuts.h>
 #include "dNdPt/AlidNdPtEventCuts.h"
@@ -53,7 +48,7 @@
 ClassImp(AlidNdPtHelper)
 
 //____________________________________________________________________
-const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* aEsd, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts, AnalysisMode analysisMode, Bool_t debug, Bool_t bRedoTPC, Bool_t bUseMeanVertex)
+const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts, AnalysisMode analysisMode, Bool_t debug, Bool_t bRedoTPC, Bool_t bUseMeanVertex)
 {
   // Get the vertex from the ESD and returns it if the vertex is valid
   //
@@ -185,7 +180,7 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
 
   // check resolution
   Double_t zRes = vertex->GetZRes();
-  if (zRes == 0) {
+  if ((zRes-0.000000001) < 0.0) {
     Printf("AlidNdPtHelper::GetVertex: UNEXPECTED: resolution is 0.");
     return kFALSE;
   }
@@ -200,7 +195,7 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
 }
 
 //____________________________________________________________________
-Bool_t AlidNdPtHelper::IsPrimaryParticle(AliStack* stack, Int_t idx, ParticleMode particleMode)
+Bool_t AlidNdPtHelper::IsPrimaryParticle(AliStack* const stack, Int_t idx, ParticleMode particleMode)
 {
 // check primary particles 
 // depending on the particle mode
@@ -212,7 +207,7 @@ Bool_t AlidNdPtHelper::IsPrimaryParticle(AliStack* stack, Int_t idx, ParticleMod
 
   // only charged particles
   Double_t charge = particle->GetPDG()->Charge()/3.;
-  if (charge == 0.0) return kFALSE;
+  if (TMath::Abs(charge) < 0.001) return kFALSE;
 
   Int_t pdg = TMath::Abs(particle->GetPdgCode());
 
@@ -239,7 +234,7 @@ return prim;
 
 //____________________________________________________________________
 /*
-Bool_t AlidNdPtHelper::IsCosmicTrack(TObjArray *allChargedTracks, AliESDtrack *track1, Int_t trackIdx, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts)
+Bool_t AlidNdPtHelper::IsCosmicTrack(TObjArray *const allChargedTracks, AliESDtrack *const track1, Int_t trackIdx, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts)
 {
 //
 // check cosmic tracks
@@ -290,7 +285,7 @@ return kFALSE;
 */
 
 //____________________________________________________________________
-Bool_t AlidNdPtHelper::IsCosmicTrack(AliESDtrack *track1, AliESDtrack *track2)
+Bool_t AlidNdPtHelper::IsCosmicTrack(AliESDtrack *const track1, AliESDtrack *const track2)
 {
 //
 // check cosmic tracks
@@ -378,7 +373,7 @@ return pid;
 }
 
 //_____________________________________________________________________________
-TH1F* AlidNdPtHelper::CreateResHisto(TH2F* hRes2, TH1F **phMean, Int_t integ,  Bool_t drawBinFits, Int_t minHistEntries)
+TH1F* AlidNdPtHelper::CreateResHisto(TH2F* const hRes2, TH1F **phMean, Int_t integ,  Bool_t drawBinFits, Int_t minHistEntries)
 {
 //
 // Create mean and resolution 
@@ -599,7 +594,7 @@ return tpcTrack;
 } 
 
 //_____________________________________________________________________________
-Int_t AlidNdPtHelper::GetTPCMBTrackMult(AliESDEvent *esdEvent, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts)
+Int_t AlidNdPtHelper::GetTPCMBTrackMult(AliESDEvent *const esdEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts)
 {
   //
   // get MB event track multiplicity
@@ -657,7 +652,7 @@ return mult;
 }
 
 //_____________________________________________________________________________
-Int_t AlidNdPtHelper::GetTPCMBPrimTrackMult(AliESDEvent *esdEvent, AliStack * stack, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts)
+Int_t AlidNdPtHelper::GetTPCMBPrimTrackMult(AliESDEvent *const esdEvent, AliStack *const  stack, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts)
 {
   //
   // get MB primary event track multiplicity
@@ -738,7 +733,7 @@ return mult;
 
 
 //_____________________________________________________________________________
-Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *mcEvent, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts)
+Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts)
 {
   //
   // calculate mc event true track multiplicity
@@ -764,7 +759,7 @@ Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *mcEvent, AlidNdPtEventCuts 
 
      // only charged particles
      Double_t charge = particle->GetPDG()->Charge()/3.;
-     if (charge == 0.0)
+     if (TMath::Abs(charge) < 0.001)
      continue;
       
      // physical primary
@@ -782,7 +777,7 @@ return mult;
 }
 
 //_______________________________________________________________________
-void  AlidNdPtHelper::PrintMCInfo(AliStack *pStack,Int_t label)
+void  AlidNdPtHelper::PrintMCInfo(AliStack *const pStack,Int_t label)
 {
 // print information about particles in the stack
 
@@ -808,7 +803,7 @@ void  AlidNdPtHelper::PrintMCInfo(AliStack *pStack,Int_t label)
 
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::GetContCorrHisto(TH1 *hist) 
+TH1* AlidNdPtHelper::GetContCorrHisto(TH1 *const hist) 
 {
 //
 // get contamination histogram
@@ -816,36 +811,36 @@ TH1* AlidNdPtHelper::GetContCorrHisto(TH1 *hist)
  if(!hist) return 0;
 
  Int_t nbins = hist->GetNbinsX();
- TH1 *h_cont = (TH1D *)hist->Clone();
+ TH1 *hCont = (TH1D *)hist->Clone();
 
  for(Int_t i=0; i<=nbins+1; i++) {
    Double_t binContent = hist->GetBinContent(i);
    Double_t binError = hist->GetBinError(i);
 
-   h_cont->SetBinContent(i,1.-binContent);
-   h_cont->SetBinError(i,binError);
+   hCont->SetBinContent(i,1.-binContent);
+   hCont->SetBinError(i,binError);
  }
 
-return h_cont;
+return hCont;
 }
 
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::ScaleByBinWidth(TH1 *hist) 
+TH1* AlidNdPtHelper::ScaleByBinWidth(TH1 *const hist) 
 {
 //
 // scale by bin width
 //
  if(!hist) return 0;
 
- TH1 *h_scale = (TH1D *)hist->Clone();
- h_scale->Scale(1.,"width");
+ TH1 *hScale = (TH1D *)hist->Clone();
+ hScale->Scale(1.,"width");
 
-return h_scale;
+return hScale;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::CalcRelativeDifference(TH1 *hist1, TH1 *hist2) 
+TH1* AlidNdPtHelper::CalcRelativeDifference(TH1 *const hist1, TH1 *const hist2) 
 {
 //
 // calculate rel. difference 
@@ -854,18 +849,18 @@ TH1* AlidNdPtHelper::CalcRelativeDifference(TH1 *hist1, TH1 *hist2)
  if(!hist1) return 0;
  if(!hist2) return 0;
 
- TH1 *h1_clone = (TH1D *)hist1->Clone();
- h1_clone->Sumw2();
+ TH1 *h1Clone = (TH1D *)hist1->Clone();
+ h1Clone->Sumw2();
 
  // (rec-mc)/mc
- h1_clone->Add(hist2,-1);
- h1_clone->Divide(hist2);
+ h1Clone->Add(hist2,-1);
+ h1Clone->Divide(hist2);
 
-return h1_clone;
+return h1Clone;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::CalcRelativeDifferenceFun(TH1 *hist1, TF1 *fun) 
+TH1* AlidNdPtHelper::CalcRelativeDifferenceFun(TH1 *const hist1, TF1 *const fun) 
 {
 //
 // calculate rel. difference
@@ -874,18 +869,18 @@ TH1* AlidNdPtHelper::CalcRelativeDifferenceFun(TH1 *hist1, TF1 *fun)
  if(!hist1) return 0;
  if(!fun) return 0;
 
- TH1 *h1_clone = (TH1D *)hist1->Clone();
- h1_clone->Sumw2();
+ TH1 *h1Clone = (TH1D *)hist1->Clone();
+ h1Clone->Sumw2();
 
  // 
- h1_clone->Add(fun,-1);
- h1_clone->Divide(hist1);
+ h1Clone->Add(fun,-1);
+ h1Clone->Divide(hist1);
 
-return h1_clone;
+return h1Clone;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::NormalizeToEvent(TH2 *hist1, TH1 *hist2) 
+TH1* AlidNdPtHelper::NormalizeToEvent(TH2 *const hist1, TH1 *const hist2) 
 {
 // normalise to event for a given multiplicity bin
 // return pt histogram 
@@ -897,29 +892,29 @@ TH1* AlidNdPtHelper::NormalizeToEvent(TH2 *hist1, TH1 *hist2)
  Int_t nbinsX = hist1->GetNbinsX();
  //Int_t nbinsY = hist1->GetNbinsY();
 
- TH1D *hist_norm = 0;
+ TH1D *histNorm = 0;
  for(Int_t i=0; i<=nbinsX+1; i++) {
    sprintf(name,"mom_%d",i);
    TH1D *hist = (TH1D*)hist1->ProjectionY(name,i+1,i+1);
 
    sprintf(name,"mom_norm");
    if(i==0) { 
-     hist_norm = (TH1D *)hist->Clone(name);
-     hist_norm->Reset();
+     histNorm = (TH1D *)hist->Clone(name);
+     histNorm->Reset();
    }
 
    Double_t nbEvents = hist2->GetBinContent(i);
    if(!nbEvents) { nbEvents = 1.; };
 
    hist->Scale(1./nbEvents);
-   hist_norm->Add(hist);
+   histNorm->Add(hist);
  }
 
-return hist_norm;
+return histNorm;
 }
 
 //_____________________________________________________________________________
-THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *hist1, THnSparse *hist2, char *name) {
+THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name) {
 // generate correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -930,7 +925,7 @@ return h;
 }
 
 //_____________________________________________________________________________
-TH2* AlidNdPtHelper::GenerateCorrMatrix(TH2 *hist1, TH2 *hist2, char *name) {
+TH2* AlidNdPtHelper::GenerateCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name) {
 // generate correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -941,7 +936,7 @@ return h;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::GenerateCorrMatrix(TH1 *hist1, TH1 *hist2, char *name) {
+TH1* AlidNdPtHelper::GenerateCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name) {
 // generate correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -952,7 +947,7 @@ return h;
 }
 
 //_____________________________________________________________________________
-THnSparse* AlidNdPtHelper::GenerateContCorrMatrix(THnSparse *hist1, THnSparse *hist2, char *name) {
+THnSparse* AlidNdPtHelper::GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name) {
 // generate contamination correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -978,7 +973,7 @@ return hist;
 }
 
 //_____________________________________________________________________________
-TH2* AlidNdPtHelper::GenerateContCorrMatrix(TH2 *hist1, TH2 *hist2, char *name) {
+TH2* AlidNdPtHelper::GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name) {
 // generate contamination correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -1001,7 +996,7 @@ return hist;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::GenerateContCorrMatrix(TH1 *hist1, TH1 *hist2, char *name) {
+TH1* AlidNdPtHelper::GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name) {
 // generate contamination correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -1021,7 +1016,7 @@ return hist;
 }
 
 //_____________________________________________________________________________
-const AliESDVertex* AlidNdPtHelper::GetTPCVertexZ(AliESDEvent* esdEvent, AlidNdPtEventCuts *evtCuts, AlidNdPtAcceptanceCuts *accCuts, AliESDtrackCuts *trackCuts, Float_t fraction, Int_t ntracksMin){
+const AliESDVertex* AlidNdPtHelper::GetTPCVertexZ(AliESDEvent* const esdEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts, Float_t fraction, Int_t ntracksMin){
   //
   // TPC Z vertexer
   //
@@ -1093,7 +1088,7 @@ const AliESDVertex* AlidNdPtHelper::GetTPCVertexZ(AliESDEvent* esdEvent, AlidNdP
 }
 
 //_____________________________________________________________________________
-Int_t  AlidNdPtHelper::GetSPDMBTrackMult(AliESDEvent* esdEvent, Float_t deltaThetaCut, Float_t deltaPhiCut) 
+Int_t  AlidNdPtHelper::GetSPDMBTrackMult(AliESDEvent* const esdEvent, Float_t deltaThetaCut, Float_t deltaPhiCut) 
 {
   //
   // SPD track multiplicity
@@ -1132,7 +1127,7 @@ return inputCount;
 }
 
 //_____________________________________________________________________________
-Int_t  AlidNdPtHelper::GetSPDMBPrimTrackMult(AliESDEvent* esdEvent, AliStack* stack, Float_t deltaThetaCut, Float_t deltaPhiCut) 
+Int_t  AlidNdPtHelper::GetSPDMBPrimTrackMult(AliESDEvent* const esdEvent, AliStack* const stack, Float_t deltaThetaCut, Float_t deltaPhiCut) 
 {
   //
   // SPD track multiplicity
