@@ -1196,7 +1196,7 @@ void MakePatternStore(AliDAConfig& cfg)
     }
   }
 
-  printf("LOCAL mask bits changed = %5d (%9.5f %%) \n",nMaskBitsChanged,(Float_t)nMaskBitsChanged/(Float_t)nMaskBits);
+  printf("LOCAL mask bits changed = %5d (%7.3f %%) \n",nMaskBitsChanged,100*(Float_t)nMaskBitsChanged/(Float_t)nMaskBits);
 
   Int_t status = 0;
   if (updated) {
@@ -1290,8 +1290,10 @@ int main(Int_t argc, Char_t **argv)
 #ifdef OFFLINE
     // the run number extracted from the file name
     TString tmp(inputFile);
-    Int_t pos = tmp.First("daq");
-    tmp = tmp(pos+3,5);
+    Int_t pos1 = tmp.First('d');
+    Int_t pos2 = tmp.Last('.');
+    Int_t len  = pos2 - (pos1+3);
+    tmp = tmp(pos1+3,len);
     gSystem->Setenv("DATE_RUN_NUMBER",tmp.Data());
     gSystem->Exec("echo \"DATE_RUN_NUMBER = \" $DATE_RUN_NUMBER");
 #endif
