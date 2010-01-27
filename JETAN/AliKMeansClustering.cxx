@@ -30,7 +30,7 @@ ClassImp(AliKMeansClustering)
 
 Double_t AliKMeansClustering::fBeta = 10.;
  
-void AliKMeansClustering::SoftKMeans(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* rk )
+Int_t AliKMeansClustering::SoftKMeans(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* rk )
 {
     //
     // The soft K-means algorithm
@@ -114,9 +114,12 @@ void AliKMeansClustering::SoftKMeans(Int_t k, Int_t n, Double_t* x, Double_t* y,
     delete[] nr;
     for (j = 0; j < n; j++) delete[] r[j];
     delete[] r;
+// 
+    return (nit < 1000);
+    
 }
 
-void AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* sigma2, Double_t* rk )
+Int_t AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* sigma2, Double_t* rk )
 {
     //
     // The soft K-means algorithm
@@ -225,7 +228,7 @@ void AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y
 	  sigma2[i] += r[j][i] * d(mx[i], my[i], x[j], y[j]);
 	} // Data
 	sigma2[i] /= rk[i];
-	if (sigma2[i] < 0.025) sigma2[i] = 0.025;
+	if (sigma2[i] < 0.0025) sigma2[i] = 0.0025;
       } // Clusters    
       //
       // Fractions
@@ -240,6 +243,8 @@ void AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y
     delete[] pi;
     for (j = 0; j < n; j++) delete[] r[j];
     delete[] r;
+// 
+    return (nit < 1000);
 }
 
 Double_t AliKMeansClustering::d(Double_t mx, Double_t my, Double_t x, Double_t y)
