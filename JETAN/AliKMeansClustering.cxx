@@ -25,10 +25,12 @@
 #include "AliKMeansClustering.h"
 #include <TMath.h>
 #include <TRandom.h>
+#include <TH1F.h>
 
 ClassImp(AliKMeansClustering)
 
 Double_t AliKMeansClustering::fBeta = 10.;
+
  
 Int_t AliKMeansClustering::SoftKMeans(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* rk )
 {
@@ -50,8 +52,7 @@ Int_t AliKMeansClustering::SoftKMeans(Int_t k, Int_t n, Double_t* x, Double_t* y
     for (j = 0; j < n; j++) {r[j] = new Double_t[k];}
     //
     // (2b) Normalisation
-    Double_t* nr = new Double_t[n];
-
+    Double_t* nr   = new Double_t[n];
     // (3) Iterations
     Int_t nit = 0;
     
@@ -126,14 +127,9 @@ Int_t AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* 
     //
     Int_t i,j;
     //
-    // (1) Initialisation of the k means
+    // (1) Initialisation of the k means using k-means++ recipe
     // 
-    // (there is an optimized version for initialisation called kmeans++)
-    for (i = 0; i < k; i++) {
-	mx[i] = 2. * TMath::Pi() * gRandom->Rndm();
-	my[i] = -1. + 2. * gRandom->Rndm();
-    }
-
+     OptimalInit(k, n, x, y, mx, my);
     //
     // (2a) The responsibilities
     Double_t** r = new Double_t*[n]; // responsibilities
@@ -144,6 +140,7 @@ Int_t AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* 
     //
     // (2c) Weights 
     Double_t* pi = new Double_t[k];
+    //
     //
     // (2d) Initialise the responsibilties and weights
     for (j = 0; j < n; j++) {
@@ -166,7 +163,8 @@ Int_t AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* 
     } // data point j
     // (3) Iterations
     Int_t nit = 0;
-    
+    Bool_t rmovalStep = kFALSE;
+
     while(1) {
 	nit++;
       //
@@ -198,7 +196,6 @@ Int_t AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* 
 	  mx[i] = x[0];
 	  my[i] = y[0];
 	  rk[i] = r[0][i];
-
 	for (j = 1; j < n; j++) {
 	    Double_t xx =  x[j];
 //
@@ -258,3 +255,47 @@ Double_t AliKMeansClustering::d(Double_t mx, Double_t my, Double_t x, Double_t y
     
     return (0.5*(dx * dx + (my - y) * (my - y)));
 }
+
+
+
+void AliKMeansClustering::OptimalInit(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my)
+{
+  //  
+  // Optimal initialisation using the k-means++ algorithm
+  // http://en.wikipedia.org/wiki/K-means%2B%2B
+  //
+  // k-means++ is an algorithm for choosing the initial values for k-means clustering in statistics and machine learning. 
+  // It was proposed in 2007 by David Arthur and Sergei Vassilvitskii as an approximation algorithm for the NP-hard k-means problem---
+  // a way of avoiding the sometimes poor clusterings found by the standard k-means algorithm.
+  //
+  //
+  TH1F d2("d2", "", n, -0.5, Float_t(n)-0.5);
+  d2.Reset();
+
+  // (1) Chose first center as a random point among the input data.
+  Int_t ir = Int_t(Float_t(n) * gRandom->Rndm());
+  mx[0] = x[ir];
+  my[0] = y[ir];
+
+  // (2) Iterate
+  Int_t icl = 1;
+  while(icl < k)
+    {
+      // find min distance to existing clusters
+      for (Int_t j = 0; j < n; j++) {
+	Double_t dmin = 1.e10;
+	for (Int_t i = 0; i < icl; i++) {
+	  Double_t dij = d(mx[i], my[i], x[j], y[j]);
+	  if (dij < dmin) dmin = dij;
+	} // clusters
+	d2.Fill(Float_t(j), dmin);
+      } // data points
+      // select a new cluster from data points with probability ~d2
+      ir = Int_t(d2.GetRandom());
+      mx[icl] = x[ir];
+      my[icl] = y[ir];
+      icl++;
+    } // icl
+}
+
+
