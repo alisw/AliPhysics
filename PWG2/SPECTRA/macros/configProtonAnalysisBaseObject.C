@@ -13,12 +13,12 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
     baseAnalysis->OfflineTriggerInit();
 
     baseAnalysis->SetMinTPCClusters(80);
-    baseAnalysis->SetMaxChi2PerTPCCluster(2.5);
-    baseAnalysis->SetMaxCov11(2.5);
-    baseAnalysis->SetMaxCov22(1.0);
-    baseAnalysis->SetMaxCov33(2.5);
-    baseAnalysis->SetMaxCov44(2.5);
-    baseAnalysis->SetMaxCov55(2.5);
+    baseAnalysis->SetMaxChi2PerTPCCluster(3.5);
+    baseAnalysis->SetMaxCov11(2.0);
+    baseAnalysis->SetMaxCov22(2.0);
+    baseAnalysis->SetMaxCov33(0.5);
+    baseAnalysis->SetMaxCov44(0.5);
+    baseAnalysis->SetMaxCov55(2.0);
     baseAnalysis->SetMinTPCdEdxPoints(80);
     switch(esdAnalysisType) {
     case "TPC":
@@ -31,19 +31,19 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       break;
     case "Hybrid":
       baseAnalysis->SetAnalysisMode(AliProtonAnalysisBase::kHybrid);
-      baseAnalysis->SetPhaseSpace(10, -0.5, 0.5, 16, 0.5, 0.9);
+      baseAnalysis->SetPhaseSpace(9, -0.9, 0.9, 5, 0.4, 0.9);
       //baseAnalysis->SetPhaseSpace(18, -0.9, 0.9, 32, 0.5, 1.3);
       baseAnalysis->SetTPCpid();
-      baseAnalysis->SetMaxSigmaToVertex(2.0);
-      /*baseAnalysis->SetMaxDCAXY(1.5);
-	baseAnalysis->SetMaxDCAZ(1.5);*/
-      baseAnalysis->SetPointOnITSLayer6();
-      baseAnalysis->SetPointOnITSLayer5();
+      baseAnalysis->SetMaxSigmaToVertex(3.0);
+      /*baseAnalysis->SetMaxDCAXY(3.0);
+	baseAnalysis->SetMaxDCAZ(3.0);*/
+      //baseAnalysis->SetPointOnITSLayer6();
+      //baseAnalysis->SetPointOnITSLayer5();
       //baseAnalysis->SetPointOnITSLayer4();
       //baseAnalysis->SetPointOnITSLayer3();
-      baseAnalysis->SetPointOnITSLayer2();
-      baseAnalysis->SetPointOnITSLayer1();
-      baseAnalysis->SetMinITSClusters(4);
+      //baseAnalysis->SetPointOnITSLayer2();
+      //baseAnalysis->SetPointOnITSLayer1();
+      baseAnalysis->SetMinITSClusters(2);
       break;
     case "Global":
       baseAnalysis->SetAnalysisMode(AliProtonAnalysisBase::kGlobal);
@@ -66,7 +66,8 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
     default:
       break;
     }
-    baseAnalysis->SetAcceptedVertexDiamond(5.,5.,25.);
+    baseAnalysis->SetAcceptedVertexDiamond(2.,2.,15.);
+    baseAnalysis->SetMinNumOfContributors(3);
     baseAnalysis->SetEtaMode();
     switch(pidMode) {
     case "Bayesian":
@@ -93,7 +94,7 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       break;
     case "Sigma1":
       baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kSigma1);
-      baseAnalysis->SetNSigma(3);
+      baseAnalysis->SetNSigma(4);
       baseAnalysis->SetdEdxBandInfo("$ALICE_ROOT/PWG2/data/protonsdEdxInfo.dat");
       break;
     case "Sigma2":

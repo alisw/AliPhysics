@@ -59,6 +59,9 @@ class AliProtonAnalysisBase : public TObject {
   Double_t GetVxMax() const {return fVxMax;}
   Double_t GetVyMax() const {return fVyMax;}
   Double_t GetVzMax() const {return fVzMax;}
+  void SetMinNumOfContributors(Int_t nContributors) {
+    fMinNumOfContributors = nContributors;}
+  Int_t GetMinNumOfContributors() {return fMinNumOfContributors;}
 
   void SetPhaseSpace(Int_t nBinsX, Double_t gXmin, Double_t gXmax,
 		     Int_t nBinsY, Double_t gYmin, Double_t gYmax) {
@@ -73,6 +76,8 @@ class AliProtonAnalysisBase : public TObject {
   Double_t GetMaxY() const {return fMaxY;}
 
   //Trigger
+  Bool_t IsOnlineTriggerUsed() {return kUseOnlineTrigger;}
+  void UseOnlineTrigger() {kUseOnlineTrigger = kTRUE;}
   Bool_t IsEventTriggered(const AliESDEvent *esd,
 			  TriggerMode trigger = kMB2);
   void OfflineTriggerInit() {
@@ -84,6 +89,9 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t IsOfflineTriggerUsed() {return kUseOfflineTrigger;}
   AliPhysicsSelection *GetPhysicsSelectionObject() {return fPhysicsSelection;}
 
+  Bool_t IsPrimary(AliESDEvent *esd,
+		   const AliESDVertex *vertex, 
+		   AliESDtrack *track);
   Bool_t IsAccepted(AliESDEvent *esd,
 		    const AliESDVertex *vertex, 
 		    AliESDtrack *track);
@@ -269,6 +277,7 @@ class AliProtonAnalysisBase : public TObject {
   TString fProtonAnalysisLevel;//"ESD", "AOD" or "MC"
   Bool_t fAnalysisMC; //kTRUE if MC analysis while reading the ESDs
   TriggerMode fTriggerMode; //Trigger mode
+  Bool_t kUseOnlineTrigger; //use the online trigger or not
   Bool_t kUseOfflineTrigger; //use the offline trigger or not
   AliPhysicsSelection *fPhysicsSelection; //Trigger selection: offline
   AnalysisMode fProtonAnalysisMode; //Analysis mode: TPC-Hybrid-Global
@@ -276,6 +285,7 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t fAnalysisEtaMode; //run the analysis in eta or y
 
   Double_t fVxMax, fVyMax, fVzMax; //vertex diamond constrain 
+  Int_t fMinNumOfContributors;//min number of contributors
 
   Int_t fNBinsX; //number of bins in y or eta
   Double_t fMinX, fMaxX; //min & max value of y or eta

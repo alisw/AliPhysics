@@ -12,6 +12,7 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliESDVertex.h"
+#include "AliPhysicsSelection.h"
 
 #include "AliProtonQAAnalysis.h"
 #include "AliProtonAnalysisBase.h"
@@ -140,19 +141,25 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
     Printf("ERROR: Could not retrieve the stack");
     return;
   }
-  
-    if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
-      fProtonQAAnalysis->RunVertexQA(header,
-				     fESD);
-      const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
-    if(vertex) {
-      fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
-      fProtonQAAnalysis->RunMCAnalysis(stack);
-      fProtonQAAnalysis->RunPIDEfficiencyAnalysis(stack, fESD, vertex);
-      fProtonQAAnalysis->RunReconstructionEfficiencyAnalysis(fMC,fESD,vertex);
-      fProtonQAAnalysis->RunCutEfficiencyAnalysis(stack, fESD, vertex);
-    }//accepted vertex
-  }//triggered event
+  //online trigger
+  if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
+    //offline trigger                                                                
+    if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsOfflineTriggerUsed()) {
+      AliPhysicsSelection *gPhysicselection = dynamic_cast<AliPhysicsSelection *>(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetPhysicsSelectionObject());
+      if(gPhysicselection->IsCollisionCandidate(fESD)) {
+	fProtonQAAnalysis->RunVertexQA(header,
+				       fESD);
+	const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
+	if(vertex) {
+	  fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
+	  fProtonQAAnalysis->RunMCAnalysis(stack);
+	  fProtonQAAnalysis->RunPIDEfficiencyAnalysis(stack, fESD, vertex);
+	  fProtonQAAnalysis->RunReconstructionEfficiencyAnalysis(fMC,fESD,vertex);
+	  fProtonQAAnalysis->RunCutEfficiencyAnalysis(stack, fESD, vertex);
+	}//accepted vertex
+      }//offline trigger
+    }//offline trigger used
+  }//online trigger
   
   // Post output data.
   PostData(0, fList0);

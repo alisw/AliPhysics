@@ -23,7 +23,7 @@ void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
   timer.Start();
   
   //runLocal("ESD",esdAnalysisType,pidMode,"/home/pchrist/ALICE/Baryons/QA/Local");
-  runProof("ESD",esdAnalysisType,pidMode,100000,"/COMMON/COMMON/LHC09d10_run104799-801#esdTree");
+  runProof("ESD",esdAnalysisType,pidMode,100000,"/COMMON/COMMON/LHC09d10_run104792-3#esdTree");
   //runInteractive("ESD",esdAnalysisType,pidMode,"wn.xml");
   //runBatch("ESD",esdAnalysisType,pidMode,"wn.xml");
 
