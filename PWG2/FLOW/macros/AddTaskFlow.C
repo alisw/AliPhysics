@@ -16,6 +16,14 @@ Bool_t UseMultCutforESD = kTRUE;
 const Int_t multminESD = 1;  //used for CORRFW cuts 
 const Int_t multmaxESD = 1000000; //used for CORRFW cuts 
 
+Bool_t requireVtxCuts = kTRUE;
+Double_t vertexXmin = -1.0;
+Double_t vertexXmax = 1.0;
+Double_t vertexYmin = -1.0;
+Double_t vertexYmax = 1.0;
+Double_t vertexZmin = -15.0; //-1.e99;
+Double_t vertexZmax = 15.0; //1.e99;
+
 //Bool_t UseMultCut = kTRUE;
 Bool_t UseMultCut = kFALSE;
 const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
@@ -194,48 +202,78 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     } 
   }
     
-  if (LYZ2SUM){  
-    // read the output file from LYZ1SUM 
-    TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis" ;
-    inputFileNameLYZ2SUM += type;
-    inputFileNameLYZ2SUM += ".root";
-    cout<<"The input file is "<<inputFileNameLYZ2SUM.Data()<<endl;
-    TFile* fInputFileLYZ2SUM = new TFile(inputFileNameLYZ2SUM.Data(),"READ");
-    if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
-      cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ; 
-      break;
+  //LYZ2
+  if (LYZ2SUM || LYZ2PROD) {
+    //read the outputfile of the first run
+    TString outputFileName = "AnalysisResults1.root";
+    TString pwd(gSystem->pwd());
+    pwd+="/";
+    pwd+=outputFileName.Data();
+    TFile *outputFile = NULL;
+    if(gSystem->AccessPathName(pwd.Data(),kFileExists)) {
+      cout<<"WARNING: You do not have an output file:"<<endl;
+      cout<<"         "<<pwd.Data()<<endl;
+      exit(0);
+    } else {
+      outputFile = TFile::Open(pwd.Data(),"READ");
     }
-    else {
-      TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("cobjLYZ1SUM");
-      if (!fInputListLYZ2SUM) {cout<<"list is NULL pointer!"<<endl;}
+    
+    if (LYZ2SUM){  
+      // read the output directory from LYZ1SUM 
+      TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis" ;
+      inputFileNameLYZ2SUM += type;
+      cout<<"The input directory is "<<inputFileNameLYZ2SUM.Data()<<endl;
+      TFile* fInputFileLYZ2SUM = (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2SUM.Data());
+      if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
+	cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ; 
+	break;
+      }
+      else {
+	TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("cobjLYZ1SUM");
+	if (!fInputListLYZ2SUM) {cout<<"list is NULL pointer!"<<endl;}
+      }
+      cout<<"LYZ2SUM input file/list read..."<<endl;
     }
-    cout<<"LYZ2SUM input file/list read..."<<endl;
+
+    if (LYZ2PROD){  
+      // read the output directory from LYZ1PROD 
+      TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis" ;
+      inputFileNameLYZ2PROD += type;
+      cout<<"The input directory is "<<inputFileNameLYZ2PROD.Data()<<endl;
+      TFile* fInputFileLYZ2PROD = (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2PROD.Data());
+      if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
+	cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ; 
+	break;
+      }
+      else {
+	TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("cobjLYZ1PROD");
+	if (!fInputListLYZ2PROD) {cout<<"list is NULL pointer!"<<endl;}
+      }
+      cout<<"LYZ2PROD input file/list read..."<<endl;
+    }
   }
-if (LYZ2PROD){  
-    // read the output file from LYZ1PROD 
-    TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis" ;
-    inputFileNameLYZ2PROD += type;
-    inputFileNameLYZ2PROD += ".root";
-    cout<<"The input file is "<<inputFileNameLYZ2PROD.Data()<<endl;
-    TFile* fInputFileLYZ2PROD = new TFile(inputFileNameLYZ2PROD.Data(),"READ");
-    if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
-      cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ; 
-      break;
-    }
-    else {
-      TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("cobjLYZ1PROD");
-      if (!fInputListLYZ2PROD) {cout<<"list is NULL pointer!"<<endl;}
-    }
-    cout<<"LYZ2PROD input file/list read..."<<endl;
-  }
-  
+
+
   if (LYZEP) {
+    //read the outputfile of the second run
+    TString outputFileName = "AnalysisResults2.root";
+    TString pwd(gSystem->pwd());
+    pwd+="/";
+    pwd+=outputFileName.Data();
+    TFile *outputFile = NULL;
+    if(gSystem->AccessPathName(pwd.Data(),kFileExists)) {
+      cout<<"WARNING: You do not have an output file:"<<endl;
+      cout<<"         "<<pwd.Data()<<endl;
+      exit(0);
+    } else {
+      outputFile = TFile::Open(pwd.Data(),"READ");
+    }
+
     // read the output file from LYZ2SUM
     TString inputFileNameLYZEP = "outputLYZ2SUManalysis" ;
     inputFileNameLYZEP += type;
-    inputFileNameLYZEP += ".root";
     cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
-    TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
+    TFile* fInputFileLYZEP = (TFile*)outputFile->FindObjectAny(inputFileNameLYZEP.Data());
     if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
       cerr << " ERROR: To run LYZEP you need the output file from LYZ2SUM. This file is not there! Please run LYZ2SUM first." << endl ; 
       break;
@@ -246,7 +284,7 @@ if (LYZ2PROD){
     }
     cout<<"LYZEP input file/list read..."<<endl;
   }
-
+  
 
 
   // Create the task, add it to the manager.
@@ -283,11 +321,19 @@ if (LYZ2PROD){
   //----------Event cuts----------
   AliCFEventGenCuts* mcEventCuts = new AliCFEventGenCuts("mcEventCuts","MC-level event cuts");
   mcEventCuts->SetNTracksCut(multminESD,multmaxESD); 
+  mcEventCuts->SetRequireVtxCuts(requireVtxCuts);
+  mcEventCuts->SetVertexXCut(vertexXmin, vertexXmax);
+  mcEventCuts->SetVertexYCut(vertexYmin, vertexYmax);
+  mcEventCuts->SetVertexZCut(vertexZmin, vertexZmax);
   if (QA) { 
     mcEventCuts->SetQAOn(qaRP);
   }
   AliCFEventRecCuts* recEventCuts = new AliCFEventRecCuts("recEventCuts","rec-level event cuts");
   recEventCuts->SetNTracksCut(multminESD,multmaxESD); 
+  recEventCuts->SetRequireVtxCuts(requireVtxCuts);
+  recEventCuts->SetVertexXCut(vertexXmin, vertexXmax);
+  recEventCuts->SetVertexYCut(vertexYmin, vertexYmax);
+  recEventCuts->SetVertexZCut(vertexZmin, vertexZmax);
   if (QA) { 
     recEventCuts->SetQAOn(qaRP);
   }
@@ -503,10 +549,10 @@ if (LYZ2PROD){
   //----------Create Cut Lists----------
   printf("CREATE EVENT CUTS\n");
   TObjArray* mcEventList = new TObjArray(0);  
-  if (UseMultCutforESD) mcEventList->AddLast(mcEventCuts);//cut on mult
+  if (UseMultCutforESD) mcEventList->AddLast(mcEventCuts);//cut on mult and vertex
     
   TObjArray* recEventList = new TObjArray(0);
-  if (UseMultCutforESD) recEventList->AddLast(recEventCuts);//cut on mult
+  if (UseMultCutforESD) recEventList->AddLast(recEventCuts);//cut on mult and vertex
 
   printf("CREATE MC KINE CUTS\n");
   TObjArray* mcListRP = new TObjArray(0);
