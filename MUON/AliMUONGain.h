@@ -6,7 +6,7 @@
 // $Id$
 
 /// \ingroup calib
-/// \class AliMUONDA
+/// \class AliMUONGain
 /// \brief Implementation of the pedestal and gain computing
 /// 
 //  Author: Alberto Baldisseri, JL Charvet (05/05/2009)
