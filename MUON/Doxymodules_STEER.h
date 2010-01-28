@@ -11,7 +11,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERBaseLinkDef.h 37215 2009-11-25 09:13:40Z morsch
+// From STEERBaseLinkDef.h 38329 2010-01-17 19:17:24Z hristov
 
     enum  AliLog::EType_t {};
  
@@ -22,6 +22,7 @@
     class AliVHeader {};
     class AliVEventHandler {};
     class AliVEventPool {};
+    class AliVCuts {};
 
     class AliMixedEvent {};
 
@@ -48,6 +49,7 @@
     class AliGenHijingEventHeader {};
     class AliCollisionGeometry {};
     class AliGenDPMjetEventHeader {};
+    class AliGenHerwigEventHeader {};
     class AliGenGeVSimEventHeader {};
     class AliGenEposEventHeader {};
     class AliStack {};
@@ -79,6 +81,11 @@
     class AliExternalTrackParam {};
     class AliQA {};
 
+    class AliITSPidParams {};
+    class AliITSPIDResponse {};
+    class AliTPCPIDResponse {};
+    class AliTOFPIDResponse {};
+
 /** @} */
 
 /** @defgroup STEER0 STEER0
@@ -86,7 +93,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERLinkDef.h 36069 2009-10-28 17:17:04Z shahoian
+// From STEERLinkDef.h 38305 2010-01-15 14:30:37Z shahoian
 
     enum VertexSmear_t {};
     enum VertexSource_t {};
@@ -242,6 +249,13 @@
     class AliLHCReader {};
     class AliCTPTimeParams {};
     class AliCTPInputTimeParams {};
+
+    class AliLHCDipValT<Double_t> {};
+    class AliLHCDipValT<Int_t> {};
+    class AliLHCDipValT<Float_t> {};
+    class AliLHCDipValT<Char_t> {};
+    class AliLHCData {};
+
 /** @} */
 
 /** @defgroup ESD ESD
@@ -249,7 +263,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h 37480 2009-12-01 21:59:07Z cvetan
+// From ESDLinkDef.h 38329 2010-01-17 19:17:24Z hristov
 
     enum   AliESDEvent::ESDListIndex {};
 
@@ -317,9 +331,6 @@
     class  AliTriggerIR {};
 
     class  AliESDVZEROfriend {};
-
-    class  AliTPCpidESD {};
-    class  AliTOFpidESD {};
 
     class  AliTriggerScalersESD {};
     class  AliTriggerScalersRecordESD {};
