@@ -10,6 +10,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <fstream>
+#include <algorithm>
 
 #include "TString.h"
 #include "TMath.h"
@@ -34,6 +35,7 @@
 #include "AliTriggerClass.h"
 #include "AliExternalTrackParam.h"
 #endif
+
 
 int rec_hlt_trd(const TString input ="raw.root", TString outPath=gSystem->pwd());
 Int_t ExtractRunNumber(const TString str);
@@ -62,7 +64,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   Bool_t useOnlyTRDtrigger=kFALSE;
 
   // Is the TRD full? (this is only important if ddl files should be read)
-  Bool_t fullTRD=kTRUE;
+  Bool_t fullTRD=kFALSE;
 
   // If not use these SMs:
   Int_t TRDmodules[18] = {0,1,7,8,9,10,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
@@ -129,7 +131,9 @@ int rec_hlt_trd(const TString filename, TString outPath)
     for(int i=0; i<18; i++)
       TRDmodules[i]=i;
   }else{
+#if !defined (__CINT__) || defined (__MAKECINT__)
     std::sort((UInt_t*)TRDmodules, ((UInt_t*)TRDmodules) + 18);
+#endif
     for(int i=0; i<18; i++)
       if(TRDmodules[i]>-1)usedModules++;
   }

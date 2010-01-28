@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <fstream>
+#include <algorithm>
 
 #include "TString.h"
 #include "TMath.h"
@@ -19,7 +20,6 @@
 #include <sys/time.h>
 #endif
 
-#include <algorithm>
 #include "initGRP.h"
 
 void aliHLTTRDrun(const TString inDir = gSystem->pwd());
@@ -42,7 +42,7 @@ void aliHLTTRDrun(const TString inDir)
   Bool_t customArgs=kTRUE;
 
   // Disable HLT flag?
-  Bool_t disableHLTflag=kTRUE;
+  Bool_t disableHLTflag=kFALSE;
 
 
 
@@ -54,7 +54,9 @@ void aliHLTTRDrun(const TString inDir)
     for(int i=0; i<18; i++)
       TRDmodules[i]=i;
   }else{
+#if !defined (__CINT__) || defined (__MAKECINT__)
     std::sort((UInt_t*)TRDmodules, ((UInt_t*)TRDmodules) + 18);
+#endif
     for(int i=0; i<18; i++)
       if(TRDmodules[i]>-1)usedModules++;
   }
