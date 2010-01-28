@@ -623,6 +623,12 @@ void AliTRDCalibTask::CreateOutputObjects()
 	     Float_t ch =  tracklet->GetdQdl(ic);
 	     Float_t qcl = TMath::Abs(fCl->GetQ());
 	     detector = fCl->GetDetector();	  
+	     // Add the charge if shared cluster
+	     if((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) {
+	       if((fCl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) {
+		 qcl += TMath::Abs(fCl->GetQ());
+	       }
+	     }
 	     if((time>-1) && (time<fNbTimeBins)) phtb[time]=qcl;
 	     if((fCalDetGain) && (fCalDetGain->GetValue(detector) > 0.0)) sum += ch*fCalDetGain->GetValue(detector)/normalisation;	
 	     else sum += ch/normalisation;

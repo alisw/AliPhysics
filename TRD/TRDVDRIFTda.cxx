@@ -45,13 +45,18 @@ extern "C" {
 #include "AliTRDrawStream.h"
 #include "AliTRDrawStreamBase.h"
 
+//
+//AMORE
+//
+#include <AmoreDA.h>
 
 //
 // TRD calibration algorithm includes
 //
 #include "AliTRDCalibraFillHisto.h"
 
-
+//functions, implementation below
+//void SendToAmoreDB(TObject *o, unsigned long32 runNb);
 
 
 /* Main routine
@@ -100,8 +105,9 @@ int main(int argc, char **argv) {
 
 
   /* init some counters */
-  int neventsphysics=0;
-  int neventstotal=0;
+  int nevents_physics=0;
+  int nevents_total=0;
+  //unsigned long32 runNb=0;      //run number
 
   //Instance of AliCDBManager: needed by AliTRDrawStream
   //AliCDBManager *man = AliCDBManager::Instance();
@@ -110,6 +116,7 @@ int main(int argc, char **argv) {
   //Instance of AliTRDCalibraFillHisto
   AliTRDCalibraFillHisto *calibra      = AliTRDCalibraFillHisto::Instance();
   calibra->SetNumberClustersProcent(0.9);
+
   // everythings are okey for vdrift
   Bool_t passvdrift  = kTRUE;    // if timebin okey
   Int_t  nbvdrift    = 0;     // number of events with entries for vdrift
@@ -118,7 +125,6 @@ int main(int argc, char **argv) {
   // AliTRDrawStream::SetNoDebug();
   AliTRDrawStream::DisableSkipData();
   AliTRDrawStream::SetNoErrorWarning();
-  //AliTRDrawStream::SetSubtractBaseline(0); 
   //AliTRDrawStream::SetForceCleanDataOnly();
   //AliTRDrawStream::AllowCorruptedData();
   //AliTRDrawStream::DisableStackNumberChecker();
@@ -156,7 +162,9 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    if( ((Int_t)neventstotal)%1000 == 0 ) printf(" event number %d (physic event number %d) will be processed\n",(Int_t) neventstotal,(Int_t) neventsphysics);  
+    if( ((Int_t)nevents_total)%1000 == 0 ) printf(" event number %d (physic event number %d) will be processed\n",(Int_t) nevents_total,(Int_t) nevents_physics);  
+
+
 
     /* use event - here, just write event id to result file */
     eventT=event->eventType;
@@ -168,23 +176,33 @@ int main(int argc, char **argv) {
       //if (eventT==PHYSICS_EVENT) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       rawReader->Select("TRD");
-      AliTRDrawStream *trdRawStream = new AliTRDrawStream((AliRawReader *) rawReader);
-      Int_t result = calibra->ProcessEventDAQ((AliTRDrawStreamBase *) trdRawStream,(Bool_t)nbvdrift);
+
+      Int_t result = calibra->ProcessEventDAQ2((AliTRDrawReader *) rawReader);
       if(!result) passvdrift = kFALSE;
       else nbvdrift += (Int_t) result/2;
              
-      delete trdRawStream;
+
       delete rawReader;
     
     } 
+
+    // get the run number
+    //runNb = event->eventRunNb;
    
     if(eventT==PHYSICS_EVENT){
  
-      neventsphysics++;
+      nevents_physics++;
      
     }
     
-    neventstotal++;
+    /*
+      if( ((Int_t)nevents_physics)%100 == 0 ) {
+      SendToAmoreDB(&calibra);
+      }
+    */
+
+    
+    nevents_total++;
 
 
     /* free resources */
@@ -199,7 +217,7 @@ int main(int argc, char **argv) {
 
 
   /* report progress */
-  printf("%d events processed and %d used\n",neventstotal,nbvdrift);
+  printf("%d events processed and %d used\n",nevents_total,nbvdrift);
   
   //
   // Write a local file and put it on the FX 
@@ -221,5 +239,24 @@ int main(int argc, char **argv) {
   delete fileTRD;  
 
   return status;
+
+  /*
+    void SendToAmoreDB(TObject *o)
+    {
+    //AMORE
+    const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
+    gSystem->Setenv("AMORE_DA_NAME","TRD-dataQA");
+    
+    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+    Int_t statusDA=0;
+    statusDA+=amoreDA.Send("DataQA-VDRIFT",o);
+    if ( statusDA!=0 )
+    printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+    // reset env var
+    if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
+    } 
+  */
+
 }
+
 

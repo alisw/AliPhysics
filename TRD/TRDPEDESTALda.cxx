@@ -39,11 +39,19 @@ extern "C" {
 #include "AliTRDrawStream.h"
 #include "AliTRDrawStreamBase.h"
 #include "AliCDBManager.h"
+
+//
+//AMORE
+//
+#include <AmoreDA.h>
+
 //
 // AliRoot TRD calib classes
 //
 #include "AliTRDCalibPadStatus.h"
 
+//functios, implementation below
+//void SendToAmoreDB(TObject *o, unsigned long32 runNb);
 
 /* Main routine
       Arguments: list of DATE raw data files
@@ -81,7 +89,7 @@ int main(int argc, char **argv) {
   
 
   /* init some counters */
-  int neventstotal=0;
+  int nevents_total=0;
   int nevents      =0;
  
   //Instance of AliCDBManager: needed by AliTRDRawStream
@@ -91,12 +99,12 @@ int main(int argc, char **argv) {
   // AliTRDCalibPadStatus object
   AliTRDCalibPadStatus calipad = AliTRDCalibPadStatus();
   Bool_t passpadstatus = kTRUE;
+  //unsigned long32 runNb=0;      //run number
 
   // setting
   // AliTRDrawStream::SetNoDebug();
   AliTRDrawStream::DisableSkipData();
   AliTRDrawStream::SetNoErrorWarning();
-  //AliTRDrawStream::SetSubtractBaseline(0); 
   //AliTRDrawStream::SetForceCleanDataOnly();
   //AliTRDrawStream::AllowCorruptedData();
   //AliTRDrawStream::DisableStackNumberChecker();
@@ -147,17 +155,19 @@ int main(int argc, char **argv) {
 
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	rawReader->Select("TRD");
-	AliTRDrawStream *trdRawStream = new AliTRDrawStream((AliRawReader *)rawReader);
-	Int_t result = calipad.ProcessEvent((AliTRDrawStreamBase *)trdRawStream,0);
+	
+	Int_t result = calipad.ProcessEvent2((AliTRDrawReader *)rawReader);
 	// 0 error, 1 no input, 2 output
 	if(result == 2) nevents++;
 	if(result == 0) passpadstatus = kFALSE;
-	delete trdRawStream;
 	delete rawReader;
       
       }
 
-      neventstotal++;
+      nevents_total++;
+
+      // get the run number
+      //runNb = event->eventRunNb;
 
       /* free resources */
       free(event);
@@ -166,7 +176,7 @@ int main(int argc, char **argv) {
 
 
   /* report progress */
-  printf("%d events processed and %d used\n",neventstotal,nevents);
+  printf("%d events processed and %d used\n",nevents_total,nevents);
 
   /* write file in any case to see what happens in case of problems*/
   TFile *fileTRD = new TFile(RESULT_FILE,"recreate");
@@ -184,5 +194,80 @@ int main(int argc, char **argv) {
 
   
   return status;
+
+  /*
+
+  // send objects to AMORE
+  //SendToAmoreDB(calibpad,runNb);
+  
+  void SendToAmoreDB(TObject *calipad, unsigned long32 runNb)
+  {
+  //cheet a little -- temporary solution (hopefully)
+  //
+  //currently amoreDA uses the environment variable AMORE_DA_NAME to create the mysql
+  //table in which the calib objects are stored. This table is dropped each time AmoreDA
+  //is initialised. This of course makes a problem if we would like to store different
+  //calibration entries in the AMORE DB. Therefore in each DA which writes to the AMORE DB
+  //the AMORE_DA_NAME env variable is overwritten.
+  
+  
+  //
+  // The reference data are stored in:
+  // PadStatus1 for sm-00-01-02
+  // PadStatus2 for sm-03-04-05
+  // PadStatus3 for sm-06-07-08
+  // PadStatus4 for sm-09-10-11
+  // PadStatus5 for sm-12-13-14
+  // PadStatus6 for sm-15-16-17
+  // PadStatus0 if nothing found..means problems
+  //
+  
+  ///////////////////
+  // Find wich LDC
+  ///////////////////
+  Int_t ldcnumber = -1;
+  Int_t sm = -1;
+  for (Int_t idet=0; idet<540; idet++) {
+  AliTRDCalROC *rocMean  = calipad->GetCalRocMean(idet, kFALSE);
+    if ( rocMean )  {
+      sm  = AliTRDgeometry::GetSector(idet);  
+      if((sm==0) || (sm==1) || (sm==2)) ldcnumber = 1;
+      if((sm==3) || (sm==4) || (sm==5)) ldcnumber = 2;
+      if((sm==6) || (sm==7) || (sm==8)) ldcnumber = 3;
+      if((sm==9) || (sm==10) || (sm==11)) ldcnumber = 1;
+      if((sm==12) || (sm==13) || (sm==14)) ldcnumber = 2;
+      if((sm==15) || (sm==16) || (sm==17)) ldcnumber = 3;
+    }
+  }
+  const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
+  
+  gSystem->Setenv("AMORE_DA_NAME",Form("TRD-dataQA-%02d-%s",ldcnumber,FILE_ID));
+ 
+  /////////////////////
+  // Send the stuff
+  ////////////////////
+  if (ldcnumber>-1){
+  TDatime time;
+  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
+  
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+  Int_t statusDA=0;
+  statusDA+=amoreDA.Send("Pedestals",calibpad);
+  statusDA+=amoreDA.Send("Info",&info);
+  if ( statusDA )
+  printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+  }  else {
+  printf("Waring: No data found!\n");
+  }
+  
+  // reset env var
+  if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
+  
+  }
+  
+  */
+
+
+
 }
 

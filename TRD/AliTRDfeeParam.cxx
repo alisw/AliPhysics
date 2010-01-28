@@ -279,6 +279,28 @@ Int_t AliTRDfeeParam::GetMCMfromPad(Int_t irow, Int_t icol) const
 }
 
 //_____________________________________________________________________________
+Int_t AliTRDfeeParam::GetMCMfromSharedPad(Int_t irow, Int_t icol) const
+{
+  //
+  // Return on which MCM this pad is directry connected.
+  // Return -1 for error.
+  //
+  
+  if ( irow < 0 || icol < 0 || irow > fgkNrowC1 || icol > fgkNcol+8*3 ) return -1;
+
+  Int_t adc = 20 - (icol%18) -1;
+  switch(adc) {
+    case 2:  icol += 5; break;
+    case 18: icol -= 5; break;
+    case 19: icol -= 5; break;
+    default: icol += 0; break;
+  }
+
+  return (icol%(fgkNcol/2))/fgkNcolMcm + fgkNmcmRobInCol*(irow%fgkNmcmRobInRow);
+
+}
+
+//_____________________________________________________________________________
 Int_t AliTRDfeeParam::GetROBfromPad(Int_t irow, Int_t icol) const
 {
   //
@@ -286,6 +308,18 @@ Int_t AliTRDfeeParam::GetROBfromPad(Int_t irow, Int_t icol) const
   //
 
   return (irow/fgkNmcmRobInRow)*2 + GetColSide(icol);
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDfeeParam::GetROBfromSharedPad(Int_t irow, Int_t icol) const
+{
+  //
+  // Return on which rob this pad is for shared pads
+  //
+
+  if(icol<72) return (irow/fgkNmcmRobInRow)*2 + GetColSide(icol+5);
+  else return (irow/fgkNmcmRobInRow)*2 + GetColSide(icol-5);
 
 }
 

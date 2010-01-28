@@ -44,7 +44,9 @@ class AliTRDfeeParam : public TObject
   virtual Int_t    GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const;
   virtual Int_t    GetExtendedPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const;
   virtual Int_t    GetMCMfromPad(Int_t irow, Int_t icol) const;
+  virtual Int_t    GetMCMfromSharedPad(Int_t irow, Int_t icol) const;
   virtual Int_t    GetROBfromPad(Int_t irow, Int_t icol) const;
+  virtual Int_t    GetROBfromSharedPad(Int_t irow, Int_t icol) const;
   virtual Int_t    GetRobSide(Int_t irob) const;
   virtual Int_t    GetColSide(Int_t icol) const;
 
@@ -100,7 +102,7 @@ class AliTRDfeeParam : public TObject
 	  Bool_t   GetTracklet()         const { return fgTracklet; } 
   static  void     SetTracklet(Bool_t trackletSim = kTRUE) { fgTracklet = trackletSim; }
           Int_t    GetMaxNrOfTracklets() const { return fgkMaxNrOfTracklets; } 
-	  Bool_t    GetMCTrackletOutput() const { return fgkMCTrackletOutput; }
+	  Bool_t   GetMCTrackletOutput() const { return fgkMCTrackletOutput; }
 
   static  Float_t  GetTFattPar()          { return ((Float_t) fgkTFattPar1) / ((Float_t) fgkTFattPar2); }
           Float_t  GetTFf0()        const { return 1.0 + fgkTFon*(-1.0+GetTFattPar()); }   // 1 if TC off
@@ -227,3 +229,4 @@ class AliTRDfeeParam : public TObject
 
 };
 #endif
+

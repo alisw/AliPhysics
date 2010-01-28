@@ -43,6 +43,9 @@ class AliTRDgeometry;
 class AliTRDCalDet;
 class AliTRDCalROC;
 
+class AliTRDrawFastStream;
+class AliTRDdigitsManager;
+class AliTRDSignalIndex;
 
 struct eventHeaderStruct;
 
@@ -69,6 +72,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  Int_t   ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(const eventHeaderStruct *event, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQ2(AliRawReader *rawReader);
 
   // Is Pad on
           Bool_t   IsPadOn(Int_t detector, Int_t row, Int_t col) const;
@@ -139,7 +143,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetThresholdClustersDAQ(Float_t thresholdClustersDAQ)     { fThresholdClustersDAQ = thresholdClustersDAQ;                         }
 	  void     SetNumberRowDAQ(Short_t numberRowDAQ)                     { fNumberRowDAQ         = numberRowDAQ;         }
 	  void     SetNumberColDAQ(Short_t numberColDAQ)                     { fNumberColDAQ         = numberColDAQ;         }
-          void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;      }
+	  void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;      }
           void     SetNumberBinPRF(Short_t numberBinPRF)                     { fNumberBinPRF         = numberBinPRF;         }
 	  void     SetNumberGroupsPRF(Short_t numberGroupsPRF);
   
@@ -266,7 +270,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  Bool_t   HandlePRFtracklet(const AliTRDtrack *t, Int_t index0, Int_t index1);
 	  Bool_t   HandlePRFtrackletV1(const AliTRDseedV1 *tracklet, Int_t nbclusters);
 	  void     ResetfVariablestracklet();
-	  void     StoreInfoCHPHtrack(const AliTRDcluster *cl,const Double_t dqdl,const Int_t *group,const Int_t row,const Int_t col);
+	  void     StoreInfoCHPHtrack(const AliTRDcluster *cl,const Double_t dqdl,const Int_t *group,const Int_t row,const Int_t col,const AliTRDcluster *cls=0x0);
 	  void     FillCH2d(Int_t x, Float_t y);
 
   // Calibration on DAQ
@@ -305,3 +309,4 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 };
   
 #endif
+

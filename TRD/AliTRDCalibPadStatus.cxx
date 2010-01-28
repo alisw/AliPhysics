@@ -54,7 +54,11 @@
 //  TH1F *histo = ped.GetHisto(31);                                       //
 //  histo->SetEntries(1);                                                 //
 //  histo->Draw();                                                        //
-//                                                                        //
+//
+// Authors:
+//   R. Bailhache (R.Bailhache@gsi.de, rbailhache@ikf.uni-frankfurt.de)
+//   J. Book (jbook@ikf.uni-frankfurt.de)
+//                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////
 
 
@@ -86,6 +90,14 @@
 #include "./Cal/AliTRDCalDet.h"
 #include "./Cal/AliTRDCalPad.h"
 #include "./Cal/AliTRDCalSingleChamberStatus.h"
+
+#include "AliTRDrawFastStream.h"
+#include "AliTRDdigitsManager.h"
+#include "AliTRDdigitsParam.h"
+#include "AliTRDSignalIndex.h"
+#include "AliTRDarraySignal.h"
+#include "AliTRDarrayADC.h"
+#include "AliTRDfeeParam.h"
 
 #ifdef ALI_DATE
 #include "event.h"
@@ -219,12 +231,53 @@ Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
   // fast filling methode.
   // Attention: the entry counter of the histogram is not increased
   //            this means that e.g. the colz draw option gives an empty plot
+  
   Int_t bin = 0;
+  
+  if ( !(((Int_t)csignal>=fAdcMax ) || ((Int_t)csignal<fAdcMin)) )
+    bin = (nbchannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
+  
+  //GetHisto(icdet,kTRUE)->Fill(csignal,nbchannel);
+  
+  GetHisto(icdet,kTRUE)->GetArray()[bin]++;
+  
+  return 0;
+}
+//_____________________________________________________________________
+Int_t AliTRDCalibPadStatus::UpdateHisto2(const Int_t icdet, /*FOLD00*/
+					 const Int_t icRow,
+					 const Int_t icCol,
+					 const Int_t csignal,
+					 const Int_t crowMax,
+					 const Int_t ccold,
+					 const Int_t icMcm,
+					 const Int_t icRob
+					 )
+{
+  //
+  // Signal filling methode 
+  //
+  Int_t nbchannel = icRow+icCol*crowMax;
+  Int_t mCm = icMcm%4;
+  Int_t rOb = icRob%2;
+
+  // now the case of double read channel
+  if(ccold > 0){
+    nbchannel = (((ccold-1)*8+ (mCm+rOb*4))*crowMax+icRow)+144*crowMax;
+    //printf("nbchannel %d, ccold %d, icMcm %d, crowMax %d, icRow %d\n",nbchannel,ccold,icMcm,crowMax,icRow);
+  }
+  
+  // fast filling methode.
+  // Attention: the entry counter of the histogram is not increased
+  //            this means that e.g. the colz draw option gives an empty plot
+  
+  Int_t bin = 0;
+  
   if ( !(((Int_t)csignal>=fAdcMax ) || ((Int_t)csignal<fAdcMin)) )
     bin = (nbchannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
 
   //GetHisto(icdet,kTRUE)->Fill(csignal,nbchannel);
-  
+
   GetHisto(icdet,kTRUE)->GetArray()[bin]++;
   
   return 0;
@@ -237,6 +290,9 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
   // 0 time bin problem or zero suppression
   // 1 no input
   // 2 input
+  // 
+
+  //
   // Raw version number: 
   // [3,31] non zero suppressed
   // 2,4 and [32,63] zero suppressed 
@@ -293,7 +349,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       fDetector         = idetector;      
 
       for(Int_t k = 0; k < fNumberOfTimeBins; k++){
-	if(signal[k]>0) UpdateHisto(idetector,iRow,iCol,signal[k],iRowMax,col,mcm);
+	if(signal[k]>0 && iCol != -1) UpdateHisto(idetector,iRow,iCol,signal[k],iRowMax,col,mcm);
       }
       
       withInput = 2;
@@ -328,7 +384,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       //printf("det %d, row %d, signal[0] %d, signal[1] %d, signal [2] %d\n", idetector, iRow, signal[0], signal[1], signal[2]);
  
       for(Int_t k = 0; k < nbtimebin; k++){
-	if(signal[k]>0) {
+	if(signal[k]>0 && iCol != -1) {
 	  UpdateHisto(idetector,iRow,iCol,signal[k],iRowMax,col,mcm);
 	  //printf("Update with det %d, row %d, col %d, signal %d, rowmax %d, col %d, mcm %d\n",idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
 	}
@@ -385,6 +441,126 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(
     return 0;
 #endif
 
+}
+
+//_____________________________________________________________________
+Int_t AliTRDCalibPadStatus::ProcessEvent2(AliRawReader *rawReader)
+{
+  //
+  // Event Processing loop - AliTRDRawStreamCosmic
+  // 0 time bin problem or zero suppression
+  // 1 no input
+  // 2 input
+  // Raw version number: 
+  // [3,31] non zero suppressed
+  // 2,4 and [32,63] zero suppressed 
+  //
+  
+  Int_t withInput = 1;
+
+  AliTRDrawFastStream *rawStream = new AliTRDrawFastStream(rawReader);
+  rawStream->SetSharedPadReadout(kTRUE);
+
+  AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager(kTRUE);
+  digitsManager->CreateArrays();
+  
+  AliTRDfeeParam *feeParam = AliTRDfeeParam::Instance();
+
+  Int_t det    = 0;
+  while ((det = rawStream->NextChamber(digitsManager, NULL, NULL)) >= 0) { //idetector
+    if (digitsManager->GetIndexes(det)->HasEntry()) {//QA
+      //	printf("there is ADC data on this chamber!\n");
+      
+       AliTRDarrayADC *digits = (AliTRDarrayADC *) digitsManager->GetDigits(det); //mod
+      if (digits->HasData()) { //array
+	
+	AliTRDSignalIndex   *indexes = digitsManager->GetIndexes(det);
+	if (indexes->IsAllocated() == kFALSE) {
+	  AliError("Indexes do not exist!");
+	  break;
+	}
+	Int_t iRow  = 0;
+	Int_t iCol  = 0;
+	indexes->ResetCounters();
+
+	while (indexes->NextRCIndex(iRow, iCol)) { //column,row
+	  
+
+	  AliTRDdigitsParam *digitParam = (AliTRDdigitsParam *)digitsManager->GetDigitsParam();
+	  
+	  Int_t mcm          = 0;     // MCM from AliTRDfeeParam
+	  Int_t rob          = 0;     // ROB from AliTRDfeeParam
+	  Int_t extCol       = 0;     // extended column from  AliTRDfeeParam  
+	  mcm = feeParam->GetMCMfromPad(iRow,iCol);
+	  rob = feeParam->GetROBfromPad(iRow,iCol);
+
+	  Int_t idetector  = det;                            //  current detector
+	  Int_t iRowMax    = rawStream->GetMaxRow();         //  current rowmax
+
+	  Int_t adc        = 20 - (iCol%18) -1;                 //  current adc
+	  Int_t col        = 0;                              //  col!=0 ->Shared Pad
+	  extCol = feeParam->GetExtendedPadColFromADC(rob,mcm,adc);
+	  //printf("  iCol %d  iRow %d  iRowMax %d  rob %d  mcm %d  adc %d  extCol %d\n",iCol,iRow,iRowMax,rob,mcm,adc,extCol);	  
+	  
+	  // Signal for regular pads
+	  Int_t nbtimebin  = digitParam->GetNTimeBins();     //  number of time bins read from data	  
+	  for(Int_t k = 0; k < nbtimebin; k++){
+	    Short_t signal = 0;
+	    signal = digits->GetData(iRow,iCol,k);
+	    
+	    if(signal>0) {
+	      UpdateHisto2(idetector,iRow,iCol,signal,iRowMax,col,mcm,rob);
+	    }
+	  }
+
+	  
+	  
+	  if((adc==3-1 || adc==20-1 || adc==19-1) && (iCol > 1 && iCol <142) /* && fSharedPadsOn*/ ) { //SHARED PADS
+	    
+	      switch(adc) {
+	      case 2:  
+		adc = 20;                                       //shared Pad adc 
+		mcm = feeParam->GetMCMfromSharedPad(iRow,iCol); //shared Pad mcm 
+		col =  1;
+		break;
+	      case 19:  
+		adc = 1;                                        //shared Pad adc  
+		mcm = feeParam->GetMCMfromSharedPad(iRow,iCol); //shared Pad mcm  
+		col =  2;
+		break;
+	      case 18: 
+		adc =  0;                                       //shared Pad adc  
+		mcm = feeParam->GetMCMfromSharedPad(iRow,iCol); //shared Pad mcm 
+		col =  3;
+		break;
+	      }
+	      rob = feeParam->GetROBfromSharedPad(iRow,iCol);     //shared Pad rob 
+	      
+	    
+	    extCol = feeParam->GetExtendedPadColFromADC(rob,mcm,adc);     //extended pad col via the shared pad rob,mcm and adc
+	    
+	    //printf("SHARED PAD ---  iCol %d  iRow %d  rob %d  mcm %d  adc %d  extCol %d  col %d\n",iCol,iRow,rob,mcm,adc,extCol,col);
+	    for(Int_t k = 0; k < nbtimebin; k++){
+	      Short_t signal = 0;
+	      signal = digits->GetDataByAdcCol(iRow,extCol,k);
+	      
+	      if(signal>0) {
+		UpdateHisto2(idetector,iRow,iCol,signal,iRowMax,col,mcm,rob);
+	      }
+	    }
+	  } //shared pads end
+	    
+	  
+	  withInput = 2;
+	}//column,row
+
+      }//array
+    }//QA
+    digitsManager->ClearArrays(det);
+  }//idetector
+  delete digitsManager;
+  delete rawStream;
+  return withInput;
 }
 
 //_____________________________________________________________________
@@ -897,4 +1073,5 @@ Int_t AliTRDCalibPadStatus::GetSector(Int_t d) const
   return ((Int_t) (d / 30));
 
 }
+
 

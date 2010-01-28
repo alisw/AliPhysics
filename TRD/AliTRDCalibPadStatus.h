@@ -23,6 +23,10 @@ class AliTRDCalPadStatus;
 class AliTRDrawStreamBase;
 class AliTRDgeometry;
 
+class AliTRDrawFastStream;
+class AliTRDdigitsManager;
+class AliTRDSignalIndex;
+
 struct eventHeaderStruct;
 
 class AliTRDCalibPadStatus : public TObject {
@@ -38,10 +42,14 @@ public:
   Int_t ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(const eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
-
+  Int_t ProcessEvent2(AliRawReader    *rawReader);
+ 
   void  Destroy();
   Int_t UpdateHisto(const Int_t idet, const Int_t iRow, const Int_t iCol,
 		    const Int_t signal, const Int_t crowMax, const Int_t ccold, const Int_t icMcm);
+
+  Int_t UpdateHisto2(const Int_t idet, const Int_t iRow, const Int_t iCol,
+		     const Int_t signal, const Int_t crowMax, const Int_t ccold, const Int_t icMcm, const Int_t icRob);
 
   void AnalyseHisto();
   AliTRDCalPadStatus *CreateCalPadStatus();
@@ -107,3 +115,4 @@ public:
 
 };
 #endif
+
