@@ -205,12 +205,13 @@ Int_t AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* 
 	    Double_t dx = mx[i] - x[j];
 	    if (dx >  TMath::Pi()) xx += 2. * TMath::Pi();
 	    if (dx < -TMath::Pi()) xx -= 2. * TMath::Pi();
-	    mx[i] = mx[i] * rk[i] + r[j][i] * xx;
-	    my[i] = my[i] * rk[i] + r[j][i] * y[j];
-	    rk[i] += r[j][i];
-	    mx[i] /= rk[i];
-	    my[i] /= rk[i];	    
-	    
+	    if (r[j][i] > 1.e-15) {
+	      mx[i] = mx[i] * rk[i] + r[j][i] * xx;
+	      my[i] = my[i] * rk[i] + r[j][i] * y[j];
+	      rk[i] += r[j][i];
+	      mx[i] /= rk[i];
+	      my[i] /= rk[i];	
+	    }    
 	    if (mx[i] > 2. * TMath::Pi()) mx[i] -= 2. * TMath::Pi();
 	    if (mx[i] < 0.              ) mx[i] += 2. * TMath::Pi();
 	} // Data
@@ -291,7 +292,7 @@ void AliKMeansClustering::OptimalInit(Int_t k, Int_t n, Double_t* x, Double_t* y
 	d2.Fill(Float_t(j), dmin);
       } // data points
       // select a new cluster from data points with probability ~d2
-      ir = Int_t(d2.GetRandom());
+      ir = Int_t(d2.GetRandom() + 0.5);
       mx[icl] = x[ir];
       my[icl] = y[ir];
       icl++;
