@@ -114,7 +114,7 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
-  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:triggered:dndygen:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc");
+  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:bunchcross:triggered:dndygen:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc");
 
   fOutput->Add(fNtupleVertexESD);
 
@@ -301,13 +301,14 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   
 
   // fill ntuple
-  Int_t isize=66;
-  Float_t xnt[66]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
+  Int_t isize=67;
+  Float_t xnt[67]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
   
   Int_t index=0;
 
   xnt[index++]=(Float_t)esdE->GetRunNumber();
   xnt[index++]=(Float_t)esdE->GetTimeStamp();
+  xnt[index++]=(Float_t)esdE->GetBunchCrossNumber();
   xnt[index++]=(eventTriggered ? 1. : 0.);
 
   xnt[index++]=(Float_t)dNchdy;
