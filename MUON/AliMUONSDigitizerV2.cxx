@@ -16,6 +16,7 @@
 // $Id$
 
 #include <TClonesArray.h>
+#include <TParticle.h>
 
 #include "AliMUONSDigitizerV2.h"
 
@@ -36,6 +37,7 @@
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliStack.h"
 
 //-----------------------------------------------------------------------------
 /// The sdigitizer performs the transformation from hits (energy deposits by
@@ -131,6 +133,17 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     AliDebug(1,Form("iEvent=%d",iEvent));
     runLoader->GetEvent(iEvent);
   
+    // for pile up studies
+    runLoader->LoadKinematics();
+    AliStack* stack = runLoader->Stack();
+    Int_t nparticles = (Int_t) stack->GetNtrack();
+    float T0=10;    // time of the triggered event 
+    // loop to find the time of the triggered event (this may change)
+    for (Int_t iparticle=0; iparticle<nparticles; ++iparticle) {
+      float t = stack->Particle(iparticle)->T();
+      if (TMath::Abs(t)<TMath::Abs(T0)) T0 = t;
+    }
+
     loader->MakeSDigitsContainer();
 
     TTree* treeS = loader->TreeS();
@@ -161,7 +174,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
       while ( ( hit = static_cast<AliMUONHit*>(next()) ) )       
       {
         Int_t chamberId = hit->Chamber()-1;
- 	Float_t age = hit->Age();
+ 	Float_t age = hit->Age()-T0;
 
         AliMUONChamber& chamber = muon->Chamber(chamberId);
         AliMUONResponse* response = chamber.ResponseModel();

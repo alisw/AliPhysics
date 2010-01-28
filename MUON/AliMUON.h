@@ -119,6 +119,15 @@ class AliMUON : public  AliDetector
                  /// Parametrised tail effect in resolution histogram
     virtual void SetTailEffect(Bool_t isTailEffect) { fIsTailEffect=isTailEffect; }
     
+    // For pileup studies
+    //
+                 /// Set time limits for sdigits to be digitized
+    virtual void SetTimeLimits(Float_t time1, Float_t time2) {fTimeMin=time1; fTimeMax=time2;}
+                 /// Return minimum time(*10^9) for a sdigit to be digitized
+    virtual Float_t GetTimeMin() {return fTimeMin;}
+                 /// Return maximum time(*10^9) for a sdigit to be digitized
+    virtual Float_t GetTimeMax() {return fTimeMax;}
+    
     // Getters
                   /// Return reference to Chamber \a id
     virtual AliMUONChamber& Chamber(Int_t id)
@@ -169,6 +178,9 @@ class AliMUON : public  AliDetector
     Int_t  fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
     Bool_t fIsTailEffect;       ///< Switch to turn on/off the tail effect
 
+    Float_t fTimeMin;           // minimum time(*10^9) for an sdigit to be digitized
+    Float_t fTimeMax;           // maximum time(*10^9) for an sdigit to be digitized
+
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
     
     AliMUONDigitMaker* fDigitMaker; //!< pointer to the digit maker class
@@ -179,7 +191,7 @@ class AliMUON : public  AliDetector
     
     AliMUONCalibrationData* fCalibrationData; ///< pointer of calibration data
     
-    ClassDef(AliMUON,17)  // MUON Detector base class
+    ClassDef(AliMUON,18)  // MUON Detector base class
 };
 #endif
 

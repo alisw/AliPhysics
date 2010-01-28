@@ -102,7 +102,9 @@ AliMUON::AliMUON()
     fDigitMaker(0x0),
     fHitStore(0x0),
     fDigitStoreConcreteClassName(),
-    fCalibrationData(0x0)
+    fCalibrationData(0x0),
+    fTimeMin(-100000),
+    fTimeMax(100000)
 {
 /// Default Constructor
     
@@ -137,7 +139,9 @@ AliMUON::AliMUON(const char *name, const char* title)
     fDigitMaker(new AliMUONDigitMaker),
     fHitStore(0x0),
     fDigitStoreConcreteClassName("AliMUONDigitStoreV2S"),
-    fCalibrationData()
+    fCalibrationData(),
+    fTimeMin(-100000),
+    fTimeMax(100000)
 
 {
   /// Standard constructor  
