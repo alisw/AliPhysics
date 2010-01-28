@@ -132,7 +132,12 @@ int AliHLTTRDOfflineTrackerV1Component::DoEvent(const AliHLTComponent_EventData&
 	AliHLTTRDUtils::EmulateHLTTracks(trdTracks);
       }
 
+      if(trdTracks)
       PushBack(trdTracks, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+      else{
+	TClonesArray temp("AliTRDtrackV1");
+	PushBack(&temp, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+      }
       PushBack(strg, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
       fTracker->UnloadClusters();
       AliTRDReconstructor::SetClusters(0x0);
