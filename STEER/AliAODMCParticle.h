@@ -120,7 +120,7 @@ class AliAODMCParticle: public AliVParticle {
   Double32_t       fPx;                   // x component of momentum
   Double32_t       fPy;                   // y component of momentum
   Double32_t       fPz;                   // z component of momentum
-  Double32_t       fE;                    // [0.,0.,12]
+  Double32_t       fE;                    // Energy
 
   Double32_t       fVx;                   // [0.,0.,12] x of production vertex
   Double32_t       fVy;                   // [0.,0.,12] y of production vertex
@@ -144,7 +144,7 @@ class AliAODMCParticle: public AliVParticle {
     };
   */
 
-  ClassDef(AliAODMCParticle,4)  // AliVParticle realisation for AODMCParticles
+  ClassDef(AliAODMCParticle,5)  // AliVParticle realisation for AODMCParticles
 
 };
 
