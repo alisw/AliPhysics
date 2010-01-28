@@ -18,20 +18,6 @@ void drawResults(const char* analysisOutput) {
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG2spectra.so");
 
-  //Open the input file and get the objects
-  /*TFile *f = TFile::Open(analysisOutput);
-  TList *analysisList = dynamic_cast<TList *>(f->Get("outputList"));
-  TH2D *gHistYPtProtons = dynamic_cast<TH2D *>(analysisList->At(0));
-  TH2D *gHistYPtAntiProtons = dynamic_cast<TH2D *>(analysisList->At(1));
-  AliCFContainer *cfProtons = dynamic_cast<AliCFContainer *>(analysisList->At(3));
-  AliCFContainer *cfAntiProtons = dynamic_cast<AliCFContainer *>(analysisList->At(4));
-  TH1F *gHistEventStats = dynamic_cast<TH1F *>(analysisList->At(5));
-  gHistEventStats->SetStats(kFALSE);
-  if(gHistEventStats->GetBinContent(1) != 0) {
-    gHistEventStats->GetYaxis()->SetTitle("N_{events} [%]");
-    gHistEventStats->Scale(100./gHistEventStats->GetBinContent(1));
-    }*/
-
   //Create the AliProtonAnalysis object
   AliProtonAnalysis *analysis = new AliProtonAnalysis();
   analysis->ReadFromFile(analysisOutput);
@@ -46,7 +32,7 @@ void drawResults(const char* analysisOutput) {
   TH1D *gHistPtRatio = dynamic_cast<TH1D *>(analysis->GetPtRatioHistogram());
 
   //==================================================================//
-  TH2F *hEmptyRatio = new TH2F("hEmptyRatio",";;#bar{p}/p",100,-0.7,1.1,100,0.1,1.1);
+  TH2F *hEmptyRatio = new TH2F("hEmptyRatio",";;#bar{p}/p",100,-1.1,1.1,100,0.1,1.1);
   hEmptyRatio->SetStats(kFALSE);
   hEmptyRatio->GetXaxis()->SetNdivisions(10);
   hEmptyRatio->GetYaxis()->SetNdivisions(10);
@@ -81,7 +67,7 @@ void drawResults(const char* analysisOutput) {
   TCanvas *cRatio = new TCanvas("cRatio","Ratio",300,0,600,400);
   cRatio->SetFillColor(10); cRatio->SetHighLightColor(10); cRatio->Divide(2,1);
   cRatio->cd(1); hEmptyRatio->GetXaxis()->SetTitle("eta"); 
-  hEmptyRatio->GetXaxis()->SetRangeUser(-0.7,0.7); 
+  hEmptyRatio->GetXaxis()->SetRangeUser(-1.0,1.0); 
   hEmptyRatio->DrawCopy(); gHistYRatio->Draw("ESAME");
   gHistYRatio->Fit("fFitFunction","N");
   latex->DrawLatex(-0.1,0.45,"ALICE PRELIMINARY");
@@ -94,6 +80,13 @@ void drawResults(const char* analysisOutput) {
 
 
   Printf("==========================================");
+  for(Int_t iBin = 1; iBin <= gHistYRatio->GetNbinsX(); iBin++)
+    Printf("Eta: %lf - Ratio: %lf - Error: %lf",
+	   gHistYRatio->GetBinCenter(iBin),
+	   gHistYRatio->GetBinContent(iBin),
+	   gHistYRatio->GetBinError(iBin));
+  Printf("==========================================");
+
   Printf("Fit result: %lf - %lf",fFitFunction->GetParameter(0),fFitFunction->GetParError(0));
   analysis->PrintMean(gHistYRatio,0.5);
   Printf("==========================================");
@@ -194,13 +187,27 @@ void drawQAPlots(const char* analysisOutput) {
   TH2D *gHistProtonsPhiTPCNPoints = dynamic_cast<TH2D *>gHistProtonsPtPhiTPCNPoints->Project3D("zy");
   gHistProtonsPhiTPCNPoints->SetStats(kFALSE);
 
+  //2D eta-phi- accepted protons & antiprotons
+  TH2F *gHistEtaPhiProtons = dynamic_cast<TH2F *>(fQA2DList->At(10));
+  gHistEtaPhiProtons->SetStats(kFALSE);
+  TH2F *gHistEtaPhiAntiProtons = dynamic_cast<TH2F *>(fQA2DList->At(11));
+  gHistEtaPhiAntiProtons->SetStats(kFALSE);
+
   //__________________________________________________//
   TCanvas *cdEdx = new TCanvas("cdEdx","dE/dx (TPC)",0,0,700,400);
   cdEdx->SetFillColor(10); cdEdx->SetHighLightColor(10); cdEdx->Divide(2,1);
   cdEdx->cd(1)->SetLogx(); gHistdEdxP->Draw("col");
   cdEdx->cd(2)->SetLogx(); gHistProtonsdEdxP->Draw("col");
 
-  TCanvas *cEtaPhiNPointsdEdx = new TCanvas("cEtaPhiNPointsdEdx",
+  TCanvas *cEtaPhi = new TCanvas("cEtaPhi",
+				 "eta-phi",
+				 0,0,700,400);
+  cEtaPhi->SetFillColor(10); 
+  cEtaPhi->SetHighLightColor(10); cEtaPhi->Divide(2,1);
+  cEtaPhi->cd(1); gHistEtaPhiProtons->Draw("colz");
+  cEtaPhi->cd(2); gHistEtaPhiAntiProtons->Draw("colz");
+
+  /*TCanvas *cEtaPhiNPointsdEdx = new TCanvas("cEtaPhiNPointsdEdx",
 					    "eta-phi-NPoints(dE/dx)",
 					    0,0,900,600);
   cEtaPhiNPointsdEdx->SetFillColor(10); 
@@ -246,7 +253,7 @@ void drawQAPlots(const char* analysisOutput) {
   cPtPhiNPoints->cd(3); gHistPhiTPCNPoints->Draw("col");
   cPtPhiNPoints->cd(4); gHistProtonsPtPhi->Draw("col");
   cPtPhiNPoints->cd(5); gHistProtonsPtTPCNPoints->Draw("col");
-  cPtPhiNPoints->cd(6); gHistProtonsPhiTPCNPoints->Draw("col");
+  cPtPhiNPoints->cd(6); gHistProtonsPhiTPCNPoints->Draw("col");*/
 
   //Accepted protons
   TList *fQAProtonsAcceptedList = dynamic_cast<TList *>(gListGlobalQA->At(1));
@@ -530,6 +537,8 @@ void drawQAPlots(const char* analysisOutput) {
   TH1F *gHistVz = dynamic_cast<TH1F *>(gListVertexQA->At(4));
   TH1F *gHistVzAccepted = dynamic_cast<TH1F *>(gListVertexQA->At(5));
   gHistVzAccepted->SetFillColor(10);
+  TH1F *gHistNumberOfContributors = dynamic_cast<TH1F *>(gListVertexQA->At(6));
+  gHistNumberOfContributors->SetFillColor(10);
 
   TCanvas *cVertex = new TCanvas("cVertex","Vertex QA",0,0,900,400);
   cVertex->SetFillColor(10); cVertex->SetHighLightColor(10);
@@ -537,4 +546,8 @@ void drawQAPlots(const char* analysisOutput) {
   cVertex->cd(1)->SetLogy(); gHistVx->Draw(); gHistVxAccepted->Draw("same");
   cVertex->cd(2)->SetLogy(); gHistVy->Draw(); gHistVyAccepted->Draw("same");
   cVertex->cd(3)->SetLogy(); gHistVz->Draw(); gHistVzAccepted->Draw("same");
+
+  TCanvas *cVertexNContributors = new TCanvas("cVertexNContributors",
+					      "Vertex QA",0,0,400,400);
+  gHistNumberOfContributors->Draw();
 }

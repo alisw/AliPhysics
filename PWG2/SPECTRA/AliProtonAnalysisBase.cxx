@@ -40,10 +40,11 @@ ClassImp(AliProtonAnalysisBase)
 //____________________________________________________________________//
 AliProtonAnalysisBase::AliProtonAnalysisBase() : 
   TObject(),  fProtonAnalysisLevel("ESD"), fAnalysisMC(kFALSE),
-  fTriggerMode(kMB2), kUseOfflineTrigger(kFALSE), fPhysicsSelection(0),
+  fTriggerMode(kMB2), kUseOnlineTrigger(kFALSE), kUseOfflineTrigger(kFALSE), 
+  fPhysicsSelection(0),
   fProtonAnalysisMode(kTPC), fProtonPIDMode(kBayesian),
   fAnalysisEtaMode(kFALSE),
-  fVxMax(100.), fVyMax(100.), fVzMax(100.),
+  fVxMax(100.), fVyMax(100.), fVzMax(100.), fMinNumOfContributors(0),
   fNBinsX(0), fMinX(0), fMaxX(0),
   fNBinsY(0), fMinY(0), fMaxY(0),
   fMinTPCClusters(0), fMinITSClusters(0),
@@ -80,7 +81,6 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
     fdEdxMean[i] = 0.0;
     fdEdxSigma[i] = 0.0;
   }
-  //fListVertexQA = new TList();
   fListVertexQA->SetName("fListVertexQA");
   TH1F *gHistVx = new TH1F("gHistVx",
 			   "Vx distribution;V_{x} [cm];Entries",
@@ -109,6 +109,11 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
 				   "Vz distribution;V_{z} [cm];Entries",
 				   100,-25.,25.);
   fListVertexQA->Add(gHistVzAccepted);
+
+  TH1F *gHistNumberOfContributors = new TH1F("gHistNumberOfContributors",
+					     "Number of contributors;N_{contr.};Entries",
+					     100,0.,100.);
+  fListVertexQA->Add(gHistNumberOfContributors);
 
 
 }
@@ -169,9 +174,14 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
     eta = track->Eta();
   }
   
-  if((gP < fMinY) || (gP > fMaxY)) {
+  if((gPt < fMinY) || (gPt > fMaxY)) {
       if(fDebugMode)
 	Printf("IsInPhaseSpace: Track rejected because it has a Pt value of %lf (accepted interval: %lf - %lf)",gPt,fMinY,fMaxY);
+      return kFALSE;
+  }
+  if((gP < fMinY) || (gP > fMaxY)) {
+      if(fDebugMode)
+	Printf("IsInPhaseSpace: Track rejected because it has a P value of %lf (accepted interval: %lf - %lf)",gP,fMinY,fMaxY);
       return kFALSE;
   }
   if(fAnalysisEtaMode) {
@@ -460,9 +470,275 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDEvent *esd,
 }
 
 //____________________________________________________________________//
+Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
+					const AliESDVertex *vertex, 
+					AliESDtrack* track) {
+  // Checks if the track is a primary-like candidate
+  Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
+  Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
+  Double_t dca3D = 0.0;
+  
+  if((fProtonAnalysisMode == kTPC)||(fProtonAnalysisMode == kHybrid)) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
+      dca[0] = -100.; dca[1] = -100.; dca3D = -100.;
+      cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
+    }
+    else {
+      gPt = tpcTrack->Pt();
+      gPx = tpcTrack->Px();
+      gPy = tpcTrack->Py();
+      gPz = tpcTrack->Pz();
+      tpcTrack->PropagateToDCA(vertex,
+			       esd->GetMagneticField(),
+			       100.,dca,cov);
+    }
+  }//standalone TPC or hybrid TPC approaches
+  else {
+    gPt = track->Pt();
+    gPx = track->Px();
+    gPy = track->Py();
+    gPz = track->Pz();
+    track->PropagateToDCA(vertex,
+			  esd->GetMagneticField(),
+			  100.,dca,cov);
+  }
+  dca3D = TMath::Sqrt(TMath::Power(dca[0],2) +
+		      TMath::Power(dca[1],2));
+     
+  Int_t  fIdxInt[200];
+  Int_t nClustersITS = track->GetITSclusters(fIdxInt);
+  Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
+
+  Float_t chi2PerClusterITS = -1;
+  if (nClustersITS!=0)
+    chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
+  Float_t chi2PerClusterTPC = -1;
+  if (nClustersTPC!=0)
+    chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
+
+  Double_t extCov[15];
+  track->GetExternalCovariance(extCov);
+
+  if(fPointOnITSLayer1Flag) {
+    if(!track->HasPointOnITSLayer(0)) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it doesn't have a point on the 1st ITS layer");
+      return kFALSE;
+    }
+  }
+  if(fPointOnITSLayer2Flag) {
+    if(!track->HasPointOnITSLayer(1)) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it doesn't have a point on the 2nd ITS layer");
+      return kFALSE;
+    }
+  }
+  if(fPointOnITSLayer3Flag) {
+    if(!track->HasPointOnITSLayer(2)) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it doesn't have a point on the 3rd ITS layer");
+      return kFALSE;
+    }
+  }
+  if(fPointOnITSLayer4Flag) {
+    if(!track->HasPointOnITSLayer(3)) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it doesn't have a point on the 4th ITS layer");
+      return kFALSE;
+    }
+  }
+  if(fPointOnITSLayer5Flag) {
+    if(!track->HasPointOnITSLayer(4)) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it doesn't have a point on the 5th ITS layer");
+      return kFALSE;
+    }
+  }
+  if(fPointOnITSLayer6Flag) {
+    if(!track->HasPointOnITSLayer(5)) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it doesn't have a point on the 6th ITS layer");
+      return kFALSE;
+    }
+  }
+  if(fMinITSClustersFlag) {
+    if(nClustersITS < fMinITSClusters) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has %d ITS points (min. requested: %d)",nClustersITS,fMinITSClusters);
+      return kFALSE;
+    }
+  }
+  if(fMaxChi2PerITSClusterFlag) {
+    if(chi2PerClusterITS > fMaxChi2PerITSCluster) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a chi2 per ITS cluster %lf (max. requested: %lf)",chi2PerClusterITS,fMaxChi2PerITSCluster);
+      return kFALSE; 
+    }
+  }
+  if(fMinTPCClustersFlag) {
+    if(nClustersTPC < fMinTPCClusters) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has %d TPC clusters (min. requested: %d)",nClustersTPC,fMinTPCClusters);
+      return kFALSE;
+    }
+  }
+  if(fMaxChi2PerTPCClusterFlag) {
+    if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a chi2 per TPC cluster %lf (max. requested: %lf)",chi2PerClusterTPC,fMaxChi2PerTPCCluster);
+      return kFALSE; 
+    }
+  }
+  if(fMaxCov11Flag) {
+    if(extCov[0] > fMaxCov11) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a cov11 value of %lf (max. requested: %lf)",extCov[0],fMaxCov11);
+      return kFALSE;
+    }
+  }
+  if(fMaxCov22Flag) {
+    if(extCov[2] > fMaxCov22) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a cov22 value of %lf (max. requested: %lf)",extCov[2],fMaxCov22);
+      return kFALSE;
+    }
+  }
+  if(fMaxCov33Flag) {
+    if(extCov[5] > fMaxCov33) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a cov33 value of %lf (max. requested: %lf)",extCov[5],fMaxCov33);
+      return kFALSE;
+    }
+  }
+  if(fMaxCov44Flag) {
+    if(extCov[9] > fMaxCov44) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a cov44 value of %lf (max. requested: %lf)",extCov[9],fMaxCov44);
+      return kFALSE;
+    }
+  }
+  if(fMaxCov55Flag) {
+    if(extCov[14] > fMaxCov55) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a cov55 value of %lf (max. requested: %lf)",extCov[14],fMaxCov55);
+      return kFALSE;
+    }
+  }
+  if(fMaxSigmaToVertexFlag) {
+    if(GetSigmaToVertex(track) > fMaxSigmaToVertex) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a %lf sigmas to vertex (max. requested: %lf)",GetSigmaToVertex(track),fMaxSigmaToVertex);
+      return kFALSE;
+    }
+  }
+  if(fMaxSigmaToVertexTPCFlag) {
+    if(GetSigmaToVertex(track) > fMaxSigmaToVertexTPC) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a %lf sigmas to vertex TPC (max. requested: %lf)",GetSigmaToVertex(track),fMaxSigmaToVertexTPC);
+      return kFALSE;
+    }
+  }
+  if(fMaxDCAXYFlag) { 
+    if(TMath::Abs(dca[0]) > fMaxDCAXY) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a value of dca(xy) of %lf (max. requested: %lf)",TMath::Abs(dca[0]),fMaxDCAXY);
+      return kFALSE;
+    }
+  }
+  if(fMaxDCAXYTPCFlag) { 
+    if(TMath::Abs(dca[0]) > fMaxDCAXYTPC) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a value of dca(xy) (TPC) of %lf (max. requested: %lf)",TMath::Abs(dca[0]),fMaxDCAXYTPC);
+      return kFALSE;
+    }
+  }
+  if(fMaxDCAZFlag) { 
+    if(TMath::Abs(dca[1]) > fMaxDCAZ) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a value of dca(z) of %lf (max. requested: %lf)",TMath::Abs(dca[1]),fMaxDCAZ);
+      return kFALSE;
+    }
+  }
+  if(fMaxDCAZTPCFlag) { 
+    if(TMath::Abs(dca[1]) > fMaxDCAZTPC) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a value of dca(z) (TPC) of %lf (max. requested: %lf)",TMath::Abs(dca[1]),fMaxDCAZTPC);
+      return kFALSE;
+    }
+  }
+  if(fMaxDCA3DFlag) { 
+    if(TMath::Abs(dca3D) > fMaxDCA3D) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a value of dca(3D) of %lf (max. requested: %lf)",TMath::Abs(dca3D),fMaxDCA3D);
+      return kFALSE;
+    }
+  }
+  if(fMaxDCA3DTPCFlag) { 
+    if(TMath::Abs(dca3D) > fMaxDCA3DTPC)  {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a value of dca(3D) (TPC) of %lf (max. requested: %lf)",TMath::Abs(dca3D),fMaxDCA3DTPC);
+      return kFALSE;
+    }
+  }
+  if(fMaxConstrainChi2Flag) {
+    if(track->GetConstrainedChi2() > 0) 
+      if(TMath::Log(track->GetConstrainedChi2()) > fMaxConstrainChi2)  {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a value of the constrained chi2 to the vertex of %lf (max. requested: %lf)",TMath::Log(track->GetConstrainedChi2()),fMaxConstrainChi2);
+      return kFALSE;
+      }
+  }
+  if(fMinTPCdEdxPointsFlag) {
+    if(track->GetTPCsignalN() < fMinTPCdEdxPoints) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has %d TPC points for the calculation of the energy loss (min. requested: %d)",track->GetTPCsignalN(),fMinTPCdEdxPoints);
+      return kFALSE;
+    }
+  }
+  if(fITSRefitFlag) {
+    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has no ITS refit flag");
+      return kFALSE;
+    }
+  }
+  if(fTPCRefitFlag) {
+    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has no TPC refit flag");
+      return kFALSE;
+    }
+  }
+  if(fESDpidFlag) {
+    if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has no ESD pid flag");
+      return kFALSE;
+    }
+  }
+  if(fTPCpidFlag) {
+    if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has no TPC pid flag");
+      return kFALSE;
+    }
+  }
+  if(fTOFpidFlag) {
+    if ((track->GetStatus() & AliESDtrack::kTOFpid) == 0) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has no TOF pid flag");
+      return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________//
 Float_t AliProtonAnalysisBase::GetSigmaToVertex(AliESDtrack* esdTrack) const {
   // Calculates the number of sigma to the vertex.
-  
   Float_t b[2];
   Float_t bRes[2];
   Float_t bCov[3];
@@ -560,6 +836,7 @@ const AliESDVertex* AliProtonAnalysisBase::GetVertex(AliESDEvent* esd,
   ((TH1F *)(fListVertexQA->At(0)))->Fill(vertex->GetXv());
   ((TH1F *)(fListVertexQA->At(2)))->Fill(vertex->GetYv());
   ((TH1F *)(fListVertexQA->At(4)))->Fill(vertex->GetZv());
+
   //check position
   if(TMath::Abs(vertex->GetXv()) > gVxMax) {
     if(fDebugMode)
@@ -579,6 +856,17 @@ const AliESDVertex* AliProtonAnalysisBase::GetVertex(AliESDEvent* esd,
   ((TH1F *)(fListVertexQA->At(1)))->Fill(vertex->GetXv());
   ((TH1F *)(fListVertexQA->At(3)))->Fill(vertex->GetYv());
   ((TH1F *)(fListVertexQA->At(5)))->Fill(vertex->GetZv());
+  ((TH1F *)(fListVertexQA->At(6)))->Fill(vertex->GetNContributors());
+
+  //check number of contributors
+  if(fMinNumOfContributors > 0) {
+    if(fMinNumOfContributors > vertex->GetNContributors()) {
+      if(fDebugMode)
+	Printf("GetVertex: Event rejected because it has %d number of contributors (requested minimum: %d)",vertex->GetNContributors(),fMinNumOfContributors);
+      
+      return 0;
+    }
+  }
   
   return vertex;
 }
@@ -852,22 +1140,22 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
   else if(fProtonPIDMode == kSigma1) {
     Double_t fAlephParameters[5];
     if(fAnalysisMC) {
-      fAlephParameters[0] = 4.23232575531564326e+00;
-      fAlephParameters[1] = 8.68482806165147636e+00;
-      fAlephParameters[2] = 1.34000000000000005e-05;
-      fAlephParameters[3] = 2.30445734159456084e+00;
-      fAlephParameters[4] = 2.25624744086878559e+00;
+      fAlephParameters[0] = 2.15898e+00/50.;
+      fAlephParameters[1] = 1.75295e+01;
+      fAlephParameters[2] = 3.40030e-09;
+      fAlephParameters[3] = 1.96178e+00;
+      fAlephParameters[4] = 3.91720e+00;
     }
     else {
-      fAlephParameters[0] = 50*0.76176e-1;
-      fAlephParameters[1] = 10.632;
-      fAlephParameters[2] = 0.13279e-4;
-      fAlephParameters[3] = 1.8631;
-      fAlephParameters[4] = 1.9479;
+      fAlephParameters[0] = 0.0283086;
+      fAlephParameters[1] = 2.63394e+01;
+      fAlephParameters[2] = 5.04114e-11;
+      fAlephParameters[3] = 2.12543e+00;
+      fAlephParameters[4] = 4.88663e+00;
     }
 
     AliESDpid *fESDpid = new AliESDpid(); 
-    fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0]/50.,fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+    fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
     
     Double_t nsigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kProton));
     if(nsigma <= fNSigma) 

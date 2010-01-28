@@ -1,6 +1,6 @@
 void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
 		       const char* esdAnalysisType = "Hybrid",
-		       const char* pidMode = "Bayesian") {
+		       const char* pidMode = "Sigma1") {
   //Int_t runNumberForOfflineTtrigger = -1) {
   //Macro to run the proton analysis tested for local, proof & GRID.
   //Local: Takes six arguments, the analysis mode, a boolean to define the ESD
@@ -32,15 +32,15 @@ void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
   TStopwatch timer;
   timer.Start();
   
-  runLocal("ESD", 
+  /*runLocal("ESD", 
 	   kAnalyzeMC,
 	   esdAnalysisType,
 	   pidMode, //runNumberForOfflineTtrigger,
-	   "/home/pchrist/ALICE/Baryons/Data/104070");
+	   "/home/pchrist/ALICE/Baryons/Data/104070");*/
   //runInteractive("ESD", kAnalyzeMC, esdAnalysisType, pidMode, "tag.xml");
   //runBatch("ESD", kAnalyzeMC, esdAnalysisType, pidMode, "wn.xml");  
-  //runProof("ESD", kAnalyzeMC, esdAnalysisType, pidMode,
-  //500000,0,"/COMMON/COMMON/LHC09d1_0.9TeV_0.5T#esdTree");
+  runProof("ESD", kAnalyzeMC, esdAnalysisType, pidMode,
+	   250000,0,"/COMMON/COMMON/LHC09d10_run104792-3#esdTree");
 
   timer.Stop();
   timer.Print();
