@@ -24,6 +24,7 @@ class TH2;
 class TF1;
 class TGraphErrors;
 class TObjArray;
+class TDatabasePDG;
 class AliTRDReconstructor;
 class AliTRDgeometry;
 class AliTRDrecoParam;
@@ -42,7 +43,8 @@ public:
     ,kMCtrackTPC =  6 // TPC track monitor
     ,kMCtrackTOF =  7 // TOF/HMPID track monitor
     ,kMCtrackTRD =  8 // TRD track monitor
-    ,kNhistos    =  9
+    ,kNviews     =  9 // total number of resolution views
+    ,kNprojs     = 53 // total number of projections for all views
   };
   enum ETRDresolutionSteer {
     kVerbose  = 0
@@ -73,8 +75,8 @@ public:
 
   void    Terminate(Option_t * opt);
   Bool_t  GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1);
-  Bool_t  GetGraphTrack(Float_t *bb, Int_t idx, Int_t ily);
-  Bool_t  GetGraphTrackTPC(Float_t *bb, Int_t selector);
+  Bool_t  GetGraphTrack(Float_t *bb, Int_t idx, Int_t ist, Int_t n=123456789, Bool_t kLEG=kFALSE);
+  Bool_t  GetGraphTrackTPC(Float_t *bb, Int_t idx, Int_t ist=0, Int_t n=123456789, Bool_t kLEG=kFALSE);
   
 private:
   AliTRDresolution(const AliTRDresolution&);
@@ -82,18 +84,23 @@ private:
   void    AdjustF1(TH1 *h, TF1 *f);
   void    GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
   Bool_t  Process(TH2* const h2, TF1 *f, Float_t k, TGraphErrors **g);
-  Bool_t  Process2D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  Process2D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1., Int_t gidx=-1);
   Bool_t  Process3D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  Process3Drange(ETRDresolutionPlot ip, Int_t idx=-1, Int_t gidx=-1, TF1 *f=0x0,  Float_t scale=1., Int_t zbin0=0, Int_t zbin1=0);
   Bool_t  Process3DL(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
-  Bool_t  Process4D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  Process4D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1., Int_t n=-1);
 
   UChar_t             fStatus;          // steer parameter of the task
-  UChar_t             fIdxPlot;         //! plot counter (internal)
-  static Char_t const *fgPerformanceName[kNhistos]; // name of performance plot
-  static UChar_t const fgNElements[kNhistos]; // number of componets per task
-  static Char_t const *fgAxTitle[46][4]; // Title for all ref histos
+  UShort_t            fIdxPlot;         //! plot counter (internal)
+  UShort_t            fIdxFrame;        //! frame counter (internal)
+  static Char_t const *fgPerformanceName[kNviews]; // name of performance plot
+  static UChar_t const fgNhistos[kNviews]; // number of histos per task
+  static UChar_t const fgNproj[kNviews]; // number of projections per task
+  static UChar_t const fgNcomp[kNprojs]; // number of projections per task
+  static Char_t const *fgAxTitle[kNprojs][4]; // Title for all ref histos
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
   AliTRDgeometry      *fGeo;            //! TRD geometry
+  TDatabasePDG        *fDBPDG;          //! PDG database
   TObjArray           *fGraphS;         //! result holder - sigma values
   TObjArray           *fGraphM;         //! result holder - mean values
 
@@ -103,6 +110,6 @@ private:
   TObjArray           *fMCcl;   //! cluster2mc calib
   TObjArray           *fMCtrklt;//! tracklet2mc calib
   
-  ClassDef(AliTRDresolution, 3) // TRD tracking resolution task
+  ClassDef(AliTRDresolution, 4) // TRD tracking resolution task
 };
 #endif

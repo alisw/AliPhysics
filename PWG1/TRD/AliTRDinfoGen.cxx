@@ -211,6 +211,7 @@ void AliTRDinfoGen::Exec(Option_t *){
     memset(trackMap, 0, sizeof(Bool_t) * nTracksMC);
   }
   
+  Double32_t *dedx(NULL); Int_t nSlices(0);
   Int_t nTRDout(0), nTRDin(0), nTPC(0), nclsTrklt;
   AliDebug(2, Form("Entry[%3d] Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC));
   AliESDtrack *esdTrack = NULL;
@@ -285,6 +286,16 @@ void AliTRDinfoGen::Exec(Option_t *){
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
     fTrackInfo->SetESDpid(p);
     fTrackInfo->SetESDpidQuality(esdTrack->GetTRDntrackletsPID());
+    if(!dedx){ 
+      nSlices = esdTrack->GetNumberOfTRDslices();
+      dedx=new Double32_t[nSlices];
+    }
+    Int_t in(0);
+    for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++)
+      for(Int_t is=0; is<nSlices; is++) 
+        dedx[in++]=esdTrack->GetTRDslice(il, is);
+    for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++) dedx[in++]=esdTrack->GetTRDmomentum(il);
+    fTrackInfo->SetSlices(in, dedx);
     fTrackInfo->SetLabel(label);
     fTrackInfo->SetNumberOfClustersRefit(esdTrack->GetNcls(2));
     // some other Informations which we may wish to store in order to find problematic cases
