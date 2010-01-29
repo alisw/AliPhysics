@@ -211,7 +211,7 @@ void AliTRDinfoGen::Exec(Option_t *){
     memset(trackMap, 0, sizeof(Bool_t) * nTracksMC);
   }
   
-  Double32_t *dedx(NULL); Int_t nSlices(0);
+  Double32_t dedx[100]; Int_t nSlices(0);
   Int_t nTRDout(0), nTRDin(0), nTPC(0), nclsTrklt;
   AliDebug(2, Form("Entry[%3d] Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC));
   AliESDtrack *esdTrack = NULL;
@@ -286,15 +286,14 @@ void AliTRDinfoGen::Exec(Option_t *){
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
     fTrackInfo->SetESDpid(p);
     fTrackInfo->SetESDpidQuality(esdTrack->GetTRDntrackletsPID());
-    if(!dedx){ 
-      nSlices = esdTrack->GetNumberOfTRDslices();
-      dedx=new Double32_t[nSlices];
-    }
+    if(!nSlices) nSlices = esdTrack->GetNumberOfTRDslices();
+    memset(dedx, 0, 100*sizeof(Double32_t));
     Int_t in(0);
     for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++)
       for(Int_t is=0; is<nSlices; is++) 
         dedx[in++]=esdTrack->GetTRDslice(il, is);
     for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++) dedx[in++]=esdTrack->GetTRDmomentum(il);
+    printf("n[%d] slices[%d]\n", in, nSlices);
     fTrackInfo->SetSlices(in, dedx);
     fTrackInfo->SetLabel(label);
     fTrackInfo->SetNumberOfClustersRefit(esdTrack->GetNcls(2));

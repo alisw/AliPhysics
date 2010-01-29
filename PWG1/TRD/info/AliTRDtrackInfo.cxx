@@ -45,8 +45,8 @@ ClassImp(AliTRDtrackInfo::AliESDinfo)
 AliTRDtrackInfo::AliTRDtrackInfo():
   TObject()
   ,fNClusters(0)
-  ,fTRDtrack(0x0)
-  ,fMC(0x0)
+  ,fTRDtrack(NULL)
+  ,fMC(NULL)
   ,fESD()
 {
   //
@@ -59,7 +59,7 @@ AliTRDtrackInfo::AliTRDtrackInfo():
 AliTRDtrackInfo::AliTRDtrackInfo(const AliTRDtrackInfo &trdInfo):
   TObject((const TObject&)trdInfo)  
   ,fNClusters(trdInfo.fNClusters)
-  ,fTRDtrack(0x0)
+  ,fTRDtrack(NULL)
   ,fMC(new AliMCinfo(*trdInfo.fMC))
   ,fESD(trdInfo.fESD)
 {
@@ -110,8 +110,8 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   ,fTPCncls(0)
   ,fTRDpidQuality(0)
   ,fTRDnSlices(0)
-  ,fTRDslices(0x0)
-  ,fOP(0x0)
+  ,fTRDslices(NULL)
+  ,fOP(NULL)
 {
   //
   // Constructor
@@ -128,8 +128,8 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   ,fTPCncls(esd.fTPCncls)
   ,fTRDpidQuality(esd.fTRDpidQuality)
   ,fTRDnSlices(esd.fTRDnSlices)
-  ,fTRDslices(0x0)
-  ,fOP(0x0)
+  ,fTRDslices(NULL)
+  ,fOP(NULL)
 {
   //
   // Constructor
@@ -166,7 +166,7 @@ AliTRDtrackInfo::AliMCinfo::~AliMCinfo()
   fNTrackRefs = 0;
   for(Int_t ien = 0; ien < 12; ien++){
     if(fTrackRefs[ien]) delete fTrackRefs[ien];
-    fTrackRefs[ien] = 0x0;
+    fTrackRefs[ien] = NULL;
   }
 }
 
@@ -179,10 +179,10 @@ AliTRDtrackInfo::AliESDinfo::~AliESDinfo()
 
   if(fTRDnSlices){
     delete [] fTRDslices;
-    fTRDslices = 0x0;
+    fTRDslices = NULL;
     fTRDnSlices = 0;
   }
-  if(fOP) delete fOP; fOP = 0x0;
+  if(fOP) delete fOP; fOP = NULL;
 }
 
 
@@ -231,7 +231,7 @@ AliTRDtrackInfo::AliMCinfo& AliTRDtrackInfo::AliMCinfo::operator=(const AliMCinf
     if((*jtr)){
       if(!(*itr)) (*itr) = new AliTrackReference(*(*jtr));
       else new(&(*itr)) AliTrackReference(*(*jtr));
-    } else (*itr) = 0x0;
+    } else (*itr) = NULL;
   }
   return *this;
 }
@@ -247,7 +247,7 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
   fStatus      = esd.fStatus; 
   fTRDpidQuality = esd.fTRDpidQuality;
   fTRDnSlices  = esd.fTRDnSlices;
-  fTRDslices   = 0x0;
+  fTRDslices   = NULL;
 
   memcpy(fTRDr, esd.fTRDr, AliPID::kSPECIES*sizeof(Double32_t));
 
@@ -258,7 +258,7 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
   if(esd.fOP){
     if(fOP) new(fOP) AliExternalTrackParam(esd.fOP);
     else fOP = new AliExternalTrackParam(esd.fOP);
-  } else fOP = 0x0;
+  } else fOP = NULL;
 
   return *this;
 }
@@ -271,8 +271,8 @@ void AliTRDtrackInfo::Delete(const Option_t *)
   //
 
   fNClusters  = 0;
-  if(fMC) delete fMC; fMC = 0x0;
-  if(fTRDtrack) delete fTRDtrack; fTRDtrack = 0x0;
+  if(fMC) delete fMC; fMC = NULL;
+  if(fTRDtrack) delete fTRDtrack; fTRDtrack = NULL;
 }
 
 //___________________________________________________
@@ -312,8 +312,8 @@ AliTrackReference* AliTRDtrackInfo::GetTrackRef(Int_t idx) const
 //
 // Returns a track reference
 //
-  if(!fMC) return 0x0;
-  return (idx>=0 && idx < 12) ? fMC->fTrackRefs[idx] : 0x0;
+  if(!fMC) return NULL;
+  return (idx>=0 && idx < 12) ? fMC->fTrackRefs[idx] : NULL;
 }
 
 //___________________________________________________
@@ -322,14 +322,14 @@ AliTrackReference* AliTRDtrackInfo::GetTrackRef(AliTRDseedV1* const tracklet) co
 //
 // Returns a track reference
 //
-  if(!fMC) return 0x0;
+  if(!fMC) return NULL;
   Double_t cw = AliTRDgeometry::CamHght() + AliTRDgeometry::CdrHght();
   AliTrackReference * const* jtr = &(fMC->fTrackRefs[0]);
   for(Int_t itr = 0; itr < fMC->fNTrackRefs; itr++, ++jtr){
     if(!(*jtr)) break;   
     if(TMath::Abs(tracklet->GetX0() - (*jtr)->LocalX()) < cw) return (*jtr);
   }
-  return 0x0;
+  return NULL;
 }
 
 //___________________________________________________
@@ -342,7 +342,7 @@ Int_t AliTRDtrackInfo::GetNumberOfClusters() const
   Int_t n = 0;
   if(!fTRDtrack) return 0;
   if(fTRDtrack->GetNumberOfTracklets() == 0) return n;
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   for(Int_t ip=0; ip<6; ip++){
     if(!(tracklet = const_cast<AliTRDseedV1 *>(fTRDtrack->GetTracklet(ip)))) continue;
     n+=tracklet->GetN();
@@ -370,7 +370,7 @@ Int_t AliTRDtrackInfo::GetNTracklets() const
   // Return the number of tracklets
   //
 
-  if(!fTRDtrack) return 0x0;
+  if(!fTRDtrack) return NULL;
   return fTRDtrack->GetNumberOfTracklets();
 }
 
@@ -380,16 +380,15 @@ void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
   //
   // Set the slices
   //
-
   if(fESD.fTRDnSlices != n){
     fESD.fTRDnSlices = 0;
     delete [] fESD.fTRDslices;
-    fESD.fTRDslices = 0x0;
+    fESD.fTRDslices = NULL;
   }
 
   if(!fESD.fTRDnSlices){
     fESD.fTRDnSlices = n;
-    fESD.fTRDslices = new Double32_t[n];
+    fESD.fTRDslices = new Double32_t[fESD.fTRDnSlices];
   }
 
   memcpy(fESD.fTRDslices, s, n*sizeof(Double32_t));
@@ -409,7 +408,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
   status = 0;
   Double_t cw = AliTRDgeometry::CamHght() + AliTRDgeometry::CdrHght();
   Int_t nFound = 0;
-  AliTrackReference *tr[2] = {0x0, 0x0};
+  AliTrackReference *tr[2] = {NULL, NULL};
   AliTrackReference * const* jtr = &fTrackRefs[0];
   for(Int_t itr = 0; itr < fNTrackRefs; itr++, ++jtr){
     if(!(*jtr)) break;
@@ -420,7 +419,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
     if(nFound == 2) break;
   } 
   if(nFound < 2){ 
-    AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Missing track ref x0[%6.3f] nref[%d]\n", x0, nFound));
+    AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Missing track ref x0[%6.3f] nref[%d]", x0, nFound));
     if(!nFound) SETBIT(status, 0);
     else SETBIT(status, 1);
     return kFALSE;
@@ -483,7 +482,7 @@ void AliTRDtrackInfo::AliMCinfo::PropagateKalman(Double_t dx[kNTrackRefs], Doubl
   tt.SetMass(pdg->Mass());
   
   Double_t x0 = tr->LocalX();
-  const Double_t *cc = 0x0;
+  const Double_t *cc = NULL;
   for(Int_t itr=1, ip=0; itr<fNTrackRefs; itr++){
     tr = fTrackRefs[itr];
     if(!AliTRDtrackerV1::PropagateToX(tt, tr->LocalX(), step)) continue;
