@@ -1,7 +1,7 @@
 void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
 		       const char* esdAnalysisType = "Hybrid",
-		       const char* pidMode = "Sigma1") {
-  //Int_t runNumberForOfflineTtrigger = -1) {
+		       const char* pidMode = "Sigma1",
+		       Bool_t kUseOnlineTrigger = kTRUE) {
   //Macro to run the proton analysis tested for local, proof & GRID.
   //Local: Takes six arguments, the analysis mode, a boolean to define the ESD
   //       analysis of MC data, the type of the ESD analysis, the PID mode, 
@@ -35,11 +35,11 @@ void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
   /*runLocal("ESD", 
 	   kAnalyzeMC,
 	   esdAnalysisType,
-	   pidMode, //runNumberForOfflineTtrigger,
+	   pidMode, kUseOnlineTrigger,
 	   "/home/pchrist/ALICE/Baryons/Data/104070");*/
-  //runInteractive("ESD", kAnalyzeMC, esdAnalysisType, pidMode, "tag.xml");
-  //runBatch("ESD", kAnalyzeMC, esdAnalysisType, pidMode, "wn.xml");  
-  runProof("ESD", kAnalyzeMC, esdAnalysisType, pidMode,
+  //runInteractive("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, "tag.xml");
+  //runBatch("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, "wn.xml");  
+  runProof("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger,
 	   250000,0,"/COMMON/COMMON/LHC09d10_run104792-3#esdTree");
 
   timer.Stop();
@@ -51,7 +51,7 @@ void runLocal(const char* mode = "ESD",
 	      Bool_t kAnalyzeMC = kTRUE,
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
-	      //UInt_t runNumberForOfflineTtrigger = -1,
+	      Bool_t kUseOnlineTrigger = kTRUE,
 	      const char* path = "/home/pchrist/ALICE/Alien/Tutorial/November2007/Tags") {
   TString smode = mode;
   TString outputFilename = "Protons."; outputFilename += mode;
@@ -97,8 +97,8 @@ void runLocal(const char* mode = "ESD",
   gROOT->LoadMacro("configProtonAnalysis.C");
   AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,kAnalyzeMC,
 							analysisType,
-							pidMode);
-							//runNumberForOfflineTtrigger);
+							pidMode,
+							kUseOnlineTrigger);
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisManager");
@@ -140,7 +140,7 @@ void runInteractive(const char* mode = "ESD",
 		    Bool_t kAnalyzeMC = kTRUE,
 		    const char* analysisType = 0x0,
 		    const char* pidMode = 0x0,
-		    //UInt_t runNumberForOfflineTtrigger = -1,
+		    Bool_t kUseOnlineTrigger = kTRUE,
 		    const char* collectionName = "tag.xml") {
   gSystem->Load("libProofPlayer.so");
 
@@ -194,7 +194,8 @@ void runInteractive(const char* mode = "ESD",
   gROOT->LoadMacro("configProtonAnalysis.C");
   AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,kAnalyzeMC,
 							analysisType,
-							pidMode);
+							pidMode,
+							kUseOnlineTrigger);
   //runNumberForOfflineTtrigger);
   //____________________________________________//
   // Make the analysis manager
@@ -237,7 +238,7 @@ void runBatch(const char* mode = "ESD",
 	      Bool_t kAnalyzeMC = kTRUE,
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
-	      //UInt_t runNumberForOfflineTtrigger = -1,
+	      Bool_t kUseOnlineTrigger = kTRUE,
 	      const char *collectionfile = "wn.xml") {
   TString smode = mode;
   TString outputFilename = "Protons."; outputFilename += mode;
@@ -281,7 +282,8 @@ void runBatch(const char* mode = "ESD",
   gROOT->LoadMacro("configProtonAnalysis.C");
   AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,kAnalyzeMC,
 							analysisType,
-							pidMode);
+							pidMode,
+							kUseOnlineTrigger);
   //runNumberForOfflineTtrigger);
   //____________________________________________//
   // Make the analysis manager
@@ -324,7 +326,7 @@ void runProof(const char* mode = "ESD",
 	      Bool_t kAnalyzeMC = kTRUE,
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
-	      //UInt_t runNumberForOfflineTtrigger = -1,
+	      Bool_t kUseOnlineTrigger = kTRUE,
 	      Int_t stats = 0, Int_t startingPoint = 0,
 	      const char* dataset = 0x0) {  
   TString smode = mode;
@@ -359,8 +361,8 @@ void runProof(const char* mode = "ESD",
   gROOT->LoadMacro("configProtonAnalysis.C");
   AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,kAnalyzeMC,
 							analysisType,
-							pidMode);
-							//runNumberForOfflineTtrigger);
+							pidMode,
+							kUseOnlineTrigger);
   //____________________________________________//
 
   //____________________________________________//

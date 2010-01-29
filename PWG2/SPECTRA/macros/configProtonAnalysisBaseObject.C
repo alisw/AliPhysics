@@ -1,7 +1,8 @@
 AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "ESD",
 						   Bool_t kAnalyzeMC = kTRUE,
 						   const char* esdAnalysisType = "Hybrid",
-						   const char* pidMode = "Bayesian") {
+						   const char* pidMode = "Bayesian",
+						   Bool_t kUseOnlineTrigger = kFALSE) {
   //Function to setup the AliProtonAnalysisBase object and return it
   AliProtonAnalysisBase *baseAnalysis = new AliProtonAnalysisBase();
   //baseAnalysis->SetDebugMode();
@@ -9,6 +10,9 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
   if(analysisLevel == "ESD") {
     if(kAnalyzeMC)
       baseAnalysis->SetTriggerMode(AliProtonAnalysisBase::kMB2);
+    //use the offline trigger
+    if(kUseOnlineTrigger) baseAnalysis->UseOnlineTrigger();
+
     //use the offline trigger
     baseAnalysis->OfflineTriggerInit();
 
@@ -66,7 +70,7 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
     default:
       break;
     }
-    baseAnalysis->SetAcceptedVertexDiamond(2.,2.,15.);
+    baseAnalysis->SetAcceptedVertexDiamond(1.,1.,10.);
     baseAnalysis->SetMinNumOfContributors(3);
     baseAnalysis->SetEtaMode();
     switch(pidMode) {
