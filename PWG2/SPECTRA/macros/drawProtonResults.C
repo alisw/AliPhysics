@@ -56,8 +56,8 @@ void drawResults(const char* analysisOutput) {
 
   TCanvas *cEta = new TCanvas("cEta","Eta",100,0,600,400);
   cEta->SetFillColor(10); cEta->SetHighLightColor(10); cEta->Divide(2,1);
-  cEta->cd(1); gHistYProtons->Draw("E");
-  cEta->cd(2); gHistYAntiProtons->Draw("E");
+  cEta->cd(1); gHistYProtons->Draw("E"); PrintYields(gHistYProtons);
+  cEta->cd(2); gHistYAntiProtons->Draw("E"); PrintYields(gHistYAntiProtons);
 
   TCanvas *cPt = new TCanvas("cPt","Pt",100,200,600,400);
   cPt->SetFillColor(10); cPt->SetHighLightColor(10); cPt->Divide(2,1);
@@ -193,6 +193,16 @@ void drawQAPlots(const char* analysisOutput) {
   TH2F *gHistEtaPhiAntiProtons = dynamic_cast<TH2F *>(fQA2DList->At(11));
   gHistEtaPhiAntiProtons->SetStats(kFALSE);
 
+  //2D dca vs pT - accepted protons & antiprotons
+  TH2F *gHistDCAxyPtProtons = dynamic_cast<TH2F *>(fQA2DList->At(12));
+  gHistDCAxyPtProtons->SetStats(kFALSE);
+  TH2F *gHistDCAzPtProtons = dynamic_cast<TH2F *>(fQA2DList->At(13));
+  gHistDCAzPtProtons->SetStats(kFALSE);
+  TH2F *gHistDCAxyPtAntiProtons = dynamic_cast<TH2F *>(fQA2DList->At(14));
+  gHistDCAxyPtAntiProtons->SetStats(kFALSE);
+  TH2F *gHistDCAzPtAntiProtons = dynamic_cast<TH2F *>(fQA2DList->At(15));
+  gHistDCAzPtAntiProtons->SetStats(kFALSE);
+
   //__________________________________________________//
   TCanvas *cdEdx = new TCanvas("cdEdx","dE/dx (TPC)",0,0,700,400);
   cdEdx->SetFillColor(10); cdEdx->SetHighLightColor(10); cdEdx->Divide(2,1);
@@ -206,6 +216,14 @@ void drawQAPlots(const char* analysisOutput) {
   cEtaPhi->SetHighLightColor(10); cEtaPhi->Divide(2,1);
   cEtaPhi->cd(1); gHistEtaPhiProtons->Draw("colz");
   cEtaPhi->cd(2); gHistEtaPhiAntiProtons->Draw("colz");
+
+  TCanvas *cDCAPt = new TCanvas("cDCAPt","pT-dca",0,0,700,700);
+  cDCAPt->SetFillColor(10); 
+  cDCAPt->SetHighLightColor(10); cDCAPt->Divide(2,2);
+  cDCAPt->cd(1); gHistDCAxyPtProtons->Draw("colz");
+  cDCAPt->cd(2); gHistDCAzPtProtons->Draw("colz");
+  cDCAPt->cd(3); gHistDCAxyPtAntiProtons->Draw("colz");
+  cDCAPt->cd(4); gHistDCAzPtAntiProtons->Draw("colz");
 
   /*TCanvas *cEtaPhiNPointsdEdx = new TCanvas("cEtaPhiNPointsdEdx",
 					    "eta-phi-NPoints(dE/dx)",
@@ -550,4 +568,19 @@ void drawQAPlots(const char* analysisOutput) {
   TCanvas *cVertexNContributors = new TCanvas("cVertexNContributors",
 					      "Vertex QA",0,0,400,400);
   gHistNumberOfContributors->Draw();
+}
+
+//________________________________________________________//
+void PrintYields(TH1 *h) {
+  Double_t sum = 0.0, error = 0.0;
+  for(Int_t iBin = 1; iBin <= h->GetNbinsX(); iBin++) {
+    sum += h->GetBinContent(iBin);
+    error += TMath::Power(h->GetBinError(iBin),2);
+  }
+  error = TMath::Sqrt(error);
+
+  Printf("==================================");
+  Printf("Histogram: %s",h->GetName());
+  Printf("Yields: %lf - %lf",sum,error);
+  Printf("==================================");
 }
