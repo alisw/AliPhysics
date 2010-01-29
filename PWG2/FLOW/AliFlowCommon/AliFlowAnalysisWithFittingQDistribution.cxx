@@ -954,8 +954,12 @@ void AliFlowAnalysisWithFittingQDistribution::PrintFinalResultsForIntegratedFlow
  }
  
  // shortcut for the harmonic:
- Int_t n = (Int_t)(fCommonHists->GetHarmonic())->GetBinContent(1); 
-
+ Int_t n = 0;
+ if(fCommonHists->GetHarmonic())
+ {
+  n = (Int_t)(fCommonHists->GetHarmonic())->GetBinContent(1); 
+ }
+ 
  // printing:
  cout<<" "<<endl;
  cout<<"***************************************"<<endl;

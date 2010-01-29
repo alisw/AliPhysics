@@ -57,6 +57,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void BookEverythingForNestedLoops();   
     virtual void StoreIntFlowFlags();
     virtual void StoreDiffFlowFlags();
+    virtual void StoreFlagsForDistributions();   
     virtual void StoreHarmonic();
   // 2.) method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
@@ -66,25 +67,30 @@ class AliFlowAnalysisWithQCumulants{
     virtual void ResetEventByEventQuantities();
     // 2b.) integrated flow:
     virtual void CalculateIntFlowCorrelations(); 
+    virtual void CalculateIntFlowCorrelationsUsingParticleWeights();
     virtual void CalculateIntFlowProductOfCorrelations();
     virtual void CalculateIntFlowSumOfEventWeights();
     virtual void CalculateIntFlowSumOfProductOfEventWeights();
-    virtual void CalculateIntFlowCorrectionsForNUASinTerms();  
     virtual void CalculateIntFlowCorrectionsForNUACosTerms();
+    virtual void CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights();
+    virtual void CalculateIntFlowCorrectionsForNUASinTerms();  
+    virtual void CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights();    
     // ...  
-    virtual void CalculateIntFlowCorrelationsUsingParticleWeights();
     virtual void CalculateWeightedQProductsForIntFlow();
     virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent); 
     virtual void EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent); 
-    virtual void EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple* const anEvent);  
+    virtual void EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple* const anEvent); 
+    virtual void EvaluateIntFlowCorrectionsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent);
     // 2c.) differential flow:
     virtual void CalculateDiffFlowCorrelations(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowCorrelationsUsingParticleWeights(TString type, TString ptOrEta); // type = RP or POI 
     virtual void CalculateDiffFlowProductOfCorrelations(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowSumOfEventWeights(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowSumOfProductOfEventWeights(TString type, TString ptOrEta); // type = RP or POI
-    virtual void CalculateDiffFlowCorrectionsForNUASinTerms(TString type, TString ptOrEta);  
     virtual void CalculateDiffFlowCorrectionsForNUACosTerms(TString type, TString ptOrEta);
+    virtual void CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights(TString type, TString ptOrEta);
+    virtual void CalculateDiffFlowCorrectionsForNUASinTerms(TString type, TString ptOrEta);  
+    virtual void CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights(TString type, TString ptOrEta);  
     // ...
     //virtual void CalculateCorrelationsForDifferentialFlow2D(TString type); // type = RP or POI
     //virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms(TString type); // type = RP or POI  
@@ -92,6 +98,9 @@ class AliFlowAnalysisWithQCumulants{
     virtual void EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
     virtual void EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta); 
     virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
+    virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
+    // 2d.) distributions of correlations:
+    virtual void StoreDistributionsOfCorrelations();
   // 3.) method Finish() and methods called within Finish():
   virtual void Finish();
     // 3a.) integrated flow:
@@ -268,6 +277,22 @@ class AliFlowAnalysisWithQCumulants{
   void SetDiffFlowCorrectionTermsForNUAHist(TH1D* const dfctfnh, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fDiffFlowCorrectionTermsForNUAHist[i][j][k][l] = dfctfnh;};
   TH1D* GetDiffFlowCorrectionTermsForNUAHist(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowCorrectionTermsForNUAHist[i][j][k][l];};  
   
+  // 5.) distributions of correlations:
+  // flags:
+  void SetStoreDistributions(Bool_t const storeDistributions) {this->fStoreDistributions = storeDistributions;};
+  Bool_t GetStoreDistributions() const {return this->fStoreDistributions;};
+  // profile:
+  void SetDistributionsFlags(TProfile* const distributionsFlags) {this->fDistributionsFlags = distributionsFlags;};
+  TProfile* GetDistributionsFlags() const {return this->fDistributionsFlags;};  
+  // histograms:
+  void SetDistributions(TH1D* const distributions, Int_t const i) {this->fDistributions[i] = distributions;};
+  TH1D* GetDistributions(Int_t i) const {return this->fDistributions[i];};  
+  // min and max values of correlations (ci is correlations index [0=<2>,1=<4>,2=<6>,3=<8>]):
+  void SetMinValueOfCorrelation(Int_t const ci, Double_t const minValue) {this->fMinValueOfCorrelation[ci] = minValue;};
+  Double_t GetMinValueOfCorrelation(Int_t ci) const {return this->fMinValueOfCorrelation[ci];};
+  void SetMaxValueOfCorrelation(Int_t const ci, Double_t const maxValue) {this->fMaxValueOfCorrelation[ci] = maxValue;};
+  Double_t GetMaxValueOfCorrelation(Int_t ci) const {return this->fMaxValueOfCorrelation[ci];};
+    
   // x.) debugging and cross-checking:
   void SetNestedLoopsList(TList* const nllist) {this->fNestedLoopsList = nllist;};
   TList* GetNestedLoopsList() const {return this->fNestedLoopsList;}; 
@@ -351,7 +376,7 @@ class AliFlowAnalysisWithQCumulants{
   //  3c.) event-by-event quantities:
   TMatrixD *fReQ; // fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
-  TMatrixD *fSMpk; // fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p}
+  TMatrixD *fSMpk; // fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
   TH1D *fIntFlowCorrelationsEBE; // 1st bin: <2>, 2nd bin: <4>, 3rd bin: <6>, 4th bin: <8>
   TH1D *fIntFlowEventWeightsForCorrelationsEBE; // 1st bin: eW_<2>, 2nd bin: eW_<4>, 3rd bin: eW_<6>, 4th bin: eW_<8>
   TH1D *fIntFlowCorrelationsAllEBE; // to be improved (add comment)
@@ -429,8 +454,12 @@ class AliFlowAnalysisWithQCumulants{
   TProfile2D *fCorrectionTermsPro[2][2][2][2][2]; // [0=RP,1=POI][0=pW not used,1=pW used][0=e eW,1=ne eW][0=sin terms,1=cos terms][corr. terms' index]
         
   // 5.) distributions:
-  TList *fDistributionsList; // list to hold all distributions
-  TH1D *fDistributions[2][2][4]; // [0=pWeights not used,1=pWeights used][0=exact eWeights,1=non-exact eWeights][0=<2>,1=<4>,2=<6>,3=<8>]
+  TList *fDistributionsList; // list to hold all distributions of correlations
+  TProfile *fDistributionsFlags; // profile to hold all flags for distributions of correlations
+  Bool_t fStoreDistributions; // store or not distributions of correlations
+  TH1D *fDistributions[4]; // [0=distribution of <2>,1=distribution of <4>,2=distribution of <6>,3=distribution of <8>]
+  Double_t fMinValueOfCorrelation[4]; // min values of <2>, <4>, <6> and <8>
+  Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
     
   // x.) debugging and cross-checking:
   TList *fNestedLoopsList; // list to hold all profiles filled with nested loops

@@ -3,23 +3,27 @@
 
 enum libModes {mLocal,mLocalSource};
 
-void redoFinish(TString type="", Int_t mode=mLocal)
+void redoFinish(TString type="ESD", Int_t mode=mLocal)
 {
  // type: type of analysis can be ESD, AOD, MC, ESDMC0, ESDMC1
  //       (if type="" output files are from MC simulation (default))
  // mode: if mode = mLocal: analyze data on your computer using aliroot
  //       if mode = mLocalSource: analyze data on your computer using root + source files
 
- TString mergedFileName = "mergedAnalysisResults.root"; // hardwired name of merged, large statistics file obtained with macro mergeOutput.C 
- TString outputFileName = "AnalysisResults.root"; // final output file name holding final results for large statistics sample
+ // Name of merged, large statistics file obtained with macro mergeOutput.C: 
+ TString mergedFileName = "mergedAnalysisResults.root";
+ // Final output file name holding final results for large statistics sample:
+ TString outputFileName = "AnalysisResults.root"; 
  
  const Int_t nMethods = 10;
  TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP"};
  
- // load needed libraries:                       
+ // Load needed libraries:                       
  LoadLibrariesRF(mode);  
-  
- // access the merged, large statistics file obtained with macro mergeOutput.C:
+   
+ // Accessing the merged, large statistics file obtained with macro mergeOutput.C.
+ // On this file the flow analysis will be redone, its content modified to store
+ // the correct final results and eventually renamed into TString outputFileName.
  TString pwd(gSystem->pwd());
  pwd+="/";
  pwd+=mergedFileName.Data();
@@ -28,51 +32,48 @@ void redoFinish(TString type="", Int_t mode=mLocal)
  {
   cout<<"WARNING: You do not have a merged output file:"<<endl;
   cout<<"         "<<pwd.Data()<<endl;
+  cout<<endl;
+  cout<<"In order to get that file use macro mergeOutput.C first."<<endl;
+  cout<<endl;
   exit(0);
  } else 
    {
-    mergedFile = TFile::Open(pwd.Data(),"READ");
+    // Create temporarily copy of "mergedAnalysisResults.root":
+    TSystemFile *fileTemp = new TSystemFile(mergedFileName.Data(),".");
+    fileTemp->Copy("mergedAnalysisResultsTemp.root");
+    delete fileTemp;
+    // Access merged file:
+    mergedFile = TFile::Open(pwd.Data(),"UPDATE");
    }
-
- // access from mergedFile the merged files for each method and from them the lists holding histograms:
+   
+ // Access from mergedFile the merged files for each method and from them the lists holding histograms:
  TString fileName[nMethods]; 
  TDirectoryFile *dirFile[nMethods] = {NULL}; 
  TString listName[nMethods]; 
  TList *list[nMethods] = {NULL};
  for(Int_t i=0;i<nMethods;i++)
  {
-  // form a file name for each method:
+  // Form a file name for each method:
   fileName[i]+="output";
   fileName[i]+=method[i].Data();
   fileName[i]+="analysis";
   fileName[i]+=type.Data();
-  // access this file:
+  // Access this file:
   dirFile[i] = (TDirectoryFile*)mergedFile->FindObjectAny(fileName[i].Data());
-  // form a list name for each method:
+  // Form a list name for each method:
   listName[i]+="cobj";
   listName[i]+=method[i].Data();
-  // access this list and close the file:
+  // Access this list:
   if(dirFile[i])
   {
    dirFile[i]->GetObject(listName[i].Data(),list[i]);
-   dirFile[i]->Close();
-  }
- } 
- 
- // close the mergedFile:
- mergedFile->Close();
- 
- // create a new file which will hold the final results of all methods:
- TFile *outputFile = new TFile(outputFileName.Data(),"RECREATE");
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileName[i].Data()<<".root !!!!"<<endl;
+    }
+ } // End of for(Int_t i=0;i<nMethods;i++)
 
- // create a new file for each method wich will hold list with final results:
- TDirectoryFile *dirFileFinal[nMethods] = {NULL};
- for(Int_t i=0;i<nMethods;i++)
- {
-  if(dirFile[i]) dirFileFinal[i] = new TDirectoryFile(fileName[i].Data(),fileName[i].Data());
- } 
-
- // redo finish for each method (REMARK: this implementation can be dramatically improved!):
+ // Redo finish for each method (REMARK: this implementation can be dramatically improved!):
  // MCEP:
  for(Int_t i=0;i<nMethods;i++)
  {
@@ -81,8 +82,8 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    AliFlowAnalysisWithMCEventPlane* mcep = new AliFlowAnalysisWithMCEventPlane();
    mcep->GetOutputHistograms(list[i]);
    mcep->Finish();
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   } 
   // SP:
   else if(list[i] && strcmp(list[i]->GetName(),"cobjSP")==0)
@@ -90,8 +91,8 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
    sp->GetOutputHistograms(list[i]);
    sp->Finish();
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   } 
   // GFC:
   else if(list[i] && strcmp(list[i]->GetName(),"cobjGFC")==0)
@@ -99,8 +100,8 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
    gfc->GetOutputHistograms(list[i]);
    gfc->Finish();
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   } 
   // QC:
   else if(list[i] && strcmp(list[i]->GetName(),"cobjQC")==0)
@@ -108,8 +109,8 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
    qc->GetOutputHistograms(list[i]);
    qc->Finish();
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   } 
   // FQD:
   else if(list[i] && strcmp(list[i]->GetName(),"cobjFQD")==0)
@@ -117,8 +118,8 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    AliFlowAnalysisWithFittingQDistribution* fqd = new AliFlowAnalysisWithFittingQDistribution();
    fqd->GetOutputHistograms(list[i]);
    fqd->Finish(kTRUE);
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   }
   // LYZ1SUM:
   else if(list[i] && strcmp(list[i]->GetName(),"cobjLYZ1SUM")==0)
@@ -128,8 +129,8 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    lyz1sum->SetUseSum(kTRUE);       
    lyz1sum->GetOutputHistograms(list[i]);
    lyz1sum->Finish();
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   } 
   // LYZ2SUM:
   else if(list[i] && strcmp(list[i]->GetName(),"cobjLYZ2SUM")==0)
@@ -139,8 +140,8 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    lyz2sum->SetUseSum(kTRUE);       
    lyz2sum->GetOutputHistograms(list[i]);
    lyz2sum->Finish();
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   }
   // LYZ1PROD:
   else if(list[i] && strcmp(list[i]->GetName(),"cobjLYZ1PROD")==0)
@@ -150,8 +151,8 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    lyz1prod->SetUseSum(kFALSE);       
    lyz1prod->GetOutputHistograms(list[i]);
    lyz1prod->Finish();
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   }    
   // LYZ2PROD:
   else if(list[i] && strcmp(list[i]->GetName(),"cobjLYZ2PROD")==0)
@@ -161,8 +162,8 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    lyz2prod->SetUseSum(kFALSE);       
    lyz2prod->GetOutputHistograms(list[i]);
    lyz2prod->Finish();
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   }
   // LYZEP:
   else if(list[i] && strcmp(list[i]->GetName(),"cobjLYZEP")==0)
@@ -170,16 +171,24 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    AliFlowAnalysisWithLYZEventPlane* lyzep = new AliFlowAnalysisWithLYZEventPlane();
    lyzep->GetOutputHistograms(list[i]);
    lyzep->Finish();
-   dirFileFinal[i]->Add(list[i]);
-   dirFileFinal[i]->Write(dirFileFinal[i]->GetName(),TObject::kSingleKey);
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   }                
- } // end of for(Int_t i=0;i<nMethods;i++)
+ } // End of for(Int_t i=0;i<nMethods;i++)
 
- // close the final output file:
- outputFile->Close();
- delete outputFile;
+ // Close the final output file:
+ mergedFile->Close();
+ delete mergedFile;
+ 
+ // Giving the final names:
+ TSystemFile *outputFileFinal = new TSystemFile(mergedFileName.Data(),".");
+ outputFileFinal->Rename(outputFileName.Data());
+ delete outputFileFinal; 
+ TSystemFile *mergedFileFinal = new TSystemFile("mergedAnalysisResultsTemp.root",".");
+ mergedFileFinal->Rename(mergedFileName.Data());
+ delete mergedFileFinal;
      
-} // end of void reCallFinish(Int_t mode=mLocal)
+} // End of void redoFinish(Int_t mode=mLocal)
  
 void LoadLibrariesRF(const libModes mode) {
   
