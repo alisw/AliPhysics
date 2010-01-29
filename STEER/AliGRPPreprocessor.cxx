@@ -610,29 +610,41 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 				grpobj->SetBeamEnergyIsSqrtSHalfGeV(kTRUE);
 			}
 			
+			Double_t timeBeamMode = 0;
+			Double_t timeMachineMode = 0;
 			// BeamMode
 			TObjArray* beamModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[2]);
-			AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
-			TObjString* beamModeString = beamMode->GetStringArray(0);
-			Double_t timeBeamMode = 0;
-			if (beamModeArray->GetEntries()!=1){
-				timeBeamMode = beamMode->GetTimeStamp();
-				AliWarning(Form("The beam mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeBeamMode));
+			if (beamModeArray->GetEntries()==0){
+				AliInfo("No Beam Mode found, setting it to UNKNOWN");
+				grpobj->SetLHCState("UNKNOWN");
 			}
-			AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
-			grpobj->SetLHCState(beamModeString->String());
+			else{
+				AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
+				TObjString* beamModeString = beamMode->GetStringArray(0);
+				if (beamModeArray->GetEntries()>1){
+					timeBeamMode = beamMode->GetTimeStamp();
+					AliWarning(Form("The beam mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeBeamMode));
+				}
+				AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
+				grpobj->SetLHCState(beamModeString->String());
+			}
 			
 			// MachineMode
 			TObjArray* machineModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[1]);
-			AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
-			TObjString* machineModeString = machineMode->GetStringArray(0);
-			Double_t timeMachineMode = 0;
-			if (machineModeArray->GetEntries()!=1){
-				timeMachineMode = machineMode->GetTimeStamp();
-				AliWarning(Form("The machine mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeMachineMode));
+			if (machineModeArray->GetEntries()==0){
+				AliInfo("No Machine Mode found, setting it to UNKNOWN");
+				grpobj->SetMachineMode("UNKNOWN");
 			}
-			AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
-			grpobj->SetMachineMode(machineModeString->String());
+			else{
+				AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
+				TObjString* machineModeString = machineMode->GetStringArray(0);
+				if (machineModeArray->GetEntries()>1){
+					timeMachineMode = machineMode->GetTimeStamp();
+					AliWarning(Form("The Machine Mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeMachineMode));
+				}
+				AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
+				grpobj->SetMachineMode(machineModeString->String());
+			}
 			
 			if (timeBeamMode!=0 || timeMachineMode!=0){
 				Double_t minTimeLHCValidity;
@@ -2564,15 +2576,20 @@ Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* array, Double_t timeStart, 
 	Int_t nCounts = array->GetEntries();
 	Float_t energy = -1;
 	AliDebug(2,Form("Energy measurements = %d\n",nCounts));
-	for(Int_t i = 0; i < nCounts; i++) {
-		AliDCSArray *dcs = (AliDCSArray*)array->At(i);
-		if((dcs->GetTimeStamp() >= timeStart) &&(dcs->GetTimeStamp() <= timeEnd)) {
-			energy = (Float_t)(TMath::Nint(((Double_t)(dcs->GetInt(0)))*120/1000)); // sqrt(s)/2 energy in GeV
-			AliInfo(Form("Energy value found = %d, converting --> sqrt(s)/2 = %f (GeV)", dcs->GetInt(0),energy));
-			break;
-		}
-		else {
-			AliError("No energy values found between DAQ_time_start and DAQ_time_end - energy will remain invalid!");
+	if (nCounts ==0){
+		AliWarning("No Energy values found! Beam Energy remaining invalid!");
+	}
+	else{
+		for(Int_t i = 0; i < nCounts; i++) {
+			AliDCSArray *dcs = (AliDCSArray*)array->At(i);
+			if((dcs->GetTimeStamp() >= timeStart) &&(dcs->GetTimeStamp() <= timeEnd)) {
+				energy = (Float_t)(TMath::Nint(((Double_t)(dcs->GetInt(0)))*120/1000)); // sqrt(s)/2 energy in GeV
+				AliInfo(Form("Energy value found = %d, converting --> sqrt(s)/2 = %f (GeV)", dcs->GetInt(0),energy));
+				break;
+			}
+			else {
+				AliError("No energy values found between DAQ_time_start and DAQ_time_end - energy will remain invalid!");
+			}
 		}
 	}
 
