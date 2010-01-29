@@ -138,6 +138,8 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fCalculate2DFlow(kFALSE),
  // 5.) distributions:
  fDistributionsList(NULL),
+ fDistributionsFlags(NULL),
+ fStoreDistributions(kFALSE),
  // x.) debugging and cross-checking:
  fNestedLoopsList(NULL),
  fEvaluateIntFlowNestedLoops(kFALSE),
@@ -194,7 +196,8 @@ void AliFlowAnalysisWithQCumulants::Init()
  // a) Access all common constants;
  // b) Book all objects;
  // c) Store flags for integrated and differential flow;
- // d) Store harmonic which will be estimated.
+ // d) Store flags for distributions of corelations;
+ // e) Store harmonic which will be estimated.
   
  // a) Access all common constants:
  this->AccessConstants();
@@ -211,8 +214,11 @@ void AliFlowAnalysisWithQCumulants::Init()
  // c) Store flags for integrated and differential flow:
  this->StoreIntFlowFlags();
  this->StoreDiffFlowFlags();
+ 
+ // d) Store flags for distributions of corelations:
+ this->StoreFlagsForDistributions();
 
- // d) Store harmonic which will be estimated:
+ // e) Store harmonic which will be estimated:
  this->StoreHarmonic();
  
 } // end of void AliFlowAnalysisWithQCumulants::Init()
@@ -227,7 +233,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  //  a) Fill the common control histograms and call the method to fill fAvMultiplicity;
  //  b) Loop over data and calculate e-b-e quantities;
- //  c) call the methods;
+ //  c) Call all the methods;
  //  d) Debugging and cross-checking (evaluate nested loops);
  //  e) Reset all event by event quantities. 
  
@@ -497,11 +503,18 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   if(nRP>3) this->CalculateIntFlowProductOfCorrelations();
   if(nRP>1) this->CalculateIntFlowSumOfEventWeights();
   if(nRP>1) this->CalculateIntFlowSumOfProductOfEventWeights();
-  if(fApplyCorrectionForNUA && !(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)) // to be improved (enable correction for NUA also when particle weights are used?)
+  if(fApplyCorrectionForNUA)
   {
-   if(nRP>0) this->CalculateIntFlowCorrectionsForNUASinTerms();
-   if(nRP>0) this->CalculateIntFlowCorrectionsForNUACosTerms();
-  }
+   if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
+   {
+    if(nRP>0) this->CalculateIntFlowCorrectionsForNUASinTerms();
+    if(nRP>0) this->CalculateIntFlowCorrectionsForNUACosTerms();
+   } else // to if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
+     {
+      if(nRP>0) this->CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights();
+      if(nRP>0) this->CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights();     
+     }  
+  } // end of if(fApplyCorrectionForNUA)
  } // end of if(!fEvaluateIntFlowNestedLoops)
 
  // differential flow:
@@ -509,23 +522,43 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  {
   if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
   {
-   if(nRP>1) // to be improved (move this if somewhere else)
+   // without using particle weights:
+   this->CalculateDiffFlowCorrelations("RP","Pt"); 
+   this->CalculateDiffFlowCorrelations("RP","Eta");
+   this->CalculateDiffFlowCorrelations("POI","Pt");
+   this->CalculateDiffFlowCorrelations("POI","Eta");
+   if(fApplyCorrectionForNUA)
    {
-    // without using particle weights:
-    this->CalculateDiffFlowCorrelations("RP","Pt"); 
-    this->CalculateDiffFlowCorrelations("RP","Eta");
-    this->CalculateDiffFlowCorrelations("POI","Pt");
-    this->CalculateDiffFlowCorrelations("POI","Eta");
-   }  
-  } else
+    this->CalculateDiffFlowCorrectionsForNUASinTerms("RP","Pt");
+    this->CalculateDiffFlowCorrectionsForNUASinTerms("RP","Eta");
+    this->CalculateDiffFlowCorrectionsForNUASinTerms("POI","Pt");
+    this->CalculateDiffFlowCorrectionsForNUASinTerms("POI","Eta");
+    this->CalculateDiffFlowCorrectionsForNUACosTerms("RP","Pt");
+    this->CalculateDiffFlowCorrectionsForNUACosTerms("RP","Eta");
+    this->CalculateDiffFlowCorrectionsForNUACosTerms("POI","Pt");
+    this->CalculateDiffFlowCorrectionsForNUACosTerms("POI","Eta");   
+   } // end of if(fApplyCorrectionForNUA)  
+  } else // to if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
     {
      // with using particle weights:   
      this->CalculateDiffFlowCorrelationsUsingParticleWeights("RP","Pt"); 
      this->CalculateDiffFlowCorrelationsUsingParticleWeights("RP","Eta"); 
      this->CalculateDiffFlowCorrelationsUsingParticleWeights("POI","Pt"); 
      this->CalculateDiffFlowCorrelationsUsingParticleWeights("POI","Eta"); 
+     if(fApplyCorrectionForNUA)
+     {
+      this->CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights("RP","Pt");
+      this->CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights("RP","Eta");
+      this->CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights("POI","Pt");
+      this->CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights("POI","Eta");
+      this->CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights("RP","Pt");
+      this->CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights("RP","Eta");
+      this->CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights("POI","Pt");
+      this->CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights("POI","Eta");   
+     } // end of if(fApplyCorrectionForNUA)  
     } 
     
+  // whether or not using particle weights the following is calculated in the same way:  
   this->CalculateDiffFlowProductOfCorrelations("RP","Pt");
   this->CalculateDiffFlowProductOfCorrelations("RP","Eta");
   this->CalculateDiffFlowProductOfCorrelations("POI","Pt");
@@ -537,19 +570,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   this->CalculateDiffFlowSumOfProductOfEventWeights("RP","Pt");
   this->CalculateDiffFlowSumOfProductOfEventWeights("RP","Eta");
   this->CalculateDiffFlowSumOfProductOfEventWeights("POI","Pt");
-  this->CalculateDiffFlowSumOfProductOfEventWeights("POI","Eta");
-  if(fApplyCorrectionForNUA && !(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)) // to be improved (enable correction for NUA also when particle weights are used?)
-  {
-   this->CalculateDiffFlowCorrectionsForNUASinTerms("RP","Pt");
-   this->CalculateDiffFlowCorrectionsForNUASinTerms("RP","Eta");
-   this->CalculateDiffFlowCorrectionsForNUASinTerms("POI","Pt");
-   this->CalculateDiffFlowCorrectionsForNUASinTerms("POI","Eta");
-   this->CalculateDiffFlowCorrectionsForNUACosTerms("RP","Pt");
-   this->CalculateDiffFlowCorrectionsForNUACosTerms("RP","Eta");
-   this->CalculateDiffFlowCorrectionsForNUACosTerms("POI","Pt");
-   this->CalculateDiffFlowCorrectionsForNUACosTerms("POI","Eta");
-  }
-  
+  this->CalculateDiffFlowSumOfProductOfEventWeights("POI","Eta");   
  } // end of if(!fEvaluateDiffFlowNestedLoops)
 
 
@@ -574,7 +595,12 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   } // end of if(fCalculate2DFlow)
   */
   
- 
+ // distributions of correlations:
+ if(fStoreDistributions)
+ {
+  this->StoreDistributionsOfCorrelations();
+ }
+  
  // d) Debugging and cross-checking (evaluate nested loops):
  //  d1) cross-checking results for integrated flow:
  if(fEvaluateIntFlowNestedLoops)
@@ -598,6 +624,10 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     // correlations:
     this->CalculateIntFlowCorrelationsUsingParticleWeights(); // from Q-vectors
     this->EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(anEvent); // from nested loops (to be improved: do I have to pass here anEvent or not?)
+    // correction for non-uniform acceptance:
+    this->CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights(); // from Q-vectors (sin terms)
+    this->CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights(); // from Q-vectors (cos terms)
+    this->EvaluateIntFlowCorrectionsForNUAWithNestedLoopsUsingParticleWeights(anEvent); // from nested loops (both sin and cos terms)   
    }
   } else if (nPrim>fMaxAllowedMultiplicity) // to if(nPrim>0 && nPrim<=fMaxAllowedMultiplicity)
     {
@@ -652,10 +682,22 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     this->CalculateDiffFlowCorrelationsUsingParticleWeights("RP","Eta"); 
     this->CalculateDiffFlowCorrelationsUsingParticleWeights("POI","Pt"); 
     this->CalculateDiffFlowCorrelationsUsingParticleWeights("POI","Eta"); 
+    this->CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights("RP","Pt");
+    this->CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights("RP","Eta");
+    this->CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights("POI","Pt");
+    this->CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights("POI","Eta");
+    this->CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights("RP","Pt");
+    this->CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights("RP","Eta");
+    this->CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights("POI","Pt");
+    this->CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights("POI","Eta");
     this->EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(anEvent,"RP","Pt"); // to be improved (enabled eventually)
     this->EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(anEvent,"RP","Eta"); // to be improved (enabled eventually)
     this->EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(anEvent,"POI","Pt"); // to be improved (do I need to pass here anEvent?)
-    this->EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(anEvent,"POI","Eta"); // to be improved (do I need to pass here anEvent?)
+    this->EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(anEvent,"POI","Eta"); // to be improved (do I need to pass here anEvent?)    
+    //this->EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(anEvent,"RP","Pt"); // to be improved (enabled eventually)
+    //this->EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(anEvent,"RP","Eta"); // to be improved (enabled eventually)
+    this->EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(anEvent,"POI","Pt"); // to be improved (do I need to pass here anEvent?)
+    this->EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(anEvent,"POI","Eta"); // to be improved (do I need to pass here anEvent?)
    } // end of if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
   } // end of if(nPrim>0 && nPrim<=fMaxAllowedMultiplicity) // by default fMaxAllowedMultiplicity = 10
  } // end of if(fEvaluateDiffFlowNestedLoops) 
@@ -777,19 +819,15 @@ void AliFlowAnalysisWithQCumulants::Finish()
  this->PrintFinalResultsForIntegratedFlow("POI"); 
   
  // g) cross-check the results: results from Q-vectors vs results from nested loops
+ 
  //  g1) integrated flow:
  if(fEvaluateIntFlowNestedLoops)
  {
-  if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)) 
-  {
-   this->CrossCheckIntFlowCorrelations();
-   this->CrossCheckIntFlowCorrectionTermsForNUA(); 
-  } else
-    {
-     this->CrossCheckIntFlowCorrelations();     
-     this->CrossCheckIntFlowExtraCorrelations();     
-    }
+  this->CrossCheckIntFlowCorrelations();
+  this->CrossCheckIntFlowCorrectionTermsForNUA(); 
+  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights) this->CrossCheckIntFlowExtraCorrelations();     
  } // end of if(fEvaluateIntFlowNestedLoops)  
+ 
  //  g2) differential flow: 
  if(fEvaluateDiffFlowNestedLoops) 
  {
@@ -1495,7 +1533,6 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
   // extra 2-p correlations:
   (fIntFlowExtraCorrelationsPro->GetXaxis())->SetBinLabel(1,"<<w1^3 w2 cos(n*(phi1-phi2))>>");
   (fIntFlowExtraCorrelationsPro->GetXaxis())->SetBinLabel(2,"<<w1 w2 w3^2 cos(n*(phi1-phi2))>>");
-  // ...
   fIntFlowProfiles->Add(fIntFlowExtraCorrelationsPro);
  } // end of if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
  // average product of correlations <2>, <4>, <6> and <8>:  
@@ -1820,24 +1857,24 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
     } // end of for(Int_t rci=0;rci<4;rci++) // correlation index
    } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta 
   } // end of for(Int_t t=0;t<2;t++) // type: RP or POI 
- } // end of if(fEvaluateDiffFlowNestedLoops)
- // correction terms for non-uniform acceptance:
- TString diffFlowDirectCorrectionTermsForNUAName = "fDiffFlowDirectCorrectionTermsForNUA";
- diffFlowDirectCorrectionTermsForNUAName += fAnalysisLabel->Data();
- for(Int_t t=0;t<2;t++) // typeFlag (0 = RP, 1 = POI)
- { 
-  for(Int_t pe=0;pe<2;pe++) // pt or eta
-  {
-   for(Int_t sc=0;sc<2;sc++) // sin or cos
+  // correction terms for non-uniform acceptance:
+  TString diffFlowDirectCorrectionTermsForNUAName = "fDiffFlowDirectCorrectionTermsForNUA";
+  diffFlowDirectCorrectionTermsForNUAName += fAnalysisLabel->Data();
+  for(Int_t t=0;t<2;t++) // typeFlag (0 = RP, 1 = POI)
+  { 
+   for(Int_t pe=0;pe<2;pe++) // pt or eta
    {
-    for(Int_t cti=0;cti<9;cti++) // correction term index
+    for(Int_t sc=0;sc<2;sc++) // sin or cos
     {
-     fDiffFlowDirectCorrectionTermsForNUA[t][pe][sc][cti] = new TProfile(Form("%s, %s, %s, %s, cti = %d",diffFlowDirectCorrectionTermsForNUAName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),sinCosFlag[sc].Data(),cti+1),Form("%s, %s, %s, %s, cti = %d",diffFlowDirectCorrectionTermsForNUAName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),sinCosFlag[sc].Data(),cti+1),1,lowerPtEtaEdge[pe],upperPtEtaEdge[pe],"s"); 
-     fNestedLoopsList->Add(fDiffFlowDirectCorrectionTermsForNUA[t][pe][sc][cti]);
+     for(Int_t cti=0;cti<9;cti++) // correction term index
+     {
+      fDiffFlowDirectCorrectionTermsForNUA[t][pe][sc][cti] = new TProfile(Form("%s, %s, %s, %s, cti = %d",diffFlowDirectCorrectionTermsForNUAName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),sinCosFlag[sc].Data(),cti+1),Form("%s, %s, %s, %s, cti = %d",diffFlowDirectCorrectionTermsForNUAName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),sinCosFlag[sc].Data(),cti+1),1,lowerPtEtaEdge[pe],upperPtEtaEdge[pe],"s"); 
+      fNestedLoopsList->Add(fDiffFlowDirectCorrectionTermsForNUA[t][pe][sc][cti]);
+     }
     }
    }
-  }
- } 
+  } 
+ } // end of if(fEvaluateDiffFlowNestedLoops)
 
 } // end of AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
 
@@ -3178,8 +3215,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelationsUsingParticleWei
  
  // 1st bin: two1n1nW3W1 = <w1^3 w2 cos(n*(phi1-phi2))>
  // 2nd bin: two1n1nW1W1W2 = <w1 w2 w3^2 cos(n*(phi1-phi2))>  
- // ...
-  
+ 
  // multiplicity (number of particles used to determine the reaction plane)
  Double_t dMult = (*fSMpk)(0,0);
  
@@ -4340,22 +4376,27 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
 
 void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 {
- // initialize arrays used for distributions:
+ // Initialize all arrays used for distributions.
  
- /*
+ // a) Initialize arrays of histograms used to hold distributions of correlations; 
+ // b) Initialize array to hold min and max values of correlations.
  
- for(Int_t pW=0;pW<2;pW++) // particle weights not used (0) or used (1)
+ // a) Initialize arrays of histograms used to hold distributions of correlations:
+ for(Int_t di=0;di<4;di++) // distribution index
  {
-  for(Int_t eW=0;eW<2;eW++)
-  {
-   for(Int_t di=0;di<4;di++) // distribution index
-   {
-    fDistributions[pW][eW][di] = NULL;
-   }
-  } 
+  fDistributions[di] = NULL;
  }
  
- */
+ // b) Initialize default min and max values of correlations:
+ //    (Remark: The default values bellow were chosen for v2=5% and M=500)
+ fMinValueOfCorrelation[0] = -0.01; // <2>_min 
+ fMaxValueOfCorrelation[0] = 0.04; // <2>_max 
+ fMinValueOfCorrelation[1] = -0.00002; // <4>_min 
+ fMaxValueOfCorrelation[1] = 0.00015; // <4>_max  
+ fMinValueOfCorrelation[2] = -0.0000003; // <6>_min 
+ fMaxValueOfCorrelation[2] = 0.0000006; // <6>_max  
+ fMinValueOfCorrelation[3] = -0.000000006; // <8>_min 
+ fMaxValueOfCorrelation[3] = 0.000000003; // <8>_max 
  
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 
@@ -4365,35 +4406,98 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 
 void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
 {
- // book all histograms for distributions
+ // a) Book profile to hold all flags for distributions of correlations;
+ // b) Book all histograms to hold distributions of correlations.
  
- /*
- //weighted <2>_{n|n} distribution
- f2pDistribution = new TH1D("f2pDistribution","<2>_{n|n} distribution",100000,-0.02,0.1);
- f2pDistribution->SetXTitle("<2>_{n|n}");
- f2pDistribution->SetYTitle("Counts");
- fHistList->Add(f2pDistribution);
-
- //weighted <4>_{n,n|n,n} distribution
- f4pDistribution = new TH1D("f4pDistribution","<4>_{n,n|n,n} distribution",100000,-0.00025,0.002);
- f4pDistribution->SetXTitle("<4>_{n,n|n,n}");
- f4pDistribution->SetYTitle("Counts");
- fHistList->Add(f4pDistribution); 
+ TString correlationIndex[4] = {"<2>","<4>","<6>","<8>"}; // to be improved (should I promote this to data members?)
+  
+ // a) Book profile to hold all flags for distributions of correlations:
+ TString distributionsFlagsName = "fDistributionsFlags";
+ distributionsFlagsName += fAnalysisLabel->Data();
+ fDistributionsFlags = new TProfile(distributionsFlagsName.Data(),"Flags for Distributions of Correlations",9,0,9);
+ fDistributionsFlags->SetTickLength(-0.01,"Y");
+ fDistributionsFlags->SetMarkerStyle(25);
+ fDistributionsFlags->SetLabelSize(0.05);
+ fDistributionsFlags->SetLabelOffset(0.02,"Y");
+ (fDistributionsFlags->GetXaxis())->SetBinLabel(1,"Store or not?");
+ (fDistributionsFlags->GetXaxis())->SetBinLabel(2,"<2>_{min}");
+ (fDistributionsFlags->GetXaxis())->SetBinLabel(3,"<2>_{max}");
+ (fDistributionsFlags->GetXaxis())->SetBinLabel(4,"<4>_{min}");
+ (fDistributionsFlags->GetXaxis())->SetBinLabel(5,"<4>_{max}");
+ (fDistributionsFlags->GetXaxis())->SetBinLabel(6,"<6>_{min}");
+ (fDistributionsFlags->GetXaxis())->SetBinLabel(7,"<6>_{max}");
+ (fDistributionsFlags->GetXaxis())->SetBinLabel(8,"<8>_{min}");
+ (fDistributionsFlags->GetXaxis())->SetBinLabel(9,"<8>_{max}");
+ fDistributionsList->Add(fDistributionsFlags);
  
- //weighted <6>_{n,n,n|n,n,n} distribution
- f6pDistribution = new TH1D("f6pDistribution","<6>_{n,n,n|n,n,n} distribution",100000,-0.000005,0.000025);
- f6pDistribution->SetXTitle("<6>_{n,n,n|n,n,n}");
- f6pDistribution->SetYTitle("Counts");
- fHistList->Add(f6pDistribution);
- 
- //weighted <8>_{n,n,n,n|n,n,n,n} distribution
- f8pDistribution = new TH1D("f8pDistribution","<8>_{n,n,n,n|n,n,n,n} distribution",100000,-0.000000001,0.00000001);
- f8pDistribution->SetXTitle("<8>_{n,n,n,n|n,n,n,n}");
- f8pDistribution->SetYTitle("Counts");
- fHistList->Add(f8pDistribution);
- */
+ // b) Book all histograms to hold distributions of correlations.
+ if(fStoreDistributions)
+ { 
+  TString distributionsName = "fDistributions";
+  distributionsName += fAnalysisLabel->Data();
+  for(Int_t di=0;di<4;di++) // distribution index
+  {
+   fDistributions[di] = new TH1D(Form("Distribution of %s",correlationIndex[di].Data()),Form("Distribution of %s",correlationIndex[di].Data()),10000,fMinValueOfCorrelation[di],fMaxValueOfCorrelation[di]); 
+   fDistributions[di]->SetXTitle(correlationIndex[di].Data());
+   fDistributionsList->Add(fDistributions[di]);
+  } // end of for(Int_t di=0;di<4;di++) // distribution index
+ } // end of if(fStoreDistributions)
  
 } // end of void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::StoreFlagsForDistributions()
+{
+ // Store all flags for distributiuons of correlations in profile fDistributionsFlags.
+ 
+ if(!fDistributionsFlags)
+ {
+  cout<<"WARNING: fDistributionsFlags is NULL in AFAWQC::SDF() !!!!"<<endl;
+  exit(0);
+ } 
+
+ fDistributionsFlags->Fill(0.5,(Int_t)fStoreDistributions); // histos with distributions of correlations stored or not in the output file
+ // store min and max values of correlations:
+ for(Int_t di=0;di<4;di++) // distribution index
+ {
+  fDistributionsFlags->Fill(1.5+2.*(Double_t)di,fMinValueOfCorrelation[di]);
+  fDistributionsFlags->Fill(2.5+2.*(Double_t)di,fMaxValueOfCorrelation[di]);
+ }
+     
+} // end of void AliFlowAnalysisWithQCumulants::StoreFlagsForDistributions()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::StoreDistributionsOfCorrelations()
+{
+ // Store distributions of correlations.
+ 
+ if(!(fIntFlowCorrelationsEBE && fIntFlowEventWeightsForCorrelationsEBE))
+ {
+  cout<<"WARNING: fIntFlowCorrelationsEBE && fIntFlowEventWeightsForCorrelationsEBE"<<endl; 
+  cout<<"         is NULL in AFAWQC::SDOC() !!!!"<<endl;
+  exit(0);
+ }
+
+ for(Int_t di=0;di<4;di++) // distribution index
+ {
+  if(!fDistributions[di])
+  { 
+   cout<<"WARNING: fDistributions[di] is NULL in AFAWQC::SDOC() !!!!"<<endl;
+   cout<<"di = "<<di<<endl;
+   exit(0);
+  } else 
+    {
+     fDistributions[di]->Fill(fIntFlowCorrelationsEBE->GetBinContent(di+1),fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(di+1)); 
+    } 
+ } // end of for(Int_t di=0;di<4;di++) // distribution index
+
+} // end of void AliFlowAnalysisWithQCumulants::StoreDistributionsOfCorrelations()
 
 
 //================================================================================================================================
@@ -8807,7 +8911,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLo
  // Evaluate with nested loops correction terms for non-uniform acceptance relevant for NONAME integrated flow (to be improved (name)).
  //
  // Remark: Both sin and cos correction terms are calculated in this method. Sin terms are stored in fIntFlowDirectCorrectionTermsForNUA[0],
- // and cos terms in fIntFlowCorrectionTermsForNUAPro[sc]fIntFlowDirectCorrectionTermsForNUA[1]. Binning of fIntFlowDirectCorrectionTermsForNUA[sc] is organized as follows 
+ // and cos terms in fIntFlowDirectCorrectionTermsForNUA[1]. Binning of fIntFlowDirectCorrectionTermsForNUA[sc] is organized as follows 
  // (sc stands for either sin or cos):
  
  //  1st bin: <<sc(n*(phi1))>> 
@@ -9436,3 +9540,901 @@ void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrectionTermsForNUA(TStr
 
 
 //================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights()
+{
+ // Calculate corrections using particle weights for non-uniform acceptance of the detector for no-name integrated flow (cos terms).
+ 
+ //                                  **********************************************************************
+ //                                  **** weighted corrections for non-uniform acceptance (cos terms): ****
+ //                                  **********************************************************************
+ 
+ // Remark 1: When particle weights are used the binning of fIntFlowCorrectionTermsForNUAPro[1] is organized as follows:
+ //
+ // 1st bin: <<w1 cos(n*(phi1))>> = cosP1nW1
+ // 2nd bin: <<w1 w2 cos(n*(phi1+phi2))>> = cosP1nP1nW1W1
+ // 3rd bin: <<w1 w2 w3 cos(n*(phi1-phi2-phi3))>> = cosP1nM1nM1nW1W1W1 
+ // ...
+
+ // multiplicity (number of particles used to determine the reaction plane)
+ Double_t dMult = (*fSMpk)(0,0);
+ 
+ // real and imaginary parts of weighted Q-vectors evaluated in harmonics n, 2n, 3n and 4n: 
+ Double_t dReQ1n1k = (*fReQ)(0,1);
+ Double_t dReQ2n2k = (*fReQ)(1,2);
+ //Double_t dReQ3n3k = (*fReQ)(2,3);
+ //Double_t dReQ4n4k = (*fReQ)(3,4);
+ Double_t dReQ1n3k = (*fReQ)(0,3);
+ Double_t dImQ1n1k = (*fImQ)(0,1);
+ Double_t dImQ2n2k = (*fImQ)(1,2);
+ //Double_t dImQ3n3k = (*fImQ)(2,3);
+ //Double_t dImQ4n4k = (*fImQ)(3,4);
+ //Double_t dImQ1n3k = (*fImQ)(0,3);
+
+ // dMs are variables introduced in order to simplify some Eqs. bellow:
+ //..............................................................................................
+ Double_t dM11 = (*fSMpk)(1,1)-(*fSMpk)(0,2); // dM11 = sum_{i,j=1,i!=j}^M w_i w_j
+ Double_t dM111 = (*fSMpk)(2,1)-3.*(*fSMpk)(0,2)*(*fSMpk)(0,1)
+                + 2.*(*fSMpk)(0,3); // dM111 = sum_{i,j,k=1,i!=j!=k}^M w_i w_j w_k
+ //..............................................................................................
+         // 1-particle:
+ Double_t cosP1nW1 = 0.; // <<w1 cos(n*(phi1))>>
+   
+ if(dMult>0 && (*fSMpk)(0,1) !=0.)
+ {
+  cosP1nW1 = dReQ1n1k/(*fSMpk)(0,1); 
+  
+  // average weighted 1-particle correction (cos terms) for non-uniform acceptance for single event:
+  fIntFlowCorrectionTermsForNUAEBE[1]->SetBinContent(1,cosP1nW1);
+  
+  // final average weighted 1-particle correction (cos terms) for non-uniform acceptance for all events:
+  fIntFlowCorrectionTermsForNUAPro[1]->Fill(0.5,cosP1nW1,(*fSMpk)(0,1));  
+ } 
+ 
+ // 2-particle:
+ Double_t cosP1nP1nW1W1 = 0.; // <<w1 w2 cos(n*(phi1+phi2))>>
+ 
+ if(dMult>1 && dM11 !=0.)
+ {
+  cosP1nP1nW1W1 = (pow(dReQ1n1k,2)-pow(dImQ1n1k,2)-dReQ2n2k)/dM11; 
+  
+  // average weighted 2-particle correction (cos terms) for non-uniform acceptance for single event:
+  fIntFlowCorrectionTermsForNUAEBE[1]->SetBinContent(2,cosP1nP1nW1W1);
+  
+  // final average weighted 2-particle correction (cos terms) for non-uniform acceptance for all events:
+  fIntFlowCorrectionTermsForNUAPro[1]->Fill(1.5,cosP1nP1nW1W1,dM11);  
+ } 
+ 
+ // 3-particle:
+ Double_t cosP1nM1nM1nW1W1W1 = 0.; // <<w1 w2 w3 cos(n*(phi1-phi2-phi3))>>
+ 
+ if(dMult>2 && dM111 !=0.)
+ {
+  cosP1nM1nM1nW1W1W1 = (dReQ1n1k*(pow(dReQ1n1k,2)+pow(dImQ1n1k,2))
+                     - dReQ1n1k*dReQ2n2k-dImQ1n1k*dImQ2n2k
+                     - 2.*((*fSMpk)(0,2))*dReQ1n1k
+                     + 2.*dReQ1n3k) 
+                     / dM111; 
+  
+  // average non-weighted 3-particle correction (cos terms) for non-uniform acceptance for single event:
+  fIntFlowCorrectionTermsForNUAEBE[1]->SetBinContent(3,cosP1nM1nM1nW1W1W1);
+  
+  // final average non-weighted 3-particle correction (cos terms) for non-uniform acceptance for all events:
+  fIntFlowCorrectionTermsForNUAPro[1]->Fill(2.5,cosP1nM1nM1nW1W1W1,dM111);  
+ } 
+ 
+} // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights()
+{
+ // calculate corrections using particle weights for non-uniform acceptance of the detector for no-name integrated flow (sin terms)
+ 
+ //                                  **********************************************************************
+ //                                  **** weighted corrections for non-uniform acceptance (sin terms): ****
+ //                                  **********************************************************************
+ 
+ // Remark 1: When particle weights are used the binning of fIntFlowCorrectionTermsForNUAPro[0] is organized as follows:
+ //
+ // 1st bin: <<w1 sin(n*(phi1))>> = sinP1nW1
+ // 2nd bin: <<w1 w2 sin(n*(phi1+phi2))>> = sinP1nP1nW1W1
+ // 3rd bin: <<w1 w2 w3 sin(n*(phi1-phi2-phi3))>> = sinP1nM1nM1nW1W1W1 
+ // ...
+
+ // multiplicity (number of particles used to determine the reaction plane)
+ Double_t dMult = (*fSMpk)(0,0);
+ 
+ // real and imaginary parts of weighted Q-vectors evaluated in harmonics n, 2n, 3n and 4n: 
+ Double_t dReQ1n1k = (*fReQ)(0,1);
+ Double_t dReQ2n2k = (*fReQ)(1,2);
+ //Double_t dReQ3n3k = (*fReQ)(2,3);
+ //Double_t dReQ4n4k = (*fReQ)(3,4);
+ //Double_t dReQ1n3k = (*fReQ)(0,3);
+ Double_t dImQ1n1k = (*fImQ)(0,1);
+ Double_t dImQ2n2k = (*fImQ)(1,2);
+ //Double_t dImQ3n3k = (*fImQ)(2,3);
+ //Double_t dImQ4n4k = (*fImQ)(3,4);
+ Double_t dImQ1n3k = (*fImQ)(0,3);
+
+ // dMs are variables introduced in order to simplify some Eqs. bellow:
+ //..............................................................................................
+ Double_t dM11 = (*fSMpk)(1,1)-(*fSMpk)(0,2); // dM11 = sum_{i,j=1,i!=j}^M w_i w_j
+ Double_t dM111 = (*fSMpk)(2,1)-3.*(*fSMpk)(0,2)*(*fSMpk)(0,1)
+                + 2.*(*fSMpk)(0,3); // dM111 = sum_{i,j,k=1,i!=j!=k}^M w_i w_j w_k
+ //..............................................................................................
+ 
+ // 1-particle:
+ Double_t sinP1nW1 = 0.; // <<w1 sin(n*(phi1))>>
+ 
+ if(dMult>0 && (*fSMpk)(0,1) !=0.)
+ {
+  sinP1nW1 = dImQ1n1k/((*fSMpk)(0,1)); 
+     
+  // average weighted 1-particle correction (sin terms) for non-uniform acceptance for single event:
+  fIntFlowCorrectionTermsForNUAEBE[0]->SetBinContent(1,sinP1nW1);
+  
+  // final average weighted 1-particle correction (sin terms) for non-uniform acceptance for all events:   
+  fIntFlowCorrectionTermsForNUAPro[0]->Fill(0.5,sinP1nW1,(*fSMpk)(0,1));  
+ } 
+ 
+ // 2-particle:
+ Double_t sinP1nP1nW1W1 = 0.; // <<w1 w2 sin(n*(phi1+phi2))>>
+ 
+ if(dMult>1 && dM11 !=0.)
+ {
+  sinP1nP1nW1W1 = (2.*dReQ1n1k*dImQ1n1k-dImQ2n2k)/dM11; 
+     
+  // average weighted 2-particle correction (sin terms) for non-uniform acceptance for single event:
+  fIntFlowCorrectionTermsForNUAEBE[0]->SetBinContent(2,sinP1nP1nW1W1);
+  
+  // final average weighted 1-particle correction (sin terms) for non-uniform acceptance for all events:      
+  fIntFlowCorrectionTermsForNUAPro[0]->Fill(1.5,sinP1nP1nW1W1,dM11);  
+ } 
+ 
+ // 3-particle:
+ Double_t sinP1nM1nM1nW1W1W1 = 0.; // <<w1 w2 w3 sin(n*(phi1-phi2-phi3))>>
+ 
+ if(dMult>2 && dM111 !=0.)
+ {
+  sinP1nM1nM1nW1W1W1 = (-dImQ1n1k*(pow(dReQ1n1k,2)+pow(dImQ1n1k,2))
+                     + dReQ1n1k*dImQ2n2k-dImQ1n1k*dReQ2n2k
+                     + 2.*((*fSMpk)(0,2))*dImQ1n1k
+                     - 2.*dImQ1n3k)
+                     / dM111; 
+  
+  // average weighted 3-particle correction (sin terms) for non-uniform acceptance for single event:
+  fIntFlowCorrectionTermsForNUAEBE[0]->SetBinContent(3,sinP1nM1nM1nW1W1W1);
+  
+  // final average weighted 3-particle correction (sin terms) for non-uniform acceptance for all events:  
+  fIntFlowCorrectionTermsForNUAPro[0]->Fill(2.5,sinP1nM1nM1nW1W1W1,dM111);  
+ } 
+ 
+} // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent)
+{
+ // Evaluate with nested loops correction terms for non-uniform acceptance for integrated flow (using the particle weights). 
+
+ // Results are stored in profiles fIntFlowDirectCorrectionTermsForNUA[0] (sin terms) and
+ // fIntFlowDirectCorrectionTermsForNUA[1] (cos terms). 
+ 
+ // Remark 1: When particle weights are used the binning of fIntFlowDirectCorrectionTermsForNUA[sc] is 
+ // organized as follows (sc stands for either sin or cos):
+ //
+ // 1st bin: <<w1 sc(n*(phi1))>> = scP1nW1
+ // 2nd bin: <<w1 w2 sc(n*(phi1+phi2))>> = scP1nP1nW1W1
+ // 3rd bin: <<w1 w2 w3 sc(n*(phi1-phi2-phi3))>> = scP1nM1nM1nW1W1W1 
+ // ...
+ 
+ Int_t nPrim = anEvent->NumberOfTracks(); 
+ AliFlowTrackSimple *aftsTrack = NULL;
+ //Double_t phi1=0., phi2=0., phi3=0., phi4=0., phi5=0., phi6=0., phi7=0., phi8=0.;
+ //Double_t wPhi1=1., wPhi2=1., wPhi3=1., wPhi4=1., wPhi5=1., wPhi6=1., wPhi7=1., wPhi8=1.;
+ Double_t phi1=0., phi2=0., phi3=0.;
+ Double_t wPhi1=1., wPhi2=1., wPhi3=1.;
+ Int_t n = fHarmonic; 
+ Int_t eventNo = (Int_t)fAvMultiplicity->GetBinEntries(1); // to be improved (is this casting safe in general?)
+ Double_t dMult = (*fSMpk)(0,0);
+ cout<<endl;
+ cout<<"Correction terms for non-uniform acceptance: Event number: "<<eventNo<<", multiplicity is "<<dMult<<endl;
+ if(dMult<1)
+ {
+  cout<<"... skipping this event (multiplicity too low) ..."<<endl;
+ } else if (dMult>fMaxAllowedMultiplicity)
+   {
+    cout<<"... skipping this event (multiplicity too high) ..."<<endl;
+   } else 
+     { 
+      cout<<"... evaluating nested loops (using particle weights) ..."<<endl;
+     } 
+      
+ // 1-particle correction terms using particle weights:       
+ if(nPrim>=1 && nPrim<=fMaxAllowedMultiplicity)
+ {
+  for(Int_t i1=0;i1<nPrim;i1++)
+  {
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi1=aftsTrack->Phi();
+   if(fUsePhiWeights && fPhiWeights) wPhi1 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*fnBinsPhi/TMath::TwoPi())));
+   // 1-particle correction terms using particle weights:
+   if(fUsePhiWeights) fIntFlowDirectCorrectionTermsForNUA[0]->Fill(0.5,sin(n*phi1),wPhi1); // <w1 sin(n*phi1)>
+   if(fUsePhiWeights) fIntFlowDirectCorrectionTermsForNUA[1]->Fill(0.5,cos(n*phi1),wPhi1); // <w1 cos(n*phi1)>
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ } // end of if(nPrim>=1 && nPrim<=fMaxAllowedMultiplicity) 
+ 
+ // 2-particle correction terms using particle weights:       
+ if(nPrim>=2 && nPrim<=fMaxAllowedMultiplicity)
+ {
+  for(Int_t i1=0;i1<nPrim;i1++)
+  {
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi1=aftsTrack->Phi();
+   if(fUsePhiWeights && fPhiWeights) wPhi1 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*fnBinsPhi/TMath::TwoPi())));
+   for(Int_t i2=0;i2<nPrim;i2++)
+   {
+    if(i2==i1)continue;
+    aftsTrack=anEvent->GetTrack(i2);
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi2=aftsTrack->Phi();
+    if(fUsePhiWeights && fPhiWeights) wPhi2 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*fnBinsPhi/TMath::TwoPi())));   
+    if(nPrim==2) cout<<i1<<" "<<i2<<"\r"<<flush;
+    // 2-p correction terms using particle weights:    
+    if(fUsePhiWeights) fIntFlowDirectCorrectionTermsForNUA[0]->Fill(1.5,sin(n*(phi1+phi2)),wPhi1*wPhi2); // <w1 w2 sin(n*(phi1+phi2))>
+    if(fUsePhiWeights) fIntFlowDirectCorrectionTermsForNUA[1]->Fill(1.5,cos(n*(phi1+phi2)),wPhi1*wPhi2); // <w1 w2 cos(n*(phi1+phi2))>
+   } // end of for(Int_t i2=0;i2<nPrim;i2++)
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ } // end of if(nPrim>=2)
+
+ // 3-particle correction terms using particle weights:       
+ if(nPrim>=3 && nPrim<=fMaxAllowedMultiplicity)
+ { 
+  for(Int_t i1=0;i1<nPrim;i1++)
+  {
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi1=aftsTrack->Phi();
+   if(fUsePhiWeights && fPhiWeights) wPhi1 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*fnBinsPhi/TMath::TwoPi())));
+   for(Int_t i2=0;i2<nPrim;i2++)
+   {
+    if(i2==i1)continue;
+    aftsTrack=anEvent->GetTrack(i2);
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi2=aftsTrack->Phi();
+    if(fUsePhiWeights && fPhiWeights) wPhi2 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*fnBinsPhi/TMath::TwoPi())));
+    for(Int_t i3=0;i3<nPrim;i3++)
+    {
+     if(i3==i1||i3==i2)continue;
+     aftsTrack=anEvent->GetTrack(i3);
+     if(!(aftsTrack->InRPSelection())) continue;
+     phi3=aftsTrack->Phi();
+     if(fUsePhiWeights && fPhiWeights) wPhi3 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*fnBinsPhi/TMath::TwoPi())));
+     if(nPrim==3) cout<<i1<<" "<<i2<<" "<<i3<<"\r"<<flush;
+     // 3-p correction terms using particle weights:    
+     if(fUsePhiWeights) fIntFlowDirectCorrectionTermsForNUA[0]->Fill(2.5,sin(n*(phi1-phi2-phi3)),wPhi1*wPhi2*wPhi3); // <w1 w2 w3 sin(n*(phi1-phi2-phi3))>
+     if(fUsePhiWeights) fIntFlowDirectCorrectionTermsForNUA[1]->Fill(2.5,cos(n*(phi1-phi2-phi3)),wPhi1*wPhi2*wPhi3); // <w1 w2 w3 cos(n*(phi1-phi2-phi3))>
+    } // end of for(Int_t i3=0;i3<nPrim;i3++)
+   } // end of for(Int_t i2=0;i2<nPrim;i2++)
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ } // end of if(nPrim>=3)
+ 
+ /*
+ 
+ if(nPrim>=4 && nPrim<=fMaxAllowedMultiplicity)
+ {
+  // 4 nested loops multiparticle correlations using particle weights:       
+  for(Int_t i1=0;i1<nPrim;i1++)
+  {
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi1=aftsTrack->Phi();
+   if(fUsePhiWeights && fPhiWeights) wPhi1 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*fnBinsPhi/TMath::TwoPi())));
+   for(Int_t i2=0;i2<nPrim;i2++)
+   {
+    if(i2==i1)continue;
+    aftsTrack=anEvent->GetTrack(i2);
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi2=aftsTrack->Phi();
+    if(fUsePhiWeights && fPhiWeights) wPhi2 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*fnBinsPhi/TMath::TwoPi())));
+    for(Int_t i3=0;i3<nPrim;i3++)
+    {
+     if(i3==i1||i3==i2)continue;
+     aftsTrack=anEvent->GetTrack(i3);
+     if(!(aftsTrack->InRPSelection())) continue;
+     phi3=aftsTrack->Phi();
+     if(fUsePhiWeights && fPhiWeights) wPhi3 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*fnBinsPhi/TMath::TwoPi())));
+     for(Int_t i4=0;i4<nPrim;i4++)
+     {
+      if(i4==i1||i4==i2||i4==i3)continue;
+      aftsTrack=anEvent->GetTrack(i4);
+      if(!(aftsTrack->InRPSelection())) continue;
+      phi4=aftsTrack->Phi();
+      if(fUsePhiWeights && fPhiWeights) wPhi4 = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi4*fnBinsPhi/TMath::TwoPi())));
+      if(nPrim>=4) cout<<i1<<" "<<i2<<" "<<i3<<" "<<i4<<"\r"<<flush; // to be improved (replace eventually this if statement with if(nPrim==4))
+      // 4-p correlations using particle weights:
+      if(fUsePhiWeights) fIntFlowDirectCorrelations->Fill(10.5,cos(n*phi1+n*phi2-n*phi3-n*phi4),wPhi1*wPhi2*wPhi3*wPhi4); 
+      // extra correlations: 
+      // 2-p extra correlations (do not appear if particle weights are not used):
+      // ...
+      // 3-p extra correlations (do not appear if particle weights are not used):
+      // ...
+      // 4-p extra correlations (do not appear if particle weights are not used):
+      // ...
+     } // end of for(Int_t i4=0;i4<nPrim;i4++) 
+    } // end of for(Int_t i3=0;i3<nPrim;i3++)
+   } // end of for(Int_t i2=0;i2<nPrim;i2++)
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ } // end of if(nPrim>=4)
+
+ */
+
+ cout<<endl; 
+
+} // end of void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent)
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights(TString type, TString ptOrEta)
+{
+ // Calculate correction terms for non-uniform acceptance for differential flow (cos terms) using particle weights.
+ 
+ type+=""; // to be removed
+ ptOrEta+=""; // to be removed
+
+// Remark: w1 bellow is a particle weight used only for particles which were flagged both as POI and RP.
+ 
+ // Results are stored in fDiffFlowCorrectionTermsForNUAPro[t][pe][1][cti], where cti runs as follows:
+ //
+ //  0: <<w1 cos n(psi)>>
+ //  1: <<w1 w2 cos n(psi1+phi2)>>
+ //  2: <<w1 w2 w3 cos n(psi1+phi2-phi3)>>
+ //  3: <<w1 w2 w3 cos n(psi1-phi2-phi3)>>
+ //  4:
+ //  5:
+ //  6:
+ 
+ /*
+ 
+ // multiplicity:
+ Double_t dMult = (*fSMpk)(0,0);
+ 
+ // real and imaginary parts of weighted Q-vectors evaluated in harmonics n, 2n, 3n and 4n: 
+ Double_t dReQ1n1k = (*fReQ)(0,1);
+ Double_t dReQ2n2k = (*fReQ)(1,2);
+ Double_t dReQ1n3k = (*fReQ)(0,3);
+ //Double_t dReQ4n4k = (*fReQ)(3,4);
+ Double_t dImQ1n1k = (*fImQ)(0,1);
+ Double_t dImQ2n2k = (*fImQ)(1,2);
+ Double_t dImQ1n3k = (*fImQ)(0,3);
+ //Double_t dImQ4n4k = (*fImQ)(3,4);
+ 
+ // S^M_{p,k} (see .h file for the definition of fSMpk):
+ Double_t dSM1p1k = (*fSMpk)(0,1);
+ Double_t dSM1p2k = (*fSMpk)(0,2);
+ Double_t dSM1p3k = (*fSMpk)(0,3);
+ Double_t dSM2p1k = (*fSMpk)(1,1);
+ Double_t dSM3p1k = (*fSMpk)(2,1);
+
+ Int_t t = -1; // type flag 
+ Int_t pe = -1; // ptEta flag
+ 
+ if(type == "RP")
+ {
+  t = 0;
+ } else if(type == "POI")
+   {
+    t = 1;
+   }
+
+ if(ptOrEta == "Pt")
+ {
+  pe = 0;
+ } else if(ptOrEta == "Eta")
+   {
+    pe = 1;
+   }
+    
+ Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
+ Double_t minPtEta[2] = {fPtMin,fEtaMin};
+ //Double_t maxPtEta[2] = {fPtMax,fEtaMax};
+ Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
+
+ // looping over all bins and calculating correction terms: 
+ for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ {
+  // real and imaginary parts of p_{m*n,0} (non-weighted Q-vector evaluated for POIs in particular pt or eta bin): 
+  Double_t p1n0kRe = 0.;
+  Double_t p1n0kIm = 0.;
+
+  // number of POIs in particular pt or eta bin:
+  Double_t mp = 0.;
+
+  // real and imaginary parts of q_{m*n,0} (non-weighted Q-vector evaluated for particles which are both RPs and POIs in particular pt or eta bin):
+  Double_t q1n0kRe = 0.;
+  Double_t q1n0kIm = 0.;
+  Double_t q2n0kRe = 0.;
+  Double_t q2n0kIm = 0.;
+
+  // real and imaginary parts of q_{m*n,0} (weighted Q-vector evaluated for particles which are both RPs and POIs in particular pt or eta bin):
+  Double_t q1n1kRe = 0.;
+  Double_t q1n1kIm = 0.;
+  Double_t q1n2kRe = 0.;
+  Double_t q1n2kIm = 0.;
+  Double_t q2n1kRe = 0.;
+  Double_t q2n1kIm = 0.;
+  Double_t q2n2kRe = 0.;
+  Double_t q2n2kIm = 0.;
+  
+  // number of particles which are both RPs and POIs in particular pt or eta bin:
+  Double_t mq = 0.;
+  
+  // s_{1,1}, s_{1,2} and s_{1,3} // to be improved (add explanation)  
+  Double_t s1p1k = 0.; 
+  Double_t s1p2k = 0.; 
+  Double_t s1p3k = 0.; 
+  
+  if(type == "POI")
+  {
+   // p_{m*n,k}:   
+   p1n0kRe = fReRPQ1dEBE[1][pe][0][0]->GetBinContent(fReRPQ1dEBE[1][pe][0][0]->GetBin(b))
+           * fReRPQ1dEBE[1][pe][0][0]->GetBinEntries(fReRPQ1dEBE[1][pe][0][0]->GetBin(b));
+   p1n0kIm = fImRPQ1dEBE[1][pe][0][0]->GetBinContent(fImRPQ1dEBE[1][pe][0][0]->GetBin(b))  
+           * fImRPQ1dEBE[1][pe][0][0]->GetBinEntries(fImRPQ1dEBE[1][pe][0][0]->GetBin(b));
+   mp = fReRPQ1dEBE[1][pe][0][0]->GetBinEntries(fReRPQ1dEBE[1][pe][0][0]->GetBin(b)); // to be improved (cross-checked by accessing other profiles here)                
+   // q_{m*n,k}:
+   q1n0kRe = fReRPQ1dEBE[2][pe][0][0]->GetBinContent(fReRPQ1dEBE[2][pe][0][0]->GetBin(b))
+           * fReRPQ1dEBE[2][pe][0][0]->GetBinEntries(fReRPQ1dEBE[2][pe][0][0]->GetBin(b));
+   q1n0kIm = fImRPQ1dEBE[2][pe][0][0]->GetBinContent(fImRPQ1dEBE[2][pe][0][0]->GetBin(b))
+           * fImRPQ1dEBE[2][pe][0][0]->GetBinEntries(fImRPQ1dEBE[2][pe][0][0]->GetBin(b));
+   q2n0kRe = fReRPQ1dEBE[2][pe][1][0]->GetBinContent(fReRPQ1dEBE[2][pe][1][0]->GetBin(b))
+           * fReRPQ1dEBE[2][pe][1][0]->GetBinEntries(fReRPQ1dEBE[2][pe][1][0]->GetBin(b));
+   q2n0kIm = fImRPQ1dEBE[2][pe][1][0]->GetBinContent(fImRPQ1dEBE[2][pe][1][0]->GetBin(b))
+           * fImRPQ1dEBE[2][pe][1][0]->GetBinEntries(fImRPQ1dEBE[2][pe][1][0]->GetBin(b));         
+   q1n1kRe = fReRPQ1dEBE[2][pe][0][1]->GetBinContent(fReRPQ1dEBE[2][pe][0][1]->GetBin(b))
+           * fReRPQ1dEBE[2][pe][0][1]->GetBinEntries(fReRPQ1dEBE[2][pe][0][1]->GetBin(b));
+   q1n1kIm = fImRPQ1dEBE[2][pe][0][1]->GetBinContent(fImRPQ1dEBE[2][pe][0][1]->GetBin(b))
+           * fImRPQ1dEBE[2][pe][0][1]->GetBinEntries(fImRPQ1dEBE[2][pe][0][1]->GetBin(b));
+   q2n2kRe = fReRPQ1dEBE[2][pe][1][2]->GetBinContent(fReRPQ1dEBE[2][pe][1][2]->GetBin(b))
+           * fReRPQ1dEBE[2][pe][1][2]->GetBinEntries(fReRPQ1dEBE[2][pe][1][2]->GetBin(b));
+   q2n2kIm = fImRPQ1dEBE[2][pe][1][2]->GetBinContent(fImRPQ1dEBE[2][pe][1][2]->GetBin(b))
+           * fImRPQ1dEBE[2][pe][1][2]->GetBinEntries(fImRPQ1dEBE[2][pe][1][2]->GetBin(b));          
+   mq = fReRPQ1dEBE[2][pe][0][0]->GetBinEntries(fReRPQ1dEBE[2][pe][0][0]->GetBin(b)); // to be improved (cross-checked by accessing other profiles here)
+   // s_{1,1}, s_{1,2} and s_{1,3} // to be improved (add explanation)  
+   s1p1k = pow(fs1dEBE[2][pe][1]->GetBinContent(b)*fs1dEBE[2][pe][1]->GetBinEntries(b),1.); 
+   s1p2k = pow(fs1dEBE[2][pe][2]->GetBinContent(b)*fs1dEBE[2][pe][2]->GetBinEntries(b),1.); 
+   s1p3k = pow(fs1dEBE[2][pe][3]->GetBinContent(b)*fs1dEBE[2][pe][3]->GetBinEntries(b),1.); 
+   // typeFlag = RP (0) or POI (1):   
+   t = 1; 
+  }else if(type == "RP")
+   {
+    // q_{m*n,k}: (Remark: m=1 is 0, k=0 iz zero (to be improved!)) 
+    q1n2kRe = fReRPQ1dEBE[0][pe][0][2]->GetBinContent(fReRPQ1dEBE[0][pe][0][2]->GetBin(b))
+            * fReRPQ1dEBE[0][pe][0][2]->GetBinEntries(fReRPQ1dEBE[0][pe][0][2]->GetBin(b));
+    q1n2kIm = fImRPQ1dEBE[0][pe][0][2]->GetBinContent(fImRPQ1dEBE[0][pe][0][2]->GetBin(b))
+            * fImRPQ1dEBE[0][pe][0][2]->GetBinEntries(fImRPQ1dEBE[0][pe][0][2]->GetBin(b));
+    q2n1kRe = fReRPQ1dEBE[0][pe][1][1]->GetBinContent(fReRPQ1dEBE[0][pe][1][1]->GetBin(b))
+            * fReRPQ1dEBE[0][pe][1][1]->GetBinEntries(fReRPQ1dEBE[0][pe][1][1]->GetBin(b));
+    q2n1kIm = fImRPQ1dEBE[0][pe][1][1]->GetBinContent(fImRPQ1dEBE[0][pe][1][1]->GetBin(b))
+            * fImRPQ1dEBE[0][pe][1][1]->GetBinEntries(fImRPQ1dEBE[0][pe][1][1]->GetBin(b));
+    // s_{1,1}, s_{1,2} and s_{1,3} // to be improved (add explanation)  
+    s1p1k = pow(fs1dEBE[0][pe][1]->GetBinContent(b)*fs1dEBE[0][pe][1]->GetBinEntries(b),1.); 
+    s1p2k = pow(fs1dEBE[0][pe][2]->GetBinContent(b)*fs1dEBE[0][pe][2]->GetBinEntries(b),1.); 
+    s1p3k = pow(fs1dEBE[0][pe][3]->GetBinContent(b)*fs1dEBE[0][pe][3]->GetBinEntries(b),1.); 
+    
+    // to be improved (cross-checked):
+    p1n0kRe = fReRPQ1dEBE[0][pe][0][0]->GetBinContent(fReRPQ1dEBE[0][pe][0][0]->GetBin(b))
+            * fReRPQ1dEBE[0][pe][0][0]->GetBinEntries(fReRPQ1dEBE[0][pe][0][0]->GetBin(b));
+    p1n0kIm = fImRPQ1dEBE[0][pe][0][0]->GetBinContent(fImRPQ1dEBE[0][pe][0][0]->GetBin(b))  
+            * fImRPQ1dEBE[0][pe][0][0]->GetBinEntries(fImRPQ1dEBE[0][pe][0][0]->GetBin(b));
+    mp = fReRPQ1dEBE[0][pe][0][0]->GetBinEntries(fReRPQ1dEBE[0][pe][0][0]->GetBin(b)); // to be improved (cross-checked by accessing other profiles here)
+    // typeFlag = RP (0) or POI (1): 
+    t = 0;
+  }    
+  
+  // <<w1 cos n(psi1)>>:
+  Double_t cosP1nPsiW1 = 0.;
+  if(mp-mq+s1p1k)
+  {
+   cosP1nPsiW1 = (p1n0kRe-q1n0kRe+q1n1kRe)/(mp-mq+s1p1k);
+   
+   // fill profile for <<w1 cos n(psi1)>>:
+   fDiffFlowCorrectionTermsForNUAPro[t][pe][1][0]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],cosP1nPsiW1,mp-mq+s1p1k);
+   // histogram to store <w1 cos n(psi1)> e-b-e (needed in some other methods):
+   fDiffFlowCorrectionTermsForNUAEBE[t][pe][1][0]->SetBinContent(b,cosP1nPsiW1);
+  } // end of if(mp-mq+s1p1k)   
+    
+  
+  
+  // <<w1 w2 cos n(psi1+phi2)>>:
+  Double_t cosP1nPsiP1nPhi = 0.;
+  if(mp*dMult-mq)
+  {
+   cosP1nPsiP1nPhi = (p1n0kRe*dReQ1n-p1n0kIm*dImQ1n-q2n0kRe)/(mp*dMult-mq);
+   // fill profile for <<w1 w2 cos n(psi1+phi2)>>:
+   fDiffFlowCorrectionTermsForNUAPro[t][pe][1][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],cosP1nPsiP1nPhi,mp*dMult-mq);
+   // histogram to store <w1 w2 cos n(psi1+phi2)> e-b-e (needed in some other methods):
+   fDiffFlowCorrectionTermsForNUAEBE[t][pe][1][1]->SetBinContent(b,cosP1nPsiP1nPhi);
+  } // end of if(mp*dMult-mq)   
+  
+  // <<w1 w2 w3 cos n(psi1+phi2-phi3)>>:
+  Double_t cosP1nPsi1P1nPhi2MPhi3 = 0.;
+  if(mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.))
+  {
+   cosP1nPsi1P1nPhi2MPhi3 = (p1n0kRe*(pow(dImQ1n,2.)+pow(dReQ1n,2.)-dMult)
+                          - 1.*(q2n0kRe*dReQ1n+q2n0kIm*dImQ1n)  
+                          - mq*dReQ1n+2.*q1n0kRe)
+                          / (mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.));
+   // fill profile for <<w1 w2 w3 cos n(psi1+phi2)>>:
+   fDiffFlowCorrectionTermsForNUAPro[t][pe][1][2]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],cosP1nPsi1P1nPhi2MPhi3,mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.));
+   // histogram to store <w1 w2 w3 cos n(psi1+phi2)> e-b-e (needed in some other methods):
+   fDiffFlowCorrectionTermsForNUAEBE[t][pe][1][2]->SetBinContent(b,cosP1nPsi1P1nPhi2MPhi3);
+  } // end of if(mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.))   
+  
+  // <<w1 w2 w3 cos n(psi1-phi2-phi3)>>:
+  Double_t cosP1nPsi1M1nPhi2MPhi3 = 0.;
+  if(mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.))
+  {
+   cosP1nPsi1M1nPhi2MPhi3 = (p1n0kRe*(pow(dReQ1n,2.)-pow(dImQ1n,2.))+2.*p1n0kIm*dReQ1n*dImQ1n
+                          - 1.*(p1n0kRe*dReQ2n+p1n0kIm*dImQ2n)  
+                          - 2.*mq*dReQ1n+2.*q1n0kRe)
+                          / (mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.));
+   // fill profile for <<w1 w2 w3 cos n(psi1+phi2)>>:
+   fDiffFlowCorrectionTermsForNUAPro[t][pe][1][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],cosP1nPsi1M1nPhi2MPhi3,mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.));
+   // histogram to store <w1 w2 w3 cos n(psi1+phi2)> e-b-e (needed in some other methods):
+   fDiffFlowCorrectionTermsForNUAEBE[t][pe][1][3]->SetBinContent(b,cosP1nPsi1M1nPhi2MPhi3);
+  } // end of if(mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.))   
+ 
+ 
+ } // end of for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+  
+ */
+ 
+} // end of AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights(TString type, TString ptOrEta)
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights(TString type, TString ptOrEta)
+{
+ // Calculate correction terms for non-uniform acceptance for differential flow (sin terms).
+  
+ type+=""; // to be removed
+ ptOrEta+=""; // to be removed
+ 
+ // Results are stored in fDiffFlowCorrectionTermsForNUAPro[t][pe][0][cti], where cti runs as follows:
+ //  0: <<sin n(psi1)>>
+ //  1: <<sin n(psi1+phi2)>>
+ //  2: <<sin n(psi1+phi2-phi3)>>
+ //  3: <<sin n(psi1-phi2-phi3)>>:
+ //  4:
+ //  5:
+ //  6:
+ 
+ /*
+ 
+ // multiplicity:
+ Double_t dMult = (*fSMpk)(0,0);
+ 
+ // real and imaginary parts of non-weighted Q-vectors evaluated in harmonics n, 2n, 3n and 4n: 
+ Double_t dReQ1n = (*fReQ)(0,0);
+ Double_t dReQ2n = (*fReQ)(1,0);
+ //Double_t dReQ3n = (*fReQ)(2,0);
+ //Double_t dReQ4n = (*fReQ)(3,0);
+ Double_t dImQ1n = (*fImQ)(0,0);
+ Double_t dImQ2n = (*fImQ)(1,0);
+ //Double_t dImQ3n = (*fImQ)(2,0);
+ //Double_t dImQ4n = (*fImQ)(3,0);
+
+ Int_t t = -1; // type flag 
+ Int_t pe = -1; // ptEta flag
+ 
+ if(type == "RP")
+ {
+  t = 0;
+ } else if(type == "POI")
+   {
+    t = 1;
+   }
+
+ if(ptOrEta == "Pt")
+ {
+  pe = 0;
+ } else if(ptOrEta == "Eta")
+   {
+    pe = 1;
+   }
+    
+ Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
+ Double_t minPtEta[2] = {fPtMin,fEtaMin};
+ //Double_t maxPtEta[2] = {fPtMax,fEtaMax};
+ Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
+
+ // looping over all bins and calculating correction terms: 
+ for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ {
+  // real and imaginary parts of p_{m*n,0} (non-weighted Q-vector evaluated for POIs in particular pt or eta bin): 
+  Double_t p1n0kRe = 0.;
+  Double_t p1n0kIm = 0.;
+
+  // number of POIs in particular pt or eta bin:
+  Double_t mp = 0.;
+
+  // real and imaginary parts of q_{m*n,0} (non-weighted Q-vector evaluated for particles which are both RPs and POIs in particular pt or eta bin):
+  Double_t q1n0kRe = 0.;
+  Double_t q1n0kIm = 0.;
+  Double_t q2n0kRe = 0.;
+  Double_t q2n0kIm = 0.;
+
+  // number of particles which are both RPs and POIs in particular pt or eta bin:
+  Double_t mq = 0.;
+   
+  if(type == "POI")
+  {
+   // q_{m*n,0}:
+   q1n0kRe = fReRPQ1dEBE[2][pe][0][0]->GetBinContent(fReRPQ1dEBE[2][pe][0][0]->GetBin(b))
+           * fReRPQ1dEBE[2][pe][0][0]->GetBinEntries(fReRPQ1dEBE[2][pe][0][0]->GetBin(b));
+   q1n0kIm = fImRPQ1dEBE[2][pe][0][0]->GetBinContent(fImRPQ1dEBE[2][pe][0][0]->GetBin(b))
+           * fImRPQ1dEBE[2][pe][0][0]->GetBinEntries(fImRPQ1dEBE[2][pe][0][0]->GetBin(b));
+   q2n0kRe = fReRPQ1dEBE[2][pe][1][0]->GetBinContent(fReRPQ1dEBE[2][pe][1][0]->GetBin(b))
+           * fReRPQ1dEBE[2][pe][1][0]->GetBinEntries(fReRPQ1dEBE[2][pe][1][0]->GetBin(b));
+   q2n0kIm = fImRPQ1dEBE[2][pe][1][0]->GetBinContent(fImRPQ1dEBE[2][pe][1][0]->GetBin(b))
+           * fImRPQ1dEBE[2][pe][1][0]->GetBinEntries(fImRPQ1dEBE[2][pe][1][0]->GetBin(b));         
+                 
+   mq = fReRPQ1dEBE[2][pe][0][0]->GetBinEntries(fReRPQ1dEBE[2][pe][0][0]->GetBin(b)); // to be improved (cross-checked by accessing other profiles here)
+  } 
+  else if(type == "RP")
+  {
+   // q_{m*n,0}:
+   q1n0kRe = fReRPQ1dEBE[0][pe][0][0]->GetBinContent(fReRPQ1dEBE[0][pe][0][0]->GetBin(b))
+           * fReRPQ1dEBE[0][pe][0][0]->GetBinEntries(fReRPQ1dEBE[0][pe][0][0]->GetBin(b));
+   q1n0kIm = fImRPQ1dEBE[0][pe][0][0]->GetBinContent(fImRPQ1dEBE[0][pe][0][0]->GetBin(b))
+           * fImRPQ1dEBE[0][pe][0][0]->GetBinEntries(fImRPQ1dEBE[0][pe][0][0]->GetBin(b));
+   q2n0kRe = fReRPQ1dEBE[0][pe][1][0]->GetBinContent(fReRPQ1dEBE[0][pe][1][0]->GetBin(b))
+           * fReRPQ1dEBE[0][pe][1][0]->GetBinEntries(fReRPQ1dEBE[0][pe][1][0]->GetBin(b));
+   q2n0kIm = fImRPQ1dEBE[0][pe][1][0]->GetBinContent(fImRPQ1dEBE[0][pe][1][0]->GetBin(b))
+           * fImRPQ1dEBE[0][pe][1][0]->GetBinEntries(fImRPQ1dEBE[0][pe][1][0]->GetBin(b));         
+                 
+   mq = fReRPQ1dEBE[0][pe][0][0]->GetBinEntries(fReRPQ1dEBE[0][pe][0][0]->GetBin(b)); // to be improved (cross-checked by accessing other profiles here)  
+  }    
+  if(type == "POI")
+  {
+   // p_{m*n,0}:
+   p1n0kRe = fReRPQ1dEBE[1][pe][0][0]->GetBinContent(fReRPQ1dEBE[1][pe][0][0]->GetBin(b))
+           * fReRPQ1dEBE[1][pe][0][0]->GetBinEntries(fReRPQ1dEBE[1][pe][0][0]->GetBin(b));
+   p1n0kIm = fImRPQ1dEBE[1][pe][0][0]->GetBinContent(fImRPQ1dEBE[1][pe][0][0]->GetBin(b))  
+           * fImRPQ1dEBE[1][pe][0][0]->GetBinEntries(fImRPQ1dEBE[1][pe][0][0]->GetBin(b));
+            
+   mp = fReRPQ1dEBE[1][pe][0][0]->GetBinEntries(fReRPQ1dEBE[1][pe][0][0]->GetBin(b)); // to be improved (cross-checked by accessing other profiles here)
+    
+   t = 1; // typeFlag = RP or POI
+  }
+  else if(type == "RP")
+  {
+   // p_{m*n,0} = q_{m*n,0}:
+   p1n0kRe = q1n0kRe; 
+   p1n0kIm = q1n0kIm; 
+           
+   mp = mq; 
+   
+   t = 0; // typeFlag = RP or POI
+  }
+
+  // <<sin n(psi1)>>:
+  Double_t sinP1nPsi = 0.;
+  if(mp)
+  {
+   sinP1nPsi = p1n0kIm/mp;
+   // fill profile for <<sin n(psi1)>>:
+   fDiffFlowCorrectionTermsForNUAPro[t][pe][0][0]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sinP1nPsi,mp);
+   // histogram to store <sin n(psi1)> e-b-e (needed in some other methods):
+   fDiffFlowCorrectionTermsForNUAEBE[t][pe][0][0]->SetBinContent(b,sinP1nPsi);
+  } // end of if(mp)   
+  
+  // <<sin n(psi1+phi2)>>:
+  Double_t sinP1nPsiP1nPhi = 0.;
+  if(mp*dMult-mq)
+  {
+   sinP1nPsiP1nPhi = (p1n0kRe*dImQ1n+p1n0kIm*dReQ1n-q2n0kIm)/(mp*dMult-mq);
+   // fill profile for <<sin n(psi1+phi2)>>:
+   fDiffFlowCorrectionTermsForNUAPro[t][pe][0][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sinP1nPsiP1nPhi,mp*dMult-mq);
+   // histogram to store <sin n(psi1+phi2)> e-b-e (needed in some other methods):
+   fDiffFlowCorrectionTermsForNUAEBE[t][pe][0][1]->SetBinContent(b,sinP1nPsiP1nPhi);
+  } // end of if(mp*dMult-mq)   
+  
+  // <<sin n(psi1+phi2-phi3)>>:
+  Double_t sinP1nPsi1P1nPhi2MPhi3 = 0.;
+  if(mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.))
+  {
+   sinP1nPsi1P1nPhi2MPhi3 = (p1n0kIm*(pow(dImQ1n,2.)+pow(dReQ1n,2.)-dMult)
+                          - 1.*(q2n0kIm*dReQ1n-q2n0kRe*dImQ1n)  
+                          - mq*dImQ1n+2.*q1n0kIm)
+                          / (mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.));
+   // fill profile for <<sin n(psi1+phi2)>>:
+   fDiffFlowCorrectionTermsForNUAPro[t][pe][0][2]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sinP1nPsi1P1nPhi2MPhi3,mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.));
+   // histogram to store <sin n(psi1+phi2)> e-b-e (needed in some other methods):
+   fDiffFlowCorrectionTermsForNUAEBE[t][pe][0][2]->SetBinContent(b,sinP1nPsi1P1nPhi2MPhi3);
+  } // end of if(mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.))   
+  
+  // <<sin n(psi1-phi2-phi3)>>:
+  Double_t sinP1nPsi1M1nPhi2MPhi3 = 0.;
+  if(mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.))
+  {
+   sinP1nPsi1M1nPhi2MPhi3 = (p1n0kIm*(pow(dReQ1n,2.)-pow(dImQ1n,2.))-2.*p1n0kRe*dReQ1n*dImQ1n
+                          - 1.*(p1n0kIm*dReQ2n-p1n0kRe*dImQ2n)
+                          + 2.*mq*dImQ1n-2.*q1n0kIm)
+                          / (mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.));
+   // fill profile for <<sin n(psi1+phi2)>>:
+   fDiffFlowCorrectionTermsForNUAPro[t][pe][0][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sinP1nPsi1M1nPhi2MPhi3,mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.));
+   // histogram to store <sin n(psi1+phi2)> e-b-e (needed in some other methods):
+   fDiffFlowCorrectionTermsForNUAEBE[t][pe][0][3]->SetBinContent(b,sinP1nPsi1M1nPhi2MPhi3);
+  } // end of if(mq*(dMult-1.)*(dMult-2.)+(mp-mq)*dMult*(dMult-1.))   
+ } // end of for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ 
+ */
+
+} // end of AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights(TString type, TString ptOrEta)
+
+
+//================================================================================================================================
+
+   
+void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
+{
+ // Evaluate with nested loops correction terms for non-uniform acceptance 
+ // with using particle weights (both sin and cos terms) relevant for differential flow.
+ 
+ anEvent->NumberOfTracks(); // to be removed
+ ptOrEta+=""; // to be removed
+ type+=""; // to be removed
+ 
+ // Remark 1: "w1" in expressions bellow is a particle weight used only for particles which were 
+ //           flagged both as POI and RP.
+ // Remark 2: Reduced correction terms for non-uniform acceptance are evaluated in pt bin number fCrossCheckInPtBinNo 
+ //           and eta bin number fCrossCheckInEtaBinNo both for RPs and POIs.
+ // Remark 3: Results are stored in 1 bin profiles fDiffFlowDirectCorrections[t][pe][sc][cti], where first three indices runs as: 
+ //           [0=RP,1=POI][0=Pt,1=Eta][0=sin terms,1=cos terms], whilst the cti (correction term index) runs as follows: 
+ //  cti: 
+ //    0: <<w1 sc n(psi1)>>
+ //    1: <<w1 w2 sc n(psi1+phi2)>> 
+ //    2: <<w1 w2 w3 sc n(psi1+phi2-phi3)>>
+ //    3: <<w1 w2 w3 sc n(psi1-phi2-phi3)>>
+ //    4:
+ //    5:
+ //    6:
+    
+ /*
+ 
+ Int_t typeFlag = -1;
+ Int_t ptEtaFlag = -1;
+ if(type == "RP")
+ {
+  typeFlag = 0;
+ } else if(type == "POI")
+   {
+    typeFlag = 1;
+   }      
+ if(ptOrEta == "Pt")
+ {
+  ptEtaFlag = 0;
+ } else if(ptOrEta == "Eta")
+   {
+    ptEtaFlag = 1;
+   } 
+ // shortcuts:
+ Int_t t = typeFlag;
+ Int_t pe = ptEtaFlag;
+      
+ Double_t lowerPtEtaEdge[2] = {fPtMin+(fCrossCheckInPtBinNo-1)*fPtBinWidth,fEtaMin+(fCrossCheckInEtaBinNo-1)*fEtaBinWidth};
+ Double_t upperPtEtaEdge[2] = {fPtMin+fCrossCheckInPtBinNo*fPtBinWidth,fEtaMin+fCrossCheckInEtaBinNo*fEtaBinWidth};
+ Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
+ 
+ Int_t nPrim = anEvent->NumberOfTracks(); 
+ AliFlowTrackSimple *aftsTrack = NULL;
+ 
+ Double_t psi1=0., phi2=0., phi3=0.;// phi4=0.;// phi5=0., phi6=0., phi7=0., phi8=0.;
+ 
+ Int_t n = fHarmonic; 
+ 
+ // 1-particle correction terms:
+ for(Int_t i1=0;i1<nPrim;i1++)
+ {
+  aftsTrack=anEvent->GetTrack(i1);
+  // POI condition (first particle in the correlator must be POI): // to be improved (this can be implemented much better)
+  if(ptOrEta == "Pt")
+  { 
+   if(!((aftsTrack->Pt()>=lowerPtEtaEdge[pe] && aftsTrack->Pt()<upperPtEtaEdge[pe]) && (aftsTrack->InPOISelection()))) continue;
+  } else if (ptOrEta == "Eta")
+    {
+     if(!((aftsTrack->Eta()>=lowerPtEtaEdge[pe] && aftsTrack->Eta()<upperPtEtaEdge[pe]) && (aftsTrack->InPOISelection()))) continue;    
+    }
+  psi1=aftsTrack->Phi(); 
+  // sin terms: 
+  fDiffFlowDirectCorrectionTermsForNUA[t][pe][0][0]->Fill(lowerPtEtaEdge[pe]+binWidthPtEta[pe]/2.,sin(n*psi1),1.); // <<sin(n*(psi1))>>  
+  // cos terms: 
+  fDiffFlowDirectCorrectionTermsForNUA[t][pe][1][0]->Fill(lowerPtEtaEdge[pe]+binWidthPtEta[pe]/2.,cos(n*psi1),1.); // <<cos(n*(psi1))>>  
+ }//end of for(Int_t i1=0;i1<nPrim;i1++)
+   
+ // 2-particle correction terms:
+ for(Int_t i1=0;i1<nPrim;i1++)
+ {
+  aftsTrack=anEvent->GetTrack(i1);
+  // POI condition (first particle in the correlator must be POI): // to be improved (this can be implemented much better)
+  if(ptOrEta == "Pt")
+  { 
+   if(!((aftsTrack->Pt()>=lowerPtEtaEdge[pe] && aftsTrack->Pt()<upperPtEtaEdge[pe]) && (aftsTrack->InPOISelection()))) continue;
+  } else if (ptOrEta == "Eta")
+    {
+     if(!((aftsTrack->Eta()>=lowerPtEtaEdge[pe] && aftsTrack->Eta()<upperPtEtaEdge[pe]) && (aftsTrack->InPOISelection()))) continue;    
+    }
+  psi1=aftsTrack->Phi(); 
+  for(Int_t i2=0;i2<nPrim;i2++)
+  {
+   if(i2==i1) continue;
+   aftsTrack=anEvent->GetTrack(i2);
+   // RP condition (!(first) particle in the correlator must be RP):
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi2=aftsTrack->Phi();   
+   // sin terms: 
+   fDiffFlowDirectCorrectionTermsForNUA[t][pe][0][1]->Fill(lowerPtEtaEdge[pe]+binWidthPtEta[pe]/2.,sin(n*(psi1+phi2)),1.); // <<sin(n*(psi1+phi2))>>  
+   // cos terms: 
+   fDiffFlowDirectCorrectionTermsForNUA[t][pe][1][1]->Fill(lowerPtEtaEdge[pe]+binWidthPtEta[pe]/2.,cos(n*(psi1+phi2)),1.); // <<cos(n*(psi1+phi2))>>  
+  }//end of for(Int_t i2=0;i2<nPrim;i2++)
+ }//end of for(Int_t i1=0;i1<nPrim;i1++)   
+ 
+ // 3-particle correction terms:
+ for(Int_t i1=0;i1<nPrim;i1++)
+ {
+  aftsTrack=anEvent->GetTrack(i1);
+  // POI condition (first particle in the correlator must be POI): // to be improved (this can be implemented much better)
+  if(ptOrEta == "Pt")
+  { 
+   if(!((aftsTrack->Pt()>=lowerPtEtaEdge[pe] && aftsTrack->Pt()<upperPtEtaEdge[pe]) && (aftsTrack->InPOISelection())))continue;
+  } else if (ptOrEta == "Eta")
+    {
+     if(!((aftsTrack->Eta()>=lowerPtEtaEdge[pe] && aftsTrack->Eta()<upperPtEtaEdge[pe]) && (aftsTrack->InPOISelection())))continue;    
+    }
+  psi1=aftsTrack->Phi();
+  for(Int_t i2=0;i2<nPrim;i2++)
+  {
+   if(i2==i1) continue;
+   aftsTrack=anEvent->GetTrack(i2);
+   // RP condition (!(first) particle in the correlator must be RP):
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi2=aftsTrack->Phi();
+   for(Int_t i3=0;i3<nPrim;i3++)
+   {
+    if(i3==i1||i3==i2) continue;
+    aftsTrack=anEvent->GetTrack(i3);
+    // RP condition (!(first) particle in the correlator must be RP):
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi3=aftsTrack->Phi();
+    // sin terms: 
+    fDiffFlowDirectCorrectionTermsForNUA[t][pe][0][2]->Fill(lowerPtEtaEdge[pe]+binWidthPtEta[pe]/2.,sin(n*(psi1+phi2-phi3)),1.); // <<sin(n*(psi1+phi2-phi3))>>  
+    fDiffFlowDirectCorrectionTermsForNUA[t][pe][0][3]->Fill(lowerPtEtaEdge[pe]+binWidthPtEta[pe]/2.,sin(n*(psi1-phi2-phi3)),1.); // <<sin(n*(psi1-phi2-phi3))>>  
+    // cos terms: 
+    fDiffFlowDirectCorrectionTermsForNUA[t][pe][1][2]->Fill(lowerPtEtaEdge[pe]+binWidthPtEta[pe]/2.,cos(n*(psi1+phi2-phi3)),1.); // <<cos(n*(psi1+phi2-phi3))>>  
+    fDiffFlowDirectCorrectionTermsForNUA[t][pe][1][3]->Fill(lowerPtEtaEdge[pe]+binWidthPtEta[pe]/2.,cos(n*(psi1-phi2-phi3)),1.); // <<cos(n*(psi1-phi2-phi3))>>  
+   }//end of for(Int_t i3=0;i3<nPrim;i3++)  
+  }//end of for(Int_t i2=0;i2<nPrim;i2++)  
+ }//end of for(Int_t i1=0;i1<nPrim;i1++)
+ 
+ */ 
+               
+} // end of void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
+
+
+
+
+
