@@ -365,6 +365,18 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
 	}
       }
     }
+  }else{
+    while (nentr--) {
+      AliESDtrack *track=event->GetTrack(nentr);
+      if ((track->GetStatus()&AliESDtrack::kITSin) == AliESDtrack::kITSin){
+	Int_t idx[12];
+	Int_t ncl = track->GetITSclusters(idx);
+	for(Int_t k=0;k<ncl;k++){
+	  AliITSRecPoint* cll = (AliITSRecPoint*)GetCluster(idx[k]);
+	  cll->ResetBit(kSAflag);
+	}
+      }
+    }
   }
   //Get primary vertex
   Double_t primaryVertex[3];
