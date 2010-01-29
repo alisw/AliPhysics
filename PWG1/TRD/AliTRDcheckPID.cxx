@@ -273,13 +273,13 @@ TH1 *AliTRDcheckPID::PlotLQ(const AliTRDtrackV1 *track)
   //
 
   if(!fkESD){
-    AliWarning("No ESD info available.");
+    AliDebug(2, "No ESD info available.");
     return NULL;
   }
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
 
@@ -338,13 +338,13 @@ TH1 *AliTRDcheckPID::PlotNN(const AliTRDtrackV1 *track)
   //
 
   if(!fkESD){
-    AliWarning("No ESD info available.");
+    AliDebug(2, "No ESD info available.");
     return NULL;
   }
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
   
@@ -403,13 +403,13 @@ TH1 *AliTRDcheckPID::PlotESD(const AliTRDtrackV1 *track)
   //
 
   if(!fkESD){
-    AliWarning("No ESD info available.");
+    AliDebug(2, "No ESD info available.");
     return NULL;
   }
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
   
@@ -467,7 +467,7 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
   
@@ -523,7 +523,7 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
   
@@ -577,7 +577,7 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
   
@@ -633,7 +633,7 @@ TH1 *AliTRDcheckPID::PlotNClus(const AliTRDtrackV1 *track)
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
   
@@ -681,7 +681,7 @@ TH1 *AliTRDcheckPID::PlotNTracklets(const AliTRDtrackV1 *track)
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
   
@@ -720,7 +720,7 @@ TH1 *AliTRDcheckPID::PlotMom(const AliTRDtrackV1 *track)
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
   
@@ -759,7 +759,7 @@ TH1 *AliTRDcheckPID::PlotMomBin(const AliTRDtrackV1 *track)
 
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(2, "No Track defined.");
     return NULL;
   }
   
