@@ -36,7 +36,7 @@ const Int_t kNumberOfEventsPerFile = 100;
 //---------------------------------------------------------------------------
 
 const Bool_t kMC = kTRUE; //With real data kMC = kFALSE
-const TString kInputData = "ESD";//ESD, AOD, MC
+const TString kInputData = "ESD";//ESD, AOD, MC or deltaAOD
 TString kTreeName = "esdTree";
 
 void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisPhoton")
@@ -54,7 +54,7 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisPhoton")
   //Create chain from ESD and from cross sections files, look below for options.
   //------------------------------------------------------------------------------------------------- 
   if(kInputData == "ESD") kTreeName = "esdTree" ;
-  else if(kInputData == "AOD") kTreeName = "aodTree" ;
+  else if(kInputData.Contains("AOD")) kTreeName = "aodTree" ;
   else if (kInputData == "MC") kTreeName = "TE" ;
   else {
     cout<<"Wrong  data type "<<kInputData<<endl;
@@ -81,20 +81,23 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisPhoton")
     }
 
     // AOD output handler
-    AliAODHandler* aodoutHandler   = new AliAODHandler();
-    aodoutHandler->SetOutputFileName("aod.root");
-    //aodoutHandler->SetCreateNonStandardAOD();
-    mgr->SetOutputEventHandler(aodoutHandler);
-    
+    if(kInputData!="deltaAOD"){
+      AliAODHandler* aodoutHandler   = new AliAODHandler();
+      aodoutHandler->SetOutputFileName("aod.root");
+      //aodoutHandler->SetCreateNonStandardAOD();
+      mgr->SetOutputEventHandler(aodoutHandler);
+    }
+
     //input
     if(kInputData == "ESD"){
       // ESD handler
       AliESDInputHandler *esdHandler = new AliESDInputHandler();
       mgr->SetInputEventHandler(esdHandler);
     }
-    if(kInputData == "AOD"){
+    if(kInputData.Contains("AOD")){
       // AOD handler
       AliAODInputHandler *aodHandler = new AliAODInputHandler();
+      if(kInputData == "deltaAOD") aodHandler->AddFriend("deltaAODPartCorr.root");
       mgr->SetInputEventHandler(aodHandler);
     }
 
@@ -115,7 +118,7 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisPhoton")
 							      AliAnalysisManager::kOutputContainer, "histos.root");
     
     mgr->ConnectInput  (taskpwg4,     0, cinput1);
-    mgr->ConnectOutput (taskpwg4,     0, coutput1 );
+    if(kInputData != "deltaAOD")   mgr->ConnectOutput (taskpwg4,     0, coutput1 );
     mgr->ConnectOutput (taskpwg4,     1, coutput2 );
   
     //------------------------  
@@ -351,7 +354,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       
       TString datafile="";
       if(kInputData == "ESD") datafile = "AliESDs.root" ;
-      else if(kInputData == "AOD") datafile = "aod.root" ;
+      else if(kInputData.Contains("AOD")) datafile = "AliAOD.root" ;
       else if(kInputData == "MC")  datafile = "galice.root" ;
       
       //Loop on ESD files, add them to chain

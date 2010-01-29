@@ -1,4 +1,4 @@
-AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calorimeter, Bool_t kUseKinematics = kFALSE, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE)
 {
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
   
@@ -16,17 +16,23 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     ::Error("AddTaskPartCorr", "This task requires an input event handler");
     return NULL;
   }
-   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+   TString inputDataType = "AOD";
+   if(!data.Contains("delta"))
+	   inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
    //cout<<"DATA TYPE :: "<<inputDataType<<endl;
    // inputDataType: data managed by the input handler
    // data: can be same as one managed by input handler, or the output AOD created by the filter. By default use AOD
    
+   Bool_t kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
+
+   cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
+
    // Configure analysis
    //===========================================================================
    
    //Reader
    AliCaloTrackReader * reader = 0x0;
-   if(data=="AOD") reader = new AliCaloTrackAODReader();
+   if(data.Contains("AOD")) reader = new AliCaloTrackAODReader();
    else if(data=="ESD") reader = new AliCaloTrackESDReader();
    else if(data=="MC" && dataType == "ESD") reader = new AliCaloTrackMCReader();
    //reader->SetDebug(10);//10 for lots of messages
@@ -41,6 +47,15 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     reader->SwitchOnPHOSCells();  
     reader->SwitchOnPHOS();
   }
+	printf("data");
+  // for case data="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
+  if(data.Contains("delta")){
+	reader->SwitchOffEMCAL();
+	reader->SwitchOffPHOS();
+	reader->SwitchOffEMCALCells(); 
+	reader->SwitchOffPHOSCells(); 
+  }
+	
   if(kUseKinematics){
     if(inputDataType == "ESD"){
       reader->SwitchOnStack();          
@@ -142,7 +157,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     anaphoton1->SwitchOnFiducialCut();
     anaphoton1->SetFiducialCut(fidCut1stYear);
   }
-  anaphoton1->SetOutputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
+	
+  if(!data.Contains("delta")) anaphoton1->SetOutputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
+  else                        anaphoton1->SetInputAODName (Form("PhotonsForIM%s",calorimeter.Data()));
   //Set Histograms bins and ranges
   anaphoton1->SetHistoPtRangeAndNBins(0, 50, 500) ;
   //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
@@ -193,8 +210,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
 		anaphoton2->SwitchOnFiducialCut();
 		anaphoton2->SetFiducialCut(fidCut1stYear);
   }
-  anaphoton2->SetOutputAODName(Form("Photons%s",calorimeter.Data()));
-  anaphoton2->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+	
+  if(!data.Contains("delta")) {
+		anaphoton2->SetOutputAODName(Form("Photons%s",calorimeter.Data()));
+		anaphoton2->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else anaphoton2->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   anaphoton2->AddToHistogramsName("AnaPhotonCorr_");
   //Set Histograms bins and ranges
   anaphoton2->SetHistoPtRangeAndNBins(0, 50, 500) ;
@@ -253,8 +274,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // ### Correlation with hadrons
   AliAnaParticleHadronCorrelation *anacorrhadron = new AliAnaParticleHadronCorrelation();
   anacorrhadron->SetInputAODName(Form("Photons%s",calorimeter.Data()));
-  anacorrhadron->SetOutputAODName(Form("CorrGammaHadrons%s",calorimeter.Data()));
-  anacorrhadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  if(!data.Contains("delta")) {
+	  anacorrhadron->SetOutputAODName(Form("CorrGammaHadrons%s",calorimeter.Data()));
+	  anacorrhadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else anacorrhadron->SetInputAODName(Form("CorrGammaHadrons%s",calorimeter.Data()));
+	
   anacorrhadron->AddToHistogramsName("AnaHadronCorrPhoton_");
   anacorrhadron->SetDebug(-1);
   anacorrhadron->SwitchOffCaloPID();
@@ -280,8 +305,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // ### Correlation with hadrons
   AliAnaParticleHadronCorrelation *anacorrisohadron = new AliAnaParticleHadronCorrelation();
   anacorrisohadron->SetInputAODName(Form("Photons%s",calorimeter.Data()));
-  anacorrisohadron->SetOutputAODName(Form("CorrIsoGammaHadrons%s",calorimeter.Data()));
-  anacorrisohadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  if(!data.Contains("delta")) {
+	  anacorrisohadron->SetOutputAODName(Form("CorrIsoGammaHadrons%s",calorimeter.Data()));
+	  anacorrisohadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else  anacorrisohadron->SetInputAODName(Form("CorrIsoGammaHadrons%s",calorimeter.Data()));
+	
   anacorrisohadron->AddToHistogramsName("AnaHadronCorrIsoPhoton_");
   anacorrisohadron->SetDebug(-1);
   anacorrisohadron->SwitchOffCaloPID();
@@ -320,8 +349,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0ebe->SetMinPt(0);
   anapi0ebe->SetCalorimeter(calorimeter);
   anapi0ebe->SetInputAODName(Form("Photons%s",calorimeter.Data()));
-  anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
-  anapi0ebe->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  if(!data.Contains("delta")) {
+	  anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
+	  anapi0ebe->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else  anapi0ebe->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
+	
   if(kUseKinematics) anapi0ebe->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else  anapi0ebe->SwitchOffDataMC() ;	
   anapi0ebe->SetNeutralMesonSelection(nms);
@@ -359,8 +392,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // ### Pi0 Correlation with hadrons, not isolated
   AliAnaParticleHadronCorrelation *anacorrhadronpi0 = new AliAnaParticleHadronCorrelation();
   anacorrhadronpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
-  anacorrhadronpi0->SetOutputAODName(Form("CorrPi0Hadrons%s",calorimeter.Data()));
-  anacorrhadronpi0->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  if(!data.Contains("delta")){ 
+	  anacorrhadronpi0->SetOutputAODName(Form("CorrPi0Hadrons%s",calorimeter.Data()));
+	  anacorrhadronpi0->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else anacorrhadronpi0->SetInputAODName(Form("CorrPi0Hadrons%s",calorimeter.Data()));
+	
   anacorrhadronpi0->AddToHistogramsName("AnaHadronCorrPi0_");
   anacorrhadronpi0->SetDebug(-1);
   anacorrhadronpi0->SwitchOffCaloPID();
@@ -386,8 +423,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // ### Pi0 Correlation with hadrons, isolated
   AliAnaParticleHadronCorrelation *anacorrhadronisopi0 = new AliAnaParticleHadronCorrelation();
   anacorrhadronisopi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
-  anacorrhadronisopi0->SetOutputAODName(Form("CorrIsoPi0Hadrons%s",calorimeter.Data()));
-  anacorrhadronisopi0->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  if(!data.Contains("delta")) {
+		anacorrhadronisopi0->SetOutputAODName(Form("CorrIsoPi0Hadrons%s",calorimeter.Data()));
+		anacorrhadronisopi0->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else  anacorrhadronisopi0->SetInputAODName(Form("CorrIsoPi0Hadrons%s",calorimeter.Data()));
+	
   anacorrhadronisopi0->AddToHistogramsName("AnaHadronCorrIsoPi0_");
   anacorrhadronisopi0->SetDebug(-1);
   anacorrhadronisopi0->SwitchOffCaloPID();
@@ -435,7 +476,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
-  maker->AddAnalysis(qa,0);
+  if(!data.Contains("delta")) maker->AddAnalysis(qa,0);
   maker->AddAnalysis(anaphoton1,1);
   maker->AddAnalysis(anapi0,2);
   maker->AddAnalysis(anaphoton2,3);
@@ -449,9 +490,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anacorrhadronisopi0,11);
   maker->AddAnalysis(anaomegaToPi0Gamma,12);  
  
-  maker->SetAnaDebug(-1)  ;
+  maker->SetAnaDebug(0)  ;
   maker->SwitchOnHistogramsMaker()  ;
-  maker->SwitchOnAODsMaker()  ;
+  if(data.Contains("delta")) maker->SwitchOffAODsMaker()  ;
+  else                       maker->SwitchOnAODsMaker()  ;
+	
   if(kPrintSettings) maker->Print("");
   
   printf("======================== \n");
@@ -464,7 +507,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
   task->SetAnalysisMaker(maker);
-  if(!kSimulation)task->SelectCollisionCandidates(); //AliPhysicsSelection has to be attached before.
+  //if(!kSimulation)task->SelectCollisionCandidates(); //AliPhysicsSelection has to be attached before.
   mgr->AddTask(task);
   
   char name[128];
@@ -482,7 +525,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //==============================================================================
   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
   // AOD output slot will be used in a different way in future
-  mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
+  if(!data.Contains("delta")) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
   
   return task;

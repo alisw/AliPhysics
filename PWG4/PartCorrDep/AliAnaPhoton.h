@@ -53,6 +53,14 @@ public:
   void SwitchOnTrackMatchRejection()  {fRejectTrackMatch = kTRUE ; }
   void SwitchOffTrackMatchRejection() {fRejectTrackMatch = kFALSE ; }  
 
+  Bool_t IsCheckConversionOn()   const {return fCheckConversion ; }
+  void SwitchOnConversionChecker()  {fCheckConversion = kTRUE ; }
+  void SwitchOffConversionChecker() {fCheckConversion = kFALSE ; }  
+	
+  Bool_t AreConvertedPairsInAOD()   const {return fAddConvertedPairsToAOD ; }
+  void SwitchOnAdditionConvertedPairsToAOD()  {fAddConvertedPairsToAOD = kTRUE ; }
+  void SwitchOffAdditionConvertedPairsToAOD() {fAddConvertedPairsToAOD = kFALSE ; }  
+	
   void InitParameters();
  
   void SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
@@ -60,15 +68,21 @@ public:
     fMinDist2 = m2;
     fMinDist3 = m3;
   }
- 
+	
+  Float_t GetMassCut()    const {return fMassCut ; }
+  void SetMassCut(Float_t m)    {fMassCut = m ; }
+	
   private:
  
   TString fCalorimeter ; // Calorimeter where the gamma is searched;
   Float_t fMinDist ;     // Minimal distance to bad channel to accept cluster
   Float_t fMinDist2;     // Cuts on Minimal distance to study acceptance evaluation
   Float_t fMinDist3;     // One more cut on distance used for acceptance-efficiency study
-  Bool_t fRejectTrackMatch ; //If PID on, reject clusters which have an associated TPC track
-  
+  Bool_t  fRejectTrackMatch ;      //If PID on, reject clusters which have an associated TPC track
+  Bool_t  fCheckConversion;        // Combine pairs of clusters with mass close to 0
+  Bool_t  fAddConvertedPairsToAOD; // Put Converted pairs in AOD
+  Float_t fMassCut;                // Mass cut for the conversion pairs selection
+	
   //Histograms  
   TH1F * fhPtPhoton   ; //! Number of identified photon vs transerse momentum 
   TH2F * fhPhiPhoton  ; //! Azimuthal angle of identified  photon vs transerse momentum 
@@ -114,7 +128,7 @@ public:
   TH2F * fhPhiUnknown;  //! Phi of identified  Unknown gamma
   TH2F * fhEtaUnknown;  //! eta of identified  Unknown gamma
 
-   ClassDef(AliAnaPhoton,5)
+   ClassDef(AliAnaPhoton,6)
 
 } ;
  

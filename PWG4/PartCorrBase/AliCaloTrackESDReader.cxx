@@ -199,11 +199,11 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
       if (clus->IsEMCAL()){
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
-	if(fDebug > 3 && momentum.E() > 0.2) printf("AliCaloTrackESDReader::FillInputEMCAL() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	if(fDebug > 3 && momentum.E() > 0.1) printf("AliCaloTrackESDReader::FillInputEMCAL() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta()); 
 	if(fEMCALPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"EMCAL")){
 	  
-	  if(fDebug > 2 && momentum.E() > 0.2) printf("AliCaloTrackESDReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackESDReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  
 	  clus->GetPosition(pos) ;
@@ -228,7 +228,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 				      clus->GetEmcCpvDistance(),  clus->GetNExMax(), clus->GetTOF()) ;
 	  
 	  
-	  if(fDebug > 3 && momentum.E() > 0.2)
+	  if(fDebug > 3 && momentum.E() > 0.1)
 	    printf("AliCaloTrackESDReader::FillInputEMCAL() - Selected clusters Distance BC %2.2f, dispersion %2.2f, M20 %f, M02 %3.2f, NexMax %d, TOF %e\n",
 		   clus->GetDistanceToBadChannel(), clus->GetClusterDisp(),clus->GetM20(), clus->GetM02(),
 		   clus->GetNExMax(), clus->GetTOF());

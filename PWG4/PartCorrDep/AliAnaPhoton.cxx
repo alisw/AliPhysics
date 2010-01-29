@@ -47,6 +47,7 @@ ClassImp(AliAnaPhoton)
   AliAnaPhoton::AliAnaPhoton() : 
     AliAnaPartCorrBaseClass(), fCalorimeter(""), 
     fMinDist(0.),fMinDist2(0.),fMinDist3(0.),fRejectTrackMatch(0),
+	fCheckConversion(kFALSE),fAddConvertedPairsToAOD(kFALSE), fMassCut(0),
 	fhPtPhoton(0),fhPhiPhoton(0),fhEtaPhoton(0),
     //MC
     fhDeltaE(0), fhDeltaPt(0),fhRatioE(0), fhRatioPt(0),fh2E(0),fh2Pt(0),
@@ -69,9 +70,11 @@ ClassImp(AliAnaPhoton)
 //____________________________________________________________________________
 AliAnaPhoton::AliAnaPhoton(const AliAnaPhoton & g) : 
   AliAnaPartCorrBaseClass(g), fCalorimeter(g.fCalorimeter),
-   fMinDist(g.fMinDist),fMinDist2(g.fMinDist2), fMinDist3(g.fMinDist3),
-   fRejectTrackMatch(g.fRejectTrackMatch),
-   fhPtPhoton(g.fhPtPhoton),fhPhiPhoton(g.fhPhiPhoton),fhEtaPhoton(g.fhEtaPhoton), 
+  fMinDist(g.fMinDist),fMinDist2(g.fMinDist2), fMinDist3(g.fMinDist3),
+  fRejectTrackMatch(g.fRejectTrackMatch),
+  fCheckConversion(g.fCheckConversion),fAddConvertedPairsToAOD(g.fAddConvertedPairsToAOD),
+  fMassCut(g.fMassCut),
+  fhPtPhoton(g.fhPtPhoton),fhPhiPhoton(g.fhPhiPhoton),fhEtaPhoton(g.fhEtaPhoton), 
   //MC
   fhDeltaE(g.fhDeltaE), fhDeltaPt(g.fhDeltaPt), 
   fhRatioE(g.fhRatioE), fhRatioPt(g.fhRatioPt),
@@ -101,8 +104,12 @@ AliAnaPhoton & AliAnaPhoton::operator = (const AliAnaPhoton & g)
   fMinDist  = g.fMinDist;
   fMinDist2 = g.fMinDist2;
   fMinDist3 = g.fMinDist3;
-  fRejectTrackMatch = g.fRejectTrackMatch;
-      
+  fMassCut     = g.fMassCut;
+	
+  fRejectTrackMatch       = g.fRejectTrackMatch;
+  fCheckConversion        = g.fCheckConversion;
+  fAddConvertedPairsToAOD = g.fAddConvertedPairsToAOD;
+	
   fhPtPhoton  = g.fhPtPhoton ; 
   fhPhiPhoton = g.fhPhiPhoton ;
   fhEtaPhoton = g.fhEtaPhoton ;
@@ -391,11 +398,11 @@ void AliAnaPhoton::Init()
   
   //Init
   //Do some checks
-  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn()){
+  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
     printf("AliAnaPhoton::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
-  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn()){
+  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
     printf("AliAnaPhoton::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
@@ -408,16 +415,18 @@ void AliAnaPhoton::InitParameters()
 {
   
   //Initialize the parameters of the analysis.
-  SetOutputAODClassName("AliAODPWG4Particle");
-  SetOutputAODName("PWG4Particle");
-
   AddToHistogramsName("AnaPhoton_");
 
   fCalorimeter = "PHOS" ;
   fMinDist  = 2.;
   fMinDist2 = 4.;
   fMinDist3 = 5.;
-  fRejectTrackMatch = kTRUE ;
+  fMassCut  = 0.03; //30 MeV
+	
+  fRejectTrackMatch       = kTRUE ;
+  fCheckConversion        = kFALSE;
+  fAddConvertedPairsToAOD = kFALSE;
+	
 }
 
 //__________________________________________________________________
@@ -444,10 +453,14 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     pl = GetAODEMCAL();
   
   //Fill AODCaloClusters and AODParticle with PHOS aods
-  TLorentzVector mom ;
-  
-  for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
-    AliAODCaloCluster * calo =  (AliAODCaloCluster*) (pl->At(icalo));	
+  TLorentzVector mom, mom2 ;
+  Int_t nCaloClusters = pl->GetEntriesFast();
+  Bool_t * indexConverted = new Bool_t[nCaloClusters];
+  for (Int_t i = 0; i < nCaloClusters; i++) indexConverted[i] = kFALSE;
+	
+  for(Int_t icalo = 0; icalo < nCaloClusters; icalo++){    
+	  
+	  AliAODCaloCluster * calo =  (AliAODCaloCluster*) (pl->At(icalo));	
 	  
     //Cluster selection, not charged, with photon id and in fiducial cut
 	  
@@ -539,6 +552,65 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
     }//Work with stack also   
     
+	  
+	// Check if cluster comes from a conversion in the material in front of the calorimeter
+	// Do invariant mass of all pairs, if mass is close to 0, then it is conversion.
+	  
+	if(fCheckConversion && nCaloClusters > 1){
+		Bool_t bConverted = kFALSE;
+		Int_t id2 = -1;
+		  
+		//Check if set previously as converted couple, if so skip its use.
+		if (indexConverted[icalo]) continue;
+		  
+		for(Int_t jcalo = icalo + 1 ; jcalo < nCaloClusters ; jcalo++) {
+			//Check if set previously as converted couple, if so skip its use.
+			if (indexConverted[jcalo]) continue;
+			//printf("Check Conversion indeces %d and %d\n",icalo,jcalo);
+			AliAODCaloCluster * calo2 =  (AliAODCaloCluster*) (pl->At(jcalo));              //Get cluster kinematics
+			calo2->GetMomentum(mom2,vertex);
+			//Check only certain regions
+			Bool_t in2 = kTRUE;
+			if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
+			if(!in2) continue;      
+			
+			//Get mass of pair, if small, take this pair.
+			//printf("\t both in calo, mass %f, cut %f\n",(mom+mom2).M(),fMassCut);
+			if((mom+mom2).M() < fMassCut){  
+				bConverted = kTRUE;
+				id2 = calo2->GetID();
+				indexConverted[jcalo]=kTRUE;
+				break;
+			}
+			  
+		}//Mass loop
+		  
+		if(bConverted){ 
+			if(fAddConvertedPairsToAOD){
+				//Create AOD of pair analysis
+				TLorentzVector mpair = mom+mom2;
+				AliAODPWG4Particle aodpair = AliAODPWG4Particle(mpair);
+				aodpair.SetLabel(aodph.GetLabel());
+				aodpair.SetInputFileIndex(input);
+				
+				//printf("Index %d, Id %d\n",icalo, calo->GetID());
+				//Set the indeces of the original caloclusters  
+				aodpair.SetCaloLabel(calo->GetID(),id2);
+				aodpair.SetDetector(fCalorimeter);
+				aodpair.SetPdg(aodph.GetPdg());
+				aodpair.SetTag(aodph.GetTag());
+				
+				//Add AOD with pair object to aod branch
+				AddAODParticle(aodpair);
+				//printf("\t \t both added pair\n");
+			}
+			
+			//Do not add the current calocluster
+			continue;
+		}//converted pair
+	}//check conversion
+	//printf("\t \t added single cluster %d\n",icalo);
+	  
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     
@@ -767,7 +839,9 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Min Distance to Bad Channel 2 = %2.1f\n",fMinDist2);
   printf("Min Distance to Bad Channel 3 = %2.1f\n",fMinDist3);
   printf("Reject clusters with a track matched = %d\n",fRejectTrackMatch);
-
+  printf("Check Pair Conversion                = %d\n",fCheckConversion);
+  printf("Add conversion pair to AOD           = %d\n",fAddConvertedPairsToAOD);
+  printf("Conversion pair mass cut             = %f\n",fMassCut);
   printf("    \n") ;
 	
 } 
