@@ -28,27 +28,34 @@ class AliAnalysisTask;
 #include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 
+///////////////////////////////////////////////
 // AliAnalysisTaskScalarProduct:
 //
 // analysis task for Scalar Product Method
 //
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
+///////////////////////////////////////////////
 
 ClassImp(AliAnalysisTaskScalarProduct)
 
 //________________________________________________________________________
-AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) : 
+AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Bool_t usePhiWeights) : 
   AliAnalysisTask(name, ""), 
   fEvent(NULL),
   fSP(NULL),
-  fListHistos(NULL)
-  {
+  fListHistos(NULL),
+  fUsePhiWeights(usePhiWeights),
+  fListWeights(NULL)
+{
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name)"<<endl;
 
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
   DefineInput(0, AliFlowEventSimple::Class());
+  // Input slot #1 is needed for the weights input file
+  if(usePhiWeights) {
+    DefineInput(1, TList::Class()); }
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());  
    
@@ -58,7 +65,9 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) :
 AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() : 
   fEvent(NULL),
   fSP(NULL),
-  fListHistos(NULL)
+  fListHistos(NULL),
+  fUsePhiWeights(kFALSE),
+  fListWeights(NULL)
   {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct()"<<endl;
@@ -97,13 +106,23 @@ void AliAnalysisTaskScalarProduct::CreateOutputObjects()
   
   //Analyser
   fSP  = new AliFlowAnalysisWithScalarProduct() ;
-  fSP-> Init();
+    
+  //for using phi weights:
+  if(fUsePhiWeights) {
+    //pass the flag to the analysis class:
+    fSP->SetUsePhiWeights(fUsePhiWeights);
+    //get data from input slot #1 which is used for weights:
+    if(GetNinputs()==2) {                   
+      fListWeights = (TList*)GetInputData(1); 
+    }
+    //pass the list with weights to the analysis class:
+    if(fListWeights) fSP->SetWeightsList(fListWeights);
+  }
   
+  fSP-> Init();
 
   if (fSP->GetHistList()) {
-    //fSP->GetHistList()->Print();
     fListHistos = fSP->GetHistList();
-    //fListHistos->Print();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
 }
@@ -120,7 +139,7 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
     fSP->Make(fEvent);
   }
   else {
-    cout << "Warning no input data!!!" << endl;
+    cout << "Warning no input data for Scalar Product task!!!" << endl;
   }
     
   //fListHistos->Print();	

@@ -223,7 +223,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
 }
 
 //-----------------------------------------------------------------------   
-void AliFlowEventSimple::GetQsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, Bool_t usePhiWeights, Bool_t usePtWeights, Bool_t useEtaWeights) 
+void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, Bool_t usePhiWeights, Bool_t usePtWeights, Bool_t useEtaWeights) 
 {
   
   // calculate Q-vector in harmonic n without weights (default harmonic n=2)  
@@ -238,101 +238,88 @@ void AliFlowEventSimple::GetQsub(AliFlowVector* Qarray, Int_t n, TList *weightsL
   
   AliFlowTrackSimple* pTrack = NULL;
  
-  Int_t    nBinsPhi    = 0; 
+  Int_t    iNbinsPhi   = 0; 
   Double_t dBinWidthPt = 0.;
   Double_t dPtMin      = 0.;
   Double_t dBinWidthEta= 0.;
   Double_t dEtaMin     = 0.;
  
-  Double_t wPhi = 1.;  // weight Phi  
-  Double_t wPt  = 1.;  // weight Pt 
-  Double_t wEta = 1.;  // weight Eta 
+  Double_t dWphi = 1.;  // weight Phi  
+  Double_t dWpt  = 1.;  // weight Pt 
+  Double_t dWeta = 1.;  // weight Eta 
   
-  TH1F *phiWeights = NULL;
-  TH1D *ptWeights  = NULL;
-  TH1D *etaWeights = NULL;
+  TH1F* phiWeights = NULL;
+  TH1D* ptWeights  = NULL;
+  TH1D* etaWeights = NULL;
   
-  if(weightsList)
-    {
-      if(usePhiWeights)
-	{
-    phiWeights = dynamic_cast<TH1F *>(weightsList->FindObject("phi_weights"));
-    if(phiWeights) nBinsPhi = phiWeights->GetNbinsX();
-   }          
-   if(usePtWeights)
-   {
-    ptWeights = dynamic_cast<TH1D *>(weightsList->FindObject("pt_weights"));
-    if(ptWeights)
-    {
-     dBinWidthPt = ptWeights->GetBinWidth(1); // assuming that all bins have the same width
-     dPtMin = (ptWeights->GetXaxis())->GetXmin();
-    } 
-   }       
-   if(useEtaWeights)
-   {
-    etaWeights = dynamic_cast<TH1D *>(weightsList->FindObject("eta_weights"));
-    if(etaWeights)
-    {
-     dBinWidthEta = etaWeights->GetBinWidth(1); // assuming that all bins have the same width
-     dEtaMin = (etaWeights->GetXaxis())->GetXmin();
-    } 
+  if(weightsList) {
+    if(usePhiWeights) {
+      phiWeights = dynamic_cast<TH1F *>(weightsList->FindObject("phi_weights"));
+      if(phiWeights) { 
+	iNbinsPhi = phiWeights->GetNbinsX(); 
+      }
+    }          
+    if(usePtWeights) {
+      ptWeights = dynamic_cast<TH1D *>(weightsList->FindObject("pt_weights"));
+      if(ptWeights) {
+	dBinWidthPt = ptWeights->GetBinWidth(1); // assuming that all bins have the same width
+	dPtMin = (ptWeights->GetXaxis())->GetXmin();
+      } 
+    }       
+   if(useEtaWeights) {
+     etaWeights = dynamic_cast<TH1D *>(weightsList->FindObject("eta_weights"));
+     if(etaWeights) {
+       dBinWidthEta = etaWeights->GetBinWidth(1); // assuming that all bins have the same width
+       dEtaMin = (etaWeights->GetXaxis())->GetXmin();
+     } 
    }          
   } // end of if(weightsList)
   
   //loop over the two subevents
-  for (Int_t s=0;s<2;s++)  
-    {
-      // loop over tracks    
-      for(Int_t i=0;i<fNumberOfTracks;i++)                               
-	{
-	  pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i); 
-	  if(pTrack)
-	    {
-	      if(pTrack->InRPSelection())
-		{
-		  if (pTrack->InSubevent(s)) {
-		    dPhi = pTrack->Phi();
-		    dPt  = pTrack->Pt();
-		    dEta = pTrack->Eta();
+  for (Int_t s=0;s<2;s++) {
+    // loop over tracks    
+    for(Int_t i=0;i<fNumberOfTracks;i++) {
+      pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i); 
+      if(pTrack) {
+	if(pTrack->InRPSelection()) {
+	  if (pTrack->InSubevent(s)) {
+	    dPhi = pTrack->Phi();
+	    dPt  = pTrack->Pt();
+	    dEta = pTrack->Eta();
 		  
-		    // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
-		    if(phiWeights && nBinsPhi)
-		      {
-			wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
-		      }
-		    // determine v'(pt) weight:    
-		    if(ptWeights && dBinWidthPt)
-		      {
-			wPt=ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-dPtMin)/dBinWidthPt))); 
-		      }            
-		    // determine v'(eta) weight:    
-		    if(etaWeights && dBinWidthEta)
-		      {
-			wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-dEtaMin)/dBinWidthEta))); 
-		      } 
+	    // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
+	    if(phiWeights && iNbinsPhi)  {
+	      dWphi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNbinsPhi/TMath::TwoPi())));
+	    }
+	    // determine v'(pt) weight:    
+	    if(ptWeights && dBinWidthPt) {
+	      dWpt=ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-dPtMin)/dBinWidthPt))); 
+	    }            
+	    // determine v'(eta) weight:    
+	    if(etaWeights && dBinWidthEta) {
+	      dWeta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-dEtaMin)/dBinWidthEta))); 
+	    } 
 		    
-		    // building up the weighted Q-vector:       
-		    dQX += wPhi*wPt*wEta*TMath::Cos(iOrder*dPhi);
-		    dQY += wPhi*wPt*wEta*TMath::Sin(iOrder*dPhi); 
+	    // building up the weighted Q-vector:       
+	    dQX += dWphi*dWpt*dWeta*TMath::Cos(iOrder*dPhi);
+	    dQY += dWphi*dWpt*dWeta*TMath::Sin(iOrder*dPhi); 
 		    
-		    // weighted multiplicity:
-		    iUsedTracks+=wPhi*wPt*wEta;
+	    // weighted multiplicity:
+	    iUsedTracks+=dWphi*dWpt*dWeta;
 		    		    
-		  } // end of subevent 
-		} // end of if (pTrack->InRPSelection())
-	    } // end of if (pTrack)
-	  else {cerr << "no particle!!!"<<endl;}
-	} // loop over particles
-      Qarray[s].Set(dQX,dQY);
-      Qarray[s].SetMult(iUsedTracks);
-      //reset
-      iUsedTracks = 0;
-      dQX = 0.;
-      dQY = 0.;
-    }
-  
-  //return vQ;
-  
+	  } // end of subevent 
+	} // end of if (pTrack->InRPSelection())
+      } // end of if (pTrack)
+      else {cerr << "no particle!!!"<<endl;}
+    } // loop over particles
+    Qarray[s].Set(dQX,dQY);
+    Qarray[s].SetMult(iUsedTracks);
+    //reset
+    iUsedTracks = 0;
+    dQX = 0.;
+    dQY = 0.;
+  }
+     
 }
 
 

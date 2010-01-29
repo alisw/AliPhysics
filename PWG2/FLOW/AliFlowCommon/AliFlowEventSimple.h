@@ -34,21 +34,21 @@ class AliFlowEventSimple: public TObject {
   virtual  ~AliFlowEventSimple();
 
   Bool_t  IsFolder() const {return kTRUE;};
-  void Browse(TBrowser *b); 
-  void Print(Option_t* option = "") const;      //method to print stats
+  void    Browse(TBrowser *b); 
+  void    Print(Option_t* option = "") const;      //method to print stats
   
-  Int_t NumberOfTracks() const              { return this->fNumberOfTracks; }
-  void  SetNumberOfTracks(Int_t nr)         { this->fNumberOfTracks = nr; }
-  Int_t GetEventNSelTracksRP() const        { return this->fEventNSelTracksRP; } //will replace GetEventNSelTracksIntFlow()
-  void  SetEventNSelTracksRP(Int_t nr)      { this->fEventNSelTracksRP = nr; }  //will replace SetEventNSelTracksIntFlow
-  Double_t GetMCReactionPlaneAngle() const  { return this->fMCReactionPlaneAngle; }
-  void  SetMCReactionPlaneAngle(Double_t fPhiRP)  { this->fMCReactionPlaneAngle = fPhiRP; }
+  Int_t    NumberOfTracks() const                   { return this->fNumberOfTracks; }
+  void     SetNumberOfTracks(Int_t nr)              { this->fNumberOfTracks = nr; }
+  Int_t    GetEventNSelTracksRP() const             { return this->fEventNSelTracksRP; } 
+  void     SetEventNSelTracksRP(Int_t nr)           { this->fEventNSelTracksRP = nr; }  
+  Double_t GetMCReactionPlaneAngle() const          { return this->fMCReactionPlaneAngle; }
+  void     SetMCReactionPlaneAngle(Double_t fPhiRP) { this->fMCReactionPlaneAngle = fPhiRP; }
  
   AliFlowTrackSimple* GetTrack(Int_t i);
-  TObjArray* TrackCollection() const        { return this->fTrackCollection; }
+  TObjArray* TrackCollection() const                { return this->fTrackCollection; }
  
   AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
-  void GetQsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  
+  void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  
 
  private:
   TObjArray*              fTrackCollection;        // collection of tracks
@@ -58,6 +58,7 @@ class AliFlowEventSimple: public TObject {
   TParameter<Int_t>*      fNumberOfTracksWrap;     //! number of tracks in TBrowser
   TParameter<Int_t>*      fEventNSelTracksRPWrap;  //! number of tracks that have passed the RP selection in TBrowser
   TParameter<Double_t>*   fMCReactionPlaneAngleWrap;   //! the angle of the reaction plane from the MC truth in TBrowser
+
   ClassDef(AliFlowEventSimple,1)                       // simplified event used in flow analysis 
 };
 

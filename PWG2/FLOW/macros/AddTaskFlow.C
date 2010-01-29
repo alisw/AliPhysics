@@ -27,7 +27,7 @@ Double_t vertexZmax = 15.0; //1.e99;
 //Bool_t UseMultCut = kTRUE;
 Bool_t UseMultCut = kFALSE;
 const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
-const Int_t multmax = 40;     //used for AliFlowEventSimple (to set the centrality)
+const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centrality)
 //const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
 //const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
 
@@ -623,7 +623,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   // Create the analysis tasks, add them to the manager.
   //===========================================================================
   if (SP){
-    AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct");
+    AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",WEIGHTS[0]);
     mgr->AddTask(taskSP);
   }
   if (LYZ1SUM){
@@ -720,6 +720,10 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     AliAnalysisDataContainer *coutputSP = mgr->CreateContainer("cobjSP", TList::Class(),AliAnalysisManager::kOutputContainer,outputSP); 
     mgr->ConnectInput(taskSP,0,coutputFE); 
     mgr->ConnectOutput(taskSP,0,coutputSP); 
+    if (WEIGHTS[0]) {
+      mgr->ConnectInput(taskSP,1,cinputWeights);
+      cinputWeights->SetData(weightsList);
+    } 
   }
   if(LYZ1SUM) {
     TString outputLYZ1SUM = AliAnalysisManager::GetCommonFileName();
