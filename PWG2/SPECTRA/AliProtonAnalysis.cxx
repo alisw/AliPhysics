@@ -727,7 +727,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 			       100.,dca,cov);
 
       if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
-	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
+	if(fProtonAnalysisBase->IsAccepted(track)) {
 	  ((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
 	  ((TH3F *)(fQA2DList->At(2)))->Fill(tpcTrack->Eta(),
 					     tpcTrack->Phi()*180./TMath::Pi(),
@@ -772,7 +772,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  FillQA(esd,vertex,track);	  
 	  
 	  //Step: kStepSurvived
-	  if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
+	  if(fProtonAnalysisBase->IsAccepted(track)) {
 	    ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
 	    ((TH3F *)(fQA2DList->At(3)))->Fill(tpcTrack->Eta(),
 					       tpcTrack->Phi()*180./TMath::Pi(),
@@ -833,7 +833,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 			    100.,dca,cov);
       
       if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
-	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
+	if(fProtonAnalysisBase->IsAccepted(track)) {
 	  ((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
 	  ((TH3F *)(fQA2DList->At(2)))->Fill(track->Eta(),
 					     track->Phi()*180./TMath::Pi(),
@@ -878,7 +878,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  FillQA(esd,vertex,track);	  
 	  
 	  //Step: kStepSurvived
-	  if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
+	  if(fProtonAnalysisBase->IsAccepted(track)) {
 	    ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
 	    ((TH3F *)(fQA2DList->At(3)))->Fill(track->Eta(),
 					       track->Phi()*180./TMath::Pi(),

@@ -176,7 +176,9 @@ void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *ve
 				if(tpcTrack->Charge() > 0) 
 				{
 					nIdentifiedProtons += 1;
-					if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+					if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) 
+					  continue;
+					if(!fProtonAnalysisBase->IsAccepted(track)) 
 						continue;//track cuts
 					if(!fProtonAnalysisBase->IsInPhaseSpace(track)) 
 						continue; //track outside the analyzed y-Pt
@@ -213,7 +215,9 @@ void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *ve
 				else if(tpcTrack->Charge() < 0) 
 				{
 					nIdentifiedAntiProtons += 1;
-					if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+					if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) 
+					  continue;
+					if(!fProtonAnalysisBase->IsAccepted(track)) 
 						continue;//track cuts
 					if(!fProtonAnalysisBase->IsInPhaseSpace(track)) 
 						continue; //track outside the analyzed y-Pt
@@ -262,7 +266,9 @@ void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *ve
 				if(track->Charge() > 0) 
 				{
 					nIdentifiedProtons += 1;
-					if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+					if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) 
+					  continue;
+					if(!fProtonAnalysisBase->IsAccepted(track)) 
 						continue;//track cuts
 					if(!fProtonAnalysisBase->IsInPhaseSpace(track)) 
 						continue; //track outside the analyzed y-Pt
@@ -298,7 +304,9 @@ void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *ve
 				else if(track->Charge() < 0) 
 				{
 					nIdentifiedAntiProtons += 1;
-					if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) 
+					if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) 
+					  continue;
+					if(!fProtonAnalysisBase->IsAccepted(track)) 
 						continue;//track cuts
 					if(!fProtonAnalysisBase->IsInPhaseSpace(track))
 						continue; //track outside the analyzed y-Pt

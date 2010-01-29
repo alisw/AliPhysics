@@ -3268,9 +3268,10 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	else 
 	  if((fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
 		
-	if(fUseCutsInEfficiency) 
-	  if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
-	
+	if(fUseCutsInEfficiency) {
+	  if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) continue;
+	  if(!fProtonAnalysisBase->IsAccepted(track)) continue;
+	}	
 	//reconstructed primary (anti)protons
 	if(pdgcode == 2212) {
 	  if(label <= stack->GetNprimary()) {
@@ -3375,9 +3376,10 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	
 	//Double_t probability[5];
 
-	if(fUseCutsInEfficiency) 
-	  if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
-	
+	if(fUseCutsInEfficiency) {
+	  if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) continue;
+	  if(!fProtonAnalysisBase->IsAccepted(track)) continue;
+	}	
 	//reconstructed primary (anti)protons
 	if(pdgcode == 2212) {
 	  if(label <= stack->GetNprimary()) {
@@ -3496,9 +3498,10 @@ void AliProtonQAAnalysis::RunPIDEfficiencyAnalysis(AliStack *const stack,
     
     Int_t nTPCpoints = track->GetTPCsignalN();
 
-    if(fUseCutsInEfficiency) 
-      if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
-	
+    if(fUseCutsInEfficiency) {
+      if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) continue;
+      if(!fProtonAnalysisBase->IsAccepted(track)) continue;
+    }	
     if(TMath::Abs(pdgcode) == 2212) {
       if(fProtonAnalysisBase->GetEtaMode())
 	((TH3D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
@@ -3581,7 +3584,8 @@ void AliProtonQAAnalysis::RunCutEfficiencyAnalysis(AliStack *const stack,
     }
 
     //survived tracks
-    if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
+    if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) continue;
+    if(!fProtonAnalysisBase->IsAccepted(track)) continue;
     if(track->Charge() > 0) {
       if(fProtonAnalysisBase->GetEtaMode())
 	((TH2F *)(fCutEfficiencyList->At(2)))->Fill(particle->Eta(),
@@ -3736,9 +3740,10 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
       else 
 	if((fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
       
-      if(fUseCutsInEfficiency) 
-	if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
-      
+      if(fUseCutsInEfficiency) {
+	if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) continue;
+	if(!fProtonAnalysisBase->IsAccepted(track)) continue;
+      }      
       //reconstructed primary (anti)protons
       if(pdgcode == 2212) {
 	if(label <= stack->GetNprimary()) {
@@ -3831,9 +3836,10 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 	if((fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
       }
       
-      if(fUseCutsInEfficiency) 
-	if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
-      
+      if(fUseCutsInEfficiency) {
+	if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) continue;
+	if(!fProtonAnalysisBase->IsAccepted(track)) continue;
+      }      
       //reconstructed primary (anti)protons
       if(pdgcode == 2212) {
 	if(label <= stack->GetNprimary()) {
@@ -4129,191 +4135,193 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 	if(!fProtonAnalysisBase->IsInPhaseSpace(track)) continue; //track outside the analyzed y-Pt
 
 	FillQA(stack,esd,vertex,track);
-	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
-	  if(label <= stack->GetNprimary()) {
-	    if(track->Charge() > 0) {
-	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
-		if(track->HasPointOnITSLayer(iLayer))
-		  ((TH1F *)(fAcceptedCutList->At(0)))->Fill(iLayer+1);
+	if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
+	  if(fProtonAnalysisBase->IsAccepted(track)) {
+	    if(label <= stack->GetNprimary()) {
+	      if(track->Charge() > 0) {
+		for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+		  if(track->HasPointOnITSLayer(iLayer))
+		    ((TH1F *)(fAcceptedCutList->At(0)))->Fill(iLayer+1);
+		}
+		((TH1F *)(fAcceptedCutList->At(4)))->Fill(nClustersITS);
+		((TH1F *)(fAcceptedCutList->At(8)))->Fill(chi2PerClusterITS);
+		((TH1F *)(fAcceptedCutList->At(12)))->Fill(chi2ConstrainVertex);
+		((TH1F *)(fAcceptedCutList->At(16)))->Fill(nClustersTPC);
+		((TH1F *)(fAcceptedCutList->At(20)))->Fill(chi2PerClusterTPC);
+		((TH1F *)(fAcceptedCutList->At(24)))->Fill(extCov[0]);
+		((TH1F *)(fAcceptedCutList->At(28)))->Fill(extCov[2]);
+		((TH1F *)(fAcceptedCutList->At(32)))->Fill(extCov[5]);
+		((TH1F *)(fAcceptedCutList->At(36)))->Fill(extCov[9]);
+		((TH1F *)(fAcceptedCutList->At(40)))->Fill(extCov[14]);
+		((TH3D *)(fAcceptedCutList->At(44)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   nClustersTPC);
+		((TH3D *)(fAcceptedCutList->At(48)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   chi2PerClusterTPC);
+		((TH3D *)(fAcceptedCutList->At(52)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   npointsTPCdEdx);
+		((TH1D *)(fAcceptedCutList->At(56)))->Fill(npointsTPCdEdx);
+		
+		((TH1F *)(fAcceptedDCAList->At(0)))->Fill(TMath::Abs(dcaXY));
+		((TH1F *)(fAcceptedDCAList->At(4)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(8)))->Fill(nSigmaToVertex);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH2D *)(fQA2DList->At(0)))->Fill(tpcTrack->Eta(),gPt);
+		else
+		  ((TH2D *)(fQA2DList->At(0)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
+										   tpcTrack->Py(),
+										   tpcTrack->Pz()),
+						     gPt);
+	      }//accepted primary protons
+	      else if(track->Charge() < 0) {
+		for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+		  if(track->HasPointOnITSLayer(iLayer))
+		    ((TH1F *)(fAcceptedCutList->At(1)))->Fill(iLayer+1);
+		}
+		((TH1F *)(fAcceptedCutList->At(5)))->Fill(nClustersITS);
+		((TH1F *)(fAcceptedCutList->At(9)))->Fill(chi2PerClusterITS);
+		((TH1F *)(fAcceptedCutList->At(13)))->Fill(chi2ConstrainVertex);
+		((TH1F *)(fAcceptedCutList->At(17)))->Fill(nClustersTPC);
+		((TH1F *)(fAcceptedCutList->At(21)))->Fill(chi2PerClusterTPC);
+		((TH1F *)(fAcceptedCutList->At(25)))->Fill(extCov[0]);
+		((TH1F *)(fAcceptedCutList->At(29)))->Fill(extCov[2]);
+		((TH1F *)(fAcceptedCutList->At(33)))->Fill(extCov[5]);
+		((TH1F *)(fAcceptedCutList->At(37)))->Fill(extCov[9]);
+		((TH1F *)(fAcceptedCutList->At(41)))->Fill(extCov[14]);
+		((TH3D *)(fAcceptedCutList->At(45)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   nClustersTPC);
+		((TH3D *)(fAcceptedCutList->At(49)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   chi2PerClusterTPC);
+		((TH3D *)(fAcceptedCutList->At(53)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   npointsTPCdEdx);
+		((TH1D *)(fAcceptedCutList->At(57)))->Fill(npointsTPCdEdx);
+		
+		((TH1F *)(fAcceptedDCAList->At(1)))->Fill(TMath::Abs(dcaXY));
+		((TH1F *)(fAcceptedDCAList->At(5)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(9)))->Fill(nSigmaToVertex);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH2D *)(fQA2DList->At(4)))->Fill(tpcTrack->Eta(),gPt);
+		else
+		  ((TH2D *)(fQA2DList->At(4)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
+										   tpcTrack->Py(),
+										   tpcTrack->Pz()),
+						     gPt);
+	      }//accepted primary antiprotons
+	    }//accepted primary particles
+	    else if(label > stack->GetNprimary()) {
+	      Int_t lPartMother = -1;
+	      Int_t motherPDGCode = -1;
+	      if(particle) {
+		lPartMother = particle->GetFirstMother();
+		TParticle *motherParticle = stack->Particle(lPartMother);
+		if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
 	      }
-	      ((TH1F *)(fAcceptedCutList->At(4)))->Fill(nClustersITS);
-	      ((TH1F *)(fAcceptedCutList->At(8)))->Fill(chi2PerClusterITS);
-	      ((TH1F *)(fAcceptedCutList->At(12)))->Fill(chi2ConstrainVertex);
-	      ((TH1F *)(fAcceptedCutList->At(16)))->Fill(nClustersTPC);
-	      ((TH1F *)(fAcceptedCutList->At(20)))->Fill(chi2PerClusterTPC);
-	      ((TH1F *)(fAcceptedCutList->At(24)))->Fill(extCov[0]);
-	      ((TH1F *)(fAcceptedCutList->At(28)))->Fill(extCov[2]);
-	      ((TH1F *)(fAcceptedCutList->At(32)))->Fill(extCov[5]);
-	      ((TH1F *)(fAcceptedCutList->At(36)))->Fill(extCov[9]);
-	      ((TH1F *)(fAcceptedCutList->At(40)))->Fill(extCov[14]);
-	      ((TH3D *)(fAcceptedCutList->At(44)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 nClustersTPC);
-	      ((TH3D *)(fAcceptedCutList->At(48)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 chi2PerClusterTPC);
-	      ((TH3D *)(fAcceptedCutList->At(52)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 npointsTPCdEdx);
-	      ((TH1D *)(fAcceptedCutList->At(56)))->Fill(npointsTPCdEdx);
 	      
-	      ((TH1F *)(fAcceptedDCAList->At(0)))->Fill(TMath::Abs(dcaXY));
-	      ((TH1F *)(fAcceptedDCAList->At(4)))->Fill(TMath::Abs(dcaZ));
-	      ((TH1F *)(fAcceptedDCAList->At(8)))->Fill(nSigmaToVertex);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH2D *)(fQA2DList->At(0)))->Fill(tpcTrack->Eta(),gPt);
-	      else
-		((TH2D *)(fQA2DList->At(0)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-										 tpcTrack->Py(),
-										 tpcTrack->Pz()),
-						   gPt);
-	    }//accepted primary protons
-	    else if(track->Charge() < 0) {
-	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
-		if(track->HasPointOnITSLayer(iLayer))
-		  ((TH1F *)(fAcceptedCutList->At(1)))->Fill(iLayer+1);
-	      }
-	      ((TH1F *)(fAcceptedCutList->At(5)))->Fill(nClustersITS);
-	      ((TH1F *)(fAcceptedCutList->At(9)))->Fill(chi2PerClusterITS);
-	      ((TH1F *)(fAcceptedCutList->At(13)))->Fill(chi2ConstrainVertex);
-	      ((TH1F *)(fAcceptedCutList->At(17)))->Fill(nClustersTPC);
-	      ((TH1F *)(fAcceptedCutList->At(21)))->Fill(chi2PerClusterTPC);
-	      ((TH1F *)(fAcceptedCutList->At(25)))->Fill(extCov[0]);
-	      ((TH1F *)(fAcceptedCutList->At(29)))->Fill(extCov[2]);
-	      ((TH1F *)(fAcceptedCutList->At(33)))->Fill(extCov[5]);
-	      ((TH1F *)(fAcceptedCutList->At(37)))->Fill(extCov[9]);
-	      ((TH1F *)(fAcceptedCutList->At(41)))->Fill(extCov[14]);
-	      ((TH3D *)(fAcceptedCutList->At(45)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 nClustersTPC);
-	      ((TH3D *)(fAcceptedCutList->At(49)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 chi2PerClusterTPC);
-	      ((TH3D *)(fAcceptedCutList->At(53)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 npointsTPCdEdx);
-	      ((TH1D *)(fAcceptedCutList->At(57)))->Fill(npointsTPCdEdx);
+	      if(fMCProcessIdFlag)
+		if(particle->GetUniqueID() != fMCProcessId) continue;
+	      if(fMotherParticlePDGCodeFlag)
+		if(TMath::Abs(motherPDGCode) != fMotherParticlePDGCode) continue;
 	      
-	      ((TH1F *)(fAcceptedDCAList->At(1)))->Fill(TMath::Abs(dcaXY));
-	      ((TH1F *)(fAcceptedDCAList->At(5)))->Fill(TMath::Abs(dcaZ));
-	      ((TH1F *)(fAcceptedDCAList->At(9)))->Fill(nSigmaToVertex);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH2D *)(fQA2DList->At(4)))->Fill(tpcTrack->Eta(),gPt);
-	      else
-		((TH2D *)(fQA2DList->At(4)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-										 tpcTrack->Py(),
-										 tpcTrack->Pz()),
-						   gPt);
-	    }//accepted primary antiprotons
-	  }//accepted primary particles
-	  else if(label > stack->GetNprimary()) {
-	    Int_t lPartMother = -1;
-	    Int_t motherPDGCode = -1;
-	    if(particle) {
-	      lPartMother = particle->GetFirstMother();
-	      TParticle *motherParticle = stack->Particle(lPartMother);
-	      if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
-	    }
-	    
-	    if(fMCProcessIdFlag)
-	      if(particle->GetUniqueID() != fMCProcessId) continue;
-	    if(fMotherParticlePDGCodeFlag)
-	      if(TMath::Abs(motherPDGCode) != fMotherParticlePDGCode) continue;
-	    
-	    if(track->Charge() > 0) {
-	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
-		if(track->HasPointOnITSLayer(iLayer))
-		  ((TH1F *)(fAcceptedCutList->At(2)))->Fill(iLayer+1);
-	      }
-	      ((TH1F *)(fAcceptedCutList->At(6)))->Fill(nClustersITS);
-	      ((TH1F *)(fAcceptedCutList->At(10)))->Fill(chi2PerClusterITS);
-	      ((TH1F *)(fAcceptedCutList->At(14)))->Fill(chi2ConstrainVertex);
-	      ((TH1F *)(fAcceptedCutList->At(18)))->Fill(nClustersTPC);
-	      ((TH1F *)(fAcceptedCutList->At(22)))->Fill(chi2PerClusterTPC);
-	      ((TH1F *)(fAcceptedCutList->At(26)))->Fill(extCov[0]);
-	      ((TH1F *)(fAcceptedCutList->At(30)))->Fill(extCov[2]);
-	      ((TH1F *)(fAcceptedCutList->At(34)))->Fill(extCov[5]);
-	      ((TH1F *)(fAcceptedCutList->At(38)))->Fill(extCov[9]);
-	      ((TH1F *)(fAcceptedCutList->At(42)))->Fill(extCov[14]);
-	      ((TH3D *)(fAcceptedCutList->At(46)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 nClustersTPC);
-	      ((TH3D *)(fAcceptedCutList->At(50)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 chi2PerClusterTPC);
-	      ((TH3D *)(fAcceptedCutList->At(54)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 npointsTPCdEdx);
-	      ((TH1D *)(fAcceptedCutList->At(58)))->Fill(npointsTPCdEdx);
-
-	      ((TH1F *)(fAcceptedDCAList->At(2)))->Fill(TMath::Abs(dcaXY));
-	      ((TH1F *)(fAcceptedDCAList->At(6)))->Fill(TMath::Abs(dcaZ));
-	      ((TH1F *)(fAcceptedDCAList->At(10)))->Fill(nSigmaToVertex);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH2D *)(fQA2DList->At(2)))->Fill(tpcTrack->Eta(),gPt);
-	      else
-		((TH2D *)(fQA2DList->At(2)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-										 tpcTrack->Py(),
-										 tpcTrack->Pz()),
-						   gPt);
-	      if(fProtonAnalysisBase->GetEtaMode())
-	      ((TH3F *)(fQA2DList->At(10)))->Fill(tpcTrack->Eta(),gPt,
-						  ConvertPDGToInt(motherPDGCode));
-	      else
-		((TH3F *)(fQA2DList->At(10)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-							     tpcTrack->Py(),
-							     tpcTrack->Pz()),
-						    gPt,
-						    ConvertPDGToInt(motherPDGCode));
-	    }//accepted secondary protons
-	    else if(track->Charge() < 0) {
-	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
-		if(track->HasPointOnITSLayer(iLayer))
-		  ((TH1F *)(fAcceptedCutList->At(3)))->Fill(iLayer+1);
-	      }
-	      ((TH1F *)(fAcceptedCutList->At(7)))->Fill(nClustersITS);
-	      ((TH1F *)(fAcceptedCutList->At(11)))->Fill(chi2PerClusterITS);
-	      ((TH1F *)(fAcceptedCutList->At(15)))->Fill(chi2ConstrainVertex);
-	      ((TH1F *)(fAcceptedCutList->At(19)))->Fill(nClustersTPC);
-	      ((TH1F *)(fAcceptedCutList->At(23)))->Fill(chi2PerClusterTPC);
-	      ((TH1F *)(fAcceptedCutList->At(27)))->Fill(extCov[0]);
-	      ((TH1F *)(fAcceptedCutList->At(31)))->Fill(extCov[2]);
-	      ((TH1F *)(fAcceptedCutList->At(35)))->Fill(extCov[5]);
-	      ((TH1F *)(fAcceptedCutList->At(39)))->Fill(extCov[9]);
-	      ((TH1F *)(fAcceptedCutList->At(43)))->Fill(extCov[14]);
-	      ((TH3D *)(fAcceptedCutList->At(47)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 nClustersTPC);
-	      ((TH3D *)(fAcceptedCutList->At(51)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 chi2PerClusterTPC);
-	      ((TH3D *)(fAcceptedCutList->At(55)))->Fill(tpcTrack->Eta(),
-							 tpcTrack->Phi()*180./TMath::Pi(),
-							 npointsTPCdEdx);
-	      ((TH1F *)(fAcceptedCutList->At(59)))->Fill(npointsTPCdEdx);
-
-	      ((TH1F *)(fAcceptedDCAList->At(3)))->Fill(TMath::Abs(dcaXY));
-	      ((TH1F *)(fAcceptedDCAList->At(7)))->Fill(TMath::Abs(dcaZ));
-	      ((TH1F *)(fAcceptedDCAList->At(11)))->Fill(nSigmaToVertex);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH2D *)(fQA2DList->At(6)))->Fill(tpcTrack->Eta(),gPt);
-	      else
-		((TH2D *)(fQA2DList->At(6)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-										 tpcTrack->Py(),
-										 tpcTrack->Pz()),
-						   gPt);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH3F *)(fQA2DList->At(11)))->Fill(tpcTrack->Eta(),gPt,
-						    ConvertPDGToInt(motherPDGCode));
-	      else
-		((TH3F *)(fQA2DList->At(11)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
-							     tpcTrack->Py(),
-							     tpcTrack->Pz()),
-						    gPt,
-						    ConvertPDGToInt(motherPDGCode));
-	    }//accepted secondary antiprotons
-	  }//accepted secondary particles
-	}//accepted - track cuts
+	      if(track->Charge() > 0) {
+		for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+		  if(track->HasPointOnITSLayer(iLayer))
+		    ((TH1F *)(fAcceptedCutList->At(2)))->Fill(iLayer+1);
+		}
+		((TH1F *)(fAcceptedCutList->At(6)))->Fill(nClustersITS);
+		((TH1F *)(fAcceptedCutList->At(10)))->Fill(chi2PerClusterITS);
+		((TH1F *)(fAcceptedCutList->At(14)))->Fill(chi2ConstrainVertex);
+		((TH1F *)(fAcceptedCutList->At(18)))->Fill(nClustersTPC);
+		((TH1F *)(fAcceptedCutList->At(22)))->Fill(chi2PerClusterTPC);
+		((TH1F *)(fAcceptedCutList->At(26)))->Fill(extCov[0]);
+		((TH1F *)(fAcceptedCutList->At(30)))->Fill(extCov[2]);
+		((TH1F *)(fAcceptedCutList->At(34)))->Fill(extCov[5]);
+		((TH1F *)(fAcceptedCutList->At(38)))->Fill(extCov[9]);
+		((TH1F *)(fAcceptedCutList->At(42)))->Fill(extCov[14]);
+		((TH3D *)(fAcceptedCutList->At(46)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   nClustersTPC);
+		((TH3D *)(fAcceptedCutList->At(50)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   chi2PerClusterTPC);
+		((TH3D *)(fAcceptedCutList->At(54)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   npointsTPCdEdx);
+		((TH1D *)(fAcceptedCutList->At(58)))->Fill(npointsTPCdEdx);
+		
+		((TH1F *)(fAcceptedDCAList->At(2)))->Fill(TMath::Abs(dcaXY));
+		((TH1F *)(fAcceptedDCAList->At(6)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(10)))->Fill(nSigmaToVertex);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH2D *)(fQA2DList->At(2)))->Fill(tpcTrack->Eta(),gPt);
+		else
+		  ((TH2D *)(fQA2DList->At(2)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
+										   tpcTrack->Py(),
+										   tpcTrack->Pz()),
+						     gPt);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH3F *)(fQA2DList->At(10)))->Fill(tpcTrack->Eta(),gPt,
+						      ConvertPDGToInt(motherPDGCode));
+		else
+		  ((TH3F *)(fQA2DList->At(10)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
+										    tpcTrack->Py(),
+										    tpcTrack->Pz()),
+						      gPt,
+						      ConvertPDGToInt(motherPDGCode));
+	      }//accepted secondary protons
+	      else if(track->Charge() < 0) {
+		for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+		  if(track->HasPointOnITSLayer(iLayer))
+		    ((TH1F *)(fAcceptedCutList->At(3)))->Fill(iLayer+1);
+		}
+		((TH1F *)(fAcceptedCutList->At(7)))->Fill(nClustersITS);
+		((TH1F *)(fAcceptedCutList->At(11)))->Fill(chi2PerClusterITS);
+		((TH1F *)(fAcceptedCutList->At(15)))->Fill(chi2ConstrainVertex);
+		((TH1F *)(fAcceptedCutList->At(19)))->Fill(nClustersTPC);
+		((TH1F *)(fAcceptedCutList->At(23)))->Fill(chi2PerClusterTPC);
+		((TH1F *)(fAcceptedCutList->At(27)))->Fill(extCov[0]);
+		((TH1F *)(fAcceptedCutList->At(31)))->Fill(extCov[2]);
+		((TH1F *)(fAcceptedCutList->At(35)))->Fill(extCov[5]);
+		((TH1F *)(fAcceptedCutList->At(39)))->Fill(extCov[9]);
+		((TH1F *)(fAcceptedCutList->At(43)))->Fill(extCov[14]);
+		((TH3D *)(fAcceptedCutList->At(47)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   nClustersTPC);
+		((TH3D *)(fAcceptedCutList->At(51)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   chi2PerClusterTPC);
+		((TH3D *)(fAcceptedCutList->At(55)))->Fill(tpcTrack->Eta(),
+							   tpcTrack->Phi()*180./TMath::Pi(),
+							   npointsTPCdEdx);
+		((TH1F *)(fAcceptedCutList->At(59)))->Fill(npointsTPCdEdx);
+		
+		((TH1F *)(fAcceptedDCAList->At(3)))->Fill(TMath::Abs(dcaXY));
+		((TH1F *)(fAcceptedDCAList->At(7)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(11)))->Fill(nSigmaToVertex);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH2D *)(fQA2DList->At(6)))->Fill(tpcTrack->Eta(),gPt);
+		else
+		  ((TH2D *)(fQA2DList->At(6)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
+										   tpcTrack->Py(),
+										   tpcTrack->Pz()),
+						     gPt);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH3F *)(fQA2DList->At(11)))->Fill(tpcTrack->Eta(),gPt,
+						      ConvertPDGToInt(motherPDGCode));
+		else
+		  ((TH3F *)(fQA2DList->At(11)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),
+										    tpcTrack->Py(),
+										    tpcTrack->Pz()),
+						      gPt,
+						      ConvertPDGToInt(motherPDGCode));
+	      }//accepted secondary antiprotons
+	    }//accepted secondary particles
+	  }//accepted - track cuts
+	}//primary-like cut
 	else {
 	  if(label <= stack->GetNprimary()) {
 	    if(track->Charge() > 0) {
@@ -4326,7 +4334,7 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 	      ((TH3D *)(fRejectedCutList->At(8)))->Fill(tpcTrack->Eta(),
 							tpcTrack->Phi()*180./TMath::Pi(),
 							npointsTPCdEdx);
-
+	      
 	      if(fProtonAnalysisBase->GetEtaMode())
 		((TH2D *)(fQA2DList->At(1)))->Fill(tpcTrack->Eta(),gPt);
 	      else
@@ -4407,192 +4415,195 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 	if(!fProtonAnalysisBase->IsInPhaseSpace(track)) continue; //track outside the analyzed y-Pt
 
 	FillQA(stack,esd,vertex,track);
-	if(fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
-	  if(label <= stack->GetNprimary()) {
-	    if(track->Charge() > 0) {
-	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
-		if(track->HasPointOnITSLayer(iLayer))
-		  ((TH1F *)(fAcceptedCutList->At(0)))->Fill(iLayer+1);
+	if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
+	  if(fProtonAnalysisBase->IsAccepted(track)) {
+	    if(label <= stack->GetNprimary()) {
+	      if(track->Charge() > 0) {
+		for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+		  if(track->HasPointOnITSLayer(iLayer))
+		    ((TH1F *)(fAcceptedCutList->At(0)))->Fill(iLayer+1);
+		}
+		((TH1F *)(fAcceptedCutList->At(4)))->Fill(nClustersITS);
+		((TH1F *)(fAcceptedCutList->At(8)))->Fill(chi2PerClusterITS);
+		((TH1F *)(fAcceptedCutList->At(12)))->Fill(chi2ConstrainVertex);
+		((TH1F *)(fAcceptedCutList->At(16)))->Fill(nClustersTPC);
+		((TH1F *)(fAcceptedCutList->At(20)))->Fill(chi2PerClusterTPC);
+		((TH1F *)(fAcceptedCutList->At(24)))->Fill(extCov[0]);
+		((TH1F *)(fAcceptedCutList->At(28)))->Fill(extCov[2]);
+		((TH1F *)(fAcceptedCutList->At(32)))->Fill(extCov[5]);
+		((TH1F *)(fAcceptedCutList->At(36)))->Fill(extCov[9]);
+		((TH1F *)(fAcceptedCutList->At(40)))->Fill(extCov[14]);
+		((TH3D *)(fAcceptedCutList->At(44)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   nClustersTPC);
+		((TH3D *)(fAcceptedCutList->At(48)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   chi2PerClusterTPC);
+		((TH3D *)(fAcceptedCutList->At(52)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   npointsTPCdEdx);
+		((TH1F *)(fAcceptedCutList->At(56)))->Fill(npointsTPCdEdx);
+		
+		((TH1F *)(fAcceptedDCAList->At(0)))->Fill(TMath::Abs(dcaXY));
+		((TH1F *)(fAcceptedDCAList->At(4)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(8)))->Fill(nSigmaToVertex);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH2D *)(fQA2DList->At(0)))->Fill(track->Eta(),gPt);
+		else
+		  ((TH2D *)(fQA2DList->At(0)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
+										   track->Py(),
+										   track->Pz()),
+						     gPt);
 	      }
-	      ((TH1F *)(fAcceptedCutList->At(4)))->Fill(nClustersITS);
-	      ((TH1F *)(fAcceptedCutList->At(8)))->Fill(chi2PerClusterITS);
-	      ((TH1F *)(fAcceptedCutList->At(12)))->Fill(chi2ConstrainVertex);
-	      ((TH1F *)(fAcceptedCutList->At(16)))->Fill(nClustersTPC);
-	      ((TH1F *)(fAcceptedCutList->At(20)))->Fill(chi2PerClusterTPC);
-	      ((TH1F *)(fAcceptedCutList->At(24)))->Fill(extCov[0]);
-	      ((TH1F *)(fAcceptedCutList->At(28)))->Fill(extCov[2]);
-	      ((TH1F *)(fAcceptedCutList->At(32)))->Fill(extCov[5]);
-	      ((TH1F *)(fAcceptedCutList->At(36)))->Fill(extCov[9]);
-	      ((TH1F *)(fAcceptedCutList->At(40)))->Fill(extCov[14]);
-	      ((TH3D *)(fAcceptedCutList->At(44)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 nClustersTPC);
-	      ((TH3D *)(fAcceptedCutList->At(48)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 chi2PerClusterTPC);
-	      ((TH3D *)(fAcceptedCutList->At(52)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 npointsTPCdEdx);
-	      ((TH1F *)(fAcceptedCutList->At(56)))->Fill(npointsTPCdEdx);
-	      
-	      ((TH1F *)(fAcceptedDCAList->At(0)))->Fill(TMath::Abs(dcaXY));
-	      ((TH1F *)(fAcceptedDCAList->At(4)))->Fill(TMath::Abs(dcaZ));
-	      ((TH1F *)(fAcceptedDCAList->At(8)))->Fill(nSigmaToVertex);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH2D *)(fQA2DList->At(0)))->Fill(track->Eta(),gPt);
-	      else
-		((TH2D *)(fQA2DList->At(0)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
-							    track->Py(),
-							    track->Pz()),
-						   gPt);
-	    }
-	    else if(track->Charge() < 0) {
-	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
-		if(track->HasPointOnITSLayer(iLayer))
-		  ((TH1F *)(fAcceptedCutList->At(1)))->Fill(iLayer+1);
+	      else if(track->Charge() < 0) {
+		for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+		  if(track->HasPointOnITSLayer(iLayer))
+		    ((TH1F *)(fAcceptedCutList->At(1)))->Fill(iLayer+1);
+		}
+		((TH1F *)(fAcceptedCutList->At(5)))->Fill(nClustersITS);
+		((TH1F *)(fAcceptedCutList->At(9)))->Fill(chi2PerClusterITS);
+		((TH1F *)(fAcceptedCutList->At(13)))->Fill(chi2ConstrainVertex);
+		((TH1F *)(fAcceptedCutList->At(17)))->Fill(nClustersTPC);
+		((TH1F *)(fAcceptedCutList->At(21)))->Fill(chi2PerClusterTPC);
+		((TH1F *)(fAcceptedCutList->At(25)))->Fill(extCov[0]);
+		((TH1F *)(fAcceptedCutList->At(29)))->Fill(extCov[2]);
+		((TH1F *)(fAcceptedCutList->At(33)))->Fill(extCov[5]);
+		((TH1F *)(fAcceptedCutList->At(37)))->Fill(extCov[9]);
+		((TH1F *)(fAcceptedCutList->At(41)))->Fill(extCov[14]);
+		((TH3D *)(fAcceptedCutList->At(45)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   nClustersTPC);
+		((TH3D *)(fAcceptedCutList->At(49)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   chi2PerClusterTPC);
+		((TH3D *)(fAcceptedCutList->At(53)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   npointsTPCdEdx);
+		((TH1F *)(fAcceptedCutList->At(57)))->Fill(npointsTPCdEdx);
+		
+		((TH1F *)(fAcceptedDCAList->At(1)))->Fill(TMath::Abs(dcaXY));
+		((TH1F *)(fAcceptedDCAList->At(5)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(9)))->Fill(nSigmaToVertex);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH2D *)(fQA2DList->At(4)))->Fill(track->Eta(),gPt);
+		else
+		  ((TH2D *)(fQA2DList->At(4)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
+										   track->Py(),
+										   track->Pz()),
+						     gPt);
 	      }
-	      ((TH1F *)(fAcceptedCutList->At(5)))->Fill(nClustersITS);
-	      ((TH1F *)(fAcceptedCutList->At(9)))->Fill(chi2PerClusterITS);
-	      ((TH1F *)(fAcceptedCutList->At(13)))->Fill(chi2ConstrainVertex);
-	      ((TH1F *)(fAcceptedCutList->At(17)))->Fill(nClustersTPC);
-	      ((TH1F *)(fAcceptedCutList->At(21)))->Fill(chi2PerClusterTPC);
-	      ((TH1F *)(fAcceptedCutList->At(25)))->Fill(extCov[0]);
-	      ((TH1F *)(fAcceptedCutList->At(29)))->Fill(extCov[2]);
-	      ((TH1F *)(fAcceptedCutList->At(33)))->Fill(extCov[5]);
-	      ((TH1F *)(fAcceptedCutList->At(37)))->Fill(extCov[9]);
-	      ((TH1F *)(fAcceptedCutList->At(41)))->Fill(extCov[14]);
-	      ((TH3D *)(fAcceptedCutList->At(45)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 nClustersTPC);
-	      ((TH3D *)(fAcceptedCutList->At(49)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 chi2PerClusterTPC);
-	      ((TH3D *)(fAcceptedCutList->At(53)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 npointsTPCdEdx);
-	      ((TH1F *)(fAcceptedCutList->At(57)))->Fill(npointsTPCdEdx);
-	      
-	      ((TH1F *)(fAcceptedDCAList->At(1)))->Fill(TMath::Abs(dcaXY));
-	      ((TH1F *)(fAcceptedDCAList->At(5)))->Fill(TMath::Abs(dcaZ));
-	      ((TH1F *)(fAcceptedDCAList->At(9)))->Fill(nSigmaToVertex);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH2D *)(fQA2DList->At(4)))->Fill(track->Eta(),gPt);
-	      else
-		((TH2D *)(fQA2DList->At(4)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
-							    track->Py(),
-							    track->Pz()),
-						   gPt);
-	    }
-	  }//primary particles
-	  else if(label > stack->GetNprimary()) {
-	    Int_t lPartMother = -1;
-	    Int_t motherPDGCode = -1;
-	    if(particle) {
-	      lPartMother = particle->GetFirstMother();
-	      TParticle *motherParticle = stack->Particle(lPartMother);
-	      if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
-	    }
-	    
-	    if(fMCProcessIdFlag)
-	      if(particle->GetUniqueID() != fMCProcessId) continue;
-	    if(fMotherParticlePDGCodeFlag)
-	      if(TMath::Abs(motherPDGCode) != fMotherParticlePDGCode) continue;
-	    
-	    if(track->Charge() > 0) {
-	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
-		if(track->HasPointOnITSLayer(iLayer))
-		  ((TH1F *)(fAcceptedCutList->At(2)))->Fill(iLayer+1);
+	    }//primary particles
+	    else if(label > stack->GetNprimary()) {
+	      Int_t lPartMother = -1;
+	      Int_t motherPDGCode = -1;
+	      if(particle) {
+		lPartMother = particle->GetFirstMother();
+		TParticle *motherParticle = stack->Particle(lPartMother);
+		if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
 	      }
-	      ((TH1F *)(fAcceptedCutList->At(6)))->Fill(nClustersITS);
-	      ((TH1F *)(fAcceptedCutList->At(10)))->Fill(chi2PerClusterITS);
-	      ((TH1F *)(fAcceptedCutList->At(14)))->Fill(chi2ConstrainVertex);
-	      ((TH1F *)(fAcceptedCutList->At(18)))->Fill(nClustersTPC);
-	      ((TH1F *)(fAcceptedCutList->At(22)))->Fill(chi2PerClusterTPC);
-	      ((TH1F *)(fAcceptedCutList->At(26)))->Fill(extCov[0]);
-	      ((TH1F *)(fAcceptedCutList->At(30)))->Fill(extCov[2]);
-	      ((TH1F *)(fAcceptedCutList->At(34)))->Fill(extCov[5]);
-	      ((TH1F *)(fAcceptedCutList->At(38)))->Fill(extCov[9]);
-	      ((TH1F *)(fAcceptedCutList->At(42)))->Fill(extCov[14]);
-	      ((TH3D *)(fAcceptedCutList->At(46)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 nClustersTPC);
-	      ((TH3D *)(fAcceptedCutList->At(50)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 chi2PerClusterTPC);
-	      ((TH3D *)(fAcceptedCutList->At(54)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 npointsTPCdEdx);
-	      ((TH1F *)(fAcceptedCutList->At(58)))->Fill(npointsTPCdEdx);
 	      
-	      ((TH1F *)(fAcceptedDCAList->At(2)))->Fill(TMath::Abs(dcaXY));
-	      ((TH1F *)(fAcceptedDCAList->At(6)))->Fill(TMath::Abs(dcaZ));
-	      ((TH1F *)(fAcceptedDCAList->At(10)))->Fill(nSigmaToVertex);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH2D *)(fQA2DList->At(2)))->Fill(track->Eta(),gPt);
-	      else
-		((TH2D *)(fQA2DList->At(2)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
-							    track->Py(),
-							    track->Pz()),
-						   gPt);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH3F *)(fQA2DList->At(10)))->Fill(track->Eta(),gPt,
-						    ConvertPDGToInt(motherPDGCode));
-	      else
-		((TH3F *)(fQA2DList->At(10)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
-							     track->Py(),
-							     track->Pz()),
-						    gPt,
-						    ConvertPDGToInt(motherPDGCode));
-	    }
-	    else if(track->Charge() < 0) {
-	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
-		if(track->HasPointOnITSLayer(iLayer))
-		  ((TH1F *)(fAcceptedCutList->At(3)))->Fill(iLayer+1);
+	      if(fMCProcessIdFlag)
+		if(particle->GetUniqueID() != fMCProcessId) continue;
+	      if(fMotherParticlePDGCodeFlag)
+		if(TMath::Abs(motherPDGCode) != fMotherParticlePDGCode) continue;
+	      
+	      if(track->Charge() > 0) {
+		for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+		  if(track->HasPointOnITSLayer(iLayer))
+		    ((TH1F *)(fAcceptedCutList->At(2)))->Fill(iLayer+1);
+		}
+		((TH1F *)(fAcceptedCutList->At(6)))->Fill(nClustersITS);
+		((TH1F *)(fAcceptedCutList->At(10)))->Fill(chi2PerClusterITS);
+		((TH1F *)(fAcceptedCutList->At(14)))->Fill(chi2ConstrainVertex);
+		((TH1F *)(fAcceptedCutList->At(18)))->Fill(nClustersTPC);
+		((TH1F *)(fAcceptedCutList->At(22)))->Fill(chi2PerClusterTPC);
+		((TH1F *)(fAcceptedCutList->At(26)))->Fill(extCov[0]);
+		((TH1F *)(fAcceptedCutList->At(30)))->Fill(extCov[2]);
+		((TH1F *)(fAcceptedCutList->At(34)))->Fill(extCov[5]);
+		((TH1F *)(fAcceptedCutList->At(38)))->Fill(extCov[9]);
+		((TH1F *)(fAcceptedCutList->At(42)))->Fill(extCov[14]);
+		((TH3D *)(fAcceptedCutList->At(46)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   nClustersTPC);
+		((TH3D *)(fAcceptedCutList->At(50)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   chi2PerClusterTPC);
+		((TH3D *)(fAcceptedCutList->At(54)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   npointsTPCdEdx);
+		((TH1F *)(fAcceptedCutList->At(58)))->Fill(npointsTPCdEdx);
+		
+		((TH1F *)(fAcceptedDCAList->At(2)))->Fill(TMath::Abs(dcaXY));
+		((TH1F *)(fAcceptedDCAList->At(6)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(10)))->Fill(nSigmaToVertex);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH2D *)(fQA2DList->At(2)))->Fill(track->Eta(),gPt);
+		else
+		  ((TH2D *)(fQA2DList->At(2)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
+										   track->Py(),
+										   track->Pz()),
+						     gPt);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH3F *)(fQA2DList->At(10)))->Fill(track->Eta(),gPt,
+						      ConvertPDGToInt(motherPDGCode));
+		else
+		  ((TH3F *)(fQA2DList->At(10)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
+										    track->Py(),
+										    track->Pz()),
+						      gPt,
+						      ConvertPDGToInt(motherPDGCode));
 	      }
-	      ((TH1F *)(fAcceptedCutList->At(7)))->Fill(nClustersITS);
-	      ((TH1F *)(fAcceptedCutList->At(11)))->Fill(chi2PerClusterITS);
-	      ((TH1F *)(fAcceptedCutList->At(15)))->Fill(chi2ConstrainVertex);
-	      ((TH1F *)(fAcceptedCutList->At(19)))->Fill(nClustersTPC);
-	      ((TH1F *)(fAcceptedCutList->At(23)))->Fill(chi2PerClusterTPC);
-	      ((TH1F *)(fAcceptedCutList->At(27)))->Fill(extCov[0]);
-	      ((TH1F *)(fAcceptedCutList->At(31)))->Fill(extCov[2]);
-	      ((TH1F *)(fAcceptedCutList->At(35)))->Fill(extCov[5]);
-	      ((TH1F *)(fAcceptedCutList->At(39)))->Fill(extCov[9]);
-	      ((TH1F *)(fAcceptedCutList->At(43)))->Fill(extCov[14]);
-	      ((TH3D *)(fAcceptedCutList->At(47)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 nClustersTPC);
-	      ((TH3D *)(fAcceptedCutList->At(51)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 chi2PerClusterTPC);
-	      ((TH3D *)(fAcceptedCutList->At(55)))->Fill(track->Eta(),
-							 track->Phi()*180./TMath::Pi(),
-							 npointsTPCdEdx);
-	      ((TH1F *)(fAcceptedCutList->At(59)))->Fill(npointsTPCdEdx);
-	      
-	      ((TH1F *)(fAcceptedDCAList->At(3)))->Fill(TMath::Abs(dcaXY));
-	      ((TH1F *)(fAcceptedDCAList->At(7)))->Fill(TMath::Abs(dcaZ));
-	      ((TH1F *)(fAcceptedDCAList->At(11)))->Fill(nSigmaToVertex);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH2D *)(fQA2DList->At(6)))->Fill(track->Eta(),gPt);
-	      else
-		((TH2D *)(fQA2DList->At(6)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
-							    track->Py(),
-							    track->Pz()),
-						   gPt);
-	      if(fProtonAnalysisBase->GetEtaMode())
-		((TH3F *)(fQA2DList->At(11)))->Fill(track->Eta(),gPt,
-						    ConvertPDGToInt(motherPDGCode));
-	      else
-		((TH3F *)(fQA2DList->At(11)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
-							     track->Py(),
-							     track->Pz()),
-						    gPt,
-						    ConvertPDGToInt(motherPDGCode));
-	    }
-	  }//secondary particles
-	}//accepted - track cuts
-	else if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) {
+	      else if(track->Charge() < 0) {
+		for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+		  if(track->HasPointOnITSLayer(iLayer))
+		    ((TH1F *)(fAcceptedCutList->At(3)))->Fill(iLayer+1);
+		}
+		((TH1F *)(fAcceptedCutList->At(7)))->Fill(nClustersITS);
+		((TH1F *)(fAcceptedCutList->At(11)))->Fill(chi2PerClusterITS);
+		((TH1F *)(fAcceptedCutList->At(15)))->Fill(chi2ConstrainVertex);
+		((TH1F *)(fAcceptedCutList->At(19)))->Fill(nClustersTPC);
+		((TH1F *)(fAcceptedCutList->At(23)))->Fill(chi2PerClusterTPC);
+		((TH1F *)(fAcceptedCutList->At(27)))->Fill(extCov[0]);
+		((TH1F *)(fAcceptedCutList->At(31)))->Fill(extCov[2]);
+		((TH1F *)(fAcceptedCutList->At(35)))->Fill(extCov[5]);
+		((TH1F *)(fAcceptedCutList->At(39)))->Fill(extCov[9]);
+		((TH1F *)(fAcceptedCutList->At(43)))->Fill(extCov[14]);
+		((TH3D *)(fAcceptedCutList->At(47)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   nClustersTPC);
+		((TH3D *)(fAcceptedCutList->At(51)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   chi2PerClusterTPC);
+		((TH3D *)(fAcceptedCutList->At(55)))->Fill(track->Eta(),
+							   track->Phi()*180./TMath::Pi(),
+							   npointsTPCdEdx);
+		((TH1F *)(fAcceptedCutList->At(59)))->Fill(npointsTPCdEdx);
+		
+		((TH1F *)(fAcceptedDCAList->At(3)))->Fill(TMath::Abs(dcaXY));
+		((TH1F *)(fAcceptedDCAList->At(7)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(11)))->Fill(nSigmaToVertex);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH2D *)(fQA2DList->At(6)))->Fill(track->Eta(),gPt);
+		else
+		  ((TH2D *)(fQA2DList->At(6)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
+										   track->Py(),
+										   track->Pz()),
+						     gPt);
+		if(fProtonAnalysisBase->GetEtaMode())
+		  ((TH3F *)(fQA2DList->At(11)))->Fill(track->Eta(),gPt,
+						      ConvertPDGToInt(motherPDGCode));
+		else
+		  ((TH3F *)(fQA2DList->At(11)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),
+										    track->Py(),
+										    track->Pz()),
+						      gPt,
+						      ConvertPDGToInt(motherPDGCode));
+	      }
+	    }//secondary particles
+	  }//accepted - track cuts
+	}//primary-like cut
+	else if((!fProtonAnalysisBase->IsAccepted(track)) || 
+		(!fProtonAnalysisBase->IsPrimary(esd,vertex,track))) {
 	  if(label <= stack->GetNprimary()) {
 	    if(track->Charge() > 0) {
 	      ((TH3D *)(fRejectedCutList->At(0)))->Fill(track->Eta(),

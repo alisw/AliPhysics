@@ -203,9 +203,7 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
 }
 
 //____________________________________________________________________//
-Bool_t AliProtonAnalysisBase::IsAccepted(AliESDEvent *esd,
-					 const AliESDVertex *vertex, 
-					 AliESDtrack* track) {
+Bool_t AliProtonAnalysisBase::IsAccepted(AliESDtrack* track) {
   // Checks if the track is excluded from the cuts
   Int_t  fIdxInt[200];
   Int_t nClustersITS = track->GetITSclusters(fIdxInt);
@@ -900,10 +898,14 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
       fAlephParameters[4] = 4.88663e+00;
     }
 
+    Double_t nsigma = 100.0;
     AliESDpid *fESDpid = new AliESDpid(); 
     fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
     
-    Double_t nsigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kProton));
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(tpcTrack)
+      nsigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kProton));
+  
     if(nsigma <= fNSigma) 
       return kTRUE;
   }//kSigma1 PID method
