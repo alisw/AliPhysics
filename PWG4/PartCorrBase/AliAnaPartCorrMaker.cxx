@@ -254,9 +254,10 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   Int_t nana = fAnalysisContainer->GetEntries() ;
   for(Int_t iana = 0; iana <  nana; iana++){
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ; 
-    if(nAODBranches) ana->ConnectInputOutputAODBranches(); //Sets branches for each analysis, if there is any branch.
+    
+	ana->ConnectInputOutputAODBranches(); //Sets branches for each analysis
     //Make analysis, create aods in aod branch or AODCaloClusters
-    if(fMakeAOD) ana->MakeAnalysisFillAOD()  ;
+    if(fMakeAOD)   ana->MakeAnalysisFillAOD()  ;
     //Make further analysis with aod branch and fill histograms
     if(fMakeHisto) ana->MakeAnalysisFillHistograms()  ;
     

@@ -85,7 +85,7 @@ public:
   virtual void SetAODObjArrayName(TString name) {fAODObjArrayName = name; }
 
   virtual TClonesArray* GetInputAODBranch() const {return fInputAODBranch ;}
-  virtual TClonesArray* GetOutputAODBranch() const {return fOutputAODBranch ;}
+  virtual TClonesArray* GetOutputAODBranch() const {if(fNewAOD) return fOutputAODBranch; else return fInputAODBranch ;}
   virtual TClonesArray* GetAODBranch(TString aodBranchName) const ;
 	
 //	virtual TClonesArray* GetAODCaloClusters() const {return fAODCaloClusters ;}

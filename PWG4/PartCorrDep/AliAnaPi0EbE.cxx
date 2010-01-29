@@ -620,11 +620,11 @@ void AliAnaPi0EbE::Init()
 { 
   //Init
   //Do some checks
-  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn()){
+  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
     printf("AliAnaPi0EbE::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
-  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn()){
+  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
     printf("AliAnaPi0EbE::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
@@ -634,10 +634,7 @@ void AliAnaPi0EbE::Init()
 //____________________________________________________________________________
 void AliAnaPi0EbE::InitParameters()
 {
-  //Initialize the parameters of the analysis.
-  SetOutputAODClassName("AliAODPWG4Particle");
-  SetOutputAODName("Pi0");
-  
+  //Initialize the parameters of the analysis.  
   AddToHistogramsName("AnaPi0EbE_");
 
   fInputAODGammaConvName = "gammaconv" ;
