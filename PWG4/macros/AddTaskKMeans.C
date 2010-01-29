@@ -30,6 +30,8 @@ AliAnalysisTaskKMeans *AddTaskKMeans()
    esdTrackCutsL->SetMaxDCAToVertexZ(3.);
    esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
    taskKMeans->SetCuts(esdTrackCutsL);
+   taskKMeans->SetK(2);
+   AliKMeansClustering::SetBeta(1.);
    mgr->AddTask(taskKMeans);
 
    AliAnalysisDataContainer* cout_kmeans = mgr->CreateContainer("KMeans", TList::Class(),AliAnalysisManager::kOutputContainer,
