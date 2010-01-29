@@ -278,7 +278,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskPhysicsSelection.C");
-     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kTRUE);
+     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
      if(kIsMC)physSelTask->GetPhysicsSelection()->SetAnalyzeMC();
      physSelTask->GetPhysicsSelection()->AddBackgroundIdentification(new AliBackgroundSelection());
    }
@@ -424,9 +424,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4PartCorr){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
-     AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS",kUseMC,kFALSE,kIsMC);
+     AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS",kFALSE,kIsMC);
      if (!taskpartcorrPHOS) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation PHOS cannot run for this train conditions - EXCLUDED");
-     AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL",kUseMC,kFALSE,kIsMC);
+     AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL",kFALSE,kIsMC);
      if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation EMCAL cannot run for this train conditions - EXCLUDED");
      if(kDeltaAODPartCorrName.Length()>0)mgr->RegisterExtraFile(kDeltaAODPartCorrName.Data()); // hmm this is written anyway.... but at least we do not register it...
    } 
