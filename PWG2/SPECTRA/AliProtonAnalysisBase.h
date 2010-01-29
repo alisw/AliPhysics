@@ -92,9 +92,7 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t IsPrimary(AliESDEvent *esd,
 		   const AliESDVertex *vertex, 
 		   AliESDtrack *track);
-  Bool_t IsAccepted(AliESDEvent *esd,
-		    const AliESDVertex *vertex, 
-		    AliESDtrack *track);
+  Bool_t IsAccepted(AliESDtrack *track);
   Bool_t IsInPhaseSpace(AliESDtrack *track);
 
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack) const; 

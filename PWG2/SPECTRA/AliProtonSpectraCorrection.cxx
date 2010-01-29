@@ -270,7 +270,8 @@ void AliProtonSpectraCorrection::FillCorrectionMaps(AliESDEvent *esd,
 
 	//fill the container - survived protons
 	//track cuts
-	if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
+	if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) continue;
+	if(!fProtonAnalysisBase->IsAccepted(track)) continue;
 	//track outside the analyzed y-Pt
 	if(!fProtonAnalysisBase->IsInPhaseSpace(track)) continue; 
 	containerInput[0] = mcPart->Eta();
@@ -299,7 +300,8 @@ void AliProtonSpectraCorrection::FillCorrectionMaps(AliESDEvent *esd,
 
 	//fill the container - survived antiprotons
 	//track cuts
-	if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
+	if(!fProtonAnalysisBase->IsPrimary(esd,vertex,track)) continue;
+	if(!fProtonAnalysisBase->IsAccepted(track)) continue;
 	//track outside the analyzed y-Pt
 	if(!fProtonAnalysisBase->IsInPhaseSpace(track)) continue; 
 	containerInput[0] = mcPart->Eta();
