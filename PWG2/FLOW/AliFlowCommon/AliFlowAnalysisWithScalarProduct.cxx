@@ -46,6 +46,9 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
  AliFlowAnalysisWithScalarProduct::AliFlowAnalysisWithScalarProduct():
    fEventNumber(0),
    fDebug(kFALSE),
+   fWeightsList(NULL),
+   fUsePhiWeights(kFALSE),
+   fPhiWeights(NULL),
    fHistList(NULL),
    fHistProUQetaRP(NULL),
    fHistProUQetaPOI(NULL),
@@ -53,10 +56,12 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
    fHistProUQPtPOI(NULL),
    fHistProQaQb(NULL),
    fHistProM(NULL),
+   fHistM(NULL),
    fCommonHists(NULL),
    fCommonHistsRes(NULL)
 {
   // Constructor.
+  fWeightsList = new TList();
   fHistList = new TList();
 }
  //-----------------------------------------------------------------------
@@ -65,6 +70,7 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
  AliFlowAnalysisWithScalarProduct::~AliFlowAnalysisWithScalarProduct() 
  {
    //destructor
+   delete fWeightsList;
    delete fHistList;
  }
  
@@ -150,10 +156,30 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fHistProM -> SetXTitle("<M-1>, <Ma*Mb>");
   fHistList->Add(fHistProM);
 
+  fHistM = new TH1D("Flow_Msum_SP","Flow_Msum_SP",2,0.5, 2.5);
+  fHistM -> SetYTitle("sum (*)");
+  fHistM -> SetXTitle("sum (M-1), sum (Ma*Mb)");
+  fHistList->Add(fHistM);
+
   fCommonHists = new AliFlowCommonHist("AliFlowCommonHistSP");
   fHistList->Add(fCommonHists);
   fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsSP");
   fHistList->Add(fCommonHistsRes);  
+
+  //weights
+  if(fUsePhiWeights) {
+    if(!fWeightsList) {
+      cout<<"WARNING: fWeightsList is NULL in the Scalar Product method."<<endl;
+      exit(0);  
+    }
+    if(fWeightsList->FindObject("phi_weights"))  {
+      fPhiWeights = dynamic_cast<TH1F*>(fWeightsList->FindObject("phi_weights"));
+      fHistList->Add(fPhiWeights);
+    } else {
+      cout<<"WARNING: histogram with phi weights is not accessible in Scalar Product"<<endl;
+      exit(0);
+    }
+  } // end of if(fUsePhiWeights)
 
   fEventNumber = 0;  //set number of events to zero    
 }
@@ -170,17 +196,25 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
         
     //get Q vectors for the eta-subevents
     AliFlowVector* vQarray = new AliFlowVector[2];
-    anEvent->GetQsub(vQarray);
+    if (fUsePhiWeights) {
+      anEvent->Get2Qsub(vQarray,2,fWeightsList,kTRUE);
+    } else {
+      anEvent->Get2Qsub(vQarray);
+    }
     AliFlowVector vQa = vQarray[0];
     AliFlowVector vQb = vQarray[1];
     //get total Q vector
     AliFlowVector vQ = vQa + vQb;
     
     //fill the multiplicity histograms for the prefactor
-    fHistProM -> Fill(1,vQ.GetMult()-1);                //<M-1>
-    fHistProM -> Fill(2,vQa.GetMult()*vQb.GetMult());   //<Ma*Mb>
+    Double_t dMmin1 = vQ.GetMult()-1; //M-1
+    Double_t dMaMb = vQa.GetMult()*vQb.GetMult();     //Ma*Mb
+    fHistM -> Fill(1,dMmin1);//sum of (M-1)
+    fHistM -> Fill(2,vQa.GetMult()*vQb.GetMult()); //sum of (Ma*Mb)
+    fHistProM -> Fill(1,dMmin1);      //<M-1>
+    fHistProM -> Fill(2,vQa.GetMult()*vQb.GetMult()); //<Ma*Mb>
     //scalar product of the two subevents
-    Double_t dQaQb = vQa*vQb; 
+    Double_t dQaQb = (vQa*vQb)*dMaMb;
     fHistProQaQb -> Fill(0.,dQaQb);    
                 
     //loop over the tracks of the event
@@ -191,6 +225,13 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	pTrack = anEvent->GetTrack(i) ; 
 	if (pTrack){
 	  Double_t dPhi = pTrack->Phi();
+	  //set default weight to 1
+	  Double_t dW = 1.; 
+	  //phi weight of pTrack
+	  if(fUsePhiWeights && fPhiWeights) {
+	    Int_t iNBinsPhi = fPhiWeights->GetNbinsX();
+	    dW = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNBinsPhi/TMath::TwoPi())));  //bin = 1 + value*nbins/range
+	  }                                                                                           //TMath::Floor rounds to the lower integer
 	  //calculate vU
 	  TVector2 vU;
 	  Double_t dUX = TMath::Cos(2*dPhi);
@@ -204,14 +245,14 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	  //subtract particle from the flowvector if used to define it
 	  if (pTrack->InRPSelection()) {
 	    if (pTrack->InSubevent(0) || pTrack->InSubevent(1)) { 
-	      Double_t dQmX = vQm.X() - dUX;
-	      Double_t dQmY = vQm.Y() - dUY;
+	      Double_t dQmX = vQm.X() - dW*dUX;
+	      Double_t dQmY = vQm.Y() - dW*dUY;
 	      vQm.Set(dQmX,dQmY);
 	    }
 	  }
 
 	  //dUQ = scalar product of vU and vQm
-	  Double_t dUQ = vU * vQm;
+	  Double_t dUQ = (vU * vQm)*dMmin1;
 	  Double_t dPt = pTrack->Pt();
 	  Double_t dEta = pTrack->Eta();
 	  //fill the profile histograms
@@ -282,6 +323,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   Double_t dMaMb     = fHistProM->GetBinContent(2);  //average over Ma*Mb
   Double_t dMaMbErr  = fHistProM->GetBinError(2);    //error on average over Ma*Mb
 
+  //Double_t dSumMmin1 = fHistM->GetBinContent(1);  //sum over (M-1)
+  //Double_t dSumMaMb  = fHistM->GetBinContent(2);  //sum over (Ma*Mb)
+
   Double_t dMcorrection = 0.;     //correction factor for Ma != Mb
   Double_t dMcorrectionErr = 0.;  
   Double_t dMcorrectionErrRel = 0.; 
@@ -295,7 +339,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   }
 
   Double_t dQaQbAv  = TMath::Abs(fHistProQaQb->GetBinContent(1)); //average over events //TEST TAKE ABS
+  dQaQbAv /= dMaMb;  //normalize for weighted average
   Double_t dQaQbErr = fHistProQaQb->GetBinError(1);
+  dQaQbErr /= dMaMb;  //normalize for weighted average
   Double_t dQaQbErrRel = 0.;
   if (dQaQbAv != 0.) {
     dQaQbErrRel = dQaQbErr/dQaQbAv; }
@@ -317,7 +363,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     //v as a function of eta for RP selection
     for(Int_t b=0;b<iNbinsEta;b++) {
       Double_t duQpro = fHistProUQetaRP->GetBinContent(b);
+      duQpro /= dMmin1;  //normalize for weighted average
       Double_t duQerr = fHistProUQetaRP->GetBinError(b); //copy error for now
+      duQerr /= dMmin1;  //normalize for weighted average
       Double_t duQerrRel = 0.;
       if (duQpro != 0.) {duQerrRel = duQerr/duQpro;}
       Double_t duQerrRel2 = duQerrRel*duQerrRel;
@@ -335,7 +383,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     //v as a function of eta for POI selection
     for(Int_t b=0;b<iNbinsEta;b++) {
       Double_t duQpro = fHistProUQetaPOI->GetBinContent(b);
+      duQpro /= dMmin1;  //normalize for weighted average
       Double_t duQerr = fHistProUQetaPOI->GetBinError(b); //copy error for now
+      duQerr /= dMmin1;  //normalize for weighted average
       Double_t duQerrRel = 0.;
       if (duQpro != 0.) {duQerrRel = duQerr/duQpro;}
       Double_t duQerrRel2 = duQerrRel*duQerrRel;
@@ -358,7 +408,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
 
     for(Int_t b=0;b<iNbinsPt;b++) {
       Double_t duQpro = fHistProUQPtRP->GetBinContent(b);
+      duQpro /= dMmin1;  //normalize for weighted average
       Double_t duQerr = fHistProUQPtRP->GetBinError(b); //copy error for now
+      duQerr /= dMmin1;  //normalize for weighted average
       Double_t duQerrRel = 0.;
       if (duQpro != 0.) {duQerrRel = duQerr/duQpro;}
       Double_t duQerrRel2 = duQerrRel*duQerrRel;
@@ -398,7 +450,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   
     for(Int_t b=0;b<iNbinsPt;b++) {
       Double_t duQpro = fHistProUQPtPOI->GetBinContent(b);
+      duQpro /= dMmin1;  //normalize for weighted average
       Double_t duQerr = fHistProUQPtPOI->GetBinError(b); //copy error for now
+      duQerr /= dMmin1;  //normalize for weighted average
       Double_t duQerrRel = 0.;
       if (duQpro != 0.) {duQerrRel = duQerr/duQpro;}
       Double_t duQerrRel2 = duQerrRel*duQerrRel;

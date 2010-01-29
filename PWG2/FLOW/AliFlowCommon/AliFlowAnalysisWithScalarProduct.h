@@ -44,6 +44,12 @@ class AliFlowAnalysisWithScalarProduct {
    void    SetDebug(Bool_t kt)   { this->fDebug = kt ; }
    Bool_t  GetDebug() const      { return this->fDebug ; }
 
+   //phi weights
+   void    SetWeightsList(TList* const aWeightsList)  {this->fWeightsList = (TList*)aWeightsList->Clone();}
+   TList*  GetWeightsList() const                     {return this->fWeightsList;}  
+   void    SetUsePhiWeights(Bool_t const aPhiW)       {this->fUsePhiWeights = aPhiW;}
+   Bool_t  GetUsePhiWeights() const                   {return this->fUsePhiWeights;}
+
    // Output 
    TList*    GetHistList() const    { return this->fHistList ; }     // Gets output histogram list
   
@@ -59,6 +65,8 @@ class AliFlowAnalysisWithScalarProduct {
    void      SetHistProQaQb(TProfile* const aHistProQaQb) {this->fHistProQaQb = aHistProQaQb;}
    TProfile* GetHistProM() const {return this->fHistProM;}
    void      SetHistProM(TProfile* const aHistProM) {this->fHistProM = aHistProM;}
+   TH1D*     GetHistM() const {return this->fHistM;}
+   void      SetHistM(TH1D* const aHistM) {this->fHistM = aHistM;}
 
    AliFlowCommonHist* GetCommonHists() const {return this->fCommonHists; }
    void SetCommonHists(AliFlowCommonHist* const someCommonHists) {this->fCommonHists = someCommonHists; }
@@ -74,6 +82,10 @@ class AliFlowAnalysisWithScalarProduct {
    Int_t      fEventNumber;      // event counter
    Bool_t     fDebug ;           // flag for analysis: more print statements
 
+   TList*     fWeightsList;      // list holding input histograms with phi weights
+   Bool_t     fUsePhiWeights;    // use phi weights
+   TH1F*      fPhiWeights;       // histogram holding phi weights
+
    TList*     fHistList;         //list to hold all output histograms  
    TProfile*  fHistProUQetaRP;   //uQ(eta) for RP
    TProfile*  fHistProUQetaPOI;  //uQ(eta) for POI
@@ -81,6 +93,7 @@ class AliFlowAnalysisWithScalarProduct {
    TProfile*  fHistProUQPtPOI;   //uQ(pt) for POI
    TProfile*  fHistProQaQb;      //average of QaQb (for event plane resolution)
    TProfile*  fHistProM;         //holds avarage of M-1 and Ma*Mb
+   TH1D*      fHistM;            //holds sum of M-1 and Ma*Mb
    AliFlowCommonHist*        fCommonHists;    //control histograms
    AliFlowCommonHistResults* fCommonHistsRes; //results histograms
 
