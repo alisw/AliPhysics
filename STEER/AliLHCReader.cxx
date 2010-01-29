@@ -87,7 +87,7 @@ TMap* AliLHCReader::ReadLHCDP(TString filename)
 		//if (strLine.BeginsWith("=")) continue;
 		//if (!strLine.CompareTo("END_OF_BLOCK")) {
 		if (strLine.Contains("END_OF_BLOCK")) {
-			AliInfo("END_OF_BLOCK");
+			AliDebug(2,"END_OF_BLOCK");
 			nBlocks++;
 			continue;
 		}
@@ -101,7 +101,7 @@ TMap* AliLHCReader::ReadLHCDP(TString filename)
 			continue;
 		}
 		if (ntokens == 1 && !(((TObjString*)tokens->At(0))->String()).CompareTo("END_OF_DATA")){
-			AliInfo("End of file reached");
+			AliDebug(2,"End of file reached");
 			break;
 		}
 		if (ntokens < 4){  
@@ -114,7 +114,7 @@ TMap* AliLHCReader::ReadLHCDP(TString filename)
 		AliDebug(2,Form("lhcDPindex = %d",lhcDPindex));
 		TObjString* lhcDPname = (TObjString*)tokens->At(1);
 		TString lhcDPtype = ((TObjString*)tokens->At(2))->String();
-		AliInfo(Form("lhcDPname = %s",(lhcDPname->String()).Data()));
+		AliDebug(2,Form("lhcDPname = %s",(lhcDPname->String()).Data()));
 		AliDebug(2,Form("lhcDPtype = %s",lhcDPtype.Data()));
 		TObjArray* typeTokens = lhcDPtype.Tokenize(":");
 		if (typeTokens->GetEntriesFast() < 2 ){  
@@ -210,7 +210,6 @@ TMap* AliLHCReader::ReadLHCDP(TString filename)
 	return mapLHC;
 }
 
-				
 
 
 
