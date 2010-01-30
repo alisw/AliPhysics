@@ -10,14 +10,18 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Boo
     if(iFlag&(1<<2))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",filterMask,iPhysicsSelection);
     if(iFlag&(1<<3))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",filterMask,iPhysicsSelection);
 
-    if(iFlag&(1<<4))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",filterMask,iPhysicsSelection);
+    if(iFlag&(1<<4)){
+      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",filterMask,iPhysicsSelection);
+    }
     if(iFlag&(1<<5))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04",filterMask,iPhysicsSelection);
-
     if(iFlag&(1<<6))js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107",filterMask,iPhysicsSelection);
   }
+
   if(iFlag&(1<<7))js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",filterMask,iPhysicsSelection);
   if(iFlag&(1<<8))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",filterMask,iPhysicsSelection);
   if(iFlag&(1<<9))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",filterMask,iPhysicsSelection);
+  
+
   if(iFlag&(1<<10)){
     js = AddTaskJetSpectrum2("jetsAOD_UA107","",filterMask,iPhysicsSelection);
     js->SetRecEtaWindow(0.2);
@@ -46,8 +50,10 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t f
    }
 
    TString type = mgr->GetInputEventHandler()->GetDataType();
-   TString typeMC(bGen);
-   typeMC.ToUpper();
+   TString typeRec(bRec);
+   TString typeGen(bGen);
+   typeGen.ToUpper();
+   typeRec.ToUpper();
    // Create the task and configure it.
    //===========================================================================
    
@@ -63,25 +69,42 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t f
    //   pwg4spec->SetUseGlobalSelection(kTRUE); 
 
    if(type == "AOD"){
-     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODIn);
-     pwg4spec->SetAODInput(kTRUE);
+     // Assume all jet are produced already
+     pwg4spec->SetAODJetInput(kTRUE);
+     pwg4spec->SetAODTrackInput(kTRUE);
+     pwg4spec->SetAODMCInput(kTRUE);
    }
-   else pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODOut);
 
-   if(typeMC.Contains("AODMC2")){
+   if(typeRec.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
+     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCChargedAcceptance);
+   }
+   else if (typeRec.Contains("AODMC2")){
+     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
+   }
+   else if (typeRec.Contains("AODMC")){
+     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCall);
+   }
+   else if (typeRec.Contains("AOD")) {
+     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAOD);
+   }
+
+   if(typeGen.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
+     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCChargedAcceptance);
+   }
+   else if (typeGen.Contains("AODMC2")){
      pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
    }
-   else if (typeMC.Contains("AODMC2")){
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
+   else if (typeGen.Contains("AODMC")){
+     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCall);
    }
-   else if (typeMC.Contains("AOD")) {
-     if(type == "AOD"){
-       pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODIn);
-     }
-     else{
-       pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODOut);
-     }
+   else if (typeGen.Contains("AOD")) {
+     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAOD);
    }
+
+
+
+
+
    if(iPhysicsSelection)pwg4spec->SelectCollisionCandidates();
 
    mgr->AddTask(pwg4spec);

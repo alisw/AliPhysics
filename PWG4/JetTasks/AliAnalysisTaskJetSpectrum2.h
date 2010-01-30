@@ -45,7 +45,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetUseGlobalSelection(Bool_t b){fUseGlobalSelection = b;}
     virtual void SetExternalWeight(Float_t f){fExternalWeight = f;}
     virtual void SetUseExternalWeightOnly(Bool_t b){fUseExternalWeightOnly = b;}
-    virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
+    virtual void SetAODJetInput(Bool_t b){fUseAODJetInput = b;}
+    virtual void SetAODTrackInput(Bool_t b){fUseAODTrackInput = b;}
+    virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
     virtual void SetLimitGenJetEta(Bool_t b){fLimitGenJetEta = b;}
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
     virtual void SetAnalysisType(Int_t i){fAnalysisType = i;}
@@ -64,7 +66,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     // AOD reading -> MC from AOD
     // ESD reading -> MC from Kinematics
     // this has to match with our selection of input events
-    enum {kTrackUndef = 0, kTrackAODIn, kTrackAODOut, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged };
+    enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
     enum {kAnaMC =  0x1, kAnaMCESD = 0x2};
     enum {kMaxJets = 4};
     enum {kMaxCorrelation =  3};
@@ -96,7 +98,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TString       fBranchRec;  // AOD branch name for reconstructed
     TString       fBranchGen;  // AOD brnach for genereated
 
-    Bool_t        fUseAODInput;           // take jet from input AOD not from ouptu AOD
+    Bool_t        fUseAODJetInput;        // take jet from input AOD not from ouptu AOD
+    Bool_t        fUseAODTrackInput;      // take track from input AOD not from ouptu AOD
+    Bool_t        fUseAODMCInput;         // take MC from input AOD not from ouptu AOD
     Bool_t        fUseGlobalSelection;    // Limit the eta of the generated jets
     Bool_t        fUseExternalWeightOnly; // use only external weight
     Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
@@ -124,14 +128,18 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtGenIn[kMaxJets];  // Jet pt with corellated generated jet    
 
     TH1F*         fh1PtJetsRecIn;  // Jet pt for all jets
+    TH1F*         fh1PtJetsLeadingRecIn;  // Jet pt for all jets
     TH1F*         fh1PtTracksRecIn;  // track pt for all tracks
+    TH1F*         fh1PtTracksLeadingRecIn;  // track pt for all tracks
     TH1F*         fh1PtTracksGenIn;  // track pt for all tracks
 
 
     TH2F*         fh2NRecJetsPt;            // Number of found jets above threshold
     TH2F*         fh2NRecTracksPt;          // Number of found tracks above threshold
-    TH2F*         fh2JetsLeadingPhiEta;     // jet corrlation with leading jet
-    TH2F*         fh2TracksLeadingPhiEta;   // jet corrlation with leading jet
+    TH2F*         fh2JetsLeadingPhiEta;     // jet correlation with leading jet
+    TH2F*         fh2JetsLeadingPhiPt;      // jet correlation with leading jet
+    TH2F*         fh2TracksLeadingPhiEta;   // track correlation with leading track
+    TH2F*         fh2TracksLeadingPhiPt;    // track correlation with leading track
 
     TH2F*         fh2PhiPt[kMaxJets];    // delta phi correlation of tracks with the jet      
     TH2F*         fh2PhiEta[kMaxJets];   // eta   phi correlation of tracks with the jet      
