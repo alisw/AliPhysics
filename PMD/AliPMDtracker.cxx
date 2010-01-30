@@ -245,6 +245,7 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 
   const Float_t kzpos = 361.5;    // middle of the PMD
 
+  Int_t   ix, iy;
   Int_t   det,smn,trno,trpid,mstat;
   Float_t xpos,ypos;
   Float_t adc, ncell, radx, rady;
@@ -269,7 +270,28 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
       adc   = fPMDclout->GetClusADC();
       ncell = fPMDclout->GetClusCells();
       radx  = fPMDclout->GetClusSigmaX();
-      rady  = fPMDclout->GetClusSigmaY();
+      // Here in the variable "rady" we are keeping the row and col
+      // of the single isolated cluster having ncell = 1 for offline
+      // calibration
+      
+      if ((radx > 999. && radx < 1000.) && ncell == 1)
+	{
+	  if (smn < 12)
+	    {
+	      ix = (Int_t) (ypos +0.5);
+	      iy = (Int_t) xpos;
+	    }
+	  else if (smn > 12 && smn < 24)
+	    {
+	      ix = (Int_t) xpos;
+	      iy = (Int_t) (ypos +0.5);
+	    }
+	  rady = (Float_t) (ix*100 + iy);
+	}
+      else
+	{
+	  rady  = fPMDclout->GetClusSigmaY();
+	}
       pid   = fPMDclout->GetClusPID();
       
       //
