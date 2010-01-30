@@ -366,10 +366,19 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,selection);
      }
      if(iJETAN&3&&!kFillAOD&!iAODanalysis){
+       AddTaskJetSpectrum2("jetsAOD_FASTKT00","",kHighPtFilterMask,iPhysicsSelection);
        AddTaskJetSpectrum2("jetsAOD_FASTKT01","",kHighPtFilterMask,iPhysicsSelection);
        AddTaskJetSpectrum2("jetsAOD_FASTKT02","",kHighPtFilterMask,iPhysicsSelection);
        AddTaskJetSpectrum2("jetsAOD_FASTKT06","",kHighPtFilterMask,iPhysicsSelection);
        AddTaskJetSpectrum2("jetsAOD_FASTKT08","",kHighPtFilterMask,iPhysicsSelection);
+       if(kIsMC){
+	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT00","",kHighPtFilterMask,iPhysicsSelection);
+	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT00","",kHighPtFilterMask,iPhysicsSelection);
+	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT01","",kHighPtFilterMask,iPhysicsSelection);
+	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT02","",kHighPtFilterMask,iPhysicsSelection);
+	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT06","",kHighPtFilterMask,iPhysicsSelection);
+	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT08","",kHighPtFilterMask,iPhysicsSelection);
+       }
      }
      if(kUseMC)taskjetSpectrum->SetAnalysisType( AliAnalysisTaskJetSpectrum2::kAnaMCESD);
      taskjetSpectrum->SetDebugLevel(0);
