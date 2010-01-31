@@ -1,10 +1,11 @@
-#ifndef ALICALORAWANALYZERLMS_H
-#define ALICALORAWANALYZERLMS_H
+#ifndef ALICALORAWANALYZERNN_H
+#define ALICALORAWANALYZERNN_H
+
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
  *                                                                        *
- * Primary Author: Per Thomas Hille <p.t.hille@fys.uio.no>                *
+ * Primary Author: Per Thomas Hille <perthomas.hille@yale.edu>            *
  *                                                                        *
  * Contributors are mentioned in the code where appropriate.              *
  * Please report bugs to p.t.hille@fys.uio.no                             *
@@ -18,35 +19,32 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-// Extraction of amplitude and peak position
-// FRom CALO raw data using
-// Chi square fit
+// Evaluation of peak position
+// and amplitude using Neural Networks (NN)
+// ------------------
 
 #include "AliCaloRawAnalyzer.h"
 
+class AliCaloBunchInfo;
+class AliCaloFitResults;
+class AliCaloNeuralFit;
 
-class  TF1;
-class  TGraph;
 
-class  AliCaloRawAnalyzerLMS : public AliCaloRawAnalyzer
+class  AliCaloRawAnalyzerNN : public AliCaloRawAnalyzer
 {
  public:
-  AliCaloRawAnalyzerLMS();
-  virtual ~AliCaloRawAnalyzerLMS();
-  virtual AliCaloFitResults  Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-  void PrintFitResult(const TF1 *f) const;
-  
- private:
-  AliCaloRawAnalyzerLMS(const AliCaloRawAnalyzerLMS & );
-  AliCaloRawAnalyzerLMS  & operator = (const AliCaloRawAnalyzerLMS  &);
- 
-  double fXaxis[MAXSAMPLES]; //Axis if time bins, ( used by TGraph )
-  const double fkEulerSquared; //e^2 = 7.389056098930650227
-  TGraph *fSig;  // Signale holding the data to be fitted.
-  TF1 *fTf1;     // Analytical formula of the Semi Gaussian to be fitted
+  AliCaloRawAnalyzerNN();
+  virtual ~AliCaloRawAnalyzerNN();
+  virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
+				       const UInt_t altrocfg1,  const UInt_t altrocfg2 );
+  //  virtual void SelectSubarray( const Double_t *fData, const int length, const short maxindex, int *const  first, int *const last ) const;
 
-  ClassDef(AliCaloRawAnalyzerLMS, 1)
+ private:
+  AliCaloRawAnalyzerNN( const AliCaloRawAnalyzerNN   & );
+  AliCaloRawAnalyzerNN   & operator = ( const  AliCaloRawAnalyzerNN  & );
+  AliCaloNeuralFit *fNeuralNet; // pointer to the class whick actually implements the Neural Network for EMCAL
+  Double_t fNNInput[5]; // The 5 input Neurons to the network ( mix bin + to samples on each side )
+  ClassDef( AliCaloRawAnalyzerNN, 1 )
 
 };
 

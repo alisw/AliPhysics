@@ -1,5 +1,5 @@
-#ifndef ALICALORAWANALYZERCRUDE_H
-#define ALICALORAWANALYZERCRUDE_H
+#ifndef ALICALORAWANALYZERFASTFIT_H
+#define ALICALORAWANALYZERFASTFIT_H
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -19,28 +19,26 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-
-// Evaluation of amplitude
-// as max sample value - pedestal
-// Not veru accurate, but very robust
-
-
 #include "AliCaloRawAnalyzer.h"
+#include "Rtypes.h"
 
-class AliCaloFitResults;
-class AliCaloBunchInfo;
+// Extraction of Amplitude and peak
+// position using specila algorithm
+// from Alexei Pavlinov
 
-class  AliCaloRawAnalyzerCrude : public  AliCaloRawAnalyzer
+
+class  AliCaloRawAnalyzerFastFit : public AliCaloRawAnalyzer
 {
  public:
-   virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
-				       const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-   
-   AliCaloRawAnalyzerCrude();
-   virtual ~AliCaloRawAnalyzerCrude();
+  AliCaloRawAnalyzerFastFit();
+  virtual ~AliCaloRawAnalyzerFastFit();
+  virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
+				      const UInt_t altrocfg1,  const UInt_t altrocfg2 ); 
+ private:
+  Double_t fXAxis[1008]; // Xaxis (time bins) corresponding to the ADC samples
 
-   ClassDef(AliCaloRawAnalyzerCrude, 1)  
+  ClassDef( AliCaloRawAnalyzerFastFit, 1 )
+
 
 };
 

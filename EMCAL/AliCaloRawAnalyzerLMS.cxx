@@ -37,9 +37,11 @@ using namespace std;
 
 
 #define BAD 4  //CRAP PTH
+ 
+ClassImp( AliCaloRawAnalyzerLMS )
 
 
-AliCaloRawAnalyzerLMS::AliCaloRawAnalyzerLMS() : AliCaloRawAnalyzer(),
+AliCaloRawAnalyzerLMS::AliCaloRawAnalyzerLMS() : AliCaloRawAnalyzer("Chi Square Fit"),
 						 fkEulerSquared(7.389056098930650227),
 						 fSig(0),
 						 fTf1(0)

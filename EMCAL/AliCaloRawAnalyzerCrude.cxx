@@ -15,12 +15,22 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+// Evaluation of amplitude
+// as max sample value - pedestal
+// Not veru accurate, but very robust
+// --------------
+// --------------
+
 #include "AliCaloRawAnalyzerCrude.h"
 #include "AliCaloFitResults.h"
 #include "AliCaloBunchInfo.h"
 
 
-AliCaloRawAnalyzerCrude::AliCaloRawAnalyzerCrude()
+ClassImp(AliCaloRawAnalyzerCrude)  
+
+
+AliCaloRawAnalyzerCrude::AliCaloRawAnalyzerCrude() : AliCaloRawAnalyzer("Crude")
 {
 
 }
@@ -35,9 +45,10 @@ AliCaloRawAnalyzerCrude::~AliCaloRawAnalyzerCrude()
 AliCaloFitResults
 AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
 {
+  // Evaluation of signal parameters
   if( bunchvector.size()  <=  0 )
     {
-      return AliCaloFitResults(-1, -1, -1, -1 , -1, -1, -1 );
+      return AliCaloFitResults(9999, 9999, 9999, 9999 , 9999, 9999, 9999 );
     }
 
   Int_t amp = 0;
@@ -61,7 +72,7 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
 
   //:EvaluatePedestal(const UShort_t * const data, const int length )
   //  double ped = EvaluatePedestal(sig, length) ;
-  return  AliCaloFitResults(amp, ped, -1, amp - ped, tof, -1, -1 );
+  return  AliCaloFitResults(amp, ped, 9999, amp - ped, tof, 9999, 9999 );
   
 } //end Crude
 

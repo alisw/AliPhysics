@@ -1,11 +1,11 @@
 /**************************************************************************
- * This file is property of and copyright by the Experimental Nuclear     *
- * Physics Group, Dep. of Physics                                         *
- * University of Oslo, Norway, 2007                                       *
+ * This file is property of and copyright by                              *
+ * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
  *                                                                        *
- * Author: Per Thomas Hille <perthi@fys.uio.no> for the ALICE HLT Project.*
+ * Primary Author: Per Thomas Hille  <perthomas.hille@yale.edu>           *
+ *                                                                        *
  * Contributors are mentioned in the code where appropriate.              *
- * Please report bugs to perthi@fys.uio.no                                *
+ * Please report bugs to p.t.hille@fys.uio.no                             *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -35,9 +35,11 @@
 
 using namespace std;
 
-AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer(), 
-								fTof(0), 
-								fAmp(0)
+ClassImp( AliCaloRawAnalyzerPeakFinder )
+
+AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer("Peak-Finder")
+//    fTof(0), 
+//							      fAmp(0)
 {
   //comment
 
@@ -84,7 +86,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 
   short maxampindex; //index of maximum amplitude
   short maxamp; //Maximum amplitude
-  fAmp = 0;
+  //  fAmp = 0;
   fAmpA[0] = 0;
   fAmpA[1] = 0;
   fAmpA[2] = 0;
@@ -119,11 +121,10 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      int dt =  maxampindex - startbin -2; 
 	      for(int i=0; i < SAMPLERANGE; i++ )
 		{
-		  //	  int dt =  maxampindex - startbin -2;
 		  
+		  //	  int dt =  maxampindex - startbin -2;
 		  //		  double tmp[3];
- 
-		  //	  tmp[0]  =  fReversed[ dt  +i -1]; 
+ 		  //	  tmp[0]  =  fReversed[ dt  +i -1]; 
 		  //		  tmp[1]  =  fReversed[ dt  +i];  
 		  //		  tmp[2]  =  fReversed[ dt  +i +1]; 
 		  
@@ -136,7 +137,6 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 		}
 	      
 	      double diff = 9999;
-
 	      int tmpindex = 0;
 
 	      for(int k=0; k < 3; k ++)
@@ -158,9 +158,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      
 	      tof = tof /  fAmpA[tmpindex];
 
-	      //   return AliCaloFitResults( maxamp, ped , -1, fAmp, -1, -1, -1 );  
 	      return AliCaloFitResults( maxamp, ped , -1, fAmpA[tmpindex], tof, -2, -3 ); 
-		  
 	    }
 
 	  else

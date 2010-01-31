@@ -2,7 +2,7 @@
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
  *                                                                        *
- * Primary Author: Per Thomas Hille <p.t.hille@fys.uio.no>                *
+ * Primary Author: Per Thomas Hille <perthomas.hille@yale.edu>            *
  *                                                                        *
  * Contributors are mentioned in the code where appropriate.              *
  * Please report bugs to p.t.hille@fys.uio.no                             *
@@ -32,17 +32,19 @@
 #include <iostream>
 using namespace std;
 
+ClassImp(AliCaloRawAnalyzer)  
 
-AliCaloRawAnalyzer::AliCaloRawAnalyzer() :  TObject(),
-					      fMinTimeIndex(-1),
-					      fMaxTimeIndex(-1),
-					      fFitArrayCut(5),
-					      fAmpCut(4),
-					      fNsampleCut(5),
-					      fIsZerosupressed( false ),
-					      fVerbose( false )
+AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name) :  TObject(),
+							    fMinTimeIndex(-1),
+							    fMaxTimeIndex(-1),
+							    fFitArrayCut(5),
+							    fAmpCut(4),
+							    fNsampleCut(5),
+							    fIsZerosupressed( false ),
+							    fVerbose( false )
 {
-  //Comment
+  //Comment 
+  sprintf(fName, "%s", name);
   for(int i=0; i < MAXSAMPLES; i++ )
     {
       fReversed[i] = 0;
@@ -146,6 +148,9 @@ AliCaloRawAnalyzer::EvaluatePedestal(const UShort_t * const data, const int /*le
 	  tmp += data[i];
 	}
     }
+
+  //  cout << __FILE__ << __LINE__ << "XXXXXXXXXXX returning " <<   tmp/5 << endl;
+
   return  tmp/5;
 }
 
@@ -247,14 +252,12 @@ AliCaloRawAnalyzer::PrintBunch( const AliCaloBunchInfo &bunch ) const
   cout << endl; 
 }
 
-
 AliCaloFitResults
 AliCaloRawAnalyzer::Evaluate( const vector<AliCaloBunchInfo>  &/*bunchvector*/, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
 { // method to do the selection of what should possibly be fitted
   // not implemented for base class
   return AliCaloFitResults( 0, 0, 0, 0, 0, 0, 0 );
 }
-
 
 int
 AliCaloRawAnalyzer::PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2, Int_t & index, Float_t & maxf, short & maxamp, short & maxampindex, Float_t & ped, int & first, int & last)

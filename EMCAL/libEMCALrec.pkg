@@ -14,8 +14,11 @@ AliCaloRawAnalyzer.cxx \
 AliCaloRawAnalyzerCrude.cxx \
 AliCaloRawAnalyzerLMS.cxx \
 AliCaloRawAnalyzerPeakFinder.cxx \
+AliCaloRawAnalyzerNN.cxx \
+AliCaloRawAnalyzerFastFit.cxx \
 AliCaloBunchInfo.cxx \
 AliCaloFitResults.cxx 
+
 
 HDRS= $(SRCS:.cxx=.h) 
 
