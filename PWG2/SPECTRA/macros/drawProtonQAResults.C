@@ -2578,6 +2578,7 @@ void drawCutParametersDistributions(const char* filename = "Protons.QA.Histogram
   //and draws the DCA distributions of protons 
   //and antiprotons (both primary & secondaries)
   const Int_t nEvents = 1;
+  gStyle->SetPalette(1,0);
 
   TFile *f = TFile::Open(filename);
 
@@ -2610,8 +2611,9 @@ void drawCutParametersDistributions(const char* filename = "Protons.QA.Histogram
   TH1F *gDCAListHistograms[20];
   TList *listDCA = (TList *)f->Get("acceptedDCAList");
   iCounter = 0;
+  Int_t nDCAHistos1D = 12;
   cout<<"DCA list entries: "<<listDCA->GetEntries()<<endl;
-  for(Int_t iEntry = 0; iEntry < listDCA->GetEntries(); iEntry++) {
+  for(Int_t iEntry = 0; iEntry < nDCAHistos1D; iEntry++) {
     if(iCounter == 4) iCounter = 0;
     iCounter += 1;
     gDCAListHistograms[iEntry] = (TH1F *)listDCA->At(iEntry);
@@ -2631,6 +2633,10 @@ void drawCutParametersDistributions(const char* filename = "Protons.QA.Histogram
       " - Name: "<<gDCAListHistograms[iEntry]->GetName()<<endl;*/
   }
 
+  TH2F *gDCAListHistograms2D[20];
+  Int_t nDCAHistos2D = 12;
+  for(Int_t iEntry = nDCAHistos1D; iEntry < 2*nDCAHistos2D; iEntry++)
+    gDCAListHistograms2D[iEntry-nDCAHistos1D] = (TH2F *)listDCA->At(iEntry);
   //_________________________________________________________//
   TF1 *gDCA = new TF1("gDCA",
 		      "[0]*TMath::Power(1+TMath::Exp((x-[1])/[2]),-1)",
@@ -2966,6 +2972,49 @@ void drawCutParametersDistributions(const char* filename = "Protons.QA.Histogram
   gDCAListHistograms[11]->DrawCopy("ESAME");
   c15->SaveAs("NSigmaToVertex.gif");
 
+  TCanvas *c16 = new TCanvas("c16","dca(xy) vs Pt",0,0,900,650);
+  c16->SetFillColor(10); c16->GetFrame()->SetFillColor(10);
+  c16->SetHighLightColor(10); c16->Divide(3,2);
+  c16->cd(1)->SetBottomMargin(0.2); c16->cd(1)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[0]->SetTitle("Accepted primary protons");
+  gDCAListHistograms2D[0]->Draw("colz");
+  c16->cd(2)->SetBottomMargin(0.2); c16->cd(2)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[2]->SetTitle("Accepted secondary protons (weak decay)");
+  gDCAListHistograms2D[2]->Draw("colz");
+  c16->cd(3)->SetBottomMargin(0.2); c16->cd(3)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[4]->SetTitle("Accepted secondary protons (material)");
+  gDCAListHistograms2D[4]->Draw("colz");
+  c16->cd(4)->SetBottomMargin(0.2); c16->cd(4)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[1]->SetTitle("Accepted primary antiprotons");
+  gDCAListHistograms2D[1]->Draw("colz");
+  c16->cd(5)->SetBottomMargin(0.2); c16->cd(5)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[3]->SetTitle("Accepted secondary antiprotons (weak decay)");
+  gDCAListHistograms2D[3]->Draw("colz");
+  c16->cd(6)->SetBottomMargin(0.2); c16->cd(6)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[5]->SetTitle("Accepted secondary antiprotons (material)");
+  gDCAListHistograms2D[5]->Draw("colz");
+
+  TCanvas *c17 = new TCanvas("c17","dca(z) vs Pt",100,100,900,650);
+  c17->SetFillColor(10); c17->GetFrame()->SetFillColor(10);
+  c17->SetHighLightColor(10); c17->Divide(3,2);
+  c17->cd(1)->SetBottomMargin(0.2); c17->cd(1)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[6]->SetTitle("Accepted primary protons");
+  gDCAListHistograms2D[6]->Draw("colz");
+  c17->cd(2)->SetBottomMargin(0.2); c17->cd(2)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[8]->SetTitle("Accepted secondary protons (weak decay)");
+  gDCAListHistograms2D[8]->Draw("colz");
+  c17->cd(3)->SetBottomMargin(0.2); c17->cd(3)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[10]->SetTitle("Accepted secondary protons (material)");
+  gDCAListHistograms2D[10]->Draw("colz");
+  c17->cd(4)->SetBottomMargin(0.2); c17->cd(4)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[7]->SetTitle("Accepted primary antiprotons");
+  gDCAListHistograms2D[7]->Draw("colz");
+  c17->cd(5)->SetBottomMargin(0.2); c17->cd(5)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[9]->SetTitle("Accepted secondary antiprotons (weak decay)");
+  gDCAListHistograms2D[9]->Draw("colz");
+  c17->cd(6)->SetBottomMargin(0.2); c17->cd(6)->SetLeftMargin(0.2);
+  gDCAListHistograms2D[11]->SetTitle("Accepted secondary antiprotons (material)");
+  gDCAListHistograms2D[11]->Draw("colz");
 
   f->Close();
 }
