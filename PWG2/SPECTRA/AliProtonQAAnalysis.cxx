@@ -138,22 +138,22 @@ void AliProtonQAAnalysis::FillQA(AliStack *const stack,
 			  100.,dca,cov);
   }
 
-  TParticle *particle = stack->Particle(label);
-  if(particle) {
-    Int_t pdgcode = particle->GetPdgCode();
-    Int_t gProcess = particle->GetUniqueID();
-    Int_t  fIdxInt[200];
-    Int_t nClustersITS = track->GetITSclusters(fIdxInt);
-    Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
-    
-    Float_t chi2PerClusterITS = -1;
-    if (nClustersITS!=0)
-      chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
-    Float_t chi2PerClusterTPC = -1;
-    if (nClustersTPC!=0)
-      chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
-    
-    Double_t extCov[15];
+  //TParticle *particle = stack->Particle(label);
+  //if(particle) {
+  //Int_t pdgcode = particle->GetPdgCode();
+  //Int_t gProcess = particle->GetUniqueID();
+  Int_t  fIdxInt[200];
+  Int_t nClustersITS = track->GetITSclusters(fIdxInt);
+  Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
+  
+  Float_t chi2PerClusterITS = -1;
+  if (nClustersITS!=0)
+    chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
+  Float_t chi2PerClusterTPC = -1;
+  if (nClustersTPC!=0)
+    chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
+  
+  Double_t extCov[15];
     track->GetExternalCovariance(extCov);
     
     //protons
@@ -353,16 +353,16 @@ void AliProtonQAAnalysis::FillQA(AliStack *const stack,
 	    ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(26)))->Fill(track->GetTPCsignalN());
 	}//number of TPC points for the dE/dx
 	
-	if(TMath::Abs(dca[0]) > fProtonAnalysisBase->GetMaxDCAXY()) {
-	  ((TH2F *)(fQAPrimaryProtonsRejectedList->At(27)))->Fill(TMath::Abs(dca[0]),gPt);
+	/*if(TMath::Abs(dca[0]) > fProtonAnalysisBase->GetMaxDCAXY()) {
+	  ((TH2F *)(fQAPrimaryProtonsRejectedList->At(27)))->Fill(gPt,TMath::Abs(dca[0]));
 	}
 	else if(TMath::Abs(dca[0]) <= fProtonAnalysisBase->GetMaxDCAXY())
-	  ((TH2F *)(fQAPrimaryProtonsAcceptedList->At(27)))->Fill(TMath::Abs(dca[0]),gPt);
+	  ((TH2F *)(fQAPrimaryProtonsAcceptedList->At(27)))->Fill(gPt,TMath::Abs(dca[0]));
 	if(TMath::Abs(dca[1]) > fProtonAnalysisBase->GetMaxDCAZ()) {
-	  ((TH2F *)(fQAPrimaryProtonsRejectedList->At(28)))->Fill(TMath::Abs(dca[1]),gPt);
+	  ((TH2F *)(fQAPrimaryProtonsRejectedList->At(28)))->Fill(gPt,TMath::Abs(dca[1]));
 	}
 	else if(TMath::Abs(dca[1]) <= fProtonAnalysisBase->GetMaxDCAZ())
-	  ((TH2F *)(fQAPrimaryProtonsAcceptedList->At(28)))->Fill(TMath::Abs(dca[1]),gPt);
+	((TH2F *)(fQAPrimaryProtonsAcceptedList->At(28)))->Fill(gPt,TMath::Abs(dca[1]));*/
       }//primary particle cut
       
       //Secondaries
@@ -562,30 +562,30 @@ void AliProtonQAAnalysis::FillQA(AliStack *const stack,
 	    ((TH1F *)(fQASecondaryProtonsAcceptedList->At(26)))->Fill(track->GetTPCsignalN());
 	}//number of TPC points for the dE/dx
 
-	if(TMath::Abs(dca[0]) > fProtonAnalysisBase->GetMaxDCAXY()) {
+	/*if(TMath::Abs(dca[0]) > fProtonAnalysisBase->GetMaxDCAXY()) {
 	  if(gProcess == 4)
-	    ((TH2F *)(fQASecondaryProtonsRejectedList->At(27)))->Fill(TMath::Abs(dca[0]),gPt);
+	    ((TH2F *)(fQASecondaryProtonsRejectedList->At(27)))->Fill(gPt,TMath::Abs(dca[0]));
 	  if(gProcess == 13)
-	    ((TH2F *)(fQASecondaryProtonsRejectedList->At(29)))->Fill(TMath::Abs(dca[0]),gPt);
+	    ((TH2F *)(fQASecondaryProtonsRejectedList->At(29)))->Fill(gPt,TMath::Abs(dca[0]));
 	}
 	else if(TMath::Abs(dca[0]) <= fProtonAnalysisBase->GetMaxDCAXY()) {
 	  if(gProcess == 4)
-	    ((TH2F *)(fQASecondaryProtonsAcceptedList->At(27)))->Fill(TMath::Abs(dca[0]),gPt);
+	    ((TH2F *)(fQASecondaryProtonsAcceptedList->At(27)))->Fill(gPt,TMath::Abs(dca[0]));
 	  if(gProcess == 13)
-	    ((TH2F *)(fQASecondaryProtonsAcceptedList->At(29)))->Fill(TMath::Abs(dca[0]),gPt);
+	    ((TH2F *)(fQASecondaryProtonsAcceptedList->At(29)))->Fill(gPt,TMath::Abs(dca[0]));
 	}
 	if(TMath::Abs(dca[1]) > fProtonAnalysisBase->GetMaxDCAZ()) {
 	  if(gProcess == 4)
-	    ((TH2F *)(fQASecondaryProtonsRejectedList->At(28)))->Fill(TMath::Abs(dca[1]),gPt);
+	    ((TH2F *)(fQASecondaryProtonsRejectedList->At(28)))->Fill(gPt,TMath::Abs(dca[1]));
 	  if(gProcess == 13)
-	    ((TH2F *)(fQASecondaryProtonsRejectedList->At(30)))->Fill(TMath::Abs(dca[1]),gPt);
+	    ((TH2F *)(fQASecondaryProtonsRejectedList->At(30)))->Fill(gPt,TMath::Abs(dca[1]));
 	}
 	else if(TMath::Abs(dca[1]) <= fProtonAnalysisBase->GetMaxDCAZ()) {
 	  if(gProcess == 4)
-	    ((TH2F *)(fQASecondaryProtonsAcceptedList->At(28)))->Fill(TMath::Abs(dca[1]),gPt);
+	    ((TH2F *)(fQASecondaryProtonsAcceptedList->At(28)))->Fill(gPt,TMath::Abs(dca[1]));
 	  if(gProcess == 13)
-	    ((TH2F *)(fQASecondaryProtonsAcceptedList->At(30)))->Fill(TMath::Abs(dca[1]),gPt);
-	}
+	    ((TH2F *)(fQASecondaryProtonsAcceptedList->At(30)))->Fill(gPt,TMath::Abs(dca[1]));
+	    }*/
       }//secondary particle cut
     }//protons
     
@@ -787,16 +787,16 @@ void AliProtonQAAnalysis::FillQA(AliStack *const stack,
 	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(26)))->Fill(track->GetTPCsignalN());
       }//number of TPC points for the dE/dx
 
-      if(TMath::Abs(dca[0]) > fProtonAnalysisBase->GetMaxDCAXY()) {
-	((TH2F *)(fQAPrimaryAntiProtonsRejectedList->At(27)))->Fill(TMath::Abs(dca[0]),gPt);
+      /*if(TMath::Abs(dca[0]) > fProtonAnalysisBase->GetMaxDCAXY()) {
+	((TH2F *)(fQAPrimaryAntiProtonsRejectedList->At(27)))->Fill(gPt,TMath::Abs(dca[0]));
       }
       else if(TMath::Abs(dca[0]) <= fProtonAnalysisBase->GetMaxDCAXY())
-	((TH2F *)(fQAPrimaryAntiProtonsAcceptedList->At(27)))->Fill(TMath::Abs(dca[0]),gPt);
+	((TH2F *)(fQAPrimaryAntiProtonsAcceptedList->At(27)))->Fill(gPt,TMath::Abs(dca[0]));
       if(TMath::Abs(dca[1]) > fProtonAnalysisBase->GetMaxDCAZ()) {
-	((TH2F *)(fQAPrimaryAntiProtonsRejectedList->At(28)))->Fill(TMath::Abs(dca[1]),gPt);
+	((TH2F *)(fQAPrimaryAntiProtonsRejectedList->At(28)))->Fill(gPt,TMath::Abs(dca[1]));
       }
       else if(TMath::Abs(dca[1]) <= fProtonAnalysisBase->GetMaxDCAZ())
-	((TH2F *)(fQAPrimaryAntiProtonsAcceptedList->At(28)))->Fill(TMath::Abs(dca[1]),gPt);
+      ((TH2F *)(fQAPrimaryAntiProtonsAcceptedList->At(28)))->Fill(gPt,TMath::Abs(dca[1]));*/
     }//primary particle cut
 
     //Secondaries
@@ -994,33 +994,33 @@ void AliProtonQAAnalysis::FillQA(AliStack *const stack,
 	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(26)))->Fill(track->GetTPCsignalN());
       }//number of TPC points for the dE/dx
 
-      if(TMath::Abs(dca[0]) > fProtonAnalysisBase->GetMaxDCAXY()) {
+      /*if(TMath::Abs(dca[0]) > fProtonAnalysisBase->GetMaxDCAXY()) {
 	if(gProcess == 4)
-	  ((TH2F *)(fQASecondaryAntiProtonsRejectedList->At(27)))->Fill(TMath::Abs(dca[0]),gPt);
+	  ((TH2F *)(fQASecondaryAntiProtonsRejectedList->At(27)))->Fill(gPt,TMath::Abs(dca[0]));
 	if(gProcess == 13)
-	  ((TH2F *)(fQASecondaryAntiProtonsRejectedList->At(29)))->Fill(TMath::Abs(dca[0]),gPt);
+	  ((TH2F *)(fQASecondaryAntiProtonsRejectedList->At(29)))->Fill(gPt,TMath::Abs(dca[0]));
       }
       else if(TMath::Abs(dca[0]) <= fProtonAnalysisBase->GetMaxDCAXY()) {
 	if(gProcess == 4)
-	  ((TH2F *)(fQASecondaryAntiProtonsAcceptedList->At(27)))->Fill(TMath::Abs(dca[0]),gPt);
+	  ((TH2F *)(fQASecondaryAntiProtonsAcceptedList->At(27)))->Fill(gPt,TMath::Abs(dca[0]));
 	if(gProcess == 13)
-	  ((TH2F *)(fQASecondaryAntiProtonsAcceptedList->At(29)))->Fill(TMath::Abs(dca[0]),gPt);
+	  ((TH2F *)(fQASecondaryAntiProtonsAcceptedList->At(29)))->Fill(gPt,TMath::Abs(dca[0]));
       }
       if(TMath::Abs(dca[1]) > fProtonAnalysisBase->GetMaxDCAZ()) {
 	if(gProcess == 4)
-	  ((TH2F *)(fQASecondaryAntiProtonsRejectedList->At(28)))->Fill(TMath::Abs(dca[1]),gPt);
+	  ((TH2F *)(fQASecondaryAntiProtonsRejectedList->At(28)))->Fill(gPt,TMath::Abs(dca[1]));
 	if(gProcess == 13)
-	  ((TH2F *)(fQASecondaryAntiProtonsRejectedList->At(30)))->Fill(TMath::Abs(dca[1]),gPt);
+	  ((TH2F *)(fQASecondaryAntiProtonsRejectedList->At(30)))->Fill(gPt,TMath::Abs(dca[1]));
       }
       else if(TMath::Abs(dca[1]) <= fProtonAnalysisBase->GetMaxDCAZ()) {
 	if(gProcess == 4)
-	  ((TH2F *)(fQASecondaryAntiProtonsAcceptedList->At(28)))->Fill(TMath::Abs(dca[1]),gPt);
+	  ((TH2F *)(fQASecondaryAntiProtonsAcceptedList->At(28)))->Fill(gPt,TMath::Abs(dca[1]));
 	if(gProcess == 13)
-	  ((TH2F *)(fQASecondaryAntiProtonsAcceptedList->At(30)))->Fill(TMath::Abs(dca[1]),gPt);
-      }
+	  ((TH2F *)(fQASecondaryAntiProtonsAcceptedList->At(30)))->Fill(gPt,TMath::Abs(dca[1]));
+	  }*/
     }//secondary particle cut
   }//antiprotons
-  }//if TParticle
+    //}//if TParticle
 }
 
 //____________________________________________________________________//
@@ -1954,6 +1954,80 @@ void AliProtonQAAnalysis::InitCutLists() {
 						      100,0,10);
   fAcceptedDCAList->Add(gSecondaryAntiProtonsSigmaToVertex);
 
+  //2D DCA vs pT plots
+  TH2F *gHistPrimaryProtonsDCAxyPt = new TH2F("gHistPrimaryProtonsDCAxyPt",
+						  ";P_{T} [GeV/c];dca_{xy} [cm]",
+						  16,0.3,1.1,
+						  1000,0,10);
+  gHistPrimaryProtonsDCAxyPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistPrimaryProtonsDCAxyPt);
+  TH2F *gHistPrimaryAntiProtonsDCAxyPt = new TH2F("gHistPrimaryAntiProtonsDCAxyPt",
+						  ";P_{T} [GeV/c];dca_{xy} [cm]",
+						  16,0.3,1.1,
+						  1000,0,10);
+  gHistPrimaryAntiProtonsDCAxyPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistPrimaryAntiProtonsDCAxyPt);
+  TH2F *gHistSecondaryProtonsFromWeakDCAxyPt = new TH2F("gHistSecondaryProtonsFromWeakDCAxyPt",
+							    ";P_{T} [GeV/c];dca_{xy} [cm]",
+							    16,0.3,1.1,
+							    1000,0,10);
+  gHistSecondaryProtonsFromWeakDCAxyPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistSecondaryProtonsFromWeakDCAxyPt);
+  TH2F *gHistSecondaryAntiProtonsFromWeakDCAxyPt = new TH2F("gHistSecondaryAntiProtonsFromWeakDCAxyPt",
+							    ";P_{T} [GeV/c];dca_{xy} [cm]",
+							    16,0.3,1.1,
+							    1000,0,10);
+  gHistSecondaryAntiProtonsFromWeakDCAxyPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistSecondaryAntiProtonsFromWeakDCAxyPt);
+  TH2F *gHistSecondaryProtonsFromHadronicDCAxyPt = new TH2F("gHistSecondaryProtonsFromHadronicDCAxyPt",
+								";P_{T} [GeV/c];dca_{xy} [cm]",
+								16,0.3,1.1,
+								1000,0,10);
+  gHistSecondaryProtonsFromHadronicDCAxyPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistSecondaryProtonsFromHadronicDCAxyPt);
+  TH2F *gHistSecondaryAntiProtonsFromHadronicDCAxyPt = new TH2F("gHistSecondaryAntiProtonsFromHadronicDCAxyPt",
+								";P_{T} [GeV/c];dca_{xy} [cm]",
+								16,0.3,1.1,
+								1000,0,10);
+  gHistSecondaryAntiProtonsFromHadronicDCAxyPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistSecondaryAntiProtonsFromHadronicDCAxyPt);
+
+  TH2F *gHistPrimaryProtonsDCAzPt = new TH2F("gHistPrimaryProtonsDCAzPt",
+						 ";P_{T} [GeV/c];dca_{z} [cm]",
+						 16,0.3,1.1,
+						 1000,0,10);
+  gHistPrimaryProtonsDCAzPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistPrimaryProtonsDCAzPt);
+  TH2F *gHistPrimaryAntiProtonsDCAzPt = new TH2F("gHistPrimaryAntiProtonsDCAzPt",
+						 ";P_{T} [GeV/c];dca_{z} [cm]",
+						 16,0.3,1.1,
+						 1000,0,10);
+  gHistPrimaryAntiProtonsDCAzPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistPrimaryAntiProtonsDCAzPt);
+  TH2F *gHistSecondaryProtonsFromWeakDCAzPt = new TH2F("gHistSecondaryProtonsFromWeakDCAzPt",
+							   ";P_{T} [GeV/c];dca_{z} [cm]",
+							   16,0.3,1.1,
+							   1000,0,10);
+  gHistSecondaryProtonsFromWeakDCAzPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistSecondaryProtonsFromWeakDCAzPt);
+  TH2F *gHistSecondaryAntiProtonsFromWeakDCAzPt = new TH2F("gHistSecondaryAntiProtonsFromWeakDCAzPt",
+							   ";P_{T} [GeV/c];dca_{z} [cm]",
+							   16,0.3,1.1,
+							   1000,0,10);
+  gHistSecondaryAntiProtonsFromWeakDCAzPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistSecondaryAntiProtonsFromWeakDCAzPt);
+  TH2F *gHistSecondaryProtonsFromHadronicDCAzPt = new TH2F("gHistSecondaryProtonsFromHadronicDCAzPt",
+							       ";P_{T} [GeV/c];dca_{z} [cm]",
+							       16,0.3,1.1,
+							       1000,0,10);
+  gHistSecondaryProtonsFromHadronicDCAzPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistSecondaryProtonsFromHadronicDCAzPt);
+  TH2F *gHistSecondaryAntiProtonsFromHadronicDCAzPt = new TH2F("gHistSecondaryAntiProtonsFromHadronicDCAzPt",
+							       ";P_{T} [GeV/c];dca_{z} [cm]",
+							       16,0.3,1.1,
+							       1000,0,10);
+  gHistSecondaryAntiProtonsFromHadronicDCAzPt->SetStats(kFALSE);
+  fAcceptedDCAList->Add(gHistSecondaryAntiProtonsFromHadronicDCAzPt);
 }
 
 //____________________________________________________________________//
@@ -2443,18 +2517,6 @@ void AliProtonQAAnalysis::InitQA() {
   fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsPointOnITSLayer6Pass);
   TH1F *gPrimaryProtonsNumberOfTPCdEdxPointsPass = new TH1F("gPrimaryProtonsNumberOfTPCdEdxPointsPass","",100,0,200);
   fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsNumberOfTPCdEdxPointsPass);
-  TH2F *gHistPrimaryProtonsDCAxyPtPass = new TH2F("gHistPrimaryProtonsDCAxyPtPass",
-						  ";P_{T} [GeV/c];dca_{xy} [cm]",
-						  16,0.3,1.1,
-						  1000,0,10);
-  gHistPrimaryProtonsDCAxyPtPass->SetStats(kFALSE);
-  fQAPrimaryProtonsAcceptedList->Add(gHistPrimaryProtonsDCAxyPtPass);
-  TH2F *gHistPrimaryProtonsDCAzPtPass = new TH2F("gHistPrimaryProtonsDCAzPtPass",
-						 ";P_{T} [GeV/c];dca_{z} [cm]",
-						 16,0.3,1.1,
-						 1000,0,10);
-  gHistPrimaryProtonsDCAzPtPass->SetStats(kFALSE);
-  fQAPrimaryProtonsAcceptedList->Add(gHistPrimaryProtonsDCAzPtPass);
 
   //Rejected primary protons
   /*gDirectory->cd("../");
@@ -2557,7 +2619,7 @@ void AliProtonQAAnalysis::InitQA() {
   fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsPointOnITSLayer6Reject);
   TH1F *gPrimaryProtonsNumberOfTPCdEdxPointsReject = new TH1F("gPrimaryProtonsNumberOfTPCdEdxPointsReject","",100,0,200);
   fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsNumberOfTPCdEdxPointsReject);
-  TH2F *gHistPrimaryProtonsDCAxyPtReject = new TH2F("gHistPrimaryProtonsDCAxyPtReject",
+  /*TH2F *gHistPrimaryProtonsDCAxyPtReject = new TH2F("gHistPrimaryProtonsDCAxyPtReject",
 						    ";P_{T} [GeV/c];dca_{xy} [cm]",
 						    16,0.3,1.1,
 						    1000,0,10);
@@ -2568,7 +2630,7 @@ void AliProtonQAAnalysis::InitQA() {
 						   16,0.3,1.1,
 						   1000,0,10);
   gHistPrimaryProtonsDCAzPtReject->SetStats(kFALSE);
-  fQAPrimaryProtonsRejectedList->Add(gHistPrimaryProtonsDCAzPtReject);
+  fQAPrimaryProtonsRejectedList->Add(gHistPrimaryProtonsDCAzPtReject);*/
 
   //________________________________________________________________//
   /*gDirectory->cd("../../");
@@ -2675,30 +2737,6 @@ void AliProtonQAAnalysis::InitQA() {
   fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsPointOnITSLayer6Pass);
   TH1F *gSecondaryProtonsNumberOfTPCdEdxPointsPass = new TH1F("gSecondaryProtonsNumberOfTPCdEdxPointsPass","",100,0,200);
   fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsNumberOfTPCdEdxPointsPass);
-  TH2F *gHistSecondaryProtonsFromWeakDCAxyPtPass = new TH2F("gHistSecondaryProtonsFromWeakDCAxyPtPass",
-							    ";P_{T} [GeV/c];dca_{xy} [cm]",
-							    16,0.3,1.1,
-							    1000,0,10);
-  gHistSecondaryProtonsFromWeakDCAxyPtPass->SetStats(kFALSE);
-  fQASecondaryProtonsAcceptedList->Add(gHistSecondaryProtonsFromWeakDCAxyPtPass);
-  TH2F *gHistSecondaryProtonsFromWeakDCAzPtPass = new TH2F("gHistSecondaryProtonsFromWeakDCAzPtPass",
-							   ";P_{T} [GeV/c];dca_{z} [cm]",
-							   16,0.3,1.1,
-							   1000,0,10);
-  gHistSecondaryProtonsFromWeakDCAzPtPass->SetStats(kFALSE);
-  fQASecondaryProtonsAcceptedList->Add(gHistSecondaryProtonsFromWeakDCAzPtPass);
-  TH2F *gHistSecondaryProtonsFromHadronicDCAxyPtPass = new TH2F("gHistSecondaryProtonsFromHadronicDCAxyPtPass",
-								";P_{T} [GeV/c];dca_{xy} [cm]",
-								16,0.3,1.1,
-								1000,0,10);
-  gHistSecondaryProtonsFromHadronicDCAxyPtPass->SetStats(kFALSE);
-  fQASecondaryProtonsAcceptedList->Add(gHistSecondaryProtonsFromHadronicDCAxyPtPass);
-  TH2F *gHistSecondaryProtonsFromHadronicDCAzPtPass = new TH2F("gHistSecondaryProtonsFromHadronicDCAzPtPass",
-							       ";P_{T} [GeV/c];dca_{z} [cm]",
-							       16,0.3,1.1,
-							       1000,0,10);
-  gHistSecondaryProtonsFromHadronicDCAzPtPass->SetStats(kFALSE);
-  fQASecondaryProtonsAcceptedList->Add(gHistSecondaryProtonsFromHadronicDCAzPtPass);
 
   //Rejected secondary protons
   /*gDirectory->cd("../");
@@ -2801,7 +2839,7 @@ void AliProtonQAAnalysis::InitQA() {
   fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsPointOnITSLayer6Reject);
   TH1F *gSecondaryProtonsNumberOfTPCdEdxPointsReject = new TH1F("gSecondaryProtonsNumberOfTPCdEdxPointsReject","",100,0,200);
   fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsNumberOfTPCdEdxPointsReject);  
-  TH2F *gHistSecondaryProtonsFromWeakDCAxyPtReject = new TH2F("gHistSecondaryProtonsFromWeakDCAxyPtReject",
+  /*TH2F *gHistSecondaryProtonsFromWeakDCAxyPtReject = new TH2F("gHistSecondaryProtonsFromWeakDCAxyPtReject",
 							      ";P_{T} [GeV/c];dca_{xy} [cm]",
 							      16,0.3,1.1,
 							      1000,0,10);
@@ -2824,7 +2862,7 @@ void AliProtonQAAnalysis::InitQA() {
 								 16,0.3,1.1,
 								 1000,0,10);
   gHistSecondaryProtonsFromHadronicDCAzPtReject->SetStats(kFALSE);
-  fQASecondaryProtonsRejectedList->Add(gHistSecondaryProtonsFromHadronicDCAzPtReject);
+  fQASecondaryProtonsRejectedList->Add(gHistSecondaryProtonsFromHadronicDCAzPtReject);*/
 
   /*gDirectory->cd("../../../");
 
@@ -2935,7 +2973,7 @@ void AliProtonQAAnalysis::InitQA() {
   fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsPointOnITSLayer6Pass);
   TH1F *gPrimaryAntiProtonsNumberOfTPCdEdxPointsPass = new TH1F("gPrimaryAntiProtonsNumberOfTPCdEdxPointsPass","",100,0,200);
   fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsNumberOfTPCdEdxPointsPass);
-  TH2F *gHistPrimaryAntiProtonsDCAxyPtPass = new TH2F("gHistPrimaryAntiProtonsDCAxyPtPass",
+  /*TH2F *gHistPrimaryAntiProtonsDCAxyPtPass = new TH2F("gHistPrimaryAntiProtonsDCAxyPtPass",
 						      ";P_{T} [GeV/c];dca_{xy} [cm]",
 						      16,0.3,1.1,
 						      1000,0,10);
@@ -2946,7 +2984,7 @@ void AliProtonQAAnalysis::InitQA() {
 						     16,0.3,1.1,
 						     1000,0,10);
   gHistPrimaryAntiProtonsDCAzPtPass->SetStats(kFALSE);
-  fQAPrimaryAntiProtonsAcceptedList->Add(gHistPrimaryAntiProtonsDCAzPtPass);
+  fQAPrimaryAntiProtonsAcceptedList->Add(gHistPrimaryAntiProtonsDCAzPtPass);*/
 
   //Rejected primary antiprotons
   /*gDirectory->cd("../");
@@ -3049,7 +3087,7 @@ void AliProtonQAAnalysis::InitQA() {
   fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsPointOnITSLayer6Reject);
   TH1F *gPrimaryAntiProtonsNumberOfTPCdEdxPointsReject = new TH1F("gPrimaryAntiProtonsNumberOfTPCdEdxPointsReject","",100,0,200);
   fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsNumberOfTPCdEdxPointsReject);
-  TH2F *gHistPrimaryAntiProtonsDCAxyPtReject = new TH2F("gHistPrimaryAntiProtonsDCAxyPtReject",
+  /*TH2F *gHistPrimaryAntiProtonsDCAxyPtReject = new TH2F("gHistPrimaryAntiProtonsDCAxyPtReject",
 							";P_{T} [GeV/c];dca_{xy} [cm]",
 							16,0.3,1.1,
 							1000,0,10);
@@ -3060,7 +3098,7 @@ void AliProtonQAAnalysis::InitQA() {
 						       16,0.3,1.1,
 						       1000,0,10);
   gHistPrimaryAntiProtonsDCAzPtReject->SetStats(kFALSE);
-  fQAPrimaryAntiProtonsRejectedList->Add(gHistPrimaryAntiProtonsDCAzPtReject);
+  fQAPrimaryAntiProtonsRejectedList->Add(gHistPrimaryAntiProtonsDCAzPtReject);*/
   
   //________________________________________________________________//
   /*gDirectory->cd("../../");
@@ -3167,7 +3205,7 @@ void AliProtonQAAnalysis::InitQA() {
   fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsPointOnITSLayer6Pass);
   TH1F *gSecondaryAntiProtonsNumberOfTPCdEdxPointsPass = new TH1F("gSecondaryAntiProtonsNumberOfTPCdEdxPointsPass","",100,0,200);
   fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsNumberOfTPCdEdxPointsPass);
-  TH2F *gHistSecondaryAntiProtonsFromWeakDCAxyPtPass = new TH2F("gHistSecondaryAntiProtonsFromWeakDCAxyPtPass",
+  /*TH2F *gHistSecondaryAntiProtonsFromWeakDCAxyPtPass = new TH2F("gHistSecondaryAntiProtonsFromWeakDCAxyPtPass",
 								";P_{T} [GeV/c];dca_{xy} [cm]",
 								16,0.3,1.1,
 								1000,0,10);
@@ -3190,7 +3228,7 @@ void AliProtonQAAnalysis::InitQA() {
 								   16,0.3,1.1,
 								   1000,0,10);
   gHistSecondaryAntiProtonsFromHadronicDCAzPtPass->SetStats(kFALSE);
-  fQASecondaryAntiProtonsAcceptedList->Add(gHistSecondaryAntiProtonsFromHadronicDCAzPtPass);
+  fQASecondaryAntiProtonsAcceptedList->Add(gHistSecondaryAntiProtonsFromHadronicDCAzPtPass);*/
   
   //Rejected secondary antiprotons
   /*gDirectory->cd("../");
@@ -3293,7 +3331,7 @@ void AliProtonQAAnalysis::InitQA() {
   fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsPointOnITSLayer6Reject);
   TH1F *gSecondaryAntiProtonsNumberOfTPCdEdxPointsReject = new TH1F("gSecondaryAntiProtonsNumberOfTPCdEdxPointsReject","",100,0,200);
   fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsNumberOfTPCdEdxPointsReject);
-  TH2F *gHistSecondaryAntiProtonsFromWeakDCAxyPtReject = new TH2F("gHistSecondaryAntiProtonsFromWeakDCAxyPtReject",
+  /*TH2F *gHistSecondaryAntiProtonsFromWeakDCAxyPtReject = new TH2F("gHistSecondaryAntiProtonsFromWeakDCAxyPtReject",
 								  ";P_{T} [GeV/c];dca_{xy} [cm]",
 								  16,0.3,1.1,
 								  1000,0,10);
@@ -3316,7 +3354,7 @@ void AliProtonQAAnalysis::InitQA() {
 								     16,0.3,1.1,
 								     1000,0,10);
   gHistSecondaryAntiProtonsFromHadronicDCAzPtReject->SetStats(kFALSE);
-  fQASecondaryAntiProtonsRejectedList->Add(gHistSecondaryAntiProtonsFromHadronicDCAzPtReject);
+  fQASecondaryAntiProtonsRejectedList->Add(gHistSecondaryAntiProtonsFromHadronicDCAzPtReject);*/
 }
 
 //____________________________________________________________________//
@@ -4289,7 +4327,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 					   particle->Pt());
     }
   }//MC loop
-  
+
+  Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
   //ESD track loop
   Int_t nGoodTracks = esd->GetNumberOfTracks();
   TArrayI labelArray(nGoodTracks);
@@ -4310,21 +4349,20 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
     AliESDtrack trackTPC;
     
     //in case it's a TPC only track relate it to the proper vertex
-    if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)&&(!fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
+    //if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)&&(!fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
       //if((fUseTPCOnly)&&(!fUseHybridTPC)) {
-      Float_t p[2],cov[3];
-      track->GetImpactParametersTPC(p,cov);
-      if (p[0]==0 && p[1]==0)  
+      /*track->GetImpactParametersTPC(dca,cov);
+      if (dca[0]==0 && dca[1]==0)  
 	track->RelateToVertexTPC(((AliESDEvent*)esd)->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
       if (!track->FillTPCOnlyTrack(trackTPC)) {
 	continue;
       }
-      track = &trackTPC ;
-    }
+      track = &trackTPC ;*/
+    //}
     
     Double_t gPt = 0.0, gP = 0.0;
     //Double_t probability[5];
-    Float_t dcaXY = 0.0, dcaZ = 0.0;
+    //Float_t dcaXY = 0.0, dcaZ = 0.0;
     Double_t nSigmaToVertex = fProtonAnalysisBase->GetSigmaToVertex(track);
     Int_t  fIdxInt[200];
     Int_t nClustersITS = track->GetITSclusters(fIdxInt);
@@ -4347,10 +4385,13 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
       if(!tpcTrack) continue;
       gPt = tpcTrack->Pt();
       gP = tpcTrack->P();
-      if(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)
+      /*if(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)
 	track->GetImpactParameters(dcaXY,dcaZ);
-      else track->GetImpactParametersTPC(dcaXY,dcaZ);
-      
+	else track->GetImpactParametersTPC(dcaXY,dcaZ);*/
+      tpcTrack->PropagateToDCA(vertex,
+                               esd->GetMagneticField(),
+                               100.,dca,cov);
+
       //pid
       if(fProtonAnalysisBase->IsProton(track)) {
 	if(!fProtonAnalysisBase->IsInPhaseSpace(track)) continue; //track outside the analyzed y-Pt
@@ -4385,9 +4426,11 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   npointsTPCdEdx);
 		((TH1D *)(fAcceptedCutList->At(56)))->Fill(npointsTPCdEdx);
 		
-		((TH1F *)(fAcceptedDCAList->At(0)))->Fill(TMath::Abs(dcaXY));
-		((TH1F *)(fAcceptedDCAList->At(4)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(0)))->Fill(TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(4)))->Fill(TMath::Abs(dca[1]));
 		((TH1F *)(fAcceptedDCAList->At(8)))->Fill(nSigmaToVertex);
+		((TH2F *)(fAcceptedDCAList->At(12)))->Fill(gPt,TMath::Abs(dca[0]));
+		((TH2F *)(fAcceptedDCAList->At(18)))->Fill(gPt,TMath::Abs(dca[1]));
 		if(fProtonAnalysisBase->GetEtaMode())
 		  ((TH2D *)(fQA2DList->At(0)))->Fill(tpcTrack->Eta(),gPt);
 		else
@@ -4422,9 +4465,11 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   npointsTPCdEdx);
 		((TH1D *)(fAcceptedCutList->At(57)))->Fill(npointsTPCdEdx);
 		
-		((TH1F *)(fAcceptedDCAList->At(1)))->Fill(TMath::Abs(dcaXY));
-		((TH1F *)(fAcceptedDCAList->At(5)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(1)))->Fill(TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(5)))->Fill(TMath::Abs(dca[1]));
 		((TH1F *)(fAcceptedDCAList->At(9)))->Fill(nSigmaToVertex);
+		((TH2F *)(fAcceptedDCAList->At(13)))->Fill(gPt,TMath::Abs(dca[0]));
+		((TH2F *)(fAcceptedDCAList->At(19)))->Fill(gPt,TMath::Abs(dca[1]));
 		if(fProtonAnalysisBase->GetEtaMode())
 		  ((TH2D *)(fQA2DList->At(4)))->Fill(tpcTrack->Eta(),gPt);
 		else
@@ -4474,9 +4519,17 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   npointsTPCdEdx);
 		((TH1D *)(fAcceptedCutList->At(58)))->Fill(npointsTPCdEdx);
 		
-		((TH1F *)(fAcceptedDCAList->At(2)))->Fill(TMath::Abs(dcaXY));
-		((TH1F *)(fAcceptedDCAList->At(6)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(2)))->Fill(TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(6)))->Fill(TMath::Abs(dca[1]));
 		((TH1F *)(fAcceptedDCAList->At(10)))->Fill(nSigmaToVertex);
+		if(particle->GetUniqueID() == 4) {
+		  ((TH2F *)(fAcceptedDCAList->At(14)))->Fill(gPt,TMath::Abs(dca[0]));
+		  ((TH2F *)(fAcceptedDCAList->At(20)))->Fill(gPt,TMath::Abs(dca[1]));
+		}
+		if(particle->GetUniqueID() == 13) {
+		  ((TH2F *)(fAcceptedDCAList->At(16)))->Fill(gPt,TMath::Abs(dca[0]));
+		  ((TH2F *)(fAcceptedDCAList->At(22)))->Fill(gPt,TMath::Abs(dca[1]));
+		}
 		if(fProtonAnalysisBase->GetEtaMode())
 		  ((TH2D *)(fQA2DList->At(2)))->Fill(tpcTrack->Eta(),gPt);
 		else
@@ -4520,9 +4573,17 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   npointsTPCdEdx);
 		((TH1F *)(fAcceptedCutList->At(59)))->Fill(npointsTPCdEdx);
 		
-		((TH1F *)(fAcceptedDCAList->At(3)))->Fill(TMath::Abs(dcaXY));
-		((TH1F *)(fAcceptedDCAList->At(7)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(3)))->Fill(TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(7)))->Fill(TMath::Abs(dca[1]));
 		((TH1F *)(fAcceptedDCAList->At(11)))->Fill(nSigmaToVertex);
+		if(particle->GetUniqueID() == 4) {
+		  ((TH2F *)(fAcceptedDCAList->At(15)))->Fill(gPt,TMath::Abs(dca[0]));
+		  ((TH2F *)(fAcceptedDCAList->At(21)))->Fill(gPt,TMath::Abs(dca[1]));
+		}
+		if(particle->GetUniqueID() == 13) {
+		  ((TH2F *)(fAcceptedDCAList->At(17)))->Fill(gPt,TMath::Abs(dca[0]));
+		  ((TH2F *)(fAcceptedDCAList->At(23)))->Fill(gPt,TMath::Abs(dca[1]));
+		}
 		if(fProtonAnalysisBase->GetEtaMode())
 		  ((TH2D *)(fQA2DList->At(6)))->Fill(tpcTrack->Eta(),gPt);
 		else
@@ -4629,7 +4690,9 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
     else {
       gPt = track->Pt();
       gP = track->P();
-      track->GetImpactParameters(dcaXY,dcaZ);
+      track->PropagateToDCA(vertex,
+                               esd->GetMagneticField(),
+                               100.,dca,cov);
       
       //pid
       if(fProtonAnalysisBase->IsProton(track)) {
@@ -4665,9 +4728,11 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   npointsTPCdEdx);
 		((TH1F *)(fAcceptedCutList->At(56)))->Fill(npointsTPCdEdx);
 		
-		((TH1F *)(fAcceptedDCAList->At(0)))->Fill(TMath::Abs(dcaXY));
-		((TH1F *)(fAcceptedDCAList->At(4)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(0)))->Fill(TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(4)))->Fill(TMath::Abs(dca[1]));
 		((TH1F *)(fAcceptedDCAList->At(8)))->Fill(nSigmaToVertex);
+		((TH1F *)(fAcceptedDCAList->At(12)))->Fill(gPt,TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(18)))->Fill(gPt,TMath::Abs(dca[0]));
 		if(fProtonAnalysisBase->GetEtaMode())
 		  ((TH2D *)(fQA2DList->At(0)))->Fill(track->Eta(),gPt);
 		else
@@ -4702,9 +4767,11 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   npointsTPCdEdx);
 		((TH1F *)(fAcceptedCutList->At(57)))->Fill(npointsTPCdEdx);
 		
-		((TH1F *)(fAcceptedDCAList->At(1)))->Fill(TMath::Abs(dcaXY));
-		((TH1F *)(fAcceptedDCAList->At(5)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(1)))->Fill(TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(5)))->Fill(TMath::Abs(dca[1]));
 		((TH1F *)(fAcceptedDCAList->At(9)))->Fill(nSigmaToVertex);
+		((TH1F *)(fAcceptedDCAList->At(13)))->Fill(gPt,TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(19)))->Fill(gPt,TMath::Abs(dca[0]));
 		if(fProtonAnalysisBase->GetEtaMode())
 		  ((TH2D *)(fQA2DList->At(4)))->Fill(track->Eta(),gPt);
 		else
@@ -4754,9 +4821,17 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   npointsTPCdEdx);
 		((TH1F *)(fAcceptedCutList->At(58)))->Fill(npointsTPCdEdx);
 		
-		((TH1F *)(fAcceptedDCAList->At(2)))->Fill(TMath::Abs(dcaXY));
-		((TH1F *)(fAcceptedDCAList->At(6)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(2)))->Fill(TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(6)))->Fill(TMath::Abs(dca[1]));
 		((TH1F *)(fAcceptedDCAList->At(10)))->Fill(nSigmaToVertex);
+		if(particle->GetUniqueID() == 4) {
+		  ((TH2F *)(fAcceptedDCAList->At(14)))->Fill(gPt,TMath::Abs(dca[0]));
+		  ((TH2F *)(fAcceptedDCAList->At(20)))->Fill(gPt,TMath::Abs(dca[1]));
+		}
+		if(particle->GetUniqueID() == 13) {
+		  ((TH2F *)(fAcceptedDCAList->At(16)))->Fill(gPt,TMath::Abs(dca[0]));
+		  ((TH2F *)(fAcceptedDCAList->At(22)))->Fill(gPt,TMath::Abs(dca[1]));
+		}
 		if(fProtonAnalysisBase->GetEtaMode())
 		  ((TH2D *)(fQA2DList->At(2)))->Fill(track->Eta(),gPt);
 		else
@@ -4800,9 +4875,17 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   npointsTPCdEdx);
 		((TH1F *)(fAcceptedCutList->At(59)))->Fill(npointsTPCdEdx);
 		
-		((TH1F *)(fAcceptedDCAList->At(3)))->Fill(TMath::Abs(dcaXY));
-		((TH1F *)(fAcceptedDCAList->At(7)))->Fill(TMath::Abs(dcaZ));
+		((TH1F *)(fAcceptedDCAList->At(3)))->Fill(TMath::Abs(dca[0]));
+		((TH1F *)(fAcceptedDCAList->At(7)))->Fill(TMath::Abs(dca[1]));
 		((TH1F *)(fAcceptedDCAList->At(11)))->Fill(nSigmaToVertex);
+		if(particle->GetUniqueID() == 4) {
+		  ((TH2F *)(fAcceptedDCAList->At(15)))->Fill(gPt,TMath::Abs(dca[0]));
+		  ((TH2F *)(fAcceptedDCAList->At(21)))->Fill(gPt,TMath::Abs(dca[1]));
+		}
+		if(particle->GetUniqueID() == 13) {
+		  ((TH2F *)(fAcceptedDCAList->At(17)))->Fill(gPt,TMath::Abs(dca[0]));
+		  ((TH2F *)(fAcceptedDCAList->At(23)))->Fill(gPt,TMath::Abs(dca[1]));
+		}
 		if(fProtonAnalysisBase->GetEtaMode())
 		  ((TH2D *)(fQA2DList->At(6)))->Fill(track->Eta(),gPt);
 		else
