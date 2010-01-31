@@ -44,6 +44,7 @@ class TClonesArray ;
 // --- AliRoot header files ---
 #include "AliDigitizer.h"
 #include "AliConfig.h"
+#include "AliPHOSPulseGenerator.h"
 class AliRunDigitizer ;
 class AliPHOSCalibData ; 
 
@@ -110,8 +111,12 @@ private:
   AliPHOSCalibData* fcdb;           //! Calibration parameters DB
 
   Int_t fEventCounter ;             //! counts the events processed
+
+  AliPHOSPulseGenerator *fPulse;    //! Pulse shape generator
+  Int_t *fADCValuesLG;              //! Array og low-gain ALTRO samples
+  Int_t *fADCValuesHG;              //! Array og high-gain ALTRO samples
   
-  ClassDef(AliPHOSDigitizer,4)  // description 
+  ClassDef(AliPHOSDigitizer,5)  // description 
 
 };
 

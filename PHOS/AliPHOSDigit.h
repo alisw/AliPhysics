@@ -57,29 +57,39 @@ public:
 
   AliPHOSDigit& operator=(const AliPHOSDigit) {
     Fatal("operator = ", "not implemented") ; return *this ; } 
-  Int_t   Compare(const TObject * obj) const ;  
-  Int_t   GetNprimary()           const { return fNprimary ; }
-  Int_t   GetPrimary(Int_t index) const ; 
-  Float_t GetEnergy(void)         const {return fEnergy ;}
-  Float_t GetTime(void)           const {return fTime ;}
-  Float_t GetTimeR(void)          const {return fTimeR ;}
-  Bool_t  IsSortable()            const { return kTRUE ; }
-  void    Print(const Option_t * = "") const;
-  void    SetAmp(Int_t Amp)      {fAmp   = Amp  ;} 
-  void    SetEnergy(Float_t E)   {fEnergy= E    ;} 
-  void    SetTime(Float_t time)  {fTime  = time ;}
-  void    SetTimeR(Float_t time) {fTimeR = time ;}
-  void    ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
+  Int_t     Compare(const TObject * obj) const ;  
+  Int_t     GetNprimary()           const { return fNprimary ; }
+  Int_t     GetPrimary(Int_t index) const ; 
+  Float_t   GetEnergy(void)         const {return fEnergy ;}
+  Float_t   GetTime(void)           const {return fTime ;}
+  Float_t   GetTimeR(void)          const {return fTimeR ;}
+  Int_t     GetNSamplesHG()         const {return fNSamplesHG;}
+  Int_t     GetNSamplesLG()         const {return fNSamplesLG;}
+  UShort_t *GetSamplesHG()          const {return fSamplesHG;}
+  UShort_t *GetSamplesLG()          const {return fSamplesLG;}
+  Bool_t    IsSortable()            const { return kTRUE ; }
+  void      Print(const Option_t * = "") const;
+  void      SetAmp(Int_t Amp)      {fAmp   = Amp  ;} 
+  void      SetEnergy(Float_t E)   {fEnergy= E    ;} 
+  void      SetTime(Float_t time)  {fTime  = time ;}
+  void      SetTimeR(Float_t time) {fTimeR = time ;}
+  void      SetALTROSamplesHG(Int_t nSamplesHG, Int_t *samplesHG);
+  void      SetALTROSamplesLG(Int_t nSamplesLG, Int_t *samplesLG);
+  void      ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
 
  private:
 
-  Int_t   fNprimary ;      // Number of primaries
-  Int_t * fPrimary ;       //[fNprimary] Array of primaries      
-  Float_t fEnergy ;        // Deposited energy in ADC counts
-  Float_t fTime ;          // Calculcated time 
-  Float_t fTimeR ;         // Earliest time: to be used by Digits2Raw
-    
-  ClassDef(AliPHOSDigit,5) // Digit in PHOS 
+  Int_t       fNprimary ;  // Number of primaries
+  Int_t *     fPrimary ;   //[fNprimary] Array of primaries      
+  Float_t     fEnergy ;    // Deposited energy in ADC counts
+  Float_t     fTime ;      // Calculcated time 
+  Float_t     fTimeR ;     // Earliest time: to be used by Digits2Raw
+  Int_t       fNSamplesHG; // Number of high-gain ALTRO samples
+  Int_t       fNSamplesLG; // Number of low-gain  ALTRO samples
+  UShort_t   *fSamplesHG;  //[fNSamplesHG] Array of high-gain ALTRO samples
+  UShort_t   *fSamplesLG;  //[fNSamplesLG] Array of low-gain  ALTRO samples
+
+  ClassDef(AliPHOSDigit,6) // Digit in PHOS 
 
 } ;
 

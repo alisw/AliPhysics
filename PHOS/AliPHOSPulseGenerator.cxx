@@ -171,8 +171,8 @@ void AliPHOSPulseGenerator::Digitize()
 {
   // Emulates ADC: rounds up to nearest integer value all amplitudes
   for (Int_t i=0; i<fkTimeBins; i++) {
-    fDataHG[i] = TMath::Ceil(fDataHG[i]);
-    fDataLG[i] = TMath::Ceil(fDataLG[i]);
+    fDataHG[i] = (Int_t)(fDataHG[i]);
+    fDataLG[i] = (Int_t)(fDataLG[i]);
   }
 }
 

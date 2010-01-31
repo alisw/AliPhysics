@@ -60,8 +60,11 @@ AliPHOSDigit::AliPHOSDigit() :
   fPrimary(0x0),
   fEnergy(0.),
   fTime(0.),
-  fTimeR(0.) 
-  
+  fTimeR(0.),
+  fNSamplesHG(0),
+  fNSamplesLG(0),
+  fSamplesHG(0),
+  fSamplesLG(0)
 {
   // default ctor 
 }
@@ -72,7 +75,11 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
   fPrimary(0),
   fEnergy(0.f),
   fTime(0.f),
-  fTimeR(0.f)
+  fTimeR(0.f),
+  fNSamplesHG(0),
+  fNSamplesLG(0),
+  fSamplesHG(0),
+  fSamplesLG(0)
 {  
   // ctor with all data 
 
@@ -99,7 +106,11 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Float_t energy, Float_t time
   fPrimary(0),
   fEnergy(0.f),
   fTime(0.f),
-  fTimeR(0.f)
+  fTimeR(0.f),
+  fNSamplesHG(0),
+  fNSamplesLG(0),
+  fSamplesHG(0),
+  fSamplesLG(0)
 {  
   // ctor with all data 
 
@@ -127,8 +138,11 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) :
   fPrimary(0),
   fEnergy(digit.fEnergy),
   fTime(digit.fTime),
-  fTimeR(digit.fTimeR)
-
+  fTimeR(digit.fTimeR),
+  fNSamplesHG(0),
+  fNSamplesLG(0),
+  fSamplesHG(0),
+  fSamplesLG(0)
 {
   // copy ctor
   if(fNprimary){
@@ -146,9 +160,11 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) :
 //____________________________________________________________________________
 AliPHOSDigit::~AliPHOSDigit() 
 {
-  // Delete array of primiries if any
-  if(fPrimary)
-    delete [] fPrimary ;
+  // Delete array of primaries if any
+  if (fPrimary)   delete [] fPrimary  ;
+  // Delete arrays of ALTRO samples if any
+  if (fSamplesHG) delete [] fSamplesHG;
+  if (fSamplesLG) delete [] fSamplesLG;
 }
 
 //____________________________________________________________________________
@@ -186,13 +202,44 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
   return rv ; 
   
 }
+
+//____________________________________________________________________________
+void AliPHOSDigit::SetALTROSamplesHG(Int_t nSamplesHG, Int_t *samplesHG)
+{
+  fNSamplesHG = nSamplesHG;
+  fSamplesHG = new UShort_t[fNSamplesHG];
+  UShort_t i;
+  for (i=0; i<fNSamplesHG; i++) {
+    fSamplesHG[i] = samplesHG[i];
+  }
+}
+//____________________________________________________________________________
+void AliPHOSDigit::SetALTROSamplesLG(Int_t nSamplesLG, Int_t *samplesLG)
+{
+  fNSamplesLG = nSamplesLG;
+  fSamplesLG = new UShort_t[fNSamplesLG];
+  UShort_t i;
+  for (i=0; i<fNSamplesLG; i++) {
+    fSamplesLG[i] = samplesLG[i];
+  }
+}
 //____________________________________________________________________________
 void AliPHOSDigit::Print(const Option_t *) const
 {
   // Print the digit together with list of primaries
-  printf("PHOS digit: Amp=%d/E=%.3f, Id=%d, Time=%.3e, TimeR=%.3e, NPrim=%d ",fAmp,fEnergy,fId,fTime,fTimeR,fNprimary);
-  for(Int_t index = 0; index <fNprimary; index ++ )
+  printf("PHOS digit: E=%.3f, Id=%d, Time=%.3e, TimeR=%.3e, NPrim=%d, nHG=%d, nLG=%d \n",
+	 fEnergy,fId,fTime,fTimeR,fNprimary,fNSamplesHG,fNSamplesLG);
+  printf("\tList of primaries: ");
+  for (Int_t index = 0; index <fNprimary; index ++ )
     printf(" %d ",fPrimary[index]); 
+  printf("\n") ;
+  printf("\tHG samples: 0x%x: ",fSamplesHG);
+  for (Int_t i = 0; i <fNSamplesHG; i++)
+    printf(" %d ",fSamplesHG[i]); 
+  printf("\n") ;
+  printf("\tLG samples: 0x%x: ",fSamplesLG);
+  for (Int_t i = 0; i <fNSamplesLG; i++)
+    printf(" %d ",fSamplesLG[i]); 
   printf("\n") ;
 }
 //____________________________________________________________________________
@@ -243,6 +290,52 @@ AliPHOSDigit& AliPHOSDigit::operator+=(AliPHOSDigit const & digit)
    if(fTime > digit.fTime)
       fTime = digit.fTime ;
    fTimeR = fTime ; 
+
+   // Add high-gain ALTRO samples
+   UShort_t i;
+   if (digit.fNSamplesHG > fNSamplesHG) {
+     UShort_t newNSamplesHG = digit.fNSamplesHG;
+     UShort_t *newSamplesHG = new UShort_t[newNSamplesHG];
+     for (i=0; i<newNSamplesHG; i++) {
+       if (i<fNSamplesHG)
+	 newSamplesHG[i] = TMath::Max(1023,fSamplesHG[i] + (digit.fSamplesHG)[i]);
+       else
+	 newSamplesHG[i] = (digit.fSamplesHG)[i];
+     }
+     delete [] fSamplesHG;
+     fSamplesHG = new UShort_t[newNSamplesHG];
+     for (i=0; i<newNSamplesHG; i++) {
+       fSamplesHG[i] = newSamplesHG[i];
+     }
+     delete [] newSamplesHG;
+   }
+   else {
+     for (i=0; i<fNSamplesHG; i++)
+       fSamplesHG[i] = TMath::Max(1023,fSamplesHG[i] + (digit.fSamplesHG)[i]);
+   }
+
+   // Add low-gain ALTRO samples
+   if (digit.fNSamplesLG > fNSamplesLG) {
+     UShort_t newNSamplesLG = digit.fNSamplesLG;
+     UShort_t *newSamplesLG = new UShort_t[newNSamplesLG];
+     for (i=0; i<newNSamplesLG; i++) {
+       if (i<fNSamplesLG)
+	 newSamplesLG[i] = TMath::Max(1023,fSamplesLG[i] + (digit.fSamplesLG)[i]);
+       else
+	 newSamplesLG[i] = (digit.fSamplesLG)[i];
+     }
+     delete [] fSamplesLG;
+     fSamplesLG = new UShort_t[newNSamplesLG];
+     for (i=0; i<newNSamplesLG; i++) {
+       fSamplesLG[i] = newSamplesLG[i];
+     }
+     delete [] newSamplesLG;
+   }
+   else {
+     for (i=0; i<fNSamplesLG; i++)
+       fSamplesLG[i] = TMath::Max(1023,fSamplesLG[i] + (digit.fSamplesLG)[i]);
+   }
+
    return *this ;
 }
 //____________________________________________________________________________

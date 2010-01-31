@@ -140,6 +140,7 @@
 #include "AliPHOSCalibData.h"
 #include "AliRunLoader.h"
 #include "AliPHOSLoader.h"
+#include "AliPHOSPulseGenerator.h"
 
 ClassImp(AliPHOSDigitizer)
 
@@ -158,7 +159,10 @@ AliPHOSDigitizer::AliPHOSDigitizer() :
   fFirstEvent(0),
   fLastEvent(0), 
   fcdb(0x0),
-  fEventCounter(0)
+  fEventCounter(0),
+  fPulse(0),
+  fADCValuesLG(0),
+  fADCValuesHG(0)
 {
   // ctor
   InitParameters() ; 
@@ -180,13 +184,16 @@ AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName,
   fFirstEvent(0),
   fLastEvent(0), 
   fcdb(0x0),
-  fEventCounter(0)
+  fEventCounter(0),
+  fPulse(0),
+  fADCValuesLG(0),
+  fADCValuesHG(0)
 {
   // ctor
   InitParameters() ; 
   Init() ;
   fDefaultInit = kFALSE ; 
-  fManager = 0 ;                     // We work in the standalong mode
+  fManager = 0 ;                     // We work in the standalone mode
   fcdb = new AliPHOSCalibData(-1);
 }
 
@@ -204,7 +211,10 @@ AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d) :
   fFirstEvent(d.fFirstEvent),
   fLastEvent(d.fLastEvent), 
   fcdb (0x0), 
-  fEventCounter(0)
+  fEventCounter(0),
+  fPulse(0),
+  fADCValuesLG(0),
+  fADCValuesHG(0)
 {
   // copyy ctor 
   SetName(d.GetName()) ; 
@@ -226,7 +236,10 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
   fFirstEvent(0),
   fLastEvent(0), 
   fcdb (0x0), 
-  fEventCounter(0)
+  fEventCounter(0),
+  fPulse(0),
+  fADCValuesLG(0),
+  fADCValuesHG(0)
 
 {
   // ctor Init() is called by RunDigitizer
@@ -250,6 +263,10 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
 
+  delete fPulse;
+  delete [] fADCValuesLG;
+  delete [] fADCValuesHG;
+
   if(fcdb){ delete fcdb ; fcdb=0;} 
 
 }
@@ -269,7 +286,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 
   //First stream 
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));                                                                
+  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
   Int_t readEvent = event ; 
   if (fManager) 
@@ -589,10 +606,22 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       continue ;
     }
 
+    geom->AbsToRelNumbering(digit->GetId(),relId);
+
     digit->SetEnergy(TMath::Ceil(digit->GetEnergy())-0.9999) ;
 
     Float_t tres = TimeResolution(digit->GetEnergy()) ; 
     digit->SetTime(gRandom->Gaus(digit->GetTime(), tres) ) ;
+
+    fPulse->Reset();
+    fPulse->SetAmplitude(digit->GetEnergy()/
+			 fcdb->GetADCchannelEmc(relId[0],relId[3],relId[2]));
+    fPulse->SetTZero(digit->GetTimeR());
+    fPulse->MakeSamples();
+    fPulse->GetSamples(fADCValuesHG, fADCValuesLG) ; 
+    Int_t nSamples = fPulse->GetRawFormatTimeBins();
+    digit->SetALTROSamplesHG(nSamples,fADCValuesHG);
+    digit->SetALTROSamplesLG(nSamples,fADCValuesLG);
   }
 
   Float_t cpvDigitThreshold = AliPHOSSimParam::GetInstance()->GetCpvDigitsThreshold() ;
@@ -838,6 +867,9 @@ void AliPHOSDigitizer::InitParameters()
 
   fDigitsInRun  = 0 ; 
   SetEventRange(0,-1) ;
+  fPulse = new AliPHOSPulseGenerator();
+  fADCValuesLG = new Int_t[fPulse->GetRawFormatTimeBins()];
+  fADCValuesHG = new Int_t[fPulse->GetRawFormatTimeBins()];
     
 }
 
