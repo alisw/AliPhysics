@@ -5,7 +5,7 @@ const Int_t    PDG = 421;
 const Int_t    minclustersTPC = 0 ;
 const Int_t    minITSClusters = 4;
 // ANALYSIS TYPE D*+ or D*-
-const Bool_t computeD0 = kTRUE;
+const Bool_t computeD0 = kFALSE;
 const Bool_t topologicalCut = kFALSE;
 
 //----------------------------------------------------
