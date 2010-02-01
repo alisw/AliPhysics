@@ -39,11 +39,13 @@ public:
          void SetSigCutFromFile(TString name);                              //Set Sigma Cuts from File
          void SetDeadChannelMapFromFile(TString name);
          Bool_t GetSelectedDDL()     const  {return fSelectDDL;}              //Set wether ADC histos of pads are written or not
-         TH2F   *GetPedMeanMap(Int_t iDDL)  {return fPedMeanMap[iDDL];}
-         TH2F   *GetPedSigMap(Int_t iDDL)   {return fPedSigMap[iDDL];}
-         TH1F   *GetPedMean(Int_t iChFee)   {return f1DPedMean[iChFee];}
-         TH1F   *GetPedSigma(Int_t iChFee)  {return f1DPedSigma[iChFee];}
-     THnSparse  *GetDeadMap()               {return fDeadMap;}
+         TH2F   *GetPedMeanMap(Int_t iDDL)  {return fPedMeanMap[iDDL];}       //Get the pedestal mean map for a DDL to send to AMORE
+         TH2F   *GetPedSigMap(Int_t iDDL)   {return fPedSigMap[iDDL];}        //Get the pedestal sigma map for a DDL to send to AMORE
+         TH1F   *GetPedMean(Int_t iChFee)   {return f1DPedMean[iChFee];}      //Get the pedestal mean map for a FEE channel to send to AMORE
+         TH1F   *GetPedSigma(Int_t iChFee)  {return f1DPedSigma[iChFee];}     //Get the pedestal Sigma map for a FEE channel to send to AMORE
+     THnSparse  *GetDeadMap()               {return fDeadMap;}                //Get the masked channel map from the DAQ database
+         Int_t   GetNumMaskedPads()         {return fNumMaskedPads;}          //Get the number of masked channels
+         Int_t   GetNumDeadPads()           {return fNumDeadPads;}            //Get the number of masked channels
 protected: 
 
     Bool_t     *faddl;                                                         //check is ddl is filled
@@ -66,15 +68,17 @@ protected:
     THnSparse  *fDeadMap;                                                      //Dead Channel Map
     TH2F       **fPedMeanMap;                                                  //2D mean pedestal map to export to AMORE
     TH2F       **fPedSigMap;                                                   //2D pedestal sigma map to export to AMORE
-    TH1F      **f1DPedMean;                                                   //1D mean pedestal map to export to AMORE
+    TH1F      **f1DPedMean;                                                    //1D mean pedestal map to export to AMORE
     TH1F      **f1DPedSigma;                                                   //1D pedestal sigma map to export to AMORE
-        
+    Int_t       fNumMaskedPads;                                                //Number of masked pads     
+    Int_t       fNumDeadPads;                                                  //Number of currently dead channels   
+            
   private:
                                            
   AliHMPIDCalib(const AliHMPIDCalib& c);                                       //dummy copy constructor
   AliHMPIDCalib &operator=(const AliHMPIDCalib& c);                            //dummy assignment operator
      
-    ClassDef(AliHMPIDCalib,4)                                                  //HMPID calibration and pedestal class        
+    ClassDef(AliHMPIDCalib,5)                                                  //HMPID calibration and pedestal class        
 };
 #endif
 

@@ -55,24 +55,24 @@ int main(int argc, char **argv){
 
   
   /* log start of process */
-  printf("HMPID DA program started\n");  
+  printf("HMP PedestalDa: HMPID DA program started\n");  
 
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo","*","TStreamerInfo","RIO","TStreamerInfo()");
   
   /* check that we got some arguments = list of files */
   if (argc<2) {
-    printf("Wrong number of arguments\n");
+    printf("HMP PedestalDa: Wrong number of arguments\n");
     return -1;
   }
 
   /* copy locally a file from daq detector config db */
   
-  hmpIn=Form("./%s",hmpConfigFile);
-  status=daqDA_DB_getFile(hmpConfigFile,hmpIn.Data()); 
-  if (status) { printf("Failed to get HMPID config file status: %d\n",status);return -1; }
-  hmpIn2=Form("./%s",hmpDeadChannelMapFile);
-  status=daqDA_DB_getFile(hmpDeadChannelMapFile,hmpIn2.Data()); 
-  if (status) { printf("Failed to get HMPID dead channel file status: %d\n",status);return -1; }
+ hmpIn=Form("./%s",hmpConfigFile);
+ status=daqDA_DB_getFile(hmpConfigFile,hmpIn.Data()); 
+ if (status) { printf("Failed to get HMPID config file status: %d\n",status);return -1; }
+ hmpIn2=Form("./%s",hmpDeadChannelMapFile);
+ status=daqDA_DB_getFile(hmpDeadChannelMapFile,hmpIn2.Data()); 
+ if (status) { printf("Failed to get HMPID dead channel file status: %d\n",status);return -1; }
   
 
   /* report progress */
@@ -89,8 +89,8 @@ int main(int argc, char **argv){
   AliHMPIDCalib *pCal=new AliHMPIDCalib();
   /* Set the number of sigma cuts inside the file HmpidSigmaCut.txt on all LDCs! */
   /* If the file is NOT present then the default cut 3 will be used!*/
-  pCal->SetSigCutFromFile(hmpIn);
-  pCal->SetDeadChannelMapFromFile(hmpIn2);  
+ pCal->SetSigCutFromFile(hmpIn);
+ pCal->SetDeadChannelMapFromFile(hmpIn2);  
   
   /* init event counter */
   Int_t firstEvt=0;
@@ -103,7 +103,7 @@ int main(int argc, char **argv){
 
     status=monitorSetDataSource( argv[n] );
     if (status!=0) {
-      printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
+      printf("HMP PedestalDa: monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
       return -1;
     }
 
@@ -123,11 +123,11 @@ int main(int argc, char **argv){
       status=monitorGetEventDynamic((void **)&event);
       if (status==MON_ERR_EOF)                                              /* end of monitoring file has been reached */
       {
-        printf("End of monitoring file has been reached! \n");
+        printf("HMP PedestalDa: End of monitoring file has been reached! \n");
         break;
         }
       if (status!=0) {
-        printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+        printf("HMP PedestalDa: monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
 	return -1;
       }
 
@@ -167,7 +167,7 @@ int main(int argc, char **argv){
 
       /* exit when last event received, no need to wait for TERM signal */
       if (eventT==END_OF_RUN) {
-	printf("EOR event detected\n");
+	printf("HMP PedestalDa: EOR event detected\n");
 	break;    
     
       } // events loop   
@@ -178,10 +178,10 @@ int main(int argc, char **argv){
   }//arg
 
   /* write report */
-  printf("HMPID DA processed RUN #%s on LDC#%d, with %d calibration events\n",getenv("DATE_RUN_NUMBER"),ldcId,iEvtNcal);
+  printf("HMP PedestalDa: HMPID DA processed RUN #%s on LDC#%d, with %d calibration events\n",getenv("DATE_RUN_NUMBER"),ldcId,iEvtNcal);
 
   if (!iEvtNcal) {
-    printf("No calibration events have been read. Exiting\n");
+    printf("HMP PedestalDa: No calibration events have been read. Exiting\n");
     return -1;
   }
 
@@ -193,13 +193,13 @@ int main(int argc, char **argv){
     /* Calculate pedestal for the given ddl, if there is no ddl go t next */
     if(pCal->CalcPedestal(nDDL,Form("HmpidPedDdl%02i.txt",nDDL),Form("%s",feeIn.Data()),iEvtNcal)) {
       status=daqDA_DB_storeFile(feeIn.Data(),feeIn.Data());                                               //store a single threshold file for a DDL in DAQ DB  
-      if (status) { printf("Failed to store file %s in DAQ DB, status: %d\n",feeIn.Data(),status); }
+      if (status) { printf("HMP PedestalDa: Failed to store file %s in DAQ DB, status: %d\n",feeIn.Data(),status); }
       status=daqDA_FES_storeFile(Form("HmpidPedDdl%02i.txt",nDDL),Form("HmpidPedDdl%02i.txt",nDDL));      //store a single pedestal file for a DDL
-      if (status) { printf("Failed to export file on FES: %d\n",status); }
+      if (status) { printf("HMP PedestalDa: Failed to export file on FES: %d\n",status); }
     }//pedestals and thresholds
     if(pCal->WriteErrors(nDDL,Form("HmpidErrorsDdl%02i.txt",nDDL),iEvtNcal)) {
       status=daqDA_FES_storeFile(Form("HmpidErrorsDdl%02i.txt",nDDL),Form("HmpidErrorsDdl%02i.txt",nDDL));
-      if (status) { printf("Failed to export file : %d\n",status); }
+      if (status) { printf("HMP PedestalDa: Failed to export file : %d\n",status); }
     }//errors
   }//nDDL
 
@@ -219,13 +219,16 @@ int main(int argc, char **argv){
          statusAmoreDA+=amoreDA.Send(Form("f1DPedSigma_Ch%d_FEE_%d",iCh,iFee),pCal->GetPedSigma(6*iCh+iFee));
        }
      }
-         
+
+  printf("HMP PedestalDa: num. masked pads: %d, num of currently dead pads: %d.\n",pCal->GetNumMaskedPads(),pCal->GetNumDeadPads()); 
+           
   delete pCal;  
   if(status) return -1;
   if(statusAmoreDA) return -1;
   
   /* report progress */
   daqDA_progressReport(100);
+  
   
   
   return status;

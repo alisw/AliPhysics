@@ -52,7 +52,9 @@ fDeadMap(0x0),
 fPedMeanMap(0x0),
 fPedSigMap(0x0),
 f1DPedMean(0x0),
-f1DPedSigma(0x0)
+f1DPedSigma(0x0),
+fNumMaskedPads(0),
+fNumDeadPads(0)
 {
   //
   //constructor
@@ -177,6 +179,7 @@ AliHMPIDCalib::~AliHMPIDCalib()
   fSigCut=0;
   fLargeHisto=kFALSE;
   fSelectDDL=0;
+  fNumMaskedPads=0;
   
   if (fPedMeanMap)   { delete [] fPedMeanMap; fPedMeanMap=0x0;  }  
   if (fPedSigMap)    { delete [] fPedSigMap;  fPedSigMap=0x0;   }  
@@ -408,7 +411,7 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t
   Int_t feeOffset=196657;
   ofstream feeInput; feeInput.open(Form("%s",name2));      //write thr file for Fe2C
   
-  Double_t mean=0,sigma=0;
+  Double_t mean=0,sigma=0, threshold=0;
   Double_t qs2m=0,qsm2=0;
   ofstream out;                                            //to write the pedestal text files
   Int_t inhard;
@@ -447,11 +450,13 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t
        if(nEvPerPad < 1 ) {                                                      //if the pad is bad then we assign 100  for the sigma and 50 for the mean
           mean  = AliHMPIDParam::kPadMeanZeroCharge;
           sigma = AliHMPIDParam::kPadSigmaZeroCharge;
+          fNumDeadPads++;
         }
         else if(fDeadMap->GetBinContent(binSp)>0)                                 //check if channel is masked, if yes set maksed values
         {
           mean  = AliHMPIDParam::kPadMeanMasked;
           sigma = AliHMPIDParam::kPadSigmaMasked;
+          fNumMaskedPads++;
         }
        else{            
          mean = fsq[nDDL][row][dil][pad]*1.0/nEvPerPad;
@@ -459,7 +464,13 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t
          qsm2 = TMath::Power(fsq[nDDL][row][dil][pad]*1.0/nEvPerPad,2); 
         sigma = TMath::Sqrt(TMath::Abs(qs2m-qsm2));
         }
-        inhard=((Int_t(mean+fSigCut*sigma))<<9)+Int_t(mean);                       //right calculation, xchecked with Paolo 8/4/2008
+        
+        //The electronics takes the 32bit int as: first 9 bits for the pedestal and the second 9 bits for threshold
+        threshold = mean+fSigCut*sigma;                                                                    
+        if(mean > 511.0 || threshold > 511.0) {mean = AliHMPIDParam::kPadMeanMasked; threshold = AliHMPIDParam::kPadMeanMasked + 5.0 * AliHMPIDParam::kPadSigmaMasked; }
+        //inhard=((Int_t(mean+fSigCut*sigma))<<9)+Int_t(mean);                                                 //right calculation, xchecked with Paolo 8/4/2008
+        inhard=((Int_t(threshold))<<9)+Int_t(mean);                                                            //right calculation, xchecked with Paolo 8/4/2008
+        
         out << Form("%2i %2i %2i %5.3f %5.3f %4.4x \n",row,dil,pad,mean,sigma,inhard);
         feeInput << Form("0x%4.4x\n",inhard);
         
