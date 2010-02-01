@@ -240,11 +240,24 @@ void LoadLibrariesRF(const libModes mode) {
     // Cuts
     gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimpleCuts.cxx+");    
     
-    // Output histosgrams
+    // Output histograms
     gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHist.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHistResults.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist1.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist2.cxx+");
+    
+    // Functions needed for various methods
+    gROOT->LoadMacro("AliFlowCommon/AliCumulantsFunctions.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZEventPlane.cxx+");
+    
+    // Flow Analysis code for various methods
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMCEventPlane.cxx+"); 
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithScalarProduct.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLYZEventPlane.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx+");
        
     cout << "finished loading macros!" << endl;  
     
