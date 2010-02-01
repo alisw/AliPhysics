@@ -1,4 +1,4 @@
-// Author: Benjamin Hess   15/01/2010
+// Author: Benjamin Hess   29/01/2010
 
 /*************************************************************************
  * Copyright (C) 2009-2010, Alexandru Bercuci, Benjamin Hess.            *
@@ -27,7 +27,7 @@
 // To find the type of objects the macro will deal with (corresponds to //
 // "YourObjectType" in the examples below) please use                   //
 // GetMacroObjectType(...).                                             //
-// With ApplySTSelectionMacros(...) or ApplyProcessMacros(...)          //
+// With ApplySOSelectionMacros(...) or ApplyProcessMacros(...)          //
 // respectively you can apply the macros to the track list via          //
 // iterators (same style like for RemoveSelectedMacros(...)(cf. above)).//
 // Selection macros (de-)select macros according to a selection rule    //
@@ -42,14 +42,14 @@
 // Currently, the following macro types are supported:                  //
 // Selection macros:                                                    //
 // Bool_t YourMacro(const YourObjectType*);                             //
-// Bool_t YourMacro(const YourObjectType*, const YourObjectType*);      //
+// Bool_t YourMacro(const YourObjectType*, const YourObjectType2*);     //
 //                                                                      //
 // Process macros:                                                      //
 // void YourMacro(const YourObjectType*, Double_t*&, Int_t&);           //
-// void YourMacro(const YourObjectType*, const YourObjectType*,         //
+// void YourMacro(const YourObjectType*, const YourObjectType2*,        //
 //                Double_t*&, Int_t&);                                  //
 // TH1* YourMacro(const YourObjectType*);                               //
-// TH1* YourMacro(const YourObjectType*, const YourObjectType*);        //
+// TH1* YourMacro(const YourObjectType*, const YourObjectType2*);       //
 //                                                                      //
 // The macros which take 2 tracks are applied to all track pairs        //
 // (whereby BOTH tracks of the pair have to be selected by the single   //
@@ -166,13 +166,13 @@ Int_t AliEveListAnalyser::AddMacro(const Char_t* path, const Char_t* nameC, Bool
   // Supported macro types:
   // Selection macros:                                                    
   // Bool_t YourMacro(const YourObjectType*)
-  // Bool_t YourMacro(const YourObjectType*, const YourObjectType*)
+  // Bool_t YourMacro(const YourObjectType*, const YourObjectType2*)
   //
   // Process macros:                                                      
   // void YourMacro(const YourObjectType*, Double_t*&, Int_t&)             
-  // void YourMacro(const YourObjectType*, const TObject*, Double_t*&, Int_t&)                                   
+  // void YourMacro(const YourObjectType*, const YourObjectType2*, Double_t*&, Int_t&)                                   
   // TH1* YourMacro(const YourObjectType*)                                 
-  // TH1* YourMacro(const YourObjectType*, const YourObjectType*)                              
+  // TH1* YourMacro(const YourObjectType*, const YourObjectType2*)                              
 
   Char_t pathname[fkMaxMacroPathNameLength];
   memset(pathname, '\0', sizeof(Char_t) * fkMaxMacroPathNameLength);
@@ -202,15 +202,41 @@ Int_t AliEveListAnalyser::AddMacro(const Char_t* path, const Char_t* nameC, Bool
   gROOT->ProcessLineSync(Form(".L %s+%c", pathname, forceReload ? '+' : ' '));
 
   TClass* objectType;
+  TClass* objectType2;
 
-  objectType = GetMacroObjectType(name);
+  objectType = GetMacroObjectType(name, 1);
+  objectType2 = GetMacroObjectType(name, 2);
 
   // We need this line... otherwise, in some cases, there will be problems concerning ACLIC
   gROOT->ProcessLineSync(Form(".L %s", pathname));
 
   if (!objectType)  return UNKNOWN_OBJECT_TYPE_ERROR;
 
-  AliEveListAnalyserMacroType type = GetMacroType(name, objectType->GetName(), kFALSE);
+  // This might be a macro dealing with only 1 object... test this afterwards!
+  Bool_t testSecondObj = kFALSE;
+  if (!objectType2) 
+  {
+    objectType2 = TObject::Class();
+    testSecondObj = kTRUE;
+  }
+  AliEveListAnalyserMacroType type = GetMacroType(name, objectType->GetName(), objectType2->GetName(), kFALSE);
+
+  if (testSecondObj)
+  {
+    switch (type)
+    {
+    case AliEveListAnalyser::kCorrelObjectSelect:
+    case AliEveListAnalyser::kCorrelObjectAnalyse:
+    case AliEveListAnalyser::kCorrelObjectHisto:
+      // There must be a second type -> Error!
+      return UNKNOWN_OBJECT_TYPE_ERROR;
+      break;
+    default:
+      // Ok, single object macro!
+      break;
+    }
+  }
+
 
   // Clean up again
   // A.B. gROOT->Reset();
@@ -222,19 +248,21 @@ Int_t AliEveListAnalyser::AddMacro(const Char_t* path, const Char_t* nameC, Bool
   Int_t returnValue = WARNING;
   if(fMacroList->GetValue(name) == 0) 
   {
-    returnValue = AddMacroFast(path, name, type, objectType) ? SUCCESS : ERROR;
+    returnValue = AddMacroFast(path, name, type, objectType, objectType2) ? SUCCESS : ERROR;
   }
 
   return returnValue;
 }
 
 //______________________________________________________
-Bool_t AliEveListAnalyser::AddMacroFast(const Char_t* path, const Char_t* name, AliEveListAnalyserMacroType type, TClass* objectType)
+Bool_t AliEveListAnalyser::AddMacroFast(const Char_t* path, const Char_t* name, AliEveListAnalyserMacroType type, 
+                                        TClass* objectType, TClass* objectType2)
 {
   // Adds a macro (path/name) to the corresponding list. No checks are performed (file exists, 
   // macro already in list/map, signature correct),  no libraries are created!
   // You can use this function only, if the macro has been added successfully before 
   // (and then maybe was removed). The function is very fast. On success kTRUE is returned, otherwise: kFALSE;
+  // Note: If your macro takes only 1 pointer as a parameter, just use "0x0" for objectType2!
 
   Bool_t success = kFALSE;
 
@@ -246,7 +274,7 @@ Bool_t AliEveListAnalyser::AddMacroFast(const Char_t* path, const Char_t* name, 
     case kSingleObjectHisto:
     case kCorrelObjectAnalyse:
     case kCorrelObjectHisto:
-      fMacroList->Add(new TObjString(name), new TGeneralMacroData(name, path, type, objectType));
+      fMacroList->Add(new TObjString(name), new TGeneralMacroData(name, path, type, objectType, objectType2));
 
       // We do not know, where the element has been inserted - deselect this list
       fMacroListSelected = 0;
@@ -255,16 +283,15 @@ Bool_t AliEveListAnalyser::AddMacroFast(const Char_t* path, const Char_t* name, 
 
 #ifdef AliEveListAnalyser_DEBUG
       // Successfull add will only be displayed in debug mode
-      printf("AliEveListAnalyser::AddMacroFast: Added macro \"%s/%s\" with object type \"%s\" to the corresponding list\n", path, name,
-             objectType->GetName());
+      printf("AliEveListAnalyser::AddMacroFast: Added macro \"%s/%s\" with object types \"%s\" and \"%s\" to the corresponding list\n", 
+             path, name, objectType->GetName(), objectType2->GetName());
 #endif
 
       break;
 
     default:
       // Error will always be displayed
-      printf("AliEveListAnalyser::AddMacroFast: ERROR: Could not add macro \"%s/%s\" with object type \"%s\" to the corresponding list\n", 
-             path, name, objectType->GetName());
+      printf("AliEveListAnalyser::AddMacroFast: ERROR: Could not add macro \"%s/%s\" with object types \"%s\" and \"%s\" to the corresponding list\n", path, name, objectType->GetName(), objectType2->GetName());
 
       success = kFALSE;
 
@@ -279,6 +306,8 @@ Bool_t AliEveListAnalyser::AddMacroFast(const Char_t* path, const Char_t* name, 
 Int_t AliEveListAnalyser::AddPrimSelectedObject(TEveElement* el)
 {
   // Adds the TEveElement el to the list. If it is already in the list, it is removed.
+  // If the list is the only parent of the clicked object, the object is moved outside the list in the browser (not deleted!).
+  // If you want to delete the object, just select it there and choose "Destroy" in the menu.
   // This function is designed to be used together with a signal:
   // It adds the (primarily) selected objects in the viewer to the list (objects that are already in the list are removed!).
   // Returns "ERROR" (cf. defines) on error, "WARNING" if the element does not contain any user data and else "SUCCESS" (i.e.
@@ -294,7 +323,7 @@ Int_t AliEveListAnalyser::AddPrimSelectedObject(TEveElement* el)
 
   // If the clicked element is the list itself, just do nothing.
   if (el == this)  return SUCCESS;
-  
+
   if (!this->HasChild(el))
   {
 
@@ -306,15 +335,40 @@ Int_t AliEveListAnalyser::AddPrimSelectedObject(TEveElement* el)
       return WARNING;
     }
 
-    // Element clicked that is not in the list (and is not the list itself!) -> Add this element to list
+    // Element clicked that is not in the list (and is not the list itself!) -> Add this element to the list
     this->AddElement(el);
+    this->SetTitle(Form("Objects %d", this->NumChildren()));
+    gEve->Redraw3D();
   }
   else
   {
     // Element clicked that is already in the list. Remove it. But: Only take care of objects that have been added
     // via primary selection (name does not start with "[sec")
     if (TString(el->GetElementName()).BeginsWith("[sec:"))  return SUCCESS;
-    this->RemoveElement(el);
+
+
+    // Element is a child of this list. So, if there are only 2 parents, we know them: list + eve selection. In this case,
+    // the element needs to be destroyed. If there are more parents, just remove the element from the list.
+    // Since the elements editor will be opened, the element is not deleted, but "moved" outside the list (in the browser).
+    if (el->NumParents() > 2) 
+    {
+      this->RemoveElement(el);
+    }
+    else
+    {
+      // There must be at least 2 parents!
+      if (el->NumParents() <= 1)  return ERROR;
+
+      TEveElement* listObj = 0x0;
+      listObj = this->FindChild(el->GetElementName());
+      if (!listObj)  return ERROR;
+
+      gEve->AddElement(listObj, 0);
+      // Alternatively: Switch on that the element is NOT destroyed, instead of adding it outside the list. Warning: Memory leaks possible.
+      //listObj->SetDestroyOnZeroRefCnt(kFALSE);
+      this->RemoveElement(listObj);
+      //gEve->RemoveElement(listObj, 0);
+    }
   } 
 
   this->SetTitle(Form("Objects %d", this->NumChildren()));
@@ -384,19 +438,18 @@ void AliEveListAnalyser::AddSecSelectedSingleObjectToList(Int_t pointId)
     {
       // I don't know why, but you get a crash, if you try this->RemoveElement(ps) (in some cases).
       // So, use this way instead.
-      //this->RemoveElement((TEveElement*)ps);
       TEveElement* listObj = this->FindChild(ps->GetName());
       if (listObj)
       {
+        listObj->SetUserData(0x0);
         this->RemoveElement(listObj);
         this->SetTitle(Form("Objects %d", this->NumChildren()));
-        gEve->Redraw3D();
       }
 
       return;
     }
   }
-  
+
   TObject* obj = ps->GetPointId(pointId);
   if (obj)
   {
@@ -405,10 +458,9 @@ void AliEveListAnalyser::AddSecSelectedSingleObjectToList(Int_t pointId)
     listObj = this->FindChild(Form("[sec:%d] %s%d", obj->GetUniqueID(), obj->GetName(), pointId));
     if (listObj)
     {
-      this->RemoveElement(listObj);  
+      listObj->SetUserData(0x0);
+      this->RemoveElement(listObj); 
       this->SetTitle(Form("Objects %d", this->NumChildren()));
-
-      gEve->Redraw3D();
       return;
     }
 
@@ -422,6 +474,8 @@ void AliEveListAnalyser::AddSecSelectedSingleObjectToList(Int_t pointId)
     newPS->SetMarkerColor(5);
     newPS->SetMarkerStyle(ps->GetMarkerStyle());
     newPS->SetMarkerSize(ps->GetMarkerSize());
+    // Own points -> Will be cleared, if this object is removed
+    newPS->SetOwnIds(kTRUE);
 
     this->AddElement(newPS);
     this->SetTitle(Form("Objects %d", this->NumChildren()));
@@ -497,8 +551,10 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
   }
   
   TClass** mProcObjectType = 0;
+  TClass** mProcObjectType2 = 0;
   if (procIterator->GetEntries() > 0) {
     mProcObjectType = new TClass*[procIterator->GetEntries()];
+    mProcObjectType2 = new TClass*[procIterator->GetEntries()];
   }
 
   Char_t** selCmds  = 0;
@@ -509,8 +565,10 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
   }
 
   TClass** mSelObjectType = 0;
+  TClass** mSelObjectType2 = 0;
   if (selIterator->GetEntries() > 0) {
     mSelObjectType = new TClass*[selIterator->GetEntries()];
+    mSelObjectType2 = new TClass*[selIterator->GetEntries()];
   }
   
   Bool_t selectedByCorrSelMacro = kFALSE;
@@ -540,8 +598,9 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     printf("AliEveListAnalyser: Checking process macro: %s\n", macro->GetName());
 #endif 
            
-    // Find the object type of the macro
+    // Find the object types of the macro
     mProcObjectType[i] = macro->GetObjectType();
+    mProcObjectType2[i] = macro->GetObjectType2();
 
     // Find the type of the process macro
     macroType = macro->GetType();
@@ -586,15 +645,16 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     printf("AliEveListAnalyser: Checking selection macro: %s\n", macro->GetName());
 #endif
 
-    // Find the object type of the macro
+    // Find the object types of the macro
     mSelObjectType[i] = macro->GetObjectType();
+    mSelObjectType2[i] = macro->GetObjectType2();
        
     // Find the type of the process macro
     macroType = macro->GetType();
 
     // Single Object select macro
     if (macroType == kSingleObjectSelect) {
-      // Has already been processed by ApplySTSelectionMacros(...)
+      // Has already been processed by ApplySOSelectionMacros(...)
       mSelType[i] = macroType;         
     }
     // Correlated Objects select macro
@@ -615,6 +675,9 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
   if (numHistoMacros > 0)  histos = new TH1*[numHistoMacros];
   for (Int_t i = 0; i < numHistoMacros; i++)  histos[i] = 0x0;
 
+
+  Bool_t secondBeforeFirstObject = kTRUE;
+  
 
   //////////////////////////////////////
   // WALK THROUGH THE LIST OF OBJECTS //
@@ -647,23 +710,38 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
         histos[histoIndex++] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
        // Correlated Objects histo
       } else if (mProcType[i] == kCorrelObjectHisto) {
-        // Loop over all pairs behind the current one - together with the other loop this will be a loop
-        // over all pairs. We have a pair of objects, if and only if both objects of the pair are selected (Rnr-state)
+        // To get all pairs, do the second loop over all objects.
+        // But: If a macro takes 2 pointers of the same type, we must take care that one gets the same pair, when we exchange the objects
+        // (this is not true, if we have different types - even if they inherit from the same classes!).
+        // Thus: If the latter case occurs, we ignore an object pair, if the second object is BEFORE the first object in the list.
+        // Since then the pair has already been taken into account.
+        // Furthermore, we have a pair of objects, if and only if both objects of the pair are selected (Rnr-state)
         // and are not equal.
         // The correlated objects process macro will be applied to all pairs that will be additionally selected by
         // all correlated objects selection macros.
-        TEveElement::List_i iter2 = iter;
-        iter2++;
-        for ( ; iter2 != this->EndChildren(); ++iter2)
+
+        secondBeforeFirstObject = kTRUE;
+        for (TEveElement::List_i iter2 = this->BeginChildren(); iter2 != this->EndChildren(); ++iter2)
         {
+          // If the objects are the same, it is not a pair -> continue. From now on: 2nd object BEHIND the 1st object in the list!
+          if (iter == iter2)
+          {
+            secondBeforeFirstObject = kFALSE;
+            continue;
+          }
           if(!(object2 = dynamic_cast<TEveElement*>(*iter2))) continue;
 
           // Skip objects that have not been selected
           if (!object2->GetRnrState())  continue;
 
           // Same check of the macro object type as before
-          if (((TObject*)object2->GetUserData())->IsA() != mProcObjectType[i] && 
-              !((TObject*)object2->GetUserData())->InheritsFrom(mProcObjectType[i]))  continue;
+          if (((TObject*)object2->GetUserData())->IsA() != mProcObjectType2[i] && 
+              !((TObject*)object2->GetUserData())->InheritsFrom(mProcObjectType2[i]))  continue;
+          // Do not process object pairs twice
+          if (secondBeforeFirstObject)
+          {
+            if (mProcObjectType[i] == mProcObjectType2[i]) continue;
+          }
       
           // Cast to the "real" object behind
           gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", object2));
@@ -677,11 +755,13 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           // Note: Again, via selCmds[i], the automatic objects are casted to the correct type!
           if (((TObject*)object1->GetUserData())->IsA() != mSelObjectType[j] && 
               !((TObject*)object1->GetUserData())->InheritsFrom(mSelObjectType[j]))  continue;
-          if (((TObject*)object2->GetUserData())->IsA() != mSelObjectType[j] && 
-              !((TObject*)object2->GetUserData())->InheritsFrom(mSelObjectType[j]))  continue;
+          if (((TObject*)object2->GetUserData())->IsA() != mSelObjectType2[j] && 
+              !((TObject*)object2->GetUserData())->InheritsFrom(mSelObjectType2[j]))  continue;
 
               selectedByCorrSelMacro = (Bool_t)gROOT->ProcessLineSync(selCmds[j]);
-              if (!selectedByCorrSelMacro)  break;
+              if (!selectedByCorrSelMacro){ 
+                break;
+              }
             }
           }       
 
@@ -714,23 +794,38 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
       }
       // Correlated objects analyse
       else if (mProcType[i] == kCorrelObjectAnalyse){
-        // Loop over all pairs behind the current one - together with the other loop this will be a loop
-        // over all pairs. We have a pair of objects, if and only if both objects of the pair are selected (Rnr-state)
+        // To get all pairs, do the second loop over all objects.
+        // But: If a macro takes 2 pointers of the same type, we must take care that one gets the same pair, when we exchange the objects
+        // (this is not true, if we have different types - even if they inherit from the same classes!).
+        // Thus: If the latter case occurs, we ignore an object pair, if the second object is BEFORE the first object in the list.
+        // Since then the pair has already been taken into account.
+        // Furthermore, we have a pair of objects, if and only if both objects of the pair are selected (Rnr-state)
         // and are not equal.
         // The correlated objects process macro will be applied to all pairs that will be additionally selected by
         // all correlated objects selection macros.
-        TEveElement::List_i iter2 = iter;
-        iter2++;
 
-        for ( ; iter2 != this->EndChildren(); ++iter2) {
+        secondBeforeFirstObject = kTRUE;
+        for (TEveElement::List_i iter2 = this->BeginChildren(); iter2 != this->EndChildren(); ++iter2)
+        {
+          // If the objects are the same, it is not a pair -> continue. From now on: 2nd object BEHIND the 1st object in the list!
+          if (iter == iter2)
+          {
+            secondBeforeFirstObject = kFALSE;
+            continue;
+          }
           if(!(object2 = dynamic_cast<TEveElement*>(*iter2))) continue;
  
           // Skip objects that have not been selected
           if (!object2->GetRnrState())  continue;
 
           // Same check of the macro object type as before
-          if (((TObject*)object2->GetUserData())->IsA() != mProcObjectType[i] && 
-              !((TObject*)object2->GetUserData())->InheritsFrom(mProcObjectType[i]))  continue;
+          if (((TObject*)object2->GetUserData())->IsA() != mProcObjectType2[i] && 
+              !((TObject*)object2->GetUserData())->InheritsFrom(mProcObjectType2[i]))  continue;
+          // Do not process object pairs twice
+          if (secondBeforeFirstObject)
+          {
+            if (mProcObjectType[i] == mProcObjectType2[i]) continue;
+          }
     
           // Cast to the "real" object behind
           gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", object2));
@@ -741,11 +836,11 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           for (Int_t j = 0; j < selIterator->GetEntries(); j++) {
             if (mSelType[j] == kCorrelObjectSelect) {
               // Check, whether the macro can deal with both objects. If not, skip it.
-              // Note: Again, via selCmds[i], the automatic objects are casted to the correct type!
+              // Note: Again, via selCmds[i], the automatic objects are casted to the correct type! 
               if (((TObject*)object1->GetUserData())->IsA() != mSelObjectType[j] && 
                   !((TObject*)object1->GetUserData())->InheritsFrom(mSelObjectType[j]))  continue;
-              if (((TObject*)object2->GetUserData())->IsA() != mSelObjectType[j] && 
-                  !((TObject*)object2->GetUserData())->InheritsFrom(mSelObjectType[j]))  continue;
+              if (((TObject*)object2->GetUserData())->IsA() != mSelObjectType2[j] && 
+                  !((TObject*)object2->GetUserData())->InheritsFrom(mSelObjectType2[j]))  continue;
 
               selectedByCorrSelMacro = (Bool_t)gROOT->ProcessLineSync(selCmds[j]);
               if (!selectedByCorrSelMacro)  break;
@@ -794,14 +889,18 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
   procCmds = 0;
   if (mProcObjectType != 0) delete mProcObjectType;
   mProcObjectType = 0;
-  if (mProcType != 0)  delete mProcType;
+  if (mProcObjectType2 != 0) delete mProcObjectType2;
+  mProcObjectType2 = 0;
+  if (mProcType != 0)  delete [] mProcType;
   mProcType = 0;
 
   if (selCmds != 0)  delete [] selCmds;
   selCmds = 0;
   if (mSelObjectType != 0)  delete mSelObjectType;
   mSelObjectType = 0;
-  if (mSelType != 0)  delete mSelType;
+  if (mSelObjectType2 != 0)  delete mSelObjectType2;
+  mSelObjectType2 = 0;
+  if (mSelType != 0)  delete [] mSelType;
   mSelType = 0;
 
   if (histos != 0)  delete [] histos;
@@ -819,12 +918,12 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 }
 
 //______________________________________________________
-void AliEveListAnalyser::ApplySTSelectionMacros(const TList* iterator)
+void AliEveListAnalyser::ApplySOSelectionMacros(const TList* iterator)
 {
   // Uses the iterator (for the selected selection macros) to apply the selected macros to the data.
   // The rnr-states of the objects are set according to the result of the macro calls (kTRUE, if all
   // macros return kTRUE for this object, otherwise: kFALSE).
-  // "ST" stands for "single object". This means that only single object selection macros are applied.
+  // "SO" stands for "single object". This means that only single object selection macros are applied.
   // Correlated objects selection macros will be used inside the call of ApplyProcessMacros(...)!
 
   TGeneralMacroData* macro = 0;
@@ -902,13 +1001,15 @@ void AliEveListAnalyser::ApplySTSelectionMacros(const TList* iterator)
 }
 
 //______________________________________________________
-TClass* AliEveListAnalyser::GetMacroObjectType(const Char_t* name) const
+TClass* AliEveListAnalyser::GetMacroObjectType(const Char_t* name, Int_t argNum) const
 {
-  // Returns the type of object the macro with name "name" is dealing with; 
+  // Returns the type of object (of argument argNum) the macro with name "name" is dealing with; 
   // e.g. if you have the signature:
   // void MyMacro(const AliTRDtrackV1* track, Double_t* &results, Int_t& nResults)
   // the call 'GetMacroObjectType("MyMacro")' yields the AliTRDtrackV1-class.
   // If the macro is not found (or there is an error), 0x0 is returned.
+
+  if (argNum - 1 < 0) return 0x0;
 
   TFunction* f = gROOT->GetGlobalFunction(name, 0 , kTRUE);
   TMethodArg* m = 0;
@@ -920,7 +1021,7 @@ TClass* AliEveListAnalyser::GetMacroObjectType(const Char_t* name) const
     
     if (!list->IsEmpty())
     {
-      m = (TMethodArg*)list->At(0);
+      m = (TMethodArg*)list->At(argNum - 1);
 
       if (m)  return TClass::GetClass(m->GetTypeName());
     }
@@ -931,9 +1032,11 @@ TClass* AliEveListAnalyser::GetMacroObjectType(const Char_t* name) const
 }
 
 //______________________________________________________
-AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType(const Char_t* name, const Char_t* objectType, Bool_t UseList) const
+AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType(const Char_t* name, const Char_t* objectType, 
+                                                                                 const Char_t* objectType2, Bool_t UseList) const
 {
-  // Returns the type of the corresponding macro, that accepts pointers of the class "objectType" as a parametre. 
+  // Returns the type of the corresponding macro, that accepts pointers of the classes "objectType" (first pointer) and
+  // objectType2" (second pointer) as parametres. 
   // If "UseList" is kTRUE, the type will be looked up in the internal list (very fast). But if this list
   // does not exist, you have to use kFALSE for this parameter. Then the type will be determined by the
   // prototype! NOTE: It is assumed that the macro has been compiled! If not, the return value is not
@@ -943,6 +1046,7 @@ AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType
   AliEveListAnalyserMacroType type = kUnknown;
 
   TString* typeStr = 0;
+  TString* typeStr2 = 0;
   
   if (objectType != 0) 
   {
@@ -953,6 +1057,16 @@ AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType
   else
   {
     typeStr = new TString("TObject");
+  }
+  if (objectType2 != 0) 
+  {
+    typeStr2 = new TString(objectType2);
+    // Remove white-spaces
+    typeStr2->ReplaceAll(" ", "");
+  }
+  else
+  {
+    typeStr2 = new TString("TObject");
   }
 
   TString* mangled1Str = new TString();
@@ -968,17 +1082,17 @@ AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType
   // We want "const 'OBJECTTYPE'*, Double_t*&, Int_t&"
   mangled2Str->Append("const ").Append(*typeStr).Append("*, Double_t*&, Int_t&");
 
-  // We want "const 'OBJECTTYPE'*, const 'OBJECTTYPE'*"
-  mangled3Str->Append("const ").Append(*typeStr).Append("*, const ").Append(*typeStr).Append("*");
+  // We want "const 'OBJECTTYPE'*, const 'OBJECTTYPE2'*"
+  mangled3Str->Append("const ").Append(*typeStr).Append("*, const ").Append(*typeStr2).Append("*");
 
-  // We want "const 'OBJECTTYPE'*, const 'OBJECTTYPE'*, Double_t*&, Int_t&"
-  mangled4Str->Append("const ").Append(*typeStr).Append("*, const ").Append(*typeStr).Append("*, Double_t*&, Int_t&");
+  // We want "const 'OBJECTTYPE'*, const 'OBJECTTYPE2'*, Double_t*&, Int_t&"
+  mangled4Str->Append("const ").Append(*typeStr).Append("*, const ").Append(*typeStr2).Append("*, Double_t*&, Int_t&");
 
   // We want "oPconstsP'OBJECTTYPE'mUsP"
   mangledArg1Str->Append("oPconstsP").Append(*typeStr).Append("mUsP");
 
-  // We want "cOconstsP'OBJECTTYPE'mUsP"
-  mangledArg2Str->Append("cOconstsP").Append(*typeStr).Append("mUsP");  
+  // We want "cOconstsP'OBJECTTYPE2'mUsP"
+  mangledArg2Str->Append("cOconstsP").Append(*typeStr2).Append("mUsP");  
   
   // Re-do the check of the macro type
   if (!UseList){
@@ -1119,6 +1233,12 @@ AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType
     typeStr->Clear();
     delete typeStr;
     typeStr = 0;
+  }
+  if (typeStr2 != 0)
+  {
+    typeStr2->Clear();
+    delete typeStr2;
+    typeStr2 = 0;
   }
 
 

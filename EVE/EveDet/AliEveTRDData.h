@@ -56,7 +56,7 @@ public:
   ~AliEveTRDDigits();
 
   void			ComputeRepresentation();
-  const AliTRDarrayADC*	GetData() const {return fData.HasData() ? &fData : 0x0;}
+  const AliTRDarrayADC*	GetData() const {return fData.HasData() ? &fData : NULL;}
   //void			Paint(Option_t *opt="");
   void			Reset();
   void			SetData(AliTRDdigitsManager *digits);
@@ -133,9 +133,9 @@ public:
 
   AliEveTRDTrack(AliTRDtrackV1 *trk);
   virtual ~AliEveTRDTrack();
-  //AliEveTRDTracklet*  GetTracklet(Int_t plane) const {return plane <6 && plane >= 0 ? fTracklet[plane] : 0x0;}
+  //AliEveTRDTracklet*  GetTracklet(Int_t plane) const {return plane <6 && plane >= 0 ? fTracklet[plane] : NULL;}
   void    Print(Option_t *opt="a") const; // *MENU*
-  void    SetStatus(UChar_t s);
+  void    SetStatus(UChar_t s=0);         // *MENU*
   void    SetESDstatus(ULong_t stat) {fESDStatus = stat;} 
 private:
   AliEveTRDTrack(const AliEveTRDTrack&);            // Not implemented

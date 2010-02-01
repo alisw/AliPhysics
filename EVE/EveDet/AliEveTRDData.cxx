@@ -220,7 +220,7 @@ void AliEveTRDHits::PointSelected(Int_t n)
 {
   // Handle an individual point selection from GL.
 
-  AliTRDhit *h = 0x0;
+  AliTRDhit *h = NULL;
   if(!(h = dynamic_cast<AliTRDhit*>(GetPointId(n)))) return;
   printf("Id[%3d] Det[%3d] Reg[%c] TR[%c] Q[%3d] MC[%d] t[%f]\n", 
     n, h->GetDetector(), 
@@ -265,7 +265,7 @@ void AliEveTRDClusters::PointSelected(Int_t n)
 //______________________________________________________________________________
 void AliEveTRDClusters::Print(Option_t *o) const
 {
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c = NULL;
 
   for(Int_t n = GetN(); n--;){
     if(!(c = dynamic_cast<AliTRDcluster*>(GetPointId(n)))) continue;
@@ -290,13 +290,13 @@ void AliEveTRDClusters::Load(Char_t *w, Bool_t stk) const
     return;
   }
 
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c = NULL;
   Int_t n = 0;
   while((n = GetN() && !(c = dynamic_cast<AliTRDcluster*>(GetPointId(n))))) n++;
   if(!c) return;
 
   Int_t det = c->GetDetector();
-  AliEveTRDLoader *loader = 0x0;
+  AliEveTRDLoader *loader = NULL;
   switch(typ){
   case 0:  
     loader = new AliEveTRDLoader("Hits");
@@ -349,7 +349,7 @@ void AliEveTRDClusters::Load(Char_t *w, Bool_t stk) const
 
 //______________________________________________________________________________
 AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
-  ,fClusters(0x0)
+  ,fClusters(NULL)
 {
   // Constructor.
   SetName("tracklet");
@@ -363,7 +363,7 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   Float_t dzdx = trklt->GetZref(1);
   Float_t tilt = trklt->GetTilt();
   Float_t g[3];
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c = NULL;
   for(Int_t ic=0; ic<AliTRDseedV1::kNclusters; ic++){
     if(!(c = trklt->GetClusters(ic))) continue;
     if(!fClusters) AddElement(fClusters = new AliEveTRDClusters());
@@ -435,8 +435,8 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk)
   ,fTrackState(0)
   ,fESDStatus(0)
   ,fAlpha(0.)
-  ,fPoints(0x0)
-  ,fRim(0x0)
+  ,fPoints(NULL)
+  ,fRim(NULL)
 {
   // Constructor.
   SetUserData(trk);
@@ -445,13 +445,13 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk)
   AliTRDtrackerV1::SetNTimeBins(24);
 
   fRim = new AliRieman(trk->GetNumberOfClusters());
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
     if(!(tracklet = trk->GetTracklet(il))) continue;
     if(!tracklet->IsOK()) continue;
     AddElement(new AliEveTRDTracklet(tracklet));
 
-    AliTRDcluster *c = 0x0;
+    AliTRDcluster *c = NULL;
 //     tracklet->ResetClusterIter(kFALSE);
 //     while((c = tracklet->PrevCluster())){
     for(Int_t ic=AliTRDseedV1::kNtb; ic--;){
@@ -471,7 +471,7 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk)
 //______________________________________________________________________________
 AliEveTRDTrack::~AliEveTRDTrack()
 {
-  if(fPoints) delete [] fPoints; fPoints = 0x0;
+  if(fPoints) delete [] fPoints; fPoints = NULL;
   //delete dynamic_cast<AliTRDtrackV1*>(GetUserData());
 }
 
@@ -503,11 +503,11 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
     // define the radial span of the track in the TRD
     Double_t xmin = -1., xmax = -1.;
     Int_t det = 0;
-    AliTRDseedV1 *trklt = 0x0;
-    for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
+    AliTRDseedV1 *trklt = NULL;
+    for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
       if(!(trklt = trk->GetTracklet(ily))) continue;
       if(xmin<0.) xmin = trklt->GetX0() - AliTRDgeometry::CamHght() - AliTRDgeometry::CdrHght();
-      if(xmax<0.) xmax = trklt->GetX0();
+      if(trklt->GetX0()>xmax) xmax = trklt->GetX0();
       det = trklt->GetDetector();
     }
     Int_t sec = det/AliTRDgeometry::kNdets;
@@ -525,25 +525,24 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
   if(BUILD || ((s&12) != (fTrackState&12))){
     if(TESTBIT(s, kTrackCosmics)){
       //printf("Straight track\n");
-      AliTRDtrackerV1::FitLine(trk, 0x0, kFALSE, nc, fPoints);
+      AliTRDtrackerV1::FitLine(trk, NULL, kFALSE, nc, fPoints);
     } else {
       if(TESTBIT(s, kTrackModel)){
         //printf("Kalman track\n");
-        if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitKalman(trk, 0x0, kFALSE, nc, fPoints);
+        if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitKalman(trk, NULL, kFALSE, nc, fPoints);
       } else { 
         //printf("Rieman track\n");
-        // if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, fPoints);
-
-/*        Float_t x = 0.;
+        if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitRiemanTilt(trk, NULL, kTRUE, nc, fPoints);
+        Float_t x = 0.;
         for(Int_t ip = nc; ip--;){
           x = fPoints[ip].GetX();
           fPoints[ip].SetXYZ(x, fRim->GetYat(x), fRim->GetZat(x));
-        }*/
+        }
       }
     }
   
     Float_t global[3];
-    for(Int_t ip=0; ip<0/*nc*/; ip++){
+    for(Int_t ip=0; ip<nc; ip++){
       fPoints[ip].Rotate(-fAlpha).GetXYZ(global);
       SetPoint(ip, global[0], global[1], global[2]);
     }
@@ -733,7 +732,7 @@ void AliEveTRDTrackletOnline::ShowMCM(Option_t *opt) const
   evemcm->LoadDigits();
   evemcm->Draw(opt);
 
-  TEveElementList *mcmlist = 0x0;
+  TEveElementList *mcmlist = NULL;
   if (gEve->GetCurrentEvent()) 
     mcmlist = (TEveElementList*) gEve->GetCurrentEvent()->FindChild("TRD MCMs");
   if (!mcmlist) {

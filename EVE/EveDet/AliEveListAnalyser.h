@@ -1,4 +1,4 @@
-// Author: Benjamin Hess   15/01/2010
+// Author: Benjamin Hess   29/01/2010
 
 /*************************************************************************
  * Copyright (C) 2009-2010, Alexandru Bercuci, Benjamin Hess.            *
@@ -27,7 +27,7 @@
 // To find the type of objects the macro will deal with (corresponds to //
 // "YourObjectType" in the examples below) please use                   //
 // GetMacroObjectType(...).                                             //
-// With ApplySTSelectionMacros(...) or ApplyProcessMacros(...)          //
+// With ApplySOSelectionMacros(...) or ApplyProcessMacros(...)          //
 // respectively you can apply the macros to the track list via          //
 // iterators (same style like for RemoveSelectedMacros(...)(cf. above)).//
 // Selection macros (de-)select macros according to a selection rule    //
@@ -42,14 +42,14 @@
 // Currently, the following macro types are supported:                  //
 // Selection macros:                                                    //
 // Bool_t YourMacro(const YourObjectType*);                             //
-// Bool_t YourMacro(const YourObjectType*, const YourObjectType*);      //
+// Bool_t YourMacro(const YourObjectType*, const YourObjectType2*);     //
 //                                                                      //
 // Process macros:                                                      //
 // void YourMacro(const YourObjectType*, Double_t*&, Int_t&);           //
-// void YourMacro(const YourObjectType*, const YourObjectType*,         //
+// void YourMacro(const YourObjectType*, const YourObjectType2*,        //
 //                Double_t*&, Int_t&);                                  //
 // TH1* YourMacro(const YourObjectType*);                               //
-// TH1* YourMacro(const YourObjectType*, const YourObjectType*);        //
+// TH1* YourMacro(const YourObjectType*, const YourObjectType2*);       //
 //                                                                      //
 // The macros which take 2 tracks are applied to all track pairs        //
 // (whereby BOTH tracks of the pair have to be selected by the single   //
@@ -130,16 +130,16 @@ public:
   virtual ~AliEveListAnalyser();
 
   Int_t AddMacro(const Char_t* path, const Char_t* name, Bool_t forceReload = kFALSE);                      
-  Bool_t AddMacroFast(const Char_t* path, const Char_t* name, AliEveListAnalyserMacroType type, TClass* objectType);     
+  Bool_t AddMacroFast(const Char_t* path, const Char_t* name, AliEveListAnalyserMacroType type, TClass* objectType, TClass* objectType2);     
   Int_t AddPrimSelectedObject(TEveElement* el);
   //void AddPrimSelectedObjects();
   void AddSecSelectedSingleObjectToList(Int_t pointId);  
   virtual void AddStandardContent();                             
   Bool_t ApplyProcessMacros(const TList* selIterator, const TList* procIterator);               
-  void ApplySTSelectionMacros(const TList* iterator);
+  void ApplySOSelectionMacros(const TList* iterator);
   Bool_t GetConnected()             // Returns whether "adding objects by clicking" is enabled or not.
     { return fConnected;  };
-  TClass* GetMacroObjectType(const Char_t* name) const;
+  TClass* GetMacroObjectType(const Char_t* name, Int_t argNum = 1) const;
 
   // Returns the type of the macro of the corresponding entry (i.e. "macro.C (Path: path)"). 
   // If you have only the name and the path, you can simply use MakeMacroEntry.
@@ -149,7 +149,8 @@ public:
   // predictable, but normally will be kUnknown.
   // "objectType" gives the class/"type of object" of the pointer(s), the macro accepts as a parametre.
   // Note: AddMacro(Fast) will update the internal list and RemoveProcess(/Selection)Macros respectively.
-  AliEveListAnalyserMacroType GetMacroType(const Char_t* name, const Char_t* objectType = "TObject", Bool_t UseList = kTRUE) const; 
+  AliEveListAnalyserMacroType GetMacroType(const Char_t* name, const Char_t* objectType = "TObject", 
+                                           const Char_t* objectType2 = "TObject", Bool_t UseList = kTRUE) const; 
   
   //void RemovePrimSelectedObjects();
   void RemoveSelectedMacros(const TList* iterator);
@@ -211,9 +212,10 @@ class TGeneralMacroData: public TObject
 public:
   TGeneralMacroData(const Char_t* name, const Char_t* path,                                                        // Constructor
              AliEveListAnalyser::AliEveListAnalyserMacroType type = AliEveListAnalyser::kUnknown,
-             TClass* objectType = TObject::Class()):
+             TClass* objectType = TObject::Class(), TClass* objectType2 = TObject::Class()):
     TObject(),
     fObjectType(0x0),
+    fObjectType2(0x0),
     fIsSelected(kFALSE),
     fType(AliEveListAnalyser::kUnknown)
     
@@ -222,6 +224,7 @@ public:
 
     SetName(name);
     SetObjectType(objectType);
+    SetObjectType2(objectType2);
     SetPath(path);
     SetType(type);
 
@@ -241,11 +244,11 @@ public:
 
       case AliEveListAnalyser::kCorrelObjectSelect:
       case AliEveListAnalyser::kCorrelObjectHisto:
-        SetCmd(Form("%s((%s*)automaticObject_1, (%s*)automaticObject_2);", name, fObjectType->GetName(), fObjectType->GetName()));
+        SetCmd(Form("%s((%s*)automaticObject_1, (%s*)automaticObject_2);", name, fObjectType->GetName(), fObjectType2->GetName()));
         break;
 
       case AliEveListAnalyser::kCorrelObjectAnalyse:
-        SetCmd(Form("%s((%s*)automaticObject_1, (%s*)automaticObject_2, results, n);", name, fObjectType->GetName(), fObjectType->GetName()));
+        SetCmd(Form("%s((%s*)automaticObject_1, (%s*)automaticObject_2, results, n);", name, fObjectType->GetName(), fObjectType2->GetName()));
         break;
 
       default:
@@ -258,8 +261,10 @@ public:
     { return fCmd;  }
   const Char_t* GetName() const               // Returns the macro name (without ".C")
     { return fName;  }
-  TClass* GetObjectType() const               // Returns the object type of the macro parameter
+  TClass* GetObjectType() const               // Returns the object type of the macro parameter (1st pointer)
     { return fObjectType;  }
+  TClass* GetObjectType2() const              // Returns the object type of the macro parameter (2nd pointer)
+    { return fObjectType2;  }
   const Char_t* GetPath() const               // Returns the path of the macro
     { return fPath;  }
   AliEveListAnalyser::AliEveListAnalyserMacroType GetType() const   // Returns the type of the macro
@@ -298,26 +303,30 @@ public:
     return kFALSE;
   }
 
-  void SetCmd(const char* newCmd)             // Sets the command that will be used to call this macro
+  void SetCmd(const char* newCmd)               // Sets the command that will be used to call this macro
   { 
     memset(fCmd, '\0', sizeof(Char_t) * MAX_APPLY_COMMAND_LENGTH);
     sprintf(fCmd, "%s", newCmd);
   }
-  void SetName(const char* newName)           // Sets the macro name (please use without ".C")
+  void SetName(const char* newName)             // Sets the macro name (please use without ".C")
   { 
     memset(fName, '\0', sizeof(Char_t) * MAX_MACRO_NAME_LENGTH);
     sprintf(fName, "%s", newName);
   }
-  void SetObjectType(TClass* newObjectType)   // Sets the object type of the macro parameter
+  void SetObjectType(TClass* newObjectType)     // Sets the object type of the macro parameter (1st pointer)
   { 
     fObjectType = newObjectType;
   }
-  void SetPath(const char* newPath)           // Sets the path of the macro
+  void SetObjectType2(TClass* newObjectType2)   // Sets the object type of the macro parameter (2nd pointer)
+  { 
+    fObjectType2 = newObjectType2;
+  }
+  void SetPath(const char* newPath)             // Sets the path of the macro
   { 
     memset(fPath, '\0', sizeof(Char_t) * MAX_MACRO_PATH_LENGTH);
     sprintf(fPath, "%s", newPath);
   }
-  void SetSelected(Bool_t selection)          // Sets whether the macro is selected or not
+  void SetSelected(Bool_t selection)            // Sets whether the macro is selected or not
   {
     fIsSelected = selection;
   }
@@ -332,7 +341,8 @@ private:
 
   Char_t fCmd[MAX_APPLY_COMMAND_LENGTH];                  // Command that will be used to call this macro
   Char_t fName[MAX_MACRO_NAME_LENGTH];                    // Macro name (without ".C"!)
-  TClass* fObjectType;                                    // Type of object of the macro parameter
+  TClass* fObjectType;                                    // Type of object of the macro parameter (1st pointer)
+  TClass* fObjectType2;                                   // Type of object of the macro parameter (2nd pointer)
   Char_t fPath[MAX_MACRO_PATH_LENGTH];                    // Path of the macro
   Bool_t fIsSelected;                                     // Is macro selected (e.g. in the editor's list)?
   AliEveListAnalyser::AliEveListAnalyserMacroType fType;  // Type of the macro  

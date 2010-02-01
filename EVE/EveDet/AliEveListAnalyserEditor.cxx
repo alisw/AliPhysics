@@ -1,4 +1,4 @@
-// Author: Benjamin Hess   15/01/2010
+// Author: Benjamin Hess   29/01/2010
 
 /*************************************************************************
  * Copyright (C) 2009-2010, Alexandru Bercuci, Benjamin Hess.            *
@@ -156,7 +156,7 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
   // Functionality for adding macros  
   fMainFrame = CreateEditorTabSubFrame("Process");
    
-  fLabel1 = new TGLabel(fMainFrame,"Add macro(s):");
+  fLabel1 = new TGLabel(fMainFrame,"Add plugin(s):");
   fMainFrame->AddFrame(fLabel1);
   fBrowseFrame = new TGHorizontalFrame(fMainFrame);
 
@@ -178,7 +178,7 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
 
   fLine1 = new TGHorizontal3DLine(fMainFrame, 194, 8);
   fMainFrame->AddFrame(fLine1, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));
-  fLabel2 = new TGLabel(fMainFrame,"Selection macros:");
+  fLabel2 = new TGLabel(fMainFrame,"Selection plugins:");
   fMainFrame->AddFrame(fLabel2);
 
   ftlMacroSelList = new TGListBox(fMainFrame);
@@ -225,7 +225,7 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
   fHistoFrame->AddFrame(fLine4, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));  
 
   fbDrawHisto = new TGTextButton(fHistoFrame, "Draw projections");
-  fbDrawHisto->SetToolTipText("Uses the data file created by the last \"Apply selected macro(s)\".\nClick here to display the data histograms of the selected macros.\nSelect multiple macros to create multi-dimensional plots.\nHisto macros cannot be used for multi-dimensional plots!");
+  fbDrawHisto->SetToolTipText("Uses the data file created by the last \"Apply selected plugin(s)\".\nClick here to display the data histograms of the selected macros.\nSelect multiple macros to create multi-dimensional plots.\nHisto macros cannot be used for multi-dimensional plots!");
   fbDrawHisto->Connect("Clicked()", "AliEveListAnalyserEditor", this, "DrawHistos()");
   fHistoFrame->AddFrame(fbDrawHisto);
 
@@ -305,12 +305,12 @@ void AliEveListAnalyserEditor::AddMacro(const Char_t* name, const Char_t* path)
                  kMBIconExclamation, kMBOk);
     break;
   case ERROR:
-    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", "Fail to load the macro (check messages in the terminal)!",
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", "Failed to load the macro (check messages in the terminal)!",
                  kMBIconExclamation, kMBOk);
     break;
   case SIGNATURE_ERROR:
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
-                 "Macro has not the signature of...\n...a single object selection macro: Bool_t YourMacro(const YourObjectType*)\n...a correlated objects selection macro: Bool_t YourMacro(const YourObjectType*, const YourObjectType*)\n...a single object analyse macro: void YourMacro(const YourObjectType*, Double_t*&, Int_t&)\n...a correlated objects analyse macro: void YourMacro(const YourObjectType*, const YourObjectType*, Double_t*&, Int_t&)\n...a single object histo macro: TH1* YourMacro(const YourObjectType*)\n...a correlated objects histo macro: TH1* YourMacro(const YourObjectType*, const YourObjectType*)", 
+                 "Macro has not the signature of...\n...a single object selection macro: Bool_t YourMacro(const YourObjectType*)\n...a correlated objects selection macro: Bool_t YourMacro(const YourObjectType*, const YourObjectType2*)\n...a single object analyse macro: void YourMacro(const YourObjectType*, Double_t*&, Int_t&)\n...a correlated objects analyse macro: void YourMacro(const YourObjectType*, const YourObjectType2*, Double_t*&, Int_t&)\n...a single object histo macro: TH1* YourMacro(const YourObjectType*)\n...a correlated objects histo macro: TH1* YourMacro(const YourObjectType*, const YourObjectType2*)", 
                  kMBIconExclamation, kMBOk);
     break;               
   case NOT_EXIST_ERROR:
@@ -339,7 +339,7 @@ void AliEveListAnalyserEditor::ApplyMacros()
   // First apply the single object selection macros
   TList* selIterator = new TList();
   ftlMacroSelList->GetSelectedEntries(selIterator);
-  fM->ApplySTSelectionMacros(selIterator);
+  fM->ApplySOSelectionMacros(selIterator);
   
   // Update view
   gEve->Redraw3D();
@@ -842,10 +842,11 @@ void AliEveListAnalyserEditor::InheritMacroList()
   {
     macro = (TGeneralMacroData*)fInheritedMacroList->GetValue(key);
     if (macro != 0)  fM->fMacroList->Add(new TObjString(key->GetName()), 
-                                         new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType(), macro->GetObjectType()));
+                                         new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType(), 
+                                                               macro->GetObjectType(), macro->GetObjectType2()));
     else
     {
-      Error("AliEveListAnalyserEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+      Error("AliEveListAnalyserEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key->GetName()));
     }
   }
   
@@ -912,10 +913,11 @@ void AliEveListAnalyserEditor::SaveMacroList(TMap* list)
   {
     macro = (TGeneralMacroData*)fM->fMacroList->GetValue(key);
     if (macro != 0) fInheritedMacroList->Add(new TObjString(key->GetName()), 
-                                             new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType(), macro->GetObjectType()));
+                                             new TGeneralMacroData(macro->GetName(), macro->GetPath(), macro->GetType(), 
+                                                                   macro->GetObjectType(), macro->GetObjectType2()));
     else
     {
-      Error("AliEveListAnalyserEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+      Error("AliEveListAnalyserEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key->GetName()));
     }
   }
 }
@@ -1130,6 +1132,7 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   ,fTextIncludes(0x0)
   ,fTextName(0x0)  
   ,fTextObjectType(0x0)
+  ,fTextObjectType2(0x0)
 {
   // Creates the macro wizard.
 
@@ -1153,7 +1156,7 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
 
   // horizontal frame
   TGHorizontalFrame *fFrameObjectType = new TGHorizontalFrame(this, 10, 10, kHorizontalFrame);
-  fLabel = new TGLabel(fFrameObjectType, "Object type of macro");
+  fLabel = new TGLabel(fFrameObjectType, "1st object type of macro");
   fLabel->SetTextJustify(36);
   fLabel->SetMargins(0,0,0,0);
   fLabel->SetWrapLength(-1);
@@ -1164,9 +1167,27 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   fTextObjectType->SetText("");
   // Limit max.length to 80 characters
   fTextObjectType->SetMaxLength(80);
-  fTextObjectType->SetToolTipText("The type of objects, your macro will work with");
+  fTextObjectType->SetToolTipText("The type of objects, your macro will work with (type of the first pointer)");
   fTextObjectType->Resize(width, fTextObjectType->GetDefaultHeight());
   fFrameObjectType->AddFrame(fTextObjectType, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
+
+   // horizontal frame
+  TGHorizontalFrame *fFrameObjectType2 = new TGHorizontalFrame(this, 10, 10, kHorizontalFrame);
+  fLabel = new TGLabel(fFrameObjectType2, "2nd object type of macro (pair");
+  fLabel->SetTextJustify(36);
+  fLabel->SetMargins(0,0,0,0);
+  fLabel->SetWrapLength(-1);
+  fFrameObjectType2->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+
+  fTextObjectType2 = new TGTextEntry(fFrameObjectType2);
+  fTextObjectType2->SetAlignment(kTextLeft);
+  fTextObjectType2->SetText("");
+  // Limit max.length to 80 characters
+  fTextObjectType2->SetMaxLength(80);
+  fTextObjectType2->SetToolTipText("The type of objects, your macro will work with (type of the second pointer)\nOnly needed for macros dealing with object pairs");
+  fTextObjectType2->Resize(width, fTextObjectType2->GetDefaultHeight());
+  fFrameObjectType2->AddFrame(fTextObjectType2, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
+  fTextObjectType2->SetEnabled(kFALSE);
 
   // horizontal frame
   TGHorizontalFrame *fFrameIncludes = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
@@ -1234,6 +1255,7 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   // put things together  
   AddFrame(fFrameName, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameObjectType, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
+  AddFrame(fFrameObjectType2, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameIncludes, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameComment, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameType, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
@@ -1254,6 +1276,7 @@ AliEveGeneralMacroWizard::AliEveGeneralMacroWizard(const TGWindow* p)
   MapWindow();
 
   // Do the linking
+  fCombo->Connect("Selected(Int_t)", "AliEveGeneralMacroWizard", this, "HandleSelectionChanged(Int_t)");
   fbCreate->Connect("Clicked()", "AliEveGeneralMacroWizard", this, "HandleCreate()");
   fbCancel->Connect("Clicked()", "AliEveGeneralMacroWizard", this, "CloseWindow()");
 
@@ -1323,6 +1346,7 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   }
 
   Bool_t useGivenType = kFALSE;
+  Bool_t useGivenType2 = kFALSE;
 
   // Remove white-spaces
   TString* typeStr = new TString();
@@ -1330,6 +1354,12 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   typeStr->Append(fTextObjectType->GetText());
   typeStr->ReplaceAll(" ", "");
   fTextObjectType->SetText(typeStr->Data(), kFALSE);
+
+  TString* typeStr2 = new TString();
+
+  typeStr2->Append(fTextObjectType2->GetText());
+  typeStr2->ReplaceAll(" ", "");
+  fTextObjectType2->SetText(typeStr2->Data(), kFALSE);
 
   // If an object type is provided by the user, use it!
   if (strlen(typeStr->Data()) > 0)
@@ -1343,7 +1373,7 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
     {
       Int_t buttonsPressed = 0;
       new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Unknown object type", 
-        Form("The class of your object, \"%s\" has not been found. Do you really want to create your macro with this object type?", 
+        Form("The class of your 1st object, \"%s\" has not been found. Do you really want to create your macro with this object type?", 
              typeStr->Data()), kMBIconExclamation, kMBYes | kMBNo, &buttonsPressed);
 
       if (buttonsPressed & kMBYes)  useGivenType = kTRUE;
@@ -1352,9 +1382,60 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
       // Cancel creation
       if (!useGivenType)
       {
-        typeStr->Clear();
-        if (typeStr != 0) delete typeStr;
+        if (typeStr != 0)
+        {
+          typeStr->Clear();
+          delete typeStr;
+        }
         typeStr = 0;
+
+        if (typeStr2 != 0)
+        {
+          typeStr2->Clear();
+          delete typeStr2;
+        }
+        typeStr2 = 0;
+
+        return;
+      }
+    }
+  }
+
+  // If an object type is provided by the user, use it!
+  if (strlen(typeStr2->Data()) > 0)
+  {
+    // Check, if the class really exists
+    if (TClass::GetClass(typeStr2->Data()) != 0x0)
+    {
+      useGivenType2 = kTRUE; 
+    }
+    else
+    {
+      Int_t buttonsPressed = 0;
+      new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Unknown object type", 
+        Form("The class of your 2nd object, \"%s\" has not been found. Do you really want to create your macro with this object type?", 
+             typeStr2->Data()), kMBIconExclamation, kMBYes | kMBNo, &buttonsPressed);
+
+      if (buttonsPressed & kMBYes)  useGivenType2 = kTRUE;
+      else useGivenType2 = kFALSE;
+
+      // Cancel creation
+      if (!useGivenType2)
+      {
+        if (typeStr != 0)
+        {
+          typeStr->Clear();
+          delete typeStr;
+        }
+        typeStr = 0;
+
+        if (typeStr2 != 0)
+        {
+          typeStr2->Clear();
+          delete typeStr2;
+        }
+        typeStr2 = 0;
+
         return;
       }
     }
@@ -1402,6 +1483,11 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
     typeStr->Clear();
     typeStr->Append("TObject");
   }
+  if (!useGivenType2)
+  {
+    typeStr2->Clear();
+    typeStr2->Append("TObject");
+  }
 
   switch(type){
   case AliEveListAnalyser::kSingleObjectSelect:
@@ -1410,8 +1496,8 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
     fprintf(fp, tempStr->Data());
     break;
   case AliEveListAnalyser::kCorrelObjectSelect:
-    // Use "Bool_t 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE' *object2)\n"
-    tempStr->Append("Bool_t ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr->Data()).Append(" *object2)\n");
+    // Use "Bool_t 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE2' *object2)\n"
+    tempStr->Append("Bool_t ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr2->Data()).Append(" *object2)\n");
     fprintf(fp, tempStr->Data());
     break;
   case AliEveListAnalyser::kSingleObjectAnalyse:    
@@ -1425,13 +1511,13 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
     fprintf(fp, tempStr->Data());
     break;
   case AliEveListAnalyser::kCorrelObjectAnalyse:
-    // Use "void 'NAME'(const TObject *object, const TObject *object2, Double_t*& r, Int_t& n)\n"
-    tempStr->Append("void ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr->Data()).Append(" *object2, Double_t*& r, Int_t& n)\n");
+    // Use "void 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE2' *object2, Double_t*& r, Int_t& n)\n"
+    tempStr->Append("void ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr2->Data()).Append(" *object2, Double_t*& r, Int_t& n)\n");
     fprintf(fp, tempStr->Data());
     break;
   case AliEveListAnalyser::kCorrelObjectHisto:
-    // Use "TH1* 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE' *object2)\n"
-    tempStr->Append("TH1* ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr->Data()).Append(" *object2)\n");
+    // Use "TH1* 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE2' *object2)\n"
+    tempStr->Append("TH1* ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr2->Data()).Append(" *object2)\n");
     fprintf(fp, tempStr->Data());
     break;
   default:
@@ -1459,6 +1545,10 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   typeStr->Clear();
   if (typeStr != 0) delete typeStr;
   typeStr = 0;
+
+  typeStr2->Clear();
+  if (typeStr2 != 0) delete typeStr2;
+  typeStr2 = 0;
 
   fprintf(fp, "{\n%s\n", fGeneralMacroTemplate[type]);
 
@@ -1493,4 +1583,24 @@ void AliEveGeneralMacroWizard::HandleCreate()
   // Handles the signal, when the creation button is pressed.
 
   Create(fCombo->GetSelected());
+}
+
+//______________________________________________________
+void AliEveGeneralMacroWizard::HandleSelectionChanged(Int_t sel)
+{
+  // Handles the change of the selected macro type.
+
+  switch (sel)
+  {
+case AliEveListAnalyser::kCorrelObjectSelect:
+case AliEveListAnalyser::kCorrelObjectAnalyse:
+case AliEveListAnalyser::kCorrelObjectHisto:
+    // Enable 2nd object type
+    fTextObjectType2->SetEnabled(kTRUE);
+  break;
+default:
+    // Disable 2nd object type
+    fTextObjectType2->SetEnabled(kFALSE);
+  break;
+  }
 }

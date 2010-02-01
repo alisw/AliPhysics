@@ -1,4 +1,4 @@
-// Author: Benjamin Hess   15/01/2010
+// Author: Benjamin Hess   29/01/2010
 
 /*************************************************************************
  * Copyright (C) 2009-2010, Alexandru Bercuci, Benjamin Hess.            *
@@ -191,6 +191,7 @@ public:
   void Create(Int_t type); //*SIGNAL*
   void Create(Char_t *pname); //*SIGNAL*
   void HandleCreate();
+  void HandleSelectionChanged(Int_t sel);
 
 private:
   AliEveGeneralMacroWizard(const AliEveGeneralMacroWizard&);
@@ -202,7 +203,8 @@ private:
   TGTextEdit   *fTextEdit;                 // "Comments"
   TGTextEntry  *fTextIncludes;             // "Includes"
   TGTextEntry  *fTextName;                 // "Name"
-  TGTextEntry  *fTextObjectType;           // "ObjectType"  
+  TGTextEntry  *fTextObjectType;           // "1st object type"  
+  TGTextEntry  *fTextObjectType2;          // "2nd object type"
   
   ClassDef(AliEveGeneralMacroWizard, 0);      // Helper class to create macro templates 
 };
