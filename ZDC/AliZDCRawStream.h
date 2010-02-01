@@ -77,6 +77,8 @@ class AliZDCRawStream: public TObject {
     virtual void ReadChMap();
 
     virtual void ReadCDHHeader();
+    
+    Bool_t IsAddChannel() const {return fIsADDChannel;}
 
     UInt_t GetRawBuffer()      const {return fBuffer;}
     Int_t  GetReadOutCard()    const {return fReadOutCard;}
@@ -248,10 +250,13 @@ class AliZDCRawStream: public TObject {
     
     // Checks over raw data event quality
     Bool_t fIsADCEventGood; // true if not valid datum not corrupted
-    Bool_t fIsL0BitSet;    // true if L0 bit in history words = 1 
-    Bool_t fIsPileUpEvent; // true if pile up bits in history words = 0
+    Bool_t fIsL0BitSet;     // true if L0 bit in history words = 1 
+    Bool_t fIsPileUpEvent;  // true if pile up bits in history words = 0
     
-    ClassDef(AliZDCRawStream, 16)    // class for reading ZDC raw data
+    // ADD part
+    Bool_t fIsADDChannel;   // true if datum is an ADD ADC channel
+    
+    ClassDef(AliZDCRawStream, 17)    // class for reading ZDC raw data
 };
 
 #endif

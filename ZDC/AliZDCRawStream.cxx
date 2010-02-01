@@ -352,7 +352,8 @@ Bool_t AliZDCRawStream::Next()
 
   if(!fRawReader->ReadNextInt((UInt_t&) fBuffer)) return kFALSE;
   const int kNch = 48;
-  Int_t kFirstADCGeo=0, kLastADCGeo=3, kScalerGeo=8, kPUGeo=29, kTrigScales=30, kTrigHistory=31;
+  Int_t kFirstADCGeo=0, kLastADCGeo=3, kAddADCGeo=4;
+  Int_t kScalerGeo=8, kPUGeo=29, kTrigScales=30, kTrigHistory=31;
   fIsHeaderMapping = kFALSE; fIsChMapping = kFALSE; 
   fIsADCHeader = kFALSE; fIsADCDataWord = kFALSE; fIsADCEOB = kFALSE;
   fIsUnderflow = kFALSE; fIsOverflow = kFALSE; fIsScalerWord = kFALSE;
@@ -740,6 +741,25 @@ Bool_t AliZDCRawStream::Next()
     	//printf("  AliZDCRawStream -> EOB --------------------------\n");
       }
     }//ADC module
+    // ********************************* ADD ADC *********************************
+    else if(fADCModule == kAddADCGeo){
+      // *** ADC header
+      if((fBuffer & 0x07000000) == 0x02000000){
+        fIsADCHeader = kTRUE;
+    	fADCNChannels = ((fBuffer & 0x00003f00)>>8);
+    	//printf("  AliZDCRawStream -> ADC HEADER: mod.%d has %d ch. \n",fADCModule,fADCNChannels);
+      }
+      // *** ADC data word
+      else if((fBuffer & 0x07000000) == 0x00000000){
+        fIsADCDataWord = kTRUE;
+        fADCChannel = ((fBuffer & 0x1e0000) >> 17);
+        fADCGain = ((fBuffer & 0x10000) >> 16);       
+        fADCValue = (fBuffer & 0xfff);  
+    	//
+	//printf("  ADD ADC DATUM -> mod. %d ch. %d gain %d value %d\n",
+	//  fADCModule,fADCChannel,fADCGain,fADCValue);
+      }
+    }
     // ********************************* VME SCALER HEADER *********************************
     else if(fADCModule == kScalerGeo){
       if(fBuffer & 0x04000000 && fIsScHeaderRead==kFALSE){ // *** Scaler header
