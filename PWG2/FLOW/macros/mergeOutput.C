@@ -16,17 +16,16 @@
 //  5.) REMARK: To see plots for some of the results use macro compareFlowResults.C. This macro
 //      accesses file "AnalysisResults.root" and produces couple of predefined example plots.        
 
-void mergeOutput()
+enum libModes {mLocal,mLocalSource};
+
+void mergeOutput(Int_t mode=mLocal)
 {
+ // mode: if mode = mLocal: analyze data on your computer using aliroot
+ //       if mode = mLocalSource: analyze data on your computer using root + source files 
  // Name of the output files to be merged:
  TString outputFileName = "AnalysisResults.root";
  // Name of the merged, large statistics file:
  TString mergedFileName = "mergedAnalysisResults.root";
- // Load needed flow libraries:
- gSystem->AddIncludePath("-I$ROOTSYS/include");
- gSystem->AddIncludePath("-I$ALICE_ROOT/include");
- gSystem->Load("libPWG2flowCommon");
- cerr<<"Library \"libPWG2flowCommon\" loaded ...."<<endl;
  // For a large number of output files merging is done in cycles
  // and this is the cycle period: 
  const Int_t cycle = 500;
@@ -36,6 +35,8 @@ void mergeOutput()
   cout<<"         Set \"const Int_t cycle\" to smaller value in the macro."<<endl;
   exit(0);
  }
+ // Load needed flow libraries:
+ LoadLibrariesMO(mode);  
  // Standard magic:
  TString *baseDirPath = new TString(gSystem->pwd());
  TSystemDirectory *baseDir = new TSystemDirectory(".",baseDirPath->Data());          
@@ -153,4 +154,68 @@ void mergeOutput()
     cout<<"WARNING: Merging failed !!!!"<<endl;
    } 
  cout<<endl;
-} // End of void mergeOutput()
+} // End of void mergeOutput(Int_t mode=mLocal)
+
+
+void LoadLibrariesMO(const libModes mode) {
+  
+  //--------------------------------------
+  // Load the needed libraries most of them already loaded by aliroot
+  //--------------------------------------
+  //gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libPhysics");
+  
+  //----------------------------------------------------------
+  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
+  //----------------------------------------------------------
+  if (mode==mLocal) {
+    //--------------------------------------------------------
+    // If you want to use already compiled libraries 
+    // in the aliroot distribution
+    //--------------------------------------------------------
+
+  //==================================================================================  
+  //load needed libraries:
+  gSystem->AddIncludePath("-I$ROOTSYS/include");
+  //gSystem->Load("libTree");
+
+  // for AliRoot
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG2flowCommon");
+  //cerr<<"libPWG2flowCommon loaded ..."<<endl;
+  
+  }
+  
+  else if (mode==mLocalSource) {
+ 
+    // In root inline compile
+  
+    // Constants  
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonConstants.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZConstants.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCumuConstants.cxx+");
+    
+    // Flow event
+    gROOT->LoadMacro("AliFlowCommon/AliFlowVector.cxx+"); 
+    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");    
+    gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimple.cxx+");
+    
+    // Cuts
+    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimpleCuts.cxx+");    
+    
+    // Output histosgrams
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHist.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHistResults.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist1.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist2.cxx+");
+       
+    cout << "finished loading macros!" << endl;  
+    
+  } // end of else if (mode==mLocalSource) 
+  
+} // end of void LoadLibrariesMO(const libModes mode)
+
