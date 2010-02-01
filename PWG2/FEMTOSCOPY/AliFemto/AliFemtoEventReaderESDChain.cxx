@@ -316,12 +316,19 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       
 //   }
 
+  int tNormMult = 0;
   for (int i=0;i<nofTracks;i++)
     {
       bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
-		
+
       const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
       //      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
+      if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit)
+	if (esdtrack->GetTPCNcls() > 80) 
+	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 6.0) 
+	    if (esdtrack->GetConstrainedParam())
+	      if (esdtrack->GetConstrainedParam()->Eta() < 0.9)
+		tNormMult++;
 
       // If reading ITS-only tracks, reject all with TPC
       if (fTrackType == kITSOnly) {
@@ -508,6 +515,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     }
 
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
+  hbtEvent->SetNormalizedMult(tNormMult);
   fCurEvent++;	
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
   return hbtEvent; 

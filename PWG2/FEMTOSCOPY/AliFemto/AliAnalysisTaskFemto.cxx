@@ -241,6 +241,20 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 	  fesdck->SetGenEventHeader(hdh);
 	  fManager->ProcessEvent();
 	}
+      AliFemtoEventReaderStandard* fstd = dynamic_cast<AliFemtoEventReaderStandard *> (fReader);
+      if (fstd) 
+	{
+	  // Process the event with Kine information
+	  fstd->SetESDSource(fESD);
+	  if (mctruth) {
+	    fstd->SetStackSource(fStack);
+	    fstd->SetGenEventHeader(hdh);
+	    fstd->SetInputType(AliFemtoEventReaderStandard::kESDKine);
+	  }
+	  else
+	    fstd->SetInputType(AliFemtoEventReaderStandard::kESD);
+	  fManager->ProcessEvent();
+	}
     } 
 
     // Post the output histogram list
@@ -279,6 +293,14 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 	  faodc->SetAODSource(fAOD);
 	  fManager->ProcessEvent();
 	}
+	AliFemtoEventReaderStandard* fstd = dynamic_cast<AliFemtoEventReaderStandard *> (fReader);
+
+	if (fstd) {
+	  // Process the event
+	  fstd->SetAODSource(fAOD);
+	  fstd->SetInputType(AliFemtoEventReaderStandard::kAOD);
+	  fManager->ProcessEvent();
+	}
       }
     } 
 
@@ -304,19 +326,24 @@ void AliAnalysisTaskFemto:: FinishTaskOutput() {
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderESD(AliFemtoEventReaderESDChain *aReader)
 {
-  printf("Selectring Femto reader for ESD\n");
+  printf("Selecting Femto reader for ESD\n");
   fReader = aReader;
 }
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderESDKine(AliFemtoEventReaderESDChainKine *aReader)
 {
-  printf("Selectring Femto reader for ESD with Kinematics information\n");
+  printf("Selecting Femto reader for ESD with Kinematics information\n");
   fReader = aReader;
 }
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReader)
 {
   printf("Selecting Femto reader for AOD\n");
+  fReader = aReader;
+}
+void AliAnalysisTaskFemto::SetFemtoReaderStandard(AliFemtoEventReaderStandard *aReader)
+{
+  printf("Selecting Standard all-purpose Femto reader\n");
   fReader = aReader;
 }
 //________________________________________________________________________
@@ -327,13 +354,15 @@ void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
   AliFemtoEventReaderESDChain     *tReaderESDChain     = dynamic_cast<AliFemtoEventReaderESDChain *> (aManager->EventReader());
   AliFemtoEventReaderESDChainKine *tReaderESDChainKine = dynamic_cast<AliFemtoEventReaderESDChainKine *> (aManager->EventReader());
   AliFemtoEventReaderAODChain     *tReaderAODChain     = dynamic_cast<AliFemtoEventReaderAODChain *> (aManager->EventReader());
+  AliFemtoEventReaderStandard     *tReaderStandard     = dynamic_cast<AliFemtoEventReaderStandard *> (aManager->EventReader());
 
-  if ((!tReaderESDChain) && (!tReaderESDChainKine) && (!tReaderAODChain)) {
+  if ((!tReaderESDChain) && (!tReaderESDChainKine) && (!tReaderAODChain) && (!tReaderStandard)) {
     printf("No AliFemto event reader created. Will not run femto analysis.\n");
     return;
   }
   if (tReaderESDChain) SetFemtoReaderESD(tReaderESDChain);
   if (tReaderESDChainKine) SetFemtoReaderESDKine(tReaderESDChainKine);
   if (tReaderAODChain) SetFemtoReaderAOD(tReaderAODChain);
+  if (tReaderStandard) SetFemtoReaderStandard(tReaderStandard);
 }
 

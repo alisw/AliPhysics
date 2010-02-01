@@ -68,7 +68,7 @@ void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   Double_t tXside = (tPy * tRout - tPx * tRside)/tPt;
 
   Double_t tBetaz = tPz/tEs;
-  Double_t tGammaz = 1.0/(1-tBetaz*tBetaz);
+  Double_t tGammaz = 1.0/TMath::Sqrt(1-tBetaz*tBetaz);
   
   Double_t tXlong = tGammaz * (tRlong + tBetaz * 0);
   Double_t tXtime = tGammaz * (0 + tBetaz * tRlong);
