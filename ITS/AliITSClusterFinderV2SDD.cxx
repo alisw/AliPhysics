@@ -266,7 +266,7 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	  Float_t zdet = GetSeg()->GetLocalZFromAnode(zAnode);
 	  Float_t driftTimeUncorr = GetSeg()->GetDriftTimeFromTb(timebin)+jitter*rsdd->GetCarlosRXClockPeriod();
 	  Float_t driftTime=driftTimeUncorr-rsdd->GetTimeZero(fModule);
-	  Float_t driftSpeed = cal->GetDriftSpeedAtAnode(zAnode) + rsdd->GetDeltaVDrift(fModule);
+	  Float_t driftSpeed = cal->GetDriftSpeedAtAnode(zAnode) + rsdd->GetDeltaVDrift(fModule,zAnode>255);
 	  Float_t driftPathMicron = driftTime*driftSpeed;
 	  const Double_t kMicronTocm = 1.0e-4; 
 	  Float_t xdet=(driftPathMicron-GetSeg()->Dx())*kMicronTocm; // xdet is negative

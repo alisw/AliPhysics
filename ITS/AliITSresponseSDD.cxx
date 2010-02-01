@@ -38,15 +38,16 @@ ClassImp(AliITSresponseSDD)
 //_________________________________________________________________________
 AliITSresponseSDD::AliITSresponseSDD():
 TObject(),
-fTimeOffset(fgkTimeOffsetDefault),
-fADC2keV(fgkADC2keVDefault),
-fChargevsTime(fgkChargevsTimeDefault){
+  fTimeOffset(fgkTimeOffsetDefault),
+  fADC2keV(fgkADC2keVDefault),
+  fChargevsTime(fgkChargevsTimeDefault){
   // default constructor
   for(Int_t i=0; i<kNSDDmods;i++){
     fTimeZero[i]=fgkTimeOffsetDefault;
-    fDeltaVDrift[i]=0.;
+    fDeltaVDrift[i] = fDeltaVDrift[i+kNSDDmods] = 0.;
     fADCtokeV[i]=fgkADC2keVDefault;
   }  
+  SetVDCorr2Side(kTRUE); // default for new objects will be separate corrections for 2 sides (bwd compatible)
 }
 //_________________________________________________________________________
 void AliITSresponseSDD::SetHalfLadderATimeZero(Int_t lay, Int_t lad, Float_t tzero){

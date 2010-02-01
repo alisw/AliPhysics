@@ -18,7 +18,8 @@
 
 class AliITSresponseSDD : public TObject {
  public:
-
+  enum {kVDCorr2Side = BIT(14)};   // if bit set, the object contains separate corrections for 2 sides
+  //
   AliITSresponseSDD();
   virtual ~AliITSresponseSDD(){};
 
@@ -49,18 +50,19 @@ class AliITSresponseSDD : public TObject {
     fTimeZero[modIndex-kNSPDmods]=tzero;
   }
 
-  virtual void SetDeltaVDrift(Int_t modIndex, Float_t dv){
-    if(modIndex<kNSPDmods || modIndex>kNSPDmods+kNSDDmods) AliError(Form("SDD module number %d out of range",modIndex));
-    fDeltaVDrift[modIndex-kNSPDmods]=dv;
-  }
-  virtual Float_t GetDeltaVDrift(Int_t modIndex) const {
-    if(modIndex<kNSPDmods || modIndex>kNSPDmods+kNSDDmods){
-      AliError(Form("SDD module number %d out of range",modIndex));
-      return 0.;
-    }
-    return fDeltaVDrift[modIndex-kNSPDmods];
+  virtual void SetDeltaVDrift(Int_t modIndex, Float_t dv, Bool_t rightSide=kFALSE) {
+    int ind = GetVDIndex(modIndex,rightSide);
+    if (ind>=0) fDeltaVDrift[ind] = dv;
   }
 
+  virtual Float_t GetDeltaVDrift(Int_t modIndex,Bool_t rightSide=kFALSE) const {
+    int ind = GetVDIndex(modIndex,rightSide);
+    return ind<0 ? 0.:fDeltaVDrift[ind];
+  }
+  // 
+  Bool_t IsVDCorr2Side()                       const {return TestBit(kVDCorr2Side);}
+  void   SetVDCorr2Side(Bool_t v=kTRUE)              {SetBit(kVDCorr2Side,v);}
+  //
   static Float_t DefaultTimeOffset() {return fgkTimeOffsetDefault;}
   virtual void SetTimeOffset(Float_t to){fTimeOffset = to;}
   virtual Float_t GetTimeOffset()const {return fTimeOffset;}
@@ -93,7 +95,16 @@ class AliITSresponseSDD : public TObject {
   static Float_t DefaultChargevsTime() {return fgkChargevsTimeDefault;}
 
   static Float_t GetCarlosRXClockPeriod() {return fgkCarlosRXClockPeriod;}
- 
+
+
+ protected:
+    //
+  virtual Int_t GetVDIndex(Int_t modIndex, Bool_t rightSide=kFALSE) const {
+    int ind = modIndex - kNSPDmods;
+    if(ind<0 || ind>=kNSDDmods) {AliError(Form("SDD module number %d out of range",modIndex)); return -1;}
+    return (rightSide && IsVDCorr2Side()) ? ind + kNSDDmods : ind;
+  }
+
 
  protected:
 
@@ -111,7 +122,7 @@ class AliITSresponseSDD : public TObject {
   Float_t  fTimeOffset;             // Time offset due to electronic delays 
                                     // --> obsolete, kept for backw. comp. 
   Float_t  fTimeZero[kNSDDmods];    // Time Zero for each module
-  Float_t  fDeltaVDrift[kNSDDmods]; // Vdrift correction (um/ns) for each module
+  Float_t  fDeltaVDrift[2*kNSDDmods];  // Vdrift correction (um/ns) for each module left (<kNSDDmods) and right (>=kNSDDmods) sides
   Float_t  fADC2keV;                // Conversion factor from ADC to keV
                                     // --> obsolete, kept for backw. comp. 
   Float_t  fChargevsTime;           // Correction for zero suppression effect
@@ -122,7 +133,7 @@ class AliITSresponseSDD : public TObject {
   AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
   AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-  ClassDef(AliITSresponseSDD,19) 
+  ClassDef(AliITSresponseSDD,20) 
      
     };
 #endif
