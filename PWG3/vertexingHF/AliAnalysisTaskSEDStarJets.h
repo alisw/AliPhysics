@@ -61,9 +61,10 @@ class AliAnalysisTaskSEDStarJets : public AliAnalysisTaskSE {
   Bool_t   DefineHistoFroAnalysis();
   
   //MC values for D0 and D*
-  Bool_t   GetGeneratedValuesFromMCParticle(AliAODMCParticle* const mcPart, TClonesArray* const mcArray) const;
-  Bool_t   DstarInMC(AliAODMCParticle* const mcPart, TClonesArray* mcArray);
   
+  Bool_t   DstarInMC(AliAODMCParticle* const mcPart, TClonesArray* mcArray);
+  Bool_t   EvaluateIfD0toKpi(AliAODMCParticle* neutralDaugh, TClonesArray* mcArray)const;
+
   // Alternative cut method
   Bool_t   EvaluateCutOnPiD0pt(AliAODRecoDecayHF2Prong* const vtx, AliAODTrack* const aodTrack);
   // set minimum ITS clusters for the analysis
@@ -78,14 +79,11 @@ class AliAnalysisTaskSEDStarJets : public AliAnalysisTaskSE {
   
  protected:
   
-  Int_t  fCountMC;               //  MC particle found
-  Int_t  fCountAcc;              //  MC particle found that satisfy acceptance cuts
   Int_t  fCountReco;             //  Reco particle found that satisfy cuts
   Int_t  fCountRecoAcc;          //  Reco particle found that satisfy cuts in requested acceptance
   Int_t  fCountRecoITSClusters;  //  Reco particle found that satisfy cuts in n. of ITS clusters
   Int_t  fCountRecoPPR;          //  Reco particle found that satisfy cuts in PPR
   Int_t  fCountDStar;            //  MC particle that are D* in acc and with D0->kpi.
-  Int_t  fCountDStarMC;          //  MC particles that are D* in MC
   Int_t  fEvents;                //  n. of events
   Int_t  fMinITSClusters;        //  min n. of ITS clusters for RecoDecay
   Bool_t fComputeD0;             // select analysis type: D*+ (kTRUE), D*- (kFALSE)
@@ -124,9 +122,8 @@ class AliAnalysisTaskSEDStarJets : public AliAnalysisTaskSE {
   TH1F *fPhijet;         //!
   TH1F *fEtaJet;         //!
   TH1F *fdstarpt;        //!
-  TH1F *fMCPionPt;       //!
 
-  ClassDef(AliAnalysisTaskSEDStarJets,0); // class for HF corrections as a function of many variables
+  ClassDef(AliAnalysisTaskSEDStarJets,1); // class for HF corrections as a function of many variables
 };
 
 #endif
