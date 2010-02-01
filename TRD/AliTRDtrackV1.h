@@ -80,6 +80,7 @@ public:
   AliTRDcluster* GetCluster(Int_t id);
   Int_t          GetClusterIndex(Int_t id) const;
   Float_t        GetEdep() const {return fDE;}
+  Int_t          GetESDid() const {return fESDid;}
   inline Float_t GetMomentum(Int_t plane) const;
   inline Int_t   GetNCross();
   inline Int_t   GetNumberOfTracklets() const;
@@ -115,6 +116,7 @@ public:
   Bool_t         Rotate(Double_t angle, Bool_t absolute = kFALSE);
   void           SetBudget(Int_t i, Double_t b) {if(i>=0 && i<3) fBudget[i] = b;}
   void           SetEdep(Double32_t inDE){fDE = inDE;};
+  void           SetESDid(Int_t id) {fESDid = id;}
   void           SetKink(Bool_t k)        { SetBit(kKink, k);}
   void           SetNumberOfClusters();
   UChar_t        SetNumberOfTrackletsPID(Bool_t recalc);
@@ -136,6 +138,7 @@ public:
 private:
   UInt_t       fStatus;                //  Bit map for the status of propagation
   Int_t        fTrackletIndex[kNplane];//  Tracklets index in the tracker list
+  Int_t        fESDid;                 //  ESD track id 
   Double32_t   fPID[AliPID::kSPECIES]; //  PID probabilities
   Double32_t   fBudget[3];             //  Integrated material budget
   Double32_t   fDE;                    //  Integrated delta energy
@@ -145,7 +148,7 @@ private:
   AliExternalTrackParam *fTrackLow;    // parameters of the track which enter TRD from below (TPC) 
   AliExternalTrackParam *fTrackHigh;   // parameters of the track which enter TRD from above (HMPID, PHOS) 
 
-  ClassDef(AliTRDtrackV1, 6)          // TRD track - tracklet based
+  ClassDef(AliTRDtrackV1, 7)          // TRD track - tracklet based
 };
 
 //____________________________________________________

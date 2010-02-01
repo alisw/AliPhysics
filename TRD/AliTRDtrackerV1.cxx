@@ -1510,6 +1510,8 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
   }
 
   Double_t xref = CalculateReferenceX(tracklets);
+  AliDebugGeneral("AliTRDtrackerV1::FitRiemanTilt()", 4, 
+  Form("\nx0[(0)%6.2f (1)%6.2f (2)%6.2f (3)%6.2f (4)%6.2f (5)%6.2f] xref[%6.2f]", tracklets[0].GetX0(), tracklets[1].GetX0(), tracklets[2].GetX0(), tracklets[3].GetX0(), tracklets[4].GetX0(), tracklets[5].GetX0(), xref));
   Double_t x, y, z, t, tilt, dx, w, we;
   Double_t uvt[4];
   Int_t nPoints = 0;
@@ -1518,7 +1520,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
     if(!tracklets[ipl].IsOK()) continue;
     for(Int_t itb = 0; itb < AliTRDseedV1::kNclusters; itb++){
       if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
-      if (!tracklets[ipl].IsUsable(itb)) continue;
+      //if (!tracklets[ipl].IsUsable(itb)) continue;
       x = cl->GetX();
       y = cl->GetY();
       z = cl->GetZ();
@@ -1582,6 +1584,8 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
 
   // Calculate chi2 of the fit 
   Double_t chi2 = fitter->GetChisquare()/Double_t(nPoints);
+  AliDebugGeneral("AliTRDtrackerV1::FitRiemanTilt()", 4, 
+  Form("x0[%6.2f] y0[%6.2f] R[%6.2f] chi2[%f]\n", x0, y0, radius, chi2));
 
   // Update the tracklets
   if(!track){
@@ -2174,8 +2178,22 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(Int_t sector, AliESDEvent *esd)
   }
   if(nTracks) AliDebug(2, Form("Number of tracks: SM_%02d[%d]", sector, nTracks));
 
-  for(int itrack=0; itrack<nTracks; itrack++)
-    esd->AddTrack((AliESDtrack*)(fTracksESD->operator[](itrack)));
+  for(int itrack=0; itrack<nTracks; itrack++){
+    AliESDtrack *esdTrack((AliESDtrack*)(fTracksESD->operator[](itrack)));
+    Int_t id = esd->AddTrack(esdTrack);
+
+    // set ESD id to stand alone TRD tracks
+    if (fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0){ 
+      esdTrack=esd->GetTrack(id);
+      TObject *o(NULL); Int_t ic(0);
+      AliTRDtrackV1 *calibTrack(NULL); 
+      while((o = esdTrack->GetCalibObject(ic++))){
+        if(!(calibTrack = dynamic_cast<AliTRDtrackV1*>(o))) continue;
+        calibTrack->SetESDid(esdTrack->GetID());
+        break;
+      }
+    }
+  }
 
   // Reset Track and Candidate Number
   AliTRDtrackerDebug::SetCandidateNumber(0);

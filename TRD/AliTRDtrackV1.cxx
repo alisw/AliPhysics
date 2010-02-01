@@ -41,6 +41,7 @@ ClassImp(AliTRDtrackV1)
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
   ,fStatus(0)
+  ,fESDid(0)
   ,fDE(0.)
   ,fkReconstructor(NULL)
   ,fBackupTrack(NULL)
@@ -66,6 +67,7 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
   ,fStatus(ref.fStatus)
+  ,fESDid(ref.fESDid)
   ,fDE(ref.fDE)
   ,fkReconstructor(ref.fkReconstructor)
   ,fBackupTrack(NULL)
@@ -95,6 +97,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
   ,fStatus(0)
+  ,fESDid(0)
   ,fDE(0.)
   ,fkReconstructor(NULL)
   ,fBackupTrack(NULL)
@@ -105,6 +108,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
   // Constructor from AliESDtrack
   //
 
+  SetESDid(t.GetID());
   SetLabel(t.GetLabel());
   SetChi2(0.0);
 
@@ -146,6 +150,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
 AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], const Double_t cov[15]
              , Double_t x, Double_t alpha) : AliKalmanTrack()
   ,fStatus(0)
+  ,fESDid(0)
   ,fDE(0.)
   ,fkReconstructor(NULL)
   ,fBackupTrack(NULL)
