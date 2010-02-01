@@ -56,7 +56,7 @@ AliGenDPMjet::AliGenDPMjet()
      fDPMjet(0),
      fNoGammas(0),
      fLHC(0),
-     fPi0Decay(0),
+     fPi0Decay(1),
      fDecayAll(0),
      fGenImpPar(0.),
      fProcess(kDpmMb)
@@ -83,7 +83,7 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
      fDPMjet(0),
      fNoGammas(0),
      fLHC(0),
-     fPi0Decay(0),
+     fPi0Decay(1),
      fDecayAll(0),
      fGenImpPar(0.),
      fProcess(kDpmMb)
@@ -114,7 +114,7 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fDPMjet(0),
      fNoGammas(0),
      fLHC(0),
-     fPi0Decay(0),
+     fPi0Decay(1),
      fDecayAll(0),
      fGenImpPar(0.),
      fProcess(kDpmMb)
@@ -185,6 +185,7 @@ void AliGenDPMjet::Generate()
       fSpecp = 0;
 // --------------------------------------------------------------------------
       fDPMjet->GenerateEvent();
+      
       fTrials++;
 
       fDPMjet->ImportParticles(&fParticles,"All");      
@@ -226,7 +227,10 @@ void AliGenDPMjet::Generate()
 	    
 	  if (!fSelectAll) selected = KinematicSelection(iparticle, 0) && 
 			       SelectFlavor(kf);
+
+	  
 	  hasSelectedDaughters = DaughtersSelection(iparticle);
+
 
 // Put particle on the stack if it is either selected or 
 // it is the mother of at least one seleted particle
@@ -299,6 +303,8 @@ void AliGenDPMjet::Generate()
 		  imo = (mother->GetPdgCode() != 92 && mother->GetPdgCode() != 99999) ? newPos[imo] : -1;
 	      } // if has mother   
 
+
+	      
 	      Bool_t tFlag = (fTrackIt && (ks == 1));
 	      PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
 	      KeepTrack(nt);
