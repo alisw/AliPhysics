@@ -28,6 +28,7 @@ AliFemtoEvent::AliFemtoEvent():
   fEventNumber(0),
   fRunNumber(0),
   fNumberOfTracks(0),
+  fNormalizedMult(-1),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -67,6 +68,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fEventNumber(0),
   fRunNumber(0),
   fNumberOfTracks(0),
+  fNormalizedMult(-1),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -98,6 +100,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fZDCEMEnergy=ev.fZDCEMEnergy;
   fZDCParticipants=ev.fZDCParticipants;
   fNumberOfTracks = ev.fNumberOfTracks;
+  fNormalizedMult = ev.fNormalizedMult;
   fMagneticField= ev.fMagneticField;
   fIsCollisionCandidate = ev.fIsCollisionCandidate;
 
@@ -145,6 +148,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fEventNumber(0),
   fRunNumber(0),
   fNumberOfTracks(0),
+  fNormalizedMult(-1),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -225,6 +229,7 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   fZDCEMEnergy=aEvent.fZDCEMEnergy;
   fZDCParticipants=aEvent.fZDCParticipants;
   fNumberOfTracks = aEvent.fNumberOfTracks;
+  fNormalizedMult = aEvent.fNormalizedMult;
   fMagneticField= aEvent.fMagneticField;
   fIsCollisionCandidate = aEvent.fIsCollisionCandidate;
 
@@ -304,11 +309,9 @@ void AliFemtoEvent::SetZDCN2Energy(const float& aZDCN2Energy){fZDCN2Energy=aZDCN
 void AliFemtoEvent::SetZDCP2Energy(const float& aZDCP2Energy){fZDCP2Energy=aZDCP2Energy;}      
 void AliFemtoEvent::SetZDCEMEnergy(const float& aZDCEMEnergy){fZDCEMEnergy=aZDCEMEnergy;}    
 void AliFemtoEvent::SetZDCParticipants(const unsigned int& aZDCParticipants){fZDCParticipants=aZDCParticipants;}
-    
 
 void AliFemtoEvent::SetNumberOfTracks(const unsigned short& tracks){fNumberOfTracks = tracks;}
-
-
+void AliFemtoEvent::SetNormalizedMult(const int& i){fNormalizedMult = i;}
 
 void AliFemtoEvent::SetPrimVertPos(const AliFemtoThreeVector& vp){fPrimVertPos = vp;}
 void AliFemtoEvent::SetPrimVertCov(const double* v){
@@ -364,19 +367,22 @@ double AliFemtoEvent::UncorrectedNumberOfNegativePrimaries() const
 
 double AliFemtoEvent::UncorrectedNumberOfPrimaries() const
 {
-  // Count number of normalized charged tracks 
-  Int_t tNormTrackCount = 0;
-  for (AliFemtoTrackIterator iter=fTrackCollection->begin();iter!=fTrackCollection->end();iter++){
-    if (!((*iter)->Flags()&(AliFemtoTrack::kTPCrefit))) continue;
-    if ((*iter)->TPCncls() < 50) continue;
-    if ((*iter)->TPCchi2()/(*iter)->TPCncls() > 60.0) continue;
-    if ((*iter)->ImpactD() > 6.0) continue;
-    if ((*iter)->ImpactZ() > 6.0) continue;
-    if (fabs((*iter)->P().pseudoRapidity()) > 0.9) continue;
-
-    tNormTrackCount++;
+  if (fNormalizedMult < 0) {
+    // Count number of normalized charged tracks 
+    Int_t tNormTrackCount = 0;
+    for (AliFemtoTrackIterator iter=fTrackCollection->begin();iter!=fTrackCollection->end();iter++){
+      if (!((*iter)->Flags()&(AliFemtoTrack::kTPCrefit))) continue;
+      if ((*iter)->TPCncls() < 50) continue;
+      if ((*iter)->TPCchi2()/(*iter)->TPCncls() > 60.0) continue;
+      if ((*iter)->ImpactD() > 6.0) continue;
+      if ((*iter)->ImpactZ() > 6.0) continue;
+      if (fabs((*iter)->P().pseudoRapidity()) > 0.9) continue;
+      
+      tNormTrackCount++;
+    }
+    return tNormTrackCount;
   }
 
-  return tNormTrackCount;
+  return fNormalizedMult;
   //  return NumberOfTracks();
 }

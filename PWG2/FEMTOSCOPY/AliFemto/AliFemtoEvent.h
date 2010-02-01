@@ -73,6 +73,7 @@ public:
   void SetEventNumber(const unsigned short& s);
   void SetRunNumber(const int& i);
   void SetNumberOfTracks(const unsigned short& s);
+  void SetNormalizedMult(const int& i);
   void SetPrimVertPos(const AliFemtoThreeVector& v);
   void SetPrimVertCov(const double* v);
   void SetMagneticField(const double& x);
@@ -98,6 +99,7 @@ private:
   unsigned short fEventNumber;           // Event number in file
   unsigned short fRunNumber;             // run number the event belong to
   unsigned short fNumberOfTracks;        // total number of TPC tracks
+  int   fNormalizedMult;                 // normalized multiplicity
   double fMagneticField;                 // magnetic field in Z direction
   bool fIsCollisionCandidate;            // is collision candidate
   

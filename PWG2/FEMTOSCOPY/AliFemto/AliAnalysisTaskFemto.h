@@ -24,6 +24,7 @@
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
+#include "AliFemtoEventReaderStandard.h"
 #include "AliFemtoManager.h"
 
 class AliAnalysisTaskFemto : public AliAnalysisTask {
@@ -44,6 +45,7 @@ class AliAnalysisTaskFemto : public AliAnalysisTask {
   void SetFemtoReaderESD(AliFemtoEventReaderESDChain *aReader);
   void SetFemtoReaderESDKine(AliFemtoEventReaderESDChainKine *aReader);
   void SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReader);
+  void SetFemtoReaderStandard(AliFemtoEventReaderStandard *aReader);
   void SetFemtoManager(AliFemtoManager *aManager);
 
  private:
