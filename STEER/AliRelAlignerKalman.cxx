@@ -72,6 +72,7 @@
 #include <TVector3.h>
 #include <TDecompLU.h>
 #include <TArrayI.h>
+#include <TObjArray.h>
 #include <TH1D.h>
 #include <TF1.h>
 
@@ -98,21 +99,24 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fPMeasurementCov(new TMatrixDSym( fNMeasurementParams )),
     fPMeasurementPrediction(new TVectorD( fNMeasurementParams )),
     fOutRejSigmas(1.),
+    fOutRejSigma2Median(5.),
     fYZOnly(kFALSE),
     fNumericalParanoia(kTRUE),
     fRejectOutliers(kTRUE),
+    fRejectOutliersSigma2Median(kFALSE),
     fRequireMatchInTPC(kFALSE),
     fCuts(kFALSE),
     fMinPointsVol1(3),
     fMinPointsVol2(50),
-    fMinMom(0.),
-    fMaxMom(1.e100),
+    fMinPt(0.),
+    fMaxPt(1.e100),
     fMaxMatchingAngle(0.1),
     fMaxMatchingDistance(10.),  //in cm
     fCorrectionMode(kFALSE),
     fNTracks(0),
     fNUpdates(0),
     fNOutliers(0),
+    fNOutliersSigma2Median(0),
     fNMatchedCosmics(0),
     fNMatchedTPCtracklets(0),
     fNProcessedEvents(0),
@@ -126,8 +130,8 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fTPCZLengthC(2.4969799e02)
 {
   //Default constructor
-
-  //default seed: zero, reset errors to large default
+  for (Int_t i=0;i<fgkNSystemParams;i++) fDelta[i] = 1.e-6;
+  for (Int_t i=0; i<4;i++){fResArrSigma2Median[i]=NULL;}
   Reset();
 }
 
@@ -146,21 +150,24 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fPMeasurementCov(new TMatrixDSym( fNMeasurementParams )),
     fPMeasurementPrediction(new TVectorD( fNMeasurementParams )),
     fOutRejSigmas(a.fOutRejSigmas),
+    fOutRejSigma2Median(a.fOutRejSigma2Median),
     fYZOnly(a.fYZOnly),
     fNumericalParanoia(a.fNumericalParanoia),
     fRejectOutliers(a.fRejectOutliers),
+    fRejectOutliersSigma2Median(a.fRejectOutliersSigma2Median),
     fRequireMatchInTPC(a.fRequireMatchInTPC),
     fCuts(a.fCuts),
     fMinPointsVol1(a.fMinPointsVol1),
     fMinPointsVol2(a.fMinPointsVol2),
-    fMinMom(a.fMinMom),
-    fMaxMom(a.fMaxMom),
+    fMinPt(a.fMinPt),
+    fMaxPt(a.fMaxPt),
     fMaxMatchingAngle(a.fMaxMatchingAngle),
     fMaxMatchingDistance(a.fMaxMatchingDistance),  //in cm
     fCorrectionMode(a.fCorrectionMode),
     fNTracks(a.fNTracks),
     fNUpdates(a.fNUpdates),
     fNOutliers(a.fNOutliers),
+    fNOutliersSigma2Median(a.fNOutliersSigma2Median),
     fNMatchedCosmics(a.fNMatchedCosmics),
     fNMatchedTPCtracklets(a.fNMatchedTPCtracklets),
     fNProcessedEvents(a.fNProcessedEvents),
@@ -175,6 +182,19 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
 {
   //copy constructor
   memcpy(fDelta,a.fDelta,fgkNSystemParams*sizeof(Double_t));
+
+  //copy contents of the residuals array for sigma2median scheme
+  for (Int_t i=0;i<4;i++)
+  {
+    if ((a.fResArrSigma2Median)[i]) 
+    {
+      fResArrSigma2Median[i] = new Double_t[fgkNtracksSigma2Median];
+      memcpy(fResArrSigma2Median[i],(a.fResArrSigma2Median)[i],
+             fgkNtracksSigma2Median*sizeof(Double_t));
+    }
+    else
+      fResArrSigma2Median[i] = NULL;
+  }
 }
 
 //______________________________________________________________________________
@@ -187,22 +207,25 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
   *fPXcov = *a.fPXcov;
   fQ=a.fQ;
   fOutRejSigmas=a.fOutRejSigmas;
+  fOutRejSigma2Median=a.fOutRejSigma2Median;
   memcpy(fDelta,a.fDelta,fgkNSystemParams*sizeof(Double_t));
   fYZOnly=a.fYZOnly;
   fNumericalParanoia=a.fNumericalParanoia;
   fRejectOutliers=a.fRejectOutliers;
+  fRejectOutliersSigma2Median=a.fRejectOutliersSigma2Median;
   fRequireMatchInTPC=a.fRequireMatchInTPC;
   fCuts=a.fCuts;
   fMinPointsVol1=a.fMinPointsVol1;
   fMinPointsVol2=a.fMinPointsVol2;
-  fMinMom=a.fMinMom;
-  fMaxMom=a.fMaxMom;
+  fMinPt=a.fMinPt;
+  fMaxPt=a.fMaxPt;
   fMaxMatchingAngle=a.fMaxMatchingAngle;
   fMaxMatchingDistance=a.fMaxMatchingDistance;  //in c;
   fCorrectionMode=a.fCorrectionMode;
   fNTracks=a.fNTracks;
   fNUpdates=a.fNUpdates;
   fNOutliers=a.fNOutliers;
+  fNOutliersSigma2Median=a.fNOutliersSigma2Median;
   fNMatchedCosmics=a.fNMatchedCosmics;
   fNMatchedTPCtracklets=a.fNMatchedTPCtracklets;
   fNProcessedEvents=a.fNProcessedEvents;
@@ -213,6 +236,20 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
   fTPCvd=a.fTPCvd;
   fTPCZLengthA=a.fTPCZLengthA;
   fTPCZLengthC=a.fTPCZLengthC;
+
+  //copy contents of the residuals array for sigma2median scheme
+  for (Int_t i=0;i<4;i++)
+  {
+    if ((a.fResArrSigma2Median)[i]) 
+    {
+      if (!(fResArrSigma2Median[i])) fResArrSigma2Median[i] = 
+                                     new Double_t[fgkNtracksSigma2Median];
+      memcpy(fResArrSigma2Median[i],(a.fResArrSigma2Median)[i],
+             fgkNtracksSigma2Median*sizeof(Double_t));
+    }
+    else
+      fResArrSigma2Median[i] = NULL;
+  }
   return *this;
 }
 
@@ -220,13 +257,17 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
 AliRelAlignerKalman::~AliRelAlignerKalman()
 {
   //destructor
-  if (fPTrackParamArr1) delete [] fPTrackParamArr1;
-  if (fPTrackParamArr2) delete [] fPTrackParamArr2;
-  if (fPX) delete fPX;
-  if (fPXcov) delete fPXcov;
-  if (fPH) delete fPH;
-  if (fPMeasurement) delete fPMeasurement;
-  if (fPMeasurementCov) delete fPMeasurementCov;
+  delete [] fPTrackParamArr1;
+  delete [] fPTrackParamArr2;
+  delete fPX;
+  delete fPXcov;
+  delete fPH;
+  delete fPMeasurement;
+  delete fPMeasurementCov;
+  for (Int_t i=0;i<4;i++) 
+  {
+    delete [] (fResArrSigma2Median[i]);
+  }
 }
 
 //______________________________________________________________________________
@@ -245,7 +286,7 @@ Bool_t AliRelAlignerKalman::AddESDevent( const AliESDEvent* pEvent )
     track = pEvent->GetTrack(i);
     if (!track) continue;
     if ( ((track->GetStatus()&AliESDtrack::kTPCin)>0)&&
-         ((track->GetStatus()&AliESDtrack::kITSout)>0)&&
+         ((track->GetStatus()&AliESDtrack::kITSrefit)>0)&&
          (track->GetNcls(0)>=fMinPointsVol1)&&
          (track->GetNcls(1)>=fMinPointsVol2) )
     { 
@@ -265,7 +306,7 @@ Bool_t AliRelAlignerKalman::AddESDtrack( const AliESDtrack* pTrack )
 {
   //Adds a full track, returns true if results in a new estimate
   //  gets the inner TPC parameters from AliESDTrack::GetInnerParam()
-  //  gets the outer ITS parameters from AliESDTrack::GetOuterParam()
+  //  gets the outer ITS parameters from AliESDfriendTrack::GetITSout()
 
   const AliExternalTrackParam* pconstparamsITS = pTrack->GetOuterParam();
   if (!pconstparamsITS) return kFALSE;
@@ -341,13 +382,13 @@ Bool_t AliRelAlignerKalman::AddCosmicEvent( const AliESDEvent* pEvent )
 void AliRelAlignerKalman::SetPoint2Track( Bool_t set )
 {
   fNMeasurementParams = (set)?2:4;
-  if (fPH) delete fPH;
+  delete fPH;
   fPH = new TMatrixD( fNMeasurementParams, fgkNSystemParams );
-  if (fPMeasurement) delete fPMeasurement;
+  delete fPMeasurement;
   fPMeasurement = new TVectorD( fNMeasurementParams );
-  if (fPMeasurementCov) delete fPMeasurementCov;
+  delete fPMeasurementCov;
   fPMeasurementCov = new TMatrixDSym( fNMeasurementParams );
-  if (fPMeasurementPrediction) delete fPMeasurementPrediction;
+  delete fPMeasurementPrediction;
   fPMeasurementPrediction = new TVectorD( fNMeasurementParams );
   fYZOnly = set;
 }
@@ -359,7 +400,8 @@ void AliRelAlignerKalman::Print(Option_t*) const
   Double_t rad2deg = 180./TMath::Pi();
   printf("\nAliRelAlignerKalman\n");
   if (fCorrectionMode) printf("(Correction mode)\n");
-  printf("  %i inputs, %i updates, %i outliers, %i merges, %i failed merges\n", fNTracks, fNUpdates, fNOutliers, fNMerges, fNMergesFailed );
+  printf("  run: %i, timestamp: %i, magfield: %.3f\n", fRunNumber, fTimeStamp, fMagField);
+  printf("  %i(-%i) inputs, %i(-%i) updates, %i(-%i) merges\n", fNTracks, fNOutliersSigma2Median, fNUpdates, fNOutliers, fNMerges, fNMergesFailed );
   printf("  psi(x):           % .3f ± (%.2f) mrad  |  % .3f ± (%.2f) deg\n",1e3*(*fPX)(0), 1e3*TMath::Sqrt((*fPXcov)(0,0)),(*fPX)(0)*rad2deg,TMath::Sqrt((*fPXcov)(0,0))*rad2deg);
   printf("  theta(y):         % .3f ± (%.2f) mrad  |  % .3f ± (%.2f) deg\n",1e3*(*fPX)(1), 1e3*TMath::Sqrt((*fPXcov)(1,1)),(*fPX)(1)*rad2deg,TMath::Sqrt((*fPXcov)(1,1))*rad2deg);
   printf("  phi(z):           % .3f ± (%.2f) mrad  |  % .3f ± (%.2f) deg\n",1e3*(*fPX)(2), 1e3*TMath::Sqrt((*fPXcov)(2,2)),(*fPX)(2)*rad2deg,TMath::Sqrt((*fPXcov)(2,2))*rad2deg);
@@ -369,7 +411,6 @@ void AliRelAlignerKalman::Print(Option_t*) const
   if (fgkNSystemParams>6) printf("  vd corr           % .5g ± (%.2g)    [ vd should be %.4g (was %.4g in reco) ]\n", (*fPX)(6), TMath::Sqrt((*fPXcov)(6,6)), (*fPX)(6)*fTPCvd, fTPCvd);
   if (fgkNSystemParams>7) printf("  t0                % .5g ± (%.2g) us  |  %.4g ± (%.2g) cm     [ t0_real = t0_rec+t0 ]\n",(*fPX)(7), TMath::Sqrt((*fPXcov)(7,7)), fTPCvd*(*fPX)(7), fTPCvd*TMath::Sqrt((*fPXcov)(7,7)));
   if (fgkNSystemParams>8) printf("  vd/dy             % .5f ± (%.2f) (cm/us)/m\n", (*fPX)(8), TMath::Sqrt((*fPXcov)(8,8)));
-  printf("  run: %i, timestamp: %i, magfield: %.3f\n", fRunNumber, fTimeStamp, fMagField);
   printf("\n");
   return;
 }
@@ -395,7 +436,11 @@ void AliRelAlignerKalman::PrintSystemMatrix()
 Bool_t AliRelAlignerKalman::SetTrackParams( const AliExternalTrackParam* exparam1, const AliExternalTrackParam* exparam2 )
 {
   //Set the parameters, exparam1 will normally be ITS and exparam 2 tht TPC
-  
+  fNTracks++; //count added input sets
+
+  //INPUT OUTLIER REJECTION
+  if (fRejectOutliersSigma2Median && IsOutlierSigma2Median(exparam1,exparam2) ) return kFALSE;
+
   fPTrackParamArr1[fTrackInBuffer] = *exparam1;
   fPTrackParamArr2[fTrackInBuffer] = *exparam2;
   
@@ -508,7 +553,6 @@ Bool_t AliRelAlignerKalman::PrepareMeasurement()
       (*fPMeasurementCov)(x+3,x+3)+=parcovarr2[9];
     }
     
-    fNTracks++; //count added track sets
   }
   //if (fApplyCovarianceCorrection)
   //  *fPMeasurementCov += *fPMeasurementCovCorr;
@@ -653,6 +697,7 @@ Bool_t AliRelAlignerKalman::UpdateEstimateKalman()
   if ( IsOutlier( xupdate, (*fPXcov) ) && fRejectOutliers )
   {
     fNOutliers++;
+    //printf("AliRelAlignerKalman: outlier\n");
     return kFALSE;
   }
 
@@ -682,6 +727,36 @@ Bool_t AliRelAlignerKalman::IsOutlier( const TVectorD& update, const TMatrixDSym
     is = (is) || (TMath::Abs(update(i)) > fOutRejSigmas*TMath::Sqrt((covmatrix)(i,i)));
   }
   return is;
+}
+
+//______________________________________________________________________________
+Bool_t AliRelAlignerKalman::IsOutlierSigma2Median( const AliExternalTrackParam* pITS, 
+                                                   const AliExternalTrackParam* pTPC )
+{
+  //check if the input residuals are not too far off their median
+  TVectorD vecDelta(4),vecMedian(4), vecRMS(4);
+  TVectorD vecDeltaN(5);
+  Double_t sign=(pITS->GetParameter()[1]>0)? 1.:-1.;
+  vecDeltaN[4]=0;
+  for (Int_t i=0;i<4;i++){
+    vecDelta[i]=(pITS->GetParameter()[i]-pTPC->GetParameter()[i])*sign;
+    (fResArrSigma2Median[i])[(fNTracks-1)%fgkNtracksSigma2Median]=vecDelta[i];
+  }
+  Int_t entries=(fNTracks<fgkNtracksSigma2Median)?fNTracks:fgkNtracksSigma2Median;
+  for (Int_t i=0;i<fNMeasurementParams;i++){       //in point2trackmode just take the first 2 params (zy)
+    vecMedian[i] = TMath::Median(entries,fResArrSigma2Median[i]);
+    vecRMS[i]    = TMath::RMS(entries,fResArrSigma2Median[i]);
+    vecDeltaN[i] = 0;
+    if (vecRMS[i]>0.){
+      vecDeltaN[i] = (vecDelta[i]-vecMedian[i])/vecRMS[i];
+      vecDeltaN[4]+= TMath::Abs(vecDeltaN[i]);  //sum of abs residuals
+    }
+  }
+  Bool_t outlier=kFALSE;
+  if (fNTracks<3)  outlier=kTRUE;   //median and RMS still to be defined
+  if ( vecDeltaN[4]/fNMeasurementParams>fOutRejSigma2Median) outlier=kTRUE;
+  if (outlier) fNOutliersSigma2Median++;
+  return outlier;
 }
 
 //______________________________________________________________________________
@@ -791,7 +866,7 @@ Bool_t AliRelAlignerKalman::FindCosmicTrackletNumbersInEvent( TArrayI& outITSind
     }
     if (fCuts)
     {
-      if (pTrack->GetP()<fMinMom || pTrack->GetP()>fMaxMom) continue;
+      if (pTrack->GetP()<fMinPt || pTrack->GetP()>fMaxPt) continue;
     }
     goodtracksArr[nGoodTracks]=itrack;
     Float_t phi = pTrack->GetAlpha()+TMath::ASin(pTrack->GetSnp());
@@ -1215,7 +1290,11 @@ void AliRelAlignerKalman::Reset()
   ResetCovariance();
 
   //initialize the differentials per parameter
-  for (Int_t i=0;i<fgkNSystemParams;i++) fDelta[i] = 1.e-6;
+  for (Int_t i=0;i<4;i++) 
+  {
+    delete [] (fResArrSigma2Median[i]);
+  }
+  fRejectOutliersSigma2Median=kFALSE;
 
   fNMatchedCosmics=0;
   fNMatchedTPCtracklets=0;
@@ -1331,15 +1410,18 @@ Bool_t AliRelAlignerKalman::Merge( const AliRelAlignerKalman* al )
   if (!success)    
   {
     fNMergesFailed++;
+    //printf("AliRelAlignerKalman::Merge failed\n");
     return kFALSE; //no point in merging stats if merge not succesful
   }
   fNProcessedEvents += al->fNProcessedEvents;
   fNUpdates += al->fNUpdates;
   fNOutliers += al->fNOutliers;
+  fNOutliersSigma2Median += al->fNOutliersSigma2Median;
   fNTracks += al->fNTracks;
   fNMatchedTPCtracklets += al->fNMatchedTPCtracklets;
   fNMatchedCosmics += al->fNMatchedCosmics;
-  fNMerges += al->fNMerges;
+  if (fNMerges==0 || al->fNMerges==0) fNMerges++;
+  else fNMerges += al->fNMerges;
   if (fTimeStamp < al->fTimeStamp) fTimeStamp = al->fTimeStamp; //take the newer one
 
   return success;
@@ -1372,3 +1454,125 @@ Int_t AliRelAlignerKalman::Compare(const TObject *obj) const
   else return 0;
 }
 
+//________________________________________________________________________
+Int_t AliRelAlignerKalman::FindMatchingTracks(TObjArray& arrITS, TObjArray& arrTPC, AliESDEvent* pESD)
+{
+  //find matching tracks and return tobjarrays with the params
+  
+  Int_t ntracks = pESD->GetNumberOfTracks();
+  Int_t* matchedArr = new Int_t[ntracks]; //storage for index of ITS track for which a match was found
+  for (Int_t i=0;i<ntracks;i++)
+  {
+    matchedArr[i]=0;
+  }
+
+  Int_t iMatched=-1;
+  for (Int_t i=0; i<ntracks; i++)
+  {
+    //get track1 and friend
+    AliESDtrack* track1 = pESD->GetTrack(i);
+    if (!track1) continue;
+
+    if (track1->GetNcls(0) < fMinPointsVol1) continue;
+
+    if (!( ( track1->IsOn(AliESDtrack::kITSrefit)) &&
+           (!track1->IsOn(AliESDtrack::kTPCin)) )) continue;
+
+    const AliESDfriendTrack* constfriendtrack1 = track1->GetFriendTrack();
+    if (!constfriendtrack1) continue;
+    AliESDfriendTrack friendtrack1(*constfriendtrack1);
+    
+    if (!friendtrack1.GetITSOut()) continue;
+    AliExternalTrackParam params1(*(friendtrack1.GetITSOut()));
+
+    Double_t bestd = 1000.; //best distance
+    Bool_t newi = kTRUE; //whether we start with a new i
+    for (Int_t j=0; j<ntracks; j++)
+    {
+      if (matchedArr[j]>0 && matchedArr[j]!=i) continue; //already matched, everything tried 
+      //get track2 and friend
+      AliESDtrack* track2 = pESD->GetTrack(j);
+      if (!track2) continue;
+      if (track1==track2) continue;
+      //if ( ( ( track2->IsOn(AliESDtrack::kITSout)) &&
+      //       (!track2->IsOn(AliESDtrack::kTPCin)) )) continue; //all but ITS standalone
+
+      if (track2->GetNcls(0) != track1->GetNcls(0)) continue;
+      if (track2->GetITSClusterMap() != track1->GetITSClusterMap()) continue;
+      if (track2->GetNcls(1) < fMinPointsVol2) continue; //min 80 clusters in TPC
+      if (track2->GetTgl() > 1.) continue; //acceptance
+      //cut crossing tracks
+      if (track2->GetOuterParam()->GetZ()*track2->GetInnerParam()->GetZ()<0) continue;
+      if (track2->GetInnerParam()->GetX()>90) continue;
+      if (TMath::Abs(track2->GetInnerParam()->GetZ())<10.) continue; //too close to membrane?
+
+
+      if (!track2->GetInnerParam()) continue;
+      AliExternalTrackParam params2(*(track2->GetInnerParam()));
+
+      //bring to same reference plane
+      if (!params2.Rotate(params1.GetAlpha())) continue;
+      if (!params2.PropagateTo(params1.GetX(), pESD->GetMagneticField())) continue;
+
+      //pt cut
+      if (params2.Pt() < fMinPt) continue;
+
+      const Double32_t*	p1 = params1.GetParameter();
+      const Double32_t*	p2 = params2.GetParameter();
+
+      //hard cuts
+      Double_t dy = TMath::Abs(p2[0]-p1[0]);
+      Double_t dz = TMath::Abs(p2[1]-p1[1]);
+      Double_t dphi = TMath::Abs(p2[2]-p1[2]);
+      Double_t dlam = TMath::Abs(p2[3]-p1[3]);
+      if (dy > 2.0) continue;
+      if (dz > 10.0) continue;
+      if (dphi > 0.1 ) continue;
+      if (dlam > 0.1 ) continue;
+
+      //best match only
+      Double_t d = TMath::Sqrt(dy*dy+dz*dz+dphi*dphi+dlam*dlam);
+      if ( d >= bestd) continue;
+      bestd = d;
+      matchedArr[j]=i; //j-th track matches i-th (ITS) track
+      if (newi) iMatched++; newi=kFALSE; //increment at most once per i
+      if (arrITS[iMatched] && arrTPC[iMatched])
+      {
+        *(arrITS[iMatched]) = params1;
+        *(arrTPC[iMatched]) = params2;
+      }
+      else
+      {
+        arrITS[iMatched] = new AliExternalTrackParam(params1);
+        arrTPC[iMatched] = new AliExternalTrackParam(params2);
+      }//else
+    }//for j
+  }//for i
+  return iMatched;
+}
+
+//________________________________________________________________________
+void AliRelAlignerKalman::SetRejectOutliersSigma2Median(const Bool_t set )
+{
+  //Sets up or destroys the memory hungry array to hold the statistics
+  //for data rejection with median
+  if (set)
+  {
+    for (Int_t i=0;i<4;i++) 
+    {
+      if (!fResArrSigma2Median[i]) fResArrSigma2Median[i] = 
+                                   new Double_t[fgkNtracksSigma2Median];
+    }
+    fRejectOutliersSigma2Median = kTRUE;
+  }//else
+  else
+  {
+    // it probably doesn't make sense to delete the arrays, they are not streamed
+    //if (fRejectOutliersSigma2Median)
+    //for (Int_t i=0;i<4;i++) 
+    //{
+    //  delete [] (fResArrSigma2Median[i]);
+    //}
+    fRejectOutliersSigma2Median = kFALSE;
+  }//if
+}

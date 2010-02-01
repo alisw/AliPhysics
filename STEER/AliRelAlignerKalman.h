@@ -22,6 +22,7 @@ class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDtrack;
 class TArrayI;
+class TObjArray;
 
 class AliRelAlignerKalman : public TObject {
 
@@ -78,6 +79,7 @@ public:
     void SetMagField( const Double_t f ) { fMagField=f; }
     Double_t GetMagField() const { return fMagField; }
     Bool_t FindCosmicTrackletNumbersInEvent( TArrayI& outITStracksTArr, TArrayI& outTPCtracksTArr, const AliESDEvent* pEvent );
+    Int_t FindMatchingTracks(TObjArray& arrITS, TObjArray& arrTPC, AliESDEvent* pESD);
     Bool_t Update();
     void PrintCorrelationMatrix();
     //void PrintCovarianceCorrection();
@@ -90,11 +92,14 @@ public:
     Double_t* GetMeasurementArr() const { return fPMeasurement->GetMatrixArray(); }
     Double_t* GetMeasurementCovArr() const { return fPMeasurementCov->GetMatrixArray(); }
     TMatrixD* GetH() const { return fPH; }
+    TVectorD* GetMeasurementPrediction() const {return fPMeasurementPrediction;}
     const Double_t* GetDeltaArr() const {return fDelta;}
     void SetNumericalParanoia( const Bool_t mode=kFALSE ) { fNumericalParanoia=mode; }
     void SetCorrectionMode( const Bool_t mode=kTRUE ) { fCorrectionMode=mode; }
     void SetOutRejSigma( const Double_t a=2. ) { fOutRejSigmas = a; }
     void SetRejectOutliers( const Bool_t r=kTRUE ) {fRejectOutliers = r;}
+    void SetRejectOutliersSigma2Median( const Bool_t b=kTRUE );
+    void SetOutRejSigma2Median( const Double_t s ) {fOutRejSigma2Median = s;}
     Bool_t SetTrackParams( const AliExternalTrackParam* exparam1, const AliExternalTrackParam* exparam2 );
     const AliExternalTrackParam* GetTrackParams1() const {return fPTrackParamArr1;}
     const AliExternalTrackParam* GetTrackParams2() const {return fPTrackParamArr2;}
@@ -122,6 +127,7 @@ public:
     Int_t GetNTracks() const {return fNTracks;}
     Int_t GetNUpdates() const {return fNUpdates;}
     Int_t GetNOutliers() const {return fNOutliers;}
+    Int_t GetNOutliersSigma2Median() const {return fNOutliersSigma2Median;}
     Int_t GetNMerges() const {return fNMerges;}
     Int_t GetNMergesFailed() const {return fNMergesFailed;}
     void SetPoint2Track( Bool_t o );
@@ -133,10 +139,12 @@ protected:
     Bool_t PreparePrediction();
     Bool_t PredictMeasurement( TVectorD& z, const TVectorD& x );
     Bool_t IsOutlier( const TVectorD& update, const TMatrixDSym& covmatrix );
+    Bool_t IsOutlierSigma2Median( const AliExternalTrackParam* pITS, const AliExternalTrackParam* pTPC );
 
 private:
     static const Int_t fgkNTracksPerMeasurement=1;        //how many tracks for one update
     static const Int_t fgkNSystemParams=9;                //how many fit parameters
+    static const Int_t fgkNtracksSigma2Median=500;              //how many sets for median and rms
     
     //Track parameters
     AliExternalTrackParam* fPTrackParamArr1;   //!local track parameters
@@ -153,18 +161,21 @@ private:
     TMatrixDSym* fPMeasurementCov; //!measurement vec cvariance
     TVectorD* fPMeasurementPrediction; //!prediction of the measurement
     Double_t fOutRejSigmas; //number of sigmas for outlier rejection
+    Double_t fOutRejSigma2Median; //nsigmas to median of input residual distribution
     Double_t fDelta[fgkNSystemParams]; //array with differentials for calculating derivatives for every parameter(see PrepareSystemMatrix())
+    Double_t* fResArrSigma2Median[4]; //!holds residuals for median based outlier removal
 
     //Control
     Bool_t fYZOnly;   //whether to consider only yz without directions.
     Bool_t fNumericalParanoia; //whether to perform additional checks for numerical stability
     Bool_t fRejectOutliers; //whether to do outlier rejection in the Kalman filter
+    Bool_t fRejectOutliersSigma2Median; //whether to reject input based on distance to median
     Bool_t fRequireMatchInTPC;  //when looking for a cosmic in event, require that TPC has 2 matching segments
     Bool_t fCuts;    //track cuts?
     Int_t fMinPointsVol1;   //mininum number of points in volume 1
     Int_t fMinPointsVol2;   //mininum number of points in volume 2
-    Double_t fMinMom;       //min momentum of track for track cuts
-    Double_t fMaxMom;       //max momentum of track for track cuts
+    Double_t fMinPt;       //min momentum of track for track cuts
+    Double_t fMaxPt;       //max momentum of track for track cuts
     Double_t fMaxMatchingAngle; //cuts
     Double_t fMaxMatchingDistance; //cuts
     Bool_t fCorrectionMode; //calculate corrective transform for TPC (or monitor actual TPC misal params)
@@ -173,6 +184,7 @@ private:
     Int_t fNTracks; //number of processed tracks
     Int_t fNUpdates; //number of successful Kalman updates
     Int_t fNOutliers; //number of outliers
+    Int_t fNOutliersSigma2Median; //number of rejected inputs
     Int_t fNMatchedCosmics; //number of cosmic events with matching tracklets (good cosmics)
     Int_t fNMatchedTPCtracklets;//number of cosmic events with 2 matching TPC tracklets
     Int_t fNProcessedEvents; //number of processed events
@@ -187,7 +199,7 @@ private:
     Double_t fTPCZLengthA; //TPC length side A
     Double_t fTPCZLengthC; //TPC length side C
     
-    ClassDef(AliRelAlignerKalman,3)     //AliRelAlignerKalman class
+    ClassDef(AliRelAlignerKalman,4)     //AliRelAlignerKalman class
 };
 
 #endif
