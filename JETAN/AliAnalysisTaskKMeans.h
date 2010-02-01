@@ -38,9 +38,11 @@ class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
   virtual Double_t DeltaPhi(Double_t phi1, Double_t phi2);
   virtual Double_t DeltaR(Double_t phi1, Double_t eta1, Double_t phi2, Double_t eta2);
   virtual void     SetK(Int_t k) {fK = k;} 
+  virtual void     SetMinimumMultiplicity(Int_t k) {fNMin = k;} 
  private:
   // Others
   Int_t            fK;             // K                        
+  Int_t            fNMin;          // Minimum multipicity                         
   TList*           fHists;         // Histograms
   TH1F*            fH1CEta;        // Eta distribution of clusters
   TH1F*            fH1CPhi;        // Phi distribution of clusters  
@@ -50,6 +52,8 @@ class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
   TH1F*            fH1PtC;         // pt outside clusters
   TH1F*            fH1PtC1;        // pt dr > 0.4
   TH1F*            fH1PtC2;        // pt dr > 0.2 
+  TH1F*            fH1PtAS;        // away-side peak 
+  TH1F*            fH1PtR;         // away-side peak 
   TH1F*            fH1SPt;         // sum pt
   TH1F*            fH1SPtC;        // sum pt
   TH1F*            fH1DPhi;        // Dphi wr to cluster
@@ -63,6 +67,8 @@ class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
   TH2F*            fH2DPhiEtaCR;   // eta-phi of Clusters
   TH1F*            fH1Resp;        // responsibility
   TH1F*            fH1RespR;       // responsibility
+  TH2F*            fH2Sigma;
+  TH2F*            fH2SigmaR;
   AliESDtrackCuts* fCuts;             // List of cuts
   ClassDef(AliAnalysisTaskKMeans, 1); // A k-means clustering analysis
 };
