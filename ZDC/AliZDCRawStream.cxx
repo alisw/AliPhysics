@@ -436,8 +436,8 @@ Bool_t AliZDCRawStream::Next()
 	fCabledSignal = (fBuffer&0xffff);
         //
 	if(fModType == kV965){ // ******** ADCs ********************************
-           // Channel signal
-	  if((fBuffer&0x40000000)>>30==0){ // high range chain ADC
+          // Channel signal
+	  if((fBuffer&0x40000000)>>30==0 && fADCModule<=kLastADCGeo){ // *ZDC* high range chain ADC
             fIsChMapping = kTRUE;
 	    fMapADC[fCurrentCh][0] = fADCModule;
 	    fMapADC[fCurrentCh][1] = fADCChannel;
@@ -516,47 +516,52 @@ Bool_t AliZDCRawStream::Next()
 	  //  look the enum in AliZDCRawStream.h file
 	  // -----------------------------------------
 	  // NOT CONSIDERING OUT OF TIME OR REFERENCE SIGNALS FOR SCALER!!!!!
-	  if(fCabledSignal>=2 && fCabledSignal<=6){
+	  if(fCabledSignal>=2 && fCabledSignal<=6 ||
+	     fCabledSignal>=61 && fCabledSignal<=65){
 	    fScalerMap[fCurrScCh][3] = 4; //ZNA
 	    //
-	    if(fCabledSignal==2 )      fScalerMap[fCurrScCh][4]=0;
-	    else if(fCabledSignal==3)  fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==4)  fScalerMap[fCurrScCh][4]=2;
-	    else if(fCabledSignal==5)  fScalerMap[fCurrScCh][4]=3;
-	    else if(fCabledSignal==6)  fScalerMap[fCurrScCh][4]=4;
+	    if(fCabledSignal==2 || fCabledSignal==61)      fScalerMap[fCurrScCh][4]=0;
+	    else if(fCabledSignal==3 || fCabledSignal==62)  fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==4 || fCabledSignal==63)  fScalerMap[fCurrScCh][4]=2;
+	    else if(fCabledSignal==5 || fCabledSignal==64)  fScalerMap[fCurrScCh][4]=3;
+	    else if(fCabledSignal==6 || fCabledSignal==65)  fScalerMap[fCurrScCh][4]=4;
 	  }
-	  else if(fCabledSignal>=7 && fCabledSignal<=11){
+	  else if(fCabledSignal>=7 && fCabledSignal<=11 ||
+	     fCabledSignal>=66 && fCabledSignal<=70){
 	    fScalerMap[fCurrScCh][3] = 5; //ZPA
 	    //
-	    if(fCabledSignal==7 )      fScalerMap[fCurrScCh][4]=0;
-	    else if(fCabledSignal==8)  fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==9)  fScalerMap[fCurrScCh][4]=2;
-	    else if(fCabledSignal==10) fScalerMap[fCurrScCh][4]=3;
-	    else if(fCabledSignal==11) fScalerMap[fCurrScCh][4]=4;
+	    if(fCabledSignal==7 || fCabledSignal==66)      fScalerMap[fCurrScCh][4]=0;
+	    else if(fCabledSignal==8 || fCabledSignal==67)  fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==9 || fCabledSignal==68)  fScalerMap[fCurrScCh][4]=2;
+	    else if(fCabledSignal==10 || fCabledSignal==69) fScalerMap[fCurrScCh][4]=3;
+	    else if(fCabledSignal==11 || fCabledSignal==70) fScalerMap[fCurrScCh][4]=4;
 	  }
-	  else if(fCabledSignal>=12 && fCabledSignal<=16){
+	  else if(fCabledSignal>=12 && fCabledSignal<=16 ||
+	     fCabledSignal>=71 && fCabledSignal<=75){
 	    fScalerMap[fCurrScCh][3] = 1; //ZNC
 	    //
-	    if(fCabledSignal==12)      fScalerMap[fCurrScCh][4]=0;
-	    else if(fCabledSignal==13) fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==14) fScalerMap[fCurrScCh][4]=2;
-	    else if(fCabledSignal==15) fScalerMap[fCurrScCh][4]=3;
-	    else if(fCabledSignal==16) fScalerMap[fCurrScCh][4]=4;
+	    if(fCabledSignal==12 || fCabledSignal==71)      fScalerMap[fCurrScCh][4]=0;
+	    else if(fCabledSignal==13 || fCabledSignal==72) fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==14 || fCabledSignal==73) fScalerMap[fCurrScCh][4]=2;
+	    else if(fCabledSignal==15 || fCabledSignal==74) fScalerMap[fCurrScCh][4]=3;
+	    else if(fCabledSignal==16 || fCabledSignal==75) fScalerMap[fCurrScCh][4]=4;
 	  }
-	  else if(fCabledSignal>=17 && fCabledSignal<=21){
+	  else if(fCabledSignal>=17 && fCabledSignal<=21 ||
+	     fCabledSignal>=76 && fCabledSignal<=80){
 	    fScalerMap[fCurrScCh][3] = 2; //ZPC
 	    //
-	    if(fCabledSignal==17)      fScalerMap[fCurrScCh][4]=0;
-	    else if(fCabledSignal==18) fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==19) fScalerMap[fCurrScCh][4]=2;
-	    else if(fCabledSignal==20) fScalerMap[fCurrScCh][4]=3;
-	    else if(fCabledSignal==21) fScalerMap[fCurrScCh][4]=4;
+	    if(fCabledSignal==17 || fCabledSignal==76)      fScalerMap[fCurrScCh][4]=0;
+	    else if(fCabledSignal==18 || fCabledSignal==77) fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==19 || fCabledSignal==78) fScalerMap[fCurrScCh][4]=2;
+	    else if(fCabledSignal==20 || fCabledSignal==79) fScalerMap[fCurrScCh][4]=3;
+	    else if(fCabledSignal==21 || fCabledSignal==80) fScalerMap[fCurrScCh][4]=4;
 	  }
-	  else if(fCabledSignal==22 || fCabledSignal==23){
+	  else if(fCabledSignal==22 || fCabledSignal==23 ||
+	          fCabledSignal==81 || fCabledSignal==82){
 	    fScalerMap[fCurrScCh][3] = 3; // ZEM
 	    //
-	    if(fCabledSignal==22 )     fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==23) fScalerMap[fCurrScCh][4]=2;
+	    if(fCabledSignal==22 || fCabledSignal==81)     fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==23 || fCabledSignal==82) fScalerMap[fCurrScCh][4]=2;
 	  }
       	  // Ch debug.
 	  //printf("\t VME scaler mod. %d ch. %d, signal %d",fScalerMap[fCurrScCh][0],fADCChannel,fCabledSignal);
