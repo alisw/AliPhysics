@@ -29,7 +29,9 @@ public:
   enum EChamberData{kMinCh=0,kMaxCh=6,kMinPc=0,kMaxPc=5};      //Segmenation
   enum EPadxData{kPadPcX=80,kMinPx=0,kMaxPx=79,kMaxPcx=159};   //Segmentation structure along x
   enum EPadyData{kPadPcY=48,kMinPy=0,kMaxPy=47,kMaxPcy=143};   //Segmentation structure along y 
-  enum EPedestalData{kPadMeanZeroCharge=4000,kPadSigmaZeroCharge=1000,kPadMeanMasked=4001,kPadSigmaMasked=1001}; //Pedestal pad data information
+  //The electronics takes the 32bit int as: first 9 bits for the pedestal and the second 9 bits for threshold - values below should be within range
+  enum EPedestalData{kPadMeanZeroCharge=400,kPadSigmaZeroCharge=20,kPadMeanMasked=401,kPadSigmaMasked=20};         //One can go up to 5 sigma cut, overflow is protected in AliHMPIDCalib
+  
       
   static Float_t r2d         (                               )     {return 57.2957795;                               }
   static Float_t SizePadX    (                               )     {return fgCellX;                                  }  //pad size x, [cm]  
@@ -252,14 +254,9 @@ Double_t AliHMPIDParam::FindTemp(Double_t tLow,Double_t tHigh,Double_t y)
 //  Double_t gradT = (t2-t1)/SizePcY();  // linear gradient
 //  return gradT*y+t1;
   Double_t halfPadSize = 0.5*SizePadY();
-  Double_t result = tLow;
-  Double_t delta = (TMath::Log(tHigh)-TMath::Log(tLow));
-  if (TMath::Abs(delta)>0) {
-    Double_t gradT = (TMath::Log(SizePcY()) - TMath::Log(halfPadSize))/delta;
-    if(y<0) y = 0;
-    result += TMath::Power(y/halfPadSize,1./gradT);
-  }
-  return result;    
+  Double_t gradT = (TMath::Log(SizePcY()) - TMath::Log(halfPadSize))/(TMath::Log(tHigh)-TMath::Log(tLow));
+  if(y<0) y = 0;
+  return tLow + TMath::Power(y/halfPadSize,1./gradT);  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif
