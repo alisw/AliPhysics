@@ -13,6 +13,7 @@
 #include "AliFemtoModelGausLCMSFreezeOutGenerator.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoLorentzVector.h"
+#include <TMath.h>
 
 //_______________________
 AliFemtoModelGausLCMSFreezeOutGenerator::AliFemtoModelGausLCMSFreezeOutGenerator() :
