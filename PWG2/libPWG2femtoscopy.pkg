@@ -26,6 +26,7 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFmPhysicalHelix.cxx \
       FEMTOSCOPY/AliFemto/TpcLocalTransform.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReader.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoEventReaderStandard.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderESD.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderESDChain.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderESDChainKine.cxx \
