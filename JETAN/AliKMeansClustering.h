@@ -28,6 +28,8 @@ class AliKMeansClustering : public TObject
   static void  OptimalInit(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my);
   static void  SetBeta(Double_t beta) {fBeta = beta;}
   static Double_t d(Double_t mx, Double_t my, Double_t x, Double_t y);
+  static Int_t NTwoSigma(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my, 
+				Double_t* sigma2x, Double_t* sigma2y);
 protected:
   static Double_t fBeta;
   

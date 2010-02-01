@@ -440,3 +440,24 @@ void AliKMeansClustering::OptimalInit(Int_t k, Int_t n, Double_t* x, Double_t* y
 }
 
 
+Int_t AliKMeansClustering::NTwoSigma(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my, 
+					   Double_t* sigma2x, Double_t* sigma2y)
+{
+  //  
+  // Counting the number of data points within 2sigma of a cluster
+  //
+  Int_t n2sigma = 0;
+  for (Int_t j = 0; j < n; j++) {
+    Double_t nassign = 0;
+    for (Int_t i = 0; i < k; i++) {
+      Double_t dx = TMath::Abs(mx[i]-x[j]);
+      if (dx > TMath::Pi()) dx = 2. * TMath::Pi() - dx; 
+      Double_t dy = TMath::Abs(my[i]-y[j]);
+      if ((dx * dx / sigma2x[i] + dy * dy / sigma2y[i]) < 4.) nassign++;
+    } // clusters
+    if (nassign > 0) n2sigma++;
+  } // data points
+  return (n2sigma);
+}
+
+
