@@ -422,6 +422,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
   TH1D *fHistSSDEventType = new TH1D("fHistSSDEventType",
 				     "SSD Event Type;Event type;Events",
 				     31,-1,30);
+  fHistSSDEventType->SetStats(kFALSE);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDEventType, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
@@ -430,7 +431,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 				    "SSD Data Size;(SSD data size) [KB];Events",
 				    1000,0,500);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSize, 
-					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizePercentage = new TH1D("fHistSSDDataSizePercentage",
 					      "SSD Data Size Percentage;SSD data size [%];Events",
@@ -440,12 +441,14 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDDLId = new TH1D("fHistSSDDDLId",
 				 "SSD DDL Id;DDL id;Events",16,511.5,527.5);
+  fHistSSDDDLId->SetStats(kFALSE);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDDLId, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizePerDDL = new TH1D("fHistSSDDataSizePerDDL",
 					  "SSD Data Size Per DDL;DDL id;<SSD data size> [KB]",
 					  16,511.5,527.5);
+  fHistSSDDataSizePerDDL->SetStats(kFALSE);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerDDL, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
 
@@ -463,14 +466,16 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
   }
   
   TH1D *fHistSSDLDCId = new TH1D("fHistSSDLDCId","SSD LDC Id;LDC id;Events",8,169.5,177.5);
+  fHistSSDLDCId->SetStats(kFALSE);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDLDCId, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizePerLDC = new TH1D("fHistSSDDataSizePerLDC",
 					  "SSD Data Size Per LDC;LDC id;<SSD data size> [KB]",
 					  8,169.5,177.5);
+  fHistSSDDataSizePerLDC->SetStats(kFALSE);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerLDC, 
-					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);  fSSDRawsOffset += 1;
+					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, image, !saveCorr);  fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizeLDC[fgkNumOfLDCs];
   for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) {
     gName = "fHistSSDDataSizeLDC"; 
@@ -596,6 +601,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
       sprintf(fLabel,"%d",iBin);
       fHistSSDOccupancyLayer5->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
+    fHistSSDOccupancyLayer5->SetStats(kFALSE);
     rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyLayer5, 
 					fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1;
@@ -610,6 +616,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
       sprintf(fLabel,"%d",iBin);
       fHistSSDOccupancyLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
+    fHistSSDOccupancyLayer6->SetStats(kFALSE);
     rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyLayer6, 
                                         fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1;
@@ -626,6 +633,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
       sprintf(fLabel,"%d",iBin);
       fHistSSDOccupancyThresholdLayer5->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
+    fHistSSDOccupancyThresholdLayer5->SetStats(kFALSE);
     rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyThresholdLayer5, 
                                         fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1;
@@ -640,6 +648,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
       sprintf(fLabel,"%d",iBin);
       fHistSSDOccupancyThresholdLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
+    fHistSSDOccupancyThresholdLayer6->SetStats(kFALSE);
     rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyThresholdLayer6, 
 					fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1;
@@ -656,6 +665,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
       sprintf(fLabel,"%d",iBin);
       fHistSSDAverageOccupancyLayer5->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
+    fHistSSDAverageOccupancyLayer5->SetStats(kFALSE);
     rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDAverageOccupancyLayer5, 
 					     fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
     fSSDRawsOffset += 1;
@@ -670,6 +680,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
       sprintf(fLabel,"%d",iBin);
       fHistSSDAverageOccupancyLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
+    fHistSSDAverageOccupancyLayer6->SetStats(kFALSE);
     rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDAverageOccupancyLayer6, 
 					     fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
     fSSDRawsOffset += 1;

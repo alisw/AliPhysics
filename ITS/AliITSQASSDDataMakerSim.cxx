@@ -221,7 +221,7 @@ Int_t AliITSQASSDDataMakerSim::InitHits() {
 
   // custom code here
   TH1F *fHistSSDModule = new TH1F("fHistSSDHitsModule",
-				  "SSD Hits Module;SDD Module Number;N_{HITS}",
+				  "SSD Hits Module;SSD Module Number;N_{HITS}",
 				  1698,499.5,2197.5); 
   rv = fAliITSQADataMakerSim->Add2HitsList(fHistSSDModule,
 				      fGenOffsetH[fAliITSQADataMakerSim->GetEventSpecie()] + 0, !expert, image);
