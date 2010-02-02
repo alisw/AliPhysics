@@ -234,7 +234,7 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
   	} else {
 		// this is to make the SHUTTLE output lighter
 		if(!(query.GetPath().Contains("SHUTTLE/STATUS")))
-    			AliInfo(Form("No valid CDB object found! request was: %s", query.ToString().Data()));
+    			AliFatal(Form("No valid CDB object found! request was: %s", query.ToString().Data()));
   	}
 
 	// if drain storage is set, drain entry into drain storage
