@@ -52,6 +52,8 @@ class AliEMCALDigitizer;
 #include "AliCaloNeuralFit.h"
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
+#include "AliCaloRawAnalyzerFastFit.h"
+#include "AliCaloRawAnalyzerNN.h"
 #include "AliCaloRawAnalyzerLMS.h"
 #include "AliCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloRawAnalyzerCrude.h"
@@ -85,7 +87,14 @@ AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
   fNPedSamples = 4;    // less than this value => likely pedestal samples
   fRemoveBadChannels = kTRUE; //Remove bad channels before fitting
   fFittingAlgorithm  = fitAlgo;
-  if (fitAlgo == kLMS) {
+
+  if (fitAlgo == kFastFit) {
+    fRawAnalyzer = new AliCaloRawAnalyzerFastFit();
+  }
+  else if (fitAlgo == kNeuralNet) {
+    fRawAnalyzer = new AliCaloRawAnalyzerNN();
+  }
+  else if (fitAlgo == kLMS) {
     fRawAnalyzer = new AliCaloRawAnalyzerLMS();
   }
   else if (fitAlgo == kPeakFinder) {
@@ -144,7 +153,14 @@ AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry, fitAlgorithm fit
   fNPedSamples = 4;    // less than this value => likely pedestal samples
   fRemoveBadChannels = kTRUE; //Remove bad channels before fitting
   fFittingAlgorithm  = fitAlgo;
-  if (fitAlgo == kLMS) {
+
+  if (fitAlgo == kFastFit) {
+    fRawAnalyzer = new AliCaloRawAnalyzerFastFit();
+  }
+  else if (fitAlgo == kNeuralNet) {
+    fRawAnalyzer = new AliCaloRawAnalyzerNN();
+  }
+  else if (fitAlgo == kLMS) {
     fRawAnalyzer = new AliCaloRawAnalyzerLMS();
   }
   else if (fitAlgo == kPeakFinder) {
@@ -380,7 +396,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       Float_t time = 0; 
       Float_t amp = 0; 
 
-      if (fFittingAlgorithm == kLMS || fFittingAlgorithm == kPeakFinder || fFittingAlgorithm == kCrude) {
+      if ( fFittingAlgorithm == kFastFit || fFittingAlgorithm == kNeuralNet || fFittingAlgorithm == kLMS || fFittingAlgorithm == kPeakFinder || fFittingAlgorithm == kCrude) {
 	// all functionality to determine amp and time etc is encapsulated inside the Evaluate call for these methods 
 	AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
 
@@ -500,18 +516,20 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
   //Do the fit, different fitting algorithms available
   //--------------------------------------------------
   int nsamples = lastTimeBin - firstTimeBin + 1;
-  TGraph *gSig =  new TGraph( nsamples); 
-  for (int i=0; i<nsamples; i++) {
-    Int_t timebin = firstTimeBin + i;    
-    gSig->SetPoint(timebin, timebin, fRawAnalyzer->GetReversed(timebin)); 
-  }
 
   switch(fFittingAlgorithm) {
   case kStandard:
     {
-      if (gSig->GetN() < 3) { return; } // nothing much to fit
+      if (nsamples < 3) { return; } // nothing much to fit
       //printf("Standard fitter \n");
+
       // Create Graph to hold data we will fit 
+      TGraph *gSig =  new TGraph( nsamples); 
+      for (int i=0; i<nsamples; i++) {
+	Int_t timebin = firstTimeBin + i;    
+	gSig->SetPoint(timebin, timebin, fRawAnalyzer->GetReversed(timebin)); 
+      }
+
       TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeBins(), 5);
       signalF->SetParameters(10.,5.,fTau,fOrder,0.); //set all defaults once, just to be safe
       signalF->SetParNames("amp","t0","tau","N","ped");
@@ -533,80 +551,50 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
       FitParabola(gSig, amp); // amp is possibly updated
 
       //printf("Std   : Amp %f, time %g\n",amp, time);
+      delete gSig; // delete TGraph
 				
       break;
     }//kStandard Fitter
     //----------------------------
-  case kFastFit:
+  case kLogFit:
     {
-      //printf("FastFitter \n");
-      Double_t eSignal = 1; // nominal 1 ADC error
-      Double_t dAmp = amp; 
-      Double_t eAmp = 0;
-      Double_t dTime = time;
-      Double_t eTime = 0;
-      Double_t chi2 = 0;
-      
-      AliCaloFastAltroFitv0::FastFit(gSig->GetX(), gSig->GetY(), gSig->GetN(),
-				     eSignal, fTau,
-				     dAmp, eAmp, dTime, eTime, chi2);
-      amp  = dAmp;
-      time = dTime * GetRawFormatTimeBinWidth();
-      //printf("FastFitter: Amp %f, time %g, eAmp %f, eTimeEstimate %g, chi2 %f\n",amp, time,eAmp,eTime,chi2);
+      if (nsamples < 3) { return; } // nothing much to fit
+      //printf("LogFit \n");
+
+      // Create Graph to hold data we will fit 
+      TGraph *gSigLog =  new TGraph( nsamples); 
+      for (int i=0; i<nsamples; i++) {
+	Int_t timebin = firstTimeBin + i;    
+	gSigLog->SetPoint(timebin, timebin, TMath::Log(fRawAnalyzer->GetReversed(timebin) ) ); 
+      }
+
+      TF1 * signalFLog = new TF1("signalLog", RawResponseFunctionLog, 0, GetRawFormatTimeBins(), 5);
+      signalFLog->SetParameters(2.3, 5.,fTau,fOrder,0.); //set all defaults once, just to be safe
+      signalFLog->SetParNames("amplog","t0","tau","N","ped");
+      signalFLog->FixParameter(2,fTau); // tau in units of time bin
+      signalFLog->FixParameter(3,fOrder); // order
+      signalFLog->FixParameter(4, 0); // pedestal should be subtracted when we get here 
+      signalFLog->SetParameter(1, time);
+      if (amp>=1) {
+	signalFLog->SetParameter(0, TMath::Log(amp));
+      }
+	
+      gSigLog->Fit(signalFLog, "QROW"); // Note option 'W': equal errors on all points
+				
+      // assign fit results
+      Double_t amplog = signalFLog->GetParameter(0); //Not Amp, but Log of Amp
+      amp = TMath::Exp(amplog);
+      time = signalFLog->GetParameter(1);
+
+      delete signalFLog;
+      //printf("LogFit: Amp %f, time %g\n",amp, time);
+      delete gSigLog; 
       break;
-    } //kFastFit 
+    } //kLogFit 
     //----------------------------	
     
-  case kNeuralNet:
-    {
-      // Extracts the amplitude and the time information using a Neural Network approach
-      // Author P. La Rocca
-      //printf("NeuralNet \n");
-      Double_t input[5] = {0.};
-      Double_t maxgraph = 0.;
-      Int_t maxindex = -10; 
-      // Values for readback from input graph
-      Double_t ttime = 0;
-      Double_t signal = 0;
-
-      for (Int_t i=0; i < gSig->GetN(); i++) {
-	gSig->GetPoint(i, ttime, signal); 
-	if(signal > maxgraph) {
-	  maxgraph = signal;
-	  maxindex = i;
-	}
-      }
-      if((maxindex-2) > -1 && (maxindex-2)< gSig->GetN()) {
-	gSig->GetPoint(maxindex-2, ttime, input[0]);
-	input[0] /= maxgraph;
-      }
-      if((maxindex-1) > -1 && (maxindex-1)< gSig->GetN()) {
-	gSig->GetPoint(maxindex-1, ttime, input[1]);
-	input[1] /= maxgraph;
-      }
-      if((maxindex) > -1 && (maxindex)< gSig->GetN()) {
-	gSig->GetPoint(maxindex,   ttime, input[2]);
-	input[2] /= maxgraph;
-      }
-      if((maxindex+1) > -1 && (maxindex+1)< gSig->GetN()) {
-	gSig->GetPoint(maxindex+1, ttime, input[3]);
-	input[3] /= maxgraph;
-      }
-      if((maxindex+2) > -1 && (maxindex+2)< gSig->GetN()) {
-	gSig->GetPoint(maxindex+2, ttime, input[4]);
-	input[4] /= maxgraph;
-      }
-      
-      AliCaloNeuralFit exportNN;
-      amp = exportNN.Value(0,input[0],input[1],input[2],input[3],input[4])*maxgraph;
-      time = exportNN.Value(1,input[0],input[1],input[2],input[3],input[4])+maxindex;
-            
-      break;
-    } //kNeuralNet
     //----------------------------
   }//switch fitting algorithms
-
-  delete gSig; // delete TGraph
 
   return;
 }
@@ -701,6 +689,39 @@ Double_t AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
     signal = ped ;  
   else {  
     signal = ped + par[0] * TMath::Power(xx , n) * TMath::Exp(n * (1 - xx )) ; 
+  }
+  return signal ;  
+}
+
+//__________________________________________________________________
+Double_t AliEMCALRawUtils::RawResponseFunctionLog(Double_t *x, Double_t *par)
+{
+  // Matches version used in 2007 beam test
+  //
+  // Shape of the electronics raw reponse:
+  // It is a semi-gaussian, 2nd order Gamma function of the general form
+  //
+  // xx = (t - t0 + tau) / tau  [xx is just a convenient help variable]
+  // F = A * (xx**N * exp( N * ( 1 - xx) )   for xx >= 0
+  // F = 0                                   for xx < 0 
+  //
+  // parameters:
+  // Log[A]:   par[0]   // Amplitude = peak value
+  // t0:  par[1]
+  // tau: par[2]
+  // N:   par[3]
+  // ped: par[4]
+  //
+  Double_t signal ;
+  Double_t tau =par[2];
+  Double_t n =par[3];
+  //Double_t ped = par[4]; // not used
+  Double_t xx = ( x[0] - par[1] + tau ) / tau ;
+
+  if (xx < 0) 
+    signal = par[0] - n*TMath::Log(TMath::Abs(xx)) + n * (1 - xx ) ;  
+  else {  
+    signal = par[0] + n*TMath::Log(xx) + n * (1 - xx ) ; 
   }
   return signal ;  
 }
