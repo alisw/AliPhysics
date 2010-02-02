@@ -72,7 +72,7 @@ ClassImp(AliAnalysisTaskPerformanceStrange)
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
-  : AliAnalysisTaskSE(), fAnalysisMC(999), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"), fListHist(0), 
+  : AliAnalysisTaskSE(), fAnalysisMC(999), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"), fListHist(0), fPhysTrigSel(0),
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
     fHistMCPrimaryVertexZ(0),
@@ -310,7 +310,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char *name)
-  : AliAnalysisTaskSE(name), fAnalysisMC(999), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"), fListHist(),
+  : AliAnalysisTaskSE(name), fAnalysisMC(999), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"), fListHist(), fPhysTrigSel(0),
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
     fHistMCPrimaryVertexZ(0),
@@ -1780,8 +1780,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   AliVParticle *lVPartNeg   = NULL;
 
   // Daughters' momentum:
-  Double_t  lMomPos[3];
-  Double_t  lMomNeg[3];
+  Double_t  lMomPos[3] = {999,999,999};
+  Double_t  lMomNeg[3] = {999,999,999};
 
   // AliKF Chi2 and Armenteros variables
   Double_t lChi2KFK0s = 0,  lChi2KFLambda = 0,  lChi2KFAntiLambda = 0;
