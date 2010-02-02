@@ -296,6 +296,7 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	  AliITSRecPoint cc(milab,hit,info);
 	  cc.SetType(npeaks);
 	  cc.SetDriftTime(driftTimeUncorr);
+	  cc.SetDriftSide(s);
 	  if(clusters) new (cl[ncl]) AliITSRecPoint(cc); 
 	  else {
 	    fDetTypeRec->AddRecPoint(cc);

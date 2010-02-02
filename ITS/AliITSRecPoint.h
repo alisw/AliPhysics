@@ -59,6 +59,7 @@ class AliITSRecPoint : public AliCluster {
   void SetType(Int_t type){ fType=type;}
   void SetDeltaProbability(Float_t prob){fDeltaProb = prob;}
   void SetDriftTime(Float_t tim) {fDriftTime=tim;}
+  void SetDriftSide(Int_t sid) {fDriftSide=sid;}
  
   Int_t IsUsed() const {return (fQ<0)?1:0;}
   Float_t GetQ() const {return TMath::Abs(fQ);}
@@ -73,6 +74,7 @@ class AliITSRecPoint : public AliCluster {
   Int_t GetType() const {return fType;}  // type of the cluster (for SPD the number of pixels in the cluster)
   Float_t GetDeltaProbability() const{return fDeltaProb;} //probability to belong to the delta ray
   Float_t GetDriftTime() const{return  fDriftTime;}
+  Int_t GetDriftSide() const {return fDriftSide;}
   Int_t GetNpixels() const; // for SPD returns fType, i.e. the number of pixels in the cluster (-1 for SDD and SSD)
   Int_t GetSPDclusterType() const; // for SPD returns cluster type according to conventional numbering (-1 for SDD and SSD)
   Int_t GetSDDclusterType() const; 
@@ -98,8 +100,9 @@ class AliITSRecPoint : public AliCluster {
   Int_t    fType;         //quality factor of the cluster
   Float_t  fDeltaProb;    // probability to be delta electron
   Float_t  fDriftTime;    // drift time in SDD
+  Char_t   fDriftSide;    // drift region in SDD (0=left=positive xlocal, 1=right)
     
-  ClassDef(AliITSRecPoint,6)  // AliITSRecPoint class
+  ClassDef(AliITSRecPoint,7)  // AliITSRecPoint class
 };
 // Input and output function for standard C++ input/output.
 ostream& operator<<(ostream &os,AliITSRecPoint &source);

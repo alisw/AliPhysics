@@ -37,7 +37,8 @@
 ClassImp(AliITSRecPoint)
 
 //_____________________________________________________________
-AliITSRecPoint::AliITSRecPoint(): AliCluster(),
+AliITSRecPoint::AliITSRecPoint(): 
+AliCluster(),
 fXloc(0),
 fZloc(0),
 fdEdX(0),
@@ -49,7 +50,8 @@ fNy(0),
 fChargeRatio(0),
 fType(0),
 fDeltaProb(0),
-fDriftTime(0.)
+fDriftTime(0.),
+fDriftSide(0)
 {
     // default constructor
 }
@@ -68,7 +70,8 @@ fNy(info[0]),
 fChargeRatio(0),
 fType(0),
 fDeltaProb(0),
-fDriftTime(0.)
+fDriftTime(0.),
+fDriftSide(0)
 {
   //standard constructor used in AliITSClusterFinderV2
 
@@ -115,19 +118,21 @@ fDriftTime(0.)
 }
 
 //_______________________________________________________________________
-AliITSRecPoint::AliITSRecPoint(const AliITSRecPoint& pt):AliCluster(pt),
-fXloc(pt.fXloc),
-fZloc(pt.fZloc),
-fdEdX(pt.fdEdX),
-fIndex(pt.fIndex),
-fQ(pt.fQ),
-fLayer(pt.fLayer),
-fNz(pt.fNz),
-fNy(pt.fNy),
-fChargeRatio(pt.fChargeRatio),
-fType(pt.fType),
-fDeltaProb(pt.fDeltaProb),
-fDriftTime(pt.fDriftTime)
+AliITSRecPoint::AliITSRecPoint(const AliITSRecPoint& pt):
+  AliCluster(pt),
+  fXloc(pt.fXloc),
+  fZloc(pt.fZloc),
+  fdEdX(pt.fdEdX),
+  fIndex(pt.fIndex),
+  fQ(pt.fQ),
+  fLayer(pt.fLayer),
+  fNz(pt.fNz),
+  fNy(pt.fNy),
+  fChargeRatio(pt.fChargeRatio),
+  fType(pt.fType),
+  fDeltaProb(pt.fDeltaProb),
+  fDriftTime(pt.fDriftTime),
+  fDriftSide(pt.fDriftSide)
 {
   //Copy constructor
 
@@ -173,7 +178,7 @@ void AliITSRecPoint::Print(ostream *os){
     *os << fXloc << " " << fZloc << " " << fdEdX << " ";
     fmt = os->setf(ios::fixed); // every fixed
     *os << fIndex <<" " << fQ << " "<<fLayer <<" "<<fNz<<" "<<fNy<<" ";
-    *os << fChargeRatio<<" " << fType << " " << fDeltaProb << " " << fDriftTime;
+    *os << fChargeRatio<<" " << fType << " " << fDeltaProb << " " << fDriftTime<< " " << fDriftSide;
     os->flags(fmt); // reset back to old formating.
     return;
 }
@@ -240,6 +245,7 @@ Int_t AliITSRecPoint::GetSDDclusterType() const {
 // max. allowed cluster size = 255
   Int_t typ=(fNz&0xFF)<<8;
   typ+=fNy&0xFF;
+  if(fDriftSide==1) typ+=1<<16;
   return typ;
 }
 
@@ -271,7 +277,7 @@ void AliITSRecPoint::Read(istream *is){
     SetVolumeId(lab[0]);// fIsMisalinged = mis;
     *is >> fXloc >> fZloc >> fdEdX;
     *is >> fIndex >> fQ >> fLayer >> fNz >> fNy >> fChargeRatio >> fType;
-    *is >> fDeltaProb >> fDriftTime;
+    *is >> fDeltaProb >> fDriftTime >> fDriftSide;
 
     return;
 }
