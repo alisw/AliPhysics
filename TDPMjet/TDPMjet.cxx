@@ -59,6 +59,7 @@
 # define dt_rndmin dt_rndmin_
 # define dt_rndmou dt_rndmou_
 # define dpmjet_openinp dpmjet_openinp_
+# define dt_evtout dt_evtout_
 # define type_of_call
 #else
 # define dt_dtuini DT_DTUINI
@@ -70,9 +71,11 @@
 # define dt_rndmst DT_RNDMST
 # define dt_rndmin DT_RNDMIN
 # define dt_rndmou DT_RNDMOU
+# define dt_evtout DT_EVTOUT_
 # define dpmjet_openinp DPMJET_OPENINP
 # define type_of_call _stdcall
 #endif
+
 
 #ifndef WIN32
 extern "C" void   type_of_call dt_dtuini(Int_t & , Double_t &, Int_t & , Int_t &, 
@@ -82,6 +85,7 @@ extern "C" void   type_of_call dt_kkinc(Int_t &, Int_t &, Int_t &, Int_t &,
 				    Int_t &, Double_t &, Int_t &, Int_t &);
 extern "C" void   type_of_call pho_phist(Int_t &, Double_t &);
 extern "C" void   type_of_call dt_dtuout();
+extern "C" int    type_of_call dt_evtout(const Int_t &);
 extern "C" void   type_of_call dt_rndm(Int_t &);
 extern "C" void   type_of_call dt_rndmst(Int_t &, Int_t &, Int_t &, Int_t &);
 extern "C" void   type_of_call dt_rndmin(Int_t &, Int_t &, Int_t &, Int_t &, Int_t &, Int_t &);
@@ -223,6 +227,17 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
 	      printf("\n	pc#%d -> A = %d, Z = %d -> PDGcode = %d\n",
 		     i,DTEVT2.idres[i],DTEVT2.idxres[i],DTEVT1.idhkk[i]);
 */	  
+/*
+	  printf("%5d %5d %5d %5d %13.3f %13.3f %13.3f %13.3f \n", i,
+		 DTEVT1.idhkk[i],
+		 DTEVT1.isthkk[i],
+		 iParent,  
+		 DTEVT1.phkk[i][0],
+		 DTEVT1.phkk[i][1],
+		 DTEVT1.phkk[i][2],
+		 DTEVT1.phkk[i][3]
+		 );
+*/
 	  new(Particles[i]) TParticle(
 	      DTEVT1.idhkk[i],
 	      DTEVT1.isthkk[i],
@@ -300,7 +315,7 @@ void TDPMjet::Initialize()
         fprintf(out, "PROCESS           0 0 0 1 0 0 0 0\n");
     }
     
-    Int_t iPDG[19] = 
+    Int_t iPDG[18] = 
 	{
 //          K0s   pi0  lam   sig+  sig-  tet0
 	310,  111, 3122, 3222, 3112, 3322,
@@ -309,12 +324,12 @@ void TDPMjet::Initialize()
 //          etac lamc+ sigc++ sigc+ sigc0 Ksic+
         441, 4122, 4222, 4212, 4112, 4232,
 //         Ksic0 sig0 
-	4132, 3212
+	4132
 	};
     
     
     Int_t iON = (fDecayAll) ? 1:0;
-    for (Int_t i = 0; i < 19; i++) {
+    for (Int_t i = 0; i < 8; i++) {
 	fprintf(out, "LUND-DECAY%5d %5d\n",  iPDG[i], iON);    
     }
 	
@@ -346,6 +361,7 @@ void TDPMjet::GenerateEvent()
    Float_t Elab = fEpn;
    Int_t irej=0;
    Dt_Kkinc(fIp, fIpz, fIt, fItz, fIdp, Elab, kkmat, irej);
+//   dt_evtout(4);
    if(irej!=0) return;
 }
 //______________________________________________________________________________
