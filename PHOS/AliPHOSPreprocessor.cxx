@@ -405,24 +405,64 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
     else
       lastCalib = (AliPHOSEmcCalibData*)entryEmc->GetObject();
 
-    if(lastCalib)
-      result[i] *= DoCalibrateEmc(system[i],list,badMap,*lastCalib);
-    else
+    if(lastCalib) 
+      result[i] *= DoCalibrateEmc(system[i],list,badMap,*lastCalib);    
+    else 
       result[i] *= DoCalibrateEmc(system[i],list,badMap,calibData);
-
+    
     //Store EMC calibration data
-
     AliCDBMetaData emcMetaData;
     
     if(lastCalib)
-      result[i] *= Store(path.Data(), "EmcGainPedestals", lastCalib, &emcMetaData, 0, kTRUE);
+      result[i] *= Store(path.Data(), "EmcGainPedestals", lastCalib, &emcMetaData, 0, kFALSE);
     else
-      result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, 0, kTRUE);
+      result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, 0, kFALSE);
+
+    //Store reference data
+    Bool_t refOK = StoreReferenceEmc(system[i],list,path.Data());
+    if(refOK) Log(Form("Reference data for EMC Amplitudes successfully stored."));
     
   }
   
   if(result[0] || result[1]) return kTRUE;
   else return kFALSE;
+}
+
+Bool_t AliPHOSPreprocessor::StoreReferenceEmc(Int_t system, TList* list, const char* path)
+{
+  //Put 2D calibration histograms (E vs Time) prepared by DAQ/HLT to the reference storage.
+  //system is DAQ or HLT, TList is the list of FES sources.
+
+  TIter iter(list);
+  TObjString *source;
+  TObjArray objArr;
+  
+  while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+    
+    TString fileName = GetFile(system, "AMPLITUDES", source->GetName());
+    TFile f(fileName);
+    
+    if(!f.IsOpen()) {
+      Log(Form("Source file %s is not opened, EMC reference data will not be stored!",fileName.Data()));
+      return kFALSE;
+    }
+    
+    TList * keylist = f.GetListOfKeys();
+    Int_t nkeys   = f.GetNkeys();
+    
+    for(Int_t ikey=0; ikey<nkeys; ikey++) {
+      TKey* key = (TKey*)keylist->At(ikey);
+      TObject* obj = f.Get(key->GetName());
+      objArr.Add(obj);
+    }
+  }
+
+  AliCDBMetaData metaData;
+  metaData.SetResponsible("Boris Polishchuk");
+  
+  Bool_t resultRef = StoreReferenceData(path,"Amplitudes",&objArr, &metaData);
+  return resultRef;
+
 }
 
 
@@ -436,7 +476,7 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
   // It is a responsibility of the SHUTTLE framework to form the fileName.
 
   gRandom->SetSeed(0); //the seed is set to the current  machine clock!
-  Int_t minEntries=100; // recalculate calibration coeff. if Nentries > minEntries.
+  Int_t minEntries=1000; // recalculate calibration coeff. if Nentries > minEntries.
 
   TIter iter(list);
   TObjString *source;

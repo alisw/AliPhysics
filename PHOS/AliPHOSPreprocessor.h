@@ -35,8 +35,9 @@ class AliPHOSPreprocessor : public AliPreprocessor {
 
   Bool_t DoCalibrateEmc(Int_t system, TList* sources, const AliPHOSEmcBadChannelsMap* badMap, AliPHOSEmcCalibData& calibData);
   Bool_t DoFindBadChannelsEmc(Int_t system, TList* sources, AliPHOSEmcBadChannelsMap& badMap);
+  Bool_t StoreReferenceEmc(Int_t system, TList* list, const char* path);
 
-  ClassDef(AliPHOSPreprocessor,2);
+  ClassDef(AliPHOSPreprocessor,3);
 
 };
 
