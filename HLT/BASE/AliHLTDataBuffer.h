@@ -326,17 +326,30 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     /** destructor */
     virtual ~AliHLTRawPage();
 
+    /** alloc a buffer of specified size from the global pages*/
+    static AliHLTRawBuffer* GlobalAlloc(AliHLTUInt32_t size, int verbosity=0);
+    /** find buffer in the global pages */
+    static AliHLTRawPage* FindPage(AliHLTRawBuffer* buffer);
+    /** cleanup the global pages */
+    static int GlobalClean();
+    /** adjust global page size */
+    static void SetGlobalPageSize(AliHLTUInt32_t size) {fgGlobalPageSize=size;}
+    /** find next page after prev, or first page */
+    static AliHLTRawPage* NextPage(AliHLTRawPage* prev=NULL);
+
     /** alloc a buffer of specified size */
     AliHLTRawBuffer* Alloc(AliHLTUInt32_t size);
     /** free a buffer and merge consecutive free buffers */
     int Free(AliHLTRawBuffer* pBuffer);
     /** set the size of a raw buffer and release the remaining part */
     int SetSize(AliHLTRawBuffer* pBuffer, AliHLTUInt32_t size);
+    /// check if the buffer is in this page
+    bool HasBuffer(AliHLTRawBuffer* pBuffer);
 
     AliHLTUInt32_t Size() const {return fSize;}
     AliHLTUInt32_t Capacity() const;
     bool IsUsed() const {return fUsedBuffers.size()>0;}
-    bool IsFragmented() const {return (fFreeBuffers.size()+fUsedBuffers.size()>0)>1;}
+    bool IsFragmented() const {return (fFreeBuffers.size()+fUsedBuffers.size())>1;}
 
     /**
      * Print page information
@@ -348,6 +361,11 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     AliHLTRawPage(const AliHLTRawPage&);
     /** assignment operator prohibited */
     AliHLTRawPage& operator=(const AliHLTRawPage&);
+
+    /// list of global pages
+    static vector<AliHLTDataBuffer::AliHLTRawPage*> fgGlobalPages; //! transient
+    /// pages size of global pages
+    static AliHLTUInt32_t fgGlobalPageSize;                        //! transient
 
     /** page size */
     AliHLTUInt32_t fSize;                                          // see above
@@ -492,12 +510,15 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   int FindMatchingDataSegments(const AliHLTComponent* pConsumer, 
 			       vector<AliHLTDataBuffer::AliHLTDataSegment>& tgtList);
 
+ protected:
+  // 2010-02-01 make function protected in order to be used from unit test
   /**
    * Reset the data buffer.
    * Removes all consumers back to the @ref fConsumers list, deletes
    * segments and releases the Raw Buffer.
    */
   int ResetDataBuffer();
+ private:
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -537,6 +558,12 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @return pointer to raw buffer
    */
   static AliHLTRawBuffer* CreateRawBuffer(AliHLTUInt32_t size);
+
+  /**
+   * Set the data size of a raw buffer after it has been filled by
+   * the component.
+   */
+  int SetRawBufferDataSize(AliHLTRawBuffer* pBuffer, AliHLTUInt32_t size) const;
 
   /**
    * Mark a buffer as free.
