@@ -207,9 +207,9 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
       fGeom->RelToAbsNumbering(relId, absId);
       
       fitter->SetNBunches(0);
-      Int_t sigStart  ;
-      Int_t sigLength ;
-      while (fRawStream->NextBunch()) { //Take first in time banch
+      Int_t sigStart =0 ;
+      Int_t sigLength=0 ;
+      while (fRawStream->NextBunch()) { //Take the first in time bunch
 	const UShort_t *sig = fRawStream->GetSignals();
 	sigStart  = fRawStream->GetStartTimeBin();
 	sigLength = fRawStream->GetBunchLength();
@@ -254,7 +254,8 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
       
       if (caloFlag == AliCaloRawStreamV3::kLowGain) {
 	new(tmpLG[ilgDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
-	dynamic_cast<AliPHOSDigit*>(tmpLG.At(ilgDigit))->SetALTROSamplesHG(sigLength,fADCValuesLG);
+	if (sigLength>0 && fADCValuesLG!=0)
+	  dynamic_cast<AliPHOSDigit*>(tmpLG.At(ilgDigit))->SetALTROSamplesLG(sigLength,fADCValuesLG);
 	ilgDigit++ ; 
       }
       else if (caloFlag == AliCaloRawStreamV3::kHighGain) {
@@ -263,7 +264,8 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
 	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,-1.f,(Float_t)time);
 	else
 	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
-	dynamic_cast<AliPHOSDigit*>(digits->At(iDigit))->SetALTROSamplesHG(sigLength,fADCValuesLG);
+	if (sigLength>0 && fADCValuesHG!=0)
+	  dynamic_cast<AliPHOSDigit*>(digits->At(iDigit))->SetALTROSamplesHG(sigLength,fADCValuesHG);
 	iDigit++;
       }
     } // End of NextChannel()
