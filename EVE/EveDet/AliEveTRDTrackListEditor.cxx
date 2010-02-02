@@ -1,7 +1,7 @@
-// Author: Benjamin Hess   30/10/2009
+// Author: Benjamin Hess   29/01/2010
 
 /*************************************************************************
- * Copyright (C) 2008-2009, Alexandru Bercuci, Benjamin Hess.            *
+ * Copyright (C) 2009-2010, Alexandru Bercuci, Benjamin Hess.            *
  * All rights reserved.                                                  *
  *************************************************************************/
 
@@ -123,10 +123,10 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   frbColor[2] = new TGRadioButton(fbgStyleColor, "ESD Source", 2);
   frbColor[2]->SetToolTipText("Set color model to \"ESD Source\" -> By source (TPC track prolongation or TRD stand alone)");
   
-  // Functionality for adding macros  
+  // Functionality for adding plugins  
   fMainFrame = CreateEditorTabSubFrame("Process");
    
-  fLabel1 = new TGLabel(fMainFrame,"Add macro(s):");
+  fLabel1 = new TGLabel(fMainFrame,"Add plugin(s):");
   fMainFrame->AddFrame(fLabel1);
   fBrowseFrame = new TGHorizontalFrame(fMainFrame);
 
@@ -148,7 +148,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 
   fLine1 = new TGHorizontal3DLine(fMainFrame, 194, 8);
   fMainFrame->AddFrame(fLine1, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));
-  fLabel2 = new TGLabel(fMainFrame,"Selection macros:");
+  fLabel2 = new TGLabel(fMainFrame,"Selection plugins:");
   fMainFrame->AddFrame(fLabel2);
 
   ftlMacroSelList = new TGListBox(fMainFrame);
@@ -195,7 +195,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fHistoFrame->AddFrame(fLine4, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));  
 
   fbDrawHisto = new TGTextButton(fHistoFrame, "Draw projections");
-  fbDrawHisto->SetToolTipText("Uses the data file created by the last \"Apply selected macro(s)\".\nClick here to display the data histograms of the selected macros.\nSelect multiple macros to create multi-dimensional plots.\nHisto macros cannot be used for multi-dimensional plots!");
+  fbDrawHisto->SetToolTipText("Uses the data file created by the last \"Apply selected plugin(s)\".\nClick here to display the data histograms of the selected macros.\nSelect multiple macros to create multi-dimensional plots.\nHisto macros cannot be used for multi-dimensional plots!");
   fbDrawHisto->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "DrawHistos()");
   fHistoFrame->AddFrame(fbDrawHisto);
 
@@ -278,7 +278,7 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* name, const Char_t* path)
                  kMBIconExclamation, kMBOk);
     break;
   case ERROR:
-    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", "Fail to load the macro (check messages in the terminal)!",
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", "Failed to load the macro (check messages in the terminal)!",
                  kMBIconExclamation, kMBOk);
     break;
   case SIGNATURE_ERROR:
@@ -759,7 +759,7 @@ void AliEveTRDTrackListEditor::InheritMacroList()
                                          new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
     else
     {
-      Error("AliEveTRDTrackListEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+      Error("AliEveTRDTrackListEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key->GetName()));
     }
   }
   
@@ -844,7 +844,7 @@ void AliEveTRDTrackListEditor::SaveMacroList(TMap* list)
                                              new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
     else
     {
-      Error("AliEveTRDTrackListEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+      Error("AliEveTRDTrackListEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key->GetName()));
     }
   }
 }

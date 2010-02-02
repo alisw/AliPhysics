@@ -579,6 +579,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
   TEveElement* object1 = 0;
   TEveElement* object2 = 0;
+  TH1* returnedHist = 0x0;
 
   // Collect the commands for each process macro and add them to "data-from-list"
   for (Int_t i = 0; i < procIterator->GetEntries(); i++){
@@ -675,7 +676,6 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
   if (numHistoMacros > 0)  histos = new TH1*[numHistoMacros];
   for (Int_t i = 0; i < numHistoMacros; i++)  histos[i] = 0x0;
 
-
   Bool_t secondBeforeFirstObject = kTRUE;
   
 
@@ -707,7 +707,18 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
         
       // Single object histo
       if (mProcType[i] == kSingleObjectHisto){
-        histos[histoIndex++] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
+        returnedHist = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
+        if (returnedHist)
+        {
+          if (!histos[histoIndex])  histos[histoIndex] = returnedHist;
+          else  
+          {
+            histos[histoIndex]->Add((const TH1*)returnedHist);
+            delete returnedHist;
+            returnedHist = 0;
+          }
+        }
+        histoIndex++;
        // Correlated Objects histo
       } else if (mProcType[i] == kCorrelObjectHisto) {
         // To get all pairs, do the second loop over all objects.
@@ -759,16 +770,25 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
               !((TObject*)object2->GetUserData())->InheritsFrom(mSelObjectType2[j]))  continue;
 
               selectedByCorrSelMacro = (Bool_t)gROOT->ProcessLineSync(selCmds[j]);
-              if (!selectedByCorrSelMacro){ 
-                break;
-              }
+              if (!selectedByCorrSelMacro)  break;
             }
           }       
 
           // If the pair has not been selected by the correlated objects selection macros, skip it!
           if (!selectedByCorrSelMacro) continue;
-          
-          histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
+
+          returnedHist = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
+          if (returnedHist)
+          {
+            if (!histos[histoIndex])  histos[histoIndex] = returnedHist;
+            else  
+            {
+              histos[histoIndex]->Add((const TH1*)returnedHist);
+
+              delete returnedHist;
+              returnedHist = 0;
+            }
+          }
         }
         histoIndex++;
       }

@@ -1,7 +1,7 @@
-// Author: Benjamin Hess   25/09/2008
+// Author: Benjamin Hess   29/01/2010
 
 /*************************************************************************
- * Copyright (C) 2008-2009, Alexandru Bercuci, Benjamin Hess.            *
+ * Copyright (C) 2009-2010, Alexandru Bercuci, Benjamin Hess.            *
  * All rights reserved.                                                  *
  *************************************************************************/
 
