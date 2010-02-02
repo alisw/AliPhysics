@@ -28,20 +28,27 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
  
   void   SetCollidingSystems(Int_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
+  void   SetAnalysisMC(Int_t analysisMC) {fAnalysisMC = analysisMC;}
   void   SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   void   SetUsePID(const char* usePID) {fUsePID = usePID;}
   void   SetAnalysisCut(const char* useCut) {fUseCut = useCut;}
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
  
  private:
+  Int_t        fAnalysisMC;                     //  0->No MC or 1->MC analysis
   TString      fAnalysisType;                   //  "ESD" or "AOD"
   Int_t        fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb  
   TString      fUsePID;                         //  "withPID" or "noPID"
   TString      fUseCut;                         //  "yes" or "no"
 
-  TList       *fListHist;			//! Output List
+  TList               *fListHist;		//! Output List
+  AliPhysicsSelection *fPhysTrigSel;            //! Selection of events
 
   // MC histograms
+  TH1F        *fHistMCPrimaryVertexX;      //! Histo
+  TH1F        *fHistMCPrimaryVertexY;      //! Histo
+  TH1F        *fHistMCPrimaryVertexZ;      //! Histo
+
   TH1F        *fHistMCMultiplicityPrimary;       //! Histo
   TH1F        *fHistMCMultiplicityTracks;       //! Histo
   
@@ -61,9 +68,9 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistMCProdRadiusLambda;       //! Histo
   TH1F        *fHistMCProdRadiusAntiLambda;       //! Histo
 
-  TH2F        *fHistMCPtVsYK0s;       //! Histo
-  TH2F        *fHistMCPtVsYLambda;       //! Histo
-  TH2F        *fHistMCPtVsYAntiLambda;       //! Histo
+  TH2F        *fHistMCPtVsEtaK0s;       //! Histo
+  TH2F        *fHistMCPtVsEtaLambda;       //! Histo
+  TH2F        *fHistMCPtVsEtaAntiLambda;       //! Histo
 
   TH1F        *fHistMCPtLambdaFromSigma;       //! Histo
   TH1F        *fHistMCPtAntiLambdaFromSigma;       //! Histo
@@ -90,6 +97,10 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistPrimaryVertexY;       //! Histo
   TH1F        *fHistPrimaryVertexZ;       //! Histo
 
+  TH1F        *fHistPrimaryVertexPosXV0events;  //! Primary vertex position in X in events with V0 candidates
+  TH1F        *fHistPrimaryVertexPosYV0events;  //! Primary vertex position in Y in events with V0 candidates
+  TH1F        *fHistPrimaryVertexPosZV0events;  //! Primary vertex position in Z in events with V0 candidates
+
   TH2F        *fHistDcaPosToPrimVertex;       //! Histo
   TH2F        *fHistDcaNegToPrimVertex;       //! Histo
   TH2F        *fHistDcaPosToPrimVertexZoom;       //! Histo
@@ -106,12 +117,12 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistV0Multiplicity;  //! Histo
   TH1F        *fHistV0MultiplicityMI; //! Histo
 
-  TH2F        *fHistPtVsYK0s;       //! Histo
-  TH2F        *fHistPtVsYK0sMI;       //! Histo
-  TH2F        *fHistPtVsYLambda;       //! Histo
-  TH2F        *fHistPtVsYLambdaMI;       //! Histo
-  TH2F        *fHistPtVsYAntiLambda;       //! Histo
-  TH2F        *fHistPtVsYAntiLambdaMI;       //! Histo
+  TH2F        *fHistChi2KFBeforeCutK0s;   //! Histo 
+  TH2F        *fHistChi2KFBeforeCutLambda;   //! Histo 
+  TH2F        *fHistChi2KFBeforeCutAntiLambda;   //! Histo  
+  TH2F        *fHistChi2KFAfterCutK0s;   //! Histo 
+  TH2F        *fHistChi2KFAfterCutLambda;   //! Histo 
+  TH2F        *fHistChi2KFAfterCutAntiLambda;   //! Histo
 
   TH1F        *fHistMassK0;       //! Histo
   TH1F        *fHistMassK0MI;       //! Histo
@@ -146,6 +157,13 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistNsigmaNegPionK0;                 //! Histo
 
   // Associated particles histograms
+  TH1F        *fHistAsMcEtaK0;       //! Histo
+  TH1F        *fHistAsMcEtaK0MI;       //! Histo
+  TH1F        *fHistAsMcEtaLambda;       //! Histo
+  TH1F        *fHistAsMcEtaLambdaMI;       //! Histo
+  TH1F        *fHistAsMcEtaAntiLambda;       //! Histo
+  TH1F        *fHistAsMcEtaAntiLambdaMI;       //! Histo
+
   TH1F        *fHistAsMcPtK0;       //! Histo
   TH1F        *fHistAsMcPtK0MI;       //! Histo
   TH1F        *fHistAsMcPtLambda;       //! Histo
@@ -247,12 +265,12 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistAsMcResPtAntiLambda;       //! Histo
   TH1F        *fHistAsMcResPtAntiLambdaMI;       //! Histo
 
-  TH2F        *fHistAsMcResPtVsRapK0;       //! Histo
-  TH2F        *fHistAsMcResPtVsRapK0MI;       //! Histo
-  TH2F        *fHistAsMcResPtVsRapLambda;       //! Histo
-  TH2F        *fHistAsMcResPtVsRapLambdaMI;       //! Histo
-  TH2F        *fHistAsMcResPtVsRapAntiLambda;       //! Histo
-  TH2F        *fHistAsMcResPtVsRapAntiLambdaMI;       //! Histo
+  TH2F        *fHistAsMcResPtVsEtaK0;       //! Histo
+  TH2F        *fHistAsMcResPtVsEtaK0MI;       //! Histo
+  TH2F        *fHistAsMcResPtVsEtaLambda;       //! Histo
+  TH2F        *fHistAsMcResPtVsEtaLambdaMI;       //! Histo
+  TH2F        *fHistAsMcResPtVsEtaAntiLambda;       //! Histo
+  TH2F        *fHistAsMcResPtVsEtaAntiLambdaMI;       //! Histo
   TH2F        *fHistAsMcResPtVsPtK0;       //! Histo
   TH2F        *fHistAsMcResPtVsPtK0MI;       //! Histo
   TH2F        *fHistAsMcResPtVsPtLambda;       //! Histo
@@ -274,12 +292,12 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistAsMcPtAntiLambdaFromSigmaMI;       //! Histo
 
   // Associated secondary particles:
-  TH2F        *fHistAsMcSecondaryPtVsYK0s;       //! Histo
-  TH2F        *fHistAsMcSecondaryPtVsYK0sMI;       //! Histo
-  TH2F        *fHistAsMcSecondaryPtVsYLambda;       //! Histo
-  TH2F        *fHistAsMcSecondaryPtVsYLambdaMI;       //! Histo
-  TH2F        *fHistAsMcSecondaryPtVsYAntiLambda;       //! Histo
-  TH2F        *fHistAsMcSecondaryPtVsYAntiLambdaMI;       //! Histo
+  TH2F        *fHistAsMcSecondaryPtVsEtaK0s;       //! Histo
+  TH2F        *fHistAsMcSecondaryPtVsEtaK0sMI;       //! Histo
+  TH2F        *fHistAsMcSecondaryPtVsEtaLambda;       //! Histo
+  TH2F        *fHistAsMcSecondaryPtVsEtaLambdaMI;       //! Histo
+  TH2F        *fHistAsMcSecondaryPtVsEtaAntiLambda;       //! Histo
+  TH2F        *fHistAsMcSecondaryPtVsEtaAntiLambdaMI;       //! Histo
 
   TH1F        *fHistAsMcSecondaryProdRadiusK0s;       //! Histo
   TH1F        *fHistAsMcSecondaryProdRadiusK0sMI;       //! Histo
