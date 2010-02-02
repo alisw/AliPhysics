@@ -389,23 +389,23 @@ Bool_t AliAODHandler::FinishEvent()
 {
   // Fill data structures
   if(fFillAOD){
-    fAODEvent->MakeEntriesReferencable();
-    // StoreMCParticles();
-    FillTree();
+      fAODEvent->MakeEntriesReferencable();
+      // StoreMCParticles();
+      FillTree();
+      
+      if (fExtensions) {
+	  TIter next(fExtensions);
+	  AliAODExtension *ext;
+	  while ((ext=(AliAODExtension*)next())) ext->FinishEvent();
+      }
+      if (fFilters) {   
+	  TIter nextf(fFilters);
+	  AliAODExtension *ext;
+	  while ((ext=(AliAODExtension*)nextf())) {
+	      ext->FinishEvent();
+	  }  
+      }       
   }  
-  if (fExtensions) {
-    TIter next(fExtensions);
-    AliAODExtension *ext;
-    while ((ext=(AliAODExtension*)next())) ext->FinishEvent();
-  }
-  if (fFilters) {   
-    TIter nextf(fFilters);
-    AliAODExtension *ext;
-    while ((ext=(AliAODExtension*)nextf())) {
-//      ext->SetEvent(fAODEvent);
-      ext->FinishEvent();
-    }  
-  }       
   if (fIsStandard) fAODEvent->ResetStd();
   // Reset AOD replication flag
   fAODIsReplicated = kFALSE;
