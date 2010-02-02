@@ -233,6 +233,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
       TFile* file = TFile::Open(fPathName->Data());
       TArchiveFile* arch = file->GetArchive();
       members = arch->GetMembers();
+      fPathName->ReplaceAll("#AliESDs.root", "");
     } else {
 	// Directory or alien archive
       if (fileName.BeginsWith("alien:")) {
