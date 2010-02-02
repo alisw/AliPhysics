@@ -31,6 +31,7 @@ AliAnalysisTaskKMeans *AddTaskKMeans()
    esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
    taskKMeans->SetCuts(esdTrackCutsL);
    taskKMeans->SetK(2);
+   taskKMeans->SetMinimumMultiplicity(10);
    AliKMeansClustering::SetBeta(1.);
    mgr->AddTask(taskKMeans);
 
