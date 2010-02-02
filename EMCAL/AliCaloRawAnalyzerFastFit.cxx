@@ -84,6 +84,10 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 	    {
 	      Double_t ordered[1008];
 
+	      for(int i=0; i < nsamples ; i++ )
+		{
+		  ordered[i] = fReversed[first + i];
+		}
 	      /*
 	      cout << __FILE__ << __LINE__ << "!!!!!!! USING these samples" << endl; 
 	      for(int i=0; i < nsamples ; i++ )
@@ -100,13 +104,13 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 	      Double_t dTime = 0;
 	      Double_t eTime = 0;
 	      Double_t chi2 = 0;
-	      Double_t fTau = 0.235;
+	      Double_t dTau = 2.35; // time-bin units
 	      
 	      //  AliCaloFastAltroFitv0::FastFit(fXAxis, &fReversed[first] , nsamples,
 	      //				     eSignal, fTau, dAmp, eAmp, dTime, eTime, chi2);
 	      
 	      AliCaloFastAltroFitv0::FastFit(fXAxis, ordered , nsamples,
-					     eSignal, fTau, dAmp, eAmp, dTime, eTime, chi2);
+					     eSignal, dTau, dAmp, eAmp, dTime, eTime, chi2);
 	   
 	      // return AliCaloFitResults( maxamp, ped , -1, fAmpA[tmpindex], tof, -2, -3 );  
 	      return AliCaloFitResults(maxamp, ped, -1,  dAmp, dTime*100E-9,  -2,  -3 );
