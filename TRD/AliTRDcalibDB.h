@@ -86,6 +86,7 @@ class AliTRDcalibDB : public TObject {
   
   Bool_t                              IsChamberInstalled(Int_t det);
   Bool_t                              IsChamberMasked(Int_t det);
+  Bool_t                              IsHalfChamberMasked(Int_t det, Int_t side);
 
   const AliTRDCalMonitoring          *GetMonitoringObject();
   const AliTRDCalPID                 *GetPIDObject(AliTRDpidUtil::ETRDPIDMethod m);
@@ -154,3 +155,4 @@ class AliTRDcalibDB : public TObject {
 };
 
 #endif
+

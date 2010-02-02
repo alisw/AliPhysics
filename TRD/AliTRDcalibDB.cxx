@@ -746,16 +746,22 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
   const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
 
   if(!dcsArr){
-    return -1;
+    printf("No DCS Object found\n");
+    //return -1;
+    return 30;
   }
   const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0)); // Take SOR
   const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1));
 
   // prefer SOR
   if(!calDCSsor){
-    if(!calDCSeor)
-      return -1;
-    return calDCSeor->GetGlobalNumberOfTimeBins();
+    if(!calDCSeor){
+      printf("No calDCSeor found\n");
+      //return -1;
+      return 30;
+    }
+    if(calDCSeor->GetGlobalNumberOfTimeBins() > 0.0) return calDCSeor->GetGlobalNumberOfTimeBins();
+    else return 30;
   }
   // if SOR is available and the number of timebins is > -1, take this, otherwise check EOR
   Int_t nTimeSOR = calDCSsor->GetGlobalNumberOfTimeBins();
@@ -765,15 +771,21 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
       Int_t nTimeEOR = calDCSeor->GetGlobalNumberOfTimeBins();
       if((nTimeEOR > -1) && (nTimeSOR != nTimeEOR)){
         // Parameter inconsistency found, return -2 to be able to catch the error
-        return -2;
+        //return -2;
+	printf("Inconsistency\n");
+	return 30;
       }
     }
     // Consisency check passed or not done
-    return nTimeSOR;
+    if(nTimeSOR > 0.0) return nTimeSOR;
+    else return 30;
   } else {
     // SOR has unphysical time parameter, take EOR
-    if(calDCSeor) return calDCSeor->GetGlobalNumberOfTimeBins(); 
-    return -1;  // Both SOR and EOR not available
+    if(calDCSeor) {
+     if(calDCSeor->GetGlobalNumberOfTimeBins() > 0.0) return calDCSeor->GetGlobalNumberOfTimeBins(); 
+     else return 30;
+    }
+    return 30;  // Both SOR and EOR not available
   }
 }
 
@@ -979,7 +991,21 @@ Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
   return cal->IsMasked(det);
 
 }
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsHalfChamberMasked(Int_t det, Int_t side){
+  //
+  // Returns status, see name of functions for details ;-)
+  //
 
+  const AliTRDCalChamberStatus     * cal = dynamic_cast<const AliTRDCalChamberStatus *> 
+                                           (GetCachedCDBObject(kIDChamberStatus));
+  if (!cal) {
+    return -1;
+  }
+
+  return side > 0 ? cal->IsHalfChamberSideBMasked(det) : cal->IsHalfChamberSideAMasked(det);
+
+}
 //_____________________________________________________________________________
 const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(AliTRDpidUtil::ETRDPIDMethod method)
 {
@@ -1209,3 +1235,5 @@ Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
   }
 
 }
+
+
