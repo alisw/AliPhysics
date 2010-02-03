@@ -76,6 +76,13 @@ Double_t AliMUONTrackerQADataMakerRec::fgkRawNofTokenLostErrors(1.0);
 Double_t AliMUONTrackerQADataMakerRec::fgkRawNofParityErrors(2.0);
 Double_t AliMUONTrackerQADataMakerRec::fgkRawNofPaddingErrors(3.0);
 
+namespace
+{
+  Double_t ProtectedSqrt(Double_t x)
+  {
+    return ( x > 0.0 ? TMath::Sqrt(x) : 0.0 );
+  }
+}
 //____________________________________________________________________________ 
 AliMUONTrackerQADataMakerRec::AliMUONTrackerQADataMakerRec(AliQADataMakerRec* master) : 
 AliMUONVQADataMakerRec(master),
@@ -253,13 +260,13 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleESDs(Int_t, TObjArray**)
         Double_t meanResX = hESDSumResidualXPerDE->GetBinContent(iDE+1)/nClusters;
         hESDResidualXPerDEMean->SetBinContent(iDE+1, meanResX);
         hESDResidualXPerDEMean->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(nClusters));
-        hESDResidualXPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(hESDSumResidualX2PerDE->GetBinContent(iDE+1)/nClusters - meanResX*meanResX));
+        hESDResidualXPerDESigma->SetBinContent(iDE+1, ProtectedSqrt(hESDSumResidualX2PerDE->GetBinContent(iDE+1)/nClusters - meanResX*meanResX));
         hESDResidualXPerDESigma->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(2.*nClusters));
         
         Double_t meanResY = hESDSumResidualYPerDE->GetBinContent(iDE+1)/nClusters;
         hESDResidualYPerDEMean->SetBinContent(iDE+1, meanResY);
         hESDResidualYPerDEMean->SetBinError(iDE+1, sigmaResidualY/TMath::Sqrt(nClusters));
-        hESDResidualYPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(hESDSumResidualY2PerDE->GetBinContent(iDE+1)/nClusters - meanResY*meanResY));
+        hESDResidualYPerDESigma->SetBinContent(iDE+1, ProtectedSqrt(hESDSumResidualY2PerDE->GetBinContent(iDE+1)/nClusters - meanResY*meanResY));
         hESDResidualYPerDESigma->SetBinError(iDE+1, sigmaResidualY/TMath::Sqrt(2.*nClusters));
         
         hESDLocalChi2XPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2XPerDE->GetBinContent(iDE+1)/nClusters);
