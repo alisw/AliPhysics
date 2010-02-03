@@ -49,7 +49,7 @@ public:
   Float_t GetQmaxLowLimit() const {return fQmaxLowLimit; }
   Float_t GetQmaxHighLimit() const {return fQmaxHighLimit;}
 
-  virtual void ResetDetector();
+  virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
 
 private:
   virtual void   StartOfDetectorCycle() {}; // empty 

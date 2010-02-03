@@ -52,6 +52,7 @@
 #include <TString.h>
 #include <TSystem.h>
 #include <TBox.h>
+#include <TLine.h>
 
 // --- Standard library ---
 
@@ -270,16 +271,40 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  
 	  Double_t xminQmax = histRawsQmaxVsSector->GetXaxis()->GetXmin();
 	  Double_t xmaxQmax = histRawsQmaxVsSector->GetXaxis()->GetXmax();
-	  Double_t yminQmax = histRawsQmaxVsSector->GetMinimum();
-	  Double_t ymaxQmax = histRawsQmaxVsSector->GetMaximum();
+// 	  Double_t yminQmax = histRawsQmaxVsSector->GetMinimum();
+// 	  Double_t ymaxQmax = histRawsQmaxVsSector->GetMaximum();
 	  
-	  TBox* boxOccOk = new TBox(xminOcc,0,xmaxOcc,fOccHighLimit);
-	  boxOccOk->SetFillColor(kGreen);
-	  histRawsOccupancyVsSector->GetListOfFunctions()->Add(boxOccOk);
-	  
-	  TBox* boxQmaxOk = new TBox(xminQmax,fQmaxLowLimit,xmaxQmax,fQmaxHighLimit);
-	  boxQmaxOk->SetFillColor(kGreen);
-	  histRawsQmaxVsSector->GetListOfFunctions()->Add(boxQmaxOk);
+	  // For reasons not understood the following stopped working
+	  // in the DQM and instead lines were adopted:
+// 	  TBox* boxOccOk = new TBox(xminOcc,0,xmaxOcc,fOccHighLimit);
+// 	  boxOccOk->SetFillColor(kGreen);
+// 	  histRawsOccupancyVsSector->GetListOfFunctions()->Add(boxOccOk);
+
+	  TLine* lineOccMin = new TLine(xminOcc,0,xmaxOcc,0);
+	  lineOccMin->SetLineColor(kGreen);
+	  lineOccMin->SetLineWidth(2);
+	  histRawsOccupancyVsSector->GetListOfFunctions()->Add(lineOccMin);
+
+	  TLine* lineOccMax = new TLine(xminOcc,fOccHighLimit, xmaxOcc,fOccHighLimit);
+	  lineOccMax->SetLineColor(kGreen);
+	  lineOccMax->SetLineWidth(2);
+	  histRawsOccupancyVsSector->GetListOfFunctions()->Add(lineOccMax);
+
+ 
+	  // For some reason this dtopped working
+// 	  TBox* boxQmaxOk = new TBox(xminQmax,fQmaxLowLimit,xmaxQmax,fQmaxHighLimit);
+// 	  boxQmaxOk->SetFillColor(kGreen);
+// 	  histRawsQmaxVsSector->GetListOfFunctions()->Add(boxQmaxOk);
+
+	  TLine* lineQmaxMin = new TLine(xminQmax,fQmaxLowLimit, xmaxQmax,fQmaxLowLimit);
+	  lineQmaxMin->SetLineColor(kGreen);
+	  lineQmaxMin->SetLineWidth(2);
+	  histRawsQmaxVsSector->GetListOfFunctions()->Add(lineQmaxMin);
+
+	  TLine* lineQmaxMax = new TLine(xminQmax,fQmaxHighLimit, xmaxQmax,fQmaxHighLimit);
+	  lineQmaxMax->SetLineColor(kGreen);
+	  lineQmaxMax->SetLineWidth(2);
+	  histRawsQmaxVsSector->GetListOfFunctions()->Add(lineQmaxMax);
 	  
 	  
 	  for(Int_t bin = 1; bin <= 72; bin++) {
@@ -293,7 +318,7 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 		new TBox(histRawsOccupancyVsSector->GetXaxis()->GetBinLowEdge(bin), yminOcc,
 			 histRawsOccupancyVsSector->GetXaxis()->GetBinUpEdge(bin), ymaxOcc);
 	      boxErr->SetFillColor(kRed);
-	      histRawsOccupancyVsSector->GetListOfFunctions()->Add(boxErr);
+	      //	      histRawsOccupancyVsSector->GetListOfFunctions()->Add(boxErr);
 	    }
 	    
 	    if(histRawsQmaxVsSector->GetBinContent(bin)<fQmaxLowLimit||
@@ -302,23 +327,27 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	      // Mark that histogram has error
 	      histRawsQmaxVsSector->SetBit(AliQAv1::GetQABit());
 
-	      TBox* boxErr = 
-		new TBox(histRawsQmaxVsSector->GetXaxis()->GetBinLowEdge(bin), yminQmax,
-			 histRawsQmaxVsSector->GetXaxis()->GetBinUpEdge(bin), ymaxQmax);
-	      boxErr->SetFillColor(kRed);
-	      histRawsQmaxVsSector->GetListOfFunctions()->Add(boxErr);
+	  // For reasons not understood the following stopped working
+	  // in the DQM and instead lines were adopted:
+// 	      TBox* boxErr = 
+// 		new TBox(histRawsQmaxVsSector->GetXaxis()->GetBinLowEdge(bin), yminQmax,
+// 			 histRawsQmaxVsSector->GetXaxis()->GetBinUpEdge(bin), ymaxQmax);
+// 	      boxErr->SetFillColor(kRed);
+	      //	      histRawsQmaxVsSector->GetListOfFunctions()->Add(boxErr);
 	    }
 	  }
 
+	  // For reasons not understood the following stopped working
+	  // in the DQM and instead lines were adopted:
 	  // Now we have to add a copy of the histograms to draw
 	  // because the boxes covers the data points
-	  TH1F* hOccCopy = new TH1F(*histRawsOccupancyVsSector);
-	  hOccCopy->SetOption("SAME P");
-	  histRawsOccupancyVsSector->GetListOfFunctions()->Add(hOccCopy);
+// 	  TH1F* hOccCopy = new TH1F(*histRawsOccupancyVsSector);
+// 	  hOccCopy->SetOption("SAME P");
+// 	  histRawsOccupancyVsSector->GetListOfFunctions()->Add(hOccCopy);
 
-	  TH1F* hQmaxCopy = new TH1F(*histRawsQmaxVsSector);
-	  hQmaxCopy->SetOption("SAME P");
-	  histRawsQmaxVsSector->GetListOfFunctions()->Add(hQmaxCopy);
+// 	  TH1F* hQmaxCopy = new TH1F(*histRawsQmaxVsSector);
+// 	  hQmaxCopy->SetOption("SAME P");
+// 	  histRawsQmaxVsSector->GetListOfFunctions()->Add(hQmaxCopy);
 
 	} // end beautify
       }
@@ -649,12 +678,15 @@ void AliTPCQADataMakerRec::LoadMaps()
 }
 
 //____________________________________________________________________________
-void AliTPCQADataMakerRec::ResetDetector()
+void AliTPCQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
 {
-  // This method is only used for DQM.
+  // Overwrites general method for RAW data.
   // The AliTPCdataQA elements that does the internal processing are
   // in the case they have processed data deleted and new are created
 
+  if ( task != AliQAv1::kRAWS )
+    AliQADataMakerRec::ResetDetector(task);
+  
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     
     if ( fTPCdataQA[specie] != NULL) { // exist
