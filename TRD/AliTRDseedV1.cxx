@@ -1270,6 +1270,10 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
 // Author 
 // A.Bercuci <A.Bercuci@gsi.de>
 
+  if(!fkReconstructor){
+    AliError("The tracklet needs the reconstruction setup. Please initialize by SetReconstructor().");
+    return kFALSE;
+  }
   if(!IsCalibrated()) Calibrate();
 
   const Int_t kClmin = 8;
