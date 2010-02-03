@@ -22,8 +22,9 @@ TPCQAda.cxx - algorithm for TPC RAW QA
 09/06/2008  peter.christiansen@hep.lu.se and haavard.helstrup@cern.ch  :  created QA DA based on AliTPCdataQA code
 
 10/09/2009  Jens.Wiechula@cern.ch:     Export object to AMOREdb after a defined update interval for QA
-contact: marian.ivanov@cern.ch, peter.christiansen@hep.lu.se
+26/01/2010  Jens.Wiechula@cern.ch:     Exclude laser triggers when running in a global partition
 
+contact: marian.ivanov@cern.ch, peter.christiansen@hep.lu.se
 
 This process reads RAW data from the files provided as command line arguments
 and save results in a file (named from RESULT_FILE define - see below).
@@ -51,6 +52,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 #include <TSystem.h>
 #include <TStopwatch.h>
 #include <TObject.h>
+#include <TMap.h>
 //
 //AliRoot includes
 //
@@ -80,7 +82,14 @@ void SendToAmoreDB(TObject *o, unsigned long32 runNb);
       Arguments: list of DATE raw data files
 */
 int main(int argc, char **argv) {
-
+  /* log start of process */
+  printf("TPCQAda: DA started - %s\n",__FILE__);
+  
+  if (argc<2) {
+    printf("TPCQAda: Wrong number of arguments\n");
+    return -1;
+  }
+  
  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
                                          "*",
                                          "TStreamerInfo",
@@ -92,20 +101,27 @@ int main(int argc, char **argv) {
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
 
-  //variables 
-  int i,status;
+  /* declare monitoring program */
+  int status=monitorDeclareMp( __FILE__ );
+  if (status!=0) {
+    printf("TPCQAda: monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
+    return -1;
+  }
+  //Set network timeout
+  monitorSetNowait();
+  monitorSetNoWaitNetworkTimeout(1000);
+  
+  //variables
   AliTPCmapper *mapping = 0;   // The TPC mapping
   unsigned long32 runNb=0;      //run number
-  // configuration options
-  Bool_t fastDecoding = kFALSE;
- // if  test setup get parameters from $DAQDA_TEST_DIR 
+  // if  test setup get parameters from $DAQDA_TEST_DIR
   
   if (!mapping){
     /* copy locally the mapping file from daq detector config db */
     status = daqDA_DB_getFile(MAPPING_FILE,"./tpcMapping.root");
     if (status) {
-      printf("Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
-      printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      printf("TPCQAda: Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
+//       printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     }
 
@@ -116,68 +132,93 @@ int main(int argc, char **argv) {
   }
 
   if (mapping == 0) {
-    printf("Failed to get mapping object from %s.  ...\n", MAPPING_FILE);
+    printf("TPCQAda: Failed to get mapping object from %s.  ...\n", MAPPING_FILE);
     //return -1;
   } else {
-    printf("Got mapping object from %s\n", MAPPING_FILE);
+    printf("TPCQAda: Got mapping object from %s\n", MAPPING_FILE);
   }
- //retrieve configuration file
+ 
+  //
+  // DA configuration from configuration file
+  //
+  //retrieve configuration file
   char localfile[255];
   sprintf(localfile,"./%s",CONFIG_FILE);
   status = daqDA_DB_getFile(CONFIG_FILE,localfile);
   if (status) {
-    printf("Failed to get configuration file (%s) from DAQdetDB, status=%d\n", CONFIG_FILE, status);
+    printf("TPCQAda: Failed to get configuration file (%s) from DAQdetDB, status=%d\n", CONFIG_FILE, status);
     return -1;
   }
   AliTPCConfigDA config(CONFIG_FILE);
-  // check configuration options
-  if ( (Int_t)config.GetValue("UseFastDecoder") == 1 ) {
-    printf("Info: The fast decoder will be used for the processing.\n");
-    fastDecoding=kTRUE;
-  }
 
-
-  AliTPCdataQA calibQA(config.GetConfigurationMap());   // qa object
-
-  if (argc<2) {
-    printf("Wrong number of arguments\n");
-    return -1;
-  }
-
-
-  /* log start of process */
-  printf("TPC QA DA started - %s\n",__FILE__);
-
-
-  /* set time bin range */
-  // calibQA.SetRangeTime(0,1000); // should be done in the configuration file now
-  calibQA.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
-
-  /* declare monitoring program */
-  status=monitorDeclareMp( __FILE__ );
-  if (status!=0) {
-    printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
-    return -1;
-  }
-  //amore update interval
+  // set default configuration options
   Double_t updateInterval=30; //seconds
+  TString laserTriggerName("C0LSR-ABCE-NOPF-CENT");
+  TString forceLaserTriggerId("-1");
+  
+  //amore update interval
   Double_t valConf=config.GetValue("AmoreUpdateInterval");
   if ( valConf>0 ) updateInterval=valConf;
+  
+  //laser trigger class name
+  if ( config.GetConfigurationMap()->GetValue("LaserTriggerName") ) {
+    laserTriggerName=config.GetConfigurationMap()->GetValue("LaserTriggerName")->GetName();
+    printf("TPCRAWda: Laser trigger class name set to: %s.\n",laserTriggerName.Data());
+  }
+  //force laser trigger id
+  if ( config.GetConfigurationMap()->GetValue("ForceLaserTriggerId") ) {
+    forceLaserTriggerId=config.GetConfigurationMap()->GetValue("ForceLaserTriggerId")->GetName();
+    printf("TPCRAWda: Force laser trigger Id: %s.\n",forceLaserTriggerId.Data());
+  }
+  
+  
+  //reject laser triggers in a global partition if we have interleaved laser events
+  unsigned char classId=0;
+  int retClassId=daqDA_getClassIdFromName(laserTriggerName.Data(),&classId);
+  //chek if we shall force the laser trigger id. Mainly for test purposes
+  if (forceLaserTriggerId!="-1"){
+    retClassId=0;
+    classId=static_cast<unsigned char>(forceLaserTriggerId.Atoi());
+  }
+  //create trigger mask
+  if (retClassId==0){
+    //interleaved laser in physics runs
+    //reject laser triggered events
+    TString triggerClasses;
+    //TODO
+    //TODO: in the next release of daq put 49 back to 50!!!
+    //TODO
+    for (unsigned char iclassId=0; iclassId<49; ++iclassId){
+      if (iclassId==classId) continue; //exclude laser trigger
+      triggerClasses+=Form("%u|",(unsigned int)iclassId);
+    }
+    triggerClasses.Chop();
+    char *table[5] = {"PHY","Y","*",const_cast<char*>(triggerClasses.Data()),NULL};
+    monitorDeclareTableExtended(table);
+    printf("TPCRAWda: Using laser trigger class Id: %u\n",(unsigned int)classId);
+    printf("TPCRAWda: Accepted trigger class Ids: %s\n",triggerClasses.Data());
+  }
+  
+  //
+  // create calibration object
+  //
+  AliTPCdataQA calibQA(config.GetConfigurationMap());   // qa object
+  calibQA.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
+  
   //timer
   TStopwatch stopWatch;
   
-  monitorSetNowait();
-  monitorSetNoWaitNetworkTimeout(1000);
-
-  /* loop over RAW data files */
+  //===========================//
+  // loop over RAW data files //
+  //==========================//
   int nevents=0;
-  for(i=1;i<argc;i++) {
+  for(int i=1;i<argc;i++) {
 
     /* define data source : this is argument i */
-    printf("Processing file %s\n", argv[i]);
+    printf("TPCQAda: Processing file %s\n", argv[i]);
     status=monitorSetDataSource( argv[i] );
     if (status!=0) {
-      printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
+      printf("TPCQAda: monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
       return -1;
     }
 
@@ -191,12 +232,12 @@ int main(int argc, char **argv) {
       /* get next event (blocking call until timeout) */
       status=monitorGetEventDynamic((void **)&event);
       if (status==MON_ERR_EOF) {
-        printf ("End of File %d detected\n",i);
+        printf ("TPCQAda: End of File %d detected\n",i);
         break; /* end of monitoring file has been reached */
       }
 
       if (status!=0) {
-        printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+        printf("TPCQAda: monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
         break;
       }
 
@@ -209,9 +250,9 @@ int main(int argc, char **argv) {
       runNb = event->eventRunNb;
       //  QA
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      if ( fastDecoding ) calibQA.ProcessEventFast(rawReader);   
-      else calibQA.ProcessEvent(rawReader);
+      calibQA.ProcessEvent(rawReader);
       delete rawReader;
+      
       // sending to AMOREdb
       if (stopWatch.RealTime()>updateInterval){
         SendToAmoreDB(&calibQA,runNb);
@@ -226,12 +267,12 @@ int main(int argc, char **argv) {
   }
 
   calibQA.Analyse(); 
-  printf ("%d events processed\n",nevents);
+  printf ("TPCQAda: %d events processed\n",nevents);
 
   TFile * fileTPC = new TFile (RESULT_FILE,"recreate");
   calibQA.Write("tpcCalibQA");
   delete fileTPC;
-  printf("Wrote %s\n",RESULT_FILE);
+  printf("TPCQAda: Wrote %s\n",RESULT_FILE);
 
   /* store the result file on FXS */
 
@@ -242,7 +283,7 @@ int main(int argc, char **argv) {
   //
   //Send objects to the AMORE DB
   //
-  printf ("AMORE part\n");
+  printf ("TPCQAda: AMORE part\n");
   SendToAmoreDB(&calibQA, runNb);
   
   return status;
@@ -271,7 +312,7 @@ void SendToAmoreDB(TObject *o, unsigned long32 runNb)
   statusDA+=amoreDA.Send("DataQA",o);
   statusDA+=amoreDA.Send("Info",&info);
   if ( statusDA!=0 )
-    printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+    printf("TPCQAda: Waring: Failed to write one of the calib objects to the AMORE database\n");
   // reset env var
   if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
 }
