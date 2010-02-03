@@ -34,22 +34,9 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSRcuProcessor.h"
-
-
+#include <AliHLTCaloRawAnalyzerComponentv3.h>
 
 class AliHLTPHOSRawAnalyzer;
-class AliHLTPHOSRcuCellEnergyDataStruct;
-class AliHLTPHOSMapper;
-class AliHLTPHOSSanityInspector;
-class AliHLTPHOSDigitMaker;
-class AliHLTPHOSDigitContainerDataStruct;
-class AliRawReaderMemory;
-class AliAltroRawStreamV3;
-class AliHLTPHOSChannelDataStruct;
-
-//class RawDataWriter;
-
 
 /**
  * @class AliHLTPHOSRawAnalyzerComponentv3
@@ -100,7 +87,7 @@ class AliHLTPHOSChannelDataStruct;
  */ 
 
 
-class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
+class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTCaloRawAnalyzerComponentv3
 {
  public:
 
@@ -109,12 +96,6 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
 
   /** Destructor */
   virtual ~AliHLTPHOSRawAnalyzerComponentv3();
-
-  /** interface function, see @ref AliHLTComponent for description */
-  virtual int DoInit(int argc =0, const char** argv  = 0);
-
-  /** interface function, see @ref AliHLTComponent for description */
-  virtual int Deinit();
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual const char* GetComponentID() = 0;
@@ -131,33 +112,21 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
   /** interface function, see @ref AliHLTComponent for description */
   virtual AliHLTComponent* Spawn() = 0; 
 
+  //virtual void InitMapping(const AliHLTUInt32_t specification);
+  
  protected:
-
-  /** interface function, see @ref AliHLTComponent for description */
-  using AliHLTPHOSRcuProcessor::DoEvent;
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );  
-
-  /** 
-   * Do the real processing in the component 
-   * @param iter is the pointer to the data blocks
-   * @param outputPtr is the pointer to the output buffer
-   * @param size is the available size for output
-   * @param totSize is the total size used for output
-   * @return the size output size used
-   */
-  virtual Int_t DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize); 
-
-
+  
   /** Pointer to an analyzer object used for raw data anlysis */ 
   AliHLTPHOSRawAnalyzer *fAnalyzerPtr;   //COMMENT
 
- private:
+   virtual void InitMapping(const int specification);
 
-  int WriteRawData( AliHLTPHOSChannelDataStruct *dtaPtr );
+ private:
 
   /** Keep the copy constructor private since it should not be used */
   AliHLTPHOSRawAnalyzerComponentv3(const AliHLTPHOSRawAnalyzerComponentv3 & );
@@ -165,78 +134,8 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
   /** Keep the assignement operator private since it should not be used */
   AliHLTPHOSRawAnalyzerComponentv3 & operator = (const AliHLTPHOSRawAnalyzerComponentv3 &);
 
-  /** Mapping from harware address to geometrical address */
-  AliHLTPHOSMapper *fMapperPtr;                       //!transient 
-
-  /** Pointer to object which may check the integrity of the data */
-  AliHLTPHOSSanityInspector *fSanityInspectorPtr;     //!transient
-
-  /** Pointer to the raw data reader which reads from memory */
-  AliRawReaderMemory* fRawReaderMemoryPtr;            //!transient
-  
-  /** Pointer to the raw stream */
-  AliAltroRawStreamV3* fAltroRawStreamPtr;              //!transient
-
-  /** Describing which algorithm we are using */
-  Short_t fAlgorithm;                                 //COMMENT
-
-  /** The offset applied before ZS */
-  Int_t fOffset;                                      //COMMENT
-
-  /** The minimum length a bunch can have to be considered */
-  Int_t fBunchSizeCut;                                //COMMENT
-
-  /** The lowest position a peak can have to be considered */
-  Int_t fMinPeakPosition;                             //COMMENT
-  
-  /** The maximum position a peak can have to be considered */
-  Int_t fMaxPeakPosition;                             //COMMENT
-
-  /** Should we push raw data? */
-  bool fDoPushRawData;                                //COMMENT
-  
-  /** Should we check for and heal insanity? */
-  bool fInspectSanity;                                //COMMENT
-
-  // const UShort_t* fRawDataBuffer;
-  // RawDataWriter *fRawDataWriter; 
-
-  //  class RawDataWriter : public AliHLTLogging
- 
-  class RawDataWriter 
-  {
-  public:
-    RawDataWriter();
-    ~RawDataWriter();
-    //   void WriteChannelId(const UShort_t channeldid );
-    void NewChannel( );
-    void WriteBunchData(const UShort_t *bunchdata,  const int length,   const UInt_t starttimebin );
-    void ResetBuffer();
-    void SetChannelId( const UShort_t channeldid );
-
-    //void CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
-    int CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
-  
- void NewEvent();
- 
- private:
-    RawDataWriter (const RawDataWriter  & );
-    RawDataWriter & operator = (const RawDataWriter &);
-    
-    void Init();
-    
-    //    bool fIsFirstChannel;
-    UShort_t* fRawDataBuffer;
-    int fCurrentChannelSize;
-    int fBufferIndex;
-    int fBufferSize;
-    UShort_t *fCurrentChannelIdPtr;
-    UShort_t *fCurrentChannelSizePtr; 
-    UShort_t *fCurrentChannelDataPtr; 
-    int fTotalSize;
- };
-
-  RawDataWriter *fRawDataWriter; 
+  /** The current specification for which the mapping is loaded */
+  AliHLTUInt32_t fCurrentSpec;
 
 };
 

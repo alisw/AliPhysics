@@ -17,11 +17,6 @@
 
 #include "AliHLTPHOSRawAnalyzerPeakFinderComponent.h"
 #include "AliHLTPHOSRawAnalyzerPeakFinder.h"
-//#include <cstdlib>
-//#include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTPHOSConstant.h"
-
-using namespace PhosHLTConst;
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;
 
@@ -30,7 +25,7 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderCompone
 {
   fAnalyzerPtr = new AliHLTPHOSRawAnalyzerPeakFinder();
 
-  if(LoadPFVector() == kFALSE)
+  if(1)//LoadPFVector() == kFALSE)
     {
       //      cout << "Warning, could not load PF vectors" << endl;
     }
@@ -84,7 +79,8 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::GetComponentID()
 Bool_t 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector()
 {
-  return LoadPFVector(PFDEFAULTSTARTINDEX,  PFDEFAULTNSAMPLES, DEFAULTTAU, DEFAULTFS );
+  return LoadPFVector(fCaloConstants->GetPFDEFAULTSTARTINDEX(),  fCaloConstants->GetPFDEFAULTNSAMPLES(), 
+				  fCaloConstants->GetDEFAULTTAU(), fCaloConstants->GetDEFAULTFS() );
 }
 
 
@@ -92,7 +88,8 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector()
 Bool_t 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamples, int tau, int fs)
 {
-  char tmpPFPath[PFMAXPATHLENGTH];
+   
+  char tmpPFPath[fCaloConstants->GetPFMAXPATHLENGTH()];
   Double_t * tmpAVector = new Double_t[nSamples];
   Double_t * tmpTVector = new Double_t[nSamples]; 
   sprintf(tmpPFPath,"%s%s/start%dN%dtau%dfs%d.txt", getenv("ALICE_ROOT"), PFVECTORDIR, startIndex, nSamples, tau, fs);

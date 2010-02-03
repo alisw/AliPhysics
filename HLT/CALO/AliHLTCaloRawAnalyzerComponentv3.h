@@ -171,6 +171,8 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
   //** Pointer to a mapper opbject */
   AliHLTCaloMapper *fMapperPtr;          //COMMENT
 
+  virtual void InitMapping(const int specification ) = 0;
+
  private:
 
 /** Keep default constructor private since it should not be used */
@@ -182,7 +184,7 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
   /** Keep the assignement operator private since it should not be used */
   AliHLTCaloRawAnalyzerComponentv3 & operator = (const AliHLTCaloRawAnalyzerComponentv3 &);
 
-  virtual void InitMapping(const int specification ) = 0;
+  //virtual void InitMapping(const int specification ) = 0;
   
   /** Mapping from harware address to geometrical address */
   //  AliHLTCaloMapper *fMapperPtr;                       //!transient 

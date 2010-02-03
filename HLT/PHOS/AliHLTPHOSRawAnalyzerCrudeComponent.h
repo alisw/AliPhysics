@@ -4,16 +4,16 @@
 #ifndef ALIHLTPHOSRAWANALYZERCRUDECOMPONENT_H
 #define ALIHLTPHOSRAWANALYZERCRUDECOMPONENT_H
 
-//#include "AliHLTPHOSRawAnalyzerComponent.h"
 #include "AliHLTPHOSRawAnalyzerComponentv3.h"
+//#include "AliHLTCaloRawAnalyzerComponentv3.h"
 
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice  */ 
 
 
 
-//class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTPHOSRawAnalyzerComponent
 class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTPHOSRawAnalyzerComponentv3
+//class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTCaloRawAnalyzerComponentv3
 {
  public:
   AliHLTPHOSRawAnalyzerCrudeComponent();

@@ -29,7 +29,7 @@ class  AliHLTEMCALMapper : public AliHLTCaloMapper
  public:
   AliHLTEMCALMapper(  const unsigned long  specifiaction );
   virtual ~AliHLTEMCALMapper();
-  virtual void InitAltroMapping( const unsigned long specification ); 
+  virtual Bool_t InitAltroMapping( const unsigned long specification ); 
   virtual void InitDDLSpecificationMapping();
   virtual void GetLocalCoord(const int channelId, Float_t* localCoord) const; 
   //  static  const int GlobalX2ModuleId(const int globalX);

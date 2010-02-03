@@ -27,29 +27,32 @@
 
 //using namespace PhosHLTConst;
 #include "Rtypes.h"
-#include "AliHLTLogging.h"
-
+#include "AliHLTCaloMapper.h"
 #include "AliPHOSEMCAGeometry.h"
 
+class AliHLTCaloCoordinate;
 class AliHLTPHOSCoordinate;
 
-class AliHLTPHOSMapper : public AliHLTLogging
-//class AliHLTPHOSMapper 
+class AliHLTPHOSMapper : public AliHLTCaloMapper
 {
  public:
+
   AliHLTPHOSMapper();
   virtual ~AliHLTPHOSMapper();
-  void InitAltroMapping(); 
+  
+  Bool_t InitAltroMapping(const unsigned long specification); 
   void InitDDLSpecificationMapping();
   bool GetIsInitializedMapping();
-  char* GetFilePath();
+  char* GetFilePath(const int ddlId);
+  
+  Int_t GetChannelID(Int_t hwAddress);
+  Int_t GetChannelID(AliHLTUInt32_t specification, Int_t hwAddress);
 
-  UShort_t GetChannelID(Int_t specification, Int_t hwAddress);
-  static void GetChannelCoord(const UShort_t channelId, UShort_t* channelCoord);
-  static void ChannelId2Coordinate(const UShort_t channelId, AliHLTPHOSCoordinate &channelCoord );
-  static void GetLocalCoord(const UShort_t channelId, Float_t* localCoord);
-  int GetDDLFromSpec(Int_t specification);
-  int GetModuleFromSpec(Int_t specification);
+  //static void GetChannelCoord(const Int_t channelId, UShort_t* channelCoord);
+  //static void ChannelId2Coordinate(const Int_t channelId, AliHLTCaloCoordinate &channelCoord );
+  //static void GetLocalCoord(const Int_t channelId, Float_t* localCoord);
+  int GetDDLFromSpec(AliHLTUInt32_t specification);
+  int GetModuleFromSpec(AliHLTUInt32_t specification);
 
   struct fAltromap{ 
     int fZRow; // Coordinate in Z direction (beam direction) relatve too one RCU
@@ -72,12 +75,16 @@ class AliHLTPHOSMapper : public AliHLTLogging
 
  private:
   bool fIsInitializedMapping;
+
   AliHLTPHOSMapper(const AliHLTPHOSMapper & );
   AliHLTPHOSMapper & operator = (const AliHLTPHOSMapper &);
   
   fDDLSpecificationMap* fSpecificationMapPtr;
   //AliPHOSEMCAGeometry fPHOSGeometry;
   static const Float_t fCellStep = 2.2;//2.*fPHOSGeometry.GetAirCellHalfSize()[0];
+  
+  Int_t fModuleId;
+    int fDDLId;
 };
 
 #endif

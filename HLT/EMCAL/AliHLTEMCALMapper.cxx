@@ -52,7 +52,7 @@ AliHLTEMCALMapper::GetLocalCoord(const int channelId, Float_t* localCoord) const
 }
 
 
-void 
+Bool_t 
 AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 {
   char *base =  getenv("ALICE_ROOT");

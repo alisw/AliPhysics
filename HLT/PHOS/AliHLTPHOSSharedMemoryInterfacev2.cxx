@@ -75,7 +75,7 @@ AliHLTPHOSSharedMemoryInterfacev2::NextChannel()
 	  fRawData.fCrazyness  = tmpChannelPtr->fCrazyness; 
 	  Reset(fRawData);
 	  //AliHLTPHOSMapper::ChannelId2Coordinate(const UShort_t channelId,    AliHLTPHOSCoordinate &channelCoord) 
-	  AliHLTPHOSMapper::ChannelId2Coordinate( fRawData.fChannelID, fRawData.fCoordinate);
+//	  AliHLTPHOSMapper::ChannelId2Coordinate( fRawData.fChannelID, fRawData.fCoordinate);
 	  
 	  if( fRawData.fChannelID ==  fRawDataPtr[0]  )
 	    {
@@ -175,7 +175,7 @@ AliHLTPHOSSharedMemoryInterfacev2::Reset()
 void 
 AliHLTPHOSSharedMemoryInterfacev2::Reset(AliHLTPHOSChannelRawDataStruct &str)
 {
-  for(int i=0; i< ALTROMAXSAMPLES; i++ )
+  for(int i=0; i< 1008; i++ )
     {
       str.fDataPtr[i] = 0;
     }

@@ -22,15 +22,12 @@
 #include "AliHLTPHOSChannelDataStruct.h"
 #include "AliHLTPHOSCoordinate.h"
 #include "Rtypes.h"
-#include "AliHLTPHOSConstant.h"
-
-using namespace PhosHLTConst;
 
 struct  AliHLTPHOSChannelRawDataStruct : public AliHLTPHOSChannelDataStruct
 {
   AliHLTPHOSCoordinate fCoordinate;
   int nSamplesUsed;
-  UShort_t fDataPtr[ALTROMAXSAMPLES];
+  UShort_t fDataPtr[1008];
 };
 
 #endif
