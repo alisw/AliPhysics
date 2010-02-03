@@ -36,7 +36,7 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDrawStream.h"
+#include "AliTRDrawFastStream.h"
 #include "AliTRDrawStreamBase.h"
 #include "AliCDBManager.h"
 
@@ -102,18 +102,8 @@ int main(int argc, char **argv) {
   //unsigned long32 runNb=0;      //run number
 
   // setting
-  // AliTRDrawStream::SetNoDebug();
-  AliTRDrawStream::DisableSkipData();
-  AliTRDrawStream::SetNoErrorWarning();
-  //AliTRDrawStream::SetForceCleanDataOnly();
-  //AliTRDrawStream::AllowCorruptedData();
-  //AliTRDrawStream::DisableStackNumberChecker();
-  //AliTRDrawStream::DisableStackLinkNumberChecker();
-  //AliTRDrawStream::SetSkipCDH();
-  //AliTRDrawStream::SetExtraWordsFix();
-  //AliTRDrawStream::EnableDebugStream();
-  //AliTRDrawStream::SetDumpHead(320);
-  //AliTRDrawStream::SetDumpHead(80);
+  AliTRDrawFastStream::DisableSkipData();
+ 
 
   /* read the data files */
   int n;
@@ -156,7 +146,7 @@ int main(int argc, char **argv) {
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	rawReader->Select("TRD");
 	
-	Int_t result = calipad.ProcessEvent2((AliTRDrawReader *)rawReader);
+	Int_t result = calipad.ProcessEvent2((AliRawReader *) rawReader);
 	// 0 error, 1 no input, 2 output
 	if(result == 2) nevents++;
 	if(result == 0) passpadstatus = kFALSE;

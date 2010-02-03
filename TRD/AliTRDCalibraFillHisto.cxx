@@ -381,6 +381,9 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
   if(nboftimebin > 0) fTimeMax = nboftimebin;
   else fTimeMax = cal->GetNumberOfTimeBinsDCS();
   if(fTimeMax <= 0) fTimeMax = 30;
+  printf("////////////////////////////////////////////\n");
+  printf("Number of time bins in calibration component %d\n",fTimeMax);
+  printf("////////////////////////////////////////////\n");
   fSf                 = parCom->GetSamplingFrequency();
   if(!fNormalizeNbOfCluster) fRelativeScale = 20.0;
   else fRelativeScale = 1.18;
@@ -1933,10 +1936,15 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(const AliTRDcluster *cl,const Do
   // cls is shared cluster if any
   //
   
+  //printf("StoreInfoCHPHtrack\n");
+
   // time bin of the cluster not corrected
   Int_t    time     = cl->GetPadTime();
   Float_t  charge   = TMath::Abs(cl->GetQ());  
-  if(cls) charge += TMath::Abs(cls->GetQ());
+  if(cls) {
+    charge += TMath::Abs(cls->GetQ());
+    //printf("AliTRDCalibraFillHisto::Add the cluster charge");
+  }
 
   //printf("Store::time %d, amplitude %f\n",time,dqdl);
   
@@ -2553,6 +2561,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ2(AliRawReader *rawReader)
 
    //  AliTRDrawFastStream *rawStream = AliTRDrawFastStream::GetRawStream(rawReader);
   AliTRDrawFastStream *rawStream = new AliTRDrawFastStream(rawReader);
+  rawStream->SetNoErrorWarning();
   rawStream->SetSharedPadReadout(kFALSE);
 
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager(kTRUE);

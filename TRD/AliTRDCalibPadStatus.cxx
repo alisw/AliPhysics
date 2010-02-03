@@ -459,6 +459,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent2(AliRawReader *rawReader)
   Int_t withInput = 1;
 
   AliTRDrawFastStream *rawStream = new AliTRDrawFastStream(rawReader);
+  rawStream->SetNoErrorWarning();
   rawStream->SetSharedPadReadout(kTRUE);
 
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager(kTRUE);
@@ -1073,5 +1074,4 @@ Int_t AliTRDCalibPadStatus::GetSector(Int_t d) const
   return ((Int_t) (d / 30));
 
 }
-
 

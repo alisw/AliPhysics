@@ -42,7 +42,7 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDrawStream.h"
+#include "AliTRDrawFastStream.h"
 #include "AliTRDrawStreamBase.h"
 
 //
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
   int nevents_total=0;
   //unsigned long32 runNb=0;      //run number
 
-  //Instance of AliCDBManager: needed by AliTRDrawStream
+  //Instance of AliCDBManager: needed by AliTRDrawFastStream
   //AliCDBManager *man = AliCDBManager::Instance();
   //man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //man->SetRun(0);
@@ -122,20 +122,8 @@ int main(int argc, char **argv) {
   Int_t  nbvdrift    = 0;     // number of events with entries for vdrift
 
    // setting
-  // AliTRDrawStream::SetNoDebug();
-  AliTRDrawStream::DisableSkipData();
-  AliTRDrawStream::SetNoErrorWarning();
-  //AliTRDrawStream::SetForceCleanDataOnly();
-  //AliTRDrawStream::AllowCorruptedData();
-  //AliTRDrawStream::DisableStackNumberChecker();
-  //AliTRDrawStream::DisableStackLinkNumberChecker();
-  //AliTRDrawStream::SetSkipCDH();
-  //AliTRDrawStream::SetExtraWordsFix();
-  //AliTRDrawStream::EnableDebugStream();
-  //AliTRDrawStream::SetDumpHead(320);
-  //AliTRDrawStream::SetDumpHead(80);
-
-  
+  AliTRDrawFastStream::DisableSkipData();
+    
   /* main loop (infinite) */
   for(;;) {
   //for(Int_t k = 0; k < 20; k++) {
@@ -177,7 +165,7 @@ int main(int argc, char **argv) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       rawReader->Select("TRD");
 
-      Int_t result = calibra->ProcessEventDAQ2((AliTRDrawReader *) rawReader);
+      Int_t result = calibra->ProcessEventDAQ2((AliRawReader *)rawReader);
       if(!result) passvdrift = kFALSE;
       else nbvdrift += (Int_t) result/2;
              
@@ -239,24 +227,22 @@ int main(int argc, char **argv) {
   delete fileTRD;  
 
   return status;
-
-  /*
-    void SendToAmoreDB(TObject *o)
-    {
-    //AMORE
-    const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
-    gSystem->Setenv("AMORE_DA_NAME","TRD-dataQA");
-    
-    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-    Int_t statusDA=0;
-    statusDA+=amoreDA.Send("DataQA-VDRIFT",o);
-    if ( statusDA!=0 )
-    printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
-    // reset env var
-    if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
-    } 
-  */
-
 }
 
+/*
+  void SendToAmoreDB(TObject *o)
+  {
+  //AMORE
+  const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
+  gSystem->Setenv("AMORE_DA_NAME","TRD-dataQA");
+  
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+  Int_t statusDA=0;
+  statusDA+=amoreDA.Send("DataQA-VDRIFT",o);
+  if ( statusDA!=0 )
+  printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+  // reset env var
+  if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
+  } 
+*/
 
