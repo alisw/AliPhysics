@@ -47,6 +47,7 @@
  * outputs a block of AliHLTPHOSDigitDataStruct container
  * @ingroup alihlt_phos
  */
+#include <AliHLTCaloConstantsHandler.h>
 
 class TH2F;
 class AliHLTPHOSSharedMemoryInterfacev2; // added by PTH
@@ -56,7 +57,7 @@ class AliHLTPHOSMapper;
 using namespace PhosHLTConst;
 
 //class AliHLTPHOSDigitMaker : public AliHLTPHOSBase
-class AliHLTPHOSDigitMaker : public AliHLTLogging
+class AliHLTPHOSDigitMaker : public AliHLTCaloConstantsHandler
 {
 public:
 

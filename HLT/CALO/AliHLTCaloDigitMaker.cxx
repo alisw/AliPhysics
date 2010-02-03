@@ -50,7 +50,6 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
   fShmPtr(0),
   fDigitStructPtr(0),
   fDigitCount(0),
-  fOrdered(true),
   fMapperPtr(0),
   fHighGainFactors(0),
   fLowGainFactors(0),
@@ -97,21 +96,6 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
 
 }
 
-AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &) :
-  AliHLTCaloConstantsHandler(""),
-  fShmPtr(0),
-  fDigitStructPtr(0),
-  fDigitCount(0),
-  fOrdered(true),
-  fMapperPtr(0),
-  fHighGainFactors(0),
-  fLowGainFactors(0),
-  fBadChannelMask(0),
-  fChannelBook(0)
-{
-  // Dummy copy constructor
-}
-
 AliHLTCaloDigitMaker::~AliHLTCaloDigitMaker() 
 {
   //See header file for documentation
@@ -121,6 +105,8 @@ Int_t
 AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataHeader, AliHLTUInt32_t availableSize)
 {
   //See header file for documentation
+  
+  Reset();
   
   Int_t j = 0;
   UInt_t totSize = sizeof(AliHLTCaloDigitDataStruct);
@@ -148,32 +134,28 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
       
       tmpchannel = currentchannel;
 	  
-      if(coord1[2] == fCaloConstants->GetHIGHGAIN()) // We got a completely new crystal
-	{
-	  fMapperPtr->GetLocalCoord(currentchannel->fChannelID, locCoord);
-	  if(UseDigit(coord1, currentchannel))
- 	    {
-	      AddDigit(currentchannel, coord1, locCoord);
-	      j++;	      
-	      totSize += sizeof(AliHLTCaloDigitDataStruct);
-	    }
-	  currentchannel = fShmPtr->NextChannel(); // Get the next channel
-	}
-      else if(coord1[2] == fCaloConstants->GetLOWGAIN())
-	{
-	  fMapperPtr->GetLocalCoord(currentchannel->fChannelID, locCoord);
-	  if(UseDigit(coord1, currentchannel))
-	    {
-	      AddDigit(currentchannel, coord1, locCoord);
-	      j++;	      
-	      totSize += sizeof(AliHLTCaloDigitDataStruct);
-	    }
-	  currentchannel = fShmPtr->NextChannel(); // Get the next channel
-	}
-    }
+      fMapperPtr->GetLocalCoord(currentchannel->fChannelID, locCoord);
+      if(UseDigit(coord1, currentchannel))
+      {
+	 AddDigit(currentchannel, coord1, locCoord);
+	 j++;	      
+	 totSize += sizeof(AliHLTCaloDigitDataStruct);
+      }
+      
+      currentchannel = fShmPtr->NextChannel(); // Get the next channel
 
-  fDigitCount += j;
-  return fDigitCount; 
+      fMapperPtr->GetLocalCoord(currentchannel->fChannelID, locCoord);
+      if(UseDigit(coord1, currentchannel))
+      {
+	 AddDigit(currentchannel, coord1, locCoord);
+	 j++;	      
+	 totSize += sizeof(AliHLTCaloDigitDataStruct);
+      }
+	currentchannel = fShmPtr->NextChannel(); // Get the next channel
+    }
+   
+   fDigitCount += j;
+   return fDigitCount; 
 }
 
 void 

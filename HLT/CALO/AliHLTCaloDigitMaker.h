@@ -70,32 +70,9 @@ public:
   /** Destructor */
   virtual ~AliHLTCaloDigitMaker();
 
-//   /** Copy constructor */  
-//   AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &) : 
-//     //    AliHLTCaloBase(),
-//     fShmPtr(0),
-//     fDigitStructPtr(0),
-//     fDigitCount(0),
-//     fOrdered(true),
-//     fMapperPtr(0),
-//     fHighGainFactors(0),
-//     fLowGainFactors(0),
-//     fBadChannelMask(0),
-//     fChannelBook(0)
-//   {
-//     //Copy constructor not implemented
-//   }
-  
-  /** Assignment */
-  AliHLTCaloDigitMaker & operator = (const AliHLTCaloDigitMaker)
-  {
-    //Assignment
-    return *this; 
-  }
-
   /**
    * Sets the pointer to the output
-   * @param the output pointer
+   * @param digitDataPtr the output pointer
    */
   void SetDigitDataPtr(AliHLTCaloDigitDataStruct *digitDataPtr) 
   { fDigitStructPtr = digitDataPtr; }
@@ -119,7 +96,6 @@ public:
    */
   Int_t MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataHeader, AliHLTUInt32_t availableSize);
 
-
   /**
    * Set the mask for dead channels
    * @param badChannelHGHist is a pointer to a high gain bad channel histogram
@@ -128,11 +104,7 @@ public:
    */
   void SetBadChannelMask(TH2F* badChannelHGHist, TH2F* badChannelLGHist, Float_t qCut);
 
-  /**
-   * Set ordering of gains or not
-   */
-  void SetOrdered(bool val) { fOrdered = val; }
-  
+  /** Reset the channel book */
   void Reset();
 
 private:
@@ -155,7 +127,6 @@ private:
    */
   bool UseDigit(UShort_t *channelCoordinates, AliHLTCaloChannelDataStruct *channel);
 
-
   /** Pointer to shared memory interface */
   AliHLTCaloSharedMemoryInterfacev2* fShmPtr;                    //! transient
 
@@ -164,9 +135,6 @@ private:
 
   /** Digit count */
   Int_t fDigitCount;                                             //COMMENT
-
-  /** Are the gains ordered? */
-  bool fOrdered;                                                 //COMMENT
 
   /** Mapper */
   AliHLTCaloMapper* fMapperPtr;                                  //COMMENT
@@ -183,14 +151,13 @@ private:
   /** Channel book keeping variable */
   AliHLTCaloDigitDataStruct ***fChannelBook;                     //! transient
 
-
+  /** Assignment operator and copy constructor not implemented */
   AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &);
-  //  AliHLTCaloDigitMaker & operator = (const AliHLTCaloDigitMaker &);
+  AliHLTCaloDigitMaker & operator = (const AliHLTCaloDigitMaker &);
 
   ClassDef(AliHLTCaloDigitMaker, 0); 
 
 };
-
 
 #endif
  
