@@ -11,7 +11,6 @@ include $(MODDIR)/hlt.conf
 CLASS_HDRS:=	  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSDefinitions.h \
-		  AliHLTPHOSEmcCalibData.h \
 		  AliHLTPHOSPhysicsAnalyzer.h \
 		  AliHLTPHOSProcessor.h \
 		  AliHLTPHOSRawAnalyzer.h \
@@ -20,26 +19,20 @@ CLASS_HDRS:=	  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSRawAnalyzerCrude.h \
 		  AliHLTPHOSRawAnalyzerCrudeComponent.h \
 		  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
-		  AliHLTPHOSRcuHistogramProducer.h \
-		  AliHLTPHOSRcuHistogramProducerComponent.h \
 		  AliHLTPHOSRcuProcessor.h \
 		  AliHLTPHOSMapper.h \
 		  AliHLTPHOSRawAnalyzerPeakFinder.h \
 		  AliHLTPHOSSanityInspector.h \
-		  AliHLTPHOSDigitMaker.h \
-		  AliHLTPHOSDigitMakerComponent.h \
 		  AliHLTPHOSSharedMemoryInterfacev2.h \
 		  AliHLTPHOSClusterAnalyser.h \
 		  AliHLTPHOSClusterAnalyserComponent.h \
 		  AliHLTPHOSESDMaker.h \
 		  AliHLTPHOSESDMakerComponent.h \
-		  AliHLTPHOSRcuDAComponent.h \
 		  AliHLTPHOSUtilities.h \
 		  AliHLTPHOSHistogramProducer.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
 		  AliHLTPHOSESDEntriesMakerComponent.h \
 		  AliHLTPHOSESDCaloClusterWriterComponent.h \
-		  AliHLTPHOSFourier.h \
 		  AliHLTPHOSDigitReader.h \
 		  AliHLTPHOSConstants.h
 
@@ -48,7 +41,6 @@ MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSCommonDefs.h \
 		  AliHLTPHOSConstant.h \
-		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
 		  AliHLTPHOSRecPointDataStruct.h \
 		  AliHLTPHOSRecPointContainerStruct.h \
 		  AliHLTPHOSDigitContainerDataStruct.h \
