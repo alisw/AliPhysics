@@ -75,6 +75,13 @@ int main(int argc, char **argv) {
   int const kNChannels = 24;
   int const kNScChannels = 32;
   Int_t kFirstADCGeo=0, kLastADCGeo=3;
+      
+  Int_t ich=0;
+  Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
+  Int_t det[2*kNChannels], sec[2*kNChannels];
+  for(Int_t y=0; y<2*kNChannels; y++){
+    adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=0;
+  }
 
   /* log start of process */
   printf("ZDC EMD program started\n");  
@@ -171,11 +178,11 @@ int main(int argc, char **argv) {
     for(int ii=0; ii<2; ii++){
        fscanf(filePed,"%f",&readValues[ii][jj]);
     }
-    if(jj<kNChannels && jj<2*kNChannels){
+    if(jj<2*kNChannels){
       MeanPed[jj] = readValues[0][jj];
-      //printf("\t MeanPedhg[%d] = %1.1f\n",jj, MeanPedhg[jj]);
+      printf("\t MeanPed[%d] = %1.1f\n",jj, MeanPed[jj]);
     }
-    else if(jj>2*kNChannels && jj>4*kNChannels){
+    else if(jj>2*kNChannels){
       CorrCoeff0[jj-4*kNChannels] = readValues[0][jj]; 
       CorrCoeff1[jj-4*kNChannels] = readValues[1][jj];;
     }
@@ -235,13 +242,6 @@ int main(int argc, char **argv) {
 
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
-      
-      Int_t ich=0;
-      Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
-      Int_t det[2*kNChannels], sec[2*kNChannels];
-      for(Int_t y=0; y<2*kNChannels; y++){
-        adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=0;
-      }
       
       Int_t iScCh=0;
       Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
@@ -347,17 +347,14 @@ int main(int argc, char **argv) {
 	Int_t quad = rawStreamZDC->GetSector(1);
         
 	if(rawStreamZDC->IsADCDataWord() && !(rawStreamZDC->IsUnderflow())
-	     && !(rawStreamZDC->IsOverflow()) && det!=-1
+	     && !(rawStreamZDC->IsOverflow()) && det!=-1 && det!=3 
 	     && (rawStreamZDC->GetADCGain() == 1 && // Selecting LOW RES ch.s
              rawStreamZDC->GetADCModule()>=kFirstADCGeo && rawStreamZDC->GetADCModule()<=kLastADCGeo)){
-
-	  //printf("  IsADCWord %d, IsUnderflow %d, IsOverflow %d\n",
-	  //  rawStreamZDC->IsADCDataWord(),rawStreamZDC->IsUnderflow(),rawStreamZDC->IsOverflow());
 	  
 	  // Taking LOW RES channels -> ch.+kNChannels !!!!
 	  Int_t DetIndex=999, PedIndex=999;
-	  // Not ZEM not PMRef && low gain chain
-	  if((det!=3) && (quad!=5) && (rawStreamZDC->GetADCGain()==1)){ 
+	  // Not PMRef
+	  if(quad!=5){ 
 	    if(det == 1){
 	      DetIndex = det-1;
 	      PedIndex = quad+kNChannels; 
@@ -387,36 +384,48 @@ int main(int argc, char **argv) {
 	      ZDCCorrADC[DetIndex] = (rawStreamZDC->GetADCValue()) - Pedestal;
 	      ZDCCorrADCSum[DetIndex] += ZDCCorrADC[DetIndex];
 	      //
-	      /*printf("\t det %d quad %d res %d pedInd %d detInd %d:"
-	         "ADCCorr = %d, ZDCCorrADCSum = %d\n", 
-	         det,quad,rawStreamZDC->GetADCGain(),PedIndex,DetIndex, 
-	         (Int_t) ZDCCorrADC[DetIndex],(Int_t) ZDCCorrADCSum[DetIndex]);
-	      */	      
+	      /*printf("\t det %d quad %d res %d pedInd %d "
+	         "Pedestal %1.0f -> ADCCorr = %d ZDCCorrADCSum = %d\n", 
+	         det,quad,rawStreamZDC->GetADCGain(),PedIndex,Pedestal, 
+	         (Int_t) ZDCCorrADC[DetIndex],(Int_t) ZDCCorrADCSum[DetIndex]);*/
+	      	      
 	    }
-	    // Not common nor ref. PM && low gain chain
-	    if((quad!=0) && (rawStreamZDC->GetADCGain()==1)){
+	    // Not common PM 
+	    if(quad!=0){
 	      Float_t corrADCval = (rawStreamZDC->GetADCValue()) - Pedestal;
-	      if(det==1)      histZNCtow[quad]->Fill(corrADCval);
-	      else if(det==2) histZPCtow[quad]->Fill(corrADCval);
-	      else if(det==4) histZNAtow[quad]->Fill(corrADCval);
-	      else if(det==5) histZPAtow[quad]->Fill(corrADCval);
+	      if(det==1)      histZNCtow[quad-1]->Fill(corrADCval);
+	      else if(det==2) histZPCtow[quad-1]->Fill(corrADCval);
+	      else if(det==4) histZNAtow[quad-1]->Fill(corrADCval);
+	      else if(det==5) histZPAtow[quad-1]->Fill(corrADCval);
+	      //
+	      //printf("\t det %d tow %d fill histo w. value %1.0f\n", 
+	      //  det,quad,corrADCval);
 	    }
 
 	    if(DetIndex==999 || PedIndex==999) 
-	    	printf(" WARNING! Detector a/o pedestal index are WRONG!!!\n");
+	       printf(" WARNING! Detector a/o pedestal index are WRONG!!!\n");
  
-	  }
+	  }//quad!=5
 	}//IsADCDataWord()
 	
        }
        //
        nevents_physics++;
        //
+       delete reader;
+       delete rawStreamZDC;
+       //
        for(Int_t j=0; j<4; j++){
           histoEMDRaw[j]->Fill(ZDCRawADC[j]);
           histoEMDCorr[j]->Fill(ZDCCorrADCSum[j]);
        }
     }//(if PHYSICS_EVENT)
+      
+    /* exit when last event received, no need to wait for TERM signal */
+    else if(eventT==END_OF_RUN) {
+      printf(" -> EOR event detected\n");
+      break;
+    }
     
     nevents_total++;
 
@@ -430,20 +439,26 @@ int main(int argc, char **argv) {
   //
   FILE *fileShuttle1 = fopen(ENCALIBDATA_FILE,"w");
   //
-  Int_t BinMax[4];
-  Float_t YMax[4];
-  Int_t NBinsx[4];
-  Float_t MeanFitVal[4];
+  Int_t BinMax[4]={0,0,0,0};
+  Float_t YMax[4]={0.,0.,0.,0.};
+  Int_t NBinsx[4]={0,0,0,0};
+  Float_t MeanFitVal[4]={0.,0.,0.,0.};
   TF1 *fitfun[4];
   for(Int_t k=0; k<4; k++){
      if(histoEMDCorr[k]->GetEntries() == 0){
        printf("\n WARNING! Empty histos -> ending DA WITHOUT writing output\n\n");
        return -1;
      } 
+     //
      BinMax[k] = histoEMDCorr[k]->GetMaximumBin();
+     if(BinMax[k]<=6){
+       printf("\n WARNING! Something wrong with det %d histo -> ending DA WITHOUT writing output\n\n", k);
+       return -1;
+     }
+     // 
      YMax[k] = (histoEMDCorr[k]->GetXaxis())->GetXmax();
      NBinsx[k] = (histoEMDCorr[k]->GetXaxis())->GetNbins();
-//     printf("\n\t Det%d -> BinMax = %d, ChXMax = %f\n", k+1, BinMax[k], BinMax[k]*YMax[k]/NBinsx[k]);
+     //printf("\n\t Det%d -> BinMax = %d, ChXMax = %f\n", k+1, BinMax[k], BinMax[k]*YMax[k]/NBinsx[k]);
      histoEMDCorr[k]->Fit("gaus","Q","",BinMax[k]*YMax[k]/NBinsx[k]*0.7,BinMax[k]*YMax[k]/NBinsx[k]*1.25);
      fitfun[k] = histoEMDCorr[k]->GetFunction("gaus");
      MeanFitVal[k] = (Float_t) (fitfun[k]->GetParameter(1));
@@ -451,7 +466,6 @@ int main(int argc, char **argv) {
   }
   //
   Float_t CalibCoeff[6];     
-  //Float_t icoeff[5];
   //
   for(Int_t j=0; j<6; j++){
      if(j<4){
@@ -467,25 +481,26 @@ int main(int argc, char **argv) {
   fclose(fileShuttle1);
  
   FILE *fileShuttle2 = fopen(TOWCALIBDATA_FILE,"w");
-  Float_t meanvalznc[4], meanvalzpc[4], meanvalzna[4], meanvalzpa[4];
+  //Float_t meanvalznc[4], meanvalzpc[4], meanvalzna[4], meanvalzpa[4];
   for(Int_t j=0; j<4; j++){
-     if(histZNCtow[j]->GetEntries() == 0){
+     /*if(histZNCtow[j]->GetEntries() == 0){
        printf("\n WARNING! Empty histos -> ending DA WITHOUT writing output\n\n");
        return -1;
      } 
      meanvalznc[j] = histZNCtow[j]->GetMean();
      meanvalzpc[j] = histZPCtow[j]->GetMean();
      meanvalzna[j] = histZNAtow[j]->GetMean();
-     meanvalzpa[j] = histZPAtow[j]->GetMean();
+     meanvalzpa[j] = histZPAtow[j]->GetMean();*/
      
      // Note -> For the moment the inter-calibration coeff. are set to 1 
-     /*for(Int_t k=0; k<4; k++){  
-       icoeff[k] = 1.;
-       fprintf(fileShuttle2,"\t%f",icoeff[k]);
+     for(Int_t k=0; k<4; k++){  
+       Float_t icoeff = 1.;
+       fprintf(fileShuttle2,"\t%f",icoeff);
        if(k==4) fprintf(fileShuttle2,"\n");
-     }*/
+     }
   }
-  if(meanvalznc[1]!=0 && meanvalznc[2]!=0 && meanvalznc[3]!=0 && 
+  //
+  /*if(meanvalznc[1]!=0 && meanvalznc[2]!=0 && meanvalznc[3]!=0 && 
      meanvalzpc[1]!=0 && meanvalzpc[2]!=0 && meanvalzpc[3]!=0 &&
      meanvalzna[1]!=0 && meanvalzna[2]!=0 && meanvalzna[3]!=0 &&
      meanvalzpa[1]!=0 && meanvalzpa[2]!=0 && meanvalzpa[3]!=0){
@@ -501,7 +516,7 @@ int main(int argc, char **argv) {
   else{
     printf("\n Tower intercalib. coeff. CAN'T be calculated (some mean values are ZERO)!!!\n\n");
     return -1;
-  }
+  }*/
   fclose(fileShuttle2);
   
   for(Int_t ij=0; ij<4; ij++){
