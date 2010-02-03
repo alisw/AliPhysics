@@ -1,5 +1,5 @@
-void drawProtonQAResults(const char *analysisType = "TPC",
-			 const char *pidMode = "Bayesian") {
+void drawProtonQAResults(const char *analysisType = "Hybrid",
+			 const char *pidMode = "Sigma1") {
   //Macro to visualize the results of the proton QA task
   gStyle->SetPalette(1,0);
   gStyle->SetCanvasColor(41);
