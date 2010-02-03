@@ -352,12 +352,12 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	   fRawDataWriter->NewChannel();
 	 }
 
-      }
   }
 
-  // return 1;
 
-  //Writing the header
+// return 1;
+
+//Writing the header
   channelDataHeaderPtr->fNChannels   =  channelCount;
   channelDataHeaderPtr->fAlgorithm   = fAlgorithm;
   channelDataHeaderPtr->fInfo        = 0;

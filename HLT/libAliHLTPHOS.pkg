@@ -17,7 +17,6 @@ CLASS_HDRS:=  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSRawAnalyzerComponentv3.h \
 		  AliHLTPHOSRawAnalyzerCrude.h \
 		  AliHLTPHOSRawAnalyzerCrudeComponent.h \
-		  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
 		  AliHLTPHOSDigitMakerComponent.h \
 		  AliHLTPHOSRcuProcessor.h \
 		  AliHLTPHOSMapper.h \
@@ -53,10 +52,10 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 ##Left empty for auto generation:
 MODULE_DHDR:=	  
 
-EINCLUDE     := HLT/BASE HLT/BASE/util HLT/CALO HLT/PHOS  STEER RAW PHOS 
+EINCLUDE     := HLT/BASE HLT/BASE/util HLT/CALO HLT/PHOS  STEER RAW PHOS EMCAL 
 
 LIBRARY_DEP := -lHLTbase -lPHOSbase -lPHOSshuttle -lESD \
-               -lSTEER -lRAWDatarec 
+               -lSTEER -lRAWDatarec -lEMCALrec
 
 ###############################################################################
 #

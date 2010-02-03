@@ -8,13 +8,7 @@ include $(MODDIR)/hlt.conf
 ## header files of all classes
 ## optionally, the link def file of the library is generated
 ## automatically from those header files
-CLASS_HDRS:= AliHLTCaloRawAnalyzerChiSquareFit.h \
-AliHLTCaloRawAnalyzerComponentv3.h \
-AliHLTCaloRawAnalyzerCrudeComponent.h \
-AliHLTCaloRawAnalyzerCrude.h \
-AliHLTCaloRawAnalyzer.h \
-AliHLTCaloRawAnalyzerPeakFinderComponent.h \
-AliHLTCaloRawAnalyzerPeakFinder.h \
+CLASS_HDRS:= AliHLTCaloRawAnalyzerComponentv3.h \
 AliHLTCaloUtilities.h \
 AliHLTCaloMapper.h \
 AliHLTCaloDefinitions.h \
@@ -29,7 +23,6 @@ AliHLTCaloClusterAnalyser.h \
 AliHLTCaloRcuProcessor.h \
 AliHLTCaloConstants.h \
 AliHLTCaloProcessor.h 
->>>>>>> - adding the new CALO clusterizer component to the CALO library
 
 ## all source files of this module
 ## all source files corresponding to the class headers
