@@ -241,6 +241,7 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 			else {
 				AliInfo(Form("No valid CDB object found! request was: %s", query.ToString().Data()));
 			}
+		}
   	}
 
 	// if drain storage is set, drain entry into drain storage
