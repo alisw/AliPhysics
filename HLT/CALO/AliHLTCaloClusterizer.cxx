@@ -41,13 +41,14 @@ ClassImp(AliHLTCaloClusterizer);
 AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
   AliHLTCaloConstantsHandler(det),
   fRecPointDataPtr(0),
-  fDigitDataPtr(0),
+  fDigitIndexPtr(0),
   fEmcClusteringThreshold(0),
   fEmcMinEnergyThreshold(0),
   fEmcTimeGate(0),
   fDigitsInCluster(0),
   fDigitContainerPtr(0),
-  fMaxDigitIndexDiff(0)
+  fMaxDigitIndexDiff(0),
+  fNDigits(0)
 {
   //See header file for documentation
   fEmcClusteringThreshold = 0.2;
@@ -60,19 +61,19 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
 
 
 //BALLE how do you set the right detector?
-AliHLTCaloClusterizer::AliHLTCaloClusterizer(const AliHLTCaloClusterizer &) :
-  AliHLTCaloConstantsHandler("BALLE"),
-  fRecPointDataPtr(0),
-  fDigitDataPtr(0),
-  fEmcClusteringThreshold(0),
-  fEmcMinEnergyThreshold(0),
-  fEmcTimeGate(0),
-  fDigitsInCluster(0),
-  fDigitContainerPtr(0),
-  fMaxDigitIndexDiff(0)
-{
-  // dummy copy constructor
-}//end
+// AliHLTCaloClusterizer::AliHLTCaloClusterizer(const AliHLTCaloClusterizer &) :
+//   AliHLTCaloConstantsHandler("BALLE"),
+//   fRecPointDataPtr(0),
+//   fDigitDataPtr(0),
+//   fEmcClusteringThreshold(0),
+//   fEmcMinEnergyThreshold(0),
+//   fEmcTimeGate(0),
+//   fDigitsInCluster(0),
+//   fDigitContainerPtr(0),
+//   fMaxDigitIndexDiff(0)
+// {
+//   // dummy copy constructor
+// }//end
 
 
 AliHLTCaloClusterizer::~AliHLTCaloClusterizer()  
@@ -88,19 +89,21 @@ AliHLTCaloClusterizer::SetRecPointDataPtr(AliHLTCaloRecPointDataStruct* recPoint
 }
 
 Int_t 
-AliHLTCaloClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
+AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits, UInt_t availableSize, UInt_t& totSize)
 {
   //see header file for documentation
   Int_t nRecPoints = 0;
 
+  fNDigits = nDigits;
+
   UInt_t maxRecPointSize = sizeof(AliHLTCaloRecPointDataStruct) + (sizeof(AliHLTCaloDigitDataStruct) << 7); //Reasonable estimate... 
 
   //Clusterization starts
-  for(UInt_t i = 0; i < fDigitContainerPtr->fNDigits; i++)
+  for(UInt_t i = 0; i < nDigits; i++)
     { 
       fDigitsInCluster = 0;
-     
-      if(fDigitContainerPtr->fDigitDataStruct[i].fEnergy < fEmcClusteringThreshold)
+      //      printf("ENERGY: %f\n", fDigitsPointerArray[i]->fEnergy);
+      if(fDigitsPointerArray[i]->fEnergy < fEmcClusteringThreshold)
 	{
 	  continue;
 	}
@@ -108,21 +111,21 @@ AliHLTCaloClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
 	{
 	  return -1; //Might get out of buffer, exiting
 	}
-
+      //            printf("cluster candidate!\n");
       // First digit is placed at the fDigits member variable in the recpoint
-      fDigitDataPtr = &(fRecPointDataPtr->fDigits);
+      fDigitIndexPtr = &(fRecPointDataPtr->fDigits);
 
       fRecPointDataPtr->fAmp = 0;
-      fRecPointDataPtr->fModule = fDigitContainerPtr->fDigitDataStruct[i].fModule;
+      fRecPointDataPtr->fModule = fDigitsPointerArray[i]->fModule;
 
-      // Assigning digit data to the digit pointer
-      fRecPointDataPtr->fDigits = fDigitContainerPtr->fDigitDataStruct[i];
+      // Assigning the digit to this rec point
+      fRecPointDataPtr->fDigits = i;
 
       // Incrementing the pointer to be ready for new entry
-      fDigitDataPtr++;
+      fDigitIndexPtr++;
 
-      fRecPointDataPtr->fAmp += fDigitContainerPtr->fDigitDataStruct[i].fEnergy;
-      fDigitContainerPtr->fDigitDataStruct[i].fEnergy = 0;
+      fRecPointDataPtr->fAmp += fDigitsPointerArray[i]->fEnergy;
+      fDigitsPointerArray[i]->fEnergy = 0;
       fDigitsInCluster++;
       nRecPoints++;
 
@@ -131,8 +134,9 @@ AliHLTCaloClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
 
       totSize += sizeof(AliHLTCaloRecPointDataStruct) + (fDigitsInCluster-1)*sizeof(AliHLTCaloDigitDataStruct);   
       fRecPointDataPtr->fMultiplicity = fDigitsInCluster;     
+      //      printf("Rec point energy: %f\n", fRecPointDataPtr->fAmp);
+      fRecPointDataPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(fDigitIndexPtr);
 
-      fRecPointDataPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(fDigitDataPtr);
     }//end of clusterization
 
    return nRecPoints;
@@ -142,27 +146,27 @@ void
 AliHLTCaloClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTCaloRecPointDataStruct* recPoint)
 {
   //see header file for documentation
-  Int_t max = TMath::Min((Int_t)fDigitContainerPtr->fNDigits, (Int_t)fMaxDigitIndexDiff+index);
+  Int_t max = TMath::Min(fNDigits, (Int_t)fMaxDigitIndexDiff+index);
   Int_t min = TMath::Max(0, (Int_t)(index - (Int_t)fMaxDigitIndexDiff));
 
-  max = fDigitContainerPtr->fNDigits;
+  max = fNDigits;
   min = 0;
   for(Int_t j = min; j < max; j++)
     {
-      if(fDigitContainerPtr->fDigitDataStruct[j].fEnergy > fEmcMinEnergyThreshold)
+      if(fDigitsPointerArray[j]->fEnergy > fEmcMinEnergyThreshold)
 	{
 	  if(j != index)
 	    {
-	      if(AreNeighbours(&(fDigitContainerPtr->fDigitDataStruct[index]),
-			       &(fDigitContainerPtr->fDigitDataStruct[j])))
+	      if(AreNeighbours(fDigitsPointerArray[index],
+			       fDigitsPointerArray[j]))
 		{
 		  // Assigning value to digit ptr
-		  *fDigitDataPtr = fDigitContainerPtr->fDigitDataStruct[j];
+		  *fDigitIndexPtr = j;
 		  // Incrementing digit pointer to be ready for new entry
-		  fDigitDataPtr++;
+		  fDigitIndexPtr++;
 
-		  recPoint->fAmp += fDigitContainerPtr->fDigitDataStruct[j].fEnergy;
-		  fDigitContainerPtr->fDigitDataStruct[j].fEnergy = 0;	      
+		  recPoint->fAmp += fDigitsPointerArray[j]->fEnergy;
+		  fDigitsPointerArray[j]->fEnergy = 0;	      
 		  fDigitsInCluster++;
 		  ScanForNeighbourDigits(j, recPoint);
 		}

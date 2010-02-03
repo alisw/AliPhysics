@@ -80,7 +80,7 @@ public:
     fEmcTimeGate(0),
     fDigitsInCluster(0),
     fDigitContainerPtr(0),
-    fMaxDigitIndexDiff(2*NZROWSMOD),
+    fMaxDigitIndexDiff(2*56),
     fAvailableSize(0),
     fDigitReader(0)
   {
@@ -109,7 +109,7 @@ public:
 
   /** Set emc time gate */
   void SetEmcTimeGate(Float_t gate) { fEmcTimeGate = gate; }
-  
+
   /** Starts clusterization of the event */ 
   virtual Int_t ClusterizeEvent(AliHLTPHOSDigitHeaderStruct *digitHeader, UInt_t availableSize, UInt_t& totSize);
 

@@ -37,15 +37,16 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSProcessor.h"
-#include <AliHLTCaloClusterizerComponent.h>
+#include "AliHLTCaloClusterizerComponent.h"
 
-class AliHLTPHOSClusterizer;
-class AliHLTPHOSRcuCellEnergyDataStruct;
-class AliHLTPHOSRecPointDataStruct;
-class AliHLTPHOSRecPointContainerStruct;
-class AliHLTPHOSRecPointListDataStruct;
-class AliHLTPHOSDigitContainerDataStruct;
+#include <vector>
+
+// class AliHLTPHOSClusterizer;
+// class AliHLTPHOSRcuCellEnergyDataStruct;
+// class AliHLTPHOSRecPointDataStruct;
+// class AliHLTPHOSRecPointContainerStruct;
+// class AliHLTPHOSRecPointListDataStruct;
+// class AliHLTPHOSDigitContainerDataStruct;
 
 /**
  * @class AliHLTPHOSClusterizerComponent
@@ -106,8 +107,10 @@ class AliHLTPHOSDigitContainerDataStruct;
  * @ingroup alihlt_phos
  */ 
 
-class AliHLTPHOSClusterizerComponent: public AliHLTCaloClusterizerComponent
+class AliHLTPHOSClusterizerComponent : public AliHLTCaloClusterizerComponent
+//class AliHLTPHOSClusterizerComponent : public AliHLTPHOSProcessor
 {
+  
  public:
 
   /** Constructor */
@@ -116,20 +119,6 @@ class AliHLTPHOSClusterizerComponent: public AliHLTCaloClusterizerComponent
   /** Destructor */
   virtual ~AliHLTPHOSClusterizerComponent();
 
-  /** Copy constructor */  
-  AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &) : 
-    AliHLTCaloClusterizerComponent()
-  {
-    //Copy constructor not implemented
-  }
-  
-  /** Assignment */
-  AliHLTPHOSClusterizerComponent & operator = (const AliHLTPHOSClusterizerComponent)
-  {
-    //Assignment
-    return *this; 
-  }
-
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
 
@@ -137,8 +126,25 @@ class AliHLTPHOSClusterizerComponent: public AliHLTCaloClusterizerComponent
   void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
 
   /** interface function, see @ref AliHLTComponent for description */
+  AliHLTComponentDataType GetOutputDataType();
+
+  /** interface function, see @ref AliHLTComponent for description */
+  void GetOutputDataSize ( unsigned long& constBase, double& inputMultiplier );
+
+  /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
+
+protected:
+  virtual int DoDeinit(){;}
+
+private:
   
+  /** Copy constructor,  not implemented */
+  AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &);
+  
+  /** Assignment operator, not implemented */
+  AliHLTPHOSClusterizerComponent & operator = (const AliHLTPHOSClusterizerComponent);
+
   
 };
 

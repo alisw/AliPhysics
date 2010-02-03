@@ -6,7 +6,7 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
 {
   //  AliCDBManager::Instance()->SetDefaultStorage("raw://");
   //  AliCDBManager::Instance()->SetDefaultStorage("raw://");
- 
+  AliCDBManager::Instance()->SetRun(10);
   
   if(!gSystem->AccessPathName("galice.root")){
     cerr << "please delete the galice.root or run at different place." << endl;
@@ -30,11 +30,11 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
   //
   int moduleStart = 2;
   int moduleEnd = 2;
-  int rcuStart = 1;
-  int rcuEnd = 1;
+  int rcuStart = 0;
+  int rcuEnd = 3;
   //  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=ESD-FILE";
   //TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-CA_02";
-  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTCalo.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-DM_02_1";
+  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTCalo.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-CL_02";
   TString ecInput;
   TString emInput;
   
@@ -67,10 +67,10 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
 	}
         TString arg, cl, ca;
 
-//       cl.Form("PHS-CL_%02d", module);
-//       arg = "";
-//       arg.Form("-digitthreshold 0.005 -recpointthreshold 0.1 -modulemode");
-//       AliHLTConfiguration clConf(cl.Data(), "PhosClusterizer", clInput.Data(), arg.Data());
+      cl.Form("PHS-CL_%02d", module);
+      arg = "";
+      arg.Form("-digitthreshold 0.005 -recpointthreshold 0.1 -modulemode");
+      AliHLTConfiguration clConf(cl.Data(), "PhosClusterizer", clInput.Data(), arg.Data());
 // 	
 //       ca.Form("PHS-CA_%02d", module);
 //       arg = "";

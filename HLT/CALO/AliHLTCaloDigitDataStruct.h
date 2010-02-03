@@ -45,17 +45,15 @@
  */
 struct AliHLTCaloDigitDataStruct
 {
+
+  /** Unique ID (in the module) for this digit */
+  UInt_t fID;
+  
   /** The x coordinate */
   UShort_t fX;
 
   /** The z coordinate */
   UShort_t fZ;
-
-  /** x position in local coordinates*/
-  Float_t fLocX;
-
-  /** z position in local coordinates*/
-  Float_t fLocZ;
 
   /** The module number */
   Int_t fModule;

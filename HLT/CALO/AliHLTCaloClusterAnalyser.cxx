@@ -98,7 +98,7 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
 
   for(Int_t iRecPoint=0; iRecPoint < fNRecPoints; iRecPoint++) 
     {
-      digit = &(recPoint->fDigits);
+      //      digit = &(recPoint->fDigits);
       for(iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
 	{
 	  
@@ -160,8 +160,9 @@ AliHLTCaloClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
   UInt_t maxClusterSize = sizeof(AliHLTCaloClusterDataStruct) + (6 << 7); //Reasonable estimate... (6 = sizeof(Short_t) + sizeof(Float_t)
 
   AliHLTCaloRecPointDataStruct* recPointPtr = fRecPointDataPtr;
-  AliHLTCaloDigitDataStruct* digitPtr = &(recPointPtr->fDigits);  
- 
+  //  AliHLTCaloDigitDataStruct* digitPtr = &(recPointPtr->fDigits);  
+  AliHLTCaloDigitDataStruct* digitPtr = 0;
+
   AliHLTCaloClusterDataStruct* caloClusterPtr = fCaloClusterDataPtr;
   UShort_t* cellIDPtr = &(caloClusterPtr->fCellsAbsId);
   Float_t* cellAmpFracPtr = &(caloClusterPtr->fCellsAmpFraction);
@@ -248,7 +249,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
       //      caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellAmpFracPtr);
       caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellIDPtr);
       recPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(digitPtr);
-      digitPtr = &(recPointPtr->fDigits);  
+      ///digitPtr = &(recPointPtr->fDigits);  
     }
   //  cout << "CA: Energy End: " << fCaloClusterDataPtr->fEnergy << endl;
   //cout << "CA totSize: " << totSize << endl;

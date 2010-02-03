@@ -319,7 +319,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	    channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
 	    AliHLTCaloCoordinate c;
 	    fMapperPtr->ChannelId2Coordinate(chId, c); 
-	    //	    HLTError("Got channel, x: %d, z: %d, gain: %d, energy: %f", c.fX, c.fZ, c.fGain, channelDataPtr->fEnergy);
+	    HLTDebug("Got channel, x: %d, z: %d, gain: %d, energy: %f", c.fX, c.fZ, c.fGain, channelDataPtr->fEnergy);
 	    channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
 	    channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
 	    channelCount++;
@@ -372,7 +372,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   // channelDataHeaderPtr->fHasRawData  = false;
   channelDataHeaderPtr->fHasRawData = fDoPushRawData;
-  HLTError("Number of channels: %d", channelCount);
+  HLTDebug("Number of channels: %d", channelCount);
   tmpsize += sizeof(AliHLTCaloChannelDataStruct)*channelCount + sizeof(AliHLTCaloChannelDataHeaderStruct); 
   return  tmpsize;
 

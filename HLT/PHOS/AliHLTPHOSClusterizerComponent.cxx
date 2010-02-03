@@ -17,11 +17,9 @@
 #include <iostream>
 
 #include "AliHLTPHOSClusterizerComponent.h"
-#include "AliHLTPHOSClusterizer.h"
-#include "AliHLTPHOSRecPointDataStruct.h"
-#include "AliHLTPHOSRecPointHeaderStruct.h"
-#include "AliHLTPHOSDigitDataStruct.h"
-#include "AliHLTPHOSDigitContainerDataStruct.h"
+#include "AliHLTCaloRecPointDataStruct.h"
+#include "AliHLTCaloRecPointHeaderStruct.h"
+
 
 
 
@@ -41,16 +39,38 @@
 AliHLTPHOSClusterizerComponent gAliHLTPHOSClusterizerComponent;
 
 AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(): 
-  AliHLTCaloClusterizerComponent()
+  AliHLTCaloClusterizerComponent("PHOS")
 {
   //See headerfile for documentation
-  fDataType = AliHLTCaloDefinitions::fgkDigitDataType|kAliHLTDataOriginPHOS;
 }
 
 AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
 {
   //See headerfile for documentation
+}
 
+void
+AliHLTPHOSClusterizerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+{
+  //See headerfile for documentation
+  list.clear();
+  list.push_back(AliHLTCaloDefinitions::fgkDigitDataType|kAliHLTDataOriginPHOS);
+}
+
+AliHLTComponentDataType
+AliHLTPHOSClusterizerComponent::GetOutputDataType()
+{
+  //See headerfile for documentation
+  return AliHLTCaloDefinitions::fgkRecPointDataType|kAliHLTDataOriginPHOS;
+}
+
+void
+AliHLTPHOSClusterizerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
+
+{
+  //See headerfile for documentation
+  constBase = sizeof(AliHLTCaloRecPointHeaderStruct) + sizeof(AliHLTCaloRecPointDataStruct) + (sizeof(AliHLTCaloDigitDataStruct) << 7); //Reasonable estimate... ;
+  inputMultiplier = 2.0;
 }
 
 
@@ -68,3 +88,5 @@ AliHLTPHOSClusterizerComponent::Spawn()
 
   return new AliHLTPHOSClusterizerComponent();
 }
+
+

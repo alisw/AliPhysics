@@ -17,8 +17,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSCLUSTERIZERCOMPONENT_H
-#define ALIHLTPHOSCLUSTERIZERCOMPONENT_H
+#ifndef ALIHLTCALOCLUSTERIZERCOMPONENT_H
+#define ALIHLTCALOCLUSTERIZERCOMPONENT_H
 
 
 
@@ -37,10 +37,12 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSProcessor.h"
+#include "AliHLTCaloConstantsHandler.h"
+#include "AliHLTCaloProcessor.h"
+
 
 class AliHLTCaloDigitDataStruct;
-class AliHLTCaloDigitContainerStruct;
+class AliHLTCaloDigitContainerDataStruct;
 class AliHLTCaloClusterizer;
 class AliHLTCaloRecPointDataStruct;
 
@@ -103,53 +105,61 @@ class AliHLTCaloRecPointDataStruct;
  * @ingroup alihlt_phos
  */
 
-class AliHLTCaloClusterizerComponent: public AliHLTPHOSProcessor
+//class AliHLTCaloClusterizerComponent : public AliHLTCaloConstantsHandler, public AliHLTCaloProcessor
+class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLTCaloConstantsHandler
   {
   public:
 
     /** Constructor */
-    AliHLTCaloClusterizerComponent();
+    AliHLTCaloClusterizerComponent(TString det);
 
     /** Destructor */
     virtual ~AliHLTCaloClusterizerComponent();
 
-    /** Copy constructor */
-    AliHLTCaloClusterizerComponent ( const AliHLTCaloClusterizerComponent & ) :
-        AliHLTPHOSProcessor(),
-        fAllDigitsPtr ( 0 ),
-        fClusterizerPtr ( 0 ),
-        //    fRecPointStructArrayPtr(0),
-        fDigitCount ( 0 )
-    {
-      //Copy constructor not implemented
-    }
+//     /** Copy constructor */
+//     AliHLTCaloClusterizerComponent ( const AliHLTCaloClusterizerComponent & ) :
+//         AliHLTPHOSProcessor(),
+//         fAllDigitsPtr ( 0 ),
+//         fClusterizerPtr ( 0 ),
+//         //    fRecPointStructArrayPtr(0),
+//         fDigitCount ( 0 )
+//     {
+//       //Copy constructor not implemented
+//     }
 
-    /** Assignment */
-    AliHLTCaloClusterizerComponent & operator = ( const AliHLTCaloClusterizerComponent )
-    {
-      //Assignment
-      return *this;
-    }
+//     /** Assignment */
+//     AliHLTCaloClusterizerComponent & operator = ( const AliHLTCaloClusterizerComponent )
+//     {
+//       //Assignment
+//       return *this;
+//     }
+
+//     /** interface function, see @ref AliHLTComponent for description */
+//     void GetInputDataTypes ( std::vector<AliHLTComponentDataType>& list );
+
+//     /** interface function, see @ref AliHLTComponent for description */
+//     AliHLTComponentDataType GetOutputDataType();
+
+//     /** interface function, see @ref AliHLTComponent for description */
+//     void GetOutputDataSize ( unsigned long& constBase, double& inputMultiplier );
 
     /** interface function, see @ref AliHLTComponent for description */
-    void GetInputDataTypes ( std::vector<AliHLTComponentDataType>& list ) = 0;
 
-    /** interface function, see @ref AliHLTComponent for description */
-    AliHLTComponentDataType GetOutputDataType();
+    using  AliHLTCaloProcessor::DoEvent;
 
-    /** interface function, see @ref AliHLTComponent for description */
-    void GetOutputDataSize ( unsigned long& constBase, double& inputMultiplier );
-
-    /** interface function, see @ref AliHLTComponent for description */
-
-    using  AliHLTPHOSProcessor::DoEvent;
     int DoEvent ( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
                   AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
                   std::vector<AliHLTComponentBlockData>& outputBlocks );
+
+    /** 
+     * Compare two digits, used during the sorting
+     */
+    static Int_t CompareDigits(const void *dig0, const void *dig);
     
   protected:
 
-    /** interface function, see @ref AliHLTComponent for description */
+    /** interface function, see @ref AliHLTComponent for
+	description */
     int DoInit ( int argc, const char** argv );
 
     /** interface function, see @ref AliHLTComponent for description */
@@ -161,19 +171,19 @@ class AliHLTCaloClusterizerComponent: public AliHLTPHOSProcessor
     /** interface function, see @ref AliHLTComponent for description */
     int ScanConfigurationArgument ( int argc, const char** argv );
 
-    /** The data type we want */
-    AliHLTComponentDataType fDataType;            //COMMENT
-
   private:
 
-    /** Pointer to our digits */
-    AliHLTCaloDigitContainerStruct *fAllDigitsPtr;             //! transient
+    /** Array of pointers to our digits */
+    AliHLTCaloDigitDataStruct **fDigitsPointerArray;              //! transient
 
     /** Pointer to the clusterizer it self */
     AliHLTCaloClusterizer* fClusterizerPtr;                       //! transient
 
     /** Number of digits in event */
     Int_t fDigitCount;                                            //COMMENT
+
+    /** Default constructor, not implemented */
+    AliHLTCaloClusterizerComponent();                             //COMMENT
 
   };
 

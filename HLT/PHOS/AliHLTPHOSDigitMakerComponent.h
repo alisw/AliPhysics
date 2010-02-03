@@ -32,6 +32,7 @@
 
 #include "AliHLTPHOSProcessor.h"
 
+
 class AliHLTCaloDigitMaker;
 class AliHLTCaloDigitContainerDataStruct;
 

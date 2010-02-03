@@ -48,6 +48,7 @@
 //#include "AliPHOSGeometry.h"
 
 class TClonesArray;
+class TString;
 //class AliPHOSDigit;
 //class AliPHOSRecoParamEmc;
 //class AliPHOSRecoParam;
@@ -100,6 +101,10 @@ public:
   void SetDigitContainer(AliHLTCaloDigitContainerDataStruct* digitContainerPtr)
   { fDigitContainerPtr = digitContainerPtr; }
 
+  /** Set array with digits */
+  void SetDigitArray(AliHLTCaloDigitDataStruct **digitPointerArr)
+  { fDigitsPointerArray = digitPointerArr; } 
+
   /** Set rec point data buffer */
   void SetRecPointDataPtr(AliHLTCaloRecPointDataStruct* recPointDataPtr);
 
@@ -116,7 +121,7 @@ public:
   void SetEmcTimeGate(Float_t gate) { fEmcTimeGate = gate; }
   
   /** Starts clusterization of the event */ 
-  virtual Int_t ClusterizeEvent(UInt_t availableSize, UInt_t& totSize);
+  virtual Int_t ClusterizeEvent(Int_t nDigits, UInt_t availableSize, UInt_t& totSize);
   
   /**
    * For a given digit this digit scans for neighbouring digits which 
@@ -138,10 +143,10 @@ public:
 protected:
 
   /** Pointer to the rec point output */
-  AliHLTCaloRecPointDataStruct* fRecPointDataPtr;              //! transient
+  AliHLTCaloRecPointDataStruct *fRecPointDataPtr;              //! transient
 
-  /** Pointer to the digit output */
-  AliHLTCaloDigitDataStruct* fDigitDataPtr;                    //! transient
+  /** Pointer to the digit index array in the rec point */
+  Int_t* fDigitIndexPtr;                                       //! transient
 
   /** Energy threshold for starting a cluster for the calorimeter */
   Float_t fEmcClusteringThreshold;                             //COMMENT
@@ -155,11 +160,17 @@ protected:
   /** Counts the digits in a rec point */
   Int_t fDigitsInCluster;                                      //COMMENT
 
+  /** Array of our digits */
+  AliHLTCaloDigitDataStruct **fDigitsPointerArray;             //! transient
+
   /** Contains the digits from one event */
   AliHLTCaloDigitContainerDataStruct *fDigitContainerPtr;      //! transient
 
   /** Maximum difference in index to be a neighbour */
   Int_t fMaxDigitIndexDiff;                                    //COMMENT
+
+  /** Number of digits in event */
+  Int_t fNDigits;                                              //COMMENT
 
 private:
 

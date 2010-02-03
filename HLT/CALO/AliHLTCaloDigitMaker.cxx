@@ -105,7 +105,7 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
   //See header file for documentation
   
   Reset();
-  
+
   Int_t j = 0;
   UInt_t totSize = sizeof(AliHLTCaloDigitDataStruct);
   
@@ -133,8 +133,8 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
       if(UseDigit(coord, currentchannel))
       {
 	AddDigit(currentchannel, coord);
-	 j++;	      
-	 totSize += sizeof(AliHLTCaloDigitDataStruct);
+	//	j++;	      
+	totSize += sizeof(AliHLTCaloDigitDataStruct);
       }
       currentchannel = fShmPtr->NextChannel(); // Get the next channel
     }
@@ -151,7 +151,7 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
 // 	}
 //     }
    
-   fDigitCount += j;
+//   fDigitCount += j;
    return fDigitCount; 
 }
 
@@ -226,10 +226,23 @@ AliHLTCaloDigitMaker::Reset()
 void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, AliHLTCaloCoordinate &coord)
 {
 
+  AliHLTCaloDigitDataStruct *tmpDigit = fDigitStructPtr + 1;
+
+  if(fChannelBook[coord.fX][coord.fZ])
+    {
+      tmpDigit = fDigitStructPtr;
+      fDigitStructPtr = fChannelBook[coord.fX][coord.fZ];
+      fDigitCount--;
+      //      printf("Going to overwrite digit: x = %d, z = %d, gain = %d, energy = %f\n", fDigitStructPtr->fX, fDigitStructPtr->fZ, fDigitStructPtr->fGain, fDigitStructPtr->fEnergy);
+    }
+  
   fChannelBook[coord.fX][coord.fZ] = fDigitStructPtr;
+
+  fDigitStructPtr->fID = fDigitStructPtr->fZ * fCaloConstants->GetNXCOLUMNSMOD() + fDigitStructPtr->fX;
 
   fDigitStructPtr->fX = coord.fX;
   fDigitStructPtr->fZ = coord.fZ;
+  fDigitStructPtr->fGain = coord.fGain;
   fDigitStructPtr->fOverflow = false;
   if(coord.fGain == fCaloConstants->GetHIGHGAIN() )
     {
@@ -238,7 +251,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
 	{
 	  fDigitStructPtr->fOverflow = true;
 	}
-      //      	printf("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy);
+      //      printf("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy);
     }
   else
     {
@@ -247,12 +260,14 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
 	{
 	  fDigitStructPtr->fOverflow = true;
 	}
-      //      	printf("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy); 
+      //      printf("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy); 
     }
   fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //TODO
   fDigitStructPtr->fCrazyness = channelData->fCrazyness;
   fDigitStructPtr->fModule = coord.fModuleId;
-  fDigitStructPtr++;
+  fDigitStructPtr = tmpDigit;
+  //  fDigitStructPtr++;
+  fDigitCount++;
 }
 
 bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, AliHLTCaloChannelDataStruct *channel) 
@@ -266,7 +281,7 @@ bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, Al
 	  //	  printf("UseDigit: Already have digit with, x: %d, z: %d, with high gain \n", channelCoordinates.fX, channelCoordinates.fZ);
 	  if(tmpDigit->fOverflow)
 	    {
-	      //	      printf("But it was in overflow! Let's use this low gain!");
+	      //	      printf("But it was in overflow! Let's use this low gain!\n");
 	      return true;
 	    }
 	  return false;

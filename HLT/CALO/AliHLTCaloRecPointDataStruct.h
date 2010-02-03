@@ -80,8 +80,8 @@ struct AliHLTCaloRecPointDataStruct
   /** Distance to nearest bad channel */
   Float_t fDistanceToBadChannel;              //COMMENT
 
-  /** Digits in the rec point */
-  AliHLTCaloDigitDataStruct fDigits;          //COMMENT
+  /** Index of the digits in the rec point */
+  Int_t fDigits;                              //COMMENT
 
 };
 
