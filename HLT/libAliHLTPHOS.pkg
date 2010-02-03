@@ -8,8 +8,7 @@ include $(MODDIR)/hlt.conf
 
 #CLASS_HDRS:=	  AliHLTPHOSAgent.h 
 
-CLASS_HDRS:=	  AliHLTPHOSClusterizer.h \
-		  AliHLTPHOSClusterizerComponent.h \
+CLASS_HDRS:=  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSDefinitions.h \
 		  AliHLTPHOSPhysicsAnalyzer.h \
 		  AliHLTPHOSProcessor.h \
