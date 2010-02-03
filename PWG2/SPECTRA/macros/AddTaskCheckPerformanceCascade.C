@@ -1,4 +1,5 @@
-AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t lCollidingSystems=0  /*0 = pp, 1 = AA*/ )
+AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t       lCollidingSystems=0  /*0 = pp, 1 = AA*/,
+                                                                       const TString lMasterJobSessionFlag = "")
 {
 // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -18,20 +19,34 @@ AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t l
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-   AliAnalysisTaskCheckPerformanceCascade *taskCheckPerfCascade = new AliAnalysisTaskCheckPerformanceCascade("TaskCheckPerfCascade");
+        AliAnalysisTaskCheckPerformanceCascade *taskCheckPerfCascade = new AliAnalysisTaskCheckPerformanceCascade("TaskCheckPerfCascade");
    taskCheckPerfCascade->SetCollidingSystems(lCollidingSystems);
    taskCheckPerfCascade->SetAnalysisType(type);
+   
    mgr->AddTask(taskCheckPerfCascade);
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
+
+   // User file name (if need be)
+   /*
+   TString lCommonFileName = "sLHC09dxx-CheckPerfCascade";
+   if(lMasterJobSessionFlag.Length()){
+        lCommonFileName += "-";
+        lCommonFileName += lMasterJobSessionFlag.Data();
+   }
+        lCommonFileName += ".root"; 
+   mgr->SetCommonFileName( lCommonFileName.Data() );
+   */
+
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    outputFileName += ":PWG2CheckPerformanceCascade";
-   if (lCollidingSystems) outputFileName += "_AA";
-   else outputFileName += "_PP";
-   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
-
+   if (lCollidingSystems) outputFileName += "_AA_";
+   else outputFileName += "_PP_";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "MC_";
+   if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
+   
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCascMC",
 							     TList::Class(),
 							     AliAnalysisManager::kOutputContainer,
@@ -39,5 +54,6 @@ AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t l
 
    mgr->ConnectInput( taskCheckPerfCascade, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskCheckPerfCascade, 1, coutput1);
+   
    return taskCheckPerfCascade;
 }   

@@ -13,7 +13,7 @@
 //              3. Supply an AliCFContainer meant to define the optimised topological selections
 //              4. Rough azimuthal correlation study (Eta, Phi)
 //            Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
-//            Modified :           A.Maire Dec2009, antonin.maire@ires.in2p3.fr
+//            Modified :           A.Maire Jan2010, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
 
 class TList;
@@ -24,6 +24,8 @@ class TVector3;
 class THnSparse;
  
 class AliESDpid;
+class AliESDEvent;
+class AliPhysicsSelection;
 class AliCFContainer;
 
 
@@ -44,52 +46,68 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 				      const Int_t    *lArrTrackID,
 				            TVector3 &lTVect3MomXi, 
 				            Double_t  lEtaXi);
+  virtual Int_t  DoESDTrackWithTPCrefitMultiplicity(const AliESDEvent *lESDevent);
+  
   virtual void   Terminate(Option_t *);
   
-  void SetRealDataFlag    (Short_t realData = 0)             {fRealData = realData;}
   void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
   void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
-    
+  
+  
  private:
-  	TString 	fAnalysisType;			// "ESD" or "AOD" analysis type	
-	Short_t 	fCollidingSystems;		// 0 = pp collisions or 1 = AA collisions
-	AliESDpid*      fESDpid;		        //! Tool data member to manage the TPC Bethe-Bloch info
-	Short_t 	fRealData;			// 0 = MC data or 1 = real data (needed for trigger issues)
-	
-	TList	*fListHistCascade;		//! List of Cascade histograms
-	
-	// - General histos (filled for any event)
-	TH1F	*fHistTrackMultiplicity;		//! Track multiplicity distribution
-	TH1F	*fHistCascadeMultiplicity;		//! Cascade multiplicity distribution
+        // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
+        // your data member object is created on the worker nodes and streaming is not needed.
+        // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
 
 
-	// - Vertex Positions
-	TH1F	*fHistVtxStatus;			//! Is there a tracking vertex in the event ?
+        TString         fAnalysisType;         // "ESD" or "AOD" analysis type	
+        Short_t         fCollidingSystems;     // 0 = pp collisions or 1 = AA collisions
 
-		// Vtx coming from the full tracking
-	TH1F	*fHistPosTrkgPrimaryVtxX;  		//! primary vertex position distribution in x 
-	TH1F	*fHistPosTrkgPrimaryVtxY;		//! primary vertex position distribution in y
-	TH1F	*fHistPosTrkgPrimaryVtxZ;  		//! primary vertex position distribution in z
-	TH1F	*fHistTrkgPrimaryVtxRadius;		//! primary vertex (3D) radius distribution 
+        AliESDpid       *fESDpid;               // Tool data member to manage the TPC Bethe-Bloch info
 
-		// Best primary Vtx available for the event
-	TH1F	*fHistPosBestPrimaryVtxX;  		//! (best) primary vertex position distribution in x 
-	TH1F	*fHistPosBestPrimaryVtxY;		//! (best) primary vertex position distribution in y
-	TH1F	*fHistPosBestPrimaryVtxZ;  		//! (best) primary vertex position distribution in z
-	TH1F	*fHistBestPrimaryVtxRadius;		//! (best) primary vertex radius distribution 
-	
-		// Correlation Best Vtx / Full Tracking Vtx
-	TH2F	*f2dHistTrkgPrimVtxVsBestPrimVtx;	//!  Radius of prim. Vtx from tracks Vs Radius of best Prim. Vtx
-	
-	
-	// PART 1 : Adavanced QA
-	// - Typical histos on the variables used for the selection of cascades
-	TH1F	*fHistEffMassXi;      			//! reconstructed cascade effective mass
-	TH1F	*fHistChi2Xi;         			//! chi2 value
-	TH1F	*fHistDcaXiDaughters; 			//! dca between Xi's daughters
-	TH1F 	*fHistDcaBachToPrimVertex;		//! dca of the bachelor track to primary vertex
-	TH1F	*fHistXiCosineOfPointingAngle;		//! cosine of Xi pointing angle in a cascade
-	TH1F	*fHistXiRadius;				//! (transverse) radius of the cascade vertex 
+
+
+             TList      *fListHistCascade;              //! List of Cascade histograms
+
+        // - General histos (filled for any event)
+        TH1F	*fHistTrackMultiplicity;                //! Track multiplicity distribution (without any cut = include ITS stand-alone + global tracks)
+        TH1F	*fHistTPCrefitTrackMultiplicity;        //! Track multiplicity distribution for tracks with TPCrefit
+        TH1F	*fHistCascadeMultiplicity;              //! Cascade multiplicity distribution
+
+
+        // - Characteristics for event with >1 cascade : Track Multiplicity, TPC clusters + Prim. vertex positions
+        TH1F	*fHistTPCrefitTrackMultiplicityForCascadeEvt;   //! TPCrefit Track multiplicity distribution for event with >1 cascade candidate (NB: after quality sel. within the task)
+
+        TH1F    *fHistPosV0TPCClusters;                 //! TPC clusters distribution for Positive V0 daughter track
+        TH1F    *fHistNegV0TPCClusters;                 //! TPC clusters distribution for Negative V0 daughter track
+        TH1F    *fHistBachTPCClusters;                  //! TPC clusters distribution for Bachelor             track
+
+        TH1F    *fHistVtxStatus;                        //! Is there a tracking vertex in the cascade event ?
+
+                // Vtx coming from the full tracking
+        TH1F    *fHistPosTrkgPrimaryVtxX;               //! primary vertex position distribution in x 
+        TH1F    *fHistPosTrkgPrimaryVtxY;               //! primary vertex position distribution in y
+        TH1F    *fHistPosTrkgPrimaryVtxZ;               //! primary vertex position distribution in z
+        TH1F    *fHistTrkgPrimaryVtxRadius;             //! primary vertex (3D) radius distribution 
+
+                // Best primary Vtx available for the event
+        TH1F    *fHistPosBestPrimaryVtxX;               //! (best) primary vertex position distribution in x 
+        TH1F    *fHistPosBestPrimaryVtxY;               //! (best) primary vertex position distribution in y
+        TH1F    *fHistPosBestPrimaryVtxZ;               //! (best) primary vertex position distribution in z
+        TH1F    *fHistBestPrimaryVtxRadius;             //! (best) primary vertex radius distribution 
+
+                // Correlation Best Vtx / Full Tracking Vtx
+        TH2F    *f2dHistTrkgPrimVtxVsBestPrimVtx;       //!  Radius of prim. Vtx from tracks Vs Radius of best Prim. Vtx
+
+
+// PART 1 : Adavanced QA
+// - Typical histos on the variables used for the selection of cascades
+        TH1F    *fHistEffMassXi;      			//! reconstructed cascade effective mass
+        TH1F    *fHistChi2Xi;         			//! chi2 value
+        TH1F    *fHistDcaXiDaughters; 			//! dca between Xi's daughters
+        TH1F    *fHistDcaBachToPrimVertex;		//! dca of the bachelor track to primary vertex
+        TH1F    *fHistXiCosineOfPointingAngle;		//! cosine of Xi pointing angle in a cascade
+        TH1F    *fHistXiRadius;                         //! (transverse) radius of the cascade vertex 
 		
 	// - Histos about ~ the "V0 selection part" of the cascade,  coming by inheritance from AliESDv0
 	TH1F	*fHistMassLambdaAsCascDghter;		//! Test Invariant Mass of Lambda coming from Cascade
@@ -188,7 +206,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascade, 8);
+  ClassDef(AliAnalysisTaskCheckCascade, 9);
 };
 
 #endif

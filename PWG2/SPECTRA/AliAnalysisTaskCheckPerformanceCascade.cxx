@@ -12,10 +12,12 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------
-//                 AliAnalysisTaskCheckPerformanceCascade class
+//		 AliAnalysisTaskCheckPerformanceCascade class
 //            This task is for a performance study of cascade identification.
-//            It works with MC info and ESD/AOD tree.
-//            Origin : A.Maire Mar2009, antonin.maire@ires.in2p3.fr
+//            It works with MC info and ESD.
+//              Use with AOD tree = under development
+//            Origin   : A.Maire Mar2009, antonin.maire@ires.in2p3.fr
+//            Modified : A.Maire Jan2010, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
 
 
@@ -34,7 +36,12 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 
+#include "AliCFContainer.h"
+#include "AliESDpid.h"
+// #include "AliV0vertexer.h"
+// #include "AliCascadeVertexer.h"
 #include "AliESDEvent.h"
 #include "AliESDcascade.h"
 
@@ -49,7 +56,7 @@ ClassImp(AliAnalysisTaskCheckPerformanceCascade)
      //_____Dummy constructor________________________________________________________________
 AliAnalysisTaskCheckPerformanceCascade::AliAnalysisTaskCheckPerformanceCascade() 
 : AliAnalysisTaskSE(), // <- take care to AliAnalysisTask( empty )
-  fDebugCascade(0), fAnalysisType("ESD"), fCollidingSystems(0),
+  fDebugCascade(0), fAnalysisType("ESD"), fCollidingSystems(0), fESDpid(0),
     
 	// - Cascade part initialisation
 fListHistCascade(0),
@@ -181,10 +188,13 @@ fListHistCascade(0),
     f2dHistAsMCResRXiMinus(0),		
     f2dHistAsMCResRXiPlus(0),		
     f2dHistAsMCResROmegaMinus(0),
-    f2dHistAsMCResROmegaPlus(0)
-	
-    
-		    
+    f2dHistAsMCResROmegaPlus(0),
+
+    fCFContCascadePIDAsXiMinus(0),
+    fCFContCascadePIDAsXiPlus(0),
+    fCFContCascadePIDAsOmegaMinus(0),
+    fCFContCascadePIDAsOmegaPlus(0)
+
 {
 // Dummy constructor
 }
@@ -195,7 +205,7 @@ fListHistCascade(0),
 //_____Non-default Constructor________________________________________________________________
 AliAnalysisTaskCheckPerformanceCascade::AliAnalysisTaskCheckPerformanceCascade(const char *name) 
   : AliAnalysisTaskSE(name),
-    fDebugCascade(0), fAnalysisType("ESD"), fCollidingSystems(0),
+    fDebugCascade(0), fAnalysisType("ESD"), fCollidingSystems(0), fESDpid(0),
       
     	// - Cascade part initialisation
 fListHistCascade(0),
@@ -327,8 +337,12 @@ fListHistCascade(0),
     f2dHistAsMCResRXiMinus(0),		
     f2dHistAsMCResRXiPlus(0),		
     f2dHistAsMCResROmegaMinus(0),
-    f2dHistAsMCResROmegaPlus(0)
-	
+    f2dHistAsMCResROmegaPlus(0),
+
+    fCFContCascadePIDAsXiMinus(0),
+    fCFContCascadePIDAsXiPlus(0),
+    fCFContCascadePIDAsOmegaMinus(0),
+    fCFContCascadePIDAsOmegaPlus(0)	
 
 {
   // Constructor
@@ -356,6 +370,30 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
 	AliLog::SetGlobalLogLevel(AliLog::kError); 
    	// to suppress the extensive info prompted by a run with MC			
 
+if(! fESDpid){
+		
+  Double_t lAlephParameters[5] = {0.};
+  	// Reasonable parameters extracted for p-p simulation (LHC09a4) - A.Kalweit
+	// lAlephParameters[0] = 4.23232575531564326e+00;//50*0.76176e-1; // do not forget to divide this value by 50 in SetBlochParam !
+	// lAlephParameters[1] = 8.68482806165147636e+00;//10.632; 
+	// lAlephParameters[2] = 1.34000000000000005e-05;//0.13279e-4;
+	// lAlephParameters[3] = 2.30445734159456084e+00;//1.8631;
+	// lAlephParameters[4] = 2.25624744086878559e+00;//1.9479;
+        
+        // Reasonable parameters extracted for real p-p event (Dec 2009 - GSI Pass5) - A.Kalweit
+        lAlephParameters[0] = 0.0283086;        // No extra-division to apply in SetBlochParam
+        lAlephParameters[1] = 2.63394e+01;
+        lAlephParameters[2] = 5.04114e-11;
+        lAlephParameters[3] = 2.12543e+00;
+        lAlephParameters[4] = 4.88663e+00; 
+
+  fESDpid = new AliESDpid();
+  fESDpid->GetTPCResponse().SetBetheBlochParameters(lAlephParameters[0],
+					  lAlephParameters[1],
+					  lAlephParameters[2],
+					  lAlephParameters[3],
+					  lAlephParameters[4]);
+}
 	
 	
   // Definition of the datamembers	
@@ -875,6 +913,182 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
   }
   
   
+  
+  
+                // - PID container
+if(! fCFContCascadePIDAsXiMinus)  {
+  const	Int_t  lNbSteps      =  7 ;
+  const Int_t  lNbVariables  =  4 ;
+
+  //array for the number of bins in each dimension :
+  Int_t lNbBinsPerVar[4];
+  lNbBinsPerVar[0] = 200;
+  lNbBinsPerVar[1] = 400;
+  lNbBinsPerVar[2] = 48;
+  lNbBinsPerVar[3] = 250;
+   
+  
+  fCFContCascadePIDAsXiMinus = new AliCFContainer("fCFContCascadePIDAsXiMinus","Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
+  
+  //setting the bin limits (valid  for v4-18-10-AN)
+  fCFContCascadePIDAsXiMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
+  fCFContCascadePIDAsXiMinus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
+  fCFContCascadePIDAsXiMinus->SetBinLimits(2,  -1.2  ,   1.2 );	// Rapidity
+  if(fCollidingSystems) 
+	fCFContCascadePIDAsXiMinus->SetBinLimits(3, 0.0, 20000.0  );    // TPCrefitTrackMultiplicity
+  else
+	fCFContCascadePIDAsXiMinus->SetBinLimits(3, 0.0, 250.0  );     // TPCrefitTrackMultiplicity
+  
+  // Setting the step title : one per PID case
+  fCFContCascadePIDAsXiMinus->SetStepTitle(0, "No PID");
+  fCFContCascadePIDAsXiMinus->SetStepTitle(1, "TPC PID / 3-#sigma cut on Bachelor track");
+  fCFContCascadePIDAsXiMinus->SetStepTitle(2, "TPC PID / 3-#sigma cut on Bachelor+Baryon tracks");
+  fCFContCascadePIDAsXiMinus->SetStepTitle(3, "TPC PID / 3-#sigma cut on Bachelor+Baryon+Meson tracks");
+  fCFContCascadePIDAsXiMinus->SetStepTitle(4, "Comb. PID / Bachelor");
+  fCFContCascadePIDAsXiMinus->SetStepTitle(5, "Comb. PID / Bachelor+Baryon");
+  fCFContCascadePIDAsXiMinus->SetStepTitle(6, "Comb. PID / Bachelor+Baryon+Meson");
+  
+  // Setting the variable title, per axis
+  fCFContCascadePIDAsXiMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
+  fCFContCascadePIDAsXiMinus->SetVarTitle(1, "M( #Lambda , #pi^{-} ) (GeV/c^{2})");
+  fCFContCascadePIDAsXiMinus->SetVarTitle(2, "Y_{#Xi}");
+  fCFContCascadePIDAsXiMinus->SetVarTitle(3, "TPCrefit track Multiplicity");
+  
+  fListHistCascade->Add(fCFContCascadePIDAsXiMinus);
+  
+}
+
+if(! fCFContCascadePIDAsXiPlus)  {
+  const	Int_t  lNbSteps      =  7 ;
+  const Int_t  lNbVariables  =  4 ;
+
+  //array for the number of bins in each dimension :
+  Int_t lNbBinsPerVar[4];
+  lNbBinsPerVar[0] = 200;
+  lNbBinsPerVar[1] = 400;
+  lNbBinsPerVar[2] = 48;
+  lNbBinsPerVar[3] = 250;
+   
+  
+  fCFContCascadePIDAsXiPlus = new AliCFContainer("fCFContCascadePIDAsXiPlus","Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
+  
+  
+  //setting the bin limits (valid  for v4-18-10-AN)
+  fCFContCascadePIDAsXiPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
+  fCFContCascadePIDAsXiPlus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
+  fCFContCascadePIDAsXiPlus->SetBinLimits(2,  -1.2  ,   1.2 );	// Rapidity
+  if(fCollidingSystems) 
+	fCFContCascadePIDAsXiPlus->SetBinLimits(3, 0.0, 20000.0  );    // TPCrefitTrackMultiplicity
+  else
+	fCFContCascadePIDAsXiPlus->SetBinLimits(3, 0.0, 250.0  );     // TPCrefitTrackMultiplicity
+  
+  // Setting the step title : one per PID case
+  fCFContCascadePIDAsXiPlus->SetStepTitle(0, "No PID");
+  fCFContCascadePIDAsXiPlus->SetStepTitle(1, "TPC PID / 3-#sigma cut on Bachelor track");
+  fCFContCascadePIDAsXiPlus->SetStepTitle(2, "TPC PID / 3-#sigma cut on Bachelor+Baryon tracks");
+  fCFContCascadePIDAsXiPlus->SetStepTitle(3, "TPC PID / 3-#sigma cut on Bachelor+Baryon+Meson tracks");
+  fCFContCascadePIDAsXiPlus->SetStepTitle(4, "Comb. PID / Bachelor");
+  fCFContCascadePIDAsXiPlus->SetStepTitle(5, "Comb. PID / Bachelor+Baryon");
+  fCFContCascadePIDAsXiPlus->SetStepTitle(6, "Comb. PID / Bachelor+Baryon+Meson");
+  
+  // Setting the variable title, per axis
+  fCFContCascadePIDAsXiPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
+  fCFContCascadePIDAsXiPlus->SetVarTitle(1, "M( #Lambda , #pi^{+} ) (GeV/c^{2})");
+  fCFContCascadePIDAsXiPlus->SetVarTitle(2, "Y_{#Xi}");
+  fCFContCascadePIDAsXiPlus->SetVarTitle(3, "TPCrefit track Multiplicity");
+  
+  fListHistCascade->Add(fCFContCascadePIDAsXiPlus);
+  
+}
+
+
+if(! fCFContCascadePIDAsOmegaMinus)  {
+  const	Int_t  lNbSteps      =  7 ;
+  const Int_t  lNbVariables  =  4 ;
+
+  //array for the number of bins in each dimension :
+  Int_t lNbBinsPerVar[4];
+  lNbBinsPerVar[0] = 200;
+  lNbBinsPerVar[1] = 500;
+  lNbBinsPerVar[2] = 48;
+  lNbBinsPerVar[3] = 250;
+   
+  
+  fCFContCascadePIDAsOmegaMinus = new AliCFContainer("fCFContCascadePIDAsOmegaMinus","Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
+  
+  
+  //setting the bin limits (valid  for v4-18-10-AN)
+  fCFContCascadePIDAsOmegaMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
+  fCFContCascadePIDAsOmegaMinus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
+  fCFContCascadePIDAsOmegaMinus->SetBinLimits(2,  -1.2  ,   1.2 );	// Rapidity
+  if(fCollidingSystems) 
+	fCFContCascadePIDAsOmegaMinus->SetBinLimits(3, 0.0, 20000.0  );    // TPCrefitTrackMultiplicity
+  else
+	fCFContCascadePIDAsOmegaMinus->SetBinLimits(3, 0.0, 250.0  );     // TPCrefitTrackMultiplicity
+  
+  // Setting the step title : one per PID case
+  fCFContCascadePIDAsOmegaMinus->SetStepTitle(0, "No PID");
+  fCFContCascadePIDAsOmegaMinus->SetStepTitle(1, "TPC PID / 3-#sigma cut on Bachelor track");
+  fCFContCascadePIDAsOmegaMinus->SetStepTitle(2, "TPC PID / 3-#sigma cut on Bachelor+Baryon tracks");
+  fCFContCascadePIDAsOmegaMinus->SetStepTitle(3, "TPC PID / 3-#sigma cut on Bachelor+Baryon+Meson tracks");
+  fCFContCascadePIDAsOmegaMinus->SetStepTitle(4, "Comb. PID / Bachelor");
+  fCFContCascadePIDAsOmegaMinus->SetStepTitle(5, "Comb. PID / Bachelor+Baryon");
+  fCFContCascadePIDAsOmegaMinus->SetStepTitle(6, "Comb. PID / Bachelor+Baryon+Meson");
+  
+  // Setting the variable title, per axis
+  fCFContCascadePIDAsOmegaMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
+  fCFContCascadePIDAsOmegaMinus->SetVarTitle(1, "M( #Lambda , K^{-} ) (GeV/c^{2})");
+  fCFContCascadePIDAsOmegaMinus->SetVarTitle(2, "Y_{#Omega}");
+  fCFContCascadePIDAsOmegaMinus->SetVarTitle(3, "TPCrefit track Multiplicity");
+  
+  fListHistCascade->Add(fCFContCascadePIDAsOmegaMinus);
+  
+}
+
+if(! fCFContCascadePIDAsOmegaPlus)  {
+  const	Int_t  lNbSteps      =  7 ;
+  const Int_t  lNbVariables  =  4 ;
+
+  //array for the number of bins in each dimension :
+  Int_t lNbBinsPerVar[4];
+  lNbBinsPerVar[0] = 200;
+  lNbBinsPerVar[1] = 500;
+  lNbBinsPerVar[2] = 48;
+  lNbBinsPerVar[3] = 250;
+   
+  
+  fCFContCascadePIDAsOmegaPlus = new AliCFContainer("fCFContCascadePIDAsOmegaPlus","Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
+  
+  
+  //setting the bin limits (valid  for v4-18-10-AN)
+  fCFContCascadePIDAsOmegaPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
+  fCFContCascadePIDAsOmegaPlus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
+  fCFContCascadePIDAsOmegaPlus->SetBinLimits(2,  -1.2  ,   1.2 );	// Rapidity
+  if(fCollidingSystems) 
+	fCFContCascadePIDAsOmegaPlus->SetBinLimits(3, 0.0, 20000.0  );    // TPCrefitTrackMultiplicity
+  else
+	fCFContCascadePIDAsOmegaPlus->SetBinLimits(3, 0.0, 250.0  );     // TPCrefitTrackMultiplicity
+  
+  // Setting the step title : one per PID case
+  fCFContCascadePIDAsOmegaPlus->SetStepTitle(0, "No PID");
+  fCFContCascadePIDAsOmegaPlus->SetStepTitle(1, "TPC PID / 3-#sigma cut on Bachelor track");
+  fCFContCascadePIDAsOmegaPlus->SetStepTitle(2, "TPC PID / 3-#sigma cut on Bachelor+Baryon tracks");
+  fCFContCascadePIDAsOmegaPlus->SetStepTitle(3, "TPC PID / 3-#sigma cut on Bachelor+Baryon+Meson tracks");
+  fCFContCascadePIDAsOmegaPlus->SetStepTitle(4, "Comb. PID / Bachelor");
+  fCFContCascadePIDAsOmegaPlus->SetStepTitle(5, "Comb. PID / Bachelor+Baryon");
+  fCFContCascadePIDAsOmegaPlus->SetStepTitle(6, "Comb. PID / Bachelor+Baryon+Meson");
+  
+  // Setting the variable title, per axis
+  fCFContCascadePIDAsOmegaPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
+  fCFContCascadePIDAsOmegaPlus->SetVarTitle(1, "M( #Lambda , K^{+} ) (GeV/c^{2})");
+  fCFContCascadePIDAsOmegaPlus->SetVarTitle(2, "Y_{#Omega}");
+  fCFContCascadePIDAsOmegaPlus->SetVarTitle(3, "TPCrefit track Multiplicity");
+  
+  fListHistCascade->Add(fCFContCascadePIDAsOmegaPlus);
+  
+}
+
+  
 }// end CreateOutputObjects
 
 
@@ -935,17 +1149,60 @@ void AliAnalysisTaskCheckPerformanceCascade::UserExec(Option_t *)
 		
 	}
 	
+  //-------------------------------------------------
+  // 0 - Trigger managment
+  // FIXME : Check the availability of the proper trigger 
 
+   // Note : Presuppose the presence of AliPhysicsSelectionTask
+        Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+        if ( ! isSelected ) return;
+        //else Printf("Event selected ... \n");
+        
+        
   //	cout << "Name of the accessed file :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
 
   //	cout << "Tree characteristics ..." << endl;
   //	fInputHandler->GetTree()->Print("toponly");
   //	fInputHandler->GetTree()->GetBranch("PrimaryVertex")->Print();
   //	fInputHandler->GetTree()->GetBranch("SPDVertex")->Print();
+        
+        
+   //-------------------------------------------------
+   // 1 - Cascade vertexer (ESD)
 
- 
- 
- 
+        // if(fAnalysisType == "ESD" ){
+        //         lESDevent->ResetCascades();
+        //         lESDevent->ResetV0s();
+        // 
+        //         AliV0vertexer V0vtxer;
+        //         AliCascadeVertexer CascVtxer;
+        // 
+        //         Double_t v0sels[]={33,    // max allowed chi2
+        //                         0.02,  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
+        //                         0.02,  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
+        //                         1.0,   // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
+        //                         0.98,  // max allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
+        //                         0.2,   // min radius of the fiducial volume                 (LHC09a4 : 0.2)
+        //                         100    // max radius of the fiducial volume                 (LHC09a4 : 100.0)
+        //         };
+        //         V0vtxer.SetDefaultCuts(v0sels);
+        // 
+        //         Double_t xisels[]={33.,   // max allowed chi2 (same as PDC07)
+        //                         0.02,   // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
+        //                         0.020,  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
+        //                         0.01 ,  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
+        //                         0.5,    // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
+        //                         0.99,   // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
+        //                         0.2,    // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
+        //                         100     // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
+        //         };
+        //         CascVtxer.SetDefaultCuts(xisels);
+        // 
+        //         V0vtxer.Tracks2V0vertices(lESDevent);
+        //         CascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        // }
+
+
  
 
  
@@ -1173,7 +1430,7 @@ switch (iCascType)
 			if( lLambda->Theta() < TMath::Pi()/4.0  ||    lLambda->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
 			if( lBach->Theta() < TMath::Pi()/4.0    ||    lBach->Theta() > 3.0*TMath::Pi()/4.0 )   continue;
 		
-			if( lBach->Pt() < 0.2 ) continue; 
+			if( lBach->Pt() < 0.2 ) continue; //FIXME : maybe tuned for Xi but not for K- from Omega ...
 			
 		
 		
@@ -1213,7 +1470,7 @@ switch (iCascType)
 			if( lDghtBarV0->Theta() < TMath::Pi()/4.0  ||  lDghtBarV0->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
 			if( lDghtMesV0->Theta() < TMath::Pi()/4.0  ||  lDghtMesV0->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
 			
-			if( lDghtBarV0->Pt() < 0.5 ) continue;
+			if( lDghtBarV0->Pt() < 0.3 ) continue;
 			if( lDghtMesV0->Pt() < 0.2 ) continue;
 			
 			
@@ -1275,16 +1532,36 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 {// This is the begining of the Cascade loop
 		
 	AliESDcascade *xiESD = lESDevent->GetCascade(iXi);
-          
 	if (!xiESD) continue;
 	
-	// -  Step 1 : Preparing the general info about of the event
+	// -  Step 1 : Preparing the general info about of the event = prim. Vtx + magnetic field (ESD)
 	//-------------
-	//const AliESDVertex *lPrimaryVtx = lESDevent->GetPrimaryVertex();  // get the best vtx available
-	//	Double_t lPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
-	//		 lPrimaryVtx->GetXYZ( lPrimaryVtxPos );
-	
+		
 	// Double_t lMagneticField = lESDevent->GetMagneticField( );
+
+        const AliESDVertex *lPrimaryTrackingVtx = lESDevent->GetPrimaryVertexTracks();  // get the vtx stored in ESD found with tracks
+        const AliESDVertex *lPrimarySPDVtx      = lESDevent->GetPrimaryVertexSPD();     // get the vtx stored in ESD found with SPD tracklets
+
+        const AliESDVertex *lPrimaryBestVtx     = lESDevent->GetPrimaryVertex();
+                // get the best primary vertex available for the event
+                // As done in AliCascadeVertexer, we keep the one which is the best one available.
+                // between : Tracking vertex > SPD vertex > TPC vertex > default SPD vertex
+                Double_t lBestPrimaryVtxPos[3]   = {-100.0, -100.0, -100.0};
+        lPrimaryBestVtx->GetXYZ( lBestPrimaryVtxPos );
+
+        // FIXME : quality cut on the z-position of the prim vertex.
+        Bool_t kQualityCutZprimVtxPos = kTRUE;
+        if(kQualityCutZprimVtxPos) {
+                if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0 ) { AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !"); return; }
+        }
+        // FIXME : remove TPC-only primary vertex : retain only events with tracking + SPD vertex
+        Bool_t kQualityCutNoTPConlyPrimVtx = kTRUE;
+        if(kQualityCutNoTPConlyPrimVtx) {
+                if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingVtx->GetStatus() ){
+                        AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+                        return;
+                }
+        }
 	
 	
 	// - Step 2 : Connection to daughter tracks of the current cascade
@@ -1294,6 +1571,15 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 		UInt_t lIdxNegXi 	= (UInt_t) TMath::Abs( xiESD->GetNindex() );
 		UInt_t lBachIdx 	= (UInt_t) TMath::Abs( xiESD->GetBindex() );
 		// abs value not needed ; the index should always be positive (!= label ...)
+                
+                
+        // FIXME : rejection of a double use of a daughter track (nothing but just a crosscheck of what is done in the cascade vertexer)
+        if(lBachIdx == lIdxNegXi) {
+                AliWarning("Pb / Idx(Bach. track) = Idx(Neg. track) ... continue!"); continue;
+        }
+        if(lBachIdx == lIdxPosXi) {
+                AliWarning("Pb / Idx(Bach. track) = Idx(Pos. track) ... continue!"); continue;
+        }
       
 	AliESDtrack *pTrackXi		= lESDevent->GetTrack( lIdxPosXi );
 	AliESDtrack *nTrackXi		= lESDevent->GetTrack( lIdxNegXi );
@@ -1303,6 +1589,29 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 		continue;
 	}
 	
+        Int_t lPosTPCClusters   = pTrackXi->GetTPCNcls();
+        Int_t lNegTPCClusters   = nTrackXi->GetTPCNcls();
+        Int_t lBachTPCClusters  = bachTrackXi->GetTPCNcls(); 
+
+                // FIXME : rejection of a poor quality tracks
+        Bool_t kQualityCutTPCrefit = kFALSE;
+        Bool_t kQualityCut80TPCcls = kFALSE;
+        
+        if(kQualityCutTPCrefit){
+                // 1 - Poor quality related to TPCrefit
+                ULong_t pStatus    = pTrackXi->GetStatus();
+                ULong_t nStatus    = nTrackXi->GetStatus();
+                ULong_t bachStatus = bachTrackXi->GetStatus();
+                if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
+                if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
+                if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
+        }
+        if(kQualityCut80TPCcls){
+                // 2 - Poor quality related to TPC clusters
+                if(lPosTPCClusters  < 80) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
+                if(lNegTPCClusters  < 80) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
+                if(lBachTPCClusters < 80) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
+        }
 	
 	// - Step 3 : Info over reconstructed cascades
 	//-------------	
@@ -1360,41 +1669,163 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	// - Step 4 : PID info
 	//-------------
 	
-	Bool_t   lIsBachelorKaon    = kFALSE;
-	Bool_t   lIsBachelorPion    = kFALSE;
 	
-	// 4.1 - Combined PID
-	// Reasonable guess for the priors for the cascade track sample
-	Double_t lPriorsGuessXi[5]    = {0.0, 0.0, 2, 0, 1};
-	Double_t lPriorsGuessOmega[5] = {0.0, 0.0, 1, 1, 1};
-	AliPID   pidXi;		pidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID   pidOmega;	pidOmega.SetPriors( lPriorsGuessOmega );
-	Double_t ppion = -2.0;
-	Double_t pkaon = -2.0;
+	// 4.1 - PID Information
+
+	Bool_t   lIsPosInXiProton      = kFALSE;
+	Bool_t   lIsPosInXiPion        = kFALSE;
+	Bool_t   lIsPosInOmegaProton   = kFALSE;
+	Bool_t   lIsPosInOmegaPion     = kFALSE;
 	
-	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
-		Double_t r[10]; bachTrackXi->GetESDpid(r);
-		pidXi.SetProbabilities(r);
-		pidOmega.SetProbabilities(r);
-		// Check if the bachelor track is a pion
-		    ppion = pidXi.GetProbability(AliPID::kPion);
-		if (ppion > pidXi.GetProbability(AliPID::kElectron) &&
-		    ppion > pidXi.GetProbability(AliPID::kMuon)     &&
-		    ppion > pidXi.GetProbability(AliPID::kKaon)     &&
-		    ppion > pidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
-		// Check if the bachelor track is a kaon
-		    pkaon = pidOmega.GetProbability(AliPID::kKaon);
-		if (pkaon > pidOmega.GetProbability(AliPID::kElectron) &&
-		    pkaon > pidOmega.GetProbability(AliPID::kMuon)     &&
-		    pkaon > pidOmega.GetProbability(AliPID::kPion)     &&
-		    pkaon > pidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;
+	Bool_t   lIsNegInXiProton      = kFALSE;
+	Bool_t   lIsNegInXiPion        = kFALSE;
+	Bool_t   lIsNegInOmegaProton   = kFALSE;
+	Bool_t   lIsNegInOmegaPion     = kFALSE;
+	
+	Bool_t   lIsBachelorKaon       = kFALSE;
+	Bool_t   lIsBachelorPion       = kFALSE; 
+	
+	Bool_t   lIsBachelorKaonForTPC = kFALSE; // For ESD only ...//FIXME : wait for availability in AOD
+	Bool_t   lIsBachelorPionForTPC = kFALSE; // For ESD only ...
+	Bool_t   lIsNegPionForTPC      = kFALSE; // For ESD only ...
+	Bool_t   lIsPosPionForTPC      = kFALSE; // For ESD only ...
+	Bool_t   lIsNegProtonForTPC    = kFALSE; // For ESD only ...
+	Bool_t   lIsPosProtonForTPC    = kFALSE; // For ESD only ...
+
+        // 4.1.A - Combined PID
+	// Reasonable guess for the priors for the cascade track sample (e-, mu, pi, K, p)
+	Double_t lPriorsGuessXi[5]    = {0, 0, 2, 0, 1};
+	Double_t lPriorsGuessOmega[5] = {0, 0, 1, 1, 1};
+	
+	// Combined VO-positive-daughter PID
+	AliPID pPidXi;		pPidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID pPidOmega;	pPidOmega.SetPriors( lPriorsGuessOmega );
 		
+	if( pTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
+		Double_t r[10] = {0.}; pTrackXi->GetESDpid(r);
+		pPidXi.SetProbabilities(r);
+		pPidOmega.SetProbabilities(r);
+		
+		// Check if the V0 positive track is a proton (case for Xi-)
+		Double_t pproton = pPidXi.GetProbability(AliPID::kProton);
+		if (pproton > pPidXi.GetProbability(AliPID::kElectron) &&
+		    pproton > pPidXi.GetProbability(AliPID::kMuon)     &&
+		    pproton > pPidXi.GetProbability(AliPID::kPion)     &&
+		    pproton > pPidXi.GetProbability(AliPID::kKaon)     )     lIsPosInXiProton = kTRUE;
+		
+		// Check if the V0 positive track is a pi+ (case for Xi+)
+		Double_t ppion = pPidXi.GetProbability(AliPID::kPion);
+		if (ppion > pPidXi.GetProbability(AliPID::kElectron) &&
+		    ppion > pPidXi.GetProbability(AliPID::kMuon)     &&
+		    ppion > pPidXi.GetProbability(AliPID::kKaon)     &&
+		    ppion > pPidXi.GetProbability(AliPID::kProton)   )     lIsPosInXiPion = kTRUE;
+		
+		
+		// Check if the V0 positive track is a proton (case for Omega-)
+		pproton = 0.;
+		    pproton = pPidOmega.GetProbability(AliPID::kProton);
+		if (pproton > pPidOmega.GetProbability(AliPID::kElectron) &&
+		    pproton > pPidOmega.GetProbability(AliPID::kMuon)     &&
+		    pproton > pPidOmega.GetProbability(AliPID::kPion)     &&
+		    pproton > pPidOmega.GetProbability(AliPID::kKaon)     )  lIsPosInOmegaProton = kTRUE;
+		
+		// Check if the V0 positive track is a pi+ (case for Omega+)
+		ppion = 0.;
+		    ppion = pPidOmega.GetProbability(AliPID::kPion);
+		if (ppion > pPidOmega.GetProbability(AliPID::kElectron) &&
+		    ppion > pPidOmega.GetProbability(AliPID::kMuon)     &&
+		    ppion > pPidOmega.GetProbability(AliPID::kKaon)     &&
+		    ppion > pPidOmega.GetProbability(AliPID::kProton)   )    lIsPosInOmegaPion = kTRUE;
+		
+	}// end if V0 positive track with existing combined PID	
+	
+	
+	// Combined VO-negative-daughter PID
+	AliPID nPidXi;		nPidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID nPidOmega;	nPidOmega.SetPriors( lPriorsGuessOmega );
+		
+	if( nTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
+		Double_t r[10] = {0.}; nTrackXi->GetESDpid(r);
+		nPidXi.SetProbabilities(r);
+		nPidOmega.SetProbabilities(r);
+		
+		// Check if the V0 negative track is a pi- (case for Xi-)
+		Double_t ppion = nPidXi.GetProbability(AliPID::kPion);
+		if (ppion > nPidXi.GetProbability(AliPID::kElectron) &&
+		    ppion > nPidXi.GetProbability(AliPID::kMuon)     &&
+		    ppion > nPidXi.GetProbability(AliPID::kKaon)     &&
+		    ppion > nPidXi.GetProbability(AliPID::kProton)   )     lIsNegInXiPion = kTRUE;
+
+		// Check if the V0 negative track is an anti-proton (case for Xi+)
+		Double_t pproton = nPidXi.GetProbability(AliPID::kProton);
+		if (pproton > nPidXi.GetProbability(AliPID::kElectron) &&
+		    pproton > nPidXi.GetProbability(AliPID::kMuon)     &&
+		    pproton > nPidXi.GetProbability(AliPID::kPion)     &&
+		    pproton > nPidXi.GetProbability(AliPID::kKaon)     )     lIsNegInXiProton = kTRUE;
+		
+		// Check if the V0 negative track is a pi- (case for Omega-)
+		ppion = 0.;
+		    ppion = nPidOmega.GetProbability(AliPID::kPion);
+		if (ppion > nPidOmega.GetProbability(AliPID::kElectron) &&
+		    ppion > nPidOmega.GetProbability(AliPID::kMuon)     &&
+		    ppion > nPidOmega.GetProbability(AliPID::kKaon)     &&
+		    ppion > nPidOmega.GetProbability(AliPID::kProton)   )    lIsNegInOmegaPion = kTRUE;
+		
+		// Check if the V0 negative track is an anti-proton (case for Omega+)
+		pproton = 0.;
+		    pproton = nPidOmega.GetProbability(AliPID::kProton);
+		if (pproton > nPidOmega.GetProbability(AliPID::kElectron) &&
+		    pproton > nPidOmega.GetProbability(AliPID::kMuon)     &&
+		    pproton > nPidOmega.GetProbability(AliPID::kPion)     &&
+		    pproton > nPidOmega.GetProbability(AliPID::kKaon)     )  lIsNegInOmegaProton = kTRUE;
+		
+	}// end if V0 negative track with existing combined PID	
+	
+		
+	// Combined bachelor PID
+	AliPID bachPidXi;	bachPidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID bachPidOmega;	bachPidOmega.SetPriors( lPriorsGuessOmega );
+	
+        Double_t ppionBach = 0.0, pkaonBach = 0.0;
+        
+	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
+		Double_t r[10] = {0.}; bachTrackXi->GetESDpid(r);
+		bachPidXi.SetProbabilities(r);
+		bachPidOmega.SetProbabilities(r);
+		// Check if the bachelor track is a pion
+		    ppionBach = bachPidXi.GetProbability(AliPID::kPion);
+		if (ppionBach > bachPidXi.GetProbability(AliPID::kElectron) &&
+		    ppionBach > bachPidXi.GetProbability(AliPID::kMuon)     &&
+		    ppionBach > bachPidXi.GetProbability(AliPID::kKaon)     &&
+		    ppionBach > bachPidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
+		// Check if the bachelor track is a kaon
+		    pkaonBach = bachPidOmega.GetProbability(AliPID::kKaon);
+		if (pkaonBach > bachPidOmega.GetProbability(AliPID::kElectron) &&
+		    pkaonBach > bachPidOmega.GetProbability(AliPID::kMuon)     &&
+		    pkaonBach > bachPidOmega.GetProbability(AliPID::kPion)     &&
+		    pkaonBach > bachPidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;	
 	}// end if bachelor track with existing combined PID
 	
-	if( lChargeXi < 0 && lIsBachelorPion )    fHistMassWithCombPIDXiMinus     ->Fill( lInvMassXiMinus );
-	if( lChargeXi > 0 && lIsBachelorPion )    fHistMassWithCombPIDXiPlus      ->Fill( lInvMassXiPlus );
+	
+	// 4.1.B - TPC PID : 3-sigma bands on Bethe-Bloch curve
+	// Bachelor
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 3) lIsBachelorKaonForTPC = kTRUE;
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < 3) lIsBachelorPionForTPC = kTRUE;
+	
+	// Negative V0 daughter
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < 3) lIsNegPionForTPC   = kTRUE;
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < 3) lIsNegProtonForTPC = kTRUE;
+	
+	// Positive V0 daughter
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 3) lIsPosPionForTPC   = kTRUE;
+	if (TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 3) lIsPosProtonForTPC = kTRUE;
+
+		
+        // Combined PID TH1s
+	if( lChargeXi < 0 && lIsBachelorPion )    fHistMassWithCombPIDXiMinus     ->Fill( lInvMassXiMinus    );
+	if( lChargeXi > 0 && lIsBachelorPion )    fHistMassWithCombPIDXiPlus      ->Fill( lInvMassXiPlus     );
 	if( lChargeXi < 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
-	if( lChargeXi > 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaPlus   ->Fill( lInvMassOmegaPlus );
+	if( lChargeXi > 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaPlus   ->Fill( lInvMassOmegaPlus  );
          
 	
 	// 4.2 - PID proba Vs Pt(Bach)
@@ -1402,8 +1833,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	TParticle* mcBachForPID   = lMCstack->Particle( lblBachForPID );
 	Double_t   lmcPtBach      = mcBachForPID->Pt();
 	
-	if(lIsBachelorPion)   f2dHistPIDprobaPionVsMCPtBach->Fill( lmcPtBach, ppion );
-	if(lIsBachelorKaon)   f2dHistPIDprobaKaonVsMCPtBach->Fill( lmcPtBach, pkaon );
+	if(lIsBachelorPion)   f2dHistPIDprobaPionVsMCPtBach->Fill( lmcPtBach, ppionBach );
+	if(lIsBachelorKaon)   f2dHistPIDprobaKaonVsMCPtBach->Fill( lmcPtBach, pkaonBach );
 	
 			
 	// 4.3 - MC perfect PID
@@ -1554,14 +1985,14 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	// - Step 6 : Plots around the cascade candidates associated with MC
 	//-------------	
 	
-	Double_t lmcPt             = mcMotherBach->Pt();
-	Double_t lmcRapXi          = 0.5*TMath::Log( (mcMotherBach->Energy() + mcMotherBach->Pz()) / 
-						     (mcMotherBach->Energy() - mcMotherBach->Pz() +1.e-13) );
-	Double_t lmcEta            = mcMotherBach->Eta();
-	Double_t lmcTransvRadius   = mcBach->R(); // to get the decay point of Xi, = the production vertex of Bachelor ...
-	
-	Double_t lrecoPt           = xiESD->Pt();
-	Double_t lrecoTransvRadius = TMath::Sqrt( xiESD->Xv() * xiESD->Xv() + xiESD->Yv() * xiESD->Yv() );
+        Double_t lmcPt             = mcMotherBach->Pt();
+        Double_t lmcRapXi          = 0.5*TMath::Log( (mcMotherBach->Energy() + mcMotherBach->Pz()) / 
+                                                     (mcMotherBach->Energy() - mcMotherBach->Pz() +1.e-13) );
+        Double_t lmcEta            = mcMotherBach->Eta();
+        Double_t lmcTransvRadius   = mcBach->R(); // to get the decay point of Xi, = the production vertex of Bachelor ...
+
+        Double_t lrecoPt           = xiESD->Pt();
+        Double_t lrecoTransvRadius = TMath::Sqrt( xiESD->Xv() * xiESD->Xv() + xiESD->Yv() * xiESD->Yv() );
 	
 	// - Histos for the cascade candidates associated with MC
 	
@@ -1600,6 +2031,174 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 		f2dHistAsMCResPtOmegaPlus        ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResROmegaPlus         ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
 	}
+        
+        
+        
+        
+        
+        //FIXME
+        
+	// - Filling the AliCFContainers related to PID
+	
+	Double_t lContainerPIDVars[4] = {0.0};
+        Int_t nTrackWithTPCrefitMultiplicity =  0;
+        
+        nTrackWithTPCrefitMultiplicity = DoESDTrackWithTPCrefitMultiplicity(lESDevent);
+        
+        
+        
+        
+	
+	// Xi Minus		
+	if( lChargeXi < 0 && lAssoXiMinus ) {
+		lContainerPIDVars[0] = lmcPt              ;
+		lContainerPIDVars[1] = lInvMassXiMinus    ;
+		lContainerPIDVars[2] = lmcRapXi           ;
+		lContainerPIDVars[3] = nTrackWithTPCrefitMultiplicity ;
+			
+		// No PID
+			fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 0); // No PID
+		// TPC PID
+		if( lIsBachelorPionForTPC  )
+			fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 1); // TPC PID / 3-#sigma cut on Bachelor track
+		
+		if( lIsBachelorPionForTPC && 
+		    lIsPosProtonForTPC     )
+			fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 2); // TPC PID / 3-#sigma cut on Bachelor+Baryon tracks
+		
+		if( lIsBachelorPionForTPC && 
+		    lIsPosProtonForTPC    && 
+		    lIsNegPionForTPC       )
+			fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 3); // TPC PID / 3-#sigma cut on Bachelor+Baryon+Meson tracks
+		
+		// Combined PID
+		if( lIsBachelorPion        )
+			fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 4); // Comb. PID / Bachelor
+		
+		if( lIsBachelorPion       && 
+		    lIsPosInXiProton    )
+			fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 5); // Comb. PID / Bachelor+Baryon
+		
+		if(lIsBachelorPion     && 
+		   lIsPosInXiProton && 
+		   lIsNegInXiPion    )
+		 	fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 6); // Comb. PID / Bachelor+Baryon+Meson
+	}
+	
+	lContainerPIDVars[0] = 0.; lContainerPIDVars[1] = 0.; lContainerPIDVars[2] = 0.; lContainerPIDVars[3] = 0.;
+	
+	// Xi Plus		
+	if( lChargeXi > 0 && lAssoXiPlus ) {
+		lContainerPIDVars[0] = lmcPt              ;
+		lContainerPIDVars[1] = lInvMassXiPlus     ;
+		lContainerPIDVars[2] = lmcRapXi           ;
+		lContainerPIDVars[3] = nTrackWithTPCrefitMultiplicity ;
+			
+		// No PID
+			fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 0); // No PID
+		// TPC PID
+		if( lIsBachelorPionForTPC  )
+			fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 1); // TPC PID / 3-#sigma cut on Bachelor track
+		
+		if( lIsBachelorPionForTPC && 
+		    lIsNegProtonForTPC     )
+			fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 2); // TPC PID / 3-#sigma cut on Bachelor+Baryon tracks
+		
+		if( lIsBachelorPionForTPC && 
+		    lIsNegProtonForTPC    && 
+		    lIsPosPionForTPC       )
+			fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 3); // TPC PID / 3-#sigma cut on Bachelor+Baryon+Meson tracks
+		
+		// Combined PID
+		if( lIsBachelorPion        )
+			fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 4); // Comb. PID / Bachelor
+		
+		if( lIsBachelorPion       && 
+		    lIsNegInXiProton    )
+			fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 5); // Comb. PID / Bachelor+Baryon
+		
+		if(lIsBachelorPion     && 
+		   lIsNegInXiProton && 
+		   lIsPosInXiPion    )
+		 	fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 6); // Comb. PID / Bachelor+Baryon+Meson
+	}
+	
+	lContainerPIDVars[0] = 0.; lContainerPIDVars[1] = 0.; lContainerPIDVars[2] = 0.; lContainerPIDVars[3] = 0.;
+	
+	// Omega Minus		
+	if( lChargeXi < 0 && lAssoOmegaMinus ) {
+		lContainerPIDVars[0] = lmcPt              ;
+		lContainerPIDVars[1] = lInvMassOmegaMinus ;
+		lContainerPIDVars[2] = lmcRapXi           ;
+		lContainerPIDVars[3] = nTrackWithTPCrefitMultiplicity ;
+			
+		// No PID
+			fCFContCascadePIDAsOmegaMinus->Fill(lContainerPIDVars, 0); // No PID
+		// TPC PID
+		if( lIsBachelorKaonForTPC  )
+			fCFContCascadePIDAsOmegaMinus->Fill(lContainerPIDVars, 1); // TPC PID / 3-#sigma cut on Bachelor track
+		
+		if( lIsBachelorKaonForTPC && 
+		    lIsPosProtonForTPC     )
+			fCFContCascadePIDAsOmegaMinus->Fill(lContainerPIDVars, 2); // TPC PID / 3-#sigma cut on Bachelor+Baryon tracks
+		
+		if( lIsBachelorKaonForTPC && 
+		    lIsPosProtonForTPC    && 
+		    lIsNegPionForTPC       )
+			fCFContCascadePIDAsOmegaMinus->Fill(lContainerPIDVars, 3); // TPC PID / 3-#sigma cut on Bachelor+Baryon+Meson tracks
+		
+		// Combined PID
+		if( lIsBachelorKaon        )
+			fCFContCascadePIDAsOmegaMinus->Fill(lContainerPIDVars, 4); // Comb. PID / Bachelor
+		
+		if( lIsBachelorKaon       && 
+		    lIsPosInOmegaProton    )
+			fCFContCascadePIDAsOmegaMinus->Fill(lContainerPIDVars, 5); // Comb. PID / Bachelor+Baryon
+		
+		if(lIsBachelorKaon     && 
+		   lIsPosInOmegaProton && 
+		   lIsNegInOmegaPion    )
+		 	fCFContCascadePIDAsOmegaMinus->Fill(lContainerPIDVars, 6); // Comb. PID / Bachelor+Baryon+Meson
+	}
+	
+	lContainerPIDVars[0] = 0.; lContainerPIDVars[1] = 0.; lContainerPIDVars[2] = 0.; lContainerPIDVars[3] = 0.;
+	
+	// Omega Plus		
+	if( lChargeXi > 0 && lAssoOmegaPlus) {
+		lContainerPIDVars[0] = lmcPt              ;
+		lContainerPIDVars[1] = lInvMassOmegaPlus  ;
+		lContainerPIDVars[2] = lmcRapXi           ;
+		lContainerPIDVars[3] = nTrackWithTPCrefitMultiplicity ;
+			
+		// No PID
+			fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 0); // No PID
+		// TPC PID
+		if( lIsBachelorKaonForTPC  )
+			fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 1); // TPC PID / 3-#sigma cut on Bachelor track
+		
+		if( lIsBachelorKaonForTPC && 
+		    lIsNegProtonForTPC     )
+			fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 2); // TPC PID / 3-#sigma cut on Bachelor+Baryon tracks
+		
+		if( lIsBachelorKaonForTPC && 
+		    lIsNegProtonForTPC    && 
+		    lIsPosPionForTPC       )
+			fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 3); // TPC PID / 3-#sigma cut on Bachelor+Baryon+Meson tracks
+		
+		// Combined PID
+		if( lIsBachelorKaon        )
+			fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 4); // Comb. PID / Bachelor
+		
+		if( lIsBachelorKaon       && 
+		    lIsNegInOmegaProton    )
+			fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 5); // Comb. PID / Bachelor+Baryon
+		
+		if(lIsBachelorKaon     && 
+		   lIsNegInOmegaProton && 
+		   lIsPosInOmegaPion    )
+		 	fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 6); // Comb. PID / Bachelor+Baryon+Meson
+	}
+        
 	
 	
 }// End of loop over reconstructed cascades
@@ -1613,6 +2212,29 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 
 
 
+Int_t AliAnalysisTaskCheckPerformanceCascade::DoESDTrackWithTPCrefitMultiplicity(const AliESDEvent *lESDevent)
+{
+    // Checking the number of tracks with TPCrefit for each event
+    // Needed for a rough assessment of the event multiplicity
+        
+        Int_t nTrackWithTPCrefitMultiplicity = 0;
+        for(Int_t iTrackIdx = 0; iTrackIdx < (InputEvent())->GetNumberOfTracks(); iTrackIdx++){
+                AliESDtrack *esdTrack	= 0x0;
+                             esdTrack	= lESDevent->GetTrack( iTrackIdx );
+                if (!esdTrack) { AliWarning("Pb / Could not retrieve one track within the track loop for TPCrefit check ..."); continue; }
+
+                ULong_t lTrackStatus    = esdTrack->GetStatus();
+                            if ((lTrackStatus&AliESDtrack::kTPCrefit)    == 0) continue;
+                            else nTrackWithTPCrefitMultiplicity++;
+                    // FIXME :
+                    // The goal here is to get a better assessment of the event multiplicity.
+                    // (InputEvent())->GetNumberOfTracks() takes into account ITS std alone tracks + global tracks
+                    // This may introduce a bias. Hence the number of TPC refit tracks.
+                    // Note : the event multiplicity = analysis on its own... See Jacek's or Jan Fiete's analysis on dN/d(eta)
+
+        }// end loop over all event tracks
+        return  nTrackWithTPCrefitMultiplicity;
+}
 
 
 
