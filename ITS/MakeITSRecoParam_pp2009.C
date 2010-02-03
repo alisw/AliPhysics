@@ -98,6 +98,8 @@ void MakeITSRecoParam_pp2009(AliRecoParam::EventSpecie_t default=AliRecoParam::k
     itsRecoParam->SetUpdateOncePerEventPlaneEff(kTRUE);
     itsRecoParam->SetMinContVtxPlaneEff(3);
     // itsRecoParam->SetOptTrackletsPlaneEff(kTRUE); // activate it for MC (very important) !
+    // Removal of tracklets reconstructed in the SPD overlaps 
+    itsRecoParam->SetTrackleterRemoveClustersFromOverlaps(kTRUE);
   
     //******************************************************************
 
