@@ -1980,7 +1980,7 @@ Int_t AliITSTrackleterSPDEff::Clusters2Tracks(AliESDEvent *esd){
   Int_t rc=1;
   // apply cuts on the vertex quality
   const AliESDVertex *vertex = esd->GetVertex();
-  if(vertex->GetNContributors()<fMinContVtx) return rc;
+  if(vertex->GetNContributors()<fMinContVtx) return 0;
   //
   AliRunLoader* runLoader = AliRunLoader::Instance();
   if (!runLoader) {

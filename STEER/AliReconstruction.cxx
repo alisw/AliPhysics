@@ -2242,7 +2242,7 @@ Bool_t AliReconstruction::RunSPDTrackleting(AliESDEvent*& esd)
     fSPDTrackleter->SetVertex(vtxPos, vtxErr);
     // run trackleting
     if (fSPDTrackleter->Clusters2Tracks(esd) != 0) {
-      AliError("AliITSTrackleterSPDEff Clusters2Tracks failed");
+      AliWarning("AliITSTrackleterSPDEff Clusters2Tracks failed");
      // fLoader[0]->UnloadRecPoints();
       return kFALSE;
     }
