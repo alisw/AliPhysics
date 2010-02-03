@@ -293,7 +293,6 @@ void AliTRDinfoGen::Exec(Option_t *){
       for(Int_t is=0; is<nSlices; is++) 
         dedx[in++]=esdTrack->GetTRDslice(il, is);
     for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++) dedx[in++]=esdTrack->GetTRDmomentum(il);
-    printf("n[%d] slices[%d]\n", in, nSlices);
     fTrackInfo->SetSlices(in, dedx);
     fTrackInfo->SetLabel(label);
     fTrackInfo->SetNumberOfClustersRefit(esdTrack->GetNcls(2));
