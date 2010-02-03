@@ -6,7 +6,7 @@ run type: PHYSICS
 DA type: MON 
 number of events needed: 1000
 input files: Mod0RCU0.data Mod0RCU1.data Mod0RCU2.data Mod0RCU3.data Mod1RCU0.data Mod1RCU1.data Mod1RCU2.data Mod1RCU3.data Mod2RCU0.data Mod2RCU1.data Mod2RCU2.data Mod2RCU3.data Mod3RCU0.data Mod3RCU1.data Mod3RCU2.data Mod3RCU3.data Mod4RCU0.data Mod4RCU1.data Mod4RCU2.data Mod4RCU3.data zs.txt
-Output files: PHOS_Calib.root 
+Output files: PHOS_Calib_Total.root contains cumulative statistics for a number of runs. 
 Trigger types used: PHYSICS
 */
 
@@ -296,36 +296,40 @@ int main(int argc, char **argv) {
   
   /* Be sure that all histograms are saved */
 
-  const TH2F* h2=0;
-  const TH1F* h1=0;
-  char localfile[128];
+  char h2name[80];
+  char totfile[80];
   
-  sprintf(localfile,"PHOS_Calib.root");
-  TFile* f = new TFile(localfile,"recreate");
+  //Write the Total file (accumulated statistics for number of runs)
+  sprintf(totfile,"PHOS_Calib_Total.root");
+  TFile * ftot = new TFile(totfile,"update");
   
-  for(Int_t iMod=0; iMod<5; iMod++) {
-    if(!dAs[iMod]) continue;
+  if (!ftot->IsZombie()){
+    printf("Updating file %s.\n",ftot->GetName());
+
+    for(Int_t iMod=0; iMod<5; iMod++) {
+      if(!dAs[iMod]) continue;
     
-    printf("DA1 for module %d detected.\n",iMod);
+      printf("DA1 for module %d detected.\n",iMod);
     
-    for(Int_t iX=0; iX<64; iX++) {
-      for(Int_t iZ=0; iZ<56; iZ++) {
+      for(Int_t iX=0; iX<64; iX++) {
+	for(Int_t iZ=0; iZ<56; iZ++) {
 	
-	h1 = dAs[iMod]->GetHgLgRatioHistogram(iX,iZ); // High Gain/Low Gain ratio
-	if(h1) h1->Write(); 
-	
-	for(Int_t iGain=0; iGain<2; iGain++) {
-	  h2 = dAs[iMod]->GetTimeEnergyHistogram(iX,iZ,iGain); // Time vs Energy
-	  if(h2) h2->Write();
+	  for(Int_t iGain=0; iGain<2; iGain++) {
+	    sprintf(h2name,"%d_%d_%d_%d",iMod,iX,iZ,iGain);
+	    TH2F* h2tot = (TH2F*)ftot->Get(h2name);
+	    const TH2F* h2run = dAs[iMod]->GetTimeEnergyHistogram(iX,iZ,iGain); // Time vs Energy
+	    if(!h2tot && h2run) h2run->Write();
+	    if(h2tot && h2run) { h2tot->Add(h2run); h2tot->Write(h2tot->GetName(),TObject::kWriteDelete); }
+	  }
 	}
       }
     }
   }
   
-  f->Close();
+  ftot->Close();
   
   /* Store output files to the File Exchange Server */
-  daqDA_FES_storeFile(localfile,"AMPLITUDES");
+  daqDA_FES_storeFile(totfile,"AMPLITUDES");
   
   return status;
 }
