@@ -16,14 +16,14 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRawAnalyzerPeakFinderComponent.h"
-#include "AliHLTPHOSRawAnalyzerPeakFinder.h"
+#include "AliHLTCaloRawAnalyzerPeakFinder.h"
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;
 
 //___________________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent():AliHLTPHOSRawAnalyzerComponentv3()
 {
-  fAnalyzerPtr = new AliHLTPHOSRawAnalyzerPeakFinder();
+  fAnalyzerPtr = new AliHLTCaloRawAnalyzerPeakFinder();
 
   if(1)//LoadPFVector() == kFALSE)
     {
@@ -110,8 +110,8 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamp
 	{
 	  res = fscanf(fp, "%lf", &tmpTVector[i]);
 	}
-      fAnalyzerPtr->SetAVector(tmpAVector,  nSamples);
-      fAnalyzerPtr->SetTVector(tmpTVector,  nSamples);
+      //      fAnalyzerPtr->SetAVector(tmpAVector,  nSamples);
+      //      fAnalyzerPtr->SetTVector(tmpTVector,  nSamples);
       fclose(fp);
       delete [] tmpAVector;
       delete [] tmpTVector;

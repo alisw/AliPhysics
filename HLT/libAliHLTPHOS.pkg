@@ -19,6 +19,7 @@ CLASS_HDRS:=	  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSRawAnalyzerCrude.h \
 		  AliHLTPHOSRawAnalyzerCrudeComponent.h \
 		  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
+		  AliHLTPHOSDigitMakerComponent.h \
 		  AliHLTPHOSRcuProcessor.h \
 		  AliHLTPHOSMapper.h \
 		  AliHLTPHOSRawAnalyzerPeakFinder.h \

@@ -16,8 +16,9 @@
  **************************************************************************/
 
 #include "AliHLTPHOSDigitMakerComponent.h"
-#include "AliHLTPHOSDigitMaker.h"
-#include "AliHLTPHOSDigitDataStruct.h"
+#include "AliHLTCaloDigitMaker.h"
+#include "AliHLTCaloDigitDataStruct.h"
+#include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSChannelDataHeaderStruct.h"
 #include "AliHLTPHOSChannelDataStruct.h"
 #include "TFile.h"
@@ -26,7 +27,7 @@
 
 
 /** 
- * @file   AliHLTPHOSDigitMakerComponent.cxx
+ * @file   AliHLTCaloDigitMakerComponent.cxx
  * @author Oystein Djuvsland
  * @date   
  * @brief  A digit maker component for PHOS HLT
@@ -96,7 +97,7 @@ AliHLTPHOSDigitMakerComponent::GetOutputDataSize(unsigned long& constBase, doubl
 {
   //see header file for documentation
   constBase = 0;
-  inputMultiplier = (float)sizeof(AliHLTPHOSDigitDataStruct)/sizeof(AliHLTPHOSChannelDataStruct) + 1;
+  inputMultiplier = (float)sizeof(AliHLTCaloDigitDataStruct)/sizeof(AliHLTPHOSChannelDataStruct) + 1;
 }
 
 int 
@@ -116,9 +117,11 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   unsigned long ndx; 
 
   UInt_t specification = 0;
-  AliHLTPHOSChannelDataHeaderStruct* tmpChannelData = 0;
+  AliHLTCaloChannelDataHeaderStruct* tmpChannelData = 0;
   
-  fDigitMakerPtr->SetDigitHeaderPtr(reinterpret_cast<AliHLTPHOSDigitHeaderStruct*>(outputPtr));
+  //  fDigitMakerPtr->SetDigitHeaderPtr(reinterpret_cast<AliHLTCaloDigitHeaderStruct*>(outputPtr));
+
+  fDigitMakerPtr->SetDigitDataPtr(reinterpret_cast<AliHLTCaloDigitDataStruct*>(outputPtr));
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -131,9 +134,9 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 	}
 
       specification |= iter->fSpecification;
-      tmpChannelData = reinterpret_cast<AliHLTPHOSChannelDataHeaderStruct*>(iter->fPtr);
+      tmpChannelData = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(iter->fPtr);
     
-      ret = fDigitMakerPtr->MakeDigits(tmpChannelData, size-(digitCount*sizeof(AliHLTPHOSDigitDataStruct)));
+      ret = fDigitMakerPtr->MakeDigits(tmpChannelData, size-(digitCount*sizeof(AliHLTCaloDigitDataStruct)));
       if(ret == -1) 
 	{
 	  HLTError("Trying to write over buffer size");
@@ -142,7 +145,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       digitCount += ret; 
     }
   
-  mysize += digitCount*sizeof(AliHLTPHOSDigitDataStruct);
+  mysize += digitCount*sizeof(AliHLTCaloDigitDataStruct);
 
   HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
 
@@ -170,7 +173,10 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
 {
   //see header file for documentation
 
-  fDigitMakerPtr = new AliHLTPHOSDigitMaker();
+  fDigitMakerPtr = new AliHLTCaloDigitMaker("PHOS");
+
+  AliHLTCaloMapper *mapper = new AliHLTPHOSMapper();
+  fDigitMakerPtr->SetMapper(mapper);
   
   for(int i = 0; i < argc; i++)
     {
@@ -181,10 +187,6 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
       if(!strcmp("-highgainfactor", argv[i]))
 	{
 	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
-	}
-      if(!strcmp("-reverseorder", argv[i]))
-	{
-	  fDigitMakerPtr->SetOrdered(false);
 	}
     }
  

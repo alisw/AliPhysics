@@ -121,9 +121,6 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTCaloRawAnalyzerComponentv3
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );  
   
-  /** Pointer to an analyzer object used for raw data anlysis */ 
-  AliHLTPHOSRawAnalyzer *fAnalyzerPtr;   //COMMENT
-
    virtual void InitMapping(const int specification);
 
  private:

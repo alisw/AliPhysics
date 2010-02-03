@@ -36,6 +36,7 @@
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTCaloChannelDataHeaderStruct.h"
 #include "AliHLTCaloDigitDataStruct.h"
+#include "AliHLTCaloCoordinate.h"
 #include "AliHLTCaloSharedMemoryInterfacev2.h" // added by PTH
 //#include "AliPHOSEMCAGeometry.h"
 #include "TH2F.h"
@@ -54,7 +55,8 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
   fHighGainFactors(0),
   fLowGainFactors(0),
   fBadChannelMask(0),
-  fChannelBook(0)
+  fChannelBook(0),
+  fMaxEnergy(900)
 {
   // See header file for documentation
 
@@ -90,10 +92,6 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
 	  
 	}
     }	  
-  
-  //Must be set in child instance
-  //fMapperPtr = new AliHLTCaloMapper(det);
-
 }
 
 AliHLTCaloDigitMaker::~AliHLTCaloDigitMaker() 
@@ -114,9 +112,8 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
 //   Int_t xMod = -1;
 //   Int_t zMod = -1;
   
-  UShort_t coord1[4];
-  //  UShort_t coord2[4];
-  Float_t locCoord[3];
+
+  AliHLTCaloCoordinate coord;
   
   
   AliHLTCaloChannelDataStruct* currentchannel = 0;
@@ -130,29 +127,29 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
     {
       if(availableSize < totSize) return -1;
 
-      fMapperPtr->GetChannelCoord(currentchannel->fChannelID, coord1);
+      fMapperPtr->ChannelId2Coordinate(currentchannel->fChannelID, coord);
       
-      tmpchannel = currentchannel;
-	  
-      fMapperPtr->GetLocalCoord(currentchannel->fChannelID, locCoord);
-      if(UseDigit(coord1, currentchannel))
+      //      fMapperPtr->GetLocalCoord(currentchannel->fChannelID, locCoord);
+      if(UseDigit(coord, currentchannel))
       {
-	 AddDigit(currentchannel, coord1, locCoord);
+	AddDigit(currentchannel, coord);
 	 j++;	      
 	 totSize += sizeof(AliHLTCaloDigitDataStruct);
       }
-      
       currentchannel = fShmPtr->NextChannel(); // Get the next channel
-
-      fMapperPtr->GetLocalCoord(currentchannel->fChannelID, locCoord);
-      if(UseDigit(coord1, currentchannel))
-      {
-	 AddDigit(currentchannel, coord1, locCoord);
-	 j++;	      
-	 totSize += sizeof(AliHLTCaloDigitDataStruct);
-      }
-	currentchannel = fShmPtr->NextChannel(); // Get the next channel
     }
+//       if(currentchannel)
+// 	{
+// 	  fMapperPtr->GetLocalCoord(currentchannel->fChannelID, locCoord);
+// 	  if(UseDigit(coord1, currentchannel))
+// 	    {
+// 	      AddDigit(currentchannel, coord1, locCoord);
+// 	      j++;	      
+// 	      totSize += sizeof(AliHLTCaloDigitDataStruct);
+// 	    }
+// 	  currentchannel = fShmPtr->NextChannel(); // Get the next channel
+// 	}
+//     }
    
    fDigitCount += j;
    return fDigitCount; 
@@ -226,57 +223,58 @@ AliHLTCaloDigitMaker::Reset()
 }
 
 
-void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, UShort_t* channelCoordinates, Float_t* localCoordinates)
+void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, AliHLTCaloCoordinate &coord)
 {
 
-  fChannelBook[channelCoordinates[0]][channelCoordinates[0]] = fDigitStructPtr;
+  fChannelBook[coord.fX][coord.fZ] = fDigitStructPtr;
 
-  fDigitStructPtr->fX = channelCoordinates[0];
-  fDigitStructPtr->fZ = channelCoordinates[1];
-
-  fDigitStructPtr->fLocX = localCoordinates[0];
-  fDigitStructPtr->fLocZ = localCoordinates[1];
-
-  if(channelCoordinates[2] == fCaloConstants->GetHIGHGAIN() )
+  fDigitStructPtr->fX = coord.fX;
+  fDigitStructPtr->fZ = coord.fZ;
+  fDigitStructPtr->fOverflow = false;
+  if(coord.fGain == fCaloConstants->GetHIGHGAIN() )
     {
-      fDigitStructPtr->fEnergy = channelData->fEnergy*fHighGainFactors[channelCoordinates[0]][channelCoordinates[1]];
-      if(channelData->fEnergy >= 1023)
+      fDigitStructPtr->fEnergy = channelData->fEnergy*fHighGainFactors[coord.fX][coord.fZ];
+      if(channelData->fEnergy >= fMaxEnergy)
 	{
 	  fDigitStructPtr->fOverflow = true;
 	}
-      //	printf("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy);
+      //      	printf("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy);
     }
   else
     {
-      fDigitStructPtr->fEnergy = channelData->fEnergy*fLowGainFactors[channelCoordinates[0]][channelCoordinates[1]];
+      fDigitStructPtr->fEnergy = channelData->fEnergy*fLowGainFactors[coord.fX][coord.fZ];
       if(channelData->fEnergy >= 1023)
 	{
 	  fDigitStructPtr->fOverflow = true;
 	}
-      //	printf("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy); 
+      //      	printf("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy); 
     }
   fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //TODO
   fDigitStructPtr->fCrazyness = channelData->fCrazyness;
-  fDigitStructPtr->fModule = channelCoordinates[3];
+  fDigitStructPtr->fModule = coord.fModuleId;
   fDigitStructPtr++;
 }
 
-bool AliHLTCaloDigitMaker::UseDigit(UShort_t *channelCoordinates, AliHLTCaloChannelDataStruct *channel) 
+bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, AliHLTCaloChannelDataStruct *channel) 
 {
-  AliHLTCaloDigitDataStruct *tmpDigit = fChannelBook[channelCoordinates[0]][channelCoordinates[1]];
+  AliHLTCaloDigitDataStruct *tmpDigit = fChannelBook[channelCoordinates.fX][channelCoordinates.fZ];
+  //  printf("UseDigit: Got digit, x: %d, z: %d, gain: %d, amp: %f\n", channelCoordinates.fX, channelCoordinates.fZ, channelCoordinates.fGain, channel->fEnergy);
   if(tmpDigit)
     {
-      if(channelCoordinates[2] == fCaloConstants->GetLOWGAIN())
+      if(channelCoordinates.fGain == fCaloConstants->GetLOWGAIN())
 	{
+	  //	  printf("UseDigit: Already have digit with, x: %d, z: %d, with high gain \n", channelCoordinates.fX, channelCoordinates.fZ);
 	  if(tmpDigit->fOverflow)
 	    {
+	      //	      printf("But it was in overflow! Let's use this low gain!");
 	      return true;
 	    }
 	  return false;
 	}
       else
 	{
-	  if(channel->fEnergy >= fCaloConstants->GetMAXBINVALUE() )
+	  //	  printf("UseDigit: Already have digit with, x: %d, z: %d, with low gain: %d\n", channelCoordinates.fX, channelCoordinates.fZ);
+	  if(channel->fEnergy > fMaxEnergy )
 	    {
 	      return false;
 	    }

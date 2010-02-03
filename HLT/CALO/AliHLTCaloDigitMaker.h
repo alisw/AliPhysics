@@ -52,6 +52,7 @@ class TH2F;
 class AliHLTCaloSharedMemoryInterfacev2; // added by PTH
 class AliHLTCaloChannelDataHeaderStruct;
 class AliHLTCaloMapper;
+class AliHLTCaloCoordinate;
 class TString;
 
 //using namespace CaloHLTConst;
@@ -107,6 +108,9 @@ public:
   /** Reset the channel book */
   void Reset();
 
+  /** Set the mapper */
+  void SetMapper(AliHLTCaloMapper *mapper) { fMapperPtr = mapper; }
+
 private:
   
   AliHLTCaloDigitMaker();
@@ -116,7 +120,7 @@ private:
    * @param channelData is the channel data
    * @param coordinates is the coordinates of the channel, including gain and module
    */
-  void AddDigit(AliHLTCaloChannelDataStruct* channelData, UShort_t* channelCoordinates, Float_t* localCoordinates);
+  void AddDigit(AliHLTCaloChannelDataStruct* channelData, AliHLTCaloCoordinate &coord);
 
   /**
    * Check if we already have this crystal. If so, keep the high gain as long as it 
@@ -125,7 +129,7 @@ private:
    * @param channel is a pointer to a struct containing channel information
    * @return true if we should use the digit. 
    */
-  bool UseDigit(UShort_t *channelCoordinates, AliHLTCaloChannelDataStruct *channel);
+  bool UseDigit(AliHLTCaloCoordinate &coord, AliHLTCaloChannelDataStruct *channel);
 
   /** Pointer to shared memory interface */
   AliHLTCaloSharedMemoryInterfacev2* fShmPtr;                    //! transient
@@ -150,6 +154,9 @@ private:
 
   /** Channel book keeping variable */
   AliHLTCaloDigitDataStruct ***fChannelBook;                     //! transient
+
+  /** Maximum energy we allow in a channel */
+  Float_t fMaxEnergy;                                            //COMMENT
 
   /** Assignment operator and copy constructor not implemented */
   AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &);

@@ -85,7 +85,7 @@ AliHLTCaloMapper::GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd)
   Short_t index = GetDDLFromSpec(spec);
   if( index < 0 )
     {
-      //      HLTError("Specification 0x%X not consistent with single DDL in PHOS", spec);
+      HLTError("Specification 0x%X not consistent with single DDL in PHOS", spec);
       return index;
     }
   else
@@ -149,7 +149,7 @@ AliHLTCaloMapper::GetChannelCoord(const UShort_t channelId, UShort_t* channelCoo
   channelCoord[1] = (channelId >> 6)&0x3f;
   channelCoord[2] = (channelId >> 12)&0x1;
   channelCoord[3] = (channelId >> 13)&0x1f;
-  //  printf("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d\n", channelId, channelCoord[0], channelCoord[1], channelCoord[2]);
+  printf("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d\n", channelId, channelCoord[0], channelCoord[1], channelCoord[2]);
 }
 
 void
@@ -188,6 +188,7 @@ AliHLTCaloMapper::GetDDLFromSpec( const AliHLTUInt32_t spec )
     {
       //   HLTError("Specification %d, not consistent with any DDL in PHOS or EMCAL", spec  );
     }
+
   return tmpIndex;
 }
 

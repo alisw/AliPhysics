@@ -31,21 +31,10 @@
 #include "AliHLTCaloClusterizer.h"
 #include "AliHLTLogging.h"
 #include "TMath.h"
-#include "AliHLTCaloRecPointContainerStruct.h"
 #include "AliHLTCaloRecPointDataStruct.h"
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloDigitContainerDataStruct.h"
-#include "TClonesArray.h"
 #include "AliHLTCaloConstantsHandler.h"
-//#ifndef HAVENOT__PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
-//#include "AliPHOSRecoParam.h"
-//#else
-//#include "AliPHOSRecoParamEmc.h"
-//ff#endif
-#include <iostream>
-using namespace std;
-
-
 
 ClassImp(AliHLTCaloClusterizer);
 
@@ -97,24 +86,6 @@ AliHLTCaloClusterizer::SetRecPointDataPtr(AliHLTCaloRecPointDataStruct* recPoint
   // See header file for documentation
   fRecPointDataPtr = recPointDataPtr;
 }
-
-// void
-// AliHLTCaloClusterizer::SetRecoParameters(AliPHOSRecoParam* params)
-// {
-//   //see header file for documentation
-// #ifndef HAVE_NOT_PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
-//   // the new AliPHOSRecoParam functions, available from revision
-//   //  fEmcClusteringThreshold = params->GetEMCClusteringThreshold();
-//   // fEmcMinEnergyThreshold = params->GetEMCMinE();
-//   //  fLogWeight = params->GetEMCLogWeight();
-//   params++;
-//   params--;
-// #else
-//   fEmcClusteringThreshold = params->GetClusteringThreshold();
-//   fEmcMinEnergyThreshold = params->GetMinE();
-//   fLogWeight = params->GetLogWeight();
-// #endif
-// }  
 
 Int_t 
 AliHLTCaloClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)

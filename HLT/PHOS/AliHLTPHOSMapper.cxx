@@ -50,7 +50,9 @@ Bool_t
 AliHLTPHOSMapper::InitAltroMapping(const unsigned long specification)
 {
   // Loads mapping between Altro addresses and geometrical addresses from file
-   
+
+  //  HLTError("Initialising ALTRO map");
+
   fDDLId = GetDDLFromSpec(specification);
   Int_t modId = GetModuleFromSpec(specification);
 
@@ -123,6 +125,7 @@ void
 AliHLTPHOSMapper::InitDDLSpecificationMapping()
 {
   fSpecificationMapPtr = new fDDLSpecificationMap[fCaloConstants->GetNMODULES()*fCaloConstants->GetNRCUSPERMODULE()];
+  //  HLTError("NUMBER OF DDLs: %d, map ptr: %d", fCaloConstants->GetNMODULES()*fCaloConstants->GetNRCUSPERMODULE(), fSpecificationMapPtr);
   for(Int_t ddl = 0; ddl < fCaloConstants->GetNMODULES()*fCaloConstants->GetNRCUSPERMODULE(); ddl++)
     {
       
@@ -152,7 +155,8 @@ AliHLTPHOSMapper::InitDDLSpecificationMapping()
 	}
       
       fSpecificationMapPtr[ddl].fRcuZOffset = fCaloConstants->GetNZROWSRCU()*(fSpecificationMapPtr[ddl].fRcuZ);
-      fSpecificationMapPtr[ddl].fRcuXOffset = fCaloConstants->GetNXCOLUMNSMOD()*(fSpecificationMapPtr[ddl].fRcuX);
+      fSpecificationMapPtr[ddl].fRcuXOffset = fCaloConstants->GetNXCOLUMNSRCU()*(fSpecificationMapPtr[ddl].fRcuX);
+
     }
 }
 
@@ -166,8 +170,12 @@ AliHLTPHOSMapper::GetIsInitializedMapping()
 Int_t
 AliHLTPHOSMapper::GetChannelID(Int_t hwAddress)
 {
-  
+
+  //  HLTError("HW add: %d -> x: %d, z: %d, gain: %d", fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[fDDLId].fRcuXOffset,
+  //	   fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[fDDLId].fRcuZOffset,
+  //	   fHw2geomapPtr[hwAddress].fGain);
   return ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[fDDLId].fRcuXOffset) |
+
 	  ((fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[fDDLId].fRcuZOffset) << 6) |
 	  (fHw2geomapPtr[hwAddress].fGain << 12) |
 	  fSpecificationMapPtr[fDDLId].fModId << 13);
@@ -205,10 +213,17 @@ AliHLTPHOSMapper::GetChannelID(AliHLTUInt32_t specification, Int_t hwAddress)
   else if(specification == 0x80000) index = 19;
 
   else HLTError("Specification 0x%X not consistent with single DDL in PHOS", specification);
+
   //  HLTError("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d", ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset) |((fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset) << 6) | (fHw2geomapPtr[hwAddress].fGain << 12) | fSpecificationMapPtr[index].fModId << 13),
-  //	   fHw2geomapPtr[hwAddress].fXCol,
-  //	   fHw2geomapPtr[hwAddress].fZRow, 
+  //  	   fHw2geomapPtr[hwAddress].fXCol,
+  //     fHw2geomapPtr[hwAddress].fZRow, 
+  //  	   fHw2geomapPtr[hwAddress].fGain);
+
+  //  HLTError("HW add: %d -> x: %d, z: %d, gain: %d", hwAddress, fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset,
+  //	   fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset,
   //	   fHw2geomapPtr[hwAddress].fGain);
+  //  HLTError("RCU X offset: %d", fSpecificationMapPtr[index].fRcuXOffset);
+  //  HLTError("RCU Z offset: %d", fSpecificationMapPtr[index].fRcuZOffset);
   return ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset) |
 	  ((fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset) << 6) |
 	  (fHw2geomapPtr[hwAddress].fGain << 12) |

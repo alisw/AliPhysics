@@ -32,8 +32,8 @@
 
 #include "AliHLTPHOSProcessor.h"
 
-class AliHLTPHOSDigitMaker;
-class AliHLTPHOSDigitContainerDataStruct;
+class AliHLTCaloDigitMaker;
+class AliHLTCaloDigitContainerDataStruct;
 
 /**
  * @class AliHLTPHOSDigitMakerComponent
@@ -141,10 +141,10 @@ protected:
 private:
 
   /** Pointer to the digit maker itself */
-  AliHLTPHOSDigitMaker *fDigitMakerPtr;                    //! transient
+  AliHLTCaloDigitMaker *fDigitMakerPtr;                    //! transient
 
   /** The output of the component, digits in a container */
-  AliHLTPHOSDigitContainerDataStruct *fDigitContainerPtr;  //! transient
+  AliHLTCaloDigitContainerDataStruct *fDigitContainerPtr;  //! transient
 
 };
 #endif

@@ -34,7 +34,7 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
   int rcuEnd = 1;
   //  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=ESD-FILE";
   //TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-CA_02";
-  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTCalo.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-RA_02_1";
+  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTCalo.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-DM_02_1";
   TString ecInput;
   TString emInput;
   
@@ -57,10 +57,10 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
 	  AliHLTConfiguration rawConf(ra.Data(), "PhosRawCrude", publisher.Data(), arg.Data());
 	  
 	  // digit maker components
-// 	  dm.Form("PHS-DM_%02d_%d", module, rcu);
-// 	  arg="";
-// 	  arg.Form("-sethighgainfactor 0.005 -setlowgainfactor 0.08 -setdigitthresholds 0.005 0.002");
-// 	  AliHLTConfiguration dmConf(dm.Data(), "PhosDigitMaker", ra.Data(), arg.Data());
+	  dm.Form("PHS-DM_%02d_%d", module, rcu);
+	  arg="";
+	  arg.Form("-sethighgainfactor 0.005 -setlowgainfactor 0.08 -setdigitthresholds 0.005 0.002");
+	  AliHLTConfiguration dmConf(dm.Data(), "PhosDigitMaker", ra.Data(), arg.Data());
 
 	  if(clInput.Length() > 0) clInput += " ";
 	  clInput+=dm;

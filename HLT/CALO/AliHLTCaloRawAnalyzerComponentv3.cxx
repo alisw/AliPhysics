@@ -33,6 +33,7 @@
 #include "AliHLTCaloRcuProcessor.h"
 #include "AliHLTCaloCrazynessDefinitions.h"
 #include "AliHLTCaloChannelRawDataStruct.h"
+#include "AliHLTCaloCoordinate.h"
 
 
 //#include "AliCALOBunchInfo.h"
@@ -224,7 +225,7 @@ AliHLTCaloRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, do
 Int_t
 AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
- 
+
   int tmpsize=  0;
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;
@@ -235,7 +236,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
  
   totSize += sizeof( AliHLTCaloChannelDataHeaderStruct );
   fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
-  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + 4608  );
+  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + 1792  );
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
  
@@ -247,8 +248,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   if(fAltroRawStreamPtr->NextDDL())
   {
     int cnt = 0;
-    fOffset = ( fAltroRawStreamPtr->GetAltroCFG1() >> 10 ) & 0xf;
-    
+    //    fOffset = ( fAltroRawStreamPtr->GetAltroCFG1() >> 10 ) & 0xf;
+    fOffset = 0;
     while( fAltroRawStreamPtr->NextChannel()  )
       { 
 	//	 cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T3"  << endl; 
@@ -261,6 +262,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	    ++ cnt;
 	    UShort_t* firstBunchPtr = 0;
 	    int chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
+	    //	    HLTError("Channel HW address: %d", fAltroRawStreamPtr->GetHWAddress());
 	    if( fDoPushRawData == true)
 	      {
 		fRawDataWriter->SetChannelId( chId );
@@ -282,7 +284,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	     
 	    //return 1;
 	  
-	     totSize += sizeof( AliHLTCaloChannelDataStruct );
+	    totSize += sizeof( AliHLTCaloChannelDataStruct );
 	    if(totSize > size)
 	      {
 		//HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
@@ -315,7 +317,9 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
 	    channelDataPtr->fChannelID =  chId;
 	    channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
-
+	    AliHLTCaloCoordinate c;
+	    fMapperPtr->ChannelId2Coordinate(chId, c); 
+	    //	    HLTError("Got channel, x: %d, z: %d, gain: %d, energy: %f", c.fX, c.fZ, c.fGain, channelDataPtr->fEnergy);
 	    channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
 	    channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
 	    channelCount++;
@@ -368,7 +372,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   // channelDataHeaderPtr->fHasRawData  = false;
   channelDataHeaderPtr->fHasRawData = fDoPushRawData;
-  HLTDebug("Number of channels: %d", channelCount);
+  HLTError("Number of channels: %d", channelCount);
   tmpsize += sizeof(AliHLTCaloChannelDataStruct)*channelCount + sizeof(AliHLTCaloChannelDataHeaderStruct); 
   return  tmpsize;
 

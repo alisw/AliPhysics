@@ -43,7 +43,7 @@ class AliHLTPHOSMapper : public AliHLTCaloMapper
   Bool_t InitAltroMapping(const unsigned long specification); 
   void InitDDLSpecificationMapping();
   bool GetIsInitializedMapping();
-  char* GetFilePath(const int ddlId);
+  //  char* GetFilePath(const int ddlId);
   
   Int_t GetChannelID(Int_t hwAddress);
   Int_t GetChannelID(AliHLTUInt32_t specification, Int_t hwAddress);
@@ -54,21 +54,15 @@ class AliHLTPHOSMapper : public AliHLTCaloMapper
   int GetDDLFromSpec(AliHLTUInt32_t specification);
   int GetModuleFromSpec(AliHLTUInt32_t specification);
 
-  struct fAltromap{ 
-    int fZRow; // Coordinate in Z direction (beam direction) relatve too one RCU
-    int fXCol; // Coordinate in X direction (perpendicular too beam direction an parallell to ground) relatve too one RCU
-    int fGain; // Gain (high gain = 1, low gain = 0)
-  };
-  
-  struct fDDLSpecificationMap{ 
-    UInt_t fRcuX; // Coordinate in Z direction (beam direction) relatve too one RCU
-    UInt_t fRcuZ; // Coordinate in X direction (perpendicular too beam direction an parallell to ground) relatve too one RCU
-    UInt_t fRcuXOffset;
-    UInt_t fRcuZOffset;
-    int fModId; 
-  };
+//   struct fDDLSpecificationMap{ 
+//     UInt_t fRcuX; // Coordinate in Z direction (beam direction) relatve too one RCU
+//     UInt_t fRcuZ; // Coordinate in X direction (perpendicular too beam direction an parallell to ground) relatve too one RCU
+//     UInt_t fRcuXOffset;
+//     UInt_t fRcuZOffset;
+//     int fModId; 
+//   };
 
-  fAltromap *fHw2geomapPtr; //pointer to structure holding information about geometrical address 
+//  fAltromap *fHw2geomapPtr; //pointer to structure holding information about geometrical address 
 
 
   char fFilepath[1024];
@@ -79,7 +73,7 @@ class AliHLTPHOSMapper : public AliHLTCaloMapper
   AliHLTPHOSMapper(const AliHLTPHOSMapper & );
   AliHLTPHOSMapper & operator = (const AliHLTPHOSMapper &);
   
-  fDDLSpecificationMap* fSpecificationMapPtr;
+  //  fDDLSpecificationMap* fSpecificationMapPtr;
   //AliPHOSEMCAGeometry fPHOSGeometry;
   static const Float_t fCellStep = 2.2;//2.*fPHOSGeometry.GetAirCellHalfSize()[0];
   
