@@ -129,6 +129,7 @@ public:
 	/// Set warnings flag to enable warnings on data errors.
 	void EnableWarnings() { fWarnings = kTRUE; }
 	
+        /// Returns the flag indicating if we should generate a warning for errors.
 	Bool_t IsWarningsEnabled() const { return fWarnings; }
 
 	/// Returns the "try to recover from errors" flag.

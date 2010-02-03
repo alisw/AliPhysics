@@ -22,6 +22,7 @@ class AliMUONRecoParam;
 class AliMUONVQAChecker : public TObject
 {
 public:
+  /// Classification of errors severity
   enum ECheckCode {
     kFatal=-1,  ///< error is really serious
     kError=0,   ///< normal error, i.e. something is wrong

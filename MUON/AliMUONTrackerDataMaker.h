@@ -97,6 +97,7 @@ public:
   
   void SetRawReader(AliRawReader* rawReader);
   
+  /// Set the error logger
   void EnableErrorLogger(AliMUONLogger* logger) { fLogger = logger; }
   
 private:

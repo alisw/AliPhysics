@@ -56,7 +56,11 @@ public:
   
 private:
   Int_t fN; ///< Number of vertices 
+  
+  /// Vertices x coordinates
   Double_t* fX; //[fN]
+  
+  /// Vertices y coordinates
   Double_t* fY; //[fN]
   
   ClassDef(AliMUONPolygon,1) // A simple polygon

@@ -434,8 +434,8 @@ private:
 	 kGlobalInputLength = 32    //!< length in bits of a global input word
   };
 
-  AliMUONVStore *fPatternStoreN; //! store for local strips patterns
-  AliMUONVStore *fPatternStoreD; //! store for local strips patterns
+  AliMUONVStore *fPatternStoreN; //!< store for local strips patterns
+  AliMUONVStore *fPatternStoreD; //!< store for local strips patterns
 
   Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (PHYSICS events)
   Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (CALIBRATION events)

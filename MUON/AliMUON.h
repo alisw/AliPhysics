@@ -178,8 +178,8 @@ class AliMUON : public  AliDetector
     Int_t  fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
     Bool_t fIsTailEffect;       ///< Switch to turn on/off the tail effect
 
-    Float_t fTimeMin;           // minimum time(*10^9) for an sdigit to be digitized
-    Float_t fTimeMax;           // maximum time(*10^9) for an sdigit to be digitized
+    Float_t fTimeMin;           ///< minimum time(*10^9) for an sdigit to be digitized
+    Float_t fTimeMax;           ///< maximum time(*10^9) for an sdigit to be digitized
 
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
     

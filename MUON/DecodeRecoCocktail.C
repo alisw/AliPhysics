@@ -72,7 +72,6 @@ void DecodeRecoCocktail(
 /// \param recodir      The directory containing galice.root for reconstructed data.
 /// \param simdir       The directory containing galice.root for simulated data.
 /// \param outFileName  The output filename containing AliMUONTrackLight and AliMUONPairLight objects.
-/// \param geoFilename  The filename containing the geometry.
 
   char startingDir[200]; 
   sprintf (startingDir,"%s",gSystem->pwd()); 

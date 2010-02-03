@@ -139,7 +139,9 @@ class AliMUONTrack : public TObject
   /// return the maximum chi2 above which the track can be considered as abnormal (due to extrapolation failure, ...)
   static Double_t MaxChi2() {return fgkMaxChi2;}
   
+  /// set the flag which is kTRUE if that track shares cluster(s) with another
   void   Connected(Bool_t flag = kTRUE) {fConnected = flag;}
+  /// return the flag which is kTRUE if that track shares cluster(s) with another
   Bool_t IsConnected() const {return fConnected;}
 
 

@@ -16,7 +16,7 @@
 /* $Id:$ */
 
 /// \ingroup macros
-/// \file MUONSurveyCh8L.C
+/// \file MUONSurveyCh5.C
 /// \brief Macro to process survey and photogrammetry data of chamber 5
 /// 
 /// Macro loads the survey data from .txt file using AliSurveyObj.
