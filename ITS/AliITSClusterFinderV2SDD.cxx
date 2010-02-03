@@ -253,7 +253,7 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	  Int_t clSizTb=maxj-minj+1;
 	  if(repa->GetUseSDDClusterSizeSelection()){
 	    if(clSizTb==1) continue; // cut common mode noise spikes
-	    if(clSizAnode>3)  continue; // cut common mode noise spikes
+	    if(clSizAnode>5)  continue; // cut common mode noise spikes
 	    if(clSizTb>10)  continue; // cut clusters on noisy anodes
 	  }
 	  
