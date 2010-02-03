@@ -1,13 +1,14 @@
 void drawProtonResults(const char* analysisOutput = 0x0,
 		       Bool_t kShowResults = kTRUE,
-		       Bool_t kShowQAPlots = kFALSE) {
+		       Bool_t kShowQAPlots = kFALSE,
+		       Bool_t kMC = kFALSE) {
   //Macro to visualize the proton ratio results
   //It also visualizes the QA plots
   gStyle->SetPalette(1,0);
   if(!analysisOutput)
     Error("drawProtonResults::The analysis output was not defined!!!");
   if(kShowResults) drawResults(analysisOutput);
-  if(kShowQAPlots) drawQAPlots(analysisOutput);
+  if(kShowQAPlots) drawQAPlots(analysisOutput, kMC);
 }
 
 //___________________________________________________//
@@ -93,7 +94,8 @@ void drawResults(const char* analysisOutput) {
 }
 
 //___________________________________________________//
-void drawQAPlots(const char* analysisOutput) {
+void drawQAPlots(const char* analysisOutput,
+		 Bool_t kMC) {
   //Draws the QA plots from the output of the analysis
   //=========================================================//
   //List of cuts
@@ -112,8 +114,64 @@ void drawQAPlots(const char* analysisOutput) {
   //2D de/dx vs P
   TH2F *gHistdEdxP = dynamic_cast<TH2F *>(fQA2DList->At(0));
   gHistdEdxP->SetStats(kFALSE);
+  drawdEdx(gHistdEdxP);
   TH2F *gHistProtonsdEdxP = dynamic_cast<TH2F *>(fQA2DList->At(1));
   gHistProtonsdEdxP->SetStats(kFALSE);
+
+  //Theoretical Bethe-Bloch
+  Double_t fAlephParameters[5];
+  if(kMC) {
+    fAlephParameters[0] = 2.15898e+00/50.;
+    fAlephParameters[1] = 1.75295e+01;
+    fAlephParameters[2] = 3.40030e-09;
+    fAlephParameters[3] = 1.96178e+00;
+    fAlephParameters[4] = 3.91720e+00;
+  }
+  else {
+    fAlephParameters[0] = 0.0283086;
+    fAlephParameters[1] = 2.63394e+01;
+    fAlephParameters[2] = 5.04114e-11;
+    fAlephParameters[3] = 2.12543e+00;
+    fAlephParameters[4] = 4.88663e+00;
+  }
+
+  AliTPCPIDResponse *tpcResponse = new AliTPCPIDResponse();
+  tpcResponse->SetBetheBlochParameters(fAlephParameters[0],
+				       fAlephParameters[1],
+				       fAlephParameters[2],
+				       fAlephParameters[3],
+				       fAlephParameters[4]);
+  const Int_t nEntries = 10000;
+  Double_t mom[nEntries];
+  Double_t dEdxElectrons[nEntries];
+  Double_t dEdxMuons[nEntries];
+  Double_t dEdxPions[nEntries];
+  Double_t dEdxKaons[nEntries];
+  Double_t dEdxProtons[nEntries];
+  for(Int_t i = 0; i < nEntries; i++) {
+    mom[i] = 0.01 + 0.01*i;
+    dEdxElectrons[i] = tpcResponse->GetExpectedSignal(mom[i],0);
+    dEdxMuons[i] = tpcResponse->GetExpectedSignal(mom[i],1);
+    dEdxPions[i] = tpcResponse->GetExpectedSignal(mom[i],2);
+    dEdxKaons[i] = tpcResponse->GetExpectedSignal(mom[i],3);
+    dEdxProtons[i] = tpcResponse->GetExpectedSignal(mom[i],4);
+  }
+
+  TGraph *grElectrons = new TGraph(nEntries,mom,dEdxElectrons);
+  grElectrons->SetName("grElectrons");
+  grElectrons->SetLineColor(6); grElectrons->SetLineWidth(2);
+  TGraph *grMuons = new TGraph(nEntries,mom,dEdxMuons);
+  grMuons->SetLineColor(3); grMuons->SetLineWidth(2);
+  grMuons->SetName("grMuons");
+  TGraph *grPions = new TGraph(nEntries,mom,dEdxPions);
+  grPions->SetLineColor(1); grPions->SetLineWidth(2);
+  grPions->SetName("grPions");
+  TGraph *grKaons = new TGraph(nEntries,mom,dEdxKaons);
+  grKaons->SetLineColor(2); grKaons->SetLineWidth(2);
+  grKaons->SetName("grKaons");
+  TGraph *grProtons = new TGraph(nEntries,mom,dEdxProtons);
+  grProtons->SetLineColor(4); grProtons->SetLineWidth(2);
+  grProtons->SetName("grProtons");
 
   //3D eta-phi-NPoints(dEdx)
   TH3F *gHistEtaPhiTPCdEdxNPoints = dynamic_cast<TH3F *>(fQA2DList->At(2));
@@ -204,9 +262,24 @@ void drawQAPlots(const char* analysisOutput) {
   gHistDCAzPtAntiProtons->SetStats(kFALSE);
 
   //__________________________________________________//
+  TH2F *hEmptydEdx = new TH2F("hEmptydEdx",
+			      "TPC dE/dx parametrization;P[GeV/c];dE/dx [a.u]",
+			      100,0.01,110.,100,30,1000);
+  hEmptydEdx->SetStats(kFALSE);
+
+  TLatex *latex = new TLatex();
+  latex->SetTextSize(0.035);
+
   TCanvas *cdEdx = new TCanvas("cdEdx","dE/dx (TPC)",0,0,700,400);
   cdEdx->SetFillColor(10); cdEdx->SetHighLightColor(10); cdEdx->Divide(2,1);
-  cdEdx->cd(1)->SetLogx(); gHistdEdxP->Draw("col");
+  cdEdx->cd(1)->SetLogx(); hEmptydEdx->DrawCopy();
+  gHistdEdxP->Draw("colsame");
+  grElectrons->Draw("LSAME"); latex->SetTextColor(6); latex->DrawLatex(0.02,55,"e");
+  grMuons->Draw("LSAME"); latex->SetTextColor(3); latex->DrawLatex(0.02,400,"#mu");
+  grPions->Draw("LSAME"); latex->SetTextColor(1); latex->DrawLatex(0.05,400,"#pi");
+  grKaons->Draw("LSAME"); latex->SetTextColor(2); latex->DrawLatex(0.17,400,"K");
+  grProtons->Draw("LSAME"); latex->SetTextColor(4); latex->DrawLatex(0.35,400,"p");
+  
   cdEdx->cd(2)->SetLogx(); gHistProtonsdEdxP->Draw("col");
 
   TCanvas *cEtaPhi = new TCanvas("cEtaPhi",
@@ -214,16 +287,28 @@ void drawQAPlots(const char* analysisOutput) {
 				 0,0,700,400);
   cEtaPhi->SetFillColor(10); 
   cEtaPhi->SetHighLightColor(10); cEtaPhi->Divide(2,1);
-  cEtaPhi->cd(1); gHistEtaPhiProtons->Draw("colz");
-  cEtaPhi->cd(2); gHistEtaPhiAntiProtons->Draw("colz");
+  cEtaPhi->cd(1); 
+  gHistEtaPhiProtons->SetTitle("Accepted protons - eta vs phi");
+  gHistEtaPhiProtons->Draw("colz");
+  cEtaPhi->cd(2); 
+  gHistEtaPhiAntiProtons->SetTitle("Accepted antiprotons - eta vs phi");
+  gHistEtaPhiAntiProtons->Draw("colz");
 
   TCanvas *cDCAPt = new TCanvas("cDCAPt","pT-dca",0,0,700,700);
   cDCAPt->SetFillColor(10); 
   cDCAPt->SetHighLightColor(10); cDCAPt->Divide(2,2);
-  cDCAPt->cd(1); gHistDCAxyPtProtons->Draw("colz");
-  cDCAPt->cd(2); gHistDCAzPtProtons->Draw("colz");
-  cDCAPt->cd(3); gHistDCAxyPtAntiProtons->Draw("colz");
-  cDCAPt->cd(4); gHistDCAzPtAntiProtons->Draw("colz");
+  cDCAPt->cd(1); 
+  gHistDCAxyPtProtons->SetTitle("Accepted protons - dca(xy) vs Pt");
+  gHistDCAxyPtProtons->Draw("colz");
+  cDCAPt->cd(2); 
+  gHistDCAzPtProtons->SetTitle("Accepted protons - dca(z) vs Pt");
+  gHistDCAzPtProtons->Draw("colz");
+  cDCAPt->cd(3); 
+  gHistDCAxyPtAntiProtons->SetTitle("Accepted antiprotons - dca(xy) vs Pt");
+  gHistDCAxyPtAntiProtons->Draw("colz");
+  cDCAPt->cd(4); 
+  gHistDCAzPtAntiProtons->SetTitle("Accepted antiprotons - dca(z) vs Pt");
+  gHistDCAzPtAntiProtons->Draw("colz");
 
   /*TCanvas *cEtaPhiNPointsdEdx = new TCanvas("cEtaPhiNPointsdEdx",
 					    "eta-phi-NPoints(dE/dx)",
@@ -583,4 +668,37 @@ void PrintYields(TH1 *h) {
   Printf("Histogram: %s",h->GetName());
   Printf("Yields: %lf - %lf",sum,error);
   Printf("==================================");
+}
+
+//___________________________________________________//
+void drawdEdx(TH2F *gHistdEdxP) {
+  //Draws the dE/dx distributions for the different momentum bins
+  TString title;
+  TH1D *gHist[100];
+  Int_t iCounter = 0;
+  Double_t binMin = gHistdEdxP->GetXaxis()->GetXmin();
+  Double_t binMax = gHistdEdxP->GetXaxis()->GetXmin() + 
+    (gHistdEdxP->GetXaxis()->GetXmax() - gHistdEdxP->GetXaxis()->GetXmin())/gHistdEdxP->GetNbinsX();
+
+  TCanvas *c[100];
+
+  for(Int_t iBin = 1; iBin <= gHistdEdxP->GetNbinsX(); iBin++) {
+    if((binMax > 0.41)&&(binMin < 0.91)) {
+      title = "P: "; title += binMin; title += " - "; 
+      title += binMax; title += "GeV/c";
+      c[iCounter] = new TCanvas(title.Data(),title.Data(),0,0,500,500);
+      c[iCounter]->SetFillColor(10); c[iCounter]->SetHighLightColor(10); 
+      gHist[iCounter] = gHistdEdxP->ProjectionY(title.Data(),iBin,iBin);
+      gHist[iCounter]->SetTitle(title.Data());
+      gHist[iCounter]->SetStats(kFALSE);
+      if(gHist[iCounter]->GetEntries() != 0)
+	c[iCounter]->SetLogy();
+      gHist[iCounter]->Draw();
+      Printf("Bin: %d - Pmin: %lf - Pmax: %lf : %s",iBin,binMin,binMax,title.Data());
+      iCounter += 1;
+    }
+    binMin += (gHistdEdxP->GetXaxis()->GetXmax() - gHistdEdxP->GetXaxis()->GetXmin())/gHistdEdxP->GetNbinsX();
+    binMax += (gHistdEdxP->GetXaxis()->GetXmax() - gHistdEdxP->GetXaxis()->GetXmin())/gHistdEdxP->GetNbinsX();
+  }
+  
 }
