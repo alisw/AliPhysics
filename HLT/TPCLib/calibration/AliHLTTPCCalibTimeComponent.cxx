@@ -40,6 +40,7 @@ using namespace std;
 #include "AliESDfriend.h"
 
 #include "AliTPCcalibTime.h"
+#include "AliTPCcalibCalib.h";
 #include "AliTPCseed.h"
 #include "AliTPCcalibCalib.h"
 
@@ -59,16 +60,12 @@ ClassImp(AliHLTTPCCalibTimeComponent) // ROOT macro for the implementation of RO
 AliHLTTPCCalibTimeComponent::AliHLTTPCCalibTimeComponent()
   :
   fCalibTime(NULL),
+  fCal(NULL),
   fESDevent(NULL),
   fESDtrack(NULL),
   fESDfriendTrack(NULL),
-  fSeedArray(NULL),
-  fMinPartition(5),
-  fMaxPartition(0),
-  fMinSlice(35),
-  fMaxSlice(0),
-  fSpecification(0) ,
-  fEnableAnalysis(kTRUE)
+  fESDfriend(NULL),
+  fSeedArray(NULL)
 {
   // see header file for class documentation
   // or
@@ -116,27 +113,10 @@ AliHLTComponent* AliHLTTPCCalibTimeComponent::Spawn() {
 }  
 
 
-Int_t AliHLTTPCCalibTimeComponent::ScanArgument( Int_t argc, const char** argv ) {
+Int_t AliHLTTPCCalibTimeComponent::ScanArgument( Int_t /*argc*/, const char** /*argv*/ ) {
 // see header file for class documentation
-
-  Int_t iResult = 0;
-  TString argument = "";
-  TString parameter = "";
-
-  if(!argc) return -EINVAL;
-
-  argument = argv[iResult];
-  
-  if(argument.IsNull()) return -EINVAL;
-
-  if( argument.CompareTo("-enable-analysis") == 0 ){
-    HLTInfo( "Analysis before shipping data to FXS enabled." );
-    fEnableAnalysis = kTRUE;
-  }
-  else {
-    iResult = -EINVAL;
-  }      
-  return iResult;
+    
+  return 0;
 }
 
 Int_t AliHLTTPCCalibTimeComponent::InitCalibration() {
@@ -145,14 +125,20 @@ Int_t AliHLTTPCCalibTimeComponent::InitCalibration() {
   if(fCalibTime) return EINPROGRESS;
   //fCalibTime = new AliTPCcalibTime();
   //fCalibTime = new AliTPCcalibTime("calibTime","time dependent Vdrift calibration",-2, 2, 1);
-
+  fCal = new AliTPCcalibCalib();
+  
   return 0;
 }
 
 Int_t AliHLTTPCCalibTimeComponent::DeinitCalibration() {
 // see header file for class documentation
 
-  if(fCalibTime) delete fCalibTime; fCalibTime = NULL;
+  if(fCalibTime)      delete fCalibTime;      fCalibTime      = NULL;
+  if(fCal)            delete fCal;            fCal            = NULL;
+  if(fESDtrack)       delete fESDtrack;       fESDtrack       = NULL;
+  if(fESDfriendTrack) delete fESDfriendTrack; fESDfriendTrack = NULL;
+  if(fESDfriend)      delete fESDfriend;      fESDfriend      = NULL;
+  if(fSeedArray)      delete fSeedArray;      fSeedArray      = NULL;
 
   return 0;
 }
@@ -178,28 +164,16 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
   for(iter = (TObject*)GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = (TObject*)GetNextInputObject()){   
       
     if(GetDataType(iter) != (kAliHLTDataTypeESDObject | kAliHLTDataOriginOut)) continue;
-  
-    AliHLTUInt8_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iter)); 
-    AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(iter));
-      
-    if( partition < fMinPartition ) fMinPartition = partition;
-    if( partition > fMaxPartition ) fMaxPartition = partition;
-    if( slice < fMinSlice ) fMinSlice = slice;
-    if( slice > fMaxSlice ) fMaxSlice = slice;
             
     fESDevent = dynamic_cast<AliESDEvent*>(iter);
     fESDevent->GetStdContent();
     
-    AliESDfriend *f = new AliESDfriend();
-    fESDevent->AddObject(f);
-    
     //fESDevent->SetTimeStamp(1256910155);
+    //fESDevent->SetRunNumber(0);
     //fESDevent->SetRunNumber(84714);
               
     HLTDebug("# Seeds: %i\n", fSeedArray->GetEntriesFast());
-    
-    //AliTPCcalibCalib *cal = new AliTPCcalibCalib();
-      
+         
     for(Int_t i=0; i<fSeedArray->GetEntriesFast(); i++){        
         
 	AliTPCseed *seed = (AliTPCseed*)fSeedArray->UncheckedAt(i);
@@ -208,16 +182,12 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
         fESDtrack = fESDevent->GetTrack(i);
 	if(!fESDtrack) continue;
              
-        //cal->RefitTrack(fESDtrack, seed, GetBz());
-	
-	fESDfriendTrack = const_cast<AliESDfriendTrack*>(fESDtrack->GetFriendTrack());
-        if(!fESDfriendTrack) continue;
-      
+        fCal->RefitTrack(fESDtrack, seed, GetBz());
+	     
         AliTPCseed *seedCopy = new AliTPCseed(*seed, kTRUE); 
 	fESDtrack->AddCalibObject(seedCopy);                
 	
-	//fCalibTime->ProcessAlignITS(fESDtrack,fESDfriendTrack); 
-	//fCalibTime->ProcessAlignITS(fESDtrack,fESDfriendTrack->GetITSOut()); 
+	//fESDfriendTrack = const_cast<AliESDfriendTrack*>(fESDtrack->GetFriendTrack());        
    }
   } 
   
@@ -228,13 +198,16 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
     fCalibTime = new AliTPCcalibTime("calibTime","time dependent Vdrift calibration", startTime, endTime, 20*60);
     printf("fCalibTime=%i, startTime=%i, endTime=%i\n", fCalibTime!=0, startTime, endTime);
   }
+  
+  fESDfriend = new AliESDfriend();
+  fESDevent->GetESDfriend(fESDfriend);
+  fESDevent->SetESDfriend(fESDfriend);
+  fESDevent->AddObject(fESDfriend);
 
   fCalibTime->UpdateEventInfo(fESDevent);
   fCalibTime->Process(fESDevent);
   
-  
-  fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( fMinSlice, fMaxSlice, fMinPartition, fMaxPartition );
-  PushBack( (TObject*)fCalibTime, AliHLTTPCDefinitions::fgkCalibCEDataType | kAliHLTDataOriginOut, fSpecification);
+  //PushBack( (TObject*)fCalibTime, AliHLTTPCDefinitions::fgkCalibCEDataType | kAliHLTDataOriginOut, 0x0);
   
   return 0;
 }
@@ -243,8 +216,8 @@ Int_t AliHLTTPCCalibTimeComponent::ShipDataToFXS( const AliHLTComponentEventData
 // see header file for class documentation
 
   HLTInfo("Shipping data to FXS...\n");
-
-  if(fEnableAnalysis) fCalibTime->Analyze();
+ 
+  fCalibTime->Analyze();
 
   THnSparse* addHist=fCalibTime->GetHistoDrift("all");
   if(!addHist) return -1;
@@ -408,6 +381,7 @@ Int_t AliHLTTPCCalibTimeComponent::ShipDataToFXS( const AliHLTComponentEventData
 
   static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
   PushToFXS( (TObject*)vdriftArray, "TPC", "Time", rdList.Buffer() );
+ 
   //PushToFXS( (TObject*)vdriftArray, "TPC", "Time");
 
   //Should array be deleted now?

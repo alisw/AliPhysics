@@ -22,6 +22,7 @@
 #include "AliHLTCalibrationProcessor.h"
 
 class AliTPCcalibTime;
+class AliTPCcalibCalib;
 class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDtrack;
@@ -82,21 +83,14 @@ class AliHLTTPCCalibTimeComponent : public AliHLTCalibrationProcessor
       /** assignment operator prohibited */
       AliHLTTPCCalibTimeComponent& operator=(const AliHLTTPCCalibTimeComponent&);
 
-      AliTPCcalibTime   *fCalibTime; //!transient
-      AliESDEvent       *fESDevent;  //!transient
-      AliESDtrack       *fESDtrack;  //!transient
-      AliESDfriendTrack *fESDfriendTrack;  //!transient
-      TObjArray         *fSeedArray; //!transient
+      AliTPCcalibTime   *fCalibTime;      //!transient
+      AliTPCcalibCalib  *fCal;            //!transient
+      AliESDEvent       *fESDevent;       //!transient
+      AliESDtrack       *fESDtrack;       //!transient
+      AliESDfriendTrack *fESDfriendTrack; //!transient
+      AliESDfriend      *fESDfriend;      //!transient
+      TObjArray         *fSeedArray;      //!transient
       
-      AliHLTUInt8_t  fMinPartition;  // see above
-      AliHLTUInt8_t  fMaxPartition;  // see above
-      AliHLTUInt8_t  fMinSlice;      // see above
-      AliHLTUInt8_t  fMaxSlice;      // see above
-      AliHLTUInt32_t fSpecification; // see above
-
-      /** Analyze calibration data before shipping to FXS */
-      Bool_t fEnableAnalysis;  // see above
-
-      ClassDef(AliHLTTPCCalibTimeComponent, 1)
+      ClassDef(AliHLTTPCCalibTimeComponent, 2)
     };
 #endif
