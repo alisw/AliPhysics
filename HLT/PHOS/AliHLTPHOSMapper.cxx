@@ -31,11 +31,12 @@
 
 AliHLTPHOSMapper::AliHLTPHOSMapper():  
    AliHLTCaloMapper(0,"PHOS") 
-   ,fDDLId(-1)
+   ,fIsInitializedMapping(false)
    ,fModuleId(-1)
+   ,fDDLId(-1)
 {
   InitDDLSpecificationMapping();
-  sprintf(fFilepath, "\0");
+  sprintf(fFilepath, "./");
 }
 
 

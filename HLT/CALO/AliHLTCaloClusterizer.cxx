@@ -46,6 +46,7 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
   fEmcMinEnergyThreshold(0),
   fEmcTimeGate(0),
   fDigitsInCluster(0),
+  fDigitsPointerArray(0),
   fDigitContainerPtr(0),
   fMaxDigitIndexDiff(0),
   fNDigits(0)
@@ -99,7 +100,7 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits, UInt_t availableSize, UInt
   UInt_t maxRecPointSize = sizeof(AliHLTCaloRecPointDataStruct) + (sizeof(AliHLTCaloDigitDataStruct) << 7); //Reasonable estimate... 
 
   //Clusterization starts
-  for(UInt_t i = 0; i < nDigits; i++)
+  for(Int_t i = 0; i < nDigits; i++)
     { 
       fDigitsInCluster = 0;
       //      printf("ENERGY: %f\n", fDigitsPointerArray[i]->fEnergy);

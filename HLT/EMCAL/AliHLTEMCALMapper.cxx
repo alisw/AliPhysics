@@ -115,6 +115,8 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
     {
       fIsInitializedMapping = false;
     }
+    
+    return fIsInitializedMapping;
 }
 
 

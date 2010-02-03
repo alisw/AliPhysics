@@ -106,7 +106,6 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
   
   Reset();
 
-  Int_t j = 0;
   UInt_t totSize = sizeof(AliHLTCaloDigitDataStruct);
   
 //   Int_t xMod = -1;
@@ -117,8 +116,6 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
   
   
   AliHLTCaloChannelDataStruct* currentchannel = 0;
-  //  AliHLTCaloChannelDataStruct* currentchannelLG = 0;  
-  AliHLTCaloChannelDataStruct* tmpchannel = 0;
   
   fShmPtr->SetMemory(channelDataHeader);
   currentchannel = fShmPtr->NextChannel();

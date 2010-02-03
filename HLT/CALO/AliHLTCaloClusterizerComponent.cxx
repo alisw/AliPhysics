@@ -39,9 +39,9 @@
 
 
 AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det): 
-  AliHLTCaloConstantsHandler(det),
   AliHLTCaloProcessor(),
-  fDigitsPointerArray(0),
+  AliHLTCaloConstantsHandler(det),
+  fDigitsPointerArray(0), 
   fClusterizerPtr(0),
   fDigitCount(0)
 
@@ -121,7 +121,7 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   Int_t nDigits           = 0;
   Int_t digCount          = 0;
 
-  UInt_t availableSize = size;
+  //UInt_t availableSize = size;
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = 0;

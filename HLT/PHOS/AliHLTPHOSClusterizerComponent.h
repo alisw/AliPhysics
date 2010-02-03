@@ -135,7 +135,7 @@ class AliHLTPHOSClusterizerComponent : public AliHLTCaloClusterizerComponent
   AliHLTComponent* Spawn();
 
 protected:
-  virtual int DoDeinit(){;}
+  virtual int DoDeinit(){ return 0;}
 
 private:
   

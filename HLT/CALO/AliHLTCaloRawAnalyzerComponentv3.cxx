@@ -58,9 +58,9 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
   fBunchSizeCut(0),
   fMinPeakPosition(0),
   fMaxPeakPosition(100),
-  fRawDataWriter(0),
   fDoPushBadRawData(false),
-  fDoPushRawData(false)
+  fDoPushRawData(false),
+  fRawDataWriter(0)
 {
   //comment
 

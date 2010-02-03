@@ -36,8 +36,8 @@
 ClassImp(AliHLTCaloMapper);
 
 AliHLTCaloMapper::AliHLTCaloMapper( const unsigned long  specification , TString det) :  
-  AliHLTLogging(), 
   AliHLTCaloConstantsHandler(det),
+  AliHLTLogging(), 
   fHw2geomapPtr(0),
   fCellSize(0),
   fSpecification(specification),

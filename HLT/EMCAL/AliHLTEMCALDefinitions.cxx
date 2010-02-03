@@ -25,19 +25,26 @@
 
 ClassImp(AliHLTEMCALDefinitions)
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDDLRawDataType = { sizeof(AliHLTComponentDataType), {'D','D','L','_','R','A','W',' '},{'E','M','C','A'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDDLRawDataType = 
+AliHLTComponentDataTypeInitializer("DDL_RAW ", kAliHLTDataOriginEMCAL);
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDigitDataType = { sizeof(AliHLTComponentDataType), {'D','I','G','I','T',' ',' ',' '},{'E','M','C','A'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDigitDataType =
+AliHLTComponentDataTypeInitializer("DIGIT", kAliHLTDataOriginEMCAL);
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkClusterDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},{'E','M','C','A'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkClusterDataType =
+AliHLTComponentDataTypeInitializer("CLUSTERS", kAliHLTDataOriginEMCAL);
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkESDDataType = { sizeof(AliHLTComponentDataType), {'G','L','O','B','L','E','S','D'},{'E','M','C','A'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkESDDataType = 
+AliHLTComponentDataTypeInitializer("GLOBALESD", kAliHLTDataOriginEMCAL);
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkEMCALESDDataType = { sizeof(AliHLTComponentDataType), {'E','M','C','A','L','E','S','D'},{'E','M','C','A'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkEMCALESDDataType =
+AliHLTComponentDataTypeInitializer("EMCALESD", kAliHLTDataOriginEMCAL);
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkCalibrationDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','I','B','R','A','H'},{'E','M','C','A'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkCalibrationDataType = 
+AliHLTComponentDataTypeInitializer("CALIBRAH", kAliHLTDataOriginEMCAL);
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkChannelDataType = { sizeof(AliHLTComponentDataType), {'C','H','A','N','N','E','L','T'},{'E','M','C','A'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkChannelDataType = 
+AliHLTComponentDataTypeInitializer("CHANNELT", kAliHLTDataOriginEMCAL);
 
 AliHLTEMCALDefinitions::AliHLTEMCALDefinitions()
 {

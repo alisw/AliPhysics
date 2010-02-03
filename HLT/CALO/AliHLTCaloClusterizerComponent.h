@@ -185,6 +185,11 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     /** Default constructor, not implemented */
     AliHLTCaloClusterizerComponent();                             //COMMENT
 
+    /** Copy constructor  not implemented */
+    AliHLTCaloClusterizerComponent ( const AliHLTCaloClusterizerComponent &); // not implemented
+    
+    /** Assignment */
+    AliHLTCaloClusterizerComponent & operator = ( const AliHLTCaloClusterizerComponent &); // not implemented
   };
 
 #endif
