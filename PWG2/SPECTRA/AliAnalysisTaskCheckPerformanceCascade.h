@@ -3,18 +3,21 @@
 
 /*  See cxx source for full Copyright notice */
 
-//-----------------------------------------------------------------
-//		 AliAnalysisTaskCheckPerformanceCascade class
-//            This task is for a performance study of cascade identification.
-//            It works with MC info and ESD/AOD tree.
-//            Origin   : A.Maire Mar2009, antonin.maire@ires.in2p3.fr
-//            Modified : A.Maire Aug2009, antonin.maire@ires.in2p3.fr
-//-----------------------------------------------------------------
+// //-----------------------------------------------------------------
+// //        AliAnalysisTaskCheckPerformanceCascade class
+// //            This task is for a performance study of cascade identification.
+// //            It works with MC info and ESD.
+// //              Use with AOD tree = under development
+// //            Origin   : A.Maire Mar2009, antonin.maire@ires.in2p3.fr
+// //            Modified : A.Maire Jan2010, antonin.maire@ires.in2p3.fr
+// //-----------------------------------------------------------------
 
 class TList;
 class TH1F;
 class TH2F;
 class AliESDEvent;
+class AliESDpid;
+class AliCFContainer;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -28,6 +31,7 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
   //virtual void   ConnectInputData(Option_t *);
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
+  virtual Int_t  DoESDTrackWithTPCrefitMultiplicity(const AliESDEvent *lESDevent);
   virtual void   Terminate(Option_t *);
   
   void SetDebugLevelCascade(Int_t lDebugCascade = 0)          {fDebugCascade = lDebugCascade;}
@@ -35,9 +39,11 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
   void SetAnalysisType     (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
   
  private:
-	Int_t	fDebugCascade;			// Denug Flag for this task devoted to cascade
-	TString fAnalysisType;			// "ESD" or "AOD" analysis type	
-	Short_t fCollidingSystems;		// 0 = pp collisions or 1 = AA collisions
+        Int_t           fDebugCascade;          // Denug Flag for this task devoted to cascade
+        TString         fAnalysisType;          // "ESD" or "AOD" analysis type	
+        Short_t         fCollidingSystems;      // 0 = pp collisions or 1 = AA collisions
+
+        AliESDpid       *fESDpid;        // Tool data member to manage the TPC Bethe-Bloch info
 	
  	TList	*fListHistCascade;		//! List of Cascade histograms
 		// - Histos 
@@ -197,12 +203,19 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 	TH2F	*f2dHistAsMCResRXiPlus;			//! resolution in transv. R = f(transv. gen. R), for Xi+
 	TH2F	*f2dHistAsMCResROmegaMinus;		//! resolution in transv. R = f(transv. gen. R), for Omega-
 	TH2F	*f2dHistAsMCResROmegaPlus;		//! resolution in transv. R = f(transv. gen. R), for Omega+
+        
+        // - Compilation of all PID plots (3D = casc. transv. momemtum Vs Casc Eff mass Vs Y), stored into an AliCFContainer
+	AliCFContainer  *fCFContCascadePIDAsXiMinus;      //! for Xi-   : Container to store any 3D histos with the different PID flavours
+	AliCFContainer  *fCFContCascadePIDAsXiPlus;       //! for Xi+   : Container to store any 3D histos with the different PID flavours
+	AliCFContainer  *fCFContCascadePIDAsOmegaMinus;   //! for Omega-: Container to store any 3D histos with the different PID flavours
+	AliCFContainer  *fCFContCascadePIDAsOmegaPlus;    //! for Omega+: Container to store any 3D histos with the different PID flavours
+	
 	
 	
   AliAnalysisTaskCheckPerformanceCascade(const AliAnalysisTaskCheckPerformanceCascade&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascade& operator=(const AliAnalysisTaskCheckPerformanceCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascade, 2);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascade, 3);
 };
 
 #endif
