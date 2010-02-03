@@ -28,47 +28,26 @@
 
 ClassImp(AliHLTCaloSharedMemoryInterfacev2);
 
-AliHLTCaloSharedMemoryInterfacev2::AliHLTCaloSharedMemoryInterfacev2(TString det): 
-  AliHLTCaloConstantsHandler(det),
-  fCurrentChannel(0),
-  fChannelDataPtr(0),
-  fIsSetMemory(false),
-  fHasRawData(false),
-  fMaxCnt(0),
-  fCurrentCnt(0), 
-  fRawDataPtr(0),
-  fRawData()
-  //	fSpecification(0)
+AliHLTCaloSharedMemoryInterfacev2::AliHLTCaloSharedMemoryInterfacev2(TString det): AliHLTCaloConstantsHandler(det),
+									fCurrentChannel(0),
+									fChannelDataPtr(0),
+									fIsSetMemory(false),
+									fHasRawData(false),
+									fMaxCnt(0),
+									fCurrentCnt(0), 
+									fRawDataPtr(0),
+									fRawData()
+									//	fSpecification(0)
 {
-  //  GetSpecFromDDLIndex
-  //  AliHLTCaloMapper  *fMapperPtr[32];
-
-  /*
-  for(int i=0; i < 32; i++)
-    {
-      fMapperPtr[i] = new AliHLTCaloMapper( AliHLTCaloMapper::GetSpecFromDDLIndex(i) ) ;
-    }
-  */
+   // See header file for class documentation
+   
 }
-
-
 
 AliHLTCaloSharedMemoryInterfacev2::~AliHLTCaloSharedMemoryInterfacev2()
 {
 
 }
 
-
-/*
-struct AliHLTCaloChannelDataStruct
-{
-  Float_t fEnergy;
-  Float_t fTime;
-  UShort_t fChannelID;
-  Short_t fCrazyness;
-  //  Short_t fRawDataSize; //the size of the raw data
-};
-*/
 AliHLTCaloChannelDataStruct*
 AliHLTCaloSharedMemoryInterfacev2::NextChannel()
 {
@@ -80,8 +59,8 @@ AliHLTCaloSharedMemoryInterfacev2::NextChannel()
       fCurrentCnt++;
       fChannelDataPtr += sizeof(AliHLTCaloChannelDataStruct);
       
-      if(fHasRawData == true)
-      //     if( false )	
+     if(fHasRawData == true)
+      if( false )	
 	{
 	  fRawData.fEnergy = tmpChannelPtr->fEnergy;
 	  fRawData.fTime = tmpChannelPtr->fTime;
@@ -113,7 +92,7 @@ AliHLTCaloSharedMemoryInterfacev2::NextChannel()
 		    {
 		      for(int i=0; i < tmpBunchtSize; i++ )
 			{
-			  fRawData.fDataPtr[i + tmpStartBin] = fRawDataPtr[ i+ 4];
+//			  fRawData.fDataPtr[i + tmpStartBin] = fRawDataPtr[ i+ 4];
 			  tmpSamplesLeft --;
 			}
 		    }
@@ -138,80 +117,6 @@ AliHLTCaloSharedMemoryInterfacev2::NextChannel()
   return 0;
 }
 
-/*
-  AliHLTCaloChannelDataStruct*   
-  AliHLTCaloSharedMemoryInterfacev2::NextChannel()
-  {
-  cout << __FILE__ << __LINE__ << " TP0" << endl;
-
-  AliHLTCaloChannelDataStruct* tmpChannelPtr = 0;
-  if(fCurrentCnt < fMaxCnt)
-  {
-  cout << __FILE__ << __LINE__ << " TP1" << endl;  
-  tmpChannelPtr = reinterpret_cast<AliHLTCaloChannelDataStruct*>(fChannelDataPtr);
-  fCurrentCnt++;
-  fChannelDataPtr += sizeof(AliHLTCaloChannelDataStruct);
-   
-  //    if(fHasRawData == true)
-  if(false)	
-  {
-  cout << __FILE__ << __LINE__ << " TP2" << endl; 
-  fRawData.fEnergy = tmpChannelPtr->fEnergy;
-  fRawData.fTime = tmpChannelPtr->fTime;
-  fRawData.fChannelID = tmpChannelPtr->fChannelID; 
-  fRawData.fCrazyness  = tmpChannelPtr->fCrazyness; 
-  Reset(fRawData);
-  AliHLTCaloMapper::ChannelId2Coordinate( fRawData.fChannelID, fRawData.fCoordinate);
-  cout << __FILE__ << __LINE__ << " TP3" << endl; 
-  if( fRawData.fChannelID ==  fRawDataPtr[0]  )
-  {
-  cout << __FILE__ << __LINE__ << " TP4" << endl; 
-  Reset(fRawData);
-  cout << __FILE__ << __LINE__ << " TP5" << endl; 
-  UShort_t tmpTotSize =  fRawDataPtr[1];
-  UShort_t tmpStartBin   =  fRawDataPtr[2];
-  UShort_t tmpBunchtSize =  fRawDataPtr[3];
-  UShort_t tmpSamplesLeft = tmpTotSize -4; 
-  fRawData.nSamplesUsed =  tmpTotSize +  tmpStartBin;
-  cout << __FILE__ << __LINE__ << " TP6" << endl; 
-
-  while(tmpSamplesLeft > 0)
-  {
-  if ( (tmpBunchtSize <  ( ALTROMAXSAMPLES +4)) && tmpBunchtSize > 0   )
-  {
-  cout << __FILE__ << __LINE__ << " TP7" << endl; 
-  for(int i=0; i < tmpBunchtSize; i++ )
-  {
-  cout << __FILE__ << __LINE__ << "  TMP tot size =" <<  tmpBunchtSize <<  tmpTotSize  << endl;
-  cout << __FILE__ << __LINE__ << "  TMP bunch size =" <<  tmpTotSize  << endl;
-  cout << __FILE__ << __LINE__ << " TP8, i=" << i <<", tmpStartBin = "<< tmpStartBin  << " fCurrentCnt = "<< fCurrentCnt << endl; 
-  cout << __FILE__ << __LINE__ << " acessing fRawData.fDataPtr["<<  i + tmpStartBin  << "]" << endl; 
-  fRawData.fDataPtr[ i + tmpStartBin ] = fRawDataPtr[ i+ 4];
-  //			    cout << __FILE__ << __LINE__ << " acessing fRawData.fDataPtr["<<  i + tmpStartBin  << "]" << endl; 
-  tmpSamplesLeft --;
-  }
-  fRawDataPtr+= tmpTotSize;
-  }
-  else
-  {
-  tmpSamplesLeft = -1;
-  }
-  }
-  }
-  }
-  return tmpChannelPtr;
-  } 
-  else
-  {
-  Reset();
-  return 0;
-  }
-  return 0;
-  //   }
-  }
-*/
-
-
 void  
 AliHLTCaloSharedMemoryInterfacev2::NextRawChannel( )
 {
@@ -232,7 +137,6 @@ AliHLTCaloSharedMemoryInterfacev2::NextRawChannel( )
 	}
     }
 }
-
 
 void
 //AliHLTCaloSharedMemoryInterfacev2::SetMemory(AliHLTCaloChannelDataHeaderStruct* channelDataHeaderPtr,  const unsigned long specification)
@@ -266,13 +170,3 @@ AliHLTCaloSharedMemoryInterfacev2::Reset()
   fHasRawData = false;
 }
 
- 
-void 
-AliHLTCaloSharedMemoryInterfacev2::Reset(AliHLTCaloChannelRawDataStruct &str)
-{
-  for(int i=0; i< fCaloConstants->GetALTROMAXSAMPLES(); i++ )
-    {
-      str.fDataPtr[i] = 0;
-    }
- 
-}

@@ -184,7 +184,6 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
 
   virtual void InitMapping(const int specification ) = 0;
   
-  const bool fkDoPushRawData;
   /** Mapping from harware address to geometrical address */
   //  AliHLTCaloMapper *fMapperPtr;                       //!transient 
 
@@ -215,6 +214,12 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
   Int_t fMaxPeakPosition;                             //COMMENT
   
   // AliHLTCaloMapper *fMapperPtr;
+
+  /** Should we push the raw data when the channel is crazy? */
+  Bool_t fDoPushBadRawData;                             //COMMENT
+      
+  /** Should we push all raw data (using the raw data writer) */
+  Bool_t fDoPushRawData;                              //COMMENT
 
   class RawDataWriter 
   {

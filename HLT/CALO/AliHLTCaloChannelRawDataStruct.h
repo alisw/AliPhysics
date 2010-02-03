@@ -33,15 +33,8 @@ struct  AliHLTCaloChannelRawDataStruct : public AliHLTCaloChannelDataStruct
   AliHLTCaloCoordinate fCoordinate;
   int nSamplesUsed;
   // UShort_t fDataPtr[ALTROMAXSAMPLES] = {0,};
-  UShort_t fDataPtr[ALTROMAXSAMPLES];
+  UShort_t fData;
 
-  virtual ~AliHLTCaloChannelRawDataStruct(){};
-  
-  AliHLTCaloChannelRawDataStruct():AliHLTCaloChannelDataStruct(), fCoordinate(), nSamplesUsed(0)
-    {
-      
-    }
-  
 };
 
 #endif

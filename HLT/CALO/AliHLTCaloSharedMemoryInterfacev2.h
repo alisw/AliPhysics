@@ -31,6 +31,7 @@
 #include "AliHLTCaloConstantsHandler.h"
 
 
+
 class AliHLTCaloChannelDataHeaderStruct;
 class AliHLTCaloChannelDataStruct;
 class AliHLTCaloCoordinate;
