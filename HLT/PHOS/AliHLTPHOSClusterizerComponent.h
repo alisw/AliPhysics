@@ -38,6 +38,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSProcessor.h"
+#include <AliHLTCaloClusterizerComponent.h>
 
 class AliHLTPHOSClusterizer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
@@ -105,7 +106,7 @@ class AliHLTPHOSDigitContainerDataStruct;
  * @ingroup alihlt_phos
  */ 
 
-class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
+class AliHLTPHOSClusterizerComponent: public AliHLTCaloClusterizerComponent
 {
  public:
 
@@ -117,12 +118,7 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
 
   /** Copy constructor */  
   AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &) : 
-    AliHLTPHOSProcessor(),
-    fAllDigitsPtr(0),
-    fClusterizerPtr(0),
-    //    fRecPointStructArrayPtr(0),
-    fDigitCount(0),
-    fNoCrazyness(0)
+    AliHLTCaloClusterizerComponent()
   {
     //Copy constructor not implemented
   }
@@ -141,52 +137,9 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
   void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
 
   /** interface function, see @ref AliHLTComponent for description */
-  AliHLTComponentDataType GetOutputDataType();
-
-  /** interface function, see @ref AliHLTComponent for description */
-  void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-
-  /** interface function, see @ref AliHLTComponent for description */
-  
-  using  AliHLTPHOSProcessor::DoEvent;
-  int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-		AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
-		std::vector<AliHLTComponentBlockData>& outputBlocks);
-  // Int_t DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
-  /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
   
-protected:
-
-  /** interface function, see @ref AliHLTComponent for description */
-  int DoInit(int argc, const char** argv);
-
-  /** interface function, see @ref AliHLTComponent for description */
-  int Deinit();
-
-  /** interface function, see @ref AliHLTComponent for description */
-  int Reconfigure(const char* cdbEntry, const char* chainId);
-
-  /** interface function, see @ref AliHLTComponent for description */
-  int ScanConfigurationArgument(int argc, const char** argv);
-
- private:
-
-  /** All digits in the event */
-  AliHLTPHOSDigitContainerDataStruct *fAllDigitsPtr;            //! transient
-
-  /** Pointer to the clusterizer it self */
-  AliHLTPHOSClusterizer* fClusterizerPtr;                       //! transient
-
-//   /** Pointer to rec points used in clusterization */
-//   AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;        //! transient
-
-  /** Number of digits in event */
-  Int_t fDigitCount;                                            //COMMENT
-
-  /** If one should consider crazyness or not */                              
-  Bool_t fNoCrazyness;                                          //COMMENT
-
+  
 };
 
 #endif
