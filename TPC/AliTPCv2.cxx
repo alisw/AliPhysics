@@ -509,15 +509,14 @@ void AliTPCv2::CreateGeometry()
    fileName += "/TPC/conn_iroc.dat";
    ifstream in;
    in.open(fileName.Data(), ios_base::in); // asci file
+   TGeoRotation *rrr = new TGeoRotation();
    for(Int_t i =0;i<86;i++){
       Double_t y = 3.99;
       Double_t x,z,ang;
       in>>x>>z>>ang;
       z-=26.5;
-      TGeoRotation *rrr = new TGeoRotation();
       rrr->RotateY(ang);
-      TGeoCombiTrans *trans = new TGeoCombiTrans("trans",x,y,z,rrr);
-      ibdv->AddNode(connv,i+1,trans);
+      ibdv->AddNode(connv,i+1,new TGeoCombiTrans(x,y,z,rrr));
    }
    in.close();
    // "cap"
@@ -627,6 +626,7 @@ void AliTPCv2::CreateGeometry()
    fileName = gSystem->Getenv("ALICE_ROOT");
    fileName += "/TPC/conn_oroc.dat";
    in.open(fileName.Data(), ios_base::in); // asci file
+   TGeoRotation *rr = new TGeoRotation();
    for(Int_t i =0;i<78;i++){
       Double_t y =3.89;
       Double_t x,z,ang;
@@ -637,14 +637,12 @@ void AliTPCv2::CreateGeometry()
       //
       x1=xr+x; x2=-xr+x; z1=zr+z; z2 = -zr+z;      
       //
-      TGeoRotation *rr = new TGeoRotation();
       rr->RotateY(ang); 
       z1-=54.95;
       z2-=54.95;
-      TGeoCombiTrans *trans1 = new TGeoCombiTrans("trans1",x1,y,z1,rr);
-      TGeoCombiTrans *trans2 = new TGeoCombiTrans("trans2",x2,y,z2,rr);
-      obdv->AddNode(connv,i+1,trans1);
-      obdv->AddNode(connv,i+79,trans2);
+      //
+      obdv->AddNode(connv,i+1,new TGeoCombiTrans(x1,y,z1,rr));
+      obdv->AddNode(connv,i+79,new TGeoCombiTrans(x2,y,z2,rr));
    }
    in.close();
    // cap
@@ -713,12 +711,13 @@ void AliTPCv2::CreateGeometry()
    TGeoVolumeAssembly *wheela = new TGeoVolumeAssembly("TPC_ENDCAP");
    TGeoVolumeAssembly *wheelc = new TGeoVolumeAssembly("TPC_ENDCAP");
    //
+   TGeoRotation *rwh[18]; 
    for(Int_t i =0;i<18;i++){
      Double_t phi = (20.*i);
-     TGeoRotation *r = new TGeoRotation();
-     r->RotateZ(phi);
-     wheela->AddNode(secta,i+1,r);
-     wheelc->AddNode(sectc,i+1,r); 
+     rwh[i]=new TGeoRotation();
+     rwh[i]->RotateZ(phi);
+     wheela->AddNode(secta,i+1,rwh[i]);
+     wheelc->AddNode(sectc,i+1,rwh[i]); 
     
    }
    // wheels in the drift volume!   
@@ -779,12 +778,13 @@ void AliTPCv2::CreateGeometry()
   //
   // SSW as an Assembly of sectors
   //
- TGeoVolumeAssembly *swheel = new TGeoVolumeAssembly("TPC_SSWHEEL");
+  TGeoRotation *rsw[18];
+  TGeoVolumeAssembly *swheel = new TGeoVolumeAssembly("TPC_SSWHEEL");
    for(Int_t i =0;i<18;i++){
      Double_t phi = (20.*i);
-     TGeoRotation *r = new TGeoRotation();
-     r->RotateZ(phi);
-     swheel->AddNode(swhs,i+1,r);   
+     rsw[i] = new TGeoRotation();
+     rsw[i]->RotateZ(phi);
+     swheel->AddNode(swhs,i+1,rsw[i]);   
    }
    v1->AddNode(swheel,1,new TGeoTranslation(0.,0.,-284.6));
    v1->AddNode(swheel,2,new TGeoTranslation(0.,0.,284.6));
