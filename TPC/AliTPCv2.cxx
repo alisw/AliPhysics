@@ -509,14 +509,15 @@ void AliTPCv2::CreateGeometry()
    fileName += "/TPC/conn_iroc.dat";
    ifstream in;
    in.open(fileName.Data(), ios_base::in); // asci file
-   TGeoRotation *rrr = new TGeoRotation();
+   TGeoRotation *rrr[86];
    for(Int_t i =0;i<86;i++){
       Double_t y = 3.99;
       Double_t x,z,ang;
       in>>x>>z>>ang;
       z-=26.5;
-      rrr->RotateY(ang);
-      ibdv->AddNode(connv,i+1,new TGeoCombiTrans(x,y,z,rrr));
+      rrr[i]= new TGeoRotation();
+      rrr[i]->RotateY(ang);
+      ibdv->AddNode(connv,i+1,new TGeoCombiTrans(x,y,z,rrr[i]));
    }
    in.close();
    // "cap"
@@ -626,7 +627,7 @@ void AliTPCv2::CreateGeometry()
    fileName = gSystem->Getenv("ALICE_ROOT");
    fileName += "/TPC/conn_oroc.dat";
    in.open(fileName.Data(), ios_base::in); // asci file
-   TGeoRotation *rr = new TGeoRotation();
+   TGeoRotation *rr[78];
    for(Int_t i =0;i<78;i++){
       Double_t y =3.89;
       Double_t x,z,ang;
@@ -637,12 +638,13 @@ void AliTPCv2::CreateGeometry()
       //
       x1=xr+x; x2=-xr+x; z1=zr+z; z2 = -zr+z;      
       //
-      rr->RotateY(ang); 
+      rr[i]= new TGeoRotation();
+      rr[i]->RotateY(ang); 
       z1-=54.95;
       z2-=54.95;
       //
-      obdv->AddNode(connv,i+1,new TGeoCombiTrans(x1,y,z1,rr));
-      obdv->AddNode(connv,i+79,new TGeoCombiTrans(x2,y,z2,rr));
+      obdv->AddNode(connv,i+1,new TGeoCombiTrans(x1,y,z1,rr[i]));
+      obdv->AddNode(connv,i+79,new TGeoCombiTrans(x2,y,z2,rr[i]));
    }
    in.close();
    // cap
@@ -1147,9 +1149,10 @@ ctr1->RegisterYourself();
  //------------------------------------------------------------------
  TGeoRotation refl("refl",90.,0.,90.,90.,180.,0.);
  TGeoRotation rotrod("rotrod");
- TGeoRotation *rotpos = new TGeoRotation("rotpos");
  //
- TGeoRotation *rotrod1 = new TGeoRotation("rotrod1");
+ TGeoRotation *rotpos[2]; 
+ //
+ TGeoRotation *rotrod1[2]; 
   
  //v9 - drift gas
 
@@ -1165,10 +1168,13 @@ ctr1->RegisterYourself();
     //
     if(i==11){//resistor rod inner
        rotrod.RotateZ(-90.+angle);
-       rotrod1->RotateZ(-90.+angle);
-       *rotpos = refl*rotrod; //rotation+reflection
-	v9->AddNode(rrod,1,new TGeoCombiTrans(x,y, z, rotrod1)); //A
-	v9->AddNode(rrod,2,new TGeoCombiTrans(x,y,-z, rotpos)); //C      
+       rotrod1[0]= new TGeoRotation();
+       rotpos[0]= new TGeoRotation();
+       //
+       rotrod1[0]->RotateZ(-90.+angle);
+       *rotpos[0] = refl*rotrod; //rotation+reflection
+	v9->AddNode(rrod,1,new TGeoCombiTrans(x,y, z, rotrod1[0])); //A
+	v9->AddNode(rrod,2,new TGeoCombiTrans(x,y,-z, rotpos[0])); //C      
     } 
     else { 
       v9->AddNode(tpcmrod,i+1,new TGeoTranslation(x,y,z));//shaft
@@ -1179,16 +1185,15 @@ ctr1->RegisterYourself();
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
     z=126.;
-    rotrod.RotateZ(90.+angle);
-    rotrod1->RotateZ(90.+angle);
-    *rotpos = refl*rotrod;//rotation+reflection
     //
     if(i==3){//resistor rod outer
       rotrod.RotateZ(90.+angle);
-      rotrod1->RotateZ(90.+angle);
-      *rotpos = refl*rotrod;//rotation+reflection
-      v9->AddNode(rrod,3,new TGeoCombiTrans(x,y, z, rotrod1)); //A 
-      v9->AddNode(rrod,4,new TGeoCombiTrans(x,y, -z, rotpos)); //C
+      rotrod1[1]= new TGeoRotation();
+      rotpos[1]= new TGeoRotation();
+      rotrod1[1]->RotateZ(90.+angle);
+      *rotpos[1] = refl*rotrod;//rotation+reflection
+      v9->AddNode(rrod,3,new TGeoCombiTrans(x,y, z, rotrod1[1])); //A 
+      v9->AddNode(rrod,4,new TGeoCombiTrans(x,y, -z, rotpos[1])); //C
     }
     else {
       v9->AddNode(tpcmrod,i+37,new TGeoTranslation(x,y,z));//shaft
