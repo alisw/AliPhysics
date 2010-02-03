@@ -49,6 +49,7 @@
 #include "TGeoCompositeShape.h"
 #include "TGeoPara.h"
 #include "TGeoPhysicalNode.h"
+#include "TGeoHalfSpace.h"
 
 ClassImp(AliTPCv2)
  
@@ -424,8 +425,8 @@ void AliTPCv2::CreateGeometry()
   //
   // central membrane - 2 rings and a mylar membrane - assembly
   //
-  TGeoTube *ih = new TGeoTube(81.05,84.05,0.3);
-  TGeoTube *oh = new TGeoTube(250.,256.,.5);
+  TGeoTube *ih = new TGeoTube(80.1,84.1,0.2);
+  TGeoTube *oh = new TGeoTube(250.,265.,0.2);
   TGeoTube *mem = new TGeoTube(84.05,250,0.01);
   TGeoVolume *ihv = new TGeoVolume("TPC_IHVH",ih,m3);
   TGeoVolume *ohv = new TGeoVolume("TPC_OHVH",oh,m3);
@@ -844,122 +845,359 @@ void AliTPCv2::CreateGeometry()
      }
    }//strips
   //----------------------------------------------------------
-  // TPc Support Rods - MAKROLON
+  // TPC Support Rods - MAKROLON
   //----------------------------------------------------------
   TGeoMedium *m6=gGeoManager->GetMedium("TPC_Makrolon");
   TGeoMedium *m7=gGeoManager->GetMedium("TPC_Cu");
   TGeoMedium *m10 =  gGeoManager->GetMedium("TPC_Alumina");
   TGeoMedium *m11 =  gGeoManager->GetMedium("TPC_Peek");
   TGeoMedium *m12 =  gGeoManager->GetMedium("TPC_Water");
-  // upper and lower rods differ in length!
-  delete [] upar;
-  upar=NULL;
-  gGeoManager->Volume("TPC_Rod","TUBE",m6->GetId(),upar);
-  upar=new Double_t [3];
-  upar[0]=1.8;
-  upar[1]=2.2;
-  
+  TGeoMedium *m13 = gGeoManager->GetMedium("TPC_Brass");
+  // 
+  // tpc rod is an assembly of 10 long parts and 2 short parts
+  // connected with alu rings and plagged on both sides.
+  //
+  //
+// tpc rod long
+//
+  TGeoPcon *rod = new TGeoPcon("rod",0.,360.,6);
+ rod->DefineSection(0,-10.43,1.92,2.08);
+ rod->DefineSection(1,-9.75,1.92,2.08);
+
+ rod->DefineSection(2,-9.75,1.8,2.2);
+ rod->DefineSection(3,9.75,1.8,2.2);
+
+ rod->DefineSection(4,9.75,1.92,2.08);
+ rod->DefineSection(5,10.43,1.92,2.08);
+ //
+ TGeoVolume *mrodl = new TGeoVolume("TPC_mrodl",rod,m6);
+ //
+ // tpc rod short 
+ //
+ TGeoPcon *rod1 = new TGeoPcon("rod1",0.,360.,6);
+ rod1->DefineSection(0,-8.93,1.92,2.08);
+ rod1->DefineSection(1,-8.25,1.92,2.08);
+
+ rod1->DefineSection(2,-8.25,1.8,2.2);
+ rod1->DefineSection(3,8.25,1.8,2.2);
+
+ rod1->DefineSection(4,8.25,1.92,2.08);
+ rod1->DefineSection(5,8.93,1.92,2.08);
+ //
+ TGeoVolume *mrods = new TGeoVolume("TPC_mrods",rod1,m6);
+ //
+ // below is for the resistor rod
+ //
+ // hole for the brass connectors
+ //
+
+ new TGeoTube("hhole",0.,0.3,0.3);
+ //
+ //transformations for holes - initialy they
+ // are placed at x=0 and negative y
+ //
+  TGeoRotation *rhole = new TGeoRotation();
+  rhole->RotateX(90.);
+  TGeoCombiTrans *transf[13];
+  Char_t name[30];
+  for(Int_t i=0;i<13;i++){
+    sprintf(name,"transf%d",i);
+    transf[i]= new TGeoCombiTrans(name,0.,-2.,-9.+i*1.5,rhole);
+    transf[i]->RegisterYourself();
+  }
+  // union expression for holes
+  TString operl("hhole:transf0");
+  for (Int_t i=1;i<13;i++){
+    sprintf(name,"+hhole:transf%d",i);
+    operl.Append(name);   
+  }
+  //
+ TString opers("hhole:transf1");
+  for (Int_t i=2;i<12;i++){
+    sprintf(name,"+hhole:transf%d",i);
+    opers.Append(name);   
+  }
+  //union of holes
+  new TGeoCompositeShape("hlv",operl.Data());
+  new TGeoCompositeShape("hsv",opers.Data());
+  //
+  TGeoCompositeShape *rodl = new TGeoCompositeShape("rodl","rod-hlv");
+  TGeoCompositeShape *rods = new TGeoCompositeShape("rods","rod1-hsv");
+ //rods - volumes - makrolon rods with holes
+  TGeoVolume *rodlv = new TGeoVolume("TPC_rodl",rodl,m6);
+  TGeoVolume *rodsv = new TGeoVolume("TPC_rods",rods,m6);
+  //brass connectors
+ //connectors
+  TGeoTube *bcon = new TGeoTube(0.,0.3,0.3);//connectors
+  TGeoVolume *bconv = new TGeoVolume("TPC_bcon",bcon,m13);
+ //
+ // hooks holding strips
+ //
+ new TGeoBBox("hk1",0.625,0.015,0.75);
+ new TGeoBBox("hk2",0.625,0.015,0.15);
+ TGeoTranslation *tr21 = new TGeoTranslation("tr21",0.,-0.03,-0.6);
+ TGeoTranslation *tr12 = new TGeoTranslation("tr12",0.,-0.03,0.6);
+ tr21->RegisterYourself();
+ tr12->RegisterYourself();
+ 
+ TGeoCompositeShape *hook = new TGeoCompositeShape("hook","hk1+hk2:tr21+hk2:tr12");
+ TGeoVolume *hookv = new TGeoVolume("TPC_hook",hook,m13);
+ //
+ // assembly of the short rod with connectors and hooks
+ //
+ //
+ // short rod
+ //
+  TGeoVolumeAssembly *spart = new TGeoVolumeAssembly("TPC_spart");
+  //
+  spart->AddNode( rodsv,1);
+  for(Int_t i=1;i<12;i++){
+  spart->AddNode(bconv,i,transf[i]);
+  }
+  for(Int_t i =0;i<11;i++){
+    spart->AddNode(hookv,i+1,new TGeoTranslation(0.,-2.3,-7.5+i*1.5));
+  } 
+ //
+ // long rod
+ //
+  TGeoVolumeAssembly *lpart = new TGeoVolumeAssembly("TPC_lpart");
+  //
+  lpart->AddNode( rodlv,1);
+  for(Int_t i=0;i<13;i++){
+  lpart->AddNode(bconv,i,transf[i]);
+  }
+  for(Int_t i =0;i<13;i++){
+    lpart->AddNode(hookv,i+1,new TGeoTranslation(0.,-2.3,-9.+i*1.5));
+  }   
+  //
+  // alu ring
+  //
+  new TGeoTube("ring1",2.1075,2.235,0.53);
+  new TGeoTube("ring2",1.7925,1.89,0.43);
+  new TGeoTube("ring3",1.89,2.1075,0.05);
+  TGeoCompositeShape *ring = new TGeoCompositeShape("ring","ring1+ring2+ring3");
+  TGeoVolume *ringv = new TGeoVolume("TPC_ring",ring,m3);
+  //
+  // rod assembly
+  //
+  TGeoVolumeAssembly *tpcrod = new TGeoVolumeAssembly("TPC_rod");//rrod
+  TGeoVolumeAssembly *tpcmrod = new TGeoVolumeAssembly("TPC_mrod");//makrolon rod  
+  //long pieces
+  for(Int_t i=0;i<11;i++){
+    tpcrod->AddNode(ringv,i+1,new TGeoTranslation(0.,0.,-105.+i*21));
+    tpcmrod->AddNode(ringv,i+12,new TGeoTranslation(0.,0.,-105.+i*21));
+  }
+  for(Int_t i=0;i<10;i++){
+    tpcrod->AddNode(lpart,i+1,new TGeoTranslation(0.,0.,-94.5+i*21));
+    tpcmrod->AddNode(mrodl,i+1,new TGeoTranslation(0.,0.,-94.5+i*21));	    
+  }
+  //
+  // short pieces
+  //
+  tpcrod->AddNode(spart,1,new TGeoTranslation(0.,0.,-114.));
+  tpcrod->AddNode(spart,2,new TGeoTranslation(0.,0.,114.)); 
+  tpcrod->AddNode(ringv,23,new TGeoTranslation(0.,0.,-123.));
+  tpcrod->AddNode(ringv,24,new TGeoTranslation(0.,0.,123.));
+  //
+  tpcmrod->AddNode(mrods,1,new TGeoTranslation(0.,0.,-114.));
+  tpcmrod->AddNode(mrods,2,new TGeoTranslation(0.,0.,114.)); 
+  tpcmrod->AddNode(ringv,25,new TGeoTranslation(0.,0.,-123.));
+  tpcmrod->AddNode(ringv,26,new TGeoTranslation(0.,0.,123.));
+ //
+  // left plaque
+  //
+  TGeoPcon *lp = new TGeoPcon(0.,360.,4);
+  //
+  lp->DefineSection(0,-125.8,1.92,2.235);
+  lp->DefineSection(1,-124.8,1.92,2.235);
+  //
+  lp->DefineSection(2,-124.8,1.92,2.08);
+  lp->DefineSection(3,-123.1,1.92,2.08);
+  //
+  TGeoVolume *lpv1 = new TGeoVolume("TPC_lpv1",lp,m6);
+  TGeoVolume *lpv2 = new TGeoVolume("TPC_lpv2",lp,m6);
+  // left ring
+  TGeoTube *lr = new TGeoTube(2.1075,2.235,0.5);
+  TGeoVolume *lrv = new TGeoVolume("TPC_lrv",lr,m3);
+  //
+  lpv2->AddNode(lrv,1,new TGeoTranslation(0.,0.,-125.3));
+  //
+  tpcrod->AddNode(lpv2,1); 
+  tpcmrod->AddNode(lpv1,1);
+  //
+  //  right plaque
+  //
+  TGeoTube *rp = new TGeoTube(1.92,2.08,2.25);
+  TGeoVolume *rpv = new TGeoVolume("TPC_rpv",rp,m6);
+  tpcrod->AddNode(rpv,1, new TGeoTranslation(0.,0.,125.35)); 
+  tpcmrod->AddNode(rpv,2,new TGeoTranslation(0.,0.,125.35));
+  //
   //
   //HV rods - makrolon + 0.58cm (diameter) Cu
-  TGeoTube *hvr = new TGeoTube(0.,2.2,126.64);
-  TGeoTube *hvc = new TGeoTube(0.,0.29,126.64);
+  TGeoTube *hvr = new TGeoTube(0.,1.465,126.7);
+  TGeoTube *hvc = new TGeoTube(0.,0.29,126.7);
   //
   TGeoVolume *hvrv = new TGeoVolume("TPC_HV_Rod",hvr,m6);
   TGeoVolume *hvcv = new TGeoVolume("TPC_HV_Cable",hvc,m7);
   hvrv->AddNode(hvcv,1);
   //
-  // resistor rods
+  //resistor rod
   //
-  TGeoTube *cri = new TGeoTube(0.,0.45,126.64); //inner 
-  TGeoTube *cro = new TGeoTube(0.,0.45,126.54); //outer 
-  TGeoTube *cwi = new TGeoTube(0.,0.15,126.64); // water inner
-  TGeoTube *cwo = new TGeoTube(0.,0.15,126.54); // water outer
-  //
-  TGeoVolume *criv = new TGeoVolume("TPC_CR_I",cri,m10);
-  TGeoVolume *crov = new TGeoVolume("TPC_CR_O",cro,m10);    
-  TGeoVolume *cwiv = new TGeoVolume("TPC_W_I",cwi,m11);
-  TGeoVolume *cwov = new TGeoVolume("TPC_W_O",cwo,m11);   
+  TGeoTube *cr = new TGeoTube(0.,0.45,126.7);   
+  TGeoTube *cw = new TGeoTube(0.,0.15,126.7);  
+  TGeoVolume *crv = new TGeoVolume("TPC_CR",cr,m10);
+  TGeoVolume *cwv = new TGeoVolume("TPC_W",cw,m11);   
   //
   // ceramic rod with water
   //
-  criv->AddNode(cwiv,1); 
-  crov->AddNode(cwov,1);
+  crv->AddNode(cwv,1);
   //
-  TGeoTube *pri =new TGeoTube(0.2,0.35,126.64); //inner 
-  TGeoTube *pro = new TGeoTube(0.2,0.35,126.54); //outer    
+  //peek rod
   //
-  // peek rod
+  TGeoTube *pr =new TGeoTube(0.2,0.35,126.7);  
+  TGeoVolume *prv = new TGeoVolume("TPC_PR",pr,m12); 
   //
-  TGeoVolume *priv = new TGeoVolume("TPC_PR_I",pri,m12);
-  TGeoVolume *prov = new TGeoVolume("TPC_PR_O",pro,m12); 
+  // copper plates with connectors
   //
-  // resistor rods assembly
+  new TGeoTube("tub",0.,1.7,0.025);
   //
-   TGeoRotation* rotr = new TGeoRotation("rotr");
-   rotr->RotateZ(-21.);
+  // half space - points on the plane and a normal vector
   //
-  TGeoTube *rri = new TGeoTube(1.8,2.2,126.64);//inner
-  TGeoTube *rro = new TGeoTube(1.8,2.2,126.54);//inner
+  Double_t n[3],p[3];
+  Double_t slope = TMath::Tan(22.*TMath::DegToRad());
+  Double_t intp = 1.245;
   //
-  TGeoVolume *rriv = new TGeoVolume("TPC_RR_I",rri,m6);
-  TGeoVolume *rrov = new TGeoVolume("TPC_RR_O",rro,m6);  
+  Double_t b = slope*slope+1.;
+  p[0]=intp*slope/b;
+  p[1]=-intp/b;
+  p[2]=0.;
   //
-  TGeoVolumeAssembly *rrin = new TGeoVolumeAssembly("TPC_RROD_I");
-  TGeoVolumeAssembly *rrou = new TGeoVolumeAssembly("TPC_RROD_O");
-  rrin->AddNode(rriv,1);
-  rrin->AddNode(criv,1,new TGeoTranslation(0.5,0.866, 0.));
-  rrin->AddNode(criv,2,new TGeoTranslation(0.5,-0.866, 0.)); 
-  rrin->AddNode(priv,1); 
+  n[0]=-p[0];
+  n[1]=-p[1];
+  n[2]=0.;
+  Double_t norm;
+  norm=TMath::Sqrt(n[0]*n[0]+n[1]*n[1]);
+  n[0] /= norm;
+  n[1] /=norm;
   //
-  rrou->AddNode(rrov,1);
-  rrou->AddNode(crov,1,new TGeoTranslation(0.5,0.866, 0.));
-  rrou->AddNode(crov,2,new TGeoTranslation(0.5,-0.866, 0.)); 
-  rrou->AddNode(prov,1); 
+  new TGeoHalfSpace("sp1",p,n);
   //
+  slope = -slope; 
+  //
+  p[0]=intp*slope/b;
+  p[1]=-intp/b;
+  //
+  n[0]=-p[0];
+  n[1]=-p[1];
+  norm=TMath::Sqrt(n[0]*n[0]+n[1]*n[1]);
+  n[0] /= norm;
+  n[1] /=norm;
+  //
+  new TGeoHalfSpace("sp2",p,n);
+  // holes for rods
+ //holes
+ new TGeoTube("h1",0.,0.5,0.025);
+ new TGeoTube("h2",0.,0.35,0.025);
+ //translations:
+ TGeoTranslation *ttr11 = new TGeoTranslation("ttr11",-0.866,0.5,0.);
+ TGeoTranslation *ttr22 = new TGeoTranslation("ttr22",0.866,0.5,0.);
+ ttr11->RegisterYourself();
+ ttr22->RegisterYourself();
+ // elastic connector
+ new TGeoBBox("elcon",0.72,0.005,0.3);
+ TGeoRotation *crr1 = new TGeoRotation();
+ crr1->RotateZ(-22.);
+TGeoCombiTrans *ctr1 = new TGeoCombiTrans("ctr1",-0.36011, -1.09951,-0.325,crr1);
+ctr1->RegisterYourself();
+ TGeoCompositeShape *cs1 = new TGeoCompositeShape("cs1",
+"(((((tub-h1:ttr11)-h1:ttr22)-sp1)-sp2)-h2)+elcon:ctr1");
+ //
+ TGeoVolume *csvv = new TGeoVolume("TPC_RR_CU",cs1,m7);
+ //
+ // resistor rod assembly 2 ceramic rods, peak rod, Cu plates
+ // and resistors
+ //
+ TGeoVolumeAssembly *rrod = new TGeoVolumeAssembly("TPC_RROD");
+ // rods
+ rrod->AddNode(crv,1,ttr11);
+ rrod->AddNode(crv,2,ttr22); 
+ rrod->AddNode(prv,1);
+ //Cu plates
+ for(Int_t i=0;i<165;i++){
+   rrod->AddNode(csvv,i+1,new TGeoTranslation(0.,0.,-122.675+i*1.5));
+ }
+ //resistors
+ TGeoTube *res = new TGeoTube(0.,0.15,0.5);
+ TGeoVolume *resv = new TGeoVolume("TPC_RES",res,m10);
+ TGeoVolumeAssembly *ress = new TGeoVolumeAssembly("TPC_RES_CH");
+ ress->AddNode(resv,1,new TGeoTranslation(0.2,0.,0.));
+ ress->AddNode(resv,2,new TGeoTranslation(-0.2,0.,0.));
+ //
+ TGeoRotation *crr2 = new TGeoRotation();
+ crr2->RotateY(30.);
+ TGeoRotation *crr3 = new TGeoRotation();
+ crr3->RotateY(-30.); 
+ //
+ for(Int_t i=0;i<164;i+=2){
+   rrod->AddNode(ress,i+1, new TGeoCombiTrans(0.,1.2,-121.925+i*1.5,crr2));
+   rrod->AddNode(ress,i+2, new TGeoCombiTrans(0.,1.2,-121.925+(i+1)*1.5,crr3));
+ }
+ rrod->AddNode(tpcrod,1,new TGeoCombiTrans(0.,0.,0.9,crr1));
+
+ //------------------------------------------------------------------
+ TGeoRotation refl("refl",90.,0.,90.,90.,180.,0.);
+ TGeoRotation rotrod("rotrod");
+ TGeoRotation *rotpos = new TGeoRotation("rotpos");
+ //
+ TGeoRotation *rotrod1 = new TGeoRotation("rotrod1");
+  
+ //v9 - drift gas
+
   for(Int_t i=0;i<18;i++){
     Double_t angle,x,y;
     Double_t z,r; 
     angle=TMath::DegToRad()*20.*(Double_t)i;
+    //inner rods
     r=81.5;
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
-    upar[2]=126.64; //lower
-    z= 126.96;
+    z = 126.;
     //
-    if(i==3){
-	v9->AddNode(rrin,1,new TGeoCombiTrans(x,y, z, rotr)); //A
-	v9->AddNode(rrin,2,new TGeoCombiTrans(x,y,-z, rotr)); //C      
+    if(i==11){//resistor rod inner
+       rotrod.RotateZ(-90.+angle);
+       rotrod1->RotateZ(-90.+angle);
+       *rotpos = refl*rotrod; //rotation+reflection
+	v9->AddNode(rrod,1,new TGeoCombiTrans(x,y, z, rotrod1)); //A
+	v9->AddNode(rrod,2,new TGeoCombiTrans(x,y,-z, rotpos)); //C      
     } 
     else { 
-      gGeoManager->Node("TPC_Rod",i+1,"TPC_Drift",x,y,z,0,kTRUE,upar,3);//shaft
-      gGeoManager->Node("TPC_Rod",i+19,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);//muon
+      v9->AddNode(tpcmrod,i+1,new TGeoTranslation(x,y,z));//shaft
+      v9->AddNode(tpcmrod,i+19,new TGeoCombiTrans(x,y,-z,ref));//muon
     }
-   
-
-    //
+    // outer rods
     r=254.25;
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
-    upar[2]=126.54; //upper
-    z=127.06;
+    z=126.;
+    rotrod.RotateZ(90.+angle);
+    rotrod1->RotateZ(90.+angle);
+    *rotpos = refl*rotrod;//rotation+reflection
     //
+    if(i==3){//resistor rod outer
+      rotrod.RotateZ(90.+angle);
+      rotrod1->RotateZ(90.+angle);
+      *rotpos = refl*rotrod;//rotation+reflection
+      v9->AddNode(rrod,3,new TGeoCombiTrans(x,y, z, rotrod1)); //A 
+      v9->AddNode(rrod,4,new TGeoCombiTrans(x,y, -z, rotpos)); //C
+    }
+    else {
+      v9->AddNode(tpcmrod,i+37,new TGeoTranslation(x,y,z));//shaft
+      v9->AddNode(tpcmrod,i+55,new TGeoCombiTrans(x,y,-z,ref));//muon      
+    }
     if(i==15){
-      //v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z));//A-side only
-        v9->AddNode(hvrv,1,new TGeoTranslation(x,y,127.14));//A-side only
-	gGeoManager->Node("TPC_Rod",i+55,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
+      v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z)); //hv->A-side only      
     }
-    else if(i==11){
-	v9->AddNode(rrou,1,new TGeoCombiTrans(x,y, z, rotr));  //A
-	v9->AddNode(rrou,2,new TGeoCombiTrans(x,y,-z, rotr));  //C
-    }
-    else{
-    //
-      gGeoManager->Node("TPC_Rod",i+37,"TPC_Drift",x,y,z,0,kTRUE,upar,3);
-      gGeoManager->Node("TPC_Rod",i+55,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
-    }
-  }
-
-  delete [] upar;
+  } //end of rods positioning
 
   TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
   alice->AddNode(v1,1);  

@@ -466,7 +466,7 @@ void AliTPC::CreateMaterials()
   wmat[2]=0.443;
   wmat[3]=0.3;
 
-  density=1.163;
+  density=1.725;
 
   AliMixture(21, "Prepreg3",amat,zmat,density,4,wmat);
 
@@ -518,6 +518,24 @@ void AliTPC::CreateMaterials()
 
   AliMaterial(25,"Cu",amat[0],zmat[0],density,999.,999.);
 
+  // brass
+
+  amat[0] = 63.546;
+  zmat[0] = 29.;
+  //
+  amat[1]= 65.409;
+  zmat[1]= 30.;
+  //
+  wmat[0]= 0.6;
+  wmat[1]= 0.4;
+
+  //
+  density = 8.23;
+  
+ 
+  //
+  AliMixture(33,"Brass",amat,zmat,density,2,wmat);
+  
   // Epoxy - C14 H20 O3
  
   amat[0]=12.011;
@@ -655,7 +673,8 @@ void AliTPC::CreateMaterials()
   AliMedium(18,"Steel",29,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001); 
   AliMedium(19,"Peek",30,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
   AliMedium(21,"Alumina",31,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);    
-  AliMedium(22,"Water",32,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);  
+  AliMedium(22,"Water",32,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(23,"Brass",33,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);  
 }
 
 void AliTPC::GenerNoise(Int_t tablesize)
