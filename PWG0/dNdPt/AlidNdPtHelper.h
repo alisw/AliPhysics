@@ -12,6 +12,7 @@
 #include <THnSparse.h>
 #include "AliTriggerAnalysis.h"
 
+class TF1;
 class TH1F;
 class TH2F;
 class TParticle;
