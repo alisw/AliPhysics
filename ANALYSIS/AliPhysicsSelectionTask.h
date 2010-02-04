@@ -25,7 +25,7 @@ class AliPhysicsSelectionTask : public AliAnalysisTaskSE {
     void SetOption(const char* opt) { fOption = opt; }
     
     void SetPhysicsSelection(AliPhysicsSelection* physicsSelection) { fPhysicsSelection = physicsSelection; }
-    AliPhysicsSelection* GetPhysicsSelection() const {return fPhysicsSelection; }
+    AliPhysicsSelection* GetPhysicsSelection() const { return fPhysicsSelection; }
 
  protected:
     TList* fOutput;                  //! list send on output slot 1

@@ -29,6 +29,7 @@
 #include <TIterator.h>
 #include "TParameter.h"
 #include <TMap.h>
+#include <TRandom.h>
 
 #include <AliTriggerAnalysis.h>
 
@@ -45,6 +46,7 @@ ClassImp(AliTriggerAnalysis)
 
 AliTriggerAnalysis::AliTriggerAnalysis() :
   fSPDGFOThreshold(2),
+  fSPDGFOEfficiency(0),
   fV0TimeOffset(0),
   fFMDLowCut(0.2),
   fFMDHitCut(0.5),
@@ -175,6 +177,8 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kSPDGFOBits : str = "SPD GFO Bits"; break;
     case kV0A : str = "V0 A BB"; break;
     case kV0C : str = "V0 C BB"; break;
+    case kV0OR : str = "V0 OR BB"; break;
+    case kV0AND : str = "V0 AND BB"; break;
     case kV0ABG : str = "V0 A BG"; break;
     case kV0CBG : str = "V0 C BG"; break;
     case kZDC : str = "ZDC"; break;
@@ -183,6 +187,7 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kFMDA : str = "FMD A"; break;
     case kFMDC : str = "FMD C"; break;
     case kFPANY : str = "SPD GFO | V0 | ZDC | FMD"; break;
+    case kNSD1 : str = "NSD1"; break;
     default: str = ""; break;
   }
    
@@ -322,6 +327,18 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
         return kTRUE;
       break;
     }
+    case kV0OR:
+    {
+      if (V0Trigger(aEsd, kASide) == kV0BB || V0Trigger(aEsd, kCSide) == kV0BB)
+        return kTRUE;
+      break;
+    }
+    case kV0AND:
+    {
+      if (V0Trigger(aEsd, kASide) == kV0BB && V0Trigger(aEsd, kCSide) == kV0BB)
+        return kTRUE;
+      break;
+    }
     case kV0ABG:
     {
       if (V0Trigger(aEsd, kASide) == kV0BG)
@@ -369,6 +386,12 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
       if (SPDGFOTrigger(aEsd, 0) || V0Trigger(aEsd, kASide) == kV0BB || V0Trigger(aEsd, kCSide) == kV0BB || ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide) || FMDTrigger(aEsd, kASide) || FMDTrigger(aEsd, kCSide))
         return kTRUE;
       break;
+    }
+    case kNSD1:
+    {
+      if (SPDFiredChips(aEsd, 0) >= 5 || (V0Trigger(aEsd, kASide) == kV0BB && V0Trigger(aEsd, kCSide) == kV0BB))
+        return kTRUE;
+       break;
     }
     default:
     {
@@ -528,12 +551,21 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, B
   {
     Int_t nChips = 0;
     for (Int_t i=0; i<1200; i++)
+    {
       if (mult->TestFastOrFiredChips(i) == kTRUE)
       {
+        // efficiency simulation (if enabled)
+        if (fSPDGFOEfficiency)
+        {
+          if (gRandom->Uniform() > fSPDGFOEfficiency->GetBinContent(i+1))
+            continue;
+        }
+        
         nChips++;
         if (fillHists)
           fHistFiredBitsSPD->Fill(i);
       }
+    }
     return nChips;
   }
   
@@ -555,7 +587,11 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
 {
   // Returns the V0 trigger decision in V0A | V0C
   //
-  // Based on algorithm by Cvetan Cheshkov
+  // Returns kV0Fake if the calculated average time is in a window where neither BB nor BG is expected. 
+  // The rate of such triggers can be used to estimate the background. Note that the rate has to be 
+  // rescaled with the size of the windows (numerical values see below in the code)
+  //
+  // Based on an algorithm by Cvetan Cheshkov
   
   AliESDVZERO* esdV0 = aEsd->GetVZEROData();
   if (!esdV0)
@@ -630,6 +666,8 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
       return kV0BB;
     if (time > 54 && time < 57.5) 
       return kV0BG;
+    if (time > 57.5 && time < 72)
+      return kV0Fake;
   }
   
   if (side == kCSide)
@@ -638,6 +676,8 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
       return kV0BB;
     if (time > 69.5 && time < 73)
       return kV0BG; 
+    if (time > 55 && time < 69.5)
+      return kV0Fake;
   }
   
   return kV0Empty;
@@ -869,6 +909,9 @@ void AliTriggerAnalysis::SaveHistograms() const
   fHistFMDC->Write();
   fHistFMDSingle->Write();
   fHistFMDSum->Write();
+  
+  if (fSPDGFOEfficiency)
+    fSPDGFOEfficiency->Write("fSPDGFOEfficiency");
   
   fTriggerClasses->Write("fTriggerClasses", TObject::kSingleKey);
 }

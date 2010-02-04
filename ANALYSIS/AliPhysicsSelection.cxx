@@ -233,8 +233,12 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       // replay CINT1B hardware trigger
       // TODO this has to depend on the actual hardware trigger (and that depends on the run...)
       Int_t fastORHW = triggerAnalysis->SPDFiredChips(aEsd, 1); // SPD number of chips from trigger bits (!)
-      Bool_t v0A = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0A);
-      Bool_t v0C = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0C);
+      
+      AliTriggerAnalysis::V0Decision v0ADecision = triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kASide);
+      AliTriggerAnalysis::V0Decision v0CDecision = triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kCSide);
+      
+      Bool_t v0A = (v0ADecision == AliTriggerAnalysis::kV0BB);
+      Bool_t v0C = (v0CDecision == AliTriggerAnalysis::kV0BB);
         
       if (fastORHW == 0 && !v0A && !v0C)
       {
@@ -246,8 +250,8 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
     
       // offline trigger
       Int_t fastOROffline = triggerAnalysis->SPDFiredChips(aEsd, 0); // SPD number of chips from clusters (!)
-      Bool_t v0ABG = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0ABG);
-      Bool_t v0CBG = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0CBG);
+      Bool_t v0ABG = (v0ADecision == AliTriggerAnalysis::kV0BG);
+      Bool_t v0CBG = (v0CDecision == AliTriggerAnalysis::kV0BG);
       Bool_t v0BG = v0ABG || v0CBG;
     
       if (fastOROffline > 0)
@@ -264,34 +268,39 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       if (v0CBG)
         fHistStatistics->Fill(8, i);
         
-      if (fastOROffline > 1 && !v0BG)
+      if (v0ADecision == AliTriggerAnalysis::kV0Fake)
         fHistStatistics->Fill(9, i);
+      if (v0CDecision == AliTriggerAnalysis::kV0Fake)
+        fHistStatistics->Fill(10, i);
+      
+      if (fastOROffline > 1 && !v0BG)
+        fHistStatistics->Fill(11, i);
         
       if ((fastOROffline > 0 || v0A || v0C) && !v0BG)
-        fHistStatistics->Fill(10, i);
+        fHistStatistics->Fill(12, i);
     
       if (fastOROffline > 0 && (v0A || v0C) && !v0BG)
-        fHistStatistics->Fill(11, i);
+        fHistStatistics->Fill(13, i);
   
       if (v0A && v0C && !v0BG)
-        fHistStatistics->Fill(12, i);
-        
+        fHistStatistics->Fill(14, i);
+      
       if (fastOROffline > 1 || (fastOROffline > 0 && (v0A || v0C)) || (v0A && v0C))
       {
         if (!v0BG)
         {
-          fHistStatistics->Fill(13, i);
+          fHistStatistics->Fill(15, i);
       
           if (fBackgroundIdentification && !fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd)))
           {
             AliDebug(AliLog::kDebug, "Rejecting event because of background identification");
-            fHistStatistics->Fill(14, i);
+            fHistStatistics->Fill(16, i);
           }
           else
           {
             AliDebug(AliLog::kDebug, "Accepted event for histograms");
             
-            fHistStatistics->Fill(15, i);
+            fHistStatistics->Fill(17, i);
             fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i);
             if (i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection)
               accept = kTRUE;
@@ -392,7 +401,7 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
     if (fHistStatistics)
       delete fHistStatistics;
   
-    fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 15, 0.5, 15.5, count, -0.5, -0.5 + count);
+    fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 17, 0.5, 17.5, count, -0.5, -0.5 + count);
       
     Int_t n = 1;
     fHistStatistics->GetXaxis()->SetBinLabel(n++, "Trigger class");
@@ -403,6 +412,8 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
     fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C");
     fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A BG");
     fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C BG");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A Fake");
+    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C Fake");
     fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2 &!V0 BG");
     fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 1 | V0A | V0C) & !V0 BG");
     fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1 & (V0A | V0C) & !V0 BG");

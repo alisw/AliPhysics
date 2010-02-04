@@ -24,9 +24,9 @@ class TMap;
 class AliTriggerAnalysis : public TObject
 {
   public:
-    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
+    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
-    enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG };
+    enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
     
     AliTriggerAnalysis();
     virtual ~AliTriggerAnalysis();
@@ -60,6 +60,7 @@ class AliTriggerAnalysis : public TObject
     void FillTriggerClasses(const AliESDEvent* aEsd);
     
     void SetSPDGFOThreshhold(Int_t t) { fSPDGFOThreshold = t; }
+    void SetSPDGFOEfficiency(TH1* hist) { fSPDGFOEfficiency = hist; }
     void SetV0TimeOffset(Float_t offset) { fV0TimeOffset = offset; }
     void SetFMDThreshold(Float_t low, Float_t hit) { fFMDLowCut = low; fFMDHitCut = hit; }
     
@@ -85,6 +86,8 @@ class AliTriggerAnalysis : public TObject
     Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE);
 
     Int_t fSPDGFOThreshold;         // number of chips to accept a SPD GF0 trigger
+    TH1* fSPDGFOEfficiency;         // SPD FASTOR efficiency - is applied in SPDFiredChips. Histogram contains efficiency as function of chip number (bin 1..400: first layer; 401..1200: second layer)
+    
     Float_t fV0TimeOffset;          // time offset applied to the times read from the V0 (in ns)
  
     Float_t fFMDLowCut;		    // 
@@ -104,7 +107,7 @@ class AliTriggerAnalysis : public TObject
     
     Bool_t fMC;              // flag if MC is analyzed
 
-    ClassDef(AliTriggerAnalysis, 6)
+    ClassDef(AliTriggerAnalysis, 7)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
