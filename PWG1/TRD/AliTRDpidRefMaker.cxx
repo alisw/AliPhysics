@@ -176,7 +176,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     Double32_t *infoPID = infoESD->GetSliceIter();
     Int_t n = infoESD->GetNSlices() - AliTRDgeometry::kNlayer;
     Double32_t *p = &infoPID[n];
-
+    AliDebug(4, Form("n[%d] p[GeV/c]{%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f}", n, p[0], p[1], p[2], p[3], p[4], p[5]));
 
     ULong_t status = track->GetStatus();
     if(!(status&AliESDtrack::kTPCout)) continue;

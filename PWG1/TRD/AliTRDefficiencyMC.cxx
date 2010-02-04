@@ -27,6 +27,7 @@
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TPad.h>
+#include <TLegend.h>
 #include <TProfile.h>
 #include <TMath.h>
 #include <TDatabasePDG.h>
@@ -218,34 +219,59 @@ Bool_t AliTRDefficiencyMC::GetRefFigure(Int_t ifig){
     (dynamic_cast<TH1 *>(fContainer->At(ifig)))->Draw("e1");
     return kTRUE;
   }
+  TH1 *h(NULL); 
+  TLegend *leg=new TLegend(.65, .12, .85, .3);
+  leg->SetHeader("Charge");
+  leg->SetBorderSize(1);leg->SetFillColor(kWhite);
   switch(ifig){
   case 2:
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram)))->Draw("e1");
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+1)))->Draw("e1same");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram));
+    h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+1));
+    h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
+    leg->Draw();
     break;
   case 3:
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+2)))->Draw("e1");
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+3)))->Draw("e1same");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+2));
+    h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+3));
+    h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
+    leg->Draw();
     break;
   case 4:
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+4)))->Draw("e1");
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+5)))->Draw("e1same");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+4));
+    h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+5));
+    h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
+    leg->Draw();
     break;
   case 5:
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+6)))->Draw("e1");
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+7)))->Draw("e1same");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+6));
+    h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+7));
+    h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
+    leg->Draw();
     break;
   case 6:
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+8)))->Draw("e1");
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+9)))->Draw("e1same");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+8));
+    h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+9));
+    h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
+    leg->Draw();
     break;
   case 7:
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+10)))->Draw("e1");
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+11)))->Draw("e1same");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+10));
+    h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+11));
+    h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
+    leg->Draw();
     break;
   case 8:
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+12)))->Draw("e1");
-    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+13)))->Draw("e1same");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+12));
+    h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
+    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+13));
+    h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
+    leg->Draw();
     break;
   }
   return kTRUE;
@@ -287,7 +313,7 @@ TObjArray *AliTRDefficiencyMC::Histos(){
     for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
       fContainer->AddAt(h=new TProfile(
         Form("hEff_%s%c", AliPID::ParticleShortName(ispec), sign[isign]), 
-        Form("Tracking Efficiency for %s%c", AliPID::ParticleName(ispec), sign[isign]), nbins, xbins), 
+        Form("Tracking Efficiency for %s", AliPID::ParticleName(ispec)), nbins, xbins), 
         kEfficiencySpeciesHistogram+ispec*2+isign);
       h->SetMarkerStyle(marker[isign][ispec]);
       h->SetLineColor(AliTRDCalPID::GetPartColor(ispec));
@@ -298,7 +324,7 @@ TObjArray *AliTRDefficiencyMC::Histos(){
       h->GetYaxis()->SetRangeUser(0.2, 1.1);
     }
 
-    fContainer->AddAt(h=new TProfile(Form("hEff_PID%c", sign[isign]), Form("Tracking Efficiency no PID %c", sign[isign]), nbins, xbins), kEfficiencySpeciesHistogram+AliPID::kSPECIES*2+isign);
+    fContainer->AddAt(h=new TProfile(Form("hEff_PID%c", sign[isign]), "Tracking Efficiency no PID", nbins, xbins), kEfficiencySpeciesHistogram+AliPID::kSPECIES*2+isign);
     h->SetMarkerStyle(marker[isign][AliPID::kSPECIES]);
     h->SetMarkerColor(kBlack);h->SetLineColor(kBlack);
     h->GetXaxis()->SetTitle("p [GeV/c]");
