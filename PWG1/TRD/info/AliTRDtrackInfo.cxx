@@ -372,7 +372,7 @@ Int_t AliTRDtrackInfo::GetNTracklets() const
   // Return the number of tracklets
   //
 
-  if(!fTRDtrack) return NULL;
+  if(!fTRDtrack) return 0;
   return fTRDtrack->GetNumberOfTracklets();
 }
 
