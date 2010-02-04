@@ -72,16 +72,19 @@ public:
     Int_t   GetPDG() const {return fPDG;}
     Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, UChar_t &s) const;
     AliTrackReference const* GetTrackRef(Int_t ref=0) const {return fTrackRefs[ref];}
+    static Int_t GetKalmanStep() {return fgKalmanStep;}
     void    PropagateKalman(
         TVectorD *dx, TVectorD *dy, TVectorD *dz, 
-        TVectorD *dpt, TVectorD *c, Double_t step = 2.) const;
-
+        TVectorD *pt, TVectorD *dpt, TVectorD *c) const;
+    static void SetKalmanStep(Double_t s) {fgKalmanStep = s;}
   protected:
-    Int_t   fLabel;             // MC label  
-    Int_t   fPDG;               // particle code
-    Int_t   fNTrackRefs;    	  // number of track refs
+    Int_t   fLabel;               // MC label  
+    Int_t   fPDG;                 // particle code
+    Int_t   fNTrackRefs;    	    // number of track refs
+    static Double_t fgKalmanStep; // Kalman step propagation
     AliTrackReference  *fTrackRefs[kNTrackRefs];	// track refs array
-    ClassDef(AliMCinfo, 1)      // MC info related to TRD
+
+    ClassDef(AliMCinfo, 2)      // MC info related to TRD
   };
 
   AliTRDtrackInfo();

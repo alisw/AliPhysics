@@ -638,13 +638,14 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   Double_t covR[7]/*, cov[3]*/;
 
   if(DebugLevel()>=1){
-    TVectorD dX(12), dY(12), dZ(12), dPt(12), cCOV(12*15);
-    fkMC->PropagateKalman(&dX, &dY, &dZ, &dPt, &cCOV);
+    TVectorD dX(12), dY(12), dZ(12), Pt(12), dPt(12), cCOV(12*15);
+    fkMC->PropagateKalman(&dX, &dY, &dZ, &Pt, &dPt, &cCOV);
     (*DebugStream()) << "MCkalman"
       << "pdg=" << pdg
       << "dx="  << &dX
       << "dy="  << &dY
       << "dz="  << &dZ
+      << "pt="  << &Pt
       << "dpt=" << &dPt
       << "cov=" << &cCOV
       << "\n";

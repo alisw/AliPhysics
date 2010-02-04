@@ -41,6 +41,7 @@
 ClassImp(AliTRDtrackInfo)
 ClassImp(AliTRDtrackInfo::AliMCinfo)
 ClassImp(AliTRDtrackInfo::AliESDinfo)
+Double_t AliTRDtrackInfo::AliMCinfo::fgKalmanStep = 2.;
 
 //___________________________________________________
 AliTRDtrackInfo::AliTRDtrackInfo():
@@ -445,7 +446,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
 }
 
 //___________________________________________________
-void AliTRDtrackInfo::AliMCinfo::PropagateKalman(TVectorD *dx, TVectorD *dy, TVectorD *dz, TVectorD *dpt, TVectorD *c, Double_t step) const
+void AliTRDtrackInfo::AliMCinfo::PropagateKalman(TVectorD *dx, TVectorD *dy, TVectorD *dz, TVectorD *pt, TVectorD *dpt, TVectorD *c) const
 {
 // Propagate Kalman from the first TRD track reference to 
 // last one and save residuals in the y, z and pt.
@@ -487,12 +488,13 @@ void AliTRDtrackInfo::AliMCinfo::PropagateKalman(TVectorD *dx, TVectorD *dy, TVe
   const Double_t *cc(NULL);
   for(Int_t ip=0; itr<fNTrackRefs; itr++){
     if(!(tr = fTrackRefs[itr])) continue;
-    if(!AliTRDtrackerV1::PropagateToX(tt, tr->LocalX(), step)) continue;
+    if(!AliTRDtrackerV1::PropagateToX(tt, tr->LocalX(), fgKalmanStep)) continue;
 
     //if(update) ...
     (*dx)[ip]  = tt.GetX() - x0;
     (*dy)[ip]  = tt.GetY() - tr->LocalY();
     (*dz)[ip]  = tt.GetZ() - tr->Z();
+    (*pt)[ip]  = tr->Pt();
     (*dpt)[ip] = tt.Pt()- tr->Pt();
     cc = tt.GetCovariance();
     c->Use(ip*15, (ip+1)*15, cc);
