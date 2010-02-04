@@ -3,7 +3,7 @@
 
 SRCS:=  AliTRIPreprocessor.cxx  AliTrigConnector.cxx AliTrigDevice.cxx \
         AliTrigDigitalCircuit.cxx AliTrigEvent.cxx AliTrigScheduledEntry.cxx \
-        AliTrigScheduler.cxx
+        AliTrigScheduler.cxx AliTrigModule.cxx
 CINTHDRS:= $(SRCS:.cxx=.h)
 
 HDRS:= $(SRCS:.cxx=.h)

@@ -77,7 +77,7 @@ private:
 class AliTrigEventWithObject : public AliTrigEvent {
 
 public:
-  AliTrigEventWithObject() : AliTrigEvent(), fValue(0) {}
+  AliTrigEventWithObject() : AliTrigEvent(), fValue(0), fType() {}
   AliTrigEventWithObject(const char *classname);
   AliTrigEventWithObject(const AliTrigEventWithObject &other);
   virtual ~AliTrigEventWithObject() {}
