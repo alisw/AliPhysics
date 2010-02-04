@@ -131,7 +131,7 @@ void AliTPCAnalysisTaskcalib::CreateOutputObjects() {
   //
   //
   //
-  OpenFile(0, "RECREATE");
+  //OpenFile(0, "RECREATE");
 }
 void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
   //
