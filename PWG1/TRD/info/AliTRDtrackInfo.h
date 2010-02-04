@@ -72,7 +72,7 @@ public:
     Int_t   GetPDG() const {return fPDG;}
     Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, UChar_t &s) const;
     AliTrackReference const* GetTrackRef(Int_t ref=0) const {return fTrackRefs[ref];}
-    static Int_t GetKalmanStep() {return fgKalmanStep;}
+    static Double_t GetKalmanStep() {return fgKalmanStep;}
     void    PropagateKalman(
         TVectorD *dx, TVectorD *dy, TVectorD *dz, 
         TVectorD *pt, TVectorD *dpt, TVectorD *c) const;
