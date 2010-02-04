@@ -38,7 +38,7 @@ public:
     ,kNDetectors = 3//TPC, TOF, ITS (TOF and ITS not implemented yet)
     ,kNDaughters = 2//for positive and negative track
     ,kNDecays = 4//number of decay types considered for reference data (conversions, K0s, Lambda, Anti-Lambda)  
-    ,kNMomBins = 2//number of different momentum bins to consider for different cuts; first example: below/above 2.5 GeV -> to be refined!
+    ,kNMomBins = 2//number of different momentum bins to consider for different cuts; first example: below /above 2.5 GeV-> to be refined!
   };
 
   enum EDaughter{
@@ -83,6 +83,7 @@ public:
   void SetRadius(Float_t SRadius){fRadius = SRadius;}
   void SetInvMass(Int_t iDecay, Float_t SInvMass){fInvMass[iDecay] = SInvMass;}
   void SetDetPID(Int_t iDaughter, Int_t iDetector, Int_t iSpecies, Float_t SDetPID){fDetPID[iDaughter][iDetector][iSpecies] = SDetPID;}
+  void SetComPID(Int_t iDaughter, Int_t iSpecies, Float_t SComPID){fComPID[iDaughter][iSpecies] = SComPID;}
 
 //____________________________________________________________
  //Set cut values:
@@ -97,10 +98,13 @@ public:
  void SetDownRadius(Int_t iDecay, Float_t DownRadius){fDownRadius[iDecay] = DownRadius;}
  void SetUpInvMass(Int_t iDecay, Int_t iMomentum, Double_t UpInvMass){fUpInvMass[iDecay][iMomentum] = UpInvMass;}
  void SetDownInvMass(Int_t iDecay, Double_t DownInvMass){fDownInvMass[iDecay] = DownInvMass;}
- void SetDownTPCPIDneg(Int_t iDecay, Double_t DownTPCPIDneg){fDownTPCPIDneg[iDecay] = DownTPCPIDneg;}
- void SetDownTPCPIDpos(Int_t iDecay, Double_t DownTPCPIDpos){fDownTPCPIDpos[iDecay] = DownTPCPIDpos;}
+ void SetDownTPCPIDneg(Int_t iPart, Double_t DownTPCPIDneg){fDownTPCPIDneg[iPart] = DownTPCPIDneg;}
+ void SetDownTPCPIDpos(Int_t iPart, Double_t DownTPCPIDpos){fDownTPCPIDpos[iPart] = DownTPCPIDpos;}
+ void SetDownComPIDneg(Int_t iPart, Double_t DownComPIDneg){fDownComPIDneg[iPart] = DownComPIDneg;}
+ void SetDownComPIDpos(Int_t iPart, Double_t DownComPIDpos){fDownComPIDpos[iPart] = DownComPIDpos;}
+ void SetDownComPIDnegPart(Int_t iPart, Double_t DownComPIDnegPart){fDownComPIDnegPart[iPart] = DownComPIDnegPart;}
+ void SetDownComPIDposPart(Int_t iPart, Double_t DownComPIDposPart){fDownComPIDposPart[iPart] = DownComPIDposPart;}
 
- 
 
 private:
   AliTRDv0Info(const AliTRDv0Info&);
@@ -108,6 +112,7 @@ private:
 
   void GetESDv0Info(AliESDv0 *esdv0);//gets most of the variables below
   void GetDetectorPID();//operating with likelihood values of different detectors
+  void CombinePID();//Bayesian combination of TPC and TOF likelihoods
   Int_t Quality(AliESDv0 * const esdv0);//checks for track/vertex quality criteria
   Double_t InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0) const;//invariant mass of mother
   Float_t PsiPair(AliESDv0 *esdv0);//angle between daughters in plane perpendicular to magnetic field (characteristically around zero for conversions)
@@ -127,6 +132,7 @@ private:
   Float_t fPplus[2*kNlayer];    // momentum and variance for the positive daughter  
   Float_t fPminus[2*kNlayer];   // momentum and variance for the negative daughter  
   Double_t fDetPID[kNDaughters][kNDetectors][AliPID::kSPECIES]; // PID provided by TPC, TOF and ITS
+  Double_t fComPID[kNDaughters][AliPID::kSPECIES];//Combined PID, momentarily from TPC and TOF only
 
   Float_t fMomentum;  // Momentum of track at the vertex
 
@@ -164,6 +170,10 @@ private:
   Float_t fDownRadius[kNDecays];             // radius, lower limit
   Float_t fDownTPCPIDneg[AliPID::kSPECIES];  // TPC PID negatives, lower limit
   Float_t fDownTPCPIDpos[AliPID::kSPECIES];  // TPC PID positives, lower limit
+  Float_t fDownComPIDneg[AliPID::kSPECIES];  // Combined PID negatives, lower limit
+  Float_t fDownComPIDpos[AliPID::kSPECIES];  // Combined PID positives, lower limit
+  Float_t fDownComPIDnegPart[AliPID::kSPECIES]; // Combined PID positive partner daughters (NOT the daughter track that would go into the reference data; here: pion daughters from Lambda decays; lower limit
+  Float_t fDownComPIDposPart[AliPID::kSPECIES]; // Combined PID positive partner daughters (NOT the daughter track that would go into the reference data; here: pion daughters from Lambda decays; lower limit
  
   AliESDtrack *fTrackP; //positive daughter
   AliESDtrack *fTrackN; //negative daughter
