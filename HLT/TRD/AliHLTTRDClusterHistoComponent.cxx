@@ -55,9 +55,7 @@ AliHLTTRDClusterHistoComponent::AliHLTTRDClusterHistoComponent()
   fClsTB(NULL),
   fClsAmpDist(NULL),
   fSClsDist(NULL),
-  fNScls(NULL),
-  fClusterDist(NULL),
-  fClusterCandCharge(NULL)
+  fNScls(NULL)
 {
   // see header file for class documentation
   // or
@@ -135,12 +133,9 @@ int AliHLTTRDClusterHistoComponent::DoInit(int argc, const char** argv)
   fClsAmpDist = new TH1D("trdClsAmpDist", "mean amplitude", 200, 0, 1000);
   fSClsDist = new TH1D("sclsdist", "Super cluster spectrum", 200, 0, 8000);
   fNScls = new TH1D("nscls", "No. of Kr clusters per event", 540, 0, 540);
-  fClusterDist = new TH2F("cldist", "Cluster distribution;padrow;padcol", 16*5, -0.5, 79.5, 8*6*18, -0.5, 863.5);
-  fClusterCandCharge = new TH1D("qClsCand", "Cluster candidate charge;charge (ADC counts);counts", 200, 0, 8000);
 
   for(int i=0; i<540; i++) {
     fClsAmpDriftDet[i] = new TH1D(Form("trdClsDriftDet_%d",i), "", 200, -0.5, 199.5);
-    fSlidingWindow[i].SetBins(9, -0.5, 8.5, 17, -0.5, 16.5);
   }
   
   return 0;
@@ -160,8 +155,6 @@ int AliHLTTRDClusterHistoComponent::DoDeinit()
   if (fClsTB) delete fClsTB;
   if (fClsAmpDist) delete fClsAmpDist;
   if (fSClsDist) delete fSClsDist;
-  if (fClusterDist) delete fClusterDist;
-  if (fClusterCandCharge) delete fClusterCandCharge;
   if (fNScls) delete fNScls;
 
   for(int i=0; i<540; i++)
@@ -201,9 +194,6 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   const AliHLTComponentBlockData* iter = NULL;
   
   Float_t sClusterCharge[540] = { 0 };
-  for (Int_t iDet = 0; iDet < 540; iDet++) {
-    fSlidingWindow[iDet].Reset();
-  }
 
   for ( iter = GetFirstInputBlock(AliHLTTRDDefinitions::fgkClusterDataType); 
 	iter != NULL; iter = GetNextInputBlock() ) {
@@ -234,10 +224,6 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
       Int_t det = cls->GetDetector();
       sClusterCharge[det] += cls->GetQ();
 
-      fSlidingWindow[det].Fill((cls->GetPadCol() / 18), cls->GetPadRow(), cls->GetQ());
-      fSlidingWindow[det].Fill((cls->GetPadCol() / 18), cls->GetPadRow() + 1, cls->GetQ());
-      fSlidingWindow[det].Fill((cls->GetPadCol() / 18) + 1, cls->GetPadRow(), cls->GetQ());
-      fSlidingWindow[det].Fill((cls->GetPadCol() / 18) + 1, cls->GetPadRow() + 1, cls->GetQ());
     }
     
     fClusterArray->Delete();
@@ -251,16 +237,6 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
       fClsAmpDist->Fill(fClsAmpDriftDet[det]->GetMean());
     fSClsDist->Fill(sClusterCharge[det]);
 
-    Int_t xmax;
-    Int_t ymax;
-    Int_t zmax;
-    fSlidingWindow[det].GetMaximumBin(xmax, ymax, zmax);
-    Float_t charge = fSlidingWindow[det].GetBinContent(xmax, ymax);
-    fClusterCandCharge->Fill(charge);
-    if (charge > 2000. && charge < 6500.) {
-      nSClusters++;
-      fClusterDist->Fill((ymax-1) + 16 * ((det % 30) / 6), (det / 30) * 48 + 8 * (det % 6) + (xmax-1));
-    }
   }
 
   fNScls->Fill(nSClusters);
@@ -271,9 +247,7 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   //  PushBack((TObject*)fClsTB, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
   //  PushBack((TObject*)fClsAmpDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
   PushBack((TObject*)fNScls, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
-  PushBack((TObject*)fSClsDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
-  PushBack((TObject*)fClusterDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
-  PushBack((TObject*)fClusterCandCharge, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
+  PushBack((TObject*)fSClsDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
 
   return 0;
 }

@@ -92,11 +92,6 @@ private:
   TH1D *fSClsDist;
   TH1D *fNScls;
 
-  // kryptogramm
-  TH2F fSlidingWindow[540];
-  TH2F *fClusterDist;
-  TH1D *fClusterCandCharge;
-
   ClassDef(AliHLTTRDClusterHistoComponent, 0);
 };
 #endif
