@@ -18,6 +18,7 @@
 #include "AliMUONPedestalSubprocessor.h"
 
 #include "AliCDBMetaData.h"
+#include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUON2DStoreValidator.h"
@@ -147,6 +148,12 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
     delete fConfig;
     fConfig = 0;
     return kFALSE;
+  }
+  
+  if ( nconfFiles > 0 && nconfFiles < AliDAQ::NumberOfLdcs("MUONTRK") )
+  {
+    // force a writing of the configuration for any incomplete configuration
+    fConfigChanged = kTRUE;
   }
   
   return kTRUE;
