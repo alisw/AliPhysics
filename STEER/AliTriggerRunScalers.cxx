@@ -315,6 +315,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    for( Int_t ic=0; ic<fnClasses; ++ic ){
       TObjArray* scalersArray2 = (TObjArray*)scalers2->GetTriggerScalers();
       AliTriggerScalers* counters2 = (AliTriggerScalers*)scalersArray2->At(ic);
+      UChar_t iclass = counters2->GetClassIndex();
       counters2->GetAllScalers(c2);
       TObjArray* scalersArray1 = (TObjArray*)scalers1->GetTriggerScalers();
       AliTriggerScalers* counters1 = (AliTriggerScalers*)scalersArray1->At(ic);
@@ -340,7 +341,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       }
       if(correctOverflow){ 
         for(Int_t i=0;i<6;i++){ c64[i]=c2[i]+max1*overflow[i]; }
-        AliTriggerScalersESD* s= new AliTriggerScalersESD(fClassIndex[ic],c64);
+        AliTriggerScalersESD* s= new AliTriggerScalersESD(iclass,c64);
         recESD->AddTriggerScalers(s);
          }
 
@@ -366,8 +367,9 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
     TObjArray* scalersArray = (TObjArray*)scalers->GetTriggerScalers();
     AliTriggerScalers* counters = (AliTriggerScalers*)scalersArray->At(ic);
     counters->GetAllScalers(c1);
+    UChar_t iclass = counters->GetClassIndex();
     for(Int_t i=0; i<6; i++)c64[i]=c1[i];
-    AliTriggerScalersESD* s= new AliTriggerScalersESD(fClassIndex[ic],c64);
+    AliTriggerScalersESD* s= new AliTriggerScalersESD(iclass,c64);
     recESD->AddTriggerScalers(s);
  }
  fScalersRecordESD.AddLast(recESD);
