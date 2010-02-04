@@ -22,5 +22,6 @@
 #pragma link C++ class  AliTrigScheduledResponse+;
 #pragma link C++ class  AliTrigScheduledSequence+;
 #pragma link C++ class  AliTrigScheduler+;
+#pragma link C++ class  AliTrigModule+;
 
 #endif
