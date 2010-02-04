@@ -442,8 +442,10 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
 
     if (partners[iC2] == -1) continue;
 
-    if (fOverlapFlagClustersLay1[partners[iC2]] || fOverlapFlagClustersLay2[iC2]) continue;
     if (fRemoveClustersFromOverlaps) FlagClustersInOverlapRegions (partners[iC2],iC2);
+
+
+    if (fOverlapFlagClustersLay1[partners[iC2]] || fOverlapFlagClustersLay2[iC2]) continue;
 
     fTracklets[fNTracklets] = new Float_t[6];
   
