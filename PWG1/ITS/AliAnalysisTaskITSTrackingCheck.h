@@ -18,6 +18,7 @@ class TH1F;
 class AliESDEvent;
 class AliESDVertex;
 class AliESDfriend;
+class AliESDtrackCuts;
 
 #include "AliAnalysisTask.h"
 
@@ -34,19 +35,24 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   virtual void   Terminate(Option_t *);
   Bool_t         GetReadMC() const { return fReadMC; }
   void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; }
+  void           SetUsePhysSel() { fUsePhysSel=kTRUE; }
   void           SetReadRPLabels(Bool_t flag=kTRUE) { fReadRPLabels=flag; }
   void           SetFillNtuples(Bool_t flag=kTRUE) { fFillNtuples=flag; }
   void           SetUseITSSAforNtuples(Bool_t flag=kTRUE) { fUseITSSAforNtuples=flag; }
-
+  void           SetESDtrackCutsTPC(AliESDtrackCuts *c) { fESDtrackCutsTPC=c; }
+  void           SetESDtrackCutsITSTPC(AliESDtrackCuts *c) { fESDtrackCutsITSTPC=c; }
   
  protected:
   Bool_t       fReadMC; // read Monte Carlo
   Bool_t       fReadRPLabels; // read MC labels from ITS.RecPoints
   Bool_t       fFillNtuples; // fill expert ntuples
   Bool_t       fUseITSSAforNtuples; // fill expert ntuples with ITSSA tracks
+  Bool_t       fUsePhysSel; // use AliPhysicsSelection
   AliESDEvent  *fESD;    // ESD object
   AliESDfriend *fESDfriend; // ESD friend object
   TList        *fOutput; //! list send on output slot 0
+  TH1F         *fHistNEvents; //! output hist
+  TH1F         *fHistNEventsFrac; //! output hist
   TH1F         *fHistNtracks; //! output hist
   TH1F         *fHistNclsITSMI; //! output hist
   TH1F         *fHistNclsITSSA; //! output hist
@@ -78,9 +84,30 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   TH1F         *fHistClusterMapModuleITSSAokInAcc; //! output hist
   TH1F         *fHistClusterMapModuleITSSAbadInAcc; //! output hist
   TH1F         *fHistClusterMapModuleITSSAnoclsInAcc; //! output hist
+  TH1F         *fHistClusterMapModuleITSMIokInAcc; //! output hist
+  TH1F         *fHistClusterMapModuleITSMIbadInAcc; //! output hist
+  TH1F         *fHistClusterMapModuleITSMInoclsInAcc; //! output hist
+  TH1F         *fHistxlocSDDok; //! output hist
+  TH1F         *fHistzlocSDDok; //! output hist
+  TH2F         *fHistxlocVSmodSDDok; //! output hist
+  TH1F         *fHistxlocSDDall; //! output hist
+  TH1F         *fHistzlocSDDall; //! output hist
   TH1F         *fHistPhiTPCInAcc; //! output hist
   TH1F         *fHistPtTPC; //! output hist
   TH1F         *fHistPtTPCInAcc; //! output hist
+  TH2F         *fHistdEdxVSPtTPCInAcc; //! output hist
+  TH2F         *fHistdEdxVSPtITSTPCsel; //! output hist
+  TH2F         *fHistPtVSphiTPCInAcc; //! output hist
+  TH1F         *fHistPtTPCInAccNoTRDout; //! output hist
+  TH1F         *fHistPtTPCInAccNoTOFout; //! output hist
+  TH1F         *fHistPtTPCInAccWithPtTPCAtInnerWall; //! output hist
+  TH1F         *fHistPtTPCInAccWithPtTPCAtVtx; //! output hist
+  TH2F         *fHistDeltaPtTPC; //! output hist
+  TH1F         *fHistPtTPCInAccP; //! output hist
+  TH1F         *fHistPtTPCInAccS; //! output hist
+  TH1F         *fHistPtTPCInAccPfromStrange; //! output hist
+  TH1F         *fHistPtTPCInAccSfromStrange; //! output hist
+  TH1F         *fHistPtTPCInAccSfromMat; //! output hist
   TH1F         *fHistPtITSMI2; //! output hist
   TH1F         *fHistPtITSMI3; //! output hist
   TH1F         *fHistPtITSMI4; //! output hist
@@ -95,15 +122,74 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   TH1F         *fHistPtITSMI6InAcc; //! output hist
   TH1F         *fHistPtITSMISPDInAcc; //! output hist
   TH1F         *fHistPtITSMIoneSPDInAcc; //! output hist
+  TH1F         *fHistPtITSTPCsel; //! output hist
+  TH1F         *fHistPtITSTPCselP; //! output hist
+  TH1F         *fHistPtITSTPCselS; //! output hist
+  TH1F         *fHistPtITSTPCselPfromStrange; //! output hist
+  TH1F         *fHistPtITSTPCselSfromStrange; //! output hist
+  TH1F         *fHistPtITSTPCselSfromMat; //! output hist
+  TH1F         *fHistPtITSMI2InAccP; //! output hist
+  TH1F         *fHistPtITSMI3InAccP; //! output hist
+  TH1F         *fHistPtITSMI4InAccP; //! output hist
+  TH1F         *fHistPtITSMI5InAccP; //! output hist
+  TH1F         *fHistPtITSMI6InAccP; //! output hist
+  TH1F         *fHistPtITSMISPDInAccP; //! output hist
+  TH1F         *fHistPtITSMIoneSPDInAccP; //! output hist
+  TH1F         *fHistPtITSMI2InAccS; //! output hist
+  TH1F         *fHistPtITSMI3InAccS; //! output hist
+  TH1F         *fHistPtITSMI4InAccS; //! output hist
+  TH1F         *fHistPtITSMI5InAccS; //! output hist
+  TH1F         *fHistPtITSMI6InAccS; //! output hist
+  TH1F         *fHistPtITSMISPDInAccS; //! output hist
+  TH1F         *fHistPtITSMIoneSPDInAccS; //! output hist
   TH1F         *fHistPtITSMIokbadoutinz6; //! output hist
   TH1F         *fHistPtITSMIokbadoutinz4InAcc; //! output hist
   TH1F         *fHistPtITSMIokbadoutinz5InAcc; //! output hist
   TH1F         *fHistPtITSMIokbadoutinz6InAcc; //! output hist
   TH1F         *fHistPhiITSMIokbadoutinz6InAcc; //! output hist
+  TH1F         *fHistRProdVtxInAccP; //! output hist
+  TH1F         *fHistRProdVtxInAccS; //! output hist
+  TH1F     *fHistd0rphiTPCInAccP150200; //! output hist
+  TH1F     *fHistd0rphiTPCInAccP500700; //! output hist
+  TH1F     *fHistd0rphiTPCInAccP10001500; //! output hist
+  TH1F     *fHistd0rphiTPCInAccS150200; //! output hist
+  TH1F     *fHistd0rphiTPCInAccS500700; //! output hist
+  TH1F     *fHistd0rphiTPCInAccS10001500; //! output hist
+  TH1F     *fHistd0rphiITSMISPDInAccP150200; //! output hist
+  TH1F     *fHistd0rphiITSMISPDInAccP500700; //! output hist
+  TH1F     *fHistd0rphiITSMISPDInAccP10001500; //! output hist
+  TH1F     *fHistd0rphiITSMISPDInAccS150200; //! output hist
+  TH1F     *fHistd0rphiITSMISPDInAccS500700; //! output hist
+  TH1F     *fHistd0rphiITSMISPDInAccS10001500; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccP150200; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccP500700; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccP10001500; //! output hist
+  TH1F     *fHistd0zITSMIoneSPDInAccP150200; //! output hist
+  TH1F     *fHistd0zITSMIoneSPDInAccP500700; //! output hist
+  TH1F     *fHistd0zITSMIoneSPDInAccP10001500; //! output hist
+  TH2F     *fHistd0rphiVSphiITSMIoneSPDInAccP10001500; //! output hist
+  TH2F     *fHistd0rphiVSetaITSMIoneSPDInAccP10001500; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS150200; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS500700; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS500700from22; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS500700from211; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS500700from310; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS500700from321; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS10001500; //! output hist  
+  TH1F     *fHistd0zITSMIoneSPDInAccS150200; //! output hist
+  TH1F     *fHistd0zITSMIoneSPDInAccS500700; //! output hist
+  TH1F     *fHistd0zITSMIoneSPDInAccS10001500; //! output hist
+  TH1F     *fHistPDGMoth; //! output hist
+  TH1F     *fHistPDGMoth150200; //! output hist
+  TH1F     *fHistPDGMoth500700; //! output hist
+  TH1F     *fHistPDGMoth10001500; //! output hist
+  TH1F     *fHistPDGTrk; //! output hist
   TNtuple      *fNtupleESDTracks; //! output ntuple
   TNtuple      *fNtupleITSAlignExtra; //! output ntuple
   TNtuple      *fNtupleITSAlignSPDTracklets; //! output ntuple
-  Int_t         fCountsPerPtBin[10]; // track per pt bin
+  Int_t         fCountsPerPtBin[11]; // track per pt bin
+  AliESDtrackCuts *fESDtrackCutsTPC; // cuts for TPC track
+  AliESDtrackCuts *fESDtrackCutsITSTPC; // cuts for TPC+ITS track
 
  private:    
 
@@ -112,10 +198,12 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   
 
   Int_t NumberOfITSClustersMC(Int_t label) const;
+  Int_t NumberOfITSClusters(Int_t idet,Float_t &xloc) const;
   Double_t ParticleImpParMC(TParticle *part,AliESDVertex *vert,Double_t bzT) const;
   Bool_t SelectPt(Double_t pt);
+  Int_t MakeITSflag(AliESDtrack *track) const;
 
-  ClassDef(AliAnalysisTaskITSTrackingCheck,4); // ITS tracks analysis
+  ClassDef(AliAnalysisTaskITSTrackingCheck,8); // ITS tracks analysis
 };
 
 #endif
