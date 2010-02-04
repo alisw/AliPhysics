@@ -587,11 +587,11 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
   ((TH3S*)arr->At(9))->Fill(PARMC[4], (PARMC[4]-PAR[4])/TMath::Sqrt(COV(4,4)), sign*sIdx);
 
   Double_t p0 = TMath::Sqrt(1.+ PARMC[3]*PARMC[3])*pt0, p;
-  p = TMath::Sqrt(1.+ PAR[3]*PAR[3])*PAR[4];
+  p = TMath::Sqrt(1.+ PAR[3]*PAR[3])/PAR[4];
   Float_t sp = 
-    p*p*COV(4,4)/PAR[4]/PAR[4]
-   +2.*PAR[3]*PAR[4]*COV(3,4)
-   +PAR[3]*PAR[3]*PAR[4]*PAR[4]*PAR[4]*PAR[4]*COV(3,3)/p/p;
+    p*p*PAR[4]*PAR[4]*COV(4,4)
+   +2.*PAR[3]*COV(3,4)/PAR[4]
+   +PAR[3]*PAR[3]*COV(3,3)/p/p/PAR[4]/PAR[4]/PAR[4]/PAR[4];
   ((TH3S*)arr->At(10))->Fill(p0, p/p0-1., sign*sIdx);
   if(sp>0.) ((TH3S*)arr->At(11))->Fill(p0, (p0-p)/TMath::Sqrt(sp), sign*sIdx);
 
@@ -638,22 +638,15 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   Double_t covR[7]/*, cov[3]*/;
 
   if(DebugLevel()>=1){
-    Double_t dX[12], dY[12], dZ[12], dPt[12], cCOV[12][15];
-    fkMC->PropagateKalman(dX, dY, dZ, dPt, cCOV);
+    TVectorD dX(12), dY(12), dZ(12), dPt(12), cCOV(12*15);
+    fkMC->PropagateKalman(&dX, &dY, &dZ, &dPt, &cCOV);
     (*DebugStream()) << "MCkalman"
-      << "pdg="  << pdg
-      << "dx0="  << dX[0]
-      << "dx1="  << dX[1]
-      << "dx2="  << dX[2]
-      << "dy0="  << dY[0]
-      << "dy1="  << dY[1]
-      << "dy2="  << dY[2]
-      << "dz0="  << dZ[0]
-      << "dz1="  << dZ[1]
-      << "dz2="  << dZ[2]
-      << "dpt0=" << dPt[0]
-      << "dpt1=" << dPt[1]
-      << "dpt2=" << dPt[2]
+      << "pdg=" << pdg
+      << "dx="  << &dX
+      << "dy="  << &dY
+      << "dz="  << &dZ
+      << "dpt=" << &dPt
+      << "cov=" << &cCOV
       << "\n";
   }
 
@@ -677,6 +670,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
         << "det="     << det
         << "pdg="     << pdg
         << "sgn="     << sign
+        << "barrel="  << kBarrel
         << "pt="      << pt0
         << "x="       << x0
         << "y="       << y0
@@ -1670,7 +1664,7 @@ TObjArray* AliTRDresolution::Histos()
   arr2->SetName("Pt Resolution [SA]");
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
     if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcSATrkPt%d", il)))){
-      h3 = new TH3S(Form("hMcSATrkPt%d", il), "Track Pt Resolution", kPbins, 0., 12., 150, -1., 2., n, -5.5, 5.5);
+      h3 = new TH3S(Form("hMcSATrkPt%d", il), "Track Pt Resolution", kPbins, 0., 12., 150, -10., 1., n, -5.5, 5.5);
       h3->GetXaxis()->SetTitle("p_{t} [GeV/c]");
       h3->GetYaxis()->SetTitle("#Delta p_{t}/p_{t}^{MC}");
       h3->GetZaxis()->SetTitle("SPECIES");

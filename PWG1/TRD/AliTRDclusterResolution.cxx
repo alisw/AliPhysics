@@ -202,10 +202,10 @@ const Float_t AliTRDclusterResolution::fgkTimeBinLength = 1./ AliTRDCommonParam:
 //_______________________________________________________
 AliTRDclusterResolution::AliTRDclusterResolution(const char *name, const char *title)
   : AliTRDrecoTask(name, title)
-  ,fCanvas(0x0)
-  ,fInfo(0x0)
-  ,fResults(0x0)
-  ,fAt(0x0)
+  ,fCanvas(NULL)
+  ,fInfo(NULL)
+  ,fResults(NULL)
+  ,fAt(NULL)
   ,fStatus(0)
   ,fDet(-1)
   ,fExB(0.)
@@ -262,12 +262,12 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
 // Steering function to retrieve performance plots
 
   if(!fResults) return kFALSE;
-  TLegend *leg = 0x0;
-  TList *l = 0x0;
-  TObjArray *arr = 0x0;
-  TTree *t = 0x0;
-  TH2 *h2 = 0x0;TH1 *h1 = 0x0;
-  TGraphErrors *gm(0x0), *gs(0x0), *gp(0x0);
+  TLegend *leg = NULL;
+  TList *l = NULL;
+  TObjArray *arr = NULL;
+  TTree *t = NULL;
+  TH2 *h2 = NULL;TH1 *h1 = NULL;
+  TGraphErrors *gm(NULL), *gs(NULL), *gp(NULL);
   switch(ifig){
   case kQRes:
     if(!(arr = (TObjArray*)fResults->At(kQRes))) break;
@@ -392,8 +392,8 @@ TObjArray* AliTRDclusterResolution::Histos()
   fContainer = new TObjArray(kNtasks);
   //fContainer->SetOwner(kTRUE);
 
-  TH3S *h3 = 0x0;
-  TObjArray *arr = 0x0;
+  TH3S *h3 = NULL;
+  TObjArray *arr = NULL;
 
   fContainer->AddAt(arr = new TObjArray(2*AliTRDgeometry::kNlayer), kCenter);
   arr->SetName("Center");
@@ -480,7 +480,7 @@ void AliTRDclusterResolution::Exec(Option_t *)
 
   Int_t det, t;
   Float_t x, y, z, q, dy, dydx, dzdx, cov[3], covcl[3];
-  TH3S *h3 = 0x0;
+  TH3S *h3 = NULL;
 
   // define limits around ExB for which x contribution is negligible
   const Float_t kDtgPhi = 3.5e-2; //(+- 2 deg)
@@ -489,7 +489,7 @@ void AliTRDclusterResolution::Exec(Option_t *)
   TObjArray *arr1 = (TObjArray*)fContainer->At(kSigm);
   TObjArray *arr2 = (TObjArray*)fContainer->At(kMean);
 
-  const AliTRDclusterInfo *cli = 0x0;
+  const AliTRDclusterInfo *cli = NULL;
   TIterator *iter=fInfo->MakeIterator();
   while((cli=dynamic_cast<AliTRDclusterInfo*>((*iter)()))){
     cli->GetCluster(det, x, y, z, q, t, covcl);
@@ -504,7 +504,7 @@ void AliTRDclusterResolution::Exec(Option_t *)
       h3 = (TH3S*)fContainer->At(kQRes);
       h3->Fill(TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
 
-      printf("q=%f Log(q)=%f dy=%f pull=%f\n",q, TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
+      AliDebug(4, Form("q=%4.0f Log(q)=%6.4f dy[um]=%7.2f pull=%5.2f",q, TMath::Log(q), 1.e4*dy, dy/TMath::Sqrt(covcl[0])));
     }
 
     // do not use problematic clusters in resolution analysis
@@ -546,10 +546,10 @@ Bool_t AliTRDclusterResolution::PostProcess()
   if(!fContainer) return kFALSE;
   if(!HasExB()) AliWarning("ExB was not set. Call SetExB() before running the post processing.");
   
-  TObjArray *arr = 0x0;
-  TTree *t=0x0;
+  TObjArray *arr = NULL;
+  TTree *t=NULL;
   if(!fResults){
-    TGraphErrors *g = 0x0;
+    TGraphErrors *g = NULL;
     fResults = new TObjArray(kNtasks);
     fResults->SetOwner();
     fResults->AddAt(arr = new TObjArray(3), kQRes);
@@ -596,7 +596,7 @@ Bool_t AliTRDclusterResolution::PostProcess()
     t->Branch("dx", &fR[0], "dx[2]/F");
     t->Branch("dy", &fR[2], "dy[2]/F");
   } else {
-    TObject *o = 0x0;
+    TObject *o = NULL;
     TIterator *iter=fResults->MakeIterator();
     while((o=((*iter)()))) o->Clear(); // maybe it is wrong but we should never reach this point
   }
@@ -688,14 +688,14 @@ void AliTRDclusterResolution::ProcessCharge()
 // Author
 // Alexandru Bercuci <A.Bercuci@gsi.de>
 
-  TH2I *h2 = 0x0;
+  TH2I *h2 = NULL;
   if(!(h2 = (TH2I*)fContainer->At(kQRes))) {
     AliWarning("Missing dy=f(Q) histo");
     return;
   }
   TF1 f("f", "gaus", -.5, .5);
-  TAxis *ax = 0x0;
-  TH1D *h1 = 0x0;
+  TAxis *ax = NULL;
+  TH1D *h1 = NULL;
 
   // compute mean error on x
   Double_t s2x = 0.; 
@@ -800,11 +800,11 @@ void AliTRDclusterResolution::ProcessCenterPad()
   TF1 f("f", "gaus", -.5, .5);
   TF1 fp("fp", "gaus", -3.5, 3.5);
 
-  TH1D *h1 = 0x0; TH2F *h2 = 0x0; TH3S *h3r=0x0, *h3p=0x0;
+  TH1D *h1 = NULL; TH2F *h2 = NULL; TH3S *h3r=NULL, *h3p=NULL;
   TObjArray *arrRes = (TObjArray*)fResults->At(kCenter);
   TTree *t = (TTree*)arrRes->At(0);
-  TGraphErrors *gs = 0x0;
-  TAxis *ax = 0x0;
+  TGraphErrors *gs = NULL;
+  TAxis *ax = NULL;
 
   printf("  const Float_t lSy[6][24] = {\n      {");
   const Int_t nl = AliTRDgeometry::kNlayer;
@@ -963,8 +963,8 @@ void AliTRDclusterResolution::ProcessSigma()
   }
 
   // init visualization
-  TGraphErrors *ggs = 0x0;
-  TGraph *line = 0x0;
+  TGraphErrors *ggs = NULL;
+  TGraph *line = NULL;
   if(fCanvas){
     ggs = new TGraphErrors();
     line = new TGraph();
@@ -974,9 +974,9 @@ void AliTRDclusterResolution::ProcessSigma()
   // init logistic support
   TF1 f("f", "gaus", -.5, .5);
   TLinearFitter gs(1,"pol1");
-  TH1 *hFrame=0x0;
-  TH1D *h1 = 0x0; TH3S *h3=0x0;
-  TAxis *ax = 0x0;
+  TH1 *hFrame=NULL;
+  TH1D *h1 = NULL; TH3S *h3=NULL;
+  TAxis *ax = NULL;
   Double_t exb2 = fExB*fExB, x;
   AliTRDcluster c;
   TTree *t = (TTree*)fResults->At(kSigm);
@@ -1157,9 +1157,9 @@ void AliTRDclusterResolution::ProcessMean()
   TF1 f("f", "gaus", -.5, .5);
   TF1 line("l", "[0]+[1]*x", -.15, .15);
   TGraphErrors *gm = new TGraphErrors();
-  TH1 *hFrame=0x0;
-  TH1D *h1 = 0x0; TH3S *h3 =0x0;
-  TAxis *ax = 0x0;
+  TH1 *hFrame=NULL;
+  TH1D *h1 = NULL; TH3S *h3 =NULL;
+  TAxis *ax = NULL;
   Double_t x;
 
   AliTRDcluster c;

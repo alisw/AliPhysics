@@ -11,14 +11,13 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef Root_TObject
-#include "TObject.h"
-#endif
-
 #ifndef ALIPID_H
 #include "AliPID.h"
 #endif
 
+
+template <typename Value> class TVectorT;
+typedef struct TVectorT<Double_t> TVectorD;
 class AliTRDseedV1;
 class AliTRDtrackV1;
 class AliTrackReference;
@@ -73,7 +72,9 @@ public:
     Int_t   GetPDG() const {return fPDG;}
     Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, UChar_t &s) const;
     AliTrackReference const* GetTrackRef(Int_t ref=0) const {return fTrackRefs[ref];}
-    void    PropagateKalman(Double_t dx[kNTrackRefs], Double_t dy[kNTrackRefs], Double_t dz[kNTrackRefs], Double_t dpt[kNTrackRefs], Double_t c[kNTrackRefs][15], Double_t step = 2.) const;
+    void    PropagateKalman(
+        TVectorD *dx, TVectorD *dy, TVectorD *dz, 
+        TVectorD *dpt, TVectorD *c, Double_t step = 2.) const;
 
   protected:
     Int_t   fLabel;             // MC label  
@@ -86,14 +87,11 @@ public:
   AliTRDtrackInfo();
   AliTRDtrackInfo(const AliTRDtrackInfo &trdInfo);
   ~AliTRDtrackInfo();
-  
+
 //  void               Clear(const Option_t *){}
   void               Delete(const Option_t *);
-  
   AliTRDtrackInfo&   operator=(const AliTRDtrackInfo &trdInfo);
-  
   void               AddTrackRef(const AliTrackReference *trackRef);
-  
   Int_t              GetTrackId() const { return fESD.fId;}
   const AliESDinfo*  GetESDinfo() const { return &fESD; }
   const AliMCinfo*   GetMCinfo() const { return fMC; }
