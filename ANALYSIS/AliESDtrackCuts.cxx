@@ -34,6 +34,7 @@ ClassImp(AliESDtrackCuts)
 // Cut names
 const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "require TPC refit",
+ "require TPC standalone",
  "require ITS refit",
  "n clusters TPC",
  "n clusters ITS",
@@ -81,6 +82,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutMaxRel1PtUncertainty(0),
   fCutAcceptKinkDaughters(0),
   fCutRequireTPCRefit(0),
+  fCutRequireTPCStandAlone(0),
   fCutRequireITSRefit(0),
   fCutRequireITSStandAlone(0),
   fCutNsigmaToVertex(0),
@@ -124,6 +126,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetMaxCovDiagonalElements();
   SetMaxRel1PtUncertainty();
   SetRequireTPCRefit();
+  SetRequireTPCStandAlone();
   SetRequireITSRefit();
   SetRequireITSStandAlone(kFALSE);
   SetAcceptKinkDaughters();
@@ -161,6 +164,7 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutMaxRel1PtUncertainty(0),
   fCutAcceptKinkDaughters(0),
   fCutRequireTPCRefit(0),
+  fCutRequireTPCStandAlone(0),
   fCutRequireITSRefit(0),
   fCutRequireITSStandAlone(0),
   fCutNsigmaToVertex(0),
@@ -283,6 +287,7 @@ void AliESDtrackCuts::Init()
 
   fCutAcceptKinkDaughters = 0;
   fCutRequireTPCRefit = 0;
+  fCutRequireTPCStandAlone = 0;
   fCutRequireITSRefit = 0;
   fCutRequireITSStandAlone = 0;
 
@@ -388,6 +393,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
   target.fCutAcceptKinkDaughters = fCutAcceptKinkDaughters;
   target.fCutRequireTPCRefit = fCutRequireTPCRefit;
+  target.fCutRequireTPCStandAlone = fCutRequireTPCStandAlone;
   target.fCutRequireITSRefit = fCutRequireITSRefit;
   target.fCutRequireITSStandAlone = fCutRequireITSStandAlone;
 
@@ -655,14 +661,26 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
 
   // getting quality parameters from the ESD track
   Int_t nClustersITS = esdTrack->GetITSclusters(0);
-  Int_t nClustersTPC = esdTrack->GetTPCclusters(0);
+  Int_t nClustersTPC = -1;
+  if(fCutRequireTPCStandAlone) {
+    nClustersTPC = esdTrack->GetTPCNclsIter1();
+  }
+  else {
+    nClustersTPC = esdTrack->GetTPCclusters(0);
+  }
 
   Float_t chi2PerClusterITS = -1;
   Float_t chi2PerClusterTPC = -1;
   if (nClustersITS!=0)
     chi2PerClusterITS = esdTrack->GetITSchi2()/Float_t(nClustersITS);
-  if (nClustersTPC!=0)
-    chi2PerClusterTPC = esdTrack->GetTPCchi2()/Float_t(nClustersTPC);
+  if (nClustersTPC!=0) {
+    if(fCutRequireTPCStandAlone) {
+      chi2PerClusterTPC = esdTrack->GetTPCchi2Iter1()/Float_t(nClustersTPC);
+    } else {
+      chi2PerClusterTPC = esdTrack->GetTPCchi2()/Float_t(nClustersTPC);
+    }
+  }
+
   Double_t extCov[15];
   esdTrack->GetExternalCovariance(extCov);
 
@@ -722,69 +740,71 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   // track quality cuts
   if (fCutRequireTPCRefit && (status&AliESDtrack::kTPCrefit)==0)
     cuts[0]=kTRUE;
-  if (fCutRequireITSRefit && (status&AliESDtrack::kITSrefit)==0)
+  if (fCutRequireTPCStandAlone && (status&AliESDtrack::kTPCin)==0)
     cuts[1]=kTRUE;
-  if (nClustersTPC<fCutMinNClusterTPC)
+  if (fCutRequireITSRefit && (status&AliESDtrack::kITSrefit)==0)
     cuts[2]=kTRUE;
-  if (nClustersITS<fCutMinNClusterITS) 
+  if (nClustersTPC<fCutMinNClusterTPC)
     cuts[3]=kTRUE;
+  if (nClustersITS<fCutMinNClusterITS) 
+    cuts[4]=kTRUE;
   if (chi2PerClusterTPC>fCutMaxChi2PerClusterTPC) 
-    cuts[4]=kTRUE; 
+    cuts[5]=kTRUE; 
   if (chi2PerClusterITS>fCutMaxChi2PerClusterITS) 
-    cuts[5]=kTRUE;
+    cuts[6]=kTRUE;
   if (extCov[0]  > fCutMaxC11) 
-    cuts[6]=kTRUE;  
-  if (extCov[2]  > fCutMaxC22) 
     cuts[7]=kTRUE;  
-  if (extCov[5]  > fCutMaxC33) 
+  if (extCov[2]  > fCutMaxC22) 
     cuts[8]=kTRUE;  
-  if (extCov[9]  > fCutMaxC44) 
+  if (extCov[5]  > fCutMaxC33) 
     cuts[9]=kTRUE;  
-  if (extCov[14]  > fCutMaxC55) 
+  if (extCov[9]  > fCutMaxC44) 
     cuts[10]=kTRUE;  
+  if (extCov[14]  > fCutMaxC55) 
+    cuts[11]=kTRUE;  
   if (nSigmaToVertex > fCutNsigmaToVertex && fCutSigmaToVertexRequired)
-    cuts[11] = kTRUE;
+    cuts[12] = kTRUE;
   // if n sigma could not be calculated
   if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)
-    cuts[12]=kTRUE;
-  if (!fCutAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)
     cuts[13]=kTRUE;
+  if (!fCutAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)
+    cuts[14]=kTRUE;
   // track kinematics cut
   if((momentum < fPMin) || (momentum > fPMax)) 
-    cuts[14]=kTRUE;
+    cuts[15]=kTRUE;
   if((pt < fPtMin) || (pt > fPtMax)) 
-    cuts[15] = kTRUE;
-  if((p[0] < fPxMin) || (p[0] > fPxMax)) 
     cuts[16] = kTRUE;
-  if((p[1] < fPyMin) || (p[1] > fPyMax)) 
+  if((p[0] < fPxMin) || (p[0] > fPxMax)) 
     cuts[17] = kTRUE;
-  if((p[2] < fPzMin) || (p[2] > fPzMax))
+  if((p[1] < fPyMin) || (p[1] > fPyMax)) 
     cuts[18] = kTRUE;
-  if((eta < fEtaMin) || (eta > fEtaMax))
+  if((p[2] < fPzMin) || (p[2] > fPzMax))
     cuts[19] = kTRUE;
-  if((y < fRapMin) || (y > fRapMax)) 
+  if((eta < fEtaMin) || (eta > fEtaMax))
     cuts[20] = kTRUE;
-  if (fCutDCAToVertex2D && dcaToVertex > 1)
+  if((y < fRapMin) || (y > fRapMax)) 
     cuts[21] = kTRUE;
-  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexXY) > fCutMaxDCAToVertexXY)
+  if (fCutDCAToVertex2D && dcaToVertex > 1)
     cuts[22] = kTRUE;
-  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) > fCutMaxDCAToVertexZ)
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexXY) > fCutMaxDCAToVertexXY)
     cuts[23] = kTRUE;
-  if (fCutDCAToVertex2D && fCutMinDCAToVertexXY > 0 && fCutMinDCAToVertexZ > 0 && dcaToVertexXY*dcaToVertexXY/fCutMinDCAToVertexXY/fCutMinDCAToVertexXY + dcaToVertexZ*dcaToVertexZ/fCutMinDCAToVertexZ/fCutMinDCAToVertexZ < 1)
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) > fCutMaxDCAToVertexZ)
     cuts[24] = kTRUE;
-  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexXY) < fCutMinDCAToVertexXY)
+  if (fCutDCAToVertex2D && fCutMinDCAToVertexXY > 0 && fCutMinDCAToVertexZ > 0 && dcaToVertexXY*dcaToVertexXY/fCutMinDCAToVertexXY/fCutMinDCAToVertexXY + dcaToVertexZ*dcaToVertexZ/fCutMinDCAToVertexZ/fCutMinDCAToVertexZ < 1)
     cuts[25] = kTRUE;
-  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) < fCutMinDCAToVertexZ)
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexXY) < fCutMinDCAToVertexXY)
     cuts[26] = kTRUE;
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) < fCutMinDCAToVertexZ)
+    cuts[27] = kTRUE;
   
   for (Int_t i = 0; i < 3; i++)
-    cuts[27+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
+    cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
   
   if (fCutRequireITSStandAlone && ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)))
-    cuts[30]=kTRUE;
+    cuts[31]=kTRUE;
   
   if (relUncertainty1Pt > fCutMaxRel1PtUncertainty)
-     cuts[31]=kTRUE;
+     cuts[32]=kTRUE;
   
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 

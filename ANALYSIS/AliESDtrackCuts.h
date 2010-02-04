@@ -70,6 +70,7 @@ public:
   void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC=max;}
   void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
   void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
+  void SetRequireTPCStandAlone(Bool_t b=kFALSE)  {fCutRequireTPCStandAlone=b;}
   void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
   void SetRequireITSStandAlone(Bool_t b)         {fCutRequireITSStandAlone = b;}
   void SetAcceptKinkDaughters(Bool_t b=kTRUE)   {fCutAcceptKinkDaughters=b;}
@@ -94,6 +95,7 @@ public:
   Float_t GetMaxChi2PerClusterTPC()  const   { return fCutMaxChi2PerClusterTPC;}
   Float_t GetMaxChi2PerClusterITS()  const   { return fCutMaxChi2PerClusterITS;}
   Bool_t  GetRequireTPCRefit()       const   { return fCutRequireTPCRefit;}
+  Bool_t  GetRequireTPCStandAlone()  const   { return fCutRequireTPCStandAlone;}
   Bool_t  GetRequireITSRefit()       const   { return fCutRequireITSRefit;}
   Bool_t  GetRequireITSStandAlone()  const   { return fCutRequireITSStandAlone; }
   Bool_t  GetAcceptKinkDaughters()   const   { return fCutAcceptKinkDaughters;}
@@ -145,7 +147,7 @@ protected:
   void Init(); // sets everything to 0
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2);
   
-  enum { kNCuts = 32 }; 
+  enum { kNCuts = 33 }; 
 
   //######################################################
   // esd track quality cuts
@@ -169,6 +171,7 @@ protected:
 
   Bool_t  fCutAcceptKinkDaughters;    // accepting kink daughters?
   Bool_t  fCutRequireTPCRefit;        // require TPC refit
+  Bool_t  fCutRequireTPCStandAlone;   // require TPC standalone tracks
   Bool_t  fCutRequireITSRefit;        // require ITS refit
   Bool_t  fCutRequireITSStandAlone;   // require ITS standalone tracks
 
@@ -226,7 +229,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 7)
+  ClassDef(AliESDtrackCuts, 8)
 };
 
 
