@@ -896,7 +896,25 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   code << "  }" << endl;
   
   // Generate the Add method.
-  code << "  virtual void Add(const TObject* _object_, const AliHLTComponentDataType& _type_, AliHLTUInt32_t _spec_) {" << endl;
+  bool haveAssignments = false;
+  for (Int_t i = 0; i < symbols.GetEntriesFast(); i++)
+  {
+    // First check if we have any symbols with assignment expressions.
+    // This is needed to get rid of the on the fly compilation warning about '_object_' not being used.
+    AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(i) );
+    TString expr = symbol->AssignExpression();
+    if (expr == "") continue; // Skip entries that have no assignment expression.
+    haveAssignments = true;
+    break;
+  }
+  if (haveAssignments or fDebugMode)
+  {
+    code << "  virtual void Add(const TObject* _object_, const AliHLTComponentDataType& _type_, AliHLTUInt32_t _spec_) {" << endl;
+  }
+  else
+  {
+    code << "  virtual void Add(const TObject* /*_object_*/, const AliHLTComponentDataType& _type_, AliHLTUInt32_t _spec_) {" << endl;
+  }
   if (fDebugMode)
   {
     code << "#ifdef __CINT__" << endl;
