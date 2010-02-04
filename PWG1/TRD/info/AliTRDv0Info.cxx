@@ -33,7 +33,6 @@
 //   Markus Heide <mheide@uni-muenster.de>                                //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-
 #include "TMath.h"
 
 #include "AliESDtrack.h"
@@ -76,6 +75,7 @@ AliTRDv0Info::AliTRDv0Info()
   memset(fPplus, 0, 2*kNlayer*sizeof(Float_t));
   memset(fPminus, 0, 2*kNlayer*sizeof(Float_t));
   memset(fDetPID, 0, 2*kNDaughters*kNDetectors*AliPID::kSPECIES*sizeof(Float_t));
+  memset(fComPID, 0, 2*kNDaughters*AliPID::kSPECIES*sizeof(Float_t));
   memset(fInvMass, 0, kNMomBins*kNDecays*sizeof(Double_t));
 
   /////////////////////////////////////////////////////////////////////////////
@@ -83,39 +83,39 @@ AliTRDv0Info::AliTRDv0Info()
   ///////////////////////////////////////////////////////////////////////////// 
 
   //Upper limit for distance of closest approach of two daughter tracks :
-  fUpDCA[kGamma] = 0.25;
-  fUpDCA[kK0s] = 0.25;
-  fUpDCA[kLambda] = 0.25;
-  fUpDCA[kAntiLambda] = 0.25;
+  fUpDCA[kGamma] = 1000.;
+  fUpDCA[kK0s] = 0.08;
+  fUpDCA[kLambda] = 0.2;
+  fUpDCA[kAntiLambda] = 0.2;
 
   //Upper limit for pointing angle (= angle between between vector from primary to secondary vertex and reconstructed momentum of V0 mother particle) :
   fUpPointingAngle[kGamma] = 0.03;
   fUpPointingAngle[kK0s] = 0.03;
-  fUpPointingAngle[kLambda] = 0.03;
-  fUpPointingAngle[kAntiLambda] = 0.03;
+  fUpPointingAngle[kLambda] = 0.04;
+  fUpPointingAngle[kAntiLambda] = 0.04;
 
   //Upper limit for invariant mass of V0 mother :
-  fUpInvMass[kGamma][0] = 0.04;// second pair of brackets is for momentum bin: 0: below mother momentm of 2.5 GeV
+  fUpInvMass[kGamma][0] = 0.05;// second pair of brackets is for momentum bin: 0: below mother momentm of 2.5 GeV
   fUpInvMass[kGamma][1] = 0.07;//1: above 2.5 GeV
-  fUpInvMass[kK0s][0] = fUpInvMass[kK0s][1] = 0.51;
-  fUpInvMass[kLambda][0] = fUpInvMass[kLambda][1] = 1.22;
-  fUpInvMass[kAntiLambda][0] = fUpInvMass[kAntiLambda][1] = 1.22;
+  fUpInvMass[kK0s][0] = fUpInvMass[kK0s][1] = 0.50265;
+  fUpInvMass[kLambda][0] = fUpInvMass[kLambda][1] = 1.1207;
+  fUpInvMass[kAntiLambda][0] = fUpInvMass[kAntiLambda][1] = 1.1207;
 
   //Lower limit for invariant mass of V0 mother :
   fDownInvMass[kGamma] = -1.;
-  fDownInvMass[kK0s] = 0.49;
-  fDownInvMass[kLambda] = 1.;
-  fDownInvMass[kAntiLambda] = 1.;
+  fDownInvMass[kK0s] = 0.49265;
+  fDownInvMass[kLambda] = 1.107;
+  fDownInvMass[kAntiLambda] = 1.107;
 
   //Lower limit for distance from secondary vertex to primary vertex in x-y plane :
-  fDownRadius[kGamma] = 5.7;
+  fDownRadius[kGamma] = 6.;
   fDownRadius[kK0s] = 0.;
-  fDownRadius[kLambda] = 10.;
-  fDownRadius[kAntiLambda] = 10.;
+  fDownRadius[kLambda] = 0.;
+  fDownRadius[kAntiLambda] = 0.;
 
   //Upper limit for distance from secondary vertex to primary vertex in x-y plane :
   fUpRadius[kGamma] = 1000.;
-  fUpRadius[kK0s] = 1000.;
+  fUpRadius[kK0s] = 20.;
   fUpRadius[kLambda] = 1000.;
   fUpRadius[kAntiLambda] = 1000.;
 
@@ -126,7 +126,7 @@ AliTRDv0Info::AliTRDv0Info()
   fUpOpenAngle[kAntiLambda] = 3.15;
 
   //Upper limit for angle between daughter momentum plane and plane perpendicular to magnetic field (characteristically around zero for conversions) :
-  fUpPsiPair[kGamma] = 0.1;
+  fUpPsiPair[kGamma] = 0.05;
   fUpPsiPair[kK0s] = 1.6;
   fUpPsiPair[kLambda] = 1.6;
   fUpPsiPair[kAntiLambda] = 1.6;
@@ -146,6 +146,39 @@ AliTRDv0Info::AliTRDv0Info()
 
   fDownTPCPIDneg[AliPID::kProton] = 0.21;
   fDownTPCPIDpos[AliPID::kProton] = 0.21;
+
+ //Lower limit for likelihood value of combined PID :
+  fDownComPIDneg[AliPID::kElectron] = 0.21;
+  fDownComPIDpos[AliPID::kElectron] = 0.21;
+
+  fDownComPIDneg[AliPID::kMuon] = 0.21;
+  fDownComPIDpos[AliPID::kMuon] = 0.21;
+
+  fDownComPIDneg[AliPID::kPion] = 0.9;
+  fDownComPIDpos[AliPID::kPion] = 0.9;
+
+  fDownComPIDneg[AliPID::kKaon] = 0.21;
+  fDownComPIDpos[AliPID::kKaon] = 0.21;
+
+  fDownComPIDneg[AliPID::kProton] = 0.9;
+  fDownComPIDpos[AliPID::kProton] = 0.9;
+
+ //Lower limit for likelihood value of combined PID for daughter track which doesn't enter reference data (here: pion daughters from Lambda decays:
+  fDownComPIDnegPart[AliPID::kElectron] = 0.05;
+  fDownComPIDposPart[AliPID::kElectron] = 0.05;
+
+  fDownComPIDnegPart[AliPID::kMuon] = 0.05;
+  fDownComPIDposPart[AliPID::kMuon] = 0.05;
+
+  fDownComPIDnegPart[AliPID::kPion] = 0.05;
+  fDownComPIDposPart[AliPID::kPion] = 0.05;
+
+  fDownComPIDnegPart[AliPID::kKaon] = 0.05;
+  fDownComPIDposPart[AliPID::kKaon] = 0.05;
+
+  fDownComPIDnegPart[AliPID::kProton] = 0.05;
+  fDownComPIDposPart[AliPID::kProton] = 0.05;
+
   //////////////////////////////////////////////////////////////////////////////////
 
 }
@@ -193,6 +226,9 @@ void AliTRDv0Info::GetESDv0Info(AliESDv0 *esdv0)
       fInvMass[idecay] = InvMass(part1, part2, esdv0);//Calculate invariant mass for all of our four supposed decays
     }
   GetDetectorPID();//Gets all likelihood values from TPC, TOF and ITS PID for the fDetPID[kNDaughters][kNDetectors][AliPID::kSPECIES] array
+  CombinePID();//Bayesian combination of likelihoods from TPC and TOF
+
+  fMomentum = fTrack->GetOuterParam()->P();
 
     
 }
@@ -331,6 +367,8 @@ void AliTRDv0Info::V0fromTrack(AliTRDtrackInfo * const track, Int_t ivertex)
 
   fTrack = fESD->GetTrack(fTrackID);//sets track information
 
+  fMomentum = fTrack->GetOuterParam()->P();//Get track momentum from outer parameters
+
   fHasV0 = 0;
 
   //comparing index of track with indices of pos./neg. V0 daughter :
@@ -356,8 +394,57 @@ void AliTRDv0Info::GetDetectorPID()
   fTrackN->GetITSpid(fDetPID[kNeg][kITS]);
   fTrackP->GetITSpid(fDetPID[kPos][kITS]);
 
-}
+  Long_t statusN = fTrackN->GetStatus(); 
+  Long_t statusP = fTrackP->GetStatus(); 
+  
+  if(!(statusN & AliESDtrack::kTPCpid)){
+         for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+	fDetPID[kNeg][kTPC][iPart] = 0.2;
+      }    
+  }
+  if(!(statusN & AliESDtrack::kTOFpid)){
+    for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+      fDetPID[kNeg][kTOF][iPart] = 0.2;
+    }    
+    
+  }
+  if(!(statusN & AliESDtrack::kITSpid)){
+    for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+      fDetPID[kNeg][kITS][iPart] = 0.2;
+    }    
+  }
+  if(!(statusP & AliESDtrack::kTPCpid)){
+    for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+      fDetPID[kPos][kTPC][iPart] = 0.2;
+    }    
+  }
+  if(!(statusP & AliESDtrack::kTOFpid)){
+    for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+      fDetPID[kPos][kTOF][iPart] = 0.2;
+    }    
+    
+  }
+  if(!(statusP & AliESDtrack::kITSpid)){
+    for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+      fDetPID[kPos][kITS][iPart] = 0.2;
+    }    
+  }
 
+}
+//____________________________________________________________________________________
+void AliTRDv0Info::CombinePID()
+{
+  Double_t partrat[AliPID::kSPECIES] = {0.208, 0.010, 0.662, 0.019, 0.101};
+  
+  for(Int_t iSign = 0; iSign < kNDaughters; iSign++)
+    {
+    for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++)
+      {
+      fComPID[iSign][iPart] = (partrat[iPart]*fDetPID[iSign][kTPC][iPart]*fDetPID[iSign][kTOF][iPart])/((partrat[0]*fDetPID[iSign][kTPC][0]*fDetPID[iSign][kTOF][0])+(partrat[1]*fDetPID[iSign][kTPC][1]*fDetPID[iSign][kTOF][1])+(partrat[2]*fDetPID[iSign][kTPC][2]*fDetPID[iSign][kTOF][2])+(partrat[3]*fDetPID[iSign][kTPC][3]*fDetPID[iSign][kTOF][3])+(partrat[4]*fDetPID[iSign][kTPC][4]*fDetPID[iSign][kTOF][4]));
+      
+      }
+    }
+}
 //_________________________________________________
 Float_t AliTRDv0Info::Radius(AliESDv0 *esdv0)
 {//distance from secondary vertex to primary vertex in x-y plane
@@ -451,70 +538,89 @@ Bool_t AliTRDv0Info::GetV0PID(Int_t ipart, AliTRDtrackInfo *track)
     {
     
       if(pid == 0)
-  {     
-    V0fromTrack(track, ivertex);//Get the V0 corresponding to the track (if there is a V0)
+	{     
+	  V0fromTrack(track, ivertex);//Get the V0 corresponding to the track (if there is a V0)
     
-    if(fV0Momentum > 2.5)//divide into slots according to reconstructed momentum of the mother particle
-      {iPSlot = 1;}
-    else
-      {iPSlot = 0;}
-    //Accept track for a sample only if...
+	  if(fV0Momentum > 2.5)//divide into slots according to reconstructed momentum of the mother particle
+	    {iPSlot = 1;}
+	  else
+	    {iPSlot = 0;}
+	  //Accept track for a sample only if...
 
-    if(!(fHasV0))//... there is a V0 found for it
-      continue;
-    if(!(fQuality == 1))//... it fulfills our quality criteria
-      continue;
-    if(!(fDCA < fUpDCA[iDecay]))//... distance of closest approach between daughters is reasonably small
-      continue;
-    if(!(fPointingAngle < fUpPointingAngle[iDecay]))//... pointing angle between momentum of mother particle and vector from prim. to sec. vertex is small
-      continue;				  
-    if(!(fRadius > fDownRadius[iDecay]))//... x-y plane distance of decay point to prim. vertex is bigger than a certain minimum value (for conversions)
-      continue;
-    if(!(fOpenAngle < fUpOpenAngle[iDecay]))//... opening angle is close enough to zero (for conversions)
-      continue;
-    if(!(TMath::Abs(fPsiPair) < fUpPsiPair[iDecay]))//... Psi-pair angle is close enough to zero(for conversions)
-      continue;
+	  if(!(fHasV0))//... there is a V0 found for it
+	    continue;
+	  if(!(fQuality == 1))//... it fulfills our quality criteria
+	    continue;
+	  if(!(fDCA < fUpDCA[iDecay]))//... distance of closest approach between daughters is reasonably small
+	    continue;
+	  if(!(fPointingAngle < fUpPointingAngle[iDecay]))//... pointing angle between momentum of mother particle and vector from prim. to sec. vertex is small
+	    continue;				  
+	  if(!(fRadius > fDownRadius[iDecay]))//... x-y plane distance of decay point to prim. vertex is bigger than a certain minimum value (for conversions)
+	    continue;
+	  if(!(fOpenAngle < fUpOpenAngle[iDecay]))//... opening angle is close enough to zero (for conversions)
+	    continue;
+	  if(!(TMath::Abs(fPsiPair) < fUpPsiPair[iDecay]))//... Psi-pair angle is close enough to zero(for conversions)
+	    continue;
 
-    //specific cut criteria :
-    if(ipart == AliPID::kProton)
-      {//for proton sample: separate treatment of Lamba and Anti-Lambda decays:
-        //for Anti-Lambda:
-        //TPC PID likelihoods high enough for pi+ and anti-proton ; invariant mass calculated postulating these two particle species...
-        if((fDetPID[kNeg][kTPC][AliPID::kProton] > fDownTPCPIDneg[AliPID::kProton]) && (fDetPID[kPos][kTPC][AliPID::kPion] > fDownTPCPIDpos[AliPID::kPion]))
-    {
-      if(fNindex == fTrackID)
-        {
-          if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda]))
-      {
-        pid = 1;
-      }
-        }
+	  //specific cut criteria :
+	  if(ipart == AliPID::kProton)
+	    {//for proton sample: separate treatment of Lamba and Anti-Lambda decays:
+	      //for Anti-Lambda:
+	      //Combined PID likelihoods high enough for pi+ and anti-proton ; invariant mass calculated postulating these two particle species...
+	      if((fComPID[kNeg][AliPID::kProton] > fDownComPIDneg[AliPID::kProton]) && (fComPID[kPos][AliPID::kPion] > fDownComPIDposPart[AliPID::kPion]))
+		{
+		  if(fNindex == fTrackID)
+		    {
+		      if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda]))
+			{
+			  pid = 1;
+			}
+		    }
+		}
+	      //for Lambda:
+	      //TPC PID likelihoods high enough for pi- and proton ; invariant mass calculated accordingly
+	      if((fComPID[kNeg][AliPID::kPion] > fDownComPIDnegPart[AliPID::kPion]) && (fComPID[kPos][AliPID::kProton] > fDownComPIDpos[AliPID::kProton]))
+		{
+		  if(fPindex == fTrackID)
+		    {
+		      if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda]))
+			{
+			  pid = 1;
+			}
+		    }
+		}
+	    }
+	  //Invariant mass cut for K0s and photons, assuming two pions/two electrons as daughters:
+	  if((fInvMass[iDecay] > fUpInvMass[iDecay][iPSlot]) || (fInvMass[iDecay] < fDownInvMass[iDecay]))
+	    continue;
+	  //for K0s decays: equal TPC PID likelihood criteria for both daughters ; invariant mass calculated postulating two pions
+	  if(ipart == AliPID::kPion)
+	    {
+	      if((fDetPID[kNeg][kTPC][ipart] > fDownTPCPIDneg[ipart]) && (fDetPID[kPos][kTPC][ipart] > fDownTPCPIDpos[ipart]))
+		{
+		  pid = 1;						  
+		}
+	    }
+	  //for photon conversions: equal combined PID likelihood criteria for both daughters ; invariant mass calculated postulating two electrons
+	  if(ipart == AliPID::kElectron)
+	    {
+	      if(fMomentum > 1.75)
+		{//since combined PID performs a little worse in simulations than TPC standalone for higher momenta, ONLY TPC PID is used here
+		  if((fDetPID[kNeg][kTPC][ipart] > fDownTPCPIDneg[ipart]) && (fDetPID[kPos][kTPC][ipart] > fDownTPCPIDpos[ipart]))
+		    {
+		      pid = 1;						  
+		    }
+		}
+	      else
+		{//for low momenta, combined PID from TOF and TPC is used to get rid of proton contamination
+		  if((fComPID[kNeg][ipart] > fDownComPIDneg[ipart]) && (fComPID[kPos][ipart] > fDownComPIDpos[ipart]))
+		    {
+		      pid = 1;						  
+		    }
+		}
+	    }	  
+	} 
     }
-        //for Lambda:
-        //TPC PID likelihoods high enough for pi- and proton ; invariant mass calculated accordingly
-        if((fDetPID[kNeg][kTPC][AliPID::kPion] > fDownTPCPIDneg[AliPID::kPion]) && (fDetPID[kPos][kTPC][AliPID::kProton] > fDownTPCPIDpos[AliPID::kProton]))
-    {
-      if(fPindex == fTrackID)
-        {
-          if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda]))
-      {
-        pid = 1;
-      }
-        }
-    }
-      }
-    //for photon and K0s decays: equal TPC PID likelihood criteria for both daughters ; invariant mass calculated postulating two electrons/two pions
-    else 		  
-      if((fDetPID[kNeg][kTPC][ipart] > fDownTPCPIDneg[ipart]) && (fDetPID[kPos][kTPC][ipart] > fDownTPCPIDpos[ipart]))
-        {
-    if((fInvMass[iDecay] < fUpInvMass[iDecay][iPSlot]) && (fInvMass[iDecay] > fDownInvMass[iDecay]))
-      {
-        pid = 1;						  
-      }
-        }
-  }
-    }
-
   return pid;
   
 }
