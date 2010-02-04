@@ -419,8 +419,8 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
       result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, 0, kFALSE);
 
     //Store reference data
-    Bool_t refOK = StoreReferenceEmc(system[i],list,path.Data());
-    if(refOK) Log(Form("Reference data for EMC Amplitudes successfully stored."));
+    Bool_t refOK = StoreReferenceEmc(system[i],list);
+    if(refOK) Log(Form("Reference data for %s amplitudes successfully stored.",sysn[i]));
     
   }
   
@@ -428,39 +428,19 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
   else return kFALSE;
 }
 
-Bool_t AliPHOSPreprocessor::StoreReferenceEmc(Int_t system, TList* list, const char* path)
+Bool_t AliPHOSPreprocessor::StoreReferenceEmc(Int_t system, TList* list)
 {
   //Put 2D calibration histograms (E vs Time) prepared by DAQ/HLT to the reference storage.
   //system is DAQ or HLT, TList is the list of FES sources.
 
-  TIter iter(list);
-  TObjString *source;
-  TObjArray objArr;
-  
-  while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
-    
-    TString fileName = GetFile(system, "AMPLITUDES", source->GetName());
-    TFile f(fileName);
-    
-    if(!f.IsOpen()) {
-      Log(Form("Source file %s is not opened, EMC reference data will not be stored!",fileName.Data()));
-      return kFALSE;
-    }
-    
-    TList * keylist = f.GetListOfKeys();
-    Int_t nkeys   = f.GetNkeys();
-    
-    for(Int_t ikey=0; ikey<nkeys; ikey++) {
-      TKey* key = (TKey*)keylist->At(ikey);
-      TObject* obj = f.Get(key->GetName());
-      objArr.Add(obj);
-    }
-  }
+  if(system!=kDAQ) return kFALSE;
 
-  AliCDBMetaData metaData;
-  metaData.SetResponsible("Boris Polishchuk");
-  
-  Bool_t resultRef = StoreReferenceData(path,"Amplitudes",&objArr, &metaData);
+  TObjString *source = dynamic_cast<TObjString *> (list->First());
+  if(!source) return kFALSE;
+
+  TString fileName = GetFile(system, "AMPLITUDES", source->GetName());
+
+  Bool_t resultRef = StoreReferenceFile(fileName.Data(),"CalibRefPHOS.root");
   return resultRef;
 
 }
