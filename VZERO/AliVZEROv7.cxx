@@ -76,7 +76,7 @@ AliVZEROv7:: AliVZEROv7():AliVZERO(),
    fV0CLidThickness(0.30),
    fV0CCellThickness(2.00),
    fV0CBoxThickness(4.70),
-   fV0COffsetFibers(1.0),
+   fV0COffsetFibers(1.125),
    fV0CLightYield(93.75),
    fV0CLightAttenuation(0.05),
    fV0CnMeters(15.0),
@@ -138,7 +138,7 @@ AliVZEROv7::AliVZEROv7(const char *name, const char *title):AliVZERO(name,title)
    fV0CLidThickness(0.30),
    fV0CCellThickness(2.00),
    fV0CBoxThickness(4.70),
-   fV0COffsetFibers(1.0),
+   fV0COffsetFibers(1.125),
    fV0CLightYield(93.75),
    fV0CLightAttenuation(0.05),
    fV0CnMeters(15.0),
@@ -272,13 +272,45 @@ void AliVZEROv7::CreateGeometry()
     partube[0] =   fV0CRMin;
     partube[1] =   fV0CRBox;
     partube[2] =   fV0CLidThickness/2.0;
-    TGeoTube   *sV0CA = new TGeoTube("V0CA", partube[0], partube[1], partube[2]);
-    TGeoVolume *v0CA  = new TGeoVolume("V0CA",sV0CA,medV0CCar);
-    TGeoTranslation *tr2 = new TGeoTranslation(0.,0., fV0CBoxThickness/2.0-partube[2]);
-    TGeoTranslation *tr3 = new TGeoTranslation(0.,0.,-fV0CBoxThickness/2.0+partube[2]);
-    v0RI->AddNode(v0CA,1,tr2);
-    v0RI->AddNode(v0CA,2,tr3);
-    v0CA->SetLineColor(kYellow);
+    //    TGeoTube   *sV0CA = new TGeoTube("V0CA", partube[0], partube[1], partube[2]);
+    //    TGeoVolume *v0CA  = new TGeoVolume("V0CA",sV0CA,medV0CCar);
+    //    TGeoTranslation *tr2 = new TGeoTranslation(0.,0., fV0CBoxThickness/2.0-partube[2]);
+    //    TGeoTranslation *tr3 = new TGeoTranslation(0.,0.,-fV0CBoxThickness/2.0+partube[2]);
+    //    v0RI->AddNode(v0CA,1,tr2);
+    //    v0RI->AddNode(v0CA,2,tr3);
+    //    v0CA->SetLineColor(kYellow);
+
+    Float_t rInt1 = 11.5, rOut1 = 20.0, rInt2 = 9.0;
+
+    TGeoTube   *sV0CA4 = new TGeoTube("V0CA4", partube[0], rInt2, partube[2] - 0.1);
+    TGeoVolume *v0CA4  = new TGeoVolume("V0CA4",sV0CA4,medV0CCar);
+    TGeoTranslation *tr21 = new TGeoTranslation(0.,0., fV0CBoxThickness/2.0-partube[2] + 0.1);
+    v0RI->AddNode(v0CA4,1,tr21);
+    v0CA4->SetLineColor(kYellow);
+
+    TGeoTube   *sV0CA5 = new TGeoTube("V0CA5", rInt2, partube[1], partube[2]);
+    TGeoVolume *v0CA5  = new TGeoVolume("V0CA5",sV0CA5,medV0CCar);
+    TGeoTranslation *tr22 = new TGeoTranslation(0.,0., fV0CBoxThickness/2.0-partube[2]);
+    v0RI->AddNode(v0CA5,1,tr22);
+    v0CA5->SetLineColor(kYellow);
+
+    TGeoTube   *sV0CA1 = new TGeoTube("V0CA1",partube[0], rInt1, partube[2]);
+    TGeoVolume *v0CA1  = new TGeoVolume("V0CA1",sV0CA1,medV0CCar);
+    TGeoTranslation *tr31 = new TGeoTranslation(0.,0.,-fV0CBoxThickness/2.0+partube[2]);
+    v0RI->AddNode(v0CA1,1,tr31);
+    v0CA1->SetLineColor(kYellow);
+
+    TGeoTube   *sV0CA2 = new TGeoTube("V0CA2", rInt1, rOut1, partube[2] - 0.1);
+    TGeoVolume *v0CA2  = new TGeoVolume("V0CA2",sV0CA2,medV0CCar);
+    TGeoTranslation *tr32 = new TGeoTranslation(0.,0.,-fV0CBoxThickness/2.0+partube[2] - 0.1);
+    v0RI->AddNode(v0CA2,1,tr32);
+    v0CA2->SetLineColor(kYellow);
+
+    TGeoTube   *sV0CA3 = new TGeoTube("V0CA3", rOut1, partube[1], partube[2]);
+    TGeoVolume *v0CA3  = new TGeoVolume("V0CA3",sV0CA3,medV0CCar);
+    TGeoTranslation *tr33 = new TGeoTranslation(0.,0.,-fV0CBoxThickness/2.0+partube[2]);
+    v0RI->AddNode(v0CA3,1,tr33);
+    v0CA3->SetLineColor(kYellow);
 
     // Creation of aluminum rings 3.0 mm thick to maintain the v0RI pieces : 
     partube[0] =   fV0CRMin - 0.3;
@@ -312,7 +344,7 @@ void AliVZEROv7::CreateGeometry()
     TGeoTubeSeg *sV0R1 = new TGeoTubeSeg("V0R1", partubs[0], partubs[1], partubs[2],
 					 partubs[3], partubs[4]);
     TGeoVolume  *v0R1  = new TGeoVolume("V0R1",sV0R1,medV0CSci);				       
-    TGeoTranslation *tr4 = new TGeoTranslation(0.,0.,-offset);
+    TGeoTranslation *tr4 = new TGeoTranslation(0.,0., offset);
     v0R0->AddNode(v0R1,1,tr4);
     v0R1->SetLineColor(kColorVZERO);
 
@@ -324,7 +356,7 @@ void AliVZEROv7::CreateGeometry()
     TGeoTubeSeg *sV0R2 = new TGeoTubeSeg("V0R2", partubs[0], partubs[1], partubs[2],
 					 partubs[3], partubs[4]);
     TGeoVolume  *v0R2  = new TGeoVolume("V0R2",sV0R2,medV0CSci);
-    TGeoTranslation *tr5 = new TGeoTranslation(0.0,0.2,-offset + fV0COffsetFibers);
+    TGeoTranslation *tr5 = new TGeoTranslation(0.0,0.2, offset - fV0COffsetFibers);
     v0R0->AddNode(v0R2,1,tr5);
     v0R2->SetLineColor(kColorVZERO);
 
@@ -338,7 +370,7 @@ void AliVZEROv7::CreateGeometry()
     TGeoTubeSeg *sV0R3 = new TGeoTubeSeg("V0R3", partubs[0], partubs[1], partubs[2],
 					 partubs[3], partubs[4]);
     TGeoVolume  *v0R3  = new TGeoVolume("V0R3",sV0R3,medV0CSci);
-    TGeoTranslation *tr6 = new TGeoTranslation(0.,0.2,-offset + 2.0*fV0COffsetFibers);
+    TGeoTranslation *tr6 = new TGeoTranslation(0.,0.2, offset - 2.0*fV0COffsetFibers);
     v0R0->AddNode(v0R3,1,tr6);
     v0R3->SetLineColor(kColorVZERO);
     partubs[3]     = 112.5-22.5;
@@ -359,7 +391,7 @@ void AliVZEROv7::CreateGeometry()
     TGeoTubeSeg *sV0R5 = new TGeoTubeSeg("V0R5", partubs[0], partubs[1], partubs[2],
 					 partubs[3], partubs[4]);
     TGeoVolume  *v0R5  = new TGeoVolume("V0R5",sV0R5,medV0CSci);
-    TGeoTranslation *tr7 = new TGeoTranslation(0.,0.0,-offset + 2.0*fV0COffsetFibers);					      
+    TGeoTranslation *tr7 = new TGeoTranslation(0.,0.0, offset - 2.0*fV0COffsetFibers + 0.25);					      
     v0R0->AddNode(v0R5,1,tr7);
     v0R5->SetLineColor(kColorVZERO);
     partubs[3]     = 112.5-22.5+x;
