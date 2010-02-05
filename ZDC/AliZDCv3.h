@@ -27,6 +27,10 @@ public:
   virtual void  InitTables();
   virtual void  StepManager();
   
+  void SetVCollAperture(Float_t aperture)
+  	{if(aperture<3.5) fVCollAperture = aperture; 
+	 else printf("\n\n AliZDCv3: WARNING: The TCTVB aperture MUST be < 3.5 cm\n\n");}
+  
  
 protected:
 
@@ -70,8 +74,11 @@ protected:
   Int_t fpLostITC, fpLostD1C, fpDetectedC, fnDetectedC; // Side C
   Int_t fpLostITA, fpLostD1A, fpLostTDI, fpDetectedA, fnDetectedA; // Side A
   
+  // Parameters to describe vertical collimator aperture
+  Float_t fVCollAperture; // Semi-aperture of TCTVB jaws
+  Float_t fVCollCentreY;  // Centre of TCTVB jaw apertures
   
-   ClassDef(AliZDCv3,4)  // Zero Degree Calorimeter version 1
+  ClassDef(AliZDCv3,5)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif

@@ -76,7 +76,9 @@ AliZDCv3::AliZDCv3() :
   fpLostD1A(0), 
   fpLostTDI(0), 
   fpDetectedA(0),
-  fnDetectedA(0)
+  fnDetectedA(0),
+  fVCollAperture(7./2.),
+  fVCollCentreY(0.)
 {
   //
   // Default constructor for Zero Degree Calorimeter
@@ -108,7 +110,10 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fpLostD1A(0), 
   fpLostTDI(0), 
   fpDetectedA(0),
-  fnDetectedA(0)  
+  fnDetectedA(0),
+  fVCollAperture(7./2.),
+  fVCollCentreY(0.)
+  
 {
   //
   // Standard constructor for Zero Degree Calorimeter 
@@ -299,10 +304,22 @@ void AliZDCv3::CreateBeamLine()
   tubpar[1] = 7.0/2.;
   tubpar[2] = totLength1/2.;
   gMC->Gsvolu("QE02", "ELTU", idtmed[10], tubpar, 3);  
-  gMC->Gspos("QE02", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY"); 
+  gMC->Gspos("QE01", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY"); 
   gMC->Gspos("QE02", 1, "QE01", 0., 0., 0., 0, "ONLY");  
   // Ch.debug
-  //printf("	QE02 ELTU from z = %1.2f to z= %1.2f\n",-zd1,-2*tubpar[2]-zd1);
+  printf("	QE01 ELTU from z = %1.2f to z= %1.2f\n",-zd1,-2*tubpar[2]-zd1);
+  
+  // Vertical collimator jaws (defined ONLY if fVCollAperture<3.5!)
+  if(fVCollAperture<3.5){
+    boxpar[0] = 5.4/2.;
+    boxpar[1] = (3.5-fVCollAperture-fVCollCentreY-0.8)/2.;
+    boxpar[2] = 124.4/2.;
+    printf("\n  AliZDCv3 -> Setting VCollimator jaw: aperture %1.2f center %1.2f thickness %1.3f\n\n", 
+    	fVCollAperture,fVCollCentreY,2*boxpar[1]);
+    gMC->Gsvolu("QCVC" , "BOX ", idtmed[7], boxpar, 3); 
+    gMC->Gspos("QCVC", 1, "QE02", -boxpar[0],  fVCollAperture+fVCollCentreY+boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
+    gMC->Gspos("QCVC", 2, "QE02", -boxpar[0], -fVCollAperture+fVCollCentreY-boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
+  }
   
   zd1 += tubpar[2] * 2.;
   
@@ -915,7 +932,17 @@ void AliZDCv3::CreateBeamLine()
   //printf("	QA07 TUBE from z = %1.2f to z= %1.2f\n",zd2,2*tubpar[2]+zd2);
   gMC->Gspos("QA06", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY"); 
   gMC->Gspos("QA07", 1, "QA06", 0., 0., 0., 0, "ONLY");  
-
+  
+  // Vertical collimator jaws (defined ONLY if fVCollAperture<3.5!)
+  if(fVCollAperture<3.5){
+    boxpar[0] = 5.4/2.;
+    boxpar[1] = (3.5-fVCollAperture-fVCollCentreY-0.8)/2.;
+    boxpar[2] = 124.4/2.;
+    gMC->Gsvolu("QCVA" , "BOX ", idtmed[7], boxpar, 3); 
+    gMC->Gspos("QCVA", 1, "QA07", -boxpar[0], fVCollAperture+fVCollCentreY+boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
+    gMC->Gspos("QCVA", 2, "QA07", -boxpar[0], -fVCollAperture+fVCollCentreY-boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
+  }
+  
   zd2 += 2.*tubpar[2];
       
   // VCTCP second part: transition cone from ID=180 to ID=212.7 
