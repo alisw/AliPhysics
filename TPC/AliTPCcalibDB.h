@@ -49,6 +49,7 @@ class AliTPCcalibDB : public TObject
   void   SetRun(Long64_t run);   
   void   Update();  //update entries
   void   UpdateRunInformations(Int_t run, Bool_t force=kFALSE);
+  void   UpdateNonRec();
   //
   Long64_t GetRun() const {return fRun;}
   //

@@ -393,18 +393,18 @@ void AliTPCcalibDB::Update(){
     fCEData=(TObjArray*)(entry->GetObject());
   }
   //RAW calibration data
-  entry          = GetCDBEntry("TPC/Calib/Raw");
-  if (entry){
-    entry->SetOwner(kTRUE);
-    TObjArray *arr=(TObjArray*)(entry->GetObject());
-    if (arr) fCalibRaw=(AliTPCCalibRaw*)arr->At(0);
-  }
-  //QA calibration data
-  entry          = GetCDBEntry("TPC/Calib/QA");
-  if (entry){
-    entry->SetOwner(kTRUE);
-    fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
-  }
+ //  entry          = GetCDBEntry("TPC/Calib/Raw");
+//   if (entry){
+//     entry->SetOwner(kTRUE);
+//     TObjArray *arr=(TObjArray*)(entry->GetObject());
+//     if (arr) fCalibRaw=(AliTPCCalibRaw*)arr->At(0);
+//   }
+//   //QA calibration data
+//   entry          = GetCDBEntry("TPC/Calib/QA");
+//   if (entry){
+//     entry->SetOwner(kTRUE);
+//     fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
+//   }
   
   entry          = GetCDBEntry("TPC/Calib/Mapping");
   if (entry){
@@ -444,6 +444,28 @@ void AliTPCcalibDB::Update(){
 
   //
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
+}
+
+void AliTPCcalibDB::UpdateNonRec(){
+  //
+  // Update/Load the parameters which are important for QA studies
+  // and not used yet for the reconstruction
+  //
+   //RAW calibration data
+  AliCDBEntry * entry=0;
+  entry          = GetCDBEntry("TPC/Calib/Raw");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    TObjArray *arr=(TObjArray*)(entry->GetObject());
+    if (arr) fCalibRaw=(AliTPCCalibRaw*)arr->At(0);
+  }
+  //QA calibration data
+  entry          = GetCDBEntry("TPC/Calib/QA");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
+  }
+  
 }
 
 
@@ -1584,7 +1606,8 @@ Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
     AliError("Default Storage not set. Cannot create calibration Tree!");
     return kFALSE;
   }
-  
+  UpdateNonRec();  // load all infromation now
+
   AliTPCPreprocessorOnline prep;
   //noise and pedestals
   if (GetPedestals()) prep.AddComponent(new AliTPCCalPad(*(GetPedestals())));
