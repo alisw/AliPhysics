@@ -443,7 +443,7 @@ void AliTPC::CreateMaterials()
   wmat[0]=0.194;
   wmat[1]=0.023;
   wmat[2]=0.443;
-  wmat[3]=0.340;
+  wmat[3]=0.34;
 
   density=1.82;
 
@@ -461,9 +461,9 @@ void AliTPC::CreateMaterials()
   zmat[2]=8.;
   zmat[3]=14.;
 
-  wmat[0]=0.225;
+  wmat[0]=0.257;
   wmat[1]=0.03;
-  wmat[2]=0.443;
+  wmat[2]=0.412;
   wmat[3]=0.3;
 
   density=1.725;
@@ -553,6 +553,28 @@ void AliTPC::CreateMaterials()
   density=1.25;
 
   AliMixture(26,"Epoxy",amat,zmat,density,-3,wmat);
+  //
+  // epoxy film - 90% epoxy, 10% glass fiber 
+  //
+  amat[0]=12.01;
+  amat[1]=1.;
+  amat[2]=15.994;
+  amat[3]=28.086;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+  zmat[3]=14.;
+
+  wmat[0]=0.596;
+  wmat[1]=0.071;
+  wmat[2]=0.257;
+  wmat[3]=0.076;
+
+
+  density=1.345;
+
+  AliMixture(34, "Epoxy-film",amat,zmat,density,4,wmat);
 
   // Plexiglas  C5H8O2
 
@@ -640,6 +662,7 @@ void AliTPC::CreateMaterials()
   density=1.;
 
   AliMixture(32,"Water",amat,zmat,density,-2,wmat);  
+
  
   //----------------------------------------------------------
   // tracking media for gases
@@ -674,7 +697,8 @@ void AliTPC::CreateMaterials()
   AliMedium(19,"Peek",30,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
   AliMedium(21,"Alumina",31,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);    
   AliMedium(22,"Water",32,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
-  AliMedium(23,"Brass",33,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);  
+  AliMedium(23,"Brass",33,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(24,"Epoxyfm",34,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);  
 }
 
 void AliTPC::GenerNoise(Int_t tablesize)

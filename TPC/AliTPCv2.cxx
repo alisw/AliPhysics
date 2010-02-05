@@ -332,9 +332,9 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *tv8 = new TGeoVolume("TPC_IFC9",t8,sm5);
   TGeoVolume *tv9 = new TGeoVolume("TPC_IFC10",t9,sm4);
   // central part - 1 copy
-  TGeoTube *t10 = new TGeoTube(76.6774,78.745,93.75); // tedlar 38 microns 
-  TGeoTube *t11 = new TGeoTube(76.6812,78.7412,93.75); // prepreg3 300 microns
-  TGeoTube *t12 = new TGeoTube(76.7112,78.7112,93.75); // nomex 2 cm
+  TGeoTube *t10 = new TGeoTube(76.6774,78.785,93.75); // tedlar 38 microns 
+  TGeoTube *t11 = new TGeoTube(76.6812,78.7812,93.75); // prepreg3 300 microns
+  TGeoTube *t12 = new TGeoTube(76.7312,78.7312,93.75); // nomex 2 cm
   //
   TGeoVolume *tv10 = new TGeoVolume("TPC_IFC11",t10,sm2);
   TGeoVolume *tv11 = new TGeoVolume("TPC_IFC12",t11,sm5);
@@ -372,22 +372,26 @@ void AliTPCv2::CreateGeometry()
   cfl->DefineSection(0,-71.1,59.7,61.2);
   cfl->DefineSection(1,-68.6,59.7,61.2);
   //
-  cfl->DefineSection(2,-68.6,60.6324,61.2);
-  cfl->DefineSection(3,68.6,60.6324,61.2); 
+  cfl->DefineSection(2,-68.6,60.6124,61.2);
+  cfl->DefineSection(3,68.6,60.6124,61.2); 
   //
   cfl->DefineSection(4,68.6,59.7,61.2);
   cfl->DefineSection(5,71.1,59.7,61.2);  
   //
   TGeoVolume *cflv = new TGeoVolume("TPC_CDR",cfl,m3);
   // sandwich
-  TGeoTube *cd1 = new TGeoTube(60.6424,61.19,71.1);
-  TGeoTube *cd2 = new TGeoTube(60.6462,61.1862,71.1);
-  TGeoTube *cd3 = new TGeoTube(60.6662,61.1662,71.1);  
+  TGeoTube *cd1 = new TGeoTube(60.6224,61.19,71.1);
+  TGeoTube *cd2 = new TGeoTube(60.6262,61.1862,71.1);
+  TGeoTube *cd3 = new TGeoTube(60.6462,61.1662,71.1);  
+  TGeoTube *cd4 = new TGeoTube(60.6562,61.1562,71.1);  
   //
   TGeoMedium *sm6 = gGeoManager->GetMedium("TPC_Prepreg1");
+  TGeoMedium *sm8 = gGeoManager->GetMedium("TPC_Epoxyfm");
   TGeoVolume *cd1v = new TGeoVolume("TPC_CDR1",cd1,sm2); //tedlar
   TGeoVolume *cd2v = new TGeoVolume("TPC_CDR2",cd2,sm6);// prepreg1
-  TGeoVolume *cd3v = new TGeoVolume("TPC_CDR3",cd3,sm4); //nomex
+  TGeoVolume *cd3v = new TGeoVolume("TPC_CDR3",cd3,sm8); //epoxy film
+  TGeoVolume *cd4v = new TGeoVolume("TPC_CDR4",cd4,sm4); //nomex
+
   //
   // seals for central drum 2 copies
   //
@@ -417,7 +421,7 @@ void AliTPCv2::CreateGeometry()
   //
   TGeoRotation *ref = new TGeoRotation("ref",90.,0.,90.,90.,180.,0.);
   //
-  cd1v->AddNode(cd2v,1); cd2v->AddNode(cd3v,1); cflv->AddNode(cd1v,1);
+  cd1v->AddNode(cd2v,1); cd2v->AddNode(cd3v,1); cd3v->AddNode(cd4v,1); cflv->AddNode(cd1v,1); 
   //
   v1->AddNode(siv,1,new TGeoTranslation(0.,0.,-69.9));
   v1->AddNode(siv,2,new TGeoTranslation(0.,0.,69.9));
