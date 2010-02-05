@@ -287,6 +287,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
   // Reset Positions array
   memset(fPositions, 0, sizeof(UChar_t)*kMaxRows);
   AliTRDcluster **cliter = &helpCL[0]; // Declare iterator running over the whole array
+  const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam(); //the dynamic cast in GetRecoParam is slow, so caching the pointer to it
   for(Int_t i = 0; i < fN; i++){
     // boundary check
     AliTRDcluster *cl = *(cliter++);
@@ -316,7 +317,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
     fX += cl->GetX(); 
     
     // Debug Streaming
-    if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 3){
+    if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) >= 3){
       AliTRDcluster dcl(*cl);
       TTreeSRedirector &cstream = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
       cstream << "BuildIndices"

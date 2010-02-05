@@ -867,24 +867,26 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
 // Author : Alexandru Bercuci <A.Bercuci@gsi.de>
 // Debug  : level >3
 
-  if(!fkReconstructor->GetRecoParam() ){
+  const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam(); //the dynamic cast in GetRecoParam is slow, so caching the pointer to it
+
+  if(!recoParam){
     AliError("Tracklets can not be used without a valid RecoParam.");
     return kFALSE;
   }
   // Initialize reco params for this tracklet
   // 1. first time bin in the drift region
   Int_t t0 = 14;
-  Int_t kClmin = Int_t(fkReconstructor->GetRecoParam() ->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
+  Int_t kClmin = Int_t(recoParam->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
 
-  Double_t sysCov[5]; fkReconstructor->GetRecoParam()->GetSysCovMatrix(sysCov);	
+  Double_t sysCov[5]; recoParam->GetSysCovMatrix(sysCov);	
   Double_t s2yTrk= fRefCov[0], 
            s2yCl = 0., 
            s2zCl = GetPadLength()*GetPadLength()/12., 
            syRef = TMath::Sqrt(s2yTrk),
            t2    = GetTilt()*GetTilt();
   //define roads
-  Double_t kroady = 1., //fkReconstructor->GetRecoParam() ->GetRoad1y();
-           kroadz = GetPadLength() * fkReconstructor->GetRecoParam()->GetRoadzMultiplicator() + 1.;
+  Double_t kroady = 1., //recoParam->GetRoad1y();
+           kroadz = GetPadLength() * recoParam->GetRoadzMultiplicator() + 1.;
   // define probing cluster (the perfect cluster) and default calibration
   Short_t sig[] = {0, 0, 10, 30, 10, 0,0};
   AliTRDcluster cp(fDet, 6, 75, 0, sig, 0);
@@ -997,7 +999,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
     }
     lr = ir; if(nr>=3) break;
   }
-  if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming()){
+  if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming()){
     TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
     UChar_t stat(0);
     if(IsKink()) SETBIT(stat, 1);
@@ -1293,6 +1295,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
 
   Int_t n = 0;
   AliTRDcluster *c=NULL, **jc = &fClusters[0];
+  const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam(); //the dynamic cast in GetRecoParam is slow, so caching the pointer to it
   for (Int_t ic=0; ic<kNtb; ic++, ++jc) {
     xc[ic]  = -1.;
     yc[ic]  = 999.;
@@ -1322,7 +1325,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], zcorr?zt:-1., dydx);
     sy[n]  = TMath::Sqrt(c->GetSigmaY2());
 
-    yc[n]   = fkReconstructor->GetRecoParam()->UseGAUS() ? 
+    yc[n]  = recoParam->UseGAUS() ? 
       c->GetYloc(y0, sy[n], GetPadWidth()): c->GetY();
     zc[n]   = c->GetZ();
     //optional tilt correction

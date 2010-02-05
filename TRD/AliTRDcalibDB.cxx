@@ -760,7 +760,7 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
       //return -1;
       return 30;
     }
-    if(calDCSeor->GetGlobalNumberOfTimeBins() > 0.0) return calDCSeor->GetGlobalNumberOfTimeBins();
+    if(calDCSeor->GetGlobalNumberOfTimeBins() > 0) return calDCSeor->GetGlobalNumberOfTimeBins();
     else return 30;
   }
   // if SOR is available and the number of timebins is > -1, take this, otherwise check EOR
@@ -782,7 +782,7 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
   } else {
     // SOR has unphysical time parameter, take EOR
     if(calDCSeor) {
-     if(calDCSeor->GetGlobalNumberOfTimeBins() > 0.0) return calDCSeor->GetGlobalNumberOfTimeBins(); 
+     if(calDCSeor->GetGlobalNumberOfTimeBins() > 0) return calDCSeor->GetGlobalNumberOfTimeBins(); 
      else return 30;
     }
     return 30;  // Both SOR and EOR not available

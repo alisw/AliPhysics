@@ -775,7 +775,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     return kFALSE;      
   }
 
-  AliTRDcalibDB  *calibration = AliTRDcalibDB::Instance();
+  AliTRDcalibDB* const calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
     AliFatal("No AliTRDcalibDB instance available\n");
     return kFALSE;  
@@ -786,10 +786,12 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     return kFALSE;
   }
 
-  fMaxThresh            = fReconstructor->GetRecoParam()->GetClusMaxThresh();
-  fSigThresh            = fReconstructor->GetRecoParam()->GetClusSigThresh();
-  fMinMaxCutSigma       = fReconstructor->GetRecoParam()->GetMinMaxCutSigma();
-  fMinLeftRightCutSigma = fReconstructor->GetRecoParam()->GetMinLeftRightCutSigma();
+  const AliTRDrecoParam* const recoParam = fReconstructor->GetRecoParam();
+
+  fMaxThresh            = recoParam->GetClusMaxThresh();
+  fSigThresh            = recoParam->GetClusSigThresh();
+  fMinMaxCutSigma       = recoParam->GetMinMaxCutSigma();
+  fMinLeftRightCutSigma = recoParam->GetMinLeftRightCutSigma();
 
   Int_t istack  = fIndexes->GetStack();
   fLayer  = fIndexes->GetLayer();
@@ -844,15 +846,15 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Calibration object with the pad status
   fCalPadStatusROC       = calibration->GetPadStatusROC(fDet);
 
-  SetBit(kLUT, fReconstructor->GetRecoParam()->UseLUT());
-  SetBit(kGAUS, fReconstructor->GetRecoParam()->UseGAUS());
+  SetBit(kLUT, recoParam->UseLUT());
+  SetBit(kGAUS, recoParam->UseGAUS());
   SetBit(kHLT, fReconstructor->IsHLT());
   
   firstClusterROC = -1;
   fClusterROC     =  0;
 
   // Apply the gain and the tail cancelation via digital filter
-  if(fReconstructor->GetRecoParam()->UseTailCancelation()) TailCancelation();
+  if(recoParam->UseTailCancelation()) TailCancelation(recoParam);
 
   MaxStruct curr, last;
   Int_t nMaximas = 0, nCorrupted = 0;
@@ -872,7 +874,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   }
   if(last.row>-1) CreateCluster(last);
 
-  if(fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 2 && fReconstructor->IsDebugStreaming()){
+  if(recoParam->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 2 && fReconstructor->IsDebugStreaming()){
     TTreeSRedirector* fDebugStream = fReconstructor->GetDebugStream(AliTRDrecoParam::kClusterizer);
     (*fDebugStream) << "MakeClusters"
       << "Detector="   << det
@@ -1232,11 +1234,10 @@ Float_t AliTRDclusterizer::Unfold(Double_t eps, Int_t layer, const Double_t *con
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::TailCancelation()
+void AliTRDclusterizer::TailCancelation(const AliTRDrecoParam* const recoParam)
 {
   //
-  // Applies the tail cancelation and gain factors: 
-  // Transform fDigits to fDigits
+  // Applies the tail cancelation
   //
 
   Int_t iRow  = 0;
@@ -1246,8 +1247,8 @@ void AliTRDclusterizer::TailCancelation()
   Float_t *arr = new Float_t[fTimeTotal];  // temp array containing the ADC signals
 
   TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDrecoParam::kClusterizer);
-  Bool_t debugStreaming = fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming();
-  Int_t nexp = fReconstructor->GetRecoParam()->GetTCnexp();
+  Bool_t debugStreaming = recoParam->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming();
+  Int_t nexp = recoParam->GetTCnexp();
   while(fIndexes->NextRCIndex(iRow, iCol))
     {
       // if corrupted then don't make the tail cancallation
@@ -1284,7 +1285,7 @@ void AliTRDclusterizer::TailCancelation()
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::DeConvExp(Float_t *const arr, const Int_t n, const Int_t nexp) 
+void AliTRDclusterizer::DeConvExp(Float_t *const arr, const Int_t nTime, const Int_t nexp) 
 {
   //
   // Tail cancellation by deconvolution for PASA v4 TRF
@@ -1317,7 +1318,7 @@ void AliTRDclusterizer::DeConvExp(Float_t *const arr, const Int_t n, const Int_t
   coefficients[0] = c1;
   coefficients[1] = c2;
 
-  Float_t dt = 0.1;
+  Double_t dt = 0.1;
 
   rates[0] = TMath::Exp(-dt/(r1));
   rates[1] = TMath::Exp(-dt/(r2));
@@ -1334,7 +1335,7 @@ void AliTRDclusterizer::DeConvExp(Float_t *const arr, const Int_t n, const Int_t
     reminder[k] = 0.0;
   }
 
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < nTime; i++) {
 
     result = (arr[i] - correction);    // No rescaling
     arr[i] = result;

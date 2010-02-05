@@ -32,6 +32,7 @@ class AliTRDCalROC;
 class AliTRDReconstructor;
 class AliTRDCalSingleChamberStatus;
 class AliTRDrawStreamBase;
+class AliTRDrecoParam;
 
 class AliTRDclusterizer : public TNamed 
 {
@@ -108,8 +109,8 @@ class AliTRDclusterizer : public TNamed
 
 protected:
 
-  void             DeConvExp (Float_t *const arr, const Int_t nTimeTotal, const Int_t nexp);
-  void             TailCancelation();
+  void             DeConvExp (Float_t *const arr, const Int_t nTime, const Int_t nexp);
+  void             TailCancelation(const AliTRDrecoParam* const recoParam);
 
   Float_t  Unfold(Double_t eps, Int_t layer, const Double_t *const padSignal) const;
   
