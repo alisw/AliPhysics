@@ -192,26 +192,26 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   TString weightFlag[3] = {"w_Qu_","w_Qu^2_","w_QuQaQb_"}; 
   for(Int_t i=0;i<3;i++)
   {
-   fHistSumOfWeightsPtRP[i] = new TH1D(Form("Flow_SumOfWeights%dPtRP_SP",weightFlag[i].Data()),
-                              Form("Flow_SumOfWeights%dPtRP_SP",weightFlag[i].Data()),iNbinsPt,dPtMin,dPtMax);
+   fHistSumOfWeightsPtRP[i] = new TH1D(Form("Flow_SumOfWeights%sPtRP_SP",weightFlag[i].Data()),
+                              Form("Flow_SumOfWeights%sPtRP_SP",weightFlag[i].Data()),iNbinsPt,dPtMin,dPtMax);
    fHistSumOfWeightsPtRP[i] -> SetYTitle("sum (*)");
    fHistSumOfWeightsPtRP[i] -> SetXTitle("p_{T}");
    fHistList->Add(fHistSumOfWeightsPtRP[i]);
  
-   fHistSumOfWeightsEtaRP[i] = new TH1D(Form("Flow_SumOfWeights%dEtaRP_SP",weightFlag[i].Data()),
-                               Form("Flow_SumOfWeights%dEtaRP_SP",weightFlag[i].Data()),iNbinsEta,dEtaMin,dEtaMax);
+   fHistSumOfWeightsEtaRP[i] = new TH1D(Form("Flow_SumOfWeights%sEtaRP_SP",weightFlag[i].Data()),
+                               Form("Flow_SumOfWeights%sEtaRP_SP",weightFlag[i].Data()),iNbinsEta,dEtaMin,dEtaMax);
    fHistSumOfWeightsEtaRP[i] -> SetYTitle("sum (*)");
    fHistSumOfWeightsEtaRP[i] -> SetXTitle("#eta");
    fHistList->Add(fHistSumOfWeightsEtaRP[i]);
   
-   fHistSumOfWeightsPtPOI[i] = new TH1D(Form("Flow_SumOfWeights%dPtPOI_SP",weightFlag[i].Data()),
-                               Form("Flow_SumOfWeights%dPtPOI_SP",weightFlag[i].Data()),iNbinsPt,dPtMin,dPtMax);
+   fHistSumOfWeightsPtPOI[i] = new TH1D(Form("Flow_SumOfWeights%sPtPOI_SP",weightFlag[i].Data()),
+                               Form("Flow_SumOfWeights%sPtPOI_SP",weightFlag[i].Data()),iNbinsPt,dPtMin,dPtMax);
    fHistSumOfWeightsPtPOI[i] -> SetYTitle("sum (*)");
    fHistSumOfWeightsPtPOI[i] -> SetXTitle("p_{T}");
    fHistList->Add(fHistSumOfWeightsPtPOI[i]);
  
-   fHistSumOfWeightsEtaPOI[i] = new TH1D(Form("Flow_SumOfWeights%dEtaPOI_SP",weightFlag[i].Data()),
-                                Form("Flow_SumOfWeights%dEtaPOI_SP",weightFlag[i].Data()),iNbinsEta,dEtaMin,dEtaMax);
+   fHistSumOfWeightsEtaPOI[i] = new TH1D(Form("Flow_SumOfWeights%sEtaPOI_SP",weightFlag[i].Data()),
+                                Form("Flow_SumOfWeights%sEtaPOI_SP",weightFlag[i].Data()),iNbinsEta,dEtaMin,dEtaMax);
    fHistSumOfWeightsEtaPOI[i] -> SetYTitle("sum (*)");
    fHistSumOfWeightsEtaPOI[i] -> SetXTitle("#eta");
    fHistList->Add(fHistSumOfWeightsEtaPOI[i]);
@@ -441,7 +441,7 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
     TProfile* pHistProUQQaQbEtaRP   = dynamic_cast<TProfile*>(outputListHistos->FindObject("Flow_UQQaQbEtaRP_SP"));
     TProfile* pHistProUQQaQbPtPOI   = dynamic_cast<TProfile*>(outputListHistos->FindObject("Flow_UQQaQbPtPOI_SP"));
     TProfile* pHistProUQQaQbEtaPOI  = dynamic_cast<TProfile*>(outputListHistos->FindObject("Flow_UQQaQbEtaPOI_SP"));
-
+        
     TString weightFlag[3] = {"w_Qu_","w_Qu^2_","w_QuQaQb_"}; 
     TH1D* pHistSumOfWeightsPtRP[3] = {NULL};                    
     TH1D* pHistSumOfWeightsEtaRP[3] = {NULL};                    
@@ -449,10 +449,10 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
     TH1D* pHistSumOfWeightsEtaPOI[3] = {NULL};                    
     for(Int_t i=0;i<3;i++)
     {
-     pHistSumOfWeightsPtRP[i]   = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%dPtRP_SP",weightFlag[i].Data())));
-     pHistSumOfWeightsEtaRP[i]  = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%dEtaRP_SP",weightFlag[i].Data())));
-     pHistSumOfWeightsPtPOI[i]  = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%dPtPOI_SP",weightFlag[i].Data())));
-     pHistSumOfWeightsEtaPOI[i] = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%dEtaPOI_SP",weightFlag[i].Data())));
+     pHistSumOfWeightsPtRP[i]   = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sPtRP_SP",weightFlag[i].Data())));
+     pHistSumOfWeightsEtaRP[i]  = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sEtaRP_SP",weightFlag[i].Data())));
+     pHistSumOfWeightsPtPOI[i]  = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sPtPOI_SP",weightFlag[i].Data())));
+     pHistSumOfWeightsEtaPOI[i] = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sEtaPOI_SP",weightFlag[i].Data())));
     }
 
     //pass the pointers to the task
@@ -473,16 +473,15 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
       this -> SetHistProUQQaQbEtaPOI(pHistProUQQaQbEtaPOI);      
       this -> SetHistSumOfLinearWeights(pHistSumOfLinearWeights);
       this -> SetHistSumOfQuadraticWeights(pHistSumOfQuadraticWeights);      
-      }  
+     }  
    
    for(Int_t i=0;i<3;i++)
    {
     if(pHistSumOfWeightsPtRP[i]) this -> SetHistSumOfWeightsPtRP(pHistSumOfWeightsPtRP[i],i);      
-    if(pHistSumOfWeightsEtaRP[i]) this -> SetHistSumOfWeightsPtRP(pHistSumOfWeightsEtaRP[i],i);      
-    if(pHistSumOfWeightsPtPOI[i]) this -> SetHistSumOfWeightsPtRP(pHistSumOfWeightsPtPOI[i],i);      
-    if(pHistSumOfWeightsEtaPOI[i]) this -> SetHistSumOfWeightsPtRP(pHistSumOfWeightsEtaPOI[i],i);      
+    if(pHistSumOfWeightsEtaRP[i]) this -> SetHistSumOfWeightsEtaRP(pHistSumOfWeightsEtaRP[i],i);      
+    if(pHistSumOfWeightsPtPOI[i]) this -> SetHistSumOfWeightsPtPOI(pHistSumOfWeightsPtPOI[i],i);      
+    if(pHistSumOfWeightsEtaPOI[i]) this -> SetHistSumOfWeightsEtaPOI(pHistSumOfWeightsEtaPOI[i],i);      
    }   
-      
   } // end of if(outputListHistos)
 }            
 
@@ -533,7 +532,6 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
 	
   //Calculate differential flow and integrated flow (RP, POI)
   //---------------------------------------------------------
-
   //v as a function of eta for RP selection
   for(Int_t b=0;b<iNbinsEta;b++) {
     Double_t duQpro = fHistProUQetaRP->GetBinContent(b);
@@ -541,9 +539,8 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     if (dV!=0.) { dv2pro = duQpro/dV; }
     //calculate the statistical error
     Double_t dv2ProErr = CalculateStatisticalError(b, dStatErrorQaQb, fHistProUQetaRP, fHistProUQQaQbEtaRP, fHistSumOfWeightsEtaRP);
-    
     //fill TH1D
-    fCommonHistsRes->FillDifferentialFlowEtaRP(b, dv2pro, dv2ProErr); 
+    fCommonHistsRes->FillDifferentialFlowEtaRP(b, dv2pro, dv2ProErr);   
   } //loop over bins b
   
 
@@ -637,7 +634,6 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
 
 //--------------------------------------------------------------------            
 Double_t AliFlowAnalysisWithScalarProduct::CalculateStatisticalError(Int_t b, Double_t aStatErrorQaQb, TProfile* pHistProUQ, TProfile* pHistProUQQaQb, TH1D** pHistSumOfWeights) {
-
   //calculate the statistical error for differential flow for bin b
   Double_t duQproSpread = pHistProUQ->GetBinError(b);
   Double_t sumOfMq = pHistSumOfWeights[0]->GetBinContent(b);
@@ -651,7 +647,6 @@ Double_t AliFlowAnalysisWithScalarProduct::CalculateStatisticalError(Int_t b, Do
     dTerm2 = 1./pow(1.-pow(dTerm1,2.),0.5); 
   }
   Double_t duQproErr = dTerm1*duQproSpread*dTerm2;
-  
   // covariances:
   Double_t dTerm1Cov = pHistSumOfWeights[2]->GetBinContent(b);
   Double_t dTerm2Cov = fHistSumOfLinearWeights->GetBinContent(1);
@@ -665,6 +660,7 @@ Double_t AliFlowAnalysisWithScalarProduct::CalculateStatisticalError(Int_t b, Do
       dWeightedCovariance = dCovariance*dPrefactor; 
     }
   }
+  
   Double_t dv2ProErr = 0.; // final statitical error: 
   if(fHistProQaQb->GetBinContent(1)>0.) {
     Double_t dv2ProErrorSquared = (1./4.)*pow(fHistProQaQb->GetBinContent(1),-3.)*
