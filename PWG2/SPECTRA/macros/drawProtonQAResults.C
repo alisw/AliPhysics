@@ -569,7 +569,7 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
   hEmptyY->SetTitle("Antiprotons");
   hEmptyY->DrawCopy();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
-    if((iParticle == 6)||(iParticle == 8))
+    if((iParticle == 6)||(iParticle == 8)||(iParticle == 9))
       gParticleAntiProtonY[iParticle]->Draw("P");
     /*if(iParticle < 5) {
       DrawMarker(-1.1, 115-5*iParticle, 20+iParticle, 1.2, 1);
@@ -584,6 +584,8 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
   t1->DrawLatex(0.1,113,fParticleName[6]);
   DrawMarker(0.0, 105, 28, 1.2, 1);
   t1->DrawLatex(0.1,103,fParticleName[8]);
+  DrawMarker(0.0, 95, 29, 1.2, 1);
+  t1->DrawLatex(0.1,93,fParticleName[9]);
   c12->SaveAs("SurvivedSecondaries-Composition-Rapidity.gif");
 
   TH2F *hEmptyPt = new TH2F("hEmptyPt","",100,0.0,4.0,100,0,120); 
@@ -640,13 +642,15 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
       t1->DrawLatex(gParticleProtonPt[0]->GetXaxis()->GetXmax()*0.5+0.1,
 		    113-5*(iParticle-5),fParticleName[iParticle]);
 		    }*/
-    if((iParticle == 6)||(iParticle == 8))
+    if((iParticle == 6)||(iParticle == 8)||(iParticle == 9))
       gParticleAntiProtonPt[iParticle]->Draw("P");
   }
   DrawMarker(0.5, 115, 26, 1.2, 1);
   t1->DrawLatex(0.6,113,fParticleName[6]);
   DrawMarker(0.5, 105, 28, 1.2, 1);
   t1->DrawLatex(0.6,103,fParticleName[8]);
+  DrawMarker(0.5, 95, 29, 1.2, 1);
+  t1->DrawLatex(0.6,93,fParticleName[9]);
   c13->SaveAs("SurvivedSecondaries-Composition-Pt.gif");
 }
 
@@ -663,68 +667,72 @@ void DrawContamination(TList *inputList,
   TLatex *t1 = new TLatex();
   t1->SetTextSize(0.04);
 
-  TH2F *hPrimaryProtons = (TH2F *)inputList->At(0);
-  TH2F *hSecondaryProtons = (TH2F *)inputList->At(2);
-  TH2F *hPrimaryAntiProtons = (TH2F *)inputList->At(4);
-  TH2F *hSecondaryAntiProtons = (TH2F *)inputList->At(6);
+ TH2D *hPrimaryProtons = (TH2D *)inputList->At(0);
+  hPrimaryProtons->SetStats(kFALSE); hPrimaryProtons->Sumw2();
+  TH2D *hSecondaryProtons = (TH2D *)inputList->At(2);
+  hSecondaryProtons->SetStats(kFALSE); hSecondaryProtons->Sumw2();
+  TH2D *hTotalProtons = hSecondaryProtons->Clone();
+  hTotalProtons->SetStats(kFALSE); hTotalProtons->Add(hPrimaryProtons);
+  hTotalProtons->Sumw2();
 
-  //rapidity dependence
-  //Protons
-  TH1D *gYPrimaryProtons = (TH1D *)hPrimaryProtons->ProjectionX("gYPrimaryProtons",0,hPrimaryProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYSecondaryProtons = (TH1D *)hSecondaryProtons->ProjectionX("gYSecondaryProtons",0,hSecondaryProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYTotalProtons = (TH1D *)hPrimaryProtons->ProjectionX("gYTotalProtons",0,hPrimaryProtons->GetXaxis()->GetNbins(),"e");
-  gYTotalProtons->Add(gYSecondaryProtons);
+  TH2D *hPrimaryAntiProtons = (TH2D *)inputList->At(4);
+  hPrimaryAntiProtons->SetStats(kFALSE); hPrimaryAntiProtons->Sumw2();
+  TH2D *hSecondaryAntiProtons = (TH2D *)inputList->At(6);
+  hSecondaryAntiProtons->SetStats(kFALSE); hSecondaryAntiProtons->Sumw2();
+  TH2D *hTotalAntiProtons = hSecondaryAntiProtons->Clone();
+  hTotalAntiProtons->SetStats(kFALSE); 
+  hTotalAntiProtons->Add(hPrimaryAntiProtons);
+  hTotalAntiProtons->Sumw2();
 
-  TH1D *gYPrimaryProtonsPercentage = new TH1D("gYPrimaryProtonsPercentage",
-					      "",
-					      hPrimaryProtons->GetXaxis()->GetNbins(),
-					      hPrimaryProtons->GetXaxis()->GetXmin(),
-					      hPrimaryProtons->GetXaxis()->GetXmax());					      
-  gYPrimaryProtonsPercentage->Divide(gYPrimaryProtons,
-				     gYTotalProtons,1.,1.0);
-  SetError(gYPrimaryProtonsPercentage,gYTotalProtons);
-  gYPrimaryProtonsPercentage->Scale(100.);
-  gYPrimaryProtonsPercentage->SetMarkerStyle(kFullCircle);
+  //=================================================================//
+  //Purity - protons
+  hPrimaryProtons->Divide(hTotalProtons);
+  hPrimaryProtons->Scale(100.);
+  TH1D *gHistEtaPurityProtons = hPrimaryProtons->ProjectionX("gHistEtaPurityProtons",1,hPrimaryProtons->GetNbinsY());
+  RescaleEtaHistogram(gHistEtaPurityProtons,hPrimaryProtons);
+  gHistEtaPurityProtons->SetStats(kFALSE);
+  gHistEtaPurityProtons->SetMarkerStyle(20);
+  TH1D *gHistPtPurityProtons = hPrimaryProtons->ProjectionY("gHistPtPurityProtons",1,hPrimaryProtons->GetNbinsX());
+  RescalePtHistogram(gHistPtPurityProtons,hPrimaryProtons);
+  gHistPtPurityProtons->SetStats(kFALSE);
+  gHistPtPurityProtons->SetMarkerStyle(20);
 
-  TH1D *gYSecondaryProtonsPercentage = new TH1D("gYSecondaryProtonsPercentage",
-						"",
-						hSecondaryProtons->GetXaxis()->GetNbins(),
-						hSecondaryProtons->GetXaxis()->GetXmin(),
-						hSecondaryProtons->GetXaxis()->GetXmax());					      
-  gYSecondaryProtonsPercentage->Divide(gYSecondaryProtons,
-				       gYTotalProtons,1.,1.0);
-  SetError(gYSecondaryProtonsPercentage,gYTotalProtons);
-  gYSecondaryProtonsPercentage->Scale(100.);
-  gYSecondaryProtonsPercentage->SetMarkerStyle(kOpenCircle);
+  //Contamination - protons
+  hSecondaryProtons->Divide(hTotalProtons);
+  hSecondaryProtons->Scale(100.);
+  TH1D *gHistEtaContaminationProtons = hSecondaryProtons->ProjectionX("gHistEtaContaminationProtons",1,hSecondaryProtons->GetNbinsY());
+  RescaleEtaHistogram(gHistEtaContaminationProtons,hSecondaryProtons);
+  gHistEtaContaminationProtons->SetStats(kFALSE);
+  gHistEtaContaminationProtons->SetMarkerStyle(24);
+  TH1D *gHistPtContaminationProtons = hSecondaryProtons->ProjectionY("gHistPtContaminationProtons",1,hSecondaryProtons->GetNbinsX());
+  RescalePtHistogram(gHistPtContaminationProtons,hSecondaryProtons);
+  gHistPtContaminationProtons->SetStats(kFALSE);
+  gHistPtContaminationProtons->SetMarkerStyle(24);
 
-  //Antiprotons
-  TH1D *gYPrimaryAntiProtons = (TH1D *)hPrimaryAntiProtons->ProjectionX("gYPrimaryAntiProtons",0,hPrimaryAntiProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYSecondaryAntiProtons = (TH1D *)hSecondaryAntiProtons->ProjectionX("gYSecondaryAntiProtons",0,hSecondaryAntiProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYTotalAntiProtons = (TH1D *)hPrimaryAntiProtons->ProjectionX("gYTotalAntiProtons",0,hPrimaryAntiProtons->GetXaxis()->GetNbins(),"e");
-  gYTotalAntiProtons->Add(gYSecondaryAntiProtons);
-  
-  TH1D *gYPrimaryAntiProtonsPercentage = new TH1D("gYPrimaryAntiProtonsPercentage",
-						  "",
-						  hPrimaryAntiProtons->GetXaxis()->GetNbins(),
-						  hPrimaryAntiProtons->GetXaxis()->GetXmin(),
-						  hPrimaryAntiProtons->GetXaxis()->GetXmax());					      
-  gYPrimaryAntiProtonsPercentage->Divide(gYPrimaryAntiProtons,
-					 gYTotalAntiProtons,1.,1.0);
-  SetError(gYPrimaryAntiProtonsPercentage,gYTotalAntiProtons);
-  gYPrimaryAntiProtonsPercentage->Scale(100.);
-  gYPrimaryAntiProtonsPercentage->SetMarkerStyle(kFullCircle);
-  
-  TH1D *gYSecondaryAntiProtonsPercentage = new TH1D("gYSecondaryAntiProtonsPercentage",
-						    "",
-						    hSecondaryAntiProtons->GetXaxis()->GetNbins(),
-						    hSecondaryAntiProtons->GetXaxis()->GetXmin(),
-						    hSecondaryAntiProtons->GetXaxis()->GetXmax());					      
-  gYSecondaryAntiProtonsPercentage->Divide(gYSecondaryAntiProtons,
-					   gYTotalAntiProtons,1.,1.0);
-  SetError(gYSecondaryAntiProtonsPercentage,gYTotalAntiProtons);
-  gYSecondaryAntiProtonsPercentage->Scale(100.);
-  gYSecondaryAntiProtonsPercentage->SetMarkerStyle(kOpenCircle);
-  
+    //=================================================================//
+  //Purity - antiprotons
+  hPrimaryAntiProtons->Divide(hTotalAntiProtons);
+  hPrimaryAntiProtons->Scale(100.);
+  TH1D *gHistEtaPurityAntiProtons = hPrimaryAntiProtons->ProjectionX("gHistEtaPurityAntiProtons",1,hPrimaryAntiProtons->GetNbinsY());
+  RescaleEtaHistogram(gHistEtaPurityAntiProtons,hPrimaryAntiProtons);
+  gHistEtaPurityAntiProtons->SetStats(kFALSE);
+  gHistEtaPurityAntiProtons->SetMarkerStyle(20);
+  TH1D *gHistPtPurityAntiProtons = hPrimaryAntiProtons->ProjectionY("gHistPtPurityAntiProtons",1,hPrimaryAntiProtons->GetNbinsX());
+  RescalePtHistogram(gHistPtPurityAntiProtons,hPrimaryAntiProtons);
+  gHistPtPurityAntiProtons->SetStats(kFALSE);
+  gHistPtPurityAntiProtons->SetMarkerStyle(20);
+
+  //Contamination - antiprotons
+  hSecondaryAntiProtons->Divide(hTotalAntiProtons);
+  hSecondaryAntiProtons->Scale(100.);
+  TH1D *gHistEtaContaminationAntiProtons = hSecondaryAntiProtons->ProjectionX("gHistEtaContaminationAntiProtons",1,hSecondaryAntiProtons->GetNbinsY());
+  RescaleEtaHistogram(gHistEtaContaminationAntiProtons,hSecondaryAntiProtons);
+  gHistEtaContaminationAntiProtons->SetStats(kFALSE);
+  gHistEtaContaminationAntiProtons->SetMarkerStyle(24);
+  TH1D *gHistPtContaminationAntiProtons = hSecondaryAntiProtons->ProjectionY("gHistPtContaminationAntiProtons",1,hSecondaryAntiProtons->GetNbinsX());
+  RescalePtHistogram(gHistPtContaminationAntiProtons,hSecondaryAntiProtons);
+  gHistPtContaminationAntiProtons->SetStats(kFALSE);
+  gHistPtContaminationAntiProtons->SetMarkerStyle(24);
   
   TH2F *hEmptyY = new TH2F("hEmptyCompositionY","",
 			   100,-1.2,1.2,100,-10.0,130); 
@@ -742,8 +750,8 @@ void DrawContamination(TList *inputList,
   c7->cd(1)->SetGridx(); c7->cd(1)->SetGridy();
   hEmptyY->SetTitle("Protons");
   hEmptyY->DrawCopy();
-  gYPrimaryProtonsPercentage->DrawCopy("ESAME");
-  gYSecondaryProtonsPercentage->DrawCopy("ESAME");
+  gHistEtaPurityProtons->DrawCopy("ESAME");
+  gHistEtaContaminationProtons->DrawCopy("ESAME");
 
   DrawMarker(0, 55, kFullCircle, 1.2, 1);
   t1->DrawLatex(0.1,53,"Primaries");
@@ -755,8 +763,8 @@ void DrawContamination(TList *inputList,
   c7->cd(2)->SetGridx(); c7->cd(2)->SetGridy();
   hEmptyY->SetTitle("Antiprotons");
   hEmptyY->DrawCopy();
-  gYPrimaryAntiProtonsPercentage->DrawCopy("ESAME");
-  gYSecondaryAntiProtonsPercentage->DrawCopy("ESAME");
+  gHistEtaPurityAntiProtons->DrawCopy("ESAME");
+  gHistEtaContaminationAntiProtons->DrawCopy("ESAME");
 
   DrawMarker(0, 55, kFullCircle, 1.2, 1);
   t1->DrawLatex(0.1,53,"Primaries");
@@ -764,64 +772,6 @@ void DrawContamination(TList *inputList,
   t1->DrawLatex(0.1,41,"Secondaries");
 
   c7->SaveAs("Contamination-Protons-Rapidity.gif");
-
-  //pT dependence
-  //Protons
-  TH1D *gPtPrimaryProtons = (TH1D *)hPrimaryProtons->ProjectionY("gPtPrimaryProtons",0,hPrimaryProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtSecondaryProtons = (TH1D *)hSecondaryProtons->ProjectionY("gPtSecondaryProtons",0,hSecondaryProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtTotalProtons = (TH1D *)hPrimaryProtons->ProjectionY("gPtTotalProtons",0,hPrimaryProtons->GetYaxis()->GetNbins(),"e");
-  gPtTotalProtons->Add(gPtSecondaryProtons);
-
-  TH1D *gPtPrimaryProtonsPercentage = new TH1D("gPtPrimaryProtonsPercentage",
-					       "",
-					       hPrimaryProtons->GetYaxis()->GetNbins(),
-					       hPrimaryProtons->GetYaxis()->GetXmin(),
-					       hPrimaryProtons->GetYaxis()->GetXmax());					      
-  gPtPrimaryProtonsPercentage->Divide(gPtPrimaryProtons,
-				      gPtTotalProtons,1.,1.0);
-  SetError(gPtPrimaryProtonsPercentage,gPtTotalProtons);
-  gPtPrimaryProtonsPercentage->Scale(100.);
-  gPtPrimaryProtonsPercentage->SetMarkerStyle(kFullCircle);
-  
-  TH1D *gPtSecondaryProtonsPercentage = new TH1D("gPtSecondaryProtonsPercentage",
-						 "",
-						 hSecondaryProtons->GetYaxis()->GetNbins(),
-						 hSecondaryProtons->GetYaxis()->GetXmin(),
-						 hSecondaryProtons->GetYaxis()->GetXmax());					      
-  gPtSecondaryProtonsPercentage->Divide(gPtSecondaryProtons,
-					gPtTotalProtons,1.,1.0);
-  SetError(gPtSecondaryProtonsPercentage,gPtTotalProtons);
-  gPtSecondaryProtonsPercentage->Scale(100.);
-  gPtSecondaryProtonsPercentage->SetMarkerStyle(kOpenCircle);
-
-
-  //Antiprotons
-  TH1D *gPtPrimaryAntiProtons = (TH1D *)hPrimaryAntiProtons->ProjectionY("gPtPrimaryAntiProtons",0,hPrimaryAntiProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtSecondaryAntiProtons = (TH1D *)hSecondaryAntiProtons->ProjectionY("gPtSecondaryAntiProtons",0,hSecondaryAntiProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtTotalAntiProtons = (TH1D *)hPrimaryAntiProtons->ProjectionY("gPtTotalAntiProtons",0,hPrimaryAntiProtons->GetYaxis()->GetNbins(),"e");
-  gPtTotalAntiProtons->Add(gPtSecondaryAntiProtons);
-  
-  TH1D *gPtPrimaryAntiProtonsPercentage = new TH1D("gPtPrimaryAntiProtonsPercentage",
-						   "",
-						   hPrimaryAntiProtons->GetYaxis()->GetNbins(),
-						   hPrimaryAntiProtons->GetYaxis()->GetXmin(),
-						   hPrimaryAntiProtons->GetYaxis()->GetXmax());					      
-  gPtPrimaryAntiProtonsPercentage->Divide(gPtPrimaryAntiProtons,
-					  gPtTotalAntiProtons,1.,1.0);
-  SetError(gPtPrimaryAntiProtonsPercentage,gPtTotalAntiProtons);
-  gPtPrimaryAntiProtonsPercentage->Scale(100.);
-  gPtPrimaryAntiProtonsPercentage->SetMarkerStyle(kFullCircle);
-  
-  TH1D *gPtSecondaryAntiProtonsPercentage = new TH1D("gPtSecondaryAntiProtonsPercentage",
-						     "",
-						     hSecondaryAntiProtons->GetYaxis()->GetNbins(),
-						     hSecondaryAntiProtons->GetYaxis()->GetXmin(),
-						     hSecondaryAntiProtons->GetYaxis()->GetXmax());					      
-  gPtSecondaryAntiProtonsPercentage->Divide(gPtSecondaryAntiProtons,
-					    gPtTotalAntiProtons,1.,1.0);
-  SetError(gPtSecondaryAntiProtonsPercentage,gPtTotalAntiProtons);
-  gPtSecondaryAntiProtonsPercentage->Scale(100.);
-  gPtSecondaryAntiProtonsPercentage->SetMarkerStyle(kOpenCircle);
   
   TH2F *hEmptyPt = new TH2F("hEmptyCompositionPt","",
 			   100,0.0,4.0,100,-10.0,130); 
@@ -838,10 +788,10 @@ void DrawContamination(TList *inputList,
   c8->cd(1)->SetLeftMargin(0.15); 
   c8->cd(1)->SetGridx(); c8->cd(1)->SetGridy();
   hEmptyPt->SetTitle("Protons");
-  hEmptyPt->GetXaxis()->SetRangeUser(gPtPrimaryProtonsPercentage->GetXaxis()->GetXmin()-0.2,gPtPrimaryProtonsPercentage->GetXaxis()->GetXmax()+0.2);
+  hEmptyPt->GetXaxis()->SetRangeUser(gHistPtPurityProtons->GetXaxis()->GetXmin()-0.1,gHistPtPurityProtons->GetXaxis()->GetXmax()+0.1);
   hEmptyPt->DrawCopy();
-  gPtPrimaryProtonsPercentage->DrawCopy("ESAME");
-  gPtSecondaryProtonsPercentage->DrawCopy("ESAME");
+  gHistPtPurityProtons->DrawCopy("ESAME");
+  gHistPtContaminationProtons->DrawCopy("ESAME");
 
   DrawMarker(0.5, 55, kFullCircle, 1.2, 1);
   t1->DrawLatex(0.6,53,"Primaries");
@@ -853,8 +803,8 @@ void DrawContamination(TList *inputList,
   c8->cd(2)->SetGridx(); c8->cd(2)->SetGridy();
   hEmptyPt->SetTitle("Antirotons");
   hEmptyPt->DrawCopy();
-  gPtPrimaryAntiProtonsPercentage->DrawCopy("ESAME");
-  gPtSecondaryAntiProtonsPercentage->DrawCopy("ESAME");
+  gHistPtPurityAntiProtons->DrawCopy("ESAME");
+  gHistPtContaminationAntiProtons->DrawCopy("ESAME");
 
   DrawMarker(2.0, 55, kFullCircle, 1.2, 1);
   t1->DrawLatex(2.1,53,"Primaries");
@@ -866,14 +816,14 @@ void DrawContamination(TList *inputList,
   TString outputFileName = "Contamination."; 
   outputFileName += analysisType; outputFileName += ".root";
   TFile *fout = TFile::Open(outputFileName.Data(),"recreate");
-  gYPrimaryProtonsPercentage->Write();
-  gYSecondaryProtonsPercentage->Write();
-  gPtPrimaryProtonsPercentage->Write();
-  gPtSecondaryProtonsPercentage->Write();
-  gYPrimaryAntiProtonsPercentage->Write();
-  gYSecondaryAntiProtonsPercentage->Write();
-  gPtPrimaryAntiProtonsPercentage->Write();
-  gPtSecondaryAntiProtonsPercentage->Write();
+  gHistEtaPurityProtons->Write();
+  gHistEtaContaminationProtons->Write();
+  gHistEtaPurityAntiProtons->Write();
+  gHistEtaContaminationAntiProtons->Write();
+  gHistPtPurityProtons->Write();
+  gHistPtContaminationProtons->Write();
+  gHistPtPurityAntiProtons->Write();
+  gHistPtContaminationAntiProtons->Write();
   fout->Close();
 }
 
@@ -890,27 +840,33 @@ void DrawCutEfficiency(TList *inputList,
   TLatex *t1 = new TLatex();
   t1->SetTextSize(0.04);
 
-  TH2F *hPrimaryESDProtons = (TH2F *)inputList->At(0);
-  TH2F *hPrimaryESDAntiProtons = (TH2F *)inputList->At(1);
-  TH2F *hPrimaryESDProtonsSurvived = (TH2F *)inputList->At(2);
-  TH2F *hPrimaryESDAntiProtonsSurvived = (TH2F *)inputList->At(3);
+  TH2D *hPrimaryESDProtons = (TH2D *)inputList->At(0);
+  hPrimaryESDProtons->SetStats(kFALSE); hPrimaryESDProtons->Sumw2();
+  TH2D *hPrimaryESDAntiProtons = (TH2D *)inputList->At(1);
+  hPrimaryESDAntiProtons->SetStats(kFALSE); hPrimaryESDAntiProtons->Sumw2();
+  TH2D *hPrimaryESDProtonsSurvived = (TH2D *)inputList->At(2);
+  hPrimaryESDProtonsSurvived->SetStats(kFALSE); hPrimaryESDProtonsSurvived->Sumw2();
+  hPrimaryESDProtonsSurvived->Divide(hPrimaryESDProtons);
+  hPrimaryESDProtonsSurvived->Scale(100.);
+  TH2D *hPrimaryESDAntiProtonsSurvived = (TH2D *)inputList->At(3);
+  hPrimaryESDAntiProtonsSurvived->SetStats(kFALSE); hPrimaryESDAntiProtonsSurvived->Sumw2();
+  hPrimaryESDAntiProtonsSurvived->Divide(hPrimaryESDAntiProtons);
+  hPrimaryESDAntiProtonsSurvived->Scale(100.);
 
   //rapidity dependence
   //Protons
-  TH1D *gYPrimaryESDProtons = (TH1D *)hPrimaryESDProtons->ProjectionX("gYPrimaryESDProtons",0,hPrimaryESDProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYPrimaryESDProtonsSurvived = (TH1D *)hPrimaryESDProtonsSurvived->ProjectionX("gYPrimaryESDProtonsSurvived",0,hPrimaryESDProtonsSurvived->GetXaxis()->GetNbins(),"e");
-  gYPrimaryESDProtonsSurvived->Divide(gYPrimaryESDProtons);
-  SetError(gYPrimaryESDProtonsSurvived,gYPrimaryESDProtons);
-  gYPrimaryESDProtonsSurvived->Scale(100.);
-  gYPrimaryESDProtonsSurvived->SetMarkerStyle(kFullCircle);
-
+  TH1D *gHistEtaProtons = hPrimaryESDProtonsSurvived->ProjectionX("gHistEtaProtons",1,hPrimaryESDProtonsSurvived->GetNbinsY());
+  //gHistEtaProtons->Scale(1./hPrimaryESDProtonsSurvived->GetNbinsY());
+  RescaleEtaHistogram(gHistEtaProtons,hPrimaryESDProtonsSurvived);
+  gHistEtaProtons->SetStats(kFALSE);
+  gHistEtaProtons->SetMarkerStyle(20);
+  
   //Antiprotons
-  TH1D *gYPrimaryESDAntiProtons = (TH1D *)hPrimaryESDAntiProtons->ProjectionX("gYPrimaryESDAntiProtons",0,hPrimaryESDAntiProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYPrimaryESDAntiProtonsSurvived = (TH1D *)hPrimaryESDAntiProtonsSurvived->ProjectionX("gYPrimaryESDAntiProtonsSurvived",0,hPrimaryESDAntiProtonsSurvived->GetXaxis()->GetNbins(),"e");
-  gYPrimaryESDAntiProtonsSurvived->Divide(gYPrimaryESDAntiProtons);
-  SetError(gYPrimaryESDAntiProtonsSurvived,gYPrimaryESDAntiProtons);
-  gYPrimaryESDAntiProtonsSurvived->Scale(100.);
-  gYPrimaryESDAntiProtonsSurvived->SetMarkerStyle(kFullCircle);
+  TH1D *gHistEtaAntiProtons = hPrimaryESDAntiProtonsSurvived->ProjectionX("gHistEtaAntiProtons",1,hPrimaryESDAntiProtonsSurvived->GetNbinsY());
+  //gHistEtaAntiProtons->Scale(1./hPrimaryESDAntiProtonsSurvived->GetNbinsY());
+  RescaleEtaHistogram(gHistEtaAntiProtons,hPrimaryESDAntiProtonsSurvived);
+  gHistEtaAntiProtons->SetStats(kFALSE);
+  gHistEtaAntiProtons->SetMarkerStyle(20);
   
   TH2F *hEmptyY = new TH2F("hEmptyEfficiencyY","",
 			   100,-1.2,1.2,100,-10.0,130); 
@@ -927,35 +883,35 @@ void DrawCutEfficiency(TList *inputList,
   c10->cd(1)->SetLeftMargin(0.15); 
   c10->cd(1)->SetGridx(); c10->cd(1)->SetGridy();
   hEmptyY->SetTitle("Protons");
-  hEmptyY->GetXaxis()->SetRangeUser(gYPrimaryESDAntiProtonsSurvived->GetXaxis()->GetXmin()-0.2,gYPrimaryESDAntiProtonsSurvived->GetXaxis()->GetXmax()+0.2);
+  hEmptyY->GetXaxis()->SetRangeUser(gHistEtaProtons->GetXaxis()->GetXmin()-0.2,gHistEtaProtons->GetXaxis()->GetXmax()+0.2);
   hEmptyY->DrawCopy();
-  gYPrimaryESDProtonsSurvived->DrawCopy("ESAME");
+  gHistEtaProtons->DrawCopy("ESAME");
 
   c10->cd(2)->SetBottomMargin(0.15); 
   c10->cd(2)->SetLeftMargin(0.15); 
   c10->cd(2)->SetGridx(); c10->cd(2)->SetGridy();
   hEmptyY->SetTitle("Antiprotons");
   hEmptyY->DrawCopy();
-  gYPrimaryESDAntiProtonsSurvived->DrawCopy("ESAME");
+  gHistEtaAntiProtons->DrawCopy("ESAME");
 
   c10->SaveAs("CutEfficiency-Protons-Rapidity.gif");
 
   //pT dependence
   //Protons
-  TH1D *gPtPrimaryESDProtons = (TH1D *)hPrimaryESDProtons->ProjectionY("gPtPrimaryESDProtons",0,hPrimaryESDProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtPrimaryESDProtonsSurvived = (TH1D *)hPrimaryESDProtonsSurvived->ProjectionY("gPtPrimaryESDProtonsSurvived",0,hPrimaryESDProtonsSurvived->GetYaxis()->GetNbins(),"e");
-  gPtPrimaryESDProtonsSurvived->Divide(gPtPrimaryESDProtons);
-  SetError(gPtPrimaryESDProtonsSurvived,gPtPrimaryESDProtons);
-  gPtPrimaryESDProtonsSurvived->Scale(100.);
-  gPtPrimaryESDProtonsSurvived->SetMarkerStyle(kFullCircle);
+  TH1D *gHistPtProtons = hPrimaryESDProtonsSurvived->ProjectionY("gHistPtProtons",1,hPrimaryESDProtonsSurvived->GetNbinsX());
+  //gHistPtProtons->Scale(1./hPrimaryESDProtonsSurvived->GetNbinsX());
+  RescalePtHistogram(gHistPtProtons,hPrimaryESDProtonsSurvived);  
+  gHistPtProtons->SetStats(kFALSE);
+  gHistPtProtons->SetMarkerStyle(20);
+  //SetError(gPtPrimaryESDProtonsSurvived,gPtPrimaryESDProtons);
 
   //Antiprotons
-  TH1D *gPtPrimaryESDAntiProtons = (TH1D *)hPrimaryESDAntiProtons->ProjectionY("gPtPrimaryESDAntiProtons",0,hPrimaryESDAntiProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtPrimaryESDAntiProtonsSurvived = (TH1D *)hPrimaryESDAntiProtonsSurvived->ProjectionY("gPtPrimaryESDAntiProtonsSurvived",0,hPrimaryESDAntiProtonsSurvived->GetYaxis()->GetNbins(),"e");
-  gPtPrimaryESDAntiProtonsSurvived->Divide(gPtPrimaryESDAntiProtons);
-  SetError(gPtPrimaryESDAntiProtonsSurvived,gPtPrimaryESDAntiProtons);
-  gPtPrimaryESDAntiProtonsSurvived->Scale(100.);
-  gPtPrimaryESDAntiProtonsSurvived->SetMarkerStyle(kFullCircle);
+  TH1D *gHistPtAntiProtons = hPrimaryESDAntiProtonsSurvived->ProjectionY("gHistPtAntiProtons",1,hPrimaryESDAntiProtonsSurvived->GetNbinsX());
+  //gHistPtAntiProtons->Scale(1./hPrimaryESDAntiProtonsSurvived->GetNbinsX());
+  RescalePtHistogram(gHistPtAntiProtons,hPrimaryESDAntiProtonsSurvived);
+  gHistPtAntiProtons->SetStats(kFALSE);
+  gHistPtAntiProtons->SetMarkerStyle(20);
+  //SetError(gPtPrimaryESDAntiProtonsSurvived,gPtPrimaryESDAntiProtons);
 
   TH2F *hEmptyPt = new TH2F("hEmptyEfficiencyPt","",
 			   100,0.0,4.0,100,-10.0,130); 
@@ -972,26 +928,26 @@ void DrawCutEfficiency(TList *inputList,
   c11->cd(1)->SetLeftMargin(0.15); 
   c11->cd(1)->SetGridx(); c11->cd(1)->SetGridy();
   hEmptyPt->SetTitle("Protons");
-  hEmptyPt->GetXaxis()->SetRangeUser(gPtPrimaryESDAntiProtonsSurvived->GetXaxis()->GetXmin()-0.2,gPtPrimaryESDAntiProtonsSurvived->GetXaxis()->GetXmax()+0.2);
+  hEmptyPt->GetXaxis()->SetRangeUser(gHistPtProtons->GetXaxis()->GetXmin()-0.1,gHistPtProtons->GetXaxis()->GetXmax()+0.1);
   hEmptyPt->DrawCopy();
-  gPtPrimaryESDProtonsSurvived->DrawCopy("ESAME");
+  gHistPtProtons->DrawCopy("ESAME");
 
   c11->cd(2)->SetBottomMargin(0.15); 
   c11->cd(2)->SetLeftMargin(0.15); 
   c11->cd(2)->SetGridx(); c11->cd(2)->SetGridy();
   hEmptyPt->SetTitle("Antirotons");
   hEmptyPt->DrawCopy();
-  gPtPrimaryESDAntiProtonsSurvived->DrawCopy("ESAME");
+  gHistPtAntiProtons->DrawCopy("ESAME");
 
   c11->SaveAs("CutEfficiency-Protons-Pt.gif");
 
   TString outputFileName = "CutEfficiency.";
   outputFileName += analysisType; outputFileName += ".root";
   TFile *fout = TFile::Open(outputFileName.Data(),"recreate");
-  gYPrimaryESDProtonsSurvived->Write();
-  gYPrimaryESDAntiProtonsSurvived->Write();
-  gPtPrimaryESDProtonsSurvived->Write();
-  gPtPrimaryESDAntiProtonsSurvived->Write();
+  gHistEtaProtons->Write();
+  gHistEtaAntiProtons->Write();
+  gHistPtProtons->Write();
+  gHistPtAntiProtons->Write();
   fout->Close();
 }
 
@@ -3079,6 +3035,39 @@ void draw2DEfficiency(const char *analysisMode = "TPC",
   c->SetRightMargin(0.15);
   h->DrawCopy();
   gId->DrawCopy("colzsame");
-
-
 }
+
+//________________________________________________//
+void RescaleEtaHistogram(TH1 *h1, TH2 *h2) {
+  //Rescales the histogram in eta or y 
+  Int_t iBinCounter = 0;
+  for(Int_t iBinX = 1; iBinX <= h2->GetNbinsX(); iBinX++) {
+    iBinCounter = 0;
+    for(Int_t iBinY = 1; iBinY <= h2->GetNbinsY(); iBinY++) {
+      if(h2->GetBinContent(iBinX,iBinY) > 0) {
+	iBinCounter += 1;
+      }
+    }
+    h1->SetBinContent(iBinX,h1->GetBinContent(iBinX)/iBinCounter);
+    h1->SetBinError(iBinX,h1->GetBinError(iBinX)/iBinCounter);
+    //Printf("Bin: %d - e: %lf - error: %lf",iBinX,sum/iBinCounter,TMath::Sqrt(sumError)/iBinCounter);
+  }
+}
+
+//________________________________________________//
+void RescalePtHistogram(TH1 *h1, TH2 *h2) {
+  //Rescales the histogram in pT
+  Int_t iBinCounter = 0;
+  for(Int_t iBinY = 1; iBinY <= h2->GetNbinsY(); iBinY++) {
+    iBinCounter = 0;
+    for(Int_t iBinX = 1; iBinX <= h2->GetNbinsX(); iBinX++) {
+      if(h2->GetBinContent(iBinX,iBinY) > 0) {
+	iBinCounter += 1;
+      }
+    }
+    h1->SetBinContent(iBinY,h1->GetBinContent(iBinY)/iBinCounter);
+    h1->SetBinError(iBinY,h1->GetBinError(iBinY)/iBinCounter);
+    //Printf("Bin: %d - e: %lf - error: %lf",iBinX,sum/iBinCounter,TMath::Sqrt(sumError)/iBinCounter);
+  }
+}
+
