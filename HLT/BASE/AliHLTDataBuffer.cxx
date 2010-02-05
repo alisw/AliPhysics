@@ -1040,18 +1040,9 @@ int AliHLTDataBuffer::AliHLTRawPage::Free(AliHLTRawBuffer* pBuffer)
        iter!=fUsedBuffers.end() && iResult>=0;
        iter++) {
     if ((*iter)==pBuffer) {
-      if (false/*pBuffer->GetTotalSize()==0*/) {
-	HLTInfo("release zero lenght buffer %p %d (used %d)", pBuffer, pBuffer->GetTotalSize(), pBuffer->GetUsedSize());
-	pBuffer->Print("");
-	Print("");
-      }
       fUsedBuffers.erase(iter);
       AliHLTRawBufferPList::iterator prev=fFreeBuffers.begin();
       for (; prev!=fFreeBuffers.end() && iResult>=0; prev++) {
-	if (false/*pBuffer->GetTotalSize()==0*/) {
-	  HLTInfo("iterator buffer %p %d (used %d)", (*prev), (*prev)->GetTotalSize(), (*prev)->GetUsedSize());
-	  (*prev)->Print("");
-	}
 	if ((*pBuffer)<(*(*prev)) ||
 	    ((*prev)->GetTotalSize()==0 && pBuffer->GetPointer()<=(*prev)->GetPointer() && (*prev)->GetPointer()<=pBuffer->GetPointer()+pBuffer->GetTotalSize())) {
 	  // check consecutive buffers
@@ -1076,9 +1067,6 @@ int AliHLTDataBuffer::AliHLTRawPage::Free(AliHLTRawBuffer* pBuffer)
 	  // check consecutive buffers
 	  if ((*pBuffer) == ((*prev)->GetPointer()+(*prev)->GetTotalSize())||
 	      (pBuffer->GetTotalSize()==0 && (*prev)->GetPointer()<=pBuffer->GetPointer() && pBuffer->GetPointer()<=(*prev)->GetPointer()+(*prev)->GetTotalSize())) {
-	    if (false/*pBuffer->GetTotalSize()==0*/) {
-	      HLTInfo("merge with buffer %p %d (used %d)", (*prev), (*prev)->GetTotalSize(), (*prev)->GetUsedSize());
-	    }
 	    // the buffer to be released is consecutive to a free buffer -> merge them
 	    if ((iResult=pBuffer->Merge(*(*prev)))>=0) {
 	      AliHLTRawBufferPList::iterator succ=prev+1;
@@ -1098,10 +1086,6 @@ int AliHLTDataBuffer::AliHLTRawPage::Free(AliHLTRawBuffer* pBuffer)
 	}
       }
       if (prev==fFreeBuffers.end()) {
-	if (false/*pBuffer->GetTotalSize()==0*/) {
-	  HLTInfo("insert as free buffer");
-	  Print("");
-	}
 	fFreeBuffers.push_back(pBuffer);
       }
 
@@ -1152,11 +1136,8 @@ int AliHLTDataBuffer::AliHLTRawPage::SetSize(AliHLTDataBuffer::AliHLTRawBuffer* 
 	HLTError("%d exceeds total size of buffer %p (%d used %d)\n", size, *iter, (*iter)->GetTotalSize(), (*iter)->GetUsedSize());
 	return -ENOSPC;
       }
-      //HLTInfo("setting size %d of buffer %p (%d used %d)", size, *iter, (*iter)->GetTotalSize(), (*iter)->GetUsedSize());
       AliHLTDataBuffer::AliHLTRawBuffer* freespace=(*iter)->Split(size);
-      //(*iter)->Print("");
       if (freespace) {
-	//freespace->Print("");
 	fUsedBuffers.push_back(freespace);
 	Free(freespace);
       } else {
