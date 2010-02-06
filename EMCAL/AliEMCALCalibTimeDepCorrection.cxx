@@ -45,7 +45,7 @@ AliEMCALCalibTimeDepCorrection::AliEMCALCalibTimeDepCorrection(const int nSM) :
 }
 
 //____________________________________________________________________________
-void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Float_t val=1.0)
+void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Float_t val)
 {
   // This methods assumes that you are using SuperModules 0..nSM-1
   fNSuperModule = nSM;
@@ -60,9 +60,12 @@ void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Floa
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
     AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
+    iSM = i;
     t->SetSuperModuleNum(iSM); // assume SMs are coming in order
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
+      iCol = j / AliEMCALGeoParams::fgkEMCALRows;
+      iRow = j % AliEMCALGeoParams::fgkEMCALRows;
 
       // set size of TArray
       t->GetCorrection(iCol,iRow)->Set(nCorr);

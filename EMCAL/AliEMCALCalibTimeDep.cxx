@@ -66,6 +66,8 @@ AliEMCALCalibTimeDep::AliEMCALCalibTimeDep() :
   fEndTime(0),
   fMinTemp(0),
   fMaxTemp(0),
+  fMinTempVariation(0),
+  fMaxTempVariation(0),
   fMinTime(0),
   fMaxTime(0),
   fTemperatureResolution(0.1), // 0.1 deg C is default
@@ -76,7 +78,8 @@ AliEMCALCalibTimeDep::AliEMCALCalibTimeDep() :
   fBiasAPD(NULL),
   fCalibMapAPD(NULL),
   fCalibReference(NULL),
-  fCalibTimeDepCorrection(NULL)
+  fCalibTimeDepCorrection(NULL),
+  fVerbosity(0)
 {
   // Constructor
 }
@@ -89,6 +92,8 @@ AliEMCALCalibTimeDep::AliEMCALCalibTimeDep(const AliEMCALCalibTimeDep& calibt) :
   fEndTime(calibt.GetEndTime()),
   fMinTemp(calibt.GetMinTemp()),
   fMaxTemp(calibt.GetMaxTemp()),
+  fMinTempVariation(calibt.GetMinTempVariation()),
+  fMaxTempVariation(calibt.GetMaxTempVariation()),
   fMinTime(calibt.GetMinTime()),
   fMaxTime(calibt.GetMaxTime()),
   fTemperatureResolution(calibt.GetTemperatureResolution()),
@@ -99,7 +104,8 @@ AliEMCALCalibTimeDep::AliEMCALCalibTimeDep(const AliEMCALCalibTimeDep& calibt) :
   fBiasAPD(calibt.GetBiasAPD()),
   fCalibMapAPD(calibt.GetCalibMapAPD()),
   fCalibReference(calibt.GetCalibReference()),
-  fCalibTimeDepCorrection(calibt.GetCalibTimeDepCorrection())
+  fCalibTimeDepCorrection(calibt.GetCalibTimeDepCorrection()),
+  fVerbosity(calibt.GetVerbosity())
 {
   // copy constructor
 }
@@ -130,6 +136,8 @@ void  AliEMCALCalibTimeDep::Reset()
   fEndTime = 0;
   fMinTemp = 0;
   fMaxTemp = 0;
+  fMinTempVariation = 0;
+  fMaxTempVariation = 0;
   fMinTime = 0;
   fMaxTime = 0;
   fTemperatureResolution = 0.1; // 0.1 deg C is default
@@ -140,6 +148,7 @@ void  AliEMCALCalibTimeDep::Reset()
   fCalibMapAPD = NULL;
   fCalibReference = NULL;
   fCalibTimeDepCorrection = NULL;
+  fVerbosity = 0;
   return;
 }
 
@@ -152,10 +161,15 @@ void  AliEMCALCalibTimeDep::PrintInfo() const
   cout << " VARIABLE DUMP: " << endl
        << " GetStartTime() " << GetStartTime() << endl
        << " GetEndTime() " << GetEndTime() << endl
+       << " GetMinTime() " << GetMinTime() << endl
+       << " GetMaxTime() " << GetMaxTime() << endl
        << " GetMinTemp() " << GetMinTemp() << endl
-       << " GetMaxTemp() " << GetMaxTemp() << endl;
+       << " GetMaxTemp() " << GetMaxTemp() << endl
+       << " GetMinTempVariation() " << GetMinTempVariation() << endl
+       << " GetMaxTempVariation() " << GetMaxTempVariation() << endl;
   // run ranges
   cout << " RUN INFO: " << endl
+       << " runnumber " << GetRunNumber() << endl
        << " length (in hours) " << GetLengthOfRunInHours() << endl
        << " range of temperature measurements (in hours) " << GetRangeOfTempMeasureInHours()
        << " (in deg. C) " << GetRangeOfTempMeasureInDegrees()
@@ -262,7 +276,9 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSM(int imod, UInt_t timeStamp) cons
 	if (f) { // ok, looks like we have valid data/info
 	  // let's check what the expected value at the time appears to be
 	  Double_t val = f->Eval(timeHour);
-	  cout << " i " << i << " val " << val << endl;
+	  if ( fVerbosity > 0 ) {
+	    cout << " sensor i " << i << " val " << val << endl;
+	  }
 	  average += val;
 	  n++;
 	}
@@ -317,10 +333,10 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSMSensor(int imod, int isens, UInt_
 Int_t AliEMCALCalibTimeDep::CalcCorrection()
 { // OK, this is where the real action takes place - the heart of this class..
   /* The philosophy is as follows:
-     0. Init corrections to 1.0 values
-     1: if we have LED info for the tower, use it
-     2. if not 1, we rely on LED info averaged over strip
-     3. if not 2 either, we try to use temperature info + APD bias and calibration info
+     0. Init corrections to 1.0 values, and see how many correction bins we need
+     1. Check how large temperature variations we have through the run - do we really need all the correction bias (otherwise adjust to single bin)
+     2. try to use temperature info + APD bias and calibration info, to estimate correction.
+     For now (from Dec 2009), we do not use LED info, since we are not taking LED triggers during the run.
    */
 
   // 0: Init
@@ -329,19 +345,23 @@ Int_t AliEMCALCalibTimeDep::CalcCorrection()
   // how many time-bins should we have for this run?
   Int_t nBins = (Int_t) GetLengthOfRunInBins(); // round-down (from double to int)
   Int_t binSize = (Int_t) (3600/fTimeBinsPerHour); // in seconds
+
+  // 1: get info on how much individual sensors might have changed during
+  // the run (compare max-min for each sensor separately)
+  if (fMaxTempVariation < fTemperatureResolution) {
+    nBins = 1; // just one bin needed..
+    binSize = fEndTime - fStartTime;
+  }
+
   // set up a reasonable default (correction = 1.0)
+  fCalibTimeDepCorrection = new AliEMCALCalibTimeDepCorrection(nSM);
   fCalibTimeDepCorrection->InitCorrection(nSM, nBins, 1.0);
   fCalibTimeDepCorrection->SetStartTime(fStartTime);
   fCalibTimeDepCorrection->SetNTimeBins(nBins);
   fCalibTimeDepCorrection->SetTimeBinSize(binSize);
 
-  // 1+2: try with LED corrections
-  Int_t nRemaining = CalcLEDCorrection(nSM, nBins);
-
-  // 3: try with Temperature, if needed
-  if (nRemaining>0) {
-    nRemaining = CalcTemperatureCorrection(nSM, nBins);
-  }
+  // 2: try with Temperature correction 
+  Int_t nRemaining = CalcTemperatureCorrection(nSM, nBins, binSize);
 
   return nRemaining;
 }
@@ -388,6 +408,8 @@ Int_t AliEMCALCalibTimeDep::ScanTemperatureInfo()
 
   fMinTemp = 999; // init to some large value (999 deg C)
   fMaxTemp = 0;
+  fMinTempVariation = 999; // init to some large value (999 deg C)
+  fMaxTempVariation = 0;
   fMinTime = 2147483647; // init to a large value in the far future (0x7fffffff), year 2038 times..
   fMaxTime = 0;
 
@@ -396,17 +418,33 @@ Int_t AliEMCALCalibTimeDep::ScanTemperatureInfo()
   for (int i=0; i<fTempArray->NumSensors(); i++) {
     
     AliEMCALSensorTemp *st = fTempArray->GetSensor(i);
+    if ( st->GetStartTime() == 0 ) { // no valid data
+      continue;
+    }
 
     // check time ranges
     if (fMinTime > st->GetStartTime()) { fMinTime = st->GetStartTime(); }
     if (fMaxTime < st->GetEndTime()) { fMaxTime = st->GetEndTime(); }
-
+ 
     // check temperature ranges
-    TGraph *g = st->GetGraph();
-    if (g) { // ok, looks like we have valid data/info
-      // let's check what the expected value at the time appears to be
-      if (fMinTemp > g->GetMinimum()) { fMinTemp = g->GetMinimum(); }
-      if (fMaxTemp < g->GetMaximum()) { fMaxTemp = g->GetMaximum(); }
+    AliSplineFit *f = st->GetFit();
+
+    if (f) { // ok, looks like we have valid data/info
+      int np = f->GetKnots();
+      Double_t *y0 = f->GetY0();
+      // min and max values within the single sensor
+      Double_t min = 999;
+      Double_t max = 0;
+      for (int ip=0; ip<np; ip++) { 
+	if (min > y0[ip]) { min = y0[ip]; }
+	if (max < y0[ip]) { max = y0[ip]; }
+      }
+      if (fMinTemp > min) { fMinTemp = min; }
+      if (fMaxTemp < max) { fMaxTemp = max; }
+      Double_t variation = max - min;
+      if (fMinTempVariation > variation) { fMinTempVariation = variation; }
+      if (fMaxTempVariation < variation) { fMaxTempVariation = variation; }
+
       n++;
     }
   } // loop over fTempArray
@@ -487,7 +525,7 @@ void AliEMCALCalibTimeDep::GetCalibMapAPDInfo()
 void AliEMCALCalibTimeDep::GetCalibReferenceInfo() 
 {
   // pick up Preprocessor output, based on fRun (most recent version)
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/MapAPD", fRun);
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/Reference", fRun);
   if (entry) {
     fCalibReference = (AliEMCALCalibReference *) entry->GetObject();
   }
@@ -814,7 +852,7 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrectionStripBasis(Int_t nSM, Int_t nBins)
 }
 
 //________________________________________________________________
-Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins) 
+Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins, Int_t binSize) 
 { // OK, so we didn't have valid LED data that allowed us to do the correction only 
   // with that info.
   // So, instead we'll rely on the temperature info and try to do the correction
@@ -830,16 +868,16 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins)
   memset(dTempCoeff, 0, sizeof(dTempCoeff));
   Float_t gainM = 0; 
   Double_t correction = 0;
-  Double_t secondsPerBin = (3600/fTimeBinsPerHour);
+  Double_t secondsPerBin = (Double_t) binSize;
 
   for (int i = 0; i < nSM; i++) {
-    AliEMCALSuperModuleCalibTimeDepCorrection * dataCalibTimeDepCorrection = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(iSM);
+    AliEMCALSuperModuleCalibTimeDepCorrection * dataCalibTimeDepCorrection = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(i);
     iSM = dataCalibTimeDepCorrection->GetSuperModuleNum();
 
     AliEMCALSuperModuleCalibReference * dataCalibReference = fCalibReference->GetSuperModuleCalibReferenceNum(iSM);
     AliEMCALSuperModuleCalibMapAPD * dataCalibMapAPD = fCalibMapAPD->GetSuperModuleCalibMapAPDNum(iSM);
-    AliEMCALSuperModuleBiasAPD * dataBiasAPD = fBiasAPD->GetSuperModuleBiasAPDNum(iSM);
-    
+    AliEMCALSuperModuleBiasAPD * dataBiasAPD = fBiasAPD->GetSuperModuleBiasAPDNum(iSM);    
+
     // first calculate the M=Gain values, and TemperatureCoeff, for all towers in this SuperModule, from BiasAPD and CalibMapAPD info
     for (iCol = 0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
       for (iRow = 0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
@@ -847,6 +885,14 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins)
 	gainM =  fCalibMapAPD->GetGain(mapAPD->GetPar(0), mapAPD->GetPar(1), mapAPD->GetPar(2), 
 				       dataBiasAPD->GetVoltage(iCol, iRow));
 	dTempCoeff[iCol][iRow] = GetTempCoeff(mapAPD->GetDarkCurrent(), gainM);
+	if (fVerbosity > 1) {
+	  cout << " iSM " << iSM << " iCol " << iCol << " iRow " << iRow 
+	       << " par0 " << mapAPD->GetPar(0) 
+	       << " par1 " << mapAPD->GetPar(1) 
+	       << " par2 " << mapAPD->GetPar(2)
+	       << " bias " << dataBiasAPD->GetVoltage(iCol, iRow) 
+	       << " gainM " << gainM << " dTempCoeff " << dTempCoeff[iCol][iRow] << endl; 
+	}
       }
     }
     
@@ -864,14 +910,25 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins)
       referenceTemperature /= nVal; // valid values exist, we can look into corrections
       
       for (int j = 0; j < nBins; j++) {
-
 	// what is the timestamp in the middle of this bin? (0.5 is for middle of bin)
 	UInt_t timeStamp = fStartTime + (UInt_t)((j+0.5)*secondsPerBin);
       // get the temperature at this time; use average over whole SM for now (TO BE CHECKED LATER - if we can do better with finer grained info)
 	Double_t dSMTemperature = GetTemperatureSM(iSM, timeStamp); 
 
-	Double_t temperatureDiff = referenceTemperature - dSMTemperature; // old vs new
+	Double_t temperatureDiff = dSMTemperature - referenceTemperature ; // new - old
+	if (fVerbosity > 0) {
+	  cout << " referenceTemperature " << referenceTemperature
+	       << " dSMTemperature " << dSMTemperature
+	       << " temperatureDiff " << temperatureDiff
+	       << endl;
+	}
 	// if the new temperature is higher than the old/reference one, then the gain has gone down 
+	// if the new temperature is lower than the old/reference one, then the gain has gone up
+	// dTempCoeff is a negative number describing how many % (hence 0.01 factor below) the gain 
+	// changes with a positive degree change.  
+	// i.e. the product temperatureDiff * dTempCoeff increase when the gain goes up
+	// The correction we want to keep is what we should multiply our ADC value with as a function
+	// of time, i.e. the inverse of the gain change..
 	if (fabs(temperatureDiff)>fTemperatureResolution) { 
 	  // significant enough difference that we need to consider it
 
@@ -879,8 +936,19 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins)
 	  for (iCol = 0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
 	    for (iRow = 0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
 
-	      correction = temperatureDiff * dTempCoeff[iCol][iRow];
+	      // the correction should be inverse of modification in gain: (see discussion above)
+	      // modification in gain: 1.0 + (temperatureDiff * dTempCoeff[iCol][iRow])*0.01; 
+	      // 1/(1+x) ~= 1 - x for small x, i.e. we arrive at:
+	      correction = 1.0 - (temperatureDiff * dTempCoeff[iCol][iRow])*0.01; 
 	      dataCalibTimeDepCorrection->GetCorrection(iCol,iRow)->AddAt(correction, j);
+	      if (fVerbosity > 1) {
+		cout << " iSM " << iSM
+		     << " iCol  " << iCol 
+		     << " iRow  " << iRow 
+		     << " j  " << j 
+		     << " correction  " << correction 
+		     << endl;
+	      }
 	    }
 	  }
 

@@ -31,11 +31,11 @@ class AliEMCALCalibTimeDep : public TObject {
   void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);//!
 
   // simple getters
-  Int_t GetRunNumber() const { return fRun; } // run number
-  Int_t GetStartTime() const { return fStartTime; } // start time
-  Int_t GetEndTime() const { return fEndTime; } //  end time
-  Double_t GetLengthOfRunInHours() const; // length of run
-  Double_t GetLengthOfRunInBins() const; // length of run
+  Int_t GetRunNumber() const { return fRun; } // 
+  UInt_t GetStartTime() const { return fStartTime; } // 
+  UInt_t GetEndTime() const { return fEndTime; } //  
+  Double_t GetLengthOfRunInHours() const; // 
+  Double_t GetLengthOfRunInBins() const; // 
 
   // Temperature Section
   // access pointer to the basic temperature object: AliEMCALSensorTempArray 
@@ -43,10 +43,12 @@ class AliEMCALCalibTimeDep : public TObject {
 
   // range of temperature readings/values during the run 
   Int_t ScanTemperatureInfo(); // go through the temperature info
-  Double_t GetMinTemp() const { return fMinTemp; } //  min temp
-  Double_t GetMaxTemp() const { return fMaxTemp; } // max temp
-  UInt_t GetMinTime() const { return fMinTime; } // min time
-  UInt_t GetMaxTime() const { return fMaxTime; } // max time
+  Double_t GetMinTemp() const { return fMinTemp; } //  
+  Double_t GetMaxTemp() const { return fMaxTemp; } // 
+  Double_t GetMinTempVariation() const { return fMinTempVariation; } //  
+  Double_t GetMaxTempVariation() const { return fMaxTempVariation; } // 
+  UInt_t GetMinTime() const { return fMinTime; } // 
+  UInt_t GetMaxTime() const { return fMaxTime; } // 
   Double_t GetRangeOfTempMeasureInHours() const; //! 
   Double_t GetRangeOfTempMeasureInDegrees() const; //! 
 
@@ -70,14 +72,27 @@ class AliEMCALCalibTimeDep : public TObject {
   AliEMCALBiasAPD  * GetBiasAPD() const { return fBiasAPD; } //
   AliEMCALCalibMapAPD  * GetCalibMapAPD() const { return fCalibMapAPD; } //
   AliEMCALCalibReference  * GetCalibReference() const { return fCalibReference; } //
-  AliEMCALCalibTimeDepCorrection  * GetCalibTimeDepCorrection() const { return fCalibTimeDepCorrection; } //
 
   // storage and access of the correction info
   Int_t CalcCorrection(); //
-  AliEMCALCalibTimeDepCorrection  * GetTimeDepCorrection() 
+  AliEMCALCalibTimeDepCorrection  * GetCalibTimeDepCorrection() 
     const { return fCalibTimeDepCorrection; } //
 
   Double_t GetTempCoeff(Double_t IDark, Double_t M) const; //
+
+  // for local debugging: setters of the main input pointers that are normally from OCDB
+  void SetTempArray(AliEMCALSensorTempArray  *arr) { fTempArray = arr; } // 
+  void SetCalibSignal(AliCaloCalibSignal  *obj) { fCalibSignal = obj; } // 
+  void SetBiasAPD(AliEMCALBiasAPD  *obj) { fBiasAPD = obj; } // 
+  void SetCalibMapAPD(AliEMCALCalibMapAPD  *obj) { fCalibMapAPD = obj; } //
+  void SetCalibReference(AliEMCALCalibReference  *obj) { fCalibReference = obj; } //
+  // basic setters, also for local debugging
+  void SetRunNumber(Int_t i) { fRun= i; } // 
+  void SetStartTime(UInt_t ui) { fStartTime = ui; } // 
+  void SetEndTime(UInt_t ui) { fEndTime = ui; } //  
+
+  Int_t GetVerbosity() const { return fVerbosity; } // debug flag 
+  void SetVerbosity(Int_t i) { fVerbosity= i; } // debug flag 
 
  private:
 
@@ -91,7 +106,7 @@ class AliEMCALCalibTimeDep : public TObject {
 
   Int_t CalcLEDCorrection(Int_t nSM, Int_t nBins); // based on LED signals, and reference photodiodes
   Int_t CalcLEDCorrectionStripBasis(Int_t nSM, Int_t nBins); // based on LED signals, and reference photodiodes
-  Int_t CalcTemperatureCorrection(Int_t nSM, Int_t nBins); // based on temperetare info
+  Int_t CalcTemperatureCorrection(Int_t nSM, Int_t nBins, Int_t binSize); // based on temperature info
 
   //
   Int_t fRun; // run number
@@ -100,6 +115,8 @@ class AliEMCALCalibTimeDep : public TObject {
   // temperature stuff
   Double_t fMinTemp; // min temp
   Double_t fMaxTemp; // max temp
+  Double_t fMinTempVariation; // min temp variation, within a sensor
+  Double_t fMaxTempVariation; // max temp variation, within a sensor
   UInt_t fMinTime; // min time
   UInt_t fMaxTime; // max time
   //
@@ -115,6 +132,8 @@ class AliEMCALCalibTimeDep : public TObject {
   AliEMCALCalibMapAPD *fCalibMapAPD; // calib & map APD info
   AliEMCALCalibReference *fCalibReference; // reference info
   AliEMCALCalibTimeDepCorrection *fCalibTimeDepCorrection; // correction values
+
+  Int_t fVerbosity; // debug flag
 
   //
   ClassDef(AliEMCALCalibTimeDep,3)    // EMCAL time-dep Calibration data
