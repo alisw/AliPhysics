@@ -405,7 +405,7 @@ TH1D *AliProtonAnalysis::GetProtonYHistogram() {
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
   //TH1D *fYProtons = (TH1D *)fHistYPtProtons->ProjectionX("fYProtons",0,fHistYPtProtons->GetYaxis()->GetNbins(),"");
-  TH1D *fYProtons = fProtonContainer->ShowProjection(0,3); //variable-step
+  TH1D *fYProtons = fProtonContainer->ShowProjection(0,kStepInPhaseSpace); //variable-step
    
   fYProtons->SetStats(kFALSE);
   fYProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
@@ -424,7 +424,7 @@ TH1D *AliProtonAnalysis::GetAntiProtonYHistogram() {
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   
   //TH1D *fYAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionX("fYAntiProtons",0,fHistYPtAntiProtons->GetYaxis()->GetNbins(),"");
-  TH1D *fYAntiProtons = fAntiProtonContainer->ShowProjection(0,3);//variable-step 
+  TH1D *fYAntiProtons = fAntiProtonContainer->ShowProjection(0,kStepInPhaseSpace);//variable-step 
  
   fYAntiProtons->SetStats(kFALSE);
   fYAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
@@ -443,7 +443,7 @@ TH1D *AliProtonAnalysis::GetProtonPtHistogram() {
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   
   //TH1D *fPtProtons = (TH1D *)fHistYPtProtons->ProjectionY("fPtProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),""); 
-  TH1D *fPtProtons = fProtonContainer->ShowProjection(1,3); //variable-step
+  TH1D *fPtProtons = fProtonContainer->ShowProjection(1,kStepInPhaseSpace); //variable-step
 
   fPtProtons->SetStats(kFALSE);
   fPtProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
@@ -462,7 +462,7 @@ TH1D *AliProtonAnalysis::GetAntiProtonPtHistogram() {
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   
   //TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionY("fPtAntiProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),""); 
-  TH1D *fPtAntiProtons = fAntiProtonContainer->ShowProjection(1,3); //variable-step
+  TH1D *fPtAntiProtons = fAntiProtonContainer->ShowProjection(1,kStepInPhaseSpace); //variable-step
 
   fPtAntiProtons->SetStats(kFALSE);
   fPtAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
