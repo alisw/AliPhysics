@@ -272,7 +272,7 @@ void drawQAPlots(const char* analysisOutput,
 
   TCanvas *cdEdx = new TCanvas("cdEdx","dE/dx (TPC)",0,0,700,400);
   cdEdx->SetFillColor(10); cdEdx->SetHighLightColor(10); cdEdx->Divide(2,1);
-  cdEdx->cd(1)->SetLogx(); hEmptydEdx->DrawCopy();
+  cdEdx->cd(1)->SetLogx(); cdEdx->cd(1)->SetLogy(); hEmptydEdx->DrawCopy();
   gHistdEdxP->Draw("colsame");
   grElectrons->Draw("LSAME"); latex->SetTextColor(6); latex->DrawLatex(0.02,55,"e");
   grMuons->Draw("LSAME"); latex->SetTextColor(3); latex->DrawLatex(0.02,400,"#mu");
@@ -681,20 +681,25 @@ void drawdEdx(TH2F *gHistdEdxP) {
     (gHistdEdxP->GetXaxis()->GetXmax() - gHistdEdxP->GetXaxis()->GetXmin())/gHistdEdxP->GetNbinsX();
 
   TCanvas *c[100];
+  TString canvasTitle;
 
   for(Int_t iBin = 1; iBin <= gHistdEdxP->GetNbinsX(); iBin++) {
-    if((binMax > 0.41)&&(binMin < 0.91)) {
+    if((binMax > 0.41)&&(binMin < 1.01)) {
       title = "P: "; title += binMin; title += " - "; 
       title += binMax; title += "GeV/c";
+      canvasTitle = "dedxMomentumSlice."; canvasTitle += iCounter;
+      canvasTitle += ".gif";
       c[iCounter] = new TCanvas(title.Data(),title.Data(),0,0,500,500);
       c[iCounter]->SetFillColor(10); c[iCounter]->SetHighLightColor(10); 
-      gHist[iCounter] = gHistdEdxP->ProjectionY(title.Data(),iBin,iBin);
+      gHist[iCounter] = gHistdEdxP->ProjectionY(title.Data(),iBin,iBin+1);
       gHist[iCounter]->SetTitle(title.Data());
       gHist[iCounter]->SetStats(kFALSE);
+      gHist[iCounter]->GetXaxis()->SetRangeUser(0.0,300.);
       if(gHist[iCounter]->GetEntries() != 0)
 	c[iCounter]->SetLogy();
       gHist[iCounter]->Draw();
-      Printf("Bin: %d - Pmin: %lf - Pmax: %lf : %s",iBin,binMin,binMax,title.Data());
+      c[iCounter]->SaveAs(canvasTitle.Data());
+      //Printf("Bin: %d - Pmin: %lf - Pmax: %lf : %s",iBin,binMin,binMax,title.Data());
       iCounter += 1;
     }
     binMin += (gHistdEdxP->GetXaxis()->GetXmax() - gHistdEdxP->GetXaxis()->GetXmin())/gHistdEdxP->GetNbinsX();
@@ -702,3 +707,552 @@ void drawdEdx(TH2F *gHistdEdxP) {
   }
   
 }
+
+//___________________________________________________//
+void drawMCvsData(const char* analysisOutputMC,
+		  const char* analysisOutputData) {
+  //Draws the QA plots from the output of the analysis
+  //=========================================================//
+  gStyle->SetPalette(1,0);
+
+  //=========================================================//
+  //QA MC plots
+  TFile *fMC = TFile::Open(analysisOutputMC);
+  TList *listQAMC = dynamic_cast<TList *>(fMC->Get("outputQAList"));
+  TList *gListGlobalQAMC = dynamic_cast<TList *>(listQAMC->At(0));
+
+  //================QA plots================//
+  TList *fQAMC2DList = dynamic_cast<TList *>(gListGlobalQAMC->At(0));
+
+  //Rejected protons
+  TList *fQAMCProtonsRejectedList = dynamic_cast<TList *>(gListGlobalQAMC->At(2));
+  TH1F *gMCProtonsITSClustersReject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(0));
+  TH1F *gMCProtonsTPCClustersReject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(2));
+  TH1F *gMCProtonsChi2PerClusterTPCReject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(3));
+  TH1F *gMCProtonsExtCov11Reject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(4));
+  TH1F *gMCProtonsExtCov22Reject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(5));
+  TH1F *gMCProtonsExtCov33Reject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(6));
+  TH1F *gMCProtonsExtCov44Reject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(7));
+  TH1F *gMCProtonsExtCov55Reject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(8));
+  TH1F *gMCProtonsDCAXYReject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(11));
+  TH1F *gMCProtonsDCAZReject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(13));
+  TH1F *gMCProtonsNumberOfTPCdEdxPointsReject = dynamic_cast<TH1F *>(fQAMCProtonsRejectedList->At(26));
+
+  //Accepted protons
+  TList *fQAMCProtonsAcceptedList = dynamic_cast<TList *>(gListGlobalQAMC->At(1));
+  TH1F *gMCProtonsITSClustersPass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(0));
+  gMCProtonsITSClustersPass->SetStats(kFALSE);
+  gMCProtonsITSClustersPass->Add(gMCProtonsITSClustersReject);
+  gMCProtonsITSClustersPass->Sumw2();
+  gMCProtonsITSClustersPass->Scale(1./gMCProtonsITSClustersPass->Integral(1,gMCProtonsITSClustersPass->GetNbinsX()));
+  gMCProtonsITSClustersPass->SetMarkerStyle(20);
+  TH1F *gMCProtonsTPCClustersPass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(2));
+  gMCProtonsTPCClustersPass->SetStats(kFALSE);
+  gMCProtonsTPCClustersPass->Add(gMCProtonsTPCClustersReject);
+  gMCProtonsTPCClustersPass->Sumw2();
+  gMCProtonsTPCClustersPass->Scale(1./gMCProtonsTPCClustersPass->Integral(1,gMCProtonsTPCClustersPass->GetNbinsX()));
+  gMCProtonsTPCClustersPass->SetMarkerStyle(20);
+  TH1F *gMCProtonsChi2PerClusterTPCPass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(3));
+  gMCProtonsChi2PerClusterTPCPass->SetStats(kFALSE);
+  gMCProtonsChi2PerClusterTPCPass->Add(gMCProtonsChi2PerClusterTPCReject);
+  gMCProtonsChi2PerClusterTPCPass->Sumw2();
+  gMCProtonsChi2PerClusterTPCPass->Scale(1./gMCProtonsChi2PerClusterTPCPass->Integral(1,gMCProtonsChi2PerClusterTPCPass->GetNbinsX()));
+  gMCProtonsChi2PerClusterTPCPass->SetMarkerStyle(20);
+  TH1F *gMCProtonsExtCov11Pass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(4));
+  gMCProtonsExtCov11Pass->SetStats(kFALSE);
+  gMCProtonsExtCov11Pass->Add(gMCProtonsExtCov11Reject);
+  gMCProtonsExtCov11Pass->Sumw2();
+  gMCProtonsExtCov11Pass->Scale(1./gMCProtonsExtCov11Pass->Integral(1,gMCProtonsExtCov11Pass->GetNbinsX()));
+  gMCProtonsExtCov11Pass->SetMarkerStyle(20);
+  TH1F *gMCProtonsExtCov22Pass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(5));
+  gMCProtonsExtCov22Pass->SetStats(kFALSE);
+  gMCProtonsExtCov22Pass->Add(gMCProtonsExtCov22Reject);
+  gMCProtonsExtCov22Pass->Sumw2();
+  gMCProtonsExtCov22Pass->Scale(1./gMCProtonsExtCov22Pass->Integral(1,gMCProtonsExtCov22Pass->GetNbinsX()));
+  gMCProtonsExtCov22Pass->SetMarkerStyle(20);
+  TH1F *gMCProtonsExtCov33Pass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(6));
+  gMCProtonsExtCov33Pass->SetStats(kFALSE);
+  gMCProtonsExtCov33Pass->Add(gMCProtonsExtCov33Reject);
+  gMCProtonsExtCov33Pass->Sumw2();
+  gMCProtonsExtCov33Pass->Scale(1./gMCProtonsExtCov33Pass->Integral(1,gMCProtonsExtCov33Pass->GetNbinsX()));
+  gMCProtonsExtCov33Pass->SetMarkerStyle(20);
+  TH1F *gMCProtonsExtCov44Pass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(7));
+  gMCProtonsExtCov44Pass->SetStats(kFALSE);
+  gMCProtonsExtCov44Pass->Add(gMCProtonsExtCov44Reject);
+  gMCProtonsExtCov44Pass->Sumw2();
+  gMCProtonsExtCov44Pass->Scale(1./gMCProtonsExtCov44Pass->Integral(1,gMCProtonsExtCov44Pass->GetNbinsX()));
+  gMCProtonsExtCov44Pass->SetMarkerStyle(20);
+  TH1F *gMCProtonsExtCov55Pass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(8));
+  gMCProtonsExtCov55Pass->SetStats(kFALSE);
+  gMCProtonsExtCov55Pass->Add(gMCProtonsExtCov55Reject);
+  gMCProtonsExtCov55Pass->Sumw2();
+  gMCProtonsExtCov55Pass->Scale(1./gMCProtonsExtCov55Pass->Integral(1,gMCProtonsExtCov55Pass->GetNbinsX()));
+  gMCProtonsExtCov55Pass->SetMarkerStyle(20);
+  TH1F *gMCProtonsDCAXYPass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(11));
+  gMCProtonsDCAXYPass->SetStats(kFALSE);  
+  gMCProtonsDCAXYPass->Add(gMCProtonsDCAXYReject);
+  gMCProtonsDCAXYPass->Sumw2();
+  gMCProtonsDCAXYPass->Scale(1./gMCProtonsDCAXYPass->Integral(1,gMCProtonsDCAXYPass->GetNbinsX()));
+  gMCProtonsDCAXYPass->SetMarkerStyle(20);
+  TH1F *gMCProtonsDCAZPass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(13));
+  gMCProtonsDCAZPass->SetStats(kFALSE);  
+  gMCProtonsDCAZPass->Add(gMCProtonsDCAZReject);
+  gMCProtonsDCAZPass->Sumw2();
+  gMCProtonsDCAZPass->Scale(1./gMCProtonsDCAZPass->Integral(1,gMCProtonsDCAZPass->GetNbinsX()));
+  gMCProtonsDCAZPass->SetMarkerStyle(20);
+  TH1F *gMCProtonsNumberOfTPCdEdxPointsPass = dynamic_cast<TH1F *>(fQAMCProtonsAcceptedList->At(26));
+  gMCProtonsNumberOfTPCdEdxPointsPass->SetStats(kFALSE);  
+  gMCProtonsNumberOfTPCdEdxPointsPass->Add(gMCProtonsNumberOfTPCdEdxPointsReject);
+  gMCProtonsNumberOfTPCdEdxPointsPass->Sumw2();
+  gMCProtonsNumberOfTPCdEdxPointsPass->Scale(1./gMCProtonsNumberOfTPCdEdxPointsPass->Integral(1,gMCProtonsNumberOfTPCdEdxPointsPass->GetNbinsX()));
+  gMCProtonsNumberOfTPCdEdxPointsPass->SetMarkerStyle(20);
+
+  //Rejected antiprotons
+  TList *fQAMCAntiProtonsRejectedList = dynamic_cast<TList *>(gListGlobalQAMC->At(4));
+  TH1F *gMCAntiProtonsITSClustersReject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(0));
+  TH1F *gMCAntiProtonsTPCClustersReject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(2));
+  TH1F *gMCAntiProtonsChi2PerClusterTPCReject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(3));
+  TH1F *gMCAntiProtonsExtCov11Reject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(4));
+  TH1F *gMCAntiProtonsExtCov22Reject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(5));
+  TH1F *gMCAntiProtonsExtCov33Reject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(6));
+  TH1F *gMCAntiProtonsExtCov44Reject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(7));
+  TH1F *gMCAntiProtonsExtCov55Reject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(8));
+  TH1F *gMCAntiProtonsDCAXYReject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(11));
+  TH1F *gMCAntiProtonsDCAZReject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(13));
+  TH1F *gMCAntiProtonsNumberOfTPCdEdxPointsReject = dynamic_cast<TH1F *>(fQAMCAntiProtonsRejectedList->At(26));
+
+  //Accepted protons
+  TList *fQAMCAntiProtonsAcceptedList = dynamic_cast<TList *>(gListGlobalQAMC->At(3));
+  TH1F *gMCAntiProtonsITSClustersPass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(0));
+  gMCAntiProtonsITSClustersPass->SetStats(kFALSE);
+  gMCAntiProtonsITSClustersPass->Add(gMCAntiProtonsITSClustersReject);
+  gMCAntiProtonsITSClustersPass->Sumw2();
+  gMCAntiProtonsITSClustersPass->Scale(1./gMCAntiProtonsITSClustersPass->Integral(1,gMCAntiProtonsITSClustersPass->GetNbinsX()));
+  gMCAntiProtonsITSClustersPass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsTPCClustersPass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(2));
+  gMCAntiProtonsTPCClustersPass->SetStats(kFALSE);
+  gMCAntiProtonsTPCClustersPass->Add(gMCAntiProtonsTPCClustersReject);
+  gMCAntiProtonsTPCClustersPass->Sumw2();
+  gMCAntiProtonsTPCClustersPass->Scale(1./gMCAntiProtonsTPCClustersPass->Integral(1,gMCAntiProtonsTPCClustersPass->GetNbinsX()));
+  gMCAntiProtonsTPCClustersPass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsChi2PerClusterTPCPass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(3));
+  gMCAntiProtonsChi2PerClusterTPCPass->SetStats(kFALSE);
+  gMCAntiProtonsChi2PerClusterTPCPass->Add(gMCAntiProtonsChi2PerClusterTPCReject);
+  gMCAntiProtonsChi2PerClusterTPCPass->Sumw2();
+  gMCAntiProtonsChi2PerClusterTPCPass->Scale(1./gMCAntiProtonsChi2PerClusterTPCPass->Integral(1,gMCAntiProtonsChi2PerClusterTPCPass->GetNbinsX()));
+  gMCAntiProtonsChi2PerClusterTPCPass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsExtCov11Pass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(4));
+  gMCAntiProtonsExtCov11Pass->SetStats(kFALSE);
+  gMCAntiProtonsExtCov11Pass->Add(gMCAntiProtonsExtCov11Reject);
+  gMCAntiProtonsExtCov11Pass->Sumw2();
+  gMCAntiProtonsExtCov11Pass->Scale(1./gMCAntiProtonsExtCov11Pass->Integral(1,gMCAntiProtonsExtCov11Pass->GetNbinsX()));
+  gMCAntiProtonsExtCov11Pass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsExtCov22Pass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(5));
+  gMCAntiProtonsExtCov22Pass->SetStats(kFALSE);
+  gMCAntiProtonsExtCov22Pass->Add(gMCAntiProtonsExtCov22Reject);
+  gMCAntiProtonsExtCov22Pass->Sumw2();
+  gMCAntiProtonsExtCov22Pass->Scale(1./gMCAntiProtonsExtCov22Pass->Integral(1,gMCAntiProtonsExtCov22Pass->GetNbinsX()));
+  gMCAntiProtonsExtCov22Pass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsExtCov33Pass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(6));
+  gMCAntiProtonsExtCov33Pass->SetStats(kFALSE);
+  gMCAntiProtonsExtCov33Pass->Add(gMCAntiProtonsExtCov33Reject);
+  gMCAntiProtonsExtCov33Pass->Sumw2();
+  gMCAntiProtonsExtCov33Pass->Scale(1./gMCAntiProtonsExtCov33Pass->Integral(1,gMCAntiProtonsExtCov33Pass->GetNbinsX()));
+  gMCAntiProtonsExtCov33Pass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsExtCov44Pass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(7));
+  gMCAntiProtonsExtCov44Pass->SetStats(kFALSE);
+  gMCAntiProtonsExtCov44Pass->Add(gMCAntiProtonsExtCov44Reject);
+  gMCAntiProtonsExtCov44Pass->Sumw2();
+  gMCAntiProtonsExtCov44Pass->Scale(1./gMCAntiProtonsExtCov44Pass->Integral(1,gMCAntiProtonsExtCov44Pass->GetNbinsX()));
+  gMCAntiProtonsExtCov44Pass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsExtCov55Pass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(8));
+  gMCAntiProtonsExtCov55Pass->SetStats(kFALSE);
+  gMCAntiProtonsExtCov55Pass->Add(gMCAntiProtonsExtCov55Reject);
+  gMCAntiProtonsExtCov55Pass->Sumw2();
+  gMCAntiProtonsExtCov55Pass->Scale(1./gMCAntiProtonsExtCov55Pass->Integral(1,gMCAntiProtonsExtCov55Pass->GetNbinsX()));
+  gMCAntiProtonsExtCov55Pass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsDCAXYPass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(11));
+  gMCAntiProtonsDCAXYPass->SetStats(kFALSE);  
+  gMCAntiProtonsDCAXYPass->Add(gMCAntiProtonsDCAXYReject);
+  gMCAntiProtonsDCAXYPass->Sumw2();
+  gMCAntiProtonsDCAXYPass->Scale(1./gMCAntiProtonsDCAXYPass->Integral(1,gMCAntiProtonsDCAXYPass->GetNbinsX()));
+  gMCAntiProtonsDCAXYPass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsDCAZPass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(13));
+  gMCAntiProtonsDCAZPass->SetStats(kFALSE);  
+  gMCAntiProtonsDCAZPass->Add(gMCAntiProtonsDCAZReject);
+  gMCAntiProtonsDCAZPass->Sumw2();
+  gMCAntiProtonsDCAZPass->Scale(1./gMCAntiProtonsDCAZPass->Integral(1,gMCAntiProtonsDCAZPass->GetNbinsX()));
+  gMCAntiProtonsDCAZPass->SetMarkerStyle(20);
+  TH1F *gMCAntiProtonsNumberOfTPCdEdxPointsPass = dynamic_cast<TH1F *>(fQAMCAntiProtonsAcceptedList->At(26));
+  gMCAntiProtonsNumberOfTPCdEdxPointsPass->SetStats(kFALSE);  
+  gMCAntiProtonsNumberOfTPCdEdxPointsPass->Add(gMCAntiProtonsNumberOfTPCdEdxPointsReject);
+  gMCAntiProtonsNumberOfTPCdEdxPointsPass->Sumw2();
+  gMCAntiProtonsNumberOfTPCdEdxPointsPass->Scale(1./gMCAntiProtonsNumberOfTPCdEdxPointsPass->Integral(1,gMCAntiProtonsNumberOfTPCdEdxPointsPass->GetNbinsX()));
+  gMCAntiProtonsNumberOfTPCdEdxPointsPass->SetMarkerStyle(20);
+
+  //=========================================================//
+  //QA data plots
+  TFile *fData = TFile::Open(analysisOutputData);
+  TList *listQAData = dynamic_cast<TList *>(fData->Get("outputQAList"));
+  TList *gListGlobalQAData = dynamic_cast<TList *>(listQAData->At(0));
+
+  //================QA plots================//
+  TList *fQAData2DList = dynamic_cast<TList *>(gListGlobalQAData->At(0));
+
+  //Rejected protons
+  TList *fQADataProtonsRejectedList = dynamic_cast<TList *>(gListGlobalQAData->At(2));
+  TH1F *gDataProtonsITSClustersReject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(0));
+  TH1F *gDataProtonsTPCClustersReject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(2));
+  TH1F *gDataProtonsChi2PerClusterTPCReject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(3));
+  TH1F *gDataProtonsExtCov11Reject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(4));
+  TH1F *gDataProtonsExtCov22Reject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(5));
+  TH1F *gDataProtonsExtCov33Reject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(6));
+  TH1F *gDataProtonsExtCov44Reject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(7));
+  TH1F *gDataProtonsExtCov55Reject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(8));
+  TH1F *gDataProtonsDCAXYReject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(11));
+  TH1F *gDataProtonsDCAZReject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(13));
+  TH1F *gDataProtonsNumberOfTPCdEdxPointsReject = dynamic_cast<TH1F *>(fQADataProtonsRejectedList->At(26));
+
+  //Accepted protons
+  TList *fQADataProtonsAcceptedList = dynamic_cast<TList *>(gListGlobalQAData->At(1));
+  TH1F *gDataProtonsITSClustersPass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(0));
+  gDataProtonsITSClustersPass->SetStats(kFALSE);
+  gDataProtonsITSClustersPass->Add(gDataProtonsITSClustersReject);
+  gDataProtonsITSClustersPass->Sumw2();
+  gDataProtonsITSClustersPass->Scale(1./gDataProtonsITSClustersPass->Integral(1,gDataProtonsITSClustersPass->GetNbinsX()));
+  gDataProtonsITSClustersPass->SetMarkerStyle(24);
+  TH1F *gDataProtonsTPCClustersPass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(2));
+  gDataProtonsTPCClustersPass->SetStats(kFALSE);
+  gDataProtonsTPCClustersPass->Add(gDataProtonsTPCClustersReject);
+  gDataProtonsTPCClustersPass->Sumw2();
+  gDataProtonsTPCClustersPass->Scale(1./gDataProtonsTPCClustersPass->Integral(1,gDataProtonsTPCClustersPass->GetNbinsX()));
+  gDataProtonsTPCClustersPass->SetMarkerStyle(24);
+  TH1F *gDataProtonsChi2PerClusterTPCPass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(3));
+  gDataProtonsChi2PerClusterTPCPass->SetStats(kFALSE);
+  gDataProtonsChi2PerClusterTPCPass->Add(gDataProtonsChi2PerClusterTPCReject);
+  gDataProtonsChi2PerClusterTPCPass->Sumw2();
+  gDataProtonsChi2PerClusterTPCPass->Scale(1./gDataProtonsChi2PerClusterTPCPass->Integral(1,gDataProtonsChi2PerClusterTPCPass->GetNbinsX()));
+  gDataProtonsChi2PerClusterTPCPass->SetMarkerStyle(24);
+  TH1F *gDataProtonsExtCov11Pass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(4));
+  gDataProtonsExtCov11Pass->SetStats(kFALSE);
+  gDataProtonsExtCov11Pass->Add(gDataProtonsExtCov11Reject);
+  gDataProtonsExtCov11Pass->Sumw2();
+  gDataProtonsExtCov11Pass->Scale(1./gDataProtonsExtCov11Pass->Integral(1,gDataProtonsExtCov11Pass->GetNbinsX()));
+  gDataProtonsExtCov11Pass->SetMarkerStyle(24);
+  TH1F *gDataProtonsExtCov22Pass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(5));
+  gDataProtonsExtCov22Pass->SetStats(kFALSE);
+  gDataProtonsExtCov22Pass->Add(gDataProtonsExtCov22Reject);
+  gDataProtonsExtCov22Pass->Sumw2();
+  gDataProtonsExtCov22Pass->Scale(1./gDataProtonsExtCov22Pass->Integral(1,gDataProtonsExtCov22Pass->GetNbinsX()));
+  gDataProtonsExtCov22Pass->SetMarkerStyle(24);
+  TH1F *gDataProtonsExtCov33Pass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(6));
+  gDataProtonsExtCov33Pass->SetStats(kFALSE);
+  gDataProtonsExtCov33Pass->Add(gDataProtonsExtCov33Reject);
+  gDataProtonsExtCov33Pass->Sumw2();
+  gDataProtonsExtCov33Pass->Scale(1./gDataProtonsExtCov33Pass->Integral(1,gDataProtonsExtCov33Pass->GetNbinsX()));
+  gDataProtonsExtCov33Pass->SetMarkerStyle(24);
+  TH1F *gDataProtonsExtCov44Pass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(7));
+  gDataProtonsExtCov44Pass->SetStats(kFALSE);
+  gDataProtonsExtCov44Pass->Add(gDataProtonsExtCov44Reject);
+  gDataProtonsExtCov44Pass->Sumw2();
+  gDataProtonsExtCov44Pass->Scale(1./gDataProtonsExtCov44Pass->Integral(1,gDataProtonsExtCov44Pass->GetNbinsX()));
+  gDataProtonsExtCov44Pass->SetMarkerStyle(24);
+  TH1F *gDataProtonsExtCov55Pass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(8));
+  gDataProtonsExtCov55Pass->SetStats(kFALSE);
+  gDataProtonsExtCov55Pass->Add(gDataProtonsExtCov55Reject);
+  gDataProtonsExtCov55Pass->Sumw2();
+  gDataProtonsExtCov55Pass->Scale(1./gDataProtonsExtCov55Pass->Integral(1,gDataProtonsExtCov55Pass->GetNbinsX()));
+  gDataProtonsExtCov55Pass->SetMarkerStyle(24);
+  TH1F *gDataProtonsDCAXYPass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(11));
+  gDataProtonsDCAXYPass->SetStats(kFALSE);  
+  gDataProtonsDCAXYPass->Add(gDataProtonsDCAXYReject);
+  gDataProtonsDCAXYPass->Sumw2();
+  gDataProtonsDCAXYPass->Scale(1./gDataProtonsDCAXYPass->Integral(1,gDataProtonsDCAXYPass->GetNbinsX()));
+  gDataProtonsDCAXYPass->SetMarkerStyle(24);
+  TH1F *gDataProtonsDCAZPass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(13));
+  gDataProtonsDCAZPass->SetStats(kFALSE);  
+  gDataProtonsDCAZPass->Add(gDataProtonsDCAZReject);
+  gDataProtonsDCAZPass->Sumw2();
+  gDataProtonsDCAZPass->Scale(1./gDataProtonsDCAZPass->Integral(1,gDataProtonsDCAZPass->GetNbinsX()));
+  gDataProtonsDCAZPass->SetMarkerStyle(24);
+  TH1F *gDataProtonsNumberOfTPCdEdxPointsPass = dynamic_cast<TH1F *>(fQADataProtonsAcceptedList->At(26));
+  gDataProtonsNumberOfTPCdEdxPointsPass->SetStats(kFALSE);  
+  gDataProtonsNumberOfTPCdEdxPointsPass->Add(gDataProtonsNumberOfTPCdEdxPointsReject);
+  gDataProtonsNumberOfTPCdEdxPointsPass->Sumw2();
+  gDataProtonsNumberOfTPCdEdxPointsPass->Scale(1./gDataProtonsNumberOfTPCdEdxPointsPass->Integral(1,gDataProtonsNumberOfTPCdEdxPointsPass->GetNbinsX()));
+  gDataProtonsNumberOfTPCdEdxPointsPass->SetMarkerStyle(24);
+
+  //Rejected antiprotons
+  TList *fQADataAntiProtonsRejectedList = dynamic_cast<TList *>(gListGlobalQAData->At(4));
+  TH1F *gDataAntiProtonsITSClustersReject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(0));
+  TH1F *gDataAntiProtonsTPCClustersReject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(2));
+  TH1F *gDataAntiProtonsChi2PerClusterTPCReject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(3));
+  TH1F *gDataAntiProtonsExtCov11Reject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(4));
+  TH1F *gDataAntiProtonsExtCov22Reject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(5));
+  TH1F *gDataAntiProtonsExtCov33Reject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(6));
+  TH1F *gDataAntiProtonsExtCov44Reject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(7));
+  TH1F *gDataAntiProtonsExtCov55Reject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(8));
+  TH1F *gDataAntiProtonsDCAXYReject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(11));
+  TH1F *gDataAntiProtonsDCAZReject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(13));
+  TH1F *gDataAntiProtonsNumberOfTPCdEdxPointsReject = dynamic_cast<TH1F *>(fQADataAntiProtonsRejectedList->At(26));
+
+  //Accepted protons
+  TList *fQADataAntiProtonsAcceptedList = dynamic_cast<TList *>(gListGlobalQAData->At(3));
+  TH1F *gDataAntiProtonsITSClustersPass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(0));
+  gDataAntiProtonsITSClustersPass->SetStats(kFALSE);
+  gDataAntiProtonsITSClustersPass->Add(gDataAntiProtonsITSClustersReject);
+  gDataAntiProtonsITSClustersPass->Sumw2();
+  gDataAntiProtonsITSClustersPass->Scale(1./gDataAntiProtonsITSClustersPass->Integral(1,gDataAntiProtonsITSClustersPass->GetNbinsX()));
+  gDataAntiProtonsITSClustersPass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsTPCClustersPass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(2));
+  gDataAntiProtonsTPCClustersPass->SetStats(kFALSE);
+  gDataAntiProtonsTPCClustersPass->Add(gDataAntiProtonsTPCClustersReject);
+  gDataAntiProtonsTPCClustersPass->Sumw2();
+  gDataAntiProtonsTPCClustersPass->Scale(1./gDataAntiProtonsTPCClustersPass->Integral(1,gDataAntiProtonsTPCClustersPass->GetNbinsX()));
+  gDataAntiProtonsTPCClustersPass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsChi2PerClusterTPCPass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(3));
+  gDataAntiProtonsChi2PerClusterTPCPass->SetStats(kFALSE);
+  gDataAntiProtonsChi2PerClusterTPCPass->Add(gDataAntiProtonsChi2PerClusterTPCReject);
+  gDataAntiProtonsChi2PerClusterTPCPass->Sumw2();
+  gDataAntiProtonsChi2PerClusterTPCPass->Scale(1./gDataAntiProtonsChi2PerClusterTPCPass->Integral(1,gDataAntiProtonsChi2PerClusterTPCPass->GetNbinsX()));
+  gDataAntiProtonsChi2PerClusterTPCPass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsExtCov11Pass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(4));
+  gDataAntiProtonsExtCov11Pass->SetStats(kFALSE);
+  gDataAntiProtonsExtCov11Pass->Add(gDataAntiProtonsExtCov11Reject);
+  gDataAntiProtonsExtCov11Pass->Sumw2();
+  gDataAntiProtonsExtCov11Pass->Scale(1./gDataAntiProtonsExtCov11Pass->Integral(1,gDataAntiProtonsExtCov11Pass->GetNbinsX()));
+  gDataAntiProtonsExtCov11Pass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsExtCov22Pass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(5));
+  gDataAntiProtonsExtCov22Pass->SetStats(kFALSE);
+  gDataAntiProtonsExtCov22Pass->Add(gDataAntiProtonsExtCov22Reject);
+  gDataAntiProtonsExtCov22Pass->Sumw2();
+  gDataAntiProtonsExtCov22Pass->Scale(1./gDataAntiProtonsExtCov22Pass->Integral(1,gDataAntiProtonsExtCov22Pass->GetNbinsX()));
+  gDataAntiProtonsExtCov22Pass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsExtCov33Pass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(6));
+  gDataAntiProtonsExtCov33Pass->SetStats(kFALSE);
+  gDataAntiProtonsExtCov33Pass->Add(gDataAntiProtonsExtCov33Reject);
+  gDataAntiProtonsExtCov33Pass->Sumw2();
+  gDataAntiProtonsExtCov33Pass->Scale(1./gDataAntiProtonsExtCov33Pass->Integral(1,gDataAntiProtonsExtCov33Pass->GetNbinsX()));
+  gDataAntiProtonsExtCov33Pass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsExtCov44Pass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(7));
+  gDataAntiProtonsExtCov44Pass->SetStats(kFALSE);
+  gDataAntiProtonsExtCov44Pass->Add(gDataAntiProtonsExtCov44Reject);
+  gDataAntiProtonsExtCov44Pass->Sumw2();
+  gDataAntiProtonsExtCov44Pass->Scale(1./gDataAntiProtonsExtCov44Pass->Integral(1,gDataAntiProtonsExtCov44Pass->GetNbinsX()));
+  gDataAntiProtonsExtCov44Pass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsExtCov55Pass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(8));
+  gDataAntiProtonsExtCov55Pass->SetStats(kFALSE);
+  gDataAntiProtonsExtCov55Pass->Add(gDataAntiProtonsExtCov55Reject);
+  gDataAntiProtonsExtCov55Pass->Sumw2();
+  gDataAntiProtonsExtCov55Pass->Scale(1./gDataAntiProtonsExtCov55Pass->Integral(1,gDataAntiProtonsExtCov55Pass->GetNbinsX()));
+  gDataAntiProtonsExtCov55Pass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsDCAXYPass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(11));
+  gDataAntiProtonsDCAXYPass->SetStats(kFALSE);  
+  gDataAntiProtonsDCAXYPass->Add(gDataAntiProtonsDCAXYReject);
+  gDataAntiProtonsDCAXYPass->Sumw2();
+  gDataAntiProtonsDCAXYPass->Scale(1./gDataAntiProtonsDCAXYPass->Integral(1,gDataAntiProtonsDCAXYPass->GetNbinsX()));
+  gDataAntiProtonsDCAXYPass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsDCAZPass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(13));
+  gDataAntiProtonsDCAZPass->SetStats(kFALSE);  
+  gDataAntiProtonsDCAZPass->Add(gDataAntiProtonsDCAZReject);
+  gDataAntiProtonsDCAZPass->Sumw2();
+  gDataAntiProtonsDCAZPass->Scale(1./gDataAntiProtonsDCAZPass->Integral(1,gDataAntiProtonsDCAZPass->GetNbinsX()));
+  gDataAntiProtonsDCAZPass->SetMarkerStyle(24);
+  TH1F *gDataAntiProtonsNumberOfTPCdEdxPointsPass = dynamic_cast<TH1F *>(fQADataAntiProtonsAcceptedList->At(26));
+  gDataAntiProtonsNumberOfTPCdEdxPointsPass->SetStats(kFALSE);  
+  gDataAntiProtonsNumberOfTPCdEdxPointsPass->Add(gDataAntiProtonsNumberOfTPCdEdxPointsReject);
+  gDataAntiProtonsNumberOfTPCdEdxPointsPass->Sumw2();
+  gDataAntiProtonsNumberOfTPCdEdxPointsPass->Scale(1./gDataAntiProtonsNumberOfTPCdEdxPointsPass->Integral(1,gDataAntiProtonsNumberOfTPCdEdxPointsPass->GetNbinsX()));
+  gDataAntiProtonsNumberOfTPCdEdxPointsPass->SetMarkerStyle(24);
+
+
+  //__________________________________________________//
+  TCanvas *c1 = new TCanvas("c1","ITS clusters",0,0,600,400);
+  c1->SetFillColor(10); c1->SetHighLightColor(10);
+  c1->Divide(2,1);
+  c1->cd(1); gDataProtonsITSClustersPass->Divide(gMCProtonsITSClustersPass);
+  gDataProtonsITSClustersPass->SetTitle("Protons");
+  gDataProtonsITSClustersPass->GetYaxis()->SetTitle("Data/MC");
+  gDataProtonsITSClustersPass->Draw("E"); 
+  //gMCProtonsITSClustersPass->Draw("ESAME"); 
+  c1->cd(2); 
+  gDataAntiProtonsITSClustersPass->Divide(gMCAntiProtonsITSClustersPass);
+  gDataAntiProtonsITSClustersPass->SetTitle("Antiprotons");
+  gDataAntiProtonsITSClustersPass->GetYaxis()->SetTitle("Data/MC");
+  gDataAntiProtonsITSClustersPass->Draw("E"); 
+  //gMCAntiProtonsITSClustersPass->Draw("ESAME"); 
+
+  TCanvas *c3 = new TCanvas("c3","TPC clusters",0,200,600,400);
+  c3->SetFillColor(10); c3->SetHighLightColor(10);
+  c3->Divide(2,1);
+  c3->cd(1); gDataProtonsTPCClustersPass->Divide(gMCProtonsTPCClustersPass);
+  gDataProtonsTPCClustersPass->SetTitle("Protons");
+  gDataProtonsTPCClustersPass->GetYaxis()->SetTitle("Data/MC");
+  gDataProtonsTPCClustersPass->Draw("E");
+  //gMCProtonsTPCClustersPass->Draw("ESAME");
+  c3->cd(2); 
+  gDataAntiProtonsTPCClustersPass->Divide(gMCAntiProtonsTPCClustersPass);
+  gDataAntiProtonsTPCClustersPass->SetTitle("Antirotons");
+  gDataAntiProtonsTPCClustersPass->GetYaxis()->SetTitle("Data/MC");
+  gDataAntiProtonsTPCClustersPass->Draw("E");
+  //gMCAntiProtonsTPCClustersPass->Draw("ESAME");
+
+  TCanvas *c4 = new TCanvas("c4","chi^2 per TPC cluster",0,300,600,400);
+  c4->SetFillColor(10); c4->SetHighLightColor(10);
+  c4->Divide(2,1);
+  c4->cd(1); 
+  gDataProtonsChi2PerClusterTPCPass->Divide(gMCProtonsChi2PerClusterTPCPass);
+  gDataProtonsChi2PerClusterTPCPass->SetTitle("Protons");
+  gDataProtonsChi2PerClusterTPCPass->GetYaxis()->SetTitle("Data/MC");
+  gDataProtonsChi2PerClusterTPCPass->Draw("E"); 
+  //gMCProtonsChi2PerClusterTPCPass->Draw("ESAME"); 
+  c4->cd(2); 
+  gDataAntiProtonsChi2PerClusterTPCPass->Divide(gMCAntiProtonsChi2PerClusterTPCPass);
+  gDataAntiProtonsChi2PerClusterTPCPass->SetTitle("Antirotons");
+  gDataAntiProtonsChi2PerClusterTPCPass->GetYaxis()->SetTitle("Data/MC");
+  gDataAntiProtonsChi2PerClusterTPCPass->Draw("E"); 
+  //gMCAntiProtonsChi2PerClusterTPCPass->Draw("ESAME"); 
+
+  if(gMCProtonsExtCov11Pass->GetEntries() != 0) {
+    TCanvas *c5 = new TCanvas("c5","Cov11",0,400,600,400);
+    c5->SetFillColor(10); c5->SetHighLightColor(10);
+    c5->Divide(2,1);
+    c5->cd(1); 
+    gDataProtonsExtCov11Pass->Divide(gMCProtonsExtCov11Pass);
+    gDataProtonsExtCov11Pass->SetTitle("Protons");
+    gDataProtonsExtCov11Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataProtonsExtCov11Pass->Draw("E"); 
+    //gMCProtonsExtCov11Pass->Draw("ESAME"); 
+    c5->cd(2); 
+    gDataAntiProtonsExtCov11Pass->Divide(gMCAntiProtonsExtCov11Pass);
+    gDataAntiProtonsExtCov11Pass->SetTitle("Antiprotons");
+    gDataAntiProtonsExtCov11Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataAntiProtonsExtCov11Pass->Draw("E"); 
+    //gMCAntiProtonsExtCov11Pass->Draw("ESAME"); 
+  }
+
+  if(gMCProtonsExtCov22Pass->GetEntries() != 0) {
+    TCanvas *c6 = new TCanvas("c6","Cov22",0,500,600,400);
+    c6->SetFillColor(10); c6->SetHighLightColor(10);
+    c6->Divide(2,1);
+    c6->cd(1); 
+    gDataProtonsExtCov22Pass->Divide(gMCProtonsExtCov11Pass);
+    gDataProtonsExtCov22Pass->SetTitle("Protons");
+    gDataProtonsExtCov22Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataProtonsExtCov22Pass->Draw("E"); 
+    //gMCProtonsExtCov22Pass->Draw("ESAME"); 
+    c6->cd(2); 
+    gDataAntiProtonsExtCov22Pass->Divide(gMCAntiProtonsExtCov22Pass);
+    gDataAntiProtonsExtCov22Pass->SetTitle("Antiprotons");
+    gDataAntiProtonsExtCov22Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataAntiProtonsExtCov22Pass->Draw("E"); 
+    //gMCAntiProtonsExtCov22Pass->Draw("ESAME"); 
+  }
+
+  if(gMCProtonsExtCov33Pass->GetEntries() != 0) {
+    TCanvas *c7 = new TCanvas("c7","Cov33",600,0,600,400);
+    c7->SetFillColor(10); c7->SetHighLightColor(10);
+    c7->Divide(2,1);
+    c7->cd(1); 
+    gDataProtonsExtCov33Pass->Divide(gMCProtonsExtCov33Pass);
+    gDataProtonsExtCov33Pass->SetTitle("Protons");
+    gDataProtonsExtCov33Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataProtonsExtCov33Pass->Draw("E"); 
+    //gMCProtonsExtCov33Pass->Draw("ESAME"); 
+    c7->cd(2); 
+    gDataAntiProtonsExtCov33Pass->Divide(gMCAntiProtonsExtCov33Pass);
+    gDataAntiProtonsExtCov33Pass->SetTitle("Antiprotons");
+    gDataAntiProtonsExtCov33Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataAntiProtonsExtCov33Pass->Draw("E"); 
+    //gMCAntiProtonsExtCov33Pass->Draw("ESAME"); 
+  }
+
+  if(gMCProtonsExtCov44Pass->GetEntries() != 0) {
+    TCanvas *c8 = new TCanvas("c8","Cov44",600,100,600,400);
+    c8->SetFillColor(10); c8->SetHighLightColor(10);
+    c8->Divide(2,1);
+    c8->cd(1); 
+    gDataProtonsExtCov44Pass->Divide(gMCProtonsExtCov44Pass);
+    gDataProtonsExtCov44Pass->SetTitle("Protons");
+    gDataProtonsExtCov44Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataProtonsExtCov44Pass->Draw("E"); 
+    //gMCProtonsExtCov44Pass->Draw("ESAME"); 
+    c8->cd(2); 
+    gDataAntiProtonsExtCov44Pass->Divide(gMCAntiProtonsExtCov44Pass);
+    gDataAntiProtonsExtCov44Pass->SetTitle("Antiprotons");
+    gDataAntiProtonsExtCov44Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataAntiProtonsExtCov44Pass->Draw("E"); 
+    //gMCAntiProtonsExtCov44Pass->Draw("ESAME"); 
+  }
+
+  if(gMCProtonsExtCov55Pass->GetEntries() != 0) {
+    TCanvas *c9 = new TCanvas("c9","Cov55",600,200,600,400);
+    c9->SetFillColor(10); c9->SetHighLightColor(10);
+    c9->Divide(2,1);
+    c9->cd(1); 
+    gDataProtonsExtCov55Pass->Divide(gMCProtonsExtCov55Pass);
+    gDataProtonsExtCov55Pass->SetTitle("Protons");
+    gDataProtonsExtCov55Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataProtonsExtCov55Pass->Draw("E"); 
+    //gMCProtonsExtCov55Pass->Draw("ESAME"); 
+    c9->cd(2); 
+    gDataAntiProtonsExtCov55Pass->Divide(gMCAntiProtonsExtCov55Pass);
+    gDataAntiProtonsExtCov55Pass->SetTitle("Antiprotons");
+    gDataAntiProtonsExtCov55Pass->GetYaxis()->SetTitle("Data/MC");
+    gDataAntiProtonsExtCov55Pass->Draw("E"); 
+    //gMCAntiProtonsExtCov55Pass->Draw("ESAME"); 
+  }
+
+  if(gMCProtonsDCAXYPass->GetEntries() != 0) {
+    TCanvas *c12 = new TCanvas("c12","dca(xy)",600,500,600,400);
+    c12->SetFillColor(10); c12->SetHighLightColor(10);
+    c12->Divide(2,1);
+    c12->cd(1); 
+    gDataProtonsDCAXYPass->Divide(gMCProtonsDCAXYPass);
+    gDataProtonsDCAXYPass->SetTitle("Protons");
+    gDataProtonsDCAXYPass->GetYaxis()->SetTitle("Data/MC");
+    gDataProtonsDCAXYPass->Draw("E"); 
+    //gMCProtonsDCAXYPass->Draw("ESAME"); 
+    c12->cd(2); 
+    gDataAntiProtonsDCAXYPass->Divide(gMCAntiProtonsDCAXYPass);
+    gDataAntiProtonsDCAXYPass->SetTitle("Antiprotons");
+    gDataAntiProtonsDCAXYPass->GetYaxis()->SetTitle("Data/MC");
+    gDataAntiProtonsDCAXYPass->Draw("E"); 
+    //gMCAntiProtonsDCAXYPass->Draw("ESAME"); 
+  }
+
+  if(gMCProtonsDCAZPass->GetEntries() != 0) {
+    TCanvas *c14 = new TCanvas("c14","dca(z)",1200,100,600,400);
+    c14->SetFillColor(10); c14->SetHighLightColor(10);
+    c14->Divide(2,1);
+    c14->cd(1); 
+    gDataProtonsDCAZPass->Divide(gMCProtonsDCAZPass);
+    gDataProtonsDCAZPass->SetTitle("Protons");
+    gDataProtonsDCAZPass->GetYaxis()->SetTitle("Data/MC");
+    gDataProtonsDCAZPass->Draw("E"); 
+    //gMCProtonsDCAZPass->Draw("ESAME"); 
+    c14->cd(2); 
+    gDataAntiProtonsDCAZPass->Divide(gMCAntiProtonsDCAZPass);
+    gDataAntiProtonsDCAZPass->SetTitle("Antiprotons");
+    gDataAntiProtonsDCAZPass->GetYaxis()->SetTitle("Data/MC");
+    gDataAntiProtonsDCAZPass->Draw("E"); 
+    //gMCAntiProtonsDCAZPass->Draw("ESAME"); 
+  }
+
+  TCanvas *c16 = new TCanvas("c16","TPC clusters (dE/dx)",1200,300,600,400);
+  c16->SetFillColor(10); c16->SetHighLightColor(10);
+  c16->Divide(2,1);
+  c16->cd(1); 
+  gDataProtonsNumberOfTPCdEdxPointsPass->Divide(gMCProtonsNumberOfTPCdEdxPointsPass);
+  gDataProtonsNumberOfTPCdEdxPointsPass->SetTitle("Protons");
+  gDataProtonsNumberOfTPCdEdxPointsPass->GetYaxis()->SetTitle("Data/MC");
+  gDataProtonsNumberOfTPCdEdxPointsPass->Draw("E"); 
+  //gMCProtonsNumberOfTPCdEdxPointsPass->Draw("ESAME"); 
+  c16->cd(2); 
+  gDataAntiProtonsNumberOfTPCdEdxPointsPass->Divide(gMCAntiProtonsNumberOfTPCdEdxPointsPass);
+  gDataAntiProtonsNumberOfTPCdEdxPointsPass->SetTitle("Antiprotons");
+  gDataAntiProtonsNumberOfTPCdEdxPointsPass->GetYaxis()->SetTitle("Data/MC");
+  gDataAntiProtonsNumberOfTPCdEdxPointsPass->Draw("E"); 
+  //gMCAntiProtonsNumberOfTPCdEdxPointsPass->Draw("ESAME"); 
+}
+
