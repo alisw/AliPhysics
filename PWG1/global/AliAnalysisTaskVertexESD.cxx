@@ -114,7 +114,7 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
-  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:bunchcross:triggered:dndygen:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc");
+  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:bunchcross:triggered:dndygen:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:xSPDp:xerrSPDp:ySPDp:yerrSPDp:zSPDp:zerrSPDp:ntrksSPDp:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc");
 
   fOutput->Add(fNtupleVertexESD);
 
@@ -153,7 +153,6 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     Printf("ERROR: fESD not available");
     return;
   }
-
   AliESDEvent* esdE = (AliESDEvent*) InputEvent();
   
   if(fCheckEventType && (esdE->GetEventType())!=7) return; 
@@ -162,7 +161,6 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   TArrayF mcVertex(3);
   mcVertex[0]=9999.; mcVertex[1]=9999.; mcVertex[2]=9999.;
   Float_t dNchdy=-999.;
-
   // ***********  MC info ***************
   if (fReadMC) {
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -256,9 +254,9 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 
     
   const AliESDVertex *spdv=esdE->GetPrimaryVertexSPD();
+  const AliESDVertex *spdvp=esdE->GetPileupVertexSPD(0);
   const AliESDVertex *tpcv=esdE->GetPrimaryVertexTPC();
   const AliESDVertex *trkv=esdE->GetPrimaryVertexTracks();
-
 
   const AliMultiplicity *alimult = esdE->GetMultiplicity();
   Int_t ntrklets=0,spd0cls=0;
@@ -298,11 +296,28 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
       fhTPCVertexZ->Fill(tpcv->GetZv());
     }
   } 
-  
+
+  Float_t xpile=-999.;
+  Float_t ypile=-999.;
+  Float_t zpile=-999.;
+  Float_t expile=-999.;
+  Float_t eypile=-999.;
+  Float_t ezpile=-999.;
+  Int_t ntrkspile=-1;
+
+  if(esdE->GetNumberOfPileupVerticesSPD()>0 && spdvp){
+    xpile=spdvp->GetXv();
+    expile=spdvp->GetXRes();
+    ypile=spdvp->GetYv();
+    eypile=spdvp->GetYRes();
+    zpile=spdvp->GetZv();
+    ezpile=spdvp->GetZRes();
+    ntrkspile=spdvp->GetNContributors();  
+  }
 
   // fill ntuple
-  Int_t isize=67;
-  Float_t xnt[67]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
+  Int_t isize=74;
+  Float_t xnt[74]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
   
   Int_t index=0;
 
@@ -356,7 +371,17 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   xnt[index++]=float(nTPCinEta09);
 
   xnt[index++]=spd0cls;
-
+    
+  xnt[index++]=xpile;
+  xnt[index++]=expile;
+  xnt[index++]=ypile;
+  xnt[index++]=eypile;
+  xnt[index++]=zpile;
+  xnt[index++]=ezpile;
+  xnt[index++]=(Float_t)ntrkspile;  
+    
+    
+ 
   // add recalculated vertices TRK and TPC
 
   if(fRecoVtxTPC) {
@@ -379,7 +404,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     xnt[index++]=tpcvc->GetZRes();
     xnt[index++]=tpcvc->GetNContributors();
     delete tpcvc; tpcvc=0;
-  }
+  } else index+=14;
 
   if(fRecoVtxITSTPC) {
     AliESDVertex *trkvnc = ReconstructPrimaryVertexITSTPC(kFALSE);
@@ -401,11 +426,9 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     xnt[index++]=trkvc->GetZRes();
     xnt[index++]=trkvc->GetNContributors();
     delete trkvc; trkvc=0;
-  }
-
-
+  } else index+=14;
+  
   if(index>isize) printf("AliAnalysisTaskVertexESD: ERROR, index!=isize\n");
-
   if(fFillNtuple) fNtupleVertexESD->Fill(xnt);
   
   // Post the data already here
