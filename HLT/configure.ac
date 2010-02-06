@@ -877,7 +877,7 @@ ALITRD_LIBS=
 CHECK_HLTMODULE([trd],
 		[], [],
 		[MLP XMLParser], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[TRDbase TRDrec TRDsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[STAT TRDbase TRDrec TRDsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
