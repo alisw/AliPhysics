@@ -35,7 +35,8 @@ pkginclude_HEADERS		= $(MODULE_HDRS)
 EXTRA_DIST			+=$(MODULE_DHDR)
 
 # version info and linking flags for the library
-libAliHLTPHOS_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
+libAliHLTPHOS_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la \
+				  $(top_builddir)/CALO/libAliHLTCalo.la
 libAliHLTPHOS_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \

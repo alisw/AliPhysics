@@ -32,8 +32,7 @@ CLASS_HDRS:=  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
 		  AliHLTPHOSESDEntriesMakerComponent.h \
 		  AliHLTPHOSESDCaloClusterWriterComponent.h \
-		  AliHLTPHOSDigitReader.h \
-		  AliHLTPHOSConstants.h
+		  AliHLTPHOSDigitReader.h
 
 MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 
@@ -47,7 +46,8 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSChannelDataStruct.h \
 		  AliHLTPHOSChannelDataHeaderStruct.h \
 		  AliHLTPHOSCoordinate.h \
-	          AliHLTPHOSChannelRawDataStruct.h
+	          AliHLTPHOSChannelRawDataStruct.h \
+		  AliHLTPHOSConstants.h
 
 ##Left empty for auto generation:
 MODULE_DHDR:=	  

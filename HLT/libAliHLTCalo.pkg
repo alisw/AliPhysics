@@ -21,7 +21,6 @@ AliHLTCaloClusterizerComponent.h \
 AliHLTCaloDigitMaker.h \
 AliHLTCaloClusterAnalyser.h \
 AliHLTCaloRcuProcessor.h \
-AliHLTCaloConstants.h \
 AliHLTCaloProcessor.h 
 
 ## all source files of this module
@@ -37,7 +36,8 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTCaloDigitContainerDataStruct.h \
 		AliHLTCaloRecPointDataStruct.h \
 		AliHLTCaloRecPointContainerStruct.h \
-		AliHLTCaloRecPointHeaderStruct.h 
+		AliHLTCaloRecPointHeaderStruct.h \
+		AliHLTCaloConstants.h 
 ##		AliHLTCaloChannelDataStruct.h \
 ##		AliHLTCaloChannelDataHeaderStruct.h 
 
