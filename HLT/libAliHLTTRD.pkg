@@ -18,7 +18,8 @@ CLASS_HDRS:= \
 	AliHLTTRDUtils.h \
 	AliHLTTRDOfflineClusterizerComponent.h \
 	AliHLTTRDOfflineTrackerV1Component.h \
-	AliHLTTRDClusterHistoComponent.h
+	AliHLTTRDClusterHistoComponent.h \
+	AliHLTTRDTrackHistoComponent.h
 
 # library sources
 MODULE_SRCS= \
@@ -43,7 +44,7 @@ MODULE_HDRS:= \
 # enable automatic generation. 
 MODULE_DHDR:=
 
-EINCLUDE := HLT/BASE HLT/BASE/util HLT/TRD TRD TRD/Cal STEER RAW
+EINCLUDE := HLT/BASE HLT/BASE/util HLT/TRD TRD TRD/Cal STEER RAW STAT
 
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lESD -lCDB -lTRDrec -lTRDbase \
                -lSTEER -lSTEERBase -lRAWDatarec

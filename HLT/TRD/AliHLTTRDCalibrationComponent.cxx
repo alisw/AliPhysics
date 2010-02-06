@@ -71,7 +71,9 @@ AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent()
     fDisplayArray(NULL),
     fSavedTimeBins(kFALSE),
     fTrgStrings(NULL),
-    fAccRejTrg(0)
+    fAccRejTrg(0),
+    fMinClusters(0),
+    fMinTracklets(0)
 {
   // Default constructor
 }
@@ -153,15 +155,27 @@ Int_t AliHLTTRDCalibrationComponent::ScanArgument( int argc, const char** argv )
           i += 2;
           continue;
         }
-      if ( !strcmp( argv[i], "-everyNevent" ) )
+      if ( !strcmp( argv[i], "-minClusters" ) )
         {
           if ( i+1>=argc )
             {
-              HLTError("Missing everyNevent parameter");
+              HLTError("Missing minClusters parameter");
               return ENOTSUP;
             }
           HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
-          HLTInfo("Option -everyNevent depreceated");
+	  fMinClusters = strtoul( argv[i+1], &cpErr, 0 );
+          i += 2;
+          continue;
+        }
+      if ( !strcmp( argv[i], "-minTracklets" ) )
+        {
+          if ( i+1>=argc )
+            {
+              HLTError("Missing minTracklets parameter");
+              return ENOTSUP;
+            }
+          HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
+	  fMinTracklets = strtoul( argv[i+1], &cpErr, 0 );
           i += 2;
           continue;
         }
@@ -312,7 +326,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
     }
     HLTDebug("Saving number of time bins which was read from input block. Value is: %d", nTimeBins);
     fTRDCalibraFillHisto->Init2Dhistos(nTimeBins); // initialise the histos
-    fTRDCalibraFillHisto->SetNumberClusters(0); // At least 1 clusters
+    fTRDCalibraFillHisto->SetNumberClusters(fMinClusters); // At least fMinClusters clusters
     fTRDCalibraFillHisto->SetNumberClustersf(nTimeBins); // Not more than %d  clusters
     fSavedTimeBins=kTRUE;
   }
@@ -345,12 +359,13 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
     Int_t nbEntries = inArr->GetEntries();
     HLTDebug(" %i TRDtracks in tracksArray", nbEntries);
     AliTRDtrackV1* trdTrack = 0x0;
-    for (Int_t i = 0; i < nbEntries; i++){
-      HLTDebug("%i/%i: ", i+1, nbEntries);
-      trdTrack = (AliTRDtrackV1*)inArr->At(i);
-      // for(int i=0; i<7; i++)
-      //   if(trdTrack->GetTracklet(i))trdTrack->GetTracklet(i)->Bootstrap(fReconstructor);
+    for (Int_t ii = 0; ii < nbEntries; ii++){
+      HLTDebug("%i/%i: ", ii+1, nbEntries);
+      trdTrack = (AliTRDtrackV1*)inArr->At(ii);
+      if(trdTrack->GetNumberOfTracklets()<=fMinTracklets)continue;
       fTRDCalibraFillHisto->UpdateHistogramsV1(trdTrack);
+      // for(int i3=0; i3<7; i3++)
+      //   if(trdTrack->GetTracklet(i3))trdTrack->GetTracklet(i3)->Bootstrap(fReconstructor);
     }
   }
 
@@ -570,16 +585,15 @@ Int_t AliHLTTRDCalibrationComponent::EORCalibration()
     PushBack(fAfterRunArray, AliHLTTRDDefinitions::fgkEORCalibrationDataType);
   }
 
-  /*
-  TString fileName="$ALIHLT_TOPDIR/build-debug/output/CalibHistoDump_run";
-  fileName+=".root";
-  HLTInfo("Dumping Histogram file to %s",fileName.Data());
-  TFile* file = TFile::Open(fileName, "RECREATE");
-  fAfterRunArray->Write();
-  fOutArray->Write();
-  file->Close();
-  HLTInfo("Histogram file dumped");
-  */
+  // TString fileName="/tmp/CalibHistoDump_run";
+  // fileName+=AliCDBManager::Instance()->GetRun();
+  // fileName+=".root";
+  // HLTInfo("Dumping Histogram file to %s",fileName.Data());
+  // TFile* file = TFile::Open(fileName, "RECREATE");
+  // fAfterRunArray->Write();
+  // fOutArray->Write();
+  // file->Close();
+  // HLTInfo("Histogram file dumped");
 
   return 0;
 }	

@@ -88,6 +88,8 @@ private:
   Bool_t fSavedTimeBins;         // already saved the number of time bins?
   TObjArray *fTrgStrings;        // name of trigger classes to accept or reject
   Int_t  fAccRejTrg;             // do we actually accept or reject the trigger strings?
+  UInt_t fMinClusters;            // minimal number of clusters/tracklet accepted to fill histos
+  UInt_t fMinTracklets;           // minimal number of tracklets/track accepted to fill histos
   
   ClassDef(AliHLTTRDCalibrationComponent, 2)
 
