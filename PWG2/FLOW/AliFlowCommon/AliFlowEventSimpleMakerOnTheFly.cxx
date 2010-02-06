@@ -136,8 +136,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
     if (fMinMultOfRP != fMaxMultOfRP) {
       iNewMultiplicityOfRP = (Int_t)fMyTRandom3->Uniform(fMinMultOfRP,fMaxMultOfRP);
       fPtSpectra->SetParameter(0,iNewMultiplicityOfRP);
-    }
-    else {
+    } else {
       fPtSpectra->SetParameter(0,fMinMultOfRP);
     }
   }
@@ -160,17 +159,15 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
     if(fV2DistrOfRPsIsGauss) {
       if(fV2SpreadRP>0.0) dNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
       fPhiDistribution->SetParameter(1,dNewV2RP);
-    } 
-    else {
+    } else {
       if(fMinV2RP != fMaxV2RP) {
 	dNewV2RP = fMyTRandom3->Uniform(fMinV2RP,fMaxV2RP);    
 	fPhiDistribution->SetParameter(1,dNewV2RP);  
-      } 
-      else {
+      } else {
 	dNewV2RP = fMinV2RP;
 	fPhiDistribution->SetParameter(1,dNewV2RP);          
       }
-    } 
+    }
   }
   
   // sampling the V4:
@@ -191,26 +188,27 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Double_t dTmpPhi = 0.;
   Bool_t bUniformAcceptance = kTRUE;
   Double_t Pi = TMath::Pi();
+
   if(!((fPhiMin1==0.) && (fPhiMax1==0.) && (fPhiMin2==0.) && (fPhiMax2==0.))) {
     bUniformAcceptance = kFALSE;
   }
+
   for(Int_t i=0;i<iNewMultiplicityOfRP;i++) {
+    // get the track parameters 
+    dTmpPt = fPtSpectra->GetRandom();
+    // to be improved:
+    if(!fUseConstantHarmonics) {
+      if(dTmpPt >= fPtCutOff) {dTmpV2 = fV2RPMax;} 
+      else {dTmpV2 = fV2RPMax*(dTmpPt/fPtCutOff);}  
+      fPhiDistribution->SetParameter(1,dTmpV2);         
+    }
+
     dTmpPhi = fPhiDistribution->GetRandom();
-    // add the track to the event
+
     for(Int_t d=0;d<fNoOfLoops;d++) {
-      AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
       dTmpEta = fMyTRandom3->Uniform(dEtaMin,dEtaMax);
-      dTmpPt = fPtSpectra->GetRandom();
-      // to be improved:
-      if(!fUseConstantHarmonics) {
-	if(dTmpPt >= fPtCutOff) { 
-	  dTmpV2 = fV2RPMax;
-	} 
-	else {
-	  dTmpV2 = fV2RPMax*(dTmpPt/fPtCutOff);
-	}  
-	fPhiDistribution->SetParameter(1,dTmpV2);         
-      }
+      // make the new track
+      AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
       // uniform acceptance:
       if(bUniformAcceptance) {
 	pTrack->SetPt(dTmpPt); 
