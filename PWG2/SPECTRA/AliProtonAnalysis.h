@@ -75,8 +75,12 @@ class AliProtonAnalysis : public TObject {
   AliCFContainer *GetProtonContainer() const {return fProtonContainer;}
   AliCFContainer *GetAntiProtonContainer() const {return fAntiProtonContainer;}
 
-  TH2D *GetProtonYPtHistogram() const {return fHistYPtProtons;}
-  TH2D *GetAntiProtonYPtHistogram() const {return fHistYPtAntiProtons;}
+  //TH2D *GetProtonYPtHistogram() const {return fHistYPtProtons;}
+  //TH2D *GetAntiProtonYPtHistogram() const {return fHistYPtAntiProtons;}
+  TH2D *GetProtonYPtHistogram() const {
+    return fProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);}
+  TH2D *GetAntiProtonYPtHistogram() const {
+    return fAntiProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);}
   TH1D *GetProtonYHistogram();
   TH1D *GetAntiProtonYHistogram();
   TH1D *GetProtonPtHistogram();
