@@ -87,7 +87,7 @@ void AliGenExtFile::Generate()
   Double_t polar[3]  = {0,0,0};
   //
   Double_t origin[3] = {0,0,0};
-  Double_t p[3];
+  Double_t p[4];
   Float_t random[6];
   Int_t i = 0, j, nt;
   //
@@ -142,6 +142,8 @@ void AliGenExtFile::Generate()
 	p[0] = jparticle->Px();
 	p[1] = jparticle->Py();
 	p[2] = jparticle->Pz();
+	p[3] = jparticle->Energy();
+	
 	Int_t idpart = jparticle->GetPdgCode();
 	if(fVertexSmear==kPerTrack) 
 	{
