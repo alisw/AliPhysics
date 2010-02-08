@@ -182,7 +182,7 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
     fId=AliHLTDAQ::DdlIDOffset("ITSSSD");
     fNddl=AliHLTDAQ::NumberOfDdls("ITSSSD");
   }
-  if(fModeSwitch==kClusterFinderDigits) {
+  else if(fModeSwitch==kClusterFinderDigits) {
     //tR = new TTree();
   }
   else{
