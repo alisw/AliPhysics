@@ -1,8 +1,9 @@
-void MakeEMCALFullMisAlignment(){
+void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_COMPLETE"){
   // Create TClonesArray of full misalignment objects for EMCAL
   //
   const char* macroname = "MakeEMCALFullMisAlignment.C";
-  const AliEMCALGeometry *emcalGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName(),"");
+  if(geoname=="")geoname=AliEMCALGeometry::GetDefaultGeometryName();
+  const AliEMCALGeometry *emcalGeom = AliEMCALGeometry::GetInstance(geoname,"");
   if(!emcalGeom) {
     Error("MakeEMCALFullMisAlignment","Cannot obtain AliEMCALGeometry singleton\n");
     return;
