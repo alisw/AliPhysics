@@ -37,6 +37,8 @@ private:
 
 	void InitRaws(); 
   
+  void InitRecoParams() ; 
+  
 	void MakeRaws(AliRawReader* rawReader) ; 
   void MakeESDs(AliESDEvent *event);
 

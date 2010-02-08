@@ -327,6 +327,7 @@ void AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, TObjArray ** list, Int_t
 //____________________________________________________________________________
 void AliQADataMakerRec::InitRecoParams() 
 {
+  // Get the recoparam form the OCDB 
   if (!fRecoParam) {
     AliDebug(AliQAv1::GetQADebugLevel(), Form("Loading reconstruction parameter objects for detector %s", GetName()));
     AliCDBPath path(GetName(),"Calib","RecoParam");

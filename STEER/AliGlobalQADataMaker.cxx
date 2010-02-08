@@ -9,6 +9,10 @@
 #include <TH1F.h>
 #include <TH2F.h>
 
+#include "AliCDBPath.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliDetectorRecoParam.h"
 #include "AliQAChecker.h"
 #include "AliGlobalQADataMaker.h"
 #include "AliGeomManager.h"
@@ -32,6 +36,46 @@ void AliGlobalQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 void AliGlobalQADataMaker::InitRaws()
 {
   // create Raws histograms in Raws subdir
+}
+
+//____________________________________________________________________________
+void AliGlobalQADataMaker::InitRecoParams() 
+{
+  // Get the recoparam form the OCDB 
+  if (!fRecoParam) {
+    TString name("GRP") ; 
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Loading reconstruction parameter objects for detector %s", name.Data()));
+    AliCDBPath path(name.Data(),"Calib","RecoParam");
+    AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+    if(!entry) {
+      fRecoParam = NULL ; 
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("Couldn't find RecoParam entry in OCDB for detector %s",name.Data()));
+    }
+    else {
+      TObject * recoParamObj = entry->GetObject() ; 
+      if ( strcmp(recoParamObj->ClassName(), "TObjArray") == 0 ) {
+          // The detector has only one set of reco parameters
+        AliDebug(AliQAv1::GetQADebugLevel(), Form("Array of reconstruction parameters found for detector %s",name.Data()));
+        TObjArray *recoParamArray = static_cast<TObjArray*>(recoParamObj) ;
+        for (Int_t iRP=0; iRP<recoParamArray->GetEntriesFast(); iRP++) {
+          fRecoParam = static_cast<AliDetectorRecoParam*>(recoParamArray->At(iRP)) ;
+          if (!fRecoParam) 
+            break ; 
+          else if (fRecoParam->IsDefault()) 
+            break ; 
+        }
+      }
+      else if (recoParamObj->InheritsFrom("AliDetectorRecoParam")) {
+          // The detector has only one set of reco parameters
+          // Registering it in AliRecoParam
+        AliDebug(AliQAv1::GetQADebugLevel(), Form("Single set of reconstruction parameters found for detector %s",name.Data()));
+        fRecoParam = static_cast<AliDetectorRecoParam*>(recoParamObj) ;
+        static_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
+      } else { 
+        AliError(Form("No valid RecoParam object found in the OCDB for detector %s",name.Data()));
+      }
+    }
+  }
 }
 
 //____________________________________________________________________________ 

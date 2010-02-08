@@ -35,8 +35,9 @@ private:
 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitESDs() ; 
-  virtual void   InitRecPoints() ; 
   virtual void   InitRaws() ; 
+  virtual void   InitRecPoints() ; 
+  virtual void   InitRecoParams() ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
   virtual void   MakeRecPoints(TTree * recpoTree) ; 
   virtual void   MakeRaws(AliRawReader *) ; 

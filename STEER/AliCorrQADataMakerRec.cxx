@@ -116,13 +116,6 @@ void AliCorrQADataMakerRec::InitESDs()
   AliInfo("TO BE IMPLEMENTED") ; 
 }
 
-//____________________________________________________________________________ 
-void AliCorrQADataMakerRec::InitRecPoints()
-{
-  // create Reconstructed Points histograms in RecPoints subdir
-
-  AliInfo("TO BE IMPLEMENTED") ; 
-}
 
 //____________________________________________________________________________ 
 void AliCorrQADataMakerRec::InitRaws()
@@ -166,6 +159,22 @@ void AliCorrQADataMakerRec::InitRaws()
     fCorrNt[AliRecoParam::AConvert(fEventSpecie)] = new TNtupleD(name, "Raws data correlation among detectors", varlist.Data()) ;  
     fVarvalue = new Double_t[fMaxRawVar] ;
   }  
+}
+
+//____________________________________________________________________________ 
+void AliCorrQADataMakerRec::InitRecPoints()
+{
+    // create Reconstructed Points histograms in RecPoints subdir
+  
+  AliInfo("TO BE IMPLEMENTED") ; 
+}
+
+//____________________________________________________________________________ 
+void AliCorrQADataMakerRec::InitRecoParams()
+{
+    // Get the recoparam form the OCDB for every detector involved in CORR
+  
+  AliInfo("TO BE IMPLEMENTED") ; 
 }
 
 //____________________________________________________________________________
