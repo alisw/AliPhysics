@@ -38,7 +38,8 @@
 #include <AliCFContainer.h>
 #include <AliCFEffGrid.h>
 #include <AliCFDataGrid.h>
-//#include <AliESDVertex.h>
+#include <AliTPCPIDResponse.h>
+#include <AliESDpid.h>
 class AliLog;
 class AliESDVertex;
 
@@ -690,6 +691,28 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
   Int_t nTracks = 0;
   Int_t nIdentifiedProtons = 0, nIdentifiedAntiProtons = 0;
   Int_t nSurvivedProtons = 0, nSurvivedAntiProtons = 0;
+  
+  //=========================================//
+  //Aleph parametrization
+  Double_t fAlephParameters[5];
+  if(fProtonAnalysisBase->GetMCAnalysisMode()) {
+    fAlephParameters[0] = 2.15898e+00/50.;
+    fAlephParameters[1] = 1.75295e+01;
+    fAlephParameters[2] = 3.40030e-09;
+    fAlephParameters[3] = 1.96178e+00;
+    fAlephParameters[4] = 3.91720e+00;
+  }
+  else {
+    fAlephParameters[0] = 0.0283086;
+    fAlephParameters[1] = 2.63394e+01;
+    fAlephParameters[2] = 5.04114e-11;
+    fAlephParameters[3] = 2.12543e+00;
+    fAlephParameters[4] = 4.88663e+00;
+  }
+  AliESDpid *fESDpid = new AliESDpid();
+  AliTPCPIDResponse tpcResponse = fESDpid->GetTPCResponse(); 
+  tpcResponse.SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+  //=========================================//  
 
   fHistEvents->Fill(1); //number of analyzed events
   Double_t containerInput[2] ;
@@ -729,16 +752,17 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
 	if(fProtonAnalysisBase->IsAccepted(track)) {
 	  ((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
-	  ((TH3F *)(fQA2DList->At(2)))->Fill(tpcTrack->Eta(),
-					     tpcTrack->Phi()*180./TMath::Pi(),
-					     npointsTPCdEdx);
+	  ((TH2F *)(fQA2DList->At(2)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
 	  ((TH3F *)(fQA2DList->At(4)))->Fill(tpcTrack->Eta(),
 					     tpcTrack->Phi()*180./TMath::Pi(),
+					     npointsTPCdEdx);
+	  ((TH3F *)(fQA2DList->At(6)))->Fill(tpcTrack->Eta(),
+					     tpcTrack->Phi()*180./TMath::Pi(),
 					     nClustersTPC);
-	  ((TH3F *)(fQA2DList->At(6)))->Fill(gPt,
+	  ((TH3F *)(fQA2DList->At(8)))->Fill(gPt,
 					     tpcTrack->Phi()*180./TMath::Pi(),
 					     npointsTPCdEdx);
-	  ((TH3F *)(fQA2DList->At(8)))->Fill(gPt,
+	  ((TH3F *)(fQA2DList->At(10)))->Fill(gPt,
 					     tpcTrack->Phi()*180./TMath::Pi(),
 					     nClustersTPC);	
 	}//quality cuts
@@ -774,35 +798,36 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  //Step: kStepSurvived
 	  if(fProtonAnalysisBase->IsAccepted(track)) {
 	    ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
-	    ((TH3F *)(fQA2DList->At(3)))->Fill(tpcTrack->Eta(),
-					       tpcTrack->Phi()*180./TMath::Pi(),
-					       npointsTPCdEdx);
+	    ((TH2F *)(fQA2DList->At(3)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
 	    ((TH3F *)(fQA2DList->At(5)))->Fill(tpcTrack->Eta(),
 					       tpcTrack->Phi()*180./TMath::Pi(),
+					       npointsTPCdEdx);
+	    ((TH3F *)(fQA2DList->At(7)))->Fill(tpcTrack->Eta(),
+					       tpcTrack->Phi()*180./TMath::Pi(),
 					       nClustersTPC);
-	    ((TH3F *)(fQA2DList->At(7)))->Fill(gPt,
+	    ((TH3F *)(fQA2DList->At(9)))->Fill(gPt,
 					       tpcTrack->Phi()*180./TMath::Pi(),
 					       npointsTPCdEdx);
-	    ((TH3F *)(fQA2DList->At(9)))->Fill(gPt,
+	    ((TH3F *)(fQA2DList->At(11)))->Fill(gPt,
 					       tpcTrack->Phi()*180./TMath::Pi(),
 					       nClustersTPC);
 	    
 	    if(tpcTrack->Charge() > 0) {
 	      fProtonContainer->Fill(containerInput,kStepSurvived);   
-	      ((TH2F *)(fQA2DList->At(10)))->Fill(tpcTrack->Eta(),
-						  tpcTrack->Phi()*180./TMath::Pi());
-	      ((TH2F *)(fQA2DList->At(12)))->Fill(tpcTrack->Pt(),
-						  TMath::Abs(dca[0]));
-	      ((TH2F *)(fQA2DList->At(13)))->Fill(tpcTrack->Pt(),
-						  TMath::Abs(dca[1]));
-	    }//protons
-	    else if(tpcTrack->Charge() < 0) {
-	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
-	      ((TH2F *)(fQA2DList->At(11)))->Fill(tpcTrack->Eta(),
+	      ((TH2F *)(fQA2DList->At(12)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Phi()*180./TMath::Pi());
 	      ((TH2F *)(fQA2DList->At(14)))->Fill(tpcTrack->Pt(),
 						  TMath::Abs(dca[0]));
 	      ((TH2F *)(fQA2DList->At(15)))->Fill(tpcTrack->Pt(),
+						  TMath::Abs(dca[1]));
+	    }//protons
+	    else if(tpcTrack->Charge() < 0) {
+	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
+	      ((TH2F *)(fQA2DList->At(13)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Phi()*180./TMath::Pi());
+	      ((TH2F *)(fQA2DList->At(16)))->Fill(tpcTrack->Pt(),
+						  TMath::Abs(dca[0]));
+	      ((TH2F *)(fQA2DList->At(17)))->Fill(tpcTrack->Pt(),
 						  TMath::Abs(dca[1]));
 	    }//antiprotons
 	    
@@ -835,16 +860,17 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
 	if(fProtonAnalysisBase->IsAccepted(track)) {
 	  ((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
-	  ((TH3F *)(fQA2DList->At(2)))->Fill(track->Eta(),
-					     track->Phi()*180./TMath::Pi(),
-					     npointsTPCdEdx);
+	  ((TH2F *)(fQA2DList->At(2)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
 	  ((TH3F *)(fQA2DList->At(4)))->Fill(track->Eta(),
 					     track->Phi()*180./TMath::Pi(),
+					     npointsTPCdEdx);
+	  ((TH3F *)(fQA2DList->At(6)))->Fill(track->Eta(),
+					     track->Phi()*180./TMath::Pi(),
 					     nClustersTPC);
-	  ((TH3F *)(fQA2DList->At(6)))->Fill(gPt,
+	  ((TH3F *)(fQA2DList->At(8)))->Fill(gPt,
 					     track->Phi()*180./TMath::Pi(),
 					     npointsTPCdEdx);
-	  ((TH3F *)(fQA2DList->At(8)))->Fill(gPt,
+	  ((TH3F *)(fQA2DList->At(10)))->Fill(gPt,
 					     track->Phi()*180./TMath::Pi(),
 					     nClustersTPC);	
 	}//quality cuts
@@ -880,35 +906,36 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  //Step: kStepSurvived
 	  if(fProtonAnalysisBase->IsAccepted(track)) {
 	    ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
-	    ((TH3F *)(fQA2DList->At(3)))->Fill(track->Eta(),
-					       track->Phi()*180./TMath::Pi(),
-					       npointsTPCdEdx);
+	    ((TH2F *)(fQA2DList->At(3)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
 	    ((TH3F *)(fQA2DList->At(5)))->Fill(track->Eta(),
 					       track->Phi()*180./TMath::Pi(),
+					       npointsTPCdEdx);
+	    ((TH3F *)(fQA2DList->At(7)))->Fill(track->Eta(),
+					       track->Phi()*180./TMath::Pi(),
 					       nClustersTPC);
-	    ((TH3F *)(fQA2DList->At(7)))->Fill(gPt,
+	    ((TH3F *)(fQA2DList->At(9)))->Fill(gPt,
 					       track->Phi()*180./TMath::Pi(),
 					       npointsTPCdEdx);
-	    ((TH3F *)(fQA2DList->At(9)))->Fill(gPt,
+	    ((TH3F *)(fQA2DList->At(11)))->Fill(gPt,
 					       track->Phi()*180./TMath::Pi(),
 					       nClustersTPC);
 	    
 	    if(track->Charge() > 0) {
 	      fProtonContainer->Fill(containerInput,kStepSurvived);   
-	      ((TH2F *)(fQA2DList->At(10)))->Fill(track->Eta(),
-						  track->Phi()*180./TMath::Pi());
-	      ((TH2F *)(fQA2DList->At(12)))->Fill(track->Pt(),
-						  TMath::Abs(dca[0]));
-	      ((TH2F *)(fQA2DList->At(13)))->Fill(track->Pt(),
-						  TMath::Abs(dca[1]));
-	    }//protons
-	    else if(track->Charge() < 0) {
-	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
-	      ((TH2F *)(fQA2DList->At(11)))->Fill(track->Eta(),
+	      ((TH2F *)(fQA2DList->At(12)))->Fill(track->Eta(),
 						  track->Phi()*180./TMath::Pi());
 	      ((TH2F *)(fQA2DList->At(14)))->Fill(track->Pt(),
 						  TMath::Abs(dca[0]));
 	      ((TH2F *)(fQA2DList->At(15)))->Fill(track->Pt(),
+						  TMath::Abs(dca[1]));
+	    }//protons
+	    else if(track->Charge() < 0) {
+	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
+	      ((TH2F *)(fQA2DList->At(13)))->Fill(track->Eta(),
+						  track->Phi()*180./TMath::Pi());
+	      ((TH2F *)(fQA2DList->At(16)))->Fill(track->Pt(),
+						  TMath::Abs(dca[0]));
+	      ((TH2F *)(fQA2DList->At(17)))->Fill(track->Pt(),
 						  TMath::Abs(dca[1]));
 	    }//antiprotons
 	    
@@ -1320,6 +1347,12 @@ void AliProtonAnalysis::InitQA() {
   fQA2DList->Add(gHistdEdxP);
   TH2F *gHistProtonsdEdxP = new TH2F("gHistProtonsdEdxP","Accepted protons dE/dx (TPC); P [GeV/c]; dE/dx [a.u]",1000,0.05,20.05,600,0,600);
   fQA2DList->Add(gHistProtonsdEdxP);
+
+  //normalized dEdx plots
+  TH2F *gHistZP = new TH2F("gHistZP","Normalized dE/dx (TPC); P [GeV/c]; ln[(dE/dx)_{exp.}/(dE/dx)_{BB}] ",1000,0.05,20.05,100,-2.0,2.0);
+  fQA2DList->Add(gHistZP);
+  TH2F *gHistProtonsZP = new TH2F("gHistProtonsZP","Normalized dE/dx (TPC); P [GeV/c]; ln[(dE/dx)_{exp.}/(dE/dx)_{BB}] ",1000,0.05,20.05,100,-2.0,2.0);
+  fQA2DList->Add(gHistProtonsZP);
 
   //eta-phi-Npoints(dEdx)
   TH3F *gHistEtaPhiTPCdEdxNPoints = new TH3F("gHistEtaPhiTPCdEdxNPoints",
