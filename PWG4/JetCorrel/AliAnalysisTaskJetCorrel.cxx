@@ -84,6 +84,7 @@ void AliAnalysisTaskJetCorrel::UserExec(Option_t */*option*/){
   fReader->SetEvent(fEVT);
 
   // get global event pars and apply global cuts
+  if(!fSelector->SelectedEvtTrigger(fEVT)) return;
   Float_t cent = fReader->GetMultiplicity(); // use multiplicity in p-p
   Float_t zvtx = fReader->GetVertex();
   Int_t cBin = fSelector->GetBin(centr,cent);

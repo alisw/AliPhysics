@@ -44,20 +44,25 @@ namespace JetCorrelHD {
     void SetBinningZvert(UInt_t s, Float_t * const v);
     void SetBinningTrigg(Float_t min, Float_t max, Float_t bw);
     void SetBinningAssoc(Float_t min, Float_t max, Float_t bw);
+    void SetTriggers(UInt_t s, TString * const v);
     void SetITSRefit(Bool_t v)    {fITSRefit=v;}
     void SetTPCRefit(Bool_t v)    {fTPCRefit=v;}
     void SetTRDRefit(Bool_t v)    {fTRDRefit=v;}
+    void SetMaxEta(Float_t v)     {fMaxEta=v;}
     void SetMaxITSChi2(Float_t v) {fMaxITSChi2=v;}
     void SetMaxTPCChi2(Float_t v) {fMaxTPCChi2=v;}
     void SetMinNClusITS(UInt_t v) {fMinNClusITS=v;}
     void SetMinNClusTPC(UInt_t v) {fMinNClusTPC=v;}
     void SetMaxNsigmaVtx(Float_t v) {fMaxNsigmaVtx=v;}
+    void SetMaxTrkVtx(Float_t v)  {fMaxTrkVtx=v;}
     void SetRejectKinkChild(Bool_t v) {fRejectKinkChild=v;}
     void SetQA(Bool_t v) {fGenQA=v;}
+    void SetTrkProximityCut(Float_t v) {trkMinProx=v;}
     // Cutting methods:
     Bool_t IsAssoc(Float_t pT) {return (pT>=minAssocPt && pT<=maxAssocPt);}
     Bool_t IsTrigg(Float_t pT) {return (pT>=minTriggPt && pT<=maxTriggPt);}
-    Bool_t GoodTrackPair(CorrelTrack_t* t1, CorrelTrack_t* t2);
+    Bool_t SelectedEvtTrigger(AliVEvent * const fEVT);
+    Bool_t CloseTrackPair(Float_t dist);
     Bool_t LowQualityTrack(AliESDtrack* t);  
     Bool_t PassPID(AliESDtrack* t, PartType_t pType);
     Float_t GetSigmaToVertex(AliESDtrack* trk);
@@ -65,18 +70,22 @@ namespace JetCorrelHD {
 
   private: 
     // Generic Selections:
-    UInt_t fNumCorrel, fPoolDepth; // number of correlations, pool depth
+    Bool_t fGenQA;                 // generate QA histos
+    UInt_t fNumCorrel, nEvtTriggs, fPoolDepth; // number of correlations, event triggers, pool depth
     UInt_t *fCorrelType;           // array of correlation types
+    TString *fEvtTriggs;           // array of event triggers
     UInt_t fNumBins[2];            // number of bins: centr, zvert
     Float_t* fBinning[2];          // bin margins: centr, zvert
-    Bool_t fGenQA;                 // generate QA histos
     Float_t minTriggPt, maxTriggPt, bwTriggPt; // trigg Pt binning
     Float_t minAssocPt, maxAssocPt, bwAssocPt; // assoc Pt binning
     // Track Selections:
     Bool_t fITSRefit, fTPCRefit, fTRDRefit, fRejectKinkChild; // on/off cuts
-    Float_t fMaxNsigmaVtx;
-    Float_t fMaxITSChi2, fMaxTPCChi2;
-    UInt_t fMinNClusITS, fMinNClusTPC;
+    Float_t fMaxEta;                   // single-particle eta cut
+    Float_t fMaxNsigmaVtx;             // track-primary vertex cut (sigma)
+    Float_t fMaxTrkVtx;                // track-primary vertex cut (value)
+    Float_t fMaxITSChi2, fMaxTPCChi2;  // ITS/TPC Chi2/cluster cut
+    UInt_t fMinNClusITS, fMinNClusTPC; // ITS/TPC number of clusters cut
+    Float_t trkMinProx;                // two-track proximity cut (dist at TPC entrance)
     
     // disable (make private) copy constructor, and assignment operator:
     AliJetCorrelSelector(const AliJetCorrelSelector&);

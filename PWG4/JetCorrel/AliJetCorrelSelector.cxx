@@ -27,10 +27,10 @@ using namespace JetCorrelHD;
 ClassImp(AliJetCorrelSelector)
 
 AliJetCorrelSelector::AliJetCorrelSelector() : 
-  fNumCorrel(0), fPoolDepth(0), fCorrelType(NULL), fGenQA(kFALSE),
+  fGenQA(kFALSE), fNumCorrel(0), nEvtTriggs(0), fPoolDepth(0), fCorrelType(NULL), fEvtTriggs(NULL),
   minTriggPt(0), maxTriggPt(0), bwTriggPt(0), minAssocPt(0), maxAssocPt(0), bwAssocPt(0),
-  fITSRefit(kFALSE), fTPCRefit(kFALSE), fTRDRefit(kFALSE), fRejectKinkChild(kFALSE),
-  fMaxNsigmaVtx(0), fMaxITSChi2(0), fMaxTPCChi2(0), fMinNClusITS(0), fMinNClusTPC(0) {
+  fITSRefit(kFALSE), fTPCRefit(kFALSE), fTRDRefit(kFALSE), fRejectKinkChild(kFALSE), fMaxEta(0),
+  fMaxNsigmaVtx(0), fMaxTrkVtx(0), fMaxITSChi2(0), fMaxTPCChi2(0), fMinNClusITS(0), fMinNClusTPC(0), trkMinProx(0) {
   // (default) constructor
   fNumBins[centr] = 0; fBinning[centr] = NULL;
   fNumBins[zvert] = 0; fBinning[zvert] = NULL;
@@ -40,6 +40,8 @@ AliJetCorrelSelector::~AliJetCorrelSelector(){
   // destructor
   if(fCorrelType) delete [] fCorrelType;
   fNumCorrel = 0;
+  if(fEvtTriggs) delete [] fEvtTriggs;
+  nEvtTriggs = 0;
   if(fBinning[centr]) delete [] fBinning[centr];
   fNumBins[centr] = 0;
   if(fBinning[zvert]) delete [] fBinning[zvert];
@@ -60,6 +62,22 @@ void AliJetCorrelSelector::SetCorrelTypes(UInt_t s, UInt_t * const v){
     else fCorrelType[k] = v[k];
   } 
 }
+
+void AliJetCorrelSelector::SetTriggers(UInt_t s, TString * const v){
+  // fills the array of event triggers
+  if(s<1){std::cerr<<"AliJetCorrelSelector::SetTriggers - empty array"<<std::endl; exit(-1);}
+  if(s>9){std::cerr<<"AliJetCorrelSelector: event trigger array too big!"<<std::endl; exit(-1);}
+  nEvtTriggs = s;
+  fEvtTriggs = new TString[nEvtTriggs];
+  for(UInt_t k=0; k<nEvtTriggs; k++){
+    if(!v[k].IsAscii()){
+      std::cerr<<"AliJetCorrelSelector::SetTriggers - read error? val["<<k<<"]="<<v[k]<<std::endl;
+      exit(-1);
+    }
+    else fEvtTriggs[k] = ToUpper(v[k]);
+  } 
+}
+
 
 void AliJetCorrelSelector::SetBinningCentr(UInt_t s, Float_t * const v){
   // fills array of centrality bins
@@ -110,23 +128,26 @@ void AliJetCorrelSelector::Show(){
   std::cout<<"Generic selections: "<<std::endl<<" PoolDepth="<<fPoolDepth;
   std::cout<<std::endl<<" Correlation Types: ";
   for(UInt_t k=0; k<fNumCorrel; k++) std::cout<<fCorrelType[k]<<" ";
+  std::cout<<std::endl<<" Event Triggers: ";
+  for(UInt_t k=0; k<nEvtTriggs; k++) std::cout<<fEvtTriggs[k]<<" ";
   std::cout<<std::endl<<" Centrality/Multiplicity binning: ";
   for(UInt_t k=0; k<fNumBins[centr]; k++) std::cout<<fBinning[centr][k]<<" ";
   std::cout<<std::endl<<" Vertex binning: ";
   for(UInt_t k=0; k<fNumBins[zvert]; k++) std::cout<<fBinning[zvert][k]<<" ";
   std::cout<<std::endl<<" Trigg binning:"<<minTriggPt<<"->"<<maxTriggPt<<"/"<<bwTriggPt;
   std::cout<<std::endl<<" Assoc binning:"<<minAssocPt<<"->"<<maxAssocPt<<"/"<<bwAssocPt;
-  std::cout<<std::endl<<"Track selections: "<<std::endl<<" MaxNsigmaVtx="<<fMaxNsigmaVtx<<std::endl
+  std::cout<<std::endl<<"Track selections: "<<std::endl
+	   <<" MaxEta="<<fMaxEta<<" MaxTrkVtx="<<fMaxTrkVtx<<" MaxNsigmaVtx="<<fMaxNsigmaVtx<<std::endl
 	   <<" MaxITSChi2="<<fMaxITSChi2<<" MaxTPCChi2="<<fMaxTPCChi2<<std::endl
 	   <<" MinNClusITS="<<fMinNClusITS<<" MinNClusTPC="<<fMinNClusTPC<<std::endl
 	   <<" ITSRefit="<<fITSRefit<<" TPCRefit="<<fTPCRefit<<" TRDRefit="<<fTRDRefit<<std::endl
-	   <<" RejectKinkChild="<<fRejectKinkChild<<std::endl;
+	   <<" RejectKinkChild="<<fRejectKinkChild<<" minTrackPairTPCDist="<<trkMinProx<<std::endl;
 }
 
 Float_t AliJetCorrelSelector::BinBorder(BinType_t cType, UInt_t k){
   // returns bin margins
   if(k<=NoOfBins(cType)) return fBinning[cType][k];
-  else {std::cerr<<"BinBorder Error: bin of type "<<cType<<" outside range "<<k<<std::endl;  exit(0);}
+  else {std::cerr<<"BinBorder Error: bin of type "<<cType<<" outside range "<<k<<std::endl; exit(0);}
 }
 
 Int_t AliJetCorrelSelector::GetBin(BinType_t cType, Float_t val){
@@ -141,32 +162,51 @@ Int_t AliJetCorrelSelector::GetBin(BinType_t cType, Float_t val){
 // Cutting Methods
 /////////////////////////////////////////////////////////
 
-Bool_t AliJetCorrelSelector::GoodTrackPair(CorrelTrack_t *t1, CorrelTrack_t *t2){
-  // meant for two-track cuts (like TPC entrance); but hopes are that single-track cuts,
-  // like a high no of TPC clusters, will avoid double counting of split tracks...
-  t1->Show(); t2->Show();
+Bool_t AliJetCorrelSelector::SelectedEvtTrigger(AliVEvent *fEVT){
+  // matches the event trigger classes with the user trigger classes
+  if(fEVT->InheritsFrom("AliESDEvent")){
+    const AliESDEvent *esd = (AliESDEvent*)fEVT;
+    TString trigClass = esd->GetFiredTriggerClasses();
+    if(nEvtTriggs==1 && fEvtTriggs[0].Contains("ALL")) return kTRUE;
+    for(UInt_t k=0; k<nEvtTriggs; k++)
+      if(trigClass.Contains(fEvtTriggs[k])) return kTRUE;
+    return kFALSE;
+  } else {std::cerr<<"AliJetCorrelSelector::SelectedEvtTrigger ERROR: not an ESD event!"<<std::endl; exit(0);}
+}
+
+Bool_t AliJetCorrelSelector::CloseTrackPair(Float_t dist){
+  // applies two-track cut (dist at TPC entrance); it is possible that single-track cuts,
+  // like fraction of shared TPC clusters, will avoid inclusion of split tracks...
+  if(dist>trkMinProx) return kFALSE;
   return kTRUE;
 }
 
 Bool_t AliJetCorrelSelector::LowQualityTrack(AliESDtrack* track){
   // selects low quality tracks
+  if(track->Eta()>fMaxEta) return kTRUE;
   UInt_t status = track->GetStatus();
   if(fITSRefit && !(status & AliESDtrack::kITSrefit)) return kTRUE;
   if(fTPCRefit && !(status & AliESDtrack::kTPCrefit)) return kTRUE;
 
-  UInt_t nClusITS = track->GetITSclusters(0);
-  UInt_t nClusTPC = track->GetTPCclusters(0); // or track->GetTPCNcls() ?
-  if(nClusITS<fMinNClusITS) return kTRUE;
-  if(nClusTPC<fMinNClusTPC) return kTRUE;
+//   UInt_t nClusITS = track->GetITSclusters(0);
+//   if(nClusITS<fMinNClusITS) return kTRUE;
+//   Float_t chi2ITS=-1.;
+//   if(nClusITS!=0) chi2ITS = track->GetITSchi2()/Float_t(nClusITS);
+//   if(chi2ITS<0 || chi2ITS>fMaxITSChi2) return kTRUE;
 
-  Float_t chi2ITS=-1., chi2TPC=-1.;
-  if(nClusITS!=0) chi2ITS = track->GetITSchi2()/Float_t(nClusITS);
+  UInt_t nClusTPC = track->GetTPCclusters(0); // or track->GetTPCNcls() ?
+  if(nClusTPC<fMinNClusTPC) return kTRUE;
+  Float_t chi2TPC=-1.;
   if(nClusTPC!=0) chi2TPC = track->GetTPCchi2()/Float_t(nClusTPC);
-  if(chi2ITS<0 || chi2ITS>fMaxITSChi2) return kTRUE;
   if(chi2TPC<0 || chi2TPC>fMaxTPCChi2) return kTRUE;
 
   if(fRejectKinkChild && track->GetKinkIndex(0)>0) return kTRUE;
-  if(GetSigmaToVertex(track)>fMaxNsigmaVtx) return kTRUE;
+//  Float_t sigTrkVtx = GetSigmaToVertex(track);
+//  if(sigTrkVtx<0 || sigTrkVtx>fMaxNsigmaVtx) return kTRUE;
+  // instead of track-vertex DCA sigma cut, apply value-cut:
+  Float_t b[2], bCov[3];
+  track->GetImpactParameters(b,bCov);
+  if((b[0]*b[0]+b[1]*b[1])>(fMaxTrkVtx*fMaxTrkVtx)) return kTRUE;
 
   return kFALSE;
 }

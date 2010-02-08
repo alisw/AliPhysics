@@ -62,9 +62,10 @@ Float_t AliJetCorrelReader::GetVertex(){
     exit(-1);
   }
   if(IsESDEvt(fEVT)){
-    Double_t v[3];
-    ((AliESDEvent*)fEVT)->GetVertex()->GetXYZ(v);
-    return v[2];
+    return ((AliESDEvent*)fEVT)->GetPrimaryVertex()->GetZ();
+//     Double_t v[3];
+//     ((AliESDEvent*)fEVT)->GetVertex()->GetXYZ(v);
+//     return v[2];
   } else {
     return ((AliAODEvent*)fEVT)->GetVertex(0)->GetZ();
   }

@@ -1,43 +1,58 @@
-AliJetCorrelSelector* JetCorrelSelector(){
+AliJetCorrelSelector* ConfigJetCorrel(){
 
   ///////////////////////////////////
   // set correlation input parameters
   ///////////////////////////////////
   // set generic selections:
-  UInt_t PoolDepth = 10;
-  UInt_t CorrelTypes[] = {0};
-  Float_t TriggBins[] = {5.,7.,10.,15.,25.};
-  Float_t AssocBins[] = {0.3,0.5,1.,2.,5.,7.};
-  Float_t CentrBins[] = {0.,50.,200.,500.};
-  Float_t ZVertBins[] = {-30.,-15.,-5.,-1.,1.,5.,15.,30.};
+  Bool_t kUseQA = kTRUE;       // generate QA histos
+  UInt_t poolDepth = 100;
+  UInt_t correlTypes[] = {0};  // 0=dihadron, 1=pi0-hadron, 2=photon-hadron, 3=Z0-hadron
+  Float_t centrBins[] = {1,30,300};
+  Float_t zVertBins[] = {-12,-8,-5,-3,-1,1,3,5,8,12};
+  Float_t bwTriggPt = 1;   Float_t minTriggPt = 2;   Float_t maxTriggPt = 20; // 18 bins
+  Float_t bwAssocPt = 0.5; Float_t minAssocPt = 0.5; Float_t maxAssocPt = 10; // 19 bins
+  //TString sTrigg[] = {"ALL"}; // selects events where one of the strings is matched; "ALL"=no cut
+  TString sTrigg[] = {"CINT1B-"};
   // set track selections:
-  Bool_t ITSRefit = kTRUE;
-  Bool_t TPCRefit = kTRUE;
-  Bool_t TRDRefit = kTRUE;          // used only for electron tracks
-  UInt_t MinNClusITS = 1;
-  UInt_t MinNClusTPC = 50; 
-  Float_t MaxITSChi2 = 3.5;         // max track Chi2 per ITS cluster
-  Float_t MaxTPCChi2 = 3.5;         // max track Chi2 per TPC cluster
-  Float_t MaxNsigVtx = 3.5;         // max dist to primary vertex
-  Bool_t RejectKinkChild = kTRUE;   // reject track comming from a kink
+  Bool_t itsRefit = kTRUE;
+  Bool_t tpcRefit = kTRUE;
+  Bool_t trdRefit = kTRUE;         // used only for electron tracks
+  Float_t maxEta = 0.9;
+  UInt_t minNClusTPC = 80;
+  Float_t maxTPCChi2 = 3.5;        // max track Chi2 per TPC cluster
+  Bool_t rejectKinkChild = kTRUE;  // reject track comming from a kink
+  Float_t trkPairCut = 0.;         // track pair proximity cut (dist at TPC entrance)
+  // code that applies next 3 cuts (NClusITS,ITSChi2,NsigVtx) currently commented out
+  UInt_t minNClusITS = 0;
+  Float_t maxITSChi2 = 35;        // max track Chi2 per ITS cluster
+  Float_t maxNsigVtx = 35;        // max dist to primary vertex (sigma)
+  Float_t maxTrkVtx  = 3;         // max dist to primary vertex (absolute) - temporarily instead of sigma
 
   //////////////////////////////////
   // load them into selector object:
   //////////////////////////////////
-  AliJetCorrelSelector* Selector = new AliJetCorrelSelector();
-  Selector->SetPoolDepth(PoolDepth);
-  Selector->SetCorrelTypes(sizeof(CorrelTypes)/sizeof(Int_t),CorrelTypes);
-  Selector->SetBinningTrigg(sizeof(TriggBins)/sizeof(Float_t),TriggBins);
-  Selector->SetBinningAssoc(sizeof(AssocBins)/sizeof(Float_t),AssocBins);
-  Selector->SetBinningCentr(sizeof(CentrBins)/sizeof(Float_t),CentrBins);
-  Selector->SetBinningZvert(sizeof(ZVertBins)/sizeof(Float_t),ZVertBins);
-  Selector->SetITSRefit(ITSRefit); Selector->SetTPCRefit(TPCRefit);
-  Selector->SetTRDRefit(TRDRefit);
-  Selector->SetMinNClusITS(MinNClusITS); Selector->SetMinNClusTPC(MinNClusTPC);
-  Selector->SetMaxITSChi2(MaxITSChi2); Selector->SetMaxTPCChi2(MaxTPCChi2);
-  Selector->SetMaxNsigmaVtx(MaxNsigVtx);
-  Selector->SetRejectKinkChild(RejectKinkChild);
-  Selector->Print();
+  AliJetCorrelSelector* selector = new AliJetCorrelSelector();
+  selector->SetQA(kUseQA);
+  selector->SetPoolDepth(poolDepth);
+  selector->SetCorrelTypes(sizeof(correlTypes)/sizeof(UInt_t),correlTypes);
+  selector->SetBinningCentr(sizeof(centrBins)/sizeof(Float_t),centrBins);
+  selector->SetBinningZvert(sizeof(zVertBins)/sizeof(Float_t),zVertBins);
+  selector->SetBinningTrigg(minTriggPt,maxTriggPt,bwTriggPt);
+  selector->SetBinningAssoc(minAssocPt,maxAssocPt,bwAssocPt);
+  selector->SetTriggers(sizeof(sTrigg)/sizeof(TString),sTrigg);
+  selector->SetITSRefit(itsRefit);
+  selector->SetTPCRefit(tpcRefit);
+  selector->SetTRDRefit(trdRefit);
+  selector->SetMaxEta(maxEta);
+  selector->SetMinNClusITS(minNClusITS);
+  selector->SetMinNClusTPC(minNClusTPC);
+  selector->SetMaxITSChi2(maxITSChi2);
+  selector->SetMaxTPCChi2(maxTPCChi2);
+  selector->SetMaxNsigmaVtx(maxNsigVtx);
+  selector->SetMaxTrkVtx(maxTrkVtx);
+  selector->SetRejectKinkChild(rejectKinkChild);
+  selector->SetTrkProximityCut(trkPairCut);
+  selector->Show();
 
-  return Selector;
+  return selector;
 }
