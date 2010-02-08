@@ -1,4 +1,4 @@
-AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(){
+AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(Bool_t fillNtuple=kFALSE, Bool_t keepAll=kFALSE){
 
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -8,26 +8,33 @@ AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(){
       ::Error("AddtaskSingleMuonAnalysis", "No analysis manager to connect to.");
       return NULL;
    }   
-   
-   // Check if MC handler is connected in case kine filter requested
-   //===========================================================================   
 
-   AliMCEventHandler *mcH = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
-   if (!mcH) {
-      ::Error("AddTaskSingleMuonAnalysis", "No MC handler connected");
-      return NULL;
-   }	
+   // This task requires an ESD or AOD output handler.
+   // Check this using the analysis manager.
+   //===============================================================================
+   TString type = mgr->GetInputEventHandler()->GetDataType();
+   if (!type.Contains("ESD") && !type.Contains("AOD")) {
+     ::Error("AddtaskSingleMuonAnalysis", "SingleMuon task needs the manager to have an ESD or AOD input handler.");
+     return NULL;
+   }
 
    TString outputfile = AliAnalysisManager::GetCommonFileName();
    outputfile += ":PWG3Muon_SingleMuon";
 
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("SingleMuon",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("SingleMuonMC",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+   AliAnalysisDataContainer *coutput3 = 0x0; 
+   
+   if ( fillNtuple ) {
+     coutput3 = mgr->CreateContainer("SingleMuonNtuple",TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+     coutput3->SetSpecialOutput();
+   }
+
 
    // Create the task, add it to the manager and configure it.
    //===========================================================================   
 
-   AliAnalysisTaskSingleMu *SingleMuonAnalysisTask = new AliAnalysisTaskSingleMu("Single Muon Analysis Task");
+   AliAnalysisTaskSingleMu *SingleMuonAnalysisTask = new AliAnalysisTaskSingleMu("Single Muon Analysis Task", fillNtuple, keepAll);
    mgr->AddTask(SingleMuonAnalysisTask);
    
    // Create ONLY the output containers for the data produced by the task.
@@ -37,6 +44,9 @@ AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(){
    mgr->ConnectInput  (SingleMuonAnalysisTask,  0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (SingleMuonAnalysisTask,  1, coutput1);
    mgr->ConnectOutput (SingleMuonAnalysisTask,  2, coutput2);
+
+   if ( fillNtuple )     
+     mgr->ConnectOutput (SingleMuonAnalysisTask,  3, coutput3);
 
    return SingleMuonAnalysisTask;
 }   

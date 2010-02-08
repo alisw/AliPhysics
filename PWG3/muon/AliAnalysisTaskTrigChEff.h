@@ -9,7 +9,7 @@ class TList;
 class AliAnalysisTaskTrigChEff : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskTrigChEff(const char *name = "AliAnalysisTaskTrigChEff");
-  virtual ~AliAnalysisTaskTrigChEff() {}
+  virtual ~AliAnalysisTaskTrigChEff();
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -29,7 +29,7 @@ private:
     
   Bool_t fUseGhosts; ///< Flag to use also the trigger tracks not matching the tracker in eff. calculation
 
-  TList*  fList; ///<TList output object
+  TList*  fList; //!<TList output object
 
   enum {
     kNcathodes = 2,  ///< Number of cathodes
