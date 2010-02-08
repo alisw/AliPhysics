@@ -469,8 +469,8 @@ class AliTOFRawStream: public TObject {
 
   void SetRawReader(AliRawReader * const rawReader) {fRawReader=rawReader;};
 
-  const AliTOFHitDataBuffer * GetDataBuffer(Int_t DDL) const {return &fDataBuffer[DDL];};
-  const AliTOFHitDataBuffer * GetPackedDataBuffer(Int_t DDL) const {return &fPackedDataBuffer[DDL];};
+  AliTOFHitDataBuffer * GetDataBuffer(Int_t DDL) {return &fDataBuffer[DDL];};
+  AliTOFHitDataBuffer * GetPackedDataBuffer(Int_t DDL) {return &fPackedDataBuffer[DDL];};
 
   void ResetDataBuffer(Int_t DDL) {fDataBuffer[DDL].Reset();};
   void ResetPackedDataBuffer(Int_t DDL) {fPackedDataBuffer[DDL].Reset();};
