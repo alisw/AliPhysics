@@ -103,7 +103,7 @@ void AliVZEROTriggerMask::FillMasks(TTree* vzeroDigitsTree,
       
       Int_t   PMNumber   = digit->PMNumber();
       Float_t adc        = digit->ADC();
-      Float_t tdc        = digit->Time(); // in 100 of picoseconds
+      Float_t tdc        = digit->Time()*10.0; // in 100 of picoseconds
 
       if (adc>fAdcThresHold) {
 	if (PMNumber<32) { // in V0C
