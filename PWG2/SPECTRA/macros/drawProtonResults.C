@@ -139,7 +139,7 @@ void drawQAPlots(const char* analysisOutput,
   //2D de/dx vs P
   TH2F *gHistdEdxP = dynamic_cast<TH2F *>(fQA2DList->At(0));
   gHistdEdxP->SetStats(kFALSE);
-  drawdEdx(gHistdEdxP);
+  drawdEdx(gHistdEdxP,0);
   TH2F *gHistProtonsdEdxP = dynamic_cast<TH2F *>(fQA2DList->At(1));
   gHistProtonsdEdxP->SetStats(kFALSE);
 
@@ -201,7 +201,7 @@ void drawQAPlots(const char* analysisOutput,
   //2D de/dx vs P
   TH2F *gHistZP = dynamic_cast<TH2F *>(fQA2DList->At(2));
   gHistZP->SetStats(kFALSE);
-  //drawdEdx(gHistdEdxP);
+  drawdEdx(gHistZP,1);
   TH2F *gHistProtonsZP = dynamic_cast<TH2F *>(fQA2DList->At(3));
   gHistProtonsZP->SetStats(kFALSE);
 
@@ -313,6 +313,11 @@ void drawQAPlots(const char* analysisOutput,
   grProtons->Draw("LSAME"); latex->SetTextColor(4); latex->DrawLatex(0.35,400,"p");
   
   cdEdx->cd(2)->SetLogx(); gHistProtonsdEdxP->Draw("col");
+
+  TCanvas *cZdEdx = new TCanvas("cZdEdx","Normalized dE/dx (TPC)",500,0,700,400);
+  cZdEdx->SetFillColor(10); cZdEdx->SetHighLightColor(10); cZdEdx->Divide(2,1);
+  cZdEdx->cd(1); gHistZP->Draw("col");
+  cZdEdx->cd(2); gHistProtonsZP->Draw("col");
 
   TCanvas *cEtaPhi = new TCanvas("cEtaPhi",
 				 "eta-phi",
@@ -703,8 +708,10 @@ void PrintYields(TH1 *h) {
 }
 
 //___________________________________________________//
-void drawdEdx(TH2F *gHistdEdxP) {
+void drawdEdx(TH2F *gHistdEdxP, Int_t iMode) {
   //Draws the dE/dx distributions for the different momentum bins
+  //iMode == 0: dEdx vs P
+  //iMode == 1: normalized(dEdx) vs P
   TString title;
   TH1D *gHist[100];
   Int_t iCounter = 0;
@@ -717,16 +724,28 @@ void drawdEdx(TH2F *gHistdEdxP) {
 
   for(Int_t iBin = 1; iBin <= gHistdEdxP->GetNbinsX(); iBin++) {
     if((binMax > 0.41)&&(binMin < 1.01)) {
-      title = "P: "; title += binMin; title += " - "; 
-      title += binMax; title += "GeV/c";
-      canvasTitle = "dedxMomentumSlice."; canvasTitle += iCounter;
-      canvasTitle += ".gif";
-      c[iCounter] = new TCanvas(title.Data(),title.Data(),0,0,500,500);
+      if(iMode == 0) {
+	title = "(dEdx)P: "; title += binMin; title += " - "; 
+	title += binMax; title += "GeV/c";
+	canvasTitle = "dedxMomentumSlice."; canvasTitle += iCounter;
+	canvasTitle += ".gif";
+	c[iCounter] = new TCanvas(title.Data(),title.Data(),0,0,500,500);
+      }
+      if(iMode == 1) {
+	title = "(normdEdx)P: "; title += binMin; title += " - "; 
+	title += binMax; title += "GeV/c";
+	canvasTitle = "normdedxMomentumSlice."; canvasTitle += iCounter;
+	canvasTitle += ".gif";
+	c[iCounter] = new TCanvas(title.Data(),title.Data(),500,0,500,500);
+      }
       c[iCounter]->SetFillColor(10); c[iCounter]->SetHighLightColor(10); 
       gHist[iCounter] = gHistdEdxP->ProjectionY(title.Data(),iBin,iBin+1);
       gHist[iCounter]->SetTitle(title.Data());
       gHist[iCounter]->SetStats(kFALSE);
-      gHist[iCounter]->GetXaxis()->SetRangeUser(0.0,300.);
+      if(iMode == 0)
+	gHist[iCounter]->GetXaxis()->SetRangeUser(0.0,300.);
+      if(iMode == 1)
+	gHist[iCounter]->GetXaxis()->SetRangeUser(-2.0,2.0);
       if(gHist[iCounter]->GetEntries() != 0)
 	c[iCounter]->SetLogy();
       gHist[iCounter]->Draw();

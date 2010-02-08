@@ -30,6 +30,7 @@
 #include <AliPID.h>
 #include <AliVertexerTracks.h>
 #include <AliESDpid.h>
+#include <AliTPCPIDResponse.h>
 class AliLog;
 class AliESDVertex;
 
@@ -917,13 +918,28 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
       gP = tpcTrack->P();
       gEta = tpcTrack->Eta();
     }
-    //We start the P slices at >0.3GeV/c with a bining of 50MeV/c ==> Int_t(0.3001/0.05) = 6
-    Int_t nbinP = Int_t(gP/0.05) - 6;
-    Double_t tpcSignal = track->GetTPCsignal();
-    Double_t dEdxTheory = Bethe(gP/9.38270000000000048e-01);
-    Double_t dEdxSigma = fdEdxSigma[nbinP];
-    Double_t nsigma = TMath::Abs(tpcSignal - dEdxTheory)/(tpcSignal*(dEdxSigma/TMath::Sqrt(track->GetTPCsignalN())));
-    if(nsigma <= fNSigma) 
+    Double_t fAlephParameters[5];
+    if(fAnalysisMC) {
+      fAlephParameters[0] = 2.15898e+00/50.;
+      fAlephParameters[1] = 1.75295e+01;
+      fAlephParameters[2] = 3.40030e-09;
+      fAlephParameters[3] = 1.96178e+00;
+      fAlephParameters[4] = 3.91720e+00;
+    }
+    else {
+      fAlephParameters[0] = 0.0283086;
+      fAlephParameters[1] = 2.63394e+01;
+      fAlephParameters[2] = 5.04114e-11;
+      fAlephParameters[3] = 2.12543e+00;
+      fAlephParameters[4] = 4.88663e+00;
+    }
+
+    AliESDpid *fESDpid = new AliESDpid(); 
+    AliTPCPIDResponse tpcResponse = fESDpid->GetTPCResponse(); 
+    tpcResponse.SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+    Double_t normalizeddEdx = TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton));
+
+    if(normalizeddEdx >= -0.15)
       return kTRUE;
   }
 
