@@ -84,10 +84,10 @@ void AliGenExtFile::Generate()
 {
 // Generate particles
 
-  Float_t polar[3]  = {0,0,0};
+  Double_t polar[3]  = {0,0,0};
   //
-  Float_t origin[3] = {0,0,0};
-  Float_t p[3];
+  Double_t origin[3] = {0,0,0};
+  Double_t p[3];
   Float_t random[6];
   Int_t i = 0, j, nt;
   //
@@ -156,11 +156,15 @@ void AliGenExtFile::Generate()
 	    origin[1] = fVertex[1] + jparticle->Vy();
 	    origin[2] = fVertex[2] + jparticle->Vz();
 	}
-	
+	Double_t tof = jparticle->T();
 	Int_t doTracking = fTrackIt && selected && (jparticle->TestBit(kTransportBit));
 	Int_t parent     = jparticle->GetFirstMother();
 	
-	PushTrack(doTracking, parent, idpart, p, origin, polar, 0, kPPrimary, nt);
+	PushTrack(doTracking, parent, idpart,
+		  p[0], p[1], p[2], p[3], origin[0], origin[1], origin[2], tof,
+		  polar[0], polar[1], polar[2],
+		  kPPrimary, nt, 1., jparticle->GetStatusCode());
+
 	KeepTrack(nt);
 	fNprimaries++;
     } // track loop
