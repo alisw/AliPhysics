@@ -17,7 +17,7 @@ AliAnalysisTaskJetCorrel *AddTaskJetCorrel(){
 
   using namespace JetCorrelHD;
   gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/ConfigJetCorrel.C");
-  AliJetCorrelSelector* Selector = JetCorrelSelector();
+  AliJetCorrelSelector* Selector = ConfigJetCorrel();
   AliAnalysisTaskJetCorrel *task = new AliAnalysisTaskJetCorrel(Selector);
 
   //add the task to the current analysis manager
@@ -27,9 +27,12 @@ AliAnalysisTaskJetCorrel *AddTaskJetCorrel(){
   //----------------------
   AliAnalysisDataContainer *output = 
     mgr->CreateContainer("JetCorrelHistos", TList::Class(),
-			 AliAnalysisManager::kOutputContainer,"JetCorrelHistos.root");    
+			 AliAnalysisManager::kOutputContainer,"JetCorrelHistos.root");
+  AliAnalysisDataContainer *dummy = mgr->CreateContainer("cdummy", TTree::Class(), 
+							 AliAnalysisManager::kExchangeContainer);  
+  
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task,0,mgr->GetCommonOutputContainer());
+  mgr->ConnectOutput(task,0,dummy);
   mgr->ConnectOutput(task,1,output);
   
   return task;

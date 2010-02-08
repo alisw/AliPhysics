@@ -238,14 +238,16 @@ void AliJetCorrelWriter::FillCorrelations(FillType_t fTyp, UInt_t iCorr, UInt_t 
   if(fabs(ptt-pta)<kEPS && fabs(phit-phia)<kEPS && fabs(etat-etaa)<kEPS) return; // don't auto-correlate
 
   // store track pair proximity
-  if(fSelector->GenQA())
-    if(Trigg->ID()==hadron && Assoc->ID()==hadron){
-      CorrelTrack_t* trk1 = dynamic_cast<CorrelTrack_t*>(Trigg);
-      CorrelTrack_t* trk2 = dynamic_cast<CorrelTrack_t*>(Assoc);
-      if(!trk1 || !trk2)
-	{std::cerr<<"AliJetCorrelWriter::FillCorrelations: failed casting!"<<std::endl; exit(-1);}
-      hTrkProx[fTyp][cBin]->Fill(trk1->Dist(trk2),ptt,pta);
-    }
+  if(Trigg->ID()==hadron && Assoc->ID()==hadron){
+    CorrelTrack_t* trk1 = dynamic_cast<CorrelTrack_t*>(Trigg);
+    CorrelTrack_t* trk2 = dynamic_cast<CorrelTrack_t*>(Assoc);
+    if(!trk1 || !trk2)
+      {std::cerr<<"AliJetCorrelWriter::FillCorrelations: failed casting!"<<std::endl; exit(-1);}
+    Float_t pairDist = trk1->Dist(trk2);
+    if(fSelector->CloseTrackPair(pairDist)) return; // proximity cut
+    if(fSelector->GenQA()) hTrkProx[fTyp][cBin]->Fill(pairDist,ptt,pta);
+  }
+
   // Fill correlation histograms:
   Float_t dphi = DeltaPhi(phit,phia);
   Float_t deta = etat-etaa;
