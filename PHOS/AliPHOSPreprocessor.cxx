@@ -364,6 +364,8 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
 
   for (Int_t i=0; i<2; i++) {
 
+    if(system[i] == kHLT) continue;
+
     AliPHOSEmcCalibData calibData;
     list = GetFileSources(system[i], "AMPLITUDES");
   
