@@ -7,14 +7,14 @@
 // RUN SETTINGS
 // flow analysis method can be: (set to kTRUE or kFALSE)
 Bool_t SP       = kTRUE;
-Bool_t LYZ1SUM  = kTRUE;
-Bool_t LYZ1PROD = kTRUE;
+Bool_t LYZ1SUM  = kFALSE;
+Bool_t LYZ1PROD = kFALSE;
 Bool_t LYZ2SUM  = kFALSE;
 Bool_t LYZ2PROD = kFALSE;
 Bool_t LYZEP    = kFALSE;
-Bool_t GFC      = kTRUE;
+Bool_t GFC      = kFALSE;
 Bool_t QC       = kTRUE;
-Bool_t FQD      = kTRUE;
+Bool_t FQD      = kFALSE;
 Bool_t MCEP     = kTRUE;
 //--------------------------------------------------------------------------------------
 
@@ -30,85 +30,104 @@ Bool_t GFC_Additional_Analysis = kFALSE;
 Bool_t QC_Additional_Analysis  = kFALSE;
 Bool_t FQD_Additional_Analysis = kFALSE;
 
+// Define the range for eta subevents
+Double_t minA = -0.9;
+Double_t maxA = -0.01;
+Double_t minB = 0.01;
+Double_t maxB = 0.9;
+
 // Parameters for the simulation of events 'on the fly': 
-Bool_t bSameSeed = kFALSE; // use always the same seed for random generators. 
-                           // usage of same seed (kTRUE) is relevant in two cases:
-                           // 1.) If you want to use LYZ method to calcualte differential flow;
-                           // 2.) If you want to use phi weights for GFC, QC and FQD
-                           
-Bool_t bConstantHarmonics = kTRUE; // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)
-
-Int_t iLoops = 1; // number of times to use each track (to simulate nonflow)
-
-Bool_t bMultDistrOfRPsIsGauss = kTRUE; // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
-                                        //                 mean = iMultiplicityOfRP and spread = dMultiplicitySpreadOfRP
-                                        // 2.) if kFALSE = multiplicitiy of RPs is sampled e-b-e uniformly from 
-                                        //                 interval [iMinMultOfRP,iMaxMultOfRP]
-                                        // 3.) for a fixed multiplicity use Gaussian with zero spread or use uniform with iMinMult=iMaxMult
-                                        
-Bool_t bV2DistrOfRPsIsGauss = kTRUE; // 1.) if kTRUE  = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
-                                      //                 mean = dV2RP and spread = dV2SpreadRP
-                                      // 2.) if kFALSE = elliptic flow of RPs is sampled e-b-e uniformly from 
-                                      //                 interval [dMinV2RP,dMaxV2RP]
-                                      // 3.) for a fixed elliptic flow use Gaussian with zero spread or use uniform with dMinV2RP=dMaxV2RP
-
-Bool_t uniformAcceptance = kTRUE; // 1.) if kTRUE = detectors has uniform azimuthal acceptance
-                                  // 2.) if kFALSE = you will simulate detector with non-uniform acceptance in one or two sectors. 
-                                  //                 For each of two sectors you specify phi_min, phi_max and probability p. Then all particles 
-                                  //                 going in direction phi_min < phi < phi_max will be taken with probability p. If p = 0, that
-                                  //                 sector is blocked. Set bellow phimin1, phimax1, p1 for the first sector and phimin2, phimax2, p2 
-                                  //                 for the second sector. If you set phimin2 = phimax2 = p2 = 0, only first non-uniform sector is 
-                                  //                 simulated.
-                                                                                                                                                                                                                                                          
-Int_t iMultiplicityOfRP = 500;        // mean multiplicity of RPs (if sampled from Gaussian)
-Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs (if sampled from Gaussian)
-Int_t iMinMultOfRP = 400;             // minimal multiplicity of RPs (if sampled uniformly)
-Int_t iMaxMultOfRP = 600;             // maximal multiplicity of RPs (if sampled uniformly)
-
 Double_t dTemperatureOfRP = 0.44; // 'temperature' of RPs in GeV/c (increase this parameter to get more high pt RPs) 
 
-//......................................................................................  
+//===SEED========================================================
+// use always the same seed for random generators. 
+// usage of same seed (kTRUE) is relevant in two cases:
+// 1.) If you want to use LYZ method to calcualte differential flow;
+// 2.) If you want to use phi weights for GFC, QC and FQD
+Bool_t bSameSeed = kTRUE;  
+
+
+//===NONFLOW=============================================
+// number of times to use each track (to simulate nonflow)
+Int_t iLoops = 1; 
+
+
+//===FLOW HARMONICS===============================================================
+// harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)                     
+Bool_t bConstantHarmonics = kTRUE; 
+
 // if you use (pt,eta) dependent harmonics (bConstantHarmonics = kFALSE):
 Double_t dPtCutOff = 2.0; // V2(pt) is linear up to pt = 2 GeV and for pt > 2 GeV it is constant: V2(pt) = dVRPMax
 Double_t dV2RPMax = 0.20; // maximum value of V2(pt) for pt >= 2GeV
-//...................................................................................... 
 
-//......................................................................................  
+// 1.) if kTRUE  = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
+//                 mean = dV2RP and spread = dV2SpreadRP
+// 2.) if kFALSE = elliptic flow of RPs is sampled e-b-e uniformly from 
+//                 interval [dMinV2RP,dMaxV2RP]
+// 3.) for a fixed elliptic flow use Gaussian with zero spread or use uniform with dMinV2RP=dMaxV2RP
+Bool_t bV2DistrOfRPsIsGauss = kTRUE; 
+
 // if you use constant harmonics (bConstantHarmonics = kTRUE) (i.e. no pt dependence):
 Double_t dV2RP = 0.05;       // elliptic flow of RPs (if sampled from Gaussian)
 Double_t dV2SpreadRP = 0.0;  // elliptic flow spread of RPs (if sampled from Gaussian)
-Double_t dMinV2RP = 0.04;    // minimal elliptic flow of RPs (if sampled uniformly)
-Double_t dMaxV2RP = 0.06;    // maximal elliptic flow of RPs (if sampled uniformly)
+Double_t dMinV2RP = 0.02;    // minimal elliptic flow of RPs (if sampled uniformly)
+Double_t dMaxV2RP = 0.08;    // maximal elliptic flow of RPs (if sampled uniformly)
 
 Double_t dV1RP = 0.0; // directed flow of RPs
 Double_t dV1SpreadRP = 0.0; // directed flow spread of RPs
 
 Double_t dV4RP = 0.0; // harmonic V4 of RPs (to be improved: name needed)
 Double_t dV4SpreadRP = 0.0; // harmonic V4's spread of RPs (to be improved: name needed)
-//......................................................................................  
 
-//......................................................................................  
+
+//===MULTIPLICITY===============================================================
+// 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
+//                 mean = iMultiplicityOfRP and spread = dMultiplicitySpreadOfRP
+// 2.) if kFALSE = multiplicitiy of RPs is sampled e-b-e uniformly from 
+//                 interval [iMinMultOfRP,iMaxMultOfRP]
+// 3.) for a fixed multiplicity use Gaussian with zero spread or use uniform with iMinMult=iMaxMult
+Bool_t bMultDistrOfRPsIsGauss = kTRUE; 
+                    
+Int_t iMultiplicityOfRP = 500;        // mean multiplicity of RPs (if sampled from Gaussian)
+Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs (if sampled from Gaussian)
+Int_t iMinMultOfRP = 50;             // minimal multiplicity of RPs (if sampled uniformly)
+Int_t iMaxMultOfRP = 500;             // maximal multiplicity of RPs (if sampled uniformly)
+
+
+                    
+//===DETECTOR ACCEPTANCE===============================================================
+
+// 1.) if kTRUE = detectors has uniform azimuthal acceptance
+// 2.) if kFALSE = you will simulate detector with non-uniform acceptance in one or two sectors. 
+//                 For each of two sectors you specify phi_min, phi_max and probability p. Then all particles 
+//                 going in direction phi_min < phi < phi_max will be taken with probability p. If p = 0, that
+//                 sector is blocked. Set bellow phimin1, phimax1, p1 for the first sector and phimin2, phimax2, p2 
+//                 for the second sector. If you set phimin2 = phimax2 = p2 = 0, only first non-uniform sector is 
+//                 simulated.
+Bool_t uniformAcceptance = kTRUE;
+                                                                         
 // settings for non-uniform acceptance:
 // Remark: set the angles in degrees from interval [0,360] and probability from interval [0,1]
 
 // 1st non-uniform sector:
 Double_t phimin1 = 60;  // first non-uniform sector starts at this azimuth
 Double_t phimax1 = 120; // first non-uniform sector ends at this azimuth
-Double_t p1 = 0.33;        // e.g. if p1 = 0 all particles emitted in phimin1 < phi < phimax1 are blocked
+Double_t p1 = 0.6;     // e.g. if p1 = 0 all particles emitted in phimin1 < phi < phimax1 are blocked
                         // e.g. if p1 = 0.5 half of the particles emitted in phimin1 < phi < phimax1 are blocked
 
 // 2nd non-uniform sector (Remark: if you do NOT want to simulate this sector, set phimin2 = phimax2 = p2 = 0):                 
-Double_t phimin2 = 0.0; // second non-uniform sector starts at this azimuth (make sure phimin2 > phimax1 !!!!)
-Double_t phimax2 = 0.0; // second non-uniform sector ends at this azimuth
-Double_t p2 = 0.0;
-//......................................................................................  
+Double_t phimin2 = 200.0; // second non-uniform sector starts at this azimuth (make sure phimin2 > phimax1 !!!!)
+Double_t phimax2 = 210.0; // second non-uniform sector ends at this azimuth
+Double_t p2 = 0.01;
+
+//=====================================================================================================
 
 enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocal: Analyze data on your computer using aliroot
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly( Int_t nEvts=440, Int_t mode=mLocal)
+int runFlowAnalysisOnTheFly( Int_t nEvts=44, Int_t mode=mLocal)
 {
  TStopwatch timer;
  timer.Start();
@@ -193,6 +212,8 @@ int runFlowAnalysisOnTheFly( Int_t nEvts=440, Int_t mode=mLocal)
  // Initialize the flowevent maker
  AliFlowEventSimpleMakerOnTheFly* eventMakerOnTheFly = new AliFlowEventSimpleMakerOnTheFly(sseed);
  eventMakerOnTheFly->Init();
+ //set the range for eta subevents
+ eventMakerOnTheFly->SetSubeventEtaRange(minA,maxA,minB,maxB); 
   
  //---------------------------------------------------------------------------------------
  // Initialize all the flow methods for default analysis:  
@@ -251,6 +272,8 @@ int runFlowAnalysisOnTheFly( Int_t nEvts=440, Int_t mode=mLocal)
  // SP = Scalar Product 
  if(SP) {
    AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
+   if(listWithWeights) sp->SetWeightsList(listWithWeights);
+   sp->SetUsePhiWeights(usePhiWeights);  
    sp->Init();
  }
 

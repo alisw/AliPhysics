@@ -7,6 +7,11 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+// Define the range for eta subevents (for SP method)
+Double_t minA = -0.9;
+Double_t maxA = -0.01;
+Double_t minB = 0.01;
+Double_t maxB = 0.9;
 
 // SETTING THE CUTS
 
@@ -299,6 +304,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     if (UseMultCut) {
       taskFE->SetMinMult(multmin);
       taskFE->SetMaxMult(multmax);}
+    taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
     mgr->AddTask(taskFE);
   }
   else { 

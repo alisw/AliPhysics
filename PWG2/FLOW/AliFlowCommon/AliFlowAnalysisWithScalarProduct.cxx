@@ -248,9 +248,6 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
   //Fill histograms
   if (anEvent) {
 
-    //fill control histograms     
-    fCommonHists->FillControlHistograms(anEvent);
-        
     //get Q vectors for the eta-subevents
     AliFlowVector* vQarray = new AliFlowVector[2];
     if (fUsePhiWeights) {
@@ -263,161 +260,159 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     //subevent b
     AliFlowVector vQb = vQarray[1];
 
-    //get total Q vector = the sum of subevent a and subevent b
-    AliFlowVector vQ = vQa + vQb;
-    //weight the Q vectors for the subevents by the multiplicity
-    //Note: Weight Q only in the particle loop when it is clear if it should be (m-1) or M
-    Double_t dQXa = 0;
-    Double_t dQYa = 0;
+    //check that the subevents are not empty:
     Double_t dMa = vQa.GetMult();
-    if (dMa != 0) {
-    dQXa = vQa.X()/dMa; 
-    dQYa = vQa.Y()/dMa;
-    } else {cout<<"empty subevent"<<endl; }
-    vQa.Set(dQXa,dQYa);
-        
-    Double_t dQXb = 0;
-    Double_t dQYb = 0;
     Double_t dMb = vQb.GetMult();
-    if (dMb != 0) {
-    dQXb = vQb.X()/dMb; 
-    dQYb = vQb.Y()/dMb;
-    } else {cout<<"empty subevent"<<endl; }
-    vQb.Set(dQXb,dQYb);
-    
+    if (dMa != 0 && dMb != 0) {
+      
+      //fill control histograms     
+      fCommonHists->FillControlHistograms(anEvent);
+
+      //get total Q vector = the sum of subevent a and subevent b
+      AliFlowVector vQ = vQa + vQb;
+      //weight the Q vectors for the subevents by the multiplicity
+      //Note: Weight Q only in the particle loop when it is clear if it should be (m-1) or M
+      Double_t dQXa = vQa.X()/dMa; 
+      Double_t dQYa = vQa.Y()/dMa;
+      vQa.Set(dQXa,dQYa);
+      
+      Double_t dQXb = vQb.X()/dMb; 
+      Double_t dQYb = vQb.Y()/dMb;
+      vQb.Set(dQXb,dQYb);
         
-    //scalar product of the two subevents
-    Double_t dQaQb = (vQa*vQb);
-    fHistProQaQb -> Fill(1.,dQaQb,dMa*dMb);  //Fill (QaQb/MaMb) with weight (MaMb). 
-    //needed for the error calculation:
-    fHistSumOfLinearWeights -> Fill(0.,dMa*dMb);
-    fHistSumOfQuadraticWeights -> Fill(0.,pow(dMa*dMb,2.));
-
-
-    //loop over the tracks of the event
-    AliFlowTrackSimple*   pTrack = NULL; 
-    Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
-    Double_t dMq =  vQ.GetMult();
-        
-    for (Int_t i=0;i<iNumberOfTracks;i++) 
-      {
-	pTrack = anEvent->GetTrack(i) ; 
-	if (pTrack){
-	  Double_t dPhi = pTrack->Phi();
-	  //set default phi weight to 1
-	  Double_t dW = 1.; 
-	  //phi weight of pTrack
-	  if(fUsePhiWeights && fPhiWeights) {
-	    Int_t iNBinsPhi = fPhiWeights->GetNbinsX();
-	    dW = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNBinsPhi/TMath::TwoPi())));  
-	    //bin = 1 + value*nbins/range
-	    //TMath::Floor rounds to the lower integer
-	  }     
-
-	  //calculate vU
-	  TVector2 vU;
-	  Double_t dUX = TMath::Cos(2*dPhi);
-	  Double_t dUY = TMath::Sin(2*dPhi);
-	  vU.Set(dUX,dUY);
-	  Double_t dModulus = vU.Mod();
-	  if (dModulus!=0.) vU.Set(dUX/dModulus,dUY/dModulus);  // make length 1
-	  else cerr<<"dModulus is zero!"<<endl;
-
-	  //redefine the Q vector and devide by its multiplicity
-	  TVector2 vQm;
-	  Double_t dQmX = 0.;
-	  Double_t dQmY = 0.;
-	  //subtract particle from the flowvector if used to define it
-	  if (pTrack->InSubevent(0) || pTrack->InSubevent(1)) { 
-	    dQmX = (vQ.X() - dW*dUX)/(dMq-1);
-	    dQmY = (vQ.Y() - dW*dUY)/(dMq-1);
+      //scalar product of the two subevents
+      Double_t dQaQb = (vQa*vQb);
+      fHistProQaQb -> Fill(1.,dQaQb,dMa*dMb);  //Fill (QaQb/MaMb) with weight (MaMb). 
+      //needed for the error calculation:
+      fHistSumOfLinearWeights -> Fill(0.,dMa*dMb);
+      fHistSumOfQuadraticWeights -> Fill(0.,pow(dMa*dMb,2.));
+      
+      //loop over the tracks of the event
+      AliFlowTrackSimple*   pTrack = NULL; 
+      Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
+      Double_t dMq =  vQ.GetMult();
+      
+      for (Int_t i=0;i<iNumberOfTracks;i++) 
+	{
+	  pTrack = anEvent->GetTrack(i) ; 
+	  if (pTrack){
+	    Double_t dPhi = pTrack->Phi();
+	    //set default phi weight to 1
+	    Double_t dW = 1.; 
+	    //phi weight of pTrack
+	    if(fUsePhiWeights && fPhiWeights) {
+	      Int_t iNBinsPhi = fPhiWeights->GetNbinsX();
+	      dW = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNBinsPhi/TMath::TwoPi())));  
+	      //bin = 1 + value*nbins/range
+	      //TMath::Floor rounds to the lower integer
+	    }     
 	    
-	    vQm.Set(dQmX,dQmY);
-	    	    
-	    //dUQ = scalar product of vU and vQm
-	    Double_t dUQ = (vU * vQm);
-	    Double_t dPt = pTrack->Pt();
-	    Double_t dEta = pTrack->Eta();
-	    //fill the profile histograms
-	    if (pTrack->InRPSelection()) {
-	      fHistProUQetaRP -> Fill(dEta,dUQ,(dMq-1)); //Fill (Qu/(Mq-1)) with weight (Mq-1) 
-	      //needed for the error calculation:
-	      fHistProUQQaQbEtaRP -> Fill(dEta,dUQ*dQaQb,(dMq-1)*dMa*dMb); //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
-	      fHistProUQPtRP -> Fill(dPt,dUQ,(dMq-1));                     //Fill (Qu/(Mq-1)) with weight (Mq-1)
-	      fHistProUQQaQbPtRP -> Fill(dPt,dUQ*dQaQb,(dMq-1)*dMa*dMb);   //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	
-         
-	      fHistSumOfWeightsEtaRP[0]->Fill(dEta,(dMq-1));        // sum of Mq-1     
-	      fHistSumOfWeightsEtaRP[1]->Fill(dEta,pow((dMq-1),2.));// sum of (Mq-1)^2     
-	      fHistSumOfWeightsEtaRP[2]->Fill(dEta,(dMq-1)*dMa*dMb);// sum of (Mq-1)*MaMb     
-	      fHistSumOfWeightsPtRP[0]->Fill(dPt,(dMq-1));          // sum of Mq-1     
-	      fHistSumOfWeightsPtRP[1]->Fill(dPt,pow((dMq-1),2.));  // sum of (Mq-1)^2     
-	      fHistSumOfWeightsPtRP[2]->Fill(dPt,(dMq-1)*dMa*dMb);  // sum of (Mq-1)*MaMb     
-	    }
-	    if (pTrack->InPOISelection()) {
-	      fHistProUQetaPOI -> Fill(dEta,dUQ,(dMq-1));//Fill (Qu/(Mq-1)) with weight (Mq-1)
-	      //needed for the error calculation:
-	      fHistProUQQaQbEtaPOI -> Fill(dEta,dUQ*dQaQb,(dMq-1)*dMa*dMb); //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
-	      fHistProUQPtPOI -> Fill(dPt,dUQ,(dMq-1));                     //Fill (Qu/(Mq-1)) with weight (Mq-1)
-	      fHistProUQQaQbPtPOI -> Fill(dPt,dUQ*dQaQb,(dMq-1)*dMa*dMb);   //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
-         
-	      fHistSumOfWeightsEtaPOI[0]->Fill(dEta,(dMq-1));        // sum of Mq-1     
-	      fHistSumOfWeightsEtaPOI[1]->Fill(dEta,pow((dMq-1),2.));// sum of (Mq-1)^2     
-	      fHistSumOfWeightsEtaPOI[2]->Fill(dEta,(dMq-1)*dMa*dMb);// sum of (Mq-1)*MaMb     
-	      fHistSumOfWeightsPtPOI[0]->Fill(dPt,(dMq-1));          // sum of Mq-1     
-	      fHistSumOfWeightsPtPOI[1]->Fill(dPt,pow((dMq-1),2.)); // sum of (Mq-1)^2     
-	      fHistSumOfWeightsPtPOI[2]->Fill(dPt,(dMq-1)*dMa*dMb); // sum of (Mq-1)*MaMb     
-	    }  
+	    //calculate vU
+	    TVector2 vU;
+	    Double_t dUX = TMath::Cos(2*dPhi);
+	    Double_t dUY = TMath::Sin(2*dPhi);
+	    vU.Set(dUX,dUY);
+	    Double_t dModulus = vU.Mod();
+	    if (dModulus!=0.) vU.Set(dUX/dModulus,dUY/dModulus);  // make length 1
+	    else cerr<<"dModulus is zero!"<<endl;
 	    
-	  } else { //do not subtract the particle from the flowvector
-	    dQmX = vQ.X()/dMq;
-	    dQmY = vQ.Y()/dMq;
-	    
-	    vQm.Set(dQmX,dQmY);
-	    
-	    //dUQ = scalar product of vU and vQm
-	    Double_t dUQ = (vU * vQm);
-	    Double_t dPt = pTrack->Pt();
-	    Double_t dEta = pTrack->Eta();
-	    //fill the profile histograms
-	    if (pTrack->InRPSelection()) {
-	      fHistProUQetaRP -> Fill(dEta,dUQ,dMq);                   //Fill (Qu/Mq) with weight Mq 
-	      //needed for the error calculation:
-	      fHistProUQQaQbEtaRP -> Fill(dEta,dUQ*dQaQb,dMq*dMa*dMb); //Fill [Qu/Mq]*[QaQb/MaMb] with weight Mq*MaMb	    
-	      fHistProUQPtRP -> Fill(dPt,dUQ,dMq);                     //Fill (Qu/Mq) with weight Mq 
-	      fHistProUQQaQbPtRP -> Fill(dPt,dUQ*dQaQb,dMq*dMa*dMb);   //Fill [Qu/Mq]*[QaQb/MaMb] with weight Mq*MaMb	    
-         
-	      fHistSumOfWeightsEtaRP[0]->Fill(dEta,dMq);        // sum of Mq     
-	      fHistSumOfWeightsEtaRP[1]->Fill(dEta,pow(dMq,2.));// sum of Mq^2     
-	      fHistSumOfWeightsEtaRP[2]->Fill(dEta,dMq*dMa*dMb);// sum of Mq*MaMb     
-	      fHistSumOfWeightsPtRP[0]->Fill(dPt,dMq);          // sum of Mq     
-	      fHistSumOfWeightsPtRP[1]->Fill(dPt,pow(dMq,2.));  // sum of Mq^2     
-	      fHistSumOfWeightsPtRP[2]->Fill(dPt,dMq*dMa*dMb);  // sum of Mq*MaMb     
-	    }
-	    if (pTrack->InPOISelection()) {
-	      fHistProUQetaPOI -> Fill(dEta,dUQ,dMq); //Fill (Qu/Mq) with weight Mq 
-	      //needed for the error calculation:
-	      fHistProUQQaQbEtaPOI -> Fill(dEta,dUQ*dQaQb,dMq*dMa*dMb); //Fill [Qu/Mq]*[QaQb/MaMb] with weight Mq*MaMb	    
-	      fHistProUQPtPOI -> Fill(dPt,dUQ,dMq);                     //Fill (Qu/Mq) with weight Mq 
-	      fHistProUQQaQbPtPOI -> Fill(dPt,dUQ*dQaQb,dMq*dMa*dMb);   //Fill [Qu/Mq]*[QaQb/MaMb] with weight Mq*MaMb	    
+	    //redefine the Q vector and devide by its multiplicity
+	    TVector2 vQm;
+	    Double_t dQmX = 0.;
+	    Double_t dQmY = 0.;
+	    //subtract particle from the flowvector if used to define it
+	    if (pTrack->InSubevent(0) || pTrack->InSubevent(1)) { 
+	      dQmX = (vQ.X() - dW*dUX)/(dMq-1);
+	      dQmY = (vQ.Y() - dW*dUY)/(dMq-1);
 	      
-	      fHistSumOfWeightsEtaPOI[0]->Fill(dEta,dMq);        // sum of Mq     
-	      fHistSumOfWeightsEtaPOI[1]->Fill(dEta,pow(dMq,2.));// sum of Mq^2     
-	      fHistSumOfWeightsEtaPOI[2]->Fill(dEta,dMq*dMa*dMb);// sum of Mq*MaMb     
-	      fHistSumOfWeightsPtPOI[0]->Fill(dPt,dMq);          // sum of Mq     
-	      fHistSumOfWeightsPtPOI[1]->Fill(dPt,pow(dMq,2.));  // sum of Mq^2     
-	      fHistSumOfWeightsPtPOI[2]->Fill(dPt,dMq*dMa*dMb);  // sum of Mq*MaMb     
-	    }  
-	  }//track not in subevents
+	      vQm.Set(dQmX,dQmY);
+	      
+	      //dUQ = scalar product of vU and vQm
+	      Double_t dUQ = (vU * vQm);
+	      Double_t dPt = pTrack->Pt();
+	      Double_t dEta = pTrack->Eta();
+	      //fill the profile histograms
+	      if (pTrack->InRPSelection()) {
+		fHistProUQetaRP -> Fill(dEta,dUQ,(dMq-1)); //Fill (Qu/(Mq-1)) with weight (Mq-1) 
+		//needed for the error calculation:
+		fHistProUQQaQbEtaRP -> Fill(dEta,dUQ*dQaQb,(dMq-1)*dMa*dMb); //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
+		fHistProUQPtRP -> Fill(dPt,dUQ,(dMq-1));                     //Fill (Qu/(Mq-1)) with weight (Mq-1)
+		fHistProUQQaQbPtRP -> Fill(dPt,dUQ*dQaQb,(dMq-1)*dMa*dMb);   //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	
+		
+		fHistSumOfWeightsEtaRP[0]->Fill(dEta,(dMq-1));        // sum of Mq-1     
+		fHistSumOfWeightsEtaRP[1]->Fill(dEta,pow((dMq-1),2.));// sum of (Mq-1)^2     
+		fHistSumOfWeightsEtaRP[2]->Fill(dEta,(dMq-1)*dMa*dMb);// sum of (Mq-1)*MaMb     
+		fHistSumOfWeightsPtRP[0]->Fill(dPt,(dMq-1));          // sum of Mq-1     
+		fHistSumOfWeightsPtRP[1]->Fill(dPt,pow((dMq-1),2.));  // sum of (Mq-1)^2     
+		fHistSumOfWeightsPtRP[2]->Fill(dPt,(dMq-1)*dMa*dMb);  // sum of (Mq-1)*MaMb     
+	      }
+	      if (pTrack->InPOISelection()) {
+		fHistProUQetaPOI -> Fill(dEta,dUQ,(dMq-1));//Fill (Qu/(Mq-1)) with weight (Mq-1)
+		//needed for the error calculation:
+		fHistProUQQaQbEtaPOI -> Fill(dEta,dUQ*dQaQb,(dMq-1)*dMa*dMb); //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
+		fHistProUQPtPOI -> Fill(dPt,dUQ,(dMq-1));                     //Fill (Qu/(Mq-1)) with weight (Mq-1)
+		fHistProUQQaQbPtPOI -> Fill(dPt,dUQ*dQaQb,(dMq-1)*dMa*dMb);   //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
+		
+		fHistSumOfWeightsEtaPOI[0]->Fill(dEta,(dMq-1));        // sum of Mq-1     
+		fHistSumOfWeightsEtaPOI[1]->Fill(dEta,pow((dMq-1),2.));// sum of (Mq-1)^2     
+		fHistSumOfWeightsEtaPOI[2]->Fill(dEta,(dMq-1)*dMa*dMb);// sum of (Mq-1)*MaMb     
+		fHistSumOfWeightsPtPOI[0]->Fill(dPt,(dMq-1));          // sum of Mq-1     
+		fHistSumOfWeightsPtPOI[1]->Fill(dPt,pow((dMq-1),2.)); // sum of (Mq-1)^2     
+		fHistSumOfWeightsPtPOI[2]->Fill(dPt,(dMq-1)*dMa*dMb); // sum of (Mq-1)*MaMb     
+	      }  
+	      
+	    } else { //do not subtract the particle from the flowvector
+	      dQmX = vQ.X()/dMq;
+	      dQmY = vQ.Y()/dMq;
+	      
+	      vQm.Set(dQmX,dQmY);
+	      
+	      //dUQ = scalar product of vU and vQm
+	      Double_t dUQ = (vU * vQm);
+	      Double_t dPt = pTrack->Pt();
+	      Double_t dEta = pTrack->Eta();
+	      //fill the profile histograms
+	      if (pTrack->InRPSelection()) {
+		fHistProUQetaRP -> Fill(dEta,dUQ,dMq);                   //Fill (Qu/Mq) with weight Mq 
+		//needed for the error calculation:
+		fHistProUQQaQbEtaRP -> Fill(dEta,dUQ*dQaQb,dMq*dMa*dMb); //Fill [Qu/Mq]*[QaQb/MaMb] with weight Mq*MaMb	    
+		fHistProUQPtRP -> Fill(dPt,dUQ,dMq);                     //Fill (Qu/Mq) with weight Mq 
+		fHistProUQQaQbPtRP -> Fill(dPt,dUQ*dQaQb,dMq*dMa*dMb);   //Fill [Qu/Mq]*[QaQb/MaMb] with weight Mq*MaMb	    
+		
+		fHistSumOfWeightsEtaRP[0]->Fill(dEta,dMq);        // sum of Mq     
+		fHistSumOfWeightsEtaRP[1]->Fill(dEta,pow(dMq,2.));// sum of Mq^2     
+		fHistSumOfWeightsEtaRP[2]->Fill(dEta,dMq*dMa*dMb);// sum of Mq*MaMb     
+		fHistSumOfWeightsPtRP[0]->Fill(dPt,dMq);          // sum of Mq     
+		fHistSumOfWeightsPtRP[1]->Fill(dPt,pow(dMq,2.));  // sum of Mq^2     
+		fHistSumOfWeightsPtRP[2]->Fill(dPt,dMq*dMa*dMb);  // sum of Mq*MaMb     
+	      }
+	      if (pTrack->InPOISelection()) {
+		fHistProUQetaPOI -> Fill(dEta,dUQ,dMq); //Fill (Qu/Mq) with weight Mq 
+		//needed for the error calculation:
+		fHistProUQQaQbEtaPOI -> Fill(dEta,dUQ*dQaQb,dMq*dMa*dMb); //Fill [Qu/Mq]*[QaQb/MaMb] with weight Mq*MaMb	    
+		fHistProUQPtPOI -> Fill(dPt,dUQ,dMq);                     //Fill (Qu/Mq) with weight Mq 
+		fHistProUQQaQbPtPOI -> Fill(dPt,dUQ*dQaQb,dMq*dMa*dMb);   //Fill [Qu/Mq]*[QaQb/MaMb] with weight Mq*MaMb	    
+		
+		fHistSumOfWeightsEtaPOI[0]->Fill(dEta,dMq);        // sum of Mq     
+		fHistSumOfWeightsEtaPOI[1]->Fill(dEta,pow(dMq,2.));// sum of Mq^2     
+		fHistSumOfWeightsEtaPOI[2]->Fill(dEta,dMq*dMa*dMb);// sum of Mq*MaMb     
+		fHistSumOfWeightsPtPOI[0]->Fill(dPt,dMq);          // sum of Mq     
+		fHistSumOfWeightsPtPOI[1]->Fill(dPt,pow(dMq,2.));  // sum of Mq^2     
+		fHistSumOfWeightsPtPOI[2]->Fill(dPt,dMq*dMa*dMb);  // sum of Mq*MaMb     
+	      }  
+	    }//track not in subevents
+	    
+	  }//track
 	  
-	}//track
+	}//loop over tracks
+      
+      fEventNumber++;
+      //    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
 
-      }//loop over tracks
-    
-    fEventNumber++;
-    //    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
+    }// subevents not empty 
     delete [] vQarray;
-  }
-}
+  } //event
+}//end of Make()
 
 //--------------------------------------------------------------------  
 void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHistos){

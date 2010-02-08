@@ -80,6 +80,10 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) 
   fQADiff(NULL),
   fMinMult(0),
   fMaxMult(10000000),
+  fMinA(-1.0),
+  fMaxA(-0.01),
+  fMinB(0.01),
+  fMaxB(1.0),
   fQA(on),
   fMCReactionPlaneAngle(0.),
   fCount(0),
@@ -119,6 +123,10 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fQADiff(NULL),
   fMinMult(0),
   fMaxMult(10000000),
+  fMinA(-1.0),
+  fMaxA(-0.01),
+  fMinB(0.01),
+  fMaxB(1.0),
   fQA(kFALSE),
   fMCReactionPlaneAngle(0.),
   fCount(0),
@@ -147,6 +155,10 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, 
   fQADiff(NULL),
   fMinMult(0),
   fMaxMult(10000000),
+  fMinA(-1.0),
+  fMaxA(-0.01),
+  fMinB(0.01),
+  fMaxB(1.0),
   fQA(on),
   fMCReactionPlaneAngle(0.),
   fCount(0),
@@ -308,6 +320,8 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   //setting event cuts
   fEventMaker->SetMinMult(fMinMult);
   fEventMaker->SetMaxMult(fMaxMult);
+  //setting ranges for eta subevents
+  fEventMaker->SetSubeventEtaRange(fMinA,fMaxA,fMinB,fMaxB);
 
   if (fEllipticFlowValue != 0.) {  
     // set the value of the monte carlo event plane for the flow event
