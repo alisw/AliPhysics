@@ -143,6 +143,8 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();  
   //
   AliTPCCalPad * time0TPC = calib->GetPadTime0(); 
+  AliTPCCalPad * distortionMapY = calib->GetDistortionMap(0); 
+  AliTPCCalPad * distortionMapZ = calib->GetDistortionMap(1); 
   AliTPCParam  * param    = calib->GetParameters(); 
   if (!time0TPC){
     AliFatal("Time unisochronity missing");
@@ -209,6 +211,19 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
 
   //
   Global2RotatedGlobal(sector,xx);
+
+  //
+  // Apply non linear distortion correction  
+  //
+  if (distortionMapY ){
+    //can be switch on for each dimension separatelly
+    if (fCurrentRecoParam->GetUseFieldCorrection()&0x2) 
+      xx[1]-=distortionMapY->GetCalROC(sector)->GetValue(row,pad);
+    if (fCurrentRecoParam->GetUseFieldCorrection()&0x4) 
+      xx[2]-=distortionMapZ->GetCalROC(sector)->GetValue(row,pad);
+  }
+
+
   //
   x[0]=xx[0];x[1]=xx[1];x[2]=xx[2];
 }

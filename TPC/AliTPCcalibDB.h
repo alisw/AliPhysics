@@ -63,6 +63,7 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
   AliTPCCalPad* GetDedxGainFactor() {return fDedxGainFactor;}
   AliTPCCalPad* GetPadTime0() {return fPadTime0;}
+  AliTPCCalPad* GetDistortionMap(Int_t i) {return (fDistortionMap) ? (AliTPCCalPad*)fDistortionMap->At(i):0;}
   AliTPCCalPad* GetPadNoise() {return fPadNoise;}
   AliTPCCalPad* GetPedestals() {return fPedestals;}
   //ALTRO config data
@@ -172,6 +173,7 @@ protected:
   AliTPCCalPad* fPadGainFactor;   // Gain calibration entry
   AliTPCCalPad* fDedxGainFactor;   // Gain calibration entry - for dEdx
   AliTPCCalPad* fPadTime0;        // Time0 calibration entry
+  TObjArray   *fDistortionMap;    // distortion map
   AliTPCCalPad* fPadNoise;        // Noise calibration entry
   AliTPCCalPad* fPedestals;       // Pedestal calibration entry
   AliTPCCalibRaw *fCalibRaw;      // raw data calibration entry
