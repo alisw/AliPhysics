@@ -1,6 +1,9 @@
-// $Id$
+//$Id$
+
 #ifndef ALIHLTGLOBALTRACKMATCHER_H
 #define ALIHLTGLOBALTRACKMATCHER_H
+
+
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
@@ -12,27 +15,12 @@
 */
 
 
-class AliPHOSGeoUtils;
-
-class TClonesArray;
-class TTreeStream;
-class TTreeSRedirector;
-class AliESDEvent;
-class AliHLTCaloClusterReader;
-struct AliHLTCaloClusterDataStruct;
-struct AliHLTCaloClusterHeaderStruct;
-
 #include "AliHLTLogging.h"
 #include "AliESDtrack.h"
+#include "TRefArray.h"
+#include "AliESDEvent.h"
 
-/** 
- * @class AliHLTGlobalTrackMatcher
- * Global track merger for the barrel section.
- *
- * @ingroup alihlt_global
- * @author Jacek.Otwinowski@gsi.de
- */
-class AliHLTGlobalTrackMatcher : public AliHLTLogging {
+class AliHLTGlobalTrackMatcher {
 
 public:
   AliHLTGlobalTrackMatcher();
@@ -40,36 +28,35 @@ public:
   /** destructor */
   virtual ~AliHLTGlobalTrackMatcher();
 
-  // Matthias 2009-11-04 implementation missing, temporarily commented
-  // set matching parameters
-  //void SetParameter(Double_t maxy=1., Double_t maxz=1., Double_t maxsnp=0.05, Double_t maxtgl=0.1, Double_t signed1Pt=0.001);
 
-  // match tracks
-  Bool_t Match(AliESDEvent *esdEvent, AliHLTCaloClusterHeaderStruct * clusterHeaderStruct);
+  // Main function, loops over tracks, clusters
+  // Finds best match for cluster
+  Bool_t Match( AliESDEvent* event );
+
 
 private:
-  
-  //Helper class reading calocluster structs.
-  AliHLTCaloClusterReader * fClusterReader;
 
-  //PHOS Geometry
-  AliPHOSGeoUtils* fPHOSGeom;
+  void DoInit();
 
+  //Projects track to detector volume and decides if it passes in the vinity or not
+  Bool_t IsTrackCloseToDetector(AliESDtrack * track, Double_t bz, Double_t * trackPosition, Double_t fMaxX, Bool_t ySign, Double_t fMaxZ);
 
-  // PHOS Geometry boundaries matching parameters
-  const Double_t fMaxZ;    //! max Z track    (cm)
-  const Double_t fMaxX;    //! max X track    (cm)
-  const Double_t fMinX;    //  min X of track (cm)
+  //Fills fClustersArray with refs to the clusters, returns number of clusters
+  void MatchTrackToClusters( AliESDtrack * track, TRefArray * clustersArray, Int_t nClusters, Float_t * bestMatch, Double_t bz );
+    
+  // Geometrical paramaters of detector volume
+  Float_t fPhosMaxZ;              // max Z track    (cm)
+  Float_t fPhosMaxX;              // max X track    (cm)
+  Float_t fEmcalMaxZ;
+  Float_t fEmcalMaxX;
 
-  const Double_t fDetRadius;
-  const Double_t fMatchDistanceSq;
-  
-  //Angle of PHOS Modules to Y 
-  //Float_t fPHOSAngles[5];
-  int fNModules;
+  Float_t fMatchDistance;
 
-  Int_t *fBestMatchesArray;
-  Float_t *fTrackDistanceArray;
+  const Double_t fPhosRadius;
+  const Double_t fEmcalRadius;         // Radial position of detector volume
+  //TRefArrays that will be filled with referenced to the PHOS and EMCAL Clusters
+  TRefArray * fPhosClustersArray;
+  TRefArray * fEmcalClustersArray;
 
   AliHLTGlobalTrackMatcher(const AliHLTGlobalTrackMatcher & );
   AliHLTGlobalTrackMatcher & operator = (const AliHLTGlobalTrackMatcher &);

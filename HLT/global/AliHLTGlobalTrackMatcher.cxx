@@ -4,7 +4,7 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Primary Authors: Jacek Otwinowski (Jacek.Otwinowski@gsi.de)            *
+ * Primary Authors: Svein Lindal     (slindal@fys.uio.no)                 *
  *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -22,16 +22,8 @@
     @brief  The HLT class Matching Calorimeter clusters to TPC tracks
 */
 
-//#include "AliTPCReconstructor.h"
-
 #include "AliHLTGlobalTrackMatcher.h"
-#include "AliExternalTrackParam.h"
-#include "AliHLTCaloClusterDataStruct.h"
-#include "AliHLTCaloClusterReader.h"
-#include "AliPHOSGeoUtils.h"
-#include "AliESDEvent.h"
-
-//struct AliHLTCaloClusterHeaderStruct;
+#include "AliESDCaloCluster.h"
 
 #if __GNUC__>= 3
 using namespace std;
@@ -39,157 +31,197 @@ using namespace std;
 
 ClassImp(AliHLTGlobalTrackMatcher)
 
-AliHLTGlobalTrackMatcher::AliHLTGlobalTrackMatcher() :
-  fClusterReader(NULL),
-  fPHOSGeom(NULL), 
-  fMaxZ(64.+10.),
-  fMaxX(72. + 72.*TMath::Sin(20) + 72.*TMath::Sin(40) +10. ), 
-  fMinX(-72.-10.),
 
-  fDetRadius(-99999),
-  fMatchDistanceSq(400),
-  fNModules(3),
-  fBestMatchesArray(NULL),
-  fTrackDistanceArray(NULL)
+AliHLTGlobalTrackMatcher::AliHLTGlobalTrackMatcher() :
+  fPhosMaxZ(0),
+  fPhosMaxX(0),
+  fEmcalMaxZ(0),
+  fEmcalMaxX(0),
+  fPhosRadius(460),
+  fEmcalRadius(448),
+  fMatchDistance(0),
+  fPhosClustersArray(NULL), 
+  fEmcalClustersArray(NULL)
 {
-  fClusterReader= new AliHLTCaloClusterReader();
-  fPHOSGeom = new AliPHOSGeoUtils("PHOS", "noCPV");
+  //Default constructor
+
+  DoInit();
 }
 
 //_____________________________________________________________________________
 AliHLTGlobalTrackMatcher::~AliHLTGlobalTrackMatcher()
 {
   //Destructor
-  if (fPHOSGeom)
-    delete fPHOSGeom;
-  fPHOSGeom = NULL;
 
-  if (fClusterReader)
-    delete fClusterReader;
-  fClusterReader = NULL;
 }
 
-//_____________________________________________________________________________
-Bool_t AliHLTGlobalTrackMatcher::Match(AliESDEvent* esdEvent, AliHLTCaloClusterHeaderStruct * clusterHeader)
-{
+void AliHLTGlobalTrackMatcher::DoInit( ) {
 
-  Double_t fNormVector[5][3] = {
-    {0, 0, 0}, 
-    {0, 0, 0}, 
-    {0, 10, 0}, 
-    {10*TMath::Cos(20), 10*TMath::Sin(20), 0}, 
-    {10*TMath::Cos(40), 10*TMath::Sin(40), 0}, 
-  };
-  
-  fClusterReader->SetMemory(clusterHeader);
-  
-  int nClusters = clusterHeader->fNClusters;
-  if( !(nClusters> 0) )
+  fMatchDistance = 40*40;
+
+  fPhosMaxX = 355 + TMath::Sqrt(fMatchDistance) + 30;
+  fPhosMaxZ = 64.+ TMath::Sqrt(fMatchDistance) + 30;
+
+  fEmcalMaxZ = 350 + TMath::Sqrt(fMatchDistance) + 30;
+  fEmcalMaxX = 3000;
+
+  fPhosClustersArray = new TRefArray();
+  fEmcalClustersArray = new TRefArray();
+
+}
+
+Bool_t AliHLTGlobalTrackMatcher::Match( AliESDEvent* event ){
+
+  Int_t nTracks = event->GetNumberOfTracks();
+
+  //Fill arrays with clusters
+  Int_t nPhosClusters = event->GetPHOSClusters(fPhosClustersArray);
+  Int_t nEmcalClusters = event->GetEMCALClusters(fEmcalClustersArray);
+
+  if ( ( nTracks <= 0 ) || ( (nEmcalClusters <= 0) && (nPhosClusters <= 0)) ) {
+    //printf(Form("No tracks or clusters in event"));
     return 0;
-  
-  
-  Double_t tDistance[nClusters];
-
-  for(int i = 0; i < nClusters; i++) {
-    tDistance[i] = 99999;
   }
   
-  //Position of track intersection with cylindrical plane defined by PHOS radius
-  Double_t trackPos[3] = {0,0,0};
+
+  Float_t bestMatchPhos[nPhosClusters];   
+  for(int ic = 0; ic < nPhosClusters; ic++) {
+    bestMatchPhos[ic] = 999999;
+  }
+
+  Float_t bestMatchEmcal[nEmcalClusters];    
+  for(int ic = 0; ic < nEmcalClusters; ic++) {
+    bestMatchEmcal[ic] = 999999;
+  }
+
+
+  Double_t trackPosition[3];
   
-  Double_t bz = esdEvent->GetMagneticField();
-  int nt = esdEvent->GetNumberOfTracks();
-  for (int it = 0; it < nt; it++ ) {
-    
-    AliExternalTrackParam * track = static_cast<AliExternalTrackParam*> (esdEvent->GetTrack(it)) ;
- 
-    //See if track is even close to detector volume
-    if (! (track->GetXYZAt(fDetRadius, bz, trackPos)) )
-      continue;
+  //Loop over tracks
+  for (int it = 0; it < nTracks; it++ ) {
 
-    if (trackPos[3] > fMaxZ || trackPos[3] < -fMaxZ)
-      continue;
-  
-    if (trackPos[0] > fMaxX || trackPos[0] < fMinX)
-      continue;
- 
-    //Track is close to Detector volume
-    //loop over clusters to find clusters that are fairly close to track
-    
-    fClusterReader->SetMemory(clusterHeader);
-    int clusterIndex = -1;
-    AliHLTCaloClusterDataStruct* cluster;
-    while( (cluster = fClusterReader->NextCluster()) ) {
-      clusterIndex++;
-      
-      //Get approximate distance between cluster and track
-      Double_t clusterPos[3] = {cluster->fGlobalPos[0], cluster->fGlobalPos[1], cluster->fGlobalPos[2]};
-      Double_t distanceSq = 0;
-      for(int i = 0; i < 3; i++) {
-	Float_t distance = trackPos[i] - clusterPos[1];
-	distanceSq += distance*distance;
-      }
-    
-      if (distanceSq >( fMatchDistanceSq + 60) ) 
-	continue;
-      
-      //We have a cluster in relatively close proximity to the track, do more accurate matching
+    AliESDtrack * track = event->GetTrack(it);
 
-      //Get the module where the cluster is located
-      //Need CellId of one of the cells of the cluster;
-      UShort_t cellId = -1;
-      Double_t cellAmp = -1;
+    Double_t bz = event->GetMagneticField();
     
-      //Get a (any) cell in the cluster
-      fClusterReader->GetCell(cluster, cellId, cellAmp, (UInt_t) (0) );
+    //Does track pass close to either calorimeter volume
+    if ( IsTrackCloseToDetector(track, bz, trackPosition, fPhosMaxX, kFALSE, fPhosMaxZ ) ) {
+      MatchTrackToClusters( track, fPhosClustersArray, nPhosClusters, bestMatchPhos, bz);
     
-      //Use cellId to find module nr;
-      Int_t relNumbering[4];
-      fPHOSGeom->AbsToRelNumbering(cellId, relNumbering);
-    
-      //Project the track to the plane defined by the module geometry and find intersection point
-      track->Intersect(clusterPos, fNormVector[relNumbering[0]], bz);
-    
-      //Is the track closer to the cluster than previous matches?
-      distanceSq = clusterPos[0]*clusterPos[0] + clusterPos[2]* clusterPos[2];
-     
-      //Is track close enough to be considered a match?
-      if( distanceSq < fMatchDistanceSq) {
-	
-	//Is this a better match than previous best match?
-	if ( distanceSq  < tDistance[clusterIndex] )  {
-	
-	  //Yes, add track label at beginning of array of matching track
-	  if( !(cluster->fTracksMatched) ) {
-	    cluster->fTracksMatched = new TArrayI(1);
-	    cluster->fTracksMatched->AddAt(track->GetLabel(), 0);
-	  } else {
-	    //Increase Array size by one
-	    cluster->fTracksMatched->Set(cluster->fTracksMatched->GetSize() + 1);
-	    //Move previous best match to last spot
-	    cluster->fTracksMatched->AddAt(cluster->fTracksMatched->GetAt(0), cluster->fTracksMatched->GetSize() - 1);
-	    //Finally add the new best to first spot
-	    cluster->fTracksMatched->AddAt(track->GetLabel(), 0);
-	  }
-	  
-	  //This is the new standard for best match
-	  tDistance[clusterIndex] = distanceSq;
-	  
-	}  else {
-	  
-	  //It's a match, but not best match
-	  //Increase Array size by one
-	  cluster->fTracksMatched->Set(cluster->fTracksMatched->GetSize() + 1);
-	  //Add new track at back of the array
-	  cluster->fTracksMatched->AddAt(track->GetLabel(), cluster->fTracksMatched->GetSize() - 1);
-	
-	}
-
-      } // if (distanceSq < fMaxDistanceSq)  
-    
-    } //cluster loopx
+    } else if ( IsTrackCloseToDetector(track, bz, trackPosition, fEmcalMaxX, kTRUE, fEmcalMaxZ ) ) {
+      MatchTrackToClusters( track, fEmcalClustersArray, nEmcalClusters, bestMatchEmcal, bz);
+    } 
   } // track loop 
 
-  return 0;
 
-}  
+  return 0;
+} 
+
+
+
+void AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliESDtrack * track, TRefArray * clustersArray, Int_t nClusters, Float_t * bestMatch, Double_t bz) {
+    
+  //loop over clusters to find matches with track
+ 
+  Float_t clusterPosition[3];
+  Double_t trackPosition[3];
+ 
+  for(int ic = 0; ic < nClusters; ic++) {
+       
+    AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(clustersArray->At(ic));
+      
+    //Get Cluster Global Coordinates
+    cluster->GetPosition(clusterPosition);
+
+    //Get track postion at radius of cluster
+    Double_t rCluster = TMath::Sqrt(clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1]);      
+    if (! (track->GetXYZAt(rCluster, bz, trackPosition)) ) {
+      cout << "XXXXXXXXXXXXX  BALLE Track reached detector but not cluster, needs to be handled no? !!!!!!" << endl;
+    }
+      
+    Float_t match = 0;
+    Float_t dxyz = 0;
+    for(int i = 0; i < 3; i++) {
+      dxyz = trackPosition[i] - clusterPosition[i];
+      match += dxyz*dxyz;
+    }
+      
+      
+    if( match > fMatchDistance  )  {     
+ 	   continue;
+    }
+
+
+    //Track is close to cluster, add to cluster's array of matching tracks
+    TArrayI *matchedTracksArray = cluster->GetTracksMatched();
+    matchedTracksArray->Set(matchedTracksArray->GetSize() + 1);
+    if ( match  < bestMatch[ic] )  {
+      bestMatch[ic] = match;
+      matchedTracksArray->AddAt(matchedTracksArray->At(0), matchedTracksArray->GetSize() - 1);
+      matchedTracksArray->AddAt(track->GetID(), 0);
+    } else {
+      matchedTracksArray->AddAt(track->GetID(), matchedTracksArray->GetSize() - 1);
+    }
+  } //cluster loop
+}
+
+
+Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToDetector(AliESDtrack * track, Double_t bz, Double_t * trackPosition, Double_t fMaxX, Bool_t ySign, Double_t fMaxZ) {
+
+  //See header file for documentation
+  
+  
+  //Get track instersection with cylinder defined by detector radius
+  if (! (track->GetXYZAt(fPhosRadius, bz, trackPosition)) ) 
+    return kFALSE;
+  
+ //Positive y for EMCAL, negative for PHOS
+  if(ySign) {
+    if (trackPosition[1] < 0 ) 
+      return kFALSE;
+  } else {
+    if (trackPosition[1] > 0 ) 
+      return kFALSE;
+  }
+  
+  
+  if ( (TMath::Abs(trackPosition[2]) > fMaxZ) ) 
+    return kFALSE;
+  
+  if (TMath::Abs(trackPosition[0]) > fMaxX )
+    return kFALSE;
+  
+  
+  
+  return kTRUE;  
+}
+
+
+// Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToEmcal(AliESDtrack * track, Double_t bz, Double_t * trackPosition) {
+  
+//   //Get track instersection with cylinder defined by detector radius
+//   if (! (track->GetXYZAt(fEmcalRadius, bz, trackPosition)) ) 
+//     return kFALSE;
+    
+
+//   //See header file for documentation
+
+
+
+//   return kTRUE;
+
+//   if (trackPosition[1] < 0 ) 
+//     return kFALSE;
+  
+
+//   if ( TMath::Abs(trackPosition[2]) > fEmcalMaxZ ) 
+//     return kFALSE;
+  
+//   if ( TMath::Abs(trackPosition[0]) > fEmcalMaxX )
+//     return kFALSE;
+  
+  
+//   //
+//   return kTRUE;
+// }
+
