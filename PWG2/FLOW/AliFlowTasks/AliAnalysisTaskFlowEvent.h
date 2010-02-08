@@ -40,8 +40,14 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   Int_t   GetMinMult() const           {return this->fMinMult; }
   void    SetMaxMult(Int_t multmax)    {this->fMaxMult = multmax; }
   Int_t   GetMaxMult() const           {return this->fMaxMult; }
-  
 
+  void SetSubeventEtaRange(Double_t minA, Double_t maxA, Double_t minB, Double_t maxB)
+    {this->fMinA = minA; this->fMaxA = maxA; this->fMinB = minB; this->fMaxB = maxB; }
+  Double_t GetMinA() const {return this->fMinA;}
+  Double_t GetMaxA() const {return this->fMaxA;}
+  Double_t GetMinB() const {return this->fMinB;}
+  Double_t GetMaxB() const {return this->fMaxB;}
+  
   void          SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
   AliCFManager* GetCFManager1()           {return this->fCFManager1; }
   void          SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
@@ -52,6 +58,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   TList*        GetQAList2()              {return this->fQADiff; }
   void          SetQAOn(Bool_t kt)        {this->fQA = kt; }
   Bool_t        GetQAOn()                 {return this->fQA; }
+
   //setters for adding by hand flow values (afterburner)
   void SetMCReactionPlaneAngle(Double_t fPhiRP)  { this->fMCReactionPlaneAngle = fPhiRP; }
   void SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
@@ -72,16 +79,21 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   AliAnalysisTaskFlowEvent& operator=(const AliAnalysisTaskFlowEvent& aAnalysisTask); 
 
   //  TFile*        fOutputFile;              // temporary output file for testing
-  AliESDEvent*  fESD;                     // ESD object
-  AliAODEvent*  fAOD;                     // AOD object
-  AliFlowEventSimpleMaker* fEventMaker;   // FlowEventSimple maker object
-  TString       fAnalysisType;            // can be MC, ESD or AOD
-  AliCFManager* fCFManager1;              // correction framework manager
-  AliCFManager* fCFManager2;              // correction framework manager
-  TList*        fQAInt;                   // QA histogram list
-  TList*        fQADiff;                  // QA histogram list
-  Int_t         fMinMult;                 // Minimum multiplicity from tracks selected using CORRFW
-  Int_t         fMaxMult;                 // Maximum multiplicity from tracks selected using CORRFW 
+  AliESDEvent*  fESD;                   // ESD object
+  AliAODEvent*  fAOD;                   // AOD object
+  AliFlowEventSimpleMaker* fEventMaker; // FlowEventSimple maker object
+  TString       fAnalysisType;          // can be MC, ESD or AOD
+  AliCFManager* fCFManager1;            // correction framework manager
+  AliCFManager* fCFManager2;            // correction framework manager
+  TList*        fQAInt;                 // QA histogram list
+  TList*        fQADiff;                // QA histogram list
+  Int_t         fMinMult;               // Minimum multiplicity from tracks selected using CORRFW
+  Int_t         fMaxMult;               // Maximum multiplicity from tracks selected using CORRFW 
+  Double_t      fMinA;                  // Minimum of eta range for subevent A
+  Double_t      fMaxA;                  // Maximum of eta range for subevent A
+  Double_t      fMinB;                  // Minimum of eta range for subevent B
+  Double_t      fMaxB;                  // Maximum of eta range for subevent B
+
   Bool_t fQA;                             // flag to set the filling of the QA hostograms
   // values afterburner
   Double_t  fMCReactionPlaneAngle;   // the angle of the reaction plane from the MC truth
