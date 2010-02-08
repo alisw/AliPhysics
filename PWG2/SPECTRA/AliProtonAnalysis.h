@@ -88,6 +88,7 @@ class AliProtonAnalysis : public TObject {
   
   TH1F *GetEventStatistics() {return fHistEventStats;}
 
+  TList *GetYRatioHistogramsInPtBins();
   TH1D *GetYRatioHistogram();
   TH1D *GetYRatioCorrectedHistogram(TH2D *gCorrectionMapProtons,
 				    TH2D *gCorrectionMapAntiProtons);
@@ -137,6 +138,7 @@ class AliProtonAnalysis : public TObject {
   TH2D *fHistYPtProtons; //Y-Pt of Protons
   TH2D *fHistYPtAntiProtons; // Y-Pt of Antiprotons
   TH1F *fHistEventStats;//Event statistics
+  TList *fYRatioInPtBinsList;//TList of the eta dependent ratios for each pT bin
 
   //Corrections
   TList *fEffGridListProtons; //list for the efficiency grid - protons 

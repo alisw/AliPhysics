@@ -55,7 +55,7 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fNBinsPt(0), fMinPt(0), fMaxPt(0),
   fProtonContainer(0), fAntiProtonContainer(0),
   fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), 
-  fHistEventStats(0),
+  fHistEventStats(0), fYRatioInPtBinsList(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
@@ -77,7 +77,8 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fNBinsY(nbinsY), fMinY(fLowY), fMaxY(fHighY),
   fNBinsPt(nbinsPt), fMinPt(fLowPt), fMaxPt(fHighPt),
   fProtonContainer(0), fAntiProtonContainer(0),
-  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), fHistEventStats(0),
+  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), 
+  fHistEventStats(0), fYRatioInPtBinsList(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
@@ -148,7 +149,8 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fNBinsY(nbinsY), fMinY(gY[0]), fMaxY(gY[nbinsY]),
   fNBinsPt(nbinsPt), fMinPt(gPt[0]), fMaxPt(gPt[nbinsPt]),
   fProtonContainer(0), fAntiProtonContainer(0),
-  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), fHistEventStats(0),
+  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), 
+  fHistEventStats(0), fYRatioInPtBinsList(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
@@ -211,6 +213,8 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fHistYPtProtons) delete fHistYPtProtons;
   if(fHistYPtAntiProtons) delete fHistYPtAntiProtons;
   if(fHistEventStats) delete fHistEventStats;
+  if(fYRatioInPtBinsList) delete fYRatioInPtBinsList;
+
   if(fProtonContainer) delete fProtonContainer;
   if(fAntiProtonContainer) delete fAntiProtonContainer;
 
@@ -398,6 +402,58 @@ Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
   }
 
   return status;
+}
+
+//____________________________________________________________________//
+TList *AliProtonAnalysis::GetYRatioHistogramsInPtBins() {
+  //Returns a TList obkect with the eta (or y) dependent ratios for each 
+  //pT bin taken from the 2D histograms (not from the containers)
+  fYRatioInPtBinsList = new TList();
+  
+  //Protons
+  TH1D *gHistYProtons[100];
+  TString title;
+  for(Int_t iBin = 1; iBin <= fHistYPtProtons->GetNbinsY(); iBin++) {
+    title = "gHistYProtons_PtBin"; title += iBin;
+    gHistYProtons[iBin] = (TH1D *)fHistYPtProtons->ProjectionX(title.Data(),
+							       iBin,
+							       iBin,"e");
+    gHistYProtons[iBin]->Sumw2();
+  }
+
+  //Antiprotons
+  TH1D *gHistYAntiProtons[100];
+  for(Int_t iBin = 1; iBin <= fHistYPtAntiProtons->GetNbinsY(); iBin++) {
+    title = "gHistYAntiProtons_PtBin"; title += iBin;
+    gHistYAntiProtons[iBin] = (TH1D *)fHistYPtAntiProtons->ProjectionX(title.Data(),
+								       iBin,
+								       iBin,"e");
+    gHistYAntiProtons[iBin]->Sumw2();
+  }
+
+  Double_t pTmin = fHistYPtProtons->GetYaxis()->GetXmin();
+  Double_t pTStep = (fHistYPtProtons->GetYaxis()->GetXmax() - fHistYPtProtons->GetYaxis()->GetXmin())/fHistYPtProtons->GetNbinsY();
+  Double_t pTmax = pTmin + pTStep;
+  //Ratio
+  TH1D *gHistYRatio[100];
+  for(Int_t iBin = 1; iBin <= fHistYPtProtons->GetNbinsY(); iBin++) {
+    title = "gHistYRatio_PtBin"; title += iBin;
+    gHistYRatio[iBin] = new TH1D(title.Data(),"",
+				 fHistYPtProtons->GetNbinsX(),
+				 fHistYPtProtons->GetXaxis()->GetXmin(),
+				 fHistYPtProtons->GetXaxis()->GetXmax());
+    title = "Pt: "; title += pTmin; title += " - "; title += pTmax;
+    gHistYRatio[iBin]->SetTitle(title.Data());
+    gHistYRatio[iBin]->GetYaxis()->SetTitle("#bar{p}/p");
+    gHistYRatio[iBin]->GetXaxis()->SetTitle(fHistYPtProtons->GetXaxis()->GetTitle());
+    gHistYRatio[iBin]->Divide(gHistYAntiProtons[iBin],
+			      gHistYProtons[iBin],1.0,1.0);
+    fYRatioInPtBinsList->Add(gHistYRatio[iBin]);
+    pTmin += pTStep;
+    pTmax += pTStep;
+  }
+  
+  return fYRatioInPtBinsList;
 }
 
 //____________________________________________________________________//
