@@ -60,7 +60,15 @@ AliAnalysisTaskTrigChEff::AliAnalysisTaskTrigChEff(const char *name) :
   //
   // Output slot #1 writes into a TObjArray container
   DefineOutput(1,  TList::Class());
+  if (fUseGhosts) AliInfo("Use also trigger tracks not matching tracker tracks");
 }
+
+//________________________________________________________________________
+AliAnalysisTaskTrigChEff::~AliAnalysisTaskTrigChEff()
+{
+  delete fList;
+}
+
 
 //___________________________________________________________________________
 void AliAnalysisTaskTrigChEff::UserCreateOutputObjects() {
@@ -275,6 +283,8 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *) {
   /// Called once at the end of the query.
   //
   if (!gROOT->IsBatch()) {
+    fList = dynamic_cast<TList*> (GetOutputData(1));
+
     TCanvas *can[kNcathodes];
     TH1F *num = 0x0;
     TH1F *den = 0x0;

@@ -17,7 +17,8 @@
 /// \class AliAnalysisTaskSingleMu
 /// Analysis task for single muons in the spectrometer.
 /// The output is a list of histograms.
-/// The macro class can run on AOD or in the train with the ESD filter.
+/// The macro class can run on AODs or ESDs.
+/// In the latter case a flag can be activated to produce a tree as output.
 /// If Monte Carlo information is present, some basics checks are performed.
 ///
 /// \author Diego Stocco
@@ -39,6 +40,8 @@
 #include "TList.h"
 #include "TCanvas.h"
 #include "TMath.h"
+#include "TTree.h"
+#include "TTimeStamp.h"
 
 // STEER includes
 #include "AliLog.h"
@@ -51,10 +54,12 @@
 #include "AliMCParticle.h"
 #include "AliStack.h"
 
+#include "AliESDInputHandler.h"
+#include "AliESDEvent.h"
+#include "AliESDMuonTrack.h"
+#include "AliAnalysisManager.h"
 
 #include "AliAnalysisTaskSE.h"
-//#include "AliAnalysisDataSlot.h"
-//#include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSingleMu.h"
 
 /// \cond CLASSIMP
@@ -63,17 +68,33 @@ ClassImp(AliAnalysisTaskSingleMu) // Class implementation in ROOT context
 
 
 //________________________________________________________________________
-AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu(const char *name) :
+AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu(const char *name, Bool_t fillTree, Bool_t keepAll) :
   AliAnalysisTaskSE(name),
   fUseMC(0),
+  fFillTree(fillTree),
+  fKeepAll(keepAll),
   fHistoList(0),
-  fHistoListMC(0)
+  fHistoListMC(0),
+  fTreeSingleMu(0),
+  fTreeSingleMuMC(0),
+  fVarFloat(0),
+  fVarInt(0),
+  fVarChar(0),
+  fVarUInt(0),
+  fVarFloatMC(0),
+  fVarIntMC(0)
 {
   //
   /// Constructor.
   //
+  if ( ! fFillTree )
+    fKeepAll = kFALSE;
+
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+
+  if ( fFillTree )
+    DefineOutput(3, TTree::Class());
 }
 
 
@@ -83,13 +104,21 @@ AliAnalysisTaskSingleMu::~AliAnalysisTaskSingleMu()
   //
   /// Destructor
   //
-  if ( fHistoList ) delete fHistoList;
-  if ( fHistoListMC ) delete fHistoListMC;
+  delete fHistoList;
+  delete fHistoListMC;
+  delete fTreeSingleMu;
+  delete fTreeSingleMuMC;
+  delete fVarFloat;
+  delete fVarInt;
+  delete [] fVarChar;
+  delete fVarUInt;
+  delete fVarFloatMC;
+  delete fVarIntMC;
 }
 
 
 //___________________________________________________________________________
-void AliAnalysisTaskSingleMu::SetFlagsFromHandler()
+void AliAnalysisTaskSingleMu::NotifyRun()
 {
   //
   /// Use the event handler information to correctly fill the analysis flags:
@@ -103,7 +132,6 @@ void AliAnalysisTaskSingleMu::SetFlagsFromHandler()
   else {
     AliInfo("No Monte Carlo information in run");
   }
-
 }
 
 
@@ -115,9 +143,19 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   //
   AliInfo(Form("   CreateOutputObjects of task %s\n", GetName()));
 
+  if ( fFillTree ) OpenFile(1);
+
   // initialize histogram lists
   if(!fHistoList) fHistoList = new TList();
   if(!fHistoListMC) fHistoListMC = new TList();
+
+  // Init variables
+  fVarFloat = new Float_t [kNvarFloat];
+  fVarInt = new Int_t [kNvarInt];
+  fVarChar = new Char_t *[kNvarChar];
+  fVarUInt = new UInt_t [kNvarUInt];
+  fVarFloatMC = new Float_t [kNvarFloatMC];
+  fVarIntMC = new Int_t [kNvarIntMC];
   
   Int_t nPtBins = 60;
   Float_t ptMin = 0., ptMax = 30.;
@@ -241,6 +279,16 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
     fHistoList->AddAt(histo2D, histoIndex);
   }
 
+  // Summary histos
+  histoName = "histoMuonMultiplicity";
+  histoTitle = "Muon track multiplicity";
+  histo1D = new TH1F(histoName.Data(), histoTitle.Data(), 10, -0.5, 10-0.5);
+  //histo1D->GetXaxis()->SetBinLabel(1, "All events");
+  //histo1D->GetXaxis()->SetBinLabel(2, "Muon events");
+  histo1D->GetXaxis()->SetTitle("# of muons");
+  histoIndex = GetHistoIndex(kNhistoTypes, 0) + kHistoMuonMultiplicity;
+  fHistoList->AddAt(histo1D, histoIndex);
+
   // MC histos
   for (Int_t itrig=0; itrig < kNtrigCuts; itrig++) {
     for (Int_t isrc = 0; isrc < kNtrackSources; isrc++) {
@@ -248,7 +296,7 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
       histoTitle = Form("%s resolution. Trigger: %s (%s)", ptTitle.Data(), trigName[itrig].Data(), srcName[isrc].Data());
       histo1D = new TH1F(histoName.Data(), histoTitle.Data(), 100, -5., 5.);
       histo1D->GetXaxis()->SetTitle(Form("%s^{reco} - %s^{MC} (%s)", ptTitle.Data(), ptTitle.Data(), ptUnits.Data()));
-      histoIndex = GetHistoIndex(kHistoPtResolution, itrig, isrc);
+      histoIndex = GetHistoIndex(kHistoPtResolutionMC, itrig, isrc);
       fHistoListMC->AddAt(histo1D, histoIndex);
     }
   }
@@ -264,7 +312,7 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
 			 nDcaBins, dcaMin, dcaMax);
       histo2D->GetXaxis()->SetTitle(Form("%s (%s)", ptTitle.Data(), ptUnits.Data()));
       histo2D->GetYaxis()->SetTitle(Form("%s (%s)", dcaTitle.Data(), dcaUnits.Data()));
-      histoIndex = GetHistoIndex(kHistoPtDCAType, itrig, isrc);
+      histoIndex = GetHistoIndex(kHistoPtDCAMC, itrig, isrc);
       fHistoListMC->AddAt(histo2D, histoIndex);
     }
   }
@@ -280,10 +328,60 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
 			 nVzBins, vzMin, vzMax);
       histo2D->GetXaxis()->SetTitle(Form("%s (%s)", ptTitle.Data(), ptUnits.Data()));
       histo2D->GetYaxis()->SetTitle(Form("%s (%s)", vzTitle.Data(), vzUnits.Data()));
-      histoIndex = GetHistoIndex(kHistoPtVzType, itrig, isrc);
+      histoIndex = GetHistoIndex(kHistoPtVzMC, itrig, isrc);
       fHistoListMC->AddAt(histo2D, histoIndex);
     }
   }
+
+  // Trees
+  if ( fFillTree ){
+    TString leavesFloat[kNvarFloat] = {"Px", "Py", "Pz", "Pt",
+				       "PxAtDCA", "PyAtDCA", "PzAtDCA", "PtAtDCA",
+				       "PxUncorrected", "PyUncorrected", "PzUncorrected", "PtUncorrected",
+				       "XUncorrected", "YUncorrected", "ZUncorrected",
+				       "XatDCA", "YatDCA", "DCA",
+				       "Eta", "Rapidity", "Charge",
+				       "IPVx", "IPVy", "IPVz"};
+    TString leavesInt[kNvarInt] = {"MatchTrig", "IsMuon", "IsGhost", "PassPhysicsSelection"};
+    TString leavesChar[kNvarChar] = {"FiredTrigClass"};
+    const Int_t charWidth[kNvarChar] = {255};
+    TString leavesUInt[kNvarUInt] = {"BunchCrossNum", "OrbitNum", "PeriodNum", "RunNum"};
+    TString leavesFloatMC[kNvarFloatMC] = {"PxMC", "PyMC", "PzMC", "PtMC", "EtaMC", "RapidityMC", "Vx", "Vy", "Vz"};
+    TString leavesIntMC[kNvarIntMC] = {"Pdg", "MotherType"};
+
+    if ( ! fTreeSingleMu ) fTreeSingleMu = new TTree("fTreeSingleMu", "Single Mu");
+    if ( ! fTreeSingleMuMC ) fTreeSingleMuMC = new TTree("fTreeSingleMuMC", "Single Mu MC");
+
+    TTree* currTree[2] = {fTreeSingleMu, fTreeSingleMuMC};
+    //TList* currList[2] = {fHistoList, fHistoListMC};
+
+    for(Int_t itree=0; itree<2; itree++){
+      for(Int_t ivar=0; ivar<kNvarFloat; ivar++){
+	currTree[itree]->Branch(leavesFloat[ivar].Data(), &fVarFloat[ivar], Form("%s/F", leavesFloat[ivar].Data()));
+      }
+      for(Int_t ivar=0; ivar<kNvarInt; ivar++){
+	currTree[itree]->Branch(leavesInt[ivar].Data(), &fVarInt[ivar], Form("%s/I", leavesInt[ivar].Data()));
+      }
+      for(Int_t ivar=0; ivar<kNvarChar; ivar++){
+	if ( itree == 0 ){
+	  fVarChar[ivar] = new Char_t [charWidth[ivar]];
+	}
+	TString addString = leavesChar[ivar] + "/C";
+	currTree[itree]->Branch(leavesChar[ivar].Data(), fVarChar[ivar], addString.Data());
+      }
+      for(Int_t ivar=0; ivar<kNvarUInt; ivar++){
+	currTree[itree]->Branch(leavesUInt[ivar].Data(), &fVarUInt[ivar], Form("%s/i", leavesUInt[ivar].Data()));
+      }
+      if ( itree==1 ){
+	for(Int_t ivar=0; ivar<kNvarFloatMC; ivar++){
+	  currTree[itree]->Branch(leavesFloatMC[ivar].Data(), &fVarFloatMC[ivar], Form("%s/F", leavesFloatMC[ivar].Data()));
+	}
+	for(Int_t ivar=0; ivar<kNvarIntMC; ivar++){
+	  currTree[itree]->Branch(leavesIntMC[ivar].Data(), &fVarIntMC[ivar], Form("%s/I", leavesIntMC[ivar].Data()));
+	}
+      }
+    } // loop on trees
+  } // fillNTuple
 }
 
 //________________________________________________________________________
@@ -294,69 +392,144 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
   /// Called for each event
   //
 
+  AliESDEvent* esdEvent = 0x0;
   AliAODEvent* aodEvent = 0x0;
   AliMCEvent*  mcEvent  = 0x0;
 
-  if ( Entry()==0 ) 
-    SetFlagsFromHandler();
+  esdEvent = dynamic_cast<AliESDEvent*> (InputEvent());
+  if ( ! esdEvent ){
+    fFillTree = kFALSE;
+    aodEvent = dynamic_cast<AliAODEvent*> (InputEvent());
+  }
+  //else
+  //aodEvent = AODEvent();
 
-  aodEvent = dynamic_cast<AliAODEvent*> (InputEvent());
-  if ( ! aodEvent ) aodEvent = AODEvent();
-  if ( ! aodEvent ) {
-    AliError ("AOD event not found. Nothing done!");
+  if ( ! aodEvent && ! esdEvent ) {
+    AliError ("AOD or ESD event not found. Nothing done!");
     return;
   }
 
-  Int_t nTracks = aodEvent->GetNTracks();
+  if ( ! fUseMC && InputEvent()->GetEventType() !=7 ) return; // Run only on physics events!
+
+  if ( fFillTree ){
+    Reset(kFALSE);
+    fVarInt[kVarPassPhysicsSelection] = ((AliESDInputHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected();
+    strcpy(fVarChar[kVarTrigMask], esdEvent->GetFiredTriggerClasses().Data());
+
+    // Small workaround: in MC the bunch ID are not properly set and the timestamp is in seconds
+    // So fill bunchCrossing with the read timestamp
+    //    fill the orbit and period number with a timestamp created while reading the run
+    TTimeStamp ts;
+    fVarUInt[kVarBunchCrossNumber] = ( fUseMC ) ? esdEvent->GetTimeStamp() : esdEvent->GetBunchCrossNumber();
+    fVarUInt[kVarOrbitNumber] = ( fUseMC ) ? ts.GetNanoSec() : esdEvent->GetOrbitNumber();
+    fVarUInt[kVarPeriodNumber] = ( fUseMC ) ? ts.GetTime() : esdEvent->GetPeriodNumber();
+    fVarUInt[kVarRunNumber] = esdEvent->GetRunNumber();
+
+    fVarFloat[kVarIPVx] = esdEvent->GetPrimaryVertex()->GetX();
+    fVarFloat[kVarIPVy] = esdEvent->GetPrimaryVertex()->GetY();
+    fVarFloat[kVarIPVz] = esdEvent->GetPrimaryVertex()->GetZ();
+  }
 
   if ( fUseMC ) mcEvent = MCEvent();
 
   // Object declaration
-  AliAODTrack *aodTrack = 0x0;
   AliMCParticle* mcTrack = 0x0;
 
-  const Float_t kDefaultFloat = -999.;
-
-  Float_t pt       = kDefaultFloat;
-  Float_t dca      = kDefaultFloat;
-  Float_t xAtDca   = kDefaultFloat;
-  Float_t yAtDca   = kDefaultFloat;
-  Float_t eta      = kDefaultFloat;
-  Float_t rapidity = kDefaultFloat;
-  Float_t vz       = kDefaultFloat;
   Int_t trackLabel = -1;
-  Int_t matchTrig = -1;
+
+  Int_t nTracks = ( esdEvent ) ? esdEvent->GetNumberOfMuonTracks() : aodEvent->GetNTracks();
+
+  Bool_t isGhost = kFALSE;
+  Int_t nGhosts = 0, nMuons = 0;
+
+  AliVParticle* track = 0x0;
 
   for (Int_t itrack = 0; itrack < nTracks; itrack++) {
 
     // Get variables
-    aodTrack = aodEvent->GetTrack(itrack);
-    if ( aodTrack->GetMostProbablePID() != AliAODTrack::kMuon ) continue;
-    pt = aodTrack->Pt();
-    xAtDca = aodTrack->XAtDCA();
-    yAtDca = aodTrack->YAtDCA();
-    dca = TMath::Sqrt( xAtDca * xAtDca + yAtDca * yAtDca );
-    eta = aodTrack->Eta();
-    rapidity = aodTrack->Y();
-    vz = aodTrack->Zv();
-    trackLabel = aodTrack->GetLabel();
-    matchTrig = aodTrack->GetMatchTrigger();
+    if ( esdEvent ){
+      if (itrack>0) Reset(kTRUE);
+
+      track = esdEvent->GetMuonTrack(itrack);
+      isGhost = ( ((AliESDMuonTrack*)track)->ContainTriggerData() && ! ((AliESDMuonTrack*)track)->ContainTrackerData() );
+
+      // ESD only info
+      fVarFloat[kVarPxUncorrected] = ( isGhost ) ? -TMath::Tan(((AliESDMuonTrack*)track)->GetThetaXUncorrected()) : ((AliESDMuonTrack*)track)->PxUncorrected();
+      fVarFloat[kVarPyUncorrected] = ( isGhost ) ? -TMath::Tan(((AliESDMuonTrack*)track)->GetThetaYUncorrected()) : ((AliESDMuonTrack*)track)->PyUncorrected();
+      fVarFloat[kVarPzUncorrected] = ( isGhost ) ? -1 : ((AliESDMuonTrack*)track)->PzUncorrected();
+      fVarFloat[kVarPtUncorrected] = TMath::Sqrt(
+	fVarFloat[kVarPxUncorrected] * fVarFloat[kVarPxUncorrected] + 
+	fVarFloat[kVarPyUncorrected] * fVarFloat[kVarPyUncorrected]);
+
+      fVarFloat[kVarXUncorrected] = ((AliESDMuonTrack*)track)->GetNonBendingCoorUncorrected();
+      fVarFloat[kVarYUncorrected] = ((AliESDMuonTrack*)track)->GetBendingCoorUncorrected();
+      fVarFloat[kVarZUncorrected] = ((AliESDMuonTrack*)track)->GetZUncorrected();
+
+      fVarInt[kVarMatchTrig] = ((AliESDMuonTrack*)track)->GetMatchTrigger();
+
+      // If is ghost fill only a partial information
+      if ( isGhost ){
+	fVarInt[kVarIsMuon] = 0;
+	nGhosts++;
+	fVarInt[kVarIsGhost] = nGhosts;
+
+	if ( ! fUseMC ) fTreeSingleMu->Fill();
+	else fTreeSingleMuMC->Fill();
+
+	continue;
+      }
+    }
+    else {
+      track = aodEvent->GetTrack(itrack);
+      if ( ! ((AliAODTrack*)track)->IsMuonTrack() )
+	continue;
+
+      //Reset(kTRUE);
+    }
+
+    // Information for tracks in tracker
+    nMuons++;
+    fVarInt[kVarIsMuon] = nMuons;
+    fVarInt[kVarIsGhost] = 0;
+
+    fVarFloat[kVarPt] = track->Pt();
+    fVarFloat[kVarXatDCA] = (esdEvent ) ? ((AliESDMuonTrack*)track)->GetNonBendingCoorAtDCA() : ((AliAODTrack*)track)->XAtDCA();
+    fVarFloat[kVarYatDCA] = (esdEvent ) ? ((AliESDMuonTrack*)track)->GetBendingCoorAtDCA() : ((AliAODTrack*)track)->YAtDCA();
+    fVarFloat[kVarDCA] = TMath::Sqrt( fVarFloat[kVarXatDCA] * fVarFloat[kVarXatDCA] + fVarFloat[kVarYatDCA] * fVarFloat[kVarYatDCA] );
+    fVarFloat[kVarEta] = track->Eta();
+    fVarFloat[kVarRapidity] = track->Y();
+    trackLabel = track->GetLabel();
+    fVarInt[kVarMatchTrig] = (esdEvent ) ? ((AliESDMuonTrack*)track)->GetMatchTrigger() : ((AliAODTrack*)track)->GetMatchTrigger();
 
     // Fill histograms
-    FillTriggerHistos(kHistoPt,       matchTrig, -1, pt);
-    FillTriggerHistos(kHistoDCA,      matchTrig, -1, dca);
-    FillTriggerHistos(kHistoVz,       matchTrig, -1, vz);
-    FillTriggerHistos(kHistoEta,      matchTrig, -1, eta);
-    FillTriggerHistos(kHistoRapidity, matchTrig, -1, rapidity);
+    FillTriggerHistos(kHistoPt,       fVarInt[kVarMatchTrig], -1, fVarFloat[kVarPt]);
+    FillTriggerHistos(kHistoDCA,      fVarInt[kVarMatchTrig], -1, fVarFloat[kVarDCA]);
+    FillTriggerHistos(kHistoVz,       fVarInt[kVarMatchTrig], -1, fVarFloat[kVarIPVz]);
+    FillTriggerHistos(kHistoEta,      fVarInt[kVarMatchTrig], -1, fVarFloat[kVarEta]);
+    FillTriggerHistos(kHistoRapidity, fVarInt[kVarMatchTrig], -1, fVarFloat[kVarRapidity]);
 
-    FillTriggerHistos(kHistoPtDCA,      matchTrig, -1, pt, dca);
-    FillTriggerHistos(kHistoPtVz,       matchTrig, -1, pt, vz);
-    FillTriggerHistos(kHistoPtRapidity, matchTrig, -1, pt, rapidity);
+    FillTriggerHistos(kHistoPtDCA,      fVarInt[kVarMatchTrig], -1, fVarFloat[kVarPt], fVarFloat[kVarDCA]);
+    FillTriggerHistos(kHistoPtVz,       fVarInt[kVarMatchTrig], -1, fVarFloat[kVarPt], fVarFloat[kVarIPVz]);
+    FillTriggerHistos(kHistoPtRapidity, fVarInt[kVarMatchTrig], -1, fVarFloat[kVarPt], fVarFloat[kVarRapidity]);
+
+    if ( fFillTree ){
+      fVarFloat[kVarPx] = track->Px();
+      fVarFloat[kVarPy] = track->Py();
+      fVarFloat[kVarPz] = track->Pz();
+      fVarFloat[kVarPxAtDCA] = (esdEvent ) ? ((AliESDMuonTrack*)track)->PxAtDCA() : ((AliAODTrack*)track)->PxAtDCA();
+      fVarFloat[kVarPyAtDCA] = (esdEvent ) ? ((AliESDMuonTrack*)track)->PyAtDCA() : ((AliAODTrack*)track)->PyAtDCA();
+      fVarFloat[kVarPzAtDCA] = (esdEvent ) ? ((AliESDMuonTrack*)track)->PzAtDCA() : ((AliAODTrack*)track)->PzAtDCA();
+      fVarFloat[kVarPtAtDCA] = TMath::Sqrt(fVarFloat[kVarPxAtDCA]*fVarFloat[kVarPxAtDCA] + fVarFloat[kVarPyAtDCA]*fVarFloat[kVarPyAtDCA]);
+
+      fVarFloat[kVarCharge] = track->Charge();
+
+      if ( ! fUseMC ) fTreeSingleMu->Fill();
+    }
 
     // Monte Carlo part
-    if (! fUseMC ) continue;
+    if ( ! fUseMC ) continue;
 
-    Int_t motherType = kUnknownPart;
+    fVarIntMC[kVarMotherType] = kUnknownPart;
 
     AliMCParticle* matchedMCTrack = 0x0;
 
@@ -370,21 +543,55 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     } // loop on MC tracks
 
     if ( matchedMCTrack )
-      motherType = RecoTrackMother(matchedMCTrack, mcEvent);
+      fVarIntMC[kVarMotherType] = RecoTrackMother(matchedMCTrack, mcEvent);
 
-    AliDebug(1, Form("Found mother %i", motherType));
+    AliDebug(1, Form("Found mother %i", fVarIntMC[kVarMotherType]));
 
-    if ( motherType != kUnknownPart) {
-      FillTriggerHistos(kHistoPtResolution, matchTrig, motherType, pt - mcTrack->Pt());
+
+    FillTriggerHistos(kHistoPtDCAMC, fVarInt[kVarMatchTrig], fVarIntMC[kVarMotherType], fVarFloat[kVarPt], fVarFloat[kVarDCA]);
+    FillTriggerHistos(kHistoPtVzMC,  fVarInt[kVarMatchTrig], fVarIntMC[kVarMotherType], fVarFloat[kVarPt], fVarFloat[kVarIPVz]);
+
+    if ( fVarIntMC[kVarMotherType] != kUnknownPart) {
+      fVarFloat[kVarPtMC] = mcTrack->Pt();
+      FillTriggerHistos(kHistoPtResolutionMC, fVarInt[kVarMatchTrig], fVarIntMC[kVarMotherType], fVarFloat[kVarPt] - fVarFloatMC[kVarPtMC]);
+      if ( fFillTree ){
+	fVarFloatMC[kVarPxMC] = mcTrack->Px();
+	fVarFloatMC[kVarPyMC] = mcTrack->Py();
+	fVarFloatMC[kVarPzMC] = mcTrack->Pz();
+	fVarFloatMC[kVarEtaMC] = mcTrack->Eta();
+	fVarFloatMC[kVarRapidityMC] = mcTrack->Y();
+	fVarFloatMC[kVarVxMC] = mcTrack->Xv();
+	fVarFloatMC[kVarVyMC] = mcTrack->Yv();
+	fVarFloatMC[kVarVzMC] = mcTrack->Zv();
+	fVarIntMC[kVarPdg] = mcTrack->PdgCode();
+
+	fTreeSingleMuMC->Fill();
+      }
     }
-    FillTriggerHistos(kHistoPtDCAType, matchTrig, motherType, pt, dca);
-    FillTriggerHistos(kHistoPtVzType,  matchTrig, motherType, pt, vz);
-
   } // loop on tracks
+
+  if ( fKeepAll &&  ( ( fVarInt[kVarIsMuon] + fVarInt[kVarIsGhost] ) == 0 ) ) {
+    // Fill event also if there is not muon (when explicitely required)
+    if ( ! fUseMC ) fTreeSingleMu->Fill();
+    else fTreeSingleMuMC->Fill();
+  }
+
+  if( strstr(fVarChar[kVarTrigMask],"MUON") && fVarInt[kVarIsMuon]==0 ) 
+    printf("WARNING: Muon trigger does not match tracker!\n");
+
+  Int_t histoIndex = GetHistoIndex(kNhistoTypes, 0) + kHistoMuonMultiplicity;
+  ((TH1F*)fHistoList->At(histoIndex))->Fill(fVarInt[kVarIsMuon]);
+  //if ( fVarInt[kVarIsMuon]>0 ) ((TH1F*)fHistoList->At(histoIndex))->Fill(2);
   
   // Post final data. It will be written to a file with option "RECREATE"
   PostData(1, fHistoList);
   if ( fUseMC ) PostData(2, fHistoListMC);
+  if ( fFillTree ){
+    if ( fUseMC ) 
+      PostData(3, fTreeSingleMuMC);
+    else 
+      PostData(3, fTreeSingleMu);
+  }
 }
 
 //________________________________________________________________________
@@ -505,10 +712,49 @@ Int_t AliAnalysisTaskSingleMu::RecoTrackMother(AliMCParticle* mcTrack, AliMCEven
 //________________________________________________________________________
 Int_t AliAnalysisTaskSingleMu::GetHistoIndex(Int_t histoTypeIndex, Int_t trigIndex, Int_t srcIndex)
  {
+   //
+   /// Get histogram index in the list
+   //
    if ( srcIndex < 0 ) return kNtrigCuts * histoTypeIndex + trigIndex;
 
    return 
      kNtrackSources * kNtrigCuts * histoTypeIndex  + 
      kNtrackSources * trigIndex  + 
      srcIndex;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSingleMu::Reset(Bool_t keepGlobal)
+{
+  //
+  /// Reset variables
+  //
+  Int_t lastVarFloat = ( keepGlobal ) ? kVarIPVx : kNvarFloat;
+  for(Int_t ivar=0; ivar<lastVarFloat; ivar++){
+    fVarFloat[ivar] = 0.;
+  }
+  Int_t lastVarInt = ( keepGlobal ) ? kVarPassPhysicsSelection : kNvarInt;
+  for(Int_t ivar=0; ivar<lastVarInt; ivar++){
+    fVarInt[ivar] = -1;
+  }
+  fVarInt[kVarIsMuon] = 0;
+  fVarInt[kVarIsGhost] = 0;
+
+  if ( ! keepGlobal ){
+    for(Int_t ivar=0; ivar<kNvarChar; ivar++){
+      //sprintf(fVarChar[ivar],"%253s","");
+      sprintf(fVarChar[ivar]," ");
+    }
+    for(Int_t ivar=0; ivar<kNvarUInt; ivar++){
+      fVarUInt[ivar] = 0;
+    }
+  }
+  if ( fUseMC ){
+    for(Int_t ivar=0; ivar<kNvarFloatMC; ivar++){
+      fVarFloatMC[ivar] = 0.;
+    }
+    for(Int_t ivar=0; ivar<kNvarIntMC; ivar++){
+      fVarIntMC[ivar] = -1;
+    }
+  }  
 }
