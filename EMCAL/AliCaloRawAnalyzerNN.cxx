@@ -124,8 +124,8 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
 	  //	  double amp = maxamp*fNeuralNet->Value( 0,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]);
 	  //	  double tof = (fNeuralNet->Value( 1,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]) + maxrev )*256 ;
 	  
-	  double amp = maxamp*fNeuralNet->Value( 0,  fNNInput[4],  fNNInput[3], fNNInput[2], fNNInput[1], fNNInput[0]);
-	  double tof = (fNeuralNet->Value( 1,  fNNInput[4],  fNNInput[3], fNNInput[2], fNNInput[1], fNNInput[0]) + maxrev )*256 ;
+	  double amp = (maxamp - ped)*fNeuralNet->Value( 0,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]);
+	  double tof = (fNeuralNet->Value( 1,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]) + maxrev )*256 ;
 
 
 	  //	  double tof = fNeuralNet->Value( 1,  fReversed[maxrev-2]/maxamp, fReversed[maxrev -1]/maxamp,  fReversed[maxrev]/maxamp, fReversed[maxrev+1]/maxamp, fReversed[maxrev+2]/maxamp);  
