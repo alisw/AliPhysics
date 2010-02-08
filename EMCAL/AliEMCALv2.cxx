@@ -234,11 +234,30 @@ void AliEMCALv2::StepManager(void){
         else if(strcmp(gMC->CurrentVolOffName(5),"SMON")==0) supModuleNumber = nSMON[supModuleNumber-1];
         else   assert(0); // something wrong
       }
-      absid = fGeometry->GetAbsCellId(supModuleNumber-1, moduleNumber-1, yNumber-1, xNumber-1);
-    
+		
+      // Due to problem with index ordering conventions the calcultation of absid is no more like this:	
+      //absid = fGeometry->GetAbsCellId(smNumber, moduleNumber-1, yNumber-1, xNumber-1);
+      
+      //Swap A side in Phi and C side in Eta due to wrong indexing.
+      Int_t iphi = -1;
+      Int_t ieta = -1;
+      Int_t smNumber = supModuleNumber-1;
+      Int_t smType   = 1;
+      fGeometry->GetCellPhiEtaIndexInSModule(smNumber,moduleNumber-1,yNumber-1,xNumber-1, iphi, ieta);
+      if (smNumber%2 == 0) {
+	ieta = ((fGeometry->GetCentersOfCellsEtaDir()).GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
+      }
+      else {  
+	if(smNumber >= 10) smType = 2 ; //half supermodule
+	iphi= ((fGeometry->GetCentersOfCellsPhiDir()).GetSize()/smType-1)-iphi;//23-iphi, revert the ordering on C side in order to keep convention.
+      }
+      
+      //Once we know the indexes, calculate the absolute ID
+      absid = fGeometry->GetAbsCellIdFromCellIndexes(smNumber, iphi, ieta);
+      
       if (absid < 0) {
         printf(" supModuleNumber %i : moduleNumber %i : yNumber %i : xNumber %i \n",
-        supModuleNumber, moduleNumber, yNumber, xNumber); 
+	       supModuleNumber, moduleNumber, yNumber, xNumber); 
 	Fatal("StepManager()", "Wrong id : %i ", absid) ; 
       }
 
