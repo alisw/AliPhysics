@@ -135,10 +135,46 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
     }
     
     fHistEventStats->Fill(1);
-    //online trigger
-    if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
+    if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->IsOnlineTriggerUsed()) {
+      //online trigger
+      if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
+	fHistEventStats->Fill(2);
+	AliDebug(1,Form("Fired trigger class: %s",fESD->GetFiredTriggerClasses().Data()));
+	
+	//offline trigger
+	if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->IsOfflineTriggerUsed()) {
+	  AliPhysicsSelection *gPhysicselection = dynamic_cast<AliPhysicsSelection *>(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetPhysicsSelectionObject());
+	  if(gPhysicselection->IsCollisionCandidate(fESD)) {
+	    fHistEventStats->Fill(3);
+	    AliDebug(1,Form("Fired trigger class: %s",fESD->GetFiredTriggerClasses().Data()));
+	    //Reconstructed vertex
+	    const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
+	    fHistEventStats->Fill(4);
+	    if(vertex) {
+	      AliDebug(1,Form("Proton ESD analysis task: There are %d tracks in this event",fESD->GetNumberOfTracks()));
+	      fProtonAnalysis->Analyze(fESD,vertex);
+	      fHistEventStats->Fill(5);
+	    }//reconstructed vertex
+	  }//offline trigger
+	}//usage of the offline trigger
+	else {
+	  fHistEventStats->Fill(3);
+	  AliDebug(1,Form("Fired trigger class: %s",fESD->GetFiredTriggerClasses().Data()));
+	  //Reconstructed vertex
+	  const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
+	  fHistEventStats->Fill(4);
+	  if(vertex) {
+	    AliDebug(1,Form("Proton ESD analysis task: There are %d tracks in this event",fESD->GetNumberOfTracks()));
+	    fProtonAnalysis->Analyze(fESD,vertex);
+	    fHistEventStats->Fill(5);
+	    }//reconstructed vertex
+	}//offline trigger not used
+      }//triggered event - online
+    }//online trigger used
+    else {
       fHistEventStats->Fill(2);
       AliDebug(1,Form("Fired trigger class: %s",fESD->GetFiredTriggerClasses().Data()));
+      
       //offline trigger
       if(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->IsOfflineTriggerUsed()) {
 	AliPhysicsSelection *gPhysicselection = dynamic_cast<AliPhysicsSelection *>(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetPhysicsSelectionObject());
@@ -155,7 +191,19 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
 	  }//reconstructed vertex
 	}//offline trigger
       }//usage of the offline trigger
-    }//triggered event - online
+      else {
+	fHistEventStats->Fill(3);
+	AliDebug(1,Form("Fired trigger class: %s",fESD->GetFiredTriggerClasses().Data()));
+	//Reconstructed vertex
+	const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
+	fHistEventStats->Fill(4);
+	if(vertex) {
+	  AliDebug(1,Form("Proton ESD analysis task: There are %d tracks in this event",fESD->GetNumberOfTracks()));
+	  fProtonAnalysis->Analyze(fESD,vertex);
+	  fHistEventStats->Fill(5);
+	}//reconstructed vertex
+      }//offline trigger not used
+    }//online trigger not used
   }//ESD analysis              
   
   else if(gAnalysisLevel == "AOD") {

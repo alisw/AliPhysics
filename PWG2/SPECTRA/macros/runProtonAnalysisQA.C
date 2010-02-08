@@ -1,6 +1,7 @@
 void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
 			 const char* pidMode = "Sigma1",
-			 Bool_t kUseOnlineTrigger = kTRUE) {
+			 Bool_t kUseOnlineTrigger = kTRUE,
+			 Bool_t kUseOfflineTrigger = kTRUE) {
   //Macro to run the proton QA analysis tested for local, proof & GRID.
   //Local: Takes four arguments, the analysis mode, the type of the ESD 
   //       analysis, the PID mode and the path where the tag and ESD or 
@@ -23,10 +24,10 @@ void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
   TStopwatch timer;
   timer.Start();
   
-  //runLocal("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,"/home/pchrist/ALICE/Baryons/QA/Local");
-  runProof("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,100000,"/COMMON/COMMON/LHC09d10_run104792-3#esdTree");
-  //runInteractive("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,"wn.xml");
-  //runBatch("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,"wn.xml");
+  //runLocal("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"/home/pchrist/ALICE/Baryons/QA/Local");
+  runProof("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,100000,"/COMMON/COMMON/LHC09d10_run104792-3#esdTree");
+  //runInteractive("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"wn.xml");
+  //runBatch("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"wn.xml");
 
   timer.Stop();
   timer.Print();
@@ -37,6 +38,7 @@ void runLocal(const char* mode = "ESD",
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
 	      Bool_t kUseOnlineTrigger = kTRUE,
+	      Bool_t kUseOfflineTrigger = kTRUE,
 	      const char* path = 0x0) {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
   outputFilename1 += "."; outputFilename1 += pidMode; 
@@ -90,7 +92,8 @@ void runLocal(const char* mode = "ESD",
   AliProtonQAAnalysis *analysis = GetProtonQAAnalysisObject(mode,
 							    analysisType,
 							    pidMode,
-							    kUseOnlineTrigger);
+							    kUseOnlineTrigger,
+							    kUseOfflineTrigger);
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisQAManager");
@@ -169,6 +172,7 @@ void runInteractive(const char* mode = "ESD",
 		    const char* analysisType = 0x0,
 		    const char* pidMode = 0x0,
 		    Bool_t kUseOnlineTrigger = kTRUE,
+		    Bool_t kUseOfflineTrigger = kTRUE,
 		    const char* collectionName = "tag.xml") {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
   outputFilename1 += "."; outputFilename1 += pidMode; 
@@ -225,7 +229,8 @@ void runInteractive(const char* mode = "ESD",
   AliProtonQAAnalysis *analysis = GetProtonQAAnalysisObject(mode,
 							    analysisType,
 							    pidMode,
-							    kUseOnlineTrigger);
+							    kUseOnlineTrigger,
+							    kUseOfflineTrigger);
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisQAManager");
@@ -304,6 +309,7 @@ void runBatch(const char* mode = "ESD",
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
 	      Bool_t kUseOnlineTrigger = kTRUE,
+	      Bool_t kUseOfflineTrigger = kTRUE,
 	      const char *collectionfile = "wn.xml") {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
   outputFilename1 += "."; outputFilename1 += pidMode; 
@@ -352,7 +358,8 @@ void runBatch(const char* mode = "ESD",
   AliProtonQAAnalysis *analysis = GetProtonQAAnalysisObject(mode,
 							    analysisType,
 							    pidMode,
-							    kUseOnlineTrigger);
+							    kUseOnlineTrigger,
+							    kUseOfflineTrigger);
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisQAManager");
@@ -431,6 +438,7 @@ void runProof(const char* mode = "ESD",
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
 	      Bool_t kUseOnlineTrigger = kTRUE,
+	      Bool_t kUseOfflineTrigger = kTRUE,
 	      Int_t stats = 0, 
 	      const char* dataset = 0x0) {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
@@ -476,7 +484,8 @@ void runProof(const char* mode = "ESD",
   AliProtonQAAnalysis *analysis = GetProtonQAAnalysisObject(mode,
 							    analysisType,
 							    pidMode,
-							    kUseOnlineTrigger);
+							    kUseOnlineTrigger,
+							    kUseOfflineTrigger);
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisQAManager");
