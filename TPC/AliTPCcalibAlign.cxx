@@ -117,6 +117,7 @@
 #include "AliTPCTracklet.h"
 #include "TH1D.h"
 #include "TH2F.h"
+#include "THnSparse.h"
 #include "TVectorD.h"
 #include "TTreeStream.h"
 #include "TFile.h"
@@ -207,6 +208,12 @@ AliTPCcalibAlign::AliTPCcalibAlign()
   fXquadrant = roc->GetPadRowRadii(36,53);
   fXmiddle   = ( roc->GetPadRowRadii(0,0)+roc->GetPadRowRadii(36,roc->GetNRows(36)-1))*0.5;
   fXIO       = ( roc->GetPadRowRadii(0,roc->GetNRows(0)-1)+roc->GetPadRowRadii(36,0))*0.5;
+  fClusterDelta[0]=0;   // cluster residuals
+  fClusterDelta[1]=0;   // cluster residuals
+  fClusterDelta[2]=0;   // cluster residuals - vertex constrained
+  fClusterDelta[3]=0;   // cluster residuals
+  fClusterDelta[4]=0;   // cluster residuals - ITS constrained
+  fClusterDelta[5]=0;   // cluster residuals
 }
 
 AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
@@ -257,6 +264,13 @@ AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
   fXquadrant = roc->GetPadRowRadii(36,53);
   fXmiddle   = ( roc->GetPadRowRadii(0,0)+roc->GetPadRowRadii(36,roc->GetNRows(36)-1))*0.5;
   fXIO       = ( roc->GetPadRowRadii(0,roc->GetNRows(0)-1)+roc->GetPadRowRadii(36,0))*0.5;
+  fClusterDelta[0]=0;   // cluster residuals
+  fClusterDelta[1]=0;   // cluster residuals
+  fClusterDelta[2]=0;   // cluster residuals - vertex constrained
+  fClusterDelta[3]=0;   // cluster residuals
+  fClusterDelta[4]=0;   // cluster residuals - ITS constrained
+  fClusterDelta[5]=0;   // cluster residuals
+
 
 
 }
@@ -363,6 +377,13 @@ AliTPCcalibAlign::AliTPCcalibAlign(const AliTPCcalibAlign &align)
     fSectorParamC = (TMatrixD*)align.fSectorParamA->Clone();
     fSectorParamC = (TMatrixD*)align.fSectorCovarA->Clone();
   }
+  fClusterDelta[0]=0;   // cluster residuals
+  fClusterDelta[1]=0;   // cluster residuals
+  fClusterDelta[2]=0;   // cluster residuals - vertex constrained
+  fClusterDelta[3]=0;   // cluster residuals
+  fClusterDelta[4]=0;   // cluster residuals - ITS constrained
+  fClusterDelta[5]=0;   // cluster residuals
+
 }
 
 
@@ -418,15 +439,20 @@ AliTPCcalibAlign::~AliTPCcalibAlign() {
   fArraySectorIntCovar.SetOwner(kTRUE); // array of sector alignment covariances 
   fArraySectorIntParam.Delete(); // array of sector alignment parameters
   fArraySectorIntCovar.Delete(); // array of sector alignment covariances 
-
+  for (Int_t i=0; i<6; i++){
+    delete fClusterDelta[i];   // cluster residuals
+  }
 }
 
 void AliTPCcalibAlign::Process(AliESDEvent *event) {
   //
   // Process pairs of cosmic tracks
   //
+  if (!fClusterDelta[0])  MakeResidualHistos();
+  //
+  fCurrentEvent=event;
   ExportTrackPoints(event);  // export track points for external calibration 
-  const Int_t kMaxTracks =50;
+  const Int_t kMaxTracks =6;
   const Int_t kminCl = 40;
   AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   if (!ESDfriend) return;
@@ -435,7 +461,26 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   Float_t dca1[2];
   //
   //
+  // process seeds
   //
+  for (Int_t i0=0;i0<ntracks;++i0) {
+    AliESDtrack *track0 = event->GetTrack(i0);
+    AliESDfriendTrack *friendTrack = 0;
+    TObject *calibObject=0;
+    AliTPCseed *seed0 = 0,*seed1=0;
+    //
+    friendTrack = (AliESDfriendTrack *)ESDfriend->GetTrack(i0);;
+    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
+      if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    }
+    if (!seed0) continue;
+    fCurrentTrack=track0;
+    fCurrentSeed=seed0;
+    fCurrentEvent=event;
+    ProcessSeed(seed0);
+  }
+  //
+  // process cosmic pairs
   //
   if (ntracks>kMaxTracks) return;  
   //
@@ -454,7 +499,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
       // fast cuts on dca and theta
       //      if (TMath::Abs(dca1[0]+dca0[0])>15) continue;
       //      if (TMath::Abs(dca1[1]-dca0[1])>15) continue;
-      //      if (TMath::Abs(track0->GetParameter()[3]+track1->GetParameter()[3])>0.1) continue;
+      if (TMath::Abs(track0->GetParameter()[3]+track1->GetParameter()[3])>0.1) continue;
       //
       AliESDfriendTrack *friendTrack = 0;
       TObject *calibObject=0;
@@ -468,8 +513,9 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
-
       if (!seed0) continue;
+      //
+      //
       if (!seed1) continue;
       Int_t nclsectors0[72], nclsectors1[72];
       for (Int_t isec=0;isec<72;isec++){
@@ -556,16 +602,28 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
   AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   if (!ESDfriend) return;
   Int_t ntracks=event->GetNumberOfTracks();
+  Int_t kMaxTracks=4;   // maximal number of tracks for cosmic pairs
+  Int_t kMinVertexTracks=5;   // maximal number of tracks for vertex mesurement
+
   //cuts
   const Int_t kminCl     = 60;
   const Int_t kminClSum  = 120;
-  //  const Double_t kDistY  = 5;
+  //const Double_t kDistY  = 5;
   // const Double_t kDistZ  = 40;
   const Double_t kDistTh = 0.05;
+  const Double_t kDistThS = 0.002;
   const Double_t kDist1Pt = 0.1;
+  const Double_t kMaxD0 =3;  // max distance to the primary vertex
+  const Double_t kMaxD1 =5;  // max distance to the primary vertex
+  const AliESDVertex *tpcVertex = 0;
+  // get the primary vertex TPC
+  if (ntracks>kMinVertexTracks) {
+    tpcVertex = event->GetPrimaryVertexSPD();
+    if (tpcVertex->GetNContributors()<kMinVertexTracks) tpcVertex=0;
+  }
   //
   Float_t dca0[2];
-  Float_t dca1[2];
+  //  Float_t dca1[2];
   Int_t index0=0,index1=0;
   //
   for (Int_t i0=0;i0<ntracks;++i0) {
@@ -573,20 +631,28 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
     if (!track0) continue;
     if ((track0->GetStatus() & AliESDtrack::kTPCrefit)==0) continue;
     if (track0->GetOuterParam()==0) continue;
+    if (track0->GetInnerParam()==0) continue;
+    if (TMath::Abs(track0->GetInnerParam()->GetSigned1Pt()-track0->GetOuterParam()->GetSigned1Pt())>kDist1Pt) continue;
+    if (TMath::Abs(track0->GetInnerParam()->GetSigned1Pt())>kDist1Pt) continue;
+    if (TMath::Abs(track0->GetInnerParam()->GetTgl()-track0->GetOuterParam()->GetTgl())>kDistThS) continue;
     AliESDtrack *track1P = 0;
     if (track0->GetTPCNcls()<kminCl) continue;
     track0->GetImpactParameters(dca0[0],dca0[1]);
     index0=i0;
     index1=-1;
     //
-    for (Int_t i1=0;i1<ntracks;++i1) {
+    if (ntracks<kMaxTracks) for (Int_t i1=i0+1;i1<ntracks;++i1) {
       if (i0==i1) continue;
       AliESDtrack *track1 = event->GetTrack(i1);
       if (!track1) continue;
       if ((track1->GetStatus() & AliESDtrack::kTPCrefit)==0) continue;
       if (track1->GetOuterParam()==0) continue;
+      if (track1->GetInnerParam()==0) continue;
       if (track1->GetTPCNcls()<kminCl) continue;
-      track1->GetImpactParameters(dca1[0],dca1[1]);
+      if (TMath::Abs(track1->GetInnerParam()->GetSigned1Pt()-track1->GetOuterParam()->GetSigned1Pt())>kDist1Pt) continue;
+      if (TMath::Abs(track1->GetInnerParam()->GetTgl()-track1->GetOuterParam()->GetTgl())>kDistThS) continue;
+      if (TMath::Abs(track1->GetInnerParam()->GetSigned1Pt())>kDist1Pt) continue;
+      //track1->GetImpactParameters(dca1[0],dca1[1]);
       //if (TMath::Abs(dca1[0]-dca0[0])>kDistY) continue;
       //if (TMath::Abs(dca1[1]-dca0[1])>kDistZ) continue;
       if (TMath::Abs(track0->GetTgl()+track1->GetTgl())>kDistTh) continue;
@@ -615,6 +681,20 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
     if (npoints<kminClSum) continue;    
     Int_t cpoint=0;
     AliTrackPointArray array(npoints);    
+    if (tpcVertex){
+      Double_t dxyz[3]={0,0,0};
+      Double_t dc[6]={0,0,0};
+      tpcVertex->GetXYZ(dxyz);
+      tpcVertex->GetCovarianceMatrix(dc);
+      Float_t xyz[3]={dxyz[0],dxyz[1],dxyz[2]};
+      Float_t cov[6]={dc[0]+1,dc[1],dc[2]+1,dc[3],dc[4],dc[5]+100.}; 
+      AliTrackPoint point(xyz,cov,73);  // add point to not existing volume
+      Float_t dtpc[2],dcov[3];
+      track0->GetImpactParametersTPC(dtpc,dcov);
+      if (TMath::Abs(dtpc[0])>kMaxD0) continue;
+      if (TMath::Abs(dtpc[1])>kMaxD1) continue;
+    }
+
     if (seed0) for (Int_t icl = 0; icl<160; icl++){
       AliTPCclusterMI *cluster=seed0->GetClusterPointer(icl);
       if (!cluster) continue;
@@ -623,7 +703,7 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
       cluster->GetGlobalXYZ(xyz);
       cluster->GetGlobalCov(cov);
       AliTrackPoint point(xyz,cov,cluster->GetDetector());
-      array.AddPoint(npoints, &point);
+      array.AddPoint(npoints, &point); 
       if (cpoint>=npoints) continue;  //shoul not happen
       array.AddPoint(cpoint, &point);
       cpoint++;
@@ -646,11 +726,16 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
     //
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
+      Bool_t isVertex=(tpcVertex)? kTRUE:kFALSE;
+      Double_t tof0=track0->GetTOFsignal();
+      Double_t tof1=(track1P) ?  track1P->GetTOFsignal(): 0;
       static AliExternalTrackParam dummy;
       AliExternalTrackParam *p0In  = &dummy;
       AliExternalTrackParam *p1In  = &dummy;
       AliExternalTrackParam *p0Out = &dummy;
       AliExternalTrackParam *p1Out = &dummy;
+      AliESDVertex vdummy;
+      AliESDVertex *pvertex= (tpcVertex)? (AliESDVertex *)tpcVertex: &vdummy;
       if (track0) {
 	p0In= new AliExternalTrackParam(*track0);
 	p0Out=new AliExternalTrackParam(*(track0->GetOuterParam()));
@@ -667,7 +752,12 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
 	"trigger="<<fTrigger<<      //  trigger
 	"triggerClass="<<&fTriggerClass<<      //  trigger
 	"mag="<<fMagF<<             //  magnetic field
+	"pvertex.="<<pvertex<<      // vertex
 	//
+	"isVertex="<<isVertex<<     // flag is with prim vertex
+	"tof0="<<tof0<<             // tof signal 0
+	"tof1="<<tof1<<             // tof signal 1
+	"seed0.="<<seed0<<          // track info
 	"ntracks="<<ntracks<<       // number of tracks
 	"ncont="<<ncont<<           // number of contributors
 	"p0In.="<<p0In<<              // track parameters0 
@@ -683,7 +773,7 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
 
 
 
-void AliTPCcalibAlign::Process(AliTPCseed *seed) {
+void AliTPCcalibAlign::ProcessSeed(AliTPCseed *seed) {
   //
   // 
   //
@@ -1547,6 +1637,53 @@ Bool_t AliTPCcalibAlign::GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a) {
   } 
 }
 
+void AliTPCcalibAlign::MakeResidualHistos(){
+  //
+  // Make cluster residual histograms
+  //
+  Double_t xminTrack[9], xmaxTrack[9];
+  Int_t    binsTrack[9];
+  TString  axisName[9],axisTitle[9];
+  //
+  // 0 - delta   of interest
+  // 1 - global  phi in sector number  as float
+  // 2 - local   x
+  // 3 - local   ky
+  // 4 - local   kz
+  // 
+  axisName[0]="delta";   axisTitle[0]="#Delta (cm)"; 
+  binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
+  //
+  axisName[1]="sector";   axisTitle[1]="Sector Number"; 
+  binsTrack[1]=360;       xminTrack[1]=0;        xmaxTrack[1]=18; 
+  //
+  axisName[2]="localX";   axisTitle[2]="x (cm)"; 
+  binsTrack[2]=53;       xminTrack[2]=85.;        xmaxTrack[2]=245.; 
+  //
+  axisName[3]="kY";      axisTitle[3]="dy/dx"; 
+  binsTrack[3]=32;       xminTrack[3]=-0.16;        xmaxTrack[3]=0.16; 
+  //
+  axisName[4]="kZ";      axisTitle[4]="dz/dx"; 
+  binsTrack[4]=10;       xminTrack[4]=-1.5;        xmaxTrack[4]=1.5; 
+  //
+  fClusterDelta[0] = new THnSparseF("#Delta_{Y} (cm)","#Delta_{Y} (cm)", 5, binsTrack,xminTrack, xmaxTrack);
+  fClusterDelta[1] = new THnSparseF("#Delta_{Z} (cm)","#Delta_{Z} (cm)", 5, binsTrack,xminTrack, xmaxTrack);
+  fClusterDelta[2] = new THnSparseF("#Delta_{Y} (cm) const","#Delta_{Y} (cm) const ", 5, binsTrack,xminTrack, xmaxTrack);
+  fClusterDelta[3] = new THnSparseF("#Delta_{Z} (cm) const","#Delta_{Z} (cm) const", 5, binsTrack,xminTrack, xmaxTrack);
+  fClusterDelta[4] = new THnSparseF("#Delta_{Y} (cm) ITS","#Delta_{Y} (cm) ITS", 5, binsTrack,xminTrack, xmaxTrack);
+  fClusterDelta[5] = new THnSparseF("#Delta_{Z} (cm) ITS","#Delta_{Z} (cm) ITS", 5, binsTrack,xminTrack, xmaxTrack);
+  //
+  //
+  //
+  for (Int_t ivar=0;ivar<6;ivar++){
+    for (Int_t ivar2=0;ivar2<5;ivar2++){
+      fClusterDelta[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+      fClusterDelta[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
+    }
+  }
+
+}
+
 void AliTPCcalibAlign::FillHisto(const Double_t *t1,
 				 const Double_t *t2,
 				 Int_t s1,Int_t s2) {
@@ -1968,6 +2105,10 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
     UpdateKalman(*fSectorParamA,*fSectorCovarA,*align->fSectorParamA,*align->fSectorCovarA);
     UpdateKalman(*fSectorParamC,*fSectorCovarC,*align->fSectorParamC,*align->fSectorCovarC);
   }
+  if (!fClusterDelta[0]) MakeResidualHistos();
+  for (Int_t i=0; i<6; i++){
+    if (align->fClusterDelta[i]) fClusterDelta[i]->Add(align->fClusterDelta[i]);
+  }
 }
 
 Double_t AliTPCcalibAlign::Correct(Int_t type, Int_t value, Int_t s1, Int_t s2, Double_t x1, Double_t y1, Double_t z1, Double_t dydx1,Double_t dzdx1){
@@ -2375,14 +2516,14 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   // Update Kalman filter of Alignment 
   //       IROC - OROC quadrants
   //
-  
+  if (!fClusterDelta[0])  MakeResidualHistos();
   const Int_t kMinClusterF=40;
   const Int_t kMinClusterQ=10;
   //
-  const  Int_t     kdrow1 =8;       // rows to skip at the end      
-  const  Int_t     kdrow0 =2;        // rows to skip at beginning  
+  const  Int_t     kdrow1Fit =5;         // rows to skip from fit at the end      
+  const  Int_t     kdrow0Fit =10;        // rows to skip from fit at beginning  
   const  Float_t   kedgey=3.0;
-  const  Float_t   kMaxDist=0.5;
+  const  Float_t   kMaxDist=1;
   const  Float_t   kMaxCorrY=0.05;
   const  Float_t   kPRFWidth = 0.6;   //cut 2 sigma of PRF
   isec = isec%36;     // use the hardware numbering
@@ -2395,24 +2536,27 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   TLinearFitter fyf(2,"pol1");
   TLinearFitter fzf(2,"pol1");
   TVectorD pyf(2), peyf(2),pzf(2), pezf(2);
+  TVectorD pyfc(2),pzfc(2);
   Int_t nf=0;
   //
   // make full fit as reference
   //
   for (Int_t iter=0; iter<2; iter++){
     fyf.ClearPoints();
-    for (Int_t irow=kdrow0;irow<159-kdrow1;irow++) {
+    for (Int_t irow=kdrow0Fit;irow<159-kdrow1Fit;irow++) {
       AliTPCclusterMI *c=track->GetClusterPointer(irow);
       if (!c) continue;
       if ((c->GetDetector()%36)!=isec) continue;
-      if (c->GetRow()<kdrow0) continue;
+      if (c->GetRow()<kdrow0Fit) continue;
       Double_t dx = c->GetX()-fXmiddle;
       Double_t x[2]={dx, dx*dx};
       if (iter==0 &&c->GetType()<0) continue;
       if (iter==1){	
 	Double_t yfit  =  pyf[0]+pyf[1]*dx;
+	Double_t zfit  =  pzf[0]+pzf[1]*dx;
 	Double_t dedge =  c->GetX()*TMath::Tan(TMath::Pi()/18.)-TMath::Abs(yfit);
 	if (TMath::Abs(c->GetY()-yfit)>kMaxDist) continue;
+	if (TMath::Abs(c->GetZ()-zfit)>kMaxDist) continue;
 	if (dedge<kedgey) continue;
 	Double_t corrtrY =  
 	  corr->RPhiCOGCorrection(c->GetDetector(),c->GetRow(), c->GetPad(),
@@ -2431,6 +2575,47 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
     fzf.GetParameters(pzf); 
     fzf.GetErrors(pezf);
   }
+  //
+  //
+  //
+  TVectorD vecX(nf+kdrow0Fit+kdrow1Fit+5);          // x         vector
+  TVectorD vecY(nf+kdrow0Fit+kdrow1Fit+5);          // residuals vector
+  TVectorD vecZ(nf+kdrow0Fit+kdrow1Fit+5);                              // residuals vector
+  TVectorD vPosG(3);                  //vertex position
+  TVectorD vPosL(3);                 // vertex position in the TPC local system
+  TVectorF vImpact(2);               //track impact parameter
+  Double_t tofSignal= fCurrentTrack->GetTOFsignal();      // tof signal
+  TVectorF tpcPosG(3);                                    // global position of track at the middle of fXmiddle
+  Double_t lphi = TMath::ATan2(pyf[0],fXmiddle);          // expected local phi angle - if vertex at 0
+  Double_t gphi = 2.*TMath::Pi()*(isec%18+0.5)/18.+lphi;  // expected global phi if vertex at 0
+  Double_t ky   = pyf[0]/fXmiddle;
+  Double_t kyE  =0, kzE=0;    // ky and kz expected
+  Double_t alpha =2.*TMath::Pi()*(isec%18+0.5)/18.;
+  Double_t scos=TMath::Cos(alpha);
+  Double_t ssin=TMath::Sin(alpha);
+  const AliESDVertex* vertex = fCurrentEvent->GetPrimaryVertexTracks();
+  vertex->GetXYZ(vPosG.GetMatrixArray());
+  fCurrentTrack->GetImpactParameters(vImpact[0],vImpact[1]);  // track impact parameters
+  //
+  tpcPosG[0]= scos*fXmiddle-ssin*pyf[0];
+  tpcPosG[1]=+ssin*fXmiddle+scos*pyf[0];
+  tpcPosG[2]=pzf[0];
+  vPosL[0]= scos*vPosG[0]+ssin*vPosG[1];
+  vPosL[1]=-ssin*vPosG[0]+scos*vPosG[1];
+  vPosL[2]= vPosG[2];
+  kyE = (pyf[0]-vPosL[1])/(fXmiddle-vPosL[0]);
+  kzE = (pzf[0]-vPosL[2])/(fXmiddle-vPosL[0]);
+  //
+  // get constrained parameters
+  //
+  Double_t xvertex=vPosL[0]-fXmiddle;
+  fyf.AddPoint(&xvertex,vPosL[1], 0.1+TMath::Abs(vImpact[0]));
+  fzf.AddPoint(&xvertex,vPosL[2], 0.1+TMath::Abs(vImpact[1]));
+  fyf.Eval(); 
+  fyf.GetParameters(pyfc); 
+  fzf.Eval(); 
+  fzf.GetParameters(pzfc); 
+  //
   //
   // Make Fitters and params for 5 fitters
   // 1-4 OROC quadrants 
@@ -2461,22 +2646,55 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   //
   // Update fitters
   //
-  for (Int_t irow=kdrow0;irow<159-kdrow1;irow++) {
+  Int_t countRes=0;
+  for (Int_t irow=0;irow<159;irow++) {
     AliTPCclusterMI *c=track->GetClusterPointer(irow);
     if (!c) continue;
     if ((c->GetDetector()%36)!=isec) continue;
-    if (c->GetRow()<kdrow0) continue;      
     Double_t dx = c->GetX()-fXmiddle;
     Double_t x[2]={dx, dx*dx};
     Double_t yfit  =  pyf[0]+pyf[1]*dx;
+    Double_t zfit  =  pzf[0]+pzf[1]*dx;
+    Double_t yfitC  =  pyfc[0]+pyfc[1]*dx;
+    Double_t zfitC  =  pzfc[0]+pzfc[1]*dx;
     Double_t dedge =  c->GetX()*TMath::Tan(TMath::Pi()/18.)-TMath::Abs(yfit);
     if (TMath::Abs(c->GetY()-yfit)>kMaxDist) continue;
+    if (TMath::Abs(c->GetZ()-zfit)>kMaxDist) continue;
     if (dedge<kedgey) continue;
     Double_t corrtrY =  
       corr->RPhiCOGCorrection(c->GetDetector(),c->GetRow(), c->GetPad(),
 			      c->GetY(),yfit, c->GetZ(), pyf[1], c->GetMax(),2.5);
     if (TMath::Abs(corrtrY)>kMaxCorrY) continue;  
-    
+    //
+    vecX[countRes]=c->GetX();
+    vecY[countRes]=c->GetY()-yfit;
+    vecZ[countRes]=c->GetZ()-zfit;
+    countRes++;
+    //
+    // Fill THnSparse cluster residuals
+    // use only primary candidates with ITS signal
+    if (nf>100&&fCurrentTrack->IsOn(0x4)&&TMath::Abs(vImpact[0])<1&&TMath::Abs(vImpact[1])<1){    
+      Double_t resVector[5];
+      resVector[1]= 9.*gphi/TMath::Pi();
+      resVector[2]= c->GetX();
+      resVector[3]= c->GetY()/c->GetX();
+      resVector[4]= c->GetZ()/c->GetX();
+      //
+      resVector[0]= c->GetY()-yfit;
+      fClusterDelta[0]->Fill(resVector);
+      resVector[0]= c->GetZ()-zfit;
+      fClusterDelta[1]->Fill(resVector);
+      //
+      resVector[0]= c->GetY()-yfitC;
+      fClusterDelta[2]->Fill(resVector);
+      resVector[0]= c->GetZ()-zfitC;
+      fClusterDelta[3]->Fill(resVector);
+
+    }
+    if (c->GetRow()<kdrow0Fit) continue;      
+    if (c->GetRow()>159-kdrow1Fit) continue;      
+    //
+
     if (c->GetDetector()>35){      
       if (c->GetX()<fXquadrant){
 	if (yfit<-kPRFWidth) fittersY[1]->AddPoint(x,c->GetY(),0.1);
@@ -2581,8 +2799,12 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   //
   // Dump debug information
   //
-  if (fStreamLevel>0){    
-    TTreeSRedirector *cstream = GetDebugStreamer();      
+  if (fStreamLevel>0){
+    // get vertex position
+     //
+    TTreeSRedirector *cstream = GetDebugStreamer();  
+
+    
     if (cstream){      
       for (Int_t i0=0;i0<5;i0++){
 	for (Int_t i1=i0;i1<5;i1++){
@@ -2597,10 +2819,30 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
 	    "triggerClass="<<&fTriggerClass<<      //  trigger
 	    "mag="<<fMagF<<             //  magnetic field	  
 	    "isec="<<isec<<             //  current sector 
+	    //
+	    "xref="<<fXmiddle<<         // reference X
+	    "vPosG.="<<&vPosG<<        // vertex position in global system
+	    "vPosL.="<<&vPosL<<        // vertex position in local  system
+	    "vImpact.="<<&vImpact<<   // track impact parameter
+	    "tofSignal="<<tofSignal<<   // tof signal
+	    "tpcPosG.="<<&tpcPosG<<   // global position of track at the middle of fXmiddle
+	    "lphi="<<lphi<<             // expected local phi angle - if vertex at 0
+	    "gphi="<<gphi<<             // expected global phi if vertex at 0
+	    "ky="<<ky<<
+	    "kyE="<<kyE<<               // expect ky - assiming pirmary track
+	    "kzE="<<kzE<<               // expected kz - assuming primary tracks
+	    "salpha="<<alpha<<          // sector alpha
+	    "scos="<<scos<<              // tracking cosinus
+	    "ssin="<<ssin<<              // tracking sinus
+	    //
 	    // full fit
+	    //
 	    "nf="<<nf<<                 //  total number of points
 	    "pyf.="<<&pyf<<             //  full OROC fit y
 	    "pzf.="<<&pzf<<             //  full OROC fit z
+	    "vX.="<<&vecX<<              //  x cluster
+	    "vY.="<<&vecY<<              //  y residual cluster
+	    "vZ.="<<&vecZ<<              //  z residual cluster
 	    // quadrant and IROC fit
 	    "i0="<<i0<<                 // quadrant number
 	    "i1="<<i1<<                 

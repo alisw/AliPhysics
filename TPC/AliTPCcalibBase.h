@@ -26,9 +26,9 @@ public:
   AliTPCcalibBase(const AliTPCcalibBase&calib);
   AliTPCcalibBase &operator=(const AliTPCcalibBase&calib);
   virtual ~AliTPCcalibBase();
-  virtual void     Process(AliESDEvent */*event*/){return;}
-  virtual void     Process(AliTPCseed */*track*/){return;}
-  virtual void     Process(AliESDtrack */*track*/, Int_t /*runNo=-1*/){return;}
+  virtual void     Process(AliESDEvent *event){ fCurrentEvent = event; return;}
+  virtual void     Process(AliTPCseed *track){fCurrentSeed = track; return;}
+  virtual void     Process(AliESDtrack *track, Int_t /*runNo=-1*/){fCurrentTrack=track; return;}
   virtual Long64_t Merge(TCollection */*li*/){return 0;}
   virtual void     Analyze(){return;}
   virtual void     Terminate();
@@ -59,7 +59,10 @@ protected:
   Int_t   fTriggerMaskAccept;           //trigger mask - accept
   Bool_t  fHasLaser;                    //flag the laser is overlayed with given event
   Bool_t  fRejectLaser;                 //flag- reject laser
-  TObjString fTriggerClass;                // trigger class
+  TObjString fTriggerClass;             // trigger class
+  AliESDEvent  *fCurrentEvent;          //! current event
+  AliESDtrack *fCurrentTrack;           //! current esd track
+  AliTPCseed   *fCurrentSeed;           //! current seed
 private:
   Int_t  fDebugLevel;                   //  debug level
 

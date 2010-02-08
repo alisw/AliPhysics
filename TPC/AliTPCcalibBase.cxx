@@ -72,6 +72,9 @@ AliTPCcalibBase::AliTPCcalibBase():
     fHasLaser(kFALSE),                    //flag the laser is overlayed with given event 
     fRejectLaser(kTRUE),                 //flag- reject laser
     fTriggerClass(),
+    fCurrentEvent(0),           //! current event
+    fCurrentTrack(0),           //! current esd track
+    fCurrentSeed(0),            //! current seed
     fDebugLevel(0)
 {
   //
@@ -93,6 +96,9 @@ AliTPCcalibBase::AliTPCcalibBase(const char * name, const char * title):
   fHasLaser(kFALSE),                    //flag the laser is overlayed with given event 
   fRejectLaser(kTRUE),                 //flag- reject laser
   fTriggerClass(),
+  fCurrentEvent(0),           //! current event
+  fCurrentTrack(0),           //! current esd track
+  fCurrentSeed(0),            //! current seed
   fDebugLevel(0)
 {
   //
@@ -114,6 +120,9 @@ AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
   fHasLaser(calib.fHasLaser),                    //flag the laser is overlayed with given event
   fRejectLaser(calib.fRejectLaser),                 //flag- reject laser
   fTriggerClass(calib.fTriggerClass),
+  fCurrentEvent(0),           //! current event
+  fCurrentTrack(0),           //! current esd track
+  fCurrentSeed(0),            //! current seed
   fDebugLevel(calib.fDebugLevel)
 {
   //

@@ -44,7 +44,7 @@ public:
   Bool_t                 IsCross(AliESDtrack *tr0, AliESDtrack *tr1);
   Bool_t                 IsSame (AliESDtrack *tr0, AliESDtrack *tr1);
   void                   ProcessSame(AliESDtrack* track, AliESDfriendTrack *friendTrack,AliESDEvent *event);
-  void                   ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack);
+  void                   ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack, AliESDEvent *event,AliESDfriend *ESDfriend);
   void                   ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *friendTrack);
   void                   ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *friendTrack);
 

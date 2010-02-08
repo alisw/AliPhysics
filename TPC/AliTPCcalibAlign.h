@@ -35,7 +35,8 @@ public:
   //
   virtual ~AliTPCcalibAlign();
   void     Process(AliESDEvent *event);
-  virtual void Process(AliTPCseed *track);
+  virtual void ProcessSeed(AliTPCseed *track);
+  virtual void Process(AliTPCseed */*track*/){ return ;}
   virtual void Analyze();
   virtual void Terminate();  
   virtual Long64_t Merge(TCollection* list);
@@ -128,11 +129,18 @@ public:
   //
   //private:
   static Int_t CheckCovariance(TMatrixD &covar);
+  //
+  //
+  void MakeResidualHistos();
+
 public:
   
   void FillHisto(const Double_t *t1,
 		 const Double_t *t2,
 		 Int_t s1,Int_t s2);
+
+  THnSparse *fClusterDelta[6];  //clusters residuals
+
 
   TObjArray fDphiHistArray;    // array of residual histograms  phi      -kPhi
   TObjArray fDthetaHistArray;  // array of residual histograms  theta    -kTheta
@@ -155,6 +163,8 @@ public:
   TObjArray fMatrixArray12;    // array of transnformtation matrix
   TObjArray fMatrixArray9;     // array of transnformtation matrix
   TObjArray fMatrixArray6;     // array of transnformtation matrix 
+  //
+  //
   //
   //
   TObjArray fCombinedMatrixArray6;      // array  combeined transformation matrix

@@ -121,7 +121,7 @@ AliTPCcalibTime::AliTPCcalibTime()
    fCutMaxDz(25),      // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99),  // direction vector products
-   fCutTracks(10),
+   fCutTracks(100),
    fArrayDz(0),          //NEW! Tmap of V drifts for different triggers
    fAlignITSTPC(0),      //alignemnt array ITS TPC match
    fAlignTRDTPC(0),      //alignemnt array TRD TPC match 
@@ -160,7 +160,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
    fCutMaxDz(40),   // maximal distance in rfi ditection
    fCutTheta(5*0.004644),// maximal distan theta
    fCutMinDir(-0.99),    // direction vector products
-   fCutTracks(10),
+   fCutTracks(100),
    fArrayDz(0),            //Tmap of V drifts for different triggers
    fAlignITSTPC(0),      //alignemnt array ITS TPC match
    fAlignTRDTPC(0),      //alignemnt array TRD TPC match 
@@ -540,7 +540,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
     
     AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
     if (friendTrack) ProcessSame(track,friendTrack,event);
-    if (friendTrack) ProcessAlignITS(track,friendTrack);
+    if (friendTrack) ProcessAlignITS(track,friendTrack,event,ESDfriend);
     if (friendTrack) ProcessAlignTRD(track,friendTrack);
     if (friendTrack) ProcessAlignTOF(track,friendTrack);
     TObject *calibObject;
@@ -1159,7 +1159,7 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack* track, AliESDfriendTrack *friend
 
 }
 
-void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack){
+void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack, AliESDEvent *event,AliESDfriend *ESDfriend){
   //
   // Process track - Update TPC-ITS alignment
   // Updates: 
@@ -1189,22 +1189,45 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
   // 0. Apply standard cuts
   //
   Int_t dummycl[1000];
-  if (track->GetITSclusters(dummycl)<kMinITS) return;  // minimal amount of clusters
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
+  if (track->GetITSclusters(dummycl)<kMinITS) return;  // minimal amount of clusters
   if (!track->IsOn(AliESDtrack::kTPCrefit)) return;
   if (!friendTrack->GetITSOut()) return;  
   if (!track->GetInnerParam())   return;
   if (!track->GetOuterParam())   return;
-  if (track->Pt()<kMinPt)  return;
+  if (track->GetInnerParam()->Pt()<kMinPt)  return;
   // exclude crossing track
   if (track->GetOuterParam()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
   if (TMath::Abs(track->GetInnerParam()->GetZ())<kMinZ)   return;
   if (track->GetInnerParam()->GetX()>90)   return;
   //
   AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(track->GetInnerParam()));
-  AliExternalTrackParam pITS(*(friendTrack->GetITSOut()));
-  pITS.Rotate(pTPC.GetAlpha());
-  pITS.PropagateTo(pTPC.GetX(),fMagF);
+  AliExternalTrackParam pITS(*(friendTrack->GetITSOut()));   // ITS standalone if possible
+  AliExternalTrackParam pITS2(*(friendTrack->GetITSOut()));  //TPC-ITS track
+  pITS2.Rotate(pTPC.GetAlpha());
+  pITS2.PropagateTo(pTPC.GetX(),fMagF);
+  AliESDfriendTrack *itsfriendTrack=0;
+  //
+  // try to find standalone ITS track corresponing to the TPC if possible
+  //
+  Bool_t hasAlone=kFALSE;
+  Int_t ntracks=event->GetNumberOfTracks();
+  for (Int_t i=0; i<ntracks; i++){
+    AliESDtrack *trackS = event->GetTrack(i);
+    if (trackS->GetTPCNcls()>0) continue;   //continue if has TPC info
+    itsfriendTrack = ESDfriend->GetTrack(i);
+    if (!itsfriendTrack) continue;
+    if (!itsfriendTrack->GetITSOut()) continue;
+    if (TMath::Abs(pITS2.GetTgl()-itsfriendTrack->GetITSOut()->GetTgl())> kMaxAngle) continue;
+    pITS=(*(itsfriendTrack->GetITSOut()));
+    //
+    pITS.Rotate(pTPC.GetAlpha());
+    pITS.PropagateTo(pTPC.GetX(),fMagF);
+    if (TMath::Abs(pITS2.GetY()-pITS.GetY())> kMaxDy) continue;
+    hasAlone=kTRUE;
+  }
+  if (!hasAlone) pITS=pITS2;
+  //
   if (TMath::Abs(pITS.GetY()-pTPC.GetY())    >kMaxDy)    return;
   if (TMath::Abs(pITS.GetSnp()-pTPC.GetSnp())>kMaxAngle) return;
   if (TMath::Abs(pITS.GetTgl()-pTPC.GetTgl())>kMaxAngle) return;
@@ -1303,6 +1326,8 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
       "vecGoofie.="<<&vecGoofie<<
       "vdcorr="<<vdcorr<<        // drift correction applied
       //
+      "hasAlone="<<hasAlone<<    // has ITS standalone ?
+      "track.="<<track<<  // track info
       "nmed="<<kglast<<        // number of entries to define median and RMS
       "vMed.="<<&vecMedian<<    // median of deltas
       "vRMS.="<<&vecRMS<<       // rms of deltas
@@ -1310,7 +1335,8 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
       "vDeltaN.="<<&vecDeltaN<< // normalized delta in respect to median
       "t.="<<track<<            // ful track - find proper cuts
       "a.="<<align<<            // current alignment
-      "pITS.="<<&pITS<<         // track param ITS
+      "pITS.="<<&pITS<<         // track param ITS 
+      "pITS2.="<<&pITS2<<       // track param ITS+TPC
       "pTPC.="<<&pTPC<<         // track param TPC
       "gpTPC.="<<&gpTPC<<       // global position  TPC
       "gdTPC.="<<&gdTPC<<       // global direction TPC
@@ -1491,7 +1517,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *fr
   // 3. Update kalman filter
   //
   const Int_t      kMinTPC  = 80;    // minimal number of TPC cluster
-  const Double_t   kMinZ    = 10;    // maximal dz distance
+  //  const Double_t   kMinZ    = 10;    // maximal dz distance
   const Double_t   kMaxDy   = 5.;    // maximal dy distance
   const Double_t   kMaxAngle= 0.015;  // maximal angular distance
   const Double_t   kSigmaCut= 5;     // maximal sigma distance to median
