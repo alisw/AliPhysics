@@ -2,7 +2,8 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
 						   Bool_t kAnalyzeMC = kTRUE,
 						   const char* esdAnalysisType = "Hybrid",
 						   const char* pidMode = "Bayesian",
-						   Bool_t kUseOnlineTrigger = kFALSE) {
+						   Bool_t kUseOnlineTrigger = kFALSE,
+						   Bool_t kUseOfflineTrigger = kFALSE) {
   //Function to setup the AliProtonAnalysisBase object and return it
   AliProtonAnalysisBase *baseAnalysis = new AliProtonAnalysisBase();
   //baseAnalysis->SetDebugMode();
@@ -14,7 +15,7 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
     if(kUseOnlineTrigger) baseAnalysis->UseOnlineTrigger();
 
     //use the offline trigger
-    baseAnalysis->OfflineTriggerInit();
+    if(kUseOfflineTrigger) baseAnalysis->OfflineTriggerInit();
 
     baseAnalysis->SetMinTPCClusters(80);
     baseAnalysis->SetMaxChi2PerTPCCluster(3.5);

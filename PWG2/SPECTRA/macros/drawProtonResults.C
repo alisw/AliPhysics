@@ -1125,13 +1125,12 @@ void drawMCvsData(const char* analysisOutputMC,
   gDataProtonsITSClustersPass->SetTitle("Protons");
   gDataProtonsITSClustersPass->GetYaxis()->SetTitle("Data/MC");
   gDataProtonsITSClustersPass->Draw("E"); 
-  //gMCProtonsITSClustersPass->Draw("ESAME"); 
   c1->cd(2); 
   gDataAntiProtonsITSClustersPass->Divide(gMCAntiProtonsITSClustersPass);
   gDataAntiProtonsITSClustersPass->SetTitle("Antiprotons");
   gDataAntiProtonsITSClustersPass->GetYaxis()->SetTitle("Data/MC");
   gDataAntiProtonsITSClustersPass->Draw("E"); 
-  //gMCAntiProtonsITSClustersPass->Draw("ESAME"); 
+  c1->SaveAs("NClustersITS.gif");
 
   TCanvas *c3 = new TCanvas("c3","TPC clusters",0,200,600,400);
   c3->SetFillColor(10); c3->SetHighLightColor(10);
@@ -1140,13 +1139,12 @@ void drawMCvsData(const char* analysisOutputMC,
   gDataProtonsTPCClustersPass->SetTitle("Protons");
   gDataProtonsTPCClustersPass->GetYaxis()->SetTitle("Data/MC");
   gDataProtonsTPCClustersPass->Draw("E");
-  //gMCProtonsTPCClustersPass->Draw("ESAME");
   c3->cd(2); 
   gDataAntiProtonsTPCClustersPass->Divide(gMCAntiProtonsTPCClustersPass);
   gDataAntiProtonsTPCClustersPass->SetTitle("Antirotons");
   gDataAntiProtonsTPCClustersPass->GetYaxis()->SetTitle("Data/MC");
   gDataAntiProtonsTPCClustersPass->Draw("E");
-  //gMCAntiProtonsTPCClustersPass->Draw("ESAME");
+  c3->SaveAs("NClustersTPC.gif");
 
   TCanvas *c4 = new TCanvas("c4","chi^2 per TPC cluster",0,300,600,400);
   c4->SetFillColor(10); c4->SetHighLightColor(10);
@@ -1156,13 +1154,12 @@ void drawMCvsData(const char* analysisOutputMC,
   gDataProtonsChi2PerClusterTPCPass->SetTitle("Protons");
   gDataProtonsChi2PerClusterTPCPass->GetYaxis()->SetTitle("Data/MC");
   gDataProtonsChi2PerClusterTPCPass->Draw("E"); 
-  //gMCProtonsChi2PerClusterTPCPass->Draw("ESAME"); 
   c4->cd(2); 
   gDataAntiProtonsChi2PerClusterTPCPass->Divide(gMCAntiProtonsChi2PerClusterTPCPass);
   gDataAntiProtonsChi2PerClusterTPCPass->SetTitle("Antirotons");
   gDataAntiProtonsChi2PerClusterTPCPass->GetYaxis()->SetTitle("Data/MC");
   gDataAntiProtonsChi2PerClusterTPCPass->Draw("E"); 
-  //gMCAntiProtonsChi2PerClusterTPCPass->Draw("ESAME"); 
+  c4->SaveAs("Chi2PerTPCCluster.gif");
 
   if(gMCProtonsExtCov11Pass->GetEntries() != 0) {
     TCanvas *c5 = new TCanvas("c5","Cov11",0,400,600,400);
@@ -1173,13 +1170,12 @@ void drawMCvsData(const char* analysisOutputMC,
     gDataProtonsExtCov11Pass->SetTitle("Protons");
     gDataProtonsExtCov11Pass->GetYaxis()->SetTitle("Data/MC");
     gDataProtonsExtCov11Pass->Draw("E"); 
-    //gMCProtonsExtCov11Pass->Draw("ESAME"); 
     c5->cd(2); 
     gDataAntiProtonsExtCov11Pass->Divide(gMCAntiProtonsExtCov11Pass);
     gDataAntiProtonsExtCov11Pass->SetTitle("Antiprotons");
     gDataAntiProtonsExtCov11Pass->GetYaxis()->SetTitle("Data/MC");
     gDataAntiProtonsExtCov11Pass->Draw("E"); 
-    //gMCAntiProtonsExtCov11Pass->Draw("ESAME"); 
+    c5->SaveAs("cov11.gif");
   }
 
   if(gMCProtonsExtCov22Pass->GetEntries() != 0) {
@@ -1191,13 +1187,12 @@ void drawMCvsData(const char* analysisOutputMC,
     gDataProtonsExtCov22Pass->SetTitle("Protons");
     gDataProtonsExtCov22Pass->GetYaxis()->SetTitle("Data/MC");
     gDataProtonsExtCov22Pass->Draw("E"); 
-    //gMCProtonsExtCov22Pass->Draw("ESAME"); 
     c6->cd(2); 
     gDataAntiProtonsExtCov22Pass->Divide(gMCAntiProtonsExtCov22Pass);
     gDataAntiProtonsExtCov22Pass->SetTitle("Antiprotons");
     gDataAntiProtonsExtCov22Pass->GetYaxis()->SetTitle("Data/MC");
     gDataAntiProtonsExtCov22Pass->Draw("E"); 
-    //gMCAntiProtonsExtCov22Pass->Draw("ESAME"); 
+    c6->SaveAs("cov22.gif");
   }
 
   if(gMCProtonsExtCov33Pass->GetEntries() != 0) {
@@ -1209,13 +1204,12 @@ void drawMCvsData(const char* analysisOutputMC,
     gDataProtonsExtCov33Pass->SetTitle("Protons");
     gDataProtonsExtCov33Pass->GetYaxis()->SetTitle("Data/MC");
     gDataProtonsExtCov33Pass->Draw("E"); 
-    //gMCProtonsExtCov33Pass->Draw("ESAME"); 
     c7->cd(2); 
     gDataAntiProtonsExtCov33Pass->Divide(gMCAntiProtonsExtCov33Pass);
     gDataAntiProtonsExtCov33Pass->SetTitle("Antiprotons");
     gDataAntiProtonsExtCov33Pass->GetYaxis()->SetTitle("Data/MC");
     gDataAntiProtonsExtCov33Pass->Draw("E"); 
-    //gMCAntiProtonsExtCov33Pass->Draw("ESAME"); 
+    c7->SaveAs("cov33.gif");
   }
 
   if(gMCProtonsExtCov44Pass->GetEntries() != 0) {
@@ -1227,13 +1221,12 @@ void drawMCvsData(const char* analysisOutputMC,
     gDataProtonsExtCov44Pass->SetTitle("Protons");
     gDataProtonsExtCov44Pass->GetYaxis()->SetTitle("Data/MC");
     gDataProtonsExtCov44Pass->Draw("E"); 
-    //gMCProtonsExtCov44Pass->Draw("ESAME"); 
     c8->cd(2); 
     gDataAntiProtonsExtCov44Pass->Divide(gMCAntiProtonsExtCov44Pass);
     gDataAntiProtonsExtCov44Pass->SetTitle("Antiprotons");
     gDataAntiProtonsExtCov44Pass->GetYaxis()->SetTitle("Data/MC");
     gDataAntiProtonsExtCov44Pass->Draw("E"); 
-    //gMCAntiProtonsExtCov44Pass->Draw("ESAME"); 
+    c8->SaveAs("cov44.gif");
   }
 
   if(gMCProtonsExtCov55Pass->GetEntries() != 0) {
@@ -1245,13 +1238,12 @@ void drawMCvsData(const char* analysisOutputMC,
     gDataProtonsExtCov55Pass->SetTitle("Protons");
     gDataProtonsExtCov55Pass->GetYaxis()->SetTitle("Data/MC");
     gDataProtonsExtCov55Pass->Draw("E"); 
-    //gMCProtonsExtCov55Pass->Draw("ESAME"); 
     c9->cd(2); 
     gDataAntiProtonsExtCov55Pass->Divide(gMCAntiProtonsExtCov55Pass);
     gDataAntiProtonsExtCov55Pass->SetTitle("Antiprotons");
     gDataAntiProtonsExtCov55Pass->GetYaxis()->SetTitle("Data/MC");
     gDataAntiProtonsExtCov55Pass->Draw("E"); 
-    //gMCAntiProtonsExtCov55Pass->Draw("ESAME"); 
+    c9->SaveAs("cov55.gif");
   }
 
   if(gMCProtonsDCAXYPass->GetEntries() != 0) {
@@ -1263,13 +1255,12 @@ void drawMCvsData(const char* analysisOutputMC,
     gDataProtonsDCAXYPass->SetTitle("Protons");
     gDataProtonsDCAXYPass->GetYaxis()->SetTitle("Data/MC");
     gDataProtonsDCAXYPass->Draw("E"); 
-    //gMCProtonsDCAXYPass->Draw("ESAME"); 
     c12->cd(2); 
     gDataAntiProtonsDCAXYPass->Divide(gMCAntiProtonsDCAXYPass);
     gDataAntiProtonsDCAXYPass->SetTitle("Antiprotons");
     gDataAntiProtonsDCAXYPass->GetYaxis()->SetTitle("Data/MC");
     gDataAntiProtonsDCAXYPass->Draw("E"); 
-    //gMCAntiProtonsDCAXYPass->Draw("ESAME"); 
+    c12->SaveAs("dcaXY.gif");
   }
 
   if(gMCProtonsDCAZPass->GetEntries() != 0) {
@@ -1281,13 +1272,12 @@ void drawMCvsData(const char* analysisOutputMC,
     gDataProtonsDCAZPass->SetTitle("Protons");
     gDataProtonsDCAZPass->GetYaxis()->SetTitle("Data/MC");
     gDataProtonsDCAZPass->Draw("E"); 
-    //gMCProtonsDCAZPass->Draw("ESAME"); 
     c14->cd(2); 
     gDataAntiProtonsDCAZPass->Divide(gMCAntiProtonsDCAZPass);
     gDataAntiProtonsDCAZPass->SetTitle("Antiprotons");
     gDataAntiProtonsDCAZPass->GetYaxis()->SetTitle("Data/MC");
     gDataAntiProtonsDCAZPass->Draw("E"); 
-    //gMCAntiProtonsDCAZPass->Draw("ESAME"); 
+    c14->SaveAs("dcaZ.gif");
   }
 
   TCanvas *c16 = new TCanvas("c16","TPC clusters (dE/dx)",1200,300,600,400);
@@ -1298,12 +1288,11 @@ void drawMCvsData(const char* analysisOutputMC,
   gDataProtonsNumberOfTPCdEdxPointsPass->SetTitle("Protons");
   gDataProtonsNumberOfTPCdEdxPointsPass->GetYaxis()->SetTitle("Data/MC");
   gDataProtonsNumberOfTPCdEdxPointsPass->Draw("E"); 
-  //gMCProtonsNumberOfTPCdEdxPointsPass->Draw("ESAME"); 
   c16->cd(2); 
   gDataAntiProtonsNumberOfTPCdEdxPointsPass->Divide(gMCAntiProtonsNumberOfTPCdEdxPointsPass);
   gDataAntiProtonsNumberOfTPCdEdxPointsPass->SetTitle("Antiprotons");
   gDataAntiProtonsNumberOfTPCdEdxPointsPass->GetYaxis()->SetTitle("Data/MC");
   gDataAntiProtonsNumberOfTPCdEdxPointsPass->Draw("E"); 
-  //gMCAntiProtonsNumberOfTPCdEdxPointsPass->Draw("ESAME"); 
+  c16->SaveAs("NClustersTPCdEdx.gif");
 }
 
