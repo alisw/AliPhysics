@@ -269,8 +269,12 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 // 5. Propagation to TOF. If track propagation fails the AliESDtrack::kTRDStop is set.
 //  
 
+  if(!fClusters || !fClusters->GetEntriesFast()){ 
+    AliInfo("No TRD clusters");
+    return 0;
+  }
   AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance(); // Calibration monitor
-  if (!calibra) AliInfo("Could not get Calibra instance\n");
+  if (!calibra) AliInfo("Could not get Calibra instance");
   if(!fgNTimeBins) CookNTimeBins();
 
   // Define scalers
@@ -468,6 +472,10 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
   Int_t   found    = 0; // contor for updated TRD tracks
   
   
+  if(!fClusters || !fClusters->GetEntriesFast()){ 
+    AliInfo("No TRD clusters");
+    return 0;
+  }
   AliTRDtrackV1 track;
   for (Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++) {
     AliESDtrack *seed = event->GetTrack(itrack);

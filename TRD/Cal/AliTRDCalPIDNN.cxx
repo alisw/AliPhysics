@@ -33,7 +33,6 @@
 
 #include "AliTRDgeometry.h"
 #include "AliTRDCalPIDNN.h"
-#include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDCalPIDNN)
 
@@ -165,8 +164,7 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom
   Double_t ddedx[AliTRDCalPID::kNSlicesNN];
 
   for (int inode=0; inode<AliTRDCalPID::kNSlicesNN; inode++) {
-    ddedx[inode] = (((Double_t) dedx[inode]/kMLPscale)*3)          // Bug fix! Needs new reference data or different calculation of dedx!!!!
-                 / (AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS()/AliTRDCalPID::kNSlicesNN);
+    ddedx[inode] = (Double_t) dedx[inode]/kMLPscale;
   }
 
   lNN1 = nn->Evaluate(spec, ddedx);
