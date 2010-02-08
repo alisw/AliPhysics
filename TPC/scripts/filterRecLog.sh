@@ -35,6 +35,7 @@ for efile in `cat errRec.log`  ;do
   echo "$efile" >>abort.log
   echo $efile
   ofile=`echo $efile| sed s_err_out_`
+  cat $efile   >> abortout.log
   cat $ofile   >> abortout.log
   #cat $sysfile | grep -v hname\/C:sname\/C: >> syswatchAbort.log
  fi
@@ -58,14 +59,37 @@ for efile in `cat errRec.log`  ;do
       echo $efile >> networkProblem.log 
     fi;
 done;
+
+rm nfsProblem.log
+touch nfsProblem.log
+nfsOK=0;
+nfsNonOK=0;
+for efile in `cat errRec.log`  ;do
+    xxx=`cat $efile| grep tcp_connect`
+    xxx=$xxx`cat $efile| grep  Stale\ NFS\ file\ handle`
+    if [ -z "$xxx" ]
+    then
+      let nfsOK=nfsOK+1
+    else
+      let nfsNonOK=nfsNonOK+1
+      echo $efile >> nfsworkProblem.log 
+    fi;
+done;
+
 #
 # Print stat
 #
 echo isOK=$isOK nonOK=$nonOK
 echo netOK=$netOK netNonOK=$netNonOK
+echo nfsOK=$nfsOK netNonOK=$nfsNonOK
 #
 # filter segmentation fault
 #
+rm seg0.out
 for a in `cat  abort.log |sed s_err_out_ ` ;do
+    cat $a | grep 0x | grep \# >> seg0.out
+done;
+
+for a in `cat  abort.log ` ;do
     cat $a | grep 0x | grep \# >> seg0.out
 done;
