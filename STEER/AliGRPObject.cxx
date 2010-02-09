@@ -94,10 +94,6 @@ AliGRPObject::AliGRPObject():
 	fLHCPeriod(fgkInvalidString),
 	fRunType(fgkInvalidString),
 	fLHCState(fgkInvalidString),
-	fLHCLuminosity(new Float_t[fPoints]),
-	fLHCLuminositySplineFit(0x0),
-	fBeamIntensity(new Float_t[fPoints]),
-	fBeamIntensitySplineFit(0x0),
 	fL3Polarity(fgkInvalidChar),
 	fDipolePolarity(fgkInvalidChar),
 	fL3Current(new Float_t[fPoints]),
@@ -126,8 +122,6 @@ AliGRPObject::AliGRPObject():
 
 	for (Int_t i = 0; i < fPoints; i++){
 
-		fLHCLuminosity[i] = fgkInvalidFloat;
-		fBeamIntensity[i] = fgkInvalidFloat;
 		fL3Current[i] = fgkInvalidFloat;
 		fDipoleCurrent[i] = fgkInvalidFloat;
 		fCavernTemperature[i] = fgkInvalidFloat;
@@ -149,10 +143,6 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	fLHCPeriod(obj.fLHCPeriod),
 	fRunType(obj.fRunType),
 	fLHCState(obj.fLHCState),
-	fLHCLuminosity(new Float_t[fPoints]),
-	fLHCLuminositySplineFit(obj.fLHCLuminositySplineFit),
-	fBeamIntensity(new Float_t[fPoints]),
-	fBeamIntensitySplineFit(obj.fBeamIntensitySplineFit),
 	fL3Polarity(obj.fL3Polarity),
 	fDipolePolarity(obj.fDipolePolarity),
 	fL3Current(new Float_t[fPoints]),
@@ -181,8 +171,6 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 
 	for (Int_t i = 0; i < fPoints; i++){
 
-		fLHCLuminosity[i] = obj.fLHCLuminosity[i];
-		fBeamIntensity[i] = obj.fBeamIntensity[i];
 		fL3Current[i] = obj.fL3Current[i];
 		fDipoleCurrent[i] = obj.fDipoleCurrent[i];
 		fCavernTemperature[i] = obj.fCavernTemperature[i];
@@ -210,8 +198,6 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	this->fLHCPeriod = obj.GetLHCPeriod();
 	this->fRunType = obj.GetRunType();
 	this->fLHCState = obj.GetLHCState();
-	this->fLHCLuminositySplineFit = obj.GetLHCLuminositySplineFit();
-	this->fBeamIntensitySplineFit = obj.GetBeamIntensitySplineFit();
 	this->fL3Polarity = obj.GetL3Polarity();
 	this->fDipolePolarity = obj.GetDipolePolarity();
 	this->fCavernAtmosPressure = obj.GetCavernAtmosPressure();
@@ -220,8 +206,6 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	this->fPoints = obj.GetPoints();
 	this->fDimension = obj.GetDimension();
 
-	this->fLHCLuminosity = new Float_t[fPoints];
-	this->fBeamIntensity = new Float_t[fPoints];
 	this->fL3Current = new Float_t[fPoints];
 	this->fDipoleCurrent = new Float_t[fPoints];
 	this->fCavernTemperature = new Float_t[fPoints];
@@ -233,8 +217,6 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	}
 	for (Int_t i = 0; i < fPoints; i++){
 
-		this->fLHCLuminosity[i] = obj.GetLHCLuminosity((Stats)i);
-		this->fBeamIntensity[i] = obj.GetBeamIntensity((Stats)i);
 		this->fL3Current[i] = obj.GetL3Current((Stats)i);
 		this->fDipoleCurrent[i] = obj.GetDipoleCurrent((Stats)i);
 		this->fCavernTemperature[i] = obj.GetCavernTemperature((Stats)i);
@@ -257,20 +239,10 @@ AliGRPObject::~AliGRPObject() {
 
 	
 	delete [] fHallProbes;
-	delete [] fLHCLuminosity;
-	delete [] fBeamIntensity;
 	delete [] fL3Current;
 	delete [] fDipoleCurrent;
 	delete [] fCavernTemperature;
 
-	if (fLHCLuminositySplineFit){
-		delete fLHCLuminositySplineFit;
-		fLHCLuminositySplineFit = 0x0;
-	}
-	if (fBeamIntensitySplineFit){
-		delete fBeamIntensitySplineFit;
-		fBeamIntensitySplineFit = 0x0;
-	}
 	if (fCavernAtmosPressure){
 		delete fCavernAtmosPressure;
 		fCavernAtmosPressure = 0x0;
@@ -397,15 +369,13 @@ void AliGRPObject::ReadValuesFromMap(const TMap* mapGRP){
 		AliError(Form("No fLHCState value found in GRP map!"));
 	}
 	if(mapGRP->GetValue("fLHCluminosity")){
-		AliInfo(Form("fLHCLuminosity found, but porting only average to the new object, since the other values are not available in the old object"));
-		SetLHCLuminosity((Float_t)(((TObjString*)(mapGRP->GetValue("fLHCLuminosity")))->GetString()).Atof(),(Stats)0);
+		AliInfo(Form("fLHCLuminosity found, but not there anymore in the new object"));
 	}	
 	else { 
 		AliError(Form("No fLHCLuminosity value found in GRP map!"));
 	}
 	if(mapGRP->GetValue("fBeamIntensity")){
-		AliInfo(Form("fBeamIntensity found, but porting only average to the new object, since the other values are not available in the old object"));
-		SetBeamIntensity((Float_t)(((TObjString*)(mapGRP->GetValue("fBeamIntensity")))->GetString()).Atof(),(Stats)0);
+		AliInfo(Form("fBeamIntensity found, but not there anymore in the new object"));
 	}	
 	else { 
 		AliError(Form("No fBeamIntensity value found in GRP map!"));

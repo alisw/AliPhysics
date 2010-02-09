@@ -2276,8 +2276,6 @@ void AliSimulation::WriteGRPEntry()
   grpObj->SetDetectorMask((Int_t)detectorPattern);
   grpObj->SetLHCPeriod("LHC08c");
   grpObj->SetLHCState("STABLE_BEAMS");
-  grpObj->SetLHCLuminosity(0,(AliGRPObject::Stats)0);
-  grpObj->SetBeamIntensity(0,(AliGRPObject::Stats)0);
   //
   AliMagF *field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   Float_t solenoidField = field ? TMath::Abs(field->SolenoidField()) : 0;

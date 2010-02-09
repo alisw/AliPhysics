@@ -62,12 +62,6 @@ class AliGRPObject : public TObject {
 	TString   GetMachineMode() const {return fMachineMode;}
 	TObjArray*   GetLHCStateArray() const {return fLHCStateArray;}
 	TObjArray*   GetMachineModeArray() const {return fMachineModeArray;}
-	Float_t*  GetLHCLuminosity() const {return fLHCLuminosity;}
-	Float_t   GetLHCLuminosity(Stats stat) const {return fLHCLuminosity[stat];}
-	AliSplineFit*  GetLHCLuminositySplineFit() const {return fLHCLuminositySplineFit;}
-	Float_t*  GetBeamIntensity() const {return fBeamIntensity;}
-	Float_t   GetBeamIntensity(Stats stat) const {return fBeamIntensity[stat];}
-	AliSplineFit*  GetBeamIntensitySplineFit() const {return fBeamIntensitySplineFit;}
 	Char_t    GetL3Polarity() const {return fL3Polarity;}
 	Char_t    GetDipolePolarity() const {return fDipolePolarity;}
 	Float_t*  GetL3Current() const {return fL3Current;}
@@ -105,16 +99,6 @@ class AliGRPObject : public TObject {
 	void SetMachineMode(TString machineMode)  {fMachineMode = machineMode;}
 	void SetLHCStateArray(TObjArray* lhcStateArray)  {fLHCStateArray = lhcStateArray;}
 	void SetMachineModeArray(TObjArray* machineModeArray)  {fMachineModeArray = machineModeArray;}
-	void SetLHCLuminosity(const Float_t* lhcLuminosity)  {
-  		for (Int_t i = 0;i<fPoints;i++) fLHCLuminosity[i] = lhcLuminosity[i];
-	}
-	void SetLHCLuminosity(Float_t lhcLuminosity, Stats stat)  {fLHCLuminosity[stat] = lhcLuminosity;}
-	void SetLHCLuminositySplineFit(AliSplineFit* const lhcLuminositySplineFit)  {fLHCLuminositySplineFit = lhcLuminositySplineFit;}
-	void SetBeamIntensity(const Float_t* beamIntensity)  {
-  		for (Int_t i = 0;i<fPoints;i++) fBeamIntensity[i] = beamIntensity[i];
-	}
-	void SetBeamIntensity(Float_t beamIntensity, Stats stat)  {fBeamIntensity[stat] = beamIntensity;}
-	void SetBeamIntensitySplineFit(AliSplineFit* const beamIntensitySplineFit)  {fBeamIntensitySplineFit = beamIntensitySplineFit;}
 	void SetL3Polarity(Char_t l3Polarity)  {fL3Polarity = l3Polarity;}
 	void SetDipolePolarity(Char_t dipolePolarity)  {fDipolePolarity = dipolePolarity;}
 	void SetL3Current(const Float_t* l3Current)  {
@@ -178,12 +162,6 @@ class AliGRPObject : public TObject {
 	TString  fLHCPeriod;              // LHCperiod entry from DAQ logbook 
 	TString  fRunType;                // RunType entry from DAQ logbook 
 	TString  fLHCState;               // LHCState entry from DCS DB
-	Float_t*  fLHCLuminosity;         // [fPoints]
-	                                  // LHCLuminosity entry from DCS DB
-	AliSplineFit*  fLHCLuminositySplineFit;       // LHCLuminosity SplineFit from DCS DB
-	Float_t*  fBeamIntensity   ;      // [fPoints]
-	                                  // BeamIntensity entry from DCS DB
-	AliSplineFit*  fBeamIntensitySplineFit;       // BeamIntensity SplineFit from DCS DB
 	Char_t    fL3Polarity;            // L3Polarity entry from DCS DB
 	Char_t    fDipolePolarity;        // DipolePolarity entry from DCS DB 	                                  
 	Float_t*  fL3Current;             // [fPoints]
@@ -208,7 +186,7 @@ class AliGRPObject : public TObject {
 
 	Double_t fMaxTimeLHCValidity;    // time until which the LHC Data Machine Mode and Beam Mode didn't change 
 
-	ClassDef(AliGRPObject,5)
+	ClassDef(AliGRPObject,6)
 
 };
 
