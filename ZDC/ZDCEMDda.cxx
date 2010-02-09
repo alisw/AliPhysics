@@ -493,10 +493,10 @@ int main(int argc, char **argv) {
      meanvalzpa[j] = histZPAtow[j]->GetMean();*/
      
      // Note -> For the moment the inter-calibration coeff. are set to 1 
-     for(Int_t k=0; k<4; k++){  
+     for(Int_t k=0; k<5; k++){  
        Float_t icoeff = 1.;
        fprintf(fileShuttle2,"\t%f",icoeff);
-       if(k==4) fprintf(fileShuttle2,"\n");
+       if(k==5) fprintf(fileShuttle2,"\n");
      }
   }
   //
