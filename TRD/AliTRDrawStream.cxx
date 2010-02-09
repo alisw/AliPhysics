@@ -767,7 +767,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
 
       // Set digitparam variables
       digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
-      digitsparam->SetPretiggerPhase(det,GetPreTriggerPhase());
+      digitsparam->SetPretriggerPhase(det,GetPreTriggerPhase());
       if (!fIsGlobalDigitsParamSet){
         digitsparam->SetNTimeBins(ntbins);
 	fCommonAdditive=10;

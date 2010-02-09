@@ -25,13 +25,13 @@ class AliTRDdigitsParam : public TObject
 
     virtual void    Copy(TObject &p) const;
 
-            void    SetNTimeBins(Int_t ntb)                    { fNTimeBins            = ntb;      }     
-            void    SetPretiggerPhase(Int_t det, UInt_t phase) { fPretriggerPhase[det] = phase;    }
-            void    SetADCbaseline(Int_t baseline)             { fADCbaseline          = baseline; }
+            void    SetNTimeBins(Int_t ntb)                     { fNTimeBins            = ntb;      }     
+            void    SetPretriggerPhase(Int_t det, UInt_t phase) { fPretriggerPhase[det] = phase;    }
+            void    SetADCbaseline(Int_t baseline)              { fADCbaseline          = baseline; }
 
-            Int_t   GetNTimeBins() const                       { return fNTimeBins;                }
-            UInt_t  GetPretriggerPhase(Int_t det) const        { return fPretriggerPhase[det];     }
-            Int_t   GetADCbaseline() const                     { return fADCbaseline;              }
+            Int_t   GetNTimeBins() const                        { return fNTimeBins;                }
+            UInt_t  GetPretriggerPhase(Int_t det) const         { return fPretriggerPhase[det];     }
+            Int_t   GetADCbaseline() const                      { return fADCbaseline;              }
 
   protected:
 
