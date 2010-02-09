@@ -87,30 +87,33 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
   Double_t entries=0.;
   Double_t entries2[2];
   for(Int_t i=0;i<2;i++)entries2[i]=0.;
+
+  if(!fCalibration){
+    AliCDBEntry *calibSDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD");
+    Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
+    if(!calibSDD)
+      {
+	AliError("Calibration object retrieval failed! SDD will not be processed");
+	fCalibration = NULL;
+	test= fHighSDDValue[AliQAv1::kWARNING];
+      }
+    fCalibration = (TObjArray *)calibSDD->GetObject();
+    
+    if(!cacheStatus)calibSDD->SetObject(NULL);
+    calibSDD->SetOwner(kTRUE);
+    if(!cacheStatus)
+      {
+	delete calibSDD;
+      }
+  }
+
+      AliInfo("Calib SDD Created\n ");
+
   switch(index)
     {
 
     case AliQAv1::kRAW:
       AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index)));
-      if(!fCalibration){
-	AliCDBEntry *calibSDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD");
-	Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
-	if(!calibSDD)
-	  {
-	    AliError("Calibration object retrieval failed! SDD will not be processed");
-	    fCalibration = NULL;
-	    test= fHighSDDValue[AliQAv1::kWARNING];
-	  }
-	fCalibration = (TObjArray *)calibSDD->GetObject();
-	
-	if(!cacheStatus)calibSDD->SetObject(NULL);
-	calibSDD->SetOwner(kTRUE);
-	if(!cacheStatus)
-	  {
-	    delete calibSDD;
-	  }
-      }
-      AliInfo("Calib SDD Created\n ");
       
       if (list->GetEntries() == 0.){ //check if the list is empty
 	//printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
@@ -174,22 +177,28 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 		}
 	      }//end if getentries
 	      else{
-		Int_t layer=0;
-		if(hname.Contains("3"))layer=0;
-		else  if(hname.Contains("4"))layer=1;
-		hlayer[layer]=dynamic_cast<TH2*>(hdata); 
-		hlayer[layer]->RebinX(2);
-		int modmay=hlayer[layer]->GetNbinsY();
-		TH1D* hproj= hlayer[layer]->ProjectionY();
+		Int_t layer1=0;
+		if(hname.Contains("3"))layer1=0;
+		else  if(hname.Contains("4"))layer1=1;
+		TH2* htemp=dynamic_cast<TH2*>(hdata);
+		hlayer[layer1]=(TH2*)htemp->Clone();
+		char newname[50];
+		sprintf(newname,"%s_copy",hname.Data());
+		hlayer[layer1]->SetName(newname);
+		hlayer[layer1]->RebinX(2);
+		int modmay=hlayer[layer1]->GetNbinsY();
+		TH1D* hproj= hlayer[layer1]->ProjectionY();
 		Double_t ladcontent=0;
 		for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
 		  ladcontent=hproj->GetBinContent(i);
-		  if(ladcontent==0){emptyladders[layer]++;}
-		  else if(ladcontent!=0){filledladders[layer]++;} 
+		  if(ladcontent==0){emptyladders[layer1]++;}
+		  else if(ladcontent!=0){filledladders[layer1]++;} 
 		}//end for
 		AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer], filledladders[layer]));//end else layer 3
 		delete hproj;
 		hproj=NULL;	
+		//delete htemp;
+		//htemp=NULL;
 	      }//end else entries !=0	      
 	    }//end if layer 3
 	  }//end if hdata	
@@ -239,7 +248,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	      //delete cal;
 	      //cal=NULL;
 	    }//end for
-	    for(Int_t i=0;i<2;i++){AliInfo(Form(" %s :Layer %i \tempty modules %i \t filled modules %i\n",hlayer[i]->GetName(), i+3,emptymodules[i], filledmodules[i]));}//end else layers
+	    for(Int_t i=0;i<2;i++){AliInfo(Form("Layer %i \tempty modules %i \t filled modules %i\n", i+3,emptymodules[i], filledmodules[i]));}//end else layers
 	    if(exactive==0){
 	      AliInfo(Form("All the active modules (%i) are in acquisition. The number of excluded modules are %i \n",active,excluded));
 	      test=fHighSDDValue[AliQAv1::kINFO];}
@@ -255,12 +264,15 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	      AliWarning(Form("No modules took data: excluded %i \t exactive %i \n", excluded, exactive)); 
 	      test=fHighSDDValue[AliQAv1::kFATAL];
 	    }
-	  } 
+	    for(Int_t i=0;i<2;i++)
+	      {
+		delete hlayer[i];
+		hlayer[i]=NULL;
+	      }
+	  }//end else 
 	}
       }//end getentries !=0
       //delete calSDD;
-      
-      
       
       //delete calibSDD;
       //delete calSDD;
@@ -270,28 +282,230 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
       AliInfo(Form("No Check on %s\n",AliQAv1::GetAliTaskName(index))); 
       test=1.;
       break;
-    case AliQAv1::kSIM:
-      AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index))); 
-      test=1.;
-      break;
     case AliQAv1::kREC:
+      /*
       AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index))); 
+      //TH1*hdata=NULL;
+      if(list->GetUniqueID()==40){
+	if (list->GetEntries() == 0.){ //check if the list is empty
+	  //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
+	  test=fHighSDDValue[AliQAv1::kFATAL];
+	  
+	}//end if getentries
+	else{
+	  
+	  TIter next(list);
+	
+	  while( hdata = dynamic_cast<TH1* >(next()) ){
+	    if (hdata){
+	      if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
+	      else
+		{
+		  TString hname=hdata->GetName();
+		  if(hname.Contains("FSE"))continue;
+		  else if(hname.Contains("SDDLay3TotCh")||hname.Contains("SDDLay4TotCh")){
+		    Double_t meancharge=hdata->GetMean();
+		    Double_t rmscharge=hdata->GetRMS();
+		    AliInfo(Form("%s : Mean value:%f RMS value%f \n ",hname.Data(),meancharge,rmscharge));
+		    test=test+fStepBitSDD[AliQAv1::kINFO];    
+		  }//end if name charge
+		  else if(hname.Contains("SDDGlobalCoordDistribYX" ))
+		    {
+		      test=test+fStepBitSDD[AliQAv1::kINFO];    
+		    }//end xy
+		  else if(hname.Contains("SDDGlobalCoordDistribRZ"))
+		    {
+		      
+		      test=test+fStepBitSDD[AliQAv1::kINFO];    
+		    } //end rz
+		  else if(hname.Contains("SDDGlobalCoordDistribL3PHIZ" )||hname.Contains("SDDGlobalCoordDistribL3PHIZ"))
+		    {    
+
+		    }//end phiz
+		  else if(hname.Contains("SDDModPatternRP"))
+		    {
+		      
+		      //to do :se raws
+
+		    }//modpattern
+		  else if(hname.Contains("SDDModPatternL3RP")||hname.Contains("SDDModPatternL4RP") )
+		    {
+		      //to do: see raws
+		    }//end ladpattern
+		  else if(hname.Contains("SDDLocalCoordDistrib"))
+		    {
+		      test=test+fStepBitSDD[AliQAv1::kINFO];    
+		    }//end local coord
+		  else if(hname.Contains("SDDrdistrib_Layer3")||hname.Contains("SDDrdistrib_Layer4"))
+		    {
+		      
+		    }//end r distribution
+		  else if(hname.Contains("SDDphidistrib_Layer3")||hname.Contains("SDDphidistrib_Layer4"))
+		    {
+		      
+		    }//end phi distribution
+		  else if(hname.Contains("SDDdrifttime_Layer3")||hname.Contains("SDDdrifttime_Layer4"))
+		    {
+		      
+		    }//end drift time
+		}
+	    }//end if hdata
+	    
+	  }//end while
+	}//end else geentries
+      }//end uniqueid
+      */
       test=1.;
       break;
     case AliQAv1::kANA:
-      AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index)));
+      AliInfo(Form("===================> No Check on %s\n",AliQAv1::GetAliTaskName(index)));
       test=1.; 
       break;
     case AliQAv1::kESD:
-      AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index)));
+      AliInfo(Form("==================>  No Check on %s\n",AliQAv1::GetAliTaskName(index)));
       test=1.; 
       break;
     case AliQAv1::kNTASK:
-      AliInfo(Form("No Check on %s\n",AliQAv1::GetAliTaskName(index))); 
+      AliInfo(Form("==================>  No Check on %s\n",AliQAv1::GetAliTaskName(index))); 
+      test=1.;
+      break;
+    case AliQAv1::kSIM:
+      AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index))); 
+      Int_t uid=list->GetUniqueID();
+      if(uid==60)
+	{
+	  //digits
+	  if (list->GetEntries() == 0.){ //check if the list is empty
+	    //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
+	    test=fHighSDDValue[AliQAv1::kFATAL];
+	    
+	  }//end if getentries
+	  else{
+	    
+	    TIter next(list);
+	    
+	    while( hdata = dynamic_cast<TH1* >(next()) ){
+	      if (hdata){
+		if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
+		else
+		  {
+		    TString hname=hdata->GetName();
+		    if(hname.Contains("SDDDIGITSModulePattern"))
+		      {
+			//see raws
+
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end modpattern
+		    else if(hname.Contains("SDDAnodeDistribution"))
+		      {
+		       
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end anode distribution
+		    else if(hname.Contains("SDDTbinDistribution"))
+		      {
+
+			//to do as rp
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end timebindistribution
+		    else if(hname.Contains("SDDADCCountsDistribution"))
+		      {
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end adc counts
+
+		  }//end entries !=0
+	      }//end hdata
+	    }//end while
+	  }//end else
+	}//end digits
+      else if(uid==50)
+	{
+	  //hits
+	  if (list->GetEntries() == 0.){ //check if the list is empty
+	    //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
+	    test=fHighSDDValue[AliQAv1::kFATAL];
+	    
+	  }//end if getentries
+	  else{
+	    
+	    TIter next(list);
+	    
+	    while( hdata = dynamic_cast<TH1* >(next()) ){
+	      if (hdata){
+		if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
+		else
+		  {
+		    TString hname=hdata->GetName();
+		    if(hname.Contains("SDDHITSModulePattern"))
+		      {
+			//to do as raws
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end modpattern
+		    else if(hname.Contains("SDDHITlenghtalonglocalYCoord"))
+		      {
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end hit lenght
+		    else if(hname.Contains("SDDHITlenghtalonglocalYCoordZoom"))
+		      {
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end hit lenght
+		    else if(hname.Contains("SDDDepositedEnergyDistribution"))
+		      {
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end deposited energy
+
+		  }//end entries !=0
+	      }//end hdata
+	    }//end while
+	  }//end else
+	}//end hits
+      else if(uid==70)
+	{
+	  //sdigits
+	  if (list->GetEntries() == 0.){ //check if the list is empty
+	    //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
+	    test=fHighSDDValue[AliQAv1::kFATAL];
+	    
+	  }//end if getentries
+	  else{
+	    
+	    TIter next(list);
+	    
+	    while( hdata = dynamic_cast<TH1* >(next()) ){
+	      if (hdata){
+		if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
+		else
+		  {
+		    TString hname=hdata->GetName();
+		    if(hname.Contains("SDDSDIGITSModulePattern"))
+		      {
+			//to do as raws
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end modpattern
+		    else if(hname.Contains("SDDAnodeDistribution"))
+		      {
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end anode bindistribution
+		    else if(hname.Contains("SDDTbinDistribution"))
+		      {
+			//to do as rp
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end timebindistribution
+		    else if(hname.Contains("SDDADCCountsDistribution"))
+		      {
+			test=test+fStepBitSDD[AliQAv1::kINFO];    
+		      }//end adc counts bindistribution
+
+		  }//end entries !=0
+	      }//end hdata
+	    }//end while
+	  }//end else
+	}//end sdigits
       test=1.;
       break;
       
     }//end switch
+
+  fCalibration=NULL;
   delete hdata;
   return test;	
 }
