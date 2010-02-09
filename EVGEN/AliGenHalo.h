@@ -31,6 +31,7 @@ public:
     virtual void SetRunPeriod(Int_t t = kY3D90) {fRunPeriod = t;}
     virtual void SetTimePerEvent(Float_t t = 1.e-4) {fTimePerEvent = t;}
     virtual void Draw(Option_t * opt="");
+    virtual void  CountEvents();
  private:
     virtual void  SkipEvents();
     virtual Int_t ReadNextParticle();

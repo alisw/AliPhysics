@@ -267,8 +267,8 @@ void AliGenHalo::Generate()
       mass = TDatabasePDG::Instance()->GetParticle(fPdg)->Mass();
       p0  = TMath::Sqrt(fEkin * fEkin + 2. * mass * fEkin);
       txy = TMath::Sqrt(fDX * fDX + fDY * fDY);
-      if (txy == 1.) {
-	  tz = 0;
+      if (txy > 1.) {
+	  tz = 0.;
       } else {
 	  tz = - TMath::Sqrt(1. - txy);
       }
@@ -381,3 +381,23 @@ void AliGenHalo::SkipEvents()
       }
     } 
 }
+void AliGenHalo::CountEvents()
+{
+    Int_t nev = 0;
+    Int_t oldID = -1;
+    Int_t nc = 1;
+    while (nc != -1)
+    {
+	nc = ReadNextParticle();
+	if (oldID != fLossID) {
+	    oldID = fLossID;
+	    nev++;
+	    printf("Number of events %10d %10d \n", nev, oldID);
+	}
+    }
+
+
+    rewind(fFile);
+}
+
+
