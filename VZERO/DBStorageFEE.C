@@ -47,14 +47,14 @@ void DBStorageFEE(){
 	Bool_t PedestalSubtraction[N] = {1,1,1,1,1,1,1,1};
 	triggerData->SetPedestalSubtraction(PedestalSubtraction);
 	
-	triggerData->SetBBAThreshold(2);
-	triggerData->SetBBCThreshold(2);
+	triggerData->SetBBAThreshold(1);
+	triggerData->SetBBCThreshold(1);
 
-	triggerData->SetBGAThreshold(3);
-	triggerData->SetBGCThreshold(3);
+	triggerData->SetBGAThreshold(1);
+	triggerData->SetBGCThreshold(1);
 	
-	triggerData->SetBBAForBGThreshold(3);
-	triggerData->SetBBCForBGThreshold(3);
+	triggerData->SetBBAForBGThreshold(1);
+	triggerData->SetBBCForBGThreshold(1);
 	
 	triggerData->SetCentralityV0AThrLow(100);
 	triggerData->SetCentralityV0AThrHigh(500);
@@ -88,13 +88,13 @@ void DBStorageFEE(){
 	
 	AliCDBMetaData *md= new AliCDBMetaData(); // metaData describing the object
 	
-	AliCDBId id("VZERO/Trigger/Data",0,9999999);
+	AliCDBId id("VZERO/Trigger/Data",0,AliCDBRunRange::Infinity());
 	
 	//md->SetObjectClassName("VZERO calibration parameters"); automatically 
 	//set to AliVZEROCalibData by the CDB classes during storage 
 	md->SetResponsible("Brigitte Cheynis");
 	md->SetBeamPeriod(0);
-	md->SetAliRootVersion("v4-17-Release");
+	md->SetAliRootVersion("v4-18-Release");
 	md->SetComment("Prototype");
 	md->PrintMetaData();
 	
