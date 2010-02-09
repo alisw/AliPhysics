@@ -100,8 +100,8 @@ void AliACORDEQADataMakerRec::InitRaws()
 
 
   TH1F *fhACORDEBitPattern[4];
-  fhACORDEBitPattern[0] = new TH1F("ACORDEBitPatternfromRAWSingle","Distribution of ACORDE fired modules from RAW-Single;Modules;Counts",60,1,60);//AcordeSingleMuon BitPattern
-  fhACORDEBitPattern[1] = new TH1F("ACORDEBitPatternfromRAWMulti","Distribution of ACORDE fired modules from RAW-Multi;Modules;Counts",60,1,60);//AcordeMultiMuon BitPattern
+  fhACORDEBitPattern[0] = new TH1F("ACORDEBitPatternfromRAWSingle","Distribution of ACORDE fired modules from RAW-Single;Modules;Counts",60,-0.5,59.5);//AcordeSingleMuon BitPattern
+  fhACORDEBitPattern[1] = new TH1F("ACORDEBitPatternfromRAWMulti","Distribution of ACORDE fired modules from RAW-Multi;Modules;Counts",60,-0.5,59.5);//AcordeMultiMuon BitPattern
   fhACORDEBitPattern[2] = new TH1F("ACORDEMultiplicityfromRAWSingle","Number of fired ACORDE modules;No. of fired ACORDE modules;No. of events in ACORDE",60,-0.5,60);//AcordeSingleMuon Multiplicity
   fhACORDEBitPattern[3] = new TH1F("ACORDEMultiplicityfromRAWMulti","Number of fired ACORDE modules; No. of fired ACORDE modules;No. of events in ACORDE",60,-0.5,60);//AcordeMultiMuon Multiplicity
   for(Int_t i=0;i<4;i++) 
