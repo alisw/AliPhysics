@@ -4706,6 +4706,173 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gsvolu("ICC0", "CONS", idtmed[225], dgh, 7);   
   gMC->Gspos("ICC0", 1, "ITSV", 0., 0., -(-186.6-dgh[0]), idrotm[199], "ONLY");
 
+  // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
+  //     THE ABSORBER - ALUMINUM PART - UPPER PART
+  
+  dgh[0] = 46.+1.0+1.5;  
+  dgh[1] = 46.+1.0+1.5+0.4; 
+//  dgh[2] = (ztpc-97.5)/2.;
+  dgh[2] = (186.6 - 101.1)/2.;
+  dgh[3] = 12.;
+  dgh[4] = 168.;  
+  gMC->Gsvolu("ICK5", "TUBS", idtmed[210], dgh, 5);   
+  //  gMC->Gspos("ICC5", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");
+  gMC->Gspos("ICK5", 1, "ITSV", 0., 0., -(-101.1-dgh[2]), idrotm[199], "ONLY");   
+  
+  dgh[0] = (ztpc - 1.0 - 186.6)/2.;
+  dgh[1] = 64.0+1.0+1.5;
+  dgh[2] = 64.0+1.0+1.5+0.4;
+  dgh[3] = 46.+1.0+1.5;
+  dgh[4] = 46.+1.0+1.5+0.4;
+  dgh[5] = 12.;
+  dgh[6] = 168.;
+  gMC->Gsvolu("ICK9", "CONS", idtmed[210], dgh, 7);   
+  gMC->Gspos("ICK9", 1, "ITSV", 0., 0., -(-186.6-dgh[0]), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;  
+  dgh[1] = 46.+1.0+1.5+0.4+5.5; 
+  dgh[2] = 4.0/2;
+  dgh[3] = 12.;
+  dgh[4] = 168.;  
+  gMC->Gsvolu("IKK7", "TUBS", idtmed[210], dgh, 5);   
+//  gMC->Gspos("IKK7", 1, "ITSV", 0., 0., -(-101.1-dgh[2]), idrotm[199], "ONLY");   
+  gMC->Gspos("IKK7", 1, "ITSV", 0., 0., -(-186.6+dgh[2]+5+4+34+31.8), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;  
+  dgh[1] = 46.+1.0+1.5+0.4+0.3; 
+  dgh[2] = 34.0/2;
+  dgh[3] = 12.;
+  dgh[4] = 168.;  
+  gMC->Gsvolu("IKK5", "TUBS", idtmed[210], dgh, 5);   
+//  gMC->Gspos("IKK5", 1, "ITSV", 0., 0., -(-101.1-dgh[2]-4), idrotm[199], "ONLY");   
+  gMC->Gspos("IKK5", 1, "ITSV", 0., 0., -(-186.6+dgh[2]+5+4+31.8), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;  
+  dgh[1] = 46.+1.0+1.5+0.4+5.5; 
+  dgh[2] = 4.0/2;
+  dgh[3] = 12.;
+  dgh[4] = 168.;  
+  gMC->Gsvolu("IKK3", "TUBS", idtmed[210], dgh, 5);   
+//  gMC->Gspos("IKK3", 1, "ITSV", 0., 0., -(-101.1-dgh[2]-4-34), idrotm[199], "ONLY");   
+  gMC->Gspos("IKK3", 1, "ITSV", 0., 0., -(-186.6+dgh[2]+5+31.8), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;  
+  dgh[1] = 46.+1.0+1.5+0.4+6.0; 
+  dgh[2] = 5.0/2;
+  dgh[3] = 12.;
+  dgh[4] = 168.;  
+  gMC->Gsvolu("IKK1", "TUBS", idtmed[210], dgh, 5);   
+//  gMC->Gspos("IKK1", 1, "ITSV", 0., 0., -(-101.1-dgh[2]-4-34-4), idrotm[199], "ONLY");   
+  gMC->Gspos("IKK1", 1, "ITSV", 0., 0., -(-186.6+dgh[2]+31.8), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;  
+  dgh[1] = 46.+1.0+1.5+0.4+0.3; 
+  dgh[2] = 31.8/2;
+  dgh[3] = 12.;
+  dgh[4] = 168.;  
+  gMC->Gsvolu("IKK9", "TUBS", idtmed[210], dgh, 5);   
+  gMC->Gspos("IKK9", 1, "ITSV", 0., 0., -(-186.6+dgh[2]), idrotm[199], "ONLY");
+
+
+  dgh[0] = 66.2/2;
+  dgh[1] = 46.+1.0+1.5+0.4+12.5;
+  dgh[2] = 46.+1.0+1.5+0.4+12.5+0.3;
+  dgh[3] = 46.+1.0+1.5+0.4;  
+  dgh[4] = 46.+1.0+1.5+0.4+0.3;
+  dgh[5] = 12.;
+  dgh[6] = 168.;
+  gMC->Gsvolu("ICK7", "CONS", idtmed[210], dgh, 7);   
+  gMC->Gspos("ICK7", 1, "ITSV", 0., 0., -(-186.6-dgh[0]), idrotm[199], "ONLY");
+
+  // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
+  //     THE ABSORBER - ALUMINUM PART - LOWER PART
+  
+  dgh[0] = 46.+1.0+1.5;   
+  dgh[1] = 46.+1.0+1.5+0.4;  
+//  dgh[2] = (ztpc-97.5)/2.;
+  dgh[2] = (186.6 - 101.1)/2.;
+  dgh[3] = 192.;
+  dgh[4] = 348.;  
+  gMC->Gsvolu("ICK6", "TUBS", idtmed[210], dgh, 5);   
+  //  gMC->Gspos("ICC6", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY"); 
+  gMC->Gspos("ICK6", 1, "ITSV", 0., 0., -(-101.1-dgh[2]), idrotm[199], "ONLY");      
+
+  dgh[0] = (ztpc - 1.0 - 186.6)/2.;
+  dgh[1] = 64.0+1.0+1.5;
+  dgh[2] = 64.0+1.0+1.5+0.4;
+  dgh[3] = 46.+1.0+1.5;
+  dgh[4] = 46.+1.0+1.5+0.4;
+  dgh[5] = 192.;
+  dgh[6] = 348.;
+  gMC->Gsvolu("ICK0", "CONS", idtmed[210], dgh, 7);   
+  gMC->Gspos("ICK0", 1, "ITSV", 0., 0., -(-186.6-dgh[0]), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;  
+  dgh[1] = 46.+1.0+1.5+0.4+5.5; 
+  dgh[2] = 4.0/2;
+  dgh[3] = 192.;
+  dgh[4] = 348.;  
+  gMC->Gsvolu("IKK8", "TUBS", idtmed[210], dgh, 5);   
+//  gMC->Gspos("IKK8", 1, "ITSV", 0., 0., -(-101.1-dgh[2]), idrotm[199], "ONLY");   
+  gMC->Gspos("IKK8", 1, "ITSV", 0., 0., -(-186.6+dgh[2]+5+4+34+31.8), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;   
+  dgh[1] = 46.+1.0+1.5+0.4+0.3;  
+  dgh[2] = 34.0/2;
+  dgh[3] = 192.;
+  dgh[4] = 348.;  
+  gMC->Gsvolu("IKK6", "TUBS", idtmed[210], dgh, 5);   
+//  gMC->Gspos("IKK6", 1, "ITSV", 0., 0., -(-101.1-dgh[2]-4), idrotm[199], "ONLY");      
+  gMC->Gspos("IKK6", 1, "ITSV", 0., 0., -(-186.6+dgh[2]+5+4+31.8), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;  
+  dgh[1] = 46.+1.0+1.5+0.4+5.5; 
+  dgh[2] = 4.0/2;
+  dgh[3] = 192.;
+  dgh[4] = 348.;  
+  gMC->Gsvolu("IKK4", "TUBS", idtmed[210], dgh, 5);   
+//  gMC->Gspos("IKK4", 1, "ITSV", 0., 0., -(-101.1-dgh[2]-4-34), idrotm[199], "ONLY");   
+  gMC->Gspos("IKK4", 1, "ITSV", 0., 0., -(-186.6+dgh[2]+5+31.8), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;  
+  dgh[1] = 46.+1.0+1.5+0.4+6.0; 
+  dgh[2] = 5.0/2;
+  dgh[3] = 192.;
+  dgh[4] = 348.;  
+  gMC->Gsvolu("IKK2", "TUBS", idtmed[210], dgh, 5);   
+//  gMC->Gspos("IKK2", 1, "ITSV", 0., 0., -(-101.1-dgh[2]-4-34-4), idrotm[199], "ONLY");   
+  gMC->Gspos("IKK2", 1, "ITSV", 0., 0., -(-186.6+dgh[2]+31.8), idrotm[199], "ONLY");
+
+
+  dgh[0] = 46.+1.0+1.5+0.4;  
+  dgh[1] = 46.+1.0+1.5+0.4+0.3; 
+  dgh[2] = 31.8/2;
+  dgh[3] = 192.;
+  dgh[4] = 348.;  
+  gMC->Gsvolu("IKK0", "TUBS", idtmed[210], dgh, 5);   
+  gMC->Gspos("IKK0", 1, "ITSV", 0., 0., -(-186.6+dgh[2]), idrotm[199], "ONLY");
+
+
+  dgh[0] = 66.2/2;
+  dgh[1] = 46.+1.0+1.5+0.4+12.5;
+  dgh[2] = 46.+1.0+1.5+0.4+12.5+0.3;
+  dgh[3] = 46.+1.0+1.5+0.4;  
+  dgh[4] = 46.+1.0+1.5+0.4+0.3;
+  dgh[5] = 192.;
+  dgh[6] = 348.;
+  gMC->Gsvolu("ICK8", "CONS", idtmed[210], dgh, 7);   
+  gMC->Gspos("ICK8", 1, "ITSV", 0., 0., -(-186.6-dgh[0]), idrotm[199], "ONLY");
+
+
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     COPPER PART - UPPER PART
     
