@@ -28,8 +28,9 @@
 
 #include "AliEMCALRawUtils.h"
   
-#include "TF1.h"
-#include "TGraph.h"
+#include <TF1.h>
+#include <TGraph.h>
+#include <TRandom.h>
 class TSystem;
   
 class AliLog;
@@ -727,8 +728,8 @@ Double_t AliEMCALRawUtils::RawResponseFunctionLog(Double_t *x, Double_t *par)
 }
 
 //__________________________________________________________________
-Bool_t AliEMCALRawUtils::RawSampledResponse(
-const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const 
+Bool_t AliEMCALRawUtils::RawSampledResponse(const Double_t dtime, const Double_t damp, 
+Int_t * adcH, Int_t * adcL, const Int_t keyErr) const  
 {
   // for a start time dtime and an amplitude damp given by digit, 
   // calculates the raw sampled response AliEMCAL::RawResponseFunction
@@ -748,8 +749,9 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   signalF.SetParameter(3, fOrder);
   signalF.SetParameter(4, fgPedestalValue);
 
+  Double_t signal=0.0, noise=0.0;
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
-    Double_t signal = signalF.Eval(iTime) ;     
+    signal = signalF.Eval(iTime) ;     
 
     // Next lines commeted for the moment but in principle it is not necessary to add
     // extra noise since noise already added at the digits level.	
@@ -760,9 +762,11 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
     //signal = sqrt(signal*signal + noise*noise);
 
     // March 17,09 for fast fit simulations by Alexei Pavlinov.
-    // Get from PHOS analysis. In some sense it is open questions.
-    //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
-    //signal += noise; 
+    // Get from PHOS analysis. In some sense it is open question.
+    if(keyErr>0) {
+      noise = gRandom->Gaus(0.,fgFEENoise);
+      signal += noise;
+    } 
 
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     if ( adcH[iTime] > fgkRawSignalOverflow ){  // larger than 10 bits 

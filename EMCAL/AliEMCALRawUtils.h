@@ -88,7 +88,8 @@ class AliEMCALRawUtils : public TObject {
   void FitParabola(const TGraph *gSig, Float_t & amp) const ; 
   static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
   static Double_t RawResponseFunctionLog(Double_t *x, Double_t *par); 
-  Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const;  
+  Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, 
+  Int_t * adcH, Int_t * adcL, const Int_t keyErr=0) const;   
 
 
  private:
