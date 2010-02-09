@@ -357,7 +357,7 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
     }
     AliHLTOUTRawReader* pHLTOUT=new AliHLTOUTRawReader(input, esd->GetEventNumberInFile(), fpEsdManager);
     if (pHLTOUT) {
-      ProcessHLTOUT(pHLTOUT, esd);
+      ProcessHLTOUT(pHLTOUT, esd, (pSystem->GetGlobalLoggingLevel()&kHLTLogDebug)!=0);
       delete pHLTOUT;
     } else {
       AliError("error creating HLTOUT handler");
