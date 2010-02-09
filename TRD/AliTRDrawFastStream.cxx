@@ -739,7 +739,7 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
     else SeekEndOfData(); // make sure that finish off with the end of data markers
 
     // set pritrigger phase since it is only avaliable after decoding HC header 
-    digitsparam->SetPretiggerPhase(det,GetPreTriggerPhase());
+    digitsparam->SetPretriggerPhase(det,GetPreTriggerPhase());
 
     // copy tracklets in memory into tracklet container
     if (trackletContainer) {
