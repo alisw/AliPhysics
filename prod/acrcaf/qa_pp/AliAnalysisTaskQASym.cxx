@@ -247,7 +247,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
   fDca   = new TH1F("fDca", 
 		    " dca ",
-		    200,  -range*(1+fTrackType*9), range*(1+fTrackType*9));
+		    200,  -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
 
 
   fqRec    = new TH1F("fqRec",   
@@ -256,7 +256,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   
   fsigmaPt    = new TH1F("fsigmaPt",   
 			 "Log_{10}(#sigma_{p_{T}})",
-			 200, -2., 8.);
+			 200, -4., 8.);
 
 
 
@@ -266,20 +266,20 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
     fSignDcaPos[ITSlayer_case]   = new TH1F(Form("fSignDcaPos%d", ITSlayer_case),  
 					    " Signed dca", 
-					    200, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+					    200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
     fSignDcaPos[ITSlayer_case]->GetXaxis()->SetTitle("dca");
     fSignDcaPos[ITSlayer_case]->GetYaxis()->SetTitle("");
    
  
     fSignDcaNeg[ITSlayer_case]   = new TH1F(Form("fSignDcaNeg%d", ITSlayer_case),  
 					    " Signed dcas",
-					    200, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+					    200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
     fSignDcaNeg[ITSlayer_case]->GetXaxis()->SetTitle("dca");
     fSignDcaNeg[ITSlayer_case]->GetYaxis()->SetTitle("");
 
     fSignDcaNegInv[ITSlayer_case]   = new TH1F(Form("fSignDcaNegInv%d", ITSlayer_case),  
 					       " inverse Signed dca ",
-					       200, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+					       200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
     fSignDcaNegInv[ITSlayer_case]->GetXaxis()->SetTitle("-dca");
     fSignDcaNegInv[ITSlayer_case]->GetYaxis()->SetTitle("");
 
@@ -315,14 +315,14 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
     fDcaSigmaPos[ITSlayer_case]   = new TH2F(Form("fDcaSigmaPos%d", ITSlayer_case),  
 					     " p_{T} shift vs #sigma_{pT} ",
-					     200, -range*(1+fTrackType*9), range*(1+fTrackType*9),200, -4., 4. );
+					     200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9),200, -4., 4. );
     fDcaSigmaPos[ITSlayer_case]->GetXaxis()->SetTitle("signed DCA)");
     fDcaSigmaPos[ITSlayer_case]->GetYaxis()->SetTitle("log_{10}(#sigma_{pT})");
     
     
     fDcaSigmaNeg[ITSlayer_case]   = new TH2F(Form("fDcaSigmaNeg%d", ITSlayer_case),  
 					     " p_{T} shift vs #sigma_{pT} ",
-					     200, -range*(1+fTrackType*9), range*(1+fTrackType*9),200, -4., 4. );
+					     200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9),200, -4., 4. );
     fDcaSigmaNeg[ITSlayer_case]->GetXaxis()->SetTitle("signed DCA");
     fDcaSigmaNeg[ITSlayer_case]->GetYaxis()->SetTitle("log_{10}(#sigma_{pT})");
 
@@ -375,26 +375,26 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
   fRecDcaPos   = new TH1F("fRecDcaPos", 
 			  " dca",
-			  100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+			  100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDcaPos->GetXaxis()->SetTitle("dca (cm)");
   fRecDcaNeg   = new TH1F("fRecDcaNeg", 
 			  " dca",
-			  100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+			  100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDcaNeg->GetXaxis()->SetTitle("dca (cm)");
 
   fRecDcaNegInv   = new TH1F("fRecDcaNegInv", 
 			     " dca",
-			     100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDcaNegInv->GetXaxis()->SetTitle("dca (cm)");
 
 
   fRecDPos   = new TH1F("fRecDPos", 
 			" d",
-			100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+			100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDPos->GetXaxis()->SetTitle("d (cm)");
   fRecDNeg   = new TH1F("fRecDNeg", 
 			"d",
-			100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+			100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDNeg->GetXaxis()->SetTitle("d (cm)");
 
 
@@ -433,16 +433,16 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
   fRecDcaPosEta   = new TH1F("fRecDcaPosEta", 
 			     " dca ",
-			     100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDcaPosEta->GetXaxis()->SetTitle("dca (cm)");
   fRecDcaNegEta   = new TH1F("fRecDcaNegEta", 
 			     " dca",
-			     100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDcaNegEta->GetXaxis()->SetTitle("dca (cm)");
 
   fRecDPosEta   = new TH1F("fRecDPosEta", 
 			   " d",
-			   100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+			   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDPosEta->GetXaxis()->SetTitle("d (cm)");
   fRecDNegEta   = new TH1F("fRecDNegEta", 
 			   "d",
@@ -451,12 +451,12 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
   fRecDcaPosPhi   = new TH2F("fRecDcaPosPhi", 
 			     " dca vs. phi",
-			     100, -range*(1+fTrackType*9), range*(1+fTrackType*9), 180, 0, TMath::Pi()*2);
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
   fRecDcaPosPhi->GetXaxis()->SetTitle("dca (cm)");
   fRecDcaPosPhi->GetYaxis()->SetTitle("#phi (rad.)");
   fRecDcaNegPhi   = new TH2F("fRecDcaNegPhi", 
 			     " dca vs. phi",
-			     100, -range*(1+fTrackType*9), range*(1+fTrackType*9), 180, 0, TMath::Pi()*2);
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
   fRecDcaNegPhi->GetXaxis()->SetTitle("dca (cm)");
   fRecDcaNegPhi->GetYaxis()->SetTitle("#phi (rad.)");
 
@@ -505,12 +505,12 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
   fRecDcaPosPhiEtaPos   = new TH2F("fRecDcaPosPhiEtaPos", 
 			     " dca vs. phi",
-			     100, -range*(1+fTrackType*9), range*(1+fTrackType*9), 180, 0, TMath::Pi()*2);
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
   fRecDcaPosPhiEtaPos->GetXaxis()->SetTitle("dca (cm)");
   fRecDcaPosPhiEtaPos->GetYaxis()->SetTitle("#phi (rad.)");
   fRecDcaNegPhiEtaPos   = new TH2F("fRecDcaNegPhiEtaPos", 
 			     " dca vs. phi",
-			     100, -range*(1+fTrackType*9), range*(1+fTrackType*9), 180, 0, TMath::Pi()*2);
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
   fRecDcaNegPhiEtaPos->GetXaxis()->SetTitle("dca (cm)");
   fRecDcaNegPhiEtaPos->GetYaxis()->SetTitle("#phi (rad.)");
 
@@ -528,12 +528,12 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
   fRecDcaPosPhiEtaNeg   = new TH2F("fRecDcaPosPhiEtaNeg", 
 			     " dca vs. phi",
-			     100, -range*(1+fTrackType*9), range*(1+fTrackType*9), 180, 0, TMath::Pi()*2);
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
   fRecDcaPosPhiEtaNeg->GetXaxis()->SetTitle("dca (cm)");
   fRecDcaPosPhiEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
   fRecDcaNegPhiEtaNeg   = new TH2F("fRecDcaNegPhiEtaNeg", 
 			     " dca vs. phi",
-			     100, -range*(1+fTrackType*9), range*(1+fTrackType*9), 180, 0, TMath::Pi()*2);
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
   fRecDcaNegPhiEtaNeg->GetXaxis()->SetTitle("dca (cm)");
   fRecDcaNegPhiEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
 
@@ -568,7 +568,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
     fSignedDcaTpcSector[sector]   = new TH1F(Form("fSignedDcaTpcSector%02d",sector), 
 					     Form("dca distribution: TPC sector %d",
-						  sector),200, -range*(1+fTrackType*9), range*(1+fTrackType*9) );
+						  sector),200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9) );
     fSignedDcaTpcSector[sector]->GetXaxis()->SetTitle("dca");
 
     fRecQPtTpcSector[sector]   = new TH1F(Form("fRecQPtTpcSector%02d",sector), 
@@ -650,11 +650,11 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
   fSignedDcaPosVz= new TH2F("fSignedDcaPosVz", 
 			    "#eta distribution vs Vz()",
-			    200, -range*(1+fTrackType*9), range*(1+fTrackType*9), 200,-vzmax,vzmax);
+			    200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 200,-vzmax,vzmax);
   fSignedDcaPosVz->GetXaxis()->SetTitle("dca (cm)");
   fSignedDcaNegVz = new TH2F("fSignedDcaNegVz",
 			     "dca vs Vz()",
-			     200, -range*(1+fTrackType*9), range*(1+fTrackType*9),200,-vzmax,vzmax);
+			     200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9),200,-vzmax,vzmax);
   fSignedDcaNegVz->GetXaxis()->SetTitle("dca (cm)");
 
   fRecQPtPosEtaVz= new TH2F("fRecQPtPosEtaVz",
@@ -750,7 +750,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 				   "#phi- p_{T} - DCA",
 				   180,0,2*TMath::Pi(),
 				   100,0,pt,
-				   100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDcaPhiPtPosEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
   fRecDcaPhiPtPosEtaPos->GetYaxis()->SetTitle("p_{T} (GeV/c)");
   fRecDcaPhiPtPosEtaPos->GetZaxis()->SetTitle("dca (cm)");
@@ -759,7 +759,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 				   "#phi- p_{T} - DCA",
 				   180,0,2*TMath::Pi(),
 				   100,0,pt,
-				   100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDcaPhiPtPosEtaNeg->GetZaxis()->SetTitle("dca (cm)");
   fRecDcaPhiPtPosEtaNeg->GetXaxis()->SetTitle("#phi (rad.)");
   fRecDcaPhiPtPosEtaNeg->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -768,7 +768,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 				   "#phi- p_{T} - DCA",
 				   180,0,2*TMath::Pi(),
 				   100,0,pt,
-				   100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDcaPhiPtNegEtaPos->GetZaxis()->SetTitle("dca (cm)");
   fRecDcaPhiPtNegEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
   fRecDcaPhiPtNegEtaPos->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -777,7 +777,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 				   "#phi- p_{T} - DCA",
 				   180,0,2*TMath::Pi(),
 				   100,0,pt,
-				   100, -range*(1+fTrackType*9), range*(1+fTrackType*9));
+				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
   fRecDcaPhiPtNegEtaNeg->GetZaxis()->SetTitle("dca (cm)");
   fRecDcaPhiPtNegEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
   fRecDcaPhiPtNegEtaNeg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -986,18 +986,25 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       continue;
     }
     //__________
-    // run Task for global tracks or for TPC tracks
+    // run Task for global tracks or ITS tracks or TPC tracks
     AliESDtrack *tpcP = 0x0;
     const AliExternalTrackParam *tpcPin = 0x0;
     Double_t phiIn=0;
     if(fTrackType==0){
-      //Fill all histograms with ESD information
+      //Fill all histograms with global tracks
       tpcP = esdtrack;
       phiIn = tpcP->Phi();
       if (!tpcP) continue;
       if (!fCuts->AcceptTrack(tpcP)) continue;
     }
-    else if(fTrackType==1){     
+    else if(fTrackType==1){
+      //Fill all histograms with ITS tracks
+      tpcP = esdtrack;
+      phiIn = tpcP->Phi();
+      if (!tpcP) continue;
+      if (!fCuts->AcceptTrack(tpcP)) continue;
+    }
+    else if(fTrackType==2){     
       //Fill all histograms with TPC track information
       tpcPin = esdtrack->GetInnerParam();
       if (!tpcPin) continue;

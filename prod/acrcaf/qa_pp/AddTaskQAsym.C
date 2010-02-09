@@ -27,10 +27,14 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    AliAnalysisTaskQASym *task0 = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_Global");
    task0->SetTrackType(0);
    task0->SelectCollisionCandidates();
-   //Task for TPC tracks 
-   AliAnalysisTaskQASym *task1 = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_TPC");
+   //Task for ITS tracks 
+   AliAnalysisTaskQASym *task1 = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_ITS");
    task1->SetTrackType(1);
    task1->SelectCollisionCandidates();
+   //Task for TPC tracks 
+   AliAnalysisTaskQASym *task2 = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_TPC");
+   task2->SetTrackType(2);
+   task2->SelectCollisionCandidates();
 
    //cuts for global tracks
    AliESDtrackCuts* esdTrackCutsL0 = new AliESDtrackCuts("AliESDtrackCuts0","Global");
@@ -39,35 +43,47 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    esdTrackCutsL0->SetMaxDCAToVertexXY(3.);
    esdTrackCutsL0->SetMaxDCAToVertexZ(3.);
    esdTrackCutsL0->SetAcceptKinkDaughters(kFALSE);
-   
-   //cuts for TPC tracks
-   AliESDtrackCuts* esdTrackCutsL1 = new AliESDtrackCuts("AliESDtrackCuts1","TPC");
-   esdTrackCutsL1->SetRequireTPCRefit(kFALSE);
-   esdTrackCutsL1->SetAcceptKinkDaughters(kFALSE);
-   //jacek's cuts:
-   esdTrackCutsL1->SetMinNClustersTPC(70);
-   // cut on max ncl=160 in Task
+
+   AliESDtrackCuts* esdTrackCutsL1 = new AliESDtrackCuts("AliESDtrackCuts1","ITS");
    esdTrackCutsL1->SetMaxDCAToVertexXY(3.);
    esdTrackCutsL1->SetMaxDCAToVertexZ(3.);
-   esdTrackCutsL1->SetMaxChi2PerClusterTPC(3.999);
+   esdTrackCutsL1->SetAcceptKinkDaughters(kFALSE);
+   esdTrackCutsL1->SetRequireITSRefit(kTRUE);
+   esdTrackCutsL1->SetRequireITSStandAlone(kTRUE);
+   
+   //cuts for TPC tracks
+   AliESDtrackCuts* esdTrackCutsL2 = new AliESDtrackCuts("AliESDtrackCuts2","TPC");
+   esdTrackCutsL2->SetRequireTPCRefit(kFALSE);
+   esdTrackCutsL2->SetAcceptKinkDaughters(kFALSE);
+   //jacek's cuts:
+   esdTrackCutsL2->SetMinNClustersTPC(70);
+   // cut on max ncl=160 in Task
+   esdTrackCutsL2->SetMaxDCAToVertexXY(3.);
+   esdTrackCutsL2->SetMaxDCAToVertexZ(3.);
+   esdTrackCutsL2->SetMaxChi2PerClusterTPC(3.999);
    //cut minChi=0 in task
-   //esdTrackCutsL1->SetPRange(0.15,16); // not needed for QA
-   //esdTrackCutsL1->SetEtaRange(-0.8, 0.7999); // not needed for QA
+   //esdTrackCutsL2->SetPRange(0.15,16); // not needed for QA
+   //esdTrackCutsL2->SetEtaRange(-0.8, 0.7999); // not needed for QA
   
 
    task0->SetCuts(esdTrackCutsL0);
    task1->SetCuts(esdTrackCutsL1);
+   task2->SetCuts(esdTrackCutsL2);
 
    mgr->AddTask(task0);
    mgr->AddTask(task1);
+   mgr->AddTask(task2);
   
    AliAnalysisDataContainer *cout0  = 0;
    AliAnalysisDataContainer *cout1  = 0;
+   AliAnalysisDataContainer *cout2  = 0;
    
    if(runNumber>0){ 
     cout0 =  mgr->CreateContainer("QAsymHists_Global",TList::Class(),
 				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
-    cout1 =  mgr->CreateContainer("QAsymHists_TPC",TList::Class(),
+    cout1 =  mgr->CreateContainer("QAsymHists_ITS",TList::Class(),
+				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
+    cout2 =  mgr->CreateContainer("QAsymHists_TPC",TList::Class(),
 				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
    }
    
@@ -75,19 +91,23 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
       cout0 = mgr->CreateContainer("QAsymHists_Global",TList::Class(),
 				 AliAnalysisManager::kOutputContainer, 
 				 Form("%s:PWG1_QAsymHists",AliAnalysisManager::GetCommonFileName()));
-      cout1 = mgr->CreateContainer("QAsymHists_TPC",TList::Class(),
+      cout1 = mgr->CreateContainer("QAsymHists_ITS",TList::Class(),
 				   AliAnalysisManager::kOutputContainer, 
 				 Form("%s:PWG1_QAsymHists",AliAnalysisManager::GetCommonFileName()));
-
+      cout2 = mgr->CreateContainer("QAsymHists_TPC",TList::Class(),
+				   AliAnalysisManager::kOutputContainer, 
+				 Form("%s:PWG1_QAsymHists",AliAnalysisManager::GetCommonFileName()));
    }
 
 
    mgr->ConnectInput  (task0, 0, mgr->GetCommonInputContainer());
    mgr->ConnectInput  (task1, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectInput  (task2, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (task0, 1, cout0);
    mgr->ConnectOutput (task1, 1, cout1);
+   mgr->ConnectOutput (task2, 1, cout2);
   
-   return task1;
+   return task0;
 
 }
 
