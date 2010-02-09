@@ -23,17 +23,15 @@
 
 class AliTPCcalibTime;
 class AliTPCcalibCalib;
-class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDtrack;
 class AliESDfriend;
-class AliESDfriendTrack;
 class TObjArray;
 
 /**
  * @class AliHLTTPCCalibTimeComponent
  * 
- * Interface of the offline algorithm (AliTPCcalibTime) for correcting the 
+ * Interface of the offline algorithm (AliTPCcalibTime) for estimating the 
  * drift velocity for changes of p and T as a function of
  * time.
  *
@@ -47,9 +45,16 @@ class AliHLTTPCCalibTimeComponent : public AliHLTCalibrationProcessor
       /** destructor */
       virtual ~AliHLTTPCCalibTimeComponent();
       
+      /** the name of the component registered in macros and configurations */
       const char* GetComponentID();
-      void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+      
+      /** the data types the component subscribes to in memory */
+      void GetInputDataTypes( vector<AliHLTComponentDataType>& list); 
+      
+      /** the data type the component produces */
       AliHLTComponentDataType GetOutputDataType();
+      
+      /** the size of the output data buffer */
       virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
       AliHLTComponent* Spawn();
 
@@ -62,35 +67,36 @@ class AliHLTTPCCalibTimeComponent : public AliHLTCalibrationProcessor
       // These functions provide initialization as well as the actual processing
       // capabilities of the component. 
       
-      /** Initialize the calibration component. */
+      /** Initialize the calibration component */
       Int_t InitCalibration();
 
-      /** Scan commandline arguments of the calibration component. */
+      /** Scan commandline arguments of the calibration component */
       Int_t ScanArgument( Int_t argc, const char** argv );
 
-      /** DeInitialize the calibration component. */
+      /** Clean up memory at the end of the run */
       Int_t DeinitCalibration();
 
-      /** Process the data in the calibration component. */
+      /** Process the data in the calibration component, called once per event */
       Int_t ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
 
-      /** Ship the data to the FXS at end of run or eventmodulo. */
+      /** Ship the data to the FXS at end of run or event modulo (the first by default, the latter to be implemented if necessary). */
       Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
 
     private:
+      
       /** copy constructor prohibited */
       AliHLTTPCCalibTimeComponent(const AliHLTTPCCalibTimeComponent&);
+      
       /** assignment operator prohibited */
       AliHLTTPCCalibTimeComponent& operator=(const AliHLTTPCCalibTimeComponent&);
 
-      AliTPCcalibTime   *fCalibTime;      //!transient
-      AliTPCcalibCalib  *fCal;            //!transient
-      AliESDEvent       *fESDevent;       //!transient
-      AliESDtrack       *fESDtrack;       //!transient
-      AliESDfriendTrack *fESDfriendTrack; //!transient
-      AliESDfriend      *fESDfriend;      //!transient
-      TObjArray         *fSeedArray;      //!transient
+      AliTPCcalibTime  *fCalibTime; //!transient
+      AliTPCcalibCalib *fCal;       //!transient
+      AliESDEvent      *fESDevent;  //!transient
+      AliESDtrack      *fESDtrack;  //!transient
+      AliESDfriend     *fESDfriend; //!transient
+      TObjArray        *fSeedArray; //!transient
       
-      ClassDef(AliHLTTPCCalibTimeComponent, 2)
+      ClassDef(AliHLTTPCCalibTimeComponent, 3)
     };
 #endif
