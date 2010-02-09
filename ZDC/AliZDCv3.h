@@ -29,7 +29,9 @@ public:
   
   void SetVCollAperture(Float_t aperture)
   	{if(aperture<3.5) fVCollAperture = aperture; 
-	 else printf("\n\n AliZDCv3: WARNING: The TCTVB aperture MUST be < 3.5 cm\n\n");}
+	 else printf("\n\n AliZDCv3: WARNING! TCTVB aperture set to max.: 3.5 cm\n\n");}
+  void SetVCollCentre(Float_t centre) {fVCollCentreY = centre;}
+  void SetLumiLength(Float_t length) {fLumiLength = length;}
   
  
 protected:
@@ -43,6 +45,8 @@ protected:
   Int_t   fMedSensGR;         // Other sensitive medium
   Int_t   fMedSensPI;         // Beam pipe and magnet coils
   Int_t   fMedSensTDI;        // Cu materials along beam pipe
+  Int_t   fMedSensVColl;      // W jaws of vertical collimators
+  Int_t   fMedSensLumi;       // luminometer medium
   
   // Parameters for light tables
   Int_t   fNalfan;	      // Number of Alfa (neutrons)
@@ -71,14 +75,16 @@ protected:
   Float_t fZEMLength; // ZEM length
   
   // Parameters for proton accepancy studies
-  Int_t fpLostITC, fpLostD1C, fpDetectedC, fnDetectedC; // Side C
-  Int_t fpLostITA, fpLostD1A, fpLostTDI, fpDetectedA, fnDetectedA; // Side A
+  Int_t fpLostITC, fpLostD1C, fpcVCollC, fpDetectedC, fnDetectedC; // Side C
+  Int_t fpLostITA, fpLostD1A, fpLostTDI, fpcVCollA, fpDetectedA, fnDetectedA; // Side A
   
   // Parameters to describe vertical collimator aperture
   Float_t fVCollAperture; // Semi-aperture of TCTVB jaws
   Float_t fVCollCentreY;  // Centre of TCTVB jaw apertures
   
-  ClassDef(AliZDCv3,5)  // Zero Degree Calorimeter version 1
+  Float_t fLumiLength;  // Luminometer length
+  
+  ClassDef(AliZDCv3,6)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif

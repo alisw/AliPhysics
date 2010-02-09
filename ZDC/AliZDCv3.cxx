@@ -63,6 +63,8 @@ AliZDCv3::AliZDCv3() :
   fMedSensGR(0),
   fMedSensPI(0),
   fMedSensTDI(0),
+  fMedSensVColl(0),
+  fMedSensLumi(0),
   fNalfan(0),
   fNalfap(0),
   fNben(0),  
@@ -70,15 +72,18 @@ AliZDCv3::AliZDCv3() :
   fZEMLength(0),
   fpLostITC(0), 
   fpLostD1C(0), 
+  fpcVCollC(0),
   fpDetectedC(0),
   fnDetectedC(0),
   fpLostITA(0), 
   fpLostD1A(0), 
   fpLostTDI(0), 
+  fpcVCollA(0),
   fpDetectedA(0),
   fnDetectedA(0),
   fVCollAperture(7./2.),
-  fVCollCentreY(0.)
+  fVCollCentreY(0.),
+  fLumiLength(15.)
 {
   //
   // Default constructor for Zero Degree Calorimeter
@@ -97,6 +102,8 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fMedSensGR(0),
   fMedSensPI(0),
   fMedSensTDI(0),
+  fMedSensVColl(0),
+  fMedSensLumi(0),
   fNalfan(90),
   fNalfap(90),
   fNben(18),  
@@ -104,16 +111,18 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fZEMLength(0),
   fpLostITC(0), 
   fpLostD1C(0), 
+  fpcVCollC(0),
   fpDetectedC(0),
   fnDetectedC(0),
   fpLostITA(0), 
   fpLostD1A(0), 
   fpLostTDI(0), 
+  fpcVCollA(0),
   fpDetectedA(0),
   fnDetectedA(0),
   fVCollAperture(7./2.),
-  fVCollCentreY(0.)
-  
+  fVCollCentreY(0.),
+  fLumiLength(15.)  
 {
   //
   // Standard constructor for Zero Degree Calorimeter 
@@ -307,16 +316,17 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("QE01", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY"); 
   gMC->Gspos("QE02", 1, "QE01", 0., 0., 0., 0, "ONLY");  
   // Ch.debug
-  printf("	QE01 ELTU from z = %1.2f to z= %1.2f\n",-zd1,-2*tubpar[2]-zd1);
+  //printf("	QE01 ELTU from z = %1.2f to z= %1.2f\n",-zd1,-2*tubpar[2]-zd1);
   
   // Vertical collimator jaws (defined ONLY if fVCollAperture<3.5!)
   if(fVCollAperture<3.5){
     boxpar[0] = 5.4/2.;
-    boxpar[1] = (3.5-fVCollAperture-fVCollCentreY-0.8)/2.;
+    boxpar[1] = (3.5-fVCollAperture-fVCollCentreY-0.7)/2.;
+    if(boxpar[1]<0.) boxpar[1]=0.;
     boxpar[2] = 124.4/2.;
-    printf("\n  AliZDCv3 -> Setting VCollimator jaw: aperture %1.2f center %1.2f thickness %1.3f\n\n", 
-    	fVCollAperture,fVCollCentreY,2*boxpar[1]);
-    gMC->Gsvolu("QCVC" , "BOX ", idtmed[7], boxpar, 3); 
+    printf("\n  AliZDCv3 -> Setting VCollimator jaw: aperture %1.2f center %1.2f mod.thickness %1.3f\n\n", 
+    	2*fVCollAperture,fVCollCentreY,2*boxpar[1]);
+    gMC->Gsvolu("QCVC" , "BOX ", idtmed[13], boxpar, 3); 
     gMC->Gspos("QCVC", 1, "QE02", -boxpar[0],  fVCollAperture+fVCollCentreY+boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
     gMC->Gspos("QCVC", 2, "QE02", -boxpar[0], -fVCollAperture+fVCollCentreY-boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
   }
@@ -577,7 +587,7 @@ void AliZDCv3::CreateBeamLine()
   TGeoCompositeShape *pOutTrousersC = new TGeoCompositeShape("outTrousersC", "QCLext:ZDCC_c1+QCLext:ZDCC_c2");
   
   // Volume: QCLext
-  TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRON");
+  TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRONT");
   TGeoVolume *pQCLext = new TGeoVolume("QCLext",pOutTrousersC, medZDCFe);
   pQCLext->SetLineColor(kGreen);
   pQCLext->SetVisLeaves(kTRUE);
@@ -640,7 +650,7 @@ void AliZDCv3::CreateBeamLine()
   // -- Luminometer (Cu box) in front of ZN - side C
   boxpar[0] = 8.0/2.;
   boxpar[1] = 8.0/2.;
-  boxpar[2] = 15./2.;
+  boxpar[2] = fLumiLength/2.;
   gMC->Gsvolu("QLUC", "BOX ", idtmed[9], boxpar, 3);
   gMC->Gspos("QLUC", 1, "ZDCC", 0., 0.,  fPosZNC[2]+66.+boxpar[2], 0, "ONLY");
   //printf("	QLUC LUMINOMETER from z = %1.2f to z= %1.2f\n",  fPosZNC[2]+66., fPosZNC[2]+66.+2*boxpar[2]);
@@ -936,9 +946,10 @@ void AliZDCv3::CreateBeamLine()
   // Vertical collimator jaws (defined ONLY if fVCollAperture<3.5!)
   if(fVCollAperture<3.5){
     boxpar[0] = 5.4/2.;
-    boxpar[1] = (3.5-fVCollAperture-fVCollCentreY-0.8)/2.;
+    boxpar[1] = (3.5-fVCollAperture-fVCollCentreY-0.7)/2.;
+    if(boxpar[1]<0.) boxpar[1]=0.;
     boxpar[2] = 124.4/2.;
-    gMC->Gsvolu("QCVA" , "BOX ", idtmed[7], boxpar, 3); 
+    gMC->Gsvolu("QCVA" , "BOX ", idtmed[13], boxpar, 3); 
     gMC->Gspos("QCVA", 1, "QA07", -boxpar[0], fVCollAperture+fVCollCentreY+boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
     gMC->Gspos("QCVA", 2, "QA07", -boxpar[0], -fVCollAperture+fVCollCentreY-boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
   }
@@ -1366,7 +1377,7 @@ void AliZDCv3::CreateBeamLine()
   // -- Luminometer (Cu box) in front of ZN - side A
   boxpar[0] = 8.0/2.;
   boxpar[1] = 8.0/2.;
-  boxpar[2] = 15./2.;
+  boxpar[2] = fLumiLength/2.;
   gMC->Gsvolu("QLUA", "BOX ", idtmed[9], boxpar, 3);
   gMC->Gspos("QLUA", 1, "ZDCA", 0., 0.,  fPosZNA[2]-66.-boxpar[2], 0, "ONLY");
   //printf("	QLUA LUMINOMETER from z = %1.2f to z= %1.2f\n\n",  fPosZNA[2]-66., fPosZNA[2]-66.-2*boxpar[2]);
@@ -2007,7 +2018,7 @@ void AliZDCv3::CreateMaterials()
   
   // --- Lead 
   ubuf[0] = 1.12;
-  AliMaterial(5, "LEAD", 207.19, 82., 11.35, .56, 18.5, ubuf, 1);
+  AliMaterial(5, "LEAD", 207.19, 82., 11.35, .56, 0., ubuf, 1);
 
   // --- Copper (energy loss taken into account)
   ubuf[0] = 1.10;
@@ -2024,6 +2035,10 @@ void AliZDCv3::CreateMaterials()
   // --- Iron (no energy loss)
   ubuf[0] = 1.1;
   AliMaterial(8, "IRON1", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
+  
+  // --- Tatalum 
+  ubuf[0] = 1.1;
+  AliMaterial(13, "TANT", 183.84, 74., 19.3, 0.35, 0., ubuf, 1);
     
   // ---------------------------------------------------------  
   Float_t aResGas[3]={1.008,12.0107,15.9994};
@@ -2076,7 +2091,7 @@ void AliZDCv3::CreateMaterials()
   Int_t ifield =2;         // IFIELD=2 -> magnetic field defined in AliMagFC.h
   // *****************************************************
   
-  AliMedium(1, "ZTANT", 1, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(1, "ZWALL", 1, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(2, "ZBRASS",2, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(3, "ZSIO2", 3, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(4, "ZQUAR", 3, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
@@ -2088,7 +2103,8 @@ void AliZDCv3::CreateMaterials()
   AliMedium(10,"ZVOID",10, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(12,"ZAIR", 12, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-
+  AliMedium(13,"ZTANT",13, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(14, "ZIRONT", 7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
 
 } 
 
@@ -2170,7 +2186,21 @@ void AliZDCv3::Init()
   gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
   
   // Avoid too detailed showering along the beam line 
+  i = 14; //iron with energy loss (ZIRONT)
+  gMC->Gstpar(idtmed[i], "CUTGAM", .001);
+  gMC->Gstpar(idtmed[i], "CUTELE", .001);
+  gMC->Gstpar(idtmed[i], "CUTNEU", .01);
+  gMC->Gstpar(idtmed[i], "CUTHAD", .01);
+  
+  // Avoid too detailed showering along the beam line 
   i = 8; //iron without energy loss (ZIRONN)
+  gMC->Gstpar(idtmed[i], "CUTGAM", .1);
+  gMC->Gstpar(idtmed[i], "CUTELE", .1);
+  gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
+  gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
+  
+  // Avoid too detailed showering along the beam line 
+  i = 13; //collimator jaws (ZTANT)
   gMC->Gstpar(idtmed[i], "CUTGAM", .1);
   gMC->Gstpar(idtmed[i], "CUTELE", .1);
   gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
@@ -2220,14 +2250,16 @@ void AliZDCv3::Init()
   gMC->Gstpar(idtmed[i], "HADR", 0.);
 
   //
-  fMedSensZN  = idtmed[1];  // Sensitive volume: ZN passive material
-  fMedSensZP  = idtmed[2];  // Sensitive volume: ZP passive material
-  fMedSensF1  = idtmed[3];  // Sensitive volume: fibres type 1
-  fMedSensF2  = idtmed[4];  // Sensitive volume: fibres type 2
-  fMedSensZEM = idtmed[5];  // Sensitive volume: ZEM passive material
-  fMedSensTDI = idtmed[6];  // Sensitive volume: TDI Cu shield
-  fMedSensPI  = idtmed[7];  // Sensitive volume: beam pipes
-  fMedSensGR  = idtmed[12]; // Sensitive volume: air into the grooves
+  fMedSensZN     = idtmed[1];  // Sensitive volume: ZN passive material
+  fMedSensZP     = idtmed[2];  // Sensitive volume: ZP passive material
+  fMedSensF1     = idtmed[3];  // Sensitive volume: fibres type 1
+  fMedSensF2     = idtmed[4];  // Sensitive volume: fibres type 2
+  fMedSensZEM    = idtmed[5];  // Sensitive volume: ZEM passive material
+  fMedSensTDI    = idtmed[6];  // Sensitive volume: TDI Cu shield
+  fMedSensPI     = idtmed[7];  // Sensitive volume: beam pipes
+  fMedSensLumi   = idtmed[9];  // Sensitive volume: luminometer
+  fMedSensGR     = idtmed[12]; // Sensitive volume: air into the grooves
+  fMedSensVColl  = idtmed[13]; // Sensitive volume: collimator jaws
 }
 
 //_____________________________________________________________________________
@@ -2336,12 +2368,14 @@ void AliZDCv3::StepManager()
   //
   for(j=0;j<13;j++) hits[j]=-999.;
   //
-  // --- This part is for no shower developement in beam pipe and TDI
-  // If particle interacts with beam pipe or TDI -> return
-  if((gMC->CurrentMedium() == fMedSensPI) || (gMC->CurrentMedium() == fMedSensTDI)){ 
+  // --- This part is for no shower developement in beam pipe, TDI, VColl
+  // If particle interacts with beam pipe, TDI, VColl -> return
+  if(fNoShower==1 && ((gMC->CurrentMedium() == fMedSensPI) || (gMC->CurrentMedium() == fMedSensTDI) ||  
+     (gMC->CurrentMedium() == fMedSensVColl || (gMC->CurrentMedium() == fMedSensLumi)))){ 
+    
     // If option NoShower is set -> StopTrack
+
     Int_t ipr = 0; 
-    if(fNoShower==1){
       gMC->TrackPosition(s[0],s[1],s[2]);
       if(gMC->CurrentMedium() == fMedSensPI){
         knamed = gMC->CurrentVolName();
@@ -2365,28 +2399,34 @@ void AliZDCv3::StepManager()
         }
 	else if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
       }
+      else if(gMC->CurrentMedium() == fMedSensVColl){ 
+        knamed = gMC->CurrentVolName();
+        if(!strncmp(knamed,"QCVC",4)) fpcVCollC++;
+ 	else if(!strncmp(knamed,"QCVA",4))  fpcVCollA++;
+	ipr=1;
+      }
       //
       //gMC->TrackMomentum(p[0], p[1], p[2], p[3]);
       //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
       //     gMC->TrackMass(), p[3], p[2], gMC->CurrentVolName());
       //
-      /*if(ipr!=0){
+      if(ipr!=0){
         printf("\n\t **********************************\n");
         printf("\t ********** Side C **********\n");
-        printf("\t # of spectators in IT = %d\n",fpLostITC);
-        printf("\t # of spectators in D1 = %d\n",fpLostD1C);
+        printf("\t # of particles in IT = %d\n",fpLostITC);
+        printf("\t # of particles in D1 = %d\n",fpLostD1C);
+        printf("\t # of particles in VColl = %d\n",fpcVCollC);
         printf("\t ********** Side A **********\n");
-        printf("\t # of spectators in IT = %d\n",fpLostITA);
-        printf("\t # of spectators in D1 = %d\n",fpLostD1A);
-        printf("\t # of spectators in TDI = %d\n",fpLostTDI);
+        printf("\t # of particles in IT = %d\n",fpLostITA);
+        printf("\t # of particles in D1 = %d\n",fpLostD1A);
+        printf("\t # of particles in TDI = %d\n",fpLostTDI);
+        printf("\t # of particles in VColl = %d\n",fpcVCollA);
         printf("\t **********************************\n");
-      }*/
+      }
       gMC->StopTrack();
-    }
-    return;
+      return;
   }
   
-
   if((gMC->CurrentMedium() == fMedSensZN) || (gMC->CurrentMedium() == fMedSensZP) ||
      (gMC->CurrentMedium() == fMedSensGR) || (gMC->CurrentMedium() == fMedSensF1) ||
      (gMC->CurrentMedium() == fMedSensF2) || (gMC->CurrentMedium() == fMedSensZEM)){
@@ -2502,9 +2542,10 @@ void AliZDCv3::StepManager()
       //Particle energy
       gMC->TrackMomentum(p[0],p[1],p[2],p[3]);
       hits[3] = p[3];
+      
       // Impact point on ZDC
       // X takes into account the LHC x-axis sign
-      // which is opposite to positive x on detcetor front face
+      // which is opposite to positive x on detector front face
       // for side A detectors (ZNA and ZPA)  
       if(vol[0]==4 || vol[0]==5){
         hits[4] = -xdet[0];
@@ -2536,27 +2577,25 @@ void AliZDCv3::StepManager()
       AddHit(curTrackN, vol, hits);
 
       if(fNoShower==1){
-        //printf("\t VolName %s -> det %d quad %d - x = %f, y = %f, z = %f\n", 
-          //knamed, vol[0], vol[1], x[0], x[1], x[2]);
         if(vol[0]==1){
           fnDetectedC += 1;
-          printf("	# of particles in ZNC = %d\n\n",fnDetectedC);
+          if(fnDetectedC==1) printf("	### Particle in ZNC\n\n");
         }
         else if(vol[0]==2){
           fpDetectedC += 1;
-          printf("	# of particles in ZPC = %d\n\n",fpDetectedC);
+          if(fpDetectedC==1) printf("	### Particle in ZPC\n\n");
         }
         else if(vol[0]==4){
           fnDetectedA += 1;
-          printf("	# of particles in ZNA = %d\n\n",fnDetectedA);	  
+          if(fnDetectedA==1) printf("	### Particle in ZNA\n\n");	  
         }
         else if(vol[0]==5){
           fpDetectedA += 1;
-          printf("	# of particles in ZPA = %d\n\n",fpDetectedA);	   
+          if(fpDetectedA==1) printf("	### Particle in ZPA\n\n"); 	 
         }
     	//
-        //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
-    	//   gMC->TrackMass(), p[3], p[2], gMC->CurrentVolName());
+        //printf("\t Pc: x %1.2f y %1.2f z %1.2f  E %1.2f GeV pz = %1.2f GeV in volume %s\n", 
+        //   x[0],x[1],x[3],p[3],p[2],gMC->CurrentVolName());
         //
         gMC->StopTrack();
         return;
@@ -2619,9 +2658,7 @@ void AliZDCv3::StepManager()
        }
  
        ibe = Int_t(be*1000.+1);
-       //if((vol[0]==1))      radius = fFibZN[1];
-       //else if((vol[0]==2)) radius = fFibZP[1];
- 
+  
        //Looking into the light tables 
        Float_t charge = gMC->TrackCharge();
        
