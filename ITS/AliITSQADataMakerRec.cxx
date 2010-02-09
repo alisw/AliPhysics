@@ -744,3 +744,55 @@ Int_t AliITSQADataMakerRec::GetDetTaskHisto(Int_t subdet,AliQAv1::TASKINDEX_t ta
   //return offset;
   return histo;
 }
+
+
+//____________________________________________________________________
+
+void AliITSQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
+{
+  
+  TObjArray ** list = NULL ; 
+  if ( task == AliQAv1::kRAWS ) {
+		list = fRawsQAList ;	 
+	} else if ( task == AliQAv1::kDIGITSR ) {
+		list = fDigitsQAList ; 
+	} else if ( task == AliQAv1::kRECPOINTS ) {
+		list = fRecPointsQAList ; 
+	} else if ( task == AliQAv1::kESDS ) {
+		list = fESDsQAList ; 
+	}
+    //list was not initialized, skip
+  if (!list) 
+    return ; 
+  
+  for (int spec = 0; spec < AliRecoParam::kNSpecies; spec++) {
+    if (!AliQAv1::Instance()->IsEventSpecieSet(AliRecoParam::ConvertIndex(spec)))
+      continue;
+    TIter next(list[spec]) ; 
+    TH1 * histo = NULL ; 
+    while ( (histo = dynamic_cast<TH1*> (next())) ) {
+      histo->Reset() ;
+    }
+  }
+
+  if(fSubDetector==0||fSubDetector==1)fSPDDataMaker->ResetDetector(task);
+  
+  if(fSubDetector==0||fSubDetector==2)fSDDDataMaker->ResetDetector(task);
+
+  if(fSubDetector==0||fSubDetector==3)fSSDDataMaker->ResetDetector(task);
+  
+}
+
+
+//____________________________________________________________________
+
+AliITSDDLModuleMapSDD *AliITSQADataMakerRec::GetDDLSDDModuleMap()
+{
+  if(fSubDetector==2)
+    {
+      return fSDDDataMaker->GetDDLSDDModuleMap();
+    }
+  else {
+    return NULL;
+  }
+}

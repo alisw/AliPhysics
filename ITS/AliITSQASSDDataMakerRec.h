@@ -45,7 +45,7 @@ public:
   void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
   void  ResetRawsMonitoredObjects();
-
+  void ResetDetector(AliQAv1::TASKINDEX_t task);
  private:
 
   void GetOccupancyStrip(TH1 *lHisto, Int_t *occupancyMatrix); 

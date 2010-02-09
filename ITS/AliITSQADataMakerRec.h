@@ -21,6 +21,7 @@
 #include "AliQADataMakerRec.h"
 #include "AliDetectorRecoParam.h"
 #include "AliReconstructor.h"
+#include "AliITSDDLModuleMapSDD.h"
 
 class AliITSQASPDDataMakerRec;
 class AliITSQASDDDataMakerRec;
@@ -28,6 +29,7 @@ class AliITSQASSDDataMakerRec;
 class AliITSRecPoint;
 class AliRawReader;
 class TH2F;
+//class AliITSDDLModuleMapSDD;
 
 class AliITSQADataMakerRec: public AliQADataMakerRec {
 
@@ -54,6 +56,8 @@ public:
   virtual void MakeESDs(AliESDEvent *esd);
   virtual void FillRecPoint(AliITSRecPoint rcp);
 
+  virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
+
   virtual ~AliITSQADataMakerRec(); // dtor
  Short_t GetSubDet(){return fSubDetector;};
  Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task,Int_t specie=0);
@@ -66,6 +70,7 @@ public:
 
  virtual void SetEventNumber(Int_t eventnumber){fEventNumber=eventnumber;};
  Int_t GetEventNumber() const {return fEventNumber;};
+ AliITSDDLModuleMapSDD *GetDDLSDDModuleMap();
 
 private:
 

@@ -39,14 +39,11 @@ public:
   Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0);
   void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
-
+  virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
+  AliITSDDLModuleMapSDD* GetDDLSDDModuleMap(){return fDDLModuleMap; };
 
 private:
 
-	void AnalyseBNG();                       // Analyse ROOT files with baselines, noise, gains
-	void AnalyseINJ();						// Analyse ROOT files with drift speed
-	void AnodeStatus();						// Check Anode Status changes (0 = bad, 1 = good)
-	void AnalyseHistos(Int_t type);				// Analyse Histos type: 1 = Baseline, 2 = Noise (Uncorrected), 3 = Noise (Common Mode), 4 = Noise (Corrected), 5 = Gain, 6 = Drift Speed
   static const Int_t fgknSDDmodules = 260; // number of SDD modules
   static const Int_t fgkmodoffset = 240;   // number of SPD modules
   static const Int_t fgknAnode = 256;      // anode per half-module
@@ -67,15 +64,8 @@ private:
   Int_t   fTimeBinSize;			      // time bin width in number of clocks
   AliITSDDLModuleMapSDD  *fDDLModuleMap;      // SDD Detector configuration for the decoding
 
-  Bool_t  fkAnodeMap[fgknSDDmodules][fgknSide][fgknAnode];  // Array of anode status 1 = ok, 0 = bad
-  Int_t   fGoodAnodes;
-  Int_t   fBadAnodes;
-  Int_t   fGoodAnodesCurrent;
-  Int_t   fBadAnodesCurrent;
 
-
-
-  ClassDef(AliITSQASDDDataMakerRec,10)         // description 
+  ClassDef(AliITSQASDDDataMakerRec,11)         // description 
 
 };
 

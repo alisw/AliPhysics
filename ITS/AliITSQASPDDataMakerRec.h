@@ -41,6 +41,7 @@ public:
   Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0);
   void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
+  virtual void ResetDetector(AliQAv1::TASKINDEX_t){;};
 
   enum {kAmoreFoOffset = 8, kAmoreErrorsOffset=21};
 
