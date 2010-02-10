@@ -1110,8 +1110,8 @@ Bool_t AliProtonAnalysis::PrintMean(TH1 *hist, Double_t edge) {
       sumError += TMath::Power(hist->GetBinError(i),2);
       nentries += 1;
     }
-    Printf("eta: %lf - sum: %lf - sumError: %lf - counter: %d",
-	   TMath::Abs(x),sum,sumError,nentries);
+    //Printf("eta: %lf - sum: %lf - sumError: %lf - counter: %d",
+    //TMath::Abs(x),sum,sumError,nentries);
   }
   Double_t mean = 0.0;
   Double_t error = 0.0;
@@ -1169,6 +1169,7 @@ Bool_t AliProtonAnalysis::PrintYields(TH1 *hist, Double_t edge) {
 
 //____________________________________________________________________//
 void AliProtonAnalysis::Correct() {
+  //Apply the corrections: Fast & dirty way for the absorption corrections
   fHistYPtProtons->Divide(fHistEfficiencyYPtProtons);
   fHistYPtAntiProtons->Divide(fHistEfficiencyYPtAntiProtons);
 }
