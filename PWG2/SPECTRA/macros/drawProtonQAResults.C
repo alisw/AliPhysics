@@ -1,5 +1,5 @@
 void drawProtonQAResults(const char *analysisType = "Hybrid",
-			 const char *pidMode = "Sigma1") {
+			 const char *pidMode = "Sigma2") {
   //Macro to visualize the results of the proton QA task
   gStyle->SetPalette(1,0);
   gStyle->SetCanvasColor(41);
@@ -2589,10 +2589,14 @@ void drawCutParametersDistributions(const char* filename = "Protons.QA.Histogram
       " - Name: "<<gDCAListHistograms[iEntry]->GetName()<<endl;*/
   }
 
-  TH2F *gDCAListHistograms2D[20];
+  TH3F *gDCAListHistograms3D[20];
+  TList *listDCA3D = new TList();
   Int_t nDCAHistos2D = 12;
-  for(Int_t iEntry = nDCAHistos1D; iEntry < 2*nDCAHistos2D; iEntry++)
-    gDCAListHistograms2D[iEntry-nDCAHistos1D] = (TH2F *)listDCA->At(iEntry);
+  for(Int_t iEntry = nDCAHistos1D; iEntry < 2*nDCAHistos2D; iEntry++) {
+    gDCAListHistograms3D[iEntry-nDCAHistos1D] = dynamic_cast<TH3F *>(listDCA->At(iEntry));
+    listDCA3D->Add(gDCAListHistograms3D[iEntry-nDCAHistos1D]);
+  }
+  
   //_________________________________________________________//
   TF1 *gDCA = new TF1("gDCA",
 		      "[0]*TMath::Power(1+TMath::Exp((x-[1])/[2]),-1)",
@@ -2932,47 +2936,63 @@ void drawCutParametersDistributions(const char* filename = "Protons.QA.Histogram
   c16->SetFillColor(10); c16->GetFrame()->SetFillColor(10);
   c16->SetHighLightColor(10); c16->Divide(3,2);
   c16->cd(1)->SetBottomMargin(0.2); c16->cd(1)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[0]->SetTitle("Accepted primary protons");
-  gDCAListHistograms2D[0]->Draw("colz");
+  gDCAListHistograms3D[0]->SetTitle("Accepted primary protons");
+  gDCAListHistograms3D[0]->Draw("");
   c16->cd(2)->SetBottomMargin(0.2); c16->cd(2)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[2]->SetTitle("Accepted secondary protons (weak decay)");
-  gDCAListHistograms2D[2]->Draw("colz");
+  gDCAListHistograms3D[2]->SetTitle("Accepted secondary protons (weak decay)");
+  gDCAListHistograms3D[2]->Draw("");
   c16->cd(3)->SetBottomMargin(0.2); c16->cd(3)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[4]->SetTitle("Accepted secondary protons (material)");
-  gDCAListHistograms2D[4]->Draw("colz");
+  gDCAListHistograms3D[4]->SetTitle("Accepted secondary protons (material)");
+  gDCAListHistograms3D[4]->Draw("");
   c16->cd(4)->SetBottomMargin(0.2); c16->cd(4)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[1]->SetTitle("Accepted primary antiprotons");
-  gDCAListHistograms2D[1]->Draw("colz");
+  gDCAListHistograms3D[1]->SetTitle("Accepted primary antiprotons");
+  gDCAListHistograms3D[1]->Draw("");
   c16->cd(5)->SetBottomMargin(0.2); c16->cd(5)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[3]->SetTitle("Accepted secondary antiprotons (weak decay)");
-  gDCAListHistograms2D[3]->Draw("colz");
+  gDCAListHistograms3D[3]->SetTitle("Accepted secondary antiprotons (weak decay)");
+  gDCAListHistograms3D[3]->Draw("");
   c16->cd(6)->SetBottomMargin(0.2); c16->cd(6)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[5]->SetTitle("Accepted secondary antiprotons (material)");
-  gDCAListHistograms2D[5]->Draw("colz");
+  gDCAListHistograms3D[5]->SetTitle("Accepted secondary antiprotons (material)");
+  gDCAListHistograms3D[5]->Draw("");
 
   TCanvas *c17 = new TCanvas("c17","dca(z) vs Pt",100,100,900,650);
   c17->SetFillColor(10); c17->GetFrame()->SetFillColor(10);
   c17->SetHighLightColor(10); c17->Divide(3,2);
   c17->cd(1)->SetBottomMargin(0.2); c17->cd(1)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[6]->SetTitle("Accepted primary protons");
-  gDCAListHistograms2D[6]->Draw("colz");
+  gDCAListHistograms3D[6]->SetTitle("Accepted primary protons");
+  gDCAListHistograms3D[6]->Draw("");
   c17->cd(2)->SetBottomMargin(0.2); c17->cd(2)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[8]->SetTitle("Accepted secondary protons (weak decay)");
-  gDCAListHistograms2D[8]->Draw("colz");
+  gDCAListHistograms3D[8]->SetTitle("Accepted secondary protons (weak decay)");
+  gDCAListHistograms3D[8]->Draw("");
   c17->cd(3)->SetBottomMargin(0.2); c17->cd(3)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[10]->SetTitle("Accepted secondary protons (material)");
-  gDCAListHistograms2D[10]->Draw("colz");
+  gDCAListHistograms3D[10]->SetTitle("Accepted secondary protons (material)");
+  gDCAListHistograms3D[10]->Draw("");
   c17->cd(4)->SetBottomMargin(0.2); c17->cd(4)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[7]->SetTitle("Accepted primary antiprotons");
-  gDCAListHistograms2D[7]->Draw("colz");
+  gDCAListHistograms3D[7]->SetTitle("Accepted primary antiprotons");
+  gDCAListHistograms3D[7]->Draw("");
   c17->cd(5)->SetBottomMargin(0.2); c17->cd(5)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[9]->SetTitle("Accepted secondary antiprotons (weak decay)");
-  gDCAListHistograms2D[9]->Draw("colz");
+  gDCAListHistograms3D[9]->SetTitle("Accepted secondary antiprotons (weak decay)");
+  gDCAListHistograms3D[9]->Draw("");
   c17->cd(6)->SetBottomMargin(0.2); c17->cd(6)->SetLeftMargin(0.2);
-  gDCAListHistograms2D[11]->SetTitle("Accepted secondary antiprotons (material)");
-  gDCAListHistograms2D[11]->Draw("colz");
+  gDCAListHistograms3D[11]->SetTitle("Accepted secondary antiprotons (material)");
+  gDCAListHistograms3D[11]->Draw("");
 
+  drawDCAPlots(listDCA3D);
   f->Close();
+}
+
+//________________________________________________//
+void drawDCAPlots(TList *listDCA3D) {
+  //Draws the dca distributions for primaries and secondaries for each 
+  //eta-pT bin
+    TH3F *gDCAListHistograms3D[20];
+  listDCA3D->ls();
+  for(Int_t i = 0; i < listDCA3D->GetEntries(); i++) {
+    gDCAListHistograms3D[i] = dynamic_cast<TH3F *>(listDCA3D->At(i));
+    Printf("Name 3D: %s - Entries: %d",gDCAListHistograms3D[i]->GetName(),gDCAListHistograms3D[i]->GetEntries());
+  }
+  TCanvas *cDCAxy = new TCanvas("cDCAxy","",0,0,500,500);
+  gDCAListHistograms3D[0]->ProjectionZ()->Draw();
+  
 }
 
 //________________________________________________//

@@ -1958,86 +1958,86 @@ void AliProtonQAAnalysis::InitCutLists() {
   TH3F *gHistPrimaryProtonsDCAxyEtaPt = new TH3F("gHistPrimaryProtonsDCAxyEtaPt",
 						 ";#eta;P_{T} [GeV/c];dca_{xy} [cm]",
 						 9,-0.9,0.9,
-						 16,0.3,1.1,
-						 1000,0,10);
+						 6,0.45,1.05,
+						 100,0,10);
   gHistPrimaryProtonsDCAxyEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistPrimaryProtonsDCAxyEtaPt);
   TH3F *gHistPrimaryAntiProtonsDCAxyEtaPt = new TH3F("gHistPrimaryAntiProtonsDCAxyEtaPt",
 						     ";#eta;P_{T} [GeV/c];dca_{xy} [cm]",
 						     9,-0.9,0.9,
-						     16,0.3,1.1,
-						     1000,0,10);
+						     6,0.45,1.05,
+						     100,0,10);
   gHistPrimaryAntiProtonsDCAxyEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistPrimaryAntiProtonsDCAxyEtaPt);
   TH3F *gHistSecondaryProtonsFromWeakDCAxyEtaPt = new TH3F("gHistSecondaryProtonsFromWeakDCAxyEtaPt",
 							   ";#eta;P_{T} [GeV/c];dca_{xy} [cm]",
 							   9,-0.9,0.9,
-							   16,0.3,1.1,
-							   1000,0,10);
+							   6,0.45,1.05,
+							   100,0,10);
   gHistSecondaryProtonsFromWeakDCAxyEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistSecondaryProtonsFromWeakDCAxyEtaPt);
   TH3F *gHistSecondaryAntiProtonsFromWeakDCAxyEtaPt = new TH3F("gHistSecondaryAntiProtonsFromWeakDCAxyEtaPt",
 							       ";#eta;P_{T} [GeV/c];dca_{xy} [cm]",
 							       9,-0.9,0.9,
-							       16,0.3,1.1,
-							       1000,0,10);
+							       6,0.45,1.05,
+							       100,0,10);
   gHistSecondaryAntiProtonsFromWeakDCAxyEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistSecondaryAntiProtonsFromWeakDCAxyEtaPt);
   TH3F *gHistSecondaryProtonsFromHadronicDCAxyEtaPt = new TH3F("gHistSecondaryProtonsFromHadronicDCAxyEtaPt",
 							       ";#eta;P_{T} [GeV/c];dca_{xy} [cm]",
 							       9,-0.9,0.9,
-							       16,0.3,1.1,
-							       1000,0,10);
+							       6,0.45,1.05,
+							       100,0,10);
   gHistSecondaryProtonsFromHadronicDCAxyEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistSecondaryProtonsFromHadronicDCAxyEtaPt);
   TH3F *gHistSecondaryAntiProtonsFromHadronicDCAxyEtaPt = new TH3F("gHistSecondaryAntiProtonsFromHadronicDCAxyEtaPt",
 								   ";#eta;P_{T} [GeV/c];dca_{xy} [cm]",
 								   9,-0.9,0.9,
-								   16,0.3,1.1,
-								   1000,0,10);
+								   6,0.45,1.05,
+								   100,0,10);
   gHistSecondaryAntiProtonsFromHadronicDCAxyEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistSecondaryAntiProtonsFromHadronicDCAxyEtaPt);
   
   TH3F *gHistPrimaryProtonsDCAzEtaPt = new TH3F("gHistPrimaryProtonsDCAzEtaPt",
 						";#eta;P_{T} [GeV/c];dca_{z} [cm]",
 						9,-0.9,0.9,
-						16,0.3,1.1,
-						1000,0,10);
+						6,0.45,1.05,
+						100,0,10);
   gHistPrimaryProtonsDCAzEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistPrimaryProtonsDCAzEtaPt);
   TH3F *gHistPrimaryAntiProtonsDCAzEtaPt = new TH3F("gHistPrimaryAntiProtonsDCAzEtaPt",
 						    ";#eta;P_{T} [GeV/c];dca_{z} [cm]",
 						    9,-0.9,0.9,
-						    16,0.3,1.1,
-						    1000,0,10);
+						    6,0.45,1.05,
+						    100,0,10);
   gHistPrimaryAntiProtonsDCAzEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistPrimaryAntiProtonsDCAzEtaPt);
   TH3F *gHistSecondaryProtonsFromWeakDCAzEtaPt = new TH3F("gHistSecondaryProtonsFromWeakDCAzEtaPt",
 							  ";#eta;P_{T} [GeV/c];dca_{z} [cm]",
 							  9,-0.9,0.9,
-							  16,0.3,1.1,
-							  1000,0,10);
+							  6,0.45,1.05,
+							  100,0,10);
   gHistSecondaryProtonsFromWeakDCAzEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistSecondaryProtonsFromWeakDCAzEtaPt);
   TH3F *gHistSecondaryAntiProtonsFromWeakDCAzEtaPt = new TH3F("gHistSecondaryAntiProtonsFromWeakDCAzEtaPt",
 							      ";#eta;P_{T} [GeV/c];dca_{z} [cm]",
 							      9,-0.9,0.9,
-							      16,0.3,1.1,
-							      1000,0,10);
+							      6,0.45,1.05,
+							      100,0,10);
   gHistSecondaryAntiProtonsFromWeakDCAzEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistSecondaryAntiProtonsFromWeakDCAzEtaPt);
   TH3F *gHistSecondaryProtonsFromHadronicDCAzEtaPt = new TH3F("gHistSecondaryProtonsFromHadronicDCAzEtaPt",
 							      ";#eta;P_{T} [GeV/c];dca_{z} [cm]",
 							      9,-0.9,0.9,
-							      16,0.3,1.1,
-							      1000,0,10);
+							      6,0.45,1.05,
+							      100,0,10);
   gHistSecondaryProtonsFromHadronicDCAzEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistSecondaryProtonsFromHadronicDCAzEtaPt);
   TH3F *gHistSecondaryAntiProtonsFromHadronicDCAzEtaPt = new TH3F("gHistSecondaryAntiProtonsFromHadronicDCAzEtaPt",
 								  ";#eta;P_{T} [GeV/c];dca_{z} [cm]",
 								  9,-0.9,0.9,
-								  16,0.3,1.1,
-								  1000,0,10);
+								  6,0.45,1.05,
+								  100,0,10);
   gHistSecondaryAntiProtonsFromHadronicDCAzEtaPt->SetStats(kFALSE);
   fAcceptedDCAList->Add(gHistSecondaryAntiProtonsFromHadronicDCAzEtaPt);
 }
@@ -2631,19 +2631,6 @@ void AliProtonQAAnalysis::InitQA() {
   fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsPointOnITSLayer6Reject);
   TH1F *gPrimaryProtonsNumberOfTPCdEdxPointsReject = new TH1F("gPrimaryProtonsNumberOfTPCdEdxPointsReject","",100,0,200);
   fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsNumberOfTPCdEdxPointsReject);
-  /*TH2F *gHistPrimaryProtonsDCAxyPtReject = new TH2F("gHistPrimaryProtonsDCAxyPtReject",
-						    ";P_{T} [GeV/c];dca_{xy} [cm]",
-						    16,0.3,1.1,
-						    1000,0,10);
-  gHistPrimaryProtonsDCAxyPtReject->SetStats(kFALSE);
-  fQAPrimaryProtonsRejectedList->Add(gHistPrimaryProtonsDCAxyPtReject);
-  TH2F *gHistPrimaryProtonsDCAzPtReject = new TH2F("gHistPrimaryProtonsDCAzPtReject",
-						   ";P_{T} [GeV/c];dca_{z} [cm]",
-						   16,0.3,1.1,
-						   1000,0,10);
-  gHistPrimaryProtonsDCAzPtReject->SetStats(kFALSE);
-  fQAPrimaryProtonsRejectedList->Add(gHistPrimaryProtonsDCAzPtReject);*/
-
   //________________________________________________________________//
   /*gDirectory->cd("../../");
 
@@ -2851,30 +2838,6 @@ void AliProtonQAAnalysis::InitQA() {
   fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsPointOnITSLayer6Reject);
   TH1F *gSecondaryProtonsNumberOfTPCdEdxPointsReject = new TH1F("gSecondaryProtonsNumberOfTPCdEdxPointsReject","",100,0,200);
   fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsNumberOfTPCdEdxPointsReject);  
-  /*TH2F *gHistSecondaryProtonsFromWeakDCAxyPtReject = new TH2F("gHistSecondaryProtonsFromWeakDCAxyPtReject",
-							      ";P_{T} [GeV/c];dca_{xy} [cm]",
-							      16,0.3,1.1,
-							      1000,0,10);
-  gHistSecondaryProtonsFromWeakDCAxyPtReject->SetStats(kFALSE);
-  fQASecondaryProtonsRejectedList->Add(gHistSecondaryProtonsFromWeakDCAxyPtReject);
-  TH2F *gHistSecondaryProtonsFromWeakDCAzPtReject = new TH2F("gHistSecondaryProtonsFromWeakDCAzPtReject",
-							     ";P_{T} [GeV/c];dca_{z} [cm]",
-							     16,0.3,1.1,
-							     1000,0,10);
-  gHistSecondaryProtonsFromWeakDCAzPtReject->SetStats(kFALSE);
-  fQASecondaryProtonsRejectedList->Add(gHistSecondaryProtonsFromWeakDCAzPtReject);
-  TH2F *gHistSecondaryProtonsFromHadronicDCAxyPtReject = new TH2F("gHistSecondaryProtonsFromHadronicDCAxyPtReject",
-								  ";P_{T} [GeV/c];dca_{xy} [cm]",
-								  16,0.3,1.1,
-								  1000,0,10);
-  gHistSecondaryProtonsFromHadronicDCAxyPtReject->SetStats(kFALSE);
-  fQASecondaryProtonsRejectedList->Add(gHistSecondaryProtonsFromHadronicDCAxyPtReject);
-  TH2F *gHistSecondaryProtonsFromHadronicDCAzPtReject = new TH2F("gHistSecondaryProtonsFromHadronicDCAzPtReject",
-								 ";P_{T} [GeV/c];dca_{z} [cm]",
-								 16,0.3,1.1,
-								 1000,0,10);
-  gHistSecondaryProtonsFromHadronicDCAzPtReject->SetStats(kFALSE);
-  fQASecondaryProtonsRejectedList->Add(gHistSecondaryProtonsFromHadronicDCAzPtReject);*/
 
   /*gDirectory->cd("../../../");
 
