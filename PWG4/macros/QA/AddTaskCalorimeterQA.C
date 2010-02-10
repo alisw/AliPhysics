@@ -1,4 +1,4 @@
-AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kUseKinematics = kFALSE, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE)
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
   
@@ -18,6 +18,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   }
    TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
+  Bool_t kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
+	
+  cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
+	
    // Configure analysis
    //===========================================================================
   
@@ -28,7 +32,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   if(data=="AOD")      reader = new AliCaloTrackAODReader();
   else if(data=="ESD") reader = new AliCaloTrackESDReader();
   //reader->SetDebug(10);//10 for lots of messages
-  
+  reader->SwitchOffEMCAL();
+  reader->SwitchOffPHOS();
+  reader->SwitchOffCTS();
+	
   if(kUseKinematics){
 		if(inputDataType == "ESD"){
 			reader->SwitchOnStack();          
@@ -39,7 +46,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
 			reader->SwitchOnAODMCParticles(); 
 		}
    }
-   if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
+   //if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
    reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
    if(kPrintSettings) reader->Print("");
 	
@@ -61,12 +68,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   emcalQA->SwitchOffPlotsMaking();
   emcalQA->SwitchOnCalorimetersCorrelation();
   //Set Histrograms bins and ranges
-  emcalQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
-  emcalQA->SetHistoPhiRangeAndNBins(75*TMath::DegToRad(), 125*TMath::DegToRad(), 100) ;
+  emcalQA->SetHistoPtRangeAndNBins(0, 20, 200) ;
+  emcalQA->SetHistoPhiRangeAndNBins(75*TMath::DegToRad(), 125*TMath::DegToRad(), 200) ;
   emcalQA->SetHistoEtaRangeAndNBins(-0.8, 0.8, 160) ;
   emcalQA->SetNumberOfModules(4); //EMCAL first year
-  emcalQA->SetHistoMassRangeAndNBins(0., 0.5, 500) ;
-  emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 5) ;
+  emcalQA->SetHistoMassRangeAndNBins(0., 0.6, 300) ;
+  emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 25) ;
   emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
   emcalQA->SetHistodEdxRangeAndNBins(0.,400.,200);
   emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),300);
@@ -91,12 +98,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
    //phosQA->GetMCAnalysisUtils()->SetDebug(10);
    phosQA->SwitchOffPlotsMaking();
    //Set Histrograms bins and ranges
-   phosQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
-   phosQA->SetHistoPhiRangeAndNBins(215*TMath::DegToRad(), 325*TMath::DegToRad(), 100) ;
-   phosQA->SetHistoEtaRangeAndNBins(-0.13, 0.13, 100) ;
+   phosQA->SetHistoPtRangeAndNBins(0, 20, 200) ;
+   phosQA->SetHistoPhiRangeAndNBins(255*TMath::DegToRad(), 325*TMath::DegToRad(), 200) ;
+   phosQA->SetHistoEtaRangeAndNBins(-0.13, 0.13, 160) ;
    phosQA->SetNumberOfModules(3); //PHOS first year
-   phosQA->SetHistoMassRangeAndNBins(0., 0.5, 500) ;
-   phosQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 5) ;
+   phosQA->SetHistoMassRangeAndNBins(0., 0.6, 300) ;
+   phosQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 25) ;
    phosQA->SetHistoPOverERangeAndNBins(0,10.,100);
    phosQA->SetHistodEdxRangeAndNBins(0.,400.,200);
    phosQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),300);
@@ -125,12 +132,17 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation ("CalorimeterPerformance");
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   task->SetDebugLevel(0);
-  task->SetAnalysisMaker(maker);				
+  task->SetAnalysisMaker(maker);	
   mgr->AddTask(task);
   
-  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer("Calo.Performance",TList::Class(),
-							   AliAnalysisManager::kOutputContainer, "Calo.Performance.root");
-  
+//  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer("Calo.Performance",TList::Class(),
+//							   AliAnalysisManager::kOutputContainer, "Calo.Performance.root");
+	
+	
+  TString outputfile = AliAnalysisManager::GetCommonFileName(); 
+  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer("CaloQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:CaloQA",outputfile.Data()));
+	
+	
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
