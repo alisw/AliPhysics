@@ -9,16 +9,16 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 Bool_t DATA = kFALSE;
 
 // Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t SP       = kTRUE;
-Bool_t LYZ1SUM  = kTRUE;
-Bool_t LYZ1PROD = kTRUE;
-Bool_t LYZ2SUM  = kFALSE;
-Bool_t LYZ2PROD = kFALSE;
-Bool_t LYZEP    = kFALSE;
-Bool_t GFC      = kTRUE;
-Bool_t QC       = kTRUE;
-Bool_t FQD      = kTRUE;
-Bool_t MCEP     = kFALSE; //not for pp 
+Bool_t MCEP     = kTRUE;  // correlation with Monte Carlo reaction plane
+Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
+Bool_t GFC      = kTRUE;  // cumulants based on generating function
+Bool_t QC       = kTRUE;  // cumulants using Q vectors
+Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
+Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
+Bool_t LYZ1PROD = kTRUE;  // Lee Yang Zeroes using product generating function (integrated v)
+Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
+Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
+Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP};
 
@@ -32,15 +32,13 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-void runFlowTask(Int_t mode=mLocal, Int_t nRuns = -1, 
+//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = -1, 
 		 //const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
-                 const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
-//void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000000, 
-		 //const Char_t* dataDir="/COMMON/COMMON/LHC09a14_0.9TeV_0.5T", Int_t offset = 0)
-		 //const Char_t* dataDir="/COMMON/COMMON/LHC08c11_10TeV_0.5T", Int_t offset = 0)
+                 //const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
+void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 2000000, 
 		 //const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
                  //const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
-
+		 const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
 
 {
   TStopwatch timer;
@@ -168,11 +166,10 @@ void LoadLibraries(const anaModes mode) {
   //---------------------------------------------------------
   else if (mode==mPROOF) {
     //
-    
+    //gEnv->SetValue("XSec.GSI.DelegProxy","2")    
     //  set to debug root versus if needed
     //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a_dbg");
     //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a");
-    
     //TProof::Reset("proof://snelling@alicecaf.cern.ch");     
     // Connect to proof
     printf("*** Connect to PROOF ***\n");
