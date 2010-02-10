@@ -1149,7 +1149,7 @@ ctr1->RegisterYourself();
    rrod->AddNode(ress,i+2, new TGeoCombiTrans(0.,1.2,-121.925+(i+1)*1.5,crr3));
  }
 
- tpcrrod->AddNode(rrod,1,new TGeoCombiTrans(0.,0.,0.,crr1));
+ tpcrrod->AddNode(rrod,1,new TGeoCombiTrans(0.,0.,0.5,crr1));
 
  //------------------------------------------------------------------
  TGeoRotation refl("refl",90.,0.,90.,90.,180.,0.);
