@@ -430,8 +430,8 @@ void AliTPCv2::CreateGeometry()
   // central membrane - 2 rings and a mylar membrane - assembly
   //
   TGeoTube *ih = new TGeoTube(80.1,84.1,0.2);
-  TGeoTube *oh = new TGeoTube(250.,265.,0.2);
-  TGeoTube *mem = new TGeoTube(84.05,250,0.01);
+  TGeoTube *oh = new TGeoTube(250.25,256.75,0.2);
+  TGeoTube *mem = new TGeoTube(84.1,250.25,0.01);
   TGeoVolume *ihv = new TGeoVolume("TPC_IHVH",ih,m3);
   TGeoVolume *ohv = new TGeoVolume("TPC_OHVH",oh,m3);
   TGeoVolume *memv = new TGeoVolume("TPC_HV",mem,sm7);
@@ -961,7 +961,7 @@ void AliTPCv2::CreateGeometry()
   spart->AddNode(bconv,i,transf[i]);
   }
   for(Int_t i =0;i<11;i++){
-    spart->AddNode(hookv,i+1,new TGeoTranslation(0.,-2.3,-7.5+i*1.5));
+    spart->AddNode(hookv,i+1,new TGeoTranslation(0.,-2.315,-7.5+i*1.5));
   } 
  //
  // long rod
@@ -970,10 +970,10 @@ void AliTPCv2::CreateGeometry()
   //
   lpart->AddNode( rodlv,1);
   for(Int_t i=0;i<13;i++){
-  lpart->AddNode(bconv,i,transf[i]);
+  lpart->AddNode(bconv,i+12,transf[i]);
   }
   for(Int_t i =0;i<13;i++){
-    lpart->AddNode(hookv,i+1,new TGeoTranslation(0.,-2.3,-9.+i*1.5));
+    lpart->AddNode(hookv,i+12,new TGeoTranslation(0.,-2.315,-9.+i*1.5));
   }   
   //
   // alu ring
@@ -986,24 +986,24 @@ void AliTPCv2::CreateGeometry()
   //
   // rod assembly
   //
-  TGeoVolumeAssembly *tpcrod = new TGeoVolumeAssembly("TPC_rod");//rrod
+  TGeoVolumeAssembly *tpcrrod = new TGeoVolumeAssembly("TPC_rrod");//rrod
   TGeoVolumeAssembly *tpcmrod = new TGeoVolumeAssembly("TPC_mrod");//makrolon rod  
   //long pieces
   for(Int_t i=0;i<11;i++){
-    tpcrod->AddNode(ringv,i+1,new TGeoTranslation(0.,0.,-105.+i*21));
+    tpcrrod->AddNode(ringv,i+1,new TGeoTranslation(0.,0.,-105.+i*21));
     tpcmrod->AddNode(ringv,i+12,new TGeoTranslation(0.,0.,-105.+i*21));
   }
   for(Int_t i=0;i<10;i++){
-    tpcrod->AddNode(lpart,i+1,new TGeoTranslation(0.,0.,-94.5+i*21));
+    tpcrrod->AddNode(lpart,i+1,new TGeoTranslation(0.,0.,-94.5+i*21));
     tpcmrod->AddNode(mrodl,i+1,new TGeoTranslation(0.,0.,-94.5+i*21));	    
   }
   //
   // short pieces
   //
-  tpcrod->AddNode(spart,1,new TGeoTranslation(0.,0.,-114.));
-  tpcrod->AddNode(spart,2,new TGeoTranslation(0.,0.,114.)); 
-  tpcrod->AddNode(ringv,23,new TGeoTranslation(0.,0.,-123.));
-  tpcrod->AddNode(ringv,24,new TGeoTranslation(0.,0.,123.));
+  tpcrrod->AddNode(spart,1,new TGeoTranslation(0.,0.,-114.));
+  tpcrrod->AddNode(spart,2,new TGeoTranslation(0.,0.,114.)); 
+  tpcrrod->AddNode(ringv,23,new TGeoTranslation(0.,0.,-123.));
+  tpcrrod->AddNode(ringv,24,new TGeoTranslation(0.,0.,123.));
   //
   tpcmrod->AddNode(mrods,1,new TGeoTranslation(0.,0.,-114.));
   tpcmrod->AddNode(mrods,2,new TGeoTranslation(0.,0.,114.)); 
@@ -1028,14 +1028,14 @@ void AliTPCv2::CreateGeometry()
   //
   lpv2->AddNode(lrv,1,new TGeoTranslation(0.,0.,-125.3));
   //
-  tpcrod->AddNode(lpv2,1); 
+  tpcrrod->AddNode(lpv2,1); 
   tpcmrod->AddNode(lpv1,1);
   //
   //  right plaque
   //
-  TGeoTube *rp = new TGeoTube(1.92,2.08,2.25);
+  TGeoTube *rp = new TGeoTube(1.92,2.08,1.125);
   TGeoVolume *rpv = new TGeoVolume("TPC_rpv",rp,m6);
-  tpcrod->AddNode(rpv,1, new TGeoTranslation(0.,0.,125.35)); 
+  tpcrrod->AddNode(rpv,1, new TGeoTranslation(0.,0.,125.35)); 
   tpcmrod->AddNode(rpv,2,new TGeoTranslation(0.,0.,125.35));
   //
   //
@@ -1049,10 +1049,10 @@ void AliTPCv2::CreateGeometry()
   //
   //resistor rod
   //
-  TGeoTube *cr = new TGeoTube(0.,0.45,126.7);   
-  TGeoTube *cw = new TGeoTube(0.,0.15,126.7);  
+  TGeoTube *cr = new TGeoTube(0.,0.45,126.2);   
+  TGeoTube *cw = new TGeoTube(0.,0.15,126.2);  
   TGeoVolume *crv = new TGeoVolume("TPC_CR",cr,m10);
-  TGeoVolume *cwv = new TGeoVolume("TPC_W",cw,m11);   
+  TGeoVolume *cwv = new TGeoVolume("TPC_W",cw,m12);   
   //
   // ceramic rod with water
   //
@@ -1060,8 +1060,8 @@ void AliTPCv2::CreateGeometry()
   //
   //peek rod
   //
-  TGeoTube *pr =new TGeoTube(0.2,0.35,126.7);  
-  TGeoVolume *prv = new TGeoVolume("TPC_PR",pr,m12); 
+  TGeoTube *pr =new TGeoTube(0.2,0.35,126.2);  
+  TGeoVolume *prv = new TGeoVolume("TPC_PR",pr,m11); 
   //
   // copper plates with connectors
   //
@@ -1123,7 +1123,7 @@ ctr1->RegisterYourself();
  // resistor rod assembly 2 ceramic rods, peak rod, Cu plates
  // and resistors
  //
- TGeoVolumeAssembly *rrod = new TGeoVolumeAssembly("TPC_RROD");
+ TGeoVolumeAssembly *rrod = new TGeoVolumeAssembly("TPC_RRIN");
  // rods
  rrod->AddNode(crv,1,ttr11);
  rrod->AddNode(crv,2,ttr22); 
@@ -1148,7 +1148,8 @@ ctr1->RegisterYourself();
    rrod->AddNode(ress,i+1, new TGeoCombiTrans(0.,1.2,-121.925+i*1.5,crr2));
    rrod->AddNode(ress,i+2, new TGeoCombiTrans(0.,1.2,-121.925+(i+1)*1.5,crr3));
  }
- rrod->AddNode(tpcrod,1,new TGeoCombiTrans(0.,0.,0.9,crr1));
+
+ tpcrrod->AddNode(rrod,1,new TGeoCombiTrans(0.,0.,0.,crr1));
 
  //------------------------------------------------------------------
  TGeoRotation refl("refl",90.,0.,90.,90.,180.,0.);
@@ -1177,8 +1178,8 @@ ctr1->RegisterYourself();
        //
        rotrod1[0]->RotateZ(-90.+angle);
        *rotpos[0] = refl*rotrod; //rotation+reflection
-	v9->AddNode(rrod,1,new TGeoCombiTrans(x,y, z, rotrod1[0])); //A
-	v9->AddNode(rrod,2,new TGeoCombiTrans(x,y,-z, rotpos[0])); //C      
+	v9->AddNode(tpcrrod,1,new TGeoCombiTrans(x,y, z, rotrod1[0])); //A
+	v9->AddNode(tpcrrod,2,new TGeoCombiTrans(x,y,-z, rotpos[0])); //C      
     } 
     else { 
       v9->AddNode(tpcmrod,i+1,new TGeoTranslation(x,y,z));//shaft
@@ -1196,8 +1197,8 @@ ctr1->RegisterYourself();
       rotpos[1]= new TGeoRotation();
       rotrod1[1]->RotateZ(90.+angle);
       *rotpos[1] = refl*rotrod;//rotation+reflection
-      v9->AddNode(rrod,3,new TGeoCombiTrans(x,y, z, rotrod1[1])); //A 
-      v9->AddNode(rrod,4,new TGeoCombiTrans(x,y, -z, rotpos[1])); //C
+      v9->AddNode(tpcrrod,3,new TGeoCombiTrans(x,y, z, rotrod1[1])); //A 
+      v9->AddNode(tpcrrod,4,new TGeoCombiTrans(x,y, -z, rotpos[1])); //C
     }
     else {
       v9->AddNode(tpcmrod,i+37,new TGeoTranslation(x,y,z));//shaft
