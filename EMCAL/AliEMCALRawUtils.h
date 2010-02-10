@@ -54,8 +54,8 @@ class AliEMCALRawUtils : public TObject {
   Double_t GetPedestalValue()  const {return fgPedestalValue;}
   Double_t GetFEENoise()       const {return fgFEENoise;}
 
-  Bool_t GetRemoveBadChannels()   const {return fRemoveBadChannels;}
-  Int_t  GetFittingAlgorithm()    const {return fFittingAlgorithm; }
+  Bool_t GetRemoveBadChannels() const {return fRemoveBadChannels;}
+  Int_t  GetFittingAlgorithm()  const {return fFittingAlgorithm; }
 	
   void SetRawFormatHighLowGainFactor(Double_t val) {fHighLowGainFactor=val;}
   void SetRawFormatOrder(Int_t val)                {fOrder=val; }   
@@ -63,7 +63,7 @@ class AliEMCALRawUtils : public TObject {
   void SetNoiseThreshold(Int_t val)                {fNoiseThreshold=val; }
   void SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
   void SetRemoveBadChannels(Bool_t val)            {fRemoveBadChannels=val; }
-  void SetFittingAlgorithm(Int_t val)              {fFittingAlgorithm=val; } // not enough to set this variable to switch between algorithms, so should be modified 
+  void SetFittingAlgorithm(Int_t val) ;             
 
   // set methods for fast fit simulation
   void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
@@ -88,8 +88,7 @@ class AliEMCALRawUtils : public TObject {
   void FitParabola(const TGraph *gSig, Float_t & amp) const ; 
   static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
   static Double_t RawResponseFunctionLog(Double_t *x, Double_t *par); 
-  Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, 
-  Int_t * adcH, Int_t * adcL, const Int_t keyErr=0) const;   
+  Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const;  
 
 
  private:

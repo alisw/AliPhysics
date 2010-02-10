@@ -28,9 +28,8 @@
 
 #include "AliEMCALRawUtils.h"
   
-#include <TF1.h>
-#include <TGraph.h>
-#include <TRandom.h>
+#include "TF1.h"
+#include "TGraph.h"
 class TSystem;
   
 class AliLog;
@@ -87,26 +86,7 @@ AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
   fNoiseThreshold = 3; // 3 ADC counts is approx. noise level
   fNPedSamples = 4;    // less than this value => likely pedestal samples
   fRemoveBadChannels = kTRUE; //Remove bad channels before fitting
-  fFittingAlgorithm  = fitAlgo;
-
-  if (fitAlgo == kFastFit) {
-    fRawAnalyzer = new AliCaloRawAnalyzerFastFit();
-  }
-  else if (fitAlgo == kNeuralNet) {
-    fRawAnalyzer = new AliCaloRawAnalyzerNN();
-  }
-  else if (fitAlgo == kLMS) {
-    fRawAnalyzer = new AliCaloRawAnalyzerLMS();
-  }
-  else if (fitAlgo == kPeakFinder) {
-    fRawAnalyzer = new AliCaloRawAnalyzerPeakFinder();
-  }
-  else if (fitAlgo == kCrude) {
-    fRawAnalyzer = new AliCaloRawAnalyzerCrude();
-  }
-  else {
-    fRawAnalyzer = new AliCaloRawAnalyzer();
-  }
+  SetFittingAlgorithm(fitAlgo);
 
   //Get Mapping RCU files from the AliEMCALRecParam                                 
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
@@ -153,27 +133,9 @@ AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry, fitAlgorithm fit
   fNoiseThreshold = 3; // 3 ADC counts is approx. noise level
   fNPedSamples = 4;    // less than this value => likely pedestal samples
   fRemoveBadChannels = kTRUE; //Remove bad channels before fitting
-  fFittingAlgorithm  = fitAlgo;
-
-  if (fitAlgo == kFastFit) {
-    fRawAnalyzer = new AliCaloRawAnalyzerFastFit();
-  }
-  else if (fitAlgo == kNeuralNet) {
-    fRawAnalyzer = new AliCaloRawAnalyzerNN();
-  }
-  else if (fitAlgo == kLMS) {
-    fRawAnalyzer = new AliCaloRawAnalyzerLMS();
-  }
-  else if (fitAlgo == kPeakFinder) {
-    fRawAnalyzer = new AliCaloRawAnalyzerPeakFinder();
-  }
-  else if (fitAlgo == kCrude) {
-    fRawAnalyzer = new AliCaloRawAnalyzerCrude();
-  }
-  else {
-    fRawAnalyzer = new AliCaloRawAnalyzer();
-  }
-
+  SetFittingAlgorithm(fitAlgo);
+	
+ 
   //Get Mapping RCU files from the AliEMCALRecParam
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
@@ -728,8 +690,8 @@ Double_t AliEMCALRawUtils::RawResponseFunctionLog(Double_t *x, Double_t *par)
 }
 
 //__________________________________________________________________
-Bool_t AliEMCALRawUtils::RawSampledResponse(const Double_t dtime, const Double_t damp, 
-Int_t * adcH, Int_t * adcL, const Int_t keyErr) const  
+Bool_t AliEMCALRawUtils::RawSampledResponse(
+const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const 
 {
   // for a start time dtime and an amplitude damp given by digit, 
   // calculates the raw sampled response AliEMCAL::RawResponseFunction
@@ -749,9 +711,8 @@ Int_t * adcH, Int_t * adcL, const Int_t keyErr) const
   signalF.SetParameter(3, fOrder);
   signalF.SetParameter(4, fgPedestalValue);
 
-  Double_t signal=0.0, noise=0.0;
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
-    signal = signalF.Eval(iTime) ;     
+    Double_t signal = signalF.Eval(iTime) ;     
 
     // Next lines commeted for the moment but in principle it is not necessary to add
     // extra noise since noise already added at the digits level.	
@@ -762,11 +723,9 @@ Int_t * adcH, Int_t * adcL, const Int_t keyErr) const
     //signal = sqrt(signal*signal + noise*noise);
 
     // March 17,09 for fast fit simulations by Alexei Pavlinov.
-    // Get from PHOS analysis. In some sense it is open question.
-    if(keyErr>0) {
-      noise = gRandom->Gaus(0.,fgFEENoise);
-      signal += noise;
-    } 
+    // Get from PHOS analysis. In some sense it is open questions.
+    //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
+    //signal += noise; 
 
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     if ( adcH[iTime] > fgkRawSignalOverflow ){  // larger than 10 bits 
@@ -782,3 +741,44 @@ Int_t * adcH, Int_t * adcL, const Int_t keyErr) const
   }
   return lowGain ; 
 }
+
+//__________________________________________________________________
+void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)              
+{
+	//Set fitting algorithm and initialize it if this same algorithm was not set before.
+	
+	if(fitAlgo == fFittingAlgorithm && fRawAnalyzer) {
+		//Do nothing, this same algorithm already set before.
+		//printf("**** Algorithm already set before, number %d, %s ****\n",fitAlgo, fRawAnalyzer->GetName());
+		return;
+	}
+	//Initialize the requested algorithm
+	if(fitAlgo != fFittingAlgorithm || !fRawAnalyzer) {
+		//printf("**** Init Algorithm , number %d ****\n",fitAlgo);
+		
+		fFittingAlgorithm = fitAlgo; 
+		if (fRawAnalyzer) delete fRawAnalyzer;  // delete prev. analyzer if existed.
+		
+		if (fitAlgo == kFastFit) {
+			fRawAnalyzer = new AliCaloRawAnalyzerFastFit();
+		}
+		else if (fitAlgo == kNeuralNet) {
+			fRawAnalyzer = new AliCaloRawAnalyzerNN();
+		}
+		else if (fitAlgo == kLMS) {
+			fRawAnalyzer = new AliCaloRawAnalyzerLMS();
+		}
+		else if (fitAlgo == kPeakFinder) {
+			fRawAnalyzer = new AliCaloRawAnalyzerPeakFinder();
+		}
+		else if (fitAlgo == kCrude) {
+			fRawAnalyzer = new AliCaloRawAnalyzerCrude();
+		}
+		else {
+			fRawAnalyzer = new AliCaloRawAnalyzer();
+		}
+	}
+	
+}
+
+
