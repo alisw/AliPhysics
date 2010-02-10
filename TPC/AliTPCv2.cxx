@@ -1033,10 +1033,10 @@ void AliTPCv2::CreateGeometry()
   //
   //  right plaque
   //
-  TGeoTube *rp = new TGeoTube(1.92,2.08,1.125);
+  TGeoTube *rp = new TGeoTube(1.92,2.08,2.025);
   TGeoVolume *rpv = new TGeoVolume("TPC_rpv",rp,m6);
-  tpcrrod->AddNode(rpv,1, new TGeoTranslation(0.,0.,125.35)); 
-  tpcmrod->AddNode(rpv,2,new TGeoTranslation(0.,0.,125.35));
+  tpcrrod->AddNode(rpv,1, new TGeoTranslation(0.,0.,125.125)); 
+  tpcmrod->AddNode(rpv,2,new TGeoTranslation(0.,0.,125.125));
   //
   //
   //HV rods - makrolon + 0.58cm (diameter) Cu
