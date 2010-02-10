@@ -474,6 +474,8 @@ Bool_t AliRawReader::IsEventSelected() const
 	expr.ReplaceAll(Form("[%d]",itrigger),"0");
       }
     }
+    // Possibility to introduce downscaling
+    expr.ReplaceAll("%",Form("&& !%d %%",GetEventIndex()));
     Int_t error;
     if ((gROOT->ProcessLineFast(expr.Data(),&error) == 0) &&
 	(error == TInterpreter::kNoError)) {
