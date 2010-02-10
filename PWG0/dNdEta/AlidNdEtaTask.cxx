@@ -397,8 +397,8 @@ void AlidNdEtaTask::Exec(Option_t*)
     
     fTriggerAnalysis->FillHistograms(fESD);
     
-    AliTriggerAnalysis::V0Decision v0A = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide);
-    AliTriggerAnalysis::V0Decision v0C = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide);
+    AliTriggerAnalysis::V0Decision v0A = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kFALSE);
+    AliTriggerAnalysis::V0Decision v0C = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kFALSE);
     
     Int_t vZero = 0;
     if (v0A != AliTriggerAnalysis::kV0Invalid && v0C != AliTriggerAnalysis::kV0Invalid)
