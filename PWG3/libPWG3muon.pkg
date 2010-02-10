@@ -12,6 +12,7 @@ SRCS:=	 muon/AliAnalysisTaskESDMuonFilter.cxx \
                  muon/AliESDMuonTrackCuts.cxx \
                  muon/AliAnalysisTaskSingleMuESD.cxx \
                  muon/AliCFMuonResTask1.cxx \
+		 muon/AliCFMuonSingleTask1.cxx \
                  muon/AliEventPoolMuon.cxx \
                  muon/AliAnalysisTaskCreateMixedDimuons.cxx \
 		 muon/AliAnalysisTaskMuonAODCreation.cxx \
