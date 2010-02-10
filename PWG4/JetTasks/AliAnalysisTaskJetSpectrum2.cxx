@@ -103,6 +103,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh2JetsLeadingPhiPt(0x0),
   fh2TracksLeadingPhiEta(0x0),
   fh2TracksLeadingPhiPt(0x0),
+  fh2TracksLeadingJetPhiPt(0x0),
   fHistList(0x0)  
 {
   for(int i = 0;i < kMaxStep*2;++i){
@@ -157,6 +158,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2JetsLeadingPhiPt(0x0),
   fh2TracksLeadingPhiEta(0x0),
   fh2TracksLeadingPhiPt(0x0),
+  fh2TracksLeadingJetPhiPt(0x0),
   fHistList(0x0)
 {
 
@@ -259,7 +261,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       binLimitsEta[iEta] = -2.0;
     }
     else{
-      binLimitsEta[iEta] = binLimitsEta[iEta-1] + 1/(Float_t)nBinEta + 0.1;
+      binLimitsEta[iEta] = binLimitsEta[iEta-1] + 0.1;
     }
   }
 
@@ -464,7 +466,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   }
 
   fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
-
+  //  if(fDebug>0)aodH->SetFillAOD(kFALSE);
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
   if((fAnalysisType&kAnaMCESD)==kAnaMCESD){
     // this is the part we only use when we have MC information
@@ -608,6 +610,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     Float_t phi = leading->Phi();
     if(phi<0)phi+=TMath::Pi()*2.;    
     Float_t eta = leading->Eta();
+    pt = leading->Pt();
      while((tmpRec = (AliAODJet*)(recIter->Next()))){
       Float_t tmpPt = tmpRec->Pt();
       fh1PtJetsRecIn->Fill(tmpPt);
@@ -654,6 +657,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     Float_t phi = leading->Phi();
     if(phi<0)phi+=TMath::Pi()*2.;    
     Float_t eta = leading->Eta();
+    pt  = leading->Pt();
     while((tmpRec = (AliVParticle*)(recIter->Next()))){
       Float_t tmpPt = tmpRec->Pt();
       fh1PtTracksRecIn->Fill(tmpPt);
@@ -781,7 +785,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   fh1SumPtTrackAreaRec->Fill(sumPt*0.4*0.4/(2.*1.8),eventW);
   fh1SumPtTrackRec->Fill(sumPt,eventW);
 
-
+  
   // loop over reconstructed jets
   for(int ir = 0;ir < nRecJets;++ir){
     Double_t etaRec = recJets[ir].Eta();
@@ -796,6 +800,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       // need to cast to int, otherwise the printf overwrites
       Printf("Jet found in Event %d with p_T, %E",(int)Entry(),ptRec);
       Printf("%s read event, %d",fInputHandler->GetTree()->GetCurrentFile()->GetName(),fInputHandler->GetTree()->GetReadEntry());
+      //  aodH->SetFillAOD(kTRUE);
       fAOD->GetHeader()->Print();
       Printf("TriggerClasses: %s",fAOD->GetFiredTriggerClasses().Data());
       for(int it = 0;it < fAOD->GetNumberOfTracks();++it){

@@ -300,7 +300,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	fh2ESDTriggerRun->Fill(run,iTrig+2);
 	fh2VtxXY->Fill(xvtx,yvtx);
       }
-      if(TMath::Abs(zvtx)<fZVtxCut&&TMath::Abs(xvtx)<0.5&&TMath::Abs(yvtx)<0.5)fh2ESDTriggerRun->Fill(run,iTrig+3);
+      Float_t r2 = xvtx *xvtx + yvtx *yvtx; 
+      if(TMath::Abs(zvtx)<fZVtxCut&&r2<1)fh2ESDTriggerRun->Fill(run,iTrig+3);
     }
     else{
       fh2ESDTriggerRun->Fill(run,0);
@@ -334,7 +335,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	Float_t yvtx = vtxAOD->GetY();
 	Float_t xvtx = vtxAOD->GetX();
 	fh2TriggerVtx->Fill(it,zvtx);
-	if(TMath::Abs(zvtx)<fZVtxCut&&aodTrig&&TMath::Abs(xvtx)<0.5&&TMath::Abs(yvtx)<0.5){
+	Float_t r2   = yvtx*yvtx+xvtx*xvtx;  
+	if(TMath::Abs(zvtx)<fZVtxCut&&aodTrig&&r2<1){
 	  fh2TriggerCount->Fill(it,kTriggeredVertexIn);
 	}
       }
