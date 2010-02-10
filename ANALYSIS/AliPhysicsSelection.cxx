@@ -233,14 +233,10 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       // replay CINT1B hardware trigger
       // TODO this has to depend on the actual hardware trigger (and that depends on the run...)
       Int_t fastORHW = triggerAnalysis->SPDFiredChips(aEsd, 1); // SPD number of chips from trigger bits (!)
+      Bool_t v0AOnline = (triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);
+      Bool_t v0COnline = (triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);
       
-      AliTriggerAnalysis::V0Decision v0ADecision = triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kASide);
-      AliTriggerAnalysis::V0Decision v0CDecision = triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kCSide);
-      
-      Bool_t v0A = (v0ADecision == AliTriggerAnalysis::kV0BB);
-      Bool_t v0C = (v0CDecision == AliTriggerAnalysis::kV0BB);
-        
-      if (fastORHW == 0 && !v0A && !v0C)
+      if (fastORHW == 0 && !v0AOnline && !v0COnline)
       {
         AliDebug(AliLog::kDebug, "Rejecting event because hardware trigger is not fired");
         continue;
@@ -249,6 +245,12 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       fHistStatistics->Fill(2, i);
     
       // offline trigger
+      AliTriggerAnalysis::V0Decision v0ADecision = triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kASide, kFALSE);
+      AliTriggerAnalysis::V0Decision v0CDecision = triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kCSide, kFALSE);
+      
+      Bool_t v0AOffline = (v0ADecision == AliTriggerAnalysis::kV0BB);
+      Bool_t v0COffline = (v0CDecision == AliTriggerAnalysis::kV0BB);
+        
       Int_t fastOROffline = triggerAnalysis->SPDFiredChips(aEsd, 0); // SPD number of chips from clusters (!)
       Bool_t v0ABG = (v0ADecision == AliTriggerAnalysis::kV0BG);
       Bool_t v0CBG = (v0CDecision == AliTriggerAnalysis::kV0BG);
@@ -259,9 +261,9 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       if (fastOROffline > 1)
         fHistStatistics->Fill(4, i);
         
-      if (v0A)
+      if (v0AOffline)
         fHistStatistics->Fill(5, i);
-      if (v0C)
+      if (v0COffline)
         fHistStatistics->Fill(6, i);
       if (v0ABG)
         fHistStatistics->Fill(7, i);
@@ -276,16 +278,16 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       if (fastOROffline > 1 && !v0BG)
         fHistStatistics->Fill(11, i);
         
-      if ((fastOROffline > 0 || v0A || v0C) && !v0BG)
+      if ((fastOROffline > 0 || v0AOffline || v0COffline) && !v0BG)
         fHistStatistics->Fill(12, i);
     
-      if (fastOROffline > 0 && (v0A || v0C) && !v0BG)
+      if (fastOROffline > 0 && (v0AOffline || v0COffline) && !v0BG)
         fHistStatistics->Fill(13, i);
   
-      if (v0A && v0C && !v0BG)
+      if (v0AOffline && v0COffline && !v0BG)
         fHistStatistics->Fill(14, i);
       
-      if (fastOROffline > 1 || (fastOROffline > 0 && (v0A || v0C)) || (v0A && v0C))
+      if (fastOROffline > 1 || (fastOROffline > 0 && (v0AOffline || v0COffline)) || (v0AOffline && v0COffline))
       {
         if (!v0BG)
         {

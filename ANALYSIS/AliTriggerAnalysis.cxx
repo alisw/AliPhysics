@@ -48,6 +48,10 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fSPDGFOThreshold(2),
   fSPDGFOEfficiency(0),
   fV0TimeOffset(0),
+  fV0AdcThr(0),
+  fV0HwAdcThr(2.5),
+  fV0HwWinLow(61.5),
+  fV0HwWinHigh(86.5),
   fFMDLowCut(0.2),
   fFMDHitCut(0.5),
   fHistBitsSPD(0),
@@ -188,6 +192,7 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kFMDC : str = "FMD C"; break;
     case kFPANY : str = "SPD GFO | V0 | ZDC | FMD"; break;
     case kNSD1 : str = "NSD1"; break;
+    case kMB1Prime: str = "MB1prime"; break;
     default: str = ""; break;
   }
    
@@ -287,19 +292,19 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     }
     case kMB1:
     {
-      if (SPDGFOTrigger(aEsd, 0) || V0Trigger(aEsd, kASide) == kV0BB || V0Trigger(aEsd, kCSide) == kV0BB)
+      if (SPDGFOTrigger(aEsd, 0) || V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
         return kTRUE;
       break;
     }
     case kMB2:
     {
-      if (SPDGFOTrigger(aEsd, 0) && (V0Trigger(aEsd, kASide) == kV0BB || V0Trigger(aEsd, kCSide) == kV0BB))
+      if (SPDGFOTrigger(aEsd, 0) && (V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB))
         return kTRUE;
       break;
     }
     case kMB3:
     {
-      if (SPDGFOTrigger(aEsd, 0) && V0Trigger(aEsd, kASide) == kV0BB && V0Trigger(aEsd, kCSide) == kV0BB)
+      if (SPDGFOTrigger(aEsd, 0) && V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
         return kTRUE;
       break;
     }
@@ -317,37 +322,37 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     }
     case kV0A:
     {
-      if (V0Trigger(aEsd, kASide) == kV0BB)
+      if (V0Trigger(aEsd, kASide, kFALSE) == kV0BB)
         return kTRUE;
       break;
     }
     case kV0C:
     {
-      if (V0Trigger(aEsd, kCSide) == kV0BB)
+      if (V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
         return kTRUE;
       break;
     }
     case kV0OR:
     {
-      if (V0Trigger(aEsd, kASide) == kV0BB || V0Trigger(aEsd, kCSide) == kV0BB)
+      if (V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
         return kTRUE;
       break;
     }
     case kV0AND:
     {
-      if (V0Trigger(aEsd, kASide) == kV0BB && V0Trigger(aEsd, kCSide) == kV0BB)
+      if (V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
         return kTRUE;
       break;
     }
     case kV0ABG:
     {
-      if (V0Trigger(aEsd, kASide) == kV0BG)
+      if (V0Trigger(aEsd, kASide, kFALSE) == kV0BG)
         return kTRUE;
       break;
     }
     case kV0CBG:
     {
-      if (V0Trigger(aEsd, kCSide) == kV0BG)
+      if (V0Trigger(aEsd, kCSide, kFALSE) == kV0BG)
         return kTRUE;
       break;
     }
@@ -383,15 +388,30 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     }
     case kFPANY:
     {
-      if (SPDGFOTrigger(aEsd, 0) || V0Trigger(aEsd, kASide) == kV0BB || V0Trigger(aEsd, kCSide) == kV0BB || ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide) || FMDTrigger(aEsd, kASide) || FMDTrigger(aEsd, kCSide))
+      if (SPDGFOTrigger(aEsd, 0) || V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB || ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide) || FMDTrigger(aEsd, kASide) || FMDTrigger(aEsd, kCSide))
         return kTRUE;
       break;
     }
     case kNSD1:
     {
-      if (SPDFiredChips(aEsd, 0) >= 5 || (V0Trigger(aEsd, kASide) == kV0BB && V0Trigger(aEsd, kCSide) == kV0BB))
+      if (SPDFiredChips(aEsd, 0) >= 5 || (V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB))
         return kTRUE;
        break;
+    }
+    case kMB1Prime:
+    {
+      Int_t count = 0;
+      if (SPDGFOTrigger(aEsd, 0))
+        count++;
+      if (V0Trigger(aEsd, kASide, kFALSE) == kV0BB)
+        count++;
+      if (V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
+        count++;
+      
+      if (count >= 2)
+        return kTRUE;
+        
+      break;
     }
     default:
     {
@@ -482,8 +502,8 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd)
   
   fHistBitsSPD->Fill(SPDFiredChips(aEsd, 0), SPDFiredChips(aEsd, 1, kTRUE));
   
-  V0Trigger(aEsd, kASide, kTRUE);
-  V0Trigger(aEsd, kCSide, kTRUE);
+  V0Trigger(aEsd, kASide, kFALSE, kTRUE);
+  V0Trigger(aEsd, kCSide, kFALSE, kTRUE);
   
   AliESDZDC* zdcData = aEsd->GetESDZDC();
   if (zdcData)
@@ -583,13 +603,15 @@ Bool_t AliTriggerAnalysis::SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin)
   return kFALSE;
 }
 
-AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists)
+AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists)
 {
   // Returns the V0 trigger decision in V0A | V0C
   //
   // Returns kV0Fake if the calculated average time is in a window where neither BB nor BG is expected. 
   // The rate of such triggers can be used to estimate the background. Note that the rate has to be 
   // rescaled with the size of the windows (numerical values see below in the code)
+  //
+  // argument 'online' is used as a switch between online and offline trigger algorithms
   //
   // Based on an algorithm by Cvetan Cheshkov
   
@@ -599,27 +621,7 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
     AliError("AliESDVZERO not available");
     return kV0Invalid;
   }
-  
-  if (fMC)
-  {
-    for (Int_t i = 0; i < 32; ++i) {
-      if (side == kASide) {
-        if (esdV0->BBTriggerV0A(i))
-          return kV0BB;
-        if (esdV0->BGTriggerV0A(i))
-          return kV0BG;
-      }
-      if (side == kCSide) {
-        if (esdV0->BBTriggerV0C(i))
-          return kV0BB;
-        if (esdV0->BGTriggerV0C(i))
-          return kV0BG;
-      }
-    }
-    
-    return kV0Empty;
-  }
-  
+
   Int_t begin = -1;
   Int_t end = -1;
   
@@ -638,13 +640,61 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
     
   Float_t time = 0;
   Float_t weight = 0;
-  for (Int_t i = begin; i < end; ++i) {
-    if (esdV0->GetTime(i) > 1e-6) {
-      Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i));
-      Float_t timeWeight = V0LeadingTimeWeight(esdV0->GetAdc(i));
-      time += correctedTime*timeWeight;
-      
-      weight += timeWeight;
+  if (fMC)
+  {
+    Int_t runRange;
+    if (aEsd->GetRunNumber() <= 104803) runRange = 0;
+    else if (aEsd->GetRunNumber() <= 104876) runRange = 1;
+    else runRange = 2;
+
+    Float_t factors[3][64] = {
+      // runs: 104792-104803
+      {4.6,5.9,6.3,6.0,4.7,5.9,4.9,5.4,4.8,4.1,4.9,4.6,4.5,5.5,5.1,5.8,4.3,4.0,4.0,3.3,3.1,2.9,3.0,5.6,3.3,4.9,3.9,5.3,4.1,4.4,3.9,5.5,5.7,9.5,5.1,5.3,6.6,7.1,8.9,4.4,4.1,5.9,9.0,4.5,4.1,6.0,4.7,7.1,4.2,4.7,3.9,6.3,5.9,4.8,4.7,4.5,4.7,5.4,5.8,5.0,5.1,5.9,5.3,3.6},
+      // runs: 104841-104876
+      {4.6,4.8,4.9,4.8,4.3,4.9,4.4,4.5,4.6,5.0,4.7,4.6,4.7,4.6,4.6,5.5,4.7,4.5,4.7,5.0,6.5,7.6,5.3,4.9,5.5,4.8,4.6,4.9,4.5,4.5,4.6,4.9,5.7,9.8,4.9,5.2,7.1,7.1,8.1,4.4,4.0,6.0,8.3,4.6,4.2,5.6,4.6,6.4,4.4,4.7,4.5,6.5,6.0,4.7,4.5,4.4,4.8,5.5,5.9,5.3,5.0,5.7,5.1,3.6},
+      // runs: 104890-92
+      {4.7,5.2,4.8,5.0,4.4,5.0,4.4,4.6,4.6,4.5,4.4,4.6,4.5,4.6,4.8,5.5,4.8,4.5,4.4,4.3,5.4,7.7,5.6,5.0,5.4,4.3,4.5,4.8,4.5,4.5,4.6,5.3,5.7,9.6,4.9,5.4,6.1,7.2,8.6,4.4,4.0,5.4,8.8,4.4,4.2,5.8,4.7,6.7,4.3,4.7,4.0,6.1,6.0,4.9,4.8,4.6,4.7,5.2,5.7,5.0,5.0,5.8,5.3,3.6}
+    };
+    Float_t dA = 77.4 - 11.0;
+    Float_t dC = 77.4 - 2.9;
+    // Time misalignment
+    Float_t timeShift[64] = {0.477957 , 0.0889999 , 0.757669 , 0.205439 , 0.239666 , -0.183705 , 0.442873 , -0.281366 , 0.260976 , 0.788995 , 0.974758 , 0.548532 , 0.495023 , 0.868472 , 0.661167 , 0.358307 , 0.221243 , 0.530179 , 1.26696 , 1.33082 , 1.27086 , 1.77133 , 1.10253 , 0.634806 , 2.14838 , 1.50212 , 1.59253 , 1.66122 , 1.16957 , 1.52056 , 1.47791 , 1.81905 , -1.94123 , -1.29124 , -2.16045 , -1.78939 , -3.11111 , -1.87178 , -1.57671 , -1.70311 , -1.81208 , -1.94475 , -2.53058 , -1.7042 , -2.08109 , -1.84416 , -0.61073 , -1.77145 , 0.16999 , -0.0585339 , 0.00401133 , 0.397726 , 0.851111 , 0.264187 , 0.59573 , -0.158263 , 0.584362 , 1.20835 , 0.927573 , 1.13895 , 0.64648 , 2.18747 , 1.68909 , 0.451194};
+    Float_t dA2 = 2.8, dC2 = 3.3;
+
+    if (online) {
+      for (Int_t i = begin; i < end; ++i) {
+        Float_t tempAdc = esdV0->GetAdc(i)/factors[runRange][i];
+        Float_t tempTime = (i >= 32) ? esdV0->GetTime(i)+dA+timeShift[i]+dA2 : esdV0->GetTime(i)+dC+timeShift[i]+dC2;
+        if (esdV0->GetTime(i) >= 1e-6 &&
+            tempTime > fV0HwWinLow && tempTime < fV0HwWinHigh &&
+            tempAdc > fV0HwAdcThr)
+          return kV0BB;
+      }
+      return kV0Empty;
+    }
+    else {
+      for (Int_t i = begin; i < end; ++i) {
+        Float_t tempAdc = esdV0->GetAdc(i)/factors[runRange][i];
+        Float_t tempTime = (i >= 32) ? esdV0->GetTime(i)+dA : esdV0->GetTime(i)+dC;
+        Float_t tempRawTime = (i >= 32) ? esdV0->GetTime(i)+dA+timeShift[i]+dA2 : esdV0->GetTime(i)+dC+timeShift[i]+dC2;
+        if (esdV0->GetTime(i) >= 1e-6 &&
+            tempRawTime < 125.0 &&
+            tempAdc > fV0AdcThr) {
+          weight += 1.0;
+          time += tempTime;
+        }
+      }
+    }
+  }
+  else {
+    for (Int_t i = begin; i < end; ++i) {
+      if (esdV0->GetTime(i) > 1e-6 && esdV0->GetAdc(i) > fV0AdcThr) {
+        Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i));
+        Float_t timeWeight = V0LeadingTimeWeight(esdV0->GetAdc(i));
+        time += correctedTime*timeWeight;
+            
+        weight += timeWeight;
+      }
     }
   }
 

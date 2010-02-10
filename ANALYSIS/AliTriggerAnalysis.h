@@ -24,7 +24,7 @@ class TMap;
 class AliTriggerAnalysis : public TObject
 {
   public:
-    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
+    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
     
@@ -50,7 +50,7 @@ class AliTriggerAnalysis : public TObject
     // some "raw" trigger functions
     Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE);
     Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin);
-    V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE);
+    V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
     Bool_t ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const;
     Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side);
     
@@ -62,10 +62,13 @@ class AliTriggerAnalysis : public TObject
     void SetSPDGFOThreshhold(Int_t t) { fSPDGFOThreshold = t; }
     void SetSPDGFOEfficiency(TH1* hist) { fSPDGFOEfficiency = hist; }
     void SetV0TimeOffset(Float_t offset) { fV0TimeOffset = offset; }
+    void SetV0AdcThr(Float_t thr) { fV0AdcThr = thr; }
+    void SetV0HwPars(Float_t thr, Float_t winLow, Float_t winHigh) { fV0HwAdcThr = thr; fV0HwWinLow = winLow; fV0HwWinHigh = winHigh; }
     void SetFMDThreshold(Float_t low, Float_t hit) { fFMDLowCut = low; fFMDHitCut = hit; }
     
     Int_t GetSPDGFOThreshhold() const { return fSPDGFOThreshold; }
     Float_t GetV0TimeOffset() const { return fV0TimeOffset; }
+    Float_t GetV0AdcThr()     const { return fV0AdcThr; }
     Float_t GetFMDLowThreshold() const { return fFMDLowCut; }
     Float_t GetFMDHitThreshold() const { return fFMDHitCut; }
     
@@ -89,7 +92,11 @@ class AliTriggerAnalysis : public TObject
     TH1* fSPDGFOEfficiency;         // SPD FASTOR efficiency - is applied in SPDFiredChips. Histogram contains efficiency as function of chip number (bin 1..400: first layer; 401..1200: second layer)
     
     Float_t fV0TimeOffset;          // time offset applied to the times read from the V0 (in ns)
- 
+    Float_t fV0AdcThr;              // thresholds applied on V0 ADC data
+    Float_t fV0HwAdcThr;            // online V0 trigger - thresholds applied on ADC data 
+    Float_t fV0HwWinLow;            // online V0 trigger - lower edge of time window
+    Float_t fV0HwWinHigh;           // online V0 trigger - upper edge of time window
+
     Float_t fFMDLowCut;		    // 
     Float_t fFMDHitCut;		    // 
     
@@ -107,7 +114,7 @@ class AliTriggerAnalysis : public TObject
     
     Bool_t fMC;              // flag if MC is analyzed
 
-    ClassDef(AliTriggerAnalysis, 7)
+    ClassDef(AliTriggerAnalysis, 8)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
