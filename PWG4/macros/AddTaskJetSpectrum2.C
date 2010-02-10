@@ -82,9 +82,9 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t f
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
    }
    else if (typeRec.Contains("AODMC")){
-     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCall);
+     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
    }
-   else if (typeRec.Contains("AOD")) {
+   else { // catch akk use AOD
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAOD);
    }
 
@@ -95,9 +95,9 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t f
      pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
    }
    else if (typeGen.Contains("AODMC")){
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCall);
+     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
    }
-   else if (typeGen.Contains("AOD")) {
+   else { // catch all use AOD
      pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAOD);
    }
 
