@@ -1,11 +1,11 @@
 //_________________________________________________________________________
 //  Procedure of fast altro fitting     
 //                  
-//*-- Author:  Aleksei Pavlinov; IHEP, Protvino, Russia
+//*-- Author:  Aleksei Pavlinov; IHEP, Protvino, Russia & WSU, Detroit, USA
 
 #ifndef ALICALOFASTALTROFITV0_H
 #define ALICALOFASTALTROFITV0_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id: $ */
 
@@ -56,6 +56,7 @@ public:
   Double_t GetChi2()   const {return fChi2;}
   Int_t    GetNDF()    const {return fNDF;}
   Int_t    GetNfit()   const {return fNfit;}
+  Int_t    GetNoFit()  const {return fNoFit;}
 
   void GetFitResult(Double_t &amp, Double_t &eamp, Double_t &t0, Double_t &et0, 
                     Double_t &chi2,Int_t &ndf) const;
@@ -66,18 +67,18 @@ public:
   static Double_t StdResponseFunction(const Double_t *x, const  Double_t *par); 
 
   static void CutRightPart(Int_t *t,Int_t *y,Int_t nPoints, Double_t tMax, Int_t &ii); 
-  static void DeductPedestal(Int_t* t, Int_t* y, Int_t n, Double_t ped, Double_t tau, 
-  Double_t* tn, Double_t* yn, Int_t &nn);
+  static void DeductPedestal(Int_t* t, Int_t* y, Int_t nPointsIn, Double_t ped, Double_t tau, 
+  Double_t* tn, Double_t* yn, Int_t &nPointsOut);
 
-  static void FastFit(const Double_t* t, const Double_t* y, const Int_t n, 
+  static void FastFit(const Double_t* t, const Double_t* y, const Int_t nPoints, 
                       const Double_t sig, const Double_t tau,
                       Double_t &amp, Double_t &eamp, Double_t &t0, Double_t &et0, Double_t &chi2);
   static Bool_t QuadraticRoots(const Double_t a, const Double_t b, const Double_t c, 
                                Double_t &x1, Double_t &x2);
-  static void Amplitude(const Double_t* t, const Double_t* y, const Int_t n, 
+  static void Amplitude(const Double_t* t, const Double_t* y, const Int_t nPoints, 
                         const Double_t sig, const Double_t tau, 
                         Double_t t0, Double_t &amp, Double_t &chi2);
-  static void CalculateParsErrors(const Double_t* t, const Double_t* y, const Int_t n, 
+  static void CalculateParsErrors(const Double_t* t, const Double_t* y, const Int_t nPoints, 
                                  const Double_t sig, const Double_t tau,
 				 Double_t &amp, Double_t &t0, Double_t &eamp, Double_t &et0);
 protected:
@@ -92,6 +93,7 @@ protected:
   Double_t fT0Err;  // time error
   Double_t fChi2;   // chi square
   Int_t    fNDF;    // number degree of freedom
+  Int_t    fNoFit;  // no solution for square equation
 
   // Working variable
   Int_t     fNfit;   //! number points for fit

@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2010 ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -48,7 +48,7 @@ ClassImp(AliCaloFastAltroFitv0)
   AliCaloFastAltroFitv0::AliCaloFastAltroFitv0() 
 : TNamed(), 
   fSig(0),fTau(0),fN(0),fPed(0), fAmp(0),fAmpErr(0),fT0(0),fT0Err(0),fChi2(0.),fNDF(0)
-,fNfit(0),fTfit(0),fAmpfit(0), fStdFun(0)
+,fNoFit(0),fNfit(0),fTfit(0),fAmpfit(0), fStdFun(0)
 {
 }
 
@@ -57,7 +57,7 @@ AliCaloFastAltroFitv0::AliCaloFastAltroFitv0(const char* name, const char* title
   const Double_t sig, const Double_t tau, const Double_t n)
   : TNamed(name, title), 
   fSig(sig),fTau(tau),fN(n),fPed(0), fAmp(0),fAmpErr(0),fT0(0),fT0Err(0),fChi2(0.),fNDF(0) 
- ,fNfit(0),fTfit(0),fAmpfit(0), fStdFun(0)
+ ,fNoFit(0),fNfit(0),fTfit(0),fAmpfit(0), fStdFun(0)
 {
   if(strlen(name)==0) SetName("CaloFastAltroFitv0");
 }
@@ -66,7 +66,7 @@ AliCaloFastAltroFitv0::AliCaloFastAltroFitv0(const char* name, const char* title
 AliCaloFastAltroFitv0::AliCaloFastAltroFitv0(const AliCaloFastAltroFitv0 &obj)
   : TNamed(obj), 
   fSig(0),fTau(0),fN(2.),fPed(0), fAmp(0),fAmpErr(0),fT0(0),fT0Err(0),fChi2(0.),fNDF(0) 
- ,fNfit(0),fTfit(0),fAmpfit(0), fStdFun(0)
+ ,fNoFit(0),fNfit(0),fTfit(0),fAmpfit(0), fStdFun(0)
 {
 }
 
@@ -112,8 +112,12 @@ void AliCaloFastAltroFitv0::FastFit(Int_t* t, Int_t* y, Int_t nPoints, Double_t 
   if(fNfit>=2) {
     FastFit(fTfit,fAmpfit,fNfit,sig,tau, fAmp,fAmpErr, fT0,fT0Err,fChi2);
 
-    if(fChi2> 0.0) fNDF = fNfit - 2;
-    else           fNDF = 0; 
+    if(fChi2> 0.0) {
+      fNDF = fNfit - 2;
+    } else {
+      fNDF = 0;
+      fNoFit++;
+    }
   } else if(fNfit==1){
     Reset(); // What to do here => fT0 = fTfit[0]; fAmp = fAmpFit[0] ??
   } else {
@@ -125,7 +129,8 @@ void AliCaloFastAltroFitv0::FastFit(Int_t* t, Int_t* y, Int_t nPoints, Double_t 
 void AliCaloFastAltroFitv0::FastFit(TH1F* h, Double_t sig, Double_t tau, Double_t n,
 Double_t ped, Double_t tMax)
 {
-  // Service method for convinience only  
+  // Service method for convinience only
+  // h - hist with altro response  
   Reset();
 
   if(h==0) return;
@@ -143,6 +148,7 @@ Double_t ped, Double_t tMax)
   if(nPoints>=2) {
     FastFit(t,y,nPoints, sig,tau,n,ped, tMax);
   }
+  if(fChi2<=0.0) fNoFit++;
 
   delete [] t;
   delete [] y;
@@ -198,14 +204,14 @@ void  AliCaloFastAltroFitv0::CutRightPart(Int_t *t,Int_t *y,Int_t nPoints,Double
   if(0) printf(" ii %i -> ii %i : tMax %7.2f \n", nPoints, ii, tMax);
 }
 
-void AliCaloFastAltroFitv0::DeductPedestal(Int_t* t, Int_t* y, Int_t n, Double_t tau, Double_t ped, 
-  Double_t* tn, Double_t* yn, Int_t &nn)
+void AliCaloFastAltroFitv0::DeductPedestal(Int_t* t, Int_t* y, Int_t nPoints, Double_t tau, Double_t ped, 
+  Double_t* tn, Double_t* yn, Int_t &nPointsOut)
 {
   // Pedestal deduction if ped is positive : static function
   // Discard part od samle if it is not compact.
   static Double_t yMinUnderPed=2.; // should be tune
   Int_t ymax=0, nmax=0;
-  for(Int_t i=0; i<n; i++){
+  for(Int_t i=0; i<nPoints; i++){
     if(y[i]>ymax) {
       ymax = y[i];
       nmax = i;
@@ -214,9 +220,9 @@ void AliCaloFastAltroFitv0::DeductPedestal(Int_t* t, Int_t* y, Int_t n, Double_t
   Int_t i1 = nmax - Int_t(tau);
   //i1 = 0;
   i1 = i1<0?0:i1;
-  Int_t i2 = n;
+  Int_t i2 = nPoints;
 
-  nn = 0;
+  nPointsOut = 0;
   Double_t yd=0.0, tdiff=0.0;;
   for(Int_t i=i1; i<i2; i++) {
     if(ped>0.0) {
@@ -226,13 +232,13 @@ void AliCaloFastAltroFitv0::DeductPedestal(Int_t* t, Int_t* y, Int_t n, Double_t
     }
     if(yd < yMinUnderPed) continue;
 
-    if(i>i1 && nn>0){
-      tdiff = t[i] - tn[nn-1];
-      //      printf(" i %i : nn %i : tdiff %6.2f : tn[nn] %6.2f \n", i,nn, tdiff, tn[nn-1]);
+    if(i>i1 && nPointsOut>0){
+      tdiff = t[i] - tn[nPointsOut-1];
+      //      printf(" i %i : nPointsOut %i : tdiff %6.2f : tn[nPointsOut] %6.2f \n", i,nPointsOut, tdiff, tn[nPointsOut-1]);
       if(tdiff>1.) {
      // discard previous points if its are before maximum point and with gap>1
         if(i<nmax ) {
-          nn = 0; // nn--;
+          nPointsOut = 0; // nPointsOut--;
      // if point with gap after maximum - finish selection
         } else if(i>=nmax ) {
           break;
@@ -241,29 +247,32 @@ void AliCaloFastAltroFitv0::DeductPedestal(Int_t* t, Int_t* y, Int_t n, Double_t
      // Far away from maximum
      //if(i-nmax > Int_t(5*tau))              break;
     }
-    tn[nn] = Double_t(t[i]);
-    yn[nn] = yd;
-    //printf("i %i : nn %i : tn %6.2f : yn %6.2f \n", i, nn, tn[nn], yn[nn]); 
-    nn++;
+    tn[nPointsOut] = Double_t(t[i]);
+    yn[nPointsOut] = yd;
+    //printf("i %i : nPointsOut %i : tn %6.2f : yn %6.2f \n", i, nPointsOut, tn[nPointsOut], yn[nPointsOut]); 
+    nPointsOut++;
   }
-  //printf(" nmax %i : n %i : nn %i i1 %i \n", nmax, n, nn, i1);
+  //printf(" nmax %i : nPointsIn %i :nPointsOut %i i1 %i \n", nmax, nPointsIn, nPointsOut, i1);
 }
 
-void AliCaloFastAltroFitv0::FastFit(const Double_t* t, const Double_t* y, const Int_t n, 
+void AliCaloFastAltroFitv0::FastFit(const Double_t* t, const Double_t* y, const Int_t nPoints, 
                                     const Double_t sig, const Double_t tau,
                                     Double_t &amp, Double_t &eamp, Double_t &t0, Double_t &et0, Double_t &chi2)
 {
-  // static function
+  // Static function
   // It is case of n=k=2 : fnn = x*x*exp(2 - 2*x)
   // Input: 
-  //     n  - number of points 
-  //   t[n] - array of time bins
-  //   y[n] - array of amplitudes after pedestal subtractions;
+  //nPoints  - number of points 
+  //   t[]   - array of time bins
+  //   y[]   - array of amplitudes after pedestal subtractions;
   //   sig   - error of amplitude measurement (one value for all channels)
   //   tau   - filter time response (in timebin units)
   // Output:
   //       amp - amplitude at t0;
+  //      eamp - error of amplitude; 
   //        t0 - time of max amplitude; 
+  //       et0 - error of t0;
+  //      chi2 - chi2
   static Double_t xx; // t/tau
   static Double_t a, b, c;
   static Double_t f02, f12, f22;    // functions
@@ -271,13 +280,13 @@ void AliCaloFastAltroFitv0::FastFit(const Double_t* t, const Double_t* y, const 
 
   chi2 = -1.;
 
-  if(n<2) {
-    printf(" AliCaloFastAltroFitv0::FastFit : n<=%i \n", n); 
+  if(nPoints<2) {
+    printf(" AliCaloFastAltroFitv0::FastFit : nPoints<=%i \n", nPoints); 
     return;
   }
 
   a = b = c = 0.0;
-  for(Int_t i=0; i<n; i++){
+  for(Int_t i=0; i<nPoints; i++){
     xx  = t[i]/tau;
     f02 = exp(-2.*xx);
     f12 = xx*f02;
@@ -296,8 +305,8 @@ void AliCaloFastAltroFitv0::FastFit(const Double_t* t, const Double_t* y, const 
   if(QuadraticRoots(a,b,c, t01,t02)) {
     t01 *= tau;
     t02 *= tau;
-    Amplitude(t,y,n, sig, tau, t01, amp1, chi21);
-    Amplitude(t,y,n, sig, tau, t02, amp2, chi22);
+    Amplitude(t,y,nPoints, sig, tau, t01, amp1, chi21);
+    Amplitude(t,y,nPoints, sig, tau, t02, amp2, chi22);
     if(0) {
       printf(" t01 %f : t02 %f \n", t01, t02);
       printf(" amp1 %f : amp2 %f \n", amp1, amp2);
@@ -313,10 +322,10 @@ void AliCaloFastAltroFitv0::FastFit(const Double_t* t, const Double_t* y, const 
       chi2 = chi22; 
     }
     if(tau<3.) { // EMCAL case : small tau 
-      t0 += -0.03; 
-      Amplitude(t,y,n, sig, tau, t0, amp, chi2);
+      t0 += -0.03; // Discard bias in t0
+      Amplitude(t,y,nPoints, sig, tau, t0, amp, chi2);
     }
-    CalculateParsErrors(t, y, n, sig, tau, amp, t0, eamp, et0);
+    CalculateParsErrors(t, y, nPoints, sig, tau, amp, t0, eamp, et0);
 
     // Fill1();
     
@@ -334,13 +343,13 @@ Bool_t AliCaloFastAltroFitv0::QuadraticRoots(const Double_t a, const Double_t b,
   // Resolve quadratic equations a*x**2 + b*x + c
   //printf(" a %12.5e b %12.5e c %12.5e \n", a, b, c);
   static Double_t dtmp = 0.0, dtmpCut = -1.e-6;
-  static Int_t ierr=0;
+  static Int_t iWarning=0, iNoSolution=0;
   dtmp = b*b - 4.*a*c;
 
   if(dtmp>=dtmpCut && dtmp<0.0) {
-    if(ierr<5 || ierr%1000==0)
-      printf("%i small neg. sq. : dtmp %12.5e \n", ierr, dtmp);
-    ierr++;
+    if(iWarning<5 || iWarning%1000==0)
+      printf("<W> %i small neg. sq. : dtmp %12.5e \n", iWarning, dtmp);
+    iWarning++;
     dtmp = 0.0;
   }
   if(dtmp>=0.0) {
@@ -352,14 +361,14 @@ Bool_t AliCaloFastAltroFitv0::QuadraticRoots(const Double_t a, const Double_t b,
     return kTRUE;
   } else {
     x1 = dtmp;
-    if(ierr<5 || ierr%1000==0)
-      printf(" %i neg. sq. : dtmp %12.5e \n", ierr, dtmp);
-    ierr++;
+    if(iNoSolution<5 || iNoSolution%1000==0)
+      printf("<No solution> %i neg. sq. : dtmp %12.5e \n", iNoSolution, dtmp);
+    iNoSolution++;
     return kFALSE;
   }
 }
 
-void AliCaloFastAltroFitv0::Amplitude(const Double_t* t,const Double_t* y,const Int_t n, 
+void AliCaloFastAltroFitv0::Amplitude(const Double_t* t,const Double_t* y,const Int_t nPoints, 
                                       const Double_t sig, const Double_t tau, const Double_t t0, 
                                       Double_t &amp, Double_t &chi2)
 {  
@@ -367,7 +376,7 @@ void AliCaloFastAltroFitv0::Amplitude(const Double_t* t,const Double_t* y,const 
   // sig is independent from points
   amp = 0.;
   Double_t x=0.0, f=0.0, den=0.0, f02;
-  for(Int_t i=0; i<n; i++){
+  for(Int_t i=0; i<nPoints; i++){
     x    = (t[i] - t0)/tau;
     f02  = exp(-2.*x);
     f    = x*x*f02;     
@@ -380,7 +389,7 @@ void AliCaloFastAltroFitv0::Amplitude(const Double_t* t,const Double_t* y,const 
   //
   Double_t dy=0.0;
   chi2=0.;
-  for(Int_t i=0; i<n; i++){
+  for(Int_t i=0; i<nPoints; i++){
     x    = (t[i] - t0)/tau;
     f02  = exp(-2.*x);
     f    = amp*x*x*f02;
@@ -391,7 +400,7 @@ void AliCaloFastAltroFitv0::Amplitude(const Double_t* t,const Double_t* y,const 
   chi2 /= (sig*sig);
 }
 
-void AliCaloFastAltroFitv0::CalculateParsErrors(const Double_t* t, const Double_t* /*y*/, const Int_t n, 
+void AliCaloFastAltroFitv0::CalculateParsErrors(const Double_t* t, const Double_t* /*y*/, const Int_t nPoints, 
                                                 const Double_t sig, const Double_t tau, 
                                                 Double_t &amp, Double_t &t0, Double_t &eamp, Double_t &et0)
 {
@@ -402,7 +411,7 @@ void AliCaloFastAltroFitv0::CalculateParsErrors(const Double_t* t, const Double_
 
   Double_t sumf2=0.0, sumfd2=0.0, x, f02, f12, f22, f22d;
 
-  for(Int_t i=0; i<n; i++){
+  for(Int_t i=0; i<nPoints; i++){
     x    = (t[i] - t0)/tau;
     f02  = exp(-2.*x);
     f12  = x*f02;
