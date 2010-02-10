@@ -16,6 +16,7 @@
 #include "AliHLTMUONFullTracker.h"
 #include <cassert>
 
+
 class AliHLTMUONFullTrackerComponent : public AliHLTMUONProcessor {
  public:
   /// Constructor
@@ -71,8 +72,8 @@ class AliHLTMUONFullTrackerComponent : public AliHLTMUONProcessor {
   int Configure(const char* arguments);
   /// % of output data blocks
   unsigned fOutputPercentage; // see above
-  /// Pointer to the full tracker
-  AliHLTMUONFullTracker *fTracker;
+  
+  AliHLTMUONFullTracker *fTracker; /// Pointer to the full tracker
   
   ClassDef(AliHLTMUONFullTrackerComponent, 0)
     };

@@ -94,6 +94,20 @@ public:
 	static AliHLTInt32_t GetkDDLOffSet() { return fgkDDLOffSet; }
 	static AliHLTInt32_t GetkNofDDL() { return fgkNofDDL; }
 	static AliHLTInt32_t GetkDDLHeaderSize() { return fgkDDLHeaderSize; }
+	static AliHLTInt32_t GetkNofDetElemInDDL(Int_t iDDL) 
+	{ 
+	  if(iDDL>=0 && iDDL<=19)
+	    return fgkNofDetElemInDDL[iDDL];
+	  else
+	    return -1; 
+	}
+	static AliHLTInt32_t GetkMinDetElemIdInDDL(Int_t iDDL) 
+	{ 
+	  if(iDDL>=0 && iDDL<=19)
+	    return fgkMinDetElemIdInDDL[iDDL];
+	  else
+	    return -1; 
+	}
 	
 	/// The error recovery mode used for TryRecover.
 	enum ERecoveryMode
@@ -151,6 +165,9 @@ public:
 	/// Sets the DDL number the component expects data to be received from.
 	void DDLNumber(AliHLTInt32_t value) { fDDL = (value & 0x1F); }  // 0x1F forces value into our required range.
 
+	bool InitDetElemInDDLArray();
+	bool DeInitDetElemInDDLArray();
+
 private:
 
 	static const AliHLTInt32_t fgkDetectorId;      // DDL Offset
@@ -158,6 +175,9 @@ private:
 	static const AliHLTInt32_t fgkNofDDL;          // Number of DDL 
 	static const AliHLTInt32_t fgkDDLHeaderSize;   // DDL header size
 	static const AliHLTInt32_t fgkLutLine;         // nof Line in LookupTable
+	static const AliHLTInt32_t fgkMaxNofDataPerDetElem;         // maximum allowed data points per detlem
+	static const AliHLTInt32_t fgkNofDetElemInDDL[20] ;         // nof Detelem in a given ddl
+	static const AliHLTInt32_t fgkMinDetElemIdInDDL[20] ;       // the detelem which has minimum value in ddl
 
 protected:
 
@@ -172,6 +192,7 @@ private:
 		AliHLTInt32_t fIX, fIY;  // The X,Y number of the pad.
 		AliHLTFloat32_t fRealX, fRealY, fRealZ;   // The real coordinate of the pad.
 		AliHLTFloat32_t fHalfPadSize; // half padsize in X and Y
+	        AliHLTFloat32_t fPadSizeXY; // padsize in Y for bending plane and X for nonbending
 		AliHLTInt32_t fPlane;   // The plane and PCB zone ID numbers.
 		AliHLTFloat32_t fCharge;  // The charge measured on the pad.
 		AliHLTInt32_t fBusPatch;  // The bus patch of the raw data word from the DDL stream.
@@ -186,30 +207,27 @@ private:
 		AliHLTMUONRawDecoder();
 		virtual ~AliHLTMUONRawDecoder();
 		
-		void OnData(UInt_t dataWord, bool /*parityError*/);
-		void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* header, const void* /*data*/) 
-		{
-		  fBusPatchId = int(header->fBusPatchId);
-		  MaxEntryPerBusPatch& maxEntryPerBusPatch 
-		    = * const_cast<MaxEntryPerBusPatch*>(fMaxEntryPerBusPatch);
-		  fIsMuchNoisy = false;
-		  if(AliHLTInt32_t(header->fLength)> maxEntryPerBusPatch[fBusPatchId])
-		    fIsMuchNoisy = true;
-		  
-		};
+		void OnData(UInt_t dataWord, bool parityError);
+		void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* header, const void* data) ;
 		
 		void OnNewBuffer(const void* buffer, UInt_t bufferSize);
 		void OnError(ErrorCode code, const void* location);
 		
 		void SetDCCut(AliHLTInt32_t dcCut) {fDCCut = dcCut;}
 		void SetPadData(AliHLTMUONPad* padData) {fPadData = padData;}
-		void SetLookUpTable(const AliHLTMUONHitRecoLutRow* lookUpTableData) {fLookUpTableData = lookUpTableData;}
-		void SetNofFiredDetElemId(AliHLTInt32_t& nofFiredDetElem) {fNofFiredDetElem = &nofFiredDetElem;}
-		void SetIdManuChannelToEntry(const IdManuChannelToEntry* idToEntry) {fIdToEntry = idToEntry;}
-		void SetMaxEntryPerBusPatch(const MaxEntryPerBusPatch* maxEntryPerBP) {fMaxEntryPerBusPatch = maxEntryPerBP;}
-		void SetMaxFiredPerDetElem(AliHLTInt32_t* maxFiredPerDetElem) {fMaxFiredPerDetElem = maxFiredPerDetElem;}
-		
-		AliHLTInt32_t GetDataCount() {return fDataCount;}
+		void SetLookUpTable(const AliHLTMUONHitRecoLutRow* lookUpTableData) {fkLookUpTableData = lookUpTableData;}
+
+		void SetIdManuChannelToEntry(const IdManuChannelToEntry* idToEntry) {fkIdToEntry = idToEntry;}
+		void SetMaxEntryPerBusPatch(const MaxEntryPerBusPatch* maxEntryPerBP) {fkMaxEntryPerBusPatch = maxEntryPerBP;}
+
+		AliHLTInt32_t DDLNumber() const { return fDDL; }
+		void DDLNumber(AliHLTInt32_t value) { fDDL = (value & 0x1F); }  // 0x1F forces value into our required range.
+		// The following two methods have to called after set the ddl
+		void SetNofFiredDetElemId(AliHLTUInt16_t *nofDataInDetElem) {fNofDataInDetElem = nofDataInDetElem;}
+		void SetMaxFiredPerDetElem(AliHLTUInt16_t **dataCountListPerDetElem) {fDataCountListPerDetElem = dataCountListPerDetElem;}		
+
+
+		AliHLTInt32_t GetDataCount() const {return fDataCount;}
 		
 		/**
 		 * Returns true if the OnError handler method will only generate warning
@@ -270,16 +288,17 @@ private:
                 /// Not implemented
 		AliHLTMUONRawDecoder& operator=(const AliHLTMUONRawDecoder& rhs); // assignment operator
 	
-		const void* fBufferStart;   // Pointer to the start of the current DDL payload buffer.
+		const void* fkBufferStart;   // Pointer to the start of the current DDL payload buffer.
 		AliHLTInt32_t fBusPatchId;  // buspatchId
 		AliHLTInt32_t fDCCut;       // DC Cut value
 		AliHLTMUONPad* fPadData;    // pointer to the array containing the information of each padhits
-		const AliHLTMUONHitRecoLutRow* fLookUpTableData;   // pointer to the array of Lookuptable data
-		AliHLTInt32_t* fNofFiredDetElem;         // counter for detector elements that are fired 
-		AliHLTInt32_t* fMaxFiredPerDetElem;      // array for detector elements that are fired 
-		const IdManuChannelToEntry* fIdToEntry;  // Mapping between Linenumber to IdManuChannel;
-		const MaxEntryPerBusPatch* fMaxEntryPerBusPatch;   // Maximum allowed entry per Buspatch.
+		const AliHLTMUONHitRecoLutRow* fkLookUpTableData;   // pointer to the array of Lookuptable data
+		/* AliHLTInt32_t* fNofFiredDetElem;         // counter for detector elements that are fired  */
+		/* AliHLTInt32_t* fMaxFiredPerDetElem;      // array for detector elements that are fired  */
+		const IdManuChannelToEntry* fkIdToEntry;  // Mapping between Linenumber to IdManuChannel;
+		const MaxEntryPerBusPatch* fkMaxEntryPerBusPatch;   // Maximum allowed entry per Buspatch.
 		
+		AliHLTInt32_t fDDL;                 // DDL number
 		AliHLTInt32_t fDataCount;           // Data Counter
 		AliHLTInt32_t fPrevDetElemId;       // previous detection elementId
 		AliHLTInt32_t fPadCharge;           // pedestal subtracted pad charge
@@ -287,6 +306,8 @@ private:
 		AliHLTInt32_t fIdManuChannel;       // id manu channel
 		AliHLTInt32_t fLutEntry;            // i-th entry in lookuptable
 		
+		AliHLTUInt16_t **fDataCountListPerDetElem;	         ///< List of datacounts associated with given ddl
+		AliHLTUInt16_t *fNofDataInDetElem;	                 ///< Nof datacount in a ddl
 		bool fWarnOnly;  ///< Flag indicating if the OnError method should generate warnings rather than error messages.
 		bool fSkipParityErrors;  ///< Flag indicating if ADC digits with parity errors should be skipped.
 		bool fDontPrintParityErrors;  ///< Flag for controlling if messages about parity errors should be printed.
@@ -305,7 +326,7 @@ private:
 	AliHLTInt32_t fDCCut;                 // DC Cut value
 	
 	AliHLTMUONPad* fPadData;  // pointer to the array containing the information of each padhits
-	const AliHLTMUONHitRecoLutRow* fLookUpTableData;  // pointer to the array of Lookuptable data (The memory is not owned by this component).
+	const AliHLTMUONHitRecoLutRow* fkLookUpTableData;  // pointer to the array of Lookuptable data (The memory is not owned by this component).
 	
 	AliHLTMUONRecHitStruct* fRecPoints;      // Reconstructed hits
 	AliHLTUInt32_t *fRecPointsCount;         // nof reconstructed hit.
@@ -326,7 +347,9 @@ private:
 	
 	AliHLTInt32_t fCentralCountB, fCentralCountNB;   // centeral hits.
 	AliHLTInt32_t fDigitPerDDL;                      // Total nof Digits perDDL.
-	
+
+	AliHLTUInt16_t **fDataCountListPerDetElem;	         // List of datacounts associated with given ddl
+	AliHLTUInt16_t *fNofDataInDetElem;	                 // Nof datacount in a ddl
 	AliHLTInt32_t *fCentralChargeB, *fCentralChargeNB;       // pointer to an array of central hit
 	AliHLTFloat32_t *fRecX, *fRecY;                          // pointer to an array of reconstructed hit
 	AliHLTFloat32_t *fAvgChargeX, *fAvgChargeY;              // average charge on central pad found using CG method
@@ -334,17 +357,18 @@ private:
 	AliHLTInt32_t *fNofBChannel, *fNofNBChannel;             // number of channels bending and non-bending.
 	AliHLTInt32_t *fNofYNeighbour;                           // number of neighbour pad in y direction, needed for y-resolution correction
 	AliHLTInt32_t fGetIdTotalData[336][237][2];              // an array of idManuChannel with argument of centralX, centralY and planeType.
-	AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[130];  // counter for detector elements that are fired
-	const IdManuChannelToEntry* fIdToEntry;   // Mapping between Linenumber to IdManuChannel (The object is not owned by this component).
-	const MaxEntryPerBusPatch* fMaxEntryPerBusPatch;   // Maximum allowed entry per Buspatch.
+	//AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[130];  // counter for detector elements that are fired
+	const IdManuChannelToEntry* fkIdToEntry;   // Mapping between Linenumber to IdManuChannel (The object is not owned by this component).
+	const MaxEntryPerBusPatch* fkMaxEntryPerBusPatch;   // Maximum allowed entry per Buspatch.
 	
 	ERecoveryMode fRecoveryMode;  ///< The recovery mode for the decoder.
 	
 	bool DecodeDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
-	void FindCentralHits(AliHLTInt32_t minPadId, AliHLTInt32_t maxPadId);
+	void FindCentralHits(AliHLTInt32_t iDet);
 	bool FindRecHits();
 	void RecXRecY();
-	bool MergeRecHits();
+	bool MergeSlatRecHits();
+	bool MergeQuadRecHits();
 	void Clear();
 
 };

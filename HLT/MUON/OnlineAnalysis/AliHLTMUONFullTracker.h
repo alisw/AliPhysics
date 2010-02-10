@@ -3,22 +3,58 @@
 /* This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
+
+///
+///  @file   AliHLTMUONFullTracker.h
+///  @author Indranil Das <indra.das@saha.ac.in> | <indra.ehep@gmail.com>
+///  @date   09 Feb 2010
+///  @brief  For full tracking in the dimuon HLT.
+///
+
+
 /**********************************************************************
-// Created on : 08/12/2009
-// Purpose    : First version implementation of the Full tracker for dHLT.
-// Author     : Indranil Das, HEP Division, SINP
-// Email      : indra.das@saha.ac.in | indra.ehep@gmail.com
+ Created on : 08/12/2009
+ Purpose    : First version implementation of the Full tracker for dHLT.
+ Author     : Indranil Das, HEP Division, SINP
+ Email      : indra.das@saha.ac.in | indra.ehep@gmail.com
 **********************************************************************/
 
-#include "AliHLTLogging.h"
-#include "TMatrixD.h"
+#include <iostream>
+#include <map>
 
-class AliHLTMUONConstants;
-class AliHLTMUONMansoTrackStruct;
-class AliHLTMUONTriggerRecordStruct;
-class AliHLTMUONRecHitStruct;
-class AliMUONGeometryTransformer;
-class AliMUONTrackParam;
+#include "TMatrixD.h"
+#include "TMath.h"
+#include "AliHLTMUONDataBlockReader.h"
+#include "AliHLTMUONDataBlockWriter.h"
+
+
+class	AliHLTMUONUtils;
+class	AliHLTMUONDataTypes;
+class	AliHLTMUONConstants;
+class	AliRunInfo;
+class	AliLog;
+class	AliCDBEntry;
+class	AliMpDEIterator;
+class	AliMpCDB;
+class	AliMpSegmentation;
+class	AliMpDDLStore;
+class	AliMUONTrackParam;
+class	AliMUONGeometryTransformer;
+class	AliMUONConstants;
+class	AliMUONTrackExtrap;
+class	AliMUONTrackParam;
+class	AliMUONTrackExtrap;
+class	AliGRPObject;
+class	AliGeomManager;
+class	AliCDBStorage;
+class	AliCDBManager;
+class	AliMagF;
+class	TGeoGlobalMagField;
+class	TVector3;
+class	TString;
+class	TMap;
+
+typedef std::map<Int_t, Int_t> DetElemList;
 
 class AliHLTMUONFullTracker : public AliHLTLogging
 {
@@ -27,7 +63,7 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   ///Constructor
   AliHLTMUONFullTracker() ;
   ///Destructor
-  ~AliHLTMUONFullTracker();
+  virtual ~AliHLTMUONFullTracker();
 
   ///Print message
   void Print();
@@ -39,7 +75,9 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   Bool_t Run(int iEvent,AliHLTMUONMansoTrackStruct *data, AliHLTUInt32_t& size);
   ///To be called once from DoInit method of component
   Bool_t Init();
-  
+  ///Max number of points per chamber
+  int MaxNofPointsPerCh(){return fgkMaxNofPointsPerCh;}
+
  protected:
 
   /// copy constructor
@@ -51,21 +89,26 @@ class AliHLTMUONFullTracker : public AliHLTLogging
 
   /// intger pair needed for QuadTrackSeg method
   struct IntPair{
-    Int_t fFirst,fSecond;  /// First and second element of the pair.
+    Int_t fFirst,fSecond; /// First and second
   };
   ///Structure for internal track segments
   struct TrackSeg{
-    Int_t fIndex[4];    /// Index of the chamber rec hit point in fChPoint.
-    AliHLTInt32_t fTrigRec;  /// The corresponding trigger record ID.
+    Int_t fIndex[4]; /// index array for cluster address
+    AliHLTInt32_t fTrigRec; /// trigrec
   };
 
   ///Sructure for clusters
   struct Cluster{
-    Float_t fX,fY,fZ;       /// Cluster point X, Y, Z.
-    Float_t fErrX2,fErrY2;  /// The square of the uncertainty (variance) on X and Y.
+    Float_t fX,fY,fZ;  /// position
+    Float_t fErrX2,fErrY2;  /// error in position
   };
+ 
+  ///Sructure for clusters
+  struct HalfTrack{
+    Float_t fPx,fPy,fPz; /// momentum
+    Int_t fCharge;       /// charge
+  }; 
 
-  
   static const Float_t fgkTrackDetCoordinate[3]; /// set the constant value for third station position and size
   
   static const Double_t fgkAbsoedge[4] ;     /// edge of the absorber
@@ -80,33 +123,35 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   static const Int_t fgkMaxNofTracks;           /// maximum number of allowed tracks
   static const Int_t fgkMaxNofConnectedTracks;  /// maximum number of back to front connected tracks
   
-  AliMUONGeometryTransformer *fChamberGeometryTransformer;   /// Pointer to AliMUONGeometryTransformer
-  
-  AliHLTMUONRecHitStruct ***fChPoint;  /// array of pointer to rechit data
-  AliHLTMUONTriggerRecordStruct **fChPoint11;   ///array of pointer to trigrec data
-  TrackSeg *fBackTrackSeg;  /// track segments at the rear part of the spectrometer
-  TrackSeg *fFrontTrackSeg;  /// track segments close the part of interaction point  of ALICE
-  
-  Float_t *fExtrapSt3X ;  /// Extrapolated x position in third station
-  Float_t *fExtrapSt3Y ;  /// Extrapolated y position in third station
-  Float_t *fInclinationBack;  /// values of inclination angle of back track segments
+  AliMUONGeometryTransformer *fChamberGeometryTransformer; /// Pointer to AliMUONGeometryTransformer
+  AliHLTMUONRecHitStruct ***fChPoint; /// array of pointer to rechit data
+  AliHLTMUONTriggerRecordStruct **fChPoint11; ///array of pointer to trigrec data
+  TrackSeg *fBackTrackSeg; /// track segments at the rear part of the spectrometer
+  TrackSeg *fFrontTrackSeg; /// track segments close the part of interaction point  of ALICE
+  Float_t *fExtrapSt3X ; /// Extrapolated x position in third station
+  Float_t *fExtrapSt3Y ; /// Extrapolated y position in third station
+  Float_t *fInclinationBack; /// values of inclination angle of back track segments
 
-  Int_t *fNofConnectedfrontTrackSeg ;  /// nof connected tracks in front direction for each back track segments
-  Int_t **fBackToFront;  /// Pointer to back to front segment mapping
-  Float_t *fCharge;  /// Charge of the tracks
-  Int_t *fNofPoints ;  /// Number of points for each stations
-  AliMUONTrackParam *fTrackParam ;  /// track parameters;
+  Int_t *fNofConnectedfrontTrackSeg ; /// nof connected tracks in front direction for each back track segments
+  Int_t **fBackToFront; /// Pointer to back to front segment mapping
+  Int_t *fNofPoints ; /// Number of points for each stations
+  AliMUONTrackParam *fTrackParam ; /// track parameters;
+  HalfTrack *fHalfTrack; /// momentum parameters for the tracks which doesnot have tracksegment in quadrants
 
-  Int_t fTotNofPoints;  /// Total number of points received from all rechit source
-  Int_t fTotTrackSeg;  /// Total number of track segments
-  Int_t fNofCells[2];  /// Number of cells per station in QuadSeg
-  Bool_t fOverflowed;  /// Check if overflowed
-  Int_t fNofbackTrackSeg;  /// number of back track segments
-  Int_t fNoffrontTrackSeg;  /// number of front track segments
-  Int_t fNofConnected ;  /// number of connected track segments
+  Int_t fTotNofPoints; /// Total number of points received from all rechit source
+  Int_t fTotTrackSeg; /// Total number of track segments
+  Int_t fNofCells[2]; // nof cell count per station
+  Int_t fNofbackTrackSeg; /// number of back track segments
+  Int_t fNoffrontTrackSeg; /// number of front track segments
+  Int_t fNofConnected ; /// number of connected track segments
+  AliHLTUInt32_t fNofTracks; /// number of connected track segments
+  DetElemList fDetElemList; ///Map for valid detelem
+  
 
   /// Slat Track segments 
   Bool_t SlatTrackSeg();
+  /// Calculate preliminary momentum
+  Bool_t PrelimMomCalc();
   /// Quad Track segments 
   Bool_t QuadTrackSeg();
   /// Kalman Chi2 test
@@ -114,8 +159,8 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   /// track extrapolation through  dipole magnet to connect front and back track seg
   Bool_t SelectFront();
   /// Propagate tracks
-  void PropagateTracks(Double_t charge, Float_t& px, Float_t& py, Float_t& pz,
-		       Float_t& xr, Float_t& yr, Float_t& zr, Float_t zprop) const;
+  void PropagateTracks(Double_t charge, Float_t& px, Float_t& py, Float_t& pz, 
+		       Float_t& xr, Float_t& yr, Float_t& zr, Float_t zprop);
   /// extrapolate to origin
   Bool_t ExtrapolateToOrigin(Bool_t extrap);
   /// Clean after each run
@@ -123,42 +168,40 @@ class AliHLTMUONFullTracker : public AliHLTLogging
 
 
   /// Angle calculate
-  Double_t Angle(const AliHLTMUONRecHitStruct *v1, const AliHLTMUONRecHitStruct *v2) const;
+  inline Double_t Angle(const AliHLTMUONRecHitStruct *v1, const AliHLTMUONRecHitStruct *v2);
   /// Subtracktion of two point
-  void Sub(const AliHLTMUONRecHitStruct *v1, const AliHLTMUONRecHitStruct *v2, AliHLTMUONRecHitStruct *v3) const;
+  inline void Sub(const AliHLTMUONRecHitStruct *v1, const AliHLTMUONRecHitStruct *v2, AliHLTMUONRecHitStruct *v3) const;
   /// Kalman Filter
-  Double_t KalmanFilter(AliMUONTrackParam &trackParamAtCluster, Cluster *cluster);
+  inline Double_t KalmanFilter(AliMUONTrackParam &trackParamAtCluster, Cluster *cluster);
   /// Try onecluster
-  Double_t TryOneCluster(const AliMUONTrackParam &trackParam, Cluster* cluster,
+  inline Double_t TryOneCluster(const AliMUONTrackParam &trackParam, Cluster* cluster,
 				AliMUONTrackParam &trackParamAtCluster, Bool_t updatePropagator);
-  Bool_t TryOneClusterFast(const AliMUONTrackParam &trackParam, const Cluster* cluster) const;
+  inline Bool_t TryOneClusterFast(const AliMUONTrackParam &trackParam, const Cluster* cluster);
 
   /// MCS effect correction
-  void CorrectMCSEffectInAbsorber(AliMUONTrackParam* param,
+  inline void CorrectMCSEffectInAbsorber(AliMUONTrackParam* param,
 					 Double_t xVtx, Double_t yVtx, Double_t zVtx,
 					 Double_t absZBeg, 
 					 Double_t f1, Double_t f2);
   /// Covariant handling function
-  void Cov2CovP(const TMatrixD &param, TMatrixD &cov);
+  inline void Cov2CovP(const TMatrixD &param, TMatrixD &cov);
   /// Covariant handling function
-  void CovP2Cov(const TMatrixD &param, TMatrixD &covP);
+  inline void CovP2Cov(const TMatrixD &param, TMatrixD &covP);
   /// Energy loss coreection in front absorber
-  void CorrectELossEffectInAbsorber(AliMUONTrackParam* param, Double_t eLoss);
+  inline void CorrectELossEffectInAbsorber(AliMUONTrackParam* param, Double_t eLoss);
   /// Linear Extrapolation to Z position
-  void LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd) const;
+  inline void LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd);
   /// Energy loss
-  Double_t EnergyLossFluctuation2(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
+  inline Double_t EnergyLossFluctuation2(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
   /// Bethe Bloch formula of enrgy loss
-  Double_t BetheBloch(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
+  inline Double_t BetheBloch(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
   
   /// Runge Kutta method of track extrapolation through mag field
-  void OneStepRungekutta(Double_t charge, Double_t step, const Double_t* vect, Double_t* vout) const;
+  inline void OneStepRungekutta(Double_t charge, Double_t step, const Double_t* vect, Double_t* vout);
   /// Helix3 method of track extrapolation through mag field
-  void OneStepHelix3(Double_t field, Double_t step, const Double_t *vect, Double_t *vout) const;
-  /// Initialise GRP when running without reconstruction chain
-  Bool_t InitGRP();
+  inline void OneStepHelix3(Double_t field, Double_t step, const Double_t *vect, Double_t *vout) const;				  
   /// Fill the tracks to output pointer
-  Bool_t FillOutData(AliHLTMUONMansoTrackStruct *data, AliHLTUInt32_t& size) const;
+  Bool_t FillOutData(AliHLTMUONMansoTrackStruct *data, AliHLTUInt32_t& size);
   
 };
 #endif // ALIHLTMUONMANSOTRACKERFSM_H

@@ -23,8 +23,6 @@ using namespace std;
 #endif
 
 #include "AliHLTMUONFullTrackerComponent.h"
-#include "AliHLTMUONDataBlockReader.h"
-#include "AliHLTMUONDataBlockWriter.h"
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
@@ -40,6 +38,7 @@ using namespace std;
 ClassImp(AliHLTMUONFullTrackerComponent)
 
 AliHLTMUONFullTrackerComponent::AliHLTMUONFullTrackerComponent() :
+  AliHLTMUONProcessor(),
   fOutputPercentage(100),
   fTracker(NULL)
 {
@@ -118,33 +117,18 @@ int AliHLTMUONFullTrackerComponent::DoInit( int argc, const char** argv )
 {
   // perform dummy initialization, will be properly implemented later
   fOutputPercentage = 100;
-  int i = 0;
-  char* cpErr;
-  while ( i < argc )
-    {
-      HLTDebug("argv[%d] == %s", i, argv[i] );
-      if ( !strcmp( argv[i], "output_percentage" ) ||
-	   !strcmp( argv[i], "-output_percentage" ))
-	{
-	  if ( i+1>=argc )
-	    {
-	      HLTError("Missing output_percentage parameter");
-	      return -EINVAL;
-	    }
-	  HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
-	  fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
-	  if ( *cpErr )
-	    {
-	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
-	      return -EINVAL;
-	    }
-	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
-	  i += 2;
-	  continue;
-	}
-      HLTError("Unknown option '%s'", argv[i] );
-      return -EINVAL;
-    }
+
+  int result = AliHLTMUONProcessor::DoInit(argc, argv);
+  if (result != 0) return result;
+  
+  
+  for (int i = 0; i < argc; i++){
+	
+    // To keep the legacy behaviour we need to have the following check
+    // for -cdbpath here, before ArgumentAlreadyHandled.
+    if (ArgumentAlreadyHandled(i, argv[i])) continue;
+  }
+
   
   if (fTracker == NULL)
   {
@@ -159,7 +143,9 @@ int AliHLTMUONFullTrackerComponent::DoInit( int argc, const char** argv )
     }
   }
   
+  result = FetchMappingStores();
   fTracker->Init();
+  
   return 0;
 }
 
@@ -191,7 +177,7 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	 evtData.fEventID, evtData.fBlockCnt
 	 );
 
-  if(evtData.fBlockCnt==3) return 0;
+  //if(evtData.fBlockCnt==3) return 0;
 
   AliHLTMUONMansoTracksBlockWriter block(outputPtr, size);
   
@@ -209,85 +195,66 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     }
   
   for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++){
+
+    //if(evtData.fBlockCnt==3) continue;
+
     HLTDebug("Handling block: %u, with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
-	     n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fPtr, blocks[n].fSize
-	     );
-    
+  	     n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fPtr, blocks[n].fSize
+  	     );
+
     if (blocks[n].fDataType == AliHLTMUONConstants::RecHitsBlockDataType()){
       specification |= blocks[n].fSpecification;
 			
       AliHLTMUONRecHitsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
       if (not BlockStructureOk(inblock)){
-	if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
-	continue;
+  	if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+  	continue;
       }
-			
-      if (inblock.Nentries() != 0)
-	fTracker->SetInput(AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification), inblock.GetArray(), inblock.Nentries());
-      else{
 
-	Logging(kHLTLogDebug,
-		"AliHLTMUONMansoTrackerFSMComponent::DoEvent",
-		"Block empty",
-		"Received a reconstructed hits data block which contains no entries."
-		);
-      }
+      fTracker->SetInput(AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification), inblock.GetArray(), inblock.Nentries());	
+      
+
     }else if (blocks[n].fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType()){
       specification |= blocks[n].fSpecification;
-
       AliHLTMUONTriggerRecordsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
       if (not BlockStructureOk(inblock)){
-	if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
-	continue;
+  	if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+  	continue;
       }
       
-      if (inblock.Nentries() != 0)
-	fTracker->SetInput(AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification), inblock.GetArray(), inblock.Nentries());
-      else{
-
-	Logging(kHLTLogDebug,
-		"AliHLTMUONMansoTrackerFSMComponent::DoEvent",
-		"Block empty",
-		"Received a reconstructed hits data block which contains no entries."
-		);
-      }
-      
+      fTracker->SetInput(AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification), inblock.GetArray(),inblock.Nentries());	
     }//check if trigger block
-    
-
   }//loop over blocks array of rechit and trigrecs
-
+  
   AliHLTUInt32_t nofTracks = block.MaxNumberOfEntries();
     
-    
-  if (evtData.fBlockCnt!=3)
-    if (not fTracker->Run(int(evtData.fEventID),block.GetArray(), nofTracks))
-      {
-	HLTError("Error while processing the full tracker algorithm.");
-	if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
-	size = totalSize; // Must tell the framework how much buffer space was used.
-	return -EIO;
-      }
+  //  if (evtData.fBlockCnt!=3){
+  bool resultOk  = fTracker->Run(int(evtData.fEventID),block.GetArray(), nofTracks);
+  if (resultOk){
+    assert( nofTracks <= block.MaxNumberOfEntries() );
+    block.SetNumberOfEntries(nofTracks);
 		
-  // nofTracks should now contain the number of reconstructed hits actually found
-  // and filled into the output data block, so we can set this number.
-  assert( nofTracks <= block.MaxNumberOfEntries() );
-  block.SetNumberOfEntries(nofTracks);
-		
-  HLTDebug("Number of reconstructed tracks found is %d\n", nofTracks);
-  HLTDebug("sizeof  %d\n", sizeof(AliHLTMUONMansoTrackStruct));
-  HLTDebug("Bytes Used  is %d\n",block.BytesUsed());    
-  HLTDebug("specification is %d\n", specification);
+    HLTDebug("Number of reconstructed tracks found is %d\n", nofTracks);
+    HLTDebug("sizeof  %d\n", sizeof(AliHLTMUONMansoTrackStruct));
+    HLTDebug("Bytes Used  is %d\n",block.BytesUsed());    
+    HLTDebug("specification is %d\n", specification);
 
-  AliHLTComponentBlockData bd;
-  FillBlockData(bd);
-  bd.fPtr = outputPtr;
-  bd.fOffset = 0;
-  bd.fSize = block.BytesUsed();
-  bd.fDataType = AliHLTMUONConstants::MansoTracksBlockDataType();
-  bd.fSpecification = specification;
-  outputBlocks.push_back(bd);
-  totalSize = block.BytesUsed();
+    AliHLTComponentBlockData bd;
+    FillBlockData(bd);
+    bd.fPtr = outputPtr;
+    bd.fOffset = 0;
+    bd.fSize = block.BytesUsed();
+    bd.fDataType = AliHLTMUONConstants::MansoTracksBlockDataType();
+    bd.fSpecification = specification;
+    outputBlocks.push_back(bd);
+    totalSize = block.BytesUsed();
+  }else{
+    HLTDebug("Error while processing the full tracker algorithm.");
+    if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+    size = totalSize; // Must tell the framework how much buffer space was used.
+    //return -EIO;
+    return 0;
+  }
 
   // Finally we set the total size of output memory we consumed.
   size = totalSize;

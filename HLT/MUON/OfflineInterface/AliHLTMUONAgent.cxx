@@ -345,11 +345,11 @@ int AliHLTMUONAgent::CreateConfigurations(
 			" RecoRawDDL7 RecoRawDDL8 RecoRawDDL9 RecoRawDDL10 RecoRawDDL11 RecoRawDDL12 "
 			" RecoRawDDL13 RecoRawDDL14 RecoRawDDL15 RecoRawDDL16 RecoRawDDL17 "
 			" RecoRawDDL18 RecoRawDDL19 RecoRawDDL20 RecoRawDDL21 RecoRawDDL22 ";
-		handler->CreateConfiguration("FullTrackerForRaw", fullTrackerId, recoSrcsFull, "");
+		handler->CreateConfiguration("FullTrackerForRaw", fullTrackerId, recoSrcsFull, "-cdb");
 		
 		handler->CreateConfiguration("DecisionForRawFullTrk", decCompId, "FullTrackerForRaw", "");
 		
-		TString outputSrcsFull = " DecisionForRawFullTrk FullTrackerForRaw ";
+		TString outputSrcsFull = "DecisionForRawFullTrk FullTrackerForRaw ";
 		outputSrcsFull += recoSrcsFull;
 		handler->CreateConfiguration("dHLT-sim-fromRaw-fullTracker", "BlockFilter", outputSrcsFull, "");
 	}

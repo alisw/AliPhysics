@@ -511,6 +511,8 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	fHitRec->GenerateClusterInfo(makeClusters);
 	fHitRec->GenerateChannelInfo(makeChannels);
 	fHitRec->DDLNumber(fDDL);
+	//The DDL number has to be set before the following InitDetElemInDDLArray() method
+	fHitRec->InitDetElemInDDLArray();
 	HLTDebug("dHLT hit reconstruction component is initialized.");
 	return 0;
 }
@@ -521,7 +523,7 @@ int AliHLTMUONHitReconstructorComponent::DoDeinit()
 	///
 	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
 	///
-	
+	fHitRec->DeInitDetElemInDDLArray();
 	HLTInfo("Deinitialising dHLT hit reconstruction component.");
 	FreeMemory();
 	return 0;
@@ -998,11 +1000,10 @@ int AliHLTMUONHitReconstructorComponent::ReadLookUpTable(const char* lutFileName
 	}
 
 	MaxEntryPerBusPatch::iterator it;
-	for(it=fMaxEntryPerBusPatch.begin();it!=fMaxEntryPerBusPatch.end();it++){
-	  HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
-	  fMaxEntryPerBusPatch[it->first] = AliHLTInt32_t(0.05*(it->second));///< for 10% occupancy 
-	  HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
-	  
+	for(it=fMaxEntryPerBusPatch.begin(); it!=fMaxEntryPerBusPatch.end(); it++){
+		HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
+		fMaxEntryPerBusPatch[it->first] = AliHLTInt32_t(0.05*(it->second));///< for 10% occupancy 
+		HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
 	}
 	
 	return 0;
@@ -1054,7 +1055,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 		HLTError("Failed to load geomerty data.");
 		return -ENOENT;
 	}
-	
+
 	AliMUONCalibrationData calibData(AliCDBManager::Instance()->GetRun());
 	
 	bool skippedPads = false;
@@ -1088,6 +1089,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 				Int_t idManuChannel, manuId, channelId, buspatchId;
 				AliHLTFloat32_t padSizeX, padSizeY;
 				AliHLTFloat32_t halfPadSize;
+				AliHLTFloat32_t padSizeXY;
 				Double_t realX, realY, realZ;
 				Double_t localX, localY, localZ;
 				Float_t calibA0Coeff,calibA1Coeff,pedestal,sigma;
@@ -1194,11 +1196,15 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 						continue;
 					}
 					
-					if (plane == 0)
+
+					if (plane == 0){
 						halfPadSize = padSizeX;
-					else
+						padSizeXY = padSizeY;
+					}else{
 						halfPadSize = padSizeY;
-					
+						padSizeXY = padSizeX;
+					}
+
 					fIdToEntry[idManuChannel] = iEntry+1;
 					fMaxEntryPerBusPatch[buspatchId] = fMaxEntryPerBusPatch[buspatchId] + 1;  
 					
@@ -1209,6 +1215,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					lut.fRealY = realY;
 					lut.fRealZ = realZ;
 					lut.fHalfPadSize = halfPadSize;
+					lut.fPadSizeXY = padSizeXY;
 					lut.fPlane = plane;
 					lut.fPed = pedestal;
 					lut.fSigma = sigma;
@@ -1259,6 +1266,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 	fLut[0].fRealY = 0.0;
 	fLut[0].fRealZ = 0.0;
 	fLut[0].fHalfPadSize = 0.0;
+	fLut[0].fPadSizeXY = 0.0;
 	fLut[0].fPlane = -1;
 	fLut[0].fPed = -1;
 	fLut[0].fSigma = -1;
@@ -1272,10 +1280,10 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 	lutList.clear();
 
 	MaxEntryPerBusPatch::iterator it;
-	for(it=fMaxEntryPerBusPatch.begin();it!=fMaxEntryPerBusPatch.end();it++){
-	  HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
-	  fMaxEntryPerBusPatch[it->first] = AliHLTInt32_t(0.05*(it->second));///< for 10% occupancy 
-	  HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
+	for(it=fMaxEntryPerBusPatch.begin(); it!=fMaxEntryPerBusPatch.end(); it++){
+		HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
+		fMaxEntryPerBusPatch[it->first] = AliHLTInt32_t(0.05*(it->second));///< for 10% occupancy
+		HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
 	}
 
 	return 0;
