@@ -1,4 +1,5 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
 #include <TFile.h>
 #include <TH1F.h>
 #include <TGraph.h>
@@ -26,16 +27,14 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t firstRun=76172, 
-			     Int_t lastRun=999999999, 
+void PlotDriftSpeedSDDVsTime(Int_t year=2009, Int_t firstRun=62840, 
+			     Int_t lastRun=999999999,
 			     Int_t anode=128){
-
   TGrid::Connect("alien:",0,0,"t");
-
   Float_t errSpeed[260];
   FillErrors(errSpeed);
-
-  gSystem->Exec("gbbox find \"/alice/data/2009/OCDB/ITS/Calib/DriftSpeedSDD\" \"Run*.root\" > runSpeedAlien.txt");
+  TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD\" \"Run*.root\" > runSpeedAlien.txt",year);
+  gSystem->Exec(cmd.Data());
   FILE* listruns=fopen("runSpeedAlien.txt","r");
   Char_t filnam[200],filnamalien[200];
   TGraphErrors** gvdrvstime=new TGraphErrors*[520];
@@ -52,13 +51,16 @@ void PlotDriftSpeedSDDVsTime(Int_t firstRun=76172,
   }
   Float_t Edrift=(1800-45)/291/0.012;  
   Int_t nrun,nrun2,nv,ns;
-
   while(!feof(listruns)){
     fscanf(listruns,"%s\n",filnam);
-    if(!strstr(filnam,"/alice/data/2009")) continue;
-    sscanf(filnam,"/alice/data/2009/OCDB/ITS/Calib/DriftSpeedSDD/Run%d_%d_v%d_s%d.root",&nrun,&nrun2,&nv,&ns);
-    if(nrun<85639 && nrun2> 85639) continue;// protection for files with swapped ladders 4-5 of layer 3 
-    if(nrun>100000 && nv< 271) continue; // protection for files with swapped ladder 0-1 of layer 4
+    Char_t directory[100];
+    sprintf(directory,"/alice/data/%d",year);
+    if(!strstr(filnam,directory)) continue;
+       sscanf(filnam,"/alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD/Run%d_%d_v%d_s%d.root",&year,&nrun,&nrun2,&nv,&ns);
+
+       if(year==2009 && (nrun<85639 && nrun2> 85639)) continue;// protection for files with swapped ladders 4-5 of layer 3 
+       if(year==2009 && (nrun>100000 && nv< 271)) continue; // protection for files with swapped ladder 0-1 of layer 4
+  
     if(nrun<firstRun) continue;
     if(nrun>lastRun) continue;
     sprintf(filnamalien,"alien://%s",filnam);
@@ -77,8 +79,13 @@ void PlotDriftSpeedSDDVsTime(Int_t firstRun=76172,
       if(anode>256) iAn=anode-256;
       Float_t vdrift=vdriftarr->GetDriftSpeed(0,iAn);
       UInt_t timest=vdriftarr->GetTimestamp(0);
-      if(timest==0) continue;
-      Float_t timeday=float(timest-1247762992)/60./60./24.;
+     if(timest==0) continue;
+      Float_t timeday;
+     if(year==2009){
+	timeday=float(timest-1247762992)/60./60./24.;
+      } else {
+	timeday=float(timest-1264531801)/60./60./24.;
+     }
       Float_t mob=vdrift*1.E5/Edrift;  
       Float_t temper=293.15*TMath::Power((mob/1350.),-1/2.4); 
       if(iMod==497-240) printf("Run %s   Time %d Day %f Speed=%f Temp=%f\n",filnam,timest,timeday,vdrift,temper);
@@ -93,11 +100,11 @@ void PlotDriftSpeedSDDVsTime(Int_t firstRun=76172,
 
   Int_t mod1=244-240;
   Int_t mod2=277-240;
-  //Int_t mod1=268-240;
-  //Int_t mod2=274-240;
+//   Int_t mod1=268-240;
+//   Int_t mod2=274-240;
   Int_t mod3=327-240;
-  Int_t mod4=453-240;
-  //  Int_t mod4=497-240;
+   Int_t mod4=453-240;
+   //  Int_t mod4=497-240;
   Int_t lay1,lad1,det1;
   Int_t lay2,lad2,det2;
   Int_t lay3,lad3,det3;
@@ -106,8 +113,9 @@ void PlotDriftSpeedSDDVsTime(Int_t firstRun=76172,
   AliITSgeomTGeo::GetModuleId(mod2+240,lay2,lad2,det2);
   AliITSgeomTGeo::GetModuleId(mod3+240,lay3,lad3,det3);
   AliITSgeomTGeo::GetModuleId(mod4+240,lay4,lad4,det4);
-
-  TFile *ofil=new TFile("DriftSp2009VsTime.root","recreate");
+  Char_t filout[100];
+  sprintf(filout,"DriftSpVsTime_%d.root",year);
+  TFile *ofil=new TFile(filout,"recreate");
   for(Int_t iMod=0; iMod<260;iMod++){
     gvdrvstime[iMod]->Write();
     gvdrvsrun[iMod]->Write();
@@ -131,8 +139,13 @@ void PlotDriftSpeedSDDVsTime(Int_t firstRun=76172,
   gvdrvstime[mod1]->Draw("AP");
   gvdrvstime[mod1]->SetMinimum(6.3);
   gvdrvstime[mod1]->SetMaximum(6.75);
-
-  gvdrvstime[mod1]->GetXaxis()->SetTitle("Time (days since July 16th 2009)");
+  Char_t title[100];
+  if(year==2009){
+  sprintf(title,"Time (days since July 16th 2009)");
+  }else if (year==2010){
+  sprintf(title,"Time (days since January 16th 2010)");
+  }
+  gvdrvstime[mod1]->GetXaxis()->SetTitle(title);
   gvdrvstime[mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
   gvdrvstime[mod2]->Draw("PSAME");
   gvdrvstime[mod3]->Draw("PSAME");
