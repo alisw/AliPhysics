@@ -49,7 +49,7 @@ public:
   void    Digitize(Int_t event);          // Make Digits from SDigits stored in fSDigits
   void    Exec(Option_t *option);               // Supervising method
 
-  Float_t GetDigitThreshold() const { return fDigitThreshold;}
+  Int_t   GetDigitThreshold() const { return fDigitThreshold;}
   //Float_t GetPedestal()       const { return fPedestal; }
   Float_t GetPinNoise()       const { return fPinNoise;}
   //Float_t GetSlope()          const { return fSlope; }
@@ -57,7 +57,7 @@ public:
   Float_t GetECAchannel()     const { return fADCchannelEC ; }
   Float_t GetECApedestal()    const { return fADCpedestalEC ; }
   void    SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
-  void    SetDigitThreshold(Float_t EMCThreshold)  {fDigitThreshold = EMCThreshold;}
+  void    SetDigitThreshold(Int_t EMCThreshold)  {fDigitThreshold = EMCThreshold;}
   void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
 
   //General
@@ -99,7 +99,7 @@ private:
   TString * fInputFileNames ;     //[fInput] List of file names to merge 
   TString * fEventNames ;         //[fInput] List of event names to merge
 
-  Float_t fDigitThreshold  ;      // Threshold for storing digits in EMC
+  Int_t   fDigitThreshold  ;      // Threshold for storing digits in EMC, ACD units
   Int_t   fMeanPhotonElectron ;   // number of photon electrons per GeV deposited energy 
   //Float_t fPedestal ;           // Calibration parameters //Not used, remove?
   //Float_t fSlope ;              // read from SDigitizer   //Not used, remove?

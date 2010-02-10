@@ -49,7 +49,7 @@ fECPrimThreshold(0.) //SDigitizer
 	//Parameters in Digitizer
 	fMeanPhotonElectron = 4400;  // electrons per GeV 
 	fPinNoise           = 0.012; // pin noise in GeV from analysis test beam data 
-	fDigitThreshold     = fPinNoise * 3; // 3 * sigma
+	fDigitThreshold     = 3; // 3 ADC counts not anymore cut in energy: //fPinNoise * 3; // 3 * sigma
 	fTimeResolution     = 0.6e-9 ; // 600 psc
 	//fTimeSignalLength   = 1.0e-9 ;
 	fNADCEC             = (Int_t) TMath::Power(2,16) ; // number of channels in Tower ADC - 65536
@@ -115,9 +115,9 @@ void AliEMCALSimParam::Print(Option_t *) const
 	
 	printf("=== Parameters in Digitizer === \n");
 	printf("\t Electronics noise in EMC (fPinNoise)       = %f\n", fPinNoise) ;
-    printf("\t Threshold  in EMC  (fDigitThreshold)       = %f\n", fDigitThreshold)  ;
+	printf("\t Threshold  in EMC  (fDigitThreshold)       = %d\n", fDigitThreshold)  ;
 	printf("\t Time Resolution (fTimeResolution)          = %g\n", fTimeResolution) ;
-    printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d\n", fMeanPhotonElectron)  ;
+	printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d\n", fMeanPhotonElectron)  ;
 	printf("\t N channels in EC section ADC (fNADCEC)     = %d\n", fNADCEC) ;
 
 	printf("\n");

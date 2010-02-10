@@ -26,12 +26,12 @@ public:
   virtual void Print(Option_t * option="") const ;
 
 	//Parameters used in Digitizer
-	Float_t GetDigitThreshold()     const { return fDigitThreshold;}
+	Int_t   GetDigitThreshold()     const { return fDigitThreshold;}
 	Float_t GetPinNoise()           const { return fPinNoise;}
 	Float_t GetTimeResolution()     const { return fTimeResolution ; }
 	Int_t   GetNADCEC()             const { return fNADCEC ; }
 	Int_t   GetMeanPhotonElectron() const { return fMeanPhotonElectron ; }
-	void    SetDigitThreshold(Float_t val)  { fDigitThreshold     = val ; }
+	void    SetDigitThreshold(Int_t val)    { fDigitThreshold     = val ; }
 	void    SetPinNoise(Float_t val)        { fPinNoise           = val ; }
 	void    SetTimeResolution(Float_t val)  { fTimeResolution     = val ; }
 	void    SetNADCED(Int_t val)            { fNADCEC             = val ; }
@@ -55,7 +55,7 @@ private:
   static AliEMCALSimParam * fgSimParam ; // pointer to the unique instance of the class
 
 	// Digitizer
-	Float_t fDigitThreshold  ;      // Threshold for storing digits in EMC
+	Int_t   fDigitThreshold  ;      // Threshold for storing digits in EMC
 	Int_t   fMeanPhotonElectron ;   // number of photon electrons per GeV deposited energy 
 	Float_t fPinNoise ;             // Electronics noise in EMC
 	Float_t fTimeResolution ;       // Time resolution of FEE electronics
