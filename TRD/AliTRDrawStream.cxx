@@ -1954,7 +1954,7 @@ const char *AliTRDrawStream::DumpHCinfoH0(const struct AliTRDrawHC *hc)
     return Form("Unable to dump. Null received as parameter!?!");
   else
     return Form("[ HC[0] at 0x%08x ] : 0x%08x Info is : RawV %d SM %d Stack %d Layer %d Side %d DCSboard %d",
-                hc->fPos[0], (hc->fPos[0]) ? *(hc->fPos[0]) : 0, hc->fRawVMajor, hc->fSM, hc->fStack, hc->fLayer, hc->fSide, hc->fDCSboard);
+                hc->fPos[0], (hc->fPos[0]) ? *(hc->fPos[0]) : 0, hc->fRawVMajor, fRawReader->GetEquipmentId()-1024, hc->fStack, hc->fLayer, hc->fSide, hc->fDCSboard);
 }
 
 //--------------------------------------------------------
