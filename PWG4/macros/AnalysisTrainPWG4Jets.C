@@ -74,8 +74,11 @@ Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
 Int_t       iPWG4ThreeJets     = 0;      // Sona's thrust task
 Int_t       iPWG4KMeans        = 0;      // Andreas' KMeans task 
+Int_t       iPWG4Cluster       = 0;      // CKB cluster task 
 Int_t       iPWG4PartCorrLibs  = 0;      // Gustavo's part corr analysis
 Int_t       iPWG4PartCorr      = 0;      // Gustavo's part corr analysis
+Int_t       iPWG4CaloQA        = 0;      // Gustavo's part corr analysis
+Int_t       iPWG4JetCorr       = 0;     // Paul's jet corr analysis
 Int_t       iPWG4Tagged        = 0;      // Gustavo's part corr analysis
 Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4) 
 Int_t       iPWG4GammaConv     = 0;      // Gamma Conversio
@@ -171,6 +174,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (iESDfilter)   printf("=  ESD filter                                                    =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
    printf("==================================================================\n");
+   printf(":: use Fill AOD      %d\n", (UInt_t)kFillAOD);
    printf(":: use MC truth      %d\n", (UInt_t)kUseMC);
    printf(":: use KINE filter   %d\n", (UInt_t)kUseKinefilter);
    printf(":: use track refs    %d\n", (UInt_t)kUseTR);
@@ -190,7 +194,10 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use PWG4 Pt QA TPC    %d\n",iPWG4PtQATPC);     
    printf(":: use PWG4 Three Jets   %d\n",iPWG4ThreeJets);
    printf(":: use PWG4 KMeans       %d\n",iPWG4KMeans);
+   printf(":: use PWG4 Cluster       %d\n",iPWG4Cluster);
    printf(":: use PWG4 Part Corr    %d\n",iPWG4PartCorr);
+   printf(":: use PWG4 Calo QA    %d\n",iPWG4CaloQA);
+   printf(":: use PWG4 Jet Corr    %d\n",iPWG4JetCorr);
    printf(":: use PWG4 Tagged       %d\n",iPWG4Tagged);
    printf(":: use PWG4 omega to 3 pions %d\n",iPWG4omega3pi);
 
@@ -277,10 +284,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    // from each task configuration macro.
 
    if(iPhysicsSelection && !iAODanalysis){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskPhysicsSelection.C");
-     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-     if(kIsMC)physSelTask->GetPhysicsSelection()->SetAnalyzeMC();
-     physSelTask->GetPhysicsSelection()->AddBackgroundIdentification(new AliBackgroundSelection());
+     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,kTRUE);
    }
 
    if (iESDfilter && !iAODanalysis) {
@@ -306,7 +311,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       if(iJETAN&1)taskjets = AddTaskJets(kHighPtFilterMask); 
       if(iJETAN&2){
 	UInt_t selection = 0;
-	if(!kFillAOD) selection = 0xffffff;
+	if(!kFillAOD) selection = 0xffffff; //&~(1<<13);
 	else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<6|1<<7|1<<8|1<<9;
 	AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC,selection); 
       }
@@ -357,8 +362,10 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
 	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
        }
+       if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
+       taskjetSpectrum->SetDebugLevel(0);
      }
-     if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
+
      if(iPWG4JetSpectrum&2){
        UInt_t selection = 0;
        if(!iAODanalysis) selection = 0xffffff;
@@ -373,15 +380,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        AddTaskJetSpectrum2("jetsAOD_FASTKT08","",kHighPtFilterMask,iPhysicsSelection);
        if(kIsMC){
 	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT00","",kHighPtFilterMask,iPhysicsSelection);
-	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT00","",kHighPtFilterMask,iPhysicsSelection);
 	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT01","",kHighPtFilterMask,iPhysicsSelection);
 	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT02","",kHighPtFilterMask,iPhysicsSelection);
 	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT06","",kHighPtFilterMask,iPhysicsSelection);
 	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT08","",kHighPtFilterMask,iPhysicsSelection);
        }
      }
-     if(kUseMC)taskjetSpectrum->SetAnalysisType( AliAnalysisTaskJetSpectrum2::kAnaMCESD);
-     taskjetSpectrum->SetDebugLevel(0);
    }
 
    if(iPWG4UE){
@@ -395,7 +399,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV"); 
        taskUE = AddTaskUE("jetsAOD_FASTJET04","CDF","LJ","TRANSV"); 
        taskUE = AddTaskUE("jetsAOD_SISCONE04","CDF","LJ","TRANSV"); 
-
+       taskUE = AddTaskUE("jetsAOD_CDF07","ALICE","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_UA1LO07","ALICE","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_UA1LO07","ALICE","BB","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_FASTKT04","ALICE","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_FASTJET04","ALICE","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_SISCONE04","ALICE","LJ","TRANSV"); 
      }
 
      if (!taskUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskUE cannot run for this train conditions - EXCLUDED");
@@ -431,6 +440,20 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskKMeans) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskKMenans cannot run for this train conditions - EXCLUDED");
    }
 
+   if(iPWG4Cluster){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCluster.C");
+     AliAnalysisTaskJetCluster *taskCl = 0;
+     if(iPWG4Cluster&1)taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection);
+     if(iPWG4Cluster&2){
+       UInt_t selection = 0;
+       if(!iAODanalysis) selection = 0xffffff;
+       else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
+       AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,selection);
+     }
+     if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
+
+   }
+
    if(iPWG4PartCorr){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
      AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS",kFALSE,kIsMC);
@@ -439,6 +462,22 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation EMCAL cannot run for this train conditions - EXCLUDED");
      if(kDeltaAODPartCorrName.Length()>0)mgr->RegisterExtraFile(kDeltaAODPartCorrName.Data()); // hmm this is written anyway.... but at least we do not register it...
    } 
+
+   if(iPWG4CaloQA){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
+     AliAnalysisTaskParticleCorrelation *taskcaloQA =  AddTaskCalorimeterQA("AOD",kFALSE,kIsMC);
+     if(!taskcaloQA)::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation QA cannot run - EXCLUDED");
+   } 
+
+
+   if(iPWG4JetCorr){
+     //     using namespace JetCorrelHD;
+
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCorrel.C");
+     AliAnalysisTaskJetCorrel *taskjetcorr = AddTaskJetCorrel();
+     if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskJetCorrel  cannot run for this train conditions - EXCLUDED");
+   } 
+
 
    if(iPWG4Tagged){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskTaggedPhotons.C");
@@ -618,8 +657,12 @@ void CheckModuleFlags(const char *mode) {
       iPWG4PtSpectra     = 0;
       if(iPWG4KMeans)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4KMeans disabled on AOD's");
       iPWG4KMeans       = 0;
+      if (iPWG4JetCorr)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4Jetcorr disabled on AOD's");
+      iPWG4JetCorr = 0;
       if (iPWG4PartCorr)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4partcorr disabled on AOD's");
       iPWG4PartCorr = 0;
+      if (iPWG4CaloQA)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4CaloQA disabled on AOD's");
+      iPWG4CaloQA = 0;
       if (iPWG4Tagged)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4tagged disabled on AOD's");
       iPWG4Tagged = 0;
       if (iPWG4omega3pi)
@@ -655,7 +698,7 @@ void CheckModuleFlags(const char *mode) {
       }
    }
    iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4ThreeJets;
-   iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged;
+   iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
    iJETANLib = iPWG4JetTasks||iJETAN||iDIJETAN;
    if (iESDfilter) {iAODhandler=1;}
    if (kUseKinefilter && !kUseMC) kUseKinefilter = kFALSE;
@@ -863,6 +906,9 @@ Bool_t LoadAnalysisLibraries(const char *mode)
           !LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
           !LoadLibrary("PWG4PartCorrDep", mode, kTRUE)) return kFALSE;
    }
+   if (iPWG4JetCorr) { 
+     if (!LoadLibrary("PWG4JetCorrel", mode, kTRUE)) return kFALSE;
+   }  
    if (iPWG4omega3pi) {
      if (!LoadLibrary("PWG4omega3pi", mode, kTRUE)) return kFALSE;
    }
