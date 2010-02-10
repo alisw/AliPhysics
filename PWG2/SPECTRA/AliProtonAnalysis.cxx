@@ -61,6 +61,7 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
   fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
   fCorrectProtons(0), fCorrectAntiProtons(0),
+  fHistEfficiencyYPtProtons(0), fHistEfficiencyYPtAntiProtons(0),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
   fQAAntiProtonsAcceptedList(0), fQAAntiProtonsRejectedList(0),
@@ -84,6 +85,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
   fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
   fCorrectProtons(0), fCorrectAntiProtons(0),
+  fHistEfficiencyYPtProtons(0), fHistEfficiencyYPtAntiProtons(0),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
   fQAAntiProtonsAcceptedList(0), fQAAntiProtonsRejectedList(0),
@@ -156,6 +158,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
   fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
   fCorrectProtons(0), fCorrectAntiProtons(0),
+  fHistEfficiencyYPtProtons(0), fHistEfficiencyYPtAntiProtons(0),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
   fQAAntiProtonsAcceptedList(0), fQAAntiProtonsRejectedList(0),
@@ -228,6 +231,8 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fCorrectionListAntiProtons1D) delete fCorrectionListAntiProtons1D;
   if(fCorrectProtons) delete fCorrectProtons;
   if(fCorrectAntiProtons) delete fCorrectAntiProtons;
+  if(fHistEfficiencyYPtProtons) delete fHistEfficiencyYPtProtons;
+  if(fHistEfficiencyYPtAntiProtons) delete fHistEfficiencyYPtAntiProtons;
 
   //QA lists
   if(fGlobalQAList) delete fGlobalQAList;
@@ -537,7 +542,8 @@ TH1D *AliProtonAnalysis::GetProtonCorrectedYHistogram() {
   //Get the corrected y histogram for protons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fYProtons = fCorrectProtons->Project(0); //0: rapidity
+  TH1D *fYProtons = (TH1D *)fHistYPtProtons->ProjectionX("fYProtons",1,fHistYPtProtons->GetYaxis()->GetNbins(),"e");
+  //TH1D *fYProtons = fCorrectProtons->Project(0); //0: rapidity
    
   fYProtons->SetStats(kFALSE);
   fYProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
@@ -555,8 +561,9 @@ TH1D *AliProtonAnalysis::GetProtonCorrectedYHistogram() {
 TH1D *AliProtonAnalysis::GetAntiProtonCorrectedYHistogram() {
   //Get the corrected y histogram for antiprotons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
-
-  TH1D *fYAntiProtons = fCorrectAntiProtons->Project(0); //0: rapidity
+  
+  TH1D *fYAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionX("fYAntiProtons",1,fHistYPtAntiProtons->GetYaxis()->GetNbins(),"e");
+  //TH1D *fYAntiProtons = fCorrectAntiProtons->Project(0); //0: rapidity
    
   fYAntiProtons->SetStats(kFALSE);
   fYAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
@@ -575,7 +582,8 @@ TH1D *AliProtonAnalysis::GetProtonCorrectedPtHistogram() {
   //Get the corrected Pt histogram for protons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fPtProtons = fCorrectProtons->Project(0); //0: rapidity
+  TH1D *fPtProtons = (TH1D *)fHistYPtProtons->ProjectionY("fPtProtons",1,fHistYPtProtons->GetXaxis()->GetNbins(),"e");
+  //TH1D *fPtProtons = fCorrectProtons->Project(0); //0: rapidity
    
   fPtProtons->SetStats(kFALSE);
   fPtProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
@@ -594,7 +602,8 @@ TH1D *AliProtonAnalysis::GetAntiProtonCorrectedPtHistogram() {
   //Get the corrected Pt histogram for antiprotons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fPtAntiProtons = fCorrectAntiProtons->Project(0); //0: rapidity
+  TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionY("fPtAntiProtons",1,fHistYPtAntiProtons->GetXaxis()->GetNbins(),"e");
+//TH1D *fPtAntiProtons = fCorrectAntiProtons->Project(0); //0: rapidity
    
   fPtAntiProtons->SetStats(kFALSE);
   fPtAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
@@ -628,13 +637,14 @@ TH1D *AliProtonAnalysis::GetYRatioHistogram() {
 }
 
 //____________________________________________________________________//
-TH1D *AliProtonAnalysis::GetYRatioCorrectedHistogram(TH2D *gCorrectionProtons, 
-						     TH2D *gCorrectionAntiProtons) {
+TH1D *AliProtonAnalysis::GetYRatioCorrectedHistogram() {
+//TH2D *gCorrectionProtons, 
+//TH2D *gCorrectionAntiProtons) {
   //Returns the rapidity dependence of the ratio (corrected)
-  fHistYPtProtons->Multiply(gCorrectionProtons);
-  TH1D *fYProtons = GetProtonYHistogram();
-  fHistYPtAntiProtons->Multiply(gCorrectionAntiProtons);
-  TH1D *fYAntiProtons = GetAntiProtonYHistogram();
+  //fHistYPtProtons->Multiply(gCorrectionProtons);
+  TH1D *fYProtons = GetProtonCorrectedYHistogram();
+  //fHistYPtAntiProtons->Multiply(gCorrectionAntiProtons);
+  TH1D *fYAntiProtons = GetAntiProtonCorrectedYHistogram();
   
   TH1D *hRatioY = new TH1D("hRatioY","",fYProtons->GetNbinsX(),fYProtons->GetXaxis()->GetXmin(),fYProtons->GetXaxis()->GetXmax());
   hRatioY->Divide(fYAntiProtons,fYProtons,1.0,1.0);
@@ -669,13 +679,14 @@ TH1D *AliProtonAnalysis::GetPtRatioHistogram() {
 }
 
 //____________________________________________________________________//
-TH1D *AliProtonAnalysis::GetPtRatioCorrectedHistogram(TH2D *gCorrectionProtons, 
-						      TH2D *gCorrectionAntiProtons) {
+TH1D *AliProtonAnalysis::GetPtRatioCorrectedHistogram() {
+  //TH2D *gCorrectionProtons, 
+  //TH2D *gCorrectionAntiProtons) {
   //Returns the Pt dependence of the ratio (corrected)
-  fHistYPtProtons->Multiply(gCorrectionProtons);
-  TH1D *fPtProtons = GetProtonPtHistogram();
-  fHistYPtAntiProtons->Multiply(gCorrectionAntiProtons);
-  TH1D *fPtAntiProtons = GetAntiProtonPtHistogram();
+  //fHistYPtProtons->Multiply(gCorrectionProtons);
+  TH1D *fPtProtons = GetProtonCorrectedPtHistogram();
+  //fHistYPtAntiProtons->Multiply(gCorrectionAntiProtons);
+  TH1D *fPtAntiProtons = GetAntiProtonCorrectedPtHistogram();
   
   TH1D *hRatioPt = new TH1D("hRatioPt","",fPtProtons->GetNbinsX(),fPtProtons->GetXaxis()->GetXmin(),fPtProtons->GetXaxis()->GetXmax());
   hRatioPt->Divide(fPtAntiProtons,fPtProtons,1.0,1.0);
@@ -1088,34 +1099,37 @@ void AliProtonAnalysis::Analyze(AliStack* const stack,
 //____________________________________________________________________//
 Bool_t AliProtonAnalysis::PrintMean(TH1 *hist, Double_t edge) {
   //calculates the mean value of the ratio/asymmetry within \pm edge
-  Double_t sum = 0.0;
+  Double_t sum = 0.0, sumError = 0.0;
   Int_t nentries = 0;
   //calculate the mean
-  for(Int_t i = 0; i < hist->GetXaxis()->GetNbins(); i++) {
-    Double_t x = hist->GetBinCenter(i+1);
-    Double_t y = hist->GetBinContent(i+1);
+  for(Int_t i = 1; i <= hist->GetXaxis()->GetNbins(); i++) {
+    Double_t x = hist->GetBinCenter(i);
+    Double_t y = hist->GetBinContent(i);
     if(TMath::Abs(x) < edge) {
       sum += y;
+      sumError += TMath::Power(hist->GetBinError(i),2);
       nentries += 1;
     }
+    Printf("eta: %lf - sum: %lf - sumError: %lf - counter: %d",
+	   TMath::Abs(x),sum,sumError,nentries);
   }
   Double_t mean = 0.0;
-  if(nentries != 0)
+  Double_t error = 0.0;
+  if(nentries != 0) {
     mean = sum/nentries;
+    error =  TMath::Sqrt(sumError)/nentries;
+  }
 
   //calculate the error
-  for(Int_t i = 0; i < hist->GetXaxis()->GetNbins(); i++) {
-    Double_t x = hist->GetBinCenter(i+1);
-    Double_t y = hist->GetBinContent(i+1);
+    /*for(Int_t i = 1; i <= hist->GetXaxis()->GetNbins(); i++) {
+    Double_t x = hist->GetBinCenter(i);
+    Double_t y = hist->GetBinContent(i);
     if(TMath::Abs(x) < edge) {
       sum += TMath::Power((mean - y),2);
       nentries += 1;
     }
-  }
+    }*/
 
-  Double_t error = 0.0;
-  if(nentries != 0)
-    error =  TMath::Sqrt(sum)/nentries;
 
   cout<<"========================================="<<endl;
   cout<<"Input distribution: "<<hist->GetName()<<endl;
@@ -1154,6 +1168,12 @@ Bool_t AliProtonAnalysis::PrintYields(TH1 *hist, Double_t edge) {
 }
 
 //____________________________________________________________________//
+void AliProtonAnalysis::Correct() {
+  fHistYPtProtons->Divide(fHistEfficiencyYPtProtons);
+  fHistYPtAntiProtons->Divide(fHistEfficiencyYPtAntiProtons);
+}
+
+//____________________________________________________________________//
 void AliProtonAnalysis::Correct(Int_t step) {
   //Applies the correction maps to the initial containers
   fCorrectProtons = new AliCFDataGrid("correctProtons",
@@ -1171,6 +1191,44 @@ void AliProtonAnalysis::Correct(Int_t step) {
 
 //____________________________________________________________________//
 Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
+  // Reads the outout of the correction framework task
+  // Creates the correction maps
+  // Puts the results in the different TList objects
+  Bool_t status = kTRUE;
+
+  TFile *file = TFile::Open(filename);
+  if(!file) {
+    cout<<"Could not find the input CORRFW file "<<filename<<endl;
+    status = kFALSE;
+  }
+  TList *list = dynamic_cast<TList *>(file->Get("outputList"));
+  Int_t iRap = 0, iPt = 1;
+
+  //Calculation of efficiency/correction: Protons
+  AliCFContainer *gProtonContainer = dynamic_cast<AliCFContainer *>(list->At(0));
+  AliCFEffGrid *effProtonsStep0Step2 = new AliCFEffGrid("eff20",
+							"effProtonsStep0Step2",
+							*gProtonContainer);
+  effProtonsStep0Step2->CalculateEfficiency(2,0); 
+  fHistEfficiencyYPtProtons = effProtonsStep0Step2->Project(iRap,iPt);
+  fHistEfficiencyYPtProtons->Sumw2();
+
+  //Calculation of efficiency/correction: Protons
+  AliCFContainer *gAntiProtonContainer = dynamic_cast<AliCFContainer *>(list->At(1));
+  AliCFEffGrid *effAntiProtonsStep0Step2 = new AliCFEffGrid("eff20",
+							    "effAntiProtonsStep0Step2",
+							    *gAntiProtonContainer);
+  effAntiProtonsStep0Step2->CalculateEfficiency(2,0); 
+  fHistEfficiencyYPtAntiProtons = effAntiProtonsStep0Step2->Project(iRap,iPt);
+  fHistEfficiencyYPtAntiProtons->Sumw2();
+
+  Correct();
+
+  return status;
+}
+
+//____________________________________________________________________//
+/*Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
   // Reads the outout of the correction framework task
   // Creates the correction maps
   // Puts the results in the different TList objects
@@ -1384,7 +1442,7 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
   }
 
   return status;
-}
+  }*/
  
 //____________________________________________________________________//
 void AliProtonAnalysis::InitQA() {

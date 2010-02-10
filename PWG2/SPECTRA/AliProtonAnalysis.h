@@ -75,8 +75,10 @@ class AliProtonAnalysis : public TObject {
   AliCFContainer *GetProtonContainer() const {return fProtonContainer;}
   AliCFContainer *GetAntiProtonContainer() const {return fAntiProtonContainer;}
 
-  TH2D *GetProtonYPtHistogram() const {return fHistYPtProtons;}
-  TH2D *GetAntiProtonYPtHistogram() const {return fHistYPtAntiProtons;}
+  //TH2D *GetProtonYPtHistogram() const {return fHistYPtProtons;}
+  //TH2D *GetAntiProtonYPtHistogram() const {return fHistYPtAntiProtons;}
+  TH2D *GetProtonYPtHistogram() const {return fProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);}
+  TH2D *GetAntiProtonYPtHistogram() const {return fAntiProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);}
   TH1D *GetProtonYHistogram();
   TH1D *GetAntiProtonYHistogram();
   TH1D *GetProtonPtHistogram();
@@ -90,11 +92,13 @@ class AliProtonAnalysis : public TObject {
 
   TList *GetYRatioHistogramsInPtBins();
   TH1D *GetYRatioHistogram();
-  TH1D *GetYRatioCorrectedHistogram(TH2D *gCorrectionMapProtons,
-				    TH2D *gCorrectionMapAntiProtons);
+  TH1D *GetYRatioCorrectedHistogram();
+  //TH2D *gCorrectionMapProtons,
+  //TH2D *gCorrectionMapAntiProtons);
   TH1D *GetPtRatioHistogram();
-  TH1D *GetPtRatioCorrectedHistogram(TH2D *gCorrectionMapProtons,
-				     TH2D *gCorrectionMapAntiProtons);
+  TH1D *GetPtRatioCorrectedHistogram();
+  //TH2D *gCorrectionMapProtons,
+  //TH2D *gCorrectionMapAntiProtons);
   TH1D *GetYAsymmetryHistogram();
   TH1D *GetPtAsymmetryHistogram();
 
@@ -105,14 +109,15 @@ class AliProtonAnalysis : public TObject {
   Bool_t  PrintYields(TH1 *hist, Double_t edge); 
 
   //interface to the correction framework
+  void Correct();
   void Correct(Int_t step);
   Bool_t ReadCorrectionContainer(const char* filename);
-  TList *GetCorrectionListProtons2D() const {return fCorrectionListProtons2D;} 
+  /*TList *GetCorrectionListProtons2D() const {return fCorrectionListProtons2D;} 
   TList *GetEfficiencyListProtons1D() const {return fEfficiencyListProtons1D;} 
   TList *GetCorrectionListProtons1D() const {return fCorrectionListProtons1D;} 
   TList *GetCorrectionListAntiProtons2D() const {return fCorrectionListAntiProtons2D;} 
   TList *GetEfficiencyListAntiProtons1D() const {return fEfficiencyListAntiProtons1D;} 
-  TList *GetCorrectionListAntiProtons1D() const {return fCorrectionListAntiProtons1D;} 
+  TList *GetCorrectionListAntiProtons1D() const {return fCorrectionListAntiProtons1D;}*/ 
   
   //iStep=0->MC - iStep=1->Acceptance - iStep=2->Reconstruction - iStep=3->PID
   TH1D  *GetUncorrectedProtonYHistogram(Int_t iStep) {return fProtonContainer->ShowProjection(0, iStep);}
@@ -151,6 +156,8 @@ class AliProtonAnalysis : public TObject {
   TList *fCorrectionListAntiProtons1D; //list for the 1d corrections 
   AliCFDataGrid *fCorrectProtons; //corrected data grid for protons
   AliCFDataGrid *fCorrectAntiProtons; //corrected data grid for antiprotons
+  TH2D *fHistEfficiencyYPtProtons;//efficiency 2D for the corrections - protons
+  TH2D *fHistEfficiencyYPtAntiProtons;//efficiency 2D for the corrections - antiprotons
 
   //QA lists
   TList *fGlobalQAList; //global list
