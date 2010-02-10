@@ -140,7 +140,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2JetsLeadingPhiPt;      // jet correlation with leading jet
     TH2F*         fh2TracksLeadingPhiEta;   // track correlation with leading track
     TH2F*         fh2TracksLeadingPhiPt;    // track correlation with leading track
-
+    TH2F*         fh2TracksLeadingJetPhiPt; // track correlation with leading track
     TH2F*         fh2PhiPt[kMaxJets];    // delta phi correlation of tracks with the jet      
     TH2F*         fh2PhiEta[kMaxJets];   // eta   phi correlation of tracks with the jet      
 
