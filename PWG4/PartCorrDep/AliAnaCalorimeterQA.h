@@ -206,6 +206,9 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F * fhNCellsPerClusterMIP; //! N cells per cluster, finer fixed pT bin for MIP search.	
   TH1F * fhNClusters; //! Number of clusters
 	
+  TH1F * fhCellTimeSpreadRespectToCellMax; //! Difference of the time of cell with maximum dep energy and the rest of cells
+  TH1F * fhCellIdCellLargeTimeSpread;      //! Cells with large time respect to max (diff > 100 ns)
+	
   //Calo Cells
   TH1F * fhNCells;    //! Number of towers/crystals with signal
   TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
@@ -227,7 +230,9 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH1F ** fhNCellsMod ;           //! Number of towers/crystals with signal different module, Reco
   TH2F ** fhGridCellsMod ;        //! Cells ordered in column/row for different module, Reco
   TH2F ** fhGridCellsEMod ;       //! Cells ordered in column/row for different module, weighted with energy, Reco
+  TH2F ** fhGridCellsTimeMod ;    //! Cells ordered in column/row for different module, weighted with time, Reco
   TH1F ** fhAmplitudeMod ;        //! Amplitude measured in towers/crystals different module, Reco
+  TH1F ** fhAmplitudeModFraction; //! Amplitude measured in towers/crystals different fractions of module, Reco
   TH2F ** fhIMMod;                //! cluster pairs invariant mass, different module,
   TH2F ** fhIMCellCutMod;         //! cluster pairs invariant mass, n cells > 1 per cluster, different module
 
@@ -337,7 +342,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,5)
+	ClassDef(AliAnaCalorimeterQA,6)
 } ;
 
 

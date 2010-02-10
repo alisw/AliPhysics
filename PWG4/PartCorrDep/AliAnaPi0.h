@@ -15,6 +15,7 @@
 //Root
 class TList;
 class TH3D ;
+class TH2D ;
 
 //Analysis
 class AliAODEvent ;
@@ -67,20 +68,23 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Int_t GetNPID()   const {return fNPID ; }
   void SetNPID(Int_t n)    {fNPID = n ; }
 	
+  void SwitchOnAngleSelection()    {fUseAngleCut = kTRUE ; }
+  void SwitchOffAngleSelection()   {fUseAngleCut = kFALSE ; }
+
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
   
   private:
-  Int_t fNCentrBin ;	  // Number of bins in event container for centrality
-  Int_t fNZvertBin ;	  // Number of bins in event container for vertex position
-  Int_t fNrpBin ;		  // Number of bins in event container for reaction plain
-  Int_t fNPID ;			  // Number of possible PID combinations
-  Int_t fNmaxMixEv ;	  // Maximal number of events stored in buffer for mixing
-  Float_t fZvtxCut ;	  // Cut on vertex position
-  TString fCalorimeter ;  // Select Calorimeter for IM
-  Int_t fNModules ;       // Number of EMCAL/PHOS modules, set as many histogras as modules 
-
-  TList ** fEventsList ;  //! containers for photons in stored events
+  Int_t    fNCentrBin ;	  // Number of bins in event container for centrality
+  Int_t    fNZvertBin ;	  // Number of bins in event container for vertex position
+  Int_t    fNrpBin ;	  // Number of bins in event container for reaction plain
+  Int_t    fNPID ;		  // Number of possible PID combinations
+  Int_t    fNmaxMixEv ;	  // Maximal number of events stored in buffer for mixing
+  Float_t  fZvtxCut ;	  // Cut on vertex position
+  TString  fCalorimeter ; // Select Calorimeter for IM
+  Int_t    fNModules ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
+  Bool_t   fUseAngleCut ; // Select pairs depending on their opening angle
+  TList ** fEventsList ;  //! Containers for photons in stored events
   
   //Histograms
   
@@ -94,7 +98,10 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH3D ** fhMi2 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
   TH3D ** fhRe3 ;  //!REAL two-photon invariant mass distribution for different centralities and PID 
   TH3D ** fhMi3 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
-  TH3D * fhEvents;  //!Number of events per centrality, RP, zbin
+  TH3D * fhEvents; //!Number of events per centrality, RP, zbin
+
+  TH2D * fhRealOpeningAngle ;    //! Opening angle of pair versus pair energy
+  TH2D * fhRealCosOpeningAngle ; //! Cosinus of opening angle of pair version pair energy
 
   //Acceptance
   TH1D * fhPrimPt ;    //! Spectrum of Primary 
@@ -103,8 +110,10 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH1D * fhPrimAccY ;  //! Rapidity distribution of primary with accepted daughters
   TH1D * fhPrimPhi ;   //! Azimutal distribution of primary particles
   TH1D * fhPrimAccPhi; //! Azimutal distribution of primary with accepted daughters	
-
-  ClassDef(AliAnaPi0,7)
+  TH2D * fhPrimOpeningAngle ;    //! Opening angle of pair versus pair energy, primaries
+  TH2D * fhPrimCosOpeningAngle ; //! Cosinus of opening angle of pair version pair energy, primaries
+	
+  ClassDef(AliAnaPi0,8)
 } ;
 
 
