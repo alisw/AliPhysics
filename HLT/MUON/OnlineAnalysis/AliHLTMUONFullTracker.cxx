@@ -678,7 +678,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 
 	    Float_t tx=0.0,ty=0.0;
 
-	    AliHLTUInt16_t detElemID,prevDetElemID=-1;
+	    AliHLTUInt16_t detElemID,prevDetElemID=0xFFFF;
 	    AliHLTUInt8_t chamber;
 	    Int_t minTrgCh,maxTrgCh;
 
