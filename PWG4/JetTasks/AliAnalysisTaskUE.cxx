@@ -151,6 +151,8 @@ fhRegForwardPartPtDistVsEt(0x0),
 fhRegBackwardPartPtDistVsEt(0x0),
 fhRegTransMult(0x0),
 fhRegTransSumPtVsMult(0x0),
+fhMinRegSumPtJetPtBin(0x0),
+fhMaxRegSumPtJetPtBin(0x0),
 fh1Xsec(0x0),
 fh1Trials(0x0),
 fSettingsTree(0x0)//,   fhValidRegion(0x0)
@@ -835,6 +837,8 @@ void AliAnalysisTaskUE::FillSumPtRegion( Double_t leadingE, Double_t ptMax, Doub
   fhRegionSumPtMinVsEt->Fill( leadingE, ptMin );
   // MAke distributions for UE comparison with MB data
   fhMinRegSumPt->Fill(ptMin);
+  fhMinRegSumPtJetPtBin->Fill(leadingE, ptMin);
+  fhMaxRegSumPtJetPtBin->Fill(leadingE, ptMax);
 }
 
 //____________________________________________________________________
@@ -1290,15 +1294,27 @@ void  AliAnalysisTaskUE::CreateHistos()
   fhRegTransSumPtVsMult->Sumw2();
   fListOfHistos->Add( fhRegTransSumPtVsMult );     // At(32);
   
+  fhMinRegSumPtJetPtBin = new TH2F("hMinRegSumPtJetPtBin",      "Transverse Min Reg #Sigma p_{T} per jet Pt Bin",  
+                                   fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, 50, 0.,   20.);
+  fhMinRegSumPtJetPtBin->SetXTitle("Leading Jet P_{T}");
+  fhMinRegSumPtJetPtBin->Sumw2();
+  fListOfHistos->Add( fhMinRegSumPtJetPtBin );           // At(33)
+  
+  fhMaxRegSumPtJetPtBin = new TH2F("hMaxRegSumPtJetPtBin",      "Transverse Max Reg #Sigma p_{T} per jet Pt Bin",  
+                                   fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, 50, 0.,   20.);
+  fhMaxRegSumPtJetPtBin->SetXTitle("Leading Jet P_{T}");
+  fhMaxRegSumPtJetPtBin->Sumw2();
+  fListOfHistos->Add( fhMaxRegSumPtJetPtBin );           // At(34)
+  
   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1); 
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
   fh1Xsec->Sumw2();
-  fListOfHistos->Add( fh1Xsec );            //At(33)
+  fListOfHistos->Add( fh1Xsec );            //At(35)
   
   fh1Trials = new TH1F("fh1Trials","trials from pyxsec.root",1,0,1);
   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
   fh1Trials->Sumw2();
-  fListOfHistos->Add( fh1Trials ); //At(34)
+  fListOfHistos->Add( fh1Trials ); //At(36)
   
   fSettingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
   fSettingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
@@ -1320,7 +1336,7 @@ void  AliAnalysisTaskUE::CreateHistos()
   fSettingsTree->Fill();
 
   
-  fListOfHistos->Add( fSettingsTree );    // At(35)
+  fListOfHistos->Add( fSettingsTree );    // At(37)
   
   /*   
    // For debug region selection
@@ -1346,6 +1362,9 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
   // Normalize histos to region area TODO: 
   // Normalization done at Analysis, taking into account 
   // area variations on per-event basis (cone case)
+   
+   //HIGH WARNING!!!!!: DO NOT SCALE ANY OF THE ORIGINAL HISTOGRAMS
+   //MAKE A COPY, DRAW IT, And later sacale that copy. CAF Issue!!!!!
   
   // Draw some Test plot to the screen
   if (!gROOT->IsBatch()) {
@@ -1441,14 +1460,17 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     if(fDebug > 1)Printf("xSec %f nTrials %f Norm %f \n",xsec,ntrials,normFactor);
     
     
+    
     TCanvas* c2 = new TCanvas("c2","Jet Pt dist",160,160,1200,800);
+    TH1 * copy = 0;
     c2->Divide(2,2);
     c2->cd(1);
     fhEleadingPt->SetMarkerStyle(20);
     fhEleadingPt->SetMarkerColor(2);
-    if( normFactor > 0.) fhEleadingPt->Scale(normFactor);
+    //if( normFactor > 0.) fhEleadingPt->Scale(normFactor);
     //fhEleadingPt->Draw("p");
-    fhEleadingPt->DrawCopy("p");
+    copy = fhEleadingPt->DrawCopy("p");
+    if( normFactor > 0.) copy->Scale(normFactor);
     gPad->SetLogy();
     
     c2->cd(2);
