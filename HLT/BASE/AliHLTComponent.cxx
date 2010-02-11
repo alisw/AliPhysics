@@ -2131,7 +2131,18 @@ int AliHLTComponent::SetStopwatches(TObjArray* pStopwatches)
 AliHLTUInt32_t AliHLTComponent::GetRunNo() const
 {
   // see header file for function documentation
-  if (fpRunDesc==NULL) return kAliHLTVoidRunNo;
+
+  // 2010-02-11 OCDB is now the reliable source for the run number, it is
+  // initialized either by aliroot or the external interface depending
+  // on the environment. It turned out that the rundescriptor is not set
+  // in the aliroot mode, resulting in an invalid run number. However this
+  // did not cause problems until now. OCDB initialization has been revised
+  // already in 10/2009. This was a remnant.
+  // Have to check whether we get rid of the rundescriptor at some point.
+  if (fpRunDesc==NULL) return AliHLTMisc::Instance().GetCDBRunNo();
+  if (fpRunDesc->fRunNo!=(unsigned)AliHLTMisc::Instance().GetCDBRunNo()) {
+    HLTWarning("run number mismatch: ocdb %d   run descriptor %d", AliHLTMisc::Instance().GetCDBRunNo(), fpRunDesc->fRunNo);
+  }
   return fpRunDesc->fRunNo;
 }
 
