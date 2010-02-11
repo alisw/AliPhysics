@@ -1,5 +1,7 @@
-AliAnalysisTaskPerformanceStrange *AddTaskPerformanceStrange(Short_t lCollidingSystems=0,  /*0 = pp, 1 = AA*/
-				       TString lAnalysisCut="no" )
+AliAnalysisTaskPerformanceStrange *AddTaskPerformanceStrange(Short_t lCollidingSystems = 0,   // 0->pp,   1->AA
+							     Short_t lAnalysisMC       = 1,   // 0->No MC or 1->MC analysis
+							     TString lAnalysisCut      = "no",
+							     TString lAnalysisPidMode  = "withoutPID" )
 {
 // Creates, configures and attaches to the train a strangeness task.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -22,7 +24,9 @@ AliAnalysisTaskPerformanceStrange *AddTaskPerformanceStrange(Short_t lCollidingS
 	AliAnalysisTaskPerformanceStrange *taskperformancestrange = new AliAnalysisTaskPerformanceStrange("TaskPerformanceStrange");
    taskperformancestrange->SetCollidingSystems(lCollidingSystems);
    taskperformancestrange->SetAnalysisType(type);
+   taskperformancestrange->SetAnalysisMC(lAnalysisMC);
    taskperformancestrange->SetAnalysisCut(lAnalysisCut);
+   taskperformancestrange->SetUsePID((lAnalysisPidMode);
    mgr->AddTask(taskperformancestrange);
 
    // Create ONLY the output containers for the data produced by the task.
