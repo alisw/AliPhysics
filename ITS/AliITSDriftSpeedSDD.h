@@ -35,6 +35,7 @@ class AliITSDriftSpeedSDD : public TObject {
 
   void PrintDriftSpeedParameters() const;
 
+  Int_t GetDegreeofPoly() const {return fPolDeg;}
   Int_t GetEventNumber() const {return fEvNum;}
   UInt_t GetEventTimestamp() const {return fTimestamp;}
   Float_t GetDriftSpeedParameter(Int_t i) const {return fDriftSpeedParam[i];}

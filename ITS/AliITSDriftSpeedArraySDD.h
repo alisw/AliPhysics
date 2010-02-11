@@ -31,7 +31,11 @@ class AliITSDriftSpeedArraySDD : public TObject{
   UInt_t GetTimestamp(Int_t iElement);
   UInt_t GetInjectorStatus() const {return fInjectorStatus;}
   Double_t GetDriftSpeed(Int_t iEvent, Double_t iAnode);
-  
+  AliITSDriftSpeedSDD* GetDriftSpeedObject(Int_t iEvent) const{
+    if(iEvent>=0 && iEvent<fNEvents) return (AliITSDriftSpeedSDD*)fDriftSpeedSDD.At(iEvent);
+    else return 0;
+  }
+
  protected:  
   Int_t fNEvents;               // number of drift speed determination
   TObjArray fDriftSpeedSDD; // array of AliITSDriftSpeedSDD objects

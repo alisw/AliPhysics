@@ -45,7 +45,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
     SetInjLineRange(2,170,240);
     SetTimeStep(25.);
   }
-  void SetPolOrder(Int_t n){fPolOrder=n;}
+  void SetPolDegree(Int_t n){fPolDegree=n;}
   void SetMinDriftSpeed(Float_t vmin){fMinDriftSpeed=vmin;}
   void SetMaxDriftSpeed(Float_t vmax){fMaxDriftSpeed=vmax;}
   void SetMaxDriftSpeedErr(Float_t maxval){
@@ -55,7 +55,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
     fFirstPadForFit=firstpad;
     fLastPadForFit=lastpad;
   }
-  void SetPadStatusCutForFit(Int_t cutval=1){
+  void SetPadStatusCutForFit(Int_t cutval=4){
     fPadStatusCutForFit=cutval;
   }
   void SetDefaults();
@@ -107,6 +107,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void CalcDriftSpeed(Int_t jpad);
   void CalcTimeBinZero();
   void FitDriftSpeedVsAnode();
+  void FitDriftSpeedVsAnodeOld();
   Double_t GetMeanDriftSpeed(Int_t ipad) const{
     if(fNEvents==0) return 0.;
     return fSumDriftSpeed[ipad]/(Double_t)fNEvents;
@@ -129,7 +130,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   static const Float_t fgkDefaultMinSpeed;   // Default for fMinDriftSpeed
   static const Float_t fgkDefaultMaxSpeed;   // Default for fMaxDriftSpeed
   static const Float_t fgkDefaultMaxErr;     // Default for fMaxDriftSpeedErr
-  static const Int_t   fgkDefaultPolOrder;   // Default for fPolOrder
+  static const Int_t   fgkDefaultPolDegree;   // Default for fPolDegree
   static const Float_t fgkDefaultTimeStep;   // Default for fTimeStep
   static const UShort_t   fgkDefaultTbMin[kInjLines];  // Defaults for fTbMin
   static const UShort_t   fgkDefaultTbMax[kInjLines];  // Defaults for fTbMax
@@ -152,7 +153,8 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   
   Double_t *fParam;                           // parameters of polinomial fit to
                                              // drift speed vs. anode number
-  Int_t fPolOrder;                   // order of polinomial fit
+  Int_t fPolDegree;                   // Degree of polynomial fit
+  Int_t fActualPolDegree;             // Degree actually used (<=fPolDegree)
   Float_t fMinDriftSpeed;            // Minimum value for drift speed
   Float_t fMaxDriftSpeed;            // Maximum value for drift speed
   Float_t fMaxDriftSpeedErr;         // Maximum value for error on drift speed

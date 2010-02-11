@@ -227,8 +227,8 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   Double_t nPtLay4 = 0;
 
   Double_t param[4];    // parameters of poly fit
-  Double_t minValP0=4.; // min value for param[0]
-  Double_t maxValP0=9.; // max value for param[0]
+  Double_t minValP0=5.; // min value for param[0]
+  Double_t maxValP0=8.; // max value for param[0]
   Double_t minValP1=0.; // min value for param[1]
   Double_t aveCoefLay3[4]={0.,0.,0.,0.};  // average param for good mod.
   Double_t aveCoefLay4[4]={0.,0.,0.,0.};  // average param for good mod.
@@ -284,16 +284,20 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	    }
 
 	    if(param[0]>minValP0 && param[0]<maxValP0 && param[1]>minValP1){
-	      if(modID<kNumberOfSDDLay3){ 
-		for(Int_t ic=0;ic<4;ic++) aveCoefLay3[ic]+=param[ic];
-		nPtLay3++;
-	      }else{ 
-		for(Int_t ic=0;ic<4;ic++) aveCoefLay4[ic]+=param[ic];
-		nPtLay4++;
+	      if(polDeg==3){
+		if(modID<kNumberOfSDDLay3){ 
+		  for(Int_t ic=0;ic<4;ic++) aveCoefLay3[ic]+=param[ic];
+		  nPtLay3++;
+		}else{ 
+		  for(Int_t ic=0;ic<4;ic++) aveCoefLay4[ic]+=param[ic];
+		  nPtLay4++;
+		}
 	      }
 	      AliITSDriftSpeedSDD *dsp=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,param);
 	      arr->AddDriftSpeed(dsp);
 	      modSet[2*modID+isid]=1;
+	    }else{
+	      Log(Form("Module %d side %d not accepted, degree=%d, params=%g %g %g %g",modID+240,isid,polDeg,param[0],param[1],param[2],param[3]));
 	    }
 	  }
 	}
