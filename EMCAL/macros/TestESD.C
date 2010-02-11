@@ -37,6 +37,9 @@ Bool_t kPrintClusterCells = kFALSE;
 
 void TestESD() {
 
+  TGeoManager::Import("geometry.root");
+  AliEMCALGeometry *geom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE") ;  
+
   TFile* f = new TFile("AliESDs.root");
   TTree* esdTree = (TTree*)f->Get("esdTree");
   
@@ -101,7 +104,7 @@ void TestESD() {
       //For later: ADD CHECK THAT CLUSTER IS WITHIN SM FIDUCIAL VOLUME
 
       cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << " Phi: " 
-	   << cphi << " Eta: " << ceta << " NCells: " << nCells << " #Matches: " << nMatched 
+	   << cphi*TMath::RadToDeg() << " Eta: " << ceta << " NCells: " << nCells << " #Matches: " << nMatched 
 	   << " Index: " << trackIndex << " #Labels: " << nLabels << " Index: " 
 	   << labelIndex << endl;
 
@@ -136,6 +139,22 @@ void TestESD() {
 			Float_t amp       = cells.GetCellAmplitude(absId) ;
 			Float_t time      = cells.GetCellTime(absId);
 			cout<<"         Cluster Cell: AbsID : "<< absId << "; Amplitude "<< amp << "; Fraction "<<ampFract<<"; Time " <<time<<endl;
+			//Geometry methods  
+			Int_t iSupMod =  0 ;
+			Int_t iTower  =  0 ;
+			Int_t iIphi   =  0 ;
+			Int_t iIeta   =  0 ;
+			Int_t iphi    =  0 ;
+			Int_t ieta    =  0 ;
+			if(geom){
+			  geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta); 
+			  //Gives SuperModule and Tower numbers
+			  geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
+							    iIphi, iIeta,iphi,ieta);
+			  //Gives label of cell in eta-phi position per each supermodule
+			  cout<< "SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
+			      <<"; Phi "<<iIphi<<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
+			}
 		}
 	}
 		
@@ -144,9 +163,9 @@ void TestESD() {
 	if(labelIndex >= 0 && labelIndex < stack->GetNtrack()){
 		TParticle * particle = stack->Particle(labelIndex);
 		//Print primary values
-		cout<<"         More  contributing primary: "<<particle->GetName()<< "; Energy "<<particle->Energy()<<endl;   
+		cout<<"         More  contributing primary: "<<particle->GetName()<< "; Energy "<<particle->Energy()<<"; Eta "<<particle->Eta()<<"; Phi "<<particle->Phi()*TMath::RadToDeg()<<endl;   
 		for(Int_t i = 1; i < nLabels; i++){
-			particle = stack->Particle(clus->(GetLabels()->At(i)));
+			particle = stack->Particle((clus->GetLabels())->At(i));
 			cout<<"         Other contributing primary: "<<particle->GetName()<< "; Energy "<<particle->Energy()<<endl;
 		}
 	}
