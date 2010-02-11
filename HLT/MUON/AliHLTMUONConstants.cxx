@@ -33,6 +33,7 @@
 #include "AliHLTMUONChannelsBlockStruct.h"
 #include "AliHLTMUONMansoTracksBlockStruct.h"
 #include "AliHLTMUONMansoCandidatesBlockStruct.h"
+#include "AliHLTMUONTracksBlockStruct.h"
 #include "AliHLTMUONSinglesDecisionBlockStruct.h"
 #include "AliHLTMUONPairsDecisionBlockStruct.h"
 
@@ -92,6 +93,29 @@ AliHLTMUONConstants::fgkNilMansoCandidateStruct = {
 	0, 0
 };
 
+const AliHLTMUONTrackStruct
+AliHLTMUONConstants::fgkNilTrackStruct = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	{
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct
+	}
+};
+
 const AliHLTMUONTrackDecisionStruct
 AliHLTMUONConstants::fgkNilTrackDecisionStruct = {0, 0, 0};
 
@@ -122,6 +146,9 @@ AliHLTMUONConstants::fgkMansoTracksBlockDataType = AliHLTComponentDataTypeInitia
 
 const AliHLTComponentDataType
 AliHLTMUONConstants::fgkMansoCandidatesBlockDataType = AliHLTComponentDataTypeInitializer("MNCANDID", kAliHLTDataOriginMUON);
+
+const AliHLTComponentDataType
+AliHLTMUONConstants::fgkTracksBlockDataType = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
 AliHLTMUONConstants::fgkSinglesDecisionBlockDataType = AliHLTComponentDataTypeInitializer("DECIDSIN", kAliHLTDataOriginMUON);

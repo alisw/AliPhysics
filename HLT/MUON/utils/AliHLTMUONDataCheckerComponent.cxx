@@ -288,6 +288,7 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 	PAliHLTComponentBlockData* channelBlocks = NULL;
 	PAliHLTComponentBlockData* mansoTrackBlocks = NULL;
 	PAliHLTComponentBlockData* mansoCandidateBlocks = NULL;
+	PAliHLTComponentBlockData* trackBlocks = NULL;
 	PAliHLTComponentBlockData* singleDecisionBlocks = NULL;
 	PAliHLTComponentBlockData* pairDecisionBlocks = NULL;
 	AliHLTUInt32_t trigRecBlocksCount = 0;
@@ -297,6 +298,7 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 	AliHLTUInt32_t channelBlocksCount = 0;
 	AliHLTUInt32_t mansoTrackBlocksCount = 0;
 	AliHLTUInt32_t mansoCandidateBlocksCount = 0;
+	AliHLTUInt32_t trackBlocksCount = 0;
 	AliHLTUInt32_t singleDecisionBlocksCount = 0;
 	AliHLTUInt32_t pairDecisionBlocksCount = 0;
 	try
@@ -309,6 +311,7 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 		channelBlocks = new PAliHLTComponentBlockData[evtData.fBlockCnt];
 		mansoTrackBlocks = new PAliHLTComponentBlockData[evtData.fBlockCnt];
 		mansoCandidateBlocks = new PAliHLTComponentBlockData[evtData.fBlockCnt];
+		trackBlocks = new PAliHLTComponentBlockData[evtData.fBlockCnt];
 		singleDecisionBlocks = new PAliHLTComponentBlockData[evtData.fBlockCnt];
 		pairDecisionBlocks = new PAliHLTComponentBlockData[evtData.fBlockCnt];
 	}
@@ -324,6 +327,7 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 		if (channelBlocks != NULL) delete [] channelBlocks;
 		if (mansoTrackBlocks != NULL) delete [] mansoTrackBlocks;
 		if (mansoCandidateBlocks != NULL) delete [] mansoCandidateBlocks;
+		if (trackBlocks != NULL) delete [] trackBlocks;
 		if (singleDecisionBlocks != NULL) delete [] singleDecisionBlocks;
 		if (pairDecisionBlocks != NULL) delete [] pairDecisionBlocks;
 		return -ENOMEM;
@@ -401,6 +405,10 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 				{
 					blockType = kMansoCandidatesDataBlock;
 				}
+				else if (blocks[n].fDataType == AliHLTMUONConstants::TracksBlockDataType())
+				{
+					blockType = kTracksDataBlock;
+				}
 				else if (blocks[n].fDataType == AliHLTMUONConstants::SinglesDecisionBlockDataType())
 				{
 					blockType = kSinglesDecisionDataBlock;
@@ -460,6 +468,10 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 				blockOk[n] = CheckMansoCandidatesBlock(blocks[n], n);
 				mansoCandidateBlocks[mansoCandidateBlocksCount++] = &blocks[n];
 				break;
+			case kTracksDataBlock:
+				blockOk[n] = CheckTracksBlock(blocks[n], n);
+				trackBlocks[trackBlocksCount++] = &blocks[n];
+				break;
 			case kSinglesDecisionDataBlock:
 				blockOk[n] = CheckSinglesDecisionBlock(blocks[n], n);
 				singleDecisionBlocks[singleDecisionBlocksCount++] = &blocks[n];
@@ -491,6 +503,7 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 				channelBlocks, channelBlocksCount,
 				mansoTrackBlocks, mansoTrackBlocksCount,
 				mansoCandidateBlocks, mansoCandidateBlocksCount,
+				trackBlocks, trackBlocksCount,
 				singleDecisionBlocks, singleDecisionBlocksCount,
 				pairDecisionBlocks, pairDecisionBlocksCount
 			);
@@ -524,6 +537,7 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 		delete [] channelBlocks;
 		delete [] mansoTrackBlocks;
 		delete [] mansoCandidateBlocks;
+		delete [] trackBlocks;
 		delete [] singleDecisionBlocks;
 		delete [] pairDecisionBlocks;
 	)
@@ -1040,7 +1054,7 @@ bool AliHLTMUONDataCheckerComponent::IsMansoTrackOk(
 	///      block being checked.
 	/// \param  track The Manso track data being checked.
 	/// \param  ddl  The array decoded by AliHLTMUONUtils::UnpackSpecBits.
-	/// \returns true if the hit is valid and false otherwise.
+	/// \returns true if the Manso track is valid and false otherwise.
 	
 	bool result = true;
 	
@@ -1056,7 +1070,7 @@ bool AliHLTMUONDataCheckerComponent::IsMansoTrackOk(
 			" fPtr = %p and fSize = %u bytes."
 			" Assuming this is a %s data block."
 			" Problem with entry %d in block: The Manso track has"
-			" the chi squared value of %f that unreasonably big.",
+			" the chi squared value of %f that is unreasonably big.",
 			blockNumber,
 			DataType2Text(block.fDataType).c_str(),
 			block.fPtr,
@@ -1090,6 +1104,157 @@ bool AliHLTMUONDataCheckerComponent::IsMansoTrackOk(
 		bool hitOk = IsHitCoordinateOk(
 				block, blockNumber, name, entryNumber, track.fHit[i],
 				minCh, maxCh, i+6, ddl
+			);
+		if (not hitOk) result = false;
+	}
+	
+	return result;
+}
+
+
+bool AliHLTMUONDataCheckerComponent::IsTrackOk(
+		const AliHLTComponentBlockData& block,
+		AliHLTUInt32_t blockNumber,
+		const char* name,
+		AliHLTUInt32_t entryNumber,
+		const AliHLTMUONTrackStruct& track,
+		bool ddl[22]
+	) const
+{
+	/// Checks if the full track structure is Ok.
+	/// \param  block The block from which the track data comes from.
+	/// \param  blockNumber The block index number.
+	/// \param  name The name of the type of block.
+	/// \param  entryNumber The entry index number of the structure in the
+	///      block being checked.
+	/// \param  track The track data being checked.
+	/// \param  ddl  The array decoded by AliHLTMUONUtils::UnpackSpecBits.
+	/// \returns true if the full track structure is valid and false otherwise.
+	
+	bool result = true;
+	
+	// Chi^2 should not be greater than the worst fit possible, estimated
+	// as the diameter of largest chamber times the number of points
+	// findable in a track. Max points is 10 tracker chambers times
+	// 2 cathodes + 4 trigger chambers.
+	if (track.fChi2 > AliMUONConstants::Dmax(6)*AliMUONConstants::Dmax(6)*(10*2+4))
+	{
+		// Just a warning since this is not technically an
+		// integrity problem.
+		HLTWarning("Problem found with data block %d, fDataType = '%s',"
+			" fPtr = %p and fSize = %u bytes."
+			" Assuming this is a %s data block."
+			" Problem with entry %d in block: The track has"
+			" the chi squared value of %f that is unreasonably big.",
+			blockNumber,
+			DataType2Text(block.fDataType).c_str(),
+			block.fPtr,
+			block.fSize,
+			name,
+			entryNumber,
+			track.fChi2
+		);
+		result = false;
+	}
+	
+	// Check if the momentum vector is reasonable.
+	bool momOk = IsMomentumVectorOk(
+			block, blockNumber, name, entryNumber,
+			track.fPx, track.fPy, track.fPz
+		);
+	if (not momOk) result = false;
+	
+	// Check that the momentum parameters correspond to the momentum vector.
+	double momvalue = sqrt(track.fPy*track.fPy + track.fPz*track.fPz);
+	double invMom = (momvalue != 0 ? 1. / momvalue : 0);
+	if (TMath::Abs(invMom - TMath::Abs(track.fInverseBendingMomentum)) > 1e-12)
+	{
+		HLTError("Problem found with data block %d, fDataType = '%s',"
+			" fPtr = %p and fSize = %u bytes."
+			" Assuming this is a %s data block."
+			" Problem with entry %d in block: The track's inverse bending"
+			" momentum %f does not correspond to the momentum vector.",
+			blockNumber,
+			DataType2Text(block.fDataType).c_str(),
+			block.fPtr,
+			block.fSize,
+			name,
+			entryNumber,
+			track.fInverseBendingMomentum
+		);
+		result = false;
+	}
+	if (track.fPz != 0 and TMath::Abs(track.fPx/track.fPz - track.fThetaX) > 1e-12)
+	{
+		HLTError("Problem found with data block %d, fDataType = '%s',"
+			" fPtr = %p and fSize = %u bytes."
+			" Assuming this is a %s data block."
+			" Problem with entry %d in block: The track's non-bending plane"
+			" slope parameter %f does not correspond to the momentum vector.",
+			blockNumber,
+			DataType2Text(block.fDataType).c_str(),
+			block.fPtr,
+			block.fSize,
+			name,
+			entryNumber,
+			track.fThetaX
+		);
+		result = false;
+	}
+	if (track.fPz != 0 and TMath::Abs(track.fPy/track.fPz - track.fThetaY) > 1e-12)
+	{
+		HLTError("Problem found with data block %d, fDataType = '%s',"
+			" fPtr = %p and fSize = %u bytes."
+			" Assuming this is a %s data block."
+			" Problem with entry %d in block: The track's bending plane"
+			" slope parameter %f does not correspond to the momentum vector.",
+			blockNumber,
+			DataType2Text(block.fDataType).c_str(),
+			block.fPtr,
+			block.fSize,
+			name,
+			entryNumber,
+			track.fThetaY
+		);
+		result = false;
+	}
+	
+	// Check that the DCA vertex is reasonable. i.e. the vertex is within
+	// a 1 meter cube of the origin.
+	if (TMath::Abs(track.fX) > 100 or TMath::Abs(track.fY) > 100 or TMath::Abs(track.fZ) > 100)
+	{
+		// Just a warning since this is not technically an integrity problem.
+		HLTWarning("Problem found with data block %d, fDataType = '%s',"
+			" fPtr = %p and fSize = %u bytes."
+			" Assuming this is a %s data block."
+			" Problem with entry %d in block: The track's distance of closest"
+			" approach (DCA) vertex (x, y, z) = (%f, %f, %f) is not a reasonable value.",
+			blockNumber,
+			DataType2Text(block.fDataType).c_str(),
+			block.fPtr,
+			block.fSize,
+			name,
+			entryNumber,
+			track.fX, track.fY, track.fZ
+		);
+		result = false;
+	}
+	
+	AliHLTMUONParticleSign sign;
+	bool hitset[16];
+	AliHLTMUONUtils::UnpackTrackFlags(track.fFlags, sign, hitset);
+	
+	// Min and max allowed chamber numbers for hits:
+	Int_t minCh = 0;
+	Int_t maxCh = AliMUONConstants::NTrackingCh() - 1;
+	
+	// Check that this hit coordinates are OK.
+	for (AliHLTUInt32_t i = 0; i < 16; i++)
+	{
+		if (not hitset[i]) continue; // ignore hits that are not initialised.
+		bool hitOk = IsHitCoordinateOk(
+				block, blockNumber, name, entryNumber, track.fHit[i],
+				minCh, maxCh, -1, ddl
 			);
 		if (not hitOk) result = false;
 	}
@@ -2781,6 +2946,66 @@ bool AliHLTMUONDataCheckerComponent::CheckMansoCandidatesBlock(
 }
 
 
+bool AliHLTMUONDataCheckerComponent::CheckTracksBlock(
+		const AliHLTComponentBlockData& block,
+		AliHLTUInt32_t blockNumber
+	) const
+{
+	/// Checks the validity of a tracks block.
+
+	bool result = true;
+	const char* name = "tracks";
+	
+	if (not fIgnoreSpec)
+	{
+		if (not IsSpecificationValid(block, blockNumber, name))
+			result = false;
+	}
+	
+	AliHLTMUONTracksBlockReader inblock(block.fPtr, block.fSize);
+	if (not CheckBlockIntegrity(block, blockNumber, inblock, name))
+		return false;
+	
+	bool ddl[22];
+	AliHLTMUONUtils::UnpackSpecBits(block.fSpecification, ddl);
+	
+	for (AliHLTUInt32_t i = 0; i < inblock.Nentries(); i++)
+	{
+		// Need to check that no entries have duplicated data but with
+		// a different track ID number.
+		AliHLTMUONTrackStruct ti = inblock[i];
+		ti.fId = -1;
+		for (AliHLTUInt32_t j = i+1; j < inblock.Nentries(); j++)
+		{
+			AliHLTMUONTrackStruct tj = inblock[j];
+			tj.fId = ti.fId;
+			
+			if (ti == tj)
+			{
+				HLTError("Problem found with data block %d, fDataType = '%s',"
+					" fPtr = %p and fSize = %u bytes."
+					" Assuming this is a %s data block."
+					" Problem: The track structures %d and %d contain the"
+					" same data. The data might have been duplicated.",
+					blockNumber,
+					DataType2Text(block.fDataType).c_str(),
+					block.fPtr,
+					block.fSize,
+					name,
+					i, j
+				);
+				result = false;
+			}
+		}
+		
+		bool trackOk = IsTrackOk(block, blockNumber, name, i, ti, ddl);
+		if (not trackOk) result = false;
+	}
+	
+	return result;
+}
+
+
 bool AliHLTMUONDataCheckerComponent::CheckSinglesDecisionBlock(
 		const AliHLTComponentBlockData& block,
 		AliHLTUInt32_t blockNumber
@@ -2866,7 +3091,7 @@ bool AliHLTMUONDataCheckerComponent::IsScalarTooLarge(
 		AliHLTUInt32_t totalTrackCount
 	) const
 {
-	/// Checks if the scalar value is larger than the number of Manso
+	/// Checks if the scalar value is larger than the number of
 	/// tracks in the event.
 
 	if (scalarValue > totalTrackCount)
@@ -2875,7 +3100,7 @@ bool AliHLTMUONDataCheckerComponent::IsScalarTooLarge(
 			" data block %d, fDataType = '%s', fPtr = %p and"
 			" fSize = %u bytes."
 			" Problem: The %s scalar with value %d is larger"
-			" than the total number of Manso tracks found for the"
+			" than the total number of tracks found for the"
 			" event (%d tracks).",
 			blockTypeName,
 			blockNumber,
@@ -2885,6 +3110,44 @@ bool AliHLTMUONDataCheckerComponent::IsScalarTooLarge(
 			scalarName,
 			scalarValue,
 			totalTrackCount
+		);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+bool AliHLTMUONDataCheckerComponent::IsScalarTooLargePairs(
+		const AliHLTComponentBlockData* block,
+		AliHLTUInt32_t blockNumber,
+		const char* blockTypeName,
+		const char* scalarName,
+		AliHLTUInt32_t scalarValue,
+		AliHLTUInt32_t trackPairsCount
+	) const
+{
+	/// Checks if the scalar value is larger than the number of
+	/// track pairs in the event.
+
+	if (scalarValue > trackPairsCount)
+	{
+		HLTError("Problem found with %s trigger decision"
+			" data block %d, fDataType = '%s', fPtr = %p and"
+			" fSize = %u bytes."
+			" Problem: The %s scalar with value %d is larger"
+			" than the total number of track pairs found for the"
+			" event (%d track pairs).",
+			blockTypeName,
+			blockNumber,
+			DataType2Text(block->fDataType).c_str(),
+			block->fPtr,
+			block->fSize,
+			scalarName,
+			scalarValue,
+			trackPairsCount
 		);
 		return true;
 	}
@@ -2973,6 +3236,8 @@ void AliHLTMUONDataCheckerComponent::MakeGlobalChecks(
 		AliHLTUInt32_t mansoTrackBlocksCount,
 		const AliHLTComponentBlockData** mansoCandidateBlocks,
 		AliHLTUInt32_t mansoCandidateBlocksCount,
+		const AliHLTComponentBlockData** trackBlocks,
+		AliHLTUInt32_t trackBlocksCount,
 		const AliHLTComponentBlockData** singleDecisionBlocks,
 		AliHLTUInt32_t singleDecisionBlocksCount,
 		const AliHLTComponentBlockData** pairDecisionBlocks,
@@ -2989,8 +3254,8 @@ void AliHLTMUONDataCheckerComponent::MakeGlobalChecks(
 	/// the trigger record data blocks.
 	/// 4) Do the number of channels claimed in the cluster correspond to
 	/// the number of channel structures.
-	/// 5) Check that the momentum vectors between the Manso tracks and
-	/// the corresponding trigger record are compatible.
+	/// 5) Check that the momentum vectors between the Manso and full tracks,
+	/// and the corresponding trigger record are compatible.
 	/// 6) Check that the trigger decision scalars are reasonable.
 	/// 7) Check that the detector element IDs are the same between rec
 	/// hits and clusters / trigger record debug blocks.
@@ -3822,6 +4087,186 @@ void AliHLTMUONDataCheckerComponent::MakeGlobalChecks(
 		}
 	}
 	
+	for (AliHLTUInt32_t bi = 0; bi < trackBlocksCount; bi++)
+	{
+		AliHLTMUONTracksBlockReader inblocki(trackBlocks[bi]->fPtr, trackBlocks[bi]->fSize);
+		if (not inblocki.BufferSizeOk()) continue;
+		
+		totalTrackCount += inblocki.Nentries();
+		
+		// Check if all the trigger record IDs in the track structures exist.
+		for (AliHLTUInt32_t i = 0; i < inblocki.Nentries(); i++)
+		{
+			bool found = false;
+			
+			for (AliHLTUInt32_t bj = 0; bj < trigRecBlocksCount and not found; bj++)
+			{
+				AliHLTMUONTriggerRecordsBlockReader inblockj(trigRecBlocks[bj]->fPtr, trigRecBlocks[bj]->fSize);
+				if (not inblockj.BufferSizeOk()) continue;
+				
+				for (AliHLTUInt32_t j = 0; j < inblockj.Nentries(); j++)
+				{
+					if (inblocki[i].fTrigRec == inblockj[j].fId)
+					{
+						// At this point we can check if the momentum
+						// is compatible with the trigger record.
+						if (not AreMomentaCompatible(
+								inblocki[i].fPx, inblocki[i].fPy, inblocki[i].fPz,
+								inblockj[j].fPx, inblockj[j].fPy, inblockj[j].fPz
+							)
+						   )
+						{
+							HLTWarning("Problem found with track"
+								" data block %d, fDataType = '%s', fPtr = %p and"
+								" fSize = %u bytes."
+								" Problem with track structure %d in block: The momentum"
+								" vector of the track p = {%f, %f, %f} GeV/c is not"
+								" compatible with the momentum vector of the trigger"
+								" record with p = {%f, %f, %f} GeV/c.",
+								bi,
+								DataType2Text(trackBlocks[bi]->fDataType).c_str(),
+								trackBlocks[bi]->fPtr,
+								trackBlocks[bi]->fSize,
+								i, inblocki[i].fPx, inblocki[i].fPy, inblocki[i].fPz,
+								inblockj[j].fPx, inblockj[j].fPy, inblockj[j].fPz
+							);
+							MarkBlock(blocks, blockOk, blockCount, trackBlocks[bi]);
+						}
+						
+						found = true;
+						break;
+					}
+				}
+			}
+			
+			if (not found)
+			{
+				HLTError("Problem found with track"
+					" data block %d, fDataType = '%s', fPtr = %p and"
+					" fSize = %u bytes."
+					" Problem with track structure %d in block: The trigger"
+					" record identifier %d does not exist in any trigger"
+					" record data block.",
+					bi,
+					DataType2Text(trackBlocks[bi]->fDataType).c_str(),
+					trackBlocks[bi]->fPtr,
+					trackBlocks[bi]->fSize,
+					i, inblocki[i].fTrigRec
+				);
+				MarkBlock(blocks, blockOk, blockCount, trackBlocks[bi]);
+			}
+		}
+		
+		// Check if all the hits in the track structures exist.
+		for (AliHLTUInt32_t i = 0; i < inblocki.Nentries(); i++)
+		{
+			AliHLTMUONParticleSign sign;
+			bool hitset[16];
+			AliHLTMUONUtils::UnpackTrackFlags(inblocki[i].fFlags, sign, hitset);
+			
+			for (AliHLTUInt32_t n = 0; n < 16; n++)
+			{
+				if (not hitset[n]) continue;
+				bool found = false;
+				
+				for (AliHLTUInt32_t bj = 0; bj < hitBlocksCount and not found; bj++)
+				{
+					AliHLTMUONRecHitsBlockReader inblockj(hitBlocks[bj]->fPtr, hitBlocks[bj]->fSize);
+					if (not inblockj.BufferSizeOk()) continue;
+					
+					for (AliHLTUInt32_t j = 0; j < inblockj.Nentries(); j++)
+					{
+						if (inblocki[i].fHit[n] == inblockj[j])
+						{
+							found = true;
+							break;
+						}
+					}
+				}
+				
+				if (not found)
+				{
+					HLTError("Problem found with track"
+						" data block %d, fDataType = '%s', fPtr = %p and"
+						" fSize = %u bytes."
+						" Problem with track structure %d in block: The hit"
+						" for chamber %d does not exist in any"
+						" reconstructed hits data block.",
+						bi,
+						DataType2Text(trackBlocks[bi]->fDataType).c_str(),
+						trackBlocks[bi]->fPtr,
+						trackBlocks[bi]->fSize,
+						i, n+6+1
+					);
+					MarkBlock(blocks, blockOk, blockCount, trackBlocks[bi]);
+				}
+			}
+		}
+		
+		// Check if all the track structures are unique up to the ID and
+		// have unique identifiers.
+		for (AliHLTUInt32_t bj = bi+1; bj < trackBlocksCount; bj++)
+		{
+			AliHLTMUONTracksBlockReader inblockj(trackBlocks[bj]->fPtr, trackBlocks[bj]->fSize);
+			if (not inblockj.BufferSizeOk()) continue;
+			
+			for (AliHLTUInt32_t i = 0; i < inblocki.Nentries(); i++)
+			for (AliHLTUInt32_t j = 0; j < inblockj.Nentries(); j++)
+			{
+				if (inblocki[i].fId == inblockj[j].fId)
+				{
+					HLTError("Problem found with track"
+						" data block %d, fDataType = '%s', fPtr = %p and"
+						" fSize = %u bytes, and track data block %d,"
+						" fDataType = '%s', fPtr = %p and fSize = %u bytes."
+						" Problem: The track structure %d in block %d and entry"
+						" %d in block %d have the same identifier, but they"
+						" should be unique.",
+						bi,
+						DataType2Text(trackBlocks[bi]->fDataType).c_str(),
+						trackBlocks[bi]->fPtr,
+						trackBlocks[bi]->fSize,
+						bj,
+						DataType2Text(trackBlocks[bj]->fDataType).c_str(),
+						trackBlocks[bj]->fPtr,
+						trackBlocks[bj]->fSize,
+						bi, i,
+						bj, j
+					);
+					MarkBlock(blocks, blockOk, blockCount, trackBlocks[bi]);
+					MarkBlock(blocks, blockOk, blockCount, trackBlocks[bj]);
+				}
+				
+				AliHLTMUONTrackStruct a = inblocki[i];
+				AliHLTMUONTrackStruct b = inblockj[j];
+				a.fId = b.fId = -1;
+				if (a == b)
+				{
+					HLTError("Problem found with track"
+						" data block %d, fDataType = '%s', fPtr = %p and"
+						" fSize = %u bytes, and track data block %d,"
+						" fDataType = '%s', fPtr = %p and fSize = %u bytes."
+						" Problem: The track structure %d in block %d and entry"
+						" %d in block %d have the same data."
+						" The data may have been duplicated.",
+						bi,
+						DataType2Text(trackBlocks[bi]->fDataType).c_str(),
+						trackBlocks[bi]->fPtr,
+						trackBlocks[bi]->fSize,
+						bj,
+						DataType2Text(trackBlocks[bj]->fDataType).c_str(),
+						trackBlocks[bj]->fPtr,
+						trackBlocks[bj]->fSize,
+						bi, i,
+						bj, j
+					);
+					MarkBlock(blocks, blockOk, blockCount, trackBlocks[bi]);
+					MarkBlock(blocks, blockOk, blockCount, trackBlocks[bj]);
+				}
+			}
+		}
+	}
+	
 	for (AliHLTUInt32_t bi = 0; bi < singleDecisionBlocksCount; bi++)
 	{
 		AliHLTMUONSinglesDecisionBlockReader inblocki(singleDecisionBlocks[bi]->fPtr, singleDecisionBlocks[bi]->fSize);
@@ -3950,15 +4395,15 @@ void AliHLTMUONDataCheckerComponent::MakeGlobalChecks(
 		AliHLTUInt32_t maxPairs = totalTrackCount * (totalTrackCount-1) / 2;
 		const AliHLTMUONPairsDecisionBlockStruct& hdr = inblocki.BlockHeader();
 		const AliHLTComponentBlockData* block = pairDecisionBlocks[bi];
-		if (IsScalarTooLarge(block, bi, "track pair", "fNunlikeAnyPt", hdr.fNunlikeAnyPt, maxPairs) or
-		    IsScalarTooLarge(block, bi, "track pair", "fNunlikeLowPt", hdr.fNunlikeLowPt, maxPairs) or
-		    IsScalarTooLarge(block, bi, "track pair", "fNunlikeHighPt", hdr.fNunlikeHighPt, maxPairs) or
-		    IsScalarTooLarge(block, bi, "track pair", "fNlikeAnyPt", hdr.fNlikeAnyPt, maxPairs) or
-		    IsScalarTooLarge(block, bi, "track pair", "fNlikeLowPt", hdr.fNlikeLowPt, maxPairs) or
-		    IsScalarTooLarge(block, bi, "track pair", "fNlikeHighPt", hdr.fNlikeHighPt, maxPairs) or
-		    IsScalarTooLarge(block, bi, "track pair", "fNmassAny", hdr.fNmassAny, maxPairs) or
-		    IsScalarTooLarge(block, bi, "track pair", "fNmassLow", hdr.fNmassLow, maxPairs) or
-		    IsScalarTooLarge(block, bi, "track pair", "fNmassHigh", hdr.fNmassHigh, maxPairs) or
+		if (IsScalarTooLargePairs(block, bi, "track pair", "fNunlikeAnyPt", hdr.fNunlikeAnyPt, maxPairs) or
+		    IsScalarTooLargePairs(block, bi, "track pair", "fNunlikeLowPt", hdr.fNunlikeLowPt, maxPairs) or
+		    IsScalarTooLargePairs(block, bi, "track pair", "fNunlikeHighPt", hdr.fNunlikeHighPt, maxPairs) or
+		    IsScalarTooLargePairs(block, bi, "track pair", "fNlikeAnyPt", hdr.fNlikeAnyPt, maxPairs) or
+		    IsScalarTooLargePairs(block, bi, "track pair", "fNlikeLowPt", hdr.fNlikeLowPt, maxPairs) or
+		    IsScalarTooLargePairs(block, bi, "track pair", "fNlikeHighPt", hdr.fNlikeHighPt, maxPairs) or
+		    IsScalarTooLargePairs(block, bi, "track pair", "fNmassAny", hdr.fNmassAny, maxPairs) or
+		    IsScalarTooLargePairs(block, bi, "track pair", "fNmassLow", hdr.fNmassLow, maxPairs) or
+		    IsScalarTooLargePairs(block, bi, "track pair", "fNmassHigh", hdr.fNmassHigh, maxPairs) or
 		    IsScalarALargerThanB(block, bi, "track pair", "fNunlikeHighPt", hdr.fNunlikeHighPt, "fNunlikeLowPt", hdr.fNunlikeLowPt) or
 		    IsScalarALargerThanB(block, bi, "track pair", "fNunlikeLowPt", hdr.fNunlikeLowPt, "fNunlikeAnyPt", hdr.fNunlikeAnyPt) or
 		    IsScalarALargerThanB(block, bi, "track pair", "fNlikeHighPt", hdr.fNlikeHighPt, "fNlikeLowPt", hdr.fNlikeLowPt) or

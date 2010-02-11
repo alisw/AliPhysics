@@ -37,6 +37,7 @@ MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
 		AliHLTMUONChannelsBlockStruct.cxx \
 		AliHLTMUONMansoTracksBlockStruct.cxx \
 		AliHLTMUONMansoCandidatesBlockStruct.cxx \
+		AliHLTMUONTracksBlockStruct.cxx \
 		AliHLTMUONSinglesDecisionBlockStruct.cxx \
 		AliHLTMUONPairsDecisionBlockStruct.cxx \
 		OnlineAnalysis/AliHLTMUONCalculations.cxx \

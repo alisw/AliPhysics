@@ -34,6 +34,7 @@
 #include "AliHLTMUONChannelsBlockStruct.h"
 #include "AliHLTMUONMansoTracksBlockStruct.h"
 #include "AliHLTMUONMansoCandidatesBlockStruct.h"
+#include "AliHLTMUONTracksBlockStruct.h"
 #include "AliHLTMUONSinglesDecisionBlockStruct.h"
 #include "AliHLTMUONPairsDecisionBlockStruct.h"
 
@@ -337,6 +338,12 @@ typedef AliHLTMUONDataBlockWriter<
 		AliHLTMUONMansoCandidateStruct,
 		kMansoCandidatesDataBlock
 	> AliHLTMUONMansoCandidatesBlockWriter;
+
+typedef AliHLTMUONDataBlockWriter<
+		AliHLTMUONTracksBlockStruct,
+		AliHLTMUONTrackStruct,
+		kTracksDataBlock
+	> AliHLTMUONTracksBlockWriter;
 	
 typedef AliHLTMUONDataBlockWriter<
 		AliHLTMUONSinglesDecisionBlockStruct,

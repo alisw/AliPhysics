@@ -1049,6 +1049,8 @@ int DumpRawDataHeader(
 		bool continueParse
 	)
 {
+	// Dumps the common DDL raw data block header.
+	
 	cout << "*************************** Common DDL data header *******************************" << endl;
 	char fillChar = cout.fill();  // remember fill char to set back to original later.
 	int result = CheckHeaderField(header->fSize, buffer, bufferSize, continueParse);
@@ -1170,6 +1172,8 @@ int DumpTrackerDDLRawStream(
 		bool continueParse
 	)
 {
+	// Dumps a tracker DDL raw stream data.
+	
 	const AliRawDataHeader* header =
 		reinterpret_cast<const AliRawDataHeader*>(buffer);
 	int result = DumpRawDataHeader(buffer, bufferSize, header, continueParse);
@@ -1200,6 +1204,8 @@ int DumpTriggerDDLRawStream(
 		bool continueParse
 	)
 {
+	// Dumps a trigger DDL raw stream data.
+	
 	const AliRawDataHeader* header =
 		reinterpret_cast<const AliRawDataHeader*>(buffer);
 	int result = DumpRawDataHeader(buffer, bufferSize, header, continueParse);
@@ -1271,6 +1277,8 @@ int DumpRecHitsBlock(
 		bool continueParse
 	)
 {
+	// Dumps a reconstructed hits data block.
+	
 	int result = EXIT_SUCCESS;
 	AliHLTMUONRecHitsBlockReader block(buffer, bufferSize);
 	
@@ -1359,6 +1367,8 @@ int DumpTriggerRecordsBlock(
 		bool continueParse
 	)
 {
+	// Dumps a trigger records data block.
+	
 	AliHLTMUONTriggerRecordsBlockReader block(buffer, bufferSize);
 	
 	int result = CheckCommonHeader(block, buffer, bufferSize, continueParse);
@@ -1504,6 +1514,8 @@ int DumpTrigRecsDebugBlock(
 		bool continueParse
 	)
 {
+	// Dumps the debugging information for trigger records.
+	
 	AliHLTMUONTrigRecsDebugBlockReader block(buffer, bufferSize);
 	
 	int result = CheckCommonHeader(block, buffer, bufferSize, continueParse);
@@ -1573,6 +1585,8 @@ int DumpClustersBlock(
 		bool continueParse
 	)
 {
+	// Dumps a clusters block structure.
+	
         int result = EXIT_SUCCESS;
 	AliHLTMUONClustersBlockReader block(buffer, bufferSize);
 	
@@ -1638,6 +1652,8 @@ int DumpChannelsBlock(
 		bool continueParse
 	)
 {
+	// Dumps a channels block structure.
+	
         int result = EXIT_SUCCESS;
 	AliHLTMUONChannelsBlockReader block(buffer, bufferSize);
 	
@@ -1732,6 +1748,8 @@ int DumpMansoTracksBlock(
 		bool continueParse
 	)
 {
+	// Dumps the Manso tracks block structure.
+	
 	int result = EXIT_SUCCESS;
 	AliHLTMUONMansoTracksBlockReader block(buffer, bufferSize);
 	
@@ -1790,6 +1808,8 @@ int DumpMansoCandidateStruct(
 		bool continueParse
 	)
 {
+	// Dumps the manso candidate structure.
+	
 	int result = DumpMansoTrackStruct(buffer, bufferSize, &candidate->fTrack, continueParse);
 	if (result != EXIT_SUCCESS) return result;
 	
@@ -1824,6 +1844,8 @@ int DumpMansoCandidatesBlock(
 		bool continueParse
 	)
 {
+	// Dumps the manso candidates block structure.
+	
 	int result = EXIT_SUCCESS;
 	AliHLTMUONMansoCandidatesBlockReader block(buffer, bufferSize);
 	
@@ -1839,6 +1861,127 @@ int DumpMansoCandidatesBlock(
 		cout << "=========================== Manso track candidate number " << i+1
 			<< " of " << nentries << " ===========================" << endl;
 		int subResult = DumpMansoCandidateStruct(buffer, bufferSize, entry++, continueParse);
+		if (subResult != EXIT_SUCCESS) return subResult;
+	}
+	
+	return result;
+}
+
+
+int DumpTrackStruct(
+		const char* buffer, unsigned long bufferSize,
+		const AliHLTMUONTrackStruct* track,
+		bool continueParse
+	)
+{
+	// Step through the fields trying to print them.
+	// At each step check if we have not overflowed the buffer. If we have
+	// not, then we can print the field, otherwise we print the left over
+	// bytes assumed to be corrupted rubbish.
+	int result = CheckField(track->fId, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Track ID: " << track->fId << "\t";
+
+	result = CheckField(track->fTrigRec, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Trigger Record ID: " << track->fTrigRec << endl;
+	
+	result = CheckField(track->fFlags, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Flags: " << showbase << hex << track->fFlags << dec;
+	
+	// Print the individual trigger bits.
+	AliHLTMUONParticleSign sign;
+	bool hitset[16];
+	AliHLTMUONUtils::UnpackTrackFlags(track->fFlags, sign, hitset);
+	cout << " [Sign: " << sign << ", Hits set: ";
+	bool first = true;
+	for (AliHLTUInt32_t i = 0; i < 16; i++)
+	{
+		if (hitset[i])
+		{
+			cout << (first ? "" : ", ") << i;
+			first = false;
+		}
+	}
+	cout << (first ? "none]" : "]") << endl;
+
+	result = CheckField(track->fPx, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Momentum: (px = " << track->fPx << ", ";
+
+	result = CheckField(track->fPy, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "py = " << track->fPy << ", ";
+
+	result = CheckField(track->fPz, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "pz = " << track->fPz << ") GeV/c" << endl;
+	
+	result = CheckField(track->fInverseBendingMomentum, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Inverse bending momentum: " << track->fInverseBendingMomentum << " c/GeV" << endl;
+	
+	result = CheckField(track->fThetaX, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Slope: (non-bending plane = " << track->fThetaX << ", ";
+	
+	result = CheckField(track->fThetaY, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "bending plane = " << track->fThetaY << ")" << endl;
+
+	result = CheckField(track->fX, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "DCA vertex: (x = " << track->fX << ", ";
+
+	result = CheckField(track->fY, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "y = " << track->fY << ", ";
+
+	result = CheckField(track->fZ, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "z = " << track->fZ << ") cm" << endl;
+
+	result = CheckField(track->fChi2, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Chi squared fit: " << track->fChi2 << endl;
+	
+	cout << "Track hits:" << endl;
+	cout << "Chamber | DetElemID | X (cm)     | Y (cm)     | Z (cm)" << endl;
+	cout << "-----------------------------------------------------------" << endl;
+	const AliHLTMUONRecHitStruct* hit = &track->fHit[0];
+	for(AliHLTUInt32_t ch = 0; ch < 16; ch++)
+	{
+		result = DumpRecHitStruct(buffer, bufferSize, hit++, continueParse);
+		if (result != EXIT_SUCCESS) return result;
+	}
+
+	return result;
+}
+
+
+int DumpTracksBlock(
+		const char* buffer, unsigned long bufferSize,
+		bool continueParse
+	)
+{
+	// Dumps the full tracks block structure.
+	
+	int result = EXIT_SUCCESS;
+	AliHLTMUONTracksBlockReader block(buffer, bufferSize);
+	
+	result = CheckCommonHeader(block, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS and not continueParse) return result;
+	
+	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
+	
+	// Print the data block record entries.
+	const AliHLTMUONTrackStruct* entry = block.GetArray();
+	for(AliHLTUInt32_t i = 0; i < nentries; i++)
+	{
+		cout << "================================ track number " << i+1
+			<< " of " << nentries << " ================================" << endl;
+		int subResult = DumpTrackStruct(buffer, bufferSize, entry++, continueParse);
 		if (subResult != EXIT_SUCCESS) return subResult;
 	}
 	
@@ -2325,6 +2468,10 @@ int ParseBuffer(
 		subResult = DumpMansoCandidatesBlock(buffer, bufferSize, continueParse);
 		if (subResult != EXIT_SUCCESS) result = subResult;
 		break;
+	case kTracksDataBlock:
+		subResult = DumpTracksBlock(buffer, bufferSize, continueParse);
+		if (subResult != EXIT_SUCCESS) result = subResult;
+		break;
 	case kSinglesDecisionDataBlock:
 		subResult = DumpSinglesDecisionBlock(buffer, bufferSize, continueParse);
 		if (subResult != EXIT_SUCCESS) result = subResult;
@@ -2606,6 +2753,7 @@ void PrintUsage(bool asError = true)
 	os << "         clusters - cluster debugging information from hit reconstruction." << endl;
 	os << "         mansotracks - partial tracks from Manso algorithm." << endl;
 	os << "         mansocandidates - track candidates considered in the Manso algorithm." << endl;
+	os << "         tracks - tracks from full tracker component." << endl;
 	os << "         singlesdecision - trigger decisions for single tracks." << endl;
 	os << "         pairsdecision - trigger decisions for track pairs." << endl;
 	os << "         autodetect - the type of the data block will be automatically" << endl;

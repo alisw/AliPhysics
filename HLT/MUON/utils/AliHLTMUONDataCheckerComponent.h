@@ -25,6 +25,7 @@ extern "C" struct AliHLTMUONClusterStruct;
 extern "C" struct AliHLTMUONTriggerRecordStruct;
 extern "C" struct AliHLTMUONTrigRecInfoStruct;
 extern "C" struct AliHLTMUONMansoTrackStruct;
+extern "C" struct AliHLTMUONTrackStruct;
 
 /**
  * @class AliHLTMUONDataCheckerComponent
@@ -183,6 +184,15 @@ private:
 			bool ddl[22]
 		) const;
 	
+	bool IsTrackOk(
+			const AliHLTComponentBlockData& block,
+			AliHLTUInt32_t blockNumber,
+			const char* name,
+			AliHLTUInt32_t entryNumber,
+			const AliHLTMUONTrackStruct& track,
+			bool ddl[22]
+		) const;
+	
 	bool CheckDetElemIds(
 			const AliHLTComponentBlockData& infoBlock,
 			AliHLTUInt32_t infoBlockNumber,
@@ -245,6 +255,11 @@ private:
 			AliHLTUInt32_t blockNumber
 		) const;
 	
+	bool CheckTracksBlock(
+			const AliHLTComponentBlockData& block,
+			AliHLTUInt32_t blockNumber
+		) const;
+	
 	bool CheckSinglesDecisionBlock(
 			const AliHLTComponentBlockData& block,
 			AliHLTUInt32_t blockNumber
@@ -289,6 +304,15 @@ private:
 			AliHLTUInt32_t totalTrackCount
 		) const;
 	
+	bool IsScalarTooLargePairs(
+			const AliHLTComponentBlockData* block,
+			AliHLTUInt32_t blockNumber,
+			const char* blockTypeName,
+			const char* scalarName,
+			AliHLTUInt32_t scalarValue,
+			AliHLTUInt32_t trackPairsCount
+		) const;
+	
 	bool IsScalarALargerThanB(
 			const AliHLTComponentBlockData* block,
 			AliHLTUInt32_t blockNumber,
@@ -324,6 +348,8 @@ private:
 			AliHLTUInt32_t mansoTrackBlocksCount,
 			const AliHLTComponentBlockData** mansoCandidateBlocks,
 			AliHLTUInt32_t mansoCandidateBlocksCount,
+			const AliHLTComponentBlockData** trackBlocks,
+			AliHLTUInt32_t trackBlocksCount,
 			const AliHLTComponentBlockData** singleDecisionBlocks,
 			AliHLTUInt32_t singleDecisionBlocksCount,
 			const AliHLTComponentBlockData** pairDecisionBlocks,

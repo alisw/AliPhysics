@@ -31,6 +31,7 @@
 #include "AliHLTMUONChannelsBlockStruct.h"
 #include "AliHLTMUONMansoTracksBlockStruct.h"
 #include "AliHLTMUONMansoCandidatesBlockStruct.h"
+#include "AliHLTMUONTracksBlockStruct.h"
 #include "AliHLTMUONSinglesDecisionBlockStruct.h"
 #include "AliHLTMUONPairsDecisionBlockStruct.h"
 #include "AliMUONTrackerDDLDecoderEventHandler.h"
@@ -122,6 +123,59 @@ void AliHLTMUONUtils::UnpackRecHitFlags(
 	
 	chamber = (flags >> 12) & 0xF;
 	detElemId = flags & 0xFFF;
+}
+
+
+AliHLTUInt32_t AliHLTMUONUtils::PackTrackFlags(
+		AliHLTMUONParticleSign sign, const bool hitset[16]
+	)
+{
+	/// This packs the given parameters into the bits of a word appropriate
+	/// for AliHLTMUONTrackStruct::fFlags.
+	/// @param sign    The particle sign.
+	/// @param hitset  Flags to indicate if the corresponding fHits[i] elements
+	///                was set/filled.
+	/// @return  Returns the 32 bit packed word.
+	
+	AliHLTUInt32_t flags;
+	switch (sign)
+	{
+	case kSignMinus: flags = 0x80000000; break;
+	case kSignPlus:  flags = 0x40000000; break;
+	default:         flags = 0x00000000; break;
+	}
+	
+	for (AliHLTUInt32_t i = 0; i < 16; i++)
+	{
+		flags |= (hitset[i] ? (0x1 << i) : 0);
+	}
+	return flags;
+}
+
+
+void AliHLTMUONUtils::UnpackTrackFlags(
+		AliHLTUInt32_t flags, AliHLTMUONParticleSign& sign, bool hitset[16]
+	)
+{
+	/// This unpacks the AliHLTMUONTrackStruct::fFlags bits into
+	/// its component fields.
+	/// @param flags  The flags from an AliHLTMUONTrackStruct structure.
+	/// @param sign    Sets this to the particle sign.
+	/// @param hitset  Sets the array elements to indicate if the corresponding
+	///                fHits[i] element was set/filled.
+	
+	AliHLTUInt32_t signbits = flags & 0xC0000000;
+	switch (signbits)
+	{
+	case 0x80000000: sign = kSignMinus;   break;
+	case 0x40000000: sign = kSignPlus;    break;
+	default:         sign = kSignUnknown; break;
+	}
+	
+	for (AliHLTUInt32_t i = 0; i < 16; i++)
+	{
+		hitset[i] = ((flags & (0x1 << i)) == (0x1 << i));
+	}
 }
 
 
@@ -444,6 +498,10 @@ AliHLTMUONDataBlockType AliHLTMUONUtils::ParseCommandLineTypeString(const char* 
 	{
 		return kMansoCandidatesDataBlock;
 	}
+	else if (strcmp(type, "tracks") == 0)
+	{
+		return kTracksDataBlock;
+	}
 	else if (strcmp(type, "singlesdecision") == 0)
 	{
 		return kSinglesDecisionDataBlock;
@@ -486,6 +544,9 @@ const char* AliHLTMUONUtils::DataBlockTypeToString(AliHLTMUONDataBlockType type)
 		break;
 	case kMansoCandidatesDataBlock:
 		t = AliHLTMUONConstants::MansoCandidatesBlockDataType();
+		break;
+	case kTracksDataBlock:
+		t = AliHLTMUONConstants::TracksBlockDataType();
 		break;
 	case kSinglesDecisionDataBlock:
 		t = AliHLTMUONConstants::SinglesDecisionBlockDataType();
@@ -532,6 +593,8 @@ const char* AliHLTMUONUtils::FailureReasonToString(WhyNotValid reason)
 	case kDataWordDifferent: return "kDataWordDifferent";
 	case kChiSquareInvalid: return "kChiSquareInvalid";
 	case kMomentumVectorNotZero: return "kMomentumVectorNotZero";
+	case kMomentumParamsNotZero: return "kMomentumParamsNotZero";
+	case kDCAVertexNotZero: return "kDCAVertexNotZero";
 	case kRoiRadiusInvalid: return "kRoiRadiusInvalid";
 	case kHitNotWithinRoi: return "kHitNotWithinRoi";
 	case kPtValueNotValid: return "kPtValueNotValid";
@@ -605,10 +668,16 @@ const char* AliHLTMUONUtils::FailureReasonToMessage(WhyNotValid reason)
 		return "The raw data word is different from the unpacked values.";
 	case kChiSquareInvalid:
 		return "The chi squared value must be a positive value or -1"
-			" indicating a fitting error.";
+			" indicating no fit or a fitting error.";
 	case kMomentumVectorNotZero:
 		return "The chi sqaured value is set to -1 indicating momentum"
 			" was not fitted, but the momentum vector was not zero.";
+	case kMomentumParamsNotZero:
+		return "The chi sqaured value is set to -1 indicating the track"
+			" was not fitted, but the fitted momentum parameters are not zero.";
+	case kDCAVertexNotZero:
+		return "The chi sqaured value is set to -1 indicating the track"
+			" was not fitted, but the DCA vertex is not zero.";
 	case kRoiRadiusInvalid:
 		return "The region of interest radius is invalid.";
 	case kHitNotWithinRoi:
@@ -1007,6 +1076,54 @@ bool AliHLTMUONUtils::HeaderOk(
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONMansoCandidateStruct))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	return result;
+}
+
+
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONTracksBlockStruct& block,
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+	)
+{
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
+	/// \returns  true if there is no problem with the header and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	// The block must have the correct type.
+	if (block.fHeader.fType != kTracksDataBlock)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// The block's record width must be the correct size.
+	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTrackStruct))
 	{
 		if (reason != NULL and reasonCount < maxCount)
 		{
@@ -2263,6 +2380,240 @@ bool AliHLTMUONUtils::IntegrityOk(
 	{
 		AliHLTUInt32_t filledCount = maxCount - reasonCount;
 		if (not IntegrityOk(candidate[i], reason+reasonCount, filledCount))
+		{
+			// reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
+		}
+	}
+	
+	return result;
+}
+
+
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONTrackStruct& track,
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
+	)
+{
+	/// This method is used to check more extensively if the integrity of the
+	/// full track structure is OK and returns true in that case.
+	/// [in] \param track  The track structure to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is
+	///      not valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
+	/// \returns  true if there is no problem with the structure and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	// Check that the track ID has a valid value.
+	if (not (track.fId >= 0 or track.fId == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Check that the corresponding trigger record ID has a valid value.
+	if (not (track.fTrigRec >= 0 or track.fTrigRec == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidTriggerIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Make sure that the reserved bits in the fFlags field are set
+	// to zero.
+	if ((track.fFlags & 0x3FFF0000) != 0)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kReservedBitsNotZero;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	// Make sure the sign is not invalid.
+	if ((track.fFlags & 0xC0000000) == 0xC0000000)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kParticleSignBitsNotValid;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	// Check that fHit[i] is nil if the corresponding bit in the
+	// flags word is zero.
+	const AliHLTMUONRecHitStruct& nilhit = AliHLTMUONConstants::NilRecHitStruct();
+	for (int i = 0; i < 16; i++)
+	{
+		if ((track.fFlags & (0x1 << i)) == 0 and track.fHit[i] != nilhit)
+		{
+			if (reason != NULL and reasonCount < maxCount)
+			{
+				reason[reasonCount] = kHitNotMarkedAsNil;
+				reasonCount++;
+			}
+			result = false;
+			break;
+		}
+	}
+
+	// Check that the chi squared value is valid
+	if (not (track.fChi2 >= 0 or track.fChi2 == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kChiSquareInvalid;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	// Check that if chi squared is -1 then the momentum vector is zero.
+	if (track.fChi2 == -1 and
+	    not (track.fPx == 0 and track.fPy == 0 and track.fPz == 0)
+	   )
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kMomentumVectorNotZero;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	// Check that if chi squared is -1 then the momentum parameters are zero.
+	if (track.fChi2 == -1 and
+	    not (track.fInverseBendingMomentum == 0 and track.fThetaX == 0 and track.fThetaY == 0)
+	   )
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kMomentumParamsNotZero;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	// Check that if chi squared is -1 then the momentum parameters are zero.
+	if (track.fChi2 == -1 and
+	    not (track.fX == 0 and track.fY == 0 and track.fZ == 0)
+	   )
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kDCAVertexNotZero;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Check the individual hits
+	for (int i = 0; i < 16; i++)
+	{
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(track.fHit[i], reason + reasonCount, filledCount))
+		{
+			reasonCount += filledCount;
+			result = false;
+		}
+	}
+	
+	return result;
+}
+
+
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONTracksBlockStruct& block,
+		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum,
+		AliHLTUInt32_t& reasonCount
+	)
+{
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT internal track data block is OK and returns true in that case.
+	/// [in] \param block  The track data block to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the Manso track that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kInvalidIdValue
+	///        - kInvalidTriggerIdValue
+	///        - kReservedBitsNotZero
+	///        - kParticleSignBitsNotValid
+	///        - kHitNotMarkedAsNil
+	///        - kChiSquareInvalid
+	///        - kMomentumVectorNotZero
+	///        - kMomentumParamsNotZero
+	///        - kDCAVertexNotZero
+	///        - kInvalidDetElementNumber
+	///        - kInvalidChamberNumber
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
+	/// \returns  true if there is no problem with the data and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
+	
+	const AliHLTMUONTrackStruct* track =
+		reinterpret_cast<const AliHLTMUONTrackStruct*>(&block + 1);
+	
+	// Check if any track ID is duplicated.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTInt32_t id = track[i].fId;
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
+		{
+			if (id == track[j].fId)
+			{
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateIDs;
+					reasonCount++;
+				}
+				result = false;
+			}
+		}
+	}
+	
+	// Check that all the tracks have integrity.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(track[i], reason+reasonCount, filledCount))
 		{
 			// reasons filled in IntegrityOk, now we just need to adjust
 			// reasonCount and fill the recordNum values.

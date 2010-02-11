@@ -224,6 +224,7 @@ int DecodeFileType(const char* filename, AliHLTMUONDataBlockType& type)
 	case kChannelsDataBlock:
 	case kMansoTracksDataBlock:
 	case kMansoCandidatesDataBlock:
+	case kTracksDataBlock:
 	case kSinglesDecisionDataBlock:
 	case kPairsDecisionDataBlock:
 		break;
@@ -261,6 +262,7 @@ void PrintUsage(bool asError = true)
 	os << "         clusters - cluster debugging information from hit reconstruction." << endl;
 	os << "         mansotracks - partial tracks from Manso algorithm." << endl;
 	os << "         mansocandidates - track candidates considered in the Manso algorithm." << endl;
+	os << "         tracks - tracks from full tracker components." << endl;
 	os << "         singlesdecision - trigger decisions for single tracks." << endl;
 	os << "         pairsdecision - trigger decisions for track pairs." << endl;
 	os << "         autodetect - the type of the data block will be automatically" << endl;
