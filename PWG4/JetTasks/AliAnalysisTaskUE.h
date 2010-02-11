@@ -211,6 +211,8 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     TH2F*  fhRegBackwardPartPtDistVsEt; //!
     TH2F*  fhRegTransMult;         //!
     TH2F*  fhRegTransSumPtVsMult;    //!
+    TH2F*  fhMinRegSumPtJetPtBin;    //!,
+    TH2F*  fhMaxRegSumPtJetPtBin;    //!
 
     //        TH2F*  fhValidRegion; //! test to be canceled
     
