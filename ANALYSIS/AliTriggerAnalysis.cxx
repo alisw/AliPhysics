@@ -712,17 +712,17 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
   
   if (side == kASide)
   {
-    if (time > 75 && time < 83)
+    if (time > 68 && time < 100)
       return kV0BB;
     if (time > 54 && time < 57.5) 
       return kV0BG;
-    if (time > 57.5 && time < 72)
+    if (time > 57.5 && time < 68)
       return kV0Fake;
   }
   
   if (side == kCSide)
   {
-    if (time > 75.5 && time < 82)
+    if (time > 75.5 && time < 100)
       return kV0BB;
     if (time > 69.5 && time < 73)
       return kV0BG; 
