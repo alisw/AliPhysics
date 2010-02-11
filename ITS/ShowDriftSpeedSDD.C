@@ -1,4 +1,5 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TF1.h>
 #include <TFile.h>
 #include <TH1F.h>
 #include <TGraph.h>
@@ -11,6 +12,7 @@
 #include <TObjArray.h>
 #include "AliCDBEntry.h"
 #include "AliITSDriftSpeedArraySDD.h"
+#include "AliITSDriftSpeedSDD.h"
 #endif
 
 // Macro to plot the calibration parameters from the OCDB file 
@@ -78,6 +80,8 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   for(Int_t i=firstmod; i<lastmod; i++){
     Int_t iMod=i+240;
     if(!kNoDraw){
+      c0->Clear();
+      c0->Divide(2,1);
     }
     Int_t i0=2*i;
     Int_t i1=1+2*i;
@@ -115,18 +119,19 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
     printf(" Mod. %d \tStatusLR=%X %X \t v(an 128l)= %f",iMod,vdriftarr0->GetInjectorStatus(),vdriftarr1->GetInjectorStatus(),vdriftarr0->GetDriftSpeed(0,128));
     printf("        \t v(an 128r)= %f  Degree=%d %d\n",vdriftarr1->GetDriftSpeed(0,128),vdrift0->GetDegreeofPoly(),vdrift1->GetDegreeofPoly());
-    c0->Clear();
-    c0->Divide(2,1);
-    c0->cd(1);
-    gvdr0[i]->Draw("AP");
-    gvdr0[i]->GetXaxis()->SetTitle("Anode");
-    gvdr0[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
-    c0->cd(2);
-    gvdr1[i]->Draw("AP");
-    gvdr1[i]->GetXaxis()->SetTitle("Anode");
-    gvdr1[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
-    c0->Update();
-    
+
+    if(!kNoDraw){
+      c0->cd(1);
+      gvdr0[i]->Draw("AP");
+      gvdr0[i]->GetXaxis()->SetTitle("Anode");
+      gvdr0[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
+      c0->cd(2);
+      gvdr1[i]->Draw("AP");
+      gvdr1[i]->GetXaxis()->SetTitle("Anode");
+      gvdr1[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
+      c0->Update();
+    }
+
     Float_t vel0=0;
     Float_t pd0=0;
     if(vdrift0){ 
@@ -246,7 +251,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
 
 
-void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2009){
+void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2010){
   TGrid::Connect("alien:",0,0,"t");
   TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD\" \"Run%d*.root\" > run.txt",year,nrun);
   gSystem->Exec(cmd.Data());
