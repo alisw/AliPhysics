@@ -242,7 +242,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       AliESDInputHandler *esdHandler = new AliESDInputHandler();
       if (kUseESDTags) esdHandler->SetReadTags();
       mgr->SetInputEventHandler(esdHandler);       
+      if(iPWG4PtQATPC)esdHandler->SetActiveBranches("ESDfriend");
    }
+
    // Monte Carlo handler
    if (kUseMC && !iAODanalysis) {
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
@@ -465,7 +467,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4CaloQA){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
-     AliAnalysisTaskParticleCorrelation *taskcaloQA =  AddTaskCalorimeterQA("AOD",kFALSE,kIsMC);
+     AliAnalysisTaskParticleCorrelation *taskcaloQA =  AddTaskCalorimeterQA("ESD",kFALSE,kIsMC);
      if(!taskcaloQA)::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation QA cannot run - EXCLUDED");
    } 
 
