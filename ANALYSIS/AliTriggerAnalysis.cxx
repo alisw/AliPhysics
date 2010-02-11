@@ -687,13 +687,24 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
     }
   }
   else {
-    for (Int_t i = begin; i < end; ++i) {
-      if (esdV0->GetTime(i) > 1e-6 && esdV0->GetAdc(i) > fV0AdcThr) {
-        Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i));
-        Float_t timeWeight = V0LeadingTimeWeight(esdV0->GetAdc(i));
-        time += correctedTime*timeWeight;
+    if (online) {
+      for (Int_t i = begin; i < end; ++i) {
+        if (esdV0->GetTime(i) >= 1e-6 &&
+            esdV0->GetTime(i) > fV0HwWinLow && esdV0->GetTime(i) < fV0HwWinHigh &&
+            esdV0->GetAdc(i) > fV0HwAdcThr)
+          return kV0BB;
+      }
+      return kV0Empty;
+    }
+    else {
+      for (Int_t i = begin; i < end; ++i) {
+	if (esdV0->GetTime(i) > 1e-6 && esdV0->GetAdc(i) > fV0AdcThr) {
+	  Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i));
+	  Float_t timeWeight = V0LeadingTimeWeight(esdV0->GetAdc(i));
+	  time += correctedTime*timeWeight;
             
-        weight += timeWeight;
+	  weight += timeWeight;
+	}
       }
     }
   }
