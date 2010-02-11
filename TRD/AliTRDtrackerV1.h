@@ -191,7 +191,6 @@ private:
   AliTRDtrackerV1(const AliTRDtrackerV1 &tracker);
   AliTRDtrackerV1 &operator=(const AliTRDtrackerV1 &tracker);
   Double_t       CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]);
-  void           CookNTimeBins();
   Double_t       CalculateTrackLikelihood(const AliTRDseedV1 *const tracklets, Double_t *chi2);
   Int_t          	ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
   static Float_t	CalculateReferenceX(const AliTRDseedV1 *const tracklets);

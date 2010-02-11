@@ -48,6 +48,7 @@ public:
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
   static TClonesArray* GetClusters() {return fgClusters;}
   static TClonesArray* GetTracklets() {return fgTracklets;}
+  static Int_t        GetNTimeBins() {return fgNTimeBins;}
   Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}
   AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return GetRecoParam()->IsPIDNeuralNetwork() ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
   static AliTRDdigitsParam* GetDigitsParam() { return fgDigitsParam;}
@@ -85,6 +86,7 @@ private:
   static AliTRDdigitsParam *fgDigitsParam; // Digits Param information
   static TClonesArray *fgClusters;    // list of clusters for local reconstructor
   static TClonesArray *fgTracklets;   // list of online tracklets for local reconstructor
+  static Int_t         fgNTimeBins;   // number of time bins as given by the clusterizer
 
   ClassDef(AliTRDReconstructor, 2)    //  Class for the TRD reconstruction
 

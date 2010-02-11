@@ -275,7 +275,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
   }
   AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance(); // Calibration monitor
   if (!calibra) AliInfo("Could not get Calibra instance");
-  if(!fgNTimeBins) CookNTimeBins();
+  if (!fgNTimeBins) fgNTimeBins = fkReconstructor->GetNTimeBins(); 
 
   // Define scalers
   Int_t nFound   = 0, // number of tracks found
@@ -2087,38 +2087,6 @@ AliTRDseedV1* AliTRDtrackerV1::SetTracklet(const AliTRDseedV1 * const tracklet)
   }
   Int_t nentries = fTracklets->GetEntriesFast();
   return new ((*fTracklets)[nentries]) AliTRDseedV1(*tracklet);
-}
-
-//____________________________________________________________________
-void AliTRDtrackerV1::CookNTimeBins()
-{ 
-  // Initialize number of time bins
-
-  if(fgNTimeBins){
-    // first look if set by hand
-    AliDebug(2, Form("NTimeBins [%d] (set by user)", fgNTimeBins));
-  } else if(fkReconstructor && fkReconstructor->HasDigitsParam()) {
-    // second look into digits param to avoid DB query
-    fgNTimeBins = fkReconstructor->GetDigitsParam()->GetNTimeBins();
-    if(fgNTimeBins>0) AliDebug(2, Form("NTimeBins [%d] (set from digits param)", fgNTimeBins));
-    else AliWarning(Form("NTimeBins [%d] failed from digits param.", fgNTimeBins));
-  }
-
-  if(!fgNTimeBins){ // third query DB
-    AliTRDcalibDB *trd(NULL);
-    if((trd = AliTRDcalibDB::Instance())) {
-      if((fgNTimeBins = trd->GetNumberOfTimeBinsDCS()) <= 0){
-        AliError("Corrupted DCS Object in OCDB");
-        fgNTimeBins = 24;
-        AliDebug(2, Form("NTimeBins [%d] (set to default 24)", fgNTimeBins));
-      } else AliDebug(2, Form("NTimeBins [%d] (set from DB)", fgNTimeBins));
-    } else AliFatal("Could not get DB.");
-  }
-
-  if(fgNTimeBins<=0){
-    AliError("NTimeBins failed all settings. Use default 24 !");
-    fgNTimeBins = 24;
-  }
 }
 
 //____________________________________________________________________

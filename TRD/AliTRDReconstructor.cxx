@@ -71,6 +71,7 @@ Char_t const * AliTRDReconstructor::fgTaskFlags[AliTRDrecoParam::kTRDreconstruct
  ,"tr"
  ,"pd"
 };
+Int_t AliTRDReconstructor::fgNTimeBins = -1;
 
 //_____________________________________________________________________________
 AliTRDReconstructor::AliTRDReconstructor()
@@ -189,6 +190,8 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   // take over ownership of online tracklets
   fgTracklets = clusterer.TrackletsArray();
   clusterer.SetTrackletsOwner(kFALSE);
+
+  fgNTimeBins = clusterer.GetNTimeBins();
 }
 
 //_____________________________________________________________________________
@@ -216,6 +219,8 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   // take over ownership of online tracklets
   fgTracklets = clusterer.TrackletsArray();
   clusterer.SetTrackletsOwner(kFALSE);
+
+  fgNTimeBins = clusterer.GetNTimeBins();
 }
 
 //_____________________________________________________________________________

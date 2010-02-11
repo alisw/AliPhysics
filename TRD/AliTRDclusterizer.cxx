@@ -667,7 +667,9 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   else
     fRawStream->SetReader(rawReader);
 
-  if(fReconstructor->IsHLT()){
+  SetBit(kHLT, fReconstructor->IsHLT());
+
+  if(TestBit(kHLT)){
     fRawStream->SetSharedPadReadout(kFALSE);
     fRawStream->SetNoErrorWarning();
   }
@@ -676,10 +678,8 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   
   Int_t det    = 0;
   while ((det = fRawStream->NextChamber(fDigitsManager,fTrackletContainer)) >= 0){
-    Bool_t iclusterBranch = kFALSE;
-    if (fDigitsManager->GetIndexes(det)->HasEntry()){
-      iclusterBranch = MakeClusters(det);
-    }
+    if (fDigitsManager->GetIndexes(det)->HasEntry())
+      MakeClusters(det);
 
     fDigitsManager->ClearArrays(det);
 
@@ -786,7 +786,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     return kFALSE;
   }
 
-  const AliTRDrecoParam* const recoParam = fReconstructor->GetRecoParam();
+  const AliTRDrecoParam *const recoParam = fReconstructor->GetRecoParam();
 
   fMaxThresh            = recoParam->GetClusMaxThresh();
   fSigThresh            = recoParam->GetClusSigThresh();
@@ -823,10 +823,26 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   // Check consistency between OCDB and raw data
   Int_t nTimeOCDB = calibration->GetNumberOfTimeBinsDCS();
-  if ((nTimeOCDB  >         -1) &&
-      (fTimeTotal != nTimeOCDB)) {
-    AliError(Form("Number of timebins does not match OCDB value (RAW[%d] OCDB[%d])"
-                ,fTimeTotal,calibration->GetNumberOfTimeBinsDCS()));
+  if(TestBit(kHLT)){
+    if((nTimeOCDB > -1) && (fTimeTotal != nTimeOCDB)){
+      AliWarning(Form("Number of timebins does not match OCDB value (RAW[%d] OCDB[%d]), using raw value"
+		      ,fTimeTotal,nTimeOCDB));
+    }
+  }else{
+    if(nTimeOCDB == -1){
+      AliWarning("Undefined number of timebins in OCDB, using value from raw data.");
+      if(!fTimeTotal>0){
+	AliError("Number of timebins in raw data is negative, skipping chamber!");
+	return kFALSE;
+      }
+    }else if(nTimeOCDB == -2){
+      AliError("Mixed number of timebins in OCDB, no reconstruction of TRD data!"); 
+      return kFALSE;
+    }else if(fTimeTotal != nTimeOCDB){
+      AliError(Form("Number of timebins in raw data does not match OCDB value (RAW[%d] OCDB[%d]), skipping chamber!"
+		    ,fTimeTotal,nTimeOCDB));
+      return kFALSE;
+    }
   }
 
   // Detector wise calibration object for the gain factors
@@ -846,12 +862,11 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Calibration object with the pad status
   fCalPadStatusROC       = calibration->GetPadStatusROC(fDet);
 
-  SetBit(kLUT, recoParam->UseLUT());
-  SetBit(kGAUS, recoParam->UseGAUS());
-  SetBit(kHLT, fReconstructor->IsHLT());
-  
   firstClusterROC = -1;
   fClusterROC     =  0;
+
+  SetBit(kLUT, recoParam->UseLUT());
+  SetBit(kGAUS, recoParam->UseGAUS());
 
   // Apply the gain and the tail cancelation via digital filter
   if(recoParam->UseTailCancelation()) TailCancelation(recoParam);

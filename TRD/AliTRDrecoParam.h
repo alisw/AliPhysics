@@ -73,7 +73,6 @@ public:
   inline void GetTCParams(Double_t *par) const;
   inline Int_t GetStreamLevel(ETRDReconstructionTask task) const;
   const TString *GetRawStreamVersion() const{ return &fRawStreamVersion; };
-  Int_t    GetADCBaseline() const           { return fADCBaseline; }
   Double_t GetMinMaxCutSigma() const        { return fMinMaxCutSigma;     };
   Double_t GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;  };
   Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
@@ -122,7 +121,6 @@ public:
   void     SetNSigmaClusters(Double_t sigmaNclusters)         {fkNSigmaClusters = sigmaNclusters;} 
   void     SetRawStreamVersion(const Char_t *version)         {fRawStreamVersion = version; }
   void     SetRoadzMultiplicator(Double_t mult)               {fkRoadzMultiplicator = mult; } 
-  void     SetADCBaseline(Int_t baseline)                     { fADCBaseline = baseline; }
   void     SetMinMaxCutSigma(Float_t minMaxCutSigma)          { fMinMaxCutSigma   = minMaxCutSigma; }
   void     SetMinLeftRightCutSigma(Float_t minLeftRightCutSigma) { fMinLeftRightCutSigma   = minLeftRightCutSigma; };
   void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
@@ -174,7 +172,6 @@ private:
   
   // Raw Reader Params
   TString   fRawStreamVersion;       // Raw Reader version
-  Int_t     fADCBaseline;            // ADC Baseline
 
   // Clusterization parameter
   Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle

@@ -743,50 +743,52 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
   // Returns Number of time bins from the DCS
   //
 
+  Int_t nMixed = -2; // not the same number for all chambers
+  Int_t nUndef = -1; // default value - has not been set!
+  Int_t nTbSor = nUndef;
+  Int_t nTbEor = nUndef;
+
   const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
 
-  if(!dcsArr){
-    printf("No DCS Object found\n");
-    //return -1;
-    return 30;
+  if (!dcsArr) {
+    AliError("No DCS object found!");
+    return nUndef;
   }
-  const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0)); // Take SOR
+
+  const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0));
   const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1));
 
-  // prefer SOR
-  if(!calDCSsor){
-    if(!calDCSeor){
-      printf("No calDCSeor found\n");
-      //return -1;
-      return 30;
+  if (!calDCSsor) {
+    // the SOR file is mandatory
+    AliError("NO SOR AliTRDCalDCS object found in CDB file!");
+    return nUndef;
     }
-    if(calDCSeor->GetGlobalNumberOfTimeBins() > 0) return calDCSeor->GetGlobalNumberOfTimeBins();
-    else return 30;
+
+  if (!calDCSeor) {
+    // this can happen if the run is shorter than a couple of seconds.
+    AliWarning("NO EOR AliTRDCalDCS object found in CDB file.");
+    }
+
+  // get the numbers
+  nTbSor = calDCSsor->GetGlobalNumberOfTimeBins();
+  if (calDCSeor) nTbEor = calDCSeor->GetGlobalNumberOfTimeBins();
+
+  // if they're the same return the value
+  // -2 means mixed, -1: no data, >= 0: good number of time bins
+  if (nTbSor == nTbEor) return nTbSor;
+
+  // if they're differing:
+  if (nTbSor == nMixed || nTbEor == nMixed) {
+    AliWarning("Inconsistent number of time bins found!");
+    return nMixed;
   }
-  // if SOR is available and the number of timebins is > -1, take this, otherwise check EOR
-  Int_t nTimeSOR = calDCSsor->GetGlobalNumberOfTimeBins();
-  if(nTimeSOR > -1){
-    // Make a consistency check
-    if(calDCSeor){
-      Int_t nTimeEOR = calDCSeor->GetGlobalNumberOfTimeBins();
-      if((nTimeEOR > -1) && (nTimeSOR != nTimeEOR)){
-        // Parameter inconsistency found, return -2 to be able to catch the error
-        //return -2;
-	printf("Inconsistency\n");
-	return 30;
-      }
-    }
-    // Consisency check passed or not done
-    if(nTimeSOR > 0.0) return nTimeSOR;
-    else return 30;
-  } else {
-    // SOR has unphysical time parameter, take EOR
-    if(calDCSeor) {
-     if(calDCSeor->GetGlobalNumberOfTimeBins() > 0) return calDCSeor->GetGlobalNumberOfTimeBins(); 
-     else return 30;
-    }
-    return 30;  // Both SOR and EOR not available
-  }
+  
+  // one is undefined, the other ok -> return that one
+  if (nTbSor == nUndef) return nTbEor;
+  if (nTbEor == nUndef) return nTbSor;
+
+  // only remains: two different numbers >= 0
+  return nMixed;
 }
 
 //_____________________________________________________________________________
