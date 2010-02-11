@@ -176,7 +176,7 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
     fListHist->Add(fHistMassAntiLambdaOff);
   }
   if (!fHistArmenterosPodolanskiOff) {
-    fHistArmenterosPodolanskiOff   = new TH2F("fHistArmenterosPodolanskiOff","Armenteros-Podolanski Offline phase space;#alpha;p_{t} arm",100,-1.0,1.0,50,0,0.5);
+    fHistArmenterosPodolanskiOff   = new TH2F("fHistArmenterosPodolanskiOff","Armenteros-Podolanski Offline phase space;#alpha;p_{t} arm",200,-1.0,1.0,150,0,0.3);
     fListHist->Add(fHistArmenterosPodolanskiOff);
   }
 
@@ -230,7 +230,7 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
     fListHist->Add(fHistMassAntiLambdaOn);
   }
   if (!fHistArmenterosPodolanskiOn) {
-    fHistArmenterosPodolanskiOn    = new TH2F("fHistArmenterosPodolanskiOn","Armenteros-Podolanski Onthefly phase space;#alpha;p_{t} arm",100,-1.0,1.0,50,0,0.5);
+    fHistArmenterosPodolanskiOn    = new TH2F("fHistArmenterosPodolanskiOn","Armenteros-Podolanski Onthefly phase space;#alpha;p_{t} arm",200,-1.0,1.0,150,0,0.3);
     fListHist->Add(fHistArmenterosPodolanskiOn);
   }
 
