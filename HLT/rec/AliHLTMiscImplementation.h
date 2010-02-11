@@ -24,6 +24,7 @@ class AliHLTMiscImplementation : public AliHLTMisc
   int InitCDB(const char* cdbpath);
 
   int SetCDBRunNo(int runNo);
+  int GetCDBRunNo();
 
   AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1);
 

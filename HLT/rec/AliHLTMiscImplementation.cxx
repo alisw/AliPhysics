@@ -90,6 +90,19 @@ int AliHLTMiscImplementation::SetCDBRunNo(int runNo)
   return iResult;
 }
 
+int AliHLTMiscImplementation::GetCDBRunNo()
+{
+  // see header file for function documentation
+  AliCDBManager* pCDB = AliCDBManager::Instance();
+  AliHLTLogging log;
+  if (!pCDB) {
+    log.Logging(kHLTLogError, "SetCDBRunNo", "CDB handling", "Could not get CDB instance");
+  } else {
+    return pCDB->GetRun();
+  }
+  return -1;
+}
+
 AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo, int version, int subVersion)
 {
   // see header file for function documentation

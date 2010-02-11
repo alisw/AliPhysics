@@ -39,6 +39,7 @@ class AliHLTMisc : public TObject {
   virtual int InitCDB(const char* cdbpath);
 
   virtual int SetCDBRunNo(int runNo);
+  virtual int GetCDBRunNo();
 
   virtual AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1);
 

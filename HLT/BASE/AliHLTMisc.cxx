@@ -65,6 +65,12 @@ int AliHLTMisc::SetCDBRunNo(int /*runNo*/)
   return -EFAULT;
 }
 
+int AliHLTMisc::GetCDBRunNo()
+{
+  // default method, functionality is implemented in the child class
+  return -1;
+}
+
 AliCDBEntry* AliHLTMisc::LoadOCDBEntry(const char* /*path*/, int /*runNo*/, int /*version*/, int /*subVersion*/)
 {
   // default method, functionality is implemented in the child class
