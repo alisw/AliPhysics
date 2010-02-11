@@ -61,13 +61,12 @@ ClassImp(AliHLTMUONAgent);
 
 bool AliHLTMUONAgent::IsMuonModuleLoaded()
 {
-	// Checks to see if the MUON module is loaded or not.
+	/// Checks to see if the MUON module is loaded or not.
 
 	// If the check was already done then use the cached value.
 	if (fgMuonModuleLoaded > 0) return true;
 	if (fgMuonModuleLoaded < 0) return false;
 	
-	bool haveMuonModule = false;
 	if (gAlice != NULL)
 	{
 		// Search for a module in gAlice deriving from AliMUON.
@@ -82,11 +81,9 @@ bool AliHLTMUONAgent::IsMuonModuleLoaded()
 			}
 		}
 	}
-	else
-	{
-		fgMuonModuleLoaded = -1;
-		return false;
-	}
+	
+	fgMuonModuleLoaded = -1;
+	return false;
 }
 
 
