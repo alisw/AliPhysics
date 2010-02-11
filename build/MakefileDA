@@ -88,7 +88,7 @@ SYSLIBS=-ldl -lpthread $(shell xml2-config --libs)
 
 MONITORLIBS=$(shell date-config --monitorlibs=noshift)
 
-ALIROOTALIBS=$(RAWDatabaseALIB) $(RAWDatarecALIB) $(RAWDatasimALIB) $(STEERBaseALIB) $(STEERALIB) $(CDBALIB) $(ESDALIB) $(AODALIB)
+ALIROOTALIBS=$(RAWDatabaseALIB) $(RAWDatarecALIB) $(RAWDatasimALIB) $(STEERBaseALIB) $(STEERALIB) $(CDBALIB) $(ESDALIB) $(AODALIB) $(STATALIB)
 
 ALIROOTALIBS+=$($(DAMODULE)ALIBS)
 
