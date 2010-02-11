@@ -8,9 +8,9 @@ void Hshuttle(Int_t runTime=1500)
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   
   AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
-//  pShuttle->SetInputRunType("PHYSICS");
-//  pShuttle->SetInputRunType("CALIBRATION");
-  pShuttle->SetInputRunType("PHYSICS");
+  //pShuttle->SetInputRunType("PHYSICS");
+  pShuttle->SetInputRunType("CALIBRATION");
+  //pShuttle->SetInputRunType("STANDALONE");
   SimPed();   
   for(Int_t ldc=51;ldc<=52;ldc++) 
   {
@@ -18,14 +18,37 @@ void Hshuttle(Int_t runTime=1500)
    if(ldc==52) {for(Int_t iddl=8;iddl<=13;iddl++) pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP",Form("HmpidPedDdl%02i.txt",iddl),Form("LDC%i",ldc),Form("HmpidPedDdl%02i.txt",iddl));}
   }
   SimMap(pDcsMap,runTime); pShuttle->SetDCSInput(pDcsMap);                                    //DCS map
+  SimNoiseMap();           pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP", "HmpPhysicsDaNoiseMap.root", "MON", "./HmpPhysicsDaNoiseMap.root");                                                                          //Simulate Noise Map
   
+    
   AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle); pShuttle->Process();              //here goes preprocessor  
 //  delete pp;   
 
   DrawInput(pDcsMap); DrawOutput();
-  gSystem->Exec("rm -rf HmpidPedDdl*.txt");
-
+  
+  gSystem->Exec("rm -rf HmpidPedDdl*.txt");                 //delete simulated files
+  gSystem->Exec("rm -rf ./HmpPhysicsDaNoiseMap.root");      //delete simulated file
+  
 }//Hshuttle()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SimNoiseMap()
+{
+  //
+  // Simulate the noise map that will be extracted by the HMP Physics DA from PHYSICS and STANDALONE runs
+  //
+  TRandom rnd;
+  TH2F *hHmpNoiseMaps=new TH2F("hHmpNoiseMaps","Noise Maps Ch: 0-7;Ch 0-7: pad X;Ch0, Ch1, Ch2, Ch3, Ch4, Ch5, Ch6 pad Y ;Noise level (\%)",160,0,160,144*7,0,144*7); //In y we have all 7 chambers
+  Int_t events=2000;
+  for(Int_t nev=0;nev<events;nev++) 
+    for(Int_t npads=0;npads<350;npads++)  //average 5- pads times 7 chambers
+      hHmpNoiseMaps->Fill(rnd.Integer(160),rnd.Integer(7)*144+rnd.Integer(144));
+  
+  if(events!=0) hHmpNoiseMaps->Scale(1.0/events);
+  TFile *fout = new TFile("HmpPhysicsDaNoiseMap.root","recreate");
+  hHmpNoiseMaps->Write();
+  fout->Close();
+  Printf("==> HMP Noise Map simulation has finished!");
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimPed()
 {
@@ -47,7 +70,9 @@ void SimPed()
         for(Int_t adr=0;adr<=47;adr++){
           Float_t mean  = 150+200*gRandom->Rndm();
           Float_t sigma = 1+0.3*gRandom->Gaus();
-          Int_t inhard=((Int_t(mean+nSigmas*sigma))<<9)+Int_t(mean); //right calculation, xchecked with Paolo 8/4/2008
+          if(ddl==7 && row == 10 && dil == 6 ) {mean =  AliHMPIDParam::kPadMeanMasked ; sigma = AliHMPIDParam::kPadSigmaMasked;}                 //to test the dead channel map
+          if(ddl==7 && row == 10 && dil == 4 ) {mean =  AliHMPIDParam::kPadMeanMasked ; sigma = AliHMPIDParam::kPadSigmaMasked;}                 //to test the dead channel map
+          Int_t inhard=((Int_t(mean+nSigmas*sigma))<<9)+Int_t(mean);                                                                             //right calculation, xchecked with Paolo 8/4/2008
           out << Form("%2i %2i %2i %5.3f %5.3f %4.4x \n",row,dil,adr,mean,sigma,inhard);
         }
 
@@ -162,28 +187,43 @@ void DrawInput(TMap *pDcsMap)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawOutput()
 {
-  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME"); AliCDBManager::Instance()->SetRun(0);
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); AliCDBManager::Instance()->SetRun(0);
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre");
   AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean");
   AliCDBEntry *pDaqSigEnt=AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");
+  AliCDBEntry *pDaqMaskedEnt=AliCDBManager::Instance()->Get("HMPID/Calib/Masked");
+  AliCDBEntry *pNoiseEnt=AliCDBManager::Instance()->Get("HMPID/Calib/NoiseMap");
   
-  if(!pQthreEnt || !pNmeanEnt || !pDaqSigEnt) return;
+  if(!pQthreEnt || !pNmeanEnt || !pDaqSigEnt || !pDaqMaskedEnt) return;
   
   TObjArray *pNmean =(TObjArray*)pNmeanEnt ->GetObject(); 
   TObjArray *pQthre =(TObjArray*)pQthreEnt ->GetObject(); 
   TObjArray *pDaqSig=(TObjArray*)pDaqSigEnt->GetObject();
-   
+  TObjArray *pDaqMasked=(TObjArray*)pDaqMaskedEnt->GetObject();
+  TH2F      *pNoiseMap = (TH2F*)pNoiseEnt->GetObject();      
+  
   TF1 *pRad0,*pRad1,*pRad2;  
   TCanvas *c2=new TCanvas("c2","Output",800,800); c2->Divide(3,3);
+  TCanvas *c3=new TCanvas("c3","Output Masked",800,800); c3->Divide(3,3);
+  TCanvas *c4=new TCanvas("c4","Noise",800,800); 
   
   TH1F *pSig[7];
+  TH2F *phMask[7]; 
   
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
     TMatrix *pM=(TMatrix*)pDaqSig->At(iCh);
+    TMatrix *pmMask=(TMatrix*)pDaqMasked->At(iCh);
     
     pSig[iCh]=new TH1F(Form("sig%i",iCh),"Sigma;[QDC]",100,-5,20); //pSig[iCh]->SetLineColor(iCh+kRed);
-    for(Int_t padx=0;padx<160;padx++) for(Int_t pady=0;pady<144;pady++) pSig[iCh]->Fill((*pM)(padx,pady));
-    
+    phMask[iCh]=new TH2F(Form("phMask%i",iCh),"Maksed;pad x;pad y;Q (ADC)",160,0,160,144,0,144); 
+    for(Int_t padx=0;padx<160;padx++) 
+    {
+      for(Int_t pady=0;pady<144;pady++)
+      { 
+        pSig[iCh]->Fill((*pM)(padx,pady));
+        phMask[iCh]->Fill(padx,pady,(*pmMask)(padx,pady));
+       }
+     }
     c2->cd(7);    if(iCh==0) pSig[iCh]->Draw(); else pSig[iCh]->Draw("same");
     
     if(iCh==6) c2->cd(1);  if(iCh==5) c2->cd(2);                          
@@ -193,6 +233,17 @@ void DrawOutput()
     TF1 *pRad0=(TF1*)pNmean->At(iCh*3+0); pRad0->Draw();  pRad0->GetXaxis()->SetTimeDisplay(kTRUE); pRad0->GetYaxis()->SetRangeUser(1.28,1.3);
     TF1 *pRad1=(TF1*)pNmean->At(iCh*3+1); pRad1->Draw("same");
     TF1 *pRad2=(TF1*)pNmean->At(iCh*3+2); pRad2->Draw("same");
-  }//chambers loop    
+     
+    if(iCh==6) c3->cd(1);  if(iCh==5) c3->cd(2);                          
+    if(iCh==4) c3->cd(4);  if(iCh==3) c3->cd(5);  if(iCh==2) c3->cd(6);
+                           if(iCh==1) c3->cd(8);  if(iCh==0) c3->cd(9); 
+     phMask[iCh]->Draw("colz");
+    
+  }//chambers loop   
+  
+  c4->cd();
+  pNoiseMap->Draw("colz");
+  
+   
 }//DrawOutput()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

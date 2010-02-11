@@ -42,7 +42,7 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
 
   TString runType = GetRunType();
   Log(Form(" AliHMPIDPreprocessor: RunType is %s",runType.Data()));
-  
+  Bool_t statusNoise=kFALSE, statusDcs=kFALSE;
 // start to check event type and procedures
   
   Log("HMPID - Process in Preprocessor started");
@@ -55,16 +55,51 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
     } else {
     	Log("HMPID - Pedestal processing successful!!");                    return kFALSE;  // ok for pedestals
     }
-  } else if ( runType=="STANDALONE" || runType=="PHYSICS"){
-  if (!ProcDcs(pMap)){
-    	Log("HMPID - ERROR - DCS processing failed!!");                     return kTRUE;   // error in DCS processing
-    } else {
-    	Log("HMPID - DCS processing successful!!");                         return kFALSE;  // ok for DCS
-    }
-  } else {
+  }//CALIBRATION
+  else if ( runType=="STANDALONE" || runType=="PHYSICS"){   
+   statusDcs=ProcDcs(pMap);
+   statusNoise=ProcNoiseMap();
+   if(!statusDcs || !statusNoise) { Log(Form("HMPID - ERROR - Noise Map(%d) and/or DCS(%d) processing failed!! (0=OK, 1=FAILED)",statusNoise,statusDcs)); return kTRUE; }  // error in Noise Map or DCS processing
+   else                           { Log("HMPID - Noise Map and DCS processing successful!!");  return kFALSE;}  // ok
+  }//STANDALONE or PHYSICS run
+   else {
     Log("HMPID - Nothing to do with preprocessor for HMPID, bye!");         return kFALSE;  // ok - nothing done
   }
 }//Process()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t AliHMPIDPreprocessor::ProcNoiseMap()
+{
+  //
+  // Goal: Process the Noise Map created by the HMP Physics DA to mask 
+  // noisy channels from reconstruction and follow changes in accepatnce
+  // eg. DDL turn on/off after PEDESTAL run and between PHYSICS runs.
+  // Returns kFALSE on success
+ 
+  Bool_t stProcNoise=kFALSE;
+  TFile  *fNoiseFile;
+  TH2F   *hNoiseMap = 0x0;
+  
+  TList *pNoiseSource=GetFileSources(kDAQ,"HmpPhysicsDaNoiseMap.root"); //get list of DAQ source names containing id "HmpPhysicsDaNoiseMap" --> defined in HMPIDphysda.cxx
+  if(!pNoiseSource) {Log(Form("ERROR: Retrieval of sources for noise map: HmpPhysicsDaNoiseMap.root is failed!")); return stProcNoise;}
+  
+  TString noiseFile = GetFile(kDAQ,Form("HmpPhysicsDaNoiseMap.root"),((TObjString*)pNoiseSource->At(0))->GetName());
+  if(noiseFile.Length()==0) {Log(Form("ERROR retrieving noise map file: HmpPhysicsDaNoiseMap.root")); return stProcNoise;}
+  
+  fNoiseFile = TFile::Open(noiseFile.Data(),"read");
+  if(!fNoiseFile) {Log(Form("ERROR cannot open NoiseFile: %s!",noiseFile.Data())); return stProcNoise;}
+  hNoiseMap = (TH2F*) fNoiseFile->Get("hHmpNoiseMaps");
+  
+  AliCDBMetaData metaDataHisto;
+  metaDataHisto.SetBeamPeriod(0);
+  metaDataHisto.SetResponsible("AliHMPIDPreprocessor"); 
+  metaDataHisto.SetComment("AliHMPIDPreprocessor stores the Noise Map object as Reference Data.");
+  AliInfo("Storing Reference Data");
+  stProcNoise = Store("Calib","NoiseMap",hNoiseMap,&metaDataHisto,0,kTRUE);
+  if(!stProcNoise) {
+    Log("HMPID - failure to store Noise Map data results in OCDB");    
+  }
+  return stProcNoise;
+}//ProcNoiseMap
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
 {
@@ -258,13 +293,15 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
 // Returns: kTRUE on success
   
   Bool_t stPedStore=kFALSE;
+  Bool_t stDeadMaskedStore=kFALSE;
   AliHMPIDDigit dig;
   AliHMPIDRawStream rs;
   Int_t nSigCut,r,d,a,hard;  Float_t mean,sigma;
   Int_t  runNumber,ldcId,timeStamp,nEv,nDdlEv,nBadEv;  Char_t tName[10]; 
   Float_t nBadEvPer;
   
-  TObjArray aDaqSig(7); aDaqSig.SetOwner(kTRUE); for(Int_t i=0;i<7;i++) aDaqSig.AddAt(new TMatrix(160,144),i); //TObjArray of 7 TMatrixF, m(padx,pady)=sigma
+  TObjArray aDaqSig(7);     aDaqSig.SetOwner(kTRUE);     for(Int_t i=0;i<7;i++) aDaqSig.AddAt(new TMatrix(160,144),i);         //TObjArray of 7 TMatrixF, m(padx,pady)=sigma
+  TObjArray aDeadMasked(7); aDeadMasked.SetOwner(kTRUE); for(Int_t i=0;i<7;i++) aDeadMasked.AddAt(new TMatrix(160,144),i);     //TObjArray of 7 TMatrixF, m(padx,pady)=pedestal
   
   for(Int_t iddl=0;iddl<AliHMPIDRawStream::kNDDL;iddl++)            //retrieve the files from LDCs independently the DDL<->LDC connection
   {
@@ -281,7 +318,7 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
     
     if(!infile.is_open()) {Log("No pedestal file found for HMPID,bye!");continue;}
     TMatrix *pM=(TMatrixF*)aDaqSig.At(iddl/2);
-  
+    TMatrix *pDM=(TMatrixF*)aDeadMasked.At(iddl/2);
     infile>>tName>>runNumber;Printf("Xcheck: reading run %i",runNumber);
     infile>>tName>>ldcId;
     infile>>tName>>timeStamp;
@@ -296,11 +333,16 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
       dig.SetPad(rs.GetPad(iddl,r,d,a));
       dig.SetQ((Int_t)mean);
       (*pM)(dig.PadChX(),dig.PadChY()) = sigma;
+      if( (mean == AliHMPIDParam::kPadMeanZeroCharge && sigma == AliHMPIDParam::kPadSigmaZeroCharge) || 
+          (mean == AliHMPIDParam::kPadMeanMasked     && sigma == AliHMPIDParam::kPadSigmaMasked)     ) 
+        {(*pDM)(dig.PadChX(),dig.PadChY()) = mean;} 
       }
     }
     infile.close();
     Log(Form("Pedestal file for DDL %i read successfully",iddl));
   
+ 
+    
   }//LDCs reading entries
 
  }//DDL 
@@ -310,11 +352,11 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
   metaData.SetResponsible("AliHMPIDPreprocessor"); 
   metaData.SetComment("HMPID processor fills TObjArrays.");  
   stPedStore = Store("Calib","DaqSig",&aDaqSig,&metaData,0,kTRUE);
-//  stPedStore = Store("Calib","DaqSig",&aDaqSig,&metaData);
-  if(!stPedStore) {
-    Log("HMPID - failure to store PEDESTAL data results in OCDB");    
-  }
-  return stPedStore;
+  if(!stPedStore) {     Log("HMPID - failure to store PEDESTAL data results in OCDB");      }
+  stDeadMaskedStore = Store("Calib","Masked",&aDeadMasked,&metaData,0,kTRUE);
+  if(!stDeadMaskedStore) {     Log("HMPID - failure to store DEAD & MASKED channel map  in OCDB");      }
+  Bool_t pedRes=stPedStore*stDeadMaskedStore;
+  return pedRes;
   
 }//ProcPed()  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

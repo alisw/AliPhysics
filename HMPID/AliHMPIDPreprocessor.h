@@ -21,13 +21,14 @@ public:
            }
   virtual ~AliHMPIDPreprocessor(                             )                                 {}
 protected:
-  virtual void     Initialize(Int_t run, UInt_t startTime, UInt_t endTime); //
-  virtual UInt_t   Process   (TMap* pDcsMap                              ); //process everthing
-          Bool_t   ProcDcs   (TMap* pDcsMap                              ); //process DCS data points
-          Bool_t   ProcPed   (                                           ); //process pedestal files
-          Double_t ProcTrans (TMap *pDcsMap                              );
+  virtual void     Initialize  (Int_t run, UInt_t startTime, UInt_t endTime); //
+  virtual UInt_t   Process     (TMap* pDcsMap                              ); //process everthing
+          Bool_t   ProcDcs     (TMap* pDcsMap                              ); //process DCS data points
+          Bool_t   ProcNoiseMap(                                           ); //process Nosie Map from HMP Physics DA
+          Bool_t   ProcPed     (                                           ); //process pedestal files
+          Double_t ProcTrans   (TMap *pDcsMap                              );
           Double_t DefaultEMean();                                          //set a default value in ePhotMean                             
-  ClassDef(AliHMPIDPreprocessor, 0);
+  ClassDef(AliHMPIDPreprocessor, 1);
 };
 
 #endif
