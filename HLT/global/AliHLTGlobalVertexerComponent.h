@@ -97,12 +97,8 @@ private:
   AliESDTrackInfo *fTrackInfos; // information about esd tracks
   AliKFVertex fPrimaryVtx; // reconstructed KF primary vertex
 
-  TH2F *fHistPrimVertexXY; // primary vertex distribution in XY;
-  TH2F *fHistPrimVertexZX; // primary vertex distribution in ZX;
-  TH2F *fHistPrimVertexZY; // primary vertex distribution in ZY;
   Int_t fNEvents; // n of processed events
 
-  Bool_t fPlotHistograms;// flag to produce histogramms
   Bool_t fFitTracksToVertex; // flag to store vertex constrained track parameters
   Double_t fConstrainedTrackDeviation; // deviation of a track from prim.vtx <=cut 
   Double_t fV0DaughterPrimDeviation; // v0: daughters deviation from prim vertex >= cut
@@ -110,6 +106,17 @@ private:
   Double_t fV0Chi; // v0: v0 sqrt(chi^2/NDF) <= cut
   Double_t fV0DecayLengthInSigmas; // v0: v0 decay length/sigma_length >= cut
 
+  Double_t fV0TimeLimit; // time limit in seconds for V0 finder (it has N^2 combinatorics, therefore it can [potentially] block the data flow on some very hot events ) default limit is 1 ms
+
+  Double_t fStatTimeR; // benchmark
+  Double_t fStatTimeC; // benchmark
+  Double_t fStatTimeR1; // benchmark
+  Double_t fStatTimeC1; // benchmark
+  Double_t fStatTimeR2; // benchmark
+  Double_t fStatTimeC2; // benchmark
+  Double_t fStatTimeR3; // benchmark
+  Double_t fStatTimeC3; // benchmark
+  Double_t fStatNEvents;// benchmark
 
   ClassDef(AliHLTGlobalVertexerComponent, 0);
 

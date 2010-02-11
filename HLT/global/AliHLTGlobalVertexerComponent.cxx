@@ -40,7 +40,7 @@ using namespace std;
 #include "TMath.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
-
+#include "TStopwatch.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalVertexerComponent)
@@ -50,17 +50,23 @@ AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerComponent()
   fESD(0),
   fTrackInfos(0),
   fPrimaryVtx(),  
-  fHistPrimVertexXY(0),
-  fHistPrimVertexZX(0),
-  fHistPrimVertexZY(0),
   fNEvents(0),
-  fPlotHistograms(0),
   fFitTracksToVertex(1),
   fConstrainedTrackDeviation(4.),
   fV0DaughterPrimDeviation( 2.5 ),
   fV0PrimDeviation( 3.5 ),
   fV0Chi(3.5),
-  fV0DecayLengthInSigmas(3.)
+  fV0DecayLengthInSigmas(3.),
+  fV0TimeLimit(1.e-3), 
+  fStatTimeR( 0 ),
+  fStatTimeC( 0 ),
+  fStatTimeR1( 0 ),
+  fStatTimeC1( 0 ),
+  fStatTimeR2( 0 ),
+  fStatTimeC2( 0 ),
+  fStatTimeR3( 0 ),
+  fStatTimeC3( 0 ),
+  fStatNEvents(0)
 {
   // see header file for class documentation
   // or
@@ -75,9 +81,6 @@ AliHLTGlobalVertexerComponent::~AliHLTGlobalVertexerComponent()
   // see header file for class documentation
 
   if( fTrackInfos ) delete[] fTrackInfos;
-  if( fHistPrimVertexXY ) delete   fHistPrimVertexXY;
-  if( fHistPrimVertexZX ) delete   fHistPrimVertexZX;
-  if( fHistPrimVertexZY ) delete   fHistPrimVertexZY;
 }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -109,7 +112,6 @@ int AliHLTGlobalVertexerComponent::GetOutputDataTypes(AliHLTComponentDataTypeLis
   // see header file for class documentation
   tgtList.clear();
   tgtList.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
-  tgtList.push_back(kAliHLTDataTypeHistogram);
   return tgtList.size();
 }
 
@@ -130,30 +132,17 @@ AliHLTComponent* AliHLTGlobalVertexerComponent::Spawn()
 int AliHLTGlobalVertexerComponent::DoInit( int argc, const char** argv )
 {
   // init
-  
-  fHistPrimVertexXY = new TH2F("primVertexXY","HLT:  Primary vertex distribution in XY",60,-2.,2.,60,-2.,2.);
-  fHistPrimVertexXY->SetMarkerStyle(8);
-  fHistPrimVertexXY->SetMarkerSize(0.4);
-  fHistPrimVertexXY->SetYTitle("Y");
-  fHistPrimVertexXY->SetXTitle("X");
-  fHistPrimVertexXY->SetStats(0);
-  //fHistPrimVertexXY->SetOption("COLZ");
 
-  fHistPrimVertexZX = new TH2F("primVertexZX","HLT:  Primary vertex distribution in ZX",60,-15.,15.,60,-2.,2.);
-  fHistPrimVertexZX->SetMarkerStyle(8);
-  fHistPrimVertexZX->SetMarkerSize(0.4);
-  fHistPrimVertexZX->SetYTitle("X");
-  fHistPrimVertexZX->SetXTitle("Z");
-  fHistPrimVertexZX->SetStats(0);
-  //fHistPrimVertexZX->SetOption("COLZ");
-
-  fHistPrimVertexZY = new TH2F("primVertexZY","HLT:  Primary vertex distribution in ZY",60,-10.,10.,60,-2.,2.);
-  fHistPrimVertexZY->SetMarkerStyle(8);
-  fHistPrimVertexZY->SetMarkerSize(0.4);
-  fHistPrimVertexZY->SetYTitle("Y");
-  fHistPrimVertexZY->SetXTitle("Z");
-  fHistPrimVertexZY->SetStats(0);
-  //fHistPrimVertexZY->SetOption("COLZ");
+  fStatTimeR = 0;
+  fStatTimeC = 0;
+  fStatTimeR1 = 0;
+  fStatTimeC1 = 0;
+  fStatTimeR2 = 0;
+  fStatTimeC2 = 0;
+  fStatTimeR3 = 0;
+  fStatTimeC3 = 0;
+  fStatNEvents = 0;
+  fV0TimeLimit = 1.e-3;
 
   fNEvents =0;
 
@@ -178,16 +167,8 @@ int AliHLTGlobalVertexerComponent::DoDeinit()
   // see header file for class documentation
 
   if( fTrackInfos ) delete[] fTrackInfos;
-  if( fHistPrimVertexXY ) delete fHistPrimVertexXY;
-  if( fHistPrimVertexZX ) delete fHistPrimVertexZX;
-  if( fHistPrimVertexZY ) delete fHistPrimVertexZY;
 
   fTrackInfos = 0;
-  fHistPrimVertexXY = 0;
-  fHistPrimVertexZX = 0;
-  fHistPrimVertexZY = 0;
-
-  fPlotHistograms = 0;
   fFitTracksToVertex = 1;
   fConstrainedTrackDeviation = 4.;
   fV0DaughterPrimDeviation = 2.5 ;
@@ -195,11 +176,15 @@ int AliHLTGlobalVertexerComponent::DoDeinit()
   fV0Chi = 3.5;
   fV0DecayLengthInSigmas = 3.;
   fNEvents = 0;
+  fV0TimeLimit = 1.e-3;
+
   return 0;
 }
 
 int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
+
+  //cout<<"AliHLTGlobalVertexerComponent::DoEvent called"<<endl;
   
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
@@ -207,6 +192,7 @@ int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evt
   int iResult = 0;
 
   fNEvents++;
+  TStopwatch timer;
 
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
 
@@ -216,28 +202,40 @@ int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evt
 
     // primary vertex & V0's 
           
+    TStopwatch timer1;
     SetESD( event );
+    timer1.Stop();
+    fStatTimeR1+=timer1.RealTime();
+    fStatTimeC1+=timer1.CpuTime();
+    TStopwatch timer2;
     FindPrimaryVertex();
+    timer2.Stop();
+    fStatTimeR2+=timer2.RealTime();
+    fStatTimeC2+=timer2.CpuTime();
+    TStopwatch timer3;
     FindV0s();
+    timer3.Stop();
+    fStatTimeR3+=timer3.RealTime();
+    fStatTimeC3+=timer3.CpuTime();
     const AliESDVertex *vPrim = event->GetPrimaryVertexTracks();
 
-    // plot histograms
-
-    if( fPlotHistograms ){
-      if( vPrim && vPrim->GetNContributors()>=3 ){
-	if( fHistPrimVertexXY ) fHistPrimVertexXY->Fill( vPrim->GetX(),vPrim->GetY()  );
-	if( fHistPrimVertexZX ) fHistPrimVertexZX->Fill( vPrim->GetZ(),vPrim->GetX()  );
-	if( fHistPrimVertexZY ) fHistPrimVertexZY->Fill( vPrim->GetZ(),vPrim->GetY()  );    
-      }  
-      if( fHistPrimVertexXY ) PushBack( fHistPrimVertexXY, kAliHLTDataTypeHistogram,0);
-      if( fHistPrimVertexZX ) PushBack( fHistPrimVertexZX, kAliHLTDataTypeHistogram,0);
-      if( fHistPrimVertexZY ) PushBack( fHistPrimVertexZY, kAliHLTDataTypeHistogram,0);
-    }
-    
     iResult = PushBack( event, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
     if( iResult<0 ) break;
   }
-    
+  timer.Stop();
+  fStatTimeR+=timer.RealTime();
+  fStatTimeC+=timer.CpuTime();
+  fStatNEvents++;
+
+  /*
+  //if( fStatNEv%100==0 )
+  cout<<"SG: "<<GetComponentID()<<": "<<fStatNEvents<<" events, real time: total= "
+      <<fStatTimeR/fStatNEvents*1.e3<<" / create= "<<fStatTimeR1/fStatNEvents*1.e3
+      <<" / vprim= "<<fStatTimeR2/fStatNEvents*1.e3<<" / v0= "<<fStatTimeR3/fStatNEvents*1.e3
+      <<", CPU: total= "<<fStatTimeC/fStatNEvents*1.e3<<" / create= "<<fStatTimeC1/fStatNEvents*1.e3
+<<" / vprim= "<<fStatTimeC2/fStatNEvents*1.e3<<" / v0= "<<fStatTimeC2/fStatNEvents*1.e3
+      <<" ms"<<endl;
+  */
   return iResult;
 }
 
@@ -262,12 +260,6 @@ int AliHLTGlobalVertexerComponent::Configure(const char* arguments)
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("fitTracksToVertex is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fFitTracksToVertex=((TObjString*)pTokens->At(i))->GetString().Atoi();
-	continue;
-      }
-      else if (argument.CompareTo("-plotHistograms")==0) {
-	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("plotHistograms is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-	fPlotHistograms=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       }
       else if (argument.CompareTo("-constrainedTrackDeviation")==0) {
@@ -300,6 +292,13 @@ int AliHLTGlobalVertexerComponent::Configure(const char* arguments)
 	fV0DecayLengthInSigmas=((TObjString*)pTokens->At(i))->GetString().Atof();
 	continue;
       }
+      else if (argument.CompareTo("-v0MinEventRate")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Minimum event rate for V0 finder is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	Double_t rate = ((TObjString*)pTokens->At(i))->GetString().Atof();
+	fV0TimeLimit = (rate >0 ) ?1./rate :60; // 1 minute maximum time
+	continue;
+      }
       else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
@@ -319,7 +318,10 @@ int AliHLTGlobalVertexerComponent::Configure(const char* arguments)
 int AliHLTGlobalVertexerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
 {
   // see header file for class documentation
-  int iResult=0;
+
+  return 0; // no CDB path is set so far
+
+  int iResult=0;  
   const char* path="HLT/ConfigTPC/KryptonHistoComponent";
   const char* defaultNotify="";
   if (cdbEntry) {
@@ -412,6 +414,7 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex(  )
     nSelected++;  
   }
   fPrimaryVtx.ConstructPrimaryVertex( vSelected, nSelected, vFlag, fConstrainedTrackDeviation );
+
   for( Int_t i = 0; i<nSelected; i++){ 
     if( vFlag[i] ) fTrackInfos[vIndex[i]].fPrimUsedFlag = 1;
   }
@@ -420,7 +423,7 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex(  )
     AliESDTrackInfo &info = fTrackInfos[i];
     info.fPrimDeviation = info.fParticle.GetDeviationFromVertex( fPrimaryVtx );   
   }
-  
+  //cout<<"SG: prim vtx nelected="<<nSelected<<", ncont="<<fPrimaryVtx.GetNContributors()<<endl;
   if( fPrimaryVtx.GetNContributors()>=3 ){
     AliESDVertex vESD( fPrimaryVtx.Parameters(), fPrimaryVtx.CovarianceMatrix(), fPrimaryVtx.GetChi2(), fPrimaryVtx.GetNContributors() );
     fESD->SetPrimaryVertexTracks( &vESD );
@@ -461,8 +464,11 @@ void AliHLTGlobalVertexerComponent::FindV0s(  )
     constrainedV0[iTr] = 0;
   }
   
+  TStopwatch timer;
+  Int_t statN = 0;
+  Bool_t run = 1;
 
-  for( Int_t iTr = 0; iTr<nTracks; iTr++ ){ //* first daughter
+  for( Int_t iTr = 0; iTr<nTracks && run; iTr++ ){ //* first daughter
 
     AliESDTrackInfo &info = fTrackInfos[iTr];
     if( !info.fOK ) continue;    
@@ -470,12 +476,24 @@ void AliHLTGlobalVertexerComponent::FindV0s(  )
     if( info.fPrimDeviation < fV0DaughterPrimDeviation ) continue;
 
     for( Int_t jTr = 0; jTr<nTracks; jTr++ ){  //* second daughter
-
+      
+      
       AliESDTrackInfo &jnfo = fTrackInfos[jTr];
       if( !jnfo.fOK ) continue;
       if( jnfo.fParticle.GetQ() < 0 ) continue;
       if( jnfo.fPrimDeviation < fV0DaughterPrimDeviation ) continue;
-   
+
+      // check the time once a while...
+
+      if( (++statN)%100 ==0 ){ 
+	if( timer.RealTime()>= fV0TimeLimit ){  run = 0; break; }
+	timer.Start();
+      }
+
+      //* check if the particles fit
+
+      if( info.fParticle.GetDeviationFromParticle(jnfo.fParticle) > fV0Chi ) continue;
+
       //* construct V0 mother
 
       AliKFParticle v0( info.fParticle, jnfo.fParticle );     
