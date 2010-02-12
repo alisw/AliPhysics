@@ -122,7 +122,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 	    */
 	    hHits->Sumw2();
 	    fHitList->Add(hHits);
-	    fOutputList->Add(hHits);
+	    //fOutputList->Add(hHits);
 	    	    
 	  }
 	} 
@@ -174,10 +174,10 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       TH2F* hMult      = (TH2F*)fOutputList->FindObject(Form("mult_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       TH2F* hMultTrVtx = (TH2F*)fOutputList->FindObject(Form("multTrVtx_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       TH2F* hMultInput = (TH2F*)fInputList->FindObject(Form("FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
-      TH2F* hHits      = (TH2F*)fOutputList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
+      TH2F* hHits      = (TH2F*)fHitList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       
-      if(pars->GetProcessHits())
-	hHits->Add(hMultInput);
+      //if(pars->GetProcessHits())
+      hHits->Add(hMultInput);
       
       TH2F* hBg        = pars->GetBackgroundCorrection(det, ringChar, vtxbin);
       
@@ -231,7 +231,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
     for (UShort_t ir = 0; ir < nRings; ir++) {
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
       for(Int_t i =0; i<nVtxbins; i++) {
-	TH2F* hHits      = (TH2F*)fOutputList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,i));
+	TH2F* hHits      = (TH2F*)fHitList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,i));
 	TH1D* hHitsproj  = hHits->ProjectionX(Form("hits_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hHits->GetNbinsY());
 	TH1D* hHitsNoCuts = (TH1D*)hHitsproj->Clone(Form("hits_NoCuts_FMD%d%c_vtxbin%d_proj",det,ringChar,i));
 	
