@@ -1268,7 +1268,7 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
     }
     if (!fParSol->Solve()) { AliError("Failed to fit helix"); return -1; }
     Double_t *deltaG = fParSol->GetGlobals();
-    Double_t *deltaT = fParSol->GetLocals();
+    //    Double_t *deltaT = fParSol->GetLocals();
     for (int ipar=5;ipar--;) fParams[ipar] -= deltaG[ipar];
     for (int ip=fPntFirst;ip<=fPntLast;ip++) {
       fCurT[ip] = CalcParPCA(ip);

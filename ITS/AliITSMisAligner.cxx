@@ -170,8 +170,8 @@ TClonesArray* AliITSMisAligner::MakeAlObjsArray() {
     }else{
 	Printf("survey array contains %d entries", surveyArray->GetEntriesFast());
     }
-
-    AddAlignObj("ITS",fWholeITS[0],fWholeITS[1],fWholeITS[2],fWholeITS[3],fWholeITS[4],fWholeITS[5],"fixed");
+    char strtemp[5]="ITS";
+    AddAlignObj(strtemp,fWholeITS[0],fWholeITS[1],fWholeITS[2],fWholeITS[3],fWholeITS[4],fWholeITS[5],"fixed");
 
     AddSectorAlignObj(1,5,fSPDSector[0],fSPDSector[1],fSPDSector[2],fSPDSector[3],fSPDSector[4],fSPDSector[5],
 	    fSPDLadderShiftT[0],fSPDLadderShiftT[1],fSPDLadderShiftT[2],fSPDLadderShiftT[3],fSPDLadderShiftT[4],fSPDLadderShiftT[5],fUnifSPDSector);

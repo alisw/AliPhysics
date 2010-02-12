@@ -137,7 +137,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	TH1 *hmodule=NULL;
 	TH2 *hlayer[2];
 	for(Int_t i=0;i<2;i++)hlayer[i]=NULL;    
-	while( hdata = dynamic_cast<TH1* >(next()) ){
+	while( (hdata = dynamic_cast<TH1* >(next())) ){
 	  if (hdata){
 	    TString hname=hdata->GetName();
 	    if(hname.Contains("SDDchargeMap"))continue;
@@ -384,7 +384,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	    
 	    TIter next(list);
 	    
-	    while( hdata = dynamic_cast<TH1* >(next()) ){
+	    while( (hdata = dynamic_cast<TH1* >(next())) ){
 	      if (hdata){
 		if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
 		else
@@ -429,7 +429,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	    
 	    TIter next(list);
 	    
-	    while( hdata = dynamic_cast<TH1* >(next()) ){
+	    while( (hdata = dynamic_cast<TH1* >(next())) ){
 	      if (hdata){
 		if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
 		else
@@ -470,7 +470,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	    
 	    TIter next(list);
 	    
-	    while( hdata = dynamic_cast<TH1* >(next()) ){
+	    while( (hdata = dynamic_cast<TH1* >(next())) ){
 	      if (hdata){
 		if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
 		else
