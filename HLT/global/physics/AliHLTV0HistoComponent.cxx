@@ -48,8 +48,7 @@ using namespace std;
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTV0HistoComponent)
 
-AliHLTV0HistoComponent::AliHLTV0HistoComponent()
-:
+AliHLTV0HistoComponent::AliHLTV0HistoComponent() :
   fUID(0),
   fGamma(0),
   fKShort(0),
@@ -113,8 +112,7 @@ AliHLTComponent* AliHLTV0HistoComponent::Spawn()
   return new AliHLTV0HistoComponent;
 }
 
-int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
-{
+int AliHLTV0HistoComponent::DoInit( int argc, const char** argv ) {
   // init
 
   fUID = 0;

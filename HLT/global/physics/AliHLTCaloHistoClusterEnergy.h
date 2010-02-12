@@ -2,7 +2,7 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
  *                                                                        *
- * Primary Authors: Albin Gaignette                                       *
+ * Primary Authors: Svein Lindal                                          *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -13,11 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSHISTOPRODCELLENERGY
-#define ALIHLTPHOSHISTOPRODCELLENERGY
+#ifndef ALIHLTCALOHISTOCLUSTERENERGY
+#define ALIHLTCALOHISTOCLUSTERENERGY
 
 /** 
- * @file   AliHLTPHOSHistoProdCellEnergy
+ * @file   AliHLTCaloHistoClusterEnergy
  * @author Albin Gaignette and Svein Lindal slindal@fys.uio.no
  * @date 
  * @brief  Produces Invariant mass histograms of PHOS clusters
@@ -32,20 +32,17 @@
 //#include "AliHLTPHOSBase.h"
 
 #include "Rtypes.h"
-#include "AliHLTPHOSConstant.h" 
 
 class TObjArray;
 class TH1F;
 class TH2F;
-class AliHLTCaloClusterReader;
-struct AliHLTCaloClusterHeaderStruct;
-
-
-using namespace  PhosHLTConst;
+class AliESDEvent;
+class TRefArray;
+class TString;
 
 
 /** 
- * @class AliHLTPHOSHistoProdCellEnergy
+ * @class AliHLTCaloHistoClusterEnergy
  *
  * Class produces physics histograms for PHOS. It takes a TClonesArray
  * of AliESDCalocluster as input and fills several histograms
@@ -56,35 +53,18 @@ using namespace  PhosHLTConst;
  * @ingroup alihlt_phos
  */
 
-class AliHLTPHOSHistoProdCellEnergy 
-{
- public:
+class AliHLTCaloHistoClusterEnergy {
+ 
+public:
   
   /** Constructor */
-  AliHLTPHOSHistoProdCellEnergy();
-
+  AliHLTCaloHistoClusterEnergy(TString det);
+  
   /** Destructor */
-  virtual ~AliHLTPHOSHistoProdCellEnergy();
+  virtual ~AliHLTCaloHistoClusterEnergy();
 
-  /** Copy constructor */
-  AliHLTPHOSHistoProdCellEnergy(const AliHLTPHOSHistoProdCellEnergy &) :
-    fClusterReader(NULL),
-    fHistCellEnergy(NULL),
-    fHistCellEnergyVsNCells(NULL),
-    fHistArrayPtr(NULL)
-  {
-    // Copy constructor not implemented
-  }
-
-  /** Assignment operator */
-  AliHLTPHOSHistoProdCellEnergy & operator= (const AliHLTPHOSHistoProdCellEnergy)
-  {
-    // assignment
-    return *this;
-  }
-
-  /** Analyse the clusters in the event */
-  int DoEvent(AliHLTCaloClusterHeaderStruct* cHeader);
+  /** Analyse the clusters in the event and fill histograms */
+  Int_t FillHistograms(Int_t nc, TRefArray * clustersArray);
 
   /** Get a pointer to the TObjArray of histograms */
   TObjArray *GetHistograms();
@@ -93,19 +73,25 @@ class AliHLTPHOSHistoProdCellEnergy
   
  private:
 
-  /** Cluster reader class   */
-  AliHLTCaloClusterReader * fClusterReader;
+  /** Default constructor prohibited*/
+  AliHLTCaloHistoClusterEnergy();
+
+  /** Copy constructor prohibited */
+  AliHLTCaloHistoClusterEnergy(const AliHLTCaloHistoClusterEnergy &);
+
+  /** Assignment operator prohibited */
+  AliHLTCaloHistoClusterEnergy & operator= (const AliHLTCaloHistoClusterEnergy);
 
   /** Histogram of the 2 cluster invariant mass */
-  TH1F *fHistCellEnergy;                 //!transient
+  TH1F * fHistClusterEnergy;                 //!transient
 
   /** 2D histogram of cluster energy vs the number of cells in the cluster */
-  TH2F *fHistCellEnergyVsNCells;
+  TH2F * fHistClusterEnergyVsNCells;
   
   /** Pointer to the array of histograms */
   TObjArray *fHistArrayPtr;                     //!transient
 
-  ClassDef(AliHLTPHOSHistoProdCellEnergy, 0);
+  ClassDef(AliHLTCaloHistoClusterEnergy, 1);
 
 };
  

@@ -1,9 +1,8 @@
-
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
  *                                                                        *
- * Primary Authors: Albin Gaignette
+ * Primary Authors: Albin Gaignette, Svein Lindal slindal@fys.uio.no      *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -15,8 +14,8 @@
  **************************************************************************/
 
 /** 
- * @file   AliHLTPHOSHistoProdCellEnergy
- * @author Albin Gaignette & Svein Lindal
+ * @file   AliHLTCaloHistoCellEnergy
+ * @author Svein Lindal
  * @date 
  * @brief  Produces histograms of cluster energy distributions 
  */
@@ -27,66 +26,73 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSHistoProdCellEnergy.h"
-//#include "AliESDCaloCluster.h"
-#include "TMath.h"
-
-#include "AliHLTCaloClusterDataStruct.h"
-#include "AliHLTCaloClusterReader.h"
+#include "AliHLTCaloHistoCellEnergy.h"
 #include "TObjArray.h"
-//#include "TClonesArray.h"
-//#include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TRefArray.h"
+#include "TString.h"
+#include "AliESDCaloCluster.h"
 
-AliHLTPHOSHistoProdCellEnergy::AliHLTPHOSHistoProdCellEnergy() :
-  fClusterReader(NULL),
+ClassImp(AliHLTCaloHistoCellEnergy);
+
+AliHLTCaloHistoCellEnergy::AliHLTCaloHistoCellEnergy(TString det) :
   fHistCellEnergy(NULL),
   fHistCellEnergyVsNCells(NULL),
   fHistArrayPtr(NULL)
 {
   // See header file for documentation
   fHistArrayPtr = new TObjArray;
-  fClusterReader = new AliHLTCaloClusterReader();
 
-  fHistCellEnergy = new TH1F("fHistCellEnergy", "Distribution of total energy in clusters", 200, 0, 1);
+  fHistCellEnergy = new TH1F(Form("%s fHistCellEnergy", det.Data()), Form("%s Distribution of total energy in clusters", det.Data()), 200, 0, 1);
   fHistCellEnergy->GetXaxis()->SetTitle("E GeV");
   fHistCellEnergy->GetYaxis()->SetTitle("Number of counts");
   fHistCellEnergy->SetMarkerStyle(21);
   fHistArrayPtr->AddLast(fHistCellEnergy);
 
-  fHistCellEnergyVsNCells = new TH2F("fHistCellEnergyVsNCells", "Distribution of Energy vs Number of Cells in cluster", 200, 0, 200, 50, 0 , 50);
+  fHistCellEnergyVsNCells = new TH2F(Form("%s fHistCellEnergyVsNCells", det.Data()), Form("%s Distribution of Energy vs Number of Cells in cluster", det.Data()), 200, 0, 200, 50, 0 , 50);
   fHistCellEnergyVsNCells->GetXaxis()->SetTitle("Energy in cluster (GeV)");
   fHistCellEnergyVsNCells->GetYaxis()->SetTitle("Number of Cells in cluster");
   fHistCellEnergyVsNCells->SetMarkerStyle(21);
   fHistArrayPtr->AddLast(fHistCellEnergyVsNCells);
 
-
 }
 
-AliHLTPHOSHistoProdCellEnergy::~AliHLTPHOSHistoProdCellEnergy()
+AliHLTCaloHistoCellEnergy::~AliHLTCaloHistoCellEnergy()
 {
-  if(fHistCellEnergy){
-      delete fHistCellEnergy;
-      fHistCellEnergy = 0;
-    }
+  //See header file for documentation
+
+  if(fHistCellEnergy)
+    delete fHistCellEnergy;
+  fHistCellEnergy = NULL;
+  
+  if(fHistCellEnergyVsNCells)
+    delete fHistCellEnergyVsNCells;
+  fHistCellEnergyVsNCells = NULL;
+
+  if(fHistArrayPtr)
+    delete fHistArrayPtr;
+  fHistArrayPtr = NULL;
+
 }
 
-TObjArray* AliHLTPHOSHistoProdCellEnergy::GetHistograms()
+TObjArray* AliHLTCaloHistoCellEnergy::GetHistograms()
 {  
   // See header file for documentation
-
   return fHistArrayPtr;
 }
 
-Int_t AliHLTPHOSHistoProdCellEnergy::DoEvent(AliHLTCaloClusterHeaderStruct* cHeader) {   
+
+Int_t AliHLTCaloHistoCellEnergy::FillHistograms(Int_t nc, TRefArray * clustersArray) {   
   
-  fClusterReader->SetMemory(cHeader);
-  AliHLTCaloClusterDataStruct* cluster;
-  while ( ( cluster = fClusterReader->NextCluster() ) ) {
-    fHistCellEnergy->Fill(cluster->fNCells);
-    fHistCellEnergyVsNCells->Fill(cluster->fNCells, cluster->fCellsAmpFraction);
+  for(int ic = 0; ic < nc; ic++) {
+    AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(clustersArray->At(ic));
+    for(int i = 0; i < cluster->GetNCells(); i++) {
+      fHistCellEnergyVsNCells->Fill(cluster->GetNCells(), cluster->GetCellAmplitudeFraction(i));
+      fHistCellEnergy->Fill(cluster->GetCellAmplitudeFraction(i));
+    }
   }  
+  
   return 0;
 }
   

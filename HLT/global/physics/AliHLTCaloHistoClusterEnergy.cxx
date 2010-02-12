@@ -1,9 +1,8 @@
-
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
  *                                                                        *
- * Primary Authors: Albin Gaignette
+ * Primary Authors: Svein Lindal <slindal@fys.uio.no>    *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -15,8 +14,8 @@
  **************************************************************************/
 
 /** 
- * @file   AliHLTPHOSHistoProdClusterEnergy
- * @author Albin Gaignette & Svein Lindal
+ * @file   AliHLTCaloHistoClusterEnergy
+ * @author Svein Lindal
  * @date 
  * @brief  Produces histograms of cluster energy distributions 
  */
@@ -27,91 +26,70 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSHistoProdClusterEnergy.h"
-//#include "AliESDCaloCluster.h"
+#include "AliHLTCaloHistoClusterEnergy.h"
+#include "AliESDCaloCluster.h"
 #include "TMath.h"
-
-#include "AliHLTCaloClusterDataStruct.h"
-#include "AliHLTCaloClusterReader.h"
 #include "TObjArray.h"
-//#include "TClonesArray.h"
-//#include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TRefArray.h"
 
-AliHLTPHOSHistoProdClusterEnergy::AliHLTPHOSHistoProdClusterEnergy() :
-  fClusterReader(NULL),
+
+ClassImp(AliHLTCaloHistoClusterEnergy);
+
+AliHLTCaloHistoClusterEnergy::AliHLTCaloHistoClusterEnergy(TString det) :
   fHistClusterEnergy(NULL),
   fHistClusterEnergyVsNCells(NULL),
   fHistArrayPtr(NULL)
 {
   // See header file for documentation
   fHistArrayPtr = new TObjArray;
-  fClusterReader = new AliHLTCaloClusterReader();
 
-  fHistClusterEnergy = new TH1F("fHistClusterEnergy", "Distribution of total energy in clusters", 200, 0, 1);
+  fHistClusterEnergy = new TH1F(Form("%s fHistClusterEnergy", det.Data()), Form("%s Distribution of total energy in clusters", det.Data()), 200, 0, 1);
   fHistClusterEnergy->GetXaxis()->SetTitle("E GeV");
   fHistClusterEnergy->GetYaxis()->SetTitle("Number of counts");
   fHistClusterEnergy->SetMarkerStyle(21);
   fHistArrayPtr->AddLast(fHistClusterEnergy);
 
-  fHistClusterEnergyVsNCells = new TH2F("fHistClusterEnergyVsNCells", "Distribution of Energy vs Number of Cells in cluster", 200, 0, 200, 50, 0 , 50);
+  fHistClusterEnergyVsNCells = new TH2F(Form("%s fHistClusterEnergyVsNCells", det.Data()), Form("%s Distribution of Energy vs Number of Cells in cluster", det.Data()), 200, 0, 200, 50, 0 , 50);
   fHistClusterEnergyVsNCells->GetXaxis()->SetTitle("Energy in cluster (GeV)");
   fHistClusterEnergyVsNCells->GetYaxis()->SetTitle("Number of Cells in cluster");
   fHistClusterEnergyVsNCells->SetMarkerStyle(21);
   fHistArrayPtr->AddLast(fHistClusterEnergyVsNCells);
 
-
 }
 
-AliHLTPHOSHistoProdClusterEnergy::~AliHLTPHOSHistoProdClusterEnergy()
+AliHLTCaloHistoClusterEnergy::~AliHLTCaloHistoClusterEnergy()
 {
-  if(fHistClusterEnergy){
-      delete fHistClusterEnergy;
-      fHistClusterEnergy = 0;
-    }
+  if(fHistClusterEnergy)
+    delete fHistClusterEnergy;
+  fHistClusterEnergy = NULL;
+
+  if(fHistClusterEnergyVsNCells)
+    delete fHistClusterEnergyVsNCells;
+  fHistClusterEnergyVsNCells = NULL;
+
+
+  
+  if(fHistArrayPtr)
+    delete fHistArrayPtr;
+  fHistArrayPtr = NULL;
+
+
 }
 
-TObjArray* AliHLTPHOSHistoProdClusterEnergy::GetHistograms()
-{  
+TObjArray* AliHLTCaloHistoClusterEnergy::GetHistograms() {  
   // See header file for documentation
-
   return fHistArrayPtr;
 }
 
-Int_t AliHLTPHOSHistoProdClusterEnergy::DoEvent(AliHLTCaloClusterHeaderStruct* cHeader) {   
+Int_t AliHLTCaloHistoClusterEnergy::FillHistograms(Int_t nc, TRefArray * clustersArray) {
   
-  fClusterReader->SetMemory(cHeader);
-  
-  int ncls = cHeader->fNClusters;
-  Float_t* cPos[ncls];
-  Float_t cEnergy[ncls];
-  
-  AliHLTCaloClusterDataStruct* cluster;
-  Int_t icls = 0;
-  while ( ( cluster = fClusterReader->NextCluster() ) ) {
-    
-    cPos[icls] = cluster->fGlobalPos;
-    cEnergy[icls] = cluster->fEnergy; 
-    
-    icls++;
-  }  
-  
-  for(Int_t ipho = 0; ipho<(ncls-1); ipho++) { 
-    for(Int_t jpho = ipho+1 ; jpho<ncls ; jpho++) { 
-      // Calcul of the theta angle between two photons
-      Double_t theta = (2* asin(0.5*TMath::Sqrt((cPos[ipho][0]-cPos[jpho][0])*(cPos[ipho][0]-cPos[jpho][0]) +(cPos[ipho][1]-cPos[jpho][1])*(cPos[ipho][1]-cPos[jpho][1]))/460));
-      
-      // Calcul of the mass m of the pion 
-      Double_t m =(TMath::Sqrt(2 * cEnergy[ipho]* cEnergy[jpho]*(1-TMath::Cos(theta))));
-      
-      fHistClusterEnergy->Fill(m);
-    }
+  for(int ic = 0; ic < nc; ic++) {
+    AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(clustersArray->At(ic));
+    fHistClusterEnergy->Fill(cluster->E());
+    fHistClusterEnergyVsNCells->Fill(cluster->GetNCells(), cluster->E());
   }
   
-  return 0;
-}
   
- 
- 
-
+}

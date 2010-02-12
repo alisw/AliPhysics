@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
@@ -13,11 +14,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSHISTOPRODINVMASS_H
-#define ALIHLTPHOSHISTOPRODINVMASS_H
+#ifndef ALIHLTCALOHISTOINVMASS_H
+#define ALIHLTCALOHISTOINVMASS_H
 
 /** 
- * @file   AliHLTPHOSHistoProdInvMass
+ * @file   AliHLTCaloHistoInvMass
  * @author Albin Gaignette and Svein Lindal slindal@fys.uio.no
  * @date 
  * @brief  Produces Invariant mass histograms of PHOS clusters
@@ -32,19 +33,19 @@
 //#include "AliHLTPHOSBase.h"
 
 #include "Rtypes.h"
-#include "AliHLTPHOSConstant.h" 
+//#include "PHOS/AliHLTPHOSConstants.h" 
 
 class TObjArray;
 class TH1F;
 class AliHLTCaloClusterReader;
+class AliESDEvent;
+class TRefArray;
 struct AliHLTCaloClusterHeaderStruct;
-
-
-using namespace  PhosHLTConst;
-
+class TString;
+class TRefArray;
 
 /** 
- * @class AliHLTPHOSHistoProdInvMass
+ * @class AliHLTCaloHistoInvMass
  *
  * Class produces physics histograms for PHOS. It takes a TClonesArray
  * of AliESDCalocluster as input and fills several histograms
@@ -55,53 +56,43 @@ using namespace  PhosHLTConst;
  * @ingroup alihlt_phos
  */
 
-class AliHLTPHOSHistoProdInvMass 
-{
+class AliHLTCaloHistoInvMass {
 
 public:
   
   /** Constructor */
-  AliHLTPHOSHistoProdInvMass();
+  AliHLTCaloHistoInvMass(TString det);
 
   /** Destructor */
-  virtual ~AliHLTPHOSHistoProdInvMass();
-
-  /** Copy constructor */
-  AliHLTPHOSHistoProdInvMass(const AliHLTPHOSHistoProdInvMass &) :
-    fClusterReader(NULL),
-    fHistTwoClusterInvMass(NULL),
-    fHistArrayPtr(NULL)
-  {
-    // Copy constructor not implemented
-  }
-
-  /** Assignment operator */
-  AliHLTPHOSHistoProdInvMass & operator= (const AliHLTPHOSHistoProdInvMass)
-  {
-    // assignment
-    return *this;
-  }
-
-  /** Analyse the clusters in the event */
-  int DoEvent(AliHLTCaloClusterHeaderStruct* cHeader);
+  virtual ~AliHLTCaloHistoInvMass();
 
   /** Get a pointer to the TObjArray of histograms */
   TObjArray *GetHistograms();
 
+  //** Loops of the calo clusters and fills histos
+  Int_t FillHistograms(Int_t nc, TRefArray * clustersArray);
   
-  
- private:
+private:
 
+  /** Default constructor prohibited */
+  AliHLTCaloHistoInvMass();
+  
+  /** Copy constructor */
+  AliHLTCaloHistoInvMass(const AliHLTCaloHistoInvMass &);
+  
+  /** Assignment operator */
+  AliHLTCaloHistoInvMass & operator= (const AliHLTCaloHistoInvMass);
+  
   /** Cluster reader class   */
   AliHLTCaloClusterReader * fClusterReader;
-
+  
   /** Histogram of the 2 cluster invariant mass */
   TH1F *fHistTwoClusterInvMass;                 //!transient
-
+  
   /** Pointer to the array of histograms */
   TObjArray *fHistArrayPtr;                     //!transient
-
-  ClassDef(AliHLTPHOSHistoProdInvMass, 0);
+  
+  ClassDef(AliHLTCaloHistoInvMass, 0);
 
 };
  

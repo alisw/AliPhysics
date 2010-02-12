@@ -1,8 +1,9 @@
-/**************************************************************************
+//-*- Mode: C++ -*-
+ /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
  *                                                                        *
- * Primary Authors: Albin Gaignette                                       *
+ * Primary Authors: Svein Lindal                                          *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -13,11 +14,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSHISTOPRODMATCHEDTRACKS_H
-#define ALIHLTPHOSHISTOPRODMATCHEDTRACKS_H
+#ifndef ALIHLTCALOHISTOMATCHEDTRACKS_H
+#define ALIHLTCALOHISTOMATCHEDTRACKS_H
 
 /** 
- * @file   AliHLTPHOSHistoProdMatchedTracks
+ * @file   AliHLTCaloHistoMatchedTracks
  * @author Albin Gaignette and Svein Lindal slindal@fys.uio.no
  * @date 
  * @brief  Produces Invariant mass histograms of PHOS clusters
@@ -34,19 +35,18 @@
 #include "Rtypes.h"
 // #include "TClonesArray.h"
 
-#include "AliHLTPHOSConstant.h" 
 
-using namespace  PhosHLTConst;
-
+class TRefArray;
 class TObjArray;
 class TH1F;
-//class TH2F;
 class AliHLTCaloClusterReader;
+class AliESDEvent;
+class TString;
 struct AliHLTCaloClusterHeaderStruct;
 
 
 /** 
- * @class AliHLTPHOSHistoProdMatchedTracks
+ * @class AliHLTCaloHistoMatchedTracks
  *
  * Class produces physics histograms for PHOS. It takes a TClonesArray
  * of AliESDCalocluster as input and fills several histograms
@@ -68,62 +68,58 @@ struct AliHLTCaloClusterHeaderStruct;
 
 
 
-//class AliHLTPHOSHistoProdMatchedTracks : public AliHLTPHOSBase
-class AliHLTPHOSHistoProdMatchedTracks 
-{
+//class AliHLTCaloHistoMatchedTracks : public AliHLTPHOSBase
+class AliHLTCaloHistoMatchedTracks {
+
  public:
 
   /** Constructor */
-  AliHLTPHOSHistoProdMatchedTracks();
+  AliHLTCaloHistoMatchedTracks(TString det);
 
   /** Destructor */
-  virtual ~AliHLTPHOSHistoProdMatchedTracks();
+  virtual ~AliHLTCaloHistoMatchedTracks();
 
-  /** Copy constructor */
-  AliHLTPHOSHistoProdMatchedTracks(const AliHLTPHOSHistoProdMatchedTracks &) :
-    fClusterReader(NULL),
-    fHistArrayPtr(0),
-    fHistMatchQuality(0),
-    fHistMatchedEnergy(0),
-    fHistUnMatchedEnergy(0)
-  {
-    // Copy constructor not implemented
-  }
-
-  /** Assignment operator */
-  AliHLTPHOSHistoProdMatchedTracks & operator= (const AliHLTPHOSHistoProdMatchedTracks)
-  {
-    // assignment
-    return *this;
-  }
 
   /** Analyse the clusters in the event */
-  int DoEvent(AliHLTCaloClusterHeaderStruct* cHeader);
+ //   int DoEvent(AliHLTCaloClusterHeaderStruct* cHeader);
+//   int DoEvent(AliESDEvent * event);
 
+  /** Loop over cluster data and fill histograms */
+  int FillHistograms(Int_t nc, TRefArray * fClustersArray);
+  
   /** Get a pointer to the TObjArray of histograms */
-  TObjArray *GetHistograms();
+  TObjArray * GetHistograms();
 
   
   
  private:
+  
+  /** Default constructor prohibited */
+  AliHLTCaloHistoMatchedTracks();
+
+  /** Copy constructor prohibited*/
+  AliHLTCaloHistoMatchedTracks(const AliHLTCaloHistoMatchedTracks &);
+
+  /** Assignment operator */
+  AliHLTCaloHistoMatchedTracks & operator= (const AliHLTCaloHistoMatchedTracks);
 
   /** Cluster reader class   */
   AliHLTCaloClusterReader * fClusterReader;
 
   /** Pointer to the array of histograms */
-  TObjArray *fHistArrayPtr;                     //!transient
+  TObjArray *fHistArrayPtr;                 //!transient
 
   /** Histogram of the 2 cluster invariant mass */
-  TH1F *fHistMatchQuality;                 //!transient
+  TH1F *fHistMatchDistance;                  //!transient
   
-  /** Histograms of the energy distribution of mached and unmatched clusters*/
+  /** Histograms of the energy distribution of mached and unmatched clusters */
   TH1F *fHistMatchedEnergy;                 //!transient
-  TH1F *fHistUnMatchedEnergy;                 //!transient
+  TH1F *fHistUnMatchedEnergy;               //!transient
   
   
   
 
-  ClassDef(AliHLTPHOSHistoProdMatchedTracks, 0);
+  ClassDef(AliHLTCaloHistoMatchedTracks, 1);
 
 };
  

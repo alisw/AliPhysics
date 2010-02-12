@@ -9,11 +9,12 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		AliHLTGlobalTrackMatcher.h \
 		AliHLTGlobalVertexerHistoComponent.h \
 		AliHLTGlobalHistoCollector.h \
-		physics/AliHLTV0HistoComponent.h 
-# 	        physics/AliHLTPHOSHistoProdInvMass.h \
-# 		physics/AliHLTPHOSHistoProdMatchedTracks.h \
-# 		physics/AliHLTPHOSHistoProdClusterEnergy.h \
-# 		physics/AliHLTPHOSHistoProdCellEnergy.h
+		physics/AliHLTV0HistoComponent.h \
+		physics/AliHLTCaloHistoComponent.h \
+	        physics/AliHLTCaloHistoInvMass.h \
+		physics/AliHLTCaloHistoMatchedTracks.h \
+		physics/AliHLTCaloHistoClusterEnergy.h \
+		physics/AliHLTCaloHistoCellEnergy.h 
 
 #	        physics/AliHLTPHOSHistogramProducerComponent.h \
 #physics/AliHLTPHOSHistogramProducerComponent.h 
