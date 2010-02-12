@@ -15,6 +15,7 @@
 
 #include "AliHLTCaloClusterReader.h"
 #include "AliHLTCaloClusterDataStruct.h"
+#include "AliHLTCaloDigitDataStruct.h"
 
 AliHLTCaloClusterReader::AliHLTCaloClusterReader(): 
   fCurrentClusterPtr(0),
@@ -58,8 +59,8 @@ AliHLTCaloClusterReader::NextCluster()
       // + the number of cells minus the one already included in the struct
       // times the amount of data for each cell (absolute ID (short) and amplitude fraction (float))
       fCurrentClusterPtr = (AliHLTCaloClusterDataStruct*)((UChar_t*)fCurrentClusterPtr 
-							      + sizeof(AliHLTCaloClusterDataStruct) 
-							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t)));
+							      + sizeof(AliHLTCaloClusterDataStruct) );
+//							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t)));
       // return the cluster
       return tmpChannelPtr;
     }
@@ -95,8 +96,11 @@ void
 AliHLTCaloClusterReader::SetMemory(const AliHLTCaloClusterHeaderStruct* clusterHeaderPtr)
 {
   //See header file for documentation
+  
+  printf("Header with %d clusters and %d digits\n", clusterHeaderPtr->fNClusters, clusterHeaderPtr->fNDigits);
   fMaxCnt = clusterHeaderPtr->fNClusters;
-  fCurrentClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>((UChar_t*)(clusterHeaderPtr) + sizeof(AliHLTCaloClusterHeaderStruct));
+  fCurrentClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>((UChar_t*)(clusterHeaderPtr) + sizeof(AliHLTCaloClusterHeaderStruct) + sizeof(AliHLTCaloDigitDataStruct)*clusterHeaderPtr->fNDigits);
+  printf("First cluster energy: %f\n", fCurrentClusterPtr->fEnergy);
   fIsSetMemory = true;
 }
 

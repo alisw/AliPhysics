@@ -107,10 +107,11 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
 	}
       CheckArray();
       CheckBuffer();
-      //            printf("cluster candidate!\n");
+      //            printf("` candidate!\n");
       // First digit is placed at the fDigits member variable in the recpoint
       fDigitIndexPtr = &(fRecPointDataPtr->fDigits);
-
+      fUsedSize += sizeof(AliHLTCaloRecPointDataStruct);
+      
       fRecPointDataPtr->fAmp = 0;
       fRecPointDataPtr->fModule = fDigitsPointerArray[i]->fModule;
 
@@ -141,9 +142,11 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
       fRecPointArray[fNRecPoints] = fRecPointDataPtr; 
       
       fRecPointDataPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(fDigitIndexPtr);
+
+      fNRecPoints++;
       
     }//end of clusterization
-   fNRecPoints = nRecPoints;
+
    return nRecPoints;
 }
 

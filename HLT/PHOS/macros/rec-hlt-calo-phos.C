@@ -30,11 +30,11 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
   //
   int moduleStart = 2;
   int moduleEnd = 2;
-  int rcuStart = 2;
-  int rcuEnd = 2;
+  int rcuStart = 0;
+  int rcuEnd = 3;
   //  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=ESD-FILE";
   //TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-CA_02";
-  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTCalo.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-CL_02";
+  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTCalo.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=ESD-CONVERTER";
   TString ecInput;
   TString emInput;
   
@@ -77,7 +77,7 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
 //       AliHLTConfiguration caConf(ca.Data(), "PhosClusterAnalyser", cl.Data(), arg.Data());
 
       if(ecInput.Length() > 0) ecInput += " ";
-      ecInput += ca;
+      ecInput += cl;
     }
       
   emInput = ecInput;
@@ -85,12 +85,12 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
   TString arg, ec, em, hp, ef;
   
 
-//   ec.Form("ESD-CONVERTER");
-//   arg = "";
+   ec.Form("ESD-CONVERTER");
+   arg = "";
 // 
 //   //  AliHLTConfiguration emConf(em.Data(), "PhosEsdEntriesMaker", ecInput.Data(), "");
 // 
-//   AliHLTConfiguration esdcconf(ec.Data(), "GlobalEsdConverter"   , ecInput.Data(), "");
+ AliHLTConfiguration esdcconf(ec.Data(), "GlobalEsdConverter"   , ecInput.Data(), "");
 //   
 //   // the root file writer configuration
 //   ef.Form("ESD-FILE");

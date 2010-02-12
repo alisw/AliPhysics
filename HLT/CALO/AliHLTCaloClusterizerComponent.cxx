@@ -171,6 +171,9 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       AliHLTCaloClusterHeaderStruct* caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(outBPtr);
       caloClusterHeaderPtr->fNDigits = digCount;
       
+      outBPtr += sizeof(AliHLTCaloClusterHeaderStruct);
+      mysize += sizeof(AliHLTCaloClusterHeaderStruct);
+      
       // Sort the digit pointers
       qsort(fDigitsPointerArray, digCount, sizeof(AliHLTCaloDigitDataStruct*), CompareDigits);
 
@@ -200,7 +203,7 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       //fClusterizerPtr->CheckDigits();
       //HLTDebug("Number of rec points found: %d", nRecPoints);
 
-      fAnalyserPtr->SetCaloClusterData(reinterpret_cast<AliHLTCaloClusterDataStruct*>(outBPtr + sizeof(AliHLTCaloClusterHeaderStruct)));
+      fAnalyserPtr->SetCaloClusterData(reinterpret_cast<AliHLTCaloClusterDataStruct*>(outBPtr));
       
       //fClusterizerPtr->CheckDigits(fClusterizerPtr->GetRecPoints(), fOutputDigitsArray, nRecPoints);
 
@@ -210,19 +213,19 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
       fAnalyserPtr->SetDigitDataArray(fOutputDigitsArray);
 
-      fClusterizerPtr->CheckDigits(fClusterizerPtr->GetRecPoints(), fOutputDigitsArray, nRecPoints);
+//      fClusterizerPtr->CheckDigits(fClusterizerPtr->GetRecPoints(), fOutputDigitsArray, nRecPoints);
 
-      fAnalyserPtr->CreateClusters(nRecPoints, size, mysize);
-      
-      mysize += sizeof(AliHLTCaloRecPointHeaderStruct);
+      Int_t nClusters = fAnalyserPtr->CreateClusters(nRecPoints, size, mysize);
   
+      caloClusterHeaderPtr->fNClusters = nClusters;
+      
       //  HLTError("Number of clusters: %d", nRecPoints);
 
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset = offset;
       bd.fSize = mysize;
-      bd.fDataType = AliHLTCaloDefinitions::fgkClusterDataType|fDataOrigin;
+      bd.fDataType = kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS;
       bd.fSpecification = specification;
       outputBlocks.push_back( bd );
     }

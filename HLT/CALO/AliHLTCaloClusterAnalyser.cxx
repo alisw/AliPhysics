@@ -173,6 +173,12 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 {
   //See header file for documentation
 
+   if((totSize - availableSize)  < sizeof(AliHLTCaloClusterDataStruct))
+   {
+      HLTError("Out of buffer");
+      return -ENOBUFS;
+   }
+  totSize += sizeof(AliHLTCaloClusterDataStruct);
   fNRecPoints = nRecPoints;
 
   if(fGeometry == 0)
@@ -181,8 +187,6 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
   }
 
   CalculateCenterOfGravity();
-
-  UInt_t maxClusterSize = sizeof(AliHLTCaloClusterDataStruct) + (6 << 7); //Reasonable estimate... (6 = sizeof(Short_t) + sizeof(Float_t)
 
   //  AliHLTCaloDigitDataStruct* digitPtr = &(recPointPtr->fDigits);  
   AliHLTCaloDigitDataStruct* digitPtr = 0;
@@ -199,10 +203,6 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 //      if(availableSize
       AliHLTCaloRecPointDataStruct *recPointPtr = fRecPointArray[i];
       cout << "CA: rec point energy: " << recPointPtr->fAmp << ", rec point multiplicity: " << recPointPtr->fMultiplicity << endl;
-      if(availableSize < (totSize + maxClusterSize)) 
-	{
-	  return -1; //Might get out of buffer, exiting
-	}
       //      cout << "Local Position (x:z:module): " << recPointPtr->fX << " : "<< recPointPtr->fZ << " : " << recPointPtr->fModule << endl;
       
       AliHLTCaloGlobalCoordinate globalCoord;
