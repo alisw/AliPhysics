@@ -245,7 +245,9 @@ Bool_t AliPHOSPreprocessor::FindBadChannelsEmc()
   Bool_t result[2] = { kTRUE, kTRUE };
 
   for (Int_t i=0; i<2; i++) {
-
+    
+    if(system[i] == kHLT) continue;
+    
     AliPHOSEmcBadChannelsMap badMap;
     list = GetFileSources(system[i], "BAD_CHANNELS");
 
