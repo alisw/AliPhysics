@@ -94,7 +94,9 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits, UInt_t availableSize, UInt
 {
   //see header file for documentation
   Int_t nRecPoints = 0;
-
+  
+  fAvailableSize = availableSize;
+  
   fNDigits = nDigits;
 
   UInt_t maxRecPointSize = sizeof(AliHLTCaloRecPointDataStruct) + (sizeof(AliHLTCaloDigitDataStruct) << 7); //Reasonable estimate... 
@@ -108,10 +110,13 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits, UInt_t availableSize, UInt
 	{
 	  continue;
 	}
-      if(availableSize < (totSize + maxRecPointSize)) 
+	
+	if(fAvailableSize < (sizeof(AliHLTCaloRecPointDataStruct)))
 	{
-	  return -1; //Might get out of buffer, exiting
+	  HLTError("Out of buffer, stopping clusterisation");
+	  return -1; 
 	}
+	
       //            printf("cluster candidate!\n");
       // First digit is placed at the fDigits member variable in the recpoint
       fDigitIndexPtr = &(fRecPointDataPtr->fDigits);
@@ -131,7 +136,10 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits, UInt_t availableSize, UInt
       nRecPoints++;
 
       // Scanning for the neighbours
-      ScanForNeighbourDigits(i, fRecPointDataPtr);
+      if(ScanForNeighbourDigits(i, fRecPointDataPtr) != 0)
+      {
+	 return -1;
+      }
 
       totSize += sizeof(AliHLTCaloRecPointDataStruct) + (fDigitsInCluster-1)*sizeof(AliHLTCaloDigitDataStruct);   
       fRecPointDataPtr->fMultiplicity = fDigitsInCluster;     
@@ -143,7 +151,7 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits, UInt_t availableSize, UInt
    return nRecPoints;
 }
 
-void
+Int_t
 AliHLTCaloClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTCaloRecPointDataStruct* recPoint)
 {
   //see header file for documentation
@@ -161,7 +169,12 @@ AliHLTCaloClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTCaloRecPointDat
 	      if(AreNeighbours(fDigitsPointerArray[index],
 			       fDigitsPointerArray[j]))
 		{
-		  // Assigning value to digit ptr
+		  if(fAvailableSize < (sizeof(Int_t)))
+		     {
+			HLTError("Out of buffer, stopping clusterisation");
+			return -1; 
+		     }	
+		  // Assigning index to digit
 		  *fDigitIndexPtr = j;
 		  // Incrementing digit pointer to be ready for new entry
 		  fDigitIndexPtr++;
@@ -174,7 +187,7 @@ AliHLTCaloClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTCaloRecPointDat
 	    }
 	}
     }
-  return;
+  return 0;
 }
 
 Int_t 

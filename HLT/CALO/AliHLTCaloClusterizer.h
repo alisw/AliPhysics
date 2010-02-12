@@ -46,6 +46,7 @@
 #include "AliHLTCaloConstantsHandler.h"
 
 //#include "AliPHOSGeometry.h"
+#include "AliHLTLogging.h"
 
 class TClonesArray;
 class TString;
@@ -63,7 +64,7 @@ class TString;
  */
 
 
-class AliHLTCaloClusterizer : public AliHLTCaloConstantsHandler
+class AliHLTCaloClusterizer : public AliHLTCaloConstantsHandler, public AliHLTLogging
 {
   
 public:
@@ -73,30 +74,7 @@ public:
 
   /** Destructor */
   virtual ~AliHLTCaloClusterizer();
-
-//   /** Copy constructor */  
-//   AliHLTCaloClusterizer(const AliHLTCaloClusterizer &) : 
-//     //    AliHLTCaloBase(),
-//     AliHLTCaloConstants(NULL),
-//     fRecPointDataPtr(0),
-//     fDigitDataPtr(0),
-//     fEmcClusteringThreshold(0),
-//     fEmcMinEnergyThreshold(0),
-//     fEmcTimeGate(0),
-//     fDigitsInCluster(0),
-//     fDigitContainerPtr(0),
-//     fMaxDigitIndexDiff(2*NZROWSMOD)
-//   {
-//     //Copy constructor not implemented
-//   }
   
-  /** Assignment */
-  AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer)
-  {
-    //Assignment
-    return *this; 
-  }
-
   /** Set digit container */
   void SetDigitContainer(AliHLTCaloDigitContainerDataStruct* digitContainerPtr)
   { fDigitContainerPtr = digitContainerPtr; }
@@ -130,7 +108,7 @@ public:
    * @param digIndex index of the digit in the digit container
    * @param recPoint pointer to the current rec point
    */
-  virtual void ScanForNeighbourDigits(Int_t digIndex, AliHLTCaloRecPointDataStruct* recPoint);
+  virtual Int_t ScanForNeighbourDigits(Int_t digIndex, AliHLTCaloRecPointDataStruct* recPoint);
 
   /**
    * Checks if two digits are neighbours
@@ -173,17 +151,20 @@ protected:
   Int_t fNDigits;                                              //COMMENT
 
 private:
+   
+   /** Size of the available write buffer */
+  UInt_t fAvailableSize;                                 //COMMENT
 
-  AliHLTCaloClusterizer();
-
-  AliHLTCaloClusterizer (const AliHLTCaloClusterizer &);
-//   AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &)
-//   {
-//     return *this;
-//   }
+  /** Default constructor, prohibited */
+  AliHLTCaloClusterizer();                          // COMMENT
+  
+  /** Copy constructor, prohibited */
+  AliHLTCaloClusterizer (const AliHLTCaloClusterizer &); //COMMENT
+  
+  /** Assignment operator, prohibited */
+  AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &); //COMMENT
 
   ClassDef(AliHLTCaloClusterizer, 0);
-
 
 };
 
