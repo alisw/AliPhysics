@@ -46,7 +46,8 @@ private:
   TObjArray*    fArray;
   TH1F*         fZvtxDist;
   Int_t         fEvents;
-  Int_t         fEmptyEvents;
+  Int_t         fEmptyEventsAside;
+  Int_t         fEmptyEventsCside;
   ClassDef(AliFMDAnalysisTaskCollector, 0); // Analysis task for FMD analysis
 };
  

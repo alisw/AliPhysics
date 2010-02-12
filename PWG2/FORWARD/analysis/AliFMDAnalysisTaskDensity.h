@@ -16,7 +16,7 @@ class AliESDEvent;
 class TChain;
 class AliAODEvent;
 class TF1;
-
+class AliFMDAnaCalibEnergyDistribution;
 
 /**
  * @ingroup FMD_ana
@@ -39,7 +39,7 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option);
     virtual void CreateOutputObjects();
-    virtual void Init() {}
+  virtual void Init();
     virtual void LocalInit() {Init();}
     virtual void Exec(Option_t *option);
     virtual void Terminate(Option_t */*option*/) {}
@@ -53,17 +53,18 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     Float_t GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec);
  private:
     
-    Int_t         fDebug;        //  Debug flag
-    TList*        fOutputList;
-    AliESDFMD*    fESD;
-    TObjString    fVertexString;
-    AliESDVertex* fVertex;
-    Bool_t        fStandalone;
-    Bool_t        fStatus;
+  Int_t         fDebug;        //  Debug flag
+  TList*        fOutputList;
+  AliESDFMD*    fESD;
+  TObjString    fVertexString;
+  AliESDVertex* fVertex;
+  Bool_t        fStandalone;
+  Bool_t        fStatus;
+  //AliFMDAnaCalibEnergyDistribution* fEnergyDistribution;
     // TF1*          fFuncPos;
     // TF1*          fFuncNeg;
     
-    ClassDef(AliFMDAnalysisTaskDensity, 0); // Analysis task for FMD analysis
+  ClassDef(AliFMDAnalysisTaskDensity, 0); // Analysis task for FMD analysis
 };
  
 #endif

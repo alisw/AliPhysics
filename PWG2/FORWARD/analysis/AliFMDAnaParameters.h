@@ -125,15 +125,15 @@ public:
   void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}
   void     PrintStatus() const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
-  char*    GetDndetaAnalysisName() const {return "PWG2forwardDnDeta";}
+  char*    GetDndetaAnalysisName() {return "PWG2forwardDnDeta";}
   TH1F*    GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
   TH1F*    GetEmptyEnergyDistribution(Int_t det, Char_t ring);
   TH1F*    GetRingEnergyDistribution(Int_t det, Char_t ring);
-  AliPhysicsSelection* GetPhysicsSelection() const {return fPhysicsSelection;}
-  Bool_t   IsRealData() const {return fRealData; }
+  AliPhysicsSelection* GetPhysicsSelection() {return fPhysicsSelection;}
+  Bool_t   IsRealData() {return fRealData; }
   void     SetRealData(Bool_t realdata) {fRealData = realdata;}
-  Float_t  GetLowSPDLimit() const {return fSPDlowLimit;}
-  Float_t  GetHighSPDLimit() const {return fSPDhighLimit;}
+  Float_t  GetLowSPDLimit() {return fSPDlowLimit;}
+  Float_t  GetHighSPDLimit() {return fSPDhighLimit;}
   void     SetLowSPDLimit(Float_t cut) {fSPDlowLimit = cut;}
   void     SetHighSPDLimit(Float_t cut) {fSPDhighLimit = cut;}
   void     SetCentralTriggerSelection(Bool_t selection) {fCentralSelection = selection;}
@@ -184,16 +184,16 @@ protected:
   Bool_t fIsInit;                      //Have we been init ?
   //TObjArray*  fBackgroundArray;
   // TObjArray*  fEdistArray;
-  AliFMDAnaCalibBackgroundCorrection*         fBackground;   // background map object
-  AliFMDAnaCalibEnergyDistribution*           fEnergyDistribution; // energy distribution object
-  AliFMDAnaCalibEventSelectionEfficiency*     fEventSelectionEfficiency; // event selection distribution object
-  AliFMDAnaCalibSharingEfficiency*            fSharingEfficiency;  // sharing distribution object
+  AliFMDAnaCalibBackgroundCorrection*         fBackground;   
+  AliFMDAnaCalibEnergyDistribution*           fEnergyDistribution;
+  AliFMDAnaCalibEventSelectionEfficiency*     fEventSelectionEfficiency;
+  AliFMDAnaCalibSharingEfficiency*            fSharingEfficiency;
   //static const char* fgkBackgroundCorrection;
   //static const char* fgkEnergyDists;
-  static const char* fgkBackgroundID;  // background object
-  static const char* fgkEnergyDistributionID ;  //energy dist object
-  static const char* fgkEventSelectionEffID ;   // event selection object
-  static const char* fgkSharingEffID ;          // sharing efficiency object
+  static const char* fgkBackgroundID;
+  static const char* fgkEnergyDistributionID ;
+  static const char* fgkEventSelectionEffID ;
+  static const char* fgkSharingEffID ;
   
   TVector2 fCorner1;                  //First corner of hybrid
   TVector2 fCorner2;                  //Second corner of hybrid
@@ -207,7 +207,7 @@ protected:
   Energy   fEnergy;                   // CM energy
   MagField fMagField;                 //Magnetic field
   Species  fSpecies;                  //PbPb or pp ?
-  AliPhysicsSelection* fPhysicsSelection; // the physics selection
+  AliPhysicsSelection* fPhysicsSelection; 
   Bool_t   fRealData;                 // real or simulated
   Float_t  fSPDlowLimit ;             // low limit of SPD tracklets
   Float_t  fSPDhighLimit ;             // high limit of SPD tracklets

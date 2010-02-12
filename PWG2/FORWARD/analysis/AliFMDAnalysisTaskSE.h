@@ -51,12 +51,12 @@ public:				//
   void         Print(Option_t* option="") const;
 private:
   
-  TList* fListOfHistos;
-  AliFMDAnalysisTaskSharing              fSharing;     // Sharing task
-  AliFMDAnalysisTaskDensity              fDensity;     // Density task
-  AliFMDAnalysisTaskBackgroundCorrection fBackground;  // Background task
-  AliFMDAnalysisTaskDndeta               fDndeta;      // dN/deta task
-  AliFMDAnaParameters*                   fParams;      // Analysis parameters
+  TList*                                 fListOfHistos; // Output list
+  AliFMDAnalysisTaskSharing              fSharing;      // Sharing task
+  AliFMDAnalysisTaskDensity              fDensity;      // Density task
+  AliFMDAnalysisTaskBackgroundCorrection fBackground;   // Background task
+  AliFMDAnalysisTaskDndeta               fDndeta;       // dN/deta task
+  AliFMDAnaParameters*                   fParams;       // Analysis parameters
 
   
   ClassDef(AliFMDAnalysisTaskSE, 1);

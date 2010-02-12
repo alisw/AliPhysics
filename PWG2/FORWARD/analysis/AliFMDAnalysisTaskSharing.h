@@ -47,7 +47,7 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     virtual void Init() {}
     virtual void LocalInit() {Init();}
     virtual void Exec(Option_t */*option*/);
-    virtual void Terminate(Option_t* /* option*/) {}
+    virtual void Terminate(Option_t* /* option*/);
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     Float_t GetMultiplicityOfStrip(Float_t mult, Float_t eta, Float_t Eprev, Float_t Enext, UShort_t   det, Char_t  ring, UShort_t sec, UShort_t strip);
     // void GetVertex(Double_t* vertexXYZ) ;
@@ -74,7 +74,8 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     AliESDVertex* fEsdVertex;         // vtx info from the ESD
     Bool_t        fStatus;            // event status
     AliFMDFloatMap fLastTrackByStrip; // the last track to hit this strip
-    
+    UInt_t          fLastOrbit;
+    Float_t fEtotal;
     ClassDef(AliFMDAnalysisTaskSharing, 0); // Analysis task for FMD analysis
 };
  

@@ -17,6 +17,7 @@
 #include "AliAODHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
+#include "AliFMDAnaCalibEnergyDistribution.h"
 #include "AliESDVertex.h"
 #include "TMath.h"
 #include "AliFMDAnaParameters.h"
@@ -65,6 +66,8 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
 {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
+  
+  
   if(!fOutputList)
     fOutputList = new TList();
   fOutputList->SetName("density_list");
@@ -112,10 +115,12 @@ void AliFMDAnalysisTaskDensity::ConnectInputData(Option_t */*option*/)
     fVertex = (AliESDVertex*)GetInputData(1);
   }
 }
+//_____________________________________________________________________
+void AliFMDAnalysisTaskDensity::Init() {
+  //TFile f("/home/canute/ALICE/FMDanalysis/FirstAnalysis/energydistributions_0_0_1_0_0_0.root");
+  //fEnergyDistribution = dynamic_cast<AliFMDAnaCalibEnergyDistribution*>(f.Get("energydistributions"));
 
-
-
-
+}
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 {
@@ -124,9 +129,11 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   
   //AliESDFMD*   fmd = fESD->GetFMDData();
   
+  
   Double_t vertex[3];
   fVertex->GetXYZ(vertex);
   // Z Vtx cut
+  
   if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
     fStatus = kFALSE;
     return;
@@ -161,7 +168,12 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
      
       UShort_t nsec = (ir == 0 ? 20  : 40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
-      
+      /*
+     TH1F* hEnergyDist       = pars->GetEmptyEnergyDistribution(det,ring);
+      TF1*  fitFunc           = hEnergyDist->GetFunction("FMDfitFunc");
+      TH1F* hSignalDist    = pars->GetRingEnergyDistribution(det, ring);
+      TF1*  fitFuncSignal  = hSignalDist->GetFunction("FMDfitFunc");
+      */
       for(UShort_t sec =0; sec < nsec;  sec++)  {
 	for(UShort_t strip = 0; strip < nstr; strip++) {
 	  Float_t mult = fESD->Multiplicity(det,ring,sec,strip);
@@ -171,7 +183,7 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	  Float_t phi = pars->GetPhiFromSector(det,ring,sec);
 	  Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex[2]);
 	  
-	  Float_t mult_cut = 0.25;//0.15;//m-2*s;//0.15;//0.2;//m-3*s;// 0.2;//0.01;//m-2*s;//0.2;
+	  Float_t mult_cut = 0.3;//pars->GetMPV(det,ring,eta);// - pars->GetSigma(det,ring,eta);//0.25;//0.15;//m-2*s;//0.15;//0.2;//m-3*s;// 0.2;//0.01;//m-2*s;//0.2;
 	  // if(ring == 'I')
 	  //  mult_cut = 0.10;
 	  //Float_t mult_cut = pars->GetMPV(det,ring,eta) - 5*pars->GetSigma(det,ring,eta);
@@ -180,8 +192,7 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	    //proton + proton
 	    
 	    if(mult > mult_cut) {
-	      nParticles = 1; 
-	    
+	      nParticles = 1.;
 	    }
 	  }
 	  else {
@@ -224,6 +235,27 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	    
 	  }
 	  
+	  //std::cout<<det<<"   "<<ring<<"    "<<sec<<"    "<<strip<<"    "<<vertex[2]<<"   "<<eta<<std::endl;
+	  
+	  //Float_t signal = hSignalDist->Integral(hSignalDist->FindBin(0.5),hSignalDist->FindBin(2)) ;//pars->GetConstant(det,ring,eta);
+	  //Float_t bkg =  hEnergyDist->GetBinContent(hEnergyDist->FindBin(mult));
+	  //Float_t signal =  hSignalDist->GetBinContent(hSignalDist->FindBin(mult));
+	  /*
+	  if(fitFunc && fitFuncSignal && pars->IsRealData()) {
+	    Float_t bkg = fitFunc->Eval(mult);
+	    Float_t signal = fitFuncSignal->Eval(mult);
+	    
+	    if(signal > 0) {
+	      correction = correction/(1-(bkg/signal));
+	      //test
+	      // if(TMath::Abs(eta)<3) correction = 1.15*correction;
+	      // if(det == 2 && ring == 'I') correction = correction/(1-bkg/signal);
+	      //if(det == 2 && ring == 'O') correction = correction/(1-bkg/signal);
+	      //if(det == 3 && ring == 'I') correction = correction/(1-bkg/signal);
+	      //if(det == 3 && ring == 'O') correction = correction/(1-bkg/signal);
+	      
+	    }
+	    }*/
 	  if(correction) nParticles = nParticles / correction;
 	  if(nParticles > 0)
 	    hMult->Fill(eta,phi,nParticles);
@@ -237,6 +269,7 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	
   
   }
+  
   
 
   if(fStandalone) {
