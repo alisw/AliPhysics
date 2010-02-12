@@ -616,7 +616,6 @@ Bool_t AliTRDclusterizer::MakeClusters()
     fDigitsManager->RemoveDictionaries(i);      
     fDigitsManager->ClearIndexes(i);  
   }
-  fReconstructor->SetDigitsParam(fDigitsManager->GetDigitsParam());
   
   if(fReconstructor->IsWritingClusters()) WriteClusters(-1);
 
@@ -686,7 +685,6 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     if (!fReconstructor->IsWritingTracklets()) continue;
     if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
   }
-  fReconstructor->SetDigitsParam(fDigitsManager->GetDigitsParam());
   
   if (fTrackletContainer){
     delete [] fTrackletContainer[0];
@@ -764,7 +762,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   // Get the digits
   fDigits = (AliTRDarrayADC *) fDigitsManager->GetDigits(det); //mod
-  fBaseline = fDigitsManager->GetDigitsParam()->GetADCbaseline();
+  fBaseline = fDigitsManager->GetDigitsParam()->GetADCbaseline(det);
   
   // This is to take care of switched off super modules
   if (!fDigits->HasData()) return kFALSE;

@@ -154,7 +154,6 @@ AliTRDrawStream::AliTRDrawStream()
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
-  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
@@ -197,7 +196,6 @@ AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
-  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
@@ -246,7 +244,6 @@ AliTRDrawStream::AliTRDrawStream(const AliTRDrawStream& /*st*/)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
-  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
@@ -768,15 +765,13 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
       // Set digitparam variables
       digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
       digitsparam->SetPretriggerPhase(det,GetPreTriggerPhase());
-      if (!fIsGlobalDigitsParamSet){
-        digitsparam->SetNTimeBins(ntbins);
-	fCommonAdditive=10;
-        digitsparam->SetADCbaseline(fCommonAdditive);
-        fIsGlobalDigitsParamSet = kTRUE;
-      }
+      digitsparam->SetNTimeBins(det,ntbins);
+      fCommonAdditive=10;
+      digitsparam->SetADCbaseline(det,fCommonAdditive);
 
       // Allocate memory space for the digits buffer
-      if (digits->GetNtime() == 0) {
+      //if (digits->GetNtime() == 0) {
+      if (ntbins != digits->GetNtime()) {
         digits->Allocate(rowMax, colMax, ntbins);
         if (digitsManager->UsesDictionaries()) {
           track0->Allocate(rowMax, colMax, ntbins);
@@ -1954,7 +1949,8 @@ const char *AliTRDrawStream::DumpHCinfoH0(const struct AliTRDrawHC *hc)
     return Form("Unable to dump. Null received as parameter!?!");
   else
     return Form("[ HC[0] at 0x%08x ] : 0x%08x Info is : RawV %d SM %d Stack %d Layer %d Side %d DCSboard %d",
-                hc->fPos[0], (hc->fPos[0]) ? *(hc->fPos[0]) : 0, hc->fRawVMajor, fRawReader->GetEquipmentId()-1024, hc->fStack, hc->fLayer, hc->fSide, hc->fDCSboard);
+                hc->fPos[0], (hc->fPos[0]) ? *(hc->fPos[0]) : 0, hc->fRawVMajor, 
+                fRawReader->GetEquipmentId()-1024, hc->fStack, hc->fLayer, hc->fSide, hc->fDCSboard);
 }
 
 //--------------------------------------------------------

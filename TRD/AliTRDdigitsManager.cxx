@@ -453,8 +453,8 @@ Bool_t AliTRDdigitsManager::ReadDigits(TTree * const tree)
     AliWarning(Form("Create default version of digits parameter (NTimeBin=%d).\n"
 		   ,AliTRDSimParam::Instance()->GetNTimeBins()));
     fDigitsParam = new AliTRDdigitsParam();
-    fDigitsParam->SetNTimeBins(AliTRDSimParam::Instance()->GetNTimeBins());
-    fDigitsParam->SetADCbaseline(AliTRDSimParam::Instance()->GetADCbaseline());
+    fDigitsParam->SetNTimeBinsAll(AliTRDSimParam::Instance()->GetNTimeBins());
+    fDigitsParam->SetADCbaselineAll(AliTRDSimParam::Instance()->GetADCbaseline());
   }
 
   return status;

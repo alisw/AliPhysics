@@ -144,7 +144,6 @@ AliTRDrawFastStream::AliTRDrawFastStream()
   , fpPosTemp(0)
   , fGlobalNTimeBins(0)
   , fIsTimeBinSet(kFALSE)
-  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fLinkTrackletCounter(-1)
@@ -191,7 +190,6 @@ AliTRDrawFastStream::AliTRDrawFastStream(AliRawReader *rawReader)
   , fpPosTemp(0)
   , fGlobalNTimeBins(0)
   , fIsTimeBinSet(kFALSE)
-  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fLinkTrackletCounter(-1)
@@ -242,7 +240,6 @@ AliTRDrawFastStream::AliTRDrawFastStream(const AliTRDrawFastStream& /*st*/)
   , fpPosTemp(0)
   , fGlobalNTimeBins(0)
   , fIsTimeBinSet(kFALSE)
-  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fLinkTrackletCounter(-1)
@@ -671,17 +668,15 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
       Int_t colMax = GetColMax();
       Int_t ntbins = GetGlobalNTimeBins(); 
 
-      // Set digitparam variables
+      // Set digitsparam variables
       digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
-      if (!fIsGlobalDigitsParamSet){
-        digitsparam->SetNTimeBins(ntbins);
-	fCommonAdditive=10;
-        digitsparam->SetADCbaseline(fCommonAdditive);
-        fIsGlobalDigitsParamSet = kTRUE;
-      } 
+      digitsparam->SetNTimeBins(det,ntbins);
+      fCommonAdditive=10;
+      digitsparam->SetADCbaseline(det,fCommonAdditive);
 
       // Allocate memory space for the digits buffer
-      if (digits->GetNtime() == 0) {
+      //if (digits->GetNtime() == 0) {
+      if (ntbins != digits->GetNtime()) {
         digits->Allocate(rowMax, colMax, ntbins);
         if (digitsManager->UsesDictionaries()) {
           track0->Allocate(rowMax, colMax, ntbins);
@@ -738,7 +733,7 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
 	  }
     else SeekEndOfData(); // make sure that finish off with the end of data markers
 
-    // set pritrigger phase since it is only avaliable after decoding HC header 
+    // set pretrigger phase since it is only avaliable after decoding HC header 
     digitsparam->SetPretriggerPhase(det,GetPreTriggerPhase());
 
     // copy tracklets in memory into tracklet container
@@ -1892,8 +1887,9 @@ const char *AliTRDrawFastStream::DumpHCinfoH0(const struct AliTRDrawHC *hc)
   if (!hc)
     return Form("Unable to dump. Null received as parameter!?!");
   else
-    return Form("[ HC[0] at 0x%08x ] : 0x%08x Info is : RawV %d SM %d Stack %d Layer %d Side %d DCSboard %d",
-                hc->fPos[0], *(hc->fPos[0]), hc->fRawVMajor, fRawReader->GetEquipmentId()-1024, hc->fStack, hc->fLayer, hc->fSide, hc->fDCSboard);
+     return Form("[ HC[0] at 0x%08x ] : 0x%08x Info is : RawV %d SM %d Stack %d Layer %d Side %d DCSboard %d",
+                hc->fPos[0], *(hc->fPos[0]), hc->fRawVMajor, fRawReader->GetEquipmentId()-1024, 
+                hc->fStack, hc->fLayer, hc->fSide, hc->fDCSboard);
 }
 
 //--------------------------------------------------------

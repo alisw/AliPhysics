@@ -51,10 +51,9 @@ public:
   static Int_t        GetNTimeBins() {return fgNTimeBins;}
   Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}
   AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return GetRecoParam()->IsPIDNeuralNetwork() ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
-  static AliTRDdigitsParam* GetDigitsParam() { return fgDigitsParam;}
   static const AliTRDrecoParam* GetRecoParam() { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
+
   virtual Bool_t      HasDigitConversion() const { return fSteerParam&kDigitsConversion;  };
-  Bool_t              HasDigitsParam() const { return Bool_t(fgDigitsParam);}
   Bool_t              IsCosmic() const { return GetRecoParam()->GetEventSpecie() & AliRecoParam::kCosmic;}
   Bool_t              IsWritingClusters() const  { return fSteerParam&kWriteClusters;}
   Bool_t              IsWritingTracklets() const { return fSteerParam&kWriteTracklets;}
@@ -69,7 +68,6 @@ public:
 
   static void         SetClusters(TClonesArray *clusters)  { fgClusters = clusters;} 
   static void         SetTracklets(TClonesArray *tracklets) { fgTracklets = tracklets;}
-  static void         SetDigitsParam(AliTRDdigitsParam const *par);
   void	              SetOption(Option_t *opt);
 
 private:
@@ -83,12 +81,11 @@ private:
   UInt_t            fSteerParam;          // steering bits
   TTreeSRedirector *fDebugStream[AliTRDrecoParam::kTRDreconstructionTasks];// Debug Streamer container;
  
-  static AliTRDdigitsParam *fgDigitsParam; // Digits Param information
   static TClonesArray *fgClusters;    // list of clusters for local reconstructor
   static TClonesArray *fgTracklets;   // list of online tracklets for local reconstructor
   static Int_t         fgNTimeBins;   // number of time bins as given by the clusterizer
 
-  ClassDef(AliTRDReconstructor, 2)    //  Class for the TRD reconstruction
+  ClassDef(AliTRDReconstructor, 3)    //  Class for the TRD reconstruction
 
 };
 

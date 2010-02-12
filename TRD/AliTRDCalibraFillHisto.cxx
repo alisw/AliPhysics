@@ -2635,8 +2635,8 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ2(AliRawReader *rawReader)
 	    
 	    //	  nbtimebin              = rawStream->GetNumberOfTimeBins();              //  number of time bins read from data
 	    AliTRDdigitsParam *digitParam = (AliTRDdigitsParam *)digitsManager->GetDigitsParam();
-	    nbtimebin              = digitParam->GetNTimeBins();              //  number of time bins read from data
-	    baseline               = digitParam->GetADCbaseline();            //  baseline
+	    nbtimebin              = digitParam->GetNTimeBins(det);              //  number of time bins read from data
+	    baseline               = digitParam->GetADCbaseline(det);            //  baseline
 	    
 	    if(nbtimebin == 0) return 0;
 	    if((fTimeMax != 0) && (nbtimebin != fTimeMax)) return 0;

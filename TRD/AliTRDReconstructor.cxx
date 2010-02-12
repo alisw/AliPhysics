@@ -42,7 +42,6 @@ ClassImp(AliTRDReconstructor)
 
 TClonesArray *AliTRDReconstructor::fgClusters = NULL;
 TClonesArray *AliTRDReconstructor::fgTracklets = NULL;
-AliTRDdigitsParam *AliTRDReconstructor::fgDigitsParam = NULL;
 Char_t const * AliTRDReconstructor::fgSteerNames[kNsteer] = {
   "DigitsConversion       "
  ,"Write Clusters         "
@@ -96,10 +95,6 @@ AliTRDReconstructor::~AliTRDReconstructor()
   // Destructor
   //
 
-  if(fgDigitsParam){
-    delete fgDigitsParam;
-    fgDigitsParam = NULL;
-  }
   if(fgClusters) {
     fgClusters->Delete();
     delete fgClusters;
@@ -247,14 +242,6 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
   //
 
 }
-
-//_____________________________________________________________________________
-void AliTRDReconstructor::SetDigitsParam(AliTRDdigitsParam const *par)
-{ 
-  if(fgDigitsParam) (*fgDigitsParam) = (*par);
-  else fgDigitsParam = new AliTRDdigitsParam(*par);
-}
-
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::SetOption(Option_t *opt)

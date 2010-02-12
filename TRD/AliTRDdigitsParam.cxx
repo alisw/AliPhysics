@@ -30,15 +30,15 @@ ClassImp(AliTRDdigitsParam)
 //_____________________________________________________________________________
 AliTRDdigitsParam::AliTRDdigitsParam()
   :TObject()
-  ,fNTimeBins(0)
-  ,fADCbaseline(0)
 {
   //
   // Default constructor
   //
 
   for (Int_t i = 0; i < 540; i++) {
+    fNTimeBins[i]       = 0;
     fPretriggerPhase[i] = 0;
+    fADCbaseline[i]     = 0;
   }
 
 }
@@ -55,15 +55,15 @@ AliTRDdigitsParam::~AliTRDdigitsParam()
 //_____________________________________________________________________________
 AliTRDdigitsParam::AliTRDdigitsParam(const AliTRDdigitsParam &p)
   :TObject(p)
-  ,fNTimeBins(p.fNTimeBins)
-  ,fADCbaseline(p.fADCbaseline)
 {
   //
   // Copy constructor
   //
 
   for (Int_t i = 0; i < 540; i++) {
+    fNTimeBins[i]       = p.fNTimeBins[i];
     fPretriggerPhase[i] = p.fPretriggerPhase[i];
+    fADCbaseline[i]     = p.fADCbaseline[i];
   }
 
 }
@@ -95,11 +95,10 @@ void AliTRDdigitsParam::Copy(TObject &p) const
     return;
   }  
 
-  target->fNTimeBins   = fNTimeBins;
-  target->fADCbaseline = fADCbaseline;
-
   for (Int_t i = 0; i < 540; i++) {
+    target->fNTimeBins[i]       = fNTimeBins[i];
     target->fPretriggerPhase[i] = fPretriggerPhase[i];
+    target->fADCbaseline[i]     = fADCbaseline[i];
   }
 
 }

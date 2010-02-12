@@ -606,8 +606,6 @@ class AliTRDrawStream : public AliTRDrawStreamBase
 
   UInt_t  fWordLength;  // length of the buffer in 32bit words
 
-  Bool_t  fIsGlobalDigitsParamSet; // set true if the global digit parameters are already set
-
   Int_t   fStackNumber;     // current stack number
   Int_t   fStackLinkNumber; // current link in the stack
 
@@ -693,7 +691,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
       , kWrongPadcolumn	        = 24 //
     };			       
 
-  ClassDef(AliTRDrawStream, 0)
+  ClassDef(AliTRDrawStream, 1)
 }; //clas def end
 
 #endif

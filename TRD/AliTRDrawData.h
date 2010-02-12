@@ -23,6 +23,7 @@ class AliTRDdigitsManager;
 class AliTRDgeometry;
 class AliTRDfeeParam;
 class AliTRDarrayADC;
+class AliTRDdigitsParam;
 
 // Some constants:
 const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
@@ -77,8 +78,6 @@ class AliTRDrawData : public TObject {
   TTree               *fTrackletTree;        //! Tree for tracklets
   UInt_t              **fTrackletContainer;  //! tracklet container
 
-  ClassDef(AliTRDrawData,5)             //  TRD raw data class
-
  private:
 
 	static       Int_t  fgRawFormatVersion;           	  // simulation raw data version - 0:old , 1:new(real data format)
@@ -86,13 +85,12 @@ class AliTRDrawData : public TObject {
  	static const UInt_t fgkEndOfTrackletMarker  = 0x10001000; // This marks the end of tracklet data words
  	static const UInt_t fgkEndOfDataMarker      = 0x00000000; // This marks the end of HC data words
 
-    Int_t   fNTimeBins;                 // number of time bin
     Int_t   fSMindexPos;                // Position of SM index word
     Int_t   fStackindexPos;             // Position of SM index word
     UInt_t  fEventCounter;              // Event counter(starting from 1)
+    AliTRDdigitsParam *fDigitsParam;    // Digits parameter
 
-
-
+  ClassDef(AliTRDrawData,6)             //  TRD raw data class
 
 };
 #endif

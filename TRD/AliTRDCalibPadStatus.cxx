@@ -504,7 +504,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent2(AliRawReader *rawReader)
 	  //printf("  iCol %d  iRow %d  iRowMax %d  rob %d  mcm %d  adc %d  extCol %d\n",iCol,iRow,iRowMax,rob,mcm,adc,extCol);	  
 	  
 	  // Signal for regular pads
-	  Int_t nbtimebin  = digitParam->GetNTimeBins();     //  number of time bins read from data	  
+	  Int_t nbtimebin  = digitParam->GetNTimeBins(idetector);  //  number of time bins read from data	  
 	  for(Int_t k = 0; k < nbtimebin; k++){
 	    Short_t signal = 0;
 	    signal = digits->GetData(iRow,iCol,k);

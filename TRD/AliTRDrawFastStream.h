@@ -518,7 +518,6 @@ class AliTRDrawFastStream : public AliTRDrawStreamBase
   UInt_t *fpPosTemp;   // specific position in the buffer 
   Int_t   fGlobalNTimeBins; // number of time bin to be used in the digit container
   Bool_t  fIsTimeBinSet; // set true if the global time bin is set to avoid multiple search
-  Bool_t  fIsGlobalDigitsParamSet; // set true if the global digit parameters are already set
 
   Int_t   fStackNumber;     // current stack number
   Int_t   fStackLinkNumber; // current link in the stack
@@ -597,7 +596,7 @@ class AliTRDrawFastStream : public AliTRDrawStreamBase
       , kWrongPadcolumn	        = 24 //
     };			       
 
-  ClassDef(AliTRDrawFastStream, 0)
+  ClassDef(AliTRDrawFastStream, 1)
 }; //clas def end
 
 #endif
