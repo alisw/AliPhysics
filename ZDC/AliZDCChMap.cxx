@@ -41,13 +41,19 @@ TNamed()
   SetName(namst.Data());
   SetTitle(namst.Data());
   Reset();
-  for(Int_t i=0; i<48; i++){
+  int const kNModules = 10;
+  int const kNChannels = 48;
+  int const kNScChannels = 32;
+  for(Int_t i=0; i<kNModules; i++){
+    for(Int_t j=0; j<3; j++) fModuleMap[i][j] = 0;
+  }
+  for(Int_t i=0; i<kNChannels; i++){
     fADCModule[i] = -1;
     fADCChannel[i] = -1;
     fDetector[i] = -1;
     fSector[i] = -1;
   }
-  for(Int_t i=0; i<32; i++){
+  for(Int_t i=0; i<kNScChannels; i++){
     fScalerChannel[i] = -1;
     fScDetector[i] = -1;
     fScSector[i] = -1;
@@ -64,12 +70,18 @@ AliZDCChMap::AliZDCChMap(const AliZDCChMap& calibda) :
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(int t=0; t<48; t++){
+  int const kNModules = 10;
+  int const kNChannels = 48;
+  int const kNScChannels = 32;
+  for(Int_t i=0; i<kNModules; i++){
+     for(Int_t j=0; j<3; j++) fModuleMap[i][j] = calibda.GetModuleMap(i,j);
+  }
+  for(int t=0; t<kNChannels; t++){
      fADCModule[t]  = calibda.GetADCModule(t);
      fADCChannel[t] = calibda.GetADCChannel(t);
      fDetector[t]   = calibda.GetDetector(t);
      fSector[t]     = calibda.GetSector(t);
-     if(t<32){
+     if(t<kNScChannels){
        fScalerChannel[t] = calibda.GetScChannel(t);
        fScDetector[t]    = calibda.GetScDetector(t);
        fScSector[t]      = calibda.GetScSector(t);
@@ -84,12 +96,18 @@ AliZDCChMap &AliZDCChMap::operator =(const AliZDCChMap& calibda)
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(int t=0; t<48; t++){
+  int const kNModules = 10;
+  int const kNChannels = 48;
+  int const kNScChannels = 32;
+  for(Int_t i=0; i<kNModules; i++){
+     for(Int_t j=0; j<3; j++) fModuleMap[i][j] = calibda.GetModuleMap(i,j);
+  }
+  for(int t=0; t<kNChannels; t++){
      fADCModule[t]  = calibda.GetADCModule(t);
      fADCChannel[t] = calibda.GetADCChannel(t);
      fDetector[t]   = calibda.GetDetector(t);
      fSector[t]     = calibda.GetSector(t);
-     if(t<32){
+     if(t<kNScChannels){
        fScalerChannel[t] = calibda.GetScChannel(t);
        fScDetector[t]    = calibda.GetScDetector(t);
        fScSector[t]      = calibda.GetScSector(t);
@@ -123,6 +141,10 @@ void  AliZDCChMap::Print(Option_t *) const
 {
    // Printing of calibration object
    printf("\n\n\t ******************* AliZDCChMap object *******************\n\n");
+   for(Int_t i=0; i<9; i++){
+     printf("  ******** GEO %d mod. type %d #ch. %d\n",
+      fModuleMap[i][0],fModuleMap[i][1],fModuleMap[i][2]);     
+   } 
    for(Int_t i=0; i<48; i++) 
      printf(" ADC - mod. %d ch. %d -> detector %d sector %d\n",
       fADCModule[i], fADCChannel[i],fDetector[i], fSector[i]);

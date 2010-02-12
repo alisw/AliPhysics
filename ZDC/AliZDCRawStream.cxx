@@ -102,7 +102,13 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fCurrScCh(-1),
   fIsADCEventGood(kTRUE),
   fIsL0BitSet(kTRUE),
-  fIsPileUpEvent(kFALSE)
+  fIsPileUpEvent(kFALSE),
+  fIsZDCTDCHeader(kFALSE),
+  fIsTDCHeaderRead(kFALSE),
+  fTDCStartCounter(0),
+  fIsADDChannel(kFALSE),
+  fIsADDTDCHeader(kFALSE),
+  fIsADDTDCdatum(kFALSE)
 {
   // Create an object to read ZDC raw digits
   fRawReader->Reset();
@@ -187,7 +193,13 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fCurrScCh(stream.fCurrScCh),
   fIsADCEventGood(stream.fIsADCEventGood),
   fIsL0BitSet(stream.fIsL0BitSet),
-  fIsPileUpEvent(stream.fIsPileUpEvent)
+  fIsPileUpEvent(stream.fIsPileUpEvent),
+  fIsZDCTDCHeader(stream.fIsZDCTDCHeader),
+  fIsTDCHeaderRead(stream.fIsTDCHeaderRead),
+  fTDCStartCounter(stream.fTDCStartCounter),
+  fIsADDChannel(stream.fIsADDChannel),
+  fIsADDTDCHeader(stream.fIsADDTDCHeader),
+  fIsADDTDCdatum(stream.fIsADDTDCdatum)
 
 {
   // Copy constructor
@@ -282,11 +294,11 @@ void AliZDCRawStream::ReadCDHHeader()
     if((message & 0x08) == 0){  // ** DARC card
        fReadOutCard = 0;
        fIsDARCHeader = kTRUE;
-       AliInfo("\t ZDC readout card used: DARC");
+       //AliInfo("\t ZDC readout card used: DARC");
     }
     else if((message & 0x08) == 0x08){  // ** ZRC card
        fReadOutCard = 1;
-       AliInfo("\t ZDC readout card used: ZRC");
+       //AliInfo("\t ZDC readout card used: ZRC");
     }
 
     if(header->GetL1TriggerMessage() & 0x1){ // Calibration bit set in CDH
@@ -297,7 +309,7 @@ void AliZDCRawStream::ReadCDHHeader()
     
     UInt_t status = header->GetStatus();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> status = %d\n",status);
-    if((status & 0x000f) == 0x0001){
+/*    if((status & 0x000f) == 0x0001){
       AliDebug(2,"CDH -> DARC trg0 overlap error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
@@ -340,6 +352,7 @@ void AliZDCRawStream::ReadCDHHeader()
       AliDebug(2,"CDH -> DARC other error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
+    */
   }
   
 }
@@ -352,13 +365,16 @@ Bool_t AliZDCRawStream::Next()
 
   if(!fRawReader->ReadNextInt((UInt_t&) fBuffer)) return kFALSE;
   const int kNch = 48;
-  Int_t kFirstADCGeo=0, kLastADCGeo=3, kAddADCGeo=4;
-  Int_t kScalerGeo=8, kPUGeo=29, kTrigScales=30, kTrigHistory=31;
+  Int_t kFirstADCGeo=0, kLastADCGeo=3;
+  Int_t kADDADCGeo=5, kADDTDCGeo=6;
+  Int_t kZDCTDCGeo=8, kScalerGeo=16;
+  Int_t kPUGeo=29, kTrigScales=30, kTrigHistory=31;
+  //
   fIsHeaderMapping = kFALSE; fIsChMapping = kFALSE; 
   fIsADCHeader = kFALSE; fIsADCDataWord = kFALSE; fIsADCEOB = kFALSE;
+  fIsADDChannel = kFALSE; fIsADDTDCHeader= kFALSE; fIsADDTDCdatum=kFALSE;
   fIsUnderflow = kFALSE; fIsOverflow = kFALSE; fIsScalerWord = kFALSE;
   fSector[0] = fSector[1] = -1;
-//  fTrigCountNWords = 9; fTrigHistNWords = 2;
   for(Int_t kl=0; kl<4; kl++) fCPTInput[kl] = 0;
 
   fEvType = fRawReader->GetType();
@@ -658,12 +674,8 @@ Bool_t AliZDCRawStream::Next()
     }
      
     // Get geo address of current word
-    // - ADC GEO = 0, 1, 2, 3
-    // - VME scaler GEO = 8
-    // - PU GEO = 29
-    // - Trigger card scales GEO = 30
-    // - Trigger card history GEO = 31
     fADCModule = (Int_t) ((fBuffer & 0xf8000000)>>27);
+    if(fIsTDCHeaderRead)fADCModule = kZDCTDCGeo;
     
     // ************************************ ADC MODULES ************************************
     if(fADCModule>=kFirstADCGeo && fADCModule<=kLastADCGeo){
@@ -742,12 +754,12 @@ Bool_t AliZDCRawStream::Next()
       }
     }//ADC module
     // ********************************* ADD ADC *********************************
-    else if(fADCModule == kAddADCGeo){
+    else if(fADCModule == kADDADCGeo){
       // *** ADC header
       if((fBuffer & 0x07000000) == 0x02000000){
         fIsADCHeader = kTRUE;
     	fADCNChannels = ((fBuffer & 0x00003f00)>>8);
-    	//printf("  AliZDCRawStream -> ADC HEADER: mod.%d has %d ch. \n",fADCModule,fADCNChannels);
+    	//printf("  AliZDCRawStream -> ADD ADC HEADER: mod.%d has %d ch. \n",fADCModule,fADCNChannels);
       }
       // *** ADC data word
       else if((fBuffer & 0x07000000) == 0x00000000){
@@ -759,7 +771,38 @@ Bool_t AliZDCRawStream::Next()
 	//printf("  ADD ADC DATUM -> mod. %d ch. %d gain %d value %d\n",
 	//  fADCModule,fADCChannel,fADCGain,fADCValue);
       }
+      // *** ADC EOB
+      else if((fBuffer & 0x07000000) == 0x04000000){
+        fIsADCEOB = kTRUE;
+    	//printf("  AliZDCRawStream -> EOB --------------------------\n");
+      }
     }
+    // ********************************* ZDC TDC *********************************
+    else if(fADCModule==kZDCTDCGeo && fIsTDCHeaderRead==kFALSE){
+      fIsZDCTDCHeader = kTRUE;
+      fIsTDCHeaderRead = kTRUE;
+      fTDCStartCounter = fPosition;
+      //Ch. debug
+      //printf("  AliZDCRawStream -> ZDC TDC: mod.%d\n",fADCModule);
+    }
+    // ********************************* ADD TDC *********************************
+    else if(fADCModule == kADDTDCGeo){
+      // *** TDC header
+      if((fBuffer & 0x07000000) == 0x02000000){
+        fIsADDTDCHeader = kTRUE;
+    	fADCNChannels = ((fBuffer & 0x00003f00)>>8);
+        //printf("  AliZDCRawStream -> ADD TDC: mod.%d has %d ch. \n",fADCModule,fADCNChannels);
+      }
+      // *** TDC  word
+      else if((fBuffer & 0x07000000) == 0x00000000){
+        fIsADDTDCdatum = kTRUE;
+      }
+      // *** TDC  EOB
+      if((fBuffer & 0x07000000) == 0x04000000){
+        fIsADCEOB = kTRUE;
+    	//printf("  AliZDCRawStream -> ADD TDC EOB\n");
+      }
+   }
     // ********************************* VME SCALER HEADER *********************************
     else if(fADCModule == kScalerGeo){
       if(fBuffer & 0x04000000 && fIsScHeaderRead==kFALSE){ // *** Scaler header
@@ -815,6 +858,18 @@ Bool_t AliZDCRawStream::Next()
       if(fPosition == fScStartCounter+nWords) fIsScHeaderRead = kFALSE;
       //Ch. debug
       //printf("  AliZDCRawStream -> scaler datum %d", fScEvCounter);
+    }
+    // ********************************** ZDC TDC DATA **********************************
+    //  ZDC TDC data
+    if(fIsTDCHeaderRead && fPosition>=fTDCStartCounter+1){ 
+      fIsADCDataWord=kFALSE; fIsScalerWord=kFALSE;
+      //printf("  AliZDCRawStream -> ...skipping ZDC TDC datum\n");
+      // For the moment we skip the TDC data
+      if(((fBuffer & 0xf0000000) == 0x80000000) && ((fBuffer & 0x08000000) >> 27) == 0){
+	fIsTDCHeaderRead = kFALSE;
+        // Ch. debug
+        //printf("  AliZDCRawStream -> ZDC TDC trailer\n");
+      }
     }
     // ******************************** TRIGGER SCALER DATA ********************************
     //  Reading trigger scaler data 

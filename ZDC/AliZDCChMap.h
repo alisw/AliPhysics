@@ -27,6 +27,9 @@ class AliZDCChMap: public TNamed {
   void Reset();
   virtual void  Print(Option_t *) const; 
   //
+  Int_t* GetModuleMap() const {return (int*)fModuleMap;}
+  Int_t GetModuleMap(Int_t iModType, Int_t iMapEntry) const {return fModuleMap[iModType][iMapEntry];}
+  //
   Int_t GetADCModule(Int_t i)  const {return fADCModule[i];}
   Int_t GetADCChannel(Int_t i) const {return fADCChannel[i];}
   Int_t GetDetector(Int_t i)   const {return fDetector[i];}
@@ -35,7 +38,12 @@ class AliZDCChMap: public TNamed {
   Int_t GetScChannel(Int_t i)  const {return fScalerChannel[i];}
   Int_t GetScDetector(Int_t i) const {return fScDetector[i];}
   Int_t GetScSector(Int_t i)   const {return fScSector[i];}
-
+  
+  void  SetModuleMap(Int_t iEntry, Int_t iGeoAdd, Int_t iModType, Int_t iNCh)
+        {fModuleMap[iEntry][0] = iGeoAdd;
+	 fModuleMap[iEntry][1] = iModType;
+	 fModuleMap[iEntry][2] = iNCh;}
+  
   void  SetADCModule(Int_t i, Int_t mod)  {fADCModule[i] = mod;}
   void  SetADCChannel(Int_t i, Int_t ich) {fADCChannel[i] = ich;}
   void  SetDetector(Int_t i, Int_t ival)  {fDetector[i] = ival;}
@@ -46,6 +54,7 @@ class AliZDCChMap: public TNamed {
   void  SetScSector(Int_t i, Int_t ival)   {fScSector[i] = ival;}
   
  protected:
+  Int_t  fModuleMap[10][3]; // 10 module maps: GEO, mod. type, no. ch.
   // ************ ADC ************
   // 22 signal ch. + 2 reference ch.
   // in-time + out-of-time signals
@@ -60,7 +69,7 @@ class AliZDCChMap: public TNamed {
   Int_t  fScDetector[32];    // detector
   Int_t  fScSector[32];	     // sector
   
-  ClassDef(AliZDCChMap,2)    // ZDC pedestal calibration data
+  ClassDef(AliZDCChMap,3)    // ZDC pedestal calibration data
 };
 
 #endif

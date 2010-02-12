@@ -72,15 +72,29 @@ int main(int argc, char **argv) {
 
   int status = 0;
   // No. of ZDC cabled ch.
+  int const kNModules = 10;
   int const kNChannels = 24;
   int const kNScChannels = 32;
   Int_t kFirstADCGeo=0, kLastADCGeo=3;
-      
+            
+  Int_t iMod=-1;
+  Int_t modGeo[kNModules], modType[kNModules],modNCh[kNModules];
+  for(Int_t kl=0; kl<kNModules; kl++){
+     modGeo[kl]=modType[kl]=modNCh[kl]=0;
+  }
+  
   Int_t ich=0;
   Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
   Int_t det[2*kNChannels], sec[2*kNChannels];
   for(Int_t y=0; y<2*kNChannels; y++){
     adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=0;
+  }
+  
+  Int_t iScCh=0;
+  Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
+  Int_t scDet[kNScChannels], scSec[kNScChannels];
+  for(Int_t y=0; y<kNScChannels; y++){
+    scMod[y]=scCh[y]=scSigCode[y]=scDet[y]=scSec[y]=0;
   }
 
   /* log start of process */
@@ -243,17 +257,8 @@ int main(int argc, char **argv) {
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
       
-      Int_t iScCh=0;
-      Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
-      Int_t scDet[kNScChannels], scSec[kNScChannels];
-      for(Int_t y=0; y<kNScChannels; y++){
-        scMod[y]=scCh[y]=scSigCode[y]=scDet[y]=scSec[y]=0;
-      }
-      //
-      Int_t modNum=-1, modType=-1;
-      
       if(eventT==START_OF_DATA){
-	  	
+	  		
 	rawStreamZDC->SetSODReading(kTRUE);
 	
 	// --------------------------------------------------------
@@ -263,42 +268,50 @@ int main(int argc, char **argv) {
         else{
 	  while((rawStreamZDC->Next())){
             if(rawStreamZDC->IsHeaderMapping()){ // mapping header
-	       modNum = rawStreamZDC->GetADCModule();
-	       modType = rawStreamZDC->GetModType();
+	       iMod++;
+	       modGeo[iMod]  = rawStreamZDC->GetADCModule();
+	       modType[iMod] = rawStreamZDC->GetModType();
+	       modNCh[iMod]  = rawStreamZDC->GetADCNChannels();
 	    }
             if(rawStreamZDC->IsChMapping()){ 
-	      if(modType==1){ // ADC mapping ----------------------
+	      if(modType[iMod]==1){ // ADC mapping ----------------------
 	        adcMod[ich]  = rawStreamZDC->GetADCModFromMap(ich);
 	        adcCh[ich]   = rawStreamZDC->GetADCChFromMap(ich);
 	        sigCode[ich] = rawStreamZDC->GetADCSignFromMap(ich);
 	        det[ich]     = rawStreamZDC->GetDetectorFromMap(ich);
 	        sec[ich]     = rawStreamZDC->GetTowerFromMap(ich);
-	        //
-	        fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
-	          ich,adcMod[ich],adcCh[ich],sigCode[ich],det[ich],sec[ich]);
-	        //
-	        //printf("  Mapping in DA -> %d ADC: mod %d ch %d, code %d det %d, sec %d\n",
-	        //  ich,adcMod[ich],adcCh[ich],sigCode[ich],det[ich],sec[ich]);
-	        //
 	        ich++;
 	      }
-	      else if(modType==2){ //VME scaler mapping --------------------
+	      else if(modType[iMod]==2){ //VME scaler mapping --------------------
 	        scMod[iScCh]     = rawStreamZDC->GetScalerModFromMap(iScCh);
 	        scCh[iScCh]      = rawStreamZDC->GetScalerChFromMap(iScCh);
 	        scSigCode[iScCh] = rawStreamZDC->GetScalerSignFromMap(iScCh);
 	        scDet[iScCh]     = rawStreamZDC->GetScDetectorFromMap(iScCh);
-	        scSec[iScCh]    = rawStreamZDC->GetScTowerFromMap(iScCh);
-	        //
-	        fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
-	          iScCh,scMod[iScCh],scCh[iScCh],scSigCode[iScCh],scDet[iScCh],scSec[iScCh]);
-	        //
-	        //printf("  Mapping in DA -> %d Scaler: mod %d ch %d, code %d det %d, sec %d\n",
-	        //  iScCh,scMod[iScCh],scCh[iScCh],scSigCode[iScCh],scDet[iScCh],scSec[iScCh]);
-	        //
+	        scSec[iScCh]     = rawStreamZDC->GetScTowerFromMap(iScCh);
 	        iScCh++;
 	      }
 	    }
+ 	  }
+	  // Writing data on output FXS file
+	  for(Int_t is=0; is<kNModules; is++){
+	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\n",
+	     modGeo[is],modType[is],modNCh[is]);
+	     //printf("  EMD DA -> Module mapping: geo %d type %d #ch %d\n",
+	     //  modGeo[is],modType[is],modNCh[is]);
 	  }
+	  for(Int_t is=0; is<2*kNChannels; is++){
+	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
+	       is,adcMod[is],adcCh[is],sigCode[is],det[is],sec[is]);
+    	     //printf("  EMD DA -> %d ADC: mod %d ch %d, code %d det %d, sec %d\n",
+	     //  is,adcMod[is],adcCh[is],sigCode[is],det[is],sec[is]);
+	  }
+	  for(Int_t is=0; is<kNScChannels; is++){
+	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
+	       is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
+ 	     //printf("  EMD DA -> %d Scaler: mod %d ch %d, code %d det %d, sec %d\n",
+	     //  is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
+	  }
+	  
 	}
         fclose(mapFile4Shuttle);
       }// SOD event

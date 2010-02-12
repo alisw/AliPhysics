@@ -190,7 +190,7 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
 //______________________________________________________________________________________________
 UInt_t AliZDCPreprocessor::ProcessChMap()
 { 
-  const int kNch=48, kNScch=32;
+  const int kNModules=10, kNch=48, kNScch=32;
   
   // Reading the file for mapping from FXS
   TList* daqSource = GetFileSources(kDAQ, "MAPPING");
@@ -204,7 +204,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
   TIter iter(daqSource);
   TObjString* source = 0;
   Int_t isou = 0;
-  Int_t readMap[kNch][6]; 
+  Int_t modMap[kNModules][3], adcMap[kNch][6], scMap[kNScch][6]; 
   //
   while((source = dynamic_cast<TObjString*> (iter.Next()))){
      TString fileName = GetFile(kDAQ, "MAPPING", source->GetName());
@@ -224,9 +224,21 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
        }
        Log(Form("File %s connected to process data for ADC mapping", fileName.Data()));
        //
-       for(Int_t j=0; j<kNch; j++){	  
+       for(Int_t j=0; j<kNModules; j++){	  
+           for(Int_t k=0; k<3; k++){
+             int read = fscanf(file,"%d",&modMap[j][k]);
+	     if(read == 0) AliDebug(3," Failing in reading data from mapping file");
+           }
+       }
+       for(Int_t j=kNModules; j<kNModules+kNch; j++){	  
            for(Int_t k=0; k<6; k++){
-             int read = fscanf(file,"%d",&readMap[j][k]);
+             int read = fscanf(file,"%d",&adcMap[j-kNModules][k]);
+	     if(read == 0) AliDebug(3," Failing in reading data from mapping file");
+           }
+       }
+       for(Int_t j=kNModules+kNch; j<kNModules+kNch+kNScch; j++){	  
+           for(Int_t k=0; k<6; k++){
+             int read = fscanf(file,"%d",&scMap[j-kNModules-kNch][k]);
 	     if(read == 0) AliDebug(3," Failing in reading data from mapping file");
            }
        }
@@ -240,6 +252,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
   
   // Store the currently read map ONLY IF it is different
   // from the entry in the OCDB
+  Bool_t adcMapUpdated=kFALSE, scMapUpdated=kFALSE;
   Bool_t updateOCDB = kFALSE;
   
   AliCDBEntry *cdbEntry = GetFromOCDB("Calib","ChMap");
@@ -250,15 +263,24 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
   else{
     AliZDCChMap *chMap = (AliZDCChMap*) cdbEntry->GetObject();
     for(Int_t i=0; i<kNch; i++){
-      if(  (readMap[i][1] == chMap->GetADCModule(i)) 
-        && (readMap[i][2] == chMap->GetADCChannel(i)) 
-	&& (readMap[i][4] == chMap->GetDetector(i)) 
-	&& (readMap[i][5] == chMap->GetSector(i))){
-	 updateOCDB = kFALSE;
+      if(  (adcMap[i][1] == chMap->GetADCModule(i)) 
+        && (adcMap[i][2] == chMap->GetADCChannel(i)) 
+	&& (adcMap[i][4] == chMap->GetDetector(i)) 
+	&& (adcMap[i][5] == chMap->GetSector(i))){
+	 adcMapUpdated = kFALSE;
       }
-      else updateOCDB = kTRUE;
+      else adcMapUpdated = kTRUE;
+    }
+    for(Int_t i=0; i<kNScch; i++){
+      if(  (scMap[i][2] == chMap->GetScChannel(i)) 
+	&& (scMap[i][4] == chMap->GetScDetector(i)) 
+	&& (scMap[i][5] == chMap->GetScSector(i))){
+	 scMapUpdated = kFALSE;
+      }
+      else scMapUpdated = kTRUE;
     }
   }
+  if(adcMapUpdated || scMapUpdated) updateOCDB = kTRUE;
   //
   Bool_t resChMapStore = kTRUE;
   if(updateOCDB==kTRUE){
@@ -267,23 +289,26 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
     // --- Initializing mapping calibration object
     AliZDCChMap *mapCalib = new AliZDCChMap("ZDC");
     // Writing channel map in the OCDB
-    for(Int_t k=0; k<kNch; k++){
-      mapCalib->SetADCModule(k,readMap[k][1]);
-      mapCalib->SetADCChannel(k,readMap[k][2]);
-      mapCalib->SetDetector(k,readMap[k][4]);
-      mapCalib->SetSector(k,readMap[k][5]);
-      // TEMPORARY!!!! Until no mapping from scaler is provided!!!!!!!
-      if(k<kNScch){
-         mapCalib->SetScChannel(k, 0);
-	 mapCalib->SetScDetector(k, 0);
-	 mapCalib->SetScSector(k, 0);
-      }
+    for(Int_t k=0; k<kNModules; k++){
+      mapCalib->SetModuleMap(k, modMap[k][0], modMap[k][1], modMap[k][2]);
     }
+    for(Int_t k=0; k<kNch; k++){
+      mapCalib->SetADCModule(k,adcMap[k][1]);
+      mapCalib->SetADCChannel(k,adcMap[k][2]);
+      mapCalib->SetDetector(k,adcMap[k][4]);
+      mapCalib->SetSector(k,adcMap[k][5]);
+    }
+    for(Int_t k=0; k<kNScch; k++){
+       mapCalib->SetScChannel(k, scMap[k][0]);
+       mapCalib->SetScDetector(k, scMap[k][1]);
+       mapCalib->SetScSector(k, scMap[k][2]);
+    }
+    //
     mapCalib->Print("");
     // 
     AliCDBMetaData metaData;
     metaData.SetBeamPeriod(0);
-    //metaData.SetResponsible("Chiara Oppedisano");
+    metaData.SetResponsible("Chiara Oppedisano");
     metaData.SetComment("Filling AliZDCChMap object");  
     //
     resChMapStore = Store("Calib","ChMap",mapCalib, &metaData, 0, kTRUE);
