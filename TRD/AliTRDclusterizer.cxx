@@ -816,8 +816,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     AddTrackletsToArray();
 
   fColMax    = fDigits->GetNcol();
-  //Int_t nRowMax    = fDigits->GetNrow();
-  fTimeTotal = fDigits->GetNtime();
+  fTimeTotal = fDigitsManager->GetDigitsParam()->GetNTimeBins(det);
 
   // Check consistency between OCDB and raw data
   Int_t nTimeOCDB = calibration->GetNumberOfTimeBinsDCS();

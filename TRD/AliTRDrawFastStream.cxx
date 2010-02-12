@@ -690,7 +690,7 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
       indexes->SetStack(GetStack());
       indexes->SetLayer(GetLayer());
       indexes->SetDetNumber(det);
-      if (indexes->IsAllocated() == kFALSE)
+      if (indexes->GetNtime() != ntbins)
         indexes->Allocate(rowMax, colMax, ntbins);
     }
 

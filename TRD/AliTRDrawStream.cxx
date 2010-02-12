@@ -785,7 +785,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
       indexes->SetStack(GetStack());
       indexes->SetLayer(GetLayer());
       indexes->SetDetNumber(det);
-      if (indexes->IsAllocated() == kFALSE)
+      if (indexes->GetNtime() != ntbins)
         indexes->Allocate(rowMax, colMax, ntbins);
     }
 
