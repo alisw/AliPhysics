@@ -28,12 +28,37 @@ class AliKMeansClustering : public TObject
   static void  OptimalInit(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my);
   static void  SetBeta(Double_t beta) {fBeta = beta;}
   static Double_t d(Double_t mx, Double_t my, Double_t x, Double_t y);
-  static Int_t NTwoSigma(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my, 
-				Double_t* sigma2x, Double_t* sigma2y);
 protected:
   static Double_t fBeta;
   
   ClassDef(AliKMeansClustering, 1)
 };
+
+class AliKMeansResult : public TObject
+{
+ public:
+  AliKMeansResult(Int_t k);
+  virtual ~AliKMeansResult();
+  Int_t      GetK()      const  {return fK;}
+  Double_t*  GetMx()     const  {return fMx;}
+  Double_t*  GetMy()     const  {return fMy;}
+  Double_t*  GetSigma2() const  {return fSigma2;}
+  Double_t*  GetRk()     const  {return fRk;}
+  Int_t*     GetInd()    const  {return fInd;}
+  Double_t*  GetTarget() const  {return fTarget;}
+  void       Sort();
+  void       Sort(Double_t* target);
+  void       Sort(Int_t n, Double_t* x, Double_t* y);  
+protected:
+  Int_t        fK;        //! Number of clusters
+  Double_t*    fMx;       //! Position x
+  Double_t*    fMy;       //! Position y
+  Double_t*    fSigma2;   //! Sigma2
+  Double_t*    fRk;       //! Responsibility
+  Double_t*    fTarget;   //! Target for sorting
+  Int_t*       fInd;      //! Index for sorting
  
+  ClassDef(AliKMeansResult, 1)
+};
+
 #endif

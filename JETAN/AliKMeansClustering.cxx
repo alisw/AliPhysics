@@ -440,24 +440,62 @@ void AliKMeansClustering::OptimalInit(Int_t k, Int_t n, Double_t* x, Double_t* y
 }
 
 
-Int_t AliKMeansClustering::NTwoSigma(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my, 
-					   Double_t* sigma2x, Double_t* sigma2y)
+ClassImp(AliKMeansResult)
+
+
+    
+AliKMeansResult::AliKMeansResult(Int_t k):
+    TObject(),
+    fK(k),
+    fMx    (new Double_t[k]),
+    fMy    (new Double_t[k]),
+    fSigma2(new Double_t[k]),
+    fRk    (new Double_t[k]),
+    fTarget(new Double_t[k]),
+    fInd   (new Int_t[k])
 {
-  //  
-  // Counting the number of data points within 2sigma of a cluster
-  //
-  Int_t n2sigma = 0;
-  for (Int_t j = 0; j < n; j++) {
-    Double_t nassign = 0;
-    for (Int_t i = 0; i < k; i++) {
-      Double_t dx = TMath::Abs(mx[i]-x[j]);
-      if (dx > TMath::Pi()) dx = 2. * TMath::Pi() - dx; 
-      Double_t dy = TMath::Abs(my[i]-y[j]);
-      if ((dx * dx / sigma2x[i] + dy * dy / sigma2y[i]) < 4.) nassign++;
-    } // clusters
-    if (nassign > 0) n2sigma++;
-  } // data points
-  return (n2sigma);
+// Constructor
 }
 
+AliKMeansResult::~AliKMeansResult()
+{
+// Destructor
+    delete[] fMx;
+    delete[] fMy;
+    delete[] fSigma2;
+    delete[] fRk;
+    delete[] fInd;
+    delete[] fTarget;
+}
 
+void AliKMeansResult::Sort()
+{
+// Sort clusters
+    for (Int_t i = 0; i < fK; i++) {
+	if (fRk[i] > 1.) fRk[i] /= fSigma2[i];
+	else fRk[i] = 0.;
+    }
+    
+    TMath::Sort(fK, fRk, fInd);
+    
+}
+
+void AliKMeansResult::Sort(Int_t n, Double_t* x, Double_t* y)
+{
+  // Build target array and sort
+  for (Int_t i = 0; i < fK; i++)
+    {
+      Int_t nc = 0;
+      for (Int_t j = 0; j < n; j++)
+	{
+	  if (2. * AliKMeansClustering::d(fMx[i], fMy[i], x[j], y[j])  <  fSigma2[i]) nc++;
+	}
+      if (nc > 1) {
+	fTarget[i] = Double_t(nc) / fSigma2[i];
+      } else {
+	fTarget[i] = 0.;
+      }
+    }
+
+  TMath::Sort(fK, fTarget, fInd);
+}

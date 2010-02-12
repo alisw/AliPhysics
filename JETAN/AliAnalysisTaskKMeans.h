@@ -18,11 +18,10 @@ class TH1F;
 class TH2F;
 class TList;
 class TProfile;
-
 class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
-
+class AliKMeansResult;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -43,32 +42,38 @@ class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
   // Others
   Int_t            fK;             // K                        
   Int_t            fNMin;          // Minimum multipicity                         
-  TList*           fHists;         // Histograms
-  TH1F*            fH1CEta;        // Eta distribution of clusters
-  TH1F*            fH1CPhi;        // Phi distribution of clusters  
-  TH1F*            fH1CEtaR;       // Eta distribution of clusters for rndm evnt
-  TH2F*            fH2N1N2;        // Cluster sizes 
-  TH1F*            fH1Pt;          // pt outside clusters
-  TH1F*            fH1PtC;         // pt outside clusters
-  TH1F*            fH1PtC1;        // pt dr > 0.4
-  TH1F*            fH1PtC2;        // pt dr > 0.2 
-  TH1F*            fH1PtAS;        // away-side peak 
-  TH1F*            fH1PtR;         // away-side peak 
-  TH1F*            fH1SPt;         // sum pt
-  TH1F*            fH1SPtC;        // sum pt
-  TH1F*            fH1DPhi;        // Dphi wr to cluster
-  TH1F*            fH1DR;          // DR   wr to cluster
-  TH1F*            fH1DRR;         // DR   wr to cluster from rndm events   
-  TH2F*            fH2DPhiEta;     // eta-phi wr to cluster
-  TH2F*            fH2DPhiEtaR;    // eta-phi wr to cluster for rndm events 
-  TH2F*            fH2DPhiEtaL;    // eta-phi of leading particle
-  TH2F*            fH2DPhiEtaLR;   // eta-phi of leading particle
-  TH2F*            fH2DPhiEtaC;    // eta-phi of Clusters
-  TH2F*            fH2DPhiEtaCR;   // eta-phi of Clusters
-  TH1F*            fH1Resp;        // responsibility
-  TH1F*            fH1RespR;       // responsibility
-  TH2F*            fH2Sigma;
-  TH2F*            fH2SigmaR;
+  TList*           fHists;         //! Histograms
+  TH1F*            fH1CEta;        //! Eta distribution of clusters
+  TH1F*            fH1CPhi;        //! Phi distribution of clusters  
+  TH1F*            fH1CEtaR;       //! Eta distribution of clusters for rndm evnt
+  TH2F*            fH2N1N2;        //! Cluster sizes 
+  TH1F*            fH1Pt;          //! pt outside clusters
+  TH1F*            fH1PtC;         //! pt outside clusters
+  TH1F*            fH1PtC1;        //! pt dr > 0.4
+  TH1F*            fH1PtC2;        //! pt dr > 0.2 
+  TH1F*            fH1PtAS;        //! away-side peak 
+  TH1F*            fH1PtR;         //! away-side peak 
+  TH1F*            fH1SPt;         //! sum pt
+  TH1F*            fH1SPtC;        //! sum pt
+  TH1F*            fH1DPhi;        //! Dphi wr to cluster
+  TH1F*            fH1DR;          //! DR   wr to cluster
+  TH1F*            fH1DRR;         //! DR   wr to cluster from rndm events   
+  TH2F*            fH2DPhiEta;     //! eta-phi wr to cluster
+  TH2F*            fH2DPhiEtaR;    //! eta-phi wr to cluster for rndm events 
+  TH2F*            fH2DPhiEtaL;    //! eta-phi of leading particle
+  TH2F*            fH2DPhiEtaLR;   //! eta-phi of leading particle
+  TH2F*            fH2DPhiEtaC;    //! eta-phi of Clusters
+  TH2F*            fH2DPhiEtaCR;   //! eta-phi of Clusters
+  TH1F*            fH1Resp;        //! responsibility
+  TH1F*            fH1RespR;       //! responsibility
+  TH2F*            fH2Sigma;       //! sigma
+  TH2F*            fH2SigmaR;      //! sigma random
+  TH1F*            fHDensity;      //! Particle density
+  TH1F*            fHCSize;        //! Cluster Size
+  TH1F*            fHNCluster;     //! Number of clusters
+  TH2F*            fHPtDensity;    //! Pt vs density
+  AliKMeansResult* fA[10];         //!
+  AliKMeansResult* fB[10];         //!
   AliESDtrackCuts* fCuts;             // List of cuts
   ClassDef(AliAnalysisTaskKMeans, 1); // A k-means clustering analysis
 };

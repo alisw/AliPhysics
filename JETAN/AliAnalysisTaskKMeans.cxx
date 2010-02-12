@@ -37,6 +37,7 @@
 #include "TProfile.h"
 #include "TMath.h"
 #include "TRandom.h"
+#include "TObjArray.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -91,6 +92,10 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans()
     ,fH1RespR(0)
     ,fH2Sigma(0)
     ,fH2SigmaR(0)
+    ,fHDensity(0)
+    ,fHCSize(0)
+    ,fHNCluster(0)
+    ,fHPtDensity(0)
     ,fCuts(0)
 {
   //
@@ -129,6 +134,10 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const char *name)
       ,fH1RespR(0)
       ,fH2Sigma(0)
       ,fH2SigmaR(0)
+      ,fHDensity(0)
+      ,fHCSize(0)
+      ,fHNCluster(0)
+      ,fHPtDensity(0)
       ,fCuts(0)
 {
   //
@@ -172,6 +181,14 @@ void AliAnalysisTaskKMeans::UserCreateOutputObjects()
     fH1RespR      = new TH1F("fH1RespR",  "Responsibility", 50, 0., 1.);
     fH2Sigma      = new TH2F("fH2Sigma",  "Sigma", 31, 0., TMath::Pi(), 20, 0., 2.);
     fH2SigmaR     = new TH2F("fH2SigmaR", "Sigma", 31, 0., TMath::Pi(), 20, 0., 2.);
+
+
+    fHDensity    = new TH1F("fHDensity",    "density distribution", 100, 0., 20.);
+    fHCSize      = new TH1F("fHCSize",      "cluster size", 20, -0.5, 19.5);
+
+    fHNCluster   = new TH1F("fHNCluster",   "Number of clusters", 11, -0.5, 10.5);
+    fHPtDensity  = new TH2F("fHPtDensity", "Pt vs density", 100, 0., 20., 50, 0., 10.);
+
  
     fHists->SetOwner();
 
@@ -199,10 +216,16 @@ void AliAnalysisTaskKMeans::UserCreateOutputObjects()
     fHists->Add(fH1RespR);
     fHists->Add(fH1Resp);    
     fHists->Add(fH2Sigma);    
-    fHists->Add(fH2SigmaR);    
-    
+    fHists->Add(fH2SigmaR);
+    fHists->Add(fHCSize);    
+    fHists->Add(fHDensity);
+    fHists->Add(fHNCluster);
+    fHists->Add(fHPtDensity);
     //
-    
+    for (Int_t i = 0; i < 10; i++) {
+      fA[i] = new AliKMeansResult(i+1);
+      fB[i] = new AliKMeansResult(i+1);
+    }
 }
 
 //________________________________________________________________________
@@ -212,16 +235,9 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
   // Called for each event
     Double_t   phi [500];
     Double_t   phiR[500];
-    Double_t   eta[500];
+    Double_t    eta[500];
     Double_t   etaR[500];
-    Double_t   pt [500];
-    Double_t   mPhi[20];
-    Double_t   mEta[20];
-    Double_t     rk[20];
-    Double_t sigma2[20];
-    Double_t sigmax2[20];
-    Double_t sigmay2[20];
-    Int_t       ind[20];
+    Double_t    pt [500];
 
   if (!fInputEvent) {
     Printf("ERROR: fESD not available");
@@ -230,17 +246,11 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
   
 
   Int_t ic = 0;
+  
   //
   // Fill eta-phi positions
   //
-  /*
-  const AliMultiplicity *spdMult = fInputEvent->GetMultiplicity();
-  for (Int_t i = 0; i < spdMult->GetNumberOfTracklets(); ++i) {
-	  phi[ic] = spdMult->GetPhi(i);
-	  eta[ic] = spdMult->GetEta(i);
-	  ic++;
-  }
-  */
+
   Double_t ptmax = 0.;
   Int_t    icmax = -1;
   
@@ -248,11 +258,11 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
       AliVParticle* track = fInputEvent->GetTrack(iTracks);
       if ((fCuts->AcceptTrack((AliESDtrack*)track))) 
       {
-	  phi[ic]  = track->Phi();
+	  phi [ic] = track->Phi();
 	  phiR[ic] = 2. * TMath::Pi() * gRandom->Rndm();
-	  eta[ic]  = track->Eta();
-	  etaR[ic] = 2. * gRandom->Rndm() - 1.;
-	  pt[ic]   = track->Pt();
+	  eta [ic] = track->Eta();
+	  etaR[ic] = 1.8 * gRandom->Rndm() - 0.9;
+	  pt  [ic] = track->Pt();
 	  if (pt[ic] > ptmax) {
 	      ptmax = pt[ic];
 	      icmax = ic;
@@ -268,30 +278,55 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
       return;
   }
   //
-  Int_t ok;
-  Double_t dphic, detac;
-  //
-  ok = AliKMeansClustering::SoftKMeans3(fK, ic, phi, eta, mPhi, mEta, sigmax2, sigmay2, rk);
-  if (ok) {
-    //
-    // Sort
-    for (Int_t i = 0; i < fK; i++) {
-      if (rk[i] > 1.) rk[i] /= TMath::Sqrt(sigmax2[i] * sigmay2[i]);
-      else rk[i] = 0.;
-    }    
+  Double_t* rk0 = new Double_t[10];
 
-    TMath::Sort(fK, rk, ind);
-    fH1Resp->Fill(rk[ind[0]]/(rk[0]+rk[1]));
-    fH2Sigma->Fill(TMath::Sqrt(sigmax2[ind[0]]), TMath::Sqrt(sigmay2[ind[0]])); 
-    //
+  AliKMeansResult* res = 0;
+
+  for (Int_t i = 0; i < fK; i++) {
+    res = fA[i];
+    AliKMeansClustering::SoftKMeans2(i+1, ic, phi, eta, res->GetMx(),res->GetMy(), res->GetSigma2(), res->GetRk());
+    res->Sort(ic, phi, eta);
+    Int_t j = (res->GetInd())[0];
+    rk0[i]  = (res->GetTarget())[j];
+  }
+
+  Double_t* mPhi   = 0;
+  Double_t* mEta   = 0;
+  Double_t* sigma2 = 0;
+  Float_t   rmax   = -1.;
+  Int_t     imax   = 0;
+
+  for (Int_t i = 0; i < fK; i++) {
+    if (rk0[i] > rmax)  {
+	rmax = rk0[i];
+	imax = i;
+      }
+  }
+
+
+  res = fA[imax];
+  mPhi    = res->GetMx();
+  mEta    = res->GetMy();
+  sigma2  = res->GetSigma2();
+  Int_t nk = imax + 1;
+  Int_t im = (res->GetInd())[0];
+  fHDensity->Fill(rmax / TMath::Pi());
+  fHCSize->Fill(rmax * sigma2[im]);
+  fHNCluster->Fill(Float_t(nk));
+
+  Double_t dphic, detac;
+
+  if (rmax > 0.) {
     // Analysis
     //
     // Cluster Multiplicity
     Int_t mult[2] = {0, 0};
     //
-    dphic = DeltaPhi(mPhi[0], mPhi[1]);
-    detac = TMath::Abs(mEta[0] - mEta[1]);
-    fH2DPhiEtaC->Fill(dphic, detac);  
+    if (nk > 1) {
+      dphic = DeltaPhi(mPhi[0], mPhi[1]);
+      detac = TMath::Abs(mEta[0] - mEta[1]);
+      fH2DPhiEtaC->Fill(dphic, detac);  
+    }
     //
     // Random cluster position
     Int_t ir = Int_t(Float_t(ic) * gRandom->Rndm());
@@ -301,14 +336,16 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
     //
     Double_t sumPt  = 0;
     Double_t sumPtC = 0;
+
     for (Int_t i = 0; i < 1; i++) {
-      fH1CEta->Fill(mEta[ind[i]]);
-      fH1CPhi->Fill(mPhi[ind[i]]);      
+      fH1CEta->Fill(mEta[im]);
+      fH1CPhi->Fill(mPhi[im]);      
       for (Int_t j = 0; j < ic; j++) {
-	Double_t r    = DeltaR(mPhi[ind[i]], mEta[ind[i]], phi[j], eta[j]);
-	Double_t dphi = DeltaPhi(mPhi[ind[i]], phi[j]);
-	Double_t deta = mEta[ind[i]] - eta[j];
+	Double_t r    = DeltaR(mPhi[im], mEta[im], phi[j], eta[j]);
+	Double_t dphi = DeltaPhi(mPhi[im], phi[j]);
+	Double_t deta = mEta[im] - eta[j];
 	Double_t rr   = DeltaR(crPhi, crEta, phi[j], eta[j]);
+
 	fH1DR->Fill(r);
 	fH1DPhi->Fill(dphi);
 	fH2DPhiEta->Fill(dphi, TMath::Abs(deta));
@@ -317,29 +354,27 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
 	if (r < 0.2) {
 	  fH1PtC2->Fill(pt[j]);
 	}
-	if (r < 0.3) 
-	  {
-	    fH1PtC1->Fill(pt[j]);
-	  }
-	if (rr < 0.3) 
-	  {
+	if (r < 0.3) {
+	  fH1PtC1->Fill(pt[j]);
+	  fHPtDensity->Fill(rmax/TMath::Pi(), pt[j]);
+	}
+	if (rr < 0.3) {
 	    fH1PtR->Fill(pt[j]);
-	  }
+	}
 
-	if (r < 0.4) 
-	  {
-	    sumPtC += pt[j];
-	    mult[i]++;
-	    fH1PtC->Fill(pt[j]);
-	  } 
-	if (r > 0.7) {
+	if (r < 0.4)  {
+	  sumPtC += pt[j];
+	  mult[i]++;
+	  fH1PtC->Fill(pt[j]);
+	} 
+	if (r > 0.7 && dphi < (TMath::Pi() - 0.3)) {
 	  fH1Pt->Fill(pt[j]);
 	}
 	
 	if (r > 0.7 && r < 1.) {
 	  sumPt += pt[j];
 	}
-
+	
 	if (dphi > (TMath::Pi() - 0.3)) {
 	  fH1PtAS->Fill(pt[j]);
 	}
@@ -349,48 +384,60 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
     fH2N1N2->Fill(Float_t(mult[0]), Float_t(mult[1]));
     fH1SPt ->Fill(sumPt);
     fH1SPtC->Fill(sumPtC);
-  } // ok
-
-  // Randomized phi
-  //
-  ok = AliKMeansClustering::SoftKMeans3(fK, ic, phiR, etaR, mPhi, mEta, sigmax2, sigmay2, rk);
-  if (ok) {
+  }
     //
-    // Sort according to responsibility density
+    // Randomized phi
+    //
     for (Int_t i = 0; i < fK; i++) {
-      if (rk[i] > 1.) rk[i] /= TMath::Sqrt(sigmax2[i] * sigmay2[i]);
-      else rk[i] = 0.;
-    }    
-
-    TMath::Sort(fK, rk, ind);
-    fH1RespR->Fill(rk[ind[0]]/(rk[0]+rk[1]));
-    fH2SigmaR->Fill(TMath::Sqrt(sigmax2[ind[0]]), TMath::Sqrt(sigmay2[ind[0]])); 
-    //
-    // Analyse
-    //
-    // Cluster Multiplicity
-    for (Int_t i = 0; i < 1; i++) {
-      fH1CEtaR->Fill(mEta[ind[i]]);
+      res = fB[i];
+      AliKMeansClustering::SoftKMeans2(i+1, ic, phiR, etaR, res->GetMx(),res->GetMy(), res->GetSigma2(), res->GetRk());
+      res->Sort(ic, phiR, etaR);
+      //res->Sort();
+      Int_t j = (res->GetInd())[0];
+      rk0[i]  = (res->GetTarget())[j];
     }
     
-    for (Int_t i = 0; i < 1; i++) {
-      for (Int_t j = 0; j < ic; j++) {
-	Double_t dphi = DeltaPhi(mPhi[ind[i]], phiR[j]);
-	Double_t deta = mEta[ind[i]] - etaR[j];
-	Double_t r = DeltaR(mPhi[ind[i]], mEta[ind[i]], phiR[j], etaR[j]);
-	fH1DRR->Fill(r);
-	fH2DPhiEtaR->Fill(dphi, TMath::Abs(deta));
-	if (j == icmax) fH2DPhiEtaLR->Fill(dphi, TMath::Abs(deta));
+    rmax   = -1.;
+    imax   = 0;
+    for (Int_t i = 0; i < fK; i++) {
+      if (rk0[i] > rmax) {
+	  rmax = rk0[i];
+	  imax = i;
+	}
+    }
+    res = fB[imax];
+    mPhi    = res->GetMx();
+    mEta    = res->GetMy();
+    sigma2  = res->GetSigma2();
+    nk = imax + 1;
+    
+    //  fH1RespR->Fill(rk[ind[0]]/(rk[0]+rk[1]));
+    //
+    // Cluster Multiplicity
+    if (rmax > 0.) {
+      for (Int_t i = 0; i < 1; i++) {
+	Int_t im = (res->GetInd())[i];
+	fH1CEtaR->Fill(mEta[im]);
+      }
+      
+      for (Int_t i = 0; i < 1; i++) {
+	Int_t im = (res->GetInd())[i];
+	for (Int_t j = 0; j < ic; j++) {
+	  Double_t dphi = DeltaPhi(mPhi[im], phiR[j]);
+	  Double_t deta = mEta[im] - etaR[j];
+	  Double_t r = DeltaR(mPhi[im], mEta[im], phiR[j], etaR[j]);
+	  fH1DRR->Fill(r);
+	  fH2DPhiEtaR->Fill(dphi, TMath::Abs(deta));
+	  if (j == icmax) fH2DPhiEtaLR->Fill(dphi, TMath::Abs(deta));
+	}
+      }
+      if (nk > 1) {
+	dphic = DeltaPhi(mPhi[0], mPhi[1]);
+	detac = TMath::Abs(mEta[0] - mEta[1]);
+	fH2DPhiEtaCR->Fill(dphic, detac);  
       }
     }
-    dphic = DeltaPhi(mPhi[0], mPhi[1]);
-    detac = TMath::Abs(mEta[0] - mEta[1]);
-    fH2DPhiEtaCR->Fill(dphic, detac);  
-  } // ok
-  
-  //
-  // Post output data.
-  PostData(1, fHists);
+    PostData(1, fHists);
 }      
 
 Double_t AliAnalysisTaskKMeans::DeltaPhi(Double_t phi1, Double_t phi2)
