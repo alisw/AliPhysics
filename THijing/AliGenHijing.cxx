@@ -73,7 +73,8 @@ AliGenHijing::AliGenHijing()
      fTargetSpecp(0),
      fLHC(kFALSE),
      fRandomPz(kFALSE),
-     fNoHeavyQuarks(kFALSE)
+     fNoHeavyQuarks(kFALSE),
+     fEventTime(0.)
 {
   // Constructor
   fEnergyCMS = 5500.;
@@ -116,7 +117,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fTargetSpecp(0),
      fLHC(kFALSE),
      fRandomPz(kFALSE),
-     fNoHeavyQuarks(kFALSE)
+     fNoHeavyQuarks(kFALSE),
+     fEventTime(0.)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -369,10 +371,14 @@ void AliGenHijing::Generate()
 	      origin[0] = origin0[0]+iparticle->Vx()/10;
 	      origin[1] = origin0[1]+iparticle->Vy()/10;
 	      origin[2] = origin0[2]+iparticle->Vz()/10;
+	      fEventTime = 0.;
+	      
 	      if (TestBit(kVertexRange)) {
-		  tof = kconv * iparticle->T() + sign * origin0[2] / 2.99792458e10;
+		  fEventTime = sign * origin0[2] / 2.99792458e10;
+		  tof = kconv * iparticle->T() + fEventTime;
 	      } else {
 		  tof = kconv * iparticle->T();
+		  fEventTime = tInt;
 		  if (fPileUpTimeWindow > 0.) tof += tInt;
 	      }
 	      imo = -1;
@@ -591,6 +597,7 @@ void AliGenHijing::MakeHeader()
     ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
     header->SetPrimaryVertex(fVertex);
+    header->SetInteractionTime(fEventTime);
     AddHeader(header);
     fCollisionGeometry = (AliGenHijingEventHeader*)  header;
 }

@@ -121,6 +121,7 @@ class AliGenHijing : public AliGenMC
     Int_t       fLHC;            // Assume LHC as lab frame
     Bool_t      fRandomPz;       // Randomise sign of pz  event by event
     Bool_t      fNoHeavyQuarks;  // If true no heavy quarks are produced
+    Float_t     fEventTime;      // The event time
     
  private:
     AliGenHijing(const AliGenHijing &Hijing);

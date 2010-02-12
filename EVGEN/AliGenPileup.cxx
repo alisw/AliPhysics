@@ -244,6 +244,7 @@ void AliGenPileup::Generate()
 
       // Store the interaction header in the container of the headers
       ((AliGenEventHeader*) fHeader->GetHeaders()->Last())->SetPrimaryVertex(eventVertex);
+      ((AliGenEventHeader*) fHeader->GetHeaders()->Last())->SetInteractionTime(vTime);
     }
   }
   delete [] nIntBC;

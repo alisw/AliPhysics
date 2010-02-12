@@ -30,7 +30,8 @@ ClassImp(AliGenEventHeader)
 //_______________________________________________________________________
 AliGenEventHeader::AliGenEventHeader():
   fNProduced(-1),
-  fVertex(3)
+  fVertex(3),
+  fInteractionTime(0.)
 {
   //
   // Constructor
@@ -41,7 +42,8 @@ AliGenEventHeader::AliGenEventHeader():
 AliGenEventHeader::AliGenEventHeader(const char * name):
   TNamed(name, "Event Header"),
   fNProduced(-1),
-  fVertex(3)
+  fVertex(3),
+  fInteractionTime(0.)
 {
   //
   // Constructor
