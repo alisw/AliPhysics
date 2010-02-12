@@ -51,7 +51,8 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   fSharing.SetFMDData(fmd);
   fSharing.SetVertex(vertex);
   fSharing.SetOutputList(fListOfHistos);
-
+  
+  fDensity.Init();
   fDensity.SetOutputList(densitylist);
   fDensity.SetInputESDFMD(fmd) ;
   fDensity.SetInputVertex(vertex);
@@ -94,9 +95,9 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
       fDndeta.Exec("");
       
     }
+    else return;
   }
-  else
-    return;
+  else return;
   
   //fListOfHistos = fBackground.GetOutputList();
   
@@ -105,9 +106,21 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
 {
+  
+  TList* outputList = (TList*)GetOutputData(1);
+  
+  
+  fSharing.SetOutputList(outputList);
+  fBackground.SetHitList(outputList);
+  fDndeta.SetOutputList(outputList); 
+  fSharing.Terminate("");
   fBackground.Terminate("");
   fDndeta.Terminate("");
-
+  
+  
+  // TFile file("fmd_ana_histos_tmp.root","RECREATE");
+  //  fListOfHistos->Write();
+  // file.Close();
 }
 
 //_____________________________________________________________________

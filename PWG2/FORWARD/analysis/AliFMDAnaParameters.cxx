@@ -34,7 +34,8 @@
 #include <TMath.h>
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
-//#include "AliBackgroundSelection.h"
+#include "AliBackgroundSelection.h"
+#include "AliMultiplicity.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 
@@ -88,19 +89,17 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fSPDhighLimit(999999999),
   fCentralSelection(kFALSE)
 {
-  // Default constructor 
   fPhysicsSelection = new AliPhysicsSelection;
-  //AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
+  AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
   
-  //fPhysicsSelection->AddBackgroundIdentification(backgroundSelection);
+  fPhysicsSelection->AddBackgroundIdentification(backgroundSelection);
   //fPhysicsSelection->Initialize(104792);
   // Do not use this - it is only for IO 
   fgInstance = this;
- 
+  // Default constructor 
 }
 //____________________________________________________________________
 char* AliFMDAnaParameters::GetPath(const char* species) {
-  // paths of correction and calibration objects
   
   char* path = "";
   
@@ -167,7 +166,6 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
 
 void AliFMDAnaParameters::InitBackground() {
   
-  // init background object
   //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
   
   TFile* fin = TFile::Open(GetPath(fgkBackgroundID));
@@ -183,7 +181,6 @@ void AliFMDAnaParameters::InitBackground() {
 
 void AliFMDAnaParameters::InitEnergyDists() {
   
-  //init energy dist object
   TFile* fin = TFile::Open(GetPath(fgkEnergyDistributionID));
   //AliCDBEntry*   edist = GetEntry(fgkEnergyDists);
   if (!fin) return;
@@ -198,7 +195,6 @@ void AliFMDAnaParameters::InitEnergyDists() {
 
 void AliFMDAnaParameters::InitEventSelectionEff() {
   
-  //init event selection object
   //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
   TFile* fin = TFile::Open(GetPath(fgkEventSelectionEffID));
 			    
@@ -212,7 +208,7 @@ void AliFMDAnaParameters::InitEventSelectionEff() {
 
 void AliFMDAnaParameters::PrintStatus() const
 {
-  // print status of object
+  
   TString energystring;
   switch(fEnergy) {
   case k900:
@@ -283,7 +279,6 @@ void AliFMDAnaParameters::InitSharingEff() {
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetVtxCutZ() {
-  //get z vtx cut
   
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
@@ -295,7 +290,7 @@ Float_t AliFMDAnaParameters::GetVtxCutZ() {
 
 //____________________________________________________________________
 Int_t AliFMDAnaParameters::GetNvtxBins() {
-  // get number of vtx bins in analysis
+  
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return -1;
@@ -305,22 +300,22 @@ Int_t AliFMDAnaParameters::GetNvtxBins() {
 }
 //____________________________________________________________________
 TH1F* AliFMDAnaParameters::GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta) {
-  // get energy distribution
+  
   return fEnergyDistribution->GetEnergyDistribution(det, ring, eta);
 }
 //____________________________________________________________________
 TH1F* AliFMDAnaParameters::GetEmptyEnergyDistribution(Int_t det, Char_t ring) {
-  //get energy distribution for empty events
+  
   return fEnergyDistribution->GetEmptyEnergyDistribution(det, ring);
 }
 //____________________________________________________________________
 TH1F* AliFMDAnaParameters::GetRingEnergyDistribution(Int_t det, Char_t ring) {
-  //get the energy dist for a ring
+  
   return fEnergyDistribution->GetRingEnergyDistribution(det, ring);
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring, Float_t eta) {
-  //get sigma of energy dist
+  
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -339,7 +334,7 @@ Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring, Float_t eta) {
 
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring, Float_t eta) {
-  //Get MPV of energy dist
+  
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -358,7 +353,7 @@ Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring, Float_t eta) {
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetConstant(Int_t det, Char_t ring, Float_t eta) {
-  //Get constant of energy dist
+  
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -376,7 +371,7 @@ Float_t AliFMDAnaParameters::GetConstant(Int_t det, Char_t ring, Float_t eta) {
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) {
-  //Get 2 mip weight of energy dist
+  
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -396,7 +391,7 @@ Float_t AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) 
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::Get3MIPWeight(Int_t det, Char_t ring, Float_t eta) {
-  //Get 3 mip weight of energy dist
+  
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -446,7 +441,7 @@ Int_t AliFMDAnaParameters::GetEtaBin(Float_t eta) {
 TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det, 
 						   Char_t ring, 
 						   Int_t vtxbin) {
-  //get background correction
+  
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -465,7 +460,7 @@ TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det,
 
 TH1F* AliFMDAnaParameters::GetDoubleHitCorrection(Int_t det, 
 						  Char_t ring) {
-  // get correction for double hits in p+p
+  
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -647,7 +642,7 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
   ULong64_t triggerMask = esd->GetTriggerMask();
   
   TString triggers = esd->GetFiredTriggerClasses();
-  // std::cout<<triggers.Data()<<std::endl;
+  
   //if(triggers.Contains("CINT1B-ABCE-NOPF-ALL") || triggers.Contains("CINT1B-E-NOPF-ALL")) return kTRUE;
   //else return kFALSE;
   //if(triggers.Contains("CINT1B-E-NOPF-ALL"))    return kFALSE;
@@ -667,19 +662,15 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
   
   switch (fTrigger) {
   case kMB1: {
-    //if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
-    //  if(/*tAna.IsOfflineTriggerFired(esd,AliTriggerAnalysis::kMB1) &&*/ (triggers.Contains("CINT1B-ABCE-NOPF-ALL")))// || triggers.Contains("CINT1-E-NOPF-ALL")))
     if(fRealData) {
       if( fPhysicsSelection->IsCollisionCandidate(esd))
 	return kTRUE;
-	
-       //  triggers.Contains("CINT1C-ABCE-NOPF-ALL") || triggers.Contains("CINT1A-ABCE-NOPF-ALL"))
-    
     }
-    else
-      if(triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
+    else {
+      if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
 	return kTRUE;
-    break;
+      break;
+    }
   }
   case kMB2: { 
     if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
@@ -696,15 +687,35 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
     break;
   }
   case kEMPTY: {
-    if(triggers.Contains("CBEAMB-ABCE-NOPF-ALL"))
+     const AliMultiplicity* testmult = esd->GetMultiplicity();
+    Int_t nTrackLets = testmult->GetNumberOfTracklets();
+    Int_t nClusters  = testmult->GetNumberOfSingleClusters();
+    Int_t fastOR = tAna.SPDFiredChips(esd, 0);
+    
+    const AliESDVertex* vertex = 0;
+    vertex = esd->GetPrimaryVertexSPD();
+    Bool_t vtxstatus = vertex->GetStatus();
+    if(vertex->GetNContributors() <= 0)
+      vtxstatus = kFALSE;
+    
+    if(vertex->GetZRes() > 0.1 ) 
+      vtxstatus = kFALSE;
+    
+    Bool_t v0ABG = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0ABG);
+    
+    Bool_t v0CBG = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0CBG);
+    Bool_t v0A = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0A);
+    Bool_t v0C = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0C);
+    if(triggers.Contains("CINT1A-ABCE-NOPF-ALL") || triggers.Contains("CINT1C-ABCE-NOPF-ALL")) 
       return kTRUE;
     break;
   }
+    
   }//switch
   
   return kFALSE;
 }
-
+    
 //____________________________________________________________________
 Float_t 
 AliFMDAnaParameters::GetStripLength(Char_t ring, UShort_t strip)  
