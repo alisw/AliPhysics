@@ -59,8 +59,8 @@ AliHLTCaloClusterReader::NextCluster()
       // + the number of cells minus the one already included in the struct
       // times the amount of data for each cell (absolute ID (short) and amplitude fraction (float))
       fCurrentClusterPtr = (AliHLTCaloClusterDataStruct*)((UChar_t*)fCurrentClusterPtr 
-							      + sizeof(AliHLTCaloClusterDataStruct) );
-//							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t)));
+							      + sizeof(AliHLTCaloClusterDataStruct) 
+							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t)));
       // return the cluster
       return tmpChannelPtr;
     }

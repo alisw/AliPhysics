@@ -73,7 +73,8 @@ AliHLTESDCaloClusterMaker::FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterH
       esdCluster.SetTOF(caloClusterStructPtr->fTOF);
       esdCluster.SetClusterDisp(caloClusterStructPtr->fDispersion);
       esdCluster.SetClusterChi2(caloClusterStructPtr->fFitQuality);
-//      esdCluster.SetPid((Float_t*)(caloClusterStructPtr->fPID));
+      const Float_t *pid = caloClusterStructPtr->fPID;
+      esdCluster.SetPid(pid);
       esdCluster.SetM20(caloClusterStructPtr->fM20);
       esdCluster.SetM02(caloClusterStructPtr->fM02);
       esdCluster.SetNExMax(caloClusterStructPtr->fNExMax);
