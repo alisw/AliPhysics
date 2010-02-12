@@ -54,7 +54,18 @@ class AliHLTITSClusterFinderSSD;
  *      a configuration argument without parameters
  *
  * <h2>Default CDB entries:</h2>
- * TODO
+ * ITS/Calib/SPDNoisy
+ * ITS/Calib/SPDDead
+ * TRIGGER/SPD/PITConditions
+ * ITS/Calib/CalibSDD
+ * ITS/Calib/RespSDD
+ * ITS/Calib/DriftSpeedSDD
+ * ITS/Calib/DDLMapSDD
+ * ITS/Calib/MapsTimeSDD
+ * ITS/Calib/NoiseSSD
+ * ITS/Calib/GainSSD
+ * ITS/Calib/BadChannelsSSD
+ * GRP/CTP/Scalers
  *
  * <h2>Performance:</h2>
  * TODO
