@@ -18,7 +18,7 @@
 /// This class provides ITS SSD data handling
 /// used by DA. 
 //  Author: Oleksandr Borysov
-//  Date: 18/07/2008
+//  Date: 09/02/2010
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
@@ -36,7 +36,7 @@ class AliITSHandleDaSSD : public TObject {
 
     void    SetZsDefaul(const Int_t zs)        { fZsDefault = zs;       }
     void    SetOffsetDefault(const Int_t offs) { fOffsetDefault = offs; }
-    void    SetZsMinimum(const Int_t zsm)      { fZsMinimum = zsm;      }
+    void    SetZsMinimum(const Int_t zsm)      { if (zsm >= 0) if (static_cast<UInt_t>(zsm) <= fgkZsBitMask) fZsMinimum = zsm; }
     void    SetMergeBCFlag(const Byte_t mbcf)  { fMergeBCLists = mbcf;  }
     void    SetZsFactor(const Float_t zsf)     { fZsFactor = zsf;       }
     void    SetPedestalThresholdFactor(const Float_t pthf) { fPedestalThresholdFactor = pthf; }
@@ -84,14 +84,18 @@ class AliITSHandleDaSSD : public TObject {
     virtual Bool_t  CalculateNoise(AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateNoiseCM(AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateCM(AliITSModuleDaSSD *const module);
+    virtual Bool_t  CalculatePedNoiseW(AliITSModuleDaSSD *const module);
+    virtual Bool_t  CalculateCMW(AliITSModuleDaSSD *const module);
+    virtual Bool_t  CalculateNoiseCMW(AliITSModuleDaSSD *const module);
     virtual Bool_t  AddFeromCm(AliITSModuleDaSSD *const module);
-    virtual Bool_t  ProcessRawData(const Int_t nmread = fgkNumberOfSSDModulesPerDdl);
+    virtual Bool_t  ProcessRawData(const Int_t nmread = fgkNumberOfSSDModulesPerDdl,  const Bool_t usewelford = kTRUE);
     virtual Bool_t  RelocateModules();
     virtual Bool_t  AllocateSimulatedModules(const Int_t copymodind = 0);
 
     Bool_t  AdDataPresent(const Int_t ddl, const Int_t ad) const;
     Int_t   DdlToEquipmentId (Int_t ddl) const { return (512 + ddl); }
     Int_t   ChannelIsBad(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const;
+    UChar_t EvaluateIfChannelIsBad(const AliITSModuleDaSSD *const module, const Int_t stripn) const;
     Int_t   LadderIsOff(const UChar_t ddl, const UChar_t ad, const UChar_t adc) const;
     Bool_t  SaveEqSlotCalibrationData(const Int_t ddl, const Int_t ad, const Char_t *fname) const;
     ULong_t OffsetValue(const AliITSChannelDaSSD *strip, const UChar_t ddl = 0, const UChar_t ad = 0, 
@@ -160,8 +164,9 @@ class AliITSHandleDaSSD : public TObject {
                                                                      (signal <= AliITSChannelDaSSD::GetUnderflowConst())); }
     string   ConvBase(const unsigned long value, const long base) const;
 
-    ClassDef(AliITSHandleDaSSD, 7)
+    ClassDef(AliITSHandleDaSSD, 8)
 
 };
 
 #endif
+

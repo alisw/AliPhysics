@@ -495,22 +495,3 @@ Short_t  AliITSModuleDaSSD::GetCMFerom(const Int_t chipn, const Long_t evn)   co
   else return fCmFerom[chipn][evn];
 }
 
-
-
-UChar_t AliITSModuleDaSSD::CheckIfBad(const Int_t stripn) const
-{
-//Applies the bad channel creteria and set the appropriate flags for returned valie 
-  UInt_t          bcflags = 0;
-  const UInt_t    WOffsetMask = 0x000003FF;
-  if (!fStrips[stripn]) bcflags |= 3;
-  else {
-    if (fStrips[stripn]->GetNoiseCM() == AliITSChannelDaSSD::GetUndefinedValue()) bcflags |= 8;
-    if (fStrips[stripn]->GetNoiseCM() > 20) bcflags |= 8;
-    if (fStrips[stripn]->GetNoiseCM() < 1) bcflags |= 16;
-    if (fStrips[stripn]->GetPedestal() > ((WOffsetMask >> 1) - 1))  bcflags |= 4;
-    else if ((-(fStrips[stripn]->GetPedestal())) > (WOffsetMask >> 1))  bcflags |= 4;
-    if (bcflags) bcflags |= 3;
-  }
-  return bcflags;
-}
-

@@ -1,10 +1,10 @@
 /**************************************************************************
 - Contact: Oleksandr_Borysov oborysov@cern.ch
-- Link: /afs/cern.ch/user/o/oborysov/public/da/pedestal36186.000.raw, ssddaconfig.txt, ssdddlmap.txt, badchannels.root
+- Link: /afs/cern.ch/user/o/oborysov/public/ssdda/run75491.raw, ssddaconfig.txt, ssdddlmap_v09.txt, ssdbcmap_1258498704.root
 - Run Type: PEDESTAL
 - DA Type: LDC
 - Number of events needed: ~200
-- Input Files: raw_data_file_on_LDC, in the daqDetDB: ssddaconfig.txt, ssdddlmap.txt, badchannels.root
+- Input Files: raw_data_file_on_LDC, in the daqDetDB: ssddaconfig.txt, ssdddlmap_v09.txt, ssdbcmap_1258498704.root
 - Output Files: ./<EqId_Slot> ./ssddaldc_<LDCID>.root, FXS_name=ITSSSDda_<LDCID>.root 
                 local files are persistent over runs: data source
 - Trigger types used:
@@ -32,8 +32,8 @@ struct ConfigStruct {
   Int_t    fNModuleProcess;
   string   fSsdDdlMap;
   string   fBadChannels;
-  Bool_t   fCheckChipsOff;
-  ConfigStruct() : fNModuleProcess(108), fSsdDdlMap(""), fBadChannels(""), fCheckChipsOff(kFALSE) {}
+  Bool_t   fCheckChipsOff, fUseWelford;
+  ConfigStruct() : fNModuleProcess(108), fSsdDdlMap(""), fBadChannels(""), fCheckChipsOff(kFALSE), fUseWelford(kTRUE) {}
 };
 
 
@@ -79,7 +79,7 @@ int main( int argc, char** argv )
     
   if (cfg.fBadChannels.size() > 0) bcfname = cfg.fBadChannels.c_str();
   lfname.Form("./%s", bcfname);
-  if (status = daqDA_DB_getFile(bcfname, lfname.Data())) {
+  if ((status = daqDA_DB_getFile(bcfname, lfname.Data()))) {
     fprintf(stderr, "Failed to import the file %s from the detector db: %d, %s! Exit DA!\n", bcfname, status, lfname.Data());
     delete ssddaldc;
     return -3;
@@ -99,7 +99,7 @@ int main( int argc, char** argv )
     if (!ssddaldc->ReadDDLModuleMap()) cerr << "Failed to load the DDL map from AliITSRawStreamSSD!\n"; 
   }    
   
-  if (!ssddaldc->ProcessRawData(cfg.fNModuleProcess))  {
+  if (!ssddaldc->ProcessRawData(cfg.fNModuleProcess, cfg.fUseWelford)) {
      cerr << "Error !ssddaldc->ProcessRawData()" << endl;
      delete ssddaldc;
      return -1;
@@ -163,10 +163,10 @@ Int_t SaveEquipmentCalibrationData(const AliITSHandleDaSSD  *ssddaldc, const Cha
 Bool_t ReadDAConfigurationFile(const Char_t *configfname, AliITSHandleDaSSD *const ssddaldc, ConfigStruct& cfg) 
 {
 // Dowload configuration parameters from configuration file or database
-  const int nkwords = 12;
+  const int nkwords = 13;
   char const *keywords[nkwords] = {"ZsDefault", "OffsetDefault", "ZsFactor", "PedestalThresholdFactor", "CmThresholdFactor",
                              "NModulesToProcess", "DDLMapFile", "BadChannelsFile", "ZSMinValue", "MergeBCFlag", 
-                             "CheckChipsOff", "OffLadder"};
+                             "CheckChipsOff", "UseWelford", "OffLadder"};
   Int_t tmpint, laddern;
   Float_t tmpflt;
   fstream dfile;
@@ -276,6 +276,13 @@ Bool_t ReadDAConfigurationFile(const Char_t *configfname, AliITSHandleDaSSD *con
                 cout << keystr << ": " << cfg.fCheckChipsOff << endl;
               } break;
 	  case 11: 
+	          strline >> tmpint;
+              if (strline.fail()) cerr << "Failed to read " << keystr << " value from DA configuration file!\n";
+              else {
+	            cfg.fUseWelford = static_cast<Bool_t>(tmpint);
+                cout << keystr << ": " << cfg.fUseWelford << endl;
+              } break;
+	  case 12: 
 	          char dside;
               while (!strline.eof()) {
                 strline >> tmpstr;
@@ -322,4 +329,3 @@ Bool_t ReadDAConfigurationFile(const Char_t *configfname, AliITSHandleDaSSD *con
   if (tmparr) delete [] tmparr;
   return kTRUE;
 }
-

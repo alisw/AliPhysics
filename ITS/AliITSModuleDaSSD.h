@@ -49,7 +49,6 @@ class AliITSModuleDaSSD : public TObject {
     Int_t        GetNumberOfChips() const  { return fNumberOfChips; }
     AliITSChannelDaSSD*  GetStrip(const Int_t stripnumber)  const 
                                 { return (fStrips) ? fStrips[stripnumber] : NULL; }
-    UChar_t CheckIfBad(const Int_t stripn) const;
     Bool_t  SetEventsNumber(const Long_t eventsnumber);
     Bool_t  SetNumberOfStrips(const Int_t numberofstrips);
     Bool_t  SetNumberOfChips(const Int_t nchips);
@@ -101,7 +100,7 @@ class AliITSModuleDaSSD : public TObject {
   private:
     Bool_t ForbiddenAdcNumber (const UChar_t adcn) const { return ((adcn == 6) || (adcn == 7)); }
  
-    ClassDef(AliITSModuleDaSSD, 5) 
+    ClassDef(AliITSModuleDaSSD, 6) 
  
 };
 
