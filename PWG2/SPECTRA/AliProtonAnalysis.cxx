@@ -883,18 +883,22 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	      fProtonContainer->Fill(containerInput,kStepSurvived);   
 	      ((TH2F *)(fQA2DList->At(12)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Phi()*180./TMath::Pi());
-	      ((TH2F *)(fQA2DList->At(14)))->Fill(tpcTrack->Pt(),
+	      ((TH3F *)(fQA2DList->At(14)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Pt(),
 						  TMath::Abs(dca[0]));
-	      ((TH2F *)(fQA2DList->At(15)))->Fill(tpcTrack->Pt(),
+	      ((TH3F *)(fQA2DList->At(15)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Pt(),
 						  TMath::Abs(dca[1]));
 	    }//protons
 	    else if(tpcTrack->Charge() < 0) {
 	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
 	      ((TH2F *)(fQA2DList->At(13)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Phi()*180./TMath::Pi());
-	      ((TH2F *)(fQA2DList->At(16)))->Fill(tpcTrack->Pt(),
+	      ((TH3F *)(fQA2DList->At(16)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Pt(),
 						  TMath::Abs(dca[0]));
-	      ((TH2F *)(fQA2DList->At(17)))->Fill(tpcTrack->Pt(),
+	      ((TH3F *)(fQA2DList->At(17)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Pt(),
 						  TMath::Abs(dca[1]));
 	    }//antiprotons
 	    
@@ -991,18 +995,22 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	      fProtonContainer->Fill(containerInput,kStepSurvived);   
 	      ((TH2F *)(fQA2DList->At(12)))->Fill(track->Eta(),
 						  track->Phi()*180./TMath::Pi());
-	      ((TH2F *)(fQA2DList->At(14)))->Fill(track->Pt(),
+	      ((TH3F *)(fQA2DList->At(14)))->Fill(track->Eta(),
+						  track->Pt(),
 						  TMath::Abs(dca[0]));
-	      ((TH2F *)(fQA2DList->At(15)))->Fill(track->Pt(),
+	      ((TH3F *)(fQA2DList->At(15)))->Fill(track->Eta(),
+						  track->Pt(),
 						  TMath::Abs(dca[1]));
 	    }//protons
 	    else if(track->Charge() < 0) {
 	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
 	      ((TH2F *)(fQA2DList->At(13)))->Fill(track->Eta(),
 						  track->Phi()*180./TMath::Pi());
-	      ((TH2F *)(fQA2DList->At(16)))->Fill(track->Pt(),
+	      ((TH3F *)(fQA2DList->At(16)))->Fill(track->Eta(),
+						  track->Pt(),
 						  TMath::Abs(dca[0]));
-	      ((TH2F *)(fQA2DList->At(17)))->Fill(track->Pt(),
+	      ((TH3F *)(fQA2DList->At(17)))->Fill(track->Eta(),
+						  track->Pt(),
 						  TMath::Abs(dca[1]));
 	    }//antiprotons
 	    
@@ -1548,30 +1556,50 @@ void AliProtonAnalysis::InitQA() {
   fQA2DList->Add(gHistAntiProtonsEtaPhi);
 
   //dca vs pT for protons & antiprotons
-  TH2F *gHistProtonsDCAxyPt = new TH2F("gHistProtonsDCAxyPt",
-				       ";P_{T} [GeV/c];dca_{xy} [cm]",
-				       16,0.3,1.1,
-				       1000,0,10);
-  gHistProtonsDCAxyPt->SetStats(kTRUE);
-  fQA2DList->Add(gHistProtonsDCAxyPt);
-  TH2F *gHistProtonsDCAzPt = new TH2F("gHistProtonsDCAzPt",
-				      ";P_{T} [GeV/c];dca_{z} [cm]",
-				      16,0.3,1.1,
-				      1000,0,10);
-  gHistProtonsDCAzPt->SetStats(kTRUE);
-  fQA2DList->Add(gHistProtonsDCAzPt);
-  TH2F *gHistAntiProtonsDCAxyPt = new TH2F("gHistAntiProtonsDCAxyPt",
-					   ";P_{T} [GeV/c];dca_{xy} [cm]",
-					   16,0.3,1.1,
-					   1000,0,10);
-  gHistAntiProtonsDCAxyPt->SetStats(kTRUE);
-  fQA2DList->Add(gHistAntiProtonsDCAxyPt);
-  TH2F *gHistAntiProtonsDCAzPt = new TH2F("gHistAntiProtonsDCAzPt",
-					  ";P_{T} [GeV/c];dca_{z} [cm]",
-					  16,0.3,1.1,
-					  1000,0,10);
-  gHistAntiProtonsDCAzPt->SetStats(kTRUE);
-  fQA2DList->Add(gHistAntiProtonsDCAzPt);
+  TH3F *gHistProtonsDCAxyEtaPt = new TH3F("gHistProtonsDCAxyEtaPt",
+					  ";P_{T} [GeV/c];dca_{xy} [cm]",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt,
+					  100,0,10);
+  if(fProtonAnalysisBase->GetEtaMode())
+    gHistProtonsDCAxyEtaPt->GetXaxis()->SetTitle("#eta");
+  else
+    gHistProtonsDCAxyEtaPt->GetXaxis()->SetTitle("y");
+  gHistProtonsDCAxyEtaPt->SetStats(kTRUE);
+  fQA2DList->Add(gHistProtonsDCAxyEtaPt);
+  TH3F *gHistProtonsDCAzEtaPt = new TH3F("gHistProtonsDCAzEtaPt",
+					 ";P_{T} [GeV/c];dca_{z} [cm]",
+					 fNBinsY,fMinY,fMaxY,
+					 fNBinsPt,fMinPt,fMaxPt,
+					 100,0,10);
+  if(fProtonAnalysisBase->GetEtaMode())
+    gHistProtonsDCAzEtaPt->GetXaxis()->SetTitle("#eta");
+  else
+    gHistProtonsDCAzEtaPt->GetXaxis()->SetTitle("y");
+  gHistProtonsDCAzEtaPt->SetStats(kTRUE);
+  fQA2DList->Add(gHistProtonsDCAzEtaPt);
+  TH3F *gHistAntiProtonsDCAxyEtaPt = new TH3F("gHistAntiProtonsDCAxyEtaPt",
+					      ";P_{T} [GeV/c];dca_{xy} [cm]",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt,
+					      100,0,10);
+  if(fProtonAnalysisBase->GetEtaMode())
+    gHistAntiProtonsDCAxyEtaPt->GetXaxis()->SetTitle("#eta");
+  else
+    gHistAntiProtonsDCAxyEtaPt->GetXaxis()->SetTitle("y");
+  gHistAntiProtonsDCAxyEtaPt->SetStats(kTRUE);
+  fQA2DList->Add(gHistAntiProtonsDCAxyEtaPt);
+  TH3F *gHistAntiProtonsDCAzEtaPt = new TH3F("gHistAntiProtonsDCAzEtaPt",
+					     ";P_{T} [GeV/c];dca_{z} [cm]",
+					     fNBinsY,fMinY,fMaxY,
+					     fNBinsPt,fMinPt,fMaxPt,
+					     100,0,10);
+  if(fProtonAnalysisBase->GetEtaMode())
+    gHistAntiProtonsDCAzEtaPt->GetXaxis()->SetTitle("#eta");
+  else
+    gHistAntiProtonsDCAzEtaPt->GetXaxis()->SetTitle("y");
+  gHistAntiProtonsDCAzEtaPt->SetStats(kTRUE);
+  fQA2DList->Add(gHistAntiProtonsDCAzEtaPt);
 
   //========================================================//
   fQAProtonsAcceptedList = new TList();
