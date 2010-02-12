@@ -98,6 +98,10 @@ const AliHLTComponentDataType kAliHLTDataTypeMCObject = AliHLTComponentDataTypeI
 const char kAliHLTESDVertexDataTypeIDstring[8] = kAliHLTESDVertexDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDVertex = AliHLTComponentDataTypeInitializer(kAliHLTESDVertexDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** Global Vertexer data specification */
+const char kAliHLTDataTypeGlobalVertexerIDstring[8] = kAliHLTDataTypeGlobalVertexerID;
+const AliHLTComponentDataType kAliHLTDataTypeGlobalVertexer = AliHLTComponentDataTypeInitializer(kAliHLTDataTypeGlobalVertexerIDstring, kAliHLTDataOriginAny);
+
 /** ESD data specification */
 const char kAliHLTESDObjectDataTypeIDstring[8] = kAliHLTESDObjectDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDObject = AliHLTComponentDataTypeInitializer(kAliHLTESDObjectDataTypeIDstring, kAliHLTDataOriginAny);

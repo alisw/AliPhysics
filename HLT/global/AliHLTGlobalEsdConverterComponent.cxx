@@ -47,6 +47,7 @@
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
 #include "AliESDCaloCluster.h"
+#include "AliHLTGlobalVertexerComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -427,6 +428,14 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
       }
     }
+  }
+
+  // update with  vertices and vertex-fitted tracks
+
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeGlobalVertexer);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    
+    AliHLTGlobalVertexerComponent::FillESD( pESD, reinterpret_cast<AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerData* >(pBlock->fPtr) );
   }
 
 

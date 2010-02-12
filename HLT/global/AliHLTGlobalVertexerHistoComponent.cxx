@@ -116,8 +116,9 @@ void AliHLTGlobalVertexerHistoComponent::GetInputDataTypes(AliHLTComponentDataTy
 {
   //
   list.clear();
-  list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
   list.push_back(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS );
+  list.push_back(kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut );
+  list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
 }
 
 
@@ -278,69 +279,68 @@ int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& 
   }
 
   int iResult = 0;
-  
-  bool wasITS = 0;
+
+  const AliESDVertex *vertexITS = 0;
+  const AliESDVertex *vertexGlobal = 0;
+
+
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); iter != NULL; iter = GetNextInputObject() ) {
-    if( AliESDVertex *vertex = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) ) ){
-      if( vertex && vertex->GetNContributors() >= 5 ){
-	for( int i=0; i<=fFillSecondSPD; i++ ){
-	  if(  fRefreshPeriod>0 && fSPDVertexXY[i].GetEntries()>=fRefreshPeriod ){
-	    fSPDVertexXY[i].Reset();
-	    fSPDVertexX[i].Reset();
-	    fSPDVertexY[i].Reset();
-	    fSPDVertexZ[i].Reset();
-	  }
-	  fSPDVertexXY[i].Fill(vertex->GetX(), vertex->GetY());
-	  fSPDVertexX[i].Fill(vertex->GetX() );
-	  fSPDVertexY[i].Fill(vertex->GetY() );
-	  fSPDVertexZ[i].Fill(vertex->GetZ() );
-	}
-	wasITS = 1;
-      }
-    } else {
+    if( !( vertexITS = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) ) ) ){    
       HLTError("ITS SPD vertex object is corrupted");
       iResult = -EINVAL;    
     }
+    break;
   }
 
-  for (const TObject* iter = GetFirstInputObject(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut); iter; iter = GetNextInputObject() ) {
-    if (AliESDEvent* event = dynamic_cast<AliESDEvent*>((TObject*)iter)) {
-      event->GetStdContent();
-      const AliESDVertex* vertex = event->GetPrimaryVertexTracks();
-      if (vertex && vertex->GetNContributors() >= 5) {
-	for( int i=0; i<=fFillSecond; i++ ){
-	  if(  fRefreshPeriod>0 && fPrimaryXY[i].GetEntries()>=fRefreshPeriod ){
-	    fPrimaryXY[i].Reset();
-	    fPrimaryX[i].Reset();
-	    fPrimaryY[i].Reset();
-	    fPrimaryZ[i].Reset();      
-	  }
-	  fPrimaryXY[i].Fill(vertex->GetX(), vertex->GetY());
-	  fPrimaryX[i].Fill(vertex->GetX());
-	  fPrimaryY[i].Fill(vertex->GetY());
-	  fPrimaryZ[i].Fill(vertex->GetZ());
-	}
-      }
-      if( !wasITS ){
-	vertex = event->GetPrimaryVertexSPD();
-	if( vertex && vertex->GetNContributors() >= 3 ){
-	  for( int i=0; i<=fFillSecondSPD; i++ ){
-	    if(  fRefreshPeriod>0 && fSPDVertexXY[i].GetEntries()>=fRefreshPeriod ){
-	      fSPDVertexXY[i].Reset();
-	      fSPDVertexX[i].Reset();
-	      fSPDVertexY[i].Reset();
-	      fSPDVertexZ[i].Reset();
-	    }
-	    fSPDVertexXY[i].Fill(vertex->GetX(), vertex->GetY());
-	    fSPDVertexX[i].Fill(vertex->GetX() );
-	    fSPDVertexY[i].Fill(vertex->GetY() );
-	    fSPDVertexZ[i].Fill(vertex->GetZ() );	  
-	  }
-	}
-      }
-    } else {
-      HLTError("ESD event object is corrupted");
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
+    if( !( vertexGlobal = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) ) ) ){
+      HLTError("Global vertex object is corrupted");
       iResult = -EINVAL;    
+    }
+    break;
+  }
+
+  if( !vertexITS || !vertexGlobal ){
+
+    for (const TObject* iter = GetFirstInputObject(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut); iter; iter = GetNextInputObject() ) {
+      if ( AliESDEvent* event = dynamic_cast<AliESDEvent*>((TObject*)iter) ) {
+	event->GetStdContent();
+	if( !vertexGlobal ) vertexGlobal = event->GetPrimaryVertexTracks();
+	if( !vertexITS ) vertexITS = event->GetPrimaryVertexSPD();      
+      } else {
+	HLTError("ESD event object is corrupted");
+	iResult = -EINVAL;    
+      }
+    }
+  }
+  
+  if (vertexGlobal && vertexGlobal->GetNContributors() >= 5) {
+    for( int i=0; i<=fFillSecond; i++ ){
+      if(  fRefreshPeriod>0 && fPrimaryXY[i].GetEntries()>=fRefreshPeriod ){
+	fPrimaryXY[i].Reset();
+	fPrimaryX[i].Reset();
+	fPrimaryY[i].Reset();
+	fPrimaryZ[i].Reset();      
+      }
+      fPrimaryXY[i].Fill(vertexGlobal->GetX(), vertexGlobal->GetY());
+      fPrimaryX[i].Fill(vertexGlobal->GetX());
+      fPrimaryY[i].Fill(vertexGlobal->GetY());
+      fPrimaryZ[i].Fill(vertexGlobal->GetZ());
+    }
+  }
+
+  if( vertexITS && vertexITS->GetNContributors() >= 5 ){
+    for( int i=0; i<=fFillSecondSPD; i++ ){
+      if(  fRefreshPeriod>0 && fSPDVertexXY[i].GetEntries()>=fRefreshPeriod ){
+	fSPDVertexXY[i].Reset();
+	fSPDVertexX[i].Reset();
+	fSPDVertexY[i].Reset();
+	fSPDVertexZ[i].Reset();
+      }
+      fSPDVertexXY[i].Fill(vertexITS->GetX(), vertexITS->GetY());
+      fSPDVertexX[i].Fill(vertexITS->GetX() );
+      fSPDVertexY[i].Fill(vertexITS->GetY() );
+      fSPDVertexZ[i].Fill(vertexITS->GetZ() );	  
     }
   }
   

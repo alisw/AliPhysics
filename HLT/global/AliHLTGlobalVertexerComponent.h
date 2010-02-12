@@ -27,6 +27,19 @@ class AliESDEvent;
 class AliHLTGlobalVertexerComponent : public AliHLTProcessor
 {
 public:
+
+  struct AliHLTGlobalVertexerData
+  {
+    int fFitTracksToVertex; // flag 
+    double fPrimP[3]; // prim. vertex parameters
+    double fPrimC[6]; // prim. vertex covariance
+    double fPrimChi2; // prim. vertex chi2
+    int fPrimNContributors; // prim. vertex N contributors
+    int fNPrimTracks; // N of primary tracks
+    int fNV0s; // N of v0s 
+    int fTrackIndices[0]; // list of primary tracks and v0 tracks
+  };
+
   /** default constructor */
   AliHLTGlobalVertexerComponent();
   /** destructor */
@@ -49,6 +62,8 @@ public:
   /** interface function, see AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
+  static void FillESD( AliESDEvent *event, AliHLTGlobalVertexerData *data ) ;
+
 protected:
 
   // Protected functions to implement AliHLTComponent's interface.
@@ -60,7 +75,8 @@ protected:
   /** interface function, see AliHLTComponent for description */
   int DoDeinit();
   /** interface function, see AliHLTComponent for description */
-  int DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData );
+  int DoEvent( const AliHLTComponentEventData& evtData, 
+	       AliHLTComponentTriggerData& trigData );
 
   int Reconfigure(const char* cdbEntry, const char* chainId);
 
@@ -88,12 +104,11 @@ private:
       Bool_t fPrimUsedFlag;    //* flag shows that the particle was used for primary vertex fit
       Bool_t fOK;              //* is the track good enough
     };
-  void SetESD( AliESDEvent *event );
+
   void FindPrimaryVertex();
-  void FindV0s();
+  void FindV0s(vector<pair<int,int> > v0s);
 
-
-  AliESDEvent *fESD; // pointer to esd event
+  int fNTracks; // n of input tracks
   AliESDTrackInfo *fTrackInfos; // information about esd tracks
   AliKFVertex fPrimaryVtx; // reconstructed KF primary vertex
 
@@ -106,7 +121,7 @@ private:
   Double_t fV0Chi; // v0: v0 sqrt(chi^2/NDF) <= cut
   Double_t fV0DecayLengthInSigmas; // v0: v0 decay length/sigma_length >= cut
 
-  Double_t fV0TimeLimit; // time limit in seconds for V0 finder (it has N^2 combinatorics, therefore it can [potentially] block the data flow on some very hot events ) default limit is 1 ms
+  Double_t fV0TimeLimit; // time limit in seconds for V0 finder (it has N^2 combinatorics, therefore it can [potentially] block the data flow on some very hot events ) default limit is 10 ms
 
   Double_t fStatTimeR; // benchmark
   Double_t fStatTimeC; // benchmark

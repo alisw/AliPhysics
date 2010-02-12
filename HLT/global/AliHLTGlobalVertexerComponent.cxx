@@ -24,14 +24,15 @@ using namespace std;
 #endif
 
 #include "AliHLTGlobalVertexerComponent.h"
+#include "AliHLTDataTypes.h"
+#include "AliHLTExternalTrackParam.h"
+#include "AliHLTGlobalBarrelTrack.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include <TFile.h>
 #include <TString.h>
 #include "TObjString.h"
 #include "TObjArray.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
@@ -47,7 +48,7 @@ ClassImp(AliHLTGlobalVertexerComponent)
 
 AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerComponent()
 :
-  fESD(0),
+  fNTracks(0),
   fTrackInfos(0),
   fPrimaryVtx(),  
   fNEvents(0),
@@ -57,7 +58,7 @@ AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerComponent()
   fV0PrimDeviation( 3.5 ),
   fV0Chi(3.5),
   fV0DecayLengthInSigmas(3.),
-  fV0TimeLimit(1.e-3), 
+  fV0TimeLimit(10.e-3), 
   fStatTimeR( 0 ),
   fStatTimeC( 0 ),
   fStatTimeR1( 0 ),
@@ -97,7 +98,9 @@ void AliHLTGlobalVertexerComponent::GetInputDataTypes(AliHLTComponentDataTypeLis
 {
   // see header file for class documentation
   list.clear();
-  list.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginOut );
+  list.push_back( kAliHLTDataTypeESDObject );
+  list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginITS );
+  list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
 }
 
 AliHLTComponentDataType AliHLTGlobalVertexerComponent::GetOutputDataType()
@@ -111,7 +114,9 @@ int AliHLTGlobalVertexerComponent::GetOutputDataTypes(AliHLTComponentDataTypeLis
 {
   // see header file for class documentation
   tgtList.clear();
-  tgtList.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
+  tgtList.push_back( kAliHLTDataTypeGlobalVertexer|kAliHLTDataOriginOut);
+  tgtList.push_back( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut);
+  tgtList.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
   return tgtList.size();
 }
 
@@ -142,7 +147,7 @@ int AliHLTGlobalVertexerComponent::DoInit( int argc, const char** argv )
   fStatTimeR3 = 0;
   fStatTimeC3 = 0;
   fStatNEvents = 0;
-  fV0TimeLimit = 1.e-3;
+  fV0TimeLimit = 10.e-3;
 
   fNEvents =0;
 
@@ -176,16 +181,16 @@ int AliHLTGlobalVertexerComponent::DoDeinit()
   fV0Chi = 3.5;
   fV0DecayLengthInSigmas = 3.;
   fNEvents = 0;
-  fV0TimeLimit = 1.e-3;
+  fV0TimeLimit = 10.e-3;
 
   return 0;
 }
 
-int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
+int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, 
+					    AliHLTComponentTriggerData& /*trigData*/ )
 {
-
   //cout<<"AliHLTGlobalVertexerComponent::DoEvent called"<<endl;
-  
+ 
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
 
@@ -193,41 +198,151 @@ int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evt
 
   fNEvents++;
   TStopwatch timer;
+  vector< AliExternalTrackParam > tracks;
+  vector< int > trackId;
+  vector< pair<int,int> > v0s;
+
+  AliESDEvent *event = 0; 
 
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
-
-    AliESDEvent *event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+    event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
     if( !event ) continue;
     event->GetStdContent();
+    Int_t nESDTracks=event->GetNumberOfTracks(); 
 
-    // primary vertex & V0's 
+    for (Int_t iTr=0; iTr<nESDTracks; iTr++){   
+      AliESDtrack *pTrack = event->GetTrack(iTr);    
+      if( !pTrack  ) continue;
+      if( pTrack->GetKinkIndex(0)>0) continue;
+      if( !( pTrack->GetStatus()&AliESDtrack::kTPCin ) ) continue;
+      tracks.push_back(*pTrack);
+      trackId.push_back(iTr);
+    }      
+    break;
+  }
+
+  if( tracks.size()==0 ){
+    
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
+	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
+      
+      AliHLTTracksData* dataPtr = reinterpret_cast<AliHLTTracksData*>( pBlock->fPtr );
+      int nTracks = dataPtr->fCount;
+
+      AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
+      for( int itr=0; itr<nTracks; itr++ ){
+	AliHLTGlobalBarrelTrack t(*currOutTrack);
+	tracks.push_back( t );
+	trackId.push_back( currOutTrack->fTrackID );
+	unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + currOutTrack->fNPoints * sizeof( unsigned int );
+	currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
+      }
+    }
+  }
+
+  if( tracks.size()==0 ){
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
+	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
+      
+      AliHLTTracksData* dataPtr = reinterpret_cast<AliHLTTracksData*>( pBlock->fPtr );
+      int nTracks = dataPtr->fCount;      
+      AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
+      for( int itr=0; itr<nTracks; itr++ ){
+	AliHLTGlobalBarrelTrack t(*currOutTrack);
+	tracks.push_back( t );
+	trackId.push_back( currOutTrack->fTrackID );
+	unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + currOutTrack->fNPoints * sizeof( unsigned int );
+	currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
+      }
+    }
+  }
+
+  
+  // primary vertex & V0's 
           
+  AliKFParticle::SetField( GetBz() );
+
+  {  //* Fill fTrackInfo array
+
     TStopwatch timer1;
-    SetESD( event );
+    
+    if( fTrackInfos ) delete[] fTrackInfos;
+    fTrackInfos = 0;
+    fNTracks=tracks.size(); 
+    fTrackInfos = new AliESDTrackInfo[ fNTracks ];
+    for (Int_t iTr=0; iTr<fNTracks; iTr++){       
+      AliESDTrackInfo &info = fTrackInfos[iTr];
+      info.fOK = 1;
+      info.fPrimUsedFlag = 0;
+      info.fParticle = AliKFParticle( tracks[iTr], 211 );
+    }
     timer1.Stop();
     fStatTimeR1+=timer1.RealTime();
     fStatTimeC1+=timer1.CpuTime();
-    TStopwatch timer2;
-    FindPrimaryVertex();
-    timer2.Stop();
-    fStatTimeR2+=timer2.RealTime();
-    fStatTimeC2+=timer2.CpuTime();
-    TStopwatch timer3;
-    FindV0s();
-    timer3.Stop();
-    fStatTimeR3+=timer3.RealTime();
-    fStatTimeC3+=timer3.CpuTime();
-    const AliESDVertex *vPrim = event->GetPrimaryVertexTracks();
-
-    iResult = PushBack( event, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
-    if( iResult<0 ) break;
   }
+  
+  TStopwatch timer2;
+  FindPrimaryVertex();
+  timer2.Stop();
+  fStatTimeR2+=timer2.RealTime();
+  fStatTimeC2+=timer2.CpuTime();
+  TStopwatch timer3;
+  FindV0s( v0s );
+  timer3.Stop();
+  fStatTimeR3+=timer3.RealTime();
+  fStatTimeC3+=timer3.CpuTime();
+
+  int *buf = new int[sizeof(AliHLTGlobalVertexerData)/sizeof(int)+1 + fNTracks + 2*v0s.size()];
+  AliHLTGlobalVertexerData *data = reinterpret_cast<AliHLTGlobalVertexerData*>(buf);
+
+  if( data) {  // fill the output structure
+        
+    data->fFitTracksToVertex = fFitTracksToVertex;
+    for( int i=0; i<3; i++ ) data->fPrimP[i] = fPrimaryVtx.Parameters()[i];
+    for( int i=0; i<6; i++ ) data->fPrimC[i] = fPrimaryVtx.CovarianceMatrix()[i];
+    data->fPrimChi2 = fPrimaryVtx.GetChi2();
+    data->fPrimNContributors = fPrimaryVtx.GetNContributors();
+    data->fNPrimTracks = 0;
+    for( Int_t i = 0; i<fNTracks; i++ ){
+      if( !fTrackInfos[i].fPrimUsedFlag ) continue;	  
+      if( fTrackInfos[i].fPrimDeviation > fConstrainedTrackDeviation ) continue;
+      data->fTrackIndices[ (data->fNPrimTracks)++ ] =  trackId[i];
+    }
+    int *listV0 = data->fTrackIndices + data->fNPrimTracks;
+    data->fNV0s = v0s.size();
+    for( int i=0; i<data->fNV0s; i++ ){
+      listV0[2*i] = trackId[v0s[i].first];
+      listV0[2*i+1] = trackId[v0s[i].second];
+    }
+
+    unsigned int blockSize = sizeof(AliHLTGlobalVertexerData) + (data->fNPrimTracks + 2*data->fNV0s)*sizeof(int);
+
+    iResult = PushBack( reinterpret_cast<void*>(data), blockSize, kAliHLTDataTypeGlobalVertexer|kAliHLTDataOriginOut );  
+  }  
+  
+  
+  // output the vertex if found
+  {
+    if( iResult==0 && data && data->fPrimNContributors >=3 ){
+      AliESDVertex vESD( data->fPrimP, data->fPrimC, data->fPrimChi2, data->fPrimNContributors );
+      iResult = PushBack( (TObject*) &vESD, kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut,0 );
+    }
+  }
+
+  // output the ESD event
+  if( iResult==0 && event && data ){  
+    FillESD( event, data ); 
+    iResult = PushBack( event, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
+  }
+
+  delete[] buf;
+
   timer.Stop();
   fStatTimeR+=timer.RealTime();
   fStatTimeC+=timer.CpuTime();
   fStatNEvents++;
 
-  /*
+  /*  
   //if( fStatNEv%100==0 )
   cout<<"SG: "<<GetComponentID()<<": "<<fStatNEvents<<" events, real time: total= "
       <<fStatTimeR/fStatNEvents*1.e3<<" / create= "<<fStatTimeR1/fStatNEvents*1.e3
@@ -238,6 +353,7 @@ int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evt
   */
   return iResult;
 }
+
 
 int AliHLTGlobalVertexerComponent::Configure(const char* arguments)
 {
@@ -349,61 +465,22 @@ int AliHLTGlobalVertexerComponent::Reconfigure(const char* cdbEntry, const char*
 
 
 
-void AliHLTGlobalVertexerComponent::SetESD( AliESDEvent *event )
-{
-  //* Fill fTrackInfo array
-
-  if( fTrackInfos ) delete[] fTrackInfos;
-  fTrackInfos = 0;
-  fESD = event;
-
-  AliKFParticle::SetField( fESD->GetMagneticField() );
-
-  Int_t nESDTracks=event->GetNumberOfTracks(); 
-
-  fTrackInfos = new AliESDTrackInfo[ nESDTracks ];
-
-  for (Int_t iTr=0; iTr<nESDTracks; iTr++){ 
-  
-    AliESDTrackInfo &info = fTrackInfos[iTr];
-    info.fOK = 0;
-    info.fPrimUsedFlag = 0;
-    
-    //* track quality check
-
-    AliESDtrack *pTrack = event->GetTrack(iTr);    
-    if( !pTrack  ) continue;
-    if (pTrack->GetKinkIndex(0)>0) continue;
-    if ( !( pTrack->GetStatus()&AliESDtrack::kTPCin ) ) continue;
-    
-    //* Construct KFParticle for the track
-
-    //if(  pTrack->GetStatus()&AliESDtrack::kITSin ){
-      info.fParticle = AliKFParticle( *pTrack, 211 );    
-      //} else {
-      //info.fParticle = AliKFParticle( *pTrack->GetInnerParam(), 211 );    
-      //}
-    info.fOK = 1;
-  }
-}
-
-
-void AliHLTGlobalVertexerComponent::FindPrimaryVertex(  )
+void AliHLTGlobalVertexerComponent::FindPrimaryVertex()
 {
   //* Find event primary vertex
 
-  int nTracks = fESD->GetNumberOfTracks();
-
-  const AliKFParticle **vSelected = new const AliKFParticle*[nTracks]; //* Selected particles for vertex fit
-  Int_t *vIndex = new int [nTracks];                    //* Indices of selected particles
-  Bool_t *vFlag = new bool [nTracks];                    //* Flags returned by the vertex finder
+  const AliKFParticle **vSelected = new const AliKFParticle*[fNTracks]; //* Selected particles for the vertex fit
+  Int_t *vIndex = new int [fNTracks];                    //* Indices of selected particles
+  Bool_t *vFlag = new bool [fNTracks];                    //* Flags returned by the vertex finder
 
   fPrimaryVtx.Initialize();
-  fPrimaryVtx.SetBeamConstraint(fESD->GetDiamondX(),fESD->GetDiamondY(),0,
-				TMath::Sqrt(fESD->GetSigma2DiamondX()),TMath::Sqrt(fESD->GetSigma2DiamondY()),5.3);
+  //fPrimaryVtx.SetBeamConstraint(fESD->GetDiamondX(),fESD->GetDiamondY(),0,
+  //TMath::Sqrt(fESD->GetSigma2DiamondX()),TMath::Sqrt(fESD->GetSigma2DiamondY()),5.3);
+
+  fPrimaryVtx.SetBeamConstraint( 0, 0, 0, 3., 3., 5.3 );
   
   Int_t nSelected = 0;
-  for( Int_t i = 0; i<nTracks; i++){ 
+  for( Int_t i = 0; i<fNTracks; i++){ 
     if(!fTrackInfos[i].fOK ) continue;
     //if( fESD->GetTrack(i)->GetTPCNcls()<60  ) continue;
     const AliKFParticle &p = fTrackInfos[i].fParticle;
@@ -419,63 +496,42 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex(  )
     if( vFlag[i] ) fTrackInfos[vIndex[i]].fPrimUsedFlag = 1;
   }
 
-  for( Int_t i = 0; i<nTracks; i++ ){
+  for( Int_t i = 0; i<fNTracks; i++ ){
     AliESDTrackInfo &info = fTrackInfos[i];
     info.fPrimDeviation = info.fParticle.GetDeviationFromVertex( fPrimaryVtx );   
   }
-  //cout<<"SG: prim vtx nelected="<<nSelected<<", ncont="<<fPrimaryVtx.GetNContributors()<<endl;
-  if( fPrimaryVtx.GetNContributors()>=3 ){
-    AliESDVertex vESD( fPrimaryVtx.Parameters(), fPrimaryVtx.CovarianceMatrix(), fPrimaryVtx.GetChi2(), fPrimaryVtx.GetNContributors() );
-    fESD->SetPrimaryVertexTracks( &vESD );
 
-    // relate the tracks to vertex
+  //cout<<"SG: prim vtx event"<<fStatNEvents<<": n selected="<<nSelected<<", ncont="<<fPrimaryVtx.GetNContributors()<<endl;
 
-    if( fFitTracksToVertex ){      
-      for( Int_t i = 0; i<nTracks; i++ ){
-	if( !fTrackInfos[i].fPrimUsedFlag ) continue;	  
-	if( fTrackInfos[i].fPrimDeviation > fConstrainedTrackDeviation ) continue;
-	fESD->GetTrack(i)->RelateToVertex( &vESD, fESD->GetMagneticField(),100. );
-      }
-    }
-
-  } else {
-    for( Int_t i = 0; i<nTracks; i++)
+  if( fPrimaryVtx.GetNContributors()<3 ){
+    for( Int_t i = 0; i<fNTracks; i++)
       fTrackInfos[i].fPrimUsedFlag = 0;
   }
-
-
   delete[] vSelected;
   delete[] vIndex;
   delete[] vFlag;
 }
 
 
-void AliHLTGlobalVertexerComponent::FindV0s(  )
+void AliHLTGlobalVertexerComponent::FindV0s( vector<pair<int,int> > v0s  )
 {
   //* V0 finder
 
-  int nTracks = fESD->GetNumberOfTracks();
-  //AliKFVertex primVtx( *fESD->GetPrimaryVertexTracks() );
   AliKFVertex &primVtx = fPrimaryVtx;
   if( primVtx.GetNContributors()<3 ) return;
 
-  bool *constrainedV0   = new bool[nTracks];
-  for( Int_t iTr = 0; iTr<nTracks; iTr++ ){ 
-    constrainedV0[iTr] = 0;
-  }
-  
   TStopwatch timer;
   Int_t statN = 0;
   Bool_t run = 1;
 
-  for( Int_t iTr = 0; iTr<nTracks && run; iTr++ ){ //* first daughter
+  for( Int_t iTr = 0; iTr<fNTracks && run; iTr++ ){ //* first daughter
 
     AliESDTrackInfo &info = fTrackInfos[iTr];
     if( !info.fOK ) continue;    
     if( info.fParticle.GetQ() >0 ) continue;    
     if( info.fPrimDeviation < fV0DaughterPrimDeviation ) continue;
 
-    for( Int_t jTr = 0; jTr<nTracks; jTr++ ){  //* second daughter
+    for( Int_t jTr = 0; jTr<fNTracks; jTr++ ){  //* second daughter
       
       
       AliESDTrackInfo &jnfo = fTrackInfos[jTr];
@@ -534,25 +590,86 @@ void AliHLTGlobalVertexerComponent::FindV0s(  )
       //* Reject V0 if it decays too close[sigma] to the primary vertex
 
       if( length  < fV0DecayLengthInSigmas*sigmaLength ) continue;
-
-      //* add ESD v0 
       
-      AliESDv0 v0ESD( *fESD->GetTrack( iTr ), iTr, *fESD->GetTrack( jTr ), jTr );  
-      fESD->AddV0( &v0ESD );
+      //* keep v0 
 
-      // relate the tracks to vertex
+      v0s.push_back(pair<int,int>(iTr,jTr));
+    }
+  }
+}
 
-      if( fFitTracksToVertex ){
-	if( constrainedV0[iTr] || constrainedV0[jTr]
-	    || info.fPrimDeviation < fConstrainedTrackDeviation || jnfo.fPrimDeviation < fConstrainedTrackDeviation ) continue;
-	AliESDVertex vESD(v0.Parameters(), v0.CovarianceMatrix(), v0.GetChi2(), 2);
-	fESD->GetTrack(iTr)->RelateToVertex( &vESD, fESD->GetMagneticField(),100. );
-	fESD->GetTrack(jTr)->RelateToVertex( &vESD, fESD->GetMagneticField(),100. );
-	constrainedV0[iTr] = 1;
-	constrainedV0[jTr] = 1;	
+
+
+
+void AliHLTGlobalVertexerComponent::FillESD( AliESDEvent *event, AliHLTGlobalVertexerData *data
+)
+{
+  //* put output of a vertexer to the esd event
+
+  Int_t nESDTracks = event->GetNumberOfTracks();
+
+  const int *listPrim = data->fTrackIndices;
+  const int *listV0 = data->fTrackIndices + data->fNPrimTracks;
+
+  std::map<int,int> mapId;
+  bool *constrainedToVtx   = new bool[nESDTracks];
+
+  for( int i=0; i<nESDTracks; i++ ){
+    constrainedToVtx[i] = 0;
+    if( !event->GetTrack(i) ) continue;
+    mapId[ event->GetTrack(i)->GetID() ] = i;
+  }
+
+  if( data->fPrimNContributors >=3 ){
+
+    AliESDVertex vESD( data->fPrimP, data->fPrimC, data->fPrimChi2, data->fPrimNContributors );
+    event->SetPrimaryVertexTracks( &vESD );
+
+    // relate tracks to the primary vertex
+
+    if( data->fFitTracksToVertex ){
+      for( Int_t i = 0; i<data->fNPrimTracks; i++ ){
+	Int_t id = listPrim[ i ];
+	map<int,int>::iterator it = mapId.find(id);
+	if( it==mapId.end() ) continue;
+	Int_t itr = it->second;
+	event->GetTrack(itr)->RelateToVertex( &vESD, event->GetMagneticField(),100. );
+	constrainedToVtx[ itr ] = 1;
       }
     }
   }
-  delete[] constrainedV0;
-}
 
+  //* add ESD v0s and relate tracks to v0s
+ 
+
+  for( int i=0; i<data->fNV0s; i++ ){
+
+    Int_t id1 = listV0[ 2*i ];
+    Int_t id2 = listV0[ 2*i + 1];
+    map<int,int>::iterator it = mapId.find(id1);
+    if( it==mapId.end() ) continue;
+    Int_t iTr = it->second;
+    it = mapId.find(id2);
+    if( it==mapId.end() ) continue;
+    Int_t jTr = it->second;
+   
+    AliESDv0 v0( *event->GetTrack( iTr ), iTr, *event->GetTrack( jTr ), jTr );  
+    event->AddV0( &v0 );
+
+    // relate the tracks to the vertex  
+
+    if( data->fFitTracksToVertex ){
+      if( constrainedToVtx[iTr] || constrainedToVtx[jTr] ) continue;
+      double pos[3];
+      double sigma[3] = {.1,.1,.1};
+      v0.XvYvZv(pos);
+      AliESDVertex vESD(pos, sigma);
+      event->GetTrack(iTr)->RelateToVertex( &vESD, event->GetMagneticField(),100. );
+      event->GetTrack(jTr)->RelateToVertex( &vESD, event->GetMagneticField(),100. );
+      constrainedToVtx[iTr] = 1;
+      constrainedToVtx[jTr] = 1;    
+    }
+  }
+
+  delete[] constrainedToVtx;
+}

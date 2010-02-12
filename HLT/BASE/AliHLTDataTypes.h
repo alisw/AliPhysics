@@ -293,6 +293,12 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTESDVertexDataTypeID    {'E','S','D','V','T','X','V','0'}
 
+/** output of the GlobalVertexer data block
+ * The 'V0' at the end allows a versioning
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTDataTypeGlobalVertexerID    {'G','L','B','V','T','X','V','0'}
+
 /** ESD data block
  * an AliESD object of varying origin
  * The 'V0' at the end allows a versioning
@@ -919,6 +925,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDVertex;
+
+  /** global vertexer data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeGlobalVertexer;
 
   /** ESD object data specification, origin is 'any' 
    * @ingroup alihlt_component_datatypes
