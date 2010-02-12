@@ -1278,14 +1278,14 @@ void AliKFParticleBase::TransportCBM( Double_t dS,
 }
 
 
-void AliKFParticleBase::TransportBz( Double_t b, Double_t ss,
-				     Double_t p[], Double_t cc[] ) const 
+void AliKFParticleBase::TransportBz( Double_t b, Double_t t,
+				     Double_t p[], Double_t e[] ) const 
 { 
   //* Transport the particle on dS, output to P[],C[], for Bz field
  
   const Double_t kCLight = 0.000299792458;
   b = b*fQ*kCLight;
-  Double_t bs= b*ss;
+  Double_t bs= b*t;
   Double_t s = TMath::Sin(bs), c = TMath::Cos(bs);
   Double_t sB, cB;
   if( TMath::Abs(bs)>1.e-10){
@@ -1293,7 +1293,7 @@ void AliKFParticleBase::TransportBz( Double_t b, Double_t ss,
     cB= (1-c)/b;
   }else{
     const Double_t kOvSqr6 = 1./TMath::Sqrt(6.);
-    sB = (1.-bs*kOvSqr6)*(1.+bs*kOvSqr6)*ss;
+    sB = (1.-bs*kOvSqr6)*(1.+bs*kOvSqr6)*t;
     cB = .5*sB*bs;
   }
   
@@ -1303,16 +1303,17 @@ void AliKFParticleBase::TransportBz( Double_t b, Double_t ss,
   
   p[0] = fP[0] + sB*px + cB*py;
   p[1] = fP[1] - cB*px + sB*py;
-  p[2] = fP[2] +  ss*pz;
+  p[2] = fP[2] +  t*pz;
   p[3] =          c*px + s*py;
   p[4] =         -s*px + c*py;
   p[5] = fP[5];
   p[6] = fP[6];
   p[7] = fP[7];
- 
+
+  /* 
   Double_t mJ[8][8] = { {1,0,0,   sB, cB,  0, 0, 0 },
 			{0,1,0,  -cB, sB,  0, 0, 0 },
-			{0,0,1,    0,  0, ss, 0, 0 },
+			{0,0,1,    0,  0,  t, 0, 0 },
 			{0,0,0,    c,  s,  0, 0, 0 },
 			{0,0,0,   -s,  c,  0, 0, 0 },
 			{0,0,0,    0,  0,  1, 0, 0 },
@@ -1331,51 +1332,70 @@ void AliKFParticleBase::TransportBz( Double_t b, Double_t ss,
   
   for( Int_t k=0,i=0; i<8; i++)
     for( Int_t j=0; j<=i; j++, k++ ){
-      cc[k] = 0;
-      for( Int_t l=0; l<8; l++ ) cc[k]+=mJC[i][l]*mJ[j][l];
+      e[k] = 0;
+      for( Int_t l=0; l<8; l++ ) e[k]+=mJC[i][l]*mJ[j][l];
     }
   
   return;
-  /*
-  Double_t cBC13 = cB*fC[13];
-  Double_t C17 = fC[17];
-  Double_t C18 = fC[18];
-  fC[ 0]+=  2*(sB*fC[ 6] + cB*fC[10]) + (sB*fC[ 9] + 2*cBC13)*sB + cB*cB*fC[14];
-
-  Double_t mJC13= fC[ 7] - cB*fC[ 9] + sB*fC[13];
-  Double_t mJC14= fC[11] -    cBC13 + sB*fC[14];
- 
-  fC[ 1]+= -cB*fC[ 6] + sB*fC[10] +mJC13*sB +mJC14*cB;
-  fC[ 2]+= -cB*fC[ 7] + sB*fC[11] -mJC13*cB +mJC14*sB;
-
-  Double_t mJC23= fC[ 8] + S*fC[18];
-  Double_t mJC24= fC[12] + S*fC[19];
-  fC[ 3]+= S*fC[15] +mJC23*sB +mJC24*cB;
-  fC[ 4]+= S*fC[16] -mJC23*cB +mJC24*sB;
- 
-  fC[15]+=  C18*sB + fC[19]*cB;
-  fC[16]+= -C18*cB + fC[19]*sB;
-  fC[17]+=  fC[20]*S;
-  fC[18] =  C18*c + fC[19]*s;
-  fC[19] = -C18*s + fC[19]*c;
-
-  fC[ 5]+= (C17 + C17 + fC[17])*S;
-
-  Double_t mJC33= c*fC[ 9] + s*fC[13]; Double_t mJC34= c*fC[13] + s*fC[14];
-  Double_t mJC43=-s*fC[ 9] + c*fC[13]; Double_t mJC44=-s*fC[13] + c*fC[14];
-  Double_t C6= fC[6], C7= fC[7], C8= fC[8]; 
-
-  fC[ 6]= c*C6 + s*fC[10] +mJC33*sB +mJC34*cB;
-  fC[ 7]= c*C7 + s*fC[11] -mJC33*cB +mJC34*sB;
-  fC[ 8]= c*C8 + s*fC[12] +fC[18]*S;
-  fC[ 9]= mJC33*c +mJC34*s;
-
-  fC[10]= -s*C6 + c*fC[10] +mJC43*sB +mJC44*cB;
-  fC[11]= -s*C7 + c*fC[11] -mJC43*cB +mJC44*sB;
-  fC[12]= -s*C8 + c*fC[12] +fC[19]*S;
-  fC[13]= mJC43*c +mJC44*s;
-  fC[14]=-mJC43*s +mJC44*c;
   */
+
+  Double_t 
+    c6=fC[6], c7=fC[7], c8=fC[8], c17=fC[17], c18=fC[18],
+    c24 = fC[24], c31 = fC[31];
+
+  Double_t 
+    cBC13 = cB*fC[13],
+    mJC13 = c7 - cB*fC[9] + sB*fC[13],
+    mJC14 = fC[11] - cBC13 + sB*fC[14],
+    mJC23 = c8 + t*c18,
+    mJC24 = fC[12] + t*fC[19],
+    mJC33 = c*fC[9] + s*fC[13],
+    mJC34 = c*fC[13] + s*fC[14],
+    mJC43 = -s*fC[9] + c*fC[13],
+    mJC44 = -s*fC[13] + c*fC[14];
+
+
+  e[0]= fC[0] + 2*(sB*c6 + cB*fC[10]) + (sB*fC[9] + 2*cBC13)*sB + cB*cB*fC[14];
+  e[1]= fC[1] - cB*c6 + sB*fC[10] + mJC13*sB + mJC14*cB;
+  e[2]= fC[2] - cB*c7 + sB*fC[11] - mJC13*cB + mJC14*sB;
+  e[3]= fC[3] + t*fC[15] + mJC23*sB + mJC24*cB;
+  e[4]= fC[4] + t*fC[16] - mJC23*cB + mJC24*sB;
+
+  e[15]= fC[15] + c18*sB + fC[19]*cB;
+  e[16]= fC[16] - c18*cB + fC[19]*sB;
+  e[17]= c17 + fC[20]*t;
+  e[18]= c18*c + fC[19]*s;
+  e[19]= -c18*s + fC[19]*c;
+
+  e[5]= fC[5] + (c17 + e[17] )*t;
+
+  e[6]= c*c6 + s*fC[10] + mJC33*sB + mJC34*cB;
+  e[7]= c*c7 + s*fC[11] - mJC33*cB + mJC34*sB;
+  e[8]= c*c8 + s*fC[12] + e[18]*t;
+  e[9]= mJC33*c + mJC34*s;
+  e[10]= -s*c6 + c*fC[10] + mJC43*sB + mJC44*cB;
+
+    
+  e[11]= -s*c7 + c*fC[11] - mJC43*cB + mJC44*sB;
+  e[12]= -s*c8 + c*fC[12] + e[19]*t;
+  e[13]= mJC43*c + mJC44*s;
+  e[14]= -mJC43*s + mJC44*c;
+  e[20]= fC[20];
+  e[21]= fC[21] + fC[25]*cB + c24*sB;
+  e[22]= fC[22] - c24*cB + fC[25]*sB;
+  e[23]= fC[23] + fC[26]*t;
+  e[24]= c*c24 + s*fC[25];
+  e[25]= c*fC[25] - c24*s;
+  e[26]= fC[26];
+  e[27]= fC[27];
+  e[28]= fC[28] + fC[32]*cB + c31*sB;
+  e[29]= fC[29] - c31*cB + fC[32]*sB;
+  e[30]= fC[30] + fC[33]*t;
+  e[31]= c*c31 + s*fC[32];
+  e[32]= c*fC[32] - s*c31;
+  e[33]= fC[33];
+  e[34]= fC[34];
+  e[35]= fC[35];     
 }
 
 
@@ -1695,3 +1715,4 @@ void AliKFParticleBase::MultQSQt( const Double_t Q[], const Double_t S[], Double
 
 // 72-charachters line to define the printer border
 //3456789012345678901234567890123456789012345678901234567890123456789012
+
