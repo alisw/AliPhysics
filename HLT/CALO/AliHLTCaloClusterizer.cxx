@@ -71,7 +71,6 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
   fAvailableSize = sizeof(AliHLTCaloRecPointDataStruct) * 20;
   fRecPointDataPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(new UChar_t[fAvailableSize]);
   fFirstRecPointPtr = fRecPointDataPtr;  
-  printf("Start of rec point data: %x, end of rec point data: %x\n", fRecPointDataPtr, reinterpret_cast<UChar_t*>(fRecPointDataPtr) + fAvailableSize);
 
 }//end
 
@@ -100,14 +99,14 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
   for(Int_t i = 0; i < nDigits; i++)
     { 
       fDigitsInCluster = 0;
-      //      printf("ENERGY: %f\n", fDigitsPointerArray[i]->fEnergy);
+
       if(fDigitsPointerArray[i]->fEnergy < fEmcClusteringThreshold)
 	{
 	  continue;
 	}
       CheckArray();
       CheckBuffer();
-      //            printf("` candidate!\n");
+
       // First digit is placed at the fDigits member variable in the recpoint
       fDigitIndexPtr = &(fRecPointDataPtr->fDigits);
       fUsedSize += sizeof(AliHLTCaloRecPointDataStruct);
@@ -117,7 +116,6 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
 
       // Assigning the digit to this rec point
       fRecPointDataPtr->fDigits = i;
-      printf("Clusterizier: adding digit:  index pointer: %x, index: %d\n", fDigitIndexPtr, *fDigitIndexPtr);
       fUsedSize += sizeof(AliHLTCaloRecPointDataStruct);
       
       // Incrementing the pointer to be ready for new entry
@@ -137,8 +135,6 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
       //fUsedSize += sizeof(AliHLTCaloRecPointDataStruct) + (fDigitsInCluster-1)*sizeof(AliHLTCaloDigitDataStruct);   
       
       fRecPointDataPtr->fMultiplicity = fDigitsInCluster;     
-      printf("Rec point energy: %f\n", fRecPointDataPtr->fAmp);
-      printf("Multiplicity: %d\n", fDigitsInCluster);
       fRecPointArray[fNRecPoints] = fRecPointDataPtr; 
       
       fRecPointDataPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(fDigitIndexPtr);
@@ -182,11 +178,9 @@ AliHLTCaloClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTCaloRecPointDat
 // 		     }	
 		  CheckBuffer();
 		  // Assigning index to digit
-		  printf("Digit index pointer: %x\n", fDigitIndexPtr);
 		  *fDigitIndexPtr = j;
 		  fUsedSize += sizeof(Int_t);
 		  
-		  printf("Clusterizier: adding digit:  index pointer: %x, index: %d\n", fDigitIndexPtr, *fDigitIndexPtr); 
 		  // Incrementing digit pointer to be ready for new entry
 		  fDigitIndexPtr++;
 
@@ -247,10 +241,8 @@ AliHLTCaloClusterizer::AreNeighbours(AliHLTCaloDigitDataStruct* digit1,
 
 Int_t AliHLTCaloClusterizer::CheckArray()
 {
-      printf("CheckArray: fArraySize: %d, fNRecPoints: %d\n", fArraySize, fNRecPoints);
       if(fArraySize == fNRecPoints)
 	{
-	   printf("Expanding array...");
 	   fArraySize *= 2;
 	   AliHLTCaloRecPointDataStruct **tmp = new AliHLTCaloRecPointDataStruct*[fArraySize];
 	   memcpy(tmp, fRecPointArray, fArraySize/2 * sizeof(AliHLTCaloRecPointDataStruct*));
@@ -263,10 +255,8 @@ Int_t AliHLTCaloClusterizer::CheckArray()
 Int_t AliHLTCaloClusterizer::CheckBuffer()
 {
    // See header file for class documentation 
-	 printf("CheckBuffer: Used size %d, fAvailableSize: %d\n", fUsedSize, fAvailableSize);
-	if((fAvailableSize - fUsedSize) < sizeof(AliHLTCaloRecPointDataStruct) )
+	if((fAvailableSize - fUsedSize) < sizeof(AliHLTCaloRecPointDataStruct))
 	{
-	   printf("Expanding buffer...\n");
 	    Int_t recPointOffset = reinterpret_cast<UChar_t*>(fRecPointDataPtr) - reinterpret_cast<UChar_t*>(fFirstRecPointPtr);
 	    fAvailableSize *= 2;
 	    UChar_t *tmp = new UChar_t[fAvailableSize];
@@ -301,7 +291,6 @@ Int_t AliHLTCaloClusterizer::CheckDigits(AliHLTCaloRecPointDataStruct** recArray
   {
      nRecPoints = fNRecPoints;
   }
-  printf("CL: CheckDigits: Number of rec points: %d\n", nRecPoints);
   for(Int_t i = 0; i < nRecPoints; i++)
   {
           
@@ -310,23 +299,16 @@ Int_t AliHLTCaloClusterizer::CheckDigits(AliHLTCaloRecPointDataStruct** recArray
      //AliHLTCaloRecPointDataStruct *recPoint = fRecPointArray[0];
      Int_t multiplicity = recPoint->fMultiplicity;
      Int_t *digitIndexPtr = &(recPoint->fDigits);
-     printf("CL: Rec point with energy: %f, multiplicity: %d\n", recPoint->fAmp, recPoint->fMultiplicity);
      for(Int_t j = 0; j < multiplicity; j++)
      {
 	//AliHLTCaloRecPointDataStruct *recPoint = fRecPointArray[j];
-	AliHLTCaloDigitDataStruct *digit = digits[*digitIndexPtr];
-	printf("CL: Digit ID: %d, energy: %f, index: %d, indexpointer: %x\n", digit->fID, digit->fEnergy, *digitIndexPtr, digitIndexPtr);
+//	AliHLTCaloDigitDataStruct *digit = digits[*digitIndexPtr];
 	digitIndexPtr++;
 	//recPoint = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(digitIndexPtr);
      }
   }
      
-     
-     
-     
-     
-     
-     
+     return 0;
 }
 
 Int_t AliHLTCaloClusterizer::CheckDigits(AliHLTCaloRecPointDataStruct** recArray, AliHLTCaloDigitDataStruct* digitArray, Int_t nRP)
@@ -343,7 +325,6 @@ Int_t AliHLTCaloClusterizer::CheckDigits(AliHLTCaloRecPointDataStruct** recArray
   {
      nRecPoints = fNRecPoints;
   }
-  printf("CL: CheckDigits: Number of rec points: %d\n", nRecPoints);
   for(Int_t i = 0; i < nRecPoints; i++)
   {
           
@@ -352,22 +333,14 @@ Int_t AliHLTCaloClusterizer::CheckDigits(AliHLTCaloRecPointDataStruct** recArray
      //AliHLTCaloRecPointDataStruct *recPoint = fRecPointArray[0];
      Int_t multiplicity = recPoint->fMultiplicity;
      Int_t *digitIndexPtr = &(recPoint->fDigits);
-     printf("CL: Rec point with energy: %f, multiplicity: %d\n", recPoint->fAmp, recPoint->fMultiplicity);
      for(Int_t j = 0; j < multiplicity; j++)
      {
 	//AliHLTCaloRecPointDataStruct *recPoint = fRecPointArray[j];
 	AliHLTCaloDigitDataStruct digit = digits[*digitIndexPtr];
-	printf("CL: digits: %x, recpoints: %x, digitIndexPtr: %x\n", digits, recpoints, digitIndexPtr);
-	printf("CL: Digit ID: %d, energy: %f, index: %d, indexpointer: %x\n", digit.fID, digit.fEnergy, *digitIndexPtr, digitIndexPtr);
 	digitIndexPtr++;
 	//recPoint = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(digitIndexPtr);
      }
   }
-     
-     
-     
-     
-     
-     
+   return 0;
      
 }

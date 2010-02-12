@@ -1,4 +1,3 @@
-/*
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -21,18 +20,18 @@
 AliHLTPHOSGeometry::AliHLTPHOSGeometry() :
 AliHLTCaloGeometry("PHOS")
 {
-
+ // See header file for class documentation
 }
 
 AliHLTPHOSGeometry::~AliHLTPHOSGeometry()
 {
-
+// See header file for class documentation
 }
 
-void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint, AliHLTCaloGlobalCoordinate& globalCoord )
+void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& /*recPoint*/, AliHLTCaloGlobalCoordinate& globalCoord )
 {
+   // See header file for class documentation
    globalCoord.fX = 0;
    globalCoord.fZ = 0;
    globalCoord.fY = 0;
 }
-

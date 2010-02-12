@@ -90,8 +90,6 @@ AliHLTESDCaloClusterMaker::FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterH
       //      esdCluster.SetCellsAbsId(idArrayPtr);
       //      esdCluster.SetCellsAmplitudeFraction(ampFracArrayPtr);
 
-      printf("Cluster energy: %f\n", esdCluster.E());
-      
       esdPtr->AddCaloCluster(&esdCluster);
       nClusters++;
     }

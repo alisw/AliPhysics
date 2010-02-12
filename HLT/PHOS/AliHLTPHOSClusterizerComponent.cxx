@@ -48,7 +48,7 @@ AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent():
 
   fDataOrigin = const_cast<char*>(kAliHLTDataOriginPHOS);
 
-  AliHLTPHOSGeometry *geom = new AliHLTPHOSGeometry;
+  //AliHLTPHOSGeometry *geom = new AliHLTPHOSGeometry;
   
   fAnalyserPtr->SetGeometry(new AliHLTPHOSGeometry);
   

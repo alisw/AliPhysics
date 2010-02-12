@@ -1,4 +1,3 @@
-/*
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -33,11 +32,8 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
       virtual void GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint,  AliHLTCaloGlobalCoordinate& globalCoord ); //COMMENT
 
       /** See base class for class documentation */
-      virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId) const { AbsId = 0; }
-      
-      
-
-      
+      virtual void GetCellAbsId(UInt_t /*module*/, UInt_t /*x*/, UInt_t /*z*/, Int_t& AbsId) const { AbsId = 0; }
+    
   };
 
 #endif // ALIHLTPHOSGEOMETRY_H

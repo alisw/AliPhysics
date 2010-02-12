@@ -210,9 +210,13 @@ private:
 
   /** The cluster type */
   Char_t fClusterType;                   //COMMENT
-
-   TH1F *fHist;
-
+ 
+ /** Copy constructor  not implemented */
+ AliHLTCaloClusterAnalyser ( const AliHLTCaloClusterAnalyser &); // not implemented
+    
+ /** Assignment */
+AliHLTCaloClusterAnalyser & operator = ( const AliHLTCaloClusterAnalyser &); // not implemented
+    
 };
 
 #endif

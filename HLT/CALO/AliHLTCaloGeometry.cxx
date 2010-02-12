@@ -35,13 +35,8 @@ AliHLTCaloGeometry::AliHLTCaloGeometry(TString det) :
 
 AliHLTCaloGeometry::~AliHLTCaloGeometry()
 {
-
+   //see header file for class documentation
 }
-
-//void AliHLTCaloGeometry:: GetGlobalCoordinates(AliHLTCaloCoordinate &channelCoord, AliHLTCaloGlobalCoordinate &globalCoord )
-//{
-  //Virtual base class
-//}
 
 
 

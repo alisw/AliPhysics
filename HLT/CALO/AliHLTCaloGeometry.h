@@ -20,11 +20,20 @@ class AliHLTCaloGeometry : public AliHLTCaloConstantsHandler
 {
 
  public:
-  AliHLTCaloGeometry (TString det);
+   
+   /** Constructor */
+  AliHLTCaloGeometry (TString det);  //COMMENT
   
-  virtual ~AliHLTCaloGeometry();
+  /** Destructor */
+  virtual ~AliHLTCaloGeometry(); //COMMENT
   
-  virtual void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord ) = 0;
+  /**
+  * Get the global coordinates for a rec point. 
+  * Pure virtual - must be implemented by child classes
+  * @param recPoint is the rec point containing the local coordinates
+  * @param globalCoord is a AliHLTCaloGlobalCoordinate to write to
+  */
+  virtual void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord ) = 0;  //COMMENT
   
   /**
   * Get the absolute ID from the relative position in the module
@@ -34,12 +43,12 @@ class AliHLTCaloGeometry : public AliHLTCaloConstantsHandler
   * @param z is the z position in the module
   * @param AbsId is a the absolute id variable
   */
-  virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId) const = 0;
+  virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId) const = 0; //COMMENT
   
   private:
      
-    
-   AliHLTCaloGeometry();
+    /** Default constructor, not implemented */
+   AliHLTCaloGeometry();   //COMMENT
 
 
 };

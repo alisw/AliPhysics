@@ -60,15 +60,11 @@ AliHLTCaloClusterAnalyser::AliHLTCaloClusterAnalyser() :
   fClusterType(AliESDCaloCluster::kPHOSCluster)
 {
   //See header file for documentation
-  fHist = new TH1F("cluster_energies", "cluster_energies", 200, 0, 20);
-  
 }
 
 AliHLTCaloClusterAnalyser::~AliHLTCaloClusterAnalyser() 
 {
-   TFile *file = TFile::Open("debug.root", "RECREATE");
-   fHist->Write();
-   file->Close();
+  // See header file for class documentation
 }
 
 void 
@@ -105,11 +101,6 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
   Float_t zi = 0.;
 
   AliHLTCaloDigitDataStruct *digit = 0;
-  //AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
-   
-  
-  //AliHLTCaloClusterizer	cl("PHOS");
-  //cl.CheckDigits(fRecPointArray, fDigitDataArray, fNRecPoints);
 
   UInt_t iDigit = 0;
 
@@ -117,19 +108,17 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
     {
       AliHLTCaloRecPointDataStruct *recPoint = fRecPointArray[iRecPoint];
       //      digit = &(recPoint->fDigits);
-      cout << "COG: Rec point multiplicity: " << recPoint->fMultiplicity << ", rec point energy: " << recPoint->fAmp << endl;
+
       Int_t *digitIndexPtr = &(recPoint->fDigits);
 
       for(iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
 	{
-	  //cout << "1. Digit array: " << fDigitDataArray << ", Digit: " << digit << ", Index: " << *digitIndexPtr << ", ID: " << digit->fID << endl;
 
 	  digit = &(fDigitDataArray[*digitIndexPtr]);
-	  cout << "COG: 2. Digit array: " << fDigitDataArray << ", Digit: " << digit << ", Index: " << *digitIndexPtr << ", index pointer: " << digitIndexPtr<<  endl;
-	  cout << ", dig Energy: " << digit->fEnergy << ", Index: " << *digitIndexPtr << ", ID: " << digit->fID << endl;	
+
 	  xi = digit->fX;
 	  zi = digit->fZ;
-	  //  cout << "COG digits (x:z:E:time): " << xi << " : " << zi << " : " << digit->fEnergy << " : " << digit->fTime << endl;
+
 	  if (recPoint->fAmp > 0 && digit->fEnergy > 0) 
 	    {
 	      Float_t w = TMath::Max( 0., fLogWeight + TMath::Log( digit->fEnergy / recPoint->fAmp ) ) ;
@@ -139,7 +128,7 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
 	    }
 	  digitIndexPtr++;
 	}
-      //cout << endl;
+
       if (wtot>0) 
 	{
 	  recPoint->fX = x/wtot ;
@@ -199,7 +188,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
   UShort_t* cellIDPtr = 0;
   Float_t* cellAmpFracPtr = 0;;
   
-  Int_t id = -1;
+//  Int_t id = -1;
   TVector3 globalPos;
 
   for(Int_t i = 0; i < fNRecPoints; i++) //TODO needs fix when we start unfolding (number of clusters not necessarily same as number of recpoints gotten from the clusterizer
@@ -216,12 +205,9 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       cellAmpFracPtr = &(caloClusterPtr->fCellsAmpFraction);
      
       AliHLTCaloRecPointDataStruct *recPointPtr = fRecPointArray[i];
-      cout << "CA: rec point energy: " << recPointPtr->fAmp << ", rec point multiplicity: " << recPointPtr->fMultiplicity << endl;
-      //      cout << "Local Position (x:z:module): " << recPointPtr->fX << " : "<< recPointPtr->fZ << " : " << recPointPtr->fModule << endl;
       
       AliHLTCaloGlobalCoordinate globalCoord;
       fGeometry->GetGlobalCoordinates(*recPointPtr, globalCoord);
-      // cout << "Global Position (x:y:z): " << globalPos[0] << " : "<< globalPos[1] << " : " << globalPos[2] << endl << endl;
 
       caloClusterPtr->fGlobalPos[0] = globalCoord.fX;
       caloClusterPtr->fGlobalPos[1] = globalCoord.fY;
@@ -251,12 +237,6 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 
       caloClusterPtr->fEnergy = recPointPtr->fAmp;
 
-      fHist->Fill(caloClusterPtr->fEnergy);
-
-      cout << "CA: cluster energy: " << caloClusterPtr->fEnergy << endl;
-      cout << "CA: recpoint energy: " << recPointPtr->fAmp << endl;
-      
-      
       if(fDoClusterFit)
 	{
 	  FitCluster(recPointPtr);
@@ -307,9 +287,8 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       recPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(digitPtr);
       //digitPtr = &(recPointPtr->fDigits);  
     }
-  //  cout << "CA: Energy End: " << fCaloClusterDataPtr->fEnergy << endl;
-  //cout << "CA totSize: " << totSize << endl;
-  return fNRecPoints;
+
+return fNRecPoints;
 
 }
 

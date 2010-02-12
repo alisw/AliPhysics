@@ -40,9 +40,11 @@
 AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det): 
   AliHLTCaloProcessor(),
   AliHLTCaloConstantsHandler(det),
-  fDigitsPointerArray(0), 
-  fClusterizerPtr(0),
+  fDataOrigin('\0'),
   fAnalyserPtr(0),
+  fDigitsPointerArray(0), 
+  fOutputDigitsArray(0),
+  fClusterizerPtr(0),
   fDigitCount(0)
 {
   //See headerfile for documentation
@@ -83,30 +85,6 @@ if (fClusterizerPtr)
   return 0;
 }
 
-// void
-// AliHLTCaloClusterizerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
-// {
-//   //See headerfile for documentation
-//   list.clear();
-//   list.push_back(AliHLTCaloDefinitions::fgkDigitDataType|kAliHLTDataOriginPHOS);
-// }
-
-// AliHLTComponentDataType
-// AliHLTCaloClusterizerComponent::GetOutputDataType()
-// {
-//   //See headerfile for documentation
-//   return AliHLTCaloDefinitions::fgkRecPointDataType|kAliHLTDataOriginPHOS;
-// }
-
-// void
-// AliHLTCaloClusterizerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
-
-// {
-//   //See headerfile for documentation
-//   constBase = sizeof(AliHLTCaloRecPointHeaderStruct) + sizeof(AliHLTCaloRecPointDataStruct) + (sizeof(AliHLTCaloDigitDataStruct) << 7); //Reasonable estimate... ;
-//   inputMultiplier = 1.5;
-// }
-
 int
 AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
                                         AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
@@ -132,9 +110,6 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   
   AliHLTCaloDigitDataStruct *digitDataPtr = 0;
   
-//   delete fAnalyserPtr;
-//   fAnalyserPtr  = new AliHLTCaloClusterAnalyser();
-//   
   // Adding together all the digits, should be put in standalone method  
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -143,13 +118,8 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       if (iter->fDataType == (AliHLTCaloDefinitions::fgkDigitDataType|fDataOrigin))
 	{
 
-//	  fDigitsPointerArray[digCount] = reinterpret_cast<AliHLTCaloDigitDataStruct*>(iter->fPtr);
-	  
-	  //cout << "Digits pointer array [" << digCount << "]: " << fDigitsPointerArray[digCount] << endl;
 	  // Update the number of digits
 	  nDigits = iter->fSize/sizeof(AliHLTCaloDigitDataStruct);;
-//	  digCount += nDigits;
-	  //	  HLTError("Got %d digits", nDigits);
 	  
 	  availableSize -= iter->fSize;
 	  
@@ -184,44 +154,27 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	  memcpy(outBPtr, fDigitsPointerArray[n], sizeof(AliHLTCaloDigitDataStruct));
 	  //fOutputDigitsArray[n] = reinterpret_cast<AliHLTCaloDigitDataStruct*>(outBPtr);
 	  outBPtr = outBPtr + sizeof(AliHLTCaloDigitDataStruct);
-	  printf("CL: digit energy: %f, ID: %d\n", fOutputDigitsArray[n].fEnergy, fOutputDigitsArray[n].fID);
 	}
   
        mysize += digCount*sizeof(AliHLTCaloDigitDataStruct);
 
-//       AliHLTComponentBlockData bdDigits;
-//       FillBlockData( bdDigits );
-//       bdDigits.fOffset = offset;
-//       bdDigits.fSize = mysize;
-//       bdDigits.fDataType = iter->fDataType;
-//       bdDigits.fSpecification = specification;
-//       outputBlocks.push_back( bdDigits );
-
       //HLTDebug("Total number of digits: %d", digCount );
 
       nRecPoints = fClusterizerPtr->ClusterizeEvent(digCount);
-      //fClusterizerPtr->CheckDigits();
+
       //HLTDebug("Number of rec points found: %d", nRecPoints);
 
       fAnalyserPtr->SetCaloClusterData(reinterpret_cast<AliHLTCaloClusterDataStruct*>(outBPtr));
       
-      //fClusterizerPtr->CheckDigits(fClusterizerPtr->GetRecPoints(), fOutputDigitsArray, nRecPoints);
-
       fAnalyserPtr->SetRecPointArray(fClusterizerPtr->GetRecPoints(), nRecPoints);
 
-      //fClusterizerPtr->CheckDigits(fClusterizerPtr->GetRecPoints(), fOutputDigitsArray, nRecPoints);
-
       fAnalyserPtr->SetDigitDataArray(fOutputDigitsArray);
-
-//      fClusterizerPtr->CheckDigits(fClusterizerPtr->GetRecPoints(), fOutputDigitsArray, nRecPoints);
 
       Int_t nClusters = fAnalyserPtr->CreateClusters(nRecPoints, size, mysize);
   
       caloClusterHeaderPtr->fNClusters = nClusters;
       
-      //  HLTError("Number of clusters: %d", nRecPoints);
-
-      
+      //HLTDebug("Number of clusters: %d", nRecPoints);
       
       AliHLTComponentBlockData bd;
       FillBlockData( bd );

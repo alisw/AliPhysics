@@ -189,13 +189,13 @@ protected:
 private:
 
   /** Default constructor, prohibited */
-  //AliHLTCaloClusterizer();                          // COMMENT
+  AliHLTCaloClusterizer();                          // COMMENT
   
   /** Copy constructor, prohibited */
-  //AliHLTCaloClusterizer (const AliHLTCaloClusterizer &); //COMMENT
+  AliHLTCaloClusterizer (const AliHLTCaloClusterizer &); //COMMENT
   
   /** Assignment operator, prohibited */
-  //AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &); //COMMENT
+  AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &); //COMMENT
 
   ClassDef(AliHLTCaloClusterizer, 0);
 

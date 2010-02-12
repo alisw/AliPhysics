@@ -97,10 +97,8 @@ AliHLTCaloClusterReader::SetMemory(const AliHLTCaloClusterHeaderStruct* clusterH
 {
   //See header file for documentation
   
-  printf("Header with %d clusters and %d digits\n", clusterHeaderPtr->fNClusters, clusterHeaderPtr->fNDigits);
   fMaxCnt = clusterHeaderPtr->fNClusters;
   fCurrentClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>((UChar_t*)(clusterHeaderPtr) + sizeof(AliHLTCaloClusterHeaderStruct) + sizeof(AliHLTCaloDigitDataStruct)*clusterHeaderPtr->fNDigits);
-  printf("First cluster energy: %f\n", fCurrentClusterPtr->fEnergy);
   fIsSetMemory = true;
 }
 
