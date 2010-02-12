@@ -26,7 +26,7 @@ AliAnalysisTaskPerformanceStrange *AddTaskPerformanceStrange(Short_t lCollidingS
    taskperformancestrange->SetAnalysisType(type);
    taskperformancestrange->SetAnalysisMC(lAnalysisMC);
    taskperformancestrange->SetAnalysisCut(lAnalysisCut);
-   taskperformancestrange->SetUsePID((lAnalysisPidMode);
+   taskperformancestrange->SetUsePID(lAnalysisPidMode);
    mgr->AddTask(taskperformancestrange);
 
    // Create ONLY the output containers for the data produced by the task.
@@ -46,4 +46,5 @@ AliAnalysisTaskPerformanceStrange *AddTaskPerformanceStrange(Short_t lCollidingS
    mgr->ConnectInput(taskperformancestrange, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskperformancestrange, 1, coutput1);
    return taskperformancestrange;
-}   
+}
+
