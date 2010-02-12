@@ -37,8 +37,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTCaloDigitContainerDataStruct.h \
 		AliHLTCaloRecPointDataStruct.h \
 		AliHLTCaloRecPointContainerStruct.h \
-		AliHLTCaloRecPointHeaderStruct.h \
-		AliHLTCaloConstants.h 
+		AliHLTCaloRecPointHeaderStruct.h 
 ##		AliHLTCaloChannelDataStruct.h \
 ##		AliHLTCaloChannelDataHeaderStruct.h 
 

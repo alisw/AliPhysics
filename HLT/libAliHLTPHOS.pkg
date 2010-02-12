@@ -48,8 +48,8 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSChannelDataStruct.h \
 		  AliHLTPHOSChannelDataHeaderStruct.h \
 		  AliHLTPHOSCoordinate.h \
-	          AliHLTPHOSChannelRawDataStruct.h \
-		  AliHLTPHOSConstants.h
+	          AliHLTPHOSChannelRawDataStruct.h 
+
 
 ##Left empty for auto generation:
 MODULE_DHDR:=	  
