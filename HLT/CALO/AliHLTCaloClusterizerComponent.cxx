@@ -60,7 +60,7 @@ AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det):
 AliHLTCaloClusterizerComponent::~AliHLTCaloClusterizerComponent()
 {
   //See headerfile for documentation
-
+delete fAnalyserPtr;
   if(fClusterizerPtr)
     {
       delete fClusterizerPtr;
@@ -74,7 +74,7 @@ AliHLTCaloClusterizerComponent::Deinit()
 {
   //See headerfile for documentation
 
-  if (fClusterizerPtr)
+if (fClusterizerPtr)
     {
       delete fClusterizerPtr;
       fClusterizerPtr = 0;
@@ -221,6 +221,8 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       
       //  HLTError("Number of clusters: %d", nRecPoints);
 
+      
+      
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset = offset;

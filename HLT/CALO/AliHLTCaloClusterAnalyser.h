@@ -46,6 +46,9 @@ class AliHLTCaloClusterHeaderStruct;
 class AliHLTCaloClusterDataStruct;
 class AliHLTCaloGeometry;
 
+class TH1F; //DEBUG
+
+
 /** 
  * @class AliHLTCaloClusterAnalyser
  * ClusterAnalyser for CALO HLT. Algorithms for center of gravity
@@ -165,8 +168,11 @@ public:
   */
   void SetDigitDataArray(AliHLTCaloDigitDataStruct *digits);
 
+  /**
+  * Set the cluster type 
+  */
+  void SetClusterType(Char_t clusterType) { fClusterType = clusterType; }
   
-  void DoNothing() { printf("Do nothing\n");}
 private:
   
   /** Used for calculation of center of gravity */
@@ -200,8 +206,13 @@ private:
   Bool_t fHaveDistanceToBadChannel;                         //COMMENT
   
   /** The geometry object */
-  AliHLTCaloGeometry* fGeometry;                                   //COMMENT
-  
+  AliHLTCaloGeometry* fGeometry;                                   //! transient
+
+  /** The cluster type */
+  Char_t fClusterType;                   //COMMENT
+
+   TH1F *fHist;
+
 };
 
 #endif

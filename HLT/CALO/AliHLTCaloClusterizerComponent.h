@@ -40,12 +40,12 @@
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloProcessor.h"
 
-
 class AliHLTCaloDigitDataStruct;
 class AliHLTCaloDigitContainerDataStruct;
 class AliHLTCaloClusterizer;
 class AliHLTCaloClusterAnalyser;
 class AliHLTCaloRecPointDataStruct;
+class AliHLTPHOSHistoProdClusterEnergy;
 
 /**
  * @class AliHLTCaloClusterizerComponent
@@ -182,6 +182,7 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     
     /** Assignment */
     AliHLTCaloClusterizerComponent & operator = ( const AliHLTCaloClusterizerComponent &); // not implemented
+    
   };
 
 #endif

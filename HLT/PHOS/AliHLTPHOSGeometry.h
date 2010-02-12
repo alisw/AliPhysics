@@ -31,7 +31,13 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
       
       /** Get the ALICE global coordinates for a rec point */
       virtual void GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint,  AliHLTCaloGlobalCoordinate& globalCoord ); //COMMENT
-    
+
+      /** See base class for class documentation */
+      virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId) const { AbsId = 0; }
+      
+      
+
+      
   };
 
 #endif // ALIHLTPHOSGEOMETRY_H

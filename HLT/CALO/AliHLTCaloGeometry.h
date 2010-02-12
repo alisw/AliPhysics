@@ -21,8 +21,20 @@ class AliHLTCaloGeometry : public AliHLTCaloConstantsHandler
 
  public:
   AliHLTCaloGeometry (TString det);
+  
   virtual ~AliHLTCaloGeometry();
+  
   virtual void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord ) = 0;
+  
+  /**
+  * Get the absolute ID from the relative position in the module
+  * pure virtual - must be imlemented by child classes
+  * @param module is the module id
+  * @param x is the x position in the module
+  * @param z is the z position in the module
+  * @param AbsId is a the absolute id variable
+  */
+  virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId) const = 0;
   
   private:
      
