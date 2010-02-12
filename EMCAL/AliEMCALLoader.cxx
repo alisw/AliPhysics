@@ -56,9 +56,10 @@
 
 ClassImp(AliEMCALLoader)
   
-const TString AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP");//Name for branch with ECA Reconstructed Points
-AliEMCALCalibData*    AliEMCALLoader::fgCalibData = 0; //calibation data
+const TString         AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP");//Name for branch with ECA Reconstructed Points
+AliEMCALCalibData*    AliEMCALLoader::fgCalibData = 0; //calibration data
 AliCaloCalibPedestal* AliEMCALLoader::fgCaloPed   = 0; //dead map data
+AliEMCALSimParam*     AliEMCALLoader::fgSimParam  = 0; //simulation parameters
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
@@ -162,6 +163,26 @@ AliCaloCalibPedestal* AliEMCALLoader::PedestalData()
 	
 }
 
+//____________________________________________________________________________ 
+AliEMCALSimParam* AliEMCALLoader::SimulationParameters()
+{ 
+	// Check if the instance of AliEMCALSimParam exists, if not, create it if 
+	// the OCDB is available, and finally return it.
+	
+	if(!fgSimParam && (AliCDBManager::Instance()->IsDefaultStorageSet()))
+    {
+		AliCDBEntry *entry = (AliCDBEntry*) 
+		AliCDBManager::Instance()->Get("EMCAL/Calib/SimParam");
+		if (entry) fgSimParam =  (AliEMCALSimParam*) entry->GetObject();
+	
+    }
+	
+	if(!fgSimParam)
+		AliFatal("Simulations parameters not found in CDB!");
+
+	return fgSimParam;
+	
+}
 
 //____________________________________________________________________________ 
 Int_t AliEMCALLoader::CalibrateRaw(Double_t energy, Int_t module, 

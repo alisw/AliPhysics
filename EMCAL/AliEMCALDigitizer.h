@@ -53,7 +53,7 @@ public:
   //Float_t GetPedestal()       const { return fPedestal; }
   Float_t GetPinNoise()       const { return fPinNoise;}
   //Float_t GetSlope()          const { return fSlope; }
-  Float_t GetTimeResolution() const { return fTimeResolution ; }
+  Double_t GetTimeResolution() const { return fTimeResolution ; }
   Float_t GetECAchannel()     const { return fADCchannelEC ; }
   Float_t GetECApedestal()    const { return fADCpedestalEC ; }
   void    SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
@@ -104,7 +104,7 @@ private:
   //Float_t fPedestal ;           // Calibration parameters //Not used, remove?
   //Float_t fSlope ;              // read from SDigitizer   //Not used, remove?
   Float_t fPinNoise ;             // Electronics noise in EMC
-  Float_t fTimeResolution ;       // Time resolution of FEE electronics
+  Double_t fTimeResolution ;       // Time resolution of FEE electronics
   //Float_t fTimeThreshold ;        // Threshold to start timing for given crystall //Not used, remove?
   //Float_t fTimeSignalLength ;     // Length of the timing signal //Not used, remove?
   Float_t fADCchannelEC ;         // width of one ADC channel in EC section (GeV)

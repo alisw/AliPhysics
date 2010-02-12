@@ -170,6 +170,17 @@ void AliEMCALSDigitizer::InitParameters()
     Fatal("InitParameters", "Sampling factor not set !") ; 
   }
 
+  // Get the parameters from the OCDB via the loader
+  AliRunLoader *rl = AliRunLoader::Instance();
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+  AliEMCALSimParam * simParam = 0x0;
+  if(emcalLoader) simParam = emcalLoader->SimulationParameters();
+	
+  if(!simParam){
+	simParam = AliEMCALSimParam::GetInstance();
+	AliWarning("Simulation Parameters not available in OCDB?");
+  }
+	
   //
   //JLK 26-Jun-2008 THIS SHOULD HAVE BEEN EXPLAINED AGES AGO:
   //
@@ -180,12 +191,12 @@ void AliEMCALSDigitizer::InitParameters()
   //Digitize() and Calibrate() methods
   //
   // Initializes parameters
-  fA         = AliEMCALSimParam::GetInstance()->GetA(); //0;
-  fB         = AliEMCALSimParam::GetInstance()->GetB(); //1.e+6;  // Changed 24 Apr 2007. Dynamic range now 2 TeV
+  fA         = simParam->GetA(); //0;
+  fB         = simParam->GetB(); //1.e+6;  // Changed 24 Apr 2007. Dynamic range now 2 TeV
   fSampling  = geom->GetSampling();
 
   // threshold for deposit energy of hit
-  fECPrimThreshold  = AliEMCALSimParam::GetInstance()->GetECPrimaryThreshold();//0.05;// GeV // 22-may-07 was 0// 24-nov-04 - was 1.e-6;
+  fECPrimThreshold  = simParam->GetECPrimaryThreshold();//0.05;// GeV // 22-may-07 was 0// 24-nov-04 - was 1.e-6;
   
   AliDebug(2,Form("Print: \n------------------- %s -------------\n",GetName()));
   AliDebug(2,Form("   fInit                                 %i\n", int(fInit)));
@@ -220,7 +231,8 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 
     return ; 
   }
-  
+ 
+
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALSDigitizer");
 
@@ -258,7 +270,8 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 
     Int_t nSdigits = 0 ;
     Int_t i;
-    AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(); 
+
+	AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(); 
     for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
       AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(hits->At(i)) ;
       AliEMCALDigit * curSDigit = 0 ;

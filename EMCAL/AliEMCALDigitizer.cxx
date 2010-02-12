@@ -632,20 +632,31 @@ Bool_t AliEMCALDigitizer::Init()
 void AliEMCALDigitizer::InitParameters()
 { 
   // Parameter initialization for digitizer
- 
-  fMeanPhotonElectron = AliEMCALSimParam::GetInstance()->GetMeanPhotonElectron();//4400;  // electrons per GeV 
-  fPinNoise           = AliEMCALSimParam::GetInstance()->GetPinNoise();//0.012; // pin noise in GeV from analysis test beam data 
+  
+  // Get the parameters from the OCDB via the loader
+  AliRunLoader *rl = AliRunLoader::Instance();
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+  AliEMCALSimParam * simParam = 0x0;
+  if(emcalLoader) simParam = emcalLoader->SimulationParameters();
+	
+  if(!simParam){
+	  simParam = AliEMCALSimParam::GetInstance();
+	  AliWarning("Simulation Parameters not available in OCDB?");
+  }
+	
+  fMeanPhotonElectron = simParam->GetMeanPhotonElectron();//4400;  // electrons per GeV 
+  fPinNoise           = simParam->GetPinNoise();//0.012; // pin noise in GeV from analysis test beam data 
   if (fPinNoise < 0.0001 ) 
     Warning("InitParameters", "No noise added\n") ; 
-  fDigitThreshold     = AliEMCALSimParam::GetInstance()->GetDigitThreshold(); //fPinNoise * 3; // 3 * sigma
-  fTimeResolution     = AliEMCALSimParam::GetInstance()->GetTimeResolution(); //0.6e-9 ; // 600 psc
+  fDigitThreshold     = simParam->GetDigitThreshold(); //fPinNoise * 3; // 3 * sigma
+  fTimeResolution     = simParam->GetTimeResolution(); //0.6e-9 ; // 600 psc
 
   // These defaults are normally not used. 
   // Values are read from calibration database instead
   fADCchannelEC       = 0.0153; // Update 24 Apr 2007: 250./16/1024 - width of one ADC channel in GeV
   fADCpedestalEC      = 0.0 ;  // GeV
 
-  fNADCEC          = AliEMCALSimParam::GetInstance()->GetNADCEC();//(Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
+  fNADCEC          = simParam->GetNADCEC();//(Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
 
   AliDebug(2,Form("Mean Photon Electron %d, Noise %f, E Threshold %f,Time Resolution %g,NADCEC %d",
 		fMeanPhotonElectron,fPinNoise,fDigitThreshold,fTimeResolution,fNADCEC));

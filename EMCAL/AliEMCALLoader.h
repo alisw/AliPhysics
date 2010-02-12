@@ -28,6 +28,7 @@ class TTask ;
 #include "AliLoader.h"
 #include "AliEMCALCalibData.h"
 #include "AliCaloCalibPedestal.h"
+#include "AliEMCALSimParam.h"
 
 class AliLoader ;
 class AliEMCAL ; 
@@ -99,14 +100,16 @@ class AliEMCALLoader : public AliLoader {
   void   SetDebug(Int_t level) {fDebug = level;} // Set debug level
 
   //Calibration
-
   Int_t CalibrateRaw (Double_t energy, Int_t module, Int_t column, Int_t row);//take real calibration coefficients
-  
+	
   void  SetCalibData(AliEMCALCalibData* calibda)  { fgCalibData = calibda; }
   AliEMCALCalibData * CalibData(); // to get the calibration CDB object
-
+	
   void  SetPedestalData(AliCaloCalibPedestal* caloped)  { fgCaloPed = caloped; }
   AliCaloCalibPedestal* PedestalData(); // to get the pedestal CDB object
+
+  void  SetSimParam(AliEMCALSimParam* simparam)  { fgSimParam = simparam; }
+  AliEMCALSimParam* SimulationParameters(); // to get the simulation parameter CDB object
 
 	
 private:
@@ -128,9 +131,10 @@ private:
   TObjArray        *fRecPoints;    //! TClonesArray of recpoints (for tree reading)   
   
   static AliEMCALCalibData    * fgCalibData;  //  calibration data 
-  static AliCaloCalibPedestal * fgCaloPed;    //  dead map 
+  static AliCaloCalibPedestal * fgCaloPed;    //  dead map
+  static AliEMCALSimParam     * fgSimParam;   //  sim param 
 
-  ClassDef(AliEMCALLoader,3)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALLoader,4)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
    
 };
 
