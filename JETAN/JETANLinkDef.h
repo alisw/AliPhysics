@@ -44,5 +44,6 @@
 #pragma	link C++ class AliAnalysisTaskDiJets+;
 #pragma	link C++ class AliEventShape+;
 #pragma	link C++ class AliKMeansClustering+;
+#pragma	link C++ class AliKMeansResult+;
 #pragma	link C++ class AliAnalysisTaskKMeans+;
 #endif
