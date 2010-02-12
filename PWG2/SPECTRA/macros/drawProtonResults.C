@@ -47,11 +47,16 @@ void drawResults(const char* analysisOutput) {
   TF1 *fFitFunction = new TF1("fFitFunction","[0]",-0.5,0.5);
   fFitFunction->SetParameter(0,0.7);
 
-  TCanvas *c2D = new TCanvas("c2D","eta-pT (anti)protons",0,0,700,400);
-  c2D->SetFillColor(10); c2D->SetHighLightColor(10); c2D->Divide(2,1);
+  TCanvas *c2D = new TCanvas("c2D","eta-pT (anti)protons",0,0,900,400);
+  c2D->SetFillColor(10); c2D->SetHighLightColor(10); c2D->Divide(3,1);
   c2D->cd(1); gHistYPtProtons->Draw("col");
-  c2D->cd(2); gHistYPtAntiProtons->Draw("col");
-
+  c2D->cd(2); gHistYPtAntiProtons->DrawCopy("col");
+  c2D->cd(3); gHistYPtAntiProtons->Divide(gHistYPtProtons);
+  gHistYPtAntiProtons->SetStats(kFALSE); gHistYPtAntiProtons->DrawCopy("colz");
+  TFile *fout = TFile::Open("test.root","recreate");
+  gHistYPtAntiProtons->SetName("gHistYPtAntiProtons");
+  gHistYPtAntiProtons->Write();
+  fout->Close();
   TCanvas *cEventStats = new TCanvas("cEventStats","Event statistics",
 				     0,0,500,500);
   cEventStats->SetFillColor(10); cEventStats->SetHighLightColor(10);
@@ -63,6 +68,7 @@ void drawResults(const char* analysisOutput) {
   cEta->cd(2); gHistYAntiProtons->Draw("E"); PrintYields(gHistYAntiProtons);
 
   TCanvas *cPt = new TCanvas("cPt","Pt",100,200,600,400);
+
   cPt->SetFillColor(10); cPt->SetHighLightColor(10); cPt->Divide(2,1);
   cPt->cd(1)->SetLogy(); gHistPtProtons->Draw("E");
   cPt->cd(2)->SetLogy(); gHistPtAntiProtons->Draw("E");
@@ -125,8 +131,12 @@ void drawQAPlots(const char* analysisOutput,
   //=========================================================//
   //List of cuts
   TFile *fCutFile = TFile::Open("ListOfCuts.root");
-  TCanvas *cListOfCuts = dynamic_cast<TCanvas *>(fCutFile->Get("cListOfCuts"));
-  cListOfCuts->Draw();
+  if(fCutFile) {
+    if(fCutFile->IsOpen()) {
+      TCanvas *cListOfCuts = dynamic_cast<TCanvas *>(fCutFile->Get("cListOfCuts"));
+      cListOfCuts->Draw();
+    }
+  }
 
   //=========================================================//
   //QA plots
@@ -284,13 +294,21 @@ void drawQAPlots(const char* analysisOutput,
   gHistEtaPhiAntiProtons->SetStats(kFALSE);
 
   //2D dca vs pT - accepted protons & antiprotons
-  TH2F *gHistDCAxyPtProtons = dynamic_cast<TH2F *>(fQA2DList->At(14));
+  TH3F *gHistDCAxyEtaPtProtons = dynamic_cast<TH3F *>(fQA2DList->At(14));
+  gHistDCAxyEtaPtProtons->SetStats(kFALSE);
+  TH2D *gHistDCAxyPtProtons = gHistDCAxyEtaPtProtons->Project3D("zy");
   gHistDCAxyPtProtons->SetStats(kFALSE);
-  TH2F *gHistDCAzPtProtons = dynamic_cast<TH2F *>(fQA2DList->At(15));
+  TH3F *gHistDCAzEtaPtProtons = dynamic_cast<TH3F *>(fQA2DList->At(15));
+  gHistDCAzEtaPtProtons->SetStats(kFALSE);
+  TH2D *gHistDCAzPtProtons = gHistDCAzEtaPtProtons->Project3D("zy");
   gHistDCAzPtProtons->SetStats(kFALSE);
-  TH2F *gHistDCAxyPtAntiProtons = dynamic_cast<TH2F *>(fQA2DList->At(16));
+  TH3F *gHistDCAxyEtaPtAntiProtons = dynamic_cast<TH3F *>(fQA2DList->At(16));
+  gHistDCAxyEtaPtAntiProtons->SetStats(kFALSE);
+  TH2D *gHistDCAxyPtAntiProtons = gHistDCAxyEtaPtAntiProtons->Project3D("zy");
   gHistDCAxyPtAntiProtons->SetStats(kFALSE);
-  TH2F *gHistDCAzPtAntiProtons = dynamic_cast<TH2F *>(fQA2DList->At(17));
+  TH3F *gHistDCAzEtaPtAntiProtons = dynamic_cast<TH3F *>(fQA2DList->At(17));
+  gHistDCAzEtaPtAntiProtons->SetStats(kFALSE);
+  TH2D *gHistDCAzPtAntiProtons = gHistDCAzEtaPtAntiProtons->Project3D("zy");
   gHistDCAzPtAntiProtons->SetStats(kFALSE);
 
   //__________________________________________________//
@@ -723,7 +741,7 @@ void drawdEdx(TH2F *gHistdEdxP, Int_t iMode) {
   TString canvasTitle;
 
   for(Int_t iBin = 1; iBin <= gHistdEdxP->GetNbinsX(); iBin++) {
-    if((binMax > 0.41)&&(binMin < 1.01)) {
+    if((binMax > 0.45)&&(binMin < 1.05)) {
       if(iMode == 0) {
 	title = "(dEdx)P: "; title += binMin; title += " - "; 
 	title += binMax; title += "GeV/c";
@@ -748,7 +766,7 @@ void drawdEdx(TH2F *gHistdEdxP, Int_t iMode) {
 	gHist[iCounter]->GetXaxis()->SetRangeUser(-2.0,2.0);
       if(gHist[iCounter]->GetEntries() != 0)
 	c[iCounter]->SetLogy();
-      gHist[iCounter]->Draw();
+      gHist[iCounter]->Draw("E");
       c[iCounter]->SaveAs(canvasTitle.Data());
       //Printf("Bin: %d - Pmin: %lf - Pmax: %lf : %s",iBin,binMin,binMax,title.Data());
       iCounter += 1;
@@ -1294,5 +1312,175 @@ void drawMCvsData(const char* analysisOutputMC,
   gDataAntiProtonsNumberOfTPCdEdxPointsPass->GetYaxis()->SetTitle("Data/MC");
   gDataAntiProtonsNumberOfTPCdEdxPointsPass->Draw("E"); 
   c16->SaveAs("NClustersTPCdEdx.gif");
+}
+
+void drawDCAPlots(const char* fileName) {
+  //Function to draw the DCA plots for protons and antiprotons
+  TString histoTitle, newTitle;
+  Int_t iCounter = 0;
+  Double_t etaMin = 0.0, etaMax = 0.0, etaStep = 0.0;
+  Double_t ptMin = 0.45, ptMax = 0.0, ptStep = 0.1;
+
+  TFile *f = TFile::Open(fileName);
+  TList *listQA = dynamic_cast<TList *>(f->Get("outputQAList"));
+  TList *gListGlobalQA = dynamic_cast<TList *>(listQA->At(0));
+  TList *fQA2DList = dynamic_cast<TList *>(gListGlobalQA->At(0));
+
+  //2D dca vs pT - accepted protons & antiprotons
+  TH3F *gHistDCAxyEtaPtProtons = dynamic_cast<TH3F *>(fQA2DList->At(14));
+  gHistDCAxyEtaPtProtons->SetStats(kFALSE);
+  TH3F *gHistDCAzEtaPtProtons = dynamic_cast<TH3F *>(fQA2DList->At(15));
+  gHistDCAzEtaPtProtons->SetStats(kFALSE);
+  TH3F *gHistDCAxyEtaPtAntiProtons = dynamic_cast<TH3F *>(fQA2DList->At(16));
+  gHistDCAxyEtaPtAntiProtons->SetStats(kFALSE);
+  TH3F *gHistDCAzEtaPtAntiProtons = dynamic_cast<TH3F *>(fQA2DList->At(17));
+  gHistDCAzEtaPtAntiProtons->SetStats(kFALSE);
+
+  //Protons dcaXY
+  ptMin = 0.45, ptMax = 0.0, ptStep = 0.1;
+  TH1D *gHistProtonsDCAxy[200];
+  //ptStep = (gHistDCAxyEtaPtProtons->GetYaxis()->GetXmax() - 
+  //gHistDCAxyEtaPtProtons->GetYaxis()->GetXmin())/gHistDCAxyEtaPtProtons->GetNbinsY();
+  for(Int_t iBinY = 1; iBinY <= gHistDCAxyEtaPtProtons->GetNbinsY(); iBinY++) {
+    //ptMin = gHistDCAxyEtaPtProtons->GetYaxis()->GetBinCenter(iBinY) - ptStep/2.;
+    ptMax = ptMin + ptStep;
+    //Printf("Pt: %lf - %lf",ptMin,ptMax);
+    histoTitle = "gHistProtonsDCAxy_etaBin"; //histoTitle += iBinX;
+    histoTitle += "_ptBin"; histoTitle += iBinY;
+    newTitle = "(Protons) "; newTitle += ptMin; newTitle += " < Pt < ";
+    newTitle += ptMax; newTitle += "GeV/c";
+    ptMin += ptStep;
+
+    //gHistPrimaryProtonsDCAxy[iCounter] = gDCAListHistograms3D[0]->ProjectionZ(histoTitle.Data(),iBinX,iBinX,iBinY,iBinY,"e");
+    gHistProtonsDCAxy[iCounter] = gHistDCAxyEtaPtProtons->ProjectionZ(histoTitle.Data(),1,gHistDCAxyEtaPtProtons->GetNbinsX(),iBinY,iBinY,"e");
+    gHistProtonsDCAxy[iCounter]->SetStats(kFALSE);
+    gHistProtonsDCAxy[iCounter]->SetMarkerStyle(24);
+    gHistProtonsDCAxy[iCounter]->SetTitle(newTitle.Data());
+    gHistProtonsDCAxy[iCounter]->GetXaxis()->SetTitle("dca_{(xy)} [cm]");
+    gHistProtonsDCAxy[iCounter]->GetYaxis()->SetTitle("Entries");
+    iCounter += 1;
+  }//loop over y axis
+
+  //Antiprotons dcaXY
+  ptMin = 0.45, ptMax = 0.0, ptStep = 0.1;
+  iCounter = 0;
+  TH1D *gHistAntiProtonsDCAxy[200];
+  //ptStep = (gHistDCAxyEtaPtAntiProtons->GetYaxis()->GetXmax() - 
+  //gHistDCAxyEtaPtAntiProtons->GetYaxis()->GetXmin())/gHistDCAxyEtaPtAntiProtons->GetNbinsY();
+  for(Int_t iBinY = 1; iBinY <= gHistDCAxyEtaPtAntiProtons->GetNbinsY(); iBinY++) {
+    //ptMin = gHistDCAxyEtaPtAntiProtons->GetYaxis()->GetBinCenter(iBinY) - ptStep/2.;
+    ptMax = ptMin + ptStep;
+    //Printf("Pt: %lf - %lf",ptMin,ptMax);
+    histoTitle = "gHistAntiProtonsDCAxy_etaBin"; //histoTitle += iBinX;
+    histoTitle += "_ptBin"; histoTitle += iBinY;
+    newTitle = "(AntiProtons) "; newTitle += ptMin; newTitle += " < Pt < ";
+    newTitle += ptMax; newTitle += "GeV/c";
+    ptMin += ptStep;
+
+    //gHistPrimaryAntiProtonsDCAxy[iCounter] = gDCAListHistograms3D[0]->ProjectionZ(histoTitle.Data(),iBinX,iBinX,iBinY,iBinY,"e");
+    gHistAntiProtonsDCAxy[iCounter] = gHistDCAxyEtaPtAntiProtons->ProjectionZ(histoTitle.Data(),1,gHistDCAxyEtaPtAntiProtons->GetNbinsX(),iBinY,iBinY,"e");
+    gHistAntiProtonsDCAxy[iCounter]->SetStats(kFALSE);
+    gHistAntiProtonsDCAxy[iCounter]->SetMarkerStyle(20);
+    gHistAntiProtonsDCAxy[iCounter]->SetTitle(newTitle.Data());
+    gHistAntiProtonsDCAxy[iCounter]->GetXaxis()->SetTitle("dca_{(xy)} [cm]");
+    gHistAntiProtonsDCAxy[iCounter]->GetYaxis()->SetTitle("Entries");
+    iCounter += 1;
+  }//loop over y axis
+
+
+  //Protons dcaZ
+  ptMin = 0.45, ptMax = 0.0, ptStep = 0.1;
+  iCounter = 0;
+  TH1D *gHistProtonsDCAz[200];
+  //ptStep = (gHistDCAzEtaPtProtons->GetYaxis()->GetXmax() - 
+  //gHistDCAzEtaPtProtons->GetYaxis()->GetXmin())/gHistDCAzEtaPtProtons->GetNbinsY();
+  for(Int_t iBinY = 1; iBinY <= gHistDCAzEtaPtProtons->GetNbinsY(); iBinY++) {
+    //ptMin = gHistDCAzEtaPtProtons->GetYaxis()->GetBinCenter(iBinY) - ptStep/2.;
+    ptMax = ptMin + ptStep;
+    //Printf("Pt: %lf - %lf",ptMin,ptMax);
+    histoTitle = "gHistProtonsDCAz_etaBin"; //histoTitle += iBinX;
+    histoTitle += "_ptBin"; histoTitle += iBinY;
+    newTitle = "(Protons) "; newTitle += ptMin; newTitle += " < Pt < ";
+    newTitle += ptMax; newTitle += "GeV/c";
+    ptMin += ptStep;
+
+    //gHistPrimaryProtonsDCAz[iCounter] = gDCAListHistograms3D[0]->ProjectionZ(histoTitle.Data(),iBinX,iBinX,iBinY,iBinY,"e");
+    gHistProtonsDCAz[iCounter] = gHistDCAzEtaPtProtons->ProjectionZ(histoTitle.Data(),1,gHistDCAzEtaPtProtons->GetNbinsX(),iBinY,iBinY,"e");
+    gHistProtonsDCAz[iCounter]->SetStats(kFALSE);
+    gHistProtonsDCAz[iCounter]->SetMarkerStyle(24);
+    gHistProtonsDCAz[iCounter]->SetTitle(newTitle.Data());
+    gHistProtonsDCAz[iCounter]->GetXaxis()->SetTitle("dca_{(z)} [cm]");
+    gHistProtonsDCAz[iCounter]->GetYaxis()->SetTitle("Entries");
+    iCounter += 1;
+  }//loop over y axis
+
+  //Antiprotons dcaZ
+  ptMin = 0.45, ptMax = 0.0, ptStep = 0.1;
+  iCounter = 0;
+  TH1D *gHistAntiProtonsDCAz[200];
+  //ptStep = (gHistDCAzEtaPtAntiProtons->GetYaxis()->GetXmax() - 
+  //gHistDCAzEtaPtAntiProtons->GetYaxis()->GetXmin())/gHistDCAzEtaPtAntiProtons->GetNbinsY();
+  for(Int_t iBinY = 1; iBinY <= gHistDCAzEtaPtAntiProtons->GetNbinsY(); iBinY++) {
+    //ptMin = gHistDCAzEtaPtAntiProtons->GetYaxis()->GetBinCenter(iBinY) - ptStep/2.;
+    ptMax = ptMin + ptStep;
+    //Printf("Pt: %lf - %lf",ptMin,ptMax);
+    histoTitle = "gHistAntiProtonsDCAz_etaBin"; //histoTitle += iBinX;
+    histoTitle += "_ptBin"; histoTitle += iBinY;
+    newTitle = "(AntiProtons) "; newTitle += ptMin; newTitle += " < Pt < ";
+    newTitle += ptMax; newTitle += "GeV/c";
+    ptMin += ptStep;
+
+    //gHistPrimaryAntiProtonsDCAz[iCounter] = gDCAListHistograms3D[0]->ProjectionZ(histoTitle.Data(),iBinX,iBinX,iBinY,iBinY,"e");
+    gHistAntiProtonsDCAz[iCounter] = gHistDCAzEtaPtAntiProtons->ProjectionZ(histoTitle.Data(),1,gHistDCAzEtaPtAntiProtons->GetNbinsX(),iBinY,iBinY,"e");
+    gHistAntiProtonsDCAz[iCounter]->SetStats(kFALSE);
+    gHistAntiProtonsDCAz[iCounter]->SetMarkerStyle(20);
+    gHistAntiProtonsDCAz[iCounter]->SetTitle(newTitle.Data());
+    gHistAntiProtonsDCAz[iCounter]->GetXaxis()->SetTitle("dca_{(z)} [cm]");
+    gHistAntiProtonsDCAz[iCounter]->GetYaxis()->SetTitle("Entries");
+    iCounter += 1;
+  }//loop over y axis
+
+
+
+  //==========================================================//
+  TCanvas *c1 = new TCanvas("c1","DCA(3D)",0,0,600,600);
+  c1->SetFillColor(10); c1->SetHighLightColor(10); c1->Divide(2,2);
+  c1->cd(1); gHistDCAxyEtaPtProtons->Draw("box");
+  c1->cd(2); gHistDCAzEtaPtProtons->Draw("box");
+  c1->cd(3); gHistDCAxyEtaPtAntiProtons->Draw("box");
+  c1->cd(4); gHistDCAzEtaPtAntiProtons->Draw("box");
+
+  //==========================================================//
+  TCanvas *c2 = new TCanvas("c2","DCA(xy)",100,100,900,600);
+  c2->SetFillColor(10); c2->SetHighLightColor(10); c2->Divide(3,2);
+  c2->cd(1)->SetLogy(); gHistProtonsDCAxy[0]->Draw("E");
+  gHistAntiProtonsDCAxy[0]->Draw("ESAME");
+  c2->cd(2)->SetLogy(); gHistProtonsDCAxy[1]->Draw("E");
+  gHistAntiProtonsDCAxy[1]->Draw("ESAME");
+  c2->cd(3)->SetLogy(); gHistProtonsDCAxy[2]->Draw("E");
+  gHistAntiProtonsDCAxy[2]->Draw("ESAME");
+  c2->cd(4)->SetLogy(); gHistProtonsDCAxy[3]->Draw("E");
+  gHistAntiProtonsDCAxy[3]->Draw("ESAME");
+  c2->cd(5)->SetLogy(); gHistProtonsDCAxy[4]->Draw("E");
+  gHistAntiProtonsDCAxy[4]->Draw("ESAME");
+  c2->cd(6)->SetLogy(); gHistProtonsDCAxy[5]->Draw("E");
+  gHistAntiProtonsDCAxy[5]->Draw("ESAME");
+
+  //==========================================================//
+  TCanvas *c3 = new TCanvas("c3","DCA(z)",200,200,900,600);
+  c3->SetFillColor(10); c3->SetHighLightColor(10); c3->Divide(3,2);
+  c3->cd(1)->SetLogy(); gHistProtonsDCAz[0]->Draw("E");
+  gHistAntiProtonsDCAz[0]->Draw("ESAME");
+  c3->cd(2)->SetLogy(); gHistProtonsDCAz[1]->Draw("E");
+  gHistAntiProtonsDCAz[1]->Draw("ESAME");
+  c3->cd(3)->SetLogy(); gHistProtonsDCAz[2]->Draw("E");
+  gHistAntiProtonsDCAz[2]->Draw("ESAME");
+  c3->cd(4)->SetLogy(); gHistProtonsDCAz[3]->Draw("E");
+  gHistAntiProtonsDCAz[3]->Draw("ESAME");
+  c3->cd(5)->SetLogy(); gHistProtonsDCAz[4]->Draw("E");
+  gHistAntiProtonsDCAz[4]->Draw("ESAME");
+  c3->cd(6)->SetLogy(); gHistProtonsDCAz[5]->Draw("E");
+  gHistAntiProtonsDCAz[5]->Draw("ESAME");
+
 }
 
