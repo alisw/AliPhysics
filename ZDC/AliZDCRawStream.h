@@ -81,8 +81,9 @@ class AliZDCRawStream: public TObject {
 
     Bool_t IsZDCTDCHeader() const {return fIsZDCTDCHeader;}
     
-    Bool_t IsAddChannel()  const {return fIsADDChannel;}
-    Bool_t IsAddTDCdatum() const {return fIsADDTDCdatum;}
+    Bool_t IsAddChannel()   const {return fIsADDChannel;}
+    Bool_t IsADDTDCHeader() const {return fIsADDTDCHeader;}
+    Bool_t IsAddTDCdatum()  const {return fIsADDTDCdatum;}
 
     UInt_t GetRawBuffer()      const {return fBuffer;}
     Int_t  GetReadOutCard()    const {return fReadOutCard;}

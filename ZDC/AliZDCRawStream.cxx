@@ -763,7 +763,7 @@ Bool_t AliZDCRawStream::Next()
       }
       // *** ADC data word
       else if((fBuffer & 0x07000000) == 0x00000000){
-        fIsADCDataWord = kTRUE;
+        fIsADDChannel = kTRUE;
         fADCChannel = ((fBuffer & 0x1e0000) >> 17);
         fADCGain = ((fBuffer & 0x10000) >> 16);       
         fADCValue = (fBuffer & 0xfff);  
