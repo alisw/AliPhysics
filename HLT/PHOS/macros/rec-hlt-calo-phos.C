@@ -30,8 +30,8 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
   //
   int moduleStart = 2;
   int moduleEnd = 2;
-  int rcuStart = 0;
-  int rcuEnd = 3;
+  int rcuStart = 2;
+  int rcuEnd = 2;
   //  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=ESD-FILE";
   //TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-CA_02";
   TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTCalo.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=PHS-CL_02";

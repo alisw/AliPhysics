@@ -21,7 +21,9 @@ AliHLTCaloClusterizerComponent.h \
 AliHLTCaloDigitMaker.h \
 AliHLTCaloClusterAnalyser.h \
 AliHLTCaloRcuProcessor.h \
-AliHLTCaloProcessor.h 
+AliHLTCaloConstants.h \
+AliHLTCaloProcessor.h \
+AliHLTCaloGeometry.h
 
 ## all source files of this module
 ## all source files corresponding to the class headers

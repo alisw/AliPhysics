@@ -19,7 +19,7 @@
 #ifndef ALIHLTCALOCLUSTERANALYSER_H
 #define ALIHLTCALOCLUSTERANALYSER_H
 
-#include "Rtypes.h"
+#include "AliHLTLogging.h"
 
 /**
  * Class calculates properties of rec points
@@ -41,9 +41,10 @@
 //class AliHLTCaloPhysicsAnalyzer;
 class AliHLTCaloRecPointHeaderStruct;
 class AliHLTCaloRecPointDataStruct;
+class AliHLTCaloDigitDataStruct;
 class AliHLTCaloClusterHeaderStruct;
 class AliHLTCaloClusterDataStruct;
-class AliPHOSGeoUtils;
+class AliHLTCaloGeometry;
 
 /** 
  * @class AliHLTCaloClusterAnalyser
@@ -54,7 +55,7 @@ class AliPHOSGeoUtils;
  * @ingroup alihlt_calo
  */
 //class AliHLTCaloClusterAnalyser : public AliHLTCaloBase
-class AliHLTCaloClusterAnalyser 
+class AliHLTCaloClusterAnalyser : public AliHLTLogging
 {
 public:
 
@@ -64,43 +65,17 @@ public:
   /** Destructor */
   virtual ~AliHLTCaloClusterAnalyser();
   
-  /** Copy constructor */
-  AliHLTCaloClusterAnalyser(const AliHLTCaloClusterAnalyser &) : 
-    //   AliHLTCaloBase(),
-    fLogWeight(0),
-    fRecPointDataPtr(0),
-    fNRecPoints(0),
-    fCaloClusterDataPtr(0),
-    fCaloClusterHeaderPtr(0),
-    fPHOSGeometry(0),
-    //fAnalyzerPtr(0),
-    fDoClusterFit(false),
-    fHaveCPVInfo(false),
-    fDoPID(false),
-    fHaveDistanceToBadChannel(false)
-    
-  {
-    //Copy constructor not implemented
-  }
-  
-  /** Assignment */
-  AliHLTCaloClusterAnalyser & operator = (const AliHLTCaloClusterAnalyser)
-    {
-      //Assignment
-      return *this; 
-    }
-  
   /**
    * Set the rec point data buffer
    * @param recPointDataPtr is a pointer to the rec points
    */
-  void SetRecPointDataPtr(AliHLTCaloRecPointHeaderStruct *recPointDataPtr);
+  void SetRecPointArray(AliHLTCaloRecPointDataStruct **recPointDataPtr, Int_t nRecPoints);
 
   /** 
    * Set the calo cluster output buffer
    * @param caloClusterDataPtr is a pointer to the calo cluster buffer
    */
-  void SetCaloClusterDataPtr(AliHLTCaloClusterDataStruct *caloClusterDataPtr);
+  void SetCaloClusterData(AliHLTCaloClusterDataStruct *caloClusterDataPtr);
 
   /** 
    * Calculates the center of gravity for the reconstruction points in the container
@@ -130,7 +105,7 @@ public:
    * Convert the rec points into calo clusters
    * @return
    */
-  Int_t CreateClusters(UInt_t availableSize, UInt_t& totSize);
+  Int_t CreateClusters(Int_t nRecPoints, UInt_t availableSize, UInt_t& totSize);
 
   /**
    * Fit a cluster
@@ -180,13 +155,28 @@ public:
    */
   void SetHaveDistanceToBadChannel() { fHaveDistanceToBadChannel = true; }
 
+  /**
+  * Set the geometry object (different for EMCAL and PHOS)
+  */
+  void SetGeometry(AliHLTCaloGeometry *geometry) { fGeometry = geometry; }
+
+  /** 
+  * Set pointer to the digits
+  */
+  void SetDigitDataArray(AliHLTCaloDigitDataStruct *digits);
+
+  
+  void DoNothing() { printf("Do nothing\n");}
 private:
   
   /** Used for calculation of center of gravity */
   Float_t fLogWeight;                                       //COMMENT
   
   /** Pointer to the rec points */
-  AliHLTCaloRecPointDataStruct *fRecPointDataPtr;         //! transient
+  AliHLTCaloRecPointDataStruct **fRecPointArray;         //! transient
+
+  /** Pointer to the digits */
+  AliHLTCaloDigitDataStruct *fDigitDataArray;         //! transient
 
   /** Number of rec points */
   Int_t fNRecPoints;                                      //COMMENT
@@ -196,13 +186,6 @@ private:
 
   /** Pointer to the cluster header */
   AliHLTCaloClusterHeaderStruct *fCaloClusterHeaderPtr;   //! transient
-
-  /** Instance of the PHOS geometry */
-  AliPHOSGeoUtils *fPHOSGeometry;                           //! transient
-
-  //TODO: should not use PhysicsAnalyzer for global coord!
-  /** */
-  //  AliHLTCaloPhysicsAnalyzer *fAnalyzerPtr;                  //! transient
 
   /** Should we do cluster fitting? */
   Bool_t fDoClusterFit;                                     //COMMENT
@@ -216,6 +199,8 @@ private:
   /** Do we have distance to bad channel? */
   Bool_t fHaveDistanceToBadChannel;                         //COMMENT
   
+  /** The geometry object */
+  AliHLTCaloGeometry* fGeometry;                                   //COMMENT
   
 };
 

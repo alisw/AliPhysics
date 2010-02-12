@@ -99,7 +99,7 @@ public:
   void SetEmcTimeGate(Float_t gate) { fEmcTimeGate = gate; }
   
   /** Starts clusterization of the event */ 
-  virtual Int_t ClusterizeEvent(Int_t nDigits, UInt_t availableSize, UInt_t& totSize);
+  virtual Int_t ClusterizeEvent(Int_t nDigits);
   
   /**
    * For a given digit this digit scans for neighbouring digits which 
@@ -117,12 +117,48 @@ public:
    */
   virtual Int_t AreNeighbours(AliHLTCaloDigitDataStruct* d1, AliHLTCaloDigitDataStruct* d2);
 
+  /**
+  * Get pointer to the rec points array
+  */
+  AliHLTCaloRecPointDataStruct** GetRecPoints() const { return fRecPointArray; }
+
+  Int_t CheckDigits(AliHLTCaloRecPointDataStruct **recArray = 0, AliHLTCaloDigitDataStruct **digArray = 0, Int_t nRP = 0);
+
+  Int_t CheckDigits(AliHLTCaloRecPointDataStruct **recArray, AliHLTCaloDigitDataStruct *digArray, Int_t nRP = 0);
 
 protected:
 
-  /** Pointer to the rec point output */
-  AliHLTCaloRecPointDataStruct *fRecPointDataPtr;              //! transient
+   /** 
+   * Check the rec point buffer size and resize the buffer if necessary
+   */
+  virtual Int_t CheckBuffer(); //COMMENT
+  
+   /** 
+   * Check the rec point array size and resize the array if necessary
+   */
+  virtual Int_t CheckArray(); //COMMENT
 
+  /** Array of pointers to the rec point output */
+  AliHLTCaloRecPointDataStruct **fRecPointArray; //COMMENT
+
+   /** Pointer to the rec point output */
+  AliHLTCaloRecPointDataStruct *fRecPointDataPtr; //COMMENT
+
+  /** The first rec point in the list */
+  AliHLTCaloRecPointDataStruct *fFirstRecPointPtr; //COMMENT
+
+  /** Size of the rec point array */
+  Int_t fArraySize;
+  
+  /** Available size for the rec point output */
+  Int_t fAvailableSize;
+
+  /** The used size for the rec point output */
+  Int_t fUsedSize;
+  
+  /** Number of rec points created so far */
+  Int_t fNRecPoints;
+  
   /** Pointer to the digit index array in the rec point */
   Int_t* fDigitIndexPtr;                                       //! transient
 
@@ -151,18 +187,15 @@ protected:
   Int_t fNDigits;                                              //COMMENT
 
 private:
-   
-   /** Size of the available write buffer */
-  UInt_t fAvailableSize;                                 //COMMENT
 
   /** Default constructor, prohibited */
-  AliHLTCaloClusterizer();                          // COMMENT
+  //AliHLTCaloClusterizer();                          // COMMENT
   
   /** Copy constructor, prohibited */
-  AliHLTCaloClusterizer (const AliHLTCaloClusterizer &); //COMMENT
+  //AliHLTCaloClusterizer (const AliHLTCaloClusterizer &); //COMMENT
   
   /** Assignment operator, prohibited */
-  AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &); //COMMENT
+  //AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &); //COMMENT
 
   ClassDef(AliHLTCaloClusterizer, 0);
 

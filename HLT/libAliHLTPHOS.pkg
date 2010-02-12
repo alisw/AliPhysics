@@ -32,7 +32,9 @@ CLASS_HDRS:=  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
 		  AliHLTPHOSESDEntriesMakerComponent.h \
 		  AliHLTPHOSESDCaloClusterWriterComponent.h \
-		  AliHLTPHOSDigitReader.h
+		  AliHLTPHOSDigitReader.h \
+		  AliHLTPHOSConstants.h \
+		  AliHLTPHOSGeometry.h
 
 MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 

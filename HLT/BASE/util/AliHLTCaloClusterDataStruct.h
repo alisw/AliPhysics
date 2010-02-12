@@ -45,6 +45,7 @@
 struct AliHLTCaloClusterHeaderStruct
 {
   Short_t fNClusters;
+  Short_t fNDigits;
 };
 
 /**

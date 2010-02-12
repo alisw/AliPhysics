@@ -19,6 +19,8 @@
 #include "AliHLTPHOSClusterizerComponent.h"
 #include "AliHLTCaloRecPointDataStruct.h"
 #include "AliHLTCaloRecPointHeaderStruct.h"
+#include "AliHLTPHOSGeometry.h"
+#include "AliHLTCaloClusterAnalyser.h"
 
 
 
@@ -34,7 +36,8 @@
 // refer to README to build package
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-#include <AliHLTCaloDefinitions.h>
+#include "AliHLTCaloDefinitions.h"
+#include "AliHLTPHOSGeometry.h"
 
 AliHLTPHOSClusterizerComponent gAliHLTPHOSClusterizerComponent;
 
@@ -42,6 +45,13 @@ AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent():
   AliHLTCaloClusterizerComponent("PHOS")
 {
   //See headerfile for documentation
+
+  fDataOrigin = const_cast<char*>(kAliHLTDataOriginPHOS);
+
+  AliHLTPHOSGeometry *geom = new AliHLTPHOSGeometry;
+  
+  fAnalyserPtr->SetGeometry(new AliHLTPHOSGeometry);
+  
 }
 
 AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
@@ -88,5 +98,3 @@ AliHLTPHOSClusterizerComponent::Spawn()
 
   return new AliHLTPHOSClusterizerComponent();
 }
-
-

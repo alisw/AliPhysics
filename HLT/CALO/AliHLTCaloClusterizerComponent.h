@@ -44,6 +44,7 @@
 class AliHLTCaloDigitDataStruct;
 class AliHLTCaloDigitContainerDataStruct;
 class AliHLTCaloClusterizer;
+class AliHLTCaloClusterAnalyser;
 class AliHLTCaloRecPointDataStruct;
 
 /**
@@ -116,24 +117,6 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     /** Destructor */
     virtual ~AliHLTCaloClusterizerComponent();
 
-//     /** Copy constructor */
-//     AliHLTCaloClusterizerComponent ( const AliHLTCaloClusterizerComponent & ) :
-//         AliHLTPHOSProcessor(),
-//         fAllDigitsPtr ( 0 ),
-//         fClusterizerPtr ( 0 ),
-//         //    fRecPointStructArrayPtr(0),
-//         fDigitCount ( 0 )
-//     {
-//       //Copy constructor not implemented
-//     }
-
-//     /** Assignment */
-//     AliHLTCaloClusterizerComponent & operator = ( const AliHLTCaloClusterizerComponent )
-//     {
-//       //Assignment
-//       return *this;
-//     }
-
 //     /** interface function, see @ref AliHLTComponent for description */
 //     void GetInputDataTypes ( std::vector<AliHLTComponentDataType>& list );
 
@@ -170,18 +153,27 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
 
     /** interface function, see @ref AliHLTComponent for description */
     int ScanConfigurationArgument ( int argc, const char** argv );
+    
+     /** The data origin */
+    char* fDataOrigin;                           //COMMENT
 
+    /** Pointer to the cluster analyser */
+    AliHLTCaloClusterAnalyser *fAnalyserPtr;                         //! transient
+    
   private:
 
     /** Array of pointers to our digits */
     AliHLTCaloDigitDataStruct **fDigitsPointerArray;              //! transient
-
+    
+    /** Array of pointers to our digits */
+    AliHLTCaloDigitDataStruct *fOutputDigitsArray;              //! transient
+    
     /** Pointer to the clusterizer it self */
     AliHLTCaloClusterizer* fClusterizerPtr;                       //! transient
 
     /** Number of digits in event */
     Int_t fDigitCount;                                            //COMMENT
-
+    
     /** Default constructor, not implemented */
     AliHLTCaloClusterizerComponent();                             //COMMENT
 

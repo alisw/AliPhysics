@@ -235,12 +235,14 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
   
   fChannelBook[coord.fX][coord.fZ] = fDigitStructPtr;
 
-  fDigitStructPtr->fID = fDigitStructPtr->fZ * fCaloConstants->GetNXCOLUMNSMOD() + fDigitStructPtr->fX;
-
+ 
   fDigitStructPtr->fX = coord.fX;
   fDigitStructPtr->fZ = coord.fZ;
   fDigitStructPtr->fGain = coord.fGain;
   fDigitStructPtr->fOverflow = false;
+  
+  fDigitStructPtr->fID = fDigitStructPtr->fZ * fCaloConstants->GetNXCOLUMNSMOD() + fDigitStructPtr->fX;
+
   if(coord.fGain == fCaloConstants->GetHIGHGAIN() )
     {
       fDigitStructPtr->fEnergy = channelData->fEnergy*fHighGainFactors[coord.fX][coord.fZ];
@@ -270,7 +272,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
 bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, AliHLTCaloChannelDataStruct *channel) 
 {
   AliHLTCaloDigitDataStruct *tmpDigit = fChannelBook[channelCoordinates.fX][channelCoordinates.fZ];
-  //  printf("UseDigit: Got digit, x: %d, z: %d, gain: %d, amp: %f\n", channelCoordinates.fX, channelCoordinates.fZ, channelCoordinates.fGain, channel->fEnergy);
+  //printf("UseDigit: Got digit, x: %d, z: %d, gain: %d, amp: %f\n", channelCoordinates.fX, channelCoordinates.fZ, channelCoordinates.fGain, channel->fEnergy);
   if(tmpDigit)
     {
       if(channelCoordinates.fGain == fCaloConstants->GetLOWGAIN())
