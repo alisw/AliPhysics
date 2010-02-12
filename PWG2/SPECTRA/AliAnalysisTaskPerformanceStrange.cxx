@@ -72,7 +72,7 @@ ClassImp(AliAnalysisTaskPerformanceStrange)
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
-  : AliAnalysisTaskSE(), fAnalysisMC(999), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"), fListHist(0), fPhysTrigSel(0),
+  : AliAnalysisTaskSE(), fAnalysisMC(999), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"), fListHist(0), fPhysTrigSel(0), 
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
     fHistMCPrimaryVertexZ(0),
@@ -90,9 +90,9 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
     fHistMCProdRadiusK0s(0),
     fHistMCProdRadiusLambda(0),
     fHistMCProdRadiusAntiLambda(0),
-    fHistMCPtVsEtaK0s(0),
-    fHistMCPtVsEtaLambda(0),
-    fHistMCPtVsEtaAntiLambda(0),
+    fHistMCPtK0s(0),
+    fHistMCPtLambda(0),
+    fHistMCPtAntiLambda(0),
     fHistMCPtLambdaFromSigma(0),
     fHistMCPtAntiLambdaFromSigma(0),
     fHistNTimesRecK0s(0),
@@ -161,12 +161,12 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
     fHistNsigmaNegPionLambda(0),
     fHistNsigmaPosPionK0(0),
     fHistNsigmaNegPionK0(0),
-    fHistAsMcEtaK0(0),
-    fHistAsMcEtaK0MI(0),
-    fHistAsMcEtaLambda(0),
-    fHistAsMcEtaLambdaMI(0),
-    fHistAsMcEtaAntiLambda(0),
-    fHistAsMcEtaAntiLambdaMI(0),
+    fHistAsMcRapK0(0),
+    fHistAsMcRapK0MI(0),
+    fHistAsMcRapLambda(0),
+    fHistAsMcRapLambdaMI(0),
+    fHistAsMcRapAntiLambda(0),
+    fHistAsMcRapAntiLambdaMI(0),
     fHistAsMcPtK0(0),
     fHistAsMcPtK0MI(0),
     fHistAsMcPtLambda(0),
@@ -249,12 +249,12 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
     fHistAsMcResPtLambdaMI(0),
     fHistAsMcResPtAntiLambda(0),
     fHistAsMcResPtAntiLambdaMI(0),
-    fHistAsMcResPtVsEtaK0(0),
-    fHistAsMcResPtVsEtaK0MI(0),
-    fHistAsMcResPtVsEtaLambda(0),
-    fHistAsMcResPtVsEtaLambdaMI(0),
-    fHistAsMcResPtVsEtaAntiLambda(0),
-    fHistAsMcResPtVsEtaAntiLambdaMI(0),
+    fHistAsMcResPtVsRapK0(0),
+    fHistAsMcResPtVsRapK0MI(0),
+    fHistAsMcResPtVsRapLambda(0),
+    fHistAsMcResPtVsRapLambdaMI(0),
+    fHistAsMcResPtVsRapAntiLambda(0),
+    fHistAsMcResPtVsRapAntiLambdaMI(0),
     fHistAsMcResPtVsPtK0(0),
     fHistAsMcResPtVsPtK0MI(0),
     fHistAsMcResPtVsPtLambda(0),
@@ -271,12 +271,12 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
     fHistAsMcPtLambdaFromSigmaMI(0),
     fHistAsMcPtAntiLambdaFromSigma(0),
     fHistAsMcPtAntiLambdaFromSigmaMI(0),
-    fHistAsMcSecondaryPtVsEtaK0s(0),
-    fHistAsMcSecondaryPtVsEtaK0sMI(0),
-    fHistAsMcSecondaryPtVsEtaLambda(0),
-    fHistAsMcSecondaryPtVsEtaLambdaMI(0),
-    fHistAsMcSecondaryPtVsEtaAntiLambda(0),
-    fHistAsMcSecondaryPtVsEtaAntiLambdaMI(0),
+    fHistAsMcSecondaryPtVsRapK0s(0),
+    fHistAsMcSecondaryPtVsRapK0sMI(0),
+    fHistAsMcSecondaryPtVsRapLambda(0),
+    fHistAsMcSecondaryPtVsRapLambdaMI(0),
+    fHistAsMcSecondaryPtVsRapAntiLambda(0),
+    fHistAsMcSecondaryPtVsRapAntiLambdaMI(0),
     fHistAsMcSecondaryProdRadiusK0s(0),
     fHistAsMcSecondaryProdRadiusK0sMI(0),
     fHistAsMcSecondaryProdRadiusLambda(0),
@@ -310,7 +310,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char *name)
-  : AliAnalysisTaskSE(name), fAnalysisMC(999), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"), fListHist(), fPhysTrigSel(0),
+  : AliAnalysisTaskSE(name), fAnalysisMC(999), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"), fListHist(),fPhysTrigSel(0),
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
     fHistMCPrimaryVertexZ(0),
@@ -328,9 +328,9 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistMCProdRadiusK0s(0),
     fHistMCProdRadiusLambda(0),
     fHistMCProdRadiusAntiLambda(0),
-    fHistMCPtVsEtaK0s(0),
-    fHistMCPtVsEtaLambda(0),
-    fHistMCPtVsEtaAntiLambda(0),
+    fHistMCPtK0s(0),
+    fHistMCPtLambda(0),
+    fHistMCPtAntiLambda(0),
     fHistMCPtLambdaFromSigma(0),
     fHistMCPtAntiLambdaFromSigma(0),
     fHistNTimesRecK0s(0),
@@ -399,12 +399,12 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistNsigmaNegPionLambda(0),
     fHistNsigmaPosPionK0(0),
     fHistNsigmaNegPionK0(0),
-    fHistAsMcEtaK0(0),
-    fHistAsMcEtaK0MI(0),
-    fHistAsMcEtaLambda(0),
-    fHistAsMcEtaLambdaMI(0),
-    fHistAsMcEtaAntiLambda(0),
-    fHistAsMcEtaAntiLambdaMI(0),
+    fHistAsMcRapK0(0),
+    fHistAsMcRapK0MI(0),
+    fHistAsMcRapLambda(0),
+    fHistAsMcRapLambdaMI(0),
+    fHistAsMcRapAntiLambda(0),
+    fHistAsMcRapAntiLambdaMI(0),
     fHistAsMcPtK0(0),
     fHistAsMcPtK0MI(0),
     fHistAsMcPtLambda(0),
@@ -487,12 +487,12 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistAsMcResPtLambdaMI(0),
     fHistAsMcResPtAntiLambda(0),
     fHistAsMcResPtAntiLambdaMI(0),
-    fHistAsMcResPtVsEtaK0(0),
-    fHistAsMcResPtVsEtaK0MI(0),
-    fHistAsMcResPtVsEtaLambda(0),
-    fHistAsMcResPtVsEtaLambdaMI(0),
-    fHistAsMcResPtVsEtaAntiLambda(0),
-    fHistAsMcResPtVsEtaAntiLambdaMI(0),
+    fHistAsMcResPtVsRapK0(0),
+    fHistAsMcResPtVsRapK0MI(0),
+    fHistAsMcResPtVsRapLambda(0),
+    fHistAsMcResPtVsRapLambdaMI(0),
+    fHistAsMcResPtVsRapAntiLambda(0),
+    fHistAsMcResPtVsRapAntiLambdaMI(0),
     fHistAsMcResPtVsPtK0(0),
     fHistAsMcResPtVsPtK0MI(0),
     fHistAsMcResPtVsPtLambda(0),
@@ -509,12 +509,12 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistAsMcPtLambdaFromSigmaMI(0),
     fHistAsMcPtAntiLambdaFromSigma(0),
     fHistAsMcPtAntiLambdaFromSigmaMI(0),
-    fHistAsMcSecondaryPtVsEtaK0s(0),
-    fHistAsMcSecondaryPtVsEtaK0sMI(0),
-    fHistAsMcSecondaryPtVsEtaLambda(0),
-    fHistAsMcSecondaryPtVsEtaLambdaMI(0),
-    fHistAsMcSecondaryPtVsEtaAntiLambda(0),
-    fHistAsMcSecondaryPtVsEtaAntiLambdaMI(0),
+    fHistAsMcSecondaryPtVsRapK0s(0),
+    fHistAsMcSecondaryPtVsRapK0sMI(0),
+    fHistAsMcSecondaryPtVsRapLambda(0),
+    fHistAsMcSecondaryPtVsRapLambdaMI(0),
+    fHistAsMcSecondaryPtVsRapAntiLambda(0),
+    fHistAsMcSecondaryPtVsRapAntiLambdaMI(0),
     fHistAsMcSecondaryProdRadiusK0s(0),
     fHistAsMcSecondaryProdRadiusK0sMI(0),
     fHistAsMcSecondaryProdRadiusLambda(0),
@@ -622,14 +622,14 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
 
   // Pt and rapidity distribution:
-  fHistMCPtVsEtaK0s               = new TH2F("h2MCPtVsEtaK0s", "K^{0};p_{t} (GeV/c);rapidity",200,0,10,20,-10,10);
-  fListHist->Add(fHistMCPtVsEtaK0s);
+  fHistMCPtK0s               = new TH1F("h1MCPtK0s", "K^{0};p_{t} (GeV/c)",200,0,10);
+  fListHist->Add(fHistMCPtK0s);
 
-  fHistMCPtVsEtaLambda            = new TH2F("h2MCPtVsEtaLambda", "#Lambda^{0};p_{t} (GeV/c);rapidity",200,0,10,20,-10,10);
-  fListHist->Add(fHistMCPtVsEtaLambda);
+  fHistMCPtLambda            = new TH1F("h1MCPtLambda", "#Lambda^{0};p_{t} (GeV/c)",200,0,10);
+  fListHist->Add(fHistMCPtLambda);
 
-  fHistMCPtVsEtaAntiLambda        = new TH2F("h2MCPtVsEtaAntiLambda", "#bar{#Lambda}^{0};p_{t} (GeV/c);rapidity",200,0,10,20,-10,10);
-  fListHist->Add(fHistMCPtVsEtaAntiLambda);
+  fHistMCPtAntiLambda        = new TH1F("h1MCPtAntiLambda", "#bar{#Lambda}^{0};p_{t} (GeV/c)",200,0,10);
+  fListHist->Add(fHistMCPtAntiLambda);
 
   // Pt distribution of Lambda coming from Sigma decay
   fHistMCPtLambdaFromSigma      = new TH1F("h1MCPtLambdaFromSigma", "#Lambda^{0};p_{t} (GeV/c)",200,0,10);
@@ -853,21 +853,21 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   // Associated particles histograms
   //********************************
 
-  // Eta distribution
-  fHistAsMcEtaK0                = new TH1F("h1AsMcEtaK0", "K^{0} associated;eta;Counts", 60, -1.5, 1.5);
-  fListHist->Add(fHistAsMcEtaK0);
-  fHistAsMcEtaK0MI              = new TH1F("h1AsMcEtaK0MI", "K^{0} associated;eta;Counts", 60, -1.5, 1.5);
-  fListHist->Add(fHistAsMcEtaK0MI);
+  // Rap distribution
+  fHistAsMcRapK0                = new TH1F("h1AsMcRapK0", "K^{0} associated;eta;Counts", 60, -1.5, 1.5);
+  fListHist->Add(fHistAsMcRapK0);
+  fHistAsMcRapK0MI              = new TH1F("h1AsMcRapK0MI", "K^{0} associated;eta;Counts", 60, -1.5, 1.5);
+  fListHist->Add(fHistAsMcRapK0MI);
 
-  fHistAsMcEtaLambda            = new TH1F("h1AsMcEtaLambda", "#Lambda^{0} associated;eta;Counts", 60, -1.5, 1.5);
-  fListHist->Add(fHistAsMcEtaLambda);
-  fHistAsMcEtaLambdaMI          = new TH1F("h1AsMcEtaLambdaMI", "#Lambda^{0} associated;eta;Counts", 60, -1.5, 1.5);
-  fListHist->Add(fHistAsMcEtaLambdaMI);
+  fHistAsMcRapLambda            = new TH1F("h1AsMcRapLambda", "#Lambda^{0} associated;eta;Counts", 60, -1.5, 1.5);
+  fListHist->Add(fHistAsMcRapLambda);
+  fHistAsMcRapLambdaMI          = new TH1F("h1AsMcRapLambdaMI", "#Lambda^{0} associated;eta;Counts", 60, -1.5, 1.5);
+  fListHist->Add(fHistAsMcRapLambdaMI);
 
-  fHistAsMcEtaAntiLambda        = new TH1F("h1AsMcEtaAntiLambda", "#bar{#Lambda}^{0} associated;eta;Counts", 60, -1.5, 1.5);
-  fListHist->Add(fHistAsMcEtaAntiLambda);
-  fHistAsMcEtaAntiLambdaMI      = new TH1F("h1AsMcEtaAntiLambdaMI", "#bar{#Lambda}^{0} associated;eta;Counts", 60, -1.5, 1.5);
-  fListHist->Add(fHistAsMcEtaAntiLambdaMI);
+  fHistAsMcRapAntiLambda        = new TH1F("h1AsMcRapAntiLambda", "#bar{#Lambda}^{0} associated;eta;Counts", 60, -1.5, 1.5);
+  fListHist->Add(fHistAsMcRapAntiLambda);
+  fHistAsMcRapAntiLambdaMI      = new TH1F("h1AsMcRapAntiLambdaMI", "#bar{#Lambda}^{0} associated;eta;Counts", 60, -1.5, 1.5);
+  fListHist->Add(fHistAsMcRapAntiLambdaMI);
 
 
   //Pt distribution
@@ -1082,20 +1082,20 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fListHist->Add(fHistAsMcResPtAntiLambdaMI);
 
 
-  fHistAsMcResPtVsEtaK0              = new TH2F("h2AsMcResPtVsEtaK0","Pt Resolution K^{0};#Delta Pt;Eta",200,-1,1,20,-1,1);
-  fListHist->Add(fHistAsMcResPtVsEtaK0);
-  fHistAsMcResPtVsEtaK0MI            = new TH2F("h2AsMcResPtVsEtaK0MI","Pt Resolution K^{0} MI;#Delta Pt;Eta",200,-1,1,20,-1,1);
-  fListHist->Add(fHistAsMcResPtVsEtaK0MI);
+  fHistAsMcResPtVsRapK0              = new TH2F("h2AsMcResPtVsRapK0","Pt Resolution K^{0};#Delta Pt;Rap",200,-1,1,20,-1,1);
+  fListHist->Add(fHistAsMcResPtVsRapK0);
+  fHistAsMcResPtVsRapK0MI            = new TH2F("h2AsMcResPtVsRapK0MI","Pt Resolution K^{0} MI;#Delta Pt;Rap",200,-1,1,20,-1,1);
+  fListHist->Add(fHistAsMcResPtVsRapK0MI);
   
-  fHistAsMcResPtVsEtaLambda          = new TH2F("h2AsMcResPtVsEtaLambda","Pt Resolution #Lambda^{0};#Delta Pt;Eta",200,-1,1,20,-1,1);
-  fListHist->Add(fHistAsMcResPtVsEtaLambda);
-  fHistAsMcResPtVsEtaLambdaMI        = new TH2F("h2AsMcResPtVsEtaLambdaMI","Pt Resolution #Lambda^{0} MI;#Delta Pt;Eta",200,-1,1,20,-1,1);
-  fListHist->Add(fHistAsMcResPtVsEtaLambdaMI);
+  fHistAsMcResPtVsRapLambda          = new TH2F("h2AsMcResPtVsRapLambda","Pt Resolution #Lambda^{0};#Delta Pt;Rap",200,-1,1,20,-1,1);
+  fListHist->Add(fHistAsMcResPtVsRapLambda);
+  fHistAsMcResPtVsRapLambdaMI        = new TH2F("h2AsMcResPtVsRapLambdaMI","Pt Resolution #Lambda^{0} MI;#Delta Pt;Rap",200,-1,1,20,-1,1);
+  fListHist->Add(fHistAsMcResPtVsRapLambdaMI);
 
-  fHistAsMcResPtVsEtaAntiLambda      = new TH2F("h2AsMcResPtVsEtaAntiLambda","Pt Resolution #bar{#Lambda}^{0};#Delta Pt;Eta",200,-1,1,20,-1,1);
-  fListHist->Add(fHistAsMcResPtVsEtaAntiLambda);
-  fHistAsMcResPtVsEtaAntiLambdaMI    = new TH2F("h2AsMcResPtVsEtaAntiLambdaMI","Pt Resolution #bar{#Lambda}^{0} MI;#Delta Pt;Eta",200,-1,1,20,-1,1);
-  fListHist->Add(fHistAsMcResPtVsEtaAntiLambdaMI);
+  fHistAsMcResPtVsRapAntiLambda      = new TH2F("h2AsMcResPtVsRapAntiLambda","Pt Resolution #bar{#Lambda}^{0};#Delta Pt;Rap",200,-1,1,20,-1,1);
+  fListHist->Add(fHistAsMcResPtVsRapAntiLambda);
+  fHistAsMcResPtVsRapAntiLambdaMI    = new TH2F("h2AsMcResPtVsRapAntiLambdaMI","Pt Resolution #bar{#Lambda}^{0} MI;#Delta Pt;Rap",200,-1,1,20,-1,1);
+  fListHist->Add(fHistAsMcResPtVsRapAntiLambdaMI);
 
 
   fHistAsMcResPtVsPtK0               = new TH2F("h2AsMcResPtVsPtK0","Pt Resolution K^{0};#Delta Pt;Pt",600,-0.15,0.15,200,0,10);
@@ -1145,20 +1145,20 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
   // Associated secondary particles:
   // Pt and rapidity distribution
-  fHistAsMcSecondaryPtVsEtaK0s          = new TH2F("h2AsMcSecondaryPtVsEtaK0s", "K^{0} associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
-  fListHist->Add(fHistAsMcSecondaryPtVsEtaK0s);
-  fHistAsMcSecondaryPtVsEtaK0sMI        = new TH2F("h2AsMcSecondaryPtVsEtaK0sMI", "K^{0} MI associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
-  fListHist->Add(fHistAsMcSecondaryPtVsEtaK0sMI);
+  fHistAsMcSecondaryPtVsRapK0s          = new TH2F("h2AsMcSecondaryPtVsRapK0s", "K^{0} associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
+  fListHist->Add(fHistAsMcSecondaryPtVsRapK0s);
+  fHistAsMcSecondaryPtVsRapK0sMI        = new TH2F("h2AsMcSecondaryPtVsRapK0sMI", "K^{0} MI associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
+  fListHist->Add(fHistAsMcSecondaryPtVsRapK0sMI);
 
-  fHistAsMcSecondaryPtVsEtaLambda       = new TH2F("h2AsMcSecondaryPtVsEtaLambda", "#Lambda^{0} associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
-  fListHist->Add(fHistAsMcSecondaryPtVsEtaLambda);
-  fHistAsMcSecondaryPtVsEtaLambdaMI     = new TH2F("h2AsMcSecondaryPtVsEtaLambdaMI", "#Lambda^{0} MI associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
-  fListHist->Add(fHistAsMcSecondaryPtVsEtaLambdaMI);
+  fHistAsMcSecondaryPtVsRapLambda       = new TH2F("h2AsMcSecondaryPtVsRapLambda", "#Lambda^{0} associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
+  fListHist->Add(fHistAsMcSecondaryPtVsRapLambda);
+  fHistAsMcSecondaryPtVsRapLambdaMI     = new TH2F("h2AsMcSecondaryPtVsRapLambdaMI", "#Lambda^{0} MI associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
+  fListHist->Add(fHistAsMcSecondaryPtVsRapLambdaMI);
 
-  fHistAsMcSecondaryPtVsEtaAntiLambda   = new TH2F("h2AsMcSecondaryPtVsEtaAntiLambda", "#bar{#Lambda}^{0} associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
-  fListHist->Add(fHistAsMcSecondaryPtVsEtaAntiLambda);
-  fHistAsMcSecondaryPtVsEtaAntiLambdaMI = new TH2F("h2AsMcSecondaryPtVsEtaAntiLambdaMI", "#bar{#Lambda}^{0} MI associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
-  fListHist->Add(fHistAsMcSecondaryPtVsEtaAntiLambdaMI);
+  fHistAsMcSecondaryPtVsRapAntiLambda   = new TH2F("h2AsMcSecondaryPtVsRapAntiLambda", "#bar{#Lambda}^{0} associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
+  fListHist->Add(fHistAsMcSecondaryPtVsRapAntiLambda);
+  fHistAsMcSecondaryPtVsRapAntiLambdaMI = new TH2F("h2AsMcSecondaryPtVsRapAntiLambdaMI", "#bar{#Lambda}^{0} MI associated secondary;p_{t} (GeV/c);rapidity",200,0,10,30,-1.5,1.5);
+  fListHist->Add(fHistAsMcSecondaryPtVsRapAntiLambdaMI);
 
   // Production radius
   fHistAsMcSecondaryProdRadiusK0s              = new TH1F("h1AsMcSecondaryProdRadiusK0s", "K^{0} Production Radius;r (cm);Count", 170, -2, 15);
@@ -1264,14 +1264,14 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   // Cut used:
   //*************************************
       
-  // Cut Pseudorapidity:
-  Double_t lCutEta  = 0.7;
+  // Cut Rapidity:
+  Double_t lCutRap  = 0.75;
 
   // Cut AliKF Chi2 for Reconstructed particles
   Double_t cutChi2KF  = 1E3;
 
   // Cut to distinguish between primary and secondary associated particles
-  Double_t lMaxMcProdRadiusPrimaries = 0.2;
+  // Double_t lMaxMcProdRadiusPrimaries = 0.2;
 
 
 
@@ -1332,7 +1332,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   Int_t lNbMCPart           = 0;
 
   Int_t lPdgcodeCurrentPart = 0;
-  Double_t lEtaCurrentPart  = 0;
+  Double_t lRapCurrentPart  = 0;
   Double_t lPtCurrentPart   = 0;
   
   Int_t lComeFromSigma      = 0;
@@ -1351,9 +1351,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
   // variables for multiple reconstruction studies:
   Int_t id0           = 0, id1          = 0;
-  Int_t lLabelTrackN  = 0, lLabelTrackP = 0;
-  Int_t lPartNMother  = 0, lPartPMother = 0;
-  Int_t lPartPMotherPDGcode      = 0;
+  //Int_t lLabelTrackN  = 0, lLabelTrackP = 0;
+  //Int_t lPartNMother  = 0, lPartPMother = 0;
+  //Int_t lPartPMotherPDGcode      = 0;
   Int_t lNtimesReconstructedK0s   = 0, lNtimesReconstructedLambda   = 0, lNtimesReconstructedAntiLambda   = 0;
   Int_t lNtimesReconstructedK0sMI = 0, lNtimesReconstructedLambdaMI = 0, lNtimesReconstructedAntiLambdaMI = 0;
 
@@ -1389,8 +1389,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	// Keep only K0s, Lambda and AntiLambda:
 	if ( (lPdgcodeCurrentPart != 310 ) && (lPdgcodeCurrentPart != 3122 ) && (lPdgcodeCurrentPart != -3122 ) ) continue;
 	
-	//lRapCurrentPart   = MyRapidity(p0->Energy(),p0->Pz());
-	lEtaCurrentPart   = p0->Eta();
+	lRapCurrentPart   = MyRapidity(p0->Energy(),p0->Pz());
+	//lEtaCurrentPart   = p0->Eta();
 	lPtCurrentPart    = p0->Pt();
 	iCurrentMother    = p0->GetFirstMother();
 	lPdgCurrentMother = stack->Particle(iCurrentMother)->GetPdgCode();
@@ -1418,17 +1418,17 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	if (lPdgcodeCurrentPart==310)   {
 	  fHistMCtracksProdRadiusK0s->Fill(mcPosX,mcPosY);
 	  fHistMCtracksDecayRadiusK0s->Fill(mcDecayPosR);
-	  if (TMath::Abs(lEtaCurrentPart) < lCutEta) fHistMCPtAllK0s->Fill(lPtCurrentPart);
+	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllK0s->Fill(lPtCurrentPart);
 	}
 	else if (lPdgcodeCurrentPart==3122)  {
 	  fHistMCtracksProdRadiusLambda->Fill(mcPosX,mcPosY);
 	  fHistMCtracksDecayRadiusLambda->Fill(mcDecayPosR);
-	  if (TMath::Abs(lEtaCurrentPart) < lCutEta) fHistMCPtAllLambda->Fill(lPtCurrentPart);
+	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllLambda->Fill(lPtCurrentPart);
 	}
 	else if (lPdgcodeCurrentPart==-3122) {
 	  fHistMCtracksProdRadiusAntiLambda->Fill(mcPosX,mcPosY);
 	  fHistMCtracksDecayRadiusAntiLambda->Fill(mcDecayPosR);
-	  if (TMath::Abs(lEtaCurrentPart) < lCutEta) fHistMCPtAllAntiLambda->Fill(lPtCurrentPart);
+	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllAntiLambda->Fill(lPtCurrentPart);
 	}
 	
 	if ( ( ( TMath::Abs(lPdgCurrentMother) == 3212)  ||
@@ -1488,11 +1488,12 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	
 	//}	
 	//} // end loop over reconstructed V0s inside MC loop
-      
+     
+	if (TMath::Abs(lRapCurrentPart) > lCutRap) continue;
+ 
 	if (lPdgcodeCurrentPart==310) {
 	  fHistMCProdRadiusK0s->Fill(mcPosR);
-	  fHistMCPtVsEtaK0s->Fill(lPtCurrentPart,lEtaCurrentPart);
-	  if (TMath::Abs(lEtaCurrentPart) > lCutEta) continue;
+	  fHistMCPtK0s->Fill(lPtCurrentPart);
 	  fHistNTimesRecK0s->Fill(lNtimesReconstructedK0s);
 	  fHistNTimesRecK0sMI->Fill(lNtimesReconstructedK0s);
 	  fHistNTimesRecK0sVsPt->Fill(lPtCurrentPart,lNtimesReconstructedK0s);
@@ -1500,8 +1501,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	}
 	else if (lPdgcodeCurrentPart==3122) {
 	  fHistMCProdRadiusLambda->Fill(mcPosR);
-	  fHistMCPtVsEtaLambda->Fill(lPtCurrentPart,lEtaCurrentPart);
-	  if (TMath::Abs(lEtaCurrentPart) > lCutEta) continue;
+	  fHistMCPtLambda->Fill(lPtCurrentPart);	  
 	  fHistNTimesRecLambda->Fill(lNtimesReconstructedLambda);
 	  fHistNTimesRecLambdaMI->Fill(lNtimesReconstructedLambdaMI);
 	  fHistNTimesRecLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedLambda);
@@ -1510,8 +1510,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	}
 	else if (lPdgcodeCurrentPart==-3122) {
 	  fHistMCProdRadiusAntiLambda->Fill(mcPosR);
-	  fHistMCPtVsEtaAntiLambda->Fill(lPtCurrentPart,lEtaCurrentPart);
-	  if (TMath::Abs(lEtaCurrentPart) > lCutEta) continue;
+	  fHistMCPtAntiLambda->Fill(lPtCurrentPart);
 	  fHistNTimesRecAntiLambda->Fill(lNtimesReconstructedAntiLambda);
 	  fHistNTimesRecAntiLambdaMI->Fill(lNtimesReconstructedAntiLambdaMI);
 	  fHistNTimesRecAntiLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedAntiLambda);
@@ -1545,7 +1544,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	// Keep only K0s, Lambda and AntiLambda:
 	if ( (lPdgcodeCurrentPart != 310 ) && (lPdgcodeCurrentPart != 3122 ) && (lPdgcodeCurrentPart != -3122 ) ) continue;
 	
-	lEtaCurrentPart   = mcAODPart->Eta();
+	//lEtaCurrentPart   = mcAODPart->Eta();
+	lRapCurrentPart   = mcAODPart->Y();
 	lPtCurrentPart    = mcAODPart->Pt();
 	iCurrentMother    = mcAODPart->GetMother();
 	lPdgCurrentMother = ((AliAODMCParticle*)mcArray->At(iCurrentMother))->GetPdgCode();
@@ -1578,17 +1578,17 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	if (lPdgcodeCurrentPart==310)   {
 	  fHistMCtracksProdRadiusK0s->Fill(mcPosX,mcPosY);
 	  fHistMCtracksDecayRadiusK0s->Fill(mcDecayPosR);
-	  if (TMath::Abs(lEtaCurrentPart) < lCutEta) fHistMCPtAllK0s->Fill(lPtCurrentPart);
+	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllK0s->Fill(lPtCurrentPart);
 	}
 	else if (lPdgcodeCurrentPart==3122)  {
 	  fHistMCtracksProdRadiusLambda->Fill(mcPosX,mcPosY);
 	  fHistMCtracksDecayRadiusLambda->Fill(mcDecayPosR);
-	  if (TMath::Abs(lEtaCurrentPart) < lCutEta) fHistMCPtAllLambda->Fill(lPtCurrentPart);
+	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllLambda->Fill(lPtCurrentPart);
 	}
 	else if (lPdgcodeCurrentPart==-3122) {
 	  fHistMCtracksProdRadiusAntiLambda->Fill(mcPosX,mcPosY);
 	  fHistMCtracksDecayRadiusAntiLambda->Fill(mcDecayPosR);
-	  if (TMath::Abs(lEtaCurrentPart) < lCutEta) fHistMCPtAllAntiLambda->Fill(lPtCurrentPart);
+	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllAntiLambda->Fill(lPtCurrentPart);
 	}
 	
 	if ( ( ( TMath::Abs(lPdgCurrentMother) == 3212)  ||
@@ -1655,11 +1655,12 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  
        ///}	
       //} // end loop over reconstructed V0s inside MC loop
-     
+    
+	if (TMath::Abs(lRapCurrentPart) > lCutRap) continue;
+ 
 	if (lPdgcodeCurrentPart==310) {
 	  fHistMCProdRadiusK0s->Fill(mcPosR);
-	  fHistMCPtVsEtaK0s->Fill(lPtCurrentPart,lEtaCurrentPart);
-	  if (TMath::Abs(lEtaCurrentPart) > lCutEta) continue;
+	  fHistMCPtK0s->Fill(lPtCurrentPart);
 	  fHistNTimesRecK0s->Fill(lNtimesReconstructedK0s);
 	  fHistNTimesRecK0sMI->Fill(lNtimesReconstructedK0s);
 	  fHistNTimesRecK0sVsPt->Fill(lPtCurrentPart,lNtimesReconstructedK0s);
@@ -1667,8 +1668,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	}
 	else if (lPdgcodeCurrentPart==3122) {
 	  fHistMCProdRadiusLambda->Fill(mcPosR);
-	  fHistMCPtVsEtaLambda->Fill(lPtCurrentPart,lEtaCurrentPart);
-	  if (TMath::Abs(lEtaCurrentPart) > lCutEta) continue;
+	  fHistMCPtLambda->Fill(lPtCurrentPart);
 	  fHistNTimesRecLambda->Fill(lNtimesReconstructedLambda);
 	  fHistNTimesRecLambdaMI->Fill(lNtimesReconstructedLambdaMI);
 	  fHistNTimesRecLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedLambda);
@@ -1677,8 +1677,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	}
 	else if (lPdgcodeCurrentPart==-3122) {
 	  fHistMCProdRadiusAntiLambda->Fill(mcPosR);
-	  fHistMCPtVsEtaAntiLambda->Fill(lPtCurrentPart,lEtaCurrentPart);
-	  if (TMath::Abs(lEtaCurrentPart) > lCutEta) continue;
+	  fHistMCPtAntiLambda->Fill(lPtCurrentPart);
 	  fHistNTimesRecAntiLambda->Fill(lNtimesReconstructedAntiLambda);
 	  fHistNTimesRecAntiLambdaMI->Fill(lNtimesReconstructedAntiLambdaMI);
 	  fHistNTimesRecAntiLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedAntiLambda);
@@ -1856,7 +1855,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   }
   
   else if(fAnalysisType == "AOD") {
-    printf("enter 1!!");
+    printf("enter AOD!!");
     myPrimaryVertex = ((AliAODEvent*)lEvent)->GetPrimaryVertex();
     if (!myPrimaryVertex) return;
     lPrimaryVtxPosition[0] = myPrimaryVertex->GetX();
@@ -2384,27 +2383,27 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     fHistChi2KFBeforeCutLambda->Fill(lChi2KFLambda,lOnFlyStatus);
     fHistChi2KFBeforeCutAntiLambda->Fill(lChi2KFAntiLambda,lOnFlyStatus);
 
-    // Histo versus Eta and armenteros histo in |eta| <  lCutEta
+    // Histo versus Rap and armenteros plot
     if (!lOnFlyStatus){
-      if (lCheckMcK0Short) fHistAsMcEtaK0->Fill(lEtaK0s);
-      if (lCheckMcLambda) fHistAsMcEtaLambda->Fill(lEtaLambda);
-      if (lCheckMcAntiLambda) fHistAsMcEtaLambda->Fill(lEtaAntiLambda);
-      if (lV0Eta < lCutEta) fHistArmenterosPodolanski->Fill(lAlphaV0,lPtArmV0);
+      if (lCheckMcK0Short) fHistAsMcRapK0->Fill(lRapK0s);
+      if (lCheckMcLambda) fHistAsMcRapLambda->Fill(lRapLambda);
+      if (lCheckMcAntiLambda) fHistAsMcRapLambda->Fill(lRapAntiLambda);
+      fHistArmenterosPodolanski->Fill(lAlphaV0,lPtArmV0);
     }
     else {
-      if (lCheckMcK0Short) fHistAsMcEtaK0MI->Fill(lEtaK0s);
-      if (lCheckMcLambda) fHistAsMcEtaLambdaMI->Fill(lEtaLambda);
-      if (lCheckMcAntiLambda) fHistAsMcEtaLambdaMI->Fill(lEtaAntiLambda);
-      if (lV0Eta < lCutEta) fHistArmenterosPodolanskiMI->Fill(lAlphaV0,lPtArmV0);
+      if (lCheckMcK0Short) fHistAsMcRapK0MI->Fill(lRapK0s);
+      if (lCheckMcLambda) fHistAsMcRapLambdaMI->Fill(lRapLambda);
+      if (lCheckMcAntiLambda) fHistAsMcRapLambdaMI->Fill(lRapAntiLambda);
+      fHistArmenterosPodolanskiMI->Fill(lAlphaV0,lPtArmV0);
     }
     
-    // K0s associated histograms in |eta| < lCutEta:
+    // K0s associated histograms in |eta| < lCutRap:
     if ( (nSigmaPosPion < cutNSigma) && (nSigmaNegPion < cutNSigma) 
 	 && (lChi2KFK0s < cutChi2KF) )     {
 
       fHistChi2KFAfterCutK0s->Fill(lChi2KFK0s,lOnFlyStatus);
 
-      if (TMath::Abs(lEtaK0s) < lCutEta) {
+      if (TMath::Abs(lRapK0s) < lCutRap) {
 
 	fHistNsigmaPosPionK0->Fill(nSigmaPosPion);
 	fHistNsigmaNegPionK0->Fill(nSigmaNegPion);
@@ -2429,11 +2428,11 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    fHistAsMcProdRadiusK0->Fill(mcPosMotherR);
 	    fHistAsMcProdRadiusXvsYK0s->Fill(mcPosMotherX,mcPosMotherY);
 	    fHistAsMcResPtK0->Fill(deltaPtK0s);
-	    fHistAsMcResPtVsEtaK0->Fill(deltaPtK0s,lEtaK0s);
+	    fHistAsMcResPtVsRapK0->Fill(deltaPtK0s,lRapK0s);
 	    fHistAsMcResPtVsPtK0->Fill(deltaPtK0s,lPtK0s);
 	  }
 	  if (lCheckSecondaryK0s) {
-	    fHistAsMcSecondaryPtVsEtaK0s->Fill(lPtK0s,lEtaK0s);
+	    fHistAsMcSecondaryPtVsRapK0s->Fill(lPtK0s,lRapK0s);
 	    fHistAsMcSecondaryProdRadiusK0s->Fill(mcPosMotherR);
 	    fHistAsMcSecondaryProdRadiusXvsYK0s->Fill(mcPosMotherX,mcPosMotherY);
 	    switch (lPdgcodeMotherOfMother) {
@@ -2465,11 +2464,11 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    fHistAsMcProdRadiusK0MI->Fill(mcPosMotherR);
 	    fHistAsMcProdRadiusXvsYK0sMI->Fill(mcPosMotherX,mcPosMotherY);
 	    fHistAsMcResPtK0MI->Fill(deltaPtK0s);
-	    fHistAsMcResPtVsEtaK0MI->Fill(deltaPtK0s,lEtaK0s);
+	    fHistAsMcResPtVsRapK0MI->Fill(deltaPtK0s,lRapK0s);
 	    fHistAsMcResPtVsPtK0MI->Fill(deltaPtK0s,lPtK0s);
 	  }
 	  else if (lCheckSecondaryK0s) {
-	    fHistAsMcSecondaryPtVsEtaK0sMI->Fill(lPtK0s,lEtaK0s);
+	    fHistAsMcSecondaryPtVsRapK0sMI->Fill(lPtK0s,lRapK0s);
 	    fHistAsMcSecondaryProdRadiusK0sMI->Fill(mcPosMotherR); 
 	    fHistAsMcSecondaryProdRadiusXvsYK0sMI->Fill(mcPosMotherX,mcPosMotherY);
 	    switch (lPdgcodeMotherOfMother) {
@@ -2486,13 +2485,13 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     } // end nsigma condition
     
 
-    // Associated Lambda histograms in |eta| < lCutEta
+    // Associated Lambda histograms in |eta| < lCutRap
     if ( (nSigmaPosProton < cutNSigma) && (nSigmaNegPion < cutNSigma)
 	 && (lChi2KFLambda < cutChi2KF) )  {
       
       fHistChi2KFAfterCutLambda->Fill(lChi2KFLambda,lOnFlyStatus);
 
-      if (TMath::Abs(lEtaLambda) < lCutEta) {
+      if (TMath::Abs(lRapLambda) < lCutRap) {
 
 	fHistNsigmaPosProtonLambda->Fill(nSigmaPosProton);
 	fHistNsigmaNegPionLambda->Fill(nSigmaNegPion);
@@ -2517,7 +2516,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    fHistAsMcProdRadiusLambda->Fill(mcPosMotherR);
 	    fHistAsMcProdRadiusXvsYLambda->Fill(mcPosMotherX,mcPosMotherY);
 	    fHistAsMcResPtLambda->Fill(deltaPtLambda);
-	    fHistAsMcResPtVsEtaLambda->Fill(deltaPtLambda,lEtaLambda);
+	    fHistAsMcResPtVsRapLambda->Fill(deltaPtLambda,lRapLambda);
 	    fHistAsMcResPtVsPtLambda->Fill(deltaPtLambda,lPtLambda);
 	    if (lComeFromSigma) fHistAsMcPtLambdaFromSigma->Fill(lPtLambda);
 	    switch (lPdgcodeMotherOfMother) {
@@ -2536,7 +2535,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  }
 	  
 	  else if (lCheckSecondaryLambda) {
-	    fHistAsMcSecondaryPtVsEtaLambda->Fill(lPtLambda,lEtaLambda);
+	    fHistAsMcSecondaryPtVsRapLambda->Fill(lPtLambda,lRapLambda);
 	    fHistAsMcSecondaryProdRadiusLambda->Fill(mcPosMotherR); 
 	    fHistAsMcSecondaryProdRadiusXvsYLambda->Fill(mcPosMotherX,mcPosMotherY);
 	    if (lComeFromSigma) fHistAsMcSecondaryPtLambdaFromSigma->Fill(lPtLambda);
@@ -2576,7 +2575,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    fHistAsMcProdRadiusLambdaMI->Fill(mcPosMotherR);
 	    fHistAsMcProdRadiusXvsYLambdaMI->Fill(mcPosMotherX,mcPosMotherY);
 	    fHistAsMcResPtLambdaMI->Fill(deltaPtLambda);
-	    fHistAsMcResPtVsEtaLambdaMI->Fill(deltaPtLambda,lEtaLambda);
+	    fHistAsMcResPtVsRapLambdaMI->Fill(deltaPtLambda,lRapLambda);
 	    fHistAsMcResPtVsPtLambdaMI->Fill(deltaPtLambda,lPtLambda);
 	    if (lComeFromSigma) fHistAsMcPtLambdaFromSigmaMI->Fill(lPtLambda);
 	    switch (lPdgcodeMotherOfMother) {
@@ -2594,7 +2593,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    }
 	  }
 	  else if (lCheckSecondaryLambda) {
-	    fHistAsMcSecondaryPtVsEtaLambdaMI->Fill(lPtLambda,lEtaLambda);
+	    fHistAsMcSecondaryPtVsRapLambdaMI->Fill(lPtLambda,lRapLambda);
 	    fHistAsMcSecondaryProdRadiusLambdaMI->Fill(mcPosMotherR); 
 	    fHistAsMcSecondaryProdRadiusXvsYLambdaMI->Fill(mcPosMotherX,mcPosMotherY);
 	    if (lComeFromSigma) fHistAsMcSecondaryPtLambdaFromSigmaMI->Fill(lPtLambda);
@@ -2619,13 +2618,13 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 
 
-    // AntiLambda associated histograms in |eta| < lCutEta
+    // AntiLambda associated histograms in |eta| < lCutRap
     if ( (nSigmaPosPion < cutNSigma)   && (nSigmaNegProton < cutNSigma) 
 	 && (lChi2KFAntiLambda < cutChi2KF) )     {
       
       fHistChi2KFAfterCutLambda->Fill(lChi2KFLambda,lOnFlyStatus);
 
-      if (TMath::Abs(lEtaAntiLambda) < lCutEta) {
+      if (TMath::Abs(lRapAntiLambda) < lCutRap) {
 
 
 	fHistNsigmaPosPionAntiLambda->Fill(nSigmaPosPion);
@@ -2651,7 +2650,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    fHistAsMcProdRadiusAntiLambda->Fill(mcPosMotherR);
 	    fHistAsMcProdRadiusXvsYAntiLambda->Fill(mcPosMotherX,mcPosMotherY);
 	    fHistAsMcResPtAntiLambda->Fill(deltaPtAntiLambda);
-	    fHistAsMcResPtVsEtaAntiLambda->Fill(deltaPtAntiLambda,lEtaLambda);
+	    fHistAsMcResPtVsRapAntiLambda->Fill(deltaPtAntiLambda,lRapLambda);
 	    fHistAsMcResPtVsPtAntiLambda->Fill(deltaPtAntiLambda,lPtAntiLambda);
 	    if (lComeFromSigma) fHistAsMcPtAntiLambdaFromSigma->Fill(lPtAntiLambda);
 	    switch (lPdgcodeMotherOfMother) {
@@ -2669,7 +2668,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    }
 	  }
 	  else if (lCheckSecondaryAntiLambda) {
-	    fHistAsMcSecondaryPtVsEtaAntiLambda->Fill(lPtAntiLambda,lEtaLambda);
+	    fHistAsMcSecondaryPtVsRapAntiLambda->Fill(lPtAntiLambda,lRapLambda);
 	    fHistAsMcSecondaryProdRadiusAntiLambda->Fill(mcPosMotherR);
 	    fHistAsMcSecondaryProdRadiusXvsYAntiLambda->Fill(mcPosMotherX,mcPosMotherY);
 	    if (lComeFromSigma) fHistAsMcSecondaryPtAntiLambdaFromSigma->Fill(lPtAntiLambda);
@@ -2709,7 +2708,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    fHistAsMcProdRadiusAntiLambdaMI->Fill(mcPosMotherR);
 	    fHistAsMcProdRadiusXvsYAntiLambdaMI->Fill(mcPosMotherX,mcPosMotherY);
 	    fHistAsMcResPtAntiLambdaMI->Fill(deltaPtAntiLambda);
-	    fHistAsMcResPtVsEtaAntiLambdaMI->Fill(deltaPtAntiLambda,lEtaLambda);
+	    fHistAsMcResPtVsRapAntiLambdaMI->Fill(deltaPtAntiLambda,lRapLambda);
 	    fHistAsMcResPtVsPtAntiLambdaMI->Fill(deltaPtAntiLambda,lPtAntiLambda);
 	    if (lComeFromSigma) fHistAsMcPtAntiLambdaFromSigmaMI->Fill(lPtAntiLambda);
 	    switch (lPdgcodeMotherOfMother) {
@@ -2727,7 +2726,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    }
 	  }
 	  else if (lCheckSecondaryAntiLambda) {
-	    fHistAsMcSecondaryPtVsEtaAntiLambdaMI->Fill(lPtAntiLambda,lEtaLambda);
+	    fHistAsMcSecondaryPtVsRapAntiLambdaMI->Fill(lPtAntiLambda,lRapLambda);
 	    fHistAsMcSecondaryProdRadiusAntiLambdaMI->Fill(mcPosMotherR); 
 	    fHistAsMcSecondaryProdRadiusXvsYAntiLambdaMI->Fill(mcPosMotherX,mcPosMotherY);
 	    if (lComeFromSigma) fHistAsMcSecondaryPtAntiLambdaFromSigmaMI->Fill(lPtAntiLambda);
