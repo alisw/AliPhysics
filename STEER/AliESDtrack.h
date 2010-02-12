@@ -289,6 +289,10 @@ public:
   Double_t GetTOFsignalDz() const {return fTOFsignalDz;}
   void    SetTOFsignalDx(Double_t dx) {fTOFsignalDx=dx;}
   Double_t GetTOFsignalDx() const {return fTOFsignalDx;}
+  void     SetTOFDeltaBC(Short_t deltaBC) {fTOFdeltaBC=deltaBC;};
+  Short_t  GetTOFDeltaBC() const {return fTOFdeltaBC;}
+  void     SetTOFL0L1(Short_t l0l1) {fTOFl0l1=l0l1;};
+  Short_t  GetTOFL0L1() const {return fTOFl0l1;}
   Double_t GetTOFchi2() const {return fTOFchi2;}
   void    SetTOFpid(const Double_t *p);
   void    SetTOFLabel(const Int_t *p);
@@ -455,6 +459,8 @@ protected:
   Double32_t fTOFsignalDz;    // local z  of track's impact on the TOF pad 
   Double32_t fTOFsignalDx;    // local x  of track's impact on the TOF pad 
   Double32_t fTOFInfo[10];    //! TOF informations
+  Short_t    fTOFdeltaBC;     // detector's Delta Bunch Crossing correction
+  Short_t    fTOFl0l1;        // detector's L0L1 latency correction
 
   Double32_t fCaloDx ;        // [0.,0.,8] distance to calorimeter cluster in calo plain (phi direction)
   Double32_t fCaloDz ;        // [0.,0.,8] distance to calorimeter cluster in calo plain (z direction)
@@ -487,7 +493,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,56)  //ESDtrack 
+  ClassDef(AliESDtrack,57)  //ESDtrack 
 };
 
 

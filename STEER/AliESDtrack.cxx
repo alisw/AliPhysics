@@ -205,6 +205,8 @@ AliESDtrack::AliESDtrack() :
   fTOFsignalRaw(0),
   fTOFsignalDz(0),
   fTOFsignalDx(0),
+  fTOFdeltaBC(0),
+  fTOFl0l1(0),
   fCaloDx(0),
   fCaloDz(0),
   fHMPIDtrkX(0),
@@ -302,6 +304,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTOFsignalRaw(track.fTOFsignalRaw),
   fTOFsignalDz(track.fTOFsignalDz),
   fTOFsignalDx(track.fTOFsignalDx),
+  fTOFdeltaBC(track.fTOFdeltaBC),
+  fTOFl0l1(track.fTOFl0l1),
   fCaloDx(track.fCaloDx),
   fCaloDz(track.fCaloDz),
   fHMPIDtrkX(track.fHMPIDtrkX),
@@ -412,6 +416,8 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTOFsignalRaw(0),
   fTOFsignalDz(0),
   fTOFsignalDx(0),
+  fTOFdeltaBC(0),
+  fTOFl0l1(0),
   fCaloDx(0),
   fCaloDz(0),
   fHMPIDtrkX(0),
@@ -540,6 +546,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTOFsignalRaw(0),
   fTOFsignalDz(0),
   fTOFsignalDx(0),
+  fTOFdeltaBC(0),
+  fTOFl0l1(0),
   fCaloDx(0),
   fCaloDz(0),
   fHMPIDtrkX(0),
@@ -864,7 +872,9 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fTOFsignalRaw = source.fTOFsignalRaw;  
   fTOFsignalDz  = source.fTOFsignalDz;      
   fTOFsignalDx  = source.fTOFsignalDx;      
-  
+  fTOFdeltaBC   = source.fTOFdeltaBC;
+  fTOFl0l1      = source.fTOFl0l1;
+ 
   for(int i = 0;i<10;++i){
     fTOFInfo[i] = source.fTOFInfo[i];    
   }
@@ -1081,6 +1091,8 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTOFsignalRaw = 0;
   fTOFsignalDz = 0;
   fTOFsignalDx = 0;
+  fTOFdeltaBC = 0;
+  fTOFl0l1 = 0;
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i] = 0;
   for (Int_t i=0;i<3;i++) fTOFLabel[i] = 0;
   for (Int_t i=0;i<10;i++) fTOFInfo[i] = 0;
