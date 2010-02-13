@@ -40,12 +40,12 @@ class AliHFMassFitter : public TNamed {
   void     SetBinN(Int_t newbinN){fNbin=newbinN;}
   void     SetType(Int_t fittypeb, Int_t fittypes);
   void     SetReflectionSigmaFactor(Int_t constant) {ffactor=constant;}
-  void     SetInitialGaussianMean(Double_t mean) {fMass=mean;}
-  void     SetInitialGaussianSigma(Double_t sigma) {fSigmaSgn=sigma;}
-  void     SetSideBands(Bool_t onlysidebands=kTRUE) {fSideBands=onlysidebands;}
+  void     SetInitialGaussianMean(Double_t mean) {fMass=mean;} // change the default value of the mean
+  void     SetInitialGaussianSigma(Double_t sigma) {fSigmaSgn=sigma;} // change the default value of the sigma
+  void     SetSideBands(Bool_t onlysidebands=kTRUE) {fSideBands=onlysidebands;} // consider only side bands
 
   //getters
-  TH1F*    GetHistoClone() const;
+  TH1F*    GetHistoClone() const; //return the histogram
   void     GetRangeFit(Double_t &minvalue, Double_t &maxvalue) const {minvalue=fminMass; maxvalue=fmaxMass;}
   Double_t GetMinRangeFit()const {return fminMass;}
   Double_t GetMaxRangeFit()const {return fmaxMass;}
@@ -61,21 +61,23 @@ class AliHFMassFitter : public TNamed {
 
   void     PrintParTitles() const;
 
-  void     InitNtuParam(char *ntuname="ntupar");
-  void     FillNtuParam();
-  TNtuple* GetNtuParam() const {return fntuParam;}
-  TNtuple* NtuParamOneShot(char *ntuname="ntupar");
-  void     WriteHisto(TString path="./");
-  void     WriteNtuple(TString path="./") const;
+  void     InitNtuParam(char *ntuname="ntupar"); // initialize TNtuple to store the parameters
+  void     FillNtuParam(); //Fill the TNtuple with the current parameters
+  TNtuple* GetNtuParam() const {return fntuParam;} // return the TNtuple
+  TNtuple* NtuParamOneShot(char *ntuname="ntupar"); // the three functions above all together
+  void     WriteHisto(TString path="./"); // write the histogram
+  void     WriteNtuple(TString path="./") const; // write the TNtuple
   void     DrawFit() const;
   void     Reset();
 
-  void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; 
-  void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const; 
-  void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; 
-  void     Background(Double_t min,Double_t max,Double_t &background,Double_t &errbackground) const; 
-  void     Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const;
-  void     Significance(Double_t min,Double_t max,Double_t &significance,Double_t &errsignificance) const;
+  void     IntS(Float_t *valuewitherror);    // integral of signal given my the fit with error
+  Double_t IntTot(){return fhistoInvMass->Integral("width");}  // return total integral of the histogram
+  void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; // signal in nsigma with error 
+  void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const; // signal in (min, max) with error 
+  void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; // backgournd in nsigma with error 
+  void     Background(Double_t min,Double_t max,Double_t &background,Double_t &errbackground) const; // backgournd in (min, max) with error 
+  void     Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const; // significance in nsigma with error 
+  void     Significance(Double_t min,Double_t max,Double_t &significance,Double_t &errsignificance) const; // significance in (min, max) with error 
 
   Double_t FitFunction4MassDistr (Double_t*, Double_t*);
   Double_t FitFunction4Sgn (Double_t*, Double_t*);

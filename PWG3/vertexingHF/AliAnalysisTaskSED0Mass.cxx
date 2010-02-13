@@ -80,6 +80,7 @@ fVHFmycuts(0),
 fArray(0),
 fReadMC(0),
 fLsNormalization(1.)
+
 {
   // Default constructor
   for(Int_t i=0;i<5;i++) {fTotPosPairs[i]=0; fTotNegPairs[i]=0;}
@@ -311,8 +312,9 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     tmpS27l->Sumw2();
  
     //distribution w/o cuts
-    TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",300,0,3.73);
-    TH1F *tmpMB=(TH1F*)tmpMt->Clone();
+    //   TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",300,0.7,3.);
+    TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",300,1.56484,2.16484); //range (MD0-300MeV, mD0 + 300MeV)
+    TH1F *tmpMB=(TH1F*)tmpMS->Clone();
     tmpMB->SetName(nameMassNocutsB.Data());
     tmpMS->Sumw2();
     tmpMB->Sumw2();
@@ -704,7 +706,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 
 	  }
 	  
-      }
+	}
 
 	if(pt>0. && pt<=1.){
 	  ((TH1F*)fDistr->FindObject("hd0d0S_1"))->Fill(d->Prodd0d0());
@@ -864,10 +866,12 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
   
     Int_t ptbin=0;
+    Bool_t isInRange=kFALSE;
     
     //cout<<"P_t = "<<pt<<endl;
     if (pt>0. && pt<=1.) {
       ptbin=1;
+      isInRange=kTRUE;
       /*
       //test d0 cut
       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.0002,0.5);
@@ -886,6 +890,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     if(pt>1. && pt<=3.) {
       if(pt>1. && pt<=2.) ptbin=2;  
       if(pt>2. && pt<=3.) ptbin=3;  
+      isInRange=kTRUE;
       /*
       //test d0 cut
       fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0002,0.6);
@@ -899,20 +904,22 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     }
  
     if(pt>3. && pt<=5.){
-	ptbin=4;  
-	/*
-	//test d0 cut
-	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0001,0.8);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.8);
-	*/
-	//original
-	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
-	
-	//printf("I'm in the bin %d\n",ptbin);
+      ptbin=4;  
+      isInRange=kTRUE;
+      /*
+      //test d0 cut
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0001,0.8);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.8);
+      */
+      //original
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
+      
+      //printf("I'm in the bin %d\n",ptbin);
     }
-    if(pt>5.){
+    if(pt>5.&& pt<=10.){ //additional upper limit to compare with Correction Framework
       ptbin=5;
+      isInRange=kTRUE;
       /*
       //test d0 cut
       fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00005,0.8);
@@ -926,7 +933,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     //printf("I'm in the bin %d\n",ptbin);
     //old
     //fVHF->SetD0toKpiCuts(0.7,0.03,0.8,0.06,0.06,0.05,0.05,-0.0002,0.6); //2.p-p vertex reconstructed    
-    if(prongsinacc){
+    if(prongsinacc && isInRange){
       FillHists(ptbin,d,mcArray,fVHFPPR,fOutputPPR);
       FillHists(ptbin,d,mcArray,fVHFmycuts,fOutputmycuts);
     }
@@ -972,7 +979,7 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
     //count candidates selected by cuts
     fNentries->Fill(2);
     //count true D0 selected by cuts
-    if (labD0>=0) fNentries->Fill(3);
+    if (fReadMC && labD0>=0) fNentries->Fill(3);
     PostData(3,fNentries);
 
     if (okD0==1) {
@@ -1055,6 +1062,7 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
   // Terminate analysis
   //
   if(fDebug > 1) printf("AnalysisTaskSED0Mass: Terminate() \n");
+
 
   fOutputPPR = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutputPPR) {     
