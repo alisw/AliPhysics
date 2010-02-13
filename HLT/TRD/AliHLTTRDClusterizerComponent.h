@@ -8,7 +8,7 @@
 //* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTRDClusterizerComponent.h
-    @author 
+    @author Theodor Rascanu
     @date   
     @brief  Declaration of a TRDClusterizer component.
 */

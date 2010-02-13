@@ -6,7 +6,7 @@
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTRDTrackerV1Component.h
-    @author 
+    @author Theodor Rascanu
     @date   
     @brief  Declaration of a TRDTracker component. */
 

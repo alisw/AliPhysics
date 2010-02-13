@@ -17,7 +17,7 @@
 //**************************************************************************
 
 /** @file   AliHLTTRDTrackerV1Component.cxx
-    @author 
+    @author Theodor Rascanu
     @date   
     @brief  A TRDTrackerV1 processing component for the HLT.
 */
@@ -429,19 +429,19 @@ int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
 	}
 	continue;
       }
-      else if (argument.CompareTo("-emulateHLTTracks")==0) {
+      else if (argument.CompareTo("-emulateHLToutput")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
 	if (toCompareTo.CompareTo("yes")==0){
-	  HLTWarning("Setting emulateHLTTracks to: %s", toCompareTo.Data());
+	  HLTWarning("Setting emulateHLToutput to: %s", toCompareTo.Data());
 	  fEmulateHLTTracks=kTRUE;
 	}
 	else if (toCompareTo.CompareTo("no")==0){
-	  HLTInfo("Setting emulateHLTTracks to: %s", toCompareTo.Data());
+	  HLTInfo("Setting emulateHLToutput to: %s", toCompareTo.Data());
 	  fEmulateHLTTracks=kFALSE;
 	}
 	else {
-	  HLTError("unknown argument for emulateHLTTracks: %s", toCompareTo.Data());
+	  HLTError("unknown argument for emulateHLToutput: %s", toCompareTo.Data());
 	  iResult=-EINVAL;
 	  break;
 	}
