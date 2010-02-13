@@ -7,10 +7,9 @@ const Int_t    minITSClusters = 4;
 // ANALYSIS TYPE D*+ or D*-
 const Bool_t computeD0 = kFALSE;
 const Bool_t topologicalCut = kFALSE;
-
 //----------------------------------------------------
 
-AliAnalysisTaskSEDStarJets *AddTaskDStarJets()
+AliAnalysisTaskSEDStarJets *AddTaskDStarJets(Bool_t theMCon=kTRUE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -25,6 +24,7 @@ AliAnalysisTaskSEDStarJets *AddTaskDStarJets()
   AliAnalysisTaskSEDStarJets *task = new AliAnalysisTaskSEDStarJets("AliAnalysisTaskSEDStarJets");
   task->SetMinITSClusters(minITSClusters);
   task->SetAnalType(computeD0);
+  task->SetMC(theMCon);
   task->SetCutType(topologicalCut);
   // Create and connect containers for input/output
   

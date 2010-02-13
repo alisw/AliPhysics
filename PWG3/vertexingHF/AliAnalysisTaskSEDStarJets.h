@@ -55,7 +55,7 @@ class AliAnalysisTaskSEDStarJets : public AliAnalysisTaskSE {
   Double_t GetInvariantMassDStar(TLorentzVector LorentzTrack3,TLorentzVector LorentzTrack4);
  
   //side band background eval
-  void     SideBandBackground(Double_t finvM, Double_t finvMDStar, Double_t fejet, Double_t ejet);
+  void     SideBandBackground(Double_t finvM, Double_t finvMDStar, Double_t fejet, Double_t ejet, Int_t nJets);
   
   // inizializations
   Bool_t   DefineHistoFroAnalysis();
@@ -70,9 +70,15 @@ class AliAnalysisTaskSEDStarJets : public AliAnalysisTaskSE {
   // set minimum ITS clusters for the analysis
   void     SetMinITSClusters(Int_t minITSClusters) {fMinITSClusters = minITSClusters;}
   Int_t    GetMinITSClusters() const {return fMinITSClusters;}
+
   //set the analysis type D*+ or D*-
   void     SetAnalType(Bool_t computeD0) {fComputeD0 = computeD0;}
   Bool_t   GetAnalType() const {return fComputeD0;}
+
+  // set MC usage
+  void    SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
+  Bool_t  GetMC() const {return fUseMCInfo;}
+
   // set cut type
   void     SetCutType(Bool_t topologicalCut) {ftopologicalCut = topologicalCut;}
   Bool_t   GetCutType() const {return ftopologicalCut;}
@@ -86,9 +92,10 @@ class AliAnalysisTaskSEDStarJets : public AliAnalysisTaskSE {
   Int_t  fCountDStar;            //  MC particle that are D* in acc and with D0->kpi.
   Int_t  fEvents;                //  n. of events
   Int_t  fMinITSClusters;        //  min n. of ITS clusters for RecoDecay
-  Bool_t fComputeD0;             // select analysis type: D*+ (kTRUE), D*- (kFALSE)
-  Bool_t ftopologicalCut;        // if false apply relaxed PPR cuts alse cut on the space of D0pt and softpipt  
-  Bool_t fRequireNormalization;  // normalization 
+  Bool_t fComputeD0;             //  select analysis type: D*+ (kTRUE), D*- (kFALSE)
+  Bool_t fUseMCInfo;             //  Use MC info
+  Bool_t ftopologicalCut;        //  if false apply relaxed PPR cuts alse cut on the space of D0pt and softpipt  
+  Bool_t fRequireNormalization;  //  normalization 
 
   TLorentzVector fLorentzTrack1; // lorentz 4 vector
   TLorentzVector fLorentzTrack2; // lorentz 4 vector
@@ -123,7 +130,7 @@ class AliAnalysisTaskSEDStarJets : public AliAnalysisTaskSE {
   TH1F *fEtaJet;         //!
   TH1F *fdstarpt;        //!
 
-  ClassDef(AliAnalysisTaskSEDStarJets,1); // class for HF corrections as a function of many variables
+  ClassDef(AliAnalysisTaskSEDStarJets,2); // class for HF corrections as a function of many variables
 };
 
 #endif
