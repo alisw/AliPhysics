@@ -15,7 +15,6 @@ class AliHLTTRDCluster
  public:
   AliHLTTRDCluster();
   AliHLTTRDCluster(const AliTRDcluster* const inCluster);
-  virtual ~AliHLTTRDCluster() {};
   void ExportTRDCluster(AliTRDcluster* const outCluster) const;
   void Print() const;
   
