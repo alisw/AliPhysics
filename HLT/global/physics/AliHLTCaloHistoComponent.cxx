@@ -77,15 +77,16 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
 
   
   for(int i = 0; i < argc; i++) {
-    if(!strcmp("-cellenergy", argv[i+1])) fDoCellEnergy = true;
-    if(!strcmp("-clusterenergy", argv[i+1])) fDoClusterEnergy = true;
-    if(!strcmp("-invariantmass", argv[i+1])) fDoInvariantMass= true;
-    if(!strcmp("-matchedtracks", argv[i+1])) fDoMatchedTracks = true;
-    if(!strcmp("-phos", argv[i+1])) fDoPhos = true;
-    if(!strcmp("-emcal", argv[i+1])) fDoEmcal = true;
+    if(!strcmp("-cellenergy", argv[i])) fDoCellEnergy = true;
+    if(!strcmp("-clusterenergy", argv[i])) fDoClusterEnergy = true;
+    if(!strcmp("-invariantmass", argv[i])) fDoInvariantMass= true;
+    if(!strcmp("-matchedtracks", argv[i])) fDoMatchedTracks = true;
+    if(!strcmp("-phos", argv[i])) fDoPhos = true;
+    if(!strcmp("-emcal", argv[i])) fDoEmcal = true;
   }
 
-  
+
+
   
   //PHOS
   if(fDoPhos){
@@ -217,7 +218,7 @@ AliHLTCaloHistoComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& lis
 AliHLTComponentDataType AliHLTCaloHistoComponent::GetOutputDataType()
 {
   //see header file for documentation
-  return kAliHLTDataTypeHistogram  | kAliHLTDataOriginOut;
+  return (kAliHLTDataTypeHistogram  | kAliHLTDataOriginOut);
 }
 
 
@@ -247,7 +248,7 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
 
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
-
+    event->GetStdContent();
     
     //EMCAL
     if(fDoEmcal){
