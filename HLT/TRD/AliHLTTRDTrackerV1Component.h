@@ -11,17 +11,17 @@
     @brief  Declaration of a TRDTracker component. */
 
 #include "AliHLTProcessor.h"
+#include "AliESDEvent.h"
 
 class TFile;
-
 class TGeoManager;
 class AliCDBManager;
 class AliMagF;
 class AliTRDtrackerV1;
 class AliTRDrecoParam;
 class AliTRDReconstructor;
-class AliESDEvent;
 class TClonesArray;
+class TBuffer;
 
 /**
  * @class AliHLTTRDTrackerV1Component
@@ -32,6 +32,19 @@ class TClonesArray;
 
 class AliHLTTRDTrackerV1Component : public AliHLTProcessor
 {
+protected:
+
+  class AliHLTTRDESDEvent : public AliESDEvent
+  {
+    // Here we use our own slim version of AliESDEvent 
+    // by overwriting AliESDEvent::CreateStdContent
+  public:
+    void CreateStdContent();
+
+    // streamer function is prohibited, class for internal use only
+    void Streamer(TBuffer &R__b);
+  };
+
 public:
   AliHLTTRDTrackerV1Component();
   virtual ~AliHLTTRDTrackerV1Component();
@@ -66,7 +79,7 @@ protected:
   
   int Configure(const char* arguments);
   int SetParams();
-	
+
 protected:
   /** copy constructor prohibited */
   AliHLTTRDTrackerV1Component(const AliHLTTRDTrackerV1Component&);
@@ -79,8 +92,8 @@ protected:
 	
   AliTRDtrackerV1 *fTracker;//! Offline-pure/HLT tracker V1
   AliTRDrecoParam *fRecoParam; //! Offline reco params
-  AliTRDReconstructor * fReconstructor;
-  AliESDEvent*     fESD;
+  AliTRDReconstructor* fReconstructor;
+  AliHLTTRDESDEvent* fESD;
 
   TClonesArray* fClusterArray;
 
