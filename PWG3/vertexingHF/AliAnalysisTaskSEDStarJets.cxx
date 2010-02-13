@@ -70,6 +70,7 @@ AliAnalysisTaskSEDStarJets::AliAnalysisTaskSEDStarJets() :
   fEvents(0),
   fMinITSClusters(0),
   fComputeD0(kTRUE),
+  fUseMCInfo(kTRUE),
   ftopologicalCut(kFALSE), 
   fRequireNormalization(kTRUE),
   fLorentzTrack1(0,0,0,0),
@@ -114,6 +115,7 @@ AliAnalysisTaskSEDStarJets::AliAnalysisTaskSEDStarJets(const Char_t* name) :
   fEvents(0),
   fMinITSClusters(0),
   fComputeD0(kTRUE),
+  fUseMCInfo(kTRUE),
   ftopologicalCut(kFALSE),
   fRequireNormalization(kTRUE),
   fLorentzTrack1(0,0,0,0),
@@ -175,6 +177,7 @@ AliAnalysisTaskSEDStarJets::AliAnalysisTaskSEDStarJets(const AliAnalysisTaskSEDS
   fEvents(c.fEvents),
   fMinITSClusters(c.fMinITSClusters),
   fComputeD0(c.fComputeD0),
+  fUseMCInfo(c.fUseMCInfo),
   ftopologicalCut(c.ftopologicalCut),
   fRequireNormalization(c.fRequireNormalization),
   fLorentzTrack1(c.fLorentzTrack1),
@@ -265,10 +268,6 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
   if(aodEvent->GetNJets()<=0) return;
   AliInfo("found a jet: processing D* in jet analysis");
 
-  //loop on the MC event - some basic MC info on D*, D0 and soft pion
-  TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
-
   // AOD primary vertex
   AliAODVertex *prVtx = (AliAODVertex*)aodEvent->GetPrimaryVertex();
   Double_t primaryPos[3];
@@ -284,125 +283,132 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
   Int_t icountRecoPPR = 0;
   Int_t fiDstar    = 0;
   Int_t fDStarD0   = 0;
-  
-  for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
-    AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
-    if (!mcPart) {
-      AliWarning("Particle not found in tree, skipping"); 
-      continue;
-    }   
+
+  // TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
+  if(fUseMCInfo){
+    TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    //loop on the MC event - some basic MC info on D*, D0 and soft pion
+    if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
     
-    // charm pt
-    if(TMath::Abs(mcPart->GetPdgCode())==4){
-      fcharmpt->Fill(mcPart->Pt());
-    }
-    
-    // fill energy and pt for D* in acceptance with correct prongs 
-    Bool_t isOk = DstarInMC(mcPart,mcArray);
-    
-    if (isOk){ //D*
-      AliDebug(2, "Found a DStar in MC with correct prongs and in acceptance");
-      fdstarE ->Fill(mcPart->E());
-      fdstarpt->Fill(mcPart->Pt());
+    for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
+      AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
+      if (!mcPart) {
+	AliWarning("Particle not found in tree, skipping"); 
+	continue;
+      }   
       
-      // check the MC-Acceptance level cuts
-      // since standard CF functions are not applicable, using Kine Cuts on daughters
-      
-      Int_t daughter0 = mcPart->GetDaughter(0);
-      Int_t daughter1 = mcPart->GetDaughter(1);
-      
-      AliDebug(2, Form("daughter0 = %d and daughter1 = %d",daughter0,daughter1));
-      
-      AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter0));
-      AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter1));
-      
-      Double_t eta0 = mcPartDaughter0->Eta();
-      Double_t eta1 = mcPartDaughter1->Eta();
-      Double_t y0   = mcPartDaughter0->Y();
-      Double_t y1   = mcPartDaughter1->Y();
-      Double_t pt0  = mcPartDaughter0->Pt();
-      Double_t pt1  = mcPartDaughter1->Pt();
-      
-      AliDebug(2, Form("D* Daughter 0: eta = %f, y = %f, pt = %f", eta0, y0, pt0));
-      AliDebug(2, Form("D* Daughter 1: eta = %f, y = %f, pt = %f", eta1, y1, pt1));
-      
-      Int_t daughD00 = 0;
-      Int_t daughD01 = 0;
-      
-      // D0 daughters - do not need to check D0-kpi, already done
-      
-      if(TMath::Abs(mcPartDaughter0->GetPdgCode())==421){
-	daughD00 = mcPartDaughter0->GetDaughter(0);
-	daughD01 = mcPartDaughter0->GetDaughter(1);
-      }else{
-	daughD00 = mcPartDaughter1->GetDaughter(0);
-	daughD01 = mcPartDaughter1->GetDaughter(1);
+      // charm pt
+      if(TMath::Abs(mcPart->GetPdgCode())==4){
+	fcharmpt->Fill(mcPart->Pt());
       }
       
-      AliAODMCParticle* mcD0PartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughD00));
-      AliAODMCParticle* mcD0PartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughD01));
+      // fill energy and pt for D* in acceptance with correct prongs 
+      Bool_t isOk = DstarInMC(mcPart,mcArray);
       
-      if (!mcD0PartDaughter0 || !mcD0PartDaughter1) {
-	AliWarning("At least one Daughter Particle not found in tree, but it should be, this check was already done..."); 
-      }
-      
-      // D0 daughters - needed for acceptance
-      Double_t pD0pt0 =  mcD0PartDaughter0->Pt();
-      Double_t pD0pt1 =  mcD0PartDaughter1->Pt();
-      Double_t pD0eta0 = mcD0PartDaughter0->Eta();
-      Double_t pD0eta1 = mcD0PartDaughter1->Eta();
-      
-      // ACCEPTANCE REQUESTS ---------
-      
-      // soft pion 
-      Bool_t daught1inAcceptance = (TMath::Abs(eta1) <= 0.9 && pt1 > 0.05);
-      // Do daughters
-      Bool_t theD0daught0inAcceptance = (TMath::Abs(pD0eta0) <= 0.9 && pD0pt0 >= 0.1); 
-      Bool_t theD0daught1inAcceptance = (TMath::Abs(pD0eta1) <= 0.9 && pD0pt1 >= 0.1);
-      
-      if (daught1inAcceptance && theD0daught0inAcceptance && theD0daught1inAcceptance) {
+      if (isOk){ //D*
+	AliDebug(2, "Found a DStar in MC with correct prongs and in acceptance");
+	fdstarE ->Fill(mcPart->E());
+	fdstarpt->Fill(mcPart->Pt());
 	
-	AliDebug(2, "Daughter particles in acceptance");
-    
-	// check on the vertex
-	if (vtxFlag){
-	  printf("Vertex cut passed 2\n");
-	  fDStarD0++; 
-	  Bool_t refitFlag = kTRUE;
-	  for (Int_t iaod =0; iaod<aodEvent->GetNumberOfTracks(); iaod++){
-	    AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iaod);
-	    
-            // refit only for D0 daughters
-	    if ((track->GetLabel() == daughD00) || (track->GetLabel() == daughD01)) {
-	      if(!(track->GetStatus()&AliESDtrack::kTPCrefit) || !(track->GetStatus()&AliESDtrack::kITSrefit)) {
-		refitFlag = kFALSE;
+	// check the MC-Acceptance level cuts
+	// since standard CF functions are not applicable, using Kine Cuts on daughters
+	
+	Int_t daughter0 = mcPart->GetDaughter(0);
+	Int_t daughter1 = mcPart->GetDaughter(1);
+	
+	AliDebug(2, Form("daughter0 = %d and daughter1 = %d",daughter0,daughter1));
+	
+	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter0));
+	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter1));
+	
+	Double_t eta0 = mcPartDaughter0->Eta();
+	Double_t eta1 = mcPartDaughter1->Eta();
+	Double_t y0   = mcPartDaughter0->Y();
+	Double_t y1   = mcPartDaughter1->Y();
+	Double_t pt0  = mcPartDaughter0->Pt();
+	Double_t pt1  = mcPartDaughter1->Pt();
+	
+	AliDebug(2, Form("D* Daughter 0: eta = %f, y = %f, pt = %f", eta0, y0, pt0));
+	AliDebug(2, Form("D* Daughter 1: eta = %f, y = %f, pt = %f", eta1, y1, pt1));
+	
+	Int_t daughD00 = 0;
+	Int_t daughD01 = 0;
+	
+	// D0 daughters - do not need to check D0-kpi, already done
+	
+	if(TMath::Abs(mcPartDaughter0->GetPdgCode())==421){
+	  daughD00 = mcPartDaughter0->GetDaughter(0);
+	  daughD01 = mcPartDaughter0->GetDaughter(1);
+	}else{
+	  daughD00 = mcPartDaughter1->GetDaughter(0);
+	  daughD01 = mcPartDaughter1->GetDaughter(1);
+	}
+	
+	AliAODMCParticle* mcD0PartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughD00));
+	AliAODMCParticle* mcD0PartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughD01));
+	
+	if (!mcD0PartDaughter0 || !mcD0PartDaughter1) {
+	  AliWarning("At least one Daughter Particle not found in tree, but it should be, this check was already done..."); 
+	}
+	
+	// D0 daughters - needed for acceptance
+	Double_t pD0pt0 =  mcD0PartDaughter0->Pt();
+	Double_t pD0pt1 =  mcD0PartDaughter1->Pt();
+	Double_t pD0eta0 = mcD0PartDaughter0->Eta();
+	Double_t pD0eta1 = mcD0PartDaughter1->Eta();
+	
+	// ACCEPTANCE REQUESTS ---------
+	
+	// soft pion 
+	Bool_t daught1inAcceptance = (TMath::Abs(eta1) <= 0.9 && pt1 > 0.05);
+	// Do daughters
+	Bool_t theD0daught0inAcceptance = (TMath::Abs(pD0eta0) <= 0.9 && pD0pt0 >= 0.1); 
+	Bool_t theD0daught1inAcceptance = (TMath::Abs(pD0eta1) <= 0.9 && pD0pt1 >= 0.1);
+	
+	if (daught1inAcceptance && theD0daught0inAcceptance && theD0daught1inAcceptance) {
+	  
+	  AliDebug(2, "Daughter particles in acceptance");
+	  
+	  // check on the vertex
+	  if (vtxFlag){
+	    printf("Vertex cut passed 2\n");
+	    fDStarD0++; 
+	    Bool_t refitFlag = kTRUE;
+	    for (Int_t iaod =0; iaod<aodEvent->GetNumberOfTracks(); iaod++){
+	      AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iaod);
+	      
+	      // refit only for D0 daughters
+	      if ((track->GetLabel() == daughD00) || (track->GetLabel() == daughD01)) {
+		if(!(track->GetStatus()&AliESDtrack::kTPCrefit) || !(track->GetStatus()&AliESDtrack::kITSrefit)) {
+		  refitFlag = kFALSE;
+		}
 	      }
 	    }
-	  }
-	  if (refitFlag){
-	    printf("Refit cut passed\n");
+	    if (refitFlag){
+	      printf("Refit cut passed\n");
+	    }
+	    else{
+	      AliDebug(3,"Refit cut not passed\n");
+	    }
 	  }
 	  else{
-	    AliDebug(3,"Refit cut not passed\n");
-	  }
+	    AliDebug(3,"Vertex cut not passed\n");
+	  }			
 	}
 	else{
-	  AliDebug(3,"Vertex cut not passed\n");
-	}			
+	  AliDebug(3,"Acceptance cut not passed\n");
+	}    
       }
-      else{
-	AliDebug(3,"Acceptance cut not passed\n");
-      }    
     }
-  }    
-  
-  AliDebug(2, Form("Found %i MC particles that are D* in Kpipi and satisfy Acc cuts!!",fDStarD0));
+
+    AliDebug(2, Form("Found %i MC particles that are D* in Kpipi and satisfy Acc cuts!!",fDStarD0));
+    fCountDStar += fDStarD0;
+
+  } // End of MC
   
   // Now perform the D* in jet reconstruction
-  
-  // fill statistic
-  fCountDStar += fDStarD0;
-  
+
   // Normalization factor
   if(fRequireNormalization){       
     ftrigger->Fill(1);
@@ -449,7 +455,8 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
       if(tPrimCand && arrayVerticesHF->GetEntriesFast()>0){ // isPion and is Primary, no PID for now
 	
         // label to the candidate soft pion
-        Int_t pLabel = aodTrack->GetLabel();
+        Int_t pLabel = -1;
+	if(fUseMCInfo) pLabel = aodTrack->GetLabel();
         
 	// prepare the TLorentz vector for the pion	
 	Float_t pionMass = TDatabasePDG::Instance()->GetParticle(211)->Mass(); 
@@ -474,27 +481,32 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
           Int_t pdgDgD0toKpi[2]={321,211};
 	  
           Int_t mcLabel =-1; 
-          mcLabel = vtx->MatchToMC(421, mcArray,2,pdgDgD0toKpi) ;   //MC D0
 
           Bool_t isDStar = kFALSE; // just to count
 	  
-          // matching to MC D*
-	  if(mcLabel !=-1 && pLabel!=-1 && nJets ==1) { // count only once in case of multijets
-
-            // search for a D0 and a pi with mother and check it is a D*
-	    AliAODMCParticle* theMCpion = (AliAODMCParticle*)mcArray->At(pLabel);
-	    Int_t motherMCPion = theMCpion->GetMother();
-	    AliAODMCParticle* theMCD0 = (AliAODMCParticle*)mcArray->At(mcLabel);
-	    Int_t motherMCD0 = theMCD0->GetMother();
-	    
-	    if(motherMCPion!=-1 && (motherMCD0 == motherMCPion)){
-	      AliAODMCParticle* mcMother = (AliAODMCParticle*)mcArray->At(motherMCPion); 
-	      if(TMath::Abs(mcMother->GetPdgCode()) == 413){
-		isDStar = kTRUE;
-		fiDstar++;
+          //switch of MC for real data
+	  if(fUseMCInfo){
+	    TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	    mcLabel = vtx->MatchToMC(421, mcArray,2,pdgDgD0toKpi) ;   //MC D0
+	    // matching to MC D*
+	    if(mcLabel !=-1 && pLabel!=-1 && nJets ==1) { // count only once in case of multijets
+	      
+	      // search for a D0 and a pi with mother and check it is a D*
+	      AliAODMCParticle* theMCpion = (AliAODMCParticle*)mcArray->At(pLabel);
+	      Int_t motherMCPion = theMCpion->GetMother();
+	      AliAODMCParticle* theMCD0 = (AliAODMCParticle*)mcArray->At(mcLabel);
+	      Int_t motherMCD0 = theMCD0->GetMother();
+	      
+	      if(motherMCPion!=-1 && (motherMCD0 == motherMCPion)){
+		AliAODMCParticle* mcMother = (AliAODMCParticle*)mcArray->At(motherMCPion); 
+		if(TMath::Abs(mcMother->GetPdgCode()) == 413 && TMath::Abs(theMCpion->GetPdgCode())==211){
+		  isDStar = kTRUE;
+		  fiDstar++;
+		}
 	      }
 	    }
 	  }
+
 
 	  if (acceptanceProng0 && acceptanceProng1 && acceptanceSoftPi) {
               
@@ -521,7 +533,7 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 	    }
 
 	    // clusters in ITS for D0 daugthers and soft pion
-	    if (ncls0 >= fMinITSClusters && ncls1 >= fMinITSClusters && ncls2>=3) {
+	    if (ncls0 >= fMinITSClusters && ncls1 >= fMinITSClusters && ncls2>=4 && kRefitITS) {
 	      
 	      if(isDStar && nJets==1) icountRecoITSClusters++; 
 	      
@@ -700,7 +712,7 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 		  }
 
 		  // now the dphi signal and the fragmentation function 
-		  if((invMDStar-invM)<=0.150 && (invMDStar-invM)>=0.140) { 
+		  if((invMDStar-invM)<=0.148 && (invMDStar-invM)>=0.142) { 
 		    
 		    //fill candidates D* and soft pion reco pt
 		    if(nJets==1) fPtPion->Fill(aodTrack->Pt());		  
@@ -716,7 +728,7 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 		}
 		
 		// evaluate side band background
-		if(nJets==1) SideBandBackground(invM, invMDStar, ejet, dPhi);
+		SideBandBackground(invM, invMDStar, ejet, dPhi, nJets);
 		
 		invM      = 0;      
 		invMDStar = 0;          
@@ -1045,7 +1057,7 @@ Bool_t AliAnalysisTaskSEDStarJets::EvaluateCutOnPiD0pt(AliAODRecoDecayHF2Prong* 
 
 //______________________________ side band background for D*___________________________________
 
-void AliAnalysisTaskSEDStarJets::SideBandBackground(Double_t invM, Double_t invMDStar, Double_t ejet, Double_t dPhi){
+void AliAnalysisTaskSEDStarJets::SideBandBackground(Double_t invM, Double_t invMDStar, Double_t ejet, Double_t dPhi, Int_t nJets){
 
   //  D* side band background method. Two side bands, in M(Kpi) are taken at ~6 sigmas 
   // (expected detector resolution) on the left and right frm the D0 mass. Each band
@@ -1053,9 +1065,9 @@ void AliAnalysisTaskSEDStarJets::SideBandBackground(Double_t invM, Double_t invM
   
   if((invM>=1.763 && invM<=1.811) || (invM>=1.919 && invM<=1.963)){
     
-    fDiffSideBand->Fill(invMDStar-invM); // M(Kpipi)-M(Kpi) side band background
+    if(nJets==1)fDiffSideBand->Fill(invMDStar-invM); // M(Kpipi)-M(Kpi) side band background
     
-    if ((invMDStar-invM)<=0.150 && (invMDStar-invM)>=0.140) {                                                  
+    if ((invMDStar-invM)<=0.148 && (invMDStar-invM)>=0.142) {                                                  
       fPhiBkg->Fill(dPhi);
       
       if(dPhi>=-0.5 && dPhi<=0.5){  // evaluate in the near side
