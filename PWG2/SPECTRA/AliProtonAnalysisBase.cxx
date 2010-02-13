@@ -72,16 +72,16 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
   fMinTPCdEdxPointsFlag(kFALSE),
   fFunctionProbabilityFlag(kFALSE), 
-  fNSigma(0),
+  fNSigma(0), fNRatio(0),
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
   fDebugMode(kFALSE), fListVertexQA(new TList()) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
-  for(Int_t i = 0; i < 24; i++) {
+  /*for(Int_t i = 0; i < 24; i++) {
     fdEdxMean[i] = 0.0;
     fdEdxSigma[i] = 0.0;
-  }
+    }*/
   fListVertexQA->SetName("fListVertexQA");
   TH1F *gHistVx = new TH1F("gHistVx",
 			   "Vx distribution;V_{x} [cm];Entries",
@@ -685,24 +685,29 @@ TCanvas *AliProtonAnalysisBase::GetListOfCuts() {
   l.DrawLatex(0.1,0.66,listOfCuts.Data());
   listOfCuts = "PID mode: "; 
   if(fProtonPIDMode == kBayesian) listOfCuts += "Bayesian PID";
-  if(fProtonPIDMode == kRatio) listOfCuts += "Z = ln((dE/dx)_{exp.}/(dE/dx)_{theor.})"; 
-  if(fProtonPIDMode == kSigma1) {
-    listOfCuts += "N_{#sigma}(1) area: "; listOfCuts += fNSigma;
+  if(fProtonPIDMode == kRatio) {
+    listOfCuts += "Z = ln((dE/dx)_{exp.}/(dE/dx)_{theor.}) > ";
+    listOfCuts += fNRatio;
+  }
+  if(fProtonPIDMode == kSigma) {
+    listOfCuts += "N_{#sigma} area: "; listOfCuts += fNSigma;
     listOfCuts += " #sigma";
   }
-  if(fProtonPIDMode == kSigma2) {
-    listOfCuts += "N_{#sigma}(2) area: "; listOfCuts += fNSigma;
-    listOfCuts += " #sigma";
-  }
+  //if(fProtonPIDMode == kSigma2) {
+  //listOfCuts += "N_{#sigma}(2) area: "; listOfCuts += fNSigma;
+  //listOfCuts += " #sigma";
+  //}
   l.DrawLatex(0.1,0.58,listOfCuts.Data());
   listOfCuts = "Accepted vertex diamond: "; 
-  l.DrawLatex(0.1,0.5,listOfCuts.Data());
+  l.DrawLatex(0.1,0.52,listOfCuts.Data());
   listOfCuts = "|V_{x}| < "; listOfCuts += fVxMax; listOfCuts += " [cm]";
-  l.DrawLatex(0.6,0.5,listOfCuts.Data());
+  l.DrawLatex(0.6,0.52,listOfCuts.Data());
   listOfCuts = "|V_{y}| < "; listOfCuts += fVyMax; listOfCuts += " [cm]";
-  l.DrawLatex(0.6,0.4,listOfCuts.Data());
+  l.DrawLatex(0.6,0.45,listOfCuts.Data());
   listOfCuts = "|V_{z}| < "; listOfCuts += fVzMax; listOfCuts += " [cm]";
-  l.DrawLatex(0.6,0.3,listOfCuts.Data());
+  l.DrawLatex(0.6,0.38,listOfCuts.Data());
+  listOfCuts = "N_{contributors} > "; listOfCuts += fMinNumOfContributors; 
+  l.DrawLatex(0.6,0.31,listOfCuts.Data());
   listOfCuts = "Phase space: "; 
   l.DrawLatex(0.1,0.2,listOfCuts.Data());
   if(fAnalysisEtaMode) listOfCuts = "|#eta| < ";  
@@ -878,11 +883,38 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
   }
   //Ratio of the measured over the theoretical dE/dx a la STAR
   else if(fProtonPIDMode == kRatio) {
-    Printf("The kRatio mode is not implemented yet!!!");
-    return kFALSE;
-  }
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(tpcTrack) {
+      gPt = tpcTrack->Pt();
+      gP = tpcTrack->P();
+      gEta = tpcTrack->Eta();
+    }
+    Double_t fAlephParameters[5];
+    if(fAnalysisMC) {
+      fAlephParameters[0] = 2.15898e+00/50.;
+      fAlephParameters[1] = 1.75295e+01;
+      fAlephParameters[2] = 3.40030e-09;
+      fAlephParameters[3] = 1.96178e+00;
+      fAlephParameters[4] = 3.91720e+00;
+    }
+    else {
+      fAlephParameters[0] = 0.0283086;
+      fAlephParameters[1] = 2.63394e+01;
+      fAlephParameters[2] = 5.04114e-11;
+      fAlephParameters[3] = 2.12543e+00;
+      fAlephParameters[4] = 4.88663e+00;
+    }
+    
+    AliESDpid *fESDpid = new AliESDpid(); 
+    AliTPCPIDResponse tpcResponse = fESDpid->GetTPCResponse(); 
+    tpcResponse.SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+    Double_t normalizeddEdx = TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton));
+    
+    if(normalizeddEdx >= fNRatio)
+      return kTRUE;
+  }//kRatio PID mode
   //Definition of an N-sigma area around the dE/dx vs P band
-  else if(fProtonPIDMode == kSigma1) {
+  else if(fProtonPIDMode == kSigma) {
     Double_t fAlephParameters[5];
     if(fAnalysisMC) {
       fAlephParameters[0] = 2.15898e+00/50.;
@@ -909,9 +941,9 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
   
     if(nsigma <= fNSigma) 
       return kTRUE;
-  }//kSigma1 PID method
+  }//kSigma PID method
   //Another definition of an N-sigma area around the dE/dx vs P band
-  else if(fProtonPIDMode == kSigma2) {
+  /*else if(fProtonPIDMode == kSigma2) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(tpcTrack) {
       gPt = tpcTrack->Pt();
@@ -941,48 +973,10 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
 
     if(normalizeddEdx >= -0.15)
       return kTRUE;
-  }
+  }*/
 
   return kFALSE;
 }
 
-//________________________________________________________________________
-void AliProtonAnalysisBase::SetdEdxBandInfo(const char *filename) {
-  // This function is used in case the kSigma1 or kSigma2 PID mode is selected
-  // It takes as an argument the name of the ascii file (for the time being) 
-  // that is generated as a prior process.
-  // This ascii file has three columns: The min. P value (bins of 50MeV/c) 
-  // the mean and the sigma of the dE/dx distributions for protons coming 
-  // from a gaussian fit.
-  ifstream in;
-  in.open(filename);
-
-  Double_t gPtMin = 0.0;
-  Int_t iCounter = 0;
-  while(in.good()) {
-    in >> gPtMin >> fdEdxMean[iCounter] >> fdEdxSigma[iCounter];
-    if(fDebugMode)
-      Printf("Momentum bin: %d - Min momentum: %lf - mean(dE/dx): %lf - sigma(dE/dx): %lf",iCounter+1,gPtMin,fdEdxMean[iCounter],fdEdxSigma[iCounter]);
-    iCounter += 1;
-  }
-}
-
-//________________________________________________________________________
-Double_t AliProtonAnalysisBase::Bethe(Double_t bg) const {
-  // This is the Bethe-Bloch function normalised to 1 at the minimum
-  // We renormalize it based on the MC information
-  // WARNING: To be revised soon!!!
-  // This is just a temporary fix
-  Double_t normalization = 49.2;
-  Double_t bg2=bg*bg;
-  Double_t beta2 = bg2/(1.+ bg2);
-  Double_t bb = 8.62702e-2*(9.14550 - beta2 - TMath::Log(3.51000e-5 + 1./bg2))/beta2;
-  //
-  const Float_t kmeanCorrection =0.1;
-  Double_t meanCorrection =(1+(bb-1)*kmeanCorrection);
-  bb *= meanCorrection;
-
-  return normalization*bb; 
-}
 
 

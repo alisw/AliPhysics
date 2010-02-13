@@ -1,6 +1,6 @@
 void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
 		       const char* esdAnalysisType = "Hybrid",
-		       const char* pidMode = "Sigma1",
+		       const char* pidMode = "Ratio",
 		       Bool_t kUseOnlineTrigger = kTRUE,
 		       Bool_t kUseOfflineTrigger = kTRUE) {
   //Macro to run the proton analysis tested for local, proof & GRID.
@@ -28,8 +28,7 @@ void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
   //ESD analysis type can be one of the three: "TPC", "Hybrid", "Global"
   //PID mode can be one of the four: "Bayesian" (standard Bayesian approach) 
   //   "Ratio" (ratio of measured over expected/theoretical dE/dx a la STAR) 
-  //   "Sigma1" (N-sigma area around the fitted dE/dx vs P band)
-  //   "Sigma2" (same as previous but taking into account the No of TPC points)
+  //   "Sigma" (N-sigma area around the fitted dE/dx vs P band)
   TStopwatch timer;
   timer.Start();
   
@@ -57,11 +56,18 @@ void runLocal(const char* mode = "ESD",
 	      Bool_t kUseOfflineTrigger = kTRUE,
 	      const char* path = "/home/pchrist/ALICE/Alien/Tutorial/November2007/Tags") {
   TString smode = mode;
+  TString cutFilename = "ListOfCuts."; cutFilename += mode;
   TString outputFilename = "Protons."; outputFilename += mode;
   if(analysisType) {
+    cutFilename += "."; cutFilename += analysisType;
     outputFilename += "."; outputFilename += analysisType;
   }
-  outputFilename += ".root";
+  if(pidMode) {
+    cutFilename += "."; cutFilename += pidMode;
+    outputFilename += "."; outputFilename += pidMode;
+  }
+ cutFilename += ".root";
+ outputFilename += ".root";
 
   //____________________________________________________//
   //_____________Setting up the par files_______________//
@@ -129,11 +135,16 @@ void runLocal(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
+                                                            TCanvas::Class(),
+							    AliAnalysisManager::kOutputContainer,
+                                                            cutFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
   mgr->ConnectOutput(taskProtons,1,coutput2);
+  mgr->ConnectOutput(taskProtons,2,coutput3);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -148,12 +159,19 @@ void runInteractive(const char* mode = "ESD",
 		    Bool_t kUseOfflineTrigger = kTRUE,
 		    const char* collectionName = "tag.xml") {
   gSystem->Load("libProofPlayer.so");
-
+  
   TString smode = mode;
+  TString cutFilename = "ListOfCuts."; cutFilename += mode;
   TString outputFilename = "Protons."; outputFilename += mode;
   if(analysisType) {
+    cutFilename += "."; cutFilename += analysisType;
     outputFilename += "."; outputFilename += analysisType;
   }
+  if(pidMode) {
+    cutFilename += "."; cutFilename += pidMode;
+    outputFilename += "."; outputFilename += pidMode;
+  }
+  cutFilename += ".root";
   outputFilename += ".root";
 
   printf("*** Connect to AliEn ***\n");
@@ -229,11 +247,16 @@ void runInteractive(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
+                                                            TCanvas::Class(),
+							    AliAnalysisManager::kOutputContainer,
+                                                            cutFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
   mgr->ConnectOutput(taskProtons,1,coutput2);
+  mgr->ConnectOutput(taskProtons,2,coutput3);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -248,10 +271,17 @@ void runBatch(const char* mode = "ESD",
 	      Bool_t kUseOfflineTrigger = kTRUE,
 	      const char *collectionfile = "wn.xml") {
   TString smode = mode;
+  TString cutFilename = "ListOfCuts."; cutFilename += mode;
   TString outputFilename = "Protons."; outputFilename += mode;
   if(analysisType) {
+    cutFilename += "."; cutFilename += analysisType;
     outputFilename += "."; outputFilename += analysisType;
   }
+  if(pidMode) {
+    cutFilename += "."; cutFilename += pidMode;
+    outputFilename += "."; outputFilename += pidMode;
+  }
+  cutFilename += ".root";
   outputFilename += ".root";
 
   printf("*** Connect to AliEn ***\n");
@@ -319,11 +349,16 @@ void runBatch(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
+                                                            TCanvas::Class(),
+							    AliAnalysisManager::kOutputContainer,
+                                                            cutFilename.Data());
   
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
   mgr->ConnectOutput(taskProtons,1,coutput2);
+  mgr->ConnectOutput(taskProtons,2,coutput3);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("grid",chain);
@@ -339,10 +374,17 @@ void runProof(const char* mode = "ESD",
 	      Int_t stats = 0, Int_t startingPoint = 0,
 	      const char* dataset = 0x0) {  
   TString smode = mode;
+  TString cutFilename = "ListOfCuts."; cutFilename += mode;
   TString outputFilename = "Protons."; outputFilename += mode;
   if(analysisType) {
+    cutFilename += "."; cutFilename += analysisType;
     outputFilename += "."; outputFilename += analysisType;
   }
+  if(pidMode) {
+    cutFilename += "."; cutFilename += pidMode;
+    outputFilename += "."; outputFilename += pidMode;
+  }
+  cutFilename += ".root";
   outputFilename += ".root";
 
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
@@ -400,11 +442,16 @@ void runProof(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
+                                                            TCanvas::Class(),
+							    AliAnalysisManager::kOutputContainer,
+                                                            cutFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
   mgr->ConnectOutput(taskProtons,1,coutput2);
+  mgr->ConnectOutput(taskProtons,3,coutput3);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 

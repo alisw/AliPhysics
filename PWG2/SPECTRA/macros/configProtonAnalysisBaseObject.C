@@ -96,16 +96,11 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       break;
     case "Ratio":
       baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kRatio);
+      baseAnalysis->SetRatio(-0.2);
       break;
-    case "Sigma1":
+    case "Sigma":
       baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kSigma1);
       baseAnalysis->SetNSigma(4);
-      baseAnalysis->SetdEdxBandInfo("$ALICE_ROOT/PWG2/data/protonsdEdxInfo.dat");
-      break;
-    case "Sigma2":
-      baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kSigma2);
-      baseAnalysis->SetNSigma(3);
-      baseAnalysis->SetdEdxBandInfo("$ALICE_ROOT/PWG2/data/protonsdEdxInfo.dat");
       break;
     default:
       break;
