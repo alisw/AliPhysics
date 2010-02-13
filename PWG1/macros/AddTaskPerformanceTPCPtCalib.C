@@ -164,7 +164,7 @@ AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kTRUE, Bool_t
   // Create containers for output
   //
   AliAnalysisDataContainer *coutput_tpcptcalib = mgr->CreateContainer("TPCPtCalib", TList::Class(), AliAnalysisManager::kOutputContainer, Form("TPCPtCalib.%s.root", task->GetName()));
-  mgr->ConnectOutput(task, 0, coutput_tpcptcalib);
+  mgr->ConnectOutput(task, 1, coutput_tpcptcalib);
 
 return task;  
 }
