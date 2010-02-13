@@ -37,7 +37,7 @@ ClassImp(AliAnalysisTaskProtons)
 AliAnalysisTaskProtons::AliAnalysisTaskProtons()
   : AliAnalysisTask(), fESD(0), fAOD(0), fMC(0),
     fListAnalysis(0), fListQA(0), fHistEventStats(0), 
-    fProtonAnalysis(0) {
+  fProtonAnalysis(0), fCutCanvas(0) {
   //Dummy constructor
   
 }
@@ -46,7 +46,7 @@ AliAnalysisTaskProtons::AliAnalysisTaskProtons()
 AliAnalysisTaskProtons::AliAnalysisTaskProtons(const char *name) 
   : AliAnalysisTask(name, ""), fESD(0), fAOD(0), fMC(0),
     fListAnalysis(0), fListQA(0), fHistEventStats(0), 
-    fProtonAnalysis(0) {
+    fProtonAnalysis(0), fCutCanvas(0) {
   // Constructor
   
   // Define input and output slots here
@@ -55,6 +55,7 @@ AliAnalysisTaskProtons::AliAnalysisTaskProtons(const char *name)
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TCanvas::Class());
 }
 
 //________________________________________________________________________
@@ -120,6 +121,8 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
   fListQA->SetName("fListQA");
   fListQA->Add(fProtonAnalysis->GetQAList());
   fListQA->Add(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertexQAList());
+
+  fCutCanvas = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetListOfCuts();
 }
 
 //________________________________________________________________________
@@ -235,6 +238,7 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
   // Post output data.
   PostData(0, fListAnalysis);
   PostData(1, fListQA);
+  PostData(2, fCutCanvas);
 }      
 
 //________________________________________________________________________
@@ -260,9 +264,9 @@ void AliAnalysisTaskProtons::Terminate(Option_t *) {
   c1->cd(2)->SetLeftMargin(0.15); c1->cd(2)->SetBottomMargin(0.15);  
   if (fHistYPtAntiProtons) fHistYPtAntiProtons->DrawCopy("colz");
 
-  TCanvas *c2 = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetListOfCuts();
+  /*TCanvas *c2 = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetListOfCuts();
   TFile *flocal = TFile::Open("ListOfCuts.root","recreate");
   c2->Write();
-  flocal->Close();
+  flocal->Close();*/
 }
 

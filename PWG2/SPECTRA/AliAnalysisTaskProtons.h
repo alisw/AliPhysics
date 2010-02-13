@@ -9,6 +9,8 @@
 //-------------------------------------------------------------------------
 
 class TList;
+class TCanvas;
+
 class AliESDEvent;
 class AliAODEvent;
 class AliMCEvent;
@@ -41,6 +43,7 @@ class AliAnalysisTaskProtons : public AliAnalysisTask {
   TH1F   *fHistEventStats; //event statistics
 
   AliProtonAnalysis *fProtonAnalysis; //analysis object 
+  TCanvas *fCutCanvas; //Tcanvas with the analysis parameters (book-keeping)
   
   AliAnalysisTaskProtons(const AliAnalysisTaskProtons&); // not implemented
   AliAnalysisTaskProtons& operator=(const AliAnalysisTaskProtons&); // not implemented
