@@ -9,6 +9,8 @@
 //-------------------------------------------------------------------------
 
 class TList;
+class TH1F;
+
 class AliESDEvent;
 class AliMCEvent;
 class AliProtonQAAnalysis;
@@ -33,6 +35,8 @@ class AliAnalysisTaskProtonsQA : public AliAnalysisTask {
  private:
   AliESDEvent *fESD;    //ESD object
   AliMCEvent  *fMC;     //MC object
+
+  TH1F   *fHistEventStats; //event statistics
 
   TList  *fList0; //TList output object
   TList  *fList1; //TList output object
