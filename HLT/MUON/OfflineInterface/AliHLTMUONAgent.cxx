@@ -418,10 +418,11 @@ int AliHLTMUONAgent::CreateConfigurations(
 	// Create a chain for generating AliESDEvent objects from dHLT raw reconstructed data.
 	handler->CreateConfiguration("HLTOUTPubTrigRecs", "AliHLTOUTPublisher", NULL, "-datatype 'TRIGRECS' 'MUON'");
 	handler->CreateConfiguration("HLTOUTPubMansoTracks", "AliHLTOUTPublisher", NULL, "-datatype 'MANTRACK' 'MUON'");
+	handler->CreateConfiguration("HLTOUTPubTracks", "AliHLTOUTPublisher", NULL, "-datatype 'TRACKS  ' 'MUON'");
 	handler->CreateConfiguration(
 			"dHLT-make-esd",
 			AliHLTMUONConstants::ESDMakerId(),
-			"HLTOUTPubTrigRecs HLTOUTPubMansoTracks",
+			"HLTOUTPubTrigRecs HLTOUTPubMansoTracks HLTOUTPubTracks",
 			"-make_minimal_esd"
 		);
 	
@@ -439,7 +440,7 @@ int AliHLTMUONAgent::CreateConfigurations(
 			AliHLTMUONConstants::RootifierComponentId(),
 			"HLTOUTPubTrigRecs HLTOUTPubTrigDbg HLTOUTPubHits HLTOUTPubClusters"
 			 " HLTOUTPubChannels HLTOUTPubMansoTracks HLTOUTPubCandidates"
-			 " HLTOUTPubSingles HLTOUTPubPairs",
+			 " HLTOUTPubTracks HLTOUTPubSingles HLTOUTPubPairs",
 			""
 		);
 	handler->CreateConfiguration(
@@ -493,7 +494,8 @@ int AliHLTMUONAgent::GetHandlerDescription(
 	/// Get handler decription for MUON data in the HLTOUT data stream.
 	
 	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
-	    dt == AliHLTMUONConstants::MansoTracksBlockDataType()
+	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
+	    dt == AliHLTMUONConstants::TracksBlockDataType()
 	   )
 	{
 		HLTDebug("Indicating we can handle data type = %s and specification"
@@ -512,6 +514,7 @@ int AliHLTMUONAgent::GetHandlerDescription(
 	    dt == AliHLTMUONConstants::ChannelBlockDataType() or
 	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
 	    dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
+	    dt == AliHLTMUONConstants::TracksBlockDataType() or
 	    dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
 	    dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
 	   )
@@ -547,12 +550,13 @@ AliHLTOUTHandler* AliHLTMUONAgent::GetOutputHandler(
 	);
 	
 	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
-	    dt == AliHLTMUONConstants::MansoTracksBlockDataType()
+	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
+	    dt == AliHLTMUONConstants::TracksBlockDataType()
 	   )
 	{
 		return &fgkESDMakerChain;
 	}
-	
+
 	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
 	    dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
 	    dt == AliHLTMUONConstants::RecHitsBlockDataType() or
@@ -560,6 +564,7 @@ AliHLTOUTHandler* AliHLTMUONAgent::GetOutputHandler(
 	    dt == AliHLTMUONConstants::ChannelBlockDataType() or
 	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
 	    dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
+	    dt == AliHLTMUONConstants::TracksBlockDataType() or
 	    dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
 	    dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
 	   )

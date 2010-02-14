@@ -20,6 +20,7 @@
 #define std
 #endif
 
+extern "C" struct AliHLTMUONTrackStruct;
 extern "C" struct AliHLTMUONMansoTrackStruct;
 extern "C" struct AliHLTMUONTrackDecisionStruct;
 extern "C" struct AliHLTMUONPairDecisionStruct;
@@ -48,7 +49,8 @@ extern "C" struct AliHLTMUONPairsDecisionBlockStruct;
  *
  * Component ID: \b MUONDecisionComponent <br>
  * Library: \b libAliHLTMUON.so <br>
- * Input Data Types: AliHLTMUONConstants::MansoTracksBlockDataType() = "MANTRACK:MUON" <br>
+ * Input Data Types: \li AliHLTMUONConstants::MansoTracksBlockDataType() = "MANTRACK:MUON" <br>
+ *                   \li AliHLTMUONConstants::TracksBlockDataType() = "TRACKS  :MUON" <br>
  * Output Data Types: \li AliHLTMUONConstants::SinglesDecisionBlockDataType() = "DECIDSIN:MUON"
  *                    \li AliHLTMUONConstants::PairsDecisionBlockDataType() = "DECIDPAR:MUON" <br>
  *
@@ -178,7 +180,25 @@ private:
 			bool setLowMassCut = true, bool setHighMassCut = true
 		);
 	
+	/// Internal track information structure for the fTracks buffer.
+	struct AliTrackInfo
+	{
+		AliHLTInt32_t fId;  /// Track ID.
+		AliHLTFloat32_t fPx, fPy, fPz; /// Momentum vector.
+		AliHLTMUONParticleSign fSign;  /// The particle's charge sign.
+	};
+	
+	/**
+	 * Creates a new element in fTracks and returns it.
+	 * NULL is returned if no more memory could be allocated.
+	 */
+	AliTrackInfo* NewTrack();
+	
+	/// Adds Manso track information to the list of tracks to process.
 	int AddTrack(const AliHLTMUONMansoTrackStruct* track);
+
+	/// Adds track information from the full tracker component to the list of tracks to process.
+	int AddTrack(const AliHLTMUONTrackStruct* track);
 	
 	int ApplyTriggerAlgorithm(
 			AliHLTMUONSinglesDecisionBlockStruct& singlesHeader,
@@ -186,10 +206,10 @@ private:
 			AliHLTMUONPairsDecisionBlockStruct& pairsHeader,
 			AliHLTMUONPairDecisionStruct* pairsDecision
 		);
-
+	
 	AliHLTUInt32_t fMaxTracks; /// The maximum number of elements that can be stored in fTracks.
 	AliHLTUInt32_t fTrackCount;  /// The current number of elements stored in fTracks.
-	const AliHLTMUONMansoTrackStruct** fTracks;  /// Pointers to the track structures in input data blocks.
+	AliTrackInfo* fTracks;  /// Pointers to the Manso track structures in input data blocks.
 	AliHLTFloat32_t fLowPtCut;  /// The low pT cut value to apply to tracks. [GeV/c]
 	AliHLTFloat32_t fHighPtCut;  /// The high pT cut value to apply to tracks. [GeV/c]
 	AliHLTFloat32_t fLowMassCut;  /// The low invariant mass cut value to apply to tracks. [GeV/c^2]

@@ -374,12 +374,13 @@ bool AliHLTMUONMansoTrackerFSM::FillTrackData(AliHLTMUONMansoTrackStruct& track)
 	
 	// Construct the track ID from the running counter fTrackId and the
 	// bottom 8 bits of fTriggerId which will make this unique for an event.
-	track.fId = (fTrackId << 8) | (fTriggerId & 0xFF);
+	// 0x100 is forced for the Manso component.
+	track.fId = (fTrackId << 10) | 0x100 | (fTriggerId & 0xFF);
 	
-	// Increment the track ID and warp it around at 0x7FFFFF since the
-	// bottom 8 bits are copied from fTriggerId and the sign bit in
-	// track.fId must be positive.
-	fTrackId = (fTrackId + 1) & 0x007FFFFF;
+	// Increment the track ID and warp it around at 0x1FFFFF since the
+	// bottom 8 bits are copied from fTriggerId, bits 8 and 9 are forced to 01
+	// and the sign bit in track.fId must be positive.
+	fTrackId = (fTrackId + 1) & 0x001FFFFF;
 	
 	track.fTrigRec = fTriggerId;
 	

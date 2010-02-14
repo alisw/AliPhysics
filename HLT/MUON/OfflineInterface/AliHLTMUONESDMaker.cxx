@@ -55,7 +55,8 @@ AliHLTMUONESDMaker::AliHLTMUONESDMaker() :
 	fMakeMinimalESD(false),
 	fAddCustomData(false),
 	fMakeClonesArray(false),
-	fMakeESDDataBlock(true)
+	fMakeESDDataBlock(true),
+	fClusterIndex(0)
 {
 	/// Default constructor.
 }
@@ -188,6 +189,7 @@ void AliHLTMUONESDMaker::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 	
 	list.push_back(AliHLTMUONConstants::TriggerRecordsBlockDataType());
 	list.push_back(AliHLTMUONConstants::MansoTracksBlockDataType());
+	list.push_back(AliHLTMUONConstants::TracksBlockDataType());
 }
 
 
@@ -219,7 +221,7 @@ int AliHLTMUONESDMaker::DoEvent(
 	/// Inherited from AliHLTProcessor. Processes the new event data.
 	
 	AliESDEvent event;
-	AliHLTUInt32_t clusterIndex = 0;  // for the cluster unique ID.
+	fClusterIndex = 0;  // for the cluster unique ID.
 	
 	// Create and fill in the standard ESD objects or just create the muon
 	// tracks array if so requested.
@@ -272,7 +274,8 @@ int AliHLTMUONESDMaker::DoEvent(
 		}
 		else
 		{
-			if (block->fDataType != AliHLTMUONConstants::MansoTracksBlockDataType())
+			if (block->fDataType != AliHLTMUONConstants::MansoTracksBlockDataType() and
+			    block->fDataType != AliHLTMUONConstants::TracksBlockDataType() )
 			{
 				// Log a message indicating that we got a data block that we
 				// do not know how to handle.
@@ -325,9 +328,7 @@ int AliHLTMUONESDMaker::DoEvent(
 			
 			AliHLTMUONParticleSign sign;
 			bool hitset[4];
-			AliHLTMUONUtils::UnpackMansoTrackFlags(
-					t.fFlags, sign, hitset
-				);
+			AliHLTMUONUtils::UnpackMansoTrackFlags(t.fFlags, sign, hitset);
 			
 			double signVal = 0;
 			switch (sign)
@@ -385,7 +386,7 @@ int AliHLTMUONESDMaker::DoEvent(
 				AliHLTMUONUtils::UnpackRecHitFlags(t.fHit[i].fFlags, chamber, detElemId);
 				
 				AliESDMuonCluster cluster;
-				cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, clusterIndex++));
+				cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, fClusterIndex++));
 				cluster.SetXYZ(t.fHit[i].fX, t.fHit[i].fY, t.fHit[i].fZ);
 				cluster.SetErrXY(    // Use nominal values.
 						AliHLTMUONConstants::DefaultNonBendingReso(),
@@ -398,63 +399,89 @@ int AliHLTMUONESDMaker::DoEvent(
 				muTrack.AddInMuonClusterMap(i+6);
 			}
 			
-			// Find the corresponding trigger record.
-			const AliHLTMUONTriggerRecordStruct* trigrec = NULL;
-			for (size_t k = 0; k < triggerRecords.size(); k++)
-			{
-				if (triggerRecords[k]->fId == t.fTrigRec)
-				{
-					trigrec = triggerRecords[k];
-					break;
-				}
-			}
-			// If the trigger record was found then fill its hit information also.
-			if (trigrec != NULL)
-			{
-				AliHLTMUONParticleSign trsign;
-				bool trhitset[4];
-				AliHLTMUONUtils::UnpackTriggerRecordFlags(
-						trigrec->fFlags, trsign, trhitset
-					);
-				
-				for (int i = 0; i < 4; i++)
-				{
-					if (not trhitset[i]) continue;
-					
-					AliHLTUInt8_t chamber;
-					AliHLTUInt16_t detElemId;
-					AliHLTMUONUtils::UnpackRecHitFlags(trigrec->fHit[i].fFlags, chamber, detElemId);
-				
-					AliESDMuonCluster cluster;
-					cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, clusterIndex++));
-					cluster.SetXYZ(
-							trigrec->fHit[i].fX,
-							trigrec->fHit[i].fY,
-							trigrec->fHit[i].fZ
-						);
-					cluster.SetErrXY(    // Use nominal values.
-							AliMUONConstants::TriggerNonBendingReso(),
-							AliMUONConstants::TriggerBendingReso()
-						);
-					cluster.SetCharge(-1.);   // Indicate no total charge calculated.
-					cluster.SetChi2(-1.);   // Indicate no fit made.
-					muTrack.AddCluster(cluster);
-					nHits++;
-					muTrack.AddInMuonClusterMap(i+10);
-				}
-			}
-			else
-			{
-				HLTWarning("Trigger record (ID = %d) not found for track ID = %d.",
-					t.fTrigRec, t.fId
-				);
-			}
-			
+			FillTriggerInfo(triggerRecords, t.fTrigRec, t.fId, muTrack, nHits);
 			muTrack.SetNHit(nHits);
 			event.AddMuonTrack(&muTrack);
 		}
 	}
-	
+
+	for (block = GetFirstInputBlock(AliHLTMUONConstants::TracksBlockDataType());
+	     block != NULL;
+	     block = GetNextInputBlock()
+	    )
+	{
+		specification |= block->fSpecification;
+		AliHLTMUONTracksBlockReader inblock(block->fPtr, block->fSize);
+		if (not BlockStructureOk(inblock))
+		{
+			if (DumpDataOnError()) DumpEvent(evtData, trigData);
+			continue;
+		}
+		
+		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
+		{
+			const AliHLTMUONTrackStruct& t = inblock[n];
+			AliESDMuonTrack muTrack;
+			
+			AliHLTMUONParticleSign sign;
+			bool hitset[16];
+			AliHLTMUONUtils::UnpackTrackFlags(t.fFlags, sign, hitset);
+			
+			muTrack.SetInverseBendingMomentum(t.fInverseBendingMomentum);
+			muTrack.SetThetaX(t.fThetaX);
+			muTrack.SetThetaY(t.fThetaY);
+			muTrack.SetZ(t.fZ);
+			muTrack.SetBendingCoor(t.fY);
+			muTrack.SetNonBendingCoor(t.fX);
+			
+			// The full tracker assumes the information at the
+			// Distance of Closest Approach and chamber 1 is the same
+			// as the vertex.
+			muTrack.SetInverseBendingMomentumAtDCA(t.fInverseBendingMomentum);
+			muTrack.SetThetaXAtDCA(t.fThetaX);
+			muTrack.SetThetaYAtDCA(t.fThetaY);
+			muTrack.SetBendingCoorAtDCA(t.fY);
+			muTrack.SetNonBendingCoorAtDCA(t.fX);
+				
+			muTrack.SetInverseBendingMomentumUncorrected(t.fInverseBendingMomentum);
+			muTrack.SetThetaXUncorrected(t.fThetaX);
+			muTrack.SetThetaYUncorrected(t.fThetaY);
+			muTrack.SetZUncorrected(t.fZ);
+			muTrack.SetBendingCoorUncorrected(t.fY);
+			muTrack.SetNonBendingCoorUncorrected(t.fX);
+				
+			muTrack.SetChi2(t.fChi2);
+			
+			// Fill in the track hit points.
+			Int_t nHits = 0;
+			for (int i = 0; i < 16; i++)
+			{
+				if (not hitset[i]) continue;
+				
+				AliHLTUInt8_t chamber;
+				AliHLTUInt16_t detElemId;
+				AliHLTMUONUtils::UnpackRecHitFlags(t.fHit[i].fFlags, chamber, detElemId);
+				
+				AliESDMuonCluster cluster;
+				cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, fClusterIndex++));
+				cluster.SetXYZ(t.fHit[i].fX, t.fHit[i].fY, t.fHit[i].fZ);
+				cluster.SetErrXY(    // Use nominal values.
+						AliHLTMUONConstants::DefaultNonBendingReso(),
+						AliHLTMUONConstants::DefaultBendingReso()
+					);
+				cluster.SetCharge(-1.);   // Indicate no total charge calculated.
+				cluster.SetChi2(-1.);   // Indicate no fit made.
+				muTrack.AddCluster(cluster);
+				nHits++;
+				muTrack.AddInMuonClusterMap(chamber);
+			}
+			
+			FillTriggerInfo(triggerRecords, t.fTrigRec, t.fId, muTrack, nHits);
+			muTrack.SetNHit(nHits);
+			event.AddMuonTrack(&muTrack);
+		}
+	}
+
 	if (fMakeClonesArray and event.GetList() != NULL)
 	{
 		PushBack(
@@ -470,3 +497,64 @@ int AliHLTMUONESDMaker::DoEvent(
 	return 0;
 }
 
+
+void AliHLTMUONESDMaker::FillTriggerInfo(
+		const AliTriggerRecordList& triggerRecords,
+		AliHLTInt32_t trigRecId, AliHLTInt32_t trackId,
+		AliESDMuonTrack& muTrack, Int_t& nHits
+	)
+{
+	/// Finds the trigger record with ID = 'id' and fills the output ESD track structure.
+	
+	// Find the corresponding trigger record.
+	const AliHLTMUONTriggerRecordStruct* trigrec = NULL;
+	for (size_t k = 0; k < triggerRecords.size(); k++)
+	{
+		if (triggerRecords[k]->fId == trigRecId)
+		{
+			trigrec = triggerRecords[k];
+			break;
+		}
+	}
+	// If the trigger record was found then fill its hit information also.
+	if (trigrec != NULL)
+	{
+		AliHLTMUONParticleSign trsign;
+		bool trhitset[4];
+		AliHLTMUONUtils::UnpackTriggerRecordFlags(
+				trigrec->fFlags, trsign, trhitset
+			);
+		
+		for (int i = 0; i < 4; i++)
+		{
+			if (not trhitset[i]) continue;
+			
+			AliHLTUInt8_t chamber;
+			AliHLTUInt16_t detElemId;
+			AliHLTMUONUtils::UnpackRecHitFlags(trigrec->fHit[i].fFlags, chamber, detElemId);
+		
+			AliESDMuonCluster cluster;
+			cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, fClusterIndex++));
+			cluster.SetXYZ(
+					trigrec->fHit[i].fX,
+					trigrec->fHit[i].fY,
+					trigrec->fHit[i].fZ
+				);
+			cluster.SetErrXY(    // Use nominal values.
+					AliMUONConstants::TriggerNonBendingReso(),
+					AliMUONConstants::TriggerBendingReso()
+				);
+			cluster.SetCharge(-1.);   // Indicate no total charge calculated.
+			cluster.SetChi2(-1.);   // Indicate no fit made.
+			muTrack.AddCluster(cluster);
+			nHits++;
+			muTrack.AddInMuonClusterMap(i+10);
+		}
+	}
+	else
+	{
+		HLTWarning("Trigger record (ID = %d) not found for track ID = %d.",
+			trigRecId, trackId
+		);
+	}
+}

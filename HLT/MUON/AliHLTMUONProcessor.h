@@ -207,6 +207,15 @@ protected:
 		return BlockStructureOk(block, "Manso track candidates", checkHeader);
 	}
 
+	/// Checks the structure of a tracks data block.
+	bool BlockStructureOk(
+			const AliHLTMUONTracksBlockReader& block,
+			bool checkHeader = true
+		) const
+	{
+		return BlockStructureOk(block, "tracks", checkHeader);
+	}
+
 	/// Checks the structure of a single track trigger decision data block.
 	bool BlockStructureOk(
 			const AliHLTMUONSinglesDecisionBlockReader& block,

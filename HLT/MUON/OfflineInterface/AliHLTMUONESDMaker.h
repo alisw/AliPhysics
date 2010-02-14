@@ -14,6 +14,10 @@
 ///
 
 #include "AliHLTMUONProcessor.h"
+#include <vector>
+
+extern "C" class AliHLTMUONTriggerRecordStruct;
+class AliESDMuonTrack;
 
 /**
  * @class AliHLTMUONESDMaker
@@ -85,11 +89,31 @@ private:
 	AliHLTMUONESDMaker(const AliHLTMUONESDMaker& /*object*/);
 	AliHLTMUONESDMaker& operator = (const AliHLTMUONESDMaker& /*object*/);
 	
+	typedef std::vector<const AliHLTMUONTriggerRecordStruct*> AliTriggerRecordList;
+	
+	/**
+	 * Finds the trigger record with the specified ID in the list of trigger records
+	 * and then fills the ESD muon track structure with the information.
+	 * [in]     \param triggerRecords  The list of trigger records to search in.
+	 * [in]     \param trigRecId  The trigger record ID to seach for.
+	 * [in]     \param trackId  The track ID of the track structure where the trigger
+	 *                     record ID comes from.
+	 * [out]    \param muTrack  The track structure to fill.
+	 * [in/out] \param nHits  The number of hits added. Will increment this value
+	 *                        for every new hit added.
+	 */
+	void FillTriggerInfo(
+			const AliTriggerRecordList& triggerRecords,
+			AliHLTInt32_t trigRecId, AliHLTInt32_t trackId,
+			AliESDMuonTrack& muTrack, Int_t& nHits
+		);
+	
 	bool fWarnForUnexpecedBlock;  /// Flag indicating if we should log a warning if we got a block of an unexpected type.
 	bool fMakeMinimalESD;  /// Flag to indicate if a minimal ESD object should be created.
 	bool fAddCustomData;  /// Flag to turn on adding of all dHLT rootified objects to the ESD.
 	bool fMakeClonesArray;  /// Flag indicating if a data block of TClonesArray with AliESDMuonTrack objects should be generated.
 	bool fMakeESDDataBlock;  /// Flag indicating if the ESD data block should generated.
+	AliHLTUInt32_t fClusterIndex;  /// Running counter for the unique cluster index number.
 
 	ClassDef(AliHLTMUONESDMaker, 0); // Component for converting dHLT reconstructed data into the ESD format.
 };

@@ -41,18 +41,14 @@
 #include <new>
 
 
-// Helper type for memory allocation.
-typedef const AliHLTMUONMansoTrackStruct* AliHLTMUONMansoTrackStructP;
-
-
 ClassImp(AliHLTMUONDecisionComponent);
 
 
 AliHLTMUONDecisionComponent::AliHLTMUONDecisionComponent() :
 	AliHLTMUONProcessor(),
-	fMaxTracks(1),
+	fMaxTracks(16),
 	fTrackCount(0),
-	fTracks(new AliHLTMUONMansoTrackStructP[fMaxTracks]),
+	fTracks(new AliTrackInfo[fMaxTracks]),
 	fLowPtCut(1.),  // 1 GeV/c cut
 	fHighPtCut(2.),  // 2 GeV/c cut
 	fLowMassCut(2.5),  // 2.7 GeV/c^2 cut
@@ -100,6 +96,7 @@ void AliHLTMUONDecisionComponent::GetInputDataTypes(AliHLTComponentDataTypeList&
 	
 	assert( list.empty() );
 	list.push_back( AliHLTMUONConstants::MansoTracksBlockDataType() );
+	list.push_back( AliHLTMUONConstants::TracksBlockDataType() );
 }
 
 
@@ -459,6 +456,28 @@ int AliHLTMUONDecisionComponent::DoEvent(
 				}
 			}
 		}
+		else if (blocks[n].fDataType == AliHLTMUONConstants::TracksBlockDataType())
+		{
+			specification |= blocks[n].fSpecification;
+			
+			AliHLTMUONTracksBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+				continue;
+			}
+			
+			for (AliHLTUInt32_t i = 0; i < inblock.Nentries(); i++)
+			{
+				int result = AddTrack(&inblock[i]);
+				if (result != 0)
+				{
+					if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+					size = 0; // Important to tell framework that nothing was generated.
+					return result;
+				}
+			}
+		}
 		else
 		{
 			// Log a message indicating that we got a data block that we
@@ -638,37 +657,69 @@ int AliHLTMUONDecisionComponent::ReadConfigFromCDB(
 }
 
 
-int AliHLTMUONDecisionComponent::AddTrack(const AliHLTMUONMansoTrackStruct* track)
+AliHLTMUONDecisionComponent::AliTrackInfo* AliHLTMUONDecisionComponent::NewTrack()
 {
-	/// Adds a track to the internal track list for future reference in
-	/// ApplyTriggerAlgorithm when we actually apply the trigger algorithm.
-
+	/// Create and return a new element in fTracks.
+	
 	assert(fTrackCount <= fMaxTracks);
 	assert(fTracks != NULL);
 	
 	if (fTrackCount == fMaxTracks)
 	{
 		// Buffer full so we need to resize it.
-		const AliHLTMUONMansoTrackStruct** tmp = NULL;
+		AliTrackInfo* tmp = NULL;
 		try
 		{
-			tmp = new AliHLTMUONMansoTrackStructP[fMaxTracks+1];
+			tmp = new AliTrackInfo[fMaxTracks+16];
 		}
 		catch (const std::bad_alloc&)
 		{
-			HLTError("Could not allocate more memory for the track array.");
-			return -ENOMEM;
+			HLTError("Could not allocate more memory for the internal track array.");
+			return NULL;
 		}
 		
 		// Copy over the exisiting data and then delete the old array.
-		memcpy(tmp, fTracks, sizeof(AliHLTMUONMansoTrackStructP)*fTrackCount);
+		memcpy(tmp, fTracks, sizeof(AliTrackInfo)*fTrackCount);
 		delete [] fTracks;
 		fTracks = tmp;
-		fMaxTracks = fMaxTracks+1;
+		fMaxTracks = fMaxTracks+16;
 	}
 	
-	fTracks[fTrackCount] = track;
 	fTrackCount++;
+	return &fTracks[fTrackCount-1];
+}
+
+
+int AliHLTMUONDecisionComponent::AddTrack(const AliHLTMUONTrackStruct* track)
+{
+	/// Adds a track to the internal track list for future reference in
+	/// ApplyTriggerAlgorithm when we actually apply the trigger algorithm.
+
+	AliTrackInfo* buf = NewTrack();
+	if (buf == NULL) return -ENOMEM; // Error message already generated in NewTrack().
+	buf->fId = track->fId;
+	buf->fPx = track->fPx;
+	buf->fPy = track->fPy;
+	buf->fPz = track->fPz;
+	bool hitset[16];
+	AliHLTMUONUtils::UnpackTrackFlags(track->fFlags, buf->fSign, hitset);
+	return 0;
+}
+
+
+int AliHLTMUONDecisionComponent::AddTrack(const AliHLTMUONMansoTrackStruct* track)
+{
+	/// Adds a track to the internal track list for future reference in
+	/// ApplyTriggerAlgorithm when we actually apply the trigger algorithm.
+
+	AliTrackInfo* buf = NewTrack();
+	if (buf == NULL) return -ENOMEM; // Error message already generated in NewTrack().
+	buf->fId = track->fId;
+	buf->fPx = track->fPx;
+	buf->fPy = track->fPy;
+	buf->fPz = track->fPz;
+	bool hitset[4];
+	AliHLTMUONUtils::UnpackMansoTrackFlags(track->fFlags, buf->fSign, hitset);
 	return 0;
 }
 
@@ -720,7 +771,7 @@ int AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 	// counters in the header.
 	for (AliHLTUInt32_t n = 0; n < fTrackCount; n++)
 	{
-		const AliHLTMUONMansoTrackStruct* track = fTracks[n];
+		const AliTrackInfo* track = &fTracks[n];
 		
 		bool passedHighPtCut = false;
 		bool passedLowPtCut = false;
@@ -761,8 +812,8 @@ int AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 	for (AliHLTUInt32_t i = 0; i < fTrackCount; i++)
 	for (AliHLTUInt32_t j = i+1; j < fTrackCount; j++)
 	{
-		const AliHLTMUONMansoTrackStruct* tracki = fTracks[i];
-		const AliHLTMUONMansoTrackStruct* trackj = fTracks[j];
+		const AliTrackInfo* tracki = &fTracks[i];
+		const AliTrackInfo* trackj = &fTracks[j];
 		
 		AliHLTFloat32_t muMass = 0.1056583568; // muon mass in GeV/c^2
 		
@@ -771,10 +822,8 @@ int AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 				muMass, trackj->fPx, trackj->fPy, trackj->fPz
 			);
 		
-		AliHLTMUONParticleSign signi, signj;
-		bool hitset[4];
-		AliHLTMUONUtils::UnpackMansoTrackFlags(tracki->fFlags, signi, hitset);
-		AliHLTMUONUtils::UnpackMansoTrackFlags(trackj->fFlags, signj, hitset);
+		AliHLTMUONParticleSign signi = tracki->fSign;
+		AliHLTMUONParticleSign signj = trackj->fSign;
 		
 		AliHLTUInt8_t highPtCount = 0;
 		AliHLTUInt8_t lowPtCount = 0;

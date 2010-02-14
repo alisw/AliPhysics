@@ -62,6 +62,7 @@ void AliHLTMuonSpectroTriggerComponent::GetInputDataTypes(AliHLTComponentDataTyp
 	list.push_back(AliHLTMUONConstants::TriggerRecordsBlockDataType());
 	list.push_back(AliHLTMUONConstants::RecHitsBlockDataType());
 	list.push_back(AliHLTMUONConstants::MansoTracksBlockDataType());
+	list.push_back(AliHLTMUONConstants::TracksBlockDataType());
 	list.push_back(AliHLTMUONConstants::SinglesDecisionBlockDataType());
 	list.push_back(AliHLTMUONConstants::PairsDecisionBlockDataType());
 }
@@ -176,7 +177,7 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 	
 	int result = 0;
 
-	bool gotddls = false;	
+	bool gotddls = false;
 	bool gothits = false;
 	bool gottrigrecs = false;
 	bool gottracks = false;
@@ -190,7 +191,7 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 	UInt_t ntrigrecs = 0;
 	UInt_t nL0plus = 0;
 	UInt_t nL0minus = 0;
-	UInt_t ntracksMT = 0;  // from Manso track blocks.
+	UInt_t ntracksT = 0;  // from track blocks.
 	UInt_t ntracksSD = 0; // from singles decision blocks
 	UInt_t nplus = 0;
 	UInt_t nminus = 0;
@@ -209,15 +210,14 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 	Double_t minmass = -1;
 	Double_t maxmass = -1;
 	
-
 	AliHLTComponentDataType blockType = AliHLTMUONConstants::DDLRawDataType();
 	for (const AliHLTComponentBlockData* block = GetFirstInputBlock(blockType);
 	     block != NULL;
 	     block = GetNextInputBlock()
 	    )
-	{  
-	  gotddls = true; 	
-	  nL0 = 1;
+	{
+		gotddls = true;
+		nL0 = 1;
 	}
 	
 	blockType = AliHLTMUONConstants::TriggerRecordsBlockDataType();
@@ -308,12 +308,41 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 		}
 		gottracks = true;
 		
-		ntracksMT += tracksBlock.Nentries();
+		ntracksT += tracksBlock.Nentries();
 		for (AliHLTUInt32_t i = 0; i < tracksBlock.Nentries(); ++i)
 		{
 			AliHLTMUONParticleSign sign;
 			bool hitset[4];
 			AliHLTMUONUtils::UnpackMansoTrackFlags(tracksBlock[i].fFlags, sign, hitset);
+			switch (sign)
+			{
+			case kSignPlus: ++nplus; break;
+			case kSignMinus: ++nminus; break;
+			default: break;
+			}
+		}
+	}
+	
+	blockType = AliHLTMUONConstants::TracksBlockDataType();
+	for (const AliHLTComponentBlockData* block = GetFirstInputBlock(blockType);
+	     block != NULL;
+	     block = GetNextInputBlock()
+	    )
+	{
+		AliHLTMUONTracksBlockReader tracksBlock(block->fPtr, block->fSize);
+		if (not IsBlockOk(tracksBlock, blockType))
+		{
+			HLTWarning("Skipping problematic block '%s'", DataType2Text(blockType).c_str());
+			continue;
+		}
+		gottracks = true;
+		
+		ntracksT += tracksBlock.Nentries();
+		for (AliHLTUInt32_t i = 0; i < tracksBlock.Nentries(); ++i)
+		{
+			AliHLTMUONParticleSign sign;
+			bool hitset[16];
+			AliHLTMUONUtils::UnpackTrackFlags(tracksBlock[i].fFlags, sign, hitset);
 			switch (sign)
 			{
 			case kSignPlus: ++nplus; break;
@@ -394,7 +423,7 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 	
 	// Select the largest value for nTracks since we might only get this information
 	// from singles decision blocks.
-	UInt_t ntracks = ntracksSD > ntracksMT ? ntracksSD : ntracksMT;
+	UInt_t ntracks = ntracksSD > ntracksT ? ntracksSD : ntracksT;
 	
 	bool triggeredOnDDLs = fTriggerDDLs and nL0 > 0;
 	bool triggeredOnHits = fTriggerHits and nhitsMCH > 0;

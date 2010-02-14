@@ -72,7 +72,7 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   ///Set the input of rechit blocks
   Bool_t SetInput(AliHLTInt32_t ddl, const AliHLTMUONRecHitStruct  *data, AliHLTInt32_t size);
   ///Main method to run and compute the tracks
-  Bool_t Run(int iEvent,AliHLTMUONMansoTrackStruct *data, AliHLTUInt32_t& size);
+  Bool_t Run(int iEvent,AliHLTMUONTrackStruct *data, AliHLTUInt32_t& size);
   ///To be called once from DoInit method of component
   Bool_t Init();
   ///Max number of points per chamber
@@ -146,7 +146,6 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   Int_t fNofConnected ; /// number of connected track segments
   AliHLTUInt32_t fNofTracks; /// number of connected track segments
   DetElemList fDetElemList; ///Map for valid detelem
-  
 
   /// Slat Track segments 
   Bool_t SlatTrackSeg();
@@ -201,7 +200,7 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   /// Helix3 method of track extrapolation through mag field
   inline void OneStepHelix3(Double_t field, Double_t step, const Double_t *vect, Double_t *vout) const;				  
   /// Fill the tracks to output pointer
-  Bool_t FillOutData(AliHLTMUONMansoTrackStruct *data, AliHLTUInt32_t& size);
+  Bool_t FillOutData(AliHLTMUONTrackStruct *data, AliHLTUInt32_t& size);
   
 };
 #endif // ALIHLTMUONMANSOTRACKERFSM_H

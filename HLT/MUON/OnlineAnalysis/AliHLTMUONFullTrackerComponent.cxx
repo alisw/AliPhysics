@@ -33,7 +33,7 @@ using namespace std;
 
 #include "AliHLTMUONConstants.h"
 
-#include "AliHLTMUONMansoTracksBlockStruct.h"
+#include "AliHLTMUONTracksBlockStruct.h"
 
 ClassImp(AliHLTMUONFullTrackerComponent)
 
@@ -91,15 +91,14 @@ int AliHLTMUONFullTrackerComponent::GetOutputDataTypes(AliHLTComponentDataTypeLi
   /// Inherited from AliHLTComponent. Returns the output data types.
 	
   assert( list.empty() );
-  list.push_back( AliHLTMUONConstants::MansoTracksBlockDataType() );
-  //list.push_back( AliHLTMUONConstants::MansoCandidatesBlockDataType() );
+  list.push_back( AliHLTMUONConstants::TracksBlockDataType() );
   return list.size();
 }
 
 void AliHLTMUONFullTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // see header file for class documentation
-  constBase = sizeof(AliHLTMUONMansoTracksBlockStruct) + 1024*1024;
+  constBase = sizeof(AliHLTMUONTracksBlockStruct) + 1024*1024;
   inputMultiplier = 1;
 
 }
@@ -127,6 +126,7 @@ int AliHLTMUONFullTrackerComponent::DoInit( int argc, const char** argv )
     // To keep the legacy behaviour we need to have the following check
     // for -cdbpath here, before ArgumentAlreadyHandled.
     if (ArgumentAlreadyHandled(i, argv[i])) continue;
+
   }
 
   
@@ -179,20 +179,20 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 
   //if(evtData.fBlockCnt==3) return 0;
 
-  AliHLTMUONMansoTracksBlockWriter block(outputPtr, size);
-  
-  if (not block.InitCommonHeader())
+    AliHLTMUONTracksBlockWriter block(outputPtr, size);  
+    if (not block.InitCommonHeader())
     {
       Logging(kHLTLogError,
-	      "AliHLTMUONMansoTrackerFSMComponent::DoEvent",
+	      "AliHLTMUONFullTrackerComponent::DoEvent",
 	      "Buffer overflow",
 	      "The buffer is only %d bytes in size. We need a minimum of %d bytes.",
-	      size, sizeof(AliHLTMUONMansoTracksBlockWriter::HeaderType)
+	      size, sizeof(AliHLTMUONTracksBlockWriter::HeaderType)
 	      );
       if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
       size = 0; // Important to tell framework that nothing was generated.
       return -ENOBUFS;
     }
+
   
   for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++){
 
@@ -244,7 +244,8 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     bd.fPtr = outputPtr;
     bd.fOffset = 0;
     bd.fSize = block.BytesUsed();
-    bd.fDataType = AliHLTMUONConstants::MansoTracksBlockDataType();
+    bd.fDataType = AliHLTMUONConstants::TracksBlockDataType() ;
+      
     bd.fSpecification = specification;
     outputBlocks.push_back(bd);
     totalSize = block.BytesUsed();

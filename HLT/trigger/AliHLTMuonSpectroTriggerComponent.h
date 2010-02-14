@@ -33,6 +33,7 @@
  *                   \li AliHLTMUONConstants::TriggerRecordsBlockDataType()  = "TRIGRECS:MUON" <br>
  *                   \li AliHLTMUONConstants::RecHitsBlockDataType()         = "RECHITS :MUON" <br>
  *                   \li AliHLTMUONConstants::MansoTracksBlockDataType()     = "MANTRACK:MUON" <br>
+ *                   \li AliHLTMUONConstants::TracksBlockDataType()          = "TRACKS  :MUON" <br>
  *                   \li AliHLTMUONConstants::SinglesDecisionBlockDataType() = "DECIDSIN:MUON" <br>
  *                   \li AliHLTMUONConstants::PairsDecisionBlockDataType()   = "DECIDPAR:MUON" <br>
  * Output Data Types: \li kAliHLTDataTypeTriggerDecision                      = "TRIG_DEC:HLT " <br>
@@ -108,6 +109,7 @@ public:
 	 * AliHLTMUONConstants::TriggerRecordsBlockDataType()  = "TRIGRECS:MUON"
 	 * AliHLTMUONConstants::RecHitsBlockDataType()         = "RECHITS :MUON"
 	 * AliHLTMUONConstants::MansoTracksBlockDataType()     = "MANTRACK:MUON"
+	 * AliHLTMUONConstants::TracksBlockDataType()          = "TRACKS  :MUON"
 	 * AliHLTMUONConstants::SinglesDecisionBlockDataType() = "DECIDSIN:MUON"
 	 * AliHLTMUONConstants::PairsDecisionBlockDataType()   = "DECIDPAR:MUON"
 	 * @param list <i>[out]</i>: The list of data types to be filled.
