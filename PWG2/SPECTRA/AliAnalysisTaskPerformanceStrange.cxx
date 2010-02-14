@@ -72,7 +72,7 @@ ClassImp(AliAnalysisTaskPerformanceStrange)
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
-  : AliAnalysisTaskSE(), fAnalysisMC(999), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"), fListHist(0), fPhysTrigSel(0), 
+  : AliAnalysisTaskSE(), fAnalysisMC(999), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"), fPhysTrigSel(0), fListHist(0),
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
     fHistMCPrimaryVertexZ(0),
@@ -310,7 +310,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char *name)
-  : AliAnalysisTaskSE(name), fAnalysisMC(999), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"), fListHist(),fPhysTrigSel(0),
+  : AliAnalysisTaskSE(name), fAnalysisMC(999), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"), fPhysTrigSel(0), fListHist(0),
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
     fHistMCPrimaryVertexZ(0),
