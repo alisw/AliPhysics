@@ -18,7 +18,7 @@ class AliTOFrawData : public TObject {
  public:
   AliTOFrawData(); // default ctr
   AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t l); // ctr
-  AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t ee, Int_t ff, Int_t g, Int_t h, Int_t l); // ctr
+  AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t ee, Int_t ff, Int_t g, Int_t h, Int_t l, Int_t deltaBC = 0, Int_t l0l1 = 0); // ctr
   ~AliTOFrawData() {}; // default dtr
   AliTOFrawData(const AliTOFrawData& r);     // dummy copy constructor
   AliTOFrawData& operator=(const AliTOFrawData& r); // dummy assignment operator
@@ -33,6 +33,12 @@ class AliTOFrawData : public TObject {
   Int_t GetTOT() const;
   Int_t GetLeading() const {return fLeading;};
   Int_t GetTrailing() const {return fTrailing;};
+
+  Int_t GetDeltaBC() const {return fDeltaBC;};
+  Int_t GetL0L1Latency() const {return fL0L1Latency;};
+
+  void SetDeltaBC(Int_t value) {fDeltaBC = value;};
+  void SetL0L1Latency(Int_t value) {fL0L1Latency = value;};
   
  private:
   Int_t fACQflag;    // ACQ flag
@@ -47,10 +53,13 @@ class AliTOFrawData : public TObject {
   Int_t fTrailing; // Trailing Edge
   Int_t fToT;      // Time-Over-Threashould
   Int_t fTime;     // Time
-  
+
   Int_t fError;      // Error flag
   
-  ClassDef(AliTOFrawData, 1)  // class for TOF raw data
+  Int_t fDeltaBC; // delta BC
+  Int_t fL0L1Latency; // L0-L1 latency
+  
+  ClassDef(AliTOFrawData, 2)  // class for TOF raw data
 };
 
 #endif

@@ -173,6 +173,7 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
    * classes.
    */
 
+  AliTOFDRMStatusHeader3 *lDRMStatusHeader3;
   AliTOFTRMGlobalHeader          *lTRMGlobalHeader; //TRM global header
   AliTOFTRMGlobalTrailer         *lTRMGlobalTrailer; //TRM global trailer
   AliTOFTRMChainHeader           *lTRMChainHeader; //TRM chain header
@@ -199,6 +200,7 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
   Short_t  currentACQ = -1;
   Short_t  currentChain = -1;
   Short_t  currentBunchID = -1;
+  Short_t  currentL0BCID = -1;
   Short_t  currentMiniEventID = cdh ? cdh->GetMiniEventID() : (Short_t)-1;
   Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)-1;
   AliDebug(1, Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh->GetEventID2(), currentMiniEventID));
@@ -251,9 +253,18 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
 	decodeStatus = decodeStatus | DRM_BIT;
 	
 	//skip DRM data
-	for (Int_t i = 0; i < DRM_DATA_WORDS; i++, iWord++, rawData++){
+	for (Int_t i = 0; i < DRM_DATA_WORDS; i++, iWord++){
+	  rawData++;
 	  if (fVerbose)
 	    AliInfo(Form("  %02x - 0x%08x \t  DRM data",decodeStatus,*rawData));
+	  switch (i) {
+	  case 2:
+	    lDRMStatusHeader3 = (AliTOFDRMStatusHeader3*)rawData;
+	    currentL0BCID = lDRMStatusHeader3->GetL0BCID();
+	    break;
+	  default:
+	    break;
+	  }
 	}
 	break;
 	
@@ -271,7 +282,8 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
 	decodeStatus = decodeStatus | LTM_BIT;
 	
 	//skip LTM data
-	for (Int_t i = 0; i < LTM_DATA_WORDS; i++, iWord++, rawData++){
+	for (Int_t i = 0; i < LTM_DATA_WORDS; i++, iWord++){
+	  rawData++;
 	  if (fVerbose)
 	    AliInfo(Form("  %02x - 0x%08x \t  LTM data",decodeStatus,*rawData));
 	}
@@ -458,6 +470,7 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
 	hitData.SetTOT((float)lTDCPackedHit->GetTOTWidth() * TOT_BIN_WIDTH);
 	hitData.SetTOTBin(lTDCPackedHit->GetTOTWidth());
 	hitData.SetDeltaBunchID(currentBunchID - currentEventID1);
+	hitData.SetL0L1Latency(currentMiniEventID - currentL0BCID);
 	//orphane leading hit
 	if (hitData.GetPS()==LEADING_HIT_PS){
 	  hitData.SetTime((float)lTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
@@ -552,6 +565,7 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
 	hitData.SetTOT(-1.);
 	hitData.SetTOTBin(-1);
 	hitData.SetDeltaBunchID(currentBunchID - currentEventID1);
+	hitData.SetL0L1Latency(currentMiniEventID - currentL0BCID);
 	//push hit data in data buffer
 	  if (fDataBuffer != 0x0)
 	    fDataBuffer->Add(hitData);
@@ -589,6 +603,7 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
 	hitData.SetTOT(-1.);
 	hitData.SetTOTBin(-1);
 	hitData.SetDeltaBunchID(currentBunchID - currentEventID1);
+	hitData.SetL0L1Latency(currentMiniEventID - currentL0BCID);
 	//push hit data in data buffer
 	  if (fDataBuffer != 0x0)
 	    fDataBuffer->Add(hitData);

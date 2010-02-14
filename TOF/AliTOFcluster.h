@@ -42,6 +42,8 @@ class AliTOFcluster : public AliCluster3D {
   Int_t IsUsed()    const {return (fADC<0) ? 1 : 0;} // Flagging
   Int_t GetDetInd(Int_t n) const {return fdetIndex[n];} // Cluster Detector Indices getter
   Int_t GetIndex()  const {return fIdx;} // Digit Index getter
+  Int_t GetDeltaBC() const {return fDeltaBC;}; // deltaBC
+  Int_t GetL0L1Latency() const {return fL0L1Latency;}; // L0L1 latency
 
   void  Use(Int_t = 0) {fADC=-fADC;}        //  setter
   void  SetQuality(Double_t quality) {fQuality = quality;} // Cluster quality setter
@@ -50,6 +52,8 @@ class AliTOFcluster : public AliCluster3D {
   void  SetTDC(Int_t Tdc) {fTDC = Tdc;}       // Cluster ToF setter
   void  SetTDCND(Int_t Tdc) {fTdcND = Tdc;}   // Cluster ToFnd setter
   void  SetTDCRAW(Int_t Tdc) {fTdcRAW = Tdc;} // Cluster ToF-raw setter
+  void SetDeltaBC(Int_t value) {fDeltaBC = value;}; // deltaBC
+  void SetL0L1Latency(Int_t value) {fL0L1Latency = value;}; // L0-L1 latency
 
  private:
 
@@ -70,8 +74,10 @@ class AliTOFcluster : public AliCluster3D {
   Int_t  fTdcND;      // TDC count
   Int_t  fTdcRAW;     // RAW TDC count
   Bool_t fStatus;     // cluster online status 
+  Int_t fDeltaBC; // deltaBC
+  Int_t fL0L1Latency; // L0L1 latency
 
-  ClassDef(AliTOFcluster, 6) // TOF cluster
+  ClassDef(AliTOFcluster, 7) // TOF cluster
 };
 
 #endif

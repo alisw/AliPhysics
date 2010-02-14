@@ -51,7 +51,9 @@ AliTOFrawData::AliTOFrawData() :
   fTrailing(-1),
   fToT(-1),
   fTime(-1),
-  fError(-1)
+  fError(-1),
+  fDeltaBC(-1),
+  fL0L1Latency(-1)
 {
 
   // default ctr
@@ -72,7 +74,9 @@ AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
   fTrailing(-1),
   fToT(f),
   fTime(e),
-  fError(l)
+  fError(l),
+  fDeltaBC(0),
+  fL0L1Latency(0)
 {
 
 // ctr
@@ -81,7 +85,7 @@ AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
 
 //_____________________________________________________________________________
 AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
-			     Int_t f, Int_t ee, Int_t ff, Int_t g, Int_t h, Int_t l) :
+			     Int_t f, Int_t ee, Int_t ff, Int_t g, Int_t h, Int_t l, Int_t deltaBC, Int_t l0l1) :
   TObject(),
   fACQflag(h),
   fPSbit(g),
@@ -93,7 +97,9 @@ AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
   fTrailing(ff),
   fToT(f),
   fTime(e),
-  fError(l)
+  fError(l),
+  fDeltaBC(deltaBC),
+  fL0L1Latency(l0l1)
 {
 
   // ctr
@@ -113,7 +119,9 @@ AliTOFrawData::AliTOFrawData(const AliTOFrawData& r) :
   fTrailing(-1),
   fToT(-1),
   fTime(-1),
-  fError(-1)
+  fError(-1),
+  fDeltaBC(-1),
+  fL0L1Latency(-1)
 {
 
   // dummy copy constructor
@@ -129,6 +137,8 @@ AliTOFrawData::AliTOFrawData(const AliTOFrawData& r) :
   fToT        = r.fToT;
   fTime       = r.fTime;
   fError      = r.fError;
+  fDeltaBC      = r.fDeltaBC;
+  fL0L1Latency      = r.fL0L1Latency;
 
 }
 
@@ -149,6 +159,8 @@ AliTOFrawData& AliTOFrawData::operator=(const AliTOFrawData& r)
   this->fToT        = r.fToT;
   this->fTime       = r.fTime;
   this->fError      = r.fError;
+  this->fDeltaBC      = r.fDeltaBC;
+  this->fL0L1Latency      = r.fL0L1Latency;
   return *this;
 
 }

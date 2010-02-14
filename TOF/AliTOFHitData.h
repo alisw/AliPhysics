@@ -37,6 +37,7 @@ class AliTOFHitData : public TObject{
   Float_t GetTOT() const {return fTOT;};
   Int_t GetTOTBin() const {return fTOTBin;};
   Int_t GetDeltaBunchID() const {return fDeltaBunchID;};
+  Int_t GetL0L1Latency() const {return fL0L1Latency;};
   Int_t GetDeltaEventCounter() const {return fDeltaEventCounter;};
 
   void SetVolume(Int_t *Volume);
@@ -53,6 +54,7 @@ class AliTOFHitData : public TObject{
   void SetTOT(Float_t TOT)        { fTOT=TOT;};
   void SetTOTBin(Int_t TOTBin) {fTOTBin=TOTBin;};
   void SetDeltaBunchID(Int_t Value) {fDeltaBunchID=Value;};
+  void SetL0L1Latency(Int_t Value) {fL0L1Latency=Value;};
   void SetDeltaEventCounter(Int_t Value) {fDeltaEventCounter=Value;};
   
  private:
@@ -69,9 +71,10 @@ class AliTOFHitData : public TObject{
   Float_t fTOT;       // tot [ns]
   Int_t fTOTBin;       // TOT [TOT bin = 48.4ps]
   Int_t fDeltaBunchID; // TRM bunchID - miniEventID
+  Int_t fL0L1Latency; // L0BCID - miniEventID
   Int_t fDeltaEventCounter; // TRM event counter - DRM local event counter
 
-  ClassDef(AliTOFHitData, 1);
+  ClassDef(AliTOFHitData, 2);
 };
 
 #endif

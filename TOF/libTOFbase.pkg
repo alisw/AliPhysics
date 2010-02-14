@@ -28,6 +28,9 @@ SRCS  = AliTOFGeometry.cxx  \
 	AliTOFcalibHisto.cxx \
 	AliTOFArray.cxx \
 	AliTOFDaConfigHandler.cxx \
+	AliTOFDeltaBCOffset.cxx \
+	AliTOFCTPLatency.cxx \
+	AliTOFT0Fill.cxx \
 
 
 HDRS:= $(SRCS:.cxx=.h)

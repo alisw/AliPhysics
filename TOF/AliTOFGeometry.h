@@ -71,6 +71,7 @@ class AliTOFGeometry: public TObject{
  
   static Float_t TdcBinWidth() {return fgkTdcBin;};
   static Float_t ToTBinWidth() {return fgkToTBin;};
+  static Float_t BunchCrossingBinWidth() {return fgkBunchCrossingBin;};
 
   virtual void    ImportGeometry();
   virtual void    SetHoles(Bool_t holes) {fHoles = holes;};
@@ -171,6 +172,7 @@ class AliTOFGeometry: public TObject{
 
   static const Float_t fgkTdcBin;   // time-of-flight bin width [ps]
   static const Float_t fgkToTBin;   // time-over-threshold bin width [ps]
+  static const Float_t fgkBunchCrossingBin; // bunch-crossing bin width [ps]
 
   ClassDef(AliTOFGeometry,8) // TOF Geometry base class
 };

@@ -149,6 +149,7 @@ const Float_t AliTOFGeometry::fgkPhiSec= 20;//sector Phi width (deg)
 
 const Float_t AliTOFGeometry::fgkTdcBin = 24.4;     // time-of-flight bin width [ps]
 const Float_t AliTOFGeometry::fgkToTBin = 48.8;     // time-over-threshold bin width [ps]
+const Float_t AliTOFGeometry::fgkBunchCrossingBin = fgkTdcBin * 1024; // bunch-crossing bin width [ps]
 
 const Float_t AliTOFGeometry::fgkDeadTime = 25E+03;        // Single channel dead time (ps)
 const Float_t AliTOFGeometry::fgkMatchingWindow = fgkTdcBin*TMath::Power(2,13); // Matching window  (ps)

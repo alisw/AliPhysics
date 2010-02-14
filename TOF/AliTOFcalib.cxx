@@ -113,6 +113,10 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliTOFChannelOffline.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFRecoParam.h"
+#include "AliTOFDeltaBCOffset.h"
+#include "AliTOFCTPLatency.h"
+#include "AliTOFT0Fill.h"
+
 
 class TROOT;
 class TStyle;
@@ -140,7 +144,10 @@ AliTOFcalib::AliTOFcalib():
   fNruns(0),
   fFirstRun(0),
   fLastRun(AliCDBRunRange::Infinity()),
-  fConfigMap(new TMap)
+  fConfigMap(new TMap),
+  fDeltaBCOffset(NULL),
+  fCTPLatency(NULL),
+  fT0Fill(NULL)
 { 
   //TOF Calibration Class ctor
   fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
@@ -164,7 +171,10 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fNruns(calib.fNruns),
   fFirstRun(calib.fFirstRun),
   fLastRun(calib.fLastRun),
-  fConfigMap(calib.fConfigMap)
+  fConfigMap(calib.fConfigMap),
+  fDeltaBCOffset(NULL),
+  fCTPLatency(NULL),
+  fT0Fill(NULL)
 {
   //TOF Calibration Class copy ctor
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
@@ -179,6 +189,10 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
     fTOFCalOnlineHW->AddAt(calChOnlineStHW,iarray);
     fTOFCalOffline->AddAt(calChOffline,iarray);
   }
+
+  if (calib.fDeltaBCOffset) fDeltaBCOffset = new AliTOFDeltaBCOffset(*calib.fDeltaBCOffset);
+  if (calib.fCTPLatency) fCTPLatency = new AliTOFCTPLatency(*calib.fCTPLatency);
+  if (calib.fT0Fill) fT0Fill = new AliTOFT0Fill(*calib.fT0Fill);
 }
 
 //____________________________________________________________________________ 
@@ -213,6 +227,22 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
     fTOFCalOnlineHW->AddAt(calChOnlineStHW,iarray);
     fTOFCalOffline->AddAt(calChOffline,iarray);
   }
+
+  if (calib.fDeltaBCOffset) {
+    if (fDeltaBCOffset) *fDeltaBCOffset = *calib.fDeltaBCOffset;
+    else fDeltaBCOffset = new AliTOFDeltaBCOffset(*calib.fDeltaBCOffset);
+  }
+
+  if (calib.fCTPLatency) {
+    if (fCTPLatency) *fCTPLatency = *calib.fCTPLatency;
+    else fCTPLatency = new AliTOFCTPLatency(*calib.fCTPLatency);
+  }
+
+  if (calib.fT0Fill) {
+    if (fT0Fill) *fT0Fill = *calib.fT0Fill;
+    else fT0Fill = new AliTOFT0Fill(*calib.fT0Fill);
+  }
+
   return *this;
 }
 
@@ -246,9 +276,13 @@ AliTOFcalib::~AliTOFcalib()
     if (fConfigMap){
       delete fConfigMap;
     }
+    if (fDeltaBCOffset) delete fDeltaBCOffset;
+    if (fCTPLatency) delete fCTPLatency;
+    if (fT0Fill) delete fT0Fill;
   }
   if (fTree!=0x0) delete fTree;
   if (fChain!=0x0) delete fChain;
+
 }
 //_____________________________________________________________________________
 void AliTOFcalib::CreateCalArrays(){
@@ -1793,3 +1827,179 @@ Int_t AliTOFcalib::FindBins(TH1F* h, Double_t *binsProfile) const{
   }
   return nusefulbins;
 }
+
+
+//----------------------------------------------------------------------------
+
+void
+AliTOFcalib::CreateDeltaBCOffset()
+{
+  /*
+   * create deltaBC offset
+   */
+
+  if (fDeltaBCOffset) {
+    AliWarning("DeltaBCOffset object already defined, cannot create a new one");
+    return;
+  }
+  fDeltaBCOffset = new AliTOFDeltaBCOffset();
+}
+  
+//----------------------------------------------------------------------------
+
+void
+AliTOFcalib::CreateCTPLatency()
+{
+  /*
+   * create CTP latency
+   */
+
+  if (fCTPLatency) {
+    AliWarning("CTPLatency object already defined, cannot create a new one");
+    return;
+  }
+  fCTPLatency = new AliTOFCTPLatency();
+}
+  
+//----------------------------------------------------------------------------
+
+void
+AliTOFcalib::CreateT0Fill()
+{
+  /*
+   * create event-time
+   */
+
+  if (fT0Fill) {
+    AliWarning("T0Fill object already defined, cannot create a new one");
+    return;
+  }
+  fT0Fill = new AliTOFT0Fill();
+}
+  
+//----------------------------------------------------------------------------
+
+void
+AliTOFcalib::WriteDeltaBCOffsetOnCDB(const Char_t *sel , Int_t minrun, Int_t maxrun)
+{
+  /*
+   * deltaBC offset on CDB 
+   */
+  
+  if (!fDeltaBCOffset) return;
+  AliCDBId id(Form("%s/DeltaBCOffset", sel), minrun, maxrun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Roberto Preghenella");
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->Put(fDeltaBCOffset, id, md);
+  AliDebug(2,Form("DeltaBCOffset written on CDB with run range [%i, %i] ",minrun ,maxrun));
+  delete md;
+}
+
+//----------------------------------------------------------------------------
+
+void
+AliTOFcalib::WriteCTPLatencyOnCDB(const Char_t *sel , Int_t minrun, Int_t maxrun)
+{
+  /*
+   * write CTP latency on CDB 
+   */
+  
+  if (!fCTPLatency) return;
+  AliCDBId id(Form("%s/CTPLatency", sel), minrun, maxrun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Roberto Preghenella");
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->Put(fCTPLatency, id, md);
+  AliDebug(2,Form("CTPLatency written on CDB with run range [%i, %i] ",minrun ,maxrun));
+  delete md;
+}
+
+//----------------------------------------------------------------------------
+
+void
+AliTOFcalib::WriteT0FillOnCDB(const Char_t *sel , Int_t minrun, Int_t maxrun)
+{
+  /*
+   * write event-time on CDB 
+   */
+  
+  if (!fT0Fill) return;
+  AliCDBId id(Form("%s/T0Fill", sel), minrun, maxrun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Roberto Preghenella");
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->Put(fT0Fill, id, md);
+  AliDebug(2,Form("T0Fill written on CDB with run range [%i, %i] ",minrun ,maxrun));
+  delete md;
+}
+
+//----------------------------------------------------------------------------
+
+Bool_t
+AliTOFcalib::ReadDeltaBCOffsetFromCDB(const Char_t *sel , Int_t nrun)
+{
+  /*
+   * read deltaBC offset from CDB
+   */
+  
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBEntry *entry = man->Get(Form("%s/DeltaBCOffset", sel),nrun);
+  if (!entry) { 
+    AliFatal("No DeltaBCOffset entry found in CDB");
+    exit(0);  
+  }
+  fDeltaBCOffset =(AliTOFDeltaBCOffset *)entry->GetObject();
+  if(!fDeltaBCOffset){
+    AliFatal("No DeltaBCOffset object found in CDB entry");
+    exit(0);  
+  }  
+  return kTRUE; 
+}
+
+//----------------------------------------------------------------------------
+
+Bool_t
+AliTOFcalib::ReadCTPLatencyFromCDB(const Char_t *sel , Int_t nrun)
+{
+  /*
+   * read CTP latency from CDB
+   */
+  
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBEntry *entry = man->Get(Form("%s/CTPLatency", sel),nrun);
+  if (!entry) { 
+    AliFatal("No CTPLatency entry found in CDB");
+    exit(0);  
+  }
+  fCTPLatency =(AliTOFCTPLatency *)entry->GetObject();
+  if(!fCTPLatency){
+    AliFatal("No CTPLatency object found in CDB entry");
+    exit(0);  
+  }  
+  return kTRUE; 
+}
+
+//----------------------------------------------------------------------------
+
+Bool_t
+AliTOFcalib::ReadT0FillFromCDB(const Char_t *sel , Int_t nrun)
+{
+  /*
+   * read event-time from CDB
+   */
+  
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBEntry *entry = man->Get(Form("%s/T0Fill", sel),nrun);
+  if (!entry) { 
+    AliFatal("No T0Fill entry found in CDB");
+    exit(0);  
+  }
+  fT0Fill =(AliTOFT0Fill *)entry->GetObject();
+  if(!fT0Fill){
+    AliFatal("No T0Fill object found in CDB entry");
+    exit(0);  
+  }  
+  return kTRUE; 
+}
+

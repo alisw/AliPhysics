@@ -12,6 +12,7 @@
 //                                                           //
 ///////////////////////////////////////////////////////////////
 
+#include "AliTOFDRMStatusHeader3.h"
 #include "AliTOFTRMGlobalHeader.h"
 #include "AliTOFTRMGlobalTrailer.h"
 #include "AliTOFTRMChainHeader.h"

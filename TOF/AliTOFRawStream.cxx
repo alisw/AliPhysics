@@ -1540,20 +1540,15 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
     Int_t   hitChan = hitData->GetChan();
     Int_t   hitTimeBin = hitData->GetTimeBin();
     Int_t   hitTOTBin = hitData->GetTOTBin();
-
-    if (fgApplyBCCorrections) {
-      /* DDL BC shift time correction */
-      hitTimeBin += 1024 * fgkddlBCshift[indexDDL];
-      /* deltaBC shift time correction */
-      hitTimeBin += 1024 * (hitData->GetDeltaBunchID() - 37);
-    }
+    Int_t   hitDeltaBC = hitData->GetDeltaBunchID();
+    Int_t   hitL0L1Latency = hitData->GetL0L1Latency();
 
     Int_t hitLeading = hitData->GetTimeBin();
     Int_t hitTrailing = -1;
     Int_t hitError = -1;
     
     TClonesArray &arrayTofRawData =  *fTOFrawData;
-    new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(hitSlotID, hitChain, hitTDC, hitChan, hitTimeBin, hitTOTBin, hitLeading, hitTrailing, hitPS, hitACQ, hitError);
+    new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(hitSlotID, hitChain, hitTDC, hitChan, hitTimeBin, hitTOTBin, hitLeading, hitTrailing, hitPS, hitACQ, hitError, hitDeltaBC, hitL0L1Latency);
   }
 
   if (verbose > 0)

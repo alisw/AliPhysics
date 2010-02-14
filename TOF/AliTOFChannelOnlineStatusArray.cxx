@@ -53,7 +53,7 @@ AliTOFChannelOnlineStatusArray::AliTOFChannelOnlineStatusArray(Int_t size):
 	// ctor with size
 	for (Int_t ich = 0; ich<size; ich ++){
 	  SetStatus(ich,kTOFOnlineUnknown);
-	  SetLatencyWindow(ich, -1);
+	  SetLatencyWindow(ich, 0);
 	}
 }
 //________________________________________________________________
@@ -179,7 +179,7 @@ UChar_t AliTOFChannelOnlineStatusArray::GetNoiseStatus(Int_t pos) const
 Int_t AliTOFChannelOnlineStatusArray::GetLatencyWindow(Int_t pos) const 
 {
 	// getting the latency window for channel at position = pos 
-  Int_t lw = -1; 
+  Int_t lw = 0; 
   if (!fLatencyWindow) {
     AliWarning("cannot get latency window");
     return lw;

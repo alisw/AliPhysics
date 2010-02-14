@@ -35,6 +35,9 @@
 #pragma link C++ class  AliTOFcalibHisto+;
 #pragma link C++ class  AliTOFArray+;
 #pragma link C++ class  AliTOFDaConfigHandler+;
+#pragma link C++ class  AliTOFDeltaBCOffset+;
+#pragma link C++ class  AliTOFCTPLatency+;
+#pragma link C++ class  AliTOFT0Fill+;
 
 
 #endif

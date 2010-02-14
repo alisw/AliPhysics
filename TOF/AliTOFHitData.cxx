@@ -45,6 +45,7 @@ AliTOFHitData::AliTOFHitData():
   fTOT(-1),
   fTOTBin(-1),
   fDeltaBunchID(-1),
+  fL0L1Latency(-1),
   fDeltaEventCounter(-1)
 {
   //ctor
@@ -66,6 +67,7 @@ AliTOFHitData::AliTOFHitData(const AliTOFHitData &source):
   fTOT(source.fTOT),
   fTOTBin(source.fTOTBin),
   fDeltaBunchID(source.fDeltaBunchID),
+  fL0L1Latency(source.fL0L1Latency),
   fDeltaEventCounter(source.fDeltaEventCounter)
 { 
   // copy constructor 
@@ -90,6 +92,7 @@ AliTOFHitData& AliTOFHitData::operator=(const AliTOFHitData & source) {
     fTOT= source.fTOT;
     fTOTBin= source.fTOTBin;
     fDeltaBunchID=source.fDeltaBunchID;
+    fL0L1Latency=source.fL0L1Latency;
     fDeltaEventCounter=source.fDeltaEventCounter;
   }
   return *this;
