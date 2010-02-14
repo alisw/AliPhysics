@@ -98,7 +98,7 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1]);
 
   fList0 = new TList();
-  fList0 = fProtonQAAnalysis->GetGlobalQAList();
+  fList0->Add(fProtonQAAnalysis->GetGlobalQAList());
 
   fList1 = new TList();
   fList1 = fProtonQAAnalysis->GetPDGList();
@@ -153,21 +153,65 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
   }
 
   fHistEventStats->Fill(1);
-  //online trigger
-  if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
-    fHistEventStats->Fill(2);
-
-    //offline trigger
-if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsOfflineTriggerUsed()) {
-      AliPhysicsSelection *gPhysicselection = dynamic_cast<AliPhysicsSelection *>(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetPhysicsSelectionObject());
-      if(gPhysicselection->IsCollisionCandidate(fESD)) {
+  if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsOnlineTriggerUsed()) {
+    //online trigger
+    if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
+      fHistEventStats->Fill(2);
+      
+      //offline trigger
+      if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsOfflineTriggerUsed()) {
+	AliPhysicsSelection *gPhysicselection = dynamic_cast<AliPhysicsSelection *>(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetPhysicsSelectionObject());
+	if(gPhysicselection->IsCollisionCandidate(fESD)) {
+	  fHistEventStats->Fill(3);
+	  
+	  fProtonQAAnalysis->RunVertexQA(header,
+					 fESD);
+	  const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
+	  fHistEventStats->Fill(4);
+	  
+	  if(vertex) {
+	    fHistEventStats->Fill(5);
+	    fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
+	    fProtonQAAnalysis->RunMCAnalysis(stack);
+	    fProtonQAAnalysis->RunPIDEfficiencyAnalysis(stack, fESD, vertex);
+	    fProtonQAAnalysis->RunReconstructionEfficiencyAnalysis(fMC,fESD,vertex);
+	    fProtonQAAnalysis->RunCutEfficiencyAnalysis(stack, fESD, vertex);
+	  }//accepted vertex
+	}//offline trigger
+      }//offline trigger used
+      else {
 	fHistEventStats->Fill(3);
-
+	
 	fProtonQAAnalysis->RunVertexQA(header,
 				       fESD);
 	const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
 	fHistEventStats->Fill(4);
-
+	
+	if(vertex) {
+	  fHistEventStats->Fill(5);
+	  fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
+	  fProtonQAAnalysis->RunMCAnalysis(stack);
+	  fProtonQAAnalysis->RunPIDEfficiencyAnalysis(stack, fESD, vertex);
+	  fProtonQAAnalysis->RunReconstructionEfficiencyAnalysis(fMC,fESD,vertex);
+	  fProtonQAAnalysis->RunCutEfficiencyAnalysis(stack, fESD, vertex);
+	}//accepted vertex
+      }//offline trigger not used
+    }//triggered event - online
+  }//online trigger used
+  else {
+    fHistEventStats->Fill(2);
+    
+    //offline trigger
+    if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsOfflineTriggerUsed()) {
+      AliPhysicsSelection *gPhysicselection = dynamic_cast<AliPhysicsSelection *>(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetPhysicsSelectionObject());
+      if(gPhysicselection->IsCollisionCandidate(fESD)) {
+	fHistEventStats->Fill(3);
+	
+	fProtonQAAnalysis->RunVertexQA(header,
+				       fESD);
+	const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
+	fHistEventStats->Fill(4);
+	
 	if(vertex) {
 	  fHistEventStats->Fill(5);
 	  fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
@@ -178,8 +222,25 @@ if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBase
 	}//accepted vertex
       }//offline trigger
     }//offline trigger used
-  }//online trigger
-  
+    else {
+      fHistEventStats->Fill(3);
+      
+      fProtonQAAnalysis->RunVertexQA(header,
+				     fESD);
+      const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
+      fHistEventStats->Fill(4);
+      
+      if(vertex) {
+	fHistEventStats->Fill(5);
+	fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
+	fProtonQAAnalysis->RunMCAnalysis(stack);
+	fProtonQAAnalysis->RunPIDEfficiencyAnalysis(stack, fESD, vertex);
+	fProtonQAAnalysis->RunReconstructionEfficiencyAnalysis(fMC,fESD,vertex);
+	fProtonQAAnalysis->RunCutEfficiencyAnalysis(stack, fESD, vertex);
+      }//accepted vertex
+    }//offline trigger not used
+  }//online trigger not used
+
   // Post output data.
   PostData(0, fList0);
   PostData(1, fList1);
