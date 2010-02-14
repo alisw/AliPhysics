@@ -1,7 +1,7 @@
-// Macro to print the values stored in the OCDB with AliEMCALRecParam
-// These parameters are used during reconstruction
+// Macro to print the values stored in the OCDB with AliEMCALSimParam
+// These parameters are used during simulation
 
-// Author: Gustavo Conesa (INFN-LNF)
+// Author: Gustavo Conesa (IN2P3-LPSC)
 
 
 void PrintEMCALSimParam(char * file = "$ALICE_ROOT/OCDB/EMCAL/Calib/SimParam/Run0_999999999_v0_s0.root"){

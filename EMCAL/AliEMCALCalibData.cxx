@@ -150,7 +150,7 @@ void  AliEMCALCalibData::Print(Option_t *option) const
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
 	for (Int_t row=0; row<nRow; row++){
-	  printf("%4.1f",fADCpedestal[supermodule][column][row]);
+	  printf(" %2.4f ",fADCpedestal[supermodule][column][row]);
 	}
 	printf("\n");
       }
@@ -166,7 +166,7 @@ void  AliEMCALCalibData::Print(Option_t *option) const
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
 	for (Int_t row=0; row<nRow; row++){
-	  printf("%4.1f",fADCchannel[supermodule][column][row]);
+	  printf(" %2.4f ",fADCchannel[supermodule][column][row]);
 	}
 	printf("\n");
       }
