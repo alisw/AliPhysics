@@ -457,6 +457,46 @@ AliKMeansResult::AliKMeansResult(Int_t k):
 // Constructor
 }
 
+AliKMeansResult::AliKMeansResult(const AliKMeansResult &res):
+  TObject(res),
+  fK(res.GetK()),
+  fMx(0),
+  fMy(0),
+  fSigma2(0),
+  fRk(0),
+  fTarget(0),
+  fInd(0)
+{
+  // Copy constructor
+  for (Int_t i = 0; i <fK; i++) {
+    fMx[i]     = (res.GetMx())    [i];
+    fMy[i]     = (res.GetMy())    [i];
+    fSigma2[i] = (res.GetSigma2())[i];
+    fRk[i]     = (res.GetRk())    [i];
+    fTarget[i] = (res.GetTarget())[i];
+    fInd[i]    = (res.GetInd())   [i];
+  }
+}
+
+AliKMeansResult& AliKMeansResult::operator=(const AliKMeansResult& res)
+{
+  //
+  // Assignment operator
+  if (this != &res) {
+    fK = res.GetK();
+    for (Int_t i = 0; i <fK; i++) {
+      fMx[i]     = (res.GetMx())    [i];
+      fMy[i]     = (res.GetMy())    [i];
+      fSigma2[i] = (res.GetSigma2())[i];
+      fRk[i]     = (res.GetRk())    [i];
+      fTarget[i] = (res.GetTarget())[i];
+      fInd[i]    = (res.GetInd())   [i];
+    }
+    return *this;
+  }
+}
+
+
 AliKMeansResult::~AliKMeansResult()
 {
 // Destructor
@@ -498,4 +538,17 @@ void AliKMeansResult::Sort(Int_t n, Double_t* x, Double_t* y)
     }
 
   TMath::Sort(fK, fTarget, fInd);
+}
+
+void AliKMeansResult::CopyResults(AliKMeansResult* res)
+{
+  fK = res->GetK();
+  for (Int_t i = 0; i <fK; i++) {
+    fMx[i]     = (res->GetMx())    [i];
+    fMy[i]     = (res->GetMy())    [i];
+    fSigma2[i] = (res->GetSigma2())[i];
+    fRk[i]     = (res->GetRk())    [i];
+    fTarget[i] = (res->GetTarget())[i];
+    fInd[i]    = (res->GetInd())   [i];
+  }
 }

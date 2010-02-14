@@ -38,6 +38,9 @@ class AliKMeansResult : public TObject
 {
  public:
   AliKMeansResult(Int_t k);
+  AliKMeansResult(const AliKMeansResult &res);
+  AliKMeansResult& operator=(const AliKMeansResult& trclass);
+
   virtual ~AliKMeansResult();
   Int_t      GetK()      const  {return fK;}
   Double_t*  GetMx()     const  {return fMx;}
@@ -46,6 +49,7 @@ class AliKMeansResult : public TObject
   Double_t*  GetRk()     const  {return fRk;}
   Int_t*     GetInd()    const  {return fInd;}
   Double_t*  GetTarget() const  {return fTarget;}
+  void       CopyResults(AliKMeansResult* res);
   void       Sort();
   void       Sort(Double_t* target);
   void       Sort(Int_t n, Double_t* x, Double_t* y);  
