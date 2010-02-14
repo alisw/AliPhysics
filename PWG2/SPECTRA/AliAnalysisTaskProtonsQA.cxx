@@ -57,6 +57,7 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name)
   DefineOutput(6, TList::Class());
   DefineOutput(7, TList::Class());
   DefineOutput(8, TList::Class());
+  DefineOutput(9, TH1F::Class());
 }
 
 //________________________________________________________________________
@@ -98,7 +99,6 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
 
   fList0 = new TList();
   fList0 = fProtonQAAnalysis->GetGlobalQAList();
-  fList0->Add(fHistEventStats);
 
   fList1 = new TList();
   fList1 = fProtonQAAnalysis->GetPDGList();
@@ -190,6 +190,7 @@ if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBase
   PostData(6, fList6);
   PostData(7, fList7);
   PostData(8, fList8);
+  PostData(9, fHistEventStats);
 }      
 
 //________________________________________________________________________
@@ -240,6 +241,11 @@ void AliAnalysisTaskProtonsQA::Terminate(Option_t *) {
   fList8 = dynamic_cast<TList*> (GetOutputData(8));
   if (!fList8) {
     Printf("ERROR: fList8 not available");
+    return;
+  }
+  fHistEventStats = dynamic_cast<TH1F*> (GetOutputData(9));
+  if (!fHistEventStats) {
+    Printf("ERROR: fHistEventStats not available");
     return;
   }
 }
