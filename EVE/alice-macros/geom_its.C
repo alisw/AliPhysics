@@ -64,3 +64,10 @@ void geom_its_ssd()
 
   gEve->Redraw3D();
 }
+
+void geom_its_dets()
+{
+  geom_its_spd();
+  geom_its_sdd();
+  geom_its_ssd();
+}
