@@ -1245,7 +1245,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     isEventTriggered = fPhysTrigSel->IsCollisionCandidate((AliESDEvent*)lEvent);    
   } 
   else {
-    fPhysTrigSel->SetAnalyzeMC();
+    fPhysTrigSel->SetAnalyzeMC(); // Bo: maybe this is not needed (should be done in AliPhysicsSelectionTask)
     isEventTriggered = fPhysTrigSel->IsCollisionCandidate((AliESDEvent*)lEvent);
   }
   
@@ -1871,7 +1871,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   fHistPrimaryVertexX->Fill(lPrimaryVtxPosition[0]);
   fHistPrimaryVertexY->Fill(lPrimaryVtxPosition[1]);
   fHistPrimaryVertexZ->Fill(lPrimaryVtxPosition[2]);
-  Double_t lrcPrimVtxR = TMath::Sqrt(lPrimaryVtxPosition[0]*lPrimaryVtxPosition[0]+lPrimaryVtxPosition[0]*lPrimaryVtxPosition[0]);
+  Double_t lrcPrimVtxR = 0;
+  lrcPrimVtxR = TMath::Sqrt(lPrimaryVtxPosition[0]*lPrimaryVtxPosition[0]+lPrimaryVtxPosition[0]*lPrimaryVtxPosition[0]); // Bo: this is done with respect to x,y=0,0... to sure it is used anymore;
 
   AliKFVertex primaryVtxKF( *myPrimaryVertex );
   AliKFParticle::SetField(lMagneticField);
@@ -2773,14 +2774,20 @@ void AliAnalysisTaskPerformanceStrange::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
+  TList *cRetrievedList = 0x0;
+  cRetrievedList = (TList*)GetOutputData(1);
+
+  if(!cRetrievedList){
+    AliWarning("ERROR - AliAnalysisTaskPerformanceStrange: output data container list not available\n"); return;
+  }
   
-  fHistV0Multiplicity = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0Multiplicity"));
+  fHistV0Multiplicity = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistV0Multiplicity"));
   if (!fHistV0Multiplicity) {
     Printf("ERROR: fHistV0Multiplicity not available");
     return;
   }
 
-  fHistV0MultiplicityMI = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0MultiplicityMI"));
+  fHistV0MultiplicityMI = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistV0MultiplicityMI"));
   if (!fHistV0MultiplicityMI) {
     Printf("ERROR: fHistV0MultiplicityMI not available");
     return;

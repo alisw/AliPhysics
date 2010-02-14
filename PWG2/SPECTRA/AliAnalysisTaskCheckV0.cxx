@@ -440,6 +440,13 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
+  TList *cRetrievedList = 0x0;
+  cRetrievedList = (TList*)GetOutputData(1);
+
+  if(!cRetrievedList){
+    AliWarning("ERROR - AliAnalysisTaskPerformanceStrange: output data container list not available\n"); return;
+  }
+
   // Implement a decent style
   TStyle *myStyle = new TStyle("myStyle","my style");
   Int_t font = 42;
@@ -456,22 +463,22 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   myStyle->SetPalette(1,0); 
   myStyle->cd();
 
-  fHistTrackMultiplicity = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistTrackMultiplicity"));
+  fHistTrackMultiplicity = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistTrackMultiplicity"));
   if (!fHistTrackMultiplicity) {
     Printf("ERROR: fHistTrackMultiplicity not available");
     return;
   }
-  fHistV0Multiplicity = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0Multiplicity"));
+  fHistV0Multiplicity = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistV0Multiplicity"));
   if (!fHistV0Multiplicity) {
     Printf("ERROR: fHistV0Multiplicity not available");
     return;
   }
-  fHistV0MultiplicityOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0MultiplicityOff"));
+  fHistV0MultiplicityOff = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistV0MultiplicityOff"));
   if (!fHistV0MultiplicityOff) {
     Printf("ERROR: fHistV0MultiplicityOff not available");
     return;
   }
-  fHistV0MultiplicityOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0MultiplicityOn"));
+  fHistV0MultiplicityOn = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistV0MultiplicityOn"));
   if (!fHistV0MultiplicityOn) {
     Printf("ERROR: fHistV0MultiplicityOn not available");
     return;
@@ -496,42 +503,42 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   legendMultiplicity->AddEntry(fHistV0MultiplicityOn,"onthefly V^{0}");
   legendMultiplicity->Draw();
 
-  fHistMassK0sOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassK0sOff"));
+  fHistMassK0sOff = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistMassK0sOff"));
   if (!fHistMassK0sOff) {
     Printf("ERROR: fHistMassK0sOff not available");
     return;
   }
-  fHistMassK0sOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassK0sOn"));
+  fHistMassK0sOn = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistMassK0sOn"));
   if (!fHistMassK0sOn) {
     Printf("ERROR: fHistMassK0sOn not available");
     return;
   }
-  fHistMassLambdaOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassLambdaOff"));
+  fHistMassLambdaOff = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistMassLambdaOff"));
   if (!fHistMassLambdaOff) {
     Printf("ERROR: fHistMassLambdaOff not available");
     return;
   }
-  fHistMassLambdaOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassLambdaOn"));
+  fHistMassLambdaOn = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistMassLambdaOn"));
   if (!fHistMassLambdaOn) {
     Printf("ERROR: fHistMassLambdaOn not available");
     return;
   }
-  fHistMassAntiLambdaOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassAntiLambdaOff"));
+  fHistMassAntiLambdaOff = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistMassAntiLambdaOff"));
   if (!fHistMassAntiLambdaOff) {
     Printf("ERROR: fHistMassAntiLambdaOff not available");
     return;
   }
-  fHistMassAntiLambdaOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassAntiLambdaOn"));
+  fHistMassAntiLambdaOn = dynamic_cast<TH1F*> (cRetrievedList->FindObject("fHistMassAntiLambdaOn"));
   if (!fHistMassAntiLambdaOn) {
     Printf("ERROR: fHistMassAntiLambdaOn not available");
     return;
   }
-  fHistArmenterosPodolanskiOff = dynamic_cast<TH2F*> (((TList*)GetOutputData(1))->FindObject("fHistArmenterosPodolanskiOff"));
+  fHistArmenterosPodolanskiOff = dynamic_cast<TH2F*> (cRetrievedList->FindObject("fHistArmenterosPodolanskiOff"));
   if (!fHistArmenterosPodolanskiOff) {
     Printf("ERROR: fHistArmenterosPodolanskiOff not available");
     return;
   }
-  fHistArmenterosPodolanskiOn = dynamic_cast<TH2F*> (((TList*)GetOutputData(1))->FindObject("fHistArmenterosPodolanskiOn"));
+  fHistArmenterosPodolanskiOn = dynamic_cast<TH2F*> (cRetrievedList->FindObject("fHistArmenterosPodolanskiOn"));
   if (!fHistArmenterosPodolanskiOn) {
     Printf("ERROR: fHistArmenterosPodolanskiOn not available");
     return;

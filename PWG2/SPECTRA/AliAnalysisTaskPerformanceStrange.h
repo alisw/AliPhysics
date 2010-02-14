@@ -41,8 +41,8 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TString      fUsePID;                         //  "withPID" or "noPID"
   TString      fUseCut;                         //  "yes" or "no"
 
+  AliPhysicsSelection *fPhysTrigSel;            //  Selection of events
   TList               *fListHist;		//! Output List
-  AliPhysicsSelection *fPhysTrigSel;            //! Selection of events
 
   // MC histograms
   TH1F        *fHistMCPrimaryVertexX;      //! Histo
