@@ -1,6 +1,7 @@
 #include "TChain.h"
 #include "TTree.h"
 #include "TList.h"
+#include "TH1F.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -28,7 +29,7 @@ ClassImp(AliAnalysisTaskProtonsQA)
   
 //________________________________________________________________________ 
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
-  : AliAnalysisTask(), fESD(0), fMC(0),
+  : AliAnalysisTask(), fESD(0), fMC(0), fHistEventStats(0),
     fList0(0), fList1(0), fList2(0), fList3(0), 
     fList4(0), fList5(0), fList6(0), fList7(0), fList8(0),
     fProtonQAAnalysis(0) {
@@ -37,7 +38,7 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
 
 //________________________________________________________________________
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name) 
-  : AliAnalysisTask(name, ""), fESD(0), fMC(0),
+  : AliAnalysisTask(name, ""), fESD(0), fMC(0), fHistEventStats(0),
     fList0(0), fList1(0), fList2(0), fList3(0), 
     fList4(0), fList5(0), fList6(0), fList7(0), fList8(0),
     fProtonQAAnalysis(0) {
@@ -87,8 +88,17 @@ void AliAnalysisTaskProtonsQA::ConnectInputData(Option_t *) {
 void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   // Create histograms
   // Called once  
+  char *gCutName[5] = {"Total","Triggered","Offline trigger",
+		       "Vertex","Analyzed"};
+  fHistEventStats = new TH1F("fHistEventStats",
+			     "Event statistics;;N_{events}",
+			     5,0.5,5.5);
+  for(Int_t i = 1; i <= 5; i++) 
+    fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1]);
+
   fList0 = new TList();
   fList0 = fProtonQAAnalysis->GetGlobalQAList();
+  fList0->Add(fHistEventStats);
 
   fList1 = new TList();
   fList1 = fProtonQAAnalysis->GetPDGList();
@@ -141,16 +151,25 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
     Printf("ERROR: Could not retrieve the stack");
     return;
   }
+
+  fHistEventStats->Fill(1);
   //online trigger
   if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsEventTriggered(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetTriggerMode())) {
-    //offline trigger                                                                
-    if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsOfflineTriggerUsed()) {
+    fHistEventStats->Fill(2);
+
+    //offline trigger
+if(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->IsOfflineTriggerUsed()) {
       AliPhysicsSelection *gPhysicselection = dynamic_cast<AliPhysicsSelection *>(dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetPhysicsSelectionObject());
       if(gPhysicselection->IsCollisionCandidate(fESD)) {
+	fHistEventStats->Fill(3);
+
 	fProtonQAAnalysis->RunVertexQA(header,
 				       fESD);
 	const AliESDVertex *vertex = dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVertex(fESD,dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetAnalysisMode(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVxMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVyMax(),dynamic_cast<AliProtonAnalysisBase*>(fProtonQAAnalysis->GetProtonAnalysisBaseObject())->GetVzMax());
+	fHistEventStats->Fill(4);
+
 	if(vertex) {
+	  fHistEventStats->Fill(5);
 	  fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
 	  fProtonQAAnalysis->RunMCAnalysis(stack);
 	  fProtonQAAnalysis->RunPIDEfficiencyAnalysis(stack, fESD, vertex);

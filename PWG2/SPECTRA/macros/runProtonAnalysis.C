@@ -138,7 +138,7 @@ void runLocal(const char* mode = "ESD",
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
                                                             TCanvas::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            cutFilename.Data());
+                                                            outputFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
@@ -250,7 +250,7 @@ void runInteractive(const char* mode = "ESD",
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
                                                             TCanvas::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            cutFilename.Data());
+                                                            outputFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
@@ -352,7 +352,7 @@ void runBatch(const char* mode = "ESD",
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
                                                             TCanvas::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            cutFilename.Data());
+                                                            outputFilename.Data());
   
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
@@ -445,7 +445,7 @@ void runProof(const char* mode = "ESD",
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
                                                             TCanvas::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            cutFilename.Data());
+                                                            outputFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
