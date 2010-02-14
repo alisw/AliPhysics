@@ -1,5 +1,5 @@
 void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
-			 const char* pidMode = "Sigma1",
+			 const char* pidMode = "Ratio",
 			 Bool_t kUseOnlineTrigger = kTRUE,
 			 Bool_t kUseOfflineTrigger = kTRUE) {
   //Macro to run the proton QA analysis tested for local, proof & GRID.
@@ -25,7 +25,8 @@ void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
   timer.Start();
   
   //runLocal("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"/home/pchrist/ALICE/Baryons/QA/Local");
-  runProof("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,100000,"/COMMON/COMMON/LHC09d10_run104792-3#esdTree");
+  runProof("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,10000,"/COMMON/COMMON/LHC10a8_run104867_8#esdTree");
+  //runProof("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,500000,"/COMMON/COMMON/LHC09d10_run10482X#esdTree");
   //runInteractive("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"wn.xml");
   //runBatch("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"wn.xml");
 
@@ -55,6 +56,7 @@ void runLocal(const char* mode = "ESD",
   outputFilename4 += "."; outputFilename4 += pidMode; 
   outputFilename4 += ".root"; //Reco and PID efficiency
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
+  TString eventStatsFilename = "eventStats.root";//event stats
 
   gSystem->Load("libProofPlayer.so");
 
@@ -149,6 +151,10 @@ void runLocal(const char* mode = "ESD",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
+  AliAnalysisDataContainer *coutput10 = mgr->CreateContainer("fHistEventStats", 
+							     TH1::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     eventStatsFilename.Data());
   
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -161,6 +167,7 @@ void runLocal(const char* mode = "ESD",
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   mgr->ConnectOutput(taskProtonsQA,7,coutput8);
   mgr->ConnectOutput(taskProtonsQA,8,coutput9);
+  mgr->ConnectOutput(taskProtonsQA,9,coutput10);
 
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
@@ -189,6 +196,7 @@ void runInteractive(const char* mode = "ESD",
   outputFilename4 += "."; outputFilename4 += pidMode; 
   outputFilename4 += ".root"; //Reco and PID efficiency
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
+  TString eventStatsFilename = "eventStats.root";//event stats
 
   TGrid::Connect("alien://");
 
@@ -286,6 +294,10 @@ void runInteractive(const char* mode = "ESD",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
+  AliAnalysisDataContainer *coutput10 = mgr->CreateContainer("fHistEventStats", 
+							     TH1::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     eventStatsFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -298,6 +310,7 @@ void runInteractive(const char* mode = "ESD",
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   mgr->ConnectOutput(taskProtonsQA,7,coutput8);
   mgr->ConnectOutput(taskProtonsQA,8,coutput9);
+  mgr->ConnectOutput(taskProtonsQA,9,coutput10);
 
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
@@ -326,6 +339,7 @@ void runBatch(const char* mode = "ESD",
   outputFilename4 += "."; outputFilename4 += pidMode; 
   outputFilename4 += ".root"; //Reco and PID efficiency
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
+  TString eventStatsFilename = "eventStats.root";//event stats
 
   TGrid::Connect("alien://");
   gSystem->Load("libProofPlayer.so");
@@ -415,6 +429,10 @@ void runBatch(const char* mode = "ESD",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
+  AliAnalysisDataContainer *coutput10 = mgr->CreateContainer("fHistEventStats", 
+							     TH1::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     eventStatsFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -427,6 +445,7 @@ void runBatch(const char* mode = "ESD",
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   mgr->ConnectOutput(taskProtonsQA,7,coutput8);
   mgr->ConnectOutput(taskProtonsQA,8,coutput9);
+  mgr->ConnectOutput(taskProtonsQA,9,coutput10);
 
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
@@ -455,7 +474,8 @@ void runProof(const char* mode = "ESD",
   outputFilename4 += analysisType;
   outputFilename4 += "."; outputFilename4 += pidMode; 
   outputFilename4 += ".root"; //Reco and PID efficiency
-  TString outputFilename5 = "Vertex.QA.root"; //vertex QA
+  TString outputFilename5 = "Vertex.QA.root"; //vertex Q
+  TString eventStatsFilename = "eventStats.root";//event stats
 
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
   printf("****** Connect to PROOF *******\n");
@@ -541,6 +561,10 @@ void runProof(const char* mode = "ESD",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
+  AliAnalysisDataContainer *coutput10 = mgr->CreateContainer("fHistEventStats", 
+							     TH1::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     eventStatsFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -553,6 +577,7 @@ void runProof(const char* mode = "ESD",
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   mgr->ConnectOutput(taskProtonsQA,7,coutput8);
   mgr->ConnectOutput(taskProtonsQA,8,coutput9);
+  mgr->ConnectOutput(taskProtonsQA,9,coutput10);
 
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
