@@ -36,6 +36,9 @@ class AliCFContainer : public AliCFFrame
   virtual void       PrintNBins()                                    const {fGrid[0]->PrintNBins();}
   virtual void       SetBinLimits(Int_t ivar, Double_t min, Double_t max) ; // for uniform bin width only
   virtual void       SetBinLimits(Int_t ivar, const Double_t * array) ;     // for variable or uniform bin width
+  virtual void       SetBinLabel (Int_t ivar,Int_t ibin, const Char_t* label);// set a label to bin ibin on axis ivar
+  virtual void       SetBinContent(Int_t* bin, Int_t step, Double_t value);
+  virtual void       SetBinError  (Int_t* bin, Int_t step, Double_t value);
   virtual void       GetBinLimits(Int_t ivar, Double_t * array)      const {return fGrid[0]->GetBinLimits(ivar,array);}
   virtual Double_t * GetBinLimits(Int_t ivar)                        const {return fGrid[0]->GetBinLimits(ivar);}
   virtual Long_t     GetNBinsTotal()                                 const {return fGrid[0]->GetNBinsTotal()*fNStep;}
@@ -43,6 +46,7 @@ class AliCFContainer : public AliCFFrame
   virtual Int_t    * GetNBins()                                      const {return fGrid[0]->GetNBins();}
   virtual Float_t    GetBinCenter(Int_t ivar,Int_t ibin)             const {return fGrid[0]->GetBinCenter(ivar,ibin);}
   virtual Float_t    GetBinSize  (Int_t ivar,Int_t ibin)             const {return fGrid[0]->GetBinSize  (ivar,ibin);}
+  virtual const Char_t* GetBinLabel (Int_t ivar,Int_t ibin)          const {return GetAxis(ivar,0)->GetBinLabel(ibin);}
 
   virtual void       Print(const Option_t*) const ;
 
@@ -96,6 +100,8 @@ class AliCFContainer : public AliCFFrame
   virtual void  SetRangeUser(Double_t* varMin, Double_t* varMax, Int_t istep) ;
   virtual void  SetGrid(Int_t step, AliCFGridSparse* grid) {fGrid[step]=grid;}
   virtual AliCFGridSparse * GetGrid(Int_t istep) const {return fGrid[istep];};
+
+  virtual void  Scale(Double_t factor) const;
   
  private:
   Int_t    fNStep; //number of selection steps
@@ -138,5 +144,23 @@ inline Int_t AliCFContainer::GetStep(const Char_t* title) const {
 inline Int_t AliCFContainer::GetVar(const Char_t* title) const {
   return fGrid[0]->GetVar(title);
 }
+
+inline void AliCFContainer::SetBinLabel(Int_t iVar, Int_t iBin, const Char_t* label) {
+  for (Int_t iStep=0; iStep<GetNStep(); iStep++) GetAxis(iVar,iStep)->SetBinLabel(iBin,label);
+}
+
+inline void  AliCFContainer::Scale(Double_t factor) const {
+  Double_t fact[2] = {factor,0} ;
+  for (Int_t iStep=0; iStep<fNStep; iStep++) fGrid[iStep]->Scale(fact);
+}
+
+inline void AliCFContainer::SetBinContent(Int_t* bin, Int_t step, Double_t value) {
+  GetGrid(step)->GetGrid()->SetBinContent(bin,value);
+}
+
+inline void AliCFContainer::SetBinError(Int_t* bin, Int_t step, Double_t value) {
+  GetGrid(step)->GetGrid()->SetBinError(bin,value);
+}
+
 #endif
 
