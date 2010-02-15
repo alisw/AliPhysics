@@ -26,7 +26,7 @@
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_tutorial
  */
-void extract_ddlraw(const char* input, int iMinDDLno, int iMaxDDLno)
+void extract_ddlraw(const char* input, int iMinDDLno, int iMaxDDLno, int nofEvents=-1)
 {
   /////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////
@@ -44,11 +44,17 @@ void extract_ddlraw(const char* input, int iMinDDLno, int iMaxDDLno)
     return;
   }
 
+  TString strfile=input;
+  if (strfile.Contains("://") && !strfile.Contains("local://")) {
+    TGrid::Connect("alien");
+  }
+
   AliRawReader* pRawReader=AliRawReader::Create(input);
   if (!pRawReader) {
     cout << "can not open RawReader for file " << input << endl;
     return;
   }
+
   if (!pRawReader->NextEvent()) {
     cerr << "no events available" << endl;
     return;
@@ -72,7 +78,7 @@ void extract_ddlraw(const char* input, int iMinDDLno, int iMaxDDLno)
   //     in a loop
   //  2. all in one publisher
   // can be easily switched with the following
-  bool bAllInOne=false;
+  bool bAllInOne=true;
 
   TString writerInput;
   TString arg;
@@ -112,7 +118,7 @@ void extract_ddlraw(const char* input, int iMinDDLno, int iMaxDDLno)
   //
   // the reconstructor setup
   AliHLTReconstructor hltRec;
-  hltRec.SetOption("libAliHLTUtil.so loglevel=0x7c chains=sink1");
+  hltRec.SetOption("libAliHLTUtil.so loglevel=0x7c chains=sink1 ignore-hltout ignore-ctp");
   if (hltRec.Init()<0) {
     cerr << "initialization of reconstructor failed" << endl;
     return;
@@ -130,7 +136,8 @@ void extract_ddlraw(const char* input, int iMinDDLno, int iMaxDDLno)
   Int_t event=0;
   UChar_t* pData=NULL;
   pRawReader->RewindEvents();
-  while (pRawReader->NextEvent()) {
+  while (pRawReader->NextEvent() &&
+	 (nofEvents<0 || event<nofEvents)) {
     cout << "=======================================================" << endl;
     cout << "event " << event << endl;
     cout << "-------------------------------------------------------" << endl;
