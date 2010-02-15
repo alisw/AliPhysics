@@ -376,10 +376,13 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      trackno=tracknoOld;
 	      
 	      //-----------------end of modification----------------
+	      Float_t ptime = fPMDHit->GetTime()*1e6;   // time in microsec
+	      if (ptime < 0. || ptime > 1.2) continue;  
+
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
-	      
+
 	      edep       = fPMDHit->GetEnergy();
 	      Int_t vol1 = fPMDHit->GetVolume(1); // Column
 	      Int_t vol2 = fPMDHit->GetVolume(2); // Row
@@ -621,6 +624,9 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      mtrackno=trackno;
 	      trackpid=trackpidOld;
 	      trackno=tracknoOld;
+
+	      Float_t ptime = fPMDHit->GetTime()*1e6;
+	      if (ptime < 0. || ptime > 1.2) continue;
 	      
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
