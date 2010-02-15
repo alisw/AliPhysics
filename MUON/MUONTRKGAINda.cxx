@@ -1,23 +1,23 @@
 /*
  Contact: Jean-Luc Charvet <jean-luc.charvet@cern.ch>
  Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_mchda.html
- Reference Runs: 
- ndex		Run
- 1		104525
- 2		104527
- 3		104528
- 4		104530
- 5 		104531
- 6 		104532
- 7		104533
- 8		104534
- 9		104535
- 10		104537
- 11		104539
+ Reference Runs: (station 3)
+ Index		Run
+ 1		109303
+ 2		109304
+ 3		109305
+ 4		109306
+ 5 		109307
+ 6 		109308
+ 7		109309
+ 8		109310
+ 9		109311
+ 10		109312
+ 11		109313
  Run Type: CALIBRATION
  DA Type: LDC
  Number of events needed: 400 events for each calibration run (11)
- Input Files:  /alice/cern.ch/user/j/jcharvet/mutrkcalibvalues and /alice/cern.ch/user/j/jcharvet/config_ldc-MTRK-S0-0
+ Input Files:  mutrkcalibvalues and config_ldc-MTRK-S3-0 in path : /afs/cern.ch/user/j/jcharvet/public/DA_validation
  Output Files: local dir (not persistent) -> MUONTRKGAINda.par   FXS -> run<#>_MCH_<ldc>_GAINS
  Trigger types used:
  */
@@ -41,7 +41,7 @@
 
 /*
  -------------------------------------------------------------------------
- 2010-01-13 New version: MUONTRKGAINda.cxx,v 1.5
+ 2010-02-15 New version: MUONTRKGAINda.cxx,v 1.5
  -------------------------------------------------------------------------
  
  Version for MUONTRKGAINda MUON tracking

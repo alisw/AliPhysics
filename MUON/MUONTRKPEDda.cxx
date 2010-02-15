@@ -1,11 +1,11 @@
 /*
-  Contact: Jean-Luc Charvet <jean-luc.charvet@cern.ch>
+  Contact: Jean-Luc Charvet <jean-luc.charvet@cern.ch>  
   Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_mchda.html
-  Reference Run: 104540
+  Reference Run: 109302 (station 3 only)
   Run Type: PEDESTAL
   DA Type: LDC
   Number of events needed: 400 events for pedestal run
-  Input Files: /alice/cern.ch/user/j/jcharvet/mutrkpedvalues and /alice/cern.ch/user/j/jcharvet/config_ldc-MTRK-S0-0 
+  Input Files: mutrkpedvalues and config_ldc-MTRK-S3-0 in path : /afs/cern.ch/user/j/jcharvet/public/DA_validation 
   Output Files: local dir (not persistent) -> MUONTRKPEDda.ped  FXS -> run<#>_MCH_<ldc>_PEDESTALS
   Trigger types used:
 */
@@ -29,7 +29,7 @@
 
 /*
 	-------------------------------------------------------------------------
-        2010-01-13 New version: MUONTRKPEDda.cxx,v 1.5
+        2010-02-15 New version: MUONTRKPEDda.cxx,v 1.5
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -65,6 +65,7 @@ extern "C" {
 #include "AliMpConstants.h"
 #include "AliRawDataErrorLog.h"
 #include "AliMUONTrackerIO.h"
+#include "AliLog.h"
 
 //ROOT
 #include "TFile.h"
@@ -93,7 +94,7 @@ extern "C" {
 #include "AliMUONPedestal.h"
 #include "AliMUONErrorCounter.h"
 
-
+ 
 // main routine
 int main(Int_t argc, const char **argv) 
 {
@@ -127,6 +128,7 @@ int main(Int_t argc, const char **argv)
   Int_t nGlitchErrors= 0;
   Int_t nParityErrors= 0;
   Int_t nPaddingErrors= 0;
+  Int_t nTokenlostErrors= 0;
   Int_t recoverParityErrors = 1;
 
   TString logOutputFile;
@@ -244,8 +246,14 @@ int main(Int_t argc, const char **argv)
   // Rawdeader, RawStreamHP
   AliRawReader* rawReader = AliRawReader::Create(inputFile);
   AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
-  rawStream->DisableWarnings();
+//	rawStream->DisableWarnings();
   rawStream->EnabbleErrorLogger();
+  //
+  // kLowErrorDetail,     /// Logs minimal information in the error messages.
+  // kMediumErrorDetail,  /// Logs a medium level of detail in the error messages.
+  // kHighErrorDetail     /// Logs maximum information in the error messages.
+  //  rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kLowErrorDetail);
+   rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kHighErrorDetail);
 
   printf("\n %s : Reading data from file %s\n",prefixDA,inputFile.Data());
 
@@ -275,7 +283,7 @@ int main(Int_t argc, const char **argv)
 	{
 	  sprintf(flatFile,"%s.log",prefixDA);
 	  logOutputFile=flatFile;
-
+		AliLog::SetStreamOutput(&filcout); // Print details on logfile
 	  filcout.open(logOutputFile.Data());
 	  filcout<<"//=================================================" << endl;
 	  filcout<<"//       " << prefixDA << " for run = " << runNumber << endl;
@@ -298,6 +306,7 @@ int main(Int_t argc, const char **argv)
       int eventGlitchErrors = 0;
       int eventParityErrors = 0;
       int eventPaddingErrors = 0;
+      int eventTokenlostErrors = 0;
       rawStream->First();
       do
 	{
@@ -305,6 +314,7 @@ int main(Int_t argc, const char **argv)
 	  eventGlitchErrors += rawStream->GetGlitchErrors();
 	  eventParityErrors += rawStream->GetParityErrors();
 	  eventPaddingErrors += rawStream->GetPaddingErrors();
+	  eventTokenlostErrors += rawStream->GetTokenLostErrors();
 	} while(rawStream->NextDDL()); 
 
       AliMUONRawStreamTrackerHP::AliBusPatch* busPatch;
@@ -327,6 +337,7 @@ int main(Int_t argc, const char **argv)
 	  // Events with errors
 	  if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
 	    {
+	      filcout << " ----------- Date Event recovered = " << nDateEvents <<  " ----------------" << endl;
 	      // Recover parity errors -> compute pedestal for all good buspatches
 	      if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
 					  ATTR_ORBIT_BC )) 
@@ -385,6 +396,7 @@ int main(Int_t argc, const char **argv)
 	    } //end of if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
 	  else
 	    {
+	      filcout << " ----------- Date Event rejected = " << nDateEvents <<  " ----------------" << endl;
 	      // Fatal errors reject the event
 	      if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
 					  ATTR_ORBIT_BC )) 
@@ -403,13 +415,15 @@ int main(Int_t argc, const char **argv)
 	    } // end of if (!rawStream->GetGlitchErrors() && !rawStream->GetPaddingErrors() ...
 	  filcout<<"Number of errors : Glitch "<<eventGlitchErrors
 		     <<" Parity "<<eventParityErrors
-		     <<" Padding "<<eventPaddingErrors<<endl;
+		     <<" Padding "<<eventPaddingErrors
+		     <<" Token lost "<<eventTokenlostErrors<<endl;
 	  filcout<<endl;			
 	} // end of if (!rawStream->IsErrorMessage())
 
       if (eventGlitchErrors)  nGlitchErrors++;
       if (eventParityErrors)  nParityErrors++;
       if (eventPaddingErrors) nPaddingErrors++;
+      if (eventTokenlostErrors) nTokenlostErrors++;
 
     } // while (rawReader->NextEvent())
   delete rawReader;
@@ -453,7 +467,8 @@ int main(Int_t argc, const char **argv)
   cout << prefixDA << " : Nb of DATE events           = " << nDateEvents    << endl;
   cout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors  << endl;
   cout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors  << endl;
-  cout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;		
+  cout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;	
+  cout << prefixDA << " : Nb of Token lost errors     = "   << nTokenlostErrors << endl;
   cout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;
   cout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
   cout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
@@ -463,6 +478,7 @@ int main(Int_t argc, const char **argv)
   filcout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors << endl;
   filcout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors << endl;
   filcout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;
+  filcout << prefixDA << " : Nb of Token lost errors     = "   << nTokenlostErrors << endl;
   filcout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;	
   filcout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
   filcout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;

@@ -78,6 +78,8 @@ Two input files located in the DAQ Detector database (DetDB) are needed:
 
 - config_ldc-MTRK-S3-0 : configuration file name corresponding to MuonTracker Station 3 if (for example) DA is running on ldc-MTRK-S3-0
 
+- DA validation: see Header of MUONTRKPEDda.cxx for reference run, and corresponding input mutrkpedvalues and configuration files are located in path=/afs/cern.ch/user/j/jcharvet/public/DA_validation
+
 \subsection da_ss2 Electonics gain
 
 The syntax is: MUONTRKGAINda.exe "raw data file"
@@ -109,6 +111,7 @@ Default values are listed below
 
  - config_ldc-MTRK-S3-0 : configuration file name corresponding to MuonTracker station 3 if (for example) DA is running on ldc-MTRK-S3-0 
 
+- DA validation: Header of MUONTRKGAINda.cxx shows the list of the 11 reference runs, and corresponding input mutrkcalibvalues and configuration files are located in path=/afs/cern.ch/user/j/jcharvet/public/DA_validation
 
 \section da_s3 Using the DA Offline
  

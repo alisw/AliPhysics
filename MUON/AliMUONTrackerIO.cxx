@@ -308,13 +308,6 @@ AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
           AliDebugClass(1,Form("runNumber is %d",runNumber));
         }            
       }
-      if ( sline.Contains("*  nInit =") )
-	{
-	  sscanf(line,"//   *  nInit = %d  *  f1nbp = %d  *  f2nbp = %d",&nInit,&f1nbp,&f2nbp);
-	  AliDebugClass(1,Form("nInit = %d",nInit));
-	  AliDebugClass(1,Form("f1nbp = %d",f1nbp));
-	  AliDebugClass(1,Form("f2nbp = %d",f2nbp));
-	}
       if ( sline.Contains("DAC values") )
       {
         nDAC = TString(sline(2,sline.Length()-2)).Atoi();
@@ -326,6 +319,19 @@ AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
             runs = new Int_t[nDAC];
             dac = new Int_t[nDAC];
             // skip two lines
+            in.getline(line,1024);
+            sline = line;
+            if (!sline.Contains("*  nInit ="))
+            {
+              AliErrorClass("Improper format : was expecting nInit= line...");              
+            }
+            else
+            {
+              sscanf(line,"//   *  nInit = %d  *  f1nbp = %d  *  f2nbp = %d",&nInit,&f1nbp,&f2nbp);
+              AliDebugClass(1,Form("nInit = %d",nInit));
+              AliDebugClass(1,Form("f1nbp = %d",f1nbp));
+              AliDebugClass(1,Form("f2nbp = %d",f2nbp));
+            }
             in.getline(line,1024);
             in.getline(line,1024);
             // then get run and dac values
