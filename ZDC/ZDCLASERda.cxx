@@ -294,12 +294,6 @@ int main(int argc, char **argv) {
 	    }
  	  }
 	  // Writing data on output FXS file
-	  for(Int_t is=0; is<kNModules; is++){
-	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\n",
-	     modGeo[is],modType[is],modNCh[is]);
-	     //printf("  Laser DA -> Module mapping: geo %d type %d #ch %d\n",
-	     //  modGeo[is],modType[is],modNCh[is]);
-	  }
 	  for(Int_t is=0; is<2*kNChannels; is++){
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
 	       is,adcMod[is],adcCh[is],sigCode[is],det[is],sec[is]);
@@ -311,6 +305,12 @@ int main(int argc, char **argv) {
 	       is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
  	     //printf("  Laser DA -> %d Scaler: mod %d ch %d, code %d det %d, sec %d\n",
 	     //  is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
+	  }
+	  for(Int_t is=0; is<kNModules; is++){
+	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\n",
+	     modGeo[is],modType[is],modNCh[is]);
+	     //printf("  Laser DA -> Module mapping: geo %d type %d #ch %d\n",
+	     //  modGeo[is],modType[is],modNCh[is]);
 	  }
 	  
 	}

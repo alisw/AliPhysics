@@ -224,21 +224,21 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
        }
        Log(Form("File %s connected to process data for ADC mapping", fileName.Data()));
        //
-       for(Int_t j=0; j<kNModules; j++){	  
+       for(Int_t j=0; j<kNch; j++){	  
+           for(Int_t k=0; k<6; k++){
+             int read = fscanf(file,"%d",&adcMap[j][k]);
+	     if(read == 0) AliDebug(3," Failing in reading data from mapping file");
+           }
+       }
+       for(Int_t j=kNch; j<kNch+kNScch; j++){	  
+           for(Int_t k=0; k<6; k++){
+             int read = fscanf(file,"%d",&scMap[j-kNch][k]);
+	     if(read == 0) AliDebug(3," Failing in reading data from mapping file");
+           }
+       }
+       for(Int_t j=kNch+kNScch; j<kNModules+kNch+kNScch; j++){	  
            for(Int_t k=0; k<3; k++){
-             int read = fscanf(file,"%d",&modMap[j][k]);
-	     if(read == 0) AliDebug(3," Failing in reading data from mapping file");
-           }
-       }
-       for(Int_t j=kNModules; j<kNModules+kNch; j++){	  
-           for(Int_t k=0; k<6; k++){
-             int read = fscanf(file,"%d",&adcMap[j-kNModules][k]);
-	     if(read == 0) AliDebug(3," Failing in reading data from mapping file");
-           }
-       }
-       for(Int_t j=kNModules+kNch; j<kNModules+kNch+kNScch; j++){	  
-           for(Int_t k=0; k<6; k++){
-             int read = fscanf(file,"%d",&scMap[j-kNModules-kNch][k]);
+             int read = fscanf(file,"%d",&modMap[j-kNch-kNScch][k]);
 	     if(read == 0) AliDebug(3," Failing in reading data from mapping file");
            }
        }
