@@ -1941,6 +1941,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       if (AliAnalysisManager::GetAnalysisManager()) {
          if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>2) {
             out << "   gEnv->SetValue(\"XNet.Debug\", \"1\");" << endl;
+         } else {
+            out << "   AliLog::SetGlobalLogLevel(AliLog::kError);" << endl;
          }
       }   
       out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
