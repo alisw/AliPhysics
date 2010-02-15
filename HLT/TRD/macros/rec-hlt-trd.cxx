@@ -1,4 +1,4 @@
-// This macro is used to simulate the HLT reconstruction
+// This macro is used to simulate the HLT::TRD reconstruction
 // usage: aliroot rec-hlt-trd.cxx("/data/run/raw.root")    reconstruct local raw root file (you might add "alien://" to reconstruct remotely)
 //    or: aliroot rec-hlt-trd.cxx("/data/run/")            reconstruct local raw ddls *1
 //    or copy into folder and aliroot rec-hlt-trd.cxx      reconstruct raw.root in pwd
@@ -36,6 +36,7 @@
 #include "AliExternalTrackParam.h"
 #endif
 
+#include "readCDBentry.h"
 
 int rec_hlt_trd(const TString input ="raw.root", TString outPath=gSystem->pwd());
 Int_t ExtractRunNumber(const TString str);
@@ -55,7 +56,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   //
   
   // What chains should be run? (usually would be: TRD-OffEsdFile)
-  TString chains="TRD-CalibFile";
+  TString chains="TRD-OffEsdFile";
 
   // cosmics or not
   Bool_t bCosmics=kFALSE;
@@ -70,7 +71,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   Int_t TRDmodules[18] = {0,1,7,8,9,10,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 
   // Use custom arguments for components? i.e.: not reading OCDB arguments
-  Bool_t customArgs=kTRUE;
+  Bool_t customArgs=kFALSE;
 
   // Disable HLT flag?
   Bool_t disableHLTflag=kFALSE;
@@ -153,9 +154,10 @@ int rec_hlt_trd(const TString filename, TString outPath)
       // Clusterizer
       arg = "";
       if(customArgs || disableHLTflag){
-	arg="output_percentage 700 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT";
+	arg = readCDBentry("HLT/ConfigTRD/ClusterizerComponent"); //output_percentage 100 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT
+	arg += "";
 	if(disableHLTflag)
-	  arg+=" -HLTflag no";
+	  arg += " -HLTflag no";
       }
 
       cf.Form("TRD-CF_%02d", TRDmodules[module]);
@@ -167,9 +169,10 @@ int rec_hlt_trd(const TString filename, TString outPath)
       // Tracker
       arg="";
       if(customArgs || disableHLTflag){
-	arg="output_percentage 100 -lowflux -PIDmethod NN";
+	arg = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
+	arg += "";   
 	if(disableHLTflag)
-	  arg+=" -HLTflag no";
+	  arg += " -HLTflag no";
       }
 
       tr.Form("TRD-TR_%02d", TRDmodules[module]);
@@ -179,12 +182,10 @@ int rec_hlt_trd(const TString filename, TString outPath)
       afterTr+=tr;
 
       // Offline Tracker (for debug purposes only)
-      arg="";
-      if(customArgs || disableHLTflag){
-	arg="output_percentage 100 -lowflux -PIDmethod NN -highLevelOutput yes -emulateHLTTracks yes";
-	if(disableHLTflag)
-	  arg+=" -HLTflag no";
-      }
+      arg = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
+      arg += " -highLevelOutput yes -emulateHLToutput no";
+      if(disableHLTflag)
+	arg+=" -HLTflag no";
 
       trOff.Form("TRD-TROFF_%02d", TRDmodules[module]);
       AliHLTConfiguration trOffConf(trOff.Data(), "TRDOfflineTrackerV1", cf.Data(), arg.Data());

@@ -14,7 +14,7 @@ Bool_t InitGRP(TString OCDBpath, TString GRPpath="") {
   //------------------------------------
 
   AliCDBManager::Instance()->SetDefaultStorage(OCDBpath.Data());
-  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",GRPpath.Data()));
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data", GRPpath.Data());
   AliCDBManager::Instance()->SetRun(0);
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");

@@ -1,6 +1,6 @@
 // This macro is used to make performace studies with MC info
 // usage: aliroot rec-hlt-trd-digits.cxx("/data/run/")    reconstruct local digits file
-//    or copy into folder and aliroot rec-hlt-trd.cxx             reconstruct local digits file in pwd
+//    or copy into folder and aliroot rec-hlt-trd.cxx     reconstruct local digits file in pwd
 
 #if !defined (__CINT__) || defined (__MAKECINT__)
 
@@ -25,6 +25,7 @@
 #endif
 
 #include "initGRP.h"
+#include "readCDBentry.h"
 
 int rec_hlt_trd_digits(const TString input = gSystem->pwd());
 int main(int argc, char** argv)
@@ -36,7 +37,7 @@ int main(int argc, char** argv)
 int rec_hlt_trd_digits(const TString input){
 
   // Use custom arguments for components? i.e.: not reading OCDB arguments
-  Bool_t customArgs=kTRUE;
+  Bool_t customArgs=kFALSE;
 
   // Disable HLT flag?
   Bool_t disableHLTflag=kFALSE;
@@ -47,7 +48,7 @@ int rec_hlt_trd_digits(const TString input){
 
   gSystem->ChangeDirectory(input.Data());
 
-  InitGRP("local://$ALICE_ROOT/OCDB",gSystem->pwd());
+  InitGRP("local://$ALICE_ROOT/OCDB",Form("local://",gSystem->pwd()));
   
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root");
   AliHLTOfflineInterface::SetParamsToComponents(runLoader, NULL);
@@ -82,16 +83,18 @@ int rec_hlt_trd_digits(const TString input){
 
   TString arg="";
   if(customArgs || disableHLTflag){
-    arg="output_percentage 700 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT -highLevelOutput yes -emulateHLTClusters yes";
+    arg = readCDBentry("HLT/ConfigTRD/ClusterizerComponent"); //output_percentage 100 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT
+    arg += " -highLevelOutput yes -emulateHLToutput no";
     if(disableHLTflag)
-      arg+=" -HLTflag no";
+      arg += " -HLTflag no";
   }
   // clusterizer which processes digits
   AliHLTConfiguration cfDigiConf("TRD-DigiCF", "TRDOfflineClusterizer", "TRD-DigiP", arg.Data());
 
   arg="";
   if(customArgs || disableHLTflag){
-    arg="output_percentage 100 -lowflux -PIDmethod NN -highLevelOutput yes -emulateHLTTracks yes";
+    arg = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
+    arg += " -highLevelOutput yes -emulateHLToutput no";
     if(disableHLTflag)
       arg+=" -HLTflag no";
   }

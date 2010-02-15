@@ -21,6 +21,7 @@
 #endif
 
 #include "initGRP.h"
+#include "readCDBentry.h"
 
 void aliHLTTRDrun(const TString inDir = gSystem->pwd());
 int main(int argc, char** argv)
@@ -39,7 +40,7 @@ void aliHLTTRDrun(const TString inDir)
   Int_t TRDmodules[18] = {0,1,7,8,9,10,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 
   // Use custom arguments for components? i.e.: not reading OCDB arguments
-  Bool_t customArgs=kTRUE;
+  Bool_t customArgs=kFALSE;
 
   // Disable HLT flag?
   Bool_t disableHLTflag=kFALSE;
@@ -86,11 +87,12 @@ void aliHLTTRDrun(const TString inDir)
 
   gHLT.LoadComponentLibraries("libAliHLTUtil.so libAliHLTTRD.so libAliHLTMUON.so libAliHLTGlobal.so libAliHLTTrigger.so");
 
-  InitGRP("local://$ALICE_ROOT/OCDB",inDir.Data());
+  InitGRP("local://$ALICE_ROOT/OCDB","local:///software/data/ppbench"/*inDir.Data()*/);
+  //TString sGeomPath = " -geometry "+inDir+"/geometry.root";
   TString inFolder = inDir+"/raw", inFile = "/TRD_", inExt = ".ddl";
   TString sinput = " -datatype 'DDL_RAW ' 'TRD '";
   TString temp1, temp2;
-  Int_t spec, startEvent=10, nEvents=30, ddl;  //KR: start=10, nEvents=20;
+  Int_t spec, startEvent=0, nEvents=240, ddl;  //KR: start=10, nEvents=30;
   for(Int_t Event=startEvent; Event<(nEvents+startEvent); Event++){
     temp1=inFolder;
     temp1+=Event;
@@ -109,12 +111,14 @@ void aliHLTTRDrun(const TString inDir)
     sinput+=" -nextevent";
   }
   printf("%s\n",sinput.Data());
-  TString sCFArgs = "";//"output_percentage 700 -lowflux -simulation -tailcancellation -yPosMethod LUT"; //-processTracklets
-  TString sTrackerArgs = "";//"output_percentage 100 -lowflux -NTimeBins 24";
+  TString sCFArgs = "";
+  TString sTrackerArgs = "";
 
   if(customArgs || disableHLTflag){
-    sCFArgs = "output_percentage 700 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT";
-    sTrackerArgs = "output_percentage 100 -lowflux -PIDmethod NN"; // -highLevelOutput yes -emulateHLTTracks yes
+    sCFArgs = readCDBentry("HLT/ConfigTRD/ClusterizerComponent"); //output_percentage 100 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT
+    sTrackerArgs = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
+    sCFArgs += ""; // -processTracklets
+    sTrackerArgs += ""; // -highLevelOutput yes -emulateHLToutput no
     if(disableHLTflag){
       sCFArgs +=" -HLTflag no";
       sTrackerArgs +=" -HLTflag no";
@@ -129,19 +133,22 @@ void aliHLTTRDrun(const TString inDir)
   AliHLTConfiguration HClustMultTrig("HClustMultTrig", "TrdClusterMultiplicityTrigger", "HClusterizer", "-MultiplicityThresh 400");
 
   AliHLTConfiguration HTracker("HTracker", "TRDTrackerV1", "HClusterizer", sTrackerArgs);
-  AliHLTConfiguration HCalib("HCalib", "TRDCalibration", "HTracker", "-TrgStr hi -rejectTrgStr");
-  AliHLTConfiguration HWriterCalib("HWriterCalib", "ROOTFileWriter", "HCalib", "-directory output/ -datafile calib.root -concatenate-events -concatenate-blocks  -write-all-events");
+  AliHLTConfiguration HCalib("HCalib", "TRDCalibration", "HTracker", "-pushback-period=10 -TrgStr hi -rejectTrgStr");
+  AliHLTConfiguration HWriterCalib("HWriterCalib", "ROOTFileWriter", "HCalib", "-directory output/ -datafile calib.root -concatenate-events -concatenate-blocks -write-all-events");
 
   AliHLTConfiguration HESDMaker("HESDMaker", "GlobalEsdConverter", "HTracker", "-notree");
   AliHLTConfiguration HTrackMerger("HTrackMerger", "GlobalTrackMerger", "HTracker", "");
 
   AliHLTConfiguration HClHisto("HClHisto", "TRDClusterHisto", "HClusterizer", "-pushback-period=10");
-  AliHLTConfiguration HWriterHisto("HWriterHisto", "ROOTFileWriter", "HClHisto", "-directory output/ -datafile histo.root -concatenate-events -concatenate-blocks");
+  AliHLTConfiguration HClWriterHisto("HClWriterHisto", "ROOTFileWriter", "HClHisto", "-directory output/ -datafile clHisto.root -concatenate-events -concatenate-blocks");
+
+  AliHLTConfiguration HTrHisto("HTrHisto", "TRDTrackHisto", "HTracker", "-pushback-period=10");
+  AliHLTConfiguration HTrWriterHisto("HTrWriterHisto", "ROOTFileWriter", "HTrHisto", "-directory output/ -datafile trHisto.root -concatenate-events -concatenate-blocks");
 
   AliHLTConfiguration writerOffConf("esdWriter", "TRDEsdWriter", "HTracker", "-datafile AliHLTTRDESDs.root -concatenate-events -concatenate-blocks");
 
   gHLT.BuildTaskList(&HTracker); 
-  //gHLT.BuildTaskList(&HClHisto);
+  //gHLT.BuildTaskList(&HESDMaker);
   //gHLT.BuildTaskList(&writerOffConf);
   //gHLT.BuildTaskList(&HCalib);
 
