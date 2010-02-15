@@ -148,6 +148,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeESDVertex );
   list.push_back(kAliHLTDataTypeESDObject);
   list.push_back(kAliHLTDataTypeTObject);
+  list.push_back(kAliHLTDataTypeGlobalVertexer);
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
