@@ -41,7 +41,8 @@ Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analys
   Float_t requiredZResolution = -1;
   if (analysisMode & kSPD || analysisMode & kTPCITS)
   {
-    requiredZResolution = 0.1;
+    // disable cut on resolution
+    requiredZResolution = 1000;
   }
   else if (analysisMode & kTPC)
     requiredZResolution = 10.;
@@ -54,12 +55,22 @@ Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analys
       Printf("AliPWG0Helper::TestVertex: Resolution too poor %f (required: %f", zRes, requiredZResolution);
     return kFALSE;
   }
+  
+  if (vertex->IsFromVertexerZ())
+  {
+    if (vertex->GetDispersion() > 0.02) 
+    {
+      if (debug)
+        Printf("AliPWG0Helper::TestVertex: Delta Phi too large in Vertexer Z: %f (required: %f", vertex->GetDispersion(), 0.02);
+      return kFALSE;
+    }
+  }
 
   return kTRUE;
 }
 
 //____________________________________________________________________
-const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug, Bool_t bRedoTPC)
+const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug)
 {
   // Get the vertex from the ESD and returns it if the vertex is valid
   //
@@ -75,21 +86,6 @@ const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode ana
   }
   else if (analysisMode & kTPC)
   {
-    if(bRedoTPC){
-      if (debug)
-        Printf("AliPWG0Helper::GetVertex: Redoing vertex");
-      Double_t kBz = aEsd->GetMagneticField();
-      AliVertexerTracks vertexer(kBz);
-      vertexer.SetTPCMode();
-      AliESDVertex *vTPC = vertexer.FindPrimaryVertex(aEsd);
-      aEsd->SetPrimaryVertexTPC(vTPC);
-      for (Int_t i=0; i<aEsd->GetNumberOfTracks(); i++) {
-	AliESDtrack *t = aEsd->GetTrack(i);
-	t->RelateToVertexTPC(vTPC, kBz, kVeryBig);
-      }
-      delete vTPC;
-    }
-
     vertex = aEsd->GetPrimaryVertexTPC();
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning vertex from tracks");
@@ -515,6 +511,9 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Tri
   if (analysisMode & kSPD)
     str += "SPD-only";
     
+  if (analysisMode & kSPDOnlyL0)
+    str += " (only L0 clusters)";
+  
   if (analysisMode & kTPC)
      str += "TPC-only";
     
