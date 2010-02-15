@@ -299,9 +299,9 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
       mapCalib->SetSector(k,adcMap[k][5]);
     }
     for(Int_t k=0; k<kNScch; k++){
-       mapCalib->SetScChannel(k, scMap[k][0]);
-       mapCalib->SetScDetector(k, scMap[k][1]);
-       mapCalib->SetScSector(k, scMap[k][2]);
+       mapCalib->SetScChannel(k, scMap[k][2]);
+       mapCalib->SetScDetector(k, scMap[k][4]);
+       mapCalib->SetScSector(k, scMap[k][5]);
     }
     //
     mapCalib->Print("");
