@@ -150,6 +150,8 @@ void AliHLTReconstructor::Init()
 	pSystem->SwitchAliLog(0);
       } else if (token.CompareTo("ignore-hltout")==0) {
 	fFlags|=kAliHLTReconstructorIgnoreHLTOUT;
+      } else if (token.CompareTo("ignore-ctp")==0) {
+	fFlags|=kAliHLTReconstructorIgnoreCTP;
       } else if (token.Contains("esdmanager=")) {
 	token.ReplaceAll("esdmanager=", "");
 	token.ReplaceAll(","," ");
@@ -168,7 +170,8 @@ void AliHLTReconstructor::Init()
 
   TString ecsParam;
   TString ctpParam;
-  if (BuildCTPTriggerClassString(ctpParam)>=0) {
+  if ((fFlags&kAliHLTReconstructorIgnoreCTP)==0 &&
+      BuildCTPTriggerClassString(ctpParam)>=0) {
     if (!ecsParam.IsNull()) ecsParam+=";";
     ecsParam+="CTP_TRIGGER_CLASS=";
     ecsParam+=ctpParam;

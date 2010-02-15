@@ -83,6 +83,12 @@ class AliHLTPluginBase;
  *     level can be a hex number encoding the @ref AliHLTComponentLogSeverity
  * \li alilog=off <br>
  *     disables the logging of HLT log messages through <tt>AliLog</tt> <br>
+ * \li ignore-hltout <br>
+ *     ignore data from the HLTOUT data links
+ * \li ignore-ctp <br>
+ *     ignore CTP trigger setup
+ * \li esdmanager=<option> <br>
+ *     options passed to the AliHLTEsdManager
  *
  * For further information on the AliRoot reconstruction refer to the AliRoot
  * documentation, namely <tt>AliReconstruction</tt>.
@@ -296,6 +302,7 @@ public:
   enum {
     /// ignore the blocks from the HLTOUT payload
     kAliHLTReconstructorIgnoreHLTOUT = 0x1,
+    kAliHLTReconstructorIgnoreCTP = 0x2,
     kAliHLTReconstructorLastFlag
   };
 
