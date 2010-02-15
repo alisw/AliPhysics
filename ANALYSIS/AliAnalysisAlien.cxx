@@ -1938,6 +1938,11 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "      return;" << endl;
       out << "   }" << endl << endl;
       out << "   mgr->PrintStatus();" << endl;
+      if (AliAnalysisManager::GetAnalysisManager()) {
+         if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>2) {
+            out << "   gEnv->SetValue(\"XNet.Debug\", \"1\");" << endl;
+         }
+      }   
       out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
       out << "   timer.Stop();" << endl;
       out << "   timer.Print();" << endl;

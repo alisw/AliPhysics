@@ -16,8 +16,8 @@
 //    root[1] AnalysisTrainNew(ana_mode, plugin_mode, "train_default_<date>/ConfigTrain.C")
 
 //==================   TRAIN NAME   ============================================
-TString     train_name         = "TR010_LHC09a7ESD"; // *CHANGE ME* (no blancs or special characters)
-TString     job_tag            = "TR010: ESD+MC analysis -> AOD + delta AOD + histograms"; // *CHANGE ME*
+TString     train_name         = "test"; // *CHANGE ME* (no blancs or special characters)
+TString     job_tag            = "test"; // *CHANGE ME*
 //==============================================================================
 
 // ### Settings that make sense in PROOF only
@@ -44,9 +44,9 @@ Bool_t      useCPAR            = kFALSE;  // use par files for common libs
 TString     root_version       = "v5-25-04-3";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     aliroot_version    = "v4-18-16-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here
-TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a7";
+TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a4";
 // AliEn output directory. If blank will become output_<train_name>
-TString     alien_outdir       = "/alice/sim/PDC_09/LHC09a7/AOD";
+TString     alien_outdir       = "/alice/sim/PDC_09/LHC09a4/AOD3";
 // TString     alien_outdir       = "";
 // Output folder to write delta AOD's. Considered if not null.
 TString     outputSingleFolder = "";
@@ -60,10 +60,10 @@ TString     outputStorages      = "disk=4";
 // Number of runs per master job
 Int_t       nRunsPerMaster     = 10;
 // Maximum number of files per job (gives size of AOD)
-Int_t       nFilesPerJob       = 50;
+Int_t       nFilesPerJob       = 100;
 // Int_t       nFilesPerJob       = 1; (AOD->delta AOD production case)
 // Set the run range
-Int_t       run_range[2]       =  {80000, 80049};  // LHC09a7   *CHANGE ME*
+Int_t       run_range[2]       =  {81007, 81656};  // LHC09a7   *CHANGE ME*
 // ### Settings that make sense only for local analysis
 //==============================================================================
 // Change local xml dataset for local interactive analysis
@@ -86,49 +86,49 @@ Bool_t      saveProofToAlien   = kFALSE; // save proof outputs in AliEn
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
 Int_t       iAODanalysis       = 0;      // Analysis on input AOD's
-Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
-Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
-Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD (PWG3)
-Int_t       iJETAN             = 1;      // Jet analysis (PWG4)
-Int_t       iJETANdelta        = 1;      // Jet delta AODs
-Int_t       iPWG4partcorr      = 1;      // Gamma-hadron correlations task (PWG4)
-Int_t       iPWG4gammaconv     = 1;      // Gamma conversion analysis (PWG4)
-Int_t       iPWG4omega3pi      = 1;      // Omega to 3 pi analysis (PWG4)
-Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG3)
-Int_t       iPWG3hfe           = 1;      // Electrons analysis (PWG3)
-Int_t       iPWG3d2h           = 1;      // D0->2 hadrons (PWG3)
-Int_t        iPWG3d0mass       = 1;      // D0 mass (PWG3D2H)                                                                              
-Int_t        iPWG3d0massLS     = 1;      // D0 mass LS (PWG3D2H)                                                                           
-Int_t        iPWG3dplus        = 1;      // D+ analysis (PWG3D2H)                                                                          
-Int_t        iPWG3LSd0         = 1;      // LS D0 analysis (PWG3D2H)                                                                       
-Int_t        iPWG3LSjpsi       = 1;      // LS J/Psi analysis (PWG3D2H)                                                                    
-Int_t        iPWG3CFd0         = 1;      // CF D0 analysis (PWG3D2H)                                                                       
-Int_t        iPWG3promptd0     = 1;      // prompt D0 analysis (PWG3D2H)                                                                   
-Int_t       iPWG3MuonTrain     = 1;      // Muon analysis train
-Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
+Int_t       iAODhandler        = 0;      // Analysis produces an AOD or dAOD's
+Int_t       iESDfilter         = 0;      // ESD to AOD filter (barrel + muon tracks)
+Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in a separate AOD (PWG3)
+Int_t       iJETAN             = 0;      // Jet analysis (PWG4)
+Int_t       iJETANdelta        = 0;      // Jet delta AODs
+Int_t       iPWG4partcorr      = 0;      // Gamma-hadron correlations task (PWG4)
+Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
+Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4)
+Int_t       iPWG3vertexing     = 0;      // Vertexing HF task (PWG3)
+Int_t       iPWG3hfe           = 0;      // Electrons analysis (PWG3)
+Int_t       iPWG3d2h           = 0;      // D0->2 hadrons (PWG3)
+Int_t        iPWG3d0mass       = 0;      // D0 mass (PWG3D2H)                                                                              
+Int_t        iPWG3d0massLS     = 0;      // D0 mass LS (PWG3D2H)                                                                           
+Int_t        iPWG3dplus        = 0;      // D+ analysis (PWG3D2H)                                                                          
+Int_t        iPWG3LSd0         = 0;      // LS D0 analysis (PWG3D2H)                                                                       
+Int_t        iPWG3LSjpsi       = 0;      // LS J/Psi analysis (PWG3D2H)                                                                    
+Int_t        iPWG3CFd0         = 0;      // CF D0 analysis (PWG3D2H)                                                                       
+Int_t        iPWG3promptd0     = 0;      // prompt D0 analysis (PWG3D2H)                                                                   
+Int_t       iPWG3MuonTrain     = 0;      // Muon analysis train
+Int_t       iPWG2femto         = 0;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra tasks (PWG2
-Int_t        iPWG2protons      = 1;         // Proton-antiproton analysis
+Int_t        iPWG2protons      = 0;         // Proton-antiproton analysis
 Int_t        iPWG2checkcascade = 1;         // Check cascades task
-Int_t        iPWG2perfcascade  = 1;         // Check performance cascade
-Int_t        iPWG2checkv0      = 1;         // Check V0 task
-Int_t        iPWG2strange      = 1;         // Strangeness task
-Int_t        iPWG2central      = 1;         // Anisothropy in central collisions
-Int_t       iPWG2flow          = 1;      // Flow analysis tasks (PWG2)
-Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
-Int_t        iPWG2rsneff       = 1;      // Resonances efficiency
-Int_t       iPWG2kink          = 1;      // Kink analysis tasks (PWG2)
-Int_t        iPWG2kinkESDMC    = 1;         // Kink ESD-MC comparison (PWG2)
-Int_t        iPWG2kinkLSKstar  = 1;      // Kink like-sign K* (PWG2)
-Int_t        iPWG2kinkLSL1520  = 1;      // Kink like-sign L1520 (PWG2)
-Int_t        iPWG2kinkLSPhi    = 1;      // Kink like-sign Phi (PWG2)
-Int_t        iPWG2kinkKstarESD = 1;      // Kink Kstar ESD (PWG2)
-Int_t        iPWG2kinkKstarMC  = 1;      // Kink Kstar MC (PWG2)
-Int_t        iPWG2kinkL1520ESD = 1;      // Kink L1520 ESD (PWG2)
-Int_t        iPWG2kinkL1520MC  = 1;      // Kink L1520 MC (PWG2)
-Int_t        iPWG2kinkPhiESD   = 1;      // Kink resonances Phi ESD (PWG2)
-Int_t        iPWG2kinkPhiMC    = 1;      // Kink resonances Phi MC (PWG2)
-Int_t       iPWG2evchar        = 1;      // Event characteristics (PWG2)
-Int_t       iPWG2unicor        = 1;      // Unicor analysis (PWG2)
+Int_t        iPWG2perfcascade  = 0;         // Check performance cascade
+Int_t        iPWG2checkv0      = 0;         // Check V0 task
+Int_t        iPWG2strange      = 0;         // Strangeness task
+Int_t        iPWG2central      = 0;         // Anisothropy in central collisions
+Int_t       iPWG2flow          = 0;      // Flow analysis tasks (PWG2)
+Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
+Int_t        iPWG2rsneff       = 0;      // Resonances efficiency
+Int_t       iPWG2kink          = 0;      // Kink analysis tasks (PWG2)
+Int_t        iPWG2kinkESDMC    = 0;         // Kink ESD-MC comparison (PWG2)
+Int_t        iPWG2kinkLSKstar  = 0;      // Kink like-sign K* (PWG2)
+Int_t        iPWG2kinkLSL1520  = 0;      // Kink like-sign L1520 (PWG2)
+Int_t        iPWG2kinkLSPhi    = 0;      // Kink like-sign Phi (PWG2)
+Int_t        iPWG2kinkKstarESD = 0;      // Kink Kstar ESD (PWG2)
+Int_t        iPWG2kinkKstarMC  = 0;      // Kink Kstar MC (PWG2)
+Int_t        iPWG2kinkL1520ESD = 0;      // Kink L1520 ESD (PWG2)
+Int_t        iPWG2kinkL1520MC  = 0;      // Kink L1520 MC (PWG2)
+Int_t        iPWG2kinkPhiESD   = 0;      // Kink resonances Phi ESD (PWG2)
+Int_t        iPWG2kinkPhiMC    = 0;      // Kink resonances Phi MC (PWG2)
+Int_t       iPWG2evchar        = 0;      // Event characteristics (PWG2)
+Int_t       iPWG2unicor        = 0;      // Unicor analysis (PWG2)
 Int_t       iPWG2forward       = 0;      // FMD analysis (PWG2)
 
 // ### Configuration macros used for each module
