@@ -41,7 +41,7 @@
 using namespace std;
 
 int gVerbosity=0;
-const int gPagesize=1024*1024*10;
+const int gPagesize=1024*1024;
 
 template<class T>
 int testLoop(vector<T>& descriptions, int nofLevels, int nofCycles);
@@ -289,6 +289,12 @@ public:
 
   bool SetSize(AliHLTUInt32_t size, int verbosity) {
     if (!fInstance) return false;
+    AliHLTComponentBlockData bd;
+    AliHLTComponent::FillBlockData(bd);
+    bd.fSize=size;
+    bd.fOffset=0;
+    fInstance->SetSegments(fBuffer, &bd, 1);
+
     if (verbosity>1) {
       cout << "setting size for data buffer " << this << ": allocated size " << fSize << " -> " << size << endl;
     }
@@ -318,6 +324,8 @@ public:
       fInstance->PrintStatistics();
     }
     delete fInstance;
+
+    AliHLTDataBuffer::AliHLTRawPage::GlobalClean();
     return true;
   }
 
@@ -325,6 +333,8 @@ public:
     if (strcmp(options, "pages")==0 ||
 	strcmp(options, "global")==0) {
       fInstance->PrintStatistics();
+      AliHLTDataBuffer::AliHLTRawPage::NextPage(NULL)->Print("global");
+      return;
     }
   }
 private:
@@ -364,7 +374,7 @@ int fillTestSample(int levels, int processes, vector<T>& descriptions)
     for (int process=0; process<levelprocesses; process++) {
       T desc;
       desc.fLevel=level;
-      desc.fBufferSize=GetRandom(1024, gPagesize/levelprocesses);
+      desc.fBufferSize=GetRandom(1024, 2*gPagesize);
       //desc.fTest.Clear();
       descriptions.push_back(desc);
     }
@@ -579,7 +589,7 @@ int testAliHLTDataBuffer()
   const int iMaxLevels=10;
   int nofLevels=GetRandom(3,iMaxLevels);
   int nofProcesses=GetRandom(nofLevels,2*iMaxLevels);
-  int nofCycles=100;//GetRandom(1000,10000);
+  int nofCycles=GetRandom(100,1000);
 
   vector<testDataBufferDescription> descriptions;
 
