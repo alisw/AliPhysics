@@ -35,6 +35,8 @@ using namespace std;
 //#include <string>
 //#include "AliHLTSystem.h"
 
+#define USE_ALIHLTRAWPAGE
+
 typedef vector<AliHLTDataBuffer::AliHLTDataSegment> AliHLTDataSegmentList;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -399,7 +401,9 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 	  }
 	}
 	// to be enabled if unit test is ready
-	//iResult=SetRawBufferDataSize(fpBuffer, maxSize);	
+#ifdef USE_ALIHLTRAWPAGE
+	iResult=SetRawBufferDataSize(fpBuffer, maxSize);	
+#endif //USE_ALIHLTRAWPAGE
       } else {
 	HLTError("this data buffer (%p) does not match the internal data buffer %p of raw buffer %p", pTgt, fpBuffer->GetPointer(), fpBuffer);
 	iResult=-EINVAL;
@@ -455,6 +459,7 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
   // see header file for function documentation
   AliHLTRawBuffer* pRawBuffer=NULL;
   unsigned int reqSize=size+fgkSafetyPatternSize;
+#ifndef USE_ALIHLTRAWPAGE
   AliHLTRawBufferPList::iterator buffer=fgFreeBuffers.begin();
   while (buffer!=fgFreeBuffers.end() && pRawBuffer==NULL) {
     if ((*buffer)->CheckSize(reqSize)) {
@@ -485,6 +490,12 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
       fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "memory allocation failed");
     }
   }
+#else
+  pRawBuffer=AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc(reqSize);
+  if (pRawBuffer) {
+    pRawBuffer->UseBuffer(size);
+  }
+#endif
   if (pRawBuffer!=NULL && fgkSafetyPatternSize>0) {
     //fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "writing safety pattern to %p offset %d", (*buffer)->GetPointer(), (*buffer)->GetUsedSize());
     pRawBuffer->WritePattern(fgkSafetyPattern, fgkSafetyPatternSize);
@@ -507,7 +518,23 @@ int AliHLTDataBuffer::SetRawBufferDataSize(AliHLTRawBuffer* pBuffer, AliHLTUInt3
     }
   }
   // shrink the buffer and write new pattern at the end
+#ifdef USE_ALIHLTRAWPAGE
+  AliHLTDataBuffer::AliHLTRawPage* rawpage=AliHLTDataBuffer::AliHLTRawPage::FindPage(pBuffer);
+  if (rawpage) {
+    pBuffer->UseBuffer(size);
+    if (rawpage->SetSize(pBuffer, size+fgkSafetyPatternSize)==0) {
+      // nothing to do
+    } else {
+      fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::SetRawBufferDataSize", "data buffer handling", "failed to set size for raw buffer %p", pBuffer);
+      iResult=-EFAULT;
+    }
+  } else {
+    fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::SetRawBufferDataSize", "data buffer handling", "can not find raw page for buffer %p", pBuffer);
+    iResult=-ENOENT;
+  }
+#else //!USE_ALIHLTRAWPAGE
   pBuffer->UseBuffer(size);
+#endif //USE_ALIHLTRAWPAGE
   if (fgkSafetyPatternSize>0) {
     pBuffer->WritePattern(fgkSafetyPattern, fgkSafetyPatternSize);
   }
@@ -519,22 +546,39 @@ int AliHLTDataBuffer::ReleaseRawBuffer(AliHLTRawBuffer* pBuffer)
   // see header file for function documentation
   int iResult=0;
   if (pBuffer) {
+#ifdef USE_ALIHLTRAWPAGE
+    AliHLTDataBuffer::AliHLTRawPage* rawpage=AliHLTDataBuffer::AliHLTRawPage::FindPage(pBuffer);
+    if (rawpage)
+#else //!USE_ALIHLTRAWPAGE
     AliHLTRawBufferPList::iterator buffer=fgActiveBuffers.begin();
     while (buffer!=fgActiveBuffers.end() && (*buffer)!=pBuffer) {
       buffer++;
     }
-    if (buffer!=fgActiveBuffers.end()) {
+    if (buffer!=fgActiveBuffers.end())
+#endif //USE_ALIHLTRAWPAGE
+    {
       if (fgkSafetyPatternSize>0) {
-	//fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "comparing safety pattern at %p offset %d", (*buffer)->GetPointer(), reinterpret_cast<AliHLTUInt32_t>(*buffer));
-	if ((*buffer)->CheckPattern(fgkSafetyPattern, fgkSafetyPatternSize)) {
-	  fgLogging.Logging(kHLTLogFatal, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "component has written beyond end of data buffer %p size %d", (*buffer)->GetPointer(), (*buffer)->GetUsedSize());
+	//fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "comparing safety pattern at %p offset %d", pBuffer->GetPointer(), reinterpret_cast<AliHLTUInt32_t>(pBuffer));
+	if ((pBuffer)->CheckPattern(fgkSafetyPattern, fgkSafetyPatternSize)) {
+	  fgLogging.Logging(kHLTLogFatal, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "component has written beyond end of data buffer %p size %d", pBuffer->GetPointer(), pBuffer->GetUsedSize());
 	}
       }
-      (*buffer)->Reset();
-      fgFreeBuffers.push_back(*buffer);
+      pBuffer->Reset();
+#ifdef USE_ALIHLTRAWPAGE
+      if (rawpage->Free(pBuffer)==0) {
+      } else {
+	fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "failed to release raw buffer %p", pBuffer);
+      }
+#else //!USE_ALIHLTRAWPAGE
+      fgFreeBuffers.push_back(pBuffer);
       fgActiveBuffers.erase(buffer);
+#endif //USE_ALIHLTRAWPAGE
     } else {
+#ifdef USE_ALIHLTRAWPAGE
+      fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "can not find raw page for buffer %p", pBuffer);
+#else //!USE_ALIHLTRAWPAGE
       fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "can not find raw buffer container %p in the list of active containers", pBuffer);
+#endif //USE_ALIHLTRAWPAGE
       iResult=-ENOENT;
     }
   } else {
@@ -565,12 +609,12 @@ int AliHLTDataBuffer::DeleteRawBuffers()
 #ifdef ALIHLTSYSTEM_PROFILING
     iTotalSize+=(*buffer)->GetTotalSize();
 #endif //ALIHLTSYSTEM_PROFILING
-    fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "request to delete active raw buffer container (raw buffer %p, size %d)", (*buffer)->GetPointer(), (*buffer)->GetTotalSize());
+    fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::DeleteRawBuffer", "data buffer handling", "request to delete active raw buffer container (raw buffer %p, size %d)", (*buffer)->GetPointer(), (*buffer)->GetTotalSize());
     delete *buffer;
     fgActiveBuffers.erase(buffer);
   }
 #ifdef ALIHLTSYSTEM_PROFILING
-  fgLogging.Logging(kHLTLogImportant, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "Total memory allocation: %d byte in %d buffers", iTotalSize, iCount);
+  fgLogging.Logging(kHLTLogImportant, "AliHLTDataBuffer::DeleteRawBuffer", "data buffer handling", "Total memory allocation: %d byte in %d buffers", iTotalSize, iCount);
 #endif //ALIHLTSYSTEM_PROFILING
   return iResult;
 }
@@ -579,6 +623,19 @@ int AliHLTDataBuffer::PrintStatistics()
 {
   // see header file for function documentation
   int iResult=0;
+#ifdef USE_ALIHLTRAWPAGE
+  int nofPages=0;
+  AliHLTUInt32_t totalSize=0;
+  for (AliHLTDataBuffer::AliHLTRawPage* rawpage=AliHLTDataBuffer::AliHLTRawPage::NextPage(NULL);
+       rawpage!=NULL; 
+       rawpage=AliHLTDataBuffer::AliHLTRawPage::NextPage(rawpage)) {
+    nofPages++;
+    totalSize+=rawpage->Size();
+  }
+  //if (rawpage) rawpage->Print("global");
+  fgLogging.Logging(kHLTLogInfo, "AliHLTDataBuffer::PrintStatistics", "data buffer handling", "total number of memory pages: %d   total size %d", nofPages, totalSize);
+
+#else //! USE_ALIHLTRAWPAGE
   int iFree=0;
   int iActive=0;
   AliHLTRawBufferPList::iterator buffer;;
@@ -589,6 +646,7 @@ int AliHLTDataBuffer::PrintStatistics()
     iActive+=(*buffer)->GetTotalSize();
   }
   fgLogging.Logging(kHLTLogInfo, "AliHLTDataBuffer::PrintStatistics", "data buffer handling", "Total memory allocation: %d byte; %d free buffers (%d byte) - %d active buffers (%d byte) ", iFree+iActive, fgFreeBuffers.size(), iFree, fgActiveBuffers.size(), iActive);
+#endif // USE_ALIHLTRAWPAGE
   return iResult;
 }
 
@@ -862,13 +920,15 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawBuffer::Split(AliH
   // split a buffer at specified size
   // only possible for buffers with external memory
   if (fTotalSize>size && 
-      (fSize==0 || fSize<size) &&
+      (fSize==0 || fSize<=size) &&
       fExternalPtr!=NULL) {
     AliHLTRawBuffer* part2=new AliHLTRawBuffer(fTotalSize-size, fPtr+size);
     if (part2) {
       fTotalSize=size;
     }
     return part2;
+  } else {
+    cout << "can not split fTotalSize=" << fTotalSize << "  fSize=" << fSize << "  at size=" << size << endl; 
   }
   return NULL;
 }
@@ -1224,7 +1284,16 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc(
     }
   }
   if (!rawbuffer) {
-    AliHLTDataBuffer::AliHLTRawPage* rawpage=new AliHLTDataBuffer::AliHLTRawPage(fgGlobalPageSize);
+    AliHLTUInt32_t rawPageSize=fgGlobalPageSize;
+    if (rawPageSize<size) {
+      if (rawPageSize*10<size ||
+	  rawPageSize*10>1024*1024*1024) {
+	log.Logging(kHLTLogError, "AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc", "data buffer handling", "refusing to allocate buffer of size", size);
+	return NULL;
+      }
+      rawPageSize=size;
+    }
+    AliHLTDataBuffer::AliHLTRawPage* rawpage=new AliHLTDataBuffer::AliHLTRawPage(rawPageSize);
     if (!rawpage) {
       log.Logging(kHLTLogError, "AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc", "data buffer handling", "can not create raw page");
       return NULL;
