@@ -269,7 +269,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 
       pmdclust->SetClusteringParam(cluspar);
 
-      Float_t encut = 0.;
+      Float_t encut = 4.;
       pmdclust->SetEdepCut(encut);
       pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,pmdcont);
       
