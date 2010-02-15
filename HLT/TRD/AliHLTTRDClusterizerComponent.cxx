@@ -54,8 +54,8 @@ using namespace std;
 #ifdef HAVE_VALGRIND_CALLGRIND_H
 #include <valgrind/callgrind.h>
 #else
-#define CALLGRIND_START_INSTRUMENTATION do { } while (0)
-#define CALLGRIND_STOP_INSTRUMENTATION do { } while (0)
+#define CALLGRIND_START_INSTRUMENTATION (void)0
+#define CALLGRIND_STOP_INSTRUMENTATION (void)0
 #endif
 
 #include <cstdlib>
@@ -69,7 +69,7 @@ ClassImp(AliHLTTRDClusterizerComponent)
    
 AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
 : AliHLTProcessor(),
-  fOutputPercentage(500),
+  fOutputPercentage(100),
   fOutputConst(0),
   fClusterizer(NULL),
   fRecoParam(NULL),
@@ -131,7 +131,7 @@ void AliHLTTRDClusterizerComponent::GetOutputDataSize( unsigned long& constBase,
 {
   // Get the output data size
   constBase = fOutputConst;
-  inputMultiplier = ((double)fOutputPercentage)/100.0;
+  inputMultiplier = ((double)fOutputPercentage)*4/100.0;
 }
 
 AliHLTComponent* AliHLTTRDClusterizerComponent::Spawn()
@@ -424,7 +424,7 @@ int AliHLTTRDClusterizerComponent::Configure(const char* arguments){
 	continue;
       }
       else if (argument.CompareTo("-noZS")==0) {
-	fOutputPercentage = 100;
+	fOutputPercentage = 10;
 	HLTInfo("Awaiting non zero surpressed data");
 	continue;
       }
