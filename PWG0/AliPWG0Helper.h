@@ -23,11 +23,11 @@ class AliOfflineTrigger;
 class AliPWG0Helper : public TObject
 {
   public:
-    enum AnalysisMode { kInvalid = -1, kSPD = 0x1, kTPC = 0x2, kTPCITS = 0x4, kFieldOn = 0x8 };
+    enum AnalysisMode { kInvalid = -1, kSPD = 0x1, kTPC = 0x2, kTPCITS = 0x4, kFieldOn = 0x8, kSPDOnlyL0 = 0x10 };
     // in case we want to use bitmaps...
     enum MCProcessType { kInvalidProcess = -1, kND = 0x1, kDD = 0x2, kSD = 0x4 };
 
-    static const AliESDVertex* GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMethod, Bool_t debug = kFALSE, Bool_t bRedoTPC = kFALSE);
+    static const AliESDVertex* GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMethod, Bool_t debug = kFALSE);
     static Bool_t TestVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
     
     static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug = kFALSE);
@@ -50,7 +50,7 @@ class AliPWG0Helper : public TObject
     static void PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger);
     
   protected:
-    static Int_t fgLastProcessType;    // stores the raw value of the last process type extracnted
+    static Int_t fgLastProcessType;    // stores the raw value of the last process type extracted
  
     ClassDef(AliPWG0Helper, 0)
 
