@@ -256,9 +256,19 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
 		  else SetTagBit(tag,kMCOtherDecay);
 	  }//Decay
 	  else {
-	    printf("AliMCAnalysisUtils::ChecOrigingInAOD() - what is it? Mother mPdg %d, status %d \n    Parent  iParent %d, pPdg %d %s, status %d\n",
+	    if(fDebug > 1 ) printf("AliMCAnalysisUtils::CheckOrigingInStack() - what is it in PYTHIA? Wrong generator setting? Mother mPdg %d, status %d \n    Parent  iParent %d, pPdg %d %s, status %d\n",
 		   mPdg, mStatus,iParent, pPdg, parent->GetName(),pStatus);
-	    SetTagBit(tag,kMCOtherDecay);//Check
+		  if(pPdg == 111) {
+			  SetTagBit(tag,kMCPi0Decay);
+			  if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA pi0 decay photon,  parent pi0 with status 11 \n");
+			  CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
+		  }
+		  else if (pPdg == 221) {
+			  SetTagBit(tag, kMCEtaDecay);
+			  if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA eta decay photon,  parent pi0 with status 11 \n");
+			  CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag);//set to kMCEta if 2 gammas in same cluster
+		  }
+		  else SetTagBit(tag,kMCOtherDecay);
 	  }
 	}//PYTHIA
 	
