@@ -23,8 +23,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
    // inputDataType: data managed by the input handler
    // data: can be same as one managed by input handler, or the output AOD created by the filter. By default use AOD
    
-   Bool_t kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
-
+   Bool_t kUseKinematics = kFALSE; 
+   if(kSimulation) { 
+	   kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
+	   if (!kUseKinematics && data=="AOD" && inputDataType != "ESD") kUseKinematics = kTRUE; //AOD primary should be available ... 
+   } 
+	
    cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
 
    // Configure analysis
@@ -35,9 +39,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
    if(data.Contains("AOD")) reader = new AliCaloTrackAODReader();
    else if(data=="ESD") reader = new AliCaloTrackESDReader();
    else if(data=="MC" && dataType == "ESD") reader = new AliCaloTrackMCReader();
-   //reader->SetDebug(10);//10 for lots of messages
+   reader->SetDebug(-1);//10 for lots of messages
    reader->SwitchOnCTS();
-   reader->SetDeltaAODFileName("");
+   //reader->SetDeltaAODFileName("");
    //if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
   if(calorimeter == "EMCAL") {
     reader->SwitchOnEMCALCells();  
