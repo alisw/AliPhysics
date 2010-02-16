@@ -135,6 +135,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
   static const Int_t   fgknLHCDP;               //! number of lhc dps
   static const char*   fgkLHCDataPoints[];      //! names of lhc dps
   static const Int_t   fgkDCSDPHallTopShift;    //! shift from the top to the Hall Probes from the list of DCS DPs names
+  static const Int_t   fgkDCSDPNonWorking;    //! Number of non working DCS DPs 
 
   ClassDef(AliGRPPreprocessor, 0);
 };

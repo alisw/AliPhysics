@@ -77,6 +77,7 @@ ClassImp(AliGRPPreprocessor)
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknLHCDP = 5;   // number of dcs dps from LHC data
   const Int_t AliGRPPreprocessor::fgkDCSDPHallTopShift = 4;   // shift from the top to get tp the Hall Probes names in the list of DCS DPs
+  const Int_t AliGRPPreprocessor::fgkDCSDPNonWorking = 5; // number of non working DCS DPs
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
                    "L3Polarity",
                    "DipolePolarity",
@@ -341,16 +342,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//=================//
 	Log(Form("Starting DCS Query at %d and finishing at %d",GetStartTimeDCSQuery(),GetEndTimeDCSQuery()));
 	Int_t entries = ProcessDcsDPs( valueMap, grpobj );
-	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-1));
+	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-fgkDCSDPNonWorking));
 	if (fdaqStartEndTimeOk){
-		if( entries < fgknDCSDP-1 ) { // FIXME (!= ) L3_BSF4_H3 are not working yet...  
-			Log(Form("Problem with the DCS data points!!! Only %d/%d entries found",entries,fgknDCSDP-1));
+		if( entries < fgknDCSDP - fgkDCSDPNonWorking ) { // L3_BSF4_H3, L3_BSF17_H1, L3_BSF17_H2, L3_BSF17_H3, L3_BSF17_Temperature are not working yet...  
+			Log(Form("Possible problem with the DCS data points!!! Only %d/%d entries found - Please read further for more details",entries,fgknDCSDP-fgkDCSDPNonWorking));
 			Log(Form("The DPs giving problems were:"));
 			for (Int_t iDP = 0; iDP < fgknDCSDP; iDP++){
 				TObjString *dpString = (TObjString*)ffailedDPs->At(iDP);
 				if (dpString){
 					TString name = dpString->String();
-					if (name != "L3_BSF4_H3"){
+					if (name != "L3_BSF4_H3" && name != "L3_BSF17_H1" && name != "L3_BSF17_H2" && name != "L3_BSF17_H3" && name != "L3_BSF17_Temperature" ){
 						Log(Form("******** %s ******** not present, but foreseen --> causing an ERROR",name.Data()));
 					}
 					else {

@@ -116,9 +116,20 @@ AliGRPObject::AliGRPObject():
 	fDimension = fgknDCSDPHallProbes*fPoints;
 	fHallProbes = new Float_t[fDimension];
 
-	for (Int_t nhp=0; nhp< fDimension; nhp++){
-		fHallProbes[nhp] = fgkInvalidFloat;
+	for (Int_t nhp=0; nhp< fDimension; nhp++){ // setting to zero values for non working HP 
+		if ((nhp >= 0 && nhp <= 1*fPoints-1) || // L3_BSF17_H1
+		    (nhp >= 1*fPoints && nhp <= 2*fPoints-1) || // L3_BSF17_H2
+		    (nhp >= 2*fPoints && nhp <= 3*fPoints-1) || // L3_BSF17_H3
+                    (nhp >= 3*fPoints && nhp <= 4*fPoints-1) || // L3_BSF17_Temperature
+                    (nhp >= 6*fPoints && nhp <= 7*fPoints-1) ) { // L3_BSF4_H3
+			fHallProbes[nhp] = 0; // setting to zero values for non working HP 
+			AliDebug(2,"setting hp[%d] to zero = %f", nhp, fHallProbes[nhp]);
+		}
+		else {
+			fHallProbes[nhp] = fgkInvalidFloat;
+		}
 	}
+
 
 	for (Int_t i = 0; i < fPoints; i++){
 
