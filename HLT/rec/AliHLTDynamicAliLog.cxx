@@ -134,7 +134,7 @@ extern "C" int InitAliDynamicMessageCallback()
   // older versions of AliLog does not support the notification callback and
   // stringstreams, but they support the logging macros in general
 #ifndef NO_ALILOG_NOTIFICATION
-  AliLog* log=new AliLog;
+  AliLog* log = AliLog::GetRootLogger();
   log->SetLogNotification(LogNotification);
   log->SetStreamOutput(&AliHLTLogging::fgLogstr);
   log->SetPrintScope(true);

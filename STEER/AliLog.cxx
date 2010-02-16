@@ -45,13 +45,40 @@
 
 ClassImp(AliLog)
 
-
+// implementation of a singleton here
 AliLog* AliLog::fgInstance = NULL;
 
 Bool_t AliLog::fgDebugEnabled = kTRUE;
 
+/**
+ * get root logger singleton instance
+ */
+AliLog *AliLog::GetRootLogger()
+{
+	if (fgInstance == NULL)
+	{
+		// creating singleton
+		fgInstance =  new AliLog;
+	}
 
-//_____________________________________________________________________________
+	return fgInstance;
+}
+
+/**
+ * delete the root logger singleton instance
+ */
+void AliLog::DeleteRootLogger()
+{
+	if (fgInstance != NULL)
+	{
+		delete fgInstance;
+		fgInstance = NULL;
+	}
+}
+
+/**
+ * default private constructor
+ */
 AliLog::AliLog() :
   TObject(),
   fGlobalLogLevel(kInfo),
@@ -69,7 +96,8 @@ AliLog::AliLog() :
 {
 // default constructor: set default values
 
-  for (Int_t iType = kFatal; iType < kMaxType; iType++) {
+  for (Int_t iType = kFatal; iType < kMaxType; iType++)
+  {
     fOutputTypes[iType] = 0;
     fFileNames[iType] = "";
     fOutputFiles[iType] = NULL;
@@ -82,6 +110,7 @@ AliLog::AliLog() :
     fPrintLocation[iType] = (iType == kDebug);  
   }
 
+  // TO BE REVIEWED
   // replace the previous instance by this one
   if (fgInstance) delete fgInstance;
   fgInstance = this;
@@ -92,31 +121,41 @@ AliLog::AliLog() :
   ReadEnvSettings();
 }
 
-//_____________________________________________________________________________
+/**
+ * private destructor
+ */
 AliLog::~AliLog()
 {
 // destructor: clean up and reset instance pointer
 
   if (fRepetitions > 0) PrintRepetitions();
 
-  for (Int_t i = 0; i < fModuleDebugLevels.GetEntriesFast(); i++) {
+  for (Int_t i = 0; i < fModuleDebugLevels.GetEntriesFast(); i++)
+  {
     if (fModuleDebugLevels[i]) fModuleDebugLevels[i]->Delete();
   }
-  fClassDebugLevels.Delete();
-  for (Int_t i = 0; i < fClassDebugLevels.GetEntriesFast(); i++) {
-    if (fClassDebugLevels[i]) fClassDebugLevels[i]->Delete();
-  }
+
   fClassDebugLevels.Delete();
 
-  for (Int_t iType = kFatal; iType < kMaxType; iType++) {
+  for (Int_t i = 0; i < fClassDebugLevels.GetEntriesFast(); i++)
+  {
+    if (fClassDebugLevels[i]) fClassDebugLevels[i]->Delete();
+  }
+
+  fClassDebugLevels.Delete();
+
+  for (Int_t iType = kFatal; iType < kMaxType; iType++)
+  {
     CloseFile(iType);
   }
+
   fflush(stderr);
   fflush(stdout);
 
   fgInstance = NULL;
 }
 
+// NOT IMPLEMENTED!?
 //_____________________________________________________________________________
 AliLog::AliLog(const AliLog& log) :
   TObject(log),
@@ -138,6 +177,7 @@ AliLog::AliLog(const AliLog& log) :
   Fatal("AliLog", "copy constructor not implemented");
 }
 
+// NOT IMPLEMENTED!?
 //_____________________________________________________________________________
 AliLog& AliLog::operator = (const AliLog& /*log*/)
 {
@@ -148,48 +188,63 @@ AliLog& AliLog::operator = (const AliLog& /*log*/)
 }
 
 
+/**
+ * gSystem see TSystem.h
+ * gEnv see TEnv.h
+ *
+ * LOG_NO_DEBUG: fgDebugEnabled <- false
+ * AliRoot.AliLog.EnableDebug
+ * AliRoot.AliLog.GlobalLogLevel
+ */
 //_____________________________________________________________________________
 void AliLog::ReadEnvSettings()
 {
 // load settings from the root configuration file (.rootrc)
 // and from environment variables
 
-  static const char* typeNames[kMaxType] = 
-    {"kFatal", "kError", "kWarning", "kInfo", "kDebug"};
+  static const char* typeNames[kMaxType] = {"kFatal", "kError", "kWarning", "kInfo", "kDebug"};
 
   // debug en- or disabling
-  if (gSystem->Getenv("LOG_NO_DEBUG")) {
+  if (gSystem->Getenv("LOG_NO_DEBUG"))
+  {
     fgDebugEnabled = kFALSE;
-  } else if (gEnv->Defined("AliRoot.AliLog.EnableDebug")) {
-    fgDebugEnabled = gEnv->GetValue("AliRoot.AliLog.EnableDebug", 
-                                    fgDebugEnabled);
+  }
+  else if (gEnv->Defined("AliRoot.AliLog.EnableDebug"))
+  {
+    fgDebugEnabled = gEnv->GetValue("AliRoot.AliLog.EnableDebug", fgDebugEnabled);
     AliInfo(Form("debug %sabled", ((fgDebugEnabled) ? "en" : "dis")));
   }
 
   // global log level
-  if (gEnv->Defined("AliRoot.AliLog.GlobalLogLevel")) {
+  if (gEnv->Defined("AliRoot.AliLog.GlobalLogLevel"))
+  {
     const char* type = gEnv->GetValue("AliRoot.AliLog.GlobalLogLevel", "");
-    for (Int_t iType = kFatal; iType < kMaxType; iType++) {
+
+    for (Int_t iType = kFatal; iType < kMaxType; iType++)
+    {
       if (strcmp(type, typeNames[iType]) == 0) fGlobalLogLevel = iType;
     }
+
     AliDebug(3, Form("global log level set to %d", fGlobalLogLevel));
   }
 
   // global debug level
-  if (gEnv->Defined("AliRoot.AliLog.GlobalDebugLevel")) {
-    Int_t level = gEnv->GetValue("AliRoot.AliLog.GlobalDebugLevel",
-                                 Int_t(fGlobalLogLevel - kDebugOffset));
+  if (gEnv->Defined("AliRoot.AliLog.GlobalDebugLevel"))
+  {
+    Int_t level = gEnv->GetValue("AliRoot.AliLog.GlobalDebugLevel", Int_t(fGlobalLogLevel - kDebugOffset));
     if (level < -kDebugOffset) level = kDebugOffset;
     fGlobalLogLevel = kDebugOffset + level;
-    AliDebug(3, Form("global debug level set to %d",
-        	     fGlobalLogLevel - kDebugOffset));
+    AliDebug(3, Form("global debug level set to %d", fGlobalLogLevel - kDebugOffset));
   }
 
   // module debug level
-  if (gEnv->Defined("AliRoot.AliLog.ModuleDebugLevel")) {
+  if (gEnv->Defined("AliRoot.AliLog.ModuleDebugLevel"))
+  {
     TString levels = gEnv->GetValue("AliRoot.AliLog.ModuleDebugLevel", "");
     char* p = const_cast<char*>(levels.Data());
-    while (const char* module = strtok(p, " ")) {
+
+    while (const char* module = strtok(p, " "))
+    {
       p = NULL;
       char* pos = const_cast<char*>(index(module, ':'));
       if (!pos) continue;
@@ -201,102 +256,120 @@ void AliLog::ReadEnvSettings()
   }
 
   // class debug level
-  if (gEnv->Defined("AliRoot.AliLog.ClassDebugLevel")) {
+  if (gEnv->Defined("AliRoot.AliLog.ClassDebugLevel"))
+  {
     TString levels = gEnv->GetValue("AliRoot.AliLog.ClassDebugLevel", "");
     char* p = const_cast<char*>(levels.Data());
-    while (const char* className = strtok(p, " ")) {
+
+    while (const char* className = strtok(p, " "))
+    {
       p = NULL;
       char* pos = const_cast<char*>(index(className, ':'));
       if (!pos) continue;
       *(pos++) = '\0';
       Int_t level = atoi(pos);
       SetClassDebugLevel(className, level);
-      AliDebug(3, Form("debug level for class %s set to %d", 
-                       className, level));
+      AliDebug(3, Form("debug level for class %s set to %d", className, level));
     }
   }
 
   // general output stream
-  if (gEnv->Defined("AliRoot.AliLog.Output")) {
+  if (gEnv->Defined("AliRoot.AliLog.Output"))
+  {
     TString stream = gEnv->GetValue("AliRoot.AliLog.Output", "Standard");
-    if (stream.CompareTo("standard", TString::kIgnoreCase) == 0) {
+
+    if (stream.CompareTo("standard", TString::kIgnoreCase) == 0)
+    {
       SetStandardOutput();
       AliDebug(3, "output stream set to standard output for all types");
-    } else if (stream.CompareTo("error", TString::kIgnoreCase) == 0) {
+    }
+    else if (stream.CompareTo("error", TString::kIgnoreCase) == 0)
+    {
       SetErrorOutput();
       AliDebug(3, "output stream set to error output for all types");
-    } else if (!stream.IsNull()) {
+    }
+    else if (!stream.IsNull())
+    {
       SetFileOutput(stream);
-      AliDebug(3, Form("output stream set to file %s for all types", 
-                       stream.Data()));
+      AliDebug(3, Form("output stream set to file %s for all types", stream.Data()));
     }
   }
 
   // individual output streams
-  for (Int_t iType = kFatal; iType < kMaxType; iType++) {
+  for (Int_t iType = kFatal; iType < kMaxType; iType++)
+  {
     TString name("AliRoot.AliLog.Output.");
     name += &typeNames[iType][1];
-    if (gEnv->Defined(name)) {
+
+    if (gEnv->Defined(name))
+    {
       TString stream = gEnv->GetValue(name, "Standard");
-      if (stream.CompareTo("standard", TString::kIgnoreCase) == 0) {
+
+      if (stream.CompareTo("standard", TString::kIgnoreCase) == 0)
+      {
         SetStandardOutput(EType_t(iType));
-        AliDebug(3, Form("output stream set to standard output for type %s",
-                         typeNames[iType]));
-      } else if (stream.CompareTo("error", TString::kIgnoreCase) == 0) {
+        AliDebug(3, Form("output stream set to standard output for type %s", typeNames[iType]));
+      }
+      else if (stream.CompareTo("error", TString::kIgnoreCase) == 0)
+      {
         SetErrorOutput(EType_t(iType));
-        AliDebug(3, Form("output stream set to error output for type %s",
-                         typeNames[iType]));
-      } else if (!stream.IsNull()) {
+        AliDebug(3, Form("output stream set to error output for type %s", typeNames[iType]));
+      }
+      else if (!stream.IsNull())
+      {
         SetFileOutput(EType_t(iType), stream);
-        AliDebug(3, Form("output stream set to file %s for type %s", 
-                         stream.Data(), typeNames[iType]));
+        AliDebug(3, Form("output stream set to file %s for type %s", stream.Data(), typeNames[iType]));
       }
     }
   }
 
   // handling of root error messages
-  if (gEnv->Defined("AliRoot.AliLog.HandleRootMessages")) {
+  if (gEnv->Defined("AliRoot.AliLog.HandleRootMessages"))
+  {
     Bool_t on = gEnv->GetValue("AliRoot.AliLog.HandleRootMessages", kTRUE);
     SetHandleRootMessages(on);
-    AliDebug(3, Form("handling of root messages %sabled",
-                     ((on) ? "en" : "dis")));
+    AliDebug(3, Form("handling of root messages %sabled", ((on) ? "en" : "dis")));
   }
 
   // printout settings
-  static const char* settingNames[4] = 
-    {"Type", "Module", "Scope", "Location"};
-  Bool_t* settings[] = 
-    {fPrintType, fPrintModule, fPrintScope, fPrintLocation};
-  for (Int_t iSetting = 0; iSetting < 4; iSetting++) {
+  static const char* settingNames[4] = {"Type", "Module", "Scope", "Location"};
+  Bool_t* settings[] = {fPrintType, fPrintModule, fPrintScope, fPrintLocation};
+
+  for (Int_t iSetting = 0; iSetting < 4; iSetting++)
+  {
     TString name("AliRoot.AliLog.Print");
     name += settingNames[iSetting];
-    if (gEnv->Defined(name)) {
+
+    if (gEnv->Defined(name))
+    {
       Bool_t on = gEnv->GetValue(name, settings[iSetting][0]);
-      for (Int_t iType = kFatal; iType < kMaxType; iType++) {
+
+      for (Int_t iType = kFatal; iType < kMaxType; iType++)
+      {
         settings[iSetting][iType] = on;
       }
-      AliDebug(3, Form("printing of %s %sabled for all types",
-                       settingNames[iSetting], ((on) ? "en" : "dis")));
+      AliDebug(3, Form("printing of %s %sabled for all types", settingNames[iSetting], ((on) ? "en" : "dis")));
     }
 
-    for (Int_t iType = kFatal; iType < kMaxType; iType++) {
+    for (Int_t iType = kFatal; iType < kMaxType; iType++)
+    {
       TString nameType = name + "." + &typeNames[iType][1];
-      if (gEnv->Defined(nameType)) {
+
+      if (gEnv->Defined(nameType))
+      {
         Bool_t on = gEnv->GetValue(nameType, settings[iSetting][iType]);
         settings[iSetting][iType] = on;
-        AliDebug(3, Form("printing of %s %sabled for type %s",
-                         settingNames[iSetting], ((on) ? "en" : "dis"),
-                         typeNames[iType]));
+        AliDebug(3, Form("printing of %s %sabled for type %s", settingNames[iSetting], ((on) ? "en" : "dis"), typeNames[iType]));
       }
     }
   }
 
   // repetition of messages
-  if (gEnv->Defined("AliRoot.AliLog.PrintRepetitions")) {
+  if (gEnv->Defined("AliRoot.AliLog.PrintRepetitions"))
+  {
     Bool_t on = gEnv->GetValue("AliRoot.AliLog.PrintRepetitions", kTRUE);
     fPrintRepetitions = on;
-    AliDebug(3, Form("printing of message repetitions %sabled",
-                     ((on) ? "en" : "dis")));
+    AliDebug(3, Form("printing of message repetitions %sabled", ((on) ? "en" : "dis")));
   }
 }
 
@@ -307,7 +380,8 @@ void AliLog::RootErrorHandler(Int_t level, Bool_t abort,
 {
 // new error handler for messages from root
 
-  switch (level) {
+  switch (level)
+  {
   case ::kFatal    : level = kFatal; break;
   case ::kSysError :
     DefaultErrorHandler(level, abort, location, message);
@@ -324,6 +398,7 @@ void AliLog::RootErrorHandler(Int_t level, Bool_t abort,
 }
 
 
+// DEPRECATED: USE A CONFIGURATION FILE INSTEAD
 //_____________________________________________________________________________
 void AliLog::EnableDebug(Bool_t enabled)
 {
@@ -337,6 +412,7 @@ void AliLog::SetGlobalLogLevel(EType_t type)
 {
 // set the global debug level
 
+  // TO BE DELETED
   if (!fgInstance) new AliLog; 
   fgInstance->fGlobalLogLevel = type;
 }

@@ -5,25 +5,45 @@
 
 /* $Id$ */
 
-///
-/// class for logging debug, info and error messages
-///
-
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TString.h>
 
+// deprecation macro
+#if defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
+#define ALIROOT_DEPRECATED(func) func  __attribute__ ((deprecated))
+#elif defined(_MSC_VER) && _MSC_VER >= 1300
+#define ALIROOT_DEPRECATED(func) __declspec(deprecated) func
+# else
+#define ALIROOT_DEPRECATED(func) func
+#endif
 
-class AliLog: public TObject {
+/**
+ * class for logging debug, info and error messages
+ */
+class AliLog: public TObject
+{
  public:
-  AliLog();
-  virtual ~AliLog();
-  static AliLog* Instance() {return fgInstance;}
 
+		// Log4j log levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL
   enum EType_t {kFatal = 0, kError, kWarning, kInfo, kDebug, kMaxType};
   typedef void (*AliLogNotification)(EType_t type, const char* message );
 
+		// NB: singleton constructor & destructor should not be public!
+		// ALIROOT_DEPRECATED(AliLog());
+		// ALIROOT_DEPRECATED(virtual ~AliLog());
 
+		// NB: singleton deprecated static instance method
+		// ALIROOT_DEPRECATED(static AliLog* Instance() {return fgInstance;};)
+
+		// get root logger singleton instance
+		static AliLog *GetRootLogger();
+
+		// delete root logger singleton instance
+		static void DeleteRootLogger();
+
+		// NB: the following functions should not be static
+		// NB: deprecated: logging configuration should be made through to a configuration file
   static void  EnableDebug(Bool_t enabled);
   static void  SetGlobalLogLevel(EType_t type);
   static Int_t GetGlobalLogLevel();
@@ -86,6 +106,12 @@ class AliLog: public TObject {
                          const char* function, const char* file, Int_t line);
 
  private:
+
+		// constructor is made private for implementing a singleton
+		AliLog();
+		virtual ~AliLog();
+
+		// NOT IMPLEMENTED?
   AliLog(const AliLog& log);
   AliLog& operator = (const AliLog& log);
 
@@ -118,7 +144,6 @@ class AliLog: public TObject {
   enum {kDebugOffset = kDebug-1};
 
   static AliLog* fgInstance;                 //! pointer to current instance
-
   static Bool_t  fgDebugEnabled;             // flag for debug en-/disabling
 
   UInt_t         fGlobalLogLevel;            // global logging level
@@ -151,14 +176,14 @@ class AliLog: public TObject {
 };
 
 
-// module name
+// module name macro
 #ifdef _MODULE_
 #define MODULENAME() _MODULE_
 #else
 #define MODULENAME() "NoModule"
 #endif
 
-// function name
+// function name macro
 #if defined(__GNUC__) || defined(__ICC) || defined(__ECC) || defined(__APPLE__)
 #define FUNCTIONNAME() __FUNCTION__
 // #elif defined(__HP_aCC) || defined(__alpha) || defined(__DECCXX)
@@ -194,7 +219,7 @@ class AliLog: public TObject {
 // inspired by log4cxx code (see log4cxx/Logger.h)
 // implements GCC branch prediction for increasing logging performance
 #if !defined(ALIROOT_UNLIKELY)
-#if __GNUC__ >= 3
+#if defined(__GNUC__) && (__GNUC__ >= 3)
 /**
 Provides optimization hint to the compiler
 to optimize for the expression being false.
@@ -295,7 +320,6 @@ Logs a message to a specified logger with the DEBUG level.
 #define AliInfoStream() AliLog::Stream(AliLog::kInfo, 0, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__)
 #define AliInfoClassStream() AliLog::Stream(AliLog::kInfo, 0, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__)
 #define AliInfoGeneralStream(scope) AliLog::Stream(AliLog::kInfo, 0, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__)
-
 
 // warning messages
 #ifdef LOG_NO_WARNING

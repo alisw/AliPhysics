@@ -527,7 +527,11 @@ void AliHMPIDReconHTA::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Doubl
       
     meanCkov1/=nClAcc;
     Double_t rms2 = (meanCkov3 - meanCkov*meanCkov*nClAcc)/nClAcc;
-    AliLog::Instance();
+    
+    // get a logger instance
+    // what for??
+    AliLog::GetRootLogger();
+
     if(nClAcc!=nClAccStep1) pRecHTA->SetFitStatus(kTRUE); else pRecHTA->SetFitStatus(kFALSE);
     
     pRecHTA->SetCkovFit(meanCkov1);

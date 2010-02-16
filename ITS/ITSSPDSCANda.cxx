@@ -85,8 +85,9 @@ int main(int argc, char **argv) {
 					"TStreamerInfo()");
 
   // turn off annoying warning messages
-  new AliLog;
-  AliLog::Instance()->SetGlobalDebugLevel(-20);
+  // NB: Should not be handled here
+  AliLog logger = AliLog::GetRootLogger();
+  logger->SetGlobalDebugLevel(-20);
 
   // calib scan types
   enum calib_types{MINTH,MEANTH,DAC,UNIMA,NOISE,DELAY};

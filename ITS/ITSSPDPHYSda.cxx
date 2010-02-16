@@ -97,9 +97,9 @@ int main(int argc, char **argv) {
 					"TStreamerInfo()");
 
   // turn off annoying warning messages
-  new AliLog;
-  AliLog::Instance()->SetGlobalDebugLevel(-20);
-
+  // NB: Should not be handled here
+  AliLog logger = AliLog::GetRootLogger();
+  logger->SetGlobalDebugLevel(-20);
 
   // ********* STEP 0: Get configuration files from db (if there are any) , then read parameters*********
   UInt_t nrTuningParams = 0;

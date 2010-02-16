@@ -64,8 +64,8 @@ int main(int argc, char **argv)
   }
   gROOT->SetMacroPath(macPath);
 
-  // How to hadle AliLog properly?
-  AliLog *log = new AliLog;
+  // get a logger instance
+  AliLog *log = AliLog::GetRootLogger();
   TRint  *app = new TRint("App", &argc, argv);
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4) || defined XXX_LATEST_ROOT
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
   app->Terminate(0);
 
-  delete log;
+  //  delete log;
 
   return 0;
 }
