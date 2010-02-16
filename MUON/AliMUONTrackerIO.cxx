@@ -489,15 +489,12 @@ AliMUONTrackerIO::DecodeCapacitances(const char* data, AliMUONVStore& capaStore)
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONTrackerIO::ReadConfig(const char* filename, AliMUONVStore& confStore, Bool_t& changed)
+AliMUONTrackerIO::ReadConfig(const char* filename, AliMUONVStore& confStore)
 {
   /// Read config file (produced by the MUONTRKda.exe program for instance)
   /// and append the read values into the given VStore
   /// To be used when the input is a file (for instance when reading data 
   /// from the OCDB).
-  /// changed must be set to kFALSE before calling this method for the first time
-  /// (then the subsequent calls must not set it !)
-  ///
   
   TString sFilename(gSystem->ExpandPathName(filename));
   
@@ -514,19 +511,17 @@ AliMUONTrackerIO::ReadConfig(const char* filename, AliMUONVStore& confStore, Boo
   
   in.close();
   
-  return DecodeConfig(stream.str().c_str(),confStore,changed);
+  return DecodeConfig(stream.str().c_str(),confStore);
 }
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONTrackerIO::DecodeConfig(const char* data, AliMUONVStore& confStore, Bool_t& changed)
+AliMUONTrackerIO::DecodeConfig(const char* data, AliMUONVStore& confStore)
 {
   /// Read config data (produced by the MUONTRKda.exe program for instance)
   /// and append the read values into the given VStore
   /// To be used when the input is a TString (for instance when getting data 
   /// from AMORE DB).
-  /// changed must be set to kFALSE before calling this method for the first time
-  /// (then the subsequent calls must not set it !)
 
   char line[1024];
   Int_t busPatchID, manuID;
@@ -538,9 +533,6 @@ AliMUONTrackerIO::DecodeConfig(const char* data, AliMUONVStore& confStore, Bool_
     AliDebugClass(3,Form("line=%s",line));
     if ( line[0] == '#' ) 
     {
-      TString sline(line);
-      sline.ToUpper();
-      if (sline.Contains("CHANGED") && !sline.Contains("UNCHANGED")) changed = kTRUE;
       continue;
     }
     std::istringstream sin(line);

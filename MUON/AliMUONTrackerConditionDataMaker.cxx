@@ -409,8 +409,7 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
     else
     {
       tmp = new AliMUON2DMap(kTRUE);
-      Bool_t changed(kFALSE);
-      AliMUONTrackerIO::DecodeConfig(source,*tmp,changed);
+      AliMUONTrackerIO::DecodeConfig(source,*tmp);
     }
     if ( tmp ) 
     {

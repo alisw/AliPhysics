@@ -38,6 +38,8 @@ private:
   Int_t ReadPedestalFile(const char* filename);
   Int_t ReadConfigFile(const char* filename);
 
+  Bool_t HasConfigChanged(const AliMUONVStore& newConfig) const;
+
 private:
   AliMUONVStore* fPedestals; //!< Pedestals for the MUON TRK
   AliMUONVStore* fConfig; //!< Configuration (i.e. list of (buspatch,manu)) for the MUON TRK

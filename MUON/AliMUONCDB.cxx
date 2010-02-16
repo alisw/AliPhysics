@@ -1402,9 +1402,8 @@ AliMUONCDB::WriteConfig(Int_t startRun, Int_t endRun)
   }
   
   AliMUON2DMap config(kTRUE);
-  Bool_t dummy(kTRUE);
   
-  AliMUONTrackerIO::DecodeConfig(lines.str().c_str(),config,dummy);
+  AliMUONTrackerIO::DecodeConfig(lines.str().c_str(),config);
   
   WriteToCDB("MUON/Calib/Config",&config,startRun,endRun,kTRUE);
 }

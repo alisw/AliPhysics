@@ -18,6 +18,7 @@
 #include "AliMUONPedestalSubprocessor.h"
 
 #include "AliCDBMetaData.h"
+#include "AliCDBEntry.h"
 #include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
@@ -70,6 +71,51 @@ AliMUONPedestalSubprocessor::~AliMUONPedestalSubprocessor()
   delete fPedestals;
   delete fConfig;
 }
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONPedestalSubprocessor::HasConfigChanged(const AliMUONVStore& newConfig) const
+{
+  /// Check whether the config changed. 
+  /// Any error will return kTRUE to trig a config upload (safer way).
+  
+  AliCDBEntry* entry = Master()->GetFromOCDB("Calib","Config");
+  if (!entry)
+  {
+    AliError("Could not get MUON/Calib/Config entry for current run ! That's not OK !");
+    return kTRUE;
+  }
+  AliMUONVStore* oldConfig = dynamic_cast<AliMUONVStore*>(entry->GetObject());
+  if (!oldConfig)
+  {
+    AliError("Could not get MUON/Calib/Config object for current run (wrong type ?) ! That's not OK !");
+    return kTRUE;
+  }
+  
+  if ( oldConfig->GetSize() != newConfig.GetSize() ) 
+  {
+    return kTRUE;
+  }
+  
+  TIter next(oldConfig->CreateIterator());
+  AliMUONVCalibParam* old;
+  
+  while ( ( old = static_cast<AliMUONVCalibParam*>(next()) ) )
+  {
+    Int_t detElemId = old->ID0();
+    Int_t manuId = old->ID1();
+    
+    if ( ! newConfig.FindObject(detElemId,manuId) )
+    {
+      // not found in new. Configurations are different. Return right now.
+      return kTRUE;
+    }
+  }
+  
+  // all tests OK. Configuration has not changed.
+  return kFALSE;
+}
+
 
 //_____________________________________________________________________________
 Bool_t 
@@ -125,8 +171,6 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
   Int_t nconf(0);
   Int_t nconfFiles(0);
   
-  fConfigChanged = kFALSE;
-  
   while ( ( o = static_cast<TObjString*>(nextConf()) ) )
   {
     TString fileName(Master()->GetFile(kSystem,kIdConf,o->GetName()));
@@ -150,11 +194,7 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
     return kFALSE;
   }
   
-  if ( nconfFiles > 0 && nconfFiles < AliDAQ::NumberOfLdcs("MUONTRK") )
-  {
-    // force a writing of the configuration for any incomplete configuration
-    fConfigChanged = kTRUE;
-  }
+  fConfigChanged = HasConfigChanged(*fConfig);
   
   return kTRUE;
 }
@@ -254,8 +294,6 @@ AliMUONPedestalSubprocessor::ReadConfigFile(const char* filename)
   /// Read the configuration from an ASCII file.                              
   /// Format of that file is one line per manu :                              
   /// BUS_PATCH MANU_ADDR
-  /// And the first line contains "unchanged" if the configuration is the same
-  /// as before.
   /// Return kFALSE if reading was not successfull.                           
   ///
   
@@ -263,7 +301,7 @@ AliMUONPedestalSubprocessor::ReadConfigFile(const char* filename)
   
   Master()->Log(Form("Reading %s",sFilename.Data()));
   
-  Int_t n = AliMUONTrackerIO::ReadConfig(sFilename.Data(),*fConfig,fConfigChanged);
+  Int_t n = AliMUONTrackerIO::ReadConfig(sFilename.Data(),*fConfig);
   
   switch (n)
   {

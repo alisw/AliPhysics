@@ -25,8 +25,8 @@ public:
   AliMUONTrackerIO();
   virtual ~AliMUONTrackerIO();
 
-  static Int_t ReadConfig(const char* filename, AliMUONVStore& confStore, Bool_t& changed);
-  static Int_t DecodeConfig(const char* data, AliMUONVStore& confStore, Bool_t& changed);
+  static Int_t ReadConfig(const char* filename, AliMUONVStore& confStore);
+  static Int_t DecodeConfig(const char* data, AliMUONVStore& confStore);
   static Int_t WriteConfig(ofstream& out, const AliMUONVStore& confStore);
   
   static Int_t ReadPedestals(const char* filename, AliMUONVStore& pedStore);

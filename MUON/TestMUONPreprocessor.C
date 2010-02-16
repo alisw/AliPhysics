@@ -67,6 +67,11 @@
 /// The sourceDirectory is there to "emulate" what the real preprocessor will
 /// find on the FXS, and is assumed to have the following structure :
 /// <pre>
+/// CONFIG/
+///    LDC0.config
+///    LDC1.config
+///    LDC2.config
+///    LDC3.config
 /// GAINS/
 ///    LDC0.gain
 ///    LDC1.gain
