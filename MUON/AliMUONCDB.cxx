@@ -72,6 +72,7 @@
 #include "AliGRPManager.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
+#include "AliMpBusPatch.h"
 
 #include <Riostream.h>
 #include <TArrayI.h>
@@ -87,7 +88,7 @@
 #include <TMath.h>
 #include <TGeoGlobalMagField.h>
 #include <TClonesArray.h>
-
+#include <sstream>
 
 namespace
 {
@@ -1386,6 +1387,30 @@ AliMUONCDB::WriteTrigger(Bool_t defaultValues, Int_t startRun, Int_t endRun)
 
 //_____________________________________________________________________________
 void
+AliMUONCDB::WriteConfig(Int_t startRun, Int_t endRun)
+{
+  /// Write complete tracker configuration to OCDB
+  ostringstream lines;
+  TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+  AliMpBusPatch* bp;
+  while ( ( bp = static_cast<AliMpBusPatch*>(next()) ) )
+  {
+    for (Int_t imanu = 0; imanu < bp->GetNofManus(); ++imanu) 
+    {
+      lines << bp->GetId() << " " << bp->GetManuId(imanu) << endl;
+    }
+  }
+  
+  AliMUON2DMap config(kTRUE);
+  Bool_t dummy(kTRUE);
+  
+  AliMUONTrackerIO::DecodeConfig(lines.str().c_str(),config,dummy);
+  
+  WriteToCDB("MUON/Calib/Config",&config,startRun,endRun,kTRUE);
+}
+
+//_____________________________________________________________________________
+void
 AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
 {
   /// Writes all Tracker related calibration to CDB
@@ -1396,5 +1421,6 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WriteNeighbours(startRun,endRun);
   WriteOccupancyMap(defaultValues,startRun,endRun);
   WriteRejectList(defaultValues,startRun,endRun);
+  WriteConfig(startRun,endRun);
 }
 
