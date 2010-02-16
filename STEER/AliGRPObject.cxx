@@ -123,7 +123,8 @@ AliGRPObject::AliGRPObject():
                     (nhp >= 3*fPoints && nhp <= 4*fPoints-1) || // L3_BSF17_Temperature
                     (nhp >= 6*fPoints && nhp <= 7*fPoints-1) ) { // L3_BSF4_H3
 			fHallProbes[nhp] = 0; // setting to zero values for non working HP 
-			AliDebug(2,"setting hp[%d] to zero = %f", nhp, fHallProbes[nhp]);
+			AliDebug(2,Form("setting hp[%d] to zero = %f", 
+nhp, fHallProbes[nhp]));
 		}
 		else {
 			fHallProbes[nhp] = fgkInvalidFloat;
