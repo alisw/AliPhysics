@@ -76,6 +76,7 @@ ClassImp(AliGRPPreprocessor)
   const Int_t AliGRPPreprocessor::fgknDCSDP = 48;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknLHCDP = 5;   // number of dcs dps from LHC data
+  const Int_t AliGRPPreprocessor::fgkDCSDPHallTopShift = 4;   // shift from the top to get tp the Hall Probes names in the list of DCS DPs
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
                    "L3Polarity",
                    "DipolePolarity",
@@ -343,7 +344,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-1));
 	if (fdaqStartEndTimeOk){
 		if( entries < fgknDCSDP-1 ) { // FIXME (!= ) L3_BSF4_H3 are not working yet...  
-			Log(Form("Problem with the DCS data points!!! Only %d/%d entries found",entries,fgknDCSDP-4));
+			Log(Form("Problem with the DCS data points!!! Only %d/%d entries found",entries,fgknDCSDP-1));
 			Log(Form("The DPs giving problems were:"));
 			for (Int_t iDP = 0; iDP < fgknDCSDP; iDP++){
 				TObjString *dpString = (TObjString*)ffailedDPs->At(iDP);
@@ -1363,7 +1364,7 @@ Int_t AliGRPPreprocessor::ProcessHPDPs(const TMap* valueMap, AliGRPObject* grpOb
 				}
 			}
 			if (!outOfRange) {
-				ffailedDPs->RemoveAt(indexDP + 7);  // 7 = shift in the complete list of DPs to get to the Hall Probes
+				ffailedDPs->RemoveAt(indexDP + fgkDCSDPHallTopShift);  // 7 = shift in the complete list of DPs to get to the Hall Probes
 				nHPEntries++;
 			}
 		}

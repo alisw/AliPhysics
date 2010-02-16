@@ -49,7 +49,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
 		 kCavernAtmosPressure2};
 
 	enum DPHallProbes { 
-		 khpL3bsf17H1= 0 , khpL3bsf17H2, khpL3bsf17H3, khpL3bsf17Temperature, 
+		 khpL3bsf17H1=0, khpL3bsf17H2, khpL3bsf17H3, khpL3bsf17Temperature, 
 		 khpL3bsf4H1, khpL3bsf4H2, khpL3bsf4H3, khpL3bsf4Temperature, 
 		 khpL3bkf17H1, khpL3bkf17H2, khpL3bkf17H3, khpL3bkf17Temperature, 
 		 khpL3bkf4H1, khpL3bkf4H2, khpL3bkf4H3, khpL3bkf4Temperature, 
@@ -113,7 +113,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
   static const Int_t   fgknDCSDP;               //! number of dcs dps
   static const char*   fgkDCSDataPoints[];      //! names of dcs dps
   static const char*   fgkDCSDataPointsHallProbes[];      //! names of dcs dps for Hall Probes
-  static const Int_t   fgknDCSDPHallProbes;           //! names of LHC States for Hall Probes
+  static const Int_t   fgknDCSDPHallProbes;           //! number of Hall Probes
 
   AliDCSSensorArray*   fPressure; //pressure array
 
@@ -134,6 +134,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
 
   static const Int_t   fgknLHCDP;               //! number of lhc dps
   static const char*   fgkLHCDataPoints[];      //! names of lhc dps
+  static const Int_t   fgkDCSDPHallTopShift;    //! shift from the top to the Hall Probes from the list of DCS DPs names
 
   ClassDef(AliGRPPreprocessor, 0);
 };
