@@ -138,20 +138,6 @@ class AliHLTHOMERBlockDesc;
 
 class TEveViewer;
 
-// 
-class caloCell :  public TObject 
-{
-
-public :
-
-  AliHLTPHOSChannelDataStruct phosStruct;
-
-private :
-  ClassDef(caloCell, 1);
-
-};
-
-
 
 // -----------------------------------------------------------------
 // --                       Geometry / Scenes                     --
@@ -1475,10 +1461,6 @@ Int_t processPHOSClusters(AliHLTHOMERBlockDesc* block) {
 	//	gPHOSBoxSet[ds->fModule]->AddBox(ds->fLocX, 0, ds->fLocZ, 2.2, ds->fEnergy*20, 2.2);
 	gPHOSBoxSet[module]->AddBox(x, 0, z, 2.2, chd->fEnergy/15, 2.2);
 	gPHOSBoxSet[module]->DigitValue(static_cast<Int_t>(chd->fEnergy));
-	
-	caloCell *cs = new caloCell();
-	cs->phosStruct = *chd;
-	gPHOSBoxSet[module]->DigitId(cs);
       }
 
 
