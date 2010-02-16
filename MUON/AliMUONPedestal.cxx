@@ -98,17 +98,18 @@ void AliMUONPedestal::LoadConfig(const char* dbfile)
   ifstream filein(dbfile,ios::in);
 
   // check if the 1st caracter of the 1st line is # (Config read from the OCDB => OffLine)
-  string line; 
-  getline(filein, line, '\n');
-  cout << " line 1: " << line ;
-  if ( int(line[0]) == 35 )  // ascii code of # character
-    {
-      cout << " ==>  1st caracter = " << line[0] << " (ascii code =" << int(line[0]) << ")" << endl;    
-    }
-  else  
-    { filein.clear();  filein.seekg(0);  // rewind
-      cout << " ==> rewind configuration file: "<< dbfile << endl;           
-    } 
+  // NO NEED ANYMORE : change configuration tested by the Shuttle (from 16/02/10)
+//   string line; 
+//   getline(filein, line, '\n');
+//   cout << " line 1: " << line ;
+//   if ( int(line[0]) == 35 )  // ascii code of # character
+//     {
+//       cout << " ==>  1st caracter = " << line[0] << " (ascii code =" << int(line[0]) << ")" << endl;    
+//     }
+//   else  
+//     { filein.clear();  filein.seekg(0);  // rewind
+//       cout << " ==> rewind configuration file: "<< dbfile << endl;           
+//     } 
   
   while (!filein.eof())
     { 
@@ -136,6 +137,7 @@ void AliMUONPedestal::LoadConfig(const char* dbfile)
 //______________________________________________________________________________
 void AliMUONPedestal::MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, Int_t charge)
 {
+  static Int_t warn=0;
   /// Compute pedestals values
   AliMUONVCalibParam* ped = 
     static_cast<AliMUONVCalibParam*>(fPedestalStore ->FindObject(busPatchId, manuId));
@@ -146,7 +148,10 @@ void AliMUONPedestal::MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, I
 	{  // Fill out_of_config (buspatch,manu) table
 	  if (!(static_cast<AliMUONErrorCounter*>(fManuBPoutofconfigTable->FindObject(busPatchId,manuId))))
 	    fManuBPoutofconfigTable->Add(new AliMUONErrorCounter(busPatchId,manuId));
-	  cout << " !!! WARNING  : busPatchId = " << busPatchId << " manuId = " << manuId << " not in the Detector configuration " << endl;
+	  if(warn<10) cout << " !!! WARNING  : busPatchId = " << busPatchId << " manuId = " << manuId << " not in the Detector configuration " << endl;
+	  else if(warn==10) cout << " !!! see .log file for an exhaustive list of (busPatchId, manuId) out of Detector configuration \n" << endl; 
+	   warn++;
+	   (*fFilcout) << " !!! WARNING  : busPatchId = " << busPatchId << " manuId = " << manuId << " not in the Detector configuration " << endl; 
 	}
       else {fNManu++;}
       fNChannel+=64;

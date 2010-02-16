@@ -41,7 +41,7 @@
 
 /*
  -------------------------------------------------------------------------
- 2010-02-15 New version: MUONTRKGAINda.cxx,v 1.5
+ 2010-02-16 New version: MUONTRKGAINda.cxx,v 1.5
  -------------------------------------------------------------------------
  
  Version for MUONTRKGAINda MUON tracking
@@ -141,6 +141,7 @@ int main(Int_t argc, const char** argv)
   Int_t nGlitchErrors= 0;
   Int_t nParityErrors= 0;
   Int_t nPaddingErrors= 0;
+  Int_t nTokenlostErrors= 0;
   Int_t nEventsRecovered = 0;
   Int_t nEvents = 0;
   
@@ -195,8 +196,8 @@ int main(Int_t argc, const char** argv)
   filein >> nbev;  // Nb of events to read  (default = 0 => reading all events)
   if(nbev>0)maxEvents=nbev;
   
-  printf(" *** Copy: %s from DetDB to working directory  ***      Config= %d\n",dbfile,nConfig);
-  printf(" Input parameters:  nInit= %d   Nb linear pts= %d   Print level= %d   Plot Level= %d",nInit,nbpf1,printLevel,plotLevel);
+  //  printf(" *** Copy: %s from DetDB to working directory  ***      Config= %d\n",dbfile,nConfig);
+  printf(" Input parameters:  nInit= %d   Nb linear pts= %d   Print level= %d   Plot Level= %d    nConfig= %d",nInit,nbpf1,printLevel,plotLevel,nConfig);
   if(nbev==0)printf("\n");
   else printf("  Nb_max evt = %d\n",maxEvents);
   
@@ -210,7 +211,7 @@ int main(Int_t argc, const char** argv)
     sprintf(dbfile,"config_%s",getenv("DATE_ROLE_NAME"));
     status=daqDA_DB_getFile(dbfile,dbfile);
     if(status) {printf(" Failed  : Configuration file %s is missing, status = %d\n",dbfile,status); return -1; }
-    else printf(" *** Copy ascii config file: %s from DetDB to working directory and reading ...*** \n",dbfile);
+    //    else printf(" *** Copy ascii config file: %s from DetDB to working directory and reading ...*** \n",dbfile);
     muonGain->LoadConfig(dbfile);  
   } 
   
@@ -270,6 +271,7 @@ int main(Int_t argc, const char** argv)
     int eventGlitchErrors = 0;
     int eventParityErrors = 0;
     int eventPaddingErrors = 0;
+    int eventTokenlostErrors = 0;
     rawStream->First();
     do
     {
@@ -277,6 +279,7 @@ int main(Int_t argc, const char** argv)
       eventGlitchErrors += rawStream->GetGlitchErrors();
       eventParityErrors += rawStream->GetParityErrors();
       eventPaddingErrors += rawStream->GetPaddingErrors();
+      eventTokenlostErrors += rawStream->GetTokenLostErrors();
     } while(rawStream->NextDDL()); 
     
     AliMUONRawStreamTrackerHP::AliBusPatch* busPatch;
@@ -378,14 +381,16 @@ int main(Int_t argc, const char** argv)
 	    } // end of if (!rawStream->GetGlitchErrors() && !rawStream->GetPaddingErrors() ...
       filcout<<"Number of errors : Glitch "<<eventGlitchErrors
       <<" Parity "<<eventParityErrors
-      <<" Padding "<<eventPaddingErrors<<endl;
+      <<" Padding "<<eventPaddingErrors
+      <<" Token lost "<<eventTokenlostErrors<<endl;
       filcout<<endl;			
     } // end of if (!rawStream->IsErrorMessage())
     
     if (eventGlitchErrors)  nGlitchErrors++;
     if (eventParityErrors)  nParityErrors++;
     if (eventPaddingErrors) nPaddingErrors++;
-    
+    if (eventTokenlostErrors) nTokenlostErrors++;
+
   } // while (rawReader->NextEvent())
   delete rawReader;
   delete rawStream;
@@ -407,6 +412,7 @@ int main(Int_t argc, const char** argv)
   cout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors  << endl;
   cout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors  << endl;
   cout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;		
+  cout << prefixDA << " : Nb of Token lost errors     = "   << nTokenlostErrors << endl;
   cout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;
   cout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
   cout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
@@ -416,6 +422,7 @@ int main(Int_t argc, const char** argv)
   filcout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors << endl;
   filcout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors << endl;
   filcout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;
+  filcout << prefixDA << " : Nb of Token lost errors     = "   << nTokenlostErrors << endl;
   filcout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;	
   filcout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
   filcout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
@@ -457,7 +464,7 @@ int main(Int_t argc, const char** argv)
   //	 Copying files to local DB folder defined by DAQ_DETDB_LOCAL
   Char_t *dir;
   dir= getenv("DAQ_DETDB_LOCAL");
-  unsigned int nLastVersions = 90;
+  unsigned int nLastVersions = 50;
   printf("\n ***  Local DataBase: %s  (Max= %d) ***\n",dir,nLastVersions);
   status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
   if(status)printf(" Store file : %s   status = %d\n",logOutputFile.Data(),status);
@@ -481,13 +488,13 @@ int main(Int_t argc, const char** argv)
   
   filcout.close();
   
-  // Transferring to OCDB via the SHUTTLE
+  // Transferring to calibration file to  FES
   // be sure that env variable DAQDALIB_PATH is set in script file
   //       gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
-  printf("\n *****  STORE FILE in FES ****** \n");
+  printf("\n *****  STORE calibration FILE to FES ****** \n");
   status = daqDA_FES_storeFile(shuttleFile.Data(),"GAINS");
   if (status) { printf(" Failed to export file : %s , status = %d\n",shuttleFile.Data(),status); return -1; }
-  else printf(" %s successfully exported to FES  \n",shuttleFile.Data());
+  //  else printf(" %s successfully exported to FES  \n",shuttleFile.Data());
   
   printf("\n ######## End execution : %s ######## \n",prefixDA); 
   timers.Stop();

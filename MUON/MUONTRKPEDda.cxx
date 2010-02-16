@@ -29,7 +29,7 @@
 
 /*
 	-------------------------------------------------------------------------
-        2010-02-15 New version: MUONTRKPEDda.cxx,v 1.5
+        2010-02-16 New version: MUONTRKPEDda.cxx,v 1.5
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -139,7 +139,7 @@ int main(Int_t argc, const char **argv)
   Int_t nEventsRecovered = 0;
   Int_t nEvents = 0;
   UInt_t runNumber   = 0;
-  Int_t nConfig = 1, writeConfig=0; 
+  Int_t nConfig = 1; 
   ofstream filcout;
 
   // decode the input line
@@ -226,20 +226,17 @@ int main(Int_t argc, const char **argv)
       if(status) {printf(" !!! Failed  : input file %s is missing, status = %d\n",dbfile,status); return -1; } 
       ifstream filein(dbfile,ios::in);
       filein >> nConfig;
-      filein >> writeConfig; // default=0, if 1 : current configuration file written in the Det.DataBase at the end of the DA
-      printf(" *** Copy: %s from DetDB to working directory  ***  Config= %d   writeConfig=%d\n",dbfile,nConfig,writeConfig);
     }
   else  printf(" ***  Config= %d: no configuration ascii file is used \n",nConfig); 
   muonPedestal->SetconfigDA(nConfig);
 
-  // nConfig=1: configuration ascii file read from DetDB
+  // nConfig=1: configuration ascii file config_$DATE_ROLE_NAME read from DetDB
   if(nConfig)
     {
-      // MuonTrk Configuration ascii file (initCROCUS.dat -> ascii file = config_$DATE_ROLE_NAME)
       sprintf(dbfile,"config_%s",getenv("DATE_ROLE_NAME"));
       status=daqDA_DB_getFile(dbfile,dbfile);
       if(status) {printf(" !!! Failed  : Configuration file %s is missing, status = %d\n",dbfile,status); return -1; }
-      else printf(" *** Copy ascii config file: %s from DetDB to working directory and reading ...*** \n",dbfile);
+      //      else printf(" *** Copy ascii config file: %s from DetDB to working directory and reading ...*** \n",dbfile);
       muonPedestal->LoadConfig(dbfile);  
     } 
 
@@ -508,23 +505,18 @@ int main(Int_t argc, const char **argv)
 
   filcout.close();
 
-  // Transferring to OCDB via the SHUTTLE (be sure that env variable DAQDALIB_PATH is set)
-  printf("\n *****  STORE FILE in FES ****** \n");
+  // Transferring to FES  (be sure that env variable DAQDALIB_PATH is set)
+  printf("\n *****  STORE Pedestal FILE in FES ****** \n");
   status = daqDA_FES_storeFile(shuttleFile.Data(),"PEDESTALS");
   if (status) { printf(" !!! Failed to export file : %s , status = %d\n",shuttleFile.Data(),status); return -1; }
-  else printf(" %s successfully exported to FES  \n",shuttleFile.Data());
+  //  else printf(" %s successfully exported to FES  \n",shuttleFile.Data());
 
-  // Transferring to DetectorDataBase the configuration file if changed
-  if(writeConfig)
-    {
-      printf("\n *****  New detector configuration : STORE Config FILE in Detector DataBase ****** \n");
-      Char_t DAdbfile[256]="";
-      //      TString DAdbfile=Form("DA_config_%s",getenv("DATE_ROLE_NAME")) ;
-      sprintf(DAdbfile,"DA_config_%s",getenv("DATE_ROLE_NAME"));
-      status=daqDA_DB_storeFile(dbfile,DAdbfile);
-      if(status) {printf(" !!! Failed  : Pb to store config. file %s in DetDB (%s), status = %d\n",dbfile,DAdbfile,status); return -1; }
-      else printf(" Copy ascii current config file: %s to %s in DetDB \n",dbfile,DAdbfile);
-    }
+  // Transferring to FES  (be sure that env variable DAQDALIB_PATH is set)
+  printf("\n *****  STORE Configuration FILE in FES ****** \n");
+  status = daqDA_FES_storeFile(dbfile,"CONFIG");
+  if (status) { printf(" !!! Failed to export file : %s , status = %d\n",dbfile,status); return -1; }
+  //  else printf(" %s successfully exported to FES  \n",dbfile);
+
 
   printf("\n ######## End execution : %s ######## \n",prefixDA); 
   timers.Stop();
