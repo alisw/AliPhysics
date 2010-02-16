@@ -48,6 +48,7 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       //baseAnalysis->SetPointOnITSLayer3();
       //baseAnalysis->SetPointOnITSLayer2();
       //baseAnalysis->SetPointOnITSLayer1();
+      baseAnalysis->SetPointOnSPDLayers();
       baseAnalysis->SetMinITSClusters(2);
       break;
     case "Global":

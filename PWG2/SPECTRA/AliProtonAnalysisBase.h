@@ -99,12 +99,18 @@ class AliProtonAnalysisBase : public TObject {
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz) const;
   
   //Cut functions
+  void    SetPointOnSPDLayers() {fPointOnSPDLayersFlag = kTRUE;}
+  void    SetPointOnSDDLayers() {fPointOnSDDLayersFlag = kTRUE;}
+  void    SetPointOnSSDLayers() {fPointOnSSDLayersFlag = kTRUE;}
   void    SetPointOnITSLayer1() {fPointOnITSLayer1Flag = kTRUE;}
   void    SetPointOnITSLayer2() {fPointOnITSLayer2Flag = kTRUE;}
   void    SetPointOnITSLayer3() {fPointOnITSLayer3Flag = kTRUE;}
   void    SetPointOnITSLayer4() {fPointOnITSLayer4Flag = kTRUE;}
   void    SetPointOnITSLayer5() {fPointOnITSLayer5Flag = kTRUE;}
   void    SetPointOnITSLayer6() {fPointOnITSLayer6Flag = kTRUE;}
+  Bool_t  IsUsedPointOnSPDLayer() const {return fPointOnSPDLayersFlag;}
+  Bool_t  IsUsedPointOnSDDLayer() const {return fPointOnSDDLayersFlag;}
+  Bool_t  IsUsedPointOnSSDLayer() const {return fPointOnSSDLayersFlag;}
   Bool_t  IsUsedPointOnITSLayer1() const {return fPointOnITSLayer1Flag;}
   Bool_t  IsUsedPointOnITSLayer2() const {return fPointOnITSLayer2Flag;}
   Bool_t  IsUsedPointOnITSLayer3() const {return fPointOnITSLayer3Flag;}
@@ -313,6 +319,9 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t fMaxConstrainChi2Flag; //shows if this cut is used or not
   Bool_t fITSRefitFlag, fTPCRefitFlag; //shows if this cut is used or not
   Bool_t fESDpidFlag, fTPCpidFlag, fTOFpidFlag; //shows if this cut is used or not
+  Bool_t fPointOnSPDLayersFlag;//shows if this cut is used or not
+  Bool_t fPointOnSDDLayersFlag;//shows if this cut is used or not
+  Bool_t fPointOnSSDLayersFlag;//shows if this cut is used or not
   Bool_t fPointOnITSLayer1Flag, fPointOnITSLayer2Flag; //shows if this cut is used or not
   Bool_t fPointOnITSLayer3Flag, fPointOnITSLayer4Flag; //shows if this cut is used or not
   Bool_t fPointOnITSLayer5Flag, fPointOnITSLayer6Flag; //shows if this cut is used or not

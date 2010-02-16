@@ -67,6 +67,7 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fMaxConstrainChi2Flag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
   fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE), fTOFpidFlag(kFALSE),
+  fPointOnSPDLayersFlag(0), fPointOnSDDLayersFlag(0), fPointOnSSDLayersFlag(0),
   fPointOnITSLayer1Flag(0), fPointOnITSLayer2Flag(0),
   fPointOnITSLayer3Flag(0), fPointOnITSLayer4Flag(0),
   fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
@@ -220,6 +221,27 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDtrack* track) {
   Double_t extCov[15];
   track->GetExternalCovariance(extCov);
 
+  if(fPointOnSPDLayersFlag) {
+    if((!track->HasPointOnITSLayer(0))&&(!track->HasPointOnITSLayer(1))) {
+      if(fDebugMode)
+	Printf("IsAccepted: Track rejected because it doesn't have a point on either SPD layers");
+      return kFALSE;
+    }
+  }
+  if(fPointOnSDDLayersFlag) {
+    if((!track->HasPointOnITSLayer(2))&&(!track->HasPointOnITSLayer(3))) {
+      if(fDebugMode)
+	Printf("IsAccepted: Track rejected because it doesn't have a point on either SDD layers");
+      return kFALSE;
+    }
+  }
+  if(fPointOnSSDLayersFlag) {
+    if((!track->HasPointOnITSLayer(4))&&(!track->HasPointOnITSLayer(5))) {
+      if(fDebugMode)
+	Printf("IsAccepted: Track rejected because it doesn't have a point on either SSD layers");
+      return kFALSE;
+    }
+  }
   if(fPointOnITSLayer1Flag) {
     if(!track->HasPointOnITSLayer(0)) {
       if(fDebugMode)
@@ -727,33 +749,43 @@ TCanvas *AliProtonAnalysisBase::GetListOfCuts() {
   l.DrawLatex(0.35,0.05,listOfCuts.Data());
 
   c->cd(2)->SetFillColor(2);
-  l.DrawLatex(0.3,0.9,"ITS related cuts");
+  l.DrawLatex(0.3,0.95,"ITS related cuts");
+  listOfCuts = "Request a cluster on either of the SPD layers: "; 
+  listOfCuts += fPointOnSPDLayersFlag;
+  l.DrawLatex(0.1,0.9,listOfCuts.Data());
+  listOfCuts = "Request a cluster on either of the SDD layers: "; 
+  listOfCuts += fPointOnSDDLayersFlag;
+  l.DrawLatex(0.1,0.83,listOfCuts.Data());
+  listOfCuts = "Request a cluster on either of the SSD layers: "; 
+  listOfCuts += fPointOnSSDLayersFlag;
+  l.DrawLatex(0.1,0.76,listOfCuts.Data());
+
   listOfCuts = "Request a cluster on SPD1: "; 
   listOfCuts += fPointOnITSLayer1Flag;
-  l.DrawLatex(0.1,0.8,listOfCuts.Data());
+  l.DrawLatex(0.1,0.69,listOfCuts.Data());
   listOfCuts = "Request a cluster on SPD2: "; 
   listOfCuts += fPointOnITSLayer2Flag;
-  l.DrawLatex(0.1,0.7,listOfCuts.Data());
+  l.DrawLatex(0.1,0.62,listOfCuts.Data());
   listOfCuts = "Request a cluster on SDD1: "; 
   listOfCuts += fPointOnITSLayer3Flag;
-  l.DrawLatex(0.1,0.6,listOfCuts.Data());
+  l.DrawLatex(0.1,0.55,listOfCuts.Data());
   listOfCuts = "Request a cluster on SDD2: "; 
   listOfCuts += fPointOnITSLayer4Flag;
-  l.DrawLatex(0.1,0.5,listOfCuts.Data());
+  l.DrawLatex(0.1,0.48,listOfCuts.Data());
   listOfCuts = "Request a cluster on SSD1: "; 
   listOfCuts += fPointOnITSLayer5Flag;
-  l.DrawLatex(0.1,0.4,listOfCuts.Data());
+  l.DrawLatex(0.1,0.41,listOfCuts.Data());
   listOfCuts = "Request a cluster on SSD2: "; 
   listOfCuts += fPointOnITSLayer6Flag; 
-  l.DrawLatex(0.1,0.3,listOfCuts.Data());  
+  l.DrawLatex(0.1,0.34,listOfCuts.Data());  
   listOfCuts = "Minimum number of ITS clusters: ";
   if(fMinITSClustersFlag) listOfCuts += fMinITSClusters;
   else listOfCuts += "Not used";
-  l.DrawLatex(0.1,0.2,listOfCuts.Data());
+  l.DrawLatex(0.1,0.27,listOfCuts.Data());
   listOfCuts = "Maximum #chi^{2} per ITS cluster: ";
   if(fMaxChi2PerITSClusterFlag) listOfCuts += fMaxChi2PerITSCluster; 
   else listOfCuts += "Not used";
-  l.DrawLatex(0.1,0.1,listOfCuts.Data());
+  l.DrawLatex(0.1,0.2,listOfCuts.Data());
 
   c->cd(3)->SetFillColor(3);
   l.DrawLatex(0.3,0.9,"TPC related cuts");
