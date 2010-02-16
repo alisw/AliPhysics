@@ -193,6 +193,8 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent * const event) {
 	t->SetIntegratedLength(seed->GetIntegratedLength());
 	t->SetTOFsignalToT(seed->GetTOFsignalToT());
 	t->SetTOFCalChannel(seed->GetTOFCalChannel());
+	t->SetTOFDeltaBC(seed->GetTOFDeltaBC());
+	t->SetTOFL0L1(seed->GetTOFL0L1());
 	//
 	// Make attention, please:
 	//      AliESDtrack::fTOFInfo array does not be stored in the AliESDs.root file
@@ -554,6 +556,8 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     t->SetTOFInfo(info);
     t->SetTOFsignal(tof2);
     t->SetTOFcluster(cgold->GetIndex());  
+    t->SetTOFDeltaBC(cgold->GetDeltaBC());
+    t->SetTOFL0L1(cgold->GetL0L1Latency());
 
     AliDebug(2, Form("%7i     %7i     %10i     %10i  %10i  %10i      %7i",
 		     i,

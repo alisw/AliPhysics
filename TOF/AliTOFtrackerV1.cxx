@@ -191,6 +191,8 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent * const event) {
 	t->SetTOFsignalRaw(seed->GetTOFsignalRaw());
 	t->SetTOFsignalDz(seed->GetTOFsignalDz());
 	t->SetTOFsignalDx(seed->GetTOFsignalDx());
+	t->SetTOFDeltaBC(seed->GetTOFDeltaBC());
+	t->SetTOFL0L1(seed->GetTOFL0L1());
 	t->SetTOFCalChannel(seed->GetTOFCalChannel());
 	Int_t tlab[3]; seed->GetTOFLabel(tlab);
 	t->SetTOFLabel(tlab);
@@ -535,6 +537,9 @@ void AliTOFtrackerV1::MatchTracks( ){
 
     Float_t deltaY = trackTOFin->GetY()-bestCluster->GetY();
     t->SetTOFsignalDx(deltaY);
+
+    t->SetTOFDeltaBC(bestCluster->GetDeltaBC());
+    t->SetTOFL0L1(bestCluster->GetL0L1Latency());
 
     Float_t distR = (trackTOFin->GetX()-bestCluster->GetX())*
       (trackTOFin->GetX()-bestCluster->GetX());

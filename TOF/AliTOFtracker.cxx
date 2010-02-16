@@ -208,6 +208,8 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 	t->SetTOFsignalRaw(seed->GetTOFsignalRaw());
 	t->SetTOFsignalDz(seed->GetTOFsignalDz());
 	t->SetTOFsignalDx(seed->GetTOFsignalDx());
+	t->SetTOFDeltaBC(seed->GetTOFDeltaBC());
+	t->SetTOFL0L1(seed->GetTOFL0L1());
 	t->SetTOFCalChannel(seed->GetTOFCalChannel());
 	Int_t tlab[3]; seed->GetTOFLabel(tlab);    
 	t->SetTOFLabel(tlab);
@@ -720,6 +722,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     t->SetTOFsignalRaw(rawTime);
     t->SetTOFsignalDz(mindistZ);
     t->SetTOFsignalDx(mindistY);
+    t->SetTOFDeltaBC(c->GetDeltaBC());
+    t->SetTOFL0L1(c->GetL0L1Latency());
 
     Float_t info[10] = {mindist,mindistY,mindistZ,
 			0.,0.,0.,0.,0.,0.,0.};
