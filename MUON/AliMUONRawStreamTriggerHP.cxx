@@ -237,6 +237,10 @@ Bool_t AliMUONRawStreamTriggerHP::NextDDL()
 	Swap(reinterpret_cast<UInt_t*>(fBuffer), dataSize / sizeof(UInt_t)); // Swap needed for mac power pc.
 #endif
 	
+	fDDL++; // Remember to increment index to next DDL before the calls to
+	        // fDecoder.Decode since the callback methods of the decoder might
+	        // use AliMUONRawStreamTriggerHP::GetDDL()
+	
 	// Check if this is a scalar event.
 	bool scalerEvent = (GetReader()->GetDataHeader()->GetL1TriggerMessage() & 0x1) == 0x1;
 	
@@ -261,7 +265,6 @@ Bool_t AliMUONRawStreamTriggerHP::NextDDL()
 	// Update the current local structure pointer.
 	fkCurrentLocalStruct = fDecoder.GetHandler().FirstLocalStruct();
 
-	fDDL++; // Remember to increment index to next DDL.
 	return kTRUE;
 }
 

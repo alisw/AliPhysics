@@ -261,6 +261,10 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 	Swap(reinterpret_cast<UInt_t*>(fBuffer), dataSize / sizeof(UInt_t)); // Swap needed for mac power pc.
 #endif
 	
+	fDDL++; // Remember to increment index to next DDL before the calls to
+	        // fDecoder.Decode since the callback methods of the decoder will
+	        // use AliMUONRawStreamTrackerHP::GetDDL()
+	
 	bool result = false;
 	try
 	{
@@ -294,7 +298,6 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 		fkCurrentData = fkEndOfData = NULL;
 	}
 
-	fDDL++; // Remember to increment index to next DDL.
 	return kTRUE;
 }
 
@@ -820,8 +823,8 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 			word = *reinterpret_cast<const UInt_t*>(location);
 			message = Form(
 				"Lost token error detected in DSP 0x%X of DDL %d and code %d.",
-        ((word & 0xFFFF0000) >> 16),
-        fRawStream->GetDDL(),
+				((word & 0xFFFF0000) >> 16),
+				fRawStream->GetDDL(),
 				(word & 0xF)
 			);
 			break;

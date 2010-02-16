@@ -94,7 +94,7 @@ public:
 	/// Set maximum number of Buspatch per Dsp allowed.
 	virtual void SetMaxBus(Int_t bus);
 	
-	/// Return number of the current DDL.
+	/// Return number of the current DDL being processed in the range [0..19] or -1 if no DDL set.
 	virtual Int_t GetDDL() const { return fDDL - 1; }
 	
 	/// check error/Warning presence

@@ -71,7 +71,7 @@ public:
 	/// Sets the maximum number of local cards in the DDL.
 	virtual void SetMaxLoc(Int_t loc);
 	
-	/// Return number of the current DDL being handled.
+	/// Return number of the current DDL being handled in the range [0..1] and -1 if no DDL set.
 	virtual Int_t GetDDL() const { return fDDL - 1; }
 	
 	/// check error/Warning presence
