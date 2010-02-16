@@ -852,10 +852,10 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   
   AliPDG::AddParticlesToPdgDataBase();  
   
-  gAlice->GetMCApp()->Init();
-  
   gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
 
+  gAlice->GetMCApp()->Init();
+  
   
   //Must be here because some MCs (G4) adds detectors here and not in Config.C
   gAlice->InitLoaders();
@@ -1000,12 +1000,12 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     
    AliPDG::AddParticlesToPdgDataBase();  
 
-   gAlice->GetMCApp()->Init();
-   AliSysInfo::AddStamp("RunSimulation_InitMCApp");
-
    gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
    AliSysInfo::AddStamp("RunSimulation_GetField");
    
+   gAlice->GetMCApp()->Init();
+   AliSysInfo::AddStamp("RunSimulation_InitMCApp");
+
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
    gAlice->InitLoaders();
    AliRunLoader::Instance()->MakeTree("E");
@@ -1793,10 +1793,10 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     
    AliPDG::AddParticlesToPdgDataBase();  
 
-   gAlice->GetMCApp()->Init();
-
    gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
    
+   gAlice->GetMCApp()->Init();
+
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
    gAlice->InitLoaders();
    AliRunLoader::Instance()->MakeTree("E");
