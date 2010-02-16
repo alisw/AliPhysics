@@ -311,51 +311,145 @@ void AliTPCv2::CreateGeometry()
   TGeoTube *t1 = new TGeoTube(76.6774,78.845,0.75);
   TGeoVolume *tv1 = new TGeoVolume("TPC_IFC2",t1,m3);
   // sandwich - outermost parts - 2 copies
-  TGeoTube *t2 = new TGeoTube(76.6774,78.845,74.175); // tedlar 38 microns
-  TGeoTube *t3 = new TGeoTube(76.6812,78.8412,74.175); // prepreg2 500 microns
-  TGeoTube *t4 = new TGeoTube(76.7312,78.7912,74.175); // prepreg3 300 microns
-  TGeoTube *t5 = new TGeoTube(76.7612,78.7612,74.175); // nomex 2 cm
   //
+  // segment outermost
+  //
+  TGeoTubeSeg *t2 = new TGeoTubeSeg(76.6774,78.845,74.175,350.,109.9); // tedlar 38 microns
+  TGeoTubeSeg *t3 = new TGeoTubeSeg(76.6812,78.8412,74.175,350.,109.9); // prepreg2 500 microns
+  TGeoTubeSeg *t4 = new TGeoTubeSeg(76.7312,78.7912,74.175,350.,109.9); // prepreg3 300 microns
+  TGeoTubeSeg *t5 = new TGeoTubeSeg(76.7612,78.7612,74.175,350.,109.9); // nomex 2 cm
+  TGeoTubeSeg *tepox1 = new TGeoTubeSeg(76.6774,78.845,74.175,109.9,110.);//epoxy
+  TGeoTubeSeg *tpr1 = new TGeoTubeSeg(78.845,78.885,74.175,119.,121.);
+  
+  // volumes for the outer part  
   TGeoVolume *tv2 = new TGeoVolume("TPC_IFC3",t2,sm2);
   TGeoVolume *tv3 = new TGeoVolume("TPC_IFC4",t3,sm3);
   TGeoVolume *tv4 = new TGeoVolume("TPC_IFC5",t4,sm5);
   TGeoVolume *tv5 = new TGeoVolume("TPC_IFC6",t5,sm4);
+  TGeoVolume *tvep1 = new TGeoVolume("TPC_IFEPOX1",tepox1,sm1); 
+  TGeoVolume *tvpr1 = new TGeoVolume("TPC_PRSTR1",tpr1,sm2); 
   //
   // middle parts - 2 copies
-  TGeoTube *t6 = new TGeoTube(76.6774,78.795,5.); // tedlar 38 microns
-  TGeoTube *t7 = new TGeoTube(76.6812,78.7912,5.); // prepreg2 250 microns
-  TGeoTube *t8 = new TGeoTube(76.7062,78.7662,5.); // prepreg3 300 microns
-  TGeoTube *t9 = new TGeoTube(76.7362,78.7362,5.); // nomex 2 cm
   //
+  // segment middle
+  //
+  TGeoTubeSeg *t6 = new TGeoTubeSeg(76.6774,78.795,5.,350.,109.9); // tedlar 38 microns
+  TGeoTubeSeg *t7 = new TGeoTubeSeg(76.6812,78.7912,5.,350.,109.9); // prepreg2 250 microns
+  TGeoTubeSeg *t8 = new TGeoTubeSeg(76.7062,78.7662,5.,350.,109.9); // prepreg3 300 microns
+  TGeoTubeSeg *t9 = new TGeoTubeSeg(76.7362,78.7362,5.,350.,109.9); // nomex 2 cm
+  TGeoTubeSeg *tepox2 = new TGeoTubeSeg(76.6774,78.795,5.,109.9,110.);//epoxy
+  TGeoTubeSeg *tpr2 = new TGeoTubeSeg(78.795,78.835,5.,119.,121.);
+  // volumes for the middle part
   TGeoVolume *tv6 = new TGeoVolume("TPC_IFC7",t6,sm2);
   TGeoVolume *tv7 = new TGeoVolume("TPC_IFC8",t7,sm3);
   TGeoVolume *tv8 = new TGeoVolume("TPC_IFC9",t8,sm5);
   TGeoVolume *tv9 = new TGeoVolume("TPC_IFC10",t9,sm4);
+  TGeoVolume *tvep2 = new TGeoVolume("TPC_IFEPOX2",tepox2,sm1);
+  TGeoVolume *tvpr2 = new TGeoVolume("TPC_PRSTR2",tpr2,sm2);
   // central part - 1 copy
-  TGeoTube *t10 = new TGeoTube(76.6774,78.785,93.75); // tedlar 38 microns 
-  TGeoTube *t11 = new TGeoTube(76.6812,78.7812,93.75); // prepreg3 300 microns
-  TGeoTube *t12 = new TGeoTube(76.7312,78.7312,93.75); // nomex 2 cm
+  // 
+  // segment central part
   //
+  TGeoTubeSeg *t10 = new TGeoTubeSeg(76.6774,78.785,93.75,350.,109.9); // tedlar 38 microns 
+  TGeoTubeSeg *t11 = new TGeoTubeSeg(76.6812,78.7812,93.75,350.,109.9); // prepreg3 500 microns
+  TGeoTubeSeg *t12 = new TGeoTubeSeg(76.7312,78.7312,93.75,350.,109.9); // nomex 2 cm 
+  TGeoTubeSeg *tepox3 = new TGeoTubeSeg(76.6774,78.785,93.75,109.9,110.);//epoxy
+  TGeoTubeSeg *tpr3 = new TGeoTubeSeg(78.785,78.825,93.75,119.,121.);
+  // volumes for the central part
   TGeoVolume *tv10 = new TGeoVolume("TPC_IFC11",t10,sm2);
   TGeoVolume *tv11 = new TGeoVolume("TPC_IFC12",t11,sm5);
   TGeoVolume *tv12 = new TGeoVolume("TPC_IFC13",t12,sm4);
+  TGeoVolume *tvep3 = new TGeoVolume("TPC_IFEPOX3",tepox3,sm1);
+  TGeoVolume *tvpr3 = new TGeoVolume("TPC_PRSTR3",tpr3,sm2);  
   //
-  // inner part - positioning
+  // creating a sandwich for the outer par,t tv2 is the mother
   //
-  // creating a sandwich
   tv2->AddNode(tv3,1); tv3->AddNode(tv4,1); tv4->AddNode(tv5,1);
+  //
+  // creating a sandwich for the middle part, tv6 is the mother
   //
   tv6->AddNode(tv7,1); tv7->AddNode(tv8,1); tv8->AddNode(tv9,1);
   //
+  // creating a sandwich for the central part, tv10 is the mother
+  //
   tv10->AddNode(tv11,1); tv11->AddNode(tv12,1);
   //
-  TGeoVolumeAssembly *tv100 = new TGeoVolumeAssembly("TPC_IFC");
+  TGeoVolumeAssembly *tv100 = new TGeoVolumeAssembly("TPC_IFC"); // ifc itself - 3 segments
   //
-  tv100->AddNode(tv10,1);
-  tv100->AddNode(tv6,1,new TGeoTranslation(0.,0.,-98.75));
-  tv100->AddNode(tv6,2,new TGeoTranslation(0.,0.,98.75));
-  tv100->AddNode(tv2,1,new TGeoTranslation(0.,0.,-177.925));
+  //
+  //
+  TGeoRotation *segrot;
+
+  //
+  // first segment - no rotation
+  //
+  // central
+  tv100->AddNode(tv10,1); //sandwich
+  tv100->AddNode(tvep3,1);//epoxy
+  tv100->AddNode(tvpr3,1);//prepreg strip				     
+  // middle
+  tv100->AddNode(tv6,1,new TGeoTranslation(0.,0.,-98.75)); //sandwich1
+  tv100->AddNode(tv6,2,new TGeoTranslation(0.,0.,98.75)); // sandwich2
+  tv100->AddNode(tvep2,1,new TGeoTranslation(0.,0.,-98.75)); //epoxy
+  tv100->AddNode(tvep2,2,new TGeoTranslation(0.,0.,98.75)); //epoxy
+  tv100->AddNode(tvpr2,1,new TGeoTranslation(0.,0.,-98.75));//prepreg strip
+  tv100->AddNode(tvpr2,2,new TGeoTranslation(0.,0.,98.75));
+  // outer
+  tv100->AddNode(tv2,1,new TGeoTranslation(0.,0.,-177.925)); //sandwich
   tv100->AddNode(tv2,2,new TGeoTranslation(0.,0.,177.925));
+  tv100->AddNode(tvep1,1,new TGeoTranslation(0.,0.,-177.925)); //epoxy
+  tv100->AddNode(tvep1,2,new TGeoTranslation(0.,0.,177.925));
+  tv100->AddNode(tvpr1,1,new TGeoTranslation(0.,0.,-177.925));//prepreg strip
+  tv100->AddNode(tvpr1,2,new TGeoTranslation(0.,0.,-177.925));
+  //
+  // second segment - rotation 120 deg.
+  //
+  segrot = new TGeoRotation();
+  segrot->RotateZ(120.);
+  //
+  // central	
+  tv100->AddNode(tv10,2,segrot); //sandwich
+  tv100->AddNode(tvep3,2,segrot);//epoxy
+  tv100->AddNode(tvpr3,2,segrot);//prepreg strip
+  // middle
+  tv100->AddNode(tv6,3,new TGeoCombiTrans(0.,0.,-98.75,segrot)); //sandwich1
+  tv100->AddNode(tv6,4,new TGeoCombiTrans(0.,0.,98.75,segrot)); // sandwich2
+  tv100->AddNode(tvep2,3,new TGeoCombiTrans(0.,0.,-98.75,segrot)); //epoxy
+  tv100->AddNode(tvep2,4,new TGeoCombiTrans(0.,0.,98.75,segrot)); //epoxy
+  tv100->AddNode(tvpr2,3,new TGeoCombiTrans(0.,0.,-98.75,segrot));//prepreg strip
+  tv100->AddNode(tvpr2,4,new TGeoCombiTrans(0.,0.,98.75,segrot));
+  //outer
+  tv100->AddNode(tv2,3,new TGeoCombiTrans(0.,0.,-177.925,segrot));//sandwich
+  tv100->AddNode(tv2,4,new TGeoCombiTrans(0.,0.,177.925,segrot));
+  tv100->AddNode(tvep1,3,new TGeoCombiTrans(0.,0.,-177.925,segrot));//epoxy
+  tv100->AddNode(tvep1,4,new TGeoCombiTrans(0.,0.,177.925,segrot));
+  tv100->AddNode(tvpr1,3,new TGeoCombiTrans(0.,0.,-177.925,segrot));//prepreg strip
+  tv100->AddNode(tvpr1,4,new TGeoCombiTrans(0.,0.,177.925,segrot));
+  //
+  //  third segment - rotation 240 deg.
+  //
+  segrot = new TGeoRotation();
+  segrot->RotateZ(240.);
+  //
+  // central	
+  tv100->AddNode(tv10,3,segrot); //sandwich
+  tv100->AddNode(tvep3,3,segrot);//epoxy
+  tv100->AddNode(tvpr3,3,segrot);//prepreg strip
+  // middle
+  tv100->AddNode(tv6,5,new TGeoCombiTrans(0.,0.,-98.75,segrot)); //sandwich1
+  tv100->AddNode(tv6,6,new TGeoCombiTrans(0.,0.,98.75,segrot)); // sandwich2
+  tv100->AddNode(tvep2,5,new TGeoCombiTrans(0.,0.,-98.75,segrot)); //epoxy
+  tv100->AddNode(tvep2,6,new TGeoCombiTrans(0.,0.,98.75,segrot)); //epoxy
+  tv100->AddNode(tvpr2,5,new TGeoCombiTrans(0.,0.,-98.75,segrot));//prepreg strip
+  tv100->AddNode(tvpr2,6,new TGeoCombiTrans(0.,0.,98.75,segrot));
+  //outer
+  tv100->AddNode(tv2,5,new TGeoCombiTrans(0.,0.,-177.925,segrot));//sandwich
+  tv100->AddNode(tv2,6,new TGeoCombiTrans(0.,0.,177.925,segrot));
+  tv100->AddNode(tvep1,5,new TGeoCombiTrans(0.,0.,-177.925,segrot));//epoxy
+  tv100->AddNode(tvep1,6,new TGeoCombiTrans(0.,0.,177.925,segrot));
+  tv100->AddNode(tvpr1,5,new TGeoCombiTrans(0.,0.,-177.925,segrot));//prepreg strip
+  tv100->AddNode(tvpr1,6,new TGeoCombiTrans(0.,0.,177.925,segrot));
+  // Al parts - rings
   tv100->AddNode(tv1,1,new TGeoTranslation(0.,0.,-252.85));
   tv100->AddNode(tv1,2,new TGeoTranslation(0.,0.,252.85));
   //
