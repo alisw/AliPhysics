@@ -1244,7 +1244,27 @@ ctr1->RegisterYourself();
  }
 
  tpcrrod->AddNode(rrod,1,new TGeoCombiTrans(0.,0.,0.5,crr1));
-
+ //
+ // guard ring resistor chain
+ //
+ TGeoTube *gres1 = new TGeoTube(0.,0.375,249.); //outside ifc
+ TGeoTube *gres2 = new TGeoTube(0.,0.375,125.);// inside ifc
+ //
+ TGeoVolume *vgres1 = new TGeoVolume("TPC_GRES1",gres1,m10);
+ TGeoVolume *vgres2 = new TGeoVolume("TPC_GRES2",gres2,m10); 
+ //
+ Double_t xrc,yrc;
+ //
+ xrc=76.2*TMath::Cos(170.*TMath::DegToRad());
+ yrc=76.2*TMath::Sin(170.*TMath::DegToRad());
+ //
+ v5->AddNode(vgres1,1,new TGeoTranslation(xrc,yrc,0.)); //in the insulator
+ //
+ xrc=79.3*TMath::Cos(350.*TMath::DegToRad());
+ yrc=79.3*TMath::Sin(350.*TMath::DegToRad());
+ //
+ v9->AddNode(vgres2,1,new TGeoTranslation(xrc,yrc,126.9));
+ v9->AddNode(vgres2,2,new TGeoTranslation(xrc,yrc,-126.9));
  //------------------------------------------------------------------
  TGeoRotation refl("refl",90.,0.,90.,90.,180.,0.);
  TGeoRotation rotrod("rotrod");
