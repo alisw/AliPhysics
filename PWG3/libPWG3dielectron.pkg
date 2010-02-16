@@ -1,0 +1,25 @@
+#-*- Mode: Makefile -*-
+
+SRCS= dielectron/AliDielectron.cxx \
+      dielectron/AliDielectronPair.cxx \
+      dielectron/AliDielectronHistos.cxx \
+      dielectron/AliDielectronCF.cxx \
+      dielectron/AliDielectronMC.cxx \
+      dielectron/AliDielectronVarManager.cxx \
+      dielectron/AliAnalysisTaskDielectronSE.cxx \
+      dielectron/AliAnalysisTaskDielectronFilter.cxx \
+      dielectron/AliAnalysisTaskDielectronEfficiency.cxx \
+      dielectron/AliAnalysisTaskMultiDielectron.cxx \
+      dielectron/AliDielectronVarCuts.cxx \
+      dielectron/AliDielectronPairLegCuts.cxx
+
+HDRS= $(SRCS:.cxx=.h)
+
+DHDR= PWG3dielectronLinkDef.h
+
+EINCLUDE:= PWG3/dielectron STEER CORRFW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+-lESD -lSTEER -lANALYSISalice -lANALYSIS -lCORRFW
+endif
