@@ -1254,28 +1254,32 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
     // 
     AliITSsegmentationSDD* segSDD = (AliITSsegmentationSDD*) fDetTypeSim->GetSegmentationModel(1);
     npx = segSDD->Npx();
-    AliITSRawStreamSDD inputSDD(rawReader);
+    AliITSRawStream* inputSDD=AliITSRawStreamSDD::CreateRawStreamSDD(rawReader);
     AliITSDDLModuleMapSDD* ddlmap=fDetTypeSim->GetDDLModuleMapSDD();
-    inputSDD.SetDDLModuleMap(ddlmap);
+    inputSDD->SetDDLModuleMap(ddlmap);
     while(1){
-	Bool_t next  = inputSDD.Next();
+	Bool_t next  = inputSDD->Next();
 	if (!next) break;
 
-	Int_t module = inputSDD.GetModuleID();
-	Int_t anode  = inputSDD.GetAnode();
-	Int_t time   = inputSDD.GetTime();
-	Int_t signal10 = inputSDD.GetSignal();
-	Int_t index  = npx * anode + time;
+	if(inputSDD->IsCompletedModule()==kFALSE && 
+	   inputSDD->IsCompletedDDL()==kFALSE){
 
-	if (module >= size) continue;
-	last = modA[module]->GetEntries();
-	TClonesArray& dum = *modA[module];
-	new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal10));
-	((AliITSpListItem*) dum.At(last))->AddSignalAfterElect(module, index, Double_t(signal10));
-	
+	  Int_t module = inputSDD->GetModuleID();
+	  Int_t anode  = inputSDD->GetCoord1();
+	  Int_t time   = inputSDD->GetCoord2();
+	  Int_t signal10 = inputSDD->GetSignal();
+	  Int_t index  = npx * anode + time;
+
+	  if (module >= size) continue;
+	  last = modA[module]->GetEntries();
+	  TClonesArray& dum = *modA[module];
+	  new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal10));
+	  ((AliITSpListItem*) dum.At(last))->AddSignalAfterElect(module, index, Double_t(signal10));
+	}
     }
+    delete inputSDD;
     rawReader->Reset();
-
+    
     //
     // SSD
     // 
