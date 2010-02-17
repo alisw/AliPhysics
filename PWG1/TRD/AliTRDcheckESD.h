@@ -34,7 +34,8 @@ public:
     kNCl  = 0    // number of clusters per track
    ,kTRDstat     // TRD tracks status
    ,kTRDmom      // TRD track momentum
-   ,kNhistos = 3 // number of histograms
+   ,kPtRes       // Pt resolution @ vertex for TRD
+   ,kNhistos = 4 // number of histograms
    ,kNgraphs = 6 // number of graphs
   };
   enum ETRDcheckESDbits {
@@ -43,7 +44,6 @@ public:
    ,kTRDout     // track reconstructed in TRD
    ,kTRDpid     // PID calculated in TRD
    ,kTRDref     // track refitted in TRD
-   ,kNbits  = 5 // number of check bits
   };
   AliTRDcheckESD();
   virtual ~AliTRDcheckESD();
@@ -67,6 +67,7 @@ private:
 
   AliTRDcheckESD(const AliTRDcheckESD&);
   AliTRDcheckESD& operator=(const AliTRDcheckESD&);
+  Int_t         Pdg2Idx(Int_t pdg);
   void          Process(TH1 **h, TGraphErrors *g);
   void          PrintStatus(ULong_t s);
 
