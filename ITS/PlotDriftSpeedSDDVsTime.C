@@ -27,7 +27,7 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t year=2009, Int_t firstRun=62840, 
+void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840, 
 			     Int_t lastRun=999999999,
 			     Int_t anode=128){
   TGrid::Connect("alien:",0,0,"t");
@@ -78,14 +78,15 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2009, Int_t firstRun=62840,
       Int_t iAn=anode;
       if(anode>256) iAn=anode-256;
       Float_t vdrift=vdriftarr->GetDriftSpeed(0,iAn);
+      if(vdrift<4. || vdrift > 8.) continue;
       UInt_t timest=vdriftarr->GetTimestamp(0);
-     if(timest==0) continue;
+      if(timest==0) continue;
       Float_t timeday;
-     if(year==2009){
+      if(year==2009){
 	timeday=float(timest-1247762992)/60./60./24.;
       } else {
 	timeday=float(timest-1264531801)/60./60./24.;
-     }
+      }
       Float_t mob=vdrift*1.E5/Edrift;  
       Float_t temper=293.15*TMath::Power((mob/1350.),-1/2.4); 
       if(iMod==497-240) printf("Run %s   Time %d Day %f Speed=%f Temp=%f\n",filnam,timest,timeday,vdrift,temper);
