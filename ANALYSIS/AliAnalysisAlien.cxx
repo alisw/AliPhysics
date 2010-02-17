@@ -2164,7 +2164,12 @@ void AliAnalysisAlien::WriteProductionFile(const char *filename) const
    out << locjdl << " " << njobspermaster << endl;
    Int_t nmasterjobs = fInputFiles->GetEntries();
    for (Int_t i=0; i<nmasterjobs; i++) {
-      out << Form("%s", fInputFiles->At(i)->GetName()) << " " << Form("%03d", i) << endl;
+      TString runOutDir = gSystem->BaseName(fInputFiles->At(i)->GetName());
+      runOutDir.ReplaceAll(".xml", "");
+      if (fOutputToRunNo)
+         out << Form("%s", fInputFiles->At(i)->GetName()) << " " << runOutDir << endl;
+      else
+         out << Form("%s", fInputFiles->At(i)->GetName()) << " " << Form("%03d", i) << endl;
    }
    Info("WriteProductionFile", "\n#####   Copying production file <%s> to your work directory", filename);
    if (FileExists(filename)) gGrid->Rm(filename);
