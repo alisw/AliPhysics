@@ -25,6 +25,7 @@
 
 Bool_t kNoDraw = kFALSE; // set to kTRUE to eliminate module dependent plots
 
+
 void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/Run0_9999999_v0_s0.root", Int_t firstmod=0, Int_t lastmod=260,Int_t nrun=0){
   TFile *f= TFile::Open(filnam);
   AliCDBEntry *ent=(AliCDBEntry*)f->Get("AliCDBEntry");
@@ -33,8 +34,8 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   AliITSDriftSpeedArraySDD *vdriftarr1;
   TGraph **gvdr0=new TGraph*[260];
   TGraph **gvdr1=new TGraph*[260];
-  TCanvas *c0=NULL;
-  if(!kNoDraw)c0=new TCanvas("c0","Module Drift Speed",1100,500);
+  TCanvas *c0=0x0;
+  if(!kNoDraw)c0=new TCanvas("c0","Module Drift Speed",700,1000);
 
   TGraph *vvsmod0=new TGraph(0);
   TGraph *vvsmod1=new TGraph(0);
@@ -75,14 +76,22 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
   TF1* fPoly=new TF1("fPoly","[0]+[1]*x+[2]*x*x+[3]*x*x*x",0.,256.);
   Char_t tit[100];
+  TString psnm0 = "vdriftSDD.ps[";
+  TString psnm1 = "vdriftSDD.ps";
+  TString psnm2 = "vdriftSDD.ps]";
+  if(!kNoDraw) c0->Print(psnm0.Data());
+  Int_t cntpad = 0;
   Int_t iGoodInj=0;
   Int_t iAverSpeed=0;
+  TLatex* tleft=new TLatex(0.2,0.82,"Side 0");
+  tleft->SetNDC();
+  tleft->SetTextColor(1);
+  TLatex* tright=new TLatex(0.2,0.75,"Side 1");
+  tright->SetNDC();
+  tright->SetTextColor(2);
+
   for(Int_t i=firstmod; i<lastmod; i++){
     Int_t iMod=i+240;
-    if(!kNoDraw){
-      c0->Clear();
-      c0->Divide(2,1);
-    }
     Int_t i0=2*i;
     Int_t i1=1+2*i;
     vdriftarr0=(AliITSDriftSpeedArraySDD*)drspSDD->At(i0);
@@ -96,13 +105,17 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     gvdr1[i]=new TGraph(0);
     gvdr0[i]->SetMarkerStyle(7);
     gvdr1[i]->SetMarkerStyle(7);
+    gvdr0[i]->SetMarkerColor(kBlack);
+    gvdr0[i]->SetLineColor(kBlack);
     gvdr0[i]->SetMinimum(5.);
     gvdr1[i]->SetMinimum(5.);
-    gvdr0[i]->SetMaximum(9.);
-    gvdr1[i]->SetMaximum(9.);
+    gvdr0[i]->SetMaximum(7.5);
+    gvdr1[i]->SetMaximum(7.5);
     sprintf(tit,"Mod %d\n",iMod);
     gvdr0[i]->SetTitle(tit);
     gvdr1[i]->SetTitle(tit);
+    gvdr1[i]->SetMarkerColor(kRed);
+    gvdr1[i]->SetLineColor(kRed);
 
     for(Int_t iAn=0; iAn<256; iAn++){
       Float_t vel0=0;
@@ -121,22 +134,31 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     printf("        \t v(an 128r)= %f  Degree=%d %d\n",vdriftarr1->GetDriftSpeed(0,128),vdrift0->GetDegreeofPoly(),vdrift1->GetDegreeofPoly());
 
     if(!kNoDraw){
-      c0->cd(1);
+      if (i%12==0 ) {
+	c0->cd();
+	c0->Modified();
+	c0->Update();
+	if (i) c0->Print(psnm1.Data());
+	c0->Clear();
+	c0->Divide(3,4);
+	cntpad = 0;
+      }
+      c0->cd(++cntpad);
       gvdr0[i]->Draw("AP");
       gvdr0[i]->GetXaxis()->SetTitle("Anode");
-      gvdr0[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
-      c0->cd(2);
-      gvdr1[i]->Draw("AP");
+      gvdr0[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");      
+      gvdr1[i]->Draw("P same");
       gvdr1[i]->GetXaxis()->SetTitle("Anode");
       gvdr1[i]->GetYaxis()->SetTitle("Vdrift (#mum/ns)");
-      c0->Update();
+      tleft->Draw();
+      tright->Draw();
     }
 
     Float_t vel0=0;
     Float_t pd0=0;
     if(vdrift0){ 
       vel0=vdrift0->GetDriftSpeedAtAnode(128);
-      pd0=vdrift0->GetDegreeofPoly();
+     pd0=vdrift0->GetDegreeofPoly();
     }
     Float_t vel1=0;
     Float_t pd1=0;
@@ -172,6 +194,12 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     //    getchar();
   }
 
+  if(!kNoDraw){
+    c0->cd();
+    c0->Modified();
+    c0->Update();
+    c0->Print(psnm2.Data());
+  }
   printf("Number of half-modules with drift speed from injectors = %d\n",iGoodInj);
   printf("Number of half-modules with average drift speed        = %d\n",iAverSpeed);
 
@@ -184,13 +212,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   vvsmod1->SetMarkerStyle(21);
   vvsmod1->SetMarkerColor(2);
   vvsmod1->Draw("SAMEP");
-  TLatex* tleft=new TLatex(0.2,0.82,"Side 0");
-  tleft->SetNDC();
-  tleft->SetTextColor(1);
   tleft->Draw();
-  TLatex* tright=new TLatex(0.2,0.75,"Side 1");
-  tright->SetNDC();
-  tright->SetTextColor(2);
   tright->Draw();
 
   TCanvas* c3;
@@ -251,9 +273,12 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
 
 
-void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2010){
+void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2010, Int_t nv=-1){
   TGrid::Connect("alien:",0,0,"t");
   TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD\" \"Run%d*.root\" > run.txt",year,nrun);
+  if(nv>0){
+    cmd.Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD\" \"Run%d_999999999_v%d_s0.root\" > run.txt",year,nrun,nv);  
+  }
   gSystem->Exec(cmd.Data());
   
   Char_t filnam[200],filnamalien[200];
