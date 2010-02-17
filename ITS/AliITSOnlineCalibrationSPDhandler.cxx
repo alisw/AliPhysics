@@ -404,7 +404,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadPITConditionsFromDB(Int_t runNr, c
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBEntry *cdbEntry = man->Get("TRIGGER/SPD/PITConditions", runNr);
@@ -547,7 +547,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadModuleFromDB(UInt_t module, In
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBEntry *cdbEntry = man->Get("ITS/Calib/SPDDead", runNr);
@@ -600,7 +600,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyModuleFromDB(UInt_t module, I
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBEntry *cdbEntry = man->Get("ITS/Calib/SPDNoisy", runNr);
@@ -648,7 +648,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDB(Int_t runNr, const Char
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBEntry *cdbEntry = man->Get("ITS/Calib/SPDDead", runNr);
@@ -705,7 +705,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromDB(Int_t runNr, const Cha
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBEntry *cdbEntry = man->Get("ITS/Calib/SPDNoisy", runNr);
@@ -751,7 +751,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDBasNoisy(Int_t runNr, con
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBEntry *cdbEntry = man->Get("ITS/Calib/SPDNoisy", runNr);
@@ -846,7 +846,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDB(Int_t runNrStart, Int_t 
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBMetaData* metaData = new AliCDBMetaData();
@@ -893,7 +893,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDBasNoisy(Int_t runNrStart,
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBMetaData* metaData = new AliCDBMetaData();
@@ -940,7 +940,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteNoisyToDB(Int_t runNrStart, Int_t
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBMetaData* metaData = new AliCDBMetaData();
@@ -2970,7 +2970,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WritePITConditionsToDB(Int_t runNrStar
     }
   }
   else {
-    storageSTR = Form("local://%s",storage);
+    storageSTR = Form("%s",storage);
     man->SetDefaultStorage(storageSTR.Data());
   }
   AliCDBMetaData* metaData = new AliCDBMetaData();
@@ -2995,6 +2995,102 @@ Bool_t AliITSOnlineCalibrationSPDhandler::UnSetInactiveChipInPITmask(UInt_t eq, 
   //
   fTriggerConditions->SetInActiveChip(eq,hs,chip);
   return kTRUE;
+}
+//____________________________________________________________________________________________
+void AliITSOnlineCalibrationSPDhandler::PrintDiffInDead(AliITSOnlineCalibrationSPDhandler *other) const {
+  //
+  // Printout of the differences between two ocdb files for SPD Dead channel map
+  //
+  UInt_t nrChipOk=0;
+  UInt_t nrDeadChipOk=0; 
+  UInt_t nrDeadHsOk=0;
+  UInt_t nrDeadHs =0;
+  UInt_t nrDeadChip=0;
+  UInt_t nrDeadHsInOther =0;
+  UInt_t nrDeadChipInOther=0;
+  UInt_t nrMismatch =0;
+  UInt_t nrMismatchInOther =0;
+  printf("\n\n ****** loop over chips ***** \n");
+  for(Int_t eq=0; eq<20; eq++){
+   if(TMath::Abs((Int_t)GetNrBadEq(eq) - (Int_t)other->GetNrBadEq(eq)) >0) printf("-----> dead pixels differ in eq %i!   %i - %i in the other \n",eq,GetNrBadEq(eq),other->GetNrBadEq(eq));
+   for(Int_t hs=0; hs<6; hs++){
+    Short_t nchips =0;
+    Short_t nchipsOther =0;
+    Short_t nok=0;
+    for(Int_t chip=0; chip<10; chip++){
+      UInt_t chipkey = AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(eq,hs,chip);
+     // test if everything is coherent
+     if(IsDeadChip(eq,hs,chip) && other->IsDeadChip(eq,hs,chip)) {
+      nok++;
+      nrChipOk++;
+      nrDeadChipOk++;
+     }
+     if(!IsDeadChip(eq,hs,chip) && !other->IsDeadChip(eq,hs,chip)) nrChipOk++;
+     // now testing if mismatches
+     if(IsDeadChip(eq,hs,chip)) {
+      nrDeadChip++;
+      nchips++;
+      if(!other->IsDeadChip(eq,hs,chip)) {
+        nrMismatch++;
+        printf("  mismatch -> eq %i  hs %i  chip %i is DEAD  - ALIVE in the other (chipkey %i)\n",eq,hs,chip,chipkey);
+       }
+      }
+     if(other->IsDeadChip(eq,hs,chip)){
+      nrDeadChipInOther++;
+      nchipsOther++;
+      if(!IsDeadChip(eq,hs,chip)) {
+       nrMismatchInOther++;
+       printf("  mismatch -> eq %i  hs %i  chip %i is ALIVE -  DEAD in the other (chipkey %i)\n",eq,hs,chip,chipkey);
+      }
+     }
+    }
+    if(nok==10) nrDeadHsOk++;
+    if(nchips==10) nrDeadHs++;
+    if(nchipsOther==10) nrDeadHsInOther++;
+   }
+  }
+
+printf("\n\n\n*************SUMMARY****************\n");
+printf(" BOTH have : %i Dead HS and %i Dead chips  with %i coherent chips \n",nrDeadHsOk,nrDeadChipOk,nrChipOk);
+printf("\n_________MISMATCH RESULTS___________\n");
+printf(" THIS  : Nr Dead HS %i - Nr Dead Chip %i \n",nrDeadHs,nrDeadChip);
+printf(" OTHER : Nr Dead HS %i - Nr Dead Chip %i \n",nrDeadHsInOther,nrDeadChipInOther);
+printf(" N Mismatches in Dead  chips (=ALIVE in the other) %i \n",nrMismatch);
+printf(" N Mismatches in Alive chips (=DEAD  in the other) %i \n",nrMismatchInOther);
+}
+//____________________________________________________________________________________________
+void AliITSOnlineCalibrationSPDhandler::PrintDiffInPITmask(AliITSOnlineCalibrationSPDhandler *other) const {
+  //
+  // Printout of the differences between two ocdb files for SPD Dead channel map
+  //
+
+Int_t nOk =0;
+Int_t nMismatch =0;
+Int_t nMismatchInOther =0;
+
+printf("\n\n ****** loop over chips in PIT mask***** \n");
+for(Int_t eq=0; eq<20; eq++){
+  for(Int_t hs=0; hs<6; hs++){
+   for(Int_t chip=0; chip<10; chip++){
+
+  UInt_t chipkey = AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(eq,hs,chip);
+
+  if(fTriggerConditions->IsChipActive(eq,hs,chip) && (other->GetTriggerConditions())->IsChipActive(eq,hs,chip)) nOk++;
+  if(fTriggerConditions->IsChipActive(eq,hs,chip) && !(other->GetTriggerConditions())->IsChipActive(eq,hs,chip)) {
+   nMismatch++;
+   printf("Mismatch -> eq %i  hs %i chip %i is ACTIVE - INACTIVE in the other (chipkey %i) \n",eq,hs,chip,chipkey);
+  }
+  if(!fTriggerConditions->IsChipActive(eq,hs,chip) && (other->GetTriggerConditions())->IsChipActive(eq,hs,chip)) {
+   nMismatchInOther++;
+   printf("Mismatch -> eq %i  hs %i chip %i is INACTIVE - ACTIVE in the other (chipkey %i) \n",eq,hs,chip,chipkey);
+   }
+  if(!fTriggerConditions->IsChipActive(eq,hs,chip) && !(other->GetTriggerConditions())->IsChipActive(eq,hs,chip)) nOk++;
+  }
+ }
+}
+
+printf("n Chips OK %i : ACTIVE mismatch %i  - INACTIVE mismatch in %i \n",nOk,nMismatch,nMismatchInOther);
+
 }
 
 

@@ -225,6 +225,9 @@ class AliITSOnlineCalibrationSPDhandler {
   AliITSOnlineCalibrationSPDhandler* GetNoisyDiff(AliITSOnlineCalibrationSPDhandler* other) const;
   AliITSTriggerConditions * GetTriggerConditions() const {return fTriggerConditions;}
 
+  void PrintDiffInDead(AliITSOnlineCalibrationSPDhandler *other) const;
+  void PrintDiffInPITmask(AliITSOnlineCalibrationSPDhandler *other) const;
+
  private:
   TString fFileLocation;              // location (dir) of files to read and write from
   AliITSIntMap* fDeadPixelMap[1200];  // lists of dead pixels for each chip
@@ -296,3 +299,4 @@ class AliITSOnlineCalibrationSPDhandler {
 };
 
 #endif
+
