@@ -30,6 +30,7 @@
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TH2I.h>
+#include <TH3S.h>
 #include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
 #include <TFile.h>
@@ -226,44 +227,49 @@ void AliTRDcheckESD::Exec(Option_t *){
   for(Int_t itrk = 0; itrk < fESD->GetNumberOfTracks(); itrk++){
     esdTrack = fESD->GetTrack(itrk);
 
-//     if(esdTrack->GetNcls(1)) nTPC++;
-//     if(esdTrack->GetNcls(2)) nTRD++;
-
     // track status
-    ULong_t status = esdTrack->GetStatus();
-    //PrintStatus(status);
-
-    // define TPC out tracks
+    ULong_t status = esdTrack->GetStatus(); //PrintStatus(status);
     if(!Bool_t(status & AliESDtrack::kTPCout)) continue;
     if(esdTrack->GetKinkIndex(0) > 0) continue;
 
-    // TRD PID
+    //Int_t nTPC(esdTrack->GetNcls(1));
+    Int_t nTRD(esdTrack->GetNcls(2));
+    Double_t pt(esdTrack->Pt());
+    //Double_t eta(esdTrack->Eta());
+    //Double_t phi(esdTrack->Phi());
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
     // pid quality
     //esdTrack->GetTRDntrackletsPID();
+    Bool_t kBarrel = Bool_t(status & AliESDtrack::kTRDin);
 
     // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
     const AliExternalTrackParam *ip = esdTrack->GetInnerParam();
 
-    Float_t pt(0.); Bool_t kFOUND(kFALSE);
-
+    Double_t pt0(0.), eta0(0.), phi0(0.), ptTRD(0.); 
     // read MC info if available
+    Bool_t kFOUND(kFALSE), kPhysPrim(kFALSE);
+    AliMCParticle *mcParticle(NULL);
     if(HasMC()){
       AliTrackReference *ref(NULL); 
       Int_t fLabel(esdTrack->GetLabel());
-      if(TMath::Abs(fLabel) > fStack->GetNtrack()) continue; 
+      Int_t fIdx(TMath::Abs(fLabel));
+      if(fIdx > fStack->GetNtrack()) continue; 
       
-      // read MC particle
-      AliMCParticle *mcParticle(NULL); 
-      if(!(mcParticle = (AliMCParticle*) fMC->GetTrack(TMath::Abs(fLabel)))){
+      // read MC particle 
+      if(!(mcParticle = (AliMCParticle*) fMC->GetTrack(fIdx))) {
         AliWarning(Form("MC particle missing. Label[ %d].", fLabel));
         continue;
       }
-  
+      pt0  = mcParticle->Pt();
+      eta0 = mcParticle->Eta();
+      phi0 = mcParticle->Phi();
+      kPhysPrim = fMC->IsPhysicalPrimary(fIdx);
+
+      // read track references
       Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
       if(!nRefs){
-        AliWarning(Form("Track refs missing. Label[%d].", fLabel));
+        AliWarning(Form("No TR found for track @ Label[%d].", fLabel));
         continue;
       }
       Int_t iref = 0;
@@ -279,40 +285,44 @@ void AliTRDcheckESD::Exec(Option_t *){
       } else { // track stopped in TPC 
         ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
       }
-      pt = ref->Pt();kFOUND=kTRUE;
+      ptTRD = ref->Pt();kFOUND=kTRUE;
     } else { // use reconstructed values
       if(op){
         Double_t x(op->GetX());
         if(x<fgkxTOF && x>fgkxTPC){
-          pt=op->Pt();
+          ptTRD=op->Pt();
           kFOUND=kTRUE;
         }
       }
 
       if(!kFOUND && ip){
-        pt=ip->Pt();
+        ptTRD=ip->Pt();
         kFOUND=kTRUE;
       }
     }
 
     if(kFOUND){
       h = (TH2I*)fHistos->At(kTRDstat);
-      if(status & AliESDtrack::kTPCout) h->Fill(pt, kTPCout);
-      if(status & AliESDtrack::kTRDin) h->Fill(pt, kTRDin);
-      if(status & AliESDtrack::kTRDout){ 
-        ((TH1*)fHistos->At(kNCl))->Fill(esdTrack->GetNcls(2));
-        h->Fill(pt, kTRDout);
+      if(status & AliESDtrack::kTPCout) h->Fill(ptTRD, kTPCout);
+      if(status & AliESDtrack::kTRDin) h->Fill(ptTRD, kTRDin);
+      if(kBarrel && (status & AliESDtrack::kTRDout)){ 
+        ((TH1*)fHistos->At(kNCl))->Fill(nTRD);
+        h->Fill(ptTRD, kTRDout);
       }
-      if(status & AliESDtrack::kTRDpid) h->Fill(pt, kTRDpid);
-      if(status & AliESDtrack::kTRDrefit) h->Fill(pt, kTRDref);
+      if(kBarrel && (status & AliESDtrack::kTRDpid)) h->Fill(ptTRD, kTRDpid);
+      if(kBarrel && (status & AliESDtrack::kTRDrefit)) h->Fill(ptTRD, kTRDref);
     }
-
+    if(HasMC() && kBarrel && (status & AliESDtrack::kTRDout)) {
+      TH3 *h3 = (TH3S*)fHistos->At(kPtRes);
+      Int_t sgn = mcParticle->Charge()>0?1:-1;
+      h3->Fill(pt0, 1.e2*pt/pt0-1.e2, sgn*Pdg2Idx(TMath::Abs(mcParticle->PdgCode())));
+    }
     if(ip){
       h = (TH2I*)fHistos->At(kTRDmom);
-      Float_t p(0.);
+      Float_t pTRD(0.);
       for(Int_t ily=6; ily--;){
-        if((p=esdTrack->GetTRDmomentum(ily))<0.) continue;
-        h->Fill(ip->GetP()-p, ily);
+        if((pTRD=esdTrack->GetTRDmomentum(ily))<0.) continue;
+        h->Fill(ip->GetP()-pTRD, ily);
       }
     }
   }  
@@ -333,29 +343,48 @@ TObjArray* AliTRDcheckESD::Histos()
 
   // clusters per tracklet
   if(!(h = (TH1I*)gROOT->FindObject("hNCl"))){
-    h = new TH1I("hNCl", "Clusters per TRD track", 100, 0., 200.);
-    h->GetXaxis()->SetTitle("N_{cl}^{TRD}");
-    h->GetYaxis()->SetTitle("entries");
+    h = new TH1I("hNCl", "Clusters per TRD track;N_{cl}^{TRD};entries", 100, 0., 200.);
   } else h->Reset();
   fHistos->AddAt(h, kNCl);
 
   // status bits histogram
+  const Int_t kNpt(10), kNbits(5);
+  Float_t Pt(0.1), Bits(.5);
+  Float_t binsPt[kNpt+1], binsBits[kNbits+1];
+  for(Int_t i=0;i<kNpt+1; i++,Pt+=(TMath::Exp(i*i*.015)-1.)) binsPt[i]=Pt;
+  for(Int_t i=0; i<kNbits+1; i++,Bits+=1.) binsBits[i]=Bits;
   if(!(h = (TH2I*)gROOT->FindObject("hTRDstat"))){
-    h = new TH2I("hTRDstat", "TRD status bits", 100, 0., 20., kNbits, .5, kNbits+.5);
-    h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    h->GetYaxis()->SetTitle("status bits");
-    h->GetZaxis()->SetTitle("entries");
+    h = new TH2I("hTRDstat", "TRD status bits;p_{t} @ TRD [GeV/c];status;entris", kNpt, binsPt, kNbits, binsBits);
+    TAxis *ay(h->GetYaxis());
+    ay->SetBinLabel(1, "kTPCout");
+    ay->SetBinLabel(2, "kTRDin");
+    ay->SetBinLabel(3, "kTRDout");
+    ay->SetBinLabel(4, "kTRDpid");
+    ay->SetBinLabel(5, "kTRDrefit");
   } else h->Reset();
   fHistos->AddAt(h, kTRDstat);
 
   // energy loss
   if(!(h = (TH2I*)gROOT->FindObject("hTRDmom"))){
-    h = new TH2I("hTRDmom", "TRD energy loss", 100, -1., 2., 6, -0.5, 5.5);
-    h->GetXaxis()->SetTitle("p_{inner} - p_{ly} [GeV/c]");
-    h->GetYaxis()->SetTitle("layer");
-    h->GetZaxis()->SetTitle("entries");
+    h = new TH2I("hTRDmom", "TRD energy loss;p_{inner} - p_{ly} [GeV/c];ly;entries", 100, -1., 2., 6, -0.5, 5.5);
   } else h->Reset();
   fHistos->AddAt(h, kTRDmom);
+
+  // pt resolution
+  const Int_t kNdpt(100), kNspec(2*AliPID::kSPECIES+1);
+  Float_t DPt(-3.), Spec(-AliPID::kSPECIES-0.5);
+  Float_t binsDPt[kNdpt+1], binsSpec[kNspec+1];
+  for(Int_t i=0; i<kNdpt+1; i++,DPt+=6.e-2) binsDPt[i]=DPt;
+  for(Int_t i=0; i<kNspec+1; i++,Spec+=1.) binsSpec[i]=Spec;
+  if(!(h = (TH3S*)gROOT->FindObject("hPtRes"))){
+    h = new TH3S("hPtRes", "P_{t} resolution @ DCA;p_{t}^{MC} [GeV/c];#Delta p_{t}/p_{t}^{MC} [%];SPECIES", kNpt, binsPt, kNdpt, binsDPt, kNspec, binsSpec);
+    TAxis *az(h->GetZaxis());
+    for(Int_t i(0); i<AliPID::kSPECIES; i++){
+      az->SetBinLabel(5-i, AliPID::ParticleLatexName(i));
+      az->SetBinLabel(7+i, AliPID::ParticleLatexName(i));
+    }
+  } else h->Reset();
+  fHistos->AddAt(h, kPtRes);
 
   return fHistos;
 }
@@ -445,6 +474,19 @@ void AliTRDcheckESD::Terminate(Option_t *)
     //printf(" max[%f] mean[%f] q[%f %f %f %f]\n", ax->GetBinCenter(h1[0]->GetMaximumBin()), h1[0]->GetMean(), yq[0], yq[1], yq[2], yq[3]);
     delete h1[0];
   }
+}
+
+//____________________________________________________________________
+Int_t AliTRDcheckESD::Pdg2Idx(Int_t pdg)
+{
+  switch(pdg){
+  case kElectron: return AliPID::kElectron+1;  
+  case kMuonMinus: return AliPID::kMuon+1;  
+  case kPiPlus: return AliPID::kPion+1;  
+  case kKPlus: return AliPID::kKaon+1;
+  case kProton: return AliPID::kProton+1;
+  } 
+  return 0;
 }
 
 //____________________________________________________________________
