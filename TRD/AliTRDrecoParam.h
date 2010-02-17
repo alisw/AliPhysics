@@ -82,6 +82,7 @@ public:
   Int_t    GetNumberOfPostsamples() const   { return fNumberOfPostsamples;}
   Bool_t   IsArgon() const                  { return TESTBIT(fFlags, kDriftGas); }
   Bool_t   IsCheckTimeConsistency() const   { return kCheckTimeConsistency;}
+  Bool_t   IsOverPtThreshold(Double_t pt) const {return Bool_t(pt>fkPtThreshold);}
   Bool_t   IsXenon() const                  { return !TESTBIT(fFlags, kDriftGas); }
   Bool_t   IsPIDNeuralNetwork() const       { return TESTBIT(fFlags, kSteerPID);}
   Bool_t   IsVertexConstrained() const      { return TESTBIT(fFlags, kVertexConstraint); }
@@ -126,6 +127,7 @@ public:
   void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
   void     SetClusSigThresh(Float_t thresh)                   { fClusSigThresh   = thresh; };
   inline void SetPIDThreshold(Double_t *pid);
+  void     SetPtThreshold(Double_t pt) {fkPtThreshold = pt;}
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
   inline void SetTCParams(Double_t *par);
   inline void SetStreamLevel(ETRDReconstructionTask task, Int_t level);
@@ -138,7 +140,7 @@ private:
   Double_t  fkdNchdy;                // dNch/dy
   Double_t  fkMaxTheta;              // Maximum theta
   Double_t  fkMaxPhi;                // Maximum phi - momentum cut
-
+  // Tracker params 
   Double_t  fkRoad0y;                // Road for middle cluster
   Double_t  fkRoad0z;                // Road for middle cluster
 
@@ -147,7 +149,7 @@ private:
 
   Double_t  fkRoad2y;                // Road in y for extrapolated cluster
   Double_t  fkRoad2z;                // Road in z for extrapolated cluster
-  
+  Double_t  fkPtThreshold;           // pt threshold for using TRD points for updating Kalaman track
   Double_t  fkPlaneQualityThreshold; // Quality threshold
   Double_t  fkRoadzMultiplicator;    // Multiplicator for the Roads in z 
   Double_t  fkFindable;              // minimum ratio of clusters per tracklet supposed to be attached.
@@ -185,7 +187,7 @@ private:
   Int_t     fNumberOfPresamples;     // number of presamples 
   Int_t     fNumberOfPostsamples;     // number of postsamples 
 
-  ClassDef(AliTRDrecoParam, 10)       // Reconstruction parameters for TRD detector
+  ClassDef(AliTRDrecoParam, 11)       // Reconstruction parameters for TRD detector
 
 };
 

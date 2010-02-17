@@ -699,7 +699,9 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     tracklets[ip] = t.GetTracklet(ip);
     t.UnsetTracklet(ip);
   } 
-  Bool_t kStoreIn = kTRUE, kPropagateIn = kTRUE;
+  Bool_t kStoreIn(kTRUE),    //
+         kPropagateIn(kTRUE),//
+         kUseTRD(fkReconstructor->GetRecoParam()->IsOverPtThreshold(t.Pt()));// use TRD measurment to update Kalman
 
   // Loop through the TRD layers
   TGeoHMatrix *matrix = NULL;
@@ -933,7 +935,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       AliDebug(4, Form("Failed Chi2[%f]", chi2));
       continue; 
     }
-    if(!t.Update(p, cov, chi2)) {
+    if(!t.Update(p, cov, chi2, kUseTRD)) {
       n=-1; 
       t.SetStatus(AliTRDtrackV1::kUpdate);
       if(debugLevel > 2){
