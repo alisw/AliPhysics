@@ -33,6 +33,7 @@
 #include "TROOT.h"
 #include "TClonesArray.h"
 #include "TObjString.h"
+#include "TGeoManager.h"
 
 //---- AliRoot system ----
 #include "AliAnaPi0.h"
@@ -616,7 +617,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 	      
 	      Bool_t inacceptance = kFALSE;
 	      if(fCalorimeter == "PHOS"){
-		if(GetReader()->GetPHOSGeometry()){
+		if(GetReader()->GetPHOSGeometry() && gGeoManager){
 		  Int_t mod ;
 		  Double_t x,z ;
 		  if(GetReader()->GetPHOSGeometry()->ImpactOnEmc(phot1,mod,z,x) && GetReader()->GetPHOSGeometry()->ImpactOnEmc(phot2,mod,z,x)) 
@@ -631,7 +632,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 		}
 		
 	      }	   
-	      else if(fCalorimeter == "EMCAL"){
+	      else if(fCalorimeter == "EMCAL" && gGeoManager){
 		if(GetReader()->GetEMCALGeometry()){
 		  if(GetReader()->GetEMCALGeometry()->Impact(phot1) && GetReader()->GetEMCALGeometry()->Impact(phot2)) 
 		    inacceptance = kTRUE;

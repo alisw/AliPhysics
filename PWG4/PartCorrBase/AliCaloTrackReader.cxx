@@ -28,6 +28,7 @@
 
 // --- ROOT system ---
 #include "TFile.h"
+#include "TGeoManager.h"
 
 //---- ANALYSIS system ----
 #include "AliCaloTrackReader.h"
@@ -376,6 +377,25 @@ void AliCaloTrackReader::InitParameters()
 	
 }
 
+//________________________________________________________________
+void AliCaloTrackReader::InitEMCALGeometry()
+{
+	//Initialize EMCAL geometry if it did not exist previously
+	if (!fEMCALGeo){
+		fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName); 
+		if (!gGeoManager) printf("Careful!, gGeoManager not loaded.\n");
+	}
+}
+
+//________________________________________________________________
+void AliCaloTrackReader::InitPHOSGeometry()
+{
+	//Initialize PHOS geometry if it did not exist previously
+	if (!fPHOSGeo){
+		fPHOSGeo = new AliPHOSGeoUtils(fPHOSGeoName); 
+		if (!gGeoManager) printf("Careful!, gGeoManager not loaded.\n");
+	}	
+}
 
 //________________________________________________________________
 void AliCaloTrackReader::Print(const Option_t * opt) const
