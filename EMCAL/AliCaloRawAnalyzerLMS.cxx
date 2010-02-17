@@ -82,13 +82,15 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 
       if ( maxf > fAmpCut )
 	{
-	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxampindex -  bunchvector.at(index).GetStartBin(), &first, &last);
-	  int nsamples =  last - first;
+	  short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
+	  short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last);
+	  int nsamples =  last - first + 1;
 	  
 	  if( ( nsamples  )  > fNsampleCut )
 	    {
 	      
-	      TGraph *graph =  new TGraph(  last - first, fXaxis,  &fReversed[first] );
+	      TGraph *graph =  new TGraph(  nsamples, fXaxis,  &fReversed[first] );
 	      fTf1->SetParameter(0, maxf*fkEulerSquared );
 	      fTf1->SetParameter(1, 0.2);
 	      //	      fTf1->SetParameter(2,  2);
@@ -109,7 +111,7 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 	        delete graph;
 		return AliCaloFitResults( maxamp, ped ,    tmpStatus,  
 					 fTf1->GetParameter(0)/fkEulerSquared, 
-					 fTf1->GetParameter(1) + maxampindex,  
+					 fTf1->GetParameter(1) + timebinOffset,  
 					 fTf1->GetChisquare(), 
 					 fTf1->GetNDF());
 		

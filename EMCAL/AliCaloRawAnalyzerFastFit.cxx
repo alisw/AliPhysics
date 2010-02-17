@@ -67,13 +67,14 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
       int first;
       int last;
       int maxrev =  maxampindex -  bunchvector.at(index).GetStartBin();
+      short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
 
       double maxf =  maxamp - ped;
 
       if ( maxf > fAmpCut )
 	{
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last);
-	  int nsamples =  last - first;
+	  int nsamples =  last - first + 1;
 
 	  //amp  = dAmp;
 	  //	  time = dTime * GetRawFormatTimeBinWidth();
@@ -106,14 +107,10 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 	      Double_t chi2 = 0;
 	      Double_t dTau = 2.35; // time-bin units
 	      
-	      //  AliCaloFastAltroFitv0::FastFit(fXAxis, &fReversed[first] , nsamples,
-	      //				     eSignal, fTau, dAmp, eAmp, dTime, eTime, chi2);
-	      
 	      AliCaloFastAltroFitv0::FastFit(fXAxis, ordered , nsamples,
 					     eSignal, dTau, dAmp, eAmp, dTime, eTime, chi2);
 	   
-	      // return AliCaloFitResults( maxamp, ped , -1, fAmpA[tmpindex], tof, -2, -3 );  
-	      return AliCaloFitResults(maxamp, ped, -1,  dAmp, dTime*100E-9,  -2,  -3 );
+	      return AliCaloFitResults(maxamp, ped, -1,  dAmp, dTime+timebinOffset,  chi2,  -3 );
 	    }
 
 	}

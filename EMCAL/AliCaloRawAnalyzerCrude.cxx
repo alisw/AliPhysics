@@ -66,7 +66,7 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
 	if( sig[j] > amp  )
 	  {
 	    amp   = sig[j];
-	    tof   = i;		     
+	    tof   = bunchvector.at(i).GetStartBin() - j;		     
 	  }
     }
 

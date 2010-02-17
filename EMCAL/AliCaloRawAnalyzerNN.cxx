@@ -80,16 +80,11 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
  
   Float_t ped = ReverseAndSubtractPed( &(bunchvector.at( bindex ) )  ,  altrocfg1, altrocfg2, fReversed  );
   
-  //  SelectSubarray ( fReversed,  bunchvector.at(bindex).GetLength(), &first, &last );
-  
   short maxrev = maxindex  -  bunchvector.at(bindex).GetStartBin();
-
+  short timebinOffset = maxindex - (bunchvector.at(bindex).GetLength()-1);
   
   SelectSubarray( fReversed,  bunchvector.at(bindex).GetLength(),  maxrev , &first, &last);
 
-  //  cout << __FILE__ << __LINE__ << ":" << fName << ", maxindex = " << maxindex << ", first = " << first << ", last = " << last << endl;
-  // cout << __FILE__ << __LINE__ << ":" << fName << ", maxindex = " <<  maxrev    << ", first = " << first << ", last = " << last << endl;
-  
   if(maxrev  < 1000 )
     {
       if (  ( maxrev   - first) < 2  &&  (last -   maxrev ) < 2)
@@ -98,37 +93,15 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
 	}
       else
 	{
-	  /*
-	  cout << __FILE__ << __LINE__ << "!!!!!!!!:\t" << fReversed[maxrev -2 ]<< "\t" <<  
-	    fReversed[ maxrev  -1 ] << "\t" <<  fReversed[maxrev  ]  <<   "\t" <<
-	    fReversed[ maxrev  +1 ] << "\t" <<  fReversed[maxrev +2]  << endl;
-	  */
 
 	  for(int i=0; i < 5 ; i++)
 	    {
 	      fNNInput[i]  = fReversed[maxrev-2 +i]/(maxamp -ped);
 	    } 
 
-	  
-
-	  //	  double amp = fNeuralNet->Value( 0,  fReversed[maxrev-2], fReversed[maxrev -1],  fReversed[maxrev], fReversed[maxrev+1], fReversed[maxrev+2]);
-	  //  double tof = fNeuralNet->Value( 1,  fReversed[maxrev-2], fReversed[maxrev -1],  fReversed[maxrev], fReversed[maxrev+1], fReversed[maxrev+2]);
-	  
-	  //	  double amp = fNeuralNet->Value( 0,  fReversed[maxrev+2]/maxamp, fReversed[maxrev +1]/maxamp,  fReversed[maxrev]/maxamp, fReversed[maxrev-1]/maxamp, fReversed[maxrev-2]/maxamp);
-	  //	  double tof = fNeuralNet->Value( 1,  fReversed[maxrev+2]/maxamp, fReversed[maxrev +1]/maxamp,  fReversed[maxrev]/maxamp, fReversed[maxrev-1]/maxamp, fReversed[maxrev-2]/maxamp);
-	  
-	  //	  double amp = maxamp*fNeuralNet->Value( 0,  fReversed[maxrev-2]/(maxamp -ped), fReversed[maxrev -1]/(maxamp -ped),  fReversed[maxrev]/(maxamp-ped), fReversed[maxrev+1]/(maxamp -ped), fReversed[maxrev+2]/(maxamp-ped));
-	  //	  double tof = fNeuralNet->Value( 1,  fReversed[maxrev-2]/maxamp, fReversed[maxrev -1]/maxamp,  fReversed[maxrev]/maxamp, fReversed[maxrev+1]/maxamp, fReversed[maxrev+2]/maxamp); 
-	 
-
-	  //	  double amp = maxamp*fNeuralNet->Value( 0,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]);
-	  //	  double tof = (fNeuralNet->Value( 1,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]) + maxrev )*256 ;
-	  
+	  	  
 	  double amp = (maxamp - ped)*fNeuralNet->Value( 0,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]);
-	  double tof = (fNeuralNet->Value( 1,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]) + maxrev ) ;
-
-
-	  //	  double tof = fNeuralNet->Value( 1,  fReversed[maxrev-2]/maxamp, fReversed[maxrev -1]/maxamp,  fReversed[maxrev]/maxamp, fReversed[maxrev+1]/maxamp, fReversed[maxrev+2]/maxamp);  
+	  double tof = (fNeuralNet->Value( 1,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]) + timebinOffset ) ;
 
 	  return AliCaloFitResults( maxamp, ped , -1, amp , tof, -2, -3 ); 
 
@@ -137,18 +110,4 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
   return AliCaloFitResults(9999, 9999, 9999, 9999 , 9999, 9999, 9999 );
 }
 
-//amp = exportNN.Value(0,input[0],input[1],input[2],input[3],input[4])*(globMaxSig - pedEstimate);
-//time = (exportNN.Value(1,input[0],input[1],input[2],input[3],input[4])+globMaxId) * fgTimeBins;
 
-
-
-//SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxampindex -  bunchvector.at(index).GetStartBin(), &first, &last);
-
-
-/*
-void 
-AliCaloRawAnalyzerNN::SelectSubarray( const Double_t *fData, const int length, const short maxindex, int *const  first, int *const last ) const
-{
-
-}
-*/
