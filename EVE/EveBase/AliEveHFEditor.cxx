@@ -202,7 +202,7 @@ void AliEveHFEditor::DisplayDetailed()
   {
     TEveGeoShape *geomRPhi = reinterpret_cast<TEveGeoShape*>(result);
     geomRPhi->IncDenyDestroy();
-    TEveProjectionManager *projMgr = new TEveProjectionManager();
+    TEveProjectionManager *projMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
     projMgr->ImportElements(geomRPhi, bpScene);
   }
   else

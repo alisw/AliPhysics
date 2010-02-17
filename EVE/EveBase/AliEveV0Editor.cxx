@@ -198,7 +198,7 @@ void AliEveV0Editor::DisplayDetailed()
   TEveViewer *bpViewer = gEve->SpawnNewViewer("V0 bending plane View");
   TEveScene  *bpScene  = gEve->SpawnNewScene("V0 bending plane Scene");
   
-  TEveProjectionManager *projMgr = new TEveProjectionManager();
+  TEveProjectionManager *projMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
   bpScene->AddElement(projMgr);
   bpViewer->AddScene(bpScene);
 

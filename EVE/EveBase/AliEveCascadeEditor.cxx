@@ -243,7 +243,7 @@ void AliEveCascadeEditor::DisplayDetailed()
   TEveViewer *bpViewer = gEve->SpawnNewViewer("Cascade bending plane");
   TEveScene  *bpScene  = gEve->SpawnNewScene("Cascade bending plane Scene");
 
-  TEveProjectionManager *projMgr = new TEveProjectionManager();
+  TEveProjectionManager *projMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
   bpScene->AddElement(projMgr);
 
   TEveUtil::LoadMacro("geom_gentle.C");
