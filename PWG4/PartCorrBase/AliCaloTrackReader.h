@@ -179,12 +179,12 @@ class AliCaloTrackReader : public TObject {
 	
   void SetEMCALGeometryName(TString name)   { fEMCALGeoName = name ; }
   TString EMCALGeometryName() const { return fEMCALGeoName ; }
-	void InitEMCALGeometry() {if (!fEMCALGeo) fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName); }
+  void InitEMCALGeometry() ; 
   AliEMCALGeoUtils * GetEMCALGeometry() const {return fEMCALGeo;}
 	
   void SetPHOSGeometryName(TString name)   { fPHOSGeoName = name ; }
   TString PHOSGeometryName() const { return fPHOSGeoName ; }
-  void InitPHOSGeometry() {if (!fPHOSGeo) fPHOSGeo = new AliPHOSGeoUtils(fPHOSGeoName); }
+  void InitPHOSGeometry() ; 
   AliPHOSGeoUtils * GetPHOSGeometry() const {return fPHOSGeo;}
 	
  protected:
