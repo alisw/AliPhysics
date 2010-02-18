@@ -11,7 +11,10 @@ CLASS_HDRS:= \
 	AliHLTEMCALRawAnalyzerLMSComponent.h \
 	AliHLTEMCALRawAnalyzerPeakFinderComponent.h \
 	AliHLTEMCALSharedMemoryInterface.h  \
-	AliHLTEMCALConstants.h
+	AliHLTEMCALConstants.h \
+	AliHLTEMCALDigitMakerComponent.h \
+	AliHLTEMCALClusterizerComponent.h \
+	AliHLTEMCALGeometry.h
 # library sources
 MODULE_SRCS= \
 	$(CLASS_HDRS:.h=.cxx)
