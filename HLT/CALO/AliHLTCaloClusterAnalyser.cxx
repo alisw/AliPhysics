@@ -145,7 +145,7 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
 
 Int_t 
 AliHLTCaloClusterAnalyser::CalculateRecPointMoments()
-{
+{	
   //See header file for documentation
   return 0;
 }
@@ -209,28 +209,41 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       AliHLTCaloGlobalCoordinate globalCoord;
       fGeometry->GetGlobalCoordinates(*recPointPtr, globalCoord);
 
-      caloClusterPtr->fGlobalPos[0] = globalCoord.fX;
-      caloClusterPtr->fGlobalPos[1] = globalCoord.fY;
-      caloClusterPtr->fGlobalPos[2] = globalCoord.fZ;
+      caloClusterPtr->fGlobalPos[0] = recPointPtr->fX;//globalCoord.fX;
+      caloClusterPtr->fGlobalPos[1] =  globalCoord.fY;
+      caloClusterPtr->fGlobalPos[2] = recPointPtr->fZ;//globalCoord.fZ;
 
-      caloClusterPtr->fNCells = 0;//recPointPtr->fMultiplicity;
-      
+      //caloClusterPtr->fNCells = 0;//recPointPtr->fMultiplicity;
+      caloClusterPtr->fNCells = recPointPtr->fMultiplicity;
+
+//      Int_t tmpSize = 0;//totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
       Int_t tmpSize = totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
-      
+
       if((availableSize - totSize)  < tmpSize)
       {
 	 HLTError("Out of buffer");
 	 return -ENOBUFS;
       }
-      
+      Int_t *digitIndexPtr = &(recPointPtr->fDigits);
+      Int_t id = 0;
+
       for(UInt_t j = 0; j < caloClusterPtr->fNCells; j++)
 	{
-/*	  fGeometry->GetCellAbsId(recPointPtr->fModule, digitPtr->fX, digitPtr->fZ, id);
-	  *cellIDPtr = id;
-	  *cellAmpFracPtr = digitPtr->fEnergy/recPointPtr->fAmp;
-	  digitPtr++;
-	  cellIDPtr = reinterpret_cast<UShort_t*>(reinterpret_cast<char*>(cellAmpFracPtr) + sizeof(Float_t)); 
-	  cellAmpFracPtr = reinterpret_cast<Float_t*>(reinterpret_cast<char*>(cellIDPtr) + sizeof(Short_t)); */
+ 	   digitPtr = &(fDigitDataArray[*digitIndexPtr]);
+	   id++;
+	   // //	  fGeometry->GetCellAbsId(recPointPtr->fModule, digitPtr->fX, digitPtr->fZ, id);
+ 	  *cellIDPtr = id;
+ 	  *cellAmpFracPtr = digitPtr->fEnergy/recPointPtr->fAmp;
+	  //printf("Cell ID pointer: %x\n", cellIDPtr);
+ 	 //printf("Cell Amp Pointer: %x\n", cellAmpFracPtr);
+	 //printf("Digit ID: %d\n", *cellIDPtr);
+ 	  digitPtr++;
+ 	  //cellIDPtr = reinterpret_cast<UShort_t*>(reinterpret_cast<char*>(cellAmpFracPtr) + sizeof(Float_t)); 
+	  cellIDPtr = reinterpret_cast<UShort_t*>(reinterpret_cast<char*>(cellIDPtr) + sizeof(Float_t) + sizeof(Short_t)); 
+	  cellAmpFracPtr = reinterpret_cast<Float_t*>(reinterpret_cast<char*>(cellAmpFracPtr) + sizeof(Short_t) + sizeof(Float_t));
+ 	  
+	  digitIndexPtr++;
+	  
 	}
 
       totSize += tmpSize;
@@ -278,12 +291,13 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 	}
 
       caloClusterPtr->fClusterType = fClusterType;
-      //      totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells)*(sizeof(Short_t) +sizeof(Float_t)-1);   
+	  //totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells)*(sizeof(Short_t) +sizeof(Float_t)-1);   
       //totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));   
-
+      //printf("CaloClusterPtr: %x, energy: %f\n", caloClusterPtr, caloClusterPtr->fEnergy);
+      
       //      caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellAmpFracPtr);
-      caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellIDPtr);
-
+      //caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellIDPtr);
+      fCaloClusterDataPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellIDPtr);
       recPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(digitPtr);
       //digitPtr = &(recPointPtr->fDigits);  
     }

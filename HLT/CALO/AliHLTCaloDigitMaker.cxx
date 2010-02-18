@@ -250,7 +250,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
 	{
 	  fDigitStructPtr->fOverflow = true;
 	}
-      //      printf("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy);
+            //printf("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy);
     }
   else
     {
@@ -259,7 +259,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
 	{
 	  fDigitStructPtr->fOverflow = true;
 	}
-      //      printf("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy); 
+            //printf("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy); 
     }
   fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //TODO
   fDigitStructPtr->fCrazyness = channelData->fCrazyness;
@@ -277,17 +277,17 @@ bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, Al
     {
       if(channelCoordinates.fGain == fCaloConstants->GetLOWGAIN())
 	{
-	  //	  printf("UseDigit: Already have digit with, x: %d, z: %d, with high gain \n", channelCoordinates.fX, channelCoordinates.fZ);
+	  	  //printf("UseDigit: Already have digit with, x: %d, z: %d, with high gain \n", channelCoordinates.fX, channelCoordinates.fZ);
 	  if(tmpDigit->fOverflow)
 	    {
-	      //	      printf("But it was in overflow! Let's use this low gain!\n");
+	      	     // printf("But it was in overflow! Let's use this low gain!\n");
 	      return true;
 	    }
 	  return false;
 	}
       else
 	{
-	  //	  printf("UseDigit: Already have digit with, x: %d, z: %d, with low gain: %d\n", channelCoordinates.fX, channelCoordinates.fZ);
+	  	  //printf("UseDigit: Already have digit with, x: %d, z: %d, with low gain: %d\n", channelCoordinates.fX, channelCoordinates.fZ);
 	  if(channel->fEnergy > fMaxEnergy )
 	    {
 	      return false;
