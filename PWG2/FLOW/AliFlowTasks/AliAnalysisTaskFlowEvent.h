@@ -11,26 +11,24 @@
 #ifndef AliAnalysisTaskFlowEvent_H
 #define AliAnalysisTaskFlowEvent_H
 
-class AliESDEvent;
-class AliAODEvent;
+//class AliESDEvent;
+//class AliAODEvent;
 class AliCFManager;
 class AliFlowEventSimpleMaker;
 class TList;
 class TRandom3;
 
 #include "TString.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
+class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFlowEvent();
-  AliAnalysisTaskFlowEvent(const char *name,Bool_t QAon);
-  AliAnalysisTaskFlowEvent(const char *name,Bool_t QAon,UInt_t);
+  AliAnalysisTaskFlowEvent(const char *name,Bool_t QAon,UInt_t=666);
   virtual ~AliAnalysisTaskFlowEvent();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
   void SetAnalysisType(TString type) { this->fAnalysisType = type; }
@@ -79,8 +77,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   AliAnalysisTaskFlowEvent& operator=(const AliAnalysisTaskFlowEvent& aAnalysisTask); 
 
   //  TFile*        fOutputFile;              // temporary output file for testing
-  AliESDEvent*  fESD;                   // ESD object
-  AliAODEvent*  fAOD;                   // AOD object
+  //  AliESDEvent*  fESD;                   // ESD object
+  //  AliAODEvent*  fAOD;                   // AOD object
   AliFlowEventSimpleMaker* fEventMaker; // FlowEventSimple maker object
   TString       fAnalysisType;          // can be MC, ESD or AOD
   AliCFManager* fCFManager1;            // correction framework manager
@@ -105,6 +103,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   Int_t     fSigmaMultiplicityOfEvent; // Sigma multiplicity (Gaussian).
     
   TRandom3* fMyTRandom3; // our TRandom3 generator
+  Bool_t fbAfterburnerOn;
   // end afterburner
   
   ClassDef(AliAnalysisTaskFlowEvent, 1); // example of analysis

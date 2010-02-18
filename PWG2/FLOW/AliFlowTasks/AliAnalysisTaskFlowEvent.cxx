@@ -67,54 +67,9 @@ class AliAnalysisTask;
 ClassImp(AliAnalysisTaskFlowEvent)
   
 //________________________________________________________________________
-AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) : 
-  AliAnalysisTask(name, ""), 
-//  fOutputFile(NULL),
-  fESD(NULL),
-  fAOD(NULL),
-  fEventMaker(NULL),
-  fAnalysisType("ESD"),
-  fCFManager1(NULL),
-  fCFManager2(NULL),
-  fQAInt(NULL),
-  fQADiff(NULL),
-  fMinMult(0),
-  fMaxMult(10000000),
-  fMinA(-1.0),
-  fMaxA(-0.01),
-  fMinB(0.01),
-  fMaxB(1.0),
-  fQA(on),
-  fMCReactionPlaneAngle(0.),
-  fCount(0),
-  fNoOfLoops(1),
-  fEllipticFlowValue(0.),
-  fSigmaEllipticFlowValue(0.),
-  fMultiplicityOfEvent(1000000000),
-  fSigmaMultiplicityOfEvent(0),
-  fMyTRandom3(NULL)
-{
-  // Constructor
-  cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name)"<<endl;
-
-  // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
-  // Define here the flow event output
-  DefineOutput(0, AliFlowEventSimple::Class());  
-  if(on) {
-    DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class()); }  
-  // and for testing open an output file
-  //  fOutputFile = new TFile("FlowEvents.root","RECREATE");
-
-}
-
-//________________________________________________________________________
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() : 
+  AliAnalysisTaskSE(), 
   //  fOutputFile(NULL),
-  fESD(NULL),
-  fAOD(NULL),
   fEventMaker(NULL),
   fAnalysisType("ESD"),
   fCFManager1(NULL),
@@ -135,7 +90,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fSigmaEllipticFlowValue(0.),
   fMultiplicityOfEvent(1000000000),
   fSigmaMultiplicityOfEvent(0),
-  fMyTRandom3(NULL)
+  fMyTRandom3(NULL),
+  fbAfterburnerOn(kFALSE)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent()"<<endl;
@@ -143,10 +99,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
 
 //________________________________________________________________________
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed) : 
-  AliAnalysisTask(name, ""), 
+  AliAnalysisTaskSE(name), 
 //  fOutputFile(NULL),
-  fESD(NULL),
-  fAOD(NULL),
   fEventMaker(NULL),
   fAnalysisType("ESD"),
   fCFManager1(NULL),
@@ -167,22 +121,21 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, 
   fSigmaEllipticFlowValue(0.),
   fMultiplicityOfEvent(1000000000),
   fSigmaMultiplicityOfEvent(0),
-  fMyTRandom3(NULL)
+  fMyTRandom3(NULL),
+  fbAfterburnerOn(kFALSE)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed)"<<endl;
-
   fMyTRandom3 = new TRandom3(iseed);   
   gRandom->SetSeed(fMyTRandom3->Integer(65539));
-  
-  // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
+
+
+  // Define output slots here
   // Define here the flow event output
-  DefineOutput(0, AliFlowEventSimple::Class());  
+  DefineOutput(1, AliFlowEventSimple::Class());  
   if(on) {
-    DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class()); }  
+    DefineOutput(2, TList::Class());
+    DefineOutput(3, TList::Class()); }  
   // and for testing open an output file
   //  fOutputFile = new TFile("FlowEvents.root","RECREATE");
 
@@ -201,40 +154,7 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskFlowEvent::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-  cout<<"AliAnalysisTaskFlowEvent::ConnectInputData(Option_t *)"<<endl;
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } 
-  else {
-    if (fAnalysisType == "ESD" || fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" || fAnalysisType == "MC") {
-      AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-      if (!esdH) {
-	Printf("ERROR: Could not get ESDInputHandler");
-      } 
-      else {fESD = esdH->GetEvent();}
-    }
-    else if (fAnalysisType == "AOD") {
-      AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-      if (!aodH) {
-	Printf("ERROR: Could not get AODInputHandler");
-      }
-      else { fAOD = aodH->GetEvent();}
-    }
-    else {
-      Printf("!!!!!Wrong analysis type: Only ESD, ESDMC0, ESDMC1, AOD and MC types are allowed!");
-      exit(1);
-    }
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskFlowEvent::CreateOutputObjects() 
+void AliAnalysisTaskFlowEvent::UserCreateOutputObjects() 
 {
   // Called at every worker node to initialize
   cout<<"AliAnalysisTaskFlowEvent::CreateOutputObjects()"<<endl;
@@ -249,69 +169,64 @@ void AliAnalysisTaskFlowEvent::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskFlowEvent::Exec(Option_t *) 
+void AliAnalysisTaskFlowEvent::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
   AliFlowEventSimple* fEvent = NULL;
   Double_t fRP = 0.; // the monte carlo reaction plane angle
-  AliMCEvent* mcEvent = NULL;
+  AliMCEvent* mcEvent = fMCEvent;
   // See if we can get Monte Carlo Information and if so get the reaction plane
 
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (eventHandler) {
-    mcEvent = eventHandler->MCEvent();
-    if (mcEvent) {
+  if (mcEvent) {
 
-      //COCKTAIL with HIJING
-      if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Cocktail Header")) { //returns 0 if matches
-	AliGenCocktailEventHeader *headerC = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
-	if (headerC) {
-	  TList *lhd = headerC->GetHeaders();
-	  if (lhd) {
-	    AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
-	    if (hdh) {
-	      fRP = hdh->ReactionPlaneAngle();
-	      //cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
-	    }
+    //COCKTAIL with HIJING
+    if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Cocktail Header")) { //returns 0 if matches
+      AliGenCocktailEventHeader *headerC = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
+      if (headerC) {
+	TList *lhd = headerC->GetHeaders();
+	if (lhd) {
+	  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
+	  if (hdh) {
+	    fRP = hdh->ReactionPlaneAngle();
+	    //cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
 	  }
 	}
-	//else { cout<<"headerC is NULL"<<endl; }
       }
-
-      //GEVSIM
-      else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"GeVSim header")) { //returns 0 if matches
-	AliGenGeVSimEventHeader* headerG = (AliGenGeVSimEventHeader*)(mcEvent->GenEventHeader());
-	if (headerG) {
-	  fRP = headerG->GetEventPlane();
-	  //cout<<"The reactionPlane from GeVSim is: "<< fRP <<endl;
-	}
-	//else { cout<<"headerG is NULL"<<endl; }
-      }
-     
-      //HIJING
-      else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Hijing")) { //returns 0 if matches
-	AliGenHijingEventHeader* headerH = (AliGenHijingEventHeader*)(mcEvent->GenEventHeader());
-	if (headerH) {
-	  fRP = headerH->ReactionPlaneAngle();
-	  //cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
-	}
-	//else { cout<<"headerH is NULL"<<endl; }
-      }
-
-      //EPOS
-      else if (!strcmp(mcEvent->GenEventHeader()->GetName(),"EPOS")) {
-	AliGenEposEventHeader* headerE = (AliGenEposEventHeader*)(mcEvent->GenEventHeader());
-	if (headerE) {
-	  fRP = headerE->ReactionPlaneAngle();
-	  //cout<<"The reactionPlane from EPOS is: "<< fR <<endl;
-	}
-	//else { cout<<"headerE is NULL"<<endl; }
-      }
-
+      //else { cout<<"headerC is NULL"<<endl; }
     }
-    //else {cout<<"No MC event!"<<endl; }
+
+    //GEVSIM
+    else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"GeVSim header")) { //returns 0 if matches
+      AliGenGeVSimEventHeader* headerG = (AliGenGeVSimEventHeader*)(mcEvent->GenEventHeader());
+      if (headerG) {
+	fRP = headerG->GetEventPlane();
+	//cout<<"The reactionPlane from GeVSim is: "<< fRP <<endl;
+      }
+      //else { cout<<"headerG is NULL"<<endl; }
+    }
     
+    //HIJING
+    else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Hijing")) { //returns 0 if matches
+      AliGenHijingEventHeader* headerH = (AliGenHijingEventHeader*)(mcEvent->GenEventHeader());
+      if (headerH) {
+	fRP = headerH->ReactionPlaneAngle();
+	//cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
+      }
+      //else { cout<<"headerH is NULL"<<endl; }
+    }
+    
+    //EPOS
+    else if (!strcmp(mcEvent->GenEventHeader()->GetName(),"EPOS")) {
+      AliGenEposEventHeader* headerE = (AliGenEposEventHeader*)(mcEvent->GenEventHeader());
+      if (headerE) {
+	fRP = headerE->ReactionPlaneAngle();
+	//cout<<"The reactionPlane from EPOS is: "<< fR <<endl;
+      }
+      //else { cout<<"headerE is NULL"<<endl; }
+    }
+    
+  
   }
   //else {cout<<"No eventHandler!"<<endl; }
 
@@ -337,7 +252,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     Double_t xNewFlowValue = 0.;
     Int_t nNewMultOfEvent = 100000000;
 
-    if (fMyTRandom3) {  
+    if (fbAfterburnerOn && fMyTRandom3) {  
       xRPangle = TMath::TwoPi()*(fMyTRandom3->Rndm());
       xNewFlowValue = fMyTRandom3->Gaus(fEllipticFlowValue,fSigmaEllipticFlowValue);
       nNewMultOfEvent =  TMath::Nint(fMyTRandom3->Gaus(fMultiplicityOfEvent,fSigmaMultiplicityOfEvent));
@@ -381,22 +296,22 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     if (!fCFManager1) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
     if (!fCFManager2) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
 
-    if (!fESD) { Printf("ERROR: fESD not available"); return;}
+    if (!fInputEvent) { Printf("ERROR: fInputEvent not available"); return;}
     //check the offline trigger (check if the event has the correct trigger)
     if (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected())
       {
-	Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+	Printf("There are %d tracks in this event", fInputEvent->GetNumberOfTracks());
 	
 	// analysis 
-	fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
+	fEvent = fEventMaker->FillTracks(dynamic_cast <AliESDEvent*> (fInputEvent),fCFManager1,fCFManager2);
       }
   }
   // Fill the FlowEventSimple for ESD input combined with MC info  
   else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
     if (!fCFManager1) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
     if (!fCFManager2) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
-    if (!fESD) { Printf("ERROR: fESD not available"); return;}
-    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+    if (!fInputEvent) { Printf("ERROR: fInputEvent not available"); return;}
+    Printf("There are %d tracks in this event", fInputEvent->GetNumberOfTracks());
     
     if (!mcEvent) {Printf("ERROR: Could not retrieve MC event"); return;}
 
@@ -405,27 +320,27 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 
 
     if (fAnalysisType == "ESDMC0") { 
-      fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
+      fEvent = fEventMaker->FillTracks(dynamic_cast <AliESDEvent*> (fInputEvent), mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
     } else if (fAnalysisType == "ESDMC1") {
-      fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
+      fEvent = fEventMaker->FillTracks(dynamic_cast <AliESDEvent*> (fInputEvent), mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
     }
   }
   // Fill the FlowEventSimple for AOD input  
   else if (fAnalysisType == "AOD") {
-    if (!fAOD) {Printf("ERROR: fAOD not available"); return;}
-    Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
+    if (!fOutputAOD) {Printf("ERROR: fOutputAOD not available"); return;}
+    Printf("There are %d tracks in this event", fOutputAOD->GetNumberOfTracks());
 
     // analysis 
-    //For the moment don't use CF //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD,fCFManager1,fCFManager2);
-    fEvent = fEventMaker->FillTracks(fAOD);
+    //For the moment don't use CF //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fOutputAOD,fCFManager1,fCFManager2);
+    fEvent = fEventMaker->FillTracks(fOutputAOD);
   }
 
   //fListHistos->Print();
   //  fOutputFile->WriteObject(fEvent,"myFlowEventSimple");	
-  PostData(0,fEvent);
+  PostData(1,fEvent);
   if (fQA) {
-    PostData(1,fQAInt);
-    PostData(2,fQADiff); }
+    PostData(2,fQAInt);
+    PostData(3,fQADiff); }
 } 
 
 //________________________________________________________________________
