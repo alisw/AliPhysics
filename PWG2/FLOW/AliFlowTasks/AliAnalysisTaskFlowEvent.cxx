@@ -175,9 +175,11 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   // Called for each event
   AliFlowEventSimple* fEvent = NULL;
   Double_t fRP = 0.; // the monte carlo reaction plane angle
-  AliMCEvent* mcEvent = fMCEvent;
-  // See if we can get Monte Carlo Information and if so get the reaction plane
+  AliMCEvent* mcEvent = fMCEvent; // from TaskSE
+  AliESDEvent* myESD = dynamic_cast<AliESDEvent*>(fInputEvent); // from TaskSE
+  AliAODEvent* myAOD = dynamic_cast<AliAODEvent*>(fInputEvent); // from TaskSE
 
+  // if monte carlo event get reaction plane from monte carlo (depends on generator) 
   if (mcEvent) {
 
     //COCKTAIL with HIJING
@@ -225,12 +227,9 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       }
       //else { cout<<"headerE is NULL"<<endl; }
     }
-    
-  
   }
-  //else {cout<<"No eventHandler!"<<endl; }
 
-
+  // set the reaction plane angle for the flow event
   fEventMaker->SetMCReactionPlaneAngle(fRP);
   //setting event cuts
   fEventMaker->SetMinMult(fMinMult);
@@ -238,8 +237,8 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   //setting ranges for eta subevents
   fEventMaker->SetSubeventEtaRange(fMinA,fMaxA,fMinB,fMaxB);
 
-  if (fEllipticFlowValue != 0.) {  
-    // set the value of the monte carlo event plane for the flow event
+  if (fbAfterburnerOn && fMyTRandom3) {  
+    // set the new value of the values using a after burner
     cout << "settings for afterburner in TaskFlowEvent.cxx:" << endl;
     cout << "fCount = " << fCount << endl;
     cout << "fNoOfLoops = " << fNoOfLoops << endl;
@@ -247,19 +246,12 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     cout << "fSigmaEllipticFlowValue = " << fSigmaEllipticFlowValue << endl;
     cout << "fMultiplicityOfEvent = " << fMultiplicityOfEvent << endl;
     cout << "fSigmaMultiplicityOfEvent = " << fSigmaMultiplicityOfEvent << endl;
+    Double_t xRPangle;
+    if (!mcEvent) { xRPangle = TMath::TwoPi()*(fMyTRandom3->Rndm()); }
+    else { xRPangle = fRP; }
+    Double_t xNewFlowValue = fMyTRandom3->Gaus(fEllipticFlowValue,fSigmaEllipticFlowValue);
+    Int_t nNewMultOfEvent =  TMath::Nint(fMyTRandom3->Gaus(fMultiplicityOfEvent,fSigmaMultiplicityOfEvent));
 
-    Double_t xRPangle=0.;
-    Double_t xNewFlowValue = 0.;
-    Int_t nNewMultOfEvent = 100000000;
-
-    if (fbAfterburnerOn && fMyTRandom3) {  
-      xRPangle = TMath::TwoPi()*(fMyTRandom3->Rndm());
-      xNewFlowValue = fMyTRandom3->Gaus(fEllipticFlowValue,fSigmaEllipticFlowValue);
-      nNewMultOfEvent =  TMath::Nint(fMyTRandom3->Gaus(fMultiplicityOfEvent,fSigmaMultiplicityOfEvent));
-    }
-    else {
-      cout << "no random generator pointer initialized " << endl;
-    }
     cout << "xRPangle = " << xRPangle << endl;
     cout << "xNewFlowValue = " << xNewFlowValue << endl;
     cout << "nNewMultOfEvent = " << nNewMultOfEvent << endl;
@@ -270,8 +262,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     fEventMaker->SetEllipticFlowValue(xNewFlowValue);
     fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);  
     //end settings afterburner
-  }  
-
+  }
   
   // Fill the FlowEventSimple for MC input          
   if (fAnalysisType == "MC") {
@@ -288,29 +279,25 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     // analysis 
     Printf("Number of MC particles: %d", mcEvent->GetNumberOfTracks());
     fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
-    // here we have the fEvent and want to make it available as an output stream
-    // so no delete fEvent;
   }
+
   // Fill the FlowEventSimple for ESD input  
   else if (fAnalysisType == "ESD") {
     if (!fCFManager1) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
     if (!fCFManager2) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
-
-    if (!fInputEvent) { Printf("ERROR: fInputEvent not available"); return;}
+    
+    if (!myESD) { Printf("ERROR: ESD not available"); return;}
     //check the offline trigger (check if the event has the correct trigger)
-    if (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected())
-      {
-	Printf("There are %d tracks in this event", fInputEvent->GetNumberOfTracks());
-	
-	// analysis 
-	fEvent = fEventMaker->FillTracks(dynamic_cast <AliESDEvent*> (fInputEvent),fCFManager1,fCFManager2);
-      }
+    Printf("There are %d tracks in this event", fInputEvent->GetNumberOfTracks());
+    // analysis 
+    fEvent = fEventMaker->FillTracks(myESD,fCFManager1,fCFManager2);
   }
   // Fill the FlowEventSimple for ESD input combined with MC info  
   else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
     if (!fCFManager1) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
     if (!fCFManager2) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
-    if (!fInputEvent) { Printf("ERROR: fInputEvent not available"); return;}
+
+    if (!myESD) { Printf("ERROR: ESD not available"); return;}
     Printf("There are %d tracks in this event", fInputEvent->GetNumberOfTracks());
     
     if (!mcEvent) {Printf("ERROR: Could not retrieve MC event"); return;}
@@ -320,19 +307,19 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 
 
     if (fAnalysisType == "ESDMC0") { 
-      fEvent = fEventMaker->FillTracks(dynamic_cast <AliESDEvent*> (fInputEvent), mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
+      fEvent = fEventMaker->FillTracks(myESD, mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
     } else if (fAnalysisType == "ESDMC1") {
-      fEvent = fEventMaker->FillTracks(dynamic_cast <AliESDEvent*> (fInputEvent), mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
+      fEvent = fEventMaker->FillTracks(myESD, mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
     }
   }
   // Fill the FlowEventSimple for AOD input  
   else if (fAnalysisType == "AOD") {
-    if (!fOutputAOD) {Printf("ERROR: fOutputAOD not available"); return;}
-    Printf("There are %d tracks in this event", fOutputAOD->GetNumberOfTracks());
+    if (!myAOD) {Printf("ERROR: AOD not available"); return;}
+    Printf("There are %d tracks in this event", myAOD->GetNumberOfTracks());
 
     // analysis 
     //For the moment don't use CF //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fOutputAOD,fCFManager1,fCFManager2);
-    fEvent = fEventMaker->FillTracks(fOutputAOD);
+    fEvent = fEventMaker->FillTracks(myAOD);
   }
 
   //fListHistos->Print();
