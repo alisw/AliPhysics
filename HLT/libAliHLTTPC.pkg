@@ -54,9 +54,8 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
                 tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCATracklet.h \
 		tracking-ca/AliHLTTPCCATracker.h \
-		tracking-ca/AliHLTTPCCAOutTrack.h  \
+                tracking-ca/AliHLTTPCCABaseTrackParam.h \
 		tracking-ca/AliHLTTPCCATrackParam.h \
-		tracking-ca/AliHLTTPCCATrackParam2.h \
 		tracking-ca/AliHLTTPCCATrackConvertor.h \
 		tracking-ca/AliHLTTPCCAParam.h     \
 		tracking-ca/AliHLTTPCCARow.h \
