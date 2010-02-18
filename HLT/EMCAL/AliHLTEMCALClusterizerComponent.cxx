@@ -48,9 +48,9 @@ AliHLTEMCALClusterizerComponent::AliHLTEMCALClusterizerComponent():
 
   fDataOrigin = const_cast<char*>(kAliHLTDataOriginEMCAL);
 
-  AliHLTEMCALGeometry *geom = new AliHLTEMCALGeometry;
+  //AliHLTEMCALGeometry *geom = new AliHLTEMCALGeometry;
   
-  fAnalyserPtr->SetGeometry(new AliHLTEMCALGeometry);
+  fAnalyserPtr->SetGeometry(new AliHLTEMCALGeometry("EMCAL"));
   
 }
 
@@ -71,7 +71,7 @@ AliHLTComponentDataType
 AliHLTEMCALClusterizerComponent::GetOutputDataType()
 {
   //See headerfile for documentation
-  return AliHLTCaloDefinitions::fgkRecPointDataType|kAliHLTDataOriginEMCAL;
+  return AliHLTCaloDefinitions::fgkCaloClusterDataType|kAliHLTDataOriginEMCAL;
 }
 
 void
@@ -88,7 +88,7 @@ const Char_t*
 AliHLTEMCALClusterizerComponent::GetComponentID()
 {
   //See headerfile for documentation
-  return "PhosClusterizer";
+  return "EmcalClusterizer";
 }
 
 AliHLTComponent*

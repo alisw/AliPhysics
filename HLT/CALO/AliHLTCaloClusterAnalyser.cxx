@@ -116,8 +116,8 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
 
 	  digit = &(fDigitDataArray[*digitIndexPtr]);
 
-	  xi = digit->fX;
-	  zi = digit->fZ;
+	  xi = digit->fX+0.5;
+	  zi = digit->fZ+0.5;
 
 	  if (recPoint->fAmp > 0 && digit->fEnergy > 0) 
 	    {
@@ -209,14 +209,16 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       AliHLTCaloGlobalCoordinate globalCoord;
       fGeometry->GetGlobalCoordinates(*recPointPtr, globalCoord);
 
-      caloClusterPtr->fGlobalPos[0] = recPointPtr->fX;//globalCoord.fX;
+      caloClusterPtr->fGlobalPos[0] =  globalCoord.fX;
       caloClusterPtr->fGlobalPos[1] =  globalCoord.fY;
-      caloClusterPtr->fGlobalPos[2] = recPointPtr->fZ;//globalCoord.fZ;
+      caloClusterPtr->fGlobalPos[2] =  globalCoord.fZ;
 
       //caloClusterPtr->fNCells = 0;//recPointPtr->fMultiplicity;
       caloClusterPtr->fNCells = recPointPtr->fMultiplicity;
 
+      caloClusterPtr->fClusterType = fClusterType;
 //      Int_t tmpSize = 0;//totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
+
       Int_t tmpSize = totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
 
       if((availableSize - totSize)  < tmpSize)
