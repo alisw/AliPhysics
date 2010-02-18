@@ -205,10 +205,12 @@ struct AliHLTCaloClusterDataStruct
    
   /** 
   * Get the array of the matched tracks 
-  * DELETE THIS YOURSELF!!!!!!
   */	
-   const TArrayI * GetTracksMatched() const  {return  new TArrayI(fNTracksMatched, fTracksMatched);}
-
+   const Int_t * GetTracksMatched() const 
+   {
+      return fTracksMatched;
+   }
+   
    /** Get the best match */
    Int_t GetTrackMatched() const   
   {
@@ -278,7 +280,7 @@ struct AliHLTCaloClusterDataStruct
 
   /** the matced tracks */
   Int_t fTracksMatched[10];           //COMMENT TODO: remove hardcoded 10
-
+  
   /** The absolute IDs of the cells*/
   UShort_t fCellsAbsId;                      //COMMENT
 
