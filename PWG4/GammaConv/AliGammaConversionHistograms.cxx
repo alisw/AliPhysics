@@ -114,33 +114,48 @@ AliGammaConversionHistograms::~AliGammaConversionHistograms() {
 
 void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX,Double_t lastX,TString xAxisTitle, TString yAxisTitle){
   // see header file for documentation
-  TH1F *tmp = new TH1F(histogramName, histogramTitle,nXBins,firstX,lastX);
-  tmp->GetXaxis()->SetTitle(xAxisTitle);
-  tmp->GetYaxis()->SetTitle(yAxisTitle);
-  TObjString* tobjstring = new TObjString(histogramName.Data());
-  fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+  if( fHistogramMap->Contains(histogramName.Data()) ==  kFALSE ){
+    TH1F *tmp = new TH1F(histogramName, histogramTitle,nXBins,firstX,lastX);
+    tmp->GetXaxis()->SetTitle(xAxisTitle);
+    tmp->GetYaxis()->SetTitle(yAxisTitle);
+    TObjString* tobjstring = new TObjString(histogramName.Data());
+    fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+  }
+  else{
+    cout << "Warning: Histogram ( "<<histogramName.Data()<<" ) already exists " << endl;
+  }
 }
 
 void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
   // see header file for documentation
-  TH2F *tmp = new TH2F(histogramName, histogramTitle,nXBins,firstX,lastX,nYBins,firstY,lastY);
-  tmp->GetXaxis()->SetTitle(xAxisTitle);
-  tmp->GetYaxis()->SetTitle(yAxisTitle);
-  TObjString *tobjstring = new TObjString(histogramName.Data());
-  fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+  if( fHistogramMap->Contains(histogramName.Data()) ==  kFALSE ){
+    TH2F *tmp = new TH2F(histogramName, histogramTitle,nXBins,firstX,lastX,nYBins,firstY,lastY);
+    tmp->GetXaxis()->SetTitle(xAxisTitle);
+    tmp->GetYaxis()->SetTitle(yAxisTitle);
+    TObjString *tobjstring = new TObjString(histogramName.Data());
+    fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+  }
+  else{
+    cout << "Warning: Histogram ( "<<histogramName.Data()<<" ) already exists " << endl;
+  }
 }
 
 void AliGammaConversionHistograms::AddTable(TString tableName,TString tableTitle,Int_t nXBins,const char * axesLabel[]){
   //see header file for documentation
 
-  TH1F *tmp = new TH1F(tableName,tableTitle,nXBins,0,nXBins);
-  for(Int_t xbin=1; xbin<=nXBins; xbin++){
-    tmp->GetXaxis()->SetBinLabel(xbin,axesLabel[xbin-1]);
+  if( fHistogramMap->Contains(tableName.Data()) ==  kFALSE ){
+    TH1F *tmp = new TH1F(tableName,tableTitle,nXBins,0,nXBins);
+    for(Int_t xbin=1; xbin<=nXBins; xbin++){
+      tmp->GetXaxis()->SetBinLabel(xbin,axesLabel[xbin-1]);
+    }
+    tmp->SetStats(0);
+    
+    TObjString *tobjstring = new TObjString(tableName.Data());
+    fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
   }
-  tmp->SetStats(0);
-
-  TObjString *tobjstring = new TObjString(tableName.Data());
-  fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+  else{
+    cout << "Warning: Table ( "<<tableName.Data()<<" ) already exists " << endl;
+  }
 }
 
 void AliGammaConversionHistograms::FillTable(TString tableName,Double_t xValue) const {

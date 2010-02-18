@@ -24,30 +24,13 @@ using namespace std;
 
 typedef vector<AliKFParticle*> AliGammaConversionKFVector;
 
-
 class AliGammaConversionBGHandler : public TObject {
 
  public: 
-struct AliGammaConversionBGEvent
-{
-  AliGammaConversionBGEvent() :
-    fReconstructedGammas(),
-    fChargedTrackMultiplicity(0),
-    fZVertexPosition(0.)
-  {
-  }
-  AliGammaConversionKFVector fReconstructedGammas;
-  UInt_t fChargedTrackMultiplicity;
-  Double_t fZVertexPosition;
-}; typedef struct AliGammaConversionBGEvent AliGammaConversionBGEvent; //!	
-
   
-  typedef vector<AliGammaConversionBGEvent> AliGammaConversionBGEventVector;
-  //  typedef vector<Int_t> AliGammaConversionBGEventVector;
+  typedef vector<AliGammaConversionKFVector> AliGammaConversionBGEventVector;
   typedef vector<AliGammaConversionBGEventVector> AliGammaConversionMultipicityVector;
   typedef vector<AliGammaConversionMultipicityVector> AliGammaConversionBGVector;
-  
-    
 
   AliGammaConversionBGHandler();                                                        //constructor
   AliGammaConversionBGHandler(UInt_t binsZ,UInt_t binsMultiplicity,UInt_t fNEvents);    //constructor
@@ -55,15 +38,15 @@ struct AliGammaConversionBGEvent
   AliGammaConversionBGHandler & operator = (const AliGammaConversionBGHandler & g);     //assignment operator
   virtual ~AliGammaConversionBGHandler();                                               //virtual destructor
 
-  void Initialize(Double_t *zBinLimitsArray, Double_t *multiplicityBinLimitsArray);
+  void Initialize(Double_t * const zBinLimitsArray, Double_t * const multiplicityBinLimitsArray);
 
-  Int_t GetZBinIndex(Double_t z);
+  Int_t GetZBinIndex(Double_t z) const;
 
-  Int_t GetMultiplicityBinIndex(Int_t mult);
+  Int_t GetMultiplicityBinIndex(Int_t mult) const;
 
-  void AddEvent(TClonesArray * eventGammas, Double_t zvalue, Int_t multiplicity);
+  void AddEvent(TClonesArray * const eventGammas, Double_t zvalue, Int_t multiplicity);
 
-  Int_t GetNBGEvents(){return fNEvents;}
+  Int_t GetNBGEvents()const {return fNEvents;}
 
   AliGammaConversionKFVector* GetBGGoodV0s(Int_t event, Double_t zvalue, Int_t multiplicity);
 
@@ -71,14 +54,14 @@ struct AliGammaConversionBGEvent
 
  private:
 
-  Int_t fNEvents;
-  Int_t ** fBGEventCounter;
+  Int_t fNEvents; // number of events
+  Int_t ** fBGEventCounter; // bg counter
   
-  Int_t fNBinsZ;
-  Int_t fNBinsMultiplicity;
-  Double_t *fBinLimitsArrayZ;
-  Double_t *fBinLimitsArrayMultiplicity;
-  AliGammaConversionBGVector fBGEvents;
+  Int_t fNBinsZ; //n z bins
+  Int_t fNBinsMultiplicity; //n bins multiplicity
+  Double_t *fBinLimitsArrayZ; //bin limits z array
+  Double_t *fBinLimitsArrayMultiplicity; //bin limit multiplicity array
+  AliGammaConversionBGVector fBGEvents; //gackground events
 
   ClassDef(AliGammaConversionBGHandler,0)
 };

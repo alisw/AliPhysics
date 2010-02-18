@@ -45,7 +45,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
-  virtual void ConnectInputData(Option_t *);
+  virtual void ConnectInputData(Option_t * option);
 		
   void ProcessMCData();
   void ProcessV0sNoCut();
@@ -87,6 +87,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetTriggerCINT1B(Bool_t flag){fTriggerCINT1B=flag;}
   void SetDoMCTruth(Bool_t flag){fDoMCTruth=flag;}
   void SetDoNeutralMeson(Bool_t flag){fDoNeutralMeson=flag;}
+  void SetDoNeutralMesonV0MCCheck(Bool_t flag){fDoNeutralMesonV0MCCheck=flag;}
   void SetDoJet(Bool_t flag){fDoJet=flag;}
   void SetDoChic(Bool_t flag){fDoChic=flag;}
 		
@@ -98,14 +99,14 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetEtaMass(Double_t etaMass){fEtaMass = etaMass;}
   void SetEtaWidth(Double_t etaWidth){fEtaWidth = etaWidth;}
   void SetMinOpeningAngleGhostCut(Double_t ghostCut){fMinOpeningAngleGhostCut = ghostCut;}
-  void SetV0Reader(AliV0Reader* const reader){fV0Reader=reader;}
+  void SetV0Reader(AliV0Reader* const reader){fV0Reader=reader; fV0Reader->SetESDtrackCuts(fEsdTrackCuts);}
   void SetCalculateBackground(Bool_t bg){fCalculateBackground=bg;}
   void CalculateBackground();
   void SetWriteNtuple(Bool_t writeNtuple){fWriteNtuple = writeNtuple;}
   void FillNtuple();
   Double_t GetMCOpeningAngle(TParticle* const daughter0, TParticle* const daughter1) const;
   void CheckV0Efficiency();
-		
+
 		
   //////////////////Chi_c Analysis////////////////////////////
   void GetPID(AliESDtrack *track, Stat_t &pid, Stat_t &weight);	
@@ -222,10 +223,12 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 		
   TClonesArray* fAODBranch ;        //! selected particles branch
   TString fAODBranchName; // New AOD branch name
-		
-  //  TClonesArray *fAODObjects;
-		
-  ClassDef(AliAnalysisTaskGammaConversion, 6); // Analysis task for gamma conversions
+
+  Bool_t fDoNeutralMesonV0MCCheck; //flag
+
+  vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
+
+  ClassDef(AliAnalysisTaskGammaConversion, 7); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

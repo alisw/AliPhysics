@@ -73,14 +73,8 @@ AliAnalysisTaskSE(),
   fKFReconstructedGammasCutTClone(NULL),
   fPreviousEventTLVNegElectronTClone(NULL),
   fPreviousEventTLVPosElectronTClone(NULL),	
-//  fKFReconstructedGammas(),
   fElectronv1(),
   fElectronv2(),
-//  fCurrentEventPosElectron(),
-//  fCurrentEventNegElectron(),
-//  fKFReconstructedGammasCut(),		 	
-//  fPreviousEventTLVNegElectron(),
-//  fPreviousEventTLVPosElectron(),	
   fElectronMass(-1),
   fGammaMass(-1),
   fPi0Mass(-1),
@@ -108,8 +102,9 @@ AliAnalysisTaskSE(),
   fHighPtMapping(3.),
   fDoCF(kFALSE),
   fAODBranch(NULL),
-  fAODBranchName("GammaConv")//,
-  //  fAODObjects(NULL)
+  fAODBranchName("GammaConv"),
+  fDoNeutralMesonV0MCCheck(kFALSE),
+  fKFReconstructedGammasV0Index()
 {
   // Default constructor
 
@@ -147,14 +142,8 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fKFReconstructedGammasCutTClone(NULL),
   fPreviousEventTLVNegElectronTClone(NULL),
   fPreviousEventTLVPosElectronTClone(NULL),	
-  //  fKFReconstructedGammas(),
   fElectronv1(),
   fElectronv2(),
-  //  fCurrentEventPosElectron(),
-  //  fCurrentEventNegElectron(),
-  //  fKFReconstructedGammasCut(),	
-  //  fPreviousEventTLVNegElectron(),
-  //  fPreviousEventTLVPosElectron(),
   fElectronMass(-1),
   fGammaMass(-1),
   fPi0Mass(-1),
@@ -182,8 +171,9 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fHighPtMapping(3.),
   fDoCF(kFALSE),
   fAODBranch(NULL),
-  fAODBranchName("GammaConv")//,
-  // fAODObjects(NULL)
+  fAODBranchName("GammaConv"),
+  fDoNeutralMesonV0MCCheck(kFALSE),
+  fKFReconstructedGammasV0Index()
 {
   // Common I/O in slot 0
   DefineInput (0, TChain::Class());
@@ -243,15 +233,14 @@ void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
   fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   //standard cuts from:
   //http://aliceinfo.cern.ch/alicvs/viewvc/PWG0/dNdEta/CreateCuts.C?revision=1.4&view=markup
-  //fEsdTrackCuts->SetMinNClustersTPC(50);
-  //fEsdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
-  //fEsdTrackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
+  fEsdTrackCuts->SetMinNClustersTPC(50);
+  fEsdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
   fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
   fEsdTrackCuts->SetRequireITSRefit(kTRUE);
   fEsdTrackCuts->SetMaxNsigmaToVertex(3);
   fEsdTrackCuts->SetRequireSigmaToVertex(kTRUE);
   //  fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-	
+  //  fV0Reader->SetESDtrackCuts(fEsdTrackCuts);
 }
 
 void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
@@ -300,6 +289,8 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   fChargedParticles->Delete();	
 
   fChargedParticlesId.clear();	
+
+  fKFReconstructedGammasV0Index.clear();
 	
   //Clear the data in the v0Reader
   //  fV0Reader->UpdateEventByEventData();
@@ -772,8 +763,6 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       }
 			
 			
-			
-			
       if(particle->GetPdgCode()==111){     //Pi0
 	if( iTracks >= fStack->GetNprimary()){
 	  fHistograms->FillHistogram("MC_Pi0_Secondaries_Eta", particle->Eta());
@@ -1015,7 +1004,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
 
 void AliAnalysisTaskGammaConversion::ProcessV0s(){
   // see header file for documentation
-	
+
+
   if(fWriteNtuple == kTRUE){
     FillNtuple();
   }
@@ -1065,8 +1055,7 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     fHistograms->FillHistogram("ESD_ConvGamma_E_dEdxP",fV0Reader->GetNegativeTrackP(),fV0Reader->GetNegativeTrackTPCdEdx());
     fHistograms->FillHistogram("ESD_ConvGamma_P_dEdxP",fV0Reader->GetPositiveTrackP(),fV0Reader->GetPositiveTrackTPCdEdx());
     
-		
-		
+
     // begin mapping
     Int_t rBin    = fHistograms->GetRBin(fV0Reader->GetXYRadius());
     Int_t zBin    = fHistograms->GetZBin(fV0Reader->GetZ());
@@ -1128,7 +1117,7 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     // end mapping
 		
     new((*fKFReconstructedGammasTClone)[fKFReconstructedGammasTClone->GetEntriesFast()])  AliKFParticle(*fV0Reader->GetMotherCandidateKFCombination());
-		
+    fKFReconstructedGammasV0Index.push_back(fV0Reader->GetCurrentV0IndexNumber()-1);
     //    fKFReconstructedGammas.push_back(*fV0Reader->GetMotherCandidateKFCombination());
     fElectronv1.push_back(fV0Reader->GetCurrentV0()->GetPindex());
     fElectronv2.push_back(fV0Reader->GetCurrentV0()->GetNindex());
@@ -1148,6 +1137,11 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 
       if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
 	continue;
+      }
+      if(negativeMC->GetUniqueID() == 4 && positiveMC->GetUniqueID() ==4){// fill r distribution for Dalitz decays 
+	if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 111){ //pi0
+	  fHistograms->FillHistogram("ESD_TrueDalitzContamination_R", fV0Reader->GetXYRadius());
+	}
       }
 
       if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){// check if the daughters come from a conversion
@@ -1224,7 +1218,10 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	if(fV0Reader->GetNegativeMCParticle()->Vz() != 0){
 	  resdZ = ((fV0Reader->GetZ() -fV0Reader->GetNegativeMCParticle()->Vz())/fV0Reader->GetNegativeMCParticle()->Vz())*100;
 	}
-				
+	Double_t resdZAbs = 0;
+	resdZAbs = (fV0Reader->GetZ() -fV0Reader->GetNegativeMCParticle()->Vz());
+
+	fHistograms->FillHistogram("Resolution_dZAbs_VS_R", fV0Reader->GetNegativeMCParticle()->R(), resdZAbs);
 	fHistograms->FillHistogram("Resolution_dZ", fV0Reader->GetNegativeMCParticle()->Vz(), resdZ);
 	fHistograms->FillHistogram("Resolution_MC_Z", fV0Reader->GetNegativeMCParticle()->Vz());
 	fHistograms->FillHistogram("Resolution_ESD_Z", fV0Reader->GetZ());
@@ -1233,11 +1230,20 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	if(fV0Reader->GetNegativeMCParticle()->R() != 0){
 	  resdR = ((fV0Reader->GetXYRadius() - fV0Reader->GetNegativeMCParticle()->R())/fV0Reader->GetNegativeMCParticle()->R())*100;
 	}
-				
+	Double_t resdRAbs = 0;
+	resdRAbs = (fV0Reader->GetXYRadius() - fV0Reader->GetNegativeMCParticle()->R());
+
+	fHistograms->FillHistogram("Resolution_dRAbs_VS_R", fV0Reader->GetNegativeMCParticle()->R(), resdRAbs);
 	fHistograms->FillHistogram("Resolution_dR", fV0Reader->GetNegativeMCParticle()->R(), resdR);
 	fHistograms->FillHistogram("Resolution_MC_R", fV0Reader->GetNegativeMCParticle()->R());
 	fHistograms->FillHistogram("Resolution_ESD_R", fV0Reader->GetXYRadius());
 	fHistograms->FillHistogram("Resolution_dR_dPt", resdR, resdPt);
+
+	Double_t resdPhiAbs=0;
+	resdPhiAbs=0;
+	resdPhiAbs= (fV0Reader->GetMotherCandidatePhi()-fV0Reader->GetNegativeMCParticle()->Phi());
+	fHistograms->FillHistogram("Resolution_dPhiAbs_VS_R", fV0Reader->GetNegativeMCParticle()->R(), resdPhiAbs);
+
       }//if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22)
     }//if(fDoMCTruth)
   }//while(fV0Reader->NextV0)
@@ -1291,6 +1297,11 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	
   //  for(UInt_t firstGammaIndex=0;firstGammaIndex<fKFReconstructedGammas.size();firstGammaIndex++){
   //    for(UInt_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fKFReconstructedGammas.size();secondGammaIndex++){
+
+  if(fKFReconstructedGammasTClone->GetEntriesFast()>fV0Reader->GetNumberOfV0s()){
+    cout<<"Warning, number of entries in the tclone is bigger than number of v0s"<<endl;
+  }
+
   for(Int_t firstGammaIndex=0;firstGammaIndex<fKFReconstructedGammasTClone->GetEntriesFast();firstGammaIndex++){
     for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fKFReconstructedGammasTClone->GetEntriesFast();secondGammaIndex++){
 			
@@ -1348,6 +1359,81 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Mother_InvMass",massTwoGammaCandidate);
 
+	  if(fDoNeutralMesonV0MCCheck){
+	    //Kenneth: Checking the eta of the gamma to check the difference between 0.9 and 1.2
+	    Int_t indexKF1 = fKFReconstructedGammasV0Index.at(firstGammaIndex);
+	    if(indexKF1<fV0Reader->GetNumberOfV0s()){
+	      fV0Reader->GetV0(indexKF1);//updates to the correct v0
+	      Double_t eta1 = fV0Reader->GetMotherCandidateEta();
+	      Bool_t isRealPi0=kFALSE;
+	      Int_t gamma1MotherLabel=-1;
+	      if(fV0Reader->HasSameMCMother() == kTRUE){
+		//cout<<"This v0 is a real v0!!!!"<<endl;
+		TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
+		TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
+		if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){
+		  if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){
+		    if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22){
+		      gamma1MotherLabel=fV0Reader->GetMotherMCParticle()->GetFirstMother();
+		    }
+		  }
+		}
+	      }
+	      Int_t indexKF2 = fKFReconstructedGammasV0Index.at(secondGammaIndex);
+	      if(indexKF1 == indexKF2){
+		cout<<"index of the two KF particles are the same.... should not happen"<<endl;
+	      }
+	      if(indexKF2<fV0Reader->GetNumberOfV0s()){
+		fV0Reader->GetV0(indexKF2);
+		Double_t eta2 = fV0Reader->GetMotherCandidateEta();
+		Int_t gamma2MotherLabel=-1;
+		if(fV0Reader->HasSameMCMother() == kTRUE){
+		  TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
+		  TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
+		  if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){
+		    if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){
+		      if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22){
+			gamma2MotherLabel=fV0Reader->GetMotherMCParticle()->GetFirstMother();
+		      }
+		    }
+		  }
+		}
+		if(gamma1MotherLabel>=0 && gamma1MotherLabel==gamma2MotherLabel){
+		  if(fV0Reader->CheckIfPi0IsMother(gamma1MotherLabel)){
+		    isRealPi0=kTRUE;
+		  }
+		}
+
+		if(TMath::Abs(eta1)>0.9 && TMath::Abs(eta2)>0.9){
+		  fHistograms->FillHistogram("ESD_Mother_InvMass_1212",massTwoGammaCandidate);
+		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		  if(isRealPi0){
+		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_1212",massTwoGammaCandidate);
+		    fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_1212",openingAngleTwoGammaCandidate);
+		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		  }
+		}
+		else if(TMath::Abs(eta1)>0.9 || TMath::Abs(eta2)>0.9){
+		  fHistograms->FillHistogram("ESD_Mother_InvMass_0912",massTwoGammaCandidate);
+		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		  if(isRealPi0){
+		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_0912",massTwoGammaCandidate);
+		    fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_0912",openingAngleTwoGammaCandidate);
+		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		  }
+		}
+		else{
+		  fHistograms->FillHistogram("ESD_Mother_InvMass_0909",massTwoGammaCandidate);
+		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		  if(isRealPi0){
+		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_0909",massTwoGammaCandidate);
+		    fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_0909",openingAngleTwoGammaCandidate);
+		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		  }
+		}
+	      }
+	    }
+	  }
 	  if ( TMath::Abs(twoGammaDecayCandidateDaughter0->GetEta())<0.9 &&  TMath::Abs(twoGammaDecayCandidateDaughter1->GetEta())<0.9 ){
 	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt_Fiducial",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 	    fHistograms->FillHistogram("ESD_Mother_InvMass_Fiducial",massTwoGammaCandidate);
@@ -1398,7 +1484,8 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	      delete backgroundCandidate;   
 	      continue;   // minimum opening angle to avoid using ghosttracks
 	    }			
-					
+
+	    // original
 	    fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
 	    fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
 	    fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
@@ -1416,7 +1503,31 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
 	      fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
 	    }
+	    
+	    
+	    // test
+	    AliGammaConversionBGHandler * bgHandler = fV0Reader->GetBGHandler();
 
+	    Int_t zbin= bgHandler->GetZBinIndex(fV0Reader->GetVertexZ());
+	    Int_t mbin= bgHandler->GetMultiplicityBinIndex(fV0Reader->CountESDTracks());
+	    
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_GammaDaughter_OpeningAngle",zbin,mbin), openingAngleBG);
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_Energy",zbin,mbin), backgroundCandidate->GetE());
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_Pt",zbin,mbin),  momentumVectorbackgroundCandidate.Pt());
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_Eta",zbin,mbin), momentumVectorbackgroundCandidate.Eta());
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_Rapidity",zbin,mbin), rapidity);
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_Phi",zbin,mbin), spaceVectorbackgroundCandidate.Phi());
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_Mass",zbin,mbin), massBG);
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_R",zbin,mbin), spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_ZR",zbin,mbin), backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_XY",zbin,mbin), backgroundCandidate->GetX(), backgroundCandidate->GetY());
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
+	    fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass",zbin,mbin),massBG);
+
+	    if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
+	    }
 	  }
 	}
 	delete backgroundCandidate;      
@@ -1453,6 +1564,7 @@ void AliAnalysisTaskGammaConversion::CreateListOfChargedParticles(){
   // CreateListOfChargedParticles
 	
   fESDEvent = fV0Reader->GetESDEvent();
+  Int_t numberOfESDTracks=0;
   for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
     AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
 		
@@ -1464,8 +1576,10 @@ void AliAnalysisTaskGammaConversion::CreateListOfChargedParticles(){
       new((*fChargedParticles)[fChargedParticles->GetEntriesFast()])  AliESDtrack(*curTrack);
       //      fChargedParticles.push_back(curTrack);
       fChargedParticlesId.push_back(iTracks);
+      numberOfESDTracks++;
     }
   }
+  fHistograms->FillHistogram("ESD_NumberOfGoodESDTracks",numberOfESDTracks);
 }
 void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex){
   // CaculateJetCone
