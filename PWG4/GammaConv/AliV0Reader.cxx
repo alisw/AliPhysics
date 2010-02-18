@@ -34,6 +34,8 @@
 #include "AliMCEventHandler.h"
 #include "AliESDpid.h"
 #include "AliGammaConversionBGHandler.h"
+#include "AliESDtrackCuts.h"
+
 
 class iostream;
 class AliESDv0;
@@ -107,7 +109,9 @@ AliV0Reader::AliV0Reader() :
 //  fPreviousEventGoodV0s(),
   fCalculateBackground(kFALSE),
   fBGEventHandler(NULL),
-  fBGEventInitialized(kFALSE)
+  fBGEventInitialized(kFALSE),
+  fEsdTrackCuts(NULL),
+  fNumberOfESDTracks(0)
 {
   fESDpid = new AliESDpid;	
 }
@@ -175,7 +179,9 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   //  fPreviousEventGoodV0s(original.fPreviousEventGoodV0s),
   fCalculateBackground(original.fCalculateBackground),
   fBGEventHandler(original.fBGEventHandler),
-  fBGEventInitialized(original.fBGEventInitialized)
+  fBGEventInitialized(original.fBGEventInitialized),
+  fEsdTrackCuts(original.fEsdTrackCuts),
+  fNumberOfESDTracks(original.fNumberOfESDTracks)
 {
 	
 }
@@ -255,25 +261,37 @@ void AliV0Reader::Initialize(){
 
   if(fCalculateBackground == kTRUE){
     if(fBGEventInitialized == kFALSE){
-      Double_t *zBinLimitsArray = new Double_t[8];//{-7,-5,-3,-1,1,3,5,7};
-      zBinLimitsArray[0] = -7;
-      zBinLimitsArray[1] = -5;
-      zBinLimitsArray[2] = -3;
-      zBinLimitsArray[3] = -1;
-      zBinLimitsArray[4] = 1;
-      zBinLimitsArray[5] = 3;
-      zBinLimitsArray[6] = 5;
-      zBinLimitsArray[7] = 7;
+
       
-      Double_t *multiplicityBinLimitsArray= new Double_t[4];//={0,10,20,500};
+      Double_t *zBinLimitsArray = new Double_t[8];
+      zBinLimitsArray[0] = -50.00;
+      zBinLimitsArray[1] = -4.07;
+      zBinLimitsArray[2] = -2.17;
+      zBinLimitsArray[3] = -0.69;
+      zBinLimitsArray[4] = 0.69;
+      zBinLimitsArray[5] = 2.17;
+      zBinLimitsArray[6] = 4.11;
+      zBinLimitsArray[7] = 50.00;
+      
+      Double_t *multiplicityBinLimitsArray= new Double_t[5];
       multiplicityBinLimitsArray[0] = 0;
-      multiplicityBinLimitsArray[1] = 10;
-      multiplicityBinLimitsArray[2] = 20;
-      multiplicityBinLimitsArray[3] = 500;
-      
-      
+      multiplicityBinLimitsArray[1] = 8.5;
+      multiplicityBinLimitsArray[2] = 16.5;
+      multiplicityBinLimitsArray[3] = 27.5;
+      multiplicityBinLimitsArray[4] = 41.5;
+            
       fBGEventHandler = new AliGammaConversionBGHandler(8,4,10);
       
+      /*
+      // ---------------------------------
+      Double_t *zBinLimitsArray = new Double_t[1];
+      zBinLimitsArray[0] = 999999.00;
+
+      Double_t *multiplicityBinLimitsArray= new Double_t[1];
+      multiplicityBinLimitsArray[0] = 99999999.00;
+      fBGEventHandler = new AliGammaConversionBGHandler(1,1,10);
+      // ---------------------------------
+      */
       fBGEventHandler->Initialize(zBinLimitsArray, multiplicityBinLimitsArray);
       fBGEventInitialized = kTRUE;
     }
@@ -288,12 +306,13 @@ AliESDv0* AliV0Reader::GetV0(Int_t index){
 }
 
 Bool_t AliV0Reader::CheckForPrimaryVertex(){
+  //see headerfile for documentation
   return fESDEvent->GetPrimaryVertex()->GetNContributors()>0;
 }
 
 
 Bool_t AliV0Reader::CheckV0FinderStatus(Int_t index){
-
+  // see headerfile for documentation
   if(fUseOnFlyV0Finder){
     if(!GetV0(index)->GetOnFlyStatus()){
       return kFALSE;
@@ -311,10 +330,14 @@ Bool_t AliV0Reader::CheckV0FinderStatus(Int_t index){
 
 Bool_t AliV0Reader::NextV0(){
   //see header file for documentation
-	
+
   Bool_t iResult=kFALSE;
   while(fCurrentV0IndexNumber<fESDEvent->GetNumberOfV0s()){
     fCurrentV0 = fESDEvent->GetV0(fCurrentV0IndexNumber);
+
+    if(fHistograms != NULL){
+      fHistograms->FillHistogram("ESD_AllV0s_InvMass",GetMotherCandidateMass());
+    }
 		
     // moved it up here so that the correction framework can access pt and eta information
     if(UpdateV0Information() == kFALSE){
@@ -733,11 +756,16 @@ void AliV0Reader::UpdateEventByEventData(){
   //see header file for documentation
   if(fCurrentEventGoodV0s->GetEntriesFast() >0 ){
     if(fCalculateBackground){
-      fBGEventHandler->AddEvent(fCurrentEventGoodV0s,fESDEvent->GetPrimaryVertex()->GetZ(),fESDEvent->GetNumberOfTracks());
+      fBGEventHandler->AddEvent(fCurrentEventGoodV0s,fESDEvent->GetPrimaryVertex()->GetZ(),CountESDTracks());
+      //filling z and multiplicity histograms
+      fHistograms->FillHistogram("ESD_Z_distribution",fESDEvent->GetPrimaryVertex()->GetZ());
+      fHistograms->FillHistogram("ESD_multiplicity_distribution",CountESDTracks());
+      fHistograms->FillHistogram("ESD_ZvsMultiplicity",fESDEvent->GetPrimaryVertex()->GetZ(),CountESDTracks());
     }
   }
   fCurrentEventGoodV0s->Delete();
   fCurrentV0IndexNumber=0;
+  fNumberOfESDTracks=0;
   //  fBGEventHandler->PrintBGArray(); // for debugging
 }
 
@@ -1014,5 +1042,32 @@ Double_t AliV0Reader::GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Doubl
 
 AliGammaConversionKFVector* AliV0Reader::GetBGGoodV0s(Int_t event){
 
-  return fBGEventHandler->GetBGGoodV0s(event,fESDEvent->GetPrimaryVertex()->GetZ(),fESDEvent->GetNumberOfTracks());
+  return fBGEventHandler->GetBGGoodV0s(event,fESDEvent->GetPrimaryVertex()->GetZ(),CountESDTracks());
+}
+
+Int_t AliV0Reader::CountESDTracks(){
+  // see header file for documentation
+  if(fNumberOfESDTracks == 0){ // count the good esd tracks
+    for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);      
+      if(!curTrack){
+	continue;
+      }
+      if(fEsdTrackCuts->AcceptTrack(curTrack) ){
+	fNumberOfESDTracks++;
+      }
+    }
+  }
+
+  return fNumberOfESDTracks;
+}
+
+Bool_t AliV0Reader::CheckIfPi0IsMother(Int_t label){
+  // see headerfile for documentation
+  Bool_t iResult=kFALSE;
+  //  cout<<"Checking particle label, particle is: "<<fMCStack->Particle(TMath::Abs(label))->GetName()<<endl;
+  if(fMCStack->Particle(TMath::Abs(label))->GetPdgCode() == 111){
+    iResult=kTRUE;
+  }
+  return iResult;
 }

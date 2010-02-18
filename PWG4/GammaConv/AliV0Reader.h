@@ -40,7 +40,7 @@ class TChain;
 class AliCFManager;   // for CF
 class AliCFContainer;  // for CF
 class AliESDpid; // for dEdx cut based on nSigma to particle lines 
-
+class AliESDtrackCuts; 
 
 class AliV0Reader : public TObject {
 	
@@ -545,7 +545,7 @@ class AliV0Reader : public TObject {
   /*
    * Sets the flag to enable/disable the usage of MC information. 
    */
-  Bool_t GetDoMCTruth(){return fDoMC;}
+  Bool_t GetDoMCTruth() const {return fDoMC;}
 	
   /*
    * Sets the flag to enable/disable the cut dedx N sigma 
@@ -603,6 +603,20 @@ class AliV0Reader : public TObject {
 
   void SetCalculateBackground(Bool_t flag){fCalculateBackground=flag;}
 
+  AliGammaConversionBGHandler* GetBGHandler() const {return fBGEventHandler;}
+
+  Double_t GetVertexZ(){return fESDEvent->GetPrimaryVertex()->GetZ();}
+
+  Int_t GetMultiplicity(){return CountESDTracks();}
+
+  void SetESDtrackCuts(AliESDtrackCuts * const trackCuts){fEsdTrackCuts = trackCuts;}
+
+  Int_t CountESDTracks();
+
+  Int_t GetCurrentV0IndexNumber() const {return fCurrentV0IndexNumber;}
+
+  Bool_t CheckIfPi0IsMother(Int_t label);
+
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
   AliMCEventHandler* fMCTruth;   // for CF    pointer to the MC object
@@ -618,7 +632,7 @@ class AliV0Reader : public TObject {
   //  AliCFContainer *container;
 	
   // for dEdx cut based on nSigma to a particle line
-  AliESDpid * fESDpid; 
+  AliESDpid * fESDpid; // esd pid
 	
   AliGammaConversionHistograms *fHistograms; //! pointer to histogram handling class
 	
@@ -665,10 +679,10 @@ class AliV0Reader : public TObject {
   Double_t fPIDProbabilityCutNegativeParticle; //pid cut
   Double_t fPIDProbabilityCutPositiveParticle; //pid cut
   Bool_t   fDodEdxSigmaCut; // flag to use the dEdxCut based on sigmas
-  Double_t fPIDnSigmaAboveElectronLine;
-  Double_t fPIDnSigmaBelowElectronLine;
-  Double_t fPIDnSigmaAbovePionLine;
-  Double_t fPIDMinPnSigmaAbovePionLine;
+  Double_t fPIDnSigmaAboveElectronLine; // sigma cut
+  Double_t fPIDnSigmaBelowElectronLine; // sigma cut
+  Double_t fPIDnSigmaAbovePionLine;     // sigma cut
+  Double_t fPIDMinPnSigmaAbovePionLine; // sigma cut
   Double_t fXVertexCut; //vertex cut
   Double_t fYVertexCut; //vertex cut
   Double_t fZVertexCut; // vertexcut
@@ -681,18 +695,21 @@ class AliV0Reader : public TObject {
 
   Bool_t fDoCF; //flag
 
-  Bool_t fUseOnFlyV0Finder;
+  Bool_t fUseOnFlyV0Finder; //flag
 
   Bool_t fUpdateV0AlreadyCalled; //flag
 	
   TClonesArray* fCurrentEventGoodV0s; //vector of good v0s
   //  vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
 
-  Bool_t fCalculateBackground;
-  AliGammaConversionBGHandler *fBGEventHandler;
-  Bool_t fBGEventInitialized;
+  Bool_t fCalculateBackground; //flag
+  AliGammaConversionBGHandler *fBGEventHandler; // background handler
+  Bool_t fBGEventInitialized; //flag
 	
-  ClassDef(AliV0Reader,9)
+  AliESDtrackCuts *fEsdTrackCuts; // track cuts
+  Int_t fNumberOfESDTracks; //track counter
+
+  ClassDef(AliV0Reader,10)
 };
 #endif
 
