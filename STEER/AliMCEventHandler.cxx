@@ -180,42 +180,55 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
     // Load the event number iev
     //
     // Calculate the file number
-    if (!fInitOk) return kFALSE;
+  if (!fInitOk) return kFALSE;
     
-    Int_t inew  = iev / fEventsPerFile;
-    if (inew != fFileNumber) {
-	fFileNumber = inew;
-	if (!OpenFile(fFileNumber)){
-	    return kFALSE;
-	}
+  Int_t inew  = iev / fEventsPerFile;
+  if (inew != fFileNumber) {
+    fFileNumber = inew;
+    if (!OpenFile(fFileNumber)){
+      return kFALSE;
     }
-    // Folder name
-    char folder[20];
-    sprintf(folder, "Event%d", iev);
-    // TreeE
-    fTreeE->GetEntry(iev);
-    // Tree K
-    fFileK->GetObject(folder, fDirK);
-    if (!fDirK) {
-	AliWarning(Form("AliMCEventHandler: Event #%5d not found\n", iev));
-	return kFALSE;
-    }
+  }
+  // Folder name
+  char folder[20];
+  sprintf(folder, "Event%d", iev);
+  // TreeE
+  fTreeE->GetEntry(iev);
+  // Tree K
+  fFileK->GetObject(folder, fDirK);
+  if (!fDirK) {
+    AliWarning(Form("AliMCEventHandler: Event #%5d - Cannot get kinematics\n", iev));
+    return kFALSE;
+  }
     
-    fDirK ->GetObject("TreeK", fTreeK);
-    // Connect TreeK to MCEvent
-    fMCEvent->ConnectTreeK(fTreeK);
-    //Tree TR 
-    if (fFileTR) {
-	// Check which format has been read
-	fFileTR->GetObject(folder, fDirTR);
-	fDirTR->GetObject("TreeTR", fTreeTR);
-	//
-	// Connect TR to MCEvent
-	fMCEvent->ConnectTreeTR(fTreeTR);
-    }
-
+  fDirK ->GetObject("TreeK", fTreeK);
+  if (!fTreeK) {
+    AliError(Form("AliMCEventHandler: Event #%5d - Cannot get TreeK\n",iev));
+    return kFALSE;
+  }  
+  // Connect TreeK to MCEvent
+  fMCEvent->ConnectTreeK(fTreeK);
+  //Tree TR 
+  if (fFileTR) {
+    // Check which format has been read
+    fFileTR->GetObject(folder, fDirTR);
+    if (!fDirTR) {
+      AliError(Form("AliMCEventHandler: Event #%5d - Cannot get track references\n",iev));
+      return kFALSE;
+    }  
+     
+    fDirTR->GetObject("TreeTR", fTreeTR);
     //
-    return kTRUE;
+    if (!fTreeTR) {
+      AliError(Form("AliMCEventHandler: Event #%5d - Cannot get TreeTR\n",iev));
+      return kFALSE;
+    }  
+    // Connect TR to MCEvent
+    fMCEvent->ConnectTreeTR(fTreeTR);
+  }
+
+  //
+  return kTRUE;
 }
 
 Bool_t AliMCEventHandler::OpenFile(Int_t i)
