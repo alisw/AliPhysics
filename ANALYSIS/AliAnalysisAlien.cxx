@@ -1801,20 +1801,21 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   gSystem->Load(\"libPhysics\");" << endl << endl;
       out << "   gSystem->Load(\"libMinuit\");" << endl << endl;
       if (fAdditionalRootLibs.Length()) {
-	// in principle libtree /lib geom libvmc etc. can go into this list, too
-	out << "// Add aditional libraries" << endl;
-	TObjArray *list = fAdditionalRootLibs.Tokenize(" ");
-	TIter next(list);
-	TObjString *str;
-	while((str=(TObjString*)next())) {
-	  if (str->GetString().Contains(".so"))
-	    out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
+         // in principle libtree /lib geom libvmc etc. can go into this list, too
+         out << "// Add aditional libraries" << endl;
+         TObjArray *list = fAdditionalRootLibs.Tokenize(" ");
+         TIter next(list);
+         TObjString *str;
+         while((str=(TObjString*)next())) {
+            if (str->GetString().Contains(".so"))
+            out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
          }
-	if (list) delete list;
+         if (list) delete list;
       }
+      out << "// include path" << endl;
+      if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
+      out << "   gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");" << endl << endl;
       out << "// Load analysis framework libraries" << endl;
-
-
       if (!fPackages) {
          out << "   gSystem->Load(\"libSTEERBase\");" << endl;
          out << "   gSystem->Load(\"libESD\");" << endl;
@@ -1878,9 +1879,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   if (!SetupPar(\"" << obj->GetName() << "\")) return;" << endl;
          }   
       }   
-      out << "// include path" << endl;
-      if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
-      out << "   gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");" << endl << endl;
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
          TObjArray *list = fAdditionalLibs.Tokenize(" ");
