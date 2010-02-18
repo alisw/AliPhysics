@@ -13,6 +13,9 @@ Double_t maxA = -0.01;
 Double_t minB = 0.01;
 Double_t maxB = 0.9;
 
+// use physics selection class
+Bool_t  UsePhysicsSelection = kTRUE;
+
 // SETTING THE CUTS
 
 //----------Event selection----------
@@ -30,7 +33,7 @@ Double_t vertexZmin = -15.0; //-1.e99;
 Double_t vertexZmax = 15.0; //1.e99;
 
 //Bool_t UseMultCut = kTRUE;
-Bool_t UseMultCut = kFALSE;
+Bool_t UseMultCut = kTRUE;
 const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
 const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centrality)
 //const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
@@ -303,16 +306,30 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     taskFE->SetAnalysisType(type);
     if (UseMultCut) {
       taskFE->SetMinMult(multmin);
-      taskFE->SetMaxMult(multmax);}
+      taskFE->SetMaxMult(multmax);
+    }
     taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
+    if (UsePhysicsSelection) {
+      taskFE->SelectCollisionCandidates();
+      cout<<"Using Physics Selection"<<endl;
+    }
     mgr->AddTask(taskFE);
   }
   else { 
-    taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kFALSE); 
+    if(AddToEvent) { 
+      taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kFALSE,1);
+      taskFE->SetEllipticFlowValue(ellipticFlow); }    //TEST
+    else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kFALSE); }
     taskFE->SetAnalysisType(type);
     if (UseMultCut) {
       taskFE->SetMinMult(multmin);
-      taskFE->SetMaxMult(multmax); }
+      taskFE->SetMaxMult(multmax);
+    }
+    taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
+    if (UsePhysicsSelection) {
+      taskFE->SelectCollisionCandidates();
+      cout<<"Using Physics Selection"<<endl;
+    }
     mgr->AddTask(taskFE);
   }
  
@@ -690,7 +707,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutputFE = mgr->CreateContainer("cobjFlowEventSimple",  AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
   mgr->ConnectInput(taskFE,0,cinput1); 
-  mgr->ConnectOutput(taskFE,0,coutputFE);
+  mgr->ConnectOutput(taskFE,1,coutputFE);
 
   if (QA) { 
     TString qaNameRPFE = AliAnalysisManager::GetCommonFileName();
@@ -707,8 +724,8 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     AliAnalysisDataContainer *coutputQA2FE =
       mgr->CreateContainer("QAPOIFE", TList::Class(),AliAnalysisManager::kOutputContainer,qaNamePOIFE); 
 
-    mgr->ConnectOutput(taskFE,1,coutputQA1FE); 
-    mgr->ConnectOutput(taskFE,2,coutputQA2FE); 
+    mgr->ConnectOutput(taskFE,2,coutputQA1FE); 
+    mgr->ConnectOutput(taskFE,3,coutputQA2FE); 
   }
 
   // Create the output containers for the data produced by the analysis tasks
