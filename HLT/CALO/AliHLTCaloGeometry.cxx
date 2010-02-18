@@ -35,7 +35,7 @@ AliHLTCaloGeometry::AliHLTCaloGeometry(TString det) :
 
 AliHLTCaloGeometry::~AliHLTCaloGeometry()
 {
-   //see header file for class documentation
+
 }
 
 

@@ -14,11 +14,11 @@
 */
 
 #include "AliHLTPHOSGeometry.h"
-
-
+#include "AliPHOSGeoUtils.h"
 
 AliHLTPHOSGeometry::AliHLTPHOSGeometry() :
-AliHLTCaloGeometry("PHOS")
+AliHLTCaloGeometry("PHOS"),
+fGeoUtils(0)
 {
  // See header file for class documentation
 }

@@ -21,9 +21,9 @@
 
 struct  AliHLTCaloGlobalCoordinate
 {
-  float fX;
-  float fY;
-  float fZ;
+  Double_t fX;
+  Double_t fY;
+  Double_t fZ;
 };
 
 #endif
