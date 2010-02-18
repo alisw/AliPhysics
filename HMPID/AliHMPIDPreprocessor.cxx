@@ -75,13 +75,14 @@ Bool_t AliHMPIDPreprocessor::ProcNoiseMap()
   // eg. DDL turn on/off after PEDESTAL run and between PHYSICS runs.
   // Returns kFALSE on success
  
-  Bool_t stProcNoise=kFALSE;
+  Bool_t stProcNoise=kTRUE;
   TFile  *fNoiseFile;
   TH2F   *hNoiseMap = 0x0;
   
   TList *pNoiseSource=GetFileSources(kDAQ,"HmpPhysicsDaNoiseMap.root"); //get list of DAQ source names containing id "HmpPhysicsDaNoiseMap" --> defined in HMPIDphysda.cxx
   if(!pNoiseSource) {Log(Form("ERROR: Retrieval of sources for noise map: HmpPhysicsDaNoiseMap.root is failed!")); return stProcNoise;}
-  
+  if(!(TObjString*)pNoiseSource->At(0)) {Log(Form("ERROR: empty list received from DAQ Source!")); return stProcNoise;}
+    
   TString noiseFile = GetFile(kDAQ,Form("HmpPhysicsDaNoiseMap.root"),((TObjString*)pNoiseSource->At(0))->GetName());
   if(noiseFile.Length()==0) {Log(Form("ERROR retrieving noise map file: HmpPhysicsDaNoiseMap.root")); return stProcNoise;}
   
@@ -96,9 +97,9 @@ Bool_t AliHMPIDPreprocessor::ProcNoiseMap()
   AliInfo("Storing Reference Data");
   stProcNoise = Store("Calib","NoiseMap",hNoiseMap,&metaDataHisto,0,kTRUE);
   if(!stProcNoise) {
-    Log("HMPID - failure to store Noise Map data results in OCDB");    
+    Log("HMPID - failure to store Noise Map data results in OCDB"); return stProcNoise;   
   }
-  return stProcNoise;
+  return kFALSE;
 }//ProcNoiseMap
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
