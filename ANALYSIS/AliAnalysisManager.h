@@ -71,8 +71,8 @@ enum EAliAnalysisFlags {
    static TFile       *OpenFile(AliAnalysisDataContainer *cont, const char *option, Bool_t ignoreProof=kFALSE);
    void                PackOutput(TList *target);
    void                RegisterExtraFile(const char *fname);
-   void                StartAnalysis(const char *type="local", TTree *tree=0, Long64_t nentries=1234567890, Long64_t firstentry=0);
-   void                StartAnalysis(const char *type, const char *dataset, Long64_t nentries=1234567890, Long64_t firstentry=0);
+   Long64_t            StartAnalysis(const char *type="local", TTree *tree=0, Long64_t nentries=1234567890, Long64_t firstentry=0);
+   Long64_t            StartAnalysis(const char *type, const char *dataset, Long64_t nentries=1234567890, Long64_t firstentry=0);
    virtual void        SlaveBegin(TTree *tree);
    virtual void        Terminate();
    void                UnpackOutput(TList *source);

@@ -32,6 +32,17 @@
 ClassImp(AliAnalysisSelector)
 
 //______________________________________________________________________________
+AliAnalysisSelector::AliAnalysisSelector()
+                    :TSelector(), 
+                     fInitialized(kFALSE), 
+                     fAnalysis(NULL)
+{
+// Dummy ctor.
+   fAnalysis = AliAnalysisManager::GetAnalysisManager();
+   if (fAnalysis) fAnalysis->SetSelector(this);
+}   
+
+//______________________________________________________________________________
 AliAnalysisSelector::AliAnalysisSelector(AliAnalysisManager *mgr)
                     :TSelector(),
                      fInitialized(kFALSE),
@@ -39,6 +50,7 @@ AliAnalysisSelector::AliAnalysisSelector(AliAnalysisManager *mgr)
 {
 // Constructor. Called by AliAnalysisManager which registers itself on the
 // selector running on the master.
+   mgr->SetSelector(this);
 }
 
 //______________________________________________________________________________

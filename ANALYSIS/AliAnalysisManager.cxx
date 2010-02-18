@@ -1084,13 +1084,13 @@ void AliAnalysisManager::ResetAnalysis()
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t nentries, Long64_t firstentry)
+Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t nentries, Long64_t firstentry)
 {
 // Start analysis for this manager. Analysis task can be: LOCAL, PROOF, GRID or
 // MIX. Process nentries starting from firstentry
    if (!fInitOK) {
       Error("StartAnalysis","Analysis manager was not initialized !");
-      return;
+      return -1;
    }
    if (fDebug > 0) printf("StartAnalysis %s\n",GetName());
    TString anaType = type;
@@ -1108,7 +1108,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       if (!fGridHandler) {
          Error("StartAnalysis", "Cannot start grid analysis without a grid handler.");
          Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
-         return;
+         return -1;
       }
       // Write analysis manager in the analysis file
       cout << "===== RUNNING GRID ANALYSIS: " << GetName() << endl;
@@ -1120,21 +1120,21 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       }
       if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
          Info("StartAnalysis", "Grid analysis was stopped and cannot be terminated");
-         return;
+         return -1;
       }   
 
       // Terminate grid analysis
-      if (fSelector && fSelector->GetStatus() == -1) return;
-      if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) return;
+      if (fSelector && fSelector->GetStatus() == -1) return -1;
+      if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) return 0;
       cout << "===== MERGING OUTPUTS REGISTERED BY YOUR ANALYSIS JOB: " << GetName() << endl;
       if (!fGridHandler->MergeOutputs()) {
          // Return if outputs could not be merged or if it alien handler
          // was configured for offline mode or local testing.
-         return;
+         return 0;
       }
       ImportWrappers(NULL);
       Terminate();
-      return;
+      return 0;
    }
    char line[256];
    SetEventLoop(kFALSE);
@@ -1147,7 +1147,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       chain = (TChain*)tree;
       if (!chain || !chain->GetListOfFiles()->First()) {
          Error("StartAnalysis", "Cannot process null or empty chain...");
-         return;
+         return -1;
       }   
       ttype = "TChain";
    }   
@@ -1174,11 +1174,11 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
             if (IsExternalLoop()) {
                Info("StartAnalysis", "Initialization done. Event loop is controlled externally.\
                      \nSetData for top container, call ExecAnalysis in a loop and then Terminate manually");
-               return;
+               return 0;
             }         
             ExecAnalysis();
             Terminate();
-            return;
+            return 0;
          } 
          // Run tree-based analysis via AliAnalysisSelector  
          cout << "===== RUNNING LOCAL ANALYSIS " << GetName() << " ON TREE " << tree->GetName() << endl;
@@ -1188,7 +1188,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       case kProofAnalysis:
          if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
             Error("StartAnalysis", "No PROOF!!! Aborting.");
-            return;
+            return -1;
          }   
          sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
          gROOT->ProcessLine(line);
@@ -1198,7 +1198,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
             chain->Process("AliAnalysisSelector", "", nentries, firstentry);
          } else {
             Error("StartAnalysis", "No chain!!! Aborting.");
-            return;
+            return -1;
          }      
          break;
       case kGridAnalysis:
@@ -1208,7 +1208,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
          // Run event mixing analysis
          if (!fEventPool) {
             Error("StartAnalysis", "Cannot run event mixing without event pool");
-            return;
+            return -1;
          }
          cout << "===== RUNNING EVENT MIXING ANALYSIS " << GetName() << endl;
          fSelector = new AliAnalysisSelector(this);
@@ -1221,24 +1221,26 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
          }
          PackOutput(fSelector->GetOutputList());
          Terminate();
-   }   
+   }
+   if (fSelector) return fSelector->GetStatus();
+   return 0;
 }   
 
 //______________________________________________________________________________
-void AliAnalysisManager::StartAnalysis(const char *type, const char *dataset, Long64_t nentries, Long64_t firstentry)
+Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset, Long64_t nentries, Long64_t firstentry)
 {
 // Start analysis for this manager on a given dataset. Analysis task can be: 
 // LOCAL, PROOF or GRID. Process nentries starting from firstentry.
    if (!fInitOK) {
       Error("StartAnalysis","Analysis manager was not initialized !");
-      return;
+      return -1;
    }
    if (fDebug > 0) printf("StartAnalysis %s\n",GetName());
    TString anaType = type;
    anaType.ToLower();
    if (!anaType.Contains("proof")) {
       Error("StartAnalysis", "Cannot process datasets in %s mode. Try PROOF.", type);
-      return;
+      return -1;
    }   
    fMode = kProofAnalysis;
    char line[256];
@@ -1256,19 +1258,21 @@ void AliAnalysisManager::StartAnalysis(const char *type, const char *dataset, Lo
    
    if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
       Error("StartAnalysis", "No PROOF!!! Aborting.");
-      return;
+      return -1;
    }   
    sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
    gROOT->ProcessLine(line);
    sprintf(line, "gProof->GetDataSet(\"%s\");", dataset);
    if (!gROOT->ProcessLine(line)) {
       Error("StartAnalysis", "Dataset %s not found", dataset);
-      return;
+      return -1;
    }   
    sprintf(line, "gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
            dataset, nentries, firstentry);
    cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
    gROOT->ProcessLine(line);
+   if (fSelector) return fSelector->GetStatus();
+   return 0;
 }   
 
 //______________________________________________________________________________

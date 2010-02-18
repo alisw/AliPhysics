@@ -28,7 +28,7 @@ private:
    void                RestoreAnalysisManager();
 
 public:
-   AliAnalysisSelector() : TSelector(), fInitialized(kFALSE), fAnalysis(NULL) {}
+   AliAnalysisSelector();
    AliAnalysisSelector(AliAnalysisManager *mgr);
    virtual ~AliAnalysisSelector();
    
