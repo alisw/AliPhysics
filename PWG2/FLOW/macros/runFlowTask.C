@@ -166,7 +166,7 @@ void LoadLibraries(const anaModes mode) {
   //---------------------------------------------------------
   else if (mode==mPROOF) {
     //
-    //gEnv->SetValue("XSec.GSI.DelegProxy","2")    
+    //gEnv->SetValue("XSec.GSI.DelegProxy","2");    
     //  set to debug root versus if needed
     //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a_dbg");
     //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a");
@@ -181,6 +181,7 @@ void LoadLibraries(const anaModes mode) {
     //gProof->ShowDataSets("/*/*");  
  
     // Clear the Packages
+    /*
     gProof->ClearPackage("STEERBase.par");
     gProof->ClearPackage("ESD.par");
     gProof->ClearPackage("AOD.par");
@@ -188,6 +189,7 @@ void LoadLibraries(const anaModes mode) {
     gProof->ClearPackage("ANALYSISalice.par");
     gProof->ClearPackage("PWG2AOD.par");
     gProof->ClearPackage("CORRFW.par");
+    */
     gProof->ClearPackage("PWG2flowCommon");
     gProof->ClearPackage("PWG2flowTasks");
 
