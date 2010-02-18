@@ -99,6 +99,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
 
 Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
 {
+    
     // Copy from old to new format if necessary
   AliESD* old = ((AliESDEvent*) fEvent)->GetAliESDOld();
   if (old) {
@@ -115,8 +116,7 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   // Event selection
   // 
   if (fEventCuts)
-    fIsSelected = fEventCuts->IsSelected(fEvent); 
-
+    fIsSelected = fEventCuts->IsSelected((AliESDEvent*)fEvent); 
   return kTRUE;
 }
 

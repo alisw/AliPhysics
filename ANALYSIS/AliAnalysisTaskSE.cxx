@@ -287,12 +287,13 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 //
 // Was event selected ?
     Bool_t isSelected = kTRUE;
-    if( fInputHandler ) {
+    if( fInputHandler && fInputHandler->GetEventSelection() && fSelectCollisions) {
       isSelected = fInputHandler->IsEventSelected();
-      fEntry = fInputHandler->GetReadEntry();
     }
-    
+
     if (handler) handler->SetFillAOD(isSelected);
+
+    if( fInputHandler ) fEntry = fInputHandler->GetReadEntry();
   
 
 // Notify the change of run number
