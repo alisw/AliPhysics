@@ -35,7 +35,6 @@
 #include "AliHLTCaloChannelRawDataStruct.h"
 #include "AliHLTCaloCoordinate.h"
 
-
 //#include "AliCALOBunchInfo.h"
 //AliCALORawAnalyzer
 
@@ -293,7 +292,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
 	    //    fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
 	    AliCaloFitResults res = fAnalyzerPtr->Evaluate( bvctr,  fAltroRawStreamPtr->GetAltroCFG1(), fAltroRawStreamPtr->GetAltroCFG2() );  
-	    
+ 
+	    HLTDebug("Channel energy: %f, max sig: %d, gain = %d, x = %d, z = %d", res.GetAmp(), res.GetMaxSig(), (chId >> 12)&0x1, chId&0x3f, (chId >> 6)&0x3f);
 	    
 	    //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
 	    {

@@ -25,8 +25,8 @@ AliHLTPHOSRawAnalyzerCrudeComponent gAliHLTPHOSRawAnalyzerCrudeComponent;
 //___________________________________________________________________________
 AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent()
 {
-  HLTError("Creating raw analyzer");
   fAnalyzerPtr = new AliCaloRawAnalyzerCrude();
+  fAnalyzerPtr->SetIsZeroSuppressed(true);
 } 
 
 //___________________________________________________________________________
