@@ -206,7 +206,7 @@ struct AliHLTCaloClusterDataStruct
   /** 
   * Get the array of the matched tracks 
   */	
-   const Int_t * GetTracksMatched() const 
+   Int_t * GetTracksMatched()  
    {
       return fTracksMatched;
    }
