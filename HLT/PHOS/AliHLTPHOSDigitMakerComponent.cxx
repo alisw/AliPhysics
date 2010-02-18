@@ -27,7 +27,7 @@
 
 
 /** 
- * @file   AliHLTCaloDigitMakerComponent.cxx
+ * @file   AliHLTPHOSDigitMakerComponent.cxx
  * @author Oystein Djuvsland
  * @date   
  * @brief  A digit maker component for PHOS HLT

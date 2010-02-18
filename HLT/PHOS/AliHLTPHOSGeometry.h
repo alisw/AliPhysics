@@ -34,7 +34,7 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
       virtual void GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint,  AliHLTCaloGlobalCoordinate& globalCoord ); //COMMENT
 
       /** See base class for class documentation */
-      virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId) const { AbsId = 0; }
+      virtual void GetCellAbsId(UInt_t /*module*/, UInt_t /*x*/, UInt_t /*z*/, Int_t& AbsId) const { AbsId = 0; }
     
       /** Intialise the geometry from the HCDB/OCDB */
       virtual Int_t InitialiseGeometry() {return 0; }
@@ -43,6 +43,12 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
 	
 	/** Geometry class from offline code */
 	AliPHOSGeoUtils *fGeoUtils;  //! transient
+	
+      /** Copy constructor, not implemented */
+      AliHLTPHOSGeometry (const AliHLTPHOSGeometry&); //COMMENT
+    
+	/** Assignment operator, not implemented */
+      AliHLTPHOSGeometry & operator = (const AliHLTPHOSGeometry&); //COMMENT
   };
 
 #endif // ALIHLTPHOSGEOMETRY_H

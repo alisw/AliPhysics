@@ -28,10 +28,13 @@ AliHLTPHOSGeometry::~AliHLTPHOSGeometry()
 // See header file for class documentation
 }
 
-void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& /*recPoint*/, AliHLTCaloGlobalCoordinate& globalCoord )
+void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint, AliHLTCaloGlobalCoordinate& globalCoord )
 {
    // See header file for class documentation
-   globalCoord.fX = 0;
-   globalCoord.fZ = 0;
-   globalCoord.fY = 0;
+   Float_t x = (recPoint.fX - 32)*2.2;
+   Float_t z = (recPoint.fZ - 28)*2.2;
+   Float_t y = -460;
+   globalCoord.fX = x;
+   globalCoord.fZ = z;
+   globalCoord.fY = y;
 }
