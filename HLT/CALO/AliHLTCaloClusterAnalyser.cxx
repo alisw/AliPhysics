@@ -219,6 +219,9 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       caloClusterPtr->fClusterType = fClusterType;
 //      Int_t tmpSize = 0;//totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
 
+      //TODO remove hardcoded 10; 
+      memset(caloClusterPtr->fTracksMatched, 0xff, sizeof(Int_t)*10);
+
       Int_t tmpSize = totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
 
       if((availableSize - totSize)  < tmpSize)

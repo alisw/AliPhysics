@@ -476,13 +476,13 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
       HLTDebug("%d HLT clusters from spec: 0x%X", caloClusterHeaderPtr->fNClusters, pBlock->fSpecification);
 
-      AliHLTCaloClusterReader reader;
-      reader.SetMemory(caloClusterHeaderPtr);
+      //AliHLTCaloClusterReader reader;
+      //reader.SetMemory(caloClusterHeaderPtr);
 
       AliHLTESDCaloClusterMaker clusterMaker;
 
       int nClusters = clusterMaker.FillESD(pESD, caloClusterHeaderPtr);
-
+     
       HLTInfo("converted %d cluster(s) to AliESDCaloCluster and added to ESD", nClusters);
       iAddedDataBlocks++;
     }

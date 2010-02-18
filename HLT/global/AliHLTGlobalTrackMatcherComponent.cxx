@@ -1,0 +1,227 @@
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Svein Lindal <svein.lindal@gmail.com>                 *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
+
+/** @file   AliHLTGlobalTrackMatcherComponent.cxx
+    @author Svein Lindal
+    @brief  Component to match TPC tracks to Calo Clusters
+*/
+
+#if __GNUC__>= 3
+using namespace std;
+#endif
+
+#include "AliHLTProcessor.h"
+#include "AliHLTGlobalTrackMatcherComponent.h"
+#include "AliHLTGlobalTrackMatcher.h"
+#include "TObjArray.h"
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
+#include "AliHLTGlobalBarrelTrack.h"
+#include "AliHLTCaloClusterDataStruct.h"
+#include "AliHLTCaloClusterReader.h"
+
+
+/** ROOT macro for the implementation of ROOT specific class methods */
+AliHLTGlobalTrackMatcherComponent gAliHLTGlobalTrackMatcherComponent;
+
+ClassImp(AliHLTGlobalTrackMatcherComponent);
+
+AliHLTGlobalTrackMatcherComponent::AliHLTGlobalTrackMatcherComponent() :
+  fTrackMatcher(NULL),
+  fNEvents(0),
+  fBz(-9999999),
+  fClusterReader(NULL)
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+}
+
+AliHLTGlobalTrackMatcherComponent::~AliHLTGlobalTrackMatcherComponent()
+{
+  // see header file for class documentation
+  if(fTrackMatcher)
+    delete fTrackMatcher;
+  fTrackMatcher = NULL;
+
+  if(fClusterReader)
+    delete fClusterReader;
+  fClusterReader = NULL;
+
+}
+
+
+// Public functions to implement AliHLTComponent's interface.
+// These functions are required for the registration process
+const char* AliHLTGlobalTrackMatcherComponent::GetComponentID()
+{
+  // see header file for class documentation
+  return "TrackMatcher";
+}
+
+void AliHLTGlobalTrackMatcherComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
+{
+  // see header file for class documentation
+  list.clear();
+  list.push_back( kAliHLTDataTypeTrack );
+  list.push_back( kAliHLTDataTypeCaloCluster );
+}
+
+AliHLTComponentDataType AliHLTGlobalTrackMatcherComponent::GetOutputDataType()
+{
+  // see header file for class documentation
+  return kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny;
+}
+
+void AliHLTGlobalTrackMatcherComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
+{
+  // see header file for class documentation
+  // XXX TODO: Find more realistic values.
+  constBase = 80000;
+  inputMultiplier = 0;
+}
+
+AliHLTComponent* AliHLTGlobalTrackMatcherComponent::Spawn()
+{
+  // see header file for class documentation
+  return new AliHLTGlobalTrackMatcherComponent;
+}
+
+int AliHLTGlobalTrackMatcherComponent::DoInit( int argc, const char** argv ) 
+{
+ 
+  //BALLE TODO, use command line values to initialise matching vaules
+ // init
+  Int_t iResult = argc;
+  
+  if(argc > 0){
+    HLTWarning("Ignoring all configuration args, starting with: argv %s", argv[0]);
+  }
+
+  fClusterReader = new AliHLTCaloClusterReader();
+
+  fBz = GetBz();
+  if(fBz == -999999) {
+    HLTError("Magnetic field not properly set, current value: %d", fBz);
+  }
+
+  fTrackMatcher = new AliHLTGlobalTrackMatcher();
+
+  fNEvents = 0;
+
+  return iResult; 
+}
+  
+int AliHLTGlobalTrackMatcherComponent::DoDeinit() 
+{
+  // see header file for class documentation
+  Int_t iResult = 1;
+  
+  if(fTrackMatcher)
+    delete fTrackMatcher;
+  fTrackMatcher = NULL;
+  
+  if(fClusterReader)
+    delete fClusterReader;
+  fClusterReader = NULL;
+  
+
+  fNEvents = 0;
+
+  return iResult;
+}
+
+int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/) 
+{
+  
+  //See header file for documentation
+  Int_t iResult = 0;
+  
+  if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
+    return 0;
+
+
+  fNEvents++;
+  
+  //BALLE TODO check that the tracks in the TObjArray are fine over several blocks
+  TObjArray * trackArray = new TObjArray();
+  trackArray->SetOwner(kFALSE);
+  vector<AliHLTGlobalBarrelTrack> tracks;
+  
+  for (const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    
+    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>=0) {
+
+      for(UInt_t it = 0; it < tracks.size(); it++) {
+	AliHLTGlobalBarrelTrack track = tracks.at(it);
+	HLTInfo("track ID %d", track.TrackID());
+	trackArray->AddLast(dynamic_cast<TObject*>(&(tracks.at(it))));
+      }
+    } else {
+      HLTWarning("Converting tracks to vector failed");
+    }
+    
+    //Push the TPC block on, without any changes
+    PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
+
+  }
+
+  //Vector to contain the phos clusters
+  vector<AliHLTCaloClusterDataStruct *> phosClustersVector;
+  AliHLTCaloClusterDataStruct * caloClusterStructPtr;
+  
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
+    fClusterReader->SetMemory(caloClusterHeaderPtr);
+    
+    //BALLE, TODO, make it able to do EMCAL as well!!!
+    phosClustersVector.resize((Int_t) (caloClusterHeaderPtr->fNClusters));
+    
+    Int_t nClusters = 0;
+    while((caloClusterStructPtr = fClusterReader->NextCluster()) != 0) {
+      //BALLE stil just phos
+      phosClustersVector[nClusters++] = caloClusterStructPtr;  
+    }
+    
+    iResult = fTrackMatcher->Match(trackArray, phosClustersVector, fBz);
+    if(iResult <0) {
+      HLTWarning("Error in track matcher");
+    }
+
+    PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
+  }
+
+  //BALLE TODO phos only !!!!
+  
+  delete trackArray;
+  return iResult;
+
+}
+
+// int AliHLTGlobalTrackMatcherComponent::Configure(const char* arguments)
+// {
+//   Int_t iResult = 1;
+//   return iResult;
+// }
+
+// int AliHLTGlobalTrackMatcherComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+// {
+//   Int_t iResult = 1;
+//   return iResult;
+// }

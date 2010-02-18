@@ -81,8 +81,8 @@ AliHLTESDCaloClusterMaker::FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterH
       esdCluster.SetEmcCpvDistance(caloClusterStructPtr->fEmcCpvDistance);
       esdCluster.SetDistanceToBadChannel(caloClusterStructPtr->fDistToBadChannel);
       esdCluster.SetNCells(caloClusterStructPtr->fNCells);
-      //esdCluster.SetNCells(2);
-      
+      TArrayI tracksMatched(caloClusterStructPtr->GetNTracksMatched(), caloClusterStructPtr->fTracksMatched);
+      esdCluster.AddTracksMatched(tracksMatched);
       UShort_t *idArrayPtr = new UShort_t[caloClusterStructPtr->fNCells];
       Double32_t *ampFracArrayPtr = new Double32_t[caloClusterStructPtr->fNCells];
       for(UInt_t index = 0; index < caloClusterStructPtr->fNCells; index++)

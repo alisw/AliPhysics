@@ -58,8 +58,11 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
   fNDigits(0)
 {
   //See header file for documentation
-  fEmcClusteringThreshold = 0.2;
-  fEmcMinEnergyThreshold = 0.03;
+  //fEmcClusteringThreshold = 0.2;
+  //fEmcMinEnergyThreshold = 0.03;
+
+  fEmcClusteringThreshold = 0.1;
+  fEmcMinEnergyThreshold = 0.01;
   fEmcTimeGate = 1.e-6 ;
   
   fMaxDigitIndexDiff = 2*fCaloConstants->GetNZROWSMOD();

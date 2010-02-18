@@ -214,13 +214,23 @@ struct AliHLTCaloClusterDataStruct
    /** Get the best match */
    Int_t GetTrackMatched() const   
   {
-     if( fTracksMatched >0)  return  fTracksMatched[0]; 
+    if( fTracksMatched[0] >0)  return  fTracksMatched[0]; 
     else return -1;
   } //Most likely the track associated to the cluster
 
 /** Get the number of tracks matched */
-  Int_t GetNTracksMatched() const { return fNTracksMatched; }
-  
+  Int_t GetNTracksMatched() const 
+  { 
+    for(int i = 0; i < 10; i++) 
+      {
+        if (fTracksMatched[i] < 0)
+         {
+     	    return i;
+         }
+    }
+    return 10;
+  }
+
   /** Number of cells in the cluster */
   UInt_t fNCells;                                //COMMENT
 
@@ -276,17 +286,16 @@ struct AliHLTCaloClusterDataStruct
   Float_t fDistanceToBadChannel;              //COMMENT
 
   /** Number of matched tracks */
-  Int_t fNTracksMatched; //COMMENT
+  Int_t fNTracksMatched; //COMMENT Obsolete?
 
   /** the matced tracks */
   Int_t fTracksMatched[10];           //COMMENT TODO: remove hardcoded 10
-  
+
   /** The absolute IDs of the cells*/
   UShort_t fCellsAbsId;                      //COMMENT
 
   /** */
   Float_t fCellsAmpFraction;              //COMMENT
-  
   
   
 };

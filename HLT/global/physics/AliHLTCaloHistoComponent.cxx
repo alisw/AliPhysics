@@ -209,16 +209,19 @@ AliHLTCaloHistoComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& lis
   //see header file for documentation
   list.clear();
   list.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginOut );
+  list.push_back( kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL );
+  list.push_back(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS );
+
   //   list.push_back(AliHLTPHOSDefinitions::fgkClusterDataType);
-//   list.push_back(AliHLTPHOSDefinitions::fgkESDCaloClusterDataType);
-//   list.push_back(AliHLTPHOSDefinitions::fgkESDCaloCellsDataType);
+  //   list.push_back(AliHLTPHOSDefinitions::fgkESDCaloClusterDataType);
+  //   list.push_back(AliHLTPHOSDefinitions::fgkESDCaloCellsDataType);
 
 }
 
 AliHLTComponentDataType AliHLTCaloHistoComponent::GetOutputDataType()
 {
   //see header file for documentation
-  return (kAliHLTDataTypeHistogram  | kAliHLTDataOriginOut);
+  return kAliHLTDataTypeHistogram  | kAliHLTDataOriginAny ;
 }
 
 
@@ -245,14 +248,13 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
 //     fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
 //   }
 
-
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
     event->GetStdContent();
     
     //EMCAL
     if(fDoEmcal){
- 
+      
       Int_t nec = event->GetEMCALClusters(fEmcalClustersArray);
       
       if(fDoMatchedTracks)
@@ -260,16 +262,16 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
       
       if(fDoInvariantMass)
 	fEmcalInvariantMassHistProducer->FillHistograms(nec, fEmcalClustersArray);
-    
+      
       if(fDoClusterEnergy)
 	fEmcalClusterEnergyHistProducer->FillHistograms(nec, fEmcalClustersArray);
-   
+      
       if(fDoCellEnergy)
 	fEmcalCellEnergyHistProducer->FillHistograms(nec, fEmcalClustersArray);;
-   
+      
     }
-
-
+    
+    
     //PHOS
     if(fDoPhos){
       
@@ -280,17 +282,17 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
       
       if(fDoInvariantMass)
 	fPhosInvariantMassHistProducer->FillHistograms(npc, fPhosClustersArray);
-
+      
       if(fDoClusterEnergy)
 	fPhosClusterEnergyHistProducer->FillHistograms(npc, fPhosClustersArray);
-
+      
       if(fDoCellEnergy)
 	fPhosCellEnergyHistProducer->FillHistograms(npc, fPhosClustersArray);
-   
-    }
       
+    }
+    
   }
-
+  
   
   //Push histos
   
@@ -302,10 +304,10 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
     
     if(fDoMatchedTracks)
       PushBack(fPhosMatchedTracksHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
-
+    
     if(fDoClusterEnergy) 
       PushBack(fPhosClusterEnergyHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
-
+    
     if(fDoCellEnergy)
       PushBack(fPhosCellEnergyHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
     

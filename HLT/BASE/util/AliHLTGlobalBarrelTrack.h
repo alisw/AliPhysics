@@ -51,6 +51,8 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   Double_t GetLastPointY() const {return fLastY;}
   /// return Track ID
   Int_t TrackID() const {return fTrackID;}
+  /// return Track ID, inherited for AliExternalTrackParam
+  Int_t GetID() const {return fTrackID;}
 
   /// Get the number of associated points
   UInt_t GetNumberOfPoints() const;

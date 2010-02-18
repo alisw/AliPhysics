@@ -7,6 +7,7 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		AliHLTGlobalAgent.h \
 		AliHLTGlobalVertexerComponent.h \
 		AliHLTGlobalTrackMatcher.h \
+		AliHLTGlobalTrackMatcherComponent.h \
 		AliHLTGlobalVertexerHistoComponent.h \
 		AliHLTGlobalHistoCollector.h \
 		physics/AliHLTV0HistoComponent.h \
@@ -16,10 +17,8 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		physics/AliHLTCaloHistoClusterEnergy.h \
 		physics/AliHLTCaloHistoCellEnergy.h 
 
-#	        physics/AliHLTPHOSHistogramProducerComponent.h \
-#physics/AliHLTPHOSHistogramProducerComponent.h 
 
-# 		
+#
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:= 	$(CLASS_HDRS)
