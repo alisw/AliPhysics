@@ -51,6 +51,8 @@ AliHLTCaloClusterReader::NextCluster()
       // So, we get our cluster
       tmpChannelPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(fCurrentClusterPtr);
       
+//      printf("CR: Energy: %f, cluster pointer: %x\n", tmpChannelPtr->fEnergy, tmpChannelPtr);
+      
       // increment the number of clusters read
       fCurrentCnt++;
       
@@ -58,10 +60,18 @@ AliHLTCaloClusterReader::NextCluster()
       // The increment is defined as the size of the cluster data struct 
       // + the number of cells minus the one already included in the struct
       // times the amount of data for each cell (absolute ID (short) and amplitude fraction (float))
-      fCurrentClusterPtr = (AliHLTCaloClusterDataStruct*)((UChar_t*)fCurrentClusterPtr 
+//      fCurrentClusterPtr = (AliHLTCaloClusterDataStruct*)((UChar_t*)fCurrentClusterPtr 
+//							      + sizeof(AliHLTCaloClusterDataStruct) 
+//							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t)));
+      fCurrentClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(reinterpret_cast<UChar_t*>(fCurrentClusterPtr)
 							      + sizeof(AliHLTCaloClusterDataStruct) 
-							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t)));
+							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t))
+							      - sizeof(Short_t)); //TODO: Why?;
+						
+							      
       // return the cluster
+      //printf("CR: Energy: %f, cluster pointer: %x, next cluster pointer: %x\n", tmpChannelPtr->fEnergy, tmpChannelPtr, fCurrentClusterPtr);
+
       return tmpChannelPtr;
     }
   // if we have read our clusters we reset our memory pointer and returns 0;
@@ -84,9 +94,12 @@ AliHLTCaloClusterReader::GetCell(AliHLTCaloClusterDataStruct *clusterPtr, UShort
   if(index < clusterPtr->fNCells)
     {
       // the absolute ID is located in the memory address of the first ID plus the size of the pair of cell properties times the index
-      cellId = *(UShort_t*)((UChar_t*)(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t)));
+      //cellId = *(UShort_t*)((UChar_t*)(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t)));
+      cellId = * reinterpret_cast<UShort_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t)));
+//      printf("CR: Cell ID: %d, cell ID pointer: %x\n", cellId,  reinterpret_cast<UShort_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t))));
       // the amplitude fraction is located in the memory address of the first ID plus the size of the pair of cell properties times the index
-      cellAmp = *(Float_t*)((UChar_t*)(&(clusterPtr->fCellsAmpFraction)) + index * (sizeof(Short_t) + sizeof(Float_t)));
+      //cellAmp = *(Float_t*)((UChar_t*)(&(clusterPtr->fCellsAmpFraction)) + index * (sizeof(Short_t) + sizeof(Float_t)));
+      cellAmp = *reinterpret_cast<Float_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAmpFraction)) + index*(sizeof(Short_t) + sizeof(Float_t)));
       return true;
     }
   else return false;
@@ -96,7 +109,7 @@ void
 AliHLTCaloClusterReader::SetMemory(const AliHLTCaloClusterHeaderStruct* clusterHeaderPtr)
 {
   //See header file for documentation
-  
+  //printf("CR: Number of clusters in event: %d\n", clusterHeaderPtr->fNClusters);
   fMaxCnt = clusterHeaderPtr->fNClusters;
   fCurrentClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>((UChar_t*)(clusterHeaderPtr) + sizeof(AliHLTCaloClusterHeaderStruct) + sizeof(AliHLTCaloDigitDataStruct)*clusterHeaderPtr->fNDigits);
   fIsSetMemory = true;
