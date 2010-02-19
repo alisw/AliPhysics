@@ -98,8 +98,8 @@ void AliEMCALTriggerSTU::L1( L1TriggerType_t type )
 void AliEMCALTriggerSTU::PrintADC( L1TriggerType_t type, TVector2& pos, TVector2& idx )
 {
 	//
-	Int_t ix = ( pos.X() + fPatchSize->X() ) * fSubRegionSize->X();
-	Int_t iy = ( pos.Y() + fPatchSize->Y() ) * fSubRegionSize->Y();
+        Int_t ix = (Int_t) (( pos.X() + fPatchSize->X() ) * fSubRegionSize->X());
+        Int_t iy = (Int_t) (( pos.Y() + fPatchSize->Y() ) * fSubRegionSize->Y());
 	
 	TString subRegionADC[] = {"0->15", "16->31", "32->47", "48->63", "64->79", "80->95"};
 	
@@ -111,9 +111,9 @@ void AliEMCALTriggerSTU::PrintADC( L1TriggerType_t type, TVector2& pos, TVector2
 			
 			printf("TRU #%d row #%d col #%d fastor: ",iTRU,int(idx.Y()),int(idx.X()));
 			
-			for (Int_t i=pos.X() * fSubRegionSize->X();i<ix;i++) 
+			for (Int_t i=(Int_t)(pos.X() * fSubRegionSize->X());i<ix;i++) 
 			{
-				for (Int_t j=pos.Y() * fSubRegionSize->Y();j<iy;j++) 
+			  for (Int_t j=(Int_t) (pos.Y() * fSubRegionSize->Y());j<iy;j++) 
 				{
 					Int_t jtru = ( i < 24 ) ? 31 - j / 4 : 15 - j / 4;
 					printf("TRU#%d_%d ",jtru,fMap[i][j]);
@@ -132,9 +132,9 @@ void AliEMCALTriggerSTU::PrintADC( L1TriggerType_t type, TVector2& pos, TVector2
 			Char_t* vPair = 0x0;
 			Int_t nSubRegion = 0;
 			
-			for (Int_t i=pos.X() * fSubRegionSize->X();i<ix;i++) 
+			for (Int_t i=(Int_t)(pos.X() * fSubRegionSize->X());i<ix;i++) 
 			{
-				for (Int_t j=pos.Y() * fSubRegionSize->Y();j<iy;j++) 
+			  for (Int_t j=(Int_t)(pos.Y() * fSubRegionSize->Y());j<iy;j++) 
 				{
 					Int_t itru = ( i < 24 ) ? 31 - j / 4 : 15 - j / 4;
 					
@@ -271,8 +271,8 @@ void AliEMCALTriggerSTU::PatchGenerator(const TClonesArray* lpos, Int_t val)
 	while ( TVector2 *pos = (TVector2*)NextPosition() )
 	{
 		pos->Print();
-		for (Int_t i=pos->X()*fSubRegionSize->X(); i<int((pos->X()+fPatchSize->X())*fSubRegionSize->X()); i++)
-			for (Int_t j=pos->Y()*fSubRegionSize->Y(); j<int((pos->Y()+fPatchSize->Y())*fSubRegionSize->Y()); j++) 
+		for (Int_t i=(Int_t)(pos->X()*fSubRegionSize->X()); i<int((pos->X()+fPatchSize->X())*fSubRegionSize->X()); i++)
+		  for (Int_t j=(Int_t)(pos->Y()*fSubRegionSize->Y()); j<int((pos->Y()+fPatchSize->Y())*fSubRegionSize->Y()); j++) 
 				fRegion[i][j] = val;
 	}
 	

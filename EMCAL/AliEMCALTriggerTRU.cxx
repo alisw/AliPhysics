@@ -276,12 +276,12 @@ Int_t AliEMCALTriggerTRU::L0v1()
 			TVector2 v;
 			p->Position(v);
 			
-			Int_t sizeX = fPatchSize->X() * fSubRegionSize->X();
-			Int_t sizeY = fPatchSize->Y() * fSubRegionSize->Y();
+			Int_t sizeX = (Int_t)(fPatchSize->X() * fSubRegionSize->X());
+			Int_t sizeY = (Int_t)(fPatchSize->Y() * fSubRegionSize->Y());
 			
 			const Int_t psize =  sizeX * sizeY; // Number of FastOR in the patch
 			
-			Int_t idx[psize];
+			Int_t *idx= new Int_t[psize];
 			
 			Int_t aPeaks = 0;
 			
@@ -310,8 +310,12 @@ Int_t AliEMCALTriggerTRU::L0v1()
 				if ( AliDebugLevel() ) 
 				{
 					printf("\t----- Valid patch (all FastOR have crossed a maximum)\n");
-				
-					for (Int_t xx=0;xx<sizeX;xx++) for (Int_t yy=0;yy<sizeY;yy++) ShowFastOR(i,idx[xx*sizeY+yy]); 
+				  for (Int_t xx=0;xx<sizeX;xx++) {
+				    for (Int_t yy=0;yy<sizeY;yy++) {
+				      Int_t index = xx*sizeY+yy;
+				      ShowFastOR(i,idx[index]); 
+				    }
+				  }
 				}
 				
 				nP++; // all FOR in the patch must have seen a max

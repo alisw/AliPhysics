@@ -225,11 +225,11 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
     fInput(0),
     fInputFileNames(0),
     fEventNames(0),
-    fDigitThreshold(0.),
+    fDigitThreshold(0),
     fMeanPhotonElectron(0),
 //    fPedestal(0), //Not used, remove?
 //    fSlope(0.),   //Not used, remove?
-    fPinNoise(0),
+    fPinNoise(0.),
     fTimeResolution(0.),
 //    fTimeThreshold(0),    //Not used, remove?
 //    fTimeSignalLength(0), //Not used, remove?
@@ -694,7 +694,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
 	}
 	
 	Int_t    nSamples = 32;
-	Int_t timeSamples[nSamples];
+	Int_t *timeSamples = new Int_t[nSamples];
 	
 	NextDigit = TIter(digitsTMP);
 	while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())

@@ -75,19 +75,19 @@ void AliEMCALTriggerPatch::GetAbsCellIdsFromPatchPosition( TVector2& pSize, TVec
 	AliRunLoader*     runLoader = AliRunLoader::Instance();
 	AliEMCALGeometry*      geom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
 	
-	Int_t nTowersinpatch = pSize.X() * pSize.Y() * sSize.X() * sSize.Y() * 4;
+	Int_t nTowersinpatch = (Int_t) (pSize.X() * pSize.Y() * sSize.X() * sSize.Y() * 4);
 	
 	absid.Set( nTowersinpatch );
 	
 	// fPosition: patch position in the STU region
-	Int_t ix = ( fPosition->X() + pSize.X() ) * sSize.X(); 
-	Int_t iy = ( fPosition->Y() + pSize.Y() ) * sSize.Y();
+	Int_t ix = (Int_t)(( fPosition->X() + pSize.X() ) * sSize.X()); 
+	Int_t iy = (Int_t)(( fPosition->Y() + pSize.Y() ) * sSize.Y());
 	
 	Int_t it = 0;
 	
-	for (Int_t i=fPosition->X() * sSize.X(); i<ix; i++) // Loop over subregions FastOR
+	for (Int_t i=(Int_t) (fPosition->X() * sSize.X()); i<ix; i++) // Loop over subregions FastOR
 	{
-		for (Int_t j=fPosition->Y() * sSize.Y(); j<iy; j++) 
+	  for (Int_t j=(Int_t) (fPosition->Y() * sSize.Y()); j<iy; j++) 
 		{
 			Int_t nSupMod = int(i/24) + 2 * int(j/12);
 			
