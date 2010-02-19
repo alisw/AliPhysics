@@ -17,7 +17,7 @@
 
 class TFile;
 class TList;
-class AliAnalysisTask;
+class AliAnalysisTaskSE;
 
 #include "TProfile.h"  //needed as include
 #include "AliAnalysisManager.h"
@@ -40,7 +40,7 @@ ClassImp(AliAnalysisTaskScalarProduct)
 
 //________________________________________________________________________
 AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Bool_t usePhiWeights) : 
-  AliAnalysisTask(name, ""), 
+  AliAnalysisTaskSE(name), 
   fEvent(NULL),
   fSP(NULL),
   fListHistos(NULL),
@@ -57,12 +57,12 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
   if(usePhiWeights) {
     DefineInput(1, TList::Class()); }
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());  
-   
+  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
 AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() : 
+  AliAnalysisTaskSE(), 
   fEvent(NULL),
   fSP(NULL),
   fListHistos(NULL),
@@ -90,16 +90,7 @@ AliAnalysisTaskScalarProduct::~AliAnalysisTaskScalarProduct()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskScalarProduct::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-  cout<<"AliAnalysisTaskScalarProduct::ConnectInputData(Option_t *)"<<endl;
-  
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskScalarProduct::CreateOutputObjects() 
+void AliAnalysisTaskScalarProduct::UserCreateOutputObjects() 
 {
   // Called at every worker node to initialize
   cout<<"AliAnalysisTaskScalarProduct::CreateOutputObjects()"<<endl;
@@ -128,7 +119,7 @@ void AliAnalysisTaskScalarProduct::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskScalarProduct::Exec(Option_t *) 
+void AliAnalysisTaskScalarProduct::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -143,7 +134,7 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
   }
     
   //fListHistos->Print();	
-  PostData(0,fListHistos);
+  PostData(1,fListHistos);
   
 } 
 
@@ -152,11 +143,11 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
 {
   // Called once at the end of the query
   AliFlowAnalysisWithScalarProduct* fSPTerm = new AliFlowAnalysisWithScalarProduct() ;
-  fListHistos = (TList*)GetOutputData(0);
+  fListHistos = (TList*)GetOutputData(1);
   if (fListHistos) {
       fSPTerm -> GetOutputHistograms(fListHistos);
       fSPTerm -> Finish();
-      PostData(0,fListHistos);
+      PostData(1,fListHistos);
     }
     
   else { cout << "histgram list pointer is empty in Scalar Product" << endl; }
