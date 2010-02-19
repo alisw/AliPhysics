@@ -185,9 +185,15 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       fAnalyserPtr->SetDigitDataArray(fOutputDigitsArray);
       
       Int_t nClusters = fAnalyserPtr->CreateClusters(nRecPoints, size, mysize);
-  
-      caloClusterHeaderPtr->fNClusters = nClusters;
-      
+      if (nClusters < 0) 
+	{
+	  caloClusterHeaderPtr->fNClusters = 0;
+	} 
+      else 
+	{
+	  caloClusterHeaderPtr->fNClusters = nClusters;
+      	}
+     
       //HLTDebug("Number of clusters: %d", nRecPoints);
       
       AliHLTComponentBlockData bd;
