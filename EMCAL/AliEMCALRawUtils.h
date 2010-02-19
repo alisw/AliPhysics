@@ -40,9 +40,11 @@ class AliEMCALRawUtils : public TObject {
   AliEMCALRawUtils& operator =(const AliEMCALRawUtils& rawUtils);
 
   void Digits2Raw();
-  void Raw2Digits(AliRawReader *reader, TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap);
+  void Raw2Digits(AliRawReader *reader, TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
+				  TClonesArray *digitsTRG=0x0);
 
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Int_t amp, Float_t time);
+  void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t timeSamples[], Int_t nSamples);
 
   // Signal shape parameters
   Double_t GetRawFormatHighLowGainFactor() const { return fHighLowGainFactor ;}

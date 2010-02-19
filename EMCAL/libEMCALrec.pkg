@@ -26,10 +26,11 @@ CINTHDRS:= $(HDRS) AliEMCALGeometry.h AliEMCALGeoUtils.h
 
 DHDR:=EMCALrecLinkDef.h
 # have to tune
-EINCLUDE:=PYTHIA6 RAW EVGEN THijing 
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing VZERO 
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lEMCALUtils -lEMCALbase -lEMCALsim -lSTEER -lESD -lCDB -lSTEERBase \
                          -L$(ROOTLIBDIR) -lMinuit
 endif
+

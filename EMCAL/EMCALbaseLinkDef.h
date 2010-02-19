@@ -41,6 +41,9 @@
 #pragma link C++ class AliEMCALSuperModuleCalibReference+;
 #pragma link C++ class AliEMCALCalibMapAPDVal+;
 #pragma link C++ class AliEMCALSuperModuleCalibMapAPD+;
+#pragma link C++ class AliEMCALRawDigit+;
+#pragma link C++ class AliEMCALTriggerSTURawStream+;
 // #pragma link C++ class AliEMCALShishKebabTrd1Module+;
 
 #endif
+

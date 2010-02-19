@@ -30,7 +30,9 @@ AliEMCALBiasAPD.cxx \
 AliEMCALCalibAbs.cxx \
 AliEMCALCalibReference.cxx \
 AliEMCALCalibMapAPD.cxx \
-SMcalib/AliEMCALCCUSBRawStream.cxx 
+SMcalib/AliEMCALCCUSBRawStream.cxx \
+AliEMCALRawDigit.cxx \
+AliEMCALTriggerSTURawStream.cxx
 # AliEMCALShishKebabTrd1Module.cxx \
 
 
@@ -47,3 +49,4 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lRAWDatarec -lRAWDatabase \
                          -L$(ROOTLIBDIR) -lVMC -lGeom -lMinuit
 endif
+

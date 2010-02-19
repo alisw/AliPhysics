@@ -126,6 +126,11 @@ public:
   void     GetModulePhiEtaIndexInSModuleFromTRUIndex(
 	       Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const;
   Int_t   GetAbsTRUNumberFromNumberInSm(const Int_t row, const Int_t col, const Int_t sm) const ;
+  Bool_t   GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& id) const;
+  Bool_t                    GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, const Int_t iEta, const Int_t iPhi, Int_t& id) const;	
+  Bool_t             GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iADC) const;
+  Bool_t   GetPositionInTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iEta, Int_t& iPhi) const;
+  Bool_t    GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t& iSM, Int_t& iEta, Int_t& iPhi) const;
   
 
 

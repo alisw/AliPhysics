@@ -11,13 +11,19 @@ AliEMCALDigitizer.cxx \
 AliEMCALTick.cxx \
 AliEMCALRawUtils.cxx \
 AliEMCALTrigger.cxx \
-AliEMCALQADataMakerSim.cxx
+AliEMCALQADataMakerSim.cxx \
+AliEMCALTriggerBoard.cxx \
+AliEMCALTriggerPatch.cxx \
+AliEMCALTriggerSTU.cxx \
+AliEMCALTriggerTRU.cxx \
+AliEMCALTriggerData.cxx \
+AliEMCALTriggerElectronics.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
 DHDR:=EMCALsimLinkDef.h
 # have to tune
-EINCLUDE:=PYTHIA6 RAW EVGEN THijing 
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing VZERO 
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
@@ -25,3 +31,5 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lRAWDatarec -lRAWDatasim  -lRAWDatabase \
                          -L$(ROOTLIBDIR) -lVMC -lGeom
 endif
+
+

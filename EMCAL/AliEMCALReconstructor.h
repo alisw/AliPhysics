@@ -39,6 +39,7 @@ class AliEMCALRawUtils;
 class AliEMCALGeometry;
 class AliEMCALCalibData ;
 class AliCaloCalibPedestal ;
+class AliEMCALTriggerElectronics;
 
 // --- Standard library ---
 
@@ -98,8 +99,11 @@ private:
   AliEMCALCalibData    * fCalibData   ;   //! Calibration database if aval
   AliCaloCalibPedestal * fPedestalData ;   //! Tower status database if aval
 
-  ClassDef(AliEMCALReconstructor,8)  // Reconstruction algorithm class (Base Class)
+  static AliEMCALTriggerElectronics* fgTriggerProcessor;
+
+  ClassDef(AliEMCALReconstructor,9)  // Reconstruction algorithm class (Base Class)
 
 }; 
 
 #endif // ALIEMCALRECONSTRUCTOR_H
+

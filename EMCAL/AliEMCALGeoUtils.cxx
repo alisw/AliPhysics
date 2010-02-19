@@ -977,6 +977,99 @@ Int_t AliEMCALGeoUtils::GetAbsTRUNumberFromNumberInSm(const Int_t row, const Int
   return itru;
 }
 
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& id) const
+{
+    if (iTRU > 31 || iTRU < 0 || iADC > 95 || iADC < 0) 
+	{
+		AliError("TRU out of range!");
+		return kFALSE;
+	}
+				 
+	id = iADC + iTRU * 96;
+	
+	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iADC) const
+{
+	if (id > 3071 || id < 0)
+	{
+		AliError("Id out of range!");
+		return kFALSE;
+	}
+	
+	iTRU = id / 96;
+	iADC = id % 96;
+	
+	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetPositionInTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iEta, Int_t& iPhi) const
+{
+	Int_t iADC;
+	
+	Bool_t isOK = GetTRUFromAbsFastORIndex(id, iTRU, iADC);
+	
+	if (!isOK) return kFALSE;
+	
+	Int_t x = iADC / 4;
+	Int_t y = iADC % 4;
+	
+	if ( int( iTRU / 3 ) % 2 ) // C side 
+	{
+		iEta = 23 - x;
+		iPhi =      y;
+	}
+	else                       // A side
+	{
+		iEta =      x;
+		iPhi =  3 - y;
+	}
+	
+	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t& iSM, Int_t& iEta, Int_t& iPhi) const
+{
+	Int_t iTRU;
+	Bool_t isOK = GetPositionInTRUFromAbsFastORIndex(id, iTRU, iEta, iPhi);
+	
+	if (!isOK) return kFALSE;
+	
+	iSM  = iTRU / 3;
+	
+	if ( int( iTRU / 3 ) % 2 ) // C side
+	{
+		iPhi = iPhi + 4 * ( 2 - ( iTRU % 3 ) );
+	}
+	else                       // A side
+	{
+		iPhi = iPhi + 4 * (       iTRU % 3   );
+	}
+	
+	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, const Int_t iEta, const Int_t iPhi, Int_t& id) const
+{
+	if (iTRU < 0 || iTRU > 31 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 3) return kFALSE;
+	
+	if ( int( iTRU / 3 ) % 2 ) // C side
+	{
+		id =      iPhi  + 4 * ( 23 - iEta ) + iTRU * 96;
+	}
+	else 
+	{
+		id = (3 - iPhi) + 4 *        iEta + iTRU * 96;
+	}
+	
+	return kTRUE;
+}
 
 //____________________________________________________________________________
 const TGeoHMatrix * AliEMCALGeoUtils::GetMatrixForSuperModule(Int_t smod) const {

@@ -47,6 +47,7 @@ class AliCaloAltroMapping;
 #include "AliEMCALGeometry.h"
 class AliEMCALDigitizer;
 #include "AliEMCALDigit.h"
+#include "AliEMCALRawDigit.h"
 #include "AliEMCAL.h"
 #include "AliCaloCalibPedestal.h"  
 #include "AliCaloFastAltroFitv0.h"
@@ -69,7 +70,7 @@ Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 muse
 // some digitization constants
 Int_t    AliEMCALRawUtils::fgThreshold = 1;
 Int_t    AliEMCALRawUtils::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
-Int_t    AliEMCALRawUtils::fgPedestalValue = 0;     // pedestal value for digits2raw
+Int_t    AliEMCALRawUtils::fgPedestalValue = 0;     // pedestal value for digits2raw, default generate ZS data
 Double_t AliEMCALRawUtils::fgFEENoise = 3.;          // 3 ADC channels of noise (sampled)
 
 AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
@@ -100,8 +101,7 @@ AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
   //To make sure we match with the geometry in a simulation file,
   //let's try to get it first.  If not, take the default geometry
   AliRunLoader *rl = AliRunLoader::Instance();
-  if(!rl) AliError("Cannot find RunLoader!");
-  if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
+  if (rl && rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
     fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   } else {
     AliInfo(Form("Using default geometry in raw reco"));
@@ -309,7 +309,7 @@ void AliEMCALRawUtils::Digits2Raw()
 }
 
 //____________________________________________________________________________
-void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap)
+void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap, TClonesArray *digitsTRG)
 {
   // convert raw data of the current event to digits                                                                                     
 
@@ -339,15 +339,29 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 
   // start loop over input stream 
   while (in.NextDDL()) {
+	  
+//    if ( in.GetDDLNumber() != 0 && in.GetDDLNumber() != 2 ) continue;
+
     while (in.NextChannel()) {
 
+/*
+	  Int_t    hhwAdd    = in.GetHWAddress();
+	  UShort_t iiBranch  = ( hhwAdd >> 11 ) & 0x1; // 0/1
+	  UShort_t iiFEC     = ( hhwAdd >>  7 ) & 0xF;
+	  UShort_t iiChip    = ( hhwAdd >>  4 ) & 0x7;
+	  UShort_t iiChannel =   hhwAdd         & 0xF;
+		 
+	  if ( !( iiBranch == 0 && iiFEC == 1 && iiChip == 3 && ( iiChannel >= 8 && iiChannel <= 15 ) ) && !( iiBranch == 1 && iiFEC == 0 && in.GetColumn() == 0 ) ) continue;
+*/
+		
       //Check if the signal  is high or low gain and then do the fit, 
       //if it  is from TRU or LEDMon do not fit
       caloFlag = in.GetCaloFlag();
-      if (caloFlag != 0 && caloFlag != 1) continue; 
-	      
-      //Do not fit bad channels
-      if(fRemoveBadChannels && pedbadmap->IsBadChannel(in.GetModule(),in.GetColumn(),in.GetRow())) {
+//		if (caloFlag != 0 && caloFlag != 1) continue; 
+	  if (caloFlag > 2) continue; // Work with ALTRO and FALTRO 
+		
+      //Do not fit bad channels of ALTRO
+      if(caloFlag < 2 && fRemoveBadChannels && pedbadmap->IsBadChannel(in.GetModule(),in.GetColumn(),in.GetRow())) {
 	//printf("Tower from SM %d, column %d, row %d is BAD!!! Skip \n", in.GetModule(),in.GetColumn(),in.GetRow());
 	continue;
       }  
@@ -357,9 +371,12 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	bunchlist.push_back( AliCaloBunchInfo(in.GetStartTimeBin(), in.GetBunchLength(), in.GetSignals() ) );
       } // loop over bunches
 
-      Float_t time = 0; 
-      Float_t amp = 0; 
-
+   
+    if ( caloFlag < 2 ){ // ALTRO
+		
+	  Float_t time = 0; 
+	  Float_t amp = 0; 
+		
       if ( fFittingAlgorithm == kFastFit || fFittingAlgorithm == kNeuralNet || fFittingAlgorithm == kLMS || fFittingAlgorithm == kPeakFinder || fFittingAlgorithm == kCrude) {
 	// all functionality to determine amp and time etc is encapsulated inside the Evaluate call for these methods 
 	AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
@@ -429,10 +446,58 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	AddDigit(digitsArr, id, lowGain, TMath::Nint(amp), time); 
       }
       
+	}//ALTRO
+	else 
+	{// Fake ALTRO
+		//		if (maxTimeBin && gSig->GetN() > maxTimeBin + 10) gSig->Set(maxTimeBin + 10); // set actual max size of TGraph
+		
+		Int_t    hwAdd    = in.GetHWAddress();
+		UShort_t iRCU     = in.GetDDLNumber() % 2; // 0/1
+		UShort_t iBranch  = ( hwAdd >> 11 ) & 0x1; // 0/1
+		
+		// Now find TRU number
+		Int_t itru = 3 * in.GetModule() + ( (iRCU << 1) | iBranch ) - 1;
+		
+		AliDebug(1,Form("Found TRG digit in TRU: %2d ADC: %2d",itru,in.GetColumn()));
+		
+		Int_t idtrg;
+		
+		Bool_t isOK = fGeom->GetAbsFastORIndexFromTRU(itru, in.GetColumn(), idtrg);
+		
+		Int_t timeSamples[256]; for (Int_t j=0;j<256;j++) timeSamples[j] = 0;
+		Int_t nSamples = 0;
+		
+		for (std::vector<AliCaloBunchInfo>::iterator itVectorData = bunchlist.begin(); itVectorData != bunchlist.end(); itVectorData++)
+		{
+			AliCaloBunchInfo bunch = *(itVectorData);
+			
+			const UShort_t* sig = bunch.GetData();
+			Int_t startBin = bunch.GetStartBin();
+			
+			for (Int_t iS = 0; iS < bunch.GetLength(); iS++) 
+			{
+		  		Int_t time = startBin--;
+				Int_t amp  = sig[iS];
+				
+				if ( amp ) timeSamples[nSamples++] = ( ( time << 12 ) & 0xFF000 ) | ( amp & 0xFFF );
+			}
+		}
+		
+		if (nSamples && isOK) AddDigit(digitsTRG, idtrg, timeSamples, nSamples);
+	}//Fake ALTRO
    } // end while over channel   
   } //end while over DDL's, of input stream 
 
   return ; 
+}
+
+//____________________________________________________________________________ 
+void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t timeSamples[], Int_t nSamples) 
+{
+	new((*digitsArr)[digitsArr->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);	
+	
+	//	Int_t idx = digitsArr->GetEntriesFast()-1;
+	//	AliEMCALRawDigit* d = (AliEMCALRawDigit*)digitsArr->At(idx);
 }
 
 //____________________________________________________________________________ 
@@ -713,8 +778,8 @@ Bool_t AliEMCALRawUtils::RawSampledResponse(const Double_t dtime, const Double_t
 	
   Double_t signal=0.0, noise=0.0;
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
-    signal = signalF.Eval(iTime) ;     
-
+    signal = signalF.Eval(iTime) ;  
+	
     // Next lines commeted for the moment but in principle it is not necessary to add
     // extra noise since noise already added at the digits level.	
 
@@ -749,7 +814,8 @@ Bool_t AliEMCALRawUtils::RawSampledResponse(const Double_t dtime, const Double_t
 void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)              
 {
 	//Set fitting algorithm and initialize it if this same algorithm was not set before.
-	
+	//printf("**** Set Algorithm , number %d ****\n",fitAlgo);
+
 	if(fitAlgo == fFittingAlgorithm && fRawAnalyzer) {
 		//Do nothing, this same algorithm already set before.
 		//printf("**** Algorithm already set before, number %d, %s ****\n",fitAlgo, fRawAnalyzer->GetName());

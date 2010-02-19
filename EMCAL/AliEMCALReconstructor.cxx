@@ -58,6 +58,9 @@
 #include "AliCDBManager.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
+#include "AliEMCALTriggerData.h"
+#include "AliEMCALTriggerElectronics.h"
+#include "AliVZEROLoader.h"
 
 ClassImp(AliEMCALReconstructor) 
 
@@ -65,6 +68,7 @@ const AliEMCALRecParam* AliEMCALReconstructor::fgkRecParam = 0;  // EMCAL rec. p
 AliEMCALRawUtils* AliEMCALReconstructor::fgRawUtils = 0;   // EMCAL raw utilities class
 AliEMCALClusterizer* AliEMCALReconstructor::fgClusterizer = 0;   // EMCAL clusterizer class
 TClonesArray*     AliEMCALReconstructor::fgDigitsArr = 0;  // shoud read just once at event
+AliEMCALTriggerElectronics* AliEMCALReconstructor::fgTriggerProcessor = 0x0;
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
   : fDebug(kFALSE), fList(0), fGeom(0),fCalibData(0),fPedestalData(0) 
@@ -111,6 +115,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 	
   if(!fGeom) AliFatal(Form("Could not get geometry!"));
 
+  fgTriggerProcessor = new AliEMCALTriggerElectronics();
 } 
 
 //____________________________________________________________________________
@@ -120,7 +125,8 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   delete fGeom;
   delete fgRawUtils;
   delete fgClusterizer;
-	
+  delete fgTriggerProcessor;
+
   AliCodeTimer::Instance()->Print();
 } 
 
@@ -145,6 +151,40 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   ReadDigitsArrayFromTree(digitsTree);
   fgClusterizer->InitParameters();
   fgClusterizer->SetOutput(clustersTree);
+
+  AliEMCALTriggerData* trgData = new AliEMCALTriggerData();
+	
+  Int_t bufferSize = 32000;
+
+  if (TBranch* triggerBranch = clustersTree->GetBranch("EMTRG"))
+	  triggerBranch->SetAddress(&trgData);
+  else
+	  clustersTree->Branch("EMTRG","AliEMCALTriggerData",&trgData,bufferSize);
+
+  AliVZEROLoader* vzeroLoader = dynamic_cast<AliVZEROLoader*>(AliRunLoader::Instance()->GetDetectorLoader("VZERO"));
+  
+  TTree* treeV0 = 0x0;
+	
+  if (vzeroLoader) 
+  {
+	  vzeroLoader->LoadDigits("READ");
+      treeV0 = vzeroLoader->TreeD();
+  }
+
+  TClonesArray *trgDigits = new TClonesArray("AliEMCALRawDigit",1000);
+  TBranch *branchdig = digitsTree->GetBranch("EMTRG");
+  if (!branchdig) 
+  { 
+	  AliError("Can't get the branch with the EMCAL trigger digits !");
+	  return;
+  }
+
+  branchdig->SetAddress(&trgDigits);
+  branchdig->GetEntry(0);
+
+  fgTriggerProcessor->Digits2Trigger(trgDigits, treeV0, trgData);
+	
+  trgDigits->Delete();
 	
   if(fgDigitsArr && fgDigitsArr->GetEntries()) {
 
@@ -159,6 +199,9 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 
   }
 
+  clustersTree->Fill();	
+
+  delete trgData;
 }
 
 //____________________________________________________________________________
@@ -172,8 +215,11 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   rawReader->Reset() ; 
 
   TClonesArray *digitsArr = new TClonesArray("AliEMCALDigit",200);
+  TClonesArray *digitsTrg = new TClonesArray("AliEMCALRawDigit", 200);
+
   Int_t bufsize = 32000;
   digitsTree->Branch("EMCAL", &digitsArr, bufsize);
+  digitsTree->Branch("EMTRG", &digitsTrg, bufsize);
 
   //must be done here because, in constructor, option is not yet known
   fgRawUtils->SetOption(GetOption());
@@ -186,11 +232,13 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
   fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
 
-  fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData);
+  fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData,digitsTrg);
 
   digitsTree->Fill();
   digitsArr->Delete();
+  digitsTrg->Delete();
   delete digitsArr;
+  delete digitsTrg;
 
 }
 
@@ -513,4 +561,5 @@ void AliEMCALReconstructor::ReadDigitsArrayFromTree(TTree *digitsTree) const
   branch->SetAddress(&fgDigitsArr);
   branch->GetEntry(0);
 }
+
 
