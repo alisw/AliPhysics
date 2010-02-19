@@ -71,7 +71,7 @@ AliHLTComponentDataType
 AliHLTPHOSClusterizerComponent::GetOutputDataType()
 {
   //See headerfile for documentation
-  return AliHLTCaloDefinitions::fgkCaloClusterDataType|kAliHLTDataOriginPHOS;
+  return kAliHLTDataTypeCaloCluster|kAliHLTDataOriginPHOS;
 }
 
 void

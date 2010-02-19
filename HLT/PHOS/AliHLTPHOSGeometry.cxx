@@ -25,6 +25,7 @@ AliHLTCaloGeometry("PHOS"),
 fGeoUtils(0)
 {
  // See header file for class documentation
+ GetGeometryFromCDB();
 }
 
 AliHLTPHOSGeometry::~AliHLTPHOSGeometry()
@@ -37,12 +38,12 @@ void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& re
    // See header file for class documentation
    Float_t x = recPoint.fX;
    Float_t z = recPoint.fZ;
-   
+
    ConvertRecPointCoordinates(x, z);
 
    TVector3 coord;
    
-   fGeoUtils->Local2Global(recPoint.fModule, x, z, coord);
+   fGeoUtils->Local2Global(recPoint.fModule+1, x, z, coord);
    
    globalCoord.fX = coord[0];
    globalCoord.fZ = coord[1];
@@ -58,7 +59,6 @@ void AliHLTPHOSGeometry::ConvertRecPointCoordinates(Float_t &x, Float_t &z) cons
 int AliHLTPHOSGeometry::GetGeometryFromCDB()
 {
    // See header file for documentation
-    //HLTInfo("Getting geometry...");
 
    AliCDBPath path("GRP","Geometry","Data");
    if(path.GetPath())
