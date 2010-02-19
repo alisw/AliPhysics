@@ -38,6 +38,12 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
     
       /** Intialise the geometry from the HCDB/OCDB */
       virtual Int_t InitialiseGeometry() {return 0; }
+      
+      virtual void ConvertRecPointCoordinates(Float_t &x, Float_t &z)const;
+    
+     protected:
+	
+	Int_t GetGeometryFromCDB();
     
      private:
 	
@@ -49,6 +55,10 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
     
 	/** Assignment operator, not implemented */
       AliHLTPHOSGeometry & operator = (const AliHLTPHOSGeometry&); //COMMENT
+      
+      /** The geometrical step between cells */
+      Float_t fCellStep;
+      
   };
 
 #endif // ALIHLTPHOSGEOMETRY_H
