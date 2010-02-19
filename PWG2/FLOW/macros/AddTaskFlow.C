@@ -14,7 +14,7 @@ Double_t minB = 0.01;
 Double_t maxB = 0.9;
 
 // use physics selection class
-Bool_t  UsePhysicsSelection = kTRUE;
+Bool_t  UsePhysicsSelection = kFALSE;
 
 // SETTING THE CUTS
 
@@ -32,7 +32,7 @@ Double_t vertexYmax = 1.0;
 Double_t vertexZmin = -15.0; //-1.e99;
 Double_t vertexZmax = 15.0; //1.e99;
 
-//Bool_t UseMultCut = kTRUE;
+//Bool_t UseMultCut = kFALSE;
 Bool_t UseMultCut = kTRUE;
 const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
 const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centrality)
@@ -742,7 +742,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     
     AliAnalysisDataContainer *coutputSP = mgr->CreateContainer("cobjSP", TList::Class(),AliAnalysisManager::kOutputContainer,outputSP); 
     mgr->ConnectInput(taskSP,0,coutputFE); 
-    mgr->ConnectOutput(taskSP,0,coutputSP); 
+    mgr->ConnectOutput(taskSP,1,coutputSP); 
     if (WEIGHTS[0]) {
       mgr->ConnectInput(taskSP,1,cinputWeights);
       cinputWeights->SetData(weightsList);

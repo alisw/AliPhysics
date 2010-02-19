@@ -16,19 +16,18 @@ class AliFlowAnalysisWithScalarProduct;
 class TList;
 
 #include "TString.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
 //===============================================================
 
-class AliAnalysisTaskScalarProduct : public AliAnalysisTask {
+class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskScalarProduct();
   AliAnalysisTaskScalarProduct(const char *name, Bool_t usePhiWeights);
   virtual ~AliAnalysisTaskScalarProduct();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
   void   SetUsePhiWeights(Bool_t const aPhiW) {this->fUsePhiWeights = aPhiW;}
