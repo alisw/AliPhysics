@@ -69,7 +69,7 @@ Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 muse
 // some digitization constants
 Int_t    AliEMCALRawUtils::fgThreshold = 1;
 Int_t    AliEMCALRawUtils::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
-Int_t    AliEMCALRawUtils::fgPedestalValue = 32;     // pedestal value for digits2raw
+Int_t    AliEMCALRawUtils::fgPedestalValue = 0;     // pedestal value for digits2raw
 Double_t AliEMCALRawUtils::fgFEENoise = 3.;          // 3 ADC channels of noise (sampled)
 
 AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
