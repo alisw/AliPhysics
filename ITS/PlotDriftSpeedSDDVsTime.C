@@ -39,7 +39,6 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
   Char_t filnam[200],filnamalien[200];
   TGraphErrors** gvdrvstime=new TGraphErrors*[520];
   TGraphErrors** gvdrvsrun=new TGraphErrors*[520];
-  Int_t iPt[260];
   for(Int_t iMod=0; iMod<260;iMod++){
     gvdrvstime[iMod]=new TGraphErrors(0);    
     gvdrvstime[iMod]->SetTitle(Form("Module %d",iMod+240));
@@ -47,7 +46,6 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
     gvdrvsrun[iMod]=new TGraphErrors(0);    
     gvdrvsrun[iMod]->SetTitle(Form("Module %d",iMod+240));
     gvdrvsrun[iMod]->SetName(Form("gspmod%dr",iMod+240));
-    iPt[iMod]=0;
   }
   Float_t Edrift=(1800-45)/291/0.012;  
   Int_t nrun,nrun2,nv,ns;
@@ -81,20 +79,21 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
       if(vdrift<4. || vdrift > 8.) continue;
       UInt_t timest=vdriftarr->GetTimestamp(0);
       if(timest==0) continue;
-      Float_t timeday;
-      if(year==2009){
-	timeday=float(timest-1247762992)/60./60./24.;
-      } else {
-	timeday=float(timest-1264531801)/60./60./24.;
-      }
+      Int_t npt=gvdrvsrun[iMod]->GetN();
+      gvdrvsrun[iMod]->SetPoint(npt,(Float_t)nrun,vdrift);
+      gvdrvsrun[iMod]->SetPointError(npt,0,errSpeed[iMod]);
+      
+      Float_t timeZero;
+      if(year==2009) timeZero=1247762992;
+      else timeZero=1262300400;
+      if(timest<timeZero) continue;
+      Float_t timeday=float(timest-timeZero)/60./60./24.;
       Float_t mob=vdrift*1.E5/Edrift;  
       Float_t temper=293.15*TMath::Power((mob/1350.),-1/2.4); 
       if(iMod==497-240) printf("Run %s   Time %d Day %f Speed=%f Temp=%f\n",filnam,timest,timeday,vdrift,temper);
-      gvdrvstime[iMod]->SetPoint(iPt[iMod],timeday,vdrift);
-      gvdrvstime[iMod]->SetPointError(iPt[iMod],0,errSpeed[iMod]);
-      gvdrvsrun[iMod]->SetPoint(iPt[iMod],(Float_t)nrun,vdrift);
-      gvdrvsrun[iMod]->SetPointError(iPt[iMod],0,errSpeed[iMod]);
-      ++iPt[iMod];
+      npt=gvdrvstime[iMod]->GetN();
+      gvdrvstime[iMod]->SetPoint(npt,timeday,vdrift);
+      gvdrvstime[iMod]->SetPointError(npt,0,errSpeed[iMod]);
     }
     f->Close();
   }
@@ -144,7 +143,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
   if(year==2009){
   sprintf(title,"Time (days since July 16th 2009)");
   }else if (year==2010){
-  sprintf(title,"Time (days since January 16th 2010)");
+  sprintf(title,"Time (days since January 1st 2010)");
   }
   gvdrvstime[mod1]->GetXaxis()->SetTitle(title);
   gvdrvstime[mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
