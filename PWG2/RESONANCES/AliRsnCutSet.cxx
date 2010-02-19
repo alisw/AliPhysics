@@ -98,7 +98,7 @@ void AliRsnCutSet::AddCut(AliRsnCut *cut)
   fCuts.Add(cut);
   fNumOfCuts++;
 
-  if (fBoolValues) delete fBoolValues;
+  if (fBoolValues) delete [] fBoolValues;
 
   fBoolValues = new Bool_t[fNumOfCuts];
   for (i = 0; i < fNumOfCuts; i++) {
@@ -326,8 +326,8 @@ void AliRsnCutSet::PrintSetInfo()
   Int_t i;
 
   AliInfo("========== Rsn Cut Set info ==============");
-  AliInfo(Form("Sheme : %s",fCutScheme.Data()));
-  AliInfo(Form("Sheme : %s",fCutSchemeIndexed.Data()));
+  AliInfo(Form("Scheme : %s",fCutScheme.Data()));
+  AliInfo(Form("Scheme : %s",fCutSchemeIndexed.Data()));
   AliInfo(Form("Num of Cuts: %d", fCuts.GetEntriesFast()));
   AliInfo("====== Cuts ======");
   AliRsnCut *cut;
@@ -357,4 +357,19 @@ TString AliRsnCutSet::GetCutSchemeIndexed()
   }
   AliDebug(AliLog::kDebug,"->");
   return str;
+}
+
+//_____________________________________________________________________________
+void AliRsnCutSet::SetEvent(AliRsnEvent *event)
+{
+//
+// Set the reference event to all contained cuts
+//
+
+  Int_t i;
+  AliRsnCut *cut;
+  for (i = 0; i < fCuts.GetEntriesFast(); i++) {
+    cut = (AliRsnCut*) fCuts.At(i);
+    if (cut) cut->SetEvent(event);
+  }
 }

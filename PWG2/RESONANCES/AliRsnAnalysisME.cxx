@@ -125,7 +125,6 @@ void AliRsnAnalysisME::DoMixing(AliVEvent* ev)
       if (i > 0)
         DoESDMixing(esdEvent[0], esdEvent[i]);
     }
-    delete [] esdEvent;
   } else if (fAODEvent) {
     AliAODEvent **aodEvent = new AliAODEvent*[nEvents];
     for (Int_t i = 0; i < nEvents; i++) {
@@ -137,7 +136,6 @@ void AliRsnAnalysisME::DoMixing(AliVEvent* ev)
       if (i > 0)
         DoAODMixing(aodEvent[0], aodEvent[i]);
     }
-    delete [] aodEvent;
   }
 
 }

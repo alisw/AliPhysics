@@ -34,10 +34,32 @@ AliRsnCut::AliRsnCut() :
     fCutValueI(0),
     fCutValueU(0),
     fCutValueD(0.0),
-    fCutResult(kTRUE)
+    fCutResult(kTRUE),
+    fEvent(0x0)
 {
 //
 // Default constructor.
+//
+}
+
+//_________________________________________________________________________________________________
+AliRsnCut::AliRsnCut(const AliRsnCut& copy) :
+    TNamed(copy),
+    fVarType(copy.fVarType),
+    fMinI(copy.fMinI),
+    fMaxI(copy.fMaxI),
+    fMinU(copy.fMinU),
+    fMaxU(copy.fMaxU),
+    fMinD(copy.fMinD),
+    fMaxD(copy.fMaxD),
+    fCutValueI(copy.fCutValueI),
+    fCutValueU(copy.fCutValueU),
+    fCutValueD(copy.fCutValueD),
+    fCutResult(copy.fCutResult),
+    fEvent(copy.fEvent)
+{
+//
+// Copy constructor.
 //
 }
 
@@ -55,7 +77,8 @@ AliRsnCut::AliRsnCut
     fCutValueI(0),
     fCutValueU(0),
     fCutValueD(0.0),
-    fCutResult(kTRUE)
+    fCutResult(kTRUE),
+    fEvent(0x0)
 {
 //
 // Constructor.
@@ -80,7 +103,8 @@ AliRsnCut::AliRsnCut
     fCutValueI(0),
     fCutValueU(0),
     fCutValueD(0.0),
-    fCutResult(kTRUE)
+    fCutResult(kTRUE),
+    fEvent(0x0)
 {
 //
 // Constructor.
@@ -105,7 +129,8 @@ AliRsnCut::AliRsnCut
     fCutValueI(0),
     fCutValueU(0),
     fCutValueD(0.0),
-    fCutResult(kTRUE)
+    fCutResult(kTRUE),
+    fEvent(0x0)
 {
 //
 // Constructor.
@@ -114,6 +139,30 @@ AliRsnCut::AliRsnCut
 // the minimum and maximum of the allowed range.
 // If the cut must check a value, the second 'value' argument will never be used.
 //
+}
+
+//_________________________________________________________________________________________________
+AliRsnCut& AliRsnCut::operator=(const AliRsnCut& copy)
+{
+//
+// Assignment operator
+// don't duplicate memory occupancy for pointer
+//
+
+  fVarType   = copy.fVarType;
+  fMinI      = copy.fMinI;
+  fMaxI      = copy.fMaxI;
+  fMinD      = copy.fMinD;
+  fMaxD      = copy.fMaxD;
+  fMinU      = copy.fMinU;
+  fMaxU      = copy.fMaxU;
+  fCutValueI = copy.fCutValueI;
+  fCutValueD = copy.fCutValueD;
+  fCutValueU = copy.fCutValueU;
+  fCutResult = copy.fCutResult;
+  fEvent     = copy.fEvent;
+
+  return (*this);
 }
 
 //_________________________________________________________________________________________________

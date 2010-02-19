@@ -45,6 +45,8 @@ class AliRsnCut : public TNamed
     };
 
     AliRsnCut();
+    AliRsnCut(const AliRsnCut& copy);
+    AliRsnCut& operator=(const AliRsnCut& copy);
     AliRsnCut(const char *name, Int_t    min, Int_t    max = 0);
     AliRsnCut(const char *name, ULong_t  min, ULong_t  max = 0);
     AliRsnCut(const char *name, Double_t min, Double_t max = 0);
@@ -57,6 +59,8 @@ class AliRsnCut : public TNamed
     void             SetValue(Int_t value)    {fMinI = value; fVarType = kInt;}
     void             SetValue(ULong_t value)  {fMinU = value; fVarType = kULong;}
     void             SetValue(Double_t value) {fMinD = value; fVarType = kDouble;}
+
+    void             SetEvent(AliRsnEvent *event) {fEvent = event;}
 
     virtual Bool_t   IsSelected(ETarget tgt, AliRsnDaughter *daughter);
     virtual Bool_t   IsSelected(ETarget tgt, AliRsnPairParticle *pair);
@@ -81,6 +85,8 @@ class AliRsnCut : public TNamed
     ULong_t   fCutValueU;  // cut value
     Double_t  fCutValueD;  // cut value
     Bool_t    fCutResult;  // tells if the cut is passed or not
+
+    AliRsnEvent *fEvent;   //! pointer to current event (can be needed sometimes)
 
     ClassDef(AliRsnCut, 1)
 };

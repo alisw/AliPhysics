@@ -38,6 +38,8 @@ class AliRsnPair : public TObject
     };
 
     AliRsnPair(EPairType type = kRealisticPID, AliRsnPairDef *def = 0);
+    AliRsnPair(const AliRsnPair &copy);
+    AliRsnPair& operator=(const AliRsnPair&);
     ~AliRsnPair();
 
     void    SetOnlyTrue(Bool_t onlyTrue = kTRUE) {fOnlyTrue = onlyTrue;}
@@ -61,11 +63,6 @@ class AliRsnPair : public TObject
     TString GetPairHistTitle(AliRsnFunction *const fcn, TString text = "") const;
 
   private:
-
-    AliRsnPair(const AliRsnPair &copy) : TObject(copy),
-        fOnlyTrue(kFALSE),fIsMixed(kFALSE),fPairType(kPairTypes),fPIDMethod(AliRsnDaughter::kRealistic),
-        fPairDef(0x0),fCutMgr(0x0),fFunctions("AliRsnFunction",0),fTrack1(),fTrack2(),fPairParticle() {}
-    AliRsnPair& operator=(const AliRsnPair&) {return *this;}
 
     void     SetUp(EPairType type);
     void     SetAllFlags(AliRsnDaughter::EPIDMethod pid, Bool_t mix) {fPIDMethod = pid; fIsMixed = mix;}

@@ -47,6 +47,51 @@ AliRsnPair::AliRsnPair(EPairType type, AliRsnPairDef *def) :
   AliDebug(AliLog::kDebug+2,"->");
   SetUp(type);
 }
+
+//_____________________________________________________________________________
+AliRsnPair::AliRsnPair(const AliRsnPair& copy) :
+    TObject(),
+    fOnlyTrue(copy.fOnlyTrue),
+    fIsMixed(copy.fIsMixed),
+    fPairType(copy.fPairType),
+    fPIDMethod(copy.fPIDMethod),
+    fPairDef(copy.fPairDef),
+    fCutMgr(copy.fCutMgr),
+    fFunctions(copy.fFunctions),
+    fTrack1(copy.fTrack1),
+    fTrack2(copy.fTrack2),
+    fPairParticle(copy.fPairParticle)
+{
+//
+// Default constructor
+//
+  AliDebug(AliLog::kDebug+2,"<-");
+  AliDebug(AliLog::kDebug+2,"->");
+}
+
+//_____________________________________________________________________________
+AliRsnPair& AliRsnPair::operator=(const AliRsnPair& copy)
+{
+  fOnlyTrue = copy.fOnlyTrue;
+  fIsMixed = copy.fIsMixed;
+  fPairType = copy.fPairType;
+  fPIDMethod = copy.fPIDMethod;
+  fPairDef = copy.fPairDef;
+  fCutMgr = copy.fCutMgr;
+  fTrack1 = copy.fTrack1;
+  fTrack2 = copy.fTrack2;
+  fPairParticle = copy.fPairParticle;
+
+  Int_t i, n = copy.fFunctions.GetEntries();
+  for (i = 0; i < n; i++)
+  {
+    AliRsnFunction *fcn = (AliRsnFunction*)copy.fFunctions[i];
+    if (fcn) AddFunction(fcn);
+  }
+
+  return (*this);
+}
+
 //_____________________________________________________________________________
 AliRsnPair::~AliRsnPair()
 {

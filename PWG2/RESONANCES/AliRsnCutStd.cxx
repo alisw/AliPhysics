@@ -279,6 +279,10 @@ Bool_t AliRsnCutStd::IsSelected(ETarget tgt, AliRsnDaughter * const track)
     return OkValue();
   case kRealisticPID:
     fCutValueI = (Int_t)track->RealisticPID();
+    return OkValue();
+  case kPairIndex:
+    fCutValueI = track->PairIndex();
+    return OkValue();
   case kTruePIDMatch:
     return (track->PerfectPID() == track->RequiredPID());
   case kRealisticPIDMatch:
