@@ -140,7 +140,7 @@ protected:
   virtual int Deinit(); ////////// PTH WARNING you should Define a class AliHLTEMCALModuleProcessor
   
 //  virtual int DoInit(int, const char**) {;}
-  virtual int DoDeinit(){;}
+  virtual int DoDeinit(){return 0;}
   
 private:
 

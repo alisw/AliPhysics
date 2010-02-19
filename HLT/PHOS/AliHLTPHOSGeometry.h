@@ -56,9 +56,6 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
 	/** Assignment operator, not implemented */
       AliHLTPHOSGeometry & operator = (const AliHLTPHOSGeometry&); //COMMENT
       
-      /** The geometrical step between cells */
-      Float_t fCellStep;
-      
   };
 
 #endif // ALIHLTPHOSGEOMETRY_H

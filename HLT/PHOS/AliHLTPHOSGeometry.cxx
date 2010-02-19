@@ -85,6 +85,7 @@ int AliHLTPHOSGeometry::GetGeometryFromCDB()
 //	    HLTError("can not fetch object \"%s\" from OCDB", path);
 	}
     }
+    return 0;
 }
 
 
