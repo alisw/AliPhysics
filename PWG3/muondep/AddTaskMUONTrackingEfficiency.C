@@ -20,7 +20,7 @@ AliAnalysisTaskMuonTrackingEff *AddTaskMUONTrackingEfficiency(Bool_t isCosmicDat
 
 
   // Load the geometry
-  AliMUONGeometryTransformer transformer = new AliMUONGeometryTransformer();
+  AliMUONGeometryTransformer* transformer = new AliMUONGeometryTransformer();
   transformer->LoadGeometryData();
 
 
