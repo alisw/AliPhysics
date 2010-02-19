@@ -8,7 +8,7 @@
 #include "THnSparse.h"
 #include "TList.h"
 #include "AliPID.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 
@@ -25,15 +25,16 @@ class AliMCEventHandler;
 class AliStack;
 class TChain;
 
-class AliAnalysisTaskV0QA : public AliAnalysisTask {
+class AliAnalysisTaskV0QA : public AliAnalysisTaskSE {
  public:
   //  AliAnalysisTaskV0QA() : AliAnalysisTask(), fESD(0), fChain(0) {}
-  AliAnalysisTaskV0QA(const char *name);
+    AliAnalysisTaskV0QA();
+    AliAnalysisTaskV0QA(const char *name);
+  
   virtual ~AliAnalysisTaskV0QA();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
   void InspectListOfChargedParticles();

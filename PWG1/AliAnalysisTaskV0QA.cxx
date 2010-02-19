@@ -14,7 +14,7 @@
 
 //#include "TLorentzVector.h"
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliTrackReference.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
@@ -30,9 +30,7 @@
 #include "AliAnalysisTaskV0QA.h"
 
 ClassImp(AliAnalysisTaskV0QA)
-
-//________________________________________________________________________
-AliAnalysisTaskV0QA::AliAnalysisTaskV0QA(const char *name) :AliAnalysisTask(name,""), 
+AliAnalysisTaskV0QA::AliAnalysisTaskV0QA() :AliAnalysisTaskSE(), 
 fESD(0), 
 fStack(0),
 fMCtruth(0),
@@ -112,14 +110,91 @@ fclRefsN(0),
 fclRefsP(0)
 
  {
-  // Constructor.
-  // Input slot #0 works with an Ntuple
-   DefineInput(0, TChain::Class());
-  // Output slot #0 writes into a TH1 container
-   // DefineOutput(0,TObjArray::Class());
-   DefineOutput(0,TList::Class());
+  // Default Constructor.
 
-  // Reconstructed arrays
+ }
+
+//________________________________________________________________________
+AliAnalysisTaskV0QA::AliAnalysisTaskV0QA(const char *name) :AliAnalysisTaskSE(name), 
+fESD(0), 
+fStack(0),
+fMCtruth(0),
+fChain(0),
+fOutputContainer(0),
+fSparseV0(0),
+fSparseK0(0),
+fSparseL(0),
+fSparseAL(0),
+fnEv(0),
+fgDim(50),
+fnConvGamGeant(-1),
+fgConvGamGeantIndex(0),
+feNegConvGamGeantIndex(0),
+fePosConvGamGeantIndex(0),
+feNegConvGamGeantLength(0),
+fePosConvGamGeantLength(0),
+feNegConvGamSingleRecIndex(0),
+fePosConvGamSingleRecIndex(0),
+feNegConvGamV0RecIndex(0),
+fePosConvGamV0RecIndex(0),
+fConvGamV0RecIndexPos(0),
+fConvGamV0RecIndexNeg(0),
+fnDecayLGeant(-1),
+flDecayLGeantIndex(0),
+fpiNegDecayLGeantIndex(0),
+fpPosDecayLGeantIndex(0),
+fpiNegDecayLGeantLength(0),
+fpPosDecayLGeantLength(0),
+fpiNegDecayLSingleRecIndex(0),
+fpPosDecayLSingleRecIndex(0),
+fpiNegDecayLV0RecIndex(0),
+fpPosDecayLV0RecIndex(0),
+fDecayLV0RecIndexPos(0),
+fDecayLV0RecIndexNeg(0),
+fnDecayALGeant(-1),
+falDecayALGeantIndex(0),
+fpiPosDecayALGeantIndex(0),
+fapNegDecayALGeantIndex(0),
+fpiPosDecayALGeantLength(0),
+fapNegDecayALGeantLength(0),
+fpiPosDecayALSingleRecIndex(0),
+fapNegDecayALSingleRecIndex(0),
+fpiPosDecayALV0RecIndex(0),
+fapNegDecayALV0RecIndex(0),
+fDecayALV0RecIndexPos(0),
+fDecayALV0RecIndexNeg(0),
+fnDecayK0Geant(-1),
+fK0DecayK0GeantIndex(0),
+fpiNegDecayK0GeantIndex(0),
+fpiPosDecayK0GeantIndex(0),
+fpiNegDecayK0GeantLength(0),
+fpiPosDecayK0GeantLength(0),
+fpiNegDecayK0SingleRecIndex(0),
+fpiPosDecayK0SingleRecIndex(0),
+fpiNegDecayK0V0RecIndex(0),
+fpiPosDecayK0V0RecIndex(0),
+fDecayK0V0RecIndexPos(0),
+fDecayK0V0RecIndexNeg(0),
+fpiPosK0Index(-1),
+fpiNegK0Index(-1),
+fnTracksPrim(-1),
+ftpcRefit(0),
+fitsRefit(0),
+ftrdRefit(0),
+ftrdOut(0),
+fDim(37),
+fValueL(0),
+fValueAL(0),
+fValueK0(0),
+fValueV0(0),
+fxminV0(0),
+fxmaxV0(0),
+fbinsV0(0),
+fRefTPC(0),
+fclRefsN(0),
+fclRefsP(0)
+
+ {
 
    fnEv=0;
    fDim=37; 
@@ -206,19 +281,8 @@ fclRefsP(0)
 
 
   AliLog::SetGlobalLogLevel(AliLog::kError);
-
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskV0QA::ConnectInputData(Option_t *) {
-  printf("   ConnectInputData %s\n", GetName());
-  // Connect Input Data
-  
-  AliESDInputHandler* esdH = (AliESDInputHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  fESD = esdH->GetEvent();
-  
-  fChain = (TChain*)GetInputData(0);
-
+//
+  DefineOutput(1, TList::Class());
 }
 
 //_____________________________________________________
@@ -298,7 +362,7 @@ AliAnalysisTaskV0QA::~AliAnalysisTaskV0QA()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskV0QA::CreateOutputObjects() {
+void AliAnalysisTaskV0QA::UserCreateOutputObjects() {
   // Create Ouptut objects
 
   for(Int_t d=0;d<fDim;d++){
@@ -660,9 +724,11 @@ void AliAnalysisTaskV0QA::CreateOutputObjects() {
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskV0QA::Exec(Option_t *) {
+void AliAnalysisTaskV0QA::UserExec(Option_t *) {
   // Execution of the Task
 
+    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+    
   if (!fESD) {
     //cout<< "not a tree"<< endl;
     return;
@@ -1319,7 +1385,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
   }
 
  
-  PostData(0,fOutputContainer );
+  PostData(1, fOutputContainer );
   
 
 }
