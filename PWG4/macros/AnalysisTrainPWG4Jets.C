@@ -110,14 +110,15 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-25-04-3";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-18-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-26-00b-1";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-19-04-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // TString kPluginExecutableCommand = "root -b -q";
 TString     kPluginExecutableCommand = "source /Users/kleinb/setup_32bit_aliroot_trunk_clean_root_trunk.sh; alienroot -b -q ";
 // == grid plugin input and output variables
 TString     kGridDatadir      = "/alice/sim/PDC_08b/LHC09a1/AOD/";
 TString     kGridLocalRunList = "";
 TString     kGridOutdir       = ""; // AliEn output directory. If blank will become output_<kTrainName>
+TString     kGridDataSet      = ""; // sub working directory not to confuse different run xmls 
 Int_t       kGridRunRange[2]       =  {0, -1}; // Set the run range
 TString     kGridRunPattern        = "%03d"; // important for leading zeroes!!
 TString     kGridPassPattern       = "";
@@ -155,7 +156,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 {
 // Main analysis train macro. If a configuration file is provided, all parameters
 // are taken from there but may be altered by CheckModuleFlags.
+
    if (strlen(config_file) && !LoadConfig(config_file)) return;
+
    if(iOffset)kProofOffset = iOffset;
    TString smode(analysis_mode);
    smode.ToUpper();
@@ -203,8 +206,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    printf(":: use PWG4 Gamma Conv   %d\n",iPWG4GammaConv);
    printf(":: use HighPt FilterMask %d\n",kHighPtFilterMask);    
-
-
+   
    //==========================================================================
    // Connect to back-end system
    if (!Connect(smode)) {
@@ -217,6 +219,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       ::Error("AnalysisTrain", "Could not load common libraries");
       return;
    }
+
+
     
    // Make the analysis manager and connect event handlers
    AliAnalysisManager *mgr  = new AliAnalysisManager("PWG4Train", "pwg4 mini train");
@@ -269,8 +273,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       cout_aod->SetSpecialOutput();
    }
    // Debugging if needed
-   if (kUseDebug) mgr->SetDebugLevel(3);
-
+   if (kUseDebug){
+     mgr->SetDebugLevel(3);
+   }
+   mgr->SetDebugLevel(0);
+   AliLog::SetGlobalLogLevel(AliLog::kError);
    //==========================================================================
    // Create the chain. In this example it is created only from ALIEN files but
    // can be done to work in batch or grid mode as well.
@@ -284,7 +291,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    // For now connection to top input container and common AOD output container
    // is done in this macro, but in future these containers will be connected
    // from each task configuration macro.
-
    if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,kTRUE);
@@ -327,7 +333,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       if (!taskdijets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
    }
 
-       
    if(iPWG1QASym){
      gROOT->LoadMacro("$ALICE_ROOT/prod/acrcaf/qa_pp/AddTaskQAsym.C");
      AliAnalysisTaskQASym *taskQASym = AddTaskQAsym(-1);
@@ -342,7 +347,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskEta) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskEta cannot run for this train conditions - EXCLUDED");
    }
 
-
    if(iPWG4JetServices){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetServices.C");
      AliAnalysisTaskJetServices *taskjetServ = 0;
@@ -354,7 +358,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(!iPhysicsSelection)taskjetServ->SetUsePhysicsSelection(kFALSE);
    }
 
-
    if(iPWG4JetSpectrum){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetSpectrum2.C");
      AliAnalysisTaskJetSpectrum2 *taskjetSpectrum = 0;
@@ -365,7 +368,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
        }
        if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
-       taskjetSpectrum->SetDebugLevel(0);
+       taskjetSpectrum->SetDebugLevel(1);
      }
 
      if(iPWG4JetSpectrum&2){
@@ -389,7 +392,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
      }
    }
-
    if(iPWG4UE){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskUE.C");
      AliAnalysisTaskUE *taskUE = 0;
@@ -417,7 +419,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskThreeJets *taskThree = AddTaskThreeJets();
      if(!taskThree)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskThreets cannot run for this train conditions - EXCLUDED");
    }
-
    if(iPWG4PtQAMC){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQAMC.C");
      AliPWG4HighPtQAMC *taskQAMC = AddTaskPWG4HighPtQAMC();
@@ -429,13 +430,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliPWG4HighPtQATPConly *taskQATPC = AddTaskPWG4HighPtQATPConly();
      if (!taskQATPC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQATPC cannot run for this train conditions - EXCLUDED");
    }
-   
+
    if(iPWG4PtSpectra){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtSpectra.C");
      AliPWG4HighPtSpectra *taskPtSpectra = AddTaskPWG4HighPtSpectra();
      if (!taskPtSpectra) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskPtSpectra cannot run for this train conditions - EXCLUDED");
    }
-
    if(iPWG4KMeans){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskKMeans.C");
      AliAnalysisTaskKMeans *taskKMeans = AddTaskKMeans();
@@ -455,7 +455,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
 
    }
-
    if(iPWG4PartCorr){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
      AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS",kFALSE,kIsMC);
@@ -471,7 +470,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(!taskcaloQA)::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation QA cannot run - EXCLUDED");
    } 
 
-
    if(iPWG4JetCorr){
      //     using namespace JetCorrelHD;
 
@@ -480,21 +478,18 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskJetCorrel  cannot run for this train conditions - EXCLUDED");
    } 
 
-
    if(iPWG4Tagged){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskTaggedPhotons.C");
      AliAnalysisTaskTaggedPhotons * taskTagged = AddTaskTaggedPhotons(kFALSE); // EMCAL
      //     taskTagged = AddTaskTaggedPhotons(kTRUE); // PHOS 
      if (!taskTagged) ::Warning("AnalysisTrainNew", "AliAnalysisTaskTaggedPhotons  cannot run for this train conditions - EXCLUDED");     
    }
-
    if (iPWG4omega3pi) {
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskomega3pi.C");
      AliAnalysisTaskOmegaPi0PiPi *taskomega3pi = AddTaskomega3pi();
      if (!taskomega3pi) ::Warning("AnalysisTrainNew", "AliAnalysisTaskomega3pi cannot run\
  for these train conditions - EXCLUDED");
    }
-
 
    // PWG4 gamma conversion analysis
    if (iPWG4GammaConv) {
@@ -509,6 +504,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       taskGammaConversion->SelectCollisionCandidates();
       if (!taskGammaConversion) ::Warning("AnalysisTrainNew", "AliAnalysisTaskGammaConversion cannot run for these train conditions - EXCLUDED");
    }   
+
 
    //==========================================================================
    // FOR THE REST OF THE TASKS THE MACRO AddTaskXXX() is not yet implemented/
@@ -526,13 +522,14 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        TString alien_workdir = gGrid->GetHomeDirectory();
        if (iAODanalysis) alien_workdir += "analysisAOD";
        else              alien_workdir += "analysisESD";
+       if(kGridDataSet.Length()>0)alien_workdir += Form("/%s",kGridDataSet.Data());
        AliAnalysisAlien *gridhandler = (AliAnalysisAlien*)mgr->GetGridHandler();
        printf("=== AnalysisTrainPWG4Jets:: Registering jdl in the work directory alien://%s/%s, should be done by the manager! ===\n",
 	      alien_workdir.Data(),gridhandler->GetGridOutputDir());
        TFile::Cp(Form("file:%s.jdl",kTrainName.Data()), Form("alien://%s/%s/%s.jdl",alien_workdir.Data(),
 							     gridhandler->GetGridOutputDir(),kTrainName.Data()));
      }
-    
+     AliLog::SetGlobalLogLevel(AliLog::kError);
      StartAnalysis(smode, chain);
      if (!strcmp(plugin_mode, "offline")&&smode=="GRID"){
        // Offline mode path files
@@ -544,7 +541,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        AliAnalysisAlien *gridhandler = (AliAnalysisAlien*)mgr->GetGridHandler();
        TString alien_workdir = gGrid->GetHomeDirectory();
        if (iAODanalysis) alien_workdir += "analysisAOD";
-         else              alien_workdir += "analysisESD";
+       else              alien_workdir += "analysisESD";
+       if(kGridDataSet.Length()>0)alien_workdir += Form("/%s",kGridDataSet.Data());
        //     kGridOutdir = gridhandler->GetGridOutputDir();
        printf("=== Registering ConfigTrain.C in the work directory <%s> ===\n",
                 alien_workdir.Data());
@@ -896,7 +894,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
      if (!LoadLibrary("PWG4JetTasks", mode, kTRUE)) return kFALSE;
    }
    if(iPWG1QASym){
-     if (!LoadSource(Form("%s/PWG1/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
+     if (!LoadSource(Form("%s/prod/acrcaf/qa_pp/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
    if(iPWG4TmpSourceSara){
      //  gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
@@ -1242,8 +1240,13 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 //   plugin->AddDataFile("tag.xml");
 //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
 // Define alien work directory where all files will be copied. Relative to alien $HOME.
-   if (iAODanalysis) plugin->SetGridWorkingDir("analysisAOD");
-   else              plugin->SetGridWorkingDir("analysisESD");
+   TString alien_workdir = "";
+   
+   if (iAODanalysis)  alien_workdir += "analysisAOD";
+   else               alien_workdir += "analysisESD";    
+   if(kGridDataSet.Length()>0)alien_workdir += Form("/%s",kGridDataSet.Data());
+   plugin->SetGridWorkingDir(alien_workdir.Data());
+
    // Declare alien output directory. Relative to working directory.
    if (!kGridOutdir.Length()) kGridOutdir = Form("output_%s",kTrainName.Data());
    plugin->SetGridOutputDir(kGridOutdir);
@@ -1506,6 +1509,7 @@ Bool_t PatchAnalysisMacro(){
       if(objstr->GetString().EndsWith(".so"))add += Form("gSystem->Load(\"%s\");\n",objstr->GetString().Data());
     }
     delete arr; 
+    //    add += Form("AliLog::SetGlobalLogLevel(%d);\n",AliLog::GetGlobalLogLevel());
     add += "// BKC \n\n";
     st.Insert(index,add.Data());
   }
