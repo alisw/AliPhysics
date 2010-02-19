@@ -786,7 +786,7 @@ Int_t AliZDC::ADCch2Phe(Int_t Det, Int_t Quad, Int_t ADCVal, Int_t Res) const
   resADC[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh
   resADC[1] = 0.0000064; // ADC Resolution low gain:  25  fC/adcCh
   //
-  Int_t nPhe = (Int_t) (ADCVal * pmGain[Det-1][Quad] * resADC[Res]);
+  Int_t nPhe = (Int_t) (ADCVal / (pmGain[Det-1][Quad] * resADC[Res]));
   //
   //printf("\t AliZDC::ADCch2Phe -> det(%d, %d) - ADC %d  phe %d\n",Det,Quad,ADCVal,nPhe);
 
