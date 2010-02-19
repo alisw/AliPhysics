@@ -58,6 +58,8 @@ class AliRsnCutSet : public TNamed
 
     TObjArray *GetCuts() { return &fCuts; }
 
+    void       SetEvent(AliRsnEvent *event);
+
   private:
 
     TObjArray     fCuts;                  // array of cuts

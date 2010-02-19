@@ -41,6 +41,7 @@ class AliRsnCutStd : public AliRsnCut
       kTruePID,
       kRequiredPID,
       kRealisticPID,
+      kPairIndex,
       // cut without reference values
       kCharge,
       kSameLabel,

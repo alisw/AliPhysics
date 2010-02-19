@@ -100,3 +100,18 @@ Bool_t AliRsnCutMgr::IsSelected(AliRsnCut::ETarget type, TObject*const obj)
 
   return kTRUE;
 }
+
+//_____________________________________________________________________________
+void AliRsnCutMgr::SetEvent(AliRsnEvent *event)
+{
+//
+// Sets reference event in all cut sets
+//
+
+  Int_t i;
+  for (i = 0; i < AliRsnCut::kLastCutTarget; i++)
+  {
+    if (fCutSets[i]) fCutSets[i]->SetEvent(event);
+  }
+}
+

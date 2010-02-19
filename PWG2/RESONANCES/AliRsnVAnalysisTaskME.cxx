@@ -194,7 +194,6 @@ Bool_t AliRsnVAnalysisTaskME::CheckAndPrintEvents()
       }
       AliDebug(AliLog::kDebug, Form("ESD event %d has %d tracks", i, allESDEvents[i]->GetNumberOfTracks()));
     }
-    delete [] allESDEvents;
   } else if (fAODEvent) {
     AliAODEvent **allAODEvents = new AliAODEvent*[nEvents];
     for (Int_t i = 0; i < nEvents; i++) {
@@ -205,7 +204,6 @@ Bool_t AliRsnVAnalysisTaskME::CheckAndPrintEvents()
       }
       AliDebug(AliLog::kDebug, Form("AOD event %d has %d tracks", i, allAODEvents[i]->GetNumberOfTracks()));
     }
-    delete [] allAODEvents;
   } else {
     AliWarning("Unknown input format");
     return kFALSE;

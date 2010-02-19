@@ -69,7 +69,7 @@ void AliRsnAnalysisSE::RsnUserCreateOutputObjects()
   Int_t i;
   for (i = 1; i < kMaxNumberOfOutputs + 1; i++)
   {
-    if (i <= fNumberOfOutputs + 1) OpenFile(i);
+    // this line makes trouble with PROOF ---> if (i <= fNumberOfOutputs + 1) OpenFile(i);
     fOutList[i] = new TList();
     fOutList[i]->SetOwner();
   }

@@ -106,6 +106,8 @@ class AliRsnDaughter : public TObject
     void    SetGood() {fOK = kTRUE;}
     void    SetBad() {fOK = kFALSE;}
     Bool_t  IsOK() const { return fOK; }
+    Int_t   PairIndex() {return fPairIndex;}
+    void    SetPairIndex(Int_t value) {fPairIndex = value;}
 
     // Kinkness
     Char_t  KinkIndex() const {return fKinkIndex;}
@@ -148,6 +150,7 @@ class AliRsnDaughter : public TObject
     TParticle     *fParticle;               // pointer to (eventual) MC information
     Int_t          fMotherPDG;              // PDG code of mother (if any)
     ULong_t        fStatus;                 // track status (if available)
+    Int_t          fPairIndex;              // to know if it is member #1 or #2 of the pair (cfr. to PairDef)
 
     Double_t       fDr;                     // transverse impact parameter
     Double_t       fDz;                     // longitudinal impact parameter
