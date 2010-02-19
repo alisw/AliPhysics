@@ -61,7 +61,7 @@ AliAnalysisTaskV0QA *AddTaskV0QA(Bool_t bUseMCInfo=kTRUE)
    AliAnalysisDataContainer *coutput_v0QA =  
    mgr->CreateContainer("V0QA", TList::Class(), 
 			AliAnalysisManager::kOutputContainer, Form("%s.root", v0QA->GetName()));
-   mgr->ConnectOutput(v0QA, 0, coutput_v0QA);
+   mgr->ConnectOutput(v0QA, 1, coutput_v0QA);
  	
 
    return v0QA;
