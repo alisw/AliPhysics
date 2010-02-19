@@ -28,6 +28,7 @@
 #include "AliAnalysisDataSlot.h"
 
 #include "AliESDEvent.h"
+#include "AliESDfriend.h"
 #include "AliESD.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
@@ -39,6 +40,7 @@
 #include "AliAODInputHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliInputEventHandler.h"
+#include "AliESDInputHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliLog.h"
@@ -65,6 +67,7 @@ AliAnalysisTaskSE::AliAnalysisTaskSE():
     fDebug(0),
     fEntry(0),
     fInputEvent(0x0),
+    fESDfriend(0x0),
     fInputHandler(0x0),
     fOutputAOD(0x0),
     fMCEvent(0x0),
@@ -81,6 +84,7 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
     fDebug(0),
     fEntry(0),
     fInputEvent(0x0),
+    fESDfriend(0x0),
     fInputHandler(0x0),
     fOutputAOD(0x0),
     fMCEvent(0x0),
@@ -99,6 +103,7 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     fDebug(0),
     fEntry(0),
     fInputEvent(0x0),
+    fESDfriend(0x0),
     fInputHandler(0x0),
     fOutputAOD(0x0),
     fMCEvent(0x0),
@@ -111,6 +116,7 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     fDebug            = obj.fDebug;
     fEntry            = obj.fEntry;
     fInputEvent       = obj.fInputEvent;
+    fESDfriend        = obj.fESDfriend;
     fInputHandler     = obj.fInputHandler;
     fOutputAOD        = obj.fOutputAOD;
     fMCEvent          = obj.fMCEvent;
@@ -128,6 +134,7 @@ AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
     fDebug            = other.fDebug;
     fEntry            = other.fEntry;
     fInputEvent       = other.fInputEvent;
+    fESDfriend        = other.fESDfriend;
     fInputHandler     = other.fInputHandler;
     fOutputAOD        = other.fOutputAOD;
     fMCEvent          = other.fMCEvent;
@@ -158,7 +165,10 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
     } 
     
     if (fInputHandler) {
-         fInputEvent = fInputHandler->GetEvent();
+	if ((fInputHandler->GetTree())->GetBranch("ESDfriend."))
+	    fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
+
+	fInputEvent = fInputHandler->GetEvent();
     } else if( fMCEvent ) {
          AliWarning("No Input Event Handler connected, only MC Truth Event Handler") ; 
     } else {

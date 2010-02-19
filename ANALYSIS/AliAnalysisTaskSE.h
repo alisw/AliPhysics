@@ -15,6 +15,7 @@ class AliAODCaloCells;
 class AliMCEvent;
 class AliInputEventHandler;
 class AliAnalysisCuts;
+class AliESDfriend;
 
 class TTree;
 class TList;
@@ -46,20 +47,22 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     // Event Selection
     virtual void   SelectCollisionCandidates() {fSelectCollisions = kTRUE;}
  // Getters
-    virtual Int_t        DebugLevel()  {return fDebug;     }
-    virtual AliVEvent*   InputEvent()  {return fInputEvent;}
-    virtual AliAODEvent* AODEvent()    {return fOutputAOD; }
-    virtual TTree*       OutputTree()  {return fTreeA;     }
-    virtual AliMCEvent*  MCEvent()     {return fMCEvent;   }
-    virtual Long64_t     Entry()       {return fEntry;     }
-    virtual const char*  CurrentFileName();
-    virtual Bool_t       IsStandardAOD() const;
-    virtual TList*       GetQAHistos()   const {return fHistosQA;}
+    virtual Int_t         DebugLevel()  {return fDebug;     }
+    virtual AliVEvent*    InputEvent()  {return fInputEvent;}
+    virtual AliESDfriend* ESDfriend()   {return fESDfriend; }
+    virtual AliAODEvent*  AODEvent()    {return fOutputAOD; }
+    virtual TTree*        OutputTree()  {return fTreeA;     }
+    virtual AliMCEvent*   MCEvent()     {return fMCEvent;   }
+    virtual Long64_t      Entry()       {return fEntry;     }
+    virtual const char*   CurrentFileName();
+    virtual Bool_t        IsStandardAOD() const;
+    virtual TList*        GetQAHistos()   const {return fHistosQA;}
   protected:
     Int_t                 fDebug;           //  Debug flag
     // IO
     Int_t                 fEntry;           //  Current entry in the chain
     AliVEvent*            fInputEvent;      //! VEvent Input
+    AliESDfriend*         fESDfriend;       //! ESD friend
     AliInputEventHandler* fInputHandler;    //! Input Handler
     AliAODEvent*          fOutputAOD;       //! AOD out 
     AliMCEvent*           fMCEvent;         //! MC

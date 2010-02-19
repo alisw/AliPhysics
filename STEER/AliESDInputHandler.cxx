@@ -33,6 +33,7 @@
 
 #include "AliESDInputHandler.h"
 #include "AliESDEvent.h"
+#include "AliESDfriend.h"
 #include "AliVCuts.h"
 #include "AliESD.h"
 #include "AliRunTag.h"
@@ -47,6 +48,7 @@ static Option_t *gESDDataType = "ESD";
 AliESDInputHandler::AliESDInputHandler() :
   AliInputEventHandler(),
   fEvent(0x0),
+  fFriend(0x0),
   fAnalysisType(0),
   fNEvents(0),
   fHLTEvent(0x0),
@@ -70,7 +72,7 @@ AliESDInputHandler::~AliESDInputHandler()
 
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
-    AliInputEventHandler(name, title), fEvent(0x0), fAnalysisType(0),
+    AliInputEventHandler(name, title), fEvent(0x0), fFriend(0x0), fAnalysisType(0),
     fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
 {
     // Constructor
@@ -92,7 +94,9 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     if (!fEvent) fEvent = new AliESDEvent();
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();
-
+    if (fTree->GetBranch("ESDfriend.")) {
+	fTree->SetBranchAddress("ESDfriend.", &fFriend);
+    }
 
     return kTRUE;
 }
@@ -117,6 +121,10 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   // 
   if (fEventCuts)
     fIsSelected = fEventCuts->IsSelected((AliESDEvent*)fEvent); 
+  //
+  // Friends
+  ((AliESDEvent*)fEvent)->SetESDfriend(fFriend);
+  
   return kTRUE;
 }
 
