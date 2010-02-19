@@ -75,7 +75,7 @@ Bool_t AliHMPIDPreprocessor::ProcNoiseMap()
   // eg. DDL turn on/off after PEDESTAL run and between PHYSICS runs.
   // Returns kFALSE on success
  
-  Bool_t stProcNoise=kTRUE;
+  Bool_t stProcNoise=kFALSE;
   TFile  *fNoiseFile;
   TH2F   *hNoiseMap = 0x0;
   
@@ -97,9 +97,9 @@ Bool_t AliHMPIDPreprocessor::ProcNoiseMap()
   AliInfo("Storing Reference Data");
   stProcNoise = Store("Calib","NoiseMap",hNoiseMap,&metaDataHisto,0,kTRUE);
   if(!stProcNoise) {
-    Log("HMPID - failure to store Noise Map data results in OCDB"); return stProcNoise;   
+    Log("HMPID - failure to store Noise Map data results in OCDB");   
   }
-  return kFALSE;
+  return stProcNoise;
 }//ProcNoiseMap
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
