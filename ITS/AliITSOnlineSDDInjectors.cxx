@@ -237,78 +237,58 @@ void AliITSOnlineSDDInjectors::CalcTimeBinZero(){
 
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::FitDriftSpeedVsAnode(){
-  // fits the anode dependence of drift speed with a polynomial function
+  // fits the anode dependence of drift speed
 
-  TGraphErrors *fitGraph=new TGraphErrors(0);
-  Int_t npts = 0;
-  for(Int_t jpad=fFirstPadForFit; jpad<=fLastPadForFit; jpad++){
-    if(fDriftSpeed[jpad]>0. && GetInjPadStatus(jpad)>fPadStatusCutForFit){
-      
-      Double_t x=(Double_t)GetAnodeNumber(jpad);
-      fitGraph->SetPoint(npts,x,fDriftSpeed[jpad]);
-      fitGraph->SetPointError(npts,0.,fDriftSpeedErr[jpad]);
-      ++npts;
-    }
-  }
-  
-
-  const Int_t kNn=fPolDegree+1;
-  TString funcName=Form("pol%d",fPolDegree);
-  TF1* fitFunc=new TF1("fitFunc",funcName.Data(),0.,256.);
-  if(fParam) delete [] fParam;
-  fParam=new Double_t[kNn];
-  for(Int_t i=0; i<kNn;i++){ 
-    fitFunc->SetParameter(i,0.);  
-    fParam[i]=0.;
-  }
   Float_t rangeForMax[2]={78.,178.};
-  if(fitGraph->GetN()>fPolDegree+1){ 
-    fitGraph->Fit("fitFunc","RQN");
-    for(Int_t i=0; i<kNn;i++)fParam[i]=fitFunc->GetParameter(i);
-    fActualPolDegree=fPolDegree;
-    if(fPolDegree==3){
-      Double_t deltasq=fitFunc->GetParameter(2)*fitFunc->GetParameter(2)-3*fitFunc->GetParameter(1)*fitFunc->GetParameter(3);
-      Double_t zero1=-999.;
-      Double_t zero2=-999.;
-      if(deltasq>=0. && TMath::Abs(fitFunc->GetParameter(3))>0.){
-	Double_t delta=TMath::Sqrt(deltasq);
-	zero1=(-fitFunc->GetParameter(2)+delta)/3./fitFunc->GetParameter(3);
-	zero2=(-fitFunc->GetParameter(2)-delta)/3./fitFunc->GetParameter(3);
-      }
-      Bool_t twoZeroes=kFALSE;
-      Bool_t oneZero=kFALSE;
-      if(zero1>0. && zero1<256. && zero2>0. && zero2<256.) twoZeroes=kTRUE;
-      if(zero1>rangeForMax[0] && zero1<rangeForMax[1]) oneZero=kTRUE;
-      if(zero2>rangeForMax[0] && zero2<rangeForMax[1]) oneZero=kTRUE;
-      if(!oneZero || twoZeroes){
-	TF1* parabola=new TF1("parabola","pol2",0.,256.);
-	fitGraph->Fit("parabola","RQN");	
-	fParam[3]=0.;
-	Double_t xmax=-999.;
-	if(parabola->GetParameter(2)<0.) xmax=-parabola->GetParameter(1)/2./parabola->GetParameter(2);
-	if(xmax>rangeForMax[0] && xmax<rangeForMax[1]){
-	  for(Int_t i2=0; i2<3;i2++)fParam[i2]=parabola->GetParameter(i2);
-	  fActualPolDegree=2;
-	}else{
-	  TF1* constval=new TF1("constval","pol0",0.,256.);	  
-	  fitGraph->Fit("constval","RQN");
-	  fParam[2]=0.;
-	  fParam[1]=0.;
-	  fParam[0]=constval->GetParameter(0);
-	  fActualPolDegree=0;
-	  delete constval;
+  PolyFit(fPolDegree);
+  fActualPolDegree=fPolDegree;
+  if(fPolDegree==3){
+    Double_t deltasq=fParam[2]*fParam[2]-3*fParam[1]*fParam[3];
+    Double_t zero1=-999.;
+    Double_t zero2=-999.;
+    if(deltasq>=0. && TMath::Abs(fParam[3])>0.){
+      Double_t delta=TMath::Sqrt(deltasq);
+      zero1=(-fParam[2]+delta)/3./fParam[3];
+      zero2=(-fParam[2]-delta)/3./fParam[3];
+    }
+    Bool_t twoZeroes=kFALSE;
+    Bool_t oneZero=kFALSE;
+    if(zero1>0. && zero1<256. && zero2>0. && zero2<256.) twoZeroes=kTRUE;
+    if(zero1>rangeForMax[0] && zero1<rangeForMax[1]) oneZero=kTRUE;
+    if(zero2>rangeForMax[0] && zero2<rangeForMax[1]) oneZero=kTRUE;
+    if(!oneZero || twoZeroes){
+      PolyFit(2);
+      Double_t xmax=-999.;
+      if(fParam[2]<0.) xmax=-fParam[1]/2./fParam[2];
+      if(xmax>rangeForMax[0] && xmax<rangeForMax[1]){
+	fActualPolDegree=2;
+      }else{
+	Double_t averSpeed=0.;
+	Double_t sumWei=0.;
+	Int_t nUsedPts=0;
+	for(Int_t jpad=fFirstPadForFit; jpad<=fLastPadForFit; jpad++){
+	  if(fDriftSpeed[jpad]>0 && GetInjPadStatus(jpad)>fPadStatusCutForFit){
+	    Double_t wei=1./fDriftSpeedErr[jpad]/fDriftSpeedErr[jpad];
+	    averSpeed+=wei*fDriftSpeed[jpad];
+	    sumWei+=wei;
+	    nUsedPts++;
+	  }
 	}
-	delete parabola;
+	if(sumWei>0.) averSpeed/=sumWei;
+	if(nUsedPts<fPolDegree+1) averSpeed=0;
+	fParam[0]=averSpeed;
+	for(Int_t i=1; i < fPolDegree+1; i++) fParam[i]=0.;
+	fActualPolDegree=0;
       }
     }
   }
-  delete fitFunc;  
-  delete fitGraph;
 }
 //______________________________________________________________________
-void AliITSOnlineSDDInjectors::FitDriftSpeedVsAnodeOld(){
+void AliITSOnlineSDDInjectors::PolyFit(Int_t degree){
   // fits the anode dependence of drift speed with a polynomial function
-  const Int_t kNn=fPolDegree+1;
+  const Int_t kNn=degree+1;
+  const Int_t kDimens=fPolDegree+1;
+
   Double_t **mat = new Double_t*[kNn];
   for(Int_t i=0; i < kNn; i++) mat[i] = new Double_t[kNn];
   Double_t *vect = new Double_t[kNn];
@@ -334,8 +314,8 @@ void AliITSOnlineSDDInjectors::FitDriftSpeedVsAnodeOld(){
   }
   if(npts<fPolDegree+1){ 
     if(fParam) delete [] fParam;
-    fParam=new Double_t[kNn];
-    for(Int_t i=0; i<kNn;i++)fParam[i]=0;
+    fParam=new Double_t[kDimens];
+    for(Int_t i=0; i<kDimens;i++)fParam[i]=0;
   }else{
     Int_t *iPivot = new Int_t[kNn];
     Int_t *indxR = new Int_t[kNn];
@@ -391,8 +371,9 @@ void AliITSOnlineSDDInjectors::FitDriftSpeedVsAnodeOld(){
     
   
     if(fParam) delete [] fParam;
-    fParam=new Double_t[kNn];
+    fParam=new Double_t[kDimens];
     for(Int_t i=0; i<kNn;i++)fParam[i]=vect[i];
+    if(degree<fPolDegree) for(Int_t i=kNn; i<kDimens;i++)fParam[i]=0.;
   }
 
   for(Int_t i=0; i < kNn; i++) delete [] mat[i];
