@@ -43,7 +43,7 @@ AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation():
   AliAnalysisTaskSE(),
   fAna(0x0),
   fOutputContainer(0x0),
-  fConfigName(0)
+  fConfigName("")
 {
   // Default constructor
 }
@@ -111,7 +111,7 @@ void AliAnalysisTaskParticleCorrelation::Init()
   }
   
   if(!fAna) {
-	printf("AliAnalysisTaskParticleCorrelation::Init() - Analysis maker pointer not initialized, no analysis specified, STOP!\n");
+	printf("AliAnalysisTaskParticleCorrelation::Init() - Analysis maker pointer not initialized, no analysis specified, STOP !\n");
 	abort();
   }
   
