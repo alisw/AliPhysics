@@ -283,7 +283,10 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       track->GetImpactParametersTPC(dca2DTPC,dcaZTPC); 
       Float_t chi2PerClusterTPC = -1.;
       Float_t nClustersTPC = track->GetTPCNcls();//track->GetTPCclusters(0);
-      if(nClustersTPC!=0.) chi2PerClusterTPC = track->GetTPCchi2()/nClustersTPC;
+      if(nClustersTPC>0.) chi2PerClusterTPC = track->GetTPCchi2()/(2.*nClustersTPC-5.);
+      Float_t chi2PerClusterTPCIter1 = -1.;
+      Float_t nClustersTPCIter1 = track->GetTPCNclsIter1();   
+      if(nClustersTPCIter1>0.) chi2PerClusterTPCIter1 = track->GetTPCchi2Iter1()/(2.*nClustersTPCIter1-5.);
 
       //fill the container
       containerInputRec[0] = track->Pt();
@@ -296,7 +299,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       containerInputTPConly[1] = trackTPC->Phi();
       containerInputTPConly[2] = trackTPC->Eta();
       containerInputTPConly[3] = dca2DTPC/10.; //Divide by 10 in order to store in same containter. Should be corrected back when looking at output.
-      containerInputTPConly[4] = chi2PerClusterTPC;//TPC;
+      containerInputTPConly[4] = chi2PerClusterTPCIter1;//TPC;
 
       if (fTrackCuts->AcceptTrack(track)) {
 	if(track->GetSign()>0.) {

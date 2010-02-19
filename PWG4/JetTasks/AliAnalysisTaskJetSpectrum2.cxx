@@ -807,7 +807,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	AliAODTrack *tr = fAOD->GetTrack(it);
 	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
 	tr->Print();
-	tr->Dump();
+	//	tr->Dump();
 	if(fESD){
 	  AliESDtrack *esdTr = (AliESDtrack*)fESD->GetTrack(tr->GetID());
 	  esdTr->Print("");
@@ -970,6 +970,20 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
       AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
+      if(fDebug>0){
+	if(tr->Pt()>20){
+	  Printf("High pT track found in Event %d with p_T, %E",(int)Entry(),tr->Pt());
+	  Printf("%s read event, %d",fInputHandler->GetTree()->GetCurrentFile()->GetName(),fInputHandler->GetTree()->GetReadEntry());
+	  tr->Print();
+	  //	tr->Dump();
+	  AliESDEvent *fESD = dynamic_cast<AliESDEvent*> (InputEvent());
+	  if(fESD){
+	    AliESDtrack *esdTr = (AliESDtrack*)fESD->GetTrack(tr->GetID());
+	    esdTr->Print("");
+	    esdTr->Dump();
+	  }
+	}
+      }
       list->Add(tr);
       iCount++;
     }
