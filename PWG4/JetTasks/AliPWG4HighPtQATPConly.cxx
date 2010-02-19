@@ -768,7 +768,9 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
     Float_t relUncertainty1Pt = TMath::Sqrt(TMath::Abs(track->GetSigma1Pt2()))*pt;
     Float_t chi2PerClusterTPC = -1.;
     Float_t nClustersTPC = track->GetTPCNcls();
-    if(nClustersTPC!=0.) chi2PerClusterTPC = track->GetTPCchi2()/nClustersTPC;
+    if(nClustersTPC>0.) chi2PerClusterTPC = track->GetTPCchi2()/(2.*nClustersTPC-5.);
+    Float_t chi2PerNPointITS = -1.;
+    if(nPointITS>3) chi2PerNPointITS = track->GetITSchi2()/(2.*(float)nPointITS-5.);
 
     fPtAll->Fill(pt);
     fPtAllTPC->Fill(ptTPC);
@@ -788,7 +790,7 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       fPtAllminPtTPCvsPtAllChi2C->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2C);
       fPtAllminPtTPCvsPtAllRel1PtUncertainty->Fill(pt,(1./pt-1./ptTPC)/(1./pt),relUncertainty1Pt);
       fPtAllminPtTPCvsPtAllChi2PerNClusTPC->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2PerClusterTPC);
-      if(nPointITS>0) fPtAllminPtTPCvsPtAllChi2PerNClusITS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),track->GetITSchi2()/(float)nPointITS);
+      if(nPointITS>3) fPtAllminPtTPCvsPtAllChi2PerNClusITS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2PerNPointITS);
       if(TMath::Abs((1./pt-1./ptTPC)/(1./pt))>0.8) fEtaPhiOutliers->Fill(track->Eta(),phi);
       if (friendtrack.GetITSOut()) {
 	AliExternalTrackParam trackITSouter(*(friendtrack.GetITSOut())); 
@@ -805,45 +807,46 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
 	fPtITSouterminPtTPCvsPtAllChi2C->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2C);
 	fPtITSouterminPtTPCvsPtAllRel1PtUncertainty->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),relUncertainty1Pt);
 	fPtITSouterminPtTPCvsPtAllChi2PerNClusTPC->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerClusterTPC);
-	if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	if(track->HasPointOnITSLayer(0)) {
 	  fPtITSouterminPtTPCvsPtAll_ITSLayer0->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)) {
 	  fPtITSouterminPtTPCvsPtAll_ITSLayer1->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1) && track->HasPointOnITSLayer(2)) {
 	  fPtITSouterminPtTPCvsPtAll_ITSLayer2->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1) && !track->HasPointOnITSLayer(2) && track->HasPointOnITSLayer(3)) {
 	  fPtITSouterminPtTPCvsPtAll_ITSLayer3->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1) && !track->HasPointOnITSLayer(2) && !track->HasPointOnITSLayer(3) && track->HasPointOnITSLayer(4)) {
 	  fPtITSouterminPtTPCvsPtAll_ITSLayer4->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1) && !track->HasPointOnITSLayer(2) && !track->HasPointOnITSLayer(3) && !track->HasPointOnITSLayer(4) && track->HasPointOnITSLayer(5)) {
 	  fPtITSouterminPtTPCvsPtAll_ITSLayer5->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) {
 	  fPtITSouterminPtTPCvsPtAll_NoSPD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(2) && !track->HasPointOnITSLayer(3)) {
 	  fPtITSouterminPtTPCvsPtAll_NoSDD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(4) && !track->HasPointOnITSLayer(5)) {
 	  fPtITSouterminPtTPCvsPtAll_NoSSD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>0) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetITSchi2()/nPointITS);
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
       }
+
     }//fTrackCuts selection
     
     
@@ -864,7 +867,7 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       //      fPtOuterPtInner->Fill(trackInner->Pt(),trackOuter->Pt());
       fPtRel1PtUncertaintyChi2PerClusTPC->Fill(pt,relUncertainty1Pt,chi2PerClusterTPC);
       fPtITSminPtTPCvsPtITSChi2PerNClusTPC->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2PerClusterTPC);
-      if(nPointITS>0) fPtITSminPtTPCvsPtITSChi2PerNClusITS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),track->GetITSchi2()/nPointITS);
+      if(nPointITS>3) fPtITSminPtTPCvsPtITSChi2PerNClusITS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2PerNPointITS);
     }//fTrackCutsITS loop
       
   }//ESD track loop
