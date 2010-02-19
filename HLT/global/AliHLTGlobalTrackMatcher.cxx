@@ -57,7 +57,8 @@ void AliHLTGlobalTrackMatcher::DoInit( ) {
   //See header file for documentation
   //BALLE TODO: Change hardcoded values to something that is initialised through command line or something!!!
 
-  fMatchDistance = 40*40;
+
+  fMatchDistance = 400*400;
 
   fPhosMaxX = 355 + TMath::Sqrt(fMatchDistance) + 30;
   fPhosMaxZ = 64.+ TMath::Sqrt(fMatchDistance) + 30;
@@ -109,10 +110,13 @@ Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToDetector(AliExternalTrackParam * 
   //See header file for documentation
   
   //Get track instersection with cylinder defined by detector radius
-  Double_t trackPosition[3];
+  Double_t trackPosition[3] = {0, 0, 0};
   if (! (track->GetXYZAt(dRadius, bz, trackPosition)) ) {
     return kFALSE;
   }
+
+  HLTInfo("Track coordinate at R = PHOS radius %f %f %f", trackPosition[0],trackPosition[1],trackPosition[2]);
+
 
   //Positive y for EMCAL, negative for PHOS
   if(ySign) {
@@ -129,6 +133,8 @@ Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToDetector(AliExternalTrackParam * 
   
   if (TMath::Abs(trackPosition[0]) > fMaxX )
     return kFALSE;
+
+  HLTInfo("kTRUE");
   
   return kTRUE;  
 }

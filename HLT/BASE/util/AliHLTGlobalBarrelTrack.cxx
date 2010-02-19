@@ -128,17 +128,17 @@ Double_t AliHLTGlobalBarrelTrack::GetPathLengthTo( Double_t x, Double_t b ) cons
 
 
 
+
 int AliHLTGlobalBarrelTrack::ConvertTrackDataArray(const AliHLTTracksData* pTracks, unsigned sizeInByte, vector<AliHLTGlobalBarrelTrack> &tgtArray )
 {
   // see header file for class documentation
   int iResult=0;
-  tgtArray.clear();
   if (!pTracks || sizeInByte<sizeof(AliHLTTracksData) || pTracks->fCount==0) return 0;
 
   const AliHLTUInt8_t* pEnd=reinterpret_cast<const AliHLTUInt8_t*>(pTracks);
   pEnd+=sizeInByte;
 
-  tgtArray.resize(pTracks->fCount);
+  tgtArray.resize(pTracks->fCount + tgtArray.size());
   const AliHLTUInt8_t* pCurrent=reinterpret_cast<const AliHLTUInt8_t*>(pTracks->fTracklets);
   for (unsigned i=0; i<pTracks->fCount; i++) {
     if (pCurrent+sizeof(AliHLTExternalTrackParam)>pEnd) {

@@ -16,7 +16,7 @@
 class AliHLTProcessor;
 class AliHLTGlobalTrackMatcher;
 class AliHLTCaloClusterReader;
-
+class TObjArray;
 /**
  * @class AliHLTTPCV0HistoComponent
  * Component for monitor V0 physics 
@@ -81,6 +81,7 @@ private:
 
   AliHLTCaloClusterReader * fClusterReader;   //Instance of helper class to read calorimeter structs
 
+  TObjArray * fTrackArray;
   
   ClassDef(AliHLTGlobalTrackMatcherComponent, 0);
 

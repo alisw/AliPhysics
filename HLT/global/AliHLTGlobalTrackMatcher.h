@@ -139,6 +139,10 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
       HLTWarning("Track reached detector but not cluster!!!!!!");
       continue;
     }
+
+
+    HLTInfo("Cluster global position %f %f %f", clusterPosition[0],clusterPosition[1],clusterPosition[2]);
+
     
     //Calculate track - cluster residual
   
@@ -155,7 +159,9 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     Double_t dz = dd*dd;
   
     Double_t match = dz + dxy;
-        
+    
+    HLTInfo("Track cluster residual %f, maxmatch %f", match, fMatchDistance);
+    
     if( match > fMatchDistance  )  {     
       continue;
     }

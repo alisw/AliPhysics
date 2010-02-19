@@ -46,8 +46,8 @@ void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& re
    fGeoUtils->Local2Global(recPoint.fModule+1, x, z, coord);
    
    globalCoord.fX = coord[0];
-   globalCoord.fZ = coord[1];
-   globalCoord.fY = coord[2];
+   globalCoord.fY = coord[1];
+   globalCoord.fZ = coord[2];
 }
 
 void AliHLTPHOSGeometry::ConvertRecPointCoordinates(Float_t &x, Float_t &z) const
