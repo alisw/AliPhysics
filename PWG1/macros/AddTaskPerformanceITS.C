@@ -28,15 +28,13 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
 
   //
   // Create containers for input/output
-  AliAnalysisDataContainer *cInputITS = mgr->CreateContainer("cInputITS",TChain::Class(),AliAnalysisManager::kInputContainer);
-
   AliAnalysisDataContainer *cOutputITS = mgr->CreateContainer("cOutputITS",TList::Class(),AliAnalysisManager::kOutputContainer,"ITS.Performance.root");
 
 
   // Attach input
   mgr->ConnectInput(taskITS,0,mgr->GetCommonInputContainer());
   // Attach output
-  mgr->ConnectOutput(taskITS,0,cOutputITS);
+  mgr->ConnectOutput(taskITS, 1,cOutputITS);
   
   return taskITS;
 }

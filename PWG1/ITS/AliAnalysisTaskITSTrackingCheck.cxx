@@ -60,17 +60,83 @@
 
 
 ClassImp(AliAnalysisTaskITSTrackingCheck)
+AliAnalysisTaskITSTrackingCheck::AliAnalysisTaskITSTrackingCheck() : 
+AliAnalysisTaskSE(), 
+fReadMC(kFALSE),
+fReadRPLabels(kFALSE),
+fFillNtuples(kFALSE),
+fUseITSSAforNtuples(kFALSE),
+fESD(0), 
+fOutput(0), 
+fHistNtracks(0),
+fHistNclsITSMI(0),
+fHistNclsITSSA(0),
+fHistNclsITSSAInAcc(0),
+fHistClusterMapITSMI(0),
+fHistClusterMapITSMIok(0),
+fHistClusterMapITSMIbad(0),
+fHistClusterMapITSMIskipped(0),
+fHistClusterMapITSMIoutinz(0),
+fHistClusterMapITSMInorefit(0),
+fHistClusterMapITSMInocls(0),
+fHistClusterMapITSMIokoutinzbad(0),
+fHistClusterMapITSSA(0),
+fHistClusterMapITSSAok(0),
+fHistClusterMapITSSAbad(0),
+fHistClusterMapITSSAskipped(0),
+fHistClusterMapITSSAoutinz(0),
+fHistClusterMapITSSAnorefit(0),
+fHistClusterMapITSSAnocls(0),
+fHistClusterMapITSSAokoutinzbad(0),
+fHistClusterMapITSSAInAcc(0),
+fHistClusterMapITSSAokInAcc(0),
+fHistClusterMapITSSAbadInAcc(0),
+fHistClusterMapITSSAskippedInAcc(0),
+fHistClusterMapITSSAoutinzInAcc(0),
+fHistClusterMapITSSAnorefitInAcc(0),
+fHistClusterMapITSSAnoclsInAcc(0),
+fHistClusterMapITSSAokoutinzbadInAcc(0),
+fHistClusterMapModuleITSSAokInAcc(0),
+fHistClusterMapModuleITSSAbadInAcc(0),
+fHistClusterMapModuleITSSAnoclsInAcc(0),
+fHistPhiTPCInAcc(0),
+fHistPtTPC(0),
+fHistPtTPCInAcc(0),
+fHistPtITSMI2(0),
+fHistPtITSMI3(0),
+fHistPtITSMI4(0),
+fHistPtITSMI5(0),
+fHistPtITSMI6(0),
+fHistPtITSMISPD(0),
+fHistPtITSMIoneSPD(0),
+fHistPtITSMI2InAcc(0),
+fHistPtITSMI3InAcc(0),
+fHistPtITSMI4InAcc(0),
+fHistPtITSMI5InAcc(0),
+fHistPtITSMI6InAcc(0),
+fHistPtITSMISPDInAcc(0),
+fHistPtITSMIoneSPDInAcc(0),
+fHistPtITSMIokbadoutinz6(0),
+fHistPtITSMIokbadoutinz4InAcc(0),
+fHistPtITSMIokbadoutinz5InAcc(0),
+fHistPtITSMIokbadoutinz6InAcc(0),
+fHistPhiITSMIokbadoutinz6InAcc(0),
+fNtupleESDTracks(0),
+fNtupleITSAlignExtra(0),
+fNtupleITSAlignSPDTracklets(0)
+{
+  // Constructor
+}
 
 //________________________________________________________________________
 AliAnalysisTaskITSTrackingCheck::AliAnalysisTaskITSTrackingCheck(const char *name) : 
-AliAnalysisTask(name, "ITSTrackingCheckTask"), 
+AliAnalysisTaskSE(name), 
 fReadMC(kFALSE),
 fReadRPLabels(kFALSE),
 fFillNtuples(kFALSE),
 fUseITSSAforNtuples(kFALSE),
 fUsePhysSel(kFALSE),
 fESD(0), 
-fESDfriend(0),
 fOutput(0), 
 fHistNEvents(0),
 fHistNEventsFrac(0),
@@ -219,7 +285,7 @@ fESDtrackCutsITSTPC(0)
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());  //My private output
+  DefineOutput(1, TList::Class());  //My private output
 }
 //________________________________________________________________________
 AliAnalysisTaskITSTrackingCheck::~AliAnalysisTaskITSTrackingCheck()
@@ -236,37 +302,8 @@ AliAnalysisTaskITSTrackingCheck::~AliAnalysisTaskITSTrackingCheck()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskITSTrackingCheck::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } else {
-    // Disable all branches and enable only the needed ones
-    // The next two lines are different when data produced as AliESDEvent is read
-
-    tree->SetBranchStatus("ESDfriend*", 1);
-    tree->SetBranchAddress("ESDfriend.",&fESDfriend);
-
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-    
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else {
-      fESD = esdH->GetEvent();
-
-    }
-  }
-  
-  return;
-}
-
 //________________________________________________________________________
-void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
+void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -929,10 +966,17 @@ void AliAnalysisTaskITSTrackingCheck::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *) 
+void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
+  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+
+  if (!fESD) {
+    Printf("ERROR: fESD not available");
+    return;
+  }
+
 
   fHistNEvents->Fill(-1);
 
@@ -942,10 +986,7 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
   }
   if(!isSelected) return;
 
-  if (!fESD) {
-    Printf("ERROR: fESD not available");
-    return;
-  }
+  
   //if(fESD->GetEventType()!=7) return;
 
   // ***********  MC info ***************
@@ -1007,8 +1048,6 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
   Double_t mcVtxPos[3]={mcVertex[0],mcVertex[1],mcVertex[2]},mcVtxSigma[3]={0,0,0};
   vertexMC = new AliESDVertex(mcVtxPos,mcVtxSigma);
 
-  // ***********  ESD friends ***********
-  fESD->SetESDfriend(fESDfriend); //Attach the friend to the ESD
   // ***********  ESD friends ***********
   if(!fESDfriend) printf("no ESD friend\n");
 
@@ -1109,7 +1148,7 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
 
   fHistNtracks->Fill(ntracks);
   // Post the data already here
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 
   Int_t idet,status; Float_t xloc,zloc;
   Double_t rSPDouter=7.6,rSDDouter=23.9,rSSDouter=43.1;  
