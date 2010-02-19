@@ -14,7 +14,7 @@ Double_t minB = 0.01;
 Double_t maxB = 0.9;
 
 // use physics selection class
-Bool_t  UsePhysicsSelection = kFALSE;
+Bool_t  UsePhysicsSelection = kTRUE;
 
 // SETTING THE CUTS
 
