@@ -28,13 +28,6 @@ runnum=`echo $1 | cut -d "/" -f 6`
 echo File to be  processed $1
 echo Number of events to be processed $entries
 
-echo ALICE_ROOT = $ALICE_ROOT
-echo AliROOT = $AliROOT
-cp $ALICE_ROOT/.rootrc ~/.rootrc
-cp $ALICE_ROOT/.rootrc $HOME
-#cat $HOME/.rootrc
-export GRID_TOKEN=OK
-
 echo ">>>>>>>>> PATH is..."
 echo $PATH
 echo ">>>>>>>>> LD_LIBRARY_PATH is..."
@@ -44,10 +37,10 @@ cat rec.C
 echo
 
 echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runnum..."
-aliroot -l -b -q rec.C\(\"$1\",$2\) 2>&1 | tee rec.log
+aliroot -l -b -q rec.C\(\"alien://$1\"\) 2>&1 | tee rec.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."
-aliroot -l -b -q  runCalibTrain.C\($runnum\)   2>&1 | tee calib.log
+aliroot -l -b -q  runCalibTrain.C\(\"$runnum\"\)   2>&1 | tee calib.log
 
 echo ">>>>>>> Running AliRoot to generate Tags..."
 aliroot -l -b -q tag.C\(\) 2>&1 | tee tag.log

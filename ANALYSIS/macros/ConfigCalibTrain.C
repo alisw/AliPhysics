@@ -8,12 +8,12 @@
 void ConfigCalibTrain(Int_t run, const char *ocdb="raw://"){
 
   // OCDB
-
+ 
+  printf("setting run to %d\n",run);
   AliCDBManager::Instance()->SetDefaultStorage(ocdb);
   AliCDBManager::Instance()->SetRun(run); 
 
   // geometry
-  TGeoManager::Import("./geometry.root");
-  AliGeomManager::LoadGeometry("./geometry.root");
+  AliGeomManager::LoadGeometry();
   AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC");
 }

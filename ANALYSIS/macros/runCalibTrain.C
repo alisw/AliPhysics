@@ -3,7 +3,7 @@
 
   .L $ALICE_ROOT/ANALYSIS/macros/runCalibTrain.C
   runCalibTrain(105160);
- 
+
 */
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -15,10 +15,10 @@
 #include "AliAnalysisDataContainer.h"
 #endif
 
-void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root",
-		   const char *outFileName = "AliESDs_v1.root") 
+void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.root",
+                   const char *outFileName = "AliESDs_v1.root")
 {
-  
+
     gSystem->Load("libTree");
     gSystem->Load("libGeom");
     gSystem->Load("libPhysics");
@@ -26,29 +26,31 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root",
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
     gSystem->Load("libAOD");
-    
+
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libANALYSIScalib");
     gSystem->Load("libCORRFW");
     gSystem->Load("libPWG3muon");
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/ConfigCalibTrain.C");
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCopyESD.C");
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskFilterFriend.C");
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskFilterFriendSecond.C");
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskAddObject.C");
-    
+    gROOT->LoadMacro("ConfigCalibTrain.C");
+    gROOT->LoadMacro("AddTaskCopyESD.C");
+    gROOT->LoadMacro("AddTaskFilterFriend.C");
+    gROOT->LoadMacro("AddTaskFilterFriendSecond.C");
+    gROOT->LoadMacro("AddTaskAddObject.C");
+
     // detector tasks
 
-    gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AddTaskTPCCalib.C");
+    gROOT->LoadMacro("AddTaskTPCCalib.C");
 
     AliLog::SetClassDebugLevel("AliESDEvent",19);
     TChain *chain = new TChain("esdTree");
 
     // Steering input chain
 
-    chain->Add(inFileName);    
-    ConfigCalibTrain(runNumber);
+    chain->Add(inFileName);
+    Int_t runNumber = runNumberString.Atoi();
+    printf("runNumber from runCalibTrain = %d\n",runNumber);
+    ConfigCalibTrain(runNumber, "raw://");
 
     AliAnalysisManager *mgr  = new AliAnalysisManager("ESD to ESD", "Analysis Manager");
     // mgr->SetDebugLevel(3);
@@ -65,27 +67,26 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root",
     esdHandler->SetOutputFileName(outFileName);
     mgr->SetOutputEventHandler(esdHandler);
 
-    // Steering Tasks 
+    // Steering Tasks
 
     AliAnalysisTaskCopyESD *copy = AddTaskCopyESD();
     AliAnalysisTaskFilterFriend* filter = AddTaskFilterFriend();
     AliAnalysisTaskFilterFriendSecond* filter2 = AddTaskFilterFriendSecond();
     AliAnalysisTaskAddObject* add = AddTaskAddObject();
-   
+
     // Detector Tasks
-   
-    AliAnalysisTask* tTPC = AddTaskTPCCalib(runNumber);
+
+   AliAnalysisTask* tTPC = AddTaskTPCCalib(runNumber);
 
     // Run the analysis
 
     if (!mgr->InitAnalysis()) {
-	    printf("Analysis cannot be started, returning\n");
-	    return;
+            printf("Analysis cannot be started, returning\n");
+            return;
     }
 
     mgr->PrintStatus();
     mgr->StartAnalysis("local", chain);
-   
+
     return;
 }
-
