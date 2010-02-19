@@ -107,7 +107,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void CalcDriftSpeed(Int_t jpad);
   void CalcTimeBinZero();
   void FitDriftSpeedVsAnode();
-  void FitDriftSpeedVsAnodeOld();
+  void PolyFit(Int_t degree=3);
   Double_t GetMeanDriftSpeed(Int_t ipad) const{
     if(fNEvents==0) return 0.;
     return fSumDriftSpeed[ipad]/(Double_t)fNEvents;
