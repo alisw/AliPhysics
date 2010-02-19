@@ -15,6 +15,7 @@
 
 #include "AliQAv1.h"
 #include "AliITSQADataMakerRec.h"
+#include "AliITSCalibrationSDD.h"
 
 class TObjArray;
 class AliITSDDLModuleMapSDD;
@@ -34,6 +35,8 @@ public:
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   virtual void CreateTheMap();
+  virtual void CreateTheCalibration();
+  virtual void InitCalibrationArray();
 
   virtual ~AliITSQASDDDataMakerRec(); // dtor
   Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0);
@@ -51,21 +54,26 @@ private:
   //static const Int_t fgkDDLIDshift = 0;    // necessary option until RawStream Table is complete
   static const Int_t fgkLADDonLAY3 = 14;   // number of ladder on layer 3
   static const Int_t fgkLADDonLAY4 = 22;   // number of ladder on layer 4
+  static const Int_t fgkTotalNumberSDDAnodes = 512;
+  static const Int_t fgkNumberOfSDDAnodesperSide =256;
 
-  AliITSQADataMakerRec *fAliITSQADataMakerRec;// pointer to the main ctor
-  Bool_t  fkOnline;                           // online (1) or offline (0) use
-  Int_t   fLDC;                               // LDC number (0 for offline, 1 to 4 for online) 
-  Int_t   fSDDhRawsTask;                      // number of histo booked for each the Raws Task SDD
-  Int_t   fSDDhDigitsTask;                    // number of histo booked for each the RecPoints Task SDD
-  Int_t   fSDDhRecPointsTask;                 // number of histo booked for each the RecPoints Task SDD
+  AliITSQADataMakerRec *fAliITSQADataMakerRec; // pointer to the main ctor
+  Bool_t  fkOnline;                            // online (1) or offline (0) use
+  Int_t   fLDC;                                // LDC number (0 for offline, 1 to 4 for online) 
+  Int_t   fSDDhRawsTask;                       // number of histo booked for each the Raws Task SDD
+  Int_t   fSDDhDigitsTask;                     // number of histo booked for each the RecPoints Task SDD
+  Int_t   fSDDhRecPointsTask;                  // number of histo booked for each the RecPoints Task SDD
   Int_t   *fGenRawsOffset;                     // QAchecking Raws offset       
   Int_t   *fGenDigitsOffset;                   // QAchecking RecPoints offset       
   Int_t   *fGenRecPointsOffset;                // QAchecking RecPoints offset       
-  Int_t   fTimeBinSize;			      // time bin width in number of clocks
-  AliITSDDLModuleMapSDD  *fDDLModuleMap;      // SDD Detector configuration for the decoding
+  Int_t   fTimeBinSize;			       // time bin width in number of clocks
+  Int_t   fNEvent;                             // Number of Events (raw data)
+  Int_t   fNEventRP;                           // Number of Events (rec points)
+  AliITSDDLModuleMapSDD  *fDDLModuleMap;       // SDD Detector configuration for the decoding
+  TObjArray *fCalibration;                     //Array of Calibration Object
+  TObjArray *fHistoCalibration;                //Array of the Calibration histograms for the normalization
 
-
-  ClassDef(AliITSQASDDDataMakerRec,11)         // description 
+  ClassDef(AliITSQASDDDataMakerRec,12)         // description 
 
 };
 

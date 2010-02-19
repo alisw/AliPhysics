@@ -142,64 +142,70 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	    TString hname=hdata->GetName();
 	    if(hname.Contains("SDDchargeMap"))continue;
 	    if(hname.Contains("SDDModPattern")){
-	      hmodule=hdata;
-	      entries= hdata->GetEntries();
-	      if(entries==0){
-		AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
-		//printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
-		test=test+fStepBitSDD[AliQAv1::kFATAL];
-	      }//endif entries
+	      if(hname.Contains("NORM")) continue;
 	      else{
-		int modmax=hdata->GetNbinsX();
-		Int_t empty=0;
-		Int_t filled=0;
-		Double_t content=0;
-		for(Int_t i=1;i<=modmax;i++){
-		  content=hdata->GetBinContent(i);
-		  if(content==0.){empty++;}
-		  else if(content!=0.){filled++;}
-		}//end for
-		AliInfo(Form(" %s : empty modules %i \t filled modules %i",hname.Data(), empty, filled));
-	      }//end else pattern entries !=0	      
+		hmodule=hdata;
+		entries= hdata->GetEntries();
+		if(entries==0){
+		  AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
+		  //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
+		  test=test+fStepBitSDD[AliQAv1::kFATAL];
+		}//endif entries
+		else{
+		  int modmax=hdata->GetNbinsX();
+		  Int_t empty=0;
+		  Int_t filled=0;
+		  Double_t content=0;
+		  for(Int_t i=1;i<=modmax;i++){
+		    content=hdata->GetBinContent(i);
+		    if(content==0.){empty++;}
+		    else if(content!=0.){filled++;}
+		  }//end for
+		  AliInfo(Form(" %s : empty modules %i \t filled modules %i",hname.Data(), empty, filled));
+		}//end else pattern entries !=0
+	      }//end if norm	      
 	    }//end if modpattern
 	    else if(hname.Contains("SDDphizL3")||hname.Contains("SDDphizL4")){
-	      Int_t layer=0;
-	      if(hname.Contains("3"))layer=0;
-	      else  if(hname.Contains("4"))layer=1;
-	      entries2[layer]=hdata->GetEntries();
-	      if(entries2[layer]==0){
-		AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
-		//printf("test = %f \t value %f\n",test,fStepBitSDD[AliQAv1::kFATAL]);
-		test=test+fStepBitSDD[AliQAv1::kFATAL];
-		if(entries==0){ 
-		  //return test; 
-		  //break;
-		}
-	      }//end if getentries
+	      if(hname.Contains("NORM")) continue;
 	      else{
-		Int_t layer1=0;
-		if(hname.Contains("3"))layer1=0;
-		else  if(hname.Contains("4"))layer1=1;
-		TH2* htemp=dynamic_cast<TH2*>(hdata);
-		hlayer[layer1]=(TH2*)htemp->Clone();
-		char newname[50];
-		sprintf(newname,"%s_copy",hname.Data());
-		hlayer[layer1]->SetName(newname);
-		hlayer[layer1]->RebinX(2);
-		int modmay=hlayer[layer1]->GetNbinsY();
-		TH1D* hproj= hlayer[layer1]->ProjectionY();
-		Double_t ladcontent=0;
-		for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
-		  ladcontent=hproj->GetBinContent(i);
-		  if(ladcontent==0){emptyladders[layer1]++;}
-		  else if(ladcontent!=0){filledladders[layer1]++;} 
-		}//end for
-		AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer], filledladders[layer]));//end else layer 3
-		delete hproj;
-		hproj=NULL;	
-		//delete htemp;
-		//htemp=NULL;
-	      }//end else entries !=0	      
+		Int_t layer=0;
+		if(hname.Contains("3"))layer=0;
+		else  if(hname.Contains("4"))layer=1;
+		entries2[layer]=hdata->GetEntries();
+		if(entries2[layer]==0){
+		  AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
+		  //printf("test = %f \t value %f\n",test,fStepBitSDD[AliQAv1::kFATAL]);
+		  test=test+fStepBitSDD[AliQAv1::kFATAL];
+		  if(entries==0){ 
+		    //return test; 
+		    //break;
+		  }
+		}//end if getentries
+		else{
+		  Int_t layer1=0;
+		  if(hname.Contains("3"))layer1=0;
+		  else  if(hname.Contains("4"))layer1=1;
+		  TH2* htemp=dynamic_cast<TH2*>(hdata);
+		  hlayer[layer1]=(TH2*)htemp->Clone();
+		  char newname[50];
+		  sprintf(newname,"%s_copy",hname.Data());
+		  hlayer[layer1]->SetName(newname);
+		  hlayer[layer1]->RebinX(2);
+		  int modmay=hlayer[layer1]->GetNbinsY();
+		  TH1D* hproj= hlayer[layer1]->ProjectionY();
+		  Double_t ladcontent=0;
+		  for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
+		    ladcontent=hproj->GetBinContent(i);
+		    if(ladcontent==0){emptyladders[layer1]++;}
+		    else if(ladcontent!=0){filledladders[layer1]++;} 
+		  }//end for
+		  AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer], filledladders[layer]));//end else layer 3
+		  delete hproj;
+		  hproj=NULL;	
+		  //delete htemp;
+		  //htemp=NULL;
+		}//end else entries !=0
+	      }//end check on norm	      
 	    }//end if layer 3
 	  }//end if hdata	
 	}//end while
