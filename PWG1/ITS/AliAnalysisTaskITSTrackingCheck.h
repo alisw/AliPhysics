@@ -20,18 +20,17 @@ class AliESDVertex;
 class AliESDfriend;
 class AliESDtrackCuts;
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask 
+class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE 
 {
  public:
-
-  AliAnalysisTaskITSTrackingCheck(const char *name = "AliAnalysisTaskITSTrackingCheck");
+    AliAnalysisTaskITSTrackingCheck();
+    AliAnalysisTaskITSTrackingCheck(const char *name);
   virtual ~AliAnalysisTaskITSTrackingCheck(); 
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   Bool_t         GetReadMC() const { return fReadMC; }
   void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; }
@@ -49,7 +48,6 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTask
   Bool_t       fUseITSSAforNtuples; // fill expert ntuples with ITSSA tracks
   Bool_t       fUsePhysSel; // use AliPhysicsSelection
   AliESDEvent  *fESD;    // ESD object
-  AliESDfriend *fESDfriend; // ESD friend object
   TList        *fOutput; //! list send on output slot 0
   TH1F         *fHistNEvents; //! output hist
   TH1F         *fHistNEventsFrac; //! output hist
