@@ -30,7 +30,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
   virtual ~AliAnaCalorimeterQA() {;} //virtual dtor
   
-  void ClusterHistograms(const TLorentzVector mom, const Int_t nCaloCellsPerCluster, const Int_t nModule,
+  void ClusterHistograms(const TLorentzVector mom, Float_t *pos, const Int_t nCaloCellsPerCluster, const Int_t nModule,
 						 const Int_t nTracksMatched, const TObject* track, 
 						 const Int_t * labels, const Int_t nLabels);
 	
@@ -138,6 +138,50 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
 	Float_t GetHistoVertexDistMax()   const { return fHistoVertexDistMax ; }	
 	
 	
+	virtual void SetHistoXRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistoXBins  = n ;
+		fHistoXMax   = max ;
+		fHistoXMin   = min ;
+	}
+	
+	Int_t   GetHistoXBins()  const { return fHistoXBins ; }
+	Float_t GetHistoXMin()   const { return fHistoXMin ; }
+	Float_t GetHistoXMax()   const { return fHistoXMax ; }	
+
+	
+	virtual void SetHistoYRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistoYBins  = n ;
+		fHistoYMax   = max ;
+		fHistoYMin   = min ;
+	}
+	
+	Int_t   GetHistoYBins()  const { return fHistoYBins ; }
+	Float_t GetHistoYMin()   const { return fHistoYMin ; }
+	Float_t GetHistoYMax()   const { return fHistoYMax ; }	
+
+	
+	virtual void SetHistoZRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistoZBins  = n ;
+		fHistoZMax   = max ;
+		fHistoZMin   = min ;
+	}
+	
+	Int_t   GetHistoZBins()  const { return fHistoZBins ; }
+	Float_t GetHistoZMin()   const { return fHistoZMin ; }
+	Float_t GetHistoZMax()   const { return fHistoZMax ; }	
+	
+	virtual void SetHistoRRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistoRBins  = n ;
+		fHistoRMax   = max ;
+		fHistoRMin   = min ;
+	}
+	
+	Int_t   GetHistoRBins()  const { return fHistoRBins ; }
+	Float_t GetHistoRMin()   const { return fHistoRMin ; }
+	Float_t GetHistoRMax()   const { return fHistoRMax ; }	
+	
+
+	
  private:
   
   TString fCalorimeter ;    // Calorimeter selection
@@ -169,19 +213,30 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   Int_t   fHistoVertexDistBins;    // vertex distance histogram number of bins
   Float_t fHistoVertexDistMax;     // vertex distance maximum value
   Float_t fHistoVertexDistMin;     // vertex distance minimum value	
+  Int_t   fHistoRBins;             // r =sqrt(x^2+y^2+z^2) (cm) position histogram number of bins
+  Float_t fHistoRMax;              // r =sqrt(x^2+y^2+z^2) (cm)  maximum value
+  Float_t fHistoRMin;              // r =sqrt(x^2+y^2+z^2) (cm)  minimum value	
+  Int_t   fHistoXBins;             // x (cm) position histogram number of bins
+  Float_t fHistoXMax;              // x (cm) position maximum value
+  Float_t fHistoXMin;              // x (cm) position minimum value
+  Int_t   fHistoYBins;             // y (cm) position histogram number of bins
+  Float_t fHistoYMax;              // y (cm) position maximum value
+  Float_t fHistoYMin;              // y (cm) position minimum value
+  Int_t   fHistoZBins;             // z (cm) position histogram number of bins
+  Float_t fHistoZMax;              // z (cm) position maximum value
+  Float_t fHistoZMin;              // z (cm) position minimum value
 	
   //CaloClusters 
   TH1F * fhE  ; //! E distribution, Reco
   TH1F * fhPt ; //! pT distribution, Reco
   TH1F * fhPhi; //! phi distribution, Reco 
   TH1F * fhEta; //! eta distribution, Reco 
-  TH2F * fhEtaPhi  ; //! eta vs phi, Reco 
   TH3F * fhEtaPhiE  ; //! eta vs phi vs E, Reco
   TH1F * fhECharged  ; //! E distribution, Reco, matched with track
   TH1F * fhPtCharged ; //! pT distribution, Reco, matched with track
   TH1F * fhPhiCharged; //! phi distribution, Reco, matched with track 
   TH1F * fhEtaCharged; //! eta distribution, Reco, matched with track 
-  TH2F * fhEtaPhiCharged  ; //! eta vs phi, Reco, matched with track 
+  TH3F * fhEtaPhiECharged  ; //! eta vs phi vs E, Reco, matched with track 
   TH1F * fhEChargedNoOut  ; //! E distribution, Reco, matched with track, no outer param
   TH1F * fhPtChargedNoOut ; //! pT distribution, Reco, matched with track, no outer param
   TH1F * fhPhiChargedNoOut; //! phi distribution, Reco, matched with track, no outer param
@@ -202,12 +257,43 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F * fhIM; //! cluster pairs invariant mass
   TH2F * fhIMCellCut; //! cluster pairs invariant mass, n cells > 1 per cluster
   TH2F * fhAsym; //! cluster pairs invariant mass	
-  TH2F * fhNCellsPerCluster;    //! N cells per cluster	
-  TH2F * fhNCellsPerClusterMIP; //! N cells per cluster, finer fixed pT bin for MIP search.	
+  TH3F * fhNCellsPerCluster;           //! N cells per cluster vs cluster energy vs eta of cluster	
+  TH3F * fhNCellsPerClusterMIP;        //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search.
+  TH3F * fhNCellsPerClusterMIPCharged; //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search, cluster matched with track.	
+  
+	
   TH1F * fhNClusters; //! Number of clusters
 	
   TH1F * fhCellTimeSpreadRespectToCellMax; //! Difference of the time of cell with maximum dep energy and the rest of cells
   TH1F * fhCellIdCellLargeTimeSpread;      //! Cells with large time respect to max (diff > 100 ns)
+	
+  TH2F * fhRNCells ; //! R=sqrt(x^2+y^2+z^2) (cm) cluster distribution vs N cells in cluster
+  TH2F * fhXNCells ; //! X (cm) cluster distribution vs N cells in cluster
+  TH2F * fhYNCells ; //! Y (cm) cluster distribution vs N cells in cluster
+  TH2F * fhZNCells ; //! Z (cm) cluster distribution vs N cells in cluster
+	
+  TH2F * fhRE ; //! R=sqrt(x^2+y^2+z^2) (cm) cluster distribution vs cluster energy
+  TH2F * fhXE ; //! X (cm) cluster distribution vs cluster energy
+  TH2F * fhYE ; //! Y (cm) cluster distribution vs cluster energy
+  TH2F * fhZE ; //! Z (cm) cluster distribution vs cluster energy
+  TH3F * fhXYZ; //! cluster X vs Y vs Z (cm)
+	
+  TH2F * fhRCellE ; //! R=sqrt(x^2+y^2+z^2) (cm) cell distribution vs cell energy
+  TH2F * fhXCellE ; //! X (cm) cell distribution vs cell energy
+  TH2F * fhYCellE ; //! Y (cm) cell distribution vs cell energy
+  TH2F * fhZCellE ; //! Z (cm) cell distribution vs cell energy
+  TH3F * fhXYZCell; //! cell X vs Y vs Z (cm)
+		
+  TH2F * fhDeltaCellClusterRNCells ; //! R cluster - R cell distribution (cm) vs N cells in cluster
+  TH2F * fhDeltaCellClusterXNCells ; //! X cluster - X cell distribution (cm) vs N cells in cluster
+  TH2F * fhDeltaCellClusterYNCells ; //! Y cluster - Y cell distribution (cm) vs N cells in cluster
+  TH2F * fhDeltaCellClusterZNCells ; //! Z cluster - Z cell distribution (cm) vs N cells in cluster
+	
+  TH2F * fhDeltaCellClusterRE ; //! R cluster - R cell distribution (cm) vs cluster energy
+  TH2F * fhDeltaCellClusterXE ; //! X cluster - X cell distribution (cm) vs cluster energy
+  TH2F * fhDeltaCellClusterYE ; //! Y cluster - Y cell distribution (cm) vs cluster energy
+  TH2F * fhDeltaCellClusterZE ; //! Z cluster - Z cell distribution (cm) vs cluster energy
+	
 	
   //Calo Cells
   TH1F * fhNCells;    //! Number of towers/crystals with signal
@@ -216,7 +302,8 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH1F * fhTime;      //! Time measured in towers/crystals
   TH2F * fhTimeId;    //! Time vs Absolute cell Id
   TH2F * fhTimeAmp;   //! Time vs Amplitude 
-	
+  TH3F * fhEtaPhiAmp; //! eta vs phi vs amplitude, cells
+
   //Calorimeters Correlation
   TH2F * fhCaloCorrNClusters; // EMCAL vs PHOS, number of clusters	
   TH2F * fhCaloCorrEClusters; // EMCAL vs PHOS, total measured cluster energy
@@ -342,7 +429,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,6)
+	ClassDef(AliAnaCalorimeterQA,7)
 } ;
 
 
