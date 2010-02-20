@@ -31,21 +31,30 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t       lCollidingSystems
 
    // User file name (if need be)
    /*
-   TString lCommonFileName = "sLHC09dxx-CheckCascade";
-   if(lMasterJobSessionFlag.Length()){
-        lCommonFileName += "-";
-        lCommonFileName += lMasterJobSessionFlag.Data();
+   TString DefaultCommonFileName = AliAnalysisManager::GetCommonFileName();
+   
+   if(DefaultCommonFileName == "AnalysisResults.root"){
+        // Just change the Common File name IF it was not change before
+        // -> To avoid screwing-up the analysis train and send the output of the previous task to a non-existing file
+        TString lCommonFileName = "sLHC09-CheckCascade";
+        if(lMasterJobSessionFlag.Length()){
+                lCommonFileName += "-";
+                lCommonFileName += lMasterJobSessionFlag.Data();
+        }
+                lCommonFileName += ".root"; 
+        
+        mgr->SetCommonFileName( lCommonFileName.Data() );
    }
-        lCommonFileName += ".root"; 
-   mgr->SetCommonFileName( lCommonFileName.Data() );
    */
-
+   
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    outputFileName += ":PWG2CheckCascade";
    if (lCollidingSystems) outputFileName += "_AA_";
    else outputFileName += "_PP_";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "MC_";
    if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
+   
+   Printf("AddTaskCheckCascade - Set OutputFileName : \n %s\n", outputFileName.Data() );
 
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCasc",
 							     TList::Class(),

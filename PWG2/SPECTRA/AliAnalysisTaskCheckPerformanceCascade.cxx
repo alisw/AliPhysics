@@ -374,19 +374,19 @@ if(! fESDpid){
 		
   Double_t lAlephParameters[5] = {0.};
   	// Reasonable parameters extracted for p-p simulation (LHC09a4) - A.Kalweit
-	// lAlephParameters[0] = 4.23232575531564326e+00;//50*0.76176e-1; // do not forget to divide this value by 50 in SetBlochParam !
+	// lAlephParameters[0] = 4.23232575531564326e+00/50;//50*0.76176e-1;
 	// lAlephParameters[1] = 8.68482806165147636e+00;//10.632; 
 	// lAlephParameters[2] = 1.34000000000000005e-05;//0.13279e-4;
 	// lAlephParameters[3] = 2.30445734159456084e+00;//1.8631;
 	// lAlephParameters[4] = 2.25624744086878559e+00;//1.9479;
         
-        // Reasonable parameters extracted for real p-p event (Dec 2009 - GSI Pass5) - A.Kalweit
-        lAlephParameters[0] = 0.0283086;        // No extra-division to apply in SetBlochParam
-        lAlephParameters[1] = 2.63394e+01;
-        lAlephParameters[2] = 5.04114e-11;
-        lAlephParameters[3] = 2.12543e+00;
-        lAlephParameters[4] = 4.88663e+00; 
-
+        // Param for LHC09d10 prod - A.Kalweit
+        lAlephParameters[0] = 2.15898e+00/50.;
+        lAlephParameters[1] = 1.75295e+01;
+        lAlephParameters[2] = 3.40030e-09;
+        lAlephParameters[3] = 1.96178e+00;
+        lAlephParameters[4] = 3.91720e+00; 
+        
   fESDpid = new AliESDpid();
   fESDpid->GetTPCResponse().SetBetheBlochParameters(lAlephParameters[0],
 					  lAlephParameters[1],
