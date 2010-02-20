@@ -26,7 +26,10 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 #include <TClonesArray.h>
 
-#include <iostream.h>
+#include <iostream>
+#include <cstdlib>
+
+using namespace std;
 
 ClassImp(AliEMCALTriggerBoard)
 
