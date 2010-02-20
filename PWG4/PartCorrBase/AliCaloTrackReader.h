@@ -177,15 +177,19 @@ class AliCaloTrackReader : public TObject {
   TString GetFiredTriggerClassName() const {return fFiredTriggerClassName ; }
   virtual TString GetFiredTriggerClasses() {return "";}
 	
+  //Calorimeters Geometry Methods
   void SetEMCALGeometryName(TString name)   { fEMCALGeoName = name ; }
   TString EMCALGeometryName() const { return fEMCALGeoName ; }
   void InitEMCALGeometry() ; 
   AliEMCALGeoUtils * GetEMCALGeometry() const {return fEMCALGeo;}
-	
+  Bool_t IsEMCALGeoMatrixSet() {return fEMCALGeoMatrixSet; }
+
   void SetPHOSGeometryName(TString name)   { fPHOSGeoName = name ; }
   TString PHOSGeometryName() const { return fPHOSGeoName ; }
   void InitPHOSGeometry() ; 
-  AliPHOSGeoUtils * GetPHOSGeometry() const {return fPHOSGeo;}
+  AliPHOSGeoUtils * GetPHOSGeometry() const {return fPHOSGeo;}	
+  Bool_t IsPHOSGeoMatrixSet()  {return fPHOSGeoMatrixSet ; }
+
 	
  protected:
   Int_t	           fEventNumber; // Event number
@@ -237,9 +241,11 @@ class AliCaloTrackReader : public TObject {
   TString        fEMCALGeoName;  // Name of geometry to use for EMCAL.
   TString        fPHOSGeoName;   // Name of geometry to use for PHOS.	
   AliEMCALGeoUtils * fEMCALGeo ; //! EMCAL geometry pointer
-  AliPHOSGeoUtils  * fPHOSGeo  ; //! PHOS geometry pointer  
+  AliPHOSGeoUtils  * fPHOSGeo  ; //! PHOS  geometry pointer  
+  Bool_t         fEMCALGeoMatrixSet; // Check if the transformation matrix is set for EMCAL
+  Bool_t         fPHOSGeoMatrixSet ; // Check if the transformation matrix is set for PHOS
 
-  ClassDef(AliCaloTrackReader,10)
+  ClassDef(AliCaloTrackReader,11)
 } ;
 
 

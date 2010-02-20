@@ -291,24 +291,26 @@ void AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() {
 	  if(!fInputAODBranch)  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);
 	  }
 	  else{//If no Delta AODs, kept in standard branch, to revise. 
-		  if(fNewAOD) {
+		  if(fNewAOD && fReader->GetOutputEvent()) {
 			  fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
 			  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);	
 		  }
 		  else {
 			  fInputAODBranch  =  (TClonesArray *) fReader->GetInputEvent()->FindListObject(fInputAODName);	
-			  if(!fInputAODBranch) fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
+			  if(!fInputAODBranch && fReader->GetOutputEvent() ) 
+				  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
 		  }
 	  }
   }
   else{ //If no Delta AODs, kept in standard branch
-	  if(fNewAOD) {
+	  if(fNewAOD && fReader->GetOutputEvent()) {
 		  fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
 		  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);	
 	  }
 	  else{ 
 		  fInputAODBranch  =  (TClonesArray *) fReader->GetInputEvent()->FindListObject(fInputAODName);
-		  if(!fInputAODBranch)  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
+		  if(!fInputAODBranch && fReader->GetOutputEvent())  
+			  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
 	  }
   }
 	
