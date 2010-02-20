@@ -63,6 +63,7 @@ class AliAODv0;
 
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliMCEventHandler.h"
 
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
@@ -107,13 +108,13 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade()
     fHistMassWithCombPIDOmegaMinus(0), fHistMassWithCombPIDOmegaPlus(0),
 
     fHistXiTransvMom(0),    fHistXiTotMom(0),
-    fHistBachTransvMom(0),   fHistBachTotMom(0),
+    fHistBachTransvMomXi(0),   fHistBachTotMomXi(0),
 
     fHistChargeXi(0),
     fHistV0toXiCosineOfPointingAngle(0),
 
-    fHistRapXi(0), fHistRapOmega(0), fHistEta(0),
-    fHistTheta(0), fHistPhi(0),
+    fHistRapXi(0), fHistRapOmega(0), fHistEtaXi(0),
+    fHistThetaXi(0), fHistPhiXi(0),
 
     f2dHistArmenteros(0),			
     f2dHistEffMassLambdaVsEffMassXiMinus(0), f2dHistEffMassXiVsEffMassOmegaMinus(0),
@@ -180,13 +181,13 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade(const char *name)
     fHistMassWithCombPIDOmegaMinus(0), fHistMassWithCombPIDOmegaPlus(0),
 
     fHistXiTransvMom(0),    fHistXiTotMom(0),
-    fHistBachTransvMom(0),   fHistBachTotMom(0),
+    fHistBachTransvMomXi(0),   fHistBachTotMomXi(0),
 
     fHistChargeXi(0),
     fHistV0toXiCosineOfPointingAngle(0),
 
-    fHistRapXi(0), fHistRapOmega(0), fHistEta(0),
-    fHistTheta(0), fHistPhi(0),
+    fHistRapXi(0), fHistRapOmega(0), fHistEtaXi(0),
+    fHistThetaXi(0), fHistPhiXi(0),
 
     f2dHistArmenteros(0),			
     f2dHistEffMassLambdaVsEffMassXiMinus(0), f2dHistEffMassXiVsEffMassOmegaMinus(0),
@@ -374,7 +375,7 @@ if(! f2dHistTrkgPrimVtxVsBestPrimVtx) {
 
 
 if(! fHistEffMassXi) {
-     fHistEffMassXi = new TH1F("fHistEffMassXi", "Cascade candidates ; Invariant Mass (GeV/c^{2}) ; Counts", 200, 1.2, 2.0);
+     fHistEffMassXi = new TH1F("fHistEffMassXi", "Cascade candidates ; Invariant Mass (GeV/c^{2}) ; Counts", 400, 1.2, 2.0);
      fListHistCascade->Add(fHistEffMassXi);
 }
    
@@ -454,43 +455,43 @@ if (! fHistDcaNegToPrimVertexXi) {
 	// - Effective mass histos for cascades.
 // By cascade hyp  
 if (! fHistMassXiMinus) {
-    fHistMassXiMinus = new TH1F("fHistMassXiMinus","#Xi^{-} candidates;M( #Lambda , #pi^{-} ) (GeV/c^{2});Counts", 200,1.2,2.0);
+    fHistMassXiMinus = new TH1F("fHistMassXiMinus","#Xi^{-} candidates;M( #Lambda , #pi^{-} ) (GeV/c^{2});Counts", 400,1.2,2.0);
     fListHistCascade->Add(fHistMassXiMinus);
 }
   
 if (! fHistMassXiPlus) {
-    fHistMassXiPlus = new TH1F("fHistMassXiPlus","#Xi^{+} candidates;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",200,1.2,2.0);
+    fHistMassXiPlus = new TH1F("fHistMassXiPlus","#Xi^{+} candidates;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
     fListHistCascade->Add(fHistMassXiPlus);
 }
 
 if (! fHistMassOmegaMinus) {
-	fHistMassOmegaMinus = new TH1F("fHistMassOmegaMinus","#Omega^{-} candidates;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+	fHistMassOmegaMinus = new TH1F("fHistMassOmegaMinus","#Omega^{-} candidates;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 500,1.5,2.5);
     fListHistCascade->Add(fHistMassOmegaMinus);
 }
  
 if (! fHistMassOmegaPlus) {
-	fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#Omega^{+} candidates;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+	fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#Omega^{+} candidates;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
     fListHistCascade->Add(fHistMassOmegaPlus);
 }
 
 // By cascade hyp + bachelor PID
 if (! fHistMassWithCombPIDXiMinus) {
-    fHistMassWithCombPIDXiMinus = new TH1F("fHistMassWithCombPIDXiMinus","#Xi^{-} candidates, with Bach. comb. PID;M( #Lambda , #pi^{-} ) (GeV/c^{2});Counts", 200,1.2,2.0);
+    fHistMassWithCombPIDXiMinus = new TH1F("fHistMassWithCombPIDXiMinus","#Xi^{-} candidates, with Bach. comb. PID;M( #Lambda , #pi^{-} ) (GeV/c^{2});Counts", 400,1.2,2.0);
     fListHistCascade->Add(fHistMassWithCombPIDXiMinus);
 }
   
 if (! fHistMassWithCombPIDXiPlus) {
-    fHistMassWithCombPIDXiPlus = new TH1F("fHistMassWithCombPIDXiPlus","#Xi^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",200,1.2,2.0);
+    fHistMassWithCombPIDXiPlus = new TH1F("fHistMassWithCombPIDXiPlus","#Xi^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
     fListHistCascade->Add(fHistMassWithCombPIDXiPlus);
 }
 
 if (! fHistMassWithCombPIDOmegaMinus) {
-	fHistMassWithCombPIDOmegaMinus = new TH1F("fHistMassWithCombPIDOmegaMinus","#Omega^{-} candidates, with Bach. comb. PID;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+	fHistMassWithCombPIDOmegaMinus = new TH1F("fHistMassWithCombPIDOmegaMinus","#Omega^{-} candidates, with Bach. comb. PID;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 500,1.5,2.5);
     fListHistCascade->Add(fHistMassWithCombPIDOmegaMinus);
 }
  
 if (! fHistMassWithCombPIDOmegaPlus) {
-	fHistMassWithCombPIDOmegaPlus = new TH1F("fHistMassWithCombPIDOmegaPlus","#Omega^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+	fHistMassWithCombPIDOmegaPlus = new TH1F("fHistMassWithCombPIDOmegaPlus","#Omega^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
     fListHistCascade->Add(fHistMassWithCombPIDOmegaPlus);
 }
 
@@ -499,24 +500,24 @@ if (! fHistMassWithCombPIDOmegaPlus) {
 	// - Complements for QA
 
 if(! fHistXiTransvMom ){
-	fHistXiTransvMom  = new TH1F( "fHistXiTransvMom" , "Xi transverse momentum ; p_{t}(#Xi) (GeV/c); Counts", 100, 0.0, 10.0);
+	fHistXiTransvMom  = new TH1F( "fHistXiTransvMom" , "#Xi transverse momentum (cand. around the mass peak) ; p_{t}(#Xi) (GeV/c); Counts", 100, 0.0, 10.0);
 	fListHistCascade->Add(fHistXiTransvMom);
 }
 
 if(! fHistXiTotMom ){
-	fHistXiTotMom  = new TH1F( "fHistXiTotMom" , "Xi momentum norm; p_{tot}(#Xi) (GeV/c); Counts", 150, 0.0, 15.0);
+	fHistXiTotMom  = new TH1F( "fHistXiTotMom" , "#Xi momentum norm (cand. around the mass peak); p_{tot}(#Xi) (GeV/c); Counts", 150, 0.0, 15.0);
 	fListHistCascade->Add(fHistXiTotMom);
 }
 
 
-if(! fHistBachTransvMom ){
-	fHistBachTransvMom  = new TH1F( "fHistBachTransvMom" , "Bach. transverse momentum ; p_{t}(Bach.) (GeV/c); Counts", 100, 0.0, 5.0);
-	fListHistCascade->Add(fHistBachTransvMom);
+if(! fHistBachTransvMomXi ){
+	fHistBachTransvMomXi  = new TH1F( "fHistBachTransvMomXi" , "#Xi Bach. transverse momentum (cand. around the mass peak) ; p_{t}(Bach.) (GeV/c); Counts", 100, 0.0, 5.0);
+	fListHistCascade->Add(fHistBachTransvMomXi);
 }
 
-if(! fHistBachTotMom ){
-	fHistBachTotMom  = new TH1F( "fHistBachTotMom" , "Bach. momentum norm; p_{tot}(Bach.) (GeV/c); Counts", 100, 0.0, 5.0);
-	fListHistCascade->Add(fHistBachTotMom);
+if(! fHistBachTotMomXi ){
+	fHistBachTotMomXi  = new TH1F( "fHistBachTotMomXi" , "#Xi Bach. momentum norm (cand. around the mass peak); p_{tot}(Bach.) (GeV/c); Counts", 100, 0.0, 5.0);
+	fListHistCascade->Add(fHistBachTotMomXi);
 }
 
 
@@ -533,28 +534,28 @@ if (! fHistV0toXiCosineOfPointingAngle) {
 
 
 if(! fHistRapXi ){
-	fHistRapXi  = new TH1F( "fHistRapXi" , "Rapidity of Xi candidates ; y ; Counts", 200, -5.0, 5.0);
+	fHistRapXi  = new TH1F( "fHistRapXi" , "Rapidity of #Xi candidates (around the mass peak); y ; Counts", 200, -5.0, 5.0);
 	fListHistCascade->Add(fHistRapXi);
 }
 
 if(! fHistRapOmega ){
-	fHistRapOmega  = new TH1F( "fHistRapOmega" , "Rapidity of Omega candidates ; y ; Counts", 200, -5.0, 5.0);
+	fHistRapOmega  = new TH1F( "fHistRapOmega" , "Rapidity of #Omega candidates (around the mass peak); y ; Counts", 200, -5.0, 5.0);
 	fListHistCascade->Add(fHistRapOmega);
 }
 
-if(! fHistEta ){
-	fHistEta  = new TH1F( "fHistEta" , "Pseudo-rap. of casc. candidates ; #eta ; Counts", 120, -3.0, 3.0);
-	fListHistCascade->Add(fHistEta);
+if(! fHistEtaXi ){
+	fHistEtaXi  = new TH1F( "fHistEtaXi" , "Pseudo-rap. of #Xi candidates (around the mass peak) ; #eta ; Counts", 120, -3.0, 3.0);
+	fListHistCascade->Add(fHistEtaXi);
 }
 
-if(! fHistTheta ){
-	fHistTheta  = new TH1F( "fHistTheta" , "#theta of casc. candidates ; #theta (deg) ; Counts", 180, 0., 180.0);
-	fListHistCascade->Add(fHistTheta);
+if(! fHistThetaXi ){
+	fHistThetaXi  = new TH1F( "fHistThetaXi" , "#theta of #Xi candidates (around the mass peak); #theta (deg) ; Counts", 180, 0., 180.0);
+	fListHistCascade->Add(fHistThetaXi);
 }
 
-if(! fHistPhi ){
-	fHistPhi  = new TH1F( "fHistPhi" , "#phi of casc. candidates ; #phi (deg) ; Counts", 360, 0., 360.);
-	fListHistCascade->Add(fHistPhi);
+if(! fHistPhiXi ){
+	fHistPhiXi  = new TH1F( "fHistPhiXi" , "#phi of #Xi candidates (around the mass peak); #phi (deg) ; Counts", 360, 0., 360.);
+	fListHistCascade->Add(fHistPhiXi);
 }
 
 
@@ -566,44 +567,44 @@ if(! f2dHistArmenteros) {
 //-------
 
 if(! f2dHistEffMassLambdaVsEffMassXiMinus) {
-	f2dHistEffMassLambdaVsEffMassXiMinus = new TH2F( "f2dHistEffMassLambdaVsEffMassXiMinus", "M_{#Lambda} Vs M_{#Xi^{-} candidates} ; Inv. M_{#Lambda^{0}} (GeV/c^{2}) ; M( #Lambda , #pi^{-} ) (GeV/c^{2})", 300, 1.1,1.13, 200, 1.2, 2.0);
+	f2dHistEffMassLambdaVsEffMassXiMinus = new TH2F( "f2dHistEffMassLambdaVsEffMassXiMinus", "M_{#Lambda} Vs M_{#Xi^{-} candidates} ; Inv. M_{#Lambda^{0}} (GeV/c^{2}) ; M( #Lambda , #pi^{-} ) (GeV/c^{2})", 300, 1.1,1.13, 400, 1.2, 2.0);
 	fListHistCascade->Add(f2dHistEffMassLambdaVsEffMassXiMinus);
 }
 
 if(! f2dHistEffMassXiVsEffMassOmegaMinus) {
-	f2dHistEffMassXiVsEffMassOmegaMinus = new TH2F( "f2dHistEffMassXiVsEffMassOmegaMinus", "M_{#Xi^{-} candidates} Vs M_{#Omega^{-} candidates} ; M( #Lambda , #pi^{-} ) (GeV/c^{2}) ; M( #Lambda , K^{-} ) (GeV/c^{2})", 200, 1.2, 2.0, 250, 1.5, 2.5);
+	f2dHistEffMassXiVsEffMassOmegaMinus = new TH2F( "f2dHistEffMassXiVsEffMassOmegaMinus", "M_{#Xi^{-} candidates} Vs M_{#Omega^{-} candidates} ; M( #Lambda , #pi^{-} ) (GeV/c^{2}) ; M( #Lambda , K^{-} ) (GeV/c^{2})", 400, 1.2, 2.0, 500, 1.5, 2.5);
 	fListHistCascade->Add(f2dHistEffMassXiVsEffMassOmegaMinus);
 }
 
 if(! f2dHistEffMassLambdaVsEffMassXiPlus) {
-	f2dHistEffMassLambdaVsEffMassXiPlus = new TH2F( "f2dHistEffMassLambdaVsEffMassXiPlus", "M_{#Lambda} Vs M_{#Xi^{+} candidates} ; Inv. M_{#Lambda^{0}} (GeV/c^{2}) ; M( #Lambda , #pi^{+} ) (GeV/c^{2})", 300, 1.1,1.13, 200, 1.2, 2.0);
+	f2dHistEffMassLambdaVsEffMassXiPlus = new TH2F( "f2dHistEffMassLambdaVsEffMassXiPlus", "M_{#Lambda} Vs M_{#Xi^{+} candidates} ; Inv. M_{#Lambda^{0}} (GeV/c^{2}) ; M( #Lambda , #pi^{+} ) (GeV/c^{2})", 300, 1.1,1.13, 400, 1.2, 2.0);
 	fListHistCascade->Add(f2dHistEffMassLambdaVsEffMassXiPlus);
 }
 
 if(! f2dHistEffMassXiVsEffMassOmegaPlus) {
-	f2dHistEffMassXiVsEffMassOmegaPlus = new TH2F( "f2dHistEffMassXiVsEffMassOmegaPlus", "M_{#Xi^{+} candidates} Vs M_{#Omega^{+} candidates} ; M( #Lambda , #pi^{+} ) (GeV/c^{2}) ; M( #Lambda , K^{+} ) (GeV/c^{2})", 200, 1.2, 2.0, 250, 1.5, 2.5);
+	f2dHistEffMassXiVsEffMassOmegaPlus = new TH2F( "f2dHistEffMassXiVsEffMassOmegaPlus", "M_{#Xi^{+} candidates} Vs M_{#Omega^{+} candidates} ; M( #Lambda , #pi^{+} ) (GeV/c^{2}) ; M( #Lambda , K^{+} ) (GeV/c^{2})", 400, 1.2, 2.0, 500, 1.5, 2.5);
 	fListHistCascade->Add(f2dHistEffMassXiVsEffMassOmegaPlus);
 }
 
 //-------
 
 if(! f2dHistXiRadiusVsEffMassXiMinus) {
-	f2dHistXiRadiusVsEffMassXiMinus = new TH2F( "f2dHistXiRadiusVsEffMassXiMinus", "Transv. R_{Xi Decay} Vs M_{#Xi^{-} candidates}; r_{cascade} (cm); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ", 450, 0., 45.0, 200, 1.2, 2.0);
+	f2dHistXiRadiusVsEffMassXiMinus = new TH2F( "f2dHistXiRadiusVsEffMassXiMinus", "Transv. R_{Xi Decay} Vs M_{#Xi^{-} candidates}; r_{cascade} (cm); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ", 450, 0., 45.0, 400, 1.2, 2.0);
 	fListHistCascade->Add(f2dHistXiRadiusVsEffMassXiMinus);
 }
 
 if(! f2dHistXiRadiusVsEffMassXiPlus) {
-	f2dHistXiRadiusVsEffMassXiPlus = new TH2F( "f2dHistXiRadiusVsEffMassXiPlus", "Transv. R_{Xi Decay} Vs M_{#Xi^{+} candidates}; r_{cascade} (cm); M( #Lambda , #pi^{+} ) (GeV/c^{2}) ", 450, 0., 45.0, 200, 1.2, 2.0);
+	f2dHistXiRadiusVsEffMassXiPlus = new TH2F( "f2dHistXiRadiusVsEffMassXiPlus", "Transv. R_{Xi Decay} Vs M_{#Xi^{+} candidates}; r_{cascade} (cm); M( #Lambda , #pi^{+} ) (GeV/c^{2}) ", 450, 0., 45.0, 400, 1.2, 2.0);
 	fListHistCascade->Add(f2dHistXiRadiusVsEffMassXiPlus);
 }
 
 if(! f2dHistXiRadiusVsEffMassOmegaMinus) {
-	f2dHistXiRadiusVsEffMassOmegaMinus = new TH2F( "f2dHistXiRadiusVsEffMassOmegaMinus", "Transv. R_{Xi Decay} Vs M_{#Omega^{-} candidates}; r_{cascade} (cm); M( #Lambda , K^{-} ) (GeV/c^{2}) ", 450, 0., 45.0, 250, 1.5, 2.5);
+	f2dHistXiRadiusVsEffMassOmegaMinus = new TH2F( "f2dHistXiRadiusVsEffMassOmegaMinus", "Transv. R_{Xi Decay} Vs M_{#Omega^{-} candidates}; r_{cascade} (cm); M( #Lambda , K^{-} ) (GeV/c^{2}) ", 450, 0., 45.0, 500, 1.5, 2.5);
 	fListHistCascade->Add(f2dHistXiRadiusVsEffMassOmegaMinus);
 }
 
 if(! f2dHistXiRadiusVsEffMassOmegaPlus) {
-	f2dHistXiRadiusVsEffMassOmegaPlus = new TH2F( "f2dHistXiRadiusVsEffMassOmegaPlus", "Transv. R_{Xi Decay} Vs M_{#Omega^{+} candidates}; r_{cascade} (cm); M( #Lambda , K^{+} ) (GeV/c^{2}) ", 450, 0., 45.0, 250, 1.5, 2.5);
+	f2dHistXiRadiusVsEffMassOmegaPlus = new TH2F( "f2dHistXiRadiusVsEffMassOmegaPlus", "Transv. R_{Xi Decay} Vs M_{#Omega^{+} candidates}; r_{cascade} (cm); M( #Lambda , K^{+} ) (GeV/c^{2}) ", 450, 0., 45.0, 500, 1.5, 2.5);
 	fListHistCascade->Add(f2dHistXiRadiusVsEffMassOmegaPlus);
 }
 
@@ -666,12 +667,9 @@ if(! f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus) {
 if(! fESDpid){
 		
   Double_t lAlephParameters[5] = {0.};
-  	// Reasonable parameters extracted for p-p simulation (LHC09a4) - A.Kalweit
-	// lAlephParameters[0] = 4.23232575531564326e+00;//50*0.76176e-1; // do not forget to divide this value by 50 in SetBlochParam !
-	// lAlephParameters[1] = 8.68482806165147636e+00;//10.632; 
-	// lAlephParameters[2] = 1.34000000000000005e-05;//0.13279e-4;
-	// lAlephParameters[3] = 2.30445734159456084e+00;//1.8631;
-	// lAlephParameters[4] = 2.25624744086878559e+00;//1.9479;
+  AliMCEventHandler *lmcEvtHandler  = dynamic_cast<AliMCEventHandler*>( (AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler() );
+  
+  if( !lmcEvtHandler ){ // !0x0 = real data or !1 = there is an MC handler available (useMC = kTRUE in AnalysisTrainNew), so = data from MC
         
         // Reasonable parameters extracted for real p-p event (Dec 2009 - GSI Pass5) - A.Kalweit
         lAlephParameters[0] = 0.0283086;        // No extra-division to apply in SetBlochParam
@@ -679,13 +677,32 @@ if(! fESDpid){
         lAlephParameters[2] = 5.04114e-11;
         lAlephParameters[3] = 2.12543e+00;
         lAlephParameters[4] = 4.88663e+00; 
+        Printf("CheckCascade - Check Aleph Param in case of REAL Data (lAlephParameters[1] = %f)\n",  lAlephParameters[1]);
+  }
+  else {
+        // Reasonable parameters extracted for p-p simulation (LHC09a4) - A.Kalweit
+         // lAlephParameters[0] = 4.23232575531564326e+00;//50*0.76176e-1; // do not forget to divide this value by 50 in SetBlochParam !
+         // lAlephParameters[1] = 8.68482806165147636e+00;//10.632; 
+         // lAlephParameters[2] = 1.34000000000000005e-05;//0.13279e-4;
+         // lAlephParameters[3] = 2.30445734159456084e+00;//1.8631;
+         // lAlephParameters[4] = 2.25624744086878559e+00;//1.9479;  
+          
+        // Reasonable parameters extracted for MC LHC09d10 event (Jan 2010) - A.Kalweit
+        lAlephParameters[0] = 2.15898e+00/50.;
+        lAlephParameters[1] = 1.75295e+01;
+        lAlephParameters[2] = 3.40030e-09;
+        lAlephParameters[3] = 1.96178e+00;
+        lAlephParameters[4] = 3.91720e+00;
+        Printf("CheckCascade - Check Aleph Param win case MC data (lAlephParameters[1] = %f)\n",  lAlephParameters[1]);
+  }
+
 
   fESDpid = new AliESDpid();
   fESDpid->GetTPCResponse().SetBetheBlochParameters(lAlephParameters[0],
-					  lAlephParameters[1],
-					  lAlephParameters[2],
-					  lAlephParameters[3],
-					  lAlephParameters[4]);
+                                                lAlephParameters[1],
+                                                lAlephParameters[2],
+                                                lAlephParameters[3],
+                                                lAlephParameters[4]);
 }
 
 
@@ -1117,10 +1134,10 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
         //         AliCascadeVertexer CascVtxer;
         // 
         //         Double_t v0sels[]={33,    // max allowed chi2
-        //                         0.02,  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
-        //                         0.02,  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
-        //                         1.0,   // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
-        //                         0.98,  // max allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
+        //                         0.01,  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
+        //                         0.01,  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
+        //                         2.0,   // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
+        //                         0.0,   // max allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
         //                         0.2,   // min radius of the fiducial volume                 (LHC09a4 : 0.2)
         //                         100    // max radius of the fiducial volume                 (LHC09a4 : 100.0)
         //         };
@@ -1128,10 +1145,10 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
         // 
         //         Double_t xisels[]={33.,   // max allowed chi2 (same as PDC07)
         //                         0.02,   // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
-        //                         0.020,  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
+        //                         0.008,  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
         //                         0.01 ,  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
         //                         0.5,    // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
-        //                         0.99,   // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
+        //                         0.98,   // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
         //                         0.2,    // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
         //                         100     // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
         //         };
@@ -1408,8 +1425,8 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
         lBachTPCClusters  = bachTrackXi->GetTPCNcls(); 
 
                 // FIXME : rejection of a poor quality tracks
-        Bool_t kQualityCutTPCrefit = kFALSE;
-        Bool_t kQualityCut80TPCcls = kFALSE;
+        Bool_t kQualityCutTPCrefit = kTRUE;
+        Bool_t kQualityCut80TPCcls = kTRUE;
         
         if(kQualityCutTPCrefit){
                 // 1 - Poor quality related to TPCrefit
@@ -1703,13 +1720,14 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	
         // FIXME : Just to know which file is currently open : locate the file containing Xi
         // cout << "Name of the file containing Xi candidate(s) after anti-splitting cut :" 
-        //       << CurrentFileName() 
-        //       << " / entry: "     << Entry()
-        //              << " / in file: "   << lESDevent->GetEventNumberInFile()   // <- Cvetan / From Mihaela: AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetReadEntry();
-        //       << " : mass(Xi) = " << xi->GetEffMassXi() 
-        //              << " / pt(Casc) = " << lXiTransvMom
-        //              << endl;
-        
+        //         << CurrentFileName() 
+        //         << " / entry: "     << Entry()
+        //         << " / in file: "   << lESDevent->GetEventNumberInFile()   // <- Cvetan / From Mihaela: AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetReadEntry();
+        //         << " : mass(Xi) = " << xi->GetEffMassXi() 
+        //         << " / pt(Casc) = " << lXiTransvMom
+        //         << " / Decay 2d R(Xi) = " << lXiRadius 
+        //         << endl;
+
 	
 		// II.Step 7 - Complementary info for monitoring the cascade cut variables
 	
@@ -1955,22 +1973,28 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		
 	
 	// II.Fill.Step 4 : extra QA info
-	fHistXiTransvMom	->Fill( lXiTransvMom   );
-	fHistXiTotMom		->Fill( lXiTotMom      );
-		
-	fHistBachTransvMom	->Fill( lBachTransvMom );
-	fHistBachTotMom		->Fill( lBachTotMom    );
+        
+        fHistChargeXi                   ->Fill( lChargeXi      );
+        fHistV0toXiCosineOfPointingAngle->Fill( lV0toXiCosineOfPointingAngle );
 
-	fHistChargeXi		->Fill( lChargeXi      );
-	fHistV0toXiCosineOfPointingAngle->Fill( lV0toXiCosineOfPointingAngle );
+        if( TMath::Abs( lInvMassXiMinus-1.3217 ) < 0.012 || TMath::Abs( lInvMassXiPlus-1.3217 ) < 0.012){// One InvMass should be different from 0
+                fHistXiTransvMom        ->Fill( lXiTransvMom   );
+                fHistXiTotMom           ->Fill( lXiTotMom      );
 
-	fHistRapXi		->Fill( lRapXi               );
-	fHistRapOmega		->Fill( lRapOmega            );
-	fHistEta		->Fill( lEta                 );
-	fHistTheta		->Fill( lTheta               );
-	fHistPhi		->Fill( lPhi                 );
+                fHistBachTransvMomXi    ->Fill( lBachTransvMom );
+                fHistBachTotMomXi       ->Fill( lBachTotMom    );
 
-	f2dHistArmenteros	->Fill( lAlphaXi, lPtArmXi   );
+                fHistRapXi              ->Fill( lRapXi         );
+                fHistEtaXi              ->Fill( lEta           );
+                fHistThetaXi            ->Fill( lTheta         );
+                fHistPhiXi              ->Fill( lPhi           );
+        }
+
+        if( TMath::Abs( lInvMassOmegaMinus-1.672 ) < 0.012 || TMath::Abs( lInvMassOmegaPlus-1.672 ) < 0.012 ){// One InvMass should be different from 0
+                fHistRapOmega           ->Fill( lRapOmega            ); 
+        }
+
+	f2dHistArmenteros	        ->Fill( lAlphaXi, lPtArmXi   );
 		
 	
 	// II.Fill.Step 5 : inv mass plots 1D

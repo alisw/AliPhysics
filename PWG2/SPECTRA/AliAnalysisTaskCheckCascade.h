@@ -133,20 +133,20 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	TH1F	*fHistMassWithCombPIDOmegaPlus;		//! reconstructed Omega+ effective mass, with bach. comb PID
 
 	// - Complements for QA
-	TH1F	*fHistXiTransvMom;     			//! Xi transverse momentum 
-	TH1F	*fHistXiTotMom;     			//! Xi momentum norm
+        TH1F	*fHistXiTransvMom;                      //! Xi transverse momentum, around the mass peak of Xi-/+ 
+	TH1F	*fHistXiTotMom;                         //! Xi momentum norm, around the mass peak of Xi-/+
 	
-	TH1F	*fHistBachTransvMom;   			//! bachelor transverse momentum 
-	TH1F	*fHistBachTotMom;  			//! bachelor momentum norm
-				
+	TH1F	*fHistBachTransvMomXi;                  //! bachelor transverse momentum, for cand. around the mass peak of Xi-/+
+	TH1F	*fHistBachTotMomXi;                     //! bachelor momentum norm, for cand. around the mass peak of Xi-/+
+
 	TH1F	*fHistChargeXi;				//! Charge sign of the cascade candidate
 	TH1F	*fHistV0toXiCosineOfPointingAngle;	//! Cos. of Pointing angle between the V0 mom and the Xi-V0 vtx line
   
-	TH1F	*fHistRapXi;				//! rapidity of Xi candidates
-	TH1F	*fHistRapOmega;				//! rapidity of Omega candidates
-	TH1F	*fHistEta;				//! eta distrib. of all the cascade candidates
-	TH1F	*fHistTheta;				//! theta distrib. of all the cascade candidates
-	TH1F	*fHistPhi;				//! phi distrib. of all the cascade candidates
+	TH1F	*fHistRapXi;                            //! rapidity of Xi candidates, around the mass peak of Xi-/+
+	TH1F	*fHistRapOmega;                         //! rapidity of Omega candidates, around the mass peak of Omega-/+
+	TH1F	*fHistEtaXi;                            //! eta distrib. of all the cascade candidates, around the mass peak of Xi-/+
+	TH1F	*fHistThetaXi;                          //! theta distrib. of all the cascade candidates, around the mass peak of Xi-/+
+	TH1F	*fHistPhiXi;                            //! phi distrib. of all the cascade candidates, around the mass peak of Xi-/+
 	
 	TH2F	*f2dHistArmenteros;			//! alpha(casc. cand.) Vs PtArm(casc. cand.)
 	
@@ -206,7 +206,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascade, 9);
+  ClassDef(AliAnalysisTaskCheckCascade, 10);
 };
 
 #endif
