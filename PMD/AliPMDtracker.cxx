@@ -245,7 +245,7 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 
   const Float_t kzpos = 361.5;    // middle of the PMD
 
-  Int_t   ix, iy;
+  Int_t   ix = -1, iy = -1;
   Int_t   det,smn,trno,trpid,mstat;
   Float_t xpos,ypos;
   Float_t adc, ncell, radx, rady;
