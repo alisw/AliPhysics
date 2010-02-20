@@ -28,6 +28,8 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "Riostream.h"
 #include "TBits.h"
 
+#include <cstdlib>
+
 namespace
 {
 	const Int_t kPayLoadSize = 944;

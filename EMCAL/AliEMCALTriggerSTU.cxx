@@ -39,6 +39,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 #include <fstream>
 #include <Riostream.h>
+#include <cstdlib>
 
 ClassImp(AliEMCALTriggerSTU)
 
