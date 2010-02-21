@@ -30,15 +30,16 @@
 #include "AliHLTCaloHistoMatchedTracks.h"
 #include "AliESDCaloCluster.h"
 #include "AliHLTCaloClusterDataStruct.h"
-#include "AliHLTCaloClusterReader.h"
 #include "TObjArray.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TObjArray.h"
 #include "TRefArray.h"
 #include "TString.h"
 
 AliHLTCaloHistoMatchedTracks::AliHLTCaloHistoMatchedTracks(TString det) :
   fHistMatchDistance(NULL),
+  fHistDyxDz(NULL),
   fHistMatchedEnergy(NULL),
   fHistUnMatchedEnergy(NULL)
 {
@@ -60,26 +61,35 @@ AliHLTCaloHistoMatchedTracks::AliHLTCaloHistoMatchedTracks(TString det) :
   fHistUnMatchedEnergy->GetYaxis()->SetTitle("Number of clusters");
   fHistUnMatchedEnergy->SetMarkerStyle(21);
   fHistArray->AddLast(fHistUnMatchedEnergy);
+
+
+  fHistDyxDz = new TH2F( Form("%s fHist dXY dZ", det.Data()), Form("%s dXY - dZ distribution of track - cluster residuals", det.Data()), 50, 0, 50, 50, 0, 50);
+  fHistDyxDz->GetXaxis()->SetTitle("sqrt(dx^2 + dy^2)  (cm)");
+  fHistDyxDz->GetYaxis()->SetTitle("dz (cm)");
+  //fHistDyxDz->SetMarkerStyle(21);
+  fHistArray->AddLast(fHistDyxDz);
+
 }
 
 
 AliHLTCaloHistoMatchedTracks::~AliHLTCaloHistoMatchedTracks()
 {
 
-  if(fHistMatchDistance){
+  if(fHistMatchDistance)
     delete fHistMatchDistance;
-    fHistMatchDistance = NULL;
-  }
+  fHistMatchDistance = NULL;
 
-  if(fHistMatchedEnergy) {
+  if(fHistMatchedEnergy) 
     delete fHistMatchedEnergy;
-    fHistMatchedEnergy = NULL;
-  }
+  fHistMatchedEnergy = NULL;
 
-  if(fHistUnMatchedEnergy) {
+  if(fHistUnMatchedEnergy) 
     delete fHistUnMatchedEnergy;
-    fHistUnMatchedEnergy = NULL;
-  }
+  fHistUnMatchedEnergy = NULL;
+
+  if (fHistDyxDz) 
+    delete fHistDyxDz;
+  fHistDyxDz = NULL;
 
 }
   

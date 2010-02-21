@@ -231,6 +231,11 @@ struct AliHLTCaloClusterDataStruct
     return 10;
   }
 
+  Int_t GetNCells() const
+  {
+    return ( Int_t ) (fNCells);
+  }
+
   /** Number of cells in the cluster */
   UInt_t fNCells;                                //COMMENT
 

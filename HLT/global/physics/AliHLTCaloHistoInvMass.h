@@ -88,32 +88,4 @@ private:
 
 };
 
-// template <class T>
-// Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, vector<T*> &cVec) {
-//   //See header file for documentation
-  
-//   Float_t cPos[nc][3];
-//   Float_t cEnergy[nc];
-
-//   for(int ic = 0; ic < nc; ic++) {
-//     T * cluster = cVec.at(ic);
-//     cluster->GetPosition(cPos[ic]);
-//     cEnergy[ic] = cluster->E();
-//   }
-
-//   for(Int_t ipho = 0; ipho<(nc-1); ipho++) { 
-//     for(Int_t jpho = ipho+1; jpho<nc; jpho++) { 
-//       // Calculate the theta angle between two photons
-//       Double_t theta = (2* asin(0.5*TMath::Sqrt((cPos[ipho][0]-cPos[jpho][0])*(cPos[ipho][0]-cPos[jpho][0]) +(cPos[ipho][1]-cPos[jpho][1])*(cPos[ipho][1]-cPos[jpho][1]))/460));
-      
-//       // Calculate the mass m of the pion candidate
-//       Double_t m =(TMath::Sqrt(2 * cEnergy[ipho]* cEnergy[jpho]*(1-TMath::Cos(theta))));
-      
-//       fHistTwoClusterInvMass->Fill(m);
-//     }
-//   }
-
-//   return 0;
-// }
- 
 #endif

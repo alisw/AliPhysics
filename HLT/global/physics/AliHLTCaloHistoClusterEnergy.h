@@ -68,6 +68,9 @@ public:
   Int_t FillHistograms(Int_t nc, TRefArray * clusterArray );
   Int_t FillHistograms(Int_t nc, vector<AliHLTCaloClusterDataStruct*> &cVec);
 
+  template <class T>
+  Int_t FillClusterEnergyHistos(T*);
+
  private:
 
   /** Default constructor prohibited*/

@@ -37,7 +37,7 @@
 class TRefArray;
 class TObjArray;
 class TH1F;
-
+class TH2F;
 
 /** 
  * @class AliHLTCaloHistoMatchedTracks
@@ -50,7 +50,6 @@ class TH1F;
 
 
 
-//class AliHLTCaloHistoMatchedTracks : public AliHLTPHOSBase
 class AliHLTCaloHistoMatchedTracks : public AliHLTCaloHistoProducer {
 
  public:
@@ -80,12 +79,15 @@ class AliHLTCaloHistoMatchedTracks : public AliHLTCaloHistoProducer {
   /** Assignment operator */
   AliHLTCaloHistoMatchedTracks & operator= (const AliHLTCaloHistoMatchedTracks);
 
-  /** Histogram of the 2 cluster invariant mass */
+  /** Histograms of the track - cluster residuals */
   TH1F *fHistMatchDistance;                  //!transient
+  TH2F *fHistDyxDz;                           //!transient
   
   /** Histograms of the energy distribution of mached and unmatched clusters */
   TH1F *fHistMatchedEnergy;                 //!transient
   TH1F *fHistUnMatchedEnergy;               //!transient
+  
+ 
 
   ClassDef(AliHLTCaloHistoMatchedTracks, 0);
 
