@@ -516,7 +516,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	outputContainer->Add(fhNClusters);
 	
 	fhRNCells  = new TH2F ("hRNCells","Cluster R position vs N Clusters per Cell",rbins,rmin,rmax,nbins,nmin,nmax); 
-	fhRNCells->SetXTitle("r = #sqrt{x^2+y^2} (cm)");
+	fhRNCells->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
 	fhRNCells->SetYTitle("N cells per cluster");
 	outputContainer->Add(fhRNCells);
 	
@@ -536,8 +536,8 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	outputContainer->Add(fhZNCells);
 	
 	fhRE  = new TH2F ("hRE","Cluster R position vs cluster energy",rbins,rmin,rmax,nptbins,ptmin,ptmax); 
-	fhRE->SetXTitle("r = #sqrt{x^2+y^2} (cm)");
-	fhRE->SetYTitle("N cells per cluster");
+	fhRE->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
+	fhRE->SetYTitle("E (GeV)");
 	outputContainer->Add(fhRE);
 	
 	fhXE  = new TH2F ("hXE","Cluster X position vs cluster energy",xbins,xmin,xmax,nptbins,ptmin,ptmax); 
@@ -563,7 +563,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	
 		
 	fhRCellE  = new TH2F ("hRCellE","Cell R position vs cell energy",rbins,rmin,rmax,nptbins,ptmin,ptmax); 
-	fhRCellE->SetXTitle("r = #sqrt{x^2+y^2} (cm)");
+	fhRCellE->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
 	fhRCellE->SetYTitle("E (GeV)");
 	outputContainer->Add(fhRCellE);
 	
@@ -594,7 +594,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	Float_t dr = TMath::Abs(rmin)+TMath::Abs(rmax);
 
 	fhDeltaCellClusterRNCells  = new TH2F ("hDeltaCellClusterRNCells","Cluster-Cell R position vs N Clusters per Cell",rbins*2,-dr,dr,nbins,nmin,nmax); 
-	fhDeltaCellClusterRNCells->SetXTitle("r = #sqrt{x^2+y^2} (cm)");
+	fhDeltaCellClusterRNCells->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
 	fhDeltaCellClusterRNCells->SetYTitle("N cells per cluster");
 	outputContainer->Add(fhDeltaCellClusterRNCells);
 	
@@ -614,7 +614,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	outputContainer->Add(fhDeltaCellClusterZNCells);
 	
 	fhDeltaCellClusterRE  = new TH2F ("hDeltaCellClusterRE","Cluster-Cell R position vs cluster energy",rbins*2,-dr,dr,nptbins,ptmin,ptmax); 
-	fhDeltaCellClusterRE->SetXTitle("r = #sqrt{x^2+y^2} (cm)");
+	fhDeltaCellClusterRE->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
 	fhDeltaCellClusterRE->SetYTitle("E (GeV)");
 	outputContainer->Add(fhDeltaCellClusterRE);		
 	
@@ -1409,7 +1409,7 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
   printf("Histograms: %3.1f < p/E  < %3.1f, Nbin = %d\n", fHistoPOverEMin, fHistoPOverEMax, fHistoPOverEBins);
   printf("Histograms: %3.1f < dEdx < %3.1f, Nbin = %d\n", fHistodEdxMin,   fHistodEdxMax,   fHistodEdxBins);
   printf("Histograms: %3.1f < dR (track cluster)   < %3.1f, Nbin = %d\n", fHistodRMin,     fHistodRMax,     fHistodRBins);
-  printf("Histograms: %3.1f < R=#sqrt{x^2+y^2}    < %3.1f, Nbin = %d\n", fHistoRMin,      fHistoRMax,      fHistoRBins);
+  printf("Histograms: %3.1f < R=sqrt{x^2+y^2}    < %3.1f, Nbin = %d\n", fHistoRMin,      fHistoRMax,      fHistoRBins);
   printf("Histograms: %3.1f < X    < %3.1f, Nbin = %d\n", fHistoXMin,      fHistoXMax,      fHistoXBins);
   printf("Histograms: %3.1f < Y    < %3.1f, Nbin = %d\n", fHistoYMin,      fHistoYMax,      fHistoYBins);
   printf("Histograms: %3.1f < Z    < %3.1f, Nbin = %d\n", fHistoZMin,      fHistoZMax,      fHistoZBins);
@@ -2182,7 +2182,6 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, Float_t *p
 		//Overlapped pi0 (or eta, there will be very few)
 		if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
 			GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
-			//cout<<"Fill pi0"<< "E  "<< e <<" prim E "<<eMC<<endl;
 				fhPi0E     ->Fill(e,eMC);	
 				fhPi0Pt    ->Fill(pt,ptMC);
 				fhPi0Eta   ->Fill(eta,etaMC);	
@@ -2811,7 +2810,6 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhMCChHad1pOverER02   =    (TH2F *) outputList->At(index++);
 		fhMCNeutral1pOverER02 =    (TH2F *) outputList->At(index++);
 	}
-	//for(Int_t i = 0;  i<index ; i++) cout<<outputList->At(i)->GetName()<<endl;
 }
 
 //__________________________________________________________________
@@ -2827,19 +2825,1227 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	//Recover histograms from output histograms list, needed for distributed analysis.	
 	ReadHistograms(outputList);
 	
-	printf(" AliAnaCalorimeterQA::Terminate()  *** %s Report:", GetName()) ; 
-	printf(" AliAnaCalorimeterQA::Terminate()        pt         : %5.3f , RMS : %5.3f \n", fhPt->GetMean(),   fhPt->GetRMS() ) ;
+	//printf(" AliAnaCalorimeterQA::Terminate()  *** %s Report:", GetName()) ; 
+	//printf(" AliAnaCalorimeterQA::Terminate()        pt         : %5.3f , RMS : %5.3f \n", fhPt->GetMean(),   fhPt->GetRMS() ) ;
 
 	char name[128];
 	char cname[128];
-		
-	//CaloCells
-	//printf("c9\n");
-	sprintf(cname,"QA_%s_nclustercellsamp",fCalorimeter.Data());
-	TCanvas  * c9 = new TCanvas(cname, " CaloClusters and CaloCells", 400, 400) ;
-	c9->Divide(2, 2);
 	
-	c9->cd(1) ; 
+	//In case terminate is executed after the analysis, in a second step, and we want to rebin or to change the range of the histograms for plotting
+	Int_t nptbins     = GetHistoPtBins(); 	        Float_t ptmax     = GetHistoPtMax();           Float_t ptmin     = GetHistoPtMin();
+	Int_t nphibins    = GetHistoPhiBins();     	    Float_t phimax    = GetHistoPhiMax();          Float_t phimin    = GetHistoPhiMin();
+	Int_t netabins    = GetHistoEtaBins();          Float_t etamax    = GetHistoEtaMax();          Float_t etamin    = GetHistoEtaMin();	
+//	Int_t nmassbins   = GetHistoMassBins();         Float_t massmax   = GetHistoMassMax(); 	       Float_t massmin   = GetHistoMassMin();
+//	Int_t nasymbins   = GetHistoAsymmetryBins();    Float_t asymmax   = GetHistoAsymmetryMax();    Float_t asymmin   = GetHistoAsymmetryMin();
+//	Int_t nPoverEbins = GetHistoPOverEBins();       Float_t pOverEmax = GetHistoPOverEMax();       Float_t pOverEmin = GetHistoPOverEMin();
+//	Int_t ndedxbins   = GetHistodEdxBins();         Float_t dedxmax   = GetHistodEdxMax();         Float_t dedxmin   = GetHistodEdxMin();
+//	Int_t ndRbins     = GetHistodRBins();           Float_t dRmax     = GetHistodRMax();           Float_t dRmin     = GetHistodRMin();
+	Int_t ntimebins   = GetHistoTimeBins();         Float_t timemax   = GetHistoTimeMax();         Float_t timemin   = GetHistoTimeMin();       
+	Int_t nbins       = GetHistoNClusterCellBins(); Int_t nmax        = GetHistoNClusterCellMax(); Int_t nmin        = GetHistoNClusterCellMin(); 
+//	Int_t nratiobins  = GetHistoRatioBins();        Float_t ratiomax  = GetHistoRatioMax();        Float_t ratiomin  = GetHistoRatioMin();
+//	Int_t nvdistbins  = GetHistoVertexDistBins();   Float_t vdistmax  = GetHistoVertexDistMax();   Float_t vdistmin  = GetHistoVertexDistMin();
+	Int_t rbins       = GetHistoRBins();            Int_t rmax        = GetHistoRMax();            Int_t rmin        = GetHistoRMin(); 
+	Int_t xbins       = GetHistoXBins();            Int_t xmax        = GetHistoXMax();            Int_t xmin        = GetHistoXMin(); 
+	Int_t ybins       = GetHistoYBins();            Int_t ymax        = GetHistoYMax();            Int_t ymin        = GetHistoYMin(); 
+	Int_t zbins       = GetHistoZBins();            Int_t zmax        = GetHistoZMax();            Int_t zmin        = GetHistoZMin(); 
+	
+	//Color code for the different modules
+	Int_t modColorIndex[]={2,4,6,8};
+	
+	
+	//--------------------------------------------------
+	// Cluster energy distributions, module dependence
+	//--------------------------------------------------
+	sprintf(cname,"QA_%s_ClusterEnergy",fCalorimeter.Data());
+	TCanvas  * c = new TCanvas(cname, "Energy distributions", 800, 400) ;
+	c->Divide(2, 1);
+	Int_t rbE = 1;
+	if(fhE->GetNbinsX()> nptbins) rbE = fhE->GetNbinsX()/nptbins;
+	fhE->Rebin(rbE);
+	fhE->SetAxisRange(ptmin,ptmax,"X");
+	c->cd(1) ; 
+	if(fhE->GetEntries() > 0) gPad->SetLogy();
+	TLegend pLegendE(0.7,0.6,0.9,0.8);
+	pLegendE.SetTextSize(0.03);
+	pLegendE.AddEntry(fhE,"all modules","L");
+	pLegendE.SetFillColor(10);
+	pLegendE.SetBorderSize(1);
+	
+	fhE->SetMinimum(1);	
+	fhE->SetLineColor(1);
+	fhE->Draw("HE");
+	for(Int_t imod = 0; imod < fNModules; imod++){
+		fhEMod[imod]->Rebin(rbE);
+		fhEMod[imod]->SetLineColor(modColorIndex[imod]);
+		fhEMod[imod]->Draw("HE same");
+		pLegendE.AddEntry(fhEMod[imod],Form("module %d",imod),"L");
+	}
+	pLegendE.Draw();
+	
+	//Ratio of modules
+	c->cd(2) ; 
+	TLegend pLegendER(0.55,0.8,0.9,0.9);
+	pLegendER.SetTextSize(0.03);
+	pLegendER.SetFillColor(10);
+	pLegendER.SetBorderSize(1);
+
+	for(Int_t imod = 1; imod < fNModules; imod++){
+		TH1D * htmp = (TH1D*)fhEMod[imod]->Clone(Form("hERat%d",imod));
+		htmp->Divide(fhEMod[0]);
+		htmp->SetLineColor(modColorIndex[imod]);
+		if(imod==1){
+			htmp->SetTitle("Ratio module X / module 0");
+			htmp->SetAxisRange(ptmin,ptmax,"X");
+			htmp->SetMaximum(5);
+			htmp->SetMinimum(0);
+			htmp->SetAxisRange(ptmin,ptmax,"X");
+			htmp->Draw("HE");
+		}
+		else 
+			htmp->Draw("same HE");
+		
+		pLegendER.AddEntry(fhEMod[imod],Form("module %d / module 0",imod),"L");
+	}
+	pLegendER.Draw();
+	
+	sprintf(name,"QA_%s_ClusterEnergy.eps",fCalorimeter.Data());
+	c->Print(name); printf("Plot: %s\n",name);
+	
+	//--------------------------------------------------
+	// Cell energy distributions, module dependence
+	//--------------------------------------------------
+	sprintf(cname,"%s_QA_CellEnergy",fCalorimeter.Data());
+	TCanvas  * ca = new TCanvas(cname, "Cell Energy distributions", 800, 400) ;
+	ca->Divide(2, 1);
+	
+	Int_t rbAmp = 1;
+	if(fhAmplitude->GetNbinsX() > nptbins) rbAmp = fhAmplitude->GetNbinsX()/nptbins;
+	fhAmplitude->Rebin(rbAmp);
+	fhAmplitude->SetAxisRange(ptmin,ptmax,"X");
+	
+	ca->cd(1) ; 
+	if(fhAmplitude->GetEntries() > 0) gPad->SetLogy();
+	TLegend pLegendA(0.7,0.6,0.9,0.8);
+	pLegendA.SetTextSize(0.03);
+	pLegendA.AddEntry(fhE,"all modules","L");
+	pLegendA.SetFillColor(10);
+	pLegendA.SetBorderSize(1);
+	fhAmplitude->SetMinimum(0.1);
+	fhAmplitude->SetLineColor(1);
+	fhAmplitude->Draw("HE");
+	
+	for(Int_t imod = 0; imod < fNModules; imod++){
+		fhAmplitudeMod[imod]->Rebin(rbAmp);
+		fhAmplitudeMod[imod]->SetLineColor(modColorIndex[imod]);
+		fhAmplitudeMod[imod]->Draw("HE same");
+		pLegendA.AddEntry(fhAmplitudeMod[imod],Form("module %d",imod),"L");
+	}
+	pLegendA.Draw();
+	
+	
+	ca->cd(2) ; 
+	TLegend pLegendAR(0.55,0.8,0.9,0.9);
+	pLegendAR.SetTextSize(0.03);
+	pLegendAR.SetFillColor(10);
+	pLegendAR.SetBorderSize(1);
+	
+	for(Int_t imod = 1; imod < fNModules; imod++){
+		TH1D * htmp = (TH1D*)fhAmplitudeMod[imod]->Clone(Form("hAmpRat%d",imod));
+		htmp->Divide(fhAmplitudeMod[0]);
+		htmp->SetLineColor(modColorIndex[imod]);
+		if(imod==1){
+			htmp->SetTitle("Ratio cells energy in  module X / module 0");
+			htmp->SetAxisRange(ptmin,ptmax,"X");
+			htmp->SetMaximum(5);
+			htmp->SetMinimum(0);
+			htmp->Draw("HE");
+		}
+		else 
+			htmp->Draw("same HE");
+		pLegendAR.AddEntry(fhAmplitudeMod[imod],Form("module %d",imod),"L");
+		
+	}
+	
+	pLegendAR.Draw();
+	sprintf(name,"QA_%s_CellEnergy.eps",fCalorimeter.Data());
+	ca->Print(name); printf("Plot: %s\n",name);	
+
+	//----------------------------------------------------------
+	// Cell energy distributions, FRACTION of module dependence
+	// See Super Module calibration difference
+	//---------------------------------------------------------	
+	if(fCalorimeter=="EMCAL"){
+		//Close To Eta 0 
+		sprintf(cname,"%s_QA_SMThirds",fCalorimeter.Data());
+		TCanvas  * cfrac = new TCanvas(cname, "SM Thirds ratios", 800, 1200) ;
+		cfrac->Divide(2, 3);
+		cfrac->cd(1) ; 
+		if(fhAmplitude->GetEntries() > 0) 
+			gPad->SetLogy();
+		TLegend pLegend1(0.6,0.6,0.9,0.8);
+		pLegend1.SetTextSize(0.03);
+		pLegend1.SetFillColor(10);
+		pLegend1.SetBorderSize(1);
+		pLegend1.SetHeader("Third close to Eta=0");
+		fhAmplitudeModFraction[0]->SetTitle("Third close to Eta=0");
+		fhAmplitudeModFraction[0]->SetAxisRange(ptmin,ptmax,"X");
+		fhAmplitudeModFraction[0]->Draw("axis");
+		TH1D * hAverageThird1 = (TH1D *)fhAmplitudeModFraction[3*0+2]->Clone("AverageThird1");
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			Int_t ifrac = 0;
+			if(imod%2==0) ifrac = 2;
+			if(imod > 0) hAverageThird1->Add( fhAmplitudeModFraction[3*imod+ifrac]);
+			fhAmplitudeModFraction[3*imod+ifrac]->SetLineColor(modColorIndex[imod]);
+			fhAmplitudeModFraction[3*imod+ifrac]->Draw("HE same");
+			pLegend1.AddEntry(fhAmplitudeModFraction[3*imod+ifrac],Form("super module %d",imod),"L");
+		}
+		hAverageThird1 ->Scale(1./fNModules);
+		pLegend1.Draw();
+		//Ratio
+		cfrac->cd(2) ; 
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			Int_t ifrac = 0;
+			if(imod%2==0) ifrac = 2;
+			TH1D * htmp =  (TH1D*)fhAmplitudeModFraction[3*imod+ifrac]->Clone(Form("ThirdFractionAverage_%d_%d",imod,ifrac));
+			htmp->Divide(hAverageThird1);
+			if(imod ==0) {
+				htmp ->SetTitle("Close to eta = 0");
+				htmp ->SetMaximum(5);
+				htmp ->SetMinimum(0);
+				htmp ->SetAxisRange(ptmin,ptmax,"X");
+				htmp ->SetYTitle("ratio third to average");
+				htmp -> Draw("HE");
+			}
+			else htmp -> Draw("same HE");
+		}
+		//pLegend1.Draw();
+		
+		//Middle Eta
+		cfrac->cd(3) ; 
+		if(fhAmplitude->GetEntries() > 0) 
+			gPad->SetLogy();
+		TLegend pLegend2(0.6,0.6,0.9,0.8);
+		pLegend2.SetTextSize(0.03);
+		pLegend2.SetFillColor(10);
+		pLegend2.SetBorderSize(1);
+		pLegend2.SetHeader("Middle Third");
+		
+		fhAmplitudeModFraction[0]->SetTitle("Middle Third");
+		fhAmplitudeModFraction[0]->SetAxisRange(ptmin,ptmax,"X");
+		fhAmplitudeModFraction[0]->Draw("axis");
+		
+		TH1D * hAverageThird2 = (TH1D *)fhAmplitudeModFraction[3*0+1]->Clone("AverageThird2");
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			Int_t ifrac = 1;
+			if(imod > 0) hAverageThird2->Add( fhAmplitudeModFraction[3*imod+ifrac]);
+			fhAmplitudeModFraction[3*imod+ifrac]->SetLineColor(modColorIndex[imod]);
+			fhAmplitudeModFraction[3*imod+ifrac]->Draw("HE same");
+			pLegend2.AddEntry(fhAmplitudeModFraction[3*imod+ifrac],Form("super module %d",imod),"L");
+		}
+		hAverageThird2->Scale(1./fNModules);
+		pLegend2.Draw();
+		
+		//Ratio
+		cfrac->cd(4) ; 
+		
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			Int_t ifrac = 1;
+			TH1D * htmp =  (TH1D*)fhAmplitudeModFraction[3*imod+ifrac]->Clone(Form("ThirdFractionAverage_%d_%d",imod,ifrac));
+			htmp->Divide(hAverageThird2);
+			if(imod ==0) {
+				htmp ->SetTitle("Middle");
+				htmp ->SetMaximum(5);
+				htmp ->SetMinimum(0);
+				htmp ->SetAxisRange(ptmin,ptmax,"X");
+				htmp ->SetYTitle("ratio third to average");
+				htmp -> Draw("HE");
+			}
+			else htmp -> Draw("same HE");
+		}
+		//pLegend2.Draw();
+		
+		//Close To Eta 0.7 
+		cfrac->cd(5) ; 
+		if(fhAmplitude->GetEntries() > 0) 
+			gPad->SetLogy();
+		TLegend pLegend3(0.6,0.6,0.9,0.8);
+		pLegend3.SetTextSize(0.03);
+		pLegend3.SetFillColor(10);
+		pLegend3.SetBorderSize(1);
+		pLegend3.SetHeader("Third close to Eta=0.7");
+		
+		fhAmplitudeModFraction[0]->SetTitle("Third close to Eta=0.7");
+		fhAmplitudeModFraction[0]->SetAxisRange(ptmin,ptmax,"X");
+		fhAmplitudeModFraction[0]->Draw("axis");
+		
+		TH1D * hAverageThird3 = (TH1D *)fhAmplitudeModFraction[3*0+0]->Clone("AverageThird3");
+		for(Int_t imod = 0; imod < 4; imod++){
+			Int_t ifrac = 2;
+			if(imod%2==0) ifrac = 0;
+			if(imod > 0) hAverageThird3->Add( fhAmplitudeModFraction[3*imod+ifrac]);
+			fhAmplitudeModFraction[3*imod+ifrac]->SetLineColor(modColorIndex[imod]);
+			fhAmplitudeModFraction[3*imod+ifrac]->Draw("HE same");
+			pLegend3.AddEntry(fhAmplitudeModFraction[3*imod+ifrac],Form("super module %d",imod),"L");
+		}
+		hAverageThird3 ->Scale(1./fNModules);
+		pLegend3.Draw();
+		
+		cfrac->cd(6) ; 
+		
+		for(Int_t imod = 0; imod < fNModules; imod++){
+			Int_t ifrac = 2;
+			if(imod%2==0) ifrac = 0;
+			TH1D * htmp =  (TH1D*)fhAmplitudeModFraction[3*imod+ifrac]->Clone(Form("ThirdFractionAverage_%d_%d",imod,ifrac));
+			htmp->Divide(hAverageThird3);
+			if(imod ==0) {
+				htmp ->SetTitle("Close to eta = 0.7");
+				htmp ->SetMaximum(5);
+				htmp ->SetMinimum(0);
+				htmp ->SetAxisRange(ptmin,ptmax,"X");
+				htmp ->SetYTitle("ratio third to average");
+				htmp ->Draw("HE");
+			}
+			else htmp ->Draw("same HE");
+		}
+		//pLegend3.Draw();
+		
+		sprintf(name,"QA_%s_CellEnergyModuleFraction.eps",fCalorimeter.Data());
+		cfrac->Print(name); printf("Create plot %s\n",name);
+	}//EMCAL	
+	
+	
+	//----------------------------------------------------------
+	// Cluster eta and phi distributions, energy cut dependence
+	//---------------------------------------------------------	
+	
+	sprintf(cname,"%s_QA_EtaPhiCluster",fCalorimeter.Data());
+	TCanvas  * cetaphic = new TCanvas(cname, "Eta-Phi Reconstructed distributions", 1200, 400) ;
+	cetaphic->Divide(3, 1);
+	Int_t binmin = 0;
+	Int_t rbPhi  = 1;
+	Int_t rbEta  = 1;
+	Int_t ncuts  = 7;
+	Float_t ecut[]={0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3};
+	Float_t ecutcolor[]={2, 4, 6, 7, 8, 9, 12};
+	TH1D * hE = fhEtaPhiE->ProjectionZ();
+	
+	//PHI
+	cetaphic->cd(1) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	TLegend pLegendPhiCl(0.83,0.6,0.95,0.93);
+	pLegendPhiCl.SetTextSize(0.03);
+	pLegendPhiCl.SetFillColor(10);
+	pLegendPhiCl.SetBorderSize(1);
+	
+	TH1D * htmp = fhEtaPhiE->ProjectionY("hphi_cluster_nocut",0,-1,0,-1);
+	if(htmp){
+	htmp->SetMinimum(1);
+	if(htmp->GetNbinsX()> nphibins) rbPhi = htmp->GetNbinsX()/nphibins;
+	htmp->Rebin(rbPhi);
+	htmp->SetTitle("#phi of clusters for energy in cluster > threshold");
+	htmp->SetAxisRange(phimin,phimax,"X");
+	htmp->Draw("HE");
+	pLegendPhiCl.AddEntry(htmp,"No cut","L");
+
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhEtaPhiE->ProjectionY(Form("hphi_cluster_cut%d",i),0,-1,binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbPhi);
+	    htmp->Draw("same HE");
+		pLegendPhiCl.AddEntry(htmp,Form("E>%1.1f",ecut[i]),"L");
+
+	}
+	}
+	pLegendPhiCl.Draw();
+	
+	//ETA
+	cetaphic->cd(2) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	htmp = fhEtaPhiE->ProjectionX("heta_cluster_nocut",0,-1,0,-1);
+	htmp ->SetLineColor(1);
+	if(htmp->GetNbinsX()> netabins) rbEta = htmp->GetNbinsX()/netabins;
+	if(htmp){
+	htmp->Rebin(rbEta);
+	htmp->SetMinimum(1);
+	htmp->SetTitle("#eta of clusters for energy in cluster > threshold");
+	htmp->SetAxisRange(etamin,etamax,"X");
+	htmp->Draw("HE");
+	
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhEtaPhiE->ProjectionX(Form("heta_cluster_cut%d",i),0,-1,binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbEta);
+	    htmp->Draw("same HE");
+		
+	}
+	}
+	//ETA vs PHI	
+	cetaphic->cd(3) ;
+	TH2D* hEtaPhiCl = (TH2D*) fhEtaPhiE->Project3D("xy");
+	hEtaPhiCl->SetAxisRange(etamin,etamax,"X");
+	hEtaPhiCl->SetAxisRange(phimin,phimax,"Y");
+	hEtaPhiCl->Draw("colz");
+		
+	sprintf(name,"QA_%s_ClusterEtaPhi.eps",fCalorimeter.Data());
+	cetaphic->Print(name); printf("Create plot %s\n",name);
+
+	
+	//----------------------------------------------------------
+	// Cell eta and phi distributions, energy cut dependence
+	//---------------------------------------------------------	
+	
+	sprintf(cname,"%s_QA_EtaPhiCell",fCalorimeter.Data());
+	TCanvas  * cetaphicell = new TCanvas(cname, "Eta-Phi Cells distributions", 1200, 400) ;
+	cetaphicell->Divide(3, 1);
+	
+	//PHI
+	cetaphicell->cd(1) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	TLegend pLegendPhiCell(0.83,0.6,0.95,0.93);
+	pLegendPhiCell.SetTextSize(0.03);
+	pLegendPhiCell.SetFillColor(10);
+	pLegendPhiCell.SetBorderSize(1);
+	
+	htmp = fhEtaPhiAmp->ProjectionY("hphi_cell_nocut",0,-1,0,-1);
+	if(htmp){
+	htmp->SetMinimum(1);
+	if(htmp->GetNbinsX()> nphibins) rbPhi = htmp->GetNbinsX()/nphibins;
+	htmp->Rebin(rbPhi);
+	htmp->SetTitle("#phi of cells for cell energy > threshold");
+	htmp->SetAxisRange(phimin,phimax,"X");
+	htmp->Draw("HE");
+	pLegendPhiCell.AddEntry(htmp,"No cut","L");
+	
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhEtaPhiAmp->ProjectionY(Form("hphi_cell_cut%d",i),0,-1,binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbPhi);
+	    htmp->Draw("same HE");
+		pLegendPhiCl.AddEntry(htmp,Form("E>%1.1f",ecut[i]),"L");
+		
+	}
+	}
+	pLegendPhiCell.Draw();
+	
+	//ETA
+	cetaphicell->cd(2) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	htmp = fhEtaPhiAmp->ProjectionX("heta_cell_nocut",0,-1,0,-1);
+	if(htmp){
+	htmp ->SetLineColor(1);
+	if(htmp->GetNbinsX()> netabins) rbEta = htmp->GetNbinsX()/netabins;
+	htmp->Rebin(rbEta);
+	htmp->SetMinimum(1);
+	htmp->SetTitle("#eta of cells for cell energy > threshold");
+	htmp->SetAxisRange(etamin,etamax,"X");
+	htmp->Draw("HE");
+	
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhEtaPhiAmp->ProjectionX(Form("heta_cell_cut%d",i),0,-1,binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbEta);
+	    htmp->Draw("same HE");
+		
+	}
+	}
+	//ETA vs PHI	
+	cetaphicell->cd(3) ;
+	TH2D* hEtaPhiCell = (TH2D*) fhEtaPhiAmp->Project3D("xy");
+	hEtaPhiCell->SetAxisRange(etamin,etamax,"X");
+	hEtaPhiCell->SetAxisRange(phimin,phimax,"Y");
+	hEtaPhiCell->Draw("colz");
+	
+	sprintf(name,"QA_%s_CellEtaPhi.eps",fCalorimeter.Data());
+	cetaphicell->Print(name); printf("Create plot %s\n",name);
+	
+	
+	///////////////////////////////
+	///////// Global Positions ////
+	///////////////////////////////
+	
+	//CLUSTERS
+	sprintf(cname,"%s_QA_ClusterXY",fCalorimeter.Data());
+	TCanvas  * cxyz = new TCanvas(cname, "Cluster XY distributions", 1200, 400) ;
+	cxyz->Divide(3, 1);
+	
+	cxyz->cd(1) ; 
+	TH2D * hXY = (TH2D*) fhXYZ->Project3D("yx" );
+	hXY->SetTitle("Cluster X vs Y");
+	hXY->GetYaxis()->SetTitleOffset(1.6);
+	hXY->Draw("colz");
+	cxyz->cd(2) ; 
+	TH2D * hYZ = (TH2D*) fhXYZ->Project3D("yz" );
+	hYZ->SetTitle("Cluster Z vs Y");
+	hYZ->GetYaxis()->SetTitleOffset(1.6);
+	hYZ->Draw("colz");	
+	cxyz->cd(3) ; 
+	TH2D * hXZ = (TH2D*) fhXYZ->Project3D("zx" );
+	hXZ->SetTitle("Cluster X vs Z");
+	hXZ->GetYaxis()->SetTitleOffset(1.6);
+	hXZ->Draw("colz");
+	
+	sprintf(name,"QA_%s_ClusterXY_YZ_XZ.eps",fCalorimeter.Data());
+	cxyz->Print(name); printf("Create plot %s\n",name);
+	
+	Int_t rbX = 1;
+	Int_t rbY = 1;
+	Int_t rbZ = 1;
+	
+	sprintf(cname,"QA_%s_ClusterX",fCalorimeter.Data());
+	TCanvas  * cx = new TCanvas(cname, "Cluster X distributions", 1200, 400) ;
+	cx->Divide(3, 1);
+		
+	cx->cd(1) ; 
+	TH1D * hX = (TH1D*) fhXYZ->Project3D("xe" );
+	//gPad->SetLogy();
+	gPad->SetGridy();
+	hX->SetTitle("Cluster X ");
+	hX->Draw("HE");
+	if(hX->GetNbinsX()> xbins) rbX = hX->GetNbinsX()/xbins;
+	hX->Rebin(rbX);
+	hX->SetMinimum(hX->GetMaximum()/2);
+	hX->SetAxisRange(xmin,xmax);
+
+	cx->cd(2) ; 
+	TH1D * hY = (TH1D*) fhXYZ->Project3D("ye" );
+	//gPad->SetLogy();
+	hY->SetTitle("Cluster Y ");
+	if(hY->GetNbinsX()> ybins) rbY = hY->GetNbinsX()/ybins;
+	hY->Rebin(rbY);
+	hY->SetMinimum(1);
+	hY->SetAxisRange(ymin,ymax);
+	hY->Draw("HE");	
+	
+	cx->cd(3) ; 
+	TH1D * hZ = (TH1D*) fhXYZ->Project3D("ze" );
+	//gPad->SetLogy();
+	gPad->SetGridy();
+	if(hZ->GetNbinsX()> zbins) rbZ = hZ->GetNbinsX()/zbins;
+	hZ->Rebin(rbZ);	
+	hZ->SetMinimum(hZ->GetMaximum()/2);
+	hZ->SetAxisRange(zmin,zmax);
+	hZ->Draw("HE");
+	
+	sprintf(name,"QA_%s_ClusterX_Y_Z.eps",fCalorimeter.Data());
+	cx->Print(name); printf("Create plot %s\n",name);
+
+	
+	//CELLS
+	
+	sprintf(cname,"%s_QA_CellXY",fCalorimeter.Data());
+	TCanvas  * cellxyz = new TCanvas(cname, "Cell XY distributions", 1200, 400) ;
+	cellxyz->Divide(3, 1);
+	
+	cellxyz->cd(1) ; 
+	TH2D * hXYCell = (TH2D*) fhXYZCell->Project3D("yx" );
+	hXYCell->SetTitle("Cell X vs Y");
+	hXYCell->GetYaxis()->SetTitleOffset(1.6);
+	hXYCell->Draw("colz");
+	cellxyz->cd(2) ; 
+	TH2D * hYZCell = (TH2D*) fhXYZCell->Project3D("yz" );
+	hYZCell->SetTitle("Cell Z vs Y");
+	hYZCell->GetYaxis()->SetTitleOffset(1.6);
+	hYZCell->Draw("colz");	
+	cellxyz->cd(3) ; 
+	TH2D * hXZCell = (TH2D*) fhXYZCell->Project3D("zx" );
+	hXZCell->SetTitle("Cell X vs Z");
+	hXZCell->GetYaxis()->SetTitleOffset(1.6);
+	hXZCell->Draw("colz");
+
+	sprintf(name,"QA_%s_CellXY_YZ_XZ.eps",fCalorimeter.Data());
+	cellxyz->Print(name); printf("Create plot %s\n",name);
+	
+	
+	sprintf(cname,"%s_QA_CellX",fCalorimeter.Data());
+	TCanvas  * cellx = new TCanvas(cname, "Cell X distributions", 1200, 400) ;
+	cellx->Divide(3, 1);
+	
+	cellx->cd(1) ; 
+	TH1D * hXCell = (TH1D*) fhXYZCell->Project3D("xe" );
+	//gPad->SetLogy();
+	gPad->SetGridy();
+	hXCell->SetTitle("Cell X ");
+	hXCell->Rebin(rbX);
+	hXCell->SetMinimum(hXCell->GetMaximum()/2);
+	hXCell->SetAxisRange(xmin,xmax);
+	hXCell->Draw("HE");
+
+	cellx->cd(2) ; 
+	TH1D * hYCell = (TH1D*) fhXYZCell->Project3D("ye" );
+	//gPad->SetLogy();
+	hYCell->SetTitle("Cell Y ");
+	hYCell->Rebin(rbY);
+	hYCell->SetAxisRange(ymin,ymax);
+	hYCell->SetMinimum(1);
+	hYCell->Draw("HE");	
+	
+	cellx->cd(3) ; 
+	TH1D * hZCell = (TH1D*) fhXYZCell->Project3D("ze" );
+	//gPad->SetLogy();
+	gPad->SetGridy();
+	hZCell->SetAxisRange(zmin,zmax);
+	hZCell->SetTitle("Cell Z ");
+	hZCell->Rebin(rbZ);
+	hZCell->SetMinimum(hZCell->GetMaximum()/2);
+	hZCell->Draw("HE");
+	
+	sprintf(name,"QA_%s_CellX_Y_Z.eps",fCalorimeter.Data());
+	cellx->Print(name); printf("Create plot %s\n",name);
+		
+	
+	//----------------------------------------------------------
+	// Cluster X, Y, Z, R, energy cut dependence
+	//---------------------------------------------------------	
+	
+	sprintf(cname,"%s_QA_ClusterX_Y_Z_R_ECut",fCalorimeter.Data());
+	TCanvas  * cxe = new TCanvas(cname, "Cluster X Y Z R, E cut", 800, 800) ;
+	cxe->Divide(2, 2);		
+	//R
+	cxe->cd(1) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	TLegend pLegendXCl(0.83,0.6,0.95,0.93);
+	pLegendXCl.SetTextSize(0.03);
+	pLegendXCl.SetFillColor(10);
+	pLegendXCl.SetBorderSize(1);
+	
+	htmp = fhRE->ProjectionX("hre_cluster_nocut",0,-1);
+	Int_t rbR=1;
+	if(htmp){
+		htmp->SetMinimum(1);
+		if(htmp->GetNbinsX()> rbins) rbR = htmp->GetNbinsX()/rbins;
+		htmp->Rebin(rbR);
+		htmp->SetTitle("r of clusters for energy in cluster > threshold");
+		htmp->SetAxisRange(rmin,rmax,"X");
+		htmp->Draw("HE");
+		pLegendXCl.AddEntry(htmp,"No cut","L");
+	
+		for (Int_t i = 0; i < ncuts; i++) {
+			binmin =  hE->FindBin(ecut[i]);
+			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+			htmp = fhRE->ProjectionX(Form("hre_cluster_cut%d",i),binmin,-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbR);
+			htmp->Draw("same HE");
+			pLegendXCl.AddEntry(htmp,Form("E>%1.1f",ecut[i]),"L");
+		}
+	}
+	pLegendXCl.Draw();
+	
+	//X
+	cxe->cd(2) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhXE->ProjectionX("hxe_cluster_nocut",0,-1);
+	if(htmp){
+	htmp->SetMinimum(1);
+	htmp->Rebin(rbX);
+	htmp->SetTitle("x of clusters for energy in cluster > threshold");
+	htmp->SetAxisRange(xmin,xmax,"X");
+	htmp->Draw("HE");
+	
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhXE->ProjectionX(Form("hxe_cluster_cut%d",i),binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbX);
+	    htmp->Draw("same HE");
+		
+	}
+	}
+	//Y
+	cxe->cd(3) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhYE->ProjectionX("hye_cluster_nocut",0,-1);
+	if(htmp){
+	htmp->SetMinimum(1);
+	htmp->Rebin(rbY);
+	htmp->SetTitle("y of clusters for energy in cluster > threshold");
+	htmp->SetAxisRange(ymin,ymax,"X");
+	htmp->Draw("HE");
+	
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhYE->ProjectionX(Form("hye_cluster_cut%d",i),binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbY);
+	    htmp->Draw("same HE");
+		
+	}
+	}
+	//Z
+	cxe->cd(4) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	htmp = fhZE->ProjectionX("hze_cluster_nocut",0,-1);
+	if(htmp){
+	htmp->SetMinimum(1);
+	htmp->Rebin(rbZ);
+	htmp->SetTitle("z of clusters for energy in cluster > threshold");
+	htmp->SetAxisRange(zmin,zmax,"X");
+	htmp->Draw("HE");
+	
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhZE->ProjectionX(Form("hze_cluster_cut%d",i),binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbZ);
+	    htmp->Draw("same HE");
+		
+	}
+	}
+	
+	sprintf(name,"QA_%s_ClusterX_Y_Z_R_ECut.eps",fCalorimeter.Data());
+	cxe->Print(name); printf("Create plot %s\n",name);
+	
+	
+	//----------------------------------------------------------
+	// Cluster X, Y, Z, R, NCells in cluster dependence
+	//---------------------------------------------------------	
+	Int_t ncellcut[]={2, 3, 4};
+	Int_t ncellcuts = 3;
+	sprintf(cname,"%s_QA_ClusterX_Y_Z_R_NCellsCut",fCalorimeter.Data());
+	TCanvas  * cxn = new TCanvas(cname, "Cluster X Y Z R, NCells cut", 800, 800) ;
+	cxn->Divide(2, 2);		
+	//R
+	cxn->cd(1) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	TLegend pLegendXClN(0.83,0.6,0.95,0.93);
+	pLegendXClN.SetTextSize(0.03);
+	pLegendXClN.SetFillColor(10);
+	pLegendXClN.SetBorderSize(1);
+	
+	htmp = fhRNCells->ProjectionX("hrn_cluster_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbR);
+		htmp->SetTitle("r of clusters for energy in cluster > threshold");
+		htmp->SetAxisRange(rmin,rmax,"X");
+		htmp->Draw("HE");
+		pLegendXClN.AddEntry(htmp,"No cut","L");
+		
+		for (Int_t i = 0; i < ncellcuts; i++) {
+			if(i < ncellcuts-1) htmp = fhRNCells->ProjectionX(Form("hrn_cluster_cut%d",i),ncellcut[i],ncellcut[i]);
+			else htmp = fhRNCells->ProjectionX(Form("hrn_cluster_cut%d",i),ncellcut[i],-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbR);
+			htmp->Draw("same HE");
+			if(i < ncellcuts-1) pLegendXClN.AddEntry(htmp,Form("n = %1.1d",ncellcut[i]-1),"L");
+			else pLegendXClN.AddEntry(htmp,Form("n >= %1.1d",ncellcut[i]-1),"L");
+			
+		}
+	}
+	pLegendXClN.Draw();
+	
+	//X
+	cxn->cd(2) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhXNCells->ProjectionX("hxn_cluster_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbX);
+		htmp->SetTitle("x of clusters for energy in cluster > threshold");
+		htmp->SetAxisRange(xmin,xmax,"X");
+		htmp->Draw("HE");
+		
+		for (Int_t i = 0; i < ncellcuts; i++) {
+			if(i < ncellcuts-1)htmp = fhXNCells->ProjectionX(Form("hxn_cluster_cut%d",i),ncellcut[i],ncellcut[i]);
+			else htmp = fhXNCells->ProjectionX(Form("hxn_cluster_cut%d",i),ncellcut[i],-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbX);
+			htmp->Draw("same HE");
+			
+		}
+	}
+	//Y
+	cxn->cd(3) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhYNCells->ProjectionX("hyn_cluster_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbY);
+		htmp->SetTitle("y of clusters for energy in cluster > threshold");
+		htmp->SetAxisRange(ymin,ymax,"X");
+		htmp->Draw("HE");
+		
+		for (Int_t i = 0; i < ncellcuts; i++) {
+			if(i < ncellcuts-1) htmp = fhYNCells->ProjectionX(Form("hyn_cluster_cut%d",i),ncellcut[i],ncellcut[i]);
+			else htmp = fhYNCells->ProjectionX(Form("hyn_cluster_cut%d",i),ncellcut[i],-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbY);
+			htmp->Draw("same HE");
+			
+		}
+	}
+	//Z
+	cxn->cd(4) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	htmp = fhZNCells->ProjectionX("hzn_cluster_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbZ);
+		htmp->SetTitle("z of clusters for energy in cluster > threshold");
+		htmp->SetAxisRange(zmin,zmax,"X");
+		htmp->Draw("HE");
+		
+		for (Int_t i = 0; i < ncellcuts; i++) {
+			if(i < ncellcuts-1)htmp = fhZNCells->ProjectionX(Form("hzn_cluster_cut%d",i),ncellcut[i],ncellcut[i]);
+			else htmp = fhZNCells->ProjectionX(Form("hzn_cluster_cut%d",i),ncellcut[i],-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbZ);
+			htmp->Draw("same HE");
+			
+		}
+	}
+	
+	sprintf(name,"QA_%s_ClusterX_Y_Z_R_NCellsCut.eps",fCalorimeter.Data());
+	cxn->Print(name); printf("Create plot %s\n",name);
+	
+	
+	//----------------------------------------------------------
+	// Cell X, Y, Z, R, energy cut dependence
+	//---------------------------------------------------------	
+	
+	sprintf(cname,"%s_QA_CellX_Y_Z_R_ECut",fCalorimeter.Data());
+	TCanvas  * cxecell = new TCanvas(cname, "Cell X Y Z R, E cut", 800, 800) ;
+	cxecell->Divide(2, 2);		
+	//R
+	cxecell->cd(1) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	TLegend pLegendXCell(0.83,0.6,0.95,0.93);
+	pLegendXCell.SetTextSize(0.03);
+	pLegendXCell.SetFillColor(10);
+	pLegendXCell.SetBorderSize(1);
+	
+	htmp = fhRCellE->ProjectionX("hre_cell_nocut",0,-1);
+	if(htmp){
+	htmp->SetMinimum(1);
+	htmp->Rebin(rbR);
+	htmp->SetTitle("r of cells for energy in cluster > threshold");
+	htmp->SetAxisRange(rmin,rmax,"X");
+	htmp->Draw("HE");
+	pLegendXCell.AddEntry(htmp,"No cut","L");
+	
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhRCellE->ProjectionX(Form("hre_celr_cut%d",i),binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbR);
+	    htmp->Draw("same HE");
+		pLegendXCell.AddEntry(htmp,Form("E>%1.1f",ecut[i]),"L");
+		
+	}
+	}
+	pLegendXCell.Draw();
+	
+	//X
+	cxecell->cd(2) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	htmp = fhXCellE->ProjectionX("hxe_cells_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbX);
+		htmp->SetTitle("x of cells for energy in cluster > threshold");
+		htmp->SetAxisRange(xmin,xmax,"X");
+		htmp->Draw("HE");
+	
+		for (Int_t i = 0; i < ncuts; i++) {
+			binmin =  hE->FindBin(ecut[i]);
+			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+			htmp = fhXCellE->ProjectionX(Form("hxe_cells_cut%d",i),binmin,-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbX);
+			htmp->Draw("same HE");
+		}
+	}
+	//Y
+	cxecell->cd(3) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhYCellE->ProjectionX("hye_cells_nocut",0,-1);
+	if(htmp){
+	htmp->SetMinimum(1);
+	htmp->Rebin(rbY);
+	htmp->SetTitle("y of cells for energy in cluster > threshold");
+	htmp->SetAxisRange(ymin,ymax,"X");
+	htmp->Draw("HE");
+	
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhYCellE->ProjectionX(Form("hye_cells_cut%d",i),binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbY);
+	    htmp->Draw("same HE");
+		
+	}
+	}
+	//Z
+	cxecell->cd(4) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhZCellE->ProjectionX("hze_cells_nocut",0,-1);
+	if(htmp){
+	htmp->SetMinimum(1);
+	htmp->Rebin(rbZ);
+	htmp->SetTitle("z of cells for energy in cluster > threshold");
+	htmp->SetAxisRange(zmin,zmax,"X");
+	htmp->Draw("HE");
+	
+	for (Int_t i = 0; i < ncuts; i++) {
+		binmin =  hE->FindBin(ecut[i]);
+		//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+		htmp = fhZCellE->ProjectionX(Form("hze_cells_cut%d",i),binmin,-1);
+		htmp->SetLineColor(ecutcolor[i]);
+		htmp->Rebin(rbZ);
+	    htmp->Draw("same HE");
+		
+	}
+	}
+	sprintf(name,"QA_%s_CellX_Y_Z_R_ECut.eps",fCalorimeter.Data());
+	cxecell->Print(name); printf("Create plot %s\n",name);
+	
+	
+	//----------------------------------------------------------
+	// Cluster-Cell X, Y, Z, R, cluster energy cut dependence
+	//---------------------------------------------------------	
+	Int_t rbDR= 1;//rbR;
+	Int_t rbDX= 1;//rbX;
+	Int_t rbDY= 1;//rbY;
+	Int_t rbDZ= 1;//rbZ;
+
+	sprintf(cname,"%s_QA_DeltaClusterCellX_Y_Z_R_ECut",fCalorimeter.Data());
+	TCanvas  * cxde = new TCanvas(cname, "Cluster-Cell X, Y, Z, R, E cut", 800, 800) ;
+	cxde->Divide(2, 2);		
+	//R
+	cxde->cd(1) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	TLegend pLegendXClD(0.83,0.6,0.95,0.93);
+	pLegendXClD.SetTextSize(0.03);
+	pLegendXClD.SetFillColor(10);
+	pLegendXClD.SetBorderSize(1);
+	
+	htmp = fhDeltaCellClusterRE->ProjectionX("hrde_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbDR);
+		htmp->SetTitle("r clusters - r cells for energy in cluster > threshold");
+		htmp->SetAxisRange(-50,50,"X");
+		htmp->Draw("HE");
+		pLegendXCl.AddEntry(htmp,"No cut","L");
+		
+		for (Int_t i = 0; i < ncuts; i++) {
+			binmin =  hE->FindBin(ecut[i]);
+			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+			htmp = fhDeltaCellClusterRE->ProjectionX(Form("hrde_cut%d",i),binmin,-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbDR);
+			htmp->Draw("same HE");
+			pLegendXClD.AddEntry(htmp,Form("E>%1.1f",ecut[i]),"L");
+		}
+	}
+	pLegendXClD.Draw();
+	
+	//X
+	cxde->cd(2) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhDeltaCellClusterXE->ProjectionX("hxde_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbDX);
+		htmp->SetTitle("x clusters -x cells for energy in cluster > threshold");
+		htmp->SetAxisRange(-50,50,"X");
+		htmp->Draw("HE");
+		
+		for (Int_t i = 0; i < ncuts; i++) {
+			binmin =  hE->FindBin(ecut[i]);
+			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+			htmp = fhDeltaCellClusterXE->ProjectionX(Form("hxde_cut%d",i),binmin,-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbDX);
+			htmp->Draw("same HE");
+			
+		}
+	}
+	//Y
+	cxde->cd(3) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhDeltaCellClusterYE->ProjectionX("hyde_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbDY);
+		htmp->SetTitle("y clusters - ycells for energy in cluster > threshold");
+		htmp->SetAxisRange(-50,50,"X");
+		htmp->Draw("HE");
+		
+		for (Int_t i = 0; i < ncuts; i++) {
+			binmin =  hE->FindBin(ecut[i]);
+			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+			htmp = fhDeltaCellClusterYE->ProjectionX(Form("hyde_cut%d",i),binmin,-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbDY);
+			htmp->Draw("same HE");
+			
+		}
+	}
+	//Z
+	cxde->cd(4) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	htmp = fhDeltaCellClusterZE->ProjectionX("hzde_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbZ);
+		htmp->SetTitle("z clusters - z cells for energy in cluster > threshold");
+		htmp->SetAxisRange(-50,50,"X");
+		htmp->Draw("HE");
+		
+		for (Int_t i = 0; i < ncuts; i++) {
+			binmin =  hE->FindBin(ecut[i]);
+			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+			htmp = fhDeltaCellClusterZE->ProjectionX(Form("hzde_cut%d",i),binmin,-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbZ);
+			htmp->Draw("same HE");
+			
+		}
+	}
+	
+	sprintf(name,"QA_%s_DeltaClusterCellX_Y_Z_R_ECut.eps",fCalorimeter.Data());
+	cxde->Print(name); printf("Create plot %s\n",name);
+	
+	
+	//----------------------------------------------------------
+	// Cluster-Cell X, Y, Z, R, NCells in cluster dependence
+	//---------------------------------------------------------	
+	sprintf(cname,"%s_QA_DeltaClusterCellX_Y_Z_R_NCellsCut",fCalorimeter.Data());
+	TCanvas  * cxdn = new TCanvas(cname, "Cluster-Cell X Y Z R, NCells cut", 800, 800) ;
+	cxdn->Divide(2, 2);		
+	//R
+	cxdn->cd(1) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	TLegend pLegendXClDN(0.83,0.6,0.95,0.93);
+	pLegendXClDN.SetTextSize(0.03);
+	pLegendXClDN.SetFillColor(10);
+	pLegendXClDN.SetBorderSize(1);
+	
+	htmp = fhDeltaCellClusterRNCells->ProjectionX("hrdn_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbDR);
+		htmp->SetTitle("r clusters - r cells for n cells in cluster > threshold");
+		htmp->SetAxisRange(-50,50,"X");
+		htmp->Draw("HE");
+		pLegendXClDN.AddEntry(htmp,"No cut","L");
+		
+		for (Int_t i = 0; i < ncellcuts; i++) {
+			if(i < ncellcuts-1) htmp = fhDeltaCellClusterRNCells->ProjectionX(Form("hrdn_cut%d",i),ncellcut[i],ncellcut[i]);
+			else htmp = fhDeltaCellClusterRNCells->ProjectionX(Form("hrdn_cut%d",i),ncellcut[i],-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbDR);
+			htmp->Draw("same HE");
+			if(i < ncellcuts-1) pLegendXClDN.AddEntry(htmp,Form("n = %1.1d",ncellcut[i]-1),"L");
+			else pLegendXClDN.AddEntry(htmp,Form("n >= %1.1d",ncellcut[i]-1),"L");
+			
+		}
+	}
+	pLegendXClDN.Draw();
+	
+	//X
+	cxdn->cd(2) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhDeltaCellClusterXNCells->ProjectionX("hxdn_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbDX);
+		htmp->SetTitle("x clusters - x cells for n cells in cluster > threshold");
+		htmp->SetAxisRange(-50,50,"X");
+		htmp->Draw("HE");
+		
+		for (Int_t i = 0; i < ncellcuts; i++) {
+			if(i < ncellcuts-1)htmp = fhDeltaCellClusterXNCells->ProjectionX(Form("hxdn_cut%d",i),ncellcut[i],ncellcut[i]);
+			else htmp = fhDeltaCellClusterXNCells->ProjectionX(Form("hxdn_cut%d",i),ncellcut[i],-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbDX);
+			htmp->Draw("same HE");
+			
+		}
+	}
+	//Y
+	cxdn->cd(3) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	htmp = fhDeltaCellClusterYNCells->ProjectionX("hydn_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbDY);
+		htmp->SetTitle("y clusters - y cells for n cells in cluster > threshold");
+		htmp->SetAxisRange(-50,50,"X");
+		htmp->Draw("HE");
+		
+		for (Int_t i = 0; i < ncellcuts; i++) {
+			if(i < ncellcuts-1) htmp = fhDeltaCellClusterYNCells->ProjectionX(Form("hydn_cut%d",i),ncellcut[i],ncellcut[i]);
+			else htmp = fhDeltaCellClusterYNCells->ProjectionX(Form("hydn_cut%d",i),ncellcut[i],-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbDY);
+			htmp->Draw("same HE");
+			
+		}
+	}
+	//Z
+	cxdn->cd(4) ; 
+	gPad->SetLogy();
+	gPad->SetGridy();
+	
+	htmp = fhDeltaCellClusterZNCells->ProjectionX("hzdn_nocut",0,-1);
+	if(htmp){
+		htmp->SetMinimum(1);
+		htmp->Rebin(rbDZ);
+		htmp->SetTitle("z clusters - z cells for ncells in cluster > threshold");
+		htmp->SetAxisRange(-50,50,"X");
+		htmp->Draw("HE");
+		
+		for (Int_t i = 0; i < ncellcuts; i++) {
+			if(i < ncellcuts-1)htmp = fhDeltaCellClusterZNCells->ProjectionX(Form("hzdn_cut%d",i),ncellcut[i],ncellcut[i]);
+			else htmp = fhDeltaCellClusterZNCells->ProjectionX(Form("hzdn_cut%d",i),ncellcut[i],-1);
+			htmp->SetLineColor(ecutcolor[i]);
+			htmp->Rebin(rbDZ);
+			htmp->Draw("same HE");
+			
+		}
+	}
+	
+	sprintf(name,"QA_%s_DeltaClusterCellX_Y_Z_R_NCellsCut.eps",fCalorimeter.Data());
+	cxdn->Print(name); printf("Create plot %s\n",name);
+
+	
+	//----------------------------------------------------------
+	//Reconstructed clusters energy-eta-phi distributions, matched with tracks
+	//----------------------------------------------------------
+	
+	TH1F *	hEChargedClone   = (TH1F*)   fhECharged->Clone(Form("%sClone",fhECharged->GetName()));
+	TH1F *	hPtChargedClone  = (TH1F*)   fhPtCharged->Clone(Form("%sClone",fhPtCharged->GetName()));
+	TH1F *	hEtaChargedClone = (TH1F*)   fhEtaCharged->Clone(Form("%sClone",fhEtaCharged->GetName()));
+	TH1F *	hPhiChargedClone = (TH1F*)   fhPhiCharged->Clone(Form("%sClone",fhPhiCharged->GetName()));
+
+	
+	sprintf(cname,"QA_%s_rectrackmatch",fCalorimeter.Data());
+	TCanvas  * ccltm = new TCanvas(cname, "Reconstructed clusters E-Phi-Eta, matched with tracks", 1200, 400) ;
+	ccltm->Divide(3, 1);
+	
+	ccltm->cd(1) ; 
+	if(fhECharged->GetEntries() > 0) gPad->SetLogy();
+	fhECharged->Rebin(rbE);
+	fhECharged->SetAxisRange(ptmin,ptmax,"X");
+	fhECharged->SetMinimum(1);
+	fhECharged->Draw();
+		
+	ccltm->cd(2) ; 
+	if(fhPhiCharged->GetEntries() > 0) gPad->SetLogy();
+	fhPhiCharged->Rebin(rbPhi);
+	fhPhiCharged->SetAxisRange(phimin,phimax,"X");
+	fhPhiCharged->Draw();
+	fhPhiCharged->Draw();
+	
+	ccltm->cd(3) ;
+	if(fhEtaCharged->GetEntries() > 0) gPad->SetLogy();
+	fhEtaCharged->Rebin(rbEta);
+	fhEtaCharged->SetAxisRange(etamin,etamax,"X");	
+	fhEtaCharged->Draw();
+	fhEtaCharged->Draw();
+	
+	sprintf(name,"QA_%s_ClusterEnergyPhiEta_TrackMatched.eps",fCalorimeter.Data());
+	ccltm->Print(name); printf("Plot: %s\n",name);
+	
+	//----------------------------------------------------------
+	// Ratio  of reconstructed clusters energy-eta-phi distributions, matched with tracks over all
+	//----------------------------------------------------------
+	
+	sprintf(cname,"%s_QA_ChargedRatio",fCalorimeter.Data());
+	TCanvas  * ccharge = new TCanvas(cname, "Charged clusters over all clusters", 1200, 400) ;
+	ccharge->Divide(3, 1);
+	
+	ccharge->cd(1) ; 
+	fhECharged->Sumw2();
+	fhE->Sumw2();
+	fhECharged->Divide(fhE);
+	fhECharged->SetAxisRange(ptmin,ptmax,"X");
+	fhECharged->SetMaximum(0.5);
+	fhECharged->SetYTitle("track-matched clusters / all clusters");
+	fhECharged->Draw("HE");
+		
+	ccharge->cd(2) ; 
+	fhPhiCharged->Sumw2();
+	fhPhi->Rebin(rbPhi);
+	fhPhi->Sumw2();
+	fhPhiCharged->Divide(fhPhi);
+	fhPhiCharged->SetAxisRange(phimin,phimax,"X");
+	fhPhiCharged->SetMaximum(0.5);
+	fhPhiCharged->SetYTitle("track-matched clusters / all clusters");
+	fhPhiCharged->Draw("HE");
+	
+	ccharge->cd(3) ; 
+ 	fhEtaCharged->Sumw2();
+	fhEta->Rebin(rbEta);
+	fhEta->Sumw2();
+	fhEtaCharged->Divide(fhEta);
+	fhEtaCharged->SetAxisRange(etamin,etamax,"X");
+	fhEtaCharged->SetMaximum(0.5);
+	fhEtaCharged->SetYTitle("track-matched clusters / all clusters");
+	fhEtaCharged->Draw("HE");
+	
+	sprintf(name,"QA_%s_ClustersMatchedToAllRatios.eps",fCalorimeter.Data());
+	ccharge->Print(name); printf("Create plot %s\n",name);
+	
+	//-------------------------------------------	
+	// N Cells - N Clusters - N Cells per cluster
+	//-------------------------------------------
+	sprintf(cname,"QA_%s_nclustercells",fCalorimeter.Data());
+	TCanvas  * cN = new TCanvas(cname, " Number of CaloClusters and CaloCells", 800, 1200) ;
+	cN->Divide(2, 3);
+	
+	cN->cd(1) ; 
 	
 	TLegend pLegendN(0.7,0.6,0.9,0.8);
 	pLegendN.SetTextSize(0.03);
@@ -2850,74 +4056,232 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	if(fhNClusters->GetEntries() > 0) gPad->SetLogy();
 	gPad->SetLogx();
 	fhNClusters->SetLineColor(1);
-	fhNClusters->Draw();
+	
+	Int_t rbN = 1;
+	if(fhNClusters->GetNbinsX()> nbins) rbN = fhNClusters->GetNbinsX()/nbins;
+	
+	fhNClusters->SetAxisRange(nmin,nmax,"X");
+	fhNClusters->Draw("HE");
 	for(Int_t imod = 0; imod < fNModules; imod++){
-		fhNClustersMod[imod]->SetLineColor(imod+1);
+		fhNClustersMod[imod]->SetAxisRange(nmin,nmax,"X");
+		fhNClustersMod[imod]->SetLineColor(modColorIndex[imod]);
 		fhNClustersMod[imod]->Draw("same");
 		pLegendN.AddEntry(fhNClustersMod[imod],Form("module %d",imod),"L");
 	}
 	pLegendN.Draw();
-
-	c9->cd(2) ; 
+	
+	cN->cd(2) ; 
+	gPad->SetLogx();
+	for(Int_t imod = 1; imod < fNModules; imod++){
+		htmp = (TH1D*)fhNClustersMod[imod]->Clone(Form("hNClustersRat%d",imod));
+		htmp->Divide(fhNClustersMod[0]);
+		htmp->SetLineColor(modColorIndex[imod]);
+		if(imod==1){
+			htmp->SetTitle("Ratio # clusters in  module X / module 0");
+			htmp->SetMaximum(5);
+			htmp->SetMinimum(0);
+			htmp->Draw("HE");
+		}
+		else 
+			htmp->Draw("same HE");
+		
+	}
+	
+	cN->cd(3) ; 
 	if(fhNCells->GetEntries() > 0) gPad->SetLogy();
 	gPad->SetLogx();
 	fhNCells->SetLineColor(1);
-	fhNCells->Draw();
+	fhNCells->SetAxisRange(nmin,nmax,"X");
+	fhNCells->Draw("HE");
 	for(Int_t imod = 0; imod < fNModules; imod++){
-		fhNCellsMod[imod]->SetLineColor(imod+1);
-		fhNCellsMod[imod]->Draw("same");
+		fhNCellsMod[imod]->SetAxisRange(nmin,nmax,"X");
+		fhNCellsMod[imod]->SetLineColor(modColorIndex[imod]);
+		fhNCellsMod[imod]->Draw("same HE");
 	}
-//	c9->cd(3) ; 
-//	if(fhNCellsPerCluster->GetEntries() > 0) gPad->SetLogy();
-//	gPad->SetLogx();
-//	TH1D *cpc = fhNCellsPerCluster->ProjectionY(Form("%s_py",fhNCellsPerCluster->GetName()),-1,-1);
-//	cpc->SetLineColor(1);
-//	cpc->Draw();
-//	for(Int_t imod = 0; imod < fNModules; imod++){
-//		cpc = fhNCellsPerClusterMod[imod]->ProjectionY(Form("%s_py",fhNCellsPerClusterMod[imod]->GetName()),-1,-1);
-//		cpc->SetLineColor(imod+1);
-//		cpc->Draw("same");
-//	}
 	
-	c9->cd(4) ; 
-	if(fhAmplitude->GetEntries() > 0) gPad->SetLogy();
+	
+	cN->cd(4) ; 
 	gPad->SetLogx();
-	fhAmplitude->SetLineColor(1);
-	fhAmplitude->Draw();
-	for(Int_t imod = 0; imod < fNModules; imod++){
-		fhAmplitudeMod[imod]->SetLineColor(imod+1);
-		fhAmplitudeMod[imod]->Draw("same");
+	for(Int_t imod = 1; imod < fNModules; imod++){
+		htmp = (TH1D*)fhNCellsMod[imod]->Clone(Form("hNCellsRat%d",imod));
+		htmp->Divide(fhNCellsMod[0]);
+		htmp->SetLineColor(modColorIndex[imod]);
+		if(imod==1){
+			htmp->SetTitle("Ratio # cells in  module X / module 0");
+			htmp->SetMaximum(5);
+			htmp->SetMinimum(0);
+			htmp->Draw("HE");
+		}
+		else 
+			htmp->Draw("same HE");
+		
 	}
 	
-	sprintf(name,"QA_%s_CaloClustersAndCaloCells.eps",fCalorimeter.Data());
-	c9->Print(name); printf("Plot: %s\n",name);
+	cN->cd(5) ; 
+	if(fhNCellsPerCluster->GetEntries() > 0) gPad->SetLogy();
+	gPad->SetLogx();
+	TH1D *cpc = fhNCellsPerCluster->ProjectionY("cpc",-1,-1,-1,-1);
+	cpc->SetLineColor(1);
+	cpc->SetTitle("# cells per cluster");
+	cpc->Draw("HE"); 
+	TH1D ** hNCellsCluster1D = new TH1D*[fNModules];
 	
-	//Cell Time histograms, time only available in ESDs
+	for(Int_t imod = 0; imod < fNModules; imod++){
+		hNCellsCluster1D[imod] = fhNCellsPerClusterMod[imod]->ProjectionY(Form("cpc_%d",imod),-1,-1);
+		hNCellsCluster1D[imod]->SetLineColor(modColorIndex[imod]);
+		hNCellsCluster1D[imod]->Draw("same HE");
+	}
+	
+	
+	cN->cd(6) ; 
+	gPad->SetLogx();
+	for(Int_t imod = 1; imod < fNModules; imod++){
+		htmp = (TH1D*)hNCellsCluster1D[imod]->Clone(Form("hNClustersCells1DRat%d",imod));
+		htmp->Divide(hNCellsCluster1D[0]);
+		htmp->SetLineColor(modColorIndex[imod]);
+		if(imod==1){
+			htmp->SetTitle("Ratio # cells per cluster in  module X / module 0");
+			//htmp->SetAxisRange(ptmin,ptmax,"X");
+			htmp->SetMaximum(3.5);
+			htmp->SetMinimum(0);
+			htmp->Draw("HE");
+		}
+		else 
+			htmp->Draw("same HE");
+		
+	}
+	sprintf(name,"QA_%s_NumberCaloClustersAndCaloCells.eps",fCalorimeter.Data());
+	cN->Print(name); printf("Print plot %s\n",name);
+	
+	//----------------------------------------------------	
+	// Cell Time histograms, time only available in ESDs
+	//----------------------------------------------------
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-
+	
 		sprintf(cname,"QA_%s_cellstime",fCalorimeter.Data());
 		TCanvas  * ctime = new TCanvas(cname, " Cells time", 1200, 400) ;
 		ctime->Divide(3, 1);
-	
+		
+		Int_t rbTime = 1;
+		if(fhTime->GetNbinsX()> ntimebins) rbTime = fhTime->GetNbinsX()/ntimebins;
+		
 		ctime->cd(1) ; 
 		if(fhTime->GetEntries() > 0) gPad->SetLogy();
+		fhTime->Rebin(rbTime);
+		fhTime->SetAxisRange(timemin,timemax,"X");
 		fhTime->Draw();
 	
 		ctime->cd(2) ; 
-		//if(fhTimeId->GetEntries() > 0) gPad->SetLogy();
+		fhTimeId->SetTitleOffset(1.8,"Y");
+		fhTimeId->SetAxisRange(timemin,timemax,"X");
 		fhTimeId->Draw("colz");
 	
 		ctime->cd(3) ; 
-		//if(fhTimeAmp->GetEntries() > 0) gPad->SetLogy();
-		fhTimeAmp->Draw("surf");
+		fhTimeAmp->SetTitle("Cell Energy vs Cell Time");
+		fhTimeAmp->SetTitleOffset(1.8,"Y");
+		fhTimeAmp->SetAxisRange(timemin,timemax,"Y");
+		fhTimeAmp->SetAxisRange(ptmin,ptmax,"X");		
+		fhTimeAmp->Draw("colz");
 	
 		sprintf(name,"QA_%s_CellsTime.eps",fCalorimeter.Data());
 		ctime->Print(name); printf("Plot: %s\n",name);
 	}
 	
+	
+	//---------------------------------
+	//Grid of cell per module plots 
+	//---------------------------------
+	{
+	//Number of entries per cell
+	gStyle->SetPadRightMargin(0.15);
+	sprintf(cname,"%s_QA_GridCellEntries",fCalorimeter.Data());
+	TCanvas *cgrid   = new TCanvas("cgrid","Number of entries per cell", 12,12,800,400);
+	if(fNModules%2 == 0)
+		cgrid->Divide(fNModules/2,2); 
+	else
+		cgrid->Divide(fNModules/2+1,2); 
+		
+	for(Int_t imod = 0; imod < fNModules ; imod++){
+		cgrid->cd(imod+1);
+		gPad->SetLogz();
+		gPad->SetGridy();
+		gPad->SetGridx();
+		//fhGridCellsMod[imod]->GetYAxis()->SetTitleColor(1);
+		fhGridCellsMod[imod]->SetZTitle("Counts    ");
+		fhGridCellsMod[imod]->SetYTitle("row (phi direction)    ");
+		//fhGridCellsMod[imod]->SetLabelSize(0.025,"z");
+		fhGridCellsMod[imod]->Draw("colz");
+	}
+	sprintf(name,"QA_%s_GridCellsEntries.eps",fCalorimeter.Data());
+	cgrid->Print(name); printf("Create plot %s\n",name);
+			
+	sprintf(cname,"%s_QA_GridCellAccumEnergy",fCalorimeter.Data());
+	TCanvas *cgridE   = new TCanvas("cgridE","Summed energy per cell", 12,12,800,400);
+	if(fNModules%2 == 0)
+		cgridE->Divide(fNModules/2,2); 
+	else
+		cgridE->Divide(fNModules/2+1,2); 
+	for(Int_t imod = 0; imod < fNModules ; imod++){
+		cgridE->cd(imod+1);
+		gPad->SetLogz();
+		gPad->SetGridy();
+		gPad->SetGridx();
+		//fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
+		fhGridCellsEMod[imod]->SetZTitle("Accumulated Energy (GeV)    ");
+		fhGridCellsEMod[imod]->SetYTitle("row (phi direction)    ");
+		fhGridCellsEMod[imod]->Draw("colz");
+	}
+	sprintf(name,"QA_%s_GridCellsAccumEnergy.eps",fCalorimeter.Data());
+	cgridE->Print(name); printf("Create plot %s\n",name);
+
+	//Accumulated energy per cell
+	sprintf(cname,"%s_QA_GridCellAverageEnergy",fCalorimeter.Data());
+	TCanvas *cgridEA   = new TCanvas("cgridEA","Average energy per cell", 12,12,800,400);
+	if(fNModules%2 == 0)	  
+		cgridEA->Divide(fNModules/2,2);
+	else
+		cgridEA->Divide(fNModules/2+1,2);  
+	for(Int_t imod = 0; imod < fNModules ; imod++){
+		cgridEA->cd(imod+1);
+		gPad->SetLogz();
+		gPad->SetGridy();
+		gPad->SetGridx();
+		//fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
+		fhGridCellsEMod[imod]->SetZTitle("Average Energy (GeV)    ");
+		fhGridCellsEMod[imod]->Divide(fhGridCellsMod[imod]);
+		fhGridCellsEMod[imod]->Draw("colz");
+	}
+	sprintf(name,"QA_%s_GridCellsAverageEnergy.eps",fCalorimeter.Data());
+	cgridEA->Print(name); printf("Create plot %s\n",name);
+		
+	//Accumulated Time per cell, E > 0.5 GeV
+		
+	sprintf(cname,"%s_QA_GridCellAccumTime",fCalorimeter.Data());
+	TCanvas *cgridT   = new TCanvas("cgridT","Summed time per cell", 12,12,800,400);
+	if(fNModules%2 == 0)
+		cgridT->Divide(fNModules/2,2); 
+	else
+		cgridE->Divide(fNModules/2+1,2); 
+	for(Int_t imod = 0; imod < fNModules ; imod++){
+		cgridT->cd(imod+1);
+		gPad->SetLogz();
+		gPad->SetGridy();
+		gPad->SetGridx();
+		//fhGridCellsTimeMod[imod]->SetLabelSize(0.025,"z");
+		fhGridCellsTimeMod[imod]->SetZTitle("Accumulated Time (ns)    ");
+		fhGridCellsTimeMod[imod]->SetYTitle("row (phi direction)    ");
+		fhGridCellsTimeMod[imod]->Draw("colz");
+	}
+	sprintf(name,"QA_%s_GridCellsAccumTime.eps",fCalorimeter.Data());
+	cgridT->Print(name); printf("Create plot %s\n",name);
+		
+	}
+	
+	//---------------------------------------------
+	//Calorimeter Correlation, PHOS vs EMCAL
+	//---------------------------------------------
 	if(fCorrelateCalos){
-		//Calorimeter Correlation, PHOS vs EMCAL
-		//printf("c9\n");
+		
 		sprintf(cname,"QA_%s_CaloCorr_EMCALvsPHOS",fCalorimeter.Data());
 		TCanvas  * ccorr = new TCanvas(cname, " EMCAL vs PHOS", 400, 400) ;
 		ccorr->Divide(2, 2);
@@ -2925,241 +4289,40 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		ccorr->cd(1) ; 
 		//gPad->SetLogy();
 		//gPad->SetLogx();
+		fhCaloCorrNClusters->SetAxisRange(nmin,nmax,"X");
+		fhCaloCorrNClusters->SetAxisRange(nmin,nmax,"Y");		
 		fhCaloCorrNClusters ->Draw();
 	
 		ccorr->cd(2) ; 
 		//gPad->SetLogy();
 		//gPad->SetLogx();
+		fhCaloCorrNCells->SetAxisRange(nmin,nmax,"X");
+		fhCaloCorrNCells->SetAxisRange(nmin,nmax,"Y");		
 		fhCaloCorrNCells->Draw();
 	
-		ccorr->cd(3) ; 
 		//gPad->SetLogy();
 		//gPad->SetLogx();
+		fhCaloCorrEClusters->SetAxisRange(ptmin,ptmax,"X");
+		fhCaloCorrEClusters->SetAxisRange(ptmin,ptmax,"Y");		
 		fhCaloCorrEClusters->Draw();
 	
 		ccorr->cd(4) ; 
 		//gPad->SetLogy();
 		//gPad->SetLogx();
+		fhCaloCorrECells->SetAxisRange(ptmin,ptmax,"X");
+		fhCaloCorrECells->SetAxisRange(ptmin,ptmax,"Y");		
 		fhCaloCorrECells->Draw();
 	
 		sprintf(name,"QA_%s_CaloCorr_EMCALvsPHOS.eps",fCalorimeter.Data());
 		ccorr->Print(name); printf("Plot: %s\n",name);
 	}
-	
-	//Reconstructed distributions
-	//printf("c1\n");
-	sprintf(cname,"QA_%s_rec",fCalorimeter.Data());
-	TCanvas  * c = new TCanvas(cname, "Reconstructed distributions", 400, 400) ;
-	c->Divide(2, 2);
-	
-	c->cd(1) ; 
-	if(fhE->GetEntries() > 0) gPad->SetLogy();
-	TLegend pLegendE(0.7,0.6,0.9,0.8);
-	pLegendE.SetTextSize(0.03);
-	pLegendE.AddEntry(fhE,"all modules","L");
-	pLegendE.SetFillColor(10);
-	pLegendE.SetBorderSize(1);
-	
-	fhE->SetLineColor(1);
-	fhE->Draw();
-	for(Int_t imod = 0; imod < fNModules; imod++){
-		fhEMod[imod]->SetLineColor(imod+1);
-		fhEMod[imod]->Draw("same");
-		pLegendE.AddEntry(fhEMod[imod],Form("module %d",imod),"L");
-	}
-	pLegendE.Draw();
-	
-	c->cd(2) ; 
-	if(fhPt->GetEntries() > 0) gPad->SetLogy();
-	fhPt->SetLineColor(4);
-	fhPt->Draw();
-	
-	c->cd(3) ; 
-	fhPhi->SetLineColor(4);
-	fhPhi->Draw();
-	
-	c->cd(4) ; 
-	fhEta->SetLineColor(4);
-	fhEta->Draw();
-	
-	sprintf(name,"QA_%s_ReconstructedDistributions.eps",fCalorimeter.Data());
-	c->Print(name); printf("Plot: %s\n",name);
-	
-	//Reconstructed distributions, matched with tracks
-	//printf("c2\n");
-	sprintf(cname,"QA_%s_rectrackmatch",fCalorimeter.Data());
-	TCanvas  * c2 = new TCanvas(cname, "Reconstructed distributions, matched with tracks", 400, 400) ;
-	c2->Divide(2, 2);
-	
-	c2->cd(1) ; 
-	if(fhECharged->GetEntries() > 0) gPad->SetLogy();
-	fhECharged->SetLineColor(4);
-	fhECharged->Draw();
-	
-	c2->cd(2) ; 
-	if(fhPtCharged->GetEntries() > 0) gPad->SetLogy();
-	fhPtCharged->SetLineColor(4);
-	fhPtCharged->Draw();
-	
-	c2->cd(3) ; 
-	fhPhiCharged->SetLineColor(4);
-	fhPhiCharged->Draw();
-	
-	c2->cd(4) ; 
-	fhEtaCharged->SetLineColor(4);
-	fhEtaCharged->Draw();
-	
-	sprintf(name,"QA_%s_ReconstructedDistributions_TrackMatched.eps",fCalorimeter.Data());
-	c2->Print(name); printf("Plot: %s\n",name);
-	
-	TH1F *	hEChargedClone   = (TH1F*)   fhECharged->Clone(Form("%sClone",fhECharged->GetName()));
-	TH1F *	hPtChargedClone  = (TH1F*)   fhPtCharged->Clone(Form("%sClone",fhPtCharged->GetName()));
-	TH1F *	hEtaChargedClone = (TH1F*)   fhEtaCharged->Clone(Form("%sClone",fhEtaCharged->GetName()));
-	TH1F *	hPhiChargedClone = (TH1F*)   fhPhiCharged->Clone(Form("%sClone",fhPhiCharged->GetName()));
-	
-	TH1F *	hEChargedClone2   = (TH1F*)   fhECharged->Clone(Form("%sClone2",fhECharged->GetName()));
-	TH1F *	hPtChargedClone2  = (TH1F*)   fhPtCharged->Clone(Form("%sClone2",fhPtCharged->GetName()));
-	TH1F *	hEtaChargedClone2 = (TH1F*)   fhEtaCharged->Clone(Form("%sClone2",fhEtaCharged->GetName()));
-	TH1F *	hPhiChargedClone2 = (TH1F*)   fhPhiCharged->Clone(Form("%sClone2",fhPhiCharged->GetName()));
-	
-	//Ratio: reconstructed track matched/ all reconstructed
-	//printf("c3\n");
-	sprintf(cname,"QA_%s_rectrackmatchrat",fCalorimeter.Data());
-	TCanvas  * c3 = new TCanvas(cname, "Ratio: reconstructed track matched/ all reconstructed", 400, 400) ;
-	c3->Divide(2, 2);
-	
-	c3->cd(1) ;
-	if(hEChargedClone->GetEntries() > 0) gPad->SetLogy();
-	hEChargedClone->SetTitleOffset(1.6,"Y");
-    hEChargedClone->SetYTitle("track matched / all   ");
-	hEChargedClone->SetXTitle("E (GeV)");
-	hEChargedClone->Divide(fhE);
-	hEChargedClone->Draw();
-	
-	c3->cd(2) ; 
-	if(hPtChargedClone->GetEntries() > 0) gPad->SetLogy();
-	hPtChargedClone->SetTitleOffset(1.6,"Y");
-	hPtChargedClone->SetYTitle("track matched / all   ");
-    hPtChargedClone->SetXTitle("p_{T} (GeV/c)");
-	hPtChargedClone->Divide(fhPt);
-	hPtChargedClone->Draw();
-	
-	c3->cd(3) ;
-	if(hPhiChargedClone->GetEntries() > 0) gPad->SetLogy();
-	hPhiChargedClone->SetTitleOffset(1.6,"Y");
-	hPhiChargedClone->SetYTitle("track matched / all   ");
-	hPhiChargedClone->SetXTitle("#phi (rad)");
-	hPhiChargedClone->Divide(fhPhi);
-	hPhiChargedClone->Draw();
-	
-	c3->cd(4) ; 
-	if(hEtaChargedClone->GetEntries() > 0) gPad->SetLogy();
-	hEtaChargedClone->SetTitleOffset(1.6,"Y");
-	hEtaChargedClone->SetYTitle("track matched / all   ");
-	hEtaChargedClone->SetXTitle("#eta");
-    hEtaChargedClone->Divide(fhEta);
-	hEtaChargedClone->Draw();
-	
-	sprintf(name,"QA_%s_RatioReconstructedMatchedDistributions.eps",fCalorimeter.Data());
-	c3->Print(name); printf("Plot: %s\n",name);
-	
-	//Ratio: reconstructed track matched (minus no track param) / all
-	//printf("c3\n");
-	sprintf(cname,"QA_%s_rectrackmatchratout",fCalorimeter.Data());
-	TCanvas  * c333 = new TCanvas(cname, "Ratio: reconstructed track matched (with outer track param)/ all", 400, 400) ;
-	c333->Divide(2, 2);
-	
-	c333->cd(1) ;
-	hEChargedClone2->Add(fhEChargedNoOut,-1);
-	hEChargedClone2->SetYTitle("track matched / all");
-	hEChargedClone2->SetXTitle("E (GeV)");
-	hEChargedClone2->Divide(fhE);
-	hEChargedClone2->Draw();
-	
-	c333->cd(2) ; 
-	hPtChargedClone2->Add(fhPtChargedNoOut,-1);
-	hPtChargedClone2->SetYTitle("track matched / all");
-	hPtChargedClone2->SetXTitle("p_{T} (GeV/c)");
-	hPtChargedClone2->Divide(fhPt);
-	hPtChargedClone2->Draw();
-	
-	c333->cd(3) ;
-	hPhiChargedClone2->Add(fhPhiChargedNoOut,-1);
-	hPhiChargedClone2->SetYTitle("track matched / all");
-	hPhiChargedClone2->SetXTitle("#phi (rad)");
-	hPhiChargedClone2->Divide(fhPhi);
-	hPhiChargedClone2->Draw();
-	
-	c333->cd(4) ; 
-	hEtaChargedClone2->Add(fhEtaChargedNoOut,-1);
-	hEtaChargedClone2->SetYTitle("track matched / all");
-	hEtaChargedClone2->SetXTitle("#eta");
-	hEtaChargedClone2->Divide(fhEta);
-	hEtaChargedClone2->Draw();
-	
-	sprintf(name,"QA_%s_RatioReconstructedMatchedDistributionsOuter.eps",fCalorimeter.Data());
-	c333->Print(name); printf("Plot: %s\n",name);
-	
-	//Reconstructed distributions, matched with tracks but no outer param
-	//printf("c2\n");
-	sprintf(cname,"QA_%s_rectrackmatch_noout",fCalorimeter.Data());
-	TCanvas  * c22 = new TCanvas(cname, "Reconstructed distributions, matched with tracks, no outer track param", 400, 400) ;
-	c22->Divide(2, 2);
-	
-	c22->cd(1) ; 
-	if(fhEChargedNoOut->GetEntries() > 0) gPad->SetLogy();
-	fhEChargedNoOut->SetLineColor(4);
-	fhEChargedNoOut->Draw();
-	
-	c22->cd(2) ; 
-	if(fhEChargedNoOut->GetEntries() > 0) gPad->SetLogy();
-	fhPtChargedNoOut->SetLineColor(4);
-	fhPtChargedNoOut->Draw();
-	
-	c22->cd(3) ; 
-	fhPhiChargedNoOut->SetLineColor(4);
-	fhPhiChargedNoOut->Draw();
-	
-	c22->cd(4) ; 
-	fhEtaChargedNoOut->SetLineColor(4);
-	fhEtaChargedNoOut->Draw();
-	
-	sprintf(name,"QA_%s_ReconstructedDistributions_TrackMatched_NoOutParam.eps",fCalorimeter.Data());
-	c22->Print(name); printf("Plot: %s\n",name);
 		
-	
-//	//eta vs phi
-//	//printf("c4\n");
-//	sprintf(cname,"QA_%s_etavsphivse",fCalorimeter.Data());
-//	//	TCanvas  * c4 = new TCanvas(cname, "reconstructed #eta vs #phi", 600, 200) ;
-//	//	c4->Divide(3, 1);
-//	
-//	TCanvas  * c4 = new TCanvas(cname, "reconstructed #eta vs #phi vs E", 600, 600) ;
-//	/*
-//	c4->Divide(3, 1);
-//	
-//	c4->cd(1) ;
-//	fhEtaPhi->Draw("contz");
-//	c4->cd(2) ;
-//	fhEtaPhiE->Draw();
-//	c4->cd(3) ; 
-//	fhEtaPhiCharged->Draw("contz");
-//	//c4->Divide(3, 1);
-//	 */  
-//	{gStyle->SetOptStat(0);
-//	fhEtaPhi->Draw("contz");}
-//	//fhEtaPhiE->Draw();
-//	
-//	
-//	//	c4->cd(3) ; 
-//	//	fhEtaPhiChargedNoOut->Draw("cont");
-//	
-//	sprintf(name,"QA_%s_ReconstructedEtaVsPhiVsE.eps",fCalorimeter.Data());
-//	c4->Print(name); printf("Plot: %s\n",name);
-	
+	//----------------------------
 	//Invariant mass
-	Int_t binmin = -1;
-	Int_t binmax = -1;
+	//-----------------------------
+	
+	Int_t imbinmin = -1;
+	Int_t imbinmax = -1;
 	
 	if(fhIM->GetEntries() > 1){
 		Int_t nebins  = fhIM->GetNbinsX();
@@ -3176,9 +4339,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		c5->cd(1) ; 
 		//fhIM->SetLineColor(4);
 		//fhIM->Draw();
-		binmin = 0;
-		binmax =  (Int_t) (1-emin)*nebins/emax;
-		TH1D *pyim1 = fhIM->ProjectionY(Form("%s_py1",fhIM->GetName()),binmin,binmax);
+		imbinmin = 0;
+		imbinmax =  (Int_t) (1-emin)*nebins/emax;
+		TH1D *pyim1 = fhIM->ProjectionY(Form("%s_py1",fhIM->GetName()),imbinmin,imbinmax);
 		pyim1->SetTitle("E_{pair} < 1 GeV");
 		pyim1->SetLineColor(1);
 		pyim1->Draw();
@@ -3187,8 +4350,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		pLegendIM.AddEntry(pyim1,"all modules","L");
 		pLegendIM.SetFillColor(10);
 		pLegendIM.SetBorderSize(1);
+		//FIXME
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyim1 = fhIMMod[imod]->ProjectionY(Form("%s_py1",fhIMMod[imod]->GetName()),binmin,binmax);
+			pyim1 = fhIMMod[imod]->ProjectionY(Form("%s_py1",fhIMMod[imod]->GetName()),imbinmin,imbinmax);
 			pLegendIM.AddEntry(pyim1,Form("module %d",imod),"L");
 			pyim1->SetLineColor(imod+1);
 			pyim1->Draw("same");
@@ -3196,66 +4360,66 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		pLegendIM.Draw();
 		
 		c5->cd(2) ; 
-		binmin =  (Int_t) (1-emin)*nebins/emax;
-		binmax =  (Int_t) (2-emin)*nebins/emax;
-		TH1D *pyim2 = fhIM->ProjectionY(Form("%s_py2",fhIM->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (1-emin)*nebins/emax;
+		imbinmax =  (Int_t) (2-emin)*nebins/emax;
+		TH1D *pyim2 = fhIM->ProjectionY(Form("%s_py2",fhIM->GetName()),imbinmin,imbinmax);
 		pyim2->SetTitle("1 < E_{pair} < 2 GeV");
 		pyim2->SetLineColor(1);
 		pyim2->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyim2 = fhIMMod[imod]->ProjectionY(Form("%s_py2",fhIMMod[imod]->GetName()),binmin,binmax);
+			pyim2 = fhIMMod[imod]->ProjectionY(Form("%s_py2",fhIMMod[imod]->GetName()),imbinmin,imbinmax);
 			pyim2->SetLineColor(imod+1);
 			pyim2->Draw("same");
 		}
 		
 		c5->cd(3) ; 
-		binmin =  (Int_t) (2-emin)*nebins/emax;
-		binmax =  (Int_t) (3-emin)*nebins/emax;
-		TH1D *pyim3 = fhIM->ProjectionY(Form("%s_py3",fhIM->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (2-emin)*nebins/emax;
+		imbinmax =  (Int_t) (3-emin)*nebins/emax;
+		TH1D *pyim3 = fhIM->ProjectionY(Form("%s_py3",fhIM->GetName()),imbinmin,imbinmax);
 		pyim3->SetTitle("2 < E_{pair} < 3 GeV");
 		pyim3->SetLineColor(1);
 		pyim3->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyim3 = fhIMMod[imod]->ProjectionY(Form("%s_py3",fhIMMod[imod]->GetName()),binmin,binmax);
+			pyim3 = fhIMMod[imod]->ProjectionY(Form("%s_py3",fhIMMod[imod]->GetName()),imbinmin,imbinmax);
 			pyim3->SetLineColor(imod+1);
 			pyim3->Draw("same");
 		}
 		
 		c5->cd(4) ;
-		binmin =  (Int_t) (3-emin)*nebins/emax;
-		binmax =  (Int_t) (4-emin)*nebins/emax;
-		TH1D *pyim4 = fhIM->ProjectionY(Form("%s_py4",fhIM->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (3-emin)*nebins/emax;
+		imbinmax =  (Int_t) (4-emin)*nebins/emax;
+		TH1D *pyim4 = fhIM->ProjectionY(Form("%s_py4",fhIM->GetName()),imbinmin,imbinmax);
 		pyim4->SetTitle("3 < E_{pair} < 4 GeV");
 		pyim4->SetLineColor(1);
 		pyim4->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyim4 = fhIMMod[imod]->ProjectionY(Form("%s_py4",fhIMMod[imod]->GetName()),binmin,binmax);
+			pyim4 = fhIMMod[imod]->ProjectionY(Form("%s_py4",fhIMMod[imod]->GetName()),imbinmin,imbinmax);
 			pyim4->SetLineColor(imod+1);
 			pyim4->Draw("same");
 		}
 		
 		c5->cd(5) ;
-		binmin =  (Int_t) (4-emin)*nebins/emax;
-		binmax =  (Int_t) (5-emin)*nebins/emax;
-		TH1D *pyim5 = fhIM->ProjectionY(Form("%s_py5",fhIM->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (4-emin)*nebins/emax;
+		imbinmax =  (Int_t) (5-emin)*nebins/emax;
+		TH1D *pyim5 = fhIM->ProjectionY(Form("%s_py5",fhIM->GetName()),imbinmin,imbinmax);
 		pyim5->SetTitle("4< E_{pair} < 5 GeV");
 		pyim5->SetLineColor(1);
 		pyim5->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyim5 = fhIMMod[imod]->ProjectionY(Form("%s_py5",fhIMMod[imod]->GetName()),binmin,binmax);
+			pyim5 = fhIMMod[imod]->ProjectionY(Form("%s_py5",fhIMMod[imod]->GetName()),imbinmin,imbinmax);
 			pyim5->SetLineColor(imod+1);
 			pyim5->Draw("same");
 		}
 		
 		c5->cd(6) ;
-		binmin =  (Int_t) (5-emin)*nebins/emax;
-		binmax =  -1;
-		TH1D *pyim10 = fhIM->ProjectionY(Form("%s_py6",fhIM->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (5-emin)*nebins/emax;
+		imbinmax =  -1;
+		TH1D *pyim10 = fhIM->ProjectionY(Form("%s_py6",fhIM->GetName()),imbinmin,imbinmax);
 		pyim10->SetTitle("E_{pair} > 5 GeV");
 		pyim10->SetLineColor(1);
 		pyim10->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyim10 = fhIMMod[imod]->ProjectionY(Form("%s_py6",fhIMMod[imod]->GetName()),binmin,binmax);
+			pyim10 = fhIMMod[imod]->ProjectionY(Form("%s_py6",fhIMMod[imod]->GetName()),imbinmin,imbinmax);
 			pyim10->SetLineColor(imod+1);
 			pyim10->Draw("same");
 		}
@@ -3264,7 +4428,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		c5->Print(name); printf("Plot: %s\n",name);
 	}
 	
-	
+	//--------------------------------------------------
+	//Invariant mass, clusters with more than one cell
+	//-------------------------------------------------
 	if(fhIMCellCut->GetEntries() > 1){
 		Int_t nebins  = fhIMCellCut->GetNbinsX();
 		Int_t emax = (Int_t) fhIMCellCut->GetXaxis()->GetXmax();
@@ -3280,9 +4446,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		c5cc->cd(1) ; 
 		//fhIMCellCut->SetLineColor(4);
 		//fhIMCellCut->Draw();
-		binmin = 0;
-		binmax =  (Int_t) (1-emin)*nebins/emax;
-		TH1D *pyimcc1 = fhIMCellCut->ProjectionY(Form("%s_py1",fhIMCellCut->GetName()),binmin,binmax);
+		imbinmin = 0;
+		imbinmax =  (Int_t) (1-emin)*nebins/emax;
+		TH1D *pyimcc1 = fhIMCellCut->ProjectionY(Form("%s_py1",fhIMCellCut->GetName()),imbinmin,imbinmax);
 		pyimcc1->SetTitle("E_{pair} < 1 GeV");
 		pyimcc1->SetLineColor(1);
 		pyimcc1->Draw();
@@ -3291,8 +4457,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		pLegendIMCellCut.AddEntry(pyimcc1,"all modules","L");
 		pLegendIMCellCut.SetFillColor(10);
 		pLegendIMCellCut.SetBorderSize(1);
+		
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyimcc1 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py1",fhIMCellCutMod[imod]->GetName()),binmin,binmax);
+			pyimcc1 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py1",fhIMCellCutMod[imod]->GetName()),imbinmin,imbinmax);
 			pLegendIMCellCut.AddEntry(pyimcc1,Form("module %d",imod),"L");
 			pyimcc1->SetLineColor(imod+1);
 			pyimcc1->Draw("same");
@@ -3300,66 +4467,66 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		pLegendIMCellCut.Draw();
 		
 		c5cc->cd(2) ; 
-		binmin =  (Int_t) (1-emin)*nebins/emax;
-		binmax =  (Int_t) (2-emin)*nebins/emax;
-		TH1D *pyimcc2 = fhIMCellCut->ProjectionY(Form("%s_py2",fhIMCellCut->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (1-emin)*nebins/emax;
+		imbinmax =  (Int_t) (2-emin)*nebins/emax;
+		TH1D *pyimcc2 = fhIMCellCut->ProjectionY(Form("%s_py2",fhIMCellCut->GetName()),imbinmin,imbinmax);
 		pyimcc2->SetTitle("1 < E_{pair} < 2 GeV");
 		pyimcc2->SetLineColor(1);
 		pyimcc2->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyimcc2 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py1",fhIMCellCutMod[imod]->GetName()),binmin,binmax);
+			pyimcc2 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py1",fhIMCellCutMod[imod]->GetName()),imbinmin,imbinmax);
 			pyimcc2->SetLineColor(imod+1);
 			pyimcc2->Draw("same");
 		}
 		
 		c5cc->cd(3) ; 
-		binmin =  (Int_t) (2-emin)*nebins/emax;
-		binmax =  (Int_t) (3-emin)*nebins/emax;
-		TH1D *pyimcc3 = fhIMCellCut->ProjectionY(Form("%s_py3",fhIMCellCut->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (2-emin)*nebins/emax;
+		imbinmax =  (Int_t) (3-emin)*nebins/emax;
+		TH1D *pyimcc3 = fhIMCellCut->ProjectionY(Form("%s_py3",fhIMCellCut->GetName()),imbinmin,imbinmax);
 		pyimcc3->SetTitle("2 < E_{pair} < 3 GeV");
 		pyimcc3->SetLineColor(1);
 		pyimcc3->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyimcc3 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py1",fhIMCellCutMod[imod]->GetName()),binmin,binmax);
+			pyimcc3 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py1",fhIMCellCutMod[imod]->GetName()),imbinmin,imbinmax);
 			pyimcc3->SetLineColor(imod+1);
 			pyimcc3->Draw("same");
 		}
 		
 		c5cc->cd(4) ;
-		binmin =  (Int_t) (3-emin)*nebins/emax;
-		binmax =  (Int_t) (4-emin)*nebins/emax;
-		TH1D *pyimcc4 = fhIMCellCut->ProjectionY(Form("%s_py4",fhIMCellCut->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (3-emin)*nebins/emax;
+		imbinmax =  (Int_t) (4-emin)*nebins/emax;
+		TH1D *pyimcc4 = fhIMCellCut->ProjectionY(Form("%s_py4",fhIMCellCut->GetName()),imbinmin,imbinmax);
 		pyimcc4->SetTitle("3 < E_{pair} < 4 GeV");
 		pyimcc4->SetLineColor(1);
 		pyimcc4->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyimcc4 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py5",fhIMCellCutMod[imod]->GetName()),binmin,binmax);
+			pyimcc4 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py5",fhIMCellCutMod[imod]->GetName()),imbinmin,imbinmax);
 			pyimcc4->SetLineColor(imod+1);
 			pyimcc4->Draw("same");
 		}
 		
 		c5cc->cd(5) ;
-		binmin =  (Int_t) (4-emin)*nebins/emax;
-		binmax =  (Int_t) (5-emin)*nebins/emax;
-		TH1D *pyimcc5cc = fhIMCellCut->ProjectionY(Form("%s_py5",fhIMCellCut->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (4-emin)*nebins/emax;
+		imbinmax =  (Int_t) (5-emin)*nebins/emax;
+		TH1D *pyimcc5cc = fhIMCellCut->ProjectionY(Form("%s_py5",fhIMCellCut->GetName()),imbinmin,imbinmax);
 		pyimcc5cc->SetTitle("4< E_{pair} < 5 GeV");
 		pyimcc5cc->SetLineColor(1);
 		pyimcc5cc->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyimcc5cc = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py5",fhIMCellCutMod[imod]->GetName()),binmin,binmax);
+			pyimcc5cc = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py5",fhIMCellCutMod[imod]->GetName()),imbinmin,imbinmax);
 			pyimcc5cc->SetLineColor(imod+1);
 			pyimcc5cc->Draw("same");
 		}
 		
 		c5cc->cd(6) ;
-		binmin =  (Int_t) (5-emin)*nebins/emax;
-		binmax =  -1;
-		TH1D *pyimcc10 = fhIMCellCut->ProjectionY(Form("%s_py6",fhIMCellCut->GetName()),binmin,binmax);
+		imbinmin =  (Int_t) (5-emin)*nebins/emax;
+		imbinmax =  -1;
+		TH1D *pyimcc10 = fhIMCellCut->ProjectionY(Form("%s_py6",fhIMCellCut->GetName()),imbinmin,imbinmax);
 		pyimcc10->SetTitle("E_{pair} > 5 GeV");
 		pyimcc10->SetLineColor(1);
 		pyimcc10->Draw();
 		for(Int_t imod = 0; imod < fNModules; imod++){
-			pyimcc10 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py1",fhIMCellCutMod[imod]->GetName()),binmin,binmax);
+			pyimcc10 = fhIMCellCutMod[imod]->ProjectionY(Form("%s_py1",fhIMCellCutMod[imod]->GetName()),imbinmin,imbinmax);
 			pyimcc10->SetLineColor(imod+1);
 			pyimcc10->Draw("same");
 		}
@@ -3388,25 +4555,25 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		fhAsym->Draw();
 		
 		c5b->cd(2) ; 
-		binmin = 0;
-		binmax = (Int_t) (5-emin)*nebins/emax;
-		TH1D *pyAsym5 = fhAsym->ProjectionY(Form("%s_py5",fhAsym->GetName()),binmin,binmax);
+		imbinmin = 0;
+		imbinmax = (Int_t) (5-emin)*nebins/emax;
+		TH1D *pyAsym5 = fhAsym->ProjectionY(Form("%s_py5",fhAsym->GetName()),imbinmin,imbinmax);
 		pyAsym5->SetTitle("E_{pair} < 5 GeV");
 		pyAsym5->SetLineColor(4);
 		pyAsym5->Draw();
 		
 		c5b->cd(3) ; 
-		binmin = (Int_t) (5-emin)*nebins/emax;
-		binmax = (Int_t) (10-emin)*nebins/emax;
-		TH1D *pyAsym510 = fhAsym->ProjectionY(Form("%s_py510",fhAsym->GetName()),binmin,binmax);
+		imbinmin = (Int_t) (5-emin)*nebins/emax;
+		imbinmax = (Int_t) (10-emin)*nebins/emax;
+		TH1D *pyAsym510 = fhAsym->ProjectionY(Form("%s_py510",fhAsym->GetName()),imbinmin,imbinmax);
 		pyAsym510->SetTitle("5 < E_{pair} < 10 GeV");
 		pyAsym510->SetLineColor(4);
 		pyAsym510->Draw();
 		
 		c5b->cd(4) ;
-		binmin = (Int_t) (10-emin)*nebins/emax;
-		binmax = -1;
-		TH1D *pyAsym10 = fhAsym->ProjectionY(Form("%s_py10",fhAsym->GetName()),binmin,binmax);
+		imbinmin = (Int_t) (10-emin)*nebins/emax;
+		imbinmax = -1;
+		TH1D *pyAsym10 = fhAsym->ProjectionY(Form("%s_py10",fhAsym->GetName()),imbinmin,imbinmax);
 		pyAsym10->SetTitle("E_{pair} > 10 GeV");
 		pyAsym10->SetLineColor(4);
 		pyAsym10->Draw();
@@ -3415,60 +4582,6 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		c5b->Print(name); printf("Plot: %s\n",name);
 	}
 	
-	//Grid of cell per module plots 
-    {
-		gStyle->SetOptStat(0);
-		sprintf(cname,"QA_%s_GridCellEntries",fCalorimeter.Data());
-		//	printf("c5\n");
-		TCanvas *cgrid   = new TCanvas("cgrid","Number of entries per cell", 12,12,800,400);
-		if(fNModules%2 == 0)
-			cgrid->Divide(fNModules/2,2); 
-		else
-			cgrid->Divide(fNModules/2+1,2); 
-
-		for(Int_t imod = 0; imod < fNModules ; imod++){
-			cgrid->cd(imod+1);
-			gPad->SetLogz();
-			gPad->SetGridy();
-			gPad->SetGridx();
-			fhGridCellsMod[imod]->SetLabelSize(0.025,"z");
-			fhGridCellsMod[imod]->Draw("colz");
-		}
-		sprintf(name,"QA_%s_GridCellsEntries.eps",fCalorimeter.Data());
-		cgrid->Print(name); printf("Plot: %s\n",name);
-		
-		sprintf(cname,"QA_%s_GridCellAccumEnergy",fCalorimeter.Data());
-		//	printf("c5\n");
-		TCanvas *cgridE   = new TCanvas("cgridE","Summed energy per cell", 12,12,800,400);
-		cgridE->Divide(fNModules/2,2); 
-		for(Int_t imod = 0; imod < fNModules ; imod++){
-			cgridE->cd(imod+1);
-			gPad->SetLogz();
-			gPad->SetGridy();
-			gPad->SetGridx();
-			fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
-			fhGridCellsEMod[imod]->Draw("colz");
-		}
-		sprintf(name,"QA_%s_GridCellsAccumEnergy.eps",fCalorimeter.Data());
-		cgridE->Print(name); printf("Plot: %s\n",name);
-		
-		sprintf(cname,"QA_%s_GridCellAverageEnergy",fCalorimeter.Data());
-		//	printf("c5\n");
-		TCanvas *cgridEA   = new TCanvas("cgridEA","Average energy per cell", 12,12,800,400);
-		cgridEA->Divide(fNModules/2,2); 
-		for(Int_t imod = 0; imod < fNModules ; imod++){
-			cgridEA->cd(imod+1);
-			gPad->SetLogz();
-			gPad->SetGridy();
-			gPad->SetGridx();
-			fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
-			fhGridCellsEMod[imod]->Divide(fhGridCellsMod[imod]);
-			fhGridCellsEMod[imod]->Draw("colz");
-		}
-		sprintf(name,"QA_%s_GridCellsAverageEnergy.eps",fCalorimeter.Data());
-		cgridEA->Print(name); printf("Plot: %s\n",name);
-		
-	}
 	
 	if(IsDataMC()){
 	//Reconstructed vs MC distributions

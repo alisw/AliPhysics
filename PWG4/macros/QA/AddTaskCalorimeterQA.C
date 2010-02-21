@@ -81,7 +81,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
   emcalQA->SetHistoVertexDistRangeAndNBins(0.,500.,100);
   emcalQA->SetHistoNClusterCellRangeAndNBins(0,300,300);
-	
+  emcalQA->SetHistoXRangeAndNBins(-350,150,250);
+  emcalQA->SetHistoYRangeAndNBins(300,500,200);
+  emcalQA->SetHistoZRangeAndNBins(-400,400,400);
+  emcalQA->SetHistoRRangeAndNBins(300,600,300);
+
   //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
 	
   if(kPrintSettings) emcalQA->Print("");	
@@ -94,7 +98,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
    phosQA->AddToHistogramsName("PHOS_");//Begining of histograms name
    //phosQA->SetFiducialCut(fidCut);
    phosQA->SwitchOffFiducialCut();
-   if(kPrintSettings)phosQA->Print("");	
    //phosQA->GetMCAnalysisUtils()->SetDebug(10);
    phosQA->SwitchOffPlotsMaking();
    //Set Histrograms bins and ranges
@@ -111,13 +114,19 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
    phosQA->SetHistoRatioRangeAndNBins(0.,2.,100);
    phosQA->SetHistoVertexDistRangeAndNBins(0.,500.,100);
    phosQA->SetHistoNClusterCellRangeAndNBins(0,300,300);
+   phosQA->SetHistoXRangeAndNBins(-350,150,250);
+   phosQA->SetHistoYRangeAndNBins(300,500,200);
+   phosQA->SetHistoZRangeAndNBins(-400,400,400);
+   phosQA->SetHistoRRangeAndNBins(300,600,300);
+	
+  //if(kPrintSettings)phosQA->Print("");	
 	
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
   maker->AddAnalysis(emcalQA,0);
   maker->AddAnalysis(phosQA,1);
-  maker->SetAnaDebug(-1)  ;
+  maker->SetAnaDebug(-1)  ; // 0 to at least print the event number
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOffAODsMaker()  ;
   if(kPrintSettings) maker->Print("");
@@ -147,8 +156,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-  // AOD output slot will be used in a different way in future
-  //mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
   
   return task;
