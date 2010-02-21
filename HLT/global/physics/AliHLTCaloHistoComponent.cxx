@@ -25,7 +25,6 @@ using namespace std;
 #endif
 
 
-
 #include "AliHLTCaloHistoComponent.h"
 #include "AliHLTCaloHistoCellEnergy.h"
 #include "AliHLTCaloHistoClusterEnergy.h"
@@ -208,9 +207,9 @@ AliHLTCaloHistoComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& lis
 { 
   //see header file for documentation
   list.clear();
-  list.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginOut );
+  list.push_back( kAliHLTDataTypeESDObject | kAliHLTDataOriginOut );
   list.push_back( kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL );
-  list.push_back(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS );
+  list.push_back( kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS );
 
   //   list.push_back(AliHLTPHOSDefinitions::fgkClusterDataType);
   //   list.push_back(AliHLTPHOSDefinitions::fgkESDCaloClusterDataType);
@@ -242,56 +241,109 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   //see header file for documentation
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
+
+
+
+  //Get the clusters from struct input
+  AliHLTCaloClusterDataStruct * clusterStruct;
+  vector<AliHLTCaloClusterDataStruct*> clustersVector;
+  
+  if (fDoEmcal) {
+   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock( kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny ); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+
+     //Check for origin and continue if not do this detector
+
+     AliHLTCaloClusterHeaderStruct *clusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
+     fClusterReader->SetMemory(clusterHeader);
+     
+     if ( (clusterHeader->fNClusters) < 0) {
+       HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (clusterHeader->fNClusters));
+     } else {    
+       HLTInfo("Event has positive number of clusters: %d", (Int_t ) (clusterHeader->fNClusters));
+
+       //BALLE, TODO, make it able to do EMCAL as well!!!
+       clustersVector.resize((int) (clusterHeader->fNClusters)); 
+       Int_t nClusters = 0;
+       cout << "nclustes " << clusterHeader->fNClusters << endl;
+       while( (clusterStruct = fClusterReader->NextCluster()) != 0) {
+	 phosClustersVector[nClusters++] = clusterStruct;  
+       }
+       
+       iResult = fTrackMatcher->Match(fTrackArray, phosClustersVector, fBz);
+     }
+     
+     if(iResult <0) {
+       HLTWarning("Error in track matcher");
+     }
+     //PushBack(pBlock->fPtr, pBlock->fSize, kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny );
+  }
+
+
+
+
   
 //   if( fUID == 0 ){
 //     TTimeStamp t;
 //     fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
 //   }
 
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
-    AliESDEvent *event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
-    event->GetStdContent();
+   //TODO Set up for ESD input
+//    AliESDCaloCluster * esdCluster;
+//    vector<AliESDCaloCluster *> phosEsdClustersVector;
+//    vector<AliESDCaloCluster *> EmcalEsdClustersVector;
+//    for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
+     
+//      AliESDEvent *event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+//      event->GetStdContent();
+     
+
+   
+     
+
     
-    //EMCAL
-    if(fDoEmcal){
+//     //EMCAL
+//     if(fDoEmcal){
+//       FillClustersToVector(nec, fEmcalClustersArray, emcalEsdClustersVector);
+   
+//       Int_t nec = event->GetEMCALClusters(fEmcalClustersArray);
+
       
-      Int_t nec = event->GetEMCALClusters(fEmcalClustersArray);
       
-      if(fDoMatchedTracks)
-	fEmcalMatchedTracksHistProducer->FillHistograms(nec, fEmcalClustersArray);
+//       if(fDoMatchedTracks)
+// 	fEmcalMatchedTracksHistProducer->FillHistograms(nec, fEmcalClustersArray);
       
-      if(fDoInvariantMass)
-	fEmcalInvariantMassHistProducer->FillHistograms(nec, fEmcalClustersArray);
+//       if(fDoInvariantMass)
+// 	fEmcalInvariantMassHistProducer->FillHistograms(nec, fEmcalClustersArray);
       
-      if(fDoClusterEnergy)
-	fEmcalClusterEnergyHistProducer->FillHistograms(nec, fEmcalClustersArray);
+//       if(fDoClusterEnergy)
+// 	fEmcalClusterEnergyHistProducer->FillHistograms(nec, fEmcalClustersArray);
       
-      if(fDoCellEnergy)
-	fEmcalCellEnergyHistProducer->FillHistograms(nec, fEmcalClustersArray);;
+//       if(fDoCellEnergy)
+// 	fEmcalCellEnergyHistProducer->FillHistograms(nec, fEmcalClustersArray);;
       
-    }
+//     }
     
     
-    //PHOS
-    if(fDoPhos){
+//     //PHOS
+//     if(fDoPhos){
       
-      Int_t npc = event->GetPHOSClusters(fPhosClustersArray);
+//       Int_t npc = event->GetPHOSClusters(fPhosClustersArray);
       
-      if(fDoMatchedTracks)
-	fPhosMatchedTracksHistProducer->FillHistograms(npc, fPhosClustersArray);
+//       if(fDoMatchedTracks)
+// 	fPhosMatchedTracksHistProducer->FillHistograms(npc, fPhosClustersArray);
       
-      if(fDoInvariantMass)
-	fPhosInvariantMassHistProducer->FillHistograms(npc, fPhosClustersArray);
+//       if(fDoInvariantMass)
+// 	fPhosInvariantMassHistProducer->FillHistograms(npc, fPhosClustersArray);
       
-      if(fDoClusterEnergy)
-	fPhosClusterEnergyHistProducer->FillHistograms(npc, fPhosClustersArray);
+//       if(fDoClusterEnergy)
+// 	fPhosClusterEnergyHistProducer->FillHistograms(npc, fPhosClustersArray);
       
-      if(fDoCellEnergy)
-	fPhosCellEnergyHistProducer->FillHistograms(npc, fPhosClustersArray);
+//       if(fDoCellEnergy)
+// 	fPhosCellEnergyHistProducer->FillHistograms(npc, fPhosClustersArray);
       
-    }
+//     }
     
-  }
+//   }
   
   
   //Push histos
