@@ -32,6 +32,9 @@ using namespace std;
 #include "AliHLTCaloHistoMatchedTracks.h"
 #include "AliESDEvent.h"
 #include "TRefArray.h"
+#include "AliHLTCaloClusterDataStruct.h"
+#include "AliHLTCaloClusterReader.h"
+
 
 // see below for class documentation
 // or
@@ -59,7 +62,8 @@ AliHLTCaloHistoComponent::AliHLTCaloHistoComponent() :
   fPhosInvariantMassHistProducer(NULL),
   fEmcalInvariantMassHistProducer(NULL),
   fPhosMatchedTracksHistProducer(NULL),
-  fEmcalMatchedTracksHistProducer(NULL)
+  fEmcalMatchedTracksHistProducer(NULL),
+  fClusterReader(NULL)
 {
   //see header file for documentation
 }
@@ -132,6 +136,8 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
     
   }
   
+  fClusterReader = new AliHLTCaloClusterReader();
+
   return 0;
 }
 
@@ -239,6 +245,9 @@ AliHLTComponent* AliHLTCaloHistoComponent::Spawn() {
 Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/) {
 
   //see header file for documentation
+  Int_t iResult = 0;
+
+
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
 
@@ -249,33 +258,95 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   vector<AliHLTCaloClusterDataStruct*> clustersVector;
   
   if (fDoEmcal) {
-   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock( kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny ); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock( kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL ); pBlock!=NULL; pBlock=GetNextInputBlock()) {
 
-     //Check for origin and continue if not do this detector
+      //Check for origin and continue if not do this detector
 
-     AliHLTCaloClusterHeaderStruct *clusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
-     fClusterReader->SetMemory(clusterHeader);
+      AliHLTCaloClusterHeaderStruct *clusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
+      fClusterReader->SetMemory(clusterHeader);
      
-     if ( (clusterHeader->fNClusters) < 0) {
-       HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (clusterHeader->fNClusters));
-     } else {    
-       HLTInfo("Event has positive number of clusters: %d", (Int_t ) (clusterHeader->fNClusters));
+      if ( (clusterHeader->fNClusters) < 0) {
+	HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (clusterHeader->fNClusters));
+      } else {    
+	HLTInfo("Event has positive number of clusters: %d", (Int_t ) (clusterHeader->fNClusters));
 
-       //BALLE, TODO, make it able to do EMCAL as well!!!
-       clustersVector.resize((int) (clusterHeader->fNClusters)); 
-       Int_t nClusters = 0;
-       cout << "nclustes " << clusterHeader->fNClusters << endl;
-       while( (clusterStruct = fClusterReader->NextCluster()) != 0) {
-	 phosClustersVector[nClusters++] = clusterStruct;  
-       }
+	//BALLE, TODO, make it able to do EMCAL as well!!!
+	clustersVector.resize((int) (clusterHeader->fNClusters)); 
+	Int_t nClusters = 0;
+	while( (clusterStruct = fClusterReader->NextCluster()) != 0) {
+	  clustersVector[nClusters++] = clusterStruct;  
+	}
+      
+	nClusters = clusterHeader->fNClusters;
+
+	//	if(fDoMatchedTracks)
+	  //	  fEmcalMatchedTracksHistProducer->FillHistograms(nClusters, clustersVector);
        
-       iResult = fTrackMatcher->Match(fTrackArray, phosClustersVector, fBz);
-     }
+	if(fDoInvariantMass)
+	  fEmcalInvariantMassHistProducer->FillHistograms(nClusters, clustersVector);
+       
+	//	if(fDoClusterEnergy)
+	  //fEmcalClusterEnergyHistProducer->FillHistograms(nClusters, clustersVector);
+       
+	//if(fDoCellEnergy)
+	  //fEmcalCellEnergyHistProducer->FillHistograms(nClusters, clustersVector);
+       
+      }
+ 
+      PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
+      //PushBack(pBlock->fPtr, pBlock->fSize, kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny );
+ 
+    }
      
-     if(iResult <0) {
-       HLTWarning("Error in track matcher");
-     }
-     //PushBack(pBlock->fPtr, pBlock->fSize, kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny );
+    if(iResult <0) {
+      HLTWarning("Error in track matcher");
+    }
+  }
+
+
+  clustersVector.clear();
+  if (fDoPhos) {
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock( kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS ); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+
+      //Check for origin and continue if not do this detector
+
+      AliHLTCaloClusterHeaderStruct *clusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
+      fClusterReader->SetMemory(clusterHeader);
+     
+      if ( (clusterHeader->fNClusters) < 0) {
+	HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (clusterHeader->fNClusters));
+      } else {    
+	HLTInfo("Event has positive number of clusters: %d", (Int_t ) (clusterHeader->fNClusters));
+
+	//BALLE, TODO, make it able to do PHOS as well!!!
+	clustersVector.resize((int) (clusterHeader->fNClusters)); 
+	Int_t nClusters = 0;
+	while( (clusterStruct = fClusterReader->NextCluster()) != 0) {
+	  clustersVector[nClusters++] = clusterStruct;  
+	}
+      
+	nClusters = clusterHeader->fNClusters;
+
+	//	if(fDoMatchedTracks)
+	//fPhosMatchedTracksHistProducer->FillHistograms(nClusters, clustersVector);
+       
+	if(fDoInvariantMass)
+	  fPhosInvariantMassHistProducer->FillHistograms(nClusters, clustersVector);
+       
+// 	if(fDoClusterEnergy)
+// 	  fPhosClusterEnergyHistProducer->FillHistograms(nClusters, clustersVector);
+       
+// 	if(fDoCellEnergy)
+// 	  fPhosCellEnergyHistProducer->FillHistograms(nClusters, clustersVector);
+       
+      }
+      PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
+    }
+     
+    if(iResult <0) {
+      HLTWarning("Error in track matcher");
+    }
+    
   }
 
 
@@ -352,16 +423,16 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   if(fDoPhos){
     
     if(fDoInvariantMass)
-      PushBack(fPhosInvariantMassHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
+      PushBack(fPhosInvariantMassHistProducer->GetHistograms(), kAliHLTDataTypeHistogram|kAliHLTDataOriginPHOS);
     
-    if(fDoMatchedTracks)
-      PushBack(fPhosMatchedTracksHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
+//     if(fDoMatchedTracks)
+//       PushBack(fPhosMatchedTracksHistProducer->GetHistograms(), kAliHLTDataTypeHistogram, kAliHLTDataOriginPHOS);
     
-    if(fDoClusterEnergy) 
-      PushBack(fPhosClusterEnergyHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
+//     if(fDoClusterEnergy) 
+//       PushBack(fPhosClusterEnergyHistProducer->GetHistograms(), kAliHLTDataTypeHistogram, kAliHLTDataOriginPHOS);
     
-    if(fDoCellEnergy)
-      PushBack(fPhosCellEnergyHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
+//     if(fDoCellEnergy)
+//       PushBack(fPhosCellEnergyHistProducer->GetHistograms(), kAliHLTDataTypeHistogram, kAliHLTDataOriginPHOS);
     
   }
 
@@ -371,14 +442,14 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
     if(fDoInvariantMass) 
       PushBack(fEmcalInvariantMassHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
         
-    if(fDoMatchedTracks) 
-      PushBack(fEmcalMatchedTracksHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
+//     if(fDoMatchedTracks) 
+//       PushBack(fEmcalMatchedTracksHistProducer->GetHistograms(), kAliHLTDataOriginEMCALHLTDataTypeHistogram, kAliHLTDataOriginEMCAL);
   
-    if(fDoClusterEnergy) 
-      PushBack(fEmcalClusterEnergyHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
+//     if(fDoClusterEnergy) 
+//       PushBack(fEmcalClusterEnergyHistProducer->GetHistograms(), kAliHLTDataOriginEMCALHLTDataTypeHistogram, kAliHLTDataOriginEMCAL);
     
-    if(fDoCellEnergy)
-      PushBack(fEmcalCellEnergyHistProducer->GetHistograms(), kAliHLTDataTypeHistogram);
+//     if(fDoCellEnergy)
+//       PushBack(fEmcalCellEnergyHistProducer->GetHistograms(), kAliHLTDataOriginEMCALHLTDataTypeHistogram, kAliHLTDataOriginEMCAL);
     
   }
 

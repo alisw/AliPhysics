@@ -29,7 +29,7 @@
 
 #include "AliHLTCaloHistoInvMass.h"
 #include "AliESDCaloCluster.h"
-#include "TMath.h"
+//#include "TMath.h"
 
 // #include "AliHLTCaloClusterDataStruct.h"
 // #include "AliHLTCaloClusterReader.h"
@@ -74,32 +74,34 @@ TObjArray* AliHLTCaloHistoInvMass::GetHistograms()
   return fHistArrayPtr;
 }
 
-Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, TRefArray * clustersArray) {
-  //See header file for documentation
+// Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, TRefArray * clustersArray) {
+//   //See header file for documentation
   
-  Float_t cPos[nc][3];
-  Float_t cEnergy[nc];
+//   Float_t cPos[nc][3];
+//   Float_t cEnergy[nc];
 
-  for(int ic = 0; ic < nc; ic++) {
-    AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(clustersArray->At(ic));
-    cluster->GetPosition(cPos[ic]);
-    cEnergy[ic] = cluster->E();
-  }
+//   for(int ic = 0; ic < nc; ic++) {
+//     AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(clustersArray->At(ic));
+//     cluster->GetPosition(cPos[ic]);
+//     cEnergy[ic] = cluster->E();
+//   }
 
-  for(Int_t ipho = 0; ipho<(nc-1); ipho++) { 
-    for(Int_t jpho = ipho+1; jpho<nc; jpho++) { 
-      // Calculate the theta angle between two photons
-      Double_t theta = (2* asin(0.5*TMath::Sqrt((cPos[ipho][0]-cPos[jpho][0])*(cPos[ipho][0]-cPos[jpho][0]) +(cPos[ipho][1]-cPos[jpho][1])*(cPos[ipho][1]-cPos[jpho][1]))/460));
+//   for(Int_t ipho = 0; ipho<(nc-1); ipho++) { 
+//     for(Int_t jpho = ipho+1; jpho<nc; jpho++) { 
+//       // Calculate the theta angle between two photons
+//       Double_t theta = (2* asin(0.5*TMath::Sqrt((cPos[ipho][0]-cPos[jpho][0])*(cPos[ipho][0]-cPos[jpho][0]) +(cPos[ipho][1]-cPos[jpho][1])*(cPos[ipho][1]-cPos[jpho][1]))/460));
       
-      // Calculate the mass m of the pion candidate
-      Double_t m =(TMath::Sqrt(2 * cEnergy[ipho]* cEnergy[jpho]*(1-TMath::Cos(theta))));
+//       // Calculate the mass m of the pion candidate
+//       Double_t m =(TMath::Sqrt(2 * cEnergy[ipho]* cEnergy[jpho]*(1-TMath::Cos(theta))));
       
-      fHistTwoClusterInvMass->Fill(m);
-    }
-  }
+//       fHistTwoClusterInvMass->Fill(m);
+//     }
+//   }
 
-  return 0;
-}
+//   return 0;
+// }
+
+
 
 // Int_t AliHLTCaloHistoInvMass::DoEvent(AliHLTCaloClusterHeaderStruct* cHeader) {   
   

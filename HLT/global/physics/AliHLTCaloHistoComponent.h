@@ -42,7 +42,7 @@ class AliHLTCaloHistoClusterEnergy;
 class AliHLTCaloHistoInvMass;
 class AliHLTCaloHistoMatchedTracks;
 class TRefArray;
-
+class AliHLTCaloClusterReader;
 /**
  * @class AliHLTPHOSHistogramProducerComponent
  *
@@ -114,6 +114,8 @@ protected:
 
   AliHLTCaloHistoMatchedTracks *fPhosMatchedTracksHistProducer; // PHOS matched tracks histogram producer
   AliHLTCaloHistoMatchedTracks *fEmcalMatchedTracksHistProducer; // EMCAL matched tracks histogram producer
+
+  AliHLTCaloClusterReader * fClusterReader; //Class to read cluster data structs
 
   ClassDef(AliHLTCaloHistoComponent, 1);
 
