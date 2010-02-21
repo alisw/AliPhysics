@@ -18,7 +18,7 @@
  * @file   AliHLTCaloHistoInvMass
  * @author Svein Lindal <slindal@fys.uio.no>
  * @date 
- * @brief  Produces plots of invariant mass of two clusters
+ * @brief  Produces plots of invariant mass of two clusters. 
  */
 
 // see header file for class documentation
