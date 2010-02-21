@@ -346,7 +346,7 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
     TString leavesChar[kNvarChar] = {"FiredTrigClass"};
     const Int_t charWidth[kNvarChar] = {255};
     TString leavesUInt[kNvarUInt] = {"BunchCrossNum", "OrbitNum", "PeriodNum", "RunNum"};
-    TString leavesFloatMC[kNvarFloatMC] = {"PxMC", "PyMC", "PzMC", "PtMC", "EtaMC", "RapidityMC", "Vx", "Vy", "Vz"};
+    TString leavesFloatMC[kNvarFloatMC] = {"PxMC", "PyMC", "PzMC", "PtMC", "EtaMC", "RapidityMC", "VxMC", "VyMC", "VzMC"};
     TString leavesIntMC[kNvarIntMC] = {"Pdg", "MotherType"};
 
     if ( ! fTreeSingleMu ) fTreeSingleMu = new TTree("fTreeSingleMu", "Single Mu");
@@ -420,7 +420,7 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     // So fill bunchCrossing with the read timestamp
     //    fill the orbit and period number with a timestamp created while reading the run
     TTimeStamp ts;
-    fVarUInt[kVarBunchCrossNumber] = ( fUseMC ) ? esdEvent->GetTimeStamp() : esdEvent->GetBunchCrossNumber();
+    fVarUInt[kVarBunchCrossNumber] = ( fUseMC ) ? (UInt_t)Entry() : esdEvent->GetBunchCrossNumber();
     fVarUInt[kVarOrbitNumber] = ( fUseMC ) ? ts.GetNanoSec() : esdEvent->GetOrbitNumber();
     fVarUInt[kVarPeriodNumber] = ( fUseMC ) ? ts.GetTime() : esdEvent->GetPeriodNumber();
     fVarUInt[kVarRunNumber] = esdEvent->GetRunNumber();
@@ -551,23 +551,22 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     FillTriggerHistos(kHistoPtDCAMC, fVarInt[kVarMatchTrig], fVarIntMC[kVarMotherType], fVarFloat[kVarPt], fVarFloat[kVarDCA]);
     FillTriggerHistos(kHistoPtVzMC,  fVarInt[kVarMatchTrig], fVarIntMC[kVarMotherType], fVarFloat[kVarPt], fVarFloat[kVarIPVz]);
 
-    if ( fVarIntMC[kVarMotherType] != kUnknownPart) {
-      fVarFloat[kVarPtMC] = mcTrack->Pt();
+    if ( matchedMCTrack ) {
+      fVarFloatMC[kVarPtMC] = matchedMCTrack->Pt();
       FillTriggerHistos(kHistoPtResolutionMC, fVarInt[kVarMatchTrig], fVarIntMC[kVarMotherType], fVarFloat[kVarPt] - fVarFloatMC[kVarPtMC]);
       if ( fFillTree ){
-	fVarFloatMC[kVarPxMC] = mcTrack->Px();
-	fVarFloatMC[kVarPyMC] = mcTrack->Py();
-	fVarFloatMC[kVarPzMC] = mcTrack->Pz();
-	fVarFloatMC[kVarEtaMC] = mcTrack->Eta();
-	fVarFloatMC[kVarRapidityMC] = mcTrack->Y();
-	fVarFloatMC[kVarVxMC] = mcTrack->Xv();
-	fVarFloatMC[kVarVyMC] = mcTrack->Yv();
-	fVarFloatMC[kVarVzMC] = mcTrack->Zv();
-	fVarIntMC[kVarPdg] = mcTrack->PdgCode();
-
-	fTreeSingleMuMC->Fill();
+	fVarFloatMC[kVarPxMC] = matchedMCTrack->Px();
+	fVarFloatMC[kVarPyMC] = matchedMCTrack->Py();
+	fVarFloatMC[kVarPzMC] = matchedMCTrack->Pz();
+	fVarFloatMC[kVarEtaMC] = matchedMCTrack->Eta();
+	fVarFloatMC[kVarRapidityMC] = matchedMCTrack->Y();
+	fVarFloatMC[kVarVxMC] = matchedMCTrack->Xv();
+	fVarFloatMC[kVarVyMC] = matchedMCTrack->Yv();
+	fVarFloatMC[kVarVzMC] = matchedMCTrack->Zv();
+	fVarIntMC[kVarPdg] = matchedMCTrack->PdgCode();
       }
     }
+    if ( fFillTree ) fTreeSingleMuMC->Fill();
   } // loop on tracks
 
   if ( fKeepAll &&  ( ( fVarInt[kVarIsMuon] + fVarInt[kVarIsGhost] ) == 0 ) ) {
