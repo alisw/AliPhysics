@@ -18,9 +18,9 @@
 
 /** 
  * @file   AliHLTCaloHistoClusterEnergy
- * @author Albin Gaignette and Svein Lindal slindal@fys.uio.no
+ * @author Svein Lindal slindal@fys.uio.no
  * @date 
- * @brief  Produces Invariant mass histograms of PHOS clusters
+ * @brief  Produces histograms of cluster energy distributions
  */
 
 // see header file for class documentation
@@ -31,14 +31,15 @@
 
 //#include "AliHLTPHOSBase.h"
 
+#include "AliHLTCaloHistoProducer.h"
 #include "Rtypes.h"
-
-class TObjArray;
+//class TObjArray;
 class TH1F;
 class TH2F;
-class AliESDEvent;
-class TRefArray;
+//class AliESDEvent;
+//class TRefArray;
 class TString;
+
 
 
 /** 
@@ -47,13 +48,13 @@ class TString;
  * Class produces physics histograms for PHOS. It takes a TClonesArray
  * of AliESDCalocluster as input and fills several histograms
  *
- * Histograms (1D):
- *  * - Invariant mass of two clusters
+ * 
+ * 
  * 
  * @ingroup alihlt_phos
  */
 
-class AliHLTCaloHistoClusterEnergy {
+class AliHLTCaloHistoClusterEnergy : public AliHLTCaloHistoProducer {
  
 public:
   
@@ -64,13 +65,9 @@ public:
   virtual ~AliHLTCaloHistoClusterEnergy();
 
   /** Analyse the clusters in the event and fill histograms */
-  Int_t FillHistograms(Int_t nc, TRefArray * clustersArray);
+  Int_t FillHistograms(Int_t nc, TRefArray * clusterArray );
+  Int_t FillHistograms(Int_t nc, vector<AliHLTCaloClusterDataStruct*> &cVec);
 
-  /** Get a pointer to the TObjArray of histograms */
-  TObjArray *GetHistograms();
-
-  
-  
  private:
 
   /** Default constructor prohibited*/
@@ -86,12 +83,9 @@ public:
   TH1F * fHistClusterEnergy;                 //!transient
 
   /** 2D histogram of cluster energy vs the number of cells in the cluster */
-  TH2F * fHistClusterEnergyVsNCells;
-  
-  /** Pointer to the array of histograms */
-  TObjArray *fHistArrayPtr;                     //!transient
+  TH2F * fHistClusterEnergyVsNCells;         //!transient
 
-  ClassDef(AliHLTCaloHistoClusterEnergy, 1);
+  ClassDef(AliHLTCaloHistoClusterEnergy, 0);
 
 };
  

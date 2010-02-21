@@ -12,13 +12,14 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		AliHLTGlobalHistoCollector.h \
 		physics/AliHLTV0HistoComponent.h \
 		physics/AliHLTCaloHistoComponent.h \
+		physics/AliHLTCaloHistoProducer.h \
 	        physics/AliHLTCaloHistoInvMass.h \
 		physics/AliHLTCaloHistoMatchedTracks.h \
 		physics/AliHLTCaloHistoClusterEnergy.h \
 		physics/AliHLTCaloHistoCellEnergy.h 
 
+#//
 
-#
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:= 	$(CLASS_HDRS)

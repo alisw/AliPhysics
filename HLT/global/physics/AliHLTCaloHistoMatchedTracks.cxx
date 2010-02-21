@@ -38,43 +38,33 @@
 #include "TString.h"
 
 AliHLTCaloHistoMatchedTracks::AliHLTCaloHistoMatchedTracks(TString det) :
-  //  fClusterReader(NULL),
-  fHistArrayPtr(NULL),
   fHistMatchDistance(NULL),
   fHistMatchedEnergy(NULL),
   fHistUnMatchedEnergy(NULL)
 {
-  // See header file for documentation
-  fHistArrayPtr = new TObjArray;
 
-  //  fClusterReader = new AliHLTCaloClusterReader();
   fHistMatchDistance = new TH1F( Form("%s fHistMatchDistance", det.Data()), Form("%s Track - Cluster residuals (cm)", det.Data()), 50, 0, 50);
   fHistMatchDistance->GetXaxis()->SetTitle("Distance (cm)");
   fHistMatchDistance->GetYaxis()->SetTitle("Count");
   fHistMatchDistance->SetMarkerStyle(21);
-  fHistArrayPtr->AddLast(fHistMatchDistance);
+  fHistArray->AddLast(fHistMatchDistance);
 
   fHistMatchedEnergy = new TH1F( Form("%s fHistMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with matching tracks", det.Data()), 200, 0, 200);
   fHistMatchedEnergy->GetXaxis()->SetTitle("Cluster Energy (GeV)");
   fHistMatchedEnergy->GetYaxis()->SetTitle("Number of clusters");
   fHistMatchedEnergy->SetMarkerStyle(21);
-  fHistArrayPtr->AddLast(fHistMatchedEnergy);
+  fHistArray->AddLast(fHistMatchedEnergy);
 
   fHistUnMatchedEnergy = new TH1F( Form("%s fHistUnMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with no matching track", det.Data()), 200, 0, 200);
   fHistUnMatchedEnergy->GetXaxis()->SetTitle("Cluster Energy (GeV)");
   fHistUnMatchedEnergy->GetYaxis()->SetTitle("Number of clusters");
   fHistUnMatchedEnergy->SetMarkerStyle(21);
-  fHistArrayPtr->AddLast(fHistUnMatchedEnergy);
-
+  fHistArray->AddLast(fHistUnMatchedEnergy);
 }
 
 
 AliHLTCaloHistoMatchedTracks::~AliHLTCaloHistoMatchedTracks()
 {
-
-  if(fHistArrayPtr)
-    delete fHistArrayPtr;
-  fHistArrayPtr = NULL;
 
   if(fHistMatchDistance){
     delete fHistMatchDistance;
@@ -92,49 +82,36 @@ AliHLTCaloHistoMatchedTracks::~AliHLTCaloHistoMatchedTracks()
   }
 
 }
+  
 
-
-TObjArray* AliHLTCaloHistoMatchedTracks::GetHistograms()
-{  
-  // See header file for documentation
-  return fHistArrayPtr;
+Int_t AliHLTCaloHistoMatchedTracks::FillHistograms(Int_t nc, TRefArray * clusterArray) {
+  //See header file for documentation
+  for(int ic = 0; ic < nc; ic++) {
+    AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(clusterArray->At(ic));
+    return FillMatchedTracks(cluster);
+  }
+  return 0;
 }
 
+Int_t AliHLTCaloHistoMatchedTracks::FillHistograms(Int_t nc, vector<AliHLTCaloClusterDataStruct*> &cVec) {
+  for(int ic = 0; ic < nc; ic++) {
+    AliHLTCaloClusterDataStruct * cluster = cVec.at(ic);
+    return FillMatchedTracks(cluster);
+  }
+  return 0;
+}
 
-// Int_t AliHLTCaloHistoMatchedTracks::DoEvent(AliHLTCaloClusterHeaderStruct* cHeader) {   
-  
-//   fClusterReader->SetMemory(cHeader);
-  
-//   AliHLTCaloClusterDataStruct* cluster;
-//   while ( ( cluster = fClusterReader->NextCluster() ) ) {
-    
-//     if(cluster->fTracksMatched->GetSize()>0) {
-//       fHistMatchedEnergy->Fill(cluster->fEnergy);
-//     } else {
-//       fHistUnMatchedEnergy->Fill(cluster->fEnergy);
-//     }
-//   }  
-  
-  
-//   return 0;
-// }
-  
+template <class T>
+Int_t AliHLTCaloHistoMatchedTracks::FillMatchedTracks(T* cluster){
+  HLTInfo("Filling track-matching histograms");
 
-Int_t AliHLTCaloHistoMatchedTracks::FillHistograms(Int_t nClusters, TRefArray* clustersArray) {   
-  
-  for(int ic = 0; ic < nClusters; ic++) {
-    
-    AliESDCaloCluster * cluster = dynamic_cast<AliESDCaloCluster*>(clustersArray->At(ic));
-    
-    if(cluster->GetNTracksMatched() > 0) {
-      fHistMatchedEnergy->Fill(cluster->E());
-      fHistMatchDistance->Fill(cluster->GetEmcCpvDistance());
-    
-    } else {
-      fHistUnMatchedEnergy->Fill(cluster->E());
-    }
-  
+  if(cluster->GetNTracksMatched() > 0) {
+    fHistMatchedEnergy->Fill(cluster->E());
+    fHistMatchDistance->Fill(cluster->GetEmcCpvDistance());
+  } else {
+    fHistUnMatchedEnergy->Fill(cluster->E());
   }
   
   return 0;
 }
+

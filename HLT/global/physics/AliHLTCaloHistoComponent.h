@@ -43,6 +43,7 @@ class AliHLTCaloHistoInvMass;
 class AliHLTCaloHistoMatchedTracks;
 class TRefArray;
 class AliHLTCaloClusterReader;
+class TObjArray;
 /**
  * @class AliHLTPHOSHistogramProducerComponent
  *
@@ -50,8 +51,7 @@ class AliHLTCaloClusterReader;
  * @ingroup alihlt_phos
  */
 
-class AliHLTCaloHistoComponent : public AliHLTProcessor
-{
+class AliHLTCaloHistoComponent : public AliHLTProcessor {
 
  public:
 
@@ -93,31 +93,21 @@ protected:
   /** asssignment operator prohibited */
   AliHLTCaloHistoComponent& operator=(const AliHLTCaloHistoComponent&);
 
-  TRefArray * fEmcalClustersArray;  //Array to contain EMCAL Clusters
-  TRefArray * fPhosClustersArray;  //Array to contain PHOS Clusters
-
-  Bool_t fDoPhos;       // Process PHOS data?
-  Bool_t fDoEmcal;      // Process EMCAL data?
-  Bool_t fDoCellEnergy; // make the cell energy histograms?
-  Bool_t fDoClusterEnergy; // make the cluster energy histograms?
-  Bool_t fDoInvariantMass; // make the invariant mass histograms?
-  Bool_t fDoMatchedTracks; // make the matched tracks histograms?
+  /** function to get data content from blocks and pass it on to histogram produsers*/
+  Int_t ProcessBlocks(const AliHLTComponentBlockData * pBlock, TObjArray * histoArray);
   
-  AliHLTCaloHistoCellEnergy *fPhosCellEnergyHistProducer; // cell energy histogram producer
-  AliHLTCaloHistoCellEnergy *fEmcalCellEnergyHistProducer; // cell energy histogram producer
+  AliHLTCaloClusterReader * fClusterReader; //!transient Class to read cluster data structs
+  
+  TRefArray * fEmcalClustersArray;  //!transient Array to contain EMCAL Clusters
+  TRefArray * fPhosClustersArray;  //!transient Array to contain PHOS Clusters
 
-  AliHLTCaloHistoClusterEnergy *fPhosClusterEnergyHistProducer; // PHOS cluster energy histogram producer
-  AliHLTCaloHistoClusterEnergy *fEmcalClusterEnergyHistProducer; // EMCAL cluster energy histogram producer
+  TObjArray * fPhosHistogramArray; //!transient 
+  TObjArray * fEmcalHistogramArray; //!transient 
+  
+  Bool_t fDoEmcal;  //Fill EMCAL histos?
+  Bool_t fDoPhos;   //Fill PHOS histos?
 
-  AliHLTCaloHistoInvMass *fPhosInvariantMassHistProducer; // PHOS invariant mass histogram producer
-  AliHLTCaloHistoInvMass *fEmcalInvariantMassHistProducer; // EMCAL insvariant mass histogram producer
-
-  AliHLTCaloHistoMatchedTracks *fPhosMatchedTracksHistProducer; // PHOS matched tracks histogram producer
-  AliHLTCaloHistoMatchedTracks *fEmcalMatchedTracksHistProducer; // EMCAL matched tracks histogram producer
-
-  AliHLTCaloClusterReader * fClusterReader; //Class to read cluster data structs
-
-  ClassDef(AliHLTCaloHistoComponent, 1);
+  ClassDef(AliHLTCaloHistoComponent, 0);
 
 };
 

@@ -3,7 +3,7 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
  *                                                                        *
- * Primary Authors: Albin Gaignette                                       *
+ * Primary Authors: Svein Lindal                                          *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -30,22 +30,15 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-//#include "AliHLTPHOSBase.h"
 
+#include "AliHLTCaloHistoProducer.h"
 #include "Rtypes.h"
-#include "TMath.h"
-#include "TH1F.h"
-#include "vector"
-
-//#include "PHOS/AliHLTPHOSConstants.h" 
 
 class TObjArray;
-class AliHLTCaloClusterReader;
-class AliESDEvent;
+class AliHLTCaloClusterDataStruct;
 class TRefArray;
-struct AliHLTCaloClusterHeaderStruct;
 class TString;
-class TRefArray;
+class TH1F;
 
 /** 
  * @class AliHLTCaloHistoInvMass
@@ -61,7 +54,7 @@ class TRefArray;
 
 using std::vector;
 
-class AliHLTCaloHistoInvMass {
+class AliHLTCaloHistoInvMass : public AliHLTCaloHistoProducer {
 
 public:
   
@@ -71,13 +64,11 @@ public:
   /** Destructor */
   virtual ~AliHLTCaloHistoInvMass();
 
-  /** Get a pointer to the TObjArray of histograms */
-  TObjArray *GetHistograms();
-
   //** Loops of the calo clusters and fills histos
-  //  Int_t FillHistograms(Int_t nc, TRefArray * clustersArray);
-  template <class T>
-  Int_t FillHistograms(Int_t nc, vector<T*> &cVec);
+  Int_t FillHistograms(Int_t nc, TRefArray * clusterArray);
+  Int_t FillHistograms(Int_t nc, vector<AliHLTCaloClusterDataStruct*> &cVec);
+  //   template <class T>
+  //   Int_t FillHistograms(Int_t nc, vector<T*> &cVec);
   
 private:
 
@@ -88,50 +79,41 @@ private:
   AliHLTCaloHistoInvMass(const AliHLTCaloHistoInvMass &);
   
   /** Assignment operator */
-  AliHLTCaloHistoInvMass & operator= (const AliHLTCaloHistoInvMass);
-  
-  /** Cluster reader class   */
-  AliHLTCaloClusterReader * fClusterReader;
+  AliHLTCaloHistoInvMass & operator= (const AliHLTCaloHistoInvMass &);
   
   /** Histogram of the 2 cluster invariant mass */
   TH1F *fHistTwoClusterInvMass;                 //!transient
-  
-  /** Pointer to the array of histograms */
-  TObjArray *fHistArrayPtr;                     //!transient
-  
+
   ClassDef(AliHLTCaloHistoInvMass, 0);
 
 };
 
-
-
-template <class T>
-Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, vector<T*> &cVec) {
-  //See header file for documentation
+// template <class T>
+// Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, vector<T*> &cVec) {
+//   //See header file for documentation
   
-  Float_t cPos[nc][3];
-  Float_t cEnergy[nc];
+//   Float_t cPos[nc][3];
+//   Float_t cEnergy[nc];
 
-  for(int ic = 0; ic < nc; ic++) {
-    T * cluster = cVec.at(ic);
-    cluster->GetPosition(cPos[ic]);
-    cEnergy[ic] = cluster->E();
-  }
+//   for(int ic = 0; ic < nc; ic++) {
+//     T * cluster = cVec.at(ic);
+//     cluster->GetPosition(cPos[ic]);
+//     cEnergy[ic] = cluster->E();
+//   }
 
-  for(Int_t ipho = 0; ipho<(nc-1); ipho++) { 
-    for(Int_t jpho = ipho+1; jpho<nc; jpho++) { 
-      // Calculate the theta angle between two photons
-      Double_t theta = (2* asin(0.5*TMath::Sqrt((cPos[ipho][0]-cPos[jpho][0])*(cPos[ipho][0]-cPos[jpho][0]) +(cPos[ipho][1]-cPos[jpho][1])*(cPos[ipho][1]-cPos[jpho][1]))/460));
+//   for(Int_t ipho = 0; ipho<(nc-1); ipho++) { 
+//     for(Int_t jpho = ipho+1; jpho<nc; jpho++) { 
+//       // Calculate the theta angle between two photons
+//       Double_t theta = (2* asin(0.5*TMath::Sqrt((cPos[ipho][0]-cPos[jpho][0])*(cPos[ipho][0]-cPos[jpho][0]) +(cPos[ipho][1]-cPos[jpho][1])*(cPos[ipho][1]-cPos[jpho][1]))/460));
       
-      // Calculate the mass m of the pion candidate
-      Double_t m =(TMath::Sqrt(2 * cEnergy[ipho]* cEnergy[jpho]*(1-TMath::Cos(theta))));
+//       // Calculate the mass m of the pion candidate
+//       Double_t m =(TMath::Sqrt(2 * cEnergy[ipho]* cEnergy[jpho]*(1-TMath::Cos(theta))));
       
-      fHistTwoClusterInvMass->Fill(m);
-    }
-  }
+//       fHistTwoClusterInvMass->Fill(m);
+//     }
+//   }
 
-  return 0;
-}
-
+//   return 0;
+// }
  
 #endif
