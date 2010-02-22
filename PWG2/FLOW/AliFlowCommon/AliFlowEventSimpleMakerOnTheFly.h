@@ -116,7 +116,10 @@ class AliFlowEventSimpleMakerOnTheFly {
   
   void SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
   Int_t GetNoOfLoops() const {return this->fNoOfLoops;} 
-
+  void SetPtRange(Double_t pr) {this->fPtRange = pr;}
+  Double_t GetPtRange() const {return this->fPtRange;}   
+  void SetEtaRange(Double_t er) {this->fEtaRange = er;}
+  Double_t GetEtaRange() const {return this->fEtaRange;} 
   void SetSubeventEtaRange(Double_t minA,Double_t maxA,Double_t minB,Double_t maxB) 
   {this->fEtaMinA = minA; this->fEtaMaxA = maxA;this->fEtaMinB = minB; this->fEtaMaxB = maxB;};
 
@@ -173,10 +176,12 @@ class AliFlowEventSimpleMakerOnTheFly {
   TRandom3* fMyTRandom3; // our TRandom3 generator
   Int_t     fCount;      // count number of events 
   Int_t     fNoOfLoops;  // number of times to use the same particle (nonflow)
-  Double_t  fEtaMinA;              // minimum eta of subevent A eta range
-  Double_t  fEtaMaxA;              // maximum eta of subevent A eta range
-  Double_t  fEtaMinB;              // minimum eta of subevent B eta range
-  Double_t  fEtaMaxB;              // maximum eta of subevent B eta range  
+  Double_t  fPtRange;    // splitted track pt range for uniform sampling
+  Double_t  fEtaRange;   // splitted track eta range for uniform sampling
+  Double_t  fEtaMinA;    // minimum eta of subevent A eta range
+  Double_t  fEtaMaxA;    // maximum eta of subevent A eta range
+  Double_t  fEtaMinB;    // minimum eta of subevent B eta range
+  Double_t  fEtaMaxB;    // maximum eta of subevent B eta range  
 
   ClassDef(AliFlowEventSimpleMakerOnTheFly,0) // macro for rootcint
 };

@@ -68,6 +68,8 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fMyTRandom3(NULL),
   fCount(0),
   fNoOfLoops(1),
+  fPtRange(0.),
+  fEtaRange(0.),
   fEtaMinA(-1.0),
   fEtaMaxA(-0.01),
   fEtaMinB(0.01),
@@ -182,8 +184,8 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Int_t iGoodTracks = 0;
   Int_t iSelParticlesRP = 0;
   Int_t iSelParticlesPOI = 0;
-  Double_t dTmpPt = 0.;
-  Double_t dTmpEta = 0.;
+  Double_t dTmpPt[] = {0.};
+  Double_t dTmpEta[] = {0.};
   Double_t dTmpV2 = 0.;
   Double_t dTmpPhi = 0.;
   Bool_t bUniformAcceptance = kTRUE;
@@ -193,111 +195,147 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
     bUniformAcceptance = kFALSE;
   }
 
-  for(Int_t i=0;i<iNewMultiplicityOfRP;i++) {
-    // get the track parameters 
-    dTmpPt = fPtSpectra->GetRandom();
-    // to be improved:
-    if(!fUseConstantHarmonics) {
-      if(dTmpPt >= fPtCutOff) {dTmpV2 = fV2RPMax;} 
-      else {dTmpV2 = fV2RPMax*(dTmpPt/fPtCutOff);}  
-      fPhiDistribution->SetParameter(1,dTmpV2);         
-    }
-
-    dTmpPhi = fPhiDistribution->GetRandom();
-
-    for(Int_t d=0;d<fNoOfLoops;d++) {
-      dTmpEta = fMyTRandom3->Uniform(dEtaMin,dEtaMax);
-      // make the new track
-      AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-      // uniform acceptance:
-      if(bUniformAcceptance) {
-	pTrack->SetPt(dTmpPt); 
-	pTrack->SetEta(dTmpEta); 
-	pTrack->SetPhi(dTmpPhi); 
-	pTrack->SetForRPSelection(kTRUE); 
-	iSelParticlesRP++; 
-	// assign particles to subevents
-	if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) {
-	  pTrack->SetForSubevent(0);
-	}
-	if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) {
-	  pTrack->SetForSubevent(1);
-	}
-	pTrack->SetForPOISelection(kTRUE); 
-	iSelParticlesPOI++; 
-	pEvent->TrackCollection()->Add(pTrack); 
-	iGoodTracks++; 
-      }
-      // non-uniform acceptance, 1st sector:
-      else if ((dTmpPhi > fPhiMin1*Pi/180) && (dTmpPhi < fPhiMax1*Pi/180)) {
-	if(fMyTRandom3->Uniform(0,1) > 1 - fProbability1) {
-	  pTrack->SetPt(dTmpPt);
-	  pTrack->SetEta(dTmpEta);
+  for(Int_t i=0;i<iNewMultiplicityOfRP;i++) 
+  {
+   // get the track parameters 
+   dTmpPt[0] = fPtSpectra->GetRandom();
+   // to be improved (optimized):
+   if(!fUseConstantHarmonics) 
+   {
+    if(dTmpPt[0] >= fPtCutOff) {dTmpV2 = fV2RPMax;} 
+    else {dTmpV2 = fV2RPMax*(dTmpPt[0]/fPtCutOff);}  
+    fPhiDistribution->SetParameter(1,dTmpV2);         
+   }
+   dTmpPhi = fPhiDistribution->GetRandom();
+   dTmpEta[0] = fMyTRandom3->Uniform(dEtaMin,dEtaMax); // to be improved (add eta dependent flow as well)
+   for(Int_t d=0;d<fNoOfLoops;d++) 
+   {
+    if(d>0) 
+    {
+     dTmpPt[d] = dTmpPt[0];
+     dTmpEta[d] = dTmpEta[0]; 
+     if(fPtRange>0.)
+     {
+      dTmpPt[d] = fMyTRandom3->Uniform(dTmpPt[0]-fPtRange,dTmpPt[0]+fPtRange);
+     }     
+     if(fEtaRange>0.)
+     {
+      dTmpEta[d] = fMyTRandom3->Uniform(dTmpEta[0]-fEtaRange,dTmpEta[0]+fEtaRange);
+     }     
+    }    
+    // make the new track
+    AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
+    // uniform acceptance:
+    if(bUniformAcceptance) 
+    {
+     pTrack->SetPt(dTmpPt[d]); 
+	  pTrack->SetEta(dTmpEta[d]); 
+	  pTrack->SetPhi(dTmpPhi); 
+	  pTrack->SetForRPSelection(kTRUE); 
+	  iSelParticlesRP++; 
+	  // assign particles to subevents
+	  if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) 
+	  {
+	   pTrack->SetForSubevent(0);
+	  }
+     if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) 
+     {
+	   pTrack->SetForSubevent(1);
+	  }
+	  pTrack->SetForPOISelection(kTRUE); 
+	  iSelParticlesPOI++; 
+	  pEvent->TrackCollection()->Add(pTrack); 
+	  iGoodTracks++; 
+    } // end of if(bUniformAcceptance) 
+    // non-uniform acceptance, 1st sector:
+    else if ((dTmpPhi > fPhiMin1*Pi/180) && (dTmpPhi < fPhiMax1*Pi/180)) 
+    {
+	  if(fMyTRandom3->Uniform(0,1) > 1 - fProbability1) 
+	  {
+	   pTrack->SetPt(dTmpPt[d]);
+	   pTrack->SetEta(dTmpEta[d]);
+	   pTrack->SetPhi(dTmpPhi);
+	   pTrack->SetForRPSelection(kTRUE);
+	   iSelParticlesRP++;
+	   // assign particles to subevents
+	   if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) 
+	   {
+	    pTrack->SetForSubevent(0);
+	   }
+	   if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) 
+	   {
+	    pTrack->SetForSubevent(1);
+	   }
+	   pTrack->SetForPOISelection(kTRUE);
+	   iSelParticlesPOI++;
+	   pEvent->TrackCollection()->Add(pTrack);
+	   iGoodTracks++;
+	  } // end of if(fMyTRandom3->Uniform(0,1) > 1 - fProbability1) 
+    } // end of else if ((dTmpPhi > fPhiMin1*Pi/180) && (dTmpPhi < fPhiMax1*Pi/180)) 
+    // non-uniform acceptance, 2nd sector:
+    else if ((dTmpPhi > fPhiMin2*Pi/180) && (dTmpPhi < fPhiMax2*Pi/180)) 
+    {
+	  if(fMyTRandom3->Uniform(0,1) > 1 - fProbability2)
+	  {
+	   pTrack->SetPt(dTmpPt[d]);
+	   pTrack->SetEta(dTmpEta[d]);
+	   pTrack->SetPhi(dTmpPhi);
+	   pTrack->SetForRPSelection(kTRUE);
+	   iSelParticlesRP++;
+	   // assign particles to subevents
+	   if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) 
+	   {
+	    pTrack->SetForSubevent(0);
+	   }
+	   if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) 
+	   {
+	    pTrack->SetForSubevent(1);
+	   }
+	   pTrack->SetForPOISelection(kTRUE);
+	   iSelParticlesPOI++;
+	   pEvent->TrackCollection()->Add(pTrack);
+	   iGoodTracks++;
+	  } // end of if(fMyTRandom3->Uniform(0,1) > 1 - fProbability2)
+    } // end of else if ((dTmpPhi > fPhiMin2*Pi/180) && (dTmpPhi < fPhiMax2*Pi/180))
+    else 
+    {
+	  pTrack->SetPt(dTmpPt[d]);
+	  pTrack->SetEta(dTmpEta[d]);
 	  pTrack->SetPhi(dTmpPhi);
 	  pTrack->SetForRPSelection(kTRUE);
 	  iSelParticlesRP++;
 	  // assign particles to subevents
-	  if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) {
-	    pTrack->SetForSubevent(0);
+	  if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) 
+	  {
+	   pTrack->SetForSubevent(0);
 	  }
-	  if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) {
-	    pTrack->SetForSubevent(1);
+	  if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) 
+	  {
+	   pTrack->SetForSubevent(1);
 	  }
 	  pTrack->SetForPOISelection(kTRUE);
-	  iSelParticlesPOI++;
+     iSelParticlesPOI++;
 	  pEvent->TrackCollection()->Add(pTrack);
 	  iGoodTracks++;
-	}
-      } 
-      // non-uniform acceptance, 2nd sector:
-      else if ((dTmpPhi > fPhiMin2*Pi/180) && (dTmpPhi < fPhiMax2*Pi/180)) {
-	if(fMyTRandom3->Uniform(0,1) > 1 - fProbability2) {
-	  pTrack->SetPt(dTmpPt);
-	  pTrack->SetEta(dTmpEta);
-	  pTrack->SetPhi(dTmpPhi);
-	  pTrack->SetForRPSelection(kTRUE);
-	  iSelParticlesRP++;
-	  // assign particles to subevents
-	  if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) {
-	    pTrack->SetForSubevent(0);
-	  }
-	  if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) {
-	    pTrack->SetForSubevent(1);
-	  }
-	  
-	  pTrack->SetForPOISelection(kTRUE);
-	  iSelParticlesPOI++;
-	  pEvent->TrackCollection()->Add(pTrack);
-	  iGoodTracks++;
-	}
-      } 
-      else {
-	pTrack->SetPt(dTmpPt);
-	pTrack->SetEta(dTmpEta);
-	pTrack->SetPhi(dTmpPhi);
-	pTrack->SetForRPSelection(kTRUE);
-	iSelParticlesRP++;
-	// assign particles to subevents
-	if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) {
-	  pTrack->SetForSubevent(0);
-	}
-	if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) {
-	  pTrack->SetForSubevent(1);
-	}
-	pTrack->SetForPOISelection(kTRUE);
-	iSelParticlesPOI++;
-	pEvent->TrackCollection()->Add(pTrack);
-	iGoodTracks++;
-      }
-    }
-  }
+    } // end of else
+   } // end of for(Int_t d=0;d<fNoOfLoops;d++)
+  } // end of for(Int_t i=0;i<iNewMultiplicityOfRP;i++)
   
   // update the event quantities
   pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
   pEvent->SetNumberOfTracks(iGoodTracks);//tracks used either for RP or for POI selection
   pEvent->SetMCReactionPlaneAngle(dMCReactionPlaneAngle);
   
-  if ( (++fCount % 100) == 0) {
+  Int_t cycle = 0;
+  if(!fUseConstantHarmonics)
+  { 
+   cycle = 10;
+  } else
+    {
+     cycle = 100;
+    }
+  
+  if ( (++fCount % cycle) == 0) {
     if (!dMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  dMCReactionPlaneAngle << endl;
     else cout<<" MC Reaction Plane Angle = unknown "<< endl;
     cout<<" iGoodTracks = "<< iGoodTracks << endl;

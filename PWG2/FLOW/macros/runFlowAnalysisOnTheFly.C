@@ -44,13 +44,22 @@ Double_t dTemperatureOfRP = 0.44; // 'temperature' of RPs in GeV/c (increase thi
 // usage of same seed (kTRUE) is relevant in two cases:
 // 1.) If you want to use LYZ method to calcualte differential flow;
 // 2.) If you want to use phi weights for GFC, QC and FQD
-Bool_t bSameSeed = kTRUE;  
+Bool_t bSameSeed = kFALSE;  
 
 
 //===NONFLOW=============================================
 // number of times to use each track (to simulate nonflow)
 Int_t iLoops = 1; 
-
+Double_t ptRange = 0.0; // If the original track with momentum pt is splitted, 
+                        // the momentum of splitted track is sampled uniformly 
+                        // from (pt-ptRange, pt+ptRange). If ptRange = 0.0, the
+                        // momentum of splitted track is the same as momentum 
+                        // of original track.
+Double_t etaRange = 0.0; // If the original track with pseudorapidity eta is splitted, 
+                          // the pseudorapidity of splitted track is sampled uniformly 
+                          // from (eta-etaRange, eta+etaRange). If etaRange = 0.0, the
+                          // pseudorapidity of splitted track will be the same as the
+                          // pseudorapidity of original track.
 
 //===FLOW HARMONICS===============================================================
 // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)                     
@@ -127,7 +136,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly( Int_t nEvts=44, Int_t mode=mLocal)
+int runFlowAnalysisOnTheFly( Int_t nEvts=1000, Int_t mode=mLocal)
 {
  TStopwatch timer;
  timer.Start();
@@ -422,7 +431,8 @@ int runFlowAnalysisOnTheFly( Int_t nEvts=44, Int_t mode=mLocal)
   
  // set the global event parameters: 
  eventMakerOnTheFly->SetNoOfLoops(iLoops);
- 
+ eventMakerOnTheFly->SetPtRange(ptRange);
+ eventMakerOnTheFly->SetEtaRange(etaRange);
  if(bMultDistrOfRPsIsGauss)
  {
   eventMakerOnTheFly->SetMultDistrOfRPsIsGauss(bMultDistrOfRPsIsGauss);
