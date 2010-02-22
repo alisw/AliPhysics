@@ -74,7 +74,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   dveevsmod0->SetTitle(tit0);
   dveevsmod1->SetTitle(tit0);
 
-  TF1* fPoly=new TF1("fPoly","[0]+[1]*x+[2]*x*x+[3]*x*x*x",0.,256.);
+  TF1* fPoly=new TF1("fPoly","pol3",0.,256.);
   Char_t tit[100];
   TString psnm0 = "vdriftSDD.ps[";
   TString psnm1 = "vdriftSDD.ps";
