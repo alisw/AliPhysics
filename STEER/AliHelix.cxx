@@ -175,7 +175,9 @@ void  AliHelix::GetMomentum(Double_t phase, Double_t p[4],Double_t conversion, D
   // return  momentum at given phase
   Double_t x[3],g[3],gg[3];
   Evaluate(phase,x,g,gg);
-  if (TMath::Abs(conversion)<0.0001) conversion = -1000/0.299792458/AliTracker::GetBz();
+  //  if (TMath::Abs(conversion)<0.0001) conversion = -1000/0.299792458/AliTracker::GetBz();
+  if (TMath::Abs(conversion)<0.0001) conversion = TMath::Abs(1./kB2C/AliTracker::GetBz());
+
   Double_t mt = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
   p[0] = fHelix[8]*g[0]/(mt*conversion);
   p[1] = fHelix[8]*g[1]/(mt*conversion);
