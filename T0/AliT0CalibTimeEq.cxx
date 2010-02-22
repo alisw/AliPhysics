@@ -132,7 +132,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	    rms=cfd->GetRMS();
 	    nent=cfd->GetEntries();
 	    //	    printf ("%f %f %i \n",mean,rms,nent);
-	    if(nent<200 || rms>10 ) ok=false;
+	    if(nent<500 || rms>5 ) ok=false;
 	  }
 	   SetTimeEq(i,mean);
 	   SetTimeEqRms(i,rms);
