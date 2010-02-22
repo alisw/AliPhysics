@@ -134,7 +134,7 @@ sim_hlt_tpc(const char* options="CA")
       if (bCFSort) arg+=" -sorted ";
       if (bPropagateMC) arg+=" -do-mc ";
       cf.Form("CF_%02d_%d", slice, part);
-      AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), arg.Data());
+      AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "");
       if (trackerInput.Length()>0) trackerInput+=" ";
       trackerInput+=cf;
       if (sinkClusterInput.Length()>0) sinkClusterInput+=" ";
