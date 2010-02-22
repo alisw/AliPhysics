@@ -688,7 +688,7 @@ Int_t initializeEveViewer( Bool_t TPCMode, Bool_t MUONMode, Bool_t TRDMode) {
   slot->StartEmbedding();
   gTPCClustCanvas = new TCanvas("canvasTPCClust","canvasTPCClust", 600, 400);
   gTPCClustCanvas->Divide(3, 2);
-  slot->StopEmbedding("TPC Cluster QA Histograms 1");
+  slot->StopEmbedding("TPC Cluster QA Histograms ");
 
 
   //==============================================================================
@@ -828,19 +828,22 @@ Int_t processEvent() {
   // -- Process Blocks
   //==============================================================================
 
+  AliHLTHOMERBlockDesc* block = 0;
+
+
   if ( gHomerManager->GetBlockList() == NULL) {
     printf ("onlineDisplay:   No regular BlockList ... \n");
 	cout << endl;
 	//return -1;
-  }
-  if (gHomerManager->GetBlockList()->IsEmpty() ) {
-    printf ("onlineDisplay:   No Blocks in list ... \n");
-	cout<<endl;
-	//return -2;
+	
   } else {
-  
-    AliHLTHOMERBlockDesc* block = 0;
-
+    
+    if (gHomerManager->GetBlockList()->IsEmpty() ) {
+      printf ("onlineDisplay:   No Blocks in list ... \n");
+      cout<<endl;
+      //return -2;
+    }  
+    
     TIter next(gHomerManager->GetBlockList());
 
 
@@ -1493,8 +1496,8 @@ Int_t processEsdTracks( AliHLTHOMERBlockDesc* block, TEveTrackList* cont ) {
   gTPCMult->Fill(esd->GetNumberOfTracks()); // KK
   
   Int_t icd = 0;
-	 gTPCClustCanvas->Clear();
-		gTPCClustCanvas->Divide(2, 2);
+  gTPCClustCanvas->Clear();
+  gTPCClustCanvas->Divide(2, 2);
   gTPCClustCanvas->cd(icd++);
   gTPCPt->Draw();
   gTPCClustCanvas->cd(icd++);
@@ -1505,7 +1508,9 @@ Int_t processEsdTracks( AliHLTHOMERBlockDesc* block, TEveTrackList* cont ) {
   gTPCnClusters->Draw();
   gTPCClustCanvas->cd(icd++);
   gTPCMult->Draw();
-  
+  gTPCClustCanvas->Update();
+
+
   cont->SetTitle(Form("N=%d", esd->GetNumberOfTracks()) );
   cont->MakeTracks();
 
