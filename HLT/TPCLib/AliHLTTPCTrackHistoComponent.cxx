@@ -129,8 +129,8 @@ int AliHLTTPCTrackHistoComponent::DoInit( int argc, const char** argv ){
   fClusters = new TNtuple("fClusters", "fClusters", "charge:qmax:residualY:residualZ"); 
   fTracks   = new TNtuple("fTracks",  "fTracks",  "pt:eta:psi:nclusters"); 
  
-  fClusters->SetCircular(5000);
-  fTracks->SetCircular(5000);
+  fClusters->SetCircular(fBufferSize);
+  fTracks->SetCircular(fBufferSize);
  
   fMultiplicity     = new TH1F("fMultiplicity",     "Track multiplicity per event",     1000,           0, 1000);
   fMeanMultiplicity = new TH1F("fMeanMultiplicity", "Mean track multiplicity vs. #evt", 10000/fEvtMod, 0, 10000);
@@ -143,8 +143,7 @@ int AliHLTTPCTrackHistoComponent::DoInit( int argc, const char** argv ){
   if (iResult>=0) iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
 
   // configure from the command line parameters if specified
-  if (iResult>=0 && argc>0)
-    iResult=ConfigureFromArgumentString(argc, argv);
+  if (iResult>=0 && argc>0)  iResult=ConfigureFromArgumentString(argc, argv);
   
   return iResult;
 }
@@ -295,22 +294,24 @@ void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* it
       	   
       	   totCharge += (fClustersArray[sliceTrack][patchTrack])[pos].fCharge; 
       	   
-      	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = 0.;
+      	   //Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = 0.;
         
-           xyz[0] = (fClustersArray[sliceTrack][patchTrack])[pos].fX;
-           xyz[1] = (fClustersArray[sliceTrack][patchTrack])[pos].fY;
-           xyz[2] = (fClustersArray[sliceTrack][patchTrack])[pos].fZ;
+           //xyz[0] = (fClustersArray[sliceTrack][patchTrack])[pos].fX;
+           //xyz[1] = (fClustersArray[sliceTrack][patchTrack])[pos].fY;
+           //xyz[2] = (fClustersArray[sliceTrack][patchTrack])[pos].fZ;
         
-           AliHLTTPCTransform::Local2Global(xyz,slice); 
+           //AliHLTTPCTransform::Local2Global(xyz,slice); 
       	   
-      	   Double_t p[2]   = { xyz[1], xyz[2] };
-           Double_t cov[3] = { (fClustersArray[sliceTrack][patchTrack])[pos].fSigmaY2, 0., (fClustersArray[sliceTrack][patchTrack])[pos].fSigmaZ2};  
-      	   Double_t *res = element->GetResiduals(p,cov,kFALSE); 
+      	   //Double_t p[2]   = { xyz[1], xyz[2] };
+           //Double_t cov[3] = { (fClustersArray[sliceTrack][patchTrack])[pos].fSigmaY2, 0., (fClustersArray[sliceTrack][patchTrack])[pos].fSigmaZ2};  
+      	   //Double_t *res = element->GetResiduals(p,cov,kFALSE); 
       	   
       	   //HLTInfo("resy: %f, resz: %f", res[0], res[1]);
       	   
-      	   if(!res)  res[0] = res[1] = -1000.;
-      	   else      fClusters->Fill( (fClustersArray[sliceTrack][patchTrack])[pos].fCharge, (fClustersArray[sliceTrack][patchTrack])[pos].fQMax, res[0], res[1]);
+      	   //if(!res)  res[0] = res[1] = -1000.;
+      	   //else      fClusters->Fill( (fClustersArray[sliceTrack][patchTrack])[pos].fCharge, (fClustersArray[sliceTrack][patchTrack])[pos].fQMax, res[0], res[1]);
+      	  
+      	   fClusters->Fill( (fClustersArray[sliceTrack][patchTrack])[pos].fCharge, (fClustersArray[sliceTrack][patchTrack])[pos].fQMax, -1000., -1000.);
             
       	   usedSpacePoints++;	   
        }	
