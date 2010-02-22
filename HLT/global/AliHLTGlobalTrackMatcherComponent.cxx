@@ -199,15 +199,13 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
      
      if ( (caloClusterHeader->fNClusters) < 0) {
        HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (caloClusterHeader->fNClusters));
+       return -1;
      } else {    
-       HLTInfo("Event has positive number of clusters: %d", (Int_t ) (caloClusterHeader->fNClusters));
 
        //BALLE, TODO, make it able to do EMCAL as well!!!
        phosClustersVector.resize((int) (caloClusterHeader->fNClusters)); 
        Int_t nClusters = 0;
-       cout << "nclustes " << caloClusterHeader->fNClusters << endl;
        while( (caloClusterStruct = fClusterReader->NextCluster()) != 0) {
-	 cout << caloClusterStruct->fEnergy << "BALLE ENERGY" <<endl;
 	 //BALLE stil just phos
 	 phosClustersVector[nClusters++] = caloClusterStruct;  
        }

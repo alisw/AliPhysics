@@ -166,10 +166,11 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
       continue;
     }
 
+
     if (match < bestMatch[ic]) {
       bestMatch[ic] = match;
       cluster->SetEmcCpvDistance(TMath::Sqrt(match));
-      //cluster->SEt
+      cluster->SetTrackDistance(TMath::Sqrt(dxy), TMath::Sqrt(dz));
     }
     
     //Add track to cluster's array of matching tracks

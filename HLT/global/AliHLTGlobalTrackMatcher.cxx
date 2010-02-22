@@ -94,7 +94,6 @@ Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* matchArray, 
   }
 
   if(bestMatch) {
-    cout <<"bestmatch"<<endl;
     matchArray[nMatches] = matchArray[0];
     matchArray[0] = tId;
   } else  {
