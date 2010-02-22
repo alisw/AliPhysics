@@ -39,7 +39,7 @@
 
 AliHLTCaloHistoMatchedTracks::AliHLTCaloHistoMatchedTracks(TString det) :
   fHistMatchDistance(NULL),
-  fHistDyxDz(NULL),
+  fHistDxyDz(NULL),
   fHistMatchedEnergy(NULL),
   fHistUnMatchedEnergy(NULL)
 {
@@ -63,11 +63,11 @@ AliHLTCaloHistoMatchedTracks::AliHLTCaloHistoMatchedTracks(TString det) :
   fHistArray->AddLast(fHistUnMatchedEnergy);
 
 
-  fHistDyxDz = new TH2F( Form("%s fHist dXY dZ", det.Data()), Form("%s dXY - dZ distribution of track - cluster residuals", det.Data()), 50, 0, 50, 50, 0, 50);
-  fHistDyxDz->GetXaxis()->SetTitle("sqrt(dx^2 + dy^2)  (cm)");
-  fHistDyxDz->GetYaxis()->SetTitle("dz (cm)");
-  //fHistDyxDz->SetMarkerStyle(21);
-  fHistArray->AddLast(fHistDyxDz);
+  fHistDxyDz = new TH2F( Form("%s fHist dXY dZ", det.Data()), Form("%s dXY - dZ distribution of track - cluster residuals", det.Data()), 50, 0, 50, 50, 0, 50);
+  fHistDxyDz->GetXaxis()->SetTitle("sqrt(dx^2 + dy^2)  (cm)");
+  fHistDxyDz->GetYaxis()->SetTitle("dz (cm)");
+  //fHistDxyDz->SetMarkerStyle(21);
+  fHistArray->AddLast(fHistDxyDz);
 
 }
 
@@ -87,9 +87,9 @@ AliHLTCaloHistoMatchedTracks::~AliHLTCaloHistoMatchedTracks()
     delete fHistUnMatchedEnergy;
   fHistUnMatchedEnergy = NULL;
 
-  if (fHistDyxDz) 
-    delete fHistDyxDz;
-  fHistDyxDz = NULL;
+  if (fHistDxyDz) 
+    delete fHistDxyDz;
+  fHistDxyDz = NULL;
 
 }
   
@@ -118,6 +118,7 @@ Int_t AliHLTCaloHistoMatchedTracks::FillMatchedTracks(T* cluster){
   if(cluster->GetNTracksMatched() > 0) {
     fHistMatchedEnergy->Fill(cluster->E());
     fHistMatchDistance->Fill(cluster->GetEmcCpvDistance());
+    fHistDxyDz->Fill(cluster->GetTrackDx(), cluster->GetTrackDz());
   } else {
     fHistUnMatchedEnergy->Fill(cluster->E());
   }
