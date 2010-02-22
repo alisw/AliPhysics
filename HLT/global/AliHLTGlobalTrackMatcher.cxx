@@ -85,7 +85,7 @@ Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, TArrayI* matchedTra
 
 Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* matchArray, bool bestMatch, Int_t nMatches ){
 
-  HLTInfo("Adding track %d to cluster with %d previous matches", tId, nMatches);
+  //  HLTInfo("Adding track %d to cluster with %d previous matches", tId, nMatches);
   
   //BALLE TODO: remove hardcoded 9
   if (nMatches > 9) {                                                   //BALLE this on tooo
@@ -114,7 +114,7 @@ Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToDetector(AliExternalTrackParam * 
     return kFALSE;
   }
 
-  HLTInfo("Track coordinate at R = PHOS radius %f %f %f", trackPosition[0],trackPosition[1],trackPosition[2]);
+  //  HLTInfo("Track coordinate at R = PHOS radius %f %f %f", trackPosition[0],trackPosition[1],trackPosition[2]);
 
 
   //Positive y for EMCAL, negative for PHOS
@@ -133,7 +133,7 @@ Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToDetector(AliExternalTrackParam * 
   if (TMath::Abs(trackPosition[0]) > fMaxX )
     return kFALSE;
 
-  HLTInfo("kTRUE");
+  // HLTInfo("kTRUE");
   
   return kTRUE;  
 }

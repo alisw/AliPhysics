@@ -113,7 +113,7 @@ Int_t AliHLTCaloHistoMatchedTracks::FillHistograms(Int_t nc, vector<AliHLTCaloCl
 
 template <class T>
 Int_t AliHLTCaloHistoMatchedTracks::FillMatchedTracks(T* cluster){
-  HLTInfo("Filling track-matching histograms");
+  // HLTInfo("Filling track-matching histograms");
 
   if(cluster->GetNTracksMatched() > 0) {
     fHistMatchedEnergy->Fill(cluster->E());

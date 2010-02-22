@@ -77,7 +77,7 @@ Int_t AliHLTCaloHistoClusterEnergy::FillHistograms(Int_t nc, TRefArray * cluster
 }
 Int_t AliHLTCaloHistoClusterEnergy::FillHistograms(Int_t nc, vector<AliHLTCaloClusterDataStruct*> &cVec) {
   //See header file for documentation
-  HLTInfo("histo");
+  // HLTInfo("histo");
   for(int ic = 0; ic < nc; ic++) {
     AliHLTCaloClusterDataStruct * cluster = cVec.at(ic);
     return FillClusterEnergyHistos(cluster);

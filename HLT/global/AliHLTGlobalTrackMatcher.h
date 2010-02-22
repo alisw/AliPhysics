@@ -76,10 +76,10 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &clus
   Int_t nEmcalClusters = 0; //BALLE event->GetEMCALClusters(fEmcalClustersArray);
   
   if ( nTracks <= 0 ) {
-    HLTWarning("No tracks in event");
+    //    HLTWarning("No tracks in event");
     return 0;
   } else if  ( (nEmcalClusters <= 0) && (nPhosClusters <= 0))  {
-    HLTWarning("No calorimeter clusters in Event"); 
+    //HLTWarning("No calorimeter clusters in Event"); 
     return 0;
   }
 
@@ -141,7 +141,7 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     }
 
 
-    HLTInfo("Cluster global position %f %f %f", clusterPosition[0],clusterPosition[1],clusterPosition[2]);
+    //    HLTInfo("Cluster global position %f %f %f", clusterPosition[0],clusterPosition[1],clusterPosition[2]);
 
     
     //Calculate track - cluster residual
@@ -160,7 +160,7 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
   
     Double_t match = dz + dxy;
     
-    HLTInfo("Track cluster residual %f, maxmatch %f", match, fMatchDistance);
+    //    HLTInfo("Track cluster residual %f, maxmatch %f", match, fMatchDistance);
     
     if( match > fMatchDistance  )  {     
       continue;
@@ -176,7 +176,7 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     //Add track to cluster's array of matching tracks
     Int_t nTracksMatched = cluster->GetNTracksMatched();
     iResult = AddTrackToCluster(track->GetID(), cluster->GetTracksMatched(), match < bestMatch[ic], nTracksMatched);
-    HLTInfo("Added track %d to cluster %d, it now has %d matching tracks", track->GetID(), cluster->GetID(), cluster->GetNTracksMatched());
+    //HLTInfo("Added track %d to cluster %d, it now has %d matching tracks", track->GetID(), cluster->GetID(), cluster->GetNTracksMatched());
   }
   
   return iResult;

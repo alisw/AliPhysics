@@ -214,7 +214,7 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
      }
      
      if(iResult <0) {
-       HLTWarning("Error in track matcher");
+       //HLTWarning("Error in track matcher");
      }
      PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
      //PushBack(pBlock->fPtr, pBlock->fSize, kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny );
