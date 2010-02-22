@@ -239,7 +239,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 	{
  	   digitPtr = &(fDigitDataArray[*digitIndexPtr]);
 	   id++;
-	   // //	  fGeometry->GetCellAbsId(recPointPtr->fModule, digitPtr->fX, digitPtr->fZ, id);
+	   fGeometry->GetCellAbsId(recPointPtr->fModule, digitPtr->fX, digitPtr->fZ, id);
  	  *cellIDPtr = id;
  	  *cellAmpFracPtr = digitPtr->fEnergy/recPointPtr->fAmp;
 	  //printf("Cell ID pointer: %x\n", cellIDPtr);
