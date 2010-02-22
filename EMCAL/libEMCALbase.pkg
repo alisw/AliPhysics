@@ -25,7 +25,6 @@ AliEMCALRecParam.cxx \
 AliEMCALSimParam.cxx \
 AliEMCALQAChecker.cxx \
 AliEMCALSpaceFrame.cxx \
-AliEMCALSTURawStream.cxx \
 AliEMCALBiasAPD.cxx \
 AliEMCALCalibAbs.cxx \
 AliEMCALCalibReference.cxx \
