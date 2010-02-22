@@ -261,14 +261,14 @@ Int_t AliHLTCaloClusterizer::CheckBuffer()
 	if((fAvailableSize - fUsedSize) < sizeof(AliHLTCaloRecPointDataStruct))
 	{
 	    Int_t recPointOffset = reinterpret_cast<UChar_t*>(fRecPointDataPtr) - reinterpret_cast<UChar_t*>(fFirstRecPointPtr);
+	    UChar_t *tmp = new UChar_t[fAvailableSize*2];
+	    memcpy(tmp, fFirstRecPointPtr, fAvailableSize);
 	    fAvailableSize *= 2;
-	    UChar_t *tmp = new UChar_t[fAvailableSize];
-	    memcpy(tmp, fRecPointDataPtr, fAvailableSize/2);
 	    for(Int_t n = 0; n < fNRecPoints; n++)
 	    {
 	       fRecPointArray[n] = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(reinterpret_cast<UChar_t*>(fRecPointArray[n]) - reinterpret_cast<UChar_t*>(fFirstRecPointPtr) + reinterpret_cast<UChar_t*>(tmp));
 	    }
-	    delete fRecPointDataPtr;
+	    delete fFirstRecPointPtr;
 	    fFirstRecPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(tmp);
 	    fRecPointDataPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(tmp + recPointOffset);
 	    fUsedSize = 0;
