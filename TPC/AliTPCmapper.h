@@ -101,6 +101,9 @@ public:
   Int_t  GetNfec(Int_t patch) const;
   Bool_t IsIROC(Int_t roc) const;
   Bool_t IsOROC(Int_t roc) const;
+  
+  Int_t  GetTpcDdlOffset() const {return fTpcDdlOffset;}
+  Int_t  GetNumDdl() const {return fNside*fNsector*fNrcu; }
 
  private:
 

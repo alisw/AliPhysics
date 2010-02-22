@@ -31,7 +31,7 @@ class AliTPCPreprocessor : public AliPreprocessor
     UInt_t  ExtractPulser(Int_t sourceFXS);
     UInt_t  ExtractCE(Int_t sourceFXS);
     UInt_t  ExtractQA(Int_t sourceFXS);
-    UInt_t  ExtractAltro(Int_t sourceFXS);
+    UInt_t  ExtractAltro(Int_t sourceFXS, TMap* dcsAliasMap);
     UInt_t  ExtractRaw(Int_t sourceFXS);
     AliTPCPreprocessor& operator = (const AliTPCPreprocessor& rhs);
 

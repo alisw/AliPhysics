@@ -47,6 +47,9 @@ const TString kCosmicRunType = "COSMIC";     // cosmic run identifier
 const TString kLaserRunType = "LASER";       // laser run identifier
 const TString kDaqRunType = "DAQ"; // DAQ run identifier
 const TString kAmandaTemp = "TPC_PT_%d_TEMPERATURE"; // Amanda string for temperature entries
+const TString kAmandaDDL = "DDL%d";   // Amanda string for list of active DDLs
+const Int_t  kNumDDL = 216;           // number of TPC DDLs
+const Int_t  kFirstDDL = 768;         // identifier of first DDL
 //const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
 const Double_t kFitFraction = -1.0;          // Don't require minimum number of fits in commissioning run 
 const Int_t   kNumPressureSensors = 3;    // number of pressure sensors
@@ -399,7 +402,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   TString altroConf = fConfEnv->GetValue("AltroConf","ON");
   altroConf.ToUpper();
   if (altroConf != "OFF" ) { 
-   UInt_t altroResult = ExtractAltro(AliShuttleInterface::kDCS);
+   UInt_t altroResult = ExtractAltro(AliShuttleInterface::kDCS,dcsAliasMap);
    if (altroConf != "TRY" ) result+=altroResult;
    status = new TParameter<int>("altroResult",altroResult);
    resultArray->Add(status);
@@ -1098,10 +1101,10 @@ UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
 //______________________________________________________________________________________________
 
 
-UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
+UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
 {
  //
- //  Read pulser calibration file from file exchage server
+ //  Read Altro configuration file from file exchage server
  //  Keep original entry from OCDB in case no new pulser calibration is available
  //
  TObjArray    *altroObjects=0;
@@ -1189,11 +1192,46 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
 
  Int_t nSectors = fROC->GetNSectors();
  Bool_t changed=false;
+ if (altroObjects == 0 ) altroObjects = new TObjArray;
+
+// extract list of active DDLs
+
+  Bool_t found; 
+  TString arrDDL(kNumDDL);
+  arrDDL.Append('0',kNumDDL);
+  for ( Int_t iDDL = 0; iDDL<kNumDDL; iDDL++ ) {
+    TString stringID = Form (kAmandaDDL.Data(),iDDL+kFirstDDL);
+    TPair *pair = (TPair*)dcsMap->FindObject(stringID.Data());
+    found = false;
+    if ( pair ) {
+        TObjArray *valueSet=(TObjArray*)pair->Value();
+        if ( valueSet) { 
+	  AliDCSValue *val = (AliDCSValue*)valueSet->At(0);
+	  if (val) found = val->GetBool();
+	}
+    } 
+    if (found){
+      arrDDL[iDDL] = '1';
+    } else { 
+      arrDDL[iDDL] = '0';
+    }    
+  }
+  TObjString *ddlArray = new TObjString;
+  ddlArray->SetString(arrDDL);
+  TMap *activeDDL = new TMap;
+  activeDDL->SetName("DDLArray");
+  TObjString *key = new TObjString("DDLArray");
+  activeDDL->Add(key,ddlArray);
+  altroObjects->Add(activeDDL);
+  changed=true;
+  
+
+// extract Altro configuration files
+
  for ( Int_t id=0; id<2; id++) {
    TList* list = GetFileSources(sourceFXS,idFXS[id].Data());
  
    if (list && list->GetEntries()>0) {
-      if (altroObjects == 0 ) altroObjects = new TObjArray;
 
 //  loop through all files from LDCs
 

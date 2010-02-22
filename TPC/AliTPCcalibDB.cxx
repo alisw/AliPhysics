@@ -99,6 +99,7 @@
 #include "AliTPCSensorTempArray.h"
 #include "AliGRPObject.h"
 #include "AliTPCTransform.h"
+#include "AliTPCmapper.h"
 
 class AliCDBStorage;
 class AliTPCCalDet;
@@ -113,6 +114,7 @@ class AliTPCCalDet;
 #include "TObjString.h"
 #include "TString.h"
 #include "TDirectory.h"
+#include "TArrayI.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalibPulser.h"
 #include "AliTPCCalibPedestal.h"
@@ -1819,5 +1821,72 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   return -result/250.; //normalized before
 }
 
+AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(const char* nameMappingFile) {
+//
+//   Read list of active DDLs from OCDB entry
+//   Generate and return AliTPCCalPad containing 1 for all pads in active DDLs,
+//   0 for all pads in non-active DDLs. 
+//
+  char chinfo[1000];
+   
+  TFile *fileMapping = new TFile(nameMappingFile, "read");
+  AliTPCmapper *mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
+  if (!mapping) {
+    sprintf(chinfo,"Failed to get mapping object from %s.  ...\n", nameMappingFile);
+    AliError (chinfo);
+    return 0;
+  }
+  
+  AliTPCCalPad *deadMap = new AliTPCCalPad("deadMap","deadMap");
+  if (!deadMap) {
+     AliError("Failed to allocate dead map AliTPCCalPad");
+     return 0;
+  }  
+  
+  /// get list of active DDLs from OCDB entry
+  Int_t idDDL=0;
+  if (!fALTROConfigData ) {
+     AliError("No ALTRO config OCDB entry available");
+     return 0; 
+  }
+  TMap *activeDDL = (TMap*)fALTROConfigData->FindObject("DDLArray");
+  TObjString *ddlArray=0;
+  if (activeDDL) {
+    ddlArray = (TObjString*)activeDDL->GetValue("DDLArray");
+    if (!ddlArray) {
+      AliError("Empty list of active DDLs in OCDB entry");
+      return 0;
+    }
+  } else { 
+    AliError("List of active DDLs not available in OCDB entry");
+    return 0;
+  }
+  TString arrDDL=ddlArray->GetString();
+  Int_t offset = mapping->GetTpcDdlOffset();
+  Double_t active;
+  for (Int_t i=0; i<mapping->GetNumDdl(); i++) {
+    idDDL= i+offset;
+    Int_t patch = mapping->GetPatchFromEquipmentID(idDDL);   
+    Int_t roc=mapping->GetRocFromEquipmentID(idDDL);
+    AliTPCCalROC *calRoc=deadMap->GetCalROC(roc);
+    if (calRoc) {
+     for ( Int_t branch = 0; branch < 2; branch++ ) {
+      for ( Int_t fec = 0; fec < mapping->GetNfec(patch, branch); fec++ ) {
+        for ( Int_t altro = 0; altro < 8; altro++ ) {
+         for ( Int_t channel = 0; channel < 16; channel++ ) {
+           Int_t hwadd     = mapping->CodeHWAddress(branch, fec, altro, channel);
+           Int_t row       = mapping->GetPadRow(patch, hwadd);        // row in a ROC (IROC or OROC)
+//              Int_t globalrow = mapping.GetGlobalPadRow(patch, hwadd);  // row in full sector (IROC plus OROC)
+           Int_t pad       = mapping->GetPad(patch, hwadd);
+           active=TString(arrDDL[i]).Atof();
+           calRoc->SetValue(row,pad,active);
+         } // end channel for loop
+        } // end altro for loop
+      } // end fec for loop
+     } // end branch for loop
+    } // valid calROC 
+   } // end loop on active DDLs
+   return deadMap;
+}
 
 
