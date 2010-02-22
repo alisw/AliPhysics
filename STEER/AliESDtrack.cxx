@@ -1121,9 +1121,17 @@ void AliESDtrack::MakeMiniESDtrack(){
 //_______________________________________________________________________
 Double_t AliESDtrack::GetMass() const {
   // Returns the mass of the most probable particle type
+
+  Int_t i;
+  for (i=0; i<AliPID::kSPECIES-1; i++) { 
+      if (fR[i] != fR[i+1]) break;
+  }
+  // If all the probabilities are equal, return the pion mass
+  if (i == AliPID::kSPECIES-1) return AliPID::ParticleMass(AliPID::kPion);
+
   Float_t max=0.;
   Int_t k=-1;
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) {
+  for (i=0; i<AliPID::kSPECIES; i++) {
     if (fR[i]>max) {k=i; max=fR[i];}
   }
   if (k==0) { // dE/dx "crossing points" in the TPC
