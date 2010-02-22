@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
     eventT=event->eventType;
     
     if (eventT==PHYSICS_EVENT) {
-
+      runNumber=(unsigned long)event->eventRunNb;   
       AliRawReader *reader = new AliRawReaderDate((void*)event);
       AliHMPIDRawStream stream(reader);stream.SetTurbo(kTRUE);                  //raw data decoding without error checks SetTurbo(kTRUE)
       while(stream.Next())
