@@ -17,10 +17,12 @@
 #define ALIHLTPHOSGEOMETRY_H
 
 #include "AliHLTCaloGeometry.h"
+#include "AliHLTLogging.h"
+#include "TClass.h"
 
 class AliPHOSGeoUtils;
 
-class AliHLTPHOSGeometry : public AliHLTCaloGeometry
+class AliHLTPHOSGeometry : public AliHLTCaloGeometry, public AliHLTLogging
   {
      public:
 
@@ -34,12 +36,12 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
       virtual void GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint,  AliHLTCaloGlobalCoordinate& globalCoord ); //COMMENT
 
       /** See base class for class documentation */
-      virtual void GetCellAbsId(UInt_t /*module*/, UInt_t /*x*/, UInt_t /*z*/, Int_t& AbsId) const { AbsId = 0; }
+      virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
     
       /** Intialise the geometry from the HCDB/OCDB */
       virtual Int_t InitialiseGeometry() {return 0; }
       
-      virtual void ConvertRecPointCoordinates(Float_t &x, Float_t &z)const;
+      virtual void ConvertRecPointCoordinates(Float_t &x, Float_t &z) const;
     
      protected:
 	

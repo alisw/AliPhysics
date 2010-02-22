@@ -22,6 +22,7 @@
 
 AliHLTPHOSGeometry::AliHLTPHOSGeometry() :
 AliHLTCaloGeometry("PHOS"),
+AliHLTLogging(),
 fGeoUtils(0)
 {
  // See header file for class documentation
@@ -36,22 +37,30 @@ AliHLTPHOSGeometry::~AliHLTPHOSGeometry()
 void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint, AliHLTCaloGlobalCoordinate& globalCoord )
 {
    // See header file for class documentation
+   if(!fGeoUtils) 
+   {
+      Logging(kHLTLogError, "HLT", "PHOS", "AliHLTPHOSGeometry::GetGlobalCoordinates: no geometry initialised");
+      return;
+   }
+
    Float_t x = recPoint.fX;
    Float_t z = recPoint.fZ;
 
    ConvertRecPointCoordinates(x, z);
 
    TVector3 coord;
-   
-   fGeoUtils->Local2Global(5 - recPoint.fModule, x, z, coord);
+   fGeoUtils->Local2Global(fCaloConstants->GetNMODULES() - recPoint.fModule, x, z, coord);
    
    globalCoord.fX = coord[0];
    globalCoord.fY = coord[1];
    globalCoord.fZ = coord[2];
+   
 }
 
 void AliHLTPHOSGeometry::ConvertRecPointCoordinates(Float_t &x, Float_t &z) const
 {
+   // See header file for class documentation
+
    x = (x - fCaloConstants->GetNXCOLUMNSMOD()/2)*fCaloConstants->GetCELLSTEP();
    z = (z - fCaloConstants->GetNZROWSMOD()/2)*fCaloConstants->GetCELLSTEP();
 }
@@ -89,4 +98,14 @@ int AliHLTPHOSGeometry::GetGeometryFromCDB()
 }
 
 
+void AliHLTPHOSGeometry::GetCellAbsId ( UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId ) 
+  {
+      // See header file for class documentation
+      if(!fGeoUtils)
+      {
+	 Logging(kHLTLogError, "HLT", "PHOS", "AliHLTPHOSGeometry::GetCellAbsId: no geometry initialised");
+	 return;
+      }
+      fGeoUtils->RelPosToAbsId(module, x, z, AbsId);
+  }
 

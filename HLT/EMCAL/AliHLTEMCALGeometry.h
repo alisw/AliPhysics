@@ -30,7 +30,7 @@ class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
   AliHLTEMCALGeometry( TString det );
   virtual ~AliHLTEMCALGeometry();
   void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord );
-  void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId)const;
+  void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
  
 private:
   	AliHLTEMCALGeometry();

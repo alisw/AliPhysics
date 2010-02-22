@@ -60,7 +60,7 @@ AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &/*recPoi
 }
  
 void 
-AliHLTEMCALGeometry::GetCellAbsId(UInt_t /*module*/, UInt_t /*x*/, UInt_t /*z*/, Int_t& /*AbsId*/)  const
+AliHLTEMCALGeometry::GetCellAbsId(UInt_t /*module*/, UInt_t /*x*/, UInt_t /*z*/, Int_t& /*AbsId*/) 
 {
 	
 //	AbsId = fGeo->GetAbsCellIdFromCellIndexes(module, x, z); 

@@ -8,6 +8,7 @@
 
 #include "Rtypes.h"
 #include "AliHLTCaloConstants.h"
+#include "AliHLTLogging.h"
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloCoordinate.h"
 #include "AliHLTCaloGlobalCoordinate.h"
@@ -25,7 +26,7 @@ class AliHLTCaloGeometry : public AliHLTCaloConstantsHandler
 
   virtual void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord ) = 0;
 
-  virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId) const = 0; //COMMENT
+  virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId) = 0; //COMMENT
 
  private:
 
