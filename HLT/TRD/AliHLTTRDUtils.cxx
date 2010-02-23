@@ -236,3 +236,14 @@ void AliHLTTRDUtils::EmulateHLTTracks(TClonesArray* trackArray)
   ReadTracks(trackArray, pBlock, size);
   free(pBlock);
 }
+
+AliHLTUInt32_t AliHLTTRDUtils::GetSM(AliHLTUInt32_t spec)
+{
+  spec -= 1;
+  int count = 0;
+  while (spec) {
+    count++;
+    spec &= spec - 1;
+  }
+  return count;
+}
