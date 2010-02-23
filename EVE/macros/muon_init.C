@@ -25,7 +25,8 @@ Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
 
 void muon_init(const TString& cdburi = "",
-               const TString& path   = ".")
+               const TString& path   = ".",
+	       Bool_t showBarrel = kTRUE)
 {
   if (gSystem->Getenv("ALICE_ROOT") != 0)
   {
@@ -40,6 +41,7 @@ void muon_init(const TString& cdburi = "",
   }
   
   TEveUtil::LoadMacro("alieve_init.C");
+  path.Remove(TString::kTrailing, '/');
   if (path.BeginsWith("alien:")) AliEveEventManager::SearchRawForCentralReconstruction();
   alieve_init(cdburi, path, -1);
   
@@ -82,6 +84,12 @@ void muon_init(const TString& cdburi = "",
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_muon_tracks.C+", "esd_muon_tracks","kTRUE,kTRUE", kTRUE));
 
+  if (showBarrel) {
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX", "primary_vertex.C+", "primary_vertex", "", kTRUE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX SPD", "primary_vertex.C+", "primary_vertex_spd", "", kTRUE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category", "esd_tracks.C+", "esd_tracks_by_category", "", kTRUE));
+  }
+  
   //==============================================================================
   // Additional GUI components
   //==============================================================================
@@ -123,10 +131,6 @@ void muon_init(const TString& cdburi = "",
   // AliEve objects - global tools
   //==============================================================================
   
-  AliEveTrackFitter* fitter = new AliEveTrackFitter();
-  gEve->AddToListTree(fitter, 1);
-  gEve->AddElement(fitter, gEve->GetEventScene());
-  
   AliEveTrackCounter* g_trkcnt = new AliEveTrackCounter("Primary Counter");
   gEve->AddToListTree(g_trkcnt, kFALSE);
   
@@ -147,6 +151,11 @@ void muon_init(const TString& cdburi = "",
   gEve->EditElement(g_trkcnt);
   
   gEve->Redraw3D(kTRUE);
+  
+  // Assure 3D view rotates around the origin.
+  gSystem->ProcessEvents();
+  AliEveMultiView::Instance()->Get3DView()->GetGLViewer()->CurrentCamera().SetCenterVec(0,0,0);
+  AliEveMultiView::Instance()->Get3DView()->GetGLViewer()->RequestDraw();
 }
 
 /******************************************************************************/

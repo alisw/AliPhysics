@@ -152,9 +152,9 @@ void add_esd_muon_tracks(AliESDEvent* esd, AliMUONESDInterface* data,
       {
 	Double_t x11 = gTriggerCircuit->GetX11Pos(emt->LoCircuit(), emt->LoStripY());
 	Double_t y11 = gTriggerCircuit->GetY11Pos(emt->LoCircuit(), emt->LoStripX());
-	Double_t z11 = AliMUONConstants::DefaultChamberZ(10);
+	Double_t z11 = gTriggerCircuit->GetZ11Pos(emt->LoCircuit(), emt->LoStripX());
 	Double_t y21 = gTriggerCircuit->GetY21Pos(emt->LoCircuit(), emt->LoStripX()+emt->LoDev()+1);
-	Double_t z21 = AliMUONConstants::DefaultChamberZ(12);
+	Double_t z21 = gTriggerCircuit->GetZ21Pos(emt->LoCircuit(), emt->LoStripX()+emt->LoDev()+1);
 	Double_t pz  = -emt->PUncorrected(); // max value
 	TEveVector v(x11, y11, z11);
 	TEveVector p(pz*x11/z11, pz*(y21-y11)/(z21-z11), pz);
@@ -169,7 +169,8 @@ void add_esd_muon_tracks(AliESDEvent* esd, AliMUONESDInterface* data,
     {
       recTrack.fStatus = 0;
       recTrack.fSign = emt->Charge();
-      recTrack.fV.Set(emt->GetNonBendingCoorUncorrected(),emt->GetBendingCoorUncorrected(),(Double_t)AliMUONConstants::DefaultChamberZ(10));
+      Double_t z11 = (emt->GetZUncorrected() < -1.) ? emt->GetZUncorrected() : (Double_t)AliMUONConstants::DefaultChamberZ(10);
+      recTrack.fV.Set(emt->GetNonBendingCoorUncorrected(),emt->GetBendingCoorUncorrected(),z11);
       recTrack.fP.Set(-TMath::Tan(emt->GetThetaXUncorrected()),-TMath::Tan(emt->GetThetaYUncorrected()),-1.);
       
       // produce eve track
