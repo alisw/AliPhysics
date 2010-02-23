@@ -284,14 +284,13 @@ Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
   return 0;
 }
 
-Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_EventData& evtData,
+Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_EventData& /*evtData*/,
                                                         const AliHLTComponent_BlockData* /*blocks*/,
                                                         AliHLTComponent_TriggerData& trigData,
                                                         AliHLTUInt8_t* /*outputPtr*/,
                                                         AliHLTUInt32_t& /*size*/,
                                                         vector<AliHLTComponent_BlockData>& /*outputBlocks*/)
 {
-  HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
 	
   TClonesArray* TCAarray[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -370,7 +369,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
     for (Int_t ii = 0; ii < nbEntries; ii++){
       HLTDebug("%i/%i: ", ii+1, nbEntries);
       trdTrack = (AliTRDtrackV1*)inArr->At(ii);
-      if(trdTrack->GetNumberOfTracklets()<=fMinTracklets)continue;
+      if(trdTrack->GetNumberOfTracklets()<fMinTracklets)continue;
       fTRDCalibraFillHisto->UpdateHistogramsV1(trdTrack);
       // for(int i3=0; i3<7; i3++)
       //   if(trdTrack->GetTracklet(i3))trdTrack->GetTracklet(i3)->Bootstrap(fReconstructor);
