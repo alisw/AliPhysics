@@ -37,7 +37,7 @@ ClassImp(AliAnalysisTaskProtons)
 AliAnalysisTaskProtons::AliAnalysisTaskProtons()
   : AliAnalysisTask(), fESD(0), fAOD(0), fMC(0),
     fListAnalysis(0), fListQA(0), fHistEventStats(0), 
-  fProtonAnalysis(0), fCutCanvas(0) {
+    fProtonAnalysis(0), fCutCanvas(0) {
   //Dummy constructor
   
 }

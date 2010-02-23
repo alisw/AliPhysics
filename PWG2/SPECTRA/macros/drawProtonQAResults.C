@@ -1,5 +1,5 @@
 void drawProtonQAResults(const char *analysisType = "Hybrid",
-			 const char *pidMode = "Sigma2") {
+			 const char *pidMode = "Ratio") {
   //Macro to visualize the results of the proton QA task
   gStyle->SetPalette(1,0);
   gStyle->SetCanvasColor(41);

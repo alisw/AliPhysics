@@ -75,10 +75,12 @@ class AliProtonAnalysis : public TObject {
   AliCFContainer *GetProtonContainer() const {return fProtonContainer;}
   AliCFContainer *GetAntiProtonContainer() const {return fAntiProtonContainer;}
 
-  //TH2D *GetProtonYPtHistogram() const {return fHistYPtProtons;}
-  //TH2D *GetAntiProtonYPtHistogram() const {return fHistYPtAntiProtons;}
-  TH2D *GetProtonYPtHistogram() const {return fProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);}
-  TH2D *GetAntiProtonYPtHistogram() const {return fAntiProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);}
+  TH2D *GetProtonYPtHistogram() const {return fHistYPtProtons;}
+  TH2D *GetAntiProtonYPtHistogram() const {return fHistYPtAntiProtons;}
+  TH2D *GetProtonYPtCorrectedHistogram() const {
+    return fHistYPtProtonsCorrected;}
+  TH2D *GetAntiProtonCorrectedYPtHistogram() const {
+    return fHistYPtAntiProtonsCorrected;}
   TH1D *GetProtonYHistogram();
   TH1D *GetAntiProtonYHistogram();
   TH1D *GetProtonPtHistogram();
@@ -87,20 +89,18 @@ class AliProtonAnalysis : public TObject {
   TH1D *GetAntiProtonCorrectedYHistogram();
   TH1D *GetProtonCorrectedPtHistogram();
   TH1D *GetAntiProtonCorrectedPtHistogram();
-  
+
   TH1F *GetEventStatistics() {return fHistEventStats;}
 
   TList *GetYRatioHistogramsInPtBins();
   TH1D *GetYRatioHistogram();
   TH1D *GetYRatioCorrectedHistogram();
-  //TH2D *gCorrectionMapProtons,
-  //TH2D *gCorrectionMapAntiProtons);
   TH1D *GetPtRatioHistogram();
   TH1D *GetPtRatioCorrectedHistogram();
-  //TH2D *gCorrectionMapProtons,
-  //TH2D *gCorrectionMapAntiProtons);
   TH1D *GetYAsymmetryHistogram();
   TH1D *GetPtAsymmetryHistogram();
+  TH2D *GetProtonsAbsorptionMaps() {return fHistEfficiencyYPtProtons;}
+  TH2D *GetAntiProtonsAbsorptionMaps() {return fHistEfficiencyYPtAntiProtons;}
 
   TH1I *GetEventHistogram() const {return fHistEvents;}
 
@@ -142,6 +142,8 @@ class AliProtonAnalysis : public TObject {
   TH1I *fHistEvents; //event counter
   TH2D *fHistYPtProtons; //Y-Pt of Protons
   TH2D *fHistYPtAntiProtons; // Y-Pt of Antiprotons
+  TH2D *fHistYPtProtonsCorrected; //Y-Pt of Protons (corrected)
+  TH2D *fHistYPtAntiProtonsCorrected; // Y-Pt of Antiprotons (corrected)
   TH1F *fHistEventStats;//Event statistics
   TList *fYRatioInPtBinsList;//TList of the eta dependent ratios for each pT bin
 

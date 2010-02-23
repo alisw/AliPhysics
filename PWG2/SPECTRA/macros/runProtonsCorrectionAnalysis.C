@@ -1,8 +1,8 @@
 void runProtonsCorrectionAnalysis(const char* analysisType  = "Hybrid",
-				  const char* pidMode = "Bayesian",
+				  const char* pidMode = "Ratio",
 				  Bool_t fIsOn_AliProtonAbsorptionCorrection=kTRUE, 
-				  Bool_t fIsOn_AliProtonFeedDownAnalysis=kTRUE,
-				  Bool_t fIsOn_AliProtonSpectraCorrection=kTRUE) 
+				  Bool_t fIsOn_AliProtonFeedDownAnalysis=kFALSE,
+				  Bool_t fIsOn_AliProtonSpectraCorrection=kFALSE) 
 {
   //Macro to run the proton feed-down analysis tested for local, proof & GRID.
   //Local: Takes four arguments, the analysis mode, the type of the ESD 
@@ -26,10 +26,10 @@ void runProtonsCorrectionAnalysis(const char* analysisType  = "Hybrid",
   TStopwatch timer;
   timer.Start();
   
-  runLocal("ESD","TPC","Bayesian","/home/pchrist/ALICE/Baryons/Analysis/Protons/Local/data",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
-  //runInteractive("ESD","TPC","Bayesian","/home/marek/Analysis/global_xml/tagtest81627.xml",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
-  //runBatch("ESD","TPC","Bayesian","wn.xml",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);  
-  //runProof("ESD","TPC","Bayesian",100000,"/COMMON/COMMON/LHC09d9_0.9TeV_0.5T#esdTree",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
+  //runLocal("ESD",analysisType,pidMode,"/home/pchrist/ALICE/Baryons/Analysis/Protons/Local/data",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
+  //runInteractive("ESD",analysisType,pidMode,"/home/marek/Analysis/global_xml/tagtest81627.xml",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
+  //runBatch("ESD",analysisType,pidMode,"wn.xml",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);  
+  runProof("ESD",analysisType,pidMode,500000,"/COMMON/COMMON/LHC10a8_run104867_8#esdTree",fIsOn_AliProtonAbsorptionCorrection,fIsOn_AliProtonFeedDownAnalysis, fIsOn_AliProtonSpectraCorrection);
   
   timer.Stop();
   timer.Print();

@@ -1,7 +1,7 @@
 void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
 			 const char* pidMode = "Ratio",
-			 Bool_t kUseOnlineTrigger = kTRUE,
-			 Bool_t kUseOfflineTrigger = kTRUE) {
+			 Bool_t kUseOnlineTrigger = kFALSE,
+			 Bool_t kUseOfflineTrigger = kFALSE) {
   //Macro to run the proton QA analysis tested for local, proof & GRID.
   //Local: Takes four arguments, the analysis mode, the type of the ESD 
   //       analysis, the PID mode and the path where the tag and ESD or 
@@ -25,9 +25,9 @@ void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
   timer.Start();
   
   //runLocal("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"/home/pchrist/ALICE/Baryons/QA/Local");
-  runProof("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,10000,"/COMMON/COMMON/LHC10a8_run104867_8#esdTree");
-  //runProof("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,500000,"/COMMON/COMMON/LHC09d10_run10482X#esdTree");
-  //runInteractive("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"wn.xml");
+  //runProof("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,100000,"/COMMON/COMMON/LHC10a12_run10482X#esdTree");
+  runProof("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,100000,0,"/COMMON/COMMON/LHC09d10_run10482X#esdTree");
+  //runInteractive("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"tag104825.xml");
   //runBatch("ESD",esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger,"wn.xml");
 
   timer.Stop();
@@ -458,7 +458,7 @@ void runProof(const char* mode = "ESD",
 	      const char* pidMode = 0x0,
 	      Bool_t kUseOnlineTrigger = kTRUE,
 	      Bool_t kUseOfflineTrigger = kTRUE,
-	      Int_t stats = 0, 
+	      Int_t stats = 0, Int_t startingPoint = 0,
 	      const char* dataset = 0x0) {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
   outputFilename1 += "."; outputFilename1 += pidMode; 
@@ -583,7 +583,7 @@ void runProof(const char* mode = "ESD",
   mgr->PrintStatus();
 
   if(dataset)
-    mgr->StartAnalysis("proof",dataset,stats);
+    mgr->StartAnalysis("proof",dataset,stats,startingPoint);
   else {
     // You should get this macro and the txt file from:
     // http://aliceinfo.cern.ch/Offline/Analysis/CAF/
