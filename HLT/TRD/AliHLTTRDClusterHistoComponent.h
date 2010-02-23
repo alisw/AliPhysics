@@ -9,14 +9,13 @@
 
 
 #include "AliHLTProcessor.h"
-#include "TH1D.h"
-#include "TH2F.h"
+#include "TH1F.h"
 
 /**
- * @class AliHLTTRDQHistoComponent
+ * @class AliHLTTRDClusterHistoComponent
  * Component for ploting charge in clusters
  * 
- * Component ID: \b TRDQHisto <br>
+ * Component ID: \b TRDClusterHisto <br>
  * Library: \b libAliHLTTRD.
  *
  * Mandatory arguments: <br>
@@ -81,16 +80,16 @@ private:
   AliHLTUInt32_t fOutputSize;   // output size
   TClonesArray* fClusterArray;  // input array
 
-  TH1D *fNClsDet;
-  TH1D *fClsAmp;
-  TH1D *fClsAmpDrift;
-  TH1D *fClsTB;
+  TH1F *fNClsDet;
+  TH1F *fClsAmp;
+  TH1F *fClsAmpDrift;
+  TH1F *fClsTB;
 
-  TH1D *fClsAmpDriftDet[540];
-  TH1D *fClsAmpDist; 
+  TH1F *fClsAmpDriftDet[540];
+  TH1F *fClsAmpDist; 
 
-  TH1D *fSClsDist;
-  TH1D *fNScls;
+  TH1F *fSClsDist;
+  TH1F *fNScls;
 
   ClassDef(AliHLTTRDClusterHistoComponent, 0);
 };

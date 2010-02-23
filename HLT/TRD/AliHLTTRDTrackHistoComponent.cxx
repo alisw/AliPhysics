@@ -165,14 +165,17 @@ int AliHLTTRDTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
   if (GetFirstInputBlock(kAliHLTDataTypeSOR) || GetFirstInputBlock(kAliHLTDataTypeEOR)) return 0;
 
   const AliHLTComponentBlockData* iter = NULL;
+  Bool_t gotData = kFALSE;
   
   for(iter = GetFirstInputBlock(AliHLTTRDDefinitions::fgkTracksDataType); 
 	iter != NULL; iter = GetNextInputBlock() ) {
     
     AliHLTTRDUtils::ReadTracks(fTracksArray, iter->fPtr, iter->fSize);
     HLTDebug("TClonesArray of clusters: nbEntries = %i", fTracksArray->GetEntriesFast());
-    
+    gotData=kTRUE;
   }
+  
+  if(!gotData) return 0;
   
   AliTRDtrackV1 *trk;
   
