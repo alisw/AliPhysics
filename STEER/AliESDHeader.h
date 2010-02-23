@@ -50,6 +50,11 @@ public:
   void SetTriggerScalersRecord(AliTriggerScalersESD *scalerRun) {fTriggerScalers.AddTriggerScalers(scalerRun); }
   const AliTriggerScalersRecordESD* GetTriggerScalersRecord() const {return &fTriggerScalers; }
   const AliTriggerIR* GetTriggerIR(Int_t i) const { return fIRArray[i]; }
+  void  SetActiveTriggerInputs(const char*name, Int_t index);
+  const char* GetTriggerInputName(Int_t index, Int_t trglevel) const;
+  TString     GetActiveTriggerInputs() const;
+  TString     GetFiredTriggerInputs() const;
+  Bool_t      IsTriggerInputFired(const char *name) const;
 //**************************************************************************
 
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
@@ -64,6 +69,8 @@ public:
 
   void      Reset();
   void      Print(const Option_t *opt=0) const;
+
+  enum {kNTriggerInputs = 60};  //24 L0, 24 L1 and 12 L2 inputs
 private:
 
   // Event Identification
@@ -76,14 +83,14 @@ private:
   Int_t        fEventNumberInFile; // Running Event count in the file
   UShort_t     fBunchCrossNumber;  // Bunch Crossing Number
   UChar_t      fTriggerCluster;    // Trigger cluster (mask)
-  UInt_t       fL0TriggerInputs;   //L0 Trigger Inputs 
-  UInt_t       fL1TriggerInputs;   //L1 Trigger Inputs
-  UShort_t     fL2TriggerInputs;   //L2 Trigger Inputs
+  UInt_t       fL0TriggerInputs;   //L0 Trigger Inputs (mask)
+  UInt_t       fL1TriggerInputs;   //L1 Trigger Inputs (mask)
+  UShort_t     fL2TriggerInputs;   //L2 Trigger Inputs (mask)
   AliTriggerScalersRecordESD fTriggerScalers;  //Trigger counters of triggered classes in event
   enum {kNMaxIR = 3};              // Max number of interaction records (IR)
   AliTriggerIR*  fIRArray[kNMaxIR];// Array with trigger IRs 
-
-  ClassDef(AliESDHeader,7)
+  TObjArray    fTriggerInputsNames;// Array of TNamed of the active trigger inputs (L0,L1 and L2)
+  ClassDef(AliESDHeader,8)
 };
 
 #endif

@@ -43,13 +43,14 @@ AliESDHeader::AliESDHeader() :
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
-  fTriggerScalers()
+  fTriggerScalers(),
+  fTriggerInputsNames(kNTriggerInputs)
 {
   // default constructor
 
   SetName("AliESDHeader");
   for(Int_t i = 0; i<kNMaxIR ; i++) fIRArray[i] = 0;
-
+  fTriggerInputsNames.SetOwner(kTRUE);
 }
 AliESDHeader::~AliESDHeader() 
 {
@@ -72,7 +73,9 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fL0TriggerInputs(header.fL0TriggerInputs),
   fL1TriggerInputs(header.fL1TriggerInputs),
   fL2TriggerInputs(header.fL2TriggerInputs),
-  fTriggerScalers(header.fTriggerScalers)
+  fTriggerScalers(header.fTriggerScalers),
+  fTriggerInputsNames(TObjArray(kNTriggerInputs))
+  
 {
   // copy constructor
   SetName(header.fName);
@@ -80,6 +83,10 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   for(Int_t i = 0; i<kNMaxIR ; i++) {
     if(header.fIRArray[i])fIRArray[i] = new AliTriggerIR(*header.fIRArray[i]);
     else fIRArray[i]=0;
+  }
+  for(Int_t i = 0; i < kNTriggerInputs; i++) {
+    TNamed *str = (TNamed *)((header.fTriggerInputsNames).At(i));
+    if (str) fTriggerInputsNames.AddAt(new TNamed(*str),i);
   }
 }
 
@@ -101,6 +108,13 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fL1TriggerInputs = header.fL1TriggerInputs;
     fL2TriggerInputs = header.fL2TriggerInputs;
     fTriggerScalers = header.fTriggerScalers;
+    
+    fTriggerInputsNames.Clear();
+    for(Int_t i = 0; i < kNTriggerInputs; i++) {
+      TNamed *str = (TNamed *)((header.fTriggerInputsNames).At(i));
+      if (str) fTriggerInputsNames.AddAt(new TNamed(*str),i);
+    }
+
     for(Int_t i = 0; i<kNMaxIR ; i++) {
        if(header.fIRArray[i])fIRArray[i] = new AliTriggerIR(*header.fIRArray[i]);
        else fIRArray[i]=0;
@@ -141,6 +155,7 @@ void AliESDHeader::Reset()
   fL1TriggerInputs   = 0;
   fL2TriggerInputs   = 0;
   fTriggerScalers.Reset();
+  fTriggerInputsNames.Clear();
   for(Int_t i=0;i<kNMaxIR;i++)if(fIRArray[i]){
    delete fIRArray[i];
    fIRArray[i]=0;
@@ -168,5 +183,101 @@ void AliESDHeader::Print(const Option_t *) const
 	 GetBunchCrossNumber(),
 	 GetOrbitNumber(),
 	 GetTriggerMask());
+         printf("List of the active trigger inputs: ");
+  	 for(Int_t i = 0; i < kNTriggerInputs; i++) {
+    	   TNamed *str = (TNamed *)((fTriggerInputsNames).At(i));
+    	   if (str) printf("%s ",str->GetName());
+         }
+         printf("\n");
 }
 
+
+//______________________________________________________________________________
+void AliESDHeader::SetActiveTriggerInputs(const char*name, Int_t index)
+{
+  // Fill the active trigger inputs names
+  // into the corresponding fTriggerInputsNames (TObjArray of TNamed)
+  if (index >= kNTriggerInputs || index < 0) {
+    AliError(Form("Index (%d) is outside the allowed range (0,59)!",index));
+    return;
+  }
+
+  fTriggerInputsNames.AddAt(new TNamed(name,NULL),index);
+}
+//______________________________________________________________________________
+const char* AliESDHeader::GetTriggerInputName(Int_t index, Int_t trglevel) const
+{
+  // Get the trigger input name
+  // at the specified position in the trigger mask and trigger level (0,1,2)
+  TNamed *trginput = 0;
+  if (trglevel == 0) trginput = (TNamed *)fTriggerInputsNames.At(index);
+  if (trglevel == 1) trginput = (TNamed *)fTriggerInputsNames.At(index+24);  
+  if (trglevel == 2) trginput = (TNamed *)fTriggerInputsNames.At(index+48); 
+  if (trginput) return trginput->GetName();
+  else return "";
+}
+//______________________________________________________________________________
+TString AliESDHeader::GetActiveTriggerInputs() const
+{
+  // Returns the list with the names of the active trigger inputs
+  TString trginputs;
+  for(Int_t i = 0; i < kNTriggerInputs; i++) {
+    TNamed *str = (TNamed *)((fTriggerInputsNames).At(i));
+    if (str) {
+      trginputs += " ";
+      trginputs += str->GetName();
+      trginputs += " ";
+    }
+  }
+
+  return trginputs;
+}
+//______________________________________________________________________________
+TString AliESDHeader::GetFiredTriggerInputs() const
+{
+  // Returns the list with the names of the fired trigger inputs
+  TString trginputs;
+  for(Int_t i = 0; i < kNTriggerInputs; i++) {
+      TNamed *str = (TNamed *)((fTriggerInputsNames.At(i)));
+      if (i < 24 && (fL0TriggerInputs & (1 << i))) {
+        if (str) {
+	  trginputs += " ";
+	  trginputs += str->GetName();
+          trginputs += " ";
+        }
+      }
+      if (i >= 24 && i < 48 && (fL1TriggerInputs & (1 << i-24))) {
+        if (str) {
+	  trginputs += " ";
+	  trginputs += str->GetName();
+          trginputs += " ";
+        }
+      }
+      if (i >= 48 && (fL2TriggerInputs & (1 << i-48))) {
+        if (str) {
+	  trginputs += " ";
+	  trginputs += str->GetName();
+          trginputs += " ";
+        }
+      }
+
+  }
+  return trginputs;
+}
+//______________________________________________________________________________
+Bool_t AliESDHeader::IsTriggerInputFired(const char *name) const
+{
+  // Checks if the trigger input is fired 
+ 
+  TNamed *trginput = (TNamed *)fTriggerInputsNames.FindObject(name);
+  if (!trginput) return kFALSE;
+
+  Int_t inputIndex = fTriggerInputsNames.IndexOf(trginput);
+  if (inputIndex < 0) return kFALSE;
+  
+  if (fL0TriggerInputs & (1 << inputIndex)) return kTRUE;
+  else if (fL1TriggerInputs & (1 << (inputIndex-24))) return kTRUE;
+  else if (fL2TriggerInputs & (1 << (inputIndex-48))) return kTRUE;
+  else return kFALSE;
+}
+//_______________________________________________________________________________

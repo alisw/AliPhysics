@@ -192,7 +192,7 @@
 #include "AliTriggerRunScalers.h"
 #include "AliCTPTimeParams.h" 
 #include "AliESDHLTDecision.h"
-
+#include "AliTriggerInput.h"
 ClassImp(AliReconstruction)
 
 //_____________________________________________________________________________
@@ -3481,6 +3481,21 @@ Bool_t AliReconstruction::GetEventInfo()
     }
   }
   fEventInfo.SetTriggerClasses(trclasses);
+
+  // Write names of active trigger inputs in ESD Header
+  const TObjArray& inputsArray = config->GetInputs(); 
+  Int_t ninputs = inputsArray.GetEntriesFast();
+  for( Int_t iinput=0; iinput < ninputs; iinput++ ) {
+    AliTriggerInput* trginput = (AliTriggerInput*)inputsArray.At(iinput);
+    if (trginput) {
+      Int_t inputIndex = (Int_t)TMath::Nint(TMath::Log2(trginput->GetMask()));
+      AliESDHeader* headeresd = fesd->GetHeader();
+      Int_t trglevel = (Int_t)trginput->GetLevel();
+      if (trglevel == 0) headeresd->SetActiveTriggerInputs(trginput->GetInputName(), inputIndex);
+      if (trglevel == 1) headeresd->SetActiveTriggerInputs(trginput->GetInputName(), inputIndex+24);
+      if (trglevel == 2) headeresd->SetActiveTriggerInputs(trginput->GetInputName(), inputIndex+48);
+    }
+  }
 
   // Set the information in ESD
   fesd->SetTriggerMask(trmask);
