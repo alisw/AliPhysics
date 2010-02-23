@@ -46,8 +46,10 @@ public:
   // Cut information
   //
   virtual UInt_t GetSelectedCutsMask() const { return fSelectedCutsMask; }
-  Bool_t IsCutActive(AliDielectronVarManager::ValueTypes cut) { return TESTBIT(fActiveCutsMask,cut); }
+  Bool_t IsCutActive(AliDielectronVarManager::ValueTypes cut);
 
+  virtual void Print(const Option_t* option = "") const;
+  
 private:
 
   UChar_t  fActiveCuts[AliDielectronVarManager::kNMaxValues];       // list of activated cuts
@@ -71,15 +73,6 @@ private:
 //
 //Inline functions
 //
-inline void AliDielectronVarCuts::AddCut(Double_t min, Double_t max, AliDielectronVarManager::ValueTypes type)
-{
-  //
-  // Set cut range and activate it
-  //
-  fCutMin[type]=min;
-  fCutMax[type]=max;
-  ActivateCut(type);
-}
 
 #endif
 

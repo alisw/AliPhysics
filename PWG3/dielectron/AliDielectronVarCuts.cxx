@@ -89,13 +89,30 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
   
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
     Int_t cut=fActiveCuts[iCut];
-    SETBIT(fSelectedCutsMask,cut);
-    if ( (values[cut]<fCutMin[cut]) || (values[cut]>fCutMax[cut]) ) CLRBIT(fSelectedCutsMask,cut);
+    SETBIT(fSelectedCutsMask,iCut);
+    if ( (values[cut]<fCutMin[cut]) || (values[cut]>fCutMax[cut]) ) CLRBIT(fSelectedCutsMask,iCut);
   }
   Bool_t isSelected=(fSelectedCutsMask==fActiveCutsMask);
   SetSelected(isSelected);
   return isSelected;
 }
+
+//________________________________________________________________________
+void AliDielectronVarCuts::AddCut(Double_t min, Double_t max, AliDielectronVarManager::ValueTypes type)
+{
+  //
+  // Set cut range and activate it
+  //
+  if (min>max){
+    Double_t tmp=min;
+    min=max;
+    max=tmp;
+  }
+  fCutMin[type]=min;
+  fCutMax[type]=max;
+  ActivateCut(type);
+}
+
 //________________________________________________________________________
 void AliDielectronVarCuts::ActivateCut(AliDielectronVarManager::ValueTypes cutName)
 {
@@ -104,8 +121,33 @@ void AliDielectronVarCuts::ActivateCut(AliDielectronVarManager::ValueTypes cutNa
   //
 
   if (IsCutActive(cutName)) return;
+  SETBIT(fActiveCutsMask,fNActiveCuts);
   fActiveCuts[fNActiveCuts++]=(UChar_t)cutName;
-  SETBIT(fActiveCutsMask,cutName);
 }
 
+//________________________________________________________________________
+Bool_t AliDielectronVarCuts::IsCutActive(AliDielectronVarManager::ValueTypes cut)
+{
+  //
+  // Check if this cut is already activated
+  //
+  for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
+    if (fActiveCuts[iCut]==(UChar_t)cut) return kTRUE;
+  }
+  
+  return kFALSE;
+}
 
+//________________________________________________________________________
+void AliDielectronVarCuts::Print(const Option_t* /*option*/) const
+{
+  //
+  // Print cuts and the range
+  //
+  printf("cut ranges for '%s'\n",GetTitle());
+  for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
+    UChar_t cut=fActiveCuts[iCut];
+    printf("Cut %02d: %f < %s < %f\n", iCut,
+           fCutMin[cut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[cut]);
+  }
+}
