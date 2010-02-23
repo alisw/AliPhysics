@@ -75,7 +75,8 @@ ClassImp(AliTRDCalibTask)
 
 //________________________________________________________________________
   AliTRDCalibTask::AliTRDCalibTask(const char *name) 
-    : AliAnalysisTask(name, ""), fESD(0), fESDfriend(0),
+    : AliAnalysisTask(name,""), fESD(0),
+      fESDfriend(0),
       fkEsdTrack(0),
       fFriendTrack(0),
       fCalibObject(0),
@@ -97,6 +98,7 @@ ClassImp(AliTRDCalibTask)
       fNbTracklets(0),
       fNbTrackletsOffline(0),
       fNbTrackletsStandalone(0),
+      fAbsoluteGain(0),
       fCH2dSum(0),
       fPH2dSum(0),
       fCH2dSM(0),
@@ -112,6 +114,7 @@ ClassImp(AliTRDCalibTask)
       fVtxTPC(kFALSE),
       fVtxSPD(kFALSE),
       fMinNbContributors(0),
+      fRangePrimaryVertexZ(9999999.0),
       fLow(0),
       fHigh(30),
       fFillZero(kFALSE),
@@ -141,7 +144,7 @@ ClassImp(AliTRDCalibTask)
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
-    
+        
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());
   
@@ -169,6 +172,7 @@ AliTRDCalibTask::~AliTRDCalibTask()
   if(fNbTracklets) delete fNbTracklets;
   if(fNbTrackletsOffline) delete fNbTrackletsOffline;
   if(fNbTrackletsStandalone) delete fNbTrackletsStandalone;
+  if(fAbsoluteGain) delete fAbsoluteGain;
   if(fCH2dSum) delete fCH2dSum;
   if(fPH2dSum) delete fPH2dSum;
   if(fCH2dSM) delete fCH2dSM;
@@ -276,11 +280,32 @@ void AliTRDCalibTask::CreateOutputObjects()
   fNEvents = new TH1I("NEvents","NEvents", 2, 0, 2);
   fListHist->Add(fNEvents);
   
+  // absolute gain calibration even without AliESDfriend
+  Int_t nBinsPt = 25;
+  Double_t minPt = 0.001;
+  Double_t maxPt = 10.0;
+  
+  Double_t *binLimLogPt = new Double_t[nBinsPt+1];
+  Double_t *binLimPt    = new Double_t[nBinsPt+1];
+  for(Int_t i=0; i<=nBinsPt; i++) binLimLogPt[i]=(Double_t)TMath::Log10(minPt) + (TMath::Log10(maxPt)-TMath::Log10(minPt))/nBinsPt*(Double_t)i ;
+  for(Int_t i=0; i<=nBinsPt; i++) binLimPt[i]=(Double_t)TMath::Power(10,binLimLogPt[i]);
+  
+  fAbsoluteGain = new TH2F("AbsoluteGain","AbsoluteGain", 200, 0.0, 700.0, nBinsPt, binLimPt);
+  fAbsoluteGain->SetYTitle("Momentum at TRD");
+  fAbsoluteGain->SetXTitle("charge deposit [a.u]");
+  fAbsoluteGain->SetZTitle("counts");
+  fAbsoluteGain->SetStats(0);
+  fAbsoluteGain->Sumw2();
+  fListHist->Add(fAbsoluteGain);
+  
+
+  
   /////////////////////////////////////////
   // First debug level
   ///////////////////////////////////////
   if(fDebug > 0) {
     
+    // Standart with AliESDfriend
     fPH2dSM = new TProfile2D("PH2dSM","Nz10Nrphi10"
 			    ,fNbTimeBins,-0.05,(Double_t)((fNbTimeBins-0.5)/10.0)
 			   ,18,0,18);
@@ -379,7 +404,7 @@ void AliTRDCalibTask::CreateOutputObjects()
    //
 
    AliLog::SetGlobalLogLevel(AliLog::kError);
-
+   
    if (!fESD) {
      //Printf("ERROR: fESD not available");
      return;
@@ -405,6 +430,9 @@ void AliTRDCalibTask::CreateOutputObjects()
      }
      Int_t nCtrb = vtxESD->GetNContributors();
      if(nCtrb < fMinNbContributors) return;
+     Double_t zPosition = vtxESD->GetZ();
+     if(TMath::Abs(zPosition) > fRangePrimaryVertexZ) return;     
+
    }
 
    //printf("Primary vertex passed\n");
@@ -486,11 +514,13 @@ void AliTRDCalibTask::CreateOutputObjects()
        Int_t counteer = 0;
        Int_t icalib=0;
        while((fCalibObject = (TObject *)(fFriendTrack->GetCalibObject(icalib++)))){
-	 if(strcmp(fCalibObject->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
+	 //printf("Name %s\n",fCalibObject->IsA()->GetName());
+       	 if(strcmp(fCalibObject->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
 	 counteer++;
        }
+       //printf("TRDntracklets %d, TRDntrackletsPID %d\n",fkEsdTrack->GetTRDntracklets(),fkEsdTrack->GetTRDntrackletsPID());
        if(counteer > 0) {
-	 nbTrdTracks++;
+	 nbTrdTracks++;      
 	 if((status&(AliESDtrack::kTRDout)) && (!(status&(AliESDtrack::kTRDin)))) {
 	   nbTrdTracksStandalone++;
 	 }
@@ -534,6 +564,19 @@ void AliTRDCalibTask::CreateOutputObjects()
        //printf("Not a good track\n");
        continue;
      }
+
+     // First Absolute gain calibration
+     Int_t trdNTracklets = (Int_t) fkEsdTrack->GetTRDntracklets();
+     Int_t trdNTrackletsPID = (Int_t) fkEsdTrack->GetTRDntrackletsPID(); 
+     if((trdNTracklets > 0) && (trdNTrackletsPID > 0)) {
+       for(Int_t iPlane = 0; iPlane < 6; iPlane++){
+	 Double_t slide = fkEsdTrack->GetTRDslice(iPlane);
+	 //printf("Number of slide %d\n",fkEsdTrack->GetNumberOfTRDslices());
+	 Double_t momentum = fkEsdTrack->GetTRDmomentum(iPlane);
+	 //printf("momentum %f, slide %f\n",momentum,slide);
+	 if(slide > 0.0) fAbsoluteGain->Fill(slide*8.0/100.0,momentum); 
+       }
+     }     
      
      // Other cuts
      Bool_t good = kTRUE;
@@ -627,6 +670,7 @@ void AliTRDCalibTask::CreateOutputObjects()
 	     if((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) {
 	       if((fCl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) {
 		 qcl += TMath::Abs(fCl->GetQ());
+		 //printf("Add the cluster charge\n");
 	       }
 	     }
 	     if((time>-1) && (time<fNbTimeBins)) phtb[time]=qcl;
@@ -740,6 +784,8 @@ void AliTRDCalibTask::Plot()
 
   TH1I *nEvents  = (TH1I *) fListHist->FindObject("NEvents");
 
+  TH2F *absoluteGain  = (TH2F *) fListHist->FindObject("AbsoluteGain");
+
   TH1F *trdTrack = (TH1F *) fListHist->FindObject("TRDTrack");
   TH1F *trdTrackOffline = (TH1F *) fListHist->FindObject("TRDTrackOffline");
   TH1F *trdTrackStandalone = (TH1F *) fListHist->FindObject("TRDTrackStandalone");
@@ -815,6 +861,14 @@ void AliTRDCalibTask::Plot()
     TCanvas *debugEvents = new TCanvas("cNEvents","cNEvents",10,10,510,510);
     debugEvents->cd(1);
     if(nEvents) nEvents->Draw();
+      
+  }
+
+ if(absoluteGain) {
+   
+    TCanvas *debugAbsoluteGain = new TCanvas("cAbsoluteGain","cAbsoluteGain",10,10,510,510);
+    debugAbsoluteGain->cd(1);
+    if(absoluteGain) absoluteGain->Draw();
       
   }
 
@@ -908,4 +962,3 @@ void AliTRDCalibTask::Plot()
   }
  
 }
-

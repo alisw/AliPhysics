@@ -28,7 +28,8 @@ class AliESDtrackCuts;
 class AliTRDCalDet;
 
 #include "TObjString.h"
-#include "AliAnalysisTask.h" 
+#include "AliAnalysisTaskSE.h" 
+#include "TMath.h"
 
 class AliTRDCalibTask : public AliAnalysisTask {
  public:
@@ -37,7 +38,7 @@ class AliTRDCalibTask : public AliAnalysisTask {
   
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   Exec(Option_t *);
   virtual void   Terminate(Option_t *);
   virtual Bool_t Load(const Char_t *filename);
   void           Plot();
@@ -53,11 +54,12 @@ class AliTRDCalibTask : public AliAnalysisTask {
   void AddSelectedTriggerClass(const char*name)                        {fSelectedTrigger->Add(new TObjString(name));};
   void SetReject(Bool_t rejected)                                      {fRejected = rejected;};
   
-  void SetESDtrackCuts(AliESDtrackCuts * const esdtrackCuts)                  {fEsdTrackCuts = esdtrackCuts;};
+  void SetESDtrackCuts(AliESDtrackCuts * const esdtrackCuts)           {fEsdTrackCuts = esdtrackCuts;};
   void SetRequirePrimaryVertex(Bool_t requirePrimaryVertex)            {fRequirePrimaryVertex = requirePrimaryVertex;};
   void SetUseTPCVertex()                                               {fVtxTPC=kTRUE ; fVtxSPD=kFALSE;} 
   void SetUseSPDVertex()                                               {fVtxTPC=kFALSE; fVtxSPD=kTRUE ;} 
   void SetMinNbOfContributors(Int_t minNbOfContributors)               {fMinNbContributors = minNbOfContributors;};  
+  void SetRangePrimaryVertexZ(Double_t rangePrimaryVertexZ)            {fRangePrimaryVertexZ = TMath::Abs(rangePrimaryVertexZ);};  
   
   void SetLow(Int_t low)                                               {fLow=low;};
   void SetHigh(Int_t high)                                             {fHigh=high;};
@@ -103,16 +105,17 @@ class AliTRDCalibTask : public AliAnalysisTask {
   TH1F        *fNbTrackletsOffline;              //! nb Tracklets offline
   TH1F        *fNbTrackletsStandalone;           //! nb Tracklets standalone
   
+  TH2F        *fAbsoluteGain;                    //! Absolute Gain without AliESDfriend
   TH2I        *fCH2dSum;                         //! CH2d charge all
   TProfile2D  *fPH2dSum;                         //! PH2d PH all
   TH2I        *fCH2dSM;                          //! CH2d per SM
   TProfile2D  *fPH2dSM;                          //! PH2d per SM
 
-  Bool_t      fHisto2d;                          //! histo
-  Bool_t      fVector2d;                         //! vector
-  Bool_t      fVdriftLinear;                     //! vdrift Linear
+  Bool_t      fHisto2d;                          // histo
+  Bool_t      fVector2d;                         // vector
+  Bool_t      fVdriftLinear;                     // vdrift Linear
 
-  Int_t       fNbTimeBins;                       //! number of timebins 
+  Int_t       fNbTimeBins;                       // number of timebins 
 
   Short_t     fNz[3];                            // Nz mode 
   Short_t     fNrphi[3];                         // Nrphi mode
@@ -125,6 +128,7 @@ class AliTRDCalibTask : public AliAnalysisTask {
   Bool_t      fVtxTPC;                           // Flag for use of TPC vertex
   Bool_t      fVtxSPD;                           // Flag for use of SPD vertex
   Int_t       fMinNbContributors;                // Min number of contributors
+  Double_t    fRangePrimaryVertexZ;              // Were the primary vertex is
   
   Int_t       fLow;                              // lower limit of nb of TRD clusters per tracklet
   Int_t       fHigh;                             // higher limit of nb of TRD clusters per tracklet
@@ -140,7 +144,7 @@ class AliTRDCalibTask : public AliAnalysisTask {
 
   Int_t       fMaxEvent;                         // max events
   Int_t       fCounter;                          // max events
-  Int_t       fDebug;                            //! fDebug
+  Int_t       fDebug;                            // fDebug
 
   AliTRDCalibTask(const AliTRDCalibTask&); 
   AliTRDCalibTask& operator=(const AliTRDCalibTask&); 
@@ -149,4 +153,3 @@ class AliTRDCalibTask : public AliAnalysisTask {
 };
 
 #endif
-
