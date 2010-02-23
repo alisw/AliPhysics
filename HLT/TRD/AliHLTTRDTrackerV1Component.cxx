@@ -205,9 +205,6 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 
   HLTDebug("NofBlocks %i", evtData.fBlockCnt );
   
-  fESD->Reset();
-  //fESD->SetMagneticField(GetBz());
-
   AliHLTUInt32_t totalSize = 0, offset = 0;
 
   AliHLTComponentDataType expectedDataType = AliHLTTRDDefinitions::fgkClusterDataType;
@@ -240,6 +237,9 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	HLTWarning("Memory Block given might be too small: %i < %i; Event %Lu", size, constBase+block.fSize*inputMultiplier, evtData.fEventID);
       }
 #endif      
+
+      fESD->Reset();
+      //fESD->SetMagneticField(GetBz());
 
       AliHLTTRDUtils::ReadClusters(fClusterArray, block.fPtr, block.fSize, &fNtimeBins);
       HLTDebug("Reading number of time bins from input block. Setting number of timebins to %d", fNtimeBins);
