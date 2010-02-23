@@ -590,7 +590,7 @@ void AliHLTITSClusterFinderComponent::RecPointToSpacePoint(AliHLTUInt8_t* output
   AliHLTITSClusterData *outputClusters = reinterpret_cast<AliHLTITSClusterData*>(outputPtr + size);
   outputClusters->fSpacePointCnt=fclusters.size();    
   int clustIdx=0;
-  for(int i=0;i<fclusters.size();i++){
+  for(UInt_t i=0;i<fclusters.size();i++){
     AliITSRecPoint *recpoint = (AliITSRecPoint*) &(fclusters[i]);
     outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
     outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
