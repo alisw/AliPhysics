@@ -41,7 +41,7 @@ void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
   //runBatch("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, kUseOfflineTrigger, "wn.xml");  
   runProof("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, 
 	   kUseOfflineTrigger,
-	   250000,0,"/COMMON/COMMON/LHC09d10_run104792-3#esdTree");
+	   500000,0,"/COMMON/COMMON/LHC10a8_run104867_8#esdTree");
 
   timer.Stop();
   timer.Print();

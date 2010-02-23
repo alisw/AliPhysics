@@ -54,7 +54,8 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fNBinsY(0), fMinY(0), fMaxY(0),
   fNBinsPt(0), fMinPt(0), fMaxPt(0),
   fProtonContainer(0), fAntiProtonContainer(0),
-  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), 
+  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
+  fHistYPtProtonsCorrected(0), fHistYPtAntiProtonsCorrected(0), 
   fHistEventStats(0), fYRatioInPtBinsList(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
@@ -79,6 +80,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fNBinsPt(nbinsPt), fMinPt(fLowPt), fMaxPt(fHighPt),
   fProtonContainer(0), fAntiProtonContainer(0),
   fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), 
+  fHistYPtProtonsCorrected(0), fHistYPtAntiProtonsCorrected(0), 
   fHistEventStats(0), fYRatioInPtBinsList(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
@@ -117,6 +119,29 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
     fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
   fHistYPtAntiProtons->GetXaxis()->SetTitleColor(1);
 
+  fHistYPtProtonsCorrected = new TH2D("fHistYPtProtonsCorrected","Protons",
+				      fNBinsY,fMinY,fMaxY,
+				      fNBinsPt,fMinPt,fMaxPt);
+  fHistYPtProtonsCorrected->SetStats(kTRUE);
+  fHistYPtProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtProtonsCorrected->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtProtonsCorrected->GetXaxis()->SetTitle("y");
+  fHistYPtProtonsCorrected->GetXaxis()->SetTitleColor(1);
+
+  fHistYPtAntiProtonsCorrected = new TH2D("fHistYPtAntiProtonsCorrected",
+					  "Antiprotons",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt);
+  fHistYPtAntiProtonsCorrected->SetStats(kTRUE);
+  fHistYPtAntiProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("y");
+  fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitleColor(1);
+
   //setting up the containers
   Int_t iBin[2];
   iBin[0] = nbinsY;
@@ -152,6 +177,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fNBinsPt(nbinsPt), fMinPt(gPt[0]), fMaxPt(gPt[nbinsPt]),
   fProtonContainer(0), fAntiProtonContainer(0),
   fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0), 
+  fHistYPtProtonsCorrected(0), fHistYPtAntiProtonsCorrected(0), 
   fHistEventStats(0), fYRatioInPtBinsList(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
   fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
@@ -188,6 +214,29 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
     fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
   fHistYPtAntiProtons->GetXaxis()->SetTitleColor(1);
 
+  fHistYPtProtonsCorrected = new TH2D("fHistYPtProtonsCorrected","Protons",
+				      fNBinsY,fMinY,fMaxY,
+				      fNBinsPt,fMinPt,fMaxPt);
+  fHistYPtProtonsCorrected->SetStats(kTRUE);
+  fHistYPtProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtProtonsCorrected->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtProtonsCorrected->GetXaxis()->SetTitle("y");
+  fHistYPtProtonsCorrected->GetXaxis()->SetTitleColor(1);
+
+  fHistYPtAntiProtonsCorrected = new TH2D("fHistYPtAntiProtonsCorrected",
+					  "Antiprotons",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt);
+  fHistYPtAntiProtonsCorrected->SetStats(kTRUE);
+  fHistYPtAntiProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("y");
+  fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitleColor(1);
+
   //setting up the containers
   Int_t iBin[2];
   iBin[0] = nbinsY;
@@ -215,6 +264,8 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fHistEvents) delete fHistEvents;
   if(fHistYPtProtons) delete fHistYPtProtons;
   if(fHistYPtAntiProtons) delete fHistYPtAntiProtons;
+  if(fHistYPtProtonsCorrected) delete fHistYPtProtonsCorrected;
+  if(fHistYPtAntiProtonsCorrected) delete fHistYPtAntiProtonsCorrected;
   if(fHistEventStats) delete fHistEventStats;
   if(fYRatioInPtBinsList) delete fYRatioInPtBinsList;
 
@@ -282,6 +333,29 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY,
     fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
   fHistYPtAntiProtons->GetXaxis()->SetTitleColor(1);
 
+  fHistYPtProtonsCorrected = new TH2D("fHistYPtProtonsCorrected","Protons",
+				      fNBinsY,fMinY,fMaxY,
+				      fNBinsPt,fMinPt,fMaxPt);
+  fHistYPtProtonsCorrected->SetStats(kTRUE);
+  fHistYPtProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtProtonsCorrected->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtProtonsCorrected->GetXaxis()->SetTitle("y");
+  fHistYPtProtonsCorrected->GetXaxis()->SetTitleColor(1);
+
+  fHistYPtAntiProtonsCorrected = new TH2D("fHistYPtAntiProtonsCorrected",
+					  "Antiprotons",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt);
+  fHistYPtAntiProtonsCorrected->SetStats(kTRUE);
+  fHistYPtAntiProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("y");
+  fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitleColor(1);
+
   //setting up the containers
   Int_t iBin[2];
   iBin[0] = nbinsY;
@@ -343,6 +417,27 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY, Double_t *gY,
   else
     fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
   fHistYPtAntiProtons->GetXaxis()->SetTitleColor(1);
+
+  fHistYPtProtonsCorrected = new TH2D("fHistYPtProtonsCorrected","Protons",
+				      fNBinsY,gY,fNBinsPt,gPt);
+  fHistYPtProtonsCorrected->SetStats(kTRUE);
+  fHistYPtProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtProtonsCorrected->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtProtonsCorrected->GetXaxis()->SetTitle("y");
+  fHistYPtProtonsCorrected->GetXaxis()->SetTitleColor(1);
+
+  fHistYPtAntiProtonsCorrected = new TH2D("fHistYPtAntiProtonsCorrected",
+					  "Antiprotons",
+					  fNBinsY,gY,fNBinsPt,gPt);
+  fHistYPtAntiProtonsCorrected->SetStats(kTRUE);
+  fHistYPtAntiProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("y");
+  fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitleColor(1);
 
   //setting up the containers
   Int_t iBin[2];
@@ -422,7 +517,7 @@ TList *AliProtonAnalysis::GetYRatioHistogramsInPtBins() {
     title = "gHistYProtons_PtBin"; title += iBin;
     gHistYProtons[iBin] = (TH1D *)fHistYPtProtons->ProjectionX(title.Data(),
 							       iBin,
-							       iBin,"e");
+							       iBin,"b");
     gHistYProtons[iBin]->Sumw2();
   }
 
@@ -432,7 +527,7 @@ TList *AliProtonAnalysis::GetYRatioHistogramsInPtBins() {
     title = "gHistYAntiProtons_PtBin"; title += iBin;
     gHistYAntiProtons[iBin] = (TH1D *)fHistYPtAntiProtons->ProjectionX(title.Data(),
 								       iBin,
-								       iBin,"e");
+								       iBin,"b");
     gHistYAntiProtons[iBin]->Sumw2();
   }
 
@@ -452,7 +547,7 @@ TList *AliProtonAnalysis::GetYRatioHistogramsInPtBins() {
     gHistYRatio[iBin]->GetYaxis()->SetTitle("#bar{p}/p");
     gHistYRatio[iBin]->GetXaxis()->SetTitle(fHistYPtProtons->GetXaxis()->GetTitle());
     gHistYRatio[iBin]->Divide(gHistYAntiProtons[iBin],
-			      gHistYProtons[iBin],1.0,1.0);
+			      gHistYProtons[iBin],1.0,1.0,"b");
     fYRatioInPtBinsList->Add(gHistYRatio[iBin]);
     pTmin += pTStep;
     pTmax += pTStep;
@@ -542,7 +637,7 @@ TH1D *AliProtonAnalysis::GetProtonCorrectedYHistogram() {
   //Get the corrected y histogram for protons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fYProtons = (TH1D *)fHistYPtProtons->ProjectionX("fYProtons",1,fHistYPtProtons->GetYaxis()->GetNbins(),"e");
+  TH1D *fYProtons = (TH1D *)fHistYPtProtonsCorrected->ProjectionX("fYProtons",1,fHistYPtProtons->GetYaxis()->GetNbins(),"e");
   //TH1D *fYProtons = fCorrectProtons->Project(0); //0: rapidity
    
   fYProtons->SetStats(kFALSE);
@@ -562,7 +657,7 @@ TH1D *AliProtonAnalysis::GetAntiProtonCorrectedYHistogram() {
   //Get the corrected y histogram for antiprotons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   
-  TH1D *fYAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionX("fYAntiProtons",1,fHistYPtAntiProtons->GetYaxis()->GetNbins(),"e");
+  TH1D *fYAntiProtons = (TH1D *)fHistYPtAntiProtonsCorrected->ProjectionX("fYAntiProtons",1,fHistYPtAntiProtons->GetYaxis()->GetNbins(),"e");
   //TH1D *fYAntiProtons = fCorrectAntiProtons->Project(0); //0: rapidity
    
   fYAntiProtons->SetStats(kFALSE);
@@ -582,7 +677,7 @@ TH1D *AliProtonAnalysis::GetProtonCorrectedPtHistogram() {
   //Get the corrected Pt histogram for protons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fPtProtons = (TH1D *)fHistYPtProtons->ProjectionY("fPtProtons",1,fHistYPtProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *fPtProtons = (TH1D *)fHistYPtProtonsCorrected->ProjectionY("fPtProtons",1,fHistYPtProtons->GetXaxis()->GetNbins(),"e");
   //TH1D *fPtProtons = fCorrectProtons->Project(0); //0: rapidity
    
   fPtProtons->SetStats(kFALSE);
@@ -602,7 +697,7 @@ TH1D *AliProtonAnalysis::GetAntiProtonCorrectedPtHistogram() {
   //Get the corrected Pt histogram for antiprotons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionY("fPtAntiProtons",1,fHistYPtAntiProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtonsCorrected->ProjectionY("fPtAntiProtons",1,fHistYPtAntiProtons->GetXaxis()->GetNbins(),"e");
 //TH1D *fPtAntiProtons = fCorrectAntiProtons->Project(0); //0: rapidity
    
   fPtAntiProtons->SetStats(kFALSE);
@@ -624,7 +719,7 @@ TH1D *AliProtonAnalysis::GetYRatioHistogram() {
   TH1D *fYAntiProtons = GetAntiProtonYHistogram();
   
   TH1D *hRatioY = new TH1D("hRatioY","",fYProtons->GetNbinsX(),fYProtons->GetXaxis()->GetXmin(),fYProtons->GetXaxis()->GetXmax());
-  hRatioY->Divide(fYAntiProtons,fYProtons,1.0,1.0);
+  hRatioY->Divide(fYAntiProtons,fYProtons,1.0,1.0,"e");
   hRatioY->SetMarkerStyle(kFullCircle);
   hRatioY->SetMarkerColor(4);
   hRatioY->GetYaxis()->SetTitle("#bar{p}/p");
@@ -647,7 +742,7 @@ TH1D *AliProtonAnalysis::GetYRatioCorrectedHistogram() {
   TH1D *fYAntiProtons = GetAntiProtonCorrectedYHistogram();
   
   TH1D *hRatioY = new TH1D("hRatioY","",fYProtons->GetNbinsX(),fYProtons->GetXaxis()->GetXmin(),fYProtons->GetXaxis()->GetXmax());
-  hRatioY->Divide(fYAntiProtons,fYProtons,1.0,1.0);
+  hRatioY->Divide(fYAntiProtons,fYProtons,1.0,1.0,"e");
   hRatioY->SetMarkerStyle(kFullCircle);
   hRatioY->SetMarkerColor(4);
   hRatioY->GetYaxis()->SetTitle("#bar{p}/p");
@@ -666,7 +761,7 @@ TH1D *AliProtonAnalysis::GetPtRatioHistogram() {
   TH1D *fPtAntiProtons = GetAntiProtonPtHistogram();
   
   TH1D *hRatioPt = new TH1D("hRatioPt","",fPtProtons->GetNbinsX(),fPtProtons->GetXaxis()->GetXmin(),fPtProtons->GetXaxis()->GetXmax());
-  hRatioPt->Divide(fPtAntiProtons,fPtProtons,1.0,1.0);
+  hRatioPt->Divide(fPtAntiProtons,fPtProtons,1.0,1.0,"e");
   hRatioPt->SetMarkerStyle(kFullCircle);
   hRatioPt->SetMarkerColor(4);
   hRatioPt->GetYaxis()->SetTitle("#bar{p}/p");
@@ -689,7 +784,7 @@ TH1D *AliProtonAnalysis::GetPtRatioCorrectedHistogram() {
   TH1D *fPtAntiProtons = GetAntiProtonCorrectedPtHistogram();
   
   TH1D *hRatioPt = new TH1D("hRatioPt","",fPtProtons->GetNbinsX(),fPtProtons->GetXaxis()->GetXmin(),fPtProtons->GetXaxis()->GetXmax());
-  hRatioPt->Divide(fPtAntiProtons,fPtProtons,1.0,1.0);
+  hRatioPt->Divide(fPtAntiProtons,fPtProtons,1.0,1.0,"e");
   hRatioPt->SetMarkerStyle(kFullCircle);
   hRatioPt->SetMarkerColor(4);
   hRatioPt->GetYaxis()->SetTitle("#bar{p}/p");
@@ -714,7 +809,7 @@ TH1D *AliProtonAnalysis::GetYAsymmetryHistogram() {
   hdiff->Add(fYProtons,fYAntiProtons,1.0,-1.0);
 
   TH1D *hAsymmetryY = new TH1D("hAsymmetryY","",fYProtons->GetNbinsX(),fYProtons->GetXaxis()->GetXmin(),fYProtons->GetXaxis()->GetXmax());
-  hAsymmetryY->Divide(hdiff,hsum,2.0,1.);
+  hAsymmetryY->Divide(hdiff,hsum,2.0,1.,"e");
   hAsymmetryY->SetMarkerStyle(kFullCircle);
   hAsymmetryY->SetMarkerColor(4);
   hAsymmetryY->GetYaxis()->SetTitle("A_{p}");
@@ -739,7 +834,7 @@ TH1D *AliProtonAnalysis::GetPtAsymmetryHistogram() {
   hdiff->Add(fPtProtons,fPtAntiProtons,1.0,-1.0);
 
   TH1D *hAsymmetryPt = new TH1D("hAsymmetryPt","",fPtProtons->GetNbinsX(),fPtProtons->GetXaxis()->GetXmin(),fPtProtons->GetXaxis()->GetXmax());
-  hAsymmetryPt->Divide(hdiff,hsum,2.0,1.);
+  hAsymmetryPt->Divide(hdiff,hsum,2.0,1.,"e");
   hAsymmetryPt->SetMarkerStyle(kFullCircle);
   hAsymmetryPt->SetMarkerColor(4);
   hAsymmetryPt->GetYaxis()->SetTitle("A_{p}");
@@ -805,6 +900,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
     Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
     Int_t npointsTPCdEdx = track->GetTPCsignalN();
     Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
+    Double_t dca3D = 0.0;
 
     if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)||(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
       AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
@@ -815,6 +911,8 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       tpcTrack->PropagateToDCA(vertex,
 			       esd->GetMagneticField(),
 			       100.,dca,cov);
+      dca3D = TMath::Sqrt(TMath::Power(dca[0],2) +
+			  TMath::Power(dca[1],2));
 
       if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
 	if(fProtonAnalysisBase->IsAccepted(track)) {
@@ -889,6 +987,9 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	      ((TH3F *)(fQA2DList->At(15)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Pt(),
 						  TMath::Abs(dca[1]));
+	      ((TH3F *)(fQA2DList->At(18)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Pt(),
+						  TMath::Abs(dca3D));
 	    }//protons
 	    else if(tpcTrack->Charge() < 0) {
 	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
@@ -900,6 +1001,9 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	      ((TH3F *)(fQA2DList->At(17)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Pt(),
 						  TMath::Abs(dca[1]));
+	      ((TH3F *)(fQA2DList->At(19)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Pt(),
+						  TMath::Abs(dca3D));
 	    }//antiprotons
 	    
 	    //Step: kStepInPhaseSpace
@@ -927,7 +1031,9 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       track->PropagateToDCA(vertex,
 			    esd->GetMagneticField(),
 			    100.,dca,cov);
-      
+      dca3D = TMath::Sqrt(TMath::Power(dca[0],2) +
+			  TMath::Power(dca[1],2));
+
       if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
 	if(fProtonAnalysisBase->IsAccepted(track)) {
 	  ((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
@@ -1001,6 +1107,9 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	      ((TH3F *)(fQA2DList->At(15)))->Fill(track->Eta(),
 						  track->Pt(),
 						  TMath::Abs(dca[1]));
+	      ((TH3F *)(fQA2DList->At(18)))->Fill(track->Eta(),
+						  track->Pt(),
+						  TMath::Abs(dca3D));
 	    }//protons
 	    else if(track->Charge() < 0) {
 	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
@@ -1012,6 +1121,9 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	      ((TH3F *)(fQA2DList->At(17)))->Fill(track->Eta(),
 						  track->Pt(),
 						  TMath::Abs(dca[1]));
+	      ((TH3F *)(fQA2DList->At(19)))->Fill(track->Eta(),
+						  track->Pt(),
+						  TMath::Abs(dca3D));
 	    }//antiprotons
 	    
 	    //Step: kStepInPhaseSpace
@@ -1178,8 +1290,10 @@ Bool_t AliProtonAnalysis::PrintYields(TH1 *hist, Double_t edge) {
 //____________________________________________________________________//
 void AliProtonAnalysis::Correct() {
   //Apply the corrections: Fast & dirty way for the absorption corrections
-  fHistYPtProtons->Divide(fHistEfficiencyYPtProtons);
-  fHistYPtAntiProtons->Divide(fHistEfficiencyYPtAntiProtons);
+  fHistYPtProtonsCorrected = fProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);
+  fHistYPtProtonsCorrected->Divide(fHistEfficiencyYPtProtons);
+  fHistYPtAntiProtonsCorrected = fAntiProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);
+  fHistYPtAntiProtonsCorrected->Divide(fHistEfficiencyYPtAntiProtons);
 }
 
 //____________________________________________________________________//
@@ -1601,6 +1715,29 @@ void AliProtonAnalysis::InitQA() {
   gHistAntiProtonsDCAzEtaPt->SetStats(kTRUE);
   fQA2DList->Add(gHistAntiProtonsDCAzEtaPt);
 
+  TH3F *gHistProtonsDCA3DEtaPt = new TH3F("gHistProtonsDCA3DEtaPt",
+					  ";P_{T} [GeV/c];dca [cm]",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt,
+					  100,0,20);
+  if(fProtonAnalysisBase->GetEtaMode())
+    gHistProtonsDCA3DEtaPt->GetXaxis()->SetTitle("#eta");
+  else
+    gHistProtonsDCA3DEtaPt->GetXaxis()->SetTitle("y");
+  gHistProtonsDCA3DEtaPt->SetStats(kTRUE);
+  fQA2DList->Add(gHistProtonsDCA3DEtaPt);
+  TH3F *gHistAntiProtonsDCA3DEtaPt = new TH3F("gHistAntiProtonsDCA3DEtaPt",
+					      ";P_{T} [GeV/c];dca [cm]",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt,
+					      100,0,20);
+  if(fProtonAnalysisBase->GetEtaMode())
+    gHistAntiProtonsDCA3DEtaPt->GetXaxis()->SetTitle("#eta");
+  else
+    gHistAntiProtonsDCA3DEtaPt->GetXaxis()->SetTitle("y");
+  gHistAntiProtonsDCA3DEtaPt->SetStats(kTRUE);
+  fQA2DList->Add(gHistAntiProtonsDCA3DEtaPt);
+
   //========================================================//
   fQAProtonsAcceptedList = new TList();
   fQAProtonsAcceptedList->SetName("fQAProtonsAcceptedList");
@@ -1702,6 +1839,12 @@ void AliProtonAnalysis::InitQA() {
   fQAProtonsAcceptedList->Add(gProtonsPointOnITSLayer6Pass);
   TH1F *gProtonsNumberOfTPCdEdxPointsPass = new TH1F("gProtonsNumberOfTPCdEdxPointsPass","",100,0,200);
   fQAProtonsAcceptedList->Add(gProtonsNumberOfTPCdEdxPointsPass);
+  TH1F *gProtonsITSClusterMapPass = new TH1F("gProtonsITSClusterMapPass",";ITS Layer;Entries",6,0.5,6.5);
+  fQAProtonsAcceptedList->Add(gProtonsITSClusterMapPass);
+  TH1F *gProtonsDCA3DPass = new TH1F("gProtonsDCA3DPass",
+				     ";dca [cm];Entries",
+				     100,0,20);
+  fQAProtonsAcceptedList->Add(gProtonsDCA3DPass);
 
   //========================================================//  
   fQAProtonsRejectedList = new TList();
@@ -1831,6 +1974,14 @@ void AliProtonAnalysis::InitQA() {
   TH1F *gProtonsNumberOfTPCdEdxPointsReject = new TH1F("gProtonsNumberOfTPCdEdxPointsReject","",100,0,200);
   gProtonsNumberOfTPCdEdxPointsReject->SetFillColor(kRed-2);
   fQAProtonsRejectedList->Add(gProtonsNumberOfTPCdEdxPointsReject);
+  TH1F *gProtonsITSClusterMapReject = new TH1F("gProtonsITSClusterMapReject",";ITS Layer;Entries",6,0.5,6.5);
+  gProtonsITSClusterMapReject->SetFillColor(kRed-2);
+  fQAProtonsRejectedList->Add(gProtonsITSClusterMapReject);
+  TH1F *gProtonsDCA3DReject = new TH1F("gProtonsDCA3DReject",
+				       ";dca [cm];Entries",
+				       100,0,20);
+  gProtonsDCA3DReject->SetFillColor(kRed-2);
+  fQAProtonsRejectedList->Add(gProtonsDCA3DReject);
     
   //========================================================//
   fQAAntiProtonsAcceptedList = new TList();
@@ -1933,7 +2084,13 @@ void AliProtonAnalysis::InitQA() {
   fQAAntiProtonsAcceptedList->Add(gAntiProtonsPointOnITSLayer6Pass);
   TH1F *gAntiProtonsNumberOfTPCdEdxPointsPass = new TH1F("gAntiProtonsNumberOfTPCdEdxPointsPass","",100,0,200);
   fQAAntiProtonsAcceptedList->Add(gAntiProtonsNumberOfTPCdEdxPointsPass);
-  
+  TH1F *gAntiProtonsITSClusterMapPass = new TH1F("gAntiProtonsITSClusterMapPass",";ITS Layer;Entries",6,0.5,6.5);
+  fQAAntiProtonsAcceptedList->Add(gAntiProtonsITSClusterMapPass);
+  TH1F *gAntiProtonsDCA3DPass = new TH1F("gAntiProtonsDCA3DPass",
+					 ";dca [cm];Entries",
+					 100,0,20);
+  fQAAntiProtonsAcceptedList->Add(gAntiProtonsDCA3DPass);
+
   //========================================================//
   fQAAntiProtonsRejectedList = new TList();
   fQAAntiProtonsRejectedList->SetName("fQAAntiProtonsRejectedList");
@@ -2062,6 +2219,14 @@ void AliProtonAnalysis::InitQA() {
   TH1F *gAntiProtonsNumberOfTPCdEdxPointsReject = new TH1F("gAntiProtonsNumberOfTPCdEdxPointsReject","",100,0,200);
   gAntiProtonsNumberOfTPCdEdxPointsReject->SetFillColor(kRed-2);
   fQAAntiProtonsRejectedList->Add(gAntiProtonsNumberOfTPCdEdxPointsReject);
+  TH1F *gAntiProtonsITSClusterMapReject = new TH1F("gAntiProtonsITSClusterMapReject",";ITS Layer;Entries",6,0.5,6.5);
+  gAntiProtonsITSClusterMapReject->SetFillColor(kRed-2);
+  fQAAntiProtonsRejectedList->Add(gAntiProtonsITSClusterMapReject);
+  TH1F *gAntiProtonsDCA3DReject = new TH1F("gAntiProtonsDCA3DReject",
+					   ";dca [cm];Entries",
+					   100,0,20);
+  gAntiProtonsDCA3DReject->SetFillColor(kRed-2);
+  fQAAntiProtonsRejectedList->Add(gAntiProtonsDCA3DReject);
 }
 
 //____________________________________________________________________//
@@ -2071,6 +2236,7 @@ void AliProtonAnalysis::FillQA(AliESDEvent *esd,
   //Fills the QA histograms
   Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
   Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
+  Double_t dca3D = 0.0;
 
   if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)||(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
@@ -2098,6 +2264,9 @@ void AliProtonAnalysis::FillQA(AliESDEvent *esd,
 			  esd->GetMagneticField(),
 			  100.,dca,cov);
   }
+
+  dca3D = TMath::Sqrt(TMath::Power(dca[0],2) +
+		      TMath::Power(dca[1],2));
 
   Int_t  fIdxInt[200];
   Int_t nClustersITS = track->GetITSclusters(fIdxInt);
@@ -2307,6 +2476,27 @@ void AliProtonAnalysis::FillQA(AliESDEvent *esd,
       if(track->GetTPCsignalN() >= fProtonAnalysisBase->GetMinTPCdEdxPoints())
 	((TH1F *)(fQAProtonsAcceptedList->At(26)))->Fill(track->GetTPCsignalN());
     }//number of TPC points for the dE/dx
+    if(fProtonAnalysisBase->IsUsedPointOnSPDLayer()) {
+      if((!track->HasPointOnITSLayer(0))&&(!track->HasPointOnITSLayer(1))) {
+	for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+	  if(track->HasPointOnITSLayer(iLayer))
+	    ((TH1F *)(fQAProtonsRejectedList->At(27)))->Fill(iLayer+1);
+	}
+      }
+      else if((track->HasPointOnITSLayer(0))||(track->HasPointOnITSLayer(1))) {
+	for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+	  if(track->HasPointOnITSLayer(iLayer))
+	    ((TH1F *)(fQAProtonsAcceptedList->At(27)))->Fill(iLayer+1);
+	}
+      }
+    }//point on either SPD layers
+    if(fProtonAnalysisBase->IsUsedMaxDCA3D()) {
+      if(dca3D > fProtonAnalysisBase->GetMaxDCA3D()) {
+	((TH1F *)(fQAProtonsRejectedList->At(28)))->Fill(dca3D);
+      }
+      if(dca3D < fProtonAnalysisBase->GetMaxDCA3D()) 
+	((TH1F *)(fQAProtonsAcceptedList->At(28)))->Fill(dca3D);
+    }//dca3D
   }//protons
 
   //antiprotons
@@ -2503,5 +2693,26 @@ void AliProtonAnalysis::FillQA(AliESDEvent *esd,
       if(track->GetTPCsignalN() >= fProtonAnalysisBase->GetMinTPCdEdxPoints())
 	((TH1F *)(fQAAntiProtonsAcceptedList->At(26)))->Fill(track->GetTPCsignalN());
     }//number of TPC points for the dE/dx
+    if(fProtonAnalysisBase->IsUsedPointOnSPDLayer()) {
+      if((!track->HasPointOnITSLayer(0))&&(!track->HasPointOnITSLayer(1))) {
+	for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+	  if(track->HasPointOnITSLayer(iLayer))
+	    ((TH1F *)(fQAAntiProtonsRejectedList->At(27)))->Fill(iLayer+1);
+	}
+      }
+      else if((track->HasPointOnITSLayer(0))||(track->HasPointOnITSLayer(1))) {
+	for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
+	  if(track->HasPointOnITSLayer(iLayer))
+	    ((TH1F *)(fQAAntiProtonsAcceptedList->At(27)))->Fill(iLayer+1);
+	}
+      }
+    }//point on either SPD layers
+    if(fProtonAnalysisBase->IsUsedMaxDCA3D()) {
+      if(dca3D > fProtonAnalysisBase->GetMaxDCA3D()) {
+	((TH1F *)(fQAAntiProtonsRejectedList->At(28)))->Fill(dca3D);
+      }
+      if(dca3D < fProtonAnalysisBase->GetMaxDCA3D()) 
+	((TH1F *)(fQAAntiProtonsAcceptedList->At(28)))->Fill(dca3D);
+    }//dca3D
   }//antiprotons
 }

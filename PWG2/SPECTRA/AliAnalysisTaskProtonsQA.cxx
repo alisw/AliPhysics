@@ -98,7 +98,7 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1]);
 
   fList0 = new TList();
-  fList0->Add(fProtonQAAnalysis->GetGlobalQAList());
+  fList0 = fProtonQAAnalysis->GetGlobalQAList();
 
   fList1 = new TList();
   fList1 = fProtonQAAnalysis->GetPDGList();

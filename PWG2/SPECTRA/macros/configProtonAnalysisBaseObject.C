@@ -19,11 +19,11 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
 
     baseAnalysis->SetMinTPCClusters(80);
     baseAnalysis->SetMaxChi2PerTPCCluster(3.5);
-    baseAnalysis->SetMaxCov11(2.0);
+    /*baseAnalysis->SetMaxCov11(2.0);
     baseAnalysis->SetMaxCov22(2.0);
     baseAnalysis->SetMaxCov33(0.5);
     baseAnalysis->SetMaxCov44(0.5);
-    baseAnalysis->SetMaxCov55(2.0);
+    baseAnalysis->SetMaxCov55(2.0);*/
     baseAnalysis->SetMinTPCdEdxPoints(80);
     switch(esdAnalysisType) {
     case "TPC":
@@ -36,12 +36,13 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       break;
     case "Hybrid":
       baseAnalysis->SetAnalysisMode(AliProtonAnalysisBase::kHybrid);
-      baseAnalysis->SetPhaseSpace(9, -0.9, 0.9, 5, 0.4, 0.9);
+      baseAnalysis->SetPhaseSpace(9, -0.9, 0.9, 6, 0.45, 1.05);
       //baseAnalysis->SetPhaseSpace(18, -0.9, 0.9, 32, 0.5, 1.3);
       baseAnalysis->SetTPCpid();
-      baseAnalysis->SetMaxSigmaToVertex(3.0);
-      /*baseAnalysis->SetMaxDCAXY(3.0);
-	baseAnalysis->SetMaxDCAZ(3.0);*/
+      //baseAnalysis->SetMaxSigmaToVertex(3.0);
+      //baseAnalysis->SetMaxDCAXY(0.5);
+      //baseAnalysis->SetMaxDCAZ(0.7);
+      baseAnalysis->SetMaxDCA3D(2.0);
       //baseAnalysis->SetPointOnITSLayer6();
       //baseAnalysis->SetPointOnITSLayer5();
       //baseAnalysis->SetPointOnITSLayer4();

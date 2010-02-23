@@ -23,14 +23,18 @@ void drawResults(const char* analysisOutput) {
   AliProtonAnalysis *analysis = new AliProtonAnalysis();
   analysis->ReadFromFile(analysisOutput);
   TH1F *gHistEventStats = dynamic_cast<TH1F *>(analysis->GetEventStatistics());
+
   TH2D *gHistYPtProtons = dynamic_cast<TH2D *>(analysis->GetProtonYPtHistogram());
   TH2D *gHistYPtAntiProtons = dynamic_cast<TH2D *>(analysis->GetAntiProtonYPtHistogram());
+
   TH1D *gHistYProtons = dynamic_cast<TH1D *>(analysis->GetProtonYHistogram());
   TH1D *gHistYAntiProtons = dynamic_cast<TH1D *>(analysis->GetAntiProtonYHistogram());
   TH1D *gHistPtProtons = dynamic_cast<TH1D *>(analysis->GetProtonPtHistogram());
   TH1D *gHistPtAntiProtons = dynamic_cast<TH1D *>(analysis->GetAntiProtonPtHistogram());
+
   TH1D *gHistYRatio = dynamic_cast<TH1D *>(analysis->GetYRatioHistogram());
   TH1D *gHistPtRatio = dynamic_cast<TH1D *>(analysis->GetPtRatioHistogram());
+
   TList *gYRatioInPtBinsList = dynamic_cast<TList *>(analysis->GetYRatioHistogramsInPtBins());
   drawRatioInPtBins(gYRatioInPtBinsList);
 
@@ -129,18 +133,13 @@ void drawQAPlots(const char* analysisOutput,
 		 Bool_t kMC) {
   //Draws the QA plots from the output of the analysis
   //=========================================================//
-  //List of cuts
-  TFile *fCutFile = TFile::Open("ListOfCuts.root");
-  if(fCutFile) {
-    if(fCutFile->IsOpen()) {
-      TCanvas *cListOfCuts = dynamic_cast<TCanvas *>(fCutFile->Get("cListOfCuts"));
-      cListOfCuts->Draw();
-    }
-  }
-
-  //=========================================================//
   //QA plots
   TFile *f = TFile::Open(analysisOutput);
+  //List of cuts
+  TCanvas *cListOfCuts = dynamic_cast<TCanvas *>(f->Get("cListOfCuts"));
+  if(cListOfCuts)
+    cListOfCuts->Draw();
+
   TList *listQA = dynamic_cast<TList *>(f->Get("outputQAList"));
   TList *gListGlobalQA = dynamic_cast<TList *>(listQA->At(0));
 
@@ -442,6 +441,8 @@ void drawQAPlots(const char* analysisOutput,
   TH1F *gProtonsPointOnITSLayer5Pass = dynamic_cast<TH1F *>(fQAProtonsAcceptedList->At(24));
   TH1F *gProtonsPointOnITSLayer6Pass = dynamic_cast<TH1F *>(fQAProtonsAcceptedList->At(25));
   TH1F *gProtonsNumberOfTPCdEdxPointsPass = dynamic_cast<TH1F *>(fQAProtonsAcceptedList->At(26));
+  TH1F *gProtonsITSClusterMapPass = dynamic_cast<TH1F *>(fQAProtonsAcceptedList->At(27));
+  TH1F *gProtonsDCA3DPass = dynamic_cast<TH1F *>(fQAProtonsAcceptedList->At(28));
 
   //Rejected protons
   TList *fQAProtonsRejectedList = dynamic_cast<TList *>(gListGlobalQA->At(2));
@@ -472,6 +473,8 @@ void drawQAPlots(const char* analysisOutput,
   TH1F *gProtonsPointOnITSLayer5Reject = dynamic_cast<TH1F *>(fQAProtonsRejectedList->At(24));
   TH1F *gProtonsPointOnITSLayer6Reject = dynamic_cast<TH1F *>(fQAProtonsRejectedList->At(25));
   TH1F *gProtonsNumberOfTPCdEdxPointsReject = dynamic_cast<TH1F *>(fQAProtonsRejectedList->At(26));
+  TH1F *gProtonsITSClusterMapReject = dynamic_cast<TH1F *>(fQAProtonsRejectedList->At(27));
+  TH1F *gProtonsDCA3DReject = dynamic_cast<TH1F *>(fQAProtonsRejectedList->At(28));
 
   //Accepted antiprotons
   TList *fQAAntiProtonsAcceptedList = dynamic_cast<TList *>(gListGlobalQA->At(3));
@@ -502,6 +505,8 @@ void drawQAPlots(const char* analysisOutput,
   TH1F *gAntiProtonsPointOnITSLayer5Pass = dynamic_cast<TH1F *>(fQAAntiProtonsAcceptedList->At(24));
   TH1F *gAntiProtonsPointOnITSLayer6Pass = dynamic_cast<TH1F *>(fQAAntiProtonsAcceptedList->At(25));
   TH1F *gAntiProtonsNumberOfTPCdEdxPointsPass = dynamic_cast<TH1F *>(fQAAntiProtonsAcceptedList->At(26));
+  TH1F *gAntiProtonsITSClusterMapPass = dynamic_cast<TH1F *>(fQAAntiProtonsAcceptedList->At(27));
+  TH1F *gAntiProtonsDCA3DPass = dynamic_cast<TH1F *>(fQAAntiProtonsAcceptedList->At(28));
 
   //Rejected antiprotons
   TList *fQAAntiProtonsRejectedList = dynamic_cast<TList *>(gListGlobalQA->At(4));
@@ -532,6 +537,8 @@ void drawQAPlots(const char* analysisOutput,
   TH1F *gAntiProtonsPointOnITSLayer5Reject = dynamic_cast<TH1F *>(fQAAntiProtonsRejectedList->At(24));
   TH1F *gAntiProtonsPointOnITSLayer6Reject = dynamic_cast<TH1F *>(fQAAntiProtonsRejectedList->At(25));
   TH1F *gAntiProtonsNumberOfTPCdEdxPointsReject = dynamic_cast<TH1F *>(fQAAntiProtonsRejectedList->At(26));
+  TH1F *gAntiProtonsITSClusterMapReject = dynamic_cast<TH1F *>(fQAAntiProtonsRejectedList->At(27));
+  TH1F *gAntiProtonsDCA3DReject = dynamic_cast<TH1F *>(fQAAntiProtonsAcceptedList->At(28));
 
   //__________________________________________________//
   TCanvas *c1 = new TCanvas("c1","ITS clusters",0,0,600,400);
@@ -683,6 +690,26 @@ void drawQAPlots(const char* analysisOutput,
   gProtonsNumberOfTPCdEdxPointsReject->Draw("same");
   c16->cd(2); gAntiProtonsNumberOfTPCdEdxPointsPass->Draw(); 
   gAntiProtonsNumberOfTPCdEdxPointsReject->Draw("same");
+
+  TCanvas *c17 = new TCanvas("c17","ITS cluster map",1200,400,600,400);
+  c17->SetFillColor(10); c17->SetHighLightColor(10);
+  c17->Divide(2,1);
+  c17->cd(1); gProtonsITSClusterMapPass->GetYaxis()->SetRangeUser(0,18000);
+  gProtonsITSClusterMapPass->Draw(); 
+  gProtonsITSClusterMapReject->Draw("same"); 
+  c17->cd(2); gAntiProtonsITSClusterMapPass->GetYaxis()->SetRangeUser(0,18000);
+  gAntiProtonsITSClusterMapPass->Draw(); 
+  gAntiProtonsITSClusterMapReject->Draw("same"); 
+
+  if(gProtonsDCA3DPass->GetEntries() != 0) {  
+    TCanvas *c18 = new TCanvas("c18","DCA 3D",1200,500,600,400);
+    c18->SetFillColor(10); c18->SetHighLightColor(10);
+    c18->Divide(2,1);
+    c18->cd(1)->SetLogy(); gProtonsDCA3DPass->Draw();
+    gProtonsDCA3DReject->Draw("SAME");
+    c18->cd(2)->SetLogy(); gAntiProtonsDCA3DPass->Draw();
+    gAntiProtonsDCA3DReject->Draw("SAME");
+  }
 
   //================Vertex QA================//
   TList *gListVertexQA = dynamic_cast<TList *>(listQA->At(1));
