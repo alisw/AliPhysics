@@ -39,6 +39,7 @@ using namespace std;
 #include "AliHLTTRDClusterizerComponent.h"
 #include "AliHLTTRDDefinitions.h"
 #include "AliHLTTRDClusterizer.h"
+#include "AliHLTTRDUtils.h"
 
 #include "AliGeomManager.h"
 #include "AliTRDReconstructor.h"
@@ -265,17 +266,9 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 
       AliHLTUInt32_t spec = block.fSpecification;
       
-      Int_t id = 1024;
-      
-      for ( Int_t ii = 0; ii < 18 ; ii++ ) {
-	if ( spec & 0x1 ) {
-	  id += ii;
-	  break;
-	}
-	spec = spec >> 1 ;
-      }
+      Int_t id = AliHLTTRDUtils::GetSM(spec) + 1024;
 
-      fMemReader->SetEquipmentID( id ); 
+      fMemReader->SetEquipmentID(id);
       
       fClusterizer->SetMemBlock(outputPtr+offset);
       Bool_t bclustered = fClusterizer->Raw2ClustersChamber(fMemReader);

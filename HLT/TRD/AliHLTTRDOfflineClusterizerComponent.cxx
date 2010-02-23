@@ -17,9 +17,9 @@
 //**************************************************************************
 
 /** @file   AliHLTTRDOfflineClusterizerComponent.cxx
-    @author 
+    @author Theodor Rascanu
     @date   
-    @brief  
+    @brief  Processes digits (with MC) and raw data (without MC). For debug purposes only
 */
 
 // see header file for class documentation                                   //
@@ -127,6 +127,7 @@ int AliHLTTRDOfflineClusterizerComponent::DoEvent(const AliHLTComponent_EventDat
       TClonesArray* clusterArray = clusterizer->RecPoints();
       clusterizer->SetClustersOwner(kFALSE);
       
+      AliHLTUInt32_t spec = GetSpecification(iter);
       if(fHighLevelOutput){
 	if(fEmulateHLTClusters){
 	  TClonesArray* temp = clusterArray;
@@ -137,8 +138,8 @@ int AliHLTTRDOfflineClusterizerComponent::DoEvent(const AliHLTComponent_EventDat
 	}
 	TObjString strg;
 	strg.String() += clusterizer->GetNTimeBins();
-	PushBack(clusterArray, AliHLTTRDDefinitions::fgkHiLvlClusterDataType, 0);
-	PushBack(&strg, AliHLTTRDDefinitions::fgkHiLvlClusterDataType, 0);
+	PushBack(clusterArray, AliHLTTRDDefinitions::fgkHiLvlClusterDataType, spec);
+	PushBack(&strg, AliHLTTRDDefinitions::fgkHiLvlClusterDataType, spec);
       } else {
 	Int_t nTimeBins = clusterizer->GetNTimeBins();
 	Int_t addedSize = AliHLTTRDUtils::AddClustersToOutput(clusterArray, outputPtr+offset, nTimeBins);
@@ -147,7 +148,7 @@ int AliHLTTRDOfflineClusterizerComponent::DoEvent(const AliHLTComponent_EventDat
 	FillBlockData( bd );
 	bd.fOffset = offset;
 	bd.fSize = addedSize;
-	bd.fSpecification = 1;
+	bd.fSpecification = spec;
 	bd.fDataType = AliHLTTRDDefinitions::fgkClusterDataType;
 	outputBlocks.push_back( bd );
 	HLTDebug( "BD ptr 0x%x, offset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), bd.fSpecification);

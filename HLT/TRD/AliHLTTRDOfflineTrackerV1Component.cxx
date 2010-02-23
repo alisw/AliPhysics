@@ -17,9 +17,9 @@
 //**************************************************************************
 
 /** @file   AliHLTTRDOfflineTrackerV1Component.cxx
-    @author 
-    @date   2009-08-31
-    @brief  A TRDClusterizer processing component for the HLT. 
+    @author Theodor Rascanu
+    @date   
+    @brief  Handles high level (object based) and low level (pod) input data (clusters). For debug purposes only
 */
 
 #include "AliHLTTRDOfflineTrackerV1Component.h"
@@ -132,13 +132,14 @@ int AliHLTTRDOfflineTrackerV1Component::DoEvent(const AliHLTComponent_EventData&
 	AliHLTTRDUtils::EmulateHLTTracks(trdTracks);
       }
 
+      AliHLTUInt32_t spec = GetSpecification(iter);
       if(trdTracks)
-      PushBack(trdTracks, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+	PushBack(trdTracks, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, spec);
       else{
 	TClonesArray temp("AliTRDtrackV1");
-	PushBack(&temp, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+	PushBack(&temp, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, spec);
       }
-      PushBack(strg, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+      PushBack(strg, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, spec);
       fTracker->UnloadClusters();
       AliTRDReconstructor::SetClusters(0x0);
 
