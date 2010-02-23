@@ -40,6 +40,7 @@
 #include "AliHLTD0toKpi.h"
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
+#include "AliAODRecoDecay.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTD0Trigger)
@@ -116,7 +117,10 @@ int AliHLTD0Trigger::DoTrigger()
        fField = event->GetMagneticField();
        const AliESDVertex* pv = event->GetPrimaryVertexTracks();
        fVertex =  new AliESDVertex(*pv);
-       
+       if(fVertex->GetNContributors()<2){
+	 HLTWarning("Contributors in ESD vertex to low or not been set");
+	 continue;
+       }
        for(Int_t it=0;it<event->GetNumberOfTracks();it++){
 	 SingleTrackSelect(event->GetTrack(it));
        }
@@ -125,11 +129,11 @@ int AliHLTD0Trigger::DoTrigger()
     }
   }
 
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); 
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut); 
 	iter != NULL; iter = GetNextInputObject() ) { 
     fVertex = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ));
     if(!fVertex){
-      HLTError("ITS SPD vertex object is corrupted");
+      HLTError("Vertex object is corrupted");
       //iResult = -EINVAL;    
     }
   }  
@@ -355,6 +359,30 @@ Int_t AliHLTD0Trigger::RecD0(){
       tP->PropagateToDCA(vertexp1n1,fField,kVeryBig); 
       tN->PropagateToDCA(vertexp1n1,fField,kVeryBig);
       
+      /*
+      Double_t px[2],py[2],pz[2];
+      Double_t momentum[3];
+      tP->GetPxPyPz(momentum);
+      px[0] = momentum[0]; py[0] = momentum[1]; pz[0] = momentum[2];
+      tN->GetPxPyPz(momentum);
+      px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
+
+      Short_t dummycharge=0;
+      Double_t *dummyd0 = new Double_t[2];
+      Int_t nprongs = 2;
+
+      for(Int_t ipr=0;ipr<nprongs;ipr++) dummyd0[ipr]=0.;
+      AliAODRecoDecay *rd = new AliAODRecoDecay(0x0,nprongs,dummycharge,px,py,pz,dummyd0);
+      delete [] dummyd0; dummyd0=NULL;
+
+      UInt_t pdg2[2],pdg2bar[2];
+      Double_t mPDG,minv,minvbar;
+
+      pdg2[0]=211; pdg2[1]=321; pdg2bar[0]=321; pdg2bar[1]=211;
+      minv = rd->InvMass(nprongs,pdg2);
+      minvbar = rd->InvMass(nprongs,pdg2bar);
+      if(TMath::Abs(minv-mD0PDG)>finvMass && TMath::Abs(minv-mD0PDG)>finvMass) {continue; delete vertexp1n1; delete rd;}
+      */
       if((TMath::Abs(fd0calc->InvMass(tN,tP)-mD0PDG)) > finvMass && TMath::Abs((fd0calc->InvMass(tP,tN))-mD0PDG) > finvMass){continue;}
       fd0calc->cosThetaStar(tN,tP,D0,D0bar);
       if(TMath::Abs(D0) > fcosThetaStar && TMath::Abs(D0bar) > fcosThetaStar){continue;}
@@ -364,13 +392,20 @@ Int_t AliHLTD0Trigger::RecD0(){
       if(fd0calc->pointingAngle(tN,tP,pvpos,svpos) < fcosPoint){continue;}
       
       if(fplothisto){
+	//fD0mass->Fill(minv);
+	//fD0mass->Fill(minvbar);
+	fD0mass->Fill(fd0calc->InvMass(tN,tP));
+	fD0mass->Fill(fd0calc->InvMass(tP,tN));
+	/*
 	if((fd0calc->InvMass(tN,tP) - mD0PDG) > finvMass){
 	  fD0mass->Fill(fd0calc->InvMass(tN,tP));
 	}
 	else{
 	  fD0mass->Fill(fd0calc->InvMass(tP,tN));
-	}
+	  }
+	*/
       }
+      
       nD0++;
       delete vertexp1n1;
     }
