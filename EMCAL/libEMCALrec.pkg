@@ -9,7 +9,6 @@ AliEMCALTracker.cxx \
 AliEMCALPID.cxx \
 AliEMCALQADataMakerRec.cxx \
 AliEMCALAodCluster.cxx \
-AliCaloNeuralFit.cxx \
 AliCaloRawAnalyzer.cxx \
 AliCaloRawAnalyzerCrude.cxx \
 AliCaloRawAnalyzerLMS.cxx \

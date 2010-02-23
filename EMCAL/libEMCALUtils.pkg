@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 
 SRCS          =  AliEMCALGeoParams.cxx AliEMCALGeoUtils.cxx AliEMCALEMCGeometry.cxx  \
-                 AliEMCALShishKebabTrd1Module.cxx AliEMCALPIDUtils.cxx
+                 AliEMCALShishKebabTrd1Module.cxx AliEMCALPIDUtils.cxx AliCaloNeuralFit.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
