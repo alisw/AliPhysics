@@ -40,7 +40,7 @@ using namespace std;
 #include "AliESDfriend.h"
 
 #include "AliTPCcalibTime.h"
-#include "AliTPCcalibCalib.h";
+#include "AliTPCcalibCalib.h"
 #include "AliTPCseed.h"
 
 #include "TObjArray.h"
