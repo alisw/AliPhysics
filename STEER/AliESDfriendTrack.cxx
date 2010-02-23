@@ -120,9 +120,9 @@ AliESDfriendTrack::~AliESDfriendTrack() {
    delete fTPCOut;
    delete fITSOut;
    delete fTRDIn;
-   delete fITSindex;
-   delete fTPCindex;
-   delete fTRDindex;
+   delete[] fITSindex;
+   delete[] fTPCindex;
+   delete[] fTRDindex;
 }
 
 
