@@ -69,7 +69,7 @@ AliTPCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
   if(fDebug>0)
     AliInfo("In AliTPCQAChecker::Check");
   
-  if (index!=AliQAv1::kRAW&&index!=AliQAv1::kREC&&index!=AliQAv1::kESD) {
+  if (index!=AliQAv1::kRAW&&index!=AliQAv1::kSIM&&index!=AliQAv1::kREC&&index!=AliQAv1::kESD) {
     
     AliWarning(Form("Checker for task %d not implement for the moment",index));
     return NULL;
@@ -86,6 +86,8 @@ AliTPCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
     
     if (index == AliQAv1::kRAW)
       rv[specie] = CheckRAW(specie, list[specie]);
+    if (index == AliQAv1::kSIM)
+      rv[specie] = CheckSIM(specie, list[specie]);
     if (index == AliQAv1::kREC)
       rv[specie] = CheckREC(specie, list[specie]);
     if (index == AliQAv1::kESD)
@@ -139,6 +141,68 @@ Double_t AliTPCQAChecker::CheckRAW(Int_t specie, TObjArray* list)
   }
   
   return 1.0; // ok
+}
+
+//______________________________________________________________________________
+Double_t AliTPCQAChecker::CheckSIM(Int_t specie, TObjArray* list)
+{
+  // This method checks the QA histograms associated with simulation
+  //
+  // For TPC this is:
+  // Digits : 
+  // The digit histogram gives the ADC distribution for all sigbnals
+  // above threshold. The check is just that there are digits.
+  // Hits : The hit histograms are checked to see that they are not
+  // empty. They contain a lot of detailed information on the
+  // energyloss model (they were used to debug the AliRoot TPC use of
+  // FLUKA).
+  //
+  // The check methods are simple:
+  // We do not know if it is bad that histograms are missing because
+  // this will always be the case for summable digits. So this check
+  // is not possible here.
+  // If digit histogram is empty (set error)
+  // If one of the hit histograms are empty (set error)
+  if(fDebug>0)
+    AliInfo("In AliTPCQAChecker::CheckSIM");
+  
+  if(fDebug>2)
+    list->Print();
+
+  Char_t specieName[256];
+  sprintf(specieName, AliRecoParam::GetEventSpecieName(specie));
+
+  TH1* hDigits = static_cast<TH1*>
+    (list->FindObject(Form("%s_hDigitsADC",specieName)));
+  TH1* hHitsNhits = static_cast<TH1*> 
+    (list->FindObject(Form("%s_hHitsNhits",specieName)));
+  TH1* hHitsElectrons         = static_cast<TH1*> 
+    (list->FindObject(Form("%s_hHitsElectrons",specieName)));
+  TH1* hHitsRadius        = static_cast<TH1*> 
+    (list->FindObject(Form("%s_hHitsRadius",specieName)));
+  TH1* histHitsPrimPerCm          = static_cast<TH1*> 
+    (list->FindObject(Form("%s_histHitsPrimPerCm",specieName)));
+  TH1* histHitsElectronsPerCm          = static_cast<TH1*> 
+    (list->FindObject(Form("%s_histHitsElectronsPerCm",specieName)));
+  
+//   if (!(hDigits) ||                                             // digit hists
+//       !(hHitsNhits && hHitsElectrons && hHitsRadius && histHitsPrimPerCm && histHitsElectronsPerCm)) // hit hists
+//     return -0.5; // fatal
+  
+  if (hDigits) {
+    if(hDigits->GetEntries()==0) 
+      return 0.25; // error
+  }
+
+  if (hHitsNhits && hHitsElectrons && hHitsRadius && 
+      histHitsPrimPerCm && histHitsElectronsPerCm) {
+    if (hHitsNhits->GetEntries()==0 || hHitsElectrons->GetEntries()==0 ||
+	hHitsRadius->GetEntries()==0 || histHitsPrimPerCm->GetEntries()==0 ||
+	histHitsElectronsPerCm->GetEntries()==0) 
+      return 0.25; // error
+  }
+
+  return 1; // ok
 }
 
 //______________________________________________________________________________

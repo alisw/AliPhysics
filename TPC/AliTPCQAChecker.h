@@ -36,6 +36,7 @@ class AliTPCQAChecker: public AliQACheckerBase {
 private:
   
   Double_t CheckRAW(Int_t specie, TObjArray* list);
+  Double_t CheckSIM(Int_t specie, TObjArray* list);
   Double_t CheckREC(Int_t specie, TObjArray* list);
   Double_t CheckESD(Int_t specie, TObjArray* list);
 
