@@ -19,7 +19,8 @@ CLASS_HDRS:= \
 	AliHLTTRDOfflineClusterizerComponent.h \
 	AliHLTTRDOfflineTrackerV1Component.h \
 	AliHLTTRDClusterHistoComponent.h \
-	AliHLTTRDTrackHistoComponent.h
+	AliHLTTRDTrackHistoComponent.h \
+	AliHLTTRDHistoMergerComponent.h 
 
 # library sources
 MODULE_SRCS= \
