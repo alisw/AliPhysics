@@ -37,8 +37,6 @@ Double_t minB = 0.01;
 Double_t maxB = 0.9;
 
 // Parameters for the simulation of events 'on the fly': 
-Double_t dTemperatureOfRP = 0.44; // 'temperature' of RPs in GeV/c (increase this parameter to get more high pt RPs) 
-
 //===SEED========================================================
 // use always the same seed for random generators. 
 // usage of same seed (kTRUE) is relevant in two cases:
@@ -50,44 +48,52 @@ Bool_t bSameSeed = kFALSE;
 //===NONFLOW=============================================
 // number of times to use each track (to simulate nonflow)
 Int_t iLoops = 1; 
+Double_t phiRange = 0.0; // If the original track with azimuthal angle phi is splitted, 
+                         // the azimuthal angle of splitted track is sampled uniformly 
+                         // from (phi-phiRange, phi+phiRange). If phiRange = 0.0, the
+                         // azimuthal angle of splitted track is the same as azimuthal  
+                         // angle of original track. (Remark: phiRange's unit is degree.)
 Double_t ptRange = 0.0; // If the original track with momentum pt is splitted, 
                         // the momentum of splitted track is sampled uniformly 
                         // from (pt-ptRange, pt+ptRange). If ptRange = 0.0, the
                         // momentum of splitted track is the same as momentum 
-                        // of original track.
+                        // of original track. (Remark: ptRange's unit is GeV.)
 Double_t etaRange = 0.0; // If the original track with pseudorapidity eta is splitted, 
-                          // the pseudorapidity of splitted track is sampled uniformly 
-                          // from (eta-etaRange, eta+etaRange). If etaRange = 0.0, the
-                          // pseudorapidity of splitted track will be the same as the
-                          // pseudorapidity of original track.
+                         // the pseudorapidity of splitted track is sampled uniformly 
+                         // from (eta-etaRange, eta+etaRange). If etaRange = 0.0, the
+                         // pseudorapidity of splitted track will be the same as the
+                         // pseudorapidity of original track.
 
 //===FLOW HARMONICS===============================================================
-// harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)                     
-Bool_t bConstantHarmonics = kTRUE; 
+// harmonics V1, V2, V4... are constants or functions of pt and eta:                    
+Bool_t bPtDependentHarmonics = kFALSE; 
+Bool_t bEtaDependentHarmonics = kFALSE; 
+// 1.) if you use constant harmonics (bPtDependentHarmonics = kFALSE, bEtaDependentHarmonics = kFALSE)
+//    you can additionally select if V2 will be sampled e-b-e from Gaussian or uniform distribution:  
+Bool_t bConstantV2IsSampledFromGauss = kTRUE;
+ //  1a.) if kTRUE = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
+ //                  mean = dV2RP and spread = dV2SpreadRP (analogously for V1 and V4).
+ //  1b.) if kFALSE = elliptic flow of RPs is sampled e-b-e uniformly from 
+ //                   interval [dMinV2RP,dMaxV2RP] (not supported for V1 and V4).
+ //  1c.) for a fixed elliptic flow e-b-e use Gaussian with zero spread or use uniform with dMinV2RP=dMaxV2RP 
+ // V2:
+ Double_t dV2RP = 0.05;       // elliptic flow of RPs (if sampled from Gaussian) 
+ Double_t dV2SpreadRP = 0.0;  // elliptic flow spread of RPs (if sampled from Gaussian)
+ Double_t dMinV2RP = 0.02;    // minimal elliptic flow of RPs (if sampled uniformly)
+ Double_t dMaxV2RP = 0.08;    // maximal elliptic flow of RPs (if sampled uniformly)
+ // V1:
+ Double_t dV1RP = 0.0; // directed flow of RPs 
+ Double_t dV1SpreadRP = 0.0; // directed flow spread of RPs
+ // V4:
+ Double_t dV4RP = 0.0; // harmonic V4 of RPs (to be improved: name needed) 
+ Double_t dV4SpreadRP = 0.0; // harmonic V4's spread of RPs (to be improved: name needed)
 
-// if you use (pt,eta) dependent harmonics (bConstantHarmonics = kFALSE):
-Double_t dPtCutOff = 2.0; // V2(pt) is linear up to pt = 2 GeV and for pt > 2 GeV it is constant: V2(pt) = dVRPMax
-Double_t dV2RPMax = 0.20; // maximum value of V2(pt) for pt >= 2GeV
-
-// 1.) if kTRUE  = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
-//                 mean = dV2RP and spread = dV2SpreadRP
-// 2.) if kFALSE = elliptic flow of RPs is sampled e-b-e uniformly from 
-//                 interval [dMinV2RP,dMaxV2RP]
-// 3.) for a fixed elliptic flow use Gaussian with zero spread or use uniform with dMinV2RP=dMaxV2RP
-Bool_t bV2DistrOfRPsIsGauss = kTRUE; 
-
-// if you use constant harmonics (bConstantHarmonics = kTRUE) (i.e. no pt dependence):
-Double_t dV2RP = 0.05;       // elliptic flow of RPs (if sampled from Gaussian)
-Double_t dV2SpreadRP = 0.0;  // elliptic flow spread of RPs (if sampled from Gaussian)
-Double_t dMinV2RP = 0.02;    // minimal elliptic flow of RPs (if sampled uniformly)
-Double_t dMaxV2RP = 0.08;    // maximal elliptic flow of RPs (if sampled uniformly)
-
-Double_t dV1RP = 0.0; // directed flow of RPs
-Double_t dV1SpreadRP = 0.0; // directed flow spread of RPs
-
-Double_t dV4RP = 0.0; // harmonic V4 of RPs (to be improved: name needed)
-Double_t dV4SpreadRP = 0.0; // harmonic V4's spread of RPs (to be improved: name needed)
-
+// 2.) if you use (pt,eta) dependent harmonics (bPtDependentHarmonics = kTRUE or bEtaDependentHarmonics = kTRUE): 
+//  2a.) V2(pt) is linear up to pt = dPtCutOff and for pt > dPtCutOff it is constant, V2(pt) = dV2vsPtEtaMax:
+//  2b.) V2(eta) is Gaussian centered at midrapidity (eta=0) with V2(0) = dV2vsPtEtaMax and spread = dV2vsEtaSpread:
+ Double_t dV2vsPtEtaMax = 0.20; // maximum value of V2(pt,eta) (for pt >= dPtCutOff and at eta = 0)
+ Double_t dPtCutOff = 2.0; // up to this pt value V(pt) is growing linearly versus pt
+ Double_t dV2vsEtaSpread = 0.75; // V2(eta) is Gaussian centered at midrapidity (eta=0) with spread = dV2vsEtaSpread
 
 //===MULTIPLICITY===============================================================
 // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
@@ -101,8 +107,6 @@ Int_t iMultiplicityOfRP = 500;        // mean multiplicity of RPs (if sampled fr
 Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs (if sampled from Gaussian)
 Int_t iMinMultOfRP = 50;             // minimal multiplicity of RPs (if sampled uniformly)
 Int_t iMaxMultOfRP = 500;             // maximal multiplicity of RPs (if sampled uniformly)
-
-
                     
 //===DETECTOR ACCEPTANCE===============================================================
 
@@ -127,16 +131,18 @@ Double_t p1 = 0.6;     // e.g. if p1 = 0 all particles emitted in phimin1 < phi 
 // 2nd non-uniform sector (Remark: if you do NOT want to simulate this sector, set phimin2 = phimax2 = p2 = 0):                 
 Double_t phimin2 = 200.0; // second non-uniform sector starts at this azimuth (make sure phimin2 > phimax1 !!!!)
 Double_t phimax2 = 210.0; // second non-uniform sector ends at this azimuth
-Double_t p2 = 0.01;
+Double_t p2 = 0.0;
 
-//=====================================================================================================
+
+//===MODIFYING Pt SPECTRA===============================================================
+Double_t dTemperatureOfRP = 0.44; // 'temperature' of RPs in GeV/c (increase this parameter to get more high pt RPs) 
 
 enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocal: Analyze data on your computer using aliroot
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly( Int_t nEvts=1000, Int_t mode=mLocal)
+int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
 {
  TStopwatch timer;
  timer.Start();
@@ -429,8 +435,9 @@ int runFlowAnalysisOnTheFly( Int_t nEvts=1000, Int_t mode=mLocal)
  }
  //---------------------------------------------------------------------------------------
   
- // set the global event parameters: 
+ // set the global event parameters:
  eventMakerOnTheFly->SetNoOfLoops(iLoops);
+ eventMakerOnTheFly->SetPhiRange(phiRange*TMath::Pi()/180.);
  eventMakerOnTheFly->SetPtRange(ptRange);
  eventMakerOnTheFly->SetEtaRange(etaRange);
  if(bMultDistrOfRPsIsGauss)
@@ -446,36 +453,43 @@ int runFlowAnalysisOnTheFly( Int_t nEvts=1000, Int_t mode=mLocal)
    }
   
  eventMakerOnTheFly->SetTemperatureOfRP(dTemperatureOfRP);
-
- eventMakerOnTheFly->SetV1RP(dV1RP);
- eventMakerOnTheFly->SetV1SpreadRP(dV1SpreadRP);  
- eventMakerOnTheFly->SetV4RP(dV4RP);
- eventMakerOnTheFly->SetV4SpreadRP(dV4SpreadRP);  
+ eventMakerOnTheFly->SetPtDependentHarmonics(bPtDependentHarmonics);
+ eventMakerOnTheFly->SetEtaDependentHarmonics(bEtaDependentHarmonics);
  
- // constant harmonic V2:
- if(bConstantHarmonics)
+ // V1 and V4:
+ if(!(bPtDependentHarmonics || bEtaDependentHarmonics))
+ {
+  eventMakerOnTheFly->SetV1RP(dV1RP);
+  eventMakerOnTheFly->SetV1SpreadRP(dV1SpreadRP);  
+  eventMakerOnTheFly->SetV4RP(dV4RP);
+  eventMakerOnTheFly->SetV4SpreadRP(dV4SpreadRP);  
+ }
+ 
+ // harmonic V2:
+ if(!(bPtDependentHarmonics || bEtaDependentHarmonics)) // constant V2
  { 
-  eventMakerOnTheFly->SetUseConstantHarmonics(bConstantHarmonics);
-  if(bV2DistrOfRPsIsGauss)
+  eventMakerOnTheFly->SetConstantV2IsSampledFromGauss(bConstantV2IsSampledFromGauss);
+  if(bConstantV2IsSampledFromGauss) // Gauss
   {
-   eventMakerOnTheFly->SetV2DistrOfRPsIsGauss(bV2DistrOfRPsIsGauss);
    eventMakerOnTheFly->SetV2RP(dV2RP);
    eventMakerOnTheFly->SetV2SpreadRP(dV2SpreadRP);  
-  } else
+  } else // uniform
     {
-     eventMakerOnTheFly->SetV2DistrOfRPsIsGauss(bV2DistrOfRPsIsGauss);
      eventMakerOnTheFly->SetMinV2RP(dMinV2RP);
      eventMakerOnTheFly->SetMaxV2RP(dMaxV2RP);  
     }
- }
- 
- // (pt,eta) dependent harmonic V2:
- if(!bConstantHarmonics)
- {
-  eventMakerOnTheFly->SetUseConstantHarmonics(bConstantHarmonics);
-  eventMakerOnTheFly->SetV2RPMax(dV2RPMax);
-  eventMakerOnTheFly->SetPtCutOff(dPtCutOff);  
- }
+ } else // (pt,eta) dependent V2
+   {
+    eventMakerOnTheFly->SetV2vsPtEtaMax(dV2vsPtEtaMax);
+    if(bPtDependentHarmonics)
+    {
+     eventMakerOnTheFly->SetPtCutOff(dPtCutOff);  
+    }
+    if(bEtaDependentHarmonics)
+    {
+     eventMakerOnTheFly->SetV2vsEtaSpread(dV2vsEtaSpread);      
+    }
+   }
  
  // non-uniform acceptance:
  if(!uniformAcceptance)

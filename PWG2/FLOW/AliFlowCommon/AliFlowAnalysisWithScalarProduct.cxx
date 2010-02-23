@@ -495,12 +495,15 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   Int_t iNbinsPt  = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
   Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
    
-   
   //Calculate reference flow (noname)
   //----------------------------------
   //weighted average over (QaQb/MaMb) with weight (MaMb)
   Double_t dQaQb  = fHistProQaQb->GetBinContent(1);
-  Double_t dV = TMath::Sqrt(dQaQb); 
+  Double_t dV = 0.;
+  if(dQaQb>=0.)
+  {
+   dV = TMath::Sqrt(dQaQb); 
+  }
   //statistical error of dQaQb: 
   //  statistical error = term1 * spread * term2:
   //  term1 = sqrt{sum_{i=1}^{N} w^2}/(sum_{i=1}^{N} w)

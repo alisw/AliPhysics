@@ -45,18 +45,20 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fMinMultOfRP(0),
   fMaxMultOfRP(0),  
   fTemperatureOfRP(0.),  
-  fUseConstantHarmonics(kFALSE),
+  fPtDependentHarmonics(kFALSE),
+  fEtaDependentHarmonics(kFALSE),
   fV1RP(0.), 
   fV1SpreadRP(0.), 
-  fV2DistrOfRPsIsGauss(kFALSE),
+  fConstantV2IsSampledFromGauss(kFALSE),
   fV2RP(0.), 
   fV2SpreadRP(0.), 
   fMinV2RP(0.),
   fMaxV2RP(0.),
   fV4RP(0.), 
   fV4SpreadRP(0.), 
-  fV2RPMax(0.), 
+  fV2vsPtEtaMax(0.),
   fPtCutOff(0.),
+  fV2vsEtaSpread(0.),
   fPhiMin1(0.),              
   fPhiMax1(0.),             
   fProbability1(0.),       
@@ -68,6 +70,7 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fMyTRandom3(NULL),
   fCount(0),
   fNoOfLoops(1),
+  fPhiRange(0.),
   fPtRange(0.),
   fEtaRange(0.),
   fEtaMinA(-1.0),
@@ -156,21 +159,26 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   fPhiDistribution->SetParameter(0,dNewV1RP);
   
   // sampling the V2:
-  if(fUseConstantHarmonics) {
-    Double_t dNewV2RP = fV2RP;
-    if(fV2DistrOfRPsIsGauss) {
-      if(fV2SpreadRP>0.0) dNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
-      fPhiDistribution->SetParameter(1,dNewV2RP);
-    } else {
-      if(fMinV2RP != fMaxV2RP) {
-	dNewV2RP = fMyTRandom3->Uniform(fMinV2RP,fMaxV2RP);    
-	fPhiDistribution->SetParameter(1,dNewV2RP);  
-      } else {
-	dNewV2RP = fMinV2RP;
-	fPhiDistribution->SetParameter(1,dNewV2RP);          
-      }
+  if(!(fPtDependentHarmonics || fEtaDependentHarmonics)) 
+  {
+   Double_t dNewV2RP = fV2RP;
+   if(fConstantV2IsSampledFromGauss) 
+   {
+    if(fV2SpreadRP>0.0) 
+    {
+     dNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
     }
-  }
+    fPhiDistribution->SetParameter(1,dNewV2RP);
+   } else if(fMinV2RP < fMaxV2RP) 
+     {
+      dNewV2RP = fMyTRandom3->Uniform(fMinV2RP,fMaxV2RP);    
+	   fPhiDistribution->SetParameter(1,dNewV2RP);  
+     } else if(fMinV2RP == fMaxV2RP)
+        {
+	      dNewV2RP = fMinV2RP;
+	      fPhiDistribution->SetParameter(1,dNewV2RP);          
+        }
+  } // end of if(!(bPtDependentHarmonics || bEtaDependentHarmonics))
   
   // sampling the V4:
   Double_t dNewV4RP = fV4RP;
@@ -184,45 +192,94 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Int_t iGoodTracks = 0;
   Int_t iSelParticlesRP = 0;
   Int_t iSelParticlesPOI = 0;
-  Double_t dTmpPt[] = {0.};
-  Double_t dTmpEta[] = {0.};
+  const Int_t maxNoOfSplitedTracks = 10;
+  if(fNoOfLoops>maxNoOfSplitedTracks)
+  {
+   cout<<"One track can be splitted at maximum into 10 tracks !!!!"<<endl;
+   exit(0);
+  } 
+  Double_t *dTmpPhi = new Double_t[maxNoOfSplitedTracks]; 
+  Double_t *dTmpPt = new Double_t[maxNoOfSplitedTracks];
+  Double_t *dTmpEta = new Double_t[maxNoOfSplitedTracks];
   Double_t dTmpV2 = 0.;
-  Double_t dTmpPhi = 0.;
   Bool_t bUniformAcceptance = kTRUE;
   Double_t Pi = TMath::Pi();
 
   if(!((fPhiMin1==0.) && (fPhiMax1==0.) && (fPhiMin2==0.) && (fPhiMax2==0.))) {
     bUniformAcceptance = kFALSE;
   }
-
+  
   for(Int_t i=0;i<iNewMultiplicityOfRP;i++) 
   {
-   // get the track parameters 
+   // get the track parameters: 
    dTmpPt[0] = fPtSpectra->GetRandom();
-   // to be improved (optimized):
-   if(!fUseConstantHarmonics) 
+   dTmpEta[0] = fMyTRandom3->Uniform(dEtaMin,dEtaMax); 
+   // to be improved (optimized):   
+   if(fPtDependentHarmonics || fEtaDependentHarmonics) 
    {
-    if(dTmpPt[0] >= fPtCutOff) {dTmpV2 = fV2RPMax;} 
-    else {dTmpV2 = fV2RPMax*(dTmpPt[0]/fPtCutOff);}  
+    if(fEtaDependentHarmonics)
+    {
+     if(fV2vsEtaSpread>0.)
+     { 
+      dTmpV2 = TMath::Exp(-pow(dTmpEta[0]/fV2vsEtaSpread,2.));
+     }
+     if(!fPtDependentHarmonics)
+     {
+      dTmpV2*=fV2vsPtEtaMax;
+     } 
+    } // end of if(fEtaDependentHarmonics)
+    if(fPtDependentHarmonics)
+    {
+     if(!fEtaDependentHarmonics)
+     {
+      if(dTmpPt[0] >= fPtCutOff) {dTmpV2 = fV2vsPtEtaMax;} 
+      else {dTmpV2 = fV2vsPtEtaMax*(dTmpPt[0]/fPtCutOff);} 
+     } else
+       {
+        if(dTmpPt[0] >= fPtCutOff) {dTmpV2 *= fV2vsPtEtaMax;} 
+        else {dTmpV2 *= fV2vsPtEtaMax*(dTmpPt[0]/fPtCutOff);}         
+       }
+    } // end of if(fPtDependentHarmonics)
     fPhiDistribution->SetParameter(1,dTmpV2);         
    }
-   dTmpPhi = fPhiDistribution->GetRandom();
-   dTmpEta[0] = fMyTRandom3->Uniform(dEtaMin,dEtaMax); // to be improved (add eta dependent flow as well)
+   dTmpPhi[0] = fPhiDistribution->GetRandom();
    for(Int_t d=0;d<fNoOfLoops;d++) 
    {
     if(d>0) 
     {
+     dTmpPhi[d] = dTmpPhi[0];
      dTmpPt[d] = dTmpPt[0];
      dTmpEta[d] = dTmpEta[0]; 
+     // phi:
+     if(fPhiRange>0.)
+     {
+      dTmpPhi[d] = fMyTRandom3->Uniform(dTmpPhi[0]-fPhiRange,dTmpPhi[0]+fPhiRange);
+      if(dTmpPhi[d]<0) 
+      {
+       dTmpPhi[d]+=TMath::TwoPi(); // to ensure angle is in [0,2Pi>
+      } 
+      if(dTmpPhi[d]>=TMath::TwoPi())
+      {
+       dTmpPhi[d]-=TMath::TwoPi(); // to ensure angle is in [0,2Pi>
+      }      
+     } // end of if(fPhiRange>0.)    
+     // pt:
      if(fPtRange>0.)
      {
-      dTmpPt[d] = fMyTRandom3->Uniform(dTmpPt[0]-fPtRange,dTmpPt[0]+fPtRange);
-     }     
+      Double_t minPt = dTmpPt[0]-fPtRange;
+      Double_t maxPt = dTmpPt[0]+fPtRange;
+      if(minPt<0)
+      {
+       minPt = 0.; // protection against pt<0 for splitted track
+      } 
+      dTmpPt[d] = fMyTRandom3->Uniform(minPt,maxPt);
+     } // end of if(fPtRange>0.)    
+     // eta:     
      if(fEtaRange>0.)
      {
       dTmpEta[d] = fMyTRandom3->Uniform(dTmpEta[0]-fEtaRange,dTmpEta[0]+fEtaRange);
-     }     
-    }    
+     } // end of if(fEtaRange>0.)    
+    } // end of if(d>0)   
     // make the new track
     AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
     // uniform acceptance:
@@ -230,7 +287,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
     {
      pTrack->SetPt(dTmpPt[d]); 
 	  pTrack->SetEta(dTmpEta[d]); 
-	  pTrack->SetPhi(dTmpPhi); 
+	  pTrack->SetPhi(dTmpPhi[d]); 
 	  pTrack->SetForRPSelection(kTRUE); 
 	  iSelParticlesRP++; 
 	  // assign particles to subevents
@@ -248,13 +305,13 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
 	  iGoodTracks++; 
     } // end of if(bUniformAcceptance) 
     // non-uniform acceptance, 1st sector:
-    else if ((dTmpPhi > fPhiMin1*Pi/180) && (dTmpPhi < fPhiMax1*Pi/180)) 
+    else if ((dTmpPhi[d] > fPhiMin1*Pi/180) && (dTmpPhi[d] < fPhiMax1*Pi/180)) 
     {
 	  if(fMyTRandom3->Uniform(0,1) > 1 - fProbability1) 
 	  {
 	   pTrack->SetPt(dTmpPt[d]);
 	   pTrack->SetEta(dTmpEta[d]);
-	   pTrack->SetPhi(dTmpPhi);
+	   pTrack->SetPhi(dTmpPhi[d]);
 	   pTrack->SetForRPSelection(kTRUE);
 	   iSelParticlesRP++;
 	   // assign particles to subevents
@@ -273,13 +330,13 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
 	  } // end of if(fMyTRandom3->Uniform(0,1) > 1 - fProbability1) 
     } // end of else if ((dTmpPhi > fPhiMin1*Pi/180) && (dTmpPhi < fPhiMax1*Pi/180)) 
     // non-uniform acceptance, 2nd sector:
-    else if ((dTmpPhi > fPhiMin2*Pi/180) && (dTmpPhi < fPhiMax2*Pi/180)) 
+    else if ((dTmpPhi[d] > fPhiMin2*Pi/180) && (dTmpPhi[d] < fPhiMax2*Pi/180)) 
     {
 	  if(fMyTRandom3->Uniform(0,1) > 1 - fProbability2)
 	  {
 	   pTrack->SetPt(dTmpPt[d]);
 	   pTrack->SetEta(dTmpEta[d]);
-	   pTrack->SetPhi(dTmpPhi);
+	   pTrack->SetPhi(dTmpPhi[d]);
 	   pTrack->SetForRPSelection(kTRUE);
 	   iSelParticlesRP++;
 	   // assign particles to subevents
@@ -301,7 +358,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
     {
 	  pTrack->SetPt(dTmpPt[d]);
 	  pTrack->SetEta(dTmpEta[d]);
-	  pTrack->SetPhi(dTmpPhi);
+	  pTrack->SetPhi(dTmpPhi[d]);
 	  pTrack->SetForRPSelection(kTRUE);
 	  iSelParticlesRP++;
 	  // assign particles to subevents
@@ -327,7 +384,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   pEvent->SetMCReactionPlaneAngle(dMCReactionPlaneAngle);
   
   Int_t cycle = 0;
-  if(!fUseConstantHarmonics)
+  if(fPtDependentHarmonics || fEtaDependentHarmonics)
   { 
    cycle = 10;
   } else
@@ -343,6 +400,10 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
     cout<<" # of POI selected tracks = "<<iSelParticlesPOI<<endl;  
     cout << "# " << fCount << " events processed" << endl;
   }
+  
+  delete [] dTmpPhi;
+  delete [] dTmpPt;
+  delete [] dTmpEta;
   
   return pEvent;  
   
