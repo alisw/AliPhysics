@@ -73,7 +73,8 @@ AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent()
     fTrgStrings(NULL),
     fAccRejTrg(0),
     fMinClusters(0),
-    fMinTracklets(0)
+    fMinTracklets(0),
+    fTakeAllEvents(kFALSE)
 {
   // Default constructor
 }
@@ -204,6 +205,13 @@ Int_t AliHLTTRDCalibrationComponent::ScanArgument( int argc, const char** argv )
           i += 1;
           continue;
         }
+      if ( !strcmp( argv[i], "-takeAllEvents" ) )
+        {
+	  fTakeAllEvents = kTRUE;
+	  fAccRejTrg = 0;
+          i += 1;
+          continue;
+        }
 
       else {
         HLTError("Unknown option '%s'", argv[i] );
@@ -331,7 +339,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
     fSavedTimeBins=kTRUE;
   }
 
-  Bool_t TriggerPassed=kFALSE;
+  Bool_t TriggerPassed = fTakeAllEvents;
 
   if(fAccRejTrg){
     if(fAccRejTrg>0){
@@ -452,26 +460,14 @@ Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS(const AliHLTComponentEventDat
   //  fOutArray->Add(prf2d);
   //}
 
-
   HLTDebug("Size of the fOutArray is %d\n",fOutArray->GetEntriesFast());
 
-  /*
-  TString fileName="$ALIHLT_TOPDIR/build-debug/output/CalibHistoDump_run";
-  fileName+=".root";
-  HLTInfo("Dumping Histogram file to %s",fileName.Data());
-  TFile* file = TFile::Open(fileName, "RECREATE");
-  //fAfterRunArray->Write();
-  fOutArray->Write();
-  file->Close();
-  HLTInfo("Histogram file dumped");
-  */
-  
   PushToFXS((TObject*)fOutArray, "TRD", "GAINDRIFTPRF", rdList.Buffer() );
   //PushToFXS((TObject*)fOutArray->FindObject("CH2d"), "TRD", "GAINDRIFTPRF", rdList.Buffer() );
 
-	
   return 0;
 }
+
 Int_t AliHLTTRDCalibrationComponent::EORCalibration()
 {
   //Also Fill histograms for the online display
