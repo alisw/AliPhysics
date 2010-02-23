@@ -44,15 +44,15 @@ Double_t AliCaloNeuralFit::Value
    switch(index) 
 	 {
      case 0:
-         return Neuron0x9fdedf8();
+         return Neuron0x93bc708();
      case 1:
-         return Neuron0x9fe0da0();
+         return Neuron0x93be5d0();
      default:
          return 0.;
    }
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fd0208() const
+Double_t AliCaloNeuralFit::Neuron0x8ceb770() const
 {
 //
 // Input neuron.
@@ -62,7 +62,7 @@ Double_t AliCaloNeuralFit::Neuron0x9fd0208() const
    return fInput0;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fd0398() const
+Double_t AliCaloNeuralFit::Neuron0x8ceb900() const
 {
 //
 // Input neuron.
@@ -72,7 +72,7 @@ Double_t AliCaloNeuralFit::Neuron0x9fd0398() const
    return fInput1;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fd0570() const
+Double_t AliCaloNeuralFit::Neuron0x8cebad8() const
 {
 //
 // Input neuron.
@@ -82,7 +82,7 @@ Double_t AliCaloNeuralFit::Neuron0x9fd0570() const
    return fInput2;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fd0748() const
+Double_t AliCaloNeuralFit::Neuron0x8cebcb0() const
 {
 //
 // Input neuron.
@@ -92,7 +92,7 @@ Double_t AliCaloNeuralFit::Neuron0x9fd0748() const
    return fInput3;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fdec20() const
+Double_t AliCaloNeuralFit::Neuron0x93bc518() const
 {
 //
 // Input neuron.
@@ -102,955 +102,954 @@ Double_t AliCaloNeuralFit::Neuron0x9fdec20() const
    return fInput4;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fdef28() const
+Double_t AliCaloNeuralFit::Input0x93bc838() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-
-   Double_t input = 1.01367;
-   input += Synapse0x9fdf0d8();
-   input += Synapse0x9fdf100();
-   input += Synapse0x9fdf128();
-   input += Synapse0x9fdf150();
-   input += Synapse0x9fdf178();
+   Double_t input = -0.097207;
+   input += Synapse0x93bc9e8();
+   input += Synapse0x93bca10();
+   input += Synapse0x93bca38();
+   input += Synapse0x93bca60();
+   input += Synapse0x93bca88();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fdef28() const
+Double_t AliCaloNeuralFit::Neuron0x93bc838() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fdef28();
+   Double_t input = Input0x93bc838();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fdf1a0() const
+Double_t AliCaloNeuralFit::Input0x93bcab0() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = -0.388335;
-   input += Synapse0x9fdf398();
-   input += Synapse0x9fdf3c0();
-   input += Synapse0x9fdf3e8();
-   input += Synapse0x9fdf410();
-   input += Synapse0x9fdf438();
+   Double_t input = 0.0466086;
+   input += Synapse0x93bcca8();
+   input += Synapse0x93bccd0();
+   input += Synapse0x93bccf8();
+   input += Synapse0x93bcd20();
+   input += Synapse0x93bcd48();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fdf1a0() const
+Double_t AliCaloNeuralFit::Neuron0x93bcab0() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fdf1a0();
+   Double_t input = Input0x93bcab0();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fdf460() const
+Double_t AliCaloNeuralFit::Input0x93bcd70() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = -0.547781;
-   input += Synapse0x9fdf658();
-   input += Synapse0x9fdf680();
-   input += Synapse0x9fdf6a8();
-   input += Synapse0x9fdf6d0();
-   input += Synapse0x9fdf6f8();
+   Double_t input = 0.617042;
+   input += Synapse0x93bcf68();
+   input += Synapse0x93bcf90();
+   input += Synapse0x93bcfb8();
+   input += Synapse0x93bcfe0();
+   input += Synapse0x93bd008();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fdf460() const
+Double_t AliCaloNeuralFit::Neuron0x93bcd70() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fdf460();
+   Double_t input = Input0x93bcd70();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fdf720() const
+Double_t AliCaloNeuralFit::Input0x93bd030() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = 0.525561;
-   input += Synapse0x9fdf918();
-   input += Synapse0x9fdf940();
-   input += Synapse0x9fdf9f0();
-   input += Synapse0x9fdfa18();
-   input += Synapse0x9fdfa40();
+   Double_t input = -0.519529;
+   input += Synapse0x93bd228();
+   input += Synapse0x93bd250();
+   input += Synapse0x93bd300();
+   input += Synapse0x93bd328();
+   input += Synapse0x93bd350();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fdf720() const
+Double_t AliCaloNeuralFit::Neuron0x93bd030() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fdf720();
+   Double_t input = Input0x93bd030();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fdfa68() const
+Double_t AliCaloNeuralFit::Input0x93bd378() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = -0.360225;
-   input += Synapse0x9fdfc18();
-   input += Synapse0x9fdfc40();
-   input += Synapse0x9fdfc68();
-   input += Synapse0x9fdfc90();
-   input += Synapse0x9fdfcb8();
+   Double_t input = -0.405186;
+   input += Synapse0x93bd528();
+   input += Synapse0x93bd550();
+   input += Synapse0x93bd578();
+   input += Synapse0x93bd5a0();
+   input += Synapse0x93bd5c8();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fdfa68() const
+Double_t AliCaloNeuralFit::Neuron0x93bd378() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fdfa68();
+   Double_t input = Input0x93bd378();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fdfce0() const
+Double_t AliCaloNeuralFit::Input0x93bd5f0() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = -0.485774;
-   input += Synapse0x9fdfed8();
-   input += Synapse0x9fdff00();
-   input += Synapse0x9fdff28();
-   input += Synapse0x9fdff50();
-   input += Synapse0x9fdff78();
+   Double_t input = -0.253465;
+   input += Synapse0x93bd7e8();
+   input += Synapse0x93bd810();
+   input += Synapse0x93bd838();
+   input += Synapse0x93bd860();
+   input += Synapse0x93bd888();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fdfce0() const
+Double_t AliCaloNeuralFit::Neuron0x93bd5f0() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fdfce0();
+   Double_t input = Input0x93bd5f0();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fdffa0() const
+Double_t AliCaloNeuralFit::Input0x93bd8b0() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = 0.467242;
-   input += Synapse0x9fe0198();
-   input += Synapse0x9fe01c0();
-   input += Synapse0x9fe01e8();
-   input += Synapse0x9fdf968();
-   input += Synapse0x9fdf990();
+   Double_t input = 0.0340672;
+   input += Synapse0x93bdaa8();
+   input += Synapse0x93bdad0();
+   input += Synapse0x93bdaf8();
+   input += Synapse0x8ce7098();
+   input += Synapse0x8ce70c0();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fdffa0() const
+Double_t AliCaloNeuralFit::Neuron0x93bd8b0() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fdffa0();
+   Double_t input = Input0x93bd8b0();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fe0318() const
+Double_t AliCaloNeuralFit::Input0x93bdc28() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = 0.566875;
-   input += Synapse0x9fe04f0();
-   input += Synapse0x9fe0518();
-   input += Synapse0x9fe0540();
-   input += Synapse0x9fe0568();
-   input += Synapse0x9fe0590();
+   Double_t input = 0.231599;
+   input += Synapse0x93bde20();
+   input += Synapse0x93bde48();
+   input += Synapse0x93bde70();
+   input += Synapse0x93bde98();
+   input += Synapse0x93bdec0();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fe0318() const
+Double_t AliCaloNeuralFit::Neuron0x93bdc28() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fe0318();
+   Double_t input = Input0x93bdc28();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fe05b8() const
+Double_t AliCaloNeuralFit::Input0x93bdee8() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = -0.848776;
-   input += Synapse0x9fe07b0();
-   input += Synapse0x9fe07d8();
-   input += Synapse0x9fe0800();
-   input += Synapse0x9fe0828();
-   input += Synapse0x9fe0850();
+   Double_t input = 0.56831;
+   input += Synapse0x93be0e0();
+   input += Synapse0x93be108();
+   input += Synapse0x93be130();
+   input += Synapse0x93be158();
+   input += Synapse0x93be180();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fe05b8() const
+Double_t AliCaloNeuralFit::Neuron0x93bdee8() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fe05b8();
+   Double_t input = Input0x93bdee8();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fe0878() const
+Double_t AliCaloNeuralFit::Input0x93be1a8() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = -0.408427;
-   input += Synapse0x9fe0a70();
-   input += Synapse0x9fe0a98();
-   input += Synapse0x9fe0ac0();
-   input += Synapse0x9fe0ae8();
-   input += Synapse0x9fe0b10();
+   Double_t input = 0.223889;
+   input += Synapse0x93be3a0();
+   input += Synapse0x93be3c8();
+   input += Synapse0x93be3f0();
+   input += Synapse0x93be418();
+   input += Synapse0x93be440();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fe0878() const
+Double_t AliCaloNeuralFit::Neuron0x93be1a8() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fe0878();
+   Double_t input = Input0x93be1a8();
    return (tanh(input) * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fdedf8() const
+Double_t AliCaloNeuralFit::Input0x93bc708() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = -0.310322;
-   input += Synapse0x9fe0c10();
-   input += Synapse0x9fe0c38();
-   input += Synapse0x9fe0c60();
-   input += Synapse0x9fe0c88();
-   input += Synapse0x9fe0cb0();
-   input += Synapse0x9fe0cd8();
-   input += Synapse0x9fe0d00();
-   input += Synapse0x9fe0d28();
-   input += Synapse0x9fe0d50();
-   input += Synapse0x9fe0d78();
+   Double_t input = 0.565736;
+   input += Synapse0x93bd2c0();
+   input += Synapse0x93be468();
+   input += Synapse0x93be490();
+   input += Synapse0x93be4b8();
+   input += Synapse0x93be4e0();
+   input += Synapse0x93be508();
+   input += Synapse0x93be530();
+   input += Synapse0x93be558();
+   input += Synapse0x93be580();
+   input += Synapse0x93be5a8();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fdedf8() const
+Double_t AliCaloNeuralFit::Neuron0x93bc708() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fdedf8();
+   Double_t input = Input0x93bc708();
    return (input * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Input0x9fe0da0() const
+Double_t AliCaloNeuralFit::Input0x93be5d0() const
 {
 //
 // Hidden/Output neuron
 // Compute the activation from linear combination of
 // all neurons going into this, each one times its synaptic weight
 //
-   Double_t input = -0.0574773;
-   input += Synapse0x9fe0fa0();
-   input += Synapse0x9fe0fc8();
-   input += Synapse0x9fe0ff0();
-   input += Synapse0x9fe1018();
-   input += Synapse0x9fe1040();
-   input += Synapse0x9882b78();
-   input += Synapse0x9fd0158();
-   input += Synapse0x9fd0180();
-   input += Synapse0x9fd01a8();
-   input += Synapse0x9fd01d0();
+   Double_t input = 0.311772;
+   input += Synapse0x93be7d0();
+   input += Synapse0x93be7f8();
+   input += Synapse0x93be820();
+   input += Synapse0x93be848();
+   input += Synapse0x93be870();
+   input += Synapse0x934a7c8();
+   input += Synapse0x93605e0();
+   input += Synapse0x9360608();
+   input += Synapse0x8ce6fe8();
+   input += Synapse0x8ce7010();
    return input;
 }
 
-Double_t AliCaloNeuralFit::Neuron0x9fe0da0() const
+Double_t AliCaloNeuralFit::Neuron0x93be5d0() const
 {
 //
 // Hidden/Output neuron
 // Return computed activation
 //
-   Double_t input = Input0x9fe0da0();
+   Double_t input = Input0x93be5d0();
    return (input * 1)+0;
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf0d8()  const
+Double_t AliCaloNeuralFit::Synapse0x93bc9e8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*1.53012);
+   return (Neuron0x8ceb770()*-0.173079);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf100()  const
+Double_t AliCaloNeuralFit::Synapse0x93bca10() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*-0.316606);
+   return (Neuron0x8ceb900()*-0.356515);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf128()  const
+Double_t AliCaloNeuralFit::Synapse0x93bca38() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*1.31047);
+   return (Neuron0x8cebad8()*0.116333);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf150()  const
+Double_t AliCaloNeuralFit::Synapse0x93bca60() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*0.31846);
+   return (Neuron0x8cebcb0()*-0.0647334);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf178()  const
+Double_t AliCaloNeuralFit::Synapse0x93bca88() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*-1.43145);
+   return (Neuron0x93bc518()*0.135181);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf398()  const
+Double_t AliCaloNeuralFit::Synapse0x93bcca8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*-0.199402);
+   return (Neuron0x8ceb770()*-0.00703734);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf3c0()  const
+Double_t AliCaloNeuralFit::Synapse0x93bccd0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*0.0250046);
+   return (Neuron0x8ceb900()*1.04245);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf3e8()  const
+Double_t AliCaloNeuralFit::Synapse0x93bccf8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*0.21622);
+   return (Neuron0x8cebad8()*0.70812);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf410()  const
+Double_t AliCaloNeuralFit::Synapse0x93bcd20() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*0.0240984);
+   return (Neuron0x8cebcb0()*-0.486738);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf438()  const
+Double_t AliCaloNeuralFit::Synapse0x93bcd48() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*0.492242);
+   return (Neuron0x93bc518()*-0.623982);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf658()  const
+Double_t AliCaloNeuralFit::Synapse0x93bcf68() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*-2.9778);
+   return (Neuron0x8ceb770()*0.0557636);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf680()  const
+Double_t AliCaloNeuralFit::Synapse0x93bcf90() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*-0.598961);
+   return (Neuron0x8ceb900()*0.503374);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf6a8()  const
+Double_t AliCaloNeuralFit::Synapse0x93bcfb8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*-0.857305);
+   return (Neuron0x8cebad8()*-0.0500216);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf6d0()  const
+Double_t AliCaloNeuralFit::Synapse0x93bcfe0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*0.58472);
+   return (Neuron0x8cebcb0()*0.0561266);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf6f8()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd008() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*1.87975);
+   return (Neuron0x93bc518()*-0.403885);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf918()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd228() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*0.334053);
+   return (Neuron0x8ceb770()*-0.0649038);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf940()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd250() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*0.142395);
+   return (Neuron0x8ceb900()*-0.164437);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf9f0()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd300() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*0.293019);
+   return (Neuron0x8cebad8()*-0.657412);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdfa18()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd328() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*-0.109163);
+   return (Neuron0x8cebcb0()*0.175571);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdfa40()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd350() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*0.482151);
+   return (Neuron0x93bc518()*0.588896);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdfc18()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd528() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*-0.270303);
+   return (Neuron0x8ceb770()*-0.00361627);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdfc40()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd550() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*-0.212234);
+   return (Neuron0x8ceb900()*0.398821);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdfc68()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd578() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*-0.136993);
+   return (Neuron0x8cebad8()*0.38779);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdfc90()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd5a0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*-0.322175);
+   return (Neuron0x8cebcb0()*0.341009);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdfcb8()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd5c8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*-0.137984);
+   return (Neuron0x93bc518()*0.290214);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdfed8()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd7e8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*0.00656827);
+   return (Neuron0x8ceb770()*-0.238609);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdff00()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd810() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*-0.0405237);
+   return (Neuron0x8ceb900()*-0.193207);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdff28()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd838() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*-0.437988);
+   return (Neuron0x8cebad8()*0.304672);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdff50()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd860() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*-0.343747);
+   return (Neuron0x8cebcb0()*-0.327625);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdff78()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd888() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*-0.168597);
+   return (Neuron0x93bc518()*-0.268996);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0198()  const
+Double_t AliCaloNeuralFit::Synapse0x93bdaa8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*-0.47585);
+   return (Neuron0x8ceb770()*0.725989);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe01c0()  const
+Double_t AliCaloNeuralFit::Synapse0x93bdad0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*1.7023);
+   return (Neuron0x8ceb900()*-0.217538);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe01e8()  const
+Double_t AliCaloNeuralFit::Synapse0x93bdaf8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*0.193432);
+   return (Neuron0x8cebad8()*-0.603975);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf968()  const
+Double_t AliCaloNeuralFit::Synapse0x8ce7098() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*0.139333);
+   return (Neuron0x8cebcb0()*0.175658);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fdf990()  const
+Double_t AliCaloNeuralFit::Synapse0x8ce70c0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*-0.400241);
+   return (Neuron0x93bc518()*-0.262399);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe04f0()  const
+Double_t AliCaloNeuralFit::Synapse0x93bde20() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*0.757465);
+   return (Neuron0x8ceb770()*-1.08242);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0518()  const
+Double_t AliCaloNeuralFit::Synapse0x93bde48() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*0.070475);
+   return (Neuron0x8ceb900()*0.41456);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0540()  const
+Double_t AliCaloNeuralFit::Synapse0x93bde70() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*0.412929);
+   return (Neuron0x8cebad8()*0.117809);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0568()  const
+Double_t AliCaloNeuralFit::Synapse0x93bde98() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*-0.161017);
+   return (Neuron0x8cebcb0()*0.514938);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0590()  const
+Double_t AliCaloNeuralFit::Synapse0x93bdec0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*-0.168403);
+   return (Neuron0x93bc518()*-0.193678);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe07b0()  const
+Double_t AliCaloNeuralFit::Synapse0x93be0e0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*0.490089);
+   return (Neuron0x8ceb770()*0.580561);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe07d8()  const
+Double_t AliCaloNeuralFit::Synapse0x93be108() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*-0.193417);
+   return (Neuron0x8ceb900()*0.610453);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0800()  const
+Double_t AliCaloNeuralFit::Synapse0x93be130() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*-0.345063);
+   return (Neuron0x8cebad8()*0.4977);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0828()  const
+Double_t AliCaloNeuralFit::Synapse0x93be158() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*-0.507424);
+   return (Neuron0x8cebcb0()*-0.328315);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0850()  const
+Double_t AliCaloNeuralFit::Synapse0x93be180() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*-0.790068);
+   return (Neuron0x93bc518()*-0.729094);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0a70()  const
+Double_t AliCaloNeuralFit::Synapse0x93be3a0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0208()*1.717);
+   return (Neuron0x8ceb770()*0.172817);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0a98()  const
+Double_t AliCaloNeuralFit::Synapse0x93be3c8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0398()*3.29133);
+   return (Neuron0x8ceb900()*0.288833);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0ac0()  const
+Double_t AliCaloNeuralFit::Synapse0x93be3f0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0570()*-0.60354);
+   return (Neuron0x8cebad8()*0.0242409);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0ae8()  const
+Double_t AliCaloNeuralFit::Synapse0x93be418() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fd0748()*-0.553822);
+   return (Neuron0x8cebcb0()*0.273568);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0b10()  const
+Double_t AliCaloNeuralFit::Synapse0x93be440() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdec20()*-0.292983);
+   return (Neuron0x93bc518()*0.261816);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0c10()  const
+Double_t AliCaloNeuralFit::Synapse0x93bd2c0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdef28()*0.0177982);
+   return (Neuron0x93bc838()*-0.332154);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0c38()  const
+Double_t AliCaloNeuralFit::Synapse0x93be468() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdf1a0()*0.088043);
+   return (Neuron0x93bcab0()*0.175458);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0c60()  const
+Double_t AliCaloNeuralFit::Synapse0x93be490() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdf460()*0.0698223);
+   return (Neuron0x93bcd70()*0.211775);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0c88()  const
+Double_t AliCaloNeuralFit::Synapse0x93be4b8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdf720()*0.609632);
+   return (Neuron0x93bd030()*0.335443);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0cb0()  const
+Double_t AliCaloNeuralFit::Synapse0x93be4e0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdfa68()*-0.825672);
+   return (Neuron0x93bd378()*0.341079);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0cd8()  const
+Double_t AliCaloNeuralFit::Synapse0x93be508() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdfce0()*-0.109339);
+   return (Neuron0x93bd5f0()*-0.324381);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0d00()  const
+Double_t AliCaloNeuralFit::Synapse0x93be530() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdffa0()*-0.498954);
+   return (Neuron0x93bd8b0()*0.135666);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0d28()  const
+Double_t AliCaloNeuralFit::Synapse0x93be558() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fe0318()*0.346775);
+   return (Neuron0x93bdc28()*-0.0213577);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0d50()  const
+Double_t AliCaloNeuralFit::Synapse0x93be580() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fe05b8()*-0.284703);
+   return (Neuron0x93bdee8()*-0.598335);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0d78()  const
+Double_t AliCaloNeuralFit::Synapse0x93be5a8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fe0878()*0.0176923);
+   return (Neuron0x93be1a8()*0.636813);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0fa0()  const
+Double_t AliCaloNeuralFit::Synapse0x93be7d0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdef28()*-1.65881);
+   return (Neuron0x93bc838()*0.173357);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0fc8()  const
+Double_t AliCaloNeuralFit::Synapse0x93be7f8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdf1a0()*0.0393971);
+   return (Neuron0x93bcab0()*-0.971616);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe0ff0()  const
+Double_t AliCaloNeuralFit::Synapse0x93be820() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdf460()*1.71678);
+   return (Neuron0x93bcd70()*-0.38099);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe1018()  const
+Double_t AliCaloNeuralFit::Synapse0x93be848() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdf720()*0.408921);
+   return (Neuron0x93bd030()*0.351755);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fe1040()  const
+Double_t AliCaloNeuralFit::Synapse0x93be870() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdfa68()*-0.508733);
+   return (Neuron0x93bd378()*0.106307);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9882b78()  const
+Double_t AliCaloNeuralFit::Synapse0x934a7c8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdfce0()*-0.48213);
+   return (Neuron0x93bd5f0()*0.118656);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fd0158()  const
+Double_t AliCaloNeuralFit::Synapse0x93605e0() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fdffa0()*-1.36281);
+   return (Neuron0x93bd8b0()*-0.447119);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fd0180()  const
+Double_t AliCaloNeuralFit::Synapse0x9360608() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fe0318()*0.102217);
+   return (Neuron0x93bdc28()*0.677259);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fd01a8()  const
+Double_t AliCaloNeuralFit::Synapse0x8ce6fe8() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fe05b8()*-0.684593);
+   return (Neuron0x93bdee8()*-0.246138);
 }
 
-Double_t AliCaloNeuralFit::Synapse0x9fd01d0()  const
+Double_t AliCaloNeuralFit::Synapse0x8ce7010() const
 {
 //
 // Synaptic connection
 // Multiplies input times synaptic weight
 //
-   return (Neuron0x9fe0878()*1.99419);
+   return (Neuron0x93be1a8()*-0.117442);
 }
