@@ -130,7 +130,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
              //          3: after all cuts + MC truth
   
   if (fStepsForEachCut)        fNSteps+=(2*fNCuts);     //one step for each cut + MC truth
-  if (fStepsForCutsIncreasing) fNSteps+=(2*(fNCuts-2)); //one step for the increasing cuts + MC truth
+  if (fStepsForCutsIncreasing&&fNCuts>2) fNSteps+=(2*(fNCuts-2)); //one step for the increasing cuts + MC truth
                                                       // e.g. cut2&cut3, cut2&cut3&cut4
   fNSteps+=(2*fNStepMasks);                            // cuts for the additional cut masks
   // create the container
@@ -181,7 +181,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
   }
 
   //Steps for increasing cut match
-  if (fStepsForCutsIncreasing){
+  if (fStepsForCutsIncreasing&&fNCuts>2){
     TString cutName=filter.GetCuts()->At(0)->GetName(); //TODO: User GetTitle???
     for (Int_t iCut=1; iCut<fNCuts-1;++iCut) {
       cutName+="&";
@@ -272,7 +272,7 @@ void AliDielectronCF::Fill(UInt_t mask, const TObject *particle)
   }
 
   //Steps for increasing cut match
-  if (fStepsForCutsIncreasing){
+  if (fStepsForCutsIncreasing&&fNCuts>2){
     for (Int_t iCut=1; iCut<fNCuts-1;++iCut) {
       if (mask&(1<<((iCut+1)-1))) {
         fCfContainer->Fill(values,step);
