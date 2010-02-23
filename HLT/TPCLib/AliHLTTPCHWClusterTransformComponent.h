@@ -136,7 +136,7 @@ protected:
   using AliHLTProcessor::DoEvent;
   AliTPCTransform *fOfflineTransform;
   Bool_t fDataId;
-  Int_t fChargeThreshold;  //!transient 
+  UInt_t fChargeThreshold;  //!transient 
 
 private:
    

@@ -57,6 +57,7 @@ ClassImp(AliHLTTPCCalibSeedMakerComponent) //ROOT macro for the implementation o
 
 AliHLTTPCCalibSeedMakerComponent::AliHLTTPCCalibSeedMakerComponent()
     :    
+    fTPCGeomParam(0),
     fSeedArray(0)
 {
   // see header file for class documentation

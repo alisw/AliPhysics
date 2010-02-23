@@ -253,7 +253,7 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
 void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* iter,Int_t &tt){
 // see header file for class documentation
 
-  AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(*iter);
+  //AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(*iter);
   
   Int_t usedSpacePoints = 0;
   
