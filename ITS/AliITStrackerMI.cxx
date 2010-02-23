@@ -3606,7 +3606,7 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
   //--------------------------------------------------------------------
   Int_t tpcLabel=-1; 
      
-  if ( track->GetESDtrack())   tpcLabel =  TMath::Abs(track->GetESDtrack()->GetTPCLabel());
+  if (track->GetESDtrack())   tpcLabel = track->GetESDtrack()->GetTPCLabel();
 
    track->SetChi2MIP(9,0);
    Int_t nwrong=0;
@@ -3616,8 +3616,7 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
      AliITSRecPoint *cl = (AliITSRecPoint*)GetCluster(cindex);
      Int_t isWrong=1;
      for (Int_t ind=0;ind<3;ind++){
-       if (tpcLabel>0)
-	 if (cl->GetLabel(ind)==tpcLabel) isWrong=0;
+       if (cl->GetLabel(ind)==TMath::Abs(tpcLabel)) isWrong=0;
        AliDebug(2,Form("icl %d  ilab %d lab %d",i,ind,cl->GetLabel(ind)));
      }
      track->SetChi2MIP(9,track->GetChi2MIP(9)+isWrong*(2<<l));
@@ -3626,10 +3625,10 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
    Int_t nclusters = track->GetNumberOfClusters();
    if (nclusters > 0) //PH Some tracks don't have any cluster
      track->SetFakeRatio(double(nwrong)/double(nclusters));
-   if (tpcLabel>0){
-     if (track->GetFakeRatio()>wrong) track->SetLabel(-tpcLabel);
-     else
-       track->SetLabel(tpcLabel);
+   if (tpcLabel>0 && track->GetFakeRatio()>wrong) {
+     track->SetLabel(-tpcLabel);
+   } else {
+     track->SetLabel(tpcLabel);
    }
    AliDebug(2,Form(" nls %d wrong %d  label %d  tpcLabel %d\n",nclusters,nwrong,track->GetLabel(),tpcLabel));
    
@@ -4753,4 +4752,3 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
-
