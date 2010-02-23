@@ -63,6 +63,7 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
   fCorrectProtons(0), fCorrectAntiProtons(0),
   fHistEfficiencyYPtProtons(0), fHistEfficiencyYPtAntiProtons(0),
+  fHistYPtCorrectionForSecondaries(0), fCorrectForSecondariesFlag(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
   fQAAntiProtonsAcceptedList(0), fQAAntiProtonsRejectedList(0),
@@ -88,6 +89,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
   fCorrectProtons(0), fCorrectAntiProtons(0),
   fHistEfficiencyYPtProtons(0), fHistEfficiencyYPtAntiProtons(0),
+  fHistYPtCorrectionForSecondaries(0), fCorrectForSecondariesFlag(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
   fQAAntiProtonsAcceptedList(0), fQAAntiProtonsRejectedList(0),
@@ -185,6 +187,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
   fCorrectProtons(0), fCorrectAntiProtons(0),
   fHistEfficiencyYPtProtons(0), fHistEfficiencyYPtAntiProtons(0),
+  fHistYPtCorrectionForSecondaries(0), fCorrectForSecondariesFlag(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
   fQAAntiProtonsAcceptedList(0), fQAAntiProtonsRejectedList(0),
@@ -284,6 +287,7 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fCorrectAntiProtons) delete fCorrectAntiProtons;
   if(fHistEfficiencyYPtProtons) delete fHistEfficiencyYPtProtons;
   if(fHistEfficiencyYPtAntiProtons) delete fHistEfficiencyYPtAntiProtons;
+  if(fHistYPtCorrectionForSecondaries) delete fHistYPtCorrectionForSecondaries;
 
   //QA lists
   if(fGlobalQAList) delete fGlobalQAList;
@@ -1288,10 +1292,33 @@ Bool_t AliProtonAnalysis::PrintYields(TH1 *hist, Double_t edge) {
 }
 
 //____________________________________________________________________//
+void AliProtonAnalysis::SetCorrectionMapForSecondaries(const char* filename) {
+  //Reads the file with the correction maps for the secondaries
+  TFile *gCorrectionForSecondaries = TFile::Open(filename);
+  if(!gCorrectionForSecondaries) {
+    Printf("The TFile object is not valid!!!");
+    return;
+  }
+  if(!gCorrectionForSecondaries->IsOpen()) {
+    Printf("The file is not found!!!");
+    return;
+  }
+
+  fHistYPtCorrectionForSecondaries = dynamic_cast<TH2D *>(gCorrectionForSecondaries->Get("gHistCorrectionForSecondaries"));
+  fCorrectForSecondariesFlag = kTRUE;
+}
+
+//____________________________________________________________________//
 void AliProtonAnalysis::Correct() {
   //Apply the corrections: Fast & dirty way for the absorption corrections
+  //Correct the protons for the efficiency
   fHistYPtProtonsCorrected = fProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);
   fHistYPtProtonsCorrected->Divide(fHistEfficiencyYPtProtons);
+  //Correct the prootons for secondaries
+  if(fCorrectForSecondariesFlag)
+    fHistYPtProtonsCorrected->Divide(fHistYPtCorrectionForSecondaries);
+
+  //Correct the antiprotons for the efficiency
   fHistYPtAntiProtonsCorrected = fAntiProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);
   fHistYPtAntiProtonsCorrected->Divide(fHistEfficiencyYPtAntiProtons);
 }
