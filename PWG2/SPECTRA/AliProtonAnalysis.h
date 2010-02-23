@@ -112,12 +112,9 @@ class AliProtonAnalysis : public TObject {
   void Correct();
   void Correct(Int_t step);
   Bool_t ReadCorrectionContainer(const char* filename);
-  /*TList *GetCorrectionListProtons2D() const {return fCorrectionListProtons2D;} 
-  TList *GetEfficiencyListProtons1D() const {return fEfficiencyListProtons1D;} 
-  TList *GetCorrectionListProtons1D() const {return fCorrectionListProtons1D;} 
-  TList *GetCorrectionListAntiProtons2D() const {return fCorrectionListAntiProtons2D;} 
-  TList *GetEfficiencyListAntiProtons1D() const {return fEfficiencyListAntiProtons1D;} 
-  TList *GetCorrectionListAntiProtons1D() const {return fCorrectionListAntiProtons1D;}*/ 
+  void SetCorrectionMapForSecondaries(const char* filename);
+  TH2D *GetCorrectionMapForSecondaries() {
+    return fHistYPtCorrectionForSecondaries;}
   
   //iStep=0->MC - iStep=1->Acceptance - iStep=2->Reconstruction - iStep=3->PID
   TH1D  *GetUncorrectedProtonYHistogram(Int_t iStep) {return fProtonContainer->ShowProjection(0, iStep);}
@@ -160,6 +157,8 @@ class AliProtonAnalysis : public TObject {
   AliCFDataGrid *fCorrectAntiProtons; //corrected data grid for antiprotons
   TH2D *fHistEfficiencyYPtProtons;//efficiency 2D for the corrections - protons
   TH2D *fHistEfficiencyYPtAntiProtons;//efficiency 2D for the corrections - antiprotons
+  TH2D *fHistYPtCorrectionForSecondaries;//correction factors for the corrections (secondary protons)
+  Bool_t fCorrectForSecondariesFlag;//correct for secondaries
 
   //QA lists
   TList *fGlobalQAList; //global list
