@@ -33,10 +33,10 @@ DrawCaloQA(TString calo = "EMCAL", Bool_t kine = kFALSE)
   }
 
   //Set Histrograms bins and ranges
-  qa->SetHistoPtRangeAndNBins(0, 5, 100) ;
+  qa->SetHistoPtRangeAndNBins(0, 5, 20) ;
   if(calo=="EMCAL"){
-    qa->SetHistoPhiRangeAndNBins(1.37, 2.23, 25) ;
-    qa->SetHistoEtaRangeAndNBins(-0.8, 0.8, 20) ;
+    qa->SetHistoPhiRangeAndNBins(1.37, 2.23, 35) ;
+    qa->SetHistoEtaRangeAndNBins(-0.8, 0.8, 10) ;
   }
   else if (calo=="PHOS"){
     qa->SetHistoPhiRangeAndNBins(255*TMath::DegToRad(), 325*TMath::DegToRad(), 200) ;
@@ -51,10 +51,10 @@ DrawCaloQA(TString calo = "EMCAL", Bool_t kine = kFALSE)
   qa->SetHistoRatioRangeAndNBins(0.,2.,100);
   qa->SetHistoVertexDistRangeAndNBins(0.,500.,100);
   qa->SetHistoNClusterCellRangeAndNBins(0,300,300);
-  qa->SetHistoXRangeAndNBins(-250,100,25);
-  qa->SetHistoYRangeAndNBins(370,450,100);
-  qa->SetHistoZRangeAndNBins(-350,350,50);
-  qa->SetHistoRRangeAndNBins(420,460,300);
+  qa->SetHistoXRangeAndNBins(-250,100,30);
+  qa->SetHistoYRangeAndNBins(370,450,20);
+  qa->SetHistoZRangeAndNBins(-350,350,80);
+  qa->SetHistoRRangeAndNBins(420,460,10);
 
   //Make the histograms
   qa->Terminate(outputList);

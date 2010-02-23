@@ -67,6 +67,10 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
 
   //Histogram binning setters
+
+  Int_t GetNewRebinForRePlotting(TH1D*histo, const Float_t newXmin, const Float_t newXmax,
+				 const Int_t newNbins) const;
+
   virtual void SetHistoPOverERangeAndNBins(Float_t min, Float_t max, Int_t n) {
 	fHistoPOverEBins  = n ;
 	fHistoPOverEMax   = max ;
