@@ -91,6 +91,8 @@ private:
   TH1F *fSClsDist;
   TH1F *fNScls;
 
+  TH1F *fEvSize;                // Event size in kbyte
+
   ClassDef(AliHLTTRDClusterHistoComponent, 0);
 };
 #endif

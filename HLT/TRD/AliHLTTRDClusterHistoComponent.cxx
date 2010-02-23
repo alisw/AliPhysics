@@ -53,7 +53,8 @@ AliHLTTRDClusterHistoComponent::AliHLTTRDClusterHistoComponent()
   fClsTB(NULL),
   fClsAmpDist(NULL),
   fSClsDist(NULL),
-  fNScls(NULL)
+  fNScls(NULL),
+  fEvSize(NULL)
 {
   // see header file for class documentation
   // or
@@ -131,6 +132,7 @@ int AliHLTTRDClusterHistoComponent::DoInit(int argc, const char** argv)
   fClsAmpDist = new TH1F("trdClsAmpDist", "mean amplitude", 200, 0, 1000);
   fSClsDist = new TH1F("sclsdist", "Super cluster spectrum", 200, 0, 8000);
   fNScls = new TH1F("nscls", "No. of Kr clusters per event", 540, 0, 540);
+  fEvSize = new TH1F("evSize", "Clusters size per event per ddl in kbyte", 512, 0, 512);
 
   for(int i=0; i<540; i++) {
     fClsAmpDriftDet[i] = new TH1F(Form("trdClsDriftDet_%d",i), "", 200, -0.5, 199.5);
@@ -154,6 +156,7 @@ int AliHLTTRDClusterHistoComponent::DoDeinit()
   if (fClsAmpDist) delete fClsAmpDist;
   if (fSClsDist) delete fSClsDist;
   if (fNScls) delete fNScls;
+  if (fEvSize) delete fEvSize;
 
   for(int i=0; i<540; i++){
     if (fClsAmpDriftDet[i]) delete fClsAmpDriftDet[i];
@@ -186,7 +189,7 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   //     return 0;
   //   }
 
-  if (GetFirstInputBlock(kAliHLTDataTypeSOR) || GetFirstInputBlock(kAliHLTDataTypeEOR)) return 0;
+  if(!IsDataEvent())return 0;
 
   const AliHLTComponentBlockData* iter = NULL;
   Bool_t gotData = kFALSE;
@@ -195,17 +198,15 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   for ( iter = GetFirstInputBlock(AliHLTTRDDefinitions::fgkClusterDataType); 
 	iter != NULL; iter = GetNextInputBlock() ) {
 
-    HLTDebug("We get the right data type: Block Ptr: 0x%x; Block Size: %i",
-	     iter->fPtr, iter->fSize);
+    HLTDebug("TClonesArray of clusters: nbEntries = %i", fClusterArray->GetEntriesFast());
 
+    fEvSize->Fill((iter->fSize+0.5f)/1024);
     AliHLTTRDUtils::ReadClusters(fClusterArray, iter->fPtr, iter->fSize);
     gotData = kTRUE;
     spec = iter->fSpecification;
   }
 
   if(!gotData) return 0;
-
-    HLTDebug("TClonesArray of clusters: nbEntries = %i", fClusterArray->GetEntriesFast());
 
   Float_t sClusterCharge[540] = { 0 };
     AliTRDcluster *cls;
@@ -251,6 +252,7 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   //PushBack((TObject*)fClsAmpDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
   //PushBack((TObject*)fNScls, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
   PushBack((TObject*)fSClsDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
+  PushBack((TObject*)fEvSize, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
 
   return 0;
 }

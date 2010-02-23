@@ -133,8 +133,7 @@ int AliHLTTRDHistoMergerComponent::DoDeinit()
 int AliHLTTRDHistoMergerComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 					    AliHLTComponentTriggerData& /*trigData*/)
 {
-
-  if (GetFirstInputBlock(kAliHLTDataTypeSOR) || GetFirstInputBlock(kAliHLTDataTypeEOR)) return 0;
+  if(!IsDataEvent())return 0;
 
   int histNr = 0;
   int lastSM = -1;
@@ -161,6 +160,11 @@ int AliHLTTRDHistoMergerComponent::DoEvent(const AliHLTComponentEventData& /*evt
       lastSM = SM;
       histNr = 0;
       fIncSM[SM]=kTRUE;
+    }
+
+    if(histNr>9){
+      HLTError("Got more histogramms than expected.");
+      return 0;
     }
 
     if(!fHistoArr[histNr]) fHistoArr[histNr] = (TH1*)iter->Clone();

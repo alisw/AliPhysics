@@ -83,6 +83,7 @@ private:
 
   TH1F *fClPerTrkl;
   TH1F *fTrklPerTrk;
+  TH1F *fEvSize;                // Event size in kbyte
 
   ClassDef(AliHLTTRDTrackHistoComponent, 0);
 };
