@@ -63,6 +63,16 @@ void AliAnalysisTaskGlobalQA::UserCreateOutputObjects()
   fArrayQA = new TObjArray(kLast);
 
 
+  {// Event related QA
+    const Char_t *name[]={
+      "hGlobalPrimaryVertex"
+    };
+    const Char_t *title[]={
+      "Z-distribution of the primary vertex"
+    };
+    Add2ESDsList(new TH1F(name[0],title[0],100,-20.,20.),kEvt0);
+  }
+ 
   {// Cluster related QA
     const Char_t *name[]={
       "hGlobalFractionAssignedClustersITS",
@@ -190,6 +200,16 @@ void AliAnalysisTaskGlobalQA::UserExec(Option_t *)
     return;
   }
 
+  // Event related QA
+  const AliESDVertex *vtx=esd->GetPrimaryVertex();
+  if (!vtx->GetStatus()) return;
+
+  Double_t xv=vtx->GetXv();
+  Double_t yv=vtx->GetYv();
+  Double_t zv=vtx->GetZv();
+  GetESDsData(kEvt0)->Fill(zv);
+
+
   for (Int_t iTracks = 0; iTracks < esd->GetNumberOfTracks(); iTracks++) {
       AliESDtrack* track = esd->GetTrack(iTracks);
       if (!track) {
@@ -232,7 +252,7 @@ void AliAnalysisTaskGlobalQA::UserExec(Option_t *)
     // Track related QA
     if (track->IsOn(AliESDtrack::kTPCrefit)) {
       Float_t dz[2]; 
-      track->GetDZ(0.,0.,0.,esd->GetMagneticField(),dz); 
+      track->GetDZ(xv,yv,zv,esd->GetMagneticField(),dz); 
       if ((TMath::Abs(dz[0])<3.) && (TMath::Abs(dz[1])<3.)) { // beam pipe
         Double_t phi=track->Phi();
 	GetESDsData(kTrk0)->Fill(phi);
@@ -251,10 +271,6 @@ void AliAnalysisTaskGlobalQA::UserExec(Option_t *)
     const AliExternalTrackParam *innTrack=track->GetInnerParam();
     if (tpcTrack)
     if (innTrack) {
-       const AliESDVertex *vtx=esd->GetPrimaryVertex();
-       Double_t xv=vtx->GetXv();
-       Double_t yv=vtx->GetYv();
-       Double_t zv=vtx->GetZv();
        Float_t dz[2];
        tpcTrack->GetDZ(xv,yv,zv,esd->GetMagneticField(),dz);
        dz[0]*=10.; // in mm
@@ -282,11 +298,17 @@ void AliAnalysisTaskGlobalQA::UserExec(Option_t *)
       }
     }
     if (p>1.0) {
-      if (track->IsOn(AliESDtrack::kTOFpid)) {
-        Double_t times[10];
-        track->GetIntegratedTimes(times);
-        Double_t tof=track->GetTOFsignal();
-        GetESDsData(kPid2)->Fill(times[2]-tof);
+      if (track->IsOn(AliESDtrack::kITSrefit))
+      if (track->IsOn(AliESDtrack::kTPCrefit))
+      if (track->IsOn(AliESDtrack::kTOFout)) {
+         Float_t dz[2];
+         track->GetDZ(xv,yv,zv,esd->GetMagneticField(),dz);
+         if (dz[1]<3.) {
+            Double_t times[10];
+            track->GetIntegratedTimes(times);
+            Double_t tof=track->GetTOFsignal()/*-847055 -1771207*/;
+            GetESDsData(kPid2)->Fill(times[2]-tof);
+	 }
       }
     }
     const AliExternalTrackParam *par=track->GetInnerParam();
@@ -317,6 +339,14 @@ void AliAnalysisTaskGlobalQA::UserExec(Option_t *)
   for (Int_t i=0; i<nV0; i++) {
     Double_t mass;
     AliESDv0 v0(*esd->GetV0(i));
+
+    Int_t nidx=TMath::Abs(v0.GetNindex());
+    AliESDtrack *ntrack1=esd->GetTrack(nidx);
+    if (!ntrack1->IsOn(AliESDtrack::kTPCrefit)) continue;
+
+    Int_t pidx=TMath::Abs(v0.GetPindex());
+    AliESDtrack *ptrack1=esd->GetTrack(pidx);
+    if (!ptrack1->IsOn(AliESDtrack::kTPCrefit)) continue;
 
     v0.ChangeMassHypothesis(kK0Short);
     mass=v0.GetEffMass();

@@ -15,6 +15,7 @@ class AliESDEvent;
 class AliGlobalQADataMaker: public AliQADataMakerRec {
 public:
   enum {
+    kEvt0,
     kClr0,kClr1,kClr2,kClr3,
     kTrk0,kTrk1,kTrk2,kTrk3,kTrk4,kTrk5,kTrk6,kTrk7,kTrk8,kTrk9,kTrk10,
     kK0on,kK0off,kL0on,kL0off,
