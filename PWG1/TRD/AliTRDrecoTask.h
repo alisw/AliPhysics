@@ -28,9 +28,9 @@ class AliTRDrecoTask : public AliAnalysisTask
 {
 public:
   enum AliTRDrecoSteeringBits{
-    kMCdata       = BIT(20)
-    ,kFriends     = BIT(21)
-    ,kPostProcess = BIT(22)
+    kMCdata       = BIT(18)
+    ,kFriends     = BIT(19)
+    ,kPostProcess = BIT(20)
   };
   AliTRDrecoTask(const char *name, const char *title);
   virtual ~AliTRDrecoTask();
