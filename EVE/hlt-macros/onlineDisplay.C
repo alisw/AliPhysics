@@ -1025,7 +1025,7 @@ Int_t processEsdTracks( AliHLTHOMERBlockDesc* block, TEveTrackList* cont ) {
 
   AliESDEvent* esd = (AliESDEvent *) (block->GetTObject());
   esd->GetStdContent();
-
+  
   esd_track_propagator_setup(cont->GetPropagator(),-0.1*esd->GetMagneticField(), 520);
 
   //  printf( "Number of ESD Tracks : %d \n", esd->GetNumberOfTracks());
@@ -1035,33 +1035,33 @@ Int_t processEsdTracks( AliHLTHOMERBlockDesc* block, TEveTrackList* cont ) {
     AliEveTrack* track = dynamic_cast<AliEveTrack*>(hlt_esd_make_track(esd->GetTrack(iter), cont));
     cont->AddElement(track);
     
-    gTPCPt->Fill(esd->GetTrack(iter)->GetSignedPt()); // KK
-    gTPCEta->Fill(esd->GetTrack(iter)->GetSnp());
-    gTPCPsi->Fill(esd->GetTrack(iter)->GetTgl());
-    gTPCnClusters->Fill(esd->GetTrack(iter)->GetTPCNcls());  
+//     gTPCPt->Fill(esd->GetTrack(iter)->GetSignedPt()); // KK
+//     gTPCEta->Fill(esd->GetTrack(iter)->GetSnp());
+//     gTPCPsi->Fill(esd->GetTrack(iter)->GetTgl());
+//     gTPCnClusters->Fill(esd->GetTrack(iter)->GetTPCNcls());  
   }
   
-  gTPCMult->Fill(esd->GetNumberOfTracks()); // KK
+//   gTPCMult->Fill(esd->GetNumberOfTracks()); // KK
   
-  Int_t icd = 0;
-  gTPCClustCanvas->Clear();
-  gTPCClustCanvas->Divide(2, 2);
-  gTPCClustCanvas->cd(icd++);
-  gTPCPt->Draw();
-  gTPCClustCanvas->cd(icd++);
-  gTPCEta->Draw();
-  gTPCClustCanvas->cd(icd++);
-  gTPCPsi->Draw();
-  gTPCClustCanvas->cd(icd++);
-  gTPCnClusters->Draw();
-  gTPCClustCanvas->cd(icd++);
-  gTPCMult->Draw();
-  gTPCClustCanvas->Update();
+//   Int_t icd = 0;
+//   gTPCClustCanvas->Clear();
+//   gTPCClustCanvas->Divide(2, 2);
+//   gTPCClustCanvas->cd(icd++);
+//   gTPCPt->Draw();
+//   gTPCClustCanvas->cd(icd++);
+//   gTPCEta->Draw();
+//   gTPCClustCanvas->cd(icd++);
+//   gTPCPsi->Draw();
+//   gTPCClustCanvas->cd(icd++);
+//   gTPCnClusters->Draw();
+//   gTPCClustCanvas->cd(icd++);
+//   gTPCMult->Draw();
+//   gTPCClustCanvas->Update();
 
-
+  
   cont->SetTitle(Form("N=%d", esd->GetNumberOfTracks()) );
   cont->MakeTracks();
-
+  
   return 0;
 }
 
