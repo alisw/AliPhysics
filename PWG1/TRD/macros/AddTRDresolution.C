@@ -1,5 +1,6 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include "TTree.h"
+#include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
@@ -12,7 +13,9 @@
 void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
   Int_t map = ParseOptions(trd);
-  AliTRDresolution *task = 0x0;
+
+  //AliLog::SetClassDebugLevel("AliTRDresolution", 5);  
+  AliTRDresolution *task(NULL);
   if(!TSTBIT(map, kResolution)) return;
   mgr->AddTask(task = new AliTRDresolution());
   task->SetMCdata(mgr->GetMCtruthEventHandler());
@@ -32,7 +35,9 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
 
   // Cluster Error Parameterization
   if(TSTBIT(map, kClErrParam)){
-    AliTRDclusterResolution *taskCl = 0x0;
+    //AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
+
+    AliTRDclusterResolution *taskCl(NULL);
     mgr->AddTask(taskCl = new AliTRDclusterResolution("ESD", "ESD Cluster error parameterization"));
     taskCl->SetExB();
     mgr->ConnectInput(taskCl, 0, co[0]);

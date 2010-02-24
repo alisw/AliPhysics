@@ -1,4 +1,5 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
+#include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "PWG1/TRD/AliTRDinfoGen.h"
@@ -12,11 +13,22 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   Int_t map = ParseOptions(trd);
   if(!(TSTBIT(map, kInfoGen))) return;
 
-  AliTRDinfoGen *info = 0x0;
+  //AliLog::SetClassDebugLevel("AliTRDinfoGen", 5);  
+  AliTRDinfoGen *info(NULL);
   mgr->AddTask(info = new AliTRDinfoGen());
   info->SetDebugLevel(0);
   info->SetMCdata(mgr->GetMCtruthEventHandler());
   mgr->ConnectInput( info, 0, mgr->GetCommonInputContainer());
+  // settings for collisions
+  info->SetCollision();
+  if(info->IsCollision()){
+    info->SetTrigger(
+      "CINT1B-ABCE-NOPF-ALL"
+      " CSCO1-ABCE-NOPF-CENT" // cosmic SPD trigger
+    );
+    info->SetLocalEvSelection();
+    info->SetLocalTrkSelection();
+  }
   co[0] = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[1] = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
   co[2] = mgr->CreateContainer("v0Info", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);

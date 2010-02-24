@@ -77,9 +77,19 @@ ClassImp(AliTRDinfoGen)
 const Float_t AliTRDinfoGen::fgkTPC = 290.;
 const Float_t AliTRDinfoGen::fgkTOF = 365.;
 
+const Float_t AliTRDinfoGen::fgkEvVertexZ = 15.;
+const Int_t   AliTRDinfoGen::fgkEvVertexN = 1;
+
+const Float_t AliTRDinfoGen::fgkTrkDCAxy  = 40.;
+const Float_t AliTRDinfoGen::fgkTrkDCAz   = 15.;
+const Int_t   AliTRDinfoGen::fgkNclTPC    = 10;
+const Float_t AliTRDinfoGen::fgkPt        = 0.2;
+const Float_t AliTRDinfoGen::fgkEta       = 0.9;
+
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen():
   AliTRDrecoTask("infoGen", "MC-REC TRD-track list generator")
+  ,fEvTrigger("CINT1B-ABCE-NOPF-ALL")
   ,fESDev(NULL)
   ,fMCev(NULL)
   ,fESDfriend(NULL)
@@ -177,6 +187,37 @@ void AliTRDinfoGen::Exec(Option_t *){
     AliError("Failed retrieving ESD event");
     return;
   }
+
+  // event selection : trigger cut
+  if(UseLocalEvSelection() &&
+     fEvTrigger.Data()[0]!='\0'){ 
+    Bool_t kTRIGGERED(kFALSE);
+    const TObjArray *trig = fEvTrigger.Tokenize(" ");
+    for(Int_t itrig=trig->GetEntriesFast(); itrig--;){
+      const Char_t *trigClass(((TObjString*)(*trig)[itrig])->GetName());
+      if(fESDev->IsTriggerClassFired(trigClass)) {
+        AliDebug(2, Form("Ev[%4d] Trigger[%s]", fESDev->GetEventNumberInFile(), trigClass));
+        kTRIGGERED = kTRUE;
+        break; 
+      }
+    }
+    if(!kTRIGGERED) return;
+
+    // select only physical events
+    if(fESDev->GetEventType() != 7) return;
+  }
+
+  // if the required trigger is a collision trigger then apply event vertex cut
+  if(UseLocalEvSelection() && IsCollision()){
+    const AliESDVertex *vertex = fESDev->GetPrimaryVertex();
+    if(TMath::Abs(vertex->GetZv())<1.e-10 || 
+       TMath::Abs(vertex->GetZv())>fgkEvVertexZ || 
+       vertex->GetNContributors()<fgkEvVertexN) {
+      //PostData(0, fOutStorage);
+      return;
+    }
+  }
+
   if(!fESDfriend){
     AliError("Failed retrieving ESD friend event");
     return;
@@ -216,6 +257,20 @@ void AliTRDinfoGen::Exec(Option_t *){
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
     esdTrack = fESDev->GetTrack(itrk);
     AliDebug(3, Form("\n%3d ITS[%d] TPC[%d] TRD[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2)));
+
+    // Track Selection
+    if(UseLocalTrkSelection()){
+      if(esdTrack->Pt() < fgkPt) continue;
+      if(TMath::Abs(esdTrack->Eta()) > fgkEta) continue;
+      if(esdTrack->GetTPCNcls() < fgkNclTPC) continue;
+      Float_t par[2], cov[3];
+      esdTrack->GetImpactParameters(par, cov);
+      if(IsCollision()){ // cuts on DCA
+        if(TMath::Abs(par[0]) > fgkTrkDCAxy) continue;
+        if(TMath::Abs(par[1]) > fgkTrkDCAz) continue;
+      }
+    }
+
     if(esdTrack->GetStatus()&AliESDtrack::kTPCout) nTPC++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDout) nTRDout++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDin) nTRDin++;
