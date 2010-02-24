@@ -66,6 +66,7 @@ fCheckEventType(kTRUE),
 fReadMC(kFALSE),
 fRecoVtxTPC(kFALSE),
 fRecoVtxITSTPC(kFALSE),
+fRecoVtxITSTPCHalfEvent(kFALSE),
 fOnlyITSTPCTracks(kFALSE),
 fOnlyITSSATracks(kFALSE),
 fFillNtuple(kFALSE),
@@ -114,7 +115,7 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
-  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:bunchcross:triggered:dndygen:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:xSPDp:xerrSPDp:ySPDp:yerrSPDp:zSPDp:zerrSPDp:ntrksSPDp:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc");
+  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:bunchcross:triggered:dndygen:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:xSPDp:xerrSPDp:ySPDp:yerrSPDp:zSPDp:zerrSPDp:ntrksSPDp:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc:deltaxTRKnc:deltayTRKnc:deltazTRKnc:deltaxerrTRKnc:deltayerrTRKnc:deltazerrTRKnc:avntrksTRKnc");
 
   fOutput->Add(fNtupleVertexESD);
 
@@ -316,8 +317,8 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   }
 
   // fill ntuple
-  Int_t isize=74;
-  Float_t xnt[74]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
+  Int_t isize=81;
+  Float_t xnt[81]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
   
   Int_t index=0;
 
@@ -428,6 +429,32 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     delete trkvc; trkvc=0;
   } else index+=14;
   
+  if(fRecoVtxITSTPCHalfEvent) {
+    AliESDVertex *trkvncodd  = ReconstructPrimaryVertexITSTPC(kFALSE,1);
+    AliESDVertex *trkvnceven = ReconstructPrimaryVertexITSTPC(kFALSE,2);
+    if(trkvncodd->GetNContributors()>0 && 
+       trkvnceven->GetNContributors()>0) {
+      xnt[index++]=trkvncodd->GetXv()-trkvnceven->GetXv();
+      xnt[index++]=TMath::Sqrt(trkvncodd->GetXRes()*trkvncodd->GetXRes()+trkvnceven->GetXRes()*trkvnceven->GetXRes());
+      xnt[index++]=trkvncodd->GetYv()-trkvnceven->GetYv();
+      xnt[index++]=TMath::Sqrt(trkvncodd->GetYRes()*trkvncodd->GetYRes()+trkvnceven->GetYRes()*trkvnceven->GetYRes());
+      xnt[index++]=trkvncodd->GetZv()-trkvnceven->GetZv();
+      xnt[index++]=TMath::Sqrt(trkvncodd->GetZRes()*trkvncodd->GetZRes()+trkvnceven->GetZRes()*trkvnceven->GetZRes());
+      xnt[index++]=0.5*(trkvncodd->GetNContributors()+trkvnceven->GetNContributors());
+    } else {
+      xnt[index++]=0.;
+      xnt[index++]=0.;
+      xnt[index++]=0.;
+      xnt[index++]=0.;
+      xnt[index++]=0.;
+      xnt[index++]=0.;
+      xnt[index++]=-1;
+    }
+    delete trkvncodd; trkvncodd=0;
+    delete trkvnceven; trkvnceven=0;    
+  } else index+=7;
+  
+
   if(index>isize) printf("AliAnalysisTaskVertexESD: ERROR, index!=isize\n");
   if(fFillNtuple) fNtupleVertexESD->Fill(xnt);
   
@@ -471,8 +498,12 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexTPC(Bool_t const
 }
 
 //_________________________________________________________________________
-AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t constr) const {
+AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t constr,Int_t mode) const {
   // On the fly reco of ITS+TPC vertex from ESD
+  // mode=0 use all tracks
+  // mode=1 use odd-number tracks
+  // mode=2 use even-number tracks
+
   AliESDEvent* evt = (AliESDEvent*) fInputEvent;
   AliVertexerTracks vertexer(evt->GetMagneticField());
   vertexer.SetITSMode(); // defaults
@@ -493,10 +524,14 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t co
       AliESDtrack* track = evt->GetTrack(itr);
       if(fOnlyITSTPCTracks && track->GetNcls(1)==0) { // skip ITSSA
 	skip[iskip++]=itr;
+	continue;
       }
       if(fOnlyITSSATracks && track->GetNcls(1)>0) { // skip ITSTPC
 	skip[iskip++]=itr;
+	continue;
       }
+      if(mode==1 && itr%2==0) skip[iskip++]=itr;
+      if(mode==2 && itr%2==1) skip[iskip++]=itr;
     }
     vertexer.SetSkipTracks(iskip,skip);
     delete [] skip; skip=NULL;

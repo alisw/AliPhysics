@@ -48,6 +48,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   Bool_t       fReadMC;         // read Monte Carlo
   Bool_t       fRecoVtxTPC;     // reco TPC vertex on the flight
   Bool_t       fRecoVtxITSTPC;  // reco ITS+TPC vertex on the flight
+  Bool_t       fRecoVtxITSTPCHalfEvent;  // reco ITS+TPC vertex with even and odd tracks
   Bool_t       fOnlyITSTPCTracks; // only ITS-TPC tracks to redo ITSTPC vertex
   Bool_t       fOnlyITSSATracks;  // only ITS-SA tracks to redo ITSTPC vertex
   Bool_t       fFillNtuple;      // fill ntuple 
@@ -70,7 +71,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   AliAnalysisTaskVertexESD(const AliAnalysisTaskVertexESD&); // not implemented
   AliAnalysisTaskVertexESD& operator=(const AliAnalysisTaskVertexESD&); // not implemented
   AliESDVertex* ReconstructPrimaryVertexTPC(Bool_t constr=kFALSE) const;
-  AliESDVertex* ReconstructPrimaryVertexITSTPC(Bool_t constr=kFALSE) const;
+  AliESDVertex* ReconstructPrimaryVertexITSTPC(Bool_t constr=kFALSE,Int_t mode=0) const;
   
   ClassDef(AliAnalysisTaskVertexESD,7); // primary vertex analysis
 };
