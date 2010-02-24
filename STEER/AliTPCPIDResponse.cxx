@@ -32,11 +32,11 @@ AliTPCPIDResponse::AliTPCPIDResponse():
     fMIP(50.),
     fRes0(0.07),
     fResN2(0.),
-    fKp1(0.76176e-1),
-    fKp2(10.632),
-    fKp3(0.13279e-4),
-    fKp4(1.8631),
-    fKp5(1.9479)
+    fKp1(0.0283086),
+    fKp2(2.63394e+01),
+    fKp3(5.04114e-11),
+    fKp4(2.12543),
+    fKp5(4.88663)
 {
   //
   //  The default constructor
@@ -48,11 +48,11 @@ AliTPCPIDResponse::AliTPCPIDResponse(Double_t *param):
     fMIP(param[0]),
     fRes0(param[1]),
     fResN2(param[2]),
-    fKp1(0.76176e-1),
-    fKp2(10.632),
-    fKp3(0.13279e-4),
-    fKp4(1.8631),
-    fKp5(1.9479)
+    fKp1(0.0283086),
+    fKp2(2.63394e+01),
+    fKp3(5.04114e-11),
+    fKp4(2.12543),
+    fKp5(4.88663)
 {
   //
   //  The main constructor
