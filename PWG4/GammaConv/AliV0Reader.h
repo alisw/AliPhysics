@@ -634,7 +634,7 @@ class AliV0Reader : public TObject {
   // for dEdx cut based on nSigma to a particle line
   AliESDpid * fESDpid; // esd pid
 	
-  AliGammaConversionHistograms *fHistograms; //! pointer to histogram handling class
+  AliGammaConversionHistograms *fHistograms; // pointer to histogram handling class
 	
   Int_t fCurrentV0IndexNumber;  // the current v0 index number
   AliESDv0 * fCurrentV0;                //! pointer to the current v0
