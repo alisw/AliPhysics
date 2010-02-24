@@ -35,7 +35,7 @@ class AliLHCData : public TObject
   enum Side_t   {kLeft,kRight};
   enum Collim_t {kTCTVB4L2, kTCTVB4R2, kTCLIA4R2, kNCollimators};
   enum ColJaw_t {kGapDn,kGapUp,kLeftDn,kLeftUp,kRightDn,kRightUp,kNJaws};
-  enum {kRecTotInt,kRecBunchInt,kRecTotLum,kRecBunchLum,kRecCrossAngle,kRecBunchConf,kRecFillNum,
+  enum {kRecTotInt,kRecTotIntBunch,kRecBunchInt,kRecTotLum,kRecBunchLum,kRecCrossAngle,kRecBunchConf,kRecFillNum,
 	kRecPrfPrID,kRecPrfAmp,kRecPrfPos,kRecPrfSig};
   //
  public:
@@ -47,6 +47,7 @@ class AliLHCData : public TObject
   Bool_t                FillData(const TMap* dcsMap, double tmin=0, double tmax=1.e20);
   //
   const TObjArray&      GetIntensityTotal(BeamID_t b)                const {return fIntTot[b];}
+  const TObjArray&      GetIntensityTotalBunch(BeamID_t b)           const {return fIntTotBunch[b];}
   const TObjArray&      GetIntensityBunch(BeamID_t b)                const {return fIntBunch[b];}
   const TObjArray&      GetBeamPos(BeamID_t b,Proj_t p)              const {return fBeamPos[b][p];}
   const TObjArray&      GetLuminTotal(Side_t s)                      const {return fLuminTot[s];}
@@ -80,7 +81,8 @@ class AliLHCData : public TObject
   Double_t        fTMax;                              // selection timeMax
   AliLHCDipValI   fBunchConfig[2];                    // bunches configuration for beam1 and beam2 
   //
-  TObjArray       fIntTot[2];                         // total intensity for beam1 and beam2 (AliLHCDipValD)
+  TObjArray       fIntTot[2];                         // total intensity (DC BCT) for beam1 and beam2 (AliLHCDipValD)
+  TObjArray       fIntTotBunch[2];                    // total intensity (BCTFR) for beam1 and beam2 (AliLHCDipValD)
   TObjArray       fIntBunch[2];                       // bunch by bunch intensity for beam1 and beam2 (AliLHCDipValD)
   //
   TObjArray       fBeamPos[2][2];                     // horizontal and vertical projection gaussian fit params for beam1 and beam2 (AliLHCDipValD: amp,pos,sigma)
@@ -95,7 +97,7 @@ class AliLHCData : public TObject
   static const Char_t *fgkDCSColNames[];              // collimators to extract
   static const Char_t *fgkDCSColJaws[];               // names of collimator pieces
 
-  ClassDef(AliLHCData,1)
+  ClassDef(AliLHCData,2)
 };
 
 #endif

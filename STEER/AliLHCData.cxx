@@ -22,23 +22,26 @@
 ClassImp(AliLHCData)
 
 const Char_t* AliLHCData::fgkDCSNames[] = {
-  "dip/acc/LHC/Beam/Intensity/Beam%d.totalIntensity",
-  "dip/acc/LHC/Beam/IntensityPerBunchBeam%d.averageBunchIntensity",
-  "dip/acc/LHC/Beam/LuminosityAverage/BRANB.4%c2.meanLuminosity",
-  "dip/acc/LHC/Beam/LuminosityPerBunch/BRANB_4%c2.bunchByBunchLuminosity",
-  "dip/acc/LHC/Beam/LuminosityAverage/BRANB.4%c2.meanCrossingAngle",
-  "dip/acc/LHC/RunControl/CirculatingBunchConfig/Beam%d.value",
-  "dip/acc/LHC/RunControl/FillNumber.payload",
+  "lhcMon_LHCIntensityBeam%d.totalIntensity",
+  "lhcInst_BeamIntensityPerBunchBeam%d.averageBeamIntensity",
+  "lhcInst_BeamIntensityPerBunchBeam%d_Avgerage.averageBunchIntensities",
+  "lhcMon_LHCLumAverageBRANB_4%c2.meanLuminosity",
+  "lhcInst_BeamLuminosityPerBunchBRANB_4%c2_Average.bunchByBunchLuminosity",
+  "lhcMon_LHCLumAverageBRANB_4%c2.meanCrossingAngle",
+  "lhcMon_LHCCirculatingBunchConfig_Beam%d.value",
+  "lhcMon_LHCFillNumber.payload",
   //
-  "dip/acc/LHC/Beam/Size/Beam%d.planeSet%d",
-  "dip/acc/LHC/Beam/Size/Beam%d.amplitudeSet%d",
-  "dip/acc/LHC/Beam/Size/Beam%d.positionSet%d",
-  "dip/acc/LHC/Beam/Size/Beam%d.sigmaSet%d"};
+  "lhcMon_LHCBeamSizeBeam%d.planeSet%d",
+  "lhcMon_LHCBeamSizeBeam%d.amplitudeSet%d",
+  "lhcMon_LHCBeamSizeBeam%d.positionSet%d",
+  "lhcMon_LHCBeamSizeBeam%d.sigmaSet%d"
+};
 
 const Char_t* AliLHCData::fgkDCSColNames[] = {
-  "dip/acc/LHC/Machine/CollimatorPositions/TCTVB.4L2.%s",
-  "dip/acc/LHC/Machine/CollimatorPositions/TCTVB.4R2.%s",
-  "dip/acc/LHC/Machine/CollimatorPositions/TCLIA.4R2.%s"};
+  "lhcMon_LHCCollimatorPos_TCTVB_4L2.%s",
+  "lhcMon_LHCCollimatorPos_TCTVB_4R2.%s",  
+  "lhcMon_LHCCollimatorPos_TCLIA_4R2.%s"
+};
 
 const Char_t* AliLHCData::fgkDCSColJaws[] = {
   "lvdt_gap_downstream","lvdt_gap_upstream","lvdt_left_downstream",
@@ -71,7 +74,7 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
   arr = GetDCSEntry(dcsMap,fgkDCSNames[kRecFillNum],iEntry,tmin,tmax);
   if (arr && iEntry>=0) SetFillNumber( ((AliDCSArray*)arr->At(iEntry))->GetInt(0) );
   //
-  // -------------------------- extract total intensities for beam 1 and 2
+  // -------------------------- extract total intensities for beam 1 and 2 (DC BCT: slow average)
   for (int ibm=0;ibm<2;ibm++) {
     //
     sprintf(buff,fgkDCSNames[kRecTotInt],ibm+1);  
@@ -94,6 +97,31 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
       *curVal += *dcsVal;
     }
     for (int i=fIntTot[ibm].GetEntries();i--;) ((AliLHCDipValD*)(fIntTot[ibm])[i])->Average();
+  }
+  //
+  // -------------------------- extract total intensities for beam 1 and 2 (BCTFR: fast average)
+  for (int ibm=0;ibm<2;ibm++) {
+    //
+    sprintf(buff,fgkDCSNames[kRecTotIntBunch],ibm+1);  
+    if ( !(arr=GetDCSEntry(dcsMap,buff,iEntry,tmin,tmax)) || iEntry<0 ) continue;
+    AliLHCDipValD* curVal;
+    tPeriodEnd = 0;
+    //
+    nEntries = arr->GetEntriesFast();
+    while (iEntry<nEntries) {
+      dcsVal = (AliDCSArray*) arr->At(iEntry++);
+      double tstamp = dcsVal->GetTimeStamp();
+      if (tstamp>tmax) break;
+      if (tstamp>tPeriodEnd) {
+	curVal = new AliLHCDipValD(1,0.,0);  // start new period
+	fIntTotBunch[ibm].Add(curVal);
+	// if tmin is provided, count periods from it, otherwise from the 1st timestamp
+	if (tPeriodEnd<1) tPeriodEnd = ((tmin>ktReal) ? tmin : tstamp);
+	tPeriodEnd += fPeriod;
+      }
+      *curVal += *dcsVal;
+    }
+    for (int i=fIntTotBunch[ibm].GetEntries();i--;) ((AliLHCDipValD*)(fIntTotBunch[ibm])[i])->Average();
   }
   //  
   // -------------------------- extract total luminosities according L and R detectors
@@ -146,6 +174,25 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
     for (int i=fCrossAngle[ilr].GetEntries();i--;) ((AliLHCDipValD*)(fCrossAngle[ilr])[i])->Average();
   }
   //
+  //
+  // ------------------------- extract bunch configuration for beam 1 and 2
+  int nbunch[2];
+  for (int ibm=0;ibm<2;ibm++) {
+    //
+    nbunch[ibm] = -1;
+    sprintf(buff,fgkDCSNames[kRecBunchConf],ibm+1);  
+    if ( !(arr=GetDCSEntry(dcsMap,buff,iEntry,tmin,tmax)) || iEntry<0 ) continue;
+    dcsVal = (AliDCSArray*) arr->At(iEntry);
+    nEntries = dcsVal->GetNEntries();     // count number of actual bunches
+    nbunch[ibm] = 0;
+    while(nbunch[ibm]<nEntries && dcsVal->GetInt(nbunch[ibm])) nbunch[ibm]++;
+    if (!nbunch[ibm]) {
+      AliWarning(Form("Beam%d bunches configuration record is present but empty",ibm+1));
+      continue;
+    }
+    fBunchConfig[ibm].SetSize(nbunch[ibm]);
+    fBunchConfig[ibm] += *dcsVal;
+  }
   // -------------------------- extract intensities per bunch for beam 1 and 2
   for (int ibm=0;ibm<2;ibm++) {
     //
@@ -159,8 +206,20 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
     dcsSize = 0;
     while(dcsSize<nEntries && dcsVal->GetDouble(dcsSize)>0) dcsSize++;
     if (!dcsSize) {
-      AliWarning(Form("Beam1 bunch intensities record is present but empty",ibm));
+      AliWarning(Form("Beam%d bunch intensities record is present but empty",ibm+1));
       continue;
+    }
+    if (nbunch[ibm]>0) { // bunch pattern was provided
+      if (dcsSize>nbunch[ibm]) {
+ 	AliWarning(Form("Beam%d declares %d bunches but %d bunch intensities are non-0. Take first %d",
+			ibm+1,nbunch[ibm],dcsSize,nbunch[ibm]));
+	dcsSize = nbunch[ibm];
+      }
+      else if (dcsSize<nbunch[ibm]) {
+ 	AliWarning(Form("Beam%d declares %d bunches but %d bunch intensities are non-0. Skip",
+			ibm+1,nbunch[ibm],dcsSize));
+	continue;
+      }
     }
     //
     nEntries = arr->GetEntriesFast();
@@ -197,6 +256,19 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
       continue;
     }
     //
+    if (nbunch[ilr]>0) { // bunch pattern was provided
+      if (dcsSize>nbunch[ilr]) {
+ 	AliWarning(Form("Beam%d declares %d bunches but %d bunch luminosities are non-0. Take first %d",
+			ilr+1,nbunch[ilr],dcsSize,nbunch[ilr]));
+	dcsSize = nbunch[ilr];
+      }
+      else if (dcsSize<nbunch[ilr]) {
+ 	AliWarning(Form("Beam%d declares %d bunches but %d bunch luminosities are non-0. Skip",
+			ilr+1,nbunch[ilr],dcsSize));
+	continue;
+      }
+    }
+    //
     nEntries = arr->GetEntriesFast();
     while (iEntry<nEntries) {
       dcsVal = (AliDCSArray*) arr->At(iEntry++);
@@ -212,23 +284,6 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
       *curVal += *dcsVal;
     }
     for (int i=fLuminBunch[ilr].GetEntries();i--;) ((AliLHCDipValD*)(fLuminBunch[ilr])[i])->Average();
-  }
-  //
-  // ------------------------- extract bunch configuration for beam 1 and 2
-  for (int ibm=0;ibm<2;ibm++) {
-    //
-    sprintf(buff,fgkDCSNames[kRecBunchConf],ibm+1);  
-    if ( !(arr=GetDCSEntry(dcsMap,buff,iEntry,tmin,tmax)) || iEntry<0 ) continue;
-    dcsVal = (AliDCSArray*) arr->At(iEntry);
-    nEntries = dcsVal->GetNEntries();     // count number of actual bunches
-    dcsSize = 0;
-    while(dcsSize<nEntries && dcsVal->GetInt(dcsSize)) dcsSize++;
-    if (!dcsSize) {
-      AliWarning("Bunches configuration record is present but empty");
-      continue;
-    }
-    fBunchConfig[ibm].SetSize(dcsSize);
-    fBunchConfig[ibm] += *dcsVal;
   }
   //
   // ------------------------- extract gaussian fit params for beam 1 and 2 profiles
@@ -377,11 +432,16 @@ void AliLHCData::Print(const Option_t* opt) const
   printf("\n");
   //
   for (int ibm=0;ibm<2;ibm++) {
-    printf("*** Total intensity for Beam%d: %s\n",ibm,(n=fIntTot[ibm].GetEntriesFast()) ? "":"N/A");
+    printf("*** Average total intensity for Beam%d (DCBCT): %s\n",ibm,(n=fIntTot[ibm].GetEntriesFast()) ? "":"N/A");
     for (int i=0;i<n;i++) (fIntTot[ibm])[i]->Print(opt);
   }
   printf("\n");
   //
+  for (int ibm=0;ibm<2;ibm++) {
+    printf("*** Total intensity for Beam%d (BCTFR): %s\n",ibm,(n=fIntTotBunch[ibm].GetEntriesFast()) ? "":"N/A");
+    for (int i=0;i<n;i++) (fIntTotBunch[ibm])[i]->Print(opt);
+  }
+  printf("\n");  //
   for (int ibm=0;ibm<2;ibm++) {
     printf("*** Bunch intensities for Beam%d: %s\n",ibm,(n=fIntBunch[ibm].GetEntriesFast()) ? "":"N/A");
     for (int i=0;i<n;i++) (fIntBunch[ibm])[i]->Print(opt);
