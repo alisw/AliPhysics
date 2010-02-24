@@ -14,7 +14,7 @@ void rec(Int_t runNumber)
   rec.SetRunQA(":") ;
   rec.SetRunGlobalQA(kFALSE);
   rec.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
-  rec.SetRunPlaneEff(kTRUE);
+  rec.SetRunPlaneEff(kFALSE);
 
   // AliReconstruction settings
   rec.SetWriteESDfriend(kTRUE);
