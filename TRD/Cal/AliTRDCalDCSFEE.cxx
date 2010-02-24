@@ -22,10 +22,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // fStatusBit:
-// 0: no errors
-// 1: ROC didn't respond even though it should have (was in good state)
-// 2: ROC was not in state CONFIGURED or STANDBY_INIT (most probably it in STANDBY)
-// 3: expected and received DCS-ID do not match. This is a serious communication error!
+// 0: no errors for that ROC
+// 1: ROC sent invalid or corrupted data. 
+// 2: ROC was not in state CONFIGURED or STANDBY_INIT (most probably it was in STANDBY)
+// 3: No new data received from that ROC.
 // 4: DCS id from XML attributes <DCS> and <ack> and the one calculated from SM, S, L do not match
 // 5: ROC has not responded at all, most probably it was off.
 
@@ -131,4 +131,5 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE(const char *name, const char *title)
     }
   }
 }
+
 

@@ -231,7 +231,7 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
       }
       if (CompareString(attribName, "roc") && CompareString(tagName, "ack")) {
 	if (attribValue.Atoi() != fDCSFEEObj->GetDCSid())
-	  fDCSFEEObj->SetStatusBit(3); // consistency check
+	  fDCSFEEObj->SetStatusBit(4); // consistency check
       }
       if (CompareString(attribName, "rob") && CompareString(tagName, "ro-board") && (fInsideRstate == 1)) {
 	fCurrentROB = attribValue.Atoi();
