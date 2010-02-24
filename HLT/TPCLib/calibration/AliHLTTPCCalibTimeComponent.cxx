@@ -34,6 +34,7 @@ using namespace std;
 
 #include "AliHLTTPCCalibTimeComponent.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTMisc.h"
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -123,22 +124,23 @@ Int_t AliHLTTPCCalibTimeComponent::ScanArgument( Int_t /*argc*/, const char** /*
 Int_t AliHLTTPCCalibTimeComponent::InitCalibration() {
 // see header file for class documentation
   
-  //AliTPCcalibDB::Instance()->SetRun(0/*84714*/);
-  //AliTPCcalibDB::Instance()->GetClusterParam()->SetInstance(AliTPCcalibDB::Instance()->GetClusterParam());
+  //AliTPCcalibDB::Instance()->SetRun(84714);
+  AliTPCcalibDB::Instance()->SetRun(AliHLTMisc::Instance().GetCDBRunNo());
+  AliTPCcalibDB::Instance()->GetClusterParam()->SetInstance(AliTPCcalibDB::Instance()->GetClusterParam());
 
-  AliTPCcalibDB *calib = AliTPCcalibDB::Instance();
-
-  if(!calib){
-    HLTError("AliTPCcalibDB does not exist");
-    return -ENOENT;
-  }
+//   AliTPCcalibDB *calib = AliTPCcalibDB::Instance();
+// 
+//   if(!calib){
+//     HLTError("AliTPCcalibDB does not exist");
+//     return -ENOENT;
+//   }
+//   
+//   AliTPCClusterParam *clusPar = calib->GetClusterParam();
+//   if(!clusPar){
+//     HLTError("OCDB entry TPC/Calib/ClusterParam (AliTPCcalibDB::GetClusterParam()) is not available.");
+//     return -ENOENT;
+//   }
   
-  AliTPCClusterParam *clusPar = calib->GetClusterParam();
-  if(!clusPar){
-    HLTError("OCDB entry TPC/Calib/ClusterParam (AliTPCcalibDB::GetClusterParam()) is not available.");
-    return -ENOENT;
-  }
-
   if(fCalibTime) return EINPROGRESS;
   fCal = new AliTPCcalibCalib();
   
