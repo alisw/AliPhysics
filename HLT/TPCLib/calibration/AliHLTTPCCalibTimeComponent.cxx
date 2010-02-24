@@ -42,9 +42,12 @@ using namespace std;
 #include "AliTPCcalibTime.h"
 #include "AliTPCcalibCalib.h"
 #include "AliTPCseed.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCClusterParam.h"
 
 #include "TObjArray.h"
 #include "TString.h"
+#include "TFile.h"
 
 #include "THnSparse.h"
 #include "TGraphErrors.h"
@@ -100,7 +103,7 @@ AliHLTComponentDataType AliHLTTPCCalibTimeComponent::GetOutputDataType() {
 void AliHLTTPCCalibTimeComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
 // see header file for class documentation
 
-  constBase = 20000;
+  constBase = 50000;
   inputMultiplier = (2.0); // to be estimated
 }
 
@@ -119,7 +122,23 @@ Int_t AliHLTTPCCalibTimeComponent::ScanArgument( Int_t /*argc*/, const char** /*
 
 Int_t AliHLTTPCCalibTimeComponent::InitCalibration() {
 // see header file for class documentation
-    
+  
+  //AliTPCcalibDB::Instance()->SetRun(0/*84714*/);
+  //AliTPCcalibDB::Instance()->GetClusterParam()->SetInstance(AliTPCcalibDB::Instance()->GetClusterParam());
+
+  AliTPCcalibDB *calib = AliTPCcalibDB::Instance();
+
+  if(!calib){
+    HLTError("AliTPCcalibDB does not exist");
+    return -ENOENT;
+  }
+  
+  AliTPCClusterParam *clusPar = calib->GetClusterParam();
+  if(!clusPar){
+    HLTError("OCDB entry TPC/Calib/ClusterParam (AliTPCcalibDB::GetClusterParam()) is not available.");
+    return -ENOENT;
+  }
+
   if(fCalibTime) return EINPROGRESS;
   fCal = new AliTPCcalibCalib();
   
@@ -131,7 +150,7 @@ Int_t AliHLTTPCCalibTimeComponent::DeinitCalibration() {
 
   if(fCalibTime) delete fCalibTime; fCalibTime = NULL;
   if(fCal)       delete fCal;	    fCal       = NULL;
-  if(fESDfriend) delete fESDfriend; fESDfriend = NULL;
+  //if(fESDfriend) delete fESDfriend; fESDfriend = NULL;
   
   return 0;
 }
@@ -172,7 +191,9 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
     //fESDevent->SetRunNumber(84714);
               
     HLTDebug("# Seeds: %i\n", fSeedArray->GetEntriesFast()); // access of the info from the previous loop over the AliTPCseed array
-         
+    
+    fCal->UpdateEventInfo(fESDevent);   
+    
     for(Int_t i=0; i<fSeedArray->GetEntriesFast(); i++){  // loop over TObjArray    
         
 	AliTPCseed *seed = (AliTPCseed*)fSeedArray->UncheckedAt(i);
@@ -195,7 +216,9 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
      Int_t startTime = fESDevent->GetTimeStamp()-60*60*1;  //Start time one hour before first event, will make precise cuts later.
      Int_t   endTime = fESDevent->GetTimeStamp()+60*60*23; //End time 23 hours after first event.
      fCalibTime = new AliTPCcalibTime("calibTime","time dependent Vdrift calibration", startTime, endTime, 20*60);
-     printf("fCalibTime=%i, startTime=%i, endTime=%i \n", fCalibTime!=0, startTime, endTime);
+     fCalibTime->SetStreamLevel(20);
+     fCalibTime->SetDebugLevel(20);
+     printf("fCalibTime = %i, startTime = %i, endTime = %i \n", fCalibTime!=0, startTime, endTime);
   }
   
   fESDfriend = new AliESDfriend();
@@ -207,7 +230,7 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
   fCalibTime->UpdateEventInfo(fESDevent); // needed for getting the run number and time stamp information correct on the offline side
   fCalibTime->Process(fESDevent);         // first offline function called
   
-  delete fESDfriend;
+  // delete fESDfriend;
   
   //PushBack( (TObject*)fCalibTime, AliHLTTPCDefinitions::fgkCalibCEDataType | kAliHLTDataOriginOut, 0x0);
   
@@ -236,9 +259,9 @@ Int_t AliHLTTPCCalibTimeComponent::ShipDataToFXS( const AliHLTComponentEventData
   if(histoTime){
     startTimeBin = histoTime->FindFirstBinAbove(0);
     endTimeBin   = histoTime->FindLastBinAbove(0);
-    printf("startTimeBin       =%i endTimeBin       =%i\n", startTimeBin, endTimeBin);
-    printf("startTimeBinCentre =%f endTimeBinCentre =%f\n", histoTime->GetBinCenter(startTimeBin), histoTime->GetBinCenter(endTimeBin));
-    printf("startTimeBinWidth  =%f endTimeBinWidth  =%f\n", histoTime->GetBinWidth(startTimeBin),  histoTime->GetBinWidth(endTimeBin));
+    printf("startTimeBin       = %i endTimeBin       = %i\n", startTimeBin, endTimeBin);
+    printf("startTimeBinCentre = %f endTimeBinCentre = %f\n", histoTime->GetBinCenter(startTimeBin), histoTime->GetBinCenter(endTimeBin));
+    printf("startTimeBinWidth  = %f endTimeBinWidth  = %f\n", histoTime->GetBinWidth(startTimeBin),  histoTime->GetBinWidth(endTimeBin));
     delete histoTime; histoTime = 0;
   }
 
@@ -248,9 +271,9 @@ Int_t AliHLTTPCCalibTimeComponent::ShipDataToFXS( const AliHLTComponentEventData
   if(histoPt){
     startPtBin = histoPt->FindFirstBinAbove(0);
     endPtBin   = histoPt->FindLastBinAbove(0);
-    printf("startPtBin       =%i endPtBin       =%i\n", startPtBin, endPtBin);
-    printf("startPtBinCentre =%f endPtBinCentre =%f\n", histoPt->GetBinCenter(startPtBin), histoPt->GetBinCenter(endPtBin));
-    printf("startPtinWidth   =%f endPtBinWidth  =%f\n", histoPt->GetBinWidth(startPtBin),  histoPt->GetBinWidth(endPtBin));
+    printf("startPtBin       = %i endPtBin       = %i\n", startPtBin, endPtBin);
+    printf("startPtBinCentre = %f endPtBinCentre = %f\n", histoPt->GetBinCenter(startPtBin), histoPt->GetBinCenter(endPtBin));
+    printf("startPtinWidth   = %f endPtBinWidth  = %f\n", histoPt->GetBinWidth(startPtBin),  histoPt->GetBinWidth(endPtBin));
     delete histoPt; histoPt = 0;
   }
 
@@ -260,9 +283,9 @@ Int_t AliHLTTPCCalibTimeComponent::ShipDataToFXS( const AliHLTComponentEventData
   if(histoVd){
     startVdBin = histoVd->FindFirstBinAbove(0);
     endVdBin   = histoVd->FindLastBinAbove(0);
-    printf("startVdBin       =%i endVdBin       = %i\n", startVdBin, endVdBin);
-    printf("startVdBinCentre =%f endVdBinCentre = %f\n", histoVd->GetBinCenter(startVdBin), histoVd->GetBinCenter(endVdBin));
-    printf("startVdBinWidth  =%f endVdBinWidth  = %f\n", histoVd->GetBinWidth(startVdBin),  histoVd->GetBinWidth(endVdBin));
+    printf("startVdBin       = %i endVdBin       = %i\n", startVdBin, endVdBin);
+    printf("startVdBinCentre = %f endVdBinCentre = %f\n", histoVd->GetBinCenter(startVdBin), histoVd->GetBinCenter(endVdBin));
+    printf("startVdBinWidth  = %f endVdBinWidth  = %f\n", histoVd->GetBinWidth(startVdBin),  histoVd->GetBinWidth(endVdBin));
     delete histoVd; histoVd = 0;
   }
 
@@ -390,9 +413,19 @@ Int_t AliHLTTPCCalibTimeComponent::ShipDataToFXS( const AliHLTComponentEventData
   static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
   
   // the vdriftArray is pushed to the HLT-FXSsubscriber 
-  PushToFXS( (TObject*)vdriftArray, "TPC", "Time", rdList.Buffer() );
+  PushToFXS( (TObject*)vdriftArray, "TPC", "TIMEDRIFT", rdList.Buffer() );
  
   //PushToFXS( (TObject*)vdriftArray, "TPC", "Time");
+
+  TFile *file = TFile::Open("vdrift.root", "RECREATE");
+  vdriftArray->Write();
+  file->Close();
+  delete file;
+
+  file = TFile::Open("calibTime.root", "RECREATE");
+  fCalibTime->Write();
+  file->Close();
+  delete file;
 
   //Should array be deleted now?
   //  if(vdriftArray){
