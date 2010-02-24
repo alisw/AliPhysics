@@ -103,24 +103,17 @@ AliTRDinfoGen::~AliTRDinfoGen()
 {
 // Destructor
 
-  printf("AliTRDinfoGen::~AliTRDinfoGen() START\n");
   if(fTrackInfo) delete fTrackInfo; fTrackInfo = NULL;
-  printf("fTrackInfo\n");
   if(fEventInfo) delete fEventInfo; fEventInfo = NULL;
-  printf("fEventInfo\n");
   if(fV0Info) delete fV0Info; fV0Info = NULL;
-  printf("fV0Info\n");
   if(fContainer){ 
     fContainer->Delete(); delete fContainer;
     fContainer = NULL;
   }
-  printf("fContainer\n");
   if(fV0container){ 
     fV0container->Delete(); delete fV0container;
     fV0container = NULL;
   }
-  printf("fV0container\n");
-  printf("AliTRDinfoGen::~AliTRDinfoGen() STOP\n");
 }
 
 //____________________________________________________________________
