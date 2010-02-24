@@ -39,6 +39,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; if(flag) fCheckEventType=kFALSE;}
   void           SetRerecoVertexTPC(Bool_t flag=kTRUE) { fRecoVtxTPC=flag; }
   void           SetRerecoVertexITSTPC(Bool_t flag=kTRUE) { fRecoVtxITSTPC=flag; }
+  void           SetRerecoVertexITSTPCHalfEvent(Bool_t flag=kTRUE) { fRecoVtxITSTPCHalfEvent=flag; }
   void           SetOnlyITSTPCTracks() {fOnlyITSTPCTracks=kTRUE;}
   void           SetOnlyITSSATracks() {fOnlyITSSATracks=kTRUE;}
   void           SetFillNtuple(Bool_t fill=kTRUE) {fFillNtuple=fill;}  
