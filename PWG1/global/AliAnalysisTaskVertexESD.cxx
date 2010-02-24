@@ -517,7 +517,7 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t co
   if(!constr) vertexer.SetConstraintOff();
 
   // use only ITS-TPC or only ITS-SA tracks
-  if(fOnlyITSTPCTracks || fOnlyITSSATracks) {
+  if(fOnlyITSTPCTracks || fOnlyITSSATracks || mode>0) {
     Int_t iskip=0;
     Int_t *skip = new Int_t[evt->GetNumberOfTracks()];
     for(Int_t itr=0;itr<evt->GetNumberOfTracks(); itr++) {
