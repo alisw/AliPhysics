@@ -6,6 +6,7 @@
 #include <TString.h>
 
 #include "AliExternalTrackParam.h"
+#include "TVectorD.h"
 
 class TObjArray;
 
@@ -14,6 +15,7 @@ class TObjArray;
 class AliTPCLaserTrack : public AliExternalTrackParam {
 public:
   AliTPCLaserTrack();
+  ~AliTPCLaserTrack();
   AliTPCLaserTrack(const AliTPCLaserTrack &ltr);
   AliTPCLaserTrack(const Int_t id, const Int_t side, const Int_t rod,
                    const Int_t bundle, const Int_t beam,
@@ -22,7 +24,7 @@ public:
                    const Double_t covar[15], const Float_t rayLength=0);
   
   AliTPCLaserTrack& operator = (const  AliTPCLaserTrack &source);
-  
+  void UpdatePoints();   // update track points
   static void LoadTracks();
   static TObjArray* GetTracks() {return fgArrLaserTracks;}
   
@@ -62,8 +64,17 @@ private:
   Float_t fRayLength;     //distance from the last common point of the laser Rays
                           //(Splitter box on the A-Side at the bottom of the TPC)
                           //to each mirror [cm](needed for an exact drift velocity estimation)
-  
-  
+public:
+  TVectorD *fVecSec;      //                - sector numbers  
+  TVectorD *fVecP2;       //                - P2  
+  TVectorD *fVecPhi;       //               - global phi
+  TVectorD *fVecGX;       // points vectors - globalX
+  TVectorD *fVecGY;       // points vectors - globalY
+  TVectorD *fVecGZ;       // points vectors - globalZ
+  TVectorD *fVecLX;       // points vectors - localX
+  TVectorD *fVecLY;       // points vectors - localY
+  TVectorD *fVecLZ;       // points vectors - localZ
+private:  
   static TObjArray* fgArrLaserTracks; //! Array of all Laser Tracks,
                                         //  keeps instances of this class;
   
@@ -74,7 +85,7 @@ private:
   
 //    static const char* fgkDataFileName = "$ALIC_ROOT/TPC/Calib/LaserTracks.root";  //Path to the Data File
   
-  ClassDef(AliTPCLaserTrack,2)        // Laser Track positions and track identification
+  ClassDef(AliTPCLaserTrack,3)        // Laser Track positions and track identification
 };
 
 #endif
