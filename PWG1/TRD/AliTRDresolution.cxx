@@ -122,64 +122,64 @@ Char_t const *AliTRDresolution::fgAxTitle[kNprojs][4] = {
   {"Impv", "x [cm]", "I_{mpv}", "x/x_{0}"}
  ,{"dI/Impv", "x/x_{0}", "#delta I/I_{mpv}", "x[cm]"}
   // Clusters to Kalman
- ,{"Pos", "tg(#phi)", "#mu_{y}^{cl} [#mum]", "#sigma_{y}^{cl} [#mum]"}
- ,{"Pulls", "tg(#phi)", "PULL: #mu_{y}^{cl}", "PULL: #sigma_{y}^{cl}"}
+ ,{"Cluster2Track residuals", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y} [#mum]"}
+ ,{"Cluster2Track  pulls", "tg(#phi)", "#mu_{y}", "#sigma_{y}"}
   // TRD tracklet to Kalman fit
- ,{"PosY", "tg(#phi)", "#mu_{y}^{trklt} [#mum]", "#sigma_{y}^{trklt} [#mum]"}
- ,{"PullsY", "tg(#phi)", "PULL: #mu_{y}^{trklt}", "PULL: #sigma_{y}^{trklt}"}
- ,{"PosZ", "tg(#theta)", "#mu_{z}^{trklt} [#mum]", "#sigma_{z}^{trklt} [#mum]"}
- ,{"PullsZ", "tg(#theta)", "PULL: #mu_{z}^{trklt}", "PULL: #sigma_{z}^{trklt}"}
- ,{"Phi", "tg(#phi)", "#mu_{#phi}^{trklt} [mrad]", "#sigma_{#phi}^{trklt} [mrad]"}
+ ,{"Tracklet2Track Y residuals", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y} [#mum]"}
+ ,{"Tracklet2Track Y pulls", "tg(#phi)", "#mu_{y}", "#sigma_{y}"}
+ ,{"Tracklet2Track Z residuals", "tg(#theta)", "#mu_{z} [#mum]", "#sigma_{z} [#mum]"}
+ ,{"Tracklet2Track Z pulls", "tg(#theta)", "#mu_{z}", "#sigma_{z}"}
+ ,{"Tracklet2Track Phi residuals", "tg(#phi)", "#mu_{#phi} [mrad]", "#sigma_{#phi} [mrad]"}
   // TPC track 2 first TRD tracklet
- ,{"PosY", "tg(#phi)", "#mu_{y}^{TPC trklt} [#mum]", "#sigma_{y}^{TPC trklt} [#mum]"}
- ,{"PullsY", "tg(#phi)", "PULL: #mu_{y}^{TPC trklt}", "PULL: #sigma_{y}^{TPC trklt}"}
- ,{"PosZ", "tg(#theta)", "#mu_{z}^{TPC trklt} [#mum]", "#sigma_{z}^{TPC trklt} [#mum]"}
- ,{"PullsZ", "tg(#theta)", "PULL: #mu_{z}^{TPC trklt}", "PULL: #sigma_{z}^{TPC trklt}"}
- ,{"Phi", "tg(#phi)", "#mu_{#phi}^{TPC trklt} [mrad]", "#sigma_{#phi}^{TPC trklt} [mrad]"}
+ ,{"Tracklet2Track Y residuals @ TRDin", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y} [#mum]"}
+ ,{"Tracklet2Track Y pulls @ TRDin", "tg(#phi)", "#mu_{y}", "#sigma_{y}"}
+ ,{"Tracklet2Track Z residuals @ TRDin", "tg(#theta)", "#mu_{z} [#mum]", "#sigma_{z} [#mum]"}
+ ,{"Tracklet2Track Z pulls @ TRDin", "tg(#theta)", "#mu_{z}", "#sigma_{z}"}
+ ,{"Tracklet2Track Phi residuals @ TRDin", "tg(#phi)", "#mu_{#phi} [mrad]", "#sigma_{#phi} [mrad]"}
   // MC cluster
- ,{"Pos1", "tg(#phi)", "MC cluster (p_{t}<1 GeV/c): #mu_{y}[#mum]", "#sigma_{y}[#mum]"}
- ,{"Pos2", "tg(#phi)", "MC cluster (p_{t}<2 GeV/c): #mu_{y} [#mum]", "#sigma_{y} [#mum]"}
- ,{"Pos3", "tg(#phi)", "MC cluster (p_{t}>3 GeV/c): #mu_{y} [#mum]", "#sigma_{y}[#mum]"}
- ,{"Pulls", "tg(#phi)", "MC cluster PULL: #mu_{y}", "#sigma_{y}"}
+ ,{"MC Cluster Y resolution (p_{t}<1 GeV/c)", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y} [#mum]"}
+ ,{"MC Cluster Y resolution (1<p_{t}<2 GeV/c)", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y} [#mum]"}
+ ,{"MC Cluster Y resolution (p_{t}>3 GeV/c)", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y} [#mum]"}
+ ,{"MC Cluster Y pulls", "tg(#phi)", "#mu_{y}", "#sigma_{y}"}
   // MC tracklet
- ,{"PosY", "tg(#phi)", "MC tracklet (p_{t}<1 GeV/c): #mu_{y}[#mum]", "#sigma_{y}[#mum]"}
- ,{"PosY1", "tg(#phi)", "MC tracklet (p_{t}<2 GeV/c): #mu_{y}[#mum]", "#sigma_{y}[#mum]"}
- ,{"PosY2", "tg(#phi)", "MC tracklet (p_{t}>3 GeV/c): #mu_{y}[#mum]", "#sigma_{y}[#mum]"}
- ,{"PullsY", "tg(#phi)", "MC tracklet PULL: #mu_{y}", "MC PULL: #sigma_{y}"}
- ,{"PosZ", "tg(#theta)", "MC tracklet: #mu_{z}[#mum]", "#sigma_{z}[#mum]"}
- ,{"PullsZ", "tg(#theta)", "MC tracklet PULL: #mu_{z}", "#sigma_{z}"}
- ,{"Phi", "tg(#phi)", "MC tracklet: #mu_{#phi}[mrad]", "#sigma_{#phi}[mrad]"}
+ ,{"MC Tracklet Y resolution (p_{t}<1 GeV/c)", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y} [#mum]"}
+ ,{"MC Tracklet Y resolution (1<p_{t}<2 GeV/c)", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y} [#mum]"}
+ ,{"MC Tracklet Y resolution (p_{t}>3 GeV/c)", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y}[#mum]"}
+ ,{"MC Tracklet Y pulls", "tg(#phi)", "#mu_{y}", "#sigma_{y}"}
+ ,{"MC Tracklet Cross Z resolution", "tg(#theta)", "#mu_{z} [#mum]", "#sigma_{z} [#mum]"}
+ ,{"MC Tracklet Cross Z pulls", "tg(#theta)", "#mu_{z}", "#sigma_{z}"}
+ ,{"MC Tracklet Phi resolution", "tg(#phi)", "#mu_{#phi} [mrad]", "#sigma_{#phi} [mrad]"}
   // MC track TPC
- ,{"PosY", "tg(#phi)", "MC TPC2TRD0: #mu_{y}[#mum]", "#sigma_{y}[#mum]"}
- ,{"PullsY", "tg(#phi)", "MC TPC2TRD0 PULL: #mu_{y}", "#sigma_{y}"}
- ,{"PosZ", "tg(#theta)", "MC TPC2TRD0: #mu_{z}[#mum]", "#sigma_{z}[#mum]"}
- ,{"PullsZ", "tg(#theta)", "MC TPC2TRD0 PULL: #mu_{z}", "#sigma_{z}"}
- ,{"Phi", "tg(#phi)", "MC: #mu_{#phi}^{TPC} [mrad]", "MC: #sigma_{#phi}^{TPC} [mrad]"}
- ,{"PullsSNP", "tg(#phi)", "MC PULL: #mu_{snp}^{TPC}", "MC PULL: #sigma_{snp}^{TPC}"}
- ,{"Theta", "tg(#theta)", "MC: #mu_{#theta}^{TPC} [mrad]", "MC: #sigma_{#theta}^{TPC} [mrad]"}
- ,{"PullsTGL", "tg(#theta)", "MC PULL: #mu_{tgl}^{TPC}", "MC PULL: #sigma_{tgl}^{TPC}"}
- ,{"Pt", "p_{t}^{MC} [GeV/c]", "MC: #mu^{TPC}(#Deltap_{t}/p_{t}^{MC}) [%]", "MC: #sigma^{TPC}(#Deltap_{t}/p_{t}^{MC}) [%]"}
- ,{"Pulls1Pt", "1/p_{t}^{MC} [c/GeV]", "MC PULL: #mu_{1/p_{t}}^{TPC}", "MC PULL: #sigma_{1/p_{t}}^{TPC}"}
- ,{"P", "p^{MC} [GeV/c]", "MC: #mu^{TPC}(#Deltap/p^{MC}) [%]", "MC: #sigma^{TPC}(#Deltap/p^{MC}) [%]"}
- ,{"PullsP", "p^{MC} [GeV/c]", "MC PULL: #mu^{TPC}(#Deltap/#sigma_{p})", "MC PULL: #sigma^{TPC}(#Deltap/#sigma_{p})"}
+ ,{"Y resolution @ TRDin", "tg(#phi)", "#mu_{y} [#mum]", "#sigma_{y}[#mum]"}
+ ,{"Y pulls @ TRDin", "tg(#phi)", "#mu_{y}", "#sigma_{y}"}
+ ,{"Z resolution @ TRDin", "tg(#theta)", "#mu_{z} [#mum]", "#sigma_{z} [#mum]"}
+ ,{"Z pulls @ TRDin", "tg(#theta)", "#mu_{z}", "#sigma_{z}"}
+ ,{"Phi resolution @ TRDin", "tg(#phi)", "#mu_{#phi} [mrad]", "#sigma_{#phi} [mrad]"}
+ ,{"SNP pulls @ TRDin", "tg(#phi)", "#mu_{snp}", "#sigma_{snp}"}
+ ,{"Theta resolution @ TRDin", "tg(#theta)", "#mu_{#theta} [mrad]", "#sigma_{#theta} [mrad]"}
+ ,{"TGL pulls @ TRDin", "tg(#theta)", "#mu_{tgl}", "#sigma_{tgl}"}
+ ,{"P_{t} resolution @ TRDin", "p_{t}^{MC} [GeV/c]", "(p_{t}^{REC}-p_{t}^{MC})/p_{t}^{MC} [%]", "MC: #sigma^{TPC}(#Deltap_{t}/p_{t}^{MC}) [%]"}
+ ,{"1/P_{t} pulls @ TRDin", "1/p_{t}^{MC} [c/GeV]", "1/p_{t}^{REC}-1/p_{t}^{MC}", "MC PULL: #sigma_{1/p_{t}}^{TPC}"}
+ ,{"P resolution @ TRDin", "p^{MC} [GeV/c]", "(p^{REC}-p^{MC})/p^{MC} [%]", "MC: #sigma^{TPC}(#Deltap/p^{MC}) [%]"}
+ ,{"P pulls @ TRDin", "p^{MC} [GeV/c]", "1/p^{REC}-1/p^{MC}", "MC PULL: #sigma^{TPC}(#Deltap/#sigma_{p})"}
   // MC track TOF
  ,{"PosZ", "tg(#theta)", "MC: #mu_{z}^{TOF} [#mum]", "MC: #sigma_{z}^{TOF} [#mum]"}
  ,{"PullsZ", "tg(#theta)", "MC PULL: #mu_{z}^{TOF}", "MC PULL: #sigma_{z}^{TOF}"}
   // MC track in TRD
- ,{"PosY", "tg(#phi)", "MC: #mu_{y}^{Trk} [#mum]", "MC: #sigma_{y}^{Trk} [#mum]"}
- ,{"PullsY", "tg(#phi)", "MC PULL: #mu_{y}^{Trk}", "MC PULL: #sigma_{y}^{Trk}"}
- ,{"PosZ", "tg(#theta)", "MC: #mu_{z}^{Trk} [#mum]", "MC: #sigma_{z}^{Trk} [#mum]"}
- ,{"PullsZ", "tg(#theta)", "MC PULL: #mu_{z}^{Trk}", "MC PULL: #sigma_{z}^{Trk}"}
- ,{"Phi", "tg(#phi)", "MC: #mu_{#phi}^{Trk} [mrad]", "MC: #sigma_{#phi}^{Trk} [mrad]"}
- ,{"PullsSNP", "tg(#phi)", "MC PULL: #mu_{snp}^{Trk}", "MC PULL: #sigma_{snp}^{Trk}"}
- ,{"Theta", "tg(#theta)", "MC: #mu_{#theta}^{Trk} [mrad]", "MC: #sigma_{#theta}^{Trk} [mrad]"}
- ,{"PullsTGL", "tg(#theta)", "MC PULL: #mu_{tgl}^{Trk}", "MC PULL: #sigma_{tgl}^{Trk}"}
- ,{"MC Pt Layer", "p_{t} [GeV/c]", "#mu(#Deltap_{t}/p_{t}^{MC}) [%]", "#sigma(#Deltap_{t}/p_{t}^{MC}) [%]"}
- ,{"MC Pulls1Pt Layer", "1/p_{t} [c/GeV]", "#mu_{1/p_{t}}", "#sigma_{1/p_{t}}"}
- ,{"MC P Layer", "p [GeV/c]", "#mu(#Deltap/p^{MC}) [%]", "#sigma(#Deltap/p^{MC}) [%]"}
- ,{"Pt - SA", "p_{t}^{MC} [GeV/c]", "MC: #mu^{Trk}(#Deltap_{t}/p_{t}^{MC}) [%]", "MC: #sigma^{Trk}(#Deltap_{t}/p_{t}^{MC}) [%]"}
- ,{"Pulls1Pt - SA", "1/p_{t}^{MC} [c/GeV]", "MC PULL: #mu_{1/p_{t}}^{Trk}", "MC PULL: #sigma_{1/p_{t}}^{Trk}"}
- ,{"P - SA", "p^{MC} [GeV/c]", "MC: #mu^{Trk}(#Deltap/p^{MC}) [%]", "MC: #sigma^{Trk}(#Deltap/p^{MC}) [%]"}
+ ,{"TRD track MC Y resolution", "tg(#phi)", "#mu_{y}^{Trk} [#mum]", "#sigma_{y}^{Trk} [#mum]"}
+ ,{"TRD track MC Y pulls", "tg(#phi)", "#mu_{y}^{Trk}", "#sigma_{y}^{Trk}"}
+ ,{"TRD track MC Z resolution", "tg(#theta)", "#mu_{z}^{Trk} [#mum]", "#sigma_{z}^{Trk} [#mum]"}
+ ,{"TRD track MC Z pulls", "tg(#theta)", "#mu_{z}^{Trk}", "#sigma_{z}^{Trk}"}
+ ,{"TRD track MC Phi resolution", "tg(#phi)", "#mu_{#phi}^{Trk} [mrad]", "#sigma_{#phi}^{Trk} [mrad]"}
+ ,{"TRD track MC SNP pulls", "tg(#phi)", "#mu_{snp}^{Trk}", "#sigma_{snp}^{Trk}"}
+ ,{"TRD track MC Theta resolution", "tg(#theta)", "#mu_{#theta}^{Trk} [mrad]", "#sigma_{#theta}^{Trk} [mrad]"}
+ ,{"TRD track MC TGL pulls", "tg(#theta)", "#mu_{tgl}^{Trk}", "#sigma_{tgl}^{Trk}"}
+ ,{"P_{t} resolution TRD Layer", "p_{t} [GeV/c]", "(p_{t}^{REC}-p_{t}^{MC})/p_{t}^{MC} [%]", "#sigma(#Deltap_{t}/p_{t}^{MC}) [%]"}
+ ,{"1/P_{t} pulls TRD Layer", "1/p_{t}^{MC} [c/GeV]", "1/p_{t}^{REC} - 1/p_{t}^{MC}", "#sigma_{1/p_{t}}"}
+ ,{"P resolution TRD Layer", "p [GeV/c]", "(p^{REC}-p^{MC})/p^{MC} [%]", "#sigma(#Deltap/p^{MC}) [%]"}
+ ,{"[SA] P_{t} resolution TRD Layer", "p_{t}^{MC} [GeV/c]", "(p_{t}^{REC}-p_{t}^{MC})/p_{t}^{MC} [%]", "MC: #sigma^{Trk}(#Deltap_{t}/p_{t}^{MC}) [%]"}
+ ,{"[SA] 1/P_{t} pulls TRD Layer", "1/p_{t}^{MC} [c/GeV]", "1/p_{t}^{REC}-1/p_{t}^{MC}", "MC PULL: #sigma_{1/p_{t}}^{Trk}"}
+ ,{"[SA] P resolution TRD Layer", "p^{MC} [GeV/c]", "(p^{REC}-p^{MC})/p^{MC} [%]", "MC: #sigma^{Trk}(#Deltap/p^{MC}) [%]"}
 };
 
 //________________________________________________________
@@ -869,6 +869,8 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     AliWarning("Please provide a canvas to draw results.");
     return kFALSE;
   }
+  Int_t first(2),     // first particle species to be drawn
+        nspecies(7); // last particle species to be drawn
   TList *l = NULL; TVirtualPad *pad=NULL;
   switch(ifig){
   case kCharge:
@@ -984,10 +986,10 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     return kTRUE;
   case 14: //kMCtrackTRD [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
-    xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =200.;
+    xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
     if(!GetGraphPlot(&xy[0], kMCtrackTRD, 0)) break;
-    xy[0] = -.2; xy[1] = -0.5; xy[2] = .2; xy[3] = 2.5;
+    xy[0] = -.2; xy[1] = -0.5; xy[2] = .2; xy[3] = 3.5;
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCtrackTRD, 1)) break;
     return kTRUE;
@@ -1022,68 +1024,68 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = 0.4; xy[1] = -.7; xy[2] = 12.; xy[3] = 4.;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 8, 2, 7, kTRUE)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 8, first, nspecies)) break;
     pad->Modified(); pad->Update(); pad->SetLogx();
     pad = (TVirtualPad*)l->At(1); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 8, 55+2, 7)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 8, 55+first, nspecies, kTRUE)) break;
     pad->Modified(); pad->Update(); pad->SetLogx();
     return kTRUE;
   case 19: //kMCtrackTRD [1/pt] pulls
-    xy[0] = 0.; xy[1] = -1.5; xy[2] = 2.; xy[3] = 2.;
+    xy[0] = 0.; xy[1] = -1.; xy[2] = 2.; xy[3] = 3.5;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 9, 2, 7, kTRUE)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 9, first, nspecies)) break;
     pad = (TVirtualPad*)l->At(1); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 9, 55+2, 7)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 9, 55+first, nspecies, kTRUE)) break;
     return kTRUE;
   case 20: //kMCtrackTRD [p]
     xy[0] = 0.4; xy[1] = -.7; xy[2] = 12.; xy[3] = 4.;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 10, 2, 7, kTRUE)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 10, first, nspecies)) break;
     pad->Modified(); pad->Update(); pad->SetLogx();
     pad = (TVirtualPad*)l->At(1); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 10, 55+2, 7)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 10, 55+first, nspecies, kTRUE)) break;
     pad->Modified(); pad->Update(); pad->SetLogx();
     return kTRUE;
   case 21: //kMCtrackTRD - SA [pt]
     xy[0] = 0.; xy[1] = -5.; xy[2] = 12.; xy[3] = 7.;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 11, 2, 7)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 11, first, nspecies)) break;
     pad->SetLogx();
     pad = (TVirtualPad*)l->At(1); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 11, 55+2, 7, kTRUE)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 11, 55+first, nspecies, kTRUE)) break;
     pad->SetLogx();
     return kTRUE;
   case 22: //kMCtrackTRD - SA [1/pt] pulls
     xy[0] = 0.; xy[1] = -1.5; xy[2] = 2.; xy[3] = 2.;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 12, 2, 7)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 12, first, nspecies)) break;
     pad = (TVirtualPad*)l->At(1); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 12, 55+2, 7, kTRUE)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 12, 55+first, nspecies, kTRUE)) break;
     return kTRUE;
   case 23: //kMCtrackTRD - SA [p]
     xy[0] = 0.; xy[1] = -7.5; xy[2] = 12.; xy[3] = 10.5;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 13, 2, 7)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 13, first, nspecies)) break;
     pad->SetLogx();
     pad = (TVirtualPad*)l->At(1); pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.1);
-    if(!GetGraphTrack(&xy[0], 13, 55+2, 7, kTRUE)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrack(&xy[0], 13, 55+first, nspecies, kTRUE)) break;
     pad->SetLogx();
     return kTRUE;
   case 24: // kMCtrackTPC [y]
@@ -1126,23 +1128,25 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = 0.4; xy[1] = -.8; xy[2] = 12.; xy[3] = 6.;
     pad=(TVirtualPad*)l->At(0); pad->cd();
-    if(!GetGraphTrackTPC(xy, 8, 2, 7)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrackTPC(xy, 8, first, nspecies)) break;
     pad->SetLogx();
-    xy[0]=0.; xy[1]=-0.5; xy[2]=2.; xy[3] =2.5;
-    ((TVirtualPad*)l->At(1))->cd();
-    if(!GetGraphTrackTPC(xy, 9, 2, 7, kTRUE)) break;
+    xy[0]=0.; xy[1]=-0.5; xy[2]=2.; xy[3] =3.;
+    pad = (TVirtualPad*)l->At(1); pad->cd();
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrackTPC(xy, 9, first, nspecies, kTRUE)) break;
     return kTRUE;
   case 29: // kMCtrackTPC [p]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
-    xy[0] = 0.4; xy[1] = -.8; xy[2] = 12.; xy[3] = 6.;
+    xy[0] = 0.4; xy[1] = -.8; xy[2] = 8.; xy[3] = 6.;
     pad = ((TVirtualPad*)l->At(0));pad->cd();
-    pad->SetMargin(0.12, 0.12, 0.1, 0.04);
-    if(!GetGraphTrackTPC(xy, 10, 2, 7)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrackTPC(xy, 10, first, nspecies)) break;
     pad->SetLogx();
-    xy[0]=0.; xy[1]=-1.5; xy[2]=12.; xy[3] =2.5;
+    xy[0]=0.; xy[1]=-0.5; xy[2]=8.; xy[3] =2.5;
     pad = ((TVirtualPad*)l->At(1)); pad->cd();
-    pad->SetMargin(0.12, 0.12, 0.1, 0.04);
-    if(!GetGraphTrackTPC(xy, 11, 2, 7, kTRUE)) break;
+    pad->SetMargin(0.125, 0.015, 0.1, 0.015);
+    if(!GetGraphTrackTPC(xy, 11, first, nspecies, kTRUE)) break;
     return kTRUE;
   case 30:  // kMCtrackTOF [z]
     return kTRUE;
@@ -1156,10 +1160,15 @@ Char_t const *fgParticle[11]={
   " No PID",
   " e +", " #mu +", " #pi +", " K +", " p",
 };
-const Color_t fgColor[11]={
-kOrange, kPink, kViolet, kAzure, kSpring,
+const Color_t fgColorS[11]={
+kOrange, kOrange-3, kMagenta+1, kViolet, kRed,
 kGray,
-kSpring, kAzure, kViolet, kPink, kOrange
+kRed, kViolet, kMagenta+1, kOrange-3, kOrange
+};
+const Color_t fgColorM[11]={
+kCyan-5, kAzure-4, kBlue-7, kBlue+2, kViolet+10,
+kBlack,
+kViolet+10, kBlue+2, kBlue-7, kAzure-4, kCyan-5
 };
 const Marker_t fgMarker[11]={
 30, 30, 26, 25, 24,
@@ -1195,17 +1204,14 @@ Bool_t AliTRDresolution::PostProcess()
             agS->AddAt(gs = new TGraphErrors(), is);
             Int_t is0(is%11);
             gs->SetMarkerStyle(fgMarker[is0]);
-            gs->SetMarkerColor(fgColor[is0]);
-            gs->SetLineColor(fgColor[is0]);
-            gs->SetLineStyle(2);
+            gs->SetMarkerColor(fgColorS[is0]);
+            gs->SetLineColor(fgColorS[is0]);
             gs->SetNameTitle(Form("s_%d%02d%02d", ig, ic, is), fgParticle[is0]);
 
             agM->AddAt(gm = new TGraphErrors(), is);
             gm->SetMarkerStyle(fgMarker[is0]);
-            gm->SetMarkerSize(.5);
-            gm->SetMarkerColor(fgColor[is0]);
-            gm->SetLineColor(fgColor[is0]);
-            gm->SetLineStyle(1);
+            gm->SetMarkerColor(fgColorM[is0]);
+            gm->SetLineColor(fgColorM[is0]);
             gm->SetNameTitle(Form("m_%d%02d%02d", ig, ic, is), fgParticle[is0]);
           }
         } else {
@@ -2055,12 +2061,14 @@ Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t 
   }
 
   // axis range
-  TAxis *ax = NULL;
-  ax = gs->GetHistogram()->GetXaxis();
+  TAxis *ax(NULL); TH1 *hf(NULL);
+  hf = gs->GetHistogram();
+  hf->SetTitle(at[0]);
+  ax = hf->GetXaxis();
   ax->SetRangeUser(bb[0], bb[2]);
   ax->SetTitle(at[1]);ax->CenterTitle();
 
-  ax = gs->GetHistogram()->GetYaxis();
+  ax = hf->GetYaxis();
   ax->SetRangeUser(bb[1], bb[3]);
   ax->SetTitleOffset(1.1);
   ax->SetTitle(at[2]);ax->CenterTitle();
@@ -2080,9 +2088,6 @@ Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t 
   return kTRUE;
 }
 
-Char_t const *fgLegHeader[6]={
-  "Layer 0","Layer 1","Layer 2","Layer 3","Layer 4","Layer 5"
-};
 //________________________________________________________
 Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t first, Int_t n, Bool_t kLEG)
 {
@@ -2101,32 +2106,33 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t first, Int_
 
   TLegend *legM(NULL), *legS(NULL);
   if(kLEG){
-    legM=new TLegend(.35, .7, .65, .99);
+    legM=new TLegend(.35, .6, .65, .9);
     legM->SetHeader("Mean");
     legM->SetBorderSize(1);
     legM->SetFillColor(0);
-    legS=new TLegend(.65, .7, .95, .99);
+    legS=new TLegend(.65, .6, .95, .9);
     legS->SetHeader("Sigma");
     legS->SetBorderSize(1);
     legS->SetFillColor(0);
   }
+  Int_t layer(first/11);
   TH1S *h1(NULL);
-  h1 = new TH1S(Form("h1TF_%02d", fIdxFrame++), Form("%s;%s;%s", at[0], at[1], at[2]), 2, bb[0], bb[2]);
+  h1 = new TH1S(Form("h1TF_%02d", fIdxFrame++), Form("%s %d;%s;%s", at[0], layer, at[1], at[2]), 2, bb[0], bb[2]);
   h1->SetMinimum(bb[1]);h1->SetMaximum(bb[3]);
   h1->SetLineColor(kBlack); h1->SetLineWidth(1);h1->SetLineStyle(2); 
   // axis range
   TAxis *ax = h1->GetXaxis();
-  ax->CenterTitle();ax->SetMoreLogLabels();
+  ax->CenterTitle();ax->SetMoreLogLabels();ax->SetTitleOffset(1.2);
   ax = h1->GetYaxis();
   ax->SetRangeUser(bb[1], bb[3]);
-  ax->CenterTitle();
+  ax->CenterTitle(); ax->SetTitleOffset(1.4);
   h1->Draw();
-  TGaxis *gax = NULL;
-  gax = new TGaxis(bb[2], bb[1], bb[2], bb[3], bb[1], bb[3], 510, "+U");
-  gax->SetLineColor(kRed);gax->SetLineWidth(2);gax->SetTextColor(kRed);
-  //gax->SetVertical();
-  gax->CenterTitle(); //gax->SetTitleOffset(.5);gax->SetTitleSize(.06);
-  gax->SetTitle(at[3]); gax->Draw();
+//   TGaxis *gax = NULL;
+//   gax = new TGaxis(bb[2], bb[1], bb[2], bb[3], bb[1], bb[3], 510, "+U");
+//   gax->SetLineColor(kRed);gax->SetLineWidth(2);gax->SetTextColor(kRed);
+//   //gax->SetVertical();
+//   gax->CenterTitle(); //gax->SetTitleOffset(.5);gax->SetTitleSize(.06);
+//   gax->SetTitle(at[3]); gax->Draw();
 
   TGraphErrors *gm = NULL, *gs = NULL;
   TObjArray *a0 = NULL, *a1 = NULL;
@@ -2141,7 +2147,6 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t first, Int_
 
     if((nn=gs->GetN())){
       gs->Draw("pc"); if(legS) legS->AddEntry(gs, gs->GetTitle(), "pl");
-      printf("entryS[%d]=%s\n", is, gs->GetTitle());
       gs->Sort(&TGraph::CompareY);
       PutTrendValue(Form("%s_%sSigMin%s", fgPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is0)), gs->GetY()[0]);
       PutTrendValue(Form("%s_%sSigMax%s", fgPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is0)), gs->GetY()[nn-1]);
@@ -2149,7 +2154,6 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t first, Int_
     }
     if(gm->GetN()){
       gm->Draw("pc");if(legM) legM->AddEntry(gm, gm->GetTitle(), "pl");
-      printf("entryM[%d]=%s\n", is, gm->GetTitle());
       PutTrendValue(Form("%s_%s_%s", fgPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is0)), gm->GetMean(2));
       PutTrendValue(Form("%s_%s_%sRMS", fgPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is0)), gm->GetRMS(2));
     }
@@ -2174,12 +2178,16 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t idx, Int_t ist, Int
   nref+=idx;
   const Char_t **at = fgAxTitle[nref];
 
-  TLegend *leg(NULL);
+  TLegend *legM(NULL), *legS(NULL);
   if(kLEG){
-    leg=new TLegend(.65, .7, .95, .99);
-    leg->SetHeader("Species");
-    leg->SetBorderSize(1);
-    leg->SetFillColor(0);
+    legM=new TLegend(.35, .6, .65, .9);
+    legM->SetHeader("Mean");
+    legM->SetBorderSize(1);
+    legM->SetFillColor(0);
+    legS=new TLegend(.65, .6, .95, .9);
+    legS->SetHeader("Sigma");
+    legS->SetBorderSize(1);
+    legS->SetFillColor(0);
   }
   TH1S *h1(NULL);
   h1 = new TH1S(Form("h1TF_%02d", fIdxFrame++), at[0], 2, bb[0], bb[2]);
@@ -2187,42 +2195,43 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t idx, Int_t ist, Int
   h1->SetLineColor(kBlack); h1->SetLineWidth(1);h1->SetLineStyle(2); 
   // axis range
   TAxis *ax = h1->GetXaxis();
-  ax->SetTitle(at[1]);ax->CenterTitle();ax->SetMoreLogLabels();
+  ax->SetTitle(at[1]);ax->CenterTitle();ax->SetMoreLogLabels();ax->SetTitleOffset(1.2);
   ax = h1->GetYaxis();
   ax->SetRangeUser(bb[1], bb[3]);
-  ax->SetTitleOffset(.5);//ax->SetTitleSize(.06);
+  ax->SetTitleOffset(1.4);//ax->SetTitleSize(.06);
   ax->SetTitle(at[2]);ax->CenterTitle();
   h1->Draw();
-  TGaxis *gax = NULL;
-  gax = new TGaxis(bb[2], bb[1], bb[2], bb[3], bb[1], bb[3], 510, "+U");
-  gax->SetLineColor(kRed);gax->SetLineWidth(2);gax->SetTextColor(kRed);
-  //gax->SetVertical();
-  gax->CenterTitle(); //gax->SetTitleOffset(.5);gax->SetTitleSize(.06);
-  gax->SetTitle(at[3]); gax->Draw();
+//   TGaxis *gax = NULL;
+//   gax = new TGaxis(bb[2], bb[1], bb[2], bb[3], bb[1], bb[3], 510, "+U");
+//   gax->SetLineColor(kRed);gax->SetLineWidth(2);gax->SetTextColor(kRed);
+//   //gax->SetVertical();
+//   gax->CenterTitle(); //gax->SetTitleOffset(.5);gax->SetTitleSize(.06);
+//   gax->SetTitle(at[3]); gax->Draw();
 
-  Int_t nn(0);
+  Int_t nn(0), m(n/2);
   TGraphErrors *gm = NULL, *gs = NULL;
   TObjArray *a0 = NULL, *a1 = NULL;
   a0 = (TObjArray*)((TObjArray*)fGraphM->At(kMCtrackTPC))->At(idx);
   a1 = (TObjArray*)((TObjArray*)fGraphS->At(kMCtrackTPC))->At(idx);
   for(Int_t is=ist, is0=0; is<ist+n; is++, is0++){
-    if(is0==3) continue;
+    if(is0==m) continue; // no PID tracks
+    //if(is0==m-1||is0==m+1) continue; // electron tracks
     if(!(gs =  (TGraphErrors*)a1->At(is))) return kFALSE;
     if(!(gm =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if((nn=gs->GetN())){
-      gs->Draw("pl");if(leg) leg->AddEntry(gs, gs->GetTitle(), "p");
+      gs->Draw("pl");if(legS) legS->AddEntry(gs, gs->GetTitle(), "pl");
       gs->Sort(&TGraph::CompareY);
       PutTrendValue(Form("%s_%sSigMin%s", fgPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is0)), gs->GetY()[0]);
       PutTrendValue(Form("%s_%sSigMax%s", fgPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is0)), gs->GetY()[nn-1]);
       gs->Sort(&TGraph::CompareX); 
     }
     if(gm->GetN()){
-      gm->Draw("pl");
+      gm->Draw("pl"); if(legM) legM->AddEntry(gm, gm->GetTitle(), "pl");
       PutTrendValue(Form("%s_%s_%s", fgPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is0)), gm->GetMean(2));
       PutTrendValue(Form("%s_%s_%sRMS", fgPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is0)), gm->GetRMS(2));
     }
   }
-  if(leg) leg->Draw();
+  if(kLEG) {legM->Draw(); legS->Draw();}
   return kTRUE;
 }
 
