@@ -19,7 +19,8 @@
 // created from PEDESTAL and PULSER runs vs. Time
 // Origin: F. Prino (prino@to.infn.it)
 
-void PlotCalibSDDVsTime(Int_t firstRun=77677, Int_t lastRun=999999999){
+void PlotCalibSDDVsTime(Int_t year=2010, Int_t firstRun=77677, 
+			Int_t lastRun=999999999){
 
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -28,7 +29,7 @@ void PlotCalibSDDVsTime(Int_t firstRun=77677, Int_t lastRun=999999999){
 
 
   TGrid::Connect("alien:",0,0,"t");
-  gSystem->Exec("gbbox find \"/alice/data/2009/OCDB/ITS/Calib/CalibSDD\" \"Run*.root\" > runCalibAlien.txt");
+  gSystem->Exec(Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/CalibSDD\" \"Run*.root\" > runCalibAlien.txt",year));
   FILE* listruns=fopen("runCalibAlien.txt","r");
 
   TH1F* hbase=new TH1F("hbase","",60,0.5,120.5);
@@ -59,10 +60,12 @@ void PlotCalibSDDVsTime(Int_t firstRun=77677, Int_t lastRun=999999999){
     hgain->Reset();
     hchstatus->Reset();
     fscanf(listruns,"%s\n",filnam);    
-    if(!strstr(filnam,"/alice/data/2009")) continue;
-    sscanf(filnam,"/alice/data/2009/OCDB/ITS/Calib/CalibSDD/Run%d_%d_v%d_s%d.root",&nrun,&nrun2,&nv,&ns);
-    if(nrun<85639 && nrun2> 85639) continue; // protection for files with swapped ladders 4-5 of layer 3 
-    if(nrun>100000 && nv< 184) continue; // protection for files with swapped ladder 0-1 of layer 4
+    Char_t directory[100];
+    sprintf(directory,"/alice/data/%d",year);
+    if(!strstr(filnam,directory)) continue;
+    sscanf(filnam,"/alice/data/%d/OCDB/ITS/Calib/CalibSDD/Run%d_%d_v%d_s%d.root",&year,&nrun,&nrun2,&nv,&ns);
+    if(year==2009 && (nrun<85639 && nrun2> 85639)) continue; // protection for files with swapped ladders 4-5 of layer 3 
+    if(year==2009 && (nrun>100000 && nv< 184)) continue; // protection for files with swapped ladder 0-1 of layer 4
     if(nrun<firstRun) continue;
     if(nrun>lastRun) continue;
     sprintf(filnamalien,"alien://%s",filnam);
@@ -70,7 +73,7 @@ void PlotCalibSDDVsTime(Int_t firstRun=77677, Int_t lastRun=999999999){
     TFile *f= TFile::Open(filnamalien);  
     AliCDBEntry *ent=(AliCDBEntry*)f->Get("AliCDBEntry");
     TObjArray *calSDD = (TObjArray *)ent->GetObject();
-    printf("Run %d Entries in array=%d Entries in Histo=%d\n",nrun,calSDD->GetEntriesFast(),int(hbase->GetEntries()));
+    printf("Run %d Entries in array=%d \n",nrun,calSDD->GetEntriesFast());
 
 
     AliITSCalibrationSDD *cal;
@@ -91,7 +94,7 @@ void PlotCalibSDDVsTime(Int_t firstRun=77677, Int_t lastRun=999999999){
 	}
       } 
     }
-    printf("Set Point %d run %d Base = %f Noise =%f Entries = %d\n",iPoint,nrun,hbase->GetMean(),hnoise->GetMean(),(Int_t)hbase->GetEntries());
+    printf("Run %d <Base> = %f <Noise> =%f Entries = %d\n",nrun,hbase->GetMean(),hnoise->GetMean(),(Int_t)hbase->GetEntries());
     if((Int_t)hbase->GetEntries()==0) continue;
     gbasevstim->SetPoint(iPoint,(Double_t)nrun,hbase->GetMean());
     gbasevstim->SetPointError(iPoint,0.,hbase->GetRMS());
@@ -104,7 +107,7 @@ void PlotCalibSDDVsTime(Int_t firstRun=77677, Int_t lastRun=999999999){
     f->Close();
   }
 
-  TFile *ofil=new TFile("Calib2009VsTime.root","recreate");
+  TFile *ofil=new TFile(Form("Calib%dVsTime.root",year),"recreate");
   gbasevstim->Write();
   gnoisevstim->Write();
   ggainvstim->Write();
