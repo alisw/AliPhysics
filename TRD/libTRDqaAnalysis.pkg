@@ -5,7 +5,8 @@ SRCS= qaAnalysis/AliTRDqaElectronSpectra.cxx \
       qaAnalysis/AliTRDqaEnergyDeposit.cxx \
       qaAnalysis/AliTRDqaJPsi.cxx \
       qaAnalysis/AliTRDqaBasic.cxx \
-      qaAnalysis/AliTRDqaAT.cxx 
+      qaAnalysis/AliTRDqaAT.cxx \
+      qaAnalysis/AliAnalysisTaskTRDmon.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 

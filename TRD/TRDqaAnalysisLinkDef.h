@@ -14,5 +14,6 @@
 #pragma link C++ class  AliTRDqaJPsi+;
 #pragma link C++ class  AliTRDqaBasic+;
 #pragma link C++ class  AliTRDqaAT+;
+#pragma link C++ class  AliAnalysisTaskTRDmon+;
 
 #endif
