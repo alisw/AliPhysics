@@ -15,30 +15,33 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
 
   Bool_t mc = mgr->GetMCtruthEventHandler();
   AliTRDefficiency *eff = 0x0;
-  mgr->AddTask(eff = new AliTRDefficiency());
+  mgr->AddTask(eff = new AliTRDefficiency("TRDefficiency"));
   eff->SetDebugLevel(0);
-  mgr->ConnectInput(eff, 0, ci[0]);
-  mgr->ConnectOutput(eff, 0, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+  mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  
+  mgr->ConnectInput(eff,  1, ci[0]);
+  mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
     
 
   // TRD combined tracking efficiency
   AliTRDefficiencyMC *effMC = 0x0;
   if(mc && TSTBIT(map, kEfficiencyMC)){
-    mgr->AddTask(effMC = new AliTRDefficiencyMC());
+    mgr->AddTask(effMC = new AliTRDefficiencyMC("TRDefficiencyMC"));
     effMC->SetDebugLevel(0);
 
     // Create containers for input/output
-    mgr->ConnectInput(effMC, 0, ci[0]);
-    mgr->ConnectOutput(effMC, 0, mgr->CreateContainer(effMC->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", effMC->GetName())));
+    mgr->ConnectInput(effMC, 0, mgr->GetCommonInputContainer());  
+    mgr->ConnectInput(effMC, 1, ci[0]);
+    mgr->ConnectOutput(effMC, 1, mgr->CreateContainer(effMC->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", effMC->GetName())));
   }
 
   // TRD single track selection
   if(!(TSTBIT(map, kMultiplicity))) return;
 
   AliTRDmultiplicity *mult = 0x0;
-  mgr->AddTask(mult = new AliTRDmultiplicity());
+  mgr->AddTask(mult = new AliTRDmultiplicity("TRDmultiplicity"));
   mult->SetDebugLevel(0);
-  mgr->ConnectInput(mult, 0, ci[0]);
-  mgr->ConnectOutput(mult, 0, mgr->CreateContainer(mult->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", mult->GetName())));
+  mgr->ConnectInput(mult, 0, mgr->GetCommonInputContainer());  
+  mgr->ConnectInput(mult, 1, ci[0]);
+  mgr->ConnectOutput(mult, 1, mgr->CreateContainer(mult->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", mult->GetName())));
 }
 

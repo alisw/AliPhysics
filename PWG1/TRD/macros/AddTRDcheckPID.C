@@ -14,20 +14,22 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
 {
   Int_t map = ParseOptions(trd);
   AliAnalysisDataContainer *ce(NULL);
-  if(TSTBIT(map, kPIDRefMaker)){
+  if(TSTBIT(map, kCheckPID)){
     AliTRDcheckPID *pid = 0x0;
-    mgr->AddTask(pid = new AliTRDcheckPID());
+    mgr->AddTask(pid = new AliTRDcheckPID("checkPID"));
     pid->SetDebugLevel(0);
     pid->SetMCdata(mgr->GetMCtruthEventHandler());
-    mgr->ConnectInput(pid, 0, ci[0]);
-    mgr->ConnectOutput(pid, 0, mgr->CreateContainer(pid->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+    mgr->ConnectInput (pid, 0, mgr->GetCommonInputContainer());
+    mgr->ConnectInput (pid, 1, ci[0]);
+    mgr->ConnectOutput(pid, 1, mgr->CreateContainer(pid->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
 
     // define PID exchange container
     ce = mgr->CreateContainer("InfoPID", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-    mgr->ConnectOutput(pid, 1, ce);
+    mgr->ConnectOutput(pid, 2, ce);
   }  
 
   if(TSTBIT(map, kPIDRefMaker)){
+      printf("PIDRef (2)\n");
     // TRD pid reference maker 
     AliTRDpidRefMaker *ref = new AliTRDpidRefMaker(); 
     mgr->AddTask(ref);
@@ -37,11 +39,11 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
     ref->SetFriends(kTRUE);
 
     // link basic ref maker
-    mgr->ConnectInput( ref, 0, ci[0]);
-    mgr->ConnectInput( ref, 1, ci[2]);
+    mgr->ConnectInput( ref, 1, ci[0]);
+    mgr->ConnectInput( ref, 2, ci[2]);
     if(ce) mgr->ConnectInput( ref, 2, ce);
-    mgr->ConnectOutput(ref, 0, mgr->CreateContainer(Form("Moni%s", ref->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
-    mgr->ConnectOutput(ref, 1, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
+    mgr->ConnectOutput(ref, 1, mgr->CreateContainer(Form("Moni%s", ref->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
+    mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
 
     // TRD pid reference maker LQ 
     AliTRDpidRefMakerLQ *lq = new AliTRDpidRefMakerLQ(); 
@@ -50,12 +52,12 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
     AliLog::SetClassDebugLevel("AliTRDpidRefMakerLQ", 3);
     lq->SetMCdata(mgr->GetMCtruthEventHandler());
     lq->SetFriends(kTRUE);
-    mgr->ConnectInput(lq, 0, ci[0]);
-    mgr->ConnectInput(lq, 1, ci[2]);
+    mgr->ConnectInput(lq, 1, ci[0]);
+    mgr->ConnectInput(lq, 0, ci[2]);
     if(ce) mgr->ConnectInput(lq, 2, ce);
-    mgr->ConnectOutput(lq, 0, mgr->CreateContainer(Form("Moni%s", lq->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
-    mgr->ConnectOutput(lq, 1, mgr->CreateContainer(lq->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
-    mgr->ConnectOutput(lq, 2, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", lq->GetName())));
+    mgr->ConnectOutput(lq, 1, mgr->CreateContainer(Form("Moni%s", lq->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
+    mgr->ConnectOutput(lq, 2, mgr->CreateContainer(lq->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", ref->GetName())));
+    mgr->ConnectOutput(lq, 3, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", lq->GetName())));
   }
 }
 
