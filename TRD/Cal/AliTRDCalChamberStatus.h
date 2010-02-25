@@ -26,10 +26,10 @@ class AliTRDCalChamberStatus : public TNamed {
   Char_t GetStatus(Int_t det) const          { return fStatus[det];   };
   void   SetStatus(Int_t det, Char_t status) { fStatus[det] = status; };
 
-  Bool_t IsInstalled(Int_t sm) const         { return (GetStatus(sm) & kInstalled) ? kTRUE : kFALSE; }
-  Bool_t IsMasked(Int_t sm) const            { return (GetStatus(sm) & kMasked)    ? kTRUE : kFALSE; }
-  Bool_t IsHalfChamberSideAMasked(Int_t sm) const     { return (GetStatus(sm) & kHalfChamberSideAMasked)    ? kTRUE : kFALSE; }
-  Bool_t IsHalfChamberSideBMasked(Int_t sm) const     { return (GetStatus(sm) & kHalfChamberSideBMasked)    ? kTRUE : kFALSE; }
+  Bool_t IsInstalled(Int_t det) const         { return (GetStatus(det) == kInstalled) ? kTRUE : kFALSE; }
+  Bool_t IsMasked(Int_t det) const            { return (GetStatus(det) == kMasked)    ? kTRUE : kFALSE; }
+  Bool_t IsHalfChamberSideAMasked(Int_t det) const     { return (GetStatus(det) == kHalfChamberSideAMasked)    ? kTRUE : kFALSE; }
+  Bool_t IsHalfChamberSideBMasked(Int_t det) const     { return (GetStatus(det) == kHalfChamberSideBMasked)    ? kTRUE : kFALSE; }
 
  protected:
 
@@ -40,5 +40,6 @@ class AliTRDCalChamberStatus : public TNamed {
 };
 
 #endif
+
 
 
