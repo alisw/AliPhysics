@@ -82,7 +82,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fNSigBins(0),
   fLoop(0),
   fMaxBin(0),
-  fMaxTime(0),
+  fMaxTime(1006), // 1000>940 so use 1000, add 3 virtual time bins before and 3 after
   fMaxPad(0),
   fSector(-1),
   fRow(-1),
@@ -107,7 +107,10 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fDebugStreamer(0),
   fRecoParam(0),
   fBDumpSignal(kFALSE),
-  fBClonesArray(kFALSE)
+  fBClonesArray(kFALSE),
+  fAllBins(NULL),
+  fAllSigBins(NULL),
+  fAllNSigBins(NULL)
 {
   //
   // COSNTRUCTOR
@@ -133,6 +136,25 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fRowCl->SetClass("AliTPCclusterMI");
   fRowCl->SetArray(1);
 
+  // Non-persistent arrays
+  //
+  //alocate memory for sector - maximal case
+  //
+  AliTPCROC * roc = AliTPCROC::Instance();
+  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
+  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
+
+  fAllBins = new Float_t*[nRowsMax];
+  fAllSigBins = new Int_t*[nRowsMax];
+  fAllNSigBins = new Int_t[nRowsMax];
+  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+    //
+    Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
+    fAllBins[iRow] = new Float_t[maxBin];
+    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+    fAllSigBins[iRow] = new Int_t[maxBin];
+    fAllNSigBins[iRow]=0;
+  }
 }
 //______________________________________________________________
 AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
@@ -167,7 +189,10 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
   fDebugStreamer(0),
   fRecoParam(0),
   fBDumpSignal(kFALSE),
-  fBClonesArray(kFALSE)
+  fBClonesArray(kFALSE),
+  fAllBins(NULL),
+  fAllSigBins(NULL),
+  fAllNSigBins(NULL)
 {
   //
   // dummy
@@ -197,6 +222,16 @@ AliTPCclustererMI::~AliTPCclustererMI(){
     fOutputClonesArray->Delete();
     delete fOutputClonesArray;
   }
+
+  AliTPCROC * roc = AliTPCROC::Instance();
+  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
+  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+    delete [] fAllBins[iRow];
+    delete [] fAllSigBins[iRow];
+  }
+  delete [] fAllBins;
+  delete [] fAllSigBins;
+  delete [] fAllNSigBins;
 }
 
 void AliTPCclustererMI::SetInput(TTree * tree)
@@ -749,7 +784,7 @@ void AliTPCclustererMI::Digits2Clusters()
   Info("Digits2Clusters", "Number of found clusters : %d", nclusters);
 }
 
-void AliTPCclustererMI::ProcessSectorData(Float_t** allBins, Int_t** allSigBins, Int_t*  allNSigBins){
+void AliTPCclustererMI::ProcessSectorData(){
   //
   // Process the data for the current sector
   //
@@ -779,10 +814,10 @@ void AliTPCclustererMI::ProcessSectorData(Float_t** allBins, Int_t** allSigBins,
     //
     // Line mean - if more than given digits over threshold - make a noise calculation
     // and pedestal substration
-        if (!calcPedestal && allBins[iRow][iPad*fMaxTime+0]<50) continue;
+        if (!calcPedestal && fAllBins[iRow][iPad*fMaxTime+0]<50) continue;
     //
-        if (allBins[iRow][iPad*fMaxTime+0] <1 ) continue;  // no data
-        Float_t *p = &allBins[iRow][iPad*fMaxTime+3];
+        if (fAllBins[iRow][iPad*fMaxTime+0] <1 ) continue;  // no data
+        Float_t *p = &fAllBins[iRow][iPad*fMaxTime+3];
     //Float_t pedestal = TMath::Median(fMaxTime, p);
         Int_t id[3] = {fSector, iRow, iPad-3};
     // calib values
@@ -797,16 +832,16 @@ void AliTPCclustererMI::ProcessSectorData(Float_t** allBins, Int_t** allSigBins,
     //
         for (Int_t iTimeBin = 0; iTimeBin < fMaxTime; iTimeBin++) {
           Int_t bin = iPad*fMaxTime+iTimeBin;
-          allBins[iRow][bin] -= pedestalEvent;
+          fAllBins[iRow][bin] -= pedestalEvent;
           if (iTimeBin < fRecoParam->GetFirstBin())
-            allBins[iRow][bin] = 0;
+            fAllBins[iRow][bin] = 0;
           if (iTimeBin > fRecoParam->GetLastBin())
-            allBins[iRow][bin] = 0;
-          if (allBins[iRow][iPad*fMaxTime+iTimeBin] < zeroSup)
-            allBins[iRow][bin] = 0;
-          if (allBins[iRow][bin] < 3.0*rmsEvent)   // 3 sigma cut on RMS
-            allBins[iRow][bin] = 0;
-          if (allBins[iRow][bin]) allSigBins[iRow][allNSigBins[iRow]++] = bin;
+            fAllBins[iRow][bin] = 0;
+          if (fAllBins[iRow][iPad*fMaxTime+iTimeBin] < zeroSup)
+            fAllBins[iRow][bin] = 0;
+          if (fAllBins[iRow][bin] < 3.0*rmsEvent)   // 3 sigma cut on RMS
+            fAllBins[iRow][bin] = 0;
+          if (fAllBins[iRow][bin]) fAllSigBins[iRow][fAllNSigBins[iRow]++] = bin;
         }
       }
     }
@@ -819,7 +854,7 @@ void AliTPCclustererMI::ProcessSectorData(Float_t** allBins, Int_t** allSigBins,
       for (Int_t iPad = 3; iPad < maxPad + 3; iPad++) {
         for (Int_t iTimeBin = 0; iTimeBin < fMaxTime; iTimeBin++) {
           Int_t bin = iPad*fMaxTime+iTimeBin;
-          Float_t signal = allBins[iRow][bin];
+          Float_t signal = fAllBins[iRow][bin];
           if (AliTPCReconstructor::StreamLevel()>3 && signal>3) {
             Double_t x[]={iRow,iPad-3,iTimeBin-3};
             Int_t i[]={fSector};
@@ -827,11 +862,11 @@ void AliTPCclustererMI::ProcessSectorData(Float_t** allBins, Int_t** allSigBins,
             trafo.Transform(x,i,0,1);
             Double_t gx[3]={x[0],x[1],x[2]};
             trafo.RotatedGlobal2Global(fSector,gx);
-        //        allSigBins[iRow][allNSigBins[iRow]++]
-            Int_t rowsigBins = allNSigBins[iRow];
-            Int_t first=allSigBins[iRow][0];
+        //        fAllSigBins[iRow][fAllNSigBins[iRow]++]
+            Int_t rowsigBins = fAllNSigBins[iRow];
+            Int_t first=fAllSigBins[iRow][0];
             Int_t last= 0;
-        //        if (rowsigBins>0) allSigBins[iRow][allNSigBins[iRow]-1];
+        //        if (rowsigBins>0) fAllSigBins[iRow][fAllNSigBins[iRow]-1];
             
             if (AliTPCReconstructor::StreamLevel()>5) {
               (*fDebugStreamer)<<"Digits"<<
@@ -869,9 +904,9 @@ void AliTPCclustererMI::ProcessSectorData(Float_t** allBins, Int_t** allSigBins,
     fMaxPad = fParam->GetNPads(fSector,fRow);
     fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
     
-    fBins = allBins[fRow];
-    fSigBins = allSigBins[fRow];
-    fNSigBins = allNSigBins[fRow];
+    fBins = fAllBins[fRow];
+    fSigBins = fAllSigBins[fRow];
+    fNSigBins = fAllNSigBins[fRow];
     
     FindClusters(noiseROC);
     
@@ -901,7 +936,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     fRecoParam->Dump();
   }
   fRowDig = NULL;
-  AliTPCROC * roc = AliTPCROC::Instance();
+
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
   //
@@ -927,23 +962,16 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   fZWidth = fParam->GetZWidth();
   Int_t zeroSup = fParam->GetZeroSup();
   //
-  //alocate memory for sector - maximal case
+  // Clean-up
   //
-  Float_t** allBins = NULL;
-  Int_t** allSigBins = NULL;
-  Int_t*  allNSigBins = NULL;
+  AliTPCROC * roc = AliTPCROC::Instance();
   Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
   Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
-  allBins = new Float_t*[nRowsMax];
-  allSigBins = new Int_t*[nRowsMax];
-  allNSigBins = new Int_t[nRowsMax];
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     //
     Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
-    allBins[iRow] = new Float_t[maxBin];
-    memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
-    allSigBins[iRow] = new Int_t[maxBin];
-    allNSigBins[iRow]=0;
+    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+    fAllNSigBins[iRow]=0;
   }
 
   Int_t prevSector=-1;
@@ -1029,15 +1057,15 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
           if (!calcPedestal) {
             Int_t bin = iPad*fMaxTime+iTimeBin;
             if (gain>0){
-              allBins[iRow][bin] = signal/gain;
+              fAllBins[iRow][bin] = signal/gain;
             }else{
-              allBins[iRow][bin] =0;
+              fAllBins[iRow][bin] =0;
             }
-            allSigBins[iRow][allNSigBins[iRow]++] = bin;
+            fAllSigBins[iRow][fAllNSigBins[iRow]++] = bin;
           }else{
-            allBins[iRow][iPad*fMaxTime+iTimeBin] = signal;
+            fAllBins[iRow][iPad*fMaxTime+iTimeBin] = signal;
           }
-          allBins[iRow][iPad*fMaxTime+0]+=1.;  // pad with signal
+          fAllBins[iRow][iPad*fMaxTime+0]+=1.;  // pad with signal
           
           // Temporary
           digCounter++;
@@ -1053,27 +1081,17 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   } // End of loop over sectors
   //process last sector
   if ( digCounter>0 ){
-    ProcessSectorData(allBins, allSigBins, allNSigBins);
+    ProcessSectorData();
     for (Int_t iRow = 0; iRow < fParam->GetNRow(fSector); iRow++) {
       Int_t maxPad = fParam->GetNPads(fSector,iRow);
       Int_t maxBin = fMaxTime*(maxPad+6);  // add 3 virtual pads  before and 3 after
-      memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
-      allNSigBins[iRow] = 0;
+      memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+      fAllNSigBins[iRow] = 0;
     }
     prevSector=fSector;
     digCounter=0;
   }
   }
-  
-
-  
-  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
-    delete [] allBins[iRow];
-    delete [] allSigBins[iRow];
-  }
-  delete [] allBins;
-  delete [] allSigBins;
-  delete [] allNSigBins;
   
   if (rawReader->GetEventId() && fOutput ){
     Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), fNclusters);
@@ -1111,7 +1129,7 @@ void AliTPCclustererMI::Digits2ClustersOld
     fRecoParam->Dump();
   }
   fRowDig = NULL;
-  AliTPCROC * roc = AliTPCROC::Instance();
+
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
   //
@@ -1134,23 +1152,17 @@ void AliTPCclustererMI::Digits2ClustersOld
   fZWidth = fParam->GetZWidth();
   Int_t zeroSup = fParam->GetZeroSup();
   //
-  //alocate memory for sector - maximal case
+  // Clean-up
   //
-  Float_t** allBins = NULL;
-  Int_t** allSigBins = NULL;
-  Int_t*  allNSigBins = NULL;
+
+  AliTPCROC * roc = AliTPCROC::Instance();
   Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
   Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
-  allBins = new Float_t*[nRowsMax];
-  allSigBins = new Int_t*[nRowsMax];
-  allNSigBins = new Int_t[nRowsMax];
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     //
     Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
-    allBins[iRow] = new Float_t[maxBin];
-    memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
-    allSigBins[iRow] = new Int_t[maxBin];
-    allNSigBins[iRow]=0;
+    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+    fAllNSigBins[iRow]=0;
   }
   //
   // Loop over sectors
@@ -1190,8 +1202,8 @@ void AliTPCclustererMI::Digits2ClustersOld
         maxPad = fParam->GetNPadsUp(iRow);
       
       Int_t maxBin = fMaxTime*(maxPad+6);  // add 3 virtual pads  before and 3 after
-      memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
-      allNSigBins[iRow] = 0;
+      memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+      fAllNSigBins[iRow] = 0;
     }
     
     Int_t digCounter=0;
@@ -1244,15 +1256,15 @@ void AliTPCclustererMI::Digits2ClustersOld
       if (!calcPedestal) {
         Int_t bin = iPad*fMaxTime+iTimeBin;
         if (gain>0){
-          allBins[iRow][bin] = signal/gain;
+          fAllBins[iRow][bin] = signal/gain;
         }else{
-          allBins[iRow][bin] =0;
+          fAllBins[iRow][bin] =0;
         }
-        allSigBins[iRow][allNSigBins[iRow]++] = bin;
+        fAllSigBins[iRow][fAllNSigBins[iRow]++] = bin;
       }else{
-        allBins[iRow][iPad*fMaxTime+iTimeBin] = signal;
+        fAllBins[iRow][iPad*fMaxTime+iTimeBin] = signal;
       }
-      allBins[iRow][iPad*fMaxTime+0]+=1.;  // pad with signal
+      fAllBins[iRow][iPad*fMaxTime+0]+=1.;  // pad with signal
 
       // Temporary
       digCounter++;
@@ -1263,17 +1275,9 @@ void AliTPCclustererMI::Digits2ClustersOld
     //
     // Now loop over rows and perform pedestal subtraction
     if (digCounter==0) continue;
-    ProcessSectorData(allBins, allSigBins, allNSigBins);
+    ProcessSectorData();
   } // End of loop over sectors
 
-  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
-    delete [] allBins[iRow];
-    delete [] allSigBins[iRow];
-  }  
-  delete [] allBins;
-  delete [] allSigBins;
-  delete [] allNSigBins;
-  
   if (rawReader->GetEventId() && fOutput ){
     Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), fNclusters);
   }
