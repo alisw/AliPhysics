@@ -72,8 +72,8 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
   fRecPointArray = new AliHLTCaloRecPointDataStruct*[fArraySize];
   
   fAvailableSize = sizeof(AliHLTCaloRecPointDataStruct) * 20;
-  fRecPointDataPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(new UChar_t[fAvailableSize]);
-  fFirstRecPointPtr = fRecPointDataPtr;  
+  fFirstRecPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(new UChar_t[fAvailableSize]);
+  fRecPointDataPtr = fFirstRecPointPtr;  
 
 }//end
 
@@ -246,10 +246,11 @@ Int_t AliHLTCaloClusterizer::CheckArray()
 {
       if(fArraySize == fNRecPoints)
 	{
+	   cout << "Increasing array!" << endl;
 	   fArraySize *= 2;
 	   AliHLTCaloRecPointDataStruct **tmp = new AliHLTCaloRecPointDataStruct*[fArraySize];
 	   memcpy(tmp, fRecPointArray, fArraySize/2 * sizeof(AliHLTCaloRecPointDataStruct*));
-	   delete fRecPointArray;
+	   delete [] fRecPointArray;
 	   fRecPointArray = tmp;
 	}
    return 0;
@@ -261,6 +262,7 @@ Int_t AliHLTCaloClusterizer::CheckBuffer()
 	if((fAvailableSize - fUsedSize) < sizeof(AliHLTCaloRecPointDataStruct))
 	{
 	    Int_t recPointOffset = reinterpret_cast<UChar_t*>(fRecPointDataPtr) - reinterpret_cast<UChar_t*>(fFirstRecPointPtr);
+	    Int_t digitIndexOffset = reinterpret_cast<UChar_t*>(fDigitIndexPtr) - reinterpret_cast<UChar_t*>(fRecPointDataPtr);
 	    UChar_t *tmp = new UChar_t[fAvailableSize*2];
 	    memcpy(tmp, fFirstRecPointPtr, fAvailableSize);
 	    fAvailableSize *= 2;
@@ -268,9 +270,10 @@ Int_t AliHLTCaloClusterizer::CheckBuffer()
 	    {
 	       fRecPointArray[n] = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(reinterpret_cast<UChar_t*>(fRecPointArray[n]) - reinterpret_cast<UChar_t*>(fFirstRecPointPtr) + reinterpret_cast<UChar_t*>(tmp));
 	    }
-	    delete fFirstRecPointPtr;
+	    delete [] fFirstRecPointPtr;
 	    fFirstRecPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(tmp);
 	    fRecPointDataPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(tmp + recPointOffset);
+	    fDigitIndexPtr = reinterpret_cast<Int_t*>(reinterpret_cast<UChar_t*>(fRecPointDataPtr) + digitIndexOffset);
 	    fUsedSize = 0;
 	}
    return 0;

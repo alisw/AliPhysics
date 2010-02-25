@@ -195,7 +195,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
     {
       if((availableSize - totSize)  < sizeof(AliHLTCaloClusterDataStruct))
       {
-	 HLTError("Out of buffer");
+	 HLTError("Out of buffer: available size is: %d, total size used: %d", availableSize, totSize);
 	 return -ENOBUFS;
       }
       
@@ -216,20 +216,21 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       HLTDebug("Cluster local position: x = %f, z = %f, module = %d", recPointPtr->fX, recPointPtr->fZ, recPointPtr->fModule);
       HLTDebug("Cluster global position: x = %f, y = %f, z = %f", globalCoord.fX, globalCoord.fY, globalCoord.fZ);
       
-      //caloClusterPtr->fNCells = 0;//recPointPtr->fMultiplicity;
-      caloClusterPtr->fNCells = recPointPtr->fMultiplicity;
+      caloClusterPtr->fNCells = 0;//recPointPtr->fMultiplicity;
+      //caloClusterPtr->fNCells = recPointPtr->fMultiplicity;
 
       caloClusterPtr->fClusterType = fClusterType;
-//      Int_t tmpSize = 0;//totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
+      Int_t tmpSize = 0;//totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
 
       //TODO remove hardcoded 10; 
       memset(caloClusterPtr->fTracksMatched, 0xff, sizeof(Int_t)*10);
 
-      Int_t tmpSize = totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
+      //Int_t tmpSize = totSize + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
+//      Int_t tmpSize = (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));
 
       if((availableSize - totSize)  < tmpSize)
       {
-	 HLTError("Out of buffer");
+	 HLTError("Out of buffer, available size is: %d, total size used: %d, extra size needed: %d", availableSize, totSize, tmpSize);
 	 return -ENOBUFS;
       }
       Int_t *digitIndexPtr = &(recPointPtr->fDigits);
@@ -244,11 +245,14 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
  	  *cellAmpFracPtr = digitPtr->fEnergy/recPointPtr->fAmp;
 	  //printf("Cell ID pointer: %x\n", cellIDPtr);
  	 //printf("Cell Amp Pointer: %x\n", cellAmpFracPtr);
-	 //printf("Digit ID: %d\n", *cellIDPtr);
- 	  digitPtr++;
- 	  //cellIDPtr = reinterpret_cast<UShort_t*>(reinterpret_cast<char*>(cellAmpFracPtr) + sizeof(Float_t)); 
-	  cellIDPtr = reinterpret_cast<UShort_t*>(reinterpret_cast<char*>(cellIDPtr) + sizeof(Float_t) + sizeof(Short_t)); 
-	  cellAmpFracPtr = reinterpret_cast<Float_t*>(reinterpret_cast<char*>(cellAmpFracPtr) + sizeof(Short_t) + sizeof(Float_t));
+	 //printf("Cell pos: x = %d, z = %d\n", digitPtr->fX, digitPtr->fZ);
+	 //printf("Cell ID: %d, pointer: %x\n", *cellIDPtr, cellIDPtr);
+ 	 //printf("Cell Amp: %f, pointer: %x\n", *cellAmpFracPtr, cellAmpFracPtr);
+	  digitPtr++;
+ 	  cellIDPtr = reinterpret_cast<UShort_t*>(reinterpret_cast<char*>(cellAmpFracPtr) + sizeof(Float_t)); 
+	 // cellIDPtr = reinterpret_cast<UShort_t*>(reinterpret_cast<char*>(cellIDPtr) + sizeof(Float_t) + sizeof(Short_t)); 
+	  //cellAmpFracPtr = reinterpret_cast<Float_t*>(reinterpret_cast<char*>(cellAmpFracPtr) + sizeof(Short_t) + sizeof(Float_t));
+ 	  cellAmpFracPtr = reinterpret_cast<Float_t*>(reinterpret_cast<char*>(cellIDPtr) + sizeof(Short_t));
  	  
 	  digitIndexPtr++;
 	  

@@ -80,14 +80,15 @@ AliHLTESDCaloClusterMaker::FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterH
       esdCluster.SetNExMax(caloClusterStructPtr->fNExMax);
       esdCluster.SetEmcCpvDistance(caloClusterStructPtr->fEmcCpvDistance);
       esdCluster.SetDistanceToBadChannel(caloClusterStructPtr->fDistToBadChannel);
-      esdCluster.SetNCells(caloClusterStructPtr->fNCells);
+      //esdCluster.SetNCells(caloClusterStructPtr->fNCells);
+      esdCluster.SetNCells(0);
       if(caloClusterStructPtr->GetNTracksMatched())
       {
 	 TArrayI tracksMatched(caloClusterStructPtr->GetNTracksMatched(), caloClusterStructPtr->fTracksMatched);
 	 esdCluster.AddTracksMatched(tracksMatched);
       }
 
-      UShort_t *idArrayPtr = new UShort_t[caloClusterStructPtr->fNCells];
+/*      UShort_t *idArrayPtr = new UShort_t[caloClusterStructPtr->fNCells];
       Double32_t *ampFracArrayPtr = new Double32_t[caloClusterStructPtr->fNCells];
       
       for(UInt_t index = 0; index < caloClusterStructPtr->fNCells; index++)
@@ -99,9 +100,9 @@ AliHLTESDCaloClusterMaker::FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterH
       esdCluster.SetCellsAmplitudeFraction(ampFracArrayPtr);
    
       delete [] idArrayPtr;
-      delete [] ampFracArrayPtr;
-      idArrayPtr = 0;
-      ampFracArrayPtr = 0;
+      delete [] ampFracArrayPtr;*/
+//      idArrayPtr = 0;
+      //ampFracArrayPtr = 0;
       
       esdPtr->AddCaloCluster(&esdCluster);
       //printf("EM: Energy: %f\n", esdCluster.E());

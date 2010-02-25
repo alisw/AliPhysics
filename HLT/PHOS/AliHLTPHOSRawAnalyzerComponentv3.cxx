@@ -27,7 +27,7 @@ AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3() :
    ,fCurrentSpec(-1)
 {
    // See header file for class documentation
-  InitMapping(0);
+   InitMapping(0x1); //using 0x1 to avoid error message
 }
 
 AliHLTPHOSRawAnalyzerComponentv3::~AliHLTPHOSRawAnalyzerComponentv3()
@@ -116,7 +116,6 @@ void AliHLTPHOSRawAnalyzerComponentv3::InitMapping ( const int specification )
 {
    // See header file for class documentation
    fMapperPtr = new AliHLTPHOSMapper;
-   cout << "Initialising mapper..." << endl;
    fMapperPtr->InitDDLSpecificationMapping();
    fMapperPtr->InitAltroMapping(specification);
 

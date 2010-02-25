@@ -64,9 +64,9 @@ AliHLTCaloClusterReader::NextCluster()
 //							      + sizeof(AliHLTCaloClusterDataStruct) 
 //							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t)));
       fCurrentClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(reinterpret_cast<UChar_t*>(fCurrentClusterPtr)
-							      + sizeof(AliHLTCaloClusterDataStruct) 
-							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t))
-							      - sizeof(Short_t)); //TODO: Why?;
+							      + sizeof(AliHLTCaloClusterDataStruct) );
+							      //+ (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t))
+							      //- sizeof(Short_t)); //TODO: Why?;
 						
 							      
       // return the cluster
@@ -89,17 +89,30 @@ bool
 AliHLTCaloClusterReader::GetCell(AliHLTCaloClusterDataStruct *clusterPtr, UShort_t &cellId, Double32_t &cellAmp, UInt_t index)
 {
   // See header file for documentation
-
+   UShort_t *tmpId = 0;
+   Float_t *tmpfrac = 0;
   // check if the index is within bounds
-  if(index < clusterPtr->fNCells)
+  //if(index < clusterPtr->fNCells)
+    if(0)
     {
       // the absolute ID is located in the memory address of the first ID plus the size of the pair of cell properties times the index
       //cellId = *(UShort_t*)((UChar_t*)(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t)));
-      cellId = * reinterpret_cast<UShort_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t)));
-//      printf("CR: Cell ID: %d, cell ID pointer: %x\n", cellId,  reinterpret_cast<UShort_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t))));
+      
+      tmpId = reinterpret_cast<UShort_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t)));
+      //cellId = * reinterpret_cast<UShort_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t)));
+      cellId = *tmpId;
+      //printf("CR: Cell ID: %d, cell ID pointer: %x, # cells: %d\n", cellId,  reinterpret_cast<UShort_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAbsId)) + index * (sizeof(Short_t) + sizeof(Float_t))), clusterPtr->fNCells);
+      //printf("CR: Cell ID: %d, cell ID pointer: %x, # cells: %d\n", cellId,  tmpId, clusterPtr->fNCells);
       // the amplitude fraction is located in the memory address of the first ID plus the size of the pair of cell properties times the index
       //cellAmp = *(Float_t*)((UChar_t*)(&(clusterPtr->fCellsAmpFraction)) + index * (sizeof(Short_t) + sizeof(Float_t)));
-      cellAmp = *reinterpret_cast<Float_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAmpFraction)) + index*(sizeof(Short_t) + sizeof(Float_t)));
+      //cellAmp = *reinterpret_cast<Float_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAmpFraction)) + index*(sizeof(Short_t) + sizeof(Float_t)));
+      //tmpfrac = reinterpret_cast<Float_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAbsId)) + sizeof(Short_t) + index*(sizeof(Short_t) + sizeof(Float_t)));
+      tmpfrac = reinterpret_cast<Float_t*>(tmpId + 1);
+      cellAmp = *tmpfrac;
+      //cellAmp = *reinterpret_cast<Float_t*>(reinterpret_cast<UChar_t*>(&(clusterPtr->fCellsAbsId)) + sizeof(Short_t) + index*(sizeof(Short_t) + sizeof(Float_t)));
+      //printf("CR: cell amp: %f, pointer: %x\n", cellAmp, tmpfrac);
+
+
       return true;
     }
   else return false;
