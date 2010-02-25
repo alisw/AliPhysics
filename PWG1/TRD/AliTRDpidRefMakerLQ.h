@@ -36,8 +36,8 @@ public:
   AliTRDpidRefMakerLQ();
   ~AliTRDpidRefMakerLQ();
 
-  void        CreateOutputObjects();
-  void        Exec(Option_t *opt);
+  void        UserCreateOutputObjects();
+  void        UserExec(Option_t *opt);
   TObject*    GetOCDBEntry(Option_t *opt);
   Bool_t      GetRefFigure(Int_t ifig);
   Bool_t      HasOnlineMonitor() const {return kTRUE;}

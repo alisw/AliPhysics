@@ -63,7 +63,7 @@ FILE* AliTRDcheckESD::fgFile = NULL;
 
 //____________________________________________________________________
 AliTRDcheckESD::AliTRDcheckESD():
-  AliAnalysisTask("checkESD", "ESD checker for TRD info")
+  AliAnalysisTaskSE()
   ,fStatus(0)
   ,fESD(NULL)
   ,fMC(NULL)
@@ -74,8 +74,21 @@ AliTRDcheckESD::AliTRDcheckESD():
   // Default constructor
   //
   SetMC(kTRUE);
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TObjArray::Class());
+}
+
+AliTRDcheckESD::AliTRDcheckESD(char* name):
+  AliAnalysisTaskSE(name)
+  ,fStatus(0)
+  ,fESD(NULL)
+  ,fMC(NULL)
+  ,fHistos(NULL)
+  ,fResults(NULL)
+{
+  //
+  // Default constructor
+  //
+  SetMC(kTRUE);
+  DefineOutput(1, TObjArray::Class());
 }
 
 //____________________________________________________________________
@@ -93,24 +106,7 @@ AliTRDcheckESD::~AliTRDcheckESD()
 }
 
 //____________________________________________________________________
-void AliTRDcheckESD::ConnectInputData(Option_t *)
-{
-  //
-  // Link the Input Data
-  //
-  TTree *tree = dynamic_cast<TChain*>(GetInputData(0));
-  if(tree) tree->SetBranchStatus("Tracks", 1);
-
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  fESD = esdH ? esdH->GetEvent() : NULL;
-
-  if(!HasMC()) return;
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  fMC = mcH ? mcH->MCEvent() : NULL;
-}
-
-//____________________________________________________________________
-void AliTRDcheckESD::CreateOutputObjects()
+void AliTRDcheckESD::UserCreateOutputObjects()
 {	
   //
   // Create Output Containers (TObjectArray containing 1D histograms)
@@ -199,15 +195,18 @@ TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
 }
 
 //____________________________________________________________________
-void AliTRDcheckESD::Exec(Option_t *){
+void AliTRDcheckESD::UserExec(Option_t *){
   //
   // Run the Analysis
   //
+  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+  fMC = MCEvent();
+  
   if(!fESD){
     AliError("ESD event missing.");
     return;
   }
-
+  
   // Get MC information if available
   AliStack * fStack = NULL;
   if(HasMC()){
@@ -326,7 +325,7 @@ void AliTRDcheckESD::Exec(Option_t *){
       }
     }
   }  
-  PostData(0, fHistos);
+  PostData(1, fHistos);
 }
 
 //____________________________________________________________________

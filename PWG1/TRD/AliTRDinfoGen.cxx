@@ -88,11 +88,10 @@ const Float_t AliTRDinfoGen::fgkEta       = 0.9;
 
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen():
-  AliTRDrecoTask("infoGen", "MC-REC TRD-track list generator")
+  AliTRDrecoTask()
   ,fEvTrigger("CINT1B-ABCE-NOPF-ALL")
   ,fESDev(NULL)
   ,fMCev(NULL)
-  ,fESDfriend(NULL)
   ,fTrackInfo(NULL)
   ,fEventInfo(NULL)
   ,fV0container(NULL)
@@ -101,11 +100,22 @@ AliTRDinfoGen::AliTRDinfoGen():
   //
   // Default constructor
   //
+}
 
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TObjArray::Class());
-  DefineOutput(1, AliTRDeventInfo::Class());
-  DefineOutput(2, TObjArray::Class());
+AliTRDinfoGen::AliTRDinfoGen(char* name):
+  AliTRDrecoTask(name, "MC-REC TRD-track list generator")
+  ,fESDev(NULL)
+  ,fMCev(NULL)
+  ,fTrackInfo(NULL)
+  ,fEventInfo(NULL)
+  ,fV0container(NULL)
+  ,fV0Info(NULL)
+{
+  //
+  // Default constructor
+  //
+    DefineOutput(2, AliTRDeventInfo::Class());   // -> TRDeventInfo
+    DefineOutput(3, TObjArray::Class());         // -> TObjArray
 }
 
 //____________________________________________________________________
@@ -127,43 +137,7 @@ AliTRDinfoGen::~AliTRDinfoGen()
 }
 
 //____________________________________________________________________
-void AliTRDinfoGen::ConnectInputData(Option_t *)
-{
-  //
-  // Link the Input Data
-  //
-  TTree *tree = dynamic_cast<TChain*>(GetInputData(0));
-  if(!tree){
-    AliError("ESD event not found");
-  } else {
-    tree->SetBranchStatus("Tracks", 1);
-    tree->SetBranchStatus("ESDfriend*",1);
-  }
-
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if(!esdH){
-    printf("ERROR - ESD input handler not found");
-  } else {
-    fESDev = esdH->GetEvent();
-    if(!fESDev){
-      printf("ERROR - ESD event not found");
-    } else {
-      esdH->SetActiveBranches("ESDfriend*");
-      fESDfriend = (AliESDfriend *)fESDev->FindListObject("AliESDfriend");
-    }
-  }
-  if(HasMCdata()){
-    AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if(!mcH){ 
-      AliError("MC input handler not found");
-    } else {
-      fMCev = mcH->MCEvent();
-    }
-  }
-}
-
-//____________________________________________________________________
-void AliTRDinfoGen::CreateOutputObjects()
+void AliTRDinfoGen::UserCreateOutputObjects()
 {	
   //
   // Create Output Containers (TObjectArray containing 1D histograms)
@@ -179,10 +153,13 @@ void AliTRDinfoGen::CreateOutputObjects()
 }
 
 //____________________________________________________________________
-void AliTRDinfoGen::Exec(Option_t *){
+void AliTRDinfoGen::UserExec(Option_t *){
   //
   // Run the Analysis
   //
+  fESDev = dynamic_cast<AliESDEvent*>(InputEvent());
+  fMCev = MCEvent();
+
   if(!fESDev){
     AliError("Failed retrieving ESD event");
     return;
@@ -226,10 +203,10 @@ void AliTRDinfoGen::Exec(Option_t *){
     AliError("Failed retrieving MC event");
     return;
   }
+
   fContainer->Delete();
   fV0container->Delete();
   fEventInfo->Delete("");
-  fESDev->SetESDfriend(fESDfriend);
   new(fEventInfo)AliTRDeventInfo(fESDev->GetHeader(), const_cast<AliESDRun *>(fESDev->GetESDRun()));
   
   Bool_t *trackMap(NULL);
@@ -435,8 +412,8 @@ void AliTRDinfoGen::Exec(Option_t *){
     }
     delete[] trackMap;
   }
-  PostData(0, fContainer);
-  PostData(1, fEventInfo);
-  PostData(2, fV0container);
+  PostData(1, fContainer);
+  PostData(2, fEventInfo);
+  PostData(3, fV0container);
 }
 

@@ -35,10 +35,12 @@ public:
    ,kCollision            = BIT(23)
   };
   AliTRDinfoGen();
+  AliTRDinfoGen(char* name);
   virtual ~AliTRDinfoGen();
   
-  void    ConnectInputData(Option_t *);
-  void    CreateOutputObjects();
+
+  void  UserCreateOutputObjects();
+  void  UserExec(Option_t *);
   static Float_t GetTPCx() { return fgkTPC;}
   static Float_t GetTOFx() { return fgkTOF;}
 
@@ -74,12 +76,11 @@ private:
 
   AliESDEvent      *fESDev;          //! ESD event
   AliMCEvent       *fMCev;           //! MC event
-  AliESDfriend     *fESDfriend;      //! ESD friends
   AliTRDtrackInfo  *fTrackInfo;      //! Track info
-  AliTRDeventInfo  *fEventInfo;		   //! Event info
+  AliTRDeventInfo  *fEventInfo;	     //! Event info
   TObjArray        *fV0container;    //! V0 container
-  AliTRDv0Info     *fV0Info;		     //! V0 info
+  AliTRDv0Info     *fV0Info;	     //! V0 info
 
-  ClassDef(AliTRDinfoGen, 2)         // entry to TRD analysis train
+  ClassDef(AliTRDinfoGen, 3)         // entry to TRD analysis train
 };
 #endif

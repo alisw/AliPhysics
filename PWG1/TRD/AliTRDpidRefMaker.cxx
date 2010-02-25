@@ -134,12 +134,12 @@ void AliTRDpidRefMaker::ConnectInputData(Option_t *opt)
 } 
 
 //________________________________________________________________________
-void AliTRDpidRefMaker::CreateOutputObjects()
+void AliTRDpidRefMaker::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
 
-  OpenFile(0, "RECREATE");
+  OpenFile(1, "RECREATE");
   fContainer = new TObjArray();
   fContainer->SetName(Form("Moni%s", GetName()));
 
@@ -159,7 +159,7 @@ void AliTRDpidRefMaker::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliTRDpidRefMaker::Exec(Option_t *) 
+void AliTRDpidRefMaker::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -239,8 +239,8 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     Fill();
   }
 
-  PostData(0, fContainer);
-  PostData(1, fData);
+  PostData(1, fContainer);
+  PostData(2, fData);
 }
 
 

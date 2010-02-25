@@ -200,6 +200,24 @@ ClassImp(AliTRDclusterResolution)
 
 const Float_t AliTRDclusterResolution::fgkTimeBinLength = 1./ AliTRDCommonParam::Instance()->GetSamplingFrequency();
 //_______________________________________________________
+AliTRDclusterResolution::AliTRDclusterResolution()
+  : AliTRDrecoTask()
+  ,fCanvas(0x0)
+  ,fInfo(0x0)
+  ,fResults(0x0)
+  ,fAt(0x0)
+  ,fStatus(0)
+  ,fDet(-1)
+  ,fExB(0.)
+  ,fVdrift(0.)
+  ,fLy(0)
+  ,fX(0.)
+  ,fY(0.)
+  ,fZ(0.)
+{
+// Constructor
+}
+
 AliTRDclusterResolution::AliTRDclusterResolution(const char *name, const char *title)
   : AliTRDrecoTask(name, title)
   ,fCanvas(NULL)
@@ -246,13 +264,14 @@ AliTRDclusterResolution::~AliTRDclusterResolution()
 //_______________________________________________________
 void AliTRDclusterResolution::ConnectInputData(Option_t *)
 {
-  fInfo = dynamic_cast<TObjArray *>(GetInputData(0));
+    AliAnalysisTaskSE::ConnectInputData();
+    fInfo = dynamic_cast<TObjArray *>(GetInputData(0));
 }
 
 //_______________________________________________________
-void AliTRDclusterResolution::CreateOutputObjects()
+void AliTRDclusterResolution::UserCreateOutputObjects()
 {
-  OpenFile(0, "RECREATE");
+  OpenFile(1, "RECREATE");
   fContainer = Histos();
 }
 
@@ -472,7 +491,7 @@ TObjArray* AliTRDclusterResolution::Histos()
 }
 
 //_______________________________________________________
-void AliTRDclusterResolution::Exec(Option_t *)
+void AliTRDclusterResolution::UserExec(Option_t *)
 {
 // Fill container histograms
 
@@ -536,7 +555,7 @@ void AliTRDclusterResolution::Exec(Option_t *)
     // fill histo for systematic (mean)
     ((TH3S*)arr2->At(ix-1))->Fill(10.*cli->GetAnisochronity(), dydx-cli->GetTilt()*dzdx, dy);  
   }
-  PostData(0, fContainer);
+  PostData(1, fContainer);
 }
 
 

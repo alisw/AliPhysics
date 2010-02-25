@@ -23,9 +23,10 @@ class AliTRDefficiency : public AliTRDrecoTask
 {
 public:
   AliTRDefficiency();
+  AliTRDefficiency(char* name);
   virtual ~AliTRDefficiency();
-  void    CreateOutputObjects();
-  void    Exec(Option_t *);
+  void    UserCreateOutputObjects();
+  void    UserExec(Option_t *);
   Bool_t  GetRefFigure(Int_t ifig);
   Bool_t  PostProcess();
 

@@ -15,7 +15,7 @@
 //////////////////////////////////////////////////////
 
 #ifndef ALIANALYSISTASK_H
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 #endif
 
 class AliESDEvent;
@@ -24,7 +24,7 @@ class TH1;
 class TObjArray;
 class TGraph;
 class TGraphErrors;
-class AliTRDcheckESD : public AliAnalysisTask {
+class AliTRDcheckESD : public AliAnalysisTaskSE {
 public:
   enum ETRDcheckESDstatus {
      kMC   = BIT(0)  // use MC info
@@ -46,12 +46,12 @@ public:
    ,kTRDref     // track refitted in TRD
   };
   AliTRDcheckESD();
+  AliTRDcheckESD(char* name);
   virtual ~AliTRDcheckESD();
   
-  void          ConnectInputData(Option_t *);
-  void          CreateOutputObjects();
+  void          UserCreateOutputObjects();
   TGraph*       GetGraph(Int_t id, Option_t *opt="bc");
-  void          Exec(Option_t *);
+  void          UserExec(Option_t *);
 
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
   Bool_t        IsLoad() const { return TESTBIT(fStatus, kLoad);}

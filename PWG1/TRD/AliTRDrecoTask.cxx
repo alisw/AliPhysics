@@ -18,6 +18,7 @@
 #include "TMethodCall.h"
 #include "TMethodArg.h"
 #include "TFile.h"
+#include "TChain.h"
 #include "TList.h"
 #include "TMap.h"
 #include "TH1.h"
@@ -36,19 +37,31 @@ ClassImp(AliTRDrecoTask)
 TList* AliTRDrecoTask::fgTrendPoint(0x0);
 TTreeSRedirector* AliTRDrecoTask::fgDebugStream(0x0);
 //_______________________________________________________
-AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
-  : AliAnalysisTask(name, title)
+
+AliTRDrecoTask::AliTRDrecoTask()
+  : AliAnalysisTaskSE()
   ,fNRefFigures(0)
   ,fContainer(0x0)
   ,fTracks(0x0)
   ,fkTrack(0x0)
   ,fkMC(0x0)
   ,fkESD(0x0)
-  ,fDebugLevel(0)
   ,fPlotFuncList(0x0)
 {
-  DefineInput(0, TObjArray::Class());
-  DefineOutput(0, TObjArray::Class());
+}
+
+AliTRDrecoTask::AliTRDrecoTask(const char *name, const char */*title*/)
+  : AliAnalysisTaskSE(name)
+  ,fNRefFigures(0)
+  ,fContainer(0x0)
+  ,fTracks(0x0)
+  ,fkTrack(0x0)
+  ,fkMC(0x0)
+  ,fkESD(0x0)
+  ,fPlotFuncList(0x0)
+{
+  DefineInput (1, TObjArray::Class());
+  DefineOutput(1, TObjArray::Class());
 }
 
 //_______________________________________________________
@@ -90,12 +103,12 @@ void AliTRDrecoTask::ConnectInputData(Option_t *)
   //
   // Connect input data
   //
-
-  fTracks = dynamic_cast<TObjArray *>(GetInputData(0));
+    AliAnalysisTaskSE::ConnectInputData();
+    fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
 }
 
 //_______________________________________________________
-void AliTRDrecoTask::Exec(Option_t *)
+void AliTRDrecoTask::UserExec(Option_t *)
 {
 // Loop over Plot functors published by particular tasks
 
@@ -120,7 +133,7 @@ void AliTRDrecoTask::Exec(Option_t *)
       plot->Execute(this);
     }
   }
-  PostData(0, fContainer);
+  PostData(1, fContainer);
 }
 
 //_______________________________________________________
@@ -216,8 +229,8 @@ void AliTRDrecoTask::SetDebugLevel(Int_t level)
 {
 // Generic debug handler
 
-  fDebugLevel = level;
-  if(fDebugLevel>=1){
+  fDebug = level;
+  if(fDebug>=1){
     TDirectory *savedir = gDirectory;
     fgDebugStream = new TTreeSRedirector("TRD.DebugPerformance.root");
     savedir->cd();
@@ -234,7 +247,7 @@ void AliTRDrecoTask::Terminate(Option_t *)
   if(fgDebugStream){ 
     delete fgDebugStream;
     fgDebugStream = 0x0;
-    fDebugLevel = 0;
+    fDebug = 0;
   }
   if(HasPostProcess()) PostProcess();
 }

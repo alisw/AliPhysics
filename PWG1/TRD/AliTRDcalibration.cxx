@@ -69,7 +69,7 @@ ClassImp(AliTRDcalibration)
 
 //________________________________________________________________________
 AliTRDcalibration::AliTRDcalibration() 
-  :AliTRDrecoTask("Calibration", "Calibration on tracks")
+  :AliTRDrecoTask()
   ,fTrackInfo(0)
   ,ftrdTrack(0)
   ,fcl(0)
@@ -119,6 +119,59 @@ AliTRDcalibration::AliTRDcalibration()
     }
 
 }  
+
+AliTRDcalibration::AliTRDcalibration(char* name) 
+  :AliTRDrecoTask(name, "Calibration on tracks")
+  ,fTrackInfo(0)
+  ,ftrdTrack(0)
+  ,fcl(0)
+  ,fTRDCalibraFillHisto(0)
+  ,fNbTRDTrack(0)
+  ,fNbTRDTrackOffline(0)
+  ,fNbTRDTrackStandalone(0)
+  ,fNbTRDTracklet(0)
+  ,fNbTRDTrackletOffline(0)
+  ,fNbTRDTrackletStandalone(0)
+  ,fNbTimeBin(0x0)
+  ,fNbTimeBinOffline(0x0)
+  ,fNbTimeBinStandalone(0x0)
+  ,fNbClusters(0)
+  ,fNbClustersOffline(0)
+  ,fNbClustersStandalone(0)
+  ,fPHSM(0)
+  ,fCHSM(0)
+  ,fPHSum(0)
+  ,fCHSum(0)
+  ,fDetSum(0)
+  ,fDetSumVector(0)
+  ,fHisto2d(kTRUE)
+  ,fVector2d(kFALSE)
+  ,fVdriftLinear(kTRUE)
+  ,flow(0)
+  ,fhigh(30)
+  ,fNbTimeBins(0)
+  ,ffillZero(kFALSE)
+  ,fnormalizeNbOfCluster(kFALSE)
+  ,fmaxCluster(0)
+  ,fOfflineTracks(kFALSE)
+  ,fStandaloneTracks(kFALSE)
+  ,fCompressPerDetector(kFALSE)
+  ,fGraph(0x0)
+  ,fArrayCalib(0x0)
+  ,fPostProcess(kFALSE)
+{
+  // Constructor
+  
+  fNRefFigures = 17;
+
+  for(Int_t k = 0; k < 3; k++)
+    {
+      fNz[k]=0;
+      fNrphi[k]=0;
+    }
+
+}  
+
 //________________________________________________________________________
 AliTRDcalibration::~AliTRDcalibration() 
 {
@@ -147,11 +200,11 @@ AliTRDcalibration::~AliTRDcalibration()
    
 }
 //________________________________________________________________________
-void AliTRDcalibration::CreateOutputObjects() 
+void AliTRDcalibration::UserCreateOutputObjects() 
 {
   // Create output objects
 
-  OpenFile(0, "RECREATE");
+  OpenFile(1, "RECREATE");
   
   // Number of time bins
   if(fNbTimeBins==0) {
@@ -297,7 +350,7 @@ void AliTRDcalibration::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliTRDcalibration::Exec(Option_t *) 
+void AliTRDcalibration::UserExec(Option_t *) 
 {
   //
   // Execute function where the reference data are filled
@@ -418,7 +471,7 @@ void AliTRDcalibration::Exec(Option_t *)
   //printf("Nbof tracks %d\n",nbTrdTracks);
   
   // Post output data
-  PostData(0, fContainer);
+  PostData(1, fContainer);
 
   //printf("post container\n");
   

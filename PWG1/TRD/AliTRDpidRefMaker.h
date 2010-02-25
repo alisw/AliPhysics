@@ -81,8 +81,8 @@ public:
   virtual ~AliTRDpidRefMaker();
   
   void    ConnectInputData(Option_t *opt);
-  void    CreateOutputObjects();
-  void    Exec(Option_t *option);
+  void    UserCreateOutputObjects();
+  void    UserExec(Option_t *option);
   Float_t GetPthreshold() const { return fPthreshold;}
 
   void    SetAbundance(Float_t train);

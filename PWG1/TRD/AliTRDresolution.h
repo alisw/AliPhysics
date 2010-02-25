@@ -52,13 +52,14 @@ public:
   };
 
   AliTRDresolution();
+  AliTRDresolution(char* name);
   virtual ~AliTRDresolution();
   
-  void    CreateOutputObjects();
+  void    UserCreateOutputObjects();
   Bool_t  GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
-  void    Exec(Option_t * opt);
+  void    UserExec(Option_t * opt);
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
