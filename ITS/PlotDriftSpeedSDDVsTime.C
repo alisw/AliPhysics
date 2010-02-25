@@ -186,6 +186,73 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
   gvdrvsrun[mod3]->Draw("PSAME");
   gvdrvsrun[mod4]->Draw("PSAME");
   leg->Draw();
+
+
+  TH2F* hlay3=new TH2F("hlay3","Variation of the drift speed (%) Layer 3",6,-0.5,5.5,14,-0.5,13.5);
+  hlay3->GetXaxis()->SetTitle("Detector");
+  hlay3->GetYaxis()->SetTitle("Ladder");
+  hlay3->GetXaxis()->SetTickLength(0);
+  hlay3->GetYaxis()->SetTickLength(0);
+  hlay3->SetStats(0);
+
+  TH2F* hlay4=new TH2F("hlay4","Variation of the drift speed (%) Layer 4",8,-0.5,7.5,22,-0.5,21.5);
+  hlay4->GetXaxis()->SetTitle("Detector");
+  hlay4->GetYaxis()->SetTitle("Ladder");
+  hlay4->GetXaxis()->SetTickLength(0);
+  hlay4->GetYaxis()->SetTickLength(0);
+  hlay4->GetYaxis()->SetTitle("Ladder");
+  hlay4->SetStats(0);
+
+  Double_t run1,run2,vdr1,vdr2;
+  Int_t lay,lad,det;
+  for(Int_t iMod=0; iMod<260; iMod++){
+    Int_t lastPoint=gvdrvsrun[iMod]->GetN()-1;
+    gvdrvsrun[iMod]->GetPoint(lastPoint,run2,vdr2);
+    gvdrvsrun[iMod]->GetPoint(lastPoint-1,run1,vdr1);
+    Float_t diff=0.;
+    if(vdr1>0.) diff=100*(vdr2-vdr1)/vdr1;
+    AliITSgeomTGeo::GetModuleId(iMod+240,lay,lad,det);
+    if(lay==3) hlay3->SetBinContent(det,lad,diff);
+    if(lay==4) hlay4->SetBinContent(det,lad,diff);
+  }
+  TLine* lin=new TLine(0,0,0,23);  
+  gStyle->SetPalette(1);
+
+  TCanvas *c0b=new TCanvas("c0b","Percent difference Last Run - Previous Run",900,600);
+  c0b->Divide(2,1);
+  c0b->cd(1);
+  hlay3->DrawCopy("colz");
+  for(Int_t i=0;i<6;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(13.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<14;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(5.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+  c0b->cd(2);
+  hlay4->DrawCopy("colz");
+  for(Int_t i=0;i<8;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(21.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<22;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(7.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+  
 }
 
 void FillErrors(Float_t errSpeed[260]){
