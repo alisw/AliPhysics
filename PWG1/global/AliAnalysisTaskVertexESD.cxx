@@ -435,10 +435,10 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     if(trkvncodd->GetNContributors()>0 && 
        trkvnceven->GetNContributors()>0) {
       xnt[index++]=trkvncodd->GetXv()-trkvnceven->GetXv();
-      xnt[index++]=TMath::Sqrt(trkvncodd->GetXRes()*trkvncodd->GetXRes()+trkvnceven->GetXRes()*trkvnceven->GetXRes());
       xnt[index++]=trkvncodd->GetYv()-trkvnceven->GetYv();
-      xnt[index++]=TMath::Sqrt(trkvncodd->GetYRes()*trkvncodd->GetYRes()+trkvnceven->GetYRes()*trkvnceven->GetYRes());
       xnt[index++]=trkvncodd->GetZv()-trkvnceven->GetZv();
+      xnt[index++]=TMath::Sqrt(trkvncodd->GetXRes()*trkvncodd->GetXRes()+trkvnceven->GetXRes()*trkvnceven->GetXRes());
+      xnt[index++]=TMath::Sqrt(trkvncodd->GetYRes()*trkvncodd->GetYRes()+trkvnceven->GetYRes()*trkvnceven->GetYRes());
       xnt[index++]=TMath::Sqrt(trkvncodd->GetZRes()*trkvncodd->GetZRes()+trkvnceven->GetZRes()*trkvnceven->GetZRes());
       xnt[index++]=0.5*(trkvncodd->GetNContributors()+trkvnceven->GetNContributors());
     } else {
