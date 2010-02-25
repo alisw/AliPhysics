@@ -323,6 +323,7 @@ Int_t processBlock( AliHLTHOMERBlockDesc* block );
 Int_t processAsyncBlock( AliHLTHOMERBlockDesc* block );
 Int_t updateDisplay();
 Int_t addHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount );
+
 void writeToFile();
 
 
