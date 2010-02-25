@@ -183,6 +183,8 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
     return;
   }
 
+  fClusterizer->ResetRecPoints();
+
   fClusterizer->OpenOutput(clusterTree);
   fClusterizer->OpenTrackletOutput();
   fClusterizer->SetUseLabels(kFALSE);
@@ -215,6 +217,8 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
     AliFatal("Clusterizer not available!");
     return;
   }
+
+  fClusterizer->ResetRecPoints();
 
   fClusterizer->OpenOutput(clusterTree);
   fClusterizer->ReadDigits(digitsTree);
