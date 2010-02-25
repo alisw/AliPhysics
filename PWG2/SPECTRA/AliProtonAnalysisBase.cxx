@@ -918,7 +918,7 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(tpcTrack) {
       gPt = tpcTrack->Pt();
-      gP = tpcTrack->P();
+      gP = track->GetInnerParam()->P();
       gEta = tpcTrack->Eta();
     }
     Double_t fAlephParameters[5];
