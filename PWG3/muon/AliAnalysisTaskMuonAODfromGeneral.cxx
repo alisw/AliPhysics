@@ -171,13 +171,12 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   Int_t jDimuons=0;
   for(Int_t i=0; i<nMuTracks; i++){
      for(Int_t j=i+1; j<nMuTracks; j++){
-       new(rDimuons[jDimuons++]) AliAODDimuon(tracks[i],tracks[j],fInfos);
+       new(rDimuons[jDimuons++]) AliAODDimuon(tracks[i],tracks[j]);
      } 
   }
   
   fInfos->SetBeamEnergy(fBeamEnergy);
   fInfos->SetEv(fNewAOD);
-  fInfos->SetEi(fInfos);
   fInfos->SetHe(header);
   fInfos->SetTr(fNewAOD->GetTracks());
   fInfos->SetDi(fDimuons);

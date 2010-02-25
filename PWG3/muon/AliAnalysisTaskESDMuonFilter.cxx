@@ -36,6 +36,7 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliAODMCParticle.h"
+#include "AliAODDimuon.h"
 
 ClassImp(AliAnalysisTaskESDMuonFilter)
 
@@ -71,6 +72,7 @@ void AliAnalysisTaskESDMuonFilter::Init()
   AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
   if (!aodH) Fatal("UserCreateOutputObjects", "No AOD handler. Aborting.");
   if(fEnableMuonAOD)aodH->AddFilteredAOD("AliAOD.Muons.root", "MuonEvents");
+  if(fEnableDimuonAOD)aodH->AddFilteredAOD("AliAOD.Dimuons.root", "DimuonEvents");
 }
 
 
@@ -119,12 +121,21 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   
   // Loop on muon tracks to fill the AOD track branch
   Int_t nMuTracks = esd->GetNumberOfMuonTracks();
+
   
   // Update number of positive and negative tracks from AOD event (M.G.)
   Int_t nPosTracks = header->GetRefMultiplicityPos();
   Int_t nNegTracks = header->GetRefMultiplicityNeg();
   
+  // Access to the AOD container of dimuons
+  TClonesArray &dimuons = *(AODEvent()->GetDimuons());
+  AliAODDimuon *aodDimuon = 0x0;
+  
   Bool_t MuonsExist = kFALSE;
+  Bool_t DimuonsExist = kFALSE;
+  Int_t firstMuonTrack=0;
+  Int_t nMuons=0;
+  Int_t jDimuons=0;
 
   for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
     esdMuTrack = esd->GetMuonTrack(nMuTrack);
@@ -139,8 +150,6 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
      	  continue;
      	}  
      }
-
-    if(!MuonsExist) MuonsExist=kTRUE;
 
     p[0] = esdMuTrack->Px(); 
     p[1] = esdMuTrack->Py(); 
@@ -177,22 +186,48 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     aodTrack->SetMuonClusterMap(esdMuTrack->GetMuonClusterMap());
     aodTrack->SetMatchTrigger(esdMuTrack->GetMatchTrigger());
     aodTrack->Connected(esdMuTrack->IsConnected());
-    
     primary->AddDaughter(aodTrack);
     
     if (esdMuTrack->Charge() > 0) nPosTracks++;
     else nNegTracks++;
+    
+    // fill dimuon branch
+    if(!MuonsExist) {
+      MuonsExist=kTRUE;
+      firstMuonTrack=jTracks-1.;
+    }  
+    nMuons++;
+    if(nMuons==2) DimuonsExist = kTRUE;   
+    if(DimuonsExist) { 
+      AliAODTrack *track0 = (AliAODTrack*)tracks.At(firstMuonTrack);
+      AliAODTrack *track1 = (AliAODTrack*)tracks.At(jTracks-1);
+      aodDimuon = new(dimuons[jDimuons++]) AliAODDimuon(tracks.At(jTracks-1),tracks.At(firstMuonTrack));
+      //AliAODDimuon *dimuon0 = (AliAODDimuon*)dimuons.At(0);
+      //printf("Dimuon: mass = %f, px=%f, py=%f, pz=%f\n",dimuon0->M(),dimuon0->Px(),dimuon0->Py(),dimuon0->Pz());  
+      //AliAODTrack  *mu0 = (AliAODTrack*) dimuon0->GetMu(0);
+      //AliAODTrack  *mu1 = (AliAODTrack*) dimuon0->GetMu(1);
+      //printf("Muon0 px=%f py=%f pz=%f\n",mu0->Px(),mu0->Py(),mu0->Pz());
+      //printf("Muon1 px=%f py=%f pz=%f\n",mu1->Px(),mu1->Py(),mu1->Pz());
+      break;
+    }
+
   }
   
   header->SetRefMultiplicity(jTracks); 
   header->SetRefMultiplicityPos(nPosTracks);
   header->SetRefMultiplicityNeg(nNegTracks);
-
+  
   // From Andrei
   if(fEnableMuonAOD && MuonsExist){
     AliAODExtension *extMuons = dynamic_cast<AliAODHandler*>
     ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler())->GetFilteredAOD("AliAOD.Muons.root");
     extMuons->SelectEvent();
+  }
+
+  if(fEnableDimuonAOD && DimuonsExist){
+    AliAODExtension *extDimuons = dynamic_cast<AliAODHandler*>
+   ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler())->GetFilteredAOD("AliAOD.Dimuons.root");
+    extDimuons->SelectEvent();
   }
 
 }

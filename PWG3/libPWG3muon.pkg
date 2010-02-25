@@ -7,7 +7,6 @@ SRCS:=	 muon/AliAnalysisTaskESDMuonFilter.cxx \
                  muon/AliAnalysisTaskLUT.cxx  \
                  muon/AliAnalysisTaskTrigChEff.cxx \
                  muon/AliAnalysisTaskLinkToMC.cxx \
-                 muon/AliAODDimuon.cxx \
                  muon/AliAODEventInfo.cxx \
                  muon/AliESDMuonTrackCuts.cxx \
                  muon/AliAnalysisTaskSingleMuESD.cxx \
@@ -35,3 +34,4 @@ ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
                          -lESD -lAOD -lANALYSIS -lANALYSISalice
 endif
+

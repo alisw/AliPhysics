@@ -28,6 +28,7 @@ class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
     // Setters
     virtual void SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
     void SetWriteMuonAOD(Bool_t enableMuonAOD){fEnableMuonAOD = enableMuonAOD;}
+    void SetWriteDimuonAOD(Bool_t enableDimuonAOD){fEnableDimuonAOD = enableDimuonAOD;}
 
  private:
     AliAnalysisTaskESDMuonFilter(const AliAnalysisTaskESDMuonFilter&);
@@ -35,6 +36,7 @@ class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
     void PrintMCInfo(AliStack *pStack,Int_t label); // for debugging
     AliAnalysisFilter* fTrackFilter; //  Track Filter
     Bool_t fEnableMuonAOD; // flag for enabling Muon AOD production
+    Bool_t fEnableDimuonAOD; // flag for enabling Dimuon AOD production
     ClassDef(AliAnalysisTaskESDMuonFilter, 1); // Analysis task for standard ESD filtering
 
 };
