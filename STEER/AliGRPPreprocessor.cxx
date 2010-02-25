@@ -177,11 +177,11 @@ ClassImp(AliGRPPreprocessor)
 
 
   const char* AliGRPPreprocessor::fgkLHCDataPoints[AliGRPPreprocessor::fgknLHCDP] = {
-	  "dip/acc/LHC/Beam/Energy.Energy",
-	  "dip/acc/LHC/RunControl/MachineMode.value",
-	  "dip/acc/LHC/RunControl/BeamMode.value",
-	  "dip/acc/LHC/RunControl/BeamType/Beam1.payload",
-	  "dip/acc/LHC/RunControl/BeamType/Beam2.payload"
+	  "lhcMon_LHCBeam.Energy",
+	  "lhcMon_LHCMachineMode.value",
+	  "lhcMon_LHCBeamMode.value",
+          "dip/acc/LHC/RunControl/BeamType/Beam1.payload",
+          "dip/acc/LHC/RunControl/BeamType/Beam2.payload"
   };
   const char* kppError[] = {
                    "",
@@ -592,9 +592,6 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 	Double_t timeStart = timeStartString.Atof();
 	Double_t timeEnd = timeEndString.Atof();
 
-	//	timeStart = 1260646960;
-	//timeEnd = 1260652740;
-
 	TString fileName = GetFile(kDCS, "LHCData","");
 	if (fileName.Length()>0){
 		AliInfo("Got The LHC Data file");
@@ -606,48 +603,61 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 			// Processing data to be put in AliGRPObject
 			// Energy
 			TObjArray* energyArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[0]);
-			Float_t energy = ProcessEnergy(energyArray,timeStart,timeEnd);
-			if (energy != -1) {
-				grpobj->SetBeamEnergy(energy);
-				grpobj->SetBeamEnergyIsSqrtSHalfGeV(kTRUE);
+			if (energyArray){			
+				Float_t energy = ProcessEnergy(energyArray,timeStart,timeEnd);
+				if (energy != -1) {
+					grpobj->SetBeamEnergy(energy);
+					grpobj->SetBeamEnergyIsSqrtSHalfGeV(kTRUE);
+				}
 			}
-			
+			else {
+				AliError("Energy not found in LHC Data file!!!");
+			}	
 			Double_t timeBeamMode = 0;
 			Double_t timeMachineMode = 0;
 			// BeamMode
 			TObjArray* beamModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[2]);
-			if (beamModeArray->GetEntries()==0){
-				AliInfo("No Beam Mode found, setting it to UNKNOWN");
-				grpobj->SetLHCState("UNKNOWN");
+			if (beamModeArray){		
+				if (beamModeArray->GetEntries()==0){
+					AliInfo("No Beam Mode found, setting it to UNKNOWN");
+					grpobj->SetLHCState("UNKNOWN");
+				}
+				else{
+					AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
+					TObjString* beamModeString = beamMode->GetStringArray(0);
+					if (beamModeArray->GetEntries()>1){
+						timeBeamMode = beamMode->GetTimeStamp();
+						AliWarning(Form("The beam mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeBeamMode));
+					}
+					AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
+					grpobj->SetLHCState(beamModeString->String());
+				}
+				
 			}
 			else{
-				AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
-				TObjString* beamModeString = beamMode->GetStringArray(0);
-				if (beamModeArray->GetEntries()>1){
-					timeBeamMode = beamMode->GetTimeStamp();
-					AliWarning(Form("The beam mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeBeamMode));
-				}
-				AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
-				grpobj->SetLHCState(beamModeString->String());
+				AliError("Beam mode array not found in LHC Data file!!!");
 			}
-			
 			// MachineMode
 			TObjArray* machineModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[1]);
-			if (machineModeArray->GetEntries()==0){
-				AliInfo("No Machine Mode found, setting it to UNKNOWN");
-				grpobj->SetMachineMode("UNKNOWN");
-			}
-			else{
-				AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
-				TObjString* machineModeString = machineMode->GetStringArray(0);
-				if (machineModeArray->GetEntries()>1){
-					timeMachineMode = machineMode->GetTimeStamp();
-					AliWarning(Form("The Machine Mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeMachineMode));
+			if (machineModeArray){
+				if (machineModeArray->GetEntries()==0){
+					AliInfo("No Machine Mode found, setting it to UNKNOWN");
+					grpobj->SetMachineMode("UNKNOWN");
 				}
-				AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
-				grpobj->SetMachineMode(machineModeString->String());
+				else{
+					AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
+					TObjString* machineModeString = machineMode->GetStringArray(0);
+					if (machineModeArray->GetEntries()>1){
+						timeMachineMode = machineMode->GetTimeStamp();
+						AliWarning(Form("The Machine Mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeMachineMode));
+					}
+					AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
+					grpobj->SetMachineMode(machineModeString->String());
+				}
 			}
-			
+			else {
+				AliError("Machine mode array not found in LHC Data file!!!");
+			}	
 			if (timeBeamMode!=0 || timeMachineMode!=0){
 				Double_t minTimeLHCValidity;
  				if (timeBeamMode == 0){
@@ -665,10 +675,20 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 			
 			// BeamType1 and BeamType2 
 			TObjArray* beam1Array = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[3]);
-			AliInfo(Form("%d entries for Beam1",beam1Array->GetEntries()));
-			TObjArray* beam2Array = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[4]);
-			AliInfo(Form("%d entries for Beam2",beam2Array->GetEntries()));
-			
+			if (beam1Array){			
+				AliInfo(Form("%d entries for Beam1",beam1Array->GetEntries()));
+			}
+			else{
+				AliError("Beam1 array not found in LHC data file!!!");
+			}			
+			TObjArray* beam2Array = 
+				(TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[4]);
+			if (beam2Array){
+				AliInfo(Form("%d entries for Beam2",beam2Array->GetEntries()));
+			}
+			else{
+				AliError("Beam2 array not found in LHC data file!!!");
+			}	
 			// Processing data to go to AliLHCData object
 			AliLHCData* dt = new AliLHCData(lhcMap,timeStart,timeEnd);
 							
