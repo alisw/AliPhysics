@@ -43,7 +43,7 @@ AliFlowTrackSimple::AliFlowTrackSimple():
 //-----------------------------------------------------------------------
 
 AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
-  TObject(),
+  TNamed(),
   fEta(aTrack.fEta),
   fPt(aTrack.fPt),
   fPhi(aTrack.fPhi),

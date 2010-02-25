@@ -36,6 +36,24 @@ Double_t maxA = -0.01;
 Double_t minB = 0.01;
 Double_t maxB = 0.9;
 
+// Define simple cuts for RP selection:
+Double_t ptMinRP = 0.0; // in GeV
+Double_t ptMaxRP = 10.0; // in GeV
+Double_t etaMinRP  = -0.9;
+Double_t etaMaxRP  = 0.9;
+Double_t phiMinRP  = 0.0; // in degrees
+Double_t phiMaxRP  = 360.0; // in degrees
+Int_t pidRP = -1; // to be improved (supported eventually)
+
+// Define simple cuts for POI selection:
+Double_t ptMinPOI = 0.0; // in GeV
+Double_t ptMaxPOI = 10.0; // in GeV
+Double_t etaMinPOI  = -0.9;
+Double_t etaMaxPOI  = 0.9;
+Double_t phiMinPOI  = 0.0; // in degrees
+Double_t phiMaxPOI  = 360.0; // in degrees
+Int_t pidPOI = -1; // to be improved (supported eventually)
+
 // Parameters for the simulation of events 'on the fly': 
 //===SEED========================================================
 // use always the same seed for random generators. 
@@ -63,6 +81,11 @@ Double_t etaRange = 0.0; // If the original track with pseudorapidity eta is spl
                          // from (eta-etaRange, eta+etaRange). If etaRange = 0.0, the
                          // pseudorapidity of splitted track will be the same as the
                          // pseudorapidity of original track.
+// in addition one can simulate nonflow only in a certain detector's sector 
+// ranging from nonflowSectorMin to nonflowSectorMax. Outside this sector the
+// tracks will not be splitted. Use the following two settings only if iLoops>1:                         
+Double_t nonflowSectorMin = 0.0; // detector's sector in which tracks will be splitted starts at this angle (in degrees)                         
+Double_t nonflowSectorMax = 360.0; // detector's sector in which tracks will be splitted ends at this angle (in degrees)                        
 
 //===FLOW HARMONICS===============================================================
 // harmonics V1, V2, V4... are constants or functions of pt and eta:                    
@@ -105,7 +128,7 @@ Bool_t bMultDistrOfRPsIsGauss = kTRUE;
                     
 Int_t iMultiplicityOfRP = 500;        // mean multiplicity of RPs (if sampled from Gaussian)
 Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs (if sampled from Gaussian)
-Int_t iMinMultOfRP = 50;             // minimal multiplicity of RPs (if sampled uniformly)
+Int_t iMinMultOfRP = 50;              // minimal multiplicity of RPs (if sampled uniformly)
 Int_t iMaxMultOfRP = 500;             // maximal multiplicity of RPs (if sampled uniformly)
                     
 //===DETECTOR ACCEPTANCE===============================================================
@@ -125,7 +148,7 @@ Bool_t uniformAcceptance = kTRUE;
 // 1st non-uniform sector:
 Double_t phimin1 = 60;  // first non-uniform sector starts at this azimuth
 Double_t phimax1 = 120; // first non-uniform sector ends at this azimuth
-Double_t p1 = 0.6;     // e.g. if p1 = 0 all particles emitted in phimin1 < phi < phimax1 are blocked
+Double_t p1 = 0.5;     // e.g. if p1 = 0 all particles emitted in phimin1 < phi < phimax1 are blocked
                         // e.g. if p1 = 0.5 half of the particles emitted in phimin1 < phi < phimax1 are blocked
 
 // 2nd non-uniform sector (Remark: if you do NOT want to simulate this sector, set phimin2 = phimax2 = p2 = 0):                 
@@ -440,6 +463,8 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  eventMakerOnTheFly->SetPhiRange(phiRange*TMath::Pi()/180.);
  eventMakerOnTheFly->SetPtRange(ptRange);
  eventMakerOnTheFly->SetEtaRange(etaRange);
+ eventMakerOnTheFly->SetNonflowSectorMin(nonflowSectorMin*TMath::Pi()/180.);
+ eventMakerOnTheFly->SetNonflowSectorMax(nonflowSectorMax*TMath::Pi()/180.);
  if(bMultDistrOfRPsIsGauss)
  {
   eventMakerOnTheFly->SetMultDistrOfRPsIsGauss(bMultDistrOfRPsIsGauss);
@@ -501,13 +526,32 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
   eventMakerOnTheFly->SetSecondSectorPhiMax(phimax2);
   eventMakerOnTheFly->SetSecondSectorProbability(p2);
  }
-       
+ 
+ // simple cuts for RPs and POIs:
+ AliFlowTrackSimpleCuts *cutsRP = new AliFlowTrackSimpleCuts();
+ cutsRP->SetPtMax(ptMaxRP);
+ cutsRP->SetPtMin(ptMinRP);
+ cutsRP->SetEtaMax(etaMaxRP);
+ cutsRP->SetEtaMin(etaMinRP);
+ cutsRP->SetPhiMax(phiMaxRP*TMath::Pi()/180.);
+ cutsRP->SetPhiMin(phiMinRP*TMath::Pi()/180.);
+ cutsRP->SetPID(pidRP);
+  
+ AliFlowTrackSimpleCuts *cutsPOI = new AliFlowTrackSimpleCuts();
+ cutsPOI->SetPtMax(ptMaxPOI);
+ cutsPOI->SetPtMin(ptMinPOI);
+ cutsPOI->SetEtaMax(etaMaxPOI);
+ cutsPOI->SetEtaMin(etaMinPOI);
+ cutsPOI->SetPhiMax(phiMaxPOI*TMath::Pi()/180.);
+ cutsPOI->SetPhiMin(phiMinPOI*TMath::Pi()/180.);
+ cutsPOI->SetPID(pidPOI);
+                                       
  //---------------------------------------------------------------------------------------  
  // create and analyze events 'on the fly':
 
  for(Int_t i=0;i<nEvts;i++) {   
    // creating the event with above settings:
-   AliFlowEventSimple *event = eventMakerOnTheFly->CreateEventOnTheFly(); 
+   AliFlowEventSimple *event = eventMakerOnTheFly->CreateEventOnTheFly(cutsRP,cutsPOI); 
    
    // analyzing the created event 'on the fly':
    // do flow analysis for various methods:

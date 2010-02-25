@@ -14,8 +14,9 @@
  **************************************************************************/
 
 /* $Id$ */ 
-#include "TObject.h"
+#include "TNamed.h"
 #include "AliFlowTrackSimpleCuts.h"
+#include "AliFlowTrackSimple.h" 
 
 
 // AliFlowTrackSimpleCuts:
@@ -36,8 +37,7 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
   fEtaMin(0.),
   fPhiMax(0.),
   fPhiMin(0.),
-  fPID(0)
-  
+  fPID(0) 
 {
   //constructor 
   
@@ -46,7 +46,7 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
 //-----------------------------------------------------------------------
 
 AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts& someCuts):
-  TObject(),
+  TNamed(),
   fPtMax(someCuts.fPtMax),
   fPtMin(someCuts.fPtMin),
   fEtaMax(someCuts.fEtaMax),
@@ -81,4 +81,18 @@ AliFlowTrackSimpleCuts::~AliFlowTrackSimpleCuts()
 {
   //destructor
   
+}
+
+
+//----------------------------------------------------------------------- 
+
+Bool_t AliFlowTrackSimpleCuts::PassesCuts(AliFlowTrackSimple *track)
+{
+  //simple method to check if the simple track passes the simple cuts
+  if(track->Pt() >= fPtMin && track->Pt() < fPtMax &&
+     track->Eta() >= fEtaMin && track->Eta() < fEtaMax &&
+     track->Phi() >= fPhiMin && track->Phi() < fPhiMax)
+    { return kTRUE; } 
+  else
+    { return kFALSE; }  
 }
