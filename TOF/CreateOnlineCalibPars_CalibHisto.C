@@ -4,7 +4,7 @@ void CreateOnlineCalibPars_CalibHisto(){
 
   AliTOFcalib *tofcalib = new AliTOFcalib();
   tofcalib->CreateCalArrays();
-  TObjArray *tofCalOnline = (TObjArray*) tofcalib->GetTOFCalArrayOnline(); 
+  AliTOFChannelOnlineArray *delayArray = (AliTOFChannelOnlineArray*) tofcalib->GetTOFOnlineDelay();
 
   /* get calib histo andl and load params */
   AliTOFcalibHisto calibHisto;
@@ -23,7 +23,7 @@ void CreateOnlineCalibPars_CalibHisto(){
   for (Int_t ipad = 0 ; ipad<nChannels; ipad++){
     AliTOFChannelOnline *calChannelOnline = (AliTOFChannelOnline *)tofCalOnline->At(ipad);
     delay = calibHisto.GetFullCorrection(ipad);
-    calChannelOnline->SetDelay(delay);
+    delayArray->SetDelay(ipad, delay);
   }
 
   /* write */
