@@ -5,9 +5,13 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
 		  Int_t addLSD0=1,
 		  Int_t addLSJpsi=1,
 		  Int_t addCFD0=1,
-		  Int_t addPromptD0=1) {
+		  Int_t addPromptD0=1,
+		  Int_t addDs=1,
+		  Int_t addDStar=1,
+		  Int_t addDStarJets=1,
+		  Int_t addCFDStar=1) {
   // 
-  // Task of the D2H subgroup of PWG3 that can run in the Official Train
+  // Tasks of the D2H subgroup of PWG3 that can run in the Official Train
   //
   // They all use AOD+AOD.VertexingHF as input. 
   // They need to read the cuts from the macro 
@@ -82,6 +86,35 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
     AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0.root",switchMC,readMC);
     ntasks++;
   }
+
+  if(addDs) {
+    taskName="AddTaskDs.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEDs *dsTask = AddTaskDs(readMC);
+    ntasks++;
+  }  
+
+  if(addDStar) {
+    taskName="AddTaskDStar.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEDStar *dstarTask = AddTaskDStar(readMC);
+    ntasks++;
+  }  
+
+  if(addDStarJets) {
+    taskName="AddTaskDStarJets.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEDStarJets *dstarjetsTask = AddTaskDStarJets(readMC);
+    ntasks++;
+  }  
+
+  if(addCFDStar && readMC) {
+    taskName="AddTaskCFDStar.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliCFTaskForDStarAnalysis *cfDstarTask = AddTaskCFDStar();
+    ntasks++;
+  }
+
 
   return ntasks;
 }

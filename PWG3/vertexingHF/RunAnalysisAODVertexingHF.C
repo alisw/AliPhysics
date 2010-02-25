@@ -176,6 +176,14 @@ void RunAnalysisAODVertexingHF()
   // Analysis tasks (wagons of the train)   
   //
   TString taskName;
+  ////// ADD THE FULL D2H TRAIN
+  taskName="AddD2HTrain.C"; taskName.Prepend(loadMacroPath.Data());
+  gROOT->LoadMacro(taskName.Data());
+  Bool_t readMC=kFALSE;
+  AddD2HTrain(readMC);//,1,0,0,0,0,0,0,0,0,0,0);
+
+  ////// OR ADD INDIVIDUAL TASKS
+  /*
   
   //taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
@@ -217,8 +225,8 @@ void RunAnalysisAODVertexingHF()
   taskName="AddTaskCharmFraction.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   Int_t switchMC[5]={1,1,1,1,1};
-  AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0.root",switchMC);
-  
+  AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0",switchMC);
+  */
   // attach a private task (not committed)
   // (the files MyTask.h MyTask.cxx AddMyTask.C have to be declared in plugin
   // configuration, see below)
@@ -279,9 +287,8 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Declare input data to be processed.
    // Method 1: Create automatically XML collections using alien 'find' command.
    // Define production directory LFN
-   //plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/");
-   //plugin->SetGridDataDir("/alice/cern.ch/user/m/mgheata/analysisESD/output_train_default_28May2009_09h33/");
-   plugin->SetGridDataDir("/alice/sim/PDC_08b/LHC09a2/AOD1/");
+   plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/data_pass4_good_runCINT1B_8thfeb/");
+   //plugin->SetGridDataDir("/alice/sim/PDC_09/LHC09a4/AOD3/");
    // Set data search pattern
    plugin->SetDataPattern("AliAOD.root");
    plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
