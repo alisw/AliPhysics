@@ -13,20 +13,21 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   if(!(TSTBIT(map, kCheckDET))) return;
 
   AliTRDcheckDET *task = 0x0;
-  mgr->AddTask(task = new AliTRDcheckDET());
+  mgr->AddTask(task = new AliTRDcheckDET("checkDET"));
   task->SetDebugLevel(0);
   task->SetMCdata(mgr->GetMCtruthEventHandler());
   
   // Create containers for input/output
-  mgr->ConnectInput( task, 0, ci[0]);
-  mgr->ConnectInput( task, 1, ci[1]);
-  mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+  mgr->ConnectInput ( task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectInput ( task, 1, ci[0]);
+  mgr->ConnectInput ( task, 2, ci[1]);
+  mgr->ConnectOutput( task, 1, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
   
 
   // CALIBRATION
   if(!(TSTBIT(map, kCalibration))) return;
   AliTRDcalibration *ctask = 0x0;
-  mgr->AddTask(ctask = new AliTRDcalibration());
+  mgr->AddTask(ctask = new AliTRDcalibration("calibration"));
   ctask->SetHisto2d(kTRUE);
   ctask->SetVector2d(kTRUE);
   ctask->SetVdriftLinear(kTRUE);
@@ -42,6 +43,7 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   ctask->SetDebugLevel(1);
 
   // Create containers for input/output
-  mgr->ConnectInput(ctask, 0, ci[0]);
-  mgr->ConnectOutput(ctask, 0, mgr->CreateContainer(ctask->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", ctask->GetName())));
+  mgr->ConnectInput(ctask,  0, mgr->GetCommonInputContainer());
+  mgr->ConnectInput(ctask,  1, ci[0]);
+  mgr->ConnectOutput(ctask, 1, mgr->CreateContainer(ctask->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", ctask->GetName())));
 }

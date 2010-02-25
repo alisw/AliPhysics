@@ -6,9 +6,12 @@
 
 void AddTRDcheckESD(AliAnalysisManager *mgr)
 {
-  AliTRDcheckESD *checkESD = new AliTRDcheckESD();
-  checkESD->SetMC(mgr->GetMCtruthEventHandler());
+  AliTRDcheckESD *checkESD = new AliTRDcheckESD("checkESD");
+  Bool_t hasMCtruth = (mgr->GetMCtruthEventHandler() != 0);
+  
+  checkESD->SetMC(hasMCtruth);
   mgr->AddTask(checkESD);
-  mgr->ConnectInput(checkESD, 0, mgr->GetCommonInputContainer());  mgr->ConnectOutput(checkESD, 0, mgr->CreateContainer(checkESD->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+  mgr->ConnectInput(checkESD,  0, mgr->GetCommonInputContainer());  
+  mgr->ConnectOutput(checkESD, 1, mgr->CreateContainer(checkESD->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
 }
 
