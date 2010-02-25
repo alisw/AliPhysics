@@ -235,8 +235,8 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
   
   // Load the event
   fEvents++;
-  AliInfo(Form("Event %d",fEvents));
-  if (fEvents%10000 ==0) AliInfo(Form("Event %d",fEvents));
+  AliDebug(2,Form("Event %d",fEvents));
+  if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   
   TClonesArray *arrayVerticesHF=0;
