@@ -74,8 +74,8 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       break;
     }
     baseAnalysis->SetAcceptedVertexDiamond(1.,1.,10.);
-    baseAnalysis->SetMinNumOfContributors(3);
-    baseAnalysis->SetEtaMode();
+    baseAnalysis->SetMinNumOfContributors(0);
+    //baseAnalysis->SetEtaMode();
     switch(pidMode) {
     case "Bayesian":
       baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kBayesian);

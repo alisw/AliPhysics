@@ -910,8 +910,8 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
       if(!tpcTrack) continue;
       gPt = tpcTrack->Pt();
-      gP = tpcTrack->P();
-    
+      //gP = tpcTrack->P();
+      gP = track->GetInnerParam()->P();
       tpcTrack->PropagateToDCA(vertex,
 			       esd->GetMagneticField(),
 			       100.,dca,cov);
@@ -1031,7 +1031,9 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
     }//TPC only tracks
     else if(fProtonAnalysisBase->GetAnalysisMode() == AliProtonAnalysisBase::kGlobal) {
       gPt = track->Pt();
-      gP = track->P();
+      //gP = track->P();
+      gP = track->GetInnerParam()->P();
+
       track->PropagateToDCA(vertex,
 			    esd->GetMagneticField(),
 			    100.,dca,cov);

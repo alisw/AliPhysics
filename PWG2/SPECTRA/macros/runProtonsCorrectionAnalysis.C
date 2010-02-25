@@ -348,6 +348,7 @@ void runProof(const char* mode = "ESD",
   outputFilename += ".root";
   
   printf("****** Connect to PROOF *******\n");
+  gEnv->SetValue("XSec.GSI.DelegProxy","2");
   TProof::Open("alicecaf.cern.ch"); 
   //gProof->SetParallel();
   
