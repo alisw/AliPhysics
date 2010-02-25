@@ -44,7 +44,6 @@ public:
   static Float_t GetTPCx() { return fgkTPC;}
   static Float_t GetTOFx() { return fgkTOF;}
 
-  void    Exec(Option_t *);
   Bool_t  IsCollision() const {return TestBit(kCollision);}
 
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
