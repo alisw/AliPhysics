@@ -24,10 +24,11 @@ class AliTRDalignmentTask : public AliTRDrecoTask
 public:
 
   AliTRDalignmentTask();
+  AliTRDalignmentTask(char* name);
   virtual ~AliTRDalignmentTask();
   
-  void    CreateOutputObjects();
-  void    Exec(Option_t *opt);
+  void    UserCreateOutputObjects();
+  void    UserExec(Option_t *opt);
   TH1*    PlotTrackPoints(const AliTRDtrackV1 *track=0x0);
   Bool_t  PostProcess() { return kTRUE;}
   

@@ -44,7 +44,16 @@ ClassImp(AliTRDefficiency)
 
 //____________________________________________________________________
 AliTRDefficiency::AliTRDefficiency()
-  :AliTRDrecoTask("efficiency", "TRD barrel tracking efficiency checker")
+  :AliTRDrecoTask()
+  ,fMissed(0x0)
+{
+  //
+  // Default constructor
+  //
+}
+
+AliTRDefficiency::AliTRDefficiency(char* name)
+  :AliTRDrecoTask(name, "TRD barrel tracking efficiency checker")
   ,fMissed(0x0)
 {
   //
@@ -63,13 +72,13 @@ AliTRDefficiency::~AliTRDefficiency()
 }
 
 //____________________________________________________________________
-void  AliTRDefficiency::CreateOutputObjects()
+void  AliTRDefficiency::UserCreateOutputObjects()
 {
   //
   // Create output objects
   //
 
-  OpenFile(0, "RECREATE");
+  OpenFile(1, "RECREATE");
   const Int_t nbins = AliTRDCalPID::kNMom;
   Float_t xbins[nbins+1] = {.5, .7, .9, 1.3, 1.7, 2.4, 3.5, 4.5, 5.5, 7., 9., 11.};
 
@@ -86,7 +95,7 @@ void  AliTRDefficiency::CreateOutputObjects()
 } 
 
 //____________________________________________________________________
-void AliTRDefficiency::Exec(Option_t *)
+void AliTRDefficiency::UserExec(Option_t *)
 {
   //
   // Do it
@@ -249,7 +258,7 @@ void AliTRDefficiency::Exec(Option_t *)
 	for(Int_t itk = 0; itk < nTRD - 1; itk++)
 		if(labelsacc[indices[itk]] ==labelsacc[indices[itk + 1]]) printf("Double counted MC track: %d\n", labelsacc[indices[itk]]);
 	}
-  PostData(0, fContainer);
+  PostData(1, fContainer);
 }
 
 

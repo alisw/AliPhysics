@@ -45,11 +45,12 @@ public:
     ,kNPlots           =  12    // Number of plots for this tasks 
   };
   AliTRDcheckPID();
+  AliTRDcheckPID(char* name);
   virtual ~AliTRDcheckPID();
   
-  virtual void    CreateOutputObjects();
+  virtual void    UserCreateOutputObjects();
   virtual Bool_t  GetRefFigure(Int_t ifig);
-  virtual void    Exec(Option_t *opt);
+  virtual void    UserExec(Option_t *opt);
   virtual Bool_t  PostProcess();
 
   TH1 *PlotLQ(const AliTRDtrackV1 *track = 0x0);

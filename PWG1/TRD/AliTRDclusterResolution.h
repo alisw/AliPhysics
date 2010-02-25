@@ -34,12 +34,13 @@ public:
     kSaveAs    = BIT(22)
    ,kExB       = BIT(23)
   };
-  AliTRDclusterResolution(const char *name="ClErrParam", const char *title="Cluster error monitor");
+  AliTRDclusterResolution();
+  AliTRDclusterResolution(const char *name, const char *title="Cluster error monitor");
   virtual ~AliTRDclusterResolution();
 
   void          ConnectInputData(Option_t *);
-  void          CreateOutputObjects();
-  void          Exec(Option_t *);
+  void          UserCreateOutputObjects();
+  void          UserExec(Option_t *);
   Int_t         GetDetector() const { return fDet; }
   inline Float_t GetExB() const;
   inline Float_t GetVdrift() const;

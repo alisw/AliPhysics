@@ -41,13 +41,20 @@ ClassImp(AliTRDalignmentTask)
 
 //________________________________________________________
 AliTRDalignmentTask::AliTRDalignmentTask()
-  :AliTRDrecoTask("Alignment", "TRD alignment")
+  :AliTRDrecoTask()
   ,fTree(0x0)
   ,fArray(0x0)
 {
   InitFunctorList();
-  DefineOutput(1, TTree::Class());
+}
 
+AliTRDalignmentTask::AliTRDalignmentTask(char* name)
+  :AliTRDrecoTask(name, "TRD alignment")
+  ,fTree(0x0)
+  ,fArray(0x0)
+{
+  InitFunctorList();
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________
@@ -58,10 +65,10 @@ AliTRDalignmentTask::~AliTRDalignmentTask()
 
 
 //________________________________________________________
-void AliTRDalignmentTask::CreateOutputObjects()
+void AliTRDalignmentTask::UserCreateOutputObjects()
 {
   // spatial resolution
-  OpenFile(1, "RECREATE");
+  OpenFile(2, "RECREATE");
 
   fTree = new TTree("spTree", "Tree with track space point arrays");
   fTree->Branch("SP","AliTrackPointArray", &fArray);
@@ -69,12 +76,12 @@ void AliTRDalignmentTask::CreateOutputObjects()
 
 
 //________________________________________________________
-void AliTRDalignmentTask::Exec(Option_t *opt)
+void AliTRDalignmentTask::UserExec(Option_t *opt)
 {
 // Documentation to come
 
   AliTRDrecoTask::Exec(opt);
-  PostData(1, fTree);
+  PostData(2, fTree);
 }
 
 

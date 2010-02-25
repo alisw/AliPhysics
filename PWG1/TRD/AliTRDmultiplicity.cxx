@@ -55,7 +55,16 @@ ClassImp(AliTRDmultiplicity)
 
 //____________________________________________________________________
 AliTRDmultiplicity::AliTRDmultiplicity()
-    :AliTRDrecoTask("Multiplicity", "Barrel Tracking Multiplicity")
+    :AliTRDrecoTask()
+  ,fEventCounter(0)
+{
+  //
+  // Default constructor
+    //
+}
+
+AliTRDmultiplicity::AliTRDmultiplicity(char* name)
+    :AliTRDrecoTask(name, "Barrel Tracking Multiplicity")
   ,fEventCounter(0)
 {
   //
@@ -69,13 +78,13 @@ AliTRDmultiplicity::~AliTRDmultiplicity()
 }
 
 //____________________________________________________________________
-void  AliTRDmultiplicity::CreateOutputObjects()
+void  AliTRDmultiplicity::UserCreateOutputObjects()
 {
   //
   // Create output objects
   //
 
-  OpenFile(0, "RECREATE");
+  OpenFile(1, "RECREATE");
 
   TH1 *h = 0x0;
   fContainer = new TObjArray();
@@ -85,7 +94,7 @@ void  AliTRDmultiplicity::CreateOutputObjects()
 } 
 
 //____________________________________________________________________
-void AliTRDmultiplicity::Exec(Option_t *)
+void AliTRDmultiplicity::UserExec(Option_t *)
 {
   //
   // Do it
@@ -282,7 +291,7 @@ void AliTRDmultiplicity::Exec(Option_t *)
   }
 
   
-  PostData(0, fContainer);
+  PostData(1, fContainer);
 }
 
 

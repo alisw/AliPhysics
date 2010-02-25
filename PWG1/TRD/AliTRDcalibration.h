@@ -55,10 +55,11 @@ public:
   
 
   AliTRDcalibration();
+  AliTRDcalibration(char* name);
   virtual ~AliTRDcalibration();
   
-  virtual void    CreateOutputObjects();
-  virtual void    Exec(Option_t *option);
+  virtual void    UserCreateOutputObjects();
+  virtual void    UserExec(Option_t *option);
   virtual void    Terminate(Option_t *);
   virtual Bool_t  GetRefFigure(Int_t ifig);
   virtual Bool_t  PostProcess();

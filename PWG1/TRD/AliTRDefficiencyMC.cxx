@@ -54,27 +54,34 @@ Float_t AliTRDefficiencyMC::fgPhiCut = 50.; //[deg]
 Float_t AliTRDefficiencyMC::fgThtCut = 50.; //[deg]
 //_____________________________________________________________________________
 AliTRDefficiencyMC::AliTRDefficiencyMC()
-  :AliTRDrecoTask("EfficiencyMC", "Combined Tracking Efficiency")
+  :AliTRDrecoTask()
 {
   //
   // Default constructor
   //
 }
 
+AliTRDefficiencyMC::AliTRDefficiencyMC(char* name)
+  :AliTRDrecoTask(name, "Combined Tracking Efficiency")
+{
+  //
+  // Default constructor
+  //
+}
 
 //_____________________________________________________________________________
-void AliTRDefficiencyMC::CreateOutputObjects(){
+void AliTRDefficiencyMC::UserCreateOutputObjects(){
   //
   // Create output objects
   //
 
-  OpenFile(0, "RECREATE");
+  OpenFile(1, "RECREATE");
   fContainer = Histos();
 
 }
 
 //_____________________________________________________________________________
-void AliTRDefficiencyMC::Exec(Option_t *){
+void AliTRDefficiencyMC::UserExec(Option_t *){
   //
   // Execute the task:
   //
@@ -191,7 +198,7 @@ void AliTRDefficiencyMC::Exec(Option_t *){
     ncontam, 
     (nall ? 1.E2*Float_t(ncontam)/Float_t(nall) : 0.)));
 
-  PostData(0, fContainer);
+  PostData(1, fContainer);
 }
 
 

@@ -59,7 +59,22 @@ ClassImp(AliTRDcheckPID)
 
 //________________________________________________________________________
 AliTRDcheckPID::AliTRDcheckPID() 
-  :AliTRDrecoTask("checkPID", "TRD PID checker")
+  :AliTRDrecoTask()
+  ,fReconstructor(NULL)
+  ,fUtil(NULL)
+  ,fGraph(NULL)
+  ,fPID(NULL)
+  ,fMomentumAxis(NULL)
+  ,fMinNTracklets(AliTRDgeometry::kNlayer)
+  ,fMaxNTracklets(AliTRDgeometry::kNlayer)
+ {
+  //
+  // Default constructor
+  //
+}
+
+AliTRDcheckPID::AliTRDcheckPID(char* name ) 
+  :AliTRDrecoTask(name, "Check PID")
   ,fReconstructor(NULL)
   ,fUtil(NULL)
   ,fGraph(NULL)
@@ -85,7 +100,9 @@ AliTRDcheckPID::AliTRDcheckPID()
 
   fUtil = new AliTRDpidUtil();
   InitFunctorList();
-  DefineOutput(1, TObjArray::Class()); // PID for reference maker
+
+  DefineOutput(2, TObjArray::Class());
+  
 }
 
 
@@ -100,12 +117,12 @@ AliTRDcheckPID::~AliTRDcheckPID()
 
 
 //________________________________________________________________________
-void AliTRDcheckPID::CreateOutputObjects()
+void AliTRDcheckPID::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
 
-  OpenFile(0, "RECREATE");
+  OpenFile(1, "RECREATE");
   fContainer = Histos();
 
   fPID = new TObjArray();
@@ -113,7 +130,7 @@ void AliTRDcheckPID::CreateOutputObjects()
 }
 
 //________________________________________________________
-void AliTRDcheckPID::Exec(Option_t *opt)
+void AliTRDcheckPID::UserExec(Option_t *opt)
 {
   //
   // Execution part
@@ -123,7 +140,7 @@ void AliTRDcheckPID::Exec(Option_t *opt)
 
   AliTRDrecoTask::Exec(opt);
 
-  PostData(1, fPID);
+  PostData(2, fPID);
 }
 
 

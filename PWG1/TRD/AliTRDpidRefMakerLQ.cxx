@@ -75,7 +75,7 @@ AliTRDpidRefMakerLQ::~AliTRDpidRefMakerLQ()
 }
 
 // //________________________________________________________________________
-void AliTRDpidRefMakerLQ::CreateOutputObjects()
+void AliTRDpidRefMakerLQ::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -226,7 +226,7 @@ Bool_t AliTRDpidRefMakerLQ::Load(const Char_t */*fname*/)
 
 
 //________________________________________________________________________
-void AliTRDpidRefMakerLQ::Exec(Option_t */*opt*/)
+void AliTRDpidRefMakerLQ::UserExec(Option_t */*opt*/)
 {
 // Load PID data into local data storage
 

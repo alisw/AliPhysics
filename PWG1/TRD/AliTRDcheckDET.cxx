@@ -44,6 +44,7 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TROOT.h>
+#include <TChain.h>
 
 #include "AliLog.h"
 #include "AliTRDcluster.h"
@@ -74,7 +75,7 @@ ClassImp(AliTRDcheckDET)
 
 //_______________________________________________________
 AliTRDcheckDET::AliTRDcheckDET():
-  AliTRDrecoTask("checkDET", "Basic TRD data checker")
+  AliTRDrecoTask()
   ,fEventInfo(0x0)
   ,fTriggerNames(0x0)
   ,fReconstructor(0x0)
@@ -84,12 +85,28 @@ AliTRDcheckDET::AliTRDcheckDET():
   //
   // Default constructor
   //
-  DefineInput(1,AliTRDeventInfo::Class());
+}
+
+
+AliTRDcheckDET::AliTRDcheckDET(char* name):
+  AliTRDrecoTask(name, "Basic TRD data checker")
+  ,fEventInfo(0x0)
+  ,fTriggerNames(0x0)
+  ,fReconstructor(0x0)
+  ,fGeo(0x0)
+  ,fFlags(0)
+{
+  //
+  // Default constructor
+  //
+  DefineInput(2, AliTRDeventInfo::Class());
+
   fReconstructor = new AliTRDReconstructor;
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
   fGeo = new AliTRDgeometry;
   InitFunctorList();
 }
+
 
 //_______________________________________________________
 AliTRDcheckDET::~AliTRDcheckDET(){
@@ -107,21 +124,21 @@ void AliTRDcheckDET::ConnectInputData(Option_t *opt){
   // Connect the Input data with the task
   //
   AliTRDrecoTask::ConnectInputData(opt);
-  fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(1));
+  fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
 }
 
 //_______________________________________________________
-void AliTRDcheckDET::CreateOutputObjects(){
+void AliTRDcheckDET::UserCreateOutputObjects(){
   //
   // Create Output Objects
   //
-  OpenFile(0,"RECREATE");
+  OpenFile(1,"RECREATE");
   fContainer = Histos();
   if(!fTriggerNames) fTriggerNames = new TMap();
 }
 
 //_______________________________________________________
-void AliTRDcheckDET::Exec(Option_t *opt){
+void AliTRDcheckDET::UserExec(Option_t *opt){
   //
   // Execution function
   // Filling TRD quality histos
@@ -139,6 +156,7 @@ void AliTRDcheckDET::Exec(Option_t *opt){
     if(!fTrackInfo->GetTrack()) continue;
     nTracks++;
   }
+
   if(nTracks){
     dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTriggerTracks))->Fill(triggermask);
     dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtracksEvent))->Fill(nTracks);
@@ -151,7 +169,7 @@ void AliTRDcheckDET::Exec(Option_t *opt){
     histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTrigger));
     histo->GetXaxis()->SetBinLabel(histo->FindBin(triggermask), triggername);
   }
-  PostData(0, fContainer);
+  PostData(1, fContainer);
 }
 
 
@@ -196,6 +214,7 @@ Bool_t AliTRDcheckDET::PostProcess(){
   h->SetBinContent(1, 0.);
 
   // tracklet status
+  
   TObjArray *arr = dynamic_cast<TObjArray*>(fContainer->UncheckedAt(kTrackletStatus));
   for(Int_t ily = AliTRDgeometry::kNlayer; ily--;){
     h=dynamic_cast<TH1F*>(arr->At(ily));
@@ -348,6 +367,7 @@ TObjArray *AliTRDcheckDET::Histos(){
   //
   // Create QA histograms
   //
+    
   if(fContainer) return fContainer;
   
   fContainer = new TObjArray(20);
@@ -496,6 +516,8 @@ TObjArray *AliTRDcheckDET::Histos(){
   if(!(h = (TH1F *)gROOT->FindObject("hEventsTrigger")))
     h = new TH1F("hEventsTrigger", "Trigger Class", 100, 0, 100);
   else h->Reset();
+  printf("Histos Adding \n");
+  
   fContainer->AddAt(h, kNeventsTrigger);
 
   if(!(h = (TH1F *)gROOT->FindObject("hEventsTriggerTracks")))

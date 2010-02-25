@@ -201,6 +201,26 @@ AliTRDresolution::AliTRDresolution()
   //
   // Default constructor
   //
+}
+
+AliTRDresolution::AliTRDresolution(char* name)
+  :AliTRDrecoTask(name, "Spatial and momentum TRD resolution checker")
+  ,fStatus(0)
+  ,fIdxPlot(0)
+  ,fIdxFrame(0)
+  ,fReconstructor(NULL)
+  ,fGeo(NULL)
+  ,fDBPDG(NULL)
+  ,fGraphS(NULL)
+  ,fGraphM(NULL)
+  ,fCl(NULL)
+  ,fTrklt(NULL)
+  ,fMCcl(NULL)
+  ,fMCtrklt(NULL)
+{
+  //
+  // Default constructor
+  //
 
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
@@ -234,10 +254,10 @@ AliTRDresolution::~AliTRDresolution()
 
 
 //________________________________________________________
-void AliTRDresolution::CreateOutputObjects()
+void AliTRDresolution::UserCreateOutputObjects()
 {
   // spatial resolution
-  OpenFile(0, "RECREATE");
+  OpenFile(1, "RECREATE");
 
   fContainer = Histos();
 
@@ -252,7 +272,7 @@ void AliTRDresolution::CreateOutputObjects()
 }
 
 //________________________________________________________
-void AliTRDresolution::Exec(Option_t *opt)
+void AliTRDresolution::UserExec(Option_t *opt)
 {
   //
   // Execution part

@@ -18,9 +18,10 @@ class AliTRDmultiplicity : public AliTRDrecoTask
 {
 public:
   AliTRDmultiplicity();
+  AliTRDmultiplicity(char* name);
   virtual ~AliTRDmultiplicity();
-  void    CreateOutputObjects();
-  void    Exec(Option_t *);
+  void    UserCreateOutputObjects();
+  void    UserExec(Option_t *);
 
 private:
   AliTRDmultiplicity(const AliTRDmultiplicity&);

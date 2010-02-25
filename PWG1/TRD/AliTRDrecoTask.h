@@ -9,9 +9,7 @@
 //
 //////////////////////////////////////////////////
 
-#ifndef ALIANALYSISTASK_H
-#include "AliAnalysisTask.h"
-#endif
+#include "AliAnalysisTaskSE.h"
 
 #ifndef ALITRDTRACKINFO_H
 #include "info/AliTRDtrackInfo.h"
@@ -24,7 +22,7 @@ class TObjArray;
 class TTreeSRedirector;
 class AliTRDtrackV1;
 class AliTRDtrackInfo;
-class AliTRDrecoTask : public AliAnalysisTask 
+class AliTRDrecoTask : public AliAnalysisTaskSE 
 {
 public:
   enum AliTRDrecoSteeringBits{
@@ -32,14 +30,18 @@ public:
     ,kFriends     = BIT(19)
     ,kPostProcess = BIT(20)
   };
+  
+  AliTRDrecoTask();
   AliTRDrecoTask(const char *name, const char *title);
   virtual ~AliTRDrecoTask();
   
   
-  void           ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects() = 0;
-  virtual void   Exec(Option_t *opt);
-
+  virtual void   UserCreateOutputObjects() = 0;
+  virtual void   UserExec(Option_t *opt);
+  virtual void   ConnectInputData(Option_t *);
+  virtual void   SetDebugLevel(Int_t level);
+  
+    
   Int_t          GetNRefFigures() const  { return fNRefFigures; } 
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
   virtual Bool_t GetRefFigure(Int_t ifig);
@@ -53,14 +55,12 @@ public:
   virtual Bool_t Save(TObjArray * const res);
   virtual Bool_t PostProcess();
   virtual Bool_t PutTrendValue(const Char_t *name, Double_t val);
-  virtual void   SetDebugLevel(Int_t level);
   virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
   virtual void   Terminate(Option_t *);
 
 protected:
-  Int_t          DebugLevel() const      { return fDebugLevel;}
   static TTreeSRedirector* DebugStream() { return fgDebugStream;}
   void           InitFunctorList();
   void           Adjust(TF1 *f, TH1 * const h);

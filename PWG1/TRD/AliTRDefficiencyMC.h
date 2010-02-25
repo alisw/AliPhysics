@@ -32,10 +32,11 @@ public:
    ,kFake
   };
   AliTRDefficiencyMC();
+  AliTRDefficiencyMC(char* name);
   virtual ~AliTRDefficiencyMC(){;}
   
-  void        CreateOutputObjects();
-  void        Exec(Option_t *);
+  void        UserCreateOutputObjects();
+  void        UserExec(Option_t *);
   
   Bool_t      PostProcess();
   TObjArray*  Histos();

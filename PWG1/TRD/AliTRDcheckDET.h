@@ -50,12 +50,12 @@ public:
   };
 
   AliTRDcheckDET();
+  AliTRDcheckDET(char* name);
   virtual ~AliTRDcheckDET();
 
-  virtual void ConnectInputData(const Option_t *);
-  virtual void CreateOutputObjects();
-  virtual void Exec(Option_t *opt);
-
+  virtual void UserCreateOutputObjects();
+  virtual void UserExec(Option_t *opt);
+  virtual void ConnectInputData(Option_t *opt);
   virtual TObjArray *Histos();
 
   // Plotting Functions:
