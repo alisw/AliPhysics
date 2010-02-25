@@ -111,6 +111,10 @@ class AliITSDetTypeSim : public TObject {
     virtual void ProcessNoiseForFastOr() {fFOGenerator.ProcessNoise();}
     virtual AliITSFOSignalsSPD* GetFOSignals() {return fFOGenerator.GetFOSignals();}
     virtual void WriteFOSignals();
+    virtual Float_t GetAverageGainSDD() const {
+      if(fAveGainSDD>0.) return fAveGainSDD;
+      else return 1.;
+    }
 
 
  protected:
@@ -146,13 +150,14 @@ class AliITSDetTypeSim : public TObject {
     TObjArray     *fDigits;      //! [NMod][NDigits]
     AliITSSimuParam *fSimuPar;   //! detector simulation parameters
     AliITSDDLModuleMapSDD *fDDLMapSDD; //! mapping DDL/module -> SDD module number
+    Float_t       fAveGainSDD;    //! Average gain of SDD good anodes
     const Char_t*       fkDigClassName[3]; //! String with digit class name.
     AliITSLoader* fLoader;          //! loader  
     Bool_t        fFirstcall;       //! flag
     AliITSFOGeneratorSPD fFOGenerator; //! Fast-OR generator object
     AliITSTriggerConditions* fTriggerConditions; //! Trigger conditions 
        
-    ClassDef(AliITSDetTypeSim,11) // ITS Simulation structure
+    ClassDef(AliITSDetTypeSim,12) // ITS Simulation structure
  
 };
 

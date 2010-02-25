@@ -89,6 +89,7 @@ fRunNumber(0),   //! Run number (to access DB)
 fDigits(),       //! [NMod][NDigits]
 fSimuPar(0),
 fDDLMapSDD(0),
+fAveGainSDD(0),
 fkDigClassName(), // String with digit class name.
 fLoader(0),      // local pointer to loader
 fFirstcall(kTRUE),
@@ -177,6 +178,7 @@ fRunNumber(source.fRunNumber),   //! Run number (to access DB)
 fDigits(source.fDigits),       //! [NMod][NDigits]
 fSimuPar(source.fSimuPar),
 fDDLMapSDD(source.fDDLMapSDD),
+fAveGainSDD(source.fAveGainSDD),
 fkDigClassName(), // String with digit class name.
 fLoader(source.fLoader),      // local pointer to loader
 fFirstcall(source.fFirstcall),
@@ -611,6 +613,8 @@ if(!deadSPD || !noisySPD || !foEffSPD || !foNoiSPD
   fFOGenerator.SetNoise(calFoNoiSPD); // this cal object is used only by the generator
   
   fDDLMapSDD->SetDDLMap(ddlsdd);
+  Float_t avegain=0.;
+  Float_t nGdAnodes=0;
   Bool_t oldMapFormat=kFALSE;
   TObject* objmap=(TObject*)mapT->At(0);
   TString cname(objmap->ClassName());
@@ -635,6 +639,11 @@ if(!deadSPD || !noisySPD || !foEffSPD || !foNoiSPD
       AliWarning(Form("SDD module %d not present in DDL map: set it as dead",iMod));
     }else{
       cal = (AliITSCalibration*) calSDD->At(i);
+      for(Int_t iAnode=0;iAnode< ((AliITSCalibrationSDD*)cal)->NOfAnodes(); iAnode++){
+	if(((AliITSCalibrationSDD*)cal)->IsBadChannel(iAnode)) continue;
+	avegain+= ((AliITSCalibrationSDD*)cal)->GetChannelGain(iAnode);
+	nGdAnodes++;
+      }
       Int_t i0=2*i;
       Int_t i1=1+2*i;
       AliITSDriftSpeedArraySDD* arr0 = (AliITSDriftSpeedArraySDD*) drSp->At(i0);
@@ -658,7 +667,8 @@ if(!deadSPD || !noisySPD || !foEffSPD || !foNoiSPD
       SetCalibrationModel(iMod, cal);
     }
   }
-
+  if(nGdAnodes) fAveGainSDD=avegain/nGdAnodes;
+  AliDebug(3,Form("SDD average gain=%f\n",fAveGainSDD));
   fSSDCalibration->SetNoise(noiseSSD);
   fSSDCalibration->SetGain(gainSSD);
   fSSDCalibration->SetBadChannels(badChannelsSSD);

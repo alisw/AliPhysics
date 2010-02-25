@@ -670,7 +670,7 @@ void AliITSsimulationSDD::ChargeToSignal(Int_t mod,Bool_t bAddNoise, Bool_t bAdd
     if( !fAnodeFire[i] ) continue;
     baseline = res->GetBaseline(i);
     noise = res->GetNoise(i);
-    gain = res->GetChannelGain(i);
+    gain = res->GetChannelGain(i)/fDetType->GetAverageGainSDD();
     if(res->IsBad()) gain=0.;
     if( res->IsChipBad(res->GetChip(i)) )gain=0.;
     for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
