@@ -50,6 +50,7 @@
 #include "TGeoNode.h"
 #include "TGeoManager.h"
 #include "TGLOverlayButton.h"
+
 //****************** AliRoot ***************************************
 #include "AliESDEvent.h"
 #include "AliCDBManager.h"
@@ -115,10 +116,7 @@
 #include  "AliHLTPHOSChannelDataStruct.h"
 #include  "HLT/CALO/AliHLTCaloChannelDataHeaderStruct.h"
 #include  "HLT/CALO/AliHLTCaloChannelDataStruct.h"
-
 #include "AliHLTCaloDigitDataStruct.h"
-
-
 //****************** Macros ****************************************
 #include "hlt_structs.C"
 #include "hlt_alieve_init.C"
@@ -299,8 +297,6 @@ Int_t processTRDHistograms( AliHLTHOMERBlockDesc * block, TCanvas * canvas );
 
 Int_t processITSHistograms( AliHLTHOMERBlockDesc * block, TCanvas * canvas );
 
-Int_t processPHOSHistograms( AliHLTHOMERBlockDesc * block, TCanvas * canvas );
-
 Int_t processSSDHistograms( AliHLTHOMERBlockDesc * block, TCanvas * canvas, TCanvas * canvas1 );
 
 Int_t processPrimVertexHistograms( AliHLTHOMERBlockDesc * block, TCanvas * canvas );
@@ -320,7 +316,9 @@ Int_t processITSClusters( AliHLTHOMERBlockDesc* block, TEvePointSet* cont );
 Int_t processITSHist( AliHLTHOMERBlockDesc* block );
 
 Int_t processBlock( AliHLTHOMERBlockDesc* block );
+
 Int_t processAsyncBlock( AliHLTHOMERBlockDesc* block );
+
 Int_t updateDisplay();
 Int_t addHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount );
 
@@ -1502,6 +1500,8 @@ Int_t processSPDVertexHistograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) 
 // -----------------------------------------------------------------
 Int_t processV0Histograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) {
 
+  cout << "Processing to see if it's V0 histogram, !!!!!!!!!"<<endl;
+
   Int_t iResult = 0;
   bool update = 0;
   if ( ! block->GetClassName().CompareTo("TH1F")) {
@@ -1752,7 +1752,7 @@ void EventLoopFast() {
 
 
 
- Int_t processAsyncBlock(AliHLTHOMERBlockDesc * block) {
+Int_t processAsyncBlock(AliHLTHOMERBlockDesc * block) {
 
    Int_t iResult = 0;
 
@@ -1969,20 +1969,14 @@ Int_t processBlock (AliHLTHOMERBlockDesc * block ){
       
    // -- Process ROOTObj
    else if ( ! block->GetDataType().CompareTo("ROOTTOBJ") ) {
-     if(!gHLTText){
-       //gHLTText = new TEveText();
-       //gHLTText->BBoxZero(5, -5, -5, 0);
-       //gHLTText->SetExtrude(25);
-       //gHLTText->AssertBBoxExtents(25,25,25);
-       //gEve->AddElement(gHLTText);
-     } 
      processROOTTOBJ( block, gHLTText );
-   } // else if ( ! block->GetDataType().CompareTo("ROOTTOBJ") ) {
+   } 
 
    // -- Process HLT RDLST
    else if ( ! block->GetDataType().CompareTo("HLTRDLST") ) {
      processHLTRDLST( block );
-   } // else if ( ! block->GetDataType().CompareTo("HLTRDLST") ) {
+   } 
+
 
  } // if ( ! block->GetDetector().CompareTo("HLT") ) {
 
