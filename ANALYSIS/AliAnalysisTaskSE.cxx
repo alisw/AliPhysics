@@ -44,6 +44,7 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliLog.h"
+#include "AliAODDimuon.h"
 
 
 ClassImp(AliAnalysisTaskSE)
@@ -61,6 +62,7 @@ TClonesArray*    AliAnalysisTaskSE::fgAODMCParticles    = NULL;
 AliAODTracklets* AliAnalysisTaskSE::fgAODTracklets      = NULL;
 AliAODCaloCells* AliAnalysisTaskSE::fgAODEmcalCells     = NULL;
 AliAODCaloCells* AliAnalysisTaskSE::fgAODPhosCells      = NULL;
+TClonesArray*    AliAnalysisTaskSE::fgAODDimuons        = NULL;
 
 AliAnalysisTaskSE::AliAnalysisTaskSE():
     AliAnalysisTask(),
@@ -276,6 +278,14 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 		fgAODMCParticles->SetName("mcparticles");
 		handler->AddBranch("TClonesArray", &fgAODMCParticles);
 	    }
+	    if ((handler->NeedsDimuonsBranchReplication() || merging) && !(fgAODDimuons))      
+	    {   
+		if (fDebug > 1) AliInfo("Replicating dimuon branch\n");
+		fgAODDimuons = new TClonesArray("AliAODDimuon",0);
+		fgAODDimuons->SetName("dimuons");
+		handler->AddBranch("TClonesArray", &fgAODDimuons);
+	    }    
+
 	    // cache the pointerd in the AODEvent
 	    fOutputAOD->GetStdContent();
 	}
@@ -375,7 +385,13 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		TClonesArray* mcParticles = (TClonesArray*) ((dynamic_cast<AliAODEvent*>(InputEvent()))->FindListObject("mcparticles"));
 		new (fgAODMCParticles) TClonesArray(*mcParticles);
 	    }
-	
+	    
+	    if ((handler->NeedsDimuonsBranchReplication() || merging) && (fgAODDimuons))
+	    {
+		TClonesArray* dimuons = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetDimuons();
+		new (fgAODDimuons) TClonesArray(*dimuons);
+	    }
+
 	    // Additional merging if needed
 	    if (merging) {
 		// mcParticles

@@ -83,10 +83,11 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static AliAODTracklets* fgAODTracklets;     //! Tracklets for replication
     static AliAODCaloCells* fgAODEmcalCells;    //! Emcal Cell replication
     static AliAODCaloCells* fgAODPhosCells;     //! Phos  Cell replication
+    static TClonesArray*    fgAODDimuons;       //! Dimuons replication
     // Event Selection
     Bool_t                  fSelectCollisions;   //  Task processes collision candidates only
      
-    ClassDef(AliAnalysisTaskSE, 2); // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskSE, 3); // Analysis task for standard jet analysis
 };
  
 #endif

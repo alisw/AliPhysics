@@ -29,6 +29,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliAODPmdCluster.h"
 #include "AliAODFmdCluster.h"
+#include "AliAODDimuon.h"
 
 class TTree;
 class TFolder;
@@ -48,6 +49,7 @@ class AliAODEvent : public AliVEvent {
 		       kAODCaloClusters,
 		       kAODFmdClusters,
 		       kAODPmdClusters,
+		       kAODDimuons,
 		       kAODListN
   };
 
@@ -175,6 +177,14 @@ class AliAODEvent : public AliVEvent {
   AliAODCaloCells *GetEMCALCells() const { return fEmcalCells; }
   AliAODCaloCells *GetPHOSCells() const { return fPhosCells; }
 
+  // -- Dimuons
+  TClonesArray *GetDimuons()              const { return fDimuons; }
+  Int_t         GetNDimuons()             const { return fDimuons->GetEntriesFast(); }
+  Int_t         GetNumberOfDimuons()      const { return GetNDimuons(); }
+  AliAODDimuon *GetDimuon(Int_t nDimu)    const { return (AliAODDimuon*)fDimuons->UncheckedAt(nDimu); }
+  Int_t         AddDimuon(const AliAODDimuon* dimu)
+    {new((*fDimuons)[fDimuons->GetEntriesFast()]) AliAODDimuon(*dimu); return fDimuons->GetEntriesFast()-1;}
+  
   // -- Services
   void    CreateStdContent();
   void    SetStdNames();
@@ -187,7 +197,8 @@ class AliAODEvent : public AliVEvent {
 		   Int_t jetSize = 0, 
 		   Int_t caloClusSize = 0, 
 		   Int_t fmdClusSize = 0, 
-		   Int_t pmdClusSize = 0
+		   Int_t pmdClusSize = 0,
+		   Int_t dimuonArrsize =0
 		   );
   void    ClearStd();
   void    Reset() {ClearStd();} 
@@ -215,10 +226,11 @@ class AliAODEvent : public AliVEvent {
   TClonesArray    *fCaloClusters; //! calorimeter clusters
   TClonesArray    *fFmdClusters;  //! FMDclusters
   TClonesArray    *fPmdClusters;  //! PMDclusters
+  TClonesArray    *fDimuons;      //! dimuons
 
   static const char* fAODListName[kAODListN]; //!
 
-  ClassDef(AliAODEvent, 5);
+  ClassDef(AliAODEvent, 6);
 };
 
 #endif

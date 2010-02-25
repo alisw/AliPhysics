@@ -43,6 +43,7 @@
 #pragma link C++ class AliAODMCHeader+;
 #pragma link C++ class AliAODPWG4Particle+;
 #pragma link C++ class AliAODPWG4ParticleCorrelation+;
+#pragma link C++ class AliAODDimuon+;
 
 
 #endif

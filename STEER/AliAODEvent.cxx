@@ -30,6 +30,7 @@
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODTrack.h"
+#include "AliAODDimuon.h"
 
 ClassImp(AliAODEvent)
 
@@ -45,7 +46,8 @@ ClassImp(AliAODEvent)
 						      "phosCells",
 						      "caloClusters",
 						      "fmdClusters",
-						      "pmdClusters"
+						      "pmdClusters",
+						      "dimuons"
 						      
 };
 //______________________________________________________________________________
@@ -65,7 +67,8 @@ AliAODEvent::AliAODEvent() :
   fPhosCells(0),
   fCaloClusters(0),
   fFmdClusters(0),
-  fPmdClusters(0)
+  fPmdClusters(0),
+  fDimuons(0)
 {
   // default constructor
 }
@@ -87,7 +90,8 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   fPhosCells(new AliAODCaloCells(*aod.fPhosCells)),
   fCaloClusters(new TClonesArray(*aod.fCaloClusters)),
   fFmdClusters(new TClonesArray(*aod.fFmdClusters)),
-  fPmdClusters(new TClonesArray(*aod.fPmdClusters))
+  fPmdClusters(new TClonesArray(*aod.fPmdClusters)),
+  fDimuons(new TClonesArray(*aod.fDimuons))
 {
   // Copy constructor
   AddObject(fHeader);
@@ -102,6 +106,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AddObject(fCaloClusters);
   AddObject(fFmdClusters);
   AddObject(fPmdClusters);
+  AddObject(fDimuons);
   fConnected = aod.fConnected;
   GetStdContent();
   CreateStdFolders();
@@ -260,6 +265,7 @@ void AliAODEvent::CreateStdContent()
   AddObject(new TClonesArray("AliAODCaloCluster", 0));
   AddObject(new TClonesArray("AliAODFmdCluster", 0));
   AddObject(new TClonesArray("AliAODPmdCluster", 0));
+  AddObject(new TClonesArray("AliAODDimuon", 0));
   // set names
   SetStdNames();
 
@@ -341,6 +347,7 @@ void AliAODEvent::GetStdContent()
   fCaloClusters  = (TClonesArray*)fAODObjects->FindObject("caloClusters");
   fFmdClusters   = (TClonesArray*)fAODObjects->FindObject("fmdClusters");
   fPmdClusters   = (TClonesArray*)fAODObjects->FindObject("pmdClusters");
+  fDimuons       = (TClonesArray*)fAODObjects->FindObject("dimuons");
 }
 
 //______________________________________________________________________________
@@ -351,7 +358,8 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
 			   Int_t jetSize, 
 			   Int_t caloClusSize, 
 			   Int_t fmdClusSize, 
-			   Int_t pmdClusSize
+			   Int_t pmdClusSize,
+			   Int_t dimuonArrSize
 			   )
 {
   // deletes content of standard arrays and resets size 
@@ -387,6 +395,10 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
   fPmdClusters->Delete();
   if (pmdClusSize > fPmdClusters->GetSize()) 
     fPmdClusters->Expand(pmdClusSize);
+    
+  fDimuons->Delete();
+  if (dimuonArrSize > fDimuons->GetSize()) 
+    fDimuons->Expand(dimuonArrSize);
 
   // Reset the tracklets
   fTracklets->DeleteContainer();
@@ -410,6 +422,7 @@ void AliAODEvent::ClearStd()
   fCaloClusters  ->Delete();
   fFmdClusters   ->Clear();
   fPmdClusters   ->Clear();
+  fDimuons       ->Clear();
 }
 
 //_________________________________________________________________

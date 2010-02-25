@@ -52,6 +52,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetNeedsFMDClustersBranchReplication()  {fNeedsFMDClustersBranchReplication  = kTRUE;}
     virtual void         SetNeedsCaloClustersBranchReplication() {fNeedsCaloClustersBranchReplication = kTRUE;}
     virtual void         SetNeedsMCParticlesBranchReplication()  {fNeedsCaloClustersBranchReplication = kTRUE;}
+    virtual void         SetNeedsDimuonsBranchReplication()      {fNeedsDimuonsBranchReplication      = kTRUE;}
     virtual void         SetAODIsReplicated() {fAODIsReplicated = kTRUE;}
     //
     AliAODEvent*         GetAOD()  {return fAODEvent;}
@@ -78,6 +79,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t               NeedsFMDClustersBranchReplication()  const {return  fNeedsFMDClustersBranchReplication;}
     Bool_t               NeedsCaloClustersBranchReplication() const {return  fNeedsCaloClustersBranchReplication;}
     Bool_t               NeedsMCParticlesBranchReplication()  const {return  fNeedsMCParticlesBranchReplication;}
+    Bool_t               NeedsDimuonsBranchReplication()      const {return  fNeedsDimuonsBranchReplication;}
     Bool_t               AODIsReplicated()                    const {return  fAODIsReplicated;}
     //
     void                 SetInputTree(TTree* /*tree*/) {;}
@@ -101,6 +103,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t                   fNeedsFMDClustersBranchReplication;  // Flag for FMDClusters replication
     Bool_t                   fNeedsCaloClustersBranchReplication; // Flag for CaloClusters replication
     Bool_t                   fNeedsMCParticlesBranchReplication;  // Flag for MCParticles replication
+    Bool_t                   fNeedsDimuonsBranchReplication;      // Flag for Dimuons replication
     Bool_t                   fAODIsReplicated;                    // Flag true if replication as been executed
     AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
     AliMCEventHandler       *fMCEventH;               //! Pointer to mc event handler needed not to depend on the manager
@@ -109,7 +112,7 @@ class AliAODHandler : public AliVEventHandler {
     TString                  fFileName;               //  Output file name
     TObjArray               *fExtensions;             //  List of extensions
     TObjArray               *fFilters;                // List of filtered AOD's
-    ClassDef(AliAODHandler, 5)
+    ClassDef(AliAODHandler, 6)
 };
 
 //-------------------------------------------------------------------------

@@ -62,6 +62,7 @@ AliAODHandler::AliAODHandler() :
     fNeedsFMDClustersBranchReplication(kFALSE),
     fNeedsCaloClustersBranchReplication(kFALSE),
     fNeedsMCParticlesBranchReplication(kFALSE),
+    fNeedsDimuonsBranchReplication(kFALSE),
     fAODIsReplicated(kFALSE),
     fAODEvent(NULL),
     fMCEventH(NULL),
@@ -89,6 +90,7 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     fNeedsFMDClustersBranchReplication(kFALSE),
     fNeedsCaloClustersBranchReplication(kFALSE),
     fNeedsMCParticlesBranchReplication(kFALSE),
+    fNeedsDimuonsBranchReplication(kFALSE),
     fAODIsReplicated(kFALSE),
     fAODEvent(NULL),
     fMCEventH(NULL),
@@ -456,12 +458,14 @@ void AliAODHandler::CreateTree(Int_t flag)
     // Creates the AOD Tree
     fTreeA = new TTree("aodTree", "AliAOD tree");
     fTreeA->Branch(fAODEvent->GetList());
+    fTreeA->BranchRef();    
     if (flag == 0) fTreeA->SetDirectory(0);
 }
 
 //______________________________________________________________________________
 void AliAODHandler::FillTree()
 {
+ 
     // Fill the AOD Tree
   fTreeA->Fill();
 }
@@ -720,6 +724,7 @@ Bool_t AliAODExtension::Init(Option_t *option)
   }  
   fTreeE = new TTree("aodTree", "AliAOD tree");
   fTreeE->Branch(fAODEvent->GetList());
+  fTreeE->BranchRef();
   owd->cd();
   return kTRUE;
 }
