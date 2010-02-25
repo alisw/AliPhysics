@@ -95,6 +95,9 @@ class AliITSresponseSDD : public TObject {
   static Float_t DefaultChargevsTime() {return fgkChargevsTimeDefault;}
 
   static Float_t GetCarlosRXClockPeriod() {return fgkCarlosRXClockPeriod;}
+  void PrintChargeCalibrationParams() const;
+  void PrintTimeZeroes() const;
+  void PrintVdriftCorerctions() const;
 
 
  protected:

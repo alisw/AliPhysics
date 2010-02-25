@@ -103,3 +103,59 @@ void AliITSresponseSDD::SetHalfLadderCTimeZero(Int_t lay, Int_t lad, Float_t tze
     SetModuleTimeZero(modIndex,tzero);
   }
 }
+//_________________________________________________________________________
+void AliITSresponseSDD::PrintChargeCalibrationParams() const{
+  //
+  printf("ADC vs. drift time corr=%f\n",GetChargevsTime());
+  printf("-------------------------------------\n");
+  printf("Layer 3\n");
+  for(Int_t ilad=1; ilad<=14; ilad++){
+    for(Int_t idet=1; idet<=6;idet++){
+      Int_t modIndex=AliITSgeomTGeo::GetModuleIndex(3,ilad,idet);
+      Float_t tz=GetADCtokeV(modIndex);
+      printf("%7.2f   ",tz);
+    }
+    printf("\n");
+  }
+  printf("\n");
+  printf("Layer 4\n");
+  for(Int_t ilad=1; ilad<=22; ilad++){
+    for(Int_t idet=1; idet<=8;idet++){
+      Int_t modIndex=AliITSgeomTGeo::GetModuleIndex(4,ilad,idet);
+      Float_t tz=GetADCtokeV(modIndex);
+      printf("%7.2f   ",tz);
+    }
+    printf("\n");
+  }  
+}
+//_________________________________________________________________________
+void AliITSresponseSDD::PrintTimeZeroes() const{
+  //
+  printf("Layer 3\n");
+  for(Int_t ilad=1; ilad<=14; ilad++){
+    for(Int_t idet=1; idet<=6;idet++){
+      Int_t modIndex=AliITSgeomTGeo::GetModuleIndex(3,ilad,idet);
+      Float_t tz=GetTimeZero(modIndex);
+      printf("%7.2f   ",tz);
+    }
+    printf("\n");
+  }
+  printf("\n");
+  printf("Layer 4\n");
+  for(Int_t ilad=1; ilad<=22; ilad++){
+    for(Int_t idet=1; idet<=8;idet++){
+      Int_t modIndex=AliITSgeomTGeo::GetModuleIndex(4,ilad,idet);
+      Float_t tz=GetTimeZero(modIndex);
+      printf("%7.2f   ",tz);
+    }
+    printf("\n");
+  }
+  
+}
+//_________________________________________________________________________
+void AliITSresponseSDD::PrintVdriftCorerctions() const{
+  //
+  for(Int_t iMod=240; iMod<500; iMod++){
+    printf("Module %d   dVleft=%f   dVright=%f\n",iMod,GetDeltaVDrift(iMod,0),GetDeltaVDrift(iMod,1));
+  }
+}
