@@ -7,12 +7,14 @@
 // kinematic cuts
 // author: N. van der Kolk (kolk@nikhef.nl)
 
-#ifndef AliFlowTrackSimpleCuts_H
-#define AliFlowTrackSimpleCuts_H
+#ifndef ALIFLOWTRACKSIMPLECUTS_H
+#define ALIFLOWTRACKSIMPLECUTS_H
 
-class TObject;
+#include "AliFlowTrackSimple.h"  //needed as include
 
-class AliFlowTrackSimpleCuts : public TObject {
+class TNamed;
+
+class AliFlowTrackSimpleCuts : public TNamed {
 
  public:
   AliFlowTrackSimpleCuts();
@@ -37,6 +39,9 @@ class AliFlowTrackSimpleCuts : public TObject {
   Double_t GetPhiMax() const    {return this->fPhiMax; }
   Double_t GetPhiMin() const    {return this->fPhiMin; }
   Int_t    GetPID() const       {return this->fPID; }
+  
+  //simple method to check if the simple track passes the simple cuts:
+  Bool_t PassesCuts(AliFlowTrackSimple *track);
 
  private:
   Double_t fPtMax;

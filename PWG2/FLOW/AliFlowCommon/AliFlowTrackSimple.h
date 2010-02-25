@@ -2,16 +2,17 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliFlowTrackSimple_H
-#define AliFlowTrackSimple_H
+#ifndef ALIFLOWTRACKSIMPLE_H
+#define ALIFLOWTRACKSIMPLE_H
 
+#include "TNamed.h"
 #include "TBits.h"
 
 // AliFlowTrackSimple:
 // A simple track class to the the AliFlowEventSimple for flow analysis
 // author: N. van der Kolk (kolk@nikhef.nl)
 
-class AliFlowTrackSimple: public TObject {
+class AliFlowTrackSimple: public TNamed {
 
  public:
   AliFlowTrackSimple();
