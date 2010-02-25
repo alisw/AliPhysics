@@ -172,7 +172,7 @@ AliESDtrack::AliESDtrack() :
   fITSLabel(0),
   fTPCLabel(0),
   fTRDLabel(0),
-  fTOFCalChannel(0),
+  fTOFCalChannel(-1),
   fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
@@ -200,13 +200,13 @@ AliESDtrack::AliESDtrack() :
   fTRDsignal(0),
   fTRDQuality(0),
   fTRDBudget(0),
-  fTOFsignal(0),
-  fTOFsignalToT(0),
-  fTOFsignalRaw(0),
-  fTOFsignalDz(0),
-  fTOFsignalDx(0),
-  fTOFdeltaBC(0),
-  fTOFl0l1(0),
+  fTOFsignal(99999),
+  fTOFsignalToT(99999),
+  fTOFsignalRaw(99999),
+  fTOFsignalDz(999),
+  fTOFsignalDx(999),
+  fTOFdeltaBC(999),
+  fTOFl0l1(999),
   fCaloDx(0),
   fCaloDz(0),
   fHMPIDtrkX(0),
@@ -249,7 +249,7 @@ AliESDtrack::AliESDtrack() :
   }
   for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
-  for (i=0;i<3;i++) {fTOFLabel[i]=0;}
+  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
   for (i=0;i<12;i++) {fITSModule[i]=-1;}
 }
@@ -383,7 +383,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fITSLabel(0),
   fTPCLabel(0),
   fTRDLabel(0),
-  fTOFCalChannel(0),
+  fTOFCalChannel(-1),
   fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
@@ -411,13 +411,13 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDsignal(0),
   fTRDQuality(0),
   fTRDBudget(0),
-  fTOFsignal(0),
-  fTOFsignalToT(0),
-  fTOFsignalRaw(0),
-  fTOFsignalDz(0),
-  fTOFsignalDx(0),
-  fTOFdeltaBC(0),
-  fTOFl0l1(0),
+  fTOFsignal(99999),
+  fTOFsignalToT(99999),
+  fTOFsignalRaw(99999),
+  fTOFsignalDz(999),
+  fTOFsignalDx(999),
+  fTOFdeltaBC(999),
+  fTOFl0l1(999),
   fCaloDx(0),
   fCaloDz(0),
   fHMPIDtrkX(0),
@@ -470,7 +470,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   }
   for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
-  for (i=0;i<3;i++) {fTOFLabel[i]=0;}
+  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
   for (i=0;i<12;i++) {fITSModule[i]=-1;}
 
@@ -513,7 +513,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fITSLabel(0),
   fTPCLabel(0),
   fTRDLabel(0),
-  fTOFCalChannel(0),
+  fTOFCalChannel(-1),
   fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
@@ -541,13 +541,13 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTRDsignal(0),
   fTRDQuality(0),
   fTRDBudget(0),
-  fTOFsignal(0),
-  fTOFsignalToT(0),
-  fTOFsignalRaw(0),
-  fTOFsignalDz(0),
-  fTOFsignalDx(0),
-  fTOFdeltaBC(0),
-  fTOFl0l1(0),
+  fTOFsignal(99999),
+  fTOFsignalToT(99999),
+  fTOFsignalRaw(99999),
+  fTOFsignalDz(999),
+  fTOFsignalDx(999),
+  fTOFdeltaBC(999),
+  fTOFl0l1(999),
   fCaloDx(0),
   fCaloDz(0),
   fHMPIDtrkX(0),
@@ -592,7 +592,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   }
   for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
-  for (i=0;i<3;i++) {fTOFLabel[i]=0;}
+  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
   for (i=0;i<12;i++) {fITSModule[i]=-1;}
 
@@ -1085,16 +1085,16 @@ void AliESDtrack::MakeMiniESDtrack(){
   // Reset TOF related track information
   fTOFchi2 = 0;        
   fTOFindex = -1;       
-  fTOFsignal = 0;      
-  fTOFCalChannel = 0;
-  fTOFsignalToT = 0;
-  fTOFsignalRaw = 0;
-  fTOFsignalDz = 0;
-  fTOFsignalDx = 0;
-  fTOFdeltaBC = 0;
-  fTOFl0l1 = 0;
+  fTOFsignal = 99999;      
+  fTOFCalChannel = -1;
+  fTOFsignalToT = 99999;
+  fTOFsignalRaw = 99999;
+  fTOFsignalDz = 999;
+  fTOFsignalDx = 999;
+  fTOFdeltaBC = 999;
+  fTOFl0l1 = 999;
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i] = 0;
-  for (Int_t i=0;i<3;i++) fTOFLabel[i] = 0;
+  for (Int_t i=0;i<3;i++) fTOFLabel[i] = -1;
   for (Int_t i=0;i<10;i++) fTOFInfo[i] = 0;
 
   // Reset HMPID related track information
