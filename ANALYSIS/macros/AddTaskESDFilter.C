@@ -1,4 +1,6 @@
-AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, Bool_t writeMuonAOD=kFALSE)
+AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, 
+                                           Bool_t writeMuonAOD=kFALSE,
+                                           Bool_t writeDimuonAOD=kFALSE)
 {
 // Creates a filter task and adds it to the analysis manager.
 
@@ -123,6 +125,9 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, Bool_t wr
 
    // Enable writing of Muon AODs
    esdmuonfilter->SetWriteMuonAOD(writeMuonAOD);
+   
+   // Enable writing of Dimuon AODs
+   esdmuonfilter->SetWriteDimuonAOD(writeDimuonAOD);
  
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
