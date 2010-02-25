@@ -140,9 +140,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   TClonesArray *recParticles  = fPID->GetRecParticles();
   Int_t nOfRecParticles = recParticles->GetEntriesFast();
   
-  esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
-  esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
-  
   AliDebug(2,Form("%d rec. particles, option %s",nOfRecParticles,GetOption()));
   
   // Read digits array
