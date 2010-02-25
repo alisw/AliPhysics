@@ -611,10 +611,8 @@ Bool_t AliTRDclusterizer::MakeClusters()
     //  ResetRecPoints();
     //}
         
-    // No compress just remove
-    fDigitsManager->RemoveDigits(i);
-    fDigitsManager->RemoveDictionaries(i);      
-    fDigitsManager->ClearIndexes(i);  
+    // Clear arrays of this chamber, to prepare for next event
+    fDigitsManager->ClearArrays(i);
   }
   
   if(fReconstructor->IsWritingClusters()) WriteClusters(-1);

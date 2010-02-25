@@ -21,6 +21,7 @@
 class TClonesArray;
 class TTreeSRedirector;
 class AliRawReader;
+class AliTRDclusterizer;
 class AliTRDReconstructor: public AliReconstructor 
 {
 public:
@@ -81,14 +82,16 @@ private:
   UInt_t            fSteerParam;          // steering bits
   TTreeSRedirector *fDebugStream[AliTRDrecoParam::kTRDreconstructionTasks];// Debug Streamer container;
  
-  static TClonesArray *fgClusters;    // list of clusters for local reconstructor
-  static TClonesArray *fgTracklets;   // list of online tracklets for local reconstructor
-  static Int_t         fgNTimeBins;   // number of time bins as given by the clusterizer
+  static TClonesArray *fgClusters;    //  list of clusters for local reconstructor
+  static TClonesArray *fgTracklets;   //  list of online tracklets for local reconstructor
+  static Int_t         fgNTimeBins;   //  number of time bins as given by the clusterizer
+  AliTRDclusterizer   *fClusterizer;  //! instance of TRD clusterizer
 
-  ClassDef(AliTRDReconstructor, 3)    //  Class for the TRD reconstruction
+  ClassDef(AliTRDReconstructor, 4)    //  Class for the TRD reconstruction
 
 };
 
 
 
 #endif
+
