@@ -44,10 +44,10 @@ class AliPlaneEff : public TObject {
        {AliError("This method must be implemented in a derived class"); return kFALSE; }
     virtual Bool_t GetCreateHistos() const
        {AliError("This method must be implemented in a derived class"); return kFALSE; }
+    virtual void InitCDB(){;};
 
  protected:
 
-    virtual void InitCDB(){;};
     virtual void Copy(TObject &obj) const;
     //Int_t	fRunNumber;	//! run number (to access CDB)
     //TString	fCDBUri;	//! Uri of the default CDB storage
@@ -56,6 +56,6 @@ class AliPlaneEff : public TObject {
  private:
     //Int_t	fRunNumber;	// run number (to access CDB)
 
-    ClassDef(AliPlaneEff,1) // Plane Efficiency virtual base class 
+    ClassDef(AliPlaneEff,2) // Plane Efficiency virtual base class 
 };
 #endif

@@ -86,10 +86,10 @@ class AliITSPlaneEff : public AliPlaneEff {
       {AliError("This method must be implemented in a derived class"); return kFALSE; }
     virtual Bool_t ReadHistosFromFile(TString )
       {AliError("This method must be implemented in a derived class"); return kFALSE; }
+    void InitCDB();
 
  protected:
 
-    void InitCDB();
     virtual void Copy(TObject &obj) const;
     void NotImplemented(const char *method) const {if(gDebug>0)
          Warning(method,"This method is not implemented for this sub-class");}
@@ -103,6 +103,6 @@ class AliITSPlaneEff : public AliPlaneEff {
     //Int_t*	fTries;		// number of exspected  clusters into a given block (e.g. SPD 1200 chip)
     //Int_t	fRunNumber;	// run number (to access CDB)
 
-    ClassDef(AliITSPlaneEff,1) // ITS Plane Efficiency virtual base class 
+    ClassDef(AliITSPlaneEff,2) // ITS Plane Efficiency virtual base class 
 };
 #endif

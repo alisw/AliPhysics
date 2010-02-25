@@ -47,7 +47,7 @@ fHis(kFALSE)
     //    none.
     // Return:
     //    a default constructed AliITSPlaneEff class
- InitCDB();
+ //InitCDB();
 }
 //______________________________________________________________________
 AliITSPlaneEff::AliITSPlaneEff(const AliITSPlaneEff &s) : AliPlaneEff(s),
@@ -173,7 +173,7 @@ void AliITSPlaneEff::InitCDB()
 // First check if we have any CDB storage set, because it is used
 // to retrieve the calibration and alignment constants
 
-  if (fInitCDBCalled) return;
+  //if (fInitCDBCalled) return;
   fInitCDBCalled = kTRUE;
 
   AliCDBManager* man = AliCDBManager::Instance();
@@ -200,7 +200,9 @@ void AliITSPlaneEff::InitCDB()
 
     }
     man->SetDefaultStorage(fCDBUri);
+    man->SetRun(fRunNumber);
   }
+  return;
 }
 //_____________________________________________________________________________
 void AliITSPlaneEff::SetDefaultStorage(const char* uri) {
