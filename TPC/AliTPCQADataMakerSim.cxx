@@ -103,31 +103,31 @@ void AliTPCQADataMakerSim::InitHits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   TH1F * histHitsNhits = 
-    new TH1F("hHitsNhits", "Interactions per primary track in the TPC volume; Number of primary interactions; Counts",
+    new TH1F("hHitsNhits", "Interactions per track in the TPC volume; Number of interactions; Counts",
 	     100, 0, 10000);
   histHitsNhits->Sumw2();
   Add2HitsList(histHitsNhits, kNhits, !expert, image);
 
   TH1F * histHitsElectrons = 
-    new TH1F("hHitsElectrons", "Electrons per interaction (primaries); Electrons; Counts",
+    new TH1F("hHitsElectrons", "Electrons per interaction; Electrons; Counts",
 	     300, 0, 300);
   histHitsElectrons->Sumw2();
   Add2HitsList(histHitsElectrons, kElectrons, !expert, image);  
 
   TH1F * histHitsRadius = 
-    new TH1F("hHitsRadius", "Position of interaction (Primary tracks only); Radius; Counts",
+    new TH1F("hHitsRadius", "Position of interaction; Radius; Counts",
 	     300, 0., 300.);  
   histHitsRadius->Sumw2();
   Add2HitsList(histHitsRadius, kRadius, !expert, image);  
 
   TH1F * histHitsPrimPerCm = 
-    new TH1F("hHitsPrimPerCm", "Primaries per cm (Primary tracks only); Primaries; Counts",
+    new TH1F("hHitsPrimPerCm", "Primaries per cm; Primaries; Counts",
 	     100, 0., 100.);  
   histHitsPrimPerCm->Sumw2();
   Add2HitsList(histHitsPrimPerCm, kPrimPerCm, !expert, image);  
 
   TH1F * histHitsElectronsPerCm = 
-    new TH1F("hHitsElectronsPerCm", "Electrons per cm (Primary tracks only); Electrons; Counts",
+    new TH1F("hHitsElectronsPerCm", "Electrons per cm; Electrons; Counts",
 	     300, 0., 300.);  
   histHitsElectronsPerCm->Sumw2();
   Add2HitsList(histHitsElectronsPerCm, kElectronsPerCm, !expert, image);  
@@ -180,9 +180,12 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
       Float_t xold  = tpcHit->X();
       Float_t yold  = tpcHit->Y();
       Float_t zold  = tpcHit->Z(); 
-      Float_t radiusOld = TMath::Sqrt(xold*xold + yold*yold);
+      Float_t radiusOld = TMath::Sqrt(xold*xold + yold*yold); 
+      Int_t trackOld = tpcHit->GetTrack();
       Float_t q     = 0.;
+
       while(tpcHit) {
+
         Float_t x = tpcHit->X();
         Float_t y = tpcHit->Y();
         Float_t z = tpcHit->Z(); 
@@ -194,44 +197,49 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
 	  
           Int_t trackNo = tpcHit->GetTrack();
 	  
-          if(trackNo==n) { // primary track
+	  GetHitsData(kElectrons)->Fill(tpcHit->fQ);
+	  GetHitsData(kRadius)->Fill(radius);
 	    
-            GetHitsData(kElectrons)->Fill(tpcHit->fQ);
-            GetHitsData(kRadius)->Fill(radius);
-	    
-            // find the new distance
-            dist += TMath::Sqrt((x-xold)*(x-xold) + (y-yold)*(y-yold) + 
-                                (z-zold)*(z-zold));
-            if(dist<1.){  
-              // add data to this 1 cm step
-              nprim++;  
-              q += tpcHit->fQ;
-	      
-            } else{
-              // Fill the histograms normalized to per cm 
-	      
-              if(nprim==1)
-                cout << radius << ", " << radiusOld << ", " << dist << endl; 
-	      
-              GetHitsData(kPrimPerCm)->Fill((Float_t)nprim);
-              GetHitsData(kElectronsPerCm)->Fill(q);
-	      
-              dist  = 0;
-              q     = 0;
-              nprim = 0;
-            }
-          }
-        }
-	
-        radiusOld = radius;
-        xold = x;
-        yold = y;
-        zold = z;
-	
-        tpcHit = (AliTPChit*) tpc->NextHit();
-        }
-      }
-      GetHitsData(kNhits)->Fill(nHits);
-    }
-  }
+	  if(trackNo==trackOld) { // if the same track
 
+	    // find the new distance
+	    dist += TMath::Sqrt((x-xold)*(x-xold) + (y-yold)*(y-yold) + 
+				(z-zold)*(z-zold));
+	    if(dist<1.){ // add data to this 1 cm step
+	      
+	      nprim++;  
+	      q += tpcHit->fQ;	      
+	    } else{ // Fill the histograms normalized to per cm 
+	      
+	      if(nprim==1)
+		cout << radius << ", " << radiusOld << ", " << dist << endl; 
+	      
+	      GetHitsData(kPrimPerCm)->Fill((Float_t)nprim);
+	      GetHitsData(kElectronsPerCm)->Fill(q);
+	      
+	      dist  = 0;
+	      q     = 0;
+	      nprim = 0;
+	    }
+	  } else { // reset for new track
+	    
+	    dist  = 0;
+	    q     = 0;
+	    nprim = 0;
+	  }
+	}
+
+	radiusOld = radius;
+	xold = x;
+	yold = y;
+	zold = z;
+	trackOld = tpcHit->GetTrack();
+	
+	tpcHit = (AliTPChit*) tpc->NextHit();
+      }
+    }
+
+    GetHitsData(kNhits)->Fill(nHits);
+  }
+}
+  
