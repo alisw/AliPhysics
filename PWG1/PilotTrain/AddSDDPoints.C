@@ -1,7 +1,5 @@
 
 AliAnalysisTaskSE* AddSDDPoints() {
-    gROOT->LoadMacro("AliAnalysisTaskSDDRP.cxx++g");
-    
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
     Error("AddTaskESDFilter", "No analysis manager to connect to.");
