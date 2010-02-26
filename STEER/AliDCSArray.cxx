@@ -273,23 +273,23 @@ AliDCSArray::~AliDCSArray()
 	//
 
 	if (fBool){
-		delete fBool;
+		delete [] fBool;
 		fBool = 0x0;
 	}
 	if (fChar){
-		delete fChar;
+		delete [] fChar;
 		fChar = 0x0;
 	}
 	if (fUInt){
-		delete fUInt;
+		delete [] fUInt;
 		fUInt = 0x0;
 	}
 	if (fInt){
-		delete fInt;
+		delete [] fInt;
 		fInt = 0x0;
 	}
 	if (fFloat){
-		delete fFloat;
+		delete [] fFloat;
 		fFloat = 0x0;
 	}
 	if (fStringArray!=0x0){
@@ -297,7 +297,7 @@ AliDCSArray::~AliDCSArray()
 		fStringArray = 0x0;
 	}
 	if (fDouble){
-		delete fDouble;
+		delete [] fDouble;
 		fDouble = 0x0;
 	}
 }

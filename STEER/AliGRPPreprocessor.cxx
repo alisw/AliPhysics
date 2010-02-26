@@ -507,6 +507,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//=================//
 
 	UInt_t iLHCData = ProcessLHCData(grpobj);
+
 	if( iLHCData == 0 ) {
 		Log(Form("LHC Data from DCS FXS, successful!"));
 	} else  if (iLHCData == 1) {
@@ -579,11 +580,11 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 
 	TString timeStartString = (TString)GetRunParameter("DAQ_time_start");
 	TString timeEndString = (TString)GetRunParameter("DAQ_time_end");
-	if (timeStartString.IsNull() || timeStartString.IsNull()){
+	if (timeStartString.IsNull() || timeEndString.IsNull()){
 		if (timeStartString.IsNull()){ 
 			AliError("DAQ_time_start not set in logbook! Setting statistical values for current DP to invalid");
 		}
-		else if (timeStartString.IsNull()){
+		else if (timeEndString.IsNull()){
 			AliError("DAQ_time_end not set in logbook! Setting statistical values for current DP to invalid");
 		}
 		return 2;
@@ -595,8 +596,8 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 	TString fileName = GetFile(kDCS, "LHCData","");
 	if (fileName.Length()>0){
 		AliInfo("Got The LHC Data file");
-		AliLHCReader* lhcReader = new AliLHCReader();
-		TMap* lhcMap = (TMap*)lhcReader->ReadLHCDP(fileName.Data());
+		AliLHCReader lhcReader;
+		TMap* lhcMap = (TMap*)lhcReader.ReadLHCDP(fileName.Data());
 		if (lhcMap) {
 			Log(Form("LHCData map entries = %d",lhcMap->GetEntries()));
 			
@@ -705,6 +706,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 				else return 3;
 			}
 			else return 4;
+			delete lhcMap; 
 		}
 		else {
 			AliError("Cannot read correctly LHCData file");
@@ -1015,9 +1017,11 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 				metaData.SetComment("CTP scalers");
 				if (!Store("CTP","Scalers", scalers, &metaData, 0, 0)) {
 					Log("Unable to store the CTP scalers object to OCDB!");
+					delete scalers;					
 					return 1;
 				}
 			}
+			delete scalers;
 		}
 	}
 	
@@ -2597,6 +2601,7 @@ Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* array, Double_t timeStart, 
 
 	Int_t nCounts = array->GetEntries();
 	Float_t energy = -1;
+	Bool_t inRange = kFALSE;
 	AliDebug(2,Form("Energy measurements = %d\n",nCounts));
 	if (nCounts ==0){
 		AliWarning("No Energy values found! Beam Energy remaining invalid!");
@@ -2607,12 +2612,14 @@ Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* array, Double_t timeStart, 
 			if((dcs->GetTimeStamp() >= timeStart) &&(dcs->GetTimeStamp() <= timeEnd)) {
 				energy = (Float_t)(TMath::Nint(((Double_t)(dcs->GetInt(0)))*120/1000)); // sqrt(s)/2 energy in GeV
 				AliInfo(Form("Energy value found = %d, converting --> sqrt(s)/2 = %f (GeV)", dcs->GetInt(0),energy));
+				inRange = kTRUE;
 				break;
 			}
-			else {
-				AliError("No energy values found between DAQ_time_start and DAQ_time_end - energy will remain invalid!");
-			}
 		}
+		if (inRange == kFALSE){
+				AliInfo("No Energy value found between DAQ_time_start and DAQ_time_end - energy will remain invalid!");
+		}
+	
 	}
 
 	return energy;
