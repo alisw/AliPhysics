@@ -266,7 +266,6 @@ Int_t                                     gEMCALHistoCount    =0;
 Bool_t                                    gEventLoopStarted = kFALSE;
 
 
-
 //Container for gGeoManager till it is broken
 TGeoManager *fGeoManager = 0;
 // -----------------------------------------------------------------
@@ -784,7 +783,7 @@ Int_t processEvent() {
     iResult = processBlock(block);
   }
   
-  iResult = updateDisplay();
+  updateDisplay();
 
   return iResult;
 }
