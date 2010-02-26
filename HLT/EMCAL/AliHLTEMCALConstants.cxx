@@ -68,7 +68,8 @@ AliHLTEMCALConstants::AliHLTEMCALConstants() :
   fkNALTROCHANNELS(16),
   fkNBRANCHES(2), 
   fkCELLSTEP(-999999999.9),
-  fkNRCUSPERSECTOR(4)
+  fkNRCUSPERSECTOR(4),
+  fkDDLOFFSET(4608)
 {
   //Default constructor
 }

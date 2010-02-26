@@ -70,7 +70,8 @@ AliHLTPHOSConstants::AliHLTPHOSConstants() :
   fkNALTROCHANNELS(16),
   fkNBRANCHES(2),
   fkCELLSTEP(2.2),
-  fkNRCUSPERSECTOR(-9999)
+  fkNRCUSPERSECTOR(-9999),
+  fkDDLOFFSET(1792)
 {
   //Default constructor
 }

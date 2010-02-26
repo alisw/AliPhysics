@@ -77,6 +77,8 @@ public:
 										
   Float_t GetCELLSTEP() const { return fkCELLSTEP; } 					
   Int_t GetNRCUSPERSECTOR() const { return fkNRCUSPERSECTOR; } 					
+  
+  Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
 
 private:
 
@@ -134,6 +136,8 @@ private:
 
   const Float_t fkCELLSTEP;
   const Int_t fkNRCUSPERSECTOR;
+  
+  const Int_t fkDDLOFFSET;
 
 
   ClassDef(AliHLTPHOSConstants, 1);

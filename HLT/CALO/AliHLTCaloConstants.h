@@ -80,6 +80,7 @@ public:
 								
   virtual Float_t GetCELLSTEP() const = 0; 					
   virtual Int_t GetNRCUSPERSECTOR() const = 0; 						
+  virtual Int_t GetDDLOFFSET() const = 0;
 
   
 private:

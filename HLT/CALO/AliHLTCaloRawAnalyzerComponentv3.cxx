@@ -235,7 +235,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
  
   totSize += sizeof( AliHLTCaloChannelDataHeaderStruct );
   fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
-  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + 1792  );
+  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + fCaloConstants->GetDDLOFFSET() );
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
  

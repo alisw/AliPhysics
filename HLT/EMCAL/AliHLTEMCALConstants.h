@@ -87,6 +87,7 @@ public:
 
   Float_t GetCELLSTEP() const { return fkCELLSTEP; } 		//BALLE must be set correctly			
   Int_t GetNRCUSPERSECTOR() const { return fkNRCUSPERSECTOR; } 					
+  Int_t GetDDLOffset() const { return fkDDLOFFSET; }
 
 
 private:
@@ -146,6 +147,8 @@ private:
   
   const Float_t fkCELLSTEP;
   const Int_t fkNRCUSPERSECTOR;
+  
+  const Int_t fkDDLOFFSET;
 
   ClassDef(AliHLTEMCALConstants, 1)
 
