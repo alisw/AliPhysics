@@ -31,9 +31,6 @@ SRCS= AliTRDarraySignal.cxx \
       Cal/AliTRDCalDCSGTUTgu.cxx \
       Cal/AliTRDCalDCSGTUTmu.cxx \
       Cal/AliTRDCalDCSGTU.cxx \
-      Cal/AliTRDCalPID.cxx \
-      Cal/AliTRDCalPIDLQ.cxx \
-      Cal/AliTRDCalPIDNN.cxx \
       Cal/AliTRDCalMonitoring.cxx \
       Cal/AliTRDCalChamberStatus.cxx \
       Cal/AliTRDCalPadStatus.cxx \
@@ -71,7 +68,7 @@ HDRS= $(SRCS:.cxx=.h)
 
 DHDR= TRDbaseLinkDef.h
 
-EINCLUDE:= RAW TRD/Cal STAT
+EINCLUDE:= RAW TRD/Cal
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
