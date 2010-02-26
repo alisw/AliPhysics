@@ -63,8 +63,9 @@ ClassImp(AliT0Reconstructor)
   }
 
   
-  fdZonC = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
-  fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
+  // fdZonC = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
+  //fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
+
 
   fCalib = new AliT0Calibrator();
 
@@ -86,8 +87,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Float_t channelWidth = fParam->GetChannelWidth() ;  
   Float_t meanVertex = fParam->GetMeanVertex();
   Float_t c = 0.0299792; // cm/ps
-  Float_t vertex = 9999999;
-  Int_t timeDiff=999999, meanTime=999999, timeclock=999999;
+  Double32_t vertex = 9999999;
+  Double32_t timeDiff=999999, meanTime=999999, timeclock=999999;
 
   
   AliDebug(1,Form("Start DIGITS reconstruction "));
@@ -110,11 +111,12 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   fDigits->GetQT0(*chargeQT0);
   fDigits->GetQT1(*chargeQT1);
   Int_t onlineMean =  fDigits->MeanTime();
-  Int_t ref =  fDigits->RefPoint();
 
+  Bool_t tr[5];
+  for (Int_t i=0; i<5; i++) tr[i]=false; 
   
-  Float_t besttimeA=999999;
-  Float_t besttimeC=999999;
+  Double32_t besttimeA=999999;
+  Double32_t besttimeC=999999;
   Int_t pmtBestA=99999;
   Int_t pmtBestC=99999;
   
@@ -166,24 +168,40 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
         pmtBestA=ipmt;}
     }
   }
-  if(besttimeA !=999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
-  if( besttimeC != 999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
+  if(besttimeA < 999999) {
+    frecpoints->SetTimeBestA(Int_t(besttimeA *channelWidth));
+    tr[1]=true;
+  }
+  if( besttimeC < 999999 ) {
+    frecpoints->SetTimeBestC(Int_t(besttimeC *channelWidth));
+    tr[2]=true;
+  }
   AliDebug(10,Form(" besttimeA %f ch,  besttimeC %f ch",besttimeA, besttimeC));
-    if(besttimeA !=999999 && besttimeC != 999999 ){
+  if(besttimeA <999999 && besttimeC < 999999 ){
     //    timeDiff = (besttimeC - besttimeA)*channelWidth;
     timeDiff = (besttimeA - besttimeC)*channelWidth;
-    meanTime = Float_t((besttimeA + besttimeC)/2);// * channelWidth); 
-    timeclock = Float_t(meanTime - ref);
-    vertex = meanVertex - c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2; 
-   }
-    frecpoints->SetVertex(vertex);
-    frecpoints->SetMeanTime(meanTime);
-    frecpoints->SetT0clock(timeclock);
-    //online mean
-    frecpoints->SetOnlineMean(Int_t(onlineMean));
-    AliDebug(10,Form("  timeDiff %i #channel,  meanTime %i #channel, vertex %f cm online mean %i timeclock %i ps",timeDiff, meanTime,vertex, Int_t(onlineMean), timeclock));
-    
-    //  }
+    meanTime = (besttimeA + besttimeC)/2;// * channelWidth); 
+    timeclock = meanTime *channelWidth ;
+    vertex = meanVertex - c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2;
+    tr[0]=true; 
+  }
+  frecpoints->SetVertex(vertex);
+  frecpoints->SetMeanTime(meanTime);
+  frecpoints->SetT0clock(timeclock);
+  frecpoints->SetT0Trig(tr);
+
+  for (Int_t i=0; i<5; i++) {
+    printf(" T0 trigers %i ",tr[i]);
+  }
+    printf(" \n ");
+
+  //online mean
+  frecpoints->SetOnlineMean(Int_t(onlineMean));
+  AliDebug(10,Form("  timeDiff %i #channel,  meanTime %i #channel, vertex %f cm online mean %i timeclock %i ps",timeDiff, meanTime,vertex, Int_t(onlineMean), timeclock));
+  
+  
+
+   
   
   clustersTree->Fill();
 
@@ -204,21 +222,25 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
   Int_t refAmp = GetRecoParam()->GetRefAmp();
   Int_t refPoint = GetRecoParam()->GetRefPoint();
+  Float_t latencyL1 = GetRecoParam()->GetLatencyL1();
+  Float_t latencyHPTDC = GetRecoParam()->GetLatencyHPTDC();
+  Float_t vertexshift = GetRecoParam()->GetVertexShift();
 
   Int_t allData[110][5];
   
   Int_t timeCFD[24], timeLED[24], chargeQT0[24], chargeQT1[24];
-  Int_t timeDiff=999999, meanTime=999999, timeclock=999999;
-  Float_t c = 0.0299792458; // cm/ps
-  Float_t vertex = 9999999;
+  Double32_t timeDiff=999999, meanTime=999999, timeclock=999999;
+  Float_t c = 29.9792458; // cm/ns
+  Double32_t vertex = 9999999;
   Int_t onlineMean=0;
+
   for (Int_t i0=0; i0<105; i0++)
     {
       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 	
     }
    
-  Float_t besttimeA=9999999;
-  Float_t besttimeC=9999999;
+  Double32_t besttimeA=9999999;
+  Double32_t besttimeC=9999999;
   Int_t pmtBestA=99999;
   Int_t pmtBestC=99999;
   Float_t meanVertex = fParam->GetMeanVertex();
@@ -245,7 +267,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       }
       Int_t ref=0;
       if (refPoint>0) 
-      ref = allData[refPoint][0]-5000.;
+      ref = allData[refPoint][0]-5000;
 
       Float_t channelWidth = fParam->GetChannelWidth() ;  
       
@@ -281,7 +303,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 			   in, timeLED[in],timeCFD[in],chargeQT0[in],chargeQT1[in]));
         onlineMean = allData[49][0];       
        
-       Float_t time[24], adc[24];
+       Double32_t time[24], adc[24];
        for (Int_t ipmt=0; ipmt<24; ipmt++) {
 	 if(timeCFD[ipmt]>0 && timeLED[ipmt]>0){
 	   //for simulated data
@@ -302,9 +324,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
 	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %i\n ",ampMip,qtMip, adc[ipmt]));
 	     
-	   frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
-	   frecpoints->SetAmpLED(ipmt, Float_t( qtMip)); //for cosmic &pp beam 
-	   frecpoints->SetAmp(ipmt, Float_t(ampMip));
+	   //	   frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
+	   frecpoints->SetTime(ipmt,Double32_t(timeCFD[ipmt]));
+	   frecpoints->SetAmpLED(ipmt, Double32_t( qtMip)); //for cosmic &pp beam 
+	   frecpoints->SetAmp(ipmt, Double32_t(ampMip));
 	     
 	 }
 	 else {
@@ -328,41 +351,76 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     pmtBestA=ipmt;}
 	 }
        }
-       if(besttimeA !=9999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
-       if( besttimeC != 9999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
-       AliDebug(5,Form(" pmtA %i besttimeA %f ps, pmtC %i besttimeC %f #channel",
+       if(besttimeA < 999999) 
+	 frecpoints->SetTimeBestA( 0.001 * besttimeA * channelWidth - latencyHPTDC + latencyL1);
+       if( besttimeC < 999999 ) 
+	 frecpoints->SetTimeBestC(0.001 * besttimeC * channelWidth - latencyHPTDC + latencyL1);
+       AliDebug(10,Form(" pmtA %i besttimeA %f ps, pmtC %i besttimeC %f ps",
 		       pmtBestA,besttimeA, pmtBestC,  besttimeC));
-        if(besttimeA <9999999 && besttimeC < 9999999 ){
-	 timeDiff = ( besttimeA - besttimeC) *channelWidth;
-	 meanTime =  Float_t(((besttimeA-ref) + (besttimeC-ref))/2.);  
-	 timeclock = Float_t(meanTime);
-	 vertex =  meanVertex - c*(timeDiff)/2.; //+ (fdZonA - fdZonC)/2; 
-       }
+        if(besttimeA <999999 && besttimeC < 999999 ){
+	 timeDiff = ( besttimeA - besttimeC) *0.001 * channelWidth;
+	 timeclock =  0.001 * channelWidth * Float_t(besttimeA+besttimeC)/2. - latencyHPTDC + latencyL1;  
+	 meanTime = (besttimeA+besttimeC-2.*Float_t(ref))/2.;
+	 vertex =  meanVertex -  c*(timeDiff)/2. + vertexshift; //+ (fdZonA - fdZonC)/2; 
+	}
       }  //if phys event       
+      AliDebug(5,Form("  timeDiff %f #channel,  meanTime %f #channel, TOFmean%f  vertex %f cm meanVertex %f online mean %i \n",timeDiff, meanTime,timeclock, vertex,meanVertex, onlineMean));
       frecpoints->SetT0clock(timeclock);
       frecpoints->SetVertex(vertex);
-      frecpoints->SetMeanTime(Int_t(meanTime));
+      frecpoints->SetMeanTime(meanTime);
       frecpoints->SetOnlineMean(Int_t(onlineMean));
-      AliDebug(5,Form("  timeDiff %f #channel,  meanTime %f #channel, vertex %f cm meanVertex %f online mean %i ",timeDiff, meanTime,vertex,meanVertex, onlineMean));
-	 
-       
-    } // if (else )raw data
-	 recTree->Fill();
-	 if(frecpoints) delete frecpoints;
-}
-       
-       
-//____________________________________________________________
-
-void AliT0Reconstructor::FillESD(TTree */*digitsTree*/, TTree *clustersTree, AliESDEvent *pESD) const
-{
+	// Set triggers
+      
+      Bool_t tr[5];
+      Int_t trchan[5]= {50,51,52,55,56};
+      for (Int_t i=0; i<5; i++) tr[i]=false; 
+      for (Int_t itr=0; itr<5; itr++) {
+	if(allData[trchan[itr]][0]>0) tr[itr]=true;
+	frecpoints->SetT0Trig(tr);
+      }
+      for (Int_t i=0; i<5; i++) 
+	printf(" T0 trigers %i ",tr[i]);
+      printf(" \n ");
+      
+      
+      } // if (else )raw data
+      recTree->Fill();
+      if(frecpoints) delete frecpoints;
+    }
+  
+  
+  //____________________________________________________________
+  
+  void AliT0Reconstructor::FillESD(TTree */*digitsTree*/, TTree *clustersTree, AliESDEvent *pESD) const
+  {
 
   /***************************************************
   Resonstruct digits to vertex position
   ****************************************************/
   
   AliDebug(1,Form("Start FillESD T0"));
+  Float_t channelWidth = 0.0244;
+  Float_t c = 29.9792458; // cm/ns
+  Float_t currentVertex=0, shift=0;
+  Int_t ncont=0;
+  const AliESDVertex* vertex = pESD->GetPrimaryVertex();
+  if (!vertex)        vertex = pESD->GetPrimaryVertexSPD();
+  if (!vertex)        vertex = pESD->GetPrimaryVertexTPC();
+  if (!vertex)        vertex = pESD->GetVertex();
 
+  if (vertex) {
+    AliDebug(2, Form("Got %s (%s) from ESD: %f", 
+		    vertex->GetName(), vertex->GetTitle(), vertex->GetZ()));
+    currentVertex = vertex->GetZ();
+    
+    ncont = vertex->GetNContributors();
+    // cout<<" spdver "<<spdver<<" ncont "<<ncont<<endl;
+    if(ncont>3 ) {
+      //     hVertexSPD->Fill(spdver);
+      shift = currentVertex/c;
+      //	  cout<<" vertex shif "<<shift<<" vertex "<<spdver<<" IsFromVertexer3D  "<<fverSPD->IsFromVertexer3D()<<endl;
+    }
+  }
   TTree *treeR = clustersTree;
   
    AliT0RecPoint* frecpoints= new AliT0RecPoint ();
@@ -381,22 +439,31 @@ void AliT0Reconstructor::FillESD(TTree */*digitsTree*/, TTree *clustersTree, Ali
   } 
     
     brRec->GetEntry(0);
-    Float_t amp[24], time[24];
-    Float_t  zPosition = frecpoints -> GetVertex();
-    Float_t timeStart = frecpoints -> GetMeanTime() ;
-    Float_t timeClock = frecpoints -> GetT0clock() ;
-     for ( Int_t i=0; i<24; i++) {
-      time[i] = Float_t (frecpoints -> GetTime(i)); // ps to ns
+    Double32_t amp[24], time[24];  
+    Double32_t timeClock[3];
+    Double32_t zPosition = frecpoints -> GetVertex();
+    Double32_t timeStart = frecpoints -> GetMeanTime();
+    timeClock[0] = frecpoints -> GetT0clock() ;
+    timeClock[1] = frecpoints -> GetBestTimeA() + shift;
+    timeClock[2] = frecpoints -> GetBestTimeC() - shift;
+    for ( Int_t i=0; i<24; i++) {
+      time[i] =  frecpoints -> GetTime(i); // ps to ns
       amp[i] = frecpoints -> GetAmp(i);
     }
+    Int_t trig= frecpoints ->GetT0Trig();
+    pESD->SetT0Trig(trig);
+    
     pESD->SetT0zVertex(zPosition); //vertex Z position 
     pESD->SetT0(timeStart);        // interaction time 
-    pESD->SetT0clock(timeClock);   // interaction time with ref.point(spectrum) 
+    for(Int_t i=0; i<3; i++) 
+      pESD->SetT0TOF(i,timeClock[i]);   // interaction time (ns) 
     pESD->SetT0time(time);         // best TOF on each PMT 
     pESD->SetT0amplitude(amp);     // number of particles(MIPs) on each PMT
- 
-    AliDebug(1,Form(" Z position %f cm,  T0  %f ps",zPosition , timeStart));
-
+    pESD->Print(); 
+    
+    AliDebug(1,Form("T0: Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f T0trig %i\n",zPosition, timeStart, timeClock[0], timeClock[1], timeClock[2], trig));
+    
+    
 } // vertex in 3 sigma
 
 

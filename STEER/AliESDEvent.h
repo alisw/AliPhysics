@@ -189,16 +189,21 @@ public:
   const AliESDTZERO*    GetESDTZERO() const {return fESDTZERO;}
   // delegetated methods for fESDTZERO
 
-  Double_t GetT0zVertex() const {return fESDTZERO?fESDTZERO->GetT0zVertex():0;}
-  void SetT0zVertex(Float_t z) {if(fESDTZERO) fESDTZERO->SetT0zVertex(z);}
-  Double_t GetT0() const {return fESDTZERO?fESDTZERO->GetT0():0;}
-  void SetT0(Float_t timeStart) {if(fESDTZERO) fESDTZERO->SetT0(timeStart);}
-  Float_t GetT0clock() const {return fESDTZERO?fESDTZERO->GetT0clock():0;}
-  void SetT0clock(Float_t timeStart) {if(fESDTZERO) fESDTZERO->SetT0clock(timeStart);}
-  const Double_t * GetT0time() const {return fESDTZERO?fESDTZERO->GetT0time():0x0;}
-  void SetT0time(Float_t time[24]) {if(fESDTZERO) fESDTZERO->SetT0time(time);}
-  const Double_t * GetT0amplitude() const {return fESDTZERO?fESDTZERO->GetT0amplitude():0x0;}
-  void SetT0amplitude(Float_t amp[24]){if(fESDTZERO) fESDTZERO->SetT0amplitude(amp);}
+  Double32_t GetT0zVertex() const {return fESDTZERO?fESDTZERO->GetT0zVertex():0;}
+  void SetT0zVertex(Double32_t z) {if(fESDTZERO) fESDTZERO->SetT0zVertex(z);}
+  Double32_t GetT0() const {return fESDTZERO?fESDTZERO->GetT0():0;}
+  void SetT0(Double32_t timeStart) {if(fESDTZERO) fESDTZERO->SetT0(timeStart);}
+  Double32_t GetT0clock() const {return fESDTZERO?fESDTZERO->GetT0clock():0;}
+  void SetT0clock(Double32_t timeStart) {if(fESDTZERO) fESDTZERO->SetT0clock(timeStart);}
+  Double32_t GetT0TOF(Int_t icase) const {return fESDTZERO?fESDTZERO->GetT0TOF(icase):0;}
+  const Double32_t * GetT0TOF() const {return fESDTZERO?fESDTZERO->GetT0TOF():0x0;}
+  void SetT0TOF(Int_t icase,Double32_t timeStart) {if(fESDTZERO) fESDTZERO->SetT0TOF(icase,timeStart);}
+  const Double32_t * GetT0time() const {return fESDTZERO?fESDTZERO->GetT0time():0x0;}
+  void SetT0time(Double32_t time[24]) {if(fESDTZERO) fESDTZERO->SetT0time(time);}
+  const Double32_t * GetT0amplitude() const {return fESDTZERO?fESDTZERO->GetT0amplitude():0x0;}
+  void SetT0amplitude(Double32_t amp[24]){if(fESDTZERO) fESDTZERO->SetT0amplitude(amp);}
+  Int_t GetT0Trig() const { return fESDTZERO?fESDTZERO->GetT0Trig():0;}
+  void SetT0Trig(Int_t tvdc) {if(fESDTZERO) fESDTZERO->SetT0Trig(tvdc);}
 
   // VZERO 
   AliESDVZERO *GetVZEROData() const { return fESDVZERO; }

@@ -31,18 +31,23 @@ AliESDTZERO::AliESDTZERO() :
   TObject(),
   fT0clock(0),
   fT0zVertex(0),
-  fT0timeStart(0)   
+  fT0timeStart(0),   
+  fT0trig(0)
 {
   for(int i = 0;i<24;i++)fT0time[i] = fT0amplitude[i] = 0;
+  for(int i = 0;i<3;i++) fT0TOF[i]=0;
 }
 
 AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
   TObject(tzero),
-  fT0clock(tzero.fT0clock),
+  fT0clock(tzero.fT0clock),  
+  fT0trig(tzero.fT0trig),
   fT0zVertex(tzero.fT0zVertex),
   fT0timeStart(tzero.fT0timeStart)   
 {
   // copy constuctor
+  for(int i = 0;i<3;i++) fT0TOF[i] = tzero.fT0TOF[i];
+
   for(int i = 0;i<24;i++){
     fT0time[i] = tzero.fT0time[i]; 
     fT0amplitude[i] = tzero.fT0amplitude[i];
@@ -53,8 +58,10 @@ AliESDTZERO& AliESDTZERO::operator=(const AliESDTZERO& tzero){
   // assigmnent operator
   if(this!=&tzero) {
     TObject::operator=(tzero);
+    fT0clock = tzero.fT0clock;
     fT0zVertex = tzero.fT0zVertex;
     fT0timeStart = tzero.fT0timeStart;   
+    for(int i = 0;i<3;i++) fT0TOF[i] = tzero.fT0TOF[i];
     for(int i = 0;i<24;i++){
       fT0time[i] = tzero.fT0time[i]; 
       fT0amplitude[i] = tzero.fT0amplitude[i];
@@ -81,13 +88,26 @@ void AliESDTZERO::Copy(TObject &obj) const {
 void AliESDTZERO::Reset()
 {
   // reset contents
+  fT0clock=0;
   fT0zVertex = 0;  
   fT0timeStart = 0;
   for(int i = 0;i<24;i++)fT0time[i] = fT0amplitude[i] = 0;
+  for(int i = 0;i<3;i++) fT0TOF[i] = 0;
 }
 
 //______________________________________________________________________________
 void AliESDTZERO::Print(const Option_t *) const
 {
   // does noting fornow
+  printf(" Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f \n",fT0zVertex,  fT0timeStart, fT0TOF[0],fT0TOF[1],fT0TOF[2]);
+
+   Bool_t tr[5];
+  for (Int_t i=0; i<5; i++) tr[i]=false; 
+
+  for (Int_t i=0; i<5; i++) {
+    tr[i] = fT0trig & (1<<i);
+    printf(" AliT0ESD ::: T0 trigers %i ",tr[i]);
+  }
+    printf(" \n ");
+
 }

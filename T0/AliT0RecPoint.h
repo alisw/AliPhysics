@@ -16,50 +16,54 @@ class AliT0RecPoint: public TObject  {
     AliT0RecPoint& operator= (const AliT0RecPoint &)  { return *this;}
     virtual ~AliT0RecPoint() {}
 
-     Int_t  GetMeanTime()   const {return fTimeAverage;}
-     Int_t  GetOnlineMean() const {return fTimeOnlineMean;}
-     Int_t  GetBestTimeA()  const {return fTimeBestA ;}
-     Int_t  GetBestTimeC()  const {return fTimeBestC ;}
-     Int_t GetMultC()       const {return fMultC;}
-     Int_t GetMultA()       const {return fMultA;}
-     Float_t  GetVertex()   const {return fVertexPosition;}
+    Double32_t  GetMeanTime()   const {return fTimeAverage;}
+    Int_t  GetOnlineMean() const {return fTimeOnlineMean;}
+    Double32_t  GetBestTimeA()  const {return fTimeBestA ;}
+    Double32_t  GetBestTimeC()  const {return fTimeBestC ;}
+    Float_t GetMultC()       const {return fMultC;}
+    Float_t GetMultA()       const {return fMultA;}
+    Double32_t  GetVertex()   const {return fVertexPosition;}
 
 
-    void SetMeanTime(Int_t time) {fTimeAverage=time;}
+    void SetMeanTime(Double32_t time) {fTimeAverage=time;}
     void SetOnlineMean(Int_t time) {fTimeOnlineMean=time;}
-    void SetTimeBestA( Int_t time) {fTimeBestA = time;}
-    void SetTimeBestC( Int_t time) {fTimeBestC = time;}
-    void SetVertex( Float_t vertex) {fVertexPosition= vertex;}
-    void SetMultC(Int_t mult) {fMultC = mult;}
-    void SetMultA(Int_t mult) {fMultA = mult;}
+    void SetTimeBestA( Double32_t time) {fTimeBestA = time;}
+    void SetTimeBestC( Double32_t time) {fTimeBestC = time;}
+    void SetVertex( Double32_t vertex) {fVertexPosition= vertex;}
+    void SetMultC(Float_t mult) {fMultC = mult;}
+    void SetMultA(Float_t mult) {fMultA = mult;}
 
-    void SetTime (Int_t ipmt, Float_t time) { fTime[ipmt] = time;}
-    Float_t GetTime (Int_t ipmt)const { return fTime[ipmt];}
-    void SetAmp (Int_t ipmt, Float_t adc) { fADC[ipmt] = adc;}
-    Float_t GetAmp (Int_t ipmt) const{ return fADC[ipmt];}
-    void SetAmpLED (Int_t ipmt, Float_t adc) { fADCLED[ipmt] = adc;}
-    Float_t AmpLED (Int_t ipmt) const{ return fADCLED[ipmt];}
+    void    SetTime (Int_t ipmt, Double32_t time) { fTime[ipmt] = time;}
+    Double32_t GetTime (Int_t ipmt)const { return fTime[ipmt];}
+    void    SetAmp (Int_t ipmt, Double32_t adc) { fADC[ipmt] = adc;}
+    Double32_t GetAmp (Int_t ipmt) const{ return fADC[ipmt];}
+    void    SetAmpLED (Int_t ipmt, Double32_t adc) { fADCLED[ipmt] = adc;}
+    Double32_t AmpLED (Int_t ipmt) const{ return fADCLED[ipmt];}
     
-    void SetT0clock (Int_t time) { fT0clock = time;}
-    Float_t GetT0clock () const{ return fT0clock;}
+    void    SetT0clock (Double32_t time) { fT0clock = time;}
+    Double32_t GetT0clock () const{ return fT0clock;}
 
-
+    Bool_t GetT0Trig(Int_t i) {return fT0trig&(1<<i);}
+    Int_t GetT0Trig() {return fT0trig;}
+    void   SetT0Trig(Bool_t *tr );
+    void PrintTriggerSignals(Int_t trig);
   private: 
-    Int_t fTimeAverage;     // Average time
-    Int_t fTimeOnlineMean; // online mean signal
-    Float_t fVertexPosition;     // Diffrence time between C and A
-    Int_t fTimeBestA;   //TOF first particle on the A
-    Int_t fTimeBestC;    //TOF first particle on the C
-    Int_t fMultC; // multiplicity on the 
-    Int_t fMultA; // multiplicity on the 
-    Int_t fT0clock; // T0 with reference point
+    Double32_t fTimeAverage;     // Average time
+    Int_t   fTimeOnlineMean; // online mean signal
+    Double32_t fVertexPosition;     // Diffrence time between C and A
+    Double32_t fTimeBestA;   //TOF first particle on the A
+    Double32_t fTimeBestC;    //TOF first particle on the C
+    Float_t fMultC; // multiplicity on the 
+    Float_t fMultA; // multiplicity on the 
+    Double32_t fT0clock; // T0 with reference point in ns
+    Int_t   fT0trig;    // T0 trigger signals
  
-    Float_t fTime[24];    // array's TDC
-    Float_t fADC[24];    // array's amplitude
-    Float_t fADCLED[24];    // array's LED amplitude
+    Double32_t fTime[24];    // array's TDC
+    Double32_t fADC[24];    // array's amplitude
+    Double32_t fADCLED[24];    // array's LED amplitude
 
 
-    ClassDef(AliT0RecPoint,5)  //Digit (Header) object for set:T0
+    ClassDef(AliT0RecPoint,6)  //Digit (Header) object for set:T0
 };
 
 typedef AliT0RecPoint AliSTARTRecPoint; // for backward compatibility

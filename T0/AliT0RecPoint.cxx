@@ -40,7 +40,9 @@ ClassImp(AliT0RecPoint)
 				   fVertexPosition(999999),
 				   fTimeBestA(0),fTimeBestC(0),
                                    fMultC(0),fMultA(0),
-                                   fT0clock(9999999)
+                                   fT0clock(9999999),
+				   fT0trig(0)
+
 {
   //ctor
   // fTimeAverage=99999;
@@ -59,12 +61,35 @@ AliT0RecPoint::AliT0RecPoint(const AliT0RecPoint &r):TObject(),
 						     fVertexPosition(999999),
 						     fTimeBestA(0),fTimeBestC(0),
 						     fMultC(0),fMultA(0),
-                                                     fT0clock(9999999)
+                                                     fT0clock(9999999),
+						     fT0trig(0)
 {
   //
   // AliT0RecPoint copy constructor
   //
 
   ((AliT0RecPoint &) r).Copy(*this);
+
+}
+//_____________________________________________________________________________
+
+void AliT0RecPoint::SetT0Trig(Bool_t *tr)
+{
+  fT0trig=0;
+  for (Int_t i=0; i<5; i++) fT0trig=fT0trig<<1|tr[i];
+}
+//_____________________________________________________________________________
+
+void AliT0RecPoint::PrintTriggerSignals(Int_t trig)
+{
+  Bool_t tr[5];
+  for (Int_t i=0; i<5; i++) tr[i]=false; 
+
+  for (Int_t i=0; i<5; i++) {
+    tr[i] = trig&(1<<i);
+    printf(" T0 trigers %i ",tr[i]);
+  }
+    printf(" \n ");
+  
 
 }
