@@ -44,13 +44,11 @@ AliHLTCaloHistoClusterEnergy::AliHLTCaloHistoClusterEnergy(TString det) :
   fHistClusterEnergy = new TH1F(Form("%s fHistClusterEnergy", det.Data()), Form("%s Distribution of total energy in clusters", det.Data()), 200, 0, 200);
   fHistClusterEnergy->GetXaxis()->SetTitle("E GeV");
   fHistClusterEnergy->GetYaxis()->SetTitle("Number of counts");
-  fHistClusterEnergy->SetMarkerStyle(21);
   fHistArray->AddLast(fHistClusterEnergy);
 
   fHistClusterEnergyVsNCells = new TH2F(Form("%s fHistClusterEnergyVsNCells", det.Data()), Form("%s Distribution of Energy vs Number of Cells in cluster", det.Data()), 200, 0, 200, 50, 0 , 50);
   fHistClusterEnergyVsNCells->GetXaxis()->SetTitle("Energy in cluster (GeV)");
   fHistClusterEnergyVsNCells->GetYaxis()->SetTitle("Number of Cells in cluster");
-  fHistClusterEnergyVsNCells->SetMarkerStyle(21);
   fHistArray->AddLast(fHistClusterEnergyVsNCells);
 
 }

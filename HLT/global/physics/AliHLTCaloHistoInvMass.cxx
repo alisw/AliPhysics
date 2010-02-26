@@ -98,43 +98,24 @@ Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, TRefArray * clusterArray)
   }
 
   for(Int_t ic = 0; ic<(nc-1); ic++) { 
-    
-    //Get the Lorentz vector of one photon
+
+    //Get momentum vector
     TVector3 iVec(cPos[ic]);
-   // iVec.Print();
     iVec = iVec.Unit();
-    //iVec.Print();
     iVec = cEnergy[ic] * iVec;
-    //iVec.Print();
-    TLorentzVector iLorentz(iVec, -1);
 
     
     for(Int_t jc = ic+1; jc<nc; jc++) { 
 
-      TVector3 jVec(cPos[ic]);
-      //jVec.Print();
+      //Get second momentum vector
+      TVector3 jVec(cPos[jc]);
       jVec = jVec.Unit();
-      //jVec.Print();
       jVec = cEnergy[jc] * jVec;
-      //jVec.Print();
-      TLorentzVector jLor(jVec, -1);
 
-      
-      
-//       g.SetXYZM(gammaCandidate->GetPx(),gammaCandidate->GetPy(),gammaCandidate->GetPz(),fGammaMass);
-//       TLorentzVector xyg = xy + g;
-
-
-//       TVector3 vec( cPos[ic][0] - cPos[jc][0] , cPos[ic][1] - cPos[jc][2] , cPos[ic][1] - cPos[jc][2] );
-      
-//       // Calculate the theta angle between two photons
-//       Double_t theta = (2* asin(0.5*TMath::Sqrt((cPos[ic][0]-cPos[jc][0])*(cPos[ic][0]-cPos[jc][0]) +(cPos[ic][1]-cPos[jc][1])*(cPos[ic][1]-cPos[jc][1]))/460));
-      
-      // Calculate the mass m of the pion candidate
-      //Double_t m =(TMath::Sqrt(2 * cEnergy[ic]* cEnergy[jc]*(1-TMath::Cos(theta))));
-
+      //Calculate inv mass
       Double_t m = TMath::Sqrt( 2 *(cEnergy[ic]* cEnergy[jc] - iVec.Dot(jVec) ) );
-      
+
+      //Fill histogram
       fHistTwoClusterInvMass->Fill(m);
     }
   }
