@@ -371,10 +371,10 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	Int_t nbins       = GetHistoNClusterCellBins(); Int_t nmax        = GetHistoNClusterCellMax(); Int_t nmin        = GetHistoNClusterCellMin(); 
 	Int_t nratiobins  = GetHistoRatioBins();        Float_t ratiomax  = GetHistoRatioMax();        Float_t ratiomin  = GetHistoRatioMin();
 	Int_t nvdistbins  = GetHistoVertexDistBins();   Float_t vdistmax  = GetHistoVertexDistMax();   Float_t vdistmin  = GetHistoVertexDistMin();
-	Int_t rbins       = GetHistoRBins();            Int_t rmax        = GetHistoRMax();            Int_t rmin        = GetHistoRMin(); 
-	Int_t xbins       = GetHistoXBins();            Int_t xmax        = GetHistoXMax();            Int_t xmin        = GetHistoXMin(); 
-	Int_t ybins       = GetHistoYBins();            Int_t ymax        = GetHistoYMax();            Int_t ymin        = GetHistoYMin(); 
-	Int_t zbins       = GetHistoZBins();            Int_t zmax        = GetHistoZMax();            Int_t zmin        = GetHistoZMin(); 
+	Int_t rbins       = GetHistoRBins();            Float_t rmax      = GetHistoRMax();            Float_t rmin      = GetHistoRMin(); 
+	Int_t xbins       = GetHistoXBins();            Float_t xmax      = GetHistoXMax();            Float_t xmin      = GetHistoXMin(); 
+	Int_t ybins       = GetHistoYBins();            Float_t ymax      = GetHistoYMax();            Float_t ymin      = GetHistoYMin(); 
+	Int_t zbins       = GetHistoZBins();            Float_t zmax      = GetHistoZMax();            Float_t zmin      = GetHistoZMin(); 
 	
 	//EMCAL
 	Int_t colmax = 48;
@@ -1530,9 +1530,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In %s there are %d clusters \n", fCalorimeter.Data(), nCaloClusters);
 	
 	//Get vertex for photon momentum calculation
-	Double_t v[3] ; //vertex ;
+	Double_t v[3] = {0,0,0}; //vertex ;
 	GetReader()->GetVertex(v);
 	TObject * track = 0x0;
+	
 	Float_t pos[3] ;
 	
 	//Loop over CaloClusters
@@ -1611,12 +1612,21 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			    Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
 			    fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
 			    fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
-			    
-//		    	    	printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
-//		       		printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
-//	       			printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
-//     				printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
-						
+			
+//					Float_t celleta = 0, cellphi = 0;
+//					GetReader()->GetEMCALGeometry()->EtaPhiFromIndex(absId, celleta, cellphi); 
+//					Int_t imod = -1, iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1;
+//					GetReader()->GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
+//					GetReader()->GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
+//																				 iIphi, iIeta,iphi,ieta);
+//					printf("AbsId %d, SM %d, Index eta %d, phi %d\n", absId, imod, ieta, iphi);
+//					printf("Cluster E %f, eta %f, phi %f; Cell: Amp %f, eta %f, phi%f\n", mom.E(),mom.Eta(), mom.Phi()*TMath::RadToDeg(), cell->GetCellAmplitude(absId),celleta, cellphi*TMath::RadToDeg());
+//					printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
+//					printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
+//					printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
+//					printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
+//					
+
 			  }//EMCAL and its matrices are available
 			  else if(fCalorimeter=="PHOS" && GetReader()->IsPHOSGeoMatrixSet()){
 			    TVector3 xyz;
@@ -2941,10 +2951,10 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	Int_t nbins       = GetHistoNClusterCellBins(); Int_t nmax        = GetHistoNClusterCellMax(); Int_t nmin        = GetHistoNClusterCellMin(); 
 //	Int_t nratiobins  = GetHistoRatioBins();        Float_t ratiomax  = GetHistoRatioMax();        Float_t ratiomin  = GetHistoRatioMin();
 //	Int_t nvdistbins  = GetHistoVertexDistBins();   Float_t vdistmax  = GetHistoVertexDistMax();   Float_t vdistmin  = GetHistoVertexDistMin();
-	Int_t rbins       = GetHistoRBins();            Int_t rmax        = GetHistoRMax();            Int_t rmin        = GetHistoRMin(); 
-	Int_t xbins       = GetHistoXBins();            Int_t xmax        = GetHistoXMax();            Int_t xmin        = GetHistoXMin(); 
-	Int_t ybins       = GetHistoYBins();            Int_t ymax        = GetHistoYMax();            Int_t ymin        = GetHistoYMin(); 
-	Int_t zbins       = GetHistoZBins();            Int_t zmax        = GetHistoZMax();            Int_t zmin        = GetHistoZMin(); 
+	Int_t rbins       = GetHistoRBins();            Float_t rmax        = GetHistoRMax();          Float_t rmin      = GetHistoRMin(); 
+	Int_t xbins       = GetHistoXBins();            Float_t xmax        = GetHistoXMax();          Float_t xmin      = GetHistoXMin(); 
+	Int_t ybins       = GetHistoYBins();            Float_t ymax        = GetHistoYMax();          Float_t ymin      = GetHistoYMin(); 
+	Int_t zbins       = GetHistoZBins();            Float_t zmax        = GetHistoZMax();          Float_t zmin      = GetHistoZMin(); 
 	
 	//Color code for the different modules
 	Int_t modColorIndex[]={2,4,6,8};
@@ -3220,8 +3230,8 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	Int_t rbPhi  = 1;
 	Int_t rbEta  = 1;
 	Int_t ncuts  = 7;
-	Float_t ecut[]={0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3};
-	Float_t ecutcolor[]={2, 4, 6, 7, 8, 9, 12};
+	Float_t ecut[]     = {0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3};
+	Int_t   ecutcolor[]= {2, 4, 6, 7, 8, 9, 12};
 	TH1D * hE = fhEtaPhiE->ProjectionZ();
 	
 	//PHI
