@@ -378,8 +378,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   Int_t nClusters = clusters->GetEntries(),  nClustersNew=0;
   AliDebug(1,Form("%d clusters",nClusters));
-  esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()); // Put after Phos clusters 
-
 
   //######################################################
   //#######################TRACK MATCHING###############
@@ -403,7 +401,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //########################################
   //##############Fill CaloClusters#############
   //########################################
-  esd->SetNumberOfEMCALClusters(nClusters);
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = (const AliEMCALRecPoint*)clusters->At(iClust);
     //if(clust->GetClusterType()== AliESDCaloCluster::kEMCALClusterv1) nRP++; else nPC++;
@@ -487,24 +484,18 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
  delete [] matchedTrack;
 
- esd->SetNumberOfEMCALClusters(nClustersNew);
- //if(nClustersNew != nClusters)
- //printf(" ##### nClusters %i -> new %i ##### \n", nClusters, nClustersNew );
-
  //Fill ESDCaloCluster with PID weights
-  AliEMCALPID *pid = new AliEMCALPID;
-  //pid->SetPrintInfo(kTRUE);
-  pid->SetReconstructor(kTRUE);
-  pid->RunPID(esd);
-  delete pid;
+ AliEMCALPID *pid = new AliEMCALPID;
+ //pid->SetPrintInfo(kTRUE);
+ pid->SetReconstructor(kTRUE);
+ pid->RunPID(esd);
+ delete pid;
   
-  delete digits;
-  delete clusters;
+ delete digits;
+ delete clusters;
   
-  // printf(" ## AliEMCALReconstructor::FillESD() is ended : ncl %i -> %i ### \n ",nClusters, nClustersNew); 
-
-  //Store EMCAL misalignment matrixes
-  FillMisalMatrixes(esd) ;
+ //Store EMCAL misalignment matrixes
+ FillMisalMatrixes(esd) ;
 
 }
 
