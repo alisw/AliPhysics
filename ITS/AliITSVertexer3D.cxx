@@ -539,7 +539,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   Int_t lastL1 = AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;
   for(Int_t modul1= firstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
     if(!fUseModule[modul1]) continue;
-    UShort_t ladder=int(modul1/4)+1; // ladders are numbered starting from 1
+    UShort_t ladder=modul1/4+1; // ladders are numbered starting from 1
     TClonesArray *prpl1=rpcont->UncheckedGetClusters(modul1);
     Int_t nrecp1 = prpl1->GetEntries();
     for(Int_t j=0;j<nrecp1;j++){
@@ -768,10 +768,33 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     // make a further selection on tracklets based on this first candidate
     fVert3D.GetXYZ(peak);
     AliDebug(1,Form("FIRST V candidate: %f ; %f ; %f",peak[0],peak[1],peak[2]));
+    Int_t *validate2 = new Int_t [fLines.GetEntriesFast()];
+    for(Int_t i=0; i<fLines.GetEntriesFast();i++) validate2[i]=1; 
     for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+      if(validate2[i]==0) continue; 
       AliStrLine *l1 = (AliStrLine*)fLines.At(i);
       if(l1->GetDistFromPoint(peak)> fDCAcut)fLines.RemoveAt(i);
+      if(optCuts==2){ // temporarily only for pileup
+	for(Int_t j=i+1; j<fLines.GetEntriesFast();j++){
+	  AliStrLine *l2 = (AliStrLine*)fLines.At(j);
+	  if(l1->GetDCA(l2)<0.00001){ 
+	    Int_t delta1=(Int_t)l1->GetIdPoint(0)-(Int_t)l2->GetIdPoint(0);
+	    Int_t delta2=(Int_t)l1->GetIdPoint(1)-(Int_t)l2->GetIdPoint(1);
+	    Int_t deltamod1=(Int_t)l1->GetIdPoint(0)/kMaxCluPerMod
+	      -(Int_t)l2->GetIdPoint(0)/kMaxCluPerMod;
+	    Int_t deltamod2=(Int_t)l1->GetIdPoint(1)/kMaxCluPerMod
+	      -(Int_t)l2->GetIdPoint(1)/kMaxCluPerMod;
+	    // remove tracklets sharing a point
+	    if( (delta1==0 && deltamod2==0)  || 
+		(delta2==0 && deltamod1==0)  ) validate2[j]=0; 
+	  }
+	}
+      }
     }
+    for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+      if(validate2[i]==0)  fLines.RemoveAt(i);
+    }
+    delete [] validate2;
     fLines.Compress();
     AliDebug(1,Form("Number of tracklets (after 3rd compression) %d",fLines.GetEntriesFast()));
     if(fLines.GetEntriesFast()>1){// this new tracklet selection is used
@@ -967,3 +990,4 @@ void AliITSVertexer3D::PrintStatus() const {
   printf("Maximum number of clusters allowed on L1 or L2: %d\n",fMaxNumOfCl);
   printf("=======================================================\n");
 }
+
