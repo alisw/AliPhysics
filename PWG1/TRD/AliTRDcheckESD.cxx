@@ -425,7 +425,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
 {
 // Steer post-processing 
   if(!IsLoad()){
-    fHistos = dynamic_cast<TObjArray *>(GetOutputData(0));
+    fHistos = dynamic_cast<TObjArray *>(GetOutputData(1));
     if(!fHistos){
       AliError("Histogram container not found in output");
       return;

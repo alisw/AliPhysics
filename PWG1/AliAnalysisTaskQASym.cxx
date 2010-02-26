@@ -58,6 +58,99 @@
 
 ClassImp(AliAnalysisTaskQASym)
 
+AliAnalysisTaskQASym::AliAnalysisTaskQASym() 
+  : AliAnalysisTaskSE() 
+    ,fFieldOn(kTRUE)
+    ,fHists(0)
+    ,fHistRECpt(0)
+    ,fEta(0)
+    ,fEtaPhi(0)
+    ,fEtaPt(0)
+    ,fQPt(0)
+    ,fDca(0)
+    ,fqRec(0)
+    ,fsigmaPt(0)
+  
+    ,fRecPtPos(0)
+    ,fRecPtNeg(0)
+    ,fRecPhiPos(0)
+    ,fRecPhiNeg(0)
+    ,fRecEtaPos(0)
+    ,fRecEtaNeg(0)
+    ,fRecEtaPtPos(0)
+    ,fRecEtaPtNeg(0)
+    ,fRecDcaPos(0)
+    ,fRecDcaNeg(0)
+    ,fRecDcaNegInv(0)
+    ,fRecDPos(0)
+    ,fRecDNeg(0)
+
+
+    ,fRecQPtPosEta(0)
+    ,fRecQPtNegEta(0)
+    ,fRecPtPosEta(0)
+    ,fRecPtNegEta(0)
+    ,fRecPhiPosEta(0)
+    ,fRecPhiNegEta(0)
+    ,fRecDcaPosEta(0)
+    ,fRecDcaNegEta(0)
+    ,fRecDPosEta(0)
+    ,fRecDNegEta(0)
+
+    ,fRecPtPosVz(0)
+    ,fRecPtNegVz(0)
+    ,fRecEtaPosVz(0)
+    ,fRecEtaNegVz(0)
+    ,fRecPhiPosVz(0)
+    ,fRecPhiNegVz(0)
+    ,fSignedDcaPosVz(0)
+    ,fSignedDcaNegVz(0)
+    ,fRecQPtPosEtaVz(0)
+    ,fRecQPtNegEtaVz(0)
+    ,fRecEtaPtPosVz(0)
+    ,fRecEtaPtNegVz(0)
+
+
+    ,fDeltaPhiAll(0)
+    ,fDeltaPhiLeading(0) 
+    ,fDiffDcaD(0)
+    ,fPhiRec(0)
+    ,fThetaRec(0)
+    ,fNumber(0)
+    ,fVx(0)
+    ,fVy(0)
+    ,fVz(0)
+    ,fCuts(0)
+  
+{
+    // Constructor
+    //
+  for(Int_t i = 0; i < 18; ++i){
+    fRecPtTpcSector[i] = 0;
+    fRecEtaTpcSector[i] = 0;
+    fSignedDcaTpcSector[i] = 0;
+    fRecQPtTpcSector[i] = 0;
+    fRecEtaPtTpcSector[i] = 0;
+  }
+
+  for(Int_t i = 0; i< 7; ++i){
+    fRecPtPosLadder[i] = 0;
+    fRecPtNegLadder[i] = 0;
+    fRecPhiPosLadder[i] = 0;
+    fRecPhiNegLadder[i] = 0;
+    fRecEtaPosLadder[i] = 0;
+    fRecEtaNegLadder[i] = 0;
+    fSignDcaPos[i] = 0;
+    fSignDcaNeg[i] = 0;
+    fSignDcaNegInv[i] = 0;
+    fPtSigmaPos[i] =0;
+    fPtSigmaNeg[i] =0;
+    fqPtRec[i] =0;
+    fDcaSigmaPos[i] =0;
+    fDcaSigmaNeg[i] =0;
+  }
+}
+
 //________________________________________________________________________
 AliAnalysisTaskQASym::AliAnalysisTaskQASym(const char *name) 
   : AliAnalysisTaskSE(name) 
@@ -168,6 +261,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   Double_t pt = 20.;
 
   fHists = new TList();
+
   fHistRECpt   = new TH1F("fHistRECpt", 
 			  " p_{T}",
 			  100, 0., pt);
@@ -285,8 +379,8 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 				   200, -range, range,200, -4., 4. );
     fDcaSigmaNeg[ITSlayer_case]->GetXaxis()->SetTitle("signed DCA");
     fDcaSigmaNeg[ITSlayer_case]->GetYaxis()->SetTitle("log_{10}(#sigma_{pT})");
-
-
+  }
+  
     
     
  
@@ -415,70 +509,70 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
     for(Int_t sector=0; sector<18;sector++){
       
 
-      fRecPtTpcSector[sector]   = new TH1F(Form("fRecPtTpcSector%02d",sector), 
-					   Form("p_{T} distribution: TPC sector %d",
-						sector),100, 0., pt);
-      fRecPtTpcSector[sector]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-
-      fRecEtaTpcSector[sector]   = new TH1F(Form("fRecEtaTpcSector%02d",sector), 
-					   Form("#eta distribution: TPC sector %d",
-						sector),200, -2., 2.);
-      fRecEtaTpcSector[sector]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-     
-
-      fSignedDcaTpcSector[sector]   = new TH1F(Form("fSignedDcaTpcSector%02d",sector), 
-					   Form("dca distribution: TPC sector %d",
-						sector),200, -range, range );
-      fSignedDcaTpcSector[sector]->GetXaxis()->SetTitle("dca");
-
-      fRecQPtTpcSector[sector]   = new TH1F(Form("fRecQPtTpcSector%02d",sector), 
-					   Form("Q/ p_{T} distribution: TPC sector %d",
-						sector),100, -1., 1.);
-      fRecQPtTpcSector[sector]->GetXaxis()->SetTitle("Q/p_{T} (GeV/c)");
-
-      fRecEtaPtTpcSector[sector]   = new TH1F(Form("fRecEtaPtTpcSector%02d",sector), 
-					   Form("#eta/ p_{T} distribution: TPC sector %d",
-						sector),100, -1., 1.);
-      fRecEtaPtTpcSector[sector]->GetXaxis()->SetTitle("#eta/p_{T} (GeV/c)");
- 
+	fRecPtTpcSector[sector]   = new TH1F(Form("fRecPtTpcSector%02d",sector), 
+					     Form("p_{T} distribution: TPC sector %d",
+						  sector),100, 0., pt);
+	fRecPtTpcSector[sector]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+	
+	fRecEtaTpcSector[sector]   = new TH1F(Form("fRecEtaTpcSector%02d",sector), 
+					      Form("#eta distribution: TPC sector %d",
+						   sector),200, -2., 2.);
+	fRecEtaTpcSector[sector]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+	
+	
+	fSignedDcaTpcSector[sector]   = new TH1F(Form("fSignedDcaTpcSector%02d",sector), 
+						 Form("dca distribution: TPC sector %d",
+						      sector),200, -range, range );
+	fSignedDcaTpcSector[sector]->GetXaxis()->SetTitle("dca");
+	
+	fRecQPtTpcSector[sector]   = new TH1F(Form("fRecQPtTpcSector%02d",sector), 
+					      Form("Q/ p_{T} distribution: TPC sector %d",
+						   sector),100, -1., 1.);
+	fRecQPtTpcSector[sector]->GetXaxis()->SetTitle("Q/p_{T} (GeV/c)");
+	
+	fRecEtaPtTpcSector[sector]   = new TH1F(Form("fRecEtaPtTpcSector%02d",sector), 
+						Form("#eta/ p_{T} distribution: TPC sector %d",
+						     sector),100, -1., 1.);
+	fRecEtaPtTpcSector[sector]->GetXaxis()->SetTitle("#eta/p_{T} (GeV/c)");
+	
     }
     // YIELDS ITS ladder
     for(Int_t i=0;i<7;i++){
-      fRecPtPosLadder[i]   = new TH1F(Form("fRecPtPosLadder%d", i), 
-			     " p_{T} distribution",
-			     100, 0., pt);
-      fRecPtPosLadder[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-      fRecPtNegLadder[i]   = new TH1F(Form("fRecPtNegLadder%d",i), 
-			     " p_{T} distribution ",
-			     100, 0., pt);
-      fRecPtNegLadder[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-
-
-      fRecPhiPosLadder[i]   = new TH1F(Form("fRecPhiPosLadder%d",i), 
-				 "#phi distribution: all pos eta",
-				 361, 0., 360);
-      fRecPhiPosLadder[i]->GetXaxis()->SetTitle("#phi (deg)");
-      
-      fRecPhiNegLadder[i]   = new TH1F(Form("fRecPhiNegLadder%d", i),
-				 "#phi distribution: all neg eta",
-				 361, 0, 360);
-      fRecPhiNegLadder[i]->GetXaxis()->SetTitle("#phi (deg)");
-
-
-
-      fRecEtaPosLadder[i]   = new TH1F(Form("fRecEtaPosLadder%d",i), 
-				       "#eta distribution",
-				 200, -2., 2.);
-      fRecEtaPosLadder[i]->GetXaxis()->SetTitle("#eta)");
-      
-      fRecEtaNegLadder[i]   = new TH1F(Form("fRecEtaNegLadder%d", i),
-				 "#eta distribution",
-				 200, -2., 2.);
-      fRecEtaNegLadder[i]->GetXaxis()->SetTitle("#eta");
+	fRecPtPosLadder[i]   = new TH1F(Form("fRecPtPosLadder%d", i), 
+					" p_{T} distribution",
+					100, 0., pt);
+	fRecPtPosLadder[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+	fRecPtNegLadder[i]   = new TH1F(Form("fRecPtNegLadder%d",i), 
+					" p_{T} distribution ",
+					100, 0., pt);
+	fRecPtNegLadder[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+	
+	
+	fRecPhiPosLadder[i]   = new TH1F(Form("fRecPhiPosLadder%d",i), 
+					 "#phi distribution: all pos eta",
+					 361, 0., 360);
+	fRecPhiPosLadder[i]->GetXaxis()->SetTitle("#phi (deg)");
+	
+	fRecPhiNegLadder[i]   = new TH1F(Form("fRecPhiNegLadder%d", i),
+					 "#phi distribution: all neg eta",
+					 361, 0, 360);
+	fRecPhiNegLadder[i]->GetXaxis()->SetTitle("#phi (deg)");
+	
+	
+	
+	fRecEtaPosLadder[i]   = new TH1F(Form("fRecEtaPosLadder%d",i), 
+					 "#eta distribution",
+					 200, -2., 2.);
+	fRecEtaPosLadder[i]->GetXaxis()->SetTitle("#eta)");
+	
+	fRecEtaNegLadder[i]   = new TH1F(Form("fRecEtaNegLadder%d", i),
+					 "#eta distribution",
+					 200, -2., 2.);
+	fRecEtaNegLadder[i]->GetXaxis()->SetTitle("#eta");
     }
-
+    
     Double_t vzmax = 30;
-
+    
     fRecPtPosVz = new TH2F("fRecPtPosVz", 
 			   "p_{T} distribution vs Vz()",
 			   100, -1., 2., 200,-vzmax,vzmax);
@@ -551,7 +645,6 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 			    "dca-d",
 			    200, -5., 5.);
     
-  }
 
   fHists->SetOwner();
 
@@ -667,7 +760,6 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
 void AliAnalysisTaskQASym::UserExec(Option_t *) 
 {
-  printf("I'm here \n");
   AliVEvent *event = InputEvent();
   if (!event) {
      Printf("ERROR: Could not retrieve event");
@@ -682,8 +774,6 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     }
    
   }
-
-  Printf("There are %d tracks in this event", event->GetNumberOfTracks());
 
   
   Int_t   leadingTrack  =   0;

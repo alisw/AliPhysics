@@ -282,8 +282,6 @@ fESDtrackCutsITSTPC(0)
   for(Int_t i=0; i<11; i++) fCountsPerPtBin[i]=0;
 
   // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(1, TList::Class());  //My private output
 }
@@ -1590,7 +1588,7 @@ void AliAnalysisTaskITSTrackingCheck::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
-  fOutput = dynamic_cast<TList*> (GetOutputData(0));
+  fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {     
     Printf("ERROR: fOutput not available");
     return;

@@ -19,20 +19,20 @@ void runPilot() {
  
 
 
-  Bool_t doQAsym        = 0;   // (data)
-  Bool_t doVZERO        = 0;   // (data)
-  Bool_t doVertex       = 0;   // (data)
-  Bool_t doSPD          = 0;   // (data/RP)   
-  Bool_t doFMD          = 0;   // (data)
-  Bool_t doTPC          = 0;   // AliPerformanceTask (data/MCtruth)
-  Bool_t doEventStat    = 0;   // (data)
-  Bool_t doSDD          = 0;   // (data/RP)
-  Bool_t doTRD          = 0;   // TRD 
-  Bool_t doITS          = 0;   // ITS
-  Bool_t doCALO         = 0;   // Calorimeter
-  Bool_t doMUONTrig     = 0;   // MUON trigger
+  Bool_t doQAsym        = 1;   // (data)
+  Bool_t doVZERO        = 1;   // (data)
+  Bool_t doVertex       = 1;   // (data)
+  Bool_t doSPD          = 1;   // (data/RP)   
+  Bool_t doFMD          = 1;   // (data)
+  Bool_t doTPC          = 1;   // AliPerformanceTask (data/MCtruth)
+  Bool_t doEventStat    = 1;   // (data)
+  Bool_t doSDD          = 1;   // (data/RP)
+  Bool_t doTRD          = 1;   // TRD 
+  Bool_t doITS          = 1;   // ITS
+  Bool_t doCALO         = 1;   // Calorimeter
+  Bool_t doMUONTrig     = 1;   // MUON trigger
   Bool_t doMUONEff      = 0;   // MUON efficiency  NEEDS geometry
-  Bool_t doV0           = 1;   // V0 recosntruction performance NEEDS MCtruth
+  Bool_t doV0           = 0;   // V0 recosntruction performance NEEDS MCtruth
    
   //
   //
@@ -57,7 +57,7 @@ void runPilot() {
   TChain* chain = new TChain("esdTree");
   //chain->AddFile("alien:///alice/data/2009/LHC09d/000104321/ESDs/pass1/09000104321018.10/AliESDs.root");
   //chain->AddFile("alien:///alice/data/2009/LHC09d/000104321/ESDs/pass1/09000104321018.20/AliESDs.root");
-  chain->AddFile("./data/AliESDs.root");
+  chain->AddFile("/home/morsch/AliRoot/trunk/PWG1/PilotTrain/data/AliESDs.root");
   
 
   //
@@ -94,7 +94,6 @@ void runPilot() {
   // SPD (A. Mastroserio)
   //
   if (doSPD) {
-      gROOT->LoadMacro("AliAnalysisTaskSPD.cxx++g");
       gROOT->LoadMacro("AddTaskSPDQA.C");
       AliAnalysisTaskSE* task4 = AddTaskSPDQA();
       task4->SelectCollisionCandidates();
@@ -179,7 +178,7 @@ void runPilot() {
   if(doCALO) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
       AliAnalysisTaskParticleCorrelation *taskCaloQA = AddTaskCalorimeterQA("ESD", kTRUE, kFALSE);
-      taskCaloQA->Dump();
+      taskCaloQA->SetDebugLevel(0);
   }
 
   if(doMUONTrig) {
@@ -208,7 +207,7 @@ void runPilot() {
       mgr->PrintStatus();
       mgr->PrintStatus();
   // Run on dataset
-  mgr->StartAnalysis("local", chain, 1000);
+  mgr->StartAnalysis("local", chain, 10);
   timer.Stop();
   timer.Print();
 }
