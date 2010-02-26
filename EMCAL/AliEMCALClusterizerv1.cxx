@@ -183,12 +183,13 @@ Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t AbsId)
 
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 	  
-	// Check if channel is bad (dead, hot ...), in this case return 0.	
+	// Check if channel is bad (dead or hot), in this case return 0.	
 	// Gustavo: 15-12-09 In case of RAW data this selection is already done, but not in simulation.
 	// for the moment keep it here but remember to do the selection at the sdigitizer level 
 	// and remove it from here
-	if(fCaloPed->IsBadChannel(iSupMod,ieta,iphi)) {
-		  AliDebug(2,Form("Tower from SM %d, ieta %d, iphi %d is BAD!!!",iSupMod,ieta,iphi));
+	Int_t channelStatus = (fCaloPed->GetDeadMap(iSupMod))->GetBinContent(ieta,iphi);
+	if(channelStatus == AliCaloCalibPedestal::kHot || channelStatus == AliCaloCalibPedestal::kDead) {
+		  AliDebug(2,Form("Tower from SM %d, ieta %d, iphi %d is BAD : status %d !!!",iSupMod,ieta,iphi, channelStatus));
 		  return 0;
 	}
 	  
