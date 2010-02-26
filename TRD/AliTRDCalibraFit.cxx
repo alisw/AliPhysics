@@ -5971,9 +5971,9 @@ Double_t AliTRDCalibraFit::AsymmGauss(const Double_t *x, const Double_t *par)
   Double_t  sigma2  = par2save*par2save;
   Double_t  sqrt2   = TMath::Sqrt(2.0);
   Double_t  exp1    = par3save * TMath::Exp(-par3save * (dx - 0.5 * par3save * sigma2))
-                               * (1.0 - TMath::Erf((par3save * sigma2 - dx) / (sqrt2 * par2save)));
+                               * (1.0 - AliMathBase::ErfFast((par3save * sigma2 - dx) / (sqrt2 * par2save)));
   Double_t  exp2    = par5save * TMath::Exp(-par5save * (dx - 0.5 * par5save * sigma2))
-                               * (1.0 - TMath::Erf((par5save * sigma2 - dx) / (sqrt2 * par2save)));
+                               * (1.0 - AliMathBase::ErfFast((par5save * sigma2 - dx) / (sqrt2 * par2save)));
 
   //return par[0]*(exp1+par[4]*exp2);
   return par[0] * (exp1 + 1.00124 * exp2);

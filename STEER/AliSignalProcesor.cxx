@@ -19,6 +19,7 @@
 #include <TMath.h>
 
 #include "AliSignalProcesor.h"
+#include "AliMathBase.h"
 
 
 ClassImp(AliSignalProcesor)
@@ -48,10 +49,10 @@ Double_t asymgauss(Double_t* x, Double_t* par)
   if (-par5save*(dx-0.5*par5save*sigma2)>100) return 0;   // avoid overflow 
   if (TMath::Abs(par[4])>1) return 0;
   Double_t  exp1    = par3save*TMath::Exp(-par3save*(dx-0.5*par3save*sigma2))
-    *(1-TMath::Erf((par3save*sigma2-dx)/(sqrt2*par2save)));
+    *(1-AliMathBase::ErfFast((par3save*sigma2-dx)/(sqrt2*par2save)));
 
   Double_t  exp2    = par5save*TMath::Exp(-par5save*(dx-0.5*par5save*sigma2))
-    *(1-TMath::Erf((par5save*sigma2-dx)/(sqrt2*par2save)));
+    *(1-AliMathBase::ErfFast((par5save*sigma2-dx)/(sqrt2*par2save)));
 
 
   return par[0]*(exp1+par[4]*exp2);
@@ -82,10 +83,10 @@ Double_t asymgaussN(Double_t* x, Double_t* par)
   if (TMath::Abs(par[4])>=1) return 0;
   
   Double_t  exp1    = par3save*TMath::Exp(-par3save*(dx-0.5*par3save*sigma2))
-    *0.5*(1-TMath::Erf((par3save*sigma2-dx)/(sqrt2*par2save)));
+    *0.5*(1-AliMathBase::ErfFast((par3save*sigma2-dx)/(sqrt2*par2save)));
 
   Double_t  exp2    = par5save*TMath::Exp(-par5save*(dx-0.5*par5save*sigma2))
-    *0.5*(1-TMath::Erf((par5save*sigma2-dx)/(sqrt2*par2save)));
+    *0.5*(1-AliMathBase::ErfFast((par5save*sigma2-dx)/(sqrt2*par2save)));
 
 
   return par[0]*(1.*exp1+par[4]*exp2)/(1.+par[4]);

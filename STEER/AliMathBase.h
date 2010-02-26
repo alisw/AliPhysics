@@ -35,6 +35,9 @@ class AliMathBase : public TObject
   static TGraph2D *  MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t type);
   static TGraph *  MakeStat1D(TH3 * his, Int_t delta1, Int_t type);
 
+  static Double_t ErfcFast(Double_t x);                           // Complementary error function erfc(x)
+  static Double_t ErfFast(Double_t x) {return 1-ErfcFast(x);}     // Error function erf(x)
+
   //
   // TestFunctions:
   //

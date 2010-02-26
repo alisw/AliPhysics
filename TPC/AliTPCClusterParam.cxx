@@ -98,6 +98,8 @@ AliTPCClusterParam::SetInstance(param);
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
 
+#include "AliMathBase.h"
+
 ClassImp(AliTPCClusterParam)
 
 
@@ -1605,8 +1607,8 @@ Double_t  AliTPCClusterParam::GaussConvolution(Double_t x0, Double_t x1, Double_
   Double_t exp0 = TMath::Exp(-(k1*x0-k0*x1)*(k1*x0-k0*x1)/(2*sigma2));
   //
   Double_t sigmaErf =  2*s0*s1*TMath::Sqrt(2*sigma2);			     
-  Double_t erf0 = TMath::Erf( (k0*s1*s1*(k0-2*x0)+k1*s0*s0*(k1-2*x1))/sigmaErf);
-  Double_t erf1 = TMath::Erf( (k0*s1*s1*(k0+2*x0)+k1*s0*s0*(k1+2*x1))/sigmaErf);
+  Double_t erf0 = AliMathBase::ErfFast( (k0*s1*s1*(k0-2*x0)+k1*s0*s0*(k1-2*x1))/sigmaErf);
+  Double_t erf1 = AliMathBase::ErfFast( (k0*s1*s1*(k0+2*x0)+k1*s0*s0*(k1+2*x1))/sigmaErf);
   Double_t norm = 1./TMath::Sqrt(sigma2);
   norm/=2.*TMath::Sqrt(2.*TMath::Pi());
   Double_t val  = norm*exp0*(erf0+erf1);

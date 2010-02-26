@@ -61,6 +61,7 @@
 #include "AliITSPlaneEffSSD.h"
 #include "AliITSV0Finder.h"
 #include "AliITStrackerMI.h"
+#include "AliMathBase.h"
 
 ClassImp(AliITStrackerMI)
 
@@ -2593,8 +2594,8 @@ Double_t  AliITStrackerMI::GetSPDDeadZoneProbability(Double_t zpos, Double_t zer
   }
   // probability that the true z is in the range [zmin,zmax] (i.e. inside 
   // dead zone)
-  probability = 0.5*( TMath::Erf((zpos-zmin)/zerr/TMath::Sqrt(2.)) - 
-		      TMath::Erf((zpos-zmax)/zerr/TMath::Sqrt(2.)) );
+  probability = 0.5*( AliMathBase::ErfFast((zpos-zmin)/zerr/TMath::Sqrt(2.)) - 
+		      AliMathBase::ErfFast((zpos-zmax)/zerr/TMath::Sqrt(2.)) );
   return probability;
 }
 //------------------------------------------------------------------------

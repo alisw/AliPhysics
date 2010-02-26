@@ -38,6 +38,8 @@
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtrack.h"
 
+#include "AliMathBase.h"
+
 class TGeoManager;
 
 extern TGeoManager *gGeoManager;
@@ -806,28 +808,28 @@ void AliTOFtrackerMI::GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov,
   //
   normwidth = fDy/sigmay;
   normd     = dy/sigmay;
-  p0 = 0.5*(1+TMath::Erf(normd-normwidth*0.5));
-  p1 = 0.5*(1+TMath::Erf(normd+normwidth*0.5));  
+  p0 = 0.5*(1+AliMathBase::ErfFast(normd-normwidth*0.5));
+  p1 = 0.5*(1+AliMathBase::ErfFast(normd+normwidth*0.5));  
   py+= 0.75*(p1-p0);
   //
   normwidth = fDy/(3.*sigmay);
   normd     = dy/(3.*sigmay);
-  p0 = 0.5*(1+TMath::Erf(normd-normwidth*0.5));
-  p1 = 0.5*(1+TMath::Erf(normd+normwidth*0.5));  
+  p0 = 0.5*(1+AliMathBase::ErfFast(normd-normwidth*0.5));
+  p1 = 0.5*(1+AliMathBase::ErfFast(normd+normwidth*0.5));  
   py+= 0.25*(p1-p0);
   // 
   // pz calculation   - 75% admixture of original sigma - 25% tails 
   //
   normwidth = fDz/sigmaz;
   normd     = dz/sigmaz;
-  p0 = 0.5*(1+TMath::Erf(normd-normwidth*0.5));
-  p1 = 0.5*(1+TMath::Erf(normd+normwidth*0.5));  
+  p0 = 0.5*(1+AliMathBase::ErfFast(normd-normwidth*0.5));
+  p1 = 0.5*(1+AliMathBase::ErfFast(normd+normwidth*0.5));  
   pz+= 0.75*(p1-p0);
   //
   normwidth = fDz/(3.*sigmaz);
   normd     = dz/(3.*sigmaz);
-  p0 = 0.5*(1+TMath::Erf(normd-normwidth*0.5));
-  p1 = 0.5*(1+TMath::Erf(normd+normwidth*0.5));  
+  p0 = 0.5*(1+AliMathBase::ErfFast(normd-normwidth*0.5));
+  p1 = 0.5*(1+AliMathBase::ErfFast(normd+normwidth*0.5));  
   pz+= 0.25*(p1-p0);
 }
 //_________________________________________________________________________

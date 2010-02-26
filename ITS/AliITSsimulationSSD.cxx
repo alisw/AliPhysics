@@ -35,7 +35,7 @@
 #include "AliITSsimulationSSD.h"
 #include "AliITSTableSSD.h"
 #include <TF1.h>
-
+#include "AliMathBase.h"
 
 ClassImp(AliITSsimulationSSD)
 ////////////////////////////////////////////////////////////////////////
@@ -518,7 +518,7 @@ Float_t AliITSsimulationSSD::F(Float_t av, Float_t x, Float_t s) {
     Float_t sigm2 = sqrt2*s;
     Float_t integral;
 
-    integral = 0.5 * TMath::Erf( (x - av) / sigm2);
+    integral = 0.5 * AliMathBase::ErfFast( (x - av) / sigm2);
     return integral;
 }
 //______________________________________________________________________

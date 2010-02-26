@@ -554,6 +554,19 @@ Float_t AliMathBase::GetCOG(Short_t *arr, Int_t nBins, Float_t xMin, Float_t xMa
 }
 
 
+Double_t AliMathBase::ErfcFast(Double_t x){
+  // Fast implementation of the complementary error function
+  // The error of the approximation is |eps(x)| < 5E-4
+  // See Abramowitz and Stegun, p.299, 7.1.27
+
+  Double_t z = TMath::Abs(x);
+  Double_t ans = 1+z*(0.278393+z*(0.230389+z*(0.000972+z*0.078108)));
+  ans = 1.0/ans;
+  ans *= ans;
+  ans *= ans;
+
+  return (x>=0.0 ? ans : 2.0 - ans);
+}
 
 ///////////////////////////////////////////////////////////////
 //////////////         TEST functions /////////////////////////

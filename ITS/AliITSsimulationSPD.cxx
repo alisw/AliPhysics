@@ -32,6 +32,7 @@ $Id$
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliMagF.h"
+#include "AliMathBase.h"
 
 //#define DEBUG
 
@@ -627,13 +628,13 @@ void AliITSsimulationSPD::SpreadCharge(Double_t x0,Double_t z0,
        z1 -= z0; // Distance from where track traveled
        z2 -= z0; // Distance from where track traveled
        s   = 0.25; // Correction based on definision of Erfc
-       s  *= TMath::Erfc(sp*x1) - TMath::Erfc(sp*x2);
+       s  *= AliMathBase::ErfcFast(sp*x1) - AliMathBase::ErfcFast(sp*x2);
        if(GetDebug(3)){
            cout <<"el="<<el<<" ix0="<<ix0<<" ix="<<ix<<" x0="<<x<<
                " iz0="<<iz0<<" iz="<<iz<<" z0="<<z<< 
                " sp*x1="<<sp*x1<<" sp*x2="<<sp*x2<<" s="<<s;
        } // end if GetDebug
-       s  *= TMath::Erfc(sp*z1) - TMath::Erfc(sp*z2);
+       s  *= AliMathBase::ErfcFast(sp*z1) - AliMathBase::ErfcFast(sp*z2);
        if(GetDebug(3)){
            cout<<" sp*z1="<<sp*z1<<" sp*z2="<<sp*z2<<" s="<<s<< endl;
        } // end if GetDebug
@@ -707,13 +708,13 @@ void AliITSsimulationSPD::SpreadChargeAsym(Double_t x0,Double_t z0,
        z1 -= z0; // Distance from where track traveled
        z2 -= z0; // Distance from where track traveled
        s   = 0.25; // Correction based on definision of Erfc
-       s  *= TMath::Erfc(spx*x1) - TMath::Erfc(spx*x2);
+       s  *= AliMathBase::ErfcFast(spx*x1) - AliMathBase::ErfcFast(spx*x2);
        if(GetDebug(3)){
            cout <<"el="<<el<<" ix0="<<ix0<<" ix="<<ix<<" x0="<<x<<
                " iz0="<<iz0<<" iz="<<iz<<" z0="<<z<< 
                " spx*x1="<<spx*x1<<" spx*x2="<<spx*x2<<" s="<<s;
        } // end if GetDebug
-       s  *= TMath::Erfc(spz*z1) - TMath::Erfc(spz*z2);
+       s  *= AliMathBase::ErfcFast(spz*z1) - AliMathBase::ErfcFast(spz*z2);
        if(GetDebug(3)){
            cout<<" spz*z1="<<spz*z1<<" spz*z2="<<spz*z2<<" s="<<s<< endl;
        } // end if GetDebug
