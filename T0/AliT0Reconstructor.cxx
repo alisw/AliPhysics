@@ -459,7 +459,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       pESD->SetT0TOF(i,timeClock[i]);   // interaction time (ns) 
     pESD->SetT0time(time);         // best TOF on each PMT 
     pESD->SetT0amplitude(amp);     // number of particles(MIPs) on each PMT
-    pESD->Print(); 
     
     AliDebug(1,Form("T0: Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f T0trig %i\n",zPosition, timeStart, timeClock[0], timeClock[1], timeClock[2], trig));
     
