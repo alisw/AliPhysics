@@ -1620,7 +1620,7 @@ Bool_t    AliESDEvent::IsHLTTriggerFired(const char* name) const
   return kTRUE;
 }
 
-Bool_t  AliESDEvent::IsPileupFromSPD(Int_t ncont, Double_t nSigmaDeltaZ, Double_t nSigmaXY, Int_t option) const {
+Bool_t  AliESDEvent::IsPileupFromSPD(Int_t ncont, Double_t distz, Double_t nSigmaDeltaZ, Double_t nSigmaXY, Int_t option) const {
   //
   // This function checks if there was a pile up
   // reconstructed with SPD
@@ -1668,7 +1668,7 @@ Bool_t  AliESDEvent::IsPileupFromSPD(Int_t ncont, Double_t nSigmaDeltaZ, Double_
       errxDist=TMath::Sqrt(ex2*ex2+sigmax*sigmax); 
       erryDist=TMath::Sqrt(ey2*ey2+sigmay*sigmay); 
     
-      if(nc2>=ncont && distanceZ>nSigmaDeltaZ*errzDist && distanceX<nSigmaXY*errxDist && distanceY<nSigmaXY*erryDist)
+      if(nc2>=ncont && distanceZ>nSigmaDeltaZ*errzDist && distanceX<nSigmaXY*errxDist && distanceY<nSigmaXY*erryDist && distanceZ>distz)
 	
 	return kTRUE;
   }
