@@ -18,7 +18,7 @@ Bool_t doITS          = 1;   // ITS
 Bool_t doCALO         = 1;   // Calorimeter
 Bool_t doMUONTrig     = 1;   // MUON trigger
 Bool_t doMUONEff      = 0;   // MUON efficiency  NEEDS geometry
-Bool_t doV0           = 1;   // V0 recosntruction performance NEEDS MCtruth
+Bool_t doV0           = 0;   // V0 recosntruction performance NEEDS MCtruth 
 
 TString     train_name         = "QA001_PASS4";
 TString     job_tag            = "QA001: PWG1 QA train";
@@ -255,7 +255,7 @@ void AddAnalysisTasks()
   if(doCALO) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
       AliAnalysisTaskParticleCorrelation *taskCaloQA = AddTaskCalorimeterQA("ESD", kTRUE, kFALSE);
-      taskCaloQA->Dump();
+      taskCaloQA->SetDebugLevel(0);
   }
 
   //
