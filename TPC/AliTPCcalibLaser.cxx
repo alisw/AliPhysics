@@ -39,7 +39,7 @@
   gSystem->Load("libTPCcalib");
   TFile fcalib("CalibObjectsTrain2.root");
   AliTPCcalibLaser * laser = ( AliTPCcalibLaser *)fcalib->Get("laserTPC");
-  laser->DumpMeanInfo(0)
+  laser->DumpMeanInfo(run)
   TFile fmean("laserMean.root")
   //
   //  laser track clasification;
@@ -2248,6 +2248,9 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
   const Float_t krmsCut1=0.16;
   const Float_t kmultiCut=2;
   const Float_t kcutP0=0.002;
+  AliMagF* magF=  dynamic_cast<AliMagF*> (TGeoGlobalMagField::Instance()->GetField());
+  Double_t xyz[3]={90,0,10};
+  Double_t bxyz[3]={90,0,10};
   //
   AliTPCcalibLaser *laser = this;
   TTreeSRedirector *pcstream = new TTreeSRedirector("laserMean.root");
@@ -2262,10 +2265,12 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
   AliGRPObject *grp = AliTPCcalibDB::GetGRP(run);
   Float_t current=0;
   Float_t bfield      = 0, bz=0;
+
   if (grp){
+    Float_t polarity = (grp->GetL3Polarity()>0) ? -1.:1;
     current = grp->GetL3Current((AliGRPObject::Stats)0);
-    bfield = 5*current/30000.;
-    bz = 5*current/30000.;
+    bfield = polarity*5*current/30000.;
+    bz = polarity*5*current/30000.;
     printf("Run%d\tL3 current%f\tBz\t%f\n",run,current,bz);
   }
 
@@ -2301,6 +2306,7 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
      AliTPCLaserTrack::LoadTracks();
       ltrp =(AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
     }
+    ltrp->UpdatePoints();
     pcstream->GetFile()->cd();
     if (hisphi)  hisphi->Write();
     if (hisphiP) hisphiP->Write();
@@ -2547,6 +2553,28 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
     TVectorD vecEz(159);       //error z
     TVectorD vecPhi(159);      // local tangent
     TVectorD vecPhiR(159);     // local tangent
+    // magnetic field integrals
+    TVectorD vecIBR(159);        // radial
+    TVectorD vecIBRPhi(159);     // r-phi
+    TVectorD vecIBZ(159);        // z
+    //
+    for (Int_t irow=0;irow<159;irow++){
+      vecIBR[irow]=0;
+      vecIBRPhi[irow]=0;
+      vecIBZ[irow]=0;
+      Double_t gx=(*(ltrp->fVecGX))[irow];
+      Double_t gy=(*(ltrp->fVecGY))[irow];
+      xyz[2]=(*(ltrp->fVecGZ))[irow];
+      xyz[0]=TMath::Sqrt(gx*gx+gy*gy);
+      xyz[1]=TMath::ATan2(gy,gx);
+      if (magF){
+	magF->GetTPCIntCyl(xyz,bxyz);
+	vecIBR[irow]=bxyz[0];
+	vecIBRPhi[irow]=bxyz[1];
+	vecIBZ[irow]=bxyz[2];
+      }
+    }
+
 
     lfabsyInner.ClearPoints();    
     lfabszInner.ClearPoints();    
@@ -2686,7 +2714,8 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
 				  TMath::Max(zprof->GetBinError(bin), 0.001));
 	  }
 	}
-
+	// global position
+	
       }
 	
       delete yprof; delete zprof;
@@ -2883,6 +2912,9 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
       "SecOut="<<secOuter<<             // outer sector
       "lasTanPhiLocIn="<<lasTanPhiLocIn<< // laser tan phi in local frame (inner)
       "lasTanPhiLocOut="<<lasTanPhiLocOut<<// laser tan phi in local frame (outer)
+      "ibr.="<<&vecIBR<<   // radial filed integral
+      "ibrphi.="<<&vecIBRPhi<<   // r=phifiled integral
+      "ibz.="<<&vecIBZ<<   // radial filed integral
       "X.="<<&vecX<<       // local x 
       "Y.="<<&vecY<<       // local y 
       "R.="<<&vecR<<       // radius 

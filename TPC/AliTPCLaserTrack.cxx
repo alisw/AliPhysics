@@ -227,6 +227,7 @@ void AliTPCLaserTrack::UpdatePoints(){
     Double_t alpha=TMath::ATan2(gxyz[1],gxyz[0]);
     if (alpha<0) alpha+=2*TMath::Pi();
     sector      +=TMath::Nint(-0.5+9*alpha/TMath::Pi());
+    if (gxyz[2]<0) sector+=18;
     Double_t salpha   = TMath::Pi()*(sector+0.5)/9.;    
     if (!ltrp->Rotate(salpha)) break;
     if (!ltrp->PropagateTo(lxyz[0],5)) break;
