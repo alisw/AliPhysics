@@ -25,19 +25,20 @@ class AliESDtrackCuts;
 
 class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskQASym(const char *name = "AliAnalysisTaskQASym");
-  virtual ~AliAnalysisTaskQASym() {}
+    AliAnalysisTaskQASym();
+    AliAnalysisTaskQASym(const char *name);
+    virtual ~AliAnalysisTaskQASym() {}
   
-  virtual void   UserCreateOutputObjects();
-  virtual void   UserExec(Option_t *option);
-  virtual void   Terminate(Option_t *);
-
+    virtual void   UserCreateOutputObjects();
+    virtual void   UserExec(Option_t *option);
+    virtual void   Terminate(Option_t *);
+    
+    
   
-  
-  virtual void   SetCuts(AliESDtrackCuts* cuts)
-     {fCuts = cuts;}
-
-  virtual void   SetFieldOn(Bool_t b = kTRUE){fFieldOn = b;} 
+    virtual void   SetCuts(AliESDtrackCuts* cuts)
+	{fCuts = cuts;}
+    
+    virtual void   SetFieldOn(Bool_t b = kTRUE){fFieldOn = b;} 
   
  private:
 
