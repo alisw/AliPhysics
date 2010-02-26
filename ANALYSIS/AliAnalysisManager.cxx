@@ -182,6 +182,9 @@ AliAnalysisManager::~AliAnalysisManager()
 Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 {
 // Read one entry of the tree or a whole branch.
+   static Int_t itot = 0;
+   printf("MGR: Processing event #%d\n", itot);
+   itot++;
    if (fDebug > 0) printf("== AliAnalysisManager::GetEntry(%lld)\n", entry);
    fCurrentEntry = entry;
    return fTree ? fTree->GetTree()->GetEntry(entry, getall) : 0;
@@ -1088,6 +1091,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64
 {
 // Start analysis for this manager. Analysis task can be: LOCAL, PROOF, GRID or
 // MIX. Process nentries starting from firstentry
+   Long64_t retv = 0;
    if (!fInitOK) {
       Error("StartAnalysis","Analysis manager was not initialized !");
       return -1;
@@ -1183,7 +1187,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64
          // Run tree-based analysis via AliAnalysisSelector  
          cout << "===== RUNNING LOCAL ANALYSIS " << GetName() << " ON TREE " << tree->GetName() << endl;
          fSelector = new AliAnalysisSelector(this);
-         tree->Process(fSelector, "", nentries, firstentry);
+         retv = tree->Process(fSelector, "", nentries, firstentry);
          break;
       case kProofAnalysis:
          if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
@@ -1195,7 +1199,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64
          if (chain) {
             chain->SetProof();
             cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON CHAIN " << chain->GetName() << endl;
-            chain->Process("AliAnalysisSelector", "", nentries, firstentry);
+            retv = chain->Process("AliAnalysisSelector", "", nentries, firstentry);
          } else {
             Error("StartAnalysis", "No chain!!! Aborting.");
             return -1;
@@ -1217,13 +1221,16 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64
             // Call NotifyBinChange for all tasks
             while ((task=(AliAnalysisTask*)next()))
                if (!task->IsPostEventLoop()) task->NotifyBinChange();
-            chain->Process(fSelector);
+            retv = chain->Process(fSelector);
+            if (retv < 0) {
+               Error("StartAnalysis", "Mixing analysis failed");
+               return retv;
+            }   
          }
          PackOutput(fSelector->GetOutputList());
          Terminate();
    }
-   if (fSelector) return fSelector->GetStatus();
-   return 0;
+   return retv;
 }   
 
 //______________________________________________________________________________
@@ -1270,9 +1277,8 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    sprintf(line, "gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
            dataset, nentries, firstentry);
    cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
-   gROOT->ProcessLine(line);
-   if (fSelector) return fSelector->GetStatus();
-   return 0;
+   Long_t retv = (Long_t)gROOT->ProcessLine(line);
+   return retv;
 }   
 
 //______________________________________________________________________________
