@@ -78,11 +78,13 @@ void AliAnalysisTaskSEVertexingHFTest()
   if(createAOD) {
     aodHandler->SetOutputFileName("AliAOD.root");
   } else {
+    aodHandler->SetFillAOD(kFALSE);
     aodHandler->SetOutputFileName("AliAOD.VertexingHF.root");
     aodHandler->SetCreateNonStandardAOD();
   }
   mgr->SetOutputEventHandler(aodHandler);
-  
+  mgr->RegisterExtraFile("AliAOD.VertexingHF.root");  
+
   if(!inputAOD && createAOD) {
     // MC Truth
     AliMCEventHandler* mcHandler = new AliMCEventHandler();
