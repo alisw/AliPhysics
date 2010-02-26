@@ -136,6 +136,9 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   Int_t firstMuonTrack=0;
   Int_t nMuons=0;
   Int_t jDimuons=0;
+  Int_t nMuonTrack[10];
+  
+  for(int imuon=0;imuon<10;imuon++) nMuonTrack[imuon]=0;
 
   for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
     esdMuTrack = esd->GetMuonTrack(nMuTrack);
@@ -149,7 +152,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
      	if (!selectInfo) {
      	  continue;
      	}  
-     }
+    }
 
     p[0] = esdMuTrack->Px(); 
     p[1] = esdMuTrack->Py(); 
@@ -191,27 +194,31 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     if (esdMuTrack->Charge() > 0) nPosTracks++;
     else nNegTracks++;
     
-    // fill dimuon branch
-    if(!MuonsExist) {
-      MuonsExist=kTRUE;
-      firstMuonTrack=jTracks-1.;
-    }  
+    nMuonTrack[nMuons]= jTracks-1.;
     nMuons++;
-    if(nMuons==2) DimuonsExist = kTRUE;   
+  }
+    
+    if(nMuons>=2) DimuonsExist = kTRUE;   
     if(DimuonsExist) { 
-      AliAODTrack *track0 = (AliAODTrack*)tracks.At(firstMuonTrack);
-      AliAODTrack *track1 = (AliAODTrack*)tracks.At(jTracks-1);
-      aodDimuon = new(dimuons[jDimuons++]) AliAODDimuon(tracks.At(jTracks-1),tracks.At(firstMuonTrack));
-      //AliAODDimuon *dimuon0 = (AliAODDimuon*)dimuons.At(0);
-      //printf("Dimuon: mass = %f, px=%f, py=%f, pz=%f\n",dimuon0->M(),dimuon0->Px(),dimuon0->Py(),dimuon0->Pz());  
-      //AliAODTrack  *mu0 = (AliAODTrack*) dimuon0->GetMu(0);
-      //AliAODTrack  *mu1 = (AliAODTrack*) dimuon0->GetMu(1);
-      //printf("Muon0 px=%f py=%f pz=%f\n",mu0->Px(),mu0->Py(),mu0->Pz());
-      //printf("Muon1 px=%f py=%f pz=%f\n",mu1->Px(),mu1->Py(),mu1->Pz());
-      break;
+      for(int i=0;i<nMuons;i++){
+        Int_t index0 = nMuonTrack[i];
+	for(int j=i+1;j<nMuons;j++){
+          Int_t index1 = nMuonTrack[j];
+          aodDimuon = new(dimuons[jDimuons++]) AliAODDimuon(tracks.At(index0),tracks.At(index1));
+          if (fDebug > 1){
+            AliAODTrack *track0 = (AliAODTrack*)tracks.At(index0);
+            AliAODTrack *track1 = (AliAODTrack*)tracks.At(index1);
+            AliAODDimuon *dimuon0 = (AliAODDimuon*)dimuons.At(jDimuons-1);
+            printf("Dimuon: mass = %f, px=%f, py=%f, pz=%f\n",dimuon0->M(),dimuon0->Px(),dimuon0->Py(),dimuon0->Pz());  
+            AliAODTrack  *mu0 = (AliAODTrack*) dimuon0->GetMu(0);
+            AliAODTrack  *mu1 = (AliAODTrack*) dimuon0->GetMu(1);
+            printf("Muon0 px=%f py=%f pz=%f\n",mu0->Px(),mu0->Py(),mu0->Pz());
+            printf("Muon1 px=%f py=%f pz=%f\n",mu1->Px(),mu1->Py(),mu1->Pz());
+	  }  
+        }
+      }
     }
 
-  }
   
   header->SetRefMultiplicity(jTracks); 
   header->SetRefMultiplicityPos(nPosTracks);
