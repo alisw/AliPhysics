@@ -193,7 +193,7 @@ AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTCaloClusterHeaderStruct* 
   //See headerfile for documentation
   
   UInt_t nClusters = clusterHeaderPtr->fNClusters;
-  Float_t* ampFracPtr = 0;
+//  Float_t* ampFracPtr = 0;
 
   AliHLTCaloClusterDataStruct* clusterPtr = 0;
 
@@ -203,12 +203,12 @@ AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTCaloClusterHeaderStruct* 
     {
       if(fCheckClusterEnergy == true && clusterPtr->fEnergy > fClusterEnergyThreshold && clusterPtr->fNCells > fDigitMultiplicityThreshold)
 	{
-	  ampFracPtr = &(clusterPtr->fCellsAmpFraction);
+/*	  ampFracPtr = &(clusterPtr->fCellsAmpFraction);
 	  for(UInt_t i = 0; i < clusterPtr->fNCells; i++)
 	    {
 	      if(*ampFracPtr > fLowerCentrality && *ampFracPtr < fUpperCentrality) return true;
 	      ampFracPtr += 6; // 6 = sizeof(Short_t) + sizeof(Float_t)
-	    }
+	    }*/
 	}
       if(fCheckClusterMultiplicities == true && clusterPtr->fEnergy > fMultEnergyThreshold && clusterPtr->fNCells > fMultDigitMultiplicityThreshold)
 	{

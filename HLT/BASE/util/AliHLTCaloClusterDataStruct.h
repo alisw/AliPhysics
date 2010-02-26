@@ -57,6 +57,13 @@ struct AliHLTCaloClusterHeaderStruct
   Short_t fNDigits;
 };
 
+struct AliHLTCaloCellDataStruct
+{
+   Short_t fCellsAbsId;
+   Float_t fCellsAmpFraction;
+};
+
+
 /**
  * @struct AliHLTCaloClusterDataStruct
  * Calorimeter cluster data struct for  HLT
@@ -296,12 +303,8 @@ struct AliHLTCaloClusterDataStruct
   /** the matced tracks */
   Int_t fTracksMatched[10];           //COMMENT TODO: remove hardcoded 10
 
-  /** The absolute IDs of the cells*/
-  UShort_t fCellsAbsId;                      //COMMENT
-
-  /** */
-  Float_t fCellsAmpFraction;              //COMMENT
-  
+  /** Struct containing cell ID and amplitude fraction for the cells */
+  AliHLTCaloCellDataStruct fCaloCells;   //COMMENT
   
 };
 
