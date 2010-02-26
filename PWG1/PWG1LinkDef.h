@@ -60,6 +60,7 @@
 #pragma link C++ class AliAnalysisTaskIPInfo+;
 
 #pragma link C++ class AliAnalysisTaskVertexESD+;
+#pragma link C++ class AliAnalysisTaskCTau+;
 #pragma link C++ class AliAlignmentDataFilterITS+;
 #pragma link C++ class AliAnalysisTaskITSTrackingCheck+;
 #pragma link C++ class AliTrackMatchingTPCITSCosmics+;
@@ -82,6 +83,7 @@
 #pragma link C++ class  AliTRDtrackInfo+;
 #pragma link C++ class  AliTRDtrackInfo::AliESDinfo+;
 #pragma link C++ class  AliTRDtrackInfo::AliMCinfo+;
+#pragma link C++ class  AliTRDeventCuts+;
 #pragma link C++ class  AliTRDeventInfo+;
 #pragma link C++ class  AliTRDpidInfo+;
 #pragma link C++ class  AliTRDpidInfo::AliTRDpidData+;

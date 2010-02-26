@@ -25,6 +25,8 @@ class AliESDfriend;
 class AliTRDtrackInfo;
 class AliTRDeventInfo;
 class AliTRDv0Info;
+class AliTRDeventCuts;
+class AliESDtrackCuts;
 class TObjArray;
 class TTreeSRedirector;
 class AliTRDinfoGen : public AliTRDrecoTask{
@@ -47,7 +49,9 @@ public:
   Bool_t  IsCollision() const {return TestBit(kCollision);}
 
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
+  void    SetLocalEvSelection(AliTRDeventCuts */*cut*/){;} 
   void    SetLocalEvSelection(Bool_t use=kTRUE) {SetBit(kUseLocalEvSelection, use);}
+  void    SetLocalTrkSelection(AliESDtrackCuts */*cut*/){;} 
   void    SetLocalTrkSelection(Bool_t use=kTRUE) {SetBit(kUseLocalTrkSelection, use);}
   void    SetTrigger(const Char_t *trigger) {fEvTrigger = trigger;}
 
@@ -69,7 +73,7 @@ private:
   static const Int_t   fgkNclTPC;   // N clusters TPC
   static const Float_t fgkPt;       // min. pt
   static const Float_t fgkEta;      // eta range
-
+  
   AliTRDinfoGen(const AliTRDinfoGen&);
   AliTRDinfoGen& operator=(const AliTRDinfoGen&);
 
@@ -78,8 +82,11 @@ private:
   AliTRDtrackInfo  *fTrackInfo;      //! Track info
   AliTRDeventInfo  *fEventInfo;	     //! Event info
   TObjArray        *fV0container;    //! V0 container
-  AliTRDv0Info     *fV0Info;	     //! V0 info
+  AliTRDv0Info     *fV0Info;	       //! V0 info
+  // event/track cuts OO - to be used
+  AliTRDeventCuts  *fEventCut;       // event cut
+  AliESDtrackCuts  *fTrackCut;       // track cut
 
-  ClassDef(AliTRDinfoGen, 3)         // entry to TRD analysis train
+  ClassDef(AliTRDinfoGen, 4)         // entry to TRD analysis train
 };
 #endif

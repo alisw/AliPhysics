@@ -52,6 +52,7 @@
 #include "AliESDfriendTrack.h"
 #include "AliESDHeader.h"
 #include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliMCParticle.h"
 #include "AliPID.h"
 #include "AliStack.h"
@@ -71,6 +72,7 @@
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDeventInfo.h"
 #include "info/AliTRDv0Info.h"
+#include "info/AliTRDeventCuts.h"
 
 ClassImp(AliTRDinfoGen)
 
@@ -96,20 +98,26 @@ AliTRDinfoGen::AliTRDinfoGen():
   ,fEventInfo(NULL)
   ,fV0container(NULL)
   ,fV0Info(NULL)
+  ,fEventCut(NULL)
+  ,fTrackCut(NULL)
 {
   //
   // Default constructor
   //
 }
 
+//____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen(char* name):
   AliTRDrecoTask(name, "MC-REC TRD-track list generator")
+  ,fEvTrigger("")
   ,fESDev(NULL)
   ,fMCev(NULL)
   ,fTrackInfo(NULL)
   ,fEventInfo(NULL)
   ,fV0container(NULL)
   ,fV0Info(NULL)
+  ,fEventCut(NULL)
+  ,fTrackCut(NULL)
 {
   //
   // Default constructor
@@ -123,6 +131,8 @@ AliTRDinfoGen::~AliTRDinfoGen()
 {
 // Destructor
 
+  if(fTrackCut) delete fTrackCut;
+  if(fEventCut) delete fEventCut;
   if(fTrackInfo) delete fTrackInfo; fTrackInfo = NULL;
   if(fEventInfo) delete fEventInfo; fEventInfo = NULL;
   if(fV0Info) delete fV0Info; fV0Info = NULL;
@@ -149,7 +159,6 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fContainer->SetOwner(kTRUE);
   fV0container = new TObjArray(50);
   fV0container->SetOwner(kTRUE);
-
 }
 
 //____________________________________________________________________
@@ -194,6 +203,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
       return;
     }
   }
+
+  if(fEventCut && !fEventCut->IsSelected(fESDev, IsCollision())) return;
 
   if(!fESDfriend){
     AliError("Failed retrieving ESD friend event");
@@ -247,6 +258,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
         if(TMath::Abs(par[1]) > fgkTrkDCAz) continue;
       }
     }
+    if(fTrackCut && !fTrackCut->IsSelected(esdTrack)) continue;
 
     if(esdTrack->GetStatus()&AliESDtrack::kTPCout) nTPC++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDout) nTRDout++;
