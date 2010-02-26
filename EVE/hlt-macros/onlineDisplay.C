@@ -334,7 +334,7 @@ void processEMCALBlock(AliHLTHOMERBlockDesc * block);
 TEveElementList * createEMCALElementList();
 void processHLTBlock(AliHLTHOMERBlockDesc * block);
 void processTPCBlock(AliHLTHOMERBlockDesc * block);
-
+void processITSBlock(AliHLTHOMERBlockDesc * block);
 //Generic functions
 
 TCanvas * createCanvas(TString  tabTitle, TString  canvasTitle );
@@ -673,10 +673,6 @@ Int_t initializeEveViewer( Bool_t TPCMode, Bool_t MUONMode, Bool_t TRDMode) {
   gV0Canvas = new TCanvas("canvasV0","canvasV0", 600, 400);
   slot->StopEmbedding("V0");
 
-  slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
-  slot->StartEmbedding();
-  gITSCanvas = new TCanvas("canvasITS","canvasITS", 600, 400);
-  slot->StopEmbedding("ITS QA");
 
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();
@@ -781,10 +777,7 @@ Int_t processEvent() {
     } 
   }
 
-  //============================================================================
-  //   Read out histograms and detectors outside physics 1 partition
-  //===========================================================================
-  
+  //Read out histograms and elements from detectors outside physics 1 partition
   TIter anext(gHomerManager->GetAsyncBlockList());
   
   while ( (block = (AliHLTHOMERBlockDesc*)anext()) ) {
@@ -1396,8 +1389,8 @@ Int_t processTRDHistograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) {
 
   Int_t iResult = 0;
 
-  if ( ! block->GetClassName().CompareTo("TH1D")) {
-    TH1D* histo = reinterpret_cast<TH1D*>(block->GetTObject());
+  if ( ! block->GetClassName().CompareTo("TH1F")) {
+    TH1F* histo = reinterpret_cast<TH1F*>(block->GetTObject());
     ++gTRDHistoCount;
   
     TVirtualPad* pad = canvas->cd(gTRDHistoCount);
@@ -1411,22 +1404,8 @@ Int_t processTRDHistograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) {
     }
 
     if ( ! strcmp(histo->GetName(),"sclsdist") ||
-	 ! strcmp(histo->GetName(),"qClsCand") )
+	 ! strcmp(histo->GetName(),"evSize") )
       pad->SetLogy();
-  }
-  else if ( ! block->GetClassName().CompareTo("TH2F")) {
-    TH2F *hista = reinterpret_cast<TH2F*>(block->GetTObject());
-    ++gTRDHistoCount;
-    
-    TVirtualPad* pad = canvas->cd(gTRDHistoCount);
-
-    if (gTRDEvents > 0)
-      hista->Scale(1./gTRDEvents);
-
-    hista->Draw("COLZ");
-    pad->SetLogz();
-    pad->SetGridy();
-    pad->SetGridx();
   }
 
   gTRDCanvas->Update();
@@ -1595,6 +1574,7 @@ Int_t addHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_
 
   return iResult;
 }
+
 
 // -----------------------------------------------------------------
 Int_t processSSDHistograms(AliHLTHOMERBlockDesc* block, TCanvas *canvas0, TCanvas *canvas1) {
@@ -1792,38 +1772,34 @@ Int_t processBlock (AliHLTHOMERBlockDesc * block ){
   else if ( ! block->GetDetector().CompareTo("ISSD") )
     processISSDBlock(block);
 
-  else if ( ! block->GetDetector().CompareTo("ITS") ){
-    if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) {
-      iResult = processITSHist( block );
-    } 
-  } 
-    
   else if ( ! block->GetDetector().CompareTo("PHOS") ) 
     processPHOSBlock(block);
 
   else if ( ! block->GetDetector().CompareTo("EMCL") )
     processEMCALBlock(block);
 
-  else if ( ! block->GetDetector().CompareTo("ITS") ){
-    if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) {
-      processITSHistograms( block , gITSCanvas);
-      gITSCanvas->Update();
-    } 
-  }
+  else if ( ! block->GetDetector().CompareTo("ITS") )
+    processITSBlock(block);
  
   
 
   if ( block->GetDataType().CompareTo("ROOTHIST") == 0 )     
     processV0Histograms( block , gV0Canvas);
    
-    
-
-
-
-
-
   return iResult;
 } 
+
+
+void processITSBlock(AliHLTHOMERBlockDesc * block) {
+  
+  if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) {
+    if(!gITSCanvas){
+      gITSCanvas = createCanvas("ITS QA", "ITS QA");
+    }
+    processITSHistograms( block , gITSCanvas);
+    gITSCanvas->Update();
+  } 
+}
 
 
  Int_t processTRDBlock (AliHLTHOMERBlockDesc * block) {
