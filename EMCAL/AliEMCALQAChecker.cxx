@@ -46,7 +46,6 @@
 #include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliEMCALQAChecker.h"
-#include "AliEMCALQADataMakerRec.h"
 
 ClassImp(AliEMCALQAChecker)
 

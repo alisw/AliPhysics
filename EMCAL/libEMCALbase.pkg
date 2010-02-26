@@ -4,7 +4,6 @@ SRCS = \
 AliEMCALGeometry.cxx \
 AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
-AliEMCALShishKebabModule.cxx \
 AliEMCALWsuCosmicRaySetUp.cxx \
 AliEMCALRecPoint.cxx \
 AliEMCALClusterizer.cxx \
@@ -31,8 +30,11 @@ AliEMCALCalibReference.cxx \
 AliEMCALCalibMapAPD.cxx \
 SMcalib/AliEMCALCCUSBRawStream.cxx \
 AliEMCALRawDigit.cxx \
-AliEMCALTriggerSTURawStream.cxx
-# AliEMCALShishKebabTrd1Module.cxx \
+AliEMCALTriggerSTURawStream.cxx \
+AliEMCAL.cxx \
+AliEMCALRawUtils.cxx \
+AliCaloRawAnalyzerFastFit.cxx 
+
 
 
 HDRS= $(SRCS:.cxx=.h) 

@@ -1,13 +1,25 @@
 #-*- Mode: Makefile -*-
 
-SRCS          =  AliEMCALGeoParams.cxx AliEMCALGeoUtils.cxx AliEMCALEMCGeometry.cxx  \
-                 AliEMCALShishKebabTrd1Module.cxx AliEMCALPIDUtils.cxx AliCaloNeuralFit.cxx
+SRCS = \
+AliEMCALGeoParams.cxx \
+AliEMCALGeoUtils.cxx \
+AliEMCALEMCGeometry.cxx  \
+AliEMCALShishKebabTrd1Module.cxx \
+AliEMCALPIDUtils.cxx \
+AliCaloNeuralFit.cxx \
+AliCaloRawAnalyzer.cxx \
+AliCaloBunchInfo.cxx \
+AliCaloFitResults.cxx \
+AliCaloRawAnalyzerCrude.cxx \
+AliCaloRawAnalyzerLMS.cxx \
+AliCaloRawAnalyzerPeakFinder.cxx \
+AliCaloRawAnalyzerNN.cxx  
 
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= EMCALUtilsLinkDef.h
 
-EXPORT:=AliEMCALGeoParams.h AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h
+EXPORT:=AliEMCALGeoParams.h AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h AliCaloNeuralFit.h AliCaloRawAnalyzer.h AliCaloBunchInfo.h AliCaloFitResults.h AliCaloRawAnalyzerCrude.h AliCaloRawAnalyzerLMS.h AliCaloRawAnalyzerPeakFinder.h AliCaloRawAnalyzerNN.h 
 
 CXXFLAGS+=-D__EMCALUTIL__
 

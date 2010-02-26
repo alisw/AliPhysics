@@ -37,7 +37,7 @@
 #include <TVector2.h>
 #include <cassert>
 
-#include "AliEMCALShishKebabModule.h"
+//--- EMCAL system---
 #include "AliEMCALShishKebabTrd1Module.h"
 
 // --- Standard library ---
