@@ -1,5 +1,5 @@
-#ifndef ALITPCCALIBCPID_H
-#define ALITPCCALIBCPID_H
+#ifndef ALITPCCALIBPID_H
+#define ALITPCCALIBPID_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -34,18 +34,18 @@ public:
   void                   DrawResolBGQtot(Int_t minClusters, Int_t maxClusters, Float_t minp, Float_t maxp,  const char *outputpath, Bool_t resol=kTRUE); //
   void                   DrawResolBGQmax(Int_t minClusters, Int_t maxClusters, Float_t minp, Float_t maxp, const char *outputpath, Bool_t resol=kTRUE);
   //
-  TH1F   *          GetHistNTracks(){return fHistNTracks;};
-  TH1F   *          GetHistClusters(){return fClusters;};
-  TH2F   *          GetHistPileUp(){return fPileUp;};
-  TH2F   *          GetHistLandau(){return fLandau;};
+  TH1F   *          GetHistNTracks() const {return fHistNTracks;};
+  TH1F   *          GetHistClusters() const {return fClusters;};
+  TH2F   *          GetHistPileUp() const {return fPileUp;};
+  TH2F   *          GetHistLandau() const {return fLandau;};
   //
-  THnSparseS *      GetHistQmax(){return fDeDxQmax;};
-  THnSparseS *      GetHistQtot(){return fDeDxQtot;};
-  THnSparseS *      GetHistRatioMaxTot(){return fDeDxRatioMaxTot;};
-  THnSparseS *      GetHistRatioQmax(){return fDeDxRatioQmax;};
-  THnSparseS *      GetHistRatioQtot(){return fDeDxRatioQtot;};
-  THnSparseS *      GetHistRatioTruncQmax(){return fDeDxRatioTruncQmax;};
-  THnSparseS *      GetHistRatioTruncQtot(){return fDeDxRatioTruncQtot;};
+  THnSparseS *      GetHistQmax() const {return fDeDxQmax;};
+  THnSparseS *      GetHistQtot() const {return fDeDxQtot;};
+  THnSparseS *      GetHistRatioMaxTot() const {return fDeDxRatioMaxTot;};
+  THnSparseS *      GetHistRatioQmax() const {return fDeDxRatioQmax;};
+  THnSparseS *      GetHistRatioQtot() const {return fDeDxRatioQtot;};
+  THnSparseS *      GetHistRatioTruncQmax() const {return fDeDxRatioTruncQmax;};
+  THnSparseS *      GetHistRatioTruncQtot() const {return fDeDxRatioTruncQtot;};
   //
   void SetMIPvalue(Float_t mip){fMIP = mip;};
   void SetLowerTrunc(Float_t lowerTrunc){fLowerTrunc = lowerTrunc;};
@@ -65,14 +65,14 @@ private:
   //
   // parameter specifications
   //
-  Float_t fMIP;
-  Float_t fLowerTrunc;
-  Float_t fUpperTrunc;
-  Bool_t  fUseShapeNorm;
-  Int_t  fUsePosNorm;
-  Int_t   fUsePadNorm;
+  Float_t fMIP;                  // MIP position to be in fMIP
+  Float_t fLowerTrunc;           // lower truncation for dEdx
+  Float_t fUpperTrunc;           // upper truncation for dEdx
+  Bool_t  fUseShapeNorm;         // switch - use shape normalization 
+  Int_t  fUsePosNorm;            // switch use position normalization
+  Int_t   fUsePadNorm;           // switch use pad normalization
   //
-  Bool_t  fIsCosmic;
+  Bool_t  fIsCosmic;             // swith is cosmic - to be removed once event specie in ESD introduced 
   //
   // histograms
   //

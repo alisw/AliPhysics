@@ -251,9 +251,9 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
   Int_t ntracks=event->GetNumberOfTracks(); 
   fHistNTracks->Fill(ntracks);
   
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!ESDfriend) {
-   Printf("ERROR: ESDfriend not available");
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!esdFriend) {
+   Printf("ERROR: esdFriend not available");
    return;
   }  
   //
@@ -274,10 +274,10 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
     //Double_t meanP = 0.5*(trackIn->GetP() + trackOut->GetP());
     Double_t meanP = trackIn->GetP();
     //Double_t d = trackIn->GetLinearD(0,0);
-    Int_t NclsDeDx = track->GetTPCNcls();
+    Int_t nclsDeDx = track->GetTPCNcls();
 
     //if (meanP > 0.7 || meanP < 0.2) continue;
-     if (NclsDeDx < 60) continue;     
+     if (nclsDeDx < 60) continue;     
 
     // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
 
@@ -291,7 +291,7 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
     if (TMath::Abs(trackIn->GetAlpha()+0.872665)<0.01 || TMath::Abs(trackOut->GetAlpha()+0.872665)<0.01) continue;  // Funny sector !
     
     // Get seeds
-    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
     if (!friendTrack) continue;
     TObject *calibObject;
     AliTPCseed *seed = 0;
@@ -379,8 +379,8 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
 	if (ncl[itype]<kMinClustersTracklet) continue;
 	Float_t deltaL = TMath::Sqrt(1+snp*snp+tgl*tgl);
 	//
-	Double_t vecQmax[8] = {dEdxMax[itype],drift,snp,tgl,meanP,meanP/mass,NclsDeDx, itype};
-	Double_t vecQtot[8] = {dEdxTot[itype],drift,snp,tgl,meanP,meanP/mass,NclsDeDx, itype};
+	Double_t vecQmax[8] = {dEdxMax[itype],drift,snp,tgl,meanP,meanP/mass,nclsDeDx, itype};
+	Double_t vecQtot[8] = {dEdxTot[itype],drift,snp,tgl,meanP,meanP/mass,nclsDeDx, itype};
 	//
 	//
 	//
@@ -390,11 +390,11 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
 	Double_t ratioTrackletTruncTot = (dEdxTot[0]>0)      ? dEdxTotFull[itype]/dEdxTot[itype]:0;
 	Double_t ratioTrackletTruncMax = (dEdxMax[0]>0)      ? dEdxMaxFull[itype]/dEdxMax[itype]:0;
 
-	Double_t vecRatioMaxTot[8]      = {ratioMaxTot,      drift,snp,tgl,dEdxTot[0],  dEdxTot[0]*deltaL,NclsDeDx,itype};
-	Double_t vecRatioTrackletTot[8] = {ratioTrackletTot, drift,snp,tgl,dEdxTot[0],  dEdxTot[0]*deltaL,NclsDeDx,itype};	
-	Double_t vecRatioTrackletMax[8] = {ratioTrackletMax, drift,snp,tgl,dEdxMax[0],  dEdxMax[0]*deltaL,NclsDeDx,itype};	
-	Double_t vecRatioTrackletTruncTot[8] = {ratioTrackletTruncTot, drift,snp,tgl,dEdxTot[0],  dEdxTot[0]*deltaL,NclsDeDx,itype};	
-	Double_t vecRatioTrackletTruncMax[8] = {ratioTrackletTruncMax, drift,snp,tgl,dEdxMax[0],  dEdxMax[0]*deltaL,NclsDeDx,itype};	
+	Double_t vecRatioMaxTot[8]      = {ratioMaxTot,      drift,snp,tgl,dEdxTot[0],  dEdxTot[0]*deltaL,nclsDeDx,itype};
+	Double_t vecRatioTrackletTot[8] = {ratioTrackletTot, drift,snp,tgl,dEdxTot[0],  dEdxTot[0]*deltaL,nclsDeDx,itype};	
+	Double_t vecRatioTrackletMax[8] = {ratioTrackletMax, drift,snp,tgl,dEdxMax[0],  dEdxMax[0]*deltaL,nclsDeDx,itype};	
+	Double_t vecRatioTrackletTruncTot[8] = {ratioTrackletTruncTot, drift,snp,tgl,dEdxTot[0],  dEdxTot[0]*deltaL,nclsDeDx,itype};	
+	Double_t vecRatioTrackletTruncMax[8] = {ratioTrackletTruncMax, drift,snp,tgl,dEdxMax[0],  dEdxMax[0]*deltaL,nclsDeDx,itype};	
 	fDeDxQmax->Fill(vecQmax); 
 	fDeDxQtot->Fill(vecQtot); 
 	fDeDxRatioMaxTot->Fill(vecRatioMaxTot); 
