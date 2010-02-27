@@ -25,6 +25,8 @@
 #include "TLegend.h"
 
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
@@ -38,8 +40,11 @@ ClassImp(AliAnalysisTaskCheckV0)
 
 //________________________________________________________________________
 AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0() 
-  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fListHist(), 
+  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fUsePhysicsSelection(0),
+    fMaxPrimaryVtxPosZ(100.), fMinV0Pt(0.), fMaxV0Pt(100.), fMaxV0Rapidity(1.), fMinDaughterTpcClusters(80),
+    fListHist(), 
     fHistPrimaryVertexPosX(0), fHistPrimaryVertexPosY(0), fHistPrimaryVertexPosZ(0),
+    fHistKeptPrimaryVertexPosX(0), fHistKeptPrimaryVertexPosY(0), fHistKeptPrimaryVertexPosZ(0),
     fHistTrackMultiplicity(0), fHistV0Multiplicity(0), fHistV0OnFlyStatus(0),
     fHistV0MultiplicityOff(0),
     fHistV0Chi2Off(0),
@@ -47,6 +52,7 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0()
     fHistV0RadiusOff(0),fHistDcaV0ToPrimVertexOff(0),
     fHistDcaPosToPrimVertexOff(0),fHistDcaNegToPrimVertexOff(0),
     fHistMassK0sOff(0),fHistMassLambdaOff(0),fHistMassAntiLambdaOff(0),
+    fHistMassK0sOffVsPt(0),fHistMassLambdaOffVsPt(0),fHistMassAntiLambdaOffVsPt(0),
     fHistArmenterosPodolanskiOff(0),
     fHistV0MultiplicityOn(0),
     fHistV0Chi2On(0),
@@ -54,14 +60,18 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0()
     fHistV0RadiusOn(0),fHistDcaV0ToPrimVertexOn(0),
     fHistDcaPosToPrimVertexOn(0),fHistDcaNegToPrimVertexOn(0),
     fHistMassK0sOn(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0),
+    fHistMassK0sOnVsPt(0),fHistMassLambdaOnVsPt(0),fHistMassAntiLambdaOnVsPt(0),
     fHistArmenterosPodolanskiOn(0)
 {
   // Dummy constructor
 }
 //________________________________________________________________________
 AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0(const char *name) 
-  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fListHist(), 
+  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fUsePhysicsSelection(0),
+    fMaxPrimaryVtxPosZ(100.), fMinV0Pt(0.), fMaxV0Pt(100.), fMaxV0Rapidity(1.), fMinDaughterTpcClusters(80),
+    fListHist(), 
     fHistPrimaryVertexPosX(0), fHistPrimaryVertexPosY(0), fHistPrimaryVertexPosZ(0),
+    fHistKeptPrimaryVertexPosX(0), fHistKeptPrimaryVertexPosY(0), fHistKeptPrimaryVertexPosZ(0),
     fHistTrackMultiplicity(0), fHistV0Multiplicity(0), fHistV0OnFlyStatus(0),
     fHistV0MultiplicityOff(0),
     fHistV0Chi2Off(0),
@@ -69,6 +79,7 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0(const char *name)
     fHistV0RadiusOff(0),fHistDcaV0ToPrimVertexOff(0),
     fHistDcaPosToPrimVertexOff(0),fHistDcaNegToPrimVertexOff(0),
     fHistMassK0sOff(0),fHistMassLambdaOff(0),fHistMassAntiLambdaOff(0),
+    fHistMassK0sOffVsPt(0),fHistMassLambdaOffVsPt(0),fHistMassAntiLambdaOffVsPt(0),
     fHistArmenterosPodolanskiOff(0),
     fHistV0MultiplicityOn(0),
     fHistV0Chi2On(0),
@@ -76,6 +87,7 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0(const char *name)
     fHistV0RadiusOn(0),fHistDcaV0ToPrimVertexOn(0),
     fHistDcaPosToPrimVertexOn(0),fHistDcaNegToPrimVertexOn(0),
     fHistMassK0sOn(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0),
+    fHistMassK0sOnVsPt(0),fHistMassLambdaOnVsPt(0),fHistMassAntiLambdaOnVsPt(0),
     fHistArmenterosPodolanskiOn(0)
 {
   // Constructor
@@ -105,6 +117,18 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
   if (!fHistPrimaryVertexPosZ) {
     fHistPrimaryVertexPosZ = new TH1F("fHistPrimaryVertexPosZ", "Primary vertex position in z;Position in z (cm);Events;",100,-1,1);
     fListHist->Add(fHistPrimaryVertexPosZ);
+  }
+  if (!fHistKeptPrimaryVertexPosX) {
+    fHistKeptPrimaryVertexPosX = new TH1F("fHistKeptPrimaryVertexPosX", "Kept Primary vertex position in x;Position in x (cm);Events;",100,-1,1);
+    fListHist->Add(fHistKeptPrimaryVertexPosX);
+  }
+  if (!fHistKeptPrimaryVertexPosY) {
+    fHistKeptPrimaryVertexPosY = new TH1F("fHistKeptPrimaryVertexPosY", "Kept Primary vertex position in y;Position in y (cm);Events;",100,-1,1);
+    fListHist->Add(fHistKeptPrimaryVertexPosY);
+  }
+  if (!fHistKeptPrimaryVertexPosZ) {
+    fHistKeptPrimaryVertexPosZ = new TH1F("fHistKeptPrimaryVertexPosZ", "Kept Primary vertex position in z;Position in z (cm);Events;",100,-1,1);
+    fListHist->Add(fHistKeptPrimaryVertexPosZ);
   }
 
   if (!fHistTrackMultiplicity) {
@@ -175,6 +199,18 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
     fHistMassAntiLambdaOff = new TH1F("fHistMassAntiLambdaOff","#bar{#Lambda}^{0} candidates;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts",75,1.05,1.2);
     fListHist->Add(fHistMassAntiLambdaOff);
   }
+  if (!fHistMassK0sOffVsPt) {
+    fHistMassK0sOffVsPt = new TH2F("fHistMassK0sOffVsPt","K^{0} candidates;p_{T} (GeV/c);M(#pi^{+}#pi^{-}) (GeV/c^{2})",200,0,10,100,0.4,0.6);
+    fListHist->Add(fHistMassK0sOffVsPt);
+  }
+  if (!fHistMassLambdaOffVsPt) {
+    fHistMassLambdaOffVsPt = new TH2F("fHistMassLambdaOffVsPt","#Lambda^{0} candidates;p_{T} (GeV/c);M(p#pi^{-}) (GeV/c^{2})",200,0,10,75,1.05,1.2);
+    fListHist->Add(fHistMassLambdaOffVsPt);
+  }
+  if (!fHistMassAntiLambdaOffVsPt) {
+    fHistMassAntiLambdaOffVsPt = new TH2F("fHistMassAntiLambdaOffVsPt","#bar{#Lambda}^{0} candidates;p_{T} (GeV/c);M(#bar{p}#pi^{+}) (GeV/c^{2})",200,0,10,75,1.05,1.2);
+    fListHist->Add(fHistMassAntiLambdaOffVsPt);
+  }
   if (!fHistArmenterosPodolanskiOff) {
     fHistArmenterosPodolanskiOff   = new TH2F("fHistArmenterosPodolanskiOff","Armenteros-Podolanski Offline phase space;#alpha;p_{t} arm",200,-1.0,1.0,150,0,0.3);
     fListHist->Add(fHistArmenterosPodolanskiOff);
@@ -229,6 +265,18 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
     fHistMassAntiLambdaOn = new TH1F("fHistMassAntiLambdaOn","#bar{#Lambda}^{0} candidates;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts",75,1.05,1.2);
     fListHist->Add(fHistMassAntiLambdaOn);
   }
+  if (!fHistMassK0sOnVsPt) {
+    fHistMassK0sOnVsPt = new TH2F("fHistMassK0sOnVsPt","K^{0} candidates;p_{T} (GeV/c);M(#pi^{+}#pi^{-}) (GeV/c^{2})",200,0,10,100,0.4,0.6);
+    fListHist->Add(fHistMassK0sOnVsPt);
+  }
+  if (!fHistMassLambdaOnVsPt) {
+    fHistMassLambdaOnVsPt = new TH2F("fHistMassLambdaOnVsPt","#Lambda^{0} candidates;p_{T} (GeV/c);M(p#pi^{-}) (GeV/c^{2})",200,0,10,75,1.05,1.2);
+    fListHist->Add(fHistMassLambdaOnVsPt);
+  }
+  if (!fHistMassAntiLambdaOnVsPt) {
+    fHistMassAntiLambdaOnVsPt = new TH2F("fHistMassAntiLambdaOnVsPt","#bar{#Lambda}^{0} candidates;p_{T} (GeV/c);M(#bar{p}#pi^{+}) (GeV/c^{2})",200,0,10,75,1.05,1.2);
+    fListHist->Add(fHistMassAntiLambdaOnVsPt);
+  }
   if (!fHistArmenterosPodolanskiOn) {
     fHistArmenterosPodolanskiOn    = new TH2F("fHistArmenterosPodolanskiOn","Armenteros-Podolanski Onthefly phase space;#alpha;p_{t} arm",200,-1.0,1.0,150,0,0.3);
     fListHist->Add(fHistArmenterosPodolanskiOn);
@@ -246,6 +294,10 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
     Printf("ERROR: Event not available");
     return;
   }
+
+  Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if ((fUsePhysicsSelection)&&(!isSelected)) return;
+
   fHistTrackMultiplicity->Fill(lEvent->GetNumberOfTracks());
   
   Double_t tPrimaryVtxPosition[3];
@@ -258,7 +310,8 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
   Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
   Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
   Double_t lV0CosineOfPointingAngle = 0;
-  Double_t lV0Radius = 0;
+  Double_t lV0Radius = 0, lPt = 0;
+  Double_t lRapK0Short = 0, lRapLambda = 0;
   Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
   Double_t lAlphaV0 = 0, lPtArmV0 = 0;
 
@@ -270,169 +323,219 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
   fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
   fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
 
-  if(fAnalysisType == "ESD") {
+  if (TMath::Abs(tPrimaryVtxPosition[2])<fMaxPrimaryVtxPosZ){// event selections
 
-    Double_t lMagneticField = ((AliESDEvent*)lEvent)->GetMagneticField();
+    fHistKeptPrimaryVertexPosX->Fill(tPrimaryVtxPosition[0]);
+    fHistKeptPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
+    fHistKeptPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
 
-    for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
-      {// This is the begining of the V0 loop
-	AliESDv0 *v0 = ((AliESDEvent*)lEvent)->GetV0(iV0);
-	if (!v0) continue;
+    if(fAnalysisType == "ESD") {
 
-	Double_t tDecayVertexV0[3]; v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
+      Double_t lMagneticField = ((AliESDEvent*)lEvent)->GetMagneticField();
 
-	lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+      for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
+	{// This is the begining of the V0 loop
+	  AliESDv0 *v0 = ((AliESDEvent*)lEvent)->GetV0(iV0);
+	  if (!v0) continue;
 
-	UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
-	UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
+	  Double_t tDecayVertexV0[3]; v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
 
-	Double_t lMomPos[3]; v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
-	Double_t lMomNeg[3]; v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
+	  lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+	  lPt = v0->Pt();
+	  lRapK0Short = v0->RapK0Short();
+	  lRapLambda  = v0->RapLambda();
+	  if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
 
-	AliESDtrack *pTrack=((AliESDEvent*)lEvent)->GetTrack(lKeyPos);
-	AliESDtrack *nTrack=((AliESDEvent*)lEvent)->GetTrack(lKeyNeg);
-	if (!pTrack || !nTrack) {
-	  Printf("ERROR: Could not retreive one of the daughter track");
-	  continue;
-	}
+	  UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
+	  UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
 
-	// Filter like-sign V0 (next: add counter and distribution)
-	if ( pTrack->GetSign() == nTrack->GetSign()){
-	  continue;
-	} 
+	  Double_t lMomPos[3]; v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
+	  Double_t lMomNeg[3]; v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
 
-	lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(tPrimaryVtxPosition[0],
-						      tPrimaryVtxPosition[1],
-						      lMagneticField) );
+	  AliESDtrack *pTrack=((AliESDEvent*)lEvent)->GetTrack(lKeyPos);
+	  AliESDtrack *nTrack=((AliESDEvent*)lEvent)->GetTrack(lKeyNeg);
+	  if (!pTrack || !nTrack) {
+	    Printf("ERROR: Could not retreive one of the daughter track");
+	    continue;
+	  }
 
-	lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(tPrimaryVtxPosition[0],
-						      tPrimaryVtxPosition[1],
-						      lMagneticField) );
+	  // Filter like-sign V0 (next: add counter and distribution)
+	  if ( pTrack->GetSign() == nTrack->GetSign()){
+	    continue;
+	  } 
 
-	lOnFlyStatus = v0->GetOnFlyStatus();
-	lChi2V0 = v0->GetChi2V0();
-	lDcaV0Daughters = v0->GetDcaV0Daughters();
-	lDcaV0ToPrimVertex = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
-	lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
+	  // WARNING: the following selections cannot be done for AOD yet...
 
-	// Getting invariant mass infos directly from ESD
-	v0->ChangeMassHypothesis(310);
-	lInvMassK0s = v0->GetEffMass();
-	v0->ChangeMassHypothesis(3122);
-	lInvMassLambda = v0->GetEffMass();
-	v0->ChangeMassHypothesis(-3122);
-	lInvMassAntiLambda = v0->GetEffMass();
-	lAlphaV0 = v0->AlphaV0();
-	lPtArmV0 = v0->PtArmV0();
+	  // Tracks quality cuts 
+	  if ( ( (pTrack->GetTPCNcls()) < fMinDaughterTpcClusters ) || ( (nTrack->GetTPCNcls()) < fMinDaughterTpcClusters ) ) continue;
+	
+	  // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
+	  if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;      
+	  if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
 
-	fHistV0OnFlyStatus->Fill(lOnFlyStatus);
-	if(!lOnFlyStatus){
-	  nv0sOff++;
-	  fHistV0Chi2Off->Fill(lChi2V0);
-	  fHistDcaV0ToPrimVertexOff->Fill(lDcaV0ToPrimVertex);
-	  fHistDcaV0DaughtersOff->Fill(lDcaV0Daughters);
-	  fHistV0CosineOfPointingAngleOff->Fill(lV0CosineOfPointingAngle);
 
-	  fHistV0RadiusOff->Fill(lV0Radius);
-	  fHistDcaPosToPrimVertexOff->Fill(lDcaPosToPrimVertex);
-	  fHistDcaNegToPrimVertexOff->Fill(lDcaNegToPrimVertex);
+	  lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(tPrimaryVtxPosition[0],
+							tPrimaryVtxPosition[1],
+							lMagneticField) );
 
-	  // Filling invariant mass histos for all candidates
-	  fHistMassK0sOff->Fill(lInvMassK0s);
-	  fHistMassLambdaOff->Fill(lInvMassLambda);
-	  fHistMassAntiLambdaOff->Fill(lInvMassAntiLambda);
-	  fHistArmenterosPodolanskiOff->Fill(lAlphaV0,lPtArmV0);
-	}
-	else {
-	  nv0sOn++;
-	  fHistV0Chi2On->Fill(lChi2V0);
-	  fHistDcaV0ToPrimVertexOn->Fill(lDcaV0ToPrimVertex);
-	  fHistDcaV0DaughtersOn->Fill(lDcaV0Daughters);
-	  fHistV0CosineOfPointingAngleOn->Fill(lV0CosineOfPointingAngle);
+	  lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(tPrimaryVtxPosition[0],
+							tPrimaryVtxPosition[1],
+							lMagneticField) );
 
-	  fHistV0RadiusOn->Fill(lV0Radius);
-	  fHistDcaPosToPrimVertexOn->Fill(lDcaPosToPrimVertex);
-	  fHistDcaNegToPrimVertexOn->Fill(lDcaNegToPrimVertex);
+	  lOnFlyStatus = v0->GetOnFlyStatus();
+	  lChi2V0 = v0->GetChi2V0();
+	  lDcaV0Daughters = v0->GetDcaV0Daughters();
+	  lDcaV0ToPrimVertex = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
+	  lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
 
-	  // Filling invariant mass histos for all candidates
-	  fHistMassK0sOn->Fill(lInvMassK0s);
-	  fHistMassLambdaOn->Fill(lInvMassLambda);
-	  fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
-	  fHistArmenterosPodolanskiOn->Fill(lAlphaV0,lPtArmV0);
-	}
-      }// This is the end of the V0 loop
-  } // end of "ESD" analysis
+	  // Getting invariant mass infos directly from ESD
+	  v0->ChangeMassHypothesis(310);
+	  lInvMassK0s = v0->GetEffMass();
+	  v0->ChangeMassHypothesis(3122);
+	  lInvMassLambda = v0->GetEffMass();
+	  v0->ChangeMassHypothesis(-3122);
+	  lInvMassAntiLambda = v0->GetEffMass();
+	  lAlphaV0 = v0->AlphaV0();
+	  lPtArmV0 = v0->PtArmV0();
 
-  else if(fAnalysisType == "AOD") {
+	  fHistV0OnFlyStatus->Fill(lOnFlyStatus);
+	  if(!lOnFlyStatus){
+	    nv0sOff++;
+	    fHistV0Chi2Off->Fill(lChi2V0);
+	    fHistDcaV0ToPrimVertexOff->Fill(lDcaV0ToPrimVertex);
+	    fHistDcaV0DaughtersOff->Fill(lDcaV0Daughters);
+	    fHistV0CosineOfPointingAngleOff->Fill(lV0CosineOfPointingAngle);
 
-    for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
-      {// This is the begining of the V0 loop
-	AliAODv0 *v0 = ((AliAODEvent*)lEvent)->GetV0(iV0);
-	if (!v0) continue;
+	    fHistV0RadiusOff->Fill(lV0Radius);
+	    fHistDcaPosToPrimVertexOff->Fill(lDcaPosToPrimVertex);
+	    fHistDcaNegToPrimVertexOff->Fill(lDcaNegToPrimVertex);
 
-	lV0Radius = v0->RadiusV0();
-	lDcaPosToPrimVertex = v0->DcaPosToPrimVertex();
-	lDcaNegToPrimVertex = v0->DcaNegToPrimVertex();
+	    // Filling invariant mass histos for all candidates
+	    fHistMassK0sOff->Fill(lInvMassK0s);
+	    fHistMassLambdaOff->Fill(lInvMassLambda);
+	    fHistMassAntiLambdaOff->Fill(lInvMassAntiLambda);
+	    if (TMath::Abs(lRapK0Short)<fMaxV0Rapidity)
+	      fHistMassK0sOffVsPt->Fill(lPt,lInvMassK0s);
+	    if (TMath::Abs(lRapLambda)<fMaxV0Rapidity){
+	      fHistMassLambdaOffVsPt->Fill(lPt,lInvMassLambda);
+	      fHistMassAntiLambdaOffVsPt->Fill(lPt,lInvMassAntiLambda);
+	    }
+	    fHistArmenterosPodolanskiOff->Fill(lAlphaV0,lPtArmV0);
+	  }
+	  else {
+	    nv0sOn++;
+	    fHistV0Chi2On->Fill(lChi2V0);
+	    fHistDcaV0ToPrimVertexOn->Fill(lDcaV0ToPrimVertex);
+	    fHistDcaV0DaughtersOn->Fill(lDcaV0Daughters);
+	    fHistV0CosineOfPointingAngleOn->Fill(lV0CosineOfPointingAngle);
 
-	// propose getOnFlyStatus() = -1 for like-sign
+	    fHistV0RadiusOn->Fill(lV0Radius);
+	    fHistDcaPosToPrimVertexOn->Fill(lDcaPosToPrimVertex);
+	    fHistDcaNegToPrimVertexOn->Fill(lDcaNegToPrimVertex);
 
-	lOnFlyStatus = v0->GetOnFlyStatus();
-	lChi2V0 = v0->Chi2V0();
-	lDcaV0Daughters = v0->DcaV0Daughters();
-	lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
-	lV0CosineOfPointingAngle = v0->CosPointingAngle(tPrimaryVtxPosition);
+	    // Filling invariant mass histos for all candidates
+	    fHistMassK0sOn->Fill(lInvMassK0s);
+	    fHistMassLambdaOn->Fill(lInvMassLambda);
+	    fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
+	    if (TMath::Abs(lRapK0Short)<fMaxV0Rapidity)
+	      fHistMassK0sOnVsPt->Fill(lPt,lInvMassK0s);
+	    if (TMath::Abs(lRapLambda)<fMaxV0Rapidity){
+	      fHistMassLambdaOnVsPt->Fill(lPt,lInvMassLambda);
+	      fHistMassAntiLambdaOnVsPt->Fill(lPt,lInvMassAntiLambda);
+	    }
+	    fHistArmenterosPodolanskiOn->Fill(lAlphaV0,lPtArmV0);
+	  }
+	}// This is the end of the V0 loop
+    } // end of "ESD" analysis
 
-	lInvMassK0s = v0->MassK0Short();
-	lInvMassLambda = v0->MassLambda();
-	lInvMassAntiLambda = v0->MassAntiLambda();
-	lAlphaV0 = v0->AlphaV0();
-	lPtArmV0 = v0->PtArmV0();
+    else if(fAnalysisType == "AOD") {
 
-	fHistV0OnFlyStatus->Fill(lOnFlyStatus);
-	if(!lOnFlyStatus){
-	  nv0sOff++;
-	  fHistV0Chi2Off->Fill(lChi2V0);
-	  fHistDcaV0ToPrimVertexOff->Fill(lDcaV0ToPrimVertex);
-	  fHistDcaV0DaughtersOff->Fill(lDcaV0Daughters);
-	  fHistV0CosineOfPointingAngleOff->Fill(lV0CosineOfPointingAngle);
+      for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
+	{// This is the begining of the V0 loop
+	  AliAODv0 *v0 = ((AliAODEvent*)lEvent)->GetV0(iV0);
+	  if (!v0) continue;
 
-	  fHistV0RadiusOff->Fill(lV0Radius);
-	  fHistDcaPosToPrimVertexOff->Fill(lDcaPosToPrimVertex);
-	  fHistDcaNegToPrimVertexOff->Fill(lDcaNegToPrimVertex);
+	  lV0Radius = v0->RadiusV0();
+	  lPt = v0->Pt();
+	  lRapK0Short = v0->RapK0Short();
+	  lRapLambda  = v0->RapLambda();
+	  if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
+	  lDcaPosToPrimVertex = v0->DcaPosToPrimVertex();
+	  lDcaNegToPrimVertex = v0->DcaNegToPrimVertex();
 
-	  // Filling invariant mass histos for all candidates
-	  fHistMassK0sOff->Fill(lInvMassK0s);
-	  fHistMassLambdaOff->Fill(lInvMassLambda);
-	  fHistMassAntiLambdaOff->Fill(lInvMassAntiLambda);
-	  fHistArmenterosPodolanskiOff->Fill(lAlphaV0,lPtArmV0);
-	}
-	else {
-	  nv0sOn++;
-	  fHistV0Chi2On->Fill(lChi2V0);
-	  fHistDcaV0ToPrimVertexOn->Fill(lDcaV0ToPrimVertex);
-	  fHistDcaV0DaughtersOn->Fill(lDcaV0Daughters);
-	  fHistV0CosineOfPointingAngleOn->Fill(lV0CosineOfPointingAngle);
+	  // propose getOnFlyStatus() = -1 for like-sign
 
-	  fHistV0RadiusOn->Fill(lV0Radius);
-	  fHistDcaPosToPrimVertexOn->Fill(lDcaPosToPrimVertex);
-	  fHistDcaNegToPrimVertexOn->Fill(lDcaNegToPrimVertex);
+	  lOnFlyStatus = v0->GetOnFlyStatus();
+	  lChi2V0 = v0->Chi2V0();
+	  lDcaV0Daughters = v0->DcaV0Daughters();
+	  lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
+	  lV0CosineOfPointingAngle = v0->CosPointingAngle(tPrimaryVtxPosition);
 
-	  // Filling invariant mass histos for all candidates
-	  fHistMassK0sOn->Fill(lInvMassK0s);
-	  fHistMassLambdaOn->Fill(lInvMassLambda);
-	  fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
-	  fHistArmenterosPodolanskiOn->Fill(lAlphaV0,lPtArmV0);
-	}
-      }// This is the end of the V0 loop
-  } // end of "AOD" analysis
+	  lInvMassK0s = v0->MassK0Short();
+	  lInvMassLambda = v0->MassLambda();
+	  lInvMassAntiLambda = v0->MassAntiLambda();
+	  lAlphaV0 = v0->AlphaV0();
+	  lPtArmV0 = v0->PtArmV0();
 
-  fHistV0Multiplicity->Fill(nv0s);
-  fHistV0MultiplicityOff->Fill(nv0sOff);
-  fHistV0MultiplicityOn->Fill(nv0sOn);
+	  fHistV0OnFlyStatus->Fill(lOnFlyStatus);
+	  if(!lOnFlyStatus){
+	    nv0sOff++;
+	    fHistV0Chi2Off->Fill(lChi2V0);
+	    fHistDcaV0ToPrimVertexOff->Fill(lDcaV0ToPrimVertex);
+	    fHistDcaV0DaughtersOff->Fill(lDcaV0Daughters);
+	    fHistV0CosineOfPointingAngleOff->Fill(lV0CosineOfPointingAngle);
+
+	    fHistV0RadiusOff->Fill(lV0Radius);
+	    fHistDcaPosToPrimVertexOff->Fill(lDcaPosToPrimVertex);
+	    fHistDcaNegToPrimVertexOff->Fill(lDcaNegToPrimVertex);
+
+	    // Filling invariant mass histos for all candidates
+	    fHistMassK0sOff->Fill(lInvMassK0s);
+	    fHistMassLambdaOff->Fill(lInvMassLambda);
+	    fHistMassAntiLambdaOff->Fill(lInvMassAntiLambda);
+	    if (TMath::Abs(lRapK0Short)<fMaxV0Rapidity)
+	      fHistMassK0sOffVsPt->Fill(lPt,lInvMassK0s);
+	    if (TMath::Abs(lRapLambda)<fMaxV0Rapidity){
+	      fHistMassLambdaOffVsPt->Fill(lPt,lInvMassLambda);
+	      fHistMassAntiLambdaOffVsPt->Fill(lPt,lInvMassAntiLambda);
+	    }
+	    fHistArmenterosPodolanskiOff->Fill(lAlphaV0,lPtArmV0);
+	  }
+	  else {
+	    nv0sOn++;
+	    fHistV0Chi2On->Fill(lChi2V0);
+	    fHistDcaV0ToPrimVertexOn->Fill(lDcaV0ToPrimVertex);
+	    fHistDcaV0DaughtersOn->Fill(lDcaV0Daughters);
+	    fHistV0CosineOfPointingAngleOn->Fill(lV0CosineOfPointingAngle);
+
+	    fHistV0RadiusOn->Fill(lV0Radius);
+	    fHistDcaPosToPrimVertexOn->Fill(lDcaPosToPrimVertex);
+	    fHistDcaNegToPrimVertexOn->Fill(lDcaNegToPrimVertex);
+
+	    // Filling invariant mass histos for all candidates
+	    fHistMassK0sOn->Fill(lInvMassK0s);
+	    fHistMassLambdaOn->Fill(lInvMassLambda);
+	    fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
+	    if (TMath::Abs(lRapK0Short)<fMaxV0Rapidity)
+	      fHistMassK0sOnVsPt->Fill(lPt,lInvMassK0s);
+	    if (TMath::Abs(lRapLambda)<fMaxV0Rapidity){
+	      fHistMassLambdaOnVsPt->Fill(lPt,lInvMassLambda);
+	      fHistMassAntiLambdaOnVsPt->Fill(lPt,lInvMassAntiLambda);
+	    }
+	    fHistArmenterosPodolanskiOn->Fill(lAlphaV0,lPtArmV0);
+	  }
+	}// This is the end of the V0 loop
+    } // end of "AOD" analysis
+
+    fHistV0Multiplicity->Fill(nv0s);
+    fHistV0MultiplicityOff->Fill(nv0sOff);
+    fHistV0MultiplicityOn->Fill(nv0sOn);
+
+  }// end of event selection
 
   // Post output data.
   PostData(1, fListHist);
-}      
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskCheckV0::Terminate(Option_t *) 
