@@ -1,190 +1,283 @@
-//===========================================================================================
-// Before using the macro makeWeights.C you should already have available the output *.root 
-// files from various methods stored on common output "AnalysisResults.root" from the 
-// previous run over data (without any weights). When calling this macro you must specify 
-// the analysis type and the method from which output file you would like to make the 
-// weights for the next run (for the cumulants, GFC and QC, you must also specify the order): 
-// 
-// 1. type of analysis can be: ESD, AOD, MC, ESDMC0 or ESDMC1;
-//
-// 2. method can be: MCEP, LYZ1, LYZ2, LYZEP, FQD, GFC or QC; 
-//
-// 3. cumulant order can be: 2nd, 4th, 6th or 8th.                                                   
-//===========================================================================================
+//=====================================================================================//
+// Macro makeWeights.C is used to make phi, pt and eta weights. Before using the macro // 
+// makeWeights.C you should already have available the output .root files from various // 
+// methods stored in the common output file "AnalysisResults.root". When calling this  //
+// macro you must specify the analysis type and the method whose output file you would //
+// like to use to make the weights for the subsequent runs (for cumulants, GFC and QC, //
+// you must also specify the cumulant order).                                          // 
+//=====================================================================================//
 
+//========================= phi-weights ========================
+// Phi-weights are obtained by inverting and normalizing the
+// azimuthal acceptance profile. This procedure isn't applicable 
+// if the detector has a gap in azimuthal acceptance (i.e. if 
+// there exists a phi bin with no entries in the histogram for
+// detector's azimuthal acceptance profile).
+//========================= pt-weights =========================
+// You can make pt-weights in three different ways:
+// 1.) pt-weights are growing linearly as a function of pt for 
+//     pt <= ptCutoff. For pt > ptCutoff the pt-weights are 
+//     constant and equal to ptMax. To enable this option set
+//     useLinearPtWeights = kTRUE;
+// 2.) pt-weights are growing quadratically as a function of pt
+//     for pt <= ptCutoff. For pt > ptCutoff the pt-weights are 
+//     constant and equal to ptMax. To enable this option set
+//     useQadraticPtWeights = kTRUE;
+// 3.) pt-weights are simply v(pt) from the specified method's 
+//     result for differential flow vs pt. To enable this option 
+//     set useLinearPtWeights = kFALSE and useQadraticPtWeights = kFALSE.
+Double_t ptCutoff = 2; // in GeV
+Double_t ptWeightsMax = 0.2; 
+Bool_t useLinearPtWeights = kTRUE;
+Bool_t useQuadraticPtWeights = kFALSE;
+//========================= eta-weights ========================
+// Eta-weights are simply v(eta) from the specified method's
+// result for differential flow vs eta.
+//==============================================================
 
 enum libModes {mLocal,mLocalSource};
-//mLocal: Analyze data on your computer using aliroot
-//mLocalSource: Analyze data on your computer using root + source files
-
 
 //void makeWeights(TString type="", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocalSource)
-void makeWeights(TString type="", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocal)
-{
- // load needed libraries:
-  LoadWeightLibraries(mode);
-
-
- // open the output file from the first run of the specified method:
- TString inputFileName = "output";
- ((inputFileName.Append(method.Data())).Append("analysis")).Append(type.Data())));
+void makeWeights(TString type="", TString method="QC", TString cumulantOrder="4th", Int_t mode=mLocal)
+{ 
+ // 1. type: "ESD", "AOD", "ESDMC0", "ESDMC1", for Monte Carlo and 'on the fly' use simply "", ;
+ // 2. method: MCEP, LYZ1, LYZ2, LYZEP, SP, FQD, GFC or QC; 
+ // 3. cumulantOrder: 2nd, 4th, 6th or 8th;             
+ // 4. mode: if mode = mLocal -> analyze data on your computer using aliroot
+ //          if mode = mLocalSource -> analyze data on your computer using root + source files 
  
- TString outputFileName = "AnalysisResults.root"; // final output file name holding final results for large statistics sample
- // access the merged, large statistics file obtained with macro mergeOutput.C:
- TString pwd(gSystem->pwd());
- pwd+="/";
- pwd+=outputFileName.Data();
+ // Cross-check if the user's settings make sense:
+ CrossCheckSettings();
+ 
+ // Load needed libraries:
+ LoadLibrariesMW(mode);
+
+ // Name of the common output file:
+ TString outputFileName = "AnalysisResults.root";
  TFile *outputFile = NULL;
- if(gSystem->AccessPathName(pwd.Data(),kFileExists))
+ // Access the common output file:
+ if(!(gSystem->AccessPathName(Form("%s%s%s",gSystem->pwd(),"/",outputFileName.Data()),kFileExists)))
  {
-  cout<<"WARNING: You do not have an output file:"<<endl;
-  cout<<"         "<<pwd.Data()<<endl;
-  exit(0);
+  outputFile = TFile::Open(outputFileName.Data(),"READ");
+ } else
+   {
+    cout<<endl;
+    cout<<"WARNING: Couldn't find the file "<<outputFileName.Data()<<" in "<<endl;
+    cout<<"         directory "<<gSystem->pwd()<<" !!!!"<<endl;
+    cout<<endl;
+    exit(0);
+   }
+ 
+ // Access the output file of the specified method in the common output file:
+ TString methodFileName = "output";
+ ((methodFileName.Append(method.Data())).Append("analysis")).Append(type.Data()))); 
+ TDirectoryFile *methodFile = (TDirectoryFile*)outputFile->FindObjectAny(methodFileName.Data());
+ TList *methodList = NULL;
+ if(methodFile)
+ {
+  methodFile->GetObject(Form("cobj%s",method.Data()),methodList);
+  if(!methodList)
+  {
+   cout<<endl;
+   cout<<"WARNING: Couldn't access the list "<<methodList->GetName()<<" !!!!"<<endl;
+   cout<<endl;
+   exit(0);  
+  }   
  } else 
    {
-    outputFile = TFile::Open(pwd.Data(),"READ");
-   }  
-    
- if(!outputFile)
- {
-  cout<<"WARNING: outputFile is NULL !!!!"<<endl;
-  exit(0);
- }
+    cout<<endl;
+    cout<<"WARNING: Couldn't find the file "<<methodFileName.Data()<<".root in "<<endl;
+    cout<<"         common output file "<<gSystem->pwd()<<"/"<<outputFileName.Data()<<" !!!!"<<endl;
+    cout<<endl;
+    exit(0);
+   }
  
- TFile* file = (TFile*)outputFile->FindObjectAny(inputFileName.Data());
- 
- // using pt weights linear or quadratic in pt:
- Bool_t useLinearPt    = kTRUE;
- Bool_t useQuadraticPt = kFALSE;
- if(useLinearPt && useQuadraticPt)
- {
-  cout<<" WARNING: you can use pt weights linear or quadratic in pt, but not at the same time. "<<endl;
-  exit(0);
- }
- Bool_t useFunctionOfPt = useLinearPt||useQuadraticPt; 
- 
- // accessing the results:
- TString cobj = "cobj";
- TString afc  = "AliFlowCommonHist";
- TString afcr = "AliFlowCommonHistResults";
- 
- TList *pList = NULL;
+ // Accessing common control and results histograms from which phi, pt and eta weights will be made:
  AliFlowCommonHist *commonHist = NULL;
  AliFlowCommonHistResults *commonHistRes = NULL; 
- 
- if(file) 
+ if(!(method=="GFC"||method=="QC"))
  {
-  file->GetObject((cobj.Append(method.Data()).Data()),pList); 
-  if(pList) 
-  {
-   if(!(method=="GFC"||method=="QC"))
+  commonHist = dynamic_cast<AliFlowCommonHist*> methodList->FindObject(Form("AliFlowCommonHist%s",method.Data()));
+  commonHistRes = dynamic_cast<AliFlowCommonHistResults*> methodList->FindObject(Form("AliFlowCommonHistResults%s",method.Data()));
+ } else if(method=="GFC") // GFC has distinct common hist results for different cumulant orders (but control histos are the same for different orders)
    {
-    commonHist    = dynamic_cast<AliFlowCommonHist*> (pList->FindObject((afc.Append(method.Data())).Data()));
-    commonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pList->FindObject((afcr.Append(method.Data())).Data()));
-   }else if(method=="GFC")
-    {
-     commonHist    = dynamic_cast<AliFlowCommonHist*> (pList->FindObject((afc.Append(method.Data())).Data()));
-     commonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pList->FindObject((((afcr.Append(cumulantOrder.Data()).Append("Order")).Append(method.Data())).Data())));     
-    }else
+    commonHist = dynamic_cast<AliFlowCommonHist*> methodList->FindObject(Form("AliFlowCommonHist%s",method.Data()));
+    commonHistRes = dynamic_cast<AliFlowCommonHistResults*> methodList->FindObject(Form("AliFlowCommonHistResults%sOrder%s",cumulantOrder.Data(),method.Data()));    
+   } else // this is for sure QC - treated separately because it has distinct both common control and result histograms for different QC orders
      {
-      commonHist    = dynamic_cast<AliFlowCommonHist*> (pList->FindObject(((afc.Append(cumulantOrder.Data())).Append("Order")).Append(method.Data())));
-      commonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pList->FindObject((((afcr.Append(cumulantOrder.Data()).Append("Order")).Append(method.Data())).Data())));
+      commonHist = dynamic_cast<AliFlowCommonHist*> methodList->FindObject(Form("AliFlowCommonHist%sOrder%s",cumulantOrder.Data(),method.Data()));
+      commonHistRes = dynamic_cast<AliFlowCommonHistResults*> methodList->FindObject(Form("AliFlowCommonHistResults%sOrder%s",cumulantOrder.Data(),method.Data()));
      }     
-  }//end of if(pList)  
- }//end of if(file) 
+ if(!commonHist)
+ {
+  cout<<endl;
+  cout<<"WARNING: commonHist is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!commonHistRes)
+ {
+  cout<<endl;
+  cout<<"WARNING: commonHistRes is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
 
- //making the output file and creating the TList to hold the histograms with weights:
- TFile* outputFile = new TFile("weights.root","RECREATE"); 
- TList* listWeights = new TList();
- Int_t nBinsPhi = 0;
- Double_t nParticlesInBin = 0;  // number of particles in particular phi bin
- Double_t nParticlesPerBin = 0; // average number of particles per phi bin
- Double_t nParticles = 0;       // number of particles in all phi bins 
- Double_t wPhi = 0.;  
- 
- // common control histos:
- if(commonHist)
+ // Making the output file "weights.root" in which list "weights" will be saved.
+ // List "weights" will hold histograms phiWeights, ptWeights and etaWeights which
+ // will hold the phi, pt and eta weights, respectively:
+ TFile *weightsFile = new TFile("weights.root","RECREATE"); 
+ TList *weightsList = new TList();
+ gStyle->SetOptStat(0); // remove statistic box from all histograms
+
+ // phi-weights:
+ TH1F *phiWeights = (TH1F*)commonHist->GetHistPhiRP()->Clone("phi_weights"); // to be improved (transferred into TH1D eventually)
+ phiWeights->SetTitle("#phi-weights: correcting for non-uniform acceptance");
+ phiWeights->SetYTitle("w_{#phi}");
+ phiWeights->SetXTitle("#phi"); 
+ Int_t nBinsPhi = 0; // number of phi bins
+ Int_t counterOfEmptyBinsPhi = 0; // number of empty phi bins
+ Double_t nParticlesInBin = 0.; // number of particles in particular phi bin
+ Double_t nParticlesPerBin = 0.; // average number of particles per phi bin
+ Double_t nParticles = 0.; // number of particles in all phi bins 
+ // calculate phi-weights:
+ nBinsPhi = phiWeights->GetNbinsX();
+ nParticles = phiWeights->Integral();
+ if(nBinsPhi) nParticlesPerBin = nParticles/nBinsPhi; 
+ for(Int_t b=1;b<=nBinsPhi;b++)
  {
-  // azimuthal acceptance:
-  (commonHist->GetHistPhiRP())->SetName("phi_weights");
-  (commonHist->GetHistPhiRP())->SetTitle("phi_weights: correction for non-uniform acceptance");
-  (commonHist->GetHistPhiRP())->SetYTitle("weights");
-  (commonHist->GetHistPhiRP())->SetXTitle("#phi"); 
-  nBinsPhi = (commonHist->GetHistPhiRP())->GetNbinsX();
-  nParticles = (commonHist->GetHistPhiRP())->Integral();
-  if(nBinsPhi) nParticlesPerBin = nParticles/nBinsPhi; 
-  // loop over phi bins:
-  for(Int_t b=1;b<nBinsPhi+1;b++)
+  Double_t wPhi = 0.; // phi-weight for particular phi bin 
+  nParticlesInBin = phiWeights->GetBinContent(b);
+  if(nParticlesInBin) 
   {
-   nParticlesInBin = (commonHist->GetHistPhiRP())->GetBinContent(b);
-   // calculate the phi weight wPhi for each bin:
-   if(nParticlesInBin) wPhi = nParticlesPerBin/nParticlesInBin;
-   (commonHist->GetHistPhiRP())->SetBinContent(b,wPhi);
-  }
-  listWeights->Add(commonHist->GetHistPhiRP());
- }else{cout<<" WARNING: the common control histos from the 1st run were not accessed."<<endl;} 
- 
- // common results histos:
- if(commonHistRes)
- {
-  // diff. flow (pt):
-  (commonHistRes->GetHistDiffFlowPtPOI())->SetName("pt_weights");
-  if(!useFunctionOfPt) listWeights->Add(commonHistRes->GetHistDiffFlowPtPOI());
-  // diff. flow (eta):
-  (commonHistRes->GetHistDiffFlowEtaPOI())->SetName("eta_weights");
-  listWeights->Add(commonHistRes->GetHistDiffFlowEtaPOI());
- }else{cout<<" WARNING: the common results histos from the 1st run were not accessed."<<endl;}  
- 
- // pt weights linear and quadratic in pt:
- if(useFunctionOfPt)
- {
-  Double_t ptMin = AliFlowCommonConstants::GetMaster()->GetPtMin();
-  Double_t ptMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
-  Int_t nBinsPt  = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
-  Double_t ptCutOff = 2.0; // for pt > ptCutOff use constant weights 
-  if(nBinsPt==0) 
-  { 
-   cout<<" WARNING: number of pt bins is 0. "<<endl;
-   exit(0);
-  } 
-  Double_t ptBinWidth = 1.*(ptMax-ptMin)/nBinsPt;
- 
-  TH1D *ptFunction = new TH1D("ptFunction", "ptFunction", nBinsPt, ptMin, ptMax);
-  ptFunction->SetName("pt_weights");
-  ptFunction->SetXTitle("p_{t} [GeV]");
-  ptFunction->SetYTitle("weights");
-  Int_t power = 0;
-  if(useLinearPt) 
-  {
-   power = 1;
-   ptFunction->SetTitle("p_{t} weights: #propto p_{t}");
-  } 
-  if(useQuadraticPt)
-  { 
-   power = 2;
-   ptFunction->SetTitle("p_{t} weights: #propto p_{t}^{2}");
-  }   
-  for(Int_t b=1;b<nBinsPt+1;b++)
-  {
-   if(ptMin+b*ptBinWidth < ptCutOff)
-   {
-    ptFunction->SetBinContent(b, pow(ptMin+b*ptBinWidth, power)); 
-   }else
+   wPhi = nParticlesPerBin/nParticlesInBin;
+  } else
     {
-     ptFunction->SetBinContent(b, pow(ptCutOff, power)); 
-    }  
-  } 
-  listWeights->Add(ptFunction); 
- }   
-        
- outputFile->WriteObject(listWeights,"weights","SingleKey");
+     counterOfEmptyBinsPhi++;
+    }
+  phiWeights->SetBinContent(b,wPhi);
+ }
+ if(!counterOfEmptyBinsPhi)
+ {
+  weightsList->Add(phiWeights);
+  cout<<"Phi weights created."<<endl;
+ } else
+   {
+    cout<<"WARNING: Couldn't create phi weights because "<<counterOfEmptyBinsPhi<<" phi bins were empty !!!!"<<endl;
+   }
+ 
+ // pt-weights:  
+ Double_t ptMin = AliFlowCommonConstants::GetMaster()->GetPtMin();
+ Double_t ptMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
+ Int_t nBinsPt  = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+ Double_t ptBinWidth = 0.;
+ if(nBinsPt) ptBinWidth = (ptMax-ptMin)/nBinsPt;
+ TH1D *ptWeights = new TH1D("pt_weights","",nBinsPt,ptMin,ptMax);
+ ptWeights->SetXTitle("p_{t} [GeV]");
+ ptWeights->SetYTitle("w_{p_{T}}");
+ if(useLinearPtWeights) 
+ {
+  ptWeights->SetTitle("Linear p_{T}-weights: optimizing the flow signal");
+ } else if(useQuadraticPtWeights)
+   { 
+    ptWeights->SetTitle("Quadratic p_{T}-weights: optimizing the flow signal");
+   } else
+     {
+      ptWeights->SetTitle("Differential flow as p_{T}-weights: optimizing the flow signal");   
+     }    
+ // calculate pt weights:    
+ for(Int_t b=1;b<=nBinsPt;b++)
+ {
+  if(useLinearPtWeights)
+  {
+   if(ptMin+b*ptBinWidth < ptCutoff)
+   {
+    ptWeights->SetBinContent(b,(ptMin+b*ptBinWidth)*(ptWeightsMax/ptCutoff)); 
+   } else
+     {
+      ptWeights->SetBinContent(b,ptWeightsMax); 
+     }  
+     if(b==nBinsPt)
+     {
+      weightsList->Add(ptWeights);
+      cout<<"Pt weights (linear) created."<<endl;
+     }
+  } else if(useQuadraticPtWeights)
+    {
+     if(ptMin+b*ptBinWidth < ptCutoff)
+     {
+      ptWeights->SetBinContent(b,pow(ptMin+b*ptBinWidth,2.)*(ptWeightsMax/pow(ptCutoff,2.))); 
+     } else
+       {
+        ptWeights->SetBinContent(b,ptWeightsMax); 
+       } 
+       if(b==nBinsPt)
+       {
+        weightsList->Add(ptWeights);
+        cout<<"Pt weights (quadratic) created."<<endl;
+       }
+    } else // differential flow result is used as a pt-weight: 
+      {
+       ptWeights->SetBinContent(b,commonHistRes->GetHistDiffFlowPtPOI()->GetBinContent(b));
+       if(b==nBinsPt)
+       {
+        weightsList->Add(ptWeights);
+        cout<<"Pt weights (from differential flow) created."<<endl;
+       }
+      } 
+ } // end of for(Int_t b=1;b<=nBinsPt;b++)
 
- delete listWeights;
- delete outputFile; 
-}  
+ // eta-weights:
+ TH1D *etaWeights = commonHistRes->GetHistDiffFlowEtaPOI()->Clone("eta_weights");
+ etaWeights->SetXTitle("#eta [GeV]");
+ etaWeights->SetYTitle("w_{#eta}");
+ etaWeights->SetTitle("Differential flow as #eta-weights: optimizing the flow signal"); 
+ if(etaWeights) 
+ {
+  weightsList->Add(etaWeights);
+  cout<<"Eta weights (from differential flow) created."<<endl;
+ } 
+ 
+ // Save list holding histogram with weights:
+ weightsFile->WriteObject(weightsList,"weights","SingleKey");
+ 
+ cout<<"New file \"weights.root\" created to hold those phi, pt and eta weights."<<endl;
 
+ delete weightsList;
+ delete weightsFile; 
+ 
+} // end of void makeWeights(TString type="", TString method="QC", TString cumulantOrder="4th", Int_t mode=mLocal)
 
-void LoadWeightLibraries(const libModes mode) {
+void CrossCheckSettings() 
+{
+ // Check in this method if the settings make sense
+ 
+ if(useLinearPtWeights && useQuadraticPtWeights)
+ {
+  cout<<endl;
+  cout<<"WARNING: You cannot set useLinearPtWeights and useQuadraticPtWeights to kTRUE"<<endl;
+  cout<<"          at the same time. Please make up your mind."<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(ptCutoff<0.)
+ { 
+  cout<<endl;
+  cout<<"WARNING: It doesn't make much sense to have ptCutoff < 0."<<endl;
+  cout<<endl;
+  exit(0);
+ } 
+ if(ptWeightsMax<0.)
+ { 
+  cout<<endl;
+  cout<<"WARNING: It doesn't make much sense to have ptWeightsMax < 0."<<endl;
+  cout<<endl;
+  exit(0);
+ } 
+ 
+} // end of void CrossCheckSettings()
+
+void LoadLibrariesMW(const libModes mode) {
   
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
@@ -244,7 +337,9 @@ void LoadWeightLibraries(const libModes mode) {
     
   }  
   
-}
+} // end of void LoadLibrariesMW(const libModes mode) 
+
+
 
 
 

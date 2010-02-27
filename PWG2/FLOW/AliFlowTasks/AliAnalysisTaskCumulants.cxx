@@ -24,162 +24,143 @@
  *           (anteb@nikhef.nl)        * 
  * ***********************************/
  
+class TFile;
+class TList;
+class AliAnalysisTaskSE; 
+ 
 #include "Riostream.h"
-#include "TChain.h"
-#include "TTree.h"
-#include "TFile.h"
-#include "TList.h"
-#include "TH1.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
-#include "TProfile3D.h"
-
-#include "AliAnalysisTask.h"
-#include "AliAnalysisDataSlot.h"
-#include "AliAnalysisDataContainer.h"
-#include "AliAnalysisManager.h"
-
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskCumulants.h"
 #include "AliFlowAnalysisWithCumulants.h"
-#include "AliFlowCumuConstants.h"
-#include "AliFlowCommonConstants.h"
-#include "AliFlowCommonHist.h"
-#include "AliFlowCommonHistResults.h"
-#include "AliCumulantsFunctions.h"
 
 ClassImp(AliAnalysisTaskCumulants)
 
 //================================================================================================================
 
 AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t useWeights): 
- AliAnalysisTask(name,""), 
- fEvent(NULL),
- fGFCA(NULL), // Generating Function Cumulant (GFCA) analysis object
- fListHistos(NULL),
- fUseWeights(useWeights),
- fUsePhiWeights(kFALSE),
- fUsePtWeights(kFALSE),
- fUseEtaWeights(kFALSE),
- fListWeights(NULL)
+AliAnalysisTaskSE(name), 
+fEvent(NULL),
+fGFC(NULL),
+fListHistos(NULL),
+fUseWeights(useWeights),
+fUsePhiWeights(kFALSE),
+fUsePtWeights(kFALSE),
+fUseEtaWeights(kFALSE),
+fListWeights(NULL)
 {
- // constructor
- cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name)"<<endl;
+ // Constructor
+ cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t useWeights)"<<endl;
  
  // Define input and output slots here
- // Input slot #0 works with a TChain
+ // Input slot #0 works with an AliFlowEventSimple
  DefineInput(0, AliFlowEventSimple::Class());
  
- // Input slot #1 is needed for the weights 
- if(useWeights)
+ // Input slot #1 is needed for the weights input files 
+ if(useWeights) 
  {
   DefineInput(1, TList::Class());   
  }
-  
- // Output slot #0 writes into a TList container
- DefineOutput(0, TList::Class());   
+ // Output slot #0 is reserved
+ // Output slot #1 writes into a TList container
+ DefineOutput(1, TList::Class());    
 }
 
 AliAnalysisTaskCumulants::AliAnalysisTaskCumulants():
- fEvent(NULL),
- fGFCA(NULL), // Generating Function Cumulant (GFCA) analysis object
- fListHistos(NULL),
- fUseWeights(kFALSE),
- fUsePhiWeights(kFALSE),
- fUsePtWeights(kFALSE),
- fUseEtaWeights(kFALSE),
- fListWeights(NULL)
+AliAnalysisTaskSE(),
+fEvent(NULL),
+fGFC(NULL),
+fListHistos(NULL),
+fUseWeights(kFALSE),
+fUsePhiWeights(kFALSE),
+fUsePtWeights(kFALSE),
+fUseEtaWeights(kFALSE),
+fListWeights(NULL)
 {
- // dummy constructor
+ // Dummy constructor
  cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants()"<<endl;
 }
 
 //================================================================================================================
 
-void AliAnalysisTaskCumulants::ConnectInputData(Option_t *) 
+void AliAnalysisTaskCumulants::UserCreateOutputObjects() 
 {
- // connect ESD or AOD (called once)
- cout<<"AliAnalysisTaskCumulants::ConnectInputData(Option_t *)"<<endl;
-}
+ // Called at every worker node to initialize
+ cout<<"AliAnalysisTaskCumulants::UserCreateOutputObjects()"<<endl;
 
-//================================================================================================================
-
-void AliAnalysisTaskCumulants::CreateOutputObjects() 
-{
- // called at every worker node to initialize
- cout<<"AliAnalysisTaskCumulants::CreateOutputObjects()"<<endl;
-
- // analyser
- fGFCA = new AliFlowAnalysisWithCumulants();
- fGFCA->Init();
+ // Analyser:
+ fGFC = new AliFlowAnalysisWithCumulants();
  
- //weights:
+ // Weights:
  if(fUseWeights)
  {
-  //pass the flags to class:
-  if(fUsePhiWeights) fGFCA->SetUsePhiWeights(fUsePhiWeights);
-  if(fUsePtWeights) fGFCA->SetUsePtWeights(fUsePtWeights);
-  if(fUseEtaWeights) fGFCA->SetUseEtaWeights(fUseEtaWeights);
-  //get data from input slot #1 which is used for weights:
+  // Pass the flags to class:
+  if(fUsePhiWeights) fGFC->SetUsePhiWeights(fUsePhiWeights);
+  if(fUsePtWeights) fGFC->SetUsePtWeights(fUsePtWeights);
+  if(fUseEtaWeights) fGFC->SetUseEtaWeights(fUseEtaWeights);
+  // Get data from input slot #1 which is used for weights:
   if(GetNinputs()==2) 
   {                   
    fListWeights = (TList*)GetInputData(1); 
   }
-  //pass the list with weights to class:
-  if(fListWeights) fGFCA->SetWeightsList(fListWeights);
+  // Pass the list with weights to class:
+  if(fListWeights) fGFC->SetWeightsList(fListWeights);
  }
 
- if(fGFCA->GetHistList()) 
+ fGFC->Init();
+
+ if(fGFC->GetHistList()) 
  {
-  fListHistos = fGFCA->GetHistList();
+  fListHistos = fGFC->GetHistList();
   //fListHistos->Print();
- }
- else
- {
-  Printf(" ERROR: Could not retrieve histogram list (GFCA, Task::COO)"); 
- }
-}
+ } else
+   {
+    Printf("ERROR: Could not retrieve histogram list (GFC, Task::UserCreateOutputObjects()) !!!!"); 
+   }
+   
+} // end of void AliAnalysisTaskCumulants::UserCreateOutputObjects() 
 
 //================================================================================================================
 
-void AliAnalysisTaskCumulants::Exec(Option_t *) 
+void AliAnalysisTaskCumulants::UserExec(Option_t *) 
 {
- // main loop (called for each event)
+ // Main loop (called for each event)
  fEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(0));
 
- // generating function cumulants
+ // Generating function cumulants (GFC):
  if(fEvent) 
  {
-  fGFCA->Make(fEvent);
- }else 
-  {
-   cout<<" WARNING: No input data (GFCA, Task::E) !!!"<<endl;
-   cout<<endl;
-  }
+  fGFC->Make(fEvent);
+ } else 
+   {
+    cout<<"WARNING: No input data (GFC, Task::UserExec()) !!!!"<<endl;
+   }
   
- PostData(0,fListHistos);
-}
+ PostData(1,fListHistos);
+ 
+} // end of void AliAnalysisTaskCumulants::UserExec(Option_t *)
 
 //================================================================================================================
 
 void AliAnalysisTaskCumulants::Terminate(Option_t *) 
 {  
- //accessing the output list which contains the merged 2D and 3D profiles from all worker nodes
- fListHistos = (TList*)GetOutputData(0);
+ // Accessing the output list which contains the merged 2D and 3D profiles from all worker nodes
+ fListHistos = (TList*)GetOutputData(1);
  //fListHistos->Print();
  
- fGFCA = new AliFlowAnalysisWithCumulants();  
+ fGFC = new AliFlowAnalysisWithCumulants();  
  
  if(fListHistos)
  {
-  fGFCA->GetOutputHistograms(fListHistos);
-  fGFCA->Finish();
+  fGFC->GetOutputHistograms(fListHistos);
+  fGFC->Finish();
+  PostData(1,fListHistos);
  } else
    {
-    cout<<" WARNING: histogram list pointer is empty (GFC, Task::T)"<<endl;
+    cout<<"WARNING: histogram list pointer is empty (GFC, Task::Terminate()) !!!!"<<endl;
     cout<<endl;
    }
-}
+   
+} // end of void AliAnalysisTaskCumulants::Terminate(Option_t *) 
 
 
 

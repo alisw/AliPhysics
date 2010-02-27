@@ -25,124 +25,112 @@
  *           (anteb@nikhef.nl)        * 
  * ***********************************/
  
+class TFile;
+class TList;
+class AliAnalysisTaskSE; 
+ 
 #include "Riostream.h"
-#include "TChain.h"
-#include "TTree.h"
-#include "TFile.h"
-#include "TList.h"
-#include "TH1.h"
-#include "TProfile.h"
-
-#include "AliAnalysisTask.h"
-#include "AliAnalysisDataSlot.h"
-#include "AliAnalysisDataContainer.h"
-#include "AliAnalysisManager.h"
-
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskFittingQDistribution.h"
 #include "AliFlowAnalysisWithFittingQDistribution.h"
-#include "AliFlowCommonConstants.h"
-#include "AliFlowCommonHistResults.h"
 
 ClassImp(AliAnalysisTaskFittingQDistribution)
 
 //================================================================================================================
 
 AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const char *name, Bool_t useWeights): 
-  AliAnalysisTask(name,""), 
-  fEvent(NULL),
-  fFQDA(NULL),//Fitting Q_Distribution Analysis (FQDA) object
-  fListHistos(NULL),
-  fUseWeights(useWeights),
-  fUsePhiWeights(kFALSE),
-  fListWeights(NULL)
-{
+ AliAnalysisTaskSE(name), 
+ fEvent(NULL),
+ fFQD(NULL),
+ fListHistos(NULL),
+ fUseWeights(useWeights),
+ fUsePhiWeights(kFALSE),
+ fListWeights(NULL)
+ {
   //constructor
-  cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const char *name)"<<endl;
+  cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const char *name, Bool_t useWeights)"<<endl;
   
   // Define input and output slots here
-  // Input slot #0 works with a TChain
+  // Input slot #0 works with an AliFlowEventSimple
   DefineInput(0, AliFlowEventSimple::Class());
   
-  // Input slot #1 is needed for the weights 
-  if(useWeights) {
-    DefineInput(1, TList::Class());   
+  // Input slot #1 is needed for the weights input files 
+  if(useWeights) 
+  {
+   DefineInput(1, TList::Class());   
   }
-  
-  // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());  
-}
+  // Output slot #0 is reserved
+  // Output slot #1 writes into a TList container
+  DefineOutput(1, TList::Class());  
+ }
 
 AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(): 
-  fEvent(NULL),
-  fFQDA(NULL),//Fitting q-distribution Analysis (FQDA) object
-  fListHistos(NULL),  
-  fUseWeights(kFALSE),
-  fUsePhiWeights(kFALSE),
-  fListWeights(NULL)
-{
- //dummy constructor
- cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution()"<<endl;
-}
+ AliAnalysisTaskSE(),
+ fEvent(NULL),
+ fFQD(NULL),
+ fListHistos(NULL),  
+ fUseWeights(kFALSE),
+ fUsePhiWeights(kFALSE),
+ fListWeights(NULL)
+ {
+  // Dummy constructor
+  cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution()"<<endl;
+ }
 
 //================================================================================================================
 
-void AliAnalysisTaskFittingQDistribution::ConnectInputData(Option_t *) 
+void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects() 
 {
- //connect ESD or AOD (called once)
- cout<<"AliAnalysisTaskFittingQDistribution::ConnectInputData(Option_t *)"<<endl;
-
-}
-
-//================================================================================================================
-
-void AliAnalysisTaskFittingQDistribution::CreateOutputObjects() 
-{
-  //called at every worker node to initialize
-  cout<<"AliAnalysisTaskFittingQDistribution::CreateOutputObjects()"<<endl;
+  // Called at every worker node to initialize
+  cout<<"AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()"<<endl;
   
+  // Analyser:
+  fFQD = new AliFlowAnalysisWithFittingQDistribution();
   
-  //analyser
-  fFQDA = new AliFlowAnalysisWithFittingQDistribution();
-  fFQDA->Init();
+  // Particle weights:
+  if(fUseWeights) 
+  {
+   // Pass the flags to class:
+   if(fUsePhiWeights) fFQD->SetUsePhiWeights(fUsePhiWeights);
+   // Get data from input slot #1 which is used for weights:
+   if(GetNinputs()==2) 
+   {                   
+    fListWeights = (TList*)GetInputData(1); 
+   }
+   // Pass the list with weights to class:
+   if(fListWeights) fFQD->SetWeightsList(fListWeights);
+  }
   
-  //weights:
-  if(fUseWeights) {
-    //pass the flags to class:
-    if(fUsePhiWeights) fFQDA->SetUsePhiWeights(fUsePhiWeights);
-    //get data from input slot #1 which is used for weights:
-    if(GetNinputs()==2) {                   
-      fListWeights = (TList*)GetInputData(1); 
+  fFQD->Init();
+  
+  if(fFQD->GetHistList()) 
+  {
+   fListHistos = fFQD->GetHistList();
+   //fListHistos->Print();
+  } else 
+    {
+      Printf("ERROR: Could not retrieve histogram list (FQD, Task::UserCreateOutputObjects()) !!!!"); 
     }
-    //pass the list with weights to class:
-    if(fListWeights) fFQDA->SetWeightsList(fListWeights);
-  }
   
-  if(fFQDA->GetHistList()) {
-    fListHistos = fFQDA->GetHistList();
-    //fListHistos->Print();
-  }
-  else {
-    Printf("ERROR: Could not retrieve histogram list"); 
-  }
-  
-}
+} // end of void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()
 
 //================================================================================================================
 
-void AliAnalysisTaskFittingQDistribution::Exec(Option_t *) 
+void AliAnalysisTaskFittingQDistribution::UserExec(Option_t *) 
 {
-  //main loop (called for each event)
+  // Main loop (called for each event):
   fEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(0));
 
-  //fitting q-distribution 
-  if (fEvent) {
-    fFQDA->Make(fEvent);
-  }
-  else {
-    cout << "Warning no input data!!!" << endl;
-  }
-  PostData(0,fListHistos); 
+  // Fitting q-distribution: 
+  if(fEvent) 
+  {
+   fFQD->Make(fEvent);
+  } else 
+    {
+     cout<<"WARNING: No input data (FQD, Task::UserExec()) !!!!"<<endl;
+    }
+  
+ PostData(1,fListHistos); 
 }
 
 //================================================================================================================
@@ -150,20 +138,22 @@ void AliAnalysisTaskFittingQDistribution::Exec(Option_t *)
 void AliAnalysisTaskFittingQDistribution::Terminate(Option_t *) 
 {  
   //accessing the output list
-  fListHistos = (TList*)GetOutputData(0);
-  //fListHistos->Print();
+  fListHistos = (TList*)GetOutputData(1);
   
-  fFQDA = new AliFlowAnalysisWithFittingQDistribution();
+  fFQD = new AliFlowAnalysisWithFittingQDistribution();
   
   if(fListHistos) 
   {	     
-   fFQDA->GetOutputHistograms(fListHistos);
-   fFQDA->Finish();  
+   fFQD->GetOutputHistograms(fListHistos);
+   fFQD->Finish();  
+   PostData(1,fListHistos);
   } else 
     {
-     cout<<"histogram list pointer is empty"<<endl;
+     cout<<" WARNING: histogram list pointer is empty (FQD, Task::Terminate()) !!!!"<<endl;
+     cout<<endl;
     }
-}
+    
+} // end of void AliAnalysisTaskFittingQDistribution::Terminate(Option_t *)
 
 //================================================================================================================
 
