@@ -164,7 +164,7 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 {
 	AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
 	if(task==AliQAv1::kRAWS){
-	  printf("fNevent %d \n",fNEvent);
+	  //	  printf("fNevent %d \n",fNEvent);
 	  if(fNEvent!=0){
 	    ((TH1D*)fAliITSQADataMakerRec->GetRawsData(3 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->Divide((TH1D*)fAliITSQADataMakerRec->GetRawsData(0 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]),((TH1D*) (fHistoCalibration->At(0))),1.,(Double_t)fNEvent);
 	  
@@ -174,8 +174,8 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 	  }	  
 	}//end raws
 	
-	if(task==AliQAv1::kRECPOINTS){
-	  printf("fNeventRP %d \n",fNEventRP);
+	if(task==AliQAv1::kRECPOINTS && fHistoCalibration ){
+	  //	  printf("fNeventRP %d \n",fNEventRP);
 	  if(fNEventRP!=0){
 	    ((TH1D*)fAliITSQADataMakerRec->GetRecPointsData(9 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->Divide((TH1D*)fAliITSQADataMakerRec->GetRecPointsData(6 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]),((TH1D*) (fHistoCalibration->At(0))),1.,(Double_t)fNEventRP);
 	    
@@ -923,7 +923,7 @@ void AliITSQASDDDataMakerRec::InitCalibrationArray()
     fHistoCalibration->AddAtAndExpand(patternl3,1);
     fHistoCalibration->AddAtAndExpand(patternl4,2);
 
-    printf("Calibration Histograms created!\n");
+    //    printf("Calibration Histograms created!\n");
 }
 
 //____________________________________________________________________
