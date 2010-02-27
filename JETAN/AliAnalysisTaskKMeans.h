@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskKMeans_cxx
-#define AliAnalysisTaskKMeans_cxx
+#ifndef ALIANALYSISTASKKMEANS_H
+#define ALIANALYSISTASKKMEANS_H
  /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -27,8 +27,10 @@ class AliKMeansResult;
 
 class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
  public:
-    AliAnalysisTaskKMeans();
+  AliAnalysisTaskKMeans();
   AliAnalysisTaskKMeans(const char *name);
+  AliAnalysisTaskKMeans(const AliAnalysisTaskKMeans &res);
+  AliAnalysisTaskKMeans& operator=(const AliAnalysisTaskKMeans& trclass);
   virtual ~AliAnalysisTaskKMeans() {}
   virtual void     UserCreateOutputObjects();
   virtual void     UserExec(Option_t *option);

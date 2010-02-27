@@ -146,6 +146,48 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const char *name)
   DefineOutput(1,  TList::Class());
 }
 
+AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const AliAnalysisTaskKMeans &res)
+: AliAnalysisTaskSE(res) 
+      ,fK(0)
+      ,fNMin(0)
+      ,fHists(0)
+      ,fH1CEta(0)
+      ,fH1CPhi(0)
+      ,fH1CEtaR(0)
+      ,fH2N1N2(0)
+      ,fH1Pt(0)
+      ,fH1PtC(0)
+      ,fH1PtC1(0)
+      ,fH1PtC2(0)
+      ,fH1PtAS(0)
+      ,fH1PtR(0)
+      ,fH1SPt(0)
+      ,fH1SPtC(0)
+      ,fH1DPhi(0)
+      ,fH1DR(0)
+      ,fH1DRR(0)
+      ,fH2DPhiEta(0)
+      ,fH2DPhiEtaR(0)
+      ,fH2DPhiEtaL(0)
+      ,fH2DPhiEtaLR(0)
+      ,fH2DPhiEtaC(0)
+      ,fH2DPhiEtaCR(0)
+      ,fH1Resp(0)
+      ,fH1RespR(0)
+      ,fH2Sigma(0)
+      ,fH2SigmaR(0)
+      ,fCuts(0)
+{
+    // Dummy copy constructor
+}
+
+AliAnalysisTaskKMeans& AliAnalysisTaskKMeans::operator=(const AliAnalysisTaskKMeans& /*trclass*/)
+{
+    // Dummy assignment operator
+    return *this;
+}
+
+
 
 //________________________________________________________________________
 void AliAnalysisTaskKMeans::UserCreateOutputObjects()
