@@ -482,7 +482,9 @@ void AliAnalysisKinkESDMC::Terminate(Option_t *)
      return;
    }
    
-   TCanvas *c1=new TCanvas("c1","  ",1);
+   TCanvas *canCheckKinkESDMC = new TCanvas("AliAnalysisKinkESDMC","Check KinkESDMC",1);
+   canCheckKinkESDMC->Draw();
+   canCheckKinkESDMC->cd();
    fHistPtKaon->DrawCopy("E");
 
 }
