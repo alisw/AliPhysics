@@ -144,7 +144,7 @@ void AliGenTHnSparse::SetThnSparse(char *file_name, char *thn_name)
 {
 
     // Open the file and get object
-    TFile *fFile = new TFile(file_name);
-    fHn = (THnSparseF*)(fFile->Get(thn_name));
+  fFile = new TFile(file_name);
+  fHn = (THnSparseF*)(fFile->Get(thn_name));
 
 }
