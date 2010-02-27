@@ -17,8 +17,8 @@ public:
     // stores it in the data header
     AliRunLoader *runloader = AliRunLoader::Instance();
     if (runloader) {
-      if (!runloader->LoadTrigger()) {
-	AliCentralTrigger *aCTP = runloader->GetTrigger();
+      if(!runloader->GetTrigger()) runloader->LoadTrigger();
+      if (AliCentralTrigger *aCTP = runloader->GetTrigger()) {
 	ULong64_t mask = aCTP->GetClassMask();
 	SetTriggerClass(mask);
       }
