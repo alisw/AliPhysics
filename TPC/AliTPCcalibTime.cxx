@@ -142,6 +142,9 @@ AliTPCcalibTime::AliTPCcalibTime()
 //   fXminVdrift(fTimeStart,fPtStart,fVdriftStart),
 //   fXmaxVdrift(fTimeEnd,fPtEnd,fVdriftEnd)
 {  
+  //
+  // default constructor
+  //
   AliInfo("Default Constructor");  
   for (Int_t i=0;i<3;i++) {
     fHistVdriftLaserA[i]=0;
@@ -178,6 +181,10 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
    fRunStart(0),
    fRunEnd(0)
 {
+  //
+  // Non deafaul constructor - to be used in the Calibration setups 
+  //
+
   SetName(name);
   SetTitle(title);
   for (Int_t i=0;i<3;i++) {
@@ -273,7 +280,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
 
 AliTPCcalibTime::~AliTPCcalibTime(){
   //
-  // Destructor
+  // Virtual Destructor
   //
   for(Int_t i=0;i<3;i++){
     if(fHistVdriftLaserA[i]){
@@ -310,18 +317,35 @@ AliTPCcalibTime::~AliTPCcalibTime(){
 }
 
 Bool_t AliTPCcalibTime::IsLaser(AliESDEvent */*event*/){
+  //
+  // Indicator is laser event not yet implemented  - to be done using trigger info or event specie
+  //
   return kTRUE; //More accurate creteria to be added
 }
 Bool_t AliTPCcalibTime::IsCosmics(AliESDEvent */*event*/){
+  //
+  // Indicator is cosmic event not yet implemented - to be done using trigger info or event specie
+  //
+
   return kTRUE; //More accurate creteria to be added
 }
 Bool_t AliTPCcalibTime::IsBeam(AliESDEvent */*event*/){
+  //
+  // Indicator is physic event not yet implemented - to be done using trigger info or event specie
+  //
+
   return kTRUE; //More accurate creteria to be added
 }
 void AliTPCcalibTime::ResetCurrent(){
   fDz=0; //Reset current dz
 }
+
+
+
 void AliTPCcalibTime::Process(AliESDEvent *event){
+  //
+  // main function to make calibration
+  //
   if(!event) return;
   if (event->GetNumberOfTracks()<2) return;
   ResetCurrent();
@@ -495,6 +519,9 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
 }
 
 void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
+  //
+  // process Cosmic event - track matching A side C side
+  //
   if (!event) {
     Printf("ERROR: ESD not available");
     return;
@@ -517,7 +544,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
   if (ntracks > fCutTracks) return;
   
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   
   TObjArray  tpcSeeds(ntracks);
   Double_t vtxx[3]={0,0,0};
@@ -538,9 +565,9 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
     if (!trackIn) continue;
     if (!trackOut) continue;
     
-    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
     if (friendTrack) ProcessSame(track,friendTrack,event);
-    if (friendTrack) ProcessAlignITS(track,friendTrack,event,ESDfriend);
+    if (friendTrack) ProcessAlignITS(track,friendTrack,event,esdFriend);
     if (friendTrack) ProcessAlignTRD(track,friendTrack);
     if (friendTrack) ProcessAlignTOF(track,friendTrack);
     TObject *calibObject;
@@ -758,11 +785,22 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
 }
 
 void AliTPCcalibTime::ProcessBeam(AliESDEvent */*event*/){
+  //
+  // Not special treatment yet - the same for cosmic and physic event
+  //
 }
 
-void AliTPCcalibTime::Analyze(){}
+void AliTPCcalibTime::Analyze(){
+  //
+  // Special macro to analyze result of calibration and extract calibration entries
+  // Not yet ported to the Analyze function yet
+  //
+}
 
 THnSparse* AliTPCcalibTime::GetHistoDrift(const char* name){
+  //
+  // Get histogram for given trigger mask
+  //
   TIterator* iterator = fArrayDz->MakeIterator();
   iterator->Reset();
   TString newName=name;
@@ -780,10 +818,16 @@ THnSparse* AliTPCcalibTime::GetHistoDrift(const char* name){
 }
 
 TObjArray* AliTPCcalibTime::GetHistoDrift(){
+  //
+  // return array of histograms
+  //
   return fArrayDz;
 }
 
 TGraphErrors* AliTPCcalibTime::GetGraphDrift(const char* name){
+  //
+  // Make a drift velocity (delta Z) graph
+  //
   THnSparse* histoDrift=GetHistoDrift(name);
   TGraphErrors* graphDrift=NULL;
   if(histoDrift){
@@ -800,6 +844,9 @@ TGraphErrors* AliTPCcalibTime::GetGraphDrift(const char* name){
 }
 
 TObjArray* AliTPCcalibTime::GetGraphDrift(){
+  //
+  // make a array of drift graphs
+  //
   TObjArray* arrayGraphDrift=new TObjArray();
   TIterator* iterator=fArrayDz->MakeIterator();
   iterator->Reset();
@@ -809,6 +856,9 @@ TObjArray* AliTPCcalibTime::GetGraphDrift(){
 }
 
 AliSplineFit* AliTPCcalibTime::GetFitDrift(const char* name){
+  //
+  // Make a fit AliSplinefit  of drift velocity
+  //
   TGraph* graphDrift=GetGraphDrift(name);
   AliSplineFit* fitDrift=NULL;
   if(graphDrift && graphDrift->GetN()){
@@ -840,6 +890,9 @@ AliSplineFit* AliTPCcalibTime::GetFitDrift(const char* name){
 //}
 
 Long64_t AliTPCcalibTime::Merge(TCollection *li) {
+  //
+  // Object specific merging procedure
+  //
   TIterator* iter = li->MakeIterator();
   AliTPCcalibTime* cal = 0;
 
@@ -1159,7 +1212,7 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack* track, AliESDfriendTrack *friend
 
 }
 
-void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack, AliESDEvent *event,AliESDfriend *ESDfriend){
+void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack, AliESDEvent *event,AliESDfriend *esdFriend){
   //
   // Process track - Update TPC-ITS alignment
   // Updates: 
@@ -1215,7 +1268,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
   for (Int_t i=0; i<ntracks; i++){
     AliESDtrack *trackS = event->GetTrack(i);
     if (trackS->GetTPCNcls()>0) continue;   //continue if has TPC info
-    itsfriendTrack = ESDfriend->GetTrack(i);
+    itsfriendTrack = esdFriend->GetTrack(i);
     if (!itsfriendTrack) continue;
     if (!itsfriendTrack->GetITSOut()) continue;
     if (TMath::Abs(pITS2.GetTgl()-itsfriendTrack->GetITSOut()->GetTgl())> kMaxAngle) continue;

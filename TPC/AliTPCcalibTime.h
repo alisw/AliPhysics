@@ -48,15 +48,15 @@ public:
   void                   ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *friendTrack);
   void                   ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *friendTrack);
 
-  THnSparse*    GetHistVdriftLaserA(Int_t index=1){return fHistVdriftLaserA[index];};
-  THnSparse*    GetHistVdriftLaserC(Int_t index=1){return fHistVdriftLaserC[index];};
+  THnSparse*    GetHistVdriftLaserA(Int_t index=1) const {return fHistVdriftLaserA[index];};
+  THnSparse*    GetHistVdriftLaserC(Int_t index=1) const {return fHistVdriftLaserC[index];};
   THnSparse*    GetHistoDrift(const char* name);
   TObjArray*    GetHistoDrift();
   TGraphErrors* GetGraphDrift(const char* name);
   TObjArray*    GetGraphDrift();
   AliSplineFit* GetFitDrift(const char* name);
 //  TObjArray*    GetFitDrift();
-  TH1F*         GetCosmiMatchingHisto(Int_t index=0){return fCosmiMatchingHisto[index];};
+  TH1F*         GetCosmiMatchingHisto(Int_t index=0) const {return fCosmiMatchingHisto[index];};
   
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
