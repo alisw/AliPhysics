@@ -64,8 +64,8 @@ int main(int argc, char **argv)
   }
   gROOT->SetMacroPath(macPath);
 
-  // get a logger instance
-  AliLog *log = AliLog::GetRootLogger();
+  // make sure logger is instantiated
+  AliLog::GetRootLogger();
   TRint  *app = new TRint("App", &argc, argv);
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4) || defined XXX_LATEST_ROOT
@@ -89,8 +89,6 @@ int main(int argc, char **argv)
   TEveManager::Terminate();
 
   app->Terminate(0);
-
-  //  delete log;
 
   return 0;
 }

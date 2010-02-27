@@ -76,7 +76,13 @@ AliEveConfigManager* AliEveConfigManager::GetMaster()
 //______________________________________________________________________________
 AliEveConfigManager::AliEveConfigManager() :
   TObject(),
-  fAliEvePopup(0)
+  fAliEvePopup(0),
+  fAliEveGeometries(0),
+  fAliEvePictures(0),
+  fAliEvePicturesHR(0),
+  fAliEveDataSelection(0),
+  fAliEveVizDBs(0),
+  fLoadCheck(kFALSE)
 {
   // Constructor.
   // Expected TEveManager is already initialized.

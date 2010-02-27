@@ -35,8 +35,8 @@ ClassImp(AliEveHOMERManager)
   
 //##################################################################################
 AliEveHOMERManager::AliEveHOMERManager() :
-AliHLTHOMERManager(), 
      TEveElementList("Homer Manager"),
+     AliHLTHOMERManager(), 
      fSrcList(NULL),
      fRetryCount(1),
      fRetrySleeptime(10000)

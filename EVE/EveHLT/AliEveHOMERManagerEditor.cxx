@@ -32,7 +32,7 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
   
 TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
-//  fButtonSaveBlockList(0),
+  fButtonWriteToFile(0),
   fButtonNextEvent(0),
   fButtonNavigateBack(0),
   fButtonNavigateFwd(0),
@@ -111,8 +111,7 @@ void AliEveHOMERManagerEditor::SetModel(TObject* obj) {
 void AliEveHOMERManagerEditor::NextEvent() {
   // call next event from macro
 
-  Int_t iResult = 0;
-    if ( fM->NextEvent() )
+  if ( fM->NextEvent() )
     return;
 
     
