@@ -166,7 +166,8 @@ void AliProtonCorrectionAnalysisTask::Exec(Option_t *)
 					return;
 				fStatHist->Fill(3);
 				if(fIsOn_AliProtonAbsorptionCorrection)
-					fProtonAbsorptionCorrection->FillAbsorptionMaps(fESD,vertex,fMC);
+				  //fProtonAbsorptionCorrection->FillAbsorptionMaps(fESD,vertex,fMC);
+				  fProtonAbsorptionCorrection->FillAbsorptionMaps(fESD,fMC);
 				if(fIsOn_AliProtonFeedDownAnalysis)
 				{	
 					fProtonFeedDownAnalysis->Analyze(fESD,vertex,stack1);

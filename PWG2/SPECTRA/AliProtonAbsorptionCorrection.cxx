@@ -185,7 +185,7 @@ void AliProtonAbsorptionCorrection::InitAnalysisHistograms(Int_t nbinsY,
 
 //_________________________________________________________________________//
 void AliProtonAbsorptionCorrection::FillAbsorptionMaps(AliESDEvent *esd, 
-						       const AliESDVertex *vertex,
+						       //const AliESDVertex *vertex,
 						       AliMCEvent *mcEvent) {	
   //Function to fill the correction containers
   fCFManagerProtons->SetMCEventInfo(mcEvent);

@@ -51,7 +51,7 @@ class AliProtonAbsorptionCorrection : public TObject {
   void InitAnalysisHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY, 
 			      Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
   void FillAbsorptionMaps(AliESDEvent *fESD, 
-			  const AliESDVertex *vertex,
+			  //const AliESDVertex *vertex,
 			  AliMCEvent *mcEvent);
   void FillAbsorptionMaps(AliAODEvent *fAOD);
 		
