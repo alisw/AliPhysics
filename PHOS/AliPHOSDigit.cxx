@@ -47,7 +47,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSDigit.h"
-
+#include "AliLog.h"
 
 
 
@@ -227,20 +227,21 @@ void AliPHOSDigit::SetALTROSamplesLG(Int_t nSamplesLG, Int_t *samplesLG)
 void AliPHOSDigit::Print(const Option_t *) const
 {
   // Print the digit together with list of primaries
-  printf("PHOS digit: E=%.3f, Id=%d, Time=%.3e, TimeR=%.3e, NPrim=%d, nHG=%d, nLG=%d \n",
-	 fEnergy,fId,fTime,fTimeR,fNprimary,fNSamplesHG,fNSamplesLG);
-  printf("\tList of primaries: ");
+  TString line = Form("PHOS digit: E=%.3f, Id=%d, Time=%.3e, TimeR=%.3e, NPrim=%d, nHG=%d, nLG=%d \n",
+		      fEnergy,fId,fTime,fTimeR,fNprimary,fNSamplesHG,fNSamplesLG);
+  line += "\tList of primaries: ";
   for (Int_t index = 0; index <fNprimary; index ++ )
-    printf(" %d ",fPrimary[index]); 
-  printf("\n") ;
-  printf("\tHG samples: 0x%x: ",fSamplesHG);
+    line += Form(" %d ",fPrimary[index]); 
+  line += "\n";
+  line += "\tSamples HG: ";
   for (Int_t i = 0; i <fNSamplesHG; i++)
-    printf(" %d ",fSamplesHG[i]); 
-  printf("\n") ;
-  printf("\tLG samples: 0x%x: ",fSamplesLG);
+    line += Form(" %d ",fSamplesHG[i]); 
+  line += "\n";
+  line += "\tSamples LG: ";
   for (Int_t i = 0; i <fNSamplesLG; i++)
-    printf(" %d ",fSamplesLG[i]); 
-  printf("\n") ;
+    line += Form(" %d ",fSamplesLG[i]); 
+  line += "\n";
+  AliDebug(2,line);
 }
 //____________________________________________________________________________
 void AliPHOSDigit::ShiftPrimary(Int_t shift)
