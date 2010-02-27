@@ -809,7 +809,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     
     AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer("cobjGFC", TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC); 
     mgr->ConnectInput(taskGFC,0,coutputFE); 
-    mgr->ConnectOutput(taskGFC,0,coutputGFC);
+    mgr->ConnectOutput(taskGFC,1,coutputGFC);
     if (useWeights) {
       mgr->ConnectInput(taskGFC,1,cinputWeights);
       cinputWeights->SetData(weightsList);
@@ -822,11 +822,11 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
 
     AliAnalysisDataContainer *coutputQC = mgr->CreateContainer("cobjQC", TList::Class(),AliAnalysisManager::kOutputContainer,outputQC); 
     mgr->ConnectInput(taskQC,0,coutputFE); 
-    mgr->ConnectOutput(taskQC,0,coutputQC);
+    mgr->ConnectOutput(taskQC,1,coutputQC);
     if (useWeights) {
       mgr->ConnectInput(taskQC,1,cinputWeights);
       cinputWeights->SetData(weightsList);
-    } 
+    }    
   }
   if(FQD) {
     TString outputFQD = AliAnalysisManager::GetCommonFileName();
@@ -835,7 +835,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     
     AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer("cobjFQD", TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD); 
     mgr->ConnectInput(taskFQD,0,coutputFE); 
-    mgr->ConnectOutput(taskFQD,0,coutputFQD);
+    mgr->ConnectOutput(taskFQD,1,coutputFQD);
     if(useWeights) {
       mgr->ConnectInput(taskFQD,1,cinputWeights);
       cinputWeights->SetData(weightsList);

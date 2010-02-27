@@ -20,26 +20,22 @@
 #define ALIANALYSISTASKFITTINGQDISTRIBUTION_H
 
 #include "TString.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliESDEvent;
-class AliAODEvent;
-class AliCFManager;
+class TList;
+class AliFlowEventSimple;
 class AliFlowAnalysisWithFittingQDistribution;
-class AliFlowEventSimpleMaker;
-class TFile;
 
 //================================================================================================================
 
-class AliAnalysisTaskFittingQDistribution : public AliAnalysisTask{
+class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
  public:
   AliAnalysisTaskFittingQDistribution();
   AliAnalysisTaskFittingQDistribution(const char *name, Bool_t useWeights=kFALSE);
   virtual ~AliAnalysisTaskFittingQDistribution(){}; 
-  
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
@@ -49,13 +45,13 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTask{
   AliAnalysisTaskFittingQDistribution(const AliAnalysisTaskFittingQDistribution& aatfqd);
   AliAnalysisTaskFittingQDistribution& operator=(const AliAnalysisTaskFittingQDistribution& aatfqd);
 
-  AliFlowEventSimple* fEvent;             // the input event
-  AliFlowAnalysisWithFittingQDistribution* fFQDA;         // Fitting q-distribution Analysis (FQDA) object
-  TList  *fListHistos;                    // collection of output 
+  AliFlowEventSimple* fEvent;                    // the input event
+  AliFlowAnalysisWithFittingQDistribution* fFQD; // Fitting q-distribution (FQD) object
+  TList *fListHistos;                            // collection of output 
      
-  Bool_t       fUseWeights;               // use any weights
-  Bool_t       fUsePhiWeights;            // phi weights
-  TList*       fListWeights;              // list with weights                                               
+  Bool_t fUseWeights;                            // use any weights
+  Bool_t fUsePhiWeights;                         // phi weights
+  TList* fListWeights;                           // list with weights                                               
                                                            
   ClassDef(AliAnalysisTaskFittingQDistribution, 0); 
 };

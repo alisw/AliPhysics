@@ -18,27 +18,24 @@
 #ifndef ALIANALYSISTASKCUMULANTS_H
 #define ALIANALYSISTASKCUMULANTS_H
 
-#include "AliAnalysisTask.h"
+#include "TString.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliESDEvent;
-class AliAODEvent;
-class AliCFManager;
+class TList;
+class AliFlowEventSimple;
 class AliFlowAnalysisWithCumulants;
-class AliFlowEventSimpleMaker;
-class TFile;
 
 //================================================================================================================
 
-class AliAnalysisTaskCumulants : public AliAnalysisTask{
+class AliAnalysisTaskCumulants : public AliAnalysisTaskSE{
  public:
   AliAnalysisTaskCumulants();
   AliAnalysisTaskCumulants(const char *name, Bool_t useWeights=kFALSE);
   virtual ~AliAnalysisTaskCumulants(){}; 
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
-  virtual void   Terminate(Option_t *);
+  virtual void UserCreateOutputObjects();
+  virtual void UserExec(Option_t *option);
+  virtual void Terminate(Option_t *);
   
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
@@ -51,15 +48,15 @@ class AliAnalysisTaskCumulants : public AliAnalysisTask{
   AliAnalysisTaskCumulants(const AliAnalysisTaskCumulants& aatc);
   AliAnalysisTaskCumulants& operator=(const AliAnalysisTaskCumulants& aatc);
 
-  AliFlowEventSimple *fEvent;          // the input event
-  AliFlowAnalysisWithCumulants *fGFCA; // Generating Function Cumulant (GFC) analysis object
-  TList *fListHistos;                  // collection of output 
+  AliFlowEventSimple *fEvent;         // the input event
+  AliFlowAnalysisWithCumulants *fGFC; // Generating Function Cumulant object
+  TList *fListHistos;                 // collection of output 
 
-  Bool_t fUseWeights;                  // use any weights
-  Bool_t fUsePhiWeights;               // use phi weights
-  Bool_t fUsePtWeights;                // use pt weights
-  Bool_t fUseEtaWeights;               // use eta weights  
-  TList  *fListWeights;                // list with weights
+  Bool_t fUseWeights;                 // use any weights
+  Bool_t fUsePhiWeights;              // use phi weights
+  Bool_t fUsePtWeights;               // use pt weights
+  Bool_t fUseEtaWeights;              // use eta weights  
+  TList *fListWeights;                // list with weights
            
   ClassDef(AliAnalysisTaskCumulants, 1); 
 };

@@ -24,168 +24,164 @@
  *           (anteb@nikhef.nl)        * 
  * ***********************************/
  
+class TFile;
+class TList;
+class AliAnalysisTaskSE; 
+ 
 #include "Riostream.h"
-#include "TChain.h"
-#include "TTree.h"
-#include "TFile.h"
-#include "TList.h"
-#include "TH1.h"
-#include "TGraph.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
-#include "TProfile3D.h"
-#include "TBits.h"
-
-#include "AliAnalysisTask.h"
-#include "AliAnalysisDataSlot.h"
-#include "AliAnalysisDataContainer.h"
-#include "AliAnalysisManager.h"
-
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskQCumulants.h"
 #include "AliFlowAnalysisWithQCumulants.h"
-#include "AliFlowCumuConstants.h"
-#include "AliFlowCommonConstants.h"
-#include "AliFlowCommonHist.h"
-#include "AliFlowCommonHistResults.h"
 
 ClassImp(AliAnalysisTaskQCumulants)
 
 //================================================================================================================
 
-AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t useWeights): 
- AliAnalysisTask(name,""), 
+AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t useParticleWeights): 
+ AliAnalysisTaskSE(name), 
  fEvent(NULL),
- fQCA(NULL), // Q-cumulant Analysis (QCA) object
+ fQC(NULL), 
  fListHistos(NULL),
- fUseWeights(useWeights),
+ fHarmonic(2),  
+ fApplyCorrectionForNUA(kTRUE), 
+ fCalculate2DFlow(kFALSE),
+ fStoreDistributions(kFALSE),
+ fUseParticleWeights(useParticleWeights),
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
  fUseEtaWeights(kFALSE),
- fListWeights(NULL)
+ fWeightsList(NULL),
+ fMultiplicityWeight(NULL)
 {
  // constructor
- cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name)"<<endl;
+ cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t useParticleWeights)"<<endl;
  
  // Define input and output slots here
- // Input slot #0 works with a TChain
- DefineInput(0, AliFlowEventSimple::Class());
-  
- // Input slot #1 is needed for the weights 
- if(useWeights)
+ // Input slot #0 works with an AliFlowEventSimple
+ DefineInput(0, AliFlowEventSimple::Class());  
+ // Input slot #1 is needed for the weights input file:
+ if(useParticleWeights)
  {
   DefineInput(1, TList::Class());   
- }
-        
- // Output slot #0 writes into a TList container
- DefineOutput(0, TList::Class());  
+ }  
+ // Output slot #0 is reserved              
+ // Output slot #1 writes into a TList container
+ DefineOutput(1, TList::Class());  
  
+ // Event weights:
+ fMultiplicityWeight = new TString("combinations");
 }
 
 AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(): 
+ AliAnalysisTaskSE(),
  fEvent(NULL),
- fQCA(NULL),//Q-cumulant Analysis (QCA) object
+ fQC(NULL),
  fListHistos(NULL),
- fUseWeights(kFALSE),
+ fHarmonic(0),  
+ fApplyCorrectionForNUA(kFALSE), 
+ fCalculate2DFlow(kFALSE),
+ fStoreDistributions(kFALSE),
+ fUseParticleWeights(kFALSE),
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
  fUseEtaWeights(kFALSE),
- fListWeights(NULL)
+ fWeightsList(NULL),
+ fMultiplicityWeight(NULL)
 {
- // dummy constructor
+ // Dummy constructor
  cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants()"<<endl;
 }
 
 //================================================================================================================
 
-void AliAnalysisTaskQCumulants::ConnectInputData(Option_t *) 
+void AliAnalysisTaskQCumulants::UserCreateOutputObjects() 
 {
- // connect ESD or AOD (called once)
- cout<<"AliAnalysisTaskQCumulants::ConnectInputData(Option_t *)"<<endl;
-}
+ // Called at every worker node to initialize
+ cout<<"AliAnalysisTaskQCumulants::UserCreateOutputObjects()"<<endl;
 
-//================================================================================================================
-
-void AliAnalysisTaskQCumulants::CreateOutputObjects() 
-{
- // called at every worker node to initialize
- cout<<"AliAnalysisTaskQCumulants::CreateOutputObjects()"<<endl;
-
- // analyser
- fQCA = new AliFlowAnalysisWithQCumulants();
- fQCA->Init();
+ // Analyser:
+ fQC = new AliFlowAnalysisWithQCumulants();
  
- //weights:
- if(fUseWeights)
+ // Common:
+ fQC->SetHarmonic(fHarmonic);
+ fQC->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
+ fQC->SetCalculate2DFlow(fCalculate2DFlow);
+ fQC->SetStoreDistributions(fStoreDistributions);
+ // Particle weights:
+ if(fUseParticleWeights)
  {
-  //pass the flags to class:
-  if(fUsePhiWeights) fQCA->SetUsePhiWeights(fUsePhiWeights);
-  if(fUsePtWeights) fQCA->SetUsePtWeights(fUsePtWeights);
-  if(fUseEtaWeights) fQCA->SetUseEtaWeights(fUseEtaWeights);
-  //get data from input slot #1 which is used for weights:
+  // Pass the flags to class:
+  if(fUsePhiWeights) fQC->SetUsePhiWeights(fUsePhiWeights);
+  if(fUsePtWeights) fQC->SetUsePtWeights(fUsePtWeights);
+  if(fUseEtaWeights) fQC->SetUseEtaWeights(fUseEtaWeights);
+  // Get data from input slot #1 which is used for weights:
   if(GetNinputs()==2) 
   {                   
-   fListWeights = (TList*)GetInputData(1); 
+   fWeightsList = (TList*)GetInputData(1); 
   }
-  //pass the list with weights to class:
-  if(fListWeights) fQCA->SetWeightsList(fListWeights);
+  // Pass the list with weights to class:
+  if(fWeightsList) fQC->SetWeightsList(fWeightsList);
  }
- 
- if(fQCA->GetHistList()) 
+ // Event weights:
+ if(!(strcmp(fMultiplicityWeight->Data(),"combinations")==0)) // default is "combinations"
  {
-  fListHistos = fQCA->GetHistList();
-  //fListHistos->Print();
- }
- else 
- {
-  Printf(" ERROR: Could not retrieve histogram list (QC, Task::COO)"); 
+  fQC->SetMultiplicityWeight(fMultiplicityWeight->Data());
  }
 
- //PostData(0,fListHistos);
+ fQC->Init();
  
-}
+ if(fQC->GetHistList()) 
+ {
+  fListHistos = fQC->GetHistList();
+  // fListHistos->Print();
+ } else 
+   {
+    Printf("ERROR: Could not retrieve histogram list (QC, Task::UserCreateOutputObjects()) !!!!"); 
+   }
+   
+} // end of void AliAnalysisTaskQCumulants::UserCreateOutputObjects() 
 
 //================================================================================================================
 
-void AliAnalysisTaskQCumulants::Exec(Option_t *) 
+void AliAnalysisTaskQCumulants::UserExec(Option_t *) 
 {
-  // main loop (called for each event)
+ // main loop (called for each event)
  fEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(0));
 
  // Q-cumulants
  if(fEvent) 
  {
-  fQCA->Make(fEvent);
- }else 
-  {
-   cout<<" WARNING: No input data (QC, Task::E) !!!"<<endl;
-   cout<<endl;
-  }
+  fQC->Make(fEvent);
+ } else 
+   {
+    cout<<"WARNING: No input data (QC, Task::UserExec()) !!!!"<<endl;
+    cout<<endl;
+   }
   
- PostData(0,fListHistos);
+ PostData(1,fListHistos);
 }
 
 //================================================================================================================
 
 void AliAnalysisTaskQCumulants::Terminate(Option_t *) 
 {
- //accessing the output list which contains the merged 2D and 3D profiles from all worker nodes
- fListHistos = (TList*)GetOutputData(0);
- //fListHistos->Print();
+ //accessing the merged output list: 
+ fListHistos = (TList*)GetOutputData(1);
  
- fQCA = new AliFlowAnalysisWithQCumulants(); 
+ fQC = new AliFlowAnalysisWithQCumulants(); 
  
- if (fListHistos) 
+ if(fListHistos) 
  {
-  fQCA->GetOutputHistograms(fListHistos);
-  fQCA->Finish();
- }
- else
- {
-  cout<<" WARNING: histogram list pointer is empty (QC, Task::Terminate())"<<endl;
-  cout<<endl;
- }
-}
+  fQC->GetOutputHistograms(fListHistos);
+  fQC->Finish();
+  PostData(1,fListHistos);
+ } else
+   {
+    cout<<" WARNING: histogram list pointer is empty (QC, Task::Terminate()) !!!!"<<endl;
+    cout<<endl;
+   }
+    
+} // end of void AliAnalysisTaskQCumulants::Terminate(Option_t *)
 
 
 
