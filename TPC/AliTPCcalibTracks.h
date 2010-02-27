@@ -79,27 +79,27 @@ public :
   void     FitResolutionNew(const char* pathName = "plots");
   void     FitRMSNew(const char* pathName = "plots");
   
-  TObjArray* GetfArrayAmpRow() {return fArrayAmpRow;}
-  TObjArray* GetfArrayAmp() {return fArrayAmp;}
-  TObjArray* GetfArrayQDY() {return fArrayQDY;}
-  TObjArray* GetfArrayQDZ() {return fArrayQDZ;}
-  TObjArray* GetfArrayQRMSY() {return fArrayQRMSY;}
-  TObjArray* GetfArrayQRMSZ() {return fArrayQRMSZ;}
-  TObjArray* GetfArrayChargeVsDriftlength() {return fArrayChargeVsDriftlength;}
-  TH1F*      GetfDeltaY() {return fDeltaY;}
-  TH1F*      GetfDeltaZ() {return fDeltaZ;}
-  TObjArray* GetfResolY() {return fResolY;}
-  TObjArray* GetfResolZ() {return fResolZ;}
-  TObjArray* GetfRMSY() {return fRMSY;}
-  TObjArray* GetfRMSZ() {return fRMSZ;}
-  TH1I*      GetfHclus() {return fHclus;}
-  TH1I*      GetfRejectedTracksHisto() {return fRejectedTracksHisto;}
-  TH1I*      GetfHclusterPerPadrow() {return fHclusterPerPadrow;}
-  TH1I*      GetfHclusterPerPadrowRaw() {return fHclusterPerPadrowRaw;}
-  TH2I*      GetfClusterCutHisto() {return fClusterCutHisto;}
-  AliTPCCalPad*          GetfCalPadClusterPerPad() {return fCalPadClusterPerPad; }
-  AliTPCCalPad*          GetfCalPadClusterPerPadRaw() {return fCalPadClusterPerPadRaw;}
-  AliTPCCalPadRegion*    GetCalPadRegionchargeVsDriftlength() {return fcalPadRegionChargeVsDriftlength;}
+  TObjArray* GetfArrayAmpRow() const {return fArrayAmpRow;}
+  TObjArray* GetfArrayAmp() const {return fArrayAmp;}
+  TObjArray* GetfArrayQDY() const {return fArrayQDY;}
+  TObjArray* GetfArrayQDZ() const {return fArrayQDZ;}
+  TObjArray* GetfArrayQRMSY() const {return fArrayQRMSY;}
+  TObjArray* GetfArrayQRMSZ() const {return fArrayQRMSZ;}
+  TObjArray* GetfArrayChargeVsDriftlength() const {return fArrayChargeVsDriftlength;}
+  TH1F*      GetfDeltaY() const {return fDeltaY;}
+  TH1F*      GetfDeltaZ() const {return fDeltaZ;}
+  TObjArray* GetfResolY() const {return fResolY;}
+  TObjArray* GetfResolZ() const {return fResolZ;}
+  TObjArray* GetfRMSY() const {return fRMSY;}
+  TObjArray* GetfRMSZ() const {return fRMSZ;}
+  TH1I*      GetfHclus() const {return fHclus;}
+  TH1I*      GetfRejectedTracksHisto() const {return fRejectedTracksHisto;}
+  TH1I*      GetfHclusterPerPadrow() const {return fHclusterPerPadrow;}
+  TH1I*      GetfHclusterPerPadrowRaw() const {return fHclusterPerPadrowRaw;}
+  TH2I*      GetfClusterCutHisto() const  {return fClusterCutHisto;}
+  AliTPCCalPad*          GetfCalPadClusterPerPad() const {return fCalPadClusterPerPad; }
+  AliTPCCalPad*          GetfCalPadClusterPerPadRaw() const {return fCalPadClusterPerPadRaw;}
+  AliTPCCalPadRegion*    GetCalPadRegionchargeVsDriftlength() const {return fcalPadRegionChargeVsDriftlength;}
   AliTPCcalibTracksCuts* GetCuts() {return fCuts;}
 protected:         
   
