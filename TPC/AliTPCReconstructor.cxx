@@ -117,7 +117,7 @@ AliTracker* AliTPCReconstructor::CreateTracker() const
 
 //_____________________________________________________________________________
 void AliTPCReconstructor::FillESD(TTree */*digitsTree*/, TTree */*clustersTree*/,
-				  AliESDEvent* esd) const
+				  AliESDEvent* /*esd*/) const
 {
 // make PID
 /*  Now done in AliESDpid

@@ -355,7 +355,7 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
 }
 
 
-void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined ){
+void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam */*inner1*/, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined ){
   //
   // par0,par1       - parameter of tracks at DCA 0
   // inner0,inner1   - parameter of tracks at the TPC entrance
