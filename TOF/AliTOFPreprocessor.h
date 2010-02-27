@@ -13,7 +13,9 @@
 // and DAQ histograms to compute online calibration constants
 
 class AliTOFDataDCS;
+class AliTOFLvHvDataPoints;
 class AliTOFChannelOnlineStatusArray;
+class AliTOFChannelOnlineArray;
 class TObjArray;
 class TH2S;
 
@@ -29,13 +31,14 @@ class AliTOFPreprocessor : public AliPreprocessor
 
   protected:
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
-    virtual UInt_t Process(TMap* dcsAliasMap);
+    virtual UInt_t Process(TMap * const dcsAliasMap);
     virtual Bool_t ProcessDCS();
 
   private:
     AliTOFPreprocessor(const AliTOFPreprocessor & proc); // copy constructor
     AliTOFPreprocessor& operator=(const AliTOFPreprocessor & proc);
-    UInt_t ProcessDCSDataPoints(TMap* dcsAliasMap);
+    UInt_t ProcessDCSDataPoints(TMap * const dcsAliasMap);
+    UInt_t ProcessHVandLVdps(TMap * const dcsAliasMap);
     UInt_t ProcessOnlineDelays();
     UInt_t ProcessPulserData();
     UInt_t ProcessNoiseData();
@@ -51,6 +54,7 @@ class AliTOFPreprocessor : public AliPreprocessor
     static const Double_t fgkThrPar;         // parameter used to trigger the 
                                              // calculation of the delay
     AliTOFDataDCS *fData;                    // CDB class that stores the data
+    AliTOFLvHvDataPoints *fHVLVmaps;         // HV and LV status maps
     AliTOFChannelOnlineArray *fCal;          // TOF Calibration object
     Int_t fNChannels;                        // number of TOF channels
     Bool_t fStoreRefData;                    // Flag to decide storage of Ref Data
@@ -60,6 +64,9 @@ class AliTOFPreprocessor : public AliPreprocessor
                                              // Array of matching windows (one per channel) - to be used in noise runs
     Int_t *fLatencyWindow;                   //[fNChannels]
                                              // Array of latency windows (one per channel)
-    ClassDef(AliTOFPreprocessor, 0);         
+    Bool_t fIsStatusMapChanged;              // flag to check is the status map OCDB has to be updated
+
+    ClassDef(AliTOFPreprocessor, 1);
+
 };
 #endif

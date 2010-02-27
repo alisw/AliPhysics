@@ -113,7 +113,8 @@ class AliTOFGeometry: public TObject{
   UShort_t GetAliSensVolIndex(Int_t sec, Int_t pla, Int_t str) const; // Get the index of the TOF alignable volume in the AliGeomManager order
   static Int_t GetStripNumber(Int_t isector, Int_t iplate, Int_t istrip); // Get the serial number of the TOF alignable volume, i.e. the TOF strip
   static Int_t GetStripNumberPerSM(Int_t iplate, Int_t istrip); // Get the serial number of the TOF strip in a TOF SM
-  void PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT);
+  static void GetStripAndModule(Int_t iStripPerSM, Int_t &iplate, Int_t &istrip); // Return the module and strip per module corresponding to the strip number per SM
+  void PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT); // Convert the track coordinates from pad RF to tracking RF
 
 
   private:

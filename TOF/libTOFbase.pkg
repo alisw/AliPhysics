@@ -31,6 +31,8 @@ SRCS  = AliTOFGeometry.cxx  \
 	AliTOFDeltaBCOffset.cxx \
 	AliTOFCTPLatency.cxx \
 	AliTOFT0Fill.cxx \
+	AliTOFLvHvDataPoints.cxx \
+	AliTOFDCSmaps.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)
