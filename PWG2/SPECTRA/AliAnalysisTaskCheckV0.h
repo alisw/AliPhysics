@@ -31,15 +31,30 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
 
   void   SetCollidingSystems(Short_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
+  void   SetUsePhysicsSelection(Bool_t usePhysicsSelection = 0) {fUsePhysicsSelection = usePhysicsSelection;}
   void   SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
+  void   SetMaxPrimaryVtxPosZ(const Float_t maxPrimaryVtxPosZ = 100.) {fMaxPrimaryVtxPosZ = maxPrimaryVtxPosZ;}
+  void   SetMinV0Pt(const Float_t minV0Pt =   0.) {fMinV0Pt = minV0Pt;}
+  void   SetMaxV0Pt(const Float_t maxV0Pt = 100.) {fMaxV0Pt = maxV0Pt;}
+  void   SetMaxV0Rapidity(const Float_t maxV0Rapidity = 1.) {fMaxV0Rapidity = maxV0Rapidity;}
+  void   SetMinDaughterTpcClusters(const Int_t minDaughterTpcClusters = 80) {fMinDaughterTpcClusters = minDaughterTpcClusters;}
   
  private:
   TString      fAnalysisType;                   //  ESD or AOD
   Short_t      fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb
+  Bool_t       fUsePhysicsSelection;            //  Delegate event selection to AliPhysicsSelectionTask
+  Float_t      fMaxPrimaryVtxPosZ;              //  Primary vertex selection in Z
+  Float_t      fMinV0Pt;                        //  Minimum pt selection for the V0
+  Float_t      fMaxV0Pt;                        //  Maximum pt selection for the V0
+  Float_t      fMaxV0Rapidity;                  //  Maximum rapidity selection for the V0
+  Int_t        fMinDaughterTpcClusters;         //  Minimum number of TPC clusters for the both daughter tracks of the V0
   TList       *fListHist;                       //! List of histograms
   TH1F        *fHistPrimaryVertexPosX;          //! Primary vertex position in X
   TH1F        *fHistPrimaryVertexPosY;          //! Primary vertex position in Y
   TH1F        *fHistPrimaryVertexPosZ;          //! Primary vertex position in Z
+  TH1F        *fHistKeptPrimaryVertexPosX;      //! Primary vertex position in X after event selection
+  TH1F        *fHistKeptPrimaryVertexPosY;      //! Primary vertex position in Y after event selection
+  TH1F        *fHistKeptPrimaryVertexPosZ;      //! Primary vertex position in Z after event selection
   TH1F        *fHistTrackMultiplicity;          //! Track multiplicity distribution
   TH1F        *fHistV0Multiplicity;             //! V0 multiplicity distribution
   TH1F        *fHistV0OnFlyStatus;              //! V0 on fly status distribution
@@ -57,6 +72,9 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   TH1F        *fHistMassK0sOff;                 //! Invariant mass of K0s
   TH1F        *fHistMassLambdaOff;              //! Invariant mass of Lambda
   TH1F        *fHistMassAntiLambdaOff;          //! Invariant mass of Anti-Lambda
+  TH2F        *fHistMassK0sOffVsPt;             //! Invariant mass of K0s
+  TH2F        *fHistMassLambdaOffVsPt;          //! Invariant mass of Lambda
+  TH2F        *fHistMassAntiLambdaOffVsPt;      //! Invariant mass of Anti-Lambda
   TH2F        *fHistArmenterosPodolanskiOff;    //! Armenteros-Podolanski distribution       
 
               // V0 on-the-fly distributions
@@ -72,6 +90,9 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   TH1F        *fHistMassK0sOn;                  //! Invariant mass of K0s
   TH1F        *fHistMassLambdaOn;               //! Invariant mass of Lambda
   TH1F        *fHistMassAntiLambdaOn;           //! Invariant mass of Anti-Lambda
+  TH2F        *fHistMassK0sOnVsPt;              //! Invariant mass of K0s
+  TH2F        *fHistMassLambdaOnVsPt;           //! Invariant mass of Lambda
+  TH2F        *fHistMassAntiLambdaOnVsPt;       //! Invariant mass of Anti-Lambda
   TH2F        *fHistArmenterosPodolanskiOn;     //! Armenteros-Podolanski distribution       
    
   AliAnalysisTaskCheckV0(const AliAnalysisTaskCheckV0&);            // not implemented
