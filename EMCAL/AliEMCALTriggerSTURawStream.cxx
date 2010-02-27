@@ -295,7 +295,7 @@ void AliEMCALTriggerSTURawStream::GetADC(Int_t iTRU, UInt_t ADC[])
 }
 
 //_____________________________________________________________________________
-void AliEMCALTriggerSTURawStream::Dump(const Option_t *option) const
+void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 {
 	//
 	TString op = option;

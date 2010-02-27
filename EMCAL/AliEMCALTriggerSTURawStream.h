@@ -23,7 +23,7 @@ class AliEMCALTriggerSTURawStream: public TObject
   
     virtual void   Reset();
     virtual Bool_t ReadPayLoad();
-	virtual void   Dump(const Option_t *option = "ALL") const;
+	virtual void   DumpPayLoad(const Option_t *option = "ALL") const;
 
 	virtual void                GetADC(Int_t iTRU, UInt_t ADC[]);
 	virtual UInt_t   GetL1JetThreshold() const {return   fL1JetThreshold;}
