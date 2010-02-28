@@ -45,7 +45,8 @@ ClassImp(AliAnalysisTaskESDMuonFilter)
 AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter():
   AliAnalysisTaskSE(),
   fTrackFilter(0x0),
-  fEnableMuonAOD(kFALSE)
+  fEnableMuonAOD(kFALSE),
+  fEnableDimuonAOD(kFALSE)
 {
   // Default constructor
 }
@@ -53,7 +54,8 @@ AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter():
 AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(const char* name):
   AliAnalysisTaskSE(name),
   fTrackFilter(0x0),
-  fEnableMuonAOD(kFALSE)
+  fEnableMuonAOD(kFALSE),
+  fEnableDimuonAOD(kFALSE)
 {
   // Constructor
 }
@@ -133,7 +135,6 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   
   Bool_t MuonsExist = kFALSE;
   Bool_t DimuonsExist = kFALSE;
-  Int_t firstMuonTrack=0;
   Int_t nMuons=0;
   Int_t jDimuons=0;
   Int_t nMuonTrack[10];
@@ -206,8 +207,6 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
           Int_t index1 = nMuonTrack[j];
           aodDimuon = new(dimuons[jDimuons++]) AliAODDimuon(tracks.At(index0),tracks.At(index1));
           if (fDebug > 1){
-            AliAODTrack *track0 = (AliAODTrack*)tracks.At(index0);
-            AliAODTrack *track1 = (AliAODTrack*)tracks.At(index1);
             AliAODDimuon *dimuon0 = (AliAODDimuon*)dimuons.At(jDimuons-1);
             printf("Dimuon: mass = %f, px=%f, py=%f, pz=%f\n",dimuon0->M(),dimuon0->Px(),dimuon0->Py(),dimuon0->Pz());  
             AliAODTrack  *mu0 = (AliAODTrack*) dimuon0->GetMu(0);
