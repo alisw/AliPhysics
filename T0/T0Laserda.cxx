@@ -26,6 +26,7 @@ Trigger types used: CALIBRATION_EVENT
 #include <AliRawReaderDate.h>
 #include <AliRawReader.h>
 #include <AliT0RawReader.h>
+#include <AliT0CalibAmp.h>
 
 //ROOT
 #include "TROOT.h"
@@ -43,9 +44,14 @@ Trigger types used: CALIBRATION_EVENT
 #include "TF1.h"
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
-//#include "TProfile.h"
-int cqbx,cqby,clbx,clby,mod;
-float cqlx,cqmx,cqly,cqmy,cllx,clmx,clly,clmy;
+//AMORE
+//
+#ifdef ALI_AMORE
+#include <AmoreDA.h>
+#endif
+
+
+float lcfd, hcfd;
 /* Main routine
       Arguments: 
       1- monitoring data source
@@ -60,43 +66,47 @@ int main(int argc, char **argv) {
 					"RIO",
 					"TStreamerInfo()"); 
   
-  if(daqDA_DB_getFile(FILE_IN, FILE_IN)){
-     printf("Couldn't get input file >>inLaser.dat<< from DAQ_DB !!!\n");
-     return -1;
-  }
+  Int_t nEntries = daqDA_ECS_getTotalIteration(); // usually = 11 = Nb of calibration runs
+ cout<<" nEntries "<<nEntries<<endl;
+ Int_t nInit=1;  // = 0 all DAC values ; = 1 DAC=0 excluded (default=1)
+  // Reading current iteration
+  Int_t nIndex = daqDA_ECS_getCurrentIteration();
+  if(nIndex<0 || nIndex>nEntries) {printf("\n Failed: nIndex = %d\n",nIndex); return -1 ;}
   
- 
-  FILE *inp;
-  char c;
-  inp = fopen(FILE_IN, "r");  
-  if(!inp){
-	printf("Input file >>inLaser.dat<< not found !!!\n");
-	return -1;
-  }
 
-  while((c=getc(inp))!=EOF) {
-    switch(c) {
-      case 'a': {fscanf(inp, "%d", &cqbx ); break;} //N of X bins hCFD_QTC
-      case 'b': {fscanf(inp, "%f", &cqlx ); break;} //Low x hCFD_QTC
-      case 'c': {fscanf(inp, "%f", &cqmx ); break;} //High x hCFD_QTC
-      case 'd': {fscanf(inp, "%d", &cqby ); break;} //N of Y bins hCFD_QTC
-      case 'e': {fscanf(inp, "%f", &cqly ); break;} //Low y hCFD_QTC
-      case 'f': {fscanf(inp, "%f", &cqmy ); break;} //High y hCFD_QTC
-      case 'g': {fscanf(inp, "%d", &clbx ); break;} //N of X bins hCFD_LED
-      case 'h': {fscanf(inp, "%f", &cllx ); break;} //Low x hCFD_LED
-      case 'i': {fscanf(inp, "%f", &clmx ); break;} //High x hCFD_LED
-      case 'j': {fscanf(inp, "%d", &clby ); break;} //N of Y bins hCFD_LED
-      case 'k': {fscanf(inp, "%f", &clly ); break;} //Low y hCFD_LED
-      case 'l': {fscanf(inp, "%f", &clmy ); break;} //High y hCFD_LED
-      case 'm': {fscanf(inp, "%d", &mod  ); break;} //Modulo number
-    }
-  }
-  fclose(inp);
-
+// decode the input line
   if (argc!=2) {
     printf("Wrong number of arguments\n");
     return -1;
   }
+ 
+
+  Float_t mipsin[20];
+   if(daqDA_DB_getFile(FILE_IN, FILE_IN)){
+     printf("Couldn't get input file >>inLaser.dat<< from DAQ_DB !!!\n");
+     return -1;
+  }
+
+  ifstream filein(FILE_IN,ios::in); 
+  Int_t k=0;
+  while (k<nEntries ) { 
+    filein >>mipsin[k] ;
+    cout<<" "<<mipsin[k]<<endl;
+    k++; }
+  filein>>lcfd;
+  filein>>hcfd;
+  filein.close();
+
+
+
+  /*
+  if (argc!=2) {
+    printf("Wrong number of arguments\n");
+    return -1;
+  }
+  */
+
+  // Char_t inputFile[256]="";
 
 
   /* define data source : this is argument 1 */  
@@ -122,27 +132,30 @@ int main(int argc, char **argv) {
 
   /* log start of process */
   printf("T0 monitoring program started\n");  
-
+  
   // Allocation of histograms - start
-  TH2F *hCFDvsQTC[24][10];
-  TH2F *hCFDvsLED[24][10]; 
-
-   for(Int_t ic=0; ic<24; ic++) 
-	for(Int_t im=0;im<10;im++)
+  
+  TH1F *hQTC[24];  TH1F *hLED[24]; TH1F *hCFD[24];
+  printf(" CFD low limit %f high %f",lcfd, hcfd);
+  
+  for(Int_t ic=0; ic<24; ic++) 
     {
-      hCFDvsQTC[ic][im] = new TH2F(Form("CFDvsQTC%d_%d",ic+1,im+1),"CFDvsQTC",cqbx,cqlx,cqmx,cqby,cqly,cqmy);
-      hCFDvsLED[ic][im] = new TH2F(Form("CFDvsLED%d_%d",ic+1,im+1),"CFDvsLED",clbx,cllx,clmx,clby,clly,clmy);
+      hQTC[ic] = new TH1F(Form("hQTC%d_%d",ic+1,nIndex),"QTC",1000, 500, 4500);
+      hLED[ic] = new TH1F(Form("hLED%d_%d",ic+1,nIndex),"LED",300,300,600);
+      hCFD[ic] = new TH1F(Form("hCFD%d_%d",ic+1,nIndex),"CFD", Int_t ((hcfd-lcfd)/2), lcfd, hcfd);
     }
-
+ 
   // Allocation of histograms - end
-
+  
+  // Reading current iteration
+   
   Int_t iev=0;
-  Int_t mip=0;
+ 
   /* main loop (infinite) */
   for(;;) {
     struct eventHeaderStruct *event;
     eventTypeType eventT;
-  
+    
     /* check shutdown condition */
     if (daqDA_checkShutdown()) {break;}
     
@@ -157,36 +170,35 @@ int main(int argc, char **argv) {
       printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
       break;
     }
-
+    
     /* retry if got no event */
     if (event==NULL) {
       continue;
     }
- 
+    
     /* use event - here, just write event id to result file */
     eventT=event->eventType;
-   
+    
     switch (event->eventType){
-
-      case START_OF_RUN:
-	break;
-
-      case END_OF_RUN:
-	break;
-
-      case CALIBRATION_EVENT:
-//      case PHYSICS_EVENT:
+      
+    case START_OF_RUN:
+      break;
+      
+    case END_OF_RUN:
+      break;
+      
+    case CALIBRATION_EVENT:
+      //      case PHYSICS_EVENT:
       iev++; 
-
-      if(iev==1){
-           printf("First event - %i\n",iev);
-      }
-
+      
+      if(iev==1) printf("First event  %i\n",iev);
+      
+      
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
-          
+      
       // Enable the following two lines in case of real-data
-      	  reader->RequireHeader(kTRUE);
+      reader->RequireHeader(kTRUE);
       AliT0RawReader *start = new AliT0RawReader(reader, kTRUE);
 
       // Read raw data
@@ -194,57 +206,55 @@ int main(int argc, char **argv) {
       for(Int_t i0=0;i0<106;i0++)
       	for(Int_t j0=0;j0<5;j0++)
 		allData[i0][j0] = 0;
-     
-       if(start->Next()){
+      
+      if(start->Next()){
         for (Int_t i=0; i<106; i++) {
-	 for(Int_t iHit=0;iHit<5;iHit++){
-	  allData[i][iHit]= start->GetData(i,iHit);
-         }
+	  for(Int_t iHit=0;iHit<5;iHit++){
+	    allData[i][iHit]= start->GetData(i,iHit);
+	  }
         }
-       }
-	else 
-	 printf("No data for T0 found!!!\n");
-
+      }
+      else 
+	printf("No data for T0 found!!!\n");
+ 
+      
       // Fill the histograms
-
-      if(iev<10000){
-        mip=0;
-	}else 
-	if((iev%mod)==0.0){
-	mip++;
-//	printf("mip = %d\n",mip);
-	if(mip>=9) mip=9;}
       
-
       for (Int_t ik = 0; ik<24; ik+=2)
-         for (Int_t iHt=0; iHt<1; iHt++){
-		 Int_t cc = ik/2;
-		if(allData[ik+25][iHt]!=0 && allData[ik+26][iHt]!=0 && allData[cc+1][iHt]!=0){
-                 hCFDvsQTC[cc][mip]->Fill((allData[ik+25][iHt]-allData[ik+26][iHt]) , (allData[cc+1][iHt]-allData[0][0]+5000));
-		} 
-                if(allData[cc+13][iHt]!=0 && allData[cc+1][iHt]!=0){
-		 hCFDvsLED[cc][mip]->Fill(allData[cc+13][iHt]-allData[cc+1][iHt],allData[cc+1][iHt]-allData[0][0]+5000);
-		}
-	}
+	{
+	  Int_t cc = ik/2;
+	  if(allData[ik+25][0]>0 && allData[ik+26][0]>0)
+	    hQTC[cc]->Fill((allData[ik+25][0]-allData[ik+26][0]));
+	  if(allData[cc+13][0]>0 && allData[cc+1][0]>0)
+	    hLED[cc]->Fill(allData[cc+13][0]-allData[cc+1][0]);
+	  if(allData[cc+1][0] > 0) hCFD[cc]->Fill(allData[cc+1][0]);
+	  //	  printf("%i %i CFD %i LED_CFD %i\n",
+	  //	  ik,cc,allData[cc+1][0],allData[cc+1][0]);
 
+	}	   
+      
+      
       for (Int_t ik = 24; ik<48; ik+=2)
-         for (Int_t iHt=0; iHt<1; iHt++){
-		 Int_t cc = ik/2;
-                if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0 && allData[cc+45][iHt]!=0){
-                 hCFDvsQTC[cc][mip]->Fill(allData[ik+57][iHt]-allData[ik+58][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
-		}
-                if(allData[cc+57][iHt]!=0 && allData[cc+45][iHt]!=0){
-                 hCFDvsLED[cc][mip]->Fill(allData[cc+57][iHt]-allData[cc+45][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
-                }
+	{
+	  Int_t cc = ik/2;
+	   if(allData[ik+57][0]>0 && allData[ik+58][0]>0 && allData[cc+45][0]>0)
+	     hQTC[cc]->Fill(allData[ik+57][0]-allData[ik+58][0]);
+	   
+	   if(allData[cc+57][0]>0 && allData[cc+45][0]>0)
+	     hLED[cc]->Fill(allData[cc+57][0]-allData[cc+45][0]);
+	   if(allData[cc+45][0] > 0) hCFD[cc]->Fill(allData[cc+45][0]);
+	   //  printf("%i %i CFD %i LED_CFD %i\n",
+	   //  ik,cc,allData[cc+45][0],allData[cc+45][0]);
+
 	}
       
-     delete start;
-	start = 0x0;
-     reader->Reset();
+      delete start;
+      start = 0x0;
+      reader->Reset();
       // End of fill histograms
 
     }
-
+    
     /* free resources */
     free(event);
     
@@ -255,26 +265,36 @@ int main(int argc, char **argv) {
       break;
     }
   }
-  printf("After loop, before writing histos\n");
-  // write a file with the histograms
-  TFile *hist = new TFile(FILE_OUT,"RECREATE");
 
+  printf("After loop, before writing histos\n");
+  TH1F* hAmp = new TH1F("hAmpLaser"," Laser amplitude ", 1000, 0.5, 10.5);  
+  for(Int_t k=0; k<nEntries; k++)   hAmp->Fill(mipsin[k]); 
+  // write a file with the histograms
+  TFile *hist=0;
+  if(nIndex == 1 )
+    hist = new TFile(FILE_OUT,"RECREATE");
+  else
+    hist = new TFile(FILE_OUT,"UPDATE");
+  hist->cd();
+  
   for(Int_t j=0;j<24;j++)
-   for(Int_t k=0;k<10;k++)
     {
-     hCFDvsQTC[j][k]->Write();
-     hCFDvsLED[j][k]->Write();
+      if(hQTC[j]->GetEntries()>0) hQTC[j]->Write();
+      if(hLED[j]->GetEntries()>0) hLED[j]->Write();
+      if(hCFD[j]->GetEntries()>0) hCFD[j]->Write();
     }
+  hAmp->Write();
+  
   hist->Close();
   delete hist;
-
+  
   status=0;
-
+  
   /* export file to FXS */
-  if (daqDA_FES_storeFile(FILE_OUT, "LASER")) {
+  if (daqDA_FES_storeFile(FILE_OUT, "AMPLITUDE_CALIBRATION")) {
     status=-2;
   }
-
+  
   return status;
 }
 
