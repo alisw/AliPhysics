@@ -304,7 +304,8 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector();
   Double_t sign = 1.;
-  Double_t zwidth    = param->GetZWidth()*driftCorr*vdcorrectionTime;
+  Double_t zwidth    = param->GetZWidth()*driftCorr;
+  if (AliTPCRecoParam:: GetUseTimeCalibration()) zwidth*=vdcorrectionTime;
   Double_t padWidth  = 0;
   Double_t padLength = 0;
   Double_t    maxPad    = 0;

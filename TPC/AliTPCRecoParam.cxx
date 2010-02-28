@@ -53,7 +53,10 @@
 ClassImp(AliTPCRecoParam)
 
 
-
+Bool_t AliTPCRecoParam::fgUseTimeCalibration=kTRUE; // flag usage the time dependent calibration
+                                      // to be switched off for pass 0 reconstruction
+                                      // Use static function, other option will be to use 
+                                      // additional specific storage ?
 
 //_____________________________________________________________________________
 AliTPCRecoParam::AliTPCRecoParam():
@@ -82,7 +85,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fBSpecialSeeding(kFALSE),
   fBKinkFinder(kTRUE),
   fLastSeedRowSec(120),
-  fUseFieldCorrection(0),      // use field correction
+  fUseFieldCorrection(2),      // use field correction
   fUseRPHICorrection(0),      // use rphi correction
   fUseRadialCorrection(0),    // use radial correction
   fUseQuadrantAlignment(0),   // use quadrant alignment

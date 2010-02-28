@@ -17,6 +17,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
  public: 
   AliTPCRecoParam();
   virtual ~AliTPCRecoParam();
+  static   Bool_t  GetUseTimeCalibration(){ return fgUseTimeCalibration;}
+  static   void    SetUseTimeCalibration(Bool_t useTimeCalibration) {fgUseTimeCalibration = useTimeCalibration;}
+
   void     SetClusterSharing(Bool_t sharing){fBClusterSharing=sharing;}
   Bool_t   GetClusterSharing() const {return fBClusterSharing;}
   Double_t GetCtgRange() const     { return fCtgRange;}
@@ -161,6 +164,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //  misscalibration 
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix    
+  static Bool_t fgUseTimeCalibration; // flag usage the time dependent calibration
+                                      // to be switched off for pass 0 reconstruction
+                                      // Use static function, other option will be to use 
+                                      // additional specific storage ?
   ClassDef(AliTPCRecoParam, 9)
 };
 
