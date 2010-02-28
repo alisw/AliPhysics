@@ -26,5 +26,6 @@
 #pragma link C++ class AliAODMuonTrack+;
 #pragma link C++ class AliAODMuonPair+;
 #pragma link C++ class AliAnalysisTaskSEMuonsHF+;
+#pragma link C++ class AliAnalysisTaskDimuonCFContainerBuilder+;
 #endif
 
