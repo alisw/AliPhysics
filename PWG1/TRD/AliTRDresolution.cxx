@@ -416,8 +416,8 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
         AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
         fCl->Add(clInfo);
         clInfo->SetCluster(c);
-        Float_t covR[] = {cov[0], cov[1], cov[2]};
-        clInfo->SetGlobalPosition(yt, zt, dydx, dzdx, covR);
+        Float_t covRL[] = {cov[0], cov[1], cov[2]};
+        clInfo->SetGlobalPosition(yt, zt, dydx, dzdx, covRL);
         clInfo->SetResolution(dy);
         clInfo->SetAnisochronity(d);
         clInfo->SetDriftLength(dx);
