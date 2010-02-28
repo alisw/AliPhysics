@@ -47,9 +47,11 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TF1.h"
+#include "TH1.h"
+#include "THnSparse.h"
 #include "TH1D.h"
 #include "TH2D.h"
-#include "THnSparse.h"
+#include "TAxis.h"
 
 
 #include "AliLog.h"
@@ -357,4 +359,48 @@ TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t ax
   delete [] yerr;
   delete hist;
   return graphErrors;
+}
+
+
+void AliTPCcalibBase::BinLogX(THnSparse *h, Int_t axisDim) {
+
+  // Method for the correct logarithmic binning of histograms
+
+  TAxis *axis = h->GetAxis(axisDim);
+  int bins = axis->GetNbins();
+
+  Double_t from = axis->GetXmin();
+  Double_t to = axis->GetXmax();
+  Double_t *new_bins = new Double_t[bins + 1];
+
+  new_bins[0] = from;
+  Double_t factor = pow(to/from, 1./bins);
+
+  for (int i = 1; i <= bins; i++) {
+   new_bins[i] = factor * new_bins[i-1];
+  }
+  axis->Set(bins, new_bins);
+  delete new_bins;
+
+}
+void AliTPCcalibBase::BinLogX(TH1 *h) {
+
+  // Method for the correct logarithmic binning of histograms
+
+  TAxis *axis = h->GetXaxis();
+  int bins = axis->GetNbins();
+
+  Double_t from = axis->GetXmin();
+  Double_t to = axis->GetXmax();
+  Double_t *new_bins = new Double_t[bins + 1];
+
+  new_bins[0] = from;
+  Double_t factor = pow(to/from, 1./bins);
+
+  for (int i = 1; i <= bins; i++) {
+   new_bins[i] = factor * new_bins[i-1];
+  }
+  axis->Set(bins, new_bins);
+  delete new_bins;
+
 }

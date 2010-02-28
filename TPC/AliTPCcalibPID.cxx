@@ -302,7 +302,7 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
     if (seed) {
       if (meanP > 30 && TMath::Abs(trackIn->GetSnp()) < 0.2) fClusters->Fill(track->GetTPCNcls());
       // calculate dEdx
-      Double_t TPCsignalMax    = (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,0,159,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
+      Double_t tpcSignalMax    = (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,0,159,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
       //
       //
       //Double_t driftMismatch = seed->GetDriftTimeMismatch(0,0.95,0.5);
@@ -313,7 +313,7 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
       Double_t mass = 0.105658369;// muon
       
       if (meanP > 30) {
-	fPileUp->Fill(driftMismatch,TPCsignalMax);
+	fPileUp->Fill(driftMismatch,tpcSignalMax);
 	//
 	fLandau->Fill(0.1,0.6);
       }
@@ -490,16 +490,16 @@ void AliTPCcalibPID::BinLogX(THnSparse *h, Int_t axisDim) {
 
   Double_t from = axis->GetXmin();
   Double_t to = axis->GetXmax();
-  Double_t *new_bins = new Double_t[bins + 1];
+  Double_t *newBins = new Double_t[bins + 1];
    
-  new_bins[0] = from;
+  newBins[0] = from;
   Double_t factor = pow(to/from, 1./bins);
   
   for (int i = 1; i <= bins; i++) {
-   new_bins[i] = factor * new_bins[i-1];
+   newBins[i] = factor * newBins[i-1];
   }
-  axis->Set(bins, new_bins);
-  delete new_bins;
+  axis->Set(bins, newBins);
+  delete newBins;
   
 }
 
