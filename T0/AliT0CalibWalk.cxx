@@ -92,109 +92,18 @@ AliT0CalibWalk::~AliT0CalibWalk()
 {
   //
 }
-//________________________________________________________________
-void AliT0CalibWalk::SetWalk(Int_t ipmt)
-{
-  //read QTC walk graph from external file
+//________________________________________________________________  
 
-  Int_t mv, ps; 
-  Int_t x[70000], y[70000], index[70000];
-  Float_t time[10000],amplitude[10000];
-  string buffer;
-  Bool_t down=false;
-  
-  const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-Amp.txt");
-  ifstream inFile(filename);
-  if(!inFile) AliError(Form("Cannot open file %s !",filename));
-  
-  Int_t i=0;
-  while(getline(inFile,buffer)){
-    inFile >> ps >> mv;
-
-    x[i]=ps; y[i]=mv;
-    i++;
-  }
-  inFile.close();
-  //  cout<<" number of data "<<i<<endl;
- 
-  TMath::Sort(i, y, index,down);
-  Int_t amp=0, iin=0, isum=0, sum=0;
-  Int_t ind=0;
-  for (Int_t ii=0; ii<i; ii++)
-    {
-      ind=index[ii];
-      if(y[ind] == amp)
-	{
-	  sum +=x[ind];
-	  iin++;
-	}
-      else
-	{
-	  if(iin>0)
-	    time[isum] = Float_t (sum/(iin));
-	  else
-	    time[isum] =Float_t (x[ind]);
-	  amplitude[isum] = Float_t (amp);
-	  amp=y[ind];
-	  iin=0;
-	  isum++;
-	  sum=0;
-	}
-    }
-
-  inFile.close();
-
-  TGraph* gr = new TGraph(isum, amplitude, time);
-  fWalk.AddAtAndExpand(gr,ipmt);
-
-  //should be change to real
-  Double_t xq[10] = { 1220, 1370, 1542, 1697, 1860, 2023,2171,2331,2495,2684};
-  Double_t yq[10] = {1,2,3,4,5,6,7,8,9,10};
-  TGraph* gr1 = new TGraph(10, xq, yq);
-  fQTC.AddAtAndExpand(gr1,ipmt);
-}
-
-//________________________________________________________________
-
-void AliT0CalibWalk::SetAmpLEDRec(Int_t ipmt)
-{
-  // read LED walk from external file
-  Float_t mv, ps; 
-  Float_t x[100], y[100];
-  string buffer;
-  
-  const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-LED.txt");
-   ifstream inFile(filename);
-  if(!inFile) {AliError(Form("Cannot open file %s !",filename));}
-  
-  inFile >> mv>>ps;
-  Int_t i=0;
-  
-  while(getline(inFile,buffer)){
-    x[i]=mv; y[i]=ps;	
-    inFile >> mv >> ps;
-    i++;
-  }
-  inFile.close();
-  Float_t y1[100], x1[100];
-  for (Int_t ir=0; ir<i; ir++){
-    y1[ir]=y[i-ir]; x1[ir]=x[i-ir];}
-  TGraph* gr = new TGraph(i,y1,x1);
-  fAmpLEDRec.AddAtAndExpand(gr,ipmt);
-  //should be change to real
-  Double_t xq[10] = { 411, 412,413,415,417,419,422,428,437,452};
-  Double_t yq[10] = {1,2,3,4,5,6,7,8,9,10};
-  TGraph* gr1 = new TGraph(10, xq, yq);
-  fAmpLED.AddAtAndExpand(gr1,ipmt);
-  
-}
-
-//________________________________________________________________
-
-void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
+Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
   //make walk corerction for preprocessor
-  Int_t nmips=14;
+  Int_t npeaks = 20;
+  Int_t sigma=3.;
+  Bool_t down=false;
+  Int_t index[20];
+  Bool_t ok=true;
+  Float_t   mips[20];
+  
   gFile = TFile::Open(laserFile);
   if(!gFile) {
     AliError("No input laser data found ");
@@ -202,83 +111,133 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   else
     {
       //      gFile->ls();
-
-      Float_t x1[14], y1[14]; 
-      Float_t x2[14], y2[14];
-  
-      Float_t mips[14] = {1.,2,3,4,5,6,7,8,9,10,20,30,40,50};
-     
-      Float_t xx1[14],yy1[14], xx[14];
-      for (Int_t ii=0; ii<14; ii++)
-	{      x1[ii]=0; y1[ii]=0; x2[ii]=0; y2[ii]=0; }
+      TH1F* hAmp = (TH1F*) gFile->Get("hAmpLaser");
+      Int_t nmips=0;
+      for (Int_t ibin=0; ibin<1000; ibin++) {
+	Float_t bincont = hAmp->GetBinContent(ibin);
+	if(bincont>0){ 
+	  mips[nmips] = hAmp->GetXaxis()->GetBinCenter(ibin);
+	  cout<<ibin<<" bincont "<<bincont<<" amp "<< mips[nmips]<<endl;
+	  nmips++;
+	}	
+      }     
+      Float_t x1[20], y1[20]; 
+      Float_t x2[20], xx2[20],y2[20];
+      Float_t xx1[20],yy1[20], xx[20];
       
+      Float_t cfd0[24];
+      Int_t startim = 0;
       
-      TH2F*  hCFDvsQTC[24][14]; TH2F*  hCFDvsLED[24][14];
+      for (Int_t ii=0; ii<nmips; ii++)
+	x1[ii] = y1[ii] = x2[ii] = y2[ii] = 0; 
       
       for (Int_t i=0; i<24; i++)
 	{
-	  for (Int_t im=0; im<nmips; im++)
+	  for (Int_t im=startim; im<nmips; im++)
 	    {	      
-	      TString qtc = Form("CFDvsQTC%i_%i",i+1,im+1);
-	      TString led = Form("CFDvsLED%i_%i",i+1,im+1);
-	      hCFDvsQTC[i][im] = (TH2F*) gFile->Get(qtc.Data()) ;
-	      hCFDvsLED[i][im] = (TH2F*) gFile->Get(led.Data());
+	      Float_t fitmean=0;
+	      TString cfd = Form("hCFD%i_%i",i+1,im+1);
+	      TString qtc = Form("hQTC%i_%i",i+1,im+1);
+	      TString led = Form("hLED%i_%i",i+1,im+1);
 	      
-	      if(!hCFDvsQTC[i][im] || !hCFDvsLED[i][im]) 
-	      	AliWarning(Form(" no walk correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
+	      TH1F *hCFD = (TH1F*) gFile->Get(cfd.Data()) ;
+	      TH1F *hLED = (TH1F*) gFile->Get(led.Data());
+	      TH1F *hQTC = (TH1F*) gFile->Get(qtc.Data()) ;
+	      hCFD->SetDirectory(0);
+	      hQTC->SetDirectory(0);
+	      hLED->SetDirectory(0);
+	      if(!hCFD )
+ 	      	AliWarning(Form(" no CFD data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
+	      if(!hQTC )
+ 	      	AliWarning(Form(" no QTC correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
+	      if(!hLED)	      
+	      	AliWarning(Form(" no LED correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
+      	      
+	      if(hCFD )	{
+		TSpectrum *s = new TSpectrum(2*npeaks,1);
+		Int_t nfound = s->Search(hCFD,sigma," ",0.1);
+		if(nfound!=0){
+		  Float_t *xpeak = s->GetPositionX();
+		  TMath::Sort(nfound, xpeak, index,down);
+		  Float_t xp = xpeak[index[0]];
+		  Double_t hmax = xp+3*sigma;
+		  Double_t hmin = xp-3*sigma;
+		  hCFD->GetXaxis()->SetRangeUser(hmin-10,hmax+10);
+		}
+		else
+		  {
+		    hCFD->Rebin(2);
+		    TSpectrum *s = new TSpectrum(2*npeaks,1);
+		    Int_t nfound = s->Search(hCFD,sigma," ",0.1);
+		    if(nfound!=0){
+		      Float_t *xpeak = s->GetPositionX();
+		      TMath::Sort(nfound, xpeak, index,down);
+		      Float_t xp = xpeak[index[0]];
+		      Double_t hmax = xp+3*sigma;
+		      Double_t hmin = xp-3*sigma;
+		      hCFD->GetXaxis()->SetRangeUser(hmin-10,hmax+10);
+		    }
+		    else 
+		      ok=false;
+		  }
+
+		if (im == 0) cfd0[i] = hCFD->GetMean();
+		y1[im] =  hCFD->GetMean() - cfd0[i];
+	      }
+	      if( hQTC) x1[im] = hQTC->GetMean();
 	      
-	      Float_t qtc0 = hCFDvsQTC[i][0]->GetMean(2);	      
-	      if(hCFDvsQTC[i][im])
-		{	  
-		  x1[im] = hCFDvsQTC[i][im]->GetMean(1);
-		  y1[im] =  hCFDvsQTC[i][im]->GetMean(2) - qtc0;
+	      if( hLED){
+		TSpectrum *s = new TSpectrum(2*npeaks,1);
+		Int_t nfound = s->Search(hLED,sigma," ",0.1);
+		if(nfound!=0){
+		  Float_t *xpeak = s->GetPositionX();
+		  TMath::Sort(nfound, xpeak, index,down);
+		  Float_t xp = xpeak[index[0]];
+		  Double_t hmax = xp+10*sigma;
+		  Double_t hmin = xp-10*sigma;
+		  hLED->GetXaxis()->SetRangeUser(hmin-10,hmax+10);
 		}
-	      Float_t led0 = hCFDvsLED[i][0]->GetMean(2);
-	      if( hCFDvsLED[i][im]){
-		  x2[im] = hCFDvsLED[i][im]->GetMean(1);
-		  y2[im] =  hCFDvsLED[i][im]->GetMean(2) - led0;
-		}
+		else 
+		  ok=false;
+		x2[im] = hLED->GetMean();
+		xx2[im] = x2[nmips-im-1]; 
+	      }
 	      xx[im]=mips[im];
+	      
+	      if (hQTC) delete  hQTC;
+	      if (hCFD) delete  hCFD;
+	      if (hLED) delete  hLED;
 	    }
+	  
 	  for (Int_t imi=0; imi<nmips; imi++)
 	    {
 	      yy1[imi] = Float_t (mips[nmips-imi-1]);
 	      xx1[imi] = x2[nmips-imi-1]; 
+	      //	      cout<<" LED rev "<<i<<" "<<imi<<" "<<xx1[imi]<<" "<< yy1[imi]<<"nmips-imi-1 = "<< nmips-imi-1<<endl;
 	    }
-	  if(i==0) cout<<"Making graphs..."<<endl;
 	  
+	  if(i==0) cout<<"Making graphs..."<<endl;
+	   	  
 	  TGraph *grwalkqtc = new TGraph (nmips,x1,y1);
-	  TGraph *grwalkled = new TGraph (nmips,x2,y2);
+	  grwalkqtc->SetTitle(Form("PMT%i",i));
+	  TGraph *grwalkled = new TGraph (nmips,x2,y1);
+	  grwalkled->SetTitle(Form("PMT%i",i));
 	  fWalk.AddAtAndExpand(grwalkqtc,i);
 	  fAmpLEDRec.AddAtAndExpand(grwalkled,i);
+	  //	  cout<<" add walk "<<i<<endl;
 	 
 	  //fit amplitude graphs to make comparison wth new one	  
 	  TGraph *grampled = new TGraph (nmips,xx1,yy1);
 	  TGraph *grqtc = new TGraph (nmips,x1,xx);
 	  fQTC.AddAtAndExpand(grqtc,i);	 
 	  fAmpLED.AddAtAndExpand(grampled,i);
+	  //	  cout<<" add amp "<<i<<endl;
 
-	  //fit amplitude graphs
-	  Double_t parled [2], parqtc[2];
-
-	  TF1 *fuled = new TF1("fuled","expo",x1[0],x1[nmips]);
-	  TF1 *fuqtc = new TF1 ("fuqtc","pol1",x1[0],x1[nmips]);
-	  grqtc->Fit("fuqtc","Q"," ",x1[0],x1[nmips]);
-	  grampled->Fit("fuled","Q"," ",xx1[0],xx1[nmips]);
-	  fuled->GetParameters(&parled[0]);
-	  fuqtc->GetParameters(&parqtc[0]);
-
-	  for(Int_t ipar=0; ipar<2; ipar++) {
-	    SetQTCpar(i,ipar,parqtc[ipar]);
-	    SetAmpLEDpar(i,ipar,parled[ipar]);
-	    //	    cout<<" pars :::: "<<i<<" "<<ipar<<" qtc "<<parqtc[ipar]<<" led "<<parled[ipar]<<endl;
-	  }
-
-	  if(i==23){
+	  if(i==23)
 	    cout<<"Graphs created..."<<endl;
-	  }
 	}
     } //if gFile exits
+  return ok;
 }
 
 

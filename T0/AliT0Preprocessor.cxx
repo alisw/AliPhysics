@@ -65,7 +65,7 @@ AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) :
   //constructor
   AddRunType("PHYSICS");
   AddRunType("STANDALONE");
-  //  AddRunType("LASER");
+  AddRunType("AMPLITUDE_CALIBRATION");
 }
 //____________________________________________________
 
@@ -92,8 +92,8 @@ Bool_t AliT0Preprocessor::ProcessDCS(){
 	Log(Form("ProcessDCS - RunType: %s",runType.Data()));
 
 	if((runType == "STANDALONE")||
-	   (runType == "PHYSICS") ) {
-	   //	  || (runType == "LASER")){
+	   (runType == "PHYSICS") 
+	   || (runType == "AMPLITUDE_CALIBRATION")){
 
 	  //	  return kFALSE;
 	  	return kTRUE;
@@ -141,111 +141,58 @@ UInt_t AliT0Preprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap){
 }
 //____________________________________________________
 
-UInt_t AliT0Preprocessor::ProcessLaser(){
-	// Processing data from DAQ Standalone run
+UInt_t AliT0Preprocessor::ProcessLaser()
+{
+  // Processing data from DAQ Standalone run
   Log("Processing Laser calibration - Walk Correction");
-  
-  //Retrieve the last T0 calibration object
-
-  Float_t parqtcold[24][2], parledold[24][2],parqtcnew[24][2], parlednew[24][2] , goodled[24][2], goodqtc[24][2];
-
-  //  std::cout<<"sizeof "<<sizeof(parqtcold)<<std::endl;
-  memset(parqtcold, 0, sizeof(parqtcold));
-  memset(parqtcnew, 0, sizeof(parqtcnew));
-  memset(parledold, 0, sizeof(parledold));
-  memset(parlednew, 0, sizeof(parlednew));
-  Int_t iStore=0;
-
-
-  AliT0CalibWalk* clb=0;
-  AliCDBEntry* entryCalib = GetFromOCDB("Calib", "Slewing_Walk");
-  if(!entryCalib)
-    Log(Form("Cannot find any AliCDBEntry for [Calib, SlewingWalk]!"));
-  else {
-    clb =dynamic_cast<AliT0CalibWalk*>(entryCalib->GetObject());
-    for(Int_t i=0; i<24; i++)
-      {
-	for(Int_t ipar=0; ipar<2; ipar++)
-	  {
-	    //    std::cout<<"parqtcold "<<parqtcold[i][ipar]<<std::endl;
-	    parqtcold[i][ipar] = clb->GetQTCpar(i,ipar);
-	    parledold[i][ipar] = clb->GetLEDpar(i, ipar);
-	    goodqtc[i][ipar] = 999;
-	    goodled[i][ipar] = 999;
-	    //    std:: cout<<" old "<<i<<" "<<ipar<<" qtc "<< parqtcold[i][ipar]<<" led "<<parledold[i][ipar]<< std::endl;
-	  }
-      }
-  }
-
-
-    Bool_t resultLaser=kFALSE;
-    //processing DAQ
-    TList* list = GetFileSources(kDAQ, "LASER");
-    if (list)
-      {
-	TIter iter(list);
-	TObjString *source;
-	while ((source = dynamic_cast<TObjString *> (iter.Next())))
-	  {
-	    const char *laserFile = GetFile(kDAQ, "LASER", source->GetName());
-	    if (laserFile)
-              {
-                Log(Form("File with Id LASER found in source %s!", source->GetName()));
-                AliT0CalibWalk *laser = new AliT0CalibWalk();
-                laser->MakeWalkCorrGraph(laserFile);
-		//check difference with what was before
-		if(laser && clb ){
-		  iStore = 1;				
-		  for(Int_t i=0; i<24; i++)
-		    {
-		      for(Int_t ifit=0; ifit<2; ifit++)
-			{
-			  parqtcnew[i][ifit] = laser->GetQTCpar(i,ifit);
-			  if( parqtcold[i][ifit] != 0 && parqtcnew[i][ifit] !=0) 
-			    {
-			      goodqtc[i][ifit] = 
-				(parqtcnew[i][ifit] - parqtcold[i][ifit])/parqtcold[i][ifit];
-			      //			       std::cout<<"qtc "<<i<<" "<<ifit<<" "<< goodqtc[i][ifit]<< std::endl;
-			    }
-			  parlednew[i][ifit] = laser->GetLEDpar(i,ifit);
-			  if(parledold[i][ifit] != 0 && parlednew[i][ifit]!= 0 ) 
-			    {
-			      goodled[i][ifit]= 
-				(parlednew[i][ifit] - parledold[i][ifit])/parledold[i][ifit];   
-			      //			       std::cout<<"led "<<i<<" "<<ifit<<" "<< goodled[i][ifit]<< std::endl;
-			    }			
-			  //	  if(TMath::Abs(goodqtc[i][ifit])>0.1 || 
-			  //	     TMath::Abs(goodled[i][ifit])>0.1) 
-			  //	    iStore = 0;
-			}
-		    }
-		}
-
-		AliCDBMetaData metaData;
-		metaData.SetBeamPeriod(0);
-                metaData.SetResponsible("Tomek&Michal");
-                metaData.SetComment("Walk correction from laser runs.");
-		if( iStore>0)
-		  resultLaser=Store("Calib","Slewing_Walk", laser, &metaData, 0, 1);
-                delete laser;
-		Log(Form("resultLaser = %d",resultLaser));
-              }
-              else
-              {
-                Log(Form("Could not find file with Id LASER in source %s!", source->GetName()));
-                return 1;
-              }
-            }
-            if (!resultLaser)
-            {
-              Log("No Laser Data stored");
-              return 3;//return error code for failure in storing Laser Data
-            }
-          } else {
-	  	Log("No sources found for id LASER!");
-		return 1;
-	  }
+  Bool_t resultLaser = kFALSE;
+  Bool_t writeok = kFALSE;
+  //processing DAQ
+  TObjString *source;
+  TList* list = GetFileSources(kDAQ, "AMPLITUDE_CALIBRATION");
+  AliT0CalibWalk *laser = new AliT0CalibWalk();
+  if (list)
+    {
+      TIter iter(list);
+      while ((source = dynamic_cast<TObjString *> (iter.Next())))
+	{
+	  const char *laserFile = GetFile(kDAQ, "AMPLITUDE_CALIBRATION", source->GetName());
+	  if (laserFile)
+	    {
+	      Log(Form("File with Id LASER found in source %s!", source->GetName()));
+	     writeok = laser->MakeWalkCorrGraph(laserFile);
+	      
+	    }
+	}
+      
+      AliCDBMetaData metaData;
+      metaData.SetBeamPeriod(0);
+      metaData.SetResponsible("Tomek&Michal");
+      metaData.SetComment("Walk correction from laser runs.");
+      if (writeok) resultLaser=Store("Calib","Slewing_Walk", laser, &metaData, 0, 1);
+      else {
+	
+	Log(Form("writeok = %d no peaks in CFD spectra",writeok));
 	return 0;
+      }		  
+      Log(Form("resultLaser = %d",resultLaser));
+    }
+  else
+    {
+      Log(Form("Could not find file with Id LASER in source %s!", source->GetName()));
+      return 1;
+    }
+  
+  if (!resultLaser)
+    {
+      Log("No Laser Data stored");
+      return 3;//return error code for failure in storing Laser Data
+    }
+  else {
+    Log("No sources found for id LASER!");
+    return 1;
+  }
+  return 0;
 }
 
 //____________________________________________________
@@ -326,8 +273,8 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
       return iresultDCS;
     }
   }
-  /*
-  if(runType == "LASER"){
+  
+  if(runType == "AMPLITUDE_CALIBRATION"){
     Int_t iresultLaser = ProcessLaser();
     if(dcsDP==1){
       Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
@@ -337,7 +284,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
     Log(Form("iresultLaser = %d",iresultLaser));
     return iresultLaser;
   }
-  */
+  
   else if(runType == "PHYSICS"){
     Int_t iresultPhysics = ProcessPhysics();
     if(dcsDP==1){
