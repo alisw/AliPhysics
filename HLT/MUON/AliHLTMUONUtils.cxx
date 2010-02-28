@@ -174,7 +174,7 @@ void AliHLTMUONUtils::UnpackTrackFlags(
 	
 	for (AliHLTUInt32_t i = 0; i < 16; i++)
 	{
-		hitset[i] = ((flags & (0x1 << i)) == (0x1 << i));
+		hitset[i] = ((flags & (0x1u << i)) == (0x1u << i));
 	}
 }
 
