@@ -277,7 +277,7 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 
 }
 //________________________________________________________________________
-const Float_t AliCFMuonSingleTask1::Rap(Float_t e, Float_t pz) 
+Float_t AliCFMuonSingleTask1::Rap(Float_t e, Float_t pz) 
 {
 // calculate rapidity
     Float_t rap;
@@ -291,7 +291,7 @@ const Float_t AliCFMuonSingleTask1::Rap(Float_t e, Float_t pz)
     }
 }
 //________________________________________________________________________
-const Float_t AliCFMuonSingleTask1::Phideg(Float_t phi) 
+Float_t AliCFMuonSingleTask1::Phideg(Float_t phi) 
 {
 // calculate Phi in range [-180,180] 
     Float_t phideg;

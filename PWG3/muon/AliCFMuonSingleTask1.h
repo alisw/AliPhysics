@@ -63,8 +63,8 @@ class AliCFMuonSingleTask1 : public AliAnalysisTaskSE {
   TH1I           *fHistEventsProcessed; // simple histo for monitoring the number of events processed
   Int_t           fNevt        ;   // event countor
 
- const Float_t Rap(Float_t e, Float_t pz);
- const Float_t Phideg(Float_t phi);
+ Float_t Rap(Float_t e, Float_t pz);
+ Float_t Phideg(Float_t phi);
   
   ClassDef(AliCFMuonSingleTask1,1);
 };
