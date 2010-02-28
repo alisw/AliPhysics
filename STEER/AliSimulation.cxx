@@ -196,6 +196,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fRunQA(kTRUE), 
   fEventSpecie(AliRecoParam::kDefault),
   fWriteQAExpertData(kTRUE), 
+  fGeometryFile(),
   fRunHLT("default"),
   fpHLT(NULL),
   fWriteGRPEntry(kTRUE)
@@ -526,7 +527,7 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   }
   
   // Export ideal geometry 
-  if(!gAlice->IsRootGeometry()) AliGeomManager::GetGeometry()->Export("geometry.root");
+  if(!IsGeometryFromFile()) AliGeomManager::GetGeometry()->Export("geometry.root");
 
   // Load alignment data from CDB and apply to geometry through AliGeomManager
   if(fLoadAlignFromCDB){

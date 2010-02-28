@@ -50,6 +50,7 @@
 #include "AliRun.h"
 #include "AliTrackReference.h"
 #include "AliMC.h"
+#include "AliSimulation.h"
 #include "AliRawDataHeader.h"
 
 #include "AliDAQ.h"
@@ -156,7 +157,7 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
   uniquename.Append("_");
   uniquename.Append(name);
   //if geometry loaded from file only fill fIdmate, else create material too
-  if(gAlice->IsRootGeometry()){
+  if(AliSimulation::Instance()->IsGeometryFromFile()){
     TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
     kmat = mat->GetUniqueID();
     (*fIdmate)[imat]=kmat;
@@ -224,7 +225,7 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
   uniquename.Append("_");
   uniquename.Append(name);
   //if geometry loaded from file only fill fIdmate, else create mixture too
-  if(gAlice->IsRootGeometry()){
+  if(AliSimulation::Instance()->IsGeometryFromFile()){
     TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
     kmat = mat->GetUniqueID();
     (*fIdmate)[imat]=kmat;
@@ -270,7 +271,7 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
   uniquename.Append("_");
   uniquename.Append(name);
   //if geometry loaded from file only fill fIdtmed, else create medium too
-  if(gAlice->IsRootGeometry()){
+  if(AliSimulation::Instance()->IsGeometryFromFile()){
     TGeoMedium *med = gGeoManager->GetMedium(uniquename.Data());
     kmed = med->GetId();
     (*fIdtmed)[numed]=kmed;

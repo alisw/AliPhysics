@@ -73,9 +73,6 @@ AliRun::AliRun():
   fConfigFunction(""),
   fRandom(0),
   fBaseFileName(""),
-  fIsRootGeometry(kFALSE),
-  fGeometryFromCDB(kFALSE),
-  fGeometryFileName(""),
   fTriggerDescriptor(""),
   fRunLoader(0x0)
 {
@@ -97,9 +94,6 @@ AliRun::AliRun(const char *name, const char *title):
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
   fBaseFileName(""),
-  fIsRootGeometry(kFALSE),
-  fGeometryFromCDB(kFALSE),
-  fGeometryFileName(""),
   fTriggerDescriptor(""),
   fRunLoader(0x0)
 {
@@ -154,30 +148,6 @@ AliRun::~AliRun()
   
 }
 
-
-//_______________________________________________________________________
-void AliRun::SetRootGeometry(Bool_t flag)
-{
-// Instruct application that the geometry is to be retreived from a root file.
-   fIsRootGeometry = flag;
-   if (flag && gMC) gMC->SetRootGeometry();
-}
-
-//_______________________________________________________________________
-void AliRun::SetGeometryFromCDB()
-{
-  // Set the loading of geometry from cdb instead of creating it
-  // A default CDB storage needs to be set before this method is called
-  if(AliCDBManager::Instance()->IsDefaultStorageSet() &&
-  	AliCDBManager::Instance()->GetRun() >= 0){
-    SetRootGeometry();
-    fGeometryFromCDB = kTRUE;
-  }else{
-    AliError("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliError("Loading of geometry from CDB ignored. First set a default CDB storage!");
-    AliError("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  }
-}
 
 //_____________________________________________________________________________
 

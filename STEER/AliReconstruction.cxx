@@ -1608,6 +1608,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   static Long_t oldMres=0;
   static Long_t oldMvir=0;
   static Float_t oldCPU=0;
+  static Long_t aveDMres=0;
+  static Long_t aveDMvir=0;
+  static Float_t aveDCPU=0;
 
   AliCodeTimerAuto("",0);
 
@@ -1632,6 +1635,14 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   // Fill Event-info object
   GetEventInfo();
   fRecoParam.SetEventSpecie(fRunInfo,fEventInfo,fListOfCosmicTriggers);
+  
+  ProcInfo_t procInfo;
+  if(iEvent==fFirstEvent) {
+    gSystem->GetProcInfo(&procInfo);
+    oldMres=procInfo.fMemResident;
+    oldMvir=procInfo.fMemVirtual;
+    oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;
+  }
   AliInfo(Form("================================= Processing event %d of type %-10s ==================================", iEvent,fRecoParam.PrintEventSpecie()));
 
   // Set the reco-params
@@ -1971,11 +1982,15 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       new (fesdf) AliESDfriend(); // Reset...
     }
  
-    ProcInfo_t procInfo;
     gSystem->GetProcInfo(&procInfo);
-    AliInfo(Form("========================= End Event %d: memory res %d(%3d) vir %d(%3d) CPU %5.2f =====================",
-		 iEvent, procInfo.fMemResident/1024, (procInfo.fMemResident-oldMres)/1024, 
-		 procInfo.fMemVirtual/1024,(procInfo.fMemVirtual-oldMvir)/1024,procInfo.fCpuUser+procInfo.fCpuSys-oldCPU));
+    Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
+    Long_t dMvir=(procInfo.fMemVirtual-oldMvir)/1024;
+    Float_t dCPU=procInfo.fCpuUser+procInfo.fCpuSys-oldCPU;
+    aveDMres+=(dMres-aveDMres)/(iEvent-fFirstEvent+1);
+    aveDMvir+=(dMvir-aveDMvir)/(iEvent-fFirstEvent+1);
+    aveDCPU+=(dCPU-aveDCPU)/(iEvent-fFirstEvent+1);
+    AliInfo(Form("======================= End Event %d: Res %d(%3d <%3d>) Vir %d(%3d <%3d>) CPU %5.2f <%5.2f> ===================",
+		 iEvent, procInfo.fMemResident/1024, dMres, aveDMres, procInfo.fMemVirtual/1024, dMvir, aveDMvir, dCPU, aveDCPU));
     oldMres=procInfo.fMemResident;
     oldMvir=procInfo.fMemVirtual;
     oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;

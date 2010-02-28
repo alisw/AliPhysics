@@ -106,6 +106,10 @@ public:
    virtual void       RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
    virtual void       ResetTrackReferences();
    virtual void       FixParticleDecaytime();
+// Geometry related
+   void           SetGeometryFromCDB();
+   Bool_t         IsGeometryFromCDB() const;
+
  private:
    AliMC(const AliMC&); // Not implemented
    AliMC& operator= (const AliMC&); // Not implemented

@@ -124,8 +124,8 @@ void  AliMC::ConstructGeometry()
   // at InitGeometry().
   //
 
-  if(gAlice->IsRootGeometry()){ //load geometry either from CDB or from file
-    if(gAlice->IsGeomFromCDB()){
+  if(AliSimulation::Instance()->IsGeometryFromFile()){ //load geometry either from CDB or from file
+    if(IsGeometryFromCDB()){
       AliInfo("Loading geometry from CDB default storage");
       AliCDBPath path("GRP","Geometry","Data");
       AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
@@ -135,7 +135,7 @@ void  AliMC::ConstructGeometry()
       if (!gGeoManager) AliFatal("TGeoManager object not found in the specified CDB entry!");
     }else{
       // Load geometry
-      const char *geomfilename = gAlice->GetGeometryFileName();
+      const char *geomfilename = AliSimulation::Instance()->GetGeometryFile();
       if(gSystem->ExpandPathName(geomfilename)){
 	AliInfo(Form("Loading geometry from file:\n %40s",geomfilename));
 	TGeoManager::Import(geomfilename);
@@ -166,19 +166,19 @@ void  AliMC::ConstructGeometry()
 //_______________________________________________________________________
 Bool_t  AliMC::MisalignGeometry() 
 {
-// Call misalignment code if AliSimulation object was defined.
-
-   if(!gAlice->IsRootGeometry()){
-     //Set alignable volumes for the whole geometry
-     SetAllAlignableVolumes();
-   }
-   // Misalign geometry via AliSimulation instance
-   if (!AliSimulation::Instance()) return kFALSE;
-   AliGeomManager::SetGeometry(gGeoManager);
-   if(!AliGeomManager::CheckSymNamesLUT("ALL"))
+  // Call misalignment code if AliSimulation object was defined.
+  
+  if(!AliSimulation::Instance()->IsGeometryFromFile()){
+    //Set alignable volumes for the whole geometry
+    SetAllAlignableVolumes();
+  }
+  // Misalign geometry via AliSimulation instance
+  if (!AliSimulation::Instance()) return kFALSE;
+  AliGeomManager::SetGeometry(gGeoManager);
+  if(!AliGeomManager::CheckSymNamesLUT("ALL"))
     AliFatal("Current loaded geometry differs in the definition of symbolic names!");
-
-   return AliSimulation::Instance()->MisalignGeometry(AliRunLoader::Instance());
+  
+  return AliSimulation::Instance()->MisalignGeometry(AliRunLoader::Instance());
 }   
 
 //_______________________________________________________________________
@@ -193,7 +193,7 @@ void  AliMC::ConstructOpGeometry()
   AliInfo("Optical properties definition");
   while((detector = dynamic_cast<AliModule*>(next()))) {
     // Initialise detector geometry
-    if(gAlice->IsRootGeometry()) detector->CreateMaterials();
+    if(AliSimulation::Instance()->IsGeometryFromFile()) detector->CreateMaterials();
     // Initialise detector optical properties
     detector->DefineOpticalProperties();
   }  
@@ -216,6 +216,24 @@ void  AliMC::InitGeometry()
     AliInfo(Form("%10s R:%.2fs C:%.2fs",
 		 detector->GetName(),stw.RealTime(),stw.CpuTime()));
   }
+}
+
+//_______________________________________________________________________
+void AliMC::SetGeometryFromCDB()
+{
+  // Set the loading of geometry from cdb instead of creating it
+  // A default CDB storage needs to be set before this method is called
+  if(AliCDBManager::Instance()->IsDefaultStorageSet() &&
+     AliCDBManager::Instance()->GetRun() >= 0)
+    AliSimulation::Instance()->SetGeometryFile("*OCDB*");
+  else
+    AliError("Loading of geometry from CDB ignored. First set a default CDB storage!");
+}
+
+//_______________________________________________________________________
+Bool_t AliMC::IsGeometryFromCDB() const
+{
+  return (strcmp(AliSimulation::Instance()->GetGeometryFile(),"*OCDB*")==0);
 }
 
 //_______________________________________________________________________

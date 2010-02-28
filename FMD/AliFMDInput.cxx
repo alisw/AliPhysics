@@ -294,12 +294,12 @@ AliFMDInput::Init()
   // Optionally, get the geometry 
   if (TESTBIT(fTreeMask, kGeometry)) {
     if (fRun) {
-      TString fname(fRun->GetGeometryFileName());
-      if (fname.IsNull()) {
+      TString fname(""/*fRun->GetGeometryFileName()*/);
+      //   if (fname.IsNull()) {
 	Warning("Init", "No file name for the geometry from AliRun");
 	fname = gSystem->DirName(fGAliceFile);
 	fname.Append("/geometry.root");
-      }
+	//      }
       fGeoManager = TGeoManager::Import(fname.Data());
       if (!fGeoManager) {
 	Fatal("Init", "No geometry manager found");

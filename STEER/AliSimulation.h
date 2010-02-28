@@ -104,6 +104,12 @@ public:
 				   const char* rootFileName = "raw.root");
   virtual Bool_t ConvertRaw2SDigits(const char* rawDirectory, const char* esdFile = "");
 
+  // Sets the name of the file from which the geometry is loaded
+  virtual void SetGeometryFile(const Char_t* filename) {fGeometryFile=filename;}
+  virtual const Char_t* GetGeometryFile() const {return fGeometryFile.Data();}
+  virtual Bool_t IsGeometryFromFile() const {return !fGeometryFile.IsNull();}
+
+
   // HLT
   void SetRunHLT(const char* options) {fRunHLT=options;}
   virtual Bool_t CreateHLT();
@@ -186,13 +192,15 @@ private:
   AliRecoParam::EventSpecie_t fEventSpecie ;            // type of event (see AliRecoParam::EventSpecie_t)
   Bool_t               fWriteQAExpertData ;             //! decides wheter or not to write experts QA data; true by default
 
+  TString              fGeometryFile;                   // Geometry file
+
   //HLT
   TString              fRunHLT;       //! HLT options, HLT is disabled if empty, default='default'
   AliHLTSimulation*    fpHLT;         //! The instance of HLT simulation
 
   Bool_t         fWriteGRPEntry;      // Write or not GRP entry corresponding to the settings in Config.C
 
-  ClassDef(AliSimulation, 10)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 11)  // class for running generation, simulation and digitization
 };
 
 #endif

@@ -36,6 +36,7 @@
 #include "AliMpDEManager.h"
 
 #include "AliModule.h"
+#include "AliSimulation.h"
 #include "AliLog.h"
 #include "AliRun.h"
 
@@ -571,7 +572,7 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
 /// Initialize geometry
 
   // Load alignement data from geometry if geometry is read from Root file
-  if ( gAlice->IsRootGeometry() ) {
+  if ( AliSimulation::Instance()->IsGeometryFromFile() ) {
     fAlign = true;
     fGeometry->GetTransformer()->LoadGeometryData();
  }    
