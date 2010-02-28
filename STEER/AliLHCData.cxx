@@ -79,7 +79,7 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
     //
     sprintf(buff,fgkDCSNames[kRecTotInt],ibm+1);  
     if ( !(arr=GetDCSEntry(dcsMap,buff,iEntry,tmin,tmax)) || iEntry<0 ) continue;
-    AliLHCDipValD* curVal;
+    AliLHCDipValD* curVal = 0;
     tPeriodEnd = 0;
     //
     nEntries = arr->GetEntriesFast();
@@ -104,7 +104,7 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
     //
     sprintf(buff,fgkDCSNames[kRecTotIntBunch],ibm+1);  
     if ( !(arr=GetDCSEntry(dcsMap,buff,iEntry,tmin,tmax)) || iEntry<0 ) continue;
-    AliLHCDipValD* curVal;
+    AliLHCDipValD* curVal = 0;
     tPeriodEnd = 0;
     //
     nEntries = arr->GetEntriesFast();
@@ -154,7 +154,7 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
     //
     sprintf(buff,fgkDCSNames[kRecCrossAngle],ilr ? 'L':'R');  
     if ( !(arr=GetDCSEntry(dcsMap,buff,iEntry,tmin,tmax)) || iEntry<0 ) continue;
-    AliLHCDipValD* curVal=0;
+    AliLHCDipValD* curVal = 0;
     tPeriodEnd = 0;
     //
     nEntries = arr->GetEntriesFast();
@@ -198,7 +198,7 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
     //
     sprintf(buff,fgkDCSNames[kRecBunchInt],ibm+1);  
     if ( !(arr=GetDCSEntry(dcsMap,buff,iEntry,tmin,tmax)) || iEntry<0 ) continue;
-    AliLHCDipValD* curVal=0;
+    AliLHCDipValD* curVal = 0;
     tPeriodEnd = 0;
     //
     dcsVal = (AliDCSArray*)arr->At(iEntry);
@@ -244,7 +244,7 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
     //
     sprintf(buff,fgkDCSNames[kRecBunchLum],ilr ? 'L':'R');  
     if ( !(arr=GetDCSEntry(dcsMap,buff,iEntry,tmin,tmax)) || iEntry<0 ) continue;
-    AliLHCDipValD* curVal=0;
+    AliLHCDipValD* curVal = 0;
     tPeriodEnd = 0;
     //
     dcsVal = (AliDCSArray*) arr->At(iEntry);
@@ -303,7 +303,7 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
       int entPar[3];
       TObjArray *arrPar[3];
       AliDCSArray *dcsPar[3];
-      AliLHCDipValD* curVal=0;
+      AliLHCDipValD* curVal = 0;
       double tstamp = 0;
       int npars = 0;
       for (int ipar=0;ipar<3;ipar++) {
