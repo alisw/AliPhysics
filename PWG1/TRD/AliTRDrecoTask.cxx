@@ -46,6 +46,7 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fkTrack(0x0)
   ,fkMC(0x0)
   ,fkESD(0x0)
+  ,fDebugLevel(0)  
   ,fPlotFuncList(0x0)
 {
 }
@@ -58,6 +59,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char */*title*/)
   ,fkTrack(0x0)
   ,fkMC(0x0)
   ,fkESD(0x0)
+  ,fDebugLevel(0)  
   ,fPlotFuncList(0x0)
 {
   DefineInput (1, TObjArray::Class());
