@@ -17,9 +17,9 @@ AliFemtoBasicEventCut::AliFemtoBasicEventCut() :
   fEventMult(),
   fVertZPos(),
   fAcceptBadVertex(false), 
-  fAcceptOnlyPhysics(true), 
   fNEventsPassed(0), 
-  fNEventsFailed(0)
+  fNEventsFailed(0),
+  fAcceptOnlyPhysics(true)
 {
   // Default constructor
   fEventMult[0] = 0;
