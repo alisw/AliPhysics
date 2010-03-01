@@ -37,9 +37,9 @@ class AliAnalysisTaskSEDStar : public AliAnalysisTaskSE
   void	       SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void         PIDon() {fPID=kTRUE;}
   void         PIDoff() {fPID=kFALSE;}
-  const Bool_t       GetPIDStatus() {return fPID;}
+  Bool_t       GetPIDStatus() const {return fPID;}
   void         SetNSigmaTPC(Double_t nsigma) {fNSigma=nsigma;}
-  const Double_t     GetNSigmaTPC() {return fNSigma;}
+  Double_t     GetNSigmaTPC() const {return fNSigma;}
  private:
 
   AliAnalysisTaskSEDStar(const AliAnalysisTaskSEDStar &source);
