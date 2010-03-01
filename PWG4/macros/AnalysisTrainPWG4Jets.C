@@ -273,11 +273,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       cout_aod->SetSpecialOutput();
    }
    // Debugging if needed
+
    if (kUseDebug){
      mgr->SetDebugLevel(3);
    }
-   mgr->SetDebugLevel(0);
-   AliLog::SetGlobalLogLevel(AliLog::kError);
+   else{
+     AliLog::SetGlobalLogLevel(AliLog::kError);
+   }
    //==========================================================================
    // Create the chain. In this example it is created only from ALIEN files but
    // can be done to work in batch or grid mode as well.
@@ -397,18 +399,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskUE *taskUE = 0;
      if(iPWG4UE&1)taskUE = AddTaskUE(); 
      if(iPWG4UE&2){
-       taskUE = AddTaskUE("jetsAOD_CDF07","CDF","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_UA1LO07","CDF","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_UA1LO07","CDF","BB","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_FASTJET04","CDF","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_SISCONE04","CDF","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_CDF07","ALICE","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_UA1LO07","ALICE","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_UA1LO07","ALICE","BB","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_FASTKT04","ALICE","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_FASTJET04","ALICE","LJ","TRANSV"); 
-       taskUE = AddTaskUE("jetsAOD_SISCONE04","ALICE","LJ","TRANSV"); 
+       taskUE = AddTaskUE("jetsAOD_CDF07","CDF","LJ","TRANSV","MSP"); 
+       taskUE = AddTaskUE("jetsAOD_CDF07","CDF","LJCC","TRANSV","MSP"); 
+       taskUE = AddTaskUE("jetsAOD_CDF07","CDF","LJ","TRANSV","MAP"); 
+       taskUE = AddTaskUE("jetsAOD_ICDF","CDF","LJ","TRANSV","MSP"); 
+       taskUE = AddTaskUE("jetsAOD_ICDF","CDF","LJCC","TRANSV","MSP"); 
+       taskUE = AddTaskUE("jetsAOD_ICDF","CDF","LJCC","TRANSV","MAP"); 
+       taskUE = AddTaskUE("jetsAOD_NONE","CDF","MP","TRANSV","MSP"); 
+       taskUE = AddTaskUE("jetsAOD_NONE","CDF","MP","TRANSV","MAP") 
+	 taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV","MSP"); 
+       taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV","MAP");
      }
 
      if (!taskUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskUE cannot run for this train conditions - EXCLUDED");
@@ -684,7 +684,8 @@ void CheckModuleFlags(const char *mode) {
 
      }
      if (!kUseTR) {
-       //         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "iPWG2evchar disabled if not reading track references");
+       ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "iPWG4QATPC disabled if not reading track references");
+       iPWG4PtQAMC        = 0;
      }   
      if (iJETAN){
        iESDfilter=1;
