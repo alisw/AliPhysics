@@ -25,7 +25,6 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TF1.h"
 #include "TCanvas.h"
 #include "AliLog.h"
 #include "AliESDEvent.h"
@@ -259,6 +258,8 @@ void AliAnaVZEROQA::UserCreateOutputObjects()
 
 void AliAnaVZEROQA::UserExec(Option_t */*option*/)
 {
+  // Fill the QA histograms
+  // using ESD data
   AliVEvent* event = InputEvent();
   if (!event) {
     Printf("ERROR: Could not retrieve event");
@@ -365,6 +366,8 @@ void AliAnaVZEROQA::UserExec(Option_t */*option*/)
 
 void AliAnaVZEROQA::Terminate(Option_t *)
 {
+  // Store the output histograms
+  // from the list
   fListOfHistos = dynamic_cast<TList*>(GetOutputData(1));
   if (!fListOfHistos) {
     Printf("ERROR: fListOfHistos not available");
@@ -490,18 +493,18 @@ void AliAnaVZEROQA::Terminate(Option_t *)
   Info("AliAnaVZEROQA", "Successfully finished");
 }
 
-Float_t AliAnaVZEROQA::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc)
+Float_t AliAnaVZEROQA::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const
 {
   // Correct for slewing and align the channels
 
-  if (time == 0) return 0;
+  if (time < 1e-6) return 0;
 
   // Time offsets between channels
   Float_t timeShift[64] = {30.2914 , 30.0019 , 30.7429 , 30.1997 , 30.1511 , 29.6437 , 30.0609 , 29.5452 , 30.1437 , 30.745 , 30.7537 , 30.446 , 30.2771 , 30.838 , 30.3748 , 30.0635 , 30.1786 , 30.282 , 31.0992 , 30.7491 , 30.624 , 30.9268 , 30.6585 , 30.4895 , 31.5815 , 31.3871 , 31.2032 , 31.5778 , 31.0838 , 31.2259 , 31.2122 , 31.5989 , 28.3792 , 28.8325 , 27.8719 , 28.3475 , 26.9925 , 27.9300 , 28.4223 , 28.4996 , 28.2934 , 28.1281 , 27.209 , 28.5327 , 28.1181 , 28.0888 , 29.5111 , 28.6601 , 29.7705 , 29.6531 , 30.3373 , 30.2345 , 30.5935 , 29.8164 , 30.2235 , 29.6505 , 30.1225 , 31.2045 , 30.8399 , 30.6789 , 30.2784 , 31.7028 , 31.4239 , 30.1814};
   time -= timeShift[i];
 
   // Slewing correction
-  if (adc == 0) return time;
+  if (adc < 1e-6) return time;
 
   time += 30.;
   if (adc > 300.) adc = 300.;
