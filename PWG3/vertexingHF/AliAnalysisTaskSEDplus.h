@@ -63,8 +63,20 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TList   *fOutput; //! list send on output slot 0
   TH1F    *fHistNEvents; //!hist. for No. of events
   TH1F *fMassHist[3*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH1F*   fCosPHist[3*kMaxPtBins]; //!hist. for PointingAngle (LC)
+  TH1F*   fDLenHist[3*kMaxPtBins]; //!hist. for Dec Length (LC)
+  TH1F*   fSumd02Hist[3*kMaxPtBins]; //!hist. for sum d02 (LC)
+  TH1F*   fSigVertHist[3*kMaxPtBins]; //!hist. for sigVert (LC)
+  TH1F*   fPtMaxHist[3*kMaxPtBins]; //!hist. for Pt Max (LC)
+  TH1F*   fDCAHist[3*kMaxPtBins]; //!hist. for DCA (LC)
   TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TH1F *fMassHistLS[5*kMaxPtBins];//!hist. for LS inv mass (LC)
+  TH1F *fCosPHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 1 (LC)
+  TH1F *fDLenHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 2 (LC)
+  TH1F *fSumd02HistLS[3*kMaxPtBins];//!hist. for LS cuts variable 3 (LC)
+  TH1F *fSigVertHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 4 (LC)
+  TH1F *fPtMaxHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 5 (LC)
+  TH1F *fDCAHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 6 (LC)
   TH1F *fMassHistLSTC[5*kMaxPtBins];//!hist. for LS inv mass (TC)
   TNtuple *fNtupleDplus; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
