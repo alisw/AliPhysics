@@ -1,4 +1,4 @@
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec = "jets",char* bGen = "jetsAODMC_UA104",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1);
 
 
 AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1,UInt_t iFlag){
@@ -30,10 +30,9 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Boo
 }
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t filterMask,Int_t iPhysicsSelection)
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,UInt_t filterMask,Int_t iPhysicsSelection)
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
-
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -63,8 +62,13 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t f
    // pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum2::kAnaMC);
    // if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
    // pwg4spec->SetDebugLevel(11); 
-   pwg4spec->SetBranchRec(bRec); 
+   Printf("Rec %sXXX",bRec);
+   Printf("Gen %sXXX",bGen);
+
    pwg4spec->SetBranchGen(bGen); 
+   pwg4spec->SetBranchRec(bRec); 
+
+
    pwg4spec->SetFilterMask(filterMask); 
    pwg4spec->SetUseGlobalSelection(kTRUE); 
 
@@ -97,13 +101,9 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(char* bRec,char* bGen ,UInt_t f
    else if (typeGen.Contains("AODMC")){
      pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
    }
-   else { // catch all use AOD
+   else if (typeGen.Length()>0){ // catch all use AOD
      pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAOD);
    }
-
-
-
-
 
    if(iPhysicsSelection)pwg4spec->SelectCollisionCandidates();
 
