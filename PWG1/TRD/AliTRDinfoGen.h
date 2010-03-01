@@ -41,12 +41,14 @@ public:
   virtual ~AliTRDinfoGen();
   
 
-  void  UserCreateOutputObjects();
-  void  UserExec(Option_t *);
+  void    UserCreateOutputObjects();
+  void    UserExec(Option_t *);
   static Float_t GetTPCx() { return fgkTPC;}
   static Float_t GetTOFx() { return fgkTOF;}
 
   Bool_t  IsCollision() const {return TestBit(kCollision);}
+  Bool_t  Load(const Char_t */*filename = "TRD.Performance.root"*/) {return kTRUE;}
+  Bool_t  PostProcess() {return kTRUE;}
 
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
   void    SetLocalEvSelection(AliTRDeventCuts */*cut*/){;} 

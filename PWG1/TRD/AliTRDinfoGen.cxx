@@ -89,8 +89,8 @@ const Float_t AliTRDinfoGen::fgkPt        = 0.2;
 const Float_t AliTRDinfoGen::fgkEta       = 0.9;
 
 //____________________________________________________________________
-AliTRDinfoGen::AliTRDinfoGen():
-  AliTRDrecoTask()
+AliTRDinfoGen::AliTRDinfoGen()
+  :AliTRDrecoTask()
   ,fEvTrigger("CINT1B-ABCE-NOPF-ALL")
   ,fESDev(NULL)
   ,fMCev(NULL)
@@ -107,8 +107,8 @@ AliTRDinfoGen::AliTRDinfoGen():
 }
 
 //____________________________________________________________________
-AliTRDinfoGen::AliTRDinfoGen(char* name):
-  AliTRDrecoTask(name, "MC-REC TRD-track list generator")
+AliTRDinfoGen::AliTRDinfoGen(char* name)
+  :AliTRDrecoTask(name, "MC-REC TRD-track list generator")
   ,fEvTrigger("")
   ,fESDev(NULL)
   ,fMCev(NULL)

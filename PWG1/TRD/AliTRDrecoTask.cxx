@@ -34,33 +34,33 @@
 
 ClassImp(AliTRDrecoTask)
 
-TList* AliTRDrecoTask::fgTrendPoint(0x0);
-TTreeSRedirector* AliTRDrecoTask::fgDebugStream(0x0);
+TList* AliTRDrecoTask::fgTrendPoint(NULL);
+TTreeSRedirector* AliTRDrecoTask::fgDebugStream(NULL);
 //_______________________________________________________
-
 AliTRDrecoTask::AliTRDrecoTask()
   : AliAnalysisTaskSE()
   ,fNRefFigures(0)
-  ,fContainer(0x0)
-  ,fTracks(0x0)
-  ,fkTrack(0x0)
-  ,fkMC(0x0)
-  ,fkESD(0x0)
-  ,fDebugLevel(0)  
-  ,fPlotFuncList(0x0)
+  ,fContainer(NULL)
+  ,fTracks(NULL)
+  ,fkTrack(NULL)
+  ,fkMC(NULL)
+  ,fkESD(NULL)
+  ,fDebugLevel(0)
+  ,fPlotFuncList(NULL)
 {
 }
 
+//_______________________________________________________
 AliTRDrecoTask::AliTRDrecoTask(const char *name, const char */*title*/)
   : AliAnalysisTaskSE(name)
   ,fNRefFigures(0)
-  ,fContainer(0x0)
-  ,fTracks(0x0)
-  ,fkTrack(0x0)
-  ,fkMC(0x0)
-  ,fkESD(0x0)
-  ,fDebugLevel(0)  
-  ,fPlotFuncList(0x0)
+  ,fContainer(NULL)
+  ,fTracks(NULL)
+  ,fkTrack(NULL)
+  ,fkMC(NULL)
+  ,fkESD(NULL)
+  ,fDebugLevel(0)
+  ,fPlotFuncList(NULL)
 {
   DefineInput (1, TObjArray::Class());
   DefineOutput(1, TObjArray::Class());
@@ -75,26 +75,26 @@ AliTRDrecoTask::~AliTRDrecoTask()
   AliDebug(1, Form(" Ending %s (%s)\n", GetName(), GetTitle()));
   if(fgDebugStream){ 
     delete fgDebugStream;
-    fgDebugStream = 0x0;
+    fgDebugStream = NULL;
   }
 
   if(fPlotFuncList){
     fPlotFuncList->Delete();
     delete fPlotFuncList;
-    fPlotFuncList = 0x0;
+    fPlotFuncList = NULL;
   }
   
   if(fContainer){
     if(fContainer->IsOwner()) fContainer->Delete();
     delete fContainer;
-    fContainer = 0x0;
+    fContainer = NULL;
   }
 
   if(fgTrendPoint){
     TFile::Open("TRD.PerformanceTrend.root", "UPDATE");
     fgTrendPoint->Write();
     delete fgTrendPoint;
-    fgTrendPoint=0x0;
+    fgTrendPoint=NULL;
     gFile->Close();
   }
 }
@@ -121,7 +121,7 @@ void AliTRDrecoTask::UserExec(Option_t *)
   if(!fTracks) return;
   if(!fTracks->GetEntriesFast()) return;
   
-  AliTRDtrackInfo *trackInfo = 0x0;
+  AliTRDtrackInfo *trackInfo = NULL;
   TIter plotIter(fPlotFuncList);
   TObjArrayIter trackIter(fTracks);
   while((trackInfo = dynamic_cast<AliTRDtrackInfo*>(trackIter()))){
@@ -129,7 +129,7 @@ void AliTRDrecoTask::UserExec(Option_t *)
     fkMC    = trackInfo->GetMCinfo();
     fkESD   = trackInfo->GetESDinfo();
 
-    TMethodCall *plot = 0x0;
+    TMethodCall *plot = NULL;
     plotIter.Reset();
     while((plot=dynamic_cast<TMethodCall*>(plotIter()))){
       plot->Execute(this);
@@ -165,7 +165,7 @@ void AliTRDrecoTask::InitFunctorList()
 
   TClass *c = this->IsA();
 
-  TMethod *m = 0x0;
+  TMethod *m = NULL;
   TIter methIter(c->GetListOfMethods());
   while((m=dynamic_cast<TMethod*>(methIter()))){
     TString name(m->GetName());
@@ -184,7 +184,7 @@ Bool_t AliTRDrecoTask::Load(const Char_t *filename)
     AliWarning(Form("Couldn't open file %s.", filename));
     return kFALSE;
   }
-  TObjArray *o = 0x0;
+  TObjArray *o = NULL;
   if(!(o = (TObjArray*)gFile->Get(GetName()))){
     AliWarning("Missing histogram container.");
     return kFALSE;
@@ -206,10 +206,10 @@ Bool_t AliTRDrecoTask::Save(TObjArray * const results){
   if(!TFile::Open(Form("TRD.Result%s.root", GetName()), "RECREATE")) return kFALSE;
 
   TIterator *iter = results->MakeIterator();
-  TObject *inObject = 0x0, *outObject = 0x0;
+  TObject *inObject = NULL, *outObject = NULL;
   while((inObject = iter->Next())){
     outObject = inObject->Clone();
-    outObject->Write(0x0, TObject::kSingleKey);
+    outObject->Write(NULL, TObject::kSingleKey);
   }
   delete iter;
   gFile->Close(); delete gFile;
@@ -248,7 +248,7 @@ void AliTRDrecoTask::Terminate(Option_t *)
 
   if(fgDebugStream){ 
     delete fgDebugStream;
-    fgDebugStream = 0x0;
+    fgDebugStream = NULL;
     fDebug = 0;
   }
   if(HasPostProcess()) PostProcess();
