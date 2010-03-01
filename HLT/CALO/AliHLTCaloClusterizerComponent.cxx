@@ -110,6 +110,7 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   
   UInt_t offset           = 0;
   UInt_t mysize           = 0;
+  UInt_t digitSize           = 0;
   Int_t nRecPoints        = 0;
   Int_t nDigits           = 0;
   Int_t digCount          = 0;
@@ -171,7 +172,17 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	}
   
        mysize += digCount*sizeof(AliHLTCaloDigitDataStruct);
-
+      digitSize = mysize;
+      
+      AliHLTComponentBlockData dd;
+      FillBlockData( dd );
+      dd.fOffset = offset;
+      dd.fSize = digitSize;
+      dd.fDataType = AliHLTCaloDefinitions::fgkDigitDataType | fDataOrigin;
+      dd.fSpecification = specification;
+      outputBlocks.push_back( dd );
+      
+      
       //HLTDebug("Total number of digits: %d", digCount );
 
       nRecPoints = fClusterizerPtr->ClusterizeEvent(digCount);
@@ -199,7 +210,7 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset = offset;
-      bd.fSize = mysize;
+      bd.fSize = mysize - digitSize;
       bd.fDataType = kAliHLTDataTypeCaloCluster | fDataOrigin;
       bd.fSpecification = specification;
       outputBlocks.push_back( bd );

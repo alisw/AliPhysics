@@ -31,7 +31,6 @@ public:
   static const AliHLTComponentDataType fgkRecPointDataType; //RecPoint data type
   static const AliHLTComponentDataType fgkHistDataType;     //hist data type
   static const AliHLTComponentDataType fgkSpectrumDataType; //spectrum data type
-  static const AliHLTComponentDataType fgkDigitDataType; //Digit data type
   static const AliHLTComponentDataType fgkRootTreeDataType; //Root tree type
   static const AliHLTComponentDataType fgkBaselineDataType; //Baseline type
   static const AliHLTComponentDataType fgkMIPDataType; //"MIP" data type
@@ -42,6 +41,7 @@ public:
   static const AliHLTComponentDataType fgkESDCaloClusterDataType; //Calo cluster data type
   static const AliHLTComponentDataType fgkESDCaloCellsDataType; //Calo cells data type
   static const AliHLTComponentDataType fgkPhysicsHistogramsDataType; //hist data type
+  static const AliHLTComponentDataType fgkDigitDataType; //hist data type
 
 };
 

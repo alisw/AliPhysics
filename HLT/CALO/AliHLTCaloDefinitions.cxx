@@ -49,7 +49,6 @@ const AliHLTComponentDataType AliHLTCaloDefinitions::fgkHistDataType            
 const AliHLTComponentDataType AliHLTCaloDefinitions::fgkSpectrumDataType              = { sizeof(AliHLTComponentDataType),       {'S','P','E','C','T','R','U','M'},{'C','A','L','O'}};;
 const AliHLTComponentDataType AliHLTCaloDefinitions::fgkRootTreeDataType              = { sizeof(AliHLTComponentDataType),       {'R','O','O','T','T','R','E','E'},{'C','A','L','O'}};;
 const AliHLTComponentDataType AliHLTCaloDefinitions::fgkBaselineDataType              = { sizeof(AliHLTComponentDataType),       {'B','A','S','E','L','I','N','E'},{'C','A','L','O'}};;
-const AliHLTComponentDataType AliHLTCaloDefinitions::fgkDigitDataType                 = { sizeof(AliHLTComponentDataType),       {'D','I','G','I','T','T','Y','P'},{'C','A','L','O'}};;
 const AliHLTComponentDataType AliHLTCaloDefinitions::fgkNoiseMapDataType              = { sizeof(AliHLTComponentDataType),       {'N','O','I','S','E','M','A','P'},{'C','A','L','O'}};;
 const AliHLTComponentDataType AliHLTCaloDefinitions::fgkMIPDataType                   = { sizeof(AliHLTComponentDataType),       {'M','I','P','D','T','Y','P','E'},{'C','A','L','O'}};;
 const AliHLTComponentDataType AliHLTCaloDefinitions::fgkSandboxDataType               = { sizeof(AliHLTComponentDataType),       {'S','A','N','D','B','O','X','T'},{'C','A','L','O'}};;
@@ -58,5 +57,6 @@ const AliHLTComponentDataType AliHLTCaloDefinitions::fgkCaloClusterDataType     
 const AliHLTComponentDataType AliHLTCaloDefinitions::fgkESDCaloClusterDataType        = { sizeof(AliHLTComponentDataType),       {'E','S','D','C','L','U','S','T'},{'C','A','L','O'}};;
 const AliHLTComponentDataType AliHLTCaloDefinitions::fgkESDCaloCellsDataType          = { sizeof(AliHLTComponentDataType),       {'E','S','D','C','E','L','L','S'},{'C','A','L','O'}};;
 const AliHLTComponentDataType AliHLTCaloDefinitions::fgkPhysicsHistogramsDataType     = { sizeof(AliHLTComponentDataType),       {'P','H','Y','S','H','I','S','T'},{'C','A','L','O'}};;
+const AliHLTComponentDataType AliHLTCaloDefinitions::fgkDigitDataType     = { sizeof(AliHLTComponentDataType),       {'D','I','G','I','T','T','Y','P'},{'*','*','*','*'}};;
 
 
