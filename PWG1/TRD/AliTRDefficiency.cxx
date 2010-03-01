@@ -27,6 +27,7 @@
 #include <TClonesArray.h>
 #include <TObjArray.h>
 #include <TProfile.h>
+#include <TPad.h>
 #include "TTreeStream.h"
 
 #include "AliPID.h"
@@ -267,6 +268,12 @@ Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
 {
 // Steer reference figures
 
+  if(!gPad){
+    AliWarning("Please provide a canvas to draw results.");
+    return kFALSE;
+  }
+  gPad->SetLogx();
+
   Bool_t bFIRST = kTRUE;
   TProfile *h = NULL;
   switch(ifig){
@@ -277,7 +284,10 @@ Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
     }
     h->SetMarkerColor(kBlack);
     h->SetLineColor(kBlack);
+    h->SetTitle("TRD Efficiency integrated");
     h->GetXaxis()->SetTitle("p [GeV/c]");
+    h->GetXaxis()->SetMoreLogLabels();
+    h->GetYaxis()->SetTitle("Efficiency");
     h->Draw("e1");
     break;
   case 1:
@@ -287,6 +297,8 @@ Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
       if(bFIRST){
         h->Draw("e1");
         h->GetXaxis()->SetTitle("p [GeV/c]");
+        h->GetXaxis()->SetMoreLogLabels();
+        h->GetYaxis()->SetTitle("Efficiency");
       } else h->Draw("same e1");
       bFIRST = kFALSE;
     }

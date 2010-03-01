@@ -36,7 +36,7 @@ public:
    ,kTRDmom      // TRD track momentum
    ,kPtRes       // Pt resolution @ vertex for TRD
    ,kNhistos = 4 // number of histograms
-   ,kNgraphs = 6 // number of graphs
+   ,kNgraphs = 7 // number of graphs
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
@@ -51,6 +51,7 @@ public:
   
   void          UserCreateOutputObjects();
   TGraph*       GetGraph(Int_t id, Option_t *opt="bc");
+  Bool_t        GetRefFigure(Int_t ifig);
   void          UserExec(Option_t *);
 
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
