@@ -94,10 +94,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     if (!fEvent) fEvent = new AliESDEvent();
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();
-    if (fTree->GetBranch("ESDfriend.")) {
-	fTree->SetBranchAddress("ESDfriend.", &fFriend);
-    }
-
+    fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
     return kTRUE;
 }
 
