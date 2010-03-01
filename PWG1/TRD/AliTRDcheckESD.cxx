@@ -129,7 +129,7 @@ TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
          kCLEAR = strstr(opt, "c"); // clear existing graph
 
   const Char_t *name[] = {
-    "Geo", "Trk", "Pid", "Ref", "Max06", "Mean09"
+    "Geo", "Trk", "Pid", "Ref", "Max06", "Mean09", "PtResDCA"
   };
   const Char_t *title[] = {
     "TRD geometrical efficiency (TRDin/TPCout)"
@@ -138,6 +138,7 @@ TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
     ,"TRD refit efficiency (TRDrefit/TRDin)"
     ,"TRD Eloss (Max/90% quantile)"
     ,"TRD Eloss (Mean/60% quantile)"
+    ,"P_{t} resolution @ DCA"
   };
   const Int_t ngr = sizeof(name)/sizeof(Char_t*);
   if(ngr != kNgraphs){
@@ -193,6 +194,13 @@ TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
     }
   }
   return g;
+}
+
+
+//____________________________________________________________________
+Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
+{
+  return kTRUE;
 }
 
 //____________________________________________________________________
