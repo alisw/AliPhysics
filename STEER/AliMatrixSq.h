@@ -56,6 +56,8 @@ class AliMatrixSq : public TMatrixDBase {
   virtual void Allocate      (Int_t ,Int_t ,Int_t , Int_t ,Int_t ,Int_t ) 
   {Error("Allocate","Dummy"); return;}
   //
+  static Bool_t       IsZero(Double_t x,Double_t thresh=1e-64) {return x>0 ? (x<thresh) : (x>-thresh);}
+  //
  protected:
   //
   void    Swap(int &r,int &c) const {int t=r;r=c;c=t;}

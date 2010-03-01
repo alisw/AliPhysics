@@ -113,7 +113,7 @@ Float_t AliSymBDMatrix::GetDensity() const
   // get fraction of non-zero elements
   if (!fNelems) return 0;
   Int_t nel = 0;
-  for (int i=fNelems;i--;) if (TMath::Abs(fElems[i])>DBL_MIN) nel++;
+  for (int i=fNelems;i--;) if (!IsZero(fElems[i])) nel++;
   return nel/fNelems;
 }
 
@@ -225,8 +225,8 @@ void AliSymBDMatrix::DecomposeLDLT()
       theta = TMath::Max(theta, TMath::Abs(dtmp));
       //
       if (jr!=kr) {
-	if (TMath::Abs(QueryDiag(jr))>DBL_MIN) (*this)(kr,jr) /= QueryDiag(jr);
-	else                    (*this)(kr,jr) = 0.0;
+	if (!IsZero(QueryDiag(jr))) (*this)(kr,jr) /= QueryDiag(jr);
+	else                        (*this)(kr,jr) = 0.0;
       }
       else if (kr<iDiag) {
 	dtmp = theta/beta;
@@ -239,7 +239,7 @@ void AliSymBDMatrix::DecomposeLDLT()
   //
   for (int i=0;i<GetSize();i++) {
     dtmp = QueryDiag(i);
-    if (TMath::Abs(dtmp)>DBL_MIN) DiagElem(i) = 1./dtmp;
+    if (!IsZero(dtmp)) DiagElem(i) = 1./dtmp;
   }
   //
   SetDecomposed();

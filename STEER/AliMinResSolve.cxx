@@ -703,7 +703,7 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
     }
     // copy row from csmat into L,U D
     for(int j=rowM.GetNElems(); j--;) {  // L and D part 
-      if (TMath::Abs(rowM.GetElem(j))<DBL_MIN) continue;
+      if (AliMatrixSq::IsZero(rowM.GetElem(j))) continue;
       int col = rowM.GetIndex(j);         // (the original matrix stores only lower triangle)
       if( col < i )   rowLi.GetElem(jw[col]) = rowM.GetElem(j); 
       else if(col==i) fDiagLU[i] = rowM.GetElem(j);
@@ -711,7 +711,7 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
     }
     if (matrix->IsSymmetric()) for (int col=i+1;col<fSize;col++) {      // part of the row I on the right of diagonal is stored as 
 	double vl = matrix->Query(col,i);    // the lower part of the column I
-	if (TMath::Abs(vl)<DBL_MIN) continue;                   
+	if (AliMatrixSq::IsZero(vl)) continue;
 	rowUi.GetElem(jw[col]) = vl;
       }
     //
@@ -737,7 +737,7 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
     jw[i] = -1;
     for(int j=rowUi.GetNElems(); j--;) jw[ rowUi.GetIndex(j) ] = -1;
     //
-    if( TMath::Abs(fDiagLU[i])<DBL_MIN ) {
+    if( AliMatrixSq::IsZero(fDiagLU[i]) ) {
       AliInfo(Form("Fatal error in ILIk: Zero diagonal found..."));
       delete[] jw;
       return -1;
@@ -802,7 +802,7 @@ Int_t  AliMinResSolve::BuildPreconILUKDense(Int_t lofM)
     // copy row from csmat into L,U D
     for(int j=fSize; j--;) {  // L and D part 
       double vl = fMatrix->Query(i,j);
-      if (TMath::Abs(vl)<DBL_MIN) continue;
+      if (AliMatrixSq::IsZero(vl)) continue;
       if( j < i )   rowLi.GetElem(jw[j]) = vl;
       else if(j==i) fDiagLU[i] = vl;
       else rowUi.GetElem(jw[j]) = vl;
@@ -829,7 +829,7 @@ Int_t  AliMinResSolve::BuildPreconILUKDense(Int_t lofM)
     jw[i] = -1;
     for(int j=rowUi.GetNElems(); j--;) jw[ rowUi.GetIndex(j) ] = -1;
     //
-    if( TMath::Abs(fDiagLU[i])<DBL_MIN ) {
+    if( AliMatrixSq::IsZero(fDiagLU[i])) {
       AliInfo(Form("Fatal error in ILIk: Zero diagonal found..."));
       delete[] jw;
       return -1;
@@ -889,7 +889,7 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
     // assign lof = 0 for matrix elements
     for(int j=0;j<row.GetNElems(); j++) {
       int col = row.GetIndex(j);
-      if (TMath::Abs(row.GetElem(j))<DBL_MIN) continue;  // !!!! matrix is sparse but sometimes 0 appears 
+      if (AliMatrixSq::IsZero(row.GetElem(j))) continue;  // !!!! matrix is sparse but sometimes 0 appears 
       if (col<i) {                      // L-part
 	jbuf[incl] = col;
 	levls[incl] = 0;
@@ -902,7 +902,7 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
       }
     }
     if (matrix->IsSymmetric()) for (int col=i+1;col<fSize;col++) { // U-part of symmetric matrix
-	if (TMath::Abs(matrix->Query(col,i))<DBL_MIN) continue;    // Due to the symmetry  == matrix(i,col)
+	if (AliMatrixSq::IsZero(matrix->Query(col,i))) continue;    // Due to the symmetry  == matrix(i,col)
 	jbuf[incu] = col;
 	levls[incu] = 0;
 	iw[col] = incu++;
@@ -1021,7 +1021,7 @@ Int_t  AliMinResSolve::PreconILUKsymbDense(Int_t lofM)
     //
     // assign lof = 0 for matrix elements
     for(int j=0;j<fSize; j++) {
-      if (TMath::Abs(fMatrix->Query(i,j))<DBL_MIN) continue;
+      if (AliMatrixSq::IsZero(fMatrix->Query(i,j))) continue;
       if (j<i) {                      // L-part
 	jbuf[incl] = j;
 	levls[incl] = 0;

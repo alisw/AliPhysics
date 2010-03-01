@@ -159,7 +159,7 @@ Float_t AliSymMatrix::GetDensity() const
 {
   // get fraction of non-zero elements
   Int_t nel = 0;
-  for (int i=GetSizeUsed();i--;) for (int j=i+1;j--;) if (TMath::Abs(GetEl(i,j))>DBL_MIN) nel++;
+  for (int i=GetSizeUsed();i--;) for (int j=i+1;j--;) if (!IsZero(GetEl(i,j))) nel++;
   return 2.*nel/( (GetSizeUsed()+1)*GetSizeUsed() );
 }
 
@@ -206,7 +206,7 @@ AliSymMatrix* AliSymMatrix::DecomposeChol()
       fgBuffer = new AliSymMatrix(*this);
     }
     catch(bad_alloc&) {
-      printf("Failed to allocate memory for Choleski decompostions\n");
+      AliInfo("Failed to allocate memory for Choleski decompostions");
       return 0;
     }
   }
@@ -222,8 +222,9 @@ AliSymMatrix* AliSymMatrix::DecomposeChol()
       for (int k=i-1;k>=0;k--) if (rowi[k]&&rowj[k]) sum -= rowi[k]*rowj[k];
       if (i == j) {
 	if (sum <= 0.0) { // not positive-definite
-	  printf("The matrix is not positive definite [%e]\n"
-		 "Choleski decomposition is not possible\n",sum);
+	  AliInfo(Form("The matrix is not positive definite [%e]\n"
+		       "Choleski decomposition is not possible",sum));
+	  Print("l");
 	  return 0;
 	}
 	rowi[i] = TMath::Sqrt(sum);
@@ -241,7 +242,7 @@ Bool_t AliSymMatrix::InvertChol()
   //
   AliSymMatrix* mchol = DecomposeChol();
   if (!mchol) {
-    printf("Failed to invert the matrix\n");
+    AliInfo("Failed to invert the matrix");
     return kFALSE;
   }
   //
@@ -304,7 +305,7 @@ Bool_t AliSymMatrix::SolveChol(Double_t *b, Bool_t invert)
   //
   AliSymMatrix *pmchol = DecomposeChol();
   if (!pmchol) {
-    printf("SolveChol failed\n");
+    AliInfo("SolveChol failed");
     //    Print("l");
     return kFALSE;
   }
@@ -422,7 +423,7 @@ Double_t* AliSymMatrix::GetRow(Int_t r)
   if (r>=GetSize()) {
     int nn = GetSize();
     AddRows(r-GetSize()+1); 
-    printf("create %d of %d\n",r, nn);
+    AliDebug(2,Form("create %d of %d\n",r, nn));
     return &((fElemsAdd[r-GetSizeBooked()])[0]);
   }
   else return &fElems[GetIndex(r,0)];
@@ -451,7 +452,7 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
     for (Int_t i=nGlo; i--;) rowMax[i] = colMax[i] = 0.0;
     for (Int_t i=nGlo; i--;) for (Int_t j=i+1;j--;) { 
 	double vl = TMath::Abs(Query(i,j));
-	if (vl<DBL_MIN) continue;
+	if (IsZero(vl)) continue;
 	if (vl > rowMax[i]) rowMax[i] = vl; // Max elemt of row i
 	if (vl > colMax[j]) colMax[j] = vl; // Max elemt of column j
 	if (i==j) continue;
@@ -460,8 +461,8 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
       }
     //
     for (Int_t i=nGlo; i--;) {
-      if (TMath::Abs(rowMax[i])>DBL_MIN) rowMax[i] = 1./rowMax[i]; // Max elemt of row i
-      if (TMath::Abs(colMax[i])>DBL_MIN) colMax[i] = 1./colMax[i]; // Max elemt of column i
+      if (!IsZero(rowMax[i])) rowMax[i] = 1./rowMax[i]; // Max elemt of row i
+      if (!IsZero(colMax[i])) colMax[i] = 1./colMax[i]; // Max elemt of column i
     }
     //
   }
@@ -474,7 +475,7 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
       fgBuffer = new AliSymMatrix(*this);
     }
     catch(bad_alloc&) {
-      printf("Failed to allocate memory for matrix inversion buffer\n");
+      AliError("Failed to allocate memory for matrix inversion buffer");
       return 0;
     }
   }
@@ -483,11 +484,11 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
   if (stabilize) for (int i=0;i<nGlo; i++) { // Small loop for matrix equilibration (gives a better conditioning) 
       for (int j=0;j<=i; j++) {
 	double vl = Query(i,j);
-	if (TMath::Abs(vl)>DBL_MIN) SetEl(i,j, TMath::Sqrt(rowMax[i])*vl*TMath::Sqrt(colMax[j]) ); // Equilibrate the V matrix
+	if (!IsZero(vl)) SetEl(i,j, TMath::Sqrt(rowMax[i])*vl*TMath::Sqrt(colMax[j]) ); // Equilibrate the V matrix
       }
       for (int j=i+1;j<nGlo;j++) {
 	double vl = Query(j,i);
-	if (TMath::Abs(vl)>DBL_MIN) fgBuffer->SetEl(j,i,TMath::Sqrt(rowMax[i])*vl*TMath::Sqrt(colMax[j]) ); // Equilibrate the V matrix
+	if (!IsZero(vl)) fgBuffer->SetEl(j,i,TMath::Sqrt(rowMax[i])*vl*TMath::Sqrt(colMax[j]) ); // Equilibrate the V matrix
       }
     }
   //
