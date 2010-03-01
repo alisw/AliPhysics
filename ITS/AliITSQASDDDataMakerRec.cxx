@@ -99,6 +99,8 @@ fHistoCalibration(0)
 		fGenRecPointsOffset[i] = 0;
 		fGenDigitsOffset[i]=0;
 	}
+
+	InitCalibrationArray();
 }
 
 //____________________________________________________________________________ 
@@ -123,7 +125,7 @@ fHistoCalibration(qadm.fHistoCalibration)
   //copy ctor 
   fAliITSQADataMakerRec->SetName((const char*)qadm.fAliITSQADataMakerRec->GetName()) ; 
   fAliITSQADataMakerRec->SetTitle((const char*)qadm.fAliITSQADataMakerRec->GetTitle());
-  fDDLModuleMap=NULL;
+  //fDDLModuleMap=NULL;
 }
 
 //____________________________________________________________________________ 
@@ -144,6 +146,9 @@ AliITSQASDDDataMakerRec& AliITSQASDDDataMakerRec::operator = (const AliITSQASDDD
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
 {
+
+  if(!fCalibration) {CreateTheCalibration();}
+
   //Detector specific actions at start of cycle
   AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SDD Cycle\n");
   if(fAliITSQADataMakerRec->GetRawsData(0)!=NULL){
@@ -174,7 +179,7 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 	  }	  
 	}//end raws
 	
-	if(task==AliQAv1::kRECPOINTS && fHistoCalibration ){
+	if(task==AliQAv1::kRECPOINTS){
 	  //	  printf("fNeventRP %d \n",fNEventRP);
 	  if(fNEventRP!=0){
 	    ((TH1D*)fAliITSQADataMakerRec->GetRecPointsData(9 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->Divide((TH1D*)fAliITSQADataMakerRec->GetRecPointsData(6 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]),((TH1D*) (fHistoCalibration->At(0))),1.,(Double_t)fNEventRP);
@@ -190,6 +195,7 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 //____________________________________________________________________________ 
 Int_t AliITSQASDDDataMakerRec::InitRaws()
 { 
+
   // Initialization for RAW data - SDD -
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
@@ -294,7 +300,6 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
       fSDDhRawsTask++;
 	  
     }  // kONLINE
-  InitCalibrationArray();
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Raws histograms booked\n",fSDDhRawsTask));
   return rv ; 
 }
@@ -308,7 +313,6 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   // Check id histograms already created for this Event Specie
   fNEvent++;
   if(!fDDLModuleMap){CreateTheMap();}
-  if(!fCalibration) {CreateTheCalibration();}
   if(rawReader->GetType() != 7) return rv;  // skips non physical triggers
   AliDebug(AliQAv1::GetQADebugLevel(),"entering MakeRaws\n");                 
   rawReader->Reset();       
@@ -427,6 +431,7 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 //____________________________________________________________________________ 
 Int_t AliITSQASDDDataMakerRec::InitDigits()
 { 
+  //  if(!fHistoCalibration)InitCalibrationArray();
   // Initialization for DIGIT data - SDD -  
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ;
@@ -509,7 +514,7 @@ Int_t AliITSQASDDDataMakerRec::MakeDigits(TTree * digits)
 //____________________________________________________________________________ 
 Int_t AliITSQASDDDataMakerRec::InitRecPoints()
 {
-
+  //if(!fHistoCalibration)InitCalibrationArray();
 	//AliInfo("Initialize SDD recpoints histos\n");
   // Initialization for RECPOINTS - SDD -
   const Bool_t expert   = kTRUE ; 
@@ -934,9 +939,11 @@ void AliITSQASDDDataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
   AliInfo(Form("Reset detector in SDD called for task index %i", task));
   if(task== AliQAv1::kRAWS ){
   fDDLModuleMap=NULL;
+  }
   fCalibration=NULL;
+
   ((TH1D*)(fHistoCalibration->At(0)))->Reset();
   ((TH2D*)(fHistoCalibration->At(1)))->Reset();
   ((TH2D*)(fHistoCalibration->At(2)))->Reset();
-  }
+  
 }
