@@ -12,7 +12,7 @@
 
 # SET THE FOLLOWING PARAMETERS IF NEEDED: 
 # ---------------------------------------
-export YEAR=09
+export YEAR=10
 # ---------------------------------------
 kill -9 `ps | grep aliroot | awk '{print $1}'`
 
