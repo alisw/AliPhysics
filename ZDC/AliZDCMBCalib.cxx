@@ -67,7 +67,10 @@ AliZDCMBCalib::AliZDCMBCalib(const char* name,
   
 //________________________________________________________________
 AliZDCMBCalib::AliZDCMBCalib(const AliZDCMBCalib& calibda) :
-  TNamed(calibda)
+  TNamed(calibda),
+  fhZDCvsZEM(0), 
+  fhZDCCvsZEM(0),
+  fhZDCAvsZEM(0)
 {
   // Copy constructor
   SetName(calibda.GetName());

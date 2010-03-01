@@ -307,9 +307,9 @@ void AliZDCRawStream::ReadCDHHeader()
     //printf("\t AliZDCRawStream::ReadCDHHeader -> L1TriggerMessage %x\n",header->GetL1TriggerMessage());
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Calibration bit = %d\n",fIsCalib);    
     
-    UInt_t status = header->GetStatus();
+/*    UInt_t status = header->GetStatus();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> status = %d\n",status);
-/*    if((status & 0x000f) == 0x0001){
+    if((status & 0x000f) == 0x0001){
       AliDebug(2,"CDH -> DARC trg0 overlap error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
@@ -533,8 +533,8 @@ Bool_t AliZDCRawStream::Next()
 	  //  look the enum in AliZDCRawStream.h file
 	  // -----------------------------------------
 	  // NOT CONSIDERING OUT OF TIME OR REFERENCE SIGNALS FOR SCALER!!!!!
-	  if(fCabledSignal>=2 && fCabledSignal<=6 ||
-	     fCabledSignal>=61 && fCabledSignal<=65){
+	  if((fCabledSignal>=2 && fCabledSignal<=6) ||
+	     (fCabledSignal>=61 && fCabledSignal<=65)){
 	    fScalerMap[fCurrScCh][3] = 4; //ZNA
 	    //
 	    if(fCabledSignal==2 || fCabledSignal==61)      fScalerMap[fCurrScCh][4]=0;
@@ -543,8 +543,8 @@ Bool_t AliZDCRawStream::Next()
 	    else if(fCabledSignal==5 || fCabledSignal==64)  fScalerMap[fCurrScCh][4]=3;
 	    else if(fCabledSignal==6 || fCabledSignal==65)  fScalerMap[fCurrScCh][4]=4;
 	  }
-	  else if(fCabledSignal>=7 && fCabledSignal<=11 ||
-	     fCabledSignal>=66 && fCabledSignal<=70){
+	  else if((fCabledSignal>=7 && fCabledSignal<=11) ||
+	     (fCabledSignal>=66 && fCabledSignal<=70)){
 	    fScalerMap[fCurrScCh][3] = 5; //ZPA
 	    //
 	    if(fCabledSignal==7 || fCabledSignal==66)      fScalerMap[fCurrScCh][4]=0;
@@ -553,8 +553,8 @@ Bool_t AliZDCRawStream::Next()
 	    else if(fCabledSignal==10 || fCabledSignal==69) fScalerMap[fCurrScCh][4]=3;
 	    else if(fCabledSignal==11 || fCabledSignal==70) fScalerMap[fCurrScCh][4]=4;
 	  }
-	  else if(fCabledSignal>=12 && fCabledSignal<=16 ||
-	     fCabledSignal>=71 && fCabledSignal<=75){
+	  else if((fCabledSignal>=12 && fCabledSignal<=16) ||
+	     (fCabledSignal>=71 && fCabledSignal<=75)){
 	    fScalerMap[fCurrScCh][3] = 1; //ZNC
 	    //
 	    if(fCabledSignal==12 || fCabledSignal==71)      fScalerMap[fCurrScCh][4]=0;
@@ -563,8 +563,8 @@ Bool_t AliZDCRawStream::Next()
 	    else if(fCabledSignal==15 || fCabledSignal==74) fScalerMap[fCurrScCh][4]=3;
 	    else if(fCabledSignal==16 || fCabledSignal==75) fScalerMap[fCurrScCh][4]=4;
 	  }
-	  else if(fCabledSignal>=17 && fCabledSignal<=21 ||
-	     fCabledSignal>=76 && fCabledSignal<=80){
+	  else if((fCabledSignal>=17 && fCabledSignal<=21) ||
+	     (fCabledSignal>=76 && fCabledSignal<=80)){
 	    fScalerMap[fCurrScCh][3] = 2; //ZPC
 	    //
 	    if(fCabledSignal==17 || fCabledSignal==76)      fScalerMap[fCurrScCh][4]=0;

@@ -50,8 +50,8 @@
 
 
 ClassImp(AliZDCReconstructor)
-AliZDCRecoParam *AliZDCReconstructor::fRecoParam=0;  //reconstruction parameters
-AliZDCMBCalib *AliZDCReconstructor::fMBCalibData=0;  //calibration parameters for A-A reconstruction
+AliZDCRecoParam *AliZDCReconstructor::fgRecoParam=0;  //reconstruction parameters
+AliZDCMBCalib *AliZDCReconstructor::fgMBCalibData=0;  //calibration parameters for A-A reconstruction
 
 //_____________________________________________________________________________
 AliZDCReconstructor:: AliZDCReconstructor() :
@@ -73,11 +73,11 @@ AliZDCReconstructor:: AliZDCReconstructor() :
 AliZDCReconstructor::~AliZDCReconstructor()
 {
 // destructor
-//   if(fRecoParam)    delete fRecoParam;
+//   if(fgRecoParam)    delete fgRecoParam;
    if(fPedData)      delete fPedData;    
    if(fEnCalibData)  delete fEnCalibData;
    if(fTowCalibData) delete fTowCalibData;
-   if(fMBCalibData)  delete fMBCalibData;
+   if(fgMBCalibData)  delete fgMBCalibData;
 }
 
 //____________________________________________________________________________
@@ -111,7 +111,7 @@ void AliZDCReconstructor::Init()
   }
     
   fBeamEnergy = GetRunInfo()->GetBeamEnergy();
-  if(fBeamEnergy==0.) AliWarning(" Beam energy value missing -> E_beam = 0");
+  if(fBeamEnergy<0.01) AliWarning(" Beam energy value missing -> E_beam = 0");
     
   if(fIsCalibrationMB==kFALSE)  
     printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f GeV *****\n\n",beamType.Data(), fBeamEnergy);
@@ -571,11 +571,13 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrADCZN1, 
-	Float_t* corrADCZP1, Float_t* corrADCZN2, Float_t* corrADCZP2,
-	Float_t* corrADCZEM1, Float_t* corrADCZEM2, Float_t* sPMRef1, Float_t* sPMRef2,
-	Bool_t isScalerOn, UInt_t* scaler, 
-	Int_t* evQualityBlock, Int_t* triggerBlock, Int_t* chBlock, UInt_t puBits) const
+void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, 
+	const Float_t* const corrADCZN1, const Float_t* const corrADCZP1, 
+	const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
+	const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
+	Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
+	const Int_t* const evQualityBlock, const Int_t* const triggerBlock, 
+	const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
   
@@ -765,10 +767,12 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree, 
-	Float_t* corrADCZN1, Float_t* corrADCZP1, Float_t* corrADCZN2, Float_t* corrADCZP2,
-	Float_t* corrADCZEM1, Float_t* corrADCZEM2, Float_t* sPMRef1, Float_t* sPMRef2,
-	Bool_t isScalerOn, UInt_t* scaler, 
-	Int_t* evQualityBlock, Int_t* triggerBlock, Int_t* chBlock, UInt_t puBits) const
+	const Float_t* const corrADCZN1, const Float_t* const corrADCZP1, 
+	const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
+	const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
+	Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
+	const Int_t* const evQualityBlock, const Int_t* const triggerBlock, 
+	const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
   // ---------------------- Setting reco flags for ESD
@@ -901,7 +905,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   
   //  ******	Number of detected spectator nucleons
   Int_t nDetSpecNLeft=0, nDetSpecPLeft=0, nDetSpecNRight=0, nDetSpecPRight=0;
-  if(fBeamEnergy!=0){
+  if(fBeamEnergy>0.01){
     nDetSpecNLeft = (Int_t) (calibSumZN1[0]/fBeamEnergy);
     nDetSpecPLeft = (Int_t) (calibSumZP1[0]/fBeamEnergy);
     nDetSpecNRight = (Int_t) (calibSumZN2[0]/fBeamEnergy);
@@ -918,19 +922,19 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   
   if(fIsCalibrationMB == kFALSE){
     // ******	Reconstruction parameters ------------------ 
-    if (!fRecoParam) fRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam()); 
-    if(!fMBCalibData) fMBCalibData = const_cast<AliZDCMBCalib*>(GetMBCalibData()); 
+    if (!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam()); 
+    if(!fgMBCalibData) fgMBCalibData = const_cast<AliZDCMBCalib*>(GetMBCalibData()); 
  
-    TH2F *hZDCvsZEM  = fMBCalibData->GethZDCvsZEM();
-    TH2F *hZDCCvsZEM = fMBCalibData->GethZDCCvsZEM();
-    TH2F *hZDCAvsZEM = fMBCalibData->GethZDCAvsZEM();
+    TH2F *hZDCvsZEM  = fgMBCalibData->GethZDCvsZEM();
+    TH2F *hZDCCvsZEM = fgMBCalibData->GethZDCCvsZEM();
+    TH2F *hZDCAvsZEM = fgMBCalibData->GethZDCAvsZEM();
     //
-    TH1D *hNpartDist = fRecoParam->GethNpartDist();
-    TH1D *hbDist = fRecoParam->GethbDist();    
-    Float_t ClkCenter = fRecoParam->GetClkCenter();
+    TH1D *hNpartDist = fgRecoParam->GethNpartDist();
+    TH1D *hbDist = fgRecoParam->GethbDist();    
+    Float_t clkCenter = fgRecoParam->GetClkCenter();
     //
     Double_t xHighEdge = hZDCvsZEM->GetXaxis()->GetXmax();
-    Double_t origin = xHighEdge*ClkCenter;
+    Double_t origin = xHighEdge*clkCenter;
     // Ch. debug
     //printf("\n\n  xHighEdge %1.2f, origin %1.4f \n", xHighEdge, origin);
     //
