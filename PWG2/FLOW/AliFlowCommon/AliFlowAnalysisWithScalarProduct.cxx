@@ -531,7 +531,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   //Calculate differential flow and integrated flow (RP, POI)
   //---------------------------------------------------------
   //v as a function of eta for RP selection
-  for(Int_t b=0;b<iNbinsEta;b++) {
+  for(Int_t b=1;b<iNbinsEta+1;b++) {
     Double_t duQpro = fHistProUQetaRP->GetBinContent(b);
     Double_t dv2pro = 0.;
     if (dV!=0.) { dv2pro = duQpro/dV; }
@@ -543,7 +543,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   
 
   //v as a function of eta for POI selection
-  for(Int_t b=0;b<iNbinsEta;b++) {
+  for(Int_t b=1;b<iNbinsEta+1;b++) {
     Double_t duQpro = fHistProUQetaPOI->GetBinContent(b);
     Double_t dv2pro = 0.;
     if (dV!=0.) { dv2pro = duQpro/dV; }
@@ -561,7 +561,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   Double_t dSumRP = 0.;
   Double_t dErrVRP =0.;
   
-  for(Int_t b=0;b<iNbinsPt;b++) {
+  for(Int_t b=1;b<iNbinsPt+1;b++) {
     Double_t duQpro = fHistProUQPtRP->GetBinContent(b);
     Double_t dv2pro = 0.;
     if (dV!=0.) { dv2pro = duQpro/dV; }
@@ -595,7 +595,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   Double_t dSumPOI = 0.;
   Double_t dErrVPOI =0.;
   
-  for(Int_t b=0;b<iNbinsPt;b++) {
+  for(Int_t b=1;b<iNbinsPt+1;b++) {
     Double_t duQpro = fHistProUQPtPOI->GetBinContent(b);
     Double_t dv2pro = 0.;
     if (dV!=0.) { dv2pro = duQpro/dV; }
