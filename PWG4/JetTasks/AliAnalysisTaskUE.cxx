@@ -51,14 +51,14 @@
 #include "AliStack.h"
 #include "AliLog.h"
 
-//
+//__________________________________________________________________
 // Analysis class for Underlying Event studies
 //
 // Look for correlations on the tranverse regions to 
 // the leading charged jet
 //
-// This class needs as input AOD with track and Jets
-// the output is a list of histograms
+// This class needs as input AOD with track and Jets.
+// The output is a list of histograms
 //
 // AOD can be either connected to the InputEventHandler  
 // for a chain of AOD files 
@@ -104,6 +104,7 @@ fConeRadius(0.7),
 fConePosition(1),
 fAreaReg(1.5393), // Pi*0.7*0.7
 fUseChPartJet(kFALSE),
+fUseChPartMaxPt(kFALSE),
 fUseChargeHadrons(kFALSE),
 fUseSingleCharge(kFALSE),
 fUsePositiveCharge(kTRUE),
@@ -217,20 +218,20 @@ void AliAnalysisTaskUE::ConnectInputData(Option_t* /*option*/)
   if( handler && handler->InheritsFrom("AliAODInputHandler") ) { // input AOD
     fAOD = ((AliAODInputHandler*)handler)->GetEvent();
     if (fDebug > 1) AliInfo(" ==== Tracks from AliAODInputHandler");
-    	// Case when jets are reconstructed on the fly from AOD tracks
-    	// (the Jet Finder is using the AliJetAODReader) of InputEventHandler
-    	// and put in the OutputEventHandler AOD. Useful whe you want to reconstruct jets with
-    	// different parameters to default ones stored in the AOD or to use a different algorithm
-    	if( fJetsOnFly ) {
-      	handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
-      	if( handler && handler->InheritsFrom("AliAODHandler") ) {
-		fAODjets = ((AliAODHandler*)handler)->GetAOD();
-		if (fDebug > 1) AliInfo(" ==== Jets from AliAODHandler (on the fly)");
-      	}
-   	 } else {
-      	fAODjets = fAOD;
-      	if (fDebug > 1) AliInfo(" ==== Jets from AliAODInputHandler");
-   	 }
+    // Case when jets are reconstructed on the fly from AOD tracks
+    // (the Jet Finder is using the AliJetAODReader) of InputEventHandler
+    // and put in the OutputEventHandler AOD. Useful whe you want to reconstruct jets with
+    // different parameters to default ones stored in the AOD or to use a different algorithm
+    if( fJetsOnFly ) {
+      handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+      if( handler && handler->InheritsFrom("AliAODHandler") ) {
+        fAODjets = ((AliAODHandler*)handler)->GetAOD();
+        if (fDebug > 1) AliInfo(" ==== Jets from AliAODHandler (on the fly)");
+      }
+    } else {
+      fAODjets = fAOD;
+      if (fDebug > 1) AliInfo(" ==== Jets from AliAODInputHandler");
+    }
   } else {  //output AOD
     handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
     if( handler && handler->InheritsFrom("AliAODHandler") ) {
@@ -257,7 +258,6 @@ void  AliAnalysisTaskUE::CreateOutputObjects()
   CreateHistos();
   //  fListOfHistos->SetOwner(kTRUE);  
 
-  
 }
 
 
@@ -265,23 +265,23 @@ void  AliAnalysisTaskUE::CreateOutputObjects()
 void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
 {
   //Trigger selection ************************************************
-   AliInputEventHandler* inputHandler = (AliInputEventHandler*) 
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*)
          ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    if (inputHandler->IsEventSelected()){
-      if (fDebug > 1) AliInfo(" Trigger Selection: event ACCEPTED ... ");
-    }else{
-      if (fDebug > 1) AliInfo(" Trigger Selection: event REJECTED ... ");
-      return;
-    }
+  if (inputHandler->IsEventSelected()) {
+    if (fDebug > 1) AliInfo(" Trigger Selection: event ACCEPTED ... ");
+  } else {
+    if (fDebug > 1) AliInfo(" Trigger Selection: event REJECTED ... ");
+    return;
+  }
 
   //Event selection (vertex) *****************************************
   AliKFVertex primVtx(*(fAOD->GetPrimaryVertex()));
   Int_t nTracksPrim=primVtx.GetNContributors();
   if (fDebug > 1) AliInfo(Form(" Primary-vertex Selection: %d",nTracksPrim));
   if(!nTracksPrim){
-  	if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
-  	return; 
-	}
+    if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
+    return;
+  }
   if (fDebug > 1) AliInfo(" Primary-vertex Selection: event ACCEPTED ...");
  
   // Execute analysis for current event
@@ -299,9 +299,9 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
          }
       }
     }
- fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
- AnalyseUE();
-  
+  fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+  AnalyseUE();
+
   // Post the data
   PostData(0, fListOfHistos);
 }
@@ -309,6 +309,7 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
 //____________________________________________________________________
 void  AliAnalysisTaskUE::AnalyseUE()
 {
+   Double_t const kMyTolerance = 0.0000001; 
   //
   // Look for correlations on the tranverse regions to 
   // the leading charged jet
@@ -327,20 +328,19 @@ void  AliAnalysisTaskUE::AnalyseUE()
   Int_t nJets = 0;
   
   
-  if( !fUseChPartJet ) {
+  if( !fUseChPartJet && fAnaType != 4 ) {
     
     // Use AOD Jets
     if(fDeltaAOD){
       if (fDebug > 1) AliInfo(" ==== Jets From  Delta-AODs !");
       if (fDebug > 1) AliInfo(Form(" ====  Reading Branch: %s  ",fDeltaAODBranch.Data()));
- 	fArrayJets =
-	  (TClonesArray*)fAODjets->GetList()->FindObject(fDeltaAODBranch.Data());
-	if (!fArrayJets){
-		AliFatal(" No jet-array! ");
-		return;
-	}
-	nJets=fArrayJets->GetEntries();
-    }else{
+ 	   fArrayJets = (TClonesArray*)fAODjets->GetList()->FindObject(fDeltaAODBranch.Data());
+	   if (!fArrayJets){
+		  AliFatal(" No jet-array! ");
+		  return;
+	   }
+	   nJets=fArrayJets->GetEntries();
+    } else {
       if (fDebug > 1) AliInfo(" ==== Read Standard-AODs  !");
       if (fDebug > 1) AliInfo(Form(" ====  Reading Branch: %s  ",fAODBranch.Data()));
       
@@ -349,23 +349,23 @@ void  AliAnalysisTaskUE::AnalyseUE()
     //printf("AOD %d jets \n", nJets);
 
     for( Int_t i=0; i<nJets; ++i ) {
-       AliAODJet* jet;
+      AliAODJet* jet;
       if (fDeltaAOD){
-	jet =(AliAODJet*)fArrayJets->At(i);
+	     jet =(AliAODJet*)fArrayJets->At(i);
       }else{
-	jet = (AliAODJet*)((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->At(i);
+	     jet = (AliAODJet*)((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->At(i);
       }
       Double_t jetPt = jet->Pt();//*1.666; // FIXME Jet Pt Correction ?????!!!
  
       if( jetPt > maxPtJet1 ) {
-	maxPtJet3 = maxPtJet2; index3 = index2;
-	maxPtJet2 = maxPtJet1; index2 = index1;
-	maxPtJet1 = jetPt; index1 = i;
+	     maxPtJet3 = maxPtJet2; index3 = index2;
+	     maxPtJet2 = maxPtJet1; index2 = index1;
+	     maxPtJet1 = jetPt; index1 = i;
       } else if( jetPt > maxPtJet2 ) {
-	maxPtJet3 = maxPtJet2; index3 = index2;
-	maxPtJet2 = jetPt; index2 = i;
+	     maxPtJet3 = maxPtJet2; index3 = index2;
+	     maxPtJet2 = jetPt; index2 = i;
       } else if( jetPt > maxPtJet3 ) {
-	maxPtJet3 = jetPt; index3 = i;
+	     maxPtJet3 = jetPt; index3 = i;
       }
     }
 
@@ -382,9 +382,9 @@ void  AliAnalysisTaskUE::AnalyseUE()
       AliAODJet* jet = 0;
       if (fDeltaAOD) {
       	jet= (AliAODJet*) fArrayJets->At(index2);
-	}else{
+	   }else{
       	jet=(AliAODJet*) ((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->At(index2);
-	}
+	   }
       if(jet)jetVect[1].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
     if( index3 != -1 ) {
@@ -392,43 +392,64 @@ void  AliAnalysisTaskUE::AnalyseUE()
       if (fDeltaAOD) {
       	jet= (AliAODJet*) fArrayJets->At(index3);
       }else{
-     	((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->At(index3);
+     	   ((TClonesArray*)fAODjets->FindListObject(fAODBranch.Data()))->At(index3);
       }
       if(jet)jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
     
-  } else {
-    
+  }
+
+  if( fUseChPartJet )  {
+
     // Use "Charged Particle Jets"
     TObjArray* jets = FindChargedParticleJets();
     if( jets ) {
       nJets = jets->GetEntriesFast();
       if( nJets > 0 ) {
-	index1 = 0;
-	AliAODJet* jet = (AliAODJet*)jets->At(0);
-	maxPtJet1 = jet->Pt();
-	jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+	     index1 = 0;
+	     AliAODJet* jet = (AliAODJet*)jets->At(0);
+	     maxPtJet1 = jet->Pt();
+	     jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
       }
       if( nJets > 1 ) {
-	index2 = 1;
-	AliAODJet* jet = (AliAODJet*)jets->At(1);
+	     index2 = 1;
+	     AliAODJet* jet = (AliAODJet*)jets->At(1);
         maxPtJet2 = jet->Pt();
-	jetVect[1].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+	     jetVect[1].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
       }
       if( nJets > 2 ) {
-	index3 = 2;
-	AliAODJet* jet = (AliAODJet*)jets->At(2);
+	     index3 = 2;
+	     AliAODJet* jet = (AliAODJet*)jets->At(2);
         maxPtJet3 = jet->Pt();
-	jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+	     jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
       }
       
       jets->Delete();
       delete jets;
+      if (fDebug > 1) AliInfo(" ==== Jets Created in OUR class  !: CDF algorithm ");
     }
   }
-  
 
-fhNJets->Fill(nJets);
+
+  if( fAnaType == 4 )  {
+
+    // Use "Max Pt Charge Particle"
+    TObjArray* tracks = SortChargedParticles();
+    if( tracks ) {
+      nJets = tracks->GetEntriesFast();
+      if( nJets > 0 ) {
+        index1 = 0;
+        AliAODTrack* jet = (AliAODTrack*)tracks->At(0);
+        maxPtJet1 = jet->Pt();
+        jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+      }
+      tracks->Clear();
+      delete tracks; 
+    }
+  }
+
+
+  fhNJets->Fill(nJets);
   
   if( fDebug > 1 ) {
     if( index1 < 0 ) {
@@ -457,11 +478,11 @@ fhNJets->Fill(nJets);
     return;
   }
   // back to back inclusive
-  if( fAnaType > 1 && index2 == -1 ) {
+  if( fAnaType > 1 && fAnaType < 4 && index2 == -1 ) {
     if( fDebug > 1 ) AliInfo("\n   Skipping Event... no second Jet found");
     return;
   }
-  if( fAnaType > 1 && index2 > -1 ) {
+  if( fAnaType > 1 && fAnaType < 4 && index2 > -1 ) {
     if( TMath::Abs(jetVect[0].DeltaPhi(jetVect[1])) < fJet2DeltaPhiCut ||
        maxPtJet2/maxPtJet1 < fJet2RatioPtCut ) {
       if( fDebug > 1 ) AliInfo("\n   Skipping Event... |Jet1.Phi - Jet2.Phi| < fJet2DeltaPhiCut");
@@ -469,7 +490,7 @@ fhNJets->Fill(nJets);
     }
   }
   // back to back exclusive
-  if( fAnaType > 2 && index3 > -1 ) {
+  if( fAnaType > 2 && fAnaType < 4 && index3 > -1 ) {
     if( maxPtJet3 > fJet3PtCut ) {
       if( fDebug > 1 ) AliInfo("\n   Skipping Event... Jet3.Pt > fJet3PtCut ");
       return;
@@ -506,10 +527,12 @@ fhNJets->Fill(nJets);
   if (!fUseMCParticleBranch){
     fhEleadingPt->Fill( maxPtJet1 );
     Int_t nTracks = fAOD->GetNTracks();
+    if (fDebug > 1) AliInfo(Form(" ==== AOD tracks = %d \n ",nTracks));
     
     for (Int_t ipart=0; ipart<nTracks; ++ipart) {
       
       AliAODTrack* part = fAOD->GetTrack( ipart );
+      if (fDebug > 1) AliInfo(Form(" ==== AOD track = %d pt = %f charge = %d \n ",ipart,part->Pt(),part->Charge()));
       if ( !part->TestFilterBit(fFilterBit) ) continue; // track cut selection
       if (!part->IsPrimaryCandidate()) continue; // reject whatever is not linked to collision point
       // PID Selection: Reject everything but hadrons
@@ -528,10 +551,14 @@ fhNJets->Fill(nJets);
       if( TMath::Abs(part->Eta()) > fTrackEtaCut ) continue;
       
       TVector3 partVect(part->Px(), part->Py(), part->Pz());
-      
+      Bool_t isFlagPart = kTRUE;
       Double_t deltaPhi = jetVect[0].DeltaPhi(partVect)+k270rad;
       if( deltaPhi > kTWOPI )  deltaPhi-= kTWOPI;
-      fhdNdEtaPhiDist->Fill( deltaPhi, maxPtJet1 );
+      if (fAnaType != 4 ) fhdNdEtaPhiDist->Fill( deltaPhi, maxPtJet1 );
+      else if (TMath::Abs(deltaPhi-k270rad) >= kMyTolerance && TMath::Abs(jetVect[0].Eta()-partVect.Eta()) >= kMyTolerance){
+         fhdNdEtaPhiDist->Fill( deltaPhi, maxPtJet1 );
+         isFlagPart = kFALSE;
+      }
       
       fhFullRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
       
@@ -771,9 +798,19 @@ fhNJets->Fill(nJets);
       }//end loop AliAODMCParticle tracks
     }
   }
+  
+  Double_t avePosRegion = (nTrackRegionPosit) ? sumPtRegionPosit/nTrackRegionPosit : 0.;
+  Double_t aveNegRegion = (nTrackRegionNegat) ? sumPtRegionNegat/nTrackRegionNegat : 0.;
+  if( avePosRegion > aveNegRegion ) {
+     FillAvePartPtRegion( maxPtJet1, avePosRegion/fAreaReg, aveNegRegion/fAreaReg );
+  } else {
+     FillAvePartPtRegion( maxPtJet1, aveNegRegion/fAreaReg, avePosRegion/fAreaReg );
+  }
+  
   //How quantities will be sorted before Fill Min and Max Histogram
   //  1=Plots will be CDF-like
   //  2=Plots will be Marchesini-like
+  //  3=Minimum zone is selected as the one having lowest pt per track 
   if( fOrdering == 1 ) {
     if( sumPtRegionPosit > sumPtRegionNegat ) {
       FillSumPtRegion( maxPtJet1, sumPtRegionPosit/fAreaReg, sumPtRegionNegat/fAreaReg );
@@ -793,16 +830,15 @@ fhNJets->Fill(nJets);
       FillSumPtRegion( maxPtJet1, sumPtRegionNegat/fAreaReg, sumPtRegionPosit/fAreaReg );
       FillMultRegion( maxPtJet1, nTrackRegionNegat/fAreaReg, nTrackRegionPosit/fAreaReg, sumPtRegionPosit/fAreaReg );
     }
+  } else if( fOrdering == 3 ){
+     if (avePosRegion > aveNegRegion) {
+        FillSumPtRegion( maxPtJet1, sumPtRegionPosit/fAreaReg, sumPtRegionNegat/fAreaReg );
+        FillMultRegion( maxPtJet1, nTrackRegionPosit/fAreaReg, nTrackRegionNegat/fAreaReg, sumPtRegionNegat/fAreaReg );
+     }else{
+        FillSumPtRegion( maxPtJet1, sumPtRegionNegat/fAreaReg, sumPtRegionPosit/fAreaReg );
+        FillMultRegion( maxPtJet1, nTrackRegionNegat/fAreaReg, nTrackRegionPosit/fAreaReg, sumPtRegionPosit/fAreaReg );
+     }
   }
-  
-  Double_t avePosRegion = (nTrackRegionPosit) ? sumPtRegionPosit/nTrackRegionPosit : 0.;
-  Double_t aveNegRegion = (nTrackRegionNegat) ? sumPtRegionNegat/nTrackRegionNegat : 0.;
-  if( avePosRegion > aveNegRegion ) {
-    FillAvePartPtRegion( maxPtJet1, avePosRegion/fAreaReg, aveNegRegion/fAreaReg );
-  } else {
-    FillAvePartPtRegion( maxPtJet1, aveNegRegion/fAreaReg, avePosRegion/fAreaReg );
-  }
-  
   fhRegionMaxPartPtMaxVsEt->Fill(maxPtJet1, maxPartPtRegion );
   
   // Compute pedestal like magnitudes
@@ -928,20 +964,42 @@ Int_t AliAnalysisTaskUE::IsTrackInsideRegion(TVector3 *jetVect, TVector3 *partVe
   return region;
 }
 
+//____________________________________________________________________
+TObjArray*  AliAnalysisTaskUE::SortChargedParticles()
+{
+  //  return an array with all charged particles ordered according to their pT .
+  Int_t nTracks = fAOD->GetNTracks();
+  if( !nTracks ) return 0;
+  TObjArray* tracks = new TObjArray(nTracks);
+
+  for (Int_t ipart=0; ipart<nTracks; ++ipart) {
+    AliAODTrack* part = fAOD->GetTrack( ipart );
+    if( !part->TestFilterBit( fFilterBit ) ) continue; // track cut selection
+    if( !part->Charge() ) continue;
+    if( part->Pt() < fTrackPtCut ) continue;
+    tracks->AddLast( part );
+  }
+  QSortTracks( *tracks, 0, tracks->GetEntriesFast() );
+
+  nTracks = tracks->GetEntriesFast();
+  if( !nTracks ) return 0;
+
+  return tracks;
+}
 
 //____________________________________________________________________
 TObjArray*  AliAnalysisTaskUE::FindChargedParticleJets()
 {
   // Return a TObjArray of "charged particle jets"
   //
-  // Charged particle jet deï¬nition from reference:
+  // Charged particle jet definition from reference:
   //
   // "Charged jet evolution and the underlying event
   //  in proton-antiproton collisions at 1.8 TeV"
   //  PHYSICAL REVIEW D 65 092002, CDF Collaboration
   //
-  // We deï¬ne "jets" as circular regions in eta-phi space with
-  // radius deï¬ned by R = sqrt( (eta-eta0)^2 +(phi-phi0)^2 ).
+  // We defined "jets" as circular regions in eta-phi space with
+  // radius defined by R = sqrt( (eta-eta0)^2 +(phi-phi0)^2 ).
   // Our jet algorithm is as follows:
   //   1- Order all charged particles according to their pT .
   //   2- Start with the highest pT particle and include in the jet all
@@ -952,7 +1010,7 @@ TObjArray*  AliAnalysisTaskUE::FindChargedParticleJets()
   //      a jet and add to the jet all particles not already included in
   //      a jet within R=0.7.
   //   4- Continue until all particles are in a jet.
-  // We deï¬ne the transverse momentum of the jet to be
+  // We defined the transverse momentum of the jet to be
   // the scalar pT sum of all the particles within the jet, where pT
   // is measured with respect to the beam axis
   

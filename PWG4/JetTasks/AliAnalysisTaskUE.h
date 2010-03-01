@@ -83,6 +83,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   FillAvePartPtRegion( Double_t leadingE, Double_t ptMax, Double_t ptMin );
     void   FillMultRegion( Double_t leadingE, Double_t nTrackPtmax, Double_t nTrackPtmin, Double_t ptMin );
     TObjArray*  FindChargedParticleJets();
+    TObjArray*  SortChargedParticles();
     void   QSortTracks(TObjArray &a, Int_t first, Int_t last);
     void   WriteSettings();
     
@@ -115,7 +116,8 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     //     1=inclusive  (default) 
     //     2=back to back inclusive
     //     3=back to back exclusive
-    //     4=gama jet (back to back) ???
+    //     4=Pt max (max Pt track in region)
+    //     5=gama jet (back to back) ???
     //  Minimum bias
     //     31 = Semi jet (charged leading particle jets)
     //     32 = Random jetcone  ?
@@ -125,20 +127,21 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     // Transverse are those like defined in: R. Field Acta Physica Polonica B. Vol 36 No. 2 pg 167 (2005) 
     // Cone regions like defined in: Phys. Rev. D 70, 072002 (2004)
     Int_t   fRegionType;       // 1 = transverse regions (default)
-    // 2 = cone regions   
+                               // 2 = cone regions   
     Double_t   fConeRadius;       // if selected Cone-like region type, set Radius (=0.7 default)
     Int_t   fConePosition;     // This parameter set how will cone center in transversal zone will be set
-    //    1 : To be used in any jet topology (default value)
-    //        eta_cone = eta_leadingjet
-    //        phi_cone = phi_leadingjet + - 90
-    //    2 : To be used in multiple jet topology (code will cry otherwise)
-    //        eta_cone = (eta_leadingjet + eta_subleadingjet)/2
-    //        phi_cone = phi_leadingjet + - 90
+                               //    1 : To be used in any jet topology (default value)
+                               //        eta_cone = eta_leadingjet
+                               //        phi_cone = phi_leadingjet + - 90
+                               //    2 : To be used in multiple jet topology (code will cry otherwise)
+                               //        eta_cone = (eta_leadingjet + eta_subleadingjet)/2
+                               //        phi_cone = phi_leadingjet + - 90
     Double_t   fAreaReg;       // Area of the region To be used as normalization factor when filling histograms
-    // if fRegionType = 2 not always it is included within eta range
-    Bool_t   fUseChPartJet;     // Use "Charged Particle Jet" instead of jets from AOD
-    // see FindChargedParticleJets()
-    Bool_t     fUseChargeHadrons;   // Only use charge hadrons
+                               // if fRegionType = 2 not always it is included within eta range
+    Bool_t   fUseChPartJet;     // Use "Charged Particle Jet" instead of jets from AOD see FindChargedParticleJets()
+    Bool_t   fUseChPartMaxPt;   // Use "Charged Particle with max Pt" instead of any jets to define forward region
+
+    Bool_t   fUseChargeHadrons;   // Only use charge hadrons
     
     // Theoreticians ask for tools charge-aware
     // especially those which are related to multiplicity and MC-tunings
@@ -156,7 +159,10 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     //          sort only according Pt summation scored, find minimum between both zones and
     //          fill Pt and Multiplicity Max and Min summation histog. following only this criterium
     //       Bib: Phys. Rev. D 38, 3419 (1988)
-    //     3=User Selection sorting (NOTE: USER must implement it within cxx)
+    //     3=Nameless pt per track single sorting
+    //          sort according to pt per track scored in each transverse zone 
+    //          lowest values indicates minimum zone.   
+    //     4=User Selection sorting (NOTE: USER must implement it within cxx)
     
     UInt_t   fFilterBit;        // Select tracks from an specific track cut (default 0xFF all track selected)
     Bool_t   fJetsOnFly;        // if jets are reconstructed on the fly from AOD tracks (see ConnectInputData() )
@@ -220,9 +226,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     TH1F*  fh1Trials;                //!
     
     TTree* fSettingsTree;            //! Fast Settings saving
-    
-    
-    
+
     ClassDef( AliAnalysisTaskUE, 4); // Analysis task for Underlying Event analysis
   };
 
