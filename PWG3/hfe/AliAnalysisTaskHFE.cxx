@@ -636,7 +636,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
       if(track->Pt()>0.5){
         fSecVtx->InitHFEpairs();
         fSecVtx->InitHFEsecvtxs();
-        AliESDtrack *htrack = 0x0; 
         for(Int_t jtrack = 0; jtrack < fESD->GetNumberOfTracks(); jtrack++){
           htrack = fESD->GetTrack(jtrack);
           if ( itrack == jtrack ) continue; // since it is for tagging single electron, don't need additional condition 
