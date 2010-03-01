@@ -31,18 +31,19 @@ class AliTOFPreprocessor : public AliPreprocessor
 
   protected:
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
-    virtual UInt_t Process(TMap * const dcsAliasMap);
+    virtual UInt_t Process(TMap *dcsAliasMap);
     virtual Bool_t ProcessDCS();
 
   private:
     AliTOFPreprocessor(const AliTOFPreprocessor & proc); // copy constructor
     AliTOFPreprocessor& operator=(const AliTOFPreprocessor & proc);
-    UInt_t ProcessDCSDataPoints(TMap * const dcsAliasMap);
-    UInt_t ProcessHVandLVdps(TMap * const dcsAliasMap);
+    UInt_t ProcessDCSDataPoints(TMap *dcsAliasMap);
+    UInt_t ProcessHVandLVdps(TMap *dcsAliasMap);
     UInt_t ProcessOnlineDelays();
     UInt_t ProcessPulserData();
     UInt_t ProcessNoiseData();
     UInt_t ProcessFEEData(); // dummy, for the time being
+    UInt_t ProcessT0Fill();
 
     void FillWithCosmicCalibration(AliTOFChannelOnlineArray *cal); // fill with cosmic calibration
     void FillWithCableLengthMap(AliTOFChannelOnlineArray *cal); // fill with cable-lenght map

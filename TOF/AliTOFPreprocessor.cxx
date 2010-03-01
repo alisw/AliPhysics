@@ -43,7 +43,16 @@
 #include "AliTOFCableLengthMap.h"
 #include "AliTOFcalibHisto.h"
 #include "AliTOFFEEDump.h"
-
+#include "TChain.h"
+#include "AliTOFDeltaBCOffset.h"
+#include "AliTOFCTPLatency.h"
+#include "AliTOFT0Fill.h"
+#include "AliTOFT0FillOnlineCalib.h"
+#include "AliTOFHitField.h"
+#include "AliTOFChannelOffline.h"
+#include "TF1.h"
+#include "TGeoManager.h"
+#include "AliGeomManager.h"
 
 // TOF preprocessor class.
 // It takes data from DCS and passes them to the class AliTOFDataDCS, which
@@ -142,7 +151,7 @@ Bool_t AliTOFPreprocessor::ProcessDCS(){
 }
 //_____________________________________________________________________________
 
-UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap * const dcsAliasMap)
+UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap *dcsAliasMap)
 {
   // Fills data into a AliTOFDataDCS object
 
@@ -205,7 +214,7 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap * const dcsAliasMap)
 }
 //_____________________________________________________________________________
 
-UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap * const dcsAliasMap)
+UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
 {
   //
   //Fills data into a AliTOFLvHvDataPoints object
@@ -273,7 +282,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap * const dcsAliasMap)
 	  fIsStatusMapChanged=kTRUE;
 	}
       }
-
+      
       // check with plots. Start...
       /*
       for (Int_t ii=0; ii<91*96*18; ii++) {
@@ -374,6 +383,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap * const dcsAliasMap)
   
   return 0;
 }
+
 //_____________________________________________________________________________
 
 UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
@@ -709,6 +719,255 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 
   return 0;
 }
+
+//_____________________________________________________________________________
+
+UInt_t 
+AliTOFPreprocessor::ProcessT0Fill()
+{
+  // Processing data from DAQ for T0-fill measurement 
+
+  Log("Processing T0-fill");
+
+#if 0
+  /* instance and setup CDB manager */
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  /* load geometry */
+  if (!gGeoManager) AliGeomManager::LoadGeometry();
+#endif
+
+  /* get params from OCDB */
+  AliCDBEntry *cdbe = NULL;
+
+  /* get T0-fill calibration params */
+  cdbe = GetFromOCDB("Calib", "T0FillOnlineCalib");
+  if (!cdbe) {
+    Log("cannot get \"T0FillOnlineCalib\" entry from OCDB");
+    return 21;
+  }
+  AliTOFT0FillOnlineCalib *t0FillOnlineCalibObject = (AliTOFT0FillOnlineCalib *)cdbe->GetObject();
+  if (!t0FillOnlineCalibObject) {
+    Log("cannot get \"T0FillOnlineCalib\" object from CDB entry");
+    return 21;
+  }
+  Float_t t0FillCalibOffset = t0FillOnlineCalibObject->GetOffset();
+  Float_t t0FillCalibCoefficient = t0FillOnlineCalibObject->GetCoefficient();
+  Log(Form("got \"T0FillOnlineCalib\" object: offset=%f coeff=%f", t0FillCalibOffset, t0FillCalibCoefficient));
+
+  /* get online status from OCDB */
+  cdbe = GetFromOCDB("Calib", "Status");
+  if (!cdbe) {
+    Log("cannot get \"Status\" entry from OCDB");
+    return 21;
+  }
+  AliTOFChannelOnlineStatusArray *statusArray = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
+  if (!statusArray) {
+    Log("cannot get \"Status\" object from CDB entry");
+    return 21;
+  }
+  Log("got \"Status\" object");
+
+  /* get offline calibration from OCDB */
+  cdbe = GetFromOCDB("Calib", "ParOffline");
+  if (!cdbe) {
+    Log("cannot get \"ParOffline\" entry from OCDB");
+    return 21;
+  }
+  TObjArray *offlineArray = (TObjArray *)cdbe->GetObject();
+  AliTOFChannelOffline *channelOffline;
+  if (!offlineArray) {
+    Log("cannot get \"ParOffline\" object from CDB entry");
+    return 21;
+  }
+  Log("got \"ParOffline\" object");
+
+  /* get deltaBC offset from OCDB */
+  cdbe = GetFromOCDB("Calib", "DeltaBCOffset");
+  if (!cdbe) {
+    Log("cannot get \"DeltaBCOffset\" entry from OCDB");
+    return 21;
+  }
+  AliTOFDeltaBCOffset *deltaBCOffsetObject = (AliTOFDeltaBCOffset *)cdbe->GetObject();
+  if (!deltaBCOffsetObject) {
+    Log("cannot get \"DeltaBCOffset\" object from CDB entry");
+    return 21;
+  }
+  Int_t deltaBCOffset = deltaBCOffsetObject->GetDeltaBCOffset();
+  Log(Form("got \"DeltaBCOffset\" object: deltaBCOffset=%d (BC bins)", deltaBCOffset));
+
+  /* get CTP latency from OCDB */
+  cdbe = GetFromOCDB("Calib", "CTPLatency");
+  if (!cdbe) {
+    Log("cannot get \"CTPLatency\" entry from OCDB");
+    return 21;
+  }
+  AliTOFCTPLatency *ctpLatencyObject = (AliTOFCTPLatency *)cdbe->GetObject();
+  if (!ctpLatencyObject) {
+    Log("cannot get \"CTPLatency\" object from CDB entry");
+    return 21;
+  }
+  Float_t ctpLatency = ctpLatencyObject->GetCTPLatency();
+  Log(Form("got \"CTPLatency\" object: ctpLatency=%f (ps)", ctpLatency));
+  
+  /* get file sources from FXS */
+  TList *fileList = GetFileSources(kDAQ, "HITS");
+  if (!fileList || fileList->GetEntries() == 0) {
+    Log("cannot get DAQ source file list or empty list");
+    return 21;
+  }
+  Log(Form("got DAQ source file list: %d files", fileList->GetEntries()));
+  fileList->Print();
+  
+  /* create tree chain using file sources */
+  TChain chain("hitTree");
+  for (Int_t ifile = 0; ifile < fileList->GetEntries(); ifile++) {
+    TObjString *str = (TObjString *)fileList->At(ifile);
+    TString filename = GetFile(kDAQ, "HITS", str->GetName());
+    chain.Add(filename);
+    Log(Form("file added to input chain: source=%s, filename=%s", str->String().Data(), filename.Data()));
+  }
+  Int_t nhits = chain.GetEntries();
+  Log(Form("input chain ready: %d hits", nhits));
+
+  /* setup input chain */
+  AliTOFHitField *hit = new AliTOFHitField();
+  chain.SetBranchAddress("hit", &hit);
+
+  /* create calib histo and geometry */
+  AliTOFcalibHisto calibHisto;
+  calibHisto.LoadCalibHisto();
+  AliTOFGeometry tofGeo;
+
+  /* constants */
+  Float_t c = TMath::C() * 1.e2 / 1.e12; /* cm/ps */
+  Float_t c_1 = 1. / c;
+  /* variables */
+  Int_t index, timebin, totbin, deltaBC, l0l1latency, det[5];
+  Float_t timeps, totns, corrps, length, timeexp, timezero, pos[3], latencyWindow;
+
+  /* histos */
+  TH1F *hT0Fill = new TH1F("hT0Fill", "T0 fill;t - t_{exp}^{(c)} (ps);", 2000, -24400., 24400.);
+
+  /* loop over hits */
+  for (Int_t ihit = 0; ihit < nhits; ihit++) {
+
+    /* get entry */
+   chain.GetEntry(ihit);
+    
+    /* get hit info */
+    index = hit->GetIndex();
+    timebin = hit->GetTimeBin();
+    totbin = hit->GetTOTBin();
+    deltaBC = hit->GetDeltaBC();
+    l0l1latency = hit->GetL0L1Latency();
+    latencyWindow = statusArray->GetLatencyWindow(index) * 1.e3;
+    
+    /* convert time in ps and tot in ns */
+    timeps = timebin * AliTOFGeometry::TdcBinWidth();
+    totns = totbin * AliTOFGeometry::ToTBinWidth() * 1.e-3;
+    /* get calibration correction in ps */
+    channelOffline = (AliTOFChannelOffline *)offlineArray->At(index);
+    if (totns < AliTOFGeometry::SlewTOTMin()) totns = AliTOFGeometry::SlewTOTMin();
+    if (totns > AliTOFGeometry::SlewTOTMax()) totns = AliTOFGeometry::SlewTOTMax();
+    corrps = 0.;
+    for (Int_t ipar = 0; ipar < 6; ipar++) corrps += channelOffline->GetSlewPar(ipar) * TMath::Power(totns, ipar);
+    corrps *= 1.e3;
+    /* perform time correction */
+    timeps = timeps + (deltaBC - deltaBCOffset) * AliTOFGeometry::BunchCrossingBinWidth() + l0l1latency * AliTOFGeometry::BunchCrossingBinWidth() + ctpLatency - latencyWindow - corrps;
+    /* compute length and expected time */
+    tofGeo.GetVolumeIndices(index, det);
+    tofGeo.GetPosPar(det, pos);
+    length = 0.;
+    for (Int_t i = 0; i < 3; i++) length += pos[i] * pos[i];
+    length = TMath::Sqrt(length);
+    timeexp = length * c_1;
+    /* compute time zero */
+    timezero = timeps - timeexp;
+    
+    /* fill histos */
+    hT0Fill->Fill(timezero);
+  }
+
+  /* rebin until maximum bin has required minimum entries */
+  Int_t maxBin = hT0Fill->GetMaximumBin();
+  Int_t maxBinContent = hT0Fill->GetBinContent(maxBin);
+  Float_t binWidth = hT0Fill->GetBinWidth(maxBin);
+  while (maxBinContent < 400 && binWidth < 90.) {
+    hT0Fill->Rebin(2);
+    maxBin = hT0Fill->GetMaximumBin();
+    maxBinContent = hT0Fill->GetBinContent(maxBin);
+    binWidth = hT0Fill->GetBinWidth(maxBin);
+  }
+  Float_t maxBinCenter = hT0Fill->GetBinCenter(maxBin);
+
+  /* rough landau fit of the edge */
+  TF1 *landau = (TF1 *)gROOT->GetFunction("landau");
+  landau->SetParameter(1, maxBinCenter);
+  Float_t fitMin = maxBinCenter - 1000.; /* fit from 10 ns before max */
+  Float_t fitMax = maxBinCenter + binWidth; /* fit until a bin width above max */
+  hT0Fill->Fit("landau", "q0", "", fitMin, fitMax);
+  /* get rough landau mean and sigma to set a better fit range */
+  Float_t mean = landau->GetParameter(1);
+  Float_t sigma = landau->GetParameter(2);
+  /* better landau fit of the edge */
+  fitMin = maxBinCenter - 3. * sigma;
+  fitMax = mean;
+  hT0Fill->Fit("landau", "q0", "", fitMin, fitMax);
+  /* print params */
+  mean = landau->GetParameter(1);
+  sigma = landau->GetParameter(2);
+  Float_t meane = landau->GetParError(1);
+  Float_t sigmae = landau->GetParError(2);
+  Log(Form("edge fit: mean  = %f +- %f ps", mean, meane));
+  Log(Form("edge fit: sigma = %f +- %f ps", sigma, sigmae));
+  Float_t edge = mean - 3. * sigma;
+  Float_t edgee = TMath::Sqrt(meane * meane + 3. * sigmae * 3. * sigmae);
+  Log(Form("edge fit: edge = %f +- %f ps", edge, edgee));
+  /* apply calibration to get T0-fill from egde */
+  Float_t t0Fill = edge * t0FillCalibCoefficient + t0FillCalibOffset;
+  Log(Form("estimated T0-fill: %f ps", t0Fill));
+
+  /* create T0-fill object */
+  AliTOFT0Fill *t0FillObject = new AliTOFT0Fill();
+  t0FillObject->SetT0Fill(t0Fill);
+
+  /* store reference data */
+  if(fStoreRefData){
+    AliCDBMetaData metaDataHisto;
+    metaDataHisto.SetBeamPeriod(0);
+    metaDataHisto.SetResponsible("Roberto Preghenella");
+    metaDataHisto.SetComment("online T0-fill histogram");
+    if (!StoreReferenceData("Calib","T0Fill", hT0Fill, &metaDataHisto)) {
+      Log("error while storing reference data");
+      delete hT0Fill;
+      delete hit;
+      delete t0FillObject;
+      return 21;
+    }
+    Log("reference data successfully stored");
+  }
+  
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Roberto Preghenella");
+  metaData.SetComment("online T0-fill measurement");
+  if (!Store("Calib", "T0Fill", t0FillObject, &metaData, 0, kFALSE)) {
+    Log("error while storing T0-fill object");
+    delete hT0Fill;
+    delete hit;
+    delete t0FillObject;
+    return 21;
+  }
+  Log("T0-fill object successfully stored");
+
+  delete hT0Fill;
+  delete hit;
+  delete t0FillObject;
+  return 0;
+
+}
+ 
+
 //_____________________________________________________________________________
 
 UInt_t AliTOFPreprocessor::ProcessPulserData()
@@ -1297,7 +1556,7 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 
 //_____________________________________________________________________________
 
-UInt_t AliTOFPreprocessor::Process(TMap * const dcsAliasMap)
+UInt_t AliTOFPreprocessor::Process(TMap *dcsAliasMap)
 {
   //
   // Main AliTOFPreprocessor method called by SHUTTLE
@@ -1322,9 +1581,10 @@ UInt_t AliTOFPreprocessor::Process(TMap * const dcsAliasMap)
     Int_t iresultNoise = ProcessNoiseData();
     return iresultNoise; 
   }
-  
+ 
   if (runType == "PHYSICS") {
-    Int_t iresultDAQ = ProcessOnlineDelays();
+    //    Int_t iresultDAQ = ProcessOnlineDelays();
+    Int_t iresultDAQ = ProcessT0Fill();
     if (iresultDAQ != 0) {
       return iresultDAQ;
     }

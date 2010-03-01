@@ -2,10 +2,10 @@
 <!DOCTYPE TOFConfig [
 <!ELEMENT TOFConfig (Folder)>
 <!ELEMENT Folder EMPTY>
-<!ATTLIST Folder DebugFlag CDATA #REQUIRED>
-<!ATTLIST Folder t0Flag CDATA #REQUIRED>
+<!ATTLIST Folder MeanMultiplicity CDATA #REQUIRED>
+<!ATTLIST Folder MaxMits CDATA #REQUIRED>
 ]>
 <TOFConfig>
-<Folder DebugFlag="2" t0Flag="On">
+<Folder MeanMultiplicity="20" MaxHits="10000000">
 </Folder>
 </TOFConfig>

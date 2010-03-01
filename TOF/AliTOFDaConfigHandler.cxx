@@ -19,6 +19,7 @@
 //                                                                        //
 //  Author:                                                               //
 //    Chiara Zampolli (Chiara.Zampolli@cern.ch)                           //
+//    Roberto Preghenella (R+) (preghenella@bo.infn.it)                   //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -35,12 +36,12 @@
 
 ClassImp(AliTOFDaConfigHandler)
 
-  
+
 //_____________________________________________________________________________
 AliTOFDaConfigHandler::AliTOFDaConfigHandler()
-	:TObject(),
-	 fDebugFlag(0),
-	 fT0Flag(0)
+:TObject(),
+  fMeanMultiplicity(0),
+  fMaxHits(0)
 {
 	//
 	// AliTOFDaConfigHandler default constructor
@@ -50,8 +51,8 @@ AliTOFDaConfigHandler::AliTOFDaConfigHandler()
 //_____________________________________________________________________________
 AliTOFDaConfigHandler::AliTOFDaConfigHandler(const AliTOFDaConfigHandler &sh)
 	:TObject(sh),
-	 fDebugFlag(sh.fDebugFlag),
-	 fT0Flag(sh.fT0Flag)
+	 fMeanMultiplicity(sh.fMeanMultiplicity),
+	 fMaxHits(sh.fMaxHits)
 {
 	//
 	// AliTOFDaConfigHandler copy constructor
@@ -106,25 +107,15 @@ void AliTOFDaConfigHandler::OnStartElement(const char *name, const TList *attrib
 	while ((attr = (TXMLAttr*) next())) {
 		TString attrName = attr->GetName();
 		AliDebug(2,Form("Name = %s",attrName.Data())); 
-		if (attrName == "DebugFlag"){
-			fDebugFlag = ((TString)(attr->GetValue())).Atoi();
+		if (attrName == "MeanMultiplicity"){
+		  fMeanMultiplicity = ((TString)(attr->GetValue())).Atoi();
 		}
-		if (attrName == "t0Flag"){
-			TString t0Flag = (TString)(attr->GetValue());
-			if (t0Flag == "ON" || t0Flag == "On" || t0Flag == "on"){	
-				fT0Flag = 1;
-			}
-			else if (t0Flag == "OFF" || t0Flag == "Off"|| t0Flag == "off"){
-				fT0Flag = 0;
-			}
-			else {
-				AliWarning("Invalid T0 Flag. Keeping t0 off");
-				fT0Flag = 0;
-			}
+		if (attrName == "MaxHits"){
+		  fMaxHits = ((TString)(attr->GetValue())).Atoi();
 		}
 	}	
-	AliDebug(2,Form("Debug Flag = %i",fDebugFlag)); 
-	AliDebug(2,Form("T0 Flag = %i",fT0Flag)); 
+	AliDebug(2,Form("MeanMultiplicity = %d",fMeanMultiplicity)); 
+	AliDebug(2,Form("MaxHits = %d",fMaxHits)); 
 	return;
 }
 //_____________________________________________________________________________

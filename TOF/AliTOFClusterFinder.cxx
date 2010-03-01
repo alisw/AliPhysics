@@ -1094,6 +1094,11 @@ void AliTOFClusterFinder::CalibrateRecPoint()
       AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %d , %d", fTofClusters[ii]->GetToT(),fTofClusters[ii]->GetTDC()));
       tToT = (Double_t)(fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth());    
       tToT*=1.E-3; //ToT in ns
+
+      /* check TOT limits and set new TOT in case */
+      if (tToT < AliTOFGeometry::SlewTOTMin()) tToT = AliTOFGeometry::SlewTOTMin();
+      if (tToT > AliTOFGeometry::SlewTOTMax()) tToT = AliTOFGeometry::SlewTOTMax();
+
       AliDebug(2,Form(" The ToT and Time, uncorr (ns)= %e, %e",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3,tToT));
       timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT; // the time correction (ns)
     }

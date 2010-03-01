@@ -21,7 +21,7 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestReference");
 
   // create AliTestShuttle instance
-  Int_t nrun = 7;
+  Int_t nrun = 104892;
   AliTestShuttle* shuttle = new AliTestShuttle(nrun, 30, 980);
   //setting run type to physiscs
   shuttle->SetInputRunType(RunType);
@@ -35,6 +35,7 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
   shuttle->SetDCSInput(dcsAliasMap);   
 
   // processing files. for the time being, the files are local.
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "HITS", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Hits.root");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "DELAYS", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Total.root");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Partial.root");
   shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeLightMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEElight.20090616.102605.8000");
@@ -64,21 +65,9 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
   gBenchmark->Stop("process");
   gBenchmark->Print("process");
 
-  // checking the file which should have been created  
-  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TOF/Calib/ParOnlineDelay", nrun);
-  if (!chkEntry)
-  {
-    printf("The file is not there. Something went wrong.\n");
-    return;
-  }
-
-  AliTOFDataDCS* output = dynamic_cast<AliTOFDataDCS*> (chkEntry->GetObject());
-  // If everything went fine, draw the result
-  if (output)
-    printf("Output found.\n");
-  //    output->Draw();
   
 }
+
 
 TMap* CreateDCSAliasMap()
 {
@@ -97,38 +86,35 @@ TMap* CreateDCSAliasMap()
   aliasMap->SetOwner(1);
 
   TRandom random;
+  /*
   TDatime *datime = new TDatime();
   Int_t time = datime->GetTime();
   Int_t date = datime->GetDate();
   Int_t pid  = gSystem->GetPid();
   delete datime;
   Int_t iseed = TMath::Abs(10000 * pid + time - date); 
+  */
 
-  //Float_t thrHVv=7.75, thrHVc=3, thrLVv=2.75, thrLVc=2.5,
-  //thrFEEthr=1.5, thrFEEt=10, thrTemp=35, thrPress=1000;
-  //Float_t tentHVv=6.75, tentHVc=2, tentLVv=1.75, tentLVc=1.5,
-  //  tentFEEthr=0.5, te    result=0;
-  //ntFEEt=20, tentTemp=25, tentPress=900;
-  //Float_t sigmaHVv=1, sigmaHVc=0.25, sigmaLVv=0.25, sigmaLVc=0.25,
-  //  sigmaFEEthr=0.05, sigmaFEEt=5, sigmaTemp=1, sigmaPress=10;
 
   Float_t tentHVv=6500, tentHVi=80;
   Float_t sigmaHVv=10, sigmaHVi=10;
 
-  Float_t tent=0, sigma=0, thr=0;
+  Float_t tent=0, sigma=0;//, thr=0;
   // to have all the aliases, decomment the following line:
   Int_t NAliases=360, NHV=90;
 
+
   // if not all the aliases are there, use this:
   //Int_t NAliases=120, NHV=90;
+
+  TString sindex;
+  TString aliasName;
 
   for(int nAlias=0;nAlias<NAliases;nAlias++) {
 
     TObjArray* valueSet = new TObjArray;
     valueSet->SetOwner(1);
 
-    TString sindex;
-    TString aliasName;
     if (nAlias<NHV){
       aliasName = "tof_hv_vp_";
       sindex.Form("%02i",nAlias);
@@ -169,7 +155,7 @@ TMap* CreateDCSAliasMap()
       //thr=-thrHVc;
     }
     // gauss generation of values 
-    for (int timeStamp=0;timeStamp<1000;timeStamp+=10){
+    for (int timeStamp=0;timeStamp<6000;timeStamp+=10){
     //for (int timeStamp=0;timeStamp<1;timeStamp++){
       Float_t gaussvalue = (Float_t) (random.Gaus(tent,sigma));
       if (TMath::Abs(gaussvalue-tent)>sigma){
@@ -179,10 +165,201 @@ TMap* CreateDCSAliasMap()
     }
 
     aliasMap->Add(new TObjString(aliasName), valueSet);
+
   }
+
+
+
+
+  const Int_t kNsectors = 18;
+  const Int_t kNplates = 5;
+
+  UInt_t baseWord = 0;
+  UInt_t oldBaseWord = 0;
+
+  for(int i=0;i<kNsectors;i++)
+    for(int j=0;j<kNplates;j++) {
+
+      TObjArray* valueSetHV = new TObjArray;
+      valueSetHV->SetOwner(1);
+
+      aliasName = "TOF_HVSTATUS_";
+      sindex.Form("SM%02dMOD%1d",i,j);
+      aliasName += sindex;
+
+
+      //for (int timeStamp=0;timeStamp<6000;timeStamp+=600) {
+      for (int timeStamp=0;timeStamp<1201;timeStamp+=600) {
+	if (timeStamp==0 /*|| timeStamp==1200*/) {
+	  baseWord = CreateHVword(i,j, kTRUE);
+	  oldBaseWord = baseWord;
+	  AliDCSValue* dcsVal = new AliDCSValue(baseWord, timeStamp);
+	  valueSetHV->Add(dcsVal);
+	}
+	else {
+	  if (random.Uniform(0.,1.)>=0.5) {
+	    baseWord = CreateHVword(i,j, kFALSE);
+	    if (baseWord<=oldBaseWord) {
+	      oldBaseWord = baseWord;
+	      AliDCSValue* dcsVal = new AliDCSValue(baseWord, timeStamp);
+	      valueSetHV->Add(dcsVal);
+	    }
+	    else {
+	      AliDCSValue* dcsVal = new AliDCSValue(oldBaseWord, timeStamp);
+	      valueSetHV->Add(dcsVal);
+	    }
+	    //Info(Form(" %2d %1d %s %d %d",i,j,aliasName,timeStamp,baseWord));
+	  }
+	}
+      }
+
+      /*
+      baseWord = CreateHVword(i,j, kTRUE);
+      AliDCSValue* dcsVal0 = new AliDCSValue(baseWord, 0);
+      valueSetHV->Add(dcsVal0);
+
+      if ((i==0 && j==2) || (i==9 && j==4)) {
+	baseWord = CreateHVword(i,j, kFALSE);
+	AliDCSValue* dcsVal1 = new AliDCSValue(baseWord, 600);
+	valueSetHV->Add(dcsVal1);
+      }
+
+      baseWord = CreateHVword(i,j, kTRUE);
+      AliDCSValue* dcsVal2 = new AliDCSValue(baseWord, 1200);
+      valueSetHV->Add(dcsVal2);
+      */
+
+      aliasMap->Add(new TObjString(aliasName), valueSetHV);
+
+    }
+
+
+  const Int_t kNddl = 72;
+  baseWord = 0;
+  oldBaseWord = 0;
+
+  for(int i=0;i<kNddl;i++) {
+
+    TObjArray* valueSetLV = new TObjArray;
+    valueSetLV->SetOwner(1);
+
+    aliasName = "TOF_FEACSTATUS_";
+    sindex.Form("%02d",i);
+    aliasName += sindex;
+
+
+    //for (int timeStamp=0;timeStamp<6000;timeStamp+=600) {
+    for (int timeStamp=0;timeStamp<1201;timeStamp+=400) {
+      if (timeStamp==0 /*|| timeStamp==1200*/) {
+	baseWord = CreateLVword(kTRUE);
+	AliDCSValue* dcsVal = new AliDCSValue(baseWord, timeStamp);
+	valueSetLV->Add(dcsVal);
+	oldBaseWord = baseWord;
+	//Info(Form(" %2d %s %d %d",i,aliasName,timeStamp,baseWord));
+	}
+      else {
+	if (random.Uniform(0.,1.)>=0.5) {
+	  baseWord = CreateLVword(kFALSE);
+	  if (baseWord<=oldBaseWord) {
+	    oldBaseWord = baseWord;
+	    AliDCSValue* dcsVal = new AliDCSValue(baseWord, timeStamp);
+	    valueSetLV->Add(dcsVal);
+	  }
+	  else {
+	    AliDCSValue* dcsVal = new AliDCSValue(oldBaseWord, timeStamp);
+	    valueSetLV->Add(dcsVal);
+	  }
+	  //Info(Form(" %2d %1d %s %d %d",i,j,aliasName,timeStamp,baseWord));
+	}
+      }
+    }
+
+    /*
+    baseWord = CreateLVword(kTRUE);
+    AliDCSValue* dcsVal0 = new AliDCSValue(baseWord, 0);
+    valueSetLV->Add(dcsVal0);
+
+    if (i==7 || i==9) {
+      baseWord = CreateLVword(kFALSE);
+      AliDCSValue* dcsVal1 = new AliDCSValue(baseWord, 400);
+      valueSetLV->Add(dcsVal1);
+    }
+    else if (i==50 || i==35) {
+      baseWord = CreateLVword(kFALSE);
+      AliDCSValue* dcsVal2 = new AliDCSValue(baseWord, 800);
+      valueSetLV->Add(dcsVal2);
+    }
+
+    baseWord = CreateLVword(kTRUE);
+    AliDCSValue* dcsVal3 = new AliDCSValue(baseWord, 1200);
+    valueSetLV->Add(dcsVal3);
+    */
+
+    aliasMap->Add(new TObjString(aliasName), valueSetLV);
+
+  }
+
 
   return aliasMap;
 }
+
+
+UInt_t CreateHVword(Int_t nSector, Int_t nPlate, Bool_t isAtBorder) {
+  //
+  //
+  //
+
+  UInt_t baseWord = 0;
+  UInt_t word = 0;
+  TRandom random;
+
+  for (Int_t iStrip=0; iStrip<AliTOFGeometry::NStrip(nPlate); iStrip++) {
+
+    if (isAtBorder) {
+      word = 1;
+      if (nPlate==2 && nSector>=13 && nSector<=15)
+	word = 0;
+    }
+    else {
+      random.Uniform(0.,1.)<0.5 ?   word = 0 : word = 1;
+      if (nPlate==2 && nSector>=13 && nSector<=15)
+	word = 0;
+      word = 0;
+    }
+
+    AliBitPacking::PackWord(word,baseWord,iStrip,iStrip);
+  }
+
+  return baseWord;
+
+}
+
+
+UInt_t CreateLVword(Bool_t isAtBorder) {
+  //
+  //
+  //
+
+  UInt_t baseWord = 0;
+  UInt_t word = 0;
+  TRandom random;
+
+  for (Int_t iFeac=0; iFeac<8; iFeac++) {
+
+    if (isAtBorder)
+      word = 1;
+    else {
+      random.Uniform(0.,1.)<0.5 ?   word = 0 : word = 1;
+      word = 0;
+    }
+
+    AliBitPacking::PackWord(word,baseWord,iFeac,iFeac);
+  }
+
+  return baseWord;
+
+}
+
 
 TMap* ReadDCSAliasMap()
 {
@@ -214,3 +391,5 @@ void WriteDCSAliasMap()
 
   AliCDBManager::Instance()->Put(dcsAliasMap, id, &metaData);
 }
+
+

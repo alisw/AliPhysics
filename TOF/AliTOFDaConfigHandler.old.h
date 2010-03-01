@@ -10,8 +10,6 @@
 //  to get the necessary flags to run (e.g. debug flag)                   //
 //                                                                        //
 //  Chiara.Zampolli (Chiara.Zampolli@cern.ch)                             //
-//  Roberto Preghenella (R+) (preghenella@bo.infn.it)                     //
-//                                                                        //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -39,15 +37,14 @@ public:
   void          OnFatalError(const char *name);
   void          OnCdataBlock(const char *name, Int_t len);
 
-  Int_t GetMeanMultiplicity() const {return fMeanMultiplicity;};
-  Int_t GetMaxHits() const {return fMaxHits;};
+  Int_t GetDebugFlag() const {return fDebugFlag;}
+  Int_t GetT0Flag() const {return fT0Flag;}
 
  private:
+  Int_t fDebugFlag;          // debug flag: 0-->off, 1-->first level of debug, 2-->second level of debug, 3-->third level of debug
+  Int_t fT0Flag;             // flag for using T0: 0-->off, 1-->on
 
-  Int_t fMeanMultiplicity; // mean multiplicity
-  Int_t fMaxHits; // max hits 
-
-  ClassDef(AliTOFDaConfigHandler,1);  
+  ClassDef(AliTOFDaConfigHandler,0);  
 };
 #endif
 

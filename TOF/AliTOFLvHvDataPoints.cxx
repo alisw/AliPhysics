@@ -177,6 +177,7 @@ Bool_t AliTOFLvHvDataPoints::ProcessData(TMap& aliasMap) {
   AliDebug(1,Form(" Number of LV dps = %d",fNumberOfLVdataPoints));
 
   if (!MergeHVmap()) return kFALSE;
+  if (fNumberOfLVdataPoints==0) return kFALSE;
   if (!MergeLVmap()) return kFALSE;
 
   if (!MergeMaps()) return kFALSE;
@@ -401,6 +402,39 @@ Bool_t AliTOFLvHvDataPoints::ReadHVDataPoints(TMap& aliasMap) {
       }
     }
 
+  if (fNumberOfHVdataPoints==0) {
+    AliInfo("Valid LV dps not found. By default all HV TOF channels (except the ones in the PHOS holes) switched ON.");
+    for (int i=0; i<kNsectors; i++)
+      for (int j=0; j<kNplates; j++) {
+	for (Int_t iBin=0; iBin<kNpads; iBin++) dummy[iBin]=-1;
+	if ( (i==13 || i==14 || i==15) && j==2) {
+	  FillHVarrayPerDataPoint(i,j,0,dummy);
+	  AliTOFDCSmaps *object = new AliTOFDCSmaps(0,dummy);
+	  InsertHVDataPoint(object);
+	}
+	else {
+	  FillHVarrayPerDataPoint(i,j,1,dummy);
+	  AliTOFDCSmaps *object = new AliTOFDCSmaps(0,dummy);
+	  InsertHVDataPoint(object);
+	}
+      }
+
+    for (int i=0; i<kNsectors; i++)
+      for (int j=0; j<kNplates; j++) {
+	for (Int_t iBin=0; iBin<kNpads; iBin++) dummy[iBin]=-1;
+	if ( (i==13 || i==14 || i==15) && j==2) {
+	  FillHVarrayPerDataPoint(i,j,0,dummy);
+	  AliTOFDCSmaps *object = new AliTOFDCSmaps(999999,dummy);
+	  InsertHVDataPoint(object);
+	}
+	else {
+	  FillHVarrayPerDataPoint(i,j,1,dummy);
+	  AliTOFDCSmaps *object = new AliTOFDCSmaps(999999,dummy);
+	  InsertHVDataPoint(object);
+	}
+      }
+  }
+
   return kTRUE;
 
 }
@@ -461,6 +495,24 @@ Bool_t AliTOFLvHvDataPoints::ReadLVDataPoints(TMap& aliasMap) {
 	}
       }
     }
+  }
+
+  if (fNumberOfLVdataPoints==0) {
+    AliInfo("Valid LV dps not found. By default all LV TOF channels switched ON.");
+    for (int i=0; i<kNddl; i++) {
+      for (Int_t iBin=0; iBin<kNpads; iBin++) dummy[iBin]=-1;
+      FillLVarrayPerDataPoint(i,0,dummy);
+      AliTOFDCSmaps *object = new AliTOFDCSmaps(0,dummy);
+      InsertLVDataPoint(object);
+    }
+
+    for (int i=0; i<kNddl; i++) {
+      for (Int_t iBin=0; iBin<kNpads; iBin++) dummy[iBin]=-1;
+      FillLVarrayPerDataPoint(i,0,dummy);
+      AliTOFDCSmaps *object = new AliTOFDCSmaps(999999,dummy);
+      InsertLVDataPoint(object);
+    }
+
   }
 
   return kTRUE;
