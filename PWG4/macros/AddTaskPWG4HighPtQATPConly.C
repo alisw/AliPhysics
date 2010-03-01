@@ -58,6 +58,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   AliPWG4HighPtQATPConly *taskPWG4QA = new AliPWG4HighPtQATPConly("AliPWG4HighPtQATPConly");
   taskPWG4QA->SetCuts(trackCuts);
   taskPWG4QA->SetCutsITS(trackCutsITS);
+  taskPWG4QA->SetMaxCosmicAngle(0.008);
   
  
   // E. Create ONLY the output containers for the data produced by the task.
@@ -72,7 +73,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   AliAnalysisDataContainer *cout_hist0 = mgr->CreateContainer("qa_hists", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *cout_hist1 = mgr->CreateContainer("qa_histsTPC", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *cout_hist2 = mgr->CreateContainer("qa_histsITS", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
-
+  AliAnalysisDataContainer *cout_hist3 = mgr->CreateContainer("qa_histsCosmics", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
  
   mgr->AddTask(taskPWG4QA);
 
@@ -80,6 +81,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly()//<some_parameters>)
   mgr->ConnectOutput(taskPWG4QA,0,cout_hist0);
   mgr->ConnectOutput(taskPWG4QA,1,cout_hist1);
   mgr->ConnectOutput(taskPWG4QA,2,cout_hist2);
+  mgr->ConnectOutput(taskPWG4QA,3,cout_hist3);
 
   // Return task pointer at the end
   return taskPWG4QA;

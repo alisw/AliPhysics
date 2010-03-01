@@ -33,6 +33,7 @@ class AliESDfriendTrack;
 class AliMCEvent;
 class AliVEvent;
 class AliESDtrackCuts;
+class AliESDtrack;
 
 class AliPWG4HighPtQATPConly: public AliAnalysisTask {
 
@@ -44,12 +45,12 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
+  Bool_t IsCosmic(const AliESDtrack* track1 = 0x0, Int_t trackNumber = 0, Double_t ptMin = 6.);
   virtual void   Terminate(Option_t *);
 
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
-  //Select the trigger
-  void SelectTrigger(Int_t trig) { fTrigger = trig; } 
+  void SetMaxCosmicAngle(Double_t angle) {fMaxCosmicAngle = angle;}
 
  protected:
 
@@ -64,14 +65,16 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   AliMCEvent *fMC;                //! MC event object
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global vs TPConly comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
-  Int_t fTrigger;                 //Trigger flag as defined in AliAnalysisHelperJetTasks.h 
   
+  Double_t fMaxCosmicAngle;       // Max deviation from pi (angle between two tracks) in case of cosmic candidate
+
   TH1F *fNEventAll;                             //! Event counter
   TH1F *fNEventSel;                             //! Event counter: Selected events for analysis
   TH1F *fPtAll;                                 //! Pt spectrum all charged particles
   TH1F *fPtSel;                                 //! Pt spectrum all selected charged particles by fTrackCuts
   TH2F *fPtAllminPtTPCvsPtAll;                  //! Momentum resolution (global vs TPConly)
   TH3F *fPtAllminPtTPCvsPtAllNPointTPC;         //! Momentum resolution vs NPointTPC
+  TH3F *fPtAllminPtTPCvsPtAllNPointTPCS;        //! Momentum resolution vs NPointTPCShared/NPointTPC
   TH3F *fPtAllminPtTPCvsPtAllDCAR;              //! Momentum resolution vs DCAR
   TH3F *fPtAllminPtTPCvsPtAllDCAZ;              //! Momentum resolution vs DCAZ
   TH3F *fPtAllminPtTPCvsPtAllPhi;               //! Momentum resolution vs Phi
@@ -81,11 +84,13 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtAllminPtTPCvsPtAllRel1PtUncertainty; //! Momentum resolution vs relUncertainty1Pt
   TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusTPC;   //! Momentum resolution vs Chi2PerNClusTPC
   TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITS;   //! Momentum resolution vs Chi2PerNClusITS
+
   TH2F *fEtaPhiOutliers;                        //! Eta Phi for outliers in momentum resolution
-  //    fPtAllminPtTPCvsPtAllChi2PerNClusITS'
+ 
   TH1F *fPtSelITSouter;                         //! Pt at ITS outer wall for all selected charged particles by fTrackCuts
   TH2F *fPtITSouterminPtTPCvsPtAll;                  //! Momentum resolution (global vs ITSouter-TPCinner)
   TH3F *fPtITSouterminPtTPCvsPtAllNPointTPC;         //! Momentum resolution vs NPointTPC
+  TH3F *fPtITSouterminPtTPCvsPtAllNPointTPCS;        //! Momentum resolution vs NPointTPCS
   TH3F *fPtITSouterminPtTPCvsPtAllDCAR;              //! Momentum resolution vs DCAR
   TH3F *fPtITSouterminPtTPCvsPtAllDCAZ;              //! Momentum resolution vs DCAZ
   TH3F *fPtITSouterminPtTPCvsPtAllPhi;               //! Momentum resolution vs Phi
@@ -128,6 +133,7 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH1F *fPtSelITS;                              //! Pt spectrum all selected charged particles by fTrackCutsITS
   TH2F *fPtITSminPtTPCvsPtITS;                  //! Momentum resolution (global with ITSrefit vs TPConly)
   TH3F *fPtITSminPtTPCvsPtITSNPointTPC;         //! Momentum resolution vs NPointTPC 
+  TH3F *fPtITSminPtTPCvsPtITSNPointTPCS;        //! Momentum resolution vs NPointTPCS 
   TH3F *fPtITSminPtTPCvsPtITSDCAR;              //! Momentum resolution vs DCAR
   TH3F *fPtITSminPtTPCvsPtITSDCAZ;              //! Momentum resolution vs DCAZ
   TH3F *fPtITSminPtTPCvsPtITSPhi;               //! Momentum resolution vs Phi
@@ -138,10 +144,19 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtITSminPtTPCvsPtITSChi2PerNClusTPC;   //! Momentum resolution vs Chi2PerNClusTPC
   TH3F *fPtITSminPtTPCvsPtITSChi2PerNClusITS;  //! Momentum resolution vs Chi2PerNClusITS
 
-  TH2F *fPtOuterPtInner;                        //! Momentum of global track at inner wall versus outer wall of TPC
   TH3F *fPtRel1PtUncertaintyChi2PerClusTPC;     //! Global Pt vs relUncertainty1Pt vs Chi2PerClusTPC
+  TH3F *fPtNPointTPCSChi2PerClusTPC;            //! Global Pt vs NPointTPCShared/NPointTPC vs Chi2PerClusTPC
+  TH3F *fPtNPointTPCSRel1PtUncertainty;         //! Global Pt vs NPointTPCShared/NPointTPC vs relUncertainty1Pt
+  TH3F *fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel;     //! Global Pt vs relUncertainty1Pt vs Chi2PerClusTPC for NPointTPCShared/NPointTPC>0.05
 
   TList *fHistListITS; //! List of Histograms
+
+  TH1F *fPtCosmicCandidates;                    //! Cosmic Candidates
+  TH1F *fDeltaPtCosmicCandidates;               //! Cosmic Candidates Delta Pt
+  TH1F *fDeltaPhi;                              //! Cosmic Candidates Delta Phi
+  TH1F *fDeltaEta;                              //! Cosmic Candidates Delta Eta
+
+  TList *fHistListCosmics;                      //! List of Histograms for cosmic candidates
 
   ClassDef(AliPWG4HighPtQATPConly,1) 
   

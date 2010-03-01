@@ -36,18 +36,17 @@
 #include "TH3.h"
 #include "TList.h"
 #include "TChain.h"
-#include "TH3F.h"
 
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliExternalTrackParam.h"
+
 #include "AliLog.h"
 
 #include "AliStack.h"
 #include "TParticle.h"
-#include "TH1I.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliCFContainer.h"
@@ -317,6 +316,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  Int_t label = TMath::Abs(track->GetLabel());
 	  TParticle *particle = stack->Particle(label) ;
 	  if(!particle) continue;
+
 	  containerInputMC[0] = particle->Pt();      
 	  containerInputMC[1] = particle->Phi();      
 	  containerInputMC[2] = particle->Eta();  
@@ -345,7 +345,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     }
   
 
-  
+  //Fill MC containters if particles are findable
   if(eventHandler) {
     for(int iPart = 1; iPart<(mcEvent->GetNumberOfTracks()); iPart++)//stack->GetNprimary();
       {
@@ -360,19 +360,18 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	containerInputMC[4] = 0.0;
 
 	int counter;
-
+	Float_t trackLengthTPC = 0.;
 	if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(3,mcPart)) {
-	  Float_t trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
-	  if(trackLengthTPC>80.) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
+	  trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
+	  if(trackLengthTPC > (float)fTrackCuts->GetMinNClusterTPC()) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
 	}
 	if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(3,mcPart)) {
-	  Float_t trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
-	  if(trackLengthTPC>80.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
+	  trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
+	  if(trackLengthTPC > (float)fTrackCuts->GetMinNClusterTPC()) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
 	}
       }
   }
   
-   
   PostData(0,fHistList);
   PostData(1,fCFManagerPos->GetParticleContainer());
   PostData(2,fCFManagerNeg->GetParticleContainer());
