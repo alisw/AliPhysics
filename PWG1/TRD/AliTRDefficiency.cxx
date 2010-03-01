@@ -44,8 +44,8 @@ ClassImp(AliTRDefficiency)
 
 //____________________________________________________________________
 AliTRDefficiency::AliTRDefficiency()
-  :AliTRDrecoTask()
-  ,fMissed(0x0)
+  :AliTRDrecoTask("efficiency", "TRD barrel tracking efficiency checker")
+  ,fMissed(NULL)
 {
   //
   // Default constructor
@@ -54,7 +54,7 @@ AliTRDefficiency::AliTRDefficiency()
 
 AliTRDefficiency::AliTRDefficiency(char* name)
   :AliTRDrecoTask(name, "TRD barrel tracking efficiency checker")
-  ,fMissed(0x0)
+  ,fMissed(NULL)
 {
   //
   // Default constructor
@@ -82,7 +82,7 @@ void  AliTRDefficiency::UserCreateOutputObjects()
   const Int_t nbins = AliTRDCalPID::kNMom;
   Float_t xbins[nbins+1] = {.5, .7, .9, 1.3, 1.7, 2.4, 3.5, 4.5, 5.5, 7., 9., 11.};
 
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   fContainer = new TObjArray();
   for(Int_t is=0; is<AliPID::kSPECIES; is++){
     fContainer->Add(h = new TProfile(Form("h%s", AliTRDCalPID::GetPartSymb(is)), "", nbins, xbins));
@@ -113,9 +113,9 @@ void AliTRDefficiency::UserExec(Option_t *)
   Int_t selection[10000], nselect = 0;
   ULong_t status; Int_t pidx;
   Int_t nTRD = 0, nTPC = 0, nMiss = 0;
-  AliTRDtrackInfo     *track = 0x0;
-  AliTrackReference     *ref = 0x0;
-  AliExternalTrackParam *esd = 0x0;
+  AliTRDtrackInfo     *track = NULL;
+  AliTrackReference     *ref = NULL;
+  AliExternalTrackParam *esd = NULL;
   for(Int_t itrk=0; itrk<fTracks->GetEntriesFast(); itrk++){
     track = (AliTRDtrackInfo*)fTracks->UncheckedAt(itrk);
 
@@ -174,9 +174,9 @@ void AliTRDefficiency::UserExec(Option_t *)
 
   // Find double tracks
   Float_t threshold = 10.;
-  AliTrackReference *refMiss = 0x0;
-  AliExternalTrackParam *op = 0x0;
-  AliTRDtrackInfo       *tt = 0x0;
+  AliTrackReference *refMiss = NULL;
+  AliExternalTrackParam *op = NULL;
+  AliTRDtrackInfo       *tt = NULL;
   for(Int_t imiss=0; imiss<nMiss; imiss++){
     //printf("Searching missing %d ...\n", imiss);
 
@@ -268,7 +268,7 @@ Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
 // Steer reference figures
 
   Bool_t bFIRST = kTRUE;
-  TProfile *h = 0x0;
+  TProfile *h = NULL;
   switch(ifig){
   case 0:
     h = (TProfile*)fContainer->At(AliPID::kSPECIES);

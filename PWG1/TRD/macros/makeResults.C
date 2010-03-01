@@ -158,7 +158,6 @@ void processESD(TNamed *otask)
     delete esd;
     return;
   }
-
   esd->Terminate();
 
   TGraphErrors *g = 0x0; Int_t ipic=0;

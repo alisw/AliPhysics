@@ -75,11 +75,11 @@ ClassImp(AliTRDcheckDET)
 
 //_______________________________________________________
 AliTRDcheckDET::AliTRDcheckDET():
-  AliTRDrecoTask()
-  ,fEventInfo(0x0)
-  ,fTriggerNames(0x0)
-  ,fReconstructor(0x0)
-  ,fGeo(0x0)
+  AliTRDrecoTask("checkDET", "Basic TRD data checker")
+  ,fEventInfo(NULL)
+  ,fTriggerNames(NULL)
+  ,fReconstructor(NULL)
+  ,fGeo(NULL)
   ,fFlags(0)
 {
   //
@@ -90,10 +90,10 @@ AliTRDcheckDET::AliTRDcheckDET():
 
 AliTRDcheckDET::AliTRDcheckDET(char* name):
   AliTRDrecoTask(name, "Basic TRD data checker")
-  ,fEventInfo(0x0)
-  ,fTriggerNames(0x0)
-  ,fReconstructor(0x0)
-  ,fGeo(0x0)
+  ,fEventInfo(NULL)
+  ,fTriggerNames(NULL)
+  ,fReconstructor(NULL)
+  ,fGeo(NULL)
   ,fFlags(0)
 {
   //
@@ -179,7 +179,7 @@ Bool_t AliTRDcheckDET::PostProcess(){
   // Do Postprocessing (for the moment set the number of Reference histograms)
   //
   
-  TH1 * h = 0x0;
+  TH1 * h = NULL;
   
   // Calculate of the trigger clusters purity
   h = dynamic_cast<TH1F *>(fContainer->FindObject("hEventsTrigger"));
@@ -257,8 +257,8 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   };
   gPad->SetLogy(0);
   gPad->SetLogx(0);
-  TH1 *h = 0x0; TObjArray *arr=0x0;
-  TLegend *leg = 0x0;
+  TH1 *h = NULL; TObjArray *arr=NULL;
+  TLegend *leg = NULL;
   Bool_t kFIRST(1);
   switch(ifig){
   case kFigNclustersTrack:
@@ -559,12 +559,12 @@ TH1 *AliTRDcheckDET::PlotTrackStatus(const AliTRDtrackV1 *track)
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kTrackStatus)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
   h->Fill(fkTrack->GetStatusTRD());
   return h;
@@ -591,15 +591,15 @@ TH1 *AliTRDcheckDET::PlotTrackletStatus(const AliTRDtrackV1 *track)
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TObjArray *arr =0x0;
+  TObjArray *arr =NULL;
   if(!(arr = dynamic_cast<TObjArray*>(fContainer->At(kTrackletStatus)))){
     AliWarning("Histograms not defined.");
-    return 0x0;
+    return NULL;
   }
 
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
     if(!(h = dynamic_cast<TH1F*>(arr->At(ily)))){
       AliWarning(Form("Missing histo for layer %d.", ily));
@@ -618,14 +618,14 @@ TH1 *AliTRDcheckDET::PlotNClustersTracklet(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNclustersTracklet)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     h->Fill(tracklet->GetN2());
@@ -641,16 +641,16 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNclustersTrack)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
   
   Int_t nclusters = 0;
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   AliExternalTrackParam *par = fkTrack->GetTrackHigh() ? fkTrack->GetTrackHigh() : fkTrack->GetTrackLow();
   Double_t momentumRec = par->P();
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
@@ -697,12 +697,12 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
   TH1 *h = NULL, *hSta = NULL; TH2 *hBarrel = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsTrack)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
   Int_t nTracklets = fkTrack->GetNumberOfTracklets();
   h->Fill(nTracklets);
@@ -755,7 +755,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
     if(nTracklets == 1){
       // If we have one Tracklet, check in which layer this happens
       Int_t layer = -1;
-      AliTRDseedV1 *tracklet = 0x0;
+      AliTRDseedV1 *tracklet = NULL;
       for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
         if((tracklet = fkTrack->GetTracklet(il)) && tracklet->IsOK()){layer =  il; break;}
       }
@@ -779,16 +779,16 @@ TH1 *AliTRDcheckDET::PlotNTrackletsRowCross(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsCross)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
 
   Int_t ncross = 0;
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
     if(!(tracklet = fkTrack->GetTracklet(il)) || !tracklet->IsOK()) continue;
 
@@ -831,18 +831,18 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsFindable)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
   Int_t nFound = 0, nFindable = 0;
   Int_t stack = -1;
   Double_t ymin = 0., ymax = 0., zmin = 0., zmax = 0.;
   Double_t y = 0., z = 0.;
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   AliTRDpadPlane *pp;  
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
     if((tracklet = fkTrack->GetTracklet(il)) && tracklet->IsOK()){
@@ -862,7 +862,7 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
       xyz[0] = xAnode[il];
       points[il].SetXYZ(xyz);
     }
-    AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(fkTrack), 0x0, kTRUE, 6, points);
+    AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(fkTrack), NULL, kTRUE, 6, points);
   } else {
     // barrel track
     //
@@ -884,10 +884,10 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
     /*for(Int_t ipt = 0; ipt < AliTRDgeometry::kNlayer; ipt++)
       printf("%d. X = %f\n", ipt, points[ipt].GetX());*/
     // Kalman inwards
-    AliTRDtrackerV1::FitKalman(&copyTrack, 0x0, kFALSE, 6, pointsInward);
+    AliTRDtrackerV1::FitKalman(&copyTrack, NULL, kFALSE, 6, pointsInward);
     memcpy(points, pointsInward, sizeof(AliTrackPoint) * 6); // Preliminary store the inward results in the Array points
     // Kalman outwards
-    AliTRDtrackerV1::FitKalman(&copyTrack, 0x0, kTRUE, 6, pointsInward);
+    AliTRDtrackerV1::FitKalman(&copyTrack, NULL, kTRUE, 6, pointsInward);
     memcpy(points, pointsOutward, sizeof(AliTrackPoint) * AliTRDgeometry::kNlayer);
   }
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
@@ -929,15 +929,15 @@ TH1 *AliTRDcheckDET::PlotChi2(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   if(!(h = dynamic_cast<TH2S*>(fContainer->At(kChi2)))) {
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
   Int_t n = fkTrack->GetNumberOfTracklets();
-  if(!n) return 0x0;
+  if(!n) return NULL;
 
   h->Fill(n, fkTrack->GetChi2()/n);
   return h;
@@ -952,15 +952,15 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TProfile *h = 0x0;
+  TProfile *h = NULL;
   if(!(h = dynamic_cast<TProfile *>(((TObjArray*)(fContainer->At(kPH)))->At(0)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
-  AliTRDseedV1 *tracklet = 0x0;
-  AliTRDcluster *c = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
+  AliTRDcluster *c = NULL;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK())continue;
     Int_t crossing = Int_t(tracklet->IsRowCross());
@@ -1014,16 +1014,16 @@ TH1 *AliTRDcheckDET::PlotPHx(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TProfile *h = 0x0;
+  TProfile *h = NULL;
   if(!(h = dynamic_cast<TProfile *>(((TObjArray*)(fContainer->At(kPH)))->At(1)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
   Float_t offset = .5*AliTRDgeometry::CamHght();
-  AliTRDseedV1 *tracklet = 0x0;
-  AliTRDcluster *c = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
+  AliTRDcluster *c = NULL;
   Double_t distance = 0;
   Double_t x, y;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
@@ -1049,15 +1049,15 @@ TH1 *AliTRDcheckDET::PlotChargeCluster(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChargeCluster)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
-  AliTRDseedV1 *tracklet = 0x0;
-  AliTRDcluster *c = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
+  AliTRDcluster *c = NULL;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK())continue;
     for(Int_t itime = 0; itime < AliTRDtrackerV1::GetNTimeBins(); itime++){
@@ -1076,18 +1076,18 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChargeTracklet)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
-  AliTRDseedV1 *tracklet = 0x0;
-  AliTRDcluster *c = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
+  AliTRDcluster *c = NULL;
   Double_t qTot = 0;
   Int_t nTracklets =fkTrack->GetNumberOfTracklets();
-  for(Int_t itl = 0x0; itl < AliTRDgeometry::kNlayer; itl++){
+  for(Int_t itl = NULL; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     qTot = 0.;
     for(Int_t ic = AliTRDseedV1::kNclusters; ic--;){
@@ -1133,18 +1133,18 @@ TH1 *AliTRDcheckDET::PlotNTracksSector(const AliTRDtrackV1 *track){
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
-    return 0x0;
+    return NULL;
   }
-  TH1 *h = 0x0;
+  TH1 *h = NULL;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtracksSector)))){
     AliWarning("No Histogram defined.");
-    return 0x0;
+    return NULL;
   }
 
   // TODO we should compare with
   // sector = Int_t(track->GetAlpha() / AliTRDgeometry::GetAlpha());
 
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDseedV1 *tracklet = NULL;
   Int_t sector = -1;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
@@ -1184,7 +1184,7 @@ TH1* AliTRDcheckDET::MakePlotChi2()
   TF1 f("fChi2", "[0]*pow(x, [1]-1)*exp(-0.5*x)", 0., 50.);
   TLegend *leg = new TLegend(.7,.7,.95,.95);
   leg->SetBorderSize(1); leg->SetHeader("Tracklets per Track");
-  TH1D *h1 = 0x0;
+  TH1D *h1 = NULL;
   Bool_t kFIRST = kTRUE;
   for(Int_t il=1; il<=h2->GetNbinsX(); il++){
     h1 = h2->ProjectionY(Form("pyChi2%d", il), il, il);

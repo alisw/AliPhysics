@@ -416,8 +416,8 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
         AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
         fCl->Add(clInfo);
         clInfo->SetCluster(c);
-        Float_t covRL[] = {cov[0], cov[1], cov[2]};
-        clInfo->SetGlobalPosition(yt, zt, dydx, dzdx, covRL);
+        Float_t covF[] = {cov[0], cov[1], cov[2]};
+        clInfo->SetGlobalPosition(yt, zt, dydx, dzdx, covF);
         clInfo->SetResolution(dy);
         clInfo->SetAnisochronity(d);
         clInfo->SetDriftLength(dx);
@@ -1041,7 +1041,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     if(!GetGraphPlot(&xy[0], kMCtrackTRD, 7)) break;
     return kTRUE;
   case 18: //kMCtrackTRD [pt]
-    xy[0] = 0.4; xy[1] = -.7; xy[2] = 12.; xy[3] = 4.;
+    xy[0] = 0.2; xy[1] = -.7; xy[2] = 7.; xy[3] = 4.;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
@@ -1063,7 +1063,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     if(!GetGraphTrack(&xy[0], 9, 55+first, nspecies, kTRUE)) break;
     return kTRUE;
   case 20: //kMCtrackTRD [p]
-    xy[0] = 0.4; xy[1] = -.7; xy[2] = 12.; xy[3] = 4.;
+    xy[0] = 0.2; xy[1] = -.7; xy[2] = 7.; xy[3] = 4.;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
@@ -1146,7 +1146,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     return kTRUE;
   case 28: // kMCtrackTPC [pt]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
-    xy[0] = 0.4; xy[1] = -.8; xy[2] = 12.; xy[3] = 6.;
+    xy[0] = 0.2; xy[1] = -.8; xy[2] = 7.; xy[3] = 6.;
     pad=(TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
     if(!GetGraphTrackTPC(xy, 8, first, nspecies)) break;
@@ -1158,7 +1158,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     return kTRUE;
   case 29: // kMCtrackTPC [p]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
-    xy[0] = 0.4; xy[1] = -.8; xy[2] = 8.; xy[3] = 6.;
+    xy[0] = 0.2; xy[1] = -.8; xy[2] = 7.; xy[3] = 6.;
     pad = ((TVirtualPad*)l->At(0));pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
     if(!GetGraphTrackTPC(xy, 10, first, nspecies)) break;
