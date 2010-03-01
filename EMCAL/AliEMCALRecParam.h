@@ -93,7 +93,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetNPedSamples(Int_t value)          {fNPedSamples = value;} 
   void SetRemoveBadChannels(Bool_t val)     {fRemoveBadChannels=val; }
   void SetFittingAlgorithm(Int_t val)       {fFittingAlgorithm=val; }
-
+  void SetFALTROUsage(Bool_t val)           {fUseFALTRO=val; }
+	
   /* raw signal getters */
   Double_t GetHighLowGainFactor() const {return fHighLowGainFactor;}
   Int_t    GetOrderParameter()    const {return fOrderParameter;}
@@ -102,7 +103,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Int_t    GetNPedSamples()       const {return fNPedSamples;}
   Bool_t   GetRemoveBadChannels() const {return fRemoveBadChannels;}
   Int_t    GetFittingAlgorithm()  const {return fFittingAlgorithm; }
-	
+  Bool_t   UseFALTRO()            const {return fUseFALTRO; }
 	
 	virtual void Print(Option_t * option="") const ;
   
@@ -153,10 +154,11 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Int_t    fNPedSamples;           // number of time samples to use in pedestal calculation
   Bool_t   fRemoveBadChannels;     // select if bad channels are removed before fitting
   Int_t    fFittingAlgorithm;      // select the fitting algorithm
-
+  Bool_t   fUseFALTRO;             // get FALTRO (trigger) and put it on trigger digits.
+		
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,9)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,10)     // Reconstruction parameters
     
     } ;
 

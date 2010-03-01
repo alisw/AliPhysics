@@ -76,18 +76,19 @@ Double_t AliEMCALRawUtils::fgFEENoise = 3.;          // 3 ADC channels of noise 
 AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
     fNPedSamples(0), fGeom(0), fOption(""),
-    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),fRawAnalyzer(0)
+    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),fUseFALTRO(kFALSE),fRawAnalyzer(0)
 {
 
   //These are default parameters.  
   //Can be re-set from without with setter functions
   //Already set in the OCDB and passed via setter in the AliEMCALReconstructor
-  fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
-  fOrder = 2;                         // order of gamma fn
-  fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
-  fNoiseThreshold = 3; // 3 ADC counts is approx. noise level
-  fNPedSamples = 4;    // less than this value => likely pedestal samples
-  fRemoveBadChannels = kTRUE; //Remove bad channels before fitting
+  fHighLowGainFactor = 16. ;   // Adjusted for a low gain range of 82 GeV (10 bits) 
+  fOrder             = 2;      // Order of gamma fn
+  fTau               = 2.35;   // in units of timebin, from CERN 2007 testbeam
+  fNoiseThreshold    = 3;      // 3 ADC counts is approx. noise level
+  fNPedSamples       = 4;      // Less than this value => likely pedestal samples
+  fRemoveBadChannels = kFALSE; // Do not remove bad channels before fitting
+  fUseFALTRO         = kTRUE;  // Get the trigger FALTRO information and pass it to digits.
   SetFittingAlgorithm(fitAlgo);
 
   //Get Mapping RCU files from the AliEMCALRecParam                                 
@@ -116,7 +117,7 @@ AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
 AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry, fitAlgorithm fitAlgo)
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
     fNPedSamples(0), fGeom(pGeometry), fOption(""),
-    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),fRawAnalyzer()
+    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),fUseFALTRO(kFALSE),fRawAnalyzer()
 {
   //
   // Initialize with the given geometry - constructor required by HLT
@@ -128,15 +129,15 @@ AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry, fitAlgorithm fit
   //These are default parameters. 
   //Can be re-set from without with setter functions 
   //Already set in the OCDB and passed via setter in the AliEMCALReconstructor
-  fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits)
-  fOrder = 2;                         // order of gamma fn
-  fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
-  fNoiseThreshold = 3; // 3 ADC counts is approx. noise level
-  fNPedSamples = 4;    // less than this value => likely pedestal samples
-  fRemoveBadChannels = kTRUE; //Remove bad channels before fitting
+  fHighLowGainFactor = 16. ;   // adjusted for a low gain range of 82 GeV (10 bits)
+  fOrder             = 2;      // order of gamma fn
+  fTau               = 2.35;   // in units of timebin, from CERN 2007 testbeam
+  fNoiseThreshold    = 3;      // 3 ADC counts is approx. noise level
+  fNPedSamples       = 4;      // Less than this value => likely pedestal samples
+  fRemoveBadChannels = kFALSE; // Do not remove bad channels before fitting
+  fUseFALTRO         = kTRUE;  // Get the trigger FALTRO information and pass it to digits.
   SetFittingAlgorithm(fitAlgo);
-	
- 
+
   //Get Mapping RCU files from the AliEMCALRecParam
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
@@ -161,6 +162,7 @@ AliEMCALRawUtils::AliEMCALRawUtils(const AliEMCALRawUtils& rawU)
     fOption(rawU.fOption),
     fRemoveBadChannels(rawU.fRemoveBadChannels),
     fFittingAlgorithm(rawU.fFittingAlgorithm),
+	fUseFALTRO(rawU.fUseFALTRO),
     fRawAnalyzer(rawU.fRawAnalyzer)
 {
   //copy ctor
@@ -177,19 +179,20 @@ AliEMCALRawUtils& AliEMCALRawUtils::operator =(const AliEMCALRawUtils &rawU)
 
   if(this != &rawU) {
     fHighLowGainFactor = rawU.fHighLowGainFactor;
-    fOrder = rawU.fOrder;
-    fTau = rawU.fTau;
-    fNoiseThreshold = rawU.fNoiseThreshold;
-    fNPedSamples = rawU.fNPedSamples;
-    fGeom = rawU.fGeom;
-    fOption = rawU.fOption;
+    fOrder             = rawU.fOrder;
+    fTau               = rawU.fTau;
+    fNoiseThreshold    = rawU.fNoiseThreshold;
+    fNPedSamples       = rawU.fNPedSamples;
+    fGeom              = rawU.fGeom;
+    fOption            = rawU.fOption;
     fRemoveBadChannels = rawU.fRemoveBadChannels;
     fFittingAlgorithm  = rawU.fFittingAlgorithm;
-    fRawAnalyzer = rawU.fRawAnalyzer;
-    fMapping[0] = rawU.fMapping[0];
-    fMapping[1] = rawU.fMapping[1];
-    fMapping[2] = rawU.fMapping[2];
-    fMapping[3] = rawU.fMapping[3];
+    fUseFALTRO         = rawU.fUseFALTRO;
+    fRawAnalyzer       = rawU.fRawAnalyzer;
+    fMapping[0]        = rawU.fMapping[0];
+    fMapping[1]        = rawU.fMapping[1];
+    fMapping[2]        = rawU.fMapping[2];
+    fMapping[3]        = rawU.fMapping[3];
   }
 
   return *this;
@@ -447,10 +450,9 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       }
       
 	}//ALTRO
-	else 
+	else if(fUseFALTRO)
 	{// Fake ALTRO
 		//		if (maxTimeBin && gSig->GetN() > maxTimeBin + 10) gSig->Set(maxTimeBin + 10); // set actual max size of TGraph
-		
 		Int_t    hwAdd    = in.GetHWAddress();
 		UShort_t iRCU     = in.GetDDLNumber() % 2; // 0/1
 		UShort_t iBranch  = ( hwAdd >> 11 ) & 0x1; // 0/1

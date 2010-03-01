@@ -58,6 +58,7 @@ class AliEMCALRawUtils : public TObject {
 
   Bool_t GetRemoveBadChannels() const {return fRemoveBadChannels;}
   Int_t  GetFittingAlgorithm()  const {return fFittingAlgorithm; }
+  Bool_t UseFALTRO()            const {return fUseFALTRO; }
 	
   void SetRawFormatHighLowGainFactor(Double_t val) {fHighLowGainFactor=val;}
   void SetRawFormatOrder(Int_t val)                {fOrder=val; }   
@@ -66,7 +67,8 @@ class AliEMCALRawUtils : public TObject {
   void SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
   void SetRemoveBadChannels(Bool_t val)            {fRemoveBadChannels=val; }
   void SetFittingAlgorithm(Int_t val) ;             
-
+  void SetFALTROUsage(Bool_t val)                  {fUseFALTRO=val; }
+	
   // set methods for fast fit simulation
   void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
   void SetRawFormatTimeBins(Int_t val)             {fgTimeBins = val;}
@@ -118,9 +120,11 @@ class AliEMCALRawUtils : public TObject {
 
   Bool_t fRemoveBadChannels;            // select if bad channels are removed before fitting
   Int_t  fFittingAlgorithm;             // select the fitting algorithm
+  Bool_t fUseFALTRO;					// use FALTRO and pass it to the digits
+	
   AliCaloRawAnalyzer *fRawAnalyzer;     // e.g. for sample selection for fits
 
-  ClassDef(AliEMCALRawUtils,5)          // utilities for raw signal fitting
+  ClassDef(AliEMCALRawUtils,6)          // utilities for raw signal fitting
 };
 
 #endif

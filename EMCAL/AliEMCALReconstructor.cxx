@@ -231,7 +231,8 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   fgRawUtils->SetNPedSamples(GetRecParam()->GetNPedSamples());
   fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
   fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
-
+  fgRawUtils->SetFALTROUsage(GetRecParam()->UseFALTRO());
+	
   fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData,digitsTrg);
 
   digitsTree->Fill();
@@ -256,7 +257,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //######################################################
   //#########Calculate trigger and set trigger info###########
   //######################################################
- 
+  // Obsolete, to be changed with new trigger emulator when consensus is achieved about what is stored in ESDs.
   AliEMCALTrigger tr;
   //   tr.SetPatchSize(1);  // create 4x4 patches
   tr.SetSimulation(kFALSE); // Reconstruction mode

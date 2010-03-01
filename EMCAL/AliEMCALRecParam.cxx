@@ -58,8 +58,9 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fTau(2.35), 
   fNoiseThreshold(3), 
   fNPedSamples(5), 
-  fRemoveBadChannels(kTRUE),
-  fFittingAlgorithm(0)//raw signal
+  fRemoveBadChannels(kFALSE),
+  fFittingAlgorithm(0), 
+  fUseFALTRO(kTRUE)//raw signal
 {
   // default reco values
   
@@ -248,7 +249,8 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   fNoiseThreshold(rp.fNoiseThreshold), 
   fNPedSamples(rp.fNPedSamples), 	
   fRemoveBadChannels(rp.fRemoveBadChannels),
-  fFittingAlgorithm(rp.fFittingAlgorithm) //raw signal
+  fFittingAlgorithm(rp.fFittingAlgorithm),  
+  fUseFALTRO(fUseFALTRO) //raw signal
 {
   //copy constructor
   
@@ -297,7 +299,8 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fNoiseThreshold    = rp.fNoiseThreshold;
     fNPedSamples       = rp.fNPedSamples; 
     fRemoveBadChannels = rp.fRemoveBadChannels;
-    fFittingAlgorithm  = rp.fFittingAlgorithm;//raw signal
+    fFittingAlgorithm  = rp.fFittingAlgorithm;
+    fUseFALTRO         = rp.fUseFALTRO;//raw signal
 	  
     //PID values
     Int_t i, j;
@@ -581,8 +584,8 @@ void AliEMCALRecParam::Print(Option_t *) const
   
   AliInfo(Form("Raw signal parameters: \n gain factor=%f, order=%d, tau=%f, noise threshold=%d, nped samples=%d \n",
 	       fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
-  AliInfo(Form("Raw signal: with bad channels? %d, \n \t with fitting algorithm %d \n",
-				 fRemoveBadChannels, fFittingAlgorithm));
+  AliInfo(Form("Raw signal: with bad channels? %d, \n \t with fitting algorithm %d, \n \t Use FALTRO %d \n",
+				 fRemoveBadChannels, fFittingAlgorithm, fUseFALTRO));
   
 }
 
