@@ -153,6 +153,8 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   const AliTPCRecoParam * recoParam = AliTPCReconstructor::GetRecoParam();
   Int_t reject=0;
   AliExternalTrackParam param(t);
+  Double_t oldX=param.GetX(),  oldY=param.GetY(),  oldZ=param.GetZ();
+
   const AliExternalTrackParam  *tpcout=(t.GetFriendTrack())? ((AliESDfriendTrack*)(t.GetFriendTrack()))->GetTPCOut():0;
   const AliExternalTrackParam  *tpcin = t.GetInnerParam();
   const AliExternalTrackParam  *tpc=(tpcout)?tpcout:tpcin;
@@ -202,6 +204,12 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   StartTimeIntegral();
   Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
   SetIntegratedLength(t.GetIntegratedLength());
+
+  if (GetX()>oldX) {
+     Double_t dX=GetX()-oldX, dY=GetY()-oldY, dZ=GetZ()-oldZ;
+     Double_t d=TMath::Sqrt(dX*dX + dY*dY + dZ*dZ);
+     AddTimeStep(d);
+  }
 }
 
 //_____________________________________________________________________________
