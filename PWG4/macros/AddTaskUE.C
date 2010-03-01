@@ -1,11 +1,12 @@
 
 
 void ConfigTaskUE(AliAnalysisTaskUE * ueana );          // common config, extend with different cases
-void SetTrackCuts(AliAnalysisTaskUE * ueana, Char_t *ct);              //can be extended                 
+void SetTrackCuts(AliAnalysisTaskUE * ueana, Char_t *ct);      //can be extended
 void SetAnaTopology(AliAnalysisTaskUE * ueana, Char_t *at);    //can be extended                  
-void SetRegionType(AliAnalysisTaskUE * ueana, Char_t *rt);     //can be extended                  
+void SetRegionType(AliAnalysisTaskUE * ueana, Char_t *rt);     //can be extended        
+void SetSorting(AliAnalysisTaskUE * ueana, Char_t *sort);
 
-AliAnalysisTaskUE *AddTaskUE(Char_t *jetBranch = "jets",Char_t *cuts = "ALICE", Char_t *anaTopology="LJ", Char_t *regionType="TRANSV")
+AliAnalysisTaskUE *AddTaskUE(Char_t *jetBranch = "jets",Char_t *cuts = "ALICE", Char_t *anaTopology="LJ", Char_t *regionType="TRANSV", Char_t *sortBy="MSP")
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
 
@@ -31,7 +32,8 @@ AliAnalysisTaskUE *AddTaskUE(Char_t *jetBranch = "jets",Char_t *cuts = "ALICE", 
    TString ct(cuts);
    TString at(anaTopology);
    TString rt(regionType);
-   TString name(Form("%s_%s_%s_%s",jb.Data(),ct.Data(),at.Data(),rt.Data()));
+   TString sort(sortBy);
+   TString name(Form("%s_%s_%s_%s_%s",jb.Data(),ct.Data(),at.Data(),rt.Data(),sort.Data()));
    
    AliAnalysisTaskUE* ueana = new  AliAnalysisTaskUE(Form("UEAnalysis_%s",name.Data()));
    ueana->SelectAODBranch(jb.Data());
@@ -39,6 +41,12 @@ AliAnalysisTaskUE *AddTaskUE(Char_t *jetBranch = "jets",Char_t *cuts = "ALICE", 
    SetTrackCuts(ueana,cuts);
    SetAnaTopology(ueana,anaTopology);
    SetRegionType(ueana,regionType);
+   SetSorting(ueana,sortBy);
+
+   if( jb.Contains("ICDF") ) { // Use internal "Charged Particle Jet CDF" instead of jets from AOD
+      ueana->SetUseChPartJet( kTRUE );
+      ueana->SetPtMinChPartJet(0.5);
+   }
 
    //  ***** to be fixed *******
    /*
@@ -65,10 +73,8 @@ AliAnalysisTaskUE *AddTaskUE(Char_t *jetBranch = "jets",Char_t *cuts = "ALICE", 
 
 void ConfigTaskUE(AliAnalysisTaskUE * ueana){
   // common config,
-  ueana->SelectTrigger(AliAnalysisHelperJetTasks::kMB1);
   ueana->SetDebugLevel(0); 
   ueana->SetPtRangeInHist(15, 0., 15.);
-  ueana->SetPtSumOrdering(2);
 }
 
 //------------------------------------------------------------------------
@@ -85,7 +91,7 @@ SetTrackCuts(AliAnalysisTaskUE * ueana, Char_t *ct){
        case "CDF":
        ueana->SetTrackPtCut(0.5);
        ueana->SetTrackEtaCut(0.9); // meaningful only for pure MC
-        break;
+       break;
 
        default:
        Printf("\n >>>>>>> AddTaskUE Error Wrong Set of Track Cuts selected\n");
@@ -99,15 +105,32 @@ SetAnaTopology(AliAnalysisTaskUE * ueana, Char_t *at){
 
   switch (at) {
        case "LJ":  // leading jet
-        ueana->SetAnaTopology(1);      
-        ueana->SetJet1EtaCut(0.5);     
+        ueana->SetAnaTopology(1);
+        ueana->SetJet1EtaCut(0.5);
+       break;
+
+       case "LJCC":  // leading jet with charged cluster
+        ueana->SetAnaTopology(1);
+        ueana->SetJet1EtaCut(0.9);  // CDF allow jet radius extend ouside |eta|<1
        break;
   
        case "BB":  // back-to-back
-        ueana->SetAnaTopology(2);      
-        ueana->SetJet1EtaCut(0.5);     
+        ueana->SetAnaTopology(2);
+        ueana->SetJet1EtaCut(0.5);
         ueana->SetJet2DeltaPhiCut(2.616);
-        break;
+       break;
+
+       case "BE":  // back-to-back exclusive
+        ueana->SetAnaTopology(3);
+        ueana->SetJet1EtaCut(0.5);
+        ueana->SetJet2DeltaPhiCut(2.616);
+        ueana->SetJet3PtCut(10.);
+       break;
+
+       case "MP":  // max Pt charged particle
+        ueana->SetAnaTopology(4);
+        ueana->SetJet1EtaCut(0.9);
+       break;
 
        default:
        Printf("\n >>>>>>> AddTaskUE Error Wrong Analysis Topology selected\n");
@@ -127,7 +150,7 @@ SetRegionType(AliAnalysisTaskUE * ueana, Char_t *rt){
        case "CONE":
         ueana->SetRegionType(2);        
         ueana->SetConeRadius(0.4);   
-        break;
+       break;
 
        default:
        Printf("\n >>>>>>> AddTaskUE Error Wrong Region Type selected\n");
@@ -135,3 +158,29 @@ SetRegionType(AliAnalysisTaskUE * ueana, Char_t *rt){
   }
 }  
 
+//------------------------------------------------------------------------
+SetSorting(AliAnalysisTaskUE * ueana, Char_t *sort){
+   
+   switch (sort){
+      // Minimum zone is selected per quantity type
+      case "MQA":
+       ueana->SetPtSumOrdering(1);             
+      break;
+      
+      // Minimum Zone is selected at the region having lowest pt summation of all tracks 
+      case "MSP":
+       ueana->SetPtSumOrdering(2);
+      break;
+      
+      // Minimum Zone is selected at the region having lowest average pt per track
+      case "MAP":
+       ueana->SetPtSumOrdering(3);
+      break;
+      
+      default:
+       Printf("\n >>>>>>> AddTaskUE Error Wrong Sorting selected\n");     
+       Printf("\n >>>>>>> AddTaskUE Sort by Set to MSP \n");
+       ueana->SetPtSumOrdering(2);
+      break;
+   }
+}
