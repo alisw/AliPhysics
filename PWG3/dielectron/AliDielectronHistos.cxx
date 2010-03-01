@@ -333,8 +333,8 @@ void AliDielectronHistos::Draw(const Option_t* option)
   // Draw histograms
   //
 
-  TString drawOpt(option);
-  drawOpt.ToLower();
+  TString drawStr(option);
+  drawStr.ToLower();
   //options
 //   Bool_t same=drawOpt.Contains("same"); //FIXME not yet implemented
   

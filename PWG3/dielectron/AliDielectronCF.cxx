@@ -173,7 +173,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
   //Steps for each of the cuts
   if (fStepsForEachCut){
     for (Int_t iCut=0; iCut<fNCuts;++iCut) {
-      TString cutName=filter.GetCuts()->At(iCut)->GetName(); //TODO: User GetTitle???
+      cutName=filter.GetCuts()->At(iCut)->GetName(); //TODO: User GetTitle???
       fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut
       cutName+=" (MC truth)";
       fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut with MC truth
@@ -182,7 +182,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
 
   //Steps for increasing cut match
   if (fStepsForCutsIncreasing&&fNCuts>2){
-    TString cutName=filter.GetCuts()->At(0)->GetName(); //TODO: User GetTitle???
+    cutName=filter.GetCuts()->At(0)->GetName(); //TODO: User GetTitle???
     for (Int_t iCut=1; iCut<fNCuts-1;++iCut) {
       cutName+="&";
       cutName+=filter.GetCuts()->At(iCut)->GetName();
@@ -194,7 +194,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
 
   //Steps of user defined cut combinations
   for (UInt_t iComb=0; iComb<fNStepMasks; ++iComb){
-    TString cutName;
+    cutName="";
     UInt_t mask=fStepMasks[iComb];
     for (Int_t iCut=0; iCut<fNCuts;++iCut) {
       if (mask&(1<<iCut)){
