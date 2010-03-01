@@ -217,4 +217,16 @@ AliTPCRecoParam *AliTPCRecoParam::GetCosmicTestParam(Bool_t bPedestal){
 }
 
 
+Bool_t  AliTPCRecoParam::GetUseTimeCalibration(){ 
+  //
+  // get
+  //
+  return fgUseTimeCalibration;
+}
+void    AliTPCRecoParam::SetUseTimeCalibration(Bool_t useTimeCalibration) {
+  //
+  // set 
+  //
+  fgUseTimeCalibration = useTimeCalibration;
+}
 
