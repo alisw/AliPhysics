@@ -2,7 +2,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libPWG3base.so libPWG3muon.so libPWG3muondep.so libPWG3vertexingHF.so libPWG3vertexingOld.so libPWG3hfe.so 
+default-target: libPWG3base.so libPWG3muon.so libPWG3muondep.so libPWG3vertexingHF.so libPWG3hfe.so 
 
 ALICEINC      = -I.
 
@@ -192,28 +192,6 @@ G__PWG3vertexingHF.cxx G__PWG3vertexingHF.h: $(HDRS_PWG3vertexingHF) $(DHDR_PWG3
 	@echo "Generating dictionary ..."
 	rootcint -f $@ -c $(ALICEINC) $^
 
-## libPWG3vertexingOld part
-##include libPWG3vertexingOld.pkg
-
-DHDR_PWG3vertexingOld := $(DHDR)
-HDRS_PWG3vertexingOld := $(HDRS)
-SRCS_PWG3vertexingOld := $(SRCS) G__PWG3vertexingOld.cxx
-OBJS_PWG3vertexingOld := $(SRCS_PWG3vertexingOld:.cxx=.o)
-
-libPWG3vertexingOld.so: $(OBJS_PWG3vertexingOld)
-	@echo "Linking" $@ ...
-	@/bin/rm -f $@
-ifeq ($(ARCH),macosx)
-	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
-else
-	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
-endif
-	@chmod a+x $@
-	@echo "done"
-
-G__PWG3vertexingOld.cxx G__PWG3vertexingOld.h: $(HDRS_PWG3vertexingOld) $(DHDR_PWG3vertexingOld)
-	@echo "Generating dictionary ..."
-	rootcint -f $@ -c $(ALICEINC) $^
 
 ## libPWG3hfe part
 ##include libPWG3hfe.pkg
