@@ -35,7 +35,7 @@ using namespace std;
 
 ClassImp( AliCaloRawAnalyzerNN )
 
-AliCaloRawAnalyzerNN::AliCaloRawAnalyzerNN() : AliCaloRawAnalyzer("Neural Network"), fNeuralNet(0)
+AliCaloRawAnalyzerNN::AliCaloRawAnalyzerNN() : AliCaloRawAnalyzer("Neural Network", "NN"), fNeuralNet(0)
 {
   // Comment
 

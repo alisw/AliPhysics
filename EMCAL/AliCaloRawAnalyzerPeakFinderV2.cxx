@@ -25,7 +25,7 @@
 // Is done with a simple vector multiplication, allowing for
 // Extreemely fast computations. 
 
-#include "AliCaloRawAnalyzerPeakFinder.h"
+#include "AliCaloRawAnalyzerPeakFinderV2.h"
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
 #include <iostream>
@@ -35,9 +35,9 @@
 
 using namespace std;
 
-ClassImp( AliCaloRawAnalyzerPeakFinder )
+ClassImp( AliCaloRawAnalyzerPeakFinderV2 )
 
-AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer("Peak-Finder", "PF")
+AliCaloRawAnalyzerPeakFinderV2::AliCaloRawAnalyzerPeakFinderV2() :AliCaloRawAnalyzer("Peak-FinderV2", "PF")
 //    fTof(0), 
 //							      fAmp(0)
 {
@@ -54,6 +54,7 @@ AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer
 	  fPFAmpVectorsCoarse[i][j] = new double[100];
 	  fPFTofVectorsCoarse[i][j] = new double[100];
 
+	  
 	  for(int k=0; k < 100; k++ )
 	    {
 	      fPFAmpVectors[i][j][k] = 0; 
@@ -69,7 +70,7 @@ AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer
 }
 
 
-AliCaloRawAnalyzerPeakFinder::~AliCaloRawAnalyzerPeakFinder()
+AliCaloRawAnalyzerPeakFinderV2::~AliCaloRawAnalyzerPeakFinderV2()
 {
   //comment
   for(int i=0; i < MAXSTART; i++)
@@ -86,7 +87,7 @@ AliCaloRawAnalyzerPeakFinder::~AliCaloRawAnalyzerPeakFinder()
 
 
 Double_t  
-AliCaloRawAnalyzerPeakFinder::ScanCoarse(const Double_t *const array, const int length ) const
+AliCaloRawAnalyzerPeakFinderV2::ScanCoarse(const Double_t *const array, const int length ) const
 {
   Double_t tmpTof = 0;
   Double_t tmpAmp= 0;
@@ -103,26 +104,21 @@ AliCaloRawAnalyzerPeakFinder::ScanCoarse(const Double_t *const array, const int 
 
 
 AliCaloFitResults 
-AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
+AliCaloRawAnalyzerPeakFinderV2::Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
 {
-  // Extracting the amplitude using the Peak-Finder algorithm
+  // Extracting the amplitude using the Peak-FinderV2 algorithm
   // The amplitude is a weighted sum of the samples using 
   // optimum weights.
 
   short maxampindex; //index of maximum amplitude
   short maxamp; //Maximum amplitude
   //  fAmp = 0;
-
-  
   fAmpA[0] = 0;
   fAmpA[1] = 0;
   fAmpA[2] = 0;
-  
-  
-  //  cout << __FILE__ << __LINE__ << "\tendbin = " << bunchvector.at(index).GetEndBin()  <<  "\tstartbin = " << bunchvector.at(index).GetStartBin()  << endl;
-  
-  int index = SelectBunch( bunchvector,  &maxampindex,  &maxamp );
 
+  int index = SelectBunch( bunchvector,  &maxampindex,  &maxamp );
+ 
   if( index >= 0)
     {
       Float_t ped = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
@@ -139,8 +135,6 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
       
       if ( maxf > fAmpCut )
 	{
-	  
-
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxampindex -  bunchvector.at(index).GetStartBin(), &first, &last);
 	  int nsamples =  last - first;
 	  if( ( nsamples  )  >= fNsampleCut )
@@ -149,16 +143,18 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      int n = last - first;  
 	      int pfindex = n - fNsampleCut; 
 	      pfindex = pfindex > SAMPLERANGE ? SAMPLERANGE : pfindex;
-
-	      short timebinOffset = maxampindex - (bunchvector.at( index ).GetLength()-1); 
 	     
-	      int dt =  maxampindex - startbin -2; 
-
+	      int dt =  maxampindex - startbin -1; 
+	   
+	      
 	      //    cout << __FILE__ << __LINE__ <<"\t The coarse estimated t0 is " << ScanCoarse( &fReversed[dt] , n ) << endl;
 	    
 	 
-	      //     Float_t tmptof = ScanCoarse( &fReversed[dt] , n );
 	      
+	      //  Float_t tmptof = ScanCoarse( &fReversed[dt] , n );
+	      //  cout << __FILE__ << __LINE__ << "\ttmptof = " << tmptof << endl;
+	      
+
 	      //	      cout << __FILE__ << __LINE__ << ",  dt = " << dt << ",\tmaxamindex = " << maxampindex << "\tstartbin = "<< startbin << endl;
 
 	      for( int i=0; i < SAMPLERANGE; i++ )
@@ -184,7 +180,29 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 		}
 	      
 	      Float_t tmptof = ScanCoarse( &fReversed[dt] , n );
+
+	      //      Double_t tofnew = PolTof(tmptof) + ( dt + startbin  )*100  ;
+	      //	     int dt =  maxampindex - startbin -1;    
+	    
+	      //	      Double_t tofnew = PolTof(tmptof) + startbin*100 ;
+
+	      //      Double_t tofnew = PolTof(tmptof)  +  maxampindex*100 ;
+
 	      
+	      //	      Double_t tofnew = PolTof(tmptof)  + (dt + startbin + tmpindex )*100 ; 
+	      Double_t tofnew = PolTof(tmptof)  ; 
+
+	      //	      tmptof= tofnew;
+
+	      //	      Double_t tofnew = PolTof(tmptof) + maxampindex  ;
+
+
+	      if(tmptof < 0 )
+		{
+		  cout << __FILE__ << __LINE__ << "\ttmptof = " << tmptof << endl;  
+		}
+
+  
 	      if( tmptof < -1 )
 		{
 		  tmpindex = 0;
@@ -198,6 +216,9 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 		  {
 		    tmpindex = 2;
 		  }
+	      
+
+
 	      double tof = 0;
 	      
 	      for(int k=0; k < SAMPLERANGE; k++   )
@@ -214,16 +235,11 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 		  fAmpA[tmpindex] = maxf;
 		}
 
-	      //	      timebinOffset
-
-		//      tof = (dt + startbin + tmpindex )*100 - tof/fAmpA[tmpindex];
-		// tof = ( timebinOffset )*100 - tof/fAmpA[tmpindex]; // ns
-	      tof = timebinOffset - 0.01*tof/fAmpA[tmpindex]; // clock ticks
+	      // tof = (dt + startbin + tmpindex )*100 - tof/fAmpA[tmpindex]; // ns
+	      tof = dt + startbin + tmpindex - 0.01*tof/fAmpA[tmpindex]; // clock ticks
+	  
 	      
-	      //      tof = tof/fAmpA[tmpindex];
-
-  
-	      return AliCaloFitResults( maxamp, ped , -1, fAmpA[tmpindex], tof, -2, -3 ); 
+	      return AliCaloFitResults( maxamp, ped , -1, fAmpA[tmpindex], tof  , -2, -3 ); 
 	    }
 	  else
 	    {
@@ -236,8 +252,75 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 }
 
 
+Double_t
+AliCaloRawAnalyzerPeakFinderV2::PolTof( const double fx1 ) const
+{
+  
+  //Newtons method
+  Double_t tolerance = 0.01;
+  //  cout << "************************"  << endl;
+  Double_t fx2 = PolValue( fx1 );
+  Double_t tmpfx1 = fx1; 
+
+  while(  TMath::Abs( fx2 - fx1  ) >  tolerance )
+    {
+      Double_t der = PolDerivative( tmpfx1 ); 
+      //     tmpx = der*( x - val) +x;
+      tmpfx1 = ( fx1 - fx2)/der  +tmpfx1;
+      
+      //    tmpx = der*( val - tmpx ) +tmpx;
+      fx2 = PolValue(  tmpfx1 );
+      //     cout << __FILE__ << __LINE__ <<  "Der =\t" << der << "  x=\t"<<x<<"\tval="<<val <<  endl;
+      //     cout << __FILE__ << __LINE__ <<  "Der =\t" << der << "  tmpx=\t"<< tmpfx1 <<"\tval="<< fx2 <<  endl;
+    }
+  
+  //  cout << __FILE__ << __LINE__ << "CONVERGED !! fx1 = "<< fx1 <<"  tmpfx1 = "<< tmpfx1  <<"  f(tmpfx1) = "<< fx2 << endl;  
+
+  //  cout << "************************"  << endl;
+  
+  return tmpfx1;
+
+}
+
+
+Double_t 
+AliCaloRawAnalyzerPeakFinderV2::PolValue(const Double_t x) const
+{
+  static Double_t p0 = -55.69;
+  static Double_t p1 = 4.718;
+  static Double_t p2 = -0.05587;
+  static Double_t p3 = 0.0003185;
+  static Double_t p4 = -7.91E-7;
+  static Double_t p5 = 7.576E-10;
+  
+  //  return  p0 + p1*x + p2*TMath::Power(x, 2) + p3*TMath::Power(x, 3) + p4*TMath::Power(x, 4)  + p5*TMath::Power(x, 5);
+  
+  return  p0 + p1*x + p2*x*x + p3*x*x*x + p4*x*x*x*x  + p5*x*x*x*x*x;
+  
+}
+
+
+Double_t 
+AliCaloRawAnalyzerPeakFinderV2::PolDerivative(const Double_t x) const
+{
+  static Double_t dp0 = 0;
+  static Double_t dp1 = 4.718;
+  static Double_t dp2 = -0.11174;
+  static Double_t dp3 = 0.0009555;
+  static Double_t dp4 = -3.164E-6;
+  static Double_t dp5 = 3.788E-9;
+
+  //  return  dp0 + dp1 + dp2*x + dp3*TMath::Power(x, 2) + dp4*TMath::Power(x, 3)  + dp5*TMath::Power(x, 4);
+  
+  
+
+  return  dp0 + dp1 + dp2*x + dp3*x*x + dp4*x*x*x  + dp5*x*x*x*x;
+  
+}
+
+
 void 
-AliCaloRawAnalyzerPeakFinder::LoadVectors()
+AliCaloRawAnalyzerPeakFinderV2::LoadVectors()
 {
   //Read in the Peak finder vecors from file
   for(int i = 0;  i < MAXSTART ; i++)
@@ -289,8 +372,6 @@ AliCaloRawAnalyzerPeakFinder::LoadVectors()
 		  fscanf(fpc, "%lf\t",  &fPFTofVectorsCoarse[i][j][m]  );  
 		  //  fPFTofVectorsCoarse[i][j][m] = 1;  
 		}
-	      
-	     
 	      fclose (fp);
 	      fclose (fpc);
 	    }
@@ -299,17 +380,3 @@ AliCaloRawAnalyzerPeakFinder::LoadVectors()
 }
 
 
-
-/*
-void
-AliCaloRawAnalyzerPeakFinder::PolTof( const double rectof ) const
-//
-{
-  static Double_t p0 = -55.69;
-  static Double_t p1 = 3.178;
-  static Double_t p2 = -0.05587;
-  static Double_t p3 = 0.0003185;
-  static Double_t p4 = -7.91E-7;
-  static Double_t p5 = 7.576E-10;
-}
-*/

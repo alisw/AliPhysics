@@ -1,5 +1,5 @@
-#ifndef ALICALORAWANALYZERPEAKFINDER_H
-#define ALICALORAWANALYZERPEAKFINDER_H
+#ifndef ALICALORAWANALYZERPEAKFINDERV2_H
+#define ALICALORAWANALYZERPEAKFINDERV2_H
 
 
 /**************************************************************************
@@ -36,22 +36,27 @@
 class AliCaloBunchInfo;
 
 
-class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
+class  AliCaloRawAnalyzerPeakFinderV2 : public AliCaloRawAnalyzer
 {
  public:
-  AliCaloRawAnalyzerPeakFinder();
-  virtual ~AliCaloRawAnalyzerPeakFinder();
+  AliCaloRawAnalyzerPeakFinderV2();
+  virtual ~AliCaloRawAnalyzerPeakFinderV2();
   virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
 
  private:
-  AliCaloRawAnalyzerPeakFinder( const AliCaloRawAnalyzerPeakFinder   & );
-  AliCaloRawAnalyzerPeakFinder   & operator = ( const  AliCaloRawAnalyzerPeakFinder  & );
+  AliCaloRawAnalyzerPeakFinderV2( const AliCaloRawAnalyzerPeakFinderV2   & );
+  AliCaloRawAnalyzerPeakFinderV2   & operator = ( const  AliCaloRawAnalyzerPeakFinderV2  & );
 
   void     LoadVectors();
   Double_t  ScanCoarse(const Double_t *const array, const int length ) const ; // Find a rough estimate of peak position and t0
 
-  //  void PolTof( const double rectof ) const;
-  
+
+  Double_t PolTof(const Double_t x) const;
+  Double_t PolValue(const Double_t x) const;
+  Double_t PolDerivative(const Double_t x) const;
+
+
+
   double *fPFAmpVectorsCoarse[MAXSTART][SAMPLERANGE]; // Vectors for Amplitude extraction, first iteration 
   double *fPFTofVectorsCoarse[MAXSTART][SAMPLERANGE]; // Vectors for TOF extraction, first iteration
 
@@ -65,7 +70,7 @@ class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
   // double fAmp2;
   // double fAmp3;
 
-  ClassDef( AliCaloRawAnalyzerPeakFinder, 1 )
+  ClassDef( AliCaloRawAnalyzerPeakFinderV2, 1 )
 
 };
 

@@ -34,7 +34,7 @@ using namespace std;
 
 ClassImp( AliCaloRawAnalyzerFastFit )
 
-AliCaloRawAnalyzerFastFit::AliCaloRawAnalyzerFastFit() : AliCaloRawAnalyzer("Fast Fit (Alexei)")
+AliCaloRawAnalyzerFastFit::AliCaloRawAnalyzerFastFit() : AliCaloRawAnalyzer("Fast Fit (Alexei)", "FF")
 {
   // Comment
 

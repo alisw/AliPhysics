@@ -32,19 +32,21 @@
 #include <iostream>
 using namespace std;
 
-ClassImp(AliCaloRawAnalyzer)  
+//ClassImp(AliCaloRawAnalyzer)  
 
-AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name) :  TObject(),
-							    fMinTimeIndex(-1),
-							    fMaxTimeIndex(-1),
-							    fFitArrayCut(5),
-							    fAmpCut(4),
-							    fNsampleCut(5),
-							    fIsZerosupressed( false ),
-							    fVerbose( false )
+AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) :  TObject(),
+										   fMinTimeIndex(-1),
+										   fMaxTimeIndex(-1),
+										   fFitArrayCut(5),
+										   fAmpCut(4),
+										   fNsampleCut(5),
+										   fIsZerosupressed( false ),
+										   fVerbose( false )
 {
   //Comment 
   sprintf(fName, "%s", name);
+  sprintf(fNameShort, "%s", nameshort);
+    
   for(int i=0; i < MAXSAMPLES; i++ )
     {
       fReversed[i] = 0;
@@ -174,7 +176,8 @@ AliCaloRawAnalyzer::Max( const AliCaloBunchInfo *const bunch , int *const maxind
   
   if(maxindex != 0 )
     {
-      *maxindex =  bunch->GetLength() -1 - tmpindex + bunch->GetStartBin(); 
+      //   *maxindex =  bunch->GetLength() -1 - tmpindex + bunch->GetStartBin(); 
+       *maxindex =  bunch->GetLength() -1 - tmpindex + bunch->GetStartBin(); 
     }
   
   return  tmpmax;
@@ -192,19 +195,23 @@ AliCaloRawAnalyzer::SelectBunch( const vector<AliCaloBunchInfo> &bunchvector,sho
 
   for(unsigned int i=0; i < bunchvector.size(); i++ )
     {
-      max = Max(  &bunchvector.at(i), &indx );  
+      max = Max(  &bunchvector.at(i), &indx ); // CRAP PTH, bug fix, trouble if more than one bunches  
       if( IsInTimeRange( indx) )
 	{
 	  if( max > maxall )
 	    {
 	      maxall = max;
 	      bunchindex = i;
+	      *maxampbin     = indx;
+	      *maxamplitude  = max;
 	    }
 	}
     }
  
-  *maxampbin     = indx;
-  *maxamplitude  = max;
+  
+  //  *maxampbin     = indx;
+  //  *maxamplitude  = max;
+ 
   return  bunchindex;
 }
 
@@ -252,12 +259,14 @@ AliCaloRawAnalyzer::PrintBunch( const AliCaloBunchInfo &bunch ) const
   cout << endl; 
 }
 
+
 AliCaloFitResults
 AliCaloRawAnalyzer::Evaluate( const vector<AliCaloBunchInfo>  &/*bunchvector*/, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
 { // method to do the selection of what should possibly be fitted
   // not implemented for base class
   return AliCaloFitResults( 0, 0, 0, 0, 0, 0, 0 );
 }
+
 
 int
 AliCaloRawAnalyzer::PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2, Int_t & index, Float_t & maxf, short & maxamp, short & maxampindex, Float_t & ped, int & first, int & last)

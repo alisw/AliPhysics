@@ -49,7 +49,7 @@ class AliCaloFitResults;
 class  AliCaloRawAnalyzer : public TObject
 {
  public:
-  AliCaloRawAnalyzer(const char *name="AliCaloRawAnalyzer");
+  AliCaloRawAnalyzer(const char *name="AliCaloRawAnalyzer", const char *nameshort="RawAna");
   virtual ~AliCaloRawAnalyzer();
   virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
 				      const UInt_t altrocfg1,  const UInt_t altrocfg2 );
@@ -70,6 +70,8 @@ class  AliCaloRawAnalyzer : public TObject
   // access to array info
   Double_t GetReversed(const int i) const { return fReversed[i]; }
   const char * GetAlgoName() const { return fName;  };
+  const char * GetAlgoAbbr() const { return fNameShort;  };
+  bool GetIsZeroSuppressed() const { return fIsZerosupressed;} ;
 
  protected:
   short Max( const AliCaloBunchInfo *const bunch, int *const maxindex) const;
@@ -92,7 +94,7 @@ class  AliCaloRawAnalyzer : public TObject
   bool fVerbose;     //Print debug information to std out if set to true
 
   char fName[256]; // Name of the algorithm
-
+  char fNameShort[256]; // Abbrevation for the name
 
   ClassDef(AliCaloRawAnalyzer, 1)  
 

@@ -30,7 +30,7 @@
 ClassImp(AliCaloRawAnalyzerCrude)  
 
 
-AliCaloRawAnalyzerCrude::AliCaloRawAnalyzerCrude() : AliCaloRawAnalyzer("Crude")
+AliCaloRawAnalyzerCrude::AliCaloRawAnalyzerCrude() : AliCaloRawAnalyzer("Crude", "Crude")
 {
 
 }
