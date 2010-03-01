@@ -359,8 +359,8 @@ void AliAnalysisTaskDielectronEfficiency::FillPlots(AliVEvent *event)
             fHist->Fill("DataCuts","dndyPt",v.Rapidity(),jpsi.GetPt());
 
             //Additional TRD cuts
-            if ( (trackN->GetStatus()&AliESDtrack::kTRDrefit!=0) &&trackN->GetTRDntrackletsPID()>4 ){
-              if ( (trackP->GetStatus()&AliESDtrack::kTRDrefit!=0) &&trackP->GetTRDntrackletsPID()>4 ){
+            if ( ((trackN->GetStatus()&AliESDtrack::kTRDrefit)!=0) && trackN->GetTRDntrackletsPID()>4 ){
+              if ( ((trackP->GetStatus()&AliESDtrack::kTRDrefit)!=0) && trackP->GetTRDntrackletsPID()>4 ){
                 if (motherN){
                   fHist->Fill("DataTRDCuts","JpsiMCPt",motherN->Pt());
                   fHist->Fill("DataTRDCuts","e+Pt",pP->Pt());
@@ -411,8 +411,8 @@ void AliAnalysisTaskDielectronEfficiency::FillMCInfo(AliStack *pStack)
   
   TLorentzVector v;
   //Fill MC info
-  for (Int_t ipart=0; ipart<pStack->GetNprimary(); ++ipart){
-    TParticle *part=pStack->Particle(pStack->GetPrimary(ipart));
+  for (Int_t ipart=0; ipart<pStack->GetNtrack(); ++ipart){
+    TParticle *part=pStack->Particle(ipart);
 //     printf("Particle %d\n",part->GetPdgCode());
     if (part->GetPdgCode()!=fIdMCMother || part->GetNDaughters()!=2) continue;
     TParticle *d1=pStack->Particle(part->GetFirstDaughter());

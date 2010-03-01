@@ -155,8 +155,8 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   UInt_t selectedMask=(1<<fEventFilter.GetCuts()->GetEntries())-1;
 
   //apply event cuts
-    if (ev1&&fEventFilter.IsSelected(ev1)!=selectedMask ||
-        ev2&&fEventFilter.IsSelected(ev2)!=selectedMask) return;
+    if ((ev1&&fEventFilter.IsSelected(ev1)!=selectedMask) ||
+        (ev2&&fEventFilter.IsSelected(ev2)!=selectedMask)) return;
 
   //fill track arrays for the first event
   if (ev1) FillTrackArrays(ev1);
@@ -187,7 +187,7 @@ void AliDielectron::ProcessMC()
   for (Int_t ipart=0; ipart<dieMC->GetNMCTracks();++ipart){
     //TODO: MC truth cut properly!!!
     AliVParticle *mcPart=dieMC->GetMCTrackFromMCEvent(ipart);
-    if (!AliDielectronMC::Instance()->IsMCMotherToEE(mcPart, fPdgMother)) continue;
+    if (!dieMC->IsMCMotherToEE(mcPart, fPdgMother)) continue;
     fCfManagerPair->FillMC(mcPart);
   }
 }
