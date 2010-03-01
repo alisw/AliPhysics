@@ -36,6 +36,7 @@ AliRsnDaughter::AliRsnDaughter(AliVParticle *ref, TParticle *refMC) :
     fParticle(refMC),
     fMotherPDG(0),
     fStatus(0),
+    fPairIndex(0),
     fDr(0.0),
     fDz(0.0),
     fReqPID(AliPID::kUnknown),
@@ -54,6 +55,7 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
     fParticle(copy.fParticle),
     fMotherPDG(copy.fMotherPDG),
     fStatus(copy.fStatus),
+    fPairIndex(copy.fPairIndex),
     fDr(copy.fDr),
     fDz(copy.fDz),
     fReqPID(copy.fReqPID),
@@ -79,6 +81,7 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
   fParticle  = copy.fParticle;
   fMotherPDG = copy.fMotherPDG;
   fStatus = copy.fStatus;
+  fPairIndex = copy.fPairIndex;
   fDr = copy.fDr;
   fDz = copy.fDz;
 
