@@ -159,7 +159,7 @@ UInt_t AliT0Preprocessor::ProcessLaser()
 	  const char *laserFile = GetFile(kDAQ, "AMPLITUDE_CALIBRATION", source->GetName());
 	  if (laserFile)
 	    {
-	      Log(Form("File with Id LASER found in source %s!", source->GetName()));
+	      Log(Form("File with Id AMPLITUDE_CALIBRAION found in source %s!", source->GetName()));
 	     writeok = laser->MakeWalkCorrGraph(laserFile);
 	      
 	    }
@@ -176,23 +176,19 @@ UInt_t AliT0Preprocessor::ProcessLaser()
 	return 0;
       }		  
       Log(Form("resultLaser = %d",resultLaser));
+      if (!resultLaser)
+	{
+	  Log("No Laser Data stored");
+	  return 3;//return error code for failure in storing Laser Data
+	}
     }
   else
     {
-      Log(Form("Could not find file with Id LASER in source %s!", source->GetName()));
+      Log(Form("Could not find file with Id  AMPLITUDE_CALIBRAION in source %s!", source->GetName()));
       return 1;
     }
   
-  if (!resultLaser)
-    {
-      Log("No Laser Data stored");
-      return 3;//return error code for failure in storing Laser Data
-    }
-  else {
-    Log("No sources found for id LASER!");
-    return 1;
-  }
-  return 0;
+   return 0;
 }
 
 //____________________________________________________
