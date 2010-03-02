@@ -276,42 +276,45 @@ void AliTPCExBFirst::GetMeanFields(Double_t rx,Double_t ry,Double_t rz,
 
   double s0x=fkMeanBx[yi1*fkNX+xi1]*dx1*dy1
 	    +fkMeanBx[yi2*fkNX+xi1]*dx1*dy
-            +fkMeanBx[yi1*fkNX+xi2]*dx *dy
-            +fkMeanBx[yi2*fkNX+xi2]*dx *dy1;
+            +fkMeanBx[yi1*fkNX+xi2]*dx *dy1
+            +fkMeanBx[yi2*fkNX+xi2]*dx *dy;
   double s0y=fkMeanBy[yi1*fkNX+xi1]*dx1*dy1
 	    +fkMeanBy[yi2*fkNX+xi1]*dx1*dy
-            +fkMeanBy[yi1*fkNX+xi2]*dx *dy
-            +fkMeanBy[yi2*fkNX+xi2]*dx *dy1;
+            +fkMeanBy[yi1*fkNX+xi2]*dx *dy1
+            +fkMeanBy[yi2*fkNX+xi2]*dx *dy;
   Int_t zi0=zi1-1;
   double snmx,snmy;
   if (zi0>=0) {
     snmx=fkMeanBx[(zi0*fkNY+yi1)*fkNX+xi1]*dx1*dy1
         +fkMeanBx[(zi0*fkNY+yi2)*fkNX+xi1]*dx1*dy
-        +fkMeanBx[(zi0*fkNY+yi1)*fkNX+xi2]*dx *dy
-        +fkMeanBx[(zi0*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+        +fkMeanBx[(zi0*fkNY+yi1)*fkNX+xi2]*dx *dy1
+        +fkMeanBx[(zi0*fkNY+yi2)*fkNX+xi2]*dx *dy;
     snmy=fkMeanBy[(zi0*fkNY+yi1)*fkNX+xi1]*dx1*dy1
         +fkMeanBy[(zi0*fkNY+yi2)*fkNX+xi1]*dx1*dy
-        +fkMeanBy[(zi0*fkNY+yi1)*fkNX+xi2]*dx *dy
-        +fkMeanBy[(zi0*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+        +fkMeanBy[(zi0*fkNY+yi1)*fkNX+xi2]*dx *dy1
+        +fkMeanBy[(zi0*fkNY+yi2)*fkNX+xi2]*dx *dy;
   }
   else
     snmx=snmy=0.;
   double snx=fkMeanBx[(zi1*fkNY+yi1)*fkNX+xi1]*dx1*dy1
  	    +fkMeanBx[(zi1*fkNY+yi2)*fkNX+xi1]*dx1*dy
-            +fkMeanBx[(zi1*fkNY+yi1)*fkNX+xi2]*dx *dy
-            +fkMeanBx[(zi1*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+            +fkMeanBx[(zi1*fkNY+yi1)*fkNX+xi2]*dx *dy1
+            +fkMeanBx[(zi1*fkNY+yi2)*fkNX+xi2]*dx *dy;
   double sny=fkMeanBy[(zi1*fkNY+yi1)*fkNX+xi1]*dx1*dy1
  	    +fkMeanBy[(zi1*fkNY+yi2)*fkNX+xi1]*dx1*dy
-            +fkMeanBy[(zi1*fkNY+yi1)*fkNX+xi2]*dx *dy
-            +fkMeanBy[(zi1*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+            +fkMeanBy[(zi1*fkNY+yi1)*fkNX+xi2]*dx *dy1
+            +fkMeanBy[(zi1*fkNY+yi2)*fkNX+xi2]*dx *dy;
   double snpx=fkMeanBx[(zi2*fkNY+yi1)*fkNX+xi1]*dx1*dy1
 	     +fkMeanBx[(zi2*fkNY+yi2)*fkNX+xi1]*dx1*dy
-             +fkMeanBx[(zi2*fkNY+yi1)*fkNX+xi2]*dx *dy
-             +fkMeanBx[(zi2*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+             +fkMeanBx[(zi2*fkNY+yi1)*fkNX+xi2]*dx *dy1
+             +fkMeanBx[(zi2*fkNY+yi2)*fkNX+xi2]*dx *dy;
   double snpy=fkMeanBy[(zi2*fkNY+yi1)*fkNX+xi1]*dx1*dy1
 	     +fkMeanBy[(zi2*fkNY+yi2)*fkNX+xi1]*dx1*dy
-             +fkMeanBy[(zi2*fkNY+yi1)*fkNX+xi2]*dx *dy
-             +fkMeanBy[(zi2*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+             +fkMeanBy[(zi2*fkNY+yi1)*fkNX+xi2]*dx *dy1
+             +fkMeanBy[(zi2*fkNY+yi2)*fkNX+xi2]*dx *dy;
+
+
+
   *Bx=0.5*(((snpx-2.*snx+snmx)*dz+2.*(snx-snmx))*dz+snx-s0x+snmx);
   *By=0.5*(((snpy-2.*sny+snmy)*dz+2.*(sny-snmy))*dz+sny-s0y+snmy);
   //TODO: make this nice
