@@ -764,19 +764,47 @@ Int_t AliMillePede2::GlobalFitIteration()
     Int_t nFixedGroups = 0;
     TArrayI fixGroups(fixArrSize);
     //
+    int grIDold = -2;
+    int oldStart = -1;
+    double oldMin = 1.e20;
+    double oldMax =-1.e20;
+    //
     for (int i=fNGloPar;i--;) { // // Reset row and column of fixed params and add 1/sig^2 to free ones
       int grID = fParamGrID[i];
       if (grID<0) continue; // not in the group
-      if (fProcPnt[i]>=fMinPntValid) continue;
-      fProcPnt[i] = 0;
-      // check if the group is already accounted
-      Bool_t fnd = kFALSE;
-      for (int j=nFixedGroups;j--;) if (fixGroups[j]==grID) {fnd=kTRUE; break;}
-      if (fnd) continue;
-      if (nFixedGroups>=fixArrSize) {fixArrSize*=2; fixGroups.Set(fixArrSize);}
-      fixGroups[nFixedGroups++] = grID; // add group to fix
+      //
+      if (grID!=grIDold) { // starting new group
+	if (grIDold>=0) { // decide if the group has enough statistics
+	  if (oldMin<fMinPntValid && oldMax<2*fMinPntValid) { // suppress group
+	    for (int iold=oldStart;iold>i;iold--) fProcPnt[iold] = 0;
+	    Bool_t fnd = kFALSE;    // check if the group is already accounted
+	    for (int j=nFixedGroups;j--;) if (fixGroups[j]==grIDold) {fnd=kTRUE; break;}
+	    if (!fnd) {
+	      if (nFixedGroups>=fixArrSize) {fixArrSize*=2; fixGroups.Set(fixArrSize);}
+	      fixGroups[nFixedGroups++] = grIDold; // add group to fix
+	    }
+	  }	  
+	}
+	grIDold = grID; // mark the start of the new group
+	oldStart = i;
+	oldMin =  1.e20;
+	oldMax = -1.e20;
+      }
+      if (oldMin>fProcPnt[i]) oldMin = fProcPnt[i];
+      if (oldMax<fProcPnt[i]) oldMax = fProcPnt[i];
       //
     }
+    // extra check for the last group
+    if (grIDold>=0 && oldMin<fMinPntValid && oldMax<2*fMinPntValid) { // suppress group
+      for (int iold=oldStart;iold--;) fProcPnt[iold] = 0;
+      Bool_t fnd = kFALSE;    // check if the group is already accounted
+      for (int j=nFixedGroups;j--;) if (fixGroups[j]==grIDold) {fnd=kTRUE; break;}
+      if (!fnd) {
+	if (nFixedGroups>=fixArrSize) {fixArrSize*=2; fixGroups.Set(fixArrSize);}
+	fixGroups[nFixedGroups++] = grIDold; // add group to fix
+      }
+    }
+    //
     // 2) loop over records and add contributions of fixed groups with negative sign
     fLocFitAdd = kFALSE;
     //
