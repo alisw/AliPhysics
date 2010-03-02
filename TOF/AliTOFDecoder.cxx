@@ -256,7 +256,7 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
 	for (Int_t i = 0; i < DRM_DATA_WORDS; i++, iWord++){
 	  rawData++;
 	  if (fVerbose)
-	    AliInfo(Form("  %02x - 0x%08x \t  DRM data",decodeStatus,*rawData));
+	      AliInfo(Form("  %02x - 0x%08x \t  DRM data",decodeStatus,*rawData));
 	  switch (i) {
 	  case 2:
 	    lDRMStatusHeader3 = (AliTOFDRMStatusHeader3*)rawData;
@@ -917,4 +917,28 @@ void AliTOFDecoder::GetArrayDDL(Int_t* array, Int_t ddl){
     AliWarning(Form("Something strange occurred, number of entries in array different from expected! Please, check! ichTOF = %i",ichTOF));
   }
   return;
+}
+
+//------------------------------------------------------------
+void AliTOFDecoder::PrintStack(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh)
+{
+  /* It loops over nWords 32-bit words 
+   * starting at *rawData and prints them in 0x format.
+   * It does not decode them!
+   */
+
+ Short_t  currentMiniEventID = cdh ? cdh->GetMiniEventID() : (Short_t)-1;
+ Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)-1;
+ AliDebug(1, Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh->GetEventID2(), currentMiniEventID));
+ if (!cdh)
+     AliWarning("CDH not valid: deltaBunchID not reliable ");
+ AliInfo("Printing raw data stack for current equipment\n");
+ AliInfo("  wordN  -  Hex Word "); 
+ //loop over raw data
+ for (Int_t iWord = 0; iWord < nWords; iWord++, rawData++){
+     if (iWord<10)            AliInfo(Form("      %i   - 0x%08x",iWord,*rawData));
+     if (iWord>9 &&iWord<100) AliInfo(Form("     %i   - 0x%08x",iWord,*rawData)); 
+     if (iWord>99)            AliInfo(Form("    %i   - 0x%08x",iWord,*rawData)); 
+ }
+ return;
 }

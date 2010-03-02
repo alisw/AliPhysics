@@ -109,6 +109,7 @@ class AliTOFDecoder : public TObject
   void   SetPackedDataBuffer(AliTOFHitDataBuffer *PDB) {fPackedDataBuffer = PDB;}; //set up packed data buffer
 
   void GetArrayDDL(Int_t* array, Int_t iDDL); // method to return array of TOFchannels corresponding to a given DDL id 
+  void PrintStack(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh);
 
 enum {
   kMinPlate0=0,kMaxPlate0=2,
