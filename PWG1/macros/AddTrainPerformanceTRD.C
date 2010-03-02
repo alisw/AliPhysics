@@ -74,7 +74,7 @@
 #include "../TRD/macros/AliTRDperformanceTrain.h"
 
 
-Bool_t AddTrainPerformanceTRD(Bool_t mc, Bool_t fr, Char_t *trd="ALL")
+Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) { 
