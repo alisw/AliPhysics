@@ -71,7 +71,6 @@ AlidNdPtTask::~AlidNdPtTask()
 //____________________________________________________________________________
 Bool_t AlidNdPtTask::Notify()
 {
-  /*
   static Int_t count = 0;
   count++;
   Printf("Processing %d. file", count);
@@ -82,12 +81,9 @@ Bool_t AlidNdPtTask::Notify()
     Printf("ERROR: Could not get ESDInputHandler");
     return kFALSE;
   } else {
-    //Printf("esdH->Notify() %s", esdH->Notify());
-    //Printf("fTree->GetCurrentFile()->GetName() %s", fTree->GetCurrentFile()->GetName());
     if(chain)
-    Printf("chain->GetCurrentFile()->GetName() %s %s", chain->GetCurrentFile()->GetName(),  );
+    Printf("chain->GetCurrentFile()->GetName() %s", chain->GetCurrentFile()->GetName());
   }
-  */
 
 return kTRUE;
 }

@@ -125,6 +125,7 @@ public :
 
   THnSparseF *GetMCTrackHist1(Int_t i) const {return fMCTrackHist1[i];}
   THnSparseF *GetMCPrimTrackHist1(Int_t i) const {return fMCPrimTrackHist1[i];}
+  THnSparseF *GetMCPrimTrackHist2(Int_t i) const {return fMCPrimTrackHist2[i];}
   THnSparseF *GetMCSecTrackHist1(Int_t i) const {return fMCSecTrackHist1[i];}
 
   THnSparseF *GetRecTrackHist1(Int_t i) const {return fRecTrackHist1[i];}
@@ -233,6 +234,7 @@ private:
 
   THnSparseF *fMCTrackHist1[AlidNdPtHelper::kCutSteps];     //-> mcPt:mcEta:mcPhi
   THnSparseF *fMCPrimTrackHist1[AlidNdPtHelper::kCutSteps]; //-> mcPt:mcEta:pid:mech:mother
+  THnSparseF *fMCPrimTrackHist2[AlidNdPtHelper::kCutSteps]; //-> pdg:mech:mother
   THnSparseF *fMCSecTrackHist1[AlidNdPtHelper::kCutSteps];  //-> mcPt:mcEta:pid:mech:mother
 
   THnSparseF *fRecTrackHist1[AlidNdPtHelper::kCutSteps];     //-> Pt:Eta:Phi
@@ -249,7 +251,7 @@ private:
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented
 
-  ClassDef(AlidNdPtAnalysis,1);
+  ClassDef(AlidNdPtAnalysis,2);
 };
 
 #endif

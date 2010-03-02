@@ -13,6 +13,7 @@ class AliESDtrackCuts;
 class AlidNdPtEventCuts;
 class AlidNdPtAcceptanceCuts;
 class AliPhysicsSelection;
+class AlidNdPtBackgroundCuts;
 
 #include "TNamed.h"
 #include "TFolder.h"
@@ -54,6 +55,7 @@ public:
   void SetTriggerClass(const Char_t *triggerClass)              { fTriggerClass = triggerClass; }
   void SetParticleMode(const AlidNdPtHelper::ParticleMode mode) { fParticleMode = mode; }
   void SetPhysicsTriggerSelection(AliPhysicsSelection* const selection)  { fPhysicsSelection = selection; }
+  void SetBackgroundCuts(AlidNdPtBackgroundCuts* const cuts)    { fdNdPtBackgroundCuts = cuts; }
 
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
@@ -64,6 +66,7 @@ public:
   const Char_t* GetTriggerClass() const                         { return fTriggerClass; }
   AlidNdPtHelper::ParticleMode GetParticleMode() const          { return fParticleMode; }
   AliPhysicsSelection* GetPhysicsTriggerSelection() const       { return fPhysicsSelection; }
+  AlidNdPtBackgroundCuts* GetBackgroundCuts() const             { return fdNdPtBackgroundCuts; }
 
 private:
 
@@ -78,6 +81,7 @@ private:
   AlidNdPtHelper::ParticleMode fParticleMode;   // selected particle (pion, kaon, ...)
 
   AliPhysicsSelection* fPhysicsSelection; // physics trigger selection class
+  AlidNdPtBackgroundCuts *fdNdPtBackgroundCuts; // background cuts (cosmics and splitted tracks)
 
   ClassDef(AlidNdPt,1);
 };
