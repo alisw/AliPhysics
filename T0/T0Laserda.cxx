@@ -26,7 +26,6 @@ Trigger types used: CALIBRATION_EVENT
 #include <AliRawReaderDate.h>
 #include <AliRawReader.h>
 #include <AliT0RawReader.h>
-#include <AliT0CalibAmp.h>
 
 //ROOT
 #include "TROOT.h"
