@@ -45,14 +45,16 @@ ClassImp(AliTRDefficiency)
 
 //____________________________________________________________________
 AliTRDefficiency::AliTRDefficiency()
-  :AliTRDrecoTask("efficiency", "TRD barrel tracking efficiency checker")
+  :AliTRDrecoTask()
   ,fMissed(NULL)
 {
   //
   // Default constructor
   //
+  SetNameTitle("TRDefficiency", "TRD barrel tracking efficiency checker");
 }
 
+//____________________________________________________________________
 AliTRDefficiency::AliTRDefficiency(char* name)
   :AliTRDrecoTask(name, "TRD barrel tracking efficiency checker")
   ,fMissed(NULL)

@@ -6,7 +6,7 @@
 
 void AddTRDcheckESD(AliAnalysisManager *mgr)
 {
-  AliTRDcheckESD *checkESD = new AliTRDcheckESD("checkESD");
+  AliTRDcheckESD *checkESD = new AliTRDcheckESD((char*)"checkESD");
   Bool_t hasMCtruth = (mgr->GetMCtruthEventHandler() != 0);
   
   checkESD->SetMC(hasMCtruth);

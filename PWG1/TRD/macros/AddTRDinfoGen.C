@@ -13,10 +13,9 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   Int_t map = ParseOptions(trd);
   if(!(TSTBIT(map, kInfoGen))) return;
   
-  //AliLog::SetClassDebugLevel("AliTRDinfoGen", 5);  
+  AliLog::SetClassDebugLevel("AliTRDinfoGen", 5);  
   AliTRDinfoGen *info(NULL);
-  info = new AliTRDinfoGen("genInfo");
-  mgr->AddTask(info);
+  mgr->AddTask(info = new AliTRDinfoGen((char*)"genInfo"));
   info->SetDebugLevel(0);
   info->SetMCdata(mgr->GetMCtruthEventHandler());
   AliAnalysisDataContainer* cin   = mgr->CreateContainer("dummy", TObjArray::Class(), AliAnalysisManager::kInputContainer);
@@ -24,7 +23,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
 
   mgr->ConnectInput( info, 0, mgr->GetCommonInputContainer());
   // settings for collisions
-  info->SetCollision();
+  info->SetCollision(kFALSE);
   if(info->IsCollision()){
     info->SetTrigger(
       "CINT1B-ABCE-NOPF-ALL"

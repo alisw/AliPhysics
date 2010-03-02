@@ -184,7 +184,7 @@ Char_t const *AliTRDresolution::fgAxTitle[kNprojs][4] = {
 
 //________________________________________________________
 AliTRDresolution::AliTRDresolution()
-  :AliTRDrecoTask("resolution", "Spatial and momentum TRD resolution checker")
+  :AliTRDrecoTask()
   ,fStatus(0)
   ,fIdxPlot(0)
   ,fIdxFrame(0)
@@ -201,10 +201,11 @@ AliTRDresolution::AliTRDresolution()
   //
   // Default constructor
   //
+  SetNameTitle("TRDresolution", "TRD spatial and momentum resolution");
 }
 
 AliTRDresolution::AliTRDresolution(char* name)
-  :AliTRDrecoTask(name, "Spatial and momentum TRD resolution checker")
+  :AliTRDrecoTask(name, "TRD spatial and momentum resolution")
   ,fStatus(0)
   ,fIdxPlot(0)
   ,fIdxFrame(0)

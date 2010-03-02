@@ -21,6 +21,7 @@
 class AliESDEvent;
 class AliMCEvent;
 class TH1;
+class TH2;
 class TObjArray;
 class TGraph;
 class TGraphErrors;

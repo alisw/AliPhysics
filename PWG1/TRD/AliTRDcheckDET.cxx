@@ -75,7 +75,7 @@ ClassImp(AliTRDcheckDET)
 
 //_______________________________________________________
 AliTRDcheckDET::AliTRDcheckDET():
-  AliTRDrecoTask("checkDET", "Basic TRD data checker")
+  AliTRDrecoTask()
   ,fEventInfo(NULL)
   ,fTriggerNames(NULL)
   ,fReconstructor(NULL)
@@ -85,6 +85,7 @@ AliTRDcheckDET::AliTRDcheckDET():
   //
   // Default constructor
   //
+  SetNameTitle("checkDET", "Basic TRD data checker");
 }
 
 

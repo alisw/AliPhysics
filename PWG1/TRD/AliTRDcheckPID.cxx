@@ -59,7 +59,7 @@ ClassImp(AliTRDcheckPID)
 
 //________________________________________________________________________
 AliTRDcheckPID::AliTRDcheckPID() 
-  :AliTRDrecoTask("checkPID", "Check TRD PID")
+  :AliTRDrecoTask()
   ,fReconstructor(NULL)
   ,fUtil(NULL)
   ,fGraph(NULL)
@@ -71,10 +71,12 @@ AliTRDcheckPID::AliTRDcheckPID()
   //
   // Default constructor
   //
+  SetNameTitle("checkPID", "Check TRD PID");
 }
 
+//________________________________________________________________________
 AliTRDcheckPID::AliTRDcheckPID(char* name ) 
-  :AliTRDrecoTask(name, "Check PID")
+  :AliTRDrecoTask(name, "Check TRD PID")
   ,fReconstructor(NULL)
   ,fUtil(NULL)
   ,fGraph(NULL)

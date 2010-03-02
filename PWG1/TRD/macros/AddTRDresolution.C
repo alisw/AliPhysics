@@ -17,7 +17,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
   //AliLog::SetClassDebugLevel("AliTRDresolution", 5);  
   AliTRDresolution *task(NULL);
   if(!TSTBIT(map, kResolution)) return;
-  mgr->AddTask(task = new AliTRDresolution("TRDresolution"));
+  mgr->AddTask(task = new AliTRDresolution((char*)"TRDresolution"));
   task->SetMCdata(mgr->GetMCtruthEventHandler());
   task->SetPostProcess(kFALSE);
   task->SetDebugLevel(0);
@@ -39,13 +39,13 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
     //AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
 
     AliTRDclusterResolution *taskCl(NULL);
-    mgr->AddTask(taskCl = new AliTRDclusterResolution("ESD", "ESD Cluster error parameterization"));
+    mgr->AddTask(taskCl = new AliTRDclusterResolution((char*)"ESD", "ESD Cluster error parameterization"));
     taskCl->SetExB();
     mgr->ConnectInput(taskCl,  0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(taskCl,  1, co[0]);
     mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibClErrParam.root"));
 
-    mgr->AddTask(taskCl = new AliTRDclusterResolution("MC", "MC Cluster error parameterization"));
+    mgr->AddTask(taskCl = new AliTRDclusterResolution((char*)"MC", "MC Cluster error parameterization"));
     taskCl->SetExB();
     mgr->ConnectInput(taskCl,  0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(taskCl,  1, co[2]);
@@ -55,7 +55,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
   // TRD alignment
   if(TSTBIT(map, kAlignment)){
     AliTRDalignmentTask *taskAl = 0x0;
-    mgr->AddTask(taskAl = new AliTRDalignmentTask("TRDalignment"));
+    mgr->AddTask(taskAl = new AliTRDalignmentTask((char*)"TRDalignment"));
     taskAl->SetDebugLevel(0);
     mgr->ConnectInput(taskAl,  0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(taskAl,  1, ci[0]);  
