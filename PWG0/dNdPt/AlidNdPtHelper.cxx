@@ -40,6 +40,7 @@
 #include <AliVertexerTracks.h>
 #include <AliMathBase.h>
 #include <AliESDtrackCuts.h>
+#include <AliTracker.h>
 #include "dNdPt/AlidNdPtEventCuts.h"
 #include "dNdPt/AlidNdPtAcceptanceCuts.h"
 #include "dNdPt/AlidNdPtHelper.h"
@@ -69,7 +70,8 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, AlidNdPtE
 
   const AliESDVertex* vertex = 0;
   AliESDVertex *initVertex = 0;
-  if (analysisMode == kSPD || analysisMode == kTPCITS || analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate)
+  if (analysisMode == kSPD || analysisMode == kTPCITS || 
+      analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate || analysisMode == kTPCITSHybrid)
   {
     vertex = aEsd->GetPrimaryVertexSPD();
     if (debug)
@@ -123,7 +125,11 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, AlidNdPtE
 
       for (Int_t i=0; i<aEsd->GetNumberOfTracks(); i++) {
 	AliESDtrack *t = aEsd->GetTrack(i);
-	t->RelateToVertexTPC(vTPC, kBz, kVeryBig);
+	if(!t) continue;
+
+        Double_t x[3]; t->GetXYZ(x);
+        Double_t b[3]; AliTracker::GetBxByBz(x,b);
+	t->RelateToVertexTPCBxByBz(vTPC, b, kVeryBig);
       }
       
       delete vTPC;
@@ -133,10 +139,10 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, AlidNdPtE
     }
     vertex = aEsd->GetPrimaryVertexTPC();
     if (debug)
-      Printf("AlidNdPtHelper::GetVertex: Returning vertex from tracks");
-    }
-      else
-       Printf("AlidNdPtHelper::GetVertex: ERROR: Invalid second argument %d", analysisMode);
+     Printf("AlidNdPtHelper::GetVertex: Returning vertex from tracks");
+   }
+   else
+     Printf("AlidNdPtHelper::GetVertex: ERROR: Invalid second argument %d", analysisMode);
 
     if (!vertex) {
      if (debug)
@@ -159,15 +165,37 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
 {
   // Checks if a vertex meets the needed quality criteria
   if(!vertex) return kFALSE;
+  if(!vertex->GetStatus()) return kFALSE;
 
   Float_t requiredZResolution = -1;
-  if (analysisMode == kSPD || analysisMode == kTPCITS || analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate)
+  if (analysisMode == kSPD || analysisMode == kTPCITS || 
+      analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate || analysisMode == kTPCITSHybrid)
   {
-    requiredZResolution = 0.1;
+    requiredZResolution = 1000;
   }
   else if (analysisMode == kTPC)
     requiredZResolution = 10.;
 
+  // check resolution
+  Double_t zRes = vertex->GetZRes();
+
+  if (zRes > requiredZResolution) {
+    if (debug)
+      Printf("AlidNdPtHelper::TestVertex: Resolution too poor %f (required: %f", zRes, requiredZResolution);
+    return kFALSE;
+  }
+ 
+  if (vertex->IsFromVertexerZ())
+  {
+    if (vertex->GetDispersion() > 0.02) 
+    {
+      if (debug)
+        Printf("AliPWG0Helper::TestVertex: Delta Phi too large in Vertexer Z: %f (required: %f", vertex->GetDispersion(), 0.02);
+      return kFALSE;
+    }
+  }
+
+  /*
   // check Ncontributors
   if (vertex->GetNContributors() <= 0) {
     if (debug){
@@ -177,19 +205,7 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
     }
     return kFALSE;
   }
-
-  // check resolution
-  Double_t zRes = vertex->GetZRes();
-  if ((zRes-0.000000001) < 0.0) {
-    Printf("AlidNdPtHelper::GetVertex: UNEXPECTED: resolution is 0.");
-    return kFALSE;
-  }
-
-  if (zRes > requiredZResolution) {
-    if (debug)
-      Printf("AlidNdPtHelper::TestVertex: Resolution too poor %f (required: %f", zRes, requiredZResolution);
-    return kFALSE;
-  }
+  */
 
   return kTRUE;
 }
@@ -197,6 +213,7 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
 //____________________________________________________________________
 Bool_t AlidNdPtHelper::IsPrimaryParticle(AliStack* const stack, Int_t idx, ParticleMode particleMode)
 {
+//
 // check primary particles 
 // depending on the particle mode
 //
@@ -233,58 +250,6 @@ return prim;
 }
 
 //____________________________________________________________________
-/*
-Bool_t AlidNdPtHelper::IsCosmicTrack(TObjArray *const allChargedTracks, AliESDtrack *const track1, Int_t trackIdx, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts)
-{
-//
-// check cosmic tracks
-//
-  if(!allChargedTracks) return kFALSE;
-  if(!track1) return kFALSE;
-  if(!accCuts) return kFALSE;
-  if(!trackCuts) return kFALSE;
-
-  Int_t entries = allChargedTracks->GetEntries();
-  for(Int_t i=0; i<entries;++i) 
-  {
-      //
-      // exclude the same tracks
-      //
-      if(i == trackIdx) continue;
-
-      AliESDtrack *track2 = (AliESDtrack*)allChargedTracks->At(i);
-      if(!track2) continue;
-      if(track2->Charge()==0) continue;
-
-      if(track1->Pt() > 6. && track2->Pt() > 6. && (track1->Charge() + track2->Charge()) == 0 ) 
-      {
-        printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
-        printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
-
-        printf("deta %f, dphi %f, dq %d  \n", track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
-
-      }
-
-      //
-      // cosmic tracks in TPC
-      //
-      //if( TMath::Abs( track1->Theta() - track2->Theta() ) < 0.004  && 
-      //  ((TMath::Abs(track1->Phi()-track2->Phi()) - TMath::Pi() )<0.004) && 
-      if( (track1->Pt()-track2->Pt()) < 0.1 && track1->Pt() > 4.0 && (track1->Charge()+track2->Charge()) == 0 )
-      {
-        //printf("COSMIC  candidate \n");
-        printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
-        printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
-        printf("dtheta %f, deta %f, dphi %f, dq %d  \n", track1->Theta()-track2->Theta(),  track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
-	return kTRUE;
-      }
-   }
-     
-return kFALSE; 
-}
-*/
-
-//____________________________________________________________________
 Bool_t AlidNdPtHelper::IsCosmicTrack(AliESDtrack *const track1, AliESDtrack *const track2)
 {
 //
@@ -293,35 +258,32 @@ Bool_t AlidNdPtHelper::IsCosmicTrack(AliESDtrack *const track1, AliESDtrack *con
   if(!track1) return kFALSE;
   if(!track2) return kFALSE;
 
-  /*
-  if(track1->Pt() > 6. && track2->Pt() > 6. && (track1->Charge() + track2->Charge()) == 0 ) 
+  //
+  // cosmic tracks in TPC
+  //
+  //if( TMath::Abs( track1->Theta() - track2->Theta() ) < 0.004  && 
+  //  ((TMath::Abs(track1->Phi()-track2->Phi()) - TMath::Pi() )<0.004) && 
+  //if( track1->Pt() > 4.0 && (TMath::Abs(track1->Phi()-track2->Phi())-TMath::Pi())<0.1 
+  //    && (TMath::Abs(track1->Eta()+track2->Eta())-0.1) < 0.0 && (track1->Charge()+track2->Charge()) == 0)
+
+  //Float_t scaleF= 6.0;
+  if ( track1->Pt() > 4 && track2->Pt() > 4 && 
+       //(TMath::Abs(track1->GetSnp()-track2->GetSnp())-2.) < scaleF * TMath::Sqrt(track1->GetSigmaSnp2()+track2->GetSigmaSnp2()) &&
+       //TMath::Abs(track1->GetTgl()-track2->GetTgl())   < scaleF * TMath::Sqrt(track1->GetSigmaTgl2()+track2->GetSigmaTgl2()) &&
+       //TMath::Abs(track1->OneOverPt()-track2->OneOverPt()) < scaleF * TMath::Sqrt(track1->GetSigma1Pt2()+track2->GetSigma1Pt2()) && 
+       (track1->Charge()+track2->Charge()) == 0 && 
+       track1->Eta()*track2->Eta()<0.0 && TMath::Abs(track1->Eta()+track2->Eta())<0.03 &&
+       TMath::Abs(TMath::Abs(track1->Phi()-track2->Phi())-TMath::Pi())<0.1
+     )  
   {
-        printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
-        printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
+    printf("COSMIC  candidate \n");
 
-        printf("deta %f, dphi %f, dq %d  \n", track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
-
-      }
-      */
-
-      //
-      // cosmic tracks in TPC
-      //
-      //if( TMath::Abs( track1->Theta() - track2->Theta() ) < 0.004  && 
-      //  ((TMath::Abs(track1->Phi()-track2->Phi()) - TMath::Pi() )<0.004) && 
-
-      if( (track1->Pt()-track2->Pt()) < 0.2 && track1->Pt() > 3.0 && 
-      	     (track1->Charge()+track2->Charge()) == 0 )
-      //if( track1->Pt() > 6. || track2->Pt() > 6. )
-      {
-        //printf("COSMIC  candidate \n");
-	/*
-        printf("track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
-        printf("track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
-        printf("dtheta %f, deta %f, dphi %f, dq %d  \n", track1->Theta()-track2->Theta(),  track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
-	*/
-	return kTRUE;
-      }
+    printf("track1->Pt() %f, track1->Theta() %f, track1->Eta() %f, track1->Phi() %f, track1->Charge() %d  \n", track1->Pt(), track1->Theta(), track1->Eta(), track1->Phi(), track1->Charge());
+    printf("track2->Pt() %f, track2->Theta() %f, track2->Eta() %f, track2->Phi() %f, track2->Charge() %d  \n", track2->Pt(), track2->Theta(), track2->Eta(), track2->Phi(), track2->Charge());
+    printf("dtheta %f, deta %f, dphi %f, dq %d  \n", track1->Theta()-track2->Theta(),  track1->Eta()-track2->Eta(), track1->Phi()-track2->Phi(), track1->Charge()+track2->Charge()); 
+    printf("dsphi %f, errsphi %f, dtanl %f, errtanl %f  \n", TMath::Abs(track1->GetSnp()-track2->GetSnp()), TMath::Sqrt(track1->GetSigmaSnp2()+track2->GetSigmaSnp2()), TMath::Abs(track1->GetTgl()-track2->GetTgl()), TMath::Sqrt(track1->GetSigmaTgl2()+track2->GetSigmaTgl2())); 
+    return kTRUE;
+  }
      
 return kFALSE; 
 }
@@ -343,6 +305,7 @@ void AlidNdPtHelper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Tr
     case kTPCITS : str += "Global tracking"; break;
     case kTPCSPDvtx : str += "TPC tracking + SPD event vertex"; break;
     case kTPCSPDvtxUpdate : str += "TPC tracks updated with SPD event vertex point"; break;
+    case kTPCITSHybrid : str += "TPC tracking + ITS refit + >1 SPD cluster"; break;
     case kMCRec : str += "TPC tracking + Replace rec. with MC values"; break;
   }
   str += " and trigger ";
@@ -506,19 +469,31 @@ TObjArray* AlidNdPtHelper::GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMo
   for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
   { 
     if(analysisMode == AlidNdPtHelper::kTPC) { 
+      //
       // track must be deleted by user 
+      // esd track parameters are replaced by TPCinner
+      //
       track = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent,iTrack);
       if(!track) continue;
     } 
-    else if (analysisMode == AlidNdPtHelper::kTPCSPDvtx || AlidNdPtHelper::kTPCSPDvtxUpdate)
+    else if (analysisMode == AlidNdPtHelper::kTPCSPDvtx || analysisMode == AlidNdPtHelper::kTPCSPDvtxUpdate)
     {
+      //
       // track must be deleted by the user 
+      // esd track parameters are replaced by TPCinner
+      //
       track = AlidNdPtHelper::GetTPCOnlyTrackSPDvtx(esdEvent,iTrack,kFALSE);
       if(!track) continue;
     }
-    else {
-      track=esdEvent->GetTrack(iTrack);
+    else if( analysisMode == AlidNdPtHelper::kTPCITSHybrid )
+    {
+      track = AlidNdPtHelper::GetTrackSPDvtx(esdEvent,iTrack,kFALSE);
     }
+    else 
+    {
+      track = esdEvent->GetTrack(iTrack);
+    }
+
     if(!track) continue;
 
     if(track->Charge()==0) { 
@@ -563,13 +538,17 @@ AliESDtrack *AlidNdPtHelper::GetTPCOnlyTrackSPDvtx(AliESDEvent* esdEvent, Int_t 
   if (!track)
     return NULL;
 
+  Bool_t isOK = kFALSE;
+  Double_t x[3]; track->GetXYZ(x);
+  Double_t b[3]; AliTracker::GetBxByBz(x,b);
+
   // create new ESD track
   AliESDtrack *tpcTrack = new AliESDtrack();
  
   // relate TPC-only tracks (TPCinner) to SPD vertex
   AliExternalTrackParam cParam;
   if(bUpdate) {  
-    track->RelateToVertexTPC(esdEvent->GetPrimaryVertexSPD(),esdEvent->GetMagneticField(),kVeryBig,&cParam);
+    isOK = track->RelateToVertexTPCBxByBz(esdEvent->GetPrimaryVertexSPD(),b,kVeryBig,&cParam);
     track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
 
     // reject fake tracks
@@ -580,7 +559,7 @@ AliESDtrack *AlidNdPtHelper::GetTPCOnlyTrackSPDvtx(AliESDEvent* esdEvent, Int_t 
     }
   }
   else {
-    track->RelateToVertexTPC(esdEvent->GetPrimaryVertexSPD(), esdEvent->GetMagneticField(), kVeryBig);
+    isOK = track->RelateToVertexTPCBxByBz(esdEvent->GetPrimaryVertexSPD(), b, kVeryBig);
   }
 
   // only true if we have a tpc track
@@ -589,8 +568,51 @@ AliESDtrack *AlidNdPtHelper::GetTPCOnlyTrackSPDvtx(AliESDEvent* esdEvent, Int_t 
     delete tpcTrack;
     return NULL;
   }
+  
+  if(!isOK) return NULL;
 
 return tpcTrack;
+} 
+
+//_____________________________________________________________________________
+AliESDtrack *AlidNdPtHelper::GetTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
+{
+//
+// Propagte track to DCA to SPD vertex.
+// Update using SPD vertex point (parameter)
+//
+  if (!esdEvent) return NULL;
+  if (!esdEvent->GetPrimaryVertexSPD() ) { return NULL; }
+  if (!esdEvent->GetPrimaryVertexSPD()->GetStatus() ) { return  NULL; }
+   
+  // 
+  AliESDtrack* track = esdEvent->GetTrack(iTrack);
+  if (!track)
+    return NULL;
+
+  Bool_t isOK = kFALSE;
+  Double_t x[3]; track->GetXYZ(x);
+  Double_t b[3]; AliTracker::GetBxByBz(x,b);
+
+  // relate tracks to SPD vertex
+  AliExternalTrackParam cParam;
+  if(bUpdate) {  
+    isOK = track->RelateToVertexBxByBz(esdEvent->GetPrimaryVertexSPD(),b,kVeryBig,&cParam);
+    track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
+
+    // reject fake tracks
+    if(track->Pt() > 10000.)  {
+      ::Error("Exclude no physical tracks","pt>10000. GeV");
+      return NULL;
+    }
+  }
+  else {
+    isOK = track->RelateToVertexBxByBz(esdEvent->GetPrimaryVertexSPD(), b, kVeryBig);
+  }
+ 
+  if(!isOK) return NULL;
+
+return track;
 } 
 
 //_____________________________________________________________________________
@@ -631,8 +653,12 @@ Int_t AlidNdPtHelper::GetTPCMBTrackMult(AliESDEvent *const esdEvent, AlidNdPtEve
     if (!t->GetTPCInnerParam()) continue;
     if (t->GetTPCNcls()<minTPCClust) continue;
     //
+    Double_t x[3]; t->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    const Double_t kMaxStep = 1;   //max step over the material
+
     AliExternalTrackParam  *tpcTrack  = new AliExternalTrackParam(*(t->GetTPCInnerParam()));
-    if (!tpcTrack->PropagateToDCA(&vtx0,esdEvent->GetMagneticField(),100.,dca,cov)) 
+    if (!tpcTrack->PropagateToDCABxByBz(&vtx0,b,kMaxStep,dca,cov)) 
     {
       if(tpcTrack) delete tpcTrack; 
       continue;
@@ -696,8 +722,12 @@ Int_t AlidNdPtHelper::GetTPCMBPrimTrackMult(AliESDEvent *const esdEvent, AliStac
     if (!t->GetTPCInnerParam()) continue;
     if (t->GetTPCNcls()<minTPCClust) continue;
     //
+    Double_t x[3]; t->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    const Double_t kMaxStep = 1;   //max step over the material
+
     AliExternalTrackParam  *tpcTrack  = new AliExternalTrackParam(*(t->GetTPCInnerParam()));
-    if (!tpcTrack->PropagateToDCA(&vtx0,esdEvent->GetMagneticField(),100.,dca,cov)) 
+    if (!tpcTrack->PropagateToDCABxByBz(&vtx0,b,kMaxStep,dca,cov)) 
     {
       if(tpcTrack) delete tpcTrack; 
       continue;
@@ -766,8 +796,9 @@ Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEven
      Bool_t prim = stack->IsPhysicalPrimary(iMc);
      if(!prim) continue;
 
-     // checked accepted
-     if(accCuts->AcceptTrack(particle)) 
+     // checked accepted without pt cut
+     //if(accCuts->AcceptTrack(particle)) 
+     if( particle->Eta() > accCuts->GetMinEta() && particle->Eta() < accCuts->GetMaxEta() ) 
      {
        mult++;
      }
@@ -1051,8 +1082,13 @@ const AliESDVertex* AlidNdPtHelper::GetTPCVertexZ(AliESDEvent* const esdEvent, A
     if (!t->GetTPCInnerParam()) continue;
     if (t->GetTPCNcls()<minTPCClust) continue;
     //
+
+    Double_t x[3]; t->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    const Double_t kMaxStep = 1;   //max step over the material
+
     AliExternalTrackParam  *tpcTrack  = new AliExternalTrackParam(*(t->GetTPCInnerParam()));
-    if (!tpcTrack->PropagateToDCA(&vtx0,esdEvent->GetMagneticField(),100.,dca,cov)) continue;
+    if (!tpcTrack->PropagateToDCABxByBz(&vtx0,b,kMaxStep,dca,cov)) continue;
 
     //
     if (TMath::Abs(dca[0])>maxDCAr) continue;
