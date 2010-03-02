@@ -28,7 +28,9 @@
 
 #include <TClonesArray.h>
 #include <TObjArray.h>
-#include <TObject.h>
+#include <TPad.h>
+#include <TLegend.h>
+#include <TF1.h>
 #include <TH2I.h>
 #include <TH3S.h>
 #include <TGraphErrors.h>
@@ -59,12 +61,15 @@ ClassImp(AliTRDcheckESD)
 
 const Float_t AliTRDcheckESD::fgkxTPC = 290.;
 const Float_t AliTRDcheckESD::fgkxTOF = 365.;
+const UChar_t AliTRDcheckESD::fgkNgraph[kNrefs] ={
+0, 4, 2, 10};
 FILE* AliTRDcheckESD::fgFile = NULL;
 
 //____________________________________________________________________
 AliTRDcheckESD::AliTRDcheckESD():
   AliAnalysisTaskSE()
   ,fStatus(0)
+  ,fNRefFigures(0)
   ,fESD(NULL)
   ,fMC(NULL)
   ,fHistos(NULL)
@@ -80,6 +85,7 @@ AliTRDcheckESD::AliTRDcheckESD():
 AliTRDcheckESD::AliTRDcheckESD(char* name):
   AliAnalysisTaskSE(name)
   ,fStatus(0)
+  ,fNRefFigures(0)
   ,fESD(NULL)
   ,fMC(NULL)
   ,fHistos(NULL)
@@ -117,89 +123,93 @@ void AliTRDcheckESD::UserCreateOutputObjects()
   Histos();
 }
 
-//____________________________________________________________________
-TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
-{
-// Retrieve graph with "id"
-// Possible options are :
-//   "b" - build graph if none found
-//   "c" - clear existing graph
-
-  Bool_t kBUILD = strstr(opt, "b"), // build graph if none found
-         kCLEAR = strstr(opt, "c"); // clear existing graph
-
-  const Char_t *name[] = {
-    "Geo", "Trk", "Pid", "Ref", "Max06", "Mean09", "PtResDCA"
-  };
-  const Char_t *title[] = {
-    "TRD geometrical efficiency (TRDin/TPCout)"
-    ,"TRD tracking efficiency (TRDout/TRDin)"
-    ,"TRD PID efficiency (TRDpid/TRDin)"
-    ,"TRD refit efficiency (TRDrefit/TRDin)"
-    ,"TRD Eloss (Max/90% quantile)"
-    ,"TRD Eloss (Mean/60% quantile)"
-    ,"P_{t} resolution @ DCA"
-  };
-  const Int_t ngr = sizeof(name)/sizeof(Char_t*);
-  if(ngr != kNgraphs){
-    AliWarning("No of graphs defined different from definition");
-    return NULL;
-  }
-
-  if(!fResults){
-    fResults = new TObjArray(kNgraphs);
-    fResults->SetOwner();
-    fResults->SetName("results");
-  }
-
-  TGraph *g = NULL;
-  if((g = dynamic_cast<TGraph*>(fResults->At(id)))){
-    if(kCLEAR){ 
-      for(Int_t ip=g->GetN(); ip--;) g->RemovePoint(ip);
-    } else {
-      PutTrendValue(name[id], g->GetMean(2));
-      PutTrendValue(Form("%sRMS", name[id]), g->GetRMS(2));
-    }
-  } else {
-    if(kBUILD){
-      switch(id){
-      case 0:
-        g = new TGraphErrors();
-        break;
-      case 1:
-        g = new TGraphErrors();
-        break;
-      case 2:
-        g = new TGraphErrors();
-        break;
-      case 3:
-        g = new TGraphErrors();
-        break;
-      case 4:
-        g = new TGraphAsymmErrors(6);
-        g->SetMarkerStyle(22);g->SetMarkerColor(kRed);
-        g->SetLineColor(kBlack);g->SetLineWidth(2);
-        break;
-      case 5:
-        g = new TGraphAsymmErrors(6);
-        g->SetMarkerStyle(21);
-        g->SetLineColor(kRed);g->SetLineWidth(2);
-        break;
-      default:
-        AliWarning(Form("Graph index[%d] missing/not defined.", id));
-        return NULL;
-      }
-      g->SetNameTitle(name[id], title[id]);
-      fResults->AddAt(g, id);
-    }
-  }
-  return g;
-}
-
 
 //____________________________________________________________________
 Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
 {
+  if(ifig>=fNRefFigures){
+    AliWarning(Form("Ref plot %d not available. Valid only up to %d", ifig, fNRefFigures));
+    return kFALSE;
+  }
+  if(!gPad){
+    AliWarning("Please provide a canvas to draw results.");
+    return kFALSE;
+  }
+
+  const Char_t *title[20];
+  TH1 *hF(NULL);
+  if((hF=(TH1S*)gROOT->FindObject("hFcheckESD"))) delete hF;
+  TLegend *leg(NULL);
+  TGraphErrors *g(NULL);TGraphAsymmErrors *ga(NULL);
+  TObjArray *arr(NULL);
+  switch(ifig){
+  case kNCl: // number of clusters/track
+    ((TH1I*)fResults->At(kNCl))->Draw("c");
+    break;
+  case kTRDstat: // Efficiency
+    if(!(arr = (TObjArray*)fResults->At(kTRDstat))) return kFALSE;
+    leg = new TLegend(.65, .7, .95, .99);
+    leg->SetHeader("TRD Efficiency");
+    leg->SetBorderSize(1); leg->SetFillColor(0);
+    title[0] = "Geometrical (TRDin/TPCout)";
+    title[1] = "Tracking (TRDout/TRDin)";
+    title[2] = "PID (TRDpid/TRDin)";
+    title[3] = "Refit (TRDrefit/TRDin)";
+    hF = new TH1S("hFcheckESD", ";p [GeV/c];Efficiency", 10, 0.1, 10.);
+    hF->SetMaximum(1.3);
+    hF->GetXaxis()->SetMoreLogLabels();
+    hF->Draw("p");
+    for(Int_t ig(0); ig<fgkNgraph[kTRDstat]; ig++){
+      if(!(g = (TGraphErrors*)arr->At(ig))) return kFALSE;
+      g->Draw("pl"); leg->AddEntry(g, title[ig], "pl");
+      //PutTrendValue(name[id], g->GetMean(2));
+      //PutTrendValue(Form("%sRMS", name[id]), g->GetRMS(2));
+    }
+    leg->Draw(); gPad->SetLogx();
+    break;
+  case kTRDmom: // Energy loss
+    if(!(arr = (TObjArray*)fResults->At(kTRDmom))) return kFALSE;
+    leg = new TLegend(.65, .7, .95, .99);
+    leg->SetHeader("Energy Loss");
+    leg->SetBorderSize(1); leg->SetFillColor(0);
+    title[0] = "Max & 90% quantile";
+    title[1] = "Mean & 60% quantile";
+    hF = new TH1S("hFcheckESD", ";layer;#Delta E", 6, -0.5, 5.5);
+    hF->SetMaximum(1.3);hF->SetMinimum(-.3);
+    hF->Draw("p");
+    for(Int_t ig(0); ig<fgkNgraph[kTRDmom]; ig++){
+      if(!(ga = (TGraphAsymmErrors*)arr->At(ig))) return kFALSE;
+      ga->Draw("pl"); leg->AddEntry(ga, title[ig], "pl");
+      //PutTrendValue(name[id], g->GetMean(2));
+      //PutTrendValue(Form("%sRMS", name[id]), g->GetRMS(2));
+    }
+    leg->Draw();gPad->SetLogx(kFALSE);
+    break;
+  case kPtRes: // Pt resolution @ vertex
+    if(!(arr = (TObjArray*)fResults->At(kPtRes))) return kFALSE;
+    gPad->SetMargin(0.1, 0.22, 0.1, 0.023);
+    leg = new TLegend(.78, .1, .99, .98);
+    leg->SetHeader("P_{t} @ DCA");
+    leg->SetBorderSize(1); leg->SetFillColor(0);
+    leg->SetTextAlign(22);
+    leg->SetTextFont(12);
+    leg->SetTextSize(0.03813559);
+    hF = new TH1S("hFcheckESD", ";p_{t} [GeV/c];#Delta p_{t} / p_{t} [%]", 10, 0.2, 10.);
+    hF->SetMaximum(10.);hF->SetMinimum(-3.);
+    hF->GetXaxis()->SetMoreLogLabels();
+    hF->GetXaxis()->SetTitleOffset(1.2);
+    hF->GetYaxis()->CenterTitle();
+    hF->Draw("p");
+    for(Int_t ig(0); ig<fgkNgraph[kPtRes]; ig++){
+      if(!(g = (TGraphErrors*)arr->At(ig))) continue;//return kFALSE;
+      if(!g->GetN()) continue;
+      g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
+      //PutTrendValue(name[id], g->GetMean(2));
+      //PutTrendValue(Form("%sRMS", name[id]), g->GetRMS(2));
+    }
+    leg->Draw();gPad->SetLogx();
+    break;
+  }
   return kTRUE;
 }
 
@@ -346,14 +356,14 @@ TObjArray* AliTRDcheckESD::Histos()
 
   fHistos = new TObjArray(kNhistos);
   //fHistos->SetOwner(kTRUE);
-  
+
   TH1 *h = NULL;
 
   // clusters per tracklet
   if(!(h = (TH1I*)gROOT->FindObject("hNCl"))){
     h = new TH1I("hNCl", "Clusters per TRD track;N_{cl}^{TRD};entries", 100, 0., 200.);
   } else h->Reset();
-  fHistos->AddAt(h, kNCl);
+  fHistos->AddAt(h, kNCl); fNRefFigures++;
 
   // status bits histogram
   const Int_t kNpt(10), kNbits(5);
@@ -362,7 +372,7 @@ TObjArray* AliTRDcheckESD::Histos()
   for(Int_t i=0;i<kNpt+1; i++,Pt+=(TMath::Exp(i*i*.015)-1.)) binsPt[i]=Pt;
   for(Int_t i=0; i<kNbits+1; i++,Bits+=1.) binsBits[i]=Bits;
   if(!(h = (TH2I*)gROOT->FindObject("hTRDstat"))){
-    h = new TH2I("hTRDstat", "TRD status bits;p_{t} @ TRD [GeV/c];status;entris", kNpt, binsPt, kNbits, binsBits);
+    h = new TH2I("hTRDstat", "TRD status bits;p_{t} @ TRD [GeV/c];status;entries", kNpt, binsPt, kNbits, binsBits);
     TAxis *ay(h->GetYaxis());
     ay->SetBinLabel(1, "kTPCout");
     ay->SetBinLabel(2, "kTRDin");
@@ -377,6 +387,7 @@ TObjArray* AliTRDcheckESD::Histos()
     h = new TH2I("hTRDmom", "TRD energy loss;p_{inner} - p_{ly} [GeV/c];ly;entries", 100, -1., 2., 6, -0.5, 5.5);
   } else h->Reset();
   fHistos->AddAt(h, kTRDmom);
+  if(!HasMC()) return fHistos;
 
   // pt resolution
   const Int_t kNdpt(100), kNspec(2*AliPID::kSPECIES+1);
@@ -441,32 +452,82 @@ void AliTRDcheckESD::Terminate(Option_t *)
     }
   }
 
+  const Char_t *name[kNrefs] = {
+    "Ncl", "Eff", "Eloss", "PtResDCA"
+  };
+  TObjArray *arr(NULL); TGraph *g(NULL);
+  if(!fResults){
+    fResults = new TObjArray(kNrefs);
+    fResults->SetOwner();
+    fResults->SetName("results");
+    for(Int_t iref(0); iref<kNrefs; iref++){
+      fResults->AddAt(arr = new TObjArray(fgkNgraph[iref]), iref);
+      arr->SetName(name[iref]);  arr->SetOwner();
+      switch(iref){
+      case kTRDmom:
+        for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
+          arr->AddAt(g = new TGraphAsymmErrors(), ig);
+          g->SetLineColor(ig+1); 
+          g->SetMarkerColor(ig+1); 
+          g->SetMarkerStyle(ig+20); 
+        }
+        break;
+      case kPtRes:
+        for(Int_t im(fgkNgraph[iref]/2), ig(im), idx(0); ig--; idx+=ig){
+         arr->AddAt(g = new TGraphErrors(), ig);
+          g->SetLineColor(kRed-idx); 
+          g->SetMarkerColor(kRed-idx); 
+          g->SetMarkerStyle(20+ig); 
+          g->SetNameTitle(Form("s%d", ig), Form("res %s", AliPID::ParticleLatexName(ig)));
+          arr->AddAt(g = new TGraphErrors(), im+ig);
+          g->SetLineColor(kBlue-idx); 
+          g->SetMarkerColor(kBlue-idx); 
+          g->SetMarkerStyle(20+ig); 
+          g->SetNameTitle(Form("m%d", ig), Form("sys %s", AliPID::ParticleLatexName(ig)));
+        }
+        break;
+      default:
+        for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
+          arr->AddAt(g = new TGraphErrors(), ig);
+          g->SetLineColor(ig+1); 
+          g->SetMarkerColor(ig+1); 
+          g->SetMarkerStyle(ig+20); 
+        }
+        break;
+      }
+    }
+  }
+  fNRefFigures = 1;
+
+  // EFFICIENCY
   // geometrical efficiency
-  TH2I *h2 = (TH2I*)fHistos->At(kTRDstat);
+  TH2I *h2(NULL);
+  if(!(h2 = (TH2I*)fHistos->At(kTRDstat))) return;
+  arr = (TObjArray*)fResults->At(kTRDstat);
   TH1 *h1[2] = {NULL, NULL};
   h1[0] = h2->ProjectionX("checkESDx0", kTPCout, kTPCout);
   h1[1] = h2->ProjectionX("checkESDx1", kTRDin, kTRDin);
-  Process(h1, (TGraphErrors*)GetGraph(0));
+  Process(h1, (TGraphErrors*)arr->At(0));
   delete h1[0];delete h1[1];
-
   // tracking efficiency
   h1[0] = h2->ProjectionX("checkESDx0", kTRDin, kTRDin);
   h1[1] = h2->ProjectionX("checkESDx1", kTRDout, kTRDout);
-  Process(h1, (TGraphErrors*)GetGraph(1));
+  Process(h1, (TGraphErrors*)arr->At(1));
   delete h1[1];
-
   // PID efficiency
   h1[1] = h2->ProjectionX("checkESDx1", kTRDpid, kTRDpid);
-  Process(h1, (TGraphErrors*)GetGraph(2));
+  Process(h1, (TGraphErrors*)arr->At(2));
   delete h1[1];
-
   // Refit efficiency
   h1[1] = h2->ProjectionX("checkESDx1", kTRDref, kTRDref);
-  Process(h1, (TGraphErrors*)GetGraph(3));
+  Process(h1, (TGraphErrors*)arr->At(3));
   delete h1[1];
+  fNRefFigures++;
+
+  // ENERGY LOSS
   if(!(h2 = dynamic_cast<TH2I*>(fHistos->At(kTRDmom)))) return;
- 
-  TGraphAsymmErrors *g06 = (TGraphAsymmErrors*)GetGraph(4), *g09 = (TGraphAsymmErrors*)GetGraph(5);
+  arr = (TObjArray*)fResults->At(kTRDmom);
+  TGraphAsymmErrors *g06 = (TGraphAsymmErrors*)arr->At(0), *g09 = (TGraphAsymmErrors*)arr->At(1);
   TAxis *ax=h2->GetXaxis();
   const Int_t nq(4);
   const Double_t xq[nq] = {0.05, 0.2, 0.8, 0.95};
@@ -482,6 +543,23 @@ void AliTRDcheckESD::Terminate(Option_t *)
     //printf(" max[%f] mean[%f] q[%f %f %f %f]\n", ax->GetBinCenter(h1[0]->GetMaximumBin()), h1[0]->GetMean(), yq[0], yq[1], yq[2], yq[3]);
     delete h1[0];
   }
+  fNRefFigures++;
+  if(!HasMC()) return;
+
+  // Pt RESOLUTION @ DCA
+  TH3S* h3(NULL); TGraphErrors *gg[2] = {NULL,NULL};
+  if(!(h3 = dynamic_cast<TH3S*>(fHistos->At(kPtRes)))) return;
+  arr = (TObjArray*)fResults->At(kPtRes);
+  TAxis *az(h3->GetZaxis());
+  for(Int_t i(0); i<AliPID::kSPECIES; i++){
+    az->SetRange(5-i, 5-i); 
+    gg[1] = (TGraphErrors*)arr->At(4-i);
+    gg[0] = (TGraphErrors*)arr->At(9-i);
+    Process2D((TH2*)h3->Project3D("yx"), gg);
+    //az->SetRange(7+i, 7+i);
+    //Process2D((TH2*)h3->Project3D("yx"), gg);
+  }
+  fNRefFigures++;
 }
 
 //____________________________________________________________________
@@ -516,7 +594,32 @@ void AliTRDcheckESD::Process(TH1 **h1, TGraphErrors *g)
     g->SetPointError(ip, 0., n2 ? eff*TMath::Sqrt(1./n1+1./n2) : 0.);
   }
 }  
+//________________________________________________________
+void AliTRDcheckESD::Process2D(TH2 * const h2, TGraphErrors **g)
+{
+  //
+  // Do the processing
+  //
 
+  Int_t n = 0;
+  if((n=g[0]->GetN())) for(;n--;) g[0]->RemovePoint(n);
+  if((n=g[1]->GetN())) for(;n--;) g[1]->RemovePoint(n);
+  TF1 f("fg", "gaus", -3.,3.);
+  for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
+    Double_t x = h2->GetXaxis()->GetBinCenter(ibin);
+    TH1D *h = h2->ProjectionY("py", ibin, ibin);
+    if(h->GetEntries()<100) continue;
+    //AdjustF1(h, f);
+
+    h->Fit(&f, "QN");
+    Int_t ip = g[0]->GetN();
+    g[0]->SetPoint(ip, x, f.GetParameter(1));
+    g[0]->SetPointError(ip, 0., f.GetParError(1));
+    g[1]->SetPoint(ip, x, f.GetParameter(2));
+    g[1]->SetPointError(ip, 0., f.GetParError(2));
+  }
+  return;
+}
 //____________________________________________________________________
 void AliTRDcheckESD::PrintStatus(ULong_t status)
 {

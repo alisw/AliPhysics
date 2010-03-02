@@ -160,11 +160,10 @@ void processESD(TNamed *otask)
   }
   esd->Terminate();
 
-  TGraphErrors *g = 0x0; Int_t ipic=0;
-  while((g=esd->GetGraph(ipic, ""))){
-    c->Clear(); g->Draw("apl");
+  for(Int_t ipic(0); ipic<esd->GetNRefFigures(); ipic++){
+    c->Clear(); 
+    if(!esd->GetRefFigure(ipic)) continue;
     c->SaveAs(Form("%s_Fig%02d.gif", esd->GetName(), ipic));
-    ipic++;
   }
   delete esd;
 }
