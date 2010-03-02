@@ -82,6 +82,7 @@ AliTRDcheckESD::AliTRDcheckESD():
   SetMC(kTRUE);
 }
 
+//____________________________________________________________________
 AliTRDcheckESD::AliTRDcheckESD(char* name):
   AliAnalysisTaskSE(name)
   ,fStatus(0)
@@ -95,6 +96,7 @@ AliTRDcheckESD::AliTRDcheckESD(char* name):
   // Default constructor
   //
   SetMC(kTRUE);
+  SetTitle("Check TRD @ ESD level");
   DefineOutput(1, TObjArray::Class());
 }
 

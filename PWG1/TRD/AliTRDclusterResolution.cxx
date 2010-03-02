@@ -216,6 +216,7 @@ AliTRDclusterResolution::AliTRDclusterResolution()
   ,fZ(0.)
 {
 // Constructor
+  SetNameTitle("ClRes", "Cluster Resolution Error Parameterization");
 }
 
 AliTRDclusterResolution::AliTRDclusterResolution(const char *name, const char *title)

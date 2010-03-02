@@ -12,8 +12,8 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   Int_t map = ParseOptions(trd);
   if(!(TSTBIT(map, kCheckDET))) return;
 
-  AliTRDcheckDET *task = 0x0;
-  mgr->AddTask(task = new AliTRDcheckDET("checkDET"));
+  AliTRDcheckDET *task(NULL);
+  mgr->AddTask(task = new AliTRDcheckDET((char*)"checkDET"));
   task->SetDebugLevel(0);
   task->SetMCdata(mgr->GetMCtruthEventHandler());
   
@@ -27,7 +27,7 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   // CALIBRATION
   if(!(TSTBIT(map, kCalibration))) return;
   AliTRDcalibration *ctask = 0x0;
-  mgr->AddTask(ctask = new AliTRDcalibration("calibration"));
+  mgr->AddTask(ctask = new AliTRDcalibration((char*)"calibration"));
   ctask->SetHisto2d(kTRUE);
   ctask->SetVector2d(kTRUE);
   ctask->SetVdriftLinear(kTRUE);

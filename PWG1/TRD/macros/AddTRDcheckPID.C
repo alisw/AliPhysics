@@ -12,11 +12,12 @@
 #include "PWG1/TRD/macros/helper.C"
 void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
+  AliLog::SetClassDebugLevel("AliTRDcheckPID", 5);  
   Int_t map = ParseOptions(trd);
   AliAnalysisDataContainer *ce(NULL);
   if(TSTBIT(map, kCheckPID)){
     AliTRDcheckPID *pid = 0x0;
-    mgr->AddTask(pid = new AliTRDcheckPID("checkPID"));
+    mgr->AddTask(pid = new AliTRDcheckPID((char*)"checkPID"));
     pid->SetDebugLevel(0);
     pid->SetMCdata(mgr->GetMCtruthEventHandler());
     mgr->ConnectInput (pid, 0, mgr->GetCommonInputContainer());
@@ -29,7 +30,6 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   }  
 
   if(TSTBIT(map, kPIDRefMaker)){
-      printf("PIDRef (2)\n");
     // TRD pid reference maker 
     AliTRDpidRefMaker *ref = new AliTRDpidRefMaker(); 
     mgr->AddTask(ref);

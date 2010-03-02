@@ -136,7 +136,8 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   chain->SetBranchStatus("ESDfriend*",1);
   chain->Lookup();
   chain->GetListOfFiles()->Print();
-  printf("\tFOUND %d ENTRIES\n", (Int_t)chain->GetEntries());
+  Int_t nfound=(Int_t)chain->GetEntries();
+  printf("\tENTRIES FOUND [%d] REQUESTED [%d]\n", nfound, nev>nfound?nfound:nev);
 
 
   // BUILD ANALYSIS MANAGER

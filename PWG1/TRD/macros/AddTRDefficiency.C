@@ -15,7 +15,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
 
   Bool_t mc = mgr->GetMCtruthEventHandler();
   AliTRDefficiency *eff = 0x0;
-  mgr->AddTask(eff = new AliTRDefficiency("TRDefficiency"));
+  mgr->AddTask(eff = new AliTRDefficiency((char*)"TRDefficiency"));
   eff->SetDebugLevel(0);
   mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  
   mgr->ConnectInput(eff,  1, ci[0]);
@@ -25,7 +25,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
   // TRD combined tracking efficiency
   AliTRDefficiencyMC *effMC = 0x0;
   if(mc && TSTBIT(map, kEfficiencyMC)){
-    mgr->AddTask(effMC = new AliTRDefficiencyMC("TRDefficiencyMC"));
+    mgr->AddTask(effMC = new AliTRDefficiencyMC((char*)"TRDefficiencyMC"));
     effMC->SetDebugLevel(0);
 
     // Create containers for input/output
@@ -38,7 +38,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
   if(!(TSTBIT(map, kMultiplicity))) return;
 
   AliTRDmultiplicity *mult = 0x0;
-  mgr->AddTask(mult = new AliTRDmultiplicity("TRDmultiplicity"));
+  mgr->AddTask(mult = new AliTRDmultiplicity((char*)"TRDmultiplicity"));
   mult->SetDebugLevel(0);
   mgr->ConnectInput(mult, 0, mgr->GetCommonInputContainer());  
   mgr->ConnectInput(mult, 1, ci[0]);

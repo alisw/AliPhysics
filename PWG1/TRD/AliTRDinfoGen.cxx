@@ -104,6 +104,7 @@ AliTRDinfoGen::AliTRDinfoGen()
   //
   // Default constructor
   //
+  SetNameTitle("infoGen", "MC-REC TRD-track list generator");
 }
 
 //____________________________________________________________________
@@ -166,8 +167,12 @@ void AliTRDinfoGen::UserExec(Option_t *){
   //
   // Run the Analysis
   //
+
+  printf("AliTRDinfoGen::UserExec : ESD[%p] MC[%p]\n", (void*)fESDev, (void*)fMCev);
+
   fESDev = dynamic_cast<AliESDEvent*>(InputEvent());
   fMCev = MCEvent();
+  AliInfo(Form("ESD[%p] MC[%p]", (void*)fESDev, (void*)fMCev));
 
   if(!fESDev){
     AliError("Failed retrieving ESD event");

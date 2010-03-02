@@ -107,7 +107,6 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
     if(!TSTBIT(fSteerTask, itask)) continue;
     new(ctask) TClass(fgkTRDtaskClassName[itask]);
     task = (AliAnalysisTask*)ctask->New();
-
     if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task);
     else processESD(task);
   }
