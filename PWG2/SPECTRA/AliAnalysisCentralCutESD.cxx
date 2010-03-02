@@ -129,11 +129,11 @@ Double_t priors=0;
 
 
 
-Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t fPartType){
+Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t reqPartType){
 // Determines the type of the particle
     Int_t charge;
 
-	if(fPartType < 0){
+	if(reqPartType < 0){
 		charge = -1;
 	}
 	else{
@@ -180,7 +180,7 @@ Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t fPartType){
 		return kFALSE;
     }
 
-    if((AliPID::ParticleCode(partType)) != fPartType){
+    if((AliPID::ParticleCode(partType)) != reqPartType){
 		return kFALSE;
     }
 
