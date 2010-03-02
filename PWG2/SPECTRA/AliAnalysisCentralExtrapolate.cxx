@@ -59,14 +59,15 @@ AliAnalysisCentralExtrapolate::AliAnalysisCentralExtrapolate(const char *name)
 {
 // Constructor
 
-//  printf("AliAnalysisCentralExtrapolate::AliAnalysisCentralExtrapolate(const char *name)\n");
+	Printf("Running %s!\n", name);
+
 	fInputList = new TList();
 	fResultsList = new TList();
-	
+
 }
-  
+
 AliAnalysisCentralExtrapolate::~AliAnalysisCentralExtrapolate() {
-	
+
 	if(fInputList) delete fInputList;
 	if(fResultsList) delete fResultsList;
 
@@ -365,7 +366,7 @@ Double_t func(Double_t r){
     Double_t rho = TMath::ATanH(betaR);
 
 
-	Double_t mt = sqrt(mass*mass + pt*pt);// !!! par[0]= pt !!!!!
+	mt = sqrt(mass*mass + pt*pt);// !!! par[0]= pt !!!!!
 
     Double_t argI0 = (pt*TMath::SinH(rho))/T; //T = par[1]
 	if(argI0>700.0) return 0.0; // !! floating point exception protection
