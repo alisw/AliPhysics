@@ -39,8 +39,13 @@ class AliHeader;
 class AlidNdPtHelper : public TObject
 {
   public:
-    enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS, kTPCSPDvtx, kTPCSPDvtxUpdate, kMCRec };
-    enum ParticleMode { kAllPart = 0, kMCPion, kMCKaon, kMCProton, kPlus, kMinus, kCosmics};
+    enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS, kTPCSPDvtx, kTPCSPDvtxUpdate, kTPCITSHybrid, kMCRec };
+    enum ParticleMode { kAllPart = 0, kMCPion, kMCKaon, kMCProton, kPlus, kMinus, kCosmic, kBackgroundTrack };
+
+    enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kCorrection, kSystematics };
+    enum TrackObject  { kInvalidTrackObject = -1, kAllTracks = 0, kAccTracks, kRecTracks, kMCTracks };
+    enum EventObject  { kInvalidEventObject = -1, kAllEvents = 0, kTriggeredEvents, kAccEvents, kRecEvents, kMCEvents };
+    enum CutSteps     { kCutSteps = 3 };
 
     static const AliESDVertex* GetVertex(AliESDEvent* const aEsd, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts,  AnalysisMode analysisMethod, Bool_t debug = kFALSE,Bool_t bRedoTPC = kFALSE, Bool_t bUseMeanVertex = kFALSE);
 
@@ -49,15 +54,8 @@ class AlidNdPtHelper : public TObject
     static Bool_t TestRecVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
     static Bool_t IsPrimaryParticle(AliStack *const stack, Int_t idx, ParticleMode particleMode);
-    //static Bool_t IsCosmicTrack(TObjArray *const allChargedTracks, AliESDtrack *const track, Int_t trackIdx, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts);
     static Bool_t IsCosmicTrack(AliESDtrack *const track1, AliESDtrack *const track2);
-    static void PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger);
     static Int_t ConvertPdgToPid(TParticle *const particle);
-
-    enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kCorrection, kSystematics };
-    enum TrackObject  { kInvalidTrackObject = -1, kAllTracks = 0, kAccTracks, kRecTracks, kMCTracks };
-    enum EventObject  { kInvalidEventObject = -1, kAllEvents = 0, kTriggeredEvents, kAccEvents, kRecEvents, kMCEvents };
-    enum CutSteps     { kCutSteps = 3 };
 
     static TObjArray *GetAllChargedTracks(AliESDEvent *const esdEvent, AnalysisMode analysisMode);
 
@@ -72,7 +70,9 @@ class AlidNdPtHelper : public TObject
     static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts);
 
     static AliESDtrack* GetTPCOnlyTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
+    static AliESDtrack* GetTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
 
+    static void PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger);
     static void PrintMCInfo(AliStack *const pStack, Int_t label);
 
     static TH1* ScaleByBinWidth(TH1 *const hist=0);
