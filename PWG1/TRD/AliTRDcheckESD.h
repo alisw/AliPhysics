@@ -36,7 +36,7 @@ public:
    ,kTRDmom      // TRD track momentum
    ,kPtRes       // Pt resolution @ vertex for TRD
    ,kNhistos = 4 // number of histograms
-   ,kNgraphs = 7 // number of graphs
+   ,kNrefs   = 4 // number of reference plots
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
@@ -50,14 +50,14 @@ public:
   virtual ~AliTRDcheckESD();
   
   void          UserCreateOutputObjects();
-  TGraph*       GetGraph(Int_t id, Option_t *opt="bc");
   Bool_t        GetRefFigure(Int_t ifig);
+  Int_t          GetNRefFigures() const  { return fNRefFigures; } 
   void          UserExec(Option_t *);
 
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
   Bool_t        IsLoad() const { return TESTBIT(fStatus, kLoad);}
   TObjArray*    Histos();
-  Bool_t        Load(const Char_t *fn, const Char_t *name=0x0);
+  Bool_t        Load(const Char_t *fn="TRD.Performance.root", const Char_t *name=NULL);
   void          SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
   Bool_t        PutTrendValue(const Char_t *name, Double_t val);
   void          Terminate(Option_t *);
@@ -65,19 +65,22 @@ public:
 private:
   static const Float_t fgkxTPC; // end radial position of TPC
   static const Float_t fgkxTOF; // start radial position of TOF
+  static const UChar_t fgkNgraph[kNrefs]; // number of graphs/ref plot
 
   AliTRDcheckESD(const AliTRDcheckESD&);
   AliTRDcheckESD& operator=(const AliTRDcheckESD&);
   Int_t         Pdg2Idx(Int_t pdg);
   void          Process(TH1 **h, TGraphErrors *g);
+  void          Process2D(TH2 * const h, TGraphErrors **g);
   void          PrintStatus(ULong_t s);
 
   Int_t            fStatus;            // bit mask for controlling the task
+  Int_t            fNRefFigures;       // number of current ref plots
   AliESDEvent      *fESD;              //! ESD event
   AliMCEvent       *fMC;               //! MC event
   TObjArray        *fHistos;           //! QA histos
   TObjArray        *fResults;          // QA graphs
-  static FILE *fgFile;                 //! trend file streamer
-  ClassDef(AliTRDcheckESD, 3)          // user oriented TRD analysis based on ESD-MC data
+  static FILE      *fgFile;            //! trend file streamer
+  ClassDef(AliTRDcheckESD, 4)          // user oriented TRD analysis based on ESD-MC data
 };
 #endif
