@@ -890,7 +890,7 @@ AliTOFPreprocessor::ProcessT0Fill()
 
   /* rebin until maximum bin has required minimum entries */
   Int_t maxBin = hT0Fill->GetMaximumBin();
-  Int_t maxBinContent = hT0Fill->GetBinContent(maxBin);
+  Float_t maxBinContent = hT0Fill->GetBinContent(maxBin);
   Float_t binWidth = hT0Fill->GetBinWidth(maxBin);
   while (maxBinContent < 400 && binWidth < 90.) {
     hT0Fill->Rebin(2);

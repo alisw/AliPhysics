@@ -177,7 +177,7 @@ Bool_t AliTOFLvHvDataPoints::ProcessData(TMap& aliasMap) {
   AliDebug(1,Form(" Number of LV dps = %d",fNumberOfLVdataPoints));
 
   if (!MergeHVmap()) return kFALSE;
-  if (fNumberOfLVdataPoints==0) return kFALSE;
+
   if (!MergeLVmap()) return kFALSE;
 
   if (!MergeMaps()) return kFALSE;
