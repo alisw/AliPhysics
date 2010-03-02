@@ -17,6 +17,7 @@
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
 #include "AliPhysicsSelection.h"
+#include "AlidNdPtBackgroundCuts.h"
 #include "AlidNdPt.h"
 
 using namespace std;
@@ -34,6 +35,7 @@ AlidNdPt::AlidNdPt(): TNamed()
 , fTriggerClass(0) 
 , fParticleMode(AlidNdPtHelper::kAllPart) 
 , fPhysicsSelection(0)
+, fdNdPtBackgroundCuts(0)
 {
   // default constructor
 }
@@ -49,6 +51,7 @@ AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
 , fTriggerClass(0) 
 , fParticleMode(AlidNdPtHelper::kAllPart) 
 , fPhysicsSelection(0)
+, fdNdPtBackgroundCuts(0)
 {
   // constructor
 }
@@ -60,4 +63,5 @@ AlidNdPt::~AlidNdPt() {
   if(fdNdPtAcceptanceCuts) delete fdNdPtAcceptanceCuts; fdNdPtAcceptanceCuts=NULL;
   if(fEsdTrackCuts) delete fEsdTrackCuts; fEsdTrackCuts=NULL;
   if(fPhysicsSelection) delete fPhysicsSelection; fPhysicsSelection=NULL;
+  if(fdNdPtBackgroundCuts) delete fdNdPtBackgroundCuts; fdNdPtBackgroundCuts=NULL;
 }

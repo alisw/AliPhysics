@@ -35,9 +35,11 @@
 #include "AliMCEvent.h"  
 #include "AliESDtrackCuts.h"  
 #include "AliLog.h" 
+#include "AliTracker.h" 
 
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
+#include "AlidNdPtBackgroundCuts.h"
 #include "AliPhysicsSelection.h"
 
 #include "AliPWG0Helper.h"
@@ -134,10 +136,10 @@ void AlidNdPtCutAnalysis::Init(){
   Int_t binsRecMCEventHist[4]={100,100,100,150};
   Double_t minRecMCEventHist[4]={-1.0*kFact,-1.0*kFact,-1.0*kFact,0.}; 
   Double_t maxRecMCEventHist[4]={1.0*kFact,1.0*kFact,1.0*kFact,150.}; 
-  fRecMCEventHist = new THnSparseF("fRecMCEventHist","mcXv-Xv:mcYv-Yv:mcZv-Zv:Mult",4,binsRecMCEventHist,minRecMCEventHist,maxRecMCEventHist);
-  fRecMCEventHist->GetAxis(0)->SetTitle("mcXv-Xv (cm)");
-  fRecMCEventHist->GetAxis(1)->SetTitle("mcYv-Yv (cm)");
-  fRecMCEventHist->GetAxis(2)->SetTitle("mcZv-Zv (cm)");
+  fRecMCEventHist = new THnSparseF("fRecMCEventHist","Xv-mcXv:Yv-mcYv:Zv-mcZv:Mult",4,binsRecMCEventHist,minRecMCEventHist,maxRecMCEventHist);
+  fRecMCEventHist->GetAxis(0)->SetTitle("Xv-mcXv (cm)");
+  fRecMCEventHist->GetAxis(1)->SetTitle("Yv-mcYv (cm)");
+  fRecMCEventHist->GetAxis(2)->SetTitle("Zv-mcZv (cm)");
   fRecMCEventHist->GetAxis(3)->SetTitle("Mult");
   fRecMCEventHist->Sumw2();
 
@@ -192,16 +194,16 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
     return;
   }
 
-  // get physics trigger selection 
-  AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
-  if(!trigSel) {
-    AliDebug(AliLog::kError, "cannot get trigSel");
-    return;
-  }
-
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
-  if(evtCuts->IsTriggerRequired())  {
+  if(evtCuts->IsTriggerRequired())  
+  {
+    AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
+    if(!trigSel) {
+      AliDebug(AliLog::kError, "cannot get trigSel");
+      return;
+    }
+
     if(IsUseMCInfo()) { 
       //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
       //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
@@ -209,7 +211,6 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
       isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
     else {
-      //isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
       isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
   }
@@ -265,8 +266,6 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   Bool_t bRedoTPCVertex = evtCuts->IsRedoTPCVertex();
   Bool_t bUseConstraints = evtCuts->IsUseBeamSpotConstraint();
   const AliESDVertex* vtxESD = AlidNdPtHelper::GetVertex(esdEvent,evtCuts,accCuts,esdTrackCuts,GetAnalysisMode(),kFALSE,bRedoTPCVertex,bUseConstraints); 
-  if(!vtxESD) return; 
-
   Bool_t isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, GetAnalysisMode(), kFALSE);
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex;
 
@@ -282,6 +281,33 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   Double_t vEventCount[2] = { isEventTriggered, isTrigAndVertex};
   fEventCount->Fill(vEventCount);
 
+  //
+  // cosmic background and splitted tracks
+  //
+  if(GetParticleMode() == AlidNdPtHelper::kBackgroundTrack) 
+  {
+    AlidNdPtBackgroundCuts *backCuts = GetBackgroundCuts(); 
+    if(!backCuts) return;
+
+    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
+    {
+      AliESDtrack *track1 = esdEvent->GetTrack(iTrack);
+      if(!track1) continue; 
+      if(track1->Charge()==0) continue; 
+
+      for (Int_t jTrack = iTrack+1; jTrack < esdEvent->GetNumberOfTracks(); jTrack++) 
+      {
+        AliESDtrack *track2 = esdEvent->GetTrack(jTrack);
+        if(!track2) continue; 
+        if(track2->Charge()==0) continue; 
+
+	//printf("track2->Charge() %d\n",track2->Charge());
+
+        backCuts->IsBackgroundTrack(track1, track2);
+      }
+    }
+  }
+
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
@@ -296,27 +322,52 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
       if(!track) continue;
 
       //
+      Bool_t isOK = kFALSE;
+      Double_t x[3]; track->GetXYZ(x);
+      Double_t b[3]; AliTracker::GetBxByBz(x,b);
+
+      //
+      // if TPC-ITS hybrid tracking (kTPCITSHybrid)
+      // replace track parameters with TPC-ony track parameters
+      //
+      if( GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybrid ) 
+      {
+        // Relate TPC-only tracks to SPD vertex
+        isOK = track->RelateToVertexTPCBxByBz(esdEvent->GetPrimaryVertexSPD(), b, kVeryBig);
+        if(!isOK) continue;
+
+	// replace esd track parameters with TPCinner
+        AliExternalTrackParam  *tpcTrack  = new AliExternalTrackParam(*(track->GetTPCInnerParam()));
+	if (!tpcTrack) return;
+        track->Set(tpcTrack->GetX(),tpcTrack->GetAlpha(),tpcTrack->GetParameter(),tpcTrack->GetCovariance());
+
+        if(tpcTrack) delete tpcTrack; 
+      } 
+
+      //
       if (GetAnalysisMode()==AlidNdPtHelper::kTPCSPDvtxUpdate) 
       {
         //
         // update track parameters
 	//
-           AliExternalTrackParam cParam;
-	   track->RelateToVertexTPC(esdEvent->GetPrimaryVertexSPD(),esdEvent->GetMagneticField(),kVeryBig,&cParam);
-	   track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
+        AliExternalTrackParam cParam;
+        isOK = track->RelateToVertexTPCBxByBz(esdEvent->GetPrimaryVertexSPD(), b, kVeryBig, &cParam);
+	if(!isOK) continue;
+
+	track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
       }
 
       FillHistograms(track, stack);
       multAll++;
     }
 
-  Double_t vRecEventHist[5] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),vtxESD->GetZRes(),multAll};
-  fRecEventHist->Fill(vRecEventHist);
+    Double_t vRecEventHist[5] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),vtxESD->GetZRes(),multAll};
+    fRecEventHist->Fill(vRecEventHist);
 
-  if(IsUseMCInfo()) {
-    Double_t vRecMCEventHist[5] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2],multAll};
-    fRecMCEventHist->Fill(vRecMCEventHist);
-  }
+    if(IsUseMCInfo()) {
+      Double_t vRecMCEventHist[5] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2],multAll};
+      fRecMCEventHist->Fill(vRecMCEventHist);
+    }
   }
 
   if(allChargedTracks) delete allChargedTracks; allChargedTracks = 0;
@@ -335,11 +386,13 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   Float_t pt = esdTrack->Pt();
   Float_t eta = esdTrack->Eta();
   Float_t phi = esdTrack->Phi();
-  Int_t nClust = esdTrack->GetTPCclusters(0);
+  //Int_t nClust = esdTrack->GetTPCclusters(0);
+  Int_t nClust = esdTrack->GetTPCNclsIter1();
   Int_t nFindableClust = esdTrack->GetTPCNclsF();
 
   Float_t chi2PerCluster = 0.;
-  if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2()/Float_t(nClust);
+  //if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2()/Float_t(nClust);
+  if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2Iter1()/Float_t(nClust);
 
   Float_t clustPerFindClust = 0.;
   if(nFindableClust>0.) clustPerFindClust = Float_t(nClust)/nFindableClust;
@@ -388,6 +441,8 @@ Long64_t AlidNdPtCutAnalysis::Merge(TCollection* const list)
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
 
+  //TList *collPhysSelection = new TList;
+
   // collection of generated histograms
   Int_t count=0;
   while((obj = iter->Next()) != 0) {
@@ -402,9 +457,17 @@ Long64_t AlidNdPtCutAnalysis::Merge(TCollection* const list)
 
     // track histo
     fRecMCTrackHist->Add(entry->fRecMCTrackHist);
+
+    // physics selection
+    //collPhysSelection->Add(entry->GetPhysicsTriggerSelection());
     
   count++;
   }
+
+  //AliPhysicsSelection *trigSelection = GetPhysicsTriggerSelection();
+  //trigSelection->Merge(collPhysSelection);
+
+  //if(collPhysSelection) delete collPhysSelection;
 
 return count;
 }
