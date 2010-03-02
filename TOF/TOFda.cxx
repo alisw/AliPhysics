@@ -34,8 +34,8 @@ Event types used: PHYSICS_EVENT
 #include "AliTOFHitDataBuffer.h"
 #include "AliTOFDaConfigHandler.h"
 #include "AliTOFHitField.h"
-#include "AliTOFcalibHisto.h"
 #include "AliLog.h"
+#include "AliTOFGeometry.h"
 
 //ROOT
 #include "TFile.h"
@@ -109,7 +109,7 @@ main(int argc, char **argv)
   Int_t nChHits[nChannels];
   Bool_t noiseFlag[nChannels];
   /* variables */
-  Int_t nhits, ddl, slot, trm, chain, tdc, channel, indexEO, index, timebin, totbin, deltaBC, l0l1latency;
+  Int_t nhits, ddl, slot, trm, chain, tdc, channel, index, timebin, totbin, deltaBC, l0l1latency, det[5], dummy;
   Float_t noiseHitThreshold;
 
   /*
@@ -128,9 +128,6 @@ main(int argc, char **argv)
   AliTOFRawStream *rawStream = new AliTOFRawStream();
   AliTOFHitDataBuffer *pdb = NULL;
   AliTOFHitData *hit = NULL;
-  /* calib histo */
-  AliTOFcalibHisto calibHisto;
-  calibHisto.LoadCalibHisto();
   
   /* open output file */
   TFile *fileOut = new TFile(FILE_HITS, "RECREATE"); 
@@ -252,9 +249,18 @@ main(int argc, char **argv)
 	chain = hit->GetChain();
 	tdc = hit->GetTDC();
 	channel = hit->GetChan();
-	indexEO = calibHisto.GetIndexEO(ddl, trm, chain, tdc, channel);
-	index = calibHisto.GetCalibMap(AliTOFcalibHisto::kIndex, indexEO);
-	if (index < 0) continue;
+	/* get index */
+	rawStream->EquipmentId2VolumeId(ddl, slot, chain, tdc, channel, det);
+	dummy = det[4];
+	det[4] = det[3];
+	det[3] = dummy;
+	/* check valid index */
+	if (det[0] < 0 || det[0] > 17 ||
+	    det[1] < 0 || det[1] > 5 ||
+	    det[2] < 0 || det[2] > 18 ||
+	    det[3] < 0 || det[3] > 1 ||
+	    det[4] < 0 || det[4] > 47) continue;
+	index = AliTOFGeometry::GetIndex(det);
 	/* check noise flag */
 	if (noiseFlag[index]) continue;
 	/* increment number of channel hits and total hits */
