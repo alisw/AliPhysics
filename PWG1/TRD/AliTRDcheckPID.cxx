@@ -103,8 +103,8 @@ AliTRDcheckPID::AliTRDcheckPID(char* name )
   fUtil = new AliTRDpidUtil();
   InitFunctorList();
 
-  DefineOutput(2, TObjArray::Class());
-  
+  DefineInput(2, TObjArray::Class()); // v0 list
+  DefineOutput(2, TObjArray::Class()); // pid info list
 }
 
 

@@ -202,10 +202,10 @@ const Float_t AliTRDclusterResolution::fgkTimeBinLength = 1./ AliTRDCommonParam:
 //_______________________________________________________
 AliTRDclusterResolution::AliTRDclusterResolution()
   : AliTRDrecoTask()
-  ,fCanvas(0x0)
-  ,fInfo(0x0)
-  ,fResults(0x0)
-  ,fAt(0x0)
+  ,fCanvas(NULL)
+  ,fInfo(NULL)
+  ,fResults(NULL)
+  ,fAt(NULL)
   ,fStatus(0)
   ,fDet(-1)
   ,fExB(0.)
@@ -216,11 +216,12 @@ AliTRDclusterResolution::AliTRDclusterResolution()
   ,fZ(0.)
 {
 // Constructor
-  SetNameTitle("ClRes", "Cluster Resolution Error Parameterization");
+  SetNameTitle("ClErrCalib", "Cluster Error Parameterization");
 }
 
-AliTRDclusterResolution::AliTRDclusterResolution(const char *name, const char *title)
-  : AliTRDrecoTask(name, title)
+//_______________________________________________________
+AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
+  : AliTRDrecoTask(name, "Cluster Error Parameterization")
   ,fCanvas(NULL)
   ,fInfo(NULL)
   ,fResults(NULL)
@@ -263,10 +264,11 @@ AliTRDclusterResolution::~AliTRDclusterResolution()
 }
 
 //_______________________________________________________
-void AliTRDclusterResolution::ConnectInputData(Option_t *)
+void AliTRDclusterResolution::ConnectInputData(Option_t *opt)
 {
-    AliAnalysisTaskSE::ConnectInputData();
-    fInfo = dynamic_cast<TObjArray *>(GetInputData(0));
+  AliAnalysisTaskSE::ConnectInputData(opt);
+  // overwrite settings from AliTRDrecoTask !!!
+  fInfo = dynamic_cast<TObjArray *>(GetInputData(1));
 }
 
 //_______________________________________________________

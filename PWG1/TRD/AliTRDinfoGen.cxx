@@ -34,6 +34,7 @@
 #include <TClonesArray.h>
 #include <TObjArray.h>
 #include <TObject.h>
+#include <TString.h>
 #include <TH1F.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -73,6 +74,7 @@
 #include "info/AliTRDeventInfo.h"
 #include "info/AliTRDv0Info.h"
 #include "info/AliTRDeventCuts.h"
+#include "macros/AliTRDperformanceTrain.h"
 
 ClassImp(AliTRDinfoGen)
 
@@ -90,16 +92,20 @@ const Float_t AliTRDinfoGen::fgkEta       = 0.9;
 
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen()
-  :AliTRDrecoTask()
-  ,fEvTrigger("CINT1B-ABCE-NOPF-ALL")
+  :AliAnalysisTaskSE()
+  ,fEvTrigger(NULL)
   ,fESDev(NULL)
   ,fMCev(NULL)
-  ,fTrackInfo(NULL)
-  ,fEventInfo(NULL)
-  ,fV0container(NULL)
-  ,fV0Info(NULL)
   ,fEventCut(NULL)
   ,fTrackCut(NULL)
+  ,fTrackInfo(NULL)
+  ,fEventInfo(NULL)
+  ,fV0Info(NULL)
+  ,fTracksBarrel(NULL)
+  ,fTracksSA(NULL)
+  ,fTracksKink(NULL)
+  ,fV0List(NULL)
+  ,fDebugStream(NULL)
 {
   //
   // Default constructor
@@ -109,41 +115,58 @@ AliTRDinfoGen::AliTRDinfoGen()
 
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen(char* name)
-  :AliTRDrecoTask(name)
-  ,fEvTrigger("")
+  :AliAnalysisTaskSE(name)
+  ,fEvTrigger(NULL)
   ,fESDev(NULL)
   ,fMCev(NULL)
-  ,fTrackInfo(NULL)
-  ,fEventInfo(NULL)
-  ,fV0container(NULL)
-  ,fV0Info(NULL)
   ,fEventCut(NULL)
   ,fTrackCut(NULL)
+  ,fTrackInfo(NULL)
+  ,fEventInfo(NULL)
+  ,fV0Info(NULL)
+  ,fTracksBarrel(NULL)
+  ,fTracksSA(NULL)
+  ,fTracksKink(NULL)
+  ,fV0List(NULL)
+  ,fDebugStream(NULL)
 {
   //
   // Default constructor
   //
-    DefineOutput(2, AliTRDeventInfo::Class());   // -> TRDeventInfo
-    DefineOutput(3, TObjArray::Class());         // -> TObjArray
+  SetTitle("MC-REC TRD-track list generator");
+  DefineOutput(kTracksBarrel, TObjArray::Class());
+  DefineOutput(kTracksSA, TObjArray::Class());
+  DefineOutput(kTracksKink, TObjArray::Class());
+  DefineOutput(kEventInfo, AliTRDeventInfo::Class());
+  DefineOutput(kV0List, TObjArray::Class());
 }
 
 //____________________________________________________________________
 AliTRDinfoGen::~AliTRDinfoGen()
 {
 // Destructor
-
+  
+  if(fEvTrigger) delete fEvTrigger;
   if(fTrackCut) delete fTrackCut;
   if(fEventCut) delete fEventCut;
   if(fTrackInfo) delete fTrackInfo; fTrackInfo = NULL;
   if(fEventInfo) delete fEventInfo; fEventInfo = NULL;
   if(fV0Info) delete fV0Info; fV0Info = NULL;
-  if(fContainer){ 
-    fContainer->Delete(); delete fContainer;
-    fContainer = NULL;
+  if(fTracksBarrel){ 
+    fTracksBarrel->Delete(); delete fTracksBarrel;
+    fTracksBarrel = NULL;
   }
-  if(fV0container){ 
-    fV0container->Delete(); delete fV0container;
-    fV0container = NULL;
+  if(fTracksSA){ 
+    fTracksSA->Delete(); delete fTracksSA;
+    fTracksSA = NULL;
+  }
+  if(fTracksKink){ 
+    fTracksKink->Delete(); delete fTracksKink;
+    fTracksKink = NULL;
+  }
+  if(fV0List){ 
+    fV0List->Delete(); delete fV0List;
+    fV0List = NULL;
   }
 }
 
@@ -157,10 +180,10 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fTrackInfo = new AliTRDtrackInfo();
   fEventInfo = new AliTRDeventInfo();
   fV0Info    = new AliTRDv0Info();
-  fContainer = new TObjArray(1000);
-  fContainer->SetOwner(kTRUE);
-  fV0container = new TObjArray(50);
-  fV0container->SetOwner(kTRUE);
+  fTracksBarrel = new TObjArray(200); fTracksBarrel->SetOwner(kTRUE);
+  fTracksSA = new TObjArray(20); fTracksSA->SetOwner(kTRUE);
+  fTracksKink = new TObjArray(20); fTracksKink->SetOwner(kTRUE);
+  fV0List = new TObjArray(10); fV0List->SetOwner(kTRUE);
 }
 
 //____________________________________________________________________
@@ -168,11 +191,9 @@ void AliTRDinfoGen::UserExec(Option_t *){
   //
   // Run the Analysis
   //
-  printf("AliTRDinfoGen::UserExec : ESD[%p] MC[%p]\n", (void*)fESDev, (void*)fMCev);
 
   fESDev = dynamic_cast<AliESDEvent*>(InputEvent());
   fMCev = MCEvent();
-  AliInfo(Form("ESD[%p] MC[%p]", (void*)fESDev, (void*)fMCev));
 
   if(!fESDev){
     AliError("Failed retrieving ESD event");
@@ -180,10 +201,9 @@ void AliTRDinfoGen::UserExec(Option_t *){
   }
 
   // event selection : trigger cut
-  if(UseLocalEvSelection() &&
-     fEvTrigger.Data()[0]!='\0'){ 
+  if(UseLocalEvSelection() && fEvTrigger){ 
     Bool_t kTRIGGERED(kFALSE);
-    const TObjArray *trig = fEvTrigger.Tokenize(" ");
+    const TObjArray *trig = fEvTrigger->Tokenize(" ");
     for(Int_t itrig=trig->GetEntriesFast(); itrig--;){
       const Char_t *trigClass(((TObjString*)(*trig)[itrig])->GetName());
       if(fESDev->IsTriggerClassFired(trigClass)) {
@@ -220,8 +240,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
     return;
   }
 
-  fContainer->Delete();
-  fV0container->Delete();
+  fTracksBarrel->Delete();
+  fTracksSA->Delete();
+  fTracksKink->Delete();
+  fV0List->Delete();
   fEventInfo->Delete("");
   new(fEventInfo)AliTRDeventInfo(fESDev->GetHeader(), const_cast<AliESDRun *>(fESDev->GetESDRun()));
   
@@ -250,20 +272,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
     esdTrack = fESDev->GetTrack(itrk);
     AliDebug(3, Form("\n%3d ITS[%d] TPC[%d] TRD[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2)));
-
-    // Track Selection
-    if(UseLocalTrkSelection()){
-      if(esdTrack->Pt() < fgkPt) continue;
-      if(TMath::Abs(esdTrack->Eta()) > fgkEta) continue;
-      if(esdTrack->GetTPCNcls() < fgkNclTPC) continue;
-      Float_t par[2], cov[3];
-      esdTrack->GetImpactParameters(par, cov);
-      if(IsCollision()){ // cuts on DCA
-        if(TMath::Abs(par[0]) > fgkTrkDCAxy) continue;
-        if(TMath::Abs(par[1]) > fgkTrkDCAz) continue;
-      }
-    }
-    if(fTrackCut && !fTrackCut->IsSelected(esdTrack)) continue;
 
     if(esdTrack->GetStatus()&AliESDtrack::kTPCout) nTPC++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDout) nTRDout++;
@@ -372,8 +380,26 @@ void AliTRDinfoGen::UserExec(Option_t *){
       << "\n";
       info.Delete("");
     }
-  
-    fContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
+
+    ULong_t status(esdTrack->GetStatus());
+    if((status&AliESDtrack::kTPCout)){
+      if(!esdTrack->GetKinkIndex(0)){ // Barrel  Track Selection
+        Bool_t selected(kTRUE);
+        if(UseLocalTrkSelection()){
+          if(esdTrack->Pt() < fgkPt) selected = kFALSE;
+          if(TMath::Abs(esdTrack->Eta()) > fgkEta) selected = kFALSE;
+          if(esdTrack->GetTPCNcls() < fgkNclTPC) selected = kFALSE;
+          Float_t par[2], cov[3];
+          esdTrack->GetImpactParameters(par, cov);
+          if(IsCollision()){ // cuts on DCA
+            if(TMath::Abs(par[0]) > fgkTrkDCAxy) selected = kFALSE;
+            if(TMath::Abs(par[1]) > fgkTrkDCAz) selected = kFALSE;
+          }
+        }
+        if(fTrackCut && !fTrackCut->IsSelected(esdTrack)) selected = kFALSE;
+        if(selected) fTracksBarrel->Add(new AliTRDtrackInfo(*fTrackInfo));
+      } else fTracksKink->Add(new AliTRDtrackInfo(*fTrackInfo));
+    } else if((status&AliESDtrack::kTRDout) && !(status&AliESDtrack::kTRDin)) fTracksSA->Add(new AliTRDtrackInfo(*fTrackInfo));
     fTrackInfo->Delete("");
   }
 
@@ -382,7 +408,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
 //   AliESDv0 *v0 = NULL;
 //   for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s(); iv0++){
 //     if(!(v0 = fESD->GetV0(iv0))) continue;
-//     fV0container->Add(new AliTRDv0Info(v0));
+//     fV0List->Add(new AliTRDv0Info(v0));
 //   }
 
   // Insert also MC tracks which are passing TRD where the track is not reconstructed
@@ -425,13 +451,34 @@ void AliTRDinfoGen::UserExec(Option_t *){
         info.Delete("");
       }
       AliDebug(3, Form("Add MC track @ label[%d] nTRDrefs[%d].", itk, nRefsTRD));
-      fContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
+      fTracksBarrel->Add(new AliTRDtrackInfo(*fTrackInfo));
       fTrackInfo->Delete("");
     }
     delete[] trackMap;
   }
-  PostData(1, fContainer);
-  PostData(2, fEventInfo);
-  PostData(3, fV0container);
+  PostData(kTracksBarrel, fTracksBarrel);
+  PostData(kTracksSA, fTracksSA);
+  PostData(kTracksKink, fTracksKink);
+  PostData(kEventInfo, fEventInfo);
+  PostData(kV0List, fV0List);
 }
+
+//____________________________________________________________________
+void AliTRDinfoGen::SetTrigger(const Char_t *trigger)
+{
+  if(!fEvTrigger) fEvTrigger = new TString(trigger);
+  else (*fEvTrigger) = trigger;
+}
+
+//____________________________________________________________________
+TTreeSRedirector* AliTRDinfoGen::DebugStream()
+{
+  if(!fDebugStream){
+    TDirectory *savedir = gDirectory;
+    fDebugStream = new TTreeSRedirector("TRD.DebugInfoGen.root");
+    savedir->cd();
+  }
+  return fDebugStream;
+}
+
 

@@ -49,21 +49,43 @@
 
 ClassImp(AliTRDpidRefMakerNN)
 
-  //________________________________________________________________________
+//________________________________________________________________________
   AliTRDpidRefMakerNN::AliTRDpidRefMakerNN() 
-    :AliTRDpidRefMaker("PIDrefMakerNN", "PID(NN) Reference Maker")
-    ,fNet(0x0)
-    ,fTrainMomBin(kAll)
-    ,fEpochs(1000)
-    ,fMinTrain(100)
-    ,fDate(0)
-    ,fDoTraining(0)
-    ,fContinueTraining(0)
-    ,fTrainPath(0x0)
-    ,fScale(0)
-    ,fLy(0)
-    ,fNtrkl(0)
-    ,fRef(0x0)
+  :AliTRDpidRefMaker()
+  ,fNet(NULL)
+  ,fTrainMomBin(kAll)
+  ,fEpochs(1000)
+  ,fMinTrain(100)
+  ,fDate(0)
+  ,fDoTraining(0)
+  ,fContinueTraining(0)
+  ,fTrainPath(NULL)
+  ,fScale(0)
+  ,fLy(0)
+  ,fNtrkl(0)
+  ,fRef(NULL)
+{
+  //
+  // Default constructor
+  //
+  SetNameTitle("refMakerNN", "PID(NN) Reference Maker");
+}
+
+//________________________________________________________________________
+  AliTRDpidRefMakerNN::AliTRDpidRefMakerNN(const char *name) 
+  :AliTRDpidRefMaker(name, "PID(NN) Reference Maker")
+  ,fNet(NULL)
+  ,fTrainMomBin(kAll)
+  ,fEpochs(1000)
+  ,fMinTrain(100)
+  ,fDate(0)
+  ,fDoTraining(0)
+  ,fContinueTraining(0)
+  ,fTrainPath(NULL)
+  ,fScale(0)
+  ,fLy(0)
+  ,fNtrkl(0)
+  ,fRef(NULL)
 {
   //
   // Default constructor
@@ -77,9 +99,6 @@ ClassImp(AliTRDpidRefMakerNN)
   SetScaledEdx(Float_t(AliTRDCalPIDNN::kMLPscale));
   TDatime datime;
   fDate = datime.GetDate();
-
-  DefineInput(1, TObjArray::Class());
-  DefineOutput(1, TTree::Class());
 }
 
 
@@ -90,12 +109,12 @@ AliTRDpidRefMakerNN::~AliTRDpidRefMakerNN()
 
 
 //________________________________________________________________________
-void AliTRDpidRefMakerNN::CreateOutputObjects()
+void AliTRDpidRefMakerNN::MakeTrainTestTrees()
 {
   // Create output file and tree
   // Called once
 
-  fRef = new TFile(Form("TRD.Calib%s.root", GetName()), "RECREATE");
+  fRef = new TFile("TRD.CalibPIDrefMakerNN.root", "RECREATE");
   for(Int_t ip = 0; ip < AliTRDCalPID::kNMom; ip++){
     fTrainData[ip] = new TTree(Form("fTrainData_%d", ip), Form("NN Reference Data for MomBin %d", ip));
     fTrainData[ip] -> Branch("fdEdx", fdEdx, Form("fdEdx[%d]/F", AliTRDpidUtil::kNNslices));
@@ -106,7 +125,6 @@ void AliTRDpidRefMakerNN::CreateOutputObjects()
     fTrain[ip] = new TEventList(Form("fTrainMom%d", ip), Form("Training list for momentum intervall %d", ip));
     fTest[ip] = new TEventList(Form("fTestMom%d", ip), Form("Test list for momentum intervall %d", ip));
   }
-
 }
 
 
@@ -122,13 +140,13 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
     AliError("Calibration file not available");
     return kFALSE;
   }
-  fData = (TTree*)fCalib->Get("PIDrefMaker");
+  fData = (TTree*)fCalib->Get("refMakerNN");
   if (!fData) {
     AliError("Calibration data not available");
     return kFALSE;
   }
-  TObjArray *o = 0x0;
-  if(!(o = (TObjArray*)fCalib->Get(Form("MoniPIDrefMaker")))){
+  TObjArray *o = NULL;
+  if(!(o = (TObjArray*)fCalib->Get("MonitorNN"))) {
     AliWarning("Missing monitoring container.");
     return kFALSE;
   }
@@ -136,13 +154,13 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
 
   
   if (!fRef) {
-    AliDebug(2, Form("Loading file %s", Form("TRD.Calib%s.root", GetName())));
-    LoadFile(Form("TRD.Calib%s.root", GetName()));
+    AliDebug(2, "Loading file TRD.CalibPIDrefMakerNN.root");
+    LoadFile("TRD.CalibPIDrefMakerNN.root");
   }
   else AliDebug(2, "file available");
 
   if (!fRef) {
-    CreateOutputObjects();
+    MakeTrainTestTrees();
   
     // Convert the CaliPIDrefMaker tree to 11 (different momentum bin) trees for NN training
 

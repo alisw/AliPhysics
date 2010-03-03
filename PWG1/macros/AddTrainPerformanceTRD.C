@@ -73,7 +73,6 @@
 
 #include "../TRD/macros/AliTRDperformanceTrain.h"
 
-
 Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -83,7 +82,8 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL")
   }
 
   // TRD data containers
-  AliAnalysisDataContainer *ci[] = {0x0, 0x0, 0x0};
+  AliAnalysisDataContainer *ci[kNOutSlots];
+  AliAnalysisDataContainer *ce[2];
 
   // initialize TRD settings
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
@@ -98,15 +98,40 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL")
     case kCheckESD:
       AddTRDcheckESD(mgr); break;
     case kInfoGen:
-      AddTRDinfoGen(mgr, trd, 0x0, ci); break;
+      AddTRDinfoGen(mgr, trd, NULL, ci); break;
     case kCheckDET:
-      AddTRDcheckDET(mgr, trd, ci); break;
+      // map slots
+      ce[1]=ci[kEventInfo];
+      ce[0]=ci[kTracksBarrel];
+      AddTRDcheckDET(mgr, trd, ce);
+//       ce[0]=ci[kTracksSA];
+//       AddTRDcheckDET(mgr, trd, ce);
+//       ce[0]=ci[kTracksKink];
+//       AddTRDcheckDET(mgr, trd, ce);
+       break;
     case kEfficiency:
-      AddTRDefficiency(mgr, trd, ci); break;
+      // map slots
+      ce[0]=ci[kTracksBarrel];
+      AddTRDefficiency(mgr, trd, ce);
+//       ce[0]=ci[kTracksSA];
+//       AddTRDefficiency(mgr, trd, ce);
+//       ce[0]=ci[kTracksKink];
+//       AddTRDefficiency(mgr, trd, ce);
+      break;
     case kResolution:
-      AddTRDresolution(mgr, trd, ci); break;
+      // map slots
+      ce[0]=ci[kTracksBarrel];
+      AddTRDresolution(mgr, trd, ce);
+      ce[0]=ci[kTracksSA];
+      AddTRDresolution(mgr, trd, ce, "SA");
+//       ce[0]=ci[kTracksKink];
+//       AddTRDresolution(mgr, trd, ce, "K"); 
+      break;
     case kCheckPID:
-      AddTRDcheckPID(mgr, trd, ci); break;
+      // map slots
+      ce[1]=ci[kV0List];
+      ce[0]=ci[kTracksBarrel];
+      AddTRDcheckPID(mgr, trd, ce); break;
     default:
       Warning("AddTrainPerformanceTRD()", Form("No performance task registered at slot %d.", it)); 
     }

@@ -1,4 +1,5 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
+#include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "PWG1/TRD/AliTRDcheckESD.h"
@@ -7,10 +8,11 @@
 void AddTRDcheckESD(AliAnalysisManager *mgr)
 {
   AliTRDcheckESD *checkESD = new AliTRDcheckESD((char*)"checkESD");
-  Bool_t hasMCtruth = (mgr->GetMCtruthEventHandler() != 0);
-  
-  checkESD->SetMC(hasMCtruth);
   mgr->AddTask(checkESD);
+  checkESD->SetMC(mgr->GetMCtruthEventHandler());
+  checkESD->SetDebugLevel(0);
+  //AliLog::SetClassDebugLevel("AliTRDcheckESD", 5);
+
   mgr->ConnectInput(checkESD,  0, mgr->GetCommonInputContainer());  
   mgr->ConnectOutput(checkESD, 1, mgr->CreateContainer(checkESD->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
 }

@@ -50,6 +50,13 @@ public:
     kVerbose  = 0
     ,kVisual  = 1
   };
+  enum ETRDresolutionOutSlots {
+     kClToTrk    = 2
+    ,kTrkltToTrk = 3
+    ,kClToMC     = 4
+    ,kTrkltToMC  = 5
+    ,kNOutSlots  = 4
+  };
 
   AliTRDresolution();
   AliTRDresolution(char* name);

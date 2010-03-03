@@ -7,16 +7,12 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-//  Reconstruction QA                                                     //
+//  TRD Performance tender wagon                                          //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALITRDRECOTASK_H
-#include "AliTRDrecoTask.h"
-#endif
-
-#ifndef ROOT_TString
-#include "TString.h"
+#ifndef ALIANALYSISTASKSE_H
+#include "AliAnalysisTaskSE.h"
 #endif
 
 class AliESDEvent;
@@ -28,45 +24,48 @@ class AliTRDv0Info;
 class AliTRDeventCuts;
 class AliESDtrackCuts;
 class TObjArray;
+class TString;
 class TTreeSRedirector;
-class AliTRDinfoGen : public AliTRDrecoTask{
+class AliTRDinfoGen : public AliAnalysisTaskSE
+{
 public:
   enum AliTRDinfoGenSteeringBits{
-    kUseLocalEvSelection  = BIT(21)
-   ,kUseLocalTrkSelection = BIT(22)
-   ,kCollision            = BIT(23)
+    kMCdata               = BIT(18)
+   ,kUseLocalEvSelection  = BIT(19)
+   ,kUseLocalTrkSelection = BIT(20)
+   ,kCollision            = BIT(21)
   };
+
   AliTRDinfoGen();
   AliTRDinfoGen(char* name);
   virtual ~AliTRDinfoGen();
   
-
-  void    UserCreateOutputObjects();
-  void    UserExec(Option_t *);
   void    ConnectInputData(Option_t *opt) {AliAnalysisTaskSE::ConnectInputData(opt);}
   static Float_t GetTPCx() { return fgkTPC;}
   static Float_t GetTOFx() { return fgkTOF;}
 
+  Bool_t  HasMCdata() const       { return TestBit(kMCdata);};
   Bool_t  IsCollision() const {return TestBit(kCollision);}
-  Bool_t  Load(const Char_t */*filename = "TRD.Performance.root"*/) {return kTRUE;}
-  Bool_t  PostProcess() {return kTRUE;}
 
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
   void    SetLocalEvSelection(AliTRDeventCuts */*cut*/){;} 
   void    SetLocalEvSelection(Bool_t use=kTRUE) {SetBit(kUseLocalEvSelection, use);}
   void    SetLocalTrkSelection(AliESDtrackCuts */*cut*/){;} 
   void    SetLocalTrkSelection(Bool_t use=kTRUE) {SetBit(kUseLocalTrkSelection, use);}
-  void    SetTrigger(const Char_t *trigger) {fEvTrigger = trigger;}
+  void    SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
+  void    SetTrigger(const Char_t *trigger);
 
   Bool_t  UseLocalEvSelection() const {return TestBit(kUseLocalEvSelection);}
   Bool_t  UseLocalTrkSelection() const {return TestBit(kUseLocalTrkSelection);}
+  void    UserCreateOutputObjects();
+  void    UserExec(Option_t *);
 
 private:
   // rough radial limits for TRD
   static const Float_t fgkTPC;      // end TPC
   static const Float_t fgkTOF;      // begin TOF
   // Trigger selection
-  TString              fEvTrigger;  // list of trigger classes separated by space
+  TString              *fEvTrigger; // list of trigger classes separated by space
   // Vertex selection
   static const Float_t fgkEvVertexZ;// cm
   static const Int_t   fgkEvVertexN;// cm
@@ -79,17 +78,22 @@ private:
   
   AliTRDinfoGen(const AliTRDinfoGen&);
   AliTRDinfoGen& operator=(const AliTRDinfoGen&);
+  TTreeSRedirector* DebugStream();
 
   AliESDEvent      *fESDev;          //! ESD event
   AliMCEvent       *fMCev;           //! MC event
-  AliTRDtrackInfo  *fTrackInfo;      //! Track info
-  AliTRDeventInfo  *fEventInfo;	     //! Event info
-  TObjArray        *fV0container;    //! V0 container
-  AliTRDv0Info     *fV0Info;	       //! V0 info
   // event/track cuts OO - to be used
   AliTRDeventCuts  *fEventCut;       // event cut
   AliESDtrackCuts  *fTrackCut;       // track cut
+  AliTRDtrackInfo  *fTrackInfo;      //! Track info
+  AliTRDeventInfo  *fEventInfo;	     //! Event info
+  AliTRDv0Info     *fV0Info;         //! V0 info
+  TObjArray        *fTracksBarrel;   //! Array of barrel tracks
+  TObjArray        *fTracksSA;       //! Array of stand alone tracks
+  TObjArray        *fTracksKink;     //! Array of kink tracks
+  TObjArray        *fV0List;         //! V0 container
+  TTreeSRedirector *fDebugStream;    //! debug stream
 
-  ClassDef(AliTRDinfoGen, 4)         // entry to TRD analysis train
+  ClassDef(AliTRDinfoGen, 5)         // entry to TRD analysis train
 };
 #endif

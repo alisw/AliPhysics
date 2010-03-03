@@ -34,16 +34,17 @@ public:
    ,kMinBuckets = 100    // minimum number of buckets [lambda(6)*alpha(1.5)*regions(50)]
   };
   AliTRDpidRefMakerLQ();
+  AliTRDpidRefMakerLQ(const char *n);
   ~AliTRDpidRefMakerLQ();
 
-  void        UserCreateOutputObjects();
-  void        UserExec(Option_t *opt);
   TObject*    GetOCDBEntry(Option_t *opt);
   Bool_t      GetRefFigure(Int_t ifig);
   Bool_t      HasOnlineMonitor() const {return kTRUE;}
   TObjArray*  Histos();
   Bool_t      Load(const Char_t *filename = "TRD.CalibPIDrefMaker.root");
   Bool_t      PostProcess();
+  void        UserCreateOutputObjects();
+  void        UserExec(Option_t *opt);
 
 private:
   AliTRDpidRefMakerLQ(const AliTRDpidRefMakerLQ &ref);

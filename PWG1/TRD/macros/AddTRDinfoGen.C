@@ -13,10 +13,10 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   Int_t map = ParseOptions(trd);
   if(!(TSTBIT(map, kInfoGen))) return;
   
-  AliLog::SetClassDebugLevel("AliTRDinfoGen", 5);  
   AliTRDinfoGen *info(NULL);
   mgr->AddTask(info = new AliTRDinfoGen((char*)"genInfo"));
   info->SetDebugLevel(0);
+  //AliLog::SetClassDebugLevel("AliTRDinfoGen", 5);
   info->SetMCdata(mgr->GetMCtruthEventHandler());
 
   // settings for collisions
@@ -29,14 +29,14 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
     info->SetLocalEvSelection();
     info->SetLocalTrkSelection();
   }
-  co[0] = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-  co[1] = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
-  co[2] = mgr->CreateContainer("v0Info",    TObjArray::Class(),       AliAnalysisManager::kExchangeContainer);
-
+  
+  // Connect IO slots
   mgr->ConnectInput (info, 0, mgr->GetCommonInputContainer());
-
-  mgr->ConnectOutput(info, 1, co[0]);
-  mgr->ConnectOutput(info, 2, co[1]);
-  mgr->ConnectOutput(info, 3, co[2]);
+  co[kEventInfo] = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
+  co[kTracksBarrel] = mgr->CreateContainer("tracksBarrel", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[kTracksSA] = mgr->CreateContainer("tracksSA", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[kTracksKink] = mgr->CreateContainer("tracksKink", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[kV0List] = mgr->CreateContainer("v0List", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  for(Int_t ios(1);ios<kNOutSlots;ios++) mgr->ConnectOutput(info, ios, co[ios]);
 }
 

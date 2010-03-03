@@ -9,7 +9,9 @@
 //
 //////////////////////////////////////////////////
 
+#ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
+#endif
 
 #ifndef ALITRDTRACKINFO_H
 #include "info/AliTRDtrackInfo.h"
@@ -61,7 +63,6 @@ public:
   virtual void   Terminate(Option_t *);
 
 protected:
-  AliTRDrecoTask(const char *name);
   static TTreeSRedirector* DebugStream() { return fgDebugStream;}
   void           InitFunctorList();
   void           Adjust(TF1 *f, TH1 * const h);
