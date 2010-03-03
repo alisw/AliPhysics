@@ -38,7 +38,8 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
       fStandalone(o.fStandalone),
       fEsdVertex(o.fEsdVertex),
       fStatus(o.fStatus),
-      fLastTrackByStrip(o.fLastTrackByStrip) {}
+      fLastTrackByStrip(o.fLastTrackByStrip),
+      fLastOrbit(o.fLastOrbit) {}
     AliFMDAnalysisTaskSharing& operator=(const AliFMDAnalysisTaskSharing&) { return *this; }
     
     // Implementation of interface methods
@@ -75,7 +76,7 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     Bool_t        fStatus;            // event status
     AliFMDFloatMap fLastTrackByStrip; // the last track to hit this strip
     UInt_t          fLastOrbit;
-    Float_t fEtotal;
+    
     ClassDef(AliFMDAnalysisTaskSharing, 0); // Analysis task for FMD analysis
 };
  
