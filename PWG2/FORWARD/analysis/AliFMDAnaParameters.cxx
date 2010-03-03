@@ -89,6 +89,7 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fSPDhighLimit(999999999),
   fCentralSelection(kFALSE)
 {
+  // Default constructor 
   fPhysicsSelection = new AliPhysicsSelection;
   AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
   
@@ -96,11 +97,11 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   //fPhysicsSelection->Initialize(104792);
   // Do not use this - it is only for IO 
   fgInstance = this;
-  // Default constructor 
+  
 }
 //____________________________________________________________________
 char* AliFMDAnaParameters::GetPath(const char* species) {
-  
+  //Get path of object
   char* path = "";
   
   if(species == fgkBackgroundID)
@@ -149,8 +150,8 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
 //____________________________________________________________________
 void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
 {
-  // Initialize the parameters manager.  We need to get stuff from the
-  // CDB here. 
+  // Initialize the parameters manager.  We need to get stuff from files here.
+   
   if (forceReInit) fIsInit = kFALSE;
   if (fIsInit) return;
   if (what & kBackgroundCorrection)       InitBackground();
@@ -165,8 +166,7 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
 //____________________________________________________________________
 
 void AliFMDAnaParameters::InitBackground() {
-  
-  //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
+  //Init background correction objects.
   
   TFile* fin = TFile::Open(GetPath(fgkBackgroundID));
   
@@ -180,9 +180,9 @@ void AliFMDAnaParameters::InitBackground() {
 //____________________________________________________________________
 
 void AliFMDAnaParameters::InitEnergyDists() {
-  
+  //Init energy distributions
   TFile* fin = TFile::Open(GetPath(fgkEnergyDistributionID));
-  //AliCDBEntry*   edist = GetEntry(fgkEnergyDists);
+  
   if (!fin) return;
   
   fEnergyDistribution = dynamic_cast<AliFMDAnaCalibEnergyDistribution*>(fin->Get(fgkEnergyDistributionID));
@@ -194,8 +194,8 @@ void AliFMDAnaParameters::InitEnergyDists() {
 //____________________________________________________________________
 
 void AliFMDAnaParameters::InitEventSelectionEff() {
-  
-  //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
+  //Init event selection objects
+
   TFile* fin = TFile::Open(GetPath(fgkEventSelectionEffID));
 			    
   if (!fin) return;
@@ -204,11 +204,24 @@ void AliFMDAnaParameters::InitEventSelectionEff() {
   if (!fEventSelectionEfficiency) AliFatal("Invalid background object from CDB");
   
 }
+
+//____________________________________________________________________
+
+void AliFMDAnaParameters::InitSharingEff() {
+  
+  TFile* fin = TFile::Open(GetPath(fgkSharingEffID));
+			    
+  if (!fin) return;
+  
+  fSharingEfficiency = dynamic_cast<AliFMDAnaCalibSharingEfficiency*>(fin->Get(fgkSharingEffID));
+  if (!fSharingEfficiency) AliFatal("Invalid background object from CDB");
+  
+}
 //____________________________________________________________________
 
 void AliFMDAnaParameters::PrintStatus() const
 {
-  
+  //Print current status
   TString energystring;
   switch(fEnergy) {
   case k900:
@@ -265,21 +278,8 @@ void AliFMDAnaParameters::PrintStatus() const
 }
 
 //____________________________________________________________________
-
-void AliFMDAnaParameters::InitSharingEff() {
-  
-  //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
-  TFile* fin = TFile::Open(GetPath(fgkSharingEffID));
-			    
-  if (!fin) return;
-  
-  fSharingEfficiency = dynamic_cast<AliFMDAnaCalibSharingEfficiency*>(fin->Get(fgkSharingEffID));
-  if (!fSharingEfficiency) AliFatal("Invalid background object from CDB");
-  
-}
-//____________________________________________________________________
 Float_t AliFMDAnaParameters::GetVtxCutZ() {
-  
+  //Get the z vtx cut in analysis
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return -1;
@@ -290,7 +290,7 @@ Float_t AliFMDAnaParameters::GetVtxCutZ() {
 
 //____________________________________________________________________
 Int_t AliFMDAnaParameters::GetNvtxBins() {
-  
+  //Get number of vtx bins
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return -1;
@@ -315,7 +315,7 @@ TH1F* AliFMDAnaParameters::GetRingEnergyDistribution(Int_t det, Char_t ring) {
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring, Float_t eta) {
-  
+  //Get sigma of Landau fits
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -334,7 +334,7 @@ Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring, Float_t eta) {
 
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring, Float_t eta) {
-  
+  //Get MPV of landau fits
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -353,7 +353,7 @@ Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring, Float_t eta) {
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetConstant(Int_t det, Char_t ring, Float_t eta) {
-  
+  //Get constant parameter of Landau fits
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -371,7 +371,7 @@ Float_t AliFMDAnaParameters::GetConstant(Int_t det, Char_t ring, Float_t eta) {
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) {
-  
+  //Get 2 MIP weights of convoluted Landau fits
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -391,7 +391,7 @@ Float_t AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) 
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::Get3MIPWeight(Int_t det, Char_t ring, Float_t eta) {
-  
+  //Get 3 MIP weights of convoluted Landau fits
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -441,7 +441,7 @@ Int_t AliFMDAnaParameters::GetEtaBin(Float_t eta) {
 TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det, 
 						   Char_t ring, 
 						   Int_t vtxbin) {
-  
+  //Get background correction histogram
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -460,7 +460,7 @@ TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det,
 
 TH1F* AliFMDAnaParameters::GetDoubleHitCorrection(Int_t det, 
 						  Char_t ring) {
-  
+  //Get correction for several hits in strips for p+p
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -470,6 +470,7 @@ TH1F* AliFMDAnaParameters::GetDoubleHitCorrection(Int_t det,
 }
 //_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin) {
+  //Get event selection efficiency object
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -479,6 +480,7 @@ Float_t AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin) {
 }
 //_____________________________________________________________________
 TH1F* AliFMDAnaParameters::GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin) {
+  //Get sharing efficiency object
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -489,6 +491,7 @@ TH1F* AliFMDAnaParameters::GetSharingEfficiency(Int_t det, Char_t ring, Int_t vt
 }
 //_____________________________________________________________________
 TH1F* AliFMDAnaParameters::GetSharingEfficiencyTrVtx(Int_t det, Char_t ring, Int_t vtxbin) {
+  //Get sharing efficiency object TrVtx
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -498,7 +501,8 @@ TH1F* AliFMDAnaParameters::GetSharingEfficiencyTrVtx(Int_t det, Char_t ring, Int
 
 }
 //_____________________________________________________________________
-Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) const{
+Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) const {
+  //Get max R of ring
   Float_t radius = 0;
   if(ring == 'I')
     radius = 17.2;
@@ -511,6 +515,7 @@ Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) const{
 }
 //_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetMinR(Char_t ring) const{
+  //Get min R of ring
   Float_t radius = 0;
   if(ring == 'I')
     radius = 4.5213;
@@ -524,7 +529,7 @@ Float_t AliFMDAnaParameters::GetMinR(Char_t ring) const{
 }
 //_____________________________________________________________________
 void AliFMDAnaParameters::SetCorners(Char_t ring) {
-  
+  //Set corners (taken from nominal geometry)
   if(ring == 'I') {
     fCorner1.Set(4.9895, 15.3560);
     fCorner2.Set(1.8007, 17.2000);
@@ -538,6 +543,7 @@ void AliFMDAnaParameters::SetCorners(Char_t ring) {
 //_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const
 {
+  //Get phi from sector
   Int_t nsec = (ring == 'I' ? 20 : 40);
   Float_t basephi = 0;
   if(det == 1) 
@@ -568,8 +574,7 @@ Float_t AliFMDAnaParameters::GetPhiFromSector(UShort_t det, Char_t ring, UShort_
 //_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx) const
 {
-  // AliFMDRing fmdring(ring);
-  // fmdring.Init();
+  //Calculate eta from strip with vertex (redundant with AliESDFMD::Eta)
   Float_t   rad       = GetMaxR(ring)-GetMinR(ring);
   Float_t   nStrips   = (ring == 'I' ? 512 : 256);
   Float_t   segment   = rad / nStrips;
@@ -606,6 +611,7 @@ Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t
 
 Bool_t AliFMDAnaParameters::GetVertex(const AliESDEvent* esd, Double_t* vertexXYZ) 
 {
+  //Get the vertex from the ESD
   const AliESDVertex* vertex = 0;
   vertex = esd->GetPrimaryVertexSPD();
   
@@ -626,7 +632,7 @@ Bool_t AliFMDAnaParameters::GetVertex(const AliESDEvent* esd, Double_t* vertexXY
 }
 //____________________________________________________________________
 Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd, Trigger trig) {
-
+  //Did we have trig trigger ?
   Trigger old = fTrigger;
   fTrigger = trig;
   Bool_t retval = IsEventTriggered(esd);
@@ -687,7 +693,8 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
     break;
   }
   case kEMPTY: {
-     const AliMultiplicity* testmult = esd->GetMultiplicity();
+    /*
+    const AliMultiplicity* testmult = esd->GetMultiplicity();
     Int_t nTrackLets = testmult->GetNumberOfTracklets();
     Int_t nClusters  = testmult->GetNumberOfSingleClusters();
     Int_t fastOR = tAna.SPDFiredChips(esd, 0);
@@ -705,8 +712,9 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
     
     Bool_t v0CBG = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0CBG);
     Bool_t v0A = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0A);
-    Bool_t v0C = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0C);
-    if(triggers.Contains("CINT1A-ABCE-NOPF-ALL") || triggers.Contains("CINT1C-ABCE-NOPF-ALL")) 
+    Bool_t v0C = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0C);*/
+    //    if(triggers.Contains("CINT1A-ABCE-NOPF-ALL") || triggers.Contains("CINT1C-ABCE-NOPF-ALL")) 
+    if(triggers.Contains("CBEAMB-ABCE-NOPF-ALL")) 
       return kTRUE;
     break;
   }
@@ -720,8 +728,7 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
 Float_t 
 AliFMDAnaParameters::GetStripLength(Char_t ring, UShort_t strip)  
 {
-  //AliFMDRing fmdring(ring);
-  // fmdring.Init();
+  //Get length of a strip
   
   Float_t rad        = GetMaxR(ring)-GetMinR(ring);
   Float_t   nStrips   = (ring == 'I' ? 512 : 256);
@@ -766,8 +773,7 @@ AliFMDAnaParameters::GetStripLength(Char_t ring, UShort_t strip)
 Float_t 
 AliFMDAnaParameters::GetBaseStripLength(Char_t ring, UShort_t strip)  
 {  
-  // AliFMDRing fmdring(ring);
-  // fmdring.Init();
+  //Get length of strip assuming that corners are not cut away
   Float_t rad             = GetMaxR(ring)-GetMinR(ring);
   Float_t nStrips         = (ring == 'I' ? 512 : 256);
   Float_t nSec            = (ring == 'I' ? 20 : 40);

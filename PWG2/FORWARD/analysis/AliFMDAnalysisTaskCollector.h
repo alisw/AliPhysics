@@ -25,7 +25,9 @@ class AliFMDAnalysisTaskCollector : public AliAnalysisTaskSE
     fDebug(o.fDebug),
     fOutputList(o.fOutputList),
     fArray(o.fArray),
-    fZvtxDist(o.fZvtxDist)  {}
+    fZvtxDist(o.fZvtxDist),
+    fEvents(0),
+    fEmptyEvents(0)    {}
   
   AliFMDAnalysisTaskCollector& operator=(const AliFMDAnalysisTaskCollector&) { return *this; }
   virtual ~AliFMDAnalysisTaskCollector() {;}
@@ -46,8 +48,7 @@ private:
   TObjArray*    fArray;
   TH1F*         fZvtxDist;
   Int_t         fEvents;
-  Int_t         fEmptyEventsAside;
-  Int_t         fEmptyEventsCside;
+  Int_t         fEmptyEvents;
   ClassDef(AliFMDAnalysisTaskCollector, 0); // Analysis task for FMD analysis
 };
  

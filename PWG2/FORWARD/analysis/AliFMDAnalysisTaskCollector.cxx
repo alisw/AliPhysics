@@ -68,9 +68,7 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector()
   fOutputList(0),
   fArray(0),
   fZvtxDist(0),
-  fEvents(0),
-  fEmptyEventsAside(0),
-  fEmptyEventsCside(0)
+  fEvents(0)
 {
   // Default constructor
   
@@ -83,9 +81,7 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector(const char* name):
     fOutputList(0),
     fArray(0),
     fZvtxDist(0),
-    fEvents(0),
-    fEmptyEventsAside(0),
-    fEmptyEventsCside(0)
+    fEvents(0)
 {
   // Default constructor
   
@@ -163,10 +159,7 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
   //Bool_t trigger = pars->IsEventTriggered(esd);
   
   Bool_t physics = pars->IsEventTriggered(esd);
-  //Bool_t empty   = pars->IsEventTriggered(esd,AliFMDAnaParameters::kEMPTY);
-  Bool_t emptyAside = triggers.Contains("CINT1A-ABCE-NOPF-ALL");
-  Bool_t emptyCside = triggers.Contains("CINT1C-ABCE-NOPF-ALL");
-  
+  Bool_t empty   = pars->IsEventTriggered(esd,AliFMDAnaParameters::kEMPTY);
   //std::cout<<physics<<"   "<<empty<<std::endl;
   //if(!trigger)
   //  physics = kFALSE;
@@ -186,12 +179,10 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
   if (!fmd) return;
   if(physics)
     fEvents++;
-  else if(emptyAside) 
-    fEmptyEventsAside++;
-  else if(emptyCside) 
-    fEmptyEventsCside++;
+  else if(empty)
+    fEmptyEvents++;
   
-  if(!physics && !emptyAside && !emptyCside)
+  if(!physics && !empty)
     return;
   TH1F* Edist = 0;
   TH1F* emptyEdist = 0;
@@ -222,27 +213,14 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
 	    Edist->Fill(mult);
 	    ringEdist->Fill(mult);
 	  }
-	  if(emptyAside && det == 3 /*&& ring == 'O'*/) {
+	  else if(empty) {
 	    emptyEdist->Fill(mult);
+	    
 	  }
-	  //if(emptyCside && det == 3 && ring == 'I') {
-	  //  emptyEdist->Fill(mult);
-	  //}
-	  
-	  
-
-	  if((emptyAside || emptyCside) && !(det == 3 /*&& ring == 'O'*/)/* && !(det == 2 && ring == 'O')*/) {
-	    emptyEdist->Fill(mult);
+	  else {
+	    AliWarning("Something is wrong - wrong trigger");
+	    continue;
 	  }
-	  //if(emptyCside && det == 2 && ring == 'O') {
-	  //  emptyEdist->Fill(mult);
-	  // }
-	 
-		  
-	  //else {
-	  //  AliWarning("Something is wrong - wrong trigger");
-	  //  continue;
-	  //}
 	 
 	  
 	}
@@ -256,7 +234,7 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
 //____________________________________________________________________
   
 void AliFMDAnalysisTaskCollector::Terminate(Option_t */*option*/) {
-  std::cout<<"Analysed "<<fEvents<<" events and "<<fEmptyEventsAside<<" empty from A side and "<<fEmptyEventsCside<<"  on the C side"<<std::endl;
+  std::cout<<"Analysed "<<fEvents<<" events and "<<fEmptyEvents<<" empty"<<std::endl;
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
  
     
@@ -267,16 +245,8 @@ void AliFMDAnalysisTaskCollector::Terminate(Option_t */*option*/) {
 	Char_t ringChar = (ring == 0 ? 'I' : 'O');
 	TH1F* hRingEdist = (TH1F*)fOutputList->FindObject(Form("ringFMD%d%c",det,ringChar));
 	TH1F* hEmptyEdist = (TH1F*)fOutputList->FindObject(Form("emptyFMD%d%c",det,ringChar));
-	if(fEmptyEventsAside && det == 3 /*&& ringChar == 'O'*/)
-	  hEmptyEdist->Scale(1./(Float_t)fEmptyEventsAside);
-	
-	//if(fEmptyEventsAside && det == 3 && ringChar == 'I')
-	//  hEmptyEdist->Scale(1./(Float_t)fEmptyEventsCside);
-	//if(fEmptyEventsAside && det == 2 && ringChar == 'O') //A side
-	//  hEmptyEdist->Scale(1./(Float_t)fEmptyEventsAside);
-	
-	if((fEmptyEventsAside != 0 || fEmptyEventsCside !=0) && !(det == 3/* && ringChar == 'O'*/)/* && !(det == 2 && ringChar == 'O')*/)
-	  hEmptyEdist->Scale(1./((Float_t)fEmptyEventsAside + ((Float_t)fEmptyEventsCside)));
+	if(fEmptyEvents)
+	  hEmptyEdist->Scale(1./(Float_t)fEmptyEvents);
 	
 	if(fEvents)
 	  hRingEdist->Scale(1./(Float_t)fEvents);

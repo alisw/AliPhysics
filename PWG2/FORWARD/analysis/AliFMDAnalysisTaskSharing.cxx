@@ -51,7 +51,8 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing()
   fStandalone(kTRUE),
   fEsdVertex(0),
   fStatus(kTRUE),
-  fLastTrackByStrip(0)
+  fLastTrackByStrip(0),
+  fLastOrbit(0)
 {
   // Default constructor
   DefineInput (0, AliESDEvent::Class());
@@ -73,7 +74,7 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, Bool_t SE
     fEsdVertex(0),
     fStatus(kTRUE),
     fLastTrackByStrip(0),
-    fEtotal(0)
+    fLastOrbit(0)
 {
   // named constructor
   fStandalone = SE;
@@ -227,6 +228,9 @@ fDiagList->Add(hCorrelationFMDSPDhits);
   TH1F*  hTrEtaDistribution2 = new TH1F("hTrEtaDistribution2","hTrEtaDistribution2 ; TrEta",200,-9,9);
   
  TH1F*  hFlatTracks = new TH1F("hFlatTracks","hFlatTracks ; Horizontal tracks",100,0,100);
+ 
+ TH1F* hEnergyOfParticles = new TH1F("hEnergyOfParticles","hEnergyOfParticles",1000000,0,10);
+ fDiagList->Add(hEnergyOfParticles);
  fDiagList->Add(hTrVtxDistribution);
  fDiagList->Add(hTrEtaDistribution);
  fDiagList->Add(hTrEtaDistribution2);
@@ -508,7 +512,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   hCorrelationFMDBgCandRelative->Fill(ratioBg,nTotalFMDhits);
   
   
-   Float_t ratio =  (nbad > 0 ? ngood / nbad  : 0);
+  // Float_t ratio =  (nbad > 0 ? ngood / nbad  : 0);
   
   hCorrelationFMDGoodtracks->Fill(ngood,nTotalFMDhits);
   hCorrelationFMDBadtracks->Fill(nbad,nTotalFMDhits);
@@ -538,6 +542,7 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   Float_t cutLow  = 0.3;//0.15;
   
   Float_t cutHigh = pars->GetMPV(det,ring,eta) - 2*pars->GetSigma(det,ring,eta);
+
   // if(ring == 'I')
   //  cutLow = 0.1;
   
@@ -692,7 +697,7 @@ Float_t AliFMDAnalysisTaskSharing::Eta2Theta(Float_t eta) const{
 
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::ProcessPrimary() {
-  //Get the undspoiled MC dN/deta before event cuts
+  //Get the unspoiled MC dN/deta before event cuts
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   AliMCEvent* mcEvent = eventHandler->MCEvent();
   if(!mcEvent)
@@ -705,6 +710,7 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   AliStack* stack = mcEvent->Stack();
   
   TH1F* hPrimary = (TH1F*)fDiagList->FindObject("hMultvsEtaNoCuts");
+  TH1F* hEnergyOfParticles = (TH1F*)fDiagList->FindObject("hEnergyOfParticles");
   AliHeader* header            = mcEvent->Header();
   AliGenEventHeader* genHeader = header->GenEventHeader();
   
@@ -713,10 +719,10 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   if (!pythiaGenHeader) {
     std::cout<<" no pythia header!"<<std::endl;
     return; 
-    	}
+  }
 
 	
-  Int_t pythiaType = pythiaGenHeader->ProcessType();
+  //Int_t pythiaType = pythiaGenHeader->ProcessType();
   
   //if(pythiaType==92||pythiaType==93){
     //  std::cout<<"single diffractive"<<std::endl;
@@ -770,6 +776,9 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
 	Char_t   ring;
 	if(ref->DetectorId() != AliTrackReference::kFMD)
 	  continue;
+	if(particle->Charge() != 0)
+	  hEnergyOfParticles->Fill(particle->E());
+	
 	AliFMDStripIndex::Unpack(ref->UserId(),det,ring,sec,strip);
 	Float_t thisStripTrack = fLastTrackByStrip(det,ring,sec,strip);
 	if(particle->Charge() != 0 && i != thisStripTrack ) {
