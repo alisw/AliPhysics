@@ -914,12 +914,12 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
 
     // merge fTriggerClasses
     TIterator* iter2 = entry->fTriggerClasses->MakeIterator();
-    TObjString* obj = 0;
-    while ((obj = dynamic_cast<TObjString*> (iter2->Next())))
+    TObjString* obje = 0;
+    while ((obje = dynamic_cast<TObjString*> (iter2->Next())))
     {
-      TParameter<Long64_t>* param2 = dynamic_cast<TParameter<Long64_t>*> (entry->fTriggerClasses->GetValue(obj));
+      TParameter<Long64_t>* param2 = dynamic_cast<TParameter<Long64_t>*> (entry->fTriggerClasses->GetValue(obje));
       
-      TParameter<Long64_t>* param1 = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(obj));
+      TParameter<Long64_t>* param1 = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(obje));
       if (param1)
       {
         param1->SetVal(param1->GetVal() + param2->GetVal());
@@ -927,7 +927,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
       else
       {
         param1 = dynamic_cast<TParameter<Long64_t>*> (param2->Clone());
-        fTriggerClasses->Add(new TObjString(obj->String()), param1);
+        fTriggerClasses->Add(new TObjString(obje->String()), param1);
       }
     }
     

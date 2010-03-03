@@ -74,8 +74,6 @@ void AliAnalysisTaskCopyESD::UserExec(Option_t */*option*/)
 	// Execute analysis for current event
 	//
 	
-	Long64_t ientry = Entry();
-
 	AliInfo("Copying event");	
 	AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
 	fESDEvent = ESDEvent(); // get the output ESD
