@@ -122,8 +122,8 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL")
       // map slots
       ce[0]=ci[kTracksBarrel];
       AddTRDresolution(mgr, trd, ce);
-      ce[0]=ci[kTracksSA];
-      AddTRDresolution(mgr, trd, ce, "SA");
+//       ce[0]=ci[kTracksSA];
+//       AddTRDresolution(mgr, trd, ce, "SA");
 //       ce[0]=ci[kTracksKink];
 //       AddTRDresolution(mgr, trd, ce, "K"); 
       break;
