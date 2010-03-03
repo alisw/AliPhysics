@@ -183,9 +183,8 @@ Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 {
 // Read one entry of the tree or a whole branch.
    static Int_t itot = 0;
-   printf("MGR: Processing event #%d\n", itot);
+   if (fDebug > 1) printf("MGR: Processing event #%d (entry %lld)\n", itot, entry);
    itot++;
-   if (fDebug > 0) printf("== AliAnalysisManager::GetEntry(%lld)\n", entry);
    fCurrentEntry = entry;
    return fTree ? fTree->GetTree()->GetEntry(entry, getall) : 0;
 }
