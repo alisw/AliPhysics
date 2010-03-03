@@ -148,9 +148,9 @@ UInt_t AliT0Preprocessor::ProcessLaser()
   Bool_t resultLaser = kFALSE;
   Bool_t writeok = kFALSE;
   //processing DAQ
-  TObjString *source;
   TList* list = GetFileSources(kDAQ, "AMPLITUDE_CALIBRATION");
   AliT0CalibWalk *laser = new AliT0CalibWalk();
+  TObjString *source;
   if (list)
     {
       TIter iter(list);
@@ -171,7 +171,7 @@ UInt_t AliT0Preprocessor::ProcessLaser()
       metaData.SetComment("Walk correction from laser runs.");
       if (writeok) resultLaser=Store("Calib","Slewing_Walk", laser, &metaData, 0, 1);
       else {
-	
+ 	
 	Log(Form("writeok = %d no peaks in CFD spectra",writeok));
 	return 0;
       }		  
@@ -184,7 +184,7 @@ UInt_t AliT0Preprocessor::ProcessLaser()
     }
   else
     {
-      Log(Form("Could not find file with Id  AMPLITUDE_CALIBRAION in source %s!", source->GetName()));
+      Log(Form("Could not find file with Id  AMPLITUDE_CALIBRAION "));
       return 1;
     }
   
