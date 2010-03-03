@@ -44,6 +44,11 @@ class AliESDresolParams : public TObject{
   TVectorD *fResolC1pt;             // resolution 1/pt parameterization - r-pt  
   // 
   static AliESDresolParams*   fgInstance; //! Instance of this class (singleton implementation)
+
+private:
+  AliESDresolParams(const AliESDresolParams&);            //not implemented
+  AliESDresolParams& operator=(const AliESDresolParams&); //not implemented
+
   ClassDef(AliESDresolParams,1)      // ESD resolution parametereization
 };
 

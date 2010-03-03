@@ -25,6 +25,9 @@ public:
 
 private: 
 
+  AliAnalysisTaskCTau(const AliAnalysisTaskCTau&);           //not implemented
+  AliAnalysisTaskCTau& operator=(const AliAnalysisTaskCTau&);//not implemented 
+
   TList       *fOutput;   //! The list of histograms
 
   AliESDEvent    *fESD ; //! ESD event
