@@ -109,7 +109,7 @@ AliTRDinfoGen::AliTRDinfoGen()
 
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen(char* name)
-  :AliTRDrecoTask(name, "MC-REC TRD-track list generator")
+  :AliTRDrecoTask(name)
   ,fEvTrigger("")
   ,fESDev(NULL)
   ,fMCev(NULL)
@@ -153,6 +153,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   //
   // Create Output Containers (TObjectArray containing 1D histograms)
   //
+ 
   fTrackInfo = new AliTRDtrackInfo();
   fEventInfo = new AliTRDeventInfo();
   fV0Info    = new AliTRDv0Info();
@@ -167,7 +168,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
   //
   // Run the Analysis
   //
-
   printf("AliTRDinfoGen::UserExec : ESD[%p] MC[%p]\n", (void*)fESDev, (void*)fMCev);
 
   fESDev = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -376,6 +376,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     fContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
     fTrackInfo->Delete("");
   }
+
   AliDebug(2, Form("%3d Tracks: TPCout[%d] TRDin[%d] TRDout[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRDin, nTRDout));
 
 //   AliESDv0 *v0 = NULL;

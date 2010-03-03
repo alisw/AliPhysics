@@ -284,7 +284,7 @@ void AliTRDresolution::UserExec(Option_t *opt)
   fMCcl->Delete();
   fMCtrklt->Delete();
 
-  AliTRDrecoTask::Exec(opt);
+  AliTRDrecoTask::UserExec(opt);
 
   PostData(1, fCl);
   PostData(2, fTrklt);

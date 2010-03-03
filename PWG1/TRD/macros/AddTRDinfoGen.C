@@ -18,10 +18,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   mgr->AddTask(info = new AliTRDinfoGen((char*)"genInfo"));
   info->SetDebugLevel(0);
   info->SetMCdata(mgr->GetMCtruthEventHandler());
-  AliAnalysisDataContainer* cin   = mgr->CreateContainer("dummy", TObjArray::Class(), AliAnalysisManager::kInputContainer);
-  
 
-  mgr->ConnectInput( info, 0, mgr->GetCommonInputContainer());
   // settings for collisions
   info->SetCollision(kFALSE);
   if(info->IsCollision()){
@@ -37,7 +34,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   co[2] = mgr->CreateContainer("v0Info",    TObjArray::Class(),       AliAnalysisManager::kExchangeContainer);
 
   mgr->ConnectInput (info, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput (info, 1, cin  );   // Dummy to avoid orphan
+
   mgr->ConnectOutput(info, 1, co[0]);
   mgr->ConnectOutput(info, 2, co[1]);
   mgr->ConnectOutput(info, 3, co[2]);

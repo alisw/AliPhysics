@@ -67,6 +67,20 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   DefineOutput(1, TObjArray::Class());
 }
 
+AliTRDrecoTask::AliTRDrecoTask(const char *name)
+  : AliAnalysisTaskSE(name)
+  ,fNRefFigures(0)
+  ,fContainer(NULL)
+  ,fTracks(NULL)
+  ,fkTrack(NULL)
+  ,fkMC(NULL)
+  ,fkESD(NULL)
+  ,fDebugLevel(0)
+  ,fPlotFuncList(NULL)
+{
+  DefineOutput(1, TObjArray::Class());
+}
+
 //_______________________________________________________
 AliTRDrecoTask::~AliTRDrecoTask() 
 {

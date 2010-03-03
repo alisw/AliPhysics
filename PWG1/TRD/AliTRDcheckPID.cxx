@@ -140,7 +140,7 @@ void AliTRDcheckPID::UserExec(Option_t *opt)
 
   fPID->Delete();
 
-  AliTRDrecoTask::Exec(opt);
+  AliTRDrecoTask::UserExec(opt);
 
   PostData(2, fPID);
 }

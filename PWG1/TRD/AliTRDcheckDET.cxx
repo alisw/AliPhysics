@@ -145,7 +145,7 @@ void AliTRDcheckDET::UserExec(Option_t *opt){
   // Filling TRD quality histos
   //
   if(!HasMCdata() && fEventInfo->GetEventHeader()->GetEventType() != 7) return;	// For real data we select only physical events
-  AliTRDrecoTask::Exec(opt);  
+  AliTRDrecoTask::UserExec(opt);  
   Int_t nTracks = 0;		// Count the number of tracks per event
   Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();
   TString triggername =  fEventInfo->GetRunInfo()->GetFiredTriggerClasses(triggermask);

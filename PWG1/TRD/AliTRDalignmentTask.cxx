@@ -80,7 +80,7 @@ void AliTRDalignmentTask::UserExec(Option_t *opt)
 {
 // Documentation to come
 
-  AliTRDrecoTask::Exec(opt);
+  AliTRDrecoTask::UserExec(opt);
   PostData(2, fTree);
 }
 
