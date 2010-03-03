@@ -47,6 +47,7 @@ class AliFlowAnalysisWithQCumulants{
   virtual void InitializeArraysForNestedLoops();
   // 1.) method Init() and methods called within Init():
   virtual void Init();
+    virtual void CrossCheckSettings();
     virtual void AccessConstants();
     virtual void BookAndNestAllLists();
     virtual void BookCommonHistograms();
@@ -130,7 +131,8 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateDiffFlowCorrectedForNUA(TString type, TString ptOrEta); 
     virtual void CalculateFinalResultsForRPandPOIIntegratedFlow(TString type); // to be improved (add also possibility to integrate over eta yield)
     virtual void FillCommonHistResultsDiffFlow(TString type);   
-    virtual void CrossCheckDiffFlowCorrelations(TString type, TString ptOrEta); 
+    virtual void CrossCheckDiffFlowCorrelations(TString type, TString ptOrEta);
+    virtual void PrintNumberOfParticlesInSelectedBin();     
     virtual void CrossCheckDiffFlowCorrectionTermsForNUA(TString type, TString ptOrEta); 
         
     // to be improved (removed):
@@ -138,11 +140,11 @@ class AliFlowAnalysisWithQCumulants{
       
   // 4.)  method GetOutputHistograms() and methods called within GetOutputHistograms(): 
   virtual void GetOutputHistograms(TList *outputListHistos);
-    virtual void GetPointersForCommonHistograms(TList *outputListHistos); 
-    virtual void GetPointersForParticleWeightsHistograms(TList *outputListHistos);
-    virtual void GetPointersForIntFlowHistograms(TList *outputListHistos); 
-    virtual void GetPointersForDiffFlowHistograms(TList *outputListHistos); 
-    virtual void GetPointersForNestedLoopsHistograms(TList *outputListHistos); // to be improved (no need to pass here argument, use setter for base list instead)
+    virtual void GetPointersForCommonHistograms(); 
+    virtual void GetPointersForParticleWeightsHistograms();
+    virtual void GetPointersForIntFlowHistograms(); 
+    virtual void GetPointersForDiffFlowHistograms(); 
+    virtual void GetPointersForNestedLoopsHistograms(); 
     
   // 5.) other methods:   
   TProfile* MakePtProjection(TProfile2D *profilePtEta) const;
@@ -152,7 +154,8 @@ class AliFlowAnalysisWithQCumulants{
   
   // **** SETTERS and GETTERS ****
   
-  // 0.) base:                                                                                              
+  // 0.) base:
+  void SetHistList(TList* const hlist) {this->fHistList = hlist;} 
   TList* GetHistList() const {return this->fHistList;} 
   
   // 1.) common:
@@ -178,7 +181,9 @@ class AliFlowAnalysisWithQCumulants{
   Int_t GetHarmonic() const {return this->fHarmonic;};
   void SetAnalysisLabel(const char *aLabel) {this->fAnalysisLabel->Append(*aLabel);}; // to be improved (Append(*aLabel) changed into Append(aLabel)) 
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
-  
+  void SetPrintFinalResults(Bool_t const printOrNot, Int_t const i) {this->fPrintFinalResults[i] = printOrNot;};
+  Bool_t GetPrintFinalResults(Int_t i) const {return this->fPrintFinalResults[i];};
+   
   // 2a.) particle weights:
   void SetWeightsList(TList* const wlist) {this->fWeightsList = (TList*)wlist->Clone();}
   TList* GetWeightsList() const {return this->fWeightsList;}  
@@ -314,6 +319,8 @@ class AliFlowAnalysisWithQCumulants{
   Int_t GetCrossCheckInPtBinNo() const {return this->fCrossCheckInPtBinNo;};
   void SetCrossCheckInEtaBinNo(Int_t const crossCheckInEtaBinNo) {this->fCrossCheckInEtaBinNo = crossCheckInEtaBinNo;};
   Int_t GetCrossCheckInEtaBinNo() const {return this->fCrossCheckInEtaBinNo;};
+  void SetNoOfParticlesInBin(TH1D* const noOfParticlesInBin) {this->fNoOfParticlesInBin = noOfParticlesInBin;};
+  TH1D* GetNoOfParticlesInBin() const {return this->fNoOfParticlesInBin;};  
   void SetDiffFlowDirectCorrelations(TProfile* const diffFlowDirectCorrelations,Int_t const i,Int_t const j,Int_t const k){this->fDiffFlowDirectCorrelations[i][j][k]=diffFlowDirectCorrelations;};
   TProfile* GetDiffFlowDirectCorrelations(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowDirectCorrelations[i][j][k];};
   void SetDiffFlowDirectCorrectionTermsForNUA(TProfile* const dfdctfn, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l] = dfdctfn;};
@@ -351,6 +358,7 @@ class AliFlowAnalysisWithQCumulants{
   Double_t fEtaBinWidth; // bin width for eta histograms  
   Int_t fHarmonic; // harmonic 
   TString *fAnalysisLabel; // analysis label (all histograms and output file will have this label)
+  Bool_t fPrintFinalResults[3]; // print on the screen the final results (0=NONAME, 1=RP, 2=POI)
   
   // 2a.) particle weights:
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
@@ -372,7 +380,7 @@ class AliFlowAnalysisWithQCumulants{
   TList *fIntFlowResults; // list to hold all histograms with final results relevant for integrated flow  
   //  3b.) flags:
   TProfile *fIntFlowFlags; // profile to hold all flags for integrated flow
-  Bool_t fApplyCorrectionForNUA; // apply correction for non-uniform acceptance
+  Bool_t fApplyCorrectionForNUA; // apply correction for non-uniform acceptance  
   //  3c.) event-by-event quantities:
   TMatrixD *fReQ; // fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
@@ -474,6 +482,7 @@ class AliFlowAnalysisWithQCumulants{
   // differential flow:
   Int_t fCrossCheckInPtBinNo; // cross-check results for reduced correlations and corrections in this pt bin
   Int_t fCrossCheckInEtaBinNo; // cross-check results for reduced correlations and corrections in this eta bin
+  TH1D *fNoOfParticlesInBin; // bin: 1 = # of RPs in pt bin, 2 = # of RPs in eta bin, 3 = # of POIs in pt bin, 4 = # of POIs in eta bin 
   TProfile *fDiffFlowDirectCorrelations[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
   TProfile *fDiffFlowDirectCorrectionTermsForNUA[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
                   
