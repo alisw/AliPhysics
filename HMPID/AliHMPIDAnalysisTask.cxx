@@ -13,16 +13,24 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//==============================================================================
+// AliHMPIDAnalysysTask - Class representing a basic analysis tool of HMPID data at  
+// level of ESD.
+// A set of histograms is created. 
+//==============================================================================
+// 
+// By means of AliHMPIDAnalysisTask.C macro it is possible to use this class
+// to perform the analysis on local data, on data on alien using local machine 
+// and on CAF. 
+
 #ifndef AliHMPIDAnalysisTASK_CXX
 #define AliHMPIDAnalysisTASK_CXX
 
-
-#include "TH1.h"
-#include "TH2.h"
+#include <TH2.h>
+#include <AliLog.h>
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
-#include "AliLog.h"
 #include "AliHMPIDAnalysisTask.h"
 
 ClassImp(AliHMPIDAnalysisTask)
@@ -33,7 +41,7 @@ AliHMPIDAnalysisTask::AliHMPIDAnalysisTask() :
   fNevts(0),
   fTrigNevts(0),
   fTrigger(0),
-  fHmpInner(0x0),fHmpPesdPhmp(0x0),fHmpCkovPesd(0x0),fHmpCkovPhmp(0x0),
+  fHmpPesdPhmp(0x0),fHmpCkovPesd(0x0),fHmpCkovPhmp(0x0),
   fHmpMipTrkDist(0x0),fHmpMipTrkDistX(0x0),fHmpMipTrkDistY(0x0),fHmpMipCharge3cm(0x0),fHmpMipCharge1cm(0x0),fHmpNumPhots(0x0),
   fHmpTrkFlags(0x0)
 {
@@ -48,7 +56,7 @@ AliHMPIDAnalysisTask::AliHMPIDAnalysisTask(const Char_t* name) :
   fESD(0),fHmpHistList(0x0), fNevts(0),
   fTrigNevts(0),
   fTrigger(0),
-  fHmpInner(0x0),fHmpPesdPhmp(0x0),fHmpCkovPesd(0x0),fHmpCkovPhmp(0x0),
+  fHmpPesdPhmp(0x0),fHmpCkovPesd(0x0),fHmpCkovPhmp(0x0),
   fHmpMipTrkDist(0x0),fHmpMipTrkDistX(0x0),fHmpMipTrkDistY(0x0),fHmpMipCharge3cm(0x0),fHmpMipCharge1cm(0x0),fHmpNumPhots(0x0),
   fHmpTrkFlags(0x0)
 {
@@ -58,6 +66,50 @@ AliHMPIDAnalysisTask::AliHMPIDAnalysisTask(const Char_t* name) :
   
   DefineOutput(0,TList::Class());
  }
+//___________________________________________________________________________
+AliHMPIDAnalysisTask& AliHMPIDAnalysisTask::operator=(const AliHMPIDAnalysisTask& c) 
+{
+  //
+  // Assignment operator
+  //
+  if (this!=&c) {
+    AliAnalysisTaskSE::operator=(c) ;
+    fESD             = c.fESD ;
+    fHmpHistList     = c.fHmpHistList ;
+    fNevts           = c.fNevts;
+    fTrigNevts       = c.fTrigNevts;
+    fTrigger         = c.fTrigger;
+    fHmpPesdPhmp     = c.fHmpPesdPhmp ;
+    fHmpCkovPesd     = c.fHmpCkovPesd ;
+    fHmpCkovPhmp     = c.fHmpCkovPhmp ;
+    fHmpMipTrkDist   = c.fHmpMipTrkDist;
+    fHmpMipTrkDistX  = c.fHmpMipTrkDistX;
+    fHmpMipTrkDistY  = c.fHmpMipTrkDistY;
+    fHmpMipCharge3cm = c.fHmpMipCharge3cm;
+    fHmpMipCharge1cm = c.fHmpMipCharge1cm;
+    fHmpNumPhots     = c.fHmpNumPhots;
+    fHmpTrkFlags     = c.fHmpTrkFlags;
+    
+  }
+  return *this;
+}   
+
+//___________________________________________________________________________
+AliHMPIDAnalysisTask::AliHMPIDAnalysisTask(const AliHMPIDAnalysisTask& c) :
+  AliAnalysisTaskSE(c),
+  fESD(c.fESD),fHmpHistList(c.fHmpHistList), fNevts(c.fNevts),
+  fTrigNevts(c.fTrigNevts),
+  fTrigger(c.fTrigger),
+  fHmpPesdPhmp(c.fHmpPesdPhmp),fHmpCkovPesd(c.fHmpCkovPesd),fHmpCkovPhmp(c.fHmpCkovPhmp),
+  fHmpMipTrkDist(c.fHmpMipTrkDist),fHmpMipTrkDistX(c.fHmpMipTrkDistX),fHmpMipTrkDistY(c.fHmpMipTrkDistY),fHmpMipCharge3cm(c.fHmpMipCharge3cm),
+  fHmpMipCharge1cm(c.fHmpMipCharge1cm),fHmpNumPhots(c.fHmpNumPhots),
+  fHmpTrkFlags(c.fHmpTrkFlags)    
+{
+  //
+  // Copy Constructor
+  //
+}
+ 
 //___________________________________________________________________________
 AliHMPIDAnalysisTask::~AliHMPIDAnalysisTask() {
   //
@@ -94,25 +146,27 @@ void AliHMPIDAnalysisTask::Exec(Option_t *)
      ((TH2F *)fHmpHistList->At(22))->Fill(rin[0],rin[1]);
      ((TH2F *)fHmpHistList->At(23))->Fill(rout[0],rout[1]);
 */
-
-     if(track->GetHMPIDsignal() == -20) fHmpTrkFlags->Fill(0);
-     else if(track->GetHMPIDsignal() == -9) fHmpTrkFlags->Fill(1);
-     else if(track->GetHMPIDsignal() == -5) fHmpTrkFlags->Fill(2);
-     else if(track->GetHMPIDsignal() == -11) fHmpTrkFlags->Fill(3);
-     else if(track->GetHMPIDsignal() == -22) fHmpTrkFlags->Fill(4);
-     else fHmpTrkFlags->Fill(4);
-  
-    if(track->GetHMPIDsignal()== -20) continue;
+     Double_t ktol = 0.001;
+    
+     if(Equal(track->GetHMPIDsignal(),-20.,ktol))      fHmpTrkFlags->Fill(0);
+     else if(Equal(track->GetHMPIDsignal(),-9.,ktol))  fHmpTrkFlags->Fill(1);
+     else if(Equal(track->GetHMPIDsignal(),-5.,ktol))   fHmpTrkFlags->Fill(2);
+     else if(Equal(track->GetHMPIDsignal(),-11.,ktol))  fHmpTrkFlags->Fill(3);
+     else if(Equal(track->GetHMPIDsignal(),-22.,ktol)) fHmpTrkFlags->Fill(4);
+     else fHmpTrkFlags->Fill(4);     
+     
+       
+    if(Equal(track->GetHMPIDsignal(),-20.,ktol)) continue;
     if(track->GetHMPIDcluIdx() < 0) continue;
    
-    Int_t ch = track->GetHMPIDcluIdx()/1000000; 
+    //Int_t ch = track->GetHMPIDcluIdx()/1000000; 
     Float_t x, y; Int_t q, nph; 
     Float_t xpc, ypc, th, ph;
     
     track->GetHMPIDmip(x,y,q,nph);
     track->GetHMPIDtrk(xpc,ypc,th,ph);
      
-    if(x==0 && y==0 && xpc == 0 && ypc == 0) continue;
+    if(Equal(x,0.,ktol) && Equal(y,0.,ktol) && Equal(xpc,0.,ktol) && Equal(ypc,0.,ktol)) continue;
     //Printf("%s  %s Good track is found",(char*)__FILE__,__LINE__);
      
     Double_t dist = TMath::Sqrt( (xpc-x)*(xpc-x) + (ypc - y)*(ypc - y));
@@ -129,7 +183,7 @@ void AliHMPIDAnalysisTask::Exec(Option_t *)
       if(dist<=1.0)  fHmpMipCharge1cm->Fill(q);
       fHmpNumPhots->Fill(nph);
       fHmpCkovPesd->Fill(track->P(),track->GetHMPIDsignal());
-      fHmpCkovPesd->Fill(pmod,track->GetHMPIDsignal());
+      fHmpCkovPhmp->Fill(pmod,track->GetHMPIDsignal());
     }//there is signal
     
     }//track loop
@@ -137,7 +191,6 @@ void AliHMPIDAnalysisTask::Exec(Option_t *)
   /* PostData(0) is taken care of by AliAnalysisTaskSE */
   PostData(0,fHmpHistList) ;
 }
-
 
 //___________________________________________________________________________
 void AliHMPIDAnalysisTask::Terminate(Option_t*)
@@ -151,7 +204,6 @@ void AliHMPIDAnalysisTask::Terminate(Option_t*)
 
 }
 
-
 //___________________________________________________________________________
 void AliHMPIDAnalysisTask::CreateOutputObjects() {
   //
@@ -162,9 +214,6 @@ void AliHMPIDAnalysisTask::CreateOutputObjects() {
   //slot #1
    OpenFile(0);
    fHmpHistList = new TList();
-   fHmpInner =new TH2F("fHmpInner","HMPID: Inner track XY;X (cm);Y(cm)",800,-400,400,800,-400,400);
-   fHmpHistList->Add(fHmpInner);
-   
    fHmpPesdPhmp = new TH2F("fHmpPesdPhmp","HMPID: ESD p - running p;HMP p (GeV/c);ESD p (Gev/c)",100,0,10,100,0,10);
    fHmpHistList->Add(fHmpPesdPhmp);
    
@@ -238,5 +287,10 @@ void AliHMPIDAnalysisTask::CreateOutputObjects() {
    fHmpHistList->Add(outer);
 */
 }
-
+//____________________________________________________________________________________________________________________________________
+Bool_t AliHMPIDAnalysisTask::Equal(Double_t x, Double_t y, Double_t tolerance)
+{
+ return abs(x - y) <= tolerance ;  
+}  
+   
 #endif
