@@ -169,8 +169,6 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
   AliCDBManager* man = AliCDBManager::Instance();
   if (man && man->IsDefaultStorageSet())
   {
-    int runNo=pRunLoader->GetHeader()->GetRun();
-
     // init solenoid field
     // 2009-11-07 magnetic field handling fo HLT components has been switched to the
     // global AliMagF instance, the HLT/ConfigHLT/SolenoidBz entry is obsolete
