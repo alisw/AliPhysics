@@ -39,21 +39,33 @@ void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 2000000,
 		 //const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
                  //const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
 		 const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
-
+//void runFlowTask(Int_t mode = mGRID)
 {
   TStopwatch timer;
   timer.Start();
   
   LoadLibraries(mode);
+
+  if (mode == mGRID) {
+    // Create and configure the alien handler plugin
+    gROOT->LoadMacro("CreateAlienHandler.C");
+    AliAnalysisGrid *alienHandler = CreateAlienHandler();  
+    if (!alienHandler) return;
+  }
   
-  if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
+  if (mode==mLocal || mode == mLocalPAR) {
     if (type!="AOD") { TChain* chain = CreateESDChain(dataDir, nRuns, offset);}
     else { TChain* chain = CreateAODChain(dataDir, nRuns, offset);}
   }
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager");
-  
+ 
+  if (mode == mGRID) { 
+    // Connect plug-in to the analysis manager
+    mgr->SetGridHandler(alienHandler);
+  }
+
   if (type == "ESD"){
     AliVEventHandler* esdH = new AliESDInputHandler;
     mgr->SetInputEventHandler(esdH);
@@ -91,6 +103,11 @@ void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 2000000,
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
   if (!DATA) {physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
 
+ 
+  // Enable debug printouts
+  mgr->SetDebugLevel(2);
+
+
   //____________________________________________//
   // Run the analysis
   if (!mgr->InitAnalysis()) return;
@@ -103,7 +120,7 @@ void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 2000000,
     mgr->StartAnalysis("proof",dataDir,nRuns,offset);
   }
   else if (mode==mGRID) { 
-    mgr->StartAnalysis("local",chain);
+    mgr->StartAnalysis("grid");
   }
   
   timer.Stop();
@@ -126,7 +143,7 @@ void LoadLibraries(const anaModes mode) {
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   //----------------------------------------------------------
-  if (mode==mLocal) {
+  if (mode==mLocal || mode==mGRID) {
     //--------------------------------------------------------
     // If you want to use already compiled libraries 
     // in the aliroot distribution
@@ -144,7 +161,7 @@ void LoadLibraries(const anaModes mode) {
     cerr<<"libPWG2flowTasks loaded..."<<endl;
   }
   
-  else if (mode == mLocalPAR || mode == mGRID) {
+  else if (mode == mLocalPAR) {
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
