@@ -305,8 +305,9 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap, bool b
 const char* AliHLTLogging::SetLogString(const void* p, const char* pfmt, const char *format, ...)
 {
   // see header file for class documentation
+  if (!p || !pfmt) return NULL;
   TString formatstr=format;
-  TString pstr; 
+  TString pstr;
 #ifdef __DEBUG
   pstr.Form(pfmt, p);
 #endif
