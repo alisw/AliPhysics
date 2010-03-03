@@ -11,42 +11,38 @@
 #include "AliJetCorrelWriter.h"
 #include "AliJetCorrelSelector.h"
 
-namespace JetCorrelHD {
+class AliJetCorrelReader : public TObject {
   
-  class AliJetCorrelReader : public TObject {
-    
-  public:
-    AliJetCorrelReader(); 
-    ~AliJetCorrelReader();
-
-    void Init(AliJetCorrelSelector * const s, AliJetCorrelWriter * const w);    
-    void SetEvent(AliVEvent * const e) {fEVT=e;}
-
-    Float_t GetMultiplicity(); 
-    Float_t GetVertex();
-    void FillLists(CorrelList_t* list1, CorrelList_t* list2);
-    
-  private:    
-    AliVEvent *fEVT;                 // input event (ESD/AOD)
-    AliJetCorrelSelector *fSelector; // user selection object
-    AliJetCorrelWriter *fWriter;     // output writer object
-
-    void FillList(CorrelList_t* list);
-    void FillESDTrackLists(CorrelList_t* list1,CorrelList_t* list2);
-    void FillESDTrackList(CorrelList_t* list);
-    void FillESDPhotonList(CorrelList_t* list);
-    void FillESDDiphotonList(CorrelList_t* list);
-    void FillESDDielectronList(CorrelList_t* list);
-    void FillParentList(CorrelList_t* list1, CorrelList_t* list2);
-    Bool_t IsESDEvt(AliVEvent* const e);    
-
-    // disable (make private) copy constructor and assignment operator:
-    AliJetCorrelReader(const AliJetCorrelReader&);
-    AliJetCorrelReader& operator=(const AliJetCorrelReader&);
-
-    ClassDef(AliJetCorrelReader, 1);
-  };
-
-} // namespace
+ public:
+  AliJetCorrelReader(); 
+  ~AliJetCorrelReader();
+  
+  void Init(AliJetCorrelSelector * const s, AliJetCorrelWriter * const w);    
+  void SetEvent(AliESDEvent * const e) {jcESD=e;}
+  
+  Float_t GetMultiplicity(); 
+  Float_t GetVertex();
+  Bool_t VtxOutPipe();
+  void FillLists(CorrelList_t* list1, CorrelList_t* list2);
+  
+ private:    
+  AliESDEvent *jcESD;              // input event (ESD/AOD)
+  AliJetCorrelSelector *fSelector; // user selection object
+  AliJetCorrelWriter *fWriter;     // output writer object
+  
+  void FillList(CorrelList_t* list);
+  void FillESDTrackLists(CorrelList_t* list1,CorrelList_t* list2);
+  void FillESDTrackList(CorrelList_t* list);
+  void FillESDPhotonList(CorrelList_t* list);
+  void FillESDDiphotonList(CorrelList_t* list);
+  void FillESDDielectronList(CorrelList_t* list);
+  void FillParentList(CorrelList_t* list1, CorrelList_t* list2);
+  
+  // disable (make private) copy constructor and assignment operator:
+  AliJetCorrelReader(const AliJetCorrelReader&);
+  AliJetCorrelReader& operator=(const AliJetCorrelReader&);
+  
+  ClassDef(AliJetCorrelReader, 1);
+};
 
 #endif

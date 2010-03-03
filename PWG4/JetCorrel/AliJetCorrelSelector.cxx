@@ -15,22 +15,23 @@
 /* $Id: $ */
 
 //__________________________________________
-// Class for user selections. Object is created by ConfigJetCorrel.C macro
-// and passed to AddTaskJetCorrel.C running macro.
+// Class for user selections.
+// Object is created by ConfigJetCorrel.C macro and passed to 
+// AddTaskJetCorrel.C running macro via the main class AliAnalysisTaskJetCorrel
 //-- Author: Paul Constantin
 
 #include "AliJetCorrelSelector.h"
 
 using namespace std;
-using namespace JetCorrelHD;
 
 ClassImp(AliJetCorrelSelector)
 
 AliJetCorrelSelector::AliJetCorrelSelector() : 
-  fGenQA(kFALSE), fNumCorrel(0), nEvtTriggs(0), fPoolDepth(0), fCorrelType(NULL), fEvtTriggs(NULL),
-  minTriggPt(0), maxTriggPt(0), bwTriggPt(0), minAssocPt(0), maxAssocPt(0), bwAssocPt(0),
-  fITSRefit(kFALSE), fTPCRefit(kFALSE), fTRDRefit(kFALSE), fRejectKinkChild(kFALSE), fMaxEta(0),
-  fMaxNsigmaVtx(0), fMaxTrkVtx(0), fMaxITSChi2(0), fMaxTPCChi2(0), fMinNClusITS(0), fMinNClusTPC(0), trkMinProx(0) {
+  fGenQA(kFALSE), fDPhiNumBins(0), fDEtaNumBins(0), fNumCorrel(0), nEvtTriggs(0),
+  fPoolDepth(0), fCorrelType(NULL), fEvtTriggs(NULL), minTriggPt(0), maxTriggPt(0), bwTriggPt(0),
+  minAssocPt(0), maxAssocPt(0), bwAssocPt(0), fITSRefit(kFALSE), fTPCRefit(kFALSE), fTRDRefit(kFALSE),
+  fRejectKinkChild(kFALSE), fMaxEta(0), fMaxNsigmaVtx(0), fMaxTrkVtx(0), fMaxITSChi2(0), fMaxTPCChi2(0),
+  fMinNClusITS(0), fMinNClusTPC(0), trkMinProx(0), fUseAliKF(kFALSE) {
   // (default) constructor
   fNumBins[centr] = 0; fBinning[centr] = NULL;
   fNumBins[zvert] = 0; fBinning[zvert] = NULL;
@@ -123,9 +124,48 @@ void AliJetCorrelSelector::SetBinningAssoc(Float_t min, Float_t max, Float_t bw)
   bwAssocPt  = bw;
 }
 
+Float_t AliJetCorrelSelector::BinBorder(BinType_t cType, UInt_t k){
+  // returns bin margins
+  if(k<=NoOfBins(cType)) return fBinning[cType][k];
+  else {std::cerr<<"BinBorder Error: bin of type "<<cType<<" outside range "<<k<<std::endl; exit(0);}
+}
+
+Int_t AliJetCorrelSelector::GetBin(BinType_t cType, Float_t val){
+  // returns bin number
+  Int_t iBin=-1; UInt_t nBins=NoOfBins(cType);
+  for(UInt_t i=0; i<nBins; i++)
+    if(BinBorder(cType,i)<=val && val<BinBorder(cType,i+1)) iBin=i;
+  return iBin;
+}
+
+UInt_t AliJetCorrelSelector::NumAssocPt(){
+  UInt_t nBins = UInt_t((maxAssocPt-minAssocPt)/bwAssocPt);
+  if(nBins>=kMAXASSOBIN)
+    {std::cerr<<"AliJetCorrelSelector::NumAssocPt - Error: outside range"<<std::endl; exit(0);}
+  return nBins;
+}
+
+Int_t AliJetCorrelSelector::AssocBin(Float_t pT){
+  if(pT>=maxAssocPt) return -1;
+  return TMath::FloorNint((pT-minAssocPt)/bwAssocPt);
+}
+
+UInt_t AliJetCorrelSelector::NumTriggPt() {
+  UInt_t nBins = UInt_t((maxTriggPt-minTriggPt)/bwTriggPt);
+  if(nBins>=kMAXTRIGBIN)
+    {std::cerr<<"AliJetCorrelSelector::NumTrigPt - Error: outside range"<<std::endl; exit(0);}
+  return nBins;
+}
+
+Int_t AliJetCorrelSelector::TriggBin(Float_t pT){
+  if(pT>=maxTriggPt) return -1;
+  return TMath::FloorNint((pT-minTriggPt)/bwTriggPt);
+}
+
 void AliJetCorrelSelector::Show(){
   // print out all user selections
-  std::cout<<"Generic selections: "<<std::endl<<" PoolDepth="<<fPoolDepth;
+  std::cout<<"Generic selections: "<<std::endl<<" GenQA="<<fGenQA<<" UseAliKF="<<fUseAliKF
+	   <<" nDPhiBins="<<fDPhiNumBins<<" nDEtaBins="<<fDEtaNumBins<<" PoolDepth="<<fPoolDepth;
   std::cout<<std::endl<<" Correlation Types: ";
   for(UInt_t k=0; k<fNumCorrel; k++) std::cout<<fCorrelType[k]<<" ";
   std::cout<<std::endl<<" Event Triggers: ";
@@ -144,28 +184,14 @@ void AliJetCorrelSelector::Show(){
 	   <<" RejectKinkChild="<<fRejectKinkChild<<" minTrackPairTPCDist="<<trkMinProx<<std::endl;
 }
 
-Float_t AliJetCorrelSelector::BinBorder(BinType_t cType, UInt_t k){
-  // returns bin margins
-  if(k<=NoOfBins(cType)) return fBinning[cType][k];
-  else {std::cerr<<"BinBorder Error: bin of type "<<cType<<" outside range "<<k<<std::endl; exit(0);}
-}
-
-Int_t AliJetCorrelSelector::GetBin(BinType_t cType, Float_t val){
-  // returns bin number
-  Int_t iBin=-1; UInt_t nBins=NoOfBins(cType);
-  for(UInt_t i=0; i<nBins; i++)
-    if(BinBorder(cType,i)<=val && val<BinBorder(cType,i+1)) iBin=i;
-  return iBin;
-}
-
 //////////////////////////////////////////////////////////
 // Cutting Methods
 /////////////////////////////////////////////////////////
 
-Bool_t AliJetCorrelSelector::SelectedEvtTrigger(AliVEvent *fEVT){
+Bool_t AliJetCorrelSelector::SelectedEvtTrigger(AliESDEvent * const jcESD){
   // matches the event trigger classes with the user trigger classes
-  if(fEVT->InheritsFrom("AliESDEvent")){
-    const AliESDEvent *esd = (AliESDEvent*)fEVT;
+  if(jcESD->InheritsFrom("AliESDEvent")){
+    const AliESDEvent *esd = (AliESDEvent*)jcESD;
     TString trigClass = esd->GetFiredTriggerClasses();
     if(nEvtTriggs==1 && fEvtTriggs[0].Contains("ALL")) return kTRUE;
     for(UInt_t k=0; k<nEvtTriggs; k++)
@@ -185,7 +211,7 @@ Bool_t AliJetCorrelSelector::LowQualityTrack(AliESDtrack* track){
   // selects low quality tracks
   if(track->Eta()>fMaxEta) return kTRUE;
   UInt_t status = track->GetStatus();
-  if(fITSRefit && !(status & AliESDtrack::kITSrefit)) return kTRUE;
+  if(track->Pt()>5 && fITSRefit && !(status & AliESDtrack::kITSrefit)) return kTRUE;
   if(fTPCRefit && !(status & AliESDtrack::kTPCrefit)) return kTRUE;
 
 //   UInt_t nClusITS = track->GetITSclusters(0);

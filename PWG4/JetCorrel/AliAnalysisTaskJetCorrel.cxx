@@ -24,17 +24,23 @@
 #include "AliAnalysisTaskJetCorrel.h"
 
 using namespace std;
-using namespace JetCorrelHD;
 
 ClassImp(AliAnalysisTaskJetCorrel)
 
+AliAnalysisTaskJetCorrel::AliAnalysisTaskJetCorrel() : 
+  AliAnalysisTaskSE("JetCorrelTask"), jcESD(NULL), fOutputContainer(new TList),
+  fSelector(new AliJetCorrelSelector), fNumCorrel(0), fNumTrigg(0), fNumAssoc(0), fNumEvts(0),
+  fMaker(new AliJetCorrelMaker), fWriter(new AliJetCorrelWriter), fReader(new AliJetCorrelReader),
+  fMixer(new AliJetCorrelMixer), fTriggList(NULL), fAssocList(NULL) {
+  // default constructor
+}
+
 AliAnalysisTaskJetCorrel::AliAnalysisTaskJetCorrel(AliJetCorrelSelector *s) : 
-  AliAnalysisTaskSE("JetCorrelTask"), fOutputContainer(new TList),
+  AliAnalysisTaskSE("JetCorrelTask"), jcESD(NULL), fOutputContainer(new TList),
   fSelector(s), fNumCorrel(0), fNumTrigg(0), fNumAssoc(0), fNumEvts(0),
   fMaker(new AliJetCorrelMaker), fWriter(new AliJetCorrelWriter), fReader(new AliJetCorrelReader),
   fMixer(new AliJetCorrelMixer), fTriggList(NULL), fAssocList(NULL) {
   // constructor
-
   fNumCorrel = fSelector->NoOfCorrel();
   if(!fMaker->Init(fNumCorrel,fSelector->CorrelTypes()))
     {std::cerr<<"AliJetCorrelMaker initialization failed. Bye!"<<std::endl; exit(-1);}
@@ -50,7 +56,7 @@ AliAnalysisTaskJetCorrel::AliAnalysisTaskJetCorrel(AliJetCorrelSelector *s) :
   fAssocList = new CorrelList_t[fNumAssoc];
 
   DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
+  DefineOutput(0, TList::Class());
 }
 
 AliAnalysisTaskJetCorrel::~AliAnalysisTaskJetCorrel(){
@@ -65,31 +71,41 @@ AliAnalysisTaskJetCorrel::~AliAnalysisTaskJetCorrel(){
   fNumEvts=0;
 }
 
-void AliAnalysisTaskJetCorrel::UserCreateOutputObjects(){  
+void AliAnalysisTaskJetCorrel::ConnectInputData(Option_t *) {
+  // connects to input data stream
+  TTree* tree = dynamic_cast<TTree*>(GetInputData(0));
+  if(tree){
+    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if(esdH){
+      jcESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
+      if(!jcESD) {std::cerr<<"AliAnalysisTaskJetCorrel::ConnectInputData - ERROR: no event"<<std::endl; exit(-1);}
+    } else {std::cerr<<"AliAnalysisTaskJetCorrel::ConnectInputData - ERROR: no ESD Input"<<std::endl; exit(-1);}
+  } else {std::cerr<<"AliAnalysisTaskJetCorrel::ConnectInputData - ERROR: no input tree"<<std::endl; exit(-1);}
+}
+
+void AliAnalysisTaskJetCorrel::CreateOutputObjects(){  
   // call writer object methods for histogram booking inside the output container list
-  //  OpenFile(1);
+  //  OpenFile(0);
   fOutputContainer->SetName("JetCorrelHistos");
   fWriter->CreateGeneric(fOutputContainer);
   if(fSelector->GenQA()) fWriter->CreateQA(fOutputContainer);
   fWriter->CreateCorrelations(fOutputContainer);
 }
 
-void AliAnalysisTaskJetCorrel::UserExec(Option_t */*option*/){
+void AliAnalysisTaskJetCorrel::Exec(Option_t */*option*/){
   // get the event and pass it to the data reader object
-  AliVEvent *fEVT = (AliVEvent*)InputEvent();
-  if(!fEVT){
-    std::cerr<<"AliAnalysisTaskJetCorrel::UserExec() - ERROR: Cannot get event #"<<fNumEvts<<std::endl;
-    exit(-1);
-  }
-  fReader->SetEvent(fEVT);
+  //jcESD = dynamic_cast<AliESDEvent*>(InputEvent());
+  if(!jcESD)
+    {std::cerr<<"AliAnalysisTaskJetCorrel::Exec() - ERROR: Cannot get event "<<fNumEvts<<std::endl; exit(-1);}
+  fReader->SetEvent(jcESD);
 
   // get global event pars and apply global cuts
-  if(!fSelector->SelectedEvtTrigger(fEVT)) return;
+  if(!fSelector->SelectedEvtTrigger(jcESD)) return;
   Float_t cent = fReader->GetMultiplicity(); // use multiplicity in p-p
   Float_t zvtx = fReader->GetVertex();
   Int_t cBin = fSelector->GetBin(centr,cent);
   Int_t vBin = fSelector->GetBin(zvert,zvtx);
-  if(cBin<0 || vBin<0) return; // event fails centrality or vertex selection
+  if(cBin<0 || vBin<0 || fReader->VtxOutPipe()) return; // event fails centrality or vertex selection
   fWriter->FillGlobal(cent,zvtx);
   fNumEvts++;
   //  std::cout<<"Event:"<<fNumEvts<<" cBin="<<cBin<<" vBin="<<vBin<<std::endl;
@@ -111,7 +127,7 @@ void AliAnalysisTaskJetCorrel::UserExec(Option_t */*option*/){
 // 	     <<" triggs:"<<nTriggs<<" assocs:"<<nAssocs<<std::endl;
 
     if(nTriggs<1 && nAssocs<1) continue;
-    if(!tFilled) fWriter->FillSingleHistos(&fTriggList[idxTrigg], cBin, idxTrigg);
+    fWriter->FillSingleHistos(cBin, &fTriggList[idxTrigg], idxTrigg, &fAssocList[idxAssoc], idxAssoc);
     
     CrossCorrelate(&fTriggList[idxTrigg], &fAssocList[idxAssoc], cBin, vBin, iCor); // same-event correlation
     
@@ -119,7 +135,7 @@ void AliAnalysisTaskJetCorrel::UserExec(Option_t */*option*/){
     if(!aFilled) fMixer->FillPool(&fAssocList[idxAssoc], idxAssoc, vBin, cBin);
     if(nTriggs>0) fMixer->Mix(vBin, cBin, idxTrigg, idxAssoc, iCor);
     
-    PostData(1, fOutputContainer);
+    PostData(0, fOutputContainer);
   } // loop over correlations
 
   // clear the lists

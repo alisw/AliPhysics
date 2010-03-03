@@ -22,7 +22,6 @@
 #include "AliJetCorrelMaker.h"
 
 using namespace std;
-using namespace JetCorrelHD;
 
 ClassImp(AliJetCorrelMaker)
 
@@ -55,7 +54,7 @@ Bool_t AliJetCorrelMaker::Init(UInt_t s, UInt_t * const v){
 	     <<fNumCorrel<<std::endl;
     return kFALSE; 
   }
-  if(fNumCorrel>=kMAXNUMCORREL){
+  if(fNumCorrel>kMAXNUMCORREL){
     std::cerr<<"AliJetCorrelMaker::Initialize - ERROR: increase kMAXNUMCORREL above "
 	     <<fNumCorrel<<std::endl;
     return kFALSE; 

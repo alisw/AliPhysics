@@ -16,20 +16,19 @@
 
 //______________________________________________________________________________
 // Container class for reconstructed parents. Reconstruction method uses
-// AliKFParticle or TLorentzVector as indicated by kUseAliKF set in CorrelDefs.h
+// AliKFParticle or TLorentzVector as indicated by kUseAliKF
 //-- Author: Paul Constantin
 
 #include "CorrelRecoParent.h"
 
 using namespace std;
-using namespace JetCorrelHD;
 
 CorrelRecoParent_t::CorrelRecoParent_t() :
-  CorrelParticle_t(), fAssym(-999.), fOpenAng(-999.), fEVT(NULL){
+  CorrelParticle_t(), fAssym(-999.), fOpenAng(-999.), jcESD(NULL){
   // default constructor
 }
 
-CorrelRecoParent_t* CorrelRecoParent_t::operator=(const CorrelRecoParent_t& rhs){
+CorrelRecoParent_t& CorrelRecoParent_t::operator=(const CorrelRecoParent_t& rhs){
   fPt      = rhs.Pt()*rhs.Q();
   fPhi     = rhs.Phi();
   fEta     = rhs.Eta();
@@ -37,8 +36,8 @@ CorrelRecoParent_t* CorrelRecoParent_t::operator=(const CorrelRecoParent_t& rhs)
   fID      = rhs.ID();
   fAssym   = rhs.Assym();
   fOpenAng = rhs.OpenAng();
-  fEVT     = rhs.Evt();
-  return this;
+  jcESD     = rhs.Evt();
+  return *this;
 }
 
 CorrelRecoParent_t* CorrelRecoParent_t::Copy(){
@@ -51,11 +50,11 @@ CorrelRecoParent_t* CorrelRecoParent_t::Copy(){
   copy->fID      = this->ID();
   copy->fAssym   = this->Assym();
   copy->fOpenAng = this->OpenAng();
-  copy->fEVT     = this->Evt();
+  copy->jcESD     = this->Evt();
   return copy;
 }
 
-Bool_t CorrelRecoParent_t::Reconstruct(CorrelParticle_t *p1, CorrelParticle_t *p2){
+Bool_t CorrelRecoParent_t::Reconstruct(CorrelParticle_t *p1, CorrelParticle_t *p2, Bool_t kUseAliKF){
   // main method for parent reconstruction
 
   if(p1->ID()==photon && p2->ID()==photon) fID = diphoton;
@@ -65,19 +64,16 @@ Bool_t CorrelRecoParent_t::Reconstruct(CorrelParticle_t *p1, CorrelParticle_t *p
   
   if(fID==dielectron && kUseAliKF){
     // code for parent reconstruction based on AliKFParticle:
-    if(!fEVT)
+    if(!jcESD)
       {std::cerr<<"CorrelRecoParent_t::Reconstruct - undefined event"<<std::endl; exit(-1);}
-    AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fEVT);
-    if(!fESD)
-      {std::cerr<<"CorrelRecoParent_t::Reconstruct - failed event casting"<<std::endl; exit(-1);}
     CorrelKFTrack_t* e1 = dynamic_cast<CorrelKFTrack_t*>(p1);
     CorrelKFTrack_t* e2 = dynamic_cast<CorrelKFTrack_t*>(p2);
     if(!e1 || !e2)
       {std::cerr<<"CorrelRecoParent_t::Reconstruct - failed particle casting"<<std::endl; exit(-1);}
 
-    AliKFVertex primVtx(*(fESD->GetPrimaryVertex()));
+    AliKFVertex primVtx(*(jcESD->GetPrimaryVertex()));
     if(primVtx.GetNContributors()<=0) return kFALSE;
-    AliKFParticle::SetField(fESD->GetMagneticField());
+    AliKFParticle::SetField(jcESD->GetMagneticField());
     AliKFParticle* pKF1 = new AliKFParticle; AliKFParticle* pKF2 = new AliKFParticle;
     if(e1->Param()==NULL || e1->Covar()==NULL || e2->Param()==NULL || e2->Covar()==NULL)
       {std::cerr<<"CorrelRecoParent_t::Reconstruct - null parameter pointer"<<std::endl; exit(-1);}      
@@ -85,7 +81,7 @@ Bool_t CorrelRecoParent_t::Reconstruct(CorrelParticle_t *p1, CorrelParticle_t *p
     pKF2->Create(e2->Param(), e2->Covar(), e2->Q(), 11*e2->Q());  // so electron=11 and positron=-11
 
     AliKFParticle DiElectron(*pKF1,*pKF2);
-    DiElectron.SetMassConstraint(kZ0MassMean,kZ0MassSig); // the dielectron mass cut (1st=mass,2nd=sigma)
+    DiElectron.SetMassConstraint(91,3); // the dielectron mass cut (1st=mass,2nd=sigma)
     primVtx += DiElectron;
     DiElectron.SetProductionVertex(primVtx);
     Double_t chi2=100000.;
@@ -135,10 +131,10 @@ Bool_t CorrelRecoParent_t::NotInMass(PartType_t pID, Float_t mass){
   // THE MASS RANGES SHOULD PROBABLY BE MOMENTUM AND CENTRALITY DEPENDENT!!!
   if(pID!=dielectron && pID!=diphoton) return kFALSE;
 
-  const Float_t kZ0MassMin = kZ0MassMean - 3*kZ0MassSig;
-  const Float_t kZ0MassMax = kZ0MassMean + 3*kZ0MassSig;
-  const Float_t kPi0MassMin = kPi0MassMean - 3*kPi0MassSig;
-  const Float_t kPi0MassMax = kPi0MassMean + 3*kPi0MassSig;
+  const Float_t kZ0MassMin = 82;    // 91-3*3
+  const Float_t kZ0MassMax = 100;   // 91+3*3
+  const Float_t kPi0MassMin = 0.11; // 0.14-3*0.1
+  const Float_t kPi0MassMax = 0.17; // 0.14+3*0.1
   if(pID==dielectron && mass>kZ0MassMin && mass<kZ0MassMax) return kFALSE;
   if(pID==diphoton && mass>kPi0MassMin && mass<kPi0MassMax) return kFALSE;
 

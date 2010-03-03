@@ -25,13 +25,13 @@
 #include "AliJetCorrelMixer.h"
 
 using namespace std;
-using namespace JetCorrelHD;
 
 ClassImp(AliJetCorrelMixer)
 
 AliJetCorrelMixer::AliJetCorrelMixer() :
   fSelector(NULL), fMaker(NULL), fWriter(NULL),
   TriggEvnt(new CorrelList_t), AssocEvnt(new CorrelList_t),
+  AssocIter(NULL), TriggIter(NULL),
   fNumCentBins(0), fNumVertBins(0), fPoolDepth(0), fNumCorrel(0), fNumTriggs(0), fNumAssocs(0){
   // constructor
 }

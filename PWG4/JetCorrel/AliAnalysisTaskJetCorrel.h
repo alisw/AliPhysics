@@ -17,39 +17,37 @@
 #include "AliJetCorrelMixer.h"
 #include "AliJetCorrelWriter.h"
 
-namespace JetCorrelHD {
-
-  class AliAnalysisTaskJetCorrel : public AliAnalysisTaskSE {
-    
-  public:
-    AliAnalysisTaskJetCorrel(AliJetCorrelSelector* s);
-    virtual ~AliAnalysisTaskJetCorrel();
-    
-    // Implementation of interface methods
-    virtual void UserCreateOutputObjects();
-    virtual void UserExec(Option_t *option);
-    virtual void Terminate(Option_t *option);
-    
-  private:
-    TList *fOutputContainer;                           // Histogram container
-    AliJetCorrelSelector *fSelector;                   // User selection object
-    UInt_t fNumCorrel, fNumTrigg, fNumAssoc, fNumEvts; // counters
-    AliJetCorrelMaker *fMaker;                         // Correlation maker object
-    AliJetCorrelWriter *fWriter;                       // Output writer object
-    AliJetCorrelReader *fReader;                       // Input reader object
-    AliJetCorrelMixer *fMixer;                         // Event mixing object
-    CorrelList_t *fTriggList, *fAssocList;             // Trigger&Associated particle lists
-    
-    void CrossCorrelate(CorrelList_t * const TriggList,CorrelList_t * const AssocList, UInt_t cBin, UInt_t vBin, UInt_t iCor);
-
-    // disable (make private) default/copy constructor and assignment operator:
-    AliAnalysisTaskJetCorrel();
-    AliAnalysisTaskJetCorrel(const AliAnalysisTaskJetCorrel&);
-    AliAnalysisTaskJetCorrel& operator=(const AliAnalysisTaskJetCorrel&);
-    
-    ClassDef(AliAnalysisTaskJetCorrel, 1);
-  };
-
-} // namespace declaration
+class AliAnalysisTaskJetCorrel : public AliAnalysisTaskSE {
+  
+ public:
+  AliAnalysisTaskJetCorrel();
+  AliAnalysisTaskJetCorrel(AliJetCorrelSelector* s);
+  virtual ~AliAnalysisTaskJetCorrel();
+  
+  // Implementation of interface methods
+  virtual void ConnectInputData(Option_t *option);
+  virtual void CreateOutputObjects();
+  virtual void Exec(Option_t *option);
+  virtual void Terminate(Option_t *option);
+  
+ private:
+  AliESDEvent *jcESD;
+  TList *fOutputContainer;                           // Histogram container
+  AliJetCorrelSelector *fSelector;                   // User selection object
+  UInt_t fNumCorrel, fNumTrigg, fNumAssoc, fNumEvts; // counters
+  AliJetCorrelMaker *fMaker;                         // Correlation maker object
+  AliJetCorrelWriter *fWriter;                       // Output writer object
+  AliJetCorrelReader *fReader;                       // Input reader object
+  AliJetCorrelMixer *fMixer;                         // Event mixing object
+  CorrelList_t *fTriggList, *fAssocList;             // Trigger&Associated particle lists
+  
+  void CrossCorrelate(CorrelList_t * const TriggList,CorrelList_t * const AssocList, UInt_t cBin, UInt_t vBin, UInt_t iCor);
+  
+  // disable (make private) copy constructor and assignment operator:
+  AliAnalysisTaskJetCorrel(const AliAnalysisTaskJetCorrel&);
+  AliAnalysisTaskJetCorrel& operator=(const AliAnalysisTaskJetCorrel&);
+  
+  ClassDef(AliAnalysisTaskJetCorrel, 1);
+};
  
 #endif

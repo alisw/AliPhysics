@@ -21,7 +21,6 @@
 #include "CorrelKFTrack.h"
 
 using namespace std;
-using namespace JetCorrelHD;
 
 CorrelKFTrack_t::CorrelKFTrack_t() : CorrelParticle_t(), fParam(NULL), fCovar(NULL){
   // default constructor:
@@ -38,7 +37,7 @@ CorrelKFTrack_t::CorrelKFTrack_t(const CorrelKFTrack_t &p) :
   // copy constructor:
 }
 
-CorrelKFTrack_t* CorrelKFTrack_t::operator=(const CorrelKFTrack_t& rhs){
+CorrelKFTrack_t& CorrelKFTrack_t::operator=(const CorrelKFTrack_t& rhs){
   fPt      = rhs.Pt()*rhs.Q();
   fPhi     = rhs.Phi();
   fEta     = rhs.Eta();
@@ -46,7 +45,7 @@ CorrelKFTrack_t* CorrelKFTrack_t::operator=(const CorrelKFTrack_t& rhs){
   fID      = rhs.ID();
   fParam   = rhs.Param();
   fCovar   = rhs.Covar();
-  return this;
+  return *this;
 }
 
 CorrelKFTrack_t* CorrelKFTrack_t::Copy(){

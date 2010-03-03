@@ -21,12 +21,11 @@
 #include "AliJetCorrelReader.h"
 
 using namespace std;
-using namespace JetCorrelHD;
 
 ClassImp(AliJetCorrelReader)
 
 AliJetCorrelReader::AliJetCorrelReader() :
-  fEVT(NULL), fSelector(NULL), fWriter(NULL){
+  jcESD(NULL), fSelector(NULL), fWriter(NULL){
   // constructor
 }
 
@@ -42,38 +41,34 @@ void AliJetCorrelReader::Init(AliJetCorrelSelector * const s, AliJetCorrelWriter
 
 Float_t AliJetCorrelReader::GetMultiplicity(){
   // event multiplicity
-  if(!fEVT){
-    std::cerr<<"AliJetCorrelReader::GetVertex() - ERROR : fEVT not set!"<<std::endl; 
+  if(!jcESD){
+    std::cerr<<"AliJetCorrelReader::GetVertex() - ERROR : jcESD not set!"<<std::endl; 
     exit(-1);
   }
-  if(IsESDEvt(fEVT)){
-    // return ((AliESDEvent*)fEVT)->GetNumberOfTracks(); // ESD no of global tracks
-    const AliMultiplicity* m = ((AliESDEvent*)fEVT)->GetMultiplicity(); // SPD no of tracklets
-    return m->GetNumberOfTracklets();
-  } else {
-    return ((AliAODEvent*)fEVT)->GetNTracks(); // AOD no of global tracks
-  }
+  // return jcESD->GetNumberOfTracks(); // ESD no of global tracks
+  const AliMultiplicity* m = jcESD->GetMultiplicity(); // SPD no of tracklets
+  return m->GetNumberOfTracklets();
 }
 
 Float_t AliJetCorrelReader::GetVertex(){
   // event vertex
-  if(!fEVT){
-    std::cerr<<"AliJetCorrelReader::GetVertex() - ERROR : fEVT not set!"<<std::endl; 
+  if(!jcESD){
+    std::cerr<<"AliJetCorrelReader::GetVertex() - ERROR : jcESD not set!"<<std::endl; 
     exit(-1);
   }
-  if(IsESDEvt(fEVT)){
-    return ((AliESDEvent*)fEVT)->GetPrimaryVertex()->GetZ();
-//     Double_t v[3];
-//     ((AliESDEvent*)fEVT)->GetVertex()->GetXYZ(v);
-//     return v[2];
-  } else {
-    return ((AliAODEvent*)fEVT)->GetVertex(0)->GetZ();
-  }
+  return jcESD->GetPrimaryVertex()->GetZ();
+}
+
+Bool_t AliJetCorrelReader::VtxOutPipe(){
+  // returns true if vertex R >= beam pipe
+  Float_t xVtx2 = jcESD->GetPrimaryVertex()->GetX()*jcESD->GetPrimaryVertex()->GetX();
+  Float_t yVtx2 = jcESD->GetPrimaryVertex()->GetY()*jcESD->GetPrimaryVertex()->GetY();
+  if(TMath::Sqrt(xVtx2+yVtx2)>3) return kTRUE;
+  return kFALSE;
 }
 
 void AliJetCorrelReader::FillLists(CorrelList_t *list1, CorrelList_t *list2){
   // fills the trigger&associated particle lists
-  Bool_t useESD = IsESDEvt(fEVT);
   PartType_t partType1 = list1->PartID();
   PartType_t partType2 = list2->PartID();
   Bool_t filled1 = list1->Filled();
@@ -82,11 +77,7 @@ void AliJetCorrelReader::FillLists(CorrelList_t *list1, CorrelList_t *list2){
   if(!filled1 && !filled2 && partType1==partType2){
     switch(partType1){
     case hadron:
-      if(useESD) FillESDTrackLists(list1,list2);
-      else {
-	std::cerr<<"AliJetCorrelReader::FillLists() - ERROR: AOD dihadron not implemented!"<<std::endl;
-	exit(-1);
-      }
+      FillESDTrackLists(list1,list2);
       break;
     default:
       std::cerr<<"AliJetCorrelReader::FillLists() - ERROR: type not implemented!"<<std::endl;
@@ -108,43 +99,22 @@ void AliJetCorrelReader::FillLists(CorrelList_t *list1, CorrelList_t *list2){
 
 void AliJetCorrelReader::FillList(CorrelList_t *list){
   // calls the appropriate Fill method for the list's particle type
-  Bool_t useESD = IsESDEvt(fEVT);
   PartType_t partType = list->PartID();
   switch(partType){
   case hadron:
-    if(useESD) FillESDTrackList(list);
-    else{
-      std::cerr<<"AliJetCorrelReader::FillLists() - ERROR: AOD hadron not implemented!"<<std::endl;
-      exit(-1);
-    }
+    FillESDTrackList(list);
     break;
   case electron: 
-    if(useESD) FillESDTrackList(list);
-    else{
-      std::cerr<<"AliJetCorrelReader::FillLists() - ERROR: AOD hadron not implemented!"<<std::endl;
-      exit(-1);
-    }
+    FillESDTrackList(list);
     break;
   case dielectron:
-    if(useESD) FillESDDielectronList(list);
-    else{
-      std::cerr<<"AliJetCorrelReader::FillLists() - ERROR: AOD dielectron not implemented!"<<std::endl;
-      exit(-1);
-    }
+    FillESDDielectronList(list);
     break;
   case photon:
-    if(useESD) FillESDPhotonList(list);
-    else{
-      std::cerr<<"AliJetCorrelReader::FillLists() - ERROR: AOD photon not implemented!"<<std::endl;
-      exit(-1);
-    }
+    FillESDPhotonList(list);
     break;
   case diphoton:
-    if(useESD) FillESDDiphotonList(list);
-    else{
-      std::cerr<<"AliJetCorrelReader::FillLists() - ERROR: AOD diphoton not implemented!"<<std::endl;
-      exit(-1);
-    }
+    FillESDDiphotonList(list);
     break;
   default:
     std::cerr<<"AliJetCorrelReader::FillList() - ERROR: type not implemented!"<<std::endl;
@@ -156,10 +126,10 @@ void AliJetCorrelReader::FillESDTrackLists(CorrelList_t *list1, CorrelList_t *li
   // fills trigg&assoc lists simultaneously with ESD tracks
   PartType_t partType = list1->PartID(); // by definition the two lists store same particle
 
-  UInt_t nTracks = fEVT->GetNumberOfTracks() ;
+  UInt_t nTracks = jcESD->GetNumberOfTracks() ;
   if(nTracks<1) return;
   for(register UInt_t i=0; i<nTracks; i++){
-    AliESDtrack *track = (AliESDtrack*)fEVT->GetTrack(i);
+    AliESDtrack *track = (AliESDtrack*)jcESD->GetTrack(i);
 
     Float_t pT = track->Pt();
     if(pT<fSelector->MinAssocPt()) continue;
@@ -181,10 +151,10 @@ void AliJetCorrelReader::FillESDTrackLists(CorrelList_t *list1, CorrelList_t *li
     hadr->SetMass(track->GetMass());
     hadr->SetID(partType);
 
-    if(list1->PoolID()==assocs && fSelector->IsAssoc(pT)) list1->Push(hadr->Copy());
-    if(list1->PoolID()==triggs && fSelector->IsTrigg(pT)) list1->Push(hadr->Copy());
-    if(list2->PoolID()==assocs && fSelector->IsAssoc(pT)) list2->Push(hadr->Copy());
-    if(list2->PoolID()==triggs && fSelector->IsTrigg(pT)) list2->Push(hadr->Copy());
+    if(list1->PoolID()==assocs && fSelector->AssocBin(pT)>=0) list1->Push(hadr->Copy());
+    if(list1->PoolID()==triggs && fSelector->TriggBin(pT)>=0) list1->Push(hadr->Copy());
+    if(list2->PoolID()==assocs && fSelector->AssocBin(pT)>=0) list2->Push(hadr->Copy());
+    if(list2->PoolID()==triggs && fSelector->TriggBin(pT)>=0) list2->Push(hadr->Copy());
     delete hadr;
   } // ESD track loop
 }
@@ -194,10 +164,10 @@ void AliJetCorrelReader::FillESDTrackList(CorrelList_t *list){
   // (2) electrons to be used in dielectron reconstruction. Assoc pT cuts apply then...
   PartType_t partType = list->PartID();
 
-  UInt_t nTracks = fEVT->GetNumberOfTracks();
+  UInt_t nTracks = jcESD->GetNumberOfTracks();
   if(nTracks<1) return;
   for(register UInt_t i=0; i<nTracks; i++){
-    AliESDtrack *track = (AliESDtrack*)fEVT->GetTrack(i);
+    AliESDtrack *track = (AliESDtrack*)jcESD->GetTrack(i);
 
     Float_t pT = track->Pt();
     if(pT<fSelector->MinAssocPt()) continue; 
@@ -209,7 +179,7 @@ void AliJetCorrelReader::FillESDTrackList(CorrelList_t *list){
     // fill CorrelList_t object with CorrelKFTrack_t if AliKFParticle is used for di-electrons and 
     // with CorrelParticle_t if this is done via TLorentzVector in CorrelRecoParent_t (less memory).
     // AliKFParticle allows for a vertex cut on the reconstructed di-electron
-    if(partType==electron && kUseAliKF){
+    if(partType==electron && fSelector->UseAliKF()){
       CorrelKFTrack_t *elec = new CorrelKFTrack_t;
       const AliExternalTrackParam* tPar = track->GetConstrainedParam();
       elec->SetParam(tPar->GetParameter());
@@ -270,22 +240,11 @@ void AliJetCorrelReader::FillParentList(CorrelList_t *ParentList, CorrelList_t *
     while(!iterChild2.HasEnded()){
       CorrelParticle_t *child2 = iterChild2.Data(); iterChild2.Move();
       CorrelRecoParent_t *parent = new CorrelRecoParent_t;
-      parent->SetEvent(fEVT);
-      Bool_t goodParent = parent->Reconstruct(child1, child2);
-      Bool_t inPtRange = (ParentList->PoolID()==assocs && fSelector->IsAssoc(parent->Pt())) ||
-	(ParentList->PoolID()==triggs && fSelector->IsTrigg(parent->Pt()));
+      parent->SetEvent(jcESD);
+      Bool_t goodParent = parent->Reconstruct(child1, child2, fSelector->UseAliKF());
+      Bool_t inPtRange = (ParentList->PoolID()==assocs && fSelector->AssocBin(parent->Pt())>=0) ||
+	(ParentList->PoolID()==triggs && fSelector->TriggBin(parent->Pt())>=0);
       if(goodParent && inPtRange) ParentList->Push(parent);
     } // 2nd particle loop
   } // 1st particle loop
-}
-
-Bool_t AliJetCorrelReader::IsESDEvt(AliVEvent * const inEvt){
-  // checks input type
-  TString inputName = (TString)inEvt->ClassName();
-  if(inputName=="AliESDEvent") return kTRUE;
-  else if(inputName=="AliAODEvent") return kFALSE;
-  else {
-    std::cerr<<"AliJetCorrelReader::IsESDEvt() - ERROR: Unknown event input!"<<std::endl; 
-    exit(0);
-  }
 }

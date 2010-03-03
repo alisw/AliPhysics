@@ -32,8 +32,6 @@
 // AliRoot headers:
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliVEvent.h"
-#include "AliVParticle.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliESDInputHandler.h"
@@ -41,34 +39,17 @@
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliESDtrack.h"
-#include "AliAODInputHandler.h"
-#include "AliAODEvent.h"
-#include "AliAODVertex.h"
-#include "AliAODTrack.h"
 
-namespace JetCorrelHD {
+enum FillType_t {real, mixed};
+enum PoolType_t {triggs, assocs};
+enum BinType_t  {centr, zvert}; 
+enum PartType_t {unknown, hadron, proton, kaon, pion, photon, electron, jet, 
+		 dihadron, diphoton, dielectron, dijet};
 
-  enum FillType_t {real, mixed};
-  enum PoolType_t {triggs, assocs};
-  enum BinType_t  {centr, zvert}; 
-  enum PartType_t {unknown, hadron, proton, kaon, pion, photon, electron, jet, 
-		   dihadron, diphoton, dielectron, dijet};
-
-  const Float_t kEPS = 1.e-6;
-  const Float_t pi = TMath::Pi();
-  const Bool_t kUseAliKF = kFALSE; // reconstruction with AliKFParticle or TLorentzVector
-  const Float_t kZ0MassMean = 91.;
-  const Float_t kZ0MassSig  = 3.;
-  const Float_t kPi0MassMean = 0.140;  // Pi0 mass range for diphoton selection
-  const Float_t kPi0MassSig  = 0.010;
-
-  const UInt_t kDPhiNumBins = 62;       // number of bins in DeltaPhi histos (2pi-bin=0.1)
-  const UInt_t kDEtaNumBins = 40;       // number of bins in DeltaEta histos (3.6-bin=0.1)
-  
-  const UInt_t kMAXNUMCORREL = 3;     // Maximum no of correlations
-  const UInt_t kMAXVERTBIN   = 10;    // Maximum no of vertex bins
-  const UInt_t kMAXCENTBIN   = 3;     // Maximum no of centrality bins
-
-} // namespace declaration
+const UInt_t kMAXNUMCORREL = 1;     // Maximum no of correlations
+const UInt_t kMAXVERTBIN   = 10;    // Maximum no of vertex bins
+const UInt_t kMAXCENTBIN   = 2;     // Maximum no of centrality bins
+const UInt_t kMAXTRIGBIN   = 10;    // Maximum no of trigger bins
+const UInt_t kMAXASSOBIN   = 20;    // Maximum no of associated bins
 
 #endif
