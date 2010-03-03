@@ -202,6 +202,23 @@ public:
   TH2F * fhPhiPE; //! Azimuthal angle of photonic electron vs transverse momentum 
   TH2F * fhEtaPE; //! Pseudorapidity of photonic electron vs tranvserse momentum 
 
+  //These next set do use some MC info.  The first bin of the second
+  //dimension is filled for both REAL and MC data, other bins filled
+  //only if MC
+  //Histograms for comparison to tracking detectors
+  TH2F* fhPtHadron;        //!Pt distribution of reco charged hadrons
+                           //!(pi,k,p) in EMCAL acceptance
+  TH2F* fhPtNPEleTPC;      //!Pt distribution of non-photonic reco electrons using
+			   //!just TPC dEdx info in EMCAL acceptance
+  TH2F* fhPtNPEleTPCTRD;   //!Pt distribution of non-photonic reco electrons using
+			   //!pid info from tracking detectors only in EMCAL acceptance
+  TH2F* fhPtNPEleTTE;      //!Pt distribution of non-photonic reco
+			   //!electrons using pid info from TPC+TRD+EMCAL
+			   //!in EMCAL acceptance
+  TH2F* fhPtNPEleEMCAL;    //!Pt distribution of non-photonic reco
+			   //!electrons using EMCAL only
+			   //!in EMCAL acceptance
+
   //DVM B-tagging
   TH2F * fhDVMBtagCut1; //! DVM B-tagging result for cut1 (minv>1.0)
   TH2F * fhDVMBtagCut2; //! DVM B-tagging result for cut2 (minv>1.5)
@@ -241,18 +258,6 @@ public:
 
   //Histograms for comparison to tracking detectors
   TH2F* fhPtTrack;         //!Pt distribution of reco tracks with MC-ID
-  TH2F* fhPtHadron;        //!Pt distribution of reco charged hadrons
-                           //!(pi,k,p) in EMCAL acceptance
-  TH2F* fhPtNPEleTPC;      //!Pt distribution of non-photonic reco electrons using
-			   //!just TPC dEdx info in EMCAL acceptance
-  TH2F* fhPtNPEleTPCTRD;   //!Pt distribution of non-photonic reco electrons using
-			   //!pid info from tracking detectors only in EMCAL acceptance
-  TH2F* fhPtNPEleTTE;      //!Pt distribution of non-photonic reco
-			   //!electrons using pid info from TPC+TRD+EMCAL
-			   //!in EMCAL acceptance
-  TH2F* fhPtNPEleEMCAL;    //!Pt distribution of non-photonic reco
-			   //!electrons using EMCAL only
-			   //!in EMCAL acceptance
 
   TH2F* fhPtNPEBHadron;    //!correlate our best reconstructed
 			   //b-electrons with the b-hadron momentum
