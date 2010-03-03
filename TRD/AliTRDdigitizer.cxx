@@ -654,8 +654,12 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   } // for: detector
 
-  if (!fSDigits) 
-    AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")->WriteData("OVERWRITE");
+  if (!fSDigits) {
+    if (AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")) {
+      if (trklLoader->Tree())
+        trklLoader->WriteData("OVERWRITE");
+    }
+  }
     
   delete [] hits;
   delete [] nhit;
@@ -1693,7 +1697,11 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
 
   } // for: detector numbers
 
-  AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")->WriteData("OVERWRITE");
+  if (AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")) {
+    if (trklLoader->Tree())
+      trklLoader->WriteData("OVERWRITE");
+  }
+
   // Save the values for the raw data headers
   fDigitsManager->GetDigitsParam()->SetNTimeBinsAll(AliTRDSimParam::Instance()->GetNTimeBins());
   fDigitsManager->GetDigitsParam()->SetADCbaselineAll(AliTRDSimParam::Instance()->GetADCbaseline());
