@@ -148,9 +148,9 @@ void AlidNdPtCutAnalysis::Init(){
   //
 
   //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim:polarity
-  Int_t binsRecMCTrackHist[11]={160,80,80,80,80,30,90,ptNbins, 2, 2, 2};
-  Double_t minRecMCTrackHist[11]={0., 0., 0., -10.,-10.,-1.5, 0., ptMin, 0., 0., 0.};
-  Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 10.,10.,1.5, 2.*TMath::Pi(), ptMax, 2.,2., 2.};
+  Int_t binsRecMCTrackHist[11]={160,80,80,100,100,30,90,ptNbins, 2, 2, 2};
+  Double_t minRecMCTrackHist[11]={0., 0., 0., -5.,-5.,-1.5, 0., ptMin, 0., 0., 0.};
+  Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 5.,5.,1.5, 2.*TMath::Pi(), ptMax, 2.,2., 2.};
 
   fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim:polarity",11,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
   fRecMCTrackHist->SetBinEdges(7,binsPt);
