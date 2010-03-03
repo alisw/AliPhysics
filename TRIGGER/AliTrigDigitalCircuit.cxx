@@ -40,6 +40,7 @@ Bool_t AliTrigDigitalCircuit::Connect(Int_t output, AliTrigDevice *other, Int_t 
 // Connect to an input of another device.
   if (!fConnector) fConnector = new AliTrigConnector(Form("wire_%s_%d", GetName(), output), (AliTrigDevice*)this, 0);
   fConnector->Connect(other, at_input);
+  return kTRUE;
 }
 
 //______________________________________________________________________________
