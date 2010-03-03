@@ -43,6 +43,7 @@ public:
 
   void    UserCreateOutputObjects();
   void    UserExec(Option_t *);
+  void    ConnectInputData(Option_t *opt) {AliAnalysisTaskSE::ConnectInputData(opt);}
   static Float_t GetTPCx() { return fgkTPC;}
   static Float_t GetTOFx() { return fgkTOF;}
 
