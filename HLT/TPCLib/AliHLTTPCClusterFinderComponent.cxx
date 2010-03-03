@@ -42,8 +42,8 @@ using namespace std;
 #include "AliTPCcalibDB.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCParam.h"
-#include "AliHLTTPCCAInputDataCompressorComponent.h"
-#include "AliHLTTPCCADef.h"
+//#include "AliHLTTPCCAInputDataCompressorComponent.h"
+//#include "AliHLTTPCCADef.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -157,7 +157,7 @@ int AliHLTTPCClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDataTypeL
   tgtList.clear();
   tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
   tgtList.push_back(kAliHLTDataTypeHwAddr16);
-  tgtList.push_back(AliHLTTPCCADefinitions::fgkCompressedInputDataType);
+  //tgtList.push_back(AliHLTTPCCADefinitions::fgkCompressedInputDataType);
   return tgtList.size();
 }
 
@@ -501,6 +501,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
        tSize+=nHWAdd*sizeof(AliHLTUInt16_t);
       }
 
+      /*
       { // compressed output for the CA tracker	
 
 	AliHLTUInt32_t dSize = 0;	
@@ -531,7 +532,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	outBPtr += dSize;
 	outPtr = (AliHLTTPCClusterData*)outBPtr;	
       }
-
+      */
 
       if(fDoMC){
 	Int_t maxNumberOfClusterMCInfo = (Int_t)((size-tSize)/sizeof(AliHLTTPCClusterFinder::ClusterMCInfo)-1);
