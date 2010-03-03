@@ -345,7 +345,7 @@ Int_t AliHLTITSClusterFinderComponent::DoDeinit() {
 int AliHLTITSClusterFinderComponent::DoEvent
 (
  const AliHLTComponentEventData& evtData,
- const AliHLTComponentBlockData* blocks,
+ const AliHLTComponentBlockData* /*blocks*/,
  AliHLTComponentTriggerData& /*trigData*/,
  AliHLTUInt8_t* outputPtr,
  AliHLTUInt32_t& size,
