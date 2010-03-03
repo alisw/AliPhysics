@@ -120,10 +120,13 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  cout<<ibin<<" bincont "<<bincont<<" amp "<< mips[nmips]<<endl;
 	  nmips++;
 	}	
-      }     
-      Float_t x1[20], y1[20]; 
-      Float_t x2[20], xx2[20],y2[20];
-      Float_t xx1[20],yy1[20], xx[20];
+      }    
+      
+      if (nmips<15) ok=false; 
+       
+      Float_t x1[50], y1[50]; 
+      Float_t x2[50], xx2[50],y2[50];
+      Float_t xx1[50],yy1[50], xx[50];
       
       Float_t cfd0[24];
       Int_t startim = 0;
