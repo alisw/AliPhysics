@@ -223,9 +223,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Int_t refAmp = GetRecoParam()->GetRefAmp();
   Int_t refPoint = GetRecoParam()->GetRefPoint();
   Float_t latencyL1 = GetRecoParam()->GetLatencyL1();
+  Float_t latencyL1A = GetRecoParam()->GetLatencyL1A();
+  Float_t latencyL1C = GetRecoParam()->GetLatencyL1C();
   Float_t latencyHPTDC = GetRecoParam()->GetLatencyHPTDC();
   Float_t vertexshift = GetRecoParam()->GetVertexShift();
-
+  AliDebug(10,Form(" LatencyL1 %f latencyL1A %f latencyL1C %f latencyHPTDC %f \n",latencyL1,latencyL1A,latencyL1C, latencyHPTDC));
   Int_t allData[110][5];
   
   Int_t timeCFD[24], timeLED[24], chargeQT0[24], chargeQT1[24];
@@ -243,7 +245,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Double32_t besttimeC=9999999;
   Int_t pmtBestA=99999;
   Int_t pmtBestC=99999;
-  Float_t meanVertex = fParam->GetMeanVertex();
+  // Float_t meanVertex = fParam->GetMeanVertex();
+  Float_t meanVertex = 0;
    
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
   
@@ -352,14 +355,14 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	 }
        }
        if(besttimeA < 999999) 
-	 frecpoints->SetTimeBestA( 0.001 * besttimeA * channelWidth - latencyHPTDC + latencyL1);
+	 frecpoints->SetTimeBestA(0.001* besttimeA * channelWidth - latencyHPTDC + latencyL1A);
        if( besttimeC < 999999 ) 
-	 frecpoints->SetTimeBestC(0.001 * besttimeC * channelWidth - latencyHPTDC + latencyL1);
+	 frecpoints->SetTimeBestC( 0.001 *besttimeC * channelWidth - latencyHPTDC + latencyL1C);
        AliDebug(10,Form(" pmtA %i besttimeA %f ps, pmtC %i besttimeC %f ps",
 		       pmtBestA,besttimeA, pmtBestC,  besttimeC));
         if(besttimeA <999999 && besttimeC < 999999 ){
 	 timeDiff = ( besttimeA - besttimeC) *0.001 * channelWidth;
-	 timeclock =  0.001 * channelWidth * Float_t(besttimeA+besttimeC)/2. - latencyHPTDC + latencyL1;  
+	 timeclock = 0.001*channelWidth * Float_t( besttimeA+besttimeC)/2. - latencyHPTDC + latencyL1;  
 	 meanTime = (besttimeA+besttimeC-2.*Float_t(ref))/2.;
 	 vertex =  meanVertex -  c*(timeDiff)/2. + vertexshift; //+ (fdZonA - fdZonC)/2; 
 	}

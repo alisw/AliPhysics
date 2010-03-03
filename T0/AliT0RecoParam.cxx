@@ -44,6 +44,8 @@ AliT0RecoParam::AliT0RecoParam():
    fRefAmp(7),
    fRefPoint(0),
    fLatencyL1(0),  
+   fLatencyL1A(0),  
+   fLatencyL1C(0),  
    fLatencyHPTDC(0),      
    fVertexShift(0)   
 {
@@ -69,7 +71,9 @@ AliT0RecoParam::AliT0RecoParam(const AliT0RecoParam &p):
   fRefAmp(p.fRefAmp),
   fRefPoint(p.fRefPoint),
   fLatencyL1(p.fLatencyL1),  
-  fLatencyHPTDC(p.fLatencyHPTDC),      
+  fLatencyL1A(p.fLatencyL1A),  
+  fLatencyL1C(p.fLatencyL1C),  
+ fLatencyHPTDC(p.fLatencyHPTDC),      
   fVertexShift(p.fVertexShift)   
 {
  
@@ -91,6 +95,9 @@ AliT0RecoParam& AliT0RecoParam:: operator=(const AliT0RecoParam &p)
   fRefAmp = p.fRefAmp;
   fRefPoint = p.fRefPoint;
   fLatencyL1 = p.fLatencyL1;
+  fLatencyL1A = p.fLatencyL1A;
+  fLatencyL1C = p.fLatencyL1C;
+
   fLatencyHPTDC = p.fLatencyHPTDC;
   fVertexShift = p.fVertexShift;
   return *this;
@@ -106,7 +113,9 @@ AliT0RecoParam *AliT0RecoParam::GetLowFluxParam()
   AliT0RecoParam *param = new AliT0RecoParam();
   param->fRefAmp = 1;
   param->fRefPoint = 0;
-  param->fLatencyL1 = 7782.01;
+  param->fLatencyL1 = 7782.05;
+  param->fLatencyL1A = 7781.90;
+  param->fLatencyL1C =  7782.19;
   param->fLatencyHPTDC = 22000;
   param->fVertexShift = 4.6;
   for (Int_t i=0; i<500; i++)
@@ -128,10 +137,13 @@ AliT0RecoParam *AliT0RecoParam::GetHighFluxParam()
   //
 
   AliT0RecoParam *param = new AliT0RecoParam();
-  param->fRefAmp = 5;
+  param->fRefAmp = 10;
   param->fRefPoint = 0;
-  param->fLatencyL1 = 7782.01;
+  param->fLatencyL1 = 7782.05;
+  param->fLatencyL1A = 7781.90;
+  param->fLatencyL1C =  7782.19;
   param->fLatencyHPTDC = 22000;
+
   param->fVertexShift = 4.6;
   for (Int_t i=0; i<500; i++)
     {
@@ -155,8 +167,11 @@ AliT0RecoParam *AliT0RecoParam::GetLaserTestParam()
   AliT0RecoParam *param = new AliT0RecoParam();
   param->fRefAmp = 1;
   param->fRefPoint = 1;
-  param->fLatencyL1 = 7782.01;
+  param->fLatencyL1 = 7782.05;
+  param->fLatencyL1A = 7781.90;
+  param->fLatencyL1C =  7782.19;
   param->fLatencyHPTDC = 22000;
+
   param->fVertexShift = 0;
   for (Int_t i=0; i<500; i++)
     {
@@ -179,6 +194,6 @@ void AliT0RecoParam::PrintParameters() const
   AliInfo(Form(" Reference point in channel  : %i", fRefPoint));
   AliInfo(Form(" Current latency  : %i ns", fLatencyL1));
   AliInfo(Form(" HPTDC latency  : %i ns", fLatencyHPTDC));
-  cout<<" AliT0RecoParam::PrintParameters() "<<endl;
-  for (Int_t i=0; i<500; i++) cout<<i<<" "<<fLow[i]<<" "<<fHigh[i]<<endl; 
+  //  cout<<" AliT0RecoParam::PrintParameters() "<<endl;
+  //  for (Int_t i=0; i<500; i++) cout<<i<<" "<<fLow[i]<<" "<<fHigh[i]<<endl; 
 }

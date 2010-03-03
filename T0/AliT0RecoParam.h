@@ -41,6 +41,10 @@ class AliT0RecoParam : public AliDetectorRecoParam
   
   Float_t   GetLatencyL1() const {return fLatencyL1;}
   void      SetLatencyL1(Float_t lat) {fLatencyL1 = lat;}
+  Float_t   GetLatencyL1A() const {return fLatencyL1A;}
+  void      SetLatencyL1A(Float_t lat) {fLatencyL1A = lat;}
+  Float_t   GetLatencyL1C() const {return fLatencyL1C;}
+  void      SetLatencyL1C(Float_t lat) {fLatencyL1C = lat;}
   Float_t   GetLatencyHPTDC() const {return fLatencyHPTDC;}
   void      SetLatencyHPTDC(Float_t lat) {fLatencyHPTDC = lat;}
   Float_t   GetVertexShift() const {return fVertexShift;}
@@ -54,10 +58,12 @@ class AliT0RecoParam : public AliDetectorRecoParam
   Float_t   fLow[500];          //low limit of monitoring histograms
   Float_t   fHigh[500];         //high limit of monitoring histograms
   Float_t   fLatencyL1;         //Latency L1
+  Float_t   fLatencyL1A;         //Latency L1 for OrA
+  Float_t   fLatencyL1C;         //Latency L1 for orC
   Float_t   fLatencyHPTDC;      //Latency HPTDC
   Float_t   fVertexShift;       // for slewing correcton
 
-  ClassDef(AliT0RecoParam, 3);
+  ClassDef(AliT0RecoParam, 4);
  
 };
 #endif
