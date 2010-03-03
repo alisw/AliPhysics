@@ -36,8 +36,11 @@ public:
   AliDielectronCF(const char* name, const char* title);
   virtual ~AliDielectronCF();
 
-  void SetStepsForEachCut(Bool_t steps=kTRUE)          { fStepsForEachCut=steps;        }
-  void SetStepsForCutsIncreasing(Bool_t steps=kTRUE)   { fStepsForCutsIncreasing=steps; }
+  void SetStepForMCtruth(Bool_t steps=kTRUE)           { fStepForMCtruth=steps;           }
+  void SetStepForNoCutsMCmotherPid(Bool_t steps=kTRUE) { fStepForNoCutsMCmotherPid=steps; }
+  void SetStepForAfterAllCuts(Bool_t steps=kTRUE)      { fStepForAfterAllCuts=steps;      }
+  void SetStepsForEachCut(Bool_t steps=kTRUE)          { fStepsForEachCut=steps;          }
+  void SetStepsForCutsIncreasing(Bool_t steps=kTRUE)   { fStepsForCutsIncreasing=steps;   }
   
   void SetPdgMother(Int_t pdg) { fPdgMother=pdg; }
   
@@ -52,7 +55,7 @@ public:
   
   AliCFContainer* GetContainer() const { return fCfContainer; }
   
-private:
+// private:
   UInt_t          fVariables[AliDielectronVarManager::kNMaxValues]; //configured variables
   
   Int_t           fNSteps;                     // number of selection steps
@@ -63,9 +66,12 @@ private:
 
   Int_t           fNCuts;                      // Number of cuts in the filter concerned
 
-  Bool_t fStepsForEachCut;               //create steps for each cut?
-  Bool_t fStepsForCutsIncreasing;        //create steps for increasing cut combinatons?
-                                         //e.g. cut1&cut2, cut1&cut2&cut3 ...
+  Bool_t fStepForMCtruth;               //create a step for the MC truth
+  Bool_t fStepForNoCutsMCmotherPid;     //create a step for before cuts, but with MC truth of the mother
+  Bool_t fStepForAfterAllCuts;          //create a step for before cuts, but with MC truth of the mother
+  Bool_t fStepsForEachCut;              //create steps for each cut?
+  Bool_t fStepsForCutsIncreasing;       //create steps for increasing cut combinatons?
+                                        //e.g. cut1&cut2, cut1&cut2&cut3 ...
 
   UInt_t fStepMasks[kNmaxAddSteps];      //steps for additional cut combinatons
   UInt_t fNStepMasks;                    //number of configured step masks
@@ -76,7 +82,7 @@ private:
   AliDielectronCF(const AliDielectronCF &c);
   AliDielectronCF &operator=(const AliDielectronCF &c);
   
-  ClassDef(AliDielectronCF,1)  //Dielectron Correction Framework handler
+  ClassDef(AliDielectronCF,2)  //Dielectron Correction Framework handler
 };
 
 #endif

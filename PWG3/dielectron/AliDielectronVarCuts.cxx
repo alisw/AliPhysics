@@ -29,7 +29,7 @@
 
 
 #include "AliDielectronVarCuts.h"
-
+#include "AliDielectronMC.h"
 
 ClassImp(AliDielectronVarCuts)
 
@@ -38,7 +38,9 @@ AliDielectronVarCuts::AliDielectronVarCuts() :
   AliAnalysisCuts(),
   fNActiveCuts(0),
   fActiveCutsMask(0),
-  fSelectedCutsMask(0)
+  fSelectedCutsMask(0),
+  fCutOnMCtruth(kFALSE),
+  fCutType(kAll)
 {
   //
   // Default costructor
@@ -55,7 +57,9 @@ AliDielectronVarCuts::AliDielectronVarCuts(const char* name, const char* title) 
   AliAnalysisCuts(name,title),
   fNActiveCuts(0),
   fActiveCutsMask(0),
-  fSelectedCutsMask(0)
+  fSelectedCutsMask(0),
+  fCutOnMCtruth(kFALSE),
+  fCutType(kAll)
 {
   //
   // Named contructor
@@ -82,23 +86,37 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
   // Make cut decision
   //
 
-  Double_t values[AliDielectronVarManager::kNMaxValues];
-  AliDielectronVarManager::Fill(track,values);
+  //reset
   fSelectedCutsMask=0;
   SetSelected(kFALSE);
+
+  if (!track) return kFALSE;
+  
+  //If MC cut, get MC truth
+  if (fCutOnMCtruth){
+    AliVParticle *part=static_cast<AliVParticle*>(track);
+    track=AliDielectronMC::Instance()->GetMCTrackFromMCEvent(part->GetLabel());
+    if (!track) return kFALSE;
+  }
+
+  //Fill values
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::Fill(track,values);
   
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
     Int_t cut=fActiveCuts[iCut];
     SETBIT(fSelectedCutsMask,iCut);
-    if ( (values[cut]<fCutMin[cut]) || (values[cut]>fCutMax[cut]) ) CLRBIT(fSelectedCutsMask,iCut);
+    if ( (values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]) ) CLRBIT(fSelectedCutsMask,iCut);
   }
+  
   Bool_t isSelected=(fSelectedCutsMask==fActiveCutsMask);
+  if ( fCutType==kAny ) isSelected=(fSelectedCutsMask>0);
   SetSelected(isSelected);
   return isSelected;
 }
 
 //________________________________________________________________________
-void AliDielectronVarCuts::AddCut(Double_t min, Double_t max, AliDielectronVarManager::ValueTypes type)
+void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max)
 {
   //
   // Set cut range and activate it
@@ -108,34 +126,11 @@ void AliDielectronVarCuts::AddCut(Double_t min, Double_t max, AliDielectronVarMa
     min=max;
     max=tmp;
   }
-  fCutMin[type]=min;
-  fCutMax[type]=max;
-  ActivateCut(type);
-}
-
-//________________________________________________________________________
-void AliDielectronVarCuts::ActivateCut(AliDielectronVarManager::ValueTypes cutName)
-{
-  //
-  // Add the cut to the list of active cuts
-  //
-
-  if (IsCutActive(cutName)) return;
+  fCutMin[fNActiveCuts]=min;
+  fCutMax[fNActiveCuts]=max;
   SETBIT(fActiveCutsMask,fNActiveCuts);
-  fActiveCuts[fNActiveCuts++]=(UChar_t)cutName;
-}
-
-//________________________________________________________________________
-Bool_t AliDielectronVarCuts::IsCutActive(AliDielectronVarManager::ValueTypes cut)
-{
-  //
-  // Check if this cut is already activated
-  //
-  for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
-    if (fActiveCuts[iCut]==(UChar_t)cut) return kTRUE;
-  }
-  
-  return kFALSE;
+  fActiveCuts[fNActiveCuts]=(UShort_t)type;
+  ++fNActiveCuts;
 }
 
 //________________________________________________________________________
@@ -145,9 +140,14 @@ void AliDielectronVarCuts::Print(const Option_t* /*option*/) const
   // Print cuts and the range
   //
   printf("cut ranges for '%s'\n",GetTitle());
+  if (fCutType==kAll){
+    printf("All Cuts have to be fulfilled\n");
+  } else {
+    printf("Any Cut has to be fulfilled\n");
+  }
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
-    UChar_t cut=fActiveCuts[iCut];
+    Int_t cut=(Int_t)fActiveCuts[iCut];
     printf("Cut %02d: %f < %s < %f\n", iCut,
-           fCutMin[cut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[cut]);
+           fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[iCut]);
   }
 }

@@ -60,7 +60,7 @@ private:
   TDatabasePDG        *fPDG;           //! PDG database
 
   void FillPlots(AliVEvent *event);
-  void FillMCInfo(AliStack *pStack);
+  void FillMCInfo(AliStack * const pStack);
 
   AliAnalysisTaskDielectronEfficiency(const AliAnalysisTaskDielectronEfficiency &c);
   AliAnalysisTaskDielectronEfficiency& operator= (const AliAnalysisTaskDielectronEfficiency &c);
