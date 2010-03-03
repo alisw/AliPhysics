@@ -148,7 +148,7 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   //mgr->SetDebugLevel(10);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
-  if(!AddTrainPerformanceTRD(fHasMCdata, fHasFriends, optList)) {
+  if(!AddTrainPerformanceTRD(optList)) {
     Error("run.C", "Error loading TRD train.");
     return;
   }
