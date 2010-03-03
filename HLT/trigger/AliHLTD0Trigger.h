@@ -19,6 +19,7 @@ class TH1F;
 class TObjArray;
 class AliESDVertex;
 class AliExternalTrackParam;
+class AliHLTMCEvent;
 
 /**
  * @class  AliHLTD0Trigger
@@ -103,7 +104,8 @@ class AliHLTD0Trigger : public AliHLTTrigger
   
   void SingleTrackSelect(AliExternalTrackParam*);
   Int_t RecV0(const TObject* iter);
-  Int_t RecD0();
+  void RecD0(Int_t&,Int_t&);
+  bool CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackParam* pn);
 
   /// pt cut for decay, minimum [GeV/c]
   float fPtMin;                                            //! transient
@@ -135,9 +137,12 @@ class AliHLTD0Trigger : public AliHLTTrigger
   TObjArray *ftwoTrackArray;                                //! transient
 
   Int_t fTotalD0;                                           //! transient
-  AliESDVertex *fVertex;                                 //! transient
-  Double_t fField;                                         //!transient
+  Int_t fTotalD0true;                                       //! transient
+  AliESDVertex *fVertex;                                    //! transient
+  Double_t fField;                                          //!transient
   
+  AliHLTMCEvent* fEvent;                                    //!transient
+
   /// the default configuration entry for this component
   static const char* fgkOCDBEntry; //!transient
 

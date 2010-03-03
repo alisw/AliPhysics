@@ -41,6 +41,9 @@
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
 #include "AliAODRecoDecay.h"
+#include "AliHLTMCEvent.h"
+#include "AliStack.h"
+#include "TParticle.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTD0Trigger)
@@ -63,8 +66,10 @@ AliHLTD0Trigger::AliHLTD0Trigger()
   , fd0calc(NULL)                  
   , ftwoTrackArray(NULL)
   , fTotalD0(0)
+  , fTotalD0true(0)
   , fVertex(NULL)
   , fField(0)
+  , fEvent(NULL)
 {
   
   // see header file for class documentation
@@ -105,7 +110,16 @@ int AliHLTD0Trigger::DoTrigger()
   if (!IsDataEvent()) return 0;
 
   Int_t nD0=0;
+  Int_t nD0true=0;
   TString description;
+
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT); iter != NULL; iter = GetNextInputObject() ) {   
+    fEvent = dynamic_cast<AliHLTMCEvent*>(const_cast<TObject*>( iter ) );
+    if ( ! fEvent ) {
+      HLTError( "No MC Event present!" );
+      break;
+    }
+  }
 
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {   
     if(fUseV0){
@@ -124,8 +138,8 @@ int AliHLTD0Trigger::DoTrigger()
        for(Int_t it=0;it<event->GetNumberOfTracks();it++){
 	 SingleTrackSelect(event->GetTrack(it));
        }
-       
-       nD0=RecD0();
+    
+       RecD0(nD0,nD0true);       
     }
   }
 
@@ -147,17 +161,20 @@ int AliHLTD0Trigger::DoTrigger()
     for(UInt_t i=0;i<tracksVector.size();i++){
       SingleTrackSelect(&tracksVector[i]);
     }
-    nD0=RecD0();
+    RecD0(nD0,nD0true);
   }    
 
   fTotalD0+=nD0;
-   
+  fTotalD0true += nD0true;
+
   ftwoTrackArray->Clear();
   fPos.clear();
   fNeg.clear();
      
-  HLTInfo("Number of D0 found: %d",nD0);
-  HLTInfo("Total Number of D0 found: %d",fTotalD0);
+  HLTDebug("Number of D0 found: %d",nD0);
+  HLTDebug("Number of True D0 found: %d",nD0true);
+  HLTDebug("Total Number of D0 found: %d",fTotalD0);
+  HLTDebug("Total Number of True D0 found: %d",fTotalD0true);
 
   if(fplothisto){PushBack( (TObject*) fD0mass, kAliHLTDataTypeHistogram,0);}
   
@@ -321,9 +338,8 @@ void AliHLTD0Trigger::SingleTrackSelect(AliExternalTrackParam* t){
   }
 }
 
-Int_t AliHLTD0Trigger::RecD0(){
-  
-  int nD0=0;
+void AliHLTD0Trigger::RecD0(Int_t& nD0, Int_t& nD0true){
+ 
   Double_t D0,D0bar,xdummy,ydummy; 
   Double_t d0[2];
   Double_t svpos[3];
@@ -331,7 +347,7 @@ Int_t AliHLTD0Trigger::RecD0(){
   
   if(!fVertex){
     HLTError("No Vertex is set");
-    return 0;
+    return;
   }
   fVertex->GetXYZ(pvpos);
     
@@ -406,11 +422,14 @@ Int_t AliHLTD0Trigger::RecD0(){
 	*/
       }
       
+      if(CheckTrackMC(tP,tN)){
+	nD0true++;
+      }
+
       nD0++;
       delete vertexp1n1;
     }
   }
-  return nD0;
 }
 
 Int_t AliHLTD0Trigger::RecV0(const TObject* iter){
@@ -465,4 +484,26 @@ Int_t AliHLTD0Trigger::RecV0(const TObject* iter){
   }
   return nD0;
   
+}
+bool AliHLTD0Trigger::CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackParam* pn){
+
+  if(!fEvent){return false;}
+
+  int lP = pt->GetLabel();
+  int lN = pn->GetLabel();
+
+  if(lN>=0 && lP>=0){
+    
+    int imP = (fEvent->Particle(lP))->GetFirstMother();
+    int imN = (fEvent->Particle(lN))->GetFirstMother();
+    
+    if(imP>=0 && imN>=0){
+      TParticle * mP = fEvent->Particle(imP);
+      TParticle * mN = fEvent->Particle(imN);
+      if(fabs(mP->GetPdgCode())==421 && fabs(mN->GetPdgCode())==421 && imP == imN){
+	return true;
+      }
+    }
+  }
+  return false;
 }
