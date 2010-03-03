@@ -234,15 +234,22 @@ if test ! "x$have_aliroot" = "xno" ; then
 
   dnl
   dnl check whether AliLog supports notification callback
+  dnl 2010-03-03: revision 38921 introduces AliLog::GetRootLogger in order to make AliLog
+  dnl a pure sigleton, introduce a 2-level check here
   dnl
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   have_alilog_notification=no
   if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING([whether AliLog supports notification callback])
   AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliLog.h>], 
-		                  [AliLog::AliLogNotification fct])],
-                                  [have_alilog_notification=yes], 
-				  [AC_DEFINE(NO_ALILOG_NOTIFICATION)])
+		                  [AliLog* logger=AliLog::GetRootLogger();])],
+                                  [have_alilog_notification=yes],
+				  [AC_DEFINE(NO_ALILOG_GETROOTLOGGER)
+  				  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliLog.h>], 
+		                  				  [AliLog::AliLogNotification fct])],
+                                  				  [have_alilog_notification=yes], 
+				  				  [AC_DEFINE(NO_ALILOG_NOTIFICATION)])
+				  ])
   AC_MSG_RESULT([$have_alilog_notification])
   fi
 
