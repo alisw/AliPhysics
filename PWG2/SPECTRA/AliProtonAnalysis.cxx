@@ -692,7 +692,7 @@ TH1D *AliProtonAnalysis::GetProtonCorrectedPtHistogram() {
   //Get the corrected Pt histogram for protons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fPtProtons = (TH1D *)fHistYPtProtonsCorrected->ProjectionY("fPtProtons",1,fHistYPtProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *fPtProtons = (TH1D *)fHistYPtProtonsCorrected->ProjectionY("fPtProtons",2,fHistYPtProtons->GetXaxis()->GetNbins()-1,"e");
   //TH1D *fPtProtons = fCorrectProtons->Project(0); //0: rapidity
    
   fPtProtons->SetStats(kFALSE);
@@ -712,7 +712,7 @@ TH1D *AliProtonAnalysis::GetAntiProtonCorrectedPtHistogram() {
   //Get the corrected Pt histogram for antiprotons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtonsCorrected->ProjectionY("fPtAntiProtons",1,fHistYPtAntiProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtonsCorrected->ProjectionY("fPtAntiProtons",2,fHistYPtAntiProtons->GetXaxis()->GetNbins()-1,"e");
 //TH1D *fPtAntiProtons = fCorrectAntiProtons->Project(0); //0: rapidity
    
   fPtAntiProtons->SetStats(kFALSE);
@@ -1400,7 +1400,7 @@ void AliProtonAnalysis::Correct() {
   fHistYPtProtonsCorrected->Divide(fHistEfficiencyYPtProtons);
   //Correct the protons for proper cross-section
   if(fHistCorrectionForCrossSectionFlag)
-    fHistYPtProtonsCorrected->Divide(fHistCorrectionForCrossSectionYPtProtons);
+    fHistYPtProtonsCorrected->Multiply(fHistCorrectionForCrossSectionYPtProtons);
   //Correct the protons for secondaries
   if(fCorrectForSecondariesFlag)
     fHistYPtProtonsCorrected->Divide(fHistYPtCorrectionForSecondaries);
@@ -1410,7 +1410,7 @@ void AliProtonAnalysis::Correct() {
   fHistYPtAntiProtonsCorrected->Divide(fHistEfficiencyYPtAntiProtons);
   //Correct the antiprotons for proper cross-section
   if(fHistCorrectionForCrossSectionFlag)
-    fHistYPtAntiProtonsCorrected->Divide(fHistCorrectionForCrossSectionYPtAntiProtons);
+    fHistYPtAntiProtonsCorrected->Multiply(fHistCorrectionForCrossSectionYPtAntiProtons);
 }
 
 //____________________________________________________________________//
