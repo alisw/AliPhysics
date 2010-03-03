@@ -72,6 +72,27 @@ void AliTRDpidRefMaker::AliTRDpidRefDataArray::Reset()
 }
 
 //________________________________________________________________________
+AliTRDpidRefMaker::AliTRDpidRefMaker() 
+  :AliTRDrecoTask()
+  ,fReconstructor(NULL)
+  ,fV0s(NULL)
+  ,fData(NULL)
+  ,fInfo(NULL)
+  ,fPIDdataArray(NULL)
+  ,fRefPID(kMC)
+  ,fRefP(kMC)
+  ,fPIDbin(0xff)
+  ,fFreq(1.)
+  ,fP(-1.)
+  ,fPthreshold(0.)
+{
+  //
+  // Default constructor
+  //
+  SetNameTitle("PIDrefMaker", "PID Reference Maker");
+}
+
+//________________________________________________________________________
 AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title) 
   :AliTRDrecoTask(name, title)
   ,fReconstructor(NULL)
@@ -95,9 +116,9 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
   memset(fdEdx, 0, 10*sizeof(Float_t));
   memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
 
-  DefineInput(1, TObjArray::Class());
-  DefineInput(2, TObjArray::Class());
-  DefineOutput(1, TTree::Class());
+  DefineInput(2, TObjArray::Class()); // v0 list
+  DefineInput(3, TObjArray::Class()); // pid info list 
+  DefineOutput(2, TTree::Class());
 }
 
 
@@ -129,8 +150,8 @@ Float_t* AliTRDpidRefMaker::CookdEdx(AliTRDseedV1 *trklt)
 void AliTRDpidRefMaker::ConnectInputData(Option_t *opt)
 {
   AliTRDrecoTask::ConnectInputData(opt);
-  fV0s  = dynamic_cast<TObjArray*>(GetInputData(1));
-  fInfo = dynamic_cast<TObjArray*>(GetInputData(2));
+  fV0s  = dynamic_cast<TObjArray*>(GetInputData(2));
+  fInfo = dynamic_cast<TObjArray*>(GetInputData(3));
 } 
 
 //________________________________________________________________________
@@ -163,6 +184,8 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
+
+  AliInfo(Form("Analyse N[%d] tracks", fTracks->GetEntriesFast()));
 
   AliTRDtrackInfo     *track = NULL;
   AliTRDtrackV1    *trackTRD = NULL;
@@ -252,6 +275,7 @@ void AliTRDpidRefMaker::Fill()
   if(!fPIDdataArray->fNtracklets) return;
   fPIDbin = TMath::LocMax(AliPID::kSPECIES, fPID); // get particle type
 // Fill data tree
+  AliInfo(Form("fData[%p]", (void*)fData));
   fData->Fill();
 
   

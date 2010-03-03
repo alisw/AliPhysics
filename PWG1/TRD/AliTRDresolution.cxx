@@ -204,6 +204,7 @@ AliTRDresolution::AliTRDresolution()
   SetNameTitle("TRDresolution", "TRD spatial and momentum resolution");
 }
 
+//________________________________________________________
 AliTRDresolution::AliTRDresolution(char* name)
   :AliTRDrecoTask(name, "TRD spatial and momentum resolution")
   ,fStatus(0)
@@ -229,10 +230,10 @@ AliTRDresolution::AliTRDresolution(char* name)
 
   InitFunctorList();
 
-  DefineOutput(1, TObjArray::Class()); // cluster2track
-  DefineOutput(2, TObjArray::Class()); // tracklet2track
-  DefineOutput(3, TObjArray::Class()); // cluster2mc
-  DefineOutput(4, TObjArray::Class()); // tracklet2mc
+  DefineOutput(kClToTrk, TObjArray::Class()); // cluster2track
+  DefineOutput(kTrkltToTrk, TObjArray::Class()); // tracklet2track
+  DefineOutput(kClToMC, TObjArray::Class()); // cluster2mc
+  DefineOutput(kTrkltToMC, TObjArray::Class()); // tracklet2mc
 }
 
 //________________________________________________________
@@ -259,7 +260,6 @@ void AliTRDresolution::UserCreateOutputObjects()
 {
   // spatial resolution
   OpenFile(1, "RECREATE");
-
   fContainer = Histos();
 
   fCl = new TObjArray();
@@ -283,13 +283,11 @@ void AliTRDresolution::UserExec(Option_t *opt)
   fTrklt->Delete();
   fMCcl->Delete();
   fMCtrklt->Delete();
-
   AliTRDrecoTask::UserExec(opt);
-
-  PostData(1, fCl);
-  PostData(2, fTrklt);
-  PostData(3, fMCcl);
-  PostData(4, fMCtrklt);
+  PostData(kClToTrk, fCl);
+  PostData(kTrkltToTrk, fTrklt);
+  PostData(kClToMC, fMCcl);
+  PostData(kTrkltToMC, fMCtrklt);
 }
 
 //________________________________________________________

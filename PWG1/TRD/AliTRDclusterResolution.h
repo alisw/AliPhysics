@@ -35,7 +35,7 @@ public:
    ,kExB       = BIT(23)
   };
   AliTRDclusterResolution();
-  AliTRDclusterResolution(const char *name, const char *title="Cluster error monitor");
+  AliTRDclusterResolution(const char *name);
   virtual ~AliTRDclusterResolution();
 
   void          ConnectInputData(Option_t *);

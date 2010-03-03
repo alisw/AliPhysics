@@ -222,7 +222,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
   //
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   fMC = MCEvent();
-  
+
   if(!fESD){
     AliError("ESD event missing.");
     return;

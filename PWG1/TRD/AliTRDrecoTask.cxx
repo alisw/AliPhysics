@@ -48,6 +48,7 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fDebugLevel(0)
   ,fPlotFuncList(NULL)
 {
+// Default constructor  
 }
 
 //_______________________________________________________
@@ -62,23 +63,11 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fDebugLevel(0)
   ,fPlotFuncList(NULL)
 {
-  SetTitle(title);
-  DefineInput (1, TObjArray::Class());
-  DefineOutput(1, TObjArray::Class());
-}
+// Constructor for all derived performance tasks
 
-AliTRDrecoTask::AliTRDrecoTask(const char *name)
-  : AliAnalysisTaskSE(name)
-  ,fNRefFigures(0)
-  ,fContainer(NULL)
-  ,fTracks(NULL)
-  ,fkTrack(NULL)
-  ,fkMC(NULL)
-  ,fkESD(NULL)
-  ,fDebugLevel(0)
-  ,fPlotFuncList(NULL)
-{
-  DefineOutput(1, TObjArray::Class());
+  SetTitle(title);
+  DefineInput (1, TObjArray::Class()); // track list
+  DefineOutput(1, TObjArray::Class()); // histogram list
 }
 
 //_______________________________________________________
@@ -120,8 +109,8 @@ void AliTRDrecoTask::ConnectInputData(Option_t *)
   //
   // Connect input data
   //
-    AliAnalysisTaskSE::ConnectInputData();
-    fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
+  AliAnalysisTaskSE::ConnectInputData();
+  fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
 }
 
 //_______________________________________________________

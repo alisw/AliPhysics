@@ -10,7 +10,16 @@
 #define NTRDCALIBTASKS 6
 const Int_t NTRDTASKS = NTRDQATASKS+NTRDCALIBTASKS;
 
-enum AliTRDrecoTasks{
+enum ETRDinfoGenOutSlots {
+   kEventInfo     = 1
+  ,kTracksBarrel  = 2
+  ,kTracksSA      = 3
+  ,kTracksKink    = 4
+  ,kV0List        = 5
+  ,kNOutSlots     = 6
+};
+
+enum ETRDrecoTasks{
    kCheckESD      = 0
   ,kInfoGen       = 1
   ,kCheckDET      = 2

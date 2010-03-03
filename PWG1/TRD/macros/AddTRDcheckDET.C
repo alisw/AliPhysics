@@ -1,4 +1,5 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
+#include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
@@ -11,9 +12,11 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
 {
   Int_t map = ParseOptions(trd);
   if(!(TSTBIT(map, kCheckDET))) return;
+  printf("AddTRDcheckDET <- [0]=\"%s\" [1]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName());
 
   AliTRDcheckDET *task(NULL);
   mgr->AddTask(task = new AliTRDcheckDET((char*)"checkDET"));
+  //AliLog::SetClassDebugLevel("AliTRDcheckDET", 5);
   task->SetDebugLevel(0);
   task->SetMCdata(mgr->GetMCtruthEventHandler());
   

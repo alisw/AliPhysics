@@ -52,13 +52,24 @@ ClassImp(AliTRDpidRefMakerLQ)
 
 //__________________________________________________________________
 AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ() 
-  : AliTRDpidRefMaker("PIDrefMakerLQ", "PID(LQ) Reference Maker")
+  : AliTRDpidRefMaker()
   , fPDF(NULL)
 {
   //
   // AliTRDpidRefMakerLQ default constructor
   //
-  DefineOutput(2, TObjArray::Class());
+  SetNameTitle("refMakerLQ", "PID(LQ) Reference Maker");
+}
+
+//__________________________________________________________________
+AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ(const char *name)
+  : AliTRDpidRefMaker(name, "PID(LQ) Reference Maker")
+  , fPDF(NULL)
+{
+  //
+  // AliTRDpidRefMakerLQ default constructor
+  //
+  DefineOutput(3, TObjArray::Class());
 }
 
 //__________________________________________________________________
@@ -68,7 +79,7 @@ AliTRDpidRefMakerLQ::~AliTRDpidRefMakerLQ()
   // AliTRDCalPIDQRef destructor
   //
   if(fPDF){
-    fPDF->Write("PDF_LQ", TObject::kSingleKey);
+    //fPDF->Write("PDF_LQ", TObject::kSingleKey);
     fPDF->Delete();
     delete fPDF;
   }
@@ -80,7 +91,7 @@ void AliTRDpidRefMakerLQ::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  //OpenFile(0, "RECREATE");
+  AliTRDpidRefMaker::UserCreateOutputObjects();
   fContainer = Histos();
 
   OpenFile(2, "RECREATE");
@@ -94,11 +105,11 @@ TObjArray* AliTRDpidRefMakerLQ::Histos()
 {
   // Create histograms
 
-  if(fContainer) return fContainer;
-
-  fContainer = new TObjArray(2*AliTRDCalPID::kNMom);
-  //fContainer->SetOwner(kTRUE);
-  //fContainer->SetName(Form("Moni%s", GetName()));
+  if(!fContainer){
+    AliError("Monitor histograms missing.");
+    return NULL;
+  }
+  Int_t n(fContainer->GetEntriesFast());
 
   // save dE/dx references
   TH1 *h(NULL);
@@ -119,9 +130,9 @@ TObjArray* AliTRDpidRefMakerLQ::Histos()
       h->GetZaxis()->SetTitle("#");
       arr->AddAt(h, AliPID::kSPECIES+is);
     }
-    fContainer->AddAt(arr, ip);
+    fContainer->AddAt(arr, n+ip);
   }
-  fNRefFigures=AliTRDCalPID::kNMom;
+  fNRefFigures+=AliTRDCalPID::kNMom;
   return fContainer;
 }
 
@@ -249,8 +260,8 @@ void AliTRDpidRefMakerLQ::UserExec(Option_t */*opt*/)
     }
   }
 
-  PostData(0, fContainer);
-  PostData(2, fPDF);
+  PostData(1, fContainer);
+  PostData(3, fPDF);
 }
 
 

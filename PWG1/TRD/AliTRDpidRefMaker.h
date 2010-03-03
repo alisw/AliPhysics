@@ -76,7 +76,8 @@ public:
     ClassDef(AliTRDpidRefDataArray, 1)  // track PID data representation
   };
 
-  AliTRDpidRefMaker(const char *name="PIDrefMaker", const char *title="PID Reference Maker");
+  AliTRDpidRefMaker();
+  AliTRDpidRefMaker(const char *name, const char *title);
 
   virtual ~AliTRDpidRefMaker();
   

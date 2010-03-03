@@ -39,10 +39,9 @@ public:
    ,kMinStat    = 50     // minimum statistics/PID bin
   };
   AliTRDpidRefMakerNN();
-
+  AliTRDpidRefMakerNN(const char *n);
   virtual ~AliTRDpidRefMakerNN();
   
-  void    CreateOutputObjects();
   Int_t   GetEpochs() const {return fEpochs;};
   Int_t   GetMinTrain() const {return fMinTrain;};
   Int_t   GetTrainMomBin() const {return fTrainMomBin;};
@@ -68,6 +67,7 @@ protected:
 private:
   AliTRDpidRefMakerNN(const AliTRDpidRefMakerNN&);              // not implemented
   AliTRDpidRefMakerNN& operator=(const AliTRDpidRefMakerNN&);   // not implemented
+  void    MakeTrainTestTrees();
 
   TEventList *fTrain[AliTRDCalPID::kNMom];          // Training list for each momentum
   TEventList *fTest[AliTRDCalPID::kNMom];           // Test list for each momentum

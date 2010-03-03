@@ -88,7 +88,7 @@ AliTRDcheckDET::AliTRDcheckDET():
   SetNameTitle("checkDET", "Basic TRD data checker");
 }
 
-
+//_______________________________________________________
 AliTRDcheckDET::AliTRDcheckDET(char* name):
   AliTRDrecoTask(name, "Basic TRD data checker")
   ,fEventInfo(NULL)
