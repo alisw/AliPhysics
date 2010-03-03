@@ -115,7 +115,12 @@ class AliProtonAnalysis : public TObject {
   void SetCorrectionMapForSecondaries(const char* filename);
   TH2D *GetCorrectionMapForSecondaries() {
     return fHistYPtCorrectionForSecondaries;}
-  
+  void SetCorrectionMapForCrossSection(const char* filename);
+  TH2D *GetProtonsCorrectionMapForCrossSection() {
+    return fHistCorrectionForCrossSectionYPtProtons;}
+  TH2D *GetAntiProtonsCorrectionMapForCrossSection() {
+    return fHistCorrectionForCrossSectionYPtAntiProtons;}
+
   //iStep=0->MC - iStep=1->Acceptance - iStep=2->Reconstruction - iStep=3->PID
   TH1D  *GetUncorrectedProtonYHistogram(Int_t iStep) {return fProtonContainer->ShowProjection(0, iStep);}
   TH1D  *GetUncorrectedProtonPtHistogram(Int_t iStep) {return fProtonContainer->ShowProjection(1, iStep);}
@@ -157,6 +162,9 @@ class AliProtonAnalysis : public TObject {
   AliCFDataGrid *fCorrectAntiProtons; //corrected data grid for antiprotons
   TH2D *fHistEfficiencyYPtProtons;//efficiency 2D for the corrections - protons
   TH2D *fHistEfficiencyYPtAntiProtons;//efficiency 2D for the corrections - antiprotons
+  TH2D *fHistCorrectionForCrossSectionYPtProtons;//correction for the proper cross-section - 2D protons
+  TH2D *fHistCorrectionForCrossSectionYPtAntiProtons;//correction for the proper cross-section - 2D antiprotons
+  Bool_t fHistCorrectionForCrossSectionFlag;//correct for cross-section
   TH2D *fHistYPtCorrectionForSecondaries;//correction factors for the corrections (secondary protons)
   Bool_t fCorrectForSecondariesFlag;//correct for secondaries
 

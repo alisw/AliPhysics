@@ -63,6 +63,9 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
   fCorrectProtons(0), fCorrectAntiProtons(0),
   fHistEfficiencyYPtProtons(0), fHistEfficiencyYPtAntiProtons(0),
+  fHistCorrectionForCrossSectionYPtProtons(0),
+  fHistCorrectionForCrossSectionYPtAntiProtons(0),
+  fHistCorrectionForCrossSectionFlag(kFALSE),
   fHistYPtCorrectionForSecondaries(0), fCorrectForSecondariesFlag(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
@@ -89,6 +92,9 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
   fCorrectProtons(0), fCorrectAntiProtons(0),
   fHistEfficiencyYPtProtons(0), fHistEfficiencyYPtAntiProtons(0),
+  fHistCorrectionForCrossSectionYPtProtons(0),
+  fHistCorrectionForCrossSectionYPtAntiProtons(0),
+  fHistCorrectionForCrossSectionFlag(kFALSE),
   fHistYPtCorrectionForSecondaries(0), fCorrectForSecondariesFlag(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
@@ -187,6 +193,9 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
   fCorrectProtons(0), fCorrectAntiProtons(0),
   fHistEfficiencyYPtProtons(0), fHistEfficiencyYPtAntiProtons(0),
+  fHistCorrectionForCrossSectionYPtProtons(0),
+  fHistCorrectionForCrossSectionYPtAntiProtons(0),
+  fHistCorrectionForCrossSectionFlag(kFALSE),
   fHistYPtCorrectionForSecondaries(0), fCorrectForSecondariesFlag(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
@@ -287,6 +296,8 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fCorrectAntiProtons) delete fCorrectAntiProtons;
   if(fHistEfficiencyYPtProtons) delete fHistEfficiencyYPtProtons;
   if(fHistEfficiencyYPtAntiProtons) delete fHistEfficiencyYPtAntiProtons;
+  if(fHistCorrectionForCrossSectionYPtProtons) delete fHistCorrectionForCrossSectionYPtProtons;
+  if(fHistCorrectionForCrossSectionYPtAntiProtons) delete fHistCorrectionForCrossSectionYPtAntiProtons;
   if(fHistYPtCorrectionForSecondaries) delete fHistYPtCorrectionForSecondaries;
 
   //QA lists
@@ -985,29 +996,55 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	      fProtonContainer->Fill(containerInput,kStepSurvived);   
 	      ((TH2F *)(fQA2DList->At(12)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Phi()*180./TMath::Pi());
-	      ((TH3F *)(fQA2DList->At(14)))->Fill(tpcTrack->Eta(),
-						  tpcTrack->Pt(),
-						  TMath::Abs(dca[0]));
-	      ((TH3F *)(fQA2DList->At(15)))->Fill(tpcTrack->Eta(),
-						  tpcTrack->Pt(),
-						  TMath::Abs(dca[1]));
-	      ((TH3F *)(fQA2DList->At(18)))->Fill(tpcTrack->Eta(),
-						  tpcTrack->Pt(),
-						  TMath::Abs(dca3D));
+	      if(fProtonAnalysisBase->GetEtaMode()) {
+		((TH3F *)(fQA2DList->At(14)))->Fill(tpcTrack->Eta(),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca[0]));
+		((TH3F *)(fQA2DList->At(15)))->Fill(tpcTrack->Eta(),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca[1]));
+		((TH3F *)(fQA2DList->At(18)))->Fill(tpcTrack->Eta(),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca3D));
+	      }
+	      else {
+		((TH3F *)(fQA2DList->At(14)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca[0]));
+		((TH3F *)(fQA2DList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca[1]));
+		((TH3F *)(fQA2DList->At(18)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca3D));
+	      }
 	    }//protons
 	    else if(tpcTrack->Charge() < 0) {
 	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
 	      ((TH2F *)(fQA2DList->At(13)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Phi()*180./TMath::Pi());
-	      ((TH3F *)(fQA2DList->At(16)))->Fill(tpcTrack->Eta(),
-						  tpcTrack->Pt(),
-						  TMath::Abs(dca[0]));
-	      ((TH3F *)(fQA2DList->At(17)))->Fill(tpcTrack->Eta(),
-						  tpcTrack->Pt(),
-						  TMath::Abs(dca[1]));
-	      ((TH3F *)(fQA2DList->At(19)))->Fill(tpcTrack->Eta(),
-						  tpcTrack->Pt(),
-						  TMath::Abs(dca3D));
+	      if(fProtonAnalysisBase->GetEtaMode()) {
+		((TH3F *)(fQA2DList->At(16)))->Fill(tpcTrack->Eta(),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca[0]));
+		((TH3F *)(fQA2DList->At(17)))->Fill(tpcTrack->Eta(),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca[1]));
+		((TH3F *)(fQA2DList->At(19)))->Fill(tpcTrack->Eta(),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca3D));
+	      }
+	      else {
+		((TH3F *)(fQA2DList->At(16)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca[0]));
+		((TH3F *)(fQA2DList->At(17)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca[1]));
+		((TH3F *)(fQA2DList->At(19)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
+						    tpcTrack->Pt(),
+						    TMath::Abs(dca3D));
+	      }
 	    }//antiprotons
 	    
 	    //Step: kStepInPhaseSpace
@@ -1107,29 +1144,56 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	      fProtonContainer->Fill(containerInput,kStepSurvived);   
 	      ((TH2F *)(fQA2DList->At(12)))->Fill(track->Eta(),
 						  track->Phi()*180./TMath::Pi());
-	      ((TH3F *)(fQA2DList->At(14)))->Fill(track->Eta(),
-						  track->Pt(),
-						  TMath::Abs(dca[0]));
-	      ((TH3F *)(fQA2DList->At(15)))->Fill(track->Eta(),
-						  track->Pt(),
-						  TMath::Abs(dca[1]));
-	      ((TH3F *)(fQA2DList->At(18)))->Fill(track->Eta(),
-						  track->Pt(),
-						  TMath::Abs(dca3D));
+	      if(fProtonAnalysisBase->GetEtaMode()) {
+		((TH3F *)(fQA2DList->At(14)))->Fill(track->Eta(),
+						    track->Pt(),
+						    TMath::Abs(dca[0]));
+		((TH3F *)(fQA2DList->At(15)))->Fill(track->Eta(),
+						    track->Pt(),
+						    TMath::Abs(dca[1]));
+		((TH3F *)(fQA2DList->At(18)))->Fill(track->Eta(),
+						    track->Pt(),
+						    TMath::Abs(dca3D));
+
+	      }
+	      else {
+		((TH3F *)(fQA2DList->At(14)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),track->Py(),track->Pz()),
+						    track->Pt(),
+						    TMath::Abs(dca[0]));
+		((TH3F *)(fQA2DList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),track->Py(),track->Pz()),
+						    track->Pt(),
+						    TMath::Abs(dca[1]));
+		((TH3F *)(fQA2DList->At(18)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),track->Py(),track->Pz()),
+						    track->Pt(),
+						    TMath::Abs(dca3D));
+	      }
 	    }//protons
 	    else if(track->Charge() < 0) {
 	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
 	      ((TH2F *)(fQA2DList->At(13)))->Fill(track->Eta(),
 						  track->Phi()*180./TMath::Pi());
-	      ((TH3F *)(fQA2DList->At(16)))->Fill(track->Eta(),
-						  track->Pt(),
-						  TMath::Abs(dca[0]));
-	      ((TH3F *)(fQA2DList->At(17)))->Fill(track->Eta(),
-						  track->Pt(),
-						  TMath::Abs(dca[1]));
-	      ((TH3F *)(fQA2DList->At(19)))->Fill(track->Eta(),
-						  track->Pt(),
-						  TMath::Abs(dca3D));
+	      if(fProtonAnalysisBase->GetEtaMode()) {
+		((TH3F *)(fQA2DList->At(16)))->Fill(track->Eta(),
+						    track->Pt(),
+						    TMath::Abs(dca[0]));
+		((TH3F *)(fQA2DList->At(17)))->Fill(track->Eta(),
+						    track->Pt(),
+						    TMath::Abs(dca[1]));
+		((TH3F *)(fQA2DList->At(19)))->Fill(track->Eta(),
+						    track->Pt(),
+						    TMath::Abs(dca3D));
+	      }
+	      else {
+		((TH3F *)(fQA2DList->At(16)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),track->Py(),track->Pz()),
+						    track->Pt(),
+						    TMath::Abs(dca[0]));
+		((TH3F *)(fQA2DList->At(17)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),track->Py(),track->Pz()),
+						    track->Pt(),
+						    TMath::Abs(dca[1]));
+		((TH3F *)(fQA2DList->At(19)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),track->Py(),track->Pz()),
+						    track->Pt(),
+						    TMath::Abs(dca3D));
+	      }
 	    }//antiprotons
 	    
 	    //Step: kStepInPhaseSpace
@@ -1311,18 +1375,42 @@ void AliProtonAnalysis::SetCorrectionMapForSecondaries(const char* filename) {
 }
 
 //____________________________________________________________________//
+void AliProtonAnalysis::SetCorrectionMapForCrossSection(const char* filename) {
+  //Reads the file with the correction maps for the proper x-section
+  TFile *gCorrectionForXSection = TFile::Open(filename);
+  if(!gCorrectionForXSection) {
+    Printf("The TFile object is not valid!!!");
+    return;
+  }
+  if(!gCorrectionForXSection->IsOpen()) {
+    Printf("The file is not found!!!");
+    return;
+  }
+
+  fHistCorrectionForCrossSectionYPtProtons = dynamic_cast<TH2D *>(gCorrectionForXSection->Get("gHistCorrectionForCrossSectionProtons"));
+  fHistCorrectionForCrossSectionYPtAntiProtons = dynamic_cast<TH2D *>(gCorrectionForXSection->Get("gHistCorrectionForCrossSectionAntiProtons"));
+  fHistCorrectionForCrossSectionFlag = kTRUE;
+}
+
+//____________________________________________________________________//
 void AliProtonAnalysis::Correct() {
   //Apply the corrections: Fast & dirty way for the absorption corrections
   //Correct the protons for the efficiency
   fHistYPtProtonsCorrected = fProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);
   fHistYPtProtonsCorrected->Divide(fHistEfficiencyYPtProtons);
-  //Correct the prootons for secondaries
+  //Correct the protons for proper cross-section
+  if(fHistCorrectionForCrossSectionFlag)
+    fHistYPtProtonsCorrected->Divide(fHistCorrectionForCrossSectionYPtProtons);
+  //Correct the protons for secondaries
   if(fCorrectForSecondariesFlag)
     fHistYPtProtonsCorrected->Divide(fHistYPtCorrectionForSecondaries);
 
   //Correct the antiprotons for the efficiency
   fHistYPtAntiProtonsCorrected = fAntiProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);
   fHistYPtAntiProtonsCorrected->Divide(fHistEfficiencyYPtAntiProtons);
+  //Correct the antiprotons for proper cross-section
+  if(fHistCorrectionForCrossSectionFlag)
+    fHistYPtAntiProtonsCorrected->Divide(fHistCorrectionForCrossSectionYPtAntiProtons);
 }
 
 //____________________________________________________________________//
