@@ -74,6 +74,9 @@ AliAnaElectron::AliAnaElectron()
   fhPtElectron(0),fhPhiElectron(0),fhEtaElectron(0),
   fhPtNPE(0),fhPhiNPE(0),fhEtaNPE(0),
   fhPtPE(0),fhPhiPE(0),fhEtaPE(0),
+  //for comparisons with tracking detectors
+  fhPtTrack(0),fhPtHadron(0),fhPtNPEleTPC(0),fhPtNPEleTPCTRD(0),fhPtNPEleTTE(0),
+  fhPtNPEleEMCAL(0),
   //DVM B-tagging
   fhDVMBtagCut1(0),fhDVMBtagCut2(0),fhDVMBtagCut3(0),fhDVMBtagQA1(0),fhDVMBtagQA2(0),
   fhDVMBtagQA3(0),fhDVMBtagQA4(0),fhDVMBtagQA5(0),
@@ -89,8 +92,7 @@ AliAnaElectron::AliAnaElectron()
   //reco electrons from various sources
   fhPhiConversion(0),fhEtaConversion(0),
   //for comparisons with tracking detectors
-  fhPtTrack(0),fhPtHadron(0),fhPtNPEleTPC(0),fhPtNPEleTPCTRD(0),fhPtNPEleTTE(0),
-  fhPtNPEleEMCAL(0),fhPtNPEBHadron(0),
+  fhPtNPEBHadron(0),
   //for computing efficiency of B-jet tags
   fhBJetPt1x4(0),fhBJetPt2x3(0),fhBJetPt3x2(0),
   fhFakeJetPt1x4(0),fhFakeJetPt2x3(0),fhFakeJetPt3x2(0),fhDVMJet(0),
@@ -134,6 +136,10 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     fhPtElectron(g.fhPtElectron),fhPhiElectron(g.fhPhiElectron),fhEtaElectron(g.fhEtaElectron),
     fhPtNPE(g.fhPtNPE),fhPhiNPE(g.fhPhiNPE),fhEtaNPE(g.fhEtaNPE),
     fhPtPE(g.fhPtPE),fhPhiPE(g.fhPhiPE),fhEtaPE(g.fhEtaPE),
+    //for comparisons with tracking detectors
+    fhPtHadron(g.fhPtHadron),fhPtNPEleTPC(g.fhPtNPEleTPC),
+    fhPtNPEleTPCTRD(g.fhPtNPEleTPCTRD),fhPtNPEleTTE(g.fhPtNPEleTTE),
+    fhPtNPEleEMCAL(g.fhPtNPEleEMCAL),
     //DVM B-tagging
     fhDVMBtagCut1(g.fhDVMBtagCut1),fhDVMBtagCut2(g.fhDVMBtagCut2),fhDVMBtagCut3(g.fhDVMBtagCut3),
     fhDVMBtagQA1(g.fhDVMBtagQA1),fhDVMBtagQA2(g.fhDVMBtagQA2),
@@ -153,9 +159,8 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     //reco electrons from various sources
     fhPhiConversion(g.fhPhiConversion),fhEtaConversion(g.fhEtaConversion),
     //for comparisons with tracking detectors
-    fhPtTrack(g.fhPtTrack),fhPtHadron(g.fhPtHadron),fhPtNPEleTPC(g.fhPtNPEleTPC),
-    fhPtNPEleTPCTRD(g.fhPtNPEleTPCTRD),fhPtNPEleTTE(g.fhPtNPEleTTE),
-    fhPtNPEleEMCAL(g.fhPtNPEleEMCAL),fhPtNPEBHadron(g.fhPtNPEBHadron),
+    fhPtTrack(g.fhPtTrack),
+    fhPtNPEBHadron(g.fhPtNPEBHadron),
     //for computing efficiency of B-jet tags
     fhBJetPt1x4(g.fhBJetPt1x4),fhBJetPt2x3(g.fhBJetPt2x3),
     fhBJetPt3x2(g.fhBJetPt3x2),
@@ -234,6 +239,10 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhPtPE = g.fhPtPE;
   fhPhiPE = g.fhPhiPE;
   fhEtaPE = g.fhEtaPE; 
+  //for comparisons with tracking detectors
+  fhPtHadron = g.fhPtHadron; fhPtNPEleTPC = g.fhPtNPEleTPC; 
+  fhPtNPEleTPCTRD = g.fhPtNPEleTPCTRD; fhPtNPEleTTE = g.fhPtNPEleTTE; 
+  fhPtNPEleEMCAL = g.fhPtNPEleEMCAL; 
   //DVM B-tagging
   fhDVMBtagCut1 = g.fhDVMBtagCut1;
   fhDVMBtagCut2 = g.fhDVMBtagCut2; 
@@ -269,9 +278,7 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhEtaConversion = g.fhEtaConversion;
   //for comparisons with tracking detectors
   fhPtTrack = g.fhPtTrack;
-  fhPtHadron = g.fhPtHadron; fhPtNPEleTPC = g.fhPtNPEleTPC; 
-  fhPtNPEleTPCTRD = g.fhPtNPEleTPCTRD; fhPtNPEleTTE = g.fhPtNPEleTTE; 
-  fhPtNPEleEMCAL = g.fhPtNPEleEMCAL; fhPtNPEBHadron = g.fhPtNPEBHadron;
+  fhPtNPEBHadron = g.fhPtNPEBHadron;
   //for computing efficiency of B-jet tags
   fhBJetPt1x4 = g.fhBJetPt1x4; fhBJetPt2x3 = g.fhBJetPt2x3; 
   fhBJetPt3x2 = g.fhBJetPt3x2;
@@ -396,6 +403,26 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhPhiPE) ; 
   outputContainer->Add(fhEtaPE) ;
 
+  //These histograms are mixed REAL/MC:
+  //Bins along y-axis are:  
+  //0 - unfiltered (filled for both real and MC data) 
+  //1 - bottom, 2 - charm, 3 - charm from bottom  (MC only)
+  //4 - conversion, 5 - Dalitz, 6 - W and Z, 7 - junk/unknown (MC only)
+  //8 - misidentified (MC only)
+
+  //histograms for comparison to tracking detectors
+  fhPtHadron = new TH2F("hPtHadron","Charged hadrons w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
+  fhPtNPEleTPC = new TH2F("hPtNPEleTPC","Non-phot. Electrons identified by TPC w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
+  fhPtNPEleTPCTRD = new TH2F("hPtNPEleTPCTRD","Non-phot. Electrons identified by TPC+TRD w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
+  fhPtNPEleTTE = new TH2F("hPtNPEleTTE","Non-phot. Electrons identified by TPC+TRD+EMCAL w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);    
+  fhPtNPEleEMCAL = new TH2F("hPtNPEleEMCAL","Non-phot. Electrons identified by EMCAL w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
+  
+  outputContainer->Add(fhPtHadron);
+  outputContainer->Add(fhPtNPEleTPC);
+  outputContainer->Add(fhPtNPEleTPCTRD);
+  outputContainer->Add(fhPtNPEleTTE);
+  outputContainer->Add(fhPtNPEleEMCAL);
+
   //B-tagging
   fhDVMBtagCut1 = new TH2F("hdvmbtag_cut1","DVM B-tag result cut1", 10,0,10 ,nptbins,ptmin,ptmax);
   fhDVMBtagCut2 = new TH2F("hdvmbtag_cut2","DVM B-tag result cut2", 10,0,10 ,nptbins,ptmin,ptmax);
@@ -474,19 +501,9 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
 
     //histograms for comparison to tracking detectors
     fhPtTrack  = new TH2F("hPtTrack","Track w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
-    fhPtHadron = new TH2F("hPtHadron","Charged hadrons w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
-    fhPtNPEleTPC = new TH2F("hPtNPEleTPC","Non-phot. Electrons identified by TPC w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
-    fhPtNPEleTPCTRD = new TH2F("hPtNPEleTPCTRD","Non-phot. Electrons identified by TPC+TRD w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
-    fhPtNPEleTTE = new TH2F("hPtNPEleTTE","Non-phot. Electrons identified by TPC+TRD+EMCAL w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);    
-    fhPtNPEleEMCAL = new TH2F("hPtNPEleEMCAL","Non-phot. Electrons identified by EMCAL w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtNPEBHadron = new TH2F("hPtNPEBHadron","Non-phot. b-electrons (TPC+TRD+EMCAL) vs B-hadron pt w/in EMCAL acceptance",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
 
     outputContainer->Add(fhPtTrack);
-    outputContainer->Add(fhPtHadron);
-    outputContainer->Add(fhPtNPEleTPC);
-    outputContainer->Add(fhPtNPEleTPCTRD);
-    outputContainer->Add(fhPtNPEleTTE);
-    outputContainer->Add(fhPtNPEleEMCAL);
     outputContainer->Add(fhPtNPEBHadron);
 
     //for computing efficiency of IPSig tag
