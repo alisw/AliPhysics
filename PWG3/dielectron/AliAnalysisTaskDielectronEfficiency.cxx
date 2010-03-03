@@ -403,7 +403,7 @@ void AliAnalysisTaskDielectronEfficiency::FillPlots(AliVEvent *event)
 // }
 
 
-void AliAnalysisTaskDielectronEfficiency::FillMCInfo(AliStack *pStack)
+void AliAnalysisTaskDielectronEfficiency::FillMCInfo(AliStack * const pStack)
 {
   //
   // fill pure MC histograms
