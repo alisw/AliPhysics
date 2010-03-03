@@ -11,43 +11,39 @@
 
 #include "CorrelDefs.h"
 
-namespace JetCorrelHD {
+class AliJetCorrelMaker : public TObject {
   
-  class AliJetCorrelMaker : public TObject {
-    
-  public:
-    AliJetCorrelMaker();
-    ~AliJetCorrelMaker();
-    
-    Bool_t Init(UInt_t s, UInt_t * const v);
-    Bool_t Check();
-    void Show();
-    
-    UInt_t NoOfCorrel() const {return fNumCorrel;}
-    UInt_t NoOfTrigg()  const {return fNumTrigg;}
-    UInt_t NoOfAssoc()  const {return fNumAssoc;}
-    UInt_t IdxTrigg(UInt_t k) const;
-    UInt_t IdxAssoc(UInt_t k) const;
-    PartType_t TriggType(UInt_t k) const;
-    PartType_t AssocType(UInt_t k) const;
-    TString Descriptor(UInt_t k) const;
-    Bool_t RecoTrigger(UInt_t k) const;
-    Bool_t RecoTrigger() const;
-    
-  private: 
-    UInt_t fNumCorrel, fNumTrigg, fNumAssoc; // counters
-    UInt_t *fCorrelType;                  // array of correlation types
-    TString *fCorrelStr;                  // array of correlation string descriptors
-    PartType_t *fTriggType, *fAssocType;  // arrays of trigger&associated particle types
-    UInt_t *fIdxTrigg, *fIdxAssoc;        // arrays with trigger&associated indices
-    
-    // disable (make private) copy constructor, and assignment operator:
-    AliJetCorrelMaker(const AliJetCorrelMaker&);
-    AliJetCorrelMaker& operator=(const AliJetCorrelMaker&);
-
-    ClassDef(AliJetCorrelMaker, 1);
-  };
-
-} // namespace
+ public:
+  AliJetCorrelMaker();
+  ~AliJetCorrelMaker();
+  
+  Bool_t Init(UInt_t s, UInt_t * const v);
+  Bool_t Check();
+  void Show();
+  
+  UInt_t NoOfCorrel() const {return fNumCorrel;}
+  UInt_t NoOfTrigg()  const {return fNumTrigg;}
+  UInt_t NoOfAssoc()  const {return fNumAssoc;}
+  UInt_t IdxTrigg(UInt_t k) const;
+  UInt_t IdxAssoc(UInt_t k) const;
+  PartType_t TriggType(UInt_t k) const;
+  PartType_t AssocType(UInt_t k) const;
+  TString Descriptor(UInt_t k) const;
+  Bool_t RecoTrigger(UInt_t k) const;
+  Bool_t RecoTrigger() const;
+  
+ private: 
+  UInt_t fNumCorrel, fNumTrigg, fNumAssoc; // counters
+  UInt_t *fCorrelType;                  // array of correlation types
+  TString *fCorrelStr;                  // array of correlation string descriptors
+  PartType_t *fTriggType, *fAssocType;  // arrays of trigger&associated particle types
+  UInt_t *fIdxTrigg, *fIdxAssoc;        // arrays with trigger&associated indices
+  
+  // disable (make private) copy constructor, and assignment operator:
+  AliJetCorrelMaker(const AliJetCorrelMaker&);
+  AliJetCorrelMaker& operator=(const AliJetCorrelMaker&);
+  
+  ClassDef(AliJetCorrelMaker, 1);
+};
 
 #endif 

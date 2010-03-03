@@ -10,31 +10,27 @@
 
 #include "CorrelParticle.h"
 
-namespace JetCorrelHD {
-
-  class CorrelKFTrack_t : public CorrelParticle_t {
-  public:
-
-    CorrelKFTrack_t();
-    CorrelKFTrack_t(Float_t pt, Float_t p, Float_t e, Float_t m, PartType_t i, 
-		    Double_t* par, Double_t* cov);
-    CorrelKFTrack_t(const CorrelKFTrack_t &p);
-    virtual ~CorrelKFTrack_t() {;}
-    CorrelKFTrack_t* operator=(const CorrelKFTrack_t& rhs);
-    virtual CorrelKFTrack_t* Copy();
-   
-    void SetParam(const Double_t* v) {fParam=(Double_t*)v;}
-    void SetCovar(const Double_t* v) {fCovar=(Double_t*)v;}
-    Double_t* Param() const {return fParam;}
-    Double_t* Covar() const {return fCovar;}
-
-    virtual void Show();
-
-  private:
-    Double_t* fParam; // Param[6] = {X, Y, Z, Px, Py, Pz} - position and momentum
-    Double_t* fCovar; // Covar[21] = lower-triangular part of the covariance matrix
-  };
-
-} // namespace declaration
+class CorrelKFTrack_t : public CorrelParticle_t {
+ public:
+  
+  CorrelKFTrack_t();
+  CorrelKFTrack_t(Float_t pt, Float_t p, Float_t e, Float_t m, PartType_t i, 
+		  Double_t* par, Double_t* cov);
+  CorrelKFTrack_t(const CorrelKFTrack_t &p);
+  virtual ~CorrelKFTrack_t() {;}
+  CorrelKFTrack_t& operator=(const CorrelKFTrack_t& rhs);
+  virtual CorrelKFTrack_t* Copy();
+  
+  void SetParam(const Double_t* v) {fParam=(Double_t*)v;}
+  void SetCovar(const Double_t* v) {fCovar=(Double_t*)v;}
+  Double_t* Param() const {return fParam;}
+  Double_t* Covar() const {return fCovar;}
+  
+  virtual void Show();
+  
+ private:
+  Double_t* fParam; // Param[6] = {X, Y, Z, Px, Py, Pz} - position and momentum
+  Double_t* fCovar; // Covar[21] = lower-triangular part of the covariance matrix
+};
 
 #endif

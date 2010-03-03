@@ -22,7 +22,6 @@
 #include "CorrelTrack.h"
 
 using namespace std;
-using namespace JetCorrelHD;
 
 CorrelTrack_t::CorrelTrack_t() : CorrelParticle_t(), fTPCx(-999.), fTPCy(-999.), fTPCz(-999.) {
   // default constructor:

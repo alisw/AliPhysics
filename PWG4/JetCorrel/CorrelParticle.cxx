@@ -21,7 +21,6 @@
 #include "CorrelParticle.h"
 
 using namespace std;
-using namespace JetCorrelHD;
 
 CorrelParticle_t::CorrelParticle_t() : fPt(-999.), fPhi(-999.), fEta(-999.), fMass(-999.), fID(unknown){
   // default constructor

@@ -15,19 +15,46 @@
 /* $Id: $ */
 
 //__________________________________________
-// Three classes: a particle list class CorrelList_t with its
-// node class CorrelListNode_t and iterator class CorrelListIter_t
+// The particle list class CorrelList_t: implements a single-linked list
+// Supporting classes:
+// list node defined by class CorrelListNode_t and 
+// list iterator defined by class CorrelListIter_t
 //-- Author: Paul Constantin
 
 #include "CorrelList.h"
 
 using namespace std;
-using namespace JetCorrelHD;
+
+CorrelListNode_t::CorrelListNode_t() : fPart(NULL), fNext(NULL) {
+}
+
+CorrelListNode_t::CorrelListNode_t(CorrelParticle_t* p, CorrelListNode_t* n) : fPart(p), fNext(n) {
+}
+
+CorrelListNode_t::CorrelListNode_t(const CorrelListNode_t& rhs) : fPart(rhs.fPart), fNext(rhs.fNext) {
+}
+
+CorrelListNode_t::~CorrelListNode_t() {
+  if(fPart) delete fPart;
+  fNext = NULL;
+}
 
 const CorrelListNode_t& CorrelListNode_t::operator=(const CorrelListNode_t& rhs){
   fPart = rhs.fPart;
   fNext = rhs.fNext;
   return *this;
+}
+
+CorrelListIter_t::CorrelListIter_t() : fCurr(NULL) {
+}
+
+CorrelListIter_t::CorrelListIter_t(CorrelListNode_t* theNode) : fCurr(theNode) {
+}
+
+CorrelListIter_t::CorrelListIter_t(const CorrelListIter_t& rhs) : fCurr(rhs.fCurr) {
+}
+
+CorrelListIter_t::~CorrelListIter_t(){
 }
 
 void CorrelListIter_t::Check(){
