@@ -69,6 +69,10 @@ public :
   Double_t GetContFactZvMult(THnSparse *const hist=0, Double_t zv =0, Int_t mult=0) const;
 
   // Getters
+  THnSparseF *GetMCEventHist1() const { return fMCEventHist1;};
+  THnSparseF *GetRecEventHist1() const { return fRecEventHist1;};
+  THnSparseF *GetRecEventMultHist1() const { return fRecEventMultHist1;};
+
   THnSparseF *GetMCAllEventMultHist1() const {return fMCAllEventMultHist1;}; 
   THnSparseF *GetMCAllNDEventMultHist1() const {return fMCAllNDEventMultHist1;}; 
   THnSparseF *GetMCAllNSDEventMultHist1() const {return fMCAllNSDEventMultHist1;}; 
@@ -87,6 +91,14 @@ public :
   THnSparseF *GetMCTriggerPrimTrackTrueMultHist1() const {return fMCTriggerPrimTrackTrueMultHist1;}; 
   THnSparseF *GetMCEventPrimTrackTrueMultHist1() const {return fMCEventPrimTrackTrueMultHist1;}; 
 
+  THnSparseF *GetMCAllPrimTrackTrueMultHist2() const {return fMCAllPrimTrackTrueMultHist2;}; 
+  THnSparseF *GetMCNDEventAllPrimTrackTrueMultHist2() const {return fMCNDEventAllPrimTrackTrueMultHist2;}; 
+  THnSparseF *GetMCNSDEventAllPrimTrackTrueMultHist2() const {return fMCNSDEventAllPrimTrackTrueMultHist2;}; 
+  THnSparseF *GetMCTriggerPrimTrackTrueMultHist2() const {return fMCTriggerPrimTrackTrueMultHist2;}; 
+  THnSparseF *GetMCEventPrimTrackTrueMultHist2() const {return fMCEventPrimTrackTrueMultHist2;}; 
+
+
+
 
   THnSparseF *GetMCAllPrimTrackMeanPtMult1() const {return fMCAllPrimTrackMeanPtMult1;}; 
   THnSparseF *GetMCNDEventAllPrimTrackMeanPtMult1() const {return fMCNDEventAllPrimTrackMeanPtMult1;}; 
@@ -102,6 +114,7 @@ public :
 
   THnSparseF *GetCorrRecTrackMultHist1(Int_t i) const {return fCorrRecTrackMultHist1[i];}
   THnSparseF *GetCorrRecTrackTrueMultHist1(Int_t i) const {return fCorrRecTrackTrueMultHist1[i];}
+  THnSparseF *GetCorrRecTrackTrueMultHist2(Int_t i) const {return fCorrRecTrackTrueMultHist2[i];}
   THnSparseF *GetCorrRecTrackMeanPtMultHist1(Int_t i) const {return fCorrRecTrackMeanPtMultHist1[i];}
   THnSparseF *GetCorrRecTrackMeanPtTrueMultHist1(Int_t i) const {return fCorrRecTrackMeanPtTrueMultHist1[i];}
   THnSparseF *GetCorrRecTrackPt1(Int_t i) const {return fCorrRecTrackPt1[i];}
@@ -173,6 +186,7 @@ private:
   //
   THnSparseF *fMCEventHist1;  //-> mcXv:mcYv:mcZv
   THnSparseF *fRecEventHist1; //-> Xv:Yv:Zv
+  THnSparseF *fRecEventMultHist1; //-> track multiplicity:tracklet multiplicity
 
   // all MC events
   THnSparseF *fMCAllEventMultHist1; //-> mcZv:multiplicity
@@ -209,21 +223,19 @@ private:
   THnSparseF *fMCEventPrimTrackMultHist1; //-> mcPt:mcEta:multiplicity
 
   // true multiplicity 
-
-  // all mc primary tracks in acceptance (INEL)
   THnSparseF *fMCAllPrimTrackTrueMultHist1; //-> mcPt:mcEta:true multiplicity
-
-  // all mc primary tracks in acceptance (ND events)
   THnSparseF *fMCNDEventAllPrimTrackTrueMultHist1; //-> mcPt:mcEta:true multiplicity
-
-  // all mc primary tracks in acceptance (NSD events)
   THnSparseF *fMCNSDEventAllPrimTrackTrueMultHist1; //-> mcPt:mcEta:true multiplicity
-
-  // all mc primary tracks in acceptance (triggered events)
   THnSparseF *fMCTriggerPrimTrackTrueMultHist1; //-> mcPt:mcEta:true multiplicity
-
-  // mc primary tracks in acceptance (triggered and event vertex reconstructed)
   THnSparseF *fMCEventPrimTrackTrueMultHist1; //-> mcPt:mcEta:true multiplicity
+
+  // mcPT multiplicity vs true multiplicity 
+  THnSparseF *fMCAllPrimTrackTrueMultHist2; //-> mcPt:multiplicity:true multiplicity
+  THnSparseF *fMCNDEventAllPrimTrackTrueMultHist2; //-> mcPt:multiplicity:true multiplicity
+  THnSparseF *fMCNSDEventAllPrimTrackTrueMultHist2; //-> mcPt:multiplicity:true multiplicity
+  THnSparseF *fMCTriggerPrimTrackTrueMultHist2; //-> mcPt:multiplicity:true multiplicity
+  THnSparseF *fMCEventPrimTrackTrueMultHist2; //-> mcPt:multiplicity:true multiplicity
+
 
   //
   // mc <pt> from the event
@@ -261,6 +273,7 @@ private:
   // [7]=[4]+trigger MBToNSD)
   THnSparseF *fCorrRecTrackMultHist1[8]; //-> Pt:Eta:mult corrected histograms 
   THnSparseF *fCorrRecTrackTrueMultHist1[8]; //-> Pt:Eta:trueMult corrected histograms
+  THnSparseF *fCorrRecTrackTrueMultHist2[8]; //-> Pt:mult:trueMult corrected histograms
 
   // <pt> vs multiplicity from the event
   THnSparseF *fCorrRecTrackMeanPtMultHist1[8]; //-> <Pt>:mult corrected histograms

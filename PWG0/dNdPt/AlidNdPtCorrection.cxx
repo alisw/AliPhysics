@@ -60,6 +60,7 @@ ClassImp(AlidNdPtCorrection)
   fCorrectionFolder(0),
   fMCEventHist1(0),
   fRecEventHist1(0),
+  fRecEventMultHist1(0),
   fMCAllEventMultHist1(0),
   fMCAllNDEventMultHist1(0),
   fMCAllNSDEventMultHist1(0),
@@ -75,6 +76,11 @@ ClassImp(AlidNdPtCorrection)
   fMCNSDEventAllPrimTrackTrueMultHist1(0),
   fMCTriggerPrimTrackTrueMultHist1(0),
   fMCEventPrimTrackTrueMultHist1(0),
+  fMCAllPrimTrackTrueMultHist2(0),
+  fMCNDEventAllPrimTrackTrueMultHist2(0),
+  fMCNSDEventAllPrimTrackTrueMultHist2(0),
+  fMCTriggerPrimTrackTrueMultHist2(0),
+  fMCEventPrimTrackTrueMultHist2(0),
   fMCAllPrimTrackMeanPtMult1(0),
   fMCNDEventAllPrimTrackMeanPtMult1(0),
   fMCNSDEventAllPrimTrackMeanPtMult1(0),
@@ -111,6 +117,7 @@ ClassImp(AlidNdPtCorrection)
   for(Int_t i=0; i<8; i++) { 
     fCorrRecTrackMultHist1[i] = 0;
     fCorrRecTrackTrueMultHist1[i] = 0;
+    fCorrRecTrackTrueMultHist2[i] = 0;
     fCorrRecTrackMeanPtMultHist1[i] = 0;
     fCorrRecTrackMeanPtTrueMultHist1[i] = 0;
     fCorrRecTrackPt1[i] = 0;
@@ -129,6 +136,7 @@ AlidNdPtCorrection::AlidNdPtCorrection(Char_t* name, Char_t* title, TString corr
   fCorrectionFolder(0),
   fMCEventHist1(0),
   fRecEventHist1(0),
+  fRecEventMultHist1(0),
   fMCAllEventMultHist1(0),
   fMCAllNDEventMultHist1(0),
   fMCAllNSDEventMultHist1(0),
@@ -144,6 +152,11 @@ AlidNdPtCorrection::AlidNdPtCorrection(Char_t* name, Char_t* title, TString corr
   fMCNSDEventAllPrimTrackTrueMultHist1(0),
   fMCTriggerPrimTrackTrueMultHist1(0),
   fMCEventPrimTrackTrueMultHist1(0),
+  fMCAllPrimTrackTrueMultHist2(0),
+  fMCNDEventAllPrimTrackTrueMultHist2(0),
+  fMCNSDEventAllPrimTrackTrueMultHist2(0),
+  fMCTriggerPrimTrackTrueMultHist2(0),
+  fMCEventPrimTrackTrueMultHist2(0),
   fMCAllPrimTrackMeanPtMult1(0),
   fMCNDEventAllPrimTrackMeanPtMult1(0),
   fMCNSDEventAllPrimTrackMeanPtMult1(0),
@@ -180,6 +193,7 @@ AlidNdPtCorrection::AlidNdPtCorrection(Char_t* name, Char_t* title, TString corr
   for(Int_t i=0; i<8; i++) { 
     fCorrRecTrackMultHist1[i] = 0;
     fCorrRecTrackTrueMultHist1[i] = 0;
+    fCorrRecTrackTrueMultHist2[i] = 0;
     fCorrRecTrackMeanPtMultHist1[i] = 0;
     fCorrRecTrackMeanPtTrueMultHist1[i] = 0;
     fCorrRecTrackPt1[i] = 0;
@@ -200,6 +214,7 @@ AlidNdPtCorrection::~AlidNdPtCorrection() {
   //
   if(fMCEventHist1) delete fMCEventHist1; fMCEventHist1=0;
   if(fRecEventHist1) delete fRecEventHist1; fRecEventHist1=0;
+  if(fRecEventMultHist1) delete fRecEventMultHist1; fRecEventMultHist1=0;
 
   if(fMCAllEventMultHist1) delete fMCAllEventMultHist1; fMCAllEventMultHist1=0;
   if(fMCAllNDEventMultHist1) delete fMCAllNDEventMultHist1; fMCAllNDEventMultHist1=0;
@@ -218,6 +233,15 @@ AlidNdPtCorrection::~AlidNdPtCorrection() {
   if(fMCNSDEventAllPrimTrackTrueMultHist1) delete fMCNSDEventAllPrimTrackTrueMultHist1; fMCNSDEventAllPrimTrackTrueMultHist1=0;
   if(fMCTriggerPrimTrackTrueMultHist1) delete fMCTriggerPrimTrackTrueMultHist1; fMCTriggerPrimTrackTrueMultHist1=0;
   if(fMCEventPrimTrackTrueMultHist1) delete fMCEventPrimTrackTrueMultHist1; fMCEventPrimTrackTrueMultHist1=0;
+
+  if(fMCAllPrimTrackTrueMultHist2) delete fMCAllPrimTrackTrueMultHist2; fMCAllPrimTrackTrueMultHist2=0;
+  if(fMCNDEventAllPrimTrackTrueMultHist2) delete fMCNDEventAllPrimTrackTrueMultHist2; fMCNDEventAllPrimTrackTrueMultHist2=0;
+  if(fMCNSDEventAllPrimTrackTrueMultHist2) delete fMCNSDEventAllPrimTrackTrueMultHist2; fMCNSDEventAllPrimTrackTrueMultHist2=0;
+  if(fMCTriggerPrimTrackTrueMultHist2) delete fMCTriggerPrimTrackTrueMultHist2; fMCTriggerPrimTrackTrueMultHist2=0;
+  if(fMCEventPrimTrackTrueMultHist2) delete fMCEventPrimTrackTrueMultHist2; fMCEventPrimTrackTrueMultHist2=0;
+
+
+
 
   if(fMCAllPrimTrackMeanPtMult1) delete fMCAllPrimTrackMeanPtMult1; fMCAllPrimTrackMeanPtMult1=0;
   if(fMCNDEventAllPrimTrackMeanPtMult1) delete fMCNDEventAllPrimTrackMeanPtMult1; fMCNDEventAllPrimTrackMeanPtMult1=0;
@@ -240,6 +264,7 @@ AlidNdPtCorrection::~AlidNdPtCorrection() {
   for(Int_t i=0; i<8; i++) { 
     if(fCorrRecTrackMultHist1[i]) delete fCorrRecTrackMultHist1[i]; fCorrRecTrackMultHist1[i]=0;
     if(fCorrRecTrackTrueMultHist1[i]) delete fCorrRecTrackTrueMultHist1[i]; fCorrRecTrackTrueMultHist1[i]=0;
+    if(fCorrRecTrackTrueMultHist2[i]) delete fCorrRecTrackTrueMultHist2[i]; fCorrRecTrackTrueMultHist2[i]=0;
     if(fCorrRecTrackMeanPtMultHist1[i]) delete fCorrRecTrackMeanPtMultHist1[i]; fCorrRecTrackMeanPtMultHist1[i]=0;
     if(fCorrRecTrackMeanPtTrueMultHist1[i]) delete fCorrRecTrackMeanPtTrueMultHist1[i]; fCorrRecTrackMeanPtTrueMultHist1[i]=0;
     if(fCorrRecTrackPt1[i]) delete fCorrRecTrackPt1[i]; fCorrRecTrackPt1[i]=0;
@@ -290,6 +315,15 @@ void AlidNdPtCorrection::Init(){
   fRecEventHist1->GetAxis(1)->SetTitle("Yv (cm)");
   fRecEventHist1->GetAxis(2)->SetTitle("Zv (cm)");
   fRecEventHist1->Sumw2();
+
+  //
+  Int_t binsRecEventMultHist1[2]={150,150};
+  Double_t minRecEventMultHist1[2]={-0.5,-0.5}; 
+  Double_t maxRecEventMultHist1[2]={149.5,149.5}; 
+  fRecEventMultHist1 = new THnSparseF("fRecEventMultHist1","track multiplicity:tracklet multiplicity",2,binsRecEventMultHist1,minRecEventMultHist1,maxRecEventMultHist1);
+  fRecEventMultHist1->GetAxis(0)->SetTitle("track_mult");
+  fRecEventMultHist1->GetAxis(1)->SetTitle("tracklet_mult");
+  fRecEventMultHist1->Sumw2();
 
   //
   char name[256];
@@ -438,6 +472,76 @@ void AlidNdPtCorrection::Init(){
   fMCEventPrimTrackTrueMultHist1->GetAxis(1)->SetTitle("mcEta");
   fMCEventPrimTrackTrueMultHist1->GetAxis(2)->SetTitle("true_mult");
   fMCEventPrimTrackTrueMultHist1->Sumw2();
+
+  //
+  // mcPT vs multiplicity vs true multiplicity
+  //
+
+  Int_t binsMCAllPrimTrackTrueMultHist2[3]={ptNbins,150,150};
+  Double_t minMCAllPrimTrackTrueMultHist2[3]={0.,-0.5,-0.5}; 
+  Double_t maxMCAllPrimTrackTrueMultHist2[3]={20.,149.5,149.5}; 
+  sprintf(name,"fMCAllPrimTrackTrueMultHist2");
+  sprintf(title,"mcPt:mult:true_mult");
+  
+  fMCAllPrimTrackTrueMultHist2 = new THnSparseF(name,title,3,binsMCAllPrimTrackTrueMultHist2,minMCAllPrimTrackTrueMultHist2,maxMCAllPrimTrackTrueMultHist2);
+  fMCAllPrimTrackTrueMultHist2->SetBinEdges(0,binsPt);
+  fMCAllPrimTrackTrueMultHist2->GetAxis(0)->SetTitle("mcPt (GeV/c)");
+  fMCAllPrimTrackTrueMultHist2->GetAxis(1)->SetTitle("mult");
+  fMCAllPrimTrackTrueMultHist2->GetAxis(2)->SetTitle("true_mult");
+  fMCAllPrimTrackTrueMultHist2->Sumw2();
+
+  Int_t binsMCNDEventAllPrimTrackTrueMultHist2[3]={ptNbins,150,150};
+  Double_t minMCNDEventAllPrimTrackTrueMultHist2[3]={0.,-0.5,-0.5}; 
+  Double_t maxMCNDEventAllPrimTrackTrueMultHist2[3]={20.,149.5,149.5}; 
+  sprintf(name,"fMCNDEventAllPrimTrackTrueMultHist2");
+  sprintf(title,"mcPt:mult:true_mult");
+  
+  fMCNDEventAllPrimTrackTrueMultHist2 = new THnSparseF(name,title,3,binsMCNDEventAllPrimTrackTrueMultHist2,minMCNDEventAllPrimTrackTrueMultHist2,maxMCNDEventAllPrimTrackTrueMultHist2);
+  fMCNDEventAllPrimTrackTrueMultHist2->SetBinEdges(0,binsPt);
+  fMCNDEventAllPrimTrackTrueMultHist2->GetAxis(0)->SetTitle("mcPt (GeV/c)");
+  fMCNDEventAllPrimTrackTrueMultHist2->GetAxis(1)->SetTitle("mult");
+  fMCNDEventAllPrimTrackTrueMultHist2->GetAxis(2)->SetTitle("true_mult");
+  fMCNDEventAllPrimTrackTrueMultHist2->Sumw2();
+
+  Int_t binsMCNSDEventAllPrimTrackTrueMultHist2[3]={ptNbins,150,150};
+  Double_t minMCNSDEventAllPrimTrackTrueMultHist2[3]={0.,-0.5,-0.5}; 
+  Double_t maxMCNSDEventAllPrimTrackTrueMultHist2[3]={20.,149.5,149.5}; 
+  sprintf(name,"fMCNSDEventAllPrimTrackTrueMultHist2");
+  sprintf(title,"mcPt:mult:true_mult");
+  
+  fMCNSDEventAllPrimTrackTrueMultHist2 = new THnSparseF(name,title,3,binsMCNSDEventAllPrimTrackTrueMultHist2,minMCNSDEventAllPrimTrackTrueMultHist2,maxMCNSDEventAllPrimTrackTrueMultHist2);
+  fMCNSDEventAllPrimTrackTrueMultHist2->SetBinEdges(0,binsPt);
+  fMCNSDEventAllPrimTrackTrueMultHist2->GetAxis(0)->SetTitle("mcPt (GeV/c)");
+  fMCNSDEventAllPrimTrackTrueMultHist2->GetAxis(1)->SetTitle("mult");
+  fMCNSDEventAllPrimTrackTrueMultHist2->GetAxis(2)->SetTitle("true_mult");
+  fMCNSDEventAllPrimTrackTrueMultHist2->Sumw2();
+
+  Int_t binsMCEventTriggerPrimTrackTrueMultHist2[3]={ptNbins,150,150};
+  Double_t minMCEventTriggerPrimTrackTrueMultHist2[3]={0.,-0.5,-0.5}; 
+  Double_t maxMCEventTriggerPrimTrackTrueMultHist2[3]={20.,149.5,149.5}; 
+  sprintf(name,"fMCTriggerPrimTrackTrueMultHist2");
+  sprintf(title,"mcPt:mult:true_mult");
+  
+  fMCTriggerPrimTrackTrueMultHist2 = new THnSparseF(name,title,3,binsMCEventTriggerPrimTrackTrueMultHist2,minMCEventTriggerPrimTrackTrueMultHist2,maxMCEventTriggerPrimTrackTrueMultHist2);
+  fMCTriggerPrimTrackTrueMultHist2->SetBinEdges(0,binsPt);
+  fMCTriggerPrimTrackTrueMultHist2->GetAxis(0)->SetTitle("mcPt (GeV/c)");
+  fMCTriggerPrimTrackTrueMultHist2->GetAxis(1)->SetTitle("mult");
+  fMCTriggerPrimTrackTrueMultHist2->GetAxis(2)->SetTitle("true_mult");
+  fMCTriggerPrimTrackTrueMultHist2->Sumw2();
+
+  Int_t binsMCEventPrimTrackTrueMultHist2[3]={ptNbins,150,150};
+  Double_t minMCEventPrimTrackTrueMultHist2[3]={0.,-0.5,-0.5}; 
+  Double_t maxMCEventPrimTrackTrueMultHist2[3]={20.,149.5,149.5}; 
+  sprintf(name,"fMCEventPrimTrackTrueMultHist2");
+  sprintf(title,"mcPt:mult:true_mult");
+  
+  fMCEventPrimTrackTrueMultHist2 = new THnSparseF(name,title,3,binsMCEventPrimTrackTrueMultHist2,minMCEventPrimTrackTrueMultHist2,maxMCEventPrimTrackTrueMultHist2);
+  fMCEventPrimTrackTrueMultHist2->SetBinEdges(0,binsPt);
+  fMCEventPrimTrackTrueMultHist2->GetAxis(0)->SetTitle("mcPt (GeV/c)");
+  fMCEventPrimTrackTrueMultHist2->GetAxis(1)->SetTitle("mult");
+  fMCEventPrimTrackTrueMultHist2->GetAxis(2)->SetTitle("true_mult");
+  fMCEventPrimTrackTrueMultHist2->Sumw2();
+
 
   //
   // mean pt
@@ -590,6 +694,10 @@ void AlidNdPtCorrection::Init(){
   Double_t minCorrRecTrackTrueMultHist1[3]={0.,-1.,-0.5}; 
   Double_t maxCorrRecTrackTrueMultHist1[3]={20.,1.,149.5};
 
+  Int_t binsCorrRecTrackTrueMultHist2[3]={ptNbins,150,150};
+  Double_t minCorrRecTrackTrueMultHist2[3]={0.,-0.5,-0.5}; 
+  Double_t maxCorrRecTrackTrueMultHist2[3]={20.,149.5,149.5};
+
   //
   Int_t binsCorrRecTrackMeanPtMultHist1[2]={100,150};
   Double_t minCorrRecTrackMeanPtMultHist1[2]={0.,-0.5}; 
@@ -627,6 +735,15 @@ void AlidNdPtCorrection::Init(){
     fCorrRecTrackTrueMultHist1[i]->GetAxis(2)->SetTitle("true multiplicity");
     fCorrRecTrackTrueMultHist1[i]->Sumw2();
 
+    //
+    sprintf(name,"fCorrRecTrackTrueMultHist2_%d",i);
+    sprintf(title,"Pt:mult:true_mult");
+    fCorrRecTrackTrueMultHist2[i] = new THnSparseF(name,title,3,binsCorrRecTrackTrueMultHist2,minCorrRecTrackTrueMultHist2,maxCorrRecTrackTrueMultHist2);
+    fCorrRecTrackTrueMultHist2[i]->SetBinEdges(0,binsPt);
+    fCorrRecTrackTrueMultHist2[i]->GetAxis(0)->SetTitle("Pt (GeV/c)");
+    fCorrRecTrackTrueMultHist2[i]->GetAxis(1)->SetTitle("multiplicity");
+    fCorrRecTrackTrueMultHist2[i]->GetAxis(2)->SetTitle("true multiplicity");
+    fCorrRecTrackTrueMultHist2[i]->Sumw2();
 
     // THnSparse track histograms
     sprintf(name,"fCorrRecTrackMeanPtMultHist1_%d",i);
@@ -1176,7 +1293,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       fCorrRecTrackMeanPtMultHist1[i]->Fill(vCorrRecTrackMeanPtMultHist1); 
       
       if( IsUseMCInfo() ) {
-        if(!fCorrRecTrackTrueMultHist1[i]) continue;
+        if(!fCorrRecTrackPt1[i]) continue;
         meanPtTrueMult[i] = fCorrRecTrackPt1[i]->Projection(0)->GetMean();    
         Double_t vCorrRecTrackMeanPtTrueMultHist1[2] = {meanPtMult[i],multMCTrueTracks};
         fCorrRecTrackMeanPtTrueMultHist1[i]->Fill(vCorrRecTrackMeanPtTrueMultHist1); 
@@ -1189,6 +1306,11 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     // control event histograms
     Double_t vRecEventHist1[3] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv()};
     fRecEventHist1->Fill(vRecEventHist1);
+
+    // correlation track multiplicity vs tracklet multiplicity
+    Double_t vRecEventMultHist1[3] = {multRecTemp, multMBTracks};
+    fRecEventMultHist1->Fill(vRecEventMultHist1);
+
   } 
 
   // empty events corrections
@@ -1264,25 +1386,31 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 
         Double_t valMCAllTrackMultHist1[3] = {gpt,geta,multRec};	  
         Double_t valMCAllTrackTrueMultHist1[3] = {gpt,geta,multMCTrueTracks};	  
+        Double_t valMCAllTrackTrueMultHist2[3] = {gpt,multRec,multMCTrueTracks};	  
 
         fMCAllPrimTrackMultHist1->Fill(valMCAllTrackMultHist1);
         fMCAllPrimTrackTrueMultHist1->Fill(valMCAllTrackTrueMultHist1);
+        fMCAllPrimTrackTrueMultHist2->Fill(valMCAllTrackTrueMultHist2);
 
         if(evtType == AliPWG0Helper::kND) {
           fMCNDEventAllPrimTrackMultHist1->Fill(valMCAllTrackMultHist1);
           fMCNDEventAllPrimTrackTrueMultHist1->Fill(valMCAllTrackTrueMultHist1);
+          fMCNDEventAllPrimTrackTrueMultHist2->Fill(valMCAllTrackTrueMultHist2);
         }
         if(evtType != AliPWG0Helper::kSD) {
           fMCNSDEventAllPrimTrackMultHist1->Fill(valMCAllTrackMultHist1);
           fMCNSDEventAllPrimTrackTrueMultHist1->Fill(valMCAllTrackTrueMultHist1);
+          fMCNSDEventAllPrimTrackTrueMultHist2->Fill(valMCAllTrackTrueMultHist2);
         }
         if(isEventTriggered) { 
 	  fMCTriggerPrimTrackMultHist1->Fill(valMCAllTrackMultHist1);
           fMCTriggerPrimTrackTrueMultHist1->Fill(valMCAllTrackTrueMultHist1);
+          fMCTriggerPrimTrackTrueMultHist2->Fill(valMCAllTrackTrueMultHist2);
 	}
         if(isEventTriggered && isEventOK) { 
 	  fMCEventPrimTrackMultHist1->Fill(valMCAllTrackMultHist1);
           fMCEventPrimTrackTrueMultHist1->Fill(valMCAllTrackTrueMultHist1);
+          fMCEventPrimTrackTrueMultHist2->Fill(valMCAllTrackTrueMultHist2);
 	}
       }
 
@@ -1448,7 +1576,10 @@ void AlidNdPtCorrection::FillHistograms(AliESDtrack * const esdTrack, AliStack *
 
       if( IsUseMCInfo() ) {
         Double_t valCorrRecTrackTrueMultHist1[3] = {pt,eta,trueMult};	  
+        Double_t valCorrRecTrackTrueMultHist2[3] = {pt,mult,trueMult};	  
+
         fCorrRecTrackTrueMultHist1[i]->Fill(valCorrRecTrackTrueMultHist1,corrF[i]);
+        fCorrRecTrackTrueMultHist2[i]->Fill(valCorrRecTrackTrueMultHist2,corrF[i]);
       } 
     }
   }
@@ -1595,6 +1726,7 @@ Long64_t AlidNdPtCorrection::Merge(TCollection* const list)
   
     fMCEventHist1->Add(entry->fMCEventHist1);
     fRecEventHist1->Add(entry->fRecEventHist1);
+    fRecEventMultHist1->Add(entry->fRecEventMultHist1);
 
     fMCAllEventMultHist1->Add(entry->fMCAllEventMultHist1);
     fMCAllNDEventMultHist1->Add(entry->fMCAllNDEventMultHist1);
@@ -1613,6 +1745,12 @@ Long64_t AlidNdPtCorrection::Merge(TCollection* const list)
     fMCNSDEventAllPrimTrackTrueMultHist1->Add(entry->fMCNSDEventAllPrimTrackTrueMultHist1);
     fMCTriggerPrimTrackTrueMultHist1->Add(entry->fMCTriggerPrimTrackTrueMultHist1);
     fMCEventPrimTrackTrueMultHist1->Add(entry->fMCEventPrimTrackTrueMultHist1);
+
+    fMCAllPrimTrackTrueMultHist2->Add(entry->fMCAllPrimTrackTrueMultHist2);
+    fMCNDEventAllPrimTrackTrueMultHist2->Add(entry->fMCNDEventAllPrimTrackTrueMultHist2);
+    fMCNSDEventAllPrimTrackTrueMultHist2->Add(entry->fMCNSDEventAllPrimTrackTrueMultHist2);
+    fMCTriggerPrimTrackTrueMultHist2->Add(entry->fMCTriggerPrimTrackTrueMultHist2);
+    fMCEventPrimTrackTrueMultHist2->Add(entry->fMCEventPrimTrackTrueMultHist2);
 
     fMCAllPrimTrackMeanPtMult1->Add(entry->fMCAllPrimTrackMeanPtMult1);
     fMCNDEventAllPrimTrackMeanPtMult1->Add(entry->fMCNDEventAllPrimTrackMeanPtMult1);
@@ -1635,6 +1773,7 @@ Long64_t AlidNdPtCorrection::Merge(TCollection* const list)
     for(Int_t i=0; i<8; i++) {
       fCorrRecTrackMultHist1[i]->Add(entry->fCorrRecTrackMultHist1[i]);
       fCorrRecTrackTrueMultHist1[i]->Add(entry->fCorrRecTrackTrueMultHist1[i]);
+      fCorrRecTrackTrueMultHist2[i]->Add(entry->fCorrRecTrackTrueMultHist2[i]);
 
       fCorrRecTrackMeanPtMultHist1[i]->Add(entry->fCorrRecTrackMeanPtMultHist1[i]);
       fCorrRecTrackMeanPtTrueMultHist1[i]->Add(entry->fCorrRecTrackMeanPtTrueMultHist1[i]);
