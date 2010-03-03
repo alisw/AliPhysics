@@ -103,6 +103,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   Int_t index[20];
   Bool_t ok=true;
   Float_t   mips[20];
+  Int_t nfound=0;
   
   gFile = TFile::Open(laserFile);
   if(!gFile) {
@@ -138,7 +139,6 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	{
 	  for (Int_t im=startim; im<nmips; im++)
 	    {	      
-	      Float_t fitmean=0;
 	      TString cfd = Form("hCFD%i_%i",i+1,im+1);
 	      TString qtc = Form("hQTC%i_%i",i+1,im+1);
 	      TString led = Form("hLED%i_%i",i+1,im+1);
@@ -158,7 +158,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       	      
 	      if(hCFD )	{
 		TSpectrum *s = new TSpectrum(2*npeaks,1);
-		Int_t nfound = s->Search(hCFD,sigma," ",0.1);
+		nfound = s->Search(hCFD,sigma," ",0.1);
 		if(nfound!=0){
 		  Float_t *xpeak = s->GetPositionX();
 		  TMath::Sort(nfound, xpeak, index,down);
@@ -170,10 +170,10 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		else
 		  {
 		    hCFD->Rebin(2);
-		    TSpectrum *s = new TSpectrum(2*npeaks,1);
-		    Int_t nfound = s->Search(hCFD,sigma," ",0.1);
+		    TSpectrum *s1 = new TSpectrum(2*npeaks,1);
+		    Int_t nfound = s1->Search(hCFD,sigma," ",0.1);
 		    if(nfound!=0){
-		      Float_t *xpeak = s->GetPositionX();
+		      Float_t *xpeak = s1->GetPositionX();
 		      TMath::Sort(nfound, xpeak, index,down);
 		      Float_t xp = xpeak[index[0]];
 		      Double_t hmax = xp+3*sigma;
@@ -191,7 +191,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	      
 	      if( hLED){
 		TSpectrum *s = new TSpectrum(2*npeaks,1);
-		Int_t nfound = s->Search(hLED,sigma," ",0.1);
+		nfound = s->Search(hLED,sigma," ",0.1);
 		if(nfound!=0){
 		  Float_t *xpeak = s->GetPositionX();
 		  TMath::Sort(nfound, xpeak, index,down);

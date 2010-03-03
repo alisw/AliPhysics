@@ -402,7 +402,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   ****************************************************/
   
   AliDebug(1,Form("Start FillESD T0"));
-  Float_t channelWidth = 0.0244;
+
   Float_t c = 29.9792458; // cm/ns
   Float_t currentVertex=0, shift=0;
   Int_t ncont=0;
