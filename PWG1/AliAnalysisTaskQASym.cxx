@@ -1,34 +1,8 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-/* $Id$ */
-
-//------------------------------
-// Analysis task for quality-assurance of central tarcking
-// mainly based on fundamental symmetries 
-//
-// contact eva.sicking@cern.ch
-// authors 
-// Authors: Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing,
-//          Andreas Morsch, Eva Sicking
-
-
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "TCanvas.h"
 #include "TList.h"
 #include "TParticle.h"
@@ -47,21 +21,28 @@
 #include "AliESDtrackCuts.h"
 #include "AliMultiplicity.h"
 
-
 #include "AliAnalysisTaskQASym.h"
 #include "AliExternalTrackParam.h"
 #include "AliTrackReference.h"
-
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 
+// Analysis Task for basic QA on the ESD
+
+// Authors: Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing,
+//          Andreas Morsch, Eva Sicking
+
 ClassImp(AliAnalysisTaskQASym)
 
-AliAnalysisTaskQASym::AliAnalysisTaskQASym() 
-  : AliAnalysisTaskSE() 
+  //________________________________________________________________________
+  AliAnalysisTaskQASym::AliAnalysisTaskQASym(const char *name) 
+    : AliAnalysisTaskSE(name) 
+    ,fTrackType(0)
     ,fFieldOn(kTRUE)
+
     ,fHists(0)
+
     ,fHistRECpt(0)
     ,fEta(0)
     ,fEtaPhi(0)
@@ -96,7 +77,7 @@ AliAnalysisTaskQASym::AliAnalysisTaskQASym()
     ,fRecDcaNegEta(0)
     ,fRecDPosEta(0)
     ,fRecDNegEta(0)
-
+  
     ,fRecPtPosVz(0)
     ,fRecPtNegVz(0)
     ,fRecEtaPosVz(0)
@@ -109,116 +90,73 @@ AliAnalysisTaskQASym::AliAnalysisTaskQASym()
     ,fRecQPtNegEtaVz(0)
     ,fRecEtaPtPosVz(0)
     ,fRecEtaPtNegVz(0)
-
-
+  
+  
     ,fDeltaPhiAll(0)
     ,fDeltaPhiLeading(0) 
     ,fDiffDcaD(0)
+
     ,fPhiRec(0)
     ,fThetaRec(0)
     ,fNumber(0)
     ,fVx(0)
     ,fVy(0)
     ,fVz(0)
+    ,test(0)
+  
+    ,fRecDcaPosPhi(0)
+    ,fRecDcaNegPhi(0)
+    ,fRecPtPosPhi(0)
+    ,fRecPtNegPhi(0)
+    ,fRecEtaPosPhi(0)
+    ,fRecEtaNegPhi(0)
+    ,fRecQPtPhi(0)
+    ,fRecEtaPtPosPhi(0)
+    ,fRecEtaPtNegPhi(0)
+
+    ,fRecPtPosEtaPos(0)
+    ,fRecPtNegEtaPos(0)
+    ,fRecPtPosEtaNeg(0)
+    ,fRecPtNegEtaNeg(0)
+
+    ,fRec1PtPosEtaPos(0)
+    ,fRec1PtNegEtaPos(0)
+    ,fRec1PtPosEtaNeg(0)
+    ,fRec1PtNegEtaNeg(0)
+
+    ,fRecPhiPosEtaPos(0)
+    ,fRecPhiNegEtaPos(0)
+    ,fRecPhiPosEtaNeg(0)
+    ,fRecPhiNegEtaNeg(0)
+
+    ,fRecDcaPosPhiEtaPos(0)
+    ,fRecDcaNegPhiEtaPos(0) 
+    ,fRecDcaPosPhiEtaNeg(0)  
+    ,fRecDcaNegPhiEtaNeg(0)  
+    ,fRecPtPosPhiEtaPos(0)  
+    ,fRecPtNegPhiEtaPos(0)  
+    ,fRecPtPosPhiEtaNeg(0) 
+    ,fRecPtNegPhiEtaNeg(0) 
+
+
+    ,fRecDcaPhiPtPosEtaPos(0)
+    ,fRecDcaPhiPtNegEtaPos(0)
+    ,fRecDcaPhiPtPosEtaNeg(0)  
+    ,fRecDcaPhiPtNegEtaNeg(0)  
+    ,fEtavPt(0)  
+
+
+    
+    ,sdca(0)
+    ,xy(0)
+    ,z(0)
+    ,xvertexcor(0)
+    ,yvertexcor(0)  
+ 
     ,fCuts(0)
-  
+
 {
-    // Constructor
-    //
-  for(Int_t i = 0; i < 18; ++i){
-    fRecPtTpcSector[i] = 0;
-    fRecEtaTpcSector[i] = 0;
-    fSignedDcaTpcSector[i] = 0;
-    fRecQPtTpcSector[i] = 0;
-    fRecEtaPtTpcSector[i] = 0;
-  }
-
-  for(Int_t i = 0; i< 7; ++i){
-    fRecPtPosLadder[i] = 0;
-    fRecPtNegLadder[i] = 0;
-    fRecPhiPosLadder[i] = 0;
-    fRecPhiNegLadder[i] = 0;
-    fRecEtaPosLadder[i] = 0;
-    fRecEtaNegLadder[i] = 0;
-    fSignDcaPos[i] = 0;
-    fSignDcaNeg[i] = 0;
-    fSignDcaNegInv[i] = 0;
-    fPtSigmaPos[i] =0;
-    fPtSigmaNeg[i] =0;
-    fqPtRec[i] =0;
-    fDcaSigmaPos[i] =0;
-    fDcaSigmaNeg[i] =0;
-  }
-}
-
-//________________________________________________________________________
-AliAnalysisTaskQASym::AliAnalysisTaskQASym(const char *name) 
-  : AliAnalysisTaskSE(name) 
-    ,fFieldOn(kTRUE)
-    ,fHists(0)
-    ,fHistRECpt(0)
-    ,fEta(0)
-    ,fEtaPhi(0)
-    ,fEtaPt(0)
-    ,fQPt(0)
-    ,fDca(0)
-    ,fqRec(0)
-    ,fsigmaPt(0)
-  
-    ,fRecPtPos(0)
-    ,fRecPtNeg(0)
-    ,fRecPhiPos(0)
-    ,fRecPhiNeg(0)
-    ,fRecEtaPos(0)
-    ,fRecEtaNeg(0)
-    ,fRecEtaPtPos(0)
-    ,fRecEtaPtNeg(0)
-    ,fRecDcaPos(0)
-    ,fRecDcaNeg(0)
-    ,fRecDcaNegInv(0)
-    ,fRecDPos(0)
-    ,fRecDNeg(0)
-
-
-    ,fRecQPtPosEta(0)
-    ,fRecQPtNegEta(0)
-    ,fRecPtPosEta(0)
-    ,fRecPtNegEta(0)
-    ,fRecPhiPosEta(0)
-    ,fRecPhiNegEta(0)
-    ,fRecDcaPosEta(0)
-    ,fRecDcaNegEta(0)
-    ,fRecDPosEta(0)
-    ,fRecDNegEta(0)
-
-    ,fRecPtPosVz(0)
-    ,fRecPtNegVz(0)
-    ,fRecEtaPosVz(0)
-    ,fRecEtaNegVz(0)
-    ,fRecPhiPosVz(0)
-    ,fRecPhiNegVz(0)
-    ,fSignedDcaPosVz(0)
-    ,fSignedDcaNegVz(0)
-    ,fRecQPtPosEtaVz(0)
-    ,fRecQPtNegEtaVz(0)
-    ,fRecEtaPtPosVz(0)
-    ,fRecEtaPtNegVz(0)
-
-
-    ,fDeltaPhiAll(0)
-    ,fDeltaPhiLeading(0) 
-    ,fDiffDcaD(0)
-    ,fPhiRec(0)
-    ,fThetaRec(0)
-    ,fNumber(0)
-    ,fVx(0)
-    ,fVy(0)
-    ,fVz(0)
-    ,fCuts(0)
-  
-{
-    // Constructor
-    //
+  // Constructor
   for(Int_t i = 0;i<18;++i){
     fRecPtTpcSector[i] = 0;
     fRecEtaTpcSector[i] = 0;
@@ -257,60 +195,68 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  Double_t range = 1.;
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
+  Double_t range = 0.2;
   Double_t pt = 20.;
 
   fHists = new TList();
-
+  //  test   = new TNtuple("test","test",  
+  //			  "pt:phi:theta:x:y:z:charge");
   fHistRECpt   = new TH1F("fHistRECpt", 
 			  " p_{T}",
-			  100, 0., pt);
+			  100, 0., 0.6);
   fEta   = new TH1F("fEta", 
-			  " #eta",
-			  200, -2., 2.);
+		    " #eta",
+		    200, -2., 2.);
+ fEtavPt   = new TH2F("fEtavPt", 
+		    " #eta -p_{T}",
+		     200, -2., 2.,
+		     100, 0, 1.5);
   fEtaPhi   = new TH2F("fEtaPhi", 
-			  " #eta - #phi",
-			  200, -2., 2., 128, 0., 2. * TMath::Pi());
+		       " #eta - #phi",
+		       200, -2., 2., 128, 0., 2. * TMath::Pi());
   
   fThetaRec   = new TH1F("fThetaRec", 
-			  " #theta",
-			  180, 0., TMath::Pi());
+			 " #theta",
+			 180, 0., TMath::Pi());
   fPhiRec   = new TH1F("fPhiRec", 
-			  " #phi",
-			  180, 0., 2*TMath::Pi());
+		       " #phi",
+		       180, 0., 2*TMath::Pi());
   fNumber   = new TH1F("fNumber", 
 		       "number of tracks per event",
 		       50, 0.5, 49.5);
   fVx   = new TH1F("fVx", 
 		   "X of vertex",
-		   100, -5., 5.);
+		   100, -1., 1.);
   fVy   = new TH1F("fVy", 
 		   "Y of vertex",
-		   100, -5., 5.);
+		   100, -1., 1.);
   fVz   = new TH1F("fVz", 
 		   "Z of vertex",
-		   500, -50., 50.);
+		   200, -50., 50.);
 
   fEtaPt   = new TH1F("fEtaPt", 
-			  " #eta/p_{T} ",
-			  100, -1., 1.);
+		      " #eta/p_{T} ",
+		      100, -1., 1.);
 
   fQPt   = new TH1F("fQPt", 
-			  " charge/p_{T} ",
-			  100, -1., 1.);
+		    " charge/p_{T} ",
+		    100, -1., 1.);
 
   fDca   = new TH1F("fDca", 
-			  " dca ",
-			  200, -range, range);
+		    " dca ",
+		    200,  -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
 
 
   fqRec    = new TH1F("fqRec",   
-			  " charge all reconstructed particle",
-			  21, -9.5, 10.5);
+		      " charge all reconstructed particle",
+		      21, -9.5, 10.5);
   
   fsigmaPt    = new TH1F("fsigmaPt",   
-			  "Log_{10}(#sigma_{p_{T}})",
-			  200, -2., 8.);
+			 "Log_{10}(#sigma_{p_{T}})",
+			 200, -4., 8.);
 
 
 
@@ -319,21 +265,21 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   for(Int_t ITSlayer_case=0;ITSlayer_case<7;ITSlayer_case++){
 
     fSignDcaPos[ITSlayer_case]   = new TH1F(Form("fSignDcaPos%d", ITSlayer_case),  
-				   " Signed dca", 
-				   200, -range, range);
+					    " Signed dca", 
+					    200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
     fSignDcaPos[ITSlayer_case]->GetXaxis()->SetTitle("dca");
     fSignDcaPos[ITSlayer_case]->GetYaxis()->SetTitle("");
    
  
     fSignDcaNeg[ITSlayer_case]   = new TH1F(Form("fSignDcaNeg%d", ITSlayer_case),  
-				   " Signed dcas",
-				   200, -range, range);
+					    " Signed dcas",
+					    200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
     fSignDcaNeg[ITSlayer_case]->GetXaxis()->SetTitle("dca");
     fSignDcaNeg[ITSlayer_case]->GetYaxis()->SetTitle("");
 
     fSignDcaNegInv[ITSlayer_case]   = new TH1F(Form("fSignDcaNegInv%d", ITSlayer_case),  
-				   " inverse Signed dca ",
-				   200, -range, range);
+					       " inverse Signed dca ",
+					       200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
     fSignDcaNegInv[ITSlayer_case]->GetXaxis()->SetTitle("-dca");
     fSignDcaNegInv[ITSlayer_case]->GetYaxis()->SetTitle("");
 
@@ -341,15 +287,15 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
 
     fPtSigmaPos[ITSlayer_case]   = new TH1F(Form("fPtSigmaPos%d", ITSlayer_case),  
-				   " #sigma_{pT} ",
-				   208, -2., 8.);
+					    " #sigma_{pT} ",
+					    208, -4., 8.);
     fPtSigmaPos[ITSlayer_case]->GetXaxis()->SetTitle("Log_{10}(#sigma_{pT})");
     fPtSigmaPos[ITSlayer_case]->GetYaxis()->SetTitle("");
     
     
     fPtSigmaNeg[ITSlayer_case]   = new TH1F(Form("fPtSigmaNeg%d",ITSlayer_case),  
-				  " #sigma_{pT}",
-				   208, -2., 8.);
+					    " #sigma_{pT}",
+					    208, -4., 8.);
     fPtSigmaNeg[ITSlayer_case]->GetXaxis()->SetTitle("Log_{10}(#sigma_{pT})");
     fPtSigmaNeg[ITSlayer_case]->GetYaxis()->SetTitle("");
 
@@ -358,8 +304,8 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
 
     fqPtRec[ITSlayer_case]   = new TH1F(Form("fqPtRec%d",ITSlayer_case),  
-				  "q/ p_{T}",
-				   200, -100., 100.);
+					"q/ p_{T}",
+					200, -100., 100.);
     fqPtRec[ITSlayer_case]->GetXaxis()->SetTitle("q_{tr}/p_{T, tr} (GeV/c)");
     fqPtRec[ITSlayer_case]->GetYaxis()->SetTitle("");
 
@@ -368,288 +314,482 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
 
     fDcaSigmaPos[ITSlayer_case]   = new TH2F(Form("fDcaSigmaPos%d", ITSlayer_case),  
-				   " p_{T} shift vs #sigma_{pT} ",
-				   200, -range, range,200, -4., 4. );
+					     " p_{T} shift vs #sigma_{pT} ",
+					     200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9),200, -4., 4. );
     fDcaSigmaPos[ITSlayer_case]->GetXaxis()->SetTitle("signed DCA)");
     fDcaSigmaPos[ITSlayer_case]->GetYaxis()->SetTitle("log_{10}(#sigma_{pT})");
     
     
     fDcaSigmaNeg[ITSlayer_case]   = new TH2F(Form("fDcaSigmaNeg%d", ITSlayer_case),  
-				   " p_{T} shift vs #sigma_{pT} ",
-				   200, -range, range,200, -4., 4. );
+					     " p_{T} shift vs #sigma_{pT} ",
+					     200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9),200, -4., 4. );
     fDcaSigmaNeg[ITSlayer_case]->GetXaxis()->SetTitle("signed DCA");
     fDcaSigmaNeg[ITSlayer_case]->GetYaxis()->SetTitle("log_{10}(#sigma_{pT})");
+
+
   }
-  
-    
     
  
     
-    // YIELDs---------- positive and negative particles
+  // YIELDs---------- positive and negative particles
     
-    fRecPtPos   = new TH1F("fRecPtPos", 
-			   " p_{T}",
-			   100, 0.,pt);
-    fRecPtPos->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    fRecPtNeg   = new TH1F("fRecPtNeg", 
-			   " p_{T} ",
-			   100, 0., pt);
-    fRecPtNeg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fRecPtPos   = new TH1F("fRecPtPos", 
+			 " p_{T}",
+			 100, 0.,pt);
+  fRecPtPos->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fRecPtNeg   = new TH1F("fRecPtNeg", 
+			 " p_{T} ",
+			 100, 0., pt);
+  fRecPtNeg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
 
     
-    fRecPhiPos   = new TH1F("fRecPhiPos", 
-			    "#phi",
-			    361, 0., 360.);
-    fRecPhiPos->GetXaxis()->SetTitle("#phi (deg)");
+  fRecPhiPos   = new TH1F("fRecPhiPos", 
+			  "#phi",
+			  361, 0., 360.);
+  fRecPhiPos->GetXaxis()->SetTitle("#phi (deg)");
   
-    fRecPhiNeg   = new TH1F("fRecPhiNeg", 
-			    "#phi ",
-			    361, 0., 360.);
-    fRecPhiNeg->GetXaxis()->SetTitle("#phi (deg)");
+  fRecPhiNeg   = new TH1F("fRecPhiNeg", 
+			  "#phi ",
+			  361, 0., 360.);
+  fRecPhiNeg->GetXaxis()->SetTitle("#phi (deg)");
     
-    fRecEtaPos   = new TH1F("fRecEtaPos", 
-			    "#eta",
-			    200, -2., 2.);
-    fRecEtaPos->GetXaxis()->SetTitle("#eta");
+  fRecEtaPos   = new TH1F("fRecEtaPos", 
+			  "#eta",
+			  200, -2., 2.);
+  fRecEtaPos->GetXaxis()->SetTitle("#eta");
 
-    fRecEtaNeg   = new TH1F("fRecEtaNeg", 
-			    "#eta",
-			    200, -2., 2.);
-    fRecEtaNeg->GetXaxis()->SetTitle("#eta");
+  fRecEtaNeg   = new TH1F("fRecEtaNeg", 
+			  "#eta",
+			  200, -2., 2.);
+  fRecEtaNeg->GetXaxis()->SetTitle("#eta");
     
-    fRecEtaPtPos   = new TH1F("fRecEtaPtPos", 
-			      "#eta/p_{T}",
-			      200, -0.1, .1);
-    fRecEtaPtPos->GetXaxis()->SetTitle("#eta/p_{T}");
+  fRecEtaPtPos   = new TH1F("fRecEtaPtPos", 
+			    "#eta/p_{T}",
+			    200, -0.1, .1);
+  fRecEtaPtPos->GetXaxis()->SetTitle("#eta/p_{T}");
 
-    fRecEtaPtNeg   = new TH1F("fRecEtaPtNeg", 
-			      "#eta/p_{T}",
-			      200, -.1, .1);
-    fRecEtaPtNeg->GetXaxis()->SetTitle("#eta/p_{T}");
+  fRecEtaPtNeg   = new TH1F("fRecEtaPtNeg", 
+			    "#eta/p_{T}",
+			    200, -.1, .1);
+  fRecEtaPtNeg->GetXaxis()->SetTitle("#eta/p_{T}");
 
-    fRecDcaPos   = new TH1F("fRecDcaPos", 
-			 " dca",
-			   100, -range, range);
-    fRecDcaPos->GetXaxis()->SetTitle("dca (cm)");
-    fRecDcaNeg   = new TH1F("fRecDcaNeg", 
-			   " dca",
-			   100, -range, range);
-    fRecDcaNeg->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaPos   = new TH1F("fRecDcaPos", 
+			  " dca",
+			  100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDcaPos->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaNeg   = new TH1F("fRecDcaNeg", 
+			  " dca",
+			  100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDcaNeg->GetXaxis()->SetTitle("dca (cm)");
 
-    fRecDcaNegInv   = new TH1F("fRecDcaNegInv", 
-			   " dca",
-			   100, -range, range);
-    fRecDcaNegInv->GetXaxis()->SetTitle("dca (cm)");
-
-
-    fRecDPos   = new TH1F("fRecDPos", 
-			 " d",
-			   100, -range, range);
-    fRecDPos->GetXaxis()->SetTitle("d (cm)");
-    fRecDNeg   = new TH1F("fRecDNeg", 
-			   "d",
-			   100, -range, range);
-    fRecDNeg->GetXaxis()->SetTitle("d (cm)");
+  fRecDcaNegInv   = new TH1F("fRecDcaNegInv", 
+			     " dca",
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDcaNegInv->GetXaxis()->SetTitle("dca (cm)");
 
 
-    //  YIELDs ---------------- positive and negative eta
+  fRecDPos   = new TH1F("fRecDPos", 
+			" d",
+			100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDPos->GetXaxis()->SetTitle("d (cm)");
+  fRecDNeg   = new TH1F("fRecDNeg", 
+			"d",
+			100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDNeg->GetXaxis()->SetTitle("d (cm)");
+
+
+  //  YIELDs ---------------- positive and negative eta
     
     
-    fRecQPtPosEta   = new TH1F("fRecQPtPosEta", 
-			       "q/p_{T}",
-			       200, -0.5, 0.5);
-    fRecQPtPosEta->GetXaxis()->SetTitle("q/p_{T} ");
+  fRecQPtPosEta   = new TH1F("fRecQPtPosEta", 
+			     "q/p_{T}",
+			     200, -0.5, 0.5);
+  fRecQPtPosEta->GetXaxis()->SetTitle("q/p_{T} ");
 
-    fRecQPtNegEta   = new TH1F("fRecQPtNegEta", 
-			       "q/p_{T}",
-			       200, -0.5, 0.5);
-    fRecQPtNegEta->GetXaxis()->SetTitle("q/p_{T}");
+  fRecQPtNegEta   = new TH1F("fRecQPtNegEta", 
+			     "q/p_{T}",
+			     200, -0.5, 0.5);
+  fRecQPtNegEta->GetXaxis()->SetTitle("q/p_{T}");
     
-    fRecPtPosEta   = new TH1F("fRecPtPosEta", 
-			      " p_{T} ",
-			      100, 0., pt);
-    fRecPtPosEta->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fRecPtPosEta   = new TH1F("fRecPtPosEta", 
+			    " p_{T} ",
+			    100, 0., pt);
+  fRecPtPosEta->GetXaxis()->SetTitle("p_{T} (GeV/c)");
 
-    fRecPtNegEta   = new TH1F("fRecPtNegEta", 
-			      " p_{T}",
-			      100, 0., pt);
-    fRecPtNegEta->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fRecPtNegEta   = new TH1F("fRecPtNegEta", 
+			    " p_{T}",
+			    100, 0., pt);
+  fRecPtNegEta->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     
-    fRecPhiPosEta   = new TH1F("fRecPhiPosEta", 
-			    "#phi",
-			    361, 0., 360);
-    fRecPhiPosEta->GetXaxis()->SetTitle("#phi (deg)");
+  fRecPhiPosEta   = new TH1F("fRecPhiPosEta", 
+			     "#phi",
+			     361, 0., 360);
+  fRecPhiPosEta->GetXaxis()->SetTitle("#phi (deg)");
 
-    fRecPhiNegEta   = new TH1F("fRecPhiNegEta", 
-			    "#phi ",
-			    361, 0, 360);
-    fRecPhiNegEta->GetXaxis()->SetTitle("#phi (deg)");
+  fRecPhiNegEta   = new TH1F("fRecPhiNegEta", 
+			     "#phi ",
+			     361, 0, 360);
+  fRecPhiNegEta->GetXaxis()->SetTitle("#phi (deg)");
 
-    fRecDcaPosEta   = new TH1F("fRecDcaPosEta", 
-			 " dca ",
-			   100, -range, range);
-    fRecDcaPosEta->GetXaxis()->SetTitle("dca (cm)");
-    fRecDcaNegEta   = new TH1F("fRecDcaNegEta", 
-			   " dca",
-			   100, -range, range);
-    fRecDcaNegEta->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaPosEta   = new TH1F("fRecDcaPosEta", 
+			     " dca ",
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDcaPosEta->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaNegEta   = new TH1F("fRecDcaNegEta", 
+			     " dca",
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDcaNegEta->GetXaxis()->SetTitle("dca (cm)");
 
-    fRecDPosEta   = new TH1F("fRecDPosEta", 
-			 " d",
-			   100, -range, range);
-    fRecDPosEta->GetXaxis()->SetTitle("d (cm)");
-    fRecDNegEta   = new TH1F("fRecDNegEta", 
+  fRecDPosEta   = new TH1F("fRecDPosEta", 
+			   " d",
+			   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDPosEta->GetXaxis()->SetTitle("d (cm)");
+  fRecDNegEta   = new TH1F("fRecDNegEta", 
 			   "d",
 			   100, -5., 5.);
-    fRecDNegEta->GetXaxis()->SetTitle("d (cm)");
+  fRecDNegEta->GetXaxis()->SetTitle("d (cm)");
+
+  fRecDcaPosPhi   = new TH2F("fRecDcaPosPhi", 
+			     " dca vs. phi",
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
+  fRecDcaPosPhi->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaPosPhi->GetYaxis()->SetTitle("#phi (rad.)");
+  fRecDcaNegPhi   = new TH2F("fRecDcaNegPhi", 
+			     " dca vs. phi",
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
+  fRecDcaNegPhi->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaNegPhi->GetYaxis()->SetTitle("#phi (rad.)");
+
+  fRecPtPosPhi   = new TH2F("fRecPtPosPhi", 
+			     " log(p_T) vs. phi",
+			     100, -2.5, 2., 180, 0, TMath::Pi()*2);
+  fRecPtPosPhi->GetXaxis()->SetTitle("log_{10}(p_{T})");
+  fRecPtPosPhi->GetYaxis()->SetTitle("#phi (rad.)");
+  fRecPtNegPhi   = new TH2F("fRecPtNegPhi", 
+			     " log(p_T) vs. phi",
+			     100,-2.5 , 2., 180, 0, TMath::Pi()*2);
+  fRecPtNegPhi->GetXaxis()->SetTitle("log_{10}(p_{T})");
+  fRecPtNegPhi->GetYaxis()->SetTitle("#phi (rad.)");
+
+  fRecEtaPosPhi   = new TH2F("fRecEtaPosPhi", 
+			     " eta vs. phi",
+			     100, -1.5, 1.5, 180, 0, TMath::Pi()*2);
+  fRecEtaPosPhi->GetXaxis()->SetTitle("#eta");
+  fRecEtaPosPhi->GetYaxis()->SetTitle("#phi (rad.)");
+  fRecEtaNegPhi   = new TH2F("fRecEtaNegPhi", 
+			     " eta vs. phi",
+			     100, -1.5, 1.5, 180, 0, TMath::Pi()*2);
+  fRecEtaNegPhi->GetXaxis()->SetTitle("#eta");
+  fRecEtaNegPhi->GetYaxis()->SetTitle("#phi (rad.)");
+
+  fRecQPtPhi   = new TH2F("fRecQPtPhi", 
+			     " charge/p_T vs. phi",
+			     100,-1. , 1., 180, 0, TMath::Pi()*2);
+  fRecQPtPhi->GetXaxis()->SetTitle("charge/p_{T}");
+  fRecQPtPhi->GetYaxis()->SetTitle("#phi (rad.)");
+
+  fRecEtaPtPosPhi   = new TH2F("fRecEtaPtPosPhi", 
+			     " eta/p_T vs. phi",
+			     100, -5, 5., 180, 0, TMath::Pi()*2);
+  fRecEtaPtPosPhi->GetXaxis()->SetTitle("#eta/p_{T}");
+  fRecEtaPtPosPhi->GetYaxis()->SetTitle("#phi (rad.)");
+  fRecEtaPtNegPhi   = new TH2F("fRecEtaPtNegPhi", 
+			     " eta/p_T vs. phi",
+			     100,-5 , 5., 180, 0, TMath::Pi()*2);
+  fRecEtaPtNegPhi->GetXaxis()->SetTitle("#eta/p_{T}");
+  fRecEtaPtNegPhi->GetYaxis()->SetTitle("#phi (rad.)");
+
+
+
+
+
+  fRecDcaPosPhiEtaPos   = new TH2F("fRecDcaPosPhiEtaPos", 
+			     " dca vs. phi",
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
+  fRecDcaPosPhiEtaPos->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaPosPhiEtaPos->GetYaxis()->SetTitle("#phi (rad.)");
+  fRecDcaNegPhiEtaPos   = new TH2F("fRecDcaNegPhiEtaPos", 
+			     " dca vs. phi",
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
+  fRecDcaNegPhiEtaPos->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaNegPhiEtaPos->GetYaxis()->SetTitle("#phi (rad.)");
+
+  fRecPtPosPhiEtaPos   = new TH2F("fRecPtPosPhiEtaPos", 
+			     " log(p_T) vs. phi",
+			     100, -2.5, 2., 180, 0, TMath::Pi()*2);
+  fRecPtPosPhiEtaPos->GetXaxis()->SetTitle("log_{10}(p_{T})");
+  fRecPtPosPhiEtaPos->GetYaxis()->SetTitle("#phi (rad.)");
+  fRecPtNegPhiEtaPos   = new TH2F("fRecPtNegPhiEtaPos", 
+			     " log(p_T) vs. phi",
+			     100,-2.5 , 2., 180, 0, TMath::Pi()*2);
+  fRecPtNegPhiEtaPos->GetXaxis()->SetTitle("log_{10}(p_{T})");
+  fRecPtNegPhiEtaPos->GetYaxis()->SetTitle("#phi (rad.)");
+
+
+  fRecDcaPosPhiEtaNeg   = new TH2F("fRecDcaPosPhiEtaNeg", 
+			     " dca vs. phi",
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
+  fRecDcaPosPhiEtaNeg->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaPosPhiEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
+  fRecDcaNegPhiEtaNeg   = new TH2F("fRecDcaNegPhiEtaNeg", 
+			     " dca vs. phi",
+			     100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 180, 0, TMath::Pi()*2);
+  fRecDcaNegPhiEtaNeg->GetXaxis()->SetTitle("dca (cm)");
+  fRecDcaNegPhiEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
+
+  fRecPtPosPhiEtaNeg   = new TH2F("fRecPtPosPhiEtaNeg", 
+			     " log(p_T) vs. phi",
+			     100, -2.5, 2., 180, 0, TMath::Pi()*2);
+  fRecPtPosPhiEtaNeg->GetXaxis()->SetTitle("log_{10}(p_{T})");
+  fRecPtPosPhiEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
+  fRecPtNegPhiEtaNeg   = new TH2F("fRecPtNegPhiEtaNeg", 
+			     " log(p_T) vs. phi",
+			     100,-2.5 , 2., 180, 0, TMath::Pi()*2);
+  fRecPtNegPhiEtaNeg->GetXaxis()->SetTitle("log_{10}(p_{T})");
+  fRecPtNegPhiEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
+
 
 
     
-    //  YIELDs ---------------- for TPC sectors
-    for(Int_t sector=0; sector<18;sector++){
+  //  YIELDs ---------------- for TPC sectors
+  for(Int_t sector=0; sector<18;sector++){
       
 
-	fRecPtTpcSector[sector]   = new TH1F(Form("fRecPtTpcSector%02d",sector), 
-					     Form("p_{T} distribution: TPC sector %d",
-						  sector),100, 0., pt);
-	fRecPtTpcSector[sector]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	
-	fRecEtaTpcSector[sector]   = new TH1F(Form("fRecEtaTpcSector%02d",sector), 
-					      Form("#eta distribution: TPC sector %d",
-						   sector),200, -2., 2.);
-	fRecEtaTpcSector[sector]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	
-	
-	fSignedDcaTpcSector[sector]   = new TH1F(Form("fSignedDcaTpcSector%02d",sector), 
-						 Form("dca distribution: TPC sector %d",
-						      sector),200, -range, range );
-	fSignedDcaTpcSector[sector]->GetXaxis()->SetTitle("dca");
-	
-	fRecQPtTpcSector[sector]   = new TH1F(Form("fRecQPtTpcSector%02d",sector), 
-					      Form("Q/ p_{T} distribution: TPC sector %d",
-						   sector),100, -1., 1.);
-	fRecQPtTpcSector[sector]->GetXaxis()->SetTitle("Q/p_{T} (GeV/c)");
-	
-	fRecEtaPtTpcSector[sector]   = new TH1F(Form("fRecEtaPtTpcSector%02d",sector), 
-						Form("#eta/ p_{T} distribution: TPC sector %d",
-						     sector),100, -1., 1.);
-	fRecEtaPtTpcSector[sector]->GetXaxis()->SetTitle("#eta/p_{T} (GeV/c)");
-	
-    }
-    // YIELDS ITS ladder
-    for(Int_t i=0;i<7;i++){
-	fRecPtPosLadder[i]   = new TH1F(Form("fRecPtPosLadder%d", i), 
-					" p_{T} distribution",
-					100, 0., pt);
-	fRecPtPosLadder[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	fRecPtNegLadder[i]   = new TH1F(Form("fRecPtNegLadder%d",i), 
-					" p_{T} distribution ",
-					100, 0., pt);
-	fRecPtNegLadder[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	
-	
-	fRecPhiPosLadder[i]   = new TH1F(Form("fRecPhiPosLadder%d",i), 
-					 "#phi distribution: all pos eta",
-					 361, 0., 360);
-	fRecPhiPosLadder[i]->GetXaxis()->SetTitle("#phi (deg)");
-	
-	fRecPhiNegLadder[i]   = new TH1F(Form("fRecPhiNegLadder%d", i),
-					 "#phi distribution: all neg eta",
-					 361, 0, 360);
-	fRecPhiNegLadder[i]->GetXaxis()->SetTitle("#phi (deg)");
-	
-	
-	
-	fRecEtaPosLadder[i]   = new TH1F(Form("fRecEtaPosLadder%d",i), 
-					 "#eta distribution",
-					 200, -2., 2.);
-	fRecEtaPosLadder[i]->GetXaxis()->SetTitle("#eta)");
-	
-	fRecEtaNegLadder[i]   = new TH1F(Form("fRecEtaNegLadder%d", i),
-					 "#eta distribution",
-					 200, -2., 2.);
-	fRecEtaNegLadder[i]->GetXaxis()->SetTitle("#eta");
-    }
+    fRecPtTpcSector[sector]   = new TH1F(Form("fRecPtTpcSector%02d",sector), 
+					 Form("p_{T} distribution: TPC sector %d",
+					      sector),100, 0., pt);
+    fRecPtTpcSector[sector]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+
+    fRecEtaTpcSector[sector]   = new TH1F(Form("fRecEtaTpcSector%02d",sector), 
+					  Form("#eta distribution: TPC sector %d",
+					       sector),200, -2., 2.);
+    fRecEtaTpcSector[sector]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+     
+
+    fSignedDcaTpcSector[sector]   = new TH1F(Form("fSignedDcaTpcSector%02d",sector), 
+					     Form("dca distribution: TPC sector %d",
+						  sector),200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9) );
+    fSignedDcaTpcSector[sector]->GetXaxis()->SetTitle("dca");
+
+    fRecQPtTpcSector[sector]   = new TH1F(Form("fRecQPtTpcSector%02d",sector), 
+					  Form("Q/ p_{T} distribution: TPC sector %d",
+					       sector),100, -1., 1.);
+    fRecQPtTpcSector[sector]->GetXaxis()->SetTitle("Q/p_{T} (GeV/c)");
+
+    fRecEtaPtTpcSector[sector]   = new TH1F(Form("fRecEtaPtTpcSector%02d",sector), 
+					    Form("#eta/ p_{T} distribution: TPC sector %d",
+						 sector),100, -1., 1.);
+    fRecEtaPtTpcSector[sector]->GetXaxis()->SetTitle("#eta/p_{T} (GeV/c)");
+ 
+  }
+  // YIELDS ITS ladder
+  for(Int_t i=0;i<7;i++){
+    fRecPtPosLadder[i]   = new TH1F(Form("fRecPtPosLadder%d", i), 
+				    " p_{T} distribution",
+				    100, 0., pt);
+    fRecPtPosLadder[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fRecPtNegLadder[i]   = new TH1F(Form("fRecPtNegLadder%d",i), 
+				    " p_{T} distribution ",
+				    100, 0., pt);
+    fRecPtNegLadder[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+
+
+    fRecPhiPosLadder[i]   = new TH1F(Form("fRecPhiPosLadder%d",i), 
+				     "#phi distribution: all pos eta",
+				     361, 0., 360);
+    fRecPhiPosLadder[i]->GetXaxis()->SetTitle("#phi (deg)");
+      
+    fRecPhiNegLadder[i]   = new TH1F(Form("fRecPhiNegLadder%d", i),
+				     "#phi distribution: all neg eta",
+				     361, 0, 360);
+    fRecPhiNegLadder[i]->GetXaxis()->SetTitle("#phi (deg)");
+
+
+
+    fRecEtaPosLadder[i]   = new TH1F(Form("fRecEtaPosLadder%d",i), 
+				     "#eta distribution",
+				     200, -2., 2.);
+    fRecEtaPosLadder[i]->GetXaxis()->SetTitle("#eta)");
+      
+    fRecEtaNegLadder[i]   = new TH1F(Form("fRecEtaNegLadder%d", i),
+				     "#eta distribution",
+				     200, -2., 2.);
+    fRecEtaNegLadder[i]->GetXaxis()->SetTitle("#eta");
+  }
+
+  Double_t vzmax = 15;
+
+  fRecPtPosVz = new TH2F("fRecPtPosVz", 
+			 "p_{T} distribution vs Vz()",
+			 100, -1., 2., 200,-vzmax,vzmax);
+  fRecPtPosVz->GetXaxis()->SetTitle("log_{10}(p_{T})");
     
-    Double_t vzmax = 30;
-    
-    fRecPtPosVz = new TH2F("fRecPtPosVz", 
-			   "p_{T} distribution vs Vz()",
-			   100, -1., 2., 200,-vzmax,vzmax);
-    fRecPtPosVz->GetXaxis()->SetTitle("log_{10}(p_{T})");
-    
-    fRecPtNegVz = new TH2F("fRecPtNegVz",
-			   "p_{T} distribution vs Vz()",
-			   100, -1., 2.,200,-vzmax,vzmax);
-    fRecPtNegVz->GetXaxis()->SetTitle("Log_{10}(p_{T})");
+  fRecPtNegVz = new TH2F("fRecPtNegVz",
+			 "p_{T} distribution vs Vz()",
+			 100, -1., 2.,200,-vzmax,vzmax);
+  fRecPtNegVz->GetXaxis()->SetTitle("Log_{10}(p_{T})");
     
    
-    fRecEtaPosVz= new TH2F("fRecEtaPosVz", 
+  fRecEtaPosVz= new TH2F("fRecEtaPosVz", 
+			 "#eta distribution vs Vz()",
+			 100, -2., 2., 200,-vzmax,vzmax);
+  fRecEtaPosVz->GetXaxis()->SetTitle("#eta");
+  fRecEtaNegVz = new TH2F("fRecEtaNegVz",
 			  "#eta distribution vs Vz()",
-			  100, -2., 2., 200,-vzmax,vzmax);
-    fRecEtaPosVz->GetXaxis()->SetTitle("#eta");
-    fRecEtaNegVz = new TH2F("fRecEtaNegVz",
-			   "#eta distribution vs Vz()",
-			   100, -2., 2.,200,-vzmax,vzmax);
-    fRecEtaNegVz->GetXaxis()->SetTitle("#eta");
+			  100, -2., 2.,200,-vzmax,vzmax);
+  fRecEtaNegVz->GetXaxis()->SetTitle("#eta");
 
-    fRecPhiPosVz= new TH2F("fRecPhiPosVz", 
-			  "#eta distribution vs Vz()",
-			  361, 0., 360., 200,-vzmax,vzmax);
-    fRecPhiPosVz->GetXaxis()->SetTitle("#phi (deg)");
-    fRecPhiNegVz = new TH2F("fRecPhiNegVz",
-			   "dca vs Vz()",
-			   361, 0., 360.,200,-vzmax,vzmax);
-    fRecPhiNegVz->GetXaxis()->SetTitle("#phi (deg)");
+  fRecPhiPosVz= new TH2F("fRecPhiPosVz", 
+			 "#eta distribution vs Vz()",
+			 361, 0., 360., 200,-vzmax,vzmax);
+  fRecPhiPosVz->GetXaxis()->SetTitle("#phi (deg)");
+  fRecPhiNegVz = new TH2F("fRecPhiNegVz",
+			  "dca vs Vz()",
+			  361, 0., 360.,200,-vzmax,vzmax);
+  fRecPhiNegVz->GetXaxis()->SetTitle("#phi (deg)");
 
-    fSignedDcaPosVz= new TH2F("fSignedDcaPosVz", 
-			  "#eta distribution vs Vz()",
-			  200, -range, range, 200,-vzmax,vzmax);
-    fSignedDcaPosVz->GetXaxis()->SetTitle("dca (cm)");
-    fSignedDcaNegVz = new TH2F("fSignedDcaNegVz",
-			   "dca vs Vz()",
-			   200, -range, range,200,-vzmax,vzmax);
-    fSignedDcaNegVz->GetXaxis()->SetTitle("dca (cm)");
+  fSignedDcaPosVz= new TH2F("fSignedDcaPosVz", 
+			    "#eta distribution vs Vz()",
+			    200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9), 200,-vzmax,vzmax);
+  fSignedDcaPosVz->GetXaxis()->SetTitle("dca (cm)");
+  fSignedDcaNegVz = new TH2F("fSignedDcaNegVz",
+			     "dca vs Vz()",
+			     200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9),200,-vzmax,vzmax);
+  fSignedDcaNegVz->GetXaxis()->SetTitle("dca (cm)");
 
-    fRecQPtPosEtaVz= new TH2F("fRecQPtPosEtaVz",
-                          " Q/p_{T} distribution vs Vz()",
-                          100, -1., 1., 200,-vzmax,vzmax);
-    fRecQPtPosEtaVz->GetXaxis()->SetTitle("Q/p_{T}");
-    fRecQPtNegEtaVz = new TH2F("fRecQPtNegEtaVz",
-                           " Q/p_{T} distribution vs Vz()",
-                           100, -1., 1.,200,-vzmax,vzmax);
-    fRecQPtNegEtaVz->GetXaxis()->SetTitle("Q/p_{T}");
+  fRecQPtPosEtaVz= new TH2F("fRecQPtPosEtaVz",
+			    " Q/p_{T} distribution vs Vz()",
+			    100, -1., 1., 200,-vzmax,vzmax);
+  fRecQPtPosEtaVz->GetXaxis()->SetTitle("Q/p_{T}");
+  fRecQPtNegEtaVz = new TH2F("fRecQPtNegEtaVz",
+			     " Q/p_{T} distribution vs Vz()",
+			     100, -1., 1.,200,-vzmax,vzmax);
+  fRecQPtNegEtaVz->GetXaxis()->SetTitle("Q/p_{T}");
 
  
-    fRecEtaPtPosVz= new TH2F("fRecEtaPtPosVz",
-                          " #eta/p_{T} distribution vs Vz()",
-                          100, -1., 1., 200,-vzmax,vzmax);
-    fRecEtaPtPosVz->GetXaxis()->SetTitle("#eta/p_{T");
-    fRecEtaPtNegVz = new TH2F("fRecEtaPtNegVz",
-                           " #eta/p_{T} distribution vs Vz()",
-                           100, -1., 1.,200,-vzmax,vzmax);
-    fRecEtaPtNegVz->GetXaxis()->SetTitle("#eta/p_{T}");
+  fRecEtaPtPosVz= new TH2F("fRecEtaPtPosVz",
+			   " #eta/p_{T} distribution vs Vz()",
+			   100, -1., 1., 200,-vzmax,vzmax);
+  fRecEtaPtPosVz->GetXaxis()->SetTitle("#eta/p_{T");
+  fRecEtaPtNegVz = new TH2F("fRecEtaPtNegVz",
+			    " #eta/p_{T} distribution vs Vz()",
+			    100, -1., 1.,200,-vzmax,vzmax);
+  fRecEtaPtNegVz->GetXaxis()->SetTitle("#eta/p_{T}");
 
-    //new
-    fDeltaPhiAll = new TH1F("fDeltaPhiAll",
-                           " #Delta #phi",200,-360,360);
-    fDeltaPhiAll->GetXaxis()->SetTitle("#Delta #phi");
+  //new
+  fDeltaPhiAll = new TH1F("fDeltaPhiAll",
+			  " #Delta #phi",200,-360,360);
+  fDeltaPhiAll->GetXaxis()->SetTitle("#Delta #phi");
 
 
-    fDeltaPhiLeading = new TH2F("fDeltaPhiLeading",
-                           " #Delta #phi",361,-360,360, 361,0, 360);
-    fDeltaPhiLeading->GetXaxis()->SetTitle("#Delta #phi (deg.)");
-    fDeltaPhiLeading->GetYaxis()->SetTitle("#phi_{leading particle} (deg.)");
+  fDeltaPhiLeading = new TH2F("fDeltaPhiLeading",
+			      " #Delta #phi",361,-360,360, 361,0, 360);
+  fDeltaPhiLeading->GetXaxis()->SetTitle("#Delta #phi (deg.)");
+  fDeltaPhiLeading->GetYaxis()->SetTitle("#phi_{leading particle} (deg.)");
 
-    fDiffDcaD    = new TH1F("fDiffDcaD",   
-			    "dca-d",
-			    200, -5., 5.);
-    
+  fDiffDcaD    = new TH1F("fDiffDcaD",   
+			  "dca-d",
+			  200, -1., 1.);
+
+  
+  fRecPtPosEtaPos = new TH1F("fRecPtPosEtaPos",
+			     "p_{T} distribution",100,0,pt);
+  fRecPtPosEtaPos->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+
+  fRecPtNegEtaPos = new TH1F("fRecPtNegEtaPos",
+			     "p_{T} distribution",100,0,pt);
+  fRecPtNegEtaPos->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+
+  fRecPtPosEtaNeg = new TH1F("fRecPtPosEtaNeg",
+			     "p_{T} distribution",100,0,pt);
+  fRecPtPosEtaNeg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+
+  fRecPtNegEtaNeg = new TH1F("fRecPtNegEtaNeg",
+			     "p_{T} distribution",100,0,pt);
+  fRecPtNegEtaNeg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+
+
+
+  fRec1PtPosEtaPos = new TH1F("fRec1PtPosEtaPos",
+			     "1/p_{T} distribution",100,0,0.5);
+  fRec1PtPosEtaPos->GetXaxis()->SetTitle("p_{T} (c/GeV)");
+
+  fRec1PtNegEtaPos = new TH1F("fRec1PtNegEtaPos",
+			     "1/p_{T} distribution",100,0,0.5);
+  fRec1PtNegEtaPos->GetXaxis()->SetTitle("p_{T} (c/GeV)");
+
+  fRec1PtPosEtaNeg = new TH1F("fRec1PtPosEtaNeg",
+			     "1/p_{T} distribution",100,0,0.5);
+  fRec1PtPosEtaNeg->GetXaxis()->SetTitle("p_{T} (c/GeV)");
+
+  fRec1PtNegEtaNeg = new TH1F("fRec1PtNegEtaNeg",
+			     "1/p_{T} distribution",100,0,0.5);
+  fRec1PtNegEtaNeg->GetXaxis()->SetTitle("1/p_{T} (c/GeV)");
+
+
+ 
+  fRecPhiPosEtaPos = new TH1F("fRecPhiPosEtaPos",
+			     "#phi",180,0,2*TMath::Pi());
+  fRecPhiPosEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
+
+  fRecPhiNegEtaPos = new TH1F("fRecPhiNegEtaPos",
+			     "#phi",180,0,2*TMath::Pi());
+  fRecPhiNegEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
+
+  fRecPhiPosEtaNeg = new TH1F("fRecPhiPosEtaNeg",
+			     "#phi",180,0,2*TMath::Pi());
+  fRecPhiPosEtaNeg->GetXaxis()->SetTitle("#phi (rad.)");
+
+  fRecPhiNegEtaNeg = new TH1F("fRecPhiNegEtaNeg",
+			     "#phi",180,0,2*TMath::Pi());
+  fRecPhiNegEtaNeg->GetXaxis()->SetTitle("#phi (rad.)");
+
+
+
+  fRecDcaPhiPtPosEtaPos = new TH3F("fRecDcaPhiPtPosEtaPos",
+				   "#phi- p_{T} - DCA",
+				   180,0,2*TMath::Pi(),
+				   100,0,pt,
+				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDcaPhiPtPosEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
+  fRecDcaPhiPtPosEtaPos->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fRecDcaPhiPtPosEtaPos->GetZaxis()->SetTitle("dca (cm)");
+
+  fRecDcaPhiPtPosEtaNeg = new TH3F("fRecDcaPhiPtPosEtaNeg",
+				   "#phi- p_{T} - DCA",
+				   180,0,2*TMath::Pi(),
+				   100,0,pt,
+				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDcaPhiPtPosEtaNeg->GetZaxis()->SetTitle("dca (cm)");
+  fRecDcaPhiPtPosEtaNeg->GetXaxis()->SetTitle("#phi (rad.)");
+  fRecDcaPhiPtPosEtaNeg->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+
+  fRecDcaPhiPtNegEtaPos = new TH3F("fRecDcaPhiPtNegEtaPos",
+				   "#phi- p_{T} - DCA",
+				   180,0,2*TMath::Pi(),
+				   100,0,pt,
+				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDcaPhiPtNegEtaPos->GetZaxis()->SetTitle("dca (cm)");
+  fRecDcaPhiPtNegEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
+  fRecDcaPhiPtNegEtaPos->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+
+  fRecDcaPhiPtNegEtaNeg = new TH3F("fRecDcaPhiPtNegEtaNeg",
+				   "#phi- p_{T} - DCA",
+				   180,0,2*TMath::Pi(),
+				   100,0,pt,
+				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fRecDcaPhiPtNegEtaNeg->GetZaxis()->SetTitle("dca (cm)");
+  fRecDcaPhiPtNegEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
+  fRecDcaPhiPtNegEtaNeg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+
+
+
 
   fHists->SetOwner();
 
   fHists->Add(fHistRECpt);
   fHists->Add(fEta);
+  fHists->Add(fEtavPt);
   fHists->Add(fEtaPhi);
   fHists->Add(fThetaRec);
   fHists->Add(fPhiRec);
@@ -742,18 +882,60 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
   } 
   
-    
-    
-  for (Int_t i=0; i<fHists->GetEntries(); ++i) {
-    TH1 *h1 = dynamic_cast<TH1*>(fHists->At(i));
-    if (h1){
-      // Printf("%s ",h1->GetName());
-      h1->Sumw2();
-    }
-  }
-    // BKC
+  fHists->Add(fRecDcaPosPhi);
+  fHists->Add(fRecDcaNegPhi);   
+  fHists->Add(fRecPtPosPhi);
+  fHists->Add(fRecPtNegPhi);   
+  fHists->Add(fRecEtaPosPhi);
+  fHists->Add(fRecEtaNegPhi);  
+  fHists->Add(fRecQPtPhi);   
+  fHists->Add(fRecEtaPtPosPhi);
+  fHists->Add(fRecEtaPtNegPhi);   
+
+  fHists->Add(fRecPtPosEtaPos);   
+  fHists->Add(fRecPtNegEtaPos);   
+  fHists->Add(fRecPtPosEtaNeg);   
+  fHists->Add(fRecPtNegEtaNeg); 
+
+  fHists->Add(fRec1PtPosEtaPos);   
+  fHists->Add(fRec1PtNegEtaPos);   
+  fHists->Add(fRec1PtPosEtaNeg);   
+  fHists->Add(fRec1PtNegEtaNeg);   
+ 
+
+  fHists->Add(fRecPhiPosEtaPos);   
+  fHists->Add(fRecPhiNegEtaPos);   
+  fHists->Add(fRecPhiPosEtaNeg);   
+  fHists->Add(fRecPhiNegEtaNeg);   
+
+  fHists->Add(fRecDcaPosPhiEtaPos);
+  fHists->Add(fRecDcaNegPhiEtaPos);   
+  fHists->Add(fRecPtPosPhiEtaPos);
+  fHists->Add(fRecPtNegPhiEtaPos);  
+  fHists->Add(fRecDcaPosPhiEtaNeg);
+  fHists->Add(fRecDcaNegPhiEtaNeg);   
+  fHists->Add(fRecPtPosPhiEtaNeg);
+  fHists->Add(fRecPtNegPhiEtaNeg); 
+
+  fHists->Add(fRecDcaPhiPtPosEtaPos); 
+  fHists->Add(fRecDcaPhiPtPosEtaNeg); 
+  fHists->Add(fRecDcaPhiPtNegEtaPos); 
+  fHists->Add(fRecDcaPhiPtNegEtaNeg); 
 
 
+
+
+    
+//   for (Int_t i=0; i<fHists->GetEntries(); ++i) {
+//     TH1 *h1 = dynamic_cast<TH1*>(fHists->At(i));
+//     if (h1){
+//     //  Printf("%s ",h1->GetName());
+//       h1->Sumw2();
+//     }
+//   }
+  // BKC
+
+  TH1::AddDirectory(oldStatus);
 }
 
 //__________________________________________________________
@@ -762,8 +944,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 {
   AliVEvent *event = InputEvent();
   if (!event) {
-     Printf("ERROR: Could not retrieve event");
-     return;
+    Printf("ERROR: Could not retrieve event");
+    return;
   }
 
 
@@ -774,6 +956,10 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     }
    
   }
+
+
+
+  if(fDebug>1)Printf("There are %d tracks in this event", event->GetNumberOfTracks());
 
   
   Int_t   leadingTrack  =   0;
@@ -792,41 +978,58 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
     AliVParticle *track = event->GetTrack(iTrack);
     AliESDtrack *esdtrack =  dynamic_cast<AliESDtrack*>(track);
+    esdtrack->PropagateToDCA(event->GetPrimaryVertex(),
+			     event->GetMagneticField(), 10000.);
+
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTrack);
       continue;
     }
-    
-    //if (!fCuts->AcceptTrack(esdtrack)) continue;
-    const AliExternalTrackParam * tpcPSO = esdtrack->GetTPCInnerParam();
-    const AliExternalTrackParam *  tpcP = esdtrack;
-    if (!tpcP) continue;
-   
+    //__________
+    // run Task for global tracks or ITS tracks or TPC tracks
+    AliESDtrack *tpcP = 0x0;
+    const AliExternalTrackParam *tpcPin = 0x0;
+    Double_t phiIn=0;
+    if(fTrackType==0){
+      //Fill all histograms with global tracks
+      tpcP = esdtrack;
+      phiIn = tpcP->Phi();
+      if (!tpcP) continue;
+      if (!fCuts->AcceptTrack(tpcP)) continue;
+    }
+    else if(fTrackType==1){
+      //Fill all histograms with ITS tracks
+      tpcP = esdtrack;
+      phiIn = tpcP->Phi();
+      if (!tpcP) continue;
+      if (!fCuts->AcceptTrack(tpcP)) continue;
+    }
+    else if(fTrackType==2){     
+      //Fill all histograms with TPC track information
+      tpcPin = esdtrack->GetInnerParam();
+      if (!tpcPin) continue;
+      phiIn=tpcPin->Phi();
 
-    if (tpcP->Pt() > 50. && tpcPSO) {
-      printf("High Pt %5d %5d %13.3f %13.3f \n", event->GetPeriodNumber(), event->GetOrbitNumber(),
-	     tpcPSO->Pt(), esdtrack->Pt());
-      // AliFatal("Jet");
-    } 
-    
-//    if (tpcPSO) fRecPt12->Fill(tpcPSO->Pt(), esdtrack->Pt());
-
+      tpcP = AliESDtrackCuts::GetTPCOnlyTrack(dynamic_cast<AliESDEvent*>(event),esdtrack->GetID());
+      if (!tpcP) continue;
+      if (!fCuts->AcceptTrack(tpcP)) continue;
+      if(tpcP->GetNcls(1)>160)continue;//jacek's track cut
+      if(tpcP->GetConstrainedChi2TPC()<0)continue; // jacek's track cut
+    }
+    else{
+      Printf("ERROR: wrong track type \n");
+      continue;
+    }
+    //___________
+    //
+  
+ 
     if(tpcP->E()>leadingEnergy){
       leadingTrack=iTrack;
       leadingEnergy=tpcP->E();
-      leadingPhi=tpcP->Phi();
+      leadingPhi=phiIn;
     }
    
-
-
-    
-    //propagate to dca
-    esdtrack->PropagateToDCA(event->GetPrimaryVertex(),
-			     event->GetMagneticField(), 10000.);
-    
-    
-    // if(tpcP->Pt()<2.)continue;
-
 
     fqRec->Fill(tpcP->Charge());
   
@@ -835,38 +1038,38 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     sigmapt= sqrt(sigmapt);
     sigmapt= sigmapt *(tpcP->Pt()*tpcP->Pt()); 
 
-    if(sigmapt < 1.e-12) continue;
+    if(sigmapt == 0.)continue;
     fsigmaPt->Fill(TMath::Log10(sigmapt));
-   
+ 
 
     // hits in ITS layer
     Int_t cas=-1;
-    if(esdtrack->HasPointOnITSLayer(0)) 
+    if(tpcP->HasPointOnITSLayer(0)) 
       cas=0;
-    else if(!esdtrack->HasPointOnITSLayer(0)
-	    &&  esdtrack->HasPointOnITSLayer(1)) 
+    else if(!tpcP->HasPointOnITSLayer(0)
+	    &&  tpcP->HasPointOnITSLayer(1)) 
       cas=1;
-    else if(!esdtrack->HasPointOnITSLayer(0)
-	    && !esdtrack->HasPointOnITSLayer(1) 
-	    &&  esdtrack->HasPointOnITSLayer(2)) 
+    else if(!tpcP->HasPointOnITSLayer(0)
+	    && !tpcP->HasPointOnITSLayer(1) 
+	    &&  tpcP->HasPointOnITSLayer(2)) 
       cas=2;
-    else if(!esdtrack->HasPointOnITSLayer(0)
-	    && !esdtrack->HasPointOnITSLayer(1) 
-	    && !esdtrack->HasPointOnITSLayer(2)
-	    &&  esdtrack->HasPointOnITSLayer(3)) 
+    else if(!tpcP->HasPointOnITSLayer(0)
+	    && !tpcP->HasPointOnITSLayer(1) 
+	    && !tpcP->HasPointOnITSLayer(2)
+	    &&  tpcP->HasPointOnITSLayer(3)) 
       cas=3;
-    else if(!esdtrack->HasPointOnITSLayer(0)
-	    && !esdtrack->HasPointOnITSLayer(1) 
-	    && !esdtrack->HasPointOnITSLayer(2)
-	    && !esdtrack->HasPointOnITSLayer(3)
-	    &&  esdtrack->HasPointOnITSLayer(4)) 
+    else if(!tpcP->HasPointOnITSLayer(0)
+	    && !tpcP->HasPointOnITSLayer(1) 
+	    && !tpcP->HasPointOnITSLayer(2)
+	    && !tpcP->HasPointOnITSLayer(3)
+	    &&  tpcP->HasPointOnITSLayer(4)) 
       cas=4;
-    else if(   !esdtrack->HasPointOnITSLayer(0)
-	    && !esdtrack->HasPointOnITSLayer(1)
-	    && !esdtrack->HasPointOnITSLayer(2)
-	    && !esdtrack->HasPointOnITSLayer(3)
-	    && !esdtrack->HasPointOnITSLayer(4) 
-	    &&  esdtrack->HasPointOnITSLayer(5)) 
+    else if(   !tpcP->HasPointOnITSLayer(0)
+	       && !tpcP->HasPointOnITSLayer(1)
+	       && !tpcP->HasPointOnITSLayer(2)
+	       && !tpcP->HasPointOnITSLayer(3)
+	       && !tpcP->HasPointOnITSLayer(4) 
+	       &&  tpcP->HasPointOnITSLayer(5)) 
       cas=5;
     else 
       cas=6;
@@ -875,17 +1078,21 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
    
     //------------------- 
 
-    Double_t sdcatr = (tpcP->Py()*tpcP->Xv()
-	       - tpcP->Px()*tpcP->Yv())/tpcP->Pt();
-  
+    xvertexcor = tpcP->Xv() - vertex->GetX(); // coordinate corrected for vertex position
+    yvertexcor = tpcP->Yv() - vertex->GetY(); // "
+    sdca = (tpcP->Py()*xvertexcor - tpcP->Px()*yvertexcor)/tpcP->Pt();
 
 
     fqPtRec[cas]->Fill(tpcP->Charge()/tpcP->Pt());
     
+    
+
     fHistRECpt->Fill(tpcP->Pt());
     fEta->Fill(tpcP->Eta());
+    fEtavPt->Fill(tpcP->Eta(), tpcP->Pt());
+    fEtaPhi->Fill(tpcP->Eta(), phiIn);
     fThetaRec->Fill(tpcP->Theta());
-    fPhiRec->Fill(tpcP->Phi());
+    fPhiRec->Fill(phiIn);
     fVx->Fill(tpcP->Xv());
     fVy->Fill(tpcP->Yv());
     fVz->Fill(tpcP->Zv());
@@ -893,13 +1100,13 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
     fEtaPt->Fill(tpcP->Eta()/tpcP->Pt());
     fQPt->Fill(tpcP->Charge()/tpcP->Pt());
-    fDca->Fill(sdcatr);
+    fDca->Fill(sdca);
+    fRecQPtPhi->Fill(tpcP->Charge()/tpcP->Pt(), phiIn);
 
 
+    tpcP->GetImpactParameters(xy,z);
+    fDiffDcaD->Fill(sdca+xy);
 
-    Float_t xy, z;
-    esdtrack->GetImpactParameters(xy,z);
-    fDiffDcaD->Fill(sdcatr+xy);
    
     
     //for positive particles
@@ -908,12 +1115,12 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecPtPos->Fill(tpcP->Pt());
       fRecPtPosLadder[cas]->Fill(tpcP->Pt());
       fRecPtPosVz->Fill(TMath::Log10(tpcP->Pt()),tpcP->Zv());
-      fRecPhiPos->Fill(TMath::RadToDeg()*tpcP->Phi());
+      fRecPhiPos->Fill(TMath::RadToDeg()*phiIn);
     
      
-      fRecPhiPosLadder[cas]->Fill(TMath::RadToDeg()*tpcP->Phi());
-      fRecPhiPosVz->Fill(TMath::RadToDeg()*tpcP->Phi(),tpcP->Zv());
-      fSignedDcaPosVz->Fill(sdcatr,tpcP->Zv());
+      fRecPhiPosLadder[cas]->Fill(TMath::RadToDeg()*phiIn);
+      fRecPhiPosVz->Fill(TMath::RadToDeg()*phiIn,tpcP->Zv());
+      fSignedDcaPosVz->Fill(sdca,tpcP->Zv());
 
       fRecEtaPos->Fill(tpcP->Eta());
       fRecEtaPosLadder[cas]->Fill(tpcP->Eta());
@@ -921,14 +1128,37 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecEtaPosVz->Fill(tpcP->Eta(),tpcP->Zv());
       fRecEtaPtPosVz->Fill(tpcP->Eta()/tpcP->Pt(),tpcP->Zv());
      
-      fRecDcaPos->Fill(sdcatr);
+      fRecDcaPos->Fill(sdca);
+      fRecDcaPosPhi->Fill(sdca, phiIn);
+      fRecPtPosPhi->Fill(TMath::Log10(tpcP->Pt()), phiIn);
+      fRecEtaPtPosPhi->Fill(tpcP->Eta()/tpcP->Pt(), phiIn);
+      fRecEtaPosPhi->Fill(tpcP->Eta(), phiIn);
       fRecDPos->Fill(xy);
-      fSignDcaPos[cas]->Fill(sdcatr);
+      fSignDcaPos[cas]->Fill(sdca);
     
      
-      fDcaSigmaPos[cas]->Fill(sdcatr, TMath::Log10(sigmapt));
+      fDcaSigmaPos[cas]->Fill(sdca, TMath::Log10(sigmapt));
     
       fPtSigmaPos[cas]->Fill(TMath::Log10(sigmapt));
+      //pos eta
+      if(tpcP->Eta()>0){
+	fRecPtPosEtaPos->Fill(tpcP->Pt());
+	fRec1PtPosEtaPos->Fill(1/tpcP->Pt());
+	fRecPhiPosEtaPos->Fill(phiIn);
+	fRecDcaPosPhiEtaPos->Fill(sdca, phiIn);
+	fRecPtPosPhiEtaPos->Fill(TMath::Log10(tpcP->Pt()), phiIn);
+	fRecDcaPhiPtPosEtaPos->Fill(phiIn, tpcP->Pt(), sdca);
+      }
+      //neg eta
+      else{
+	fRecPtPosEtaNeg->Fill(tpcP->Pt());
+	fRec1PtPosEtaNeg->Fill(1/tpcP->Pt());
+	fRecPhiPosEtaNeg->Fill(phiIn);
+	fRecDcaPosPhiEtaNeg->Fill(sdca, phiIn);
+	fRecPtPosPhiEtaNeg->Fill(TMath::Log10(tpcP->Pt()), phiIn);
+	fRecDcaPhiPtPosEtaNeg->Fill(phiIn, tpcP->Pt(), sdca);
+      }
+      
     }
     //and negative particles
     else {
@@ -936,10 +1166,10 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecPtNegLadder[cas]->Fill(tpcP->Pt());
       fRecPtNegVz->Fill(TMath::Log10(tpcP->Pt()),tpcP->Zv());
            
-      fRecPhiNeg->Fill(TMath::RadToDeg()*tpcP->Phi());
-      fRecPhiNegLadder[cas]->Fill(TMath::RadToDeg()*tpcP->Phi());
-      fRecPhiNegVz->Fill(TMath::RadToDeg()*tpcP->Phi(),tpcP->Zv());
-      fSignedDcaNegVz->Fill(sdcatr,tpcP->Zv());
+      fRecPhiNeg->Fill(TMath::RadToDeg()*phiIn);
+      fRecPhiNegLadder[cas]->Fill(TMath::RadToDeg()*phiIn);
+      fRecPhiNegVz->Fill(TMath::RadToDeg()*phiIn,tpcP->Zv());
+      fSignedDcaNegVz->Fill(sdca,tpcP->Zv());
       fRecEtaPtNegVz->Fill(tpcP->Eta()/tpcP->Pt(),tpcP->Zv());
 
       fRecEtaNeg->Fill(tpcP->Eta());
@@ -947,16 +1177,40 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecEtaPtNeg->Fill(tpcP->Eta()/tpcP->Pt());
       fRecEtaNegVz->Fill(tpcP->Eta(),tpcP->Zv());
      
-      fRecDcaNeg->Fill(sdcatr);
-      fRecDcaNegInv->Fill(-sdcatr);
+      fRecDcaNeg->Fill(sdca);
+      fRecDcaNegInv->Fill(-sdca);
+      fRecDcaNegPhi->Fill(sdca, phiIn);
+      fRecPtNegPhi->Fill(TMath::Log10(tpcP->Pt()), phiIn);
+      fRecEtaNegPhi->Fill(tpcP->Eta(), phiIn);
+      fRecEtaPtNegPhi->Fill(tpcP->Eta()/tpcP->Pt(), phiIn);
       fRecDNeg->Fill(xy);
-      fSignDcaNeg[cas]->Fill(sdcatr);
-      fSignDcaNegInv[cas]->Fill(-sdcatr);
+      fSignDcaNeg[cas]->Fill(sdca);
+      fSignDcaNegInv[cas]->Fill(-sdca);
      
      
-      fDcaSigmaNeg[cas]->Fill(sdcatr,TMath::Log10(sigmapt));
+      fDcaSigmaNeg[cas]->Fill(sdca,TMath::Log10(sigmapt));
    
       fPtSigmaNeg[cas]->Fill(TMath::Log10(sigmapt));
+      
+      //pos eta
+      if(tpcP->Eta()>0){
+	fRecPtNegEtaPos->Fill(tpcP->Pt());
+	fRec1PtNegEtaPos->Fill(1/tpcP->Pt());
+	fRecPhiNegEtaPos->Fill(phiIn);
+	fRecDcaNegPhiEtaPos->Fill(sdca, phiIn);
+	fRecPtNegPhiEtaPos->Fill(TMath::Log10(tpcP->Pt()), phiIn);
+	fRecDcaPhiPtNegEtaPos->Fill(phiIn, tpcP->Pt(), sdca);
+      }
+      //neg eta
+      else{
+	fRecPtNegEtaNeg->Fill(tpcP->Pt());
+	fRec1PtNegEtaNeg->Fill(1/tpcP->Pt());
+	fRecPhiNegEtaNeg->Fill(phiIn);
+	fRecDcaNegPhiEtaNeg->Fill(sdca, phiIn);
+	fRecPtNegPhiEtaNeg->Fill(TMath::Log10(tpcP->Pt()), phiIn);
+	fRecDcaPhiPtNegEtaNeg->Fill(phiIn, tpcP->Pt(), sdca);
+      }
+
     }
     
 
@@ -965,64 +1219,58 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     if(tpcP->Eta()>0){
       fRecQPtPosEta->Fill(tpcP->Charge()/tpcP->Pt());
       fRecPtPosEta->Fill(tpcP->Pt());
-      fRecPhiPosEta->Fill(TMath::RadToDeg()*tpcP->Phi());
+      fRecPhiPosEta->Fill(TMath::RadToDeg()*phiIn);
       fRecQPtPosEtaVz->Fill(tpcP->Charge()/tpcP->Pt(),tpcP->Zv());
-      fRecDcaPosEta->Fill(sdcatr);
+      fRecDcaPosEta->Fill(sdca);
       fRecDPosEta->Fill(xy);
     }
     //all particles with negative eta (and eta==0)
     else{
       fRecQPtNegEta->Fill(tpcP->Charge()/tpcP->Pt());
       fRecPtNegEta->Fill(tpcP->Pt());
-      fRecPhiNegEta->Fill(TMath::RadToDeg()*tpcP->Phi());
+      fRecPhiNegEta->Fill(TMath::RadToDeg()*phiIn);
       fRecQPtNegEtaVz->Fill(tpcP->Charge()/tpcP->Pt(),tpcP->Zv());
-      fRecDcaNegEta->Fill(sdcatr);
+      fRecDcaNegEta->Fill(sdca);
       fRecDNegEta->Fill(xy);
 
     }
-     
 
-    //spectren detected by TPC sectors
-    //pt cut on 1 GeV/c ?!
-    // if(tpcP->Pt()<1.) continue;
-    fRecPtTpcSector[Int_t(tpcP->Phi()*
+
+    fRecPtTpcSector[Int_t(phiIn*
 			  TMath::RadToDeg()/20)]->Fill(tpcP->Pt());
-    fRecEtaTpcSector[Int_t(tpcP->Phi()*
-			  TMath::RadToDeg()/20)]->Fill(tpcP->Eta());
-    fSignedDcaTpcSector[Int_t(tpcP->Phi()*
-			  TMath::RadToDeg()/20)]->Fill(sdcatr); 
-    fRecQPtTpcSector[Int_t(tpcP->Phi()*
-			  TMath::RadToDeg()/20)]->Fill(tpcP->Charge()/tpcP->Pt());
-    fRecEtaPtTpcSector[Int_t(tpcP->Phi()*
-			  TMath::RadToDeg()/20)]->Fill(tpcP->Eta()/tpcP->Pt());
+    fRecEtaTpcSector[Int_t(phiIn*
+			   TMath::RadToDeg()/20)]->Fill(tpcP->Eta());
+    fSignedDcaTpcSector[Int_t(phiIn*
+			      TMath::RadToDeg()/20)]->Fill(sdca); 
+    fRecQPtTpcSector[Int_t(phiIn*
+			   TMath::RadToDeg()/20)]->Fill(tpcP->Charge()/tpcP->Pt());
+    fRecEtaPtTpcSector[Int_t(phiIn*
+			     TMath::RadToDeg()/20)]->Fill(tpcP->Eta()/tpcP->Pt());
      
 
 
-
-
-
-  // another track loop
-    for (Int_t iTrack2 = 0; iTrack2 < event->GetNumberOfTracks(); iTrack2++) {
+//     // another track loop
+//     for (Int_t iTrack2 = 0; iTrack2 < event->GetNumberOfTracks(); iTrack2++) {
       
-      if(leadingTrack==iTrack2) continue;
+//       if(LeadingTrack==iTrack2) continue;
 
-      AliVParticle *track2 = event->GetTrack(iTrack2);
-      AliESDtrack* esdtrack2 =  dynamic_cast<AliESDtrack*>(track2);
-      if (!track2) {
-	Printf("ERROR: Could not receive track %d", iTrack);
-	continue;
-      }
-      if (!fCuts->AcceptTrack(esdtrack2)) continue;
-      //propagate to dca
-      esdtrack2->PropagateToDCA(event->GetPrimaryVertex(),
-			       event->GetMagneticField(), 10000.);
+//       AliVParticle *track2 = event->GetTrack(iTrack2);
+//       AliESDtrack* esdtrack2 =  dynamic_cast<AliESDtrack*>(track2);
+//       if (!track2) {
+// 	Printf("ERROR: Could not receive track %d", iTrack);
+// 	continue;
+//       }
+//       if (!fCuts->AcceptTrack(esdtrack2)) continue;
+//       //propagate to dca
+//       esdtrack2->PropagateToDCA(event->GetPrimaryVertex(),
+// 				event->GetMagneticField(), 10000.);
  
-      fDeltaPhiLeading->Fill((leadingPhi-esdtrack2->Phi())*TMath::RadToDeg(),
-			     leadingPhi*TMath::RadToDeg() );
+//       fDeltaPhiLeading->Fill((LeadingPhi-esdtrack2->Phi())*TMath::RadToDeg(),
+// 			     LeadingPhi*TMath::RadToDeg() );
 
      
 
-    }//second track loop
+//     }//second track loop
   }//first track loop
 
   
@@ -1040,7 +1288,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskQASym::Terminate(Option_t *) 
 {
-  // Terminate
+
 
 }  
 
