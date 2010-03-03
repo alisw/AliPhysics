@@ -509,6 +509,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     else if(distBad > fMinDist2) aodph.SetDistToBad(1) ; 
     else aodph.SetDistToBad(0) ;
     
+	//Skip matched clusters with tracks
+	if(fRejectTrackMatch && calo->GetNTracksMatched() > 0) continue ;
+
     //Check PID
     //PID selection or bit setting
     if(GetReader()->GetDataType() == AliCaloTrackReader::kMC){
@@ -519,9 +522,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       if(aodph.GetPdg() != AliCaloPID::kPhoton) continue ;
     }					
     else if(IsCaloPIDOn()){
-      //Skip matched clusters with tracks
-      if(fRejectTrackMatch && calo->GetNTracksMatched() > 0) continue ;
-      
+		
       //Get most probable PID, 2 options check PID weights 
       //or redo PID, recommended option for EMCal.		
       if(!IsCaloPIDRecalculationOn())
