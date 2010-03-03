@@ -457,7 +457,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
       if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)
         qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 
-  } else if (iDet == AliQAv1::kGLOBAL) { //Global QA
+  } else if (iDet == AliQAv1::kGLOBAL && strcmp(GetMode(), AliQAv1::GetModeName(AliQAv1::kRECMODE)) == 0) { //Global QA
 
 		qadm = new AliGlobalQADataMaker();
 		qadm->SetName(AliQAv1::GetDetName(iDet));
@@ -468,7 +468,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
       if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
         qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 
-	}	else if (iDet == AliQAv1::kCORR && strcmp(GetMode(), "Rec") == 0 ) { //the data maker for correlations among detectors
+	}	else if (iDet == AliQAv1::kCORR && strcmp(GetMode(), AliQAv1::GetModeName(AliQAv1::kRECMODE)) == 0 ) { //the data maker for correlations among detectors
     qadm = new AliCorrQADataMakerRec(fQADataMaker) ; 
 		qadm->SetName(AliQAv1::GetDetName(iDet));
 		qadm->SetUniqueID(iDet);
@@ -479,11 +479,13 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
         qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 
   } else if ( iDet < AliQAv1::kGLOBAL ) {
-    
+    TString  smode(GetMode()) ; 
+    if (smode.Contains(AliQAv1::GetModeName(AliQAv1::kQAMODE)))
+      smode = AliQAv1::GetModeName(AliQAv1::kRECMODE) ; 
     // load the QA data maker object
     TPluginManager* pluginManager = gROOT->GetPluginManager() ;
     TString detName = AliQAv1::GetDetName(iDet) ;
-    TString qadmName = "Ali" + detName + "QADataMaker" + GetMode() ;
+    TString qadmName = "Ali" + detName + "QADataMaker" + smode ;
     
     // first check if a plugin is defined for the quality assurance data maker
     TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQADataMaker", detName) ;
@@ -491,9 +493,9 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
     if (!pluginHandler) {
       AliDebug(AliQAv1::GetQADebugLevel(), Form("defining plugin for %s", qadmName.Data())) ;
       TString libs = gSystem->GetLibraries() ;
-      TString temp(GetMode()) ;
+      TString temp(smode) ;
       temp.ToLower() ; 
-      if (libs.Contains("lib" + detName + GetMode() + ".so") || (gSystem->Load("lib" + detName + temp.Data() + ".so") >= 0)) {
+      if (libs.Contains("lib" + detName + smode + ".so") || (gSystem->Load("lib" + detName + temp.Data() + ".so") >= 0)) {
         pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName + "qadm", qadmName + "()") ;
       } else {
         pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName, qadmName + "()") ;
@@ -1088,7 +1090,8 @@ void AliQAManager::Reset(const Bool_t sameCycle)
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet);
-			qadm->Reset();
+			if (qadm) 
+        qadm->Reset();
 		}
 	} 
 	if (fRawReaderDelete) { 
@@ -1128,8 +1131,8 @@ AliQAManager * AliQAManager::QAManager(AliQAv1::MODE_t mode, TMap *entryCache, I
   // returns AliQAManager instance (singleton)
   
 	if (!fgQAInstance) {
-    if ( (mode != AliQAv1::kSIMMODE) && (mode != AliQAv1::kRECMODE) ) {
-      AliWarningClass("You must specify kSIMMODE or kRECMODE") ; 
+    if ( (mode != AliQAv1::kSIMMODE) && (mode != AliQAv1::kRECMODE) && (mode != AliQAv1::kQAMODE) ) {
+      AliWarningClass("You must specify kSIMMODE or kRECMODE or kQAMODE") ; 
       return NULL ; 
     }
     fgQAInstance = new AliQAManager(mode) ;  

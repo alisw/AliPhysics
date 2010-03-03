@@ -85,7 +85,7 @@ void rawqa(Char_t * filename, Int_t run, AliRecoParam::EventSpecie_t es=AliRecoP
 
   AliLog::SetGlobalDebugLevel(0) ; 
 	
-  AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kRECMODE) ; 
+  AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kQAMODE) ; 
   qam->SetEventSpecie(AliRecoParam::kCosmic) ; 
   AliQAv1::Instance()->SetEventSpecie(es) ; 
 //  TString detectorsW = ""; 

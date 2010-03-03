@@ -61,7 +61,7 @@ TString        AliQAv1::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "P
                                                   "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"} ;   
 TString        AliQAv1::fgGRPPath              = "GRP/GRP/Data" ; 
 TString        AliQAv1::fgTaskNames[]          = {"Raws", "Hits", "SDigits", "Digits", "DigitsR", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
-TString        AliQAv1::fgModeNames[]          = {"", "Sim", "Rec"} ;   
+TString        AliQAv1::fgModeNames[]          = {"", "Sim", "Rec", "QA"} ;   
 const TString  AliQAv1::fgkLabLocalFile        = "file://"  ; 
 const TString  AliQAv1::fgkLabLocalOCDB        = "local://" ;  
 const TString  AliQAv1::fgkLabAliEnOCDB        = "alien://" ;  

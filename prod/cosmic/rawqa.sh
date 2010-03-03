@@ -77,20 +77,23 @@ for filename in $CHUNKS; do
 $PROGRAM -b<<EOF
 .L $ALICE_ROOT/prod/cosmic/rawqa.C+
 rawqa($filename, $RUNNUM)
+.q 
 EOF
 
-$PROGRAM -b -q <<EOF
+$PROGRAM -b <<EOF
 AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kRECMODE) ; 
  qam.Merge(atoi(gSystem->Getenv("RUNNUM"))) ;
+ .q
 EOF
      rm *QA.$RUNNUM.root
      cd ..
 done
 ls */Merged.QA.Data.root > merged.list
 outfile="Merged.QA.Data."$RUNNUM".root"
-$PROGRAM -b -q <<EOF
+$PROGRAM -b <<EOF
 .L $ALICE_ROOT/test/cosmic/MergeQAMerged.C
 MergeQAMerged("$outfile", "merged.list") ; 
+.q
 EOF
 rm -f merged.list
 #$PROGRAM -b -q $ALICE_ROOT/test/cosmic/qasummary.C 

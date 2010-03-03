@@ -29,7 +29,7 @@ public:
     kNULLBit=-1, kINFO, kWARNING, kERROR, kFATAL, kNBIT };
   enum TASKINDEX_t {
     kNULLTASKINDEX=-1, kRAWS, kHITS, kSDIGITS, kDIGITS, kDIGITSR, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS, kNTASKINDEX };
-  enum MODE_t {kNULLMODE=0, kSIMMODE, kRECMODE};
+  enum MODE_t {kNULLMODE=0, kSIMMODE, kRECMODE, kQAMODE};
   
   // Creators - destructors
   AliQAv1(); // beware singleton, not to be used
