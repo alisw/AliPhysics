@@ -184,7 +184,7 @@ void runPilot() {
       mgr->PrintStatus();
       mgr->PrintStatus();
   // Run on dataset
-  mgr->StartAnalysis("local", chain, 10);
+  mgr->StartAnalysis("local", chain);
   timer.Stop();
   timer.Print();
 }

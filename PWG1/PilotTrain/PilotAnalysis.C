@@ -221,31 +221,8 @@ void AddAnalysisTasks()
   // TRD (Alex Bercuci, M. Fasel) 
   //
   if(doTRD) {
-      AliAnalysisDataContainer *ci[] = {0x0, 0x0, 0x0};
-      //
-      // Check ESD
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/TRD/macros/AddTRDcheckESD.C++");
-      AddTRDcheckESD(mgr);
-      //
-      // Info top task
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/TRD/macros/AddTRDinfoGen.C++");
-      AddTRDinfoGen(mgr, "ALL", 0x0, ci);
-      //
-      // check DET
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/TRD/macros/AddTRDcheckDET.C++");
-      AddTRDcheckDET(mgr, "ALL", ci);
-      //
-      // check PID (ref maker ???)
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/TRD/macros/AddTRDcheckPID.C++");
-      AddTRDcheckPID(mgr, "ALL", ci);
-      //
-      // Efficiency
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/TRD/macros/AddTRDefficiency.C++");
-      AddTRDefficiency(mgr, "ALL", ci);
-      //
-      // Resolution
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/TRD/macros/AddTRDresolution.C++");      
-      AddTRDresolution(mgr, "ALL", ci);
+    gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
+    AddTrainPerformanceTRD("ALL");
   }
 
   //
