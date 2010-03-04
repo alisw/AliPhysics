@@ -361,6 +361,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
   }
   
   fTRDCalibraFillHisto->SetCH2dOn(TriggerPassed);
+  fTRDCalibraFillHisto->SetPH2dOn(TriggerPassed);
   for(int i=0; i<usedEntries; i++){
     const TClonesArray* inArr = TCAarray[i];
     Int_t nbEntries = inArr->GetEntries();

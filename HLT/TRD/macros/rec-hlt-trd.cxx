@@ -78,7 +78,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
-  // init the HLT system
+  // set paths
   //
   TString dataPath = outPath;
   dataPath.Resize(dataPath.Last('/')+1);
@@ -124,6 +124,10 @@ int rec_hlt_trd(const TString filename, TString outPath)
   gSystem->mkdir(outPath.Data());
   gSystem->ChangeDirectory(outPath.Data());
 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // init the HLT system
+  //
   AliHLTSystem* gHLT=AliHLTPluginBase::GetInstance();
   
   Int_t usedModules=0;
@@ -218,9 +222,11 @@ int rec_hlt_trd(const TString filename, TString outPath)
   // Init CDBManager and trigger
   //
   AliCDBManager * man = AliCDBManager::Instance();
-  Int_t run = ExtractRunNumber(filename);
+  Int_t run = 0;
   if(bRealData){
     man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB");
+    //man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB");
+    run = ExtractRunNumber(filename);
   }else{
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); 
     man->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",dataPath.Data()));
@@ -248,9 +254,16 @@ int rec_hlt_trd(const TString filename, TString outPath)
       
       printf("ioj[%d]\n", iobj); trg_class->Print(0x0);
       
-      if(TString(trg_class->GetName()).Contains("TRD")){ // cosmic run 2009
+      // cosmic run 2009                                                                                                                                                                                       
+      // if(TString(trg_class->GetName()).Contains("TRD")){                                                                                                                                                    
+      //        triggerconfs.push_back(trg_class->GetMask());                                                                                                                                                  
+      // }                                                                                                                                                                                                     
+
+      // pp run 2009                                                                                                                                                                                           
+      if(TString(trg_class->GetName()).Contains("CINT1B-ABCE-NOPF-ALL")){
 	triggerconfs.push_back(trg_class->GetMask());
       }
+
     }
     
     Int_t itrg = 0;
@@ -269,7 +282,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
-  // Init and run the reconstruction
+  // init and run the reconstruction
   //
   AliReconstruction rec;
   rec.SetInput(filestring.Data());
@@ -278,7 +291,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   rec.SetRunTracking(":");
   rec.SetLoadAlignFromCDB(0);
   rec.SetFillESD("");
-  rec.SetRunQA(":");
+  rec.SetRunQA("HLT:ESD");  //does not make sense but there is a bug in AliReconstructor, which we circumvent like that
   rec.SetRunGlobalQA(kFALSE);
   rec.SetFillTriggerESD(kFALSE);
 
