@@ -65,7 +65,14 @@ public:
    */
   void Reset();
 
-  AliHLTCaloDigitDataStruct* GetDigits() {return fDigitsPointer; }
+  /**
+  * Get the digits shipped with the clusters
+  */
+  AliHLTCaloDigitDataStruct* GetDigits() {return fDigitsPointer; } 
+  
+  /** 
+  * Get the number of digits shipped with the clusters
+  */
   Int_t GetNDigits() {return fNDigits; }
   
  private:

@@ -258,7 +258,7 @@ Int_t AliHLTCaloClusterizer::CheckArray()
 Int_t AliHLTCaloClusterizer::CheckBuffer()
 {
    // See header file for class documentation 
-	if((fAvailableSize - fUsedSize) < sizeof(AliHLTCaloRecPointDataStruct))
+	if((fAvailableSize - fUsedSize) < (Int_t)sizeof(AliHLTCaloRecPointDataStruct))
 	{
 	    Int_t recPointOffset = reinterpret_cast<UChar_t*>(fRecPointDataPtr) - reinterpret_cast<UChar_t*>(fFirstRecPointPtr);
 	    Int_t digitIndexOffset = reinterpret_cast<UChar_t*>(fDigitIndexPtr) - reinterpret_cast<UChar_t*>(fRecPointDataPtr);

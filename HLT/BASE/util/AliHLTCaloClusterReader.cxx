@@ -21,7 +21,9 @@ AliHLTCaloClusterReader::AliHLTCaloClusterReader():
   fCurrentClusterPtr(0),
   fIsSetMemory(false),
   fMaxCnt(0),
-  fCurrentCnt(0)
+  fCurrentCnt(0),
+  fDigitsPointer(0),
+  fNDigits(0)
 {
   //See header file for documentation
 }

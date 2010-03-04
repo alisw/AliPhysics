@@ -168,7 +168,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
  
   AliHLTCaloClusterDataStruct* caloClusterPtr = fCaloClusterDataPtr;
   
-  Int_t id = -1;
+  //Int_t id = -1;
   TVector3 globalPos;
 
   for(Int_t i = 0; i < fNRecPoints; i++) //TODO needs fix when we start unfolding (number of clusters not necessarily same as number of recpoints gotten from the clusterizer

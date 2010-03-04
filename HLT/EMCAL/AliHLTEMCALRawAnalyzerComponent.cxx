@@ -119,8 +119,8 @@ AliHLTEMCALRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtDat
 {
   //-----------------------
   static int evntcnt = 0;
-  static double wlast = -1;
-  static double wcurrent = 0;
+//  static double wlast = -1;
+ // static double wcurrent = 0;
 
   evntcnt  ++;
   
