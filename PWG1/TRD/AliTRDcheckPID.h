@@ -88,7 +88,7 @@ private:
   TObjArray           *fGraph;             //! array of graphs filled in PostProcess
   TObjArray           *fPID;               //! array of PID info/track for calibration
   TObjArray           *fEfficiency[AliPID::kSPECIES];      //! array of histograms with efficiency
-  TAxis               *fMomentumAxis;      //! helper mementum binning
+  TAxis               *fMomentumAxis;      // helper mementum binning
   Int_t                fMinNTracklets;     // minimum number of required Tracklets (for systematic studies)
   Int_t                fMaxNTracklets;     // maximum number of required Tracklets (for systematic studies) 
   ClassDef(AliTRDcheckPID, 2); // TRD PID checker
