@@ -74,7 +74,7 @@ bool AliHLTMUONAgent::IsMuonModuleLoaded()
 		TObject* mod = NULL;
 		while ((mod = next()) != NULL)
 		{
-			if (mod->IsA() == AliMUON::Class())
+			if (mod->IsA()->GetBaseClass("AliMUON") != NULL)
 			{
 				fgMuonModuleLoaded = 1;
 				return true;
