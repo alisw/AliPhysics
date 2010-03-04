@@ -83,7 +83,6 @@ AliHLTPHOSClusterizerComponent::GetOutputDataSize(unsigned long& constBase, doub
   inputMultiplier = 2.0;
 }
 
-
 const Char_t*
 AliHLTPHOSClusterizerComponent::GetComponentID()
 {

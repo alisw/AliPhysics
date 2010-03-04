@@ -89,6 +89,7 @@ AliHLTComponentDataType
 AliHLTEMCALDigitMakerComponent::GetOutputDataType()
 {
   //see header file for documentation
+//  return AliHLTCaloDefinitions::fgkDigitDataType|kAliHLTDataOriginEMCAL;
   return AliHLTEMCALDefinitions::fgkDigitDataType;
 }
 

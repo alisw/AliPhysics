@@ -87,7 +87,7 @@ public:
 
   Float_t GetCELLSTEP() const { return fkCELLSTEP; } 		//BALLE must be set correctly			
   Int_t GetNRCUSPERSECTOR() const { return fkNRCUSPERSECTOR; } 					
-  Int_t GetDDLOffset() const { return fkDDLOFFSET; }
+  Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
 
 
 private:

@@ -38,6 +38,8 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTCaloDefinitions.h"
+#include "AliHLTEMCALDefinitions.h"
+
 
 AliHLTEMCALClusterizerComponent gAliHLTEMCALClusterizerComponent;
 
@@ -64,14 +66,15 @@ AliHLTEMCALClusterizerComponent::GetInputDataTypes( vector<AliHLTComponentDataTy
 {
   //See headerfile for documentation
   list.clear();
-  list.push_back(AliHLTCaloDefinitions::fgkDigitDataType|kAliHLTDataOriginEMCAL);
+  //list.push_back(AliHLTCaloDefinitions::fgkDigitDataType|kAliHLTDataOriginEMCAL);
+  list.push_back(AliHLTEMCALDefinitions::fgkDigitDataType);
 }
 
 AliHLTComponentDataType
 AliHLTEMCALClusterizerComponent::GetOutputDataType()
 {
   //See headerfile for documentation
-  return AliHLTCaloDefinitions::fgkCaloClusterDataType|kAliHLTDataOriginEMCAL;
+  return kAliHLTDataTypeCaloCluster|kAliHLTDataOriginEMCAL;
 }
 
 void

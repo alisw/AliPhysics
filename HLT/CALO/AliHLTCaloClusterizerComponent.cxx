@@ -130,9 +130,9 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
     {
       iter = blocks+ndx;
       //            HLTError("Got block");
+//      PrintComponentDataTypeInfo(iter->fDataType);
       if (iter->fDataType == (AliHLTCaloDefinitions::fgkDigitDataType|fDataOrigin))
 	{
-
 	  // Update the number of digits
 	  nDigits = iter->fSize/sizeof(AliHLTCaloDigitDataStruct);;
 	  

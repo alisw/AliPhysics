@@ -145,7 +145,6 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
       fNRecPoints++;
       
     }//end of clusterization
-
    return nRecPoints;
 }
 
@@ -246,7 +245,7 @@ Int_t AliHLTCaloClusterizer::CheckArray()
 {
       if(fArraySize == fNRecPoints)
 	{
-	   cout << "Increasing array!" << endl;
+//	   cout << "Increasing array!" << endl;
 	   fArraySize *= 2;
 	   AliHLTCaloRecPointDataStruct **tmp = new AliHLTCaloRecPointDataStruct*[fArraySize];
 	   memcpy(tmp, fRecPointArray, fArraySize/2 * sizeof(AliHLTCaloRecPointDataStruct*));

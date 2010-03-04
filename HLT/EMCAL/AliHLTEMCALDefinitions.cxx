@@ -29,7 +29,7 @@ const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDDLRawDataType =
 AliHLTComponentDataTypeInitializer("DDL_RAW ", kAliHLTDataOriginEMCAL);
 
 const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDigitDataType =
-AliHLTComponentDataTypeInitializer("DIGIT", kAliHLTDataOriginEMCAL);
+AliHLTComponentDataTypeInitializer("DIGITTYP", kAliHLTDataOriginEMCAL);
 
 const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkClusterDataType =
 AliHLTComponentDataTypeInitializer("CLUSTERS", kAliHLTDataOriginEMCAL);
