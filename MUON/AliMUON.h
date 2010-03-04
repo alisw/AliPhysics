@@ -178,9 +178,6 @@ class AliMUON : public  AliDetector
     Int_t  fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
     Bool_t fIsTailEffect;       ///< Switch to turn on/off the tail effect
 
-    Float_t fTimeMin;           ///< minimum time(*10^9) for an sdigit to be digitized
-    Float_t fTimeMax;           ///< maximum time(*10^9) for an sdigit to be digitized
-
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
     
     AliMUONDigitMaker* fDigitMaker; //!< pointer to the digit maker class
@@ -190,8 +187,11 @@ class AliMUON : public  AliDetector
     TString fDigitStoreConcreteClassName; ///< to be able to select what the sdigitizer uses
     
     AliMUONCalibrationData* fCalibrationData; ///< pointer of calibration data
-    
-    ClassDef(AliMUON,18)  // MUON Detector base class
+
+    Float_t fTimeMin;           ///< minimum time(*10^9) for an sdigit to be digitized
+    Float_t fTimeMax;           ///< maximum time(*10^9) for an sdigit to be digitized
+  
+    ClassDef(AliMUON,19)  // MUON Detector base class
 };
 #endif
 
