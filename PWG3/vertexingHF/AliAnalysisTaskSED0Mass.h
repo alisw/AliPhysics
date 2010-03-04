@@ -49,8 +49,9 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void     FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout);
   TList    *fOutputPPR; //! list send on output slot 1
   TList    *fOutputmycuts; //! list send on output slot 2
-  TList    *fDistr;       //! list send on output slot 4
   TH1F     *fNentries;    //! histogram with number of events on output slot 3
+  TList    *fDistr;       //! list send on output slot 4
+  TList    *fChecks;       //! list send on output slot 5
   AliAnalysisVertexingHF *fVHFPPR;  // Vertexer heavy flavour (used to pass the cuts)
   AliAnalysisVertexingHF *fVHFmycuts;  // Vertexer heavy flavour (used to pass the cuts)
   Int_t    fArray;        //   can be D0 or Like Sign candidates
@@ -61,7 +62,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Double_t fLsNormalization;  //  normalization
 
 
-  ClassDef(AliAnalysisTaskSED0Mass,4); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,5); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
