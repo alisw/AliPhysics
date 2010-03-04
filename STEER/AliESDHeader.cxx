@@ -246,14 +246,14 @@ TString AliESDHeader::GetFiredTriggerInputs() const
           trginputs += " ";
         }
       }
-      if (i >= 24 && i < 48 && (fL1TriggerInputs & (1 << i-24))) {
+      if (i >= 24 && i < 48 && (fL1TriggerInputs & (1 << (i-24)))) {
         if (str) {
 	  trginputs += " ";
 	  trginputs += str->GetName();
           trginputs += " ";
         }
       }
-      if (i >= 48 && (fL2TriggerInputs & (1 << i-48))) {
+      if (i >= 48 && (fL2TriggerInputs & (1 << (i-48)))) {
         if (str) {
 	  trginputs += " ";
 	  trginputs += str->GetName();

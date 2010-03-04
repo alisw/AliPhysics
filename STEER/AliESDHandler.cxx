@@ -159,7 +159,7 @@ Bool_t AliESDHandler::TerminateIO()
 
 
 //______________________________________________________________________________
-void AliESDHandler::CreateTree(Int_t flag)
+void AliESDHandler::CreateTree(Int_t /*flag*/)
 {
 	//
 	// Creates the ESD Tree
@@ -174,7 +174,7 @@ void AliESDHandler::CreateTree(Int_t flag)
 	fESDEvent->WriteToTree(fTreeE);
 }
 //______________________________________________________________________________
-void AliESDHandler::CreateFriends(Int_t flag)
+void AliESDHandler::CreateFriends(Int_t /*flag*/)
 {
 	fesdf = new AliESDfriend();
 

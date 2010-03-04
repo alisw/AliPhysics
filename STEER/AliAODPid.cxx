@@ -31,6 +31,7 @@ ClassImp(AliAODPid)
 AliAODPid::AliAODPid():
     fITSsignal(0), 
     fTPCsignal(0),
+    fTPCmomentum(0),
     fTRDnSlices(0),
     fTRDslices(0x0),
     fTOFesdsignal(0),
@@ -56,6 +57,7 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   TObject(pid),
   fITSsignal(pid.fITSsignal), 
   fTPCsignal(pid.fTPCsignal),
+  fTPCmomentum(pid.fTPCmomentum),
   fTRDnSlices(pid.fTRDnSlices),
   fTRDslices(0x0),
   fTOFesdsignal(pid.fTOFesdsignal),

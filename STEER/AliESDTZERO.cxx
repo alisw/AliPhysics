@@ -41,9 +41,9 @@ AliESDTZERO::AliESDTZERO() :
 AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
   TObject(tzero),
   fT0clock(tzero.fT0clock),  
-  fT0trig(tzero.fT0trig),
   fT0zVertex(tzero.fT0zVertex),
-  fT0timeStart(tzero.fT0timeStart)   
+  fT0timeStart(tzero.fT0timeStart),
+  fT0trig(tzero.fT0trig)
 {
   // copy constuctor
   for(int i = 0;i<3;i++) fT0TOF[i] = tzero.fT0TOF[i];

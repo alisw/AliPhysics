@@ -71,7 +71,7 @@ Double_t AliTPCPIDResponse::Bethe(Double_t betaGamma) const {
   //           1. for simulation
   //           2. for reconstructed PID
   //
-  const Float_t kmeanCorrection =0.1;
+  //  const Float_t kmeanCorrection =0.1;
   Double_t bb=
     AliExternalTrackParam::BetheBlochAleph(betaGamma,fKp1,fKp2,fKp3,fKp4,fKp5);
   return bb*fMIP;

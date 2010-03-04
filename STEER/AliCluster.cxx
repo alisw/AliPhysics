@@ -145,7 +145,7 @@ AliCluster & AliCluster::operator=(const AliCluster& cluster)
 }
 
 //______________________________________________________________________________
-void AliCluster::Print(Option_t* option) const
+void AliCluster::Print(Option_t* /*option*/) const
 {
   // Print cluster information.
   
