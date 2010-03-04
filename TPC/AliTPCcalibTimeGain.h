@@ -42,8 +42,8 @@ public:
   static void            BinLogX(THnSparse *h, Int_t axisDim);
   static void            BinLogX(TH1 *h);
   //
-  THnSparse *            GetHistGainTime(){return (THnSparse*) fHistGainTime;};
-  TH2F      *            GetHistDeDxTotal(){return (TH2F*) fHistDeDxTotal;};
+  THnSparse *            GetHistGainTime() const {return (THnSparse*) fHistGainTime;};
+  TH2F      *            GetHistDeDxTotal() const {return (TH2F*) fHistDeDxTotal;};
   //
   TGraphErrors *         GetGraphGainVsTime(Int_t runNumber = 0, Int_t minEntries = 2000);
   static AliSplineFit *  MakeSplineFit(TGraphErrors * graph);

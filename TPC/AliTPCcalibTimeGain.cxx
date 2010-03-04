@@ -197,6 +197,9 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain()
    fIsCosmic(0),
    fLowMemoryConsumption(0)
 {  
+  //
+  // Default constructor
+  //
   AliInfo("Default Constructor");  
 }
 
@@ -218,7 +221,9 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
    fIsCosmic(0),
    fLowMemoryConsumption(0)
 {
-  
+  //
+  // No default constructor
+  //
   SetName(name);
   SetTitle(title);
   
@@ -260,7 +265,7 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
 
 AliTPCcalibTimeGain::~AliTPCcalibTimeGain(){
   //
-  //
+  // Destructor
   //
   delete fHistGainTime;
   delete fGainVsTime;
@@ -290,9 +295,11 @@ void AliTPCcalibTimeGain::Process(AliESDEvent *event) {
 
 
 void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
-
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!ESDfriend) {
+  //
+  // Process in case of cosmic event
+  //
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!esdFriend) {
    Printf("ERROR: ESDfriend not available");
    return;
   }
@@ -316,15 +323,15 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
     // calculate necessary track parameters
     Double_t meanP = trackIn->GetP();
     Double_t meanDrift = 250 - 0.5*TMath::Abs(trackIn->GetZ() + trackOut->GetZ());
-    Int_t NclsDeDx = track->GetTPCNcls();
+    Int_t nclsDeDx = track->GetTPCNcls();
 
     // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
-    if (NclsDeDx < 60) continue;     
+    if (nclsDeDx < 60) continue;     
     if (TMath::Abs(trackIn->GetTgl()) > 1) continue;
     if (TMath::Abs(trackIn->GetSnp()) > 0.6) continue;
     
     // Get seeds
-    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
     if (!friendTrack) continue;
     TObject *calibObject;
     AliTPCseed *seed = 0;
@@ -333,15 +340,15 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
     }    
 
     if (seed) { 
-      Double_t TPCsignal = GetTPCdEdx(seed);
-      if (NclsDeDx > 100) fHistDeDxTotal->Fill(meanP, TPCsignal);
+      Double_t tpcSignal = GetTPCdEdx(seed);
+      if (nclsDeDx > 100) fHistDeDxTotal->Fill(meanP, tpcSignal);
       //
       if (fLowMemoryConsumption) {
 	if (meanP < 20) continue;
 	meanP = 30; // set all momenta to one in order to save memory
       }
       //dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
-      Double_t vec[6] = {TPCsignal,time,1,meanDrift,meanP,runNumber};
+      Double_t vec[6] = {tpcSignal,time,1,meanDrift,meanP,runNumber};
       fHistGainTime->Fill(vec);
     }
     
@@ -352,9 +359,11 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
 
 
 void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
-
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!ESDfriend) {
+  //
+  // Process in case of beam event
+  //
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!esdFriend) {
    Printf("ERROR: ESDfriend not available");
    return;
   }
@@ -378,15 +387,15 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
     // calculate necessary track parameters
     Double_t meanP = trackIn->GetP();
     Double_t meanDrift = 250 - 0.5*TMath::Abs(trackIn->GetZ() + trackOut->GetZ());
-    Int_t NclsDeDx = track->GetTPCNcls();
+    Int_t nclsDeDx = track->GetTPCNcls();
 
     // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
-    if (NclsDeDx < 60) continue;     
+    if (nclsDeDx < 60) continue;     
     if (TMath::Abs(trackIn->GetTgl()) > 1) continue;
     if (TMath::Abs(trackIn->GetSnp()) > 0.6) continue;
     
     // Get seeds
-    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
     if (!friendTrack) continue;
     TObject *calibObject;
     AliTPCseed *seed = 0;
@@ -395,15 +404,15 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
     }    
 
     if (seed) { 
-      Double_t TPCsignal = GetTPCdEdx(seed);
-      fHistDeDxTotal->Fill(meanP, TPCsignal);
+      Double_t tpcSignal = GetTPCdEdx(seed);
+      fHistDeDxTotal->Fill(meanP, tpcSignal);
       //
       if (fLowMemoryConsumption) {
 	if (meanP > 0.5 || meanP < 0.4) continue;
 	meanP = 0.45; // set all momenta to one in order to save memory
       }
       //dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
-      Double_t vec[6] = {TPCsignal,time,2,meanDrift,meanP,runNumber};
+      Double_t vec[6] = {tpcSignal,time,2,meanDrift,meanP,runNumber};
       fHistGainTime->Fill(vec);
     }
     
@@ -413,7 +422,9 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
 
 
 Float_t AliTPCcalibTimeGain::GetTPCdEdx(AliTPCseed * seed) {
-
+  //
+  // calculate tpc dEdx
+  //
   Double_t signal = 0;
   //
   if (!fUseCookAnalytical) {
@@ -428,7 +439,7 @@ Float_t AliTPCcalibTimeGain::GetTPCdEdx(AliTPCseed * seed) {
 
 void AliTPCcalibTimeGain::AnalyzeRun(Int_t minEntries) {
   //
-  //
+  // Analyze results of calibration
   //
   if (fIsCosmic) {
     fHistGainTime->GetAxis(2)->SetRangeUser(0.51,1.49); // only cosmics
@@ -446,7 +457,7 @@ void AliTPCcalibTimeGain::AnalyzeRun(Int_t minEntries) {
 
 TGraphErrors * AliTPCcalibTimeGain::GetGraphGainVsTime(Int_t runNumber, Int_t minEntries) {
   //
-  //
+  // Analyze results and get the graph 
   //
   if (runNumber == 0) {
     if (!fGainVsTime) {
@@ -462,7 +473,9 @@ TGraphErrors * AliTPCcalibTimeGain::GetGraphGainVsTime(Int_t runNumber, Int_t mi
 }
 
 Long64_t AliTPCcalibTimeGain::Merge(TCollection *li) {
-
+  //
+  // merge component
+  //
   TIterator* iter = li->MakeIterator();
   AliTPCcalibTimeGain* cal = 0;
 
@@ -485,7 +498,7 @@ Long64_t AliTPCcalibTimeGain::Merge(TCollection *li) {
 
 AliSplineFit * AliTPCcalibTimeGain::MakeSplineFit(TGraphErrors * graph) {
   //
-  //
+  // make spline fit of gain
   //
   AliSplineFit *fit = new AliSplineFit();
   fit->SetGraph(graph);
@@ -554,53 +567,56 @@ TGraphErrors * AliTPCcalibTimeGain::GetGraphAttachment(Int_t minEntries, Int_t n
 
 
 void AliTPCcalibTimeGain::BinLogX(THnSparse *h, Int_t axisDim) {
-
+  //
   // Method for the correct logarithmic binning of histograms
-
+  //
   TAxis *axis = h->GetAxis(axisDim);
   int bins = axis->GetNbins();
 
   Double_t from = axis->GetXmin();
   Double_t to = axis->GetXmax();
-  Double_t *new_bins = new Double_t[bins + 1];
+  Double_t *newBins = new Double_t[bins + 1];
    
-  new_bins[0] = from;
+  newBins[0] = from;
   Double_t factor = pow(to/from, 1./bins);
   
   for (int i = 1; i <= bins; i++) {
-   new_bins[i] = factor * new_bins[i-1];
+   newBins[i] = factor * newBins[i-1];
   }
-  axis->Set(bins, new_bins);
-  delete new_bins;
+  axis->Set(bins, newBins);
+  delete newBins;
   
 }
 
 
 void AliTPCcalibTimeGain::BinLogX(TH1 *h) {
-
+  //
   // Method for the correct logarithmic binning of histograms
-
+  //
   TAxis *axis = h->GetXaxis();
   int bins = axis->GetNbins();
 
   Double_t from = axis->GetXmin();
   Double_t to = axis->GetXmax();
-  Double_t *new_bins = new Double_t[bins + 1];
+  Double_t *newBins = new Double_t[bins + 1];
    
-  new_bins[0] = from;
+  newBins[0] = from;
   Double_t factor = pow(to/from, 1./bins);
   
   for (int i = 1; i <= bins; i++) {
-   new_bins[i] = factor * new_bins[i-1];
+   newBins[i] = factor * newBins[i-1];
   }
-  axis->Set(bins, new_bins);
-  delete new_bins;
+  axis->Set(bins, newBins);
+  delete newBins;
   
 }
 
 
 
 void AliTPCcalibTimeGain::CalculateBetheAlephParams(TH2F *hist, Double_t * ini) {
+  //
+  // Fit the bethe bloch params
+  //
   //{0.0762*MIP,10.632,1.34e-05,1.863,1.948}
   const Double_t sigma = 0.06;
 
@@ -618,7 +634,7 @@ void AliTPCcalibTimeGain::CalculateBetheAlephParams(TH2F *hist, Double_t * ini) 
   foKaon->SetParameters(ini);
   foProton->SetParameters(ini);
   
-  TCanvas *CanvCheck1 = new TCanvas();
+  TCanvas *canvCheck1 = new TCanvas();
   hist->Draw("colz");
   foElectron->Draw("same");
   foMuon->Draw("same");
@@ -681,7 +697,7 @@ void AliTPCcalibTimeGain::CalculateBetheAlephParams(TH2F *hist, Double_t * ini) 
   TF1 * funcAlephD = new TF1("AlephParametrizationD", "AliExternalTrackParam::BetheBlochAleph(x,[0],[1],[2],[3],[4])",0.3,10000);
   funcAlephD->SetParameters(ini);
 
-  TCanvas *CanvCheck2 = new TCanvas();
+  TCanvas *canvCheck2 = new TCanvas();
   histBG->Draw();
   
   //FitSlices
@@ -704,7 +720,7 @@ void AliTPCcalibTimeGain::CalculateBetheAlephParams(TH2F *hist, Double_t * ini) 
   foKaon->SetParameters(ini);
   foProton->SetParameters(ini);
   
-  TCanvas *CanvCheck3 = new TCanvas();
+  TCanvas *canvCheck3 = new TCanvas();
   hist->Draw("colz");
   foElectron->Draw("same");
   foMuon->Draw("same");
@@ -712,9 +728,9 @@ void AliTPCcalibTimeGain::CalculateBetheAlephParams(TH2F *hist, Double_t * ini) 
   foKaon->Draw("same");  
   foProton->Draw("same");
   
-  CanvCheck1->Print();
-  CanvCheck2->Print();
-  CanvCheck3->Print();
+  canvCheck1->Print();
+  canvCheck2->Print();
+  canvCheck3->Print();
 
   return;
 
