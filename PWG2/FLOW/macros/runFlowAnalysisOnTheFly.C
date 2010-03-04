@@ -16,6 +16,8 @@ Bool_t LYZ1PROD = kTRUE;
 Bool_t LYZ2SUM  = kFALSE;
 Bool_t LYZ2PROD = kFALSE;
 Bool_t LYZEP    = kFALSE;
+Bool_t MH       = kTRUE; // mixed harmonics 
+Bool_t MCEP_AH  = kFALSE; // MCEP in another harmonic 
 //--------------------------------------------------------------------------------------
 
 // Weights 
@@ -23,12 +25,6 @@ Bool_t LYZEP    = kFALSE;
 Bool_t usePhiWeights = kFALSE; // phi weights (correction for non-uniform azimuthal acceptance)
 Bool_t usePtWeights  = kFALSE; // pt weights 
 Bool_t useEtaWeights = kFALSE; // eta weights
-
-// Run same flow analysis method but with different settings/aims
-// You will have to label each setting/aim with your own label (see examples bellow): 
-Bool_t GFC_Additional_Analysis = kFALSE;
-Bool_t QC_Additional_Analysis  = kFALSE;
-Bool_t FQD_Additional_Analysis = kFALSE;
 
 // Define the range for eta subevents
 Double_t minA = -0.9;
@@ -39,8 +35,8 @@ Double_t maxB = 0.9;
 // Define simple cuts for RP selection:
 Double_t ptMinRP = 0.0; // in GeV
 Double_t ptMaxRP = 10.0; // in GeV
-Double_t etaMinRP  = -0.9;
-Double_t etaMaxRP  = 0.9;
+Double_t etaMinRP  = -1.;
+Double_t etaMaxRP  = 1.;
 Double_t phiMinRP  = 0.0; // in degrees
 Double_t phiMaxRP  = 360.0; // in degrees
 Int_t pidRP = -1; // to be improved (supported eventually)
@@ -48,8 +44,8 @@ Int_t pidRP = -1; // to be improved (supported eventually)
 // Define simple cuts for POI selection:
 Double_t ptMinPOI = 0.0; // in GeV
 Double_t ptMaxPOI = 10.0; // in GeV
-Double_t etaMinPOI  = -0.9;
-Double_t etaMaxPOI  = 0.9;
+Double_t etaMinPOI  = -1.;
+Double_t etaMaxPOI  = 1.;
 Double_t phiMinPOI  = 0.0; // in degrees
 Double_t phiMaxPOI  = 360.0; // in degrees
 Int_t pidPOI = -1; // to be improved (supported eventually)
@@ -102,8 +98,8 @@ Bool_t bConstantV2IsSampledFromGauss = kTRUE;
  // V2:
  Double_t dV2RP = 0.05;       // elliptic flow of RPs (if sampled from Gaussian) 
  Double_t dV2SpreadRP = 0.0;  // elliptic flow spread of RPs (if sampled from Gaussian)
- Double_t dMinV2RP = 0.02;    // minimal elliptic flow of RPs (if sampled uniformly)
- Double_t dMaxV2RP = 0.08;    // maximal elliptic flow of RPs (if sampled uniformly)
+ Double_t dMinV2RP = 0.04;    // minimal elliptic flow of RPs (if sampled uniformly)
+ Double_t dMaxV2RP = 0.06;    // maximal elliptic flow of RPs (if sampled uniformly)
  // V1:
  Double_t dV1RP = 0.0; // directed flow of RPs 
  Double_t dV1SpreadRP = 0.0; // directed flow spread of RPs
@@ -128,8 +124,8 @@ Bool_t bMultDistrOfRPsIsGauss = kTRUE;
                     
 Int_t iMultiplicityOfRP = 500;        // mean multiplicity of RPs (if sampled from Gaussian)
 Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs (if sampled from Gaussian)
-Int_t iMinMultOfRP = 50;              // minimal multiplicity of RPs (if sampled uniformly)
-Int_t iMaxMultOfRP = 500;             // maximal multiplicity of RPs (if sampled uniformly)
+Int_t iMinMultOfRP = 400;              // minimal multiplicity of RPs (if sampled uniformly)
+Int_t iMaxMultOfRP = 600;             // maximal multiplicity of RPs (if sampled uniformly)
                     
 //===DETECTOR ACCEPTANCE===============================================================
 
@@ -152,8 +148,8 @@ Double_t p1 = 0.5;     // e.g. if p1 = 0 all particles emitted in phimin1 < phi 
                         // e.g. if p1 = 0.5 half of the particles emitted in phimin1 < phi < phimax1 are blocked
 
 // 2nd non-uniform sector (Remark: if you do NOT want to simulate this sector, set phimin2 = phimax2 = p2 = 0):                 
-Double_t phimin2 = 200.0; // second non-uniform sector starts at this azimuth (make sure phimin2 > phimax1 !!!!)
-Double_t phimax2 = 210.0; // second non-uniform sector ends at this azimuth
+Double_t phimin2 = 0.0; // second non-uniform sector starts at this azimuth (make sure phimin2 > phimax1 !!!!)
+Double_t phimax2 = 0.0; // second non-uniform sector ends at this azimuth
 Double_t p2 = 0.0;
 
 
@@ -264,7 +260,9 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  AliFlowAnalysisWithLeeYangZeros *lyz2prod = NULL;
  AliFlowAnalysisWithLYZEventPlane *lyzep = NULL;
  AliFlowAnalysisWithScalarProduct *sp = NULL;
+ AliFlowAnalysisWithMixedHarmonics *mh = NULL;
  AliFlowAnalysisWithMCEventPlane *mcep = NULL;   
+ AliFlowAnalysisWithMCEventPlane *mcep_AH = NULL;   
 
  // MCEP = monte carlo event plane
  if (MCEP) {
@@ -273,6 +271,25 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
    mcep->Init();
  }
 
+ // MCEP = monte carlo event plane in another harmonic: 
+ if(MCEP_AH)
+ {
+  AliFlowAnalysisWithMCEventPlane *mcep_ah = new AliFlowAnalysisWithMCEventPlane();
+  mcep_ah->SetHarmonic(1);
+  mcep_ah->Init();
+ }
+ 
+ // Mixed harmonics:
+ if(MH) 
+ {
+  AliFlowAnalysisWithMixedHarmonics *mh = new AliFlowAnalysisWithMixedHarmonics();
+  mh->SetCorrelatorInteger(1); // integer n in expression cos[n(2phi1-phi2-phi3)] = v2n*vn^2
+  mh->SetMinMultiplicity(3); 
+  mh->SetNoOfMultipicityBins(10);  
+  mh->SetMultipicityBinWidth(100);   
+  mh->Init(); 
+ }
+ 
  // QC = Q-cumulants  
  if(QC) { 
    AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
@@ -397,67 +414,6 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  }
  //---------------------------------------------------------------------------------------
  
- //---------------------------------------------------------------------------------------
- // Initialize all the flow methods for additional analysis with different settings/aims
- // Label each setting/aim with different label !!!!
- 
- // GFC:    
- TString gfcDefaultName = "outputGFCanalysis"; 
- // 1.) GFC analysis for elliptic flow with r0 = 1.5: 
- AliFlowAnalysisWithCumulants *gfc_1;
- TString gfcAnalysisLabels_1 = "_r0_1.5"; // all histograms and output file name will have this label
- TString gfcOutputFileName_1;
- gfcOutputFileName_1 = gfcDefaultName.Data();
- gfcOutputFileName_1 += gfcAnalysisLabels_1.Data();
- gfcOutputFileName_1 += ".root";
- if(GFC_Additional_Analysis)
- {
-  gfc_1 = new AliFlowAnalysisWithCumulants();
-  //gfc_1->SetAnalysisLabel(gfcAnalysisLabels_1.Data());
-  if(listWithWeights) gfc_1->SetWeightsList(listWithWeights);
-  if(usePhiWeights) gfc_1->SetUsePhiWeights(usePhiWeights);
-  if(usePtWeights) gfc_1->SetUsePtWeights(usePtWeights);
-  if(useEtaWeights) gfc_1->SetUseEtaWeights(useEtaWeights);
-  gfc_1->Init();
- }
- 
- // QC:
- TString qcDefaultName = "outputQCanalysis"; 
- // 1.) QC analysis for directed flow: 
- AliFlowAnalysisWithQCumulants *qc_1;
- TString qcAnalysisLabels_1 = "_v1"; // all histograms and output file name will have this label
- TString qcOutputFileName_1;
- qcOutputFileName_1 = qcDefaultName.Data();
- qcOutputFileName_1 += qcAnalysisLabels_1.Data();
- qcOutputFileName_1 += ".root";
- if(QC_Additional_Analysis)
- {
-  qc_1 = new AliFlowAnalysisWithQCumulants();
-  //qc_1->SetAnalysisLabel(qcAnalysisLabels_1->Data());
-  if(listWithWeights) qc_1->SetWeightsList(listWithWeights);
-  if(usePhiWeights) qc_1->SetUsePhiWeights(usePhiWeights);
-  qc_1->Init();
- }
- 
- // FQD:
- TString fqdDefaultName = "outputFQDanalysis";
- // 1.) FQD fitting with fixed sigma:
- AliFlowAnalysisWithFittingQDistribution *fqd_1;
- TString fqdAnalysisLabels_1 = "_fixedSigma"; // all histograms and output file name will have this label
- TString fqdOutputFileName_1;
- fqdOutputFileName_1 = fqdDefaultName.Data();
- fqdOutputFileName_1 += fqdAnalysisLabels_1.Data();
- fqdOutputFileName_1 += ".root";
- if(FQD_Additional_Analysis)
- { 
-  fqd_1 = new AliFlowAnalysisWithFittingQDistribution();
-  //fqd_1->SetAnalysisLabel(fqdAnalysisLabels_1->Data());
-  if(listWithWeights) fqd_1->SetWeightsList(listWithWeights);
-  if(usePhiWeights) fqd_1->SetUsePhiWeights(usePhiWeights);
-  fqd_1->Init();
- }
- //---------------------------------------------------------------------------------------
-  
  // set the global event parameters:
  eventMakerOnTheFly->SetNoOfLoops(iLoops);
  eventMakerOnTheFly->SetPhiRange(phiRange*TMath::Pi()/180.);
@@ -565,36 +521,20 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
    if(LYZ2PROD)lyz2prod->Make(event);
    if(LYZEP)   lyzep->Make(event,ep);
    if(SP)      sp->Make(event);
-   
-   if(GFC_Additional_Analysis)
-   {
-    // r0 = 1.5:
-    gfc_1->Make(event);
-   }
-   if(QC_Additional_Analysis)
-   {
-    // v1:
-    qc_1->Make(event);
-   }
-   if(FQD_Additional_Analysis)
-   {
-    // fixed sigma:
-    fqd_1->Make(event);
-   }
+   if(MH)      mh->Make(event);
+   if(MCEP_AH) mcep_ah->Make(event);
    
    delete event;
  } // end of for(Int_t i=0;i<nEvts;i++)
  //---------------------------------------------------------------------------------------  
-
-
 
  //---------------------------------------------------------------------------------------  
  // create a new file which will hold the final results of all methods:
  TString outputFileName = "AnalysisResults.root";  
  TFile *outputFile = new TFile(outputFileName.Data(),"RECREATE");
  // create a new file for each method wich will hold list with final results:
- const Int_t nMethods = 10;
- TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP"};
+ const Int_t nMethods = 12;
+ TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","MCEP_AH"};
  TDirectoryFile *dirFileFinal[nMethods] = {NULL};
  TString fileName[nMethods]; 
  for(Int_t i=0;i<nMethods;i++)
@@ -617,6 +557,8 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  if(LYZ2SUM) {lyz2sum->Finish(); lyz2sum->WriteHistograms(dirFileFinal[7]);}
  if(LYZ2PROD){lyz2prod->Finish();lyz2prod->WriteHistograms(dirFileFinal[8]);}
  if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms(dirFileFinal[9]);}
+ if(MH)      {mh->Finish();      mh->WriteHistograms(dirFileFinal[10]);}
+ if(MCEP_AH) {mcep_ah->Finish(); mcep_ah->WriteHistograms(dirFileFinal[11]);}
  //---------------------------------------------------------------------------------------  
  
  outputFile->Close();
