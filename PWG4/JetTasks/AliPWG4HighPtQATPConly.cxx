@@ -64,7 +64,7 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fMC(0),
   fTrackCuts(0), 
   fTrackCutsITS(0),
-  fMaxCosmicAngle(0.),
+  fMaxCosmicAngle(0.002),
   fNEventAll(0),
   fNEventSel(0),
   fPtAll(0),
@@ -152,7 +152,7 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fMC(0),
   fTrackCuts(),
   fTrackCutsITS(),
-  fMaxCosmicAngle(0.),
+  fMaxCosmicAngle(0.002),
   fNEventAll(0),
   fNEventSel(0),
   fPtAll(0),
@@ -995,7 +995,7 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
     if(candidate2) {
       fDeltaPtCosmicCandidates->Fill(track1->Pt()-track2->Pt());
       fDeltaPhi->Fill(track1->Phi()-track2->Phi());
-      fDeltaPhi->Fill(track1->Eta()-track2->Eta());
+      fDeltaEta->Fill(track1->Eta()-track2->Eta());
     }
 
   }
