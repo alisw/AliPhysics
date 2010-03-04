@@ -198,6 +198,10 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
     infoESD  = track->GetESDinfo();
     Double32_t *infoPID = infoESD->GetSliceIter();
     Int_t n = infoESD->GetNSlices() - AliTRDgeometry::kNlayer;
+    if(n==0){
+      AliWarning(Form("dEdx info missing in ESD track %d", itrk));
+      continue;
+    }
     Double32_t *p = &infoPID[n];
     AliDebug(4, Form("n[%d] p[GeV/c]{%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f}", n, p[0], p[1], p[2], p[3], p[4], p[5]));
 
