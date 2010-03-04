@@ -27,7 +27,7 @@ void UpdateCDBVertexDiamond(const char* objName, Double_t xmed, Double_t ymed, D
   if(gSystem->Getenv("FIRSTRUN")) firstRun=TString(gSystem->Getenv("FIRSTRUN")).Atoi();
   Int_t lastRun=AliCDBRunRange::Infinity();
   if(gSystem->Getenv("LASTRUN")) lastRun=TString(gSystem->Getenv("LASTRUN")).Atoi();
-  TString objFullName="GRP/Calib/";
+  TString objFullName="GRP/GRP/";
 
   if(objName=="MeanVertex" || objName=="MeanVertexSPD" || objName=="MeanVertexTPC"){
       objFullName += objName;
@@ -75,9 +75,9 @@ void UpdateCDBVertexDiamondOld(Double_t xmed = 0., Double_t ymed = 0., Double_t 
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
-  AliCDBId id("GRP/Calib/MeanVertex",0,AliCDBRunRange::Infinity());
-  AliCDBId idTPC("GRP/Calib/MeanVertexTPC",0,AliCDBRunRange::Infinity());
-  AliCDBId idSPD("GRP/Calib/MeanVertexSPD",0,AliCDBRunRange::Infinity());
+  AliCDBId id("GRP/GRP/MeanVertex",0,AliCDBRunRange::Infinity());
+  AliCDBId idTPC("GRP/GRP/MeanVertexTPC",0,AliCDBRunRange::Infinity());
+  AliCDBId idSPD("GRP/GRP/MeanVertexSPD",0,AliCDBRunRange::Infinity());
   AliCDBMetaData *metadata= new AliCDBMetaData();
 
   // Get root and AliRoot versions
