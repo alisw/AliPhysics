@@ -1977,7 +1977,7 @@ Int_t processPHOSBlock(AliHLTHOMERBlockDesc * block) {
     if( !gPHOSElementList )
       gPHOSElementList = createPHOSElementList();
         
-    if ( block->GetDataType().CompareTo("CALOCLU") == 0 )
+    if ( block->GetDataType().CompareTo("CALOCLUS") == 0 )
       iResult = processPHOSClusters( block );
       
     else if ( block->GetDataType().CompareTo("DIGITTYP") == 0 )
