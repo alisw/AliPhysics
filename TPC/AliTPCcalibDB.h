@@ -55,17 +55,17 @@ class AliTPCcalibDB : public TObject
   //
   //
   //
-  AliTPCTransform* GetTransform() {return fTransform;}
-  AliTPCExB*    GetExB() {return fExB;}
+  AliTPCTransform* GetTransform() const {return fTransform;}
+  AliTPCExB*    GetExB() const {return fExB;}
   void          SetExBField(Float_t bz);
   void          SetExBField( const AliMagF*   bmap);
   static AliTPCExB*    GetExB(Float_t bz,Bool_t bdelete);
-  AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
-  AliTPCCalPad* GetDedxGainFactor() {return fDedxGainFactor;}
-  AliTPCCalPad* GetPadTime0() {return fPadTime0;}
-  AliTPCCalPad* GetDistortionMap(Int_t i) {return (fDistortionMap) ? (AliTPCCalPad*)fDistortionMap->At(i):0;}
-  AliTPCCalPad* GetPadNoise() {return fPadNoise;}
-  AliTPCCalPad* GetPedestals() {return fPedestals;}
+  AliTPCCalPad* GetPadGainFactor() const {return fPadGainFactor;}
+  AliTPCCalPad* GetDedxGainFactor() const {return fDedxGainFactor;}
+  AliTPCCalPad* GetPadTime0() const {return fPadTime0;}
+  AliTPCCalPad* GetDistortionMap(Int_t i) const {return (fDistortionMap) ? (AliTPCCalPad*)fDistortionMap->At(i):0;}
+  AliTPCCalPad* GetPadNoise() const {return fPadNoise;}
+  AliTPCCalPad* GetPedestals() const{return fPedestals;}
   //ALTRO config data
   TObjArray* GetAltroConfigData()  const {return fALTROConfigData;}
   AliTPCCalPad* GetALTROAcqStart() const {return fALTROConfigData?static_cast<AliTPCCalPad*>(fALTROConfigData->FindObject("AcqStart")):0;}
@@ -100,11 +100,11 @@ class AliTPCcalibDB : public TObject
   //QA object
   AliTPCdataQA*   GetDataQA() const {return fDataQA;}
   //
-  AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
-  AliTPCParam*  GetParameters(){return fParam;}
-  AliTPCAltroMapping ** GetMapping(){ return fMapping;}
-  AliTPCClusterParam *GetClusterParam(){ return fClusterParam;}
-  TObjArray *GetTimeGainSplines(){ return fTimeGainSplines;}  
+  AliTPCSensorTempArray* GetTemperature() const {return fTemperature;}
+  AliTPCParam*  GetParameters() const {return fParam;}
+  AliTPCAltroMapping ** GetMapping() const{ return fMapping;}
+  AliTPCClusterParam *GetClusterParam() const { return fClusterParam;}
+  TObjArray *GetTimeGainSplines() const { return fTimeGainSplines;}  
   //
   //GRP information
   static AliGRPObject * GetGRP(Int_t run);

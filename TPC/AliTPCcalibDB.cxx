@@ -304,7 +304,10 @@ void AliTPCcalibDB::SetRun(Long64_t run)
 
 
 void AliTPCcalibDB::Update(){
-	//
+  //
+  // cache the OCDB entries for simulation, reconstruction, calibration
+  //  
+  //
   AliCDBEntry * entry=0;
   Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
@@ -980,6 +983,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
 
 Float_t AliTPCcalibDB::GetGain(Int_t sector, Int_t row, Int_t pad){
   //
+  // Get Gain factor for given pad
   //
   AliTPCCalPad *calPad = Instance()->fDedxGainFactor;;
   if (!calPad) return 0;
@@ -988,7 +992,7 @@ Float_t AliTPCcalibDB::GetGain(Int_t sector, Int_t row, Int_t pad){
 
 AliSplineFit* AliTPCcalibDB::GetVdriftSplineFit(const char* name, Int_t run){
   //
-  //
+  // GetDrift velocity spline fit
   //
   TObjArray *arr=GetTimeVdriftSplineRun(run);
   if (!arr) return 0;
@@ -1026,7 +1030,7 @@ AliGRPObject *AliTPCcalibDB::GetGRP(Int_t run){
 
 TMap *  AliTPCcalibDB::GetGRPMap(Int_t run){
   //
-  //
+  // Get GRP map for given run
   //
   TMap * grpRun = dynamic_cast<TMap *>((Instance()->fGRPMaps).At(run));
   if (!grpRun) {
@@ -1516,7 +1520,7 @@ Float_t AliTPCcalibDB::GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type){
 
 Bool_t  AliTPCcalibDB::GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit){
   //
-  //
+  // GetTmeparature fit at parameter for given time stamp
   //
   TTimeStamp tstamp(timeStamp);
   AliTPCSensorTempArray* tempArray  = Instance()->GetTemperatureSensor(run);
@@ -1535,8 +1539,8 @@ Bool_t  AliTPCcalibDB::GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,
 
 Float_t AliTPCcalibDB::GetTemperature(Int_t timeStamp, Int_t run, Int_t side){
   //
-  //
-  //
+  // Get mean temperature
+  // 
   TVectorD vec(5);
   if (side==0) {
     GetTemperatureFit(timeStamp,run,0,vec);
