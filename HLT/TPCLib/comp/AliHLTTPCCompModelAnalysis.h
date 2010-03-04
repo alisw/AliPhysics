@@ -39,23 +39,23 @@ public:
   struct AliHLTTPCTrackList
   {
     AliHLTTPCTrackList() : 
-      track(),
-      pythiatrack(),
-      wronglydiscarded(kFALSE),
-      matchingindicator(0),
-      next(NULL),
-      matchingtrack(NULL)
+      fTrack(),
+      fPythiatrack(),
+      fWronglydiscarded(kFALSE),
+      fMatchingindicator(0),
+      fNext(NULL),
+      fMatchingtrack(NULL)
     {}
 
     AliHLTTPCTrackList (const AliHLTTPCTrackList&);
     AliHLTTPCTrackList& operator= (const AliHLTTPCTrackList&);
 
-    AliHLTTPCTrack track;       // store information of found discarded track   
-    AliHLTTPCTrack pythiatrack; // store pythia information about this found discarded track
-    Bool_t wronglydiscarded;    // flag to mark if track and pythia track information match together
-    Int_t matchingindicator;    // only for trackanalysis the higher the number, the more probable it is that tracks match
-    AliHLTTPCTrackList* next;   // pointer to next struct
-    AliHLTTPCTrackList* matchingtrack; // pointer to matching track (only used in trackanalysis)
+    AliHLTTPCTrack fTrack;       // store information of found discarded track   
+    AliHLTTPCTrack fPythiatrack; // store pythia information about this found discarded track
+    Bool_t fWronglydiscarded;    // flag to mark if track and pythia track information match together
+    Int_t fMatchingindicator;    // only for trackanalysis the higher the number, the more probable it is that tracks match
+    AliHLTTPCTrackList* fNext;   // pointer to next struct
+    AliHLTTPCTrackList* fMatchingtrack; // pointer to matching track (only used in trackanalysis)
   };
   typedef struct AliHLTTPCTrackList AliHLTTPCTrackList;
 
@@ -76,13 +76,13 @@ public:
    * @return 0 if fModelAnalysis is switched off
    * @return 1 if fModelAnalysis is switched on
    */
-  Bool_t GetfModelAnalysis() {return fModelAnalysis;};
+  Bool_t GetfModelAnalysis() const {return fModelAnalysis;};
 
   /** function to retrieve private member variable fTrackAnalysis used in ModelConverter
    * @return 0 if fTrackAnalysis is switched off
    * @return 1 if fTrackAnalysis is switched on
    */
-  Bool_t GetfTrackAnalysis() {return fTrackAnalysis;};
+  Bool_t GetfTrackAnalysis() const {return fTrackAnalysis;};
 
   /** fill track arrays with track data from original and secondary tracking 
    * @param tracklets           pointer to track array to be filled
@@ -148,21 +148,21 @@ private:
    * @param comparabletrack track to look for pythia information
    * @return pythiatrack    track information from pythia lookup
    */
-  AliHLTTPCTrack GetComparableTrackPythiaInfo(AliHLTTPCTrack comparabletrack);
+  AliHLTTPCTrack GetComparableTrackPythiaInfo(AliHLTTPCTrack comparabletrack) const;
 
   /** compare discarded track parameters with parameters from Pythia event
    * @param discardedtrack  pointer to a discarded track (usually with low pt)
    * @return 0 upon correct decision (track with low pt accoridng to Pythia, i.e. track = delta-electron or similar noise)
    * @return 1 upon wrong decision (track wrongly discarded, should by taken into account according to Pythia information)
    */
-  Bool_t GetTrashTrackPythiaInfo(AliHLTTPCTrack* discardedtrack);
+  Bool_t GetTrashTrackPythiaInfo(AliHLTTPCTrack* discardedtrack) const;
 
   /** compare information of a cluster not assigned to any track with its Pythia information
    * @param discardedcluster  pointer to discarded cluster
    * @return 0 upon correct decision (cluster not assigned to any track is true in Pythia, i.e. cluster = noise cluster)
    * @return 1 upon wrong decision (cluster wrongly discarded, i.e. it belongs to a valuable track according to Pythia)
    */
-  Bool_t GetClusterPythiaInfo(AliHLTTPCClusterData* discardedcluster);
+  Bool_t GetClusterPythiaInfo(AliHLTTPCClusterData* discardedcluster) const;
 
   /** compare two tracks in order to find if the match
    * @param firsttracklistelement   track from orignal tracking, stored in AliHLTTPCTrackList
@@ -200,27 +200,27 @@ private:
   /** array with tracks from secondary tracking with Vestbo-decompressed clusters */
   AliHLTTPCTrackArray fSecondTrackArray; // array to store tracks of second tracking (after compression/expansion of model)
   /** pointer to first element of first track list containing tracks and their pythia information  */
-  AliHLTTPCTrackList* fFirstTrackList;
+  AliHLTTPCTrackList* fFirstTrackList; // see above
   /** pointer to first element of second track list containing tracks and their pythia information */
-  AliHLTTPCTrackList* fSecondTrackList;
+  AliHLTTPCTrackList* fSecondTrackList; // see above
   /** array of original clusters for deviation analysis to secondary clusters */
-  AliHLTTPCClusterData* fOriginalClusters[36][6];
+  AliHLTTPCClusterData* fOriginalClusters[36][6]; // see above
   /** array of secondary clusters for deviation analysis to origin clusters */
-  AliHLTTPCClusterData* fSecondaryClusters[36][6];
+  AliHLTTPCClusterData* fSecondaryClusters[36][6]; // see above
   /** number of tracks with pt < 0.1GeV in first array */
-  Int_t fFirstTrashTracks;
+  Int_t fFirstTrashTracks; // see above
   /** number of tracks with pt < 0.1GeV in second array */
-  Int_t fSecondTrashTracks;
+  Int_t fSecondTrashTracks; // see above
   /** total number of compared tracks */
-  Int_t fTotalComparedTracks;
+  Int_t fTotalComparedTracks; // see above
   /** number of matched tracks under 0.1 GeV in first array */
-  Int_t fMatchedFirstTrashTracks;
+  Int_t fMatchedFirstTrashTracks; // see above
   /** number of matched tracks under 0.1 GeV in second array */
-  Int_t fMatchedSecondTrashTracks;
+  Int_t fMatchedSecondTrashTracks; // see above
   /** number of original tracks that do not have secondary track matches */
-  Int_t fFirstUnmatchedTracks;
+  Int_t fFirstUnmatchedTracks; // see above
   /** number of secondary tracks that do not have original track matches */
-  Int_t fSecondUnmatchedTracks;
+  Int_t fSecondUnmatchedTracks; // see above
   /** tolerance limits of relative deviation of compared track quantities, set in Init() */
   Float_t fToleranceDeviation;  // (firstparameter - secondparameter)/firstparameter <= fToleranceDeviation
 

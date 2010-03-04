@@ -57,11 +57,16 @@ AliHLTTPCCompModelAnalysis::AliHLTTPCCompModelAnalysis(Bool_t modelanalysis, Boo
   fTrashTracks(0)
 {
   // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 /** destructor **/
 AliHLTTPCCompModelAnalysis::~AliHLTTPCCompModelAnalysis()
     {
+  // see header file for class documentation
     for ( UInt_t slice=0; slice<36; slice++ )
 	for ( UInt_t patch=0; patch<6; patch++ )
 	    {
@@ -239,19 +244,19 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
     {
       // build track list for all tracks in first array
       AliHLTTPCTrackList* currenttrackentry = new AliHLTTPCTrackList;
-      currenttrackentry->track = *(fFirstTrackArray.GetCheckedTrack(ii));
+      currenttrackentry->fTrack = *(fFirstTrackArray.GetCheckedTrack(ii));
 
       // get its pythia information, 
-      currenttrackentry->pythiatrack = GetComparableTrackPythiaInfo(currenttrackentry->track);
+      currenttrackentry->fPythiatrack = GetComparableTrackPythiaInfo(currenttrackentry->fTrack);
 
-      currenttrackentry->matchingindicator = 0;
+      currenttrackentry->fMatchingindicator = 0;
 
       // put this element as first in list
-      currenttrackentry->next = fFirstTrackList;
+      currenttrackentry->fNext = fFirstTrackList;
       fFirstTrackList = currenttrackentry;
 
       // count tracks below 0.1GeV
-      if(currenttrackentry->track.GetPt()<0.1)
+      if(currenttrackentry->fTrack.GetPt()<0.1)
 	{
 	  ++fFirstTrashTracks;
 	}
@@ -263,17 +268,17 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
     {
       // build track list for all tracks in second array
       AliHLTTPCTrackList* currenttrackentry = new AliHLTTPCTrackList;
-      currenttrackentry->track = *(fSecondTrackArray.GetCheckedTrack(ii));
+      currenttrackentry->fTrack = *(fSecondTrackArray.GetCheckedTrack(ii));
 
       // get its pythia information, 
-      currenttrackentry->pythiatrack = GetComparableTrackPythiaInfo(currenttrackentry->track);
+      currenttrackentry->fPythiatrack = GetComparableTrackPythiaInfo(currenttrackentry->fTrack);
 
       // put this element as first in list
-      currenttrackentry->next = fSecondTrackList;
+      currenttrackentry->fNext = fSecondTrackList;
       fSecondTrackList = currenttrackentry;
 
       // count tracks below 0.1GeV
-      if(currenttrackentry->track.GetPt()<0.1)
+      if(currenttrackentry->fTrack.GetPt()<0.1)
 	{
 	  ++fSecondTrashTracks;
 	}
@@ -295,32 +300,32 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
 	 if ((CompareTrackInfo(firstmatchpointer, secondmatchpointer) > 4))
 	   { 
     
-	     if((CompareTrackInfo(firstmatchpointer, secondmatchpointer) > firstmatchpointer->matchingindicator))
+	     if((CompareTrackInfo(firstmatchpointer, secondmatchpointer) > firstmatchpointer->fMatchingindicator))
 	       {
 		 // look if current better matching track has already been matched before
-		 if((CompareTrackInfo(firstmatchpointer, secondmatchpointer) > secondmatchpointer->matchingindicator))
+		 if((CompareTrackInfo(firstmatchpointer, secondmatchpointer) > secondmatchpointer->fMatchingindicator))
 		   {
 		     
 		     // set previously assigned matchingindicator (if there was one) of secondary track back to zero
-		     if(firstmatchpointer->matchingindicator > 0)
+		     if(firstmatchpointer->fMatchingindicator > 0)
 		       {
-			 firstmatchpointer->matchingtrack->matchingindicator = 0;
-			 firstmatchpointer->matchingtrack->matchingtrack = NULL;
+			 firstmatchpointer->fMatchingtrack->fMatchingindicator = 0;
+			 firstmatchpointer->fMatchingtrack->fMatchingtrack = NULL;
 		       }
 
-		     if(secondmatchpointer->matchingindicator > 0)
+		     if(secondmatchpointer->fMatchingindicator > 0)
 		       {
-			 secondmatchpointer->matchingtrack->matchingindicator = 0;
-			 secondmatchpointer->matchingtrack->matchingtrack = NULL;
+			 secondmatchpointer->fMatchingtrack->fMatchingindicator = 0;
+			 secondmatchpointer->fMatchingtrack->fMatchingtrack = NULL;
 		       }
 		     
 		     // compare according to tracks themselves (other possibility: compare pythiatracks - better!)
-		     secondmatchpointer->matchingindicator = CompareTrackInfo(firstmatchpointer, secondmatchpointer) ;
-		     firstmatchpointer->matchingindicator = CompareTrackInfo(firstmatchpointer, secondmatchpointer);
+		     secondmatchpointer->fMatchingindicator = CompareTrackInfo(firstmatchpointer, secondmatchpointer) ;
+		     firstmatchpointer->fMatchingindicator = CompareTrackInfo(firstmatchpointer, secondmatchpointer);
 		     
 		     // remember which track matches which
-		     secondmatchpointer->matchingtrack = firstmatchpointer;
-		     firstmatchpointer->matchingtrack = secondmatchpointer;
+		     secondmatchpointer->fMatchingtrack = firstmatchpointer;
+		     firstmatchpointer->fMatchingtrack = secondmatchpointer;
 
 		   } // end if compare > second matching indicator
 
@@ -328,11 +333,11 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
 	     
 	   }// end if compare > 4
 	 	 
-	 secondmatchpointer = secondmatchpointer->next;
+	 secondmatchpointer = secondmatchpointer->fNext;
        }
      
      // go on with next original track
-     firstmatchpointer = firstmatchpointer->next;
+     firstmatchpointer = firstmatchpointer->fNext;
    }
   
   // count not matched tracks in first and second track list
@@ -340,7 +345,7 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
 
   while(nomatchcounter != NULL)
     {
-      if(nomatchcounter->matchingindicator == 0)
+      if(nomatchcounter->fMatchingindicator == 0)
 	{
 	  ++fFirstUnmatchedTracks;
 	}
@@ -349,31 +354,31 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
 	 ++fTotalComparedTracks;
 
 	 // count matched trash tracks
-	 if(nomatchcounter->track.GetPt() < 0.1)
+	 if(nomatchcounter->fTrack.GetPt() < 0.1)
 	   {
 	     ++fMatchedFirstTrashTracks;
 	   };
 	}
-      nomatchcounter = nomatchcounter->next;
+      nomatchcounter = nomatchcounter->fNext;
     }
 
   nomatchcounter = fSecondTrackList;
   while(nomatchcounter != NULL)
     {
-      if(nomatchcounter->matchingindicator == 0)
+      if(nomatchcounter->fMatchingindicator == 0)
 	{
 	  ++fSecondUnmatchedTracks;
 	}
       else
 	{
 	  // count matched trash tracks
-	 if(nomatchcounter->track.GetPt() < 0.1)
+	 if(nomatchcounter->fTrack.GetPt() < 0.1)
 	   {
 	     ++fMatchedSecondTrashTracks;
 	   };
 	}
     
-      nomatchcounter = nomatchcounter->next;
+      nomatchcounter = nomatchcounter->fNext;
     }
  
   // consistency check: fFirstUnmatchedTracks + fTotalComparedTracks = # of tracks in first array
@@ -627,7 +632,7 @@ Int_t AliHLTTPCCompModelAnalysis::CompareClusters(Bool_t relativedifferences)
   return 0;
 }
 
-AliHLTTPCTrack AliHLTTPCCompModelAnalysis::GetComparableTrackPythiaInfo(AliHLTTPCTrack comparabletrack)
+AliHLTTPCTrack AliHLTTPCCompModelAnalysis::GetComparableTrackPythiaInfo(AliHLTTPCTrack comparabletrack) const
 {
   // see headerfile for class documentation
 
@@ -642,11 +647,11 @@ Int_t AliHLTTPCCompModelAnalysis::MarkTrashTrack(AliHLTTPCTrack *lowpttrack)
 
   // save track first in lowpttrack list (all lowpttracks are displayed in display function altogether)
   AliHLTTPCTrackList* tracklistentry =  new AliHLTTPCTrackList;
-  tracklistentry->track = *lowpttrack;
-  tracklistentry->wronglydiscarded = GetTrashTrackPythiaInfo(lowpttrack);
-  tracklistentry->matchingindicator = 0; // not needed here, therefore initialised to zero
-  tracklistentry->next = fTrackListPointer;
-  tracklistentry->matchingtrack = NULL; // not needed here, therefore initialised to NULL
+  tracklistentry->fTrack = *lowpttrack;
+  tracklistentry->fWronglydiscarded = GetTrashTrackPythiaInfo(lowpttrack);
+  tracklistentry->fMatchingindicator = 0; // not needed here, therefore initialised to zero
+  tracklistentry->fNext = fTrackListPointer;
+  tracklistentry->fMatchingtrack = NULL; // not needed here, therefore initialised to NULL
   fTrackListPointer = tracklistentry;
 
   ++fTrashTracks;
@@ -675,7 +680,7 @@ Int_t AliHLTTPCCompModelAnalysis::MarkTrashCluster(AliHLTTPCClusterData *discard
   return 0;
 }
 
-Bool_t AliHLTTPCCompModelAnalysis::GetTrashTrackPythiaInfo(AliHLTTPCTrack* /*discardedtrack*/ )
+Bool_t AliHLTTPCCompModelAnalysis::GetTrashTrackPythiaInfo(AliHLTTPCTrack* /*discardedtrack*/ ) const
 {
   // see header file for class documentation
   // store information from pythia in current track list entry
@@ -684,7 +689,7 @@ Bool_t AliHLTTPCCompModelAnalysis::GetTrashTrackPythiaInfo(AliHLTTPCTrack* /*dis
   return 0;
 }
 
-Bool_t AliHLTTPCCompModelAnalysis::GetClusterPythiaInfo(AliHLTTPCClusterData* /*discardedcluster*/)
+Bool_t AliHLTTPCCompModelAnalysis::GetClusterPythiaInfo(AliHLTTPCClusterData* /*discardedcluster*/) const
 {
   // see header file for class documentation
   // Pythia information can be
@@ -706,37 +711,37 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTrackInfo(AliHLTTPCTrackList* firsttrac
   // tolerance range of 1 percent deviation for each quantity
 
   // compare start point (x,y,z)
-  if(abs((firsttracklistelement->track.GetFirstPointX() - secondtracklistelement->track.GetFirstPointX()))/firsttracklistelement->track.GetFirstPointX() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetFirstPointX() - secondtracklistelement->fTrack.GetFirstPointX()))/firsttracklistelement->fTrack.GetFirstPointX() <= fToleranceDeviation)
     ++currentmatchingindicator;
 
-  if(abs((firsttracklistelement->track.GetFirstPointY() - secondtracklistelement->track.GetFirstPointY()))/firsttracklistelement->track.GetFirstPointY() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetFirstPointY() - secondtracklistelement->fTrack.GetFirstPointY()))/firsttracklistelement->fTrack.GetFirstPointY() <= fToleranceDeviation)
     ++currentmatchingindicator;
 
-  if(abs((firsttracklistelement->track.GetFirstPointZ() - secondtracklistelement->track.GetFirstPointZ()))/firsttracklistelement->track.GetFirstPointZ() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetFirstPointZ() - secondtracklistelement->fTrack.GetFirstPointZ()))/firsttracklistelement->fTrack.GetFirstPointZ() <= fToleranceDeviation)
     ++currentmatchingindicator;
   
   // compare end point
-  if(abs((firsttracklistelement->track.GetLastPointX() - secondtracklistelement->track.GetLastPointX()))/firsttracklistelement->track.GetLastPointX() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetLastPointX() - secondtracklistelement->fTrack.GetLastPointX()))/firsttracklistelement->fTrack.GetLastPointX() <= fToleranceDeviation)
     ++currentmatchingindicator;
 
-  if(abs((firsttracklistelement->track.GetLastPointY() - secondtracklistelement->track.GetLastPointY()))/firsttracklistelement->track.GetLastPointY() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetLastPointY() - secondtracklistelement->fTrack.GetLastPointY()))/firsttracklistelement->fTrack.GetLastPointY() <= fToleranceDeviation)
     ++currentmatchingindicator;
 
-  if(abs((firsttracklistelement->track.GetLastPointZ() - secondtracklistelement->track.GetLastPointZ()))/firsttracklistelement->track.GetLastPointZ() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetLastPointZ() - secondtracklistelement->fTrack.GetLastPointZ()))/firsttracklistelement->fTrack.GetLastPointZ() <= fToleranceDeviation)
     ++currentmatchingindicator;
 
   // compare pt, psi, tgl
-  if(abs((firsttracklistelement->track.GetPt() - secondtracklistelement->track.GetPt()))/firsttracklistelement->track.GetPt() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetPt() - secondtracklistelement->fTrack.GetPt()))/firsttracklistelement->fTrack.GetPt() <= fToleranceDeviation)
     ++currentmatchingindicator;
 
-  if(abs((firsttracklistelement->track.GetPsi() - secondtracklistelement->track.GetPsi()))/firsttracklistelement->track.GetPsi() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetPsi() - secondtracklistelement->fTrack.GetPsi()))/firsttracklistelement->fTrack.GetPsi() <= fToleranceDeviation)
     ++currentmatchingindicator;
 
-  if(abs((firsttracklistelement->track.GetTgl() - secondtracklistelement->track.GetTgl()))/firsttracklistelement->track.GetTgl() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetTgl() - secondtracklistelement->fTrack.GetTgl()))/firsttracklistelement->fTrack.GetTgl() <= fToleranceDeviation)
     ++currentmatchingindicator;
 
   // compare number of assigned cluster hits
-  if(abs((firsttracklistelement->track.GetNHits() - secondtracklistelement->track.GetNHits()))/firsttracklistelement->track.GetNHits() <= fToleranceDeviation)
+  if(abs((firsttracklistelement->fTrack.GetNHits() - secondtracklistelement->fTrack.GetNHits()))/firsttracklistelement->fTrack.GetNHits() <= fToleranceDeviation)
     ++currentmatchingindicator;
 
   return currentmatchingindicator;
@@ -753,37 +758,37 @@ Int_t AliHLTTPCCompModelAnalysis::ComparePythiaTrackInfo(AliHLTTPCTrackList* fir
   // tolerance range of 1 percent deviation for each quantity
 
   // compare start point (x,y,z)
-  if(firsttracklistelement->pythiatrack.GetFirstPointX() == secondtracklistelement->pythiatrack.GetFirstPointX())
+  if(firsttracklistelement->fPythiatrack.GetFirstPointX() == secondtracklistelement->fPythiatrack.GetFirstPointX())
     ++currentmatchingindicator;
 
-  if(firsttracklistelement->pythiatrack.GetFirstPointY() == secondtracklistelement->pythiatrack.GetFirstPointY())
+  if(firsttracklistelement->fPythiatrack.GetFirstPointY() == secondtracklistelement->fPythiatrack.GetFirstPointY())
     ++currentmatchingindicator;
 
-  if(firsttracklistelement->pythiatrack.GetFirstPointZ() == secondtracklistelement->pythiatrack.GetFirstPointZ())
+  if(firsttracklistelement->fPythiatrack.GetFirstPointZ() == secondtracklistelement->fPythiatrack.GetFirstPointZ())
     ++currentmatchingindicator;
   
   // compare end point
-  if(firsttracklistelement->pythiatrack.GetLastPointX() == secondtracklistelement->pythiatrack.GetLastPointX())
+  if(firsttracklistelement->fPythiatrack.GetLastPointX() == secondtracklistelement->fPythiatrack.GetLastPointX())
     ++currentmatchingindicator;
 
-  if(firsttracklistelement->pythiatrack.GetLastPointY() == secondtracklistelement->pythiatrack.GetLastPointY())
+  if(firsttracklistelement->fPythiatrack.GetLastPointY() == secondtracklistelement->fPythiatrack.GetLastPointY())
     ++currentmatchingindicator;
 
-  if(firsttracklistelement->pythiatrack.GetLastPointZ() == secondtracklistelement->pythiatrack.GetLastPointZ())
+  if(firsttracklistelement->fPythiatrack.GetLastPointZ() == secondtracklistelement->fPythiatrack.GetLastPointZ())
     ++currentmatchingindicator;
 
   // compare pt, psi, tgl
-  if(firsttracklistelement->pythiatrack.GetPt() == secondtracklistelement->pythiatrack.GetPt())
+  if(firsttracklistelement->fPythiatrack.GetPt() == secondtracklistelement->fPythiatrack.GetPt())
     ++currentmatchingindicator;
 
-  if(firsttracklistelement->pythiatrack.GetPsi() == secondtracklistelement->pythiatrack.GetPsi())
+  if(firsttracklistelement->fPythiatrack.GetPsi() == secondtracklistelement->fPythiatrack.GetPsi())
     ++currentmatchingindicator;
 
-  if(firsttracklistelement->pythiatrack.GetTgl() == secondtracklistelement->pythiatrack.GetTgl())
+  if(firsttracklistelement->fPythiatrack.GetTgl() == secondtracklistelement->fPythiatrack.GetTgl())
     ++currentmatchingindicator;
 
   // compare number of assigned cluster hits
-  if(firsttracklistelement->pythiatrack.GetNHits() == secondtracklistelement->pythiatrack.GetNHits())
+  if(firsttracklistelement->fPythiatrack.GetNHits() == secondtracklistelement->fPythiatrack.GetNHits())
     ++currentmatchingindicator;
 
   return currentmatchingindicator;
@@ -967,108 +972,108 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
   while(tracklistpointer != NULL)
     {
       // if currently processed track is matched, store differences of their parameters in histogram
-      if(tracklistpointer->matchingindicator > 0)
+      if(tracklistpointer->fMatchingindicator > 0)
 	{
 	  // matching track
-	  trackmatchingpointer = tracklistpointer->matchingtrack;
+	  trackmatchingpointer = tracklistpointer->fMatchingtrack;
 
 	  // fill histograms for trackingefficiency vs. pt
-	  firsttracks->Fill(tracklistpointer->track.GetPt(),1);
+	  firsttracks->Fill(tracklistpointer->fTrack.GetPt(),1);
 	  
-	  if(abs(tracklistpointer->track.GetPt()-trackmatchingpointer->track.GetPt()) < 0.012*tracklistpointer->track.GetPt())
+	  if(abs(tracklistpointer->fTrack.GetPt()-trackmatchingpointer->fTrack.GetPt()) < 0.012*tracklistpointer->fTrack.GetPt())
 	    {
-	      matchedtrackeff->Fill(tracklistpointer->track.GetPt(),1);
+	      matchedtrackeff->Fill(tracklistpointer->fTrack.GetPt(),1);
 	    }
 
-	  //tracklistpointer = tracklistpointer->next; // only efficiency is considered...
+	  //tracklistpointer = tracklistpointer->fNext; // only efficiency is considered...
 	  //continue; // only efficiency is considered...
 
 	  if(relativedifferences == 1) // fill histogram with relative differences
 	    {
 
 	      // check if first track parameters are not zero!
-	      if (tracklistpointer->track.GetFirstPointX()==0)
+	      if (tracklistpointer->fTrack.GetFirstPointX()==0)
 		{
 		  HLTWarning("Warning! First x of original track is zero, relative differences cannot be calculated!");
 		};
-	      if (tracklistpointer->track.GetFirstPointY()==0)
+	      if (tracklistpointer->fTrack.GetFirstPointY()==0)
 		{
 		  HLTWarning("Warning! First y of original track is zero, relative differences cannot be calculated!");
 		};
-	      if (tracklistpointer->track.GetFirstPointZ()==0)
+	      if (tracklistpointer->fTrack.GetFirstPointZ()==0)
 		{
 		  HLTWarning("Warning! First z of original track is zero, relative differences cannot be calculated!");
 		};
-	      if (tracklistpointer->track.GetLastPointX()==0)
+	      if (tracklistpointer->fTrack.GetLastPointX()==0)
 		{
 		  HLTWarning("Warning! Last x of original track is zero, relative differences cannot be calculated!");
 		};
-	      if (tracklistpointer->track.GetLastPointY()==0)
+	      if (tracklistpointer->fTrack.GetLastPointY()==0)
 		{
 		  HLTWarning("Warning! Last y of original track is zero, relative differences cannot be calculated!");
 		};
-	      if (tracklistpointer->track.GetLastPointZ()==0)
+	      if (tracklistpointer->fTrack.GetLastPointZ()==0)
 		{
 		  HLTWarning("Warning! Last z of original track is zero, relative differences cannot be calculated!");
 		};
-	      if (tracklistpointer->track.GetPt()==0)
+	      if (tracklistpointer->fTrack.GetPt()==0)
 		{
 		  HLTWarning("Warning! Pt of original track is zero, relative differences cannot be calculated!");
 		};
-	      if (tracklistpointer->track.GetPsi()==0)
+	      if (tracklistpointer->fTrack.GetPsi()==0)
 		{
 		  HLTWarning("Warning! Psi of original track is zero, relative differences cannot be calculated!");
 		};
-	      if (tracklistpointer->track.GetTgl()==0)
+	      if (tracklistpointer->fTrack.GetTgl()==0)
 		{
 		  HLTWarning("Warning! Tgl of original track is zero, relative differences cannot be calculated!");
 		};
-	      firstxhisto->Fill((tracklistpointer->track.GetFirstPointX()-trackmatchingpointer->track.GetFirstPointX())/tracklistpointer->track.GetFirstPointX(),1);
-	      firstyhisto->Fill((tracklistpointer->track.GetFirstPointY()-trackmatchingpointer->track.GetFirstPointY())/tracklistpointer->track.GetFirstPointY(),1);
-	      firstzhisto->Fill((tracklistpointer->track.GetFirstPointZ()-trackmatchingpointer->track.GetFirstPointZ())/tracklistpointer->track.GetFirstPointZ(),1);
-	      lastxhisto->Fill((tracklistpointer->track.GetLastPointX()-trackmatchingpointer->track.GetLastPointX())/tracklistpointer->track.GetLastPointX(),1);
-	      lastyhisto->Fill((tracklistpointer->track.GetLastPointY()-trackmatchingpointer->track.GetLastPointY())/tracklistpointer->track.GetLastPointY(),1);
-	      lastzhisto->Fill((tracklistpointer->track.GetLastPointZ()-trackmatchingpointer->track.GetLastPointZ())/tracklistpointer->track.GetLastPointZ(),1);
-	      pthisto->Fill((tracklistpointer->track.GetPt()-trackmatchingpointer->track.GetPt())/tracklistpointer->track.GetPt(),1);
-	      psihisto->Fill((tracklistpointer->track.GetPsi()-trackmatchingpointer->track.GetPsi())/tracklistpointer->track.GetPsi(),1);
-	      tglhisto->Fill((tracklistpointer->track.GetTgl()-trackmatchingpointer->track.GetTgl())/tracklistpointer->track.GetTgl(),1);
-	      clusterhisto->Fill((tracklistpointer->track.GetNHits()-trackmatchingpointer->track.GetNHits())/tracklistpointer->track.GetNHits(),1);
+	      firstxhisto->Fill((tracklistpointer->fTrack.GetFirstPointX()-trackmatchingpointer->fTrack.GetFirstPointX())/tracklistpointer->fTrack.GetFirstPointX(),1);
+	      firstyhisto->Fill((tracklistpointer->fTrack.GetFirstPointY()-trackmatchingpointer->fTrack.GetFirstPointY())/tracklistpointer->fTrack.GetFirstPointY(),1);
+	      firstzhisto->Fill((tracklistpointer->fTrack.GetFirstPointZ()-trackmatchingpointer->fTrack.GetFirstPointZ())/tracklistpointer->fTrack.GetFirstPointZ(),1);
+	      lastxhisto->Fill((tracklistpointer->fTrack.GetLastPointX()-trackmatchingpointer->fTrack.GetLastPointX())/tracklistpointer->fTrack.GetLastPointX(),1);
+	      lastyhisto->Fill((tracklistpointer->fTrack.GetLastPointY()-trackmatchingpointer->fTrack.GetLastPointY())/tracklistpointer->fTrack.GetLastPointY(),1);
+	      lastzhisto->Fill((tracklistpointer->fTrack.GetLastPointZ()-trackmatchingpointer->fTrack.GetLastPointZ())/tracklistpointer->fTrack.GetLastPointZ(),1);
+	      pthisto->Fill((tracklistpointer->fTrack.GetPt()-trackmatchingpointer->fTrack.GetPt())/tracklistpointer->fTrack.GetPt(),1);
+	      psihisto->Fill((tracklistpointer->fTrack.GetPsi()-trackmatchingpointer->fTrack.GetPsi())/tracklistpointer->fTrack.GetPsi(),1);
+	      tglhisto->Fill((tracklistpointer->fTrack.GetTgl()-trackmatchingpointer->fTrack.GetTgl())/tracklistpointer->fTrack.GetTgl(),1);
+	      clusterhisto->Fill((tracklistpointer->fTrack.GetNHits()-trackmatchingpointer->fTrack.GetNHits())/tracklistpointer->fTrack.GetNHits(),1);
 
 	      //#if 0
-	      pterrhisto->Fill((tracklistpointer->track.GetPterr()-trackmatchingpointer->track.GetPterr())/tracklistpointer->track.GetPterr(),1);
-	      psierrhisto->Fill((tracklistpointer->track.GetPsierr()-trackmatchingpointer->track.GetPsierr())/tracklistpointer->track.GetPsierr(),1);
-	      tglerrhisto->Fill((tracklistpointer->track.GetTglerr()-trackmatchingpointer->track.GetTglerr())/tracklistpointer->track.GetTglerr(),1);
+	      pterrhisto->Fill((tracklistpointer->fTrack.GetPterr()-trackmatchingpointer->fTrack.GetPterr())/tracklistpointer->fTrack.GetPterr(),1);
+	      psierrhisto->Fill((tracklistpointer->fTrack.GetPsierr()-trackmatchingpointer->fTrack.GetPsierr())/tracklistpointer->fTrack.GetPsierr(),1);
+	      tglerrhisto->Fill((tracklistpointer->fTrack.GetTglerr()-trackmatchingpointer->fTrack.GetTglerr())/tracklistpointer->fTrack.GetTglerr(),1);
 
-	      //HLTInfo("Pterr: 1st:%f  2nd:%f   value:%f",tracklistpointer->track.GetPterr(),trackmatchingpointer->track.GetPterr(),(tracklistpointer->track.GetPterr()-trackmatchingpointer->track.GetPterr())/tracklistpointer->track.GetPterr());
-	      //HLTInfo("Psierr: 1st:%f  2nd:%f   value:%f",tracklistpointer->track.GetPsierr(),trackmatchingpointer->track.GetPsierr(),(tracklistpointer->track.GetPsierr()-trackmatchingpointer->track.GetPsierr())/tracklistpointer->track.GetPsierr());
-	      //HLTInfo("Tglerr: 1st:%f  2nd:%f   value:%f",tracklistpointer->track.GetTglerr(),trackmatchingpointer->track.GetTglerr(),(tracklistpointer->track.GetTglerr()-trackmatchingpointer->track.GetTglerr())/tracklistpointer->track.GetTglerr());
+	      //HLTInfo("Pterr: 1st:%f  2nd:%f   value:%f",tracklistpointer->fTrack.GetPterr(),trackmatchingpointer->fTrack.GetPterr(),(tracklistpointer->fTrack.GetPterr()-trackmatchingpointer->fTrack.GetPterr())/tracklistpointer->fTrack.GetPterr());
+	      //HLTInfo("Psierr: 1st:%f  2nd:%f   value:%f",tracklistpointer->fTrack.GetPsierr(),trackmatchingpointer->fTrack.GetPsierr(),(tracklistpointer->fTrack.GetPsierr()-trackmatchingpointer->fTrack.GetPsierr())/tracklistpointer->fTrack.GetPsierr());
+	      //HLTInfo("Tglerr: 1st:%f  2nd:%f   value:%f",tracklistpointer->fTrack.GetTglerr(),trackmatchingpointer->fTrack.GetTglerr(),(tracklistpointer->fTrack.GetTglerr()-trackmatchingpointer->fTrack.GetTglerr())/tracklistpointer->fTrack.GetTglerr());
 	      //#endif
 	    }
 	  else // otherwise fill histogram with absolute differences
 	    {
-	      firstxhisto->Fill(tracklistpointer->track.GetFirstPointX()-trackmatchingpointer->track.GetFirstPointX(),1);
-	      firstyhisto->Fill(tracklistpointer->track.GetFirstPointY()-trackmatchingpointer->track.GetFirstPointY(),1);
-	      firstzhisto->Fill(tracklistpointer->track.GetFirstPointZ()-trackmatchingpointer->track.GetFirstPointZ(),1);
-	      lastxhisto->Fill(tracklistpointer->track.GetLastPointX()-trackmatchingpointer->track.GetLastPointX(),1);
-	      lastyhisto->Fill(tracklistpointer->track.GetLastPointY()-trackmatchingpointer->track.GetLastPointY(),1);
-	      lastzhisto->Fill(tracklistpointer->track.GetLastPointZ()-trackmatchingpointer->track.GetLastPointZ(),1);
-	      pthisto->Fill(tracklistpointer->track.GetPt()-trackmatchingpointer->track.GetPt(),1);
-	      psihisto->Fill(tracklistpointer->track.GetPsi()-trackmatchingpointer->track.GetPsi(),1);
-	      tglhisto->Fill(tracklistpointer->track.GetTgl()-trackmatchingpointer->track.GetTgl(),1);
-	      clusterhisto->Fill(tracklistpointer->track.GetNHits()-trackmatchingpointer->track.GetNHits(),1);
+	      firstxhisto->Fill(tracklistpointer->fTrack.GetFirstPointX()-trackmatchingpointer->fTrack.GetFirstPointX(),1);
+	      firstyhisto->Fill(tracklistpointer->fTrack.GetFirstPointY()-trackmatchingpointer->fTrack.GetFirstPointY(),1);
+	      firstzhisto->Fill(tracklistpointer->fTrack.GetFirstPointZ()-trackmatchingpointer->fTrack.GetFirstPointZ(),1);
+	      lastxhisto->Fill(tracklistpointer->fTrack.GetLastPointX()-trackmatchingpointer->fTrack.GetLastPointX(),1);
+	      lastyhisto->Fill(tracklistpointer->fTrack.GetLastPointY()-trackmatchingpointer->fTrack.GetLastPointY(),1);
+	      lastzhisto->Fill(tracklistpointer->fTrack.GetLastPointZ()-trackmatchingpointer->fTrack.GetLastPointZ(),1);
+	      pthisto->Fill(tracklistpointer->fTrack.GetPt()-trackmatchingpointer->fTrack.GetPt(),1);
+	      psihisto->Fill(tracklistpointer->fTrack.GetPsi()-trackmatchingpointer->fTrack.GetPsi(),1);
+	      tglhisto->Fill(tracklistpointer->fTrack.GetTgl()-trackmatchingpointer->fTrack.GetTgl(),1);
+	      clusterhisto->Fill(tracklistpointer->fTrack.GetNHits()-trackmatchingpointer->fTrack.GetNHits(),1);
 	      //#if 0
 	      // commented out since pterr is always zero for every track!
-	      pterrhisto->Fill(tracklistpointer->track.GetPterr()-trackmatchingpointer->track.GetPterr(),1);
-	      psierrhisto->Fill(tracklistpointer->track.GetPsierr()-trackmatchingpointer->track.GetPsierr(),1);
-	      tglerrhisto->Fill(tracklistpointer->track.GetTglerr()-trackmatchingpointer->track.GetTglerr(),1);
+	      pterrhisto->Fill(tracklistpointer->fTrack.GetPterr()-trackmatchingpointer->fTrack.GetPterr(),1);
+	      psierrhisto->Fill(tracklistpointer->fTrack.GetPsierr()-trackmatchingpointer->fTrack.GetPsierr(),1);
+	      tglerrhisto->Fill(tracklistpointer->fTrack.GetTglerr()-trackmatchingpointer->fTrack.GetTglerr(),1);
 	      //#endif
 	    }
 
 	  // fill histogram that determines the quality of the fit
-	  matchinghisto->Fill(tracklistpointer->matchingindicator,1);
+	  matchinghisto->Fill(tracklistpointer->fMatchingindicator,1);
 	}
 
-      tracklistpointer = tracklistpointer->next;
+      tracklistpointer = tracklistpointer->fNext;
     }
 
   trackeff->Divide(matchedtrackeff, firsttracks,1,1,"");
@@ -1155,25 +1160,25 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayModelResults()
        {
 	 
 	 // infos about found track
-	 HLTInfo("%d : Discarding track with %d clusters.", trashtrackcounter, trackprintpointer->track.GetNHits());
+	 HLTInfo("%d : Discarding track with %d clusters.", trashtrackcounter, trackprintpointer->fTrack.GetNHits());
 	 //PYTHIA INFORMATION ABOUT PARTICLE ID
 	 HLTInfo("Track parameters of discarded track:");	
-	 HLTInfo("First x: %9.6f \t first y: %9.6f \t first z: %9.6f",trackprintpointer->track.GetFirstPointX(),trackprintpointer->track.GetFirstPointY(),trackprintpointer->track.GetFirstPointZ()); 
-	 HLTInfo(" Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f", trackprintpointer->track.GetLastPointX(),trackprintpointer->track.GetLastPointY(),trackprintpointer->track.GetLastPointZ());
-	 HLTInfo("     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f", trackprintpointer->track.GetPt(), trackprintpointer->track.GetPsi(), trackprintpointer->track.GetTgl());
+	 HLTInfo("First x: %9.6f \t first y: %9.6f \t first z: %9.6f",trackprintpointer->fTrack.GetFirstPointX(),trackprintpointer->fTrack.GetFirstPointY(),trackprintpointer->fTrack.GetFirstPointZ()); 
+	 HLTInfo(" Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f", trackprintpointer->fTrack.GetLastPointX(),trackprintpointer->fTrack.GetLastPointY(),trackprintpointer->fTrack.GetLastPointZ());
+	 HLTInfo("     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f", trackprintpointer->fTrack.GetPt(), trackprintpointer->fTrack.GetPsi(), trackprintpointer->fTrack.GetTgl());
 	 
 	 // write results to file if specified by command line argument
 	 if(!fDumpFileName.IsNull())
 	   {
-	     fprintf(dumpfile,"%d : Discarding track with %d clusters. \n", trashtrackcounter, trackprintpointer->track.GetNHits());
+	     fprintf(dumpfile,"%d : Discarding track with %d clusters. \n", trashtrackcounter, trackprintpointer->fTrack.GetNHits());
 	     fprintf(dumpfile,"Track parameters of discarded track: \n");	
-	     fprintf(dumpfile,"First x: %9.6f \t first y: %9.6f \t first z: %9.6f \n",trackprintpointer->track.GetFirstPointX(),trackprintpointer->track.GetFirstPointY(),trackprintpointer->track.GetFirstPointZ()); 
-	     fprintf(dumpfile," Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f \n", trackprintpointer->track.GetLastPointX(),trackprintpointer->track.GetLastPointY(),trackprintpointer->track.GetLastPointZ());
-	     fprintf(dumpfile,"     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f \n", trackprintpointer->track.GetPt(), trackprintpointer->track.GetPsi(), trackprintpointer->track.GetTgl());
+	     fprintf(dumpfile,"First x: %9.6f \t first y: %9.6f \t first z: %9.6f \n",trackprintpointer->fTrack.GetFirstPointX(),trackprintpointer->fTrack.GetFirstPointY(),trackprintpointer->fTrack.GetFirstPointZ()); 
+	     fprintf(dumpfile," Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f \n", trackprintpointer->fTrack.GetLastPointX(),trackprintpointer->fTrack.GetLastPointY(),trackprintpointer->fTrack.GetLastPointZ());
+	     fprintf(dumpfile,"     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f \n", trackprintpointer->fTrack.GetPt(), trackprintpointer->fTrack.GetPsi(), trackprintpointer->fTrack.GetTgl());
 	   };
 	 
 	 // comparison with pythia information
-	 if(trackprintpointer->wronglydiscarded)
+	 if(trackprintpointer->fWronglydiscarded)
 	   {
 	     HLTInfo("Found track has been wrongly discarded according to Pythia information.");
 	     
@@ -1186,17 +1191,17 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayModelResults()
 	    };
 	 
 	 // found pt must be in range pt_pythia \pm 10% to be accepted
-	 Double_t ptmin = trackprintpointer->pythiatrack.GetPt() - 0.1*trackprintpointer->pythiatrack.GetPt();
-	 Double_t ptmax = trackprintpointer->pythiatrack.GetPt() + 0.1*trackprintpointer->pythiatrack.GetPt();
+	 Double_t ptmin = trackprintpointer->fPythiatrack.GetPt() - 0.1*trackprintpointer->fPythiatrack.GetPt();
+	 Double_t ptmax = trackprintpointer->fPythiatrack.GetPt() + 0.1*trackprintpointer->fPythiatrack.GetPt();
 	 
-	 if( (trackprintpointer->track.GetPt() < ptmin) ||(trackprintpointer->track.GetPt() > ptmax) )
+	 if( (trackprintpointer->fTrack.GetPt() < ptmin) ||(trackprintpointer->fTrack.GetPt() > ptmax) )
 	   {
-	     HLTInfo("Pt of found track %f differs more than 10 %% from pt of pythia track %f.",trackprintpointer->track.GetPt(), trackprintpointer->pythiatrack.GetPt());
+	     HLTInfo("Pt of found track %f differs more than 10 %% from pt of pythia track %f.",trackprintpointer->fTrack.GetPt(), trackprintpointer->fPythiatrack.GetPt());
 	     
 	     if(!fDumpFileName.IsNull())
 	       {
 		 // write result to file if specified by command line argument
-		 fprintf(dumpfile,"Pt of found track %f differs more than 10 %% from pt of pythia track %f. \n",trackprintpointer->track.GetPt(), trackprintpointer->pythiatrack.GetPt());
+		 fprintf(dumpfile,"Pt of found track %f differs more than 10 %% from pt of pythia track %f. \n",trackprintpointer->fTrack.GetPt(), trackprintpointer->fPythiatrack.GetPt());
 	       };
 	     
 	   };
@@ -1211,7 +1216,7 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayModelResults()
 	 
 	  // go to next element in trash track list
 	 tracklistdeleter = trackprintpointer;
-	 trackprintpointer = trackprintpointer->next;
+	 trackprintpointer = trackprintpointer->fNext;
 	 
 	 ++trashtrackcounter;
 	 
@@ -1338,29 +1343,29 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
     {
       // print out parameters of original track in comparison to secondary track:
       
-      if(listprintpointer->matchingindicator != 0)
+      if(listprintpointer->fMatchingindicator != 0)
 	{
 	  
 #if 0
 	  HLTInfo("Track %d:", tracknumber);
-	  HLTInfo("Original track matched to secondary track with matchingindicator %d", listprintpointer->matchingindicator);
+	  HLTInfo("Original track matched to secondary track with matchingindicator %d", listprintpointer->fMatchingindicator);
 	  
 	  HLTInfo("Parameter comparison: Original vs. Secondary");
 
-	  HLTInfo("Clusters: %d \t %d ",listprintpointer->track.GetNHits(), listprintpointer->matchingtrack->track.GetNHits());
-	  HLTInfo("First x: %9.6f \t %9.6f", listprintpointer->track.GetFirstPointX(), listprintpointer->matchingtrack->track.GetFirstPointX());
-	  HLTInfo("First y: %9.6f \t %9.6f", listprintpointer->track.GetFirstPointY(), listprintpointer->matchingtrack->track.GetFirstPointY());
-	  HLTInfo("First z: %9.6f \t %9.6f", listprintpointer->track.GetFirstPointZ(), listprintpointer->matchingtrack->track.GetFirstPointZ()); 
-	  HLTInfo("Last x: %9.6f \t %9.6f", listprintpointer->track.GetLastPointX(), listprintpointer->matchingtrack->track.GetLastPointX());
-	  HLTInfo("Last y: %9.6f \t %9.6f", listprintpointer->track.GetLastPointY(), listprintpointer->matchingtrack->track.GetLastPointY());
-	  HLTInfo("Last z: %9.6f \t %9.6f", listprintpointer->track.GetLastPointZ(), listprintpointer->matchingtrack->track.GetLastPointZ());
-	  HLTInfo("    Pt: %9.6f \t %9.6f", listprintpointer->track.GetPt(), listprintpointer->matchingtrack->track.GetPt());  
-	  HLTInfo("   Psi: %9.6f \t %9.6f", listprintpointer->track.GetPsi(), listprintpointer->matchingtrack->track.GetPsi());
-	  HLTInfo("   Tgl: %9.6f \t %9.6f", listprintpointer->track.GetTgl(), listprintpointer->matchingtrack->track.GetTgl());
+	  HLTInfo("Clusters: %d \t %d ",listprintpointer->fTrack.GetNHits(), listprintpointer->fMatchingtrack->fTrack.GetNHits());
+	  HLTInfo("First x: %9.6f \t %9.6f", listprintpointer->fTrack.GetFirstPointX(), listprintpointer->fMatchingtrack->fTrack.GetFirstPointX());
+	  HLTInfo("First y: %9.6f \t %9.6f", listprintpointer->fTrack.GetFirstPointY(), listprintpointer->fMatchingtrack->fTrack.GetFirstPointY());
+	  HLTInfo("First z: %9.6f \t %9.6f", listprintpointer->fTrack.GetFirstPointZ(), listprintpointer->fMatchingtrack->fTrack.GetFirstPointZ()); 
+	  HLTInfo("Last x: %9.6f \t %9.6f", listprintpointer->fTrack.GetLastPointX(), listprintpointer->fMatchingtrack->fTrack.GetLastPointX());
+	  HLTInfo("Last y: %9.6f \t %9.6f", listprintpointer->fTrack.GetLastPointY(), listprintpointer->fMatchingtrack->fTrack.GetLastPointY());
+	  HLTInfo("Last z: %9.6f \t %9.6f", listprintpointer->fTrack.GetLastPointZ(), listprintpointer->fMatchingtrack->fTrack.GetLastPointZ());
+	  HLTInfo("    Pt: %9.6f \t %9.6f", listprintpointer->fTrack.GetPt(), listprintpointer->fMatchingtrack->fTrack.GetPt());  
+	  HLTInfo("   Psi: %9.6f \t %9.6f", listprintpointer->fTrack.GetPsi(), listprintpointer->fMatchingtrack->fTrack.GetPsi());
+	  HLTInfo("   Tgl: %9.6f \t %9.6f", listprintpointer->fTrack.GetTgl(), listprintpointer->fMatchingtrack->fTrack.GetTgl());
 
-	  HLTInfo(" Pterr: %9.6f \t %9.6f", listprintpointer->track.GetPterr(), listprintpointer->matchingtrack->track.GetPterr());  
-	  HLTInfo("Psierr: %9.6f \t %9.6f", listprintpointer->track.GetPsierr(), listprintpointer->matchingtrack->track.GetPsierr());
-	  HLTInfo("Tglerr: %9.6f \t %9.6f", listprintpointer->track.GetTglerr(), listprintpointer->matchingtrack->track.GetTglerr());
+	  HLTInfo(" Pterr: %9.6f \t %9.6f", listprintpointer->fTrack.GetPterr(), listprintpointer->fMatchingtrack->fTrack.GetPterr());  
+	  HLTInfo("Psierr: %9.6f \t %9.6f", listprintpointer->fTrack.GetPsierr(), listprintpointer->fMatchingtrack->fTrack.GetPsierr());
+	  HLTInfo("Tglerr: %9.6f \t %9.6f", listprintpointer->fTrack.GetTglerr(), listprintpointer->fMatchingtrack->fTrack.GetTglerr());
 	 
 	  HLTInfo("--------------");
 #endif
@@ -1368,24 +1373,24 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
 	  if(!fDumpFileName.IsNull())
 	    {
 	      fprintf(dumpfile, "Track %d: \n", tracknumber);
-	      fprintf(dumpfile, "Original track matched to secondary track with matchingindicator %d \n", listprintpointer->matchingindicator); 
+	      fprintf(dumpfile, "Original track matched to secondary track with matchingindicator %d \n", listprintpointer->fMatchingindicator); 
 	      fprintf(dumpfile, "Parameter comparison: Original vs. Secondary \n"); 
-	      fprintf(dumpfile, "Clusters: %d \t %d \n ",listprintpointer->track.GetNHits(), listprintpointer->matchingtrack->track.GetNHits());
-	      fprintf(dumpfile, "First x: %9.6f \t %9.6f \n", listprintpointer->track.GetFirstPointX(), listprintpointer->matchingtrack->track.GetFirstPointX());
-	      fprintf(dumpfile, "First y: %9.6f \t %9.6f \n", listprintpointer->track.GetFirstPointY(), listprintpointer->matchingtrack->track.GetFirstPointY()); 
-	      fprintf(dumpfile, "First z: %9.6f \t %9.6f \n", listprintpointer->track.GetFirstPointZ(), listprintpointer->matchingtrack->track.GetFirstPointZ()); 
-	      fprintf(dumpfile, "Last x: %9.6f \t %9.6f \n", listprintpointer->track.GetLastPointX(), listprintpointer->matchingtrack->track.GetLastPointX());  
-	      fprintf(dumpfile, "Last y: %9.6f \t %9.6f \n", listprintpointer->track.GetLastPointY(), listprintpointer->matchingtrack->track.GetLastPointY());
-	      fprintf(dumpfile, "Last z: %9.6f \t %9.6f \n", listprintpointer->track.GetLastPointZ(), listprintpointer->matchingtrack->track.GetLastPointZ());
-	      fprintf(dumpfile, "    Pt: %9.6f \t %9.6f \n", listprintpointer->track.GetPt(), listprintpointer->matchingtrack->track.GetPt());  
-	      fprintf(dumpfile, "   Psi: %9.6f \t %9.6f \n", listprintpointer->track.GetPsi(), listprintpointer->matchingtrack->track.GetPsi()); 
-	      fprintf(dumpfile, "   Tgl: %9.6f \t %9.6f \n", listprintpointer->track.GetTgl(), listprintpointer->matchingtrack->track.GetTgl());
+	      fprintf(dumpfile, "Clusters: %d \t %d \n ",listprintpointer->fTrack.GetNHits(), listprintpointer->fMatchingtrack->fTrack.GetNHits());
+	      fprintf(dumpfile, "First x: %9.6f \t %9.6f \n", listprintpointer->fTrack.GetFirstPointX(), listprintpointer->fMatchingtrack->fTrack.GetFirstPointX());
+	      fprintf(dumpfile, "First y: %9.6f \t %9.6f \n", listprintpointer->fTrack.GetFirstPointY(), listprintpointer->fMatchingtrack->fTrack.GetFirstPointY()); 
+	      fprintf(dumpfile, "First z: %9.6f \t %9.6f \n", listprintpointer->fTrack.GetFirstPointZ(), listprintpointer->fMatchingtrack->fTrack.GetFirstPointZ()); 
+	      fprintf(dumpfile, "Last x: %9.6f \t %9.6f \n", listprintpointer->fTrack.GetLastPointX(), listprintpointer->fMatchingtrack->fTrack.GetLastPointX());  
+	      fprintf(dumpfile, "Last y: %9.6f \t %9.6f \n", listprintpointer->fTrack.GetLastPointY(), listprintpointer->fMatchingtrack->fTrack.GetLastPointY());
+	      fprintf(dumpfile, "Last z: %9.6f \t %9.6f \n", listprintpointer->fTrack.GetLastPointZ(), listprintpointer->fMatchingtrack->fTrack.GetLastPointZ());
+	      fprintf(dumpfile, "    Pt: %9.6f \t %9.6f \n", listprintpointer->fTrack.GetPt(), listprintpointer->fMatchingtrack->fTrack.GetPt());  
+	      fprintf(dumpfile, "   Psi: %9.6f \t %9.6f \n", listprintpointer->fTrack.GetPsi(), listprintpointer->fMatchingtrack->fTrack.GetPsi()); 
+	      fprintf(dumpfile, "   Tgl: %9.6f \t %9.6f \n", listprintpointer->fTrack.GetTgl(), listprintpointer->fMatchingtrack->fTrack.GetTgl());
 	      fprintf(dumpfile, "--------------\n");
 	    }
 	  ++tracknumber;
 	}
      
-      listprintpointer = listprintpointer->next;
+      listprintpointer = listprintpointer->fNext;
     }
 
 
@@ -1395,15 +1400,15 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
 
   while(listprintpointer != NULL)
     {
-      if(listprintpointer->matchingindicator == 0)
+      if(listprintpointer->fMatchingindicator == 0)
 	{
 #if 0	  
 	  HLTInfo("Original Track, not matched with secondary track %d:", notmatchedtracknumber);
-	  HLTInfo("Clusters: %d",listprintpointer->track.GetNHits());
+	  HLTInfo("Clusters: %d",listprintpointer->fTrack.GetNHits());
 	  //PYTHIA INFORMATION ABOUT PARTICLE ID
-	  HLTInfo("First x: %9.6f \t first y: %9.6f \t first z: %9.6f",listprintpointer->track.GetFirstPointX(),listprintpointer->track.GetFirstPointY(),listprintpointer->track.GetFirstPointZ()); 
-	  HLTInfo(" Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f", listprintpointer->track.GetLastPointX(),listprintpointer->track.GetLastPointY(),listprintpointer->track.GetLastPointZ());
-	  HLTInfo("     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f", listprintpointer->track.GetPt(), listprintpointer->track.GetPsi(), listprintpointer->track.GetTgl());
+	  HLTInfo("First x: %9.6f \t first y: %9.6f \t first z: %9.6f",listprintpointer->fTrack.GetFirstPointX(),listprintpointer->fTrack.GetFirstPointY(),listprintpointer->fTrack.GetFirstPointZ()); 
+	  HLTInfo(" Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f", listprintpointer->fTrack.GetLastPointX(),listprintpointer->fTrack.GetLastPointY(),listprintpointer->fTrack.GetLastPointZ());
+	  HLTInfo("     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f", listprintpointer->fTrack.GetPt(), listprintpointer->fTrack.GetPsi(), listprintpointer->fTrack.GetTgl());
 	  HLTInfo("--------------");
 #endif
  
@@ -1411,17 +1416,17 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
 	  if(!fDumpFileName.IsNull())
 	    {
 	      fprintf(dumpfile, "Original Track, not matched with secondary track %d: \n", notmatchedtracknumber); 
-	      fprintf(dumpfile, "Clusters: %d \n",listprintpointer->track.GetNHits());
-	      fprintf(dumpfile, "First x: %9.6f \t first y: %9.6f \t first z: %9.6f \n",listprintpointer->track.GetFirstPointX(),listprintpointer->track.GetFirstPointY(),listprintpointer->track.GetFirstPointZ());
-	      fprintf(dumpfile, " Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f \n", listprintpointer->track.GetLastPointX(),listprintpointer->track.GetLastPointY(),listprintpointer->track.GetLastPointZ());
-	      fprintf(dumpfile, "     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f \n", listprintpointer->track.GetPt(), listprintpointer->track.GetPsi(), listprintpointer->track.GetTgl()); 
+	      fprintf(dumpfile, "Clusters: %d \n",listprintpointer->fTrack.GetNHits());
+	      fprintf(dumpfile, "First x: %9.6f \t first y: %9.6f \t first z: %9.6f \n",listprintpointer->fTrack.GetFirstPointX(),listprintpointer->fTrack.GetFirstPointY(),listprintpointer->fTrack.GetFirstPointZ());
+	      fprintf(dumpfile, " Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f \n", listprintpointer->fTrack.GetLastPointX(),listprintpointer->fTrack.GetLastPointY(),listprintpointer->fTrack.GetLastPointZ());
+	      fprintf(dumpfile, "     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f \n", listprintpointer->fTrack.GetPt(), listprintpointer->fTrack.GetPsi(), listprintpointer->fTrack.GetTgl()); 
 	      fprintf(dumpfile, "--------------\n");
 	    }
 
 	  ++notmatchedtracknumber;
 	}
 
-      listprintpointer = listprintpointer->next;
+      listprintpointer = listprintpointer->fNext;
     }
 
   // print out not matched tracks from second track array:
@@ -1430,32 +1435,32 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
 
   while(listprintpointer != NULL)
     {
-      if(listprintpointer->matchingindicator == 0)
+      if(listprintpointer->fMatchingindicator == 0)
 	{
 #if 0	  
 	  HLTInfo("Secondary Track, not matched with original track %d:", notmatchedtracknumber);
-	  HLTInfo("Clusters: %d",listprintpointer->track.GetNHits());
+	  HLTInfo("Clusters: %d",listprintpointer->fTrack.GetNHits());
 	  //PYTHIA INFORMATION ABOUT PARTICLE ID	
-	  HLTInfo("First x: %9.6f \t first y: %9.6f \t first z: %9.6f",listprintpointer->track.GetFirstPointX(),listprintpointer->track.GetFirstPointY(),listprintpointer->track.GetFirstPointZ()); 
-	  HLTInfo(" Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f", listprintpointer->track.GetLastPointX(),listprintpointer->track.GetLastPointY(),listprintpointer->track.GetLastPointZ());
-	  HLTInfo("     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f", listprintpointer->track.GetPt(), listprintpointer->track.GetPsi(), listprintpointer->track.GetTgl());
+	  HLTInfo("First x: %9.6f \t first y: %9.6f \t first z: %9.6f",listprintpointer->fTrack.GetFirstPointX(),listprintpointer->fTrack.GetFirstPointY(),listprintpointer->fTrack.GetFirstPointZ()); 
+	  HLTInfo(" Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f", listprintpointer->fTrack.GetLastPointX(),listprintpointer->fTrack.GetLastPointY(),listprintpointer->fTrack.GetLastPointZ());
+	  HLTInfo("     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f", listprintpointer->fTrack.GetPt(), listprintpointer->fTrack.GetPsi(), listprintpointer->fTrack.GetTgl());
 	  HLTInfo("--------------");
 #endif
 	  // print these results to file
 	  if(!fDumpFileName.IsNull())
 	    {
 	      fprintf(dumpfile, "Secondary Track, not matched with original track %d: \n", notmatchedtracknumber);
-	      fprintf(dumpfile, "Clusters: %d \n",listprintpointer->track.GetNHits());
-	      fprintf(dumpfile, "First x: %9.6f \t first y: %9.6f \t first z: %9.6f \n",listprintpointer->track.GetFirstPointX(),listprintpointer->track.GetFirstPointY(),listprintpointer->track.GetFirstPointZ()); 
-	      fprintf(dumpfile, " Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f \n", listprintpointer->track.GetLastPointX(),listprintpointer->track.GetLastPointY(),listprintpointer->track.GetLastPointZ());
-	      fprintf(dumpfile, "     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f \n", listprintpointer->track.GetPt(), listprintpointer->track.GetPsi(), listprintpointer->track.GetTgl());
+	      fprintf(dumpfile, "Clusters: %d \n",listprintpointer->fTrack.GetNHits());
+	      fprintf(dumpfile, "First x: %9.6f \t first y: %9.6f \t first z: %9.6f \n",listprintpointer->fTrack.GetFirstPointX(),listprintpointer->fTrack.GetFirstPointY(),listprintpointer->fTrack.GetFirstPointZ()); 
+	      fprintf(dumpfile, " Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f \n", listprintpointer->fTrack.GetLastPointX(),listprintpointer->fTrack.GetLastPointY(),listprintpointer->fTrack.GetLastPointZ());
+	      fprintf(dumpfile, "     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f \n", listprintpointer->fTrack.GetPt(), listprintpointer->fTrack.GetPsi(), listprintpointer->fTrack.GetTgl());
 	      fprintf(dumpfile, "--------------\n");
 	    }
 
 	  ++notmatchedtracknumber;
 	}
 
-      listprintpointer = listprintpointer->next;
+      listprintpointer = listprintpointer->fNext;
     }
 
   // close output analysis file
