@@ -2,37 +2,26 @@
 #define ALIANALYSISTASKDIMUONCFCONTAINERBUILDER_CXX
 
 #include "AliAnalysisTaskDimuonCFContainerBuilder.h"
-#include "AliHeader.h"
-#include "AliESDHeader.h"
 #include "AliStack.h"
 #include "TParticle.h"
 #include "TString.h"
 #include "TLorentzVector.h"
-#include "TFile.h"
-#include "TH1I.h"
 #include "TH2D.h"
-#include "AliMCEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliCFManager.h"
-#include "AliCFCutBase.h"
 #include "AliCFContainer.h"
-#include "AliCFEffGrid.h"
-#include "AliCFDataGrid.h"
-#include "TChain.h"
-#include "AliESDtrack.h"
-#include "AliLog.h"
 #include "AliESDMuonTrack.h"
-#include "AliESDtrack.h"
 #include "AliESDInputHandler.h"
-#include "TCanvas.h"
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 
 //	Analysis task for the building of a dimuon CF container
 //	Also some single-muon variables are stored
-//	L. Bianchi - Universita' & INFN Torino
+//	All the variable ranges and binning are set in the AddTask macro
+//	
+//	author: L. Bianchi - Universita' & INFN Torino
 
 
 ClassImp(AliAnalysisTaskDimuonCFContainerBuilder)
@@ -170,12 +159,12 @@ AliAnalysisTaskDimuonCFContainerBuilder::~AliAnalysisTaskDimuonCFContainerBuilde
 
 //___________________________________________________________________________
 void AliAnalysisTaskDimuonCFContainerBuilder::UserCreateOutputObjects(){
-	
+ //	UserCreateOutputObjects
  fOutput = new TList();
  fOutput->SetOwner(); 
  
  TH1D *hnevts	= new TH1D("hnevts","hnevts",1,0,1);					// Stat check histos
- TH1D *JpsiMult = new TH1D("JpsiMult","JpsiMult",20,0,20);	
+ TH1D *jpsiMult = new TH1D("jpsiMult","jpsiMult",20,0,20);	
 
  TH1D *ptdimuREC    = new TH1D("ptdimuREC","ptdimuREC",200,0,20);			// Dimu check histos
  TH1D *ydimuREC     = new TH1D("ydimuREC","ydimuREC",200,-10.,10.);	
@@ -191,7 +180,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserCreateOutputObjects(){
  TH1D *imassTot     = new TH1D("imassTot","imassTot",100,0,8);	
  TH1D *trigCond     = new TH1D("trigCond","trigCond",40,0,4);	
 
- TH1D *EmuonREC	= new TH1D("EmuonREC","EmuonREC",200,0.,20.);				// Mu check histos
+ TH1D *emuonREC	= new TH1D("emuonREC","emuonREC",200,0.,20.);				// Mu check histos
  TH1D *ptmuonREC= new TH1D("ptmuonREC","ptmuonREC",200,0.,20.);
  TH1D *ymuonREC	= new TH1D("ymuonREC","ymuonREC",200,-10.,10.);	
  TH1D *hdca	= new TH1D("hdca","hdca",20,0,200);
@@ -199,11 +188,11 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserCreateOutputObjects(){
 
  TH1D *zvSPD 	= new TH1D("zvSPD","zvSPD",100,-50,50.);				// Event check histos
  TH1D *zvSPDcut	= new TH1D("zvSPDcut","zvSPDcut",100,-50,50.);
- TH1D *NContrib	= new TH1D("NContrib","NContrib",100,0,100);
+ TH1D *nContrib	= new TH1D("nContrib","nContrib",100,0,100);
 
 
  fOutput->Add(hnevts);
- fOutput->Add(JpsiMult); 
+ fOutput->Add(jpsiMult); 
 
  fOutput->Add(ptdimuREC); 
  fOutput->Add(ydimuREC); 
@@ -219,7 +208,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserCreateOutputObjects(){
  fOutput->Add(imassTot); 
  fOutput->Add(trigCond); 
 
- fOutput->Add(EmuonREC); 
+ fOutput->Add(emuonREC); 
  fOutput->Add(ptmuonREC);
  fOutput->Add(ymuonREC);
  fOutput->Add(hdca);
@@ -227,7 +216,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserCreateOutputObjects(){
  
  fOutput->Add(zvSPD); 
  fOutput->Add(zvSPDcut); 
- fOutput->Add(NContrib); 
+ fOutput->Add(nContrib); 
 
 	
  fOutput->ls();
@@ -247,7 +236,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 
   Double_t containerInput[15]={666,666,666,666,666,666,666,666,666,666,666,666,666,666,666};   //y, pT, costHE, phiHE, costCS, phiCS, mass, TrigCond
   Int_t cutAccept =1;
-  Int_t NumbJpsis =0;
+  Int_t numbJpsis =0;
    
   if (!fReadAODData){     // ESD-based ANALYSIS
 
@@ -280,7 +269,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	// Selection of the resonance
 	//if (!fCFManager->CheckParticleCuts(0,mcPart)) continue;
 	if (part->GetPdgCode()!=443) continue;					// MANUAL CUT ON PDG
-	NumbJpsis++;
+	numbJpsis++;
 	
 	// Decays kinematics
 	Int_t p0 = part->GetDaughter(0);
@@ -298,7 +287,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	Double_t charge0 = part0->GetPDG()->Charge()/3;
 	Double_t theta0 = (180./TMath::Pi())*TMath::ATan2(TMath::Sqrt(px0*px0+py0*py0),pz0);
 	Double_t pt0 = TMath::Sqrt(px0*px0+py0*py0);
-	Double_t Mom0 = part0->P();
+	Double_t mom0 = part0->P();
 
 	Double_t e1 = part1->Energy();
 	Double_t pz1 = part1->Pz();
@@ -307,7 +296,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	//Double_t charge1 = part1->GetPDG()->Charge()/3;
 	Double_t theta1 = (180./TMath::Pi())*TMath::ATan2(TMath::Sqrt(px1*px1+py1*py1),pz1);
 	Double_t pt1 = TMath::Sqrt(px1*px1+py1*py1);
-	Double_t Mom1 = part1->P();
+	Double_t mom1 = part1->P();
 
      
 	if(pdg0==13 || pdg1==13) { 
@@ -342,12 +331,12 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	    containerInput[10]=theta1; 
 	    containerInput[11]=theta0;
 	  }
-	  if (Mom0<Mom1) {
-	    containerInput[12]=Mom0; 
-	    containerInput[13]=Mom1;
+	  if (mom0<mom1) {
+	    containerInput[12]=mom0; 
+	    containerInput[13]=mom1;
 	  } else {
-	    containerInput[12]=Mom1; 
-	    containerInput[13]=Mom0;
+	    containerInput[12]=mom1; 
+	    containerInput[13]=mom0;
 	  }
 	  containerInput[14]=1.;
  
@@ -388,7 +377,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
       }
 
       ((TH1D*)(fOutput->FindObject("zvSPD")))->Fill(fESD->GetPrimaryVertexSPD()->GetZ());
-      ((TH1D*)(fOutput->FindObject("NContrib")))->Fill(fESD->GetPrimaryVertexSPD()->GetNContributors());
+      ((TH1D*)(fOutput->FindObject("nContrib")))->Fill(fESD->GetPrimaryVertexSPD()->GetNContributors());
       if (!fCutOnzVtxSPD || (fCutOnzVtxSPD && (fESD->GetPrimaryVertexSPD()->GetZ()>fzPrimVertexSPD[0] && fESD->GetPrimaryVertexSPD()->GetZ()<fzPrimVertexSPD[1]))){
       ((TH1D*)(fOutput->FindObject("zvSPDcut")))->Fill(fESD->GetPrimaryVertexSPD()->GetZ());
       if (!fCutOnNContributors || (fCutOnNContributors && (fESD->GetPrimaryVertexSPD()->GetNContributors()>fNContributors[0] && fESD->GetPrimaryVertexSPD()->GetNContributors()<fNContributors[1]))){
@@ -404,10 +393,10 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	Double_t pzr1  = mu1->Pz();
         Double_t ptmu1 = TMath::Sqrt(pxr1*pxr1+pyr1*pyr1);
  	Double_t er1 = mu1->E();
-	Double_t Mom1 = mu1->P();
+	Double_t mom1 = mu1->P();
 	Double_t theta1 = (180./TMath::Pi())*mu1->Theta();
 	Double_t rapiditymu1 = Rap(er1,pzr1); 
-	((TH1D*)(fOutput->FindObject("EmuonREC")))->Fill(er1);
+	((TH1D*)(fOutput->FindObject("emuonREC")))->Fill(er1);
 	((TH1D*)(fOutput->FindObject("ptmuonREC")))->Fill(ptmu1);
 	((TH1D*)(fOutput->FindObject("ymuonREC")))->Fill(rapiditymu1);
 
@@ -422,16 +411,16 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	      Double_t zr2 = mu2->Charge();
 
 	      if(zr2>0){
-		Double_t TrigCondition=0;
-		if (mu1->GetMatchTrigger()>=mu2->GetMatchTrigger()) TrigCondition = mu1->GetMatchTrigger()+0.1*mu2->GetMatchTrigger();
-		else TrigCondition = mu2->GetMatchTrigger()+0.1*mu1->GetMatchTrigger();
-		((TH1D*)(fOutput->FindObject("trigCond")))->Fill(TrigCondition);
+		Double_t trigCondition=0;
+		if (mu1->GetMatchTrigger()>=mu2->GetMatchTrigger()) trigCondition = mu1->GetMatchTrigger()+0.1*mu2->GetMatchTrigger();
+		else trigCondition = mu2->GetMatchTrigger()+0.1*mu1->GetMatchTrigger();
+		((TH1D*)(fOutput->FindObject("trigCond")))->Fill(trigCondition);
 		Double_t pxr2 = mu2->Px();
 		Double_t pyr2 = mu2->Py();
 		Double_t pzr2 = mu2->Pz();
                 Double_t ptmu2 = TMath::Sqrt(pxr2*pxr2+pyr2*pyr2);
 		Double_t er2 = mu2->E();
-		Double_t Mom2 = mu2->P();
+		Double_t mom2 = mu2->P();
 		Double_t theta2 = (180./TMath::Pi())*mu2->Theta();
 
 		Double_t ptrec = TMath::Sqrt((pxr1+pxr2)*(pxr1+pxr2)+(pyr1+pyr2)*(pyr1+pyr2));
@@ -445,16 +434,16 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 		    
 		Double_t costCSrec = CostCS(pxr1,pyr1,pzr1,er1,zr1,pxr2,pyr2,pzr2,er2);
 		((TH1D*)(fOutput->FindObject("costCSdimuREC")))->Fill(costCSrec);
-		if(costCSrec==666) ((TH1D*)(fOutput->FindObject("costCSdimuFail")))->Fill(costCSrec);
+		if((Int_t)costCSrec==666) ((TH1D*)(fOutput->FindObject("costCSdimuFail")))->Fill(costCSrec);
 		Double_t costHErec = CostHE(pxr1,pyr1,pzr1,er1,zr1,pxr2,pyr2,pzr2,er2);
 		((TH1D*)(fOutput->FindObject("costHEdimuREC")))->Fill(costHErec);
-		if(costHErec==666) ((TH1D*)(fOutput->FindObject("costHEdimuFail")))->Fill(costHErec);
+		if((Int_t)costHErec==666) ((TH1D*)(fOutput->FindObject("costHEdimuFail")))->Fill(costHErec);
 		Double_t phiCSrec  = PhiCS(pxr1,pyr1,pzr1,er1,zr1,pxr2,pyr2,pzr2,er2);
 		((TH1D*)(fOutput->FindObject("phiCSdimuREC")))->Fill(phiCSrec);
-		if(phiCSrec==666) ((TH1D*)(fOutput->FindObject("phiCSdimuFail")))->Fill(phiCSrec);
+		if((Int_t)phiCSrec==666) ((TH1D*)(fOutput->FindObject("phiCSdimuFail")))->Fill(phiCSrec);
 		Double_t phiHErec  = PhiHE(pxr1,pyr1,pzr1,er1,zr1,pxr2,pyr2,pzr2,er2);
 		((TH1D*)(fOutput->FindObject("phiHEdimuREC")))->Fill(phiHErec);
-		if(phiHErec==666) ((TH1D*)(fOutput->FindObject("phiHEdimuFail")))->Fill(phiHErec);
+		if((Int_t)phiHErec==666) ((TH1D*)(fOutput->FindObject("phiHEdimuFail")))->Fill(phiHErec);
 
 		containerInput[0] = raprec ;   
 		containerInput[1] = ptrec;
@@ -463,7 +452,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 		containerInput[4] = costCSrec;	
 		containerInput[5] = TMath::Abs(phiCSrec);
 		containerInput[6] = imassrec;  
-		containerInput[7] = TrigCondition+0.05;
+		containerInput[7] = trigCondition+0.05;
 		if (ptmu1<ptmu2) {
 		  containerInput[8]=ptmu1; 
 		  containerInput[9]=ptmu2;
@@ -478,12 +467,12 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 		  containerInput[10]=theta2; 
 		  containerInput[11]=theta1;
 		}
-		if (Mom1<Mom2) {
-		  containerInput[12]=Mom1; 
-		  containerInput[13]=Mom2;
+		if (mom1<mom2) {
+		  containerInput[12]=mom1; 
+		  containerInput[13]=mom2;
 		} else {
-		  containerInput[12]=Mom2; 
-		  containerInput[13]=Mom1;
+		  containerInput[12]=mom2; 
+		  containerInput[13]=mom1;
 		}
 		if (fDistinguishTrigClass && trigside==0) containerInput[14]=0.;
 		else if (fDistinguishTrigClass && trigside==1) containerInput[14]=1.;
@@ -521,11 +510,11 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
       for(int ii=0;ii<mcarray->GetEntries();ii++){
 	AliAODMCParticle *mctrack = (AliAODMCParticle*) mcarray->At(ii);
 	if(mctrack->GetPdgCode()!=13) continue;
-	Int_t NumbMother = mctrack->GetMother();
-	if (NumbMother==-1) continue;
-	AliAODMCParticle *mother = (AliAODMCParticle*) mcarray->At(NumbMother);
+	Int_t numbMother = mctrack->GetMother();
+	if (numbMother==-1) continue;
+	AliAODMCParticle *mother = (AliAODMCParticle*) mcarray->At(numbMother);
 	if (mother->GetPdgCode()!=443) continue;
-	NumbJpsis++;
+	numbJpsis++;
 	Int_t daught0 = mother->GetDaughter(0);
 	Int_t daught1 = mother->GetDaughter(1);
 	AliAODMCParticle *mcDaughter0 = (AliAODMCParticle*) mcarray->At(daught0);
@@ -533,8 +522,8 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	Double_t pymc0 = mcDaughter0->Py();
 	Double_t pzmc0 = mcDaughter0->Pz();
 	Double_t ptmc0 = mcDaughter0->Pt();
-	Double_t Mommc0 = mcDaughter0->P();
-	Double_t Emc0  = mcDaughter0->E();
+	Double_t mommc0 = mcDaughter0->P();
+	Double_t emc0  = mcDaughter0->E();
 	Double_t thetamc0 = (180./TMath::Pi())*mcDaughter0->Theta();
 	Int_t charge0 = (Int_t) mcDaughter0->Charge()/3;
 	AliAODMCParticle *mcDaughter1 = (AliAODMCParticle*) mcarray->At(daught1);
@@ -542,19 +531,18 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	Double_t pymc1 = mcDaughter1->Py();
 	Double_t pzmc1 = mcDaughter1->Pz();
 	Double_t ptmc1 = mcDaughter1->Pt();
-	Double_t Mommc1 = mcDaughter1->P();
-	Double_t Emc1  = mcDaughter1->E();
+	Double_t mommc1 = mcDaughter1->P();
+	Double_t emc1  = mcDaughter1->E();
 	Double_t thetamc1 = (180./TMath::Pi())*mcDaughter1->Theta();
 	Int_t charge1 = (Int_t) mcDaughter1->Charge()/3;
       
 	if (charge0==charge1 || TMath::Abs(mcDaughter0->GetPdgCode())!=13 || TMath::Abs(mcDaughter1->GetPdgCode())!=13) continue;
-	//Double_t rapJpsi = mother->Y();		//PROBLEM!!!
 	Double_t rapJpsi = Rap(mother->E(),mother->Pz());
 	Double_t ptJpsi = mother->Pt();
-	Double_t costHE = CostHE(pxmc0,pymc0,pzmc0,Emc0,(Double_t)charge0,pxmc1,pymc1,pzmc1,Emc1);
-	Double_t phiHE  = PhiHE(pxmc0,pymc0,pzmc0,Emc0,(Double_t)charge0,pxmc1,pymc1,pzmc1,Emc1);
-	Double_t costCS = CostCS(pxmc0,pymc0,pzmc0,Emc0,(Double_t)charge0,pxmc1,pymc1,pzmc1,Emc1);
-	Double_t phiCS  = PhiCS(pxmc0,pymc0,pzmc0,Emc0,(Double_t)charge0,pxmc1,pymc1,pzmc1,Emc1);
+	Double_t costHE = CostHE(pxmc0,pymc0,pzmc0,emc0,(Double_t)charge0,pxmc1,pymc1,pzmc1,emc1);
+	Double_t phiHE  = PhiHE(pxmc0,pymc0,pzmc0,emc0,(Double_t)charge0,pxmc1,pymc1,pzmc1,emc1);
+	Double_t costCS = CostCS(pxmc0,pymc0,pzmc0,emc0,(Double_t)charge0,pxmc1,pymc1,pzmc1,emc1);
+	Double_t phiCS  = PhiCS(pxmc0,pymc0,pzmc0,emc0,(Double_t)charge0,pxmc1,pymc1,pzmc1,emc1);
 	Double_t massJpsi = mother->M();
 	containerInput[0] = rapJpsi;
 	containerInput[1] = ptJpsi;
@@ -578,16 +566,16 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	  containerInput[10]=thetamc1; 
 	  containerInput[11]=thetamc0;
 	}
-	if (Mommc0<Mommc1) {
-	  containerInput[12]=Mommc0; 
-	  containerInput[13]=Mommc1;
+	if (mommc0<mommc1) {
+	  containerInput[12]=mommc0; 
+	  containerInput[13]=mommc1;
 	} else {
-	  containerInput[12]=Mommc1; 
-	  containerInput[13]=Mommc0;
+	  containerInput[12]=mommc1; 
+	  containerInput[13]=mommc0;
 	}
 	containerInput[14]=1.;
       
-	if(rapJpsi!=666 && costHE!=666 && phiHE!=666 && costCS!=666 && phiCS!=666){
+	if((Int_t)rapJpsi!=666 && (Int_t)costHE!=666 && (Int_t)phiHE!=666 && (Int_t)costCS!=666 && (Int_t)phiCS!=666){
 	  fCFManager->GetParticleContainer()->Fill(containerInput,0);
 	  if(fIsAccProduction){
 	    // acceptance cuts on single mu
@@ -620,7 +608,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
       
       ((TH1D*)(fOutput->FindObject("zvSPD")))->Fill(aod->GetPrimaryVertex()->GetZ());
       Int_t ncontr = aod->GetPrimaryVertex()->GetNContributors();
-      ((TH1D*)(fOutput->FindObject("NContrib")))->Fill(ncontr);
+      ((TH1D*)(fOutput->FindObject("nContrib")))->Fill(ncontr);
       if (!fCutOnzVtxSPD || (fCutOnzVtxSPD && (aod->GetPrimaryVertex()->GetZ()>fzPrimVertexSPD[0] && aod->GetPrimaryVertex()->GetZ()<fzPrimVertexSPD[1]))){	//NOT REALLY SPD VERTEX
       ((TH1D*)(fOutput->FindObject("zvSPDcut")))->Fill(aod->GetPrimaryVertex()->GetZ());
       if (!fCutOnNContributors || (fCutOnNContributors && (aod->GetPrimaryVertex()->GetNContributors()>fNContributors[0] && aod->GetPrimaryVertex()->GetNContributors()<fNContributors[1]))){
@@ -638,8 +626,8 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	Double_t ptmu1 = mu1->Pt();
 	Double_t rapiditymu1 = Rap(emu1,pzmu1); 
 	Double_t thetamu1 = (180./TMath::Pi())*mu1->Theta();
-	Double_t Rdcamu1 = mu1->DCA();
-	((TH1D*)(fOutput->FindObject("EmuonREC")))->Fill(emu1);
+	Double_t rdcamu1 = mu1->DCA();
+	((TH1D*)(fOutput->FindObject("emuonREC")))->Fill(emu1);
 	((TH1D*)(fOutput->FindObject("ptmuonREC")))->Fill(ptmu1);
 	((TH1D*)(fOutput->FindObject("ymuonREC")))->Fill(rapiditymu1);
 	if(chargemu1<0){
@@ -657,20 +645,20 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	    Double_t ptmu2 = mu2->Pt();
 	    //Double_t rapiditymu2 = Rap(emu2,pzmu2); 
 	    Double_t thetamu2 = (180./TMath::Pi())*mu2->Theta();
-	    Double_t Rdcamu2 = mu2->DCA();
+	    Double_t rdcamu2 = mu2->DCA();
 	    if(chargemu2>0){
 	    if (mu1->GetMatchTrigger()>0) printf("Mu1: charge: %f, match: %d\n",chargemu1,1);
 	    else  printf("Mu1: charge: %f, match: %d\n",chargemu1,0);
 	    if (mu2->GetMatchTrigger()>0) printf("Mu2: charge: %f, match: %d\n",chargemu2,1);
 	    else printf("Mu2: charge: %f, match: %d\n",chargemu2,0);
-	      ((TH1D*)(fOutput->FindObject("hdca")))->Fill(Rdcamu2);
-	      ((TH1D*)(fOutput->FindObject("hdca")))->Fill(Rdcamu1);
-	      Double_t TrigCondition=0;
-	      if (mu1->GetMatchTrigger()>=mu2->GetMatchTrigger()) TrigCondition = mu1->GetMatchTrigger()+0.1*mu2->GetMatchTrigger();
-		else TrigCondition = mu2->GetMatchTrigger()+0.1*mu1->GetMatchTrigger();	    
+	      ((TH1D*)(fOutput->FindObject("hdca")))->Fill(rdcamu2);
+	      ((TH1D*)(fOutput->FindObject("hdca")))->Fill(rdcamu1);
+	      Double_t trigCondition=0;
+	      if (mu1->GetMatchTrigger()>=mu2->GetMatchTrigger()) trigCondition = mu1->GetMatchTrigger()+0.1*mu2->GetMatchTrigger();
+		else trigCondition = mu2->GetMatchTrigger()+0.1*mu1->GetMatchTrigger();	    
 	      containerInput[0] = (Double_t) Rap((emu1+emu2),(pzmu1+pzmu2));  
 	      ((TH1D*)(fOutput->FindObject("ydimuREC")))->Fill(containerInput[0]);
-	      ((TH2D*)(fOutput->FindObject("hdcay")))->Fill(TMath::Max(Rdcamu1,Rdcamu2),containerInput[0]);
+	      ((TH2D*)(fOutput->FindObject("hdcay")))->Fill(TMath::Max(rdcamu1,rdcamu2),containerInput[0]);
 	      //((TH2D*)(fOutput->FindObject("hdcay")))->Fill(Rdcamu2,containerInput[0]);
 	      containerInput[1] = (Double_t) TMath::Sqrt((pxmu1+pxmu2)*(pxmu1+pxmu2)+(pymu1+pymu2)*(pymu1+pymu2));
 	      ((TH1D*)(fOutput->FindObject("ptdimuREC")))->Fill(containerInput[1]);
@@ -688,7 +676,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	      if(containerInput[5]==666) ((TH1D*)(fOutput->FindObject("phiCSdimuFail")))->Fill(containerInput[5]);
 	      containerInput[6] = Imass(emu1,pxmu1,pymu1,pzmu1,emu2,pxmu2,pymu2,pzmu2);
 	      ((TH1D*)(fOutput->FindObject("imassTot")))->Fill(containerInput[6]);
-	      containerInput[7] = TrigCondition+0.05;
+	      containerInput[7] = trigCondition+0.05;
 	      ((TH1D*)(fOutput->FindObject("trigCond")))->Fill(containerInput[7]);
 	      if (ptmu1<ptmu2) {
 		containerInput[8]=ptmu1; 
@@ -744,7 +732,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 
 
 //  ----------
-  if (fReadMCInfo) ((TH1D*)(fOutput->FindObject("JpsiMult")))->Fill(NumbJpsis);
+  if (fReadMCInfo) ((TH1D*)(fOutput->FindObject("jpsiMult")))->Fill(numbJpsis);
 
   PostData(1,fOutput) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
@@ -754,7 +742,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskDimuonCFContainerBuilder::Imass(Double_t e1, Double_t px1, Double_t py1, Double_t pz1,
-				   Double_t e2, Double_t px2, Double_t py2, Double_t pz2) 
+				   Double_t e2, Double_t px2, Double_t py2, Double_t pz2) const
 {
 // invariant mass calculation
     Double_t imassrec = TMath::Sqrt((e1+e2)*(e1+e2)-((px1+px2)*(px1+px2)+
@@ -763,7 +751,7 @@ Double_t AliAnalysisTaskDimuonCFContainerBuilder::Imass(Double_t e1, Double_t px
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskDimuonCFContainerBuilder::Rap(Double_t e, Double_t pz) 
+Double_t AliAnalysisTaskDimuonCFContainerBuilder::Rap(Double_t e, Double_t pz) const
 {
 // calculate rapidity
     Double_t rap;
@@ -783,47 +771,47 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
 // Cosine of the theta decay angle (mu+) in the Collins-Soper frame
 
-  TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM. frame
-  TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+  TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM. frame
+  TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
   TVector3 beta,zaxisCS;
   Double_t mp=0.93827231;
   //
   // --- Fill the Lorentz vector for projectile and target in the CM frame
   //
-  PProjCM.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
-  PTargCM.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
+  pProjCM.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
+  pTargCM.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
   //
   // --- Get the muons parameters in the CM frame 
   //
-  PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+  pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
   //
   // --- Obtain the dimuon parameters in the CM frame
   //
-  PDimuCM=PMu1CM+PMu2CM;
+  pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the dimuon parameters in the dimuon rest frame
   //
-  beta=(-1./PDimuCM.E())*PDimuCM.Vect();
+  beta=(-1./pDimuCM.E())*pDimuCM.Vect();
   if(beta.Mag()>=1) return 666.;
-  PMu1Dimu=PMu1CM;
-  PMu2Dimu=PMu2CM;
-  PProjDimu=PProjCM;
-  PTargDimu=PTargCM;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
-  PProjDimu.Boost(beta);
-  PTargDimu.Boost(beta);
+  pMu1Dimu=pMu1CM;
+  pMu2Dimu=pMu2CM;
+  pProjDimu=pProjCM;
+  pTargDimu=pTargCM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
   
   //Debugging part -------------------------------------
   Double_t debugProj[4]={0.,0.,0.,0.};
   Double_t debugTarg[4]={0.,0.,0.,0.};
   Double_t debugMu1[4]={0.,0.,0.,0.};
   Double_t debugMu2[4]={0.,0.,0.,0.};
-  PMu1Dimu.GetXYZT(debugMu1);
-  PMu2Dimu.GetXYZT(debugMu2);
-  PProjDimu.GetXYZT(debugProj);
-  PTargDimu.GetXYZT(debugTarg);
+  pMu1Dimu.GetXYZT(debugMu1);
+  pMu2Dimu.GetXYZT(debugMu2);
+  pProjDimu.GetXYZT(debugProj);
+  pTargDimu.GetXYZT(debugTarg);
   if (debugProj[0]!=debugProj[0] ||debugProj[1]!=debugProj[1] || debugProj[2]!=debugProj[2] ||debugProj[3]!=debugProj[3]) return 666; 
   if (debugTarg[0]!=debugTarg[0] ||debugTarg[1]!=debugTarg[1] || debugTarg[2]!=debugTarg[2] ||debugTarg[3]!=debugTarg[3]) return 666; 
   if (debugMu1[0]!=debugMu1[0] ||debugMu1[1]!=debugMu1[1] || debugMu1[2]!=debugMu1[2] ||debugMu1[3]!=debugMu1[3]) return 666; 
@@ -831,13 +819,13 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
   //----------------------------------------------------
 
   // --- Determine the z axis for the CS angle 
-  zaxisCS=(((PProjDimu.Vect()).Unit())-((PTargDimu.Vect()).Unit())).Unit();
+  zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
   				     
   // --- Determine the CS angle (angle between mu+ and the z axis defined above)
   Double_t cost;
   
-  if(charge1>0) {cost = zaxisCS.Dot((PMu1Dimu.Vect()).Unit());}
-  else {cost = zaxisCS.Dot((PMu2Dimu.Vect()).Unit());}
+  if(charge1>0) {cost = zaxisCS.Dot((pMu1Dimu.Vect()).Unit());}
+  else {cost = zaxisCS.Dot((pMu2Dimu.Vect()).Unit());}
   
   return cost;
 }
@@ -848,45 +836,45 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
 // Cosine of the theta decay angle (mu+) in the Helicity frame
   
-  TLorentzVector PMu1CM, PMu2CM, PDimuCM; // In the CM frame 
-  TLorentzVector PMu1Dimu, PMu2Dimu; // In the dimuon rest frame
+  TLorentzVector pMu1CM, pMu2CM, pDimuCM; // In the CM frame 
+  TLorentzVector pMu1Dimu, pMu2Dimu; // In the dimuon rest frame
   TVector3 beta,zaxisCS;
   //
   // --- Get the muons parameters in the CM frame
   //
-  PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+  pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
   //
   // --- Obtain the dimuon parameters in the CM frame
   //
-  PDimuCM=PMu1CM+PMu2CM;
+  pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the muon parameters in the dimuon rest frame
   //
-  beta=(-1./PDimuCM.E())*PDimuCM.Vect();
+  beta=(-1./pDimuCM.E())*pDimuCM.Vect();
   if(beta.Mag()>=1) return 666.;
-  PMu1Dimu=PMu1CM;
-  PMu2Dimu=PMu2CM;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
+  pMu1Dimu=pMu1CM;
+  pMu2Dimu=pMu2CM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
   
   //Debugging part -------------------------------------
   Double_t debugMu1[4]={0.,0.,0.,0.};
   Double_t debugMu2[4]={0.,0.,0.,0.};
-  PMu1Dimu.GetXYZT(debugMu1);
-  PMu2Dimu.GetXYZT(debugMu2);
+  pMu1Dimu.GetXYZT(debugMu1);
+  pMu2Dimu.GetXYZT(debugMu2);
   if (debugMu1[0]!=debugMu1[0] ||debugMu1[1]!=debugMu1[1] || debugMu1[2]!=debugMu1[2] ||debugMu1[3]!=debugMu1[3]) return 666; 
   if (debugMu2[0]!=debugMu2[0] ||debugMu2[1]!=debugMu2[1] || debugMu2[2]!=debugMu2[2] ||debugMu2[3]!=debugMu2[3]) return 666; 
   //----------------------------------------------------
  
   // --- Determine the z axis for the calculation of the polarization angle (i.e. the direction of the dimuon in the CM system)
   TVector3 zaxis;
-  zaxis=(PDimuCM.Vect()).Unit();
+  zaxis=(pDimuCM.Vect()).Unit();
   
   // --- Calculation of the polarization angle (angle between mu+ and the z axis defined above)
   Double_t cost;
-  if(charge1>0) {cost = zaxis.Dot((PMu1Dimu.Vect()).Unit());} 
-  else {cost = zaxis.Dot((PMu2Dimu.Vect()).Unit());} 
+  if(charge1>0) {cost = zaxis.Dot((pMu1Dimu.Vect()).Unit());} 
+  else {cost = zaxis.Dot((pMu2Dimu.Vect()).Unit());} 
   return cost;
 }
 
@@ -896,43 +884,43 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
 // Phi decay angle (mu+) in the Collins-Soper frame
 
-   TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM frame
-   TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+   TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM frame
+   TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
    TVector3 beta,yaxisCS, xaxisCS, zaxisCS;
    Double_t mp=0.93827231;
    
    // --- Fill the Lorentz vector for projectile and target in the CM frame
-   PProjCM.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
-   PTargCM.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
+   pProjCM.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
+   pTargCM.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
    
    // --- Get the muons parameters in the CM frame 
-   PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-   PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+   pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+   pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
    
    // --- Obtain the dimuon parameters in the CM frame
-   PDimuCM=PMu1CM+PMu2CM;
+   pDimuCM=pMu1CM+pMu2CM;
    
    // --- Translate the dimuon parameters in the dimuon rest frame
-   beta=(-1./PDimuCM.E())*PDimuCM.Vect();
+   beta=(-1./pDimuCM.E())*pDimuCM.Vect();
    if(beta.Mag()>=1) return 666.;
-   PMu1Dimu=PMu1CM;
-   PMu2Dimu=PMu2CM;
-   PProjDimu=PProjCM;
-   PTargDimu=PTargCM;
-   PMu1Dimu.Boost(beta);
-   PMu2Dimu.Boost(beta);
-   PProjDimu.Boost(beta);
-   PTargDimu.Boost(beta);
+   pMu1Dimu=pMu1CM;
+   pMu2Dimu=pMu2CM;
+   pProjDimu=pProjCM;
+   pTargDimu=pTargCM;
+   pMu1Dimu.Boost(beta);
+   pMu2Dimu.Boost(beta);
+   pProjDimu.Boost(beta);
+   pTargDimu.Boost(beta);
 
    //Debugging part -------------------------------------
    Double_t debugProj[4]={0.,0.,0.,0.};
    Double_t debugTarg[4]={0.,0.,0.,0.};
    Double_t debugMu1[4]={0.,0.,0.,0.};
    Double_t debugMu2[4]={0.,0.,0.,0.};
-   PMu1Dimu.GetXYZT(debugMu1);
-   PMu2Dimu.GetXYZT(debugMu2);
-   PProjDimu.GetXYZT(debugProj);
-   PTargDimu.GetXYZT(debugTarg);
+   pMu1Dimu.GetXYZT(debugMu1);
+   pMu2Dimu.GetXYZT(debugMu2);
+   pProjDimu.GetXYZT(debugProj);
+   pTargDimu.GetXYZT(debugTarg);
    if (debugProj[0]!=debugProj[0] ||debugProj[1]!=debugProj[1] || debugProj[2]!=debugProj[2] ||debugProj[3]!=debugProj[3]) return 666; 
    if (debugTarg[0]!=debugTarg[0] ||debugTarg[1]!=debugTarg[1] || debugTarg[2]!=debugTarg[2] ||debugTarg[3]!=debugTarg[3]) return 666; 
    if (debugMu1[0]!=debugMu1[0] ||debugMu1[1]!=debugMu1[1] || debugMu1[2]!=debugMu1[2] ||debugMu1[3]!=debugMu1[3]) return 666; 
@@ -940,15 +928,15 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
    //----------------------------------------------------
 
    // --- Determine the z axis for the CS angle 
-   zaxisCS=(((PProjDimu.Vect()).Unit())-((PTargDimu.Vect()).Unit())).Unit();
-   yaxisCS=(((PProjDimu.Vect()).Unit()).Cross((PTargDimu.Vect()).Unit())).Unit();
+   zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
+   yaxisCS=(((pProjDimu.Vect()).Unit()).Cross((pTargDimu.Vect()).Unit())).Unit();
    xaxisCS=(yaxisCS.Cross(zaxisCS)).Unit();
  
    Double_t phi=0.;
    if(charge1>0) {
-       phi = TMath::ATan2((PMu1Dimu.Vect()).Dot(yaxisCS),((PMu1Dimu.Vect()).Dot(xaxisCS)));
+       phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxisCS),((pMu1Dimu.Vect()).Dot(xaxisCS)));
    } else {
-       phi = TMath::ATan2((PMu2Dimu.Vect()).Dot(yaxisCS),((PMu2Dimu.Vect()).Dot(xaxisCS)));
+       phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxisCS),((pMu2Dimu.Vect()).Dot(xaxisCS)));
    }
    if (phi>TMath::Pi()) phi=phi-TMath::Pi();
    
@@ -960,49 +948,49 @@ Double_t AliAnalysisTaskDimuonCFContainerBuilder::PhiHE(Double_t px1, Double_t p
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
 // Phi decay angle (mu+) in the Helicity frame
-  TLorentzVector PMu1Lab, PMu2Lab, PProjLab, PTargLab, PDimuLab; // In the lab. frame 
-  TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+  TLorentzVector pMu1Lab, pMu2Lab, pProjLab, pTargLab, pDimuLab; // In the lab. frame 
+  TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
   TVector3 beta,xaxis, yaxis,zaxis;
   Double_t mp=0.93827231;
 
   // --- Get the muons parameters in the LAB frame
-  PMu1Lab.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2Lab.SetPxPyPzE(px2,py2,pz2,e2);
+  pMu1Lab.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2Lab.SetPxPyPzE(px2,py2,pz2,e2);
   
   // --- Obtain the dimuon parameters in the LAB frame
-  PDimuLab=PMu1Lab+PMu2Lab;
-  zaxis=(PDimuLab.Vect()).Unit();
+  pDimuLab=pMu1Lab+pMu2Lab;
+  zaxis=(pDimuLab.Vect()).Unit();
   
   // --- Translate the muon parameters in the dimuon rest frame
-  beta=(-1./PDimuLab.E())*PDimuLab.Vect();
+  beta=(-1./pDimuLab.E())*pDimuLab.Vect();
   if(beta.Mag()>=1.) return 666.;
 
-  PProjLab.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); // proiettile
-  PTargLab.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); // bersaglio
+  pProjLab.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); // proiettile
+  pTargLab.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); // bersaglio
 
-  PProjDimu=PProjLab;
-  PTargDimu=PTargLab;
+  pProjDimu=pProjLab;
+  pTargDimu=pTargLab;
 
-  PProjDimu.Boost(beta);
-  PTargDimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
   
-  yaxis=((PProjDimu.Vect()).Cross(PTargDimu.Vect())).Unit();
+  yaxis=((pProjDimu.Vect()).Cross(pTargDimu.Vect())).Unit();
   xaxis=(yaxis.Cross(zaxis)).Unit();
   
-  PMu1Dimu=PMu1Lab;
-  PMu2Dimu=PMu2Lab;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
+  pMu1Dimu=pMu1Lab;
+  pMu2Dimu=pMu2Lab;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
   
   //Debugging part -------------------------------------
   Double_t debugProj[4]={0.,0.,0.,0.};
   Double_t debugTarg[4]={0.,0.,0.,0.};
   Double_t debugMu1[4]={0.,0.,0.,0.};
   Double_t debugMu2[4]={0.,0.,0.,0.};
-  PMu1Dimu.GetXYZT(debugMu1);
-  PMu2Dimu.GetXYZT(debugMu2);
-  PProjDimu.GetXYZT(debugProj);
-  PTargDimu.GetXYZT(debugTarg);
+  pMu1Dimu.GetXYZT(debugMu1);
+  pMu2Dimu.GetXYZT(debugMu2);
+  pProjDimu.GetXYZT(debugProj);
+  pTargDimu.GetXYZT(debugTarg);
   if (debugProj[0]!=debugProj[0] ||debugProj[1]!=debugProj[1] || debugProj[2]!=debugProj[2] ||debugProj[3]!=debugProj[3]) return 666; 
   if (debugTarg[0]!=debugTarg[0] ||debugTarg[1]!=debugTarg[1] || debugTarg[2]!=debugTarg[2] ||debugTarg[3]!=debugTarg[3]) return 666; 
   if (debugMu1[0]!=debugMu1[0] ||debugMu1[1]!=debugMu1[1] || debugMu1[2]!=debugMu1[2] ||debugMu1[3]!=debugMu1[3]) return 666; 
@@ -1011,9 +999,9 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
   
   Double_t phi=0.;
    if(charge1 > 0) {
-      phi = TMath::ATan2((PMu1Dimu.Vect()).Dot(yaxis),(PMu1Dimu.Vect()).Dot(xaxis));
+      phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxis),(pMu1Dimu.Vect()).Dot(xaxis));
      } else { 
-      phi = TMath::ATan2((PMu2Dimu.Vect()).Dot(yaxis),(PMu2Dimu.Vect()).Dot(xaxis));
+      phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxis),(pMu2Dimu.Vect()).Dot(xaxis));
    }  
    return phi;
 }

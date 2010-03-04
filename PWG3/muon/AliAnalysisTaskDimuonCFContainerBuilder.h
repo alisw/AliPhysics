@@ -2,16 +2,14 @@
 #define ALIANALYSISTASKDIMUONCFCONTAINERBUILDER_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliCFContainer.h"
-#include "TMath.h"
 #include "TString.h"
-#include "AliCFManager.h"
 
 //	Analysis task for the building of a dimuon CF container
 //	Also some single-muon variables are stored
 //	L. Bianchi - Universita' & INFN Torino
 
-
+class AliCFContainer;
+class AliCFManager;
 
 class AliAnalysisTaskDimuonCFContainerBuilder : public AliAnalysisTaskSE {
   public:
@@ -84,13 +82,13 @@ class AliAnalysisTaskDimuonCFContainerBuilder : public AliAnalysisTaskSE {
   
   
   
-  Double_t Imass  (Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t);
-  Double_t Rap	  (Double_t, Double_t);
+  Double_t Imass  (Double_t e1, Double_t px1, Double_t py1, Double_t pz1, Double_t e2, Double_t px2, Double_t py2, Double_t pz2) const;
+  Double_t Rap	  (Double_t e, Double_t pz) const;
   
-  Double_t CostCS (Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t);
-  Double_t CostHE (Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t);
-  Double_t PhiCS  (Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t);
-  Double_t PhiHE  (Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t);
+  Double_t CostCS (Double_t px1, Double_t py1, Double_t pz1, Double_t e1, Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2);
+  Double_t CostHE (Double_t px1, Double_t py1, Double_t pz1, Double_t e1, Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2);
+  Double_t PhiCS  (Double_t px1, Double_t py1, Double_t pz1, Double_t e1, Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2);
+  Double_t PhiHE  (Double_t px1, Double_t py1, Double_t pz1, Double_t e1, Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2);
   
   ClassDef(AliAnalysisTaskDimuonCFContainerBuilder,1);
 };
