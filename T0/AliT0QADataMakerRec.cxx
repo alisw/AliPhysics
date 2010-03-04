@@ -396,6 +396,21 @@ void AliT0QADataMakerRec::InitRaws()
     GetRawsData(97)->Fill(triggers[itr], fNumTriggers[itr]);
     GetRawsData(97)->SetBinContent(itr+1, fNumTriggers[itr]);
   }  
+
+  TH1F* fhT0meancal= new TH1F("fhT0meancal"," (OrA+OrC)/2 in ns Laser",  1000,-100,100) ;
+  Add2RawsList(fhT0meancal,421, expert, !image, !saveCorr);
+  TH1F* fhOrAnscal= new TH1F("fhOrAnscal"," OrA in ns Laser",  1000,-100,100) ;
+  Add2RawsList(fhOrAnscal,422, expert, !image, !saveCorr);
+  TH1F* fhOrCnscal= new TH1F("fhOrCnscal"," OrC in ns Laser",  1000,-100,100) ;
+  Add2RawsList(fhOrCnscal,423, expert, !image, !saveCorr);
+
+  TH1F* fhT0meanphys= new TH1F("fhT0meanphys"," (OrA+OrC)/2 in ns Physics", 1000,-100,100) ;
+  Add2RawsList(fhT0meanphys,424, expert, !image, !saveCorr);
+  TH1F* fhOrAnsphys= new TH1F("fhOrAnsphys"," OrA in ns Physics", 1000,-100,100) ;
+  Add2RawsList(fhOrAnsphys,425, expert, !image, !saveCorr);
+  TH1F* fhOrCnsphys= new TH1F("fhOrCnsphys"," OrC in ns Physics",  1000,-100,100) ;
+  Add2RawsList(fhOrCnsphys,426, expert, !image, !saveCorr);
+
 }
 
 //____________________________________________________________________________ 
@@ -413,7 +428,10 @@ void AliT0QADataMakerRec::InitDigits()
   Add2DigitsList( fhDigLEDamp,1, !expert, !image);
   TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits; #PMT; QTC amplitude",25,-0.5,24.5,100,100,10000);
   fhDigQTC->SetOption("COLZ");
-  Add2DigitsList( fhDigQTC,2, !expert, !image);}
+  Add2DigitsList( fhDigQTC,2, !expert, !image);
+
+
+}
 
 //____________________________________________________________________________ 
 
@@ -456,6 +474,19 @@ void AliT0QADataMakerRec::InitESDs()
 //____________________________________________________________________________
 void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
+
+  Float_t latencyHPTDC = 9000;
+  Float_t latencyL1    = 8.19754744000000028e+03;
+  Float_t latencyL1C   = 8.19707652000000053e+03;
+  Float_t latencyL1A   = 8.19801836000000003e+03;
+  /*
+// 2009 latency
+  Float_t latencyHPTDC = 22000;
+  Float_t latencyL1    = 7.76597940000000017e+03;
+  Float_t latencyL1C    = 7.76528399999999965e+03;
+  Float_t latencyL1A    = 7.76667480000000069e+03;
+  */
+
 
   rawReader->Reset() ; 
   //fills QA histos for RAW
@@ -618,6 +649,16 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 		GetRawsData(98+itr)->Fill(allData[trChannel[itr]][iHt]-refpoint);
 	      }
 	    }
+	    if(allData[51][iHt]>0 && allData[52][iHt]>0) {
+	      GetRawsData(424) ->Fill(24.4*0.001*(allData[51][iHt]+allData[52][iHt])/2.-latencyHPTDC+latencyL1);
+	    }
+	    if(allData[51][iHt]>0 ) {
+	       GetRawsData(425) ->Fill(24.4*0.001*allData[51][iHt]-latencyHPTDC+latencyL1A);
+	    }
+	    if(allData[52][iHt]>0 ) { 
+		  GetRawsData(426) ->Fill(24.4*0.001*allData[52][iHt]-latencyHPTDC + latencyL1C);
+	    }
+		  
 
 	    if(allData[51][iHt] >0) nhitsOrA++;
 	    if(allData[52][iHt] >0) nhitsOrC++;
@@ -629,6 +670,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    }
 	    if(allData[51][iHt]>0 && allData[52][iHt]>0)
 	      GetRawsData(215)->Fill((allData[52][iHt]-allData[51][iHt])*ch2cm);
+	    
 	  }
 	  GetRawsData(213)->Fill(nhitsOrA);
 	  GetRawsData(214)->Fill(nhitsOrC);
@@ -645,6 +687,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	      //orA-orC laser
 	    if(allData[51][iHt]>0 && allData[52][iHt]>0)
 	      GetRawsData(219)->Fill((allData[52][iHt]-allData[51][iHt])*ch2cm);
+	    
 	    //orA-orC laser tvdc 1 
 	    if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]>0)
 	      GetRawsData(351)->Fill((allData[52][iHt]-allData[51][iHt])*ch2cm);
@@ -660,6 +703,13 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 		    fNumTriggersCal[itr]++;
 		  }
 	      }
+	      //T0Tof in ns
+	    if(allData[51][iHt]>0 && allData[52][iHt]>0)
+	      GetRawsData(421) ->Fill(24.4*0.001*(allData[51][iHt]+allData[52][iHt])/2.-latencyHPTDC+latencyL1);
+	      if(allData[51][iHt]>0 ) 
+		GetRawsData(422) ->Fill(24.4*0.001*allData[51][iHt]-latencyHPTDC+latencyL1A);
+	      if(allData[52][iHt]>0 ) 
+		GetRawsData(423) ->Fill(24.4*0.001*allData[52][iHt]-latencyHPTDC+latencyL1A);
 	      //mult trigger signals laser
 	      if(allData[53][iHt]>0 && allData[54][iHt]>0) {
 		GetRawsData(202)->Fill(allData[53][iHt]-allData[54][iHt]);
