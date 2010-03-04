@@ -499,7 +499,7 @@ AliMUONTriggerIO::WriteConfig(const char* localFile,
 /// write config files
 
     Bool_t ok;
-    ok  = WriteLocalMasks(localFile, *localMasks, regionalConfig);
+    ok  = WriteLocalMasks(localFile, *localMasks);
     ok &= WriteRegionalConfig(regionalFile, regionalConfig);
     ok &= WriteGlobalConfig(globalFile, globalConfig);
     
@@ -671,7 +671,7 @@ AliMUONTriggerIO::WriteRegionalConfig(const char* regionalFile, AliMUONRegionalT
 
 //_____________________________________________________________________________
 Bool_t 
-AliMUONTriggerIO::WriteLocalMasks(const char* localFile, AliMUONVStore& localMasks, AliMUONRegionalTriggerConfig* regionalConfig) const
+AliMUONTriggerIO::WriteLocalMasks(const char* localFile, AliMUONVStore& localMasks) const
 {
     /// write local mask
     /// removing/adding enable for a local board need a update of the configuration 
