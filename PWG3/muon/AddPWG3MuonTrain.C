@@ -3,10 +3,11 @@ Int_t AddPWG3MuonTrain(Int_t iESDAnalysis=1,
                        Int_t addMuonDistributions=0,
 		       Int_t addSingleMuonAnalysis=0,
 		       Int_t addMuonHFAnalysis=0,
-		       Int_t addDimuonCFContainer=0) {
+		       Int_t addDimuonCFContainer=0,
+		       Bool_t usePhysicsSelection=kFALSE) {
 
   // Analysis wagons for PWG3Muon (Roberta)
-
+  
   TString taskName="",loadMacroPath="$ALICE_ROOT/PWG3/muon/";
   Int_t ntasks=0;
   
@@ -16,11 +17,13 @@ Int_t AddPWG3MuonTrain(Int_t iESDAnalysis=1,
     Bool_t doInvMassFit = kTRUE;
     if(iESDAnalysis){
       AliAnalysisTaskMuonDistributions *esdmuondistributionstask = AddTaskMuonDistributions("ESD",doInvMassFit);	
+      if(usePhysicsSelection)esdmuondistributionstask->SelectCollisionCandidates();
     } else if(iAODAnalysis){
       AliAnalysisTaskMuonDistributions *aodmuondistributionstask = AddTaskMuonDistributions("AOD",doInvMassFit);	
     }
     ntasks++;
   }
+  
 
   if(addSingleMuonAnalysis) {
     taskName="AddTaskSingleMuonAnalysis.C"; taskName.Prepend(loadMacroPath.Data());

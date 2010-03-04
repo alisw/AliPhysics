@@ -124,6 +124,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   // Loop on muon tracks to fill the AOD track branch
   Int_t nMuTracks = esd->GetNumberOfMuonTracks();
 
+  for (Int_t iTrack=0; iTrack<nMuTracks; ++iTrack) esd->GetMuonTrack(iTrack)->SetESDEvent(esd);
   
   // Update number of positive and negative tracks from AOD event (M.G.)
   Int_t nPosTracks = header->GetRefMultiplicityPos();
@@ -145,7 +146,9 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     esdMuTrack = esd->GetMuonTrack(nMuTrack);
     
     if (!esdMuTrack->ContainTrackerData()) continue;
-           
+    
+    MuonsExist = kTRUE;
+       
     UInt_t selectInfo = 0;
     // Track selection
     if (fTrackFilter) {
