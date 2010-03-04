@@ -86,7 +86,7 @@ AliHLTComponent::AliHLTComponent()
   fChainId(),
   fChainIdCrc(0),
   fpBenchmark(NULL),
-  fRequireSteeringBlocks(false),
+  fFlags(0),
   fEventType(gkAliEventTypeUnknown),
   fComponentArgs(),
   fEventDoneData(NULL),
@@ -238,6 +238,9 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
 	  } else {
 	    HLTError("wrong parameter for argument -pushback-period, number expected");
 	  }
+	  // -disable-component-stat
+	} else if (argument.CompareTo("-disable-component-stat")==0) {
+	  fFlags|=kDisableComponentStat;
 	} else {
 	  pArguments[iNofChildArgs++]=argv[i];
 	}
@@ -260,22 +263,24 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
     // explicitly
     AliHLTComponentDataTypeList inputDt;
     GetInputDataTypes(inputDt);
+    bool bRequireSteeringBlocks=false;
     for (AliHLTComponentDataTypeList::iterator dt=inputDt.begin();
-	 dt!=inputDt.end() && !fRequireSteeringBlocks;
+	 dt!=inputDt.end() && !bRequireSteeringBlocks;
 	 dt++) {
-      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeSOR);
-      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeRunType);
-      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeEOR);
-      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeDDL);
-      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeComponentStatistics);
+      bRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeSOR);
+      bRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeRunType);
+      bRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeEOR);
+      bRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeDDL);
+      bRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeComponentStatistics);
     }
+    if (bRequireSteeringBlocks) fFlags|=kRequireSteeringBlocks;
   }
   if (pArguments) delete [] pArguments;
 
-#if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
+#if defined(HLT_COMPONENT_STATISTICS)
   // benchmarking stopwatch for the component statistics
   fpBenchmark=new TStopwatch;
-#endif
+#endif // HLT_COMPONENT_STATISTICS
 
   return iResult;
 }
@@ -304,6 +309,7 @@ int AliHLTComponent::Deinit()
   fpCTPData=NULL;
 
   fEventCount=0;
+  fFlags=0;
   return iResult;
 }
 
@@ -1569,19 +1575,21 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   AliHLTComponentStatisticsList compStats;
   bool bAddComponentTableEntry=false;
   vector<AliHLTUInt32_t> parentComponentTables;
-#if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
-  AliHLTComponentStatistics outputStat;
-  memset(&outputStat, 0, sizeof(AliHLTComponentStatistics));
-  outputStat.fStructSize=sizeof(AliHLTComponentStatistics);
-  outputStat.fId=fChainIdCrc;
-  if (fpBenchmark) {
-    fpBenchmark->Stop();
-    outputStat.fComponentCycleTime=(AliHLTUInt32_t)(fpBenchmark->RealTime()*ALIHLTCOMPONENT_STATTIME_SCALER);
-    fpBenchmark->Reset();
-    fpBenchmark->Start();
+#if defined(HLT_COMPONENT_STATISTICS)
+  if ((fFlags&kDisableComponentStat)==0) {
+    AliHLTComponentStatistics outputStat;
+    memset(&outputStat, 0, sizeof(AliHLTComponentStatistics));
+    outputStat.fStructSize=sizeof(AliHLTComponentStatistics);
+    outputStat.fId=fChainIdCrc;
+    if (fpBenchmark) {
+      fpBenchmark->Stop();
+      outputStat.fComponentCycleTime=(AliHLTUInt32_t)(fpBenchmark->RealTime()*ALIHLTCOMPONENT_STATTIME_SCALER);
+      fpBenchmark->Reset();
+      fpBenchmark->Start();
+    }
+    compStats.push_back(outputStat);
   }
-  compStats.push_back(outputStat);
-#endif
+#endif // HLT_COMPONENT_STATISTICS
 
   // data processing is skipped
   // -  if there are only steering events in the block list.
@@ -1762,7 +1770,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 
   // data processing is not skipped if the component explicitly asks
   // for the private blocks
-  if (fRequireSteeringBlocks) bSkipDataProcessing=0;
+  if ((fFlags&kRequireSteeringBlocks)!=0) bSkipDataProcessing=0;
 
   if (fpCTPData) {
     // set the active triggers for this event
@@ -1876,7 +1884,8 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
 {
   // see header file for function documentation
   int iResult=0;
-#if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
+  if ((fFlags&kDisableComponentStat)!=0) return 0;
+#if defined(HLT_COMPONENT_STATISTICS)
   if (stats.size()==0) return -ENOENT;
   // check if there is space for at least one entry
   if (offset+sizeof(AliHLTComponentStatistics)>bufferSize) return 0;
@@ -1942,7 +1951,7 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
   if (blocks.size() && buffer && bufferSize && offset && stats.size()) {
     // get rid of warning
   }
-#endif
+#endif // HLT_COMPONENT_STATISTICS
   return iResult;
 }
 
@@ -1954,7 +1963,8 @@ int  AliHLTComponent::AddComponentTableEntry(AliHLTComponentBlockDataList& block
 {
   // see header file for function documentation
   int iResult=0;
-#if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
+  if ((fFlags&kDisableComponentStat)!=0) return 0;
+#if defined(HLT_COMPONENT_STATISTICS)
   // the payload consists of the AliHLTComponentTableEntry struct,
   // followed by a an array of 32bit crc chain ids and the component
   // description string
@@ -2014,7 +2024,7 @@ int  AliHLTComponent::AddComponentTableEntry(AliHLTComponentBlockDataList& block
   if (blocks.size() && buffer && bufferSize && offset && parents.size()) {
     // get rid of warning
   }
- #endif
+#endif // HLT_COMPONENT_STATISTICS
   return iResult;
 }
 

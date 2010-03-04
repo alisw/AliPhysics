@@ -1629,6 +1629,11 @@ class AliHLTComponent : public AliHLTLogging {
    */
   int InitCTPTriggerClasses(const char* ctpString);
 
+  enum {
+    kRequireSteeringBlocks = 0x1,
+    kDisableComponentStat = 0x2
+  };
+
   /** The global component handler instance */
   static AliHLTComponentHandler* fgpComponentHandler;              //! transient
 
@@ -1698,8 +1703,8 @@ class AliHLTComponent : public AliHLTLogging {
   /** optional benchmarking for the component statistics */
   TStopwatch* fpBenchmark;                                         //! transient
 
-  /** component requires steering data blocks */
-  bool fRequireSteeringBlocks;                                     //! transient
+  /** component flags, cleared in Deinit */
+  AliHLTUInt32_t fFlags;                                           //! transient
 
   /** current event type */
   AliHLTUInt32_t fEventType;                                       //! transient
@@ -1728,6 +1733,6 @@ class AliHLTComponent : public AliHLTLogging {
   /// time of last executed PushBack
   int fLastPushBackTime;                                           //! transient
 
-  ClassDef(AliHLTComponent, 13)
+  ClassDef(AliHLTComponent, 14)
 };
 #endif
