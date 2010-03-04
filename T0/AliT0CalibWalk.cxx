@@ -171,7 +171,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		  {
 		    hCFD->Rebin(2);
 		    TSpectrum *s1 = new TSpectrum(2*npeaks,1);
-		    Int_t nfound = s1->Search(hCFD,sigma," ",0.1);
+		    nfound = s1->Search(hCFD,sigma," ",0.1);
 		    if(nfound!=0){
 		      Float_t *xpeak = s1->GetPositionX();
 		      TMath::Sort(nfound, xpeak, index,down);
