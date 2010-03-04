@@ -63,9 +63,6 @@ using namespace std;
 #include <cerrno>
 #include <string>
 
-#include "AliTRDrawStream.h"
-#include "AliTRDrawFastStream.h"
-
 ClassImp(AliHLTTRDClusterizerComponent)
    
 AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
