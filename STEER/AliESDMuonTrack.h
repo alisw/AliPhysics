@@ -18,6 +18,7 @@
 #include "AliVParticle.h"
 
 class AliESDMuonCluster;
+class AliESDEvent;
 class TClonesArray;
 class TLorentzVector;
 
@@ -220,6 +221,8 @@ public:
   /// Getting crossed slat or info
   static Int_t GetSlatOrInfo(UShort_t pattern);
 
+  AliESDEvent* GetESDEvent() const {return fESDEvent;}
+  void         SetESDEvent(AliESDEvent* evt) {fESDEvent = evt;}  
   
 protected:
   // parameters at vertex
@@ -275,8 +278,10 @@ protected:
   mutable TClonesArray* fClusters; ///< Array of clusters attached to the track
   
   Int_t fLabel;                    ///< point to the corresponding MC track
+
+  AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
-  ClassDef(AliESDMuonTrack,11) // MUON ESD track class 
+  ClassDef(AliESDMuonTrack,12) // MUON ESD track class 
 };
 
 #endif 

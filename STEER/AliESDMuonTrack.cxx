@@ -27,6 +27,7 @@
 
 #include "AliESDMuonTrack.h"
 #include "AliESDMuonCluster.h"
+#include "AliESDEvent.h"
 
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
@@ -69,7 +70,9 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fHitsPatternInTrigCh(0),
   fNHit(0),
   fClusters(0x0),
-  fLabel(-1)
+  fLabel(-1),
+  fESDEvent(0)
+
 {
   //
   /// Default constructor
@@ -113,7 +116,8 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& muonTrack):
   fHitsPatternInTrigCh(muonTrack.fHitsPatternInTrigCh),
   fNHit(muonTrack.fNHit),
   fClusters(0x0),
-  fLabel(muonTrack.fLabel)
+  fLabel(muonTrack.fLabel),
+  fESDEvent(muonTrack.fESDEvent)
 {
   //
   /// Copy constructor
@@ -184,6 +188,8 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& muonTrack)
   fMuonClusterMap	  = muonTrack.fMuonClusterMap;
 
   fLabel                  = muonTrack.fLabel;
+  
+  fESDEvent               = muonTrack.fESDEvent;
 
   // necessary to make a copy of the objects and not only the pointers in TClonesArray
   delete fClusters;
@@ -266,6 +272,7 @@ void AliESDMuonTrack::Reset()
   delete fClusters; fClusters = 0x0;
   for (Int_t i = 0; i < 15; i++) fCovariances[i] = 0.;
   fLabel = -1;
+  fESDEvent = 0;
 }
 
 //_____________________________________________________________________________

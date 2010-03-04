@@ -1,6 +1,7 @@
 AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, 
                                            Bool_t writeMuonAOD=kFALSE,
-                                           Bool_t writeDimuonAOD=kFALSE)
+                                           Bool_t writeDimuonAOD=kFALSE,
+					   Bool_t usePhysicsSelection=kFALSE)
 {
 // Creates a filter task and adds it to the analysis manager.
 
@@ -41,6 +42,10 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // Muons
    AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
    mgr->AddTask(esdmuonfilter);
+   if(usePhysicsSelection){
+     esdfilter->SelectCollisionCandidates();
+     esdmuonfilter->SelectCollisionCandidates();
+   }  
 
    // Filtering of MC particles (decays conversions etc)
    // this task has to go AFTER all other filter tasks
@@ -52,8 +57,6 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
       kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
       mgr->AddTask(kinefilter);
    }   
-
-
 
    // Cuts on primary tracks
    AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("Standard Track Cuts", "ESD Track Cuts");
