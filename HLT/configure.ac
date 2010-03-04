@@ -548,8 +548,19 @@ AC_MSG_CHECKING([whether to enable component statistics])
 AC_ARG_ENABLE(component-stat,
   [AC_HELP_STRING([--enable-component-stat],
       [enable component statistics ])],
-  [],[enable_component_stat=no])
-if test "x$enable_component_stat" = "xyes" ; then
+  [],[])
+
+dnl enable component statistics if not explicitely disabled
+if test "x$enable_component_stat" != "xno" &&
+   test "x$enable_debug" = "xyes" ; then
+   enable_component_stat=yes.debug
+fi
+
+if test "x$enable_component_stat" = "x" ; then
+   enable_component_stat=no
+fi
+
+if test "x$enable_component_stat" != "xno" ; then
    AC_DEFINE(HLT_COMPONENT_STATISTICS)
 fi
 AC_MSG_RESULT([$enable_component_stat])
