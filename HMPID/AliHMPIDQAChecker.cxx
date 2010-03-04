@@ -76,6 +76,19 @@ fQARefRec(NULL)
 }
 
 //_________________________________________________________________
+AliHMPIDQAChecker& AliHMPIDQAChecker::operator=(const AliHMPIDQAChecker& qac) 
+{
+  //
+  // Assignment operator
+  //
+  if (this!=&qac) {
+    AliQACheckerBase::operator=(qac) ;
+    fNoReference = qac.fNoReference  ;
+    fQARefRec    = qac.fQARefRec     ;    
+  }
+  return *this;
+}   
+//_______________________________________________________________________________________________
 AliHMPIDQAChecker::~AliHMPIDQAChecker() 
 {
   fQARefRec->Delete() ; 
