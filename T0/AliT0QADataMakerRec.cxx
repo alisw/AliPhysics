@@ -166,7 +166,7 @@ void AliT0QADataMakerRec::InitRaws()
   TString qt1name, qt0name, qt1Calname, qt0Calname;
   TString nhits;
 
-  TH1F* fhRefPoint = new TH1F("hRefPoint","Ref Point", 20000, 575000 ,595000);
+  TH1F* fhRefPoint = new TH1F("hRefPoint","Ref Point", 20000, 25000 ,45000);
   Add2RawsList( fhRefPoint,0, expert, !image, !saveCorr);
 
   TH1F* fhRefPointcal = new TH1F("hRefPointcal","Ref Point laser", 10000, 18000 ,28000);
@@ -377,16 +377,16 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* fhOrCminOrATvdcOffcal= new TH1F("fhOrCminOrATvdcOffcal","T0_OR C - T0_OR ATVDC off laser",10000,-5000,5000);
   Add2RawsList( fhOrCminOrATvdcOffcal,353, expert, !image, !saveCorr);
 
-  TH1F* fhCFD1abs= new TH1F("fhCFD1abs"," CFD 1 pure ( L1) ", 20000, 575000, 595000 );
+  TH1F* fhCFD1abs= new TH1F("fhCFD1abs"," CFD 1 pure ( L1) ", 20000, 25000, 45000 );
   Add2RawsList(fhCFD1abs ,354, expert, !image, !saveCorr);
 
-  TH1F* fhCFD2abs= new TH1F("fhCFD2abs"," CFD 2 pure ( L1)  ", 20000, 575000, 595000 );
+  TH1F* fhCFD2abs= new TH1F("fhCFD2abs"," CFD 2 pure ( L1)  ", 20000, 25000, 45000 );
   Add2RawsList( fhCFD2abs,355, expert, !image, !saveCorr);
 
-  TH1F* fhCFD1abscal= new TH1F("fhCFD1abscal"," CFD 1 pure ( L1)laser ", 10000, 18000 ,28000 );
+  TH1F* fhCFD1abscal= new TH1F("fhCFD1abscal"," CFD 1 pure ( L1)laser ", 10000, 30000 ,40000 );
   Add2RawsList(fhCFD1abscal,356, expert, !image, !saveCorr);
 
-  TH1F* fhCFD2abscal= new TH1F("fhCFD2abscal"," CFD 2 pure ( L1)laser ", 10000, 18000 ,28000 );
+  TH1F* fhCFD2abscal= new TH1F("fhCFD2abscal"," CFD 2 pure ( L1)laser ", 10000, 30000 ,30000 );
   Add2RawsList( fhCFD2abscal,357, expert, !image, !saveCorr);
 
  const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
