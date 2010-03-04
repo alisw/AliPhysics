@@ -68,7 +68,8 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector()
   fOutputList(0),
   fArray(0),
   fZvtxDist(0),
-  fEvents(0)
+  fEvents(0),
+  fEmptyEvents(0)
 {
   // Default constructor
   
@@ -81,7 +82,8 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector(const char* name):
     fOutputList(0),
     fArray(0),
     fZvtxDist(0),
-    fEvents(0)
+    fEvents(0),
+    fEmptyEvents(0)
 {
   // Default constructor
   
