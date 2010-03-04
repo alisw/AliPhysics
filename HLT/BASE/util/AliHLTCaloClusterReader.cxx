@@ -105,9 +105,11 @@ void
 AliHLTCaloClusterReader::SetMemory(const AliHLTCaloClusterHeaderStruct* clusterHeaderPtr)
 {
   //See header file for documentation
-//  printf("CR: Number of clusters in event: %d\n", clusterHeaderPtr->fNClusters);
+  //printf("CR: Number of clusters in event: %d, Number of digits in event: %d\n", clusterHeaderPtr->fNClusters, clusterHeaderPtr->fNDigits);
   fMaxCnt = clusterHeaderPtr->fNClusters;
   fCurrentClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>((UChar_t*)(clusterHeaderPtr) + sizeof(AliHLTCaloClusterHeaderStruct) + sizeof(AliHLTCaloDigitDataStruct)*clusterHeaderPtr->fNDigits);
+  fNDigits = clusterHeaderPtr->fNDigits;
+  fDigitsPointer = reinterpret_cast<AliHLTCaloDigitDataStruct*>((UChar_t*)(clusterHeaderPtr) + sizeof(AliHLTCaloClusterHeaderStruct));
   fIsSetMemory = true;
 }
 
