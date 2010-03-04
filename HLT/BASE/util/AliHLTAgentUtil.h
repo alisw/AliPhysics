@@ -84,9 +84,9 @@ class AliHLTAgentUtil : public AliHLTModuleAgent {
   class AliHLTStreamerInfoHandler : public AliHLTOUTHandler {
   public:
     /** constructor */
-    AliHLTStreamerInfoHandler();
+    AliHLTStreamerInfoHandler() {};
     /** destructor */
-    ~AliHLTStreamerInfoHandler();
+    ~AliHLTStreamerInfoHandler() {};
 
     /// inherited from AliHLTOUTHandler
     /// do nothing for the moment, the streamer info is handled

@@ -82,10 +82,10 @@ int AliHLTAgentUtil::CreateConfigurations(AliHLTConfigurationHandler* handler,
   // produces a TTree object of the component statistics and writes it to disc
 
   // publisher component
-  handler->CreateConfiguration("UTIL-hltout-compstat-publisher", "AliHLTOUTPublisher"   , NULL, "");
+  handler->CreateConfiguration("UTIL-hltout-compstat-publisher", "AliHLTOUTPublisher"   , NULL, "-disable-component-stat");
 
   // collector configuration
-  handler->CreateConfiguration("UTIL-compstat-converter", "StatisticsCollector", "UTIL-hltout-compstat-publisher", "");
+  handler->CreateConfiguration("UTIL-compstat-converter", "StatisticsCollector", "UTIL-hltout-compstat-publisher", "-disable-component-stat -arraysize 10000");
 
   // writer configuration
   handler->CreateConfiguration("UTIL-compstat-writer", "ROOTFileWriter", "UTIL-compstat-converter", "-datafile HLT.statistics.root -concatenate-events -overwrite");
@@ -136,7 +136,6 @@ int AliHLTAgentUtil::GetHandlerDescription(AliHLTComponentDataType dt,
 					   AliHLTOUTHandlerDesc& desc) const
 {
   // see header file for class documentation
-  return 0;
 
   // handler for the component statistics data blocks {'COMPSTAT':'PRIV'}
   if (dt==kAliHLTDataTypeComponentStatistics ||
@@ -157,7 +156,6 @@ AliHLTOUTHandler* AliHLTAgentUtil::GetOutputHandler(AliHLTComponentDataType dt,
 						   AliHLTUInt32_t /*spec*/)
 {
   // see header file for class documentation
-  return NULL;
 
   // handler for the component statistics data blocks {'COMPSTAT':'PRIV'}
   if (dt==kAliHLTDataTypeComponentStatistics ||
