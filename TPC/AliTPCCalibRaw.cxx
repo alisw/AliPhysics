@@ -609,13 +609,13 @@ TGraph* AliTPCCalibRaw::MakeGraphOccupancy(const Int_t type, const Int_t xType)
   return gr;
 }
 //_____________________________________________________________________
-TGraph* AliTPCCalibRaw::MakeGraphNoiseEvents()
-{
+// TGraph* AliTPCCalibRaw::MakeGraphNoiseEvents()
+// {
   //
+  // Not implemented for the moment
   //
-  //
-  return 0;  
-}
+//   return 0;  
+// }
 //_____________________________________________________________________
 TCanvas* AliTPCCalibRaw::MakeCanvasOccupancy(const Int_t xType, Bool_t sen)
 {
@@ -650,5 +650,45 @@ TCanvas* AliTPCCalibRaw::MakeCanvasOccupancy(const Int_t xType, Bool_t sen)
     gr->Draw("alp");
   }
   return c;
+}
+
+//_____________________________________________________________________
+void AliTPCCalibRaw::Merge(AliTPCCalibRaw * const sig)
+{
+  //
+  // Merge sig with this instance
+  //
+
+  if (!sig) return;
+
+  //Add last time bin distribution histogram
+  fHnDrift->Add(sig->fHnDrift);
+
+  //Add occupancy data
+  
+}
+
+//_____________________________________________________________________
+Long64_t AliTPCCalibRaw::Merge(TCollection * const list)
+{
+  //
+  // Merge all objects of this type in list
+  //
+  
+  Long64_t nmerged=1;
+  
+  TIter next(list);
+  AliTPCCalibRaw *ce=0;
+  TObject *o=0;
+  
+  while ( (o=next()) ){
+    ce=dynamic_cast<AliTPCCalibRaw*>(o);
+    if (ce){
+      Merge(ce);
+      ++nmerged;
+    }
+  }
+  
+  return nmerged;
 }
 

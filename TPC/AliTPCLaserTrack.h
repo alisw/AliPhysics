@@ -1,7 +1,12 @@
-#ifndef ALITPCLASERTRACK
-#define ALITPCLASERTRACK
+#ifndef ALITPCLASERTRACK_H
+#define ALITPCLASERTRACK_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+////////////////////////////////////////////////////////////////////////////
+//
+// Surveyed Laser Track positions
+//
+////////////////////////////////////////////////////////////////////////////
 
 #include <TString.h>
 
@@ -53,6 +58,15 @@ public:
   void SetBeam  (Int_t beam)  {fBeam   = beam;  }
   void SetRayLength (Float_t len) {fRayLength = len;}
   
+  const TVectorD* GetVecSec() const { return fVecSec; }
+  const TVectorD* GetVecP2()  const { return fVecP2;  }
+  const TVectorD* GetVecPhi() const { return fVecPhi; }
+  const TVectorD* GetVecGX()  const { return fVecGX;  }
+  const TVectorD* GetVecGY()  const { return fVecGY;  }
+  const TVectorD* GetVecGZ()  const { return fVecGZ;  }
+  const TVectorD* GetVecLX()  const { return fVecLX;  }
+  const TVectorD* GetVecLY()  const { return fVecLY;  }
+  const TVectorD* GetVecLZ()  const { return fVecLZ;  }
   
 private:
   Int_t fId;              //Laser beam id            (0-335)
@@ -65,7 +79,7 @@ private:
                           //(Splitter box on the A-Side at the bottom of the TPC)
                           //to each mirror [cm](needed for an exact drift velocity estimation)
 public:
-  TVectorD *fVecSec;      //                - sector numbers  
+  TVectorD *fVecSec;      //                - sector numbers
   TVectorD *fVecP2;       //                - P2  
   TVectorD *fVecPhi;       //               - global phi
   TVectorD *fVecGX;       // points vectors - globalX

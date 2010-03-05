@@ -3,6 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                     //
+//                  Implementation of the TPC pedestal calibration                     //
+//                                                                                     //
+/////////////////////////////////////////////////////////////////////////////////////////
+
 #include <TObjArray.h>
 #include "AliTPCCalibRawBase.h"
 
@@ -34,13 +40,13 @@ public:
   //
   AliTPCCalROC* GetCalRocPedestal (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
   AliTPCCalROC* GetCalRocSigma(Int_t sector, Bool_t force=kFALSE);        // get calibration object - sector
-  const TObjArray* GetCalPadPedestal (){return &fCalRocArrayPedestal;}  // get calibration object
-  const TObjArray* GetCalPadSigma(){return &fCalRocArraySigma;}             // get calibration object
+  const TObjArray* GetCalPadPedestal() const {return &fCalRocArrayPedestal;}  // get calibration object
+  const TObjArray* GetCalPadSigma() const {return &fCalRocArraySigma;}             // get calibration object
 
   AliTPCCalROC* GetCalRocMean (Int_t sector, Bool_t force=kFALSE);      // get calibration object - sector
   AliTPCCalROC* GetCalRocRMS(Int_t sector, Bool_t force=kFALSE);        // get calibration object - sector
-  const TObjArray* GetCalPadMean (){return &fCalRocArrayMean;}          // get calibration object
-  const TObjArray* GetCalPadRMS(){return &fCalRocArrayRMS;}             // get calibration object
+  const TObjArray* GetCalPadMean() const {return &fCalRocArrayMean;}          // get calibration object
+  const TObjArray* GetCalPadRMS()  const {return &fCalRocArrayRMS;}             // get calibration object
   
   TH2F* GetHistoPedestal  (Int_t sector, Bool_t force=kFALSE);          // get refernce histogram
   //
@@ -56,8 +62,9 @@ public:
   void  SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range for the pedestal calibration
   void  SetAnalysisTruncationRange(Float_t down, Float_t up) {fAnaMeanDown=down; fAnaMeanUp=up;}    //Set range for truncated mean analysis of the channel information
 
-  void  Merge(AliTPCCalibPedestal *ped);
-
+  void  Merge(AliTPCCalibPedestal * const ped);
+  virtual Long64_t Merge(TCollection * const list);
+  
   Bool_t TestEvent();  // Test the fast approach to fill histogram - used for test purposes
 
 private:
@@ -85,7 +92,6 @@ private:
 
   AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force);
 
-public:
   ClassDef(AliTPCCalibPedestal, 7)  // Implementation of the TPC pedestal and noise calibration
 };
 

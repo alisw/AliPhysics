@@ -20,6 +20,7 @@ class AliTPCRawStreamV3;
 class AliTPCRawStream;
 class AliTPCROC;
 class TTreeSRedirector;
+class TCollection;
 struct eventHeaderStruct;
 
 class AliTPCCalibRawBase : public TNamed {
@@ -34,17 +35,17 @@ public:
   virtual ~AliTPCCalibRawBase();
   
   
-  Bool_t ProcessEventFast(AliTPCRawStreamFast *rawStreamFast);
-  Bool_t ProcessEventFast(AliRawReader        *rawReader);
+  Bool_t ProcessEventFast(AliTPCRawStreamFast * const rawStreamFast);
+  Bool_t ProcessEventFast(AliRawReader        * const rawReader);
 
   //uses the new decoder which is compatible with the new altro format
-  Bool_t ProcessEvent(AliTPCRawStreamV3   *rawStreamV3);
-  Bool_t ProcessEvent(AliRawReader        *rawReader);
-  Bool_t ProcessEvent(eventHeaderStruct   *event);
+  Bool_t ProcessEvent(AliTPCRawStreamV3   * const rawStreamV3);
+  Bool_t ProcessEvent(AliRawReader        * const rawReader);
+  Bool_t ProcessEvent(eventHeaderStruct   * const event);
 
   //For using the old decoder use the following functions
-  Bool_t ProcessEvent(AliTPCRawStream *rawStream);
-  Bool_t ProcessEventOld(AliRawReader    *rawReader);
+  Bool_t ProcessEvent(AliTPCRawStream * const rawStream);
+  Bool_t ProcessEventOld(AliRawReader * const rawReader);
   
   virtual Int_t Update(const Int_t /*isector*/, const Int_t /*iRow*/, const Int_t /*iPad*/,
                        const Int_t /*iTimeBin*/, const Float_t /*signal*/) { return 0; }
@@ -53,7 +54,9 @@ public:
                             const Int_t /*length*/, const UInt_t /*startTimeBin*/, const UShort_t* /*signal*/) {return; }
   virtual void Analyse(){ return; }
   
-    //Setters
+  virtual Long64_t Merge(TCollection * /*list*/) {return 0;}
+  
+  //Setters
   void  SetRangeTime (Int_t firstTimeBin, Int_t lastTimeBin) { fFirstTimeBin=firstTimeBin;   fLastTimeBin=lastTimeBin;  } //Set range in which the signal is expected
   void  SetAltroMapping(AliTPCAltroMapping **mapp) { fMapping = mapp; }
   //
@@ -76,8 +79,8 @@ public:
   UInt_t GetEventType() const {return fEventType;}
   //
   AliTPCAltroMapping **GetAltroMapping() { return fMapping; }
-  const AliAltroRawStream *GetAltroRawStream() {return fAltroRawStream;}
-  const AliTPCROC *GetTPCROC() {return fROC;}
+  const AliAltroRawStream *GetAltroRawStream() const {return fAltroRawStream;}
+  const AliTPCROC *GetTPCROC() const {return fROC;}
   //
   void IncrementNevents(){++fNevents;}
   //
@@ -88,7 +91,7 @@ public:
   void       SetDebugLevel(Int_t level) {fDebugLevel = level;}
   Int_t      GetStreamLevel() const {return fStreamLevel;}
   Int_t      GetDebugLevel() const {return fDebugLevel;}
-  
+
 protected:
   Int_t fFirstTimeBin;                //  First Time bin used for analysis
   Int_t fLastTimeBin;                 //  Last Time bin used for analysis

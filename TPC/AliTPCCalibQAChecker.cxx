@@ -104,6 +104,7 @@ AliTPCCalibQAChecker::~AliTPCCalibQAChecker()
   if (fHistRep) delete fHistRep;
   if (fIterSubCheckers) delete fIterSubCheckers;
   if (fArrAlarmDescriptions) delete fArrAlarmDescriptions;
+  if (fArrSubCheckers) delete fArrSubCheckers;
 }
 //_________________________________________________________________________
 void AliTPCCalibQAChecker::AddSubChecker(AliTPCCalibQAChecker *alarm)
@@ -405,7 +406,7 @@ void AliTPCCalibQAChecker::Draw(Option_t *option)
   if (fHistRep) {DrawRepresentationHist(option); return;}
 }
 //_________________________________________________________________________
-void AliTPCCalibQAChecker::Print(Option_t *option) const
+void AliTPCCalibQAChecker::Print(Option_t * const option) const
 {
   //
   // print the quality status. If we have sub checkers print recursively
@@ -471,7 +472,7 @@ void AliTPCCalibQAChecker::SetQualityDescription(const char* text, const Quality
 const AliTPCCalibQAChecker* AliTPCCalibQAChecker::GetSubChecker(const char* name, Bool_t recursive) const
 {
   //
-  //
+  // Return subnode with 'name'
   //
   TString sname(name);
   if (sname==GetName()) return this;
@@ -602,7 +603,7 @@ const char* AliTPCCalibQAChecker::QualityDescription(const QualityFlag_t quality
 Int_t AliTPCCalibQAChecker::DrawInPad(TVirtualPad *pad, Int_t sub)
 {
   //
-  //
+  // Draw recursively in 'pad'
   //
   
   if (fArrSubCheckers){
@@ -650,7 +651,7 @@ void AliTPCCalibQAChecker::DrawSubNodes(Option_t */*option*/)
   mother->Update();
 }
 //_________________________________________________________________________
-void AliTPCCalibQAChecker::DrawRepresentationHist(Option_t *option)
+void AliTPCCalibQAChecker::DrawRepresentationHist(const Option_t *option)
 {
   //
   // Draw the representation histogram

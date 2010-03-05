@@ -24,6 +24,7 @@ class AliTPCRawStream;
 class AliTPCRawStreamFast;
 class TGraph;
 class TMap;
+class TCollection;
 
 struct eventHeaderStruct;
 
@@ -80,8 +81,8 @@ public:
   TVectorF* GetTMeanEvents(Int_t sector, Bool_t force=kFALSE);
   TVectorF* GetQMeanEvents(Int_t sector, Bool_t force=kFALSE);
   
-  TVectorD*   GetEventTimes()     { return &fVEventTime;      }
-  TVectorD*   GetEventIds()       { return &fVEventNumber;    }
+  const TVectorD*   GetEventTimes()  const   { return &fVEventTime;      }
+  const TVectorD*   GetEventIds()    const   { return &fVEventNumber;    }
   
   //
   void  SetRangeRefQ  (Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsQ   = nBins; fXminQ   = xMin; fXmaxQ   = xMax; }   //Set range for Q reference histograms
@@ -95,7 +96,7 @@ public:
   //
   void  SetEventInfo(UInt_t runNumber,UInt_t timestamp, UInt_t eventId){ fRunNumber=runNumber; fTimeStamp=timestamp; fEventId=eventId;}
   //
-  void  SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
+  void  SetPedestalDatabase(AliTPCCalPad * const pedestalTPC, AliTPCCalPad * const padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
   void  SetIsZeroSuppressed(Bool_t zs=kTRUE) { fIsZeroSuppressed=zs; }
   void  SetSecRejectRatio(Float_t ratio) { fSecRejectRatio=ratio; }
   //Getters
@@ -110,10 +111,15 @@ public:
   Float_t GetPeakIntegralPlus() const {return fPeakIntPlus;}
   
   
-  void Merge(AliTPCCalibCE *ce);
+  void Merge(AliTPCCalibCE * const ce);
+  virtual Long64_t Merge(TCollection * const list);
   
   TGraph *MakeGraphTimeCE(Int_t sector, Int_t xVariable=0, Int_t fitType=0, Int_t fitParameter=0);
-    
+  
+protected:
+  virtual void EndEvent();
+  virtual void ResetEvent();
+  
 private:
     // reference histogram ranges
   Int_t   fNbinsT0;                 //  Number of bins for T0 reference histogram
@@ -213,8 +219,6 @@ private:
   
   TObjArray* GetParamArray(Int_t sector, TObjArray *arr, Bool_t force=kFALSE) const;
   
-  virtual void EndEvent();
-  virtual void ResetEvent();
   void ResetPad();
   void ProcessPad();
   //debug

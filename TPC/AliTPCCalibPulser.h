@@ -75,18 +75,24 @@ public:
   
   void  SetIsZeroSuppressed(Bool_t zs=kTRUE){ fIsZeroSuppressed=zs;}
   
-  void  SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
-  void  SetOutliers(AliTPCCalPad *outliers)  {fOutliers = outliers;}
+  void  SetPedestalDatabase(AliTPCCalPad * const pedestalTPC, AliTPCCalPad * const padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
+  void  SetOutliers(AliTPCCalPad * const outliers)  {fOutliers = outliers;}
   
   Bool_t GetIsZeroSupperssed() const { return fIsZeroSuppressed; }
 
   Float_t GetPeakIntegralMinus() const {return fPeakIntMinus;}
   Float_t GetPeakIntegralPlus() const {return fPeakIntPlus;}
   
-  void Merge(AliTPCCalibPulser *sig);
+  void Merge(AliTPCCalibPulser * const sig);
+  virtual Long64_t Merge(TCollection * const list);
+  
   //
   // Test functions
   TObjArray* TestBinning();
+  
+protected:
+  virtual void ResetEvent();
+  virtual void EndEvent();
   
 private:
     // reference histogram ranges
@@ -169,10 +175,6 @@ private:
   TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
   TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
 
-protected:
-  virtual void ResetEvent();
-  virtual void EndEvent();
-  
   
   ClassDef(AliTPCCalibPulser,5)           //Implementation of the TPC pulser calibration
 };

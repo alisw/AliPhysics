@@ -273,6 +273,7 @@ END_HTML */
 #include <TDirectory.h>
 #include <TSystem.h>
 #include <TFile.h>
+#include <TCollection.h>
 
 //AliRoot includes
 #include "AliLog.h"
@@ -922,7 +923,7 @@ void AliTPCCalibCE::ProcessPad()
   if ( (fNevents == 0) || (fOldRunNumber!=fRunNumber) ) return;  // return because we don't have Time0 info for the CE yet
   
   UpdateCETimeRef();                       // update the time refenrence for the current sector
-  if ( fCurrentCETimeRef==0 ) return;      //return if we don't have time 0 info, eg if only one side has laser
+  if ( fCurrentCETimeRef<1e-30 ) return;      //return if we don't have time 0 info, eg if only one side has laser
   TVectorD param(3);
   Float_t  qSum;
   FindCESignal(param, qSum, maxima);
@@ -1056,11 +1057,11 @@ void AliTPCCalibCE::EndEvent()
 	    //set values for temporary roc calibration class
       if ( iSec < 36 ) {
         calIroc->SetValue(iChannel, time);
-        if ( time == 0 ) calIrocOutliers.SetValue(iChannel,1);
+        if ( TMath::Abs(time) < 1e-30 ) calIrocOutliers.SetValue(iChannel,1);
 
       } else {
         calOroc->SetValue(iChannel, time);
-        if ( time == 0 ) calOrocOutliers.SetValue(iChannel,1);
+        if ( TMath::Abs(time) < 1e-30 ) calOrocOutliers.SetValue(iChannel,1);
       }
 
       if ( (fNevents>0) && (fOldRunNumber==fRunNumber) )
@@ -1503,117 +1504,150 @@ void AliTPCCalibCE::ResetPad()
     fPadNoise     = -1;
 }
 //_____________________________________________________________________
-void AliTPCCalibCE::Merge(AliTPCCalibCE *ce)
+void AliTPCCalibCE::Merge(AliTPCCalibCE * const ce)
 {
-    //
-    //  Merge ce to the current AliTPCCalibCE
-    //
-
-    //merge histograms
-    for (Int_t iSec=0; iSec<72; ++iSec){
-	TH2S *hRefQmerge   = ce->GetHistoQ(iSec);
-	TH2S *hRefT0merge  = ce->GetHistoT0(iSec);
-	TH2S *hRefRMSmerge = ce->GetHistoRMS(iSec);
-
-
-	if ( hRefQmerge ){
-	    TDirectory *dir = hRefQmerge->GetDirectory(); hRefQmerge->SetDirectory(0);
-	    TH2S *hRefQ   = GetHistoQ(iSec);
-	    if ( hRefQ ) hRefQ->Add(hRefQmerge);
-	    else {
-		TH2S *hist = new TH2S(*hRefQmerge);
-                hist->SetDirectory(0);
-		fHistoQArray.AddAt(hist, iSec);
-	    }
-	    hRefQmerge->SetDirectory(dir);
-	}
-	if ( hRefT0merge ){
-	    TDirectory *dir = hRefT0merge->GetDirectory(); hRefT0merge->SetDirectory(0);
-	    TH2S *hRefT0  = GetHistoT0(iSec);
-	    if ( hRefT0 ) hRefT0->Add(hRefT0merge);
-	    else {
-		TH2S *hist = new TH2S(*hRefT0merge);
-                hist->SetDirectory(0);
-		fHistoT0Array.AddAt(hist, iSec);
-	    }
-	    hRefT0merge->SetDirectory(dir);
-	}
-	if ( hRefRMSmerge ){
-	    TDirectory *dir = hRefRMSmerge->GetDirectory(); hRefRMSmerge->SetDirectory(0);
-	    TH2S *hRefRMS = GetHistoRMS(iSec);
-	    if ( hRefRMS ) hRefRMS->Add(hRefRMSmerge);
-	    else {
-		TH2S *hist = new TH2S(*hRefRMSmerge);
-                hist->SetDirectory(0);
-		fHistoRMSArray.AddAt(hist, iSec);
-	    }
-	    hRefRMSmerge->SetDirectory(dir);
-	}
-
+  //
+  //  Merge ce to the current AliTPCCalibCE
+  //
+  
+  //merge histograms
+  for (Int_t iSec=0; iSec<72; ++iSec){
+    TH2S *hRefQmerge   = ce->GetHistoQ(iSec);
+    TH2S *hRefT0merge  = ce->GetHistoT0(iSec);
+    TH2S *hRefRMSmerge = ce->GetHistoRMS(iSec);
+    
+    
+    if ( hRefQmerge ){
+      TDirectory *dir = hRefQmerge->GetDirectory(); hRefQmerge->SetDirectory(0);
+      TH2S *hRefQ   = GetHistoQ(iSec);
+      if ( hRefQ ) hRefQ->Add(hRefQmerge);
+      else {
+        TH2S *hist = new TH2S(*hRefQmerge);
+        hist->SetDirectory(0);
+        fHistoQArray.AddAt(hist, iSec);
+      }
+      hRefQmerge->SetDirectory(dir);
     }
-
+    if ( hRefT0merge ){
+      TDirectory *dir = hRefT0merge->GetDirectory(); hRefT0merge->SetDirectory(0);
+      TH2S *hRefT0  = GetHistoT0(iSec);
+      if ( hRefT0 ) hRefT0->Add(hRefT0merge);
+      else {
+        TH2S *hist = new TH2S(*hRefT0merge);
+        hist->SetDirectory(0);
+        fHistoT0Array.AddAt(hist, iSec);
+      }
+      hRefT0merge->SetDirectory(dir);
+    }
+    if ( hRefRMSmerge ){
+      TDirectory *dir = hRefRMSmerge->GetDirectory(); hRefRMSmerge->SetDirectory(0);
+      TH2S *hRefRMS = GetHistoRMS(iSec);
+      if ( hRefRMS ) hRefRMS->Add(hRefRMSmerge);
+      else {
+        TH2S *hist = new TH2S(*hRefRMSmerge);
+        hist->SetDirectory(0);
+        fHistoRMSArray.AddAt(hist, iSec);
+      }
+      hRefRMSmerge->SetDirectory(dir);
+    }
+    
+  }
+  
     // merge time information
-
-
-    Int_t nCEevents = ce->GetNeventsProcessed();
-    for (Int_t iSec=0; iSec<72; ++iSec){
-	TObjArray *arrPol1CE  = ce->GetParamArrayPol1(iSec);
-	TObjArray *arrPol2CE  = ce->GetParamArrayPol2(iSec);
-	TVectorF *vMeanTimeCE = ce->GetTMeanEvents(iSec);
-	TVectorF *vMeanQCE    = ce->GetQMeanEvents(iSec);
-
-	TObjArray *arrPol1  = 0x0;
-	TObjArray *arrPol2  = 0x0;
-	TVectorF *vMeanTime = 0x0;
-	TVectorF *vMeanQ    = 0x0;
-
-	//resize arrays
-	if ( arrPol1CE && arrPol2CE ){
-	    arrPol1 = GetParamArrayPol1(iSec,kTRUE);
-	    arrPol2 = GetParamArrayPol2(iSec,kTRUE);
-	    arrPol1->Expand(fNevents+nCEevents);
-            arrPol2->Expand(fNevents+nCEevents);
-	}
-	if ( vMeanTimeCE && vMeanQCE ){
-	    vMeanTime = GetTMeanEvents(iSec,kTRUE);
-	    vMeanQ    = GetQMeanEvents(iSec,kTRUE);
-	    vMeanTime->ResizeTo(fNevents+nCEevents);
-	    vMeanQ->ResizeTo(fNevents+nCEevents);
-	}
-
-
-	for (Int_t iEvent=0; iEvent<nCEevents; ++iEvent){
-	    if ( arrPol1CE && arrPol2CE ){
-		TVectorD *paramPol1 = (TVectorD*)(arrPol1CE->UncheckedAt(iEvent));
-		TVectorD *paramPol2 = (TVectorD*)(arrPol2CE->UncheckedAt(iEvent));
-		if ( paramPol1 && paramPol2 ){
-		    GetParamArrayPol1(iSec,kTRUE)->AddAt(new TVectorD(*paramPol1), fNevents+iEvent);
-		    GetParamArrayPol2(iSec,kTRUE)->AddAt(new TVectorD(*paramPol2), fNevents+iEvent);
-		}
-	    }
-	    if ( vMeanTimeCE && vMeanQCE ){
-		vMeanTime->GetMatrixArray()[fNevents+iEvent]=vMeanTimeCE->GetMatrixArray()[iEvent];
-                vMeanQ->GetMatrixArray()[fNevents+iEvent]=vMeanQCE->GetMatrixArray()[iEvent];
-	    }
-	}
+  
+  
+  Int_t nCEevents = ce->GetNeventsProcessed();
+  for (Int_t iSec=0; iSec<72; ++iSec){
+    TObjArray *arrPol1CE  = ce->GetParamArrayPol1(iSec);
+    TObjArray *arrPol2CE  = ce->GetParamArrayPol2(iSec);
+    TVectorF *vMeanTimeCE = ce->GetTMeanEvents(iSec);
+    TVectorF *vMeanQCE    = ce->GetQMeanEvents(iSec);
+    
+    TObjArray *arrPol1  = 0x0;
+    TObjArray *arrPol2  = 0x0;
+    TVectorF *vMeanTime = 0x0;
+    TVectorF *vMeanQ    = 0x0;
+    
+  //resize arrays
+    if ( arrPol1CE && arrPol2CE ){
+      arrPol1 = GetParamArrayPol1(iSec,kTRUE);
+      arrPol2 = GetParamArrayPol2(iSec,kTRUE);
+      arrPol1->Expand(fNevents+nCEevents);
+      arrPol2->Expand(fNevents+nCEevents);
     }
-
-
-
-    TVectorD*  eventTimes  = ce->GetEventTimes();
-    TVectorD*  eventIds  = ce->GetEventIds();
-    fVEventTime.ResizeTo(fNevents+nCEevents);
-    fVEventNumber.ResizeTo(fNevents+nCEevents);
-
+    if ( vMeanTimeCE && vMeanQCE ){
+      vMeanTime = GetTMeanEvents(iSec,kTRUE);
+      vMeanQ    = GetQMeanEvents(iSec,kTRUE);
+      vMeanTime->ResizeTo(fNevents+nCEevents);
+      vMeanQ->ResizeTo(fNevents+nCEevents);
+    }
+    
+    
     for (Int_t iEvent=0; iEvent<nCEevents; ++iEvent){
-	Double_t evTime     = eventTimes->GetMatrixArray()[iEvent];
-        Double_t evId       = eventIds->GetMatrixArray()[iEvent];
-	fVEventTime.GetMatrixArray()[fNevents+iEvent] = evTime;
-	fVEventNumber.GetMatrixArray()[fNevents+iEvent] = evId;
+      if ( arrPol1CE && arrPol2CE ){
+        TVectorD *paramPol1 = (TVectorD*)(arrPol1CE->UncheckedAt(iEvent));
+        TVectorD *paramPol2 = (TVectorD*)(arrPol2CE->UncheckedAt(iEvent));
+        if ( paramPol1 && paramPol2 ){
+          GetParamArrayPol1(iSec,kTRUE)->AddAt(new TVectorD(*paramPol1), fNevents+iEvent);
+          GetParamArrayPol2(iSec,kTRUE)->AddAt(new TVectorD(*paramPol2), fNevents+iEvent);
+        }
+      }
+      if ( vMeanTimeCE && vMeanQCE ){
+        vMeanTime->GetMatrixArray()[fNevents+iEvent]=vMeanTimeCE->GetMatrixArray()[iEvent];
+        vMeanQ->GetMatrixArray()[fNevents+iEvent]=vMeanQCE->GetMatrixArray()[iEvent];
+      }
     }
-    fNevents+=nCEevents; //increase event counter
-
+  }
+  
+  
+  
+  const TVectorD&  eventTimes  = ce->fVEventTime;
+  const TVectorD&  eventIds    = ce->fVEventNumber;
+  const TVectorF&  time0SideA  = ce->fVTime0SideA;
+  const TVectorF&  time0SideC  = ce->fVTime0SideC;
+  fVEventTime.ResizeTo(fNevents+nCEevents);
+  fVEventNumber.ResizeTo(fNevents+nCEevents);
+  fVTime0SideA.ResizeTo(fNevents+nCEevents);
+  fVTime0SideC.ResizeTo(fNevents+nCEevents);
+  
+  for (Int_t iEvent=0; iEvent<nCEevents; ++iEvent){
+    Double_t evTime     = eventTimes.GetMatrixArray()[iEvent];
+    Double_t evId       = eventIds.GetMatrixArray()[iEvent];
+    Float_t  t0SideA    = time0SideA.GetMatrixArray()[iEvent];
+    Float_t  t0SideC    = time0SideC.GetMatrixArray()[iEvent];
+    
+    fVEventTime.GetMatrixArray()[fNevents+iEvent]   = evTime;
+    fVEventNumber.GetMatrixArray()[fNevents+iEvent] = evId;
+    fVTime0SideA.GetMatrixArray()[fNevents+iEvent]  = t0SideA;
+    fVTime0SideC.GetMatrixArray()[fNevents+iEvent]  = t0SideC;
+  }
+  fNevents+=nCEevents; //increase event counter
 }
+
+//_____________________________________________________________________
+Long64_t AliTPCCalibCE::Merge(TCollection * const list)
+{
+  //
+  // Merge all objects of this type in list
+  //
+
+  Long64_t nmerged=1;
+
+  TIter next(list);
+  AliTPCCalibCE *ce=0;
+  TObject *o=0;
+
+  while ( (o=next()) ){
+    ce=dynamic_cast<AliTPCCalibCE*>(o);
+    if (ce){
+      Merge(ce);
+      ++nmerged;
+    }
+  }
+
+  return nmerged;
+}
+
 //_____________________________________________________________________
 TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitType, Int_t fitParameter)
 {

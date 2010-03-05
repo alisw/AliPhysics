@@ -120,7 +120,7 @@ AliTPCCalibRawBase::~AliTPCCalibRawBase()
     return *this;
   }
 //_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
+Bool_t AliTPCCalibRawBase::ProcessEventFast(AliTPCRawStreamFast * const rawStreamFast)
 {
   //
   // Event Processing loop - AliTPCRawStreamFast
@@ -150,7 +150,7 @@ Bool_t AliTPCCalibRawBase::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
   return withInput;
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEventFast(AliRawReader *rawReader)
+Bool_t AliTPCCalibRawBase::ProcessEventFast(AliRawReader * const rawReader)
 {
   //
   //  Event processing loop - AliRawReader
@@ -167,7 +167,7 @@ Bool_t AliTPCCalibRawBase::ProcessEventFast(AliRawReader *rawReader)
   return res;
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStreamV3 *rawStreamV3)
+Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStreamV3 * const rawStreamV3)
 {
   //
   // Event Processing loop - AliTPCRawStreamV3
@@ -216,7 +216,7 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStreamV3 *rawStreamV3)
   return withInput;
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEvent(AliRawReader *rawReader)
+Bool_t AliTPCCalibRawBase::ProcessEvent(AliRawReader * const rawReader)
 {
   //
   //  Event processing loop - AliRawReader
@@ -233,7 +233,7 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(AliRawReader *rawReader)
   return res;
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStream *rawStream)
+Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStream * const rawStream)
 {
   //
   // Event Processing loop - AliTPCRawStream
@@ -270,7 +270,7 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStream *rawStream)
   return withInput;
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEventOld(AliRawReader *rawReader)
+Bool_t AliTPCCalibRawBase::ProcessEventOld(AliRawReader * const rawReader)
 {
   //
   //  Event processing loop - AliRawReader
@@ -287,7 +287,7 @@ Bool_t AliTPCCalibRawBase::ProcessEventOld(AliRawReader *rawReader)
   return ProcessEvent(&rawStream);
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEvent(eventHeaderStruct *event)
+Bool_t AliTPCCalibRawBase::ProcessEvent(eventHeaderStruct * const event)
 {
   //
   //  Event processing loop - date event

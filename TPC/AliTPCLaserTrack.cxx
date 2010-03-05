@@ -13,6 +13,33 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// Surveyed Laser Track positions                                         //
+// the position and direction information are stored in                   //
+// the AliExternalTrackParam base class                                   //
+// This class extends this information by identification parameters       //
+/*
+
+//Dump positions to a tree:
+AliTPCLaserTrack::LoadTracks();
+TObjArray *arr=AliTPCLaserTrack::GetTracks();
+TTreeSRedirector *s=new TTreeSRedirector("LaserTracks.root");
+TIter next(arr);
+TObject *o=0x0;
+while ( (o=next()) ) (*s) << "tracks" << "l.=" << o << "\n";
+delete s;
+
+//draw something
+TFile f("LaserTracks.root");
+TTree *tracks=(TTree*)f.Get("tracks");
+tracks->Draw("fVecGY.fElements:fVecGX.fElements");
+
+ tracks->Draw("fVecGY.fElements:fVecGX.fElements>>h(500,-250,250,500,-250,250)","fId<7")
+*/
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 
 #include <TObjArray.h>
 #include <TFile.h>
@@ -20,6 +47,9 @@
 #include <TSystem.h>
 
 #include "AliLog.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
 #include "AliTPCLaserTrack.h"
 #include "AliTPCROC.h"
 
@@ -46,7 +76,7 @@ AliTPCLaserTrack::AliTPCLaserTrack() :
   fVecLZ(0)        // points vectors - localZ
 {
   //
-  // Default constructor
+//   // Default constructor
   //
 
 }
@@ -142,37 +172,35 @@ AliTPCLaserTrack::~AliTPCLaserTrack(){
 
 void AliTPCLaserTrack::LoadTracks()
 {
-    //
-    // Load all design positions from file into the static array fgArrLaserTracks
-    //
-
-    if ( fgArrLaserTracks ) return;
-
-    TString dataFileName("$ALICE_ROOT/TPC/Calib/LaserTracks.root");  //Path to the Data File
-
-    TFile *f=TFile::Open(gSystem->ExpandPathName(dataFileName.Data()));
-    if ( !f || !f->IsOpen() ){
-//	AliWarning(Form("Could not open laser data file: '%s'",dataFileName.Data()));
-//	AliWarning("Could not open laser data file");
-	return;
-    }
-    TObjArray *arrLaserTracks = (TObjArray*)f->Get("arrLaserTracks");
-    if ( !arrLaserTracks ) {
+  //
+  // Load all design positions from file into the static array fgArrLaserTracks
+  //
+  
+  if ( fgArrLaserTracks ) return;
+  
+  AliCDBManager *man=AliCDBManager::Instance();
+  if (!man->GetDefaultStorage()) man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  if (man->GetRun()<0) man->SetRun(0);
+  AliCDBEntry *entry=man->Get(AliCDBPath("TPC/Calib/LaserTracks"));
+  TObjArray *arrLaserTracks = (TObjArray*)entry->GetObject();
+  arrLaserTracks->SetOwner();
+  entry->SetOwner(kTRUE);
+  
+  if ( !arrLaserTracks ) {
 //	AliWarning(Form("Could not get laser position data from file: '%s'",fgkDataFileName));
-        return;
-    }
-
-    fgArrLaserTracks = new TObjArray(fgkNLaserTracks);
-    for (Int_t itrack=0; itrack<fgkNLaserTracks; itrack++){
-	AliTPCLaserTrack *ltr = (AliTPCLaserTrack*)arrLaserTracks->At(itrack);
-	if ( !ltr ){
+    return;
+  }
+  
+  fgArrLaserTracks = new TObjArray(fgkNLaserTracks);
+  for (Int_t itrack=0; itrack<fgkNLaserTracks; itrack++){
+    AliTPCLaserTrack *ltr = (AliTPCLaserTrack*)arrLaserTracks->At(itrack);
+    if ( !ltr ){
 //	    AliWarning(Form("No informatino found for Track %d!",itrack));
-	    continue;
-	}
-	ltr->UpdatePoints();
-        fgArrLaserTracks->AddAt(new AliTPCLaserTrack(*ltr),itrack);
+      continue;
     }
-    delete f;
+    ltr->UpdatePoints();
+    fgArrLaserTracks->AddAt(new AliTPCLaserTrack(*ltr),itrack);
+  }
 }
 
 
@@ -180,7 +208,7 @@ void AliTPCLaserTrack::UpdatePoints(){
   //
   // update track points
   //
-  const Double_t kMaxSnp=0.99;
+  const Double_t kMaxSnp=0.97;
   AliTPCROC* roc = AliTPCROC::Instance();
   //
   //
@@ -197,7 +225,7 @@ void AliTPCLaserTrack::UpdatePoints(){
 
   }
   for (Int_t irow=158; irow>=0; irow--){
-    (*fVecSec)[irow]= 0;       //                - 
+    (*fVecSec)[irow]= -1;       //                -
     (*fVecP2)[irow] = 0;       //                - P2  -snp
     (*fVecPhi)[irow]= 0;       //                - global phi
     (*fVecGX)[irow] = 0;       // points vectors - globalX

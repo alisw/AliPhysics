@@ -3,6 +3,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 #include <TObject.h>
+////////////////////////////////////////////////////////////////////////////
+//
+// Simple configuration file parser
+//
+////////////////////////////////////////////////////////////////////////////
 
 class TMap;
 
@@ -17,13 +22,13 @@ public:
   virtual ~AliTPCConfigDA();
   
   Int_t ParseConfigFileTxt(const char* cfgfile);
-  Float_t GetValue(const char* name); 
+  Float_t GetValue(const char* name) const; 
 
   const TMap* GetConfigurationMap() const {return fConfigMap;}
   void ResetMap();
 
 private:
-  TMap *fConfigMap;
+  TMap *fConfigMap;                   // Configuration map
   
   ClassDef(AliTPCConfigDA, 1)         // TPC DA configuration file parser
 };

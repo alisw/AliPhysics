@@ -1005,7 +1005,7 @@ Bool_t AliTPCCalibPulser::IsEdgePad(Int_t sector, Int_t row, Int_t pad)
   return kFALSE;
 }
 //_____________________________________________________________________
-void AliTPCCalibPulser::Merge(AliTPCCalibPulser *sig)
+void AliTPCCalibPulser::Merge(AliTPCCalibPulser * const sig)
 {
     //
     //  Merge reference histograms of sig to the current AliTPCCalibPulser
@@ -1063,6 +1063,32 @@ void AliTPCCalibPulser::Merge(AliTPCCalibPulser *sig)
     sig->fHMeanTimeSector->SetDirectory(dir);
   }
 }
+
+
+//_____________________________________________________________________
+Long64_t AliTPCCalibPulser::Merge(TCollection * const list)
+{
+  //
+  // Merge all objects of this type in list
+  //
+  
+  Long64_t nmerged=1;
+  
+  TIter next(list);
+  AliTPCCalibPulser *ce=0;
+  TObject *o=0;
+  
+  while ( (o=next()) ){
+    ce=dynamic_cast<AliTPCCalibPulser*>(o);
+    if (ce){
+      Merge(ce);
+      ++nmerged;
+    }
+  }
+  
+  return nmerged;
+}
+
 //_____________________________________________________________________
 void AliTPCCalibPulser::Analyse()
 {

@@ -1,5 +1,5 @@
-#ifndef ALITPCCALIBALTROHEADERS_H
-#define ALITPCCALIBALTROHEADERS_H
+#ifndef ALITPCCALIBRAW_H
+#define ALITPCCALIBRAW_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -66,12 +66,15 @@ public:
   TVectorF *MakeVectL1PhaseDist();
   //Occupancy info
   TGraph*  MakeGraphOccupancy(const Int_t type=0, const Int_t xType=0);
-  TGraph*  MakeGraphNoiseEvents();
+//   TGraph*  MakeGraphNoiseEvents();
   TCanvas* MakeCanvasOccupancy(const Int_t xType=1, Bool_t sen=kFALSE);
 
   const THnSparseI *GetHnDrift() const {return fHnDrift;}
 //   AliTPCCalPad *CreateCalPadL1Mean();
 //   AliTPCCalPad *CreateCalPadL1RMS();
+  
+  void Merge(AliTPCCalibRaw * const sig);
+  virtual Long64_t Merge(TCollection * const list);
   
 private:
   Int_t   fPeakDetMinus;             //  Consecutive timebins on rising edge to be regarded as a signal
@@ -120,7 +123,7 @@ private:
   Bool_t IsEdgePad(Int_t sector, Int_t row, Int_t pad) const;
   void CreateDVhist();
   
-  AliTPCCalibRaw(AliTPCCalibRaw &calib);
+  AliTPCCalibRaw(const AliTPCCalibRaw &calib);
   AliTPCCalibRaw& operator = (const  AliTPCCalibRaw &source);
 
   ClassDef(AliTPCCalibRaw,3) //  Analysis of the Altro header information

@@ -524,7 +524,7 @@ AliTPCCalROC* AliTPCCalibPedestal::GetCalRocRMS(Int_t sector, Bool_t force)
 
 
 //_____________________________________________________________________
-void AliTPCCalibPedestal::Merge(AliTPCCalibPedestal *ped)
+void AliTPCCalibPedestal::Merge(AliTPCCalibPedestal * const ped)
 {
   //
   //  Merge reference histograms of sig to the current AliTPCCalibSignal
@@ -533,25 +533,48 @@ void AliTPCCalibPedestal::Merge(AliTPCCalibPedestal *ped)
   // merge histograms
   for (Int_t iSec=0; iSec<72; ++iSec){
     TH2F *hRefPedMerge   = ped->GetHistoPedestal(iSec);
-
+    
     if ( hRefPedMerge ){
       TDirectory *dir = hRefPedMerge->GetDirectory(); hRefPedMerge->SetDirectory(0);
       TH2F *hRefPed   = GetHistoPedestal(iSec);
       if ( hRefPed ) hRefPed->Add(hRefPedMerge);
       else {
-	TH2F *hist = new TH2F(*hRefPedMerge);
-	hist->SetDirectory(0);
-	fHistoPedestalArray.AddAt(hist, iSec);
+        TH2F *hist = new TH2F(*hRefPedMerge);
+        hist->SetDirectory(0);
+        fHistoPedestalArray.AddAt(hist, iSec);
       }
       hRefPedMerge->SetDirectory(dir);
     }
   }
-
+  
   // merge array
   // ...
-
+  
 }
 
+//_____________________________________________________________________
+Long64_t AliTPCCalibPedestal::Merge(TCollection * const list)
+{
+  //
+  // Merge all objects of this type in list
+  //
+  
+  Long64_t nmerged=1;
+  
+  TIter next(list);
+  AliTPCCalibPedestal *ce=0;
+  TObject *o=0;
+  
+  while ( (o=next()) ){
+    ce=dynamic_cast<AliTPCCalibPedestal*>(o);
+    if (ce){
+      Merge(ce);
+      ++nmerged;
+    }
+  }
+  
+  return nmerged;
+}
 
 //_____________________________________________________________________
 void AliTPCCalibPedestal::Analyse() 
@@ -567,7 +590,7 @@ void AliTPCCalibPedestal::Analyse()
 
   TH1F *hChannel=new TH1F("hChannel","hChannel",nbinsAdc,fAdcMin,fAdcMax);
   
-  Float_t *array_hP=0;  
+  Float_t *arrayhP=0;  
 
   for (Int_t iSec=0; iSec<72; ++iSec){
     TH2F *hP = GetHistoPedestal(iSec);
@@ -578,14 +601,14 @@ void AliTPCCalibPedestal::Analyse()
     AliTPCCalROC *rocMean     = GetCalRocMean(iSec,kTRUE);
     AliTPCCalROC *rocRMS      = GetCalRocRMS(iSec,kTRUE);
 
-    array_hP = hP->GetArray();
+    arrayhP = hP->GetArray();
     UInt_t nChannels = fROC->GetNChannels(iSec);
 
     for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
       Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
       //calculate mean and sigma using a gaus fit
       //Double_t ret =
-      AliMathBase::FitGaus(array_hP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
+      AliMathBase::FitGaus(arrayhP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
       // if the fitting failed set noise and pedestal to 0
       // is now done in AliMathBase::FitGaus !
 //       if ( ret == -4 ) {
@@ -599,7 +622,7 @@ void AliTPCCalibPedestal::Analyse()
       rocPedestal->SetValue(iChannel,param[1]);
       rocSigma->SetValue(iChannel,param[2]);
       //calculate mean and RMS using a truncated means
-      hChannel->Set(nbinsAdc+2,array_hP+offset-1);
+      hChannel->Set(nbinsAdc+2,arrayhP+offset-1);
       hChannel->SetEntries(param[3]);
       param[1]=0;
       param[2]=0;

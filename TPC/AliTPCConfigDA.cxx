@@ -134,7 +134,7 @@ Int_t AliTPCConfigDA::ParseConfigFileTxt(const char* cfgfile)
  return 0;
 }
 //_____________________________________________________________________
-Float_t AliTPCConfigDA::GetValue(const char *key)
+Float_t AliTPCConfigDA::GetValue(const char *key) const
 {
   //
   //Get value for the speciefied key
