@@ -32,5 +32,6 @@
 #pragma link C++ class AliFlowAnalysisWithQCumulants+;
 #pragma link C++ class AliFlowAnalysisWithFittingQDistribution+;
 #pragma link C++ class AliFlowAnalysisWithMixedHarmonics+;
+#pragma link C++ class AliFlowAnalysisWithNestedLoops+;
 
 #endif

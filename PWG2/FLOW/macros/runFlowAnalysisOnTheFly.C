@@ -17,6 +17,7 @@ Bool_t LYZ2SUM  = kFALSE;
 Bool_t LYZ2PROD = kFALSE;
 Bool_t LYZEP    = kFALSE;
 Bool_t MH       = kTRUE; // mixed harmonics 
+Bool_t NL       = kFALSE; // nested loops
 Bool_t MCEP_AH  = kFALSE; // MCEP in another harmonic 
 //--------------------------------------------------------------------------------------
 
@@ -261,6 +262,7 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  AliFlowAnalysisWithLYZEventPlane *lyzep = NULL;
  AliFlowAnalysisWithScalarProduct *sp = NULL;
  AliFlowAnalysisWithMixedHarmonics *mh = NULL;
+ AliFlowAnalysisWithNestedLoops *nl = NULL;
  AliFlowAnalysisWithMCEventPlane *mcep = NULL;   
  AliFlowAnalysisWithMCEventPlane *mcep_AH = NULL;   
 
@@ -284,12 +286,18 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  {
   AliFlowAnalysisWithMixedHarmonics *mh = new AliFlowAnalysisWithMixedHarmonics();
   mh->SetCorrelatorInteger(1); // integer n in expression cos[n(2phi1-phi2-phi3)] = v2n*vn^2
-  mh->SetMinMultiplicity(3); 
-  mh->SetNoOfMultipicityBins(10);  
-  mh->SetMultipicityBinWidth(100);   
+  mh->SetMinMultiplicity(100); 
+  mh->SetNoOfMultipicityBins(5);  
+  mh->SetMultipicityBinWidth(200);   
   mh->Init(); 
  }
  
+ // NL = nested loops:
+ if(NL) {
+   AliFlowAnalysisWithNestedLoops *nl = new AliFlowAnalysisWithNestedLoops();
+   nl->Init();
+ }
+
  // QC = Q-cumulants  
  if(QC) { 
    AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
@@ -522,6 +530,7 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
    if(LYZEP)   lyzep->Make(event,ep);
    if(SP)      sp->Make(event);
    if(MH)      mh->Make(event);
+   if(NL)      nl->Make(event);
    if(MCEP_AH) mcep_ah->Make(event);
    
    delete event;
@@ -533,8 +542,8 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  TString outputFileName = "AnalysisResults.root";  
  TFile *outputFile = new TFile(outputFileName.Data(),"RECREATE");
  // create a new file for each method wich will hold list with final results:
- const Int_t nMethods = 12;
- TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","MCEP_AH"};
+ const Int_t nMethods = 13;
+ TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL","MCEP_AH"};
  TDirectoryFile *dirFileFinal[nMethods] = {NULL};
  TString fileName[nMethods]; 
  for(Int_t i=0;i<nMethods;i++)
@@ -558,7 +567,8 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  if(LYZ2PROD){lyz2prod->Finish();lyz2prod->WriteHistograms(dirFileFinal[8]);}
  if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms(dirFileFinal[9]);}
  if(MH)      {mh->Finish();      mh->WriteHistograms(dirFileFinal[10]);}
- if(MCEP_AH) {mcep_ah->Finish(); mcep_ah->WriteHistograms(dirFileFinal[11]);}
+ if(NL)      {nl->Finish();      nl->WriteHistograms(dirFileFinal[11]);}
+ if(MCEP_AH) {mcep_ah->Finish(); mcep_ah->WriteHistograms(dirFileFinal[12]);}
  //---------------------------------------------------------------------------------------  
  
  outputFile->Close();
