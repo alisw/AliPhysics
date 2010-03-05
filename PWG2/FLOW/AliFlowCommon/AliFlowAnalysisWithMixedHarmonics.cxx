@@ -45,7 +45,7 @@
 #include "AliFlowAnalysisWithMixedHarmonics.h"
 
 class TH1;
-class TList;
+class TList;
 ClassImp(AliFlowAnalysisWithMixedHarmonics)
 
 //================================================================================================================
@@ -137,6 +137,12 @@ void AliFlowAnalysisWithMixedHarmonics::Init()
  // f) Book all all-event quantities;
  // g) Book and fill histograms to hold phi, pt and eta weights.
  
+ //save old value and prevent histograms from being added to directory
+ //to avoid name clashes in case multiple analaysis objects are used
+ //in an analysis
+ Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
+ TH1::AddDirectory(kFALSE);
+ 
  this->CrossCheckSettings();
  this->AccessConstants();
  this->BookAndNestAllLists();
@@ -146,6 +152,7 @@ void AliFlowAnalysisWithMixedHarmonics::Init()
  this->BookAllAllEventQuantities();
  this->BookAndFillWeightsHistograms();
 
+ TH1::AddDirectory(oldHistAddStatus);
 } // end of void AliFlowAnalysisWithMixedHarmonics::Init()
 
 //================================================================================================================
@@ -252,7 +259,7 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  // e) Reset all event-by-event quantities: 
  this->ResetEventByEventQuantities();
   
-} // end of AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
+} // end of AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
 //================================================================================================================
 
 void AliFlowAnalysisWithMixedHarmonics::Finish()
@@ -799,7 +806,7 @@ void AliFlowAnalysisWithMixedHarmonics::QuantifyBiasFromDetectorEffects()
  
 } // end of void AliFlowAnalysisWithMixedHarmonics::QuantifyBiasFromDetectorEffects()
 
-//================================================================================================================
+//================================================================================================================
 void AliFlowAnalysisWithMixedHarmonics::ResetEventByEventQuantities()
 {
  // Reset all event by event quantities.

@@ -171,6 +171,12 @@ void AliFlowAnalysisWithCumulants::Init()
 {
  //various output histograms
  
+ //save old value and prevent histograms from being added to directory
+ //to avoid name clashes in case multiple analaysis objects are used
+ //in an analysis
+ Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
+ TH1::AddDirectory(kFALSE);
+ 
  //average multiplicity 
  fAvMultIntFlowGFC = new TProfile("fAvMultIntFlowGFC","Average Weighted Multiplicity",1,0,1,"s");
  fAvMultIntFlowGFC->SetXTitle("");
@@ -510,7 +516,9 @@ void AliFlowAnalysisWithCumulants::Init()
  fHistList->Add(fAverageOfSquaredWeight);
  
  // add list fWeightsList with weights to the main list
- fHistList->Add(fWeightsList); 
+ fHistList->Add(fWeightsList);
+
+ TH1::AddDirectory(oldHistAddStatus);
 }//end of Init()
 
 //================================================================================================================

@@ -132,6 +132,12 @@ void AliFlowAnalysisWithFittingQDistribution::Init()
 {
  // access constants and book everything
  
+ //save old value and prevent histograms from being added to directory
+ //to avoid name clashes in case multiple analaysis objects are used
+ //in an analysis
+ Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
+ TH1::AddDirectory(kFALSE);
+ 
  // access constants:
  this->AccessConstants();
  
@@ -151,6 +157,8 @@ void AliFlowAnalysisWithFittingQDistribution::Init()
  // set harmonic in common control histograms (to be improved (should I do this somewhere else?)):
  (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic); 
  
+ //restore old status
+ TH1::AddDirectory(oldHistAddStatus);
 } // end of void AliFlowAnalysisWithFittingQDistribution::Init()
 
 

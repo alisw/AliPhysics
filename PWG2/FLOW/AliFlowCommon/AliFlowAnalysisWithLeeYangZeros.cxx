@@ -183,6 +183,12 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
   //init method 
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::Init()****"<<endl;
 
+  //save old value and prevent histograms from being added to directory
+  //to avoid name clashes in case multiple analaysis objects are used
+  //in an analysis
+  Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+ 
   // Book histograms
   Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
   Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
@@ -336,7 +342,10 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
   if (fDebug) cout<<"****Histograms initialised****"<<endl;
     
   fEventNumber = 0; //set event counter to zero
- 
+  
+  //resore old stuff
+  TH1::AddDirectory(oldHistAddStatus);
+
   return kTRUE; 
 }
  
