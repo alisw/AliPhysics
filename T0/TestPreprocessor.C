@@ -11,37 +11,24 @@ void TestPreprocessor()
   AliTestShuttle::SetMainRefStorage("local://./TestRef");
   AliTestShuttle::SetLocalRefStorage("local://./TestRef");
 
-  AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1);
+  AliTestShuttle* shuttle = new AliTestShuttle(104890, 0, 1);
 
-  TMap* dcsAliasMap = CreateDCSAliasMap();
+ TMap* dcsAliasMap = CreateDCSAliasMap();
+
+
 
   shuttle->SetDCSInput(dcsAliasMap);
 
-  //shuttle->SetInputRunType("STANDALONE");
-
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "LASER", "LDC0","daLaser.root");
+ shuttle->SetInputRunType("AMPLITUDE_CALIBRATION");
  
-  shuttle->SetInputRunType("PHYSICS");
+ //shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "AMPLITUDE_CALIBRATION", "LDC0","daLaser.root");
+   shuttle->SetInputRunType("PHYSICS");
 
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "PHYSICS", "LDC0", "daCosmic.root");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "PHYSICS", "LDC0", "daPhys.root");
 
   AliPreprocessor* start = new AliT0Preprocessor(shuttle);
 
   shuttle->Process();
-  
-  /* AliCDBManager::Instance()->SetDefaultStorage("local://TestCDB");
-
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("T00/Calib/Data", 0);
-  if (!entry)
-  {
-    printf("The file is not there. Something went wrong.\n");
-    return;
-  }
-
-  AliT0Calc* output = dynamic_cast<AliT0Calc*> (entry->GetObject());
-
-   // output->Print();
-  */
 }
 
 TMap* CreateDCSAliasMap()
@@ -156,12 +143,15 @@ TMap* CreateDCSAliasMap()
 
     for (int timeStamp=0;timeStamp<nValues;timeStamp++)
     {
-      AliDCSValue* dcsVal = new AliDCSValue((Float_t) gRandom->Gaus(3.0e8,50), timeStamp);
+      //CHIARA's original // AliDCSValue* dcsVal = new AliDCSValue((Float_t) gRandom->Gaus(3.0e8,50), timeStamp);
+      AliDCSValue* dcsVal = new AliDCSValue((Float_t) gRandom->Gaus(3.0e3,50), timeStamp);
       valueSet->Add(dcsVal);
+
       printf("Alias: %s - value n. %d: (val=%d timestamp=%d)\n" ,
     	    aliasName.Data(), timeStamp, dcsVal->GetFloat(), dcsVal->GetTimeStamp());
     }
     aliasMap->Add(new TObjString(aliasName), valueSet);
+
   }
 
   return aliasMap;
