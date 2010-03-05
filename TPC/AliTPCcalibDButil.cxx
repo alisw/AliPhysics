@@ -1262,7 +1262,7 @@ AliCDBEntry* AliTPCcalibDButil::GetRefEntry(const char* cdbPath)
   return entry;
 }
 //_____________________________________________________________________________________
-const Int_t AliTPCcalibDButil::GetCurrentReferenceRun(const char* type){
+Int_t AliTPCcalibDButil::GetCurrentReferenceRun(const char* type) const {
   //
   // Get reference run number for the specified OCDB path
   //
@@ -1272,7 +1272,7 @@ const Int_t AliTPCcalibDButil::GetCurrentReferenceRun(const char* type){
   return (const Int_t)str->GetString().Atoi();
 }
 //_____________________________________________________________________________________
-const Int_t AliTPCcalibDButil::GetReferenceRun(const char* type) const{
+Int_t AliTPCcalibDButil::GetReferenceRun(const char* type) const{
   //
   // Get reference run number for the specified OCDB path
   //
