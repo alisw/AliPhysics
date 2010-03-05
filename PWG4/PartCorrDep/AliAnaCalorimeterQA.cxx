@@ -408,7 +408,8 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhEtaPhiE->SetYTitle("#phi (rad)");
 	fhEtaPhiE->SetZTitle("E (GeV) ");
 	outputContainer->Add(fhEtaPhiE);
-	
+
+
 	//Track Matching
 
 	fhECharged  = new TH1F ("hECharged","E reconstructed clusters, matched with track", nptbins,ptmin,ptmax); 
@@ -433,6 +434,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhEtaPhiECharged->SetYTitle("#phi ");
 	fhEtaPhiECharged->SetZTitle("E (GeV) ");
 	outputContainer->Add(fhEtaPhiECharged);	
+
 
 	fhEChargedNoOut  = new TH1F ("hEChargedNoOut","E reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax); 
 	fhEChargedNoOut->SetXTitle("E (GeV)");
@@ -500,6 +502,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhNCellsPerCluster->SetZTitle("#eta");
 	outputContainer->Add(fhNCellsPerCluster);
 	
+	
 	fhNCellsPerClusterMIP  = new TH3F ("hNCellsPerClusterMIP","# cells per cluster vs energy vs #eta, smaller bin for MIP search", 
 										100,0.,1., 6,0,5,netabins,etamin,etamax); 
 	fhNCellsPerClusterMIP->SetXTitle("E (GeV)");
@@ -507,12 +510,14 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhNCellsPerClusterMIP->SetZTitle("#eta");
 	outputContainer->Add(fhNCellsPerClusterMIP);
 	
+	
 	fhNCellsPerClusterMIPCharged  = new TH3F ("hNCellsPerClusterMIPCharged","# cells per track-matched cluster vs energy vs #eta, smaller bin for MIP search", 
 												100,0.,1., 6,0,5,netabins,etamin,etamax); 
 	fhNCellsPerClusterMIPCharged->SetXTitle("E (GeV)");
 	fhNCellsPerClusterMIPCharged->SetYTitle("n cells");
 	fhNCellsPerClusterMIPCharged->SetZTitle("#eta");
 	outputContainer->Add(fhNCellsPerClusterMIPCharged);
+	
 	
 	fhNClusters  = new TH1F ("hNClusters","# clusters", nbins,nmin,nmax); 
 	fhNClusters->SetXTitle("number of clusters");
@@ -563,7 +568,6 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhXYZ->SetYTitle("y (cm)");
 	fhXYZ->SetZTitle("z (cm) ");
 	outputContainer->Add(fhXYZ);
-	
 		
 	fhRCellE  = new TH2F ("hRCellE","Cell R position vs cell energy",rbins,rmin,rmax,nptbins,ptmin,ptmax); 
 	fhRCellE->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
@@ -588,9 +592,10 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhXYZCell  = new TH3F ("hXYZCell","Cell : x vs y vs z",xbins,xmin,xmax,ybins,ymin,ymax,zbins,zmin,zmax); 
 	fhXYZCell->SetXTitle("x (cm)");
 	fhXYZCell->SetYTitle("y (cm)");
-	fhXYZCell->SetZTitle("z (cm) ");
+	fhXYZCell->SetZTitle("z (cm)");
 	outputContainer->Add(fhXYZCell);
-	
+
+
 	Float_t dx = TMath::Abs(xmin)+TMath::Abs(xmax);
 	Float_t dy = TMath::Abs(ymin)+TMath::Abs(ymax);
 	Float_t dz = TMath::Abs(zmin)+TMath::Abs(zmax);
@@ -641,7 +646,8 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhEtaPhiAmp->SetYTitle("#phi (rad)");
 	fhEtaPhiAmp->SetZTitle("E (GeV) ");
 	outputContainer->Add(fhEtaPhiAmp);		
-	
+
+
 	//Calo cells
 	fhNCells  = new TH1F ("hNCells","# cells", colmax*rowmax*fNModules,0,colmax*rowmax*fNModules); 
 	fhNCells->SetXTitle("n cells");
@@ -1435,7 +1441,6 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
 void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms() 
 {
 	//Fill Calorimeter QA histograms
-	
 	TLorentzVector mom ;
 	TLorentzVector mom2 ;
 	TRefArray * caloClusters = new TRefArray();
