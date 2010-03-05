@@ -1726,7 +1726,7 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
   //
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
-  Double_t result;
+  Double_t result=0;
   // mode 1  automatic mode - according to the distance to the valid calibration
   //                        -  
   Double_t deltaP=0,  driftP=0,      wP  = 0.;

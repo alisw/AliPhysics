@@ -467,7 +467,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
     AliESDtrack *track0 = event->GetTrack(i0);
     AliESDfriendTrack *friendTrack = 0;
     TObject *calibObject=0;
-    AliTPCseed *seed0 = 0,*seed1=0;
+    AliTPCseed *seed0 = 0;
     //
     friendTrack = (AliESDfriendTrack *)ESDfriend->GetTrack(i0);;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
