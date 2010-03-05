@@ -95,8 +95,13 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include <cstdlib>
-#include "AliJet.h"
+
 #include "Riostream.h"
+#include "TObjArray.h"
+
+#include "AliJet.h"
+#include "AliPositionObj.h"
+#include "AliSignal.h"
  
 ClassImp(AliJet) // Class implementation to enable ROOT I/O
  

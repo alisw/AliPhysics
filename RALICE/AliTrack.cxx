@@ -93,8 +93,14 @@
 //- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
-#include "AliTrack.h"
 #include "Riostream.h"
+#include "TObjArray.h"
+
+#include "AliBoost.h"
+#include "AliPositionObj.h"
+#include "AliSignal.h"
+#include "AliTimestamp.h"
+#include "AliTrack.h"
  
 ClassImp(AliTrack) // Class implementation to enable ROOT I/O
  
@@ -341,10 +347,10 @@ void AliTrack::Set3Momentum(Ali3Vector& p)
 void AliTrack::Set4Momentum(Ali4Vector& p)
 {
 // Set the track parameters according to the 4-momentum p
- Double_t E=p.GetScalar();
+ Double_t eE=p.GetScalar();
  Double_t dE=p.GetResultError();
  Ali3Vector pv=p.Get3Vector();
- SetVector(E,pv);
+ SetVector(eE,pv);
  SetScalarError(dE);
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -498,7 +504,7 @@ void AliTrack::ListAll(TString f,TString u)
  Dumps(t,1,f,u); // Information of all decay products
 }
 //////////////////////////////////////////////////////////////////////////
-void AliTrack::Dumps(AliTrack* t,Int_t n,TString f,TString u)
+void AliTrack::Dumps(const AliTrack* t,Int_t n,TString f,TString u)
 {
 // Recursively provide the info of all decay levels of this track
  AliTrack* td; 
@@ -629,19 +635,19 @@ Double_t AliTrack::GetEnergy(Float_t scale)
 // of scale=0.001 will provide the energy in MeV.
 // The error can be obtained by invoking GetResultError() after
 // invokation of GetEnergy().
- Double_t E=GetScalar();
- if (E>0)
+ Double_t eE=GetScalar();
+ if (eE>0)
  {
   if (scale>0)
   {
-   E*=fEscale/scale;
+   eE*=fEscale/scale;
    fDresult*=fEscale/scale;
   }
-  return E;
+  return eE;
  }
  else
  {
-  cout << "*AliTrack::GetEnergy* Unphysical situation E = " << E << endl;
+  cout << "*AliTrack::GetEnergy* Unphysical situation E = " << eE << endl;
   cout << " Value 0 will be returned." << endl;
   return 0;
  }
@@ -655,14 +661,14 @@ void AliTrack::Decay(Double_t m1,Double_t m2,Double_t thcms,Double_t phicms)
 // thcms  : cms theta decay angle (in rad.) of m1
 // phicms : cms phi decay angle (in rad.) of m1
  
- Double_t M=GetMass();
+ Double_t mM=GetMass();
  
 // Compute the 4-momenta of the decay products in the cms
 // Note : p2=p1=pnorm for a 2-body decay
  Double_t e1=0;
- if (M) e1=((M*M)+(m1*m1)-(m2*m2))/(2.*M);
+ if (mM) e1=((mM*mM)+(m1*m1)-(m2*m2))/(2.*mM);
  Double_t e2=0;
- if (M) e2=((M*M)+(m2*m2)-(m1*m1))/(2.*M);
+ if (mM) e2=((mM*mM)+(m2*m2)-(m1*m1))/(2.*mM);
  Double_t pnorm=(e1*e1)-(m1*m1);
  if (pnorm>0.)
  {
@@ -690,10 +696,10 @@ void AliTrack::Decay(Double_t m1,Double_t m2,Double_t thcms,Double_t phicms)
  pprim2.SetInvariant(m2*m2);
 
  // Determine boost parameters from the parent particle
- Double_t E=GetEnergy();
+ Double_t eE=GetEnergy();
  p=Get3Vector();
  Ali4Vector pmu;
- pmu.SetVector(E,p);
+ pmu.SetVector(eE,p);
 
  AliBoost q;
  q.Set4Momentum(pmu);
@@ -991,7 +997,7 @@ void AliTrack::SetBeginPoint(AliPosition& p)
  fBegin=new AliPositionObj(p);
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition* AliTrack::GetBeginPoint()
+AliPosition* AliTrack::GetBeginPoint() const
 {
 // Provide the position of the track begin-point.
  return fBegin;
@@ -1004,7 +1010,7 @@ void AliTrack::SetEndPoint(AliPosition& p)
  fEnd=new AliPositionObj(p);
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition* AliTrack::GetEndPoint()
+AliPosition* AliTrack::GetEndPoint() const
 {
 // Provide the position of the track end-point.
  return fEnd;
@@ -1021,7 +1027,7 @@ void AliTrack::SetReferencePoint(AliPosition& p)
  fRef=new AliPositionObj(p);
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition* AliTrack::GetReferencePoint()
+AliPosition* AliTrack::GetReferencePoint() const
 {
 // Provide the position of the track reference-point.
 // The reference-point is the point on the track in which the 
@@ -1233,7 +1239,7 @@ void AliTrack::SetImpactPoint(AliPosition& p,TString q)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition* AliTrack::GetImpactPoint(TString q)
+AliPosition* AliTrack::GetImpactPoint(TString q) const
 {
 // Provide the position of the impact-point in the plane "q=0".
 // Here q denotes one of the axes X, Y or Z.
@@ -1281,7 +1287,7 @@ void AliTrack::SetClosestPoint(AliPosition& p)
  fClosest=new AliPositionObj(p);
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition* AliTrack::GetClosestPoint()
+AliPosition* AliTrack::GetClosestPoint() const
 {
 // Provide the point of closest approach w.r.t. some reference
  return fClosest;
@@ -1329,13 +1335,13 @@ Int_t AliTrack::GetParticleCode() const
  return fCode;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::SetParentTrack(AliTrack* t)
+void AliTrack::SetParentTrack(AliTrack * const t)
 {
 // Set pointer to the parent track.
  fParent=t;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliTrack* AliTrack::GetParentTrack()
+AliTrack* AliTrack::GetParentTrack() const
 {
 // Provide pointer to the parent track.
  return fParent;
@@ -1353,7 +1359,7 @@ Float_t AliTrack::GetProb() const
  return fProb;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::SetFitDetails(TObject* obj)
+void AliTrack::SetFitDetails(const TObject* obj)
 {
 // Enter the object containing the fit details.
 // In case an object to hold fit details was already present, this
@@ -1389,7 +1395,7 @@ void AliTrack::SetFitDetails(TObject* obj)
  if (obj) fFit=obj->Clone();
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliTrack::GetFitDetails()
+TObject* AliTrack::GetFitDetails() const
 {
 // Provide the pointer to the object containing the fit details.
  return fFit;
@@ -1402,7 +1408,7 @@ void AliTrack::SetTimestamp(AliTimestamp& t)
  fTstamp=new AliTimestamp(t);
 }
 ///////////////////////////////////////////////////////////////////////////
-AliTimestamp* AliTrack::GetTimestamp()
+AliTimestamp* AliTrack::GetTimestamp() const
 {
 // Provide the timestamp of this track.
  return fTstamp;
@@ -1418,7 +1424,7 @@ void AliTrack::RemoveTimestamp()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetDistance(AliPosition* p,Float_t scale)
+Double_t AliTrack::GetDistance(AliPosition* const p,Float_t scale)
 {
 // Provide distance of the current track to the position p.
 // The error on the result can be obtained as usual by invoking
@@ -1482,7 +1488,7 @@ Double_t AliTrack::GetDistance(AliPosition* p,Float_t scale)
  return dist;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetDistance(AliTrack* t,Float_t scale)
+Double_t AliTrack::GetDistance(AliTrack* const t,Float_t scale)
 {
 // Provide distance of the current track to the track t.
 // The error on the result can be obtained as usual by invoking
