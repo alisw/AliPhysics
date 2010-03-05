@@ -167,8 +167,9 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   Bool_t GFC      = METHODS[6];
   Bool_t QC       = METHODS[7];
   Bool_t FQD      = METHODS[8];
-  Bool_t MCEP     = METHODS[9];   
- 
+  Bool_t MCEP     = METHODS[9];      
+  Bool_t MH       = METHODS[10];
+  Bool_t NL       = METHODS[11];  
   //for using weights
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
   if (useWeights) cout<<"Weights are used"<<endl;
@@ -700,7 +701,26 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane");
     mgr->AddTask(taskMCEP);
   }
-
+  if (MH){
+    AliAnalysisTaskMixedHarmonics *taskMH = new AliAnalysisTaskMixedHarmonics("TaskMixedHarmonics",useWeights);
+    taskMH->SetCorrelatorInteger(1);
+    taskMH->SetNoOfMultipicityBins(10);
+    taskMH->SetMultipicityBinWidth(2);
+    taskMH->SetMinMultiplicity(3);
+    taskMH->SetCorrectForDetectorEffects(kTRUE);
+    //taskMH->SetUsePhiWeights(WEIGHTS[0]); 
+    //taskMH->SetUsePtWeights(WEIGHTS[1]);
+    //taskMH->SetUseEtaWeights(WEIGHTS[2]); 
+    mgr->AddTask(taskMH);
+  }  
+  if (NL){
+    AliAnalysisTaskNestedLoops *taskNL = new AliAnalysisTaskNestedLoops("TaskNestedLoops",useWeights);
+    //taskNL->SetUsePhiWeights(WEIGHTS[0]); 
+    //taskNL->SetUsePtWeights(WEIGHTS[1]);
+    //taskNL->SetUseEtaWeights(WEIGHTS[2]); 
+    mgr->AddTask(taskNL);
+  }
+  
   // Create the output container for the data produced by the task
   // Connect to the input and output containers
   //===========================================================================
@@ -850,7 +870,32 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     mgr->ConnectInput(taskMCEP,0,coutputFE); 
     mgr->ConnectOutput(taskMCEP,0,coutputMCEP); 
   }
-  
+  if(MH) {
+    TString outputMH = AliAnalysisManager::GetCommonFileName();
+    outputMH += ":outputMHanalysis";
+    outputMH += type;
+        
+    AliAnalysisDataContainer *coutputMH = mgr->CreateContainer("cobjMH", TList::Class(),AliAnalysisManager::kOutputContainer,outputMH); 
+    mgr->ConnectInput(taskMH,0,coutputFE); 
+    mgr->ConnectOutput(taskMH,1,coutputMH); 
+    //if (useWeights) {
+    //  mgr->ConnectInput(taskMH,1,cinputWeights);
+    //  cinputWeights->SetData(weightsList);
+    //} 
+  }
+  if(NL) {
+    TString outputNL = AliAnalysisManager::GetCommonFileName();
+    outputNL += ":outputNLanalysis";
+    outputNL += type;
+        
+    AliAnalysisDataContainer *coutputNL = mgr->CreateContainer("cobjNL", TList::Class(),AliAnalysisManager::kOutputContainer,outputNL); 
+    mgr->ConnectInput(taskNL,0,coutputFE); 
+    mgr->ConnectOutput(taskNL,1,coutputNL); 
+    //if (useWeights) {
+    //  mgr->ConnectInput(taskNL,1,cinputWeights);
+    //  cinputWeights->SetData(weightsList);
+    //} 
+  }
 
   // Return analysis task
   //===========================================================================

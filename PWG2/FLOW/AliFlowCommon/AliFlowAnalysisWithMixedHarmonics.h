@@ -26,6 +26,7 @@ class TList;
 class TFile;
 class TH1;
 class TH2;
+class TH2D;
 class TProfile;
 class TProfile2D;
 

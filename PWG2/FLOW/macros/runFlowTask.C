@@ -19,8 +19,10 @@ Bool_t LYZ1PROD = kTRUE;  // Lee Yang Zeroes using product generating function (
 Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
 Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
 Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
+Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
+Bool_t NL       = kFALSE; // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
-Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP};
+Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
 // Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
 const TString type = "ESD";
