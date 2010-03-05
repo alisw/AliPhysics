@@ -74,8 +74,10 @@ AliMUONRecoParam::AliMUONRecoParam()
   fMaxTrackCandidates(0),
   fSelectTrackOnSlope(kFALSE),
   fMissingPadFractionLimit(0),
-  fFractionOfBuspatchOutsideOccupancyLimit(0)
-{
+  fFractionOfBuspatchOutsideOccupancyLimit(0),
+  fAverageNoisePadCharge(0.22875),
+  fClusterChargeCut(2.0)
+{  
   /// Constructor
   
   SetNameTitle("Dummy","Dummy");
@@ -247,7 +249,6 @@ void AliMUONRecoParam::SetHighFluxParam()
   fBypassSt45 = 0;
   fMaxTriggerTracks = 100;
   fMaxTrackCandidates = 10000;
-  
 }
 
 //_____________________________________________________________________________
@@ -297,6 +298,7 @@ void AliMUONRecoParam::SetCosmicParam()
   fPadGoodnessMask = 0x400BE80; // Ped Mean is Zero | Ped Mean Too Low | Ped Mean Too High | Ped Sigma Too Low | Ped Sigma Too High | Ped is missing | HV is missing | manu occupancy too high
   fMaxTriggerTracks = 100;
   fMaxTrackCandidates = 10000;
+  
   SetPedMeanLimits(20, 700);
   SetManuOccupancyLimits(-1.,0.01); // reject manu above occ=1%
 
@@ -503,6 +505,11 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout << endl;
   cout<<Form("maximum number of trigger tracks above which the tracking is cancelled = %d",fMaxTriggerTracks)<<endl;
   cout<<Form("maximum number of track candidates above which the tracking is abandonned = %d",fMaxTrackCandidates)<<endl;
+
+  cout << Form("The average noise pad charge is assumed to be %7.2f fC",AverageNoisePadCharge()) << endl;
+  cout << Form("and clusters above %5.2f times this noise charge (i.e. %7.2f fC) are discarded",
+               ClusterChargeCut(),ClusterChargeCut()*AverageNoisePadCharge()) << endl;
+  cout << Form("Note that LowestPadCharge is then %7.2f fC",LowestPadCharge()) << endl;
   
   cout<<"\t-----------------------------------------------------"<<endl<<endl;
   
@@ -546,10 +553,13 @@ AliMUONRecoParam::SetDefaultLimits()
   fDEOccupancyLimits[0] = -1.0; 
   fDEOccupancyLimits[1] = 1.0;
 
-  fChargeSigmaCut = 4.0;
-  
   fMissingPadFractionLimit = 0.1; // 10 % 
   fFractionOfBuspatchOutsideOccupancyLimit = 0.05; // 5 % 
 
+  ChargeSigmaCut(4.0); // pad with charge < 4.0 x sigma will be removed (where sigma is the actual noise of that very pad, i.e. not the average)
+  
+  AverageNoisePadCharge(0.22875); // 0.22875 coulombs ~ 1.5 ADC channels
+
+  ClusterChargeCut(2.0); // will cut cluster below 2.0 x LowestPadCharge()
 }
 

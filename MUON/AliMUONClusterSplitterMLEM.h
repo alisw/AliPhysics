@@ -28,7 +28,10 @@ class AliMUONMathieson;
 class AliMUONClusterSplitterMLEM : public TObject
 {
 public:
-  AliMUONClusterSplitterMLEM(Int_t detElemId, TObjArray* pixArray);
+  AliMUONClusterSplitterMLEM(Int_t detElemId, TObjArray* pixArray, 
+                             Double_t lowestPixelCharge,
+                             Double_t lowestPadCharge,
+                             Double_t lowestClusterCharge);
   
   virtual ~AliMUONClusterSplitterMLEM();
 
@@ -95,7 +98,11 @@ private:
   Int_t fnCoupled; //!< number of coupled pixels ?
   Int_t fDebug; //!< debug level
   
-  ClassDef(AliMUONClusterSplitterMLEM,1) // 
+  Double_t fLowestPixelCharge; //!< minimum allowed pixel charge
+  Double_t fLowestPadCharge; //!< minimum allowed pad charge
+  Double_t fLowestClusterCharge; //!< minimum allowed cluster charge
+
+  ClassDef(AliMUONClusterSplitterMLEM,2) // Splitter of clusters
 };
 
 #endif

@@ -57,7 +57,10 @@ const Double_t AliMUONClusterSplitterMLEM::fgkCouplMin = 1.e-2; // threshold on 
 
 //_____________________________________________________________________________
 AliMUONClusterSplitterMLEM::AliMUONClusterSplitterMLEM(Int_t detElemId, 
-                                                       TObjArray* pixArray) 
+                                                       TObjArray* pixArray,
+                                                       Double_t lowestPixelCharge,
+                                                       Double_t lowestPadCharge,
+                                                       Double_t lowestClusterCharge) 
 : TObject(),
 fPixArray(pixArray),
 fMathieson(0x0),
@@ -65,7 +68,10 @@ fDetElemId(detElemId),
 fNpar(0),
 fQtot(0),
 fnCoupled(0),
-fDebug(0)
+fDebug(0),
+fLowestPixelCharge(lowestPixelCharge),
+fLowestPadCharge(lowestPadCharge),
+fLowestClusterCharge(lowestClusterCharge)
 {
   /// Constructor
   
@@ -119,7 +125,7 @@ AliMUONClusterSplitterMLEM::AddBin(TH2 *mlem,
       cont1 = mlem->GetCellContent(j,i);
       if (mode && cont1 > cont) continue;
       used[(i-1)*nx+j-1] = kTRUE;
-      if (cont1 < 0.5) continue;
+      if (cont1 < fLowestPixelCharge) continue;
       if (pix) pix->Add(BinToPix(mlem,j,i)); 
       else {
         pixPtr = new AliMUONPad (mlem->GetXaxis()->GetBinCenter(j), 
@@ -164,7 +170,7 @@ AliMUONClusterSplitterMLEM::BinToPix(TH2 *mlem,
   // Compare pixel and bin positions
   for (Int_t i = 0; i < nPix; ++i) {
     pixPtr = (AliMUONPad*) fPixArray->UncheckedAt(i);
-    if (pixPtr->Charge() < 0.5) continue;
+    if (pixPtr->Charge() < fLowestPixelCharge) continue; 
     if (TMath::Abs(pixPtr->Coord(0)-xc)<1.e-4 && TMath::Abs(pixPtr->Coord(1)-yc)<1.e-4) 
     {
       //return (TObject*) pixPtr;
@@ -738,7 +744,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     //                                             Double_t /*sigy*/, 
     //                                             Double_t /*dist*/)
     
-    if ( coef*fQtot >= 14 )
+    if ( coef*fQtot >= fLowestClusterCharge ) 
     {
       //AZ AliMUONCluster* cluster1 = new AliMUONCluster();
       AliMUONCluster* cluster1 = new AliMUONCluster(cluster);
@@ -802,7 +808,7 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       indx = (i-1)*nx + j - 1;
       if (used[indx]) continue;
       cont = mlem->GetCellContent(j,i);
-      if (cont < 0.5) continue;
+      if (cont < fLowestPixelCharge) continue;
       pix = new TObjArray(20);
       used[indx] = 1;
       pix->Add(BinToPix(mlem,j,i));
@@ -1293,7 +1299,7 @@ AliMUONClusterSplitterMLEM::UpdatePads(const AliMUONCluster& cluster,
     } // if (fNpar != 0)
     
     //if (pad->Charge() > 6 /*fgkZeroSuppression*/) pad->SetStatus(0); 
-    if (pad->Charge() > 6 /*fgkZeroSuppression*/) pad->SetStatus(AliMUONClusterFinderMLEM::GetZeroFlag()); 
+    if (pad->Charge() > fLowestPadCharge) pad->SetStatus(AliMUONClusterFinderMLEM::GetZeroFlag());
     // return pad for further using // FIXME: remove usage of zerosuppression here
     else pad->SetStatus(AliMUONClusterFinderMLEM::GetOverFlag()); // do not use anymore
     

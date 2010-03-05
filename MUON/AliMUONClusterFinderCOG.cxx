@@ -82,7 +82,7 @@ AliMUONClusterFinderCOG::NextCluster()
   {
     ComputePosition(*cluster);
 
-    if ( cluster->Charge() < 7 )
+    if ( cluster->Charge() < 1.0675 ) // JC: adc -> fc
     {
       // skip that one
       return NextCluster();

@@ -36,6 +36,22 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// get the clustering (pre-clustering) mode
   Option_t* GetClusteringMode() const {return fClusteringMode.Data();}
   
+  /// Get the (truncated) average of sigmas of pedestal measurements, i.e. noise, of pads
+  Double_t AverageNoisePadCharge() const { return fAverageNoisePadCharge; }
+  /// Set the average of sigmas of pedestal measurements, i.e. noise, of pads
+  void AverageNoisePadCharge(Double_t noise) { fAverageNoisePadCharge = noise; }
+  
+  /// Get the lowest charge we allow for pads
+  Double_t LowestPadCharge() const { return fChargeSigmaCut*fAverageNoisePadCharge; }
+
+  /// Get the cut applied to cut on cluster charge (the charge is cut if below fClusterChargeCut*LowestPadCharge())
+  Double_t ClusterChargeCut() const { return fClusterChargeCut; }
+  /// Set the cut applied to cut on cluster charge (the charge is cut if below fClusterChargeCut*LowestPadCharge())
+  void ClusterChargeCut(Double_t n) { fClusterChargeCut=n; }
+  
+  /// Get the lowest possible cluster charge
+  Double_t LowestClusterCharge() const { return ClusterChargeCut()*LowestPadCharge(); }
+     
   /// set the tracking mode
   void      SetTrackingMode(Option_t* mode) {fTrackingMode = mode; fTrackingMode.ToUpper();}
   /// get the tracking mode
@@ -392,13 +408,16 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Double32_t fMissingPadFractionLimit; ///< above this fraction, we consider we have too few pads alive...
   Double32_t fFractionOfBuspatchOutsideOccupancyLimit; ///< above this limit, we consider we have too many buspatches out of the allowed occupancy range
 
+  Double32_t fAverageNoisePadCharge; ///< the (truncated, typically at 10%) mean of the sigma of the pedestals, in femto-coulomb
+  Double32_t fClusterChargeCut; ///< the cluster is cut if its charge is below fClusterChargeCut*LowestPadCharge()
+  
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
   void SetCalibrationParam();
   
-  ClassDef(AliMUONRecoParam,15) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,166) // MUON reco parameters
 };
 
 #endif

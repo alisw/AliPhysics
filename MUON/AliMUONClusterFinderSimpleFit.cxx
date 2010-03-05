@@ -94,7 +94,8 @@ namespace
 AliMUONClusterFinderSimpleFit::AliMUONClusterFinderSimpleFit(AliMUONVClusterFinder* clusterFinder)
 : AliMUONVClusterFinder(),
 fClusterFinder(clusterFinder),
-fMathieson(0x0)
+fMathieson(0x0),
+fLowestClusterCharge(0)
 {
   /// ctor
 }
@@ -153,7 +154,7 @@ AliMUONClusterFinderSimpleFit::NextCluster()
   {
     ComputePosition(*cluster);
 
-    if ( cluster->Charge() < 7 )
+    if ( cluster->Charge() < fLowestClusterCharge )
     {
       // skip that one
       return NextCluster();

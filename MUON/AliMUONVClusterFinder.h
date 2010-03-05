@@ -17,6 +17,7 @@
 #endif
 
 class AliMUONCluster;
+class AliMUONRecoParam;
 class AliMpVSegmentation;
 class AliMUONPad;
 class AliMpArea;
@@ -51,6 +52,12 @@ public:
     (in which case it must returns kFALSE)
     */
   virtual Bool_t UsePad(const AliMUONPad& pad);
+  
+  /** Specify a couple of charge hints. We call them hints because some
+   clustering need them and use them directly, other cook them before
+   using them, and some others yet simply don't care about them.
+   */
+  virtual void SetChargeHints(Double_t /*lowestPadCharge*/, Double_t /*lowestClusterCharge*/) { }
   
   ClassDef(AliMUONVClusterFinder,0) // Interface of a MUON cluster finder.
 };

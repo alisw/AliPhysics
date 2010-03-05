@@ -32,6 +32,10 @@ public:
   
   virtual AliMUONCluster* NextCluster();
   
+  virtual void SetChargeHints(Double_t /*lowestPadCharge*/, Double_t lowestClusterCharge) { 
+    fLowestClusterCharge=lowestClusterCharge; 
+  }
+  
 private:
   /// Not implemented
   AliMUONClusterFinderSimpleFit(const AliMUONClusterFinderSimpleFit& rhs);
@@ -43,8 +47,9 @@ private:
 private:
     AliMUONVClusterFinder* fClusterFinder; //!< the preclustering we use
   AliMUONMathieson* fMathieson; //!< Mathieson to compute the charge repartition
+  Double_t fLowestClusterCharge; //!< minimum cluster charge we allow
   
-  ClassDef(AliMUONClusterFinderSimpleFit,1) // Basic cluster finder
+  ClassDef(AliMUONClusterFinderSimpleFit,2) // Basic cluster finder
 };
 
 #endif

@@ -155,6 +155,10 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
         { AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0),
           AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath1)
         };
+        
+        fClusterFinder->SetChargeHints(recoParam->LowestPadCharge(),
+                                       recoParam->LowestClusterCharge());
+        
         if ( fClusterFinder->NeedSegmentation() )
         {
           fClusterFinder->Prepare(detElemId,pads,deArea,seg);

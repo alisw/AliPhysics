@@ -171,7 +171,8 @@ AliMUONClusterFinderPeakFit::~AliMUONClusterFinderPeakFit()
 //_____________________________________________________________________________
 Bool_t 
 AliMUONClusterFinderPeakFit::Prepare(Int_t detElemId, TClonesArray* pads[2],
-				     const AliMpArea& area, const AliMpVSegmentation* seg[2])
+                                     const AliMpArea& area, 
+                                     const AliMpVSegmentation* seg[2])
 {
   /// Prepare for clustering
 //  AliCodeTimerAuto("",0)
@@ -350,7 +351,7 @@ AliMUONClusterFinderPeakFit::CheckPrecluster(const AliMUONCluster& origCluster)
 
   // Disregard small clusters (leftovers from splitting or noise)
   if ((origCluster.Multiplicity()==1 || origCluster.Multiplicity()==2) &&
-      origCluster.Charge(0)+origCluster.Charge(1) < 10) 
+      origCluster.Charge(0)+origCluster.Charge(1) < 1.525) // JC: adc -> fc
   { 
     return 0x0;
   }
@@ -420,7 +421,7 @@ AliMUONClusterFinderPeakFit::CheckPreclusterTwoCathodes(AliMUONCluster* cluster)
         = fkSegmentation[cath1]->PadByPosition(pad->Position().X(),pad->Position().Y(),kFALSE);
       if (!mpPad.IsValid()) continue;
       //if (nFlags == 1 && pad->Charge() < fgkZeroSuppression * 3) continue;
-      if (nFlags == 1 && pad->Charge() < 20) continue;
+      if (nFlags == 1 && pad->Charge() < 3.05) continue;  // JC: adc -> fc
       AliDebug(2,Form("Releasing the following pad : de,cath,ix,iy %d,%d,%d,%d charge %e",
                       fDetElemId,pad->Cathode(),pad->Ix(),pad->Iy(),pad->Charge()));
       toBeRemoved.AddLast(pad);
@@ -714,12 +715,12 @@ void AliMUONClusterFinderPeakFit::BuildPixArrayOneCathode(AliMUONCluster& cluste
   for (Int_t i = 1; i <= nbins[0]; ++i) {
     Double_t x = xaxis->GetBinCenter(i);
     for (Int_t j = 1; j <= nbins[1]; ++j) {
-      if (hist2->GetCellContent(i,j) < 0.1) continue;
+      if (hist2->GetCellContent(i,j) < 0.01525) continue; // JC: adc -> fc
       if (cath0 != cath1) {
 	// Two-sided cluster
 	Double_t cont = hist2->GetCellContent(i,j);
 	if (cont < 999.) continue;
-	if (cont-Int_t(cont/1000.)*1000. < 0.5) continue;
+	if (cont-Int_t(cont/1000.)*1000. < 0.07625) continue; // JC: adc -> fc
       }
       //if (hist2->GetCellContent(i,j) < 1.1 && cluster.Multiplicity(0) && 
       //  cluster.Multiplicity(1)) continue;
@@ -765,9 +766,9 @@ void AliMUONClusterFinderPeakFit::PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, 
     else {
       // Fill histogram
       Double_t cont = pad->Charge();
-      if (hist2->GetCellContent(ix0, ixy) > 0.1) 
+      if (hist2->GetCellContent(ix0, ixy) > 0.01525) // JC: adc -> fc
 	cont = TMath::Min (hist1->GetCellContent(ix0, ixy), cont) 
-	     + TMath::Min (TMath::Max(hist1->GetCellContent(ix0, ixy),cont)*0.1, 10.);
+	     + TMath::Min (TMath::Max(hist1->GetCellContent(ix0, ixy),cont)*0.1, 1.525); // JC: adc -> fc
       hist1->SetCellContent(ix0, ixy, cont);
       hist2->SetCellContent(ix0, ixy, hist2->GetCellContent(ix0, ixy)+amask);
     }
@@ -782,9 +783,9 @@ void AliMUONClusterFinderPeakFit::PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, 
     else {
       // Fill histogram
       Double_t cont = pad->Charge();
-      if (hist2->GetCellContent(ix0, ixy) > 0.1) 
+      if (hist2->GetCellContent(ix0, ixy) > 0.01525) // JC: adc -> fc 
 	cont = TMath::Min (hist1->GetCellContent(ix0, ixy), cont)
-	     + TMath::Min (TMath::Max(hist1->GetCellContent(ix0, ixy),cont)*0.1,10.);
+	     + TMath::Min (TMath::Max(hist1->GetCellContent(ix0, ixy),cont)*0.1,1.525); // JC: adc -> fc
       hist1->SetCellContent(ix0, ixy, cont);
       hist2->SetCellContent(ix0, ixy, hist2->GetCellContent(ix0, ixy)+amask);
     }
@@ -833,7 +834,7 @@ Int_t AliMUONClusterFinderPeakFit::FindLocalMaxima(TObjArray *pixArray, Int_t *l
   for (Int_t i = 1; i <= ny; ++i) {
     indx = (i-1) * nx;
     for (Int_t j = 1; j <= nx; ++j) {
-      if (fHistAnode->GetCellContent(j,i) < 0.5) continue;
+      if (fHistAnode->GetCellContent(j,i) < 0.07625) continue;  // JC: adc -> fc
       //if (isLocalMax[indx+j-1] < 0) continue;
       if (isLocalMax[indx+j-1] != 0) continue;
       FlagLocalMax(fHistAnode, i, j, isLocalMax);
@@ -965,7 +966,7 @@ void AliMUONClusterFinderPeakFit::FindClusterFit(AliMUONCluster& cluster, const 
     err[indx] = fitter->GetParError(indx);
     err[indx+1] = fitter->GetParError(indx+1);
       
-    if ( coef*qTot >= 14 )
+    if ( coef*qTot >= 2.135 ) // JC: adc -> fc
     {
       AliMUONCluster* cluster1 = new AliMUONCluster(cluster);
       
@@ -1101,7 +1102,7 @@ void AliMUONClusterFinderPeakFit::FindClusterCOG(AliMUONCluster& cluster,
   }
 
   //qAver = TMath::Sqrt(qAver);
-  if ( qAver >= 14 )
+  if ( qAver >= 2.135 ) // JC: adc -> fc
   {
     
     AliMUONCluster* cluster1 = new AliMUONCluster(cluster);

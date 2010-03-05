@@ -46,6 +46,8 @@ public:
   
   virtual AliMUONCluster* NextCluster();
   
+  virtual void SetChargeHints(Double_t lowestPadCharge, Double_t lowestClusterCharge);
+  
   virtual void Print(Option_t* opt="") const;
 
   virtual void Paint(Option_t* opt="");
@@ -126,7 +128,6 @@ private:
   static const Int_t fgkCoupled; ///< coupled pad  
       
   // Some constants
-  static const Double_t fgkZeroSuppression; ///< average zero suppression value
   static const Double_t fgkDistancePrecision; ///< used to check overlaps and so on
   static const TVector2 fgkIncreaseSize; ///< idem
   static const TVector2 fgkDecreaseSize; ///< idem
@@ -155,6 +156,10 @@ private:
   AliMUONClusterSplitterMLEM* fSplitter; //!< helper class to go from pixel arrays to clusters
   Int_t fNClusters; //!< total number of clusters
   Int_t fNAddVirtualPads; //!< number of clusters for which we added virtual pads
+  
+  Double_t fLowestPixelCharge; //!< see AliMUONRecoParam
+  Double_t fLowestPadCharge; //!< see AliMUONRecoParam
+  Double_t fLowestClusterCharge; //!< see AliMUONRecoParam
   
   ClassDef(AliMUONClusterFinderMLEM,0) // cluster finder in MUON arm of ALICE
 };
