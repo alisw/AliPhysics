@@ -53,6 +53,7 @@ AliRsnVAnalysisTaskME::AliRsnVAnalysisTaskME(const AliRsnVAnalysisTaskME& copy) 
     fESDEvent(copy.fESDEvent),
     fMCEvent(copy.fMCEvent),
     fAODEvent(copy.fAODEvent),
+    fNumberOfOutputs(copy.fNumberOfOutputs),
     fTaskInfo(copy.fTaskInfo)
 {
   AliDebug(AliLog::kDebug+2,"<-");
