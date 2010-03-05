@@ -39,7 +39,6 @@
 #include "AliTRDarrayADC.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDdigitsParam.h"
-#include "AliTRDrawTPStream.h"
 
 #include "AliRawReader.h"
 
@@ -1116,14 +1115,14 @@ Bool_t AliTRDrawFastStream::DecodeHC(AliTRDdigitsManager *digitsManager, AliTRDa
     }
   }
 
-  if ((fHC->fRawVMajor & 64) == 64) { // test pattern data
-    AliTRDrawTPStream *tpStream = new AliTRDrawTPStream(fHC->fRawVMajorOpt, fpPos);
-    if (tpStream->DecodeTPdata() == kFALSE) {
-      if (fWarnError) AliError("Failed to decode test pattern data");
-      return kFALSE;
-    }
-    return kTRUE;
-  }
+//   if ((fHC->fRawVMajor & 64) == 64) { // test pattern data
+//     AliTRDrawTPStream *tpStream = new AliTRDrawTPStream(fHC->fRawVMajorOpt, fpPos);
+//     if (tpStream->DecodeTPdata() == kFALSE) {
+//       if (fWarnError) AliError("Failed to decode test pattern data");
+//       return kFALSE;
+//     }
+//     return kTRUE;
+//   }
 
   fHC->fMCMmax = 0; // count number of mcms in a hc 
   while (*fpPos != ENDOFRAWDATAMARKER && fpPos < fpEnd) {
