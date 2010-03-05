@@ -472,8 +472,12 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   AliESDEvent* esd = (AliESDEvent*)InputEvent();
 
   //MC stack init
-  AliMCEventHandler* mctruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-  fStack = mctruth->MCEvent()->Stack();
+  fStack=0x0 ;
+  if(AliAnalysisManager::GetAnalysisManager()){
+    AliMCEventHandler* mctruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+    if(mctruth)
+      fStack = mctruth->MCEvent()->Stack();
+  }
 
   if(!fStack && gDebug>1)
     AliInfo("No stack! \n");
@@ -541,7 +545,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         printf("Pdgcode = %d\n",prim->GetPdgCode());
 
       if(prim->GetPdgCode()!=22){ //not photon
-//<--DP        p->SetPhoton(kFALSE);
         fhRecOther->Fill(p->Pt()); //not photons real spectra
         for(Int_t iPID=0; iPID<4; iPID++){
           if(p->IsPIDOK(iPID,22))
@@ -549,7 +552,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         }
       }
       else{ //Primary photon (as in MC)
-//<--DP        p->SetPhoton(kTRUE);
         fhRecPhoton->Fill(p->Pt()); //Reconstructed with primary photon
         for(Int_t iPID=0; iPID<4; iPID++){
           if(p->IsPIDOK(iPID,22))
@@ -569,7 +571,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
                 break ;
         case  11:
         case -11: //electron/positron conversion
-//<--DP                p->SetConverted(1);
                 fhRecPhotConv->Fill(p->Pt());  //Reconstructed with photon from conversion primary
                 fhConversionRadius->Fill(prim->R());
                 break ;
@@ -890,55 +891,6 @@ fhMCMissedTaggingMass->Write();
 fhConversionRadius->Write();
 fhInteractionRadius->Write();
 fhEvents->Write();
-
-/*
-  fhAllPhotons->Write() ;
-  fhNotPhotons->Write() ;
-  fhAllPhotonsPrimary->Write() ;
-  fhNotPhotonsPrimary->Write() ;
-  fhfakeNotPhotons->Write() ;
-
-  fhTaggedPhotons->Write();
-  fhfakeTaggedPhotons->Write();
-  fhDecayNotTaggedPhotons->Write();
-  fhstrangeNotTaggedPhotons->Write();
-  fhstrangeNotTaggedPhotonsPair->Write();
-  fhstrangeNotTaggedPhotonsRegCut->Write();
-  fhstrangeNotTaggedPhotonsPairRegCut->Write();
-
-  fhPi0DecayPhotonsPrimary->Write();
-  fhEtaDecayPhotonsPrimary->Write();
-  fhOmegaDecayPhotonsPrimary->Write();
-  fhEtaSDecayPhotonsPrimary->Write();
-  fhOtherDecayPhotonsPrimary->Write();
-  fhDecayPhotonsPrimary->Write();
-  fhConvertedPhotonsPrimary->Write();
-  fhConvertedPhotonsPrimaryHadronsDecays->Write();
-  fhCoordsConvertion->Write();
-  fhCoordsConvertion2->Write();
-
-  fhPHOSInvariantMassReal->Write();
-  fhPHOSInvariantMassMixed->Write();
-
-  fhPHOSPi0->Write();
-
-  fhPi0DecayPhotonsGeomfake->Write();
-  fhPi0DecayPhotonsTaggedPrimary->Write();
-  fhPi0DecayPhotonsTaggedPrimaryPair->Write();
-  fhPi0DecayPhotonsTaggedPrimaryRegCut->Write();
-  fhPi0DecayPhotonsTaggedPrimaryPairRegCut->Write();
-
-  fhPi0DecayPhotonsBigDecay->Write();
-  fhPi0DecayPhotonsPConv->Write();
-  fhPi0DecayPhotonsPGeo->Write();
-  fhPi0DecayPhotonsPReg->Write();
-
-  fhfakeTaggedPhotonsConv->Write();
-  fhfakeTaggedPhotonsPID->Write();
-
-  fhTrackRefCoords->Write();
-  fhEvents->Write();
-*/
 
 outfile->Close();
 

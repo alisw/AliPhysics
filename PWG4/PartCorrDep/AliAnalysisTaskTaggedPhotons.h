@@ -64,10 +64,10 @@ protected:
 
 private:
 
-  AliPHOSGeoUtils *fPHOSgeom;    //!PHOS geometry
-  AliEMCALGeoUtils *fEMCALgeom;  //!EMCAL geometry
+  AliPHOSGeoUtils *fPHOSgeom;    //PHOS geometry
+  AliEMCALGeoUtils *fEMCALgeom;  //EMCAL geometry
 
-  AliStack        *fStack ;      //!Pointer to MC stack
+  AliStack        *fStack ;      //Pointer to MC stack
   Bool_t           fPHOS ;       //Choose Calorimeter: PHOS/EMCAL
 
   // task parameters
@@ -79,8 +79,8 @@ private:
   Float_t   fPi0MeanP3;          // m_mean_pi0 = p[0] + p[1]*pt + p[2]*pt^2 + p[3]*pt^3
 
   Float_t   fPi0SigmaP0;        // sigma_m_pi0 = sqrt ( p0*p0/x + p1*p1 + p2*p2/x/x)
-  Float_t   fPi0SigmaP1;      // sigma_m_pi0 = sqrt ( p0*p0/x + p1*p1 + p2*p2/x/x)
-  Float_t   fPi0SigmaP2;      // sigma_m_pi0 = sqrt ( p0*p0/x + p1*p1 + p2*p2/x/x)
+  Float_t   fPi0SigmaP1;      // sigma_m_pi0 = sqrt ( p0*p0/x + p1*p1 + p2*p2/x/x)
+  Float_t   fPi0SigmaP2;      // sigma_m_pi0 = sqrt ( p0*p0/x + p1*p1 + p2*p2/x/x)
 
   //Fiducial area parameters
   Float_t fZmax ;               //Rectangular
@@ -88,8 +88,8 @@ private:
   Float_t fPhimax ;             //covered by
   Float_t fPhimin ;             //full calorimeter
 
-  TList   * fOutputList ;        //! output data list
-  TList   * fEventList ;         //!  event list for mixed InvMass
+  TList   * fOutputList ;        // output data list
+  TList   * fEventList ;         //  event list for mixed InvMass
 
   // Histograms
   //Reconstructed spectra
