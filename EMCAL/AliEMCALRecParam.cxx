@@ -544,49 +544,56 @@ AliEMCALRecParam* AliEMCALRecParam::GetHighFluxParam()
 }
 
 //-----------------------------------------------------------------------------
-void AliEMCALRecParam::Print(Option_t *) const
+void AliEMCALRecParam::Print(Option_t * opt) const
 {
   // Print reconstruction parameters to stdout
-  AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%f \n",
-	       fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut));
-  
-  AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %\n", fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
-  
-  AliInfo(Form("PID parameters, Gamma :\n"));
-  for(Int_t i = 0; i < 6; i++){
-    for(Int_t j = 0; j < 6; j++){
-      printf(" %f, ", fGamma[i][j]);
-    }
-    printf("\n");
+  // if nothing is specified print all, if "reco" just clusterization/track matching
+  // if "pid", just PID parameters, if "raw", just raw utils parameters.
+  if(!strcmp("",opt) || !strcmp("reco",opt)){
+    AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%f \n",
+		 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut));
+    
+    AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %\n", fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
   }
   
-  
-  AliInfo(Form("PID parameters, Hadron :\n"));
-  for(Int_t i = 0; i < 6; i++){
-    for(Int_t j = 0; j < 6; j++){
-      printf(" %f, ", fHadron[i][j]);
+  if(!strcmp("",opt) || !strcmp("pid",opt)){
+    AliInfo(Form("PID parameters, Gamma :\n"));
+    for(Int_t i = 0; i < 6; i++){
+      for(Int_t j = 0; j < 6; j++){
+	printf(" %f, ", fGamma[i][j]);
+      }
+      printf("\n");
     }
-    printf("\n");
-  }
-  
-  printf("\n");
-  
-  AliInfo(Form("PID parameters, Pi0zero :\n"));
-  for(Int_t i = 0; i < 6; i++){
-    for(Int_t j = 0; j < 6; j++){
-      printf(" %f, ", fPiZero[i][j]);
+    
+    
+    AliInfo(Form("PID parameters, Hadron :\n"));
+    for(Int_t i = 0; i < 6; i++){
+      for(Int_t j = 0; j < 6; j++){
+	printf(" %f, ", fHadron[i][j]);
+      }
+      printf("\n");
     }
+    
     printf("\n");
+    
+    AliInfo(Form("PID parameters, Pi0zero :\n"));
+    for(Int_t i = 0; i < 6; i++){
+      for(Int_t j = 0; j < 6; j++){
+	printf(" %f, ", fPiZero[i][j]);
+      }
+      printf("\n");
+    }
+    
+    printf("\n");
+    
   }
-  
-  printf("\n");
-  
-  
-  AliInfo(Form("Raw signal parameters: \n gain factor=%f, order=%d, tau=%f, noise threshold=%d, nped samples=%d \n",
-	       fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
-  AliInfo(Form("Raw signal: with bad channels? %d, \n \t with fitting algorithm %d, \n \t Use FALTRO %d \n",
-				 fRemoveBadChannels, fFittingAlgorithm, fUseFALTRO));
-  
+
+  if(!strcmp("",opt) || !strcmp("raw",opt)){
+    AliInfo(Form("Raw signal parameters: \n gain factor=%f, order=%d, tau=%f, noise threshold=%d, nped samples=%d \n",
+		 fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
+    AliInfo(Form("Raw signal: with bad channels? %d, \n \t with fitting algorithm %d, \n \t Use FALTRO %d \n",
+		 fRemoveBadChannels, fFittingAlgorithm, fUseFALTRO));
+  }
 }
 
 //-----------------------------------------------------------------------------
