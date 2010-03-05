@@ -75,7 +75,7 @@ AliAnaElectron::AliAnaElectron()
   fhPtNPE(0),fhPhiNPE(0),fhEtaNPE(0),
   fhPtPE(0),fhPhiPE(0),fhEtaPE(0),
   //for comparisons with tracking detectors
-  fhPtTrack(0),fhPtHadron(0),fhPtNPEleTPC(0),fhPtNPEleTPCTRD(0),fhPtNPEleTTE(0),
+  fhPtHadron(0),fhPtNPEleTPC(0),fhPtNPEleTPCTRD(0),fhPtNPEleTTE(0),
   fhPtNPEleEMCAL(0),
   //DVM B-tagging
   fhDVMBtagCut1(0),fhDVMBtagCut2(0),fhDVMBtagCut3(0),fhDVMBtagQA1(0),fhDVMBtagQA2(0),
@@ -92,6 +92,7 @@ AliAnaElectron::AliAnaElectron()
   //reco electrons from various sources
   fhPhiConversion(0),fhEtaConversion(0),
   //for comparisons with tracking detectors
+  fhPtTrack(0),
   fhPtNPEBHadron(0),
   //for computing efficiency of B-jet tags
   fhBJetPt1x4(0),fhBJetPt2x3(0),fhBJetPt3x2(0),
