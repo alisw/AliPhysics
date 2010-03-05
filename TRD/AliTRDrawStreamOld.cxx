@@ -13,7 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id: AliTRDrawStream.cxx 27797 2008-08-05 14:37:22Z cblume $ */
+/* $Id: AliTRDrawStreamOld.cxx 27797 2008-08-05 14:37:22Z cblume $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -33,7 +33,7 @@
 #include "TFile.h"
 //#include "TTreeStream.h"
 
-#include "AliTRDrawStream.h"
+#include "AliTRDrawStreamOld.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDdigitsManager.h"
@@ -41,7 +41,6 @@
 #include "AliTRDarrayADC.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDdigitsParam.h"
-#include "AliTRDrawTPStream.h"
 
 //#include "AliLog.h"
 #include "AliRawReader.h"
@@ -106,43 +105,43 @@
 #define ADC_WORD_MASK(w) ((w) & 0x3)
 
 //--------------------------------------------------------
-ClassImp(AliTRDrawStream)
+ClassImp(AliTRDrawStreamOld)
 
-Bool_t AliTRDrawStream::fgExtraSkip = kFALSE;
-Bool_t AliTRDrawStream::fgSkipCDH = kFALSE;
-Bool_t AliTRDrawStream::fgCleanDataOnly = kFALSE;
-Bool_t AliTRDrawStream::fgDebugFlag = kTRUE;
-Bool_t AliTRDrawStream::fgEnableMemoryReset = kTRUE;
-Bool_t AliTRDrawStream::fgStackNumberChecker = kTRUE;
-Bool_t AliTRDrawStream::fgStackLinkNumberChecker = kFALSE;
-Bool_t AliTRDrawStream::fgSkipData = kTRUE;
-Bool_t AliTRDrawStream::fgEnableDecodeConfigData = kFALSE;
-Int_t AliTRDrawStream::fgDumpHead = -1;
-Int_t AliTRDrawStream::fgEmptySignals[] = 
+Bool_t AliTRDrawStreamOld::fgExtraSkip = kFALSE;
+Bool_t AliTRDrawStreamOld::fgSkipCDH = kFALSE;
+Bool_t AliTRDrawStreamOld::fgCleanDataOnly = kFALSE;
+Bool_t AliTRDrawStreamOld::fgDebugFlag = kTRUE;
+Bool_t AliTRDrawStreamOld::fgEnableMemoryReset = kTRUE;
+Bool_t AliTRDrawStreamOld::fgStackNumberChecker = kTRUE;
+Bool_t AliTRDrawStreamOld::fgStackLinkNumberChecker = kFALSE;
+Bool_t AliTRDrawStreamOld::fgSkipData = kTRUE;
+Bool_t AliTRDrawStreamOld::fgEnableDecodeConfigData = kFALSE;
+Int_t AliTRDrawStreamOld::fgDumpHead = -1;
+Int_t AliTRDrawStreamOld::fgEmptySignals[] = 
   {
     -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1
     -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1
   };
-Short_t AliTRDrawStream::fgMCMordering[] =
+Short_t AliTRDrawStreamOld::fgMCMordering[] =
   {
     12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3 
   };
-Short_t AliTRDrawStream::fgROBordering[] =
+Short_t AliTRDrawStreamOld::fgROBordering[] =
   {
     0, 1, 2, 3
   };
-Int_t  AliTRDrawStream::fgLastHC = -1;
-Int_t  AliTRDrawStream::fgLastROB = -1;
-Int_t  AliTRDrawStream::fgLastIndex = -1;
-Int_t  AliTRDrawStream::fgDumpingSM = -1;
-Int_t  AliTRDrawStream::fgDumpingStack = -1;
-Int_t  AliTRDrawStream::fgDumpingLayer = -1;
-Int_t  AliTRDrawStream::fgDumpingROB = -1;
-Int_t  AliTRDrawStream::fgDumpingMCM = -1;
-Bool_t  AliTRDrawStream::fgDumpingEnable = kFALSE;
+Int_t  AliTRDrawStreamOld::fgLastHC = -1;
+Int_t  AliTRDrawStreamOld::fgLastROB = -1;
+Int_t  AliTRDrawStreamOld::fgLastIndex = -1;
+Int_t  AliTRDrawStreamOld::fgDumpingSM = -1;
+Int_t  AliTRDrawStreamOld::fgDumpingStack = -1;
+Int_t  AliTRDrawStreamOld::fgDumpingLayer = -1;
+Int_t  AliTRDrawStreamOld::fgDumpingROB = -1;
+Int_t  AliTRDrawStreamOld::fgDumpingMCM = -1;
+Bool_t  AliTRDrawStreamOld::fgDumpingEnable = kFALSE;
 
 
-AliTRDrawStream::AliTRDrawStream()
+AliTRDrawStreamOld::AliTRDrawStreamOld()
   : AliTRDrawStreamBase()
   , fSM()
   , fStack(0)
@@ -184,7 +183,7 @@ AliTRDrawStream::AliTRDrawStream()
 }
 
 //--------------------------------------------------------
-AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader)
+AliTRDrawStreamOld::AliTRDrawStreamOld(AliRawReader *rawReader)
   : AliTRDrawStreamBase(rawReader)
   , fSM()
   , fStack(0)
@@ -232,7 +231,7 @@ AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader)
 
 //------------------------------------------------------------
 
-AliTRDrawStream::AliTRDrawStream(const AliTRDrawStream& /*st*/)
+AliTRDrawStreamOld::AliTRDrawStreamOld(const AliTRDrawStreamOld& /*st*/)
   : AliTRDrawStreamBase()
   , fSM()
   , fStack(0)
@@ -272,7 +271,7 @@ AliTRDrawStream::AliTRDrawStream(const AliTRDrawStream& /*st*/)
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::SetRawVersion(Int_t fraw)
+Bool_t AliTRDrawStreamOld::SetRawVersion(Int_t fraw)
 {
   //
   // function provided for backward compatibility
@@ -284,7 +283,7 @@ Bool_t AliTRDrawStream::SetRawVersion(Int_t fraw)
 }
 
 //------------------------------------------------------------
-AliTRDrawStream::~AliTRDrawStream()
+AliTRDrawStreamOld::~AliTRDrawStreamOld()
 {
   //
   // destructor
@@ -293,7 +292,7 @@ AliTRDrawStream::~AliTRDrawStream()
 }
 
 //------------------------------------------------------------
-AliTRDrawStream & AliTRDrawStream::operator=(const AliTRDrawStream &)
+AliTRDrawStreamOld & AliTRDrawStreamOld::operator=(const AliTRDrawStreamOld &)
 {
   //
   // we are not using this functionality
@@ -304,7 +303,7 @@ AliTRDrawStream & AliTRDrawStream::operator=(const AliTRDrawStream &)
 }
 
 //___________________________________________________________
-void AliTRDrawStream::SwapOnEndian()
+void AliTRDrawStreamOld::SwapOnEndian()
 {
   //
   // Check the endian and swap if needed
@@ -328,7 +327,7 @@ void AliTRDrawStream::SwapOnEndian()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::DumpWords(UInt_t *px, UInt_t iw, UInt_t marker)
+Bool_t AliTRDrawStreamOld::DumpWords(UInt_t *px, UInt_t iw, UInt_t marker)
 {
   //
   // dump given number of words for debugging
@@ -349,7 +348,7 @@ Bool_t AliTRDrawStream::DumpWords(UInt_t *px, UInt_t iw, UInt_t marker)
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::SkipWords(UInt_t iw)
+Bool_t AliTRDrawStreamOld::SkipWords(UInt_t iw)
 {
   //
   // Skip words corresponding to iw
@@ -367,7 +366,7 @@ Bool_t AliTRDrawStream::SkipWords(UInt_t iw)
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::SetReader(AliRawReader * reader)
+Bool_t AliTRDrawStreamOld::SetReader(AliRawReader * reader)
 {
   //
   // Set reader pointer
@@ -391,7 +390,7 @@ Bool_t AliTRDrawStream::SetReader(AliRawReader * reader)
 }
 
 //------------------------------------------------------------
-Int_t AliTRDrawStream::NextBuffer()
+Int_t AliTRDrawStreamOld::NextBuffer()
 {
   //
   // return -1 if no more buffers available
@@ -433,7 +432,7 @@ Int_t AliTRDrawStream::NextBuffer()
 }
 
 //------------------------------------------------------------
-void AliTRDrawStream::ResetCounters()
+void AliTRDrawStreamOld::ResetCounters()
 {
   //
   // reset some global counters
@@ -453,7 +452,7 @@ void AliTRDrawStream::ResetCounters()
 }
 
 //------------------------------------------------------------
-void AliTRDrawStream::ResetIterators()
+void AliTRDrawStreamOld::ResetIterators()
 {
   //
   // reset data which should be reset every sm
@@ -465,7 +464,7 @@ void AliTRDrawStream::ResetIterators()
 }
 
 //------------------------------------------------------------
-void AliTRDrawStream::ResetPerSM()
+void AliTRDrawStreamOld::ResetPerSM()
 {
   //
   // reset every SM
@@ -483,7 +482,7 @@ void AliTRDrawStream::ResetPerSM()
 }     
 
 //------------------------------------------------------------
-void AliTRDrawStream::ResetPerStack()
+void AliTRDrawStreamOld::ResetPerStack()
 {
   //
   // reset every Stack
@@ -500,7 +499,7 @@ void AliTRDrawStream::ResetPerStack()
 }
 
 //------------------------------------------------------------
-void AliTRDrawStream::ResetPerHC()
+void AliTRDrawStreamOld::ResetPerHC()
 {
   //
   // reset every HC
@@ -533,7 +532,7 @@ void AliTRDrawStream::ResetPerHC()
 }
 
 //------------------------------------------------------------
-void AliTRDrawStream::ResetPerMCM()
+void AliTRDrawStreamOld::ResetPerMCM()
 {
   //
   // reset every MCM 
@@ -558,7 +557,7 @@ void AliTRDrawStream::ResetPerMCM()
 }
 
 //------------------------------------------------------------
-void AliTRDrawStream::ResetPerADC()
+void AliTRDrawStreamOld::ResetPerADC()
 {
   //
   // reset every ADC 
@@ -575,7 +574,7 @@ void AliTRDrawStream::ResetPerADC()
 }
 
 //------------------------------------------------------------
-void AliTRDrawStream::ResetMemory()
+void AliTRDrawStreamOld::ResetMemory()
 {                 
   //              
   // initialize all the data members to prevent read data from memory for previous buffer 
@@ -600,7 +599,7 @@ void AliTRDrawStream::ResetMemory()
 }         
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::Next()
+Bool_t AliTRDrawStreamOld::Next()
 {
   //
   // returns with true on next adc read
@@ -671,7 +670,7 @@ Bool_t AliTRDrawStream::Next()
 }
 
 //------------------------------------------------------------
-Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UInt_t **trackletContainer, UShort_t **/*errorCodeContainer*/) 
+Int_t AliTRDrawStreamOld::NextChamber(AliTRDdigitsManager *const digitsManager, UInt_t **trackletContainer, UShort_t **/*errorCodeContainer*/) 
 {
   //
   // Fills single chamber digit array 
@@ -805,7 +804,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::Init()
+Bool_t AliTRDrawStreamOld::Init()
 {
   //
   // Initialize geometry and fee parameters 
@@ -836,7 +835,7 @@ Bool_t AliTRDrawStream::Init()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::InitBuffer(void * const buffer, UInt_t length)
+Bool_t AliTRDrawStreamOld::InitBuffer(void * const buffer, UInt_t length)
 {
   // 
   // set initial information about the buffer
@@ -880,7 +879,7 @@ Bool_t AliTRDrawStream::InitBuffer(void * const buffer, UInt_t length)
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeGTUheader()
+Bool_t AliTRDrawStreamOld::DecodeGTUheader()
 {
   // Decode Supermodule Index Word
   DecodeSMInfo(fpPos, &fSM);
@@ -942,7 +941,7 @@ Bool_t AliTRDrawStream::DecodeGTUheader()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeSM(void * const buffer, UInt_t length)
+Bool_t AliTRDrawStreamOld::DecodeSM(void * const buffer, UInt_t length)
 {
   //
   // decode one sm data in buffer
@@ -1047,7 +1046,7 @@ Bool_t AliTRDrawStream::DecodeSM(void * const buffer, UInt_t length)
 }
 
 //------------------------------------------------------------
-Int_t AliTRDrawStream::DecodeSM()
+Int_t AliTRDrawStreamOld::DecodeSM()
 {
   //
   // decode SM data in case AliRawReader is in use
@@ -1069,7 +1068,7 @@ Int_t AliTRDrawStream::DecodeSM()
 }
 
 //------------------------------------------------------------
-Int_t AliTRDrawStream::DecodeSM(AliRawReader *reader)
+Int_t AliTRDrawStreamOld::DecodeSM(AliRawReader *reader)
 {
   //
   // decode SM with the AliRawReader
@@ -1086,7 +1085,7 @@ Int_t AliTRDrawStream::DecodeSM(AliRawReader *reader)
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::SeekEndOfData()
+Bool_t AliTRDrawStreamOld::SeekEndOfData()
 {
   //
   // go to end of data marker
@@ -1107,7 +1106,7 @@ Bool_t AliTRDrawStream::SeekEndOfData()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::SkipMCMdata(UInt_t iw)
+Bool_t AliTRDrawStreamOld::SkipMCMdata(UInt_t iw)
 {
   //
   // skip mcm data words due to corruption 
@@ -1136,7 +1135,7 @@ Bool_t AliTRDrawStream::SkipMCMdata(UInt_t iw)
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::SeekNextMCMheader()
+Bool_t AliTRDrawStreamOld::SeekNextMCMheader()
 {
   //
   // go to mcm marker
@@ -1162,7 +1161,7 @@ Bool_t AliTRDrawStream::SeekNextMCMheader()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeTracklets()
+Bool_t AliTRDrawStreamOld::DecodeTracklets()
 {
   //
   // decode tracklets
@@ -1212,7 +1211,7 @@ Bool_t AliTRDrawStream::DecodeTracklets()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::IsRowValid()
+Bool_t AliTRDrawStreamOld::IsRowValid()
 {
   //
   // check if the row number is in valid range
@@ -1228,7 +1227,7 @@ Bool_t AliTRDrawStream::IsRowValid()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::IsMCMheaderOK()
+Bool_t AliTRDrawStreamOld::IsMCMheaderOK()
 {
   //
   // check the mcm header
@@ -1316,7 +1315,7 @@ Bool_t AliTRDrawStream::IsMCMheaderOK()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeMCMheader()
+Bool_t AliTRDrawStreamOld::DecodeMCMheader()
 {
   //
   // decode the mcm header
@@ -1381,7 +1380,7 @@ Bool_t AliTRDrawStream::DecodeMCMheader()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::IsHCheaderOK()
+Bool_t AliTRDrawStreamOld::IsHCheaderOK()
 {
   //
   // check insanity of half chamber header
@@ -1458,7 +1457,7 @@ Bool_t AliTRDrawStream::IsHCheaderOK()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeHCheader()
+Bool_t AliTRDrawStreamOld::DecodeHCheader()
 {  
   //
   // decode the half chamber header
@@ -1493,7 +1492,7 @@ Bool_t AliTRDrawStream::DecodeHCheader()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeHC()
+Bool_t AliTRDrawStreamOld::DecodeHC()
 {
   //
   // decode hc header and data
@@ -1514,14 +1513,14 @@ Bool_t AliTRDrawStream::DecodeHC()
     }
   }
 
-  if ((fHC->fRawVMajor & 64) == 64) { // test pattern data
-    AliTRDrawTPStream *tpStream = new AliTRDrawTPStream(fHC->fRawVMajorOpt, fpPos);
-    if (tpStream->DecodeTPdata() == kFALSE) {
-      if (fWarnError) AliError("failed to decode test pattern data");
-        return kFALSE; 
-    }
-    return kTRUE;
-  } 
+//   if ((fHC->fRawVMajor & 64) == 64) { // test pattern data
+//     AliTRDrawTPStream *tpStream = new AliTRDrawTPStream(fHC->fRawVMajorOpt, fpPos);
+//     if (tpStream->DecodeTPdata() == kFALSE) {
+//       if (fWarnError) AliError("failed to decode test pattern data");
+//         return kFALSE; 
+//     }
+//     return kTRUE;
+//   } 
 
   fHC->fMCMmax = 0;
   while (*fpPos != ENDOFRAWDATAMARKER && fpPos < fpEnd) {
@@ -1636,7 +1635,7 @@ Bool_t AliTRDrawStream::DecodeHC()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeADC()
+Bool_t AliTRDrawStreamOld::DecodeADC()
 {
   //
   // decode single ADC channel
@@ -1711,7 +1710,7 @@ Bool_t AliTRDrawStream::DecodeADC()
 }
 
 //------------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeADCExtended()
+Bool_t AliTRDrawStreamOld::DecodeADCExtended()
 {
   //
   // decode single ADC channel
@@ -1785,7 +1784,7 @@ Bool_t AliTRDrawStream::DecodeADCExtended()
 }
 
 //--------------------------------------------------------
-void AliTRDrawStream::DecodeSMInfo(const UInt_t *word, struct AliTRDrawSM *sm) const
+void AliTRDrawStreamOld::DecodeSMInfo(const UInt_t *word, struct AliTRDrawSM *sm) const
 {
   //
   // Decode Supermodule Index Word
@@ -1818,7 +1817,7 @@ void AliTRDrawStream::DecodeSMInfo(const UInt_t *word, struct AliTRDrawSM *sm) c
 }
 
 //--------------------------------------------------------
-const char *AliTRDrawStream::DumpSMInfo(const struct AliTRDrawSM *sm)
+const char *AliTRDrawStreamOld::DumpSMInfo(const struct AliTRDrawSM *sm)
 {
   //
   // Get SM structure into a const char
@@ -1830,7 +1829,7 @@ const char *AliTRDrawStream::DumpSMInfo(const struct AliTRDrawSM *sm)
 }
 
 //--------------------------------------------------------
-void AliTRDrawStream::DecodeStackInfo(const UInt_t *word, struct AliTRDrawStack *st) const
+void AliTRDrawStreamOld::DecodeStackInfo(const UInt_t *word, struct AliTRDrawStack *st) const
 {
   //
   // Decode Stack #i Index Word
@@ -1857,7 +1856,7 @@ void AliTRDrawStream::DecodeStackInfo(const UInt_t *word, struct AliTRDrawStack 
 }
   
 //--------------------------------------------------------
-void AliTRDrawStream::DecodeStackHeader(const UInt_t *word, struct AliTRDrawStack *st, Int_t iword) const
+void AliTRDrawStreamOld::DecodeStackHeader(const UInt_t *word, struct AliTRDrawStack *st, Int_t iword) const
 {
   //
   // decode gtu header for stack info
@@ -1872,7 +1871,7 @@ void AliTRDrawStream::DecodeStackHeader(const UInt_t *word, struct AliTRDrawStac
 }
 
 //--------------------------------------------------------
-const char *AliTRDrawStream::DumpStackInfo(const struct AliTRDrawStack *st)
+const char *AliTRDrawStreamOld::DumpStackInfo(const struct AliTRDrawStack *st)
 {
   //
   // format the string with the stack info
@@ -1886,7 +1885,7 @@ const char *AliTRDrawStream::DumpStackInfo(const struct AliTRDrawStack *st)
 }
 
 //--------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeHCwordH0(const UInt_t *word, struct AliTRDrawHC *hc) const
+Bool_t AliTRDrawStreamOld::DecodeHCwordH0(const UInt_t *word, struct AliTRDrawHC *hc) const
 {
   //
   // decode the hc header word 0
@@ -1916,7 +1915,7 @@ Bool_t AliTRDrawStream::DecodeHCwordH0(const UInt_t *word, struct AliTRDrawHC *h
 }
 
 //--------------------------------------------------------
-Bool_t AliTRDrawStream::DecodeHCwordH1(const UInt_t *word, struct AliTRDrawHC *hc) const
+Bool_t AliTRDrawStreamOld::DecodeHCwordH1(const UInt_t *word, struct AliTRDrawHC *hc) const
 {
   //
   // decode the hc header word 1
@@ -1940,7 +1939,7 @@ Bool_t AliTRDrawStream::DecodeHCwordH1(const UInt_t *word, struct AliTRDrawHC *h
 }
   
 //--------------------------------------------------------
-const char *AliTRDrawStream::DumpHCinfoH0(const struct AliTRDrawHC *hc)
+const char *AliTRDrawStreamOld::DumpHCinfoH0(const struct AliTRDrawHC *hc)
 {
   //
   // dump the hc header word 0
@@ -1954,7 +1953,7 @@ const char *AliTRDrawStream::DumpHCinfoH0(const struct AliTRDrawHC *hc)
 }
 
 //--------------------------------------------------------
-const char *AliTRDrawStream::DumpHCinfoH1(const struct AliTRDrawHC *hc)
+const char *AliTRDrawStreamOld::DumpHCinfoH1(const struct AliTRDrawHC *hc)
 {
   //
   // dump the hc header word 1
@@ -1967,7 +1966,7 @@ const char *AliTRDrawStream::DumpHCinfoH1(const struct AliTRDrawHC *hc)
 }
 
 //--------------------------------------------------------
-void AliTRDrawStream::DecodeMCMheader(const UInt_t *word, struct AliTRDrawMCM *mcm) const
+void AliTRDrawStreamOld::DecodeMCMheader(const UInt_t *word, struct AliTRDrawMCM *mcm) const
 {
   //
   // decode the mcm header
@@ -1990,7 +1989,7 @@ void AliTRDrawStream::DecodeMCMheader(const UInt_t *word, struct AliTRDrawMCM *m
 }
 
 //--------------------------------------------------------
-UInt_t AliTRDrawStream::GetMCMadcMask(const UInt_t *word, struct AliTRDrawMCM *mcm) const
+UInt_t AliTRDrawStreamOld::GetMCMadcMask(const UInt_t *word, struct AliTRDrawMCM *mcm) const
 {
   //
   // get the adc mask
@@ -2022,7 +2021,7 @@ UInt_t AliTRDrawStream::GetMCMadcMask(const UInt_t *word, struct AliTRDrawMCM *m
 }
 
 //--------------------------------------------------------
-void AliTRDrawStream::DecodeMask(const UInt_t *word, struct AliTRDrawMCM *mcm) const
+void AliTRDrawStreamOld::DecodeMask(const UInt_t *word, struct AliTRDrawMCM *mcm) const
 {
   //
   // decode the adc mask - adcs to be read out
@@ -2047,7 +2046,7 @@ void AliTRDrawStream::DecodeMask(const UInt_t *word, struct AliTRDrawMCM *mcm) c
 }
 
 //--------------------------------------------------------
-void AliTRDrawStream::MCMADCwordsWithTbins(UInt_t fTbins, struct AliTRDrawMCM *mcm) const
+void AliTRDrawStreamOld::MCMADCwordsWithTbins(UInt_t fTbins, struct AliTRDrawMCM *mcm) const
 {
   //
   //  count the expected mcm words for a given tbins
@@ -2058,7 +2057,7 @@ void AliTRDrawStream::MCMADCwordsWithTbins(UInt_t fTbins, struct AliTRDrawMCM *m
 }
   
 //--------------------------------------------------------
-const char *AliTRDrawStream::DumpMCMinfo(const struct AliTRDrawMCM *mcm)
+const char *AliTRDrawStreamOld::DumpMCMinfo(const struct AliTRDrawMCM *mcm)
 {
   //
   // mcm info in a string
@@ -2070,7 +2069,7 @@ const char *AliTRDrawStream::DumpMCMinfo(const struct AliTRDrawMCM *mcm)
 }
   
 //--------------------------------------------------------
-const char *AliTRDrawStream::DumpMCMadcMask(const struct AliTRDrawMCM *mcm)
+const char *AliTRDrawStreamOld::DumpMCMadcMask(const struct AliTRDrawMCM *mcm)
 {
   //
   // mcm adc mask in a string

@@ -38,7 +38,7 @@
 
 #include "AliRawReader.h"
 
-#include "AliTRDrawStream.h"
+#include "AliTRDrawStreamOld.h"
 #include "AliTRDqaBlackEvents.h"
 
 ClassImp(AliTRDqaBlackEvents)
@@ -344,7 +344,7 @@ void AliTRDqaBlackEvents::StartEvent()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AliTRDqaBlackEvents::AddBuffer(AliTRDrawStream *data, AliRawReader * const reader) 
+void AliTRDqaBlackEvents::AddBuffer(AliTRDrawStreamOld *data, AliRawReader * const reader) 
 {
   
   //printf ("try to read data\n");

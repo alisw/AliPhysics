@@ -1,10 +1,10 @@
-#ifndef ALITRDRAWSTREAM_H
-#define ALITRDRAWSTREAM_H
+#ifndef ALITRDRAWSTREAMOLD_H
+#define ALITRDRAWSTREAMOLD_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTRDrawStream.h 27696 2008-07-31 09:18:53Z cblume $ */
+/* $Id: AliTRDrawStreamOld.h 27696 2008-07-31 09:18:53Z cblume $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -21,7 +21,7 @@ class TTreeSRedirector;
 class AliTRDfeeParam;
 
 
-class AliTRDrawStream : public AliTRDrawStreamBase
+class AliTRDrawStreamOld : public AliTRDrawStreamBase
 { // class def begin
 
  public:
@@ -374,9 +374,9 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   
   //--------------------------------------------------------
      
-  AliTRDrawStream();
-  AliTRDrawStream(AliRawReader *rawReader);
-  virtual ~AliTRDrawStream();
+  AliTRDrawStreamOld();
+  AliTRDrawStreamOld(AliRawReader *rawReader);
+  virtual ~AliTRDrawStreamOld();
 
   //--------------------------------------------------------
 
@@ -588,8 +588,8 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   void   ResetPerADC();      // reset every ADC  
   void   ResetMemory();      // reset all data members
 
-  AliTRDrawStream(const AliTRDrawStream& st);
-  AliTRDrawStream &operator=(const AliTRDrawStream &);
+  AliTRDrawStreamOld(const AliTRDrawStreamOld& st);
+  AliTRDrawStreamOld &operator=(const AliTRDrawStreamOld &);
 
   // ----------------- DATA MEMBERS START
 
@@ -691,7 +691,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
       , kWrongPadcolumn	        = 24 //
     };			       
 
-  ClassDef(AliTRDrawStream, 1)
+  ClassDef(AliTRDrawStreamOld, 1)
 }; //clas def end
 
 #endif

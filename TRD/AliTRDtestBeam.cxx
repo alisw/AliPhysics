@@ -32,7 +32,7 @@
 //#include <fcntl.h>
 //include <unistd.h>
 
-#include "AliTRDrawStream.h"
+#include "AliTRDrawStreamOld.h"
 #include "AliRawReaderMemory.h"
 #include "AliTRDtestBeam.h"
 
@@ -484,7 +484,7 @@ Int_t AliTRDtestBeam::DecodeSi()
 
 }
 //____________________________________________________________________________ 
-AliTRDrawStream *AliTRDtestBeam::GetTRDrawStream() 
+AliTRDrawStreamOld *AliTRDtestBeam::GetTRDrawStream() 
 {
   //
   // Get the TRD raw stream
@@ -501,10 +501,10 @@ AliTRDrawStream *AliTRDtestBeam::GetTRDrawStream()
   reader->ReadHeader();
   //AliTRDrawStream::RawBufferMissAligned(kTRUE);
 
-  AliTRDrawStream::SetExtraWordsFix();
-  AliTRDrawStream::AllowCorruptedData();
+  AliTRDrawStreamOld::SetExtraWordsFix();
+  AliTRDrawStreamOld::AllowCorruptedData();
   
-  AliTRDrawStream *tb = new AliTRDrawStream(reader); 
+  AliTRDrawStreamOld *tb = new AliTRDrawStreamOld(reader); 
   tb->SetNoErrorWarning();
   //tb->Init();
   return tb;
