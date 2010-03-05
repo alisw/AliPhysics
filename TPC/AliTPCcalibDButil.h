@@ -66,7 +66,7 @@ public:
 
   //getters ref data
   TMap *GetReferenceMap() const {return fRefMap;}
-  const Int_t GetReferenceRun(const char* type) const;
+  Int_t GetReferenceRun(const char* type) const;
   const char* GetRefValidity() const {return fRefValidity.Data();}
   
   AliTPCCalPad* GetRefPadNoise() const {return fRefPadNoise;}
@@ -235,7 +235,7 @@ private:
   AliTPCCalPad* GetRefCalPad(AliCDBEntry *entry);
   AliTPCCalPad* GetAltroMasked(const char* cdbPath, const char* name);
   Bool_t HasRefChanged(const char *cdbPath);
-  const Int_t GetCurrentReferenceRun(const char* type);
+  Int_t GetCurrentReferenceRun(const char* type) const;
   AliCDBEntry* GetRefEntry(const char* cdbPath);
   
   ClassDef(AliTPCcalibDButil,0)
