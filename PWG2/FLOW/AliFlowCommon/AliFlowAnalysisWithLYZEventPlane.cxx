@@ -144,6 +144,12 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
   //Initialise all histograms
   cout<<"---Analysis with Lee Yang Zeros Event Plane Method---"<<endl;
 
+  //save old value and prevent histograms from being added to directory
+  //to avoid name clashes in case multiple analaysis objects are used
+  //in an analysis
+  Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+ 
   //input histograms
   if (fSecondRunList) {
     fSecondReDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ReDtheta_LYZSUM");
@@ -222,6 +228,8 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
 
   fEventNumber = 0;  //set number of events to zero
       
+  //restore old status
+  TH1::AddDirectory(oldHistAddStatus);
 } 
  
 //-----------------------------------------------------------------------

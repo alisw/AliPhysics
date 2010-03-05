@@ -41,7 +41,7 @@
 #include "AliFlowAnalysisWithNestedLoops.h"
 
 class TH1;
-class TList;
+class TList;
 ClassImp(AliFlowAnalysisWithNestedLoops)
 
 //================================================================================================================
@@ -113,7 +113,13 @@ void AliFlowAnalysisWithNestedLoops::Init()
  // e) Book common control histograms;
  // f) Book all objects relevant for distributions;
  // g) Book and fill histograms to hold phi, pt and eta weights.
- 
+
+ //save old value and prevent histograms from being added to directory
+ //to avoid name clashes in case multiple analaysis objects are used
+ //in an analysis
+ Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
+ TH1::AddDirectory(kFALSE);
+  
  this->CrossCheckSettings();
  this->AccessConstants();
  this->BookAndNestAllLists();
@@ -122,6 +128,8 @@ void AliFlowAnalysisWithNestedLoops::Init()
  this->BookEverythingForDistributions();
  this->BookAndFillWeightsHistograms();
 
+ //restore old status
+ TH1::AddDirectory(oldHistAddStatus);
 } // end of void AliFlowAnalysisWithNestedLoops::Init()
 
 //================================================================================================================
@@ -179,7 +187,7 @@ void AliFlowAnalysisWithNestedLoops::Make(AliFlowEventSimple* anEvent)
     
  } // end of for(Int_t i=0;i<nPrim;i++) 
   
-} // end of AliFlowAnalysisWithNestedLoops::Make(AliFlowEventSimple* anEvent)
+} // end of AliFlowAnalysisWithNestedLoops::Make(AliFlowEventSimple* anEvent)
 //================================================================================================================
 
 void AliFlowAnalysisWithNestedLoops::Finish()

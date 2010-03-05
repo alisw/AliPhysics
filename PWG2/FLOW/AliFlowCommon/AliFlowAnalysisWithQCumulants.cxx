@@ -201,6 +201,12 @@ void AliFlowAnalysisWithQCumulants::Init()
  // e) Store flags for distributions of corelations;
  // f) Store harmonic which will be estimated.
   
+ //save old value and prevent histograms from being added to directory
+ //to avoid name clashes in case multiple analaysis objects are used
+ //in an analysis
+ Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
+ TH1::AddDirectory(kFALSE);
+ 
  // a) Cross check if the settings make sense before starting the QC adventure; 
  this->CrossCheckSettings();
  // b) Access all common constants:
@@ -221,6 +227,7 @@ void AliFlowAnalysisWithQCumulants::Init()
  // f) Store harmonic which will be estimated:
  this->StoreHarmonic();
  
+ TH1::AddDirectory(oldHistAddStatus);
 } // end of void AliFlowAnalysisWithQCumulants::Init()
 
 
@@ -6073,7 +6080,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersForParticleWeightsHistograms()
   fUsePhiWeights = (Int_t)fUseParticleWeights->GetBinContent(1); 
   fUsePtWeights = (Int_t)fUseParticleWeights->GetBinContent(2); 
   fUseEtaWeights = (Int_t)fUseParticleWeights->GetBinContent(3);  
- }
+ }
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersForParticleWeightsHistograms(); 
 
 

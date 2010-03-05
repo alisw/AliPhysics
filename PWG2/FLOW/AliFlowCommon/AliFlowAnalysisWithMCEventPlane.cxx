@@ -123,6 +123,12 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   //Define all histograms
   cout<<"---Analysis with the real MC Event Plane---"<<endl;
 
+  //save old value and prevent histograms from being added to directory
+  //to avoid name clashes in case multiple analaysis objects are used
+  //in an analysis
+  Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+ 
   Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
   Double_t dPtMin = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
   Double_t dPtMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
@@ -187,6 +193,7 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
  
   fEventNumber = 0;  //set number of events to zero
         
+  TH1::AddDirectory(oldHistAddStatus);
 } 
  
 //-----------------------------------------------------------------------
