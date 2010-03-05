@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -558,43 +557,43 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       labprong[0]=prong0->GetLabel();
       labprong[1]=prong1->GetLabel();
       AliAODMCParticle *mcprong=0;
-      Int_t PDGprong[2]={0,0};
+      Int_t pdgProng[2]={0,0};
       for (Int_t iprong=0;iprong<2;iprong++){
 	if(labprong[iprong]>=0)  mcprong= (AliAODMCParticle*)mcArray->At(labprong[iprong]);
-	PDGprong[iprong]=mcprong->GetPdgCode();
+	pdgProng[iprong]=mcprong->GetPdgCode();
       }
 
  
       //no mass cut ditributions: ptbis
 	
       if(pt>0. && pt<=1.) {
-	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
 	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_1"))->Fill(d->PtProng(0));
 	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_1"))->Fill(d->PtProng(1));
 	}else {
-	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
 	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_1"))->Fill(d->PtProng(0));
 	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_1"))->Fill(d->PtProng(1));
 	  }
 	}
       }
       if(pt>1. && pt<=2.) {
-	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
 	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_2"))->Fill(d->PtProng(0));
 	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_2"))->Fill(d->PtProng(1));
 	}else {
-	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
 	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_2"))->Fill(d->PtProng(0));
 	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_2"))->Fill(d->PtProng(1));
 	  }
 	}
       }
       if(pt>2. && pt<=3.) {
-	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
 	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_3"))->Fill(d->PtProng(0));
 	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_3"))->Fill(d->PtProng(1));
 	}else {
-	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
 	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_3"))->Fill(d->PtProng(0));
 	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_3"))->Fill(d->PtProng(1));
 	  }
@@ -602,11 +601,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       }
       if(pt>3. && pt<=5.) {
 
-	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
 	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_4"))->Fill(d->PtProng(0));
 	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_4"))->Fill(d->PtProng(1));
 	}else {
-	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
 	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_4"))->Fill(d->PtProng(0));
 	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_4"))->Fill(d->PtProng(1));
 	  }
@@ -614,11 +613,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       }
       if(pt>5.)           {
 
-	if (TMath::Abs(PDGprong[0]) == 211 && TMath::Abs(PDGprong[1]) == 321){
+	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
 	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_5"))->Fill(d->PtProng(0));
 	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_5"))->Fill(d->PtProng(1));
 	}else {
-	  if (TMath::Abs(PDGprong[0]) == 321 && TMath::Abs(PDGprong[1]) == 211){
+	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
 	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_5"))->Fill(d->PtProng(0));
 	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_5"))->Fill(d->PtProng(1));
 	  }
@@ -817,7 +816,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 
     } else{ //Background or LS
       //cout<<"is background"<<endl;
-      Double_t pt = d->Pt();
+      pt = d->Pt();
 
       //no mass cut distributions: mass, ptbis
       if(pt>0. && pt<=1.) {
