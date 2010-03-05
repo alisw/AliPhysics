@@ -6041,7 +6041,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersForCommonHistograms()
  if(commonHist8th) this->SetCommonHists8th(commonHist8th);  
  TString commonHistResults2ndOrderName = "AliFlowCommonHistResults2ndOrderQC"; 
  commonHistResults2ndOrderName += fAnalysisLabel->Data(); 
- AliFlowCommonHistResults *commonHistRes2nd = dynamic_cast<AliFlowCommonHistResults*>                                              (fHistList->FindObject(commonHistResults2ndOrderName.Data()));
+ AliFlowCommonHistResults *commonHistRes2nd = dynamic_cast<AliFlowCommonHistResults*>                                              (fHistList->FindObject(commonHistResults2ndOrderName.Data()));
  if(commonHistRes2nd) this->SetCommonHistsResults2nd(commonHistRes2nd);   
  TString commonHistResults4thOrderName = "AliFlowCommonHistResults4thOrderQC";
  commonHistResults4thOrderName += fAnalysisLabel->Data();
@@ -9818,7 +9818,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTermsUsi
  Double_t dM111 = (*fSMpk)(2,1)-3.*(*fSMpk)(0,2)*(*fSMpk)(0,1)
                 + 2.*(*fSMpk)(0,3); // dM111 = sum_{i,j,k=1,i!=j!=k}^M w_i w_j w_k
  //..............................................................................................
-         // 1-particle:
+         // 1-particle:
  Double_t cosP1nW1 = 0.; // <<w1 cos(n*(phi1))>>
    
  if(dMult>0 && (*fSMpk)(0,1) !=0.)

@@ -15,6 +15,8 @@ Bool_t LYZEP    = kFALSE;
 Bool_t GFC      = kTRUE;
 Bool_t QC       = kTRUE;
 Bool_t FQD      = kTRUE;
+Bool_t MH       = kTRUE; 
+Bool_t NL       = kFALSE; 
 Bool_t MCEP     = kFALSE; //does not work yet 24/12/08
 //--------------------------------------------------------------------------------------
 
@@ -145,7 +147,9 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
   AliFlowAnalysisWithLeeYangZeros *lyz2prod = NULL;
   AliFlowAnalysisWithLYZEventPlane *lyzep = NULL;
   AliFlowAnalysisWithScalarProduct *sp = NULL;
-  AliFlowAnalysisWithMCEventPlane *mcep = NULL;   
+  AliFlowAnalysisWithMCEventPlane *mcep = NULL;     
+  AliFlowAnalysisWithMixedHarmonics *mh = NULL;
+  AliFlowAnalysisWithNestedLoops *nl = NULL;
 
   //MCEP = monte carlo event plane
   if (MCEP) {
@@ -156,34 +160,35 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
   //QC = Q-cumulants  
   if(QC) { 
     AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
-    qc->Init();
     if(listWithWeights) qc->SetWeightsList(listWithWeights);
     if(usePhiWeights) qc->SetUsePhiWeights(usePhiWeights);
     if(usePtWeights) qc->SetUsePtWeights(usePtWeights);
     if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
+    qc->Init();
   }
   
   //GFC = Generating Function Cumulants 
   if(GFC) {
     AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
-    gfc->Init();
     if(listWithWeights) gfc->SetWeightsList(listWithWeights);
     if(usePhiWeights) gfc->SetUsePhiWeights(usePhiWeights);
     if(usePtWeights) gfc->SetUsePtWeights(usePtWeights);
     if(useEtaWeights) gfc->SetUseEtaWeights(useEtaWeights);
+    gfc->Init();
   }
   
   //FQD = Fitting q-distribution 
   if(FQD) {
     AliFlowAnalysisWithFittingQDistribution* fqd = new AliFlowAnalysisWithFittingQDistribution();
-    fqd->Init();
     if(listWithWeights) fqd->SetWeightsList(listWithWeights);
     if(usePhiWeights) fqd->SetUsePhiWeights(usePhiWeights);
+    fqd->Init();
   }
 
   //SP = Scalar Product 
   if(SP) {
     AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
+    if(usePhiWeights) sp->SetUsePhiWeights(usePhiWeights);
     sp->Init();
   }
 
@@ -266,6 +271,25 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
       }
     }
   }
+  // MH = Mixed Harmonics:  
+  if(MH) { 
+    AliFlowAnalysisWithMixedHarmonics* mh = new AliFlowAnalysisWithMixedHarmonics();
+    if(listWithWeights) mh->SetWeightsList(listWithWeights);
+    //if(usePhiWeights) mh->SetUsePhiWeights(usePhiWeights); // to be improved (enabled)
+    //if(usePtWeights) mh->SetUsePtWeights(usePtWeights); // to be improved (enabled)
+    //if(useEtaWeights) mh->SetUseEtaWeights(useEtaWeights); // to be improved (enabled)
+    mh->Init();
+  }
+  // NL = Nested Loops:  
+  if(NL) { 
+    AliFlowAnalysisWithNestedLoops* nl = new AliFlowAnalysisWithNestedLoops();
+    if(listWithWeights) nl->SetWeightsList(listWithWeights);
+    //if(usePhiWeights) nl->SetUsePhiWeights(usePhiWeights); // to be improved (enabled)
+    //if(usePtWeights) nl->SetUsePtWeights(usePtWeights); // to be improved (enabled)
+    //if(useEtaWeights) nl->SetUseEtaWeights(useEtaWeights); // to be improved (enabled)
+    nl->Init();
+  }
+
   //------------------------------------------------------------------------
   
   
@@ -389,7 +413,9 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
 	      if(LYZ2SUM) lyz2sum->Make(fEvent);
 	      if(LYZ2PROD)lyz2prod->Make(fEvent);
 	      if(LYZEP)   lyzep->Make(fEvent,ep);
-	      if(SP)      sp->Make(fEvent);
+	      if(SP)      sp->Make(fEvent);	      
+	      if(MH)      mh->Make(fEvent);
+	      if(NL)      nl->Make(fEvent);
 	      //-----------------------------------------------------------
 	      fCount++;
 	      //cout << "# " << fCount << " events processed" << endl;
@@ -406,8 +432,8 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
  TString outputFileName = "AnalysisResults.root";  
  TFile *outputFile = new TFile(outputFileName.Data(),"RECREATE");
  // create a new file for each method wich will hold list with final results:
- const Int_t nMethods = 10;
- TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP"};
+ const Int_t nMethods = 12;
+ TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL"};
  TDirectoryFile *dirFileFinal[nMethods] = {NULL};
  TString fileNameMethod[nMethods]; 
  for(Int_t i=0;i<nMethods;i++)
@@ -430,6 +456,8 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
  if(LYZ2SUM) {lyz2sum->Finish(); lyz2sum->WriteHistograms(dirFileFinal[7]);}
  if(LYZ2PROD){lyz2prod->Finish();lyz2prod->WriteHistograms(dirFileFinal[8]);}
  if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms(dirFileFinal[9]);}
+ if(MH)      {mh->Finish();      mh->WriteHistograms(dirFileFinal[10]);}
+ if(NL)      {nl->Finish();      nl->WriteHistograms(dirFileFinal[11]);}
  //---------------------------------------------------------------------------------------  
  
  outputFile->Close();
@@ -582,7 +610,9 @@ void LoadLibraries(const anaModes mode) {
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx+");    
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMixedHarmonics.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithNestedLoops.cxx+");
     
     // Class to fill the FlowEvent without aliroot dependence
     // can be found in the directory FlowEventMakers

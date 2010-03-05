@@ -66,7 +66,9 @@ class AliFlowAnalysisWithMixedHarmonics
     virtual void QuantifyBiasFromDetectorEffects();
   // 4.) Method GetOutputHistograms and method called within it:
   virtual void GetOutputHistograms(TList *outputListHistos);
+    virtual void GetPointersForBaseHistograms();
     virtual void GetPointersForCommonHistograms();
+    virtual void GetPointersForAllEventProfiles();
     virtual void GetPointersForResultsHistograms();
   // 5.) Other methods:   
   virtual void WriteHistograms(TString outputFileName);
@@ -79,7 +81,7 @@ class AliFlowAnalysisWithMixedHarmonics
   void SetAnalysisLabel(const char *al) {this->fAnalysisLabel->Append(*al);}; 
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   void SetAnalysisSettings(TProfile* const as) {this->fAnalysisSettings = as;};
-  TH1D* GetAnalysisSettings() const {return this->fAnalysisSettings;};
+  TProfile* GetAnalysisSettings() const {return this->fAnalysisSettings;};
   void SetCorrelatorInteger(Int_t const ci) {this->fCorrelatorInteger = ci;};
   Int_t GetCorrelatorInteger() const {return this->fCorrelatorInteger;}; 
   void SetNoOfMultipicityBins(Int_t const nomb) {this->fNoOfMultipicityBins = nomb;};
@@ -108,13 +110,15 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1D* GetPtWeights() const {return this->fPtWeights;};
   void SetEtaWeights(TH1D* const histEtaWeights) {this->fEtaWeights = histEtaWeights;};
   TH1D* GetEtaWeights() const {return this->fEtaWeights;};
+  void SetProfileList(TList* const plist) {this->fProfileList = plist;}
+  TList* GetProfileList() const {return this->fProfileList;}  
   void Set3pCorrelatorPro(TProfile* const s3pPro) {this->f3pCorrelatorPro = s3pPro;};
   TProfile* Get3pCorrelatorPro() const {return this->f3pCorrelatorPro;};
-  void SetfNonIsotropicTermsPro(TProfile* const nitPro) {this->fNonIsotropicTermsPro = nitPro;};
+  void SetNonIsotropicTermsPro(TProfile* const nitPro) {this->fNonIsotropicTermsPro = nitPro;};
   TProfile* GetNonIsotropicTermsPro() const {return this->fNonIsotropicTermsPro;};
-  void Set3pCorrelatoVsMrPro(TProfile* const s3pVsMPro) {this->f3pCorrelatorVsMPro = s3pVsMPro;};
+  void Set3pCorrelatorVsMPro(TProfile* const s3pVsMPro) {this->f3pCorrelatorVsMPro = s3pVsMPro;};
   TProfile* Get3pCorrelatorVsMPro() const {return this->f3pCorrelatorVsMPro;};
-  void SetfNonIsotropicTermsVsMPro(TProfile2D* const nitVsMPro) {this->fNonIsotropicTermsVsMPro = nitVsMPro;};
+  void SetNonIsotropicTermsVsMPro(TProfile2D* const nitVsMPro) {this->fNonIsotropicTermsVsMPro = nitVsMPro;};
   TProfile2D* GetNonIsotropicTermsVsMPro() const {return this->fNonIsotropicTermsVsMPro;};
   void SetResultsList(TList* const rlist) {this->fResultsList = rlist;}
   TList* GetResultsList() const {return this->fResultsList;}  
@@ -174,6 +178,7 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1D *f3pCorrelatorEBE; // 3-p correlator <cos[n(2phi1-phi2-phi3)]> for single event
   TH1D *fNonIsotropicTermsEBE; // correction terms to 3-p correlator <cos[n(2phi1-phi2-phi3)]> for single event
   // 4.) Profiles:
+  TList *fProfileList; // list holding all all-event profiles 
   TProfile *f3pCorrelatorPro; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> for all events (with wrong errors)
   TProfile *fNonIsotropicTermsPro; // correction terms to 3-p correlator <cos[n(2phi1-phi2-phi3)]> for all events (with wrong errors)
   TProfile *f3pCorrelatorVsMPro; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> for all events (with wrong errors) versus multiplicity
