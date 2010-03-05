@@ -15,5 +15,7 @@
 #pragma link C++ class AliAnalysisTaskFittingQDistribution+;
 #pragma link C++ class AliAnalysisTaskFlowEvent+;
 #pragma link C++ class AliAnalysisTaskFlowEventforRP+;
+#pragma link C++ class AliAnalysisTaskMixedHarmonics+;
+#pragma link C++ class AliAnalysisTaskNestedLoops+;
 
 #endif
