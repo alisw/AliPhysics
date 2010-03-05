@@ -3088,15 +3088,27 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
 }
 
 //_____________________________________________________________________________
+TGeoHMatrix *AliTRDgeometry::GetClusterMatrix(Int_t det)
+{
+  //
+  // Returns the cluster transformation matrix for a given detector
+  //
+
+  if (!fClusterMatrixArray) {
+    if (!CreateClusterMatrixArray()) {
+      return NULL;
+    }
+  }  
+  return (TGeoHMatrix *) fClusterMatrixArray->At(det);
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDgeometry::ChamberInGeometry(Int_t det)
 {
   //
   // Checks whether the given detector is part of the current geometry
   //
-
-  if (!fClusterMatrixArray) {
-    CreateClusterMatrixArray();
-  }  
 
   if (!GetClusterMatrix(det)) {
     return kFALSE;

@@ -11,8 +11,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TObjArray.h"
-
 #include "AliGeometry.h"
 
 class TGeoHMatrix;
@@ -49,8 +47,7 @@ class AliTRDgeometry : public AliGeometry {
           void     CreateServices(Int_t *idtmed);
 
           Bool_t   CreateClusterMatrixArray();  
-  TGeoHMatrix     *GetClusterMatrix(Int_t det)                           { return (TGeoHMatrix *) 
-                                                                             fClusterMatrixArray->At(det); }
+  TGeoHMatrix     *GetClusterMatrix(Int_t det);
 
           void     SetSMstatus(Int_t sm, Char_t status)                  { fSMstatus[sm] = status;         }
 
