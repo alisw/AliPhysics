@@ -611,7 +611,7 @@ void AlidNdEtaTask::Exec(Option_t*)
             {
               Printf("Suspicious x-vertex x=%f y=%f z=%f (period: %d orbit %x)", vtx[0], vtx[1], vtx[2], fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
             }
-            if (fCheckEventType && vtx[1] < 0.05 || vtx[1] > 0.5)
+            if (fCheckEventType && (vtx[1] < 0.05 || vtx[1] > 0.5))
             {
               Printf("Suspicious y-vertex x=%f y=%f z=%f (period: %d orbit %x)", vtx[0], vtx[1], vtx[2], fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
             }
