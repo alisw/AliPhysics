@@ -88,5 +88,8 @@
 #pragma link C++ class AliTPCkalmanTime+;
 #pragma link C++ class AliTPCPointCorrection+;
 #pragma link C++ class AliESDcosmic+;
+#pragma link C++ class AliTPCLaserTrack+;
+#pragma link C++ class AliTPCcalibBase+;
+
 #endif
 
