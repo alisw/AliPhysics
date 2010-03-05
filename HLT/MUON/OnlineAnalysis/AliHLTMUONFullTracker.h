@@ -77,6 +77,10 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   Bool_t Init();
   ///Max number of points per chamber
   int MaxNofPointsPerCh(){return fgkMaxNofPointsPerCh;}
+  ///Set for fast tracking bypass  default Kalman tracking
+  void FastTracking(Bool_t isFast){fFastTracking = isFast;}
+  ///Getter for fast tracking
+  Bool_t FastTracking(){return fFastTracking;}
 
  protected:
 
@@ -146,6 +150,7 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   Int_t fNofConnected ; /// number of connected track segments
   AliHLTUInt32_t fNofTracks; /// number of connected track segments
   DetElemList fDetElemList; ///Map for valid detelem
+  Bool_t fFastTracking ; ///flag for fast tracking avoiding kalman
 
   /// Slat Track segments 
   Bool_t SlatTrackSeg();
@@ -161,7 +166,7 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   void PropagateTracks(Double_t charge, Float_t& px, Float_t& py, Float_t& pz, 
 		       Float_t& xr, Float_t& yr, Float_t& zr, Float_t zprop);
   /// extrapolate to origin
-  Bool_t ExtrapolateToOrigin(Bool_t extrap);
+  Bool_t ExtrapolateToOrigin();
   /// Clean after each run
   Bool_t Clear();
 

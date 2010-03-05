@@ -131,7 +131,8 @@ AliHLTMUONFullTracker::AliHLTMUONFullTracker() :
   fNoffrontTrackSeg(0),
   fNofConnected(0),
   fNofTracks(0),
-  fDetElemList()
+  fDetElemList(),
+  fFastTracking(kFALSE)
 {
 
   /// Constructor of the class
@@ -449,8 +450,11 @@ Bool_t AliHLTMUONFullTracker::Run( Int_t iEvent,AliHLTMUONTrackStruct *data, Ali
 
 
   if(resultOk){
-    resultOk = KalmanChi2Test();
-    //resultOk = SelectFront();
+    if(fFastTracking)
+      resultOk = SelectFront();
+    else
+      resultOk = KalmanChi2Test();
+
     if(not resultOk){
       HLTDebug("Error happened in tracking through in Kalman Chi2 checking, this event will be skipped");
     }
@@ -458,7 +462,7 @@ Bool_t AliHLTMUONFullTracker::Run( Int_t iEvent,AliHLTMUONTrackStruct *data, Ali
   HLTDebug("Finishing KalmanChi2Test");
 
   if(resultOk){
-    resultOk = ExtrapolateToOrigin(true);
+    resultOk = ExtrapolateToOrigin();
     if(not resultOk){
       HLTDebug("Error happened in tracking extrapolation, this event will be skipped");
     }
@@ -670,16 +674,17 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
   Int_t index1,index2,index3,index4;
   IntPair cells[2][fgkMaxNofTracks]; ///cell array  for 5 stn for given trigger
 
-
   Float_t maxXDeflectionExtrap = 10.0 + 4.0;  ///simulation result 10.0
   Float_t extrapRatio = 0.2;            ///simulation result 0.2  
   Float_t circularWindow = 20.0 + 5.0 + 25.0;        ///simulatiuon result 20
   Float_t minAngleWindow = 2.0 + 1.0 + 2.0;        ///simulation result 2.0
-
-  // Float_t maxXDeflectionExtrap = 10.0;  ///simulation result 10.0
-  // Float_t extrapRatio = 0.2;            ///simulation result 0.2  
-  // Float_t circularWindow = 20.0 ;        ///simulatiuon result 20
-  // Float_t minAngleWindow = 2.0;        ///simulation result 2.0
+  
+  if(fFastTracking){
+    maxXDeflectionExtrap = 10.0;  ///simulation result 10.0
+    extrapRatio = 0.2;            ///simulation result 0.2  
+    circularWindow = 20.0 ;        ///simulatiuon result 20
+    minAngleWindow = 2.0;        ///simulation result 2.0
+  }
 
   Float_t tx=0.0,ty=0.0;
 
@@ -729,19 +734,21 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
       continue;
     }
 
-    AliHLTMUONUtils::UnpackRecHitFlags((fChPoint11[itrig]->fHit[minTrgCh]).fFlags,chamber,detElemID);
-    if(not fDetElemList[detElemID]){
-      HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
-      continue;
+    if( not fFastTracking){
+      AliHLTMUONUtils::UnpackRecHitFlags((fChPoint11[itrig]->fHit[minTrgCh]).fFlags,chamber,detElemID);
+      if(not fDetElemList[detElemID]){
+	HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
+	continue;
+      }
+      fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,trigZ1);
+      AliHLTMUONUtils::UnpackRecHitFlags((fChPoint11[itrig]->fHit[maxTrgCh]).fFlags,chamber,detElemID);
+      if(not fDetElemList[detElemID]){
+	HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
+	continue;
+      }
+      fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,trigZ2);
     }
-    fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,trigZ1);
-    AliHLTMUONUtils::UnpackRecHitFlags((fChPoint11[itrig]->fHit[maxTrgCh]).fFlags,chamber,detElemID);
-    if(not fDetElemList[detElemID]){
-      HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
-      continue;
-    }
-    fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,trigZ2);
-    
+
     
     trigX1 = (fChPoint11[itrig]->fHit[minTrgCh]).fX;
     trigY1 = (fChPoint11[itrig]->fHit[minTrgCh]).fY;
@@ -765,18 +772,22 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
     // #endif    
       
     nofFrontChPoints = 0; nofBackChPoints = 0;
+
+    extrapCh9X = trigX1 * extrapCh9Z/trigZ1 ;
+    extrapCh9Y = trigY1 + (trigY2-trigY1) * (extrapCh9Z-trigZ1)/(trigZ2 - trigZ1) ;
     for( Int_t ipointch9=0;ipointch9<fNofPoints[9];ipointch9++){
 
-      AliHLTMUONUtils::UnpackRecHitFlags(fChPoint[9][ipointch9]->fFlags,chamber,detElemID);
-      if(not fDetElemList[detElemID]){
-	HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
-	continue;
-      }
-      fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,extrapCh9Z);
+      if(not fFastTracking){
+	AliHLTMUONUtils::UnpackRecHitFlags(fChPoint[9][ipointch9]->fFlags,chamber,detElemID);
+	if(not fDetElemList[detElemID]){
+	  HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
+	  continue;
+	}
+	fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,extrapCh9Z);
       
-      extrapCh9X = trigX1 * extrapCh9Z/trigZ1 ;
-      extrapCh9Y = trigY1 + (trigY2-trigY1) * (extrapCh9Z-trigZ1)/(trigZ2 - trigZ1) ;
-
+	extrapCh9X = trigX1 * extrapCh9Z/trigZ1 ;
+	extrapCh9Y = trigY1 + (trigY2-trigY1) * (extrapCh9Z-trigZ1)/(trigZ2 - trigZ1) ;
+      }
       
       if(nofBackChPoints < (fgkMaxNofTracks-1) && 
 	 TMath::Abs(extrapCh9X-fChPoint[9][ipointch9]->fX) < maxXDeflectionExtrap && 
@@ -798,18 +809,22 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
     }/// ch10 loop
 
 
+    extrapCh8X = trigX1 * extrapCh8Z/trigZ1 ;
+    extrapCh8Y = trigY1 + (trigY2-trigY1) * (extrapCh8Z-trigZ1)/(trigZ2 - trigZ1) ;
     for( Int_t ipointch8=0;ipointch8<fNofPoints[8];ipointch8++){
+
+      if(not fFastTracking){      
+	AliHLTMUONUtils::UnpackRecHitFlags(fChPoint[8][ipointch8]->fFlags,chamber,detElemID);
+	if(not fDetElemList[detElemID]){
+	  HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
+	  continue;
+	}
+	fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,extrapCh8Z);
       
-      AliHLTMUONUtils::UnpackRecHitFlags(fChPoint[8][ipointch8]->fFlags,chamber,detElemID);
-      if(not fDetElemList[detElemID]){
-	HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
-	continue;
+	extrapCh8X = trigX1 * extrapCh8Z/trigZ1 ;
+	extrapCh8Y = trigY1 + (trigY2-trigY1) * (extrapCh8Z-trigZ1)/(trigZ2 - trigZ1) ;
       }
-      fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,extrapCh8Z);
-      
-      extrapCh8X = trigX1 * extrapCh8Z/trigZ1 ;
-      extrapCh8Y = trigY1 + (trigY2-trigY1) * (extrapCh8Z-trigZ1)/(trigZ2 - trigZ1) ;
-      
+
       if( nofFrontChPoints < (fgkMaxNofTracks-1) &&
 	  TMath::Abs(extrapCh8X-fChPoint[8][ipointch8]->fX) < maxXDeflectionExtrap && 
 	  TMath::Abs(extrapCh8Y-fChPoint[8][ipointch8]->fY)/
@@ -917,18 +932,22 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
     // #endif    
     
     nofFrontChPoints = 0; nofBackChPoints = 0;
-    for( Int_t ipointch7=0;ipointch7<fNofPoints[7];ipointch7++){
-      
-      AliHLTMUONUtils::UnpackRecHitFlags(fChPoint[7][ipointch7]->fFlags,chamber,detElemID);
-      if(not fDetElemList[detElemID]){
-	HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
-	continue;
-      }
-      fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,extrapCh7Z);
 
-      extrapCh7X = trigX1 * extrapCh7Z/trigZ1 ;
-      extrapCh7Y = trigY1 + (trigY2-trigY1) * (extrapCh7Z-trigZ1)/(trigZ2 - trigZ1) ;
-      
+    extrapCh7X = trigX1 * extrapCh7Z/trigZ1 ;
+    extrapCh7Y = trigY1 + (trigY2-trigY1) * (extrapCh7Z-trigZ1)/(trigZ2 - trigZ1) ;
+    for( Int_t ipointch7=0;ipointch7<fNofPoints[7];ipointch7++){
+     
+      if(not fFastTracking){
+	AliHLTMUONUtils::UnpackRecHitFlags(fChPoint[7][ipointch7]->fFlags,chamber,detElemID);
+	if(not fDetElemList[detElemID]){
+	  HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
+	  continue;
+	}
+	fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,extrapCh7Z);
+
+	extrapCh7X = trigX1 * extrapCh7Z/trigZ1 ;
+	extrapCh7Y = trigY1 + (trigY2-trigY1) * (extrapCh7Z-trigZ1)/(trigZ2 - trigZ1) ;
+      }
 
       if( nofBackChPoints < (fgkMaxNofTracks-1) &&
 	  TMath::Abs(extrapCh7X-fChPoint[7][ipointch7]->fX) < maxXDeflectionExtrap && 
@@ -949,19 +968,22 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
       }///if point found
     }///ch8 loop
 
+    extrapCh6X = trigX1 * extrapCh6Z/trigZ1 ;
+    extrapCh6Y = trigY1 + (trigY2-trigY1) * (extrapCh6Z-trigZ1)/(trigZ2 - trigZ1) ;
     for( Int_t ipointch6=0;ipointch6<fNofPoints[6];ipointch6++){
       
-      AliHLTMUONUtils::UnpackRecHitFlags(fChPoint[6][ipointch6]->fFlags,chamber,detElemID);
-      if(not fDetElemList[detElemID]){
-	HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
-	continue;
+      if(not fFastTracking){
+	AliHLTMUONUtils::UnpackRecHitFlags(fChPoint[6][ipointch6]->fFlags,chamber,detElemID);
+	if(not fDetElemList[detElemID]){
+	  HLTDebug("Invalid detection element : %d, not harmful to HLT chain",detElemID);
+	  continue;
+	}
+	fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,extrapCh6Z);	
+      
+      
+	extrapCh6X = trigX1 * extrapCh6Z/trigZ1 ;
+	extrapCh6Y = trigY1 + (trigY2-trigY1) * (extrapCh6Z-trigZ1)/(trigZ2 - trigZ1) ;
       }
-      fChamberGeometryTransformer->Local2Global(detElemID,0.0,0.0,0.0,tx,ty,extrapCh6Z);	
-      
-      
-      extrapCh6X = trigX1 * extrapCh6Z/trigZ1 ;
-      extrapCh6Y = trigY1 + (trigY2-trigY1) * (extrapCh6Z-trigZ1)/(trigZ2 - trigZ1) ;
-    
       
       if(nofFrontChPoints < (fgkMaxNofTracks-1) && 
 	 TMath::Abs(extrapCh6X-fChPoint[6][ipointch6]->fX) < maxXDeflectionExtrap && 
@@ -1479,15 +1501,17 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
   Float_t st3WindowX = 40.0   ;                ///simulation result 40.0
   Float_t st3WindowY = 10.0;                   ///simulation result 10.0
 
-  // Float_t distDiffX = 4.0;                    ///simulation result 4.0
-  // Float_t distDiffY = 4.0 ;                   ///simulation result 4.0
-  // ///float closeToY0 = 10.0;                    ///simulation result 10.0 
-  // Float_t minAngleWindow = 2.0 ;               ///simulation result 2.0
-  // Float_t diffDistStX = 25.0;                  ///simulation result 25.0
-  // Float_t diffDistStY = 25.0;                  ///simulation result 25.0
-  // Float_t st3WindowX = 40.0   ;                ///simulation result 40.0
-  // Float_t st3WindowY = 10.0;                   ///simulation result 10.0
-
+  if(fFastTracking){
+    distDiffX = 4.0;                    ///simulation result 4.0
+    distDiffY = 4.0 ;                   ///simulation result 4.0
+    ///float closeToY0 = 10.0;                    ///simulation result 10.0 
+    minAngleWindow = 2.0 ;               ///simulation result 2.0
+    diffDistStX = 25.0;                  ///simulation result 25.0
+    diffDistStY = 25.0;                  ///simulation result 25.0
+    st3WindowX = 40.0   ;                ///simulation result 40.0
+    st3WindowY = 10.0;                   ///simulation result 10.0
+  }
+  
   ///   Float_t inclinationWindow = 0.04;            ///inclination window   
   ///   Float_t st3WindowXOp2 = 40.0 ;                 ///simulation result 40.0
   ///   Float_t st3WindowYOp2 = 10.0;                ///simulation result 10.0
@@ -2960,7 +2984,7 @@ void AliHLTMUONFullTracker::CorrectMCSEffectInAbsorber(AliMUONTrackParam* param,
 
 ///__________________________________________________________________________
 
-Bool_t AliHLTMUONFullTracker::ExtrapolateToOrigin(Bool_t extrap)
+Bool_t AliHLTMUONFullTracker::ExtrapolateToOrigin()
 {
   /// Extrapolation to origin through absorber
 
@@ -3036,87 +3060,89 @@ Bool_t AliHLTMUONFullTracker::ExtrapolateToOrigin(Bool_t extrap)
     trackP.SetInverseBendingMomentum(1.0/pyz) ;
     
     
-    if(extrap){
-      
-      //trackP = fTrackParam[ibacktrackseg]    ;
-      
-      LinearExtrapToZ(&trackP,fgkAbsoedge[3]);
-      v4.SetXYZ(trackP.GetNonBendingCoor(),trackP.GetBendingCoor(),trackP.GetZ());
-      LinearExtrapToZ(&trackP,fgkAbsoedge[2]);
-      v3.SetXYZ(trackP.GetNonBendingCoor(),trackP.GetBendingCoor(),trackP.GetZ());
-      LinearExtrapToZ(&trackP,fgkAbsoedge[1]);
-      v2.SetXYZ(trackP.GetNonBendingCoor(),trackP.GetBendingCoor(),trackP.GetZ());
-      LinearExtrapToZ(&trackP,fgkAbsoedge[0]);
-      v1.SetXYZ(trackP.GetNonBendingCoor(),trackP.GetBendingCoor(),trackP.GetZ());
-    
-      eLoss1 = BetheBloch(trackP.P(), (v4-v3).Mag(), fgkRho[2], fgkAtomicA[2], fgkAtomicZ[2]);
-      eLoss2 = BetheBloch(trackP.P(), (v3-v2).Mag(), fgkRho[1], fgkAtomicA[1], fgkAtomicZ[1]);
-      eLoss3 = BetheBloch(trackP.P(), (v2-v1).Mag(), fgkRho[0], fgkAtomicA[0], fgkAtomicZ[0]);
-    
-      ///       sigmaELoss1 = EnergyLossFluctuation2(trackP.P(), (v4-v3).Mag(), rho[2], atomicA[2], atomicZ[2]);
-      ///       sigmaELoss2 = EnergyLossFluctuation2(trackP.P(), (v3-v2).Mag(), rho[1], atomicA[1], atomicZ[1]);
-      ///       sigmaELoss3 = EnergyLossFluctuation2(trackP.P(), (v2-v1).Mag(), rho[0], atomicA[0], atomicZ[0]);
 
-      ///     eDiff = totELoss-(eLoss1+eLoss2+eLoss3);
-      ///     sigmaELossDiff = sigmaTotELoss ;///- (sigmaELoss1+sigmaELoss2+sigmaELoss3);
 
-      ///       CorrectELossEffectInAbsorber(&trackP, 0.5*(eLoss1+eLoss2+eLoss3), 0.5*(sigmaELoss1+sigmaELoss2+sigmaELoss3));
-    
-
-      ///CorrectELossEffectInAbsorber(&trackP, totELoss,sigmaTotELoss);
-
-      CorrectELossEffectInAbsorber(&trackP, 0.7*(eLoss1+eLoss2+eLoss3));
-
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      f0Sum = 0.0;      f1Sum = 0.0;      f2Sum = 0.0;
-
-      b = (v4.Z()-v1.Z())/((v4-v1).Mag());
-    
-      zB = v1.Z();
-      zE = b*((v2-v1).Mag()) + zB;
-      dzB = zB - v1.Z();
-      dzE = zE - v1.Z();
-    
-      f0 = ((v2-v1).Mag())/fgkRadLen[0];
-      f1  = (dzE*dzE - dzB*dzB) / b / b / fgkRadLen[0] /2.;
-      f2 = (dzE*dzE*dzE - dzB*dzB*dzB) / b / b / b / fgkRadLen[0] / 3.;
-
-      f0Sum += f0;
-      f1Sum += f1;
-      f2Sum += f2;
-    
-      zB = zE;
-      zE = b*((v3-v2).Mag()) + zB;
-      dzB = zB - v1.Z();
-      dzE = zE - v1.Z();
-    
-      f0 = ((v3-v2).Mag())/fgkRadLen[1];
-      f1  = (dzE*dzE - dzB*dzB) / b / b / fgkRadLen[1] /2.;
-      f2 = (dzE*dzE*dzE - dzB*dzB*dzB) / b / b / b / fgkRadLen[1] / 3.;
-
-      f0Sum += f0;
-      f1Sum += f1;
-      f2Sum += f2;
-    
-      zB = zE;
-      zE = b*((v4-v3).Mag()) + zB;
-      dzB = zB - v1.Z();
-      dzE = zE - v1.Z();
-    
-      f0 = ((v4-v3).Mag())/fgkRadLen[2];
-      f1  = (dzE*dzE - dzB*dzB) / b / b / fgkRadLen[2] /2.;
-      f2 = (dzE*dzE*dzE - dzB*dzB*dzB) / b / b / b / fgkRadLen[2] / 3.;
-
-      f0Sum += f0;
-      f1Sum += f1;
-      f2Sum += f2;
-    
-    
-      ///AddMCSEffectInAbsorber(&trackP,(v4-v1).Mag(),f0Sum,f1Sum,f2Sum);
-
-      CorrectMCSEffectInAbsorber(&trackP,fXVertex,fYVertex, fZVertex,AliMUONConstants::AbsZBeg(),f1Sum,f2Sum);
-      CorrectELossEffectInAbsorber(&trackP, 0.5*(eLoss1+eLoss2+eLoss3));
+    if(not fFastTracking){
+      trackP = fTrackParam[ibacktrackseg]    ;
     }
+    
+    LinearExtrapToZ(&trackP,fgkAbsoedge[3]);
+    v4.SetXYZ(trackP.GetNonBendingCoor(),trackP.GetBendingCoor(),trackP.GetZ());
+    LinearExtrapToZ(&trackP,fgkAbsoedge[2]);
+    v3.SetXYZ(trackP.GetNonBendingCoor(),trackP.GetBendingCoor(),trackP.GetZ());
+    LinearExtrapToZ(&trackP,fgkAbsoedge[1]);
+    v2.SetXYZ(trackP.GetNonBendingCoor(),trackP.GetBendingCoor(),trackP.GetZ());
+    LinearExtrapToZ(&trackP,fgkAbsoedge[0]);
+    v1.SetXYZ(trackP.GetNonBendingCoor(),trackP.GetBendingCoor(),trackP.GetZ());
+    
+    eLoss1 = BetheBloch(trackP.P(), (v4-v3).Mag(), fgkRho[2], fgkAtomicA[2], fgkAtomicZ[2]);
+    eLoss2 = BetheBloch(trackP.P(), (v3-v2).Mag(), fgkRho[1], fgkAtomicA[1], fgkAtomicZ[1]);
+    eLoss3 = BetheBloch(trackP.P(), (v2-v1).Mag(), fgkRho[0], fgkAtomicA[0], fgkAtomicZ[0]);
+    
+    ///       sigmaELoss1 = EnergyLossFluctuation2(trackP.P(), (v4-v3).Mag(), rho[2], atomicA[2], atomicZ[2]);
+    ///       sigmaELoss2 = EnergyLossFluctuation2(trackP.P(), (v3-v2).Mag(), rho[1], atomicA[1], atomicZ[1]);
+    ///       sigmaELoss3 = EnergyLossFluctuation2(trackP.P(), (v2-v1).Mag(), rho[0], atomicA[0], atomicZ[0]);
+
+    ///     eDiff = totELoss-(eLoss1+eLoss2+eLoss3);
+    ///     sigmaELossDiff = sigmaTotELoss ;///- (sigmaELoss1+sigmaELoss2+sigmaELoss3);
+
+    ///       CorrectELossEffectInAbsorber(&trackP, 0.5*(eLoss1+eLoss2+eLoss3), 0.5*(sigmaELoss1+sigmaELoss2+sigmaELoss3));
+    
+
+    ///CorrectELossEffectInAbsorber(&trackP, totELoss,sigmaTotELoss);
+
+    CorrectELossEffectInAbsorber(&trackP, 0.7*(eLoss1+eLoss2+eLoss3));
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    f0Sum = 0.0;      f1Sum = 0.0;      f2Sum = 0.0;
+
+    b = (v4.Z()-v1.Z())/((v4-v1).Mag());
+    
+    zB = v1.Z();
+    zE = b*((v2-v1).Mag()) + zB;
+    dzB = zB - v1.Z();
+    dzE = zE - v1.Z();
+    
+    f0 = ((v2-v1).Mag())/fgkRadLen[0];
+    f1  = (dzE*dzE - dzB*dzB) / b / b / fgkRadLen[0] /2.;
+    f2 = (dzE*dzE*dzE - dzB*dzB*dzB) / b / b / b / fgkRadLen[0] / 3.;
+
+    f0Sum += f0;
+    f1Sum += f1;
+    f2Sum += f2;
+    
+    zB = zE;
+    zE = b*((v3-v2).Mag()) + zB;
+    dzB = zB - v1.Z();
+    dzE = zE - v1.Z();
+    
+    f0 = ((v3-v2).Mag())/fgkRadLen[1];
+    f1  = (dzE*dzE - dzB*dzB) / b / b / fgkRadLen[1] /2.;
+    f2 = (dzE*dzE*dzE - dzB*dzB*dzB) / b / b / b / fgkRadLen[1] / 3.;
+
+    f0Sum += f0;
+    f1Sum += f1;
+    f2Sum += f2;
+    
+    zB = zE;
+    zE = b*((v4-v3).Mag()) + zB;
+    dzB = zB - v1.Z();
+    dzE = zE - v1.Z();
+    
+    f0 = ((v4-v3).Mag())/fgkRadLen[2];
+    f1  = (dzE*dzE - dzB*dzB) / b / b / fgkRadLen[2] /2.;
+    f2 = (dzE*dzE*dzE - dzB*dzB*dzB) / b / b / b / fgkRadLen[2] / 3.;
+
+    f0Sum += f0;
+    f1Sum += f1;
+    f2Sum += f2;
+    
+    
+    ///AddMCSEffectInAbsorber(&trackP,(v4-v1).Mag(),f0Sum,f1Sum,f2Sum);
+
+    CorrectMCSEffectInAbsorber(&trackP,fXVertex,fYVertex, fZVertex,AliMUONConstants::AbsZBeg(),f1Sum,f2Sum);
+    CorrectELossEffectInAbsorber(&trackP, 0.5*(eLoss1+eLoss2+eLoss3));
+
 
     ///AliMUONTrackExtrap::ExtrapToVertex(&trackP, 0., 0., 0., 0., 0.);
     trackP.SetZ(p1.fZ);

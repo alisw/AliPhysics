@@ -70,8 +70,6 @@ class AliHLTMUONFullTrackerComponent : public AliHLTMUONProcessor {
    * was presumably fetched from the CDB.
    */
   int Configure(const char* arguments);
-  /// % of output data blocks
-  unsigned fOutputPercentage; // see above
   
   AliHLTMUONFullTracker *fTracker; /// Pointer to the full tracker
   

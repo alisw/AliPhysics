@@ -39,7 +39,6 @@ ClassImp(AliHLTMUONFullTrackerComponent)
 
 AliHLTMUONFullTrackerComponent::AliHLTMUONFullTrackerComponent() :
   AliHLTMUONProcessor(),
-  fOutputPercentage(100),
   fTracker(NULL)
 {
   // see header file for class documentation
@@ -114,9 +113,8 @@ AliHLTComponent* AliHLTMUONFullTrackerComponent::Spawn()
 
 int AliHLTMUONFullTrackerComponent::DoInit( int argc, const char** argv )
 {
-  // perform dummy initialization, will be properly implemented later
-  fOutputPercentage = 100;
-
+  // perform initialization
+  bool useFast = false;
   int result = AliHLTMUONProcessor::DoInit(argc, argv);
   if (result != 0) return result;
   
@@ -127,6 +125,11 @@ int AliHLTMUONFullTrackerComponent::DoInit( int argc, const char** argv )
     // for -cdbpath here, before ArgumentAlreadyHandled.
     if (ArgumentAlreadyHandled(i, argv[i])) continue;
 
+    if (strcmp(argv[i], "-usefast") == 0)
+      {
+	useFast = true;
+      }
+    
   }
 
   
@@ -145,6 +148,7 @@ int AliHLTMUONFullTrackerComponent::DoInit( int argc, const char** argv )
   
   result = FetchMappingStores();
   fTracker->Init();
+  fTracker->FastTracking(useFast);
   
   return 0;
 }
@@ -166,8 +170,6 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 					     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-  // see header file for class documentation
-  HLTDebug("Output percentage set to %lu %%", fOutputPercentage );
   // Process an event
   unsigned long totalSize = 0;
   AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.

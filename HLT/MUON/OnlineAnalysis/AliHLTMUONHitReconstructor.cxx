@@ -1125,13 +1125,13 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 	    
 	    // First check that we have not overflowed the buffer.
 	    if((*fRecPointsCount) == fMaxRecPointsCount){
-	      HLTError("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
+	      HLTWarning("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
 	                " Output buffer is too small.",
 	               (*fRecPointsCount),fMaxRecPointsCount
 	      );
 	      delete [] isMergedY;
 	      delete [] isMergedX;
-	      return false;
+	      return true;
 	    }
 
 	    AliHLTUInt32_t idflags = AliHLTMUONUtils::PackRecHitFlags(
@@ -1293,13 +1293,13 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
       	    
       // First check that we have not overflowed the buffer.
       if((*fRecPointsCount) == fMaxRecPointsCount){
-	HLTError("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
+	HLTWarning("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
 		 " Output buffer is too small.",
 		 (*fRecPointsCount),fMaxRecPointsCount
 		 );
 	delete [] isMergedY;
 	delete [] isMergedX;
-	return false;
+	return true;
       }
 
       AliHLTUInt32_t idflags = AliHLTMUONUtils::PackRecHitFlags(
@@ -1448,13 +1448,13 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 	    
       // First check that we have not overflowed the buffer.
       if((*fRecPointsCount) == fMaxRecPointsCount){
-	HLTError("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
+	HLTWarning("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
 		 " Output buffer is too small.",
 		 (*fRecPointsCount),fMaxRecPointsCount
 		 );
 	delete [] isMergedY;
 	delete [] isMergedX;
-	return false;
+	return true;
       }
 
       AliHLTUInt32_t idflags = AliHLTMUONUtils::PackRecHitFlags(
@@ -1724,11 +1724,11 @@ bool AliHLTMUONHitReconstructor::MergeSlatRecHits()
 	    
 	    // First check that we have not overflowed the buffer.
 	    if((*fRecPointsCount) == fMaxRecPointsCount){
-	      HLTError("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
+	      HLTWarning("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
 	                " Output buffer is too small.",
 	               (*fRecPointsCount),fMaxRecPointsCount
 	      );
-	      return false;
+	      return true;
 	    }
 
 	    AliHLTUInt32_t idflags = AliHLTMUONUtils::PackRecHitFlags(
