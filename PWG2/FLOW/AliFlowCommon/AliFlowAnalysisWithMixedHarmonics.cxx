@@ -86,6 +86,7 @@ fImQnk(NULL),
 fSpk(NULL),
 f3pCorrelatorEBE(NULL),
 fNonIsotropicTermsEBE(NULL),
+fProfileList(NULL),
 f3pCorrelatorPro(NULL),
 fNonIsotropicTermsPro(NULL),
 f3pCorrelatorVsMPro(NULL),
@@ -99,7 +100,7 @@ fDetectorBiasVsMHist(NULL),
 fNonIsotropicTermsVsMHist(NULL)
 {
  // Constructor. 
-  // Base list to hold all output objects:
+  // Base list to hold all output objects:
  fHistList = new TList();
  fHistListName = new TString("cobjMH");
  fHistList->SetName(fHistListName->Data());
@@ -107,6 +108,9 @@ fNonIsotropicTermsVsMHist(NULL)
  
  // List to hold histograms with phi, pt and eta weights:      
  fWeightsList = new TList();
+ 
+ // List to hold all all-event profiles:      
+ fProfileList = new TList();
  
  // List to hold objects with final results:      
  fResultsList = new TList();
@@ -303,7 +307,7 @@ void AliFlowAnalysisWithMixedHarmonics::GetOutputHistograms(TList *outputListHis
 {
  // Get pointers to all objects saved in the output file.
  
- // a) Get pointers for common control histograms. 
+ // a) Get pointers for common control histograms. 
  if(outputListHistos)
  {	
   this->SetHistList(outputListHistos);
@@ -314,7 +318,9 @@ void AliFlowAnalysisWithMixedHarmonics::GetOutputHistograms(TList *outputListHis
    cout<<endl;
    exit(0);
   }
+  this->GetPointersForBaseHistograms();
   this->GetPointersForCommonHistograms();
+  this->GetPointersForAllEventProfiles();
   this->GetPointersForResultsHistograms();
  } else 
    {
@@ -325,6 +331,27 @@ void AliFlowAnalysisWithMixedHarmonics::GetOutputHistograms(TList *outputListHis
    }
    
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetOutputHistograms(TList *outputListHistos)
+
+//================================================================================================================
+
+void AliFlowAnalysisWithMixedHarmonics::GetPointersForBaseHistograms() 
+{
+ // Get pointers to base histograms.
+ 
+ TString analysisSettingsName = "fAnalysisSettings";
+ TProfile *analysisSettings = dynamic_cast<TProfile*>(fHistList->FindObject(analysisSettingsName.Data()));
+ if(analysisSettings) 
+ {
+  this->SetAnalysisSettings(analysisSettings); 
+ } else
+   {
+    cout<<endl;
+    cout<<" WARNING (MH): analysisSettings is NULL in AFAWMH::GPFBH() !!!!"<<endl;
+    cout<<endl;
+    exit(0);  
+   }
+ 
+} // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForBaseHistograms()
 
 //================================================================================================================
 
@@ -349,6 +376,46 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForCommonHistograms()
 
 //================================================================================================================
 
+void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles() 
+{
+ // Get pointers to histograms holding final results.
+ 
+ TList *profileList = NULL;
+ profileList = dynamic_cast<TList*>(fHistList->FindObject("Profiles"));
+ if(!profileList) 
+ {
+  cout<<"WARNING: profileList is NULL in AFAWMH::GPFAEP() !!!!"<<endl;
+  exit(0); 
+ }  
+ 
+ TString s3pCorrelatorProName = "f3pCorrelatorPro";
+ TProfile *h3pCorrelatorPro = dynamic_cast<TProfile*>(profileList->FindObject(s3pCorrelatorProName.Data()));
+ if(h3pCorrelatorPro)
+ {
+  this->Set3pCorrelatorPro(h3pCorrelatorPro);  
+ }
+ TString s3pCorrelatorVsMProName = "f3pCorrelatorVsMPro";
+ TProfile *h3pCorrelatorVsMPro = dynamic_cast<TProfile*>(profileList->FindObject(s3pCorrelatorVsMProName.Data()));
+ if(h3pCorrelatorVsMPro)
+ {
+  this->Set3pCorrelatorVsMPro(h3pCorrelatorVsMPro);  
+ }
+ TString nonIsotropicTermsProName = "fNonIsotropicTermsPro";
+ TProfile *nonIsotropicTermsPro = dynamic_cast<TProfile*>(profileList->FindObject(nonIsotropicTermsProName.Data()));
+ if(nonIsotropicTermsPro)
+ {
+  this->SetNonIsotropicTermsPro(nonIsotropicTermsPro);  
+ }
+ TString nonIsotropicTermsVsMProName = "fNonIsotropicTermsVsMPro";
+ TProfile2D *nonIsotropicTermsVsMPro = dynamic_cast<TProfile2D*>(profileList->FindObject(nonIsotropicTermsVsMProName.Data()));
+ if(nonIsotropicTermsVsMPro)
+ {
+  this->SetNonIsotropicTermsVsMPro(nonIsotropicTermsVsMPro);  
+ }
+} // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
+
+//================================================================================================================
+
 void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms() 
 {
  // Get pointers to histograms holding final results.
@@ -367,19 +434,37 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
  {
   this->Set3pCorrelatorHist(h3pCorrelatorHist);  
  }
+ TString s3pCorrelatorVsMHistName = "f3pCorrelatorVsMHist";
+ TH1D *h3pCorrelatorVsMHist = dynamic_cast<TH1D*>(resultsList->FindObject(s3pCorrelatorVsMHistName.Data()));
+ if(h3pCorrelatorVsMHist)
+ {
+  this->Set3pCorrelatorVsMHist(h3pCorrelatorVsMHist);  
+ }
  TString detectorBiasHistName = "fDetectorBiasHist";
  TH1D *detectorBiasHist = dynamic_cast<TH1D*>(resultsList->FindObject(detectorBiasHistName.Data()));
  if(detectorBiasHist)
  {
   this->SetDetectorBiasHist(detectorBiasHist);  
  }
+ TString detectorBiasVsMHistName = "fDetectorBiasVsMHist";
+ TH1D *detectorBiasVsMHist = dynamic_cast<TH1D*>(resultsList->FindObject(detectorBiasVsMHistName.Data()));
+ if(detectorBiasVsMHist)
+ {
+  this->SetDetectorBiasVsMHist(detectorBiasVsMHist);  
+ }
  TString nonIsotropicTermsHistName = "fNonIsotropicTermsHist";
  TH1D *nonIsotropicTermsHist = dynamic_cast<TH1D*>(resultsList->FindObject(nonIsotropicTermsHistName.Data()));
  if(nonIsotropicTermsHist)
  {
   this->SetNonIsotropicTermsHist(nonIsotropicTermsHist);  
+ }  
+ TString nonIsotropicTermsVsMHistName = "fNonIsotropicTermsVsMHist";
+ TH2D *nonIsotropicTermsVsMHist = dynamic_cast<TH2D*>(resultsList->FindObject(nonIsotropicTermsVsMHistName.Data()));
+ if(nonIsotropicTermsVsMHist)
+ {
+  this->SetNonIsotropicTermsVsMHist(nonIsotropicTermsVsMHist);  
  }
-  
+
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
 
 //================================================================================================================
@@ -413,6 +498,10 @@ void AliFlowAnalysisWithMixedHarmonics::BookAndNestAllLists()
  fWeightsList->SetName("Weights");
  fWeightsList->SetOwner(kTRUE);   
  fHistList->Add(fWeightsList); 
+ // Profiles:
+ fProfileList->SetName("Profiles");
+ fProfileList->SetOwner(kTRUE);   
+ fHistList->Add(fProfileList); 
  // Results:
  fResultsList->SetName("Results");
  fResultsList->SetOwner(kTRUE);   
@@ -485,7 +574,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
  // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> for all events (with wrong error):
  TString s3pCorrelatorProName = "f3pCorrelatorPro";
  f3pCorrelatorPro = new TProfile(s3pCorrelatorProName.Data(),"<<cos[n(2#phi_{1}-#phi_{2}-#phi_{3})]>> for all events (errors are wrong here!)",1,0,1,"s");
- fHistList->Add(f3pCorrelatorPro);
+ fProfileList->Add(f3pCorrelatorPro);
  // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> for all events (with correct error):
  TString s3pCorrelatorHistName = "f3pCorrelatorHist";
  f3pCorrelatorHist = new TH1D(s3pCorrelatorHistName.Data(),"<<cos[n(2#phi_{1}-#phi_{2}-#phi_{3})]>> for all events",1,0,1);
@@ -503,7 +592,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
  fNonIsotropicTermsPro->GetXaxis()->SetBinLabel(8,"sin(n(2#phi_{1}-#phi_{2}))");
  fNonIsotropicTermsPro->GetXaxis()->SetBinLabel(9,"cos(n(#phi_{1}-#phi_{2}-#phi_{3}))");
  fNonIsotropicTermsPro->GetXaxis()->SetBinLabel(10,"sin(n(#phi_{1}-#phi_{2}-#phi_{3})");  
- fHistList->Add(fNonIsotropicTermsPro);
+ fProfileList->Add(fNonIsotropicTermsPro);
  // Correction terms for non-uniform acceptance to <cos[n(2phi1-phi2-phi3)]> for all events (with correct errors):
  TString nonIsotropicTermsHistName = "fNonIsotropicTermsHist";
  fNonIsotropicTermsHist = new TH1D(nonIsotropicTermsHistName.Data(),"Non-isotropic terms for all events",10,0,10);
@@ -533,7 +622,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
   f3pCorrelatorVsMPro->GetXaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+b*fMultipicityBinWidth)));
  }
  f3pCorrelatorVsMPro->GetXaxis()->SetBinLabel(fNoOfMultipicityBins+1,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
- fHistList->Add(f3pCorrelatorVsMPro);
+ fProfileList->Add(f3pCorrelatorVsMPro);
  // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> for all events (with correct error):
  TString s3pCorrelatorVsMHistName = "f3pCorrelatorVsMHist";
  f3pCorrelatorVsMHist = new TH1D(s3pCorrelatorVsMHistName.Data(),"<<cos[n(2#phi_{1}-#phi_{2}-#phi_{3})]>> vs M for all events",fNoOfMultipicityBins+1,0,fNoOfMultipicityBins+1);
@@ -561,7 +650,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
   fNonIsotropicTermsVsMPro->GetYaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+b*fMultipicityBinWidth)));
  }
  fNonIsotropicTermsVsMPro->GetYaxis()->SetBinLabel(fNoOfMultipicityBins+1,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
- fHistList->Add(fNonIsotropicTermsVsMPro);
+ fProfileList->Add(fNonIsotropicTermsVsMPro);
  // Correction terms for non-uniform acceptance to <cos[n(2phi1-phi2-phi3)]> for all events (with correct errors):
  TString nonIsotropicTermsVsMHistName = "fNonIsotropicTermsVsMHist";
  fNonIsotropicTermsVsMHist = new TH2D(nonIsotropicTermsVsMHistName.Data(),"Non-isotropic terms for all events vs M ",10,0,10,fNoOfMultipicityBins+1,0,fNoOfMultipicityBins+1);
@@ -732,7 +821,85 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
 void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
 {
  // Check pointers used in method Finish().
-                                                                                                                                                                                                                                                                                                                                   
+ 
+ if(!fAnalysisSettings)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !fAnalysisSettings is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f3pCorrelatorPro)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !f3pCorrelatorPro is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!fNonIsotropicTermsPro)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !fNonIsotropicTermsPro is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ } 
+ if(!f3pCorrelatorVsMPro)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !f3pCorrelatorVsMPro is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!fNonIsotropicTermsVsMPro)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !fNonIsotropicTermsVsMPro is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f3pCorrelatorHist)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !f3pCorrelatorHist is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }                                                                                                                                                                                                                                                                                                                                   
+ if(!fNonIsotropicTermsHist)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !fNonIsotropicTermsHist is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!fDetectorBiasHist)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !fDetectorBiasHist is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }   
+ if(!f3pCorrelatorVsMHist)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !f3pCorrelatorVsMHist is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }                                                                                                                                                                                                                                                                                                                                   
+ if(!fNonIsotropicTermsVsMHist)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !fNonIsotropicTermsVsMHist is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!fDetectorBiasVsMHist)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): !fDetectorBiasVsMHist is NULL !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }   
+
 } // end of AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
 
 //================================================================================================================

@@ -691,7 +691,6 @@ void LoadLibraries(const anaModes mode) {
  
     // In root inline compile
 
-   
     // Constants  
     gROOT->LoadMacro("AliFlowCommon/AliFlowCommonConstants.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowLYZConstants.cxx+");
@@ -723,6 +722,8 @@ void LoadLibraries(const anaModes mode) {
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMixedHarmonics.cxx+"); 
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithNestedLoops.cxx+");
     
     // Class to fill the FlowEvent on the fly (generate Monte Carlo events)
     gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimpleMakerOnTheFly.cxx+");   

@@ -76,7 +76,7 @@ fResultsList(NULL),
 fRelativeAngleDistribution(NULL)
 {
  // Constructor. 
-  // Base list to hold all output objects:
+  // Base list to hold all output objects:
  fHistList = new TList();
  fHistListName = new TString("cobjNL");
  fHistList->SetName(fHistListName->Data());
@@ -208,7 +208,7 @@ void AliFlowAnalysisWithNestedLoops::GetOutputHistograms(TList *outputListHistos
 {
  // Get pointers to all objects saved in the output file.
  
- // a) Get pointers for common control histograms. 
+ // a) Get pointers for common control histograms. 
  if(outputListHistos)
  {	
   this->SetHistList(outputListHistos);

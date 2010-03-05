@@ -15,8 +15,8 @@ void redoFinish(TString type="ESD", Int_t mode=mLocal)
  // Final output file name holding final results for large statistics sample:
  TString outputFileName = "AnalysisResults.root"; 
  
- const Int_t nMethods = 10;
- TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP"};
+ const Int_t nMethods = 12;
+ TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL"};
  
  // Load needed libraries:                       
  LoadLibrariesRF(mode);  
@@ -173,6 +173,24 @@ void redoFinish(TString type="ESD", Int_t mode=mLocal)
    lyzep->Finish();
    dirFile[i]->Add(list[i],kTRUE);
    dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
+  } 
+  // MH:
+  else if(list[i] && strcmp(list[i]->GetName(),"cobjMH")==0)
+  {
+   AliFlowAnalysisWithMixedHarmonics* mh = new AliFlowAnalysisWithMixedHarmonics();
+   mh->GetOutputHistograms(list[i]);
+   mh->Finish();
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
+  } 
+  // NL:
+  else if(list[i] && strcmp(list[i]->GetName(),"cobjNL")==0)
+  {
+   AliFlowAnalysisWithNestedLoops* nl = new AliFlowAnalysisWithNestedLoops();
+   nl->GetOutputHistograms(list[i]);
+   nl->Finish();
+   dirFile[i]->Add(list[i],kTRUE);
+   dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
   }                
  } // End of for(Int_t i=0;i<nMethods;i++)
 
@@ -258,7 +276,9 @@ void LoadLibrariesRF(const libModes mode) {
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx+");
-       
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMixedHarmonics.cxx+");    
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithNestedLoops.cxx+");          
+    
     cout << "finished loading macros!" << endl;  
     
   } // end of else if (mode==mLocalSource) 
