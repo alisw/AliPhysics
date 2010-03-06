@@ -213,28 +213,24 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
 
   //AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
   
-  if(!fClusterizer){
-    AliFatal("Clusterizer not available!");
-    return;
-  }
-
-  fClusterizer->ResetRecPoints();
-
-  fClusterizer->OpenOutput(clusterTree);
-  fClusterizer->ReadDigits(digitsTree);
-  fClusterizer->MakeClusters();
+  AliTRDclusterizer clusterer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
+  clusterer.SetReconstructor(this);
+  clusterer.OpenOutput(clusterTree);
+  clusterer.ReadDigits(digitsTree);
+  clusterer.MakeClusters();
 
   if(IsWritingClusters()) return;
 
   // take over ownership of clusters
-  fgClusters = fClusterizer->RecPoints();
-  fClusterizer->SetClustersOwner(kFALSE);
+  fgClusters = clusterer.RecPoints();
+  clusterer.SetClustersOwner(kFALSE);
 
   // take over ownership of online tracklets
-  fgTracklets = fClusterizer->TrackletsArray();
-  fClusterizer->SetTrackletsOwner(kFALSE);
+  fgTracklets = clusterer.TrackletsArray();
+  clusterer.SetTrackletsOwner(kFALSE);
 
-  fgNTimeBins = fClusterizer->GetNTimeBins();
+  fgNTimeBins = clusterer.GetNTimeBins();
+
 }
 
 //_____________________________________________________________________________
