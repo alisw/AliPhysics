@@ -58,9 +58,7 @@ ClassImp( AliHLTITSTrackerComponent )
 AliHLTITSTrackerComponent::AliHLTITSTrackerComponent()
     :
     fSolenoidBz( 0 ),
-    fFullTime( 0 ),
-    fRecoTime( 0 ),
-    fNEvents( 0 ),
+    fBenchmark("ITSTracker"),
     fTracker(0)
 {
   // see header file for class documentation
@@ -74,9 +72,7 @@ AliHLTITSTrackerComponent::AliHLTITSTrackerComponent( const AliHLTITSTrackerComp
     :
     AliHLTProcessor(),
     fSolenoidBz( 0 ),
-    fFullTime( 0 ),
-    fRecoTime( 0 ),
-    fNEvents( 0 ),
+    fBenchmark("ITSTracker"),
     fTracker(0)
 {
   // see header file for class documentation
@@ -151,9 +147,7 @@ void AliHLTITSTrackerComponent::SetDefaultConfiguration()
   // Some parameters can be later overwritten from the OCDB
 
   fSolenoidBz = -5.00668;
-  fFullTime = 0;
-  fRecoTime = 0;
-  fNEvents = 0;
+  
 }
 
 int AliHLTITSTrackerComponent::ReadConfigurationString(  const char* arguments )
@@ -302,7 +296,9 @@ int AliHLTITSTrackerComponent::DoInit( int argc, const char** argv )
   fSolenoidBz=GetBz();
 
   fTracker = new AliITStrackerHLT(0);
-
+  fBenchmark.Reset();
+  fBenchmark.SetTimer(0,"total");
+  fBenchmark.SetTimer(1,"reco");
   return ret;
 }
 
@@ -347,8 +343,8 @@ int AliHLTITSTrackerComponent::DoEvent
     return 0;
   }
 
-
-  TStopwatch timer;
+  fBenchmark.StartNewEvent();
+  fBenchmark.Start(0);
 
   // Event reconstruction in ITS
 
@@ -385,6 +381,7 @@ int AliHLTITSTrackerComponent::DoEvent
     // Read TPC tracks
     
     if( iter->fDataType == ( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC ) ){	  
+      fBenchmark.AddInput(iter->fSize);
       AliHLTTracksData* dataPtr = ( AliHLTTracksData* ) iter->fPtr;
       int nTracks = dataPtr->fCount;
       AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
@@ -404,6 +401,8 @@ int AliHLTITSTrackerComponent::DoEvent
 	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD) ) ||
 	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD) ) 
 	 ){
+      
+      fBenchmark.AddInput(iter->fSize);
 
       AliHLTITSClusterData *inPtr=reinterpret_cast<AliHLTITSClusterData*>( iter->fPtr );
       int nClusters = inPtr->fSpacePointCnt;
@@ -422,11 +421,10 @@ int AliHLTITSTrackerComponent::DoEvent
   
   // Reconstruct the event
 
-  TStopwatch timerReco;
-  
-  fTracker->Reconstruct( &(tracksTPC[0]), tracksTPC.size() );
-  
-  timerReco.Stop();
+    fBenchmark.Start(1);
+    fTracker->Reconstruct( &(tracksTPC[0]), tracksTPC.size() );
+    fBenchmark.Stop(1);
+
   
   // Fill output tracks
   int nITSUpdated = 0;
@@ -502,21 +500,18 @@ int AliHLTITSTrackerComponent::DoEvent
       } else {
 	resultData.fDataType = kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut;
       }
+      fBenchmark.AddOutput(resultData.fSize);
       outputBlocks.push_back( resultData );
       size += resultData.fSize;       
     }  
   }
   
-  timer.Stop();
-  fFullTime += timer.RealTime();
-  fRecoTime += timerReco.RealTime();
-  fNEvents++;
+   fBenchmark.Stop(0);
 
   // Set log level to "Warning" for on-line system monitoring
-  int hz = ( int ) ( fFullTime > 1.e-10 ? fNEvents / fFullTime : 100000 );
-  int hz1 = ( int ) ( fRecoTime > 1.e-10 ? fNEvents / fRecoTime : 100000 );
-  HLTInfo( "ITS Tracker: output %d tracks;  input %d clusters, %d tracks; time: full %d / reco %d Hz",
-	      nITSUpdated, nClustersTotal, tracksTPC.size(), hz, hz1 );
+  HLTInfo( "ITS Tracker: output %d tracks;  input %d clusters, %d tracks",
+	   nITSUpdated, nClustersTotal, tracksTPC.size() );
 
+  HLTInfo(fBenchmark.GetStatistics());
   return iResult;
 }

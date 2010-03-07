@@ -12,6 +12,8 @@
 #include "AliHLTProcessor.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
+#include "AliHLTComponentBenchmark.h"
+
 class TH1F;
 class TH2F;
 class AliESDtrack;
@@ -111,9 +113,6 @@ private:
   int fNTracks; // n of input tracks
   AliESDTrackInfo *fTrackInfos; // information about esd tracks
   AliKFVertex fPrimaryVtx; // reconstructed KF primary vertex
-
-  Int_t fNEvents; // n of processed events
-
   Bool_t fFitTracksToVertex; // flag to store vertex constrained track parameters
   Double_t fConstrainedTrackDeviation; // deviation of a track from prim.vtx <=cut 
   Double_t fV0DaughterPrimDeviation; // v0: daughters deviation from prim vertex >= cut
@@ -123,15 +122,7 @@ private:
 
   Double_t fV0TimeLimit; // time limit in seconds for V0 finder (it has N^2 combinatorics, therefore it can [potentially] block the data flow on some very hot events ) default limit is 10 ms
 
-  Double_t fStatTimeR; // benchmark
-  Double_t fStatTimeC; // benchmark
-  Double_t fStatTimeR1; // benchmark
-  Double_t fStatTimeC1; // benchmark
-  Double_t fStatTimeR2; // benchmark
-  Double_t fStatTimeC2; // benchmark
-  Double_t fStatTimeR3; // benchmark
-  Double_t fStatTimeC3; // benchmark
-  Double_t fStatNEvents;// benchmark
+  AliHLTComponentBenchmark fBenchmark;// benchmark
 
   ClassDef(AliHLTGlobalVertexerComponent, 0);
 

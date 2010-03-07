@@ -81,7 +81,8 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   fFirstTimeBin(-1),
   fLastTimeBin(-1),
   fDoMC(kFALSE),
-  fReleaseMemory( kFALSE )
+  fReleaseMemory( kFALSE ),
+  fBenchmark("TPCClusterFinder")
 {
   // see header file for class documentation
   // or
@@ -322,6 +323,9 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   if(fLastTimeBin>0 && fLastTimeBin>fFirstTimeBin && fLastTimeBin<=AliHLTTPCTransform::GetNTimeBins()){
     fClusterFinder->SetLastTimeBin(fLastTimeBin);
   }
+  fBenchmark.Reset();
+  fBenchmark.SetTimer(0,"total");
+  fBenchmark.SetTimer(1,"reco");
 
   return iResult;
 }
@@ -360,6 +364,9 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
     size=0;
     return 0;
   }
+
+  fBenchmark.StartNewEvent();
+  fBenchmark.Start(0);
 
   //  == init iter (pointer to datablock)
   const AliHLTComponentBlockData* iter = NULL;
@@ -420,6 +427,8 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 
       }
 
+      fBenchmark.AddInput(iter->fSize);
+
       slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
       patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 
@@ -435,6 +444,8 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       fClusterFinder->InitSlice( slice, patch, maxPoints );
       fClusterFinder->SetOutputArray( (AliHLTTPCSpacePointData*)outPtr->fSpacePoints );
 	
+      fBenchmark.Start(1);
+
       if(fUnsorted){
       	if(fGetActivePads){
 	  fClusterFinder->SetDoPadSelection(kTRUE);
@@ -452,6 +463,8 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	fClusterFinder->Read(iter->fPtr, iter->fSize );
 	fClusterFinder->ProcessDigits();
       }
+      fBenchmark.Stop(1);
+
       fReader->Reset();
 
       realPoints = fClusterFinder->GetNumberOfClusters();
@@ -470,7 +483,9 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       bd.fSpecification = iter->fSpecification;
       bd.fDataType = AliHLTTPCDefinitions::fgkClustersDataType;
       outputBlocks.push_back( bd );
-	
+
+      fBenchmark.AddOutput(bd.fSize);
+
       tSize += mysize;
       outBPtr += mysize;
       outPtr = (AliHLTTPCClusterData*)outBPtr;
@@ -498,6 +513,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
        bdHW.fDataType = kAliHLTDataTypeHwAddr16;
        outputBlocks.push_back( bdHW );
        
+       fBenchmark.AddOutput(bdHW.fSize);
        tSize+=nHWAdd*sizeof(AliHLTUInt16_t);
       }
 
@@ -546,7 +562,8 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	bdMCInfo.fSpecification = iter->fSpecification;
 	bdMCInfo.fDataType = AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo;
 	outputBlocks.push_back( bdMCInfo );
-	
+	fBenchmark.AddOutput(bdMCInfo.fSize);
+
 	tSize+=nMCInfo*sizeof(AliHLTTPCClusterFinder::ClusterMCInfo);
 
       }
@@ -555,6 +572,8 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
   if (iResult>=0)
     size = tSize;
 
+  fBenchmark.Stop(0);  
+  HLTInfo(fBenchmark.GetStatistics());
   return iResult;
 }
 

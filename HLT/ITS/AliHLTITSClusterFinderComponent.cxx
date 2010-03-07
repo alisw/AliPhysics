@@ -68,7 +68,8 @@ AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
   fSSD(NULL),
   tD(NULL),
   tR(NULL),
-  fclusters()
+  fclusters(),
+  fBenchmark(GetComponentID())
 { 
   // see header file for class documentation
   // or
@@ -157,6 +158,10 @@ AliHLTComponent* AliHLTITSClusterFinderComponent::Spawn() {
 	
 Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
   // see header file for class documentation
+  fBenchmark.Reset();
+  fBenchmark.SetTimer(0,"total");
+  fBenchmark.SetTimer(1,"reco");
+
   /*
   fStatTime = 0;
   fStatTimeAll = 0;
@@ -340,8 +345,6 @@ Int_t AliHLTITSClusterFinderComponent::DoDeinit() {
   return 0;
 }
 
-// #include "TStopwatch.h"
-
 int AliHLTITSClusterFinderComponent::DoEvent
 (
  const AliHLTComponentEventData& evtData,
@@ -363,11 +366,17 @@ int AliHLTITSClusterFinderComponent::DoEvent
       HLTDebug("no blocks in event" );
       return 0;
     }
-  
-  // TStopwatch timer;
+
+  fBenchmark.StartNewEvent();
+  fBenchmark.Start(0);
+  for( const AliHLTComponentBlockData *i= GetFirstInputBlock(fInputDataType); i!=NULL; i=GetNextInputBlock() ){
+    fBenchmark.AddInput(i->fSize);
+  }
+
   Int_t ret = 0;
-  //std::vector<AliITSRecPoint> vclusters;
+
   if(fModeSwitch==kClusterFinderDigits) {
+
     for ( const TObject *iter = GetFirstInputObject(fInputDataType); iter != NULL; iter = GetNextInputObject() ) {  
       tD = dynamic_cast<TTree*>(const_cast<TObject*>( iter ) );
       if(!tD){
@@ -379,8 +388,9 @@ int AliHLTITSClusterFinderComponent::DoEvent
       fDettype->MakeBranch(tR,"R");
       fDettype->SetTreeAddressR(tR);
       Option_t *opt="All";
+      fBenchmark.Start(1);
       fDettype->DigitsToRecPoints(tD,tR,0,opt,kTRUE);
-      
+      fBenchmark.Stop(1);
       TClonesArray * fRecPoints;
       tR->SetBranchAddress("ITSRecPoints",&fRecPoints);
       for(Int_t treeEntry=0;treeEntry<tR->GetEntries();treeEntry++){
@@ -403,9 +413,9 @@ int AliHLTITSClusterFinderComponent::DoEvent
 	break;		
       }
       if( nClusters>0 ){
-
+	fBenchmark.Start(1);
 	RecPointToSpacePoint(outputPtr,size);
-	
+	fBenchmark.Stop(1);
 	AliHLTComponentBlockData bd;
 	FillBlockData( bd );
 	bd.fOffset = size;
@@ -414,7 +424,7 @@ int AliHLTITSClusterFinderComponent::DoEvent
 	bd.fDataType = GetOutputDataType();
 	outputBlocks.push_back( bd );
 	size += bufferSize;
-	
+	fBenchmark.AddOutput(bd.fSize);
 	fclusters.clear();	
       }
     }
@@ -451,8 +461,9 @@ int AliHLTITSClusterFinderComponent::DoEvent
       if(!fRawReader->AddBuffer((UChar_t*) iter->fPtr, iter->fSize, id)){
 	HLTWarning("Could not add buffer");
       }
-      // TStopwatch timer1;
-      
+
+      fBenchmark.Start(1);
+
       if(fModeSwitch==kClusterFinderSPD && !fUseOfflineFinder){ fSPD->RawdataToClusters( fRawReader, fclusters ); }
       else if(fModeSwitch==kClusterFinderSSD && !fUseOfflineFinder){ fSSD->RawdataToClusters( fclusters ); }
       else{
@@ -471,10 +482,7 @@ int AliHLTITSClusterFinderComponent::DoEvent
 	  fClusters[i] = NULL;
 	}     
       }
-      
-      // timer1.Stop();
-      // fStatTime+=timer1.RealTime();
-      // fStatTimeC+=timer1.CpuTime();
+      fBenchmark.Stop(1);
       
       fRawReader->ClearBuffers();    
          
@@ -498,23 +506,15 @@ int AliHLTITSClusterFinderComponent::DoEvent
 	bd.fDataType = GetOutputDataType();
 	outputBlocks.push_back( bd );
 	size += bufferSize;
-	
+	fBenchmark.AddOutput(bd.fSize);
 	fclusters.clear();	
       }
       
     } // input blocks
   }
-  /*
-  timer.Stop();
-  
-  fStatTimeAll+=timer.RealTime();
-  fStatTimeAllC+=timer.CpuTime();
-  fStatNEv++;
-  if( fStatNEv%1000==0 && fStatTimeAll>0.0 && fStatTime>0.0 && fStatTimeAllC>0.0 && fStatTimeC>0.0)
-    cout<<fStatTimeAll/fStatNEv*1.e3<<" "<<fStatTime/fStatNEv*1.e3<<" "
-	<<fStatTimeAllC/fStatNEv*1.e3<<" "<<fStatTimeC/fStatNEv*1.e3<<" ms"<<endl;
-  */
 
+  fBenchmark.Stop(0);
+  HLTInfo(fBenchmark.GetStatistics());
   return ret;
 }
 

@@ -13,6 +13,7 @@
 */
 
 #include "AliHLTProcessor.h"
+#include "AliHLTComponentBenchmark.h"
 #include <vector>
 
 // forward declarations
@@ -101,6 +102,7 @@ protected:
 
   /// solenoid b field
   Double_t fSolenoidBz; //! transient
+  AliHLTComponentBenchmark fBenchmark; // benchmark
 
   ClassDef(AliHLTGlobalEsdConverterComponent, 0)
 };

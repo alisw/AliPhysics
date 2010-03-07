@@ -17,6 +17,7 @@
 
 #include "AliHLTProcessor.h"
 #include "AliHLTDataTypes.h"
+#include "AliHLTComponentBenchmark.h"
 class AliITStrackerHLT;
 
 
@@ -136,9 +137,7 @@ class AliHLTITSTrackerComponent : public AliHLTProcessor
 
     /** magnetic field */
     double fSolenoidBz;                                            // see above
-    double fFullTime; //* total time for DoEvent() [s]
-    double fRecoTime; //* total reconstruction time [s]
-    Long_t    fNEvents;  //* number of reconstructed events
+    AliHLTComponentBenchmark fBenchmark;// benchmark
     AliITStrackerHLT *fTracker; // the tracker itself
 
     /** set configuration parameters **/

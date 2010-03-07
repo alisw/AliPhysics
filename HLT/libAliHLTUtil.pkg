@@ -22,7 +22,8 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTGlobalBarrelTrack.h \
 		AliHLTAgentUtil.h \
 		AliHLTESDCaloClusterMaker.h \
-		AliHLTCaloClusterReader.h  
+		AliHLTCaloClusterReader.h  \
+                AliHLTComponentBenchmark.h 
 
 #		AliHLTMCGeneratorComponent.h
 

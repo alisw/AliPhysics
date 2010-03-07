@@ -50,8 +50,7 @@ AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerComponent()
 :
   fNTracks(0),
   fTrackInfos(0),
-  fPrimaryVtx(),  
-  fNEvents(0),
+  fPrimaryVtx(),   
   fFitTracksToVertex(1),
   fConstrainedTrackDeviation(4.),
   fV0DaughterPrimDeviation( 2.5 ),
@@ -59,15 +58,7 @@ AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerComponent()
   fV0Chi(3.5),
   fV0DecayLengthInSigmas(3.),
   fV0TimeLimit(10.e-3), 
-  fStatTimeR( 0 ),
-  fStatTimeC( 0 ),
-  fStatTimeR1( 0 ),
-  fStatTimeC1( 0 ),
-  fStatTimeR2( 0 ),
-  fStatTimeC2( 0 ),
-  fStatTimeR3( 0 ),
-  fStatTimeC3( 0 ),
-  fStatNEvents(0)
+  fBenchmark("GlobalVertexer")
 {
   // see header file for class documentation
   // or
@@ -138,18 +129,12 @@ int AliHLTGlobalVertexerComponent::DoInit( int argc, const char** argv )
 {
   // init
 
-  fStatTimeR = 0;
-  fStatTimeC = 0;
-  fStatTimeR1 = 0;
-  fStatTimeC1 = 0;
-  fStatTimeR2 = 0;
-  fStatTimeC2 = 0;
-  fStatTimeR3 = 0;
-  fStatTimeC3 = 0;
-  fStatNEvents = 0;
+  fBenchmark.Reset();
+  fBenchmark.SetTimer(0,"total");
+  fBenchmark.SetTimer(1,"convert");
+  fBenchmark.SetTimer(2,"vprim");
+  fBenchmark.SetTimer(3,"v0");
   fV0TimeLimit = 10.e-3;
-
-  fNEvents =0;
 
   int iResult=0;
   TString configuration="";
@@ -180,7 +165,6 @@ int AliHLTGlobalVertexerComponent::DoDeinit()
   fV0PrimDeviation =3.5;
   fV0Chi = 3.5;
   fV0DecayLengthInSigmas = 3.;
-  fNEvents = 0;
   fV0TimeLimit = 10.e-3;
 
   return 0;
@@ -195,18 +179,25 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
     return 0;
 
   int iResult = 0;
-
-  fNEvents++;
-  TStopwatch timer;
+  //cout<<"SG: GlobalVertexer:: DoEvent called"<<endl;
+  fBenchmark.StartNewEvent();
+  fBenchmark.Start(0);
+  
   vector< AliExternalTrackParam > tracks;
   vector< int > trackId;
   vector< pair<int,int> > v0s;
 
   AliESDEvent *event = 0; 
 
+  for( const AliHLTComponentBlockData *i= GetFirstInputBlock(kAliHLTDataTypeESDObject); i!=NULL; i=GetNextInputBlock() ){
+    fBenchmark.AddInput(i->fSize);
+  }
+
+
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
     event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
     if( !event ) continue;
+    
     event->GetStdContent();
     Int_t nESDTracks=event->GetNumberOfTracks(); 
 
@@ -225,7 +216,9 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
     
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
-      
+
+      fBenchmark.AddInput(pBlock->fSize);
+
       AliHLTTracksData* dataPtr = reinterpret_cast<AliHLTTracksData*>( pBlock->fPtr );
       int nTracks = dataPtr->fCount;
 
@@ -243,7 +236,9 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
   if( tracks.size()==0 ){
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
-      
+
+      fBenchmark.AddInput(pBlock->fSize);
+
       AliHLTTracksData* dataPtr = reinterpret_cast<AliHLTTracksData*>( pBlock->fPtr );
       int nTracks = dataPtr->fCount;      
       AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
@@ -262,10 +257,10 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
           
   AliKFParticle::SetField( GetBz() );
 
+  fBenchmark.Start(1);
+
   {  //* Fill fTrackInfo array
 
-    TStopwatch timer1;
-    
     if( fTrackInfos ) delete[] fTrackInfos;
     fTrackInfos = 0;
     fNTracks=tracks.size(); 
@@ -275,22 +270,18 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
       info.fOK = 1;
       info.fPrimUsedFlag = 0;
       info.fParticle = AliKFParticle( tracks[iTr], 211 );
+      for( int i=0; i<8; i++ ) if( !finite(info.fParticle.GetParameter(i)) ) info.fOK = 0;
+      for( int i=0; i<36; i++ ) if( !finite(info.fParticle.GetCovariance(i)) ) info.fOK = 0;
     }
-    timer1.Stop();
-    fStatTimeR1+=timer1.RealTime();
-    fStatTimeC1+=timer1.CpuTime();
   }
-  
-  TStopwatch timer2;
+
+  fBenchmark.Stop(1);
+  fBenchmark.Start(2);
   FindPrimaryVertex();
-  timer2.Stop();
-  fStatTimeR2+=timer2.RealTime();
-  fStatTimeC2+=timer2.CpuTime();
-  TStopwatch timer3;
+  fBenchmark.Stop(2);
+  fBenchmark.Start(3);
   FindV0s( v0s );
-  timer3.Stop();
-  fStatTimeR3+=timer3.RealTime();
-  fStatTimeC3+=timer3.CpuTime();
+  fBenchmark.Stop(3);
 
   int *buf = new int[sizeof(AliHLTGlobalVertexerData)/sizeof(int)+1 + fNTracks + 2*v0s.size()];
   AliHLTGlobalVertexerData *data = reinterpret_cast<AliHLTGlobalVertexerData*>(buf);
@@ -318,6 +309,7 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
     unsigned int blockSize = sizeof(AliHLTGlobalVertexerData) + (data->fNPrimTracks + 2*data->fNV0s)*sizeof(int);
 
     iResult = PushBack( reinterpret_cast<void*>(data), blockSize, kAliHLTDataTypeGlobalVertexer|kAliHLTDataOriginOut );  
+    fBenchmark.AddOutput(blockSize);
   }  
   
   
@@ -326,6 +318,7 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
     if( iResult==0 && data && data->fPrimNContributors >=3 ){
       AliESDVertex vESD( data->fPrimP, data->fPrimC, data->fPrimChi2, data->fPrimNContributors );
       iResult = PushBack( (TObject*) &vESD, kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut,0 );
+      fBenchmark.AddOutput(GetLastObjectSize());
     }
   }
 
@@ -333,24 +326,13 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
   if( iResult==0 && event && data ){  
     FillESD( event, data ); 
     iResult = PushBack( event, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
+    fBenchmark.AddOutput(GetLastObjectSize());
   }
 
   delete[] buf;
 
-  timer.Stop();
-  fStatTimeR+=timer.RealTime();
-  fStatTimeC+=timer.CpuTime();
-  fStatNEvents++;
-
-  /*  
-  //if( fStatNEv%100==0 )
-  cout<<"SG: "<<GetComponentID()<<": "<<fStatNEvents<<" events, real time: total= "
-      <<fStatTimeR/fStatNEvents*1.e3<<" / create= "<<fStatTimeR1/fStatNEvents*1.e3
-      <<" / vprim= "<<fStatTimeR2/fStatNEvents*1.e3<<" / v0= "<<fStatTimeR3/fStatNEvents*1.e3
-      <<", CPU: total= "<<fStatTimeC/fStatNEvents*1.e3<<" / create= "<<fStatTimeC1/fStatNEvents*1.e3
-<<" / vprim= "<<fStatTimeC2/fStatNEvents*1.e3<<" / v0= "<<fStatTimeC2/fStatNEvents*1.e3
-      <<" ms"<<endl;
-  */
+  fBenchmark.Stop(0);
+  HLTInfo(fBenchmark.GetStatistics());
   return iResult;
 }
 
@@ -490,6 +472,7 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex()
     vIndex[nSelected] = i;
     nSelected++;  
   }
+  
   fPrimaryVtx.ConstructPrimaryVertex( vSelected, nSelected, vFlag, fConstrainedTrackDeviation );
 
   for( Int_t i = 0; i<nSelected; i++){ 
@@ -501,7 +484,6 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex()
     info.fPrimDeviation = info.fParticle.GetDeviationFromVertex( fPrimaryVtx );   
   }
 
-  //cout<<"SG: prim vtx event"<<fStatNEvents<<": n selected="<<nSelected<<", ncont="<<fPrimaryVtx.GetNContributors()<<endl;
 
   if( fPrimaryVtx.GetNContributors()<3 ){
     for( Int_t i = 0; i<fNTracks; i++)
@@ -543,7 +525,7 @@ void AliHLTGlobalVertexerComponent::FindV0s( vector<pair<int,int> > v0s  )
 
       if( (++statN)%100 ==0 ){ 
 	if( timer.RealTime()>= fV0TimeLimit ){  run = 0; break; }
-	timer.Start();
+	timer.Continue();
       }
 
       //* check if the particles fit

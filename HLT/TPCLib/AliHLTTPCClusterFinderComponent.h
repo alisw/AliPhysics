@@ -14,6 +14,7 @@
 */
 
 #include "AliHLTProcessor.h"
+#include "AliHLTComponentBenchmark.h"
 
 class AliHLTTPCClusterFinder;
 class AliHLTTPCDigitReader;
@@ -224,6 +225,8 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 
 	Bool_t fDoMC; // flag to provide MC labels
 	Bool_t fReleaseMemory; // flag to release the memory after each event
+	AliHLTComponentBenchmark fBenchmark; // benchmark
+
 	/// the default configuration entry for this component
 	static const char* fgkOCDBEntryPacked; //!transient
 	static const char* fgkOCDBEntryUnpacked; //!transient

@@ -21,6 +21,7 @@
 #include "TClonesArray.h"
 #include "AliHLTDataTypes.h"
 #include "TTree.h"
+#include "AliHLTComponentBenchmark.h"
 
 class AliHLTITSClusterFinderSPD;
 class AliHLTITSClusterFinderSSD;
@@ -213,13 +214,8 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   TTree *tR;                                                  //!transient
 
   std::vector<AliITSRecPoint> fclusters;                      //!transient
-  /*
-  int fStatNEv;
-  double fStatTime;
-  double fStatTimeAll;
-  double fStatTimeC;
-  double fStatTimeAllC;
-  */
+
+  AliHLTComponentBenchmark fBenchmark;// benchmark
 
   ClassDef(AliHLTITSClusterFinderComponent, 0)
     

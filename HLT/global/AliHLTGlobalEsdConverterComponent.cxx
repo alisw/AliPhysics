@@ -58,6 +58,7 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fVerbosity(0)
   , fESD(NULL)
   , fSolenoidBz(-5.00668)
+  , fBenchmark("EsdConverter")
 {
   // see header file for class documentation
   // or
@@ -220,6 +221,8 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
     SetupCTPData();
   }
 
+  fBenchmark.SetTimer(0,"total");
+
   return iResult;
 }
 
@@ -238,6 +241,9 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
   // see header file for class documentation
   int iResult=0;
   if (!fESD) return -ENODEV;
+
+  if (IsDataEvent()) fBenchmark.StartNewEvent();
+  fBenchmark.Start(0);
 
   AliESDEvent* pESD = fESD;
 
@@ -278,12 +284,17 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
     } else {
       iResult=PushBack(pESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
     }
+    fBenchmark.AddOutput(GetLastObjectSize());
   }
   if (pTree) {
     // clear user info list to prevent objects from being deleted
     pTree->GetUserInfo()->Clear();
     delete pTree;
   }
+
+  fBenchmark.Stop(0);
+  HLTInfo( fBenchmark.GetStatistics() );
+
   return iResult;
 }
 
@@ -299,12 +310,14 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // in the first attempt this component reads the TPC tracks and updates in the
   // second step from the ITS tracks
 
-
   // first read MC information (if present)
   std::map<int,int> mcLabels;
 
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrackMC|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+
+    fBenchmark.AddInput(pBlock->fSize);
+
     AliHLTTrackMCData* dataPtr = reinterpret_cast<AliHLTTrackMCData*>( pBlock->fPtr );
     if (sizeof(AliHLTTrackMCData)+dataPtr->fCount*sizeof(AliHLTTrackMCLabel)==pBlock->fSize) {
       for( unsigned int il=0; il<dataPtr->fCount; il++ ){
@@ -324,6 +337,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   Int_t ndEdxTPC = 0;
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypedEdx|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    fBenchmark.AddInput(pBlock->fSize);
     dEdxTPC = reinterpret_cast<AliHLTFloat32_t*>( pBlock->fPtr );
     ndEdxTPC = pBlock->fSize / sizeof(AliHLTFloat32_t);
     break;
@@ -332,6 +346,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // convert the TPC tracks to ESD tracks
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
     if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>=0) {
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
@@ -391,6 +406,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
 
   // Get ITS SPD vertex
+  for( const AliHLTComponentBlockData *i= GetFirstInputBlock(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); i!=NULL; i=GetNextInputBlock() ){
+    fBenchmark.AddInput(i->fSize);
+  }
 
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); iter != NULL; iter = GetNextInputObject() ) {
     AliESDVertex *vtx = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) );
@@ -400,6 +418,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // now update ESD tracks with the ITSOut info
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
     if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
@@ -417,6 +436,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // now update ESD tracks with the ITS info
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
     if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
@@ -435,7 +455,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeGlobalVertexer);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
-    
+    fBenchmark.AddInput(pBlock->fSize);   
     AliHLTGlobalVertexerComponent::FillESD( pESD, reinterpret_cast<AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerData* >(pBlock->fPtr) );
   }
 
@@ -443,6 +463,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // convert the HLT TRD tracks to ESD tracks                        
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
     if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
@@ -472,6 +493,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   }
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny); pBlock!=NULL; pBlock=GetNextInputBlock()) 
     {
+      fBenchmark.AddInput(pBlock->fSize);
       AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
 
       HLTDebug("%d HLT clusters from spec: 0x%X", caloClusterHeaderPtr->fNClusters, pBlock->fSpecification);
@@ -488,6 +510,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
   
   // Add tracks from MUON.
+  for( const AliHLTComponentBlockData *i= GetFirstInputBlock(kAliHLTAnyDataType | kAliHLTDataOriginMUON); i!=NULL; i=GetNextInputBlock() ){
+    fBenchmark.AddInput(i->fSize);
+  }
+
   for (const TObject* obj = GetFirstInputObject(kAliHLTAnyDataType | kAliHLTDataOriginMUON);
        obj != NULL;
        obj = GetNextInputObject()
