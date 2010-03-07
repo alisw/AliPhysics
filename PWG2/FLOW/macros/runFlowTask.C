@@ -20,7 +20,7 @@ Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (seco
 Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
 Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
 Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
-Bool_t NL       = kFALSE; // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
+Bool_t NL       = kTRUE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
@@ -37,10 +37,14 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 //void runFlowTask(Int_t mode=mLocal, Int_t nRuns = -1, 
 		 //const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
                  //const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
-void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 2000000, 
+void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 5000000, 
 		 //const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
                  //const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
-		 const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
+		 //const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
+		 //const Char_t* dataDir="/PWG0/jgrosseo/run000104892_pass4", Int_t offset=0)
+		 //const Char_t* dataDir="/PWG0/jgrosseo/run000104867_90_92_pass4", Int_t offset=0)
+		 //const Char_t* dataDir="/ALICE/pp010000/MC_LHC09a4_81xxx", Int_t offset=0)
+		 const Char_t* dataDir="/COMMON/COMMON/LHC10a8_run104867_8", Int_t offset=0)
 //void runFlowTask(Int_t mode = mGRID)
 {
   TStopwatch timer;
@@ -100,11 +104,12 @@ void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 2000000,
   gROOT->LoadMacro("AddTaskFlow.C");
   AliAnalysisTaskFlowEvent* taskFE = AddTaskFlow(type,METHODS,QA,WEIGHTS);
 
+  
   //task to check the offline trigger
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
   if (!DATA) {physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
-
+  
  
   // Enable debug printouts
   mgr->SetDebugLevel(2);
@@ -192,45 +197,55 @@ void LoadLibraries(const anaModes mode) {
     //TProof::Reset("proof://snelling@alicecaf.cern.ch");     
     // Connect to proof
     printf("*** Connect to PROOF ***\n");
+    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
     // Put appropriate username here
     //TProof::Open("abilandz@alicecaf.cern.ch");
     //TProof::Open("nkolk@alicecaf.cern.ch");
     TProof::Open("snelling@localhost");
+    //TProof::Open("skaf.saske.sk");
+    //TProof::Open("prf000-iep-grid.saske.sk");
+    //Info("runSKAF.C","Loading libs on proof (may take while, around 1 min) ...");
     // list the data available
     //gProof->ShowDataSets("/*/*");  
  
     // Clear the Packages
-    /*
+    
     gProof->ClearPackage("STEERBase.par");
     gProof->ClearPackage("ESD.par");
     gProof->ClearPackage("AOD.par");
+    gProof->ClearPackage("PWG2AOD.par");
     gProof->ClearPackage("ANALYSIS.par");
     gProof->ClearPackage("ANALYSISalice.par");
-    gProof->ClearPackage("PWG2AOD.par");
     gProof->ClearPackage("CORRFW.par");
-    */
+    
     gProof->ClearPackage("PWG2flowCommon");
     gProof->ClearPackage("PWG2flowTasks");
-
-
+    
     // Upload the Packages
     gProof->UploadPackage("STEERBase.par");
     gProof->UploadPackage("ESD.par");    
     gProof->UploadPackage("AOD.par");
+    gProof->UploadPackage("PWG2AOD.par");
+       
     gProof->UploadPackage("ANALYSIS.par"); 
     gProof->UploadPackage("ANALYSISalice.par");
-    gProof->UploadPackage("PWG2AOD.par");
     gProof->UploadPackage("CORRFW.par");
     gProof->UploadPackage("PWG2flowCommon.par");
     gProof->UploadPackage("PWG2flowTasks.par");
 
-    // Enable the Packages
+    // Enable the Packages 
+    // The global package
+    //gProof->EnablePackage("aliroot_v4-19-05-AN",kTRUE);
+    // Or separate
+    
     gProof->EnablePackage("STEERBase");
     gProof->EnablePackage("ESD");
     gProof->EnablePackage("AOD");
+    gProof->EnablePackage("PWG2AOD");
+    
+    // Always needed
     gProof->EnablePackage("ANALYSIS");
     gProof->EnablePackage("ANALYSISalice");
-    gProof->EnablePackage("PWG2AOD");
     gProof->EnablePackage("CORRFW");
     gProof->EnablePackage("PWG2flowCommon");
     gProof->EnablePackage("PWG2flowTasks");
