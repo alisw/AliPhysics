@@ -1140,7 +1140,7 @@ AC_ARG_WITH(fastjet, [installation path of the FASTJET package],
 
 if test "x$with_fastjet" != "x" && test "x$with_fastjet" != "xno" ; then
   ALIFASTJET_INCFLAGS="-I${with_fastjet}/include"
-  ALIFASTJET_HEADER="PseudoJet.hh"
+  ALIFASTJET_HEADER="fastjet/PseudoJet.hh"
   ALIFASTJET_LDFLAGS="-L${with_fastjet}/lib"
   ALIFASTJET_LIBS="CGAL fastjet"
 else
