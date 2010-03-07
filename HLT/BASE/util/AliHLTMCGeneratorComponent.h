@@ -55,6 +55,9 @@
  * \li -coneRadius   <i> Cone radius for PyCell </i> <br>
  *
  * \li -jetCutMinEt  <i> Final state min Et cut for PyCell </i> <br>
+ *
+ * \li -applyParticleCuts  <i> Apply particle cuts before filling in AliHLTMCEvent </i> <br>
+ *
  * 
  * <h2>Optional arguments:</h2>
  *
@@ -282,6 +285,9 @@ class AliHLTMCGeneratorComponent : public AliHLTDataSource  {
   /** Q Hat - default 20 */
   Float_t              fQhat;                      // see above
  
+  /** Apply particle cuts, before filling in AliHLTMCEvent */
+  Bool_t               fApplyParticleCuts;         // see above
+
   ClassDef(AliHLTMCGeneratorComponent, 0)
 };
 #endif

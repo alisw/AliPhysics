@@ -62,7 +62,8 @@ AliHLTESDMCEventPublisherComponent::AliHLTESDMCEventPublisherComponent()
   fpHLTESD(NULL),
   fpMC(NULL),
   fpHLTMC(NULL),
-  fOutputSize(0) {
+  fOutputSize(0),
+  fApplyParticleCuts(kFALSE) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -183,6 +184,10 @@ Int_t AliHLTESDMCEventPublisherComponent::DoInit(int argc, const char** argv) {
 	iResult=-EINVAL;
       }
     }
+    // -- applyParticleCuts
+    else if ( !argument.CompareTo("-applyParticleCuts") ) {
+      fApplyParticleCuts = kTRUE;
+    } 
 
     // -- Argument not known
     else {
@@ -484,7 +489,7 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
 	  fOutputSize+=GetLastObjectSize();
 	}
 
-	fpHLTMC = new AliHLTMCEvent();
+	fpHLTMC = new AliHLTMCEvent( fApplyParticleCuts );
 	
 	if ( !(iResult=fpHLTMC->FillMCEvent(fpMC)) )
 	  if ((iResult=PushBack( fpHLTMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT , fSpecification ))==-ENOSPC) {

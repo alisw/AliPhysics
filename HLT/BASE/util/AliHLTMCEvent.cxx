@@ -56,12 +56,25 @@ AliHLTMCEvent::AliHLTMCEvent() :
   fStack( NULL ),
   fCurrentGenJetIndex(-1),
   fNGenJets(0),
-  fGenJets(NULL) {
+  fGenJets(NULL),
+  fHasParticleCuts(kFALSE) {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+}
+
+// #################################################################################
+AliHLTMCEvent::AliHLTMCEvent( Bool_t applyParticleCuts ) : 
+  fCurrentParticleIndex(-1),
+  fNParticles(0),
+  fStack( NULL ),
+  fCurrentGenJetIndex(-1),
+  fNGenJets(0),
+  fGenJets(NULL),
+  fHasParticleCuts(applyParticleCuts) {
+  // see header file for class documentation
 }
 
 // #################################################################################
@@ -80,7 +93,6 @@ AliHLTMCEvent::~AliHLTMCEvent() {
   }
   fGenJets = NULL;
 }
-
 
 /*
  * ---------------------------------------------------------------------------------
@@ -238,33 +250,36 @@ Int_t AliHLTMCEvent::FillMCTracks( AliStack* stack ) {
     }
 
     // ----------------
-    // -- Apply cuts         --> Do be done better XXX
+    // -- Apply cuts
     // ----------------
 
-    // -- primary
-    if ( !(stack->IsPhysicalPrimary(iterStack)) )
-      continue;
-    
-    // -- final state
-    if ( particle->GetNDaughters() != 0 )
-      continue;
-
-    // -- particle in DB
-    TParticlePDG * particlePDG = particle->GetPDG();
-    if ( ! particlePDG ) {
-      particlePDG = TDatabasePDG::Instance()->GetParticle( particle->GetPdgCode() );
-
-      if ( ! particlePDG ) {
-	HLTError("Particle %i not in PDG database", particle->GetPdgCode() );
-	iResult = -EINPROGRESS;
+    if ( fHasParticleCuts ) {
+      
+      // -- primary
+      if ( !(stack->IsPhysicalPrimary(iterStack)) )
 	continue;
+      
+      // -- final state
+      if ( particle->GetNDaughters() != 0 )
+	continue;
+      
+      // -- particle in DB
+      TParticlePDG * particlePDG = particle->GetPDG();
+      if ( ! particlePDG ) {
+	particlePDG = TDatabasePDG::Instance()->GetParticle( particle->GetPdgCode() );
+	
+	if ( ! particlePDG ) {
+	  HLTError("Particle %i not in PDG database", particle->GetPdgCode() );
+	  iResult = -EINPROGRESS;
+	  continue;
+	}
       }
     }
     
     // -- Add particle after cuts
     AddParticle ( particle );
   }
-
+  
   return iResult;
 }
 

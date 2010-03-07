@@ -80,7 +80,8 @@ AliHLTMCGeneratorComponent::AliHLTMCGeneratorComponent() :
   fPtHardMin(10.0),
   fPtHardMax(-1.0),
   fQuenching(0),                   
-  fQhat(20.) {
+  fQhat(20.),
+  fApplyParticleCuts(kFALSE) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -263,6 +264,11 @@ Int_t AliHLTMCGeneratorComponent::DoInit(int argc, const char** argv) {
       }
     } 
 
+    // -- applyParticleCuts
+    else if ( !argument.CompareTo("-applyParticleCuts") ) {
+      fApplyParticleCuts = kTRUE;
+    } 
+
     // -- Argument not known
     else {
       HLTError("Unknown argument %s.", argument.Data());
@@ -368,7 +374,7 @@ Int_t AliHLTMCGeneratorComponent::GetEvent( const AliHLTComponentEventData& /*ev
   // -- Create HLT MC Event
   if ( fpHLTMC ) 
     delete fpHLTMC;
-  fpHLTMC = new AliHLTMCEvent();
+  fpHLTMC = new AliHLTMCEvent( fApplyParticleCuts);
 
   // -- Fill HLT MC event
   iResult = fpHLTMC->FillMCEvent( stack, header );

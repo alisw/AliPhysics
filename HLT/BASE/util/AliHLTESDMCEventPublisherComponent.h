@@ -67,6 +67,9 @@
  *      If not given void spec ist used. Otherwise each Bit corresponds to
  *      the detectorID specified at ALICE-INT-2007-016, Table 1
  *
+ * \li -applyParticleCuts  <i> Apply particle cuts before filling in AliHLTMCEvent </i> <br>
+ *
+ *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * Configuration by component arguments.
@@ -290,7 +293,10 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
   AliHLTMCEvent* fpHLTMC;                    //! transient
 
   /* Maximum required output size */
-  unsigned fOutputSize;                      //! transient
+  UInt_t fOutputSize;                        //! transient
+
+  /** Apply particle cuts, before filling in AliHLTMCEvent */
+  Bool_t fApplyParticleCuts;                 // see above
 
   ClassDef(AliHLTESDMCEventPublisherComponent, 0)
 };

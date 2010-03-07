@@ -53,6 +53,9 @@ public:
 
   /** standard constructor */
   AliHLTMCEvent();
+
+  /** standard constructor */
+  AliHLTMCEvent( Bool_t applyParticleCuts );
   
   /** destructor */
   virtual ~AliHLTMCEvent();
@@ -62,6 +65,9 @@ public:
    *                               Setter - public
    * ---------------------------------------------------------------------------------
    */
+
+  /** Apply particle cuts to the this event */
+  void ApplyParticleCuts() { fHasParticleCuts = kTRUE; }
 
   /** Fill the off-line MC event in to this class
    *  @param stack  ptr to AliStack
@@ -105,6 +111,9 @@ public:
    *  @return Index of current particle
    */
   Int_t GetIndex() { return fCurrentParticleIndex; }
+
+  /** Check if particle cuts have been applied */
+  Bool_t HasParticleCuts() { return fHasParticleCuts; }
 
   // -- Generated jets
   // -------------------
@@ -223,6 +232,16 @@ private:
   
   /** Array of generated jets [AliAODJet]*/
   TClonesArray   *fGenJets;                      // see above
+
+  // -- Status Flags
+  // -----------------
+
+  /** Particle cuts have been applied 
+   *  - Is primary
+   *  - Is final state
+   *  - Is known to PDG datebase
+   */
+  Bool_t fHasParticleCuts;                       // see above
 
   ClassDef(AliHLTMCEvent, 1)
 
