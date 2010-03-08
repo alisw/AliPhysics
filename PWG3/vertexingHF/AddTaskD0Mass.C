@@ -33,6 +33,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     out2name="coutputmassLSmycuts";
     out3name="nEntriesLS";
     out4name="coutputmassLSdistr";
+    out5name="checksLS";
     inname="cinputmassD0_1";
   }
 
@@ -61,8 +62,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 							   AliAnalysisManager::kOutputContainer, 
 							   filename.Data());
   AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,TList::Class(),
-						   AliAnalysisManager::kOutputContainer, 
-						   filename.Data());
+						           AliAnalysisManager::kOutputContainer, 
+						           filename.Data());
 
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
 
