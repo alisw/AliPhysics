@@ -36,7 +36,7 @@ class AliCaloCalibPedestal : public TObject {
  public:
 
   enum kDetType {kPhos, kEmCal, kNone};//The detector types
-  enum kDeadMapEntry{kAlive = 0, kDead, kWarning, kHot, kResurrected, kRecentlyDeceased, kNumDeadMapStates};//The entries being put to the deadmap
+  enum kDeadMapEntry{kAlive = 0, kDead, kHot, kWarning, kResurrected, kRecentlyDeceased, kNumDeadMapStates};//The entries being put to the deadmap
   
   AliCaloCalibPedestal(kDetType detectorType = kPhos);
   virtual ~AliCaloCalibPedestal();
