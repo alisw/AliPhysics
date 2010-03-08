@@ -52,6 +52,7 @@ AliAODHandler::AliAODHandler() :
     AliVEventHandler(),
     fIsStandard(kTRUE),
     fFillAOD(kTRUE),
+    fFillAODRun(kTRUE),
     fNeedsHeaderReplication(kFALSE),
     fNeedsTracksBranchReplication(kFALSE),
     fNeedsVerticesBranchReplication(kFALSE),
@@ -80,6 +81,7 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     AliVEventHandler(name, title),
     fIsStandard(kTRUE),
     fFillAOD(kTRUE),
+    fFillAODRun(kTRUE),
     fNeedsHeaderReplication(kFALSE),
     fNeedsTracksBranchReplication(kFALSE),
     fNeedsVerticesBranchReplication(kFALSE),
@@ -125,7 +127,7 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   // Initialize IO
   //
   // Create the AODevent object
-  Bool_t createStdAOD = fIsStandard || fFillAOD;
+  Bool_t createStdAOD = fIsStandard || fFillAODRun;
   if(!fAODEvent && createStdAOD){
     fAODEvent = new AliAODEvent();
     if (fIsStandard) fAODEvent->CreateStdContent();
@@ -390,7 +392,7 @@ void AliAODHandler::StoreMCParticles(){
 Bool_t AliAODHandler::FinishEvent()
 {
   // Fill data structures
-  if(fFillAOD){
+  if(fFillAOD && fFillAODRun){
       fAODEvent->MakeEntriesReferencable();
       // StoreMCParticles();
       FillTree();

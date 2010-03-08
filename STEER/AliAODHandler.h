@@ -40,8 +40,9 @@ class AliAODHandler : public AliVEventHandler {
     virtual Bool_t       Terminate();
     virtual Bool_t       TerminateIO();
     //
-    virtual void         SetCreateNonStandardAOD()   {fIsStandard = kFALSE;}
-    virtual void         SetFillAOD(Bool_t b)      {fFillAOD = b;}
+    virtual void         SetCreateNonStandardAOD()               {fIsStandard = kFALSE;}
+    virtual void         SetFillAOD(Bool_t b)                    {fFillAOD = b;}
+    virtual void         SetFillAODforRun(Bool_t b)              {fFillAODRun = b;}
     virtual void         SetNeedsHeaderReplication()             {fNeedsHeaderReplication             = kTRUE;}
     virtual void         SetNeedsTracksBranchReplication()       {fNeedsTracksBranchReplication       = kTRUE;}
     virtual void         SetNeedsVerticesBranchReplication()     {fNeedsVerticesBranchReplication     = kTRUE;}
@@ -92,7 +93,8 @@ class AliAODHandler : public AliVEventHandler {
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented
  private:
     Bool_t                   fIsStandard;                         // Flag for standard aod creation
-    Bool_t                   fFillAOD;                            // Flag for filling of the AOD tree at the end (all or nothing)
+    Bool_t                   fFillAOD;                            // Flag for filling of the AOD tree at the end (all or nothing evt by evt)
+    Bool_t                   fFillAODRun;                         // Flag for filling of the AOD tree at the end (run)
     Bool_t                   fNeedsHeaderReplication;             // Flag for header replication
     Bool_t                   fNeedsTracksBranchReplication;       // Flag for tracks replication
     Bool_t                   fNeedsVerticesBranchReplication;     // Flag for vertices replication
