@@ -189,7 +189,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], c
   Double_t mostProbablePt=AliExternalTrackParam::GetMostProbablePt();
   Double_t p0=TMath::Sign(1/mostProbablePt,pp[4]);
   Double_t w0=cc[14]/(cc[14] + p0*p0), w1=p0*p0/(cc[14] + p0*p0);
-  AliDebug(4, Form("Pt mixing : w0[%4.2f] 1/pt0[%5.3f] w1[%4.2f] 1/pt[%5.3f]", w0, 1./p0, w1, 1./pp[4]));
+  AliDebug(2, Form("Pt mixing : w0[%4.2f] pt0[%5.3f] w1[%4.2f] pt[%5.3f]", w0, 1./p0, w1, 1./pp[4]));
   pp[4] = w0*p0 + w1*pp[4];
 
 
@@ -511,18 +511,57 @@ Bool_t AliTRDtrackV1::IsElectron() const
 
 	
 //_____________________________________________________________________________
-void AliTRDtrackV1::MakeBackupTrack()
+Int_t AliTRDtrackV1::MakeBackupTrack()
 {
-  //
-  // Creates a backup track
-  //
+//
+// Creates a backup track
+// TO DO update quality check of the track.
+//
+
+  Float_t occupancy(0.); Int_t n(0), ncls(0);
+  for(Int_t il(AliTRDgeometry::kNlayer); il--;){ 
+    if(!fTracklet[il]) continue;
+    n++; 
+    occupancy+=fTracklet[il]->GetOccupancyTB();
+    ncls += fTracklet[il]->GetN();
+  }
+  if(!n) return -1;
+  occupancy/=n;
+
+  //Float_t ratio1 = Float_t(t.GetNumberOfClusters()+1) / Float_t(t.GetNExpected()+1);  
+  
+  Int_t failedCutId(0);
+  if(GetChi2()/n > 5.0) failedCutId=1; 
+  if(occupancy < 0.7) failedCutId=2;
+  //if(ratio1 >   0.6) && 
+  //if(ratio0+ratio1  >   1.5) && 
+  if(GetNCross() != 0)  failedCutId=3;
+  if(TMath::Abs(GetSnp()) > 0.85) failedCutId=4;
+  if(ncls < 20) failedCutId=5;
+
+  if(failedCutId){ 
+    AliDebug(2, Form("\n"
+      "chi2/tracklet < 5.0   [%c] %5.2f\n"
+      "occupancy > 0.7       [%c] %4.2f\n"
+      "NCross == 0           [%c] %d\n"
+      "Abs(snp) < 0.85       [%c] %4.2f\n"
+      "NClusters > 20        [%c] %d"
+      ,(GetChi2()/n<5.0)?'y':'n', GetChi2()/n
+      ,(occupancy>0.7)?'y':'n', occupancy
+      ,(GetNCross()==0)?'y':'n', GetNCross()
+      ,(TMath::Abs(GetSnp())<0.85)?'y':'n', TMath::Abs(GetSnp())
+      ,(ncls>20)?'y':'n', ncls
+    ));
+    return failedCutId;
+  }
 
   if(fBackupTrack) {
     fBackupTrack->~AliTRDtrackV1();
     new(fBackupTrack) AliTRDtrackV1((AliTRDtrackV1&)(*this));
-    return;
+    return 0;
   }
   fBackupTrack = new AliTRDtrackV1((AliTRDtrackV1&)(*this));
+  return 0;
 }
 
 //_____________________________________________________________________________

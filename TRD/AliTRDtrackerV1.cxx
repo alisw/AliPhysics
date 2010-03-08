@@ -276,12 +276,11 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
   }
   AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance(); // Calibration monitor
   if (!calibra) AliInfo("Could not get Calibra instance");
-
-  printf("TB[%d] new TB[%d]\n", fgNTimeBins, fkReconstructor->GetNTimeBins());
   if (!fgNTimeBins) fgNTimeBins = fkReconstructor->GetNTimeBins(); 
 
   // Define scalers
   Int_t nFound   = 0, // number of tracks found
+        nBacked  = 0, // number of tracks backed up for refit
         nSeeds   = 0, // total number of ESD seeds
         nTRDseeds= 0, // number of seeds in the TRD acceptance
         nTPCseeds= 0; // number of TPC seeds
@@ -388,7 +387,7 @@ fkRecoParam->IsOverPtThreshold(track.Pt())){
         // Full gold track
         if (track.GetChi2() / track.GetNumberOfClusters() < 5) {
           if (track.GetBackupTrack()) seed->UpdateTrackParams(track.GetBackupTrack(),AliESDtrack::kTRDbackup);
-
+          nBacked++;
           isGold = kTRUE;
         }
   
@@ -396,13 +395,14 @@ fkRecoParam->IsOverPtThreshold(track.Pt())){
         if ((!isGold)  && (track.GetNCross() == 0) &&	(track.GetChi2() / track.GetNumberOfClusters()  < 7)) {
           //seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
           if (track.GetBackupTrack()) seed->UpdateTrackParams(track.GetBackupTrack(),AliESDtrack::kTRDbackup);
-  
+          nBacked++;
           isGold = kTRUE;
         }
         
         if ((!isGold) && (track.GetBackupTrack())) {
           if ((track.GetBackupTrack()->GetNumberOfClusters() > foundMin) && ((track.GetBackupTrack()->GetChi2()/(track.GetBackupTrack()->GetNumberOfClusters()+1)) < 7)) {
             seed->UpdateTrackParams(track.GetBackupTrack(),AliESDtrack::kTRDbackup);
+            nBacked++;
             isGold = kTRUE;
           }
         }
@@ -452,7 +452,7 @@ fkRecoParam->IsOverPtThreshold(track.Pt())){
   if(quality) delete [] quality;
 
   AliInfo(Form("Number of seeds: TPCout[%d] TRDin[%d]", nTPCseeds, nTRDseeds));
-  AliInfo(Form("Number of tracks: TRDout[%d]", nFound));
+  AliInfo(Form("Number of tracks: TRDout[%d] TRDbackup[%d]", nFound, nBacked));
 
   // run stand alone tracking
   if (fkReconstructor->IsSeeding()) Clusters2Tracks(event);
@@ -972,31 +972,8 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 //     if(ilayer>0 && t.GetTracklet(ilayer-1) && ptrTracklet->GetN() + t.GetTracklet(ilayer-1)->GetN() > 20) t.SetBudget(2, 0.);
 
     // Make backup of the track until is gold
-    // TO DO update quality check of the track.
-    // consider comparison with fTimeBinsRange
-    Float_t ratio0 = ptrTracklet->GetN() / Float_t(fgNTimeBins);
-    //Float_t ratio1 = Float_t(t.GetNumberOfClusters()+1) / Float_t(t.GetNExpected()+1);	
-    
-    if( (chi2                    <  18.0) &&  
-        (ratio0                  >   0.8) && 
-        //(ratio1                  >   0.6) && 
-        //(ratio0+ratio1           >   1.5) && 
-        (t.GetNCross()           ==    0) && 
-        (TMath::Abs(t.GetSnp())  <  0.85) &&
-        (t.GetNumberOfClusters() >    20)){
-      t.MakeBackupTrack();
-    } else AliDebug(2, Form("Failed backup : \n"
-        "chi2 < 18.0                [%c] chi2=%f\n"
-        "ratio0 > 0.8               [%c] ratio=%f\n"
-        "t.GetNCross()==0           [%c] crosses=%d\n"
-        "Abs(t.GetSnp())<0.85       [%c] snp=%f\n"
-        "t.GetNumberOfClusters()>20 [%c] ncls=%d"
-        ,(chi2<18.0)?'y':'n', chi2
-        ,(ratio0>0.8)?'y':'n', ratio0
-        ,(t.GetNCross()==0)?'y':'n', t.GetNCross()
-        ,(TMath::Abs(t.GetSnp())<0.85)?'y':'n', TMath::Abs(t.GetSnp())
-        ,(t.GetNumberOfClusters()>20)?'y':'n', t.GetNumberOfClusters()
-      ));
+    Int_t failed(0);
+    if((failed = t.MakeBackupTrack())) AliDebug(2, Form("Failed backup on cut[%d]", failed));
 
   } // end layers loop
   //printf("clusters[%d] chi2[%f] x[%f] status[%d ", n, t.GetChi2(), t.GetX(), t.GetStatusTRD());

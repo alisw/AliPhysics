@@ -131,6 +131,7 @@ public:
   Int_t     GetN2() const            { return GetN();}
   Int_t     GetNUsed() const         { return Int_t((fN>>kNbits)&kMask);}
   Int_t     GetNShared() const       { return Int_t(((fN>>kNbits)>>kNbits)&kMask);}
+  Float_t   GetOccupancyTB() const;
   Float_t   GetQuality(Bool_t kZcorr) const;
   Float_t   GetPadLength() const     { return fPad[0];}
   Float_t   GetPadWidth() const      { return fPad[1];}

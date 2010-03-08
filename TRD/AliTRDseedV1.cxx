@@ -531,6 +531,20 @@ Float_t AliTRDseedV1::GetMomentum(Float_t *err) const
   return p;
 }
 
+//____________________________________________________________________
+Float_t AliTRDseedV1::GetOccupancyTB() const
+{
+// Returns procentage of TB occupied by clusters
+
+  Int_t n(0);
+  AliTRDcluster *c(NULL);
+  for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++){
+    if(!(c = fClusters[ic]) && !(c = fClusters[ic+kNtb])) continue;
+    n++;
+  }
+
+  return Float_t(n)/AliTRDtrackerV1::GetNTimeBins();
+}
 
 //____________________________________________________________________
 Float_t* AliTRDseedV1::GetProbability(Bool_t force)
