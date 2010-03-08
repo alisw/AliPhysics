@@ -45,9 +45,10 @@ public:
   static Float_t GetTOFx() { return fgkTOF;}
 
   Bool_t  HasMCdata() const       { return TestBit(kMCdata);};
+  // temporary until check with AliAnalysisTaskSE collision selection mechannism
   Bool_t  IsCollision() const {return TestBit(kCollision);}
-
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
+
   void    SetLocalEvSelection(AliTRDeventCuts */*cut*/){;} 
   void    SetLocalEvSelection(Bool_t use=kTRUE) {SetBit(kUseLocalEvSelection, use);}
   void    SetLocalTrkSelection(AliESDtrackCuts */*cut*/){;} 

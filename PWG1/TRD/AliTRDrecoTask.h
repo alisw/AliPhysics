@@ -78,12 +78,11 @@ private:
   AliTRDrecoTask(const AliTRDrecoTask&);
   AliTRDrecoTask& operator=(const AliTRDrecoTask&);
 
-  UChar_t   fDebugLevel;   //! Debug level 
-  TList     *fPlotFuncList;//! plot functors list
-  static TList     *fgTrendPoint;          //! trend point
+  TList             *fPlotFuncList;//! plot functors list
+  static TList      *fgTrendPoint;          //! trend point
   static TTreeSRedirector *fgDebugStream;  //! Debug stream 
 
-  ClassDef(AliTRDrecoTask, 1) // base TRD reconstruction task
+  ClassDef(AliTRDrecoTask, 2) // base TRD reconstruction task
 };
 
 #endif
