@@ -195,7 +195,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   //
   // First apply calibration
   //
-  AliTPCPointCorrection * corr =  AliTPCPointCorrection::Instance();
+  //  AliTPCPointCorrection * corr =  AliTPCPointCorrection::Instance();
   for (Int_t irow=0;irow<159;irow++) {
     AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
     if (!cluster) continue; 
@@ -229,22 +229,22 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
       x[1]-=dyq;
       x[2]-=dzq;
     }
-    //
-    // Apply r-phi correction  - To be done on track level- knowing the track angle !!!
-    //
-    Double_t corrclY =  
-      corr->RPhiCOGCorrection(cluster->GetDetector(),cluster->GetRow(), cluster->GetPad(),
-				  cluster->GetY(),cluster->GetY(), cluster->GetZ(), 0., cluster->GetMax(),2.5);
-    // R correction
-    Double_t corrR   = corr->CorrectionOutR0(kFALSE,kFALSE,cluster->GetX(),cluster->GetY(),cluster->GetZ(),cluster->GetDetector());
+//     //
+//     // Apply r-phi correction  - To be done on track level- knowing the track angle !!!
+//     //
+//     Double_t corrclY =  
+//       corr->RPhiCOGCorrection(cluster->GetDetector(),cluster->GetRow(), cluster->GetPad(),
+// 				  cluster->GetY(),cluster->GetY(), cluster->GetZ(), 0., cluster->GetMax(),2.5);
+//     // R correction
+//     Double_t corrR   = corr->CorrectionOutR0(kFALSE,kFALSE,cluster->GetX(),cluster->GetY(),cluster->GetZ(),cluster->GetDetector());
 
-    if (0&fApplyRPhiCorrection){
-      if (cluster->GetY()>0) x[1]+=corrclY;  // rphi correction
-      if (cluster->GetY()<0) x[1]-=corrclY;  // rphi correction
-    }
-    if (0&fApplyRCorrection){      
-      x[0]+=corrR;                           // radial correction
-    }
+//     if (0&fApplyRPhiCorrection){
+//       if (cluster->GetY()>0) x[1]+=corrclY;  // rphi correction
+//       if (cluster->GetY()<0) x[1]-=corrclY;  // rphi correction
+//     }
+//     if (0&fApplyRCorrection){      
+//       x[0]+=corrR;                           // radial correction
+//     }
 
     //
     //
@@ -287,8 +287,8 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
 	  "cl.="<<cluster<<
 	  "cy="<<dy<<
 	  "cz="<<dz<<
-	  "cY="<<corrclY<<
-	  "cR="<<corrR<<
+	  //	  "cY="<<corrclY<<
+	  //	  "cR="<<corrR<<
 	  "dxq="<<dxq<<
 	  "dyq="<<dyq<<
 	  "dzq="<<dzq<<

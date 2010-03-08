@@ -28,7 +28,7 @@
     
 */
 
-
+#include "AliTPCcalibDB.h"
 #include "TLinearFitter.h"
 #include "Riostream.h"
 #include "TList.h"
@@ -229,7 +229,11 @@ Double_t AliTPCPointCorrection::RPhiCOGCorrection(Int_t sector, Int_t padrow, Fl
   //  qMax  - cluster max charge - cl-.GetMax()
   //  threshold - clusterer threshold
   //
-  AliTPCClusterParam * clparam = AliTPCClusterParam::Instance(); 
+  AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
+  if (!clparam) {
+    AliFatal("TPC OCDB not initialized"); 
+    return 0;
+  }
   Int_t padtype=0;
   if (sector>=36) padtype = (padrow>64)?2:1;
   Double_t padwidth=(padtype==0)? 0.4:0.6;
