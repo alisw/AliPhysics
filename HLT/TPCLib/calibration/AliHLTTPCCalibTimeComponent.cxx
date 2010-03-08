@@ -62,12 +62,13 @@ ClassImp(AliHLTTPCCalibTimeComponent) // ROOT macro for the implementation of RO
 
 AliHLTTPCCalibTimeComponent::AliHLTTPCCalibTimeComponent()
   :
-  fCalibTime(NULL),
-  fCal(NULL),
-  fESDevent(NULL),
-  fESDtrack(NULL),
-  fESDfriend(NULL),
-  fSeedArray(NULL)
+   fCalibTime(NULL)
+  ,fCal(NULL)
+  ,fESDevent(NULL)
+  ,fESDtrack(NULL)
+  ,fESDfriend(NULL)
+  ,fSeedArray(NULL)
+  ,fOutputSize(50000)
 {
   // see header file for class documentation
   // or
@@ -75,6 +76,8 @@ AliHLTTPCCalibTimeComponent::AliHLTTPCCalibTimeComponent()
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
+
+const char* AliHLTTPCCalibTimeComponent::fgkOCDBEntry="HLT/ConfigTPC/TPCCalibTime";
 
 AliHLTTPCCalibTimeComponent::~AliHLTTPCCalibTimeComponent() {
 // see header file for class documentation
@@ -104,8 +107,8 @@ AliHLTComponentDataType AliHLTTPCCalibTimeComponent::GetOutputDataType() {
 void AliHLTTPCCalibTimeComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
 // see header file for class documentation
 
-  constBase = 50000;
-  inputMultiplier = (2.0); // to be estimated
+  constBase = fOutputSize;
+  inputMultiplier = 0; // to be estimated
 }
 
 AliHLTComponent* AliHLTTPCCalibTimeComponent::Spawn() {
@@ -115,10 +118,21 @@ AliHLTComponent* AliHLTTPCCalibTimeComponent::Spawn() {
 }  
 
 
-Int_t AliHLTTPCCalibTimeComponent::ScanArgument( Int_t /*argc*/, const char** /*argv*/ ) {
+Int_t AliHLTTPCCalibTimeComponent::ScanConfigurationArgument( Int_t argc, const char** argv ) {
 // see header file for class documentation
-    
-  return 0;
+ 
+  if (argc<=0) return 0;
+  int i=0;
+  TString argument=argv[i];
+
+  // -output-size
+  if (argument.CompareTo("-output-size")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fOutputSize=argument.Atof();
+    return 2;
+  }
+  return -EINVAL;
 }
 
 Int_t AliHLTTPCCalibTimeComponent::InitCalibration() {
@@ -127,6 +141,7 @@ Int_t AliHLTTPCCalibTimeComponent::InitCalibration() {
   //AliTPCcalibDB::Instance()->SetRun(84714);
   AliTPCcalibDB::Instance()->SetRun(AliHLTMisc::Instance().GetCDBRunNo());
   AliTPCcalibDB::Instance()->GetClusterParam()->SetInstance(AliTPCcalibDB::Instance()->GetClusterParam());
+  
 
 //   AliTPCcalibDB *calib = AliTPCcalibDB::Instance();
 // 
@@ -140,11 +155,19 @@ Int_t AliHLTTPCCalibTimeComponent::InitCalibration() {
 //     HLTError("OCDB entry TPC/Calib/ClusterParam (AliTPCcalibDB::GetClusterParam()) is not available.");
 //     return -ENOENT;
 //   }
-  
+
+  // first configure the default
+  int iResult=0;
+  if (iResult>=0) iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
+
+  // configure from the command line parameters if specified
+  //if (iResult>=0 && argc>0)  iResult=ConfigureFromArgumentString(argc, argv);
+    
   if(fCalibTime) return EINPROGRESS;
   fCal = new AliTPCcalibCalib();
   
-  return 0;
+  return iResult;
+ 
 }
 
 Int_t AliHLTTPCCalibTimeComponent::DeinitCalibration() {
@@ -155,6 +178,18 @@ Int_t AliHLTTPCCalibTimeComponent::DeinitCalibration() {
   //if(fESDfriend) delete fESDfriend; fESDfriend = NULL;
   
   return 0;
+}
+
+int AliHLTTPCCalibTimeComponent::Reconfigure(const char* cdbEntry, const char* /*chainId*/){
+// see header file for class documentation
+
+  // configure from the specified antry or the default one
+  const char* entry=cdbEntry;
+  if (!entry || entry[0]==0) {
+     entry=fgkOCDBEntry;
+  }
+
+  return ConfigureFromCDBTObjString(entry);
 }
 
 Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/,  AliHLTComponentTriggerData& /*trigData*/ ){
