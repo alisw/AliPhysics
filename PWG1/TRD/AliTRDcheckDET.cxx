@@ -1088,7 +1088,7 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
   AliTRDcluster *c = NULL;
   Double_t qTot = 0;
   Int_t nTracklets =fkTrack->GetNumberOfTracklets();
-  for(Int_t itl = NULL; itl < AliTRDgeometry::kNlayer; itl++){
+  for(Int_t itl(0); itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     qTot = 0.;
     for(Int_t ic = AliTRDseedV1::kNclusters; ic--;){
