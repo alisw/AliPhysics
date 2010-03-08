@@ -4,6 +4,7 @@
 #include "TFile.h"
 
 //--------------------------------------------------------------------------------------
+// Run flow analysis on local data with custom flowevent maker
 // RUN SETTINGS
 //flow analysis method can be: (set to kTRUE or kFALSE)
 Bool_t SP       = kTRUE;
