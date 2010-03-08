@@ -50,7 +50,7 @@ class AliTRDchamberTimeBin;
 class AliTRDtrackerFitter;
 class AliTRDtrackV1;
 class AliTRDReconstructor;
-
+class AliTRDrecoParam;
 class AliTRDtrackerV1 : public AliTracker
 {
 public:
@@ -199,7 +199,8 @@ private:
   Float_t     GetChi2Z(const AliTRDseedV1 *const tracklets) const;
 
 private:
-  const AliTRDReconstructor *fkReconstructor;            // reconstructor manager
+  const AliTRDReconstructor *fkReconstructor;           // reconstructor manager
+  const AliTRDrecoParam     *fkRecoParam;               // reco param for the current event
   AliTRDgeometry      *fGeom;                           // Pointer to TRD geometry
   AliTRDtrackingSector fTrSec[kTrackingSectors];        // Array of tracking sectors;    
   TClonesArray        *fClusters;                       // List of clusters
@@ -228,7 +229,7 @@ private:
   static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
   static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
   
-  ClassDef(AliTRDtrackerV1, 4)                          //  TRD tracker - tracklet based tracking
+  ClassDef(AliTRDtrackerV1, 5)                          //  TRD tracker - tracklet based tracking
 
 };
 #endif

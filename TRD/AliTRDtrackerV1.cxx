@@ -82,6 +82,7 @@ TLinearFitter* AliTRDtrackerV1::fgTiltedRiemanConstrained = NULL;
 AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec) 
   :AliTracker()
   ,fkReconstructor(NULL)
+  ,fkRecoParam(NULL)
   ,fGeom(NULL)
   ,fClusters(NULL)
   ,fTracklets(NULL)
@@ -165,7 +166,7 @@ Int_t AliTRDtrackerV1::Clusters2Tracks(AliESDEvent *esd)
   //    See AliTRDtrackerV1::Clusters2TracksSM() for details.
   //
 
-  if(!fkReconstructor->GetRecoParam() ){
+  if(!fkRecoParam){
     AliError("Reconstruction configuration not initialized. Call first AliTRDReconstructor::SetRecoParam().");
     return 0;
   }
@@ -275,6 +276,8 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
   }
   AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance(); // Calibration monitor
   if (!calibra) AliInfo("Could not get Calibra instance");
+
+  printf("TB[%d] new TB[%d]\n", fgNTimeBins, fkReconstructor->GetNTimeBins());
   if (!fgNTimeBins) fgNTimeBins = fkReconstructor->GetNTimeBins(); 
 
   // Define scalers
@@ -357,7 +360,8 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       // update calibration references using this track
       if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(&track);
       // save calibration object
-      if (fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0){ 
+      if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0 &&
+fkRecoParam->IsOverPtThreshold(track.Pt())){ 
         AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
         calibTrack->SetOwner();
         seed->AddCalibObject(calibTrack);
@@ -507,7 +511,7 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
       }
 
       // Update the friend track
-      if (fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0){ 
+      if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0 && fkRecoParam->IsOverPtThreshold(track.Pt())){ 
         TObject *o = NULL; Int_t ic = 0;
         AliTRDtrackV1 *calibTrack = NULL; 
         while((o = seed->GetCalibObject(ic++))){
@@ -618,7 +622,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     }
   }
 
-  if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 1){
+  if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 1){
     Int_t index;
     for(int iplane=0; iplane<AliTRDgeometry::kNlayer; iplane++){
       AliTRDseedV1 *tracklet = GetTracklet(&t, iplane, index);
@@ -688,7 +692,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   Double_t driftLength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
   AliTRDtrackingChamber *chamber = NULL;
   
-  Int_t debugLevel = fkReconstructor->IsDebugStreaming() ? fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) : 0;
+  Int_t debugLevel = fkReconstructor->IsDebugStreaming() ? fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) : 0;
   TTreeSRedirector *cstreamer = fkReconstructor->IsDebugStreaming() ? fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker) : 0x0;
 
   AliTRDseedV1 tracklet, *ptrTracklet = NULL;
@@ -701,7 +705,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   } 
   Bool_t kStoreIn(kTRUE),    //
          kPropagateIn(kTRUE),//
-         kUseTRD(fkReconstructor->GetRecoParam()->IsOverPtThreshold(t.Pt()));// use TRD measurment to update Kalman
+         kUseTRD(fkRecoParam->IsOverPtThreshold(t.Pt()));// use TRD measurment to update Kalman
 
   // Loop through the TRD layers
   TGeoHMatrix *matrix = NULL;
@@ -838,7 +842,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         AliDebug(4, "Failed No Detector");
         continue;
       }
-      if(chamber->GetNClusters() < fgNTimeBins*fkReconstructor->GetRecoParam() ->GetFindableClusters()){ 
+      if(chamber->GetNClusters() < fgNTimeBins*fkRecoParam ->GetFindableClusters()){ 
         t.SetStatus(AliTRDtrackV1::kNoClusters, ily);
         AliDebug(4, "Failed Not Enough Clusters in Detector");
         continue;
@@ -869,7 +873,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         continue;
       }
       AliDebug(3, Form("Number of Clusters in Tracklet: %d", tracklet.GetN()));
-      if(tracklet.GetN() < fgNTimeBins*fkReconstructor->GetRecoParam() ->GetFindableClusters()){
+      if(tracklet.GetN() < fgNTimeBins*fkRecoParam ->GetFindableClusters()){
         t.SetStatus(AliTRDtrackV1::kNoClustersTracklet, ily);
         if(debugLevel>3){
           AliTRDseedV1 trackletCp(*ptrTracklet);
@@ -981,7 +985,19 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         (TMath::Abs(t.GetSnp())  <  0.85) &&
         (t.GetNumberOfClusters() >    20)){
       t.MakeBackupTrack();
-    }
+    } else AliDebug(2, Form("Failed backup : \n"
+        "chi2 < 18.0                [%c] chi2=%f\n"
+        "ratio0 > 0.8               [%c] ratio=%f\n"
+        "t.GetNCross()==0           [%c] crosses=%d\n"
+        "Abs(t.GetSnp())<0.85       [%c] snp=%f\n"
+        "t.GetNumberOfClusters()>20 [%c] ncls=%d"
+        ,(chi2<18.0)?'y':'n', chi2
+        ,(ratio0>0.8)?'y':'n', ratio0
+        ,(t.GetNCross()==0)?'y':'n', t.GetNCross()
+        ,(TMath::Abs(t.GetSnp())<0.85)?'y':'n', TMath::Abs(t.GetSnp())
+        ,(t.GetNumberOfClusters()>20)?'y':'n', t.GetNumberOfClusters()
+      ));
+
   } // end layers loop
   //printf("clusters[%d] chi2[%f] x[%f] status[%d ", n, t.GetChi2(), t.GetX(), t.GetStatusTRD());
   //for(int i=0; i<6; i++) printf("%d ", t.GetStatusTRD(i)); printf("]\n");
@@ -1857,7 +1873,7 @@ Int_t AliTRDtrackerV1::ReadClusters(TClonesArray* &array, TTree *clusterTree) co
   branch->SetAddress(&clusterArray); 
   
   if(!fClusters){ 
-    Float_t nclusters =  fkReconstructor->GetRecoParam()->GetNClusters();
+    Float_t nclusters =  fkRecoParam->GetNClusters();
     if(fkReconstructor->IsHLT()) nclusters /= AliTRDgeometry::kNsector;
     array = new TClonesArray("AliTRDcluster", Int_t(nclusters));
     array->SetOwner(kTRUE);
@@ -1893,6 +1909,8 @@ Int_t AliTRDtrackerV1::LoadClusters(TTree *cTree)
   // Fills clusters into TRD tracking sectors
   //
   
+  fkRecoParam = fkReconstructor->GetRecoParam(); // load reco param for this event
+
   if(!fkReconstructor->IsWritingClusters()){ 
     fClusters = AliTRDReconstructor::GetClusters();
   } else {
@@ -1932,7 +1950,7 @@ Int_t AliTRDtrackerV1::LoadClusters(TClonesArray * const clusters)
   fClusters = clusters;
   SetClustersOwner();
 
-  //Int_t nin = 
+  fkRecoParam = fkReconstructor->GetRecoParam(); // load reco param for this event
   BuildTrackingContainers();  
 
   //Int_t ncl  = fClusters->GetEntriesFast();
@@ -2146,7 +2164,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(Int_t sector, AliESDEvent *esd)
     nChambers = 0;
     for(int ilayer=0; ilayer<AliTRDgeometry::kNlayer; ilayer++){
       if(!(chamber = stack[ilayer])) continue;
-      if(chamber->GetNClusters() < fgNTimeBins * fkReconstructor->GetRecoParam() ->GetFindableClusters()) continue;
+      if(chamber->GetNClusters() < fgNTimeBins * fkRecoParam->GetFindableClusters()) continue;
       nChambers++;
       //AliInfo(Form("sector %d stack %d layer %d clusters %d", sector, istack, ilayer, chamber->GetNClusters()));
     }
@@ -2161,7 +2179,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(Int_t sector, AliESDEvent *esd)
     Int_t id = esd->AddTrack(esdTrack);
 
     // set ESD id to stand alone TRD tracks
-    if (fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0){ 
+    if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0){ 
       esdTrack=esd->GetTrack(id);
       TObject *o(NULL); Int_t ic(0);
       AliTRDtrackV1 *calibTrack(NULL); 
@@ -2230,7 +2248,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
 
   // Build initial seeding configurations
   Double_t quality = BuildSeedingConfigs(stack, configs);
-  if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 10){
+  if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 10){
     AliInfo(Form("Plane config %d %d %d Quality %f"
     , configs[0], configs[1], configs[2], quality));
   }
@@ -2371,7 +2389,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
         Int_t ich = 0; while(!(chamber = stack[ich])) ich++;
         trackParams[6] = fGeom->GetSector(chamber->GetDetector());/* *alpha+shift;	// Supermodule*/
 
-        if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 1 && fkReconstructor->IsDebugStreaming()){
+        if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 1 && fkReconstructor->IsDebugStreaming()){
           //AliInfo(Form("Track %d [%d] nlayers %d trackQuality = %e nused %d, yref = %3.3f", itrack, trackIndex, nlayers, fTrackQuality[trackIndex], nused, trackParams[1]));
 
           AliTRDseedV1 *dseed[6];
@@ -2420,7 +2438,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
         esdTrack->SetLabel(track->GetLabel());
         track->UpdateESDtrack(esdTrack);
         // write ESD-friends if neccessary
-        if (fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0){
+        if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0){
           AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(*track);
           calibTrack->SetOwner();
           esdTrack->AddCalibObject(calibTrack);
@@ -2448,7 +2466,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
       chamber->Build(fGeom, cal);//Indices(fSieveSeeding);
     }
 
-    if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 10){ 
+    if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 10){ 
       AliInfo(Form("Sieve level %d Plane config %d %d %d Quality %f", fSieveSeeding, configs[0], configs[1], configs[2], quality));
     }
   } while(fSieveSeeding<10); // end stack clusters sieve
@@ -2689,7 +2707,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
         }
       
         Bool_t isFake = kFALSE;
-        if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
+        if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
           if (c[0]->GetLabel(0) != c[3]->GetLabel(0)) isFake = kTRUE;
           if (c[1]->GetLabel(0) != c[3]->GetLabel(0)) isFake = kTRUE;
           if (c[2]->GetLabel(0) != c[3]->GetLabel(0)) isFake = kTRUE;
@@ -2732,12 +2750,12 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
               <<"RiemanFitter.="		<< rim
               <<"\n";
         }
-        if(chi2[0] > fkReconstructor->GetRecoParam() ->GetChi2Z()/*7./(3. - sLayer)*//*iter*/){
+        if(chi2[0] > fkRecoParam->GetChi2Z()/*7./(3. - sLayer)*//*iter*/){
           AliDebug(3, Form("Filter on chi2Z [%f].", chi2[0]));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
-        if(chi2[1] > fkReconstructor->GetRecoParam() ->GetChi2Y()/*1./(3. - sLayer)*//*iter*/){
+        if(chi2[1] > fkRecoParam->GetChi2Y()/*1./(3. - sLayer)*//*iter*/){
           AliDebug(3, Form("Filter on chi2Y [%f].", chi2[1]));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
@@ -2799,7 +2817,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
         }
         Double_t like = CookLikelihood(&cseed[0], planes); // to be checked
       
-        if (TMath::Log(1.E-9 + like) < fkReconstructor->GetRecoParam() ->GetTrackLikelihood()){
+        if (TMath::Log(1.E-9 + like) < fkRecoParam->GetTrackLikelihood()){
           AliDebug(3, Form("Filter on likelihood %f[%e].", TMath::Log(1.E-9 + like), like));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
@@ -2830,7 +2848,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
       
         // AliInfo("Extrapolation done.");
         // Debug Stream containing all the 6 tracklets
-        if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
+        if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
           TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
           TLinearFitter *tiltedRieman = GetTiltedRiemanFitter();
           Int_t eventNumber 		= AliTRDtrackerDebug::GetEventNumber();
@@ -2848,7 +2866,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
               << "\n";
         }
               
-        if(fkReconstructor->GetRecoParam()->HasImproveTracklets()){ 
+        if(fkRecoParam->HasImproveTracklets()){ 
           AliTRDseedV1 bseed[AliTRDgeometry::kNlayer];
           for(Int_t jLayer=AliTRDgeometry::kNlayer; jLayer--;) bseed[jLayer] = cseed[jLayer];
 
@@ -2870,7 +2888,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
         // do the final track fitting (Once with vertex constraint and once without vertex constraint)
         Double_t chi2Vals[3];
         chi2Vals[0] = FitTiltedRieman(&cseed[0], kTRUE);
-        if(fkReconstructor->GetRecoParam()->IsVertexConstrained())
+        if(fkRecoParam->IsVertexConstrained())
           chi2Vals[1] = FitTiltedRiemanConstraint(&cseed[0], GetZ()); // Do Vertex Constrained fit if desired
         else
           chi2Vals[1] = 1.;
@@ -2880,7 +2898,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
         fTrackQuality[ntracks] = CalculateTrackLikelihood(&cseed[0], &chi2Vals[0]);
         //AliInfo("Hyperplane fit done\n");
                   
-        if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
+        if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
           TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
           Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
           Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
@@ -2989,7 +3007,7 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 * const seeds, Double_t *
 
   track.ResetCovariance(1);
   Int_t nc = TMath::Abs(FollowBackProlongation(track));
-  if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 5 && fkReconstructor->IsDebugStreaming()){
+  if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 5 && fkReconstructor->IsDebugStreaming()){
     Int_t eventNumber 		= AliTRDtrackerDebug::GetEventNumber();
     Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
     Double_t p[5]; // Track Params for the Debug Stream
@@ -3110,7 +3128,7 @@ Int_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDs
     for(Int_t jLayer=AliTRDgeometry::kNlayer; jLayer--;) bseed[jLayer]=tseed[jLayer];
 
 
-    if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 7 && fkReconstructor->IsDebugStreaming()){
+    if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) >= 7 && fkReconstructor->IsDebugStreaming()){
       Int_t eventNumber 		= AliTRDtrackerDebug::GetEventNumber();
       Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
       TLinearFitter *tiltedRieman = GetTiltedRiemanFitter();
@@ -3162,13 +3180,13 @@ Double_t AliTRDtrackerV1::CalculateTrackLikelihood(const AliTRDseedV1 *const tra
   chi2phi /= Float_t (nLayers - 2.0);
   
   Double_t likeChi2Z  = TMath::Exp(-chi2[2] * 0.14);			// Chi2Z 
-  Double_t likeChi2TC = (fkReconstructor->GetRecoParam()->IsVertexConstrained()) ? 
+  Double_t likeChi2TC = (fkRecoParam->IsVertexConstrained()) ? 
   											TMath::Exp(-chi2[1] * 0.677) : 1;			// Constrained Tilted Riemann
   Double_t likeChi2TR = TMath::Exp(-chi2[0] * 0.0078);			// Non-constrained Tilted Riemann
   Double_t likeChi2Phi= TMath::Exp(-chi2phi * 3.23);//3.23
   Double_t trackLikelihood     = likeChi2Z * likeChi2TR * likeChi2Phi;
 
-  if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
+  if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
     TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
@@ -3214,8 +3232,6 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4])
   //
 
   // ratio of the total number of clusters/track which are expected to be found by the tracker.
-  const AliTRDrecoParam *fRecoPars = fkReconstructor->GetRecoParam();
-  
  	Double_t chi2y = GetChi2Y(&cseed[0]);
   Double_t chi2z = GetChi2Z(&cseed[0]);
 
@@ -3228,14 +3244,14 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4])
   }
   nclusters *= .25;
 
-  Double_t likea     = TMath::Exp(-sumda * fRecoPars->GetPhiSlope());
+  Double_t likea     = TMath::Exp(-sumda * fkRecoParam->GetPhiSlope());
   Double_t likechi2y  = 0.0000000001;
-  if (fkReconstructor->IsCosmic() || chi2y < fRecoPars->GetChi2YCut()) likechi2y += TMath::Exp(-TMath::Sqrt(chi2y) * fRecoPars->GetChi2YSlope());
-  Double_t likechi2z = TMath::Exp(-chi2z * fRecoPars->GetChi2ZSlope());
-  Double_t likeN     = TMath::Exp(-(fRecoPars->GetNMeanClusters() - nclusters) / fRecoPars->GetNSigmaClusters());
+  if (fkReconstructor->IsCosmic() || chi2y < fkRecoParam->GetChi2YCut()) likechi2y += TMath::Exp(-TMath::Sqrt(chi2y) * fkRecoParam->GetChi2YSlope());
+  Double_t likechi2z = TMath::Exp(-chi2z * fkRecoParam->GetChi2ZSlope());
+  Double_t likeN     = TMath::Exp(-(fkRecoParam->GetNMeanClusters() - nclusters) / fkRecoParam->GetNSigmaClusters());
   Double_t like      = likea * likechi2y * likechi2z * likeN;
 
-  if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
+  if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) >= 2 && fkReconstructor->IsDebugStreaming()){
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
     Int_t nTracklets = 0; Float_t meanNcls = 0;
