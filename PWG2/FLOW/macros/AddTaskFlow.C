@@ -34,7 +34,7 @@ Double_t vertexZmax = 15.0; //1.e99;
 
 //Bool_t UseMultCut = kFALSE;
 Bool_t UseMultCut = kTRUE;
-const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
+const Int_t multmin = 1;     //used for AliFlowEventSimple (to set the centrality)
 const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centrality)
 //const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
 //const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
@@ -775,7 +775,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     
     AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer("cobjLYZ1SUM", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1SUM); 
     mgr->ConnectInput(taskLYZ1SUM,0,coutputFE); 
-    mgr->ConnectOutput(taskLYZ1SUM,0,coutputLYZ1SUM); 
+    mgr->ConnectOutput(taskLYZ1SUM,1,coutputLYZ1SUM); 
   }
   if(LYZ1PROD) {
     TString outputLYZ1PROD = AliAnalysisManager::GetCommonFileName();
@@ -784,7 +784,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     
     AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer("cobjLYZ1PROD", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1PROD); 
     mgr->ConnectInput(taskLYZ1PROD,0,coutputFE); 
-    mgr->ConnectOutput(taskLYZ1PROD,0,coutputLYZ1PROD);
+    mgr->ConnectOutput(taskLYZ1PROD,1,coutputLYZ1PROD);
   }
   if(LYZ2SUM) {
     AliAnalysisDataContainer *cinputLYZ2SUM = mgr->CreateContainer("cobjLYZ2SUMin",TList::Class(),AliAnalysisManager::kInputContainer);
@@ -795,7 +795,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer("cobjLYZ2SUM", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2SUM); 
     mgr->ConnectInput(taskLYZ2SUM,0,coutputFE); 
     mgr->ConnectInput(taskLYZ2SUM,1,cinputLYZ2SUM);
-    mgr->ConnectOutput(taskLYZ2SUM,0,coutputLYZ2SUM); 
+    mgr->ConnectOutput(taskLYZ2SUM,1,coutputLYZ2SUM); 
     cinputLYZ2SUM->SetData(fInputListLYZ2SUM);
   }
   if(LYZ2PROD) {
@@ -807,7 +807,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer("cobjLYZ2PROD", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2PROD); 
     mgr->ConnectInput(taskLYZ2PROD,0,coutputFE); 
     mgr->ConnectInput(taskLYZ2PROD,1,cinputLYZ2PROD);
-    mgr->ConnectOutput(taskLYZ2PROD,0,coutputLYZ2PROD); 
+    mgr->ConnectOutput(taskLYZ2PROD,1,coutputLYZ2PROD); 
     cinputLYZ2PROD->SetData(fInputListLYZ2PROD);
   }
   if(LYZEP) {
@@ -819,7 +819,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer("cobjLYZEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP); 
     mgr->ConnectInput(taskLYZEP,0,coutputFE); 
     mgr->ConnectInput(taskLYZEP,1,cinputLYZEP);
-    mgr->ConnectOutput(taskLYZEP,0,coutputLYZEP); 
+    mgr->ConnectOutput(taskLYZEP,1,coutputLYZEP); 
     cinputLYZEP->SetData(fInputListLYZEP);
   }
   if(GFC) {
@@ -868,7 +868,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     
     AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer("cobjMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP); 
     mgr->ConnectInput(taskMCEP,0,coutputFE); 
-    mgr->ConnectOutput(taskMCEP,0,coutputMCEP); 
+    mgr->ConnectOutput(taskMCEP,1,coutputMCEP); 
   }
   if(MH) {
     TString outputMH = AliAnalysisManager::GetCommonFileName();
