@@ -8,7 +8,7 @@ Bool_t doQAsym        = 1;   // output ok
 Bool_t doVZERO        = 1;   // output ok but there is a 2nd file
 Bool_t doVertex       = 1;   // output ok
 Bool_t doSPD          = 1;   // output ok, needs RP   
-Bool_t doFMD          = 1;   // output ok
+Bool_t doFMD          = 0;   // output ok
 Bool_t doTPC          = 1;   // output ok
 Bool_t doEventStat    = 1;   // output ok
 Bool_t doSDD          = 1;   // outout ok needs RP
@@ -20,8 +20,9 @@ Bool_t doMUONTrig     = 1;   // MUON trigger
 Bool_t doMUONEff      = 0;   // MUON efficiency  NEEDS geometry
 Bool_t doV0           = 0;   // V0 recosntruction performance NEEDS MCtruth 
 
-TString     train_name         = "QA001_PASS4";
-TString     job_tag            = "QA001: PWG1 QA train";
+
+TString     train_name         = "QA003_PASS4";
+TString     job_tag            = "QA003: PWG1 QA train";
 TString     root_version       = "v5-26-00b";
 TString     aliroot_version    = "v4-19-04-AN";
 TString     grid_datadir       = "/alice/data/2009/LHC09d";
@@ -63,7 +64,7 @@ void PilotAnalysis(const char *plugin_mode = "full")
   out.close();
   
   // Load libraries
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS");
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT");
   LoadLibraries();
   // Create manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("PilotAnalysis", "Production train");
@@ -97,21 +98,17 @@ void PilotAnalysis(const char *plugin_mode = "full")
 
 void LoadLibraries()
 {
-gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libTENDER");
   gSystem->Load("libPWG0base.so");
   gSystem->Load("libPWG0dep.so");
   gSystem->Load("libPWG0selectors.so");
   gSystem->Load("libPWG1.so");
   gSystem->Load("libPWG2.so");
-  gSystem->Load("libPWG3muon.so");
-  gSystem->Load("libPWG3muondep.so");
   gSystem->Load("libPWG2forward.so");
-  gSystem->Load("libPWG4PartCorrBase.so");
-  gSystem->Load("libPWG4PartCorrDep.so");
- 
+
   if (doSPD) {   
     TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSPD.cxx"), "AliAnalysisTaskSPD.cxx");
     TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSPD.h"), "AliAnalysisTaskSPD.h");
@@ -121,86 +118,82 @@ gSystem->Load("libANALYSIS.so");
     TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSDDRP.cxx"), "AliAnalysisTaskSDDRP.cxx");
     TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSDDRP.h"), "AliAnalysisTaskSDDRP.h");
 //    gROOT->LoadMacro("AliAnalysisTaskSDDRP.cxx++g");
+  }
+  if (doCALO) {
+     gSystem->Load("libEMCALUtils");
+     gSystem->Load("libPWG4PartCorrBase");
+     gSystem->Load("libPWG4PartCorrDep");
   }  
+  if(doMUONTrig) {
+     gSystem->Load("libPWG3base");
+     gSystem->Load("libPWG3muon");
+     gSystem->Load("libPWG3muondep");
+  }   
 }
 
 void AddAnalysisTasks()
 {
-  //
   // Vertexing (A. Dainese)
   // 
-
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (doVertex) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskVertexESD.C");
     AliAnalysisTaskVertexESD* taskvertexesd =  AddTaskVertexESD();
     taskvertexesd->SelectCollisionCandidates();
   }  
 
-  //
   // TPC QA (E. Sicking)
   //
-
   if (doQAsym) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C");
     AliAnalysisTaskSE * taskqasim = AddTaskQAsym();
     taskqasim->SelectCollisionCandidates();
   }  
-
-
   //
   // VZERO QA  (C. Cheshkov)
   //
-
   if (doVZERO) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskVZEROQA.C");
     AliAnalysisTaskSE * taskv0qa = AddTaskVZEROQA(0);
+//  taskv0qa->SelectCollisionCandidates();
   }
-
-  //
   // FMD (Hans Hjersing Dalsgaard)
   //
-
   if (doFMD) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskFMD.C");
     AliAnalysisTaskSE* taskfmd = AddTaskFMD();
     taskfmd->SelectCollisionCandidates();
   }  
-
   //
   // TPC (Jacek Otwinowski)
   //
-
   if (doTPC) {
     gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
     AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
   }  
-
-  //
-  // ITS
-  // 
-  if (doITS) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceITS.C");
-      AliAnalysisTaskITSTrackingCheck *itsQA = AddTaskPerformanceITS(kFALSE);
-  }
-  
   //
   // SPD (A. Mastroserio)
   //
-
   if (doSPD) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskSPDQA.C");
     AliAnalysisTaskSE* taskspdqa = AddTaskSPDQA();
     taskspdqa->SelectCollisionCandidates();
-  }
-
+  }  
   //
   // SDD (F. Prino)
   //
-
   if (doSDD) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddSDDPoints.C");
     AliAnalysisTaskSE* tasksdd = AddSDDPoints();
     tasksdd->SelectCollisionCandidates();
+  }
+
+  //
+  // ITS
+  //
+  if (doITS) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceITS.C");
+      AliAnalysisTaskITSTrackingCheck *itsQA = AddTaskPerformanceITS(kFALSE);
   }
 
 
@@ -213,7 +206,8 @@ void AddAnalysisTasks()
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
       AliPhysicsSelection* physSel = physSelTask->GetPhysicsSelection();
       physSel->AddBackgroundIdentification(new AliBackgroundSelection());
-      AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile("event_stat.root");
+      mgr->RegisterExtraFile("event_stat.root");
+
   }
    
 
@@ -221,8 +215,8 @@ void AddAnalysisTasks()
   // TRD (Alex Bercuci, M. Fasel) 
   //
   if(doTRD) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
-    AddTrainPerformanceTRD("ALL");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
+      AddTrainPerformanceTRD("ALL");
   }
 
   //
@@ -261,8 +255,6 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskV0QA.C");
       AliAnalysisTaskV0QA *taskv0QA = AddTaskV0QA(kFALSE);
   }
-
-
 }
 
 //______________________________________________________________________________
