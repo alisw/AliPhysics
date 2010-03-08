@@ -229,16 +229,18 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
               
     HLTDebug("# Seeds: %i\n", fSeedArray->GetEntriesFast()); // access of the info from the previous loop over the AliTPCseed array
     
-    fCal->UpdateEventInfo(fESDevent);   
-    
+    fCal->UpdateEventInfo(fESDevent);  
+        
     for(Int_t i=0; i<fSeedArray->GetEntriesFast(); i++){  // loop over TObjArray    
         
-	AliTPCseed *seed = (AliTPCseed*)fSeedArray->UncheckedAt(i);
-        if(!seed) continue; 
-                    
+	AliTPCseed *seed = (AliTPCseed*)fSeedArray->UncheckedAt(i);                    
         fESDtrack = fESDevent->GetTrack(i);
-	if(!fESDtrack) continue;
-             
+	if(!fESDtrack || !seed) continue; 
+	
+	HLTDebug("AliHLTTPCCalibTimeComponent mismatch of track id between seed and ESD track: %i, %i\n", fESDtrack->GetID(), seed->GetLabel());
+	
+	if(fESDtrack->GetID() != seed->GetLabel()) continue;	      	
+
         fCal->RefitTrack(fESDtrack, seed, GetBz()); // update AliESDtrack and AliTPCseed info, acccording to Marian's request
 	     
         AliTPCseed *seedCopy = new AliTPCseed(*seed, kTRUE); 

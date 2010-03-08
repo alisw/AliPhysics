@@ -269,7 +269,8 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
           rieman.Update();
           rieman.GetExternalParameters(xmin,param,cov);  
 	  seed = new AliTPCseed(xmin,alpha,param,cov,0);
-	 
+	  seed->SetLabel(element->GetID());
+	   
 	  // set up of the cluster pointers inside the seed
  	  for(Int_t j=0; j<offClusterArray->GetEntries(); j++){ 
               AliTPCclusterMI *cl = (AliTPCclusterMI*)offClusterArray->At(j);
