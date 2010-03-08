@@ -566,6 +566,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
     if (!trackOut) continue;
     
     AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    if (!friendTrack) continue;
     if (friendTrack) ProcessSame(track,friendTrack,event);
     if (friendTrack) ProcessAlignITS(track,friendTrack,event,esdFriend);
     if (friendTrack) ProcessAlignTRD(track,friendTrack);

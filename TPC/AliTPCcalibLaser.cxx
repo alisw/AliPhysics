@@ -611,7 +611,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   if (counter<kMinTracks) return;
 
   //FitDriftV();
-  FitDriftV(0.3);
+  FitDriftV(0.2);
   if (!fFullCalib) return;
   static Bool_t init=kFALSE;
   if (!init){
@@ -961,8 +961,8 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
   const Float_t kSaturCut    = 0.05;    // remove saturated lasers - cut on fraction of saturated 
   const Float_t kDistCut     = 3.;      // distance sigma cut - 3 sigma
   const Float_t kDistCutAbs  = 1.;      // absolute cut 1 cm
-  const Float_t kMinClusters = 60.;      // minimal amount of the clusters
-  const Float_t kMinSignal   = 10.;      // minimal mean height of the signal
+  const Float_t kMinClusters = 40.;      // minimal amount of the clusters
+  const Float_t kMinSignal   = 2.5;      // minimal mean height of the signal
   const Float_t kChi2Cut     = 1.0;     // chi2 cut to accept drift fit
   //
   static TLinearFitter fdriftA(3,"hyp2");
@@ -2249,8 +2249,9 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
   const Float_t kmultiCut=2;
   const Float_t kcutP0=0.002;
   AliMagF* magF=  dynamic_cast<AliMagF*> (TGeoGlobalMagField::Instance()->GetField());
-  Double_t xyz[3]={90,0,10};
-  Double_t bxyz[3]={90,0,10};
+  Double_t xyz[3]={90,0,10};         // tmp. global position 
+  Double_t bxyz[3]={90,0,10};        // tmp. mag field  integral - cylindrical
+  Double_t bgxyz[3]={90,0,10};       // tmp. mag field  integral - local
   //
   AliTPCcalibLaser *laser = this;
   TTreeSRedirector *pcstream = new TTreeSRedirector("laserMean.root");
@@ -2556,21 +2557,42 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
     // magnetic field integrals
     TVectorD vecIBR(159);        // radial
     TVectorD vecIBRPhi(159);     // r-phi
+    TVectorD vecIBLX(159);       // local x
+    TVectorD vecIBLY(159);       // local y
+    TVectorD vecIBGX(159);       // local x
+    TVectorD vecIBGY(159);       // local y
     TVectorD vecIBZ(159);        // z
     //
     for (Int_t irow=0;irow<159;irow++){
       vecIBR[irow]=0;
       vecIBRPhi[irow]=0;
+      vecIBLX[irow]=0;
+      vecIBLY[irow]=0;
+      vecIBGX[irow]=0;
+      vecIBGY[irow]=0;
       vecIBZ[irow]=0;
-      Double_t gx=(*(ltrp->fVecGX))[irow];
-      Double_t gy=(*(ltrp->fVecGY))[irow];
+      Double_t gx    =(*(ltrp->fVecGX))[irow];
+      Double_t gy    =(*(ltrp->fVecGY))[irow];
+      Int_t    lsec  =TMath::Nint((*(ltrp->fVecSec))[irow]);
+      Double_t   ca  =TMath::Cos(TMath::Pi()*(lsec+0.5)/9.);
+      Double_t   sa  =TMath::Sin(TMath::Pi()*(lsec+0.5)/9.);
       xyz[2]=(*(ltrp->fVecGZ))[irow];
       xyz[0]=TMath::Sqrt(gx*gx+gy*gy);
       xyz[1]=TMath::ATan2(gy,gx);
+      Double_t gxyz[3]={gx,gy,(*(ltrp->fVecGZ))[irow]};
       if (magF){
 	magF->GetTPCIntCyl(xyz,bxyz);
+	magF->GetTPCInt(gxyz,bgxyz);
 	vecIBR[irow]=bxyz[0];
 	vecIBRPhi[irow]=bxyz[1];
+	//
+	vecIBGX[irow]=bgxyz[0];
+	vecIBGY[irow]=bgxyz[1];
+	//
+	vecIBLX[irow]=  bgxyz[0]*ca+bgxyz[1]*sa;
+	vecIBLY[irow]= -bgxyz[0]*sa+bgxyz[1]*ca;
+	//
+
 	vecIBZ[irow]=bxyz[2];
       }
     }
@@ -2914,7 +2936,14 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
       "lasTanPhiLocOut="<<lasTanPhiLocOut<<// laser tan phi in local frame (outer)
       "ibr.="<<&vecIBR<<   // radial filed integral
       "ibrphi.="<<&vecIBRPhi<<   // r=phifiled integral
-      "ibz.="<<&vecIBZ<<   // radial filed integral
+      "ibr.="<<&vecIBR<<   // radial filed integral
+      "ibz.="<<&vecIBZ<<   // z filed integral
+      //
+      "iblx.="<<&vecIBLX<<   // local bx  integral
+      "ibly.="<<&vecIBLY<<   // local by integral
+      "ibgx.="<<&vecIBGX<<   // global bx  integral
+      "ibgy.="<<&vecIBGY<<   // global by integral
+      //
       "X.="<<&vecX<<       // local x 
       "Y.="<<&vecY<<       // local y 
       "R.="<<&vecR<<       // radius 
