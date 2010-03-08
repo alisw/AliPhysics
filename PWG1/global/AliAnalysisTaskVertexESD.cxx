@@ -115,7 +115,7 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
-  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:bunchcross:triggered:dndygen:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:xSPDp:xerrSPDp:ySPDp:yerrSPDp:zSPDp:zerrSPDp:ntrksSPDp:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc:deltaxTRKnc:deltayTRKnc:deltazTRKnc:deltaxerrTRKnc:deltayerrTRKnc:deltazerrTRKnc:avntrksTRKnc");
+  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:bunchcross:triggered:dndygen:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:xSPDp:xerrSPDp:ySPDp:yerrSPDp:zSPDp:zerrSPDp:ntrksSPDp:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc:deltaxTRKnc:deltayTRKnc:deltazTRKnc:deltaxerrTRKnc:deltayerrTRKnc:deltazerrTRKnc:ntrksEvenTRKnc:ntrksOddTRKnc");
 
   fOutput->Add(fNtupleVertexESD);
 
@@ -317,8 +317,8 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   }
 
   // fill ntuple
-  Int_t isize=81;
-  Float_t xnt[81]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
+  Int_t isize=82;
+  Float_t xnt[82]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
   
   Int_t index=0;
 
@@ -440,7 +440,8 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
       xnt[index++]=TMath::Sqrt(trkvncodd->GetXRes()*trkvncodd->GetXRes()+trkvnceven->GetXRes()*trkvnceven->GetXRes());
       xnt[index++]=TMath::Sqrt(trkvncodd->GetYRes()*trkvncodd->GetYRes()+trkvnceven->GetYRes()*trkvnceven->GetYRes());
       xnt[index++]=TMath::Sqrt(trkvncodd->GetZRes()*trkvncodd->GetZRes()+trkvnceven->GetZRes()*trkvnceven->GetZRes());
-      xnt[index++]=0.5*(trkvncodd->GetNContributors()+trkvnceven->GetNContributors());
+      xnt[index++]=trkvnceven->GetNContributors();
+      xnt[index++]=trkvncodd->GetNContributors();
     } else {
       xnt[index++]=0.;
       xnt[index++]=0.;
@@ -449,10 +450,11 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
       xnt[index++]=0.;
       xnt[index++]=0.;
       xnt[index++]=-1;
+      xnt[index++]=-1;
     }
     delete trkvncodd; trkvncodd=0;
     delete trkvnceven; trkvnceven=0;    
-  } else index+=7;
+  } else index+=8;
   
 
   if(index>isize) printf("AliAnalysisTaskVertexESD: ERROR, index!=isize\n");
