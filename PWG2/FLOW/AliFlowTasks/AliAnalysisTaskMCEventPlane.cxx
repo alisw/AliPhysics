@@ -19,7 +19,7 @@
 #include "TList.h"
 
 
-class AliAnalysisTask;
+class AliAnalysisTaskSE;
 #include "AliAnalysisManager.h"
 #include "AliFlowEventSimple.h"
 
@@ -39,7 +39,7 @@ ClassImp(AliAnalysisTaskMCEventPlane)
 
 //________________________________________________________________________
 AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) : 
-  AliAnalysisTask(name, ""), 
+  AliAnalysisTaskSE(name), 
   fEvent(NULL),
   fMc(NULL),
   fListHistos(NULL)
@@ -51,11 +51,12 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) :
   // Input slot #0 works with a TChain
   DefineInput(0, AliFlowEventSimple::Class());
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class()); 
+  DefineOutput(1, TList::Class()); 
 }
 
 //________________________________________________________________________
 AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane() : 
+  AliAnalysisTaskSE(),
   fEvent(NULL),
   fMc(NULL),
   fListHistos(NULL)
@@ -74,16 +75,7 @@ AliAnalysisTaskMCEventPlane::~AliAnalysisTaskMCEventPlane()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMCEventPlane::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-  cout<<"AliAnalysisTaskMCEventPlane::ConnectInputData(Option_t *)"<<endl;
-
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskMCEventPlane::CreateOutputObjects() 
+void AliAnalysisTaskMCEventPlane::UserCreateOutputObjects() 
 {
   // Called once
   cout<<"AliAnalysisTaskMCEventPlane::CreateOutputObjects()"<<endl;
@@ -103,7 +95,7 @@ void AliAnalysisTaskMCEventPlane::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMCEventPlane::Exec(Option_t *) 
+void AliAnalysisTaskMCEventPlane::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -116,7 +108,7 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
     cout << "Warning no input data!!!" << endl;
   }
 
-  PostData(0,fListHistos); 
+  PostData(1,fListHistos); 
 }      
 
 
@@ -127,16 +119,14 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
   AliFlowAnalysisWithMCEventPlane* fMcTerm = new AliFlowAnalysisWithMCEventPlane() ;
 
   //Get output data
-  fListHistos = (TList*)GetOutputData(0);
-  // cout << "histogram list in Terminate" << endl;
+  fListHistos = (TList*)GetOutputData(1);
   if (fListHistos) {
-     fMcTerm->GetOutputHistograms(fListHistos);
-     fMcTerm->Finish();
-     PostData(0,fListHistos);
-     //fListHistos->Print();
-    } else 
-      { 
-       cout << "histogram list pointer is empty" << endl;
-      }
+    fMcTerm->GetOutputHistograms(fListHistos);
+    fMcTerm->Finish();
+    PostData(1,fListHistos);
+  } else 
+    { 
+      cout << "histogram list pointer is empty" << endl;
+    }
 }
 

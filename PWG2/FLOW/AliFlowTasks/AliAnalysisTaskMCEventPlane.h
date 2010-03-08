@@ -2,8 +2,8 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisTaskMCEventPlane_H
-#define AliAnalysisTaskMCEventPlane_H
+#ifndef ALIANALYSISTASKMCEVENTPLANE_H
+#define ALIANALYSISTASKMCEVENTPLANE_H
 
 // AliAnalysisTaskMCEventPlane:
 // analysis task for 
@@ -16,18 +16,17 @@ class AliFlowAnalysisWithMCEventPlane;
 class TList;
 
 #include "TString.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskMCEventPlane : public AliAnalysisTask {
+class AliAnalysisTaskMCEventPlane : public AliAnalysisTaskSE {
  public:
 
   AliAnalysisTaskMCEventPlane();
   AliAnalysisTaskMCEventPlane(const char *name);
   virtual ~AliAnalysisTaskMCEventPlane();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
  private:

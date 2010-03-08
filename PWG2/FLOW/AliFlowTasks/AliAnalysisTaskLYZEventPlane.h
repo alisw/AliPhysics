@@ -2,8 +2,8 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisTaskLYZEventPlane_H
-#define AliAnalysisTaskLYZEventPlane_H
+#ifndef ALIANALYSISTASKLYZEVENTPLANE_H
+#define ALIANALYSISTASKLYZEVENTPLANE_H
 
 // AliAnalysisTaskLYZEventPlane:
 // analysis task for 
@@ -18,17 +18,16 @@ class TFile;
 class TList;
 
 #include "TString.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskLYZEventPlane : public AliAnalysisTask {
+class AliAnalysisTaskLYZEventPlane : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskLYZEventPlane();
   AliAnalysisTaskLYZEventPlane(const char *name);
   virtual ~AliAnalysisTaskLYZEventPlane();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   
  private:

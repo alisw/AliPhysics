@@ -20,7 +20,7 @@
 #include "TList.h"
 #include "TProfile.h"
 
-class AliAnalysisTask;
+class AliAnalysisTaskSE;
 #include "AliAnalysisManager.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowLYZConstants.h"   
@@ -39,7 +39,7 @@ ClassImp(AliAnalysisTaskLeeYangZeros)
 
 //________________________________________________________________________
 AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_t firstrun) : 
-  AliAnalysisTask(name, ""), 
+  AliAnalysisTaskSE(name), 
   fEvent(0),
   fLyz(0),
   fFirstRunFile(0),
@@ -55,12 +55,13 @@ AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_
   DefineInput(0, AliFlowEventSimple::Class());
   if (!firstrun) DefineInput(1, TList::Class()); //for second loop 
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());  
+  DefineOutput(1, TList::Class());  
    
 } 
 
 //________________________________________________________________________
-AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros() :  
+AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros() :
+  AliAnalysisTaskSE(),
   fEvent(0),
   fLyz(0),
   fFirstRunFile(0),
@@ -82,16 +83,7 @@ AliAnalysisTaskLeeYangZeros::~AliAnalysisTaskLeeYangZeros()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskLeeYangZeros::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-  cout<<"AliAnalysisTaskLeeYangZeros::ConnectInputData(Option_t *)"<<endl;
- 
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskLeeYangZeros::CreateOutputObjects() 
+void AliAnalysisTaskLeeYangZeros::UserCreateOutputObjects() 
 {
   // Called once
   cout<<"AliAnalysisTaskLeeYangZeros::CreateOutputObjects()"<<endl;
@@ -121,7 +113,7 @@ void AliAnalysisTaskLeeYangZeros::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskLeeYangZeros::Exec(Option_t *) 
+void AliAnalysisTaskLeeYangZeros::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -133,7 +125,7 @@ void AliAnalysisTaskLeeYangZeros::Exec(Option_t *)
   else {
     cout << "Warning no input data!!!" << endl; }
   
-  PostData(0,fListHistos); //here for CAF
+  PostData(1,fListHistos); 
   
 }      
 
@@ -146,17 +138,17 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
   fLyzTerm -> SetFirstRun(GetFirstRunLYZ());   //set first run true or false
   fLyzTerm -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
    
-  fListHistos = (TList*)GetOutputData(0);
+  fListHistos = (TList*)GetOutputData(1);
   
   if(fListHistos) 
   {
    fLyzTerm -> GetOutputHistograms(fListHistos);
    fLyzTerm -> Finish();
-	PostData(0,fListHistos);
+	PostData(1,fListHistos);
   } else 
     {
      cout << "histogram list pointer in Lee-Yang Zeros is empty in AliAnalysisTaskLYZ::Terminate ()" << endl;
     } 
 
-  //cout<<".....finished"<<endl;
+  
 }

@@ -22,7 +22,7 @@
 #include "TFile.h"
 #include "TList.h"
 
-class AliAnalysisTask;
+class AliAnalysisTaskSE;
 #include "AliAnalysisManager.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskLYZEventPlane.h"
@@ -41,7 +41,7 @@ ClassImp(AliAnalysisTaskLYZEventPlane)
 
 //________________________________________________________________________
 AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name) : 
-  AliAnalysisTask(name, ""), 
+  AliAnalysisTaskSE(name), 
   fEvent(NULL), 
   fLyzEp(NULL),
   fLyz(NULL),
@@ -56,12 +56,13 @@ AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name) :
   DefineInput(0, AliFlowEventSimple::Class());
   DefineInput(1, TList::Class());
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
   
 }
 
 //________________________________________________________________________
 AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane() : 
+  AliAnalysisTaskSE(),
   fEvent(NULL), 
   fLyzEp(NULL),
   fLyz(NULL),
@@ -81,16 +82,7 @@ AliAnalysisTaskLYZEventPlane::~AliAnalysisTaskLYZEventPlane()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskLYZEventPlane::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-  cout<<"AliAnalysisTaskLYZEventPlane::ConnectInputData(Option_t *)"<<endl;
-  
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskLYZEventPlane::CreateOutputObjects() 
+void AliAnalysisTaskLYZEventPlane::UserCreateOutputObjects() 
 {
   // Called once
   cout<<"AliAnalysisTaskLYZEventPlane::CreateOutputObjects()"<<endl;
@@ -120,7 +112,7 @@ void AliAnalysisTaskLYZEventPlane::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskLYZEventPlane::Exec(Option_t *) 
+void AliAnalysisTaskLYZEventPlane::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -132,7 +124,7 @@ void AliAnalysisTaskLYZEventPlane::Exec(Option_t *)
   else {
     cout << "Warning no input data!!!" << endl;}
     
-  PostData(0,fListHistos);
+  PostData(1,fListHistos);
   
 }      
 
@@ -141,12 +133,12 @@ void AliAnalysisTaskLYZEventPlane::Terminate(Option_t *)
 {
   // Called once at the end of the query
   AliFlowAnalysisWithLYZEventPlane* fLyzTerm = new AliFlowAnalysisWithLYZEventPlane() ;
-  fListHistos = (TList*)GetOutputData(0);
+  fListHistos = (TList*)GetOutputData(1);
   //cout << "histogram list in Terminate" << endl;
    if (fListHistos) {
       fLyzTerm -> GetOutputHistograms(fListHistos);
       fLyzTerm -> Finish();
-      PostData(0,fListHistos);
+      PostData(1,fListHistos);
       //fListHistos->Print(); 
   } else { cout << "histogram list pointer is empty" << endl;}
 

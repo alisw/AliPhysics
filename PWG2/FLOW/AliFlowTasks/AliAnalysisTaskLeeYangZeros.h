@@ -3,8 +3,8 @@
 /* $Id$ */
 
 
-#ifndef AliAnalysisTaskLeeYangZeros_H
-#define AliAnalysisTaskLeeYangZeros_H
+#ifndef ALIANALYSISTASKLEEYANGZEROS_H
+#define ALIANALYSISTASKLEEYANGZEROS_H
 
 // AliAnalysisTaskLeeYangZeros:
 // analysis task for 
@@ -18,17 +18,16 @@ class TFile;
 class TList;
 
 #include "TString.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskLeeYangZeros : public AliAnalysisTask {
+class AliAnalysisTaskLeeYangZeros : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskLeeYangZeros();
   AliAnalysisTaskLeeYangZeros(const char *name, Bool_t firstrun);
   virtual ~AliAnalysisTaskLeeYangZeros();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
   //lyz flags
