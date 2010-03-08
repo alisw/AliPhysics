@@ -63,7 +63,7 @@ public:
  Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task,Int_t specie=0);
  Int_t GetDetTaskHisto(Int_t subdet,AliQAv1::TASKINDEX_t task);
  TH2F *GetITSGlobalHisto(Int_t layer);
- Bool_t AreEqual(Double_t a1, Double_t a2);
+ static Bool_t AreEqual(Double_t a1, Double_t a2);
 
  virtual void SetRunNumber(Int_t runnumber){fRunNumber=runnumber;};
  Int_t GetRunNumber(){return fRunNumber;};

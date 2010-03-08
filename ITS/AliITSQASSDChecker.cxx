@@ -24,10 +24,11 @@
 // --- ROOT system ---
 #include "TH1.h"
 #include "TString.h"
-#include "Riostream.h"
+//#include "Riostream.h"
 
 // --- AliRoot header files ---
 #include "AliITSQASSDChecker.h"
+#include "AliITSQADataMakerRec.h"
 #include "AliLog.h"
 
 ClassImp(AliITSQASSDChecker)
@@ -41,7 +42,7 @@ AliITSQASSDChecker& AliITSQASSDChecker::operator = (const AliITSQASSDChecker& qa
 }
 
 void AliITSQASSDChecker::CheckRaws(TH1* histo) {  
-
+  // checker for RAWS
   Double_t minSSDDataSize = 0;
   Double_t maxSSDDataSize = 200;
   Double_t minDDLDataSize = 0;
@@ -92,7 +93,7 @@ void AliITSQASSDChecker::CheckRaws(TH1* histo) {
         if(histo->GetBinContent(histo->FindBin(i))==0) {
           AliWarning(Form("Data size / LDC histogram: bin for LDC %i is empty",i));
         }
-        else if(histo->GetBinContent(histo->FindBin(i))==minLDCDataSize||histo->GetBinContent(histo->FindBin(i))>maxLDCDataSize) AliWarning(Form("Data size LDC %i is %-.2g kB",i,histo->GetBinContent(i)));
+	else if(AliITSQADataMakerRec::AreEqual(histo->GetBinContent(histo->FindBin(i)),minLDCDataSize) ||histo->GetBinContent(histo->FindBin(i))>maxLDCDataSize) AliWarning(Form("Data size LDC %i is %-.2g kB",i,histo->GetBinContent(i)));
       }
     }
   }
@@ -173,13 +174,11 @@ void AliITSQASSDChecker::CheckRaws(TH1* histo) {
 
 }
 
-void AliITSQASSDChecker::CheckRecPoints(TH1* /*histo*/) {  
 
-
-}
 
 //__________________________________________________________________
-Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * list, const AliDetectorRecoParam * /*recoParam*/) {  
+Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, const TObjArray * list, const AliDetectorRecoParam * /*recoParam*/) { 
+  // main checker method 
   AliDebug(AliQAv1::GetQADebugLevel(),Form("AliITSQASSDChecker called with offset: %d\n", fSubDetOffset));
 
   AliInfo(Form("AliITSQASSDChecker called with offset: %d\n", fSubDetOffset) );
@@ -222,7 +221,7 @@ Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
       }
     }
     if (count != 0) {
-      if (test==0) {
+      if (AliITSQADataMakerRec::AreEqual(test,0.)) {
         AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
         test = 0.5;  //upper limit value to set kWARNING flag for a task
       }
@@ -243,15 +242,14 @@ Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
 }
 
 //__________________________________________________________________
-void AliITSQASSDChecker::SetTaskOffset(Int_t TaskOffset)
-{
+void AliITSQASSDChecker::SetTaskOffset(Int_t TaskOffset){
+  // defines offset for SSD
   fSubDetOffset = TaskOffset;
 }
 
 //__________________________________________________________________
-void AliITSQASSDChecker::SetStepBit(Double_t *steprange)
-{
-
+void AliITSQASSDChecker::SetStepBit(const Double_t *steprange) {
+  // defines step range
   fStepBitSSD = new Double_t[AliQAv1::kNBIT];
   for(Int_t bit=0;bit<AliQAv1::kNBIT;bit++)
     {
@@ -260,9 +258,8 @@ void AliITSQASSDChecker::SetStepBit(Double_t *steprange)
 }
 
 //__________________________________________________________________
-void  AliITSQASSDChecker::SetSSDLimits(Float_t *lowvalue, Float_t * highvalue)
-{
-
+void  AliITSQASSDChecker::SetSSDLimits(const Float_t *lowvalue, const Float_t * highvalue){
+  // defines 
   fLowSSDValue = new Float_t[AliQAv1::kNBIT];
   fHighSSDValue= new Float_t[AliQAv1::kNBIT];
 
