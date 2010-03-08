@@ -190,6 +190,8 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   fClusterizer->SetUseLabels(kFALSE);
   fClusterizer->Raw2ClustersChamber(rawReader);
   
+  fgNTimeBins = fClusterizer->GetNTimeBins();
+  
   if(IsWritingClusters()) return;
 
   // take over ownership of clusters
@@ -199,8 +201,6 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   // take over ownership of online tracklets
   fgTracklets = fClusterizer->TrackletsArray();
   fClusterizer->SetTrackletsOwner(kFALSE);
-
-  fgNTimeBins = fClusterizer->GetNTimeBins();
 }
 
 //_____________________________________________________________________________
@@ -219,6 +219,8 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();
 
+  fgNTimeBins = clusterer.GetNTimeBins();
+
   if(IsWritingClusters()) return;
 
   // take over ownership of clusters
@@ -228,8 +230,6 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   // take over ownership of online tracklets
   fgTracklets = clusterer.TrackletsArray();
   clusterer.SetTrackletsOwner(kFALSE);
-
-  fgNTimeBins = clusterer.GetNTimeBins();
 
 }
 
