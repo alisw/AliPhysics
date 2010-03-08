@@ -422,7 +422,7 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
     // version does not really matter since we do not add decision data
     pHLTH->fVersion=AliHLTOUT::kVersion1;
 
-    pCDH->fSize=sizeof(AliRawDataHeader)+pHLTH->fLength;
+    pCDH->fSize=bufferSize;
     pCDH->fStatusMiniEventID|=0x1<<(AliHLTOUT::kCDHStatusFlagsOffset + AliHLTOUT::kCDHFlagsHLTPayload);
     
     pBuffer=&fBuffer[0];
