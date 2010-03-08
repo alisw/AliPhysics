@@ -130,16 +130,16 @@ void Config()
     gMC->SetCut("TOFMAX", tofmax); 
 
 
-    int     nParticles = 100;
+    int     nParticles = 5;
     if (gSystem->Getenv("CONFIG_NPARTICLES"))
     {
         nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
     }
 
-    AliGenBox *gener = new AliGenBox(5);
-    gener->SetMomentumRange(50.,100.);
+    AliGenBox *gener = new AliGenBox(nParticles);
+    gener->SetMomentumRange(1.,10.);
     gener->SetPhiRange(80.0,180.0);
-    gener->SetThetaRange(EtaToTheta(-0.7), EtaToTheta(0.7));
+    gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
 
     gener->SetOrigin(0,0,0);        //vertex position
     gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position

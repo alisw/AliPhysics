@@ -24,6 +24,11 @@ void TestEMCALReconstruction(Int_t nev =-1) {
   //rec.SetInput("raw.root");
   //rec.SetRunQA(":");
 
+  //OCDB settings
+  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  rec.SetSpecificStorage("GRP/GRP/Data",
+                         Form("local://%s",gSystem->pwd()));
+
   TStopwatch timer;
   timer.Start();
 

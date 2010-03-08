@@ -206,8 +206,8 @@ void AliEMCALTrigger::CreateInputs()
    fInputs.AddLast( new AliTriggerInput( det+"_GammaMPt_L1", det, 0x08 ) );
    fInputs.AddLast( new AliTriggerInput( det+"_GammaLPt_L1", det, 0x016 ) );
    fInputs.AddLast( new AliTriggerInput( det+"_JetHPt_L1", det, 0x032 ) );
-   fInputs.AddLast( new AliTriggerInput( det+"_JetMPt_L1", det, 0x064 ) );
-   fInputs.AddLast( new AliTriggerInput( det+"_JetLPt_L1", det, 0x128 ) );
+   fInputs.AddLast( new AliTriggerInput( det+"_JetMPt_L1", det, 0x048 ) );
+   fInputs.AddLast( new AliTriggerInput( det+"_JetLPt_L1", det, 0x064 ) );
 
    if(fNJetThreshold<=0) return;
    // Jet Trigger(s)
