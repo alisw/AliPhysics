@@ -16,7 +16,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     return NULL;
   }   
 
-  TString filename="",out1name="",out2name="",out3name="",out4name="",inname="";
+  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",inname="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_";
   if(flag==0){
@@ -25,6 +25,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     out2name="coutputmassD0mycuts";
     out3name="nEntriesD0";
     out4name="coutputmassD0distr";
+    out5name="checksD0";
     inname="cinputmassD0_0";
   } else {
     filename+="D0InvMassLikeSign";
@@ -59,6 +60,9 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer(out4name,TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   filename.Data());
+  AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,TList::Class(),
+						   AliAnalysisManager::kOutputContainer, 
+						   filename.Data());
 
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
 
@@ -66,7 +70,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   mgr->ConnectOutput(massD0Task,2,coutputmassD02);
   mgr->ConnectOutput(massD0Task,3,coutputmassD03);
   mgr->ConnectOutput(massD0Task,4,coutputmassD04);
-
+  mgr->ConnectOutput(massD0Task,5,coutputmassD05);
 
   return massD0Task;
 }
