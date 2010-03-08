@@ -1,5 +1,12 @@
 #ifndef ALIESDPIDCUTS_H
 #define ALIESDPIDCUTS_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+//
+// Class for PID cuts
+// Cuts the track based on numbers of sigmas in the detectors TPC and TOF
+// The sigma cuts can be applied symmetrically or assymetrically
+//
 
 #ifndef ALIANALYSISCUTS_H
 #include "AliAnalysisCuts.h"
@@ -38,6 +45,8 @@ class AliESDpidCuts : public AliAnalysisCuts{
     virtual Bool_t IsSelected(TObject *);
     virtual Bool_t IsSelected(TList * /*lst*/) {return kTRUE; }
     virtual Bool_t AcceptTrack(const AliESDtrack *track, const AliESDEvent *event);
+
+    AliESDpid *GetESDpid() { return fESDpid; };
     
     void SetTPCclusterRatioCut(Float_t clr) { fCutTPCclusterRatio = clr; }
     inline void SetTPCnSigmaCut(AliPID::EParticleType itype, Float_t nSigma);
