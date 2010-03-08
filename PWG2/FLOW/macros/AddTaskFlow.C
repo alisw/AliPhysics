@@ -9,8 +9,8 @@
 
 // Define the range for eta subevents (for SP method)
 Double_t minA = -0.9;
-Double_t maxA = -0.01;
-Double_t minB = 0.01;
+Double_t maxA = -0.1;
+Double_t minB = 0.1;
 Double_t maxB = 0.9;
 
 // use physics selection class
