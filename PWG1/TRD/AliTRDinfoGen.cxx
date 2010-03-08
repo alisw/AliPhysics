@@ -402,8 +402,16 @@ void AliTRDinfoGen::UserExec(Option_t *){
     } else if((status&AliESDtrack::kTRDout) && !(status&AliESDtrack::kTRDin)) fTracksSA->Add(new AliTRDtrackInfo(*fTrackInfo));
     fTrackInfo->Delete("");
   }
+  AliDebug(2, Form(
+    "%3d Tracks: TPCout[%d] TRDin[%d] TRDout[%d]\n"
+    "            Barrel[%d] SA[%d] Kink[%d]"
+    ,(Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry()
+    , nTPC, nTRDin, nTRDout
+    ,fTracksBarrel->GetEntriesFast()
+    ,fTracksSA->GetEntriesFast()
+    ,fTracksKink->GetEntriesFast()
+  ));
 
-  AliDebug(2, Form("%3d Tracks: TPCout[%d] TRDin[%d] TRDout[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRDin, nTRDout));
 
 //   AliESDv0 *v0 = NULL;
 //   for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s(); iv0++){

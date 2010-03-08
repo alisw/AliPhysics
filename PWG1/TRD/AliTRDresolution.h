@@ -89,7 +89,10 @@ public:
 private:
   AliTRDresolution(const AliTRDresolution&);
   AliTRDresolution& operator=(const AliTRDresolution&);
+
   void    AdjustF1(TH1 *h, TF1 *f);
+  TObjArray*  BuildMonitorContainerTrack(const char* name);
+  TObjArray*  BuildMonitorContainerTracklet(const char* name);
   void    GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
   Bool_t  Process(TH2* const h2, TF1 *f, Float_t k, TGraphErrors **g);
   Bool_t  Process2D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1., Int_t gidx=-1);

@@ -624,12 +624,12 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
 
   Double_t p0 = TMath::Sqrt(1.+ PARMC[3]*PARMC[3])*pt0, p;
   p = TMath::Sqrt(1.+ PAR[3]*PAR[3])/PAR[4];
-  Float_t sp = 
-    p*p*PAR[4]*PAR[4]*COV(4,4)
-   +2.*PAR[3]*COV(3,4)/PAR[4]
-   +PAR[3]*PAR[3]*COV(3,3)/p/p/PAR[4]/PAR[4]/PAR[4]/PAR[4];
   ((TH3S*)arr->At(10))->Fill(p0, p/p0-1., sign*sIdx);
-  if(sp>0.) ((TH3S*)arr->At(11))->Fill(p0, (p0-p)/TMath::Sqrt(sp), sign*sIdx);
+//   Float_t sp = 
+//     p*p*PAR[4]*PAR[4]*COV(4,4)
+//    +2.*PAR[3]*COV(3,4)/PAR[4]
+//    +PAR[3]*PAR[3]*COV(3,3)/p/p/PAR[4]/PAR[4]/PAR[4]/PAR[4];
+//   if(sp>0.) ((TH3S*)arr->At(11))->Fill(p0, (p0-p)/TMath::Sqrt(sp), sign*sIdx);
 
   // fill debug for MC 
   if(DebugLevel()>=1){
@@ -665,7 +665,6 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   if(!fDBPDG) fDBPDG=TDatabasePDG::Instance();
   TParticlePDG *ppdg(fDBPDG->GetParticle(pdg));
   if(ppdg) sign = ppdg->Charge() > 0. ? 1 : -1;
-  Bool_t kBarrel = Bool_t(fkESD->GetStatus() & AliESDtrack::kTRDin);
 
   TObjArray *arr(NULL);TH1 *h(NULL);
   UChar_t s;
@@ -707,7 +706,6 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
         << "det="     << det
         << "pdg="     << pdg
         << "sgn="     << sign
-        << "barrel="  << kBarrel
         << "pt="      << pt0
         << "x="       << x0
         << "y="       << y0
@@ -732,7 +730,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     pt = TMath::Abs(fTracklet->GetPt());
     fTracklet->GetCovRef(covR);
 
-    arr = (TObjArray*)fContainer->At(kMCtrackTRD);
+    arr = (TObjArray*)((TObjArray*)fContainer->At(kMCtrackTRD))->At(ily);
     // y resolution/pulls
     ((TH2I*)arr->At(0))->Fill(dydx0, dy);
     ((TH2I*)arr->At(1))->Fill(dydx0, dy/TMath::Sqrt(covR[0]));
@@ -753,15 +751,9 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     // pt resolution  \\ 1/pt pulls \\ p resolution for PID
     Double_t p0 = TMath::Sqrt(1.+ dzdl0*dzdl0)*pt0,
              p  = TMath::Sqrt(1.+ dzdl*dzdl)*pt;
-    if(kBarrel){
-      ((TH3S*)((TObjArray*)arr->At(8))->At(ily))->Fill(pt0, pt/pt0-1., sign*sIdx);
-      ((TH3S*)((TObjArray*)arr->At(9))->At(ily))->Fill(1./pt0, (1./pt-1./pt0)/TMath::Sqrt(covR[6]), sign*sIdx);
-      ((TH3S*)((TObjArray*)arr->At(10))->At(ily))->Fill(p0, p/p0-1., sign*sIdx);
-    } else {
-      ((TH3S*)((TObjArray*)arr->At(11))->At(ily))->Fill(pt0, pt/pt0-1., sign*sIdx);
-      ((TH3S*)((TObjArray*)arr->At(12))->At(ily))->Fill(1./pt0, (1./pt-1./pt0)/TMath::Sqrt(covR[6]), sign*sIdx);
-      ((TH3S*)((TObjArray*)arr->At(13))->At(ily))->Fill(p0, p/p0-1., sign*sIdx);
-    }
+    ((TH3S*)((TObjArray*)arr->At(8)))->Fill(pt0, pt/pt0-1., sign*sIdx);
+    ((TH3S*)((TObjArray*)arr->At(9)))->Fill(1./pt0, (1./pt-1./pt0)/TMath::Sqrt(covR[6]), sign*sIdx);
+    ((TH3S*)((TObjArray*)arr->At(10)))->Fill(p0, p/p0-1., sign*sIdx);
 
     // Fill Debug stream for Kalman track
     if(DebugLevel()>=1){
@@ -1394,6 +1386,172 @@ void AliTRDresolution::AdjustF1(TH1 *h, TF1 *f)
 }
 
 //________________________________________________________
+TObjArray* AliTRDresolution::BuildMonitorContainerTracklet(const char* name)
+{
+// Build performance histograms for AliExternalTrackParam.vs TRD tracklet
+//  - y reziduals/pulls
+//  - z reziduals/pulls
+//  - phi reziduals
+  TObjArray *arr = new TObjArray(5);
+  arr->SetName(name); arr->SetOwner();
+  TH1 *h(NULL); char hname[100], htitle[300];
+
+  // tracklet resolution/pull in y direction
+  sprintf(hname, "%s_Y", name);
+  sprintf(htitle, "Y res @ %s;tg(#phi);#Delta y [cm];entries", name);
+  if(!(h = (TH2I*)gROOT->FindObject(hname))){
+    h = new TH2I(hname, htitle, 21, -.33, .33, 100, -.5, .5);
+  } else h->Reset();
+  arr->AddAt(h, 0);
+  sprintf(hname, "%s_Ypull", name);
+  sprintf(htitle, "Y pull @ %s;tg(#phi);#Delta y  / #sigma_{y};entries", name);
+  if(!(h = (TH2I*)gROOT->FindObject(hname))){
+    h = new TH2I(hname, htitle, 21, -.33, .33, 100, -4.5, 4.5);
+  } else h->Reset();
+  arr->AddAt(h, 1);
+
+  // tracklet resolution/pull in z direction
+  sprintf(hname, "%s_Z", name);
+  sprintf(htitle, "Z res @ %s;tg(#theta);#Delta z [cm];entries", name);
+  if(!(h = (TH2I*)gROOT->FindObject(hname))){
+    h = new TH2I(hname, htitle, 50, -1., 1., 100, -1.5, 1.5);
+  } else h->Reset();
+  arr->AddAt(h, 2);
+  sprintf(hname, "%s_Zpull", name);
+  sprintf(htitle, "Z pull @ %s;tg(#theta);#Delta z  / #sigma_{z};entries", name);
+  if(!(h = (TH2I*)gROOT->FindObject(hname))){
+    h = new TH2I(hname, htitle, 50, -1., 1., 100, -5.5, 5.5);
+  } else h->Reset();
+  arr->AddAt(h, 3);
+
+  // tracklet to track phi resolution
+  sprintf(hname, "%s_PHI", name);
+  sprintf(htitle, "#Phi res @ %s;tg(#phi);#Delta #phi [rad];entries", name);
+  if(!(h = (TH2I*)gROOT->FindObject(hname))){
+    h = new TH2I(hname, htitle, 21, -.33, .33, 100, -.5, .5);
+  } else h->Reset();
+  arr->AddAt(h, 4);
+
+  return arr;
+}
+
+//________________________________________________________
+TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
+{
+// Build performance histograms for AliExternalTrackParam.vs MC
+//  - y resolution/pulls
+//  - z resolution/pulls
+//  - phi resolution, snp pulls
+//  - theta resolution, tgl pulls
+//  - pt resolution, 1/pt pulls, p resolution
+
+
+  TH1 *h(NULL); char hname[100], htitle[300];
+/*  TObjArray *arr = new TObjArray(11);
+  arr->SetName(name); arr->SetOwner();*/
+
+//   // y resolution
+//   sprintf(hname, "%s_Y", name);
+//   sprintf(htitle, "Y res @ %s;tg(#phi);#Delta y [cm];entries", name);
+//   if(!(h = (TH2I*)gROOT->FindObject(hname))){
+//     h = new TH2I(hname, htitle, 48, -.48, .48, 100, -.2, .2);
+//   } else h->Reset();
+//   arr->AddAt(h, 0);
+//   // y pulls
+//   sprintf(hname, "%s_Ypull", name);
+//   sprintf(htitle, "Y pull @ %s;tg(#phi);#Delta y  / #sigma_{y};entries", name);
+//   if(!(h = (TH2I*)gROOT->FindObject(hname))){
+//     h = new TH2I(hname, htitle, 48, -.48, .48, 100, -4., 4.);
+//   } else h->Reset();
+//   arr->AddAt(h, 1);
+// 
+//   // z resolution
+//   sprintf(hname, "%s_Z", name);
+//   sprintf(htitle, "Z res @ %s;tg(#theta);#Delta z [cm];entries", name);
+//   if(!(h = (TH2I*)gROOT->FindObject(hname))){
+//     h = new TH2I(hname, htitle, 100, -1., 1., 100, -1., 1.);
+//   } else h->Reset();
+//   arr->AddAt(h, 2);
+//   // z pulls
+//   sprintf(hname, "%s_Zpull", name);
+//   sprintf(htitle, "Z pull @ %s;tg(#theta);#Delta z  / #sigma_{z};entries", name);
+//   if(!(h = (TH2I*)gROOT->FindObject(hname))){
+//     h = new TH2I(hname, htitle, 100, -1., 1., 100, -4.5, 4.5);
+//   } else h->Reset();
+//   arr->AddAt(h, 3);
+// 
+//   // phi resolution
+//   sprintf(hname, "%s_PHI", name);
+//   sprintf(htitle, "#Phi res @ %s;tg(#phi);#Delta #phi [rad];entries", name);
+//   if(!(h = (TH2I*)gROOT->FindObject(hname))){
+//     h = new TH2I(hname, htitle, 60, -.3, .3, 100, -5e-3, 5e-3);
+//   } else h->Reset();
+//   arr->AddAt(h, 4);
+
+  TObjArray *arr = BuildMonitorContainerTracklet(name); 
+  arr->Expand(11);
+  // snp pulls
+  sprintf(hname, "%s_SNPpull", name);
+  sprintf(htitle, "SNP pull @ %s;tg(#phi);#Delta snp  / #sigma_{snp};entries", name);
+  if(!(h = (TH2I*)gROOT->FindObject(hname))){
+    h = new TH2I(hname, htitle, 60, -.3, .3, 100, -4.5, 4.5);
+  } else h->Reset();
+  arr->AddAt(h, 5);
+
+  // theta resolution
+  sprintf(hname, "%s_THT", name);
+  sprintf(htitle, "#Theta res @ %s;tg(#theta);#Delta #theta [rad];entries", name);
+  if(!(h = (TH2I*)gROOT->FindObject(hname))){
+    h = new TH2I(hname, htitle, 100, -1., 1., 100, -5e-3, 5e-3);
+  } else h->Reset();
+  arr->AddAt(h, 6);
+  // tgl pulls
+  sprintf(hname, "%s_TGLpull", name);
+  sprintf(htitle, "TGL pull @ %s;tg(#theta);#Delta tgl  / #sigma_{tgl};entries", name);
+  if(!(h = (TH2I*)gROOT->FindObject(hname))){
+    h = new TH2I(hname, htitle, 100, -1., 1., 100, -4.5, 4.5);
+  } else h->Reset();
+  arr->AddAt(h, 7);
+  
+  const Int_t kNpt(14);
+  const Int_t kNdpt(150); 
+  const Int_t kNspc = 2*AliPID::kSPECIES+1;
+  Float_t Pt=0.1, DPt=-.1, Spc=-5.5;
+  Float_t binsPt[kNpt+1], binsSpc[kNspc+1], binsDPt[kNdpt+1];
+  for(Int_t i=0;i<kNpt+1; i++,Pt=TMath::Exp(i*.15)-1.) binsPt[i]=Pt;
+  for(Int_t i=0; i<kNspc+1; i++,Spc+=1.) binsSpc[i]=Spc;
+  for(Int_t i=0; i<kNdpt+1; i++,DPt+=2.e-3) binsDPt[i]=DPt;
+
+  // Pt resolution
+  sprintf(hname, "%s_Pt", name);
+  sprintf(htitle, "P_{t} res @ %s;p_{t} [GeV/c];#Delta p_{t}/p_{t}^{MC};SPECIES", name);
+  if(!(h = (TH3S*)gROOT->FindObject(hname))){
+    h = new TH3S(hname, htitle, 
+                 kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
+  } else h->Reset();
+  arr->AddAt(h, 8);
+  // 1/Pt pulls
+  sprintf(hname, "%s_1Pt", name);
+  sprintf(htitle, "1/P_{t} pull @ %s;1/p_{t}^{MC} [c/GeV];#Delta(1/p_{t})/#sigma(1/p_{t});SPECIES", name);
+  if(!(h = (TH3S*)gROOT->FindObject(hname))){
+    h = new TH3S(hname, htitle, 
+                 kNpt, 0., 2., 100, -4., 4., kNspc, -5.5, 5.5);
+  } else h->Reset();
+  arr->AddAt(h, 9);
+  // P resolution
+  sprintf(hname, "%s_P", name);
+  sprintf(htitle, "P res @ %s;p [GeV/c];#Delta p/p^{MC};SPECIES", name);
+  if(!(h = (TH3S*)gROOT->FindObject(hname))){
+    h = new TH3S(hname, htitle, 
+                 kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
+  } else h->Reset();
+  arr->AddAt(h, 10);
+
+  return arr;
+}
+
+
+//________________________________________________________
 TObjArray* AliTRDresolution::Histos()
 {
   //
@@ -1444,88 +1602,10 @@ TObjArray* AliTRDresolution::Histos()
   } else h->Reset();
   arr->AddAt(h, 1);
 
-  // tracklet to track residuals/pulls in y direction
-  fContainer->AddAt(arr = new TObjArray(fgNhistos[kTrackTRD ]), kTrackTRD );
-  arr->SetName("Trklt");
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkltY"))){
-    h = new TH2I("hTrkltY", "Tracklet Y Residuals", 21, -.33, .33, 100, -.5, .5);
-    h->GetXaxis()->SetTitle("#tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y [cm]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 0);
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkltYpull"))){
-    h = new TH2I("hTrkltYpull", "Tracklet Y Pulls", 21, -.33, .33, 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("#tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y/#sigma_{y}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 1);
-  // tracklet to track residuals/pulls in z direction
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkltZ"))){
-    h = new TH2I("hTrkltZ", "Tracklet Z Residuals", 50, -1., 1., 100, -1.5, 1.5);
-    h->GetXaxis()->SetTitle("#tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z [cm]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 2);
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkltZpull"))){
-    h = new TH2I("hTrkltZpull", "Tracklet Z Pulls", 50, -1., 1., 100, -5.5, 5.5);
-    h->GetXaxis()->SetTitle("#tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z/#sigma_{z}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 3);
-  // tracklet to track phi residuals
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkltPhi"))){
-    h = new TH2I("hTrkltPhi", "Tracklet #phi Residuals", 21, -.33, .33, 100, -.5, .5);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta phi [rad]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 4);
-
-
-  // tracklet to TPC track residuals/pulls in y direction
-  fContainer->AddAt(arr = new TObjArray(fgNhistos[kTrackTPC]), kTrackTPC);
-  arr->SetName("TrkTPC");
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkTPCY"))){
-    h = new TH2I("hTrkTPCY", "Track[TPC] Y Residuals", 21, -.33, .33, 100, -.5, .5);
-    h->GetXaxis()->SetTitle("#tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y [cm]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 0);
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkTPCYpull"))){
-    h = new TH2I("hTrkTPCYpull", "Track[TPC] Y Pulls", 21, -.33, .33, 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("#tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y/#sigma_{y}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 1);
-  // tracklet to TPC track residuals/pulls in z direction
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkTPCZ"))){
-    h = new TH2I("hTrkTPCZ", "Track[TPC] Z Residuals", 50, -1., 1., 100, -1.5, 1.5);
-    h->GetXaxis()->SetTitle("#tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z [cm]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 2);
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkTPCZpull"))){
-    h = new TH2I("hTrkTPCZpull", "Track[TPC] Z Pulls", 50, -1., 1., 100, -5.5, 5.5);
-    h->GetXaxis()->SetTitle("#tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z/#sigma_{z}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 3);
-  // tracklet to TPC track phi residuals
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkTPCPhi"))){
-    h = new TH2I("hTrkTPCPhi", "Track[TPC] #phi Residuals", 21, -.33, .33, 100, -.5, .5);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta phi [rad]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 4);
+  // tracklet to TRD track
+  fContainer->AddAt(BuildMonitorContainerTracklet("TrkTRD"), kTrackTRD);
+  // tracklet to TRDin
+  fContainer->AddAt(BuildMonitorContainerTracklet("TrkTRDin"), kTrackTPC);
 
 
   // Resolution histos
@@ -1594,259 +1674,15 @@ TObjArray* AliTRDresolution::Histos()
 
 
   // KALMAN TRACK RESOLUTION
-  fContainer->AddAt(arr = new TObjArray(fgNhistos[kMCtrackTRD]), kMCtrackTRD);
+  fContainer->AddAt(arr = new TObjArray(6/*fgNhistos[kMCtrackTRD]*/), kMCtrackTRD);
   arr->SetName("McTrkTRD");
-  // Kalman track y resolution
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkY"))){
-    h = new TH2I("hMcTrkY", "Track Y Resolution", 48, -.48, .48, 100, -.2, .2);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y [cm]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 0);
-  // Kalman track y pulls
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkYPull"))){
-    h = new TH2I("hMcTrkYPull", "Track Y Pulls", 48, -.48, .48, 100, -4., 4.);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y / #sigma_{y}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 1);
-  // Kalman track Z
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkZ"))){
-    h = new TH2I("hMcTrkZ", "Track Z Resolution", 100, -1., 1., 100, -1., 1.);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z [cm]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 2);
-  // Kalman track Z pulls
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkZPull"))){
-    h = new TH2I("hMcTrkZPull", "Track Z Pulls", 100, -1., 1., 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z / #sigma_{z}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 3);
-  // Kalman track SNP
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkSNP"))){
-    h = new TH2I("hMcTrkSNP", "Track Phi Resolution", 60, -.3, .3, 100, -5e-3, 5e-3);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta #phi [rad]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 4);
-  // Kalman track SNP pulls
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkSNPPull"))){
-    h = new TH2I("hMcTrkSNPPull", "Track SNP Pulls", 60, -.3, .3, 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta(sin(#phi)) / #sigma_{sin(#phi)}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 5);
-  // Kalman track TGL
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTGL"))){
-    h = new TH2I("hMcTrkTGL", "Track Theta Resolution", 100, -1., 1., 100, -5e-3, 5e-3);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta#theta [rad]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 6);
-  // Kalman track TGL pulls
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTGLPull"))){
-    h = new TH2I("hMcTrkTGLPull", "Track TGL  Pulls", 100, -1., 1., 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta(tg(#theta)) / #sigma_{tg(#theta)}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 7);
+  for(Int_t il(0); il<AliTRDgeometry::kNlayer; il++) arr->AddAt(BuildMonitorContainerTrack(Form("McTrkTRD_Ly%d", il)), il);
 
-  const Int_t kNdpt(150); 
-  const Int_t kNspc = 2*AliPID::kSPECIES+1;
-  Float_t DPt=-.1, Spc=-5.5;
-  Float_t binsSpc[kNspc+1], binsDPt[kNdpt+1];
-  for(Int_t i=0; i<kNspc+1; i++,Spc+=1.) binsSpc[i]=Spc;
-  for(Int_t i=0; i<kNdpt+1; i++,DPt+=2.e-3) binsDPt[i]=DPt;
-  TObjArray *arr2 = NULL; TH3S* h3=NULL;
-  // Kalman track Pt resolution
-  arr->AddAt(arr2 = new TObjArray(AliTRDgeometry::kNlayer), 8);
-  arr2->SetName("Pt Resolution");
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcTrkPt%d", il)))){
-      h3 = new TH3S(Form("hMcTrkPt%d", il), "Track Pt Resolution;p_{t} [GeV/c];#Delta p_{t}/p_{t}^{MC};SPECIES", kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-    } else h3->Reset();
-    arr2->AddAt(h3, il);
-  }
-  // Kalman track Pt pulls
-  arr->AddAt(arr2 = new TObjArray(AliTRDgeometry::kNlayer), 9);
-  arr2->SetName("1/Pt Pulls");
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcTrkPtPulls%d", il)))){
-      h3 = new TH3S(Form("hMcTrkPtPulls%d", il), 
-      "Track 1/Pt Pulls;1/p_{t}^{MC} [c/GeV];#Delta(1/p_{t})/#sigma(1/p_{t});SPECIES", 
-      kNpt, 0., 2., 100, -4., 4., kNspc, -5.5, 5.5);
-    } else h3->Reset();
-    arr2->AddAt(h3, il);
-  }
-  // Kalman track P resolution
-  arr->AddAt(arr2 = new TObjArray(AliTRDgeometry::kNlayer), 10);
-  arr2->SetName("P Resolution");
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcTrkP%d", il)))){
-      h3 = new TH3S(Form("hMcTrkP%d", il), "Track P Resolution;p [GeV/c];#Delta p/p^{MC};SPECIES", kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-    } else h3->Reset();
-    arr2->AddAt(h3, il);
-  }
-  // TRD stand-alone track Pt resolution
-  arr->AddAt(arr2 = new TObjArray(AliTRDgeometry::kNlayer), 11);
-  arr2->SetName("Pt Resolution [SA]");
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcSATrkPt%d", il)))){
-      h3 = new TH3S(Form("hMcSATrkPt%d", il), 
-      "Track Pt Resolution;p_{t} [GeV/c];#Delta p_{t}/p_{t}^{MC};SPECIES", 
-      kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-    } else h3->Reset();
-    arr2->AddAt(h3, il);
-  }
-  // TRD stand-alone track Pt pulls
-  arr->AddAt(arr2 = new TObjArray(AliTRDgeometry::kNlayer), 12);
-  arr2->SetName("1/Pt Pulls [SA]");
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcSATrkPtPulls%d", il)))){
-      h3 = new TH3S(Form("hMcSATrkPtPulls%d", il), 
-      "Track 1/Pt Pulls;1/p_{t}^{MC} [c/GeV];#Delta(1/p_{t})/#sigma(1/p_{t});SPECIES", 
-      kNpt, 0., 2., 100, -4., 4., kNspc, -5.5, 5.5);
-    } else h3->Reset();
-    arr2->AddAt(h3, il);
-  }
-  // TRD stand-alone track P resolution
-  arr->AddAt(arr2 = new TObjArray(AliTRDgeometry::kNlayer), 13);
-  arr2->SetName("P Resolution [SA]");
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(!(h3 = (TH3S*)gROOT->FindObject(Form("hMcSATrkP%d", il)))){
-      h3 = new TH3S(Form("hMcSATrkP%d", il), 
-      "Track P Resolution;p [GeV/c];#Delta p/p^{MC};SPECIES", 
-      kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-    } else h3->Reset();
-    arr2->AddAt(h3, il);
-  }
+  // TRDin TRACK RESOLUTION
+  fContainer->AddAt(BuildMonitorContainerTrack("McTrkTRDin"), kMCtrackTPC);
 
-  // TPC TRACK RESOLUTION
-  fContainer->AddAt(arr = new TObjArray(fgNhistos[kMCtrackTPC]), kMCtrackTPC);
-  arr->SetName("McTrkTPC");
-  // Kalman track Y
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTPCY"))){
-    h = new TH2I("hMcTrkTPCY", "Track[TPC] Y Resolution", 60, -.3, .3, 100, -.5, .5);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y [cm]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 0);
-  // Kalman track Y pulls
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTPCYPull"))){
-    h = new TH2I("hMcTrkTPCYPull", "Track[TPC] Y Pulls", 60, -.3, .3, 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y / #sigma_{y}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 1);
-  // Kalman track Z
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTPCZ"))){
-    h = new TH2I("hMcTrkTPCZ", "Track[TPC] Z Resolution", 100, -1., 1., 100, -1., 1.);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z [cm]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 2);
-  // Kalman track Z pulls
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTPCZPull"))){
-    h = new TH2I("hMcTrkTPCZPull", "Track[TPC] Z Pulls", 100, -1., 1., 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z / #sigma_{z}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 3);
-  // Kalman track SNP
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTPCSNP"))){
-    h = new TH2I("hMcTrkTPCSNP", "Track[TPC] Phi Resolution", 60, -.3, .3, 100, -5e-3, 5e-3);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta #phi [rad]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 4);
-  // Kalman track SNP pulls
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTPCSNPPull"))){
-    h = new TH2I("hMcTrkTPCSNPPull", "Track[TPC] SNP Pulls", 60, -.3, .3, 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta(sin(#phi)) / #sigma_{sin(#phi)}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 5);
-  // Kalman track TGL
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTPCTGL"))){
-    h = new TH2I("hMcTrkTPCTGL", "Track[TPC] Theta Resolution", 100, -1., 1., 100, -5e-3, 5e-3);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta#theta [rad]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 6);
-  // Kalman track TGL pulls
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTPCTGLPull"))){
-    h = new TH2I("hMcTrkTPCTGLPull", "Track[TPC] TGL  Pulls", 100, -1., 1., 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta(tg(#theta)) / #sigma_{tg(#theta)}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 7);
-  // Kalman track Pt resolution
-  if(!(h3 = (TH3S*)gROOT->FindObject("hMcTrkTPCPt"))){
-    h3 = new TH3S("hMcTrkTPCPt", 
-    "TRDin Pt Resolution;p_{t} [GeV/c];#Delta p_{t}/p_{t}^{MC};SPECIES", 
-    kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-  } else h3->Reset();
-  arr->AddAt(h3, 8);
-  // Kalman track Pt pulls
-  if(!(h3 = (TH3S*)gROOT->FindObject("hMcTrkTPCPtPulls"))){
-    h3 = new TH3S("hMcTrkTPCPtPulls", 
-    "Track[TPC] 1/Pt Pulls;1/p_{t}^{MC} [c/GeV];#Delta(1/p_{t})/#sigma(1/p_{t});SPECIES", 
-    kNpt, 0., 2., 100, -4., 4., kNspc, -5.5, 5.5);
-  } else h3->Reset();
-  arr->AddAt(h3, 9);
-  // Kalman track P resolution
-  if(!(h3 = (TH3S*)gROOT->FindObject("hMcTrkTPCP"))){
-    h3 = new TH3S("hMcTrkTPCP", 
-    "TRDin P Resolution;p [GeV/c];#Delta p/p^{MC};SPECIES", 
-    kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-  } else h3->Reset();
-  arr->AddAt(h3, 10);
-  // Kalman track P pulls
-  if(!(h3 = (TH3S*)gROOT->FindObject("hMcTrkTPCPPulls"))){
-    h3 = new TH3S("hMcTrkTPCPPulls", 
-    "TRDin P Pulls;p^{MC} [GeV/c];#Deltap/#sigma_{p};SPECIES", 
-    kNpt, 0., 12., 100, -5., 5., kNspc, -5.5, 5.5);
-  } else h3->Reset();
-  arr->AddAt(h3, 11);
-
-
-
-  // Kalman track Z resolution [TOF]
-  fContainer->AddAt(arr = new TObjArray(fgNhistos[kMCtrackTOF]), kMCtrackTOF);
-  arr->SetName("McTrkTOF");
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTOFZ"))){
-    h = new TH2I("hMcTrkTOFZ", "Track[TOF] Z Resolution", 100, -1., 1., 100, -1., 1.);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z [cm]");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 0);
-  // Kalman track Z pulls
-  if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTOFZPull"))){
-    h = new TH2I("hMcTrkTOFZPull", "Track[TOF] Z Pulls", 100, -1., 1., 100, -4.5, 4.5);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z / #sigma_{z}");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  arr->AddAt(h, 1);
+  // TRDout TRACK RESOLUTION
+  fContainer->AddAt(BuildMonitorContainerTrack("McTrkTRDout"), kMCtrackTOF);
 
   return fContainer;
 }

@@ -45,7 +45,6 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fkTrack(NULL)
   ,fkMC(NULL)
   ,fkESD(NULL)
-  ,fDebugLevel(0)
   ,fPlotFuncList(NULL)
 {
 // Default constructor  
@@ -60,7 +59,6 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fkTrack(NULL)
   ,fkMC(NULL)
   ,fkESD(NULL)
-  ,fDebugLevel(0)
   ,fPlotFuncList(NULL)
 {
 // Constructor for all derived performance tasks
@@ -235,8 +233,8 @@ void AliTRDrecoTask::SetDebugLevel(Int_t level)
 {
 // Generic debug handler
 
-  fDebug = level;
-  if(fDebug>=1){
+  AliAnalysisTaskSE::SetDebugLevel(level);
+  if(DebugLevel()>=1){
     TDirectory *savedir = gDirectory;
     fgDebugStream = new TTreeSRedirector("TRD.DebugPerformance.root");
     savedir->cd();
@@ -253,7 +251,6 @@ void AliTRDrecoTask::Terminate(Option_t *)
   if(fgDebugStream){ 
     delete fgDebugStream;
     fgDebugStream = NULL;
-    fDebug = 0;
   }
   if(HasPostProcess()) PostProcess();
 }
