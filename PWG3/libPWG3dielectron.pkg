@@ -4,6 +4,7 @@ SRCS= dielectron/AliDielectron.cxx \
       dielectron/AliDielectronPair.cxx \
       dielectron/AliDielectronHistos.cxx \
       dielectron/AliDielectronCF.cxx \
+      dielectron/AliDielectronCFdraw.cxx \
       dielectron/AliDielectronMC.cxx \
       dielectron/AliDielectronVarManager.cxx \
       dielectron/AliAnalysisTaskDielectronSE.cxx \

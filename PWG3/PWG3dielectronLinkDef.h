@@ -10,6 +10,7 @@
 #pragma link C++ class AliDielectronPair+;
 #pragma link C++ class AliDielectronHistos+;
 #pragma link C++ class AliDielectronCF+;
+#pragma link C++ class AliDielectronCFdraw+;
 #pragma link C++ class AliDielectronMC+;
 #pragma link C++ class AliDielectronVarManager+;
 #pragma link C++ class AliAnalysisTaskDielectronSE+;

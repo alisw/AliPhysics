@@ -424,3 +424,27 @@ Bool_t AliDielectronMC::IsMotherPdgAOD(const AliVParticle *particle1, const AliV
   return kTRUE;
 }
 
+//____________________________________________________________
+void AliDielectronMC::GetDaughters(const TObject *mother, AliVParticle* &d1, AliVParticle* &d2)
+{
+  //
+  // Get First two daughters of the mother
+  //
+
+  Int_t lblD1=-1;
+  Int_t lblD2=-1;
+  d1=0;
+  d2=0;
+  if (!fMCEvent) return;
+  if (fAnaType==kAOD){
+    const AliAODMCParticle *aodMother=static_cast<const AliAODMCParticle*>(mother);
+    lblD1=aodMother->GetDaughter(0);
+    lblD2=aodMother->GetDaughter(1);
+  } else if (fAnaType==kESD){
+    const AliMCParticle *aodMother=static_cast<const AliMCParticle*>(mother);
+    lblD1=aodMother->GetFirstDaughter();
+    lblD2=aodMother->GetLastDaughter();
+  }
+  d1=fMCEvent->GetTrack(lblD1);
+  d2=fMCEvent->GetTrack(lblD2);
+}

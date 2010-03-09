@@ -61,6 +61,8 @@ public:
   AliMCParticle* GetMCTrack(AliESDtrack* _track);             // return MC track associated with reco track
   TParticle* GetMCTrackMotherFromStack(AliESDtrack* _track);  // return MC mother track from stack
   AliMCParticle* GetMCTrackMother(AliESDtrack* _track);       // return MC mother track from stack
+
+  void GetDaughters(const TObject *mother, AliVParticle* &d1, AliVParticle* &d2);
   
 private:
   AliMCEvent    *fMCEvent;  // MC event object

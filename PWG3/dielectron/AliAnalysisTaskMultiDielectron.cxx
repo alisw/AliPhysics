@@ -96,9 +96,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   TIter nextDie(&fListDielectron);
   AliDielectron *die=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
-//     printf("Processing '%s'\n",die->GetName());
     die->Process(InputEvent());
-    die->FillHistograms();
   }
   
   PostData(1, &fListHistos);

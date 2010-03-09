@@ -68,7 +68,7 @@ public:
   virtual Double_t M() const { return fPair.GetMass(); }
   
   virtual Double_t Eta() const { return fPair.GetEta();}
-  virtual Double_t Y()  const  { return TLorentzVector(Px(),Py(),Pz(),E()).Y();}
+  virtual Double_t Y()  const  { return TLorentzVector(Px(),Py(),Pz(),E()).Rapidity();}
   
   virtual Short_t Charge() const    { return fPair.GetQ();}
   virtual Int_t   GetLabel() const  { return -1; }  //TODO: check

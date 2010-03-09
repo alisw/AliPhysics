@@ -45,7 +45,7 @@ public:
   
   void Process(AliVEvent *ev1, AliVEvent *ev2=0);
 
-  void  FillHistograms();
+  void  FillHistograms(const AliVEvent *ev);
   
   const AliAnalysisFilter& GetEventFilter() const { return fEventFilter; }
   const AliAnalysisFilter& GetTrackFilter() const { return fTrackFilter; }

@@ -56,6 +56,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "PdgCode",
   "P from InnerParam",
   "TPC signal",
+  "TPC nSigma Electrons",
   //
   "Chi2NDF",
   "DecayLength",
@@ -72,10 +73,12 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "YRes",
   "ZRes",
   "NTrk",
-  "Tracks"
+  "Tracks",
+  "Nevents"
 };
 
-
+AliESDpid* AliDielectronVarManager::fgESDpid = new AliESDpid;
+AliVEvent* AliDielectronVarManager::fgEvent  = 0x0;
 //________________________________________________________________
 AliDielectronVarManager::AliDielectronVarManager() :
   TNamed("AliDielectronVarManager","AliDielectronVarManager")
