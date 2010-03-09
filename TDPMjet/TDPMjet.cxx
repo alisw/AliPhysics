@@ -258,6 +258,7 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
       } // Particle loop  
   }
   return nump;
+  
 }
 
 
@@ -558,3 +559,9 @@ void TDPMjet::Dt_Rndmou(int u, int c, int cd, int cm, int i, int j)
 	dt_rndmou(u, c, cd, cm, i, j);
 }
 
+
+Int_t TDPMjet::NHEP()                   const {return POEVT1.nhep;}
+Int_t TDPMjet::ISTHEP(Int_t i)          const {return POEVT1.isthep[i];}
+Int_t TDPMjet::IDHEP(Int_t i)           const {return POEVT1.idhep[i];}
+Int_t TDPMjet::PHEP(Int_t i, Int_t j)   const {return POEVT1.phep[i][j];}
+   

@@ -99,6 +99,15 @@ public:
    virtual Int_t GetTargSpectators() const;
    virtual Int_t    GetProcessCode() const;
 
+   // Phojet access (POEVT1)
+   virtual Int_t NHEP()                   const;
+   virtual Int_t ISTHEP(Int_t i)          const;
+   virtual Int_t IDHEP(Int_t i)           const;
+   virtual Int_t PHEP(Int_t i, Int_t j)   const;
+   
+      
+	   
+   
    // Access to DPMJET routines:
    virtual void Dt_Dtuini(int nevts, double epn, int npmass, int npchar, 
    			  int ntmass, int ntchar, int idp, int iemu);
@@ -115,6 +124,7 @@ public:
    virtual void Dt_Rndmin(int u, int c, int cd, int cm, int i, int j);   
    virtual void Dt_Rndmou(int u, int c, int cd, int cm, int i, int j);   
 
+   
 protected:
 
    Int_t        fNEvent;  // Event number to be generated 
