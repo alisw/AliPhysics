@@ -50,6 +50,7 @@ using namespace std;
 #include <cerrno>
 
 #include "TObjArray.h"
+#include "TClonesArray.h"
 #include "TObject.h"
 #include <sys/time.h>
 
@@ -120,7 +121,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoInit( int /*argc*/, const char** /*argv*
   fTPCGeomParam = AliTPCcalibDB::Instance()->GetParameters();
   if(!fTPCGeomParam) HLTError("TPC Parameters are not loaded.");
   
-  fSeedArray = new TObjArray;
+  fSeedArray = new TClonesArray("AliTPCseed");
   fSeedArray->SetOwner(kTRUE);
   return 0;
 
@@ -130,7 +131,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoDeinit() {
 // see header file for class documentation  
   
   if(fTPCGeomParam) delete fTPCGeomParam; fTPCGeomParam = NULL;          
-  if(fSeedArray)   {fSeedArray->Clear();  delete fSeedArray; }   fSeedArray    = NULL;          
+  if(fSeedArray)   {fSeedArray->Clear();  delete fSeedArray; }   fSeedArray = NULL;          
   return 0;
 }
 
@@ -183,8 +184,14 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
   //offClusterArray->SetOwner(kTRUE);
   offClusterArray->Clear();
   
-  fSeedArray->Clear();
   
+  if(!fSeedArray){
+    for(Int_t i=0; i<fSeedArray->GetEntriesFast(); i++){      
+        if(fSeedArray->At(i) != NULL) fSeedArray->At(i)->Delete();      
+    }  
+    fSeedArray->Clear();
+  }
+
   for(iter = GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){ 
   
       if(iter->fDataType != (kAliHLTDataTypeTrack|kAliHLTDataOriginTPC)) continue; 
@@ -194,9 +201,10 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
       AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(iter->fPtr), iter->fSize, tracks);
    
       // loop over the elements(tracks) of the AliHLTGlobalBarrelTrack vector
-
+      
+      Int_t nTracks = 0; 
       for(vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();  element!=tracks.end(); element++){
-          
+	 
 	  AliRieman rieman(element->GetNumberOfPoints());
 	  rieman.Reset();    
           AliTPCseed *seed = 0x0;
@@ -268,18 +276,23 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
           // creation of AliTPCseed by means of a Riemann fit
           rieman.Update();
           rieman.GetExternalParameters(xmin,param,cov);  
-	  seed = new AliTPCseed(xmin,alpha,param,cov,0);
-	  seed->SetLabel(element->GetID());
-	   
+	  
+	  new((*fSeedArray)[nTracks]) AliTPCseed(xmin,alpha,param,cov,0);
+	  
+	  dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks))->SetLabel(element->GetID());
+	  	   
 	  // set up of the cluster pointers inside the seed
  	  for(Int_t j=0; j<offClusterArray->GetEntries(); j++){ 
               AliTPCclusterMI *cl = (AliTPCclusterMI*)offClusterArray->At(j);
-              if(cl) seed->SetClusterPointer(cl->GetRow(),cl);
+              //if(cl) seed->SetClusterPointer(cl->GetRow(),cl);
+              if(cl) dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks))->SetClusterPointer(cl->GetRow(),cl);
           }
-
+	  
+	  
+	  
 	  offClusterArray->Clear();	
           HLTDebug("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f", seed, xmin, alpha, param[0], cov[0]);
-	  fSeedArray->Add(seed);	 
+	  nTracks++;
 
       }// end of vector track loop           
   } // end of loop over blocks of merged tracks  
