@@ -132,6 +132,7 @@ void AliDielectron::Init()
   // Initialise objects
   //
   if (fCfManagerPair) fCfManagerPair->InitialiseContainer(fPairFilter);
+  AliDielectronVarManager::InitESDpid(); //currently this will take the values for MC
 }
 
 //________________________________________________________________
@@ -141,6 +142,8 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   // Process the events
   //
 
+  AliDielectronVarManager::SetEvent(0x0);
+   
   //in case we have MC load the MC event and process the MC particles
   if (AliDielectronMC::Instance()->ConnectMCEvent()) ProcessMC();
   
@@ -157,7 +160,9 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //apply event cuts
     if ((ev1&&fEventFilter.IsSelected(ev1)!=selectedMask) ||
         (ev2&&fEventFilter.IsSelected(ev2)!=selectedMask)) return;
-
+  
+  AliDielectronVarManager::SetEvent(ev1);
+  
   //fill track arrays for the first event
   if (ev1) FillTrackArrays(ev1);
 
@@ -170,6 +175,10 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
       FillPairArrays(itrackArr1, itrackArr2);
     }
   }
+
+  //in case there is a histogram manager, fill the QA histograms
+  if (fHistos) FillHistograms(ev1);
+  
 }
 
 //________________________________________________________________
@@ -193,34 +202,35 @@ void AliDielectron::ProcessMC()
 }
 
 //________________________________________________________________
-void AliDielectron::FillHistograms()
+void AliDielectron::FillHistograms(const AliVEvent *ev)
 {
   //
   // Fill Histogram information for tracks and pairs
   //
   
-  if (!fHistos) return;
   TString  className;
-
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  //Fill event information
+  AliDielectronVarManager::Fill(ev, values);
+  fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, values);
+  
   //Fill track information, separately for the track array candidates
-  Double_t trackValues[AliDielectronVarManager::kNMaxValues];
   for (Int_t i=0; i<4; ++i){
     className.Form("Track_%s",fgkTrackClassNames[i]);
     Int_t ntracks=fTracks[i].GetEntriesFast();
     for (Int_t itrack=0; itrack<ntracks; ++itrack){
-      AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), trackValues);
-      fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, trackValues);
+      AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), values);
+      fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
     }
   }
 
   //Fill Pair information, separately for all pair candidate arrays
-  Double_t pairValues[AliDielectronVarManager::kNMaxValues];
   for (Int_t i=0; i<10; ++i){
     className.Form("Pair_%s",fgkPairClassNames[i]);
     Int_t ntracks=PairArray(i)->GetEntriesFast();
     for (Int_t ipair=0; ipair<ntracks; ++ipair){
-      AliDielectronVarManager::Fill(PairArray(i)->UncheckedAt(ipair), pairValues);
-      fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, pairValues);
+      AliDielectronVarManager::Fill(PairArray(i)->UncheckedAt(ipair), values);
+      fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
     }
   }
   

@@ -82,7 +82,6 @@ void AliAnalysisTaskDielectronSE::UserExec(Option_t *)
   AliKFParticle::SetField( bz );
   
   fDielectron->Process(InputEvent());
-  fDielectron->FillHistograms();
 
   if (fDielectron->GetHistogramList()){
     PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));

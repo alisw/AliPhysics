@@ -35,10 +35,12 @@
 #include <AliCFContainer.h>
 #include <AliAnalysisFilter.h>
 #include <AliAnalysisCuts.h>
+#include <AliVParticle.h>
 #include <AliLog.h>
 
 #include "AliDielectronCF.h"
 #include "AliDielectronMC.h"
+#include "AliDielectronPair.h"
 
 ClassImp(AliDielectronCF)
 
@@ -46,7 +48,9 @@ AliDielectronCF::AliDielectronCF() :
   TNamed("DielectronCF","DielectronCF"),
   fNSteps(0),
   fNVars(0),
+  fNVarsLeg(0),
   fNCuts(0),
+  fValues(0x0),
   fStepForMCtruth(kFALSE),
   fStepForNoCutsMCmotherPid(kFALSE),
   fStepForAfterAllCuts(kTRUE),
@@ -67,6 +71,9 @@ AliDielectronCF::AliDielectronCF() :
     fNBins[i]=0;
     fVarLoLimit[i]=0.;
     fVarUpLimit[i]=0.;
+    fNBinsLeg[i]=0;
+    fVarLoLimitLeg[i]=0.;
+    fVarUpLimitLeg[i]=0.;
     fStepMasks[i]=0xFFFFFF;
   }
 }
@@ -76,7 +83,9 @@ AliDielectronCF::AliDielectronCF(const char* name, const char* title) :
   TNamed(name, title),
   fNSteps(0),
   fNVars(0),
+  fNVarsLeg(0),
   fNCuts(0),
+  fValues(0x0),
   fStepForMCtruth(kFALSE),
   fStepForNoCutsMCmotherPid(kFALSE),
   fStepForAfterAllCuts(kTRUE),
@@ -97,6 +106,9 @@ AliDielectronCF::AliDielectronCF(const char* name, const char* title) :
     fNBins[i]=0;
     fVarLoLimit[i]=0.;
     fVarUpLimit[i]=0.;
+    fNBinsLeg[i]=0;
+    fVarLoLimitLeg[i]=0.;
+    fVarUpLimitLeg[i]=0.;
     fStepMasks[i]=0xFFFFFF;
   }
 }
@@ -107,20 +119,29 @@ AliDielectronCF::~AliDielectronCF()
   //
   // Destructor
   //
-  
+  if (fValues) delete [] fValues;
 }
 
 //________________________________________________________________
-void AliDielectronCF::AddVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins, Double_t min, Double_t max)
+void AliDielectronCF::AddVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins, Double_t min, Double_t max, Bool_t leg)
 {
   //
   // Add a variable to the CF configuration
   //
-  fVariables[fNVars]  = (UInt_t)type;
-  fVarLoLimit[fNVars] = min;
-  fVarUpLimit[fNVars] = max;
-  fNBins[fNVars]      = nbins;
-  ++fNVars;
+
+  if (!leg){
+    fVariables[fNVars]  = (UInt_t)type;
+    fVarLoLimit[fNVars] = min;
+    fVarUpLimit[fNVars] = max;
+    fNBins[fNVars]      = nbins;
+    ++fNVars;
+  } else {
+    fVariablesLeg[fNVarsLeg]  = (UInt_t)type;
+    fVarLoLimitLeg[fNVarsLeg] = min;
+    fVarUpLimitLeg[fNVarsLeg] = max;
+    fNBinsLeg[fNVarsLeg]      = nbins;
+    ++fNVarsLeg;
+  }
 }
 
 //________________________________________________________________
@@ -142,7 +163,13 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
                                                       // e.g. cut2&cut3, cut2&cut3&cut4
   fNSteps+=(2*fNStepMasks);                            // cuts for the additional cut masks
   // create the container
-  fCfContainer = new AliCFContainer(GetName(), GetTitle(), fNSteps, fNVars, fNBins);
+  Int_t *nbins=new Int_t[fNVars+2*fNVarsLeg];
+  for (Int_t i=0;i<fNVars;++i)    nbins[i]=fNBins[i];
+  for (Int_t i=0;i<fNVarsLeg;++i) nbins[i+fNVars]=fNBinsLeg[i];
+  for (Int_t i=0;i<fNVarsLeg;++i) nbins[i+fNVars+fNVarsLeg]=fNBinsLeg[i];
+  
+  fCfContainer = new AliCFContainer(GetName(), GetTitle(), fNSteps, fNVars+2*fNVarsLeg, nbins);
+  delete [] nbins;
   
   // initialize the variables and their bin limits
   for (Int_t iVar=0; iVar<fNVars; iVar++) {
@@ -157,8 +184,33 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
     
     fCfContainer->SetBinLimits(iVar, binLim);
     fCfContainer->SetVarTitle(iVar, AliDielectronVarManager::GetValueName(type));
-    delete binLim;
+    delete [] binLim;
   }
+  
+  // initialize the variables and their bin limits for the Legs
+  for (Int_t iVar=0; iVar<fNVarsLeg; iVar++) {
+    UInt_t type=fVariablesLeg[iVar];
+    Int_t    nBins = fNBinsLeg[iVar];
+    Double_t loLim = fVarLoLimitLeg[iVar];
+    Double_t upLim = fVarUpLimitLeg[iVar];
+    Double_t *binLim = new Double_t[nBins+1];
+    
+    // set the bin limits
+    for(Int_t iBin=0; iBin<=nBins; iBin++) binLim[iBin] = loLim + (upLim-loLim) / nBins*(Double_t)iBin;
+
+    //Leg1
+    fCfContainer->SetBinLimits(iVar+fNVars, binLim);
+    fCfContainer->SetVarTitle(iVar+fNVars, Form("Leg1_%s",AliDielectronVarManager::GetValueName(type)));
+    
+    //Leg2
+    fCfContainer->SetBinLimits(iVar+fNVars+fNVarsLeg, binLim);
+    fCfContainer->SetVarTitle(iVar+fNVars+fNVarsLeg, Form("Leg2_%s",AliDielectronVarManager::GetValueName(type)));
+    
+    delete [] binLim;
+  }
+
+  // array for storing values
+  fValues = new Double_t[fNVars+2*fNVarsLeg];
   
   //=================//
   // Set step titles //
@@ -231,7 +283,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
 }
 
 //________________________________________________________________
-void AliDielectronCF::Fill(UInt_t mask, const TObject *particle)
+void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
 {
   //
   // Fill the containers
@@ -240,15 +292,27 @@ void AliDielectronCF::Fill(UInt_t mask, const TObject *particle)
   Bool_t isMCTruth=kFALSE;
   if (fPdgMother>=0) isMCTruth=AliDielectronMC::Instance()->IsMotherPdg(particle,fPdgMother);
 
-  Double_t valuesAll[AliDielectronVarManager::kNMaxValues];
-  AliDielectronVarManager::Fill(particle,valuesAll);
+  Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::Fill(particle,valuesPair);
 
-  Double_t values[AliDielectronVarManager::kNMaxValues];
   for (Int_t iVar=0; iVar<fNVars; ++iVar){
     Int_t var=fVariables[iVar];
-    values[iVar]=valuesAll[var];
+    fValues[iVar]=valuesPair[var];
   }
 
+  if (fNVarsLeg>0){
+    Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
+    AliDielectronVarManager::Fill(particle->GetFirstDaughter(),valuesLeg1);
+    Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
+    AliDielectronVarManager::Fill(particle->GetSecondDaughter(),valuesLeg2);
+
+    for (Int_t iVar=0; iVar<fNVarsLeg; ++iVar){
+      Int_t var=fVariablesLeg[iVar];
+      fValues[iVar+fNVars]=valuesLeg1[var];
+      fValues[iVar+fNVars+fNVarsLeg]=valuesLeg2[var];
+    }
+  }
+  
   UInt_t selectedMask=(1<<fNCuts)-1;
 
   //============//
@@ -260,16 +324,16 @@ void AliDielectronCF::Fill(UInt_t mask, const TObject *particle)
 
   //No cuts (MC truth)
   if (fStepForNoCutsMCmotherPid){
-    if (isMCTruth) fCfContainer->Fill(values,step);
+    if (isMCTruth) fCfContainer->Fill(fValues,step);
     ++step;
   }
   
   //All cuts
   if (fStepForAfterAllCuts){
     if (mask == selectedMask){
-      fCfContainer->Fill(values,step);
+      fCfContainer->Fill(fValues,step);
       ++step;
-      if (isMCTruth) fCfContainer->Fill(values,step);
+      if (isMCTruth) fCfContainer->Fill(fValues,step);
       ++step;
     } else {
       step+=2;
@@ -280,9 +344,9 @@ void AliDielectronCF::Fill(UInt_t mask, const TObject *particle)
   if (fStepsForEachCut&&fNCuts>1){
     for (Int_t iCut=0; iCut<fNCuts;++iCut) {
       if (mask&(1<<iCut)) {
-        fCfContainer->Fill(values,step);
+        fCfContainer->Fill(fValues,step);
         ++step;
-        if (isMCTruth) fCfContainer->Fill(values,step);
+        if (isMCTruth) fCfContainer->Fill(fValues,step);
         ++step;
       } else {
         step+=2;
@@ -294,9 +358,9 @@ void AliDielectronCF::Fill(UInt_t mask, const TObject *particle)
   if (fStepsForCutsIncreasing&&fNCuts>2){
     for (Int_t iCut=1; iCut<fNCuts-1;++iCut) {
       if (mask&(1<<((iCut+1)-1))) {
-        fCfContainer->Fill(values,step);
+        fCfContainer->Fill(fValues,step);
         ++step;
-        if (isMCTruth) fCfContainer->Fill(values,step);
+        if (isMCTruth) fCfContainer->Fill(fValues,step);
         ++step;
       } else {
         step+=2;
@@ -308,9 +372,9 @@ void AliDielectronCF::Fill(UInt_t mask, const TObject *particle)
   for (UInt_t iComb=0; iComb<fNStepMasks; ++iComb){
     UInt_t userMask=fStepMasks[iComb];
     if (mask&userMask) {
-      fCfContainer->Fill(values,step);
+      fCfContainer->Fill(fValues,step);
       ++step;
-      if (isMCTruth) fCfContainer->Fill(values,step);
+      if (isMCTruth) fCfContainer->Fill(fValues,step);
       ++step;
     } else {
       step+=2;
@@ -327,16 +391,33 @@ void AliDielectronCF::FillMC(const TObject *particle)
   //
   if (!fStepForMCtruth) return;
   
-  Double_t valuesAll[AliDielectronVarManager::kNMaxValues];
-  AliDielectronVarManager::Fill(particle,valuesAll);
+  Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::Fill(particle,valuesPair);
   
-  Double_t values[AliDielectronVarManager::kNMaxValues];
+  //TODO: temporary solution, set manually the pair type to 1: mixed e+-
+  valuesPair[AliDielectronVarManager::kPairType]=1;
+  
   for (Int_t iVar=0; iVar<fNVars; ++iVar){
     Int_t var=fVariables[iVar];
-    values[iVar]=valuesAll[var];
+    fValues[iVar]=valuesPair[var];
   }
-  //TODO: temporary solution, set manually the pair type to 1: mixed e+-
-  values[AliDielectronVarManager::kPairType]=1;
-  fCfContainer->Fill(values,0);
+  
+  if (fNVarsLeg>0){
+    AliVParticle *d1=0x0;
+    AliVParticle *d2=0x0;
+    AliDielectronMC::Instance()->GetDaughters(particle,d1,d2);
+    Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
+    AliDielectronVarManager::Fill(d1,valuesLeg1);
+    Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
+    AliDielectronVarManager::Fill(d2,valuesLeg2);
+    
+    for (Int_t iVar=0; iVar<fNVarsLeg; ++iVar){
+      Int_t var=fVariablesLeg[iVar];
+      fValues[iVar+fNVars]=valuesLeg1[var];
+      fValues[iVar+fNVars+fNVarsLeg]=valuesLeg2[var];
+    }
+  }
+  
+  fCfContainer->Fill(fValues,0);
 }
 

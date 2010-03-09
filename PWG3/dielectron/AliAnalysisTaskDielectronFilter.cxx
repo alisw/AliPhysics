@@ -88,7 +88,6 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   AliKFParticle::SetField( bz );
   
   fDielectron->Process(InputEvent());
-  fDielectron->FillHistograms();
 
   if(fDielectron->HasCandidates()){
     AliAODExtension *extDielectron = dynamic_cast<AliAODHandler*>
