@@ -51,7 +51,6 @@ class AliKMeansResult : public TObject
   Double_t*  GetTarget() const  {return fTarget;}
   void       CopyResults(AliKMeansResult* res);
   void       Sort();
-  void       Sort(Double_t* target);
   void       Sort(Int_t n, Double_t* x, Double_t* y);  
 protected:
   Int_t        fK;        //! Number of clusters
