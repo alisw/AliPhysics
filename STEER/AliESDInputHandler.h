@@ -17,6 +17,8 @@ class TTree;
 class AliRunTag;
 class TMap;
 class AliESDfriend;
+class AliESDpid;
+
 
 class AliESDInputHandler : public AliInputEventHandler {
 
@@ -38,11 +40,14 @@ class AliESDInputHandler : public AliInputEventHandler {
     Int_t                GetNEventRejectedInFile();
     Bool_t               GetCutSummaryForChain(Int_t *aTotal, Int_t *aAccepted, Int_t *aRejected);
     Int_t                GetNFilesEmpty();
-    // HLT analysis
-    AliESDfriend        *GetESDfriend()    const {return fFriend;}
+    // HLT  analysis
     AliESDEvent         *GetHLTEvent()     const {return fHLTEvent;}
     TTree               *GetHLTTree()      const {return fHLTTree;}    
     void                SetReadHLT()             {fUseHLT = kTRUE;}
+    // Friends&Co
+    AliESDfriend        *GetESDfriend()    const {return fFriend;}
+    AliESDpid           *GetESDpid()       const {return fESDpid;}
+    void                 SetESDpid(AliESDpid* pid) {fESDpid = pid;}
     // Tag analysis
     void SetReadTags() {fUseTags = kTRUE;}
     AliRunTag           *GetRunTag() const {return fRunTag;}
@@ -54,6 +59,7 @@ class AliESDInputHandler : public AliInputEventHandler {
     // ESD event
     AliESDEvent    *fEvent;        //! Pointer to the event
     AliESDfriend   *fFriend;       //! Pointer to the esd friend
+    AliESDpid      *fESDpid;       //! Pointer to PID information
     Option_t       *fAnalysisType; //! local, proof, grid
     Int_t           fNEvents;      //! Number of events in the current tree
     // HLT event
