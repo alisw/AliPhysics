@@ -436,7 +436,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	} // ampEstimate check
       } // method selection
     
-      if (amp > fNoiseThreshold) { // something to be stored
+      if (amp > fNoiseThreshold  && amp<fgkRawSignalOverflow) { // something to be stored
 	Int_t id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
 	lowGain = in.IsLowGain();
 
@@ -680,6 +680,7 @@ void AliEMCALRawUtils::FitParabola(const TGraph *gSig, Float_t & amp) const
       Double_t a  = (sy-b*sx-c*sx2)/kN  ;
       Double_t xmax = -b/(2*c) ; 
       ymax = a + b*xmax + c*xmax*xmax ;//<========== This is the maximum amplitude
+      amp = ymax;
     }
   }
   
