@@ -204,14 +204,3 @@ void AliITSpList::GetCell(Int_t index,Int_t &i,Int_t &j) const {
   j = index - fNj*i;
   return;
 }
-//______________________________________________________________________
-Int_t AliITSpList::GetIndex(Int_t i, Int_t j) const {
- // returns the TClonesArray index for a given set of map indexes.
-  if(i<0||i>=fNi || j<0||j>=fNj){
-    Warning("GetIndex","Index out of range 0<i=%d<%d and 0<0j=%d<%d",i,fNi,j,fNj);
-    return -1;
-  }
-  else {
-    return fNj*i+j;
-  }
-}

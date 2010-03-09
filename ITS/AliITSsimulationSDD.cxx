@@ -35,7 +35,6 @@
 #include "AliITShit.h"
 #include "AliITSpList.h"
 #include "AliITSCalibrationSDD.h"
-#include "AliITSsegmentationSDD.h"
 #include "AliITSsimulationSDD.h"
 #include "AliLog.h"
 #include "AliRun.h"
@@ -70,7 +69,6 @@ fNofMaps(0),
 fMaxNofSamples(0),
 fScaleSize(0){
     // Default constructor
-    SetScaleFourier();
     SetPerpendTracksFlag();
     SetCrosstalkFlag();
     SetDoFFT();
@@ -145,13 +143,12 @@ fScaleSize(0){
 void AliITSsimulationSDD::Init(){
     // Standard Constructor
 
-    SetScaleFourier();
+    AliITSsegmentationSDD* seg = (AliITSsegmentationSDD*)GetSegmentationModel(1);
+    fScaleSize = ScaleFourier(seg);
     SetPerpendTracksFlag();
     SetCrosstalkFlag();
     SetDoFFT();
 
-    AliITSsegmentationSDD* seg = (AliITSsegmentationSDD*)GetSegmentationModel(1);
-    if(seg->Npx()==128) fScaleSize=8;
     AliITSSimuParam* simpar = fDetType->GetSimuParam();
     fpList = new AliITSpList( seg->Npz(),
                               fScaleSize*seg->Npx() );

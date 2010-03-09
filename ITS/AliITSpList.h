@@ -14,6 +14,7 @@
 // ***********************************************************************
 #include "TArrayI.h"
 #include "TClonesArray.h"
+#include "AliLog.h"
 #include "AliITSMap.h"
 #include "AliITSpListItem.h"
 
@@ -127,13 +128,18 @@ class AliITSpList: public AliITSMap {
     // Flags a hit. Not of relavence in this case.
     virtual void FlagHit(Int_t /* i */,Int_t /* j */){NotImplemented("FlagHit");}
     virtual void GetCell(Int_t index,Int_t &i,Int_t &j) const;
+ // GetIndex returns the TClonesArray index for a given set of map indexes.
+    static Int_t GetIndex(Int_t i,Int_t j,Int_t maxj){
+      return maxj*i+j;}
 
  private:
 
 // private methods
-    Int_t GetIndex(Int_t i,Int_t j) const;
+    Int_t GetIndex(Int_t i,Int_t j) const {
+      if(i<0||i>=fNi || j<0||j>=fNj){AliWarning(Form("Index out of range 0<i=%d<%d and 0<0j=%d<%d",i,fNi,j,fNj)); return -1;}
+      return GetIndex(i,j,fNj);}
     void NotImplemented(const char *method) const {if(gDebug>0)
-         Warning(method,"This method is not implemented for this class");}
+	Warning(method,"This method is not implemented for this class");}
 // data members
     Int_t     fNi,fNj;   // The max index in i,j.
     AliITSpListItem *fa;       // array of pList items

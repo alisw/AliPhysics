@@ -12,7 +12,7 @@
 
 #include <TNtuple.h>
 #include "AliITSsimulation.h"
-
+#include "AliITSsegmentationSDD.h"
 class TH1F;
 class TFile;
 class TArrayI;
@@ -23,7 +23,6 @@ class AliITSMap;
 class AliITSMapA1;
 class AliITSMapA2;
 class AliITSetfSDD;
-class AliITSsegmentationSDD;
 class AliITSCalibration;
 class AliITSCalibrationSDD;
 
@@ -46,9 +45,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     // set pointer to segmentation object
     virtual void SetSegmentationModel(Int_t /*dt*/, AliITSsegmentation *seg){fDetType->SetSegmentationModel(1,seg);}
 
-    // set the scale size factor for the smples in FFT
-    virtual void SetScaleFourier(Int_t scale=4) {fScaleSize=scale;}
-    Int_t ScaleFourier() const {return fScaleSize;} // returns the scale factor
+    static Int_t ScaleFourier(const AliITSsegmentationSDD* seg) 
+    {if(seg->Npx()==128) {return 8;} else {return 4;}} // returns the scale factor
     // set perpendicular tracks flag
     virtual void SetPerpendTracksFlag(Bool_t flag=kFALSE) {fFlag=flag;}
     // returns perpendicular track flag.

@@ -87,6 +87,8 @@ the AliITS class.
 #include "AliITSRecPoint.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
+#include "AliITSsimulationSDD.h"
+#include "AliITSCalibrationSDD.h"
 #include "AliITSsegmentationSSD.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSSD.h"
@@ -1254,21 +1256,32 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
     // 
     AliITSsegmentationSDD* segSDD = (AliITSsegmentationSDD*) fDetTypeSim->GetSegmentationModel(1);
     npx = segSDD->Npx();
+    Int_t scalef=AliITSsimulationSDD::ScaleFourier(segSDD);
+    Int_t firstSDD=AliITSgeomTGeo::GetModuleIndex(3,1,1);
+    Int_t firstSSD=AliITSgeomTGeo::GetModuleIndex(5,1,1);
+
     AliITSRawStream* inputSDD=AliITSRawStreamSDD::CreateRawStreamSDD(rawReader);
+    for(Int_t iMod=firstSDD; iMod<firstSSD; iMod++){
+      AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(iMod);
+      Bool_t isZeroSupp=cal->GetZeroSupp();
+      if(isZeroSupp){ 
+	for(Int_t iSid=0; iSid<2; iSid++) inputSDD->SetZeroSuppLowThreshold(iMod-firstSDD,iSid,cal->GetZSLowThreshold(iSid));
+     }else{
+	for(Int_t iSid=0; iSid<2; iSid++) inputSDD->SetZeroSuppLowThreshold(iMod-firstSDD,iSid,0);
+      }
+    }
+
     AliITSDDLModuleMapSDD* ddlmap=fDetTypeSim->GetDDLModuleMapSDD();
     inputSDD->SetDDLModuleMap(ddlmap);
-    while(1){
-	Bool_t next  = inputSDD->Next();
-	if (!next) break;
-
+    while(inputSDD->Next()){
 	if(inputSDD->IsCompletedModule()==kFALSE && 
 	   inputSDD->IsCompletedDDL()==kFALSE){
 
 	  Int_t module = inputSDD->GetModuleID();
-	  Int_t anode  = inputSDD->GetCoord1();
+	  Int_t anode  = inputSDD->GetCoord1()+segSDD->NpzHalf()*inputSDD->GetChannel();
 	  Int_t time   = inputSDD->GetCoord2();
 	  Int_t signal10 = inputSDD->GetSignal();
-	  Int_t index  = npx * anode + time;
+	  Int_t index = AliITSpList::GetIndex(anode,time,scalef*npx);
 
 	  if (module >= size) continue;
 	  last = modA[module]->GetEntries();
@@ -1346,4 +1359,3 @@ AliTriggerDetector* AliITS::CreateTriggerDetector() const {
   // create an AliITSTrigger object (and set trigger conditions as input)
   return new AliITSTrigger(fDetTypeSim->GetTriggerConditions());
 }
-
