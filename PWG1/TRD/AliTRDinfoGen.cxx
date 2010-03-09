@@ -146,6 +146,7 @@ AliTRDinfoGen::~AliTRDinfoGen()
 {
 // Destructor
   
+  if(fDebugStream) delete fDebugStream;
   if(fEvTrigger) delete fEvTrigger;
   if(fTrackCut) delete fTrackCut;
   if(fEventCut) delete fEventCut;
