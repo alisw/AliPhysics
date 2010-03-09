@@ -163,7 +163,6 @@ Int_t AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* 
     } // data point j
     // (3) Iterations
     Int_t nit = 0;
-    Bool_t rmovalStep = kFALSE;
 
     while(1) {
 	nit++;
@@ -291,7 +290,6 @@ Int_t AliKMeansClustering::SoftKMeans3(Int_t k, Int_t n, Double_t* x, Double_t* 
     } // data point j
     // (3) Iterations
     Int_t nit = 0;
-    Bool_t rmovalStep = kFALSE;
 
     while(1) {
 	nit++;
@@ -492,8 +490,8 @@ AliKMeansResult& AliKMeansResult::operator=(const AliKMeansResult& res)
       fTarget[i] = (res.GetTarget())[i];
       fInd[i]    = (res.GetInd())   [i];
     }
-    return *this;
   }
+  return *this;
 }
 
 
