@@ -80,6 +80,119 @@ AliJetFillUnitArray::AliJetFillUnitArray()
   // constructor
 }
 
+AliJetFillUnitArray::AliJetFillUnitArray(const AliJetFillUnitArray& cpfrom)
+  : TTask("AliJetFillUnitArray","Fill Unit Array with tpc/its and emcal information"),
+    fNTracks(0),
+    fNTracksCut(0),
+    fOpt(0),
+    fDZ(0),
+    fDebug(0),
+    fReaderHeader(0x0),
+    fMomentumArray(0x0),
+    fUnitArray(0x0),
+    fRefArray(0x0),
+    fRef(0x0),
+    fSignalFlag(0),
+    fCutFlag(0),
+    fProcId(kFALSE),
+    fTPCGrid(0x0),
+    fEMCalGrid(0x0),
+    fGeom(0x0),
+    fNphi(0),
+    fNeta(0),
+    fGrid(0),
+    fPhi2(0),
+    fEta2(0),
+    fIndex(0x0),
+    fParams(0x0),
+    fPhiMin(0),
+    fPhiMax(0),
+    fEtaMin(0),
+    fEtaMax(0),
+    fEtaBinInTPCAcc(0),
+    fPhiBinInTPCAcc(0),
+    fEtaBinInEMCalAcc(0),
+    fPhiBinInEMCalAcc(0),
+    fNbinPhi(0)
+{
+    //
+    // Copy constructor
+    //
+    fNTracks          = cpfrom.fNTracks;
+    fNTracksCut       = cpfrom.fNTracksCut;
+    fOpt              = cpfrom.fOpt;
+    fDZ               = cpfrom.fDZ;
+    fDebug            = cpfrom.fDebug;
+    fReaderHeader     = cpfrom.fReaderHeader;
+    fMomentumArray    = cpfrom.fMomentumArray;
+    fUnitArray        = cpfrom.fUnitArray;
+    fRefArray         = cpfrom.fRefArray;
+    fRef              = cpfrom.fRef;
+    fSignalFlag       = cpfrom.fSignalFlag;
+    fCutFlag          = cpfrom.fCutFlag;  
+    fProcId           = cpfrom.fProcId;
+    fTPCGrid          = cpfrom.fTPCGrid;
+    fEMCalGrid        = cpfrom.fEMCalGrid;
+    fGeom             = cpfrom.fGeom;
+    fNphi             = cpfrom.fNphi;   
+    fNeta             = cpfrom.fNeta;  
+    fGrid             = cpfrom.fGrid;
+    fPhi2             = cpfrom.fPhi2; 
+    fEta2             = cpfrom.fEta2; 
+    fIndex            = cpfrom.fIndex;
+    fParams           = cpfrom.fParams;
+    fPhiMin           = cpfrom.fPhiMin;
+    fPhiMax           = cpfrom.fPhiMax;
+    fEtaMin           = cpfrom.fEtaMin;
+    fEtaMax           = cpfrom.fEtaMax;
+    fEtaBinInTPCAcc   = cpfrom.fEtaBinInTPCAcc;
+    fPhiBinInTPCAcc   = cpfrom.fPhiBinInTPCAcc;
+    fEtaBinInEMCalAcc = cpfrom.fEtaBinInEMCalAcc;
+    fPhiBinInEMCalAcc = cpfrom.fPhiBinInEMCalAcc;
+    fNbinPhi          = cpfrom.fNbinPhi;
+}
+
+AliJetFillUnitArray& AliJetFillUnitArray::operator=(const AliJetFillUnitArray& rhs)
+{
+    //
+    // Assignment operator
+    //
+    fNTracks          = rhs.fNTracks;
+    fNTracksCut       = rhs.fNTracksCut;
+    fOpt              = rhs.fOpt;
+    fDZ               = rhs.fDZ;
+    fDebug            = rhs.fDebug;
+    fReaderHeader     = rhs.fReaderHeader;
+    fMomentumArray    = rhs.fMomentumArray;
+    fUnitArray        = rhs.fUnitArray;
+    fRefArray         = rhs.fRefArray;
+    fRef              = rhs.fRef;
+    fSignalFlag       = rhs.fSignalFlag;
+    fCutFlag          = rhs.fCutFlag;  
+    fProcId           = rhs.fProcId;
+    fTPCGrid          = rhs.fTPCGrid;
+    fEMCalGrid        = rhs.fEMCalGrid;
+    fGeom             = rhs.fGeom;
+    fNphi             = rhs.fNphi;   
+    fNeta             = rhs.fNeta;  
+    fGrid             = rhs.fGrid;
+    fPhi2             = rhs.fPhi2; 
+    fEta2             = rhs.fEta2; 
+    fIndex            = rhs.fIndex;
+    fParams           = rhs.fParams;
+    fPhiMin           = rhs.fPhiMin;
+    fPhiMax           = rhs.fPhiMax;
+    fEtaMin           = rhs.fEtaMin;
+    fEtaMax           = rhs.fEtaMax;
+    fEtaBinInTPCAcc   = rhs.fEtaBinInTPCAcc;
+    fPhiBinInTPCAcc   = rhs.fPhiBinInTPCAcc;
+    fEtaBinInEMCalAcc = rhs.fEtaBinInEMCalAcc;
+    fPhiBinInEMCalAcc = rhs.fPhiBinInEMCalAcc;
+    fNbinPhi          = rhs.fNbinPhi;
+    return *this;
+    
+}
+
 //_____________________________________________________________________________
 AliJetFillUnitArray::~AliJetFillUnitArray()
 {
