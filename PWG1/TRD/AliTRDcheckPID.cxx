@@ -72,6 +72,7 @@ AliTRDcheckPID::AliTRDcheckPID()
   // Default constructor
   //
   SetNameTitle("checkPID", "Check TRD PID");
+  LocalInit();
 }
 
 //________________________________________________________________________
@@ -89,6 +90,18 @@ AliTRDcheckPID::AliTRDcheckPID(char* name )
   // Default constructor
   //
 
+  LocalInit();
+  InitFunctorList();
+
+  DefineInput(2, TObjArray::Class());  // v0 list
+  DefineOutput(2, TObjArray::Class()); // pid info list
+}
+
+
+//________________________________________________________________________
+void AliTRDcheckPID::LocalInit() 
+{
+// Initialize working data
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
 
@@ -101,12 +114,7 @@ AliTRDcheckPID::AliTRDcheckPID(char* name )
   memset(fEfficiency, 0, AliPID::kSPECIES*sizeof(TObjArray*));
 
   fUtil = new AliTRDpidUtil();
-  InitFunctorList();
-
-  DefineInput(2, TObjArray::Class()); // v0 list
-  DefineOutput(2, TObjArray::Class()); // pid info list
 }
-
 
 //________________________________________________________________________
 AliTRDcheckPID::~AliTRDcheckPID() 

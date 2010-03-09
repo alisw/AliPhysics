@@ -82,6 +82,8 @@ private:
 
   Int_t  CalcPDG(AliTRDtrackV1* track = 0x0);
   Bool_t CheckTrackQuality(const AliTRDtrackV1* track = 0x0) const;
+  void   LocalInit();
+
   static Char_t const *fgMethod[3];        // PID method name
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
   AliTRDpidUtil       *fUtil;              //! utility class for PID calculations
