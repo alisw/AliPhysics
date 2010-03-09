@@ -22,7 +22,7 @@
 //-----------------------------------------------------------------------------------
 
 #include <TMath.h>
-#include <TRandom.h>
+#include <TRandom2.h>
 #include <TClonesArray.h>
 #include "AliJetReaderHeader.h"
 #include "AliJetReader.h"
@@ -43,7 +43,8 @@ AliDAJetFinder::AliDAJetFinder():
 	fNloopMax(100),
 	fBeta(0.1),
 	fNclustMax(0),
-	fNin(0)
+	fNin(0),
+	fNeff(0)
 {
 	// Constructor
 }
@@ -60,14 +61,14 @@ void AliDAJetFinder::FindJets()
 // Find the jets in current event
 // 
 	Float_t betaStop=100.;
-    fDebug = fHeader->GetDebug();
+	fDebug = fHeader->GetDebug();
 
 	Double_t dEtSum=0;
 	Double_t *xData[2];
-    TVectorD *vPx = new TVectorD();
-    TVectorD *vPy = new TVectorD();
-    TMatrixD *mPyx= new TMatrixD();
-    TMatrixD *mY  = new TMatrixD();
+	TVectorD *vPx = new TVectorD();
+	TVectorD *vPy = new TVectorD();
+	TMatrixD *mPyx= new TMatrixD();
+	TMatrixD *mY  = new TMatrixD();
 	InitDetAnn(dEtSum,xData,vPx,vPy,mPyx,mY);
 	if (fNin < fNclustMax) return;
 
@@ -79,7 +80,7 @@ void AliDAJetFinder::FindJets()
 		NumCl(nc,nk,vPy,mPyx,mY);
 	}while((fBeta<betaStop || nc<4) && nc<fNclustMax);
 
-	Int_t *xx=new Int_t[fNin];
+	Int_t *xx=new Int_t[fNeff];
 	EndDetAnn(nk,xData,xx,dEtSum,vPx,vPy,mPyx,mY);
 	StoreJets(nk,xData,xx,mY);
 	delete [] xx;
@@ -97,17 +98,21 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum,Double_t **xData,TVectorD *vPx,
 {
 //Initialise the variables used by the algorithm
 	fBeta=0.1;
-	fNclustMax= ((AliDAJetHeader*)fHeader)->GetFixedCl() ? 
+	fNclustMax = ((AliDAJetHeader*)fHeader)->GetFixedCl() ? 
 	    ((AliDAJetHeader*)fHeader)->GetNclustMax() : 
 	    TMath::Max((Int_t)TMath::Sqrt(fNin),5);
+	Float_t etaEff = ((AliDAJetHeader*)fHeader)->GetEtaEff();
 	TClonesArray *lvArray = fReader->GetMomentumArray();
 	Int_t nEntr = lvArray->GetEntries();
 	fNin=0;
 	for (Int_t iEn=0; iEn<nEntr; iEn++) if (fReader->GetCutFlag(iEn)==1) fNin++;
-	Double_t *xEta = new Double_t[fNin];
-	Double_t *xPhi = new Double_t[fNin];
+
+	fNeff = ((AliDAJetHeader*)fHeader)->GetNeff();
+	fNeff = TMath::Max(fNeff,fNin);
+	Double_t *xEta = new Double_t[fNeff];
+	Double_t *xPhi = new Double_t[fNeff];
 	xData[0]=xEta; xData[1]=xPhi;
-	vPx->ResizeTo(fNin);
+	vPx->ResizeTo(fNeff);
 	Int_t iIn=0;
 	for (Int_t iEn=0; iEn<nEntr; iEn++){
 		if (fReader->GetCutFlag(iEn)==0) continue;
@@ -118,17 +123,25 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum,Double_t **xData,TVectorD *vPx,
 		dEtSum+=(*vPx)(iIn);
 		iIn++;
 	}
-	for (iIn=0; iIn<fNin; iIn++) (*vPx)(iIn)=(*vPx)(iIn)/dEtSum;
+	TRandom2 r;
+	r.SetSeed(0);
+	for (Int_t iIn=fNin; iIn<fNeff; iIn++){
+		xEta[iIn]=r.Uniform(-1*etaEff,etaEff);
+		xPhi[iIn]=r.Uniform(0.,2*TMath::Pi());
+		(*vPx)(iIn)=r.Uniform(0.01,0.02);
+		dEtSum+=(*vPx)(iIn);
+	}
+	for (iIn=0; iIn<fNeff; iIn++) (*vPx)(iIn)=(*vPx)(iIn)/dEtSum;
 
 	Int_t njdim=2*fNclustMax+1;
-	mPyx->ResizeTo(fNin,njdim);
+	mPyx->ResizeTo(fNeff,njdim);
 	mY->ResizeTo(4,njdim);
 	vPy->ResizeTo(njdim);
 	mY->Zero();mPyx->Zero();vPy->Zero();
 	(*vPy)(0)=1;
 	TMatrixDColumn(*mPyx,0)=1;
 	Double_t ypos=0,xpos=0;
-	for (iIn=0; iIn<fNin; iIn++){
+	for (iIn=0; iIn<fNeff; iIn++){
 		(*mY)(0,0)+=(*vPx)(iIn)*xEta[iIn];
 		ypos+=(*vPx)(iIn)*TMath::Sin(xPhi[iIn]);
 		xpos+=(*vPx)(iIn)*TMath::Cos(xPhi[iIn]);
@@ -157,8 +170,8 @@ void AliDAJetFinder::Annealing(Int_t nk,Double_t **xData,  TVectorD *vPx,  TVect
 	TMatrixD *y  = new TMatrixD(4,nk);
 	TMatrixD *y1 = new TMatrixD(4,nk);
 	TMatrixD *ry = new TMatrixD(2,nk);
-    Double_t *xEta = xData[0];
-    Double_t *xPhi = xData[1];
+	Double_t *xEta = xData[0];
+	Double_t *xPhi = xData[1];
 	Double_t Dist(TVectorD,TVectorD);
 
 	Double_t df[2]={fReader->GetReaderHeader()->GetFiducialEtaMax(),pi};
@@ -183,7 +196,7 @@ void AliDAJetFinder::Annealing(Int_t nk,Double_t **xData,  TVectorD *vPx,  TVect
 		do{
 	//recalculate conditional probabilities
 			nloop++;
-			for (Int_t iIn=0; iIn<fNin; iIn++){
+			for (Int_t iIn=0; iIn<fNeff; iIn++){
 				vPart(0)=xEta[iIn]; vPart(1)=xPhi[iIn];
 				for(Int_t iClust=0; iClust<nk; iClust++){
 					(*mPyx)(iIn,iClust)=-log((*py)(iClust))+fBeta*Dist(vPart,TMatrixDColumn(*y1,iClust));
@@ -203,8 +216,8 @@ void AliDAJetFinder::Annealing(Int_t nk,Double_t **xData,  TVectorD *vPx,  TVect
 	//recalculate codevectors
 			for (Int_t iClust=0; iClust<nk; iClust++){
 				Double_t xpos=0,ypos=0,pxy;
-				for (Int_t iIn=0; iIn<fNin; iIn++) (*p)(iClust)+=(*vPx)(iIn)*(*mPyx)(iIn,iClust);
-				for (Int_t iIn=0; iIn<fNin; iIn++){
+				for (Int_t iIn=0; iIn<fNeff; iIn++) (*p)(iClust)+=(*vPx)(iIn)*(*mPyx)(iIn,iClust);
+				for (Int_t iIn=0; iIn<fNeff; iIn++){
 					pxy=(*vPx)(iIn)*(*mPyx)(iIn,iClust)/(*p)(iClust);
 					ypos+=pxy*TMath::Sin(xPhi[iIn]);
 					xpos+=pxy*TMath::Cos(xPhi[iIn]);
@@ -267,13 +280,13 @@ void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk,TVectorD *vPy,  TMatrixD *mPyx,TM
 		ReduceClusters(iSame,nk,nc,cont,nSame);
 		if (nc >= fNclustMax) growcl=false;
 //recalculate the nc distinct codevectors
-		TMatrixD *pyx = new TMatrixD(fNin,2*nc);
+		TMatrixD *pyx = new TMatrixD(fNeff,2*nc);
 		TVectorD *py = new TVectorD(nk);
 		TMatrixD *y1  = new TMatrixD(3,nk);
 		for (Int_t iClust=0; iClust<nc; iClust++){
 			for(Int_t j=0; j<nSame[iClust]; j++){
 				Int_t iClust1 = cont[iClust][j];
-				for (Int_t iIn=0; iIn<fNin; iIn++) (*pyx)(iIn,iClust)+=(*mPyx)(iIn,iClust1);
+				for (Int_t iIn=0; iIn<fNeff; iIn++) (*pyx)(iIn,iClust)+=(*mPyx)(iIn,iClust1);
 				(*py)(iClust)+=(*vPy)(iClust1);
 				for (Int_t i=0; i<2; i++) (*y1)(i,iClust)+=(*mY)(i,iClust1);
 			}
@@ -285,7 +298,7 @@ void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk,TVectorD *vPy,  TMatrixD *mPyx,TM
 		delete [] nSame;
 		if (nc > nk/2){
 			for (Int_t iClust=0; iClust<nc; iClust++){
-				for (Int_t iIn=0; iIn<fNin; iIn++) (*mPyx)(iIn,iClust)=(*pyx)(iIn,iClust);
+				for (Int_t iIn=0; iIn<fNeff; iIn++) (*mPyx)(iIn,iClust)=(*pyx)(iIn,iClust);
 				for (Int_t iComp=0; iComp<2; iComp++) (*mY)(iComp,iClust)=(*y1)(iComp,iClust);
 				(*vPy)(iClust)=(*py)(iClust);
 			}
@@ -335,20 +348,19 @@ void AliDAJetFinder::ReduceClusters(Int_t **iSame,Int_t nc,Int_t &ncout,Int_t **
 }
 
 //-----------------------------------------------------------------------------------
-void AliDAJetFinder::EndDetAnn(Int_t &nk,Double_t **xData,Int_t *xx,Double_t etx,
-                               TVectorD *vPx,TVectorD *vPy,TMatrixD *mPyx,TMatrixD *mY)
+void AliDAJetFinder::EndDetAnn(Int_t &nk,Double_t **xData,Int_t *xx,Double_t etx,TVectorD *vPx,TVectorD *vPy,TMatrixD *mPyx,TMatrixD *mY)
 {
 //now assign each particle to only one cluster
 	Double_t *clusters=new Double_t[nk];
-	for (Int_t iIn=0; iIn<fNin; iIn++){
+	for (Int_t iIn=0; iIn<fNeff; iIn++){
 		for (Int_t iClust=0; iClust<nk; iClust++) clusters[iClust]=(*mPyx)(iIn,iClust);
 		xx[iIn]=TMath::LocMax(nk,clusters);
 	}
-    delete [] clusters;
+	delete [] clusters;
 	
 //recalculate codevectors, having all p(y|x)=0 or 1
-    Double_t *xEta = xData[0];
-    Double_t *xPhi = xData[1];
+	Double_t *xEta = xData[0];
+	Double_t *xPhi = xData[1];
 	mY->Zero();
 	mPyx->Zero();
 	vPy->Zero();
@@ -379,26 +391,30 @@ void AliDAJetFinder::EndDetAnn(Int_t &nk,Double_t **xData,Int_t *xx,Double_t etx
 }
 
 //-----------------------------------------------------------------------------------
-void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,  Int_t *xx,  TMatrixD *mY)
+void AliDAJetFinder::StoreJets(Int_t nk, Double_t **xData, Int_t *xx, TMatrixD *mY)
 {
 //evaluate significant clusters properties
 	const Double_t pi=TMath::Pi();
 	AliJetReaderHeader *rHeader=fReader->GetReaderHeader();
-	Float_t dFiducialEta=rHeader->GetFiducialEtaMax()-rHeader->GetFiducialEtaMin();
-	Double_t dMeanDist=TMath::Sqrt(2*dFiducialEta*pi/fNin);
-    Double_t *xEta = xData[0];
-    Double_t *xPhi = xData[1];
+	Float_t dFidEtaMax = rHeader->GetFiducialEtaMax();
+	Float_t dFidEtaMin = rHeader->GetFiducialEtaMin();
+	Float_t dFiducialEta= dFidEtaMax - dFidEtaMin;
+	Double_t *xEta = xData[0];
+	Double_t *xPhi = xData[1];
+	Int_t nEff = 0;
+	for (Int_t i=0; i<fNeff; i++) if (xEta[i]<dFidEtaMax && xEta[i]>dFidEtaMin) nEff++;
+	Double_t dMeanDist=TMath::Sqrt(2*dFiducialEta*pi/nEff);
 	Bool_t   *isJet = new Bool_t[nk];
 	Double_t *etNoBg= new Double_t[nk];
 	Double_t *dDeltaEta=new Double_t[nk];
 	Double_t *dDeltaPhi=new Double_t[nk];
 	Double_t *surf  = new Double_t[nk];
 	Double_t *etDens= new Double_t[nk];
-	for (Int_t iClust=0; iClust<nk; iClust++){									//clusters loop
+	for (Int_t iClust=0; iClust<nk; iClust++){
 		isJet[iClust]=false;
 		Double_t dEtaMin=10.,dEtaMax=-10.,dPhiMin=10.,dPhiMax=0.;
-		for (Int_t iIn=0; iIn<fNin; iIn++){
-			if (xx[iIn]!=iClust) continue;
+		for (Int_t iIn=0; iIn<fNeff; iIn++){
+			if (xx[iIn]!=iClust || xEta[iIn]>dFidEtaMax || xEta[iIn]<dFidEtaMin) continue;
 			if (xEta[iIn] < dEtaMin) dEtaMin=xEta[iIn];
 			if (xEta[iIn] > dEtaMax) dEtaMax=xEta[iIn];
 			Double_t dPhi=xPhi[iIn]-(*mY)(1,iClust);
@@ -415,12 +431,12 @@ void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,  Int_t *xx,  TMatrixD 
 
 	if (((AliDAJetHeader*)fHeader)->GetSelJets()){
 		for (Int_t iClust=0; iClust<nk; iClust++){
-			if (!isJet[iClust]){
+			if (!isJet[iClust] && (*mY)(0,iClust)<dFidEtaMax && (*mY)(0,iClust)>dFidEtaMin){
 				Double_t etDensMed=0.;
 				Double_t etDensSqr=0.;
 				Int_t norm=0;
 				for (Int_t iClust1=0; iClust1<nk; iClust1++){
-					if(iClust1!=iClust){
+					if(iClust1!=iClust && (*mY)(0,iClust)<dFidEtaMax && (*mY)(0,iClust)>dFidEtaMin){
 						etDensMed+=etDens[iClust1];
 						etDensSqr+=TMath::Power(etDens[iClust1],2);
 						norm++;
@@ -450,15 +466,18 @@ void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,  Int_t *xx,  TMatrixD 
 			}
 		}
 	} else {
-		for (Int_t iClust=0; iClust<nk; iClust++) isJet[iClust]=true;
+		for (Int_t iClust=0; iClust<nk; iClust++){
+			isJet[iClust]=true;
+			etNoBg[iClust]=(*mY)(3,iClust);
+		}
 	}
 	delete [] etDens;
 	delete [] surf;
 	
 //now add selected jets to the list
 	Int_t *iSort = new Int_t[nk];
-    TMath::Sort(nk,etNoBg,iSort,true);
-    Int_t iCl = 0;
+	TMath::Sort(nk,etNoBg,iSort,true);
+	Int_t iCl = 0;
 	TRefArray *refs = 0;
 	Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
 	if (fromAod) refs = fReader->GetReferences();

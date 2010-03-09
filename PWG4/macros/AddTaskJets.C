@@ -185,7 +185,8 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     AliDAJetHeader *jh=new AliDAJetHeader();
     jh->SetComment("DA jet code with default parameters");
     jh->SelectJets(kTRUE);
-    jh->SetRadius(0.7);
+    jh->SetNeff(200);
+    jh->SetEtaEff(2.2);
     if(radius>0)jh->SetRadius(radius);
     jh->SetEtMin(5.);
     jetFinder = new AliDAJetFinder();

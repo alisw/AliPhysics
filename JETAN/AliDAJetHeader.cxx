@@ -31,7 +31,9 @@ AliDAJetHeader::AliDAJetHeader():
 	fRadius(0.7),
 	fNclustMax(10),
 	fFixedCl(kFALSE),
-	fEtMin(10.)
+	fEtMin(10.),
+	fNeff(0),
+	fEtaEff(0.9)
 {
     // Constructor
 }
@@ -41,9 +43,8 @@ void AliDAJetHeader::SetRadius(Float_t radius)
 {
     // The radius requested is used to estimate the number of clusters
     // to be found, in order to obtain jets with the expected area.
-    // It must not be intended as a sharp limit on the cluster shape
+    // It must not be intended as a sharp limit on the cluster radius
     
-  Float_t fEtaLim = 0.9;
-  Int_t nclust = (Int_t) (4.*fEtaLim/(radius*radius)) + 1;
+  Int_t nclust = (Int_t) (4.*fEtaEff/(radius*radius)) + 1;
   SetNclust(nclust);
 }
