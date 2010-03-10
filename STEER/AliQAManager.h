@@ -48,6 +48,7 @@ public:
   void             EndOfCycle(TString detectors) ; 
 	UInt_t           GetCurrentEvent() const { return fCurrentEvent ; }
 	TObjArray *      GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, const Char_t * year) const ; 
+  AliRecoParam::EventSpecie_t GetEventSpecieFromESD() ;
   TCanvas **       GetImage(Char_t * detName) ;
   const Char_t *   GetMode(){ return fMode.Data() ; }
   AliQAv1     *    GetQA(UInt_t run, UInt_t evt) ; 

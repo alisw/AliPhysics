@@ -584,6 +584,27 @@ void  AliQAManager::EndOfCycle(TString detectors)
 }
 
 //_____________________________________________________________________________
+AliRecoParam::EventSpecie_t AliQAManager::GetEventSpecieFromESD() 
+{
+  AliRecoParam::EventSpecie_t runtype = AliRecoParam::kDefault ; 
+  if (!gSystem->AccessPathName("AliESDs.root")) { // AliESDs.root exists
+    TFile * esdFile = TFile::Open("AliESDs.root") ;
+    TTree * esdTree = static_cast<TTree *> (esdFile->Get("esdTree")) ; 
+    if ( !esdTree ) {
+      AliError("esdTree not found") ; 
+    } else {
+      AliESDEvent * esd    = new AliESDEvent() ;
+      esd->ReadFromTree(esdTree) ;
+      esdTree->GetEntry(0) ; 
+      runtype = AliRecoParam::ConvertIndex(esd->GetEventType()) ; 
+    }
+  } else {
+    AliError("AliESDs.root not found") ; 
+  }
+  return runtype ;
+}
+
+//_____________________________________________________________________________
 void AliQAManager::Increment(const AliQAv1::TASKINDEX_t taskIndex)
 {
   // Increments the cycle counter for all QA Data Makers
