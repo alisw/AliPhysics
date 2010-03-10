@@ -691,7 +691,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   // Generates the global trigger class that will implement the specified trigger menu.
   // See header for more details.
   
-  HLTDebug("Generating custom HLT trigger class named %s using trigger menu %p.", ((void*)menu), name.Data());
+  HLTDebug("Generating custom HLT trigger class named %s using trigger menu %p.", name.Data(), ((void*)menu));
   
   // Create a new UUID and replace the '-' characters with '_' to make it a valid
   // C++ symbol name.
