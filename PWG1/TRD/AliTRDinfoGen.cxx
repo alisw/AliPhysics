@@ -78,8 +78,9 @@
 
 ClassImp(AliTRDinfoGen)
 
+const Float_t AliTRDinfoGen::fgkITS = 100.; // to be checked
 const Float_t AliTRDinfoGen::fgkTPC = 290.;
-const Float_t AliTRDinfoGen::fgkTOF = 365.;
+const Float_t AliTRDinfoGen::fgkTRD = 365.;
 
 const Float_t AliTRDinfoGen::fgkEvVertexZ = 15.;
 const Int_t   AliTRDinfoGen::fgkEvVertexN = 1;
@@ -262,8 +263,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
   }
   
   Double32_t dedx[100]; Int_t nSlices(0);
-  Int_t nTRDout(0), nTRDin(0), nTPC(0), nclsTrklt;
-  AliDebug(2, Form("Entry[%3d] Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC));
+  Int_t nTRDout(0), nTRDin(0), nTPC(0)
+       ,nclsTrklt
+       ,nBarrel(0), nSA(0), nKink(0)
+       ,nBarrelMC(0), nSAMC(0), nKinkMC(0);
   AliESDtrack *esdTrack = NULL;
   AliESDfriendTrack *esdFriendTrack = NULL;
   TObject *calObject = NULL;
@@ -320,7 +323,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
       Int_t jref = iref;//, kref = 0;
       while(jref<nRefs){
         ref = mcParticle->GetTrackReference(jref);
-        if(ref->LocalX() > fgkTOF) break;
+        if(ref->LocalX() > fgkTRD) break;
         AliDebug(4, Form("  trackRef[%2d (%2d)] @ %7.3f OK", jref-iref, jref, ref->LocalX()));
         fTrackInfo->AddTrackRef(ref);
         jref++;
@@ -398,21 +401,20 @@ void AliTRDinfoGen::UserExec(Option_t *){
           }
         }
         if(fTrackCut && !fTrackCut->IsSelected(esdTrack)) selected = kFALSE;
-        if(selected) fTracksBarrel->Add(new AliTRDtrackInfo(*fTrackInfo));
-      } else fTracksKink->Add(new AliTRDtrackInfo(*fTrackInfo));
-    } else if((status&AliESDtrack::kTRDout) && !(status&AliESDtrack::kTRDin)) fTracksSA->Add(new AliTRDtrackInfo(*fTrackInfo));
+        if(selected){ 
+          fTracksBarrel->Add(new AliTRDtrackInfo(*fTrackInfo));
+          nBarrel++;
+        }
+      } else {
+        fTracksKink->Add(new AliTRDtrackInfo(*fTrackInfo));
+        nKink++;
+      }
+    } else if((status&AliESDtrack::kTRDout) && !(status&AliESDtrack::kTRDin)){ 
+      fTracksSA->Add(new AliTRDtrackInfo(*fTrackInfo));
+      nSA++;
+    }
     fTrackInfo->Delete("");
   }
-  AliDebug(2, Form(
-    "%3d Tracks: TPCout[%d] TRDin[%d] TRDout[%d]\n"
-    "            Barrel[%d] SA[%d] Kink[%d]"
-    ,(Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry()
-    , nTPC, nTRDin, nTRDout
-    ,fTracksBarrel->GetEntriesFast()
-    ,fTracksSA->GetEntriesFast()
-    ,fTracksKink->GetEntriesFast()
-  ));
-
 
 //   AliESDv0 *v0 = NULL;
 //   for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s(); iv0++){
@@ -434,10 +436,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
       Int_t nRefsTRD = 0;
       new(fTrackInfo) AliTRDtrackInfo();
       fTrackInfo->SetPDG(fPdg);
-      while(iref<nRefs){
+      while(iref<nRefs){ // count TRD TR
         Bool_t kIN(kFALSE);
         ref = mcParticle->GetTrackReference(iref);
-        if(ref->LocalX() > fgkTPC && ref->LocalX() < fgkTOF){
+        if(ref->LocalX() > fgkTPC && ref->LocalX() < fgkTRD){
           fTrackInfo->AddTrackRef(ref);
           nRefsTRD++;kIN=kTRUE;
         }
@@ -460,11 +462,33 @@ void AliTRDinfoGen::UserExec(Option_t *){
         info.Delete("");
       }
       AliDebug(3, Form("Add MC track @ label[%d] nTRDrefs[%d].", itk, nRefsTRD));
-      fTracksBarrel->Add(new AliTRDtrackInfo(*fTrackInfo));
+      // check where the track starts
+      ref = mcParticle->GetTrackReference(0);
+      if(ref->LocalX() < fgkITS){ 
+        fTracksBarrel->Add(new AliTRDtrackInfo(*fTrackInfo));
+        nBarrelMC++;
+      } else if(ref->LocalX() < fgkTPC) {
+        fTracksKink->Add(new AliTRDtrackInfo(*fTrackInfo));
+        nKinkMC++;
+      } else if(nRefsTRD>6){
+        fTracksSA->Add(new AliTRDtrackInfo(*fTrackInfo));
+        nSAMC++;
+      }
       fTrackInfo->Delete("");
     }
     delete[] trackMap;
   }
+  AliDebug(2, Form(
+    "\nEv[%3d] Tracks: ESD[%d] MC[%d]\n"
+    "        TPCout[%d] TRDin[%d] TRDout[%d]\n"
+    "        Barrel[%3d+%3d=%3d] SA[%2d+%2d=%2d] Kink[%2d+%2d=%2d]"
+    ,(Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC
+    , nTPC, nTRDin, nTRDout
+    ,nBarrel, nBarrelMC, fTracksBarrel->GetEntries()
+    ,nSA, nSAMC, fTracksSA->GetEntries()
+    ,nKink, nKinkMC, fTracksKink->GetEntries()
+  ));
+
   PostData(kTracksBarrel, fTracksBarrel);
   PostData(kTracksSA, fTracksSA);
   PostData(kTracksKink, fTracksKink);

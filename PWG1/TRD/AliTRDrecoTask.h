@@ -45,6 +45,7 @@ public:
   
     
   Int_t          GetNRefFigures() const  { return fNRefFigures; } 
+  const Char_t*  GetNameId() const       { return fNameId;}
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
   virtual Bool_t GetRefFigure(Int_t ifig);
 
@@ -59,6 +60,7 @@ public:
   virtual Bool_t PutTrendValue(const Char_t *name, Double_t val);
   virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
+  virtual void   SetNameId(const Char_t *nid) {sprintf(fNameId, "%s", nid);}
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
   virtual void   Terminate(Option_t *);
 
@@ -66,7 +68,7 @@ protected:
   static TTreeSRedirector* DebugStream() { return fgDebugStream;}
   void           InitFunctorList();
   void           Adjust(TF1 *f, TH1 * const h);
-
+  Char_t    fNameId[10];   //! unique identifier of task particularity
   UChar_t   fNRefFigures;  //! no of reference figures reported by task
   TObjArray *fContainer;   //! container to store results
   TObjArray *fTracks;      //! Array of tracks
