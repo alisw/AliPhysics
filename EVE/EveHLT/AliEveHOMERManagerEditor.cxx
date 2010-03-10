@@ -110,14 +110,7 @@ void AliEveHOMERManagerEditor::SetModel(TObject* obj) {
 
 void AliEveHOMERManagerEditor::NextEvent() {
   // call next event from macro
-
-  if ( fM->NextEvent() )
-    return;
-
-    
-  gROOT->ProcessLineFast("processEvent();");
-
-  return;
+  fM->NextHOMEREvent();
 }
 
 void AliEveHOMERManagerEditor::WriteBlockListToFile() {
@@ -152,16 +145,21 @@ void AliEveHOMERManagerEditor::NavigateBack() {
 }
 
 void AliEveHOMERManagerEditor::EventLoop() {
-
   // Start/stop event loop
   if ( !fEventLoopStarted ) {
-    gROOT->ProcessLineFast("loopEvent();");
     fEventLoopStarted = kTRUE;
     fButtonEventLoopText->SetText(" Stop Loop ");
-  }
-  else {
-    gROOT->ProcessLineFast("stopLoopEvent();");
+    //fM->SetEventLoopStarted(kTRUE);
+    fM->StartLoop();
+    
+    //    gROOT->ProcessLineFast("loopEvent();");
+  
+  } else {
+    
+    //gROOT->ProcessLineFast("stopLoopEvent();");
+    fM->StopLoop();
     fEventLoopStarted = kFALSE;
+    //fM->SetEventLoopStarted(kFALSE);
     fButtonEventLoopText->SetText(" Loop Events ");
   }
 }

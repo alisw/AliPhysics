@@ -252,9 +252,10 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
   
   // -- If already connected, disconnect before connect
   //    or if ReaderList already filled
-  if ( IsConnected() || fReaderList->GetSize() != 0 )
+  if ( IsConnected() || fReaderList->GetSize() != 0 ) {
+    HLTInfo(Form("IsConnected: %d      fReaderList.Size:   %d", IsConnected(), fReaderList->GetSize()));
     DisconnectHOMER();
-  
+  }
   // -- Create the Readoutlist
   UShort_t* sourcePorts = new UShort_t [fSourceList->GetEntries()];
   const Char_t ** sourceHostnames = new const Char_t* [fSourceList->GetEntries()];
@@ -324,23 +325,27 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
 void AliHLTHOMERManager::DisconnectHOMER(){
   // see header file for class documentation
 
-  if ( ! IsConnected() )
-    return;
+  HLTInfo("Disconnecting");
 
   if ( fReaderList && fLibManager ) {
+    HLTInfo("Deleting readerlist and libmanager");
     TIter next(fReaderList);
     TObject * object = NULL;
     while ( ( object = next()) ) 
       fLibManager->DeleteReader(static_cast<AliHLTHOMERReader*>(object) );
       
+
+    HLTInfo(Form("fReaderList size %d", fReaderList->GetSize()));
     fReaderList->Clear();
+    HLTInfo(Form("fReaderList size %d", fReaderList->GetSize()));
     delete fReaderList;
-    fReaderList = NULL;
+    fReaderList = new TList ();
+    HLTInfo(Form("fReaderList size %d", fReaderList->GetSize()));
   }
   
   fStateHasChanged = kTRUE;
   fConnected = kFALSE;
-
+  
   HLTInfo(Form("Connection closed."));
 
   return;
@@ -377,9 +382,11 @@ Int_t AliHLTHOMERManager::NextEvent(){
   Int_t iResult = 0;
   Int_t iRetryCount = 0;
   
-  if ( !IsConnected() || fStateHasChanged ) 
-    ConnectHOMER();
-  
+  if ( !IsConnected() || fStateHasChanged ) {
+    HLTInfo("Not connected or state has changed, returning to AliEveHOMERManager, which will deal with this situation");
+    //    cout << "connectecd  " << IsConnected()  << "haschanged  "<<fStateHasChanged << endl;
+    return 55;//ConnectHOMER();
+  }
   if ( !IsConnected() ) {
     HLTWarning(Form( "Not connected yet." ));
     return -1;
@@ -436,15 +443,18 @@ Int_t AliHLTHOMERManager::NextEvent(){
 	break;
       } 
       else {
+	HLTDebug("Successfully read out event from source");
 	break;
       }
 
     } // while( 1 ) {
     
     // -- Check if event could be read
-    if ( iResult )
+    if ( iResult ) {
+      HLTInfo("Reading event from source failed");
       continue;
-    
+    }
+
     // -- Handle Blocks from current reader
     iResult = HandleBlocks();
     if ( iResult ) {
@@ -592,7 +602,7 @@ void AliHLTHOMERManager::AddBlockListToBuffer() {
     }
   }
   else {
-    HLTInfo("No trigger selection.");
+    HLTDebug("No trigger selection.");
   }
 
   // -- Set Top mark 

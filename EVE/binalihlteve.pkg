@@ -1,40 +1,36 @@
 #-*- Mode: Makefile -*-
 
-SRCS  := alieve_main/alieve_main.cxx
+SRCS  := alieve_main/alihlteve_main.cxx
 CSRCS :=
 
-$(BINPATH)/alieve: $(EveBaseLIB) $(EveDetLIB) 
+$(BINPATH)/alihlteve: $(EveBaseLIB) $(EveHLTLIB)
 
 EINCLUDE :=
 ELIBSDIR :=
 
-ELIBS    := EveBase EveDet \
+ELIBS    := EveBase EveHLT \
+  HLTbase AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU \
+  TPCbase TPCsim TPCrec \
+  ITSbase ITSrec \
+  TRDbase TRDrec AliHLTTRD \
+  PHOSbase PHOSUtils \
+  EMCALbase EMCALUtils EMCALrec EMCALsim TRIGGERbase VZERObase VZEROrec VZEROsim TRIGGERbase \
   MUONbase MUONevaluation MUONmapping MUONshuttle MUONcalib MUONgeometry \
   MUONraw MUONsim MUONcore MUONgraphics MUONrec MUONtrigger \
-  TPCbase TPCsim TPCrec TPCfast \
-  ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
-  TRDsim TRDrec TRDfast \
-  FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec \
-  ACORDEbase ACORDEsim ACORDErec \
-  HMPIDbase HMPIDrec HMPIDsim \
-  ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
-  EMCALUtils EMCALbase EMCALsim EMCALrec BCM \
-  STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER MONITOR \
+  STEERBase ESD AOD CDB STEER MONITOR \
   ANALYSIS ANALYSISalice \
-  THijing \
-  hijing THbtp TEPEMGEN \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
-  HLTbase XMLParser STAT
+   XMLParser STAT
 
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL -lEve $(SYSLIBS)
 
-.PHONY default: alieve_clean_compiled_macros
+.PHONY default: alihlteve_clean_compiled_macros
 
-alieve_clean_compiled_macros:
-	@echo "***** Removing .d and .$(SOEXT) files from EVE/alice-macros/ *****"
-	$(MUTE)rm -f $(ALICE_ROOT)/EVE/alice-macros/*_C.d
-	$(MUTE)rm -f $(ALICE_ROOT)/EVE/alice-macros/*_C.$(SOEXT)
+alihlteve_clean_compiled_macros:
+	@echo "***** Removing .d and .$(SOEXT) files from EVE/hlt-macros/ *****"
+	$(MUTE)rm -f $(ALICE_ROOT)/EVE/hlt-macros/*_C.d
+	$(MUTE)rm -f $(ALICE_ROOT)/EVE/hlt-macros/*_C.$(SOEXT)
 	$(MUTE)rm -f -R $(HOME)/.trdQArec
 	$(MUTE)rm -f -R $(HOME)/.QArec
 

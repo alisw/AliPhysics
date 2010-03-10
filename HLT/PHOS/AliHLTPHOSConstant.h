@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTPHOSConstant.h -1   $
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *

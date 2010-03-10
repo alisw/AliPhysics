@@ -336,11 +336,11 @@ void processTPCBlock(AliHLTHOMERBlockDesc * block);
 void processITSBlock(AliHLTHOMERBlockDesc * block);
 //Generic functions
 
-TCanvas * createCanvas(TString  tabTitle, TString  canvasTitle );
+TCanvas * CreateCanvas(TString  tabTitle, TString  canvasTitle );
 
 Int_t updateDisplay();
 
-Int_t addHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount );
+Int_t AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount );
 
 void writeToFile();
 
@@ -365,7 +365,7 @@ void onlineDisplay(Bool_t TPCMode = kTRUE, Bool_t MUONMode = kFALSE, Bool_t TRDM
   // -- Create new hM object
   // -------------------------
   gHomerManager = new AliEveHOMERManager();
-  gHomerManager->SetRetryCount(1000,15);
+  gHomerManager->SetRetryCount(100,10);
 
   Int_t iResult = gHomerManager->Initialize();
   if (iResult) { 
@@ -428,8 +428,6 @@ Int_t initializeEveViewer( Bool_t TPCMode, Bool_t MUONMode, Bool_t TRDMode) {
   TEveUtil::AssertMacro("VizDB_scan.C");
   
   //  alieve_vizdb();
-  
-
 
   //==============================================================================
   // -- Geometry, scenes, projections and viewers
@@ -527,8 +525,6 @@ Int_t initializeEveViewer( Bool_t TPCMode, Bool_t MUONMode, Bool_t TRDMode) {
   g3DView = gEve->SpawnNewViewer("3D View", "");
   g3DView->AddScene(gEve->GetGlobalScene());
   g3DView->AddScene(gEve->GetEventScene());
-
- 
 
 
   pack = pack->NewSlot()->MakePack();
@@ -646,16 +642,6 @@ Int_t initializeEveViewer( Bool_t TPCMode, Bool_t MUONMode, Bool_t TRDMode) {
   // -- Histograms
   //==============================================================================
 
-  if(TPCMode){
-    slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
-    slot->StartEmbedding();
-    
-    gTPCCanvas = new TCanvas("canvasTPC","canvasTPC", 600, 400);
-    gTPCCharge = new TH1F("ClusterCharge","ClusterCharge",100,0,500);
-    gTPCQMax = new TH1F("QMax","QMax",50,0,250);
-    gTPCQMaxOverCharge = new TH1F("QMaxOverCharge","QMaxOverCharge",50,0,1);
-    slot->StopEmbedding("TPC QA");
-  }
 
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();  
@@ -725,17 +711,19 @@ void nextEvent() {
   processEvent();
 }
 
-TCanvas * createCanvas(TString  tabTitle, TString  canvasTitle ) {
-   
-  cout <<"here"<<endl;
+TCanvas * CreateCanvas(TString  tabTitle, TString  canvasTitle ) {
 
-  TEveWindowSlot *slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
-  slot->StartEmbedding();
-  TCanvas * canvas = new TCanvas(canvasTitle.Data(),canvasTitle.Data(), 600, 400);
-  slot->StopEmbedding(tabTitle.Data());
   
+
+//   TEveWindowSlot *slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+//   slot->StartEmbedding();
+//   TCanvas * canvas = new TCanvas(canvasTitle.Data(),canvasTitle.Data(), 600, 400);
+//   slot->StopEmbedding(tabTitle.Data());
+ 
+  cout << "Create"<<endl;
+
+  TCanvas * canvas = gEve->AddCanvasTab(canvasTitle.Data());
   return canvas;
-  
 }
 
 
@@ -1142,6 +1130,8 @@ Int_t processPHOSClusters(AliHLTHOMERBlockDesc* block) {
 // -----------------------------------------------------------------
 Int_t processEMCALClusters(AliHLTHOMERBlockDesc* block) {
 
+  cout << "EMCAL"<<endl;
+
   AliHLTCaloChannelDataHeaderStruct *dhs = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*> (block->GetData());
   Short_t nC = dhs->fNChannels;
   AliHLTUInt8_t *ui = reinterpret_cast<AliHLTUInt8_t*>(dhs) + sizeof(AliHLTCaloChannelDataHeaderStruct);
@@ -1215,6 +1205,8 @@ Int_t processITSClusters(AliHLTHOMERBlockDesc* block, TEvePointSet* cont) {
 // -----------------------------------------------------------------
 Int_t processTPCClusters(AliHLTHOMERBlockDesc* block, TEvePointSet* cont, TEvePointSetArray *contCol ) {
 
+  
+
   Int_t   slice = block->GetSubDetector();
   Float_t phi   = ( slice + 0.5 ) * TMath::Pi() / 9.0;  
   Float_t cos   = TMath::Cos( phi );
@@ -1222,6 +1214,22 @@ Int_t processTPCClusters(AliHLTHOMERBlockDesc* block, TEvePointSet* cont, TEvePo
   
   AliHLTTPCClusterData *cd = reinterpret_cast<AliHLTTPCClusterData*> (block->GetData());
   UChar_t *data            = reinterpret_cast<UChar_t*> (cd->fSpacePoints);
+
+
+  if(!gTPCCanvas){
+    gTPCCanvas = gEve->AddCanvasTab("TPC QA");
+    gTPCCharge = new TH1F("ClusterCharge","ClusterCharge",100,0,500);
+    gTPCQMax = new TH1F("QMax","QMax",50,0,250);
+    gTPCQMaxOverCharge = new TH1F("QMaxOverCharge","QMaxOverCharge",50,0,1);
+  }
+
+
+
+  
+
+
+
+
 
   if ( cd->fSpacePointCnt != 0 ) {
     for (Int_t iter = 0; iter < cd->fSpacePointCnt; ++iter, data += sizeof(AliHLTTPCSpacePointData)) {
@@ -1547,7 +1555,7 @@ Int_t processITSHistograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) {
 }
 
 
-Int_t addHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount ) {
+Int_t AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount ) {
 
   if (canvas == NULL) 
     cout <<"fucked canvasn"<<endl;
@@ -1774,7 +1782,7 @@ Int_t processBlock (AliHLTHOMERBlockDesc * block ){
   else if ( ! block->GetDetector().CompareTo("PHOS") ) 
     processPHOSBlock(block);
 
-  else if ( ! block->GetDetector().CompareTo("EMCL") )
+  else if ( ! block->GetDetector().CompareTo("EMCA") )
     processEMCALBlock(block);
 
   else if ( ! block->GetDetector().CompareTo("ITS") )
@@ -1793,7 +1801,7 @@ void processITSBlock(AliHLTHOMERBlockDesc * block) {
   
   if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) {
     if(!gITSCanvas){
-      gITSCanvas = createCanvas("ITS QA", "ITS QA");
+      gITSCanvas = gEve->AddCanvasTab("ITS QA");
     }
     processITSHistograms( block , gITSCanvas);
     gITSCanvas->Update();
@@ -1838,7 +1846,7 @@ void processITSBlock(AliHLTHOMERBlockDesc * block) {
   // -- Process TRD Histograms
   else if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) {
     if(!gTRDCanvas) {
-      gTRDCanvas = createCanvas("TRD", "TRD");
+      gTRDCanvas = gEve->AddCanvasTab("TRD");
       gTRDCanvas->Divide(3,2);
     }
     iResult = processTRDHistograms( block, gTRDCanvas );     
@@ -1847,7 +1855,7 @@ void processITSBlock(AliHLTHOMERBlockDesc * block) {
   else if(block->GetDataType().CompareTo("CALIBRAH")==0){
      
     if(!gTRDCalibCanvas){
-      gTRDCalibCanvas = createCanvas("TRD Calib", "TRD Calib");
+      gTRDCalibCanvas = gEve->AddCanvasTab("TRD Calib");
       gTRDCalibCanvas->Divide(2,2);
     }
      
@@ -1857,7 +1865,7 @@ void processITSBlock(AliHLTHOMERBlockDesc * block) {
   else if(block->GetDataType().CompareTo("CALIBEOR")==0){
      
     if(!gTRDEORCanvas){
-      gTRDEORCanvas = createCanvas("TRD QA", "TRD QA");
+      gTRDEORCanvas = gEve->AddCanvasTab("TRD QA");
       gTRDEORCanvas->Divide(3,2);       
     }
   
@@ -1964,10 +1972,11 @@ Int_t processPHOSBlock(AliHLTHOMERBlockDesc * block) {
   if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) { 
     
     if(!gPHOSCanvas) {
-      gPHOSCanvas = createCanvas("PHOS QA", "PHOS QA");
+      gPHOSCanvas = CreateCanvas("PHOS QA", "PHOS QA");
       gPHOSCanvas->Divide(3, 2);
     }
-    addHistogramsToCanvas(block, gPHOSCanvas, gPHOSHistoCount);
+    
+    AddHistogramsToCanvas(block, gPHOSCanvas, gPHOSHistoCount);
    
  
   } else {
@@ -2039,10 +2048,10 @@ void processEMCALBlock(AliHLTHOMERBlockDesc * block) {
   if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) { 
     
     if(!gEMCALCanvas) {
-      gEMCALCanvas = createCanvas("EMCAL QA", "EMCAL QA");
+      gEMCALCanvas = CreateCanvas("EMCAL QA", "EMCAL QA");
       gEMCALCanvas->Divide(3, 2);
     }
-    addHistogramsToCanvas(block, gEMCALCanvas, gEMCALHistoCount);
+    AddHistogramsToCanvas(block, gEMCALCanvas, gEMCALHistoCount);
    
  
   } else {
@@ -2051,7 +2060,7 @@ void processEMCALBlock(AliHLTHOMERBlockDesc * block) {
       gEMCALElementList = createEMCALElementList();
     }
 
-    if ( block->GetDataType().CompareTo("CHANNELT") == 0 ) {
+    if ( block->GetDataType().CompareTo("CALOCLUS") == 0 ) {
       iResult = processEMCALClusters( block );
       for(int sm = 0; sm < 12; sm++) {
 	gEMCALBoxSet[sm]->ElementChanged();
@@ -2108,6 +2117,7 @@ void processHLTBlock(AliHLTHOMERBlockDesc * block) {
   } 
 
   else if ( !block->GetDataType().CompareTo("ROOTHIST") ) {      
+    
     processPrimVertexHistograms( block , gPrimVertexCanvas);
     gPrimVertexCanvas->Update();    
   }
@@ -2116,6 +2126,9 @@ void processHLTBlock(AliHLTHOMERBlockDesc * block) {
 
 
 void processTPCBlock(AliHLTHOMERBlockDesc * block) {
+
+  cout <<"Processing tpc clusters"<<endl;
+
   if ( ! block->GetDataType().CompareTo("CLUSTERS") ) {
     if(!gTPCClusters){	  
       gTPCClusters = new TEvePointSet("TPC Clusters");
