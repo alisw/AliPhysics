@@ -74,7 +74,7 @@ AliTRDrecoTask::~AliTRDrecoTask()
 
   // Generic task destructor
 
-  AliDebug(1, Form(" Ending %s (%s)\n", GetName(), GetTitle()));
+  AliDebug(2, Form(" Ending task %s[%s]", GetName(), GetTitle()));
   if(fgDebugStream){ 
     delete fgDebugStream;
     fgDebugStream = NULL;
@@ -122,7 +122,8 @@ void AliTRDrecoTask::UserExec(Option_t *)
   }
   if(!fTracks) return;
   if(!fTracks->GetEntriesFast()) return;
-  
+  else AliDebug(2, Form("Tracks[%d] for %s", fTracks->GetEntriesFast(), GetName()));
+
   AliTRDtrackInfo *trackInfo = NULL;
   TIter plotIter(fPlotFuncList);
   TObjArrayIter trackIter(fTracks);

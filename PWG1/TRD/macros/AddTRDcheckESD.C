@@ -7,11 +7,11 @@
 
 void AddTRDcheckESD(AliAnalysisManager *mgr)
 {
+  //AliLog::SetClassDebugLevel("AliTRDcheckESD", 5);
   AliTRDcheckESD *checkESD = new AliTRDcheckESD((char*)"checkESD");
   mgr->AddTask(checkESD);
   checkESD->SetMC(mgr->GetMCtruthEventHandler());
   checkESD->SetDebugLevel(0);
-  //AliLog::SetClassDebugLevel("AliTRDcheckESD", 5);
 
   mgr->ConnectInput(checkESD,  0, mgr->GetCommonInputContainer());  
   mgr->ConnectOutput(checkESD, 1, mgr->CreateContainer(checkESD->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));

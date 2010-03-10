@@ -118,6 +118,8 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
 //______________________________________________________
 void processTRD(TNamed *otask)
 {
+  printf("processTRD %s %s\n", otask->GetName(), otask->GetTitle());
+
   AliTRDrecoTask *task = dynamic_cast<AliTRDrecoTask*>(otask);
   task->SetDebugLevel(0);
   task->SetMCdata(mc);
@@ -145,13 +147,15 @@ void processTRD(TNamed *otask)
 //______________________________________________________
 void processESD(TNamed *otask)
 {
+  printf("processESD %s %s\n", otask->GetName(), otask->GetTitle());
+
   AliTRDcheckESD *esd = dynamic_cast<AliTRDcheckESD*>(otask);
   if(!esd){
-    Info("makeResults.C", "Processing of task AliTRDcheckESD failed.");
+    Info("makeResults.C", Form("Processing of task %s failed.", otask->GetName()));
     delete otask;
     return;
   }
-
+  printf("esd[%p]\n", (void*)esd);
   if(!esd->Load(Form("%s/TRD.Performance.root", gSystem->ExpandPathName("$PWD")))){
     Error("makeResults.C", Form("Load data container for task %s failed.", esd->GetName()));
     delete esd;

@@ -83,7 +83,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL")
 
   // TRD data containers
   AliAnalysisDataContainer *ci[kNOutSlots];
-  AliAnalysisDataContainer *ce[2];
+  AliAnalysisDataContainer *ce[5];
 
   // initialize TRD settings
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
@@ -101,31 +101,25 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL")
       AddTRDinfoGen(mgr, trd, NULL, ci); break;
     case kCheckDET:
       // map slots
-      ce[1]=ci[kEventInfo];
-      ce[0]=ci[kTracksBarrel];
+      ce[0]=ci[kEventInfo];
+      ce[1]=ci[kTracksBarrel];
+      ce[2]=ci[kTracksSA];
+      ce[3]=ci[kTracksKink];
       AddTRDcheckDET(mgr, trd, ce);
-//       ce[0]=ci[kTracksSA];
-//       AddTRDcheckDET(mgr, trd, ce);
-//       ce[0]=ci[kTracksKink];
-//       AddTRDcheckDET(mgr, trd, ce);
        break;
     case kEfficiency:
       // map slots
       ce[0]=ci[kTracksBarrel];
+      ce[1]=ci[kTracksSA];
+      ce[2]=ci[kTracksKink];
       AddTRDefficiency(mgr, trd, ce);
-//       ce[0]=ci[kTracksSA];
-//       AddTRDefficiency(mgr, trd, ce);
-//       ce[0]=ci[kTracksKink];
-//       AddTRDefficiency(mgr, trd, ce);
       break;
     case kResolution:
       // map slots
       ce[0]=ci[kTracksBarrel];
-      AddTRDresolution(mgr, trd, ce);
-//       ce[0]=ci[kTracksSA];
-//       AddTRDresolution(mgr, trd, ce, "SA");
-//       ce[0]=ci[kTracksKink];
-//       AddTRDresolution(mgr, trd, ce, "K"); 
+      ce[1]=ci[kTracksSA];
+      ce[2]=ci[kTracksKink];
+      AddTRDresolution(mgr, trd, ce); 
       break;
     case kCheckPID:
       // map slots

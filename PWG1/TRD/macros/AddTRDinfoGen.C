@@ -13,10 +13,10 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   Int_t map = ParseOptions(trd);
   if(!(TSTBIT(map, kInfoGen))) return;
   
+  //AliLog::SetClassDebugLevel("AliTRDinfoGen", 2);
   AliTRDinfoGen *info(NULL);
   mgr->AddTask(info = new AliTRDinfoGen((char*)"genInfo"));
   info->SetDebugLevel(0);
-  //AliLog::SetClassDebugLevel("AliTRDinfoGen", 5);
   info->SetMCdata(mgr->GetMCtruthEventHandler());
 
   // settings for collisions

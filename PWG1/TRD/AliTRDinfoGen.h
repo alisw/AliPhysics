@@ -41,8 +41,9 @@ public:
   virtual ~AliTRDinfoGen();
   
   void    ConnectInputData(Option_t *opt) {AliAnalysisTaskSE::ConnectInputData(opt);}
-  static Float_t GetTPCx() { return fgkTPC;}
-  static Float_t GetTOFx() { return fgkTOF;}
+  static Float_t GetEndITS() { return fgkITS;}
+  static Float_t GetEndTPC() { return fgkTPC;}
+  static Float_t GetEndTRD() { return fgkTRD;}
 
   Bool_t  HasMCdata() const       { return TestBit(kMCdata);};
   // temporary until check with AliAnalysisTaskSE collision selection mechannism
@@ -63,8 +64,10 @@ public:
 
 private:
   // rough radial limits for TRD
+  static const Float_t fgkITS;      // end ITS
   static const Float_t fgkTPC;      // end TPC
-  static const Float_t fgkTOF;      // begin TOF
+  static const Float_t fgkTRD;      // end TRD
+
   // Trigger selection
   TString              *fEvTrigger; // list of trigger classes separated by space
   // Vertex selection

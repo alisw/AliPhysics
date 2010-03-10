@@ -12,7 +12,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
 {
   Int_t map = ParseOptions(trd);
   if(!(TSTBIT(map, kEfficiency))) return;
-  printf("AddTRDefficiency <- [0]=\"%s\"\n", ci[0]->GetName());
+  printf("AddTRDefficiency <- [0]=\"%s\" [1]=\"%s\" [2]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName());
 
   AliTRDrecoTask *eff(NULL);
   mgr->AddTask(eff = new AliTRDefficiency((char*)"TRDefficiency"));

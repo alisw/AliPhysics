@@ -368,7 +368,7 @@ Int_t AliTRDefficiencyMC::IsFindableNot(AliTRDtrackInfo * const trkInf){
     if(!(trackRef = trkInf->GetTrackRef(itr))) continue;
     x = trackRef->LocalX(); 
     // Be Sure that we are inside TRD
-    if(x < AliTRDinfoGen::GetTPCx() || x > AliTRDinfoGen::GetTOFx()) continue;	
+    if(x < AliTRDinfoGen::GetEndTPC() || x > AliTRDinfoGen::GetEndTRD()) continue;	
     sector[ntrTRD] = Int_t(trackRef->Alpha()/AliTRDgeometry::GetAlpha());
     AliDebug(10, Form("    [%2d] x[%7.2f] y[%7.2f] z[%7.2f] Sec[%2d]", itr, trackRef->LocalX(), trackRef->LocalY(), trackRef->Z(), sector[ntrTRD]));
     if(x < xmin){

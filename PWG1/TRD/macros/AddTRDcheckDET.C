@@ -12,18 +12,18 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
 {
   Int_t map = ParseOptions(trd);
   if(!(TSTBIT(map, kCheckDET))) return;
-  printf("AddTRDcheckDET <- [0]=\"%s\" [1]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName());
+  printf("AddTRDcheckDET <- [0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName());
 
+  //AliLog::SetClassDebugLevel("AliTRDcheckDET", 5);
   AliTRDcheckDET *task(NULL);
   mgr->AddTask(task = new AliTRDcheckDET((char*)"checkDET"));
-  //AliLog::SetClassDebugLevel("AliTRDcheckDET", 5);
   task->SetDebugLevel(0);
   task->SetMCdata(mgr->GetMCtruthEventHandler());
   
   // Create containers for input/output
   mgr->ConnectInput ( task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput ( task, 1, ci[0]);
-  mgr->ConnectInput ( task, 2, ci[1]);
+  mgr->ConnectInput ( task, 1, ci[1]);
+  mgr->ConnectInput ( task, 2, ci[0]);
   mgr->ConnectOutput( task, 1, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
   
 
@@ -47,6 +47,6 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
 
   // Create containers for input/output
   mgr->ConnectInput(ctask,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput(ctask,  1, ci[0]);
+  mgr->ConnectInput(ctask,  1, ci[1]);
   mgr->ConnectOutput(ctask, 1, mgr->CreateContainer(ctask->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", ctask->GetName())));
 }
