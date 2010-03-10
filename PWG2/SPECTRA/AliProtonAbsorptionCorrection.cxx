@@ -202,7 +202,10 @@ void AliProtonAbsorptionCorrection::FillAbsorptionMaps(AliESDEvent *esd,
     //check the MC-level cuts
     if (fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
 					     mcPart)) {
-      containerInput[0] = (Float_t)mcPart->Eta();
+      if(fProtonAnalysisBase->GetEtaMode()) 
+	containerInput[0] = (Float_t)mcPart->Eta();
+      else 
+	containerInput[0] = (Float_t)fProtonAnalysisBase->Rapidity(mcPart->Px(),mcPart->Pz(),mcPart->Pz());
       containerInput[1] = (Float_t)mcPart->Pt();
       //fill the container for Gen-level selection
       fCFManagerProtons->GetParticleContainer()->Fill(containerInput,
@@ -220,7 +223,10 @@ void AliProtonAbsorptionCorrection::FillAbsorptionMaps(AliESDEvent *esd,
     //check the MC-level cuts
     if (fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
 						 mcPart)) {
-      containerInput[0] = (Float_t)mcPart->Eta();
+      if(fProtonAnalysisBase->GetEtaMode()) 
+	containerInput[0] = (Float_t)mcPart->Eta();
+      else
+	containerInput[0] = (Float_t)fProtonAnalysisBase->Rapidity(mcPart->Px(),mcPart->Pz(),mcPart->Pz());
       containerInput[1] = (Float_t)mcPart->Pt();
       //fill the container for Gen-level selection
       fCFManagerAntiProtons->GetParticleContainer()->Fill(containerInput,
@@ -244,7 +250,9 @@ void AliProtonAbsorptionCorrection::FillAbsorptionMaps(AliESDEvent *esd,
 
     // is track associated to particle ?
     Int_t label = track->GetLabel();
-    if (label<0) continue;
+    if (label < 0) continue;
+    if(label > mcEvent->GetNumberOfTracks()) continue;
+
     AliMCParticle *mcPart  = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(label));
 
     if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)||(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
@@ -257,7 +265,10 @@ void AliProtonAbsorptionCorrection::FillAbsorptionMaps(AliESDEvent *esd,
     if (fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
 					     mcPart)) {
       //fill the container
-      containerInput[0] = mcPart->Eta();
+      if(fProtonAnalysisBase->GetEtaMode()) 
+	containerInput[0] = mcPart->Eta();
+      else 
+	containerInput[0] = (Float_t)fProtonAnalysisBase->Rapidity(mcPart->Px(),mcPart->Pz(),mcPart->Pz());
       containerInput[1] = mcPart->Pt();
       fCFManagerProtons->GetParticleContainer()->Fill(containerInput,
 						      kStepReconstructed) ;   
@@ -268,7 +279,10 @@ void AliProtonAbsorptionCorrection::FillAbsorptionMaps(AliESDEvent *esd,
     if (fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
 						 mcPart)) {
       //fill the container
-      containerInput[0] = mcPart->Eta();
+      if(fProtonAnalysisBase->GetEtaMode()) 
+	containerInput[0] = mcPart->Eta();
+      else 
+	containerInput[0] = (Float_t)fProtonAnalysisBase->Rapidity(mcPart->Px(),mcPart->Pz(),mcPart->Pz());
       containerInput[1] = mcPart->Pt();
       fCFManagerAntiProtons->GetParticleContainer()->Fill(containerInput,
 							  kStepReconstructed);
