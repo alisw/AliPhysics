@@ -1,7 +1,7 @@
 #-*-Mode: Makefile-*-
 
 SRCS =  AliFastJetFinder.cxx AliFastJetHeaderV1.cxx AliFastJetInput.cxx AliJetBkg.cxx\
-        AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx
+        AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx AliAnalysisTaskJetCluster.cxx
 ifneq ($(FASTJET_ROOT),)
         EINCLUDE += $(FASTJET_ROOT)/include		
 else	

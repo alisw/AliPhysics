@@ -10,4 +10,5 @@
 #pragma	link C++ class AliFastJetHeaderV1+;
 #pragma	link C++ class AliSISConeJetFinder+;
 #pragma	link C++ class AliSISConeJetHeader+;
+#pragma	link C++ class AliAnalysisTaskJetCluster+;
 #endif
