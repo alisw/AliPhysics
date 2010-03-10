@@ -199,6 +199,11 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 
   }
 
+  if (vzeroLoader) 
+  {
+	  vzeroLoader->UnloadDigits();
+  }
+
   clustersTree->Fill();	
 
   delete trgData;
