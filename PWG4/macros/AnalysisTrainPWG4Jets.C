@@ -125,7 +125,7 @@ TString     kGridPassPattern       = "";
 TString     kGridExtraFiles        = ""; // files that will be added to the input list in the JDL...
 Int_t       kGridMaxMergeFiles      = 50; // Number of files merged in a chunkgridrunragn
 TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be merged
-TString     kGridOutputStorages      = "ALICE::NIHAM::File,ALICE::CNAF::SE,ALICE::FZK::SE,ALICE::GSI::SE,ALICE::Legnaro::SE"; // Make replicas on the storages
+TString     kGridOutputStorages      = "disk=2"; // Make replicas on the storages
 // == grid process variables
 Int_t       kGridRunsPerMaster     = 100; // Number of runs per master job
 Int_t       kGridFilesPerJob       = 100; // Maximum number of files per job (gives size of AOD)
@@ -260,7 +260,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       // AOD output handler
       AliAODHandler* aodHandler   = new AliAODHandler();
       aodHandler->SetOutputFileName("AliAOD.root");
-      aodHandler->SetFillAOD(kFillAOD);
+      aodHandler->SetFillAODforRun(kFillAOD);
       
       mgr->SetOutputEventHandler(aodHandler);
       //
@@ -406,8 +406,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskUE = AddTaskUE("jetsAOD_ICDF","CDF","LJCC","TRANSV","MSP"); 
        taskUE = AddTaskUE("jetsAOD_ICDF","CDF","LJCC","TRANSV","MAP"); 
        taskUE = AddTaskUE("jetsAOD_NONE","CDF","MP","TRANSV","MSP"); 
-       taskUE = AddTaskUE("jetsAOD_NONE","CDF","MP","TRANSV","MAP") 
-	 taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV","MSP"); 
+       taskUE = AddTaskUE("jetsAOD_NONE","CDF","MP","TRANSV","MAP");
+       taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV","MSP"); 
        taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV","MAP");
      }
 
@@ -445,12 +445,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if(iPWG4Cluster){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCluster.C");
      AliAnalysisTaskJetCluster *taskCl = 0;
-     if(iPWG4Cluster&1)taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection);
+     if(iPWG4Cluster&1){
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT");
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"CA");
+     }
      if(iPWG4Cluster&2){
        UInt_t selection = 0;
        if(!iAODanalysis) selection = 0xffffff;
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
-       AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,selection);
+       AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"KT",selection);
+       AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"CA",selection);
      }
      if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
 
